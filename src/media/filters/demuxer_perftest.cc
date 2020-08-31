@@ -191,8 +191,8 @@ static void RunDemuxerBenchmark(const std::string& filename) {
 
     {
       base::RunLoop run_loop;
-      demuxer.Initialize(&demuxer_host, base::Bind(&QuitLoopWithStatus,
-                                                   run_loop.QuitClosure()));
+      demuxer.Initialize(&demuxer_host, base::BindOnce(&QuitLoopWithStatus,
+                                                       run_loop.QuitClosure()));
       run_loop.Run();
     }
 
@@ -228,7 +228,7 @@ static const char* kDemuxerTestFiles[] {
 // For simplicity we only test containers with above 2% daily usage as measured
 // by the Media.DetectedContainer histogram.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     DemuxerPerfTest,
     testing::ValuesIn(kDemuxerTestFiles));
 

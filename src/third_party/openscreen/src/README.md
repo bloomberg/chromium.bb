@@ -26,22 +26,28 @@ lint` and `git cl upload.`
 
 ## Checking out code
 
-From the parent directory of where you want the openscreen checkout, configure
-`gclient` and check out openscreen with the following commands:
+From the parent directory of where you want the openscreen checkout (e.g.,
+`~/my_project_dir`), configure `gclient` and check out openscreen with the
+following commands:
 
 ```bash
+    cd ~/my_project_dir
     gclient config https://chromium.googlesource.com/openscreen
     gclient sync
 ```
 
-Now, you should have `openscreen/` repository checked out, with all dependencies
-checked out to their appropriate revisions.
+The first `gclient` command will create a default .gclient file in
+`~/my_project_dir` that describes how to pull down the `openscreen` repository.
+The second command creates an `openscreen/` subdirectory, downloads the source
+code, all third-party dependencies, and the toolchain needed to build things;
+and at their appropriate revisions.
 
 ## Syncing your local checkout
 
 To update your local checkout from the openscreen master repository, just run
 
 ```bash
+   cd ~/my_project_dir/openscreen
    git pull
    gclient sync
 ```
@@ -51,24 +57,23 @@ dependencies that have changed.
 
 # Build setup
 
-## Installing build dependencies
-
-The following tools are required for building:
+The following are the main tools are required for development/builds:
 
  - Build file generator: `gn`
- - Code formatter (optional): `clang-format`
+ - Code formatter: `clang-format`
  - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
+ - Compiler/Linker: `clang` (installed by default) or `gcc` (installed by you)
 
-`clang-format` and `ninja` can be downloaded to `buildtools/<platform>` root by
-running `./tools/install-build-tools.sh`.
+All of these--except `gcc` as noted above--are automatically downloaded/updated
+for the Linux and Mac environments via `gclient sync` as described above. The
+first two are installed into `buildtools/<platform>/`.
 
-`clang-format` is only used for presubmit checks and optionally used on
-generated code from the CDDL tool.
+Mac only: XCode must be installed on the system, to link against its frameworks.
 
-`gn` will be installed in `buildtools/<platform>/` automatically by `gclient sync`.
-
-You also need to ensure that you have the compiler and its toolchain dependencies.
-Currently, both Linux and Mac OS X build configurations use clang by default.
+`clang-format` is used for maintaining consistent coding style, but it is not a
+complete replacement for adhering to Chromium/Google C++ style (that's on you!).
+The presubmit script will sanity-check that it has been run on all new/changed
+code.
 
 ## Linux clang
 
@@ -153,6 +158,11 @@ the working directory for the build.  So the same could be done as follows:
 After editing a file, only `ninja` needs to be rerun, not `gn`.  If you have
 edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
+Unless you like to wait longer than necessary for builds to complete, run
+`autoninja` instead of `ninja`, which takes the same command-line arguments.
+This will automatically parallelize the build for your system, depending on
+number of processor cores, RAM, etc.
+
 For details on running `demo`, see its [README.md](demo/README.md).
 
 ## Building other targets
@@ -173,6 +183,25 @@ the build flags available.
   ninja -C out/Default unittests
   ./out/Default/unittests
 ```
+
+## Building and running fuzzers
+
+In order to build fuzzers, you need the GN arg `use_libfuzzer=true`.  It's also
+recommended to build with `is_asan=true` to catch additional problems.  Building
+and running then might look like:
+```bash
+  gn gen out/libfuzzer --args="use_libfuzzer=true is_asan=true is_debug=false"
+  ninja -C out/libfuzzer some_fuzz_target
+  out/libfuzzer/some_fuzz_target <args> <corpus_dir> [additional corpus dirs]
+```
+
+The arguments to the fuzzer binary should be whatever is listed in the GN target
+description (e.g. `-max_len=1500`).  These arguments may be automatically
+scraped by Chromium's ClusterFuzz tool when it runs fuzzers, but they are not
+built into the target.  You can also look at the file
+`out/libfuzzer/some_fuzz_target.options` for what arguments should be used.  The
+`corpus_dir` is listed as `seed_corpus` in the GN definition of the fuzzer
+target.
 
 # Continuous build and try jobs
 
@@ -213,11 +242,13 @@ review tool) and is recommended for pushing patches for review.  Once you have
 committed changes locally, simply run:
 
 ```bash
+  git cl format
   git cl upload
 ```
 
-This will run our `PRESUBMIT.sh` script to check style, and if it passes, a new
-code review will be posted on `chromium-review.googlesource.com`.
+The first command will will auto-format the code changes. Then, the second
+command runs the `PRESUBMIT.sh` script to check style and, if it passes, a
+newcode review will be posted on `chromium-review.googlesource.com`.
 
 If you make additional commits to your local branch, then running `git cl
 upload` again in the same branch will merge those commits into the ongoing
@@ -256,3 +287,76 @@ After your patch has received one or more LGTM commit it by clicking the
 `SUBMIT` button (or, confusingly, `COMMIT QUEUE +2`) in Gerrit.  This will run
 your patch through the builders again before committing to the main openscreen
 repository.
+
+<!-- TODO(mfoltz): split up README.md into more manageable files. -->
+## Working with ARM/ARM64/the Raspberry PI
+
+openscreen supports cross compilation for both arm32 and arm64 platforms, by
+using the `gn args` parameter `target_cpu="arm"` or `target_cpu="arm64"`
+respectively. Note that quotes are required around the target arch value.
+
+Setting an arm(64) target_cpu causes GN to pull down a sysroot from openscreen's
+public cloud storage bucket. Google employees may update the sysroots stored
+by requesting access to the Open Screen pantheon project and uploading a new
+tar.xz to the openscreen-sysroots bucket.
+
+NOTE: The "arm" image is taken from Chromium's debian arm image, however it has
+been manually patched to include support for libavcodec and libsdl2. To update
+this image, the new image must be manually patched to include the necessary
+header and library dependencies. Note that if the versions of libavcodec and
+libsdl2 are too out of sync from the copies in the sysroot, compilation will
+succeed, but you may experience issues decoding content.
+
+To install the last known good version of the libavcodec and libsdl packages
+on a Raspberry Pi, you can run the following command:
+
+```bash
+sudo ./cast/standalone_receiver/install_demo_deps_raspian.sh
+```
+
+NOTE: until [Issue 106](http://crbug.com/openscreen/106) is resolved, you may
+experience issues streaming to a Raspberry Pi if multiple network interfaces
+(e.g. WiFi + Ethernet) are enabled. The workaround is to disable either the WiFi
+or ethernet connection.
+
+## Code Coverage
+
+Code coverage can be checked using clang's source-based coverage tools.  You
+must use the GN argument `use_coverage=true`.  It's recommended to do this in a
+separate output directory since the added instrumentation will affect
+performance and generate an output file every time a binary is run.  You can
+read more about this in [clang's
+documentation](http://clang.llvm.org/docs/SourceBasedCodeCoverage.html) but the
+bare minimum steps are also outlined below.  You will also need to download the
+pre-built clang coverage tools, which are not downloaded by default.  The
+easiest way to do this is to set a custom variable in your `.gclient` file.
+Under the "openscreen" solution, add:
+```python
+  "custom_vars": {
+    "checkout_clang_coverage_tools": True,
+  },
+```
+then run `gclient runhooks`.  You can also run the python command from the
+`clang_coverage_tools` hook in `//DEPS` yourself or even download the tools
+manually
+([link](https://storage.googleapis.com/chromium-browser-clang-staging/)).
+
+Once you have your GN directory (we'll call it `out/coverage`) and have
+downloaded the tools, do the following to generate an HTML coverage report:
+```bash
+out/coverage/openscreen_unittests
+third_party/llvm-build/Release+Asserts/bin/llvm-profdata merge -sparse default.profraw -o foo.profdata
+third_party/llvm-build/Release+Asserts/bin/llvm-cov show out/coverage/openscreen_unittests -instr-profile=foo.profdata -format=html -output-dir=<out dir> [filter paths]
+```
+There are a few things to note here:
+ - `default.profraw` is generated by running the instrumented code, but
+ `foo.profdata` can be any path you want.
+ - `<out dir>` should be an empty directory for placing the generated HTML
+ files.  You can view the report at `<out dir>/index.html`.
+ - `[filter paths]` is a list of paths to which you want to limit the coverage
+ report.  For example, you may want to limit it to cast/ or even
+ cast/streaming/.  If this list is empty, all data will be in the report.
+
+The same process can be used to check the coverage of a fuzzer's corpus.  Just
+add `-runs=0` to the fuzzer arguments to make sure it only runs the existing
+corpus then exits.

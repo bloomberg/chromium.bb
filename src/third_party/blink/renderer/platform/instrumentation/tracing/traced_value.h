@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_TRACED_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_TRACED_VALUE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/trace_event/traced_value.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -13,7 +16,7 @@
 namespace blink {
 
 // Thin wrapper around base::trace_event::TracedValue.
-class PLATFORM_EXPORT TracedValue final
+class PLATFORM_EXPORT TracedValue
     : public base::trace_event::ConvertableToTraceFormat {
  public:
   TracedValue();
@@ -44,19 +47,30 @@ class PLATFORM_EXPORT TracedValue final
   void BeginArray();
   void BeginDictionary();
 
-  String ToString() const;
+ protected:
+  explicit TracedValue(
+      std::unique_ptr<base::trace_event::TracedValue> traced_value)
+      : traced_value_(std::move(traced_value)) {}
+  std::unique_ptr<base::trace_event::TracedValue> traced_value_;
 
  private:
   // ConvertableToTraceFormat
-
   void AppendAsTraceFormat(std::string*) const final;
   bool AppendToProto(ProtoAppender* appender) final;
   void EstimateTraceMemoryOverhead(
       base::trace_event::TraceEventMemoryOverhead*) final;
 
-  base::trace_event::TracedValue traced_value_;
-
   DISALLOW_COPY_AND_ASSIGN(TracedValue);
+};
+
+// Thin wrapper around base::trace_event::TracedValueJSON.
+class PLATFORM_EXPORT TracedValueJSON final : public TracedValue {
+ public:
+  TracedValueJSON();
+  ~TracedValueJSON() final;
+
+  String ToJSON() const;
+  String ToFormattedJSON() const;
 };
 
 }  // namespace blink

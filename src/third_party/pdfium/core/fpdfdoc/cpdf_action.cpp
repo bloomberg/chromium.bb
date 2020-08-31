@@ -12,7 +12,6 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfdoc/cpdf_filespec.h"
-#include "core/fpdfdoc/cpdf_nametree.h"
 
 namespace {
 
@@ -56,19 +55,8 @@ CPDF_Action::ActionType CPDF_Action::GetType() const {
 CPDF_Dest CPDF_Action::GetDest(CPDF_Document* pDoc) const {
   ActionType type = GetType();
   if (type != GoTo && type != GoToR)
-    return CPDF_Dest();
-
-  const CPDF_Object* pDest = m_pDict->GetDirectObjectFor("D");
-  if (!pDest)
-    return CPDF_Dest();
-  if (pDest->IsString() || pDest->IsName()) {
-    CPDF_NameTree name_tree(pDoc, "Dests");
-    return CPDF_Dest(name_tree.LookupNamedDest(pDoc, pDest->GetUnicodeText()));
-  }
-  if (const CPDF_Array* pArray = pDest->AsArray())
-    return CPDF_Dest(pArray);
-
-  return CPDF_Dest();
+    return CPDF_Dest(nullptr);
+  return CPDF_Dest::Create(pDoc, m_pDict->GetDirectObjectFor("D"));
 }
 
 WideString CPDF_Action::GetFilePath() const {
@@ -122,6 +110,30 @@ ByteString CPDF_Action::GetNamedAction() const {
 
 uint32_t CPDF_Action::GetFlags() const {
   return m_pDict->GetIntegerFor("Flags");
+}
+
+std::vector<const CPDF_Object*> CPDF_Action::GetAllFields() const {
+  std::vector<const CPDF_Object*> result;
+  if (!m_pDict)
+    return result;
+
+  ByteString csType = m_pDict->GetStringFor("S");
+  const CPDF_Object* pFields = csType == "Hide"
+                                   ? m_pDict->GetDirectObjectFor("T")
+                                   : m_pDict->GetArrayFor("Fields");
+  if (!pFields)
+    return result;
+
+  if (pFields->IsDictionary() || pFields->IsString()) {
+    result.push_back(pFields);
+  } else if (const CPDF_Array* pArray = pFields->AsArray()) {
+    for (size_t i = 0; i < pArray->size(); ++i) {
+      const CPDF_Object* pObj = pArray->GetDirectObjectAt(i);
+      if (pObj)
+        result.push_back(pObj);
+    }
+  }
+  return result;
 }
 
 Optional<WideString> CPDF_Action::MaybeGetJavaScript() const {

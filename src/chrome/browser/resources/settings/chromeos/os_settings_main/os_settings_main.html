@@ -11,7 +11,7 @@
 <link rel="import" href="../os_settings_page/os_settings_page.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs.html">
-<link rel="import" href="../../route.html">
+<link rel="import" href="../os_route.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../settings_vars_css.html">
 
@@ -53,7 +53,7 @@
     </style>
     <div id="noSearchResults" hidden$="[[!showNoResultsFound_]]">
       <div>$i18n{searchNoResults}</div>
-      <div>$i18nRaw{searchNoResultsHelp}</div>
+      <div>$i18nRaw{searchNoOsResultsHelp}</div>
     </div>
     <template is="dom-if"
         if="[[showManagedHeader_(inSearchMode_, showingSubpage_,
@@ -61,11 +61,11 @@
       <managed-footnote show-device-info></managed-footnote>
     </template>
     <template is="dom-if" if="[[showPages_.settings]]">
-      <os-settings-page prefs="{{prefs}}"
+      <os-settings-page
+          class="cr-centered-card-container"
+          prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           show-android-apps="[[showAndroidApps]]"
-          show-app-management="[[showAppManagement]]"
-          show-apps="[[showApps]]"
           show-crostini="[[showCrostini]]"
           show-plugin-vm="[[showPluginVm]]"
           show-reset="[[showReset]]"
@@ -79,6 +79,7 @@
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
       <os-settings-about-page role="main"
+          class="cr-centered-card-container"
           in-search-mode="[[inSearchMode_]]"
           on-subpage-expand="onShowingSubpage_"
           on-showing-main-page="onShowingMainPage_"

@@ -16,10 +16,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -28,8 +27,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -43,18 +40,11 @@ using media_session::mojom::AudioFocusRequestStatePtr;
 // integer/string values.
 class MediaInternalsTestBase {
  public:
-  MediaInternalsTestBase() = default;
-  virtual ~MediaInternalsTestBase() = default;
-
-  void SetUpServiceManager() {
+  MediaInternalsTestBase() {
     scoped_feature_list_.InitAndEnableFeature(
         media_session::features::kMediaSessionService);
-
-    service_manager_context_ =
-        std::make_unique<content::TestServiceManagerContext>();
   }
-
-  void TearDownServiceManager() { service_manager_context_.reset(); }
+  virtual ~MediaInternalsTestBase() = default;
 
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
@@ -117,7 +107,6 @@ class MediaInternalsTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
 };
 
 }  // namespace
@@ -130,16 +119,14 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
                                              public MediaInternalsTestBase {
  public:
   MediaInternalsVideoCaptureDeviceTest()
-      : update_cb_(base::Bind(
+      : update_cb_(base::BindRepeating(
             &MediaInternalsVideoCaptureDeviceTest::UpdateCallbackImpl,
             base::Unretained(this))) {
-    SetUpServiceManager();
     media_internals()->AddUpdateCallback(update_cb_);
   }
 
   ~MediaInternalsVideoCaptureDeviceTest() override {
     media_internals()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
   }
 
  protected:
@@ -226,19 +213,18 @@ class MediaInternalsAudioLogTest
       public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
  public:
   MediaInternalsAudioLogTest()
-      : update_cb_(base::Bind(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
-                              base::Unretained(this))),
+      : update_cb_(
+            base::BindRepeating(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
+                                base::Unretained(this))),
         test_params_(MakeAudioParams()),
         test_component_(GetParam()),
         audio_log_(media_internals()->CreateAudioLog(test_component_,
                                                      kTestComponentID)) {
-    SetUpServiceManager();
     media_internals()->AddUpdateCallback(update_cb_);
   }
 
   virtual ~MediaInternalsAudioLogTest() {
     media_internals()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
   }
 
  protected:
@@ -335,15 +321,13 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    SetUpServiceManager();
 
     update_cb_ =
         base::BindRepeating(&MediaInternalsAudioFocusTest::UpdateCallbackImpl,
                             base::Unretained(this));
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    content::GetSystemConnector()->Connect(
-        media_session::mojom::kServiceName,
+    GetMediaSessionService().BindAudioFocusManager(
         audio_focus_.BindNewPipeAndPassReceiver());
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
@@ -351,7 +335,6 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
 
   void TearDown() override {
     content::MediaInternals::GetInstance()->RemoveUpdateCallback(update_cb_);
-    TearDownServiceManager();
     RenderViewHostTestHarness::TearDown();
   }
 

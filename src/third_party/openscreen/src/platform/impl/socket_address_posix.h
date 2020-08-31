@@ -17,7 +17,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class SocketAddressPosix {
  public:
@@ -35,7 +34,13 @@ class SocketAddressPosix {
   IPAddress::Version version() const { return endpoint_.address.version(); }
   IPEndpoint endpoint() const { return endpoint_; }
 
+  // Recomputes |endpoint_| if |internal_address_| is written to directly, e.g.
+  // by a system call.
+  void RecomputeEndpoint();
+
  private:
+  void RecomputeEndpoint(IPAddress::Version version);
+
   // The way the sockaddr_* family works in POSIX is pretty unintuitive. The
   // sockaddr_in and sockaddr_in6 structs can be reinterpreted as type
   // sockaddr, however they don't have a common parent--the types are unrelated.
@@ -50,7 +55,6 @@ class SocketAddressPosix {
   IPEndpoint endpoint_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_ADDRESS_POSIX_H_

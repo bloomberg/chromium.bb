@@ -16,55 +16,6 @@
     </style>
     <style name="Base.Theme.Chromium" parent="Base.V21.Theme.Chromium" />
 
-    <!-- Preferences -->
-    <style name="Base.V21.Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
-        <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
-    </style>
-
-    <style name="Theme.Chromium.Preferences" parent="Base.V21.Theme.Chromium.Preferences" />
-
-    <style name="Theme.Chromium.PreferenceFragment">
-        <item name="android:divider">?android:attr/listDivider</item>
-    </style>
-
-    <style name="Theme.Chromium.PreferenceFragmentList">
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
-    </style>
-
-    <style name="Theme.Chromium.PreferenceLayoutCompat">
-        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
-        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
-        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
-    </style>
-
-    <style name="Theme.Chromium.PreferenceDescriptionCompat">
-        <item name="android:paddingTop">16dp</item>
-        <item name="android:paddingBottom">16dp</item>
-    </style>
-
-    <style name="Theme.Chromium.PreferenceWidgetCompat">
-        <item name="android:paddingStart">16dp</item>
-    </style>
-
-    <style name="PreferenceTitle">
-        <item name="android:ellipsize">end</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceListItem</item>
-    </style>
-    <style name="PreferenceSummary">
-        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
-    </style>
-    <style name="PreferenceLayoutBase">
-        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
-        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
-        <item name="android:paddingTop">16dp</item>
-        <item name="android:paddingBottom">16dp</item>
-        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
-        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
-    </style>
-    <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
-
     <!-- Web Notifications -->
     <style name="WebNotificationTitle"
         parent="@android:style/TextAppearance.Material.Notification.Title"/>

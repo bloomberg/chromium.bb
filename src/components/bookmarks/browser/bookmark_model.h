@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -276,14 +277,6 @@ class BookmarkModel : public BookmarkUndoProvider,
     return expanded_state_tracker_.get();
   }
 
-  // Sets the visibility of one of the permanent nodes (unless the node must
-  // always be visible, see |BookmarkClient::IsPermanentNodeVisible| for more
-  // details). This is set by sync.
-  void SetPermanentNodeVisible(BookmarkNode::Type type, bool value);
-
-  // Returns the permanent node of type |type|.
-  const BookmarkPermanentNode* PermanentNode(BookmarkNode::Type type);
-
   // Sets/deletes meta info of |node|.
   void SetNodeMetaInfo(const BookmarkNode* node,
                        const std::string& key,
@@ -302,10 +295,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   const std::set<std::string>& non_cloned_keys() const {
     return non_cloned_keys_;
   }
-
-  // Sets the sync transaction version of |node|.
-  void SetNodeSyncTransactionVersion(const BookmarkNode* node,
-                                     int64_t sync_transaction_version);
 
   // Notify BookmarkModel that the favicons for the given page URLs (e.g.
   // http://www.google.com) and the given icon URL (e.g.
@@ -423,7 +412,12 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Reads/writes bookmarks to disk.
   std::unique_ptr<BookmarkStorage> store_;
 
-  std::unique_ptr<TitledUrlIndex> index_;
+  std::unique_ptr<TitledUrlIndex> titled_url_index_;
+
+#if DCHECK_IS_ON()
+  // GUID index used to verify uniqueness in DCHECK-enabled builds.
+  std::set<std::string> guid_index_;
+#endif  // DCHECK_IS_ON()
 
   // Owned by |model_loader_|.
   // WARNING: in some tests this does *not* refer to

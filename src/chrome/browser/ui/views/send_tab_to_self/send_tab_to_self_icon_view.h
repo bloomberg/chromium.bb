@@ -18,23 +18,30 @@ class SendTabToSelfBubbleController;
 // choose to share the url to a target device.
 class SendTabToSelfIconView : public PageActionIconView {
  public:
-  SendTabToSelfIconView(CommandUpdater* command_updater,
-                        PageActionIconView::Delegate* delegate);
+  SendTabToSelfIconView(
+      CommandUpdater* command_updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~SendTabToSelfIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   void UpdateImpl() override;
-  SkColor GetTextColor() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const char* GetClassName() const override;
+
+  // Updates the opacity according to the length of the label view as it is
+  // shrinking.
+  void UpdateOpacity();
 
  private:
   enum class AnimationState { kNotShown, kShowing, kShown };
@@ -43,6 +50,9 @@ class SendTabToSelfIconView : public PageActionIconView {
 
   // Indicates the current state of the initial "Send" animation.
   AnimationState initial_animation_state_ = AnimationState::kNotShown;
+  // Indicates whether the "Sending..." animation has been shown since the last
+  // time the omnibox was in focus.
+  AnimationState sending_animation_state_ = AnimationState::kNotShown;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfIconView);
 };

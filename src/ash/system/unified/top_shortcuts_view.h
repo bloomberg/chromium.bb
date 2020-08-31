@@ -7,8 +7,11 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+class PrefRegistrySimple;
 
 namespace ash {
 
@@ -44,11 +47,11 @@ class TopShortcutButtonContainer : public views::View {
 
 // Top shortcuts view shown on the top of UnifiedSystemTrayView.
 class ASH_EXPORT TopShortcutsView : public views::View,
-                                    public views::ButtonListener,
-                                    public AccessibilityObserver {
+                                    public views::ButtonListener {
  public:
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
-  ~TopShortcutsView() override;
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Change the expanded state. CollapseButton icon will rotate.
   void SetExpandedAmount(double expanded_amount);
@@ -56,14 +59,14 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // AccessibilityObserver:
-  void OnAccessibilityStatusChanged() override;
-
   // views::View
   const char* GetClassName() const override;
 
  private:
   friend class TopShortcutsViewTest;
+
+  // Disables/Enables the |settings_button_| based on kSettingsIconEnabled pref.
+  void UpdateSettingsButtonState();
 
   UnifiedSystemTrayController* controller_;
 
@@ -75,6 +78,8 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   TopShortcutButton* settings_button_ = nullptr;
   TopShortcutButton* power_button_ = nullptr;
   CollapseButton* collapse_button_ = nullptr;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TopShortcutsView);
 };

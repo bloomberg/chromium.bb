@@ -59,6 +59,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/ftl_echo_message_listener.h"
 #include "remoting/host/ftl_host_change_notification_listener.h"
 #include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -79,7 +80,6 @@
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/host/security_key/security_key_extension.h"
 #include "remoting/host/shutdown_watchdog.h"
-#include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/test_echo_extension.h"
 #include "remoting/host/third_party_auth_config.h"
@@ -181,8 +181,6 @@ const char kEnableVp9SwitchName[] = "enable-vp9";
 // Command line switch used to enable hardware H264 encoding.
 const char kEnableH264SwitchName[] = "enable-h264";
 
-const char kWindowIdSwitchName[] = "window-id";
-
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
@@ -199,6 +197,7 @@ const int kHostOfflineReasonTimeoutSeconds = 10;
 const char kHostOfflineReasonPolicyReadError[] = "POLICY_READ_ERROR";
 const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
     "POLICY_CHANGE_REQUIRES_RESTART";
+const char kHostOfflineReasonRemoteRestartHost[] = "REMOTE_RESTART_HOST";
 
 }  // namespace
 
@@ -206,6 +205,7 @@ namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
                     public FtlHostChangeNotificationListener::Listener,
+                    public HeartbeatSender::Delegate,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
  public:
@@ -323,12 +323,11 @@ class HostProcess : public ConfigWatcher::Delegate,
   void StartHostIfReady();
   void StartHost();
 
-  // Error handler for HeartbeatSender.
-  void OnHeartbeatSuccessful();
-  void OnUnknownHostIdError();
-
-  // Error handler for FtlSignalingConnector.
-  void OnAuthFailed();
+  // HeartbeatSender::Delegate implementations.
+  void OnFirstHeartbeatSuccessful() override;
+  void OnHostNotFound() override;
+  void OnAuthFailed() override;
+  void OnRemoteRestartHost() override;
 
   void RestartHost(const std::string& host_offline_reason);
   void ShutdownHost(HostExitCodes exit_code);
@@ -336,8 +335,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Helper methods doing the work needed by RestartHost and ShutdownHost.
   void GoOffline(const std::string& host_offline_reason);
   void OnHostOfflineReasonAck(bool success);
-
-  void UpdateConfigRefreshToken(const std::string& token);
 
 #if defined(OS_WIN)
   // Initializes the pairing registry on Windows. This should be invoked on the
@@ -396,17 +393,13 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
 
-  // Boolean to change flow, where necessary, if we're
-  // capturing a window instead of the entire desktop.
-  bool enable_window_capture_ = false;
-
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
 
   // Must outlive |signal_strategy_| and |ftl_signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
-  // Must outlive |heartbeat_sender_| and |host_status_logger_|.
+  // Must outlive |host_status_logger_|.
   std::unique_ptr<LogToServer> log_to_server_;
 
   // Signal strategies must outlive |ftl_signaling_connector_|.
@@ -416,6 +409,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
   std::unique_ptr<FtlHostChangeNotificationListener>
       ftl_host_change_notification_listener_;
+  std::unique_ptr<FtlEchoMessageListener> ftl_echo_message_listener_;
 
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<HostEventLogger> host_event_logger_;
@@ -445,10 +439,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   ShutdownWatchdog* shutdown_watchdog_;
 
 #if defined(OS_MACOSX)
-  // A basic decktop capturer that captures a single screen in order to trigger
-  // the native OS permission check.
-  std::unique_ptr<DesktopCapturerChecker> capture_checker_;
-
   // When using the command line option to check the Accessibility or Screen
   // Recording permission, these track the permission state and indicate that
   // the host should exit immediately with the result.
@@ -498,9 +488,6 @@ HostProcess::~HostProcess() {
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #if defined(OS_MACOSX)
-  // Ensure we are not running as root (i.e. at the login screen).
-  DCHECK_NE(getuid(), 0U);
-
   if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanInjectInput();
@@ -512,8 +499,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     // important to add the host bundle to the list of apps under
     // Security & Privacy -> Screen Recording.
     if (base::mac::IsAtLeastOS10_15()) {
-      capture_checker_ = std::make_unique<DesktopCapturerChecker>();
-      capture_checker_->TriggerSingleCapture();
+      DesktopCapturerChecker().TriggerSingleCapture();
     }
     checking_permission_state_ = true;
     permission_granted_ = mac::CanRecordScreen();
@@ -579,27 +565,6 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     if (report_offline_reason_.empty()) {
       LOG(ERROR) << "--" << kReportOfflineReasonSwitchName
                  << " requires an argument.";
-      return false;
-    }
-  }
-
-  enable_window_capture_ = cmd_line->HasSwitch(kWindowIdSwitchName);
-  if (enable_window_capture_) {
-
-#if defined(OS_LINUX) || defined(OS_WIN)
-    LOG(WARNING) << "Window capturing is not fully supported on Linux or "
-                    "Windows.";
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-
-    // uint32_t is large enough to hold window IDs on all platforms.
-    uint32_t window_id;
-    if (base::StringToUint(
-            cmd_line->GetSwitchValueASCII(kWindowIdSwitchName),
-            &window_id)) {
-      window_id_ = static_cast<webrtc::WindowId>(window_id);
-    } else {
-      LOG(ERROR) << "Window with window id: " << window_id_
-                 << " not found. Shutting down host.";
       return false;
     }
   }
@@ -903,15 +868,9 @@ void HostProcess::StartOnUiThread() {
   desktop_session_connector_ = desktop_environment_factory;
 #else  // !defined(REMOTING_MULTI_PROCESS)
   BasicDesktopEnvironmentFactory* desktop_environment_factory;
-  if (enable_window_capture_) {
-    desktop_environment_factory = new SingleWindowDesktopEnvironmentFactory(
-        context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner(), window_id_);
-  } else {
-    desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
-        context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner());
-  }
+  desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
+      context_->network_task_runner(), context_->video_capture_task_runner(),
+      context_->input_task_runner(), context_->ui_task_runner());
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
@@ -943,12 +902,12 @@ void HostProcess::ShutdownOnUiThread() {
 #endif
 }
 
-void HostProcess::OnUnknownHostIdError() {
+void HostProcess::OnHostNotFound() {
   LOG(ERROR) << "Host ID not found.";
   ShutdownHost(kInvalidHostIdExitCode);
 }
 
-void HostProcess::OnHeartbeatSuccessful() {
+void HostProcess::OnFirstHeartbeatSuccessful() {
   if (state_ != HOST_STARTED) {
     return;
   }
@@ -1430,8 +1389,6 @@ void HostProcess::InitializeSignaling() {
   // callback will never be invoked once it is destroyed.
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
       std::move(oauth_credentials),
-      base::BindRepeating(&HostProcess::UpdateConfigRefreshToken,
-                          base::Unretained(this)),
       context_->url_loader_factory(), false);
 
   log_to_server_ = std::make_unique<RemotingLogToServer>(
@@ -1446,16 +1403,7 @@ void HostProcess::InitializeSignaling() {
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
   ftl_signaling_connector_->Start();
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-      base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
-                     base::Unretained(this)),
-      base::BindOnce(&HostProcess::OnUnknownHostIdError,
-                     base::Unretained(this)),
-      base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
-      host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
-      log_to_server_.get());
-  ftl_host_change_notification_listener_ =
-      std::make_unique<FtlHostChangeNotificationListener>(
-          this, ftl_signal_strategy.get());
+      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get());
   signal_strategy_ = std::move(ftl_signal_strategy);
 }
 
@@ -1549,6 +1497,13 @@ void HostProcess::StartHost() {
       host_->status_monitor(), context_->ui_task_runner(),
       context_->file_task_runner()));
 
+  ftl_host_change_notification_listener_ =
+      std::make_unique<FtlHostChangeNotificationListener>(
+          this, signal_strategy_.get());
+
+  ftl_echo_message_listener_ = std::make_unique<FtlEchoMessageListener>(
+      host_owner_, signal_strategy_.get());
+
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
   host_event_logger_.reset(
@@ -1561,15 +1516,10 @@ void HostProcess::StartHost() {
 #if defined(OS_MACOSX)
   // Don't run the permission-checks as root (i.e. at the login screen), as they
   // are not actionable there.
-  if (getuid() != 0U) {
-    // Capture a single screen image to trigger OS permission checks which will
-    // add our binary to the list of apps that can be granted permission. This
-    // is only needed for OS X 10.15 and later.
-    if (base::mac::IsAtLeastOS10_15()) {
-      capture_checker_.reset(new DesktopCapturerChecker());
-      capture_checker_->TriggerSingleCapture();
-    }
-
+  // Also, the permission-checks are not needed on MacOS 10.15+, as they are
+  // always handled by the new permission-wizard (the old shell script is
+  // never used on 10.15+).
+  if (getuid() != 0U && base::mac::IsAtMostOS10_14()) {
     mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
   }
 #endif  // defined(OS_MACOSX)
@@ -1584,6 +1534,10 @@ void HostProcess::StartHost() {
 
 void HostProcess::OnAuthFailed() {
   ShutdownHost(kInvalidOauthCredentialsExitCode);
+}
+
+void HostProcess::OnRemoteRestartHost() {
+  RestartHost(kHostOfflineReasonRemoteRestartHost);
 }
 
 void HostProcess::RestartHost(const std::string& host_offline_reason) {
@@ -1664,6 +1618,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
+  ftl_echo_message_listener_.reset();
   signal_strategy_.reset();
 
   if (state_ == HOST_GOING_OFFLINE_TO_RESTART) {
@@ -1683,13 +1638,6 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   } else {
     NOTREACHED();
   }
-}
-
-void HostProcess::UpdateConfigRefreshToken(const std::string& token) {
-#if defined(REMOTING_MULTI_PROCESS)
-  daemon_channel_->Send(
-      new ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken(token));
-#endif
 }
 
 void HostProcess::OnCrash(const std::string& function_name,

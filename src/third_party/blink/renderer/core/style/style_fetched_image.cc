@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -45,7 +46,8 @@ StyleFetchedImage::StyleFetchedImage(const Document& document,
                                      bool is_lazyload_possibly_deferred)
     : document_(&document),
       url_(params.Url()),
-      origin_clean_(!params.IsFromOriginDirtyStyleSheet()) {
+      origin_clean_(!params.IsFromOriginDirtyStyleSheet()),
+      is_ad_related_(params.GetResourceRequest().IsAdResource()) {
   is_image_resource_ = true;
   is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
 
@@ -81,8 +83,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::CssValue() const {
-  return CSSImageValue::Create(
-      url_, origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+  return MakeGarbageCollected<CSSImageValue>(
+      AtomicString(url_.GetString()), url_, Referrer(),
+      origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse, is_ad_related_,
       const_cast<StyleFetchedImage*>(this));
 }
 
@@ -106,21 +109,17 @@ bool StyleFetchedImage::ErrorOccurred() const {
 FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size) const {
+    const LayoutSize& default_object_size,
+    RespectImageOrientationEnum respect_orientation) const {
   Image* image = image_->GetImage();
   if (image_->HasDevicePixelRatioHeaderValue()) {
     multiplier /= image_->DevicePixelRatioHeaderValue();
   }
-  if (image->IsSVGImage()) {
-    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
-                                default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
   }
-  // Image orientation should only be respected for content images,
-  // not decorative images such as StyleImage (backgrounds,
-  // border-image, etc.)
-  //
-  // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  FloatSize size(image->Size());
+
+  FloatSize size(image->Size(respect_orientation));
   return ApplyZoom(size, multiplier);
 }
 
@@ -140,8 +139,9 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   if (image_ && image_->HasImage()) {
     Image& image = *image_->GetImage();
 
-    if (document_ && image.IsSVGImage())
-      ToSVGImage(image).UpdateUseCounters(*document_);
+    auto* svg_image = DynamicTo<SVGImage>(image);
+    if (document_ && svg_image)
+      svg_image->UpdateUseCounters(*document_);
   }
 
   if (document_) {
@@ -164,9 +164,10 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
         style.EffectiveZoom());
   }
 
-  if (!image->IsSVGImage())
+  auto* svg_image = DynamicTo<SVGImage>(image);
+  if (!svg_image)
     return image;
-  return SVGImageForContainer::Create(ToSVGImage(image), target_size,
+  return SVGImageForContainer::Create(svg_image, target_size,
                                       style.EffectiveZoom(), url_);
 }
 
@@ -194,7 +195,7 @@ bool StyleFetchedImage::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
   return true;
 }
 
-void StyleFetchedImage::Trace(blink::Visitor* visitor) {
+void StyleFetchedImage::Trace(Visitor* visitor) {
   visitor->Trace(image_);
   visitor->Trace(document_);
   StyleImage::Trace(visitor);

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">بڑا کریں</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />، انسٹال کردہ ایپ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> کا اشتراک نہیں کیا جا سکتا</translation>
+<translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> کے ساتھ سویپ کردہ<ph name="FIRST_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">آپ نے اسے پہلے بھی تلاش کیا ہے۔ آپ کی سرگزشت سے "<ph name="QUERY" />" کو حذف کرنے سے، یہ آپ کے تمام آلات پر آپ کے اکاؤنٹ سے مستقل طور پر ہٹ جائے گا۔</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 منٹ اور }other{# منٹ اور }}</translation>
 <translation id="1643823602425662293">اطلاع</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;سبھی کو منتخب کریں</translation>
-<translation id="1938451708255335766">ونڈو ڈسپلے کی کثافت کو ایڈجسٹ کرنے کیلئے، ایپ کو دوبارہ شروع کریں۔</translation>
 <translation id="2006524834898217237">یہ یقینی بنائیں کہ آپ کا آلہ انٹرنیٹ سے منسلک ہے۔</translation>
 <translation id="208586643495776849">براہ کرم دوبارہ کوشش کریں</translation>
 <translation id="2090963878406559571">‏<ph name="ORIGIN" /> سے اپنے Android فون پر نمبر بھیجنے کے لیے، ترتیبات میں دونوں آلات کے لیے <ph name="TROUBLESHOOT_LINK" />۔</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">نیچے تیر کا نشان</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 دن}other{# دن}}</translation>
 <translation id="3295886253693811851">اس سے کال کریں</translation>
+<translation id="3306688585798492231">پہلے سے شامل ڈسپلے</translation>
 <translation id="335581015389089642">اسپیچ</translation>
 <translation id="3389286852084373014">متن کافی بڑا ہے</translation>
-<translation id="3479552764303398839">ابھی نہیں</translation>
 <translation id="348799646910989694">شیلف خودکار طور پر پوشیدہ</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> کو پن کر دیا گیا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 دن باقی}other{# دن باقی}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">اپنے موبائل آلہ سے پڑھنا جاری رکھیں <ph name="TITLE" /></translation>
 <translation id="385051799172605136">پیچھے</translation>
 <translation id="3889424535448813030">دایاں تیر کا نشان</translation>
-<translation id="3892641579809465218">داخلی ڈسپلے</translation>
 <translation id="3897092660631435901">مینو</translation>
 <translation id="3909791450649380159">ک&amp;ٹ کریں</translation>
 <translation id="3990502903496589789">دایاں سرا</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 منٹ}other{# منٹ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{آج فعال تھا}=1{1 دن پہلے فعال تھا}other{# دن پہلے فعال تھا}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 دن اور }other{# دن اور }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 سال میں}other{# سال میں}}</translation>
-<translation id="5895138241574237353">دوبارہ شروع کریں</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 سیکنڈ باقی}other{# سیکنڈ باقی}}</translation>
 <translation id="5941711191222866238">چھوٹا کریں</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 گھنٹہ}other{# گھنٹے}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">دائیں سے بائیں</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">غالبأ</translation>
+<translation id="7170202025028120564">اگلی بار ری اسٹارٹ ہونے پر آپ کی ایپلیکیشن کے ڈسپلے کی ترتیبات لاگو ہوں گی۔</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 منٹ باقی}other{# منٹ باقی}}</translation>
 <translation id="7319740667687257810">لانچر، جزوی منظر</translation>

@@ -96,10 +96,27 @@ cr-menu.files-menu > cr-menu-item > span {
   z-index: 1;
 }
 
-/* Make ripple size wider to make the animation speed faster since paper-ripple
-   doesn't allow us to change its animation speed. */
 cr-menu.files-menu > cr-menu-item > paper-ripple {
-  left: -25%;
-  width: 150%;
   z-index: 0;
+}
+
+html.files-ng cr-menu.files-menu > cr-menu-item {
+  padding: 0 16px;
+}
+
+html.files-ng:not(.pointer-active) cr-menu-item > paper-ripple {
+  display: none;
+}
+
+html.files-ng.pointer-active cr-menu-item > paper-ripple {
+  --paper-ripple-opacity: 8%;
+  color: black;
+}
+
+html.files-ng cr-menu.files-menu > cr-menu-item:not([disabled])[selected] {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
+html.files-ng:not(.pointer-active) cr-menu.files-menu > cr-menu-item:not([disabled]):active[selected] {
+  background-color: rgba(0, 0, 0, 12%);
 }

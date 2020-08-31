@@ -21,12 +21,12 @@ class AutoCanvasDrawListener : public GarbageCollected<AutoCanvasDrawListener>,
   ~AutoCanvasDrawListener() override = default;
 
   void SendNewFrame(
-      sk_sp<SkImage>,
+      scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
   bool NeedsNewFrame() const final;
   void RequestFrame() final;
 
-  void Trace(blink::Visitor*) override {}
+  void Trace(Visitor*) override {}
 
  protected:
   std::unique_ptr<CanvasCaptureHandler> handler_;

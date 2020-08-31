@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 
 class BrowserProcessPlatformPartTestApi;
@@ -23,6 +24,7 @@ class ChromeSessionManager;
 class ChromeUserManager;
 class InSessionPasswordChangeManager;
 class ProfileHelper;
+class SchedulerConfigurationManager;
 class TimeZoneResolver;
 
 namespace system {
@@ -33,10 +35,6 @@ class SystemClock;
 class TimeZoneResolverManager;
 }  // namespace system
 }  // namespace chromeos
-
-namespace component_updater {
-class CrOSComponentManager;
-}
 
 namespace policy {
 class BrowserPolicyConnectorChromeOS;
@@ -64,6 +62,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   void InitializeCrosComponentManager();
   void ShutdownCrosComponentManager();
 
+  void InitializeSchedulerConfigurationManager();
+  void ShutdownSchedulerConfigurationManager();
+
   // Initializes all services that need the primary profile. Gets called as soon
   // as the primary profile is available, which implies that the primary user
   // has logged in. The services are shut down automatically when the primary
@@ -73,10 +74,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // a BrowserContextKeyedService and restricting service creation to the
   // primary profile.
   void InitializePrimaryProfileServices(Profile* primary_profile);
-
-  // Disable the offline interstitial easter egg if the device is enterprise
-  // enrolled.
-  void DisableDinoEasterEggIfEnrolled();
 
   // Used to register a KeepAlive when Ash is initialized, and release it
   // when until Chrome starts exiting. Ensure we stay running the whole time.
@@ -101,12 +98,17 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return chrome_user_manager_.get();
   }
 
+  chromeos::SchedulerConfigurationManager* scheduler_configuration_manager() {
+    return scheduler_configuration_manager_.get();
+  }
+
   chromeos::system::DeviceDisablingManager* device_disabling_manager() {
     return device_disabling_manager_.get();
   }
 
-  component_updater::CrOSComponentManager* cros_component_manager() {
-    return cros_component_manager_.get();
+  scoped_refptr<component_updater::CrOSComponentManager>
+  cros_component_manager() {
+    return cros_component_manager_;
   }
 
   chromeos::system::TimeZoneResolverManager* GetTimezoneResolverManager();
@@ -161,7 +163,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // Whether cros_component_manager_ has been initialized for test. Set by
   // BrowserProcessPlatformPartTestApi.
   bool using_testing_cros_component_manager_ = false;
-  std::unique_ptr<component_updater::CrOSComponentManager>
+  scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 
   std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;
@@ -171,6 +173,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       primary_profile_shutdown_subscription_;
+
+  std::unique_ptr<chromeos::SchedulerConfigurationManager>
+      scheduler_configuration_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

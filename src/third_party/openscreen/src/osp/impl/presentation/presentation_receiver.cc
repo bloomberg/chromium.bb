@@ -13,10 +13,8 @@
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_server.h"
 #include "platform/api/time.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
-
-using openscreen::platform::TraceCategory;
 
 namespace openscreen {
 namespace osp {
@@ -107,11 +105,11 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
                                           msgs::Type message_type,
                                           const uint8_t* buffer,
                                           size_t buffer_size,
-                                          platform::Clock::time_point now) {
-  TRACE_SCOPED(TraceCategory::Presentation, "Receiver::OnStreamMessage");
+                                          Clock::time_point now) {
+  TRACE_SCOPED(TraceCategory::kPresentation, "Receiver::OnStreamMessage");
   switch (message_type) {
     case msgs::Type::kPresentationUrlAvailabilityRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationUrlAvailabilityRequest");
       OSP_VLOG << "got presentation-url-availability-request";
       msgs::PresentationUrlAvailabilityRequest request;
@@ -137,7 +135,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationStartRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation, "kPresentationStartRequest");
+      TRACE_SCOPED(TraceCategory::kPresentation, "kPresentationStartRequest");
       OSP_VLOG << "got presentation-start-request";
       msgs::PresentationStartRequest request;
       const ssize_t result =
@@ -198,7 +196,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationConnectionOpenRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationConnectionOpenRequest");
       OSP_VLOG << "Got a presentation-connection-open-request";
       msgs::PresentationConnectionOpenRequest request;
@@ -266,7 +264,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationTerminationRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationTerminationRequest");
       OSP_VLOG << "got presentation-termination-request";
       msgs::PresentationTerminationRequest request;

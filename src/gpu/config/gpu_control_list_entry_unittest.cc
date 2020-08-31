@@ -1052,10 +1052,10 @@ TEST_F(GpuControlListEntryTest, HardwareOverlay) {
   const Entry& entry = GetEntry(kGpuControlListEntryTest_HardwareOverlay);
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
-  gpu_info.supports_overlays = true;
+  gpu_info.overlay_info.supports_overlays = true;
   EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
 
-  gpu_info.supports_overlays = false;
+  gpu_info.overlay_info.supports_overlays = false;
   EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
 }
 #endif  // OS_WIN
@@ -1109,6 +1109,51 @@ TEST_F(GpuControlListEntryTest, TestSubpixelFontRenderingDontCare) {
 
   gpu_info.subpixel_font_rendering = false;
   EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, IntelDriverVendorEntry) {
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_IntelDriverVendorEntry);
+  GPUInfo gpu_info;
+  gpu_info.gpu.driver_vendor = "Intel(R) UHD Graphics 630";
+  gpu_info.gpu.driver_version = "25.20.100.5000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "23.20.100.6500";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, IntelDriverVersionEntry) {
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_IntelDriverVersionEntry);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.driver_version = "23.20.100.8000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "25.20.100.6000";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "24.20.99.6000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "24.20.101.6000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "25.20.100.7000";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, IntelOldDriverVersionEntry) {
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_IntelOldDriverVersionEntry);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.driver_version = "23.20.10.8000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "25.20.10.6000";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "24.20.100.6000";
+  EXPECT_FALSE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "24.20.11.6000";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
+  gpu_info.gpu.driver_version = "25.20.9.7000";
+  EXPECT_TRUE(entry.Contains(kOsWin, "", gpu_info));
 }
 
 }  // namespace gpu

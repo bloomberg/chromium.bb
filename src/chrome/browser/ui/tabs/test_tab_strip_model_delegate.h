@@ -9,6 +9,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "components/tab_groups/tab_group_id.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 // Mock TabStripModelDelegate.
 class TestTabStripModelDelegate : public TabStripModelDelegate {
@@ -20,7 +25,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   void AddTabAt(const GURL& url,
                 int index,
                 bool foregroud,
-                base::Optional<TabGroupId> group) override;
+                base::Optional<tab_groups::TabGroupId> group) override;
   Browser* CreateNewStripWithContents(std::vector<NewStripContents> contentses,
                                       const gfx::Rect& window_bounds,
                                       bool maximize) override;
@@ -28,10 +33,17 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   int GetDragActions() const override;
   bool CanDuplicateContentsAt(int index) override;
   void DuplicateContentsAt(int index) override;
+  void MoveToExistingWindow(const std::vector<int>& indices,
+                            int browser_index) override;
+  std::vector<base::string16> GetExistingWindowsForMoveMenu() const override;
+  bool CanMoveTabsToWindow(const std::vector<int>& indices) override;
+  void MoveTabsToNewWindow(const std::vector<int>& indices) override;
+  void MoveGroupToNewWindow(const tab_groups::TabGroupId& group) override;
   void CreateHistoricalTab(content::WebContents* contents) override;
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
+  bool ShouldDisplayFavicon(content::WebContents* web_contents) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

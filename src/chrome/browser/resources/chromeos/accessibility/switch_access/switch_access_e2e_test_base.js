@@ -28,7 +28,7 @@ SwitchAccessE2ETest.prototype = {
   browsePreload: null,
 
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
@@ -36,13 +36,14 @@ SwitchAccessE2ETest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/test/browser_test.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ash/keyboard/ui/keyboard_util.h"
     `);
   },
 
   /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN(`
   //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
   //ash::Shell::Get()->CreateKeyboard();
@@ -65,7 +66,7 @@ SwitchAccessE2ETest.prototype = {
    *        reference bound to the test fixture.
    * @return {Function}
    */
-  newCallback: function(opt_callback) {
+  newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
   },
 
@@ -82,7 +83,7 @@ SwitchAccessE2ETest.prototype = {
    * @param {function(chrome.automation.AutomationNode)} callback Called with
    *     the desktop node once the document is ready.
    */
-  runWithLoadedTree: function(url, callback) {
+  runWithLoadedTree(url, callback) {
     const prefix = url.substring(0, 4);
     if (prefix !== 'http' && prefix !== 'data') {
       url = 'data:text/html;charset=utf-8,' + url;
@@ -90,7 +91,7 @@ SwitchAccessE2ETest.prototype = {
 
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(desktopRootNode) {
-      var createParams = {active: true, url: url};
+      var createParams = {active: true, url};
       chrome.tabs.create(createParams, function(unused_tab) {
         chrome.automation.getTree(function(returnedRootNode) {
           rootNode = returnedRootNode;

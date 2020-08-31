@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/android/content_jni_headers/RenderFrameHostImpl_jni.h"
@@ -42,6 +42,22 @@ void OnGetCanonicalUrlForSharing(
   base::android::RunStringCallbackAndroid(jcallback, url->spec());
 }
 }  // namespace
+
+// static
+RenderFrameHost* RenderFrameHost::FromJavaRenderFrameHost(
+    const JavaRef<jobject>& jrender_frame_host_android) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (jrender_frame_host_android.is_null())
+    return nullptr;
+
+  RenderFrameHostAndroid* render_frame_host_android =
+      reinterpret_cast<RenderFrameHostAndroid*>(
+          Java_RenderFrameHostImpl_getNativePointer(
+              AttachCurrentThread(), jrender_frame_host_android));
+  if (!render_frame_host_android)
+    return nullptr;
+  return render_frame_host_android->render_frame_host();
+}
 
 RenderFrameHostAndroid::RenderFrameHostAndroid(
     RenderFrameHostImpl* render_frame_host,
@@ -128,6 +144,28 @@ jboolean RenderFrameHostAndroid::IsProcessBlocked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&) const {
   return render_frame_host_->GetProcess()->IsBlocked();
+}
+
+jint RenderFrameHostAndroid::PerformGetAssertionWebAuthSecurityChecks(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&,
+    const base::android::JavaParamRef<jstring>& relying_party_id,
+    const base::android::JavaParamRef<jobject>& effective_origin) const {
+  url::Origin origin = url::Origin::FromJavaObject(effective_origin);
+  return static_cast<int32_t>(
+      render_frame_host_->PerformGetAssertionWebAuthSecurityChecks(
+          ConvertJavaStringToUTF8(env, relying_party_id), origin));
+}
+
+jint RenderFrameHostAndroid::PerformMakeCredentialWebAuthSecurityChecks(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&,
+    const base::android::JavaParamRef<jstring>& relying_party_id,
+    const base::android::JavaParamRef<jobject>& effective_origin) const {
+  url::Origin origin = url::Origin::FromJavaObject(effective_origin);
+  return static_cast<int32_t>(
+      render_frame_host_->PerformMakeCredentialWebAuthSecurityChecks(
+          ConvertJavaStringToUTF8(env, relying_party_id), origin));
 }
 
 }  // namespace content

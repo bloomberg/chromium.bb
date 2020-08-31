@@ -32,7 +32,6 @@
 #include "include/effects/SkImageFilters.h"
 #include "include/private/SkTo.h"
 #include "modules/skshaper/include/SkShaper.h"
-#include "src/core/SkMakeUnique.h"
 #include <new>
 
 extern "C" {
@@ -1263,7 +1262,7 @@ static const char* fill_type_to_str(SkPathFillType fill) {
 }
 
 static int lpath_getFillType(lua_State* L) {
-    SkPathFillType fill = get_obj<SkPath>(L, 1)->getNewFillType();
+    SkPathFillType fill = get_obj<SkPath>(L, 1)->getFillType();
     SkLua(L).pushString(fill_type_to_str(fill));
     return 1;
 }
@@ -1771,7 +1770,7 @@ static int lsk_newDocumentPDF(lua_State* L) {
     if (!filename) {
         return 0;
     }
-    auto file = skstd::make_unique<SkFILEWStream>(filename);
+    auto file = std::make_unique<SkFILEWStream>(filename);
     if (!file->isValid()) {
         return 0;
     }

@@ -7,6 +7,14 @@
 validator32 = "gen/validator_x86_32.c"
 validator64 = "gen/validator_x86_64.c"
 
+config("dfa_validator_config") {
+  if (is_clang) {
+    # ragel output (validator_x86_32.c / validator_x86_64.c)  has many many
+    # breaks right after gotos.
+    cflags = [ "-Wno-unreachable-code-break" ]
+  }
+}
+
 if (current_cpu == "x86" || current_cpu == "x64") {
   static_library("dfa_validate") {
     sources = [
@@ -31,6 +39,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "//native_client/src/trusted/validator:validation_cache",
       "//native_client/src/trusted/validator_x86:nccopy",
     ]
+    configs += [ ":dfa_validator_config" ]
   }
 }
 
@@ -47,4 +56,5 @@ static_library("rdfa_validator") {
   deps = [
     "//build/config/nacl:nacl_base",
   ]
+  configs += [ ":dfa_validator_config" ]
 }

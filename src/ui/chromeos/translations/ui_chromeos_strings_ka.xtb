@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">ატვირთვა</translation>
 <translation id="1249250836236328755">ჟანრი</translation>
 <translation id="1278813325885878377">უნგრული QWERTY კლავიატურა</translation>
+<translation id="1293556467332435079">ფაილები</translation>
 <translation id="1297922636971898492">Google Drive ამჟამად მიუწვდომელია. ატვირთვა ავტომატურად განახლდება Google Drive-ის დაბრუნების შემდეგ.</translation>
 <translation id="1307931752636661898">Linux ფაილების ნახვა ვერ ხერხდება</translation>
 <translation id="1310751437842832374">ტრანსლიტერაცია (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">შენახულია</translation>
 <translation id="1864756863218646478">ფაილი ვერ მოიძებნა.</translation>
 <translation id="1921986354447415460">თურქული-F კლავიატურა</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> დაფორმატდა</translation>
 <translation id="1931134289871235022">სლოვაკური</translation>
 <translation id="1933345018156373194">გადაადგილება ვერ მოხერხდა, მოულოდნელი შეცდომა: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ფინური</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">გერმანული კლავიატურა</translation>
 <translation id="1972984168337863910">ფაილების გამოხმაურების არეების გაფართოება</translation>
 <translation id="1984603991036629094">სომხური ფონეტიკური კლავიატურა</translation>
+<translation id="1995337122023280937">ფაილის მდებარეობაზე გადასვლა</translation>
 <translation id="2001796770603320721">Google Drive-ში მართვა</translation>
 <translation id="2009067268969781306">დისკის დაფორმატება წაშლის მასში შენახულ ყველა მონაცემს. ამ ქმედებას ვერ გააუქმებთ.</translation>
 <translation id="2028997212275086731">RAR არქივი</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive-თან დაკავშირება ვერ მოხერხდა. <ph name="BEGIN_LINK" />გამოდით<ph name="END_LINK" /> და ხელახლა შედით.</translation>
 <translation id="2649120831653069427">თევზი</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ფაილის მდებარეობა</translation>
 <translation id="2672394958563893062">შეცდომა მოხდა. დააწკაპუნეთ, რათა თავიდან დაიწყოთ.</translation>
 <translation id="2676946222714718093">ჩართვა</translation>
 <translation id="2735698359135166290">რუმინული სტანდარტული კლავიატურა</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">გერმანული NEO 2 კლავიატურა</translation>
 <translation id="2943400156390503548">სლაიდები</translation>
 <translation id="2943503720238418293">გამოიყენეთ უფრო მოკლე სახელი</translation>
+<translation id="2949781154072577687">მიმდინარეობს <ph name="DRIVE_NAME" />-ის დაფორმატება...</translation>
 <translation id="2951236788251446349">მედუზა</translation>
 <translation id="2963783323012015985">თურქული კლავიატურა</translation>
 <translation id="2966459079597787514">შვედური კლავიატურა</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> შეცდომა.</translation>
 <translation id="3519867315646775981">ტრანსლიტერაცია (shalom ← שלום)</translation>
 <translation id="3522708245912499433">პორტუგალიური</translation>
+<translation id="3524311639100184459">გაფრთხილება: ეს ფაილები დროებითია და შეიძლება ავტომატურად წაიშალოს დისკზე ადგილის გასათავისუფლებლად.  <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">საქაღალდე</translation>
 <translation id="3549797760399244642">drive.google.com-ზე გადასვლა…</translation>
 <translation id="357479282490346887">ლიტვური</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">კივი</translation>
 <translation id="3966388904776714213">აუდიო დამკვრელი</translation>
 <translation id="4002066346123236978">სათაური</translation>
+<translation id="4065397611279318371">ფაილების <ph name="APP_NAME" /> აპებით გასახსნელად, პირველ რიგში, გადაიტანეთ ისინი <ph name="SHARED_DIRECTORY_LABEL" />-ის საქაღალდეში.</translation>
 <translation id="4070370845051020638">კანტონური შეყვანის მეთოდი</translation>
 <translation id="4072248638558688893">ტამილური კლავიატურა (ფონეტიკური)</translation>
 <translation id="4124935795427217608">ზღაპრული მარტორქა</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">კოპირების ოპერაცია ვერ განხორციელდა. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">ნესვი</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">გარე ბმული</translation>
 <translation id="4425149324548788773">ჩემი Drive</translation>
 <translation id="4465830120256509958">ბრაზილიური კლავიატურა</translation>
 <translation id="4470564870223067757">ჰანგული ნაკრები 2</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">ავტომატური ფიქსაცია</translation>
 <translation id="4881695831933465202">გახსნა</translation>
 <translation id="4886021172213954916">ტამილური კლავიატურა (საბეჭდი მანქანა)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" />-ით გახსნა ვერ მოხერხდა</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> სარეზერვო კოპირებისთვის მზადაა</translation>
 <translation id="4924638091161556692">ფიქსირებული</translation>
 <translation id="4935975195727477204">ყვავილი</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">Linux გაზიარების მართვა</translation>
 <translation id="6808193438228982088">მელია</translation>
 <translation id="6820687829547641339">Gzip შეკუმშული tar არქივი</translation>
+<translation id="6823166707458800069">ამ საქაღალდეში შენახული ყველა ფაილის სარეზერვო ასლები ავტომატურად იქმნება ონლაინ.</translation>
 <translation id="6825883775269213504">რუსული</translation>
 <translation id="6827236167376090743">ეს ვიდეო უსასრულოდ იქნება ჩართული.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> ამოიშალა არჩეულიდან.</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">დევანაგარის კლავიატურა (ფონეტიკური)</translation>
 <translation id="6885780034956018177">ლოკოკინა</translation>
 <translation id="6896758677409633944">კოპირება</translation>
+<translation id="6898028766943174120">სხვა ქვესაქაღალდეები...</translation>
 <translation id="691516599546977041">„<ph name="FOLDER_NAME" />“-ში შენახვა ვერ მოხერხდა. შეცვლილი სურათები შეინახება ჩამოტვირთვების საქაღალდეში.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">მობილურ მონაცემებზე სინქრონიზაციის ჩართვა</translation>
 <translation id="6965382102122355670">კარგი</translation>
 <translation id="6970230597523682626">ბულგარული</translation>
+<translation id="6973630695168034713">ფოლდერები</translation>
 <translation id="6978611942794658017">ეს ფაილი განკუთვნილია კომპიუტერისთვის, რომელშიც გაშვებულია Windows პროგრამული უზრუნველყოფა. იგი არ არის თავსებადი თქვენს მოწყობილობასთან, რომელშიც გაშვებულია Chrome OS. სწორი პროგრამა მოძებნეთ Chrome Web Store-ში.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">ადგილი აღარ არის</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">Google რუკა</translation>
 <translation id="7419631653042041064">კატალანური კლავიატურა</translation>
 <translation id="7434823369735508263">დიდი ბრიტანეთის Dvorak კლავიატურა</translation>
+<translation id="7447678886297481665">ამ საქაღალდეში არსებული ფაილები მხოლოდ კითხვადია. ზოგიერთი მოქმედება მხარდაუჭერელია.</translation>
 <translation id="7460898608667578234">უკრაინული</translation>
 <translation id="7474889694310679759">კანადურ ინგლისური კლავიატურა</translation>
 <translation id="7489215562877293245">მოიძებნა <ph name="FILE_COUNT" />
@@ -567,6 +580,7 @@
 <translation id="7649070708921625228">დახმარება</translation>
 <translation id="7654209398114106148">მიმდინარეობს <ph name="NUMBER_OF_ITEMS" /> ერთეულის გადატანა…</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ვერ დაფორმატდა</translation>
 <translation id="770015031906360009">ბერძნული</translation>
 <translation id="7706319470528945664">პორტუგალიური კლავიატურა</translation>
 <translation id="7711920809702896782">სურათის ინფორმაცია</translation>

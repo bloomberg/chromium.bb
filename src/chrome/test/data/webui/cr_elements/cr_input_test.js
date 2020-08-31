@@ -6,6 +6,7 @@
 // #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {eventToPromise, whenAttributeIs} from '../test_util.m.js';
+// #import {assertDeepEquals, assertEquals, assertNotEquals, assertThrows, assertTrue, assertFalse} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-input', function() {
@@ -186,11 +187,11 @@ suite('cr-input', function() {
 
     input.focus();
     assertTrue(crInput.hasAttribute('focused_'));
-    assertTrue(originalLabelColor != getComputedStyle(label).color);
+    assertTrue(originalLabelColor !== getComputedStyle(label).color);
     return whenTransitionEnd
         .then(() => {
           assertEquals('1', getComputedStyle(underline).opacity);
-          assertTrue(0 != underline.offsetWidth);
+          assertTrue(0 !== underline.offsetWidth);
         })
         .then(() => {
           input.blur();
@@ -234,12 +235,12 @@ suite('cr-input', function() {
     Polymer.dom.flush();
     assertTrue(crInput.hasAttribute('invalid'));
     assertEquals('visible', getComputedStyle(errorLabel).visibility);
-    assertTrue(originalLabelColor != getComputedStyle(label).color);
+    assertTrue(originalLabelColor !== getComputedStyle(label).color);
     assertTrue(
-        originalLineColor != getComputedStyle(underline).borderBottomColor);
+        originalLineColor !== getComputedStyle(underline).borderBottomColor);
     return whenTransitionEnd.then(() => {
       assertEquals('1', getComputedStyle(underline).opacity);
-      assertTrue(0 != underline.offsetWidth);
+      assertTrue(0 !== underline.offsetWidth);
     });
   });
 
@@ -355,5 +356,22 @@ suite('cr-input', function() {
     crInput.select();
     assertTrue(input.matches(':focus'));
     assertEquals('', window.getSelection().toString());
+  });
+
+  test('announce error message when invalid', async () => {
+    const errorMessagesAnnounced = [];
+    const handler = e => {
+      errorMessagesAnnounced.push(e.detail.text);
+    };
+    crInput.addEventListener('iron-announce', handler);
+    crInput.invalid = false;
+    crInput.errorMessage = '1';
+    crInput.errorMessage = '2';
+    crInput.invalid = true;
+    crInput.errorMessage = '3';
+    crInput.invalid = false;
+    crInput.errorMessage = '4';
+    assertDeepEquals(['2', '3'], errorMessagesAnnounced);
+    crInput.removeEventListener('iron-announce', handler);
   });
 });

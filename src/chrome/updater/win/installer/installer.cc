@@ -31,6 +31,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
@@ -207,10 +208,20 @@ ProcessExitResult RunSetup(const Configuration& configuration,
       !cmd_line.append(L"\"")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
-
-  if (!cmd_line.append(
-          L" --install --enable-logging --vmodule=*/chrome/updater/*=2"))
+  if (!cmd_line.append(L" --install --single-process --enable-logging"
+                       L" --vmodule=*/chrome/updater/*=2")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+  }
+
+  // Append to the command line arguments this program has been invoked with.
+  int num_args = 0;
+  wchar_t** const arg_list =
+      ::CommandLineToArgvW(::GetCommandLineW(), &num_args);
+  for (int i = 1; i != num_args; ++i) {
+    if (!cmd_line.append(L" ") || !cmd_line.append(arg_list[i])) {
+      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+    }
+  }
 
   return RunProcessAndWait(setup_exe.get(), cmd_line.get());
 }
@@ -426,15 +437,15 @@ ProcessExitResult WMain(HMODULE module) {
   // Unpack the compressed archive to extract the uncompressed archive file.
   UnPackStatus unpack_status =
       UnPackArchive(base::FilePath(compressed_archive.get()), unpack_path,
-                    nullptr, nullptr, nullptr);
+                    /*output_file=*/nullptr);
   if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 
   // Unpack the uncompressed archive to extract the updater files.
   base::FilePath uncompressed_archive =
       unpack_path.Append(FILE_PATH_LITERAL("updater.7z"));
-  unpack_status = UnPackArchive(uncompressed_archive, unpack_path, nullptr,
-                                nullptr, nullptr);
+  unpack_status =
+      UnPackArchive(uncompressed_archive, unpack_path, /*output_file=*/nullptr);
   if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 

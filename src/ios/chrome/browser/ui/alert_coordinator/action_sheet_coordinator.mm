@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 
-#include "base/logging.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,11 +37,13 @@ enum class AnchorMode {
 @implementation ActionSheetCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message
                                       rect:(CGRect)rect
                                       view:(UIView*)view {
   self = [super initWithBaseViewController:viewController
+                                   browser:browser
                                      title:title
                                    message:message];
   if (self) {
@@ -56,10 +57,12 @@ enum class AnchorMode {
 }
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message
                              barButtonItem:(UIBarButtonItem*)barButtonItem {
   self = [super initWithBaseViewController:viewController
+                                   browser:browser
                                      title:title
                                    message:message];
   if (self) {

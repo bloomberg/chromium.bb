@@ -43,6 +43,7 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--profdata-dir', required=True, help='where to store the merged data')
   parser.add_argument(
       '--llvm-profdata', required=True, help='path to llvm-profdata executable')
+  parser.add_argument('--test-target-name', help='test target name')
   parser.add_argument(
       '--java-coverage-dir', help='directory for Java coverage data')
   parser.add_argument(
@@ -50,6 +51,27 @@ def _MergeAPIArgumentParser(*args, **kwargs):
   parser.add_argument(
       '--merged-jacoco-filename',
       help='filename used to uniquely name the merged exec file.')
+  parser.add_argument(
+      '--per-cl-coverage',
+      action='store_true',
+      help='set to indicate that this is a per-CL coverage build')
+  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
+  # --sparse to set sparse
+  parser.add_argument(
+      '--no-sparse',
+      action='store_false',
+      dest='sparse',
+      help='run llvm-profdata without the sparse flag.')
+  # TODO(crbug.com/1077304) - The intended behaviour is to default sparse to
+  # false. --no-sparse above was added as a workaround, and will be removed.
+  # This is being introduced now in support of the migration to intended
+  # behavior. Ordering of args matters here, as the default is set by the former
+  # (sparse defaults to False because of ordering. See unit tests for details)
+  parser.add_argument(
+      '--sparse',
+      action='store_true',
+      dest='sparse',
+      help='run llvm-profdata with the sparse flag.')
   return parser
 
 
@@ -71,6 +93,10 @@ def main():
     coverage_merger.merge_java_exec_files(
         params.task_output_dir, output_path, params.jacococli_path)
 
+  # Name the output profdata file name as {test_target}.profdata or
+  # default.profdata.
+  output_prodata_filename = (params.test_target_name or 'default') + '.profdata'
+
   # NOTE: The coverage data merge script must make sure that the profraw files
   # are deleted from the task output directory after merging, otherwise, other
   # test results merge script such as layout tests will treat them as json test
@@ -78,8 +104,9 @@ def main():
   logging.info('Merging code coverage profraw data')
   invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
       params.task_output_dir,
-      os.path.join(params.profdata_dir, 'default.profdata'), '.profraw',
-      params.llvm_profdata)
+      os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
+      params.llvm_profdata,
+      sparse=params.sparse)
 
   # At the moment counter overflows overlap with invalid profiles, but this is
   # not guaranteed to remain the case indefinitely. To avoid future conflicts
@@ -95,10 +122,12 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
-    # We don't want to invalidate shards in a CQ build, which we determine by
-    # the existence of the 'patch_storage' property.
-    build_properties = json.loads(params.build_properties)
-    if not build_properties.get('patch_storage'):
+    # We don't want to invalidate shards in a CQ build, because we should not
+    # interfere with the actual test results of a CQ builder.
+    # TODO(crbug.com/1050858) Remove patch_storage completely once recipe-side
+    # change passes --per-cl-coverage.
+    patch_storage = json.loads(params.build_properties).get('patch_storage')
+    if not params.per_cl_coverage and not patch_storage:
       mark_invalid_shards(
           coverage_merger.get_shards_to_retry(invalid_profiles),
           params.jsons_to_merge)

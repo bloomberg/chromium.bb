@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -18,13 +19,13 @@ namespace ash {
 
 struct ASH_EXPORT DragDetails {
   DragDetails(aura::Window* window,
-              const gfx::Point& location,
+              const gfx::PointF& location,
               int window_component,
               // TODO(sky): make wm type.
               ::wm::WindowMoveSource source);
   ~DragDetails();
 
-  ash::WindowStateType initial_state_type;
+  WindowStateType initial_state_type;
 
   // Initial bounds of the window in parent coordinates.
   const gfx::Rect initial_bounds_in_parent;
@@ -34,10 +35,7 @@ struct ASH_EXPORT DragDetails {
   gfx::Rect restore_bounds;
 
   // Location passed to the constructor, in |window->parent()|'s coordinates.
-  const gfx::Point initial_location_in_parent;
-
-  // Initial opacity of the window.
-  const float initial_opacity;
+  const gfx::PointF initial_location_in_parent;
 
   // The component the user pressed on.
   const int window_component;

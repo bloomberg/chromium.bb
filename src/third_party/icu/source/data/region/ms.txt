@@ -287,6 +287,8 @@ ms{
         VU{"Vanuatu"}
         WF{"Wallis dan Futuna"}
         WS{"Samoa"}
+        XA{"Aksen Pseudo"}
+        XB{"Bidi Pseudo"}
         XK{"Kosovo"}
         YE{"Yaman"}
         YT{"Mayotte"}
@@ -305,8 +307,7 @@ ms{
         CG{"Congo (Republik)"}
         CI{"Ivory Coast"}
         CZ{"Republik Czech"}
-        SZ{"Swaziland"}
         TL{"Timor Timur"}
     }
-    Version{"36"}
+    Version{"37"}
 }

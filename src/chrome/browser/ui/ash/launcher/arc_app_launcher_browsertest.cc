@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -35,10 +36,12 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/animation/ink_drop.h"
 
 namespace mojo {
@@ -175,6 +178,11 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SetUpOnMainThread() override {
     arc::SetArcPlayStoreEnabledForProfile(profile(), true);
+
+    // This ensures app_prefs()->GetApp() below never returns nullptr.
+    base::RunLoop run_loop;
+    app_prefs()->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {
@@ -337,6 +345,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
   // during the bounds animation. So wait for the bounds animation to finish
   // then get the final bounds of the shelf button.
   test_api.RunMessageLoopUntilAnimationsDone();
+  ash::StatusAreaWidgetTestHelper::WaitForAnimationEnd(
+      ash::Shelf::ForWindow(root_window)->GetStatusAreaWidget());
 
   const int item_index =
       controller->shelf_model()->ItemIndexByID(ash::ShelfID(app_id));
@@ -409,9 +419,10 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
 
   // Launching non-ready ARC app creates item on shelf and spinning animation.
   if (is_pinned()) {
-    EXPECT_EQ(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
-              SelectShelfItem(shelf_id, ui::ET_MOUSE_PRESSED,
-                              display::kInvalidDisplayId));
+    EXPECT_EQ(
+        ash::SHELF_ACTION_NEW_WINDOW_CREATED,
+        SelectShelfItem(shelf_id, ui::ET_MOUSE_PRESSED,
+                        display::kInvalidDisplayId, ash::LAUNCH_FROM_SHELF));
   } else {
     arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
                    arc::UserInteractionType::NOT_USER_INITIATED);

@@ -9,20 +9,26 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 
 from google.protobuf import json_format
 
 from chromite.api.gen.config.replication_config_pb2 import (
     ReplicationConfig, FileReplicationRule, FILE_TYPE_OTHER,
     REPLICATION_TYPE_COPY)
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import replication_util
 
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 D = cros_test_lib.Directory
 
 
-class RunTest(cros_test_lib.TempDirTestCase):
+class RunTest(cros_test_lib.MockTempDirTestCase):
   """Tests of the run command.
 
   Note that detailed tests of replication behavior should be done in
@@ -33,12 +39,14 @@ class RunTest(cros_test_lib.TempDirTestCase):
     file_layout = (D('src', ['audio_file']),)
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
-    self.audio_path = os.path.join(self.tempdir, 'src', 'audio_file')
-    osutils.WriteFile(self.audio_path, '[Speaker A Settings]')
+    self.audio_path = os.path.join('src', 'audio_file')
+    self.WriteTempFile(self.audio_path, '[Speaker A Settings]')
+
+    self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
 
   def testRun(self):
     """Basic test of the 'run' command."""
-    audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
+    audio_dst_path = os.path.join('dst', 'audio_file')
 
     replication_config = ReplicationConfig(file_replication_rules=[
         FileReplicationRule(
@@ -64,11 +72,11 @@ class RunTest(cros_test_lib.TempDirTestCase):
 
     cros_test_lib.VerifyOnDiskHierarchy(self.tempdir, expected_file_layout)
 
-    self.assertFileContents(audio_dst_path, '[Speaker A Settings]')
+    self.assertTempFileContents(audio_dst_path, '[Speaker A Settings]')
 
   def testUnknownFieldInConfig(self):
     """Test that unknown fields in the ReplicationConfig cause an error."""
-    audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
+    audio_dst_path = os.path.join('dst', 'audio_file')
 
     replication_config = ReplicationConfig(file_replication_rules=[
         FileReplicationRule(

@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for site-details. */
 suite('SiteDetailsPermission', function() {
   /**
@@ -11,6 +19,12 @@ suite('SiteDetailsPermission', function() {
   let testElement;
 
   /**
+   * The mock proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy;
+
+  /**
    * An example pref with only camera allowed.
    * @type {SiteSettingsPref}
    */
@@ -18,20 +32,19 @@ suite('SiteDetailsPermission', function() {
 
   // Initialize a site-details-permission before each test.
   setup(function() {
-    prefs = test_util.createSiteSettingsPrefs(
-        [test_util.createContentSettingTypeToValuePair(
-            settings.ContentSettingsTypes.CAMERA,
-            test_util.createDefaultContentSetting({
-              setting: settings.ContentSetting.ALLOW,
+    prefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.CAMERA, createDefaultContentSetting({
+              setting: ContentSetting.ALLOW,
             }))],
-        [test_util.createContentSettingTypeToValuePair(
-            settings.ContentSettingsTypes.CAMERA,
-            [test_util.createRawSiteException('https://www.example.com')])]);
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.CAMERA,
+            [createRawSiteException('https://www.example.com')])]);
 
     loadTimeData.overrideValues({enableAutoplayWhitelistContentSetting: true});
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('site-details-permission');
     document.body.appendChild(testElement);
@@ -54,12 +67,12 @@ suite('SiteDetailsPermission', function() {
   test('camera category', function() {
     const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
-    testElement.category = settings.ContentSettingsTypes.CAMERA;
+    testElement.category = ContentSettingsTypes.CAMERA;
     testElement.label = 'Camera';
     testElement.site = {
       origin: origin,
       embeddingOrigin: '',
-      source: settings.SiteSettingSource.PREFERENCE,
+      source: SiteSettingSource.PREFERENCE,
     };
 
     assertFalse(testElement.$.details.hidden);
@@ -70,68 +83,64 @@ suite('SiteDetailsPermission', function() {
         'Widget should be labelled correctly');
 
     // Flip the permission and validate that prefs stay in sync.
-    return validatePermissionFlipWorks(origin, settings.ContentSetting.ALLOW)
+    return validatePermissionFlipWorks(origin, ContentSetting.ALLOW)
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, settings.ContentSetting.BLOCK);
+          return validatePermissionFlipWorks(origin, ContentSetting.BLOCK);
         })
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, settings.ContentSetting.ALLOW);
+          return validatePermissionFlipWorks(origin, ContentSetting.ALLOW);
         })
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, settings.ContentSetting.DEFAULT);
+          return validatePermissionFlipWorks(origin, ContentSetting.DEFAULT);
         });
   });
 
   test('default string is correct', function() {
     const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
-    testElement.category = settings.ContentSettingsTypes.CAMERA;
+    testElement.category = ContentSettingsTypes.CAMERA;
     testElement.label = 'Camera';
     testElement.site = {
       origin: origin,
       embeddingOrigin: '',
-      setting: settings.ContentSetting.ALLOW,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.ALLOW,
+      source: SiteSettingSource.PREFERENCE,
     };
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
         .then((args) => {
           // Check getDefaultValueForContentType was called for camera category.
-          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
+          assertEquals(ContentSettingsTypes.CAMERA, args);
 
           // The default option will always be the first in the menu.
           assertEquals(
               'Allow (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          const defaultPrefs = test_util.createSiteSettingsPrefs(
-              [test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.CAMERA,
-                  test_util.createDefaultContentSetting(
-                      {setting: settings.ContentSetting.BLOCK}))],
+          const defaultPrefs = createSiteSettingsPrefs(
+              [createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.CAMERA,
+                  createDefaultContentSetting(
+                      {setting: ContentSetting.BLOCK}))],
               []);
           browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
-          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
+          assertEquals(ContentSettingsTypes.CAMERA, args);
           assertEquals(
               'Block (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          const defaultPrefs = test_util.createSiteSettingsPrefs(
-              [test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.CAMERA,
-                  test_util.createDefaultContentSetting())],
+          const defaultPrefs = createSiteSettingsPrefs(
+              [createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.CAMERA, createDefaultContentSetting())],
               []);
           browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
-          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
+          assertEquals(ContentSettingsTypes.CAMERA, args);
           assertEquals(
               'Ask (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
@@ -140,25 +149,25 @@ suite('SiteDetailsPermission', function() {
 
   test('info string is correct', function() {
     const origin = 'https://www.example.com';
-    testElement.category = settings.ContentSettingsTypes.CAMERA;
+    testElement.category = ContentSettingsTypes.CAMERA;
 
     // Strings that should be shown for the permission sources that don't depend
     // on the ContentSetting value.
     const permissionSourcesNoSetting = {};
-    permissionSourcesNoSetting[settings.SiteSettingSource.DEFAULT] = '';
-    permissionSourcesNoSetting[settings.SiteSettingSource.PREFERENCE] = '';
-    permissionSourcesNoSetting[settings.SiteSettingSource.EMBARGO] =
+    permissionSourcesNoSetting[SiteSettingSource.DEFAULT] = '';
+    permissionSourcesNoSetting[SiteSettingSource.PREFERENCE] = '';
+    permissionSourcesNoSetting[SiteSettingSource.EMBARGO] =
         'Automatically blocked';
-    permissionSourcesNoSetting[settings.SiteSettingSource.INSECURE_ORIGIN] =
+    permissionSourcesNoSetting[SiteSettingSource.INSECURE_ORIGIN] =
         'Blocked to protect your privacy';
-    permissionSourcesNoSetting[settings.SiteSettingSource.KILL_SWITCH] =
+    permissionSourcesNoSetting[SiteSettingSource.KILL_SWITCH] =
         'Temporarily blocked to protect your security';
 
-    for (testSource in permissionSourcesNoSetting) {
+    for (const testSource in permissionSourcesNoSetting) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,
-        setting: settings.ContentSetting.BLOCK,
+        setting: ContentSetting.BLOCK,
         source: testSource,
       };
       assertEquals(
@@ -168,12 +177,12 @@ suite('SiteDetailsPermission', function() {
                    '\nBlock (default)\nAllow\nBlock\nAsk'),
           testElement.$.permissionItem.innerText.trim());
       assertEquals(
-          permissionSourcesNoSetting[testSource] != '',
+          permissionSourcesNoSetting[testSource] !== '',
           testElement.$.permissionItem.classList.contains('two-line'));
 
-      if (testSource != settings.SiteSettingSource.DEFAULT &&
-          testSource != settings.SiteSettingSource.PREFERENCE &&
-          testSource != settings.SiteSettingSource.EMBARGO) {
+      if (testSource !== SiteSettingSource.DEFAULT &&
+          testSource !== SiteSettingSource.PREFERENCE &&
+          testSource !== SiteSettingSource.EMBARGO) {
         assertTrue(testElement.$.permission.disabled);
       } else {
         assertFalse(testElement.$.permission.disabled);
@@ -182,19 +191,17 @@ suite('SiteDetailsPermission', function() {
 
     // Permissions that have been set by extensions.
     const extensionSourceStrings = {};
-    extensionSourceStrings[settings.ContentSetting.ALLOW] =
-        'Allowed by an extension';
-    extensionSourceStrings[settings.ContentSetting.BLOCK] =
-        'Blocked by an extension';
-    extensionSourceStrings[settings.ContentSetting.ASK] =
+    extensionSourceStrings[ContentSetting.ALLOW] = 'Allowed by an extension';
+    extensionSourceStrings[ContentSetting.BLOCK] = 'Blocked by an extension';
+    extensionSourceStrings[ContentSetting.ASK] =
         'Setting controlled by an extension';
 
-    for (testSetting in extensionSourceStrings) {
+    for (const testSetting in extensionSourceStrings) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,
         setting: testSetting,
-        source: settings.SiteSettingSource.EXTENSION,
+        source: SiteSettingSource.EXTENSION,
       };
       assertEquals(
           extensionSourceStrings[testSetting] +
@@ -207,19 +214,17 @@ suite('SiteDetailsPermission', function() {
 
     // Permissions that have been set by enterprise policy.
     const policySourceStrings = {};
-    policySourceStrings[settings.ContentSetting.ALLOW] =
-        'Allowed by your administrator';
-    policySourceStrings[settings.ContentSetting.BLOCK] =
-        'Blocked by your administrator';
-    policySourceStrings[settings.ContentSetting.ASK] =
+    policySourceStrings[ContentSetting.ALLOW] = 'Allowed by your administrator';
+    policySourceStrings[ContentSetting.BLOCK] = 'Blocked by your administrator';
+    policySourceStrings[ContentSetting.ASK] =
         'Setting controlled by your administrator';
 
-    for (testSetting in policySourceStrings) {
+    for (const testSetting in policySourceStrings) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,
         setting: testSetting,
-        source: settings.SiteSettingSource.POLICY,
+        source: SiteSettingSource.POLICY,
       };
       assertEquals(
           policySourceStrings[testSetting] +
@@ -235,8 +240,8 @@ suite('SiteDetailsPermission', function() {
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.ASK,
-      source: settings.SiteSettingSource.DEFAULT,
+      setting: ContentSetting.ASK,
+      source: SiteSettingSource.DEFAULT,
     };
     assertEquals(
         'Ask (default)\nAllow\nBlock\nAsk',
@@ -247,13 +252,13 @@ suite('SiteDetailsPermission', function() {
 
   test('info string correct for drm disabled source', function() {
     const origin = 'https://www.example.com';
-    testElement.category = settings.ContentSettingsTypes.PROTECTED_CONTENT;
+    testElement.category = ContentSettingsTypes.PROTECTED_CONTENT;
     testElement.$.details.hidden = false;
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.BLOCK,
-      source: settings.SiteSettingSource.DRM_DISABLED,
+      setting: ContentSetting.BLOCK,
+      source: SiteSettingSource.DRM_DISABLED,
     };
     assertEquals(
         'To change this setting, first turn on identifiers' +
@@ -265,12 +270,12 @@ suite('SiteDetailsPermission', function() {
 
   test('info string correct for ads', function() {
     const origin = 'https://www.example.com';
-    testElement.category = settings.ContentSettingsTypes.ADS;
+    testElement.category = ContentSettingsTypes.ADS;
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.BLOCK,
-      source: settings.SiteSettingSource.ADS_FILTER_BLACKLIST,
+      setting: ContentSetting.BLOCK,
+      source: SiteSettingSource.ADS_FILTER_BLACKLIST,
     };
     assertEquals(
         'Site shows intrusive or misleading ads' +
@@ -283,8 +288,8 @@ suite('SiteDetailsPermission', function() {
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.BLOCK,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.BLOCK,
+      source: SiteSettingSource.PREFERENCE,
     };
     assertEquals(
         'Block if site shows intrusive or misleading ads' +
@@ -297,8 +302,8 @@ suite('SiteDetailsPermission', function() {
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.BLOCK,
-      source: settings.SiteSettingSource.DEFAULT,
+      setting: ContentSetting.BLOCK,
+      source: SiteSettingSource.DEFAULT,
     };
     assertEquals(
         'Block if site shows intrusive or misleading ads' +
@@ -311,8 +316,8 @@ suite('SiteDetailsPermission', function() {
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.ALLOW,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.ALLOW,
+      source: SiteSettingSource.PREFERENCE,
     };
     assertEquals(
         'Block (default)\nAllow\nBlock\nAsk',
@@ -324,52 +329,52 @@ suite('SiteDetailsPermission', function() {
   test('sound setting default string is correct', function() {
     const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
-    testElement.category = settings.ContentSettingsTypes.SOUND;
+    testElement.category = ContentSettingsTypes.SOUND;
     testElement.label = 'Sound';
     testElement.site = {
       origin: origin,
       embeddingOrigin: '',
-      setting: settings.ContentSetting.ALLOW,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.ALLOW,
+      source: SiteSettingSource.PREFERENCE,
     };
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
         .then((args) => {
           // Check getDefaultValueForContentType was called for sound category.
-          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(ContentSettingsTypes.SOUND, args);
 
           // The default option will always be the first in the menu.
           assertEquals(
               'Allow (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          const defaultPrefs = test_util.createSiteSettingsPrefs(
-              [test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.SOUND,
-                  test_util.createDefaultContentSetting(
-                      {setting: settings.ContentSetting.BLOCK}))],
+          const defaultPrefs = createSiteSettingsPrefs(
+              [createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.SOUND,
+                  createDefaultContentSetting(
+                      {setting: ContentSetting.BLOCK}))],
               []);
           browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
-          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(ContentSettingsTypes.SOUND, args);
           assertEquals(
               'Mute (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
           testElement.useAutomaticLabel = true;
-          const defaultPrefs = test_util.createSiteSettingsPrefs(
-              [test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.SOUND,
-                  test_util.createDefaultContentSetting(
-                      {setting: settings.ContentSetting.ALLOW}))],
+          const defaultPrefs = createSiteSettingsPrefs(
+              [createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.SOUND,
+                  createDefaultContentSetting(
+                      {setting: ContentSetting.ALLOW}))],
               []);
           browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
-          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(ContentSettingsTypes.SOUND, args);
           assertEquals(
               'Automatic (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
@@ -379,19 +384,19 @@ suite('SiteDetailsPermission', function() {
   test('sound setting block string is correct', function() {
     const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
-    testElement.category = settings.ContentSettingsTypes.SOUND;
+    testElement.category = ContentSettingsTypes.SOUND;
     testElement.label = 'Sound';
     testElement.site = {
       origin: origin,
       embeddingOrigin: '',
-      setting: settings.ContentSetting.ALLOW,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.ALLOW,
+      source: SiteSettingSource.PREFERENCE,
     };
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
         .then((args) => {
           // Check getDefaultValueForContentType was called for sound category.
-          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(ContentSettingsTypes.SOUND, args);
 
           // The block option will always be the third in the menu.
           assertEquals(
@@ -402,18 +407,18 @@ suite('SiteDetailsPermission', function() {
 
   test('ASK can be chosen as a preference by users', function() {
     const origin = 'https://www.example.com';
-    testElement.category = settings.ContentSettingsTypes.USB_DEVICES;
+    testElement.category = ContentSettingsTypes.USB_DEVICES;
     testElement.label = 'USB';
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,
-      setting: settings.ContentSetting.ASK,
-      source: settings.SiteSettingSource.PREFERENCE,
+      setting: ContentSetting.ASK,
+      source: SiteSettingSource.PREFERENCE,
     };
 
     // In addition to the assertions below, the main goal of this test is to
     // ensure we do not hit any assertions when choosing ASK as a setting.
-    assertEquals(testElement.$.permission.value, settings.ContentSetting.ASK);
+    assertEquals(testElement.$.permission.value, ContentSetting.ASK);
     assertFalse(testElement.$.permission.disabled);
     assertFalse(testElement.$.permission.options.ask.hidden);
   });
@@ -422,33 +427,31 @@ suite('SiteDetailsPermission', function() {
       'Bluetooth scanning: ASK/BLOCK can be chosen as a preference by users',
       function() {
         const origin = 'https://www.example.com';
-        testElement.category = settings.ContentSettingsTypes.BLUETOOTH_SCANNING;
+        testElement.category = ContentSettingsTypes.BLUETOOTH_SCANNING;
         testElement.label = 'Bluetooth-scanning';
         testElement.site = {
           origin: origin,
           embeddingOrigin: origin,
-          setting: settings.ContentSetting.ASK,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.ASK,
+          source: SiteSettingSource.PREFERENCE,
         };
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing ASK as a setting.
-        assertEquals(
-            testElement.$.permission.value, settings.ContentSetting.ASK);
+        assertEquals(testElement.$.permission.value, ContentSetting.ASK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.ask.hidden);
 
         testElement.site = {
           origin: origin,
           embeddingOrigin: origin,
-          setting: settings.ContentSetting.BLOCK,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.BLOCK,
+          source: SiteSettingSource.PREFERENCE,
         };
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing BLOCK as a setting.
-        assertEquals(
-            testElement.$.permission.value, settings.ContentSetting.BLOCK);
+        assertEquals(testElement.$.permission.value, ContentSetting.BLOCK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.block.hidden);
       });
@@ -458,34 +461,31 @@ suite('SiteDetailsPermission', function() {
           'users',
       function() {
         const origin = 'https://www.example.com';
-        testElement.category =
-            settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+        testElement.category = ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
         testElement.label = 'Save to original files';
         testElement.site = {
           origin: origin,
           embeddingOrigin: origin,
-          setting: settings.ContentSetting.ASK,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.ASK,
+          source: SiteSettingSource.PREFERENCE,
         };
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing ASK as a setting.
-        assertEquals(
-            testElement.$.permission.value, settings.ContentSetting.ASK);
+        assertEquals(testElement.$.permission.value, ContentSetting.ASK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.ask.hidden);
 
         testElement.site = {
           origin: origin,
           embeddingOrigin: origin,
-          setting: settings.ContentSetting.BLOCK,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.BLOCK,
+          source: SiteSettingSource.PREFERENCE,
         };
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing BLOCK as a setting.
-        assertEquals(
-            testElement.$.permission.value, settings.ContentSetting.BLOCK);
+        assertEquals(testElement.$.permission.value, ContentSetting.BLOCK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.block.hidden);
       });

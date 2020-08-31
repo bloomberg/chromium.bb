@@ -44,7 +44,7 @@ function getVisibleDirectoryTreeItemNames(appId) {
  * @return {!Promise}
  */
 function waitForDirectoryTreeItem(appId, name) {
-  let caller = getCaller();
+  const caller = getCaller();
   return repeatUntil(async () => {
     if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) !== -1) {
       return true;
@@ -61,7 +61,7 @@ function waitForDirectoryTreeItem(appId, name) {
  * @return {!Promise}
  */
 function waitForDirectoryTreeItemLost(appId, name) {
-  let caller = getCaller();
+  const caller = getCaller();
   return repeatUntil(async () => {
     if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) === -1) {
       return true;
@@ -131,7 +131,7 @@ async function keyboardDeleteFolder(path, treeItem) {
       await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
-  await expandRoot(appId, treeItem);
+  await expandTreeItem(appId, treeItem);
 
   // Check: the folder should be shown in the directory tree.
   await waitForDirectoryTreeItem(appId, 'photos');
@@ -198,7 +198,7 @@ async function testRenameFolder(path, treeItem) {
       await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
-  await expandRoot(appId, treeItem);
+  await expandTreeItem(appId, treeItem);
 
   // Check: the photos folder should be shown in the directory tree.
   await waitForDirectoryTreeItem(appId, 'photos');
@@ -248,7 +248,6 @@ async function testRenameFolder(path, treeItem) {
   // Check: the renamed folder should be shown in the directory tree.
   await waitForDirectoryTreeItem(appId, 'bbq photos');
 }
-
 
 /**
  * Tests renaming a file.
@@ -322,6 +321,55 @@ testcase.renameNewFolderDrive = () => {
 };
 
 /**
+ * Tests that the root html element .focus-outline-visible class appears for
+ * keyboard interaction and is removed on mouse interaction.
+ */
+testcase.keyboardFocusOutlineVisible = async () => {
+  // Open Files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Check: the html element should have focus-outline-visible class.
+  const htmlFocusOutlineVisible = ['html.focus-outline-visible'];
+  await remoteCall.waitForElementsCount(appId, htmlFocusOutlineVisible, 1);
+
+  // Send mousedown to the toolbar delete button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#delete-button', 'mousedown']));
+
+  // Check: the html element should not have focus-outline-visible class.
+  await remoteCall.waitForElementLost(appId, htmlFocusOutlineVisible);
+};
+
+/**
+ * Tests that the root html element .pointer-active class is added and removed
+ * for mouse interaction.
+ */
+testcase.keyboardFocusOutlineVisibleMouse = async () => {
+  // Open Files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Send mousedown to the toolbar delete button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#delete-button', 'mousedown']));
+
+  // Check: the html element should have pointer-active class.
+  const htmlPointerActive = ['html.pointer-active'];
+  await remoteCall.waitForElementsCount(appId, htmlPointerActive, 1);
+
+  // Check: the html element should not have focus-outline-visible class.
+  await remoteCall.waitForElementLost(appId, ['html.focus-outline-visible']);
+
+  // Send mouseup to the toolbar delete button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#delete-button', 'mouseup']));
+
+  // Check: the html element should not have pointer-active class.
+  await remoteCall.waitForElementLost(appId, htmlPointerActive);
+};
+
+/**
  * Test that selecting "Google Drive" in the directory tree with the keyboard
  * expands it and selects "My Drive".
  */
@@ -332,6 +380,9 @@ testcase.keyboardSelectDriveDirectoryTree = async () => {
 
   // Focus the directory tree.
   await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+  // Wait for Google Drive root to be available.
+  await remoteCall.waitForElement(appId, '.drive-volume');
 
   // Select Google Drive in the directory tree; as of the time of writing, it's
   // the last item so this happens to work.
@@ -371,7 +422,7 @@ testcase.keyboardDisableCopyWhenDialogDisplayed = async () => {
 
   // Click delete button in the toolbar.
   await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['button#delete-button']);
+      'fakeMouseClick', appId, ['#delete-button']);
 
   // Confirm that the delete confirmation dialog is shown.
   await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');

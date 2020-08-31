@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/hash/sha1.h"
+#include "base/test/mock_callback.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -20,7 +22,9 @@ namespace syncer {
 
 namespace {
 
+using sync_pb::CommitResponse;
 using sync_pb::EntitySpecifics;
+using sync_pb::SharingMessageCommitError;
 using sync_pb::SyncEntity;
 
 const ClientTagHash kTag = ClientTagHash::FromHashed("tag");
@@ -40,7 +44,7 @@ EntitySpecifics GenerateBookmarkSpecifics(const std::string& url,
                                           const std::string& title) {
   EntitySpecifics specifics;
   specifics.mutable_bookmark()->set_url(url);
-  specifics.mutable_bookmark()->set_title(title);
+  specifics.mutable_bookmark()->set_legacy_canonicalized_title(title);
   return specifics;
 }
 
@@ -131,7 +135,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   EXPECT_TRUE(entity.client_defined_unique_tag().empty());
   EXPECT_EQ(kURL, entity.specifics().bookmark().url());
   EXPECT_FALSE(entity.deleted());
-  EXPECT_EQ(kTitle, entity.specifics().bookmark().title());
+  EXPECT_EQ(kTitle, entity.specifics().bookmark().legacy_canonicalized_title());
   EXPECT_TRUE(entity.folder());
   EXPECT_FALSE(entity.parent_id_string().empty());
   EXPECT_TRUE(entity.unique_position().has_custom_compressed_v1());
@@ -172,8 +176,9 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*worker=*/nullptr, &cryptographer, PassphraseType::kImplicitPassphrase,
-      &debug_info_emitter,
+      /*on_commit_response_callback=*/base::NullCallback(),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
+      PassphraseType::kImplicitPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   sync_pb::ClientToServerMessage msg;
@@ -193,6 +198,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_TRUE(entity.specifics().has_password());
   EXPECT_EQ(kSignonRealm,
             entity.specifics().password().unencrypted_metadata().url());
+  EXPECT_TRUE(
+      entity.specifics().password().unencrypted_metadata().has_blacklisted());
+  EXPECT_FALSE(
+      entity.specifics().password().unencrypted_metadata().blacklisted());
   EXPECT_FALSE(entity.specifics().password().encrypted().blob().empty());
   EXPECT_TRUE(entity.parent_id_string().empty());
   EXPECT_FALSE(entity.unique_position().has_custom_compressed_v1());
@@ -233,8 +242,9 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*worker=*/nullptr, &cryptographer, PassphraseType::kCustomPassphrase,
-      &debug_info_emitter,
+      /*on_commit_response_callback=*/base::NullCallback(),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
+      PassphraseType::kCustomPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   sync_pb::ClientToServerMessage msg;
@@ -257,6 +267,89 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_TRUE(entity.parent_id_string().empty());
   EXPECT_FALSE(entity.unique_position().has_custom_compressed_v1());
   EXPECT_EQ(0, entity.position_in_parent());
+}
+
+TEST(NonBlockingTypeCommitContributionTest,
+     ShouldPropagateFailedItemsOnCommitResponse) {
+  auto data = std::make_unique<syncer::EntityData>();
+  data->client_tag_hash = ClientTagHash::FromHashed("hash");
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->entity = std::move(data);
+  CommitRequestDataList requests_data;
+  requests_data.push_back(std::move(request_data));
+
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
+  DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
+
+  DirectoryCryptographer cryptographer;
+
+  FailedCommitResponseDataList actual_error_response_list;
+
+  auto on_commit_response_callback = base::BindOnce(
+      [](FailedCommitResponseDataList* actual_error_response_list,
+         const CommitResponseDataList& committed_response_list,
+         const FailedCommitResponseDataList& error_response_list) {
+        // We put expectations outside of the callback, so that they fail if
+        // callback is not ran.
+        *actual_error_response_list = error_response_list;
+      },
+      &actual_error_response_list);
+
+  NonBlockingTypeCommitContribution contribution(
+      PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
+      std::move(on_commit_response_callback),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
+      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      /*only_commit_specifics=*/false);
+
+  sync_pb::ClientToServerMessage msg;
+  contribution.AddToCommitMessage(&msg);
+
+  sync_pb::ClientToServerResponse response;
+  sync_pb::CommitResponse* commit_response = response.mutable_commit();
+
+  {
+    sync_pb::CommitResponse_EntryResponse* entry =
+        commit_response->add_entryresponse();
+    entry->set_response_type(CommitResponse::TRANSIENT_ERROR);
+    SharingMessageCommitError* sharing_message_error =
+        entry->mutable_datatype_specific_error()
+            ->mutable_sharing_message_error();
+    sharing_message_error->set_error_code(
+        SharingMessageCommitError::INVALID_ARGUMENT);
+  }
+
+  StatusController status;
+  contribution.ProcessCommitResponse(response, &status);
+  contribution.CleanUp();
+
+  ASSERT_EQ(1u, actual_error_response_list.size());
+  FailedCommitResponseData failed_item = actual_error_response_list[0];
+  EXPECT_EQ(ClientTagHash::FromHashed("hash"), failed_item.client_tag_hash);
+  EXPECT_EQ(CommitResponse::TRANSIENT_ERROR, failed_item.response_type);
+  EXPECT_EQ(
+      SharingMessageCommitError::INVALID_ARGUMENT,
+      failed_item.datatype_specific_error.sharing_message_error().error_code());
+}
+
+TEST(NonBlockingTypeCommitContributionTest, ShouldPropagateFullCommitFailure) {
+  DirectoryCryptographer cryptographer;
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
+  DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
+
+  base::MockOnceCallback<void(SyncCommitError commit_error)>
+      on_commit_failure_callback;
+  EXPECT_CALL(on_commit_failure_callback, Run(SyncCommitError::kNetworkError));
+
+  NonBlockingTypeCommitContribution contribution(
+      PASSWORDS, sync_pb::DataTypeContext(), CommitRequestDataList(),
+      /*on_commit_response_callback=*/base::NullCallback(),
+      on_commit_failure_callback.Get(), &cryptographer,
+      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      /*only_commit_specifics=*/false);
+
+  contribution.ProcessCommitFailure(SyncCommitError::kNetworkError);
+  contribution.CleanUp();
 }
 
 }  // namespace

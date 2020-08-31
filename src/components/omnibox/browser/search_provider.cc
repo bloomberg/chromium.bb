@@ -468,10 +468,12 @@ void SearchProvider::ClearAllResults() {
 void SearchProvider::UpdateMatchContentsClass(
     const base::string16& input_text,
     SearchSuggestionParser::Results* results) {
+  const base::string16& trimmed_input =
+      base::CollapseWhitespace(input_text, false);
   for (auto& suggest_result : results->suggest_results)
-    suggest_result.ClassifyMatchContents(false, input_text);
+    suggest_result.ClassifyMatchContents(false, trimmed_input);
   for (auto& navigation_result : results->navigation_results)
-    navigation_result.CalculateAndClassifyMatchContents(false, input_text);
+    navigation_result.CalculateAndClassifyMatchContents(false, trimmed_input);
 }
 
 void SearchProvider::SortResults(bool is_keyword,
@@ -617,9 +619,9 @@ void SearchProvider::Run(bool query_is_private) {
     // Consider explicitly setting a timeout for requests sent to Google when
     // On Device Head provider is enabled.
     if (IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
-      timeout_ms = base::GetFieldTrialParamByFeatureAsInt(
-          omnibox::kOnDeviceHeadProvider,
-          "SearchProviderDefaultLoaderTimeoutMs", 0);
+      timeout_ms =
+          OmniboxFieldTrial::OnDeviceSearchProviderDefaultLoaderTimeoutMs(
+              client()->IsOffTheRecord());
     }
     default_loader_ = CreateSuggestLoader(
         providers_.GetDefaultProviderURL(), input_,
@@ -1616,8 +1618,8 @@ void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
     prefetch_limit--;
 
     const auto& image_url = suggestion.image_url();
-    if (!image_url.empty())
-      prefetch_image_urls.push_back(GURL(image_url));
+    if (!image_url.is_empty())
+      prefetch_image_urls.push_back(image_url);
 
     if (suggestion.answer())
       suggestion.answer()->AddImageURLsTo(&prefetch_image_urls);

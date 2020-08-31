@@ -41,6 +41,10 @@ const char manifest_content[] =
     "  \"manifest_version\": 2\n"
     "}\n";
 
+const char kCustomManifest[] = "custom_manifest.json";
+const base::FilePath::CharType kCustomManifestFilename[] =
+    FILE_PATH_LITERAL("custom_manifest.json");
+
 scoped_refptr<Extension> LoadExtensionManifest(
     const base::DictionaryValue& manifest,
     const base::FilePath& manifest_dir,
@@ -193,6 +197,31 @@ TEST_F(FileUtilTest, LoadExtensionWithValidLocales) {
       install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get() != nullptr);
   EXPECT_EQ("The first extension that I made.", extension->description());
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithGzippedLocalesAllowed) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_gzipped_locales");
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      install_dir, Manifest::COMPONENT, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get() != nullptr);
+  EXPECT_EQ("The first extension that I made.", extension->description());
+  ASSERT_TRUE(error.empty());
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithGzippedLocalesNotAllowed) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_gzipped_locales");
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get() == nullptr);
+  EXPECT_EQ("Catalog file is missing for locale en.", error);
 }
 
 TEST_F(FileUtilTest, LoadExtensionWithoutLocalesFolder) {
@@ -485,6 +514,33 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
                   "extension includes the key file.*ext_root.a_key.pem"));
 }
 
+// Specify a file other than manifest.json
+TEST_F(FileUtilTest, SpecifyManifestFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath ext_path = temp.GetPath().AppendASCII("ext_root");
+  ASSERT_TRUE(base::CreateDirectory(ext_path));
+
+  const char manifest[] =
+      "{\n"
+      "  \"name\": \"Test Extension\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"manifest_version\": 2,\n"
+      "  \"description\": \"The first extension that I made.\"\n"
+      "}\n";
+  ASSERT_EQ(static_cast<int>(strlen(manifest)),
+            base::WriteFile(ext_path.AppendASCII(kCustomManifest), manifest,
+                            strlen(manifest)));
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      ext_path, kCustomManifestFilename, "the_id", Manifest::EXTERNAL_PREF,
+      Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get()) << error;
+  ASSERT_EQ(0u, extension->install_warnings().size());
+}
+
 // Try to install an extension with a zero-length icon file.
 TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFile) {
   base::FilePath install_dir;
@@ -511,7 +567,8 @@ TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFileUnpacked) {
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   EXPECT_FALSE(extension);
-  EXPECT_EQ("Could not load extension icon 'missing-icon.png'.", error);
+  EXPECT_EQ("Could not load icon 'missing-icon.png' specified in 'icons'.",
+            error);
 }
 
 // Try to install an unpacked extension with an invisible icon. This
@@ -530,8 +587,10 @@ TEST_F(FileUtilTest, CheckInvisibleIconFileUnpacked) {
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'icons' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // Try to install a packed extension with an invisible icon. This should

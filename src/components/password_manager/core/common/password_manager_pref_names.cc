@@ -38,10 +38,8 @@ const char kNumberSignInPasswordPromoShown[] =
 const char kSignInPasswordPromoRevive[] =
     "profile.sign_in_password_promo_revive";
 
-const char kAccountStorageOptedInAccounts[] =
-    "profile.password_account_storage_opted_in_accounts";
-
-const char kIsAccountStoreDefault[] = "profile.is_account_store_default";
+const char kAccountStoragePerAccountSettings[] =
+    "profile.password_account_storage_settings";
 
 const char kSyncPasswordHash[] = "profile.sync_password_hash";
 
@@ -50,6 +48,9 @@ const char kSyncPasswordLengthAndHashSalt[] =
 
 const char kLastTimeObsoleteHttpCredentialsRemoved[] =
     "profile.last_time_obsolete_http_credentials_removed";
+
+const char kLastTimePasswordCheckCompleted[] =
+    "profile.last_time_password_check_completed";
 
 const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 

@@ -95,9 +95,6 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kShowDetails:
       out << "ShowDetails";
       break;
-    case ActionProto::ActionInfoCase::kReset:
-      out << "Reset";
-      break;
     case ActionProto::ActionInfoCase::kStop:
       out << "Stop";
       break;
@@ -127,6 +124,15 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kWaitForDocument:
       out << "WaitForDocument";
+      break;
+    case ActionProto::ActionInfoCase::kShowGenericUi:
+      out << "ShowGenericUi";
+      break;
+    case ActionProto::ActionInfoCase::kGeneratePasswordForFormField:
+      out << "GeneratePasswordForFormField";
+      break;
+    case ActionProto::kSaveGeneratedPassword:
+      out << "SaveGeneratedPassword";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

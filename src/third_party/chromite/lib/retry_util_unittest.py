@@ -220,7 +220,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
 
     _SetupCounters(0, 0)
     command = [sys.executable, path]
-    kwargs = {'redirect_stdout': True, 'print_cmd': False}
+    kwargs = {'stdout': True, 'print_cmd': False}
     self.assertEqual(cros_build_lib.run(command, **kwargs).output, b'0\n')
     _AssertCounters(0, 0)
 

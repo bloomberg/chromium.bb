@@ -43,7 +43,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
   ~PushSubscription() override;
 
   KURL endpoint() const { return endpoint_; }
-  DOMTimeStamp expirationTime(bool& out_is_null) const;
+  base::Optional<DOMTimeStamp> expirationTime() const;
 
   PushSubscriptionOptions* options() const { return options_.Get(); }
 
@@ -52,7 +52,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState* script_state);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushSubscriptionTest,

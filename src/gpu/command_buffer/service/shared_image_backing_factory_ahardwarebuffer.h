@@ -35,6 +35,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
+      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
@@ -57,6 +58,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
       uint32_t usage) override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
+  bool IsFormatSupported(viz::ResourceFormat format);
 
  private:
   bool ValidateUsage(uint32_t usage,

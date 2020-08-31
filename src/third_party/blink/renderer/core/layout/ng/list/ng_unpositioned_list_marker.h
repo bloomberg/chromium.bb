@@ -14,7 +14,7 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutNGListMarker;
+class LayoutNGOutsideListMarker;
 class LayoutUnit;
 class NGBlockNode;
 class NGConstraintSpace;
@@ -23,7 +23,6 @@ class NGLayoutResult;
 class NGPhysicalFragment;
 
 struct LogicalOffset;
-struct NGLineHeightMetrics;
 
 // Represents an unpositioned list marker.
 //
@@ -37,8 +36,8 @@ struct NGLineHeightMetrics;
 //
 // In order to adjust with the other content of LI, marker will be handled
 // after other children.
-// First, try to find the adjusted content_metrics for the marker. See
-// |CanAddToBox()| for details.
+// First, try to find the alignment-baseline for the marker. See
+// |ContentAlignmentBaseline()| for details.
 // If found, layout marker, compute the content adjusted offset and float
 // intuded offset. See |AddToBox()| for details.
 // If not, layout marker and deal with it in |AddToBoxWithoutLineBoxes()|.
@@ -52,25 +51,27 @@ class CORE_EXPORT NGUnpositionedListMarker final {
 
  public:
   NGUnpositionedListMarker() : marker_layout_object_(nullptr) {}
-  explicit NGUnpositionedListMarker(LayoutNGListMarker*);
+  explicit NGUnpositionedListMarker(LayoutNGOutsideListMarker*);
   explicit NGUnpositionedListMarker(const NGBlockNode&);
 
   explicit operator bool() const { return marker_layout_object_; }
 
-  // Returns true if the list marker can be added to box. False indicates
-  // that the child content does not have a baseline to align to, and that
-  // caller should try next child, or "WithoutLineBoxes" version.
-  bool CanAddToBox(const NGConstraintSpace&,
-                   FontBaseline,
-                   const NGPhysicalFragment& content,
-                   NGLineHeightMetrics* content_metrics) const;
+  // Returns the baseline that the list-marker should place itself along.
+  //
+  // |base::nullopt| indicates that the child |content| does not have a baseline
+  // to align to, and that caller should try next child, or use the
+  // |AddToBoxWithoutLineBoxes()| method.
+  base::Optional<LayoutUnit> ContentAlignmentBaseline(
+      const NGConstraintSpace&,
+      FontBaseline,
+      const NGPhysicalFragment& content) const;
   // Add a fragment for an outside list marker.
   void AddToBox(const NGConstraintSpace&,
                 FontBaseline,
                 const NGPhysicalFragment& content,
                 const NGBoxStrut&,
-                const NGLineHeightMetrics& content_metrics,
                 const NGLayoutResult& marker_layout_result,
+                LayoutUnit content_baseline,
                 LogicalOffset* content_offset,
                 NGBoxFragmentBuilder*) const;
 
@@ -105,7 +106,7 @@ class CORE_EXPORT NGUnpositionedListMarker final {
                                         const NGBoxStrut&,
                                         LayoutUnit) const;
 
-  LayoutNGListMarker* marker_layout_object_;
+  LayoutNGOutsideListMarker* marker_layout_object_;
 };
 
 }  // namespace blink

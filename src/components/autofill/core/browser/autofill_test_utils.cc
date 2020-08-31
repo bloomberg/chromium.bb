@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -54,6 +55,8 @@ std::string GetRandomCardNumber() {
 std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
+  registry->RegisterBooleanPref(
+      RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   return PrefServiceForTesting(registry.get());
 }
 
@@ -119,6 +122,7 @@ void CreateTestAddressFormData(FormData* form,
       std::make_pair(ASCIIToUTF16("Submit"),
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form->url = GURL("http://myform.com/form.html");
+  form->full_url = GURL("http://myform.com/form.html?foo=bar");
   form->action = GURL("http://myform.com/submit.html");
   form->is_action_empty = true;
   form->main_frame_origin =
@@ -191,12 +195,12 @@ void CreateTestPersonalInformationFormData(FormData* form,
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->url = GURL("http://myform.com/form.html");
+  form->full_url = GURL("http://myform.com/form.html?foo=bar");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
 
   FormFieldData field;
-  ServerFieldTypeSet type_set;
   test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
   test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
@@ -216,11 +220,13 @@ void CreateTestCreditCardFormData(FormData* form,
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   if (is_https) {
     form->url = GURL("https://myform.com/form.html");
+    form->full_url = GURL("http://myform.com/form.html?foo=bar");
     form->action = GURL("https://myform.com/submit.html");
     form->main_frame_origin =
         url::Origin::Create(GURL("https://myform_root.com/form.html"));
   } else {
     form->url = GURL("http://myform.com/form.html");
+    form->full_url = GURL("http://myform.com/form.html?foo=bar");
     form->action = GURL("http://myform.com/submit.html");
     form->main_frame_origin =
         url::Origin::Create(GURL("http://myform_root.com/form.html"));
@@ -374,28 +380,28 @@ AutofillProfile GetServerProfile2() {
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
-                    "11", "2022", "1");
+                    NextMonth().c_str(), NextYear().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
   SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
-                    "07", "2022", "1");
+                    NextMonth().c_str(), TenYearsFromNow().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetExpiredCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
-                    "11", "2002", "1");
+                    NextMonth().c_str(), LastYear().c_str(), "1");
   return credit_card;
 }
 
 CreditCard GetIncompleteCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
-  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */, "11",
-                    "2022", "1");
+  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */,
+                    NextMonth().c_str(), NextYear().c_str(), "1");
   return credit_card;
 }
 
@@ -414,26 +420,43 @@ CreditCard GetVerifiedCreditCard2() {
 CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2020", "1");
+                          "2109" /* Mastercard */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
-  credit_card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
   return credit_card;
 }
 
 CreditCard GetMaskedServerCardAmex() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
-  test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */, "9",
-                          "2020", "1");
+  test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */,
+                          NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
-  credit_card.set_card_type(CreditCard::CARD_TYPE_PREPAID);
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardWithNickname() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */,
+                          NextMonth().c_str(), NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  credit_card.SetNickname(ASCIIToUTF16("Test nickname"));
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardWithInvalidNickname() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */,
+                          NextMonth().c_str(), NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  credit_card.SetNickname(ASCIIToUTF16("Invalid nickname which is too long"));
   return credit_card;
 }
 
 CreditCard GetFullServerCard() {
   CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "c123");
   test::SetCreditCardInfo(&credit_card, "Full Carter",
-                          "4111111111111111" /* Visa */, "12", "2020", "1");
-  credit_card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
+                          "4111111111111111" /* Visa */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
   return credit_card;
 }
 
@@ -468,6 +491,29 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
   }
 
   return credit_card;
+}
+
+CreditCardCloudTokenData GetCreditCardCloudTokenData1() {
+  CreditCardCloudTokenData data;
+  data.masked_card_id = "data1_id";
+  data.suffix = ASCIIToUTF16("1111");
+  data.exp_month = 1;
+  base::StringToInt(NextYear(), &data.exp_year);
+  data.card_art_url = "fake url 1";
+  data.instrument_token = "fake token 1";
+  return data;
+}
+
+CreditCardCloudTokenData GetCreditCardCloudTokenData2() {
+  CreditCardCloudTokenData data;
+  data.masked_card_id = "data2_id";
+  data.suffix = ASCIIToUTF16("2222");
+  data.exp_month = 2;
+  base::StringToInt(NextYear(), &data.exp_year);
+  data.exp_year += 1;
+  data.card_art_url = "fake url 2";
+  data.instrument_token = "fake token 2";
+  return data;
 }
 
 void SetProfileInfo(AutofillProfile* profile,
@@ -697,6 +743,17 @@ void FillQueryField(AutofillQueryContents::Form::Field* field,
     field->set_type(control_type);
 }
 
+void FillQueryField(AutofillPageQueryRequest_Form_Field* field,
+                    unsigned signature,
+                    const char* name,
+                    const char* control_type) {
+  field->set_signature(signature);
+  if (name)
+    field->set_name(name);
+  if (control_type)
+    field->set_control_type(control_type);
+}
+
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
   int query_id = 1;
@@ -720,22 +777,22 @@ std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {
 
 std::string NextMonth() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
-  return base::NumberToString(now.month % 12 + 1);
+  AutofillClock::Now().LocalExplode(&now);
+  return base::StringPrintf("%02d", now.month % 12 + 1);
 }
 std::string LastYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year - 1);
 }
 std::string NextYear() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 1);
 }
 std::string TenYearsFromNow() {
   base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
+  AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 10);
 }
 

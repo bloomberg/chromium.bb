@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/widget/widget.h"
 
 namespace gfx {
 class Point;
@@ -22,6 +23,13 @@ namespace ash {
 ASH_PUBLIC_EXPORT int FrameBorderNonClientHitTest(
     views::NonClientFrameView* view,
     const gfx::Point& point_in_widget);
+
+// Resolve the inferred opacity and updates the params.
+ASH_PUBLIC_EXPORT void ResolveInferredOpacity(
+    views::Widget::InitParams* params);
+
+// Checks whether we should draw the restored window frame on |widget|.
+ASH_PUBLIC_EXPORT bool ShouldUseRestoreFrame(const views::Widget* widget);
 
 }  // namespace ash
 

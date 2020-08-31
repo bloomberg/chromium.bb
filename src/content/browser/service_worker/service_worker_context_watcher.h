@@ -16,7 +16,7 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 
 namespace content {
 
@@ -97,10 +97,9 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
   void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
                                          int process_id,
                                          int devtools_agent_route_id) override;
-  void OnMainScriptHttpResponseInfoSet(
-      int64_t version_id,
-      base::Time script_response_time,
-      base::Time script_last_modified) override;
+  void OnMainScriptResponseSet(int64_t version_id,
+                               base::Time script_response_time,
+                               base::Time script_last_modified) override;
   void OnErrorReported(int64_t version_id,
                        const ErrorInfo& info) override;
   void OnReportConsoleMessage(int64_t version_id,

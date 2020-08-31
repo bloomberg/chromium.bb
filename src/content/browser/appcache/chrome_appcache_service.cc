@@ -37,8 +37,8 @@ void ChromeAppCacheService::Initialize(
   browser_context_ = browser_context;
 
   // Init our base class.
-  AppCacheServiceImpl::Initialize(cache_path_);
   set_appcache_policy(this);
+  AppCacheServiceImpl::Initialize(cache_path_);
   set_special_storage_policy(special_storage_policy.get());
 }
 
@@ -56,21 +56,31 @@ void ChromeAppCacheService::Shutdown() {
   partition_ = nullptr;
 }
 
-bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
-                                            const GURL& first_party) {
+bool ChromeAppCacheService::CanLoadAppCache(
+    const GURL& manifest_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return GetContentClient()->browser()->AllowAppCache(manifest_url, first_party,
-                                                      browser_context_);
+  return GetContentClient()->browser()->AllowAppCache(
+      manifest_url, site_for_cookies, top_frame_origin, browser_context_);
 }
 
 bool ChromeAppCacheService::CanCreateAppCache(
-    const GURL& manifest_url, const GURL& first_party) {
+    const GURL& manifest_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return GetContentClient()->browser()->AllowAppCache(manifest_url, first_party,
-                                                      browser_context_);
+  return GetContentClient()->browser()->AllowAppCache(
+      manifest_url, site_for_cookies, top_frame_origin, browser_context_);
 }
 
-ChromeAppCacheService::~ChromeAppCacheService() {}
+bool ChromeAppCacheService::IsOriginTrialRequiredForAppCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GetContentClient()->browser()->IsOriginTrialRequiredForAppCache(
+      browser_context_);
+}
+
+ChromeAppCacheService::~ChromeAppCacheService() = default;
 
 void ChromeAppCacheService::DeleteOnCorrectThread() const {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {

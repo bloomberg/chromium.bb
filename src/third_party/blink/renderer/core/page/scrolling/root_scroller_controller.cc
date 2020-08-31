@@ -99,7 +99,7 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document), effective_root_scroller_(&document) {}
 
-void RootScrollerController::Trace(blink::Visitor* visitor) {
+void RootScrollerController::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(root_scroller_);
   visitor->Trace(effective_root_scroller_);
@@ -312,7 +312,7 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
     // The LayoutView is allowed to have a clip (since its clip is resized by
     // the URL bar movement). Test it for scrolling so that we only promote if
     // we know we won't block scrolling the main document.
-    if (ancestor->IsLayoutView()) {
+    if (IsA<LayoutView>(ancestor)) {
       const ComputedStyle* ancestor_style = ancestor->Style();
       DCHECK(ancestor_style);
 

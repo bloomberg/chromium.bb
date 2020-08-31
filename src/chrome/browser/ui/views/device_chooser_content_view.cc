@@ -18,6 +18,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
@@ -64,7 +65,7 @@ BluetoothStatusContainer::BluetoothStatusContainer(
           views::BoxLayout::Orientation::kHorizontal))
       ->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto re_scan_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto re_scan_button = views::MdTextButton::Create(
       listener,
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN));
   re_scan_button->SetTooltipText(
@@ -126,6 +127,8 @@ DeviceChooserContentView::DeviceChooserContentView(
   table_view_ = table_view.get();
   table_view->SetSelectOnRemove(false);
   table_view->set_observer(table_view_observer);
+  table_view->GetViewAccessibility().OverrideName(l10n_util::GetStringUTF16(
+      IDS_DEVICE_CHOOSER_ACCNAME_COMPATIBLE_DEVICES_LIST));
 
   table_parent_ = AddChildView(
       views::TableView::CreateScrollViewWithTable(std::move(table_view)));
@@ -214,11 +217,13 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
 }
 
 void DeviceChooserContentView::OnOptionsInitialized() {
+  is_initialized_ = true;
   table_view_->OnModelChanged();
   UpdateTableView();
 }
 
 void DeviceChooserContentView::OnOptionAdded(size_t index) {
+  is_initialized_ = true;
   table_view_->OnItemsAdded(base::checked_cast<int>(index), 1);
   UpdateTableView();
 }
@@ -292,9 +297,8 @@ base::string16 DeviceChooserContentView::GetWindowTitle() const {
 
 std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
   const auto make_help_button = [this]() {
-    auto help_button = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(help_button.get(),
-                                  vector_icons::kHelpOutlineIcon);
+    auto help_button = views::CreateVectorImageButtonWithNativeTheme(
+        this, vector_icons::kHelpOutlineIcon);
     help_button->SetFocusForPlatform();
     help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     help_button->set_tag(kHelpButtonTag);
@@ -350,10 +354,17 @@ void DeviceChooserContentView::Close() {
 
 void DeviceChooserContentView::UpdateTableView() {
   bool has_options = adapter_enabled_ && RowCount() > 0;
+  if (!is_initialized_ && GetWidget() &&
+      GetWidget()->GetFocusManager()->GetFocusedView()) {
+    is_initialized_ = true;  // Can show no_options_view_ after initial focus.
+  }
   table_parent_->SetVisible(has_options);
   table_view_->SetEnabled(has_options &&
                           !chooser_controller_->TableViewAlwaysDisabled());
-  no_options_view_->SetVisible(!has_options && adapter_enabled_);
+  // Do not set to visible until initialization is complete, in order to prevent
+  // message from briefly flashing and being read by screen reader.
+  no_options_view_->SetVisible(!has_options && adapter_enabled_ &&
+                               is_initialized_);
   adapter_off_view_->SetVisible(!adapter_enabled_);
 }
 

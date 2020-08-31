@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/test/browser_test.h"
 #include "third_party/blink/public/common/features.h"
 
 class NativeFileSystemUsageBubbleViewTest : public DialogBrowserTest {
@@ -29,6 +30,13 @@ class NativeFileSystemUsageBubbleViewTest : public DialogBrowserTest {
       usage.writable_files.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
       usage.writable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
+    } else if (name == "SingleReadableFile") {
+      usage.readable_files.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+    } else if (name == "MultipleReadableFiles") {
+      usage.readable_files.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+      usage.readable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
     } else if (name == "SingleWritableFolder") {
       usage.writable_directories.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Code"));
@@ -45,6 +53,12 @@ class NativeFileSystemUsageBubbleViewTest : public DialogBrowserTest {
           FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
       usage.writable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
       usage.writable_directories.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Code"));
+    } else if (name == "ReadableFilesAndFolders") {
+      usage.readable_files.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+      usage.readable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
+      usage.readable_directories.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Code"));
     } else if (name == "SingleReadableFolder") {
       usage.readable_directories.emplace_back(
@@ -114,6 +128,16 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_SingleReadableFile) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_MultipleReadableFiles) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
                        InvokeUi_SingleWritableFolder) {
   ShowAndVerifyUi();
 }
@@ -125,6 +149,11 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
                        InvokeUi_WritableFilesAndFolders) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_ReadableFilesAndFolders) {
   ShowAndVerifyUi();
 }
 

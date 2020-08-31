@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -35,7 +34,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraDevice : ICCameraDevice {
  @private
-  base::scoped_nsobject<NSMutableArray> allMediaFiles_;
+  base::scoped_nsobject<NSMutableArray> _allMediaFiles;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file;
@@ -71,13 +70,13 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSArray*)mediaFiles {
-  return allMediaFiles_;
+  return _allMediaFiles;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file {
-  if (!allMediaFiles_.get())
-    allMediaFiles_.reset([[NSMutableArray alloc] init]);
-  [allMediaFiles_ addObject:file];
+  if (!_allMediaFiles.get())
+    _allMediaFiles.reset([[NSMutableArray alloc] init]);
+  [_allMediaFiles addObject:file];
 }
 
 - (void)requestDownloadFile:(ICCameraFile*)file
@@ -93,9 +92,7 @@ const char kTestFileContents[] = "test";
   // filename. Do that here to require a rename.
   saveAsFilename += ".jpg";
   base::FilePath toBeSaved = saveDir.Append(saveAsFilename);
-  ASSERT_EQ(static_cast<int>(strlen(kTestFileContents)),
-            base::WriteFile(toBeSaved, kTestFileContents,
-                            strlen(kTestFileContents)));
+  ASSERT_TRUE(base::WriteFile(toBeSaved, kTestFileContents));
 
   NSMutableDictionary* returnOptions =
       [NSMutableDictionary dictionaryWithDictionary:options];
@@ -113,8 +110,8 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraFile : ICCameraFile {
  @private
-  base::scoped_nsobject<NSString> name_;
-  base::scoped_nsobject<NSDate> date_;
+  base::scoped_nsobject<NSString> _name;
+  base::scoped_nsobject<NSDate> _date;
 }
 
 - (id)init:(NSString*)name;
@@ -128,14 +125,14 @@ const char kTestFileContents[] = "test";
     base::scoped_nsobject<NSDateFormatter> iso8601day(
         [[NSDateFormatter alloc] init]);
     [iso8601day setDateFormat:@"yyyy-MM-dd"];
-    name_.reset([name retain]);
-    date_.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
+    _name.reset([name retain]);
+    _date.reset([[iso8601day dateFromString:@"2012-12-12"] retain]);
   }
   return self;
 }
 
 - (NSString*)name {
-  return name_.get();
+  return _name.get();
 }
 
 - (NSString*)UTI {
@@ -143,11 +140,11 @@ const char kTestFileContents[] = "test";
 }
 
 - (NSDate*)modificationDate {
-  return date_.get();
+  return _date.get();
 }
 
 - (NSDate*)creationDate {
-  return date_.get();
+  return _date.get();
 }
 
 - (off_t)fileSize {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 [
+##############################################################################
 ['system == macos and asan', {
   # BUG(820416).
   'BitsDeathTest*': [SKIP],
@@ -46,5 +47,10 @@
   # Tests are irrelevant without pointer compression
   'DecompressionOptimizerTest.*': [SKIP],
 }], # not pointer_compression
+
+################################################################################
+['variant == stress_snapshot', {
+  '*': [SKIP],  # only relevant for mjsunit tests.
+}],
 
 ]

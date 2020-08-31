@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -48,7 +49,9 @@ class NotificationResourcesLoaderTest : public PageTestBase {
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
  protected:
-  ExecutionContext* GetExecutionContext() const { return &GetDocument(); }
+  ExecutionContext* GetExecutionContext() const {
+    return GetFrame().DomWindow();
+  }
 
   NotificationResourcesLoader* Loader() const { return loader_.Get(); }
 

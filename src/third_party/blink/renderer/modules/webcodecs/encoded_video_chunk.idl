@@ -1,0 +1,21 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+enum EncodedVideoChunkType {
+    "key",
+    "delta",
+};
+
+[
+    Exposed=Window,
+    RuntimeEnabled=WebCodecs
+] interface EncodedVideoChunk {
+  constructor(EncodedVideoChunkType type, unsigned long long timestamp, BufferSource data);
+  constructor(EncodedVideoChunkType type, unsigned long long timestamp, unsigned long long duration, BufferSource data);
+  readonly attribute EncodedVideoChunkType type;
+  // TODO: Add frame dependency information
+  readonly attribute unsigned long long timestamp;  // microseconds
+  readonly attribute unsigned long long? duration;  // microseconds
+  readonly attribute ArrayBuffer data;
+};

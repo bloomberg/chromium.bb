@@ -181,7 +181,9 @@ const char* HeapEntry::TypeAsString() {
   }
 }
 
-HeapSnapshot::HeapSnapshot(HeapProfiler* profiler) : profiler_(profiler) {
+HeapSnapshot::HeapSnapshot(HeapProfiler* profiler, bool global_objects_as_roots)
+    : profiler_(profiler),
+      treat_global_objects_as_roots_(global_objects_as_roots) {
   // It is very important to keep objects that form a heap snapshot
   // as small as possible. Check assumptions about data structure sizes.
   STATIC_ASSERT((kSystemPointerSize == 4 && sizeof(HeapGraphEdge) == 12) ||
@@ -976,7 +978,7 @@ void V8HeapExplorer::ExtractContextReferences(HeapEntry* entry,
     int context_locals = scope_info.ContextLocalCount();
     for (int i = 0; i < context_locals; ++i) {
       String local_name = scope_info.ContextLocalName(i);
-      int idx = Context::MIN_CONTEXT_SLOTS + i;
+      int idx = scope_info.ContextHeaderLength() + i;
       SetContextReference(entry, local_name, context.get(idx),
                           Context::OffsetOfElementAt(idx));
     }
@@ -1485,7 +1487,11 @@ bool V8HeapExplorer::IterateAndExtractReferences(
   // its custom name to a generic builtin.
   RootsReferencesExtractor extractor(this);
   ReadOnlyRoots(heap_).Iterate(&extractor);
-  heap_->IterateRoots(&extractor, VISIT_ONLY_STRONG);
+  heap_->IterateRoots(&extractor, base::EnumSet<SkipRoot>{SkipRoot::kWeak});
+  // TODO(ulan): The heap snapshot generator incorrectly considers the weak
+  // string tables as strong retainers. Move IterateWeakRoots after
+  // SetVisitingWeakRoots.
+  heap_->IterateWeakRoots(&extractor, {});
   extractor.SetVisitingWeakRoots();
   heap_->IterateWeakGlobalHandles(&extractor);
 
@@ -1719,7 +1725,7 @@ void V8HeapExplorer::SetGcSubrootReference(Root root, const char* description,
 
   // For full heap snapshots we do not emit user roots but rather rely on
   // regular GC roots to retain objects.
-  if (FLAG_raw_heap_snapshots) return;
+  if (!snapshot_->treat_global_objects_as_roots()) return;
 
   // Add a shortcut to JS global object reference at snapshot root.
   // That allows the user to easily find global objects. They are

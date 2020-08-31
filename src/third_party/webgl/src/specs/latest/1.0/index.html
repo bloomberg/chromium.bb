@@ -15,14 +15,14 @@
         <div class="left">
             <p>
                 <a href="http://webgl.org/">
-                    <img alt="WebGL" width="240" height="100" src="../../../resources/WebGL-Logo.png"/>
+                    <img alt=WebGL width=240 height=100 src="../../../resources/WebGL-Logo.png"/>
                 </a>
             </p>
         </div>
         <div class="right">
             <p>
                 <a href="http://khronos.org/">
-                    <img alt=Khronos height=60 src="../../../resources/KhronosGroup-3D.png" width=220>
+                    <img alt=Khronos width=336 height=80  src="../../../resources/Khronos_100px_June18.png"/>
                 </a>
             </p>
         </div>
@@ -287,6 +287,10 @@
         <tr><td>Stencil</td><td>0</td><td>8 bits</td><td>no</td></tr>
     </table>
     <br>
+    <p>
+        <code>HTMLCanvasElement.width</code> and <code>.height</code> values less than 1 are treated as 1.
+        A 0x0 canvas will yield a 1x1 drawingBufferWidth/Height.
+    </p>
     <p>
         If the requested width or height cannot be satisfied, either when the drawing buffer is first
         created or when the <code>width</code> and <code>height</code> attributes of the
@@ -2539,9 +2543,15 @@ WebGLRenderingContext includes WebGLRenderingContextOverloads;
             If an attempt is made to call this function with no WebGLTexture bound (see above), an
             <code>INVALID_OPERATION</code> error is generated. <br><br>
 
-            For any pixel lying outside the frame buffer, all channels of the associated texel are
-            initialized to 0; see <a href="#READS_OUTSIDE_FRAMEBUFFER">Reading Pixels Outside the
-            Framebuffer</a>. <br><br>
+            This function behaves as if <code>texImage2D</code> were called with null data, followed
+            by <code>copyTexSubImage2D</code>.
+            As in <code>copyTexSubImage2D</code>, for any source pixels lying outside the
+            framebuffer, the corresponding destination texels are left untouched, and so they retain
+            their zero-initialized contents as if <code>texImage2D</code> was called with null data.
+            This has the combined effect that, for source pixels lying outside the
+            framebuffer, corresponding destination pixels will have all channels of the associated
+            texels initialized to 0;
+            see <a href="#READS_OUTSIDE_FRAMEBUFFER">Reading Pixels Outside the Framebuffer</a>. <br><br>
 
             If this function attempts to read from a complete framebuffer with a missing attachment,
             an <code>INVALID_OPERATION</code> error is generated

@@ -61,11 +61,11 @@ class GeolocationCoordinates : public ScriptWrappable {
 
   double latitude() const { return latitude_; }
   double longitude() const { return longitude_; }
-  double altitude(bool& is_null) const;
+  base::Optional<double> altitude() const;
   double accuracy() const { return accuracy_; }
-  double altitudeAccuracy(bool& is_null) const;
-  double heading(bool& is_null) const;
-  double speed(bool& is_null) const;
+  base::Optional<double> altitudeAccuracy() const;
+  base::Optional<double> heading() const;
+  base::Optional<double> speed() const;
 
  private:
   double latitude_;

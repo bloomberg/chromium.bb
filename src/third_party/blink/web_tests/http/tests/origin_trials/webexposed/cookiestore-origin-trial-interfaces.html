@@ -3,7 +3,7 @@
 <!-- Generate token with the command:
 generate_token.py http://127.0.0.1:8000 CookieStore --expire-timestamp=2000000000
 -- -->
-<meta http-equiv="origin-trial" content="AuCNc4F6ez8bdiKV6reoNKgzu2afmtUl5FgKkP6jdrbbCqVh8BfddejNqciWMz+V+oZXxJdW1LU5nQuC0Ij2GQkAAABTeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiQ29va2llU3RvcmUiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=" />
+<meta http-equiv="origin-trial" content="A/tS990j7n9VjcZbX16/nUmZ8VdMMUzvcPOC6lSkRjLCqhbITiPki31a3TpeDuSZzcSKeZ7bik7JB0c+M/i6UQQAAABTeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiQ29va2llU3RvcmUiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=" />
 <title>Cookie Store API - interfaces exposed by origin trial</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
@@ -22,11 +22,6 @@ test(t => {
 test(t => {
   assert_true('cookieStore' in self, 'cookieStore property exists on global scope');
 }, 'Cookie Store API entry point in Origin-Trial enabled document.');
-
-// Only run "disabled" tests if the feature is not enabled via runtime flags.
-if (!self.internals.runtimeFlags.cookieStoreEnabled) {
-  service_worker_test('resources/cookiestore-origin-trial-interfaces-serviceworker-disabled.js');
-}
 
 service_worker_test('resources/cookiestore-origin-trial-interfaces-serviceworker-enabled.php');
 

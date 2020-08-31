@@ -15,9 +15,9 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -90,6 +90,12 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   // Fullscreen doesn't always imply immersive mode (see
   // ShouldEnableImmersive()).
   window->SetProperty(ash::kImmersiveImpliedByFullscreen, false);
+  // TODO(https://crbug.com/997480): Determine if all non-resizable windows
+  // should have this behavior, or just the feedback app.
+  if (app_window->extension_id() == extension_misc::kFeedbackExtensionId) {
+    ash::WindowBackdrop::Get(window)->SetBackdropType(
+        ash::WindowBackdrop::BackdropType::kSemiOpaque);
+  }
   observed_window_.Add(window);
 }
 
@@ -331,7 +337,8 @@ bool ChromeNativeAppWindowViewsAuraAsh::IsFullscreen() const {
 
 void ChromeNativeAppWindowViewsAuraAsh::EnterFullscreen(
     const GURL& url,
-    ExclusiveAccessBubbleType bubble_type) {
+    ExclusiveAccessBubbleType bubble_type,
+    const int64_t display_id) {
   // This codepath is never hit for Chrome Apps.
   NOTREACHED();
 }
@@ -374,10 +381,6 @@ content::WebContents*
 ChromeNativeAppWindowViewsAuraAsh::GetActiveWebContents() {
   return web_view()->web_contents();
 }
-
-void ChromeNativeAppWindowViewsAuraAsh::UnhideDownloadShelf() {}
-
-void ChromeNativeAppWindowViewsAuraAsh::HideDownloadShelf() {}
 
 bool ChromeNativeAppWindowViewsAuraAsh::CanUserExitFullscreen() const {
   return true;

@@ -19,7 +19,9 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -217,8 +219,12 @@ int SearchResultListView::DoUpdate() {
   if (IsAssistantSearchEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
+  // TODO(crbug.com/1076270): The logic for zero state and Drive quick access
+  // files below exists only for metrics, and can be folded into the
+  // AppListNotifier and done in chrome.
   bool found_zero_state_file = false;
   bool found_drive_quick_access = false;
+  std::vector<std::string> display_ids;
 
   for (size_t i = 0; i < results_container_->children().size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
@@ -247,12 +253,18 @@ int SearchResultListView::DoUpdate() {
             display_results[i]->title()));
       }
 
+      display_ids.push_back(display_results[i]->id());
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {
       result_view->SetResult(nullptr);
       result_view->SetVisible(false);
     }
+  }
+
+  auto* notifier = view_delegate_->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kList, display_ids);
   }
 
   // Logic for logging impression of items that were shown to user.
@@ -286,7 +298,7 @@ int SearchResultListView::DoUpdate() {
   previous_found_drive_quick_access_ = found_drive_quick_access;
 
   set_container_score(
-      display_results.empty() ? 0 : display_results.front()->display_score());
+      display_results.empty() ? -1 : display_results.front()->display_score());
 
   return display_results.size();
 }
@@ -358,41 +370,6 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
 void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
   if (main_view_ && view->result())
     main_view_->OnResultInstalled(view->result());
-}
-
-bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
-                                                       bool arrow_up) {
-  int view_index = -1;
-  for (int i = 0; i < num_results(); ++i) {
-    if (view == GetResultViewAt(i)) {
-      view_index = i;
-      break;
-    }
-  }
-
-  if (view_index == -1) {
-    // Not found in the result list.
-    NOTREACHED();
-    return false;
-  }
-
-  if (arrow_up) {  // VKEY_UP
-    if (view_index > 0) {
-      // Move to the previous result if the current one is not the first result.
-      GetResultViewAt(view_index - 1)->RequestFocus();
-      return true;
-    }
-  } else {  // VKEY_DOWN
-    // Move down to the next result if the currernt one is not the last result;
-    // otherwise, move focus to search box.
-    if (view_index == num_results() - 1)
-      main_view_->search_box_view()->search_box()->RequestFocus();
-    else
-      GetResultViewAt(view_index + 1)->RequestFocus();
-    return true;
-  }
-
-  return false;
 }
 
 void SearchResultListView::VisibilityChanged(View* starting_from,

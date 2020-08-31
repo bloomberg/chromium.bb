@@ -32,7 +32,13 @@ enum class SigninState {
   kSignedInWithConsentedPrimaryAccount,
 };
 
-extern const base::Feature kPersistUPAInProfileInfoCache;
+enum class NameForm {
+  kGaiaName,
+  kLocalName,
+  kGaiaAndLocalName,
+};
+
+enum class AccountCategory { kConsumer, kEnterprise };
 
 class ProfileAttributesEntry {
  public:
@@ -53,6 +59,8 @@ class ProfileAttributesEntry {
   base::string16 GetGAIANameToDisplay() const;
   // Returns true if the profile name has changed.
   bool HasProfileNameChanged();
+  // Returns how the value of GetName() gets constructed.
+  NameForm GetNameForm() const;
 
   // Gets the local profile name.
   base::string16 GetLocalProfileName() const;
@@ -118,12 +126,20 @@ class ProfileAttributesEntry {
   // Returns true if the profile is signed in but is in an authentication error
   // state.
   bool IsAuthError() const;
+  // Indicates that profile was signed in through native OS credential provider.
+  bool IsSignedInWithCredentialProvider() const;
   // Returns the index of the default icon used by the profile.
   size_t GetAvatarIconIndex() const;
   // Returns the metrics bucket this profile should be recorded in.
   // Note: The bucket index is assigned once and remains the same all time. 0 is
   // reserved for the guest profile.
   size_t GetMetricsBucketIndex();
+  // Returns the hosted domain for the current signed-in account. Returns empty
+  // string if there is no signed-in account and returns |kNoHostedDomainFound|
+  // if the signed-in account has no hosted domain (such as when it is a
+  // standard gmail.com account). Unlike for other string getters, the returned
+  // value is UTF8 encoded.
+  std::string GetHostedDomain() const;
 
   void SetLocalProfileName(const base::string16& name);
   void SetShortcutName(const base::string16& name);
@@ -135,21 +151,40 @@ class ProfileAttributesEntry {
   void SetBackgroundStatus(bool running_background_apps);
   void SetGAIAName(const base::string16& name);
   void SetGAIAGivenName(const base::string16& name);
-  void SetGAIAPicture(gfx::Image image);
+  void SetGAIAPicture(const std::string& image_url_with_size, gfx::Image image);
   void SetIsUsingGAIAPicture(bool value);
   void SetIsSigninRequired(bool value);
+  void SetSignedInWithCredentialProvider(bool value);
   void SetIsEphemeral(bool value);
   void SetIsUsingDefaultName(bool value);
   void SetIsUsingDefaultAvatar(bool value);
   void SetIsAuthError(bool value);
   void SetAvatarIconIndex(size_t icon_index);
 
+  // Unlike for other string setters, the argument is expected to be UTF8
+  // encoded.
+  void SetHostedDomain(std::string hosted_domain);
+
   void SetAuthInfo(const std::string& gaia_id,
                    const base::string16& user_name,
                    bool is_consented_primary_account);
 
+  // Update info about accounts. These functions are idempotent, only the first
+  // call for a given input matters.
+  void AddAccountName(const std::string& name);
+  void AddAccountCategory(AccountCategory category);
+
+  // Clears info about all accounts that have been added in the past via
+  // AddAccountName() and AddAccountCategory().
+  void ClearAccountNames();
+  void ClearAccountCategories();
+
   // Lock/Unlock the profile, should be called only if force-sign-in is enabled.
   void LockForceSigninProfile(bool is_lock);
+
+  // Records aggregate metrics about all accounts used in this profile (added
+  // via AddAccount* functions).
+  void RecordAccountMetrics() const;
 
   static const char kSupervisedUserId[];
   static const char kIsOmittedFromProfileListKey[];
@@ -174,13 +209,6 @@ class ProfileAttributesEntry {
                   const base::FilePath& path,
                   PrefService* prefs);
 
-  // Gets the name of the profile which is the one displayed in the User Menu,
-  // which could be:
-  // - Profile name (The profile is not signed in).
-  // - Gaia name if the profile name is empty or |ShouldShowProfileLocalName()|
-  //   return false.
-  // - Otherwise the concatenation of GAIA name and local profile name.
-  base::string16 GetNameToDisplay() const;
   base::string16 GetLastNameToDisplay() const;
 
   // Returns true if:
@@ -195,6 +223,18 @@ class ProfileAttributesEntry {
   // Loads or uses an already loaded high resolution image of the generic
   // profile avatar.
   const gfx::Image* GetHighResAvatar() const;
+
+  // Returns if this profile has accounts (signed-in or signed-out) with
+  // different account names. This is approximate as only a short hash of an
+  // account name is stored so there can be false negatives.
+  bool HasMultipleAccountNames() const;
+  // Returns if this profile has both consumer and enterprise accounts
+  // (regarding both signed-in and signed-out accounts).
+  bool HasBothAccountCategories() const;
+
+  // Records aggregate metrics about all accounts used in this profile.
+  void RecordAccountCategoriesMetric() const;
+  void RecordAccountNamesMetric() const;
 
   // Loads and saves the data to the local state.
   const base::Value* GetEntryData() const;
@@ -225,6 +265,10 @@ class ProfileAttributesEntry {
   bool SetDouble(const char* key, double value);
   bool SetBool(const char* key, bool value);
   bool SetInteger(const char* key, int value);
+
+  // Clears value stored for |key|. Returns if the original data is different
+  // from the new data, i.e. whether actual update is done.
+  bool ClearValue(const char* key);
 
   // These members are an implementation detail meant to smooth the migration
   // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can

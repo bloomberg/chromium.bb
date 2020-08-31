@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">menu item</translation>
 <translation id="10623998915015855">toggle button</translation>
 <translation id="1088086359088493902">Seconds</translation>
+<translation id="1142001580032786438">Show week picker</translation>
 <translation id="1171774979989969504">Please enter an email address.</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1188858454923323853">complementary</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">slider</translation>
 <translation id="1211441953136645838">endnote</translation>
 <translation id="1281252709823657822">dialogue</translation>
+<translation id="1306460908038601864">Off</translation>
 <translation id="1335095011850992622">credits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">hide closed captions menu</translation>
 <translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="1758486001363313524">Other...</translation>
+<translation id="1787192514241997742">total time: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">alert_dialogue</translation>
 <translation id="1821985195704844674">tree grid</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">Value must be <ph name="MAXIMUM_DATE_OR_TIME" /> or earlier.</translation>
 <translation id="1946271899482435442">Show date picker</translation>
 <translation id="1993104285338243655">Switched to mirroring</translation>
+<translation id="2031987842108996681">Red channel</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' is used at a wrong position in '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2158401438286456825">page list</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">Tick box</translation>
 <translation id="2311842470354187719">page break</translation>
 <translation id="2335594187091864976">date and time picker</translation>
+<translation id="2393030564806080191">Hexadecimal colour value</translation>
 <translation id="245932805758469625">number of seconds of video remaining</translation>
 <translation id="248395913932153421">Day</translation>
 <translation id="2507943997699731163">Please fill in this field.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">show more media controls</translation>
 <translation id="2572483411312390101">play</translation>
 <translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Green channel</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2657045182931379222">graphics object</translation>
 <translation id="2674318244760992338">footer</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">Please enter a URL.</translation>
 <translation id="3175736971608411871">timer</translation>
 <translation id="3199563858620722075">combo box</translation>
+<translation id="3329013043687509092">Saturation</translation>
 <translation id="3450233048674729344">Value must be less than or equal to <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">heading <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">Please lengthen this text to <ph name="MIN_CHARACTERS" /> characters or more (you are currently using <ph name="CURRENT_LENGTH" /> characters).</translation>
 <translation id="383465348367842624">A part followed by '<ph name="ATSIGN" />' should not contain the symbol '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">Exit full screen</translation>
-<translation id="3889183436948184105">revision</translation>
 <translation id="3920932319529768807">conclusion</translation>
 <translation id="3924558731517983934">application</translation>
 <translation id="3944740393230681990">prologue</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">Appears to say: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">glossary reference</translation>
 <translation id="4522570452068850558">Details</translation>
-<translation id="4542388879936266156">remaining time: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">form</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">A part following '<ph name="ATSIGN" />' should not contain the symbol '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Please enter a number.</translation>
 <translation id="4912536737030637138">bibliography entry</translation>
+<translation id="4915360478455618802">Show time picker</translation>
 <translation id="492244087561876220">comment</translation>
+<translation id="4950364064308314478">Show local date and time picker</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> selected</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> selected</translation>
 <translation id="4992066212339426712">Unmute</translation>
 <translation id="49969490063480558">Please enter a part following '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">progress indicator</translation>
 <translation id="5090250355906949916">video time scrubber</translation>
 <translation id="5093189678851173835">epigraph</translation>
+<translation id="509897012892853729">Blue channel</translation>
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="512758898067543763">row header</translation>
 <translation id="5143125788380636750">epilogue</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Please enter a part followed by '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>
 <translation id="5334352251556557839">Unable to play media.</translation>
+<translation id="537648784377940524">Minimum date (<ph name="MIN_DATE_OR_TIME" />) must come before maximum date (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">figure</translation>
 <translation id="5453733299334684579">tree item</translation>
 <translation id="5466621249238537318">Please select one or more files.</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">more options</translation>
 <translation id="576709008726043716">introduction</translation>
 <translation id="57838592816432529">Mute</translation>
-<translation id="5860033963881614850">Off</translation>
 <translation id="588258955323874662">Full screen</translation>
 <translation id="5888666972993069672">Now casting to <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">search box</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6209276755895393898">Appears to be: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossary</translation>
+<translation id="6281588256137006900">Lightness</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Exit picture-in-picture</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">Play</translation>
 <translation id="6820355525329141109">Couldn't load plug-in.</translation>
 <translation id="6820615603175220800">bibliography reference</translation>
+<translation id="6831465880655513317">Colour well with two-dimensional slider for selecting saturation and lightness</translation>
 <translation id="6843725295806269523">mute</translation>
 <translation id="6885760532393684712">directory</translation>
 <translation id="689129560213475294">colophon</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">Please select an item in the list.</translation>
 <translation id="727747134524199931">column header</translation>
 <translation id="7320576522385648310">buffering</translation>
+<translation id="7341556277900466204">Colour well</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Choose file</translation>
 <translation id="739024184232394898">Other...</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">Invalid entry</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
+<translation id="7852167693871241274">Hue slider</translation>
 <translation id="7888071071722539607">Please include an '<ph name="ATSIGN" />' in the email address. '<ph name="INVALIDADDRESS" />' is missing an '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">No file chosen</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> not selected</translation>
 <translation id="8034303206267677282">strong</translation>
 <translation id="8053789581856978548">search text field</translation>
 <translation id="8057695513531652401">notice</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">Captions</translation>
 <translation id="8346634859695247203">section</translation>
 <translation id="835897206747267392">Invalid value.</translation>
+<translation id="839593075537728968">Value must be between <ph name="MINIMUM_TIME" /> and <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">elapsed time: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">part</translation>
 <translation id="8433900881053900389">toolbar</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">table of contents</translation>
 <translation id="8613126697340063924">control remote playback</translation>
 <translation id="862370744433916922">subtitle</translation>
+<translation id="8634971699417195529">Show month picker</translation>
 <translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Please select one of these options.</translation>
 <translation id="8808573423886751634">chapter</translation>
 <translation id="8845239796550121995">Now casting to your TV</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Video playback error</translation>
+<translation id="8889402386540077796">Hue</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Format toggler</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="901493112792887934">current time in seconds</translation>
 <translation id="901834265349196618">email</translation>
-<translation id="9023835124071926463">comment section</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">exit picture-in-picture</translation>

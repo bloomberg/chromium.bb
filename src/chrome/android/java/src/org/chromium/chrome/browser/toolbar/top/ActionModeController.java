@@ -10,8 +10,9 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v7.app.ActionBar;
 import android.util.Property;
+
+import androidx.appcompat.app.ActionBar;
 
 import org.chromium.chrome.R;
 
@@ -74,10 +75,14 @@ public class ActionModeController {
      * Creates the {@link ActionModeController} and ties it to an action bar using the given action
      * bar delegate.
      * @param actionBarDelegate The delegate for communicating with toolbar for animation.
+     * @param toolbarActionModeCallback The callback for communicating action mode changes.
      */
-    public ActionModeController(Context context, ActionBarDelegate actionBarDelegate) {
+    public ActionModeController(Context context, ActionBarDelegate actionBarDelegate,
+            ToolbarActionModeCallback toolbarActionModeCallback) {
         mActionBarDelegate = actionBarDelegate;
         mContext = context;
+        mToolbarActionModeCallback = toolbarActionModeCallback;
+        mToolbarActionModeCallback.setActionModeController(this);
         mTabStripHeight = mContext.getResources().getDimension(R.dimen.tab_strip_height);
     }
 
@@ -93,16 +98,6 @@ public class ActionModeController {
      */
     public ActionBarDelegate getActionBarDelegate() {
         return mActionBarDelegate;
-    }
-
-    /**
-     * Sets the custom ActionMode.Callback
-     */
-    public void setCustomSelectionActionModeCallback(
-            ToolbarActionModeCallback toolbarActionModeCallback) {
-        if (toolbarActionModeCallback.equals(mToolbarActionModeCallback)) return;
-        mToolbarActionModeCallback = toolbarActionModeCallback;
-        mToolbarActionModeCallback.setActionModeController(this);
     }
 
     /**

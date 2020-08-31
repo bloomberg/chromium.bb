@@ -14,13 +14,14 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #include "url/gurl.h"
@@ -151,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
                                            ->GetFindBarTesting()
                                            ->GetMatchCountText());
 
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   chrome::Find(browser());
 
@@ -236,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_T, false,
                                               false, false, false));
 
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_NE(first_active_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
@@ -255,12 +256,13 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
 
   // Go back to the first tab and end the search.
   browser()->tab_strip_model()->ActivateTabAt(0);
-  find_bar_controller->EndFindSession(FindOnPageSelectionAction::kKeep,
-                                      FindBoxResultAction::kKeep);
+  find_bar_controller->EndFindSession(find_in_page::SelectionAction::kKeep,
+                                      find_in_page::ResultAction::kKeep);
   // Simulate F3.
   ui_test_utils::FindInPage(first_active_web_contents, base::string16(), true,
                             false, nullptr, nullptr);
   EXPECT_EQ(
       base::ASCIIToUTF16("given"),
-      FindTabHelper::FromWebContents(first_active_web_contents)->find_text());
+      find_in_page::FindTabHelper::FromWebContents(first_active_web_contents)
+          ->find_text());
 }

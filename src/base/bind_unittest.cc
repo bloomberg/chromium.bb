@@ -1498,12 +1498,29 @@ int __stdcall StdCallFunc(int n) {
 // Windows specific calling convention support.
 //   - Can bind a __fastcall function.
 //   - Can bind a __stdcall function.
+//   - Can bind const and non-const __stdcall methods.
 TEST_F(BindTest, WindowsCallingConventions) {
-  RepeatingCallback<int()> fastcall_cb = BindRepeating(&FastCallFunc, 1);
+  auto fastcall_cb = BindRepeating(&FastCallFunc, 1);
   EXPECT_EQ(1, fastcall_cb.Run());
 
-  RepeatingCallback<int()> stdcall_cb = BindRepeating(&StdCallFunc, 2);
+  auto stdcall_cb = BindRepeating(&StdCallFunc, 2);
   EXPECT_EQ(2, stdcall_cb.Run());
+
+  class MethodHolder {
+   public:
+    int __stdcall Func(int n) { return n; }
+    int __stdcall ConstFunc(int n) const { return -n; }
+  };
+
+  MethodHolder obj;
+  auto stdcall_method_cb =
+      BindRepeating(&MethodHolder::Func, base::Unretained(&obj), 1);
+  EXPECT_EQ(1, stdcall_method_cb.Run());
+
+  const MethodHolder const_obj;
+  auto stdcall_const_method_cb =
+      BindRepeating(&MethodHolder::ConstFunc, base::Unretained(&const_obj), 1);
+  EXPECT_EQ(-1, stdcall_const_method_cb.Run());
 }
 #endif
 
@@ -1570,7 +1587,18 @@ TEST_F(BindTest, BindNoexcept) {
 TEST(BindDeathTest, NullCallback) {
   base::RepeatingCallback<void(int)> null_cb;
   ASSERT_TRUE(null_cb.is_null());
-  EXPECT_DCHECK_DEATH(base::BindRepeating(null_cb, 42));
+  EXPECT_CHECK_DEATH(base::BindRepeating(null_cb, 42));
+}
+
+TEST(BindDeathTest, NullFunctionPointer) {
+  void (*null_function)(int) = nullptr;
+  EXPECT_DCHECK_DEATH(base::BindRepeating(null_function, 42));
+}
+
+TEST(BindDeathTest, NullCallbackWithoutBoundArgs) {
+  base::OnceCallback<void(int)> null_cb;
+  ASSERT_TRUE(null_cb.is_null());
+  EXPECT_CHECK_DEATH(base::BindOnce(std::move(null_cb)));
 }
 
 TEST(BindDeathTest, BanFirstOwnerOfRefCountedType) {

@@ -10,6 +10,10 @@ from __future__ import print_function
 import difflib
 import fnmatch
 import os
+import sys
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetMostLikelyMatchedObject(haystack, needle, name_func=lambda x: x,

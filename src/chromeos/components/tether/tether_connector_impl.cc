@@ -72,7 +72,7 @@ TetherConnectorImpl::~TetherConnectorImpl() {
 
 void TetherConnectorImpl::ConnectToNetwork(
     const std::string& tether_network_guid,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::StringResultCallback& error_callback) {
   DCHECK(!tether_network_guid.empty());
   DCHECK(!success_callback.is_null());
@@ -103,7 +103,7 @@ void TetherConnectorImpl::ConnectToNetwork(
   }
 
   device_id_pending_connection_ = device_id;
-  success_callback_ = success_callback;
+  success_callback_ = std::move(success_callback);
   error_callback_ = error_callback;
   active_host_->SetActiveHostConnecting(device_id, tether_network_guid);
 
@@ -258,11 +258,10 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
   const std::string tether_network_guid =
       device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
           device_id);
-  connect_tethering_operation_ =
-      ConnectTetheringOperation::Factory::NewInstance(
-          *tether_host_to_connect, device_sync_client_, secure_channel_client_,
-          tether_host_response_recorder_,
-          host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
+  connect_tethering_operation_ = ConnectTetheringOperation::Factory::Create(
+      *tether_host_to_connect, device_sync_client_, secure_channel_client_,
+      tether_host_response_recorder_,
+      host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();
 }
@@ -313,14 +312,14 @@ void TetherConnectorImpl::SetConnectionSucceeded(
 
   notification_presenter_->RemoveSetupRequiredNotification();
 
-  // Save a copy of the callback before resetting it below.
-  base::Closure success_callback = success_callback_;
+  // Save the callback before resetting it below.
+  base::OnceClosure success_callback = std::move(success_callback_);
 
   device_id_pending_connection_.clear();
   success_callback_.Reset();
   error_callback_.Reset();
 
-  success_callback.Run();
+  std::move(success_callback).Run();
   active_host_->SetActiveHostConnected(
       device_id,
       device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(

@@ -9,7 +9,7 @@
 #include "base/debug/stack_trace.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
@@ -31,39 +31,6 @@ base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
   if (queue->HasTaskToRunImmediately())
     return lazy_now->Now();
   return queue->GetNextScheduledWakeUp();
-}
-
-template <class T>
-T Min(const base::Optional<T>& optional, const T& value) {
-  if (!optional) {
-    return value;
-  }
-  return std::min(optional.value(), value);
-}
-
-template <class T>
-base::Optional<T> Min(const base::Optional<T>& a, const base::Optional<T>& b) {
-  if (!b)
-    return a;
-  if (!a)
-    return b;
-  return std::min(a.value(), b.value());
-}
-
-template <class T>
-T Max(const base::Optional<T>& optional, const T& value) {
-  if (!optional)
-    return value;
-  return std::max(optional.value(), value);
-}
-
-template <class T>
-base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
-  if (!b)
-    return a;
-  if (!a)
-    return b;
-  return std::max(a.value(), b.value());
 }
 
 }  // namespace
@@ -326,20 +293,22 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
 
   if (CanRunTasksAt(queue, now, is_wake_up)) {
     // Unblock queue if we can run tasks immediately.
-    base::Optional<base::TimeTicks> unblock_until =
+    base::TimeTicks unblock_until =
         GetTimeTasksCanRunUntil(queue, now, is_wake_up);
-    DCHECK(unblock_until);
-    if (unblock_until.value() > now) {
-      queue->InsertFenceAt(unblock_until.value());
-    } else if (unblock_until.value() == now) {
-      queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
+    if (unblock_until.is_max()) {
+      queue->RemoveFence();
+    } else if (unblock_until > now) {
+      queue->InsertFenceAt(unblock_until);
     } else {
-      DCHECK_GE(unblock_until.value(), now);
+      DCHECK_EQ(unblock_until, now);
+      queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
     }
 
-    // Throttled time domain does not schedule wake-ups without explicitly
-    // being told so.
-    if (next_desired_run_time && next_desired_run_time.value() != now &&
+    // Throttled time domain does not schedule wake-ups without explicitly being
+    // told so. Schedule a wake up if there is a next desired run time in the
+    // future, and tasks can run at that time.
+    if (next_desired_run_time.has_value() &&
+        next_desired_run_time.value() != now &&
         next_desired_run_time.value() < unblock_until) {
       time_domain_->SetNextTaskRunTime(next_desired_run_time.value());
     }
@@ -505,17 +474,20 @@ bool TaskQueueThrottler::CanRunTasksAt(TaskQueue* queue,
   return true;
 }
 
-base::Optional<base::TimeTicks> TaskQueueThrottler::GetTimeTasksCanRunUntil(
+base::TimeTicks TaskQueueThrottler::GetTimeTasksCanRunUntil(
     TaskQueue* queue,
     base::TimeTicks now,
     bool is_wake_up) const {
-  base::Optional<base::TimeTicks> result;
+  // Start with no known limit for the time tasks can run until.
+  base::TimeTicks result = base::TimeTicks::Max();
+
   auto find_it = queue_details_.find(queue);
   if (find_it == queue_details_.end())
     return result;
 
   for (BudgetPool* budget_pool : find_it->value->budget_pools()) {
-    result = Min(result, budget_pool->GetTimeTasksCanRunUntil(now, is_wake_up));
+    result =
+        std::min(result, budget_pool->GetTimeTasksCanRunUntil(now, is_wake_up));
   }
 
   return result;
@@ -601,9 +573,6 @@ bool TaskQueueThrottler::Metadata::DecrementRefCount() {
   }
   return false;
 }
-
-void TaskQueueThrottler::Metadata::OnPostTask(base::Location from_here,
-                                              base::TimeDelta delay) {}
 
 void TaskQueueThrottler::Metadata::OnQueueNextWakeUpChanged(
     base::TimeTicks wake_up) {

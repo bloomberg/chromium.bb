@@ -10,23 +10,27 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/arc_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/extension_uninstaller.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/vector_icons.h"
@@ -37,7 +41,17 @@ void UninstallApp(Profile* profile, const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
-  proxy->Uninstall(app_id, nullptr /* parent_window */);
+  if (proxy->AppRegistryCache().GetAppType(app_id) !=
+      apps::mojom::AppType::kUnknown) {
+    proxy->Uninstall(app_id, nullptr /* parent_window */);
+    return;
+  }
+
+  // Runs the extension uninstall flow for for extensions. ExtensionUninstall
+  // deletes itself when done or aborted.
+  ExtensionUninstaller* extension_uninstaller =
+      new ExtensionUninstaller(profile, app_id, nullptr /* parent_window */);
+  extension_uninstaller->Run();
   return;
 }
 
@@ -51,17 +65,32 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
   DCHECK(controller);
   DCHECK(item);
   DCHECK(!item->id.IsNull());
-  // Create an ArcShelfContextMenu if the item is an ARC app.
-  if (arc::IsArcItem(controller->profile(), item->id.app_id)) {
-    return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(controller->profile());
+
+    // AppServiceShelfContextMenu supports context menus for apps registered in
+    // AppService, Arc shortcuts and Crostini apps with the prefix "crostini:".
+    if (proxy && (proxy->AppRegistryCache().GetAppType(item->id.app_id) !=
+                      apps::mojom::AppType::kUnknown ||
+                  crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id) ||
+                  arc::IsArcItem(controller->profile(), item->id.app_id))) {
+      return std::make_unique<AppServiceShelfContextMenu>(controller, item,
+                                                          display_id);
+    }
+
+    // Create an ExtensionShelfContextMenu for other items.
+    return std::make_unique<ExtensionShelfContextMenu>(controller, item,
+                                                       display_id);
   }
 
+  // Create an ArcShelfContextMenu if the item is an ARC app.
+  if (arc::IsArcItem(controller->profile(), item->id.app_id))
+    return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
+
   // Use CrostiniShelfContextMenu for crostini apps and Terminal System App.
-  crostini::CrostiniRegistryService* crostini_registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          controller->profile());
-  if ((crostini_registry_service &&
-       crostini_registry_service->IsCrostiniShelfAppId(item->id.app_id)) ||
+  if (crostini::IsCrostiniShelfAppId(controller->profile(), item->id.app_id) ||
       item->id.app_id == crostini::kCrostiniTerminalSystemAppId) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);
@@ -88,6 +117,18 @@ ShelfContextMenu::ShelfContextMenu(ChromeLauncherController* controller,
 
 ShelfContextMenu::~ShelfContextMenu() = default;
 
+std::unique_ptr<ui::SimpleMenuModel> ShelfContextMenu::GetBaseMenuModel() {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  // TODO(manucornet): Don't add 'swap with next' on the last item, or 'swap
+  // with previous' on the first one. For now, these options appear, but
+  // selecting them is a no-op.
+  AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_NEXT,
+                       IDS_SHELF_CONTEXT_MENU_SWAP_WITH_NEXT);
+  AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_PREVIOUS,
+                       IDS_SHELF_CONTEXT_MENU_SWAP_WITH_PREVIOUS);
+  return menu_model;
+}
+
 bool ShelfContextMenu::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return false;
@@ -100,6 +141,18 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
            (item_.type == ash::TYPE_PINNED_APP || item_.type == ash::TYPE_APP);
   }
 
+  if (command_id == ash::SWAP_WITH_NEXT ||
+      command_id == ash::SWAP_WITH_PREVIOUS) {
+    // Only show commands to reorder shelf items when ChromeVox is enabled.
+    if (!chromeos::AccessibilityManager::Get() ||
+        !chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+      return false;
+    }
+    const ash::ShelfModel* model = controller_->shelf_model();
+    return model->CanSwap(model->ItemIndexByID(item_.id),
+                          /*with_next=*/command_id == ash::SWAP_WITH_NEXT);
+  }
+
   DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return true;
 }
@@ -107,7 +160,15 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(
       controller_->shelf_model());
+  ash::ShelfModel* model = controller_->shelf_model();
+  const int item_index = model->ItemIndexByID(item_.id);
   switch (static_cast<ash::CommandId>(command_id)) {
+    case ash::SWAP_WITH_NEXT:
+      model->Swap(item_index, /*with_next=*/true);
+      break;
+    case ash::SWAP_WITH_PREVIOUS:
+      model->Swap(item_index, /*with_next=*/false);
+      break;
     case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be
       // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
@@ -117,7 +178,7 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
         ash::ShelfItemDelegate* item_delegate =
-            controller_->shelf_model()->GetShelfItemDelegate(item_.id);
+            model->GetShelfItemDelegate(item_.id);
         DCHECK(item_delegate);
         item_delegate->Close();
       } else {
@@ -141,6 +202,61 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     default:
       NOTREACHED();
+  }
+}
+
+const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
+    int type,
+    int string_id) const {
+  switch (type) {
+    case ash::MENU_OPEN_NEW:
+      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
+        return views::kNewTabIcon;
+      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
+        return views::kNewWindowIcon;
+      return views::kOpenIcon;
+    case ash::MENU_CLOSE:
+      return views::kCloseIcon;
+    case ash::SHOW_APP_INFO:
+      return views::kInfoIcon;
+    case ash::UNINSTALL:
+      return views::kUninstallIcon;
+    case ash::SETTINGS:
+      return vector_icons::kSettingsIcon;
+    case ash::MENU_PIN:
+      return controller_->IsPinned(item_.id) ? views::kUnpinIcon
+                                             : views::kPinIcon;
+    case ash::MENU_NEW_WINDOW:
+      return views::kNewWindowIcon;
+    case ash::MENU_NEW_INCOGNITO_WINDOW:
+      return views::kNewIncognitoWindowIcon;
+    case ash::LAUNCH_TYPE_PINNED_TAB:
+    case ash::LAUNCH_TYPE_REGULAR_TAB:
+    case ash::LAUNCH_TYPE_FULLSCREEN:
+    case ash::LAUNCH_TYPE_WINDOW:
+      // Check items use a default icon in touchable and default context menus.
+      return gfx::kNoneIcon;
+    case ash::NOTIFICATION_CONTAINER:
+      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
+                      "added to the model by NotificationMenuController.";
+      return gfx::kNoneIcon;
+    case ash::SHUTDOWN_GUEST_OS:
+      return kShutdownGuestOsIcon;
+    case ash::CROSTINI_USE_HIGH_DENSITY:
+      return views::kLinuxHighDensityIcon;
+    case ash::CROSTINI_USE_LOW_DENSITY:
+      return views::kLinuxLowDensityIcon;
+    case ash::SWAP_WITH_NEXT:
+    case ash::SWAP_WITH_PREVIOUS:
+      return gfx::kNoneIcon;
+    case ash::LAUNCH_APP_SHORTCUT_FIRST:
+    case ash::LAUNCH_APP_SHORTCUT_LAST:
+    case ash::COMMAND_ID_COUNT:
+      NOTREACHED();
+      return gfx::kNoneIcon;
+    default:
+      NOTREACHED();
+      return gfx::kNoneIcon;
   }
 }
 
@@ -171,6 +287,8 @@ bool ShelfContextMenu::ExecuteCommonCommand(int command_id, int event_flags) {
     case ash::MENU_OPEN_NEW:
     case ash::MENU_CLOSE:
     case ash::MENU_PIN:
+    case ash::SWAP_WITH_NEXT:
+    case ash::SWAP_WITH_PREVIOUS:
     case ash::UNINSTALL:
       ShelfContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
@@ -188,7 +306,8 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
 
   const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
   if (!icon.is_empty()) {
-    menu_model->AddItemWithStringIdAndIcon(type, string_id, icon);
+    menu_model->AddItemWithStringIdAndIcon(
+        type, string_id, ui::ImageModel::FromVectorIcon(icon));
     return;
   }
   // If the MenuType is a check item.
@@ -205,56 +324,4 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
     return;
   }
   menu_model->AddItemWithStringId(type, string_id);
-}
-
-const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
-    ash::CommandId type,
-    int string_id) const {
-  switch (type) {
-    case ash::MENU_OPEN_NEW:
-      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
-        return views::kNewTabIcon;
-      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
-        return views::kNewWindowIcon;
-      return views::kOpenIcon;
-    case ash::MENU_CLOSE:
-      return views::kCloseIcon;
-    case ash::SHOW_APP_INFO:
-      return views::kInfoIcon;
-    case ash::UNINSTALL:
-      return views::kUninstallIcon;
-    case ash::MENU_PIN:
-      return controller_->IsPinned(item_.id) ? views::kUnpinIcon
-                                             : views::kPinIcon;
-    case ash::MENU_NEW_WINDOW:
-      return views::kNewWindowIcon;
-    case ash::MENU_NEW_INCOGNITO_WINDOW:
-      return views::kNewIncognitoWindowIcon;
-    case ash::LAUNCH_TYPE_PINNED_TAB:
-    case ash::LAUNCH_TYPE_REGULAR_TAB:
-    case ash::LAUNCH_TYPE_FULLSCREEN:
-    case ash::LAUNCH_TYPE_WINDOW:
-      // Check items use a default icon in touchable and default context menus.
-      return gfx::kNoneIcon;
-    case ash::NOTIFICATION_CONTAINER:
-      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
-                      "added to the model by NotificationMenuController.";
-      return gfx::kNoneIcon;
-    case ash::STOP_APP:
-      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
-        return views::kLinuxShutdownIcon;
-      return gfx::kNoneIcon;
-    case ash::CROSTINI_USE_HIGH_DENSITY:
-      return views::kLinuxHighDensityIcon;
-    case ash::CROSTINI_USE_LOW_DENSITY:
-      return views::kLinuxLowDensityIcon;
-    case ash::LAUNCH_APP_SHORTCUT_FIRST:
-    case ash::LAUNCH_APP_SHORTCUT_LAST:
-    case ash::COMMAND_ID_COUNT:
-      NOTREACHED();
-      return gfx::kNoneIcon;
-    default:
-      NOTREACHED();
-      return gfx::kNoneIcon;
-  }
 }

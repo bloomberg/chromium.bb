@@ -56,7 +56,8 @@ void PageMemoryRegion::PageDeleted(Address page) {
 // we should probably have a way to distinguish physical memory OOM from
 // virtual address space OOM.
 static NOINLINE void BlinkGCOutOfMemory() {
-  OOM_CRASH();
+  // TODO(lizeb): Add the real allocation size here as well.
+  OOM_CRASH(0);
 }
 
 PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
@@ -72,7 +73,7 @@ PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
   return new PageMemoryRegion(base, size, num_pages, region_tree);
 }
 
-PageMemoryRegion* RegionTree::Lookup(Address address) {
+PageMemoryRegion* RegionTree::Lookup(ConstAddress address) {
   auto it = set_.upper_bound(address);
   // This check also covers set_.size() > 0, since for empty vectors it is
   // guaranteed that begin() == end().

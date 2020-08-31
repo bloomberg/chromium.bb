@@ -20,7 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_type.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -29,9 +29,11 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 // TODO(eroman): Add unit-tests for "X-Chrome-intent-type"
 //               (see url_request_content_job_unittest.cc).
@@ -84,7 +86,7 @@ void GetMimeType(const network::ResourceRequest& request,
 
   std::string intent_type_header;
   if ((request.resource_type ==
-       static_cast<int>(content::ResourceType::kMainFrame)) &&
+       static_cast<int>(blink::mojom::ResourceType::kMainFrame)) &&
       request.headers.GetHeader("X-Chrome-intent-type", &intent_type_header)) {
     *out_mime_type = intent_type_header;
   }
@@ -108,9 +110,11 @@ class ContentURLLoader : public network::mojom::URLLoader {
   }
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {}
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -124,8 +128,28 @@ class ContentURLLoader : public network::mojom::URLLoader {
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
-    network::ResourceResponseHead head;
-    head.request_start = head.response_start = base::TimeTicks::Now();
+    bool disable_web_security =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableWebSecurity);
+    network::mojom::FetchResponseType response_type =
+        network::cors::CalculateResponseType(request.mode,
+                                             disable_web_security);
+
+    // Don't allow content:// requests with kSameOrigin or kCors* unless the
+    // web security is turned off.
+    if ((!disable_web_security &&
+         request.mode == network::mojom::RequestMode::kSameOrigin) ||
+        response_type == network::mojom::FetchResponseType::kCors) {
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client_remote))
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(network::CorsErrorStatus(
+                  network::mojom::CorsError::kCorsDisabledScheme)));
+      return;
+    }
+
+    auto head = network::mojom::URLResponseHead::New();
+    head->request_start = head->response_start = base::TimeTicks::Now();
+    head->response_type = response_type;
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
         &ContentURLLoader::OnMojoDisconnect, base::Unretained(this)));
@@ -161,13 +185,13 @@ class ContentURLLoader : public network::mojom::URLLoader {
           std::move(client), net::FileErrorToNetError(file.error_details()));
     }
 
-    head.content_length = total_bytes_to_send;
+    head->content_length = total_bytes_to_send;
     total_bytes_written_ = total_bytes_to_send;
 
     // Set the mimetype of the response.
-    GetMimeType(request, path, &head.mime_type);
-    if (head.mime_type.empty() ||
-        head.mime_type == "application/octet-stream") {
+    GetMimeType(request, path, &head->mime_type);
+    if (head->mime_type.empty() ||
+        head->mime_type == "application/octet-stream") {
       // When a Web Bundle file is downloaded with
       // "content-type: application/webbundle;v=b1" header, Chrome saves it as
       // "application/webbundle" MIME type. The MIME type is stored to Android's
@@ -188,17 +212,17 @@ class ContentURLLoader : public network::mojom::URLLoader {
       // [2] https://android.googlesource.com/platform/external/mime-support/
       // [3]
       // https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/net/android.mime.types
-      web_bundle_utils::GetWebBundleFileMimeTypeFromFile(path, &head.mime_type);
+      web_bundle_utils::GetWebBundleFileMimeTypeFromFile(path,
+                                                         &head->mime_type);
     }
 
-    if (!head.mime_type.empty()) {
-      head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-      head.headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head.mime_type.c_str()));
+    if (!head->mime_type.empty()) {
+      head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+      head->headers->SetHeader(net::HttpRequestHeaders::kContentType,
+                               head->mime_type);
     }
 
-    client->OnReceiveResponse(head);
+    client->OnReceiveResponse(std::move(head));
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client_ = std::move(client);
 

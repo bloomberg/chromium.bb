@@ -25,10 +25,18 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNetworkSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfCompositorSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPrintCompositorSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAudioSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSharingServiceSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSpeechRecognitionSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kVideoCaptureSandbox[];
+
+#if defined(OS_WIN)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfConversionSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProxyResolverSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
+#endif  // OS_WIN
+
 #if defined(OS_CHROMEOS)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kImeSandbox[];
 #endif  // OS_CHROMEOS
@@ -45,12 +53,12 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAudioServiceSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxFailuresFatal[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
+#if defined(OS_LINUX)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoZygoteSandbox[];
+#endif
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowThirdPartyModules[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddGpuAppContainerCaps[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuAppContainer[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuLpac[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableGpuAppContainer[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char
     kNoSandboxAndElevatedPrivileges[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddXrAppContainerCaps[];
@@ -61,11 +69,14 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 // Flags spied upon from other layers.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNaClBrokerProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNaClLoaderProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiBrokerProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiPluginProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCloudPrintServiceProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kZygoteProcessType[];
 
 }  // namespace switches
 

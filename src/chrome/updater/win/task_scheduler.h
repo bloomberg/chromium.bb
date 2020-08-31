@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 
 namespace base {
 class CommandLine;
@@ -85,16 +84,11 @@ class TaskScheduler {
     uint32_t logon_type = 0;
   };
 
-  // Control the lifespan of static data for the TaskScheduler. |Initialize|
-  // must be called before the first call to |CreateInstance|, and not other
-  // methods can be called after |Terminate| was called (unless |Initialize| is
-  // called again). |Initialize| can't be called out of balance with
-  // |Terminate|. |Terminate| can be called any number of times.
-  static bool Initialize();
-  static void Terminate();
-
   static std::unique_ptr<TaskScheduler> CreateInstance();
-  virtual ~TaskScheduler() {}
+
+  TaskScheduler(const TaskScheduler&) = delete;
+  TaskScheduler& operator=(const TaskScheduler&) = delete;
+  virtual ~TaskScheduler() = default;
 
   // Identify whether the task is registered or not.
   virtual bool IsTaskRegistered(const wchar_t* task_name) = 0;
@@ -122,6 +116,9 @@ class TaskScheduler {
   // encountered. On error, the struct is left unmodified.
   virtual bool GetTaskInfo(const wchar_t* task_name, TaskInfo* info) = 0;
 
+  // Returns true if the task folder specified by |folder_name| exists.
+  virtual bool HasTaskFolder(const wchar_t* folder_name) = 0;
+
   // Register the task to run the specified application and using the given
   // |trigger_type|.
   virtual bool RegisterTask(const wchar_t* task_name,
@@ -132,8 +129,6 @@ class TaskScheduler {
 
  protected:
   TaskScheduler();
-
-  DISALLOW_COPY_AND_ASSIGN(TaskScheduler);
 };
 
 }  // namespace updater

@@ -19,14 +19,10 @@
 #include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_udp_socket.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
-#include "net/quic/platform/impl/quic_socket_utils.h"
-
-#ifndef SO_RXQ_OVFL
-#define SO_RXQ_OVFL 40
-#endif
 
 namespace quic {
 
@@ -81,7 +77,10 @@ bool QuicClientEpollNetworkHelper::CreateUDPSocketAndBind(
   sockaddr_storage addr = client_address.generic_address();
   int rc = bind(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
   if (rc < 0) {
-    QUIC_LOG(ERROR) << "Bind failed: " << strerror(errno);
+    QUIC_LOG(ERROR) << "Bind failed: " << strerror(errno)
+                    << " bind_to_address:" << bind_to_address
+                    << ", bind_to_port:" << bind_to_port
+                    << ", client_address:" << client_address;
     return false;
   }
 
@@ -91,7 +90,6 @@ bool QuicClientEpollNetworkHelper::CreateUDPSocketAndBind(
   }
 
   fd_address_map_[fd] = client_address;
-
   epoll_server_->RegisterFD(fd, this, kEpollFlags);
   return true;
 }
@@ -131,9 +129,7 @@ void QuicClientEpollNetworkHelper::OnUnregistration(int /*fd*/,
 void QuicClientEpollNetworkHelper::OnShutdown(QuicEpollServer* /*eps*/,
                                               int /*fd*/) {}
 
-void QuicClientEpollNetworkHelper::OnEvent(int fd, QuicEpollEvent* event) {
-  DCHECK_EQ(fd, GetLatestFD());
-
+void QuicClientEpollNetworkHelper::OnEvent(int /*fd*/, QuicEpollEvent* event) {
   if (event->in_events & EPOLLIN) {
     QUIC_DVLOG(1) << "Read packets on EPOLLIN";
     int times_to_read = max_reads_per_epoll_loop_;
@@ -200,9 +196,16 @@ void QuicClientEpollNetworkHelper::ProcessPacket(
 int QuicClientEpollNetworkHelper::CreateUDPSocket(
     QuicSocketAddress server_address,
     bool* overflow_supported) {
-  return QuicSocketUtils::CreateUDPSocket(
-      server_address,
-      /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
-      /*send_buffer_size =*/kDefaultSocketReceiveBuffer, overflow_supported);
+  QuicUdpSocketApi api;
+  int fd = api.Create(server_address.host().AddressFamilyToInt(),
+                      /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
+                      /*send_buffer_size =*/kDefaultSocketReceiveBuffer);
+  if (fd < 0) {
+    return fd;
+  }
+
+  *overflow_supported = api.EnableDroppedPacketCount(fd);
+  api.EnableReceiveTimestamp(fd);
+  return fd;
 }
 }  // namespace quic

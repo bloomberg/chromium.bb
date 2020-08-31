@@ -36,6 +36,38 @@ _OS_TYPE_MAP = {
     '': 'kOsAny',
   }
 
+INTEL_DRIVER_VERSION_SCHEMA = '''
+The version format of Intel graphics driver is AA.BB.CCC.DDDD.
+DDDD(old schema) or CCC.DDDD(new schema) is the build number. That is,
+indicates the actual driver number. The comparison between old schema
+and new schema is NOT valid. In such a condition the only comparison
+operator that returns true is "not equal".
+
+AA.BB: You are free to specify the real number here, but they are meaningless
+when comparing two version numbers. Usually it's okay to leave it to "0.0".
+
+CCC: It's necessary for new schema. Regarding to old schema, you can speicy
+the real number or any number less than 100 in order to differentiate from
+new schema.
+
+DDDD: It's always meaningful. It must not be "0" under old schema.
+
+Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
+Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
+'''
+
+
+def check_intel_driver_version(version):
+  ver_list = version.split('.')
+  if len(ver_list) != 4:
+    return False
+  for ver in ver_list:
+    if not ver.isdigit():
+      return False
+  if int(ver_list[2]) < 100 and ver_list[3] == '0':
+    return False
+  return True
+
 
 def load_software_rendering_list_features(feature_type_filename):
   header_file = open(feature_type_filename, 'r')
@@ -169,12 +201,15 @@ def write_gl_strings(entry_id, is_exception, exception_id, data,
 def write_version(version_info, name_tag, data_file):
   op = ''
   style = ''
+  schema = ''
   version1 = ''
   version2 = ''
   if version_info:
     op = version_info['op']
     if 'style' in version_info:
       style = version_info['style']
+    if 'schema' in version_info:
+      schema = version_info['schema']
     version1 = version_info['value']
     if 'value2' in version_info:
       version2 = version_info['value2']
@@ -198,6 +233,13 @@ def write_version(version_info, name_tag, data_file):
   }
   assert style in style_map
   data_file.write('GpuControlList::kVersionStyle%s, ' % style_map[style])
+  schema_map = {
+    'common': 'Common',
+    'intel_driver': 'IntelDriver',
+    '': 'Common',
+  }
+  assert schema in schema_map
+  data_file.write('GpuControlList::kVersionSchema%s, ' % schema_map[schema])
   write_string(version1, data_file)
   data_file.write(', ')
   write_string(version2, data_file)
@@ -265,6 +307,7 @@ def write_machine_model_info(entry_id, is_exception, exception_id,
                              data_file, data_helper_file):
   model_name_var_name = None
   if machine_model_name:
+    assert isinstance(machine_model_name, list)
     model_name_var_name = 'kMachineModelNameForEntry' + str(entry_id)
     if is_exception:
       model_name_var_name += 'Exception' + str(exception_id)
@@ -365,7 +408,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   device_id = None
   multi_gpu_category = ''
   multi_gpu_style = ''
-  gpu_series_list = None
+  intel_gpu_series_list = None
   intel_gpu_generation = None
   driver_vendor = ''
   driver_version = None
@@ -393,6 +436,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       assert entry['id'] == entry_id
       continue
     elif key == 'description':
+      assert not is_exception
+      continue
+    elif key == 'driver_update_url':
       assert not is_exception
       continue
     elif key == 'features':
@@ -425,8 +471,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       multi_gpu_category = entry[key]
     elif key == 'multi_gpu_style':
       multi_gpu_style = entry[key]
-    elif key == 'gpu_series':
-      gpu_series_list = entry[key]
+    elif key == 'intel_gpu_series':
+      intel_gpu_series_list = entry[key]
     elif key == 'intel_gpu_generation':
       intel_gpu_generation = entry[key]
     elif key == 'driver_vendor':
@@ -484,6 +530,20 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_multi_gpu_style(multi_gpu_style, data_file)
   # group driver info
   if driver_vendor != '' or driver_version != None:
+    if (driver_version and driver_version.has_key('schema') and
+        driver_version['schema'] == 'intel_driver'):
+      assert os_type == 'win', 'Intel driver schema is only for Windows'
+      is_intel = (format(vendor_id, '#04x') == '0x8086' or
+                  intel_gpu_series_list or
+                  intel_gpu_generation or
+                  'Intel' in driver_vendor)
+      assert is_intel, 'Intel driver schema is only for Intel GPUs'
+      valid_version = check_intel_driver_version(driver_version['value'])
+      if driver_version.has_key('value2'):
+        valid_version = (valid_version and
+                         check_intel_driver_version(driver_version['value2']))
+      assert valid_version, INTEL_DRIVER_VERSION_SCHEMA
+
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
                       driver_version, unique_symbol_id,
                       data_file, data_helper_file)
@@ -500,8 +560,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_machine_model_info(entry_id, is_exception, exception_id,
                            machine_model_name, machine_model_version,
                            data_file, data_helper_file)
-  write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
-                        data_file, data_helper_file)
+  write_intel_gpu_series_list(entry_id, is_exception, exception_id,
+                              intel_gpu_series_list,
+                              data_file, data_helper_file)
   write_version(intel_gpu_generation, 'intel_gpu_generation', data_file)
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
@@ -518,42 +579,49 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
     data_file.write('nullptr,  // more conditions\n')
 
 
-def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
-                          data_file, data_helper_file):
-  if gpu_series_list:
-    var_name = 'kGpuSeriesForEntry' + str(entry_id)
+def write_intel_gpu_series_list(entry_id, is_exception, exception_id,
+                                intel_gpu_series_list,
+                                data_file, data_helper_file):
+  if intel_gpu_series_list:
+    var_name = 'kIntelGpuSeriesForEntry' + str(entry_id)
     if is_exception:
       var_name += 'Exception' + str(exception_id)
-    data_helper_file.write('const GpuSeriesType %s[%d] = {\n' %
-                           (var_name, len(gpu_series_list)))
-    gpu_series_map = {
-      'intel_sandybridge': 'kIntelSandybridge',
-      'intel_baytrail': 'kIntelBaytrail',
-      'intel_ivybridge': 'kIntelIvybridge',
-      'intel_haswell': 'kIntelHaswell',
-      'intel_cherrytrail': 'kIntelCherrytrail',
-      'intel_broadwell': 'kIntelBroadwell',
-      'intel_apollolake': 'kIntelApollolake',
-      'intel_skylake': 'kIntelSkylake',
-      'intel_geminilake': 'kIntelGeminilake',
-      'intel_kabylake': 'kIntelKabylake',
-      'intel_coffeelake': 'kIntelCoffeelake',
-      'intel_whiskeylake': 'kIntelWhiskeylake',
-      'intel_cometlake': 'kIntelCometlake',
-      'intel_cannonlake': 'kIntelCannonlake',
-      'intel_icelake': 'kIntelIcelake'
+    data_helper_file.write('const IntelGpuSeriesType %s[%d] = {\n' %
+                           (var_name, len(intel_gpu_series_list)))
+    intel_gpu_series_map = {
+      'broadwater': 'kBroadwater',
+      'eaglelake': 'kEaglelake',
+      'ironlake': 'kIronlake',
+      'sandybridge': 'kSandybridge',
+      'baytrail': 'kBaytrail',
+      'ivybridge': 'kIvybridge',
+      'haswell': 'kHaswell',
+      'cherrytrail': 'kCherrytrail',
+      'broadwell': 'kBroadwell',
+      'apollolake': 'kApollolake',
+      'skylake': 'kSkylake',
+      'geminilake': 'kGeminilake',
+      'kabylake': 'kKabylake',
+      'coffeelake': 'kCoffeelake',
+      'whiskeylake': 'kWhiskeylake',
+      'cometlake': 'kCometlake',
+      'cannonlake': 'kCannonlake',
+      'icelake': 'kIcelake',
+      'elkhartlake': 'kElkhartlake',
+      'jasperlake': 'kJasperlake',
+      'tigerlake': 'kTigerlake'
     }
-    for series in gpu_series_list:
-      assert series in gpu_series_map
-      data_helper_file.write('GpuSeriesType::%s,\n' %
-                             gpu_series_map[series])
+    for series in intel_gpu_series_list:
+      assert series in intel_gpu_series_map
+      data_helper_file.write('IntelGpuSeriesType::%s,\n' %
+                             intel_gpu_series_map[series])
     data_helper_file.write('};\n\n')
 
-    data_file.write('base::size(%s),  // gpu_series size\n' % var_name)
-    data_file.write('%s,  // gpu_series\n' % var_name)
+    data_file.write('base::size(%s),  // intel_gpu_series size\n' % var_name)
+    data_file.write('%s,  // intel_gpu_series\n' % var_name)
   else:
-    data_file.write('0,  // gpu_series size\n')
-    data_file.write('nullptr,  // gpu_series\n')
+    data_file.write('0,  // intel_gpu_series size\n')
+    data_file.write('nullptr,  // intel_gpu_series\n')
 
 
 def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
@@ -601,7 +669,11 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   # ID
   entry_id = entry['id']
   data_file.write('%d,  // id\n' % entry_id)
-  data_file.write('"%s",\n' % entry['description']);
+  description = entry['description']
+  if 'driver_update_url' in entry:
+    description += (' Please update your graphics driver via this link: ' +
+                    entry['driver_update_url'])
+  data_file.write('"%s",\n' % description);
   # Features
   if 'features' in entry:
     var_name = 'kFeatureListFor%sEntry%d' % (unique_symbol_id, entry_id)

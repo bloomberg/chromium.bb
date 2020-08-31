@@ -1,6 +1,12 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {ESTreeWalker} from './ESTreeWalker.js';
+
 /**
  * @param {string} content
  */
@@ -16,8 +22,9 @@ export function javaScriptOutline(content) {
     ast = acorn.loose.parse(content, {ranges: false});
   }
 
-  const textCursor = new TextUtils.TextCursor(content.computeLineEndings());
-  const walker = new FormatterWorker.ESTreeWalker(beforeVisit);
+  const contentLineEndings = Platform.StringUtilities.findLineEndingIndexes(content);
+  const textCursor = new TextUtils.TextCursor.TextCursor(contentLineEndings);
+  const walker = new ESTreeWalker(beforeVisit);
   walker.walk(ast);
   postMessage({chunk: outlineChunk, isLastChunk: true});
 
@@ -49,7 +56,7 @@ export function javaScriptOutline(content) {
       if (node.static) {
         namePrefix.push('static');
       }
-      reportFunction(node.key, node.value, namePrefix.join(' '));
+      reportFunction(/** @type {!ESTree.Node} */ (node.key), node.value, namePrefix.join(' '));
     }
   }
 
@@ -168,11 +175,3 @@ export function javaScriptOutline(content) {
     lastReportedOffset = textCursor.offset();
   }
 }
-
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-FormatterWorker.javaScriptOutline = javaScriptOutline;

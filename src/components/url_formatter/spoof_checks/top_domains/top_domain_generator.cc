@@ -17,6 +17,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,6 +27,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_state_generator.h"
 #include "components/url_formatter/spoof_checks/top_domains/trie_entry.h"
+#include "url/gurl.h"
 
 using url_formatter::top_domains::TopDomainEntries;
 using url_formatter::top_domains::TopDomainEntry;
@@ -33,11 +35,12 @@ using url_formatter::top_domains::TopDomainStateGenerator;
 
 namespace {
 
+const char* kTop500Separator = "###END_TOP_500###";
+
 // Print the command line help.
 void PrintHelp() {
   std::cout << "top_domain_generator <input-file>"
-            << " <template-file> <output-file> [--for_testing] [--v=1]"
-            << std::endl;
+            << " <template-file> <output-file> [--v=1]" << std::endl;
 }
 
 void CheckName(const std::string& name) {
@@ -59,6 +62,8 @@ int main(int argc, char* argv[]) {
   settings.logging_dest =
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
+
+  base::i18n::InitializeICU();
 
 #if defined(OS_WIN)
   std::vector<std::string> args;
@@ -87,15 +92,20 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  const bool for_testing = command_line.HasSwitch("for_testing");
-
   std::vector<std::string> lines = base::SplitString(
       input_text, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
+  bool is_top_500 = true;
   TopDomainEntries entries;
   std::set<std::string> skeletons;
   for (std::string line : lines) {
     base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
+
+    if (line == kTop500Separator) {
+      is_top_500 = false;
+      continue;
+    }
+
     if (line.empty() || line[0] == '#') {
       continue;
     }
@@ -107,23 +117,22 @@ int main(int argc, char* argv[]) {
     CHECK_EQ(2u, tokens.size()) << "Invalid line: " << tokens[0];
     const std::string skeleton = tokens[0];
 
-    if (skeletons.find(skeleton) != skeletons.end()) {
-      // Another site has the same skeleton. Simply ignore, as we already have a
-      // top domain corresponding to this skeleton.
-      continue;
-    }
+    // Another site has the same skeleton. This is low proability so stop now.
+    CHECK(skeletons.find(skeleton) == skeletons.end())
+        << "A domain with the same skeleton is already in the list ("
+        << skeleton << ").";
+
     skeletons.insert(skeleton);
 
     // TODO: Should we lowercase these?
     entry->skeleton = skeleton;
-    entry->top_domain = tokens[1];
 
-    // If testing, only mark the first 5 sites as "top 500".
-    if (for_testing) {
-      entry->is_top_500 = entries.size() < 1;
-    } else {
-      entry->is_top_500 = entries.size() < 500;
-    }
+    // There might be unicode domains in the list. Store them in punycode in the
+    // trie.
+    const GURL domain(std::string("http://") + tokens[1]);
+    entry->top_domain = domain.host();
+
+    entry->is_top_500 = is_top_500;
 
     CheckName(entry->skeleton);
     CheckName(entry->top_domain);

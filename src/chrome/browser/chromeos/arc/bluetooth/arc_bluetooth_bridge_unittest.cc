@@ -82,6 +82,17 @@ class ArcBluetoothBridgeTest : public testing::Test {
         rssi);
   }
 
+  void ChangeTestDeviceConnected(bool connected) {
+    bluez::BluezDBusManager* dbus_manager = bluez::BluezDBusManager::Get();
+    auto* fake_bluetooth_device_client =
+        static_cast<bluez::FakeBluetoothDeviceClient*>(
+            dbus_manager->GetBluetoothDeviceClient());
+    bluez::FakeBluetoothDeviceClient::Properties* properties =
+        fake_bluetooth_device_client->GetProperties(
+            dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+    properties->connected.ReplaceValue(connected);
+  }
+
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter) {
     adapter_ = adapter;
     get_adapter_run_loop_.Quit();
@@ -108,12 +119,12 @@ class ArcBluetoothBridgeTest : public testing::Test {
         nullptr, arc_bridge_service_.get());
     fake_bluetooth_instance_ = std::make_unique<FakeBluetoothInstance>();
     arc_bridge_service_->bluetooth()->SetInstance(
-        fake_bluetooth_instance_.get(), 13);
+        fake_bluetooth_instance_.get(), 17);
     base::SysInfo::SetChromeOSVersionInfoForTest(
         "CHROMEOS_ARC_ANDROID_SDK_VERSION=28", base::Time::Now());
     WaitForInstanceReady(arc_bridge_service_->bluetooth());
 
-    device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+    device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
         &ArcBluetoothBridgeTest::OnAdapterInitialized, base::Unretained(this)));
     // We will quit the loop once we get the adapter.
     get_adapter_run_loop_.Run();
@@ -218,10 +229,16 @@ class ArcBluetoothBridgeTest : public testing::Test {
 // the correctness of the device properties sent via arc bridge.
 TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(0u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   AddTestDevice();
-  EXPECT_EQ(5u, fake_bluetooth_instance_->device_found_data().size());
+  // Only the first one should invoke a device_found callback. The following
+  // device change events should invode the remote_device_properties callback.
+  EXPECT_EQ(1u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(4u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   const std::vector<mojom::BluetoothPropertyPtr>& prop =
-      fake_bluetooth_instance_->device_found_data().back();
+      fake_bluetooth_instance_->device_properties_changed_data().back();
 
   EXPECT_EQ(7u, prop.size());
   EXPECT_TRUE(prop[0]->is_bdname());
@@ -249,9 +266,11 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(kTestRssi, prop[6]->get_remote_rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(6u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(1u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(5u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   const std::vector<mojom::BluetoothPropertyPtr>& prop2 =
-      fake_bluetooth_instance_->device_found_data().back();
+      fake_bluetooth_instance_->device_properties_changed_data().back();
   EXPECT_EQ(7u, prop2.size());
   EXPECT_TRUE(prop2[6]->is_remote_rssi());
   EXPECT_EQ(kTestRssi2, prop2[6]->get_remote_rssi());
@@ -262,7 +281,7 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
 TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
-  EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(3u, fake_bluetooth_instance_->le_device_found_data().size());
 
   const auto& le_device_found_data =
       fake_bluetooth_instance_->le_device_found_data().back();
@@ -275,7 +294,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(4u, fake_bluetooth_instance_->le_device_found_data().size());
   EXPECT_EQ(kTestRssi2,
             fake_bluetooth_instance_->le_device_found_data().back()->rssi());
 }
@@ -285,7 +304,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFoundForN) {
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=27", base::Time::Now());
   EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
-  EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(3u, fake_bluetooth_instance_->le_device_found_data().size());
 
   const auto& le_device_found_data =
       fake_bluetooth_instance_->le_device_found_data().back();
@@ -309,9 +328,101 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFoundForN) {
   EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(4u, fake_bluetooth_instance_->le_device_found_data().size());
   EXPECT_EQ(kTestRssi2,
             fake_bluetooth_instance_->le_device_found_data().back()->rssi());
+}
+
+// If ARC starts the connection by LEConnect(), OnLEConnectionStateChange()
+// should be invoked when the connection is up/down. OnConnectionStateChanged()
+// should always be invoked when the physical link state changed.
+TEST_F(ArcBluetoothBridgeTest, DeviceConnectStateChangedAfterLEConnectReuqest) {
+  AddTestDevice();
+  arc_bluetooth_bridge_->ConnectLEDevice(mojom::BluetoothAddress::From(
+      std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress)));
+
+  // OnConnectionStateChanged() should be invoked.
+  ASSERT_EQ(1u,
+            fake_bluetooth_instance_->connection_state_changed_data().size());
+  const auto& connected_data =
+      fake_bluetooth_instance_->connection_state_changed_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            connected_data->addr()->To<std::string>());
+  EXPECT_EQ(device::BLUETOOTH_TRANSPORT_LE, connected_data->device_type());
+  EXPECT_EQ(true, connected_data->connected());
+
+  // OnLEConnectionStateChange() should be invoked.
+  ASSERT_EQ(1u,
+            fake_bluetooth_instance_->le_connection_state_change_data().size());
+  const auto& le_connected_data =
+      fake_bluetooth_instance_->le_connection_state_change_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            le_connected_data->addr()->To<std::string>());
+  EXPECT_EQ(true, le_connected_data->connected());
+
+  // Device is disconnected.
+  ChangeTestDeviceConnected(false);
+
+  // OnConnectionStateChanged() should be invoked.
+  ASSERT_EQ(2u,
+            fake_bluetooth_instance_->connection_state_changed_data().size());
+  const auto& disconnected_data =
+      fake_bluetooth_instance_->connection_state_changed_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            disconnected_data->addr()->To<std::string>());
+  EXPECT_EQ(device::BLUETOOTH_TRANSPORT_LE, disconnected_data->device_type());
+  EXPECT_EQ(false, disconnected_data->connected());
+
+  // OnLEConnectionStateChange() should be invoked.
+  ASSERT_EQ(2u,
+            fake_bluetooth_instance_->le_connection_state_change_data().size());
+  const auto& le_disconnected_data =
+      fake_bluetooth_instance_->le_connection_state_change_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            le_disconnected_data->addr()->To<std::string>());
+  EXPECT_EQ(false, le_disconnected_data->connected());
+}
+
+// If the connection is up/down and is not requested by ARC (e.g., in the case
+// that another app in CrOS starts the connection, or it is an incoming
+// connection), OnLEConnectionStateChange() should not be invoked.
+// OnConnectionStateChanged() should always be invoked when the physical link
+// state changed.
+TEST_F(ArcBluetoothBridgeTest,
+       DeviceConnectStateChangedWithoutLEConnectRequest) {
+  AddTestDevice();
+  ChangeTestDeviceConnected(true);
+
+  // OnConnectionStateChanged() should be invoked.
+  ASSERT_EQ(1u,
+            fake_bluetooth_instance_->connection_state_changed_data().size());
+  const auto& connected_data =
+      fake_bluetooth_instance_->connection_state_changed_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            connected_data->addr()->To<std::string>());
+  EXPECT_EQ(device::BLUETOOTH_TRANSPORT_LE, connected_data->device_type());
+  EXPECT_EQ(true, connected_data->connected());
+
+  // OnLEConnectionStateChange() should not be invoked.
+  ASSERT_EQ(0u,
+            fake_bluetooth_instance_->le_connection_state_change_data().size());
+
+  // Device is disconnected.
+  ChangeTestDeviceConnected(false);
+
+  // OnConnectionStateChanged() should be invoked.
+  ASSERT_EQ(2u,
+            fake_bluetooth_instance_->connection_state_changed_data().size());
+  const auto& disconnected_data =
+      fake_bluetooth_instance_->connection_state_changed_data().back();
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            disconnected_data->addr()->To<std::string>());
+  EXPECT_EQ(device::BLUETOOTH_TRANSPORT_LE, disconnected_data->device_type());
+  EXPECT_EQ(false, disconnected_data->connected());
+
+  // OnLEConnectionStateChange() should not be invoked.
+  ASSERT_EQ(0u,
+            fake_bluetooth_instance_->le_connection_state_change_data().size());
 }
 
 // Invoke GetGattDB and check correctness of the GattDB sent via arc bridge.

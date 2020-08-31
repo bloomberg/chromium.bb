@@ -13,9 +13,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -131,12 +133,14 @@ void InputMethodSyncer::RegisterProfilePrefs(
   registry->RegisterStringPref(
       prefs::kLanguageEnabledImesSyncable, "",
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  // Locally tracks whether we should do the first-sync merge, hence not a
+  // syncable pref itself.
   registry->RegisterBooleanPref(prefs::kLanguageShouldMergeInputMethods, false);
 }
 
 void InputMethodSyncer::Initialize() {
-  // This causes OnIsSyncingChanged to be called when the value of
-  // PrefService::IsSyncing() changes.
+  // This causes OnIsSyncingChanged to be called when the PrefService starts
+  // syncing prefs.
   prefs_->AddObserver(this);
 
   preferred_languages_syncable_.Init(
@@ -227,11 +231,11 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   std::string languages(AddSupportedInputMethodValues(
       preferred_languages_.GetValue(), preferred_languages_syncable,
       language::prefs::kPreferredLanguages));
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&CheckAndResolveLocales, languages),
-      base::Bind(&InputMethodSyncer::FinishMerge, weak_factory_.GetWeakPtr()));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&CheckAndResolveLocales, languages),
+      base::BindOnce(&InputMethodSyncer::FinishMerge,
+                     weak_factory_.GetWeakPtr()));
 }
 
 std::string InputMethodSyncer::AddSupportedInputMethodValues(
@@ -313,10 +317,15 @@ void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
 }
 
 void InputMethodSyncer::OnIsSyncingChanged() {
-  if (prefs_->GetBoolean(prefs::kLanguageShouldMergeInputMethods) &&
-      prefs_->IsSyncing()) {
+  // Only merge once.
+  if (!prefs_->GetBoolean(prefs::kLanguageShouldMergeInputMethods))
+    return;
+  // Wait for the correct type of prefs to sync before merging.
+  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+                        ? prefs_->AreOsPrefsSyncing()
+                        : prefs_->IsSyncing();
+  if (is_syncing)
     MergeSyncedPrefs();
-  }
 }
 
 }  // namespace input_method

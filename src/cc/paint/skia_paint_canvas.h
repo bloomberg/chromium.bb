@@ -126,11 +126,13 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void drawPicture(sk_sp<const PaintRecord> record) override;
 
   bool isClipEmpty() const override;
-  const SkMatrix& getTotalMatrix() const override;
+  SkMatrix getTotalMatrix() const override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,
                 sk_sp<SkData> data) override;
+
+  void setNodeId(int) override;
 
   // Don't shadow non-virtual helper functions.
   using PaintCanvas::clipPath;

@@ -114,6 +114,9 @@ message KeyData {
     // cryptohome internally. In order to authenticate using such key,
     // cryptohome will issue one or multiple challenge requests.
     KEY_TYPE_CHALLENGE_RESPONSE = 1;
+    // Fingerprint-based key. Cryptohome needs to start fingerprint auth
+    // session and get fingerprint-based secret from biod.
+    KEY_TYPE_FINGERPRINT = 2;
   }
   optional KeyType type = 1;
   // All keys must be labeled when persisted to disk, but when KeyData

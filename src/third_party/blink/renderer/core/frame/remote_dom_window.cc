@@ -17,7 +17,7 @@ ExecutionContext* RemoteDOMWindow::GetExecutionContext() const {
   return nullptr;
 }
 
-void RemoteDOMWindow::Trace(blink::Visitor* visitor) {
+void RemoteDOMWindow::Trace(Visitor* visitor) {
   DOMWindow::Trace(visitor);
 }
 
@@ -61,8 +61,11 @@ void RemoteDOMWindow::ForwardPostMessage(
   if (!GetFrame())
     return;
 
+  base::Optional<base::UnguessableToken> agent_cluster;
+  if (event->IsLockedToAgentCluster())
+    agent_cluster = source->GetExecutionContext()->GetAgentClusterID();
   GetFrame()->Client()->ForwardPostMessage(event, std::move(target),
-                                           source->GetFrame());
+                                           agent_cluster, source->GetFrame());
 }
 
 }  // namespace blink

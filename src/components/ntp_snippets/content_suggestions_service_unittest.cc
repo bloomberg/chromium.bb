@@ -15,6 +15,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
@@ -145,6 +146,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
     ContentSuggestionsService::RegisterProfilePrefs(pref_service_->registry());
     RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
         pref_service_->registry());
+    feed::prefs::RegisterFeedSharedProfilePrefs(pref_service_->registry());
     UserClassifier::RegisterProfilePrefs(pref_service_->registry());
   }
 
@@ -475,7 +477,7 @@ TEST_F(ContentSuggestionsServiceTest,
   base::Time begin = base::Time::FromTimeT(123),
              end = base::Time::FromTimeT(456);
   EXPECT_CALL(*raw_mock_ranker, ClearHistory(begin, end));
-  base::Callback<bool(const GURL& url)> filter;
+  base::RepeatingCallback<bool(const GURL& url)> filter;
   service()->ClearHistory(begin, end, filter);
 }
 

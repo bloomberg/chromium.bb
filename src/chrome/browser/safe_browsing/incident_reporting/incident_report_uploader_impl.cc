@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -48,9 +48,9 @@ constexpr net::NetworkTrafficAnnotationTag
         "Users can control this feature via the 'Automatically report details "
         "of possible security incidents to Google' setting under Privacy."
       chrome_policy {
-        SafeBrowsingExtendedReportingOptInAllowed {
+        SafeBrowsingExtendedReportingEnabled {
           policy_options {mode: MANDATORY}
-          SafeBrowsingExtendedReportingOptInAllowed: false
+          SafeBrowsingExtendedReportingEnabled: false
         }
       }
     })");

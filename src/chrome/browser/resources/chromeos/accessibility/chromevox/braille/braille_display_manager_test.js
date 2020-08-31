@@ -6,26 +6,14 @@
 GEN_INCLUDE(
     ['../testing/chromevox_unittest_base.js', '../testing/fake_objects.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxBrailleDisplayManagerUnitTest() {}
-
-ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
+ChromeVoxBrailleDisplayManagerUnitTest = class extends ChromeVoxUnitTestBase {
   /** @override */
-  closureModuleDeps: [
-    'BrailleDisplayManager',
-    'BrailleInterface',
-    'LibLouis',
-    'NavBraille',
-  ],
-
-  /** @override */
-  setUp: function() {
+  setUp() {
     /** @const */
     this.NAV_BRAILLE = new NavBraille({text: 'Hello, world!'});
     this.EMPTY_NAV_BRAILLE = new NavBraille({text: ''});
@@ -34,9 +22,9 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     /** @const */
     this.DISPLAY_ROW_SIZE = 1;
     this.DISPLAY_COLUMN_SIZE = 12;
-  },
+  }
 
-  addFakeApi: function() {
+  addFakeApi() {
     chrome.brailleDisplayPrivate = {};
     chrome.brailleDisplayPrivate.getDisplayState = function(callback) {
       callback(this.displayState);
@@ -47,15 +35,15 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     }.bind(this);
     chrome.brailleDisplayPrivate.onDisplayStateChanged = new FakeChromeEvent();
     chrome.brailleDisplayPrivate.onKeyEvent = new FakeChromeEvent();
-  },
+  }
 
-  displayAvailable: function() {
+  displayAvailable() {
     this.displayState = {
       available: true,
       textRowCount: this.DISPLAY_ROW_SIZE,
       textColumnCount: this.DISPLAY_COLUMN_SIZE
     };
-  },
+  }
 
   /**
    * Asserts display pan position and selection markers on the last written
@@ -66,49 +54,70 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
    *                               should have a selection
    * @param {number=} opt_selEnd last cell that should have a selection.
    */
-  assertDisplayPositionAndClear: function(start, opt_selStart, opt_selEnd) {
+  assertDisplayPositionAndClear(start, opt_selStart, opt_selEnd) {
     if (opt_selStart !== undefined && opt_selEnd === undefined) {
       opt_selEnd = opt_selStart + 1;
     }
     assertEquals(1, this.writtenCells.length);
-    var a = new Uint8Array(this.writtenCells[0]);
+    const a = new Uint8Array(this.writtenCells[0]);
     this.writtenCells.length = 0;
-    var firstCell = a[0] & ~BrailleDisplayManager.CURSOR_DOTS;
+    const firstCell = a[0] & ~BrailleDisplayManager.CURSOR_DOTS;
     // We are asserting that start, which is an index, and firstCell,
     // which is a value, are the same because the fakeTranslator generates
     // the values of the braille cells based on indices.
     assertEquals(
         start, firstCell, ' Start mismatch: ' + start + ' vs. ' + firstCell);
     if (opt_selStart !== undefined) {
-      for (var i = opt_selStart; i < opt_selEnd; ++i) {
+      for (let i = opt_selStart; i < opt_selEnd; ++i) {
         assertEquals(
             BrailleDisplayManager.CURSOR_DOTS,
             a[i] & BrailleDisplayManager.CURSOR_DOTS,
             'Missing cursor marker at position ' + i);
       }
     }
-  },
+  }
 
   /**
    * Asserts that the last written display content is an empty buffer of
    * of cells and clears the list of written cells.
    * There must be only one buffer in the list.
    */
-  assertEmptyDisplayAndClear: function() {
+  assertEmptyDisplayAndClear() {
     assertEquals(1, this.writtenCells.length);
-    var content = this.writtenCells[0];
+    const content = this.writtenCells[0];
     this.writtenCells.length = 0;
     assertTrue(content instanceof ArrayBuffer);
     assertTrue(content.byteLength == 0);
-  },
+  }
 
   /**
    * Asserts that the groups passed in actually match what we expect.
    */
-  assertGroupsValid: function(groups, expected) {
+  assertGroupsValid(groups, expected) {
     assertEquals(JSON.stringify(groups), JSON.stringify(expected));
   }
+
+  /**
+   * Simulates an onDisplayStateChanged event.
+   * @param {{available: boolean, textRowCount: (number|undefined),
+   *     textColumnCount: (number|undefined)}}
+   */
+  simulateOnDisplayStateChanged(event) {
+    const listener =
+        chrome.brailleDisplayPrivate.onDisplayStateChanged.getListener();
+    assertNotEquals(null, listener);
+    listener(event);
+  }
 };
+
+/** @override */
+ChromeVoxBrailleDisplayManagerUnitTest.prototype.closureModuleDeps = [
+  'BrailleDisplayManager',
+  'BrailleInterface',
+  'LibLouis',
+  'NavBraille',
+];
+
 
 /** @extends {ExpandingBrailleTranslator} */
 function FakeTranslator() {}
@@ -122,13 +131,13 @@ FakeTranslator.prototype = {
    * mapped to two translated cells.
    * @override
    */
-  translate: function(spannable, expansionType, callback) {
+  translate(spannable, expansionType, callback) {
     text = spannable.toString();
-    var buf = new Uint8Array(text.length + text.length / 2);
-    var textToBraille = [];
-    var brailleToText = [];
-    var idx = 0;
-    for (var i = 0; i < text.length; ++i) {
+    const buf = new Uint8Array(text.length + text.length / 2);
+    const textToBraille = [];
+    const brailleToText = [];
+    let idx = 0;
+    for (let i = 0; i < text.length; ++i) {
       textToBraille.push(idx);
       brailleToText.push(i);
       buf[idx] = idx;
@@ -150,19 +159,19 @@ FakeTranslatorManager.prototype = {
   changeListener: null,
   translator: null,
 
-  setTranslator: function(translator) {
+  setTranslator(translator) {
     this.translator = translator;
     if (this.changeListener) {
       this.changeListener();
     }
   },
 
-  addChangeListener: function(listener) {
+  addChangeListener(listener) {
     assertEquals(null, this.changeListener);
     this.changeListener = listener;
   },
 
-  getExpandingTranslator: function() {
+  getExpandingTranslator() {
     return this.translator;
   }
 };
@@ -174,7 +183,7 @@ chrome.storage = {
   onChanged: new FakeChromeEvent(),
 
   local: {
-    get: function(object, callback) {
+    get(object, callback) {
       callback({brailleWordWrap: false});
     }
   }
@@ -182,7 +191,7 @@ chrome.storage = {
 
 
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'NoApi', function() {
-  var manager = new BrailleDisplayManager(this.translatorManager);
+  const manager = new BrailleDisplayManager(this.translatorManager);
   manager.setContent(this.NAV_BRAILLE);
   this.translatorManager.setTranslator(this.translator);
   manager.setContent(this.NAV_BRAILLE);
@@ -196,7 +205,7 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
   this.addFakeApi();
   this.displayState = {available: false};
 
-  var manager = new BrailleDisplayManager(this.translatorManager);
+  const manager = new BrailleDisplayManager(this.translatorManager);
   manager.setContent(this.NAV_BRAILLE);
   this.translatorManager.setTranslator(this.translator);
   manager.setContent(this.NAV_BRAILLE);
@@ -209,7 +218,7 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicSetContent', function() {
   this.addFakeApi();
   this.displayAvailable();
-  var manager = new BrailleDisplayManager(this.translatorManager);
+  const manager = new BrailleDisplayManager(this.translatorManager);
   this.assertEmptyDisplayAndClear();
   manager.setContent(this.NAV_BRAILLE);
   this.assertEmptyDisplayAndClear();
@@ -228,7 +237,7 @@ TEST_F(
       this.addFakeApi();
       this.displayAvailable();
 
-      var manager = new BrailleDisplayManager(this.translatorManager);
+      const manager = new BrailleDisplayManager(this.translatorManager);
       this.assertEmptyDisplayAndClear();
       manager.setContent(this.NAV_BRAILLE);
       this.assertEmptyDisplayAndClear();
@@ -241,17 +250,17 @@ TEST_F(
 
 TEST_F(
     'ChromeVoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
-      var text = 'This is a test string';
+      const text = 'This is a test string';
       function createNavBrailleWithCursor(start, end) {
-        return new NavBraille({text: text, startIndex: start, endIndex: end});
+        return new NavBraille({text, startIndex: start, endIndex: end});
       }
 
-      var translatedSize = Math.floor(text.length + text.length / 2);
+      const translatedSize = Math.floor(text.length + text.length / 2);
 
       this.addFakeApi();
       this.displayAvailable();
 
-      var manager = new BrailleDisplayManager(this.translatorManager);
+      const manager = new BrailleDisplayManager(this.translatorManager);
       this.assertEmptyDisplayAndClear();
       this.translatorManager.setTranslator(this.translator);
       this.assertEmptyDisplayAndClear();
@@ -280,13 +289,13 @@ TEST_F(
  * to one braille cell.
  */
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
-  var text = 'a';
-  var translated = '1';
-  var mapping = [0];
-  var expected = [['a', '1']];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+  const text = 'a';
+  const translated = '1';
+  const mapping = [0];
+  const expected = [['a', '1']];
+  const offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(
+  const groups = BrailleCaptionsBackground.groupBrailleAndText(
       translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
@@ -296,13 +305,13 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
  * to multiple braille cells.
  */
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB', function() {
-  var text = 'A';
-  var translated = '11';
-  var mapping = [0, 0];
-  var expected = [['A', '11']];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+  const text = 'A';
+  const translated = '11';
+  const mapping = [0, 0];
+  const expected = [['A', '11']];
+  const offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(
+  const groups = BrailleCaptionsBackground.groupBrailleAndText(
       translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
@@ -312,13 +321,13 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB', function() {
  * to multiple text characters.
  */
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
-  var text = 'knowledge';
-  var translated = '1';
-  var mapping = [0];
-  var expected = [['knowledge', '1']];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+  const text = 'knowledge';
+  const translated = '1';
+  const mapping = [0];
+  const expected = [['knowledge', '1']];
+  const offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(
+  const groups = BrailleCaptionsBackground.groupBrailleAndText(
       translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
@@ -330,13 +339,13 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
 TEST_F(
     'ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB_BothEnds',
     function() {
-      var text = 'AbbC';
-      var translated = 'X122X3';
-      var mapping = [0, 0, 1, 2, 3, 3];
-      var expected = [['A', 'X1'], ['b', '2'], ['b', '2'], ['C', 'X3']];
-      var offsets = {brailleOffset: 0, textOffset: 0};
+      const text = 'AbbC';
+      const translated = 'X122X3';
+      const mapping = [0, 0, 1, 2, 3, 3];
+      const expected = [['A', 'X1'], ['b', '2'], ['b', '2'], ['C', 'X3']];
+      const offsets = {brailleOffset: 0, textOffset: 0};
 
-      var groups = BrailleCaptionsBackground.groupBrailleAndText(
+      const groups = BrailleCaptionsBackground.groupBrailleAndText(
           translated, text, mapping, offsets);
       this.assertGroupsValid(groups, expected);
     });
@@ -348,16 +357,16 @@ TEST_F(
 TEST_F(
     'ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR_BothEnds',
     function() {
-      var text = 'knowledgehappych';
-      var translated = '1234456';
-      var mapping = [0, 9, 10, 11, 12, 13, 14];
-      var expected = [
+      const text = 'knowledgehappych';
+      const translated = '1234456';
+      const mapping = [0, 9, 10, 11, 12, 13, 14];
+      const expected = [
         ['knowledge', '1'], ['h', '2'], ['a', '3'], ['p', '4'], ['p', '4'],
         ['y', '5'], ['ch', '6']
       ];
-      var offsets = {brailleOffset: 0, textOffset: 0};
+      const offsets = {brailleOffset: 0, textOffset: 0};
 
-      var groups = BrailleCaptionsBackground.groupBrailleAndText(
+      const groups = BrailleCaptionsBackground.groupBrailleAndText(
           translated, text, mapping, offsets);
       this.assertGroupsValid(groups, expected);
     });
@@ -367,16 +376,31 @@ TEST_F(
  * of mapping.
  */
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'RandB_Random', function() {
-  var text = 'knowledgeIsPower';
-  var translated = '1X23X45678';
-  var mapping = [0, 9, 9, 10, 11, 11, 12, 13, 14, 15];
-  var expected = [
+  const text = 'knowledgeIsPower';
+  const translated = '1X23X45678';
+  const mapping = [0, 9, 9, 10, 11, 11, 12, 13, 14, 15];
+  const expected = [
     ['knowledge', '1'], ['I', 'X2'], ['s', '3'], ['P', 'X4'], ['o', '5'],
     ['w', '6'], ['e', '7'], ['r', '8']
   ];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+  const offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(
+  const groups = BrailleCaptionsBackground.groupBrailleAndText(
       translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that braille-related preferences are updated upon connecting and
+ * disconnecting a braille display.
+ */
+TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'UpdatePrefs', function() {
+  this.addFakeApi();
+  this.displayState = {available: false};
+  const manager = new BrailleDisplayManager(this.translatorManager);
+  assertEquals('false', localStorage['menuBrailleCommands']);
+  this.simulateOnDisplayStateChanged({available: true});
+  assertEquals('true', localStorage['menuBrailleCommands']);
+  this.simulateOnDisplayStateChanged({available: false});
+  assertEquals('false', localStorage['menuBrailleCommands']);
 });

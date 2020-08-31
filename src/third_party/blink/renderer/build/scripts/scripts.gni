@@ -71,13 +71,10 @@ make_trie_helpers_files =
 # on Posix we want to run the system one on the path.
 if (host_os == "win") {
   gperf_exe = rebase_path("//third_party/gperf/bin/gperf.exe", root_build_dir)
-  bison_exe = rebase_path("//third_party/bison/bin/bison.exe", root_build_dir)
 } else if (is_mac) {
   gperf_exe = mac_bin_path + "gperf"
-  bison_exe = mac_bin_path + "bison"
 } else {
   gperf_exe = "gperf"
-  bison_exe = "bison"
 }
 
 # Templates --------------------------------------------------------------------
@@ -85,8 +82,8 @@ if (host_os == "win") {
 _blink_gen_dir = "$root_gen_dir/third_party/blink/renderer"
 
 make_core_generated_deps = [
-  "//third_party/blink/renderer/core:generated_testing_idls",
   "//third_party/blink/renderer/core:core_event_interfaces",
+  "//third_party/blink/renderer/core:generated_testing_idls",
 ]
 
 # A wrapper for python scripts. This adds the following paths to PYTHONPATH,
@@ -96,9 +93,7 @@ make_core_generated_deps = [
 template("blink_python_runner") {
   action(target_name) {
     script = "$_scripts_dir/run_with_pythonpath.py"
-    sources = [
-      invoker.script,
-    ]
+    sources = [ invoker.script ]
     if (defined(invoker.sources)) {
       sources += invoker.sources
     }
@@ -223,6 +218,7 @@ template("css_properties") {
     in_files = [
       "css/css_properties.json5",
       "css/computed_style_field_aliases.json5",
+      "../platform/runtime_enabled_features.json5",
     ]
     if (defined(invoker.in_files)) {
       in_files += invoker.in_files

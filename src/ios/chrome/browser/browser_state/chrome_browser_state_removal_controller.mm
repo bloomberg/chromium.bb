@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -46,8 +47,8 @@ void NukeBrowserStates(const std::vector<base::FilePath>& browser_states_path) {
     // Delete both the browser state directory and its corresponding cache.
     base::FilePath cache_path;
     ios::GetUserCacheDirectory(browser_state_path, &cache_path);
-    base::DeleteFile(browser_state_path, true);
-    base::DeleteFile(cache_path, true);
+    base::DeleteFileRecursively(browser_state_path);
+    base::DeleteFileRecursively(cache_path);
   }
 }
 
@@ -143,9 +144,8 @@ void ChromeBrowserStateRemovalController::RemoveBrowserStatesIfNecessary() {
 
   if (is_removing_browser_states) {
     SetHasBrowserStateBeenRemoved(true);
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&NukeBrowserStates, browser_states_to_nuke));
   }
 }

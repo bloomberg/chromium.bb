@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -135,7 +136,7 @@ const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
 }  // anonymous namespace
 
 String HTMLElement::DebugNodeName() const {
-  if (GetDocument().IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(GetDocument())) {
     return TagQName().HasPrefix() ? Element::nodeName().UpperASCII()
                                   : TagQName().LocalName().UpperASCII();
   }
@@ -150,7 +151,7 @@ String HTMLElement::nodeName() const {
   // chars that does not have to copy the string on a hit in the hash.
   // FIXME: We should have a way to detect XHTML elements and replace the
   // hasPrefix() check with it.
-  if (GetDocument().IsHTMLDocument()) {
+  if (IsA<HTMLDocument>(GetDocument())) {
     if (!TagQName().HasPrefix())
       return TagQName().LocalNameUpper();
     return Element::nodeName().UpperASCII();
@@ -253,9 +254,9 @@ bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
 }
 
 static inline bool IsValidDirAttribute(const AtomicString& value) {
-  return DeprecatedEqualIgnoringCase(value, "auto") ||
-         DeprecatedEqualIgnoringCase(value, "ltr") ||
-         DeprecatedEqualIgnoringCase(value, "rtl");
+  return EqualIgnoringASCIICase(value, "auto") ||
+         EqualIgnoringASCIICase(value, "ltr") ||
+         EqualIgnoringASCIICase(value, "rtl");
 }
 
 void HTMLElement::CollectStyleForPresentationAttribute(
@@ -263,7 +264,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kAlignAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "middle")) {
+    if (EqualIgnoringASCIICase(value, "middle")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueID::kCenter);
     } else {
@@ -271,7 +272,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
                                               value);
     }
   } else if (name == html_names::kContenteditableAttr) {
-    if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true")) {
+    if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserModify, CSSValueID::kReadWrite);
       AddPropertyToPresentationAttributeStyle(
@@ -283,7 +284,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
         UseCounter::Count(GetDocument(),
                           WebFeature::kContentEditableTrueOnHTML);
       }
-    } else if (DeprecatedEqualIgnoringCase(value, "plaintext-only")) {
+    } else if (EqualIgnoringASCIICase(value, "plaintext-only")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserModify,
           CSSValueID::kReadWritePlaintextOnly);
@@ -293,7 +294,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kWebkitLineBreak, CSSValueID::kAfterWhiteSpace);
       UseCounter::Count(GetDocument(),
                         WebFeature::kContentEditablePlainTextOnly);
-    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
+    } else if (EqualIgnoringASCIICase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserModify, CSSValueID::kReadOnly);
     }
@@ -302,17 +303,17 @@ void HTMLElement::CollectStyleForPresentationAttribute(
                                             CSSValueID::kNone);
   } else if (name == html_names::kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
-    if (DeprecatedEqualIgnoringCase(value, "true")) {
+    if (EqualIgnoringASCIICase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kElement);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kUserSelect,
                                               CSSValueID::kNone);
-    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
+    } else if (EqualIgnoringASCIICase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kNone);
     }
   } else if (name == html_names::kDirAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "auto")) {
+    if (EqualIgnoringASCIICase(value, "auto")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kUnicodeBidi,
           UnicodeBidiAttributeForDirAuto(this));
@@ -364,8 +365,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
 
       {html_names::kOnabortAttr, kNoWebFeature, event_type_names::kAbort,
        nullptr},
-      {html_names::kOnactivateinvisibleAttr, kNoWebFeature,
-       event_type_names::kActivateinvisible, nullptr},
       {html_names::kOnanimationendAttr, kNoWebFeature,
        event_type_names::kAnimationend, nullptr},
       {html_names::kOnanimationiterationAttr, kNoWebFeature,
@@ -600,8 +599,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaHaspopupAttr, WebFeature::kARIAHasPopupAttribute,
        kNoEvent, nullptr},
-      {html_names::kAriaHelpAttr, WebFeature::kARIAHelpAttribute, kNoEvent,
-       nullptr},
       {html_names::kAriaHiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent,
        nullptr},
       {html_names::kAriaInvalidAttr, WebFeature::kARIAInvalidAttribute,
@@ -743,12 +740,8 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
 
   if (triggers->web_feature != kNoWebFeature) {
     // Count usage of attributes but ignore attributes in user agent shadow DOM.
-    if (!IsInUserAgentShadowRoot()) {
-      if (triggers->web_feature == WebFeature::kARIAHelpAttribute)
-        Deprecation::CountDeprecation(GetDocument(), triggers->web_feature);
-      else
-        UseCounter::Count(GetDocument(), triggers->web_feature);
-    }
+    if (!IsInUserAgentShadowRoot())
+      UseCounter::Count(GetDocument(), triggers->web_feature);
   }
   if (triggers->function)
     ((*this).*(triggers->function))(params);
@@ -895,25 +888,25 @@ void HTMLElement::ApplyAlignmentAttributeToStyle(
   CSSValueID float_value = CSSValueID::kInvalid;
   CSSValueID vertical_align_value = CSSValueID::kInvalid;
 
-  if (DeprecatedEqualIgnoringCase(alignment, "absmiddle")) {
+  if (EqualIgnoringASCIICase(alignment, "absmiddle")) {
     vertical_align_value = CSSValueID::kMiddle;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "absbottom")) {
+  } else if (EqualIgnoringASCIICase(alignment, "absbottom")) {
     vertical_align_value = CSSValueID::kBottom;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "left")) {
+  } else if (EqualIgnoringASCIICase(alignment, "left")) {
     float_value = CSSValueID::kLeft;
     vertical_align_value = CSSValueID::kTop;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "right")) {
+  } else if (EqualIgnoringASCIICase(alignment, "right")) {
     float_value = CSSValueID::kRight;
     vertical_align_value = CSSValueID::kTop;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "top")) {
+  } else if (EqualIgnoringASCIICase(alignment, "top")) {
     vertical_align_value = CSSValueID::kTop;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "middle")) {
+  } else if (EqualIgnoringASCIICase(alignment, "middle")) {
     vertical_align_value = CSSValueID::kWebkitBaselineMiddle;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "center")) {
+  } else if (EqualIgnoringASCIICase(alignment, "center")) {
     vertical_align_value = CSSValueID::kMiddle;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "bottom")) {
+  } else if (EqualIgnoringASCIICase(alignment, "bottom")) {
     vertical_align_value = CSSValueID::kBaseline;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "texttop")) {
+  } else if (EqualIgnoringASCIICase(alignment, "texttop")) {
     vertical_align_value = CSSValueID::kTextTop;
   }
 
@@ -938,11 +931,11 @@ String HTMLElement::contentEditable() const {
 
   if (value.IsNull())
     return "inherit";
-  if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true"))
+  if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true"))
     return "true";
-  if (DeprecatedEqualIgnoringCase(value, "false"))
+  if (EqualIgnoringASCIICase(value, "false"))
     return "false";
-  if (DeprecatedEqualIgnoringCase(value, "plaintext-only"))
+  if (EqualIgnoringASCIICase(value, "plaintext-only"))
     return "plaintext-only";
 
   return "inherit";
@@ -950,13 +943,13 @@ String HTMLElement::contentEditable() const {
 
 void HTMLElement::setContentEditable(const String& enabled,
                                      ExceptionState& exception_state) {
-  if (DeprecatedEqualIgnoringCase(enabled, "true"))
+  if (EqualIgnoringASCIICase(enabled, "true"))
     setAttribute(html_names::kContenteditableAttr, "true");
-  else if (DeprecatedEqualIgnoringCase(enabled, "false"))
+  else if (EqualIgnoringASCIICase(enabled, "false"))
     setAttribute(html_names::kContenteditableAttr, "false");
-  else if (DeprecatedEqualIgnoringCase(enabled, "plaintext-only"))
+  else if (EqualIgnoringASCIICase(enabled, "plaintext-only"))
     setAttribute(html_names::kContenteditableAttr, "plaintext-only");
-  else if (DeprecatedEqualIgnoringCase(enabled, "inherit"))
+  else if (EqualIgnoringASCIICase(enabled, "inherit"))
     removeAttribute(html_names::kContenteditableAttr);
   else
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -996,8 +989,8 @@ bool HTMLElement::isContentEditableForBinding() const {
 }
 
 bool HTMLElement::draggable() const {
-  return DeprecatedEqualIgnoringCase(
-      FastGetAttribute(html_names::kDraggableAttr), "true");
+  return EqualIgnoringASCIICase(FastGetAttribute(html_names::kDraggableAttr),
+                                "true");
 }
 
 void HTMLElement::setDraggable(bool value) {
@@ -1031,10 +1024,9 @@ TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
 
   if (value == g_null_atom)
     return kTranslateAttributeInherit;
-  if (DeprecatedEqualIgnoringCase(value, "yes") ||
-      DeprecatedEqualIgnoringCase(value, ""))
+  if (EqualIgnoringASCIICase(value, "yes") || EqualIgnoringASCIICase(value, ""))
     return kTranslateAttributeYes;
-  if (DeprecatedEqualIgnoringCase(value, "no"))
+  if (EqualIgnoringASCIICase(value, "no"))
     return kTranslateAttributeNo;
 
   return kTranslateAttributeInherit;
@@ -1069,11 +1061,11 @@ static inline const AtomicString& ToValidDirValue(const AtomicString& value) {
   DEFINE_STATIC_LOCAL(const AtomicString, rtl_value, ("rtl"));
   DEFINE_STATIC_LOCAL(const AtomicString, auto_value, ("auto"));
 
-  if (DeprecatedEqualIgnoringCase(value, ltr_value))
+  if (EqualIgnoringASCIICase(value, ltr_value))
     return ltr_value;
-  if (DeprecatedEqualIgnoringCase(value, rtl_value))
+  if (EqualIgnoringASCIICase(value, rtl_value))
     return rtl_value;
-  if (DeprecatedEqualIgnoringCase(value, auto_value))
+  if (EqualIgnoringASCIICase(value, auto_value))
     return auto_value;
   return g_null_atom;
 }
@@ -1106,7 +1098,7 @@ bool HTMLElement::HasDirectionAuto() const {
   // https://html.spec.whatwg.org/C/#the-bdi-element
   const AtomicString& direction = FastGetAttribute(html_names::kDirAttr);
   return (IsA<HTMLBDIElement>(*this) && direction == g_null_atom) ||
-         DeprecatedEqualIgnoringCase(direction, "auto");
+         EqualIgnoringASCIICase(direction, "auto");
 }
 
 TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
@@ -1129,7 +1121,7 @@ TextDirection HTMLElement::Directionality() const {
   while (node) {
     // Skip bdi, script, style and text form controls.
     auto* element = DynamicTo<Element>(node);
-    if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
+    if (EqualIgnoringASCIICase(node->nodeName(), "bdi") ||
         IsA<HTMLScriptElement>(*node) || IsA<HTMLStyleElement>(*node) ||
         (element && element->IsTextControl()) ||
         (element && element->ShadowPseudoId() == "-webkit-input-placeholder")) {
@@ -1218,11 +1210,8 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   // Process the superclass first to ensure that `InActiveDocument()` is
   // updated.
   Element::InsertedInto(insertion_point);
+  HideNonce();
 
-  if (GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
-      InActiveDocument() && FastHasAttribute(html_names::kNonceAttr)) {
-    setAttribute(html_names::kNonceAttr, g_empty_atom);
-  }
   if (IsFormAssociatedCustomElement())
     EnsureElementInternals().InsertedInto(insertion_point);
 
@@ -1343,7 +1332,7 @@ bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
   String color_string = attribute_value.StripWhiteSpace();
 
   // "transparent" doesn't apply a color either.
-  if (DeprecatedEqualIgnoringCase(color_string, "transparent"))
+  if (EqualIgnoringASCIICase(color_string, "transparent"))
     return false;
 
   // If the string is a 3/6-digit hex color or a named CSS color, use that.
@@ -1387,13 +1376,46 @@ bool HTMLElement::IsInteractiveContent() const {
 }
 
 void HTMLElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
-    HandleKeypressEvent(ToKeyboardEvent(event));
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeypress && keyboard_event) {
+    HandleKeypressEvent(*keyboard_event);
     if (event.DefaultHandled())
       return;
   }
 
   Element::DefaultEventHandler(event);
+}
+
+bool HTMLElement::HandleKeyboardActivation(Event& event) {
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (keyboard_event) {
+    if (event.type() == event_type_names::kKeydown &&
+        keyboard_event->key() == " ") {
+      SetActive(true);
+      // No setDefaultHandled() - IE dispatches a keypress in this case.
+      return true;
+    }
+    if (event.type() == event_type_names::kKeypress) {
+      switch (keyboard_event->charCode()) {
+        case '\r':
+          DispatchSimulatedClick(&event);
+          event.SetDefaultHandled();
+          return true;
+        case ' ':
+          // Prevent scrolling down the page.
+          event.SetDefaultHandled();
+          return true;
+      }
+    }
+    if (event.type() == event_type_names::kKeyup &&
+        keyboard_event->key() == " ") {
+      if (IsActive())
+        DispatchSimulatedClick(&event);
+      event.SetDefaultHandled();
+      return true;
+    }
+  }
+  return false;
 }
 
 bool HTMLElement::MatchesReadOnlyPseudoClass() const {
@@ -1405,10 +1427,10 @@ bool HTMLElement::MatchesReadWritePseudoClass() const {
     const AtomicString& value =
         FastGetAttribute(html_names::kContenteditableAttr);
 
-    if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true") ||
-        DeprecatedEqualIgnoringCase(value, "plaintext-only"))
+    if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true") ||
+        EqualIgnoringASCIICase(value, "plaintext-only"))
       return true;
-    if (DeprecatedEqualIgnoringCase(value, "false"))
+    if (EqualIgnoringASCIICase(value, "false"))
       return false;
     // All other values should be treated as "inherit".
   }
@@ -1436,7 +1458,8 @@ void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
 }
 
 int HTMLElement::offsetLeftForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1447,7 +1470,8 @@ int HTMLElement::offsetLeftForBinding() {
 }
 
 int HTMLElement::offsetTopForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1458,7 +1482,8 @@ int HTMLElement::offsetTopForBinding() {
 }
 
 int HTMLElement::offsetWidthForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1471,7 +1496,8 @@ int HTMLElement::offsetWidthForBinding() {
 
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
-  GetDocument().EnsurePaintLocationDataValidForNode(this);
+  GetDocument().EnsurePaintLocationDataValidForNode(
+      this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1483,7 +1509,8 @@ int HTMLElement::offsetHeightForBinding() {
 }
 
 Element* HTMLElement::unclosedOffsetParent() {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
@@ -1504,7 +1531,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
     parent->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
   }
 
-  if (DeprecatedEqualIgnoringCase(params.new_value, "auto"))
+  if (EqualIgnoringASCIICase(params.new_value, "auto"))
     CalculateAndAdjustDirectionality();
 }
 
@@ -1631,6 +1658,6 @@ void HTMLElement::FinishParsingChildren() {
 void dumpInnerHTML(blink::HTMLElement*);
 
 void dumpInnerHTML(blink::HTMLElement* element) {
-  printf("%s\n", element->InnerHTMLAsString().Ascii().c_str());
+  printf("%s\n", element->innerHTML().Ascii().c_str());
 }
 #endif

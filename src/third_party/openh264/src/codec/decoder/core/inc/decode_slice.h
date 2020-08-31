@@ -42,6 +42,10 @@ int32_t WelsDecodeMbCavlcISlice (PWelsDecoderContext pCtx, PNalUnit pNalCur, uin
 
 int32_t WelsActualDecodeMbCavlcPSlice (PWelsDecoderContext pCtx);
 int32_t WelsDecodeMbCavlcPSlice (PWelsDecoderContext pCtx, PNalUnit pNalCur, uint32_t& uiEosFlag);
+
+int32_t WelsActualDecodeMbCavlcBSlice (PWelsDecoderContext pCtx);
+int32_t WelsDecodeMbCavlcBSlice (PWelsDecoderContext pCtx, PNalUnit pNalCur, uint32_t& uiEosFlag);
+
 typedef int32_t (*PWelsDecMbFunc) (PWelsDecoderContext pCtx, PNalUnit pNalCur, uint32_t& uiEosFlag);
 
 int32_t WelsDecodeMbCabacISlice (PWelsDecoderContext pCtx, PNalUnit pNalCur, uint32_t& uiEosFlag);
@@ -54,17 +58,18 @@ int32_t WelsDecodeMbCabacBSliceBaseMode0 (PWelsDecoderContext pCtx, PWelsNeighAv
 int32_t WelsTargetSliceConstruction (PWelsDecoderContext pCtx); //construction based on slice
 
 int32_t WelsDecodeSlice (PWelsDecoderContext pCtx, bool bFirstSliceInLayer, PNalUnit pNalCur);
+int32_t WelsDecodeAndConstructSlice (PWelsDecoderContext pCtx);
 
 int32_t WelsTargetMbConstruction (PWelsDecoderContext pCtx);
 
-int32_t WelsMbIntraPredictionConstruction (PWelsDecoderContext pCtx, PDqLayer pCurLayer, bool bOutput);
-int32_t WelsMbInterSampleConstruction (PWelsDecoderContext pCtx, PDqLayer pCurLayer,
+int32_t WelsMbIntraPredictionConstruction (PWelsDecoderContext pCtx, PDqLayer pCurDqLayer, bool bOutput);
+int32_t WelsMbInterSampleConstruction (PWelsDecoderContext pCtx, PDqLayer pCurDqLayer,
                                        uint8_t* pDstY, uint8_t* pDstU, uint8_t* pDstV, int32_t iStrideL, int32_t iStrideC);
-int32_t WelsMbInterConstruction (PWelsDecoderContext pCtx, PDqLayer pCurLayer);
+int32_t WelsMbInterConstruction (PWelsDecoderContext pCtx, PDqLayer pCurDqLayer);
 void WelsLumaDcDequantIdct (int16_t* pBlock, int32_t iQp, PWelsDecoderContext pCtx);
-int32_t WelsMbInterPrediction (PWelsDecoderContext pCtx, PDqLayer pCurLayer);
+int32_t WelsMbInterPrediction (PWelsDecoderContext pCtx, PDqLayer pCurDqLayer);
 void WelsChromaDcIdct (int16_t* pBlock);
-bool ComputeColocated (PWelsDecoderContext pCtx);
+bool ComputeColocatedTemporalScaling (PWelsDecoderContext pCtx);
 
 #ifdef __cplusplus
 extern "C" {

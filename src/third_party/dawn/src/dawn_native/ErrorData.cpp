@@ -19,7 +19,15 @@
 
 namespace dawn_native {
 
-    ErrorData::ErrorData() = default;
+    std::unique_ptr<ErrorData> ErrorData::Create(InternalErrorType type,
+                                                 std::string message,
+                                                 const char* file,
+                                                 const char* function,
+                                                 int line) {
+        std::unique_ptr<ErrorData> error = std::make_unique<ErrorData>(type, message);
+        error->AppendBacktrace(file, function, line);
+        return error;
+    }
 
     ErrorData::ErrorData(InternalErrorType type, std::string message)
         : mType(type), mMessage(std::move(message)) {
@@ -34,21 +42,8 @@ namespace dawn_native {
         mBacktrace.push_back(std::move(record));
     }
 
-    InternalErrorType ErrorData::GetInternalType() const {
+    InternalErrorType ErrorData::GetType() const {
         return mType;
-    }
-
-    wgpu::ErrorType ErrorData::GetType() const {
-        switch (mType) {
-            case InternalErrorType::Validation:
-                return wgpu::ErrorType::Validation;
-            case InternalErrorType::OutOfMemory:
-                return wgpu::ErrorType::OutOfMemory;
-            case InternalErrorType::DeviceLost:
-                return wgpu::ErrorType::DeviceLost;
-            default:
-                return wgpu::ErrorType::Unknown;
-        }
     }
 
     const std::string& ErrorData::GetMessage() const {

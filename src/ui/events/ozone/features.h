@@ -10,9 +10,11 @@
 #include "base/metrics/field_trial_params.h"
 
 namespace ui {
-
 COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::Feature kEnableHeuristicPalmDetectionFilter;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnableHighResolutionMouseScrolling;
 
 COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::Feature kEnableNeuralPalmDetectionFilter;
@@ -21,7 +23,16 @@ COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::Feature kEnableNeuralStylusReportFilter;
 
 COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnablePalmOnMaxTouchMajor;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnablePalmOnToolTypePalm;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnablePalmSuppression;
 
 COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::FeatureParam<double> kHeuristicCancelThresholdSeconds;

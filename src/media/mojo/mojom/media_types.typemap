@@ -14,7 +14,7 @@ public_headers = [
   "//media/base/encryption_pattern.h",
   "//media/base/encryption_scheme.h",
   "//media/base/hdr_metadata.h",
-  "//media/base/media_log_event.h",
+  "//media/base/media_log_record.h",
   "//media/base/media_status.h",
   "//media/base/output_device_info.h",
   "//media/base/pipeline_status.h",
@@ -25,6 +25,8 @@ public_headers = [
   "//media/base/video_types.h",
   "//media/base/waiting.h",
   "//media/base/watch_time_keys.h",
+  "//media/base/status.h",
+  "//media/base/status_codes.h",
 ]
 
 traits_headers = [
@@ -44,14 +46,14 @@ sources = [
 
 type_mappings = [
   "media.mojom.AudioCodec=::media::AudioCodec",
+  "media.mojom.AudioCodecProfile=::media::AudioCodecProfile",
   "media.mojom.BufferingState=::media::BufferingState",
   "media.mojom.BufferingStateChangeReason=::media::BufferingStateChangeReason",
   "media.mojom.ChannelLayout=::media::ChannelLayout",
-  "media.mojom.ColorSpace=::media::ColorSpace",
   "media.mojom.DecodeStatus=::media::DecodeStatus",
   "media.mojom.EncryptionScheme=::media::EncryptionScheme",
   "media.mojom.MediaContainerName=::media::container_names::MediaContainerName",
-  "media.mojom.MediaLogEvent=::media::MediaLogEvent",
+  "media.mojom.MediaLogRecord=::media::MediaLogRecord",
   "media.mojom.OutputDeviceStatus=::media::OutputDeviceStatus",
   "media.mojom.PipelineStatus=::media::PipelineStatus",
   "media.mojom.SampleFormat=::media::SampleFormat",
@@ -64,4 +66,5 @@ type_mappings = [
   "media.mojom.WaitingReason=::media::WaitingReason",
   "media.mojom.WatchTimeKey=::media::WatchTimeKey",
   "media.mojom.MediaStatusState=::media::MediaStatus::State",
+  "media.mojom.StatusCode=::media::StatusCode",
 ]

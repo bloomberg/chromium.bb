@@ -49,7 +49,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
@@ -487,8 +487,7 @@ static void WriteTextFragment(WTF::TextStream& ts,
     const NGTextFragment fragment(paint_fragment->Style().GetWritingMode(),
                                   *physical_text_fragment);
     WriteTextFragment(ts, paint_fragment->GetLayoutObject(),
-                      PhysicalRect(paint_fragment->InlineOffsetToContainerBox(),
-                                   paint_fragment->Size()),
+                      paint_fragment->RectInContainerBlock(),
                       paint_fragment->Style(), physical_text_fragment->Text(),
                       fragment.InlineSize());
     return;
@@ -499,8 +498,8 @@ static void WriteTextFragment(WTF::TextStream& ts,
          item.Type() == NGFragmentItem::kGeneratedText);
   const LayoutUnit inline_size =
       item.IsHorizontal() ? item.Size().width : item.Size().height;
-  WriteTextFragment(ts, item.GetLayoutObject(), item.Rect(), item.Style(),
-                    item.Text(cursor.Items()), inline_size);
+  WriteTextFragment(ts, item.GetLayoutObject(), item.RectInContainerBlock(),
+                    item.Style(), item.Text(cursor.Items()), inline_size);
 }
 
 static void WritePaintProperties(WTF::TextStream& ts,
@@ -610,7 +609,8 @@ void Write(WTF::TextStream& ts,
     FrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
       if (auto* layout_view = local_frame_view->GetLayoutView()) {
-        layout_view->GetDocument().UpdateStyleAndLayout();
+        layout_view->GetDocument().UpdateStyleAndLayout(
+            DocumentUpdateReason::kTest);
         if (auto* layer = layout_view->Layer()) {
           LayoutTreeAsText::WriteLayers(ts, layer, layer, indent + 1, behavior);
         }
@@ -900,7 +900,8 @@ String ExternalRepresentation(LocalFrame* frame,
                               LayoutAsTextBehavior behavior,
                               const PaintLayer* marked_layer) {
   if (!(behavior & kLayoutAsTextDontUpdateLayout)) {
-    bool success = frame->View()->UpdateAllLifecyclePhasesExceptPaint();
+    bool success = frame->View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kTest);
     DCHECK(success);
   };
 
@@ -931,8 +932,9 @@ String ExternalRepresentation(LocalFrame* frame,
 String ExternalRepresentation(Element* element, LayoutAsTextBehavior behavior) {
   // Doesn't support printing mode.
   DCHECK(!(behavior & kLayoutAsTextPrintingMode));
-  if (!(behavior & kLayoutAsTextDontUpdateLayout))
-    element->GetDocument().UpdateStyleAndLayout();
+  if (!(behavior & kLayoutAsTextDontUpdateLayout)) {
+    element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  }
 
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object || !layout_object->IsBox())
@@ -958,11 +960,14 @@ static void WriteCounterValuesFromChildren(WTF::TextStream& stream,
 }
 
 String CounterValueForElement(Element* element) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   WTF::TextStream stream;
   bool is_first_counter = true;
-  // The counter layoutObjects should be children of :before or :after
-  // pseudo-elements.
+  // The counter LayoutObjects should be children of ::marker, ::before or
+  // ::after pseudo-elements.
+  if (LayoutObject* marker =
+          element->PseudoElementLayoutObject(kPseudoIdMarker))
+    WriteCounterValuesFromChildren(stream, marker, is_first_counter);
   if (LayoutObject* before =
           element->PseudoElementLayoutObject(kPseudoIdBefore))
     WriteCounterValuesFromChildren(stream, before, is_first_counter);
@@ -972,14 +977,16 @@ String CounterValueForElement(Element* element) {
 }
 
 String MarkerTextForListItem(Element* element) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   LayoutObject* layout_object = element->GetLayoutObject();
   if (layout_object) {
     if (layout_object->IsListItem())
       return ToLayoutListItem(layout_object)->MarkerText();
-    if (layout_object->IsLayoutNGListItem())
-      return ToLayoutNGListItem(layout_object)->MarkerTextWithoutSuffix();
+    if (layout_object->IsLayoutNGListItem()) {
+      if (LayoutObject* marker = ToLayoutNGListItem(layout_object)->Marker())
+        return ListMarker::Get(marker)->MarkerTextWithoutSuffix(*marker);
+    }
   }
   return String();
 }

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -92,8 +92,7 @@ DOMFloat32Array* XRRigidTransform::matrix() {
     matrix_array_ = transformationMatrixToDOMFloat32Array(*matrix_);
   }
 
-  if (!matrix_array_ || !matrix_array_->View() ||
-      !matrix_array_->View()->Data()) {
+  if (!matrix_array_ || !matrix_array_->Data()) {
     // A page may take the matrix_array_ value and detach it so matrix_array_ is
     // a detached array buffer.  This breaks the inspector, so return null
     // instead.
@@ -156,7 +155,7 @@ void XRRigidTransform::EnsureInverse() {
   }
 }
 
-void XRRigidTransform::Trace(blink::Visitor* visitor) {
+void XRRigidTransform::Trace(Visitor* visitor) {
   visitor->Trace(position_);
   visitor->Trace(orientation_);
   visitor->Trace(inverse_);

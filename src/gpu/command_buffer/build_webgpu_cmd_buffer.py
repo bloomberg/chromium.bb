@@ -47,30 +47,33 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'internal': True,
     'data_transfer_methods': ['shm'],
-    'cmd_args': 'uint32_t commands_shm_id, uint32_t commands_shm_offset, '
-                'uint32_t size',
+    'cmd_args': 'uint64_t device_client_id, uint32_t commands_shm_id, '
+                'uint32_t commands_shm_offset, uint32_t size',
     'size_args': {
       'commands': 'size * sizeof(char)',
     },
   },
   'AssociateMailbox': {
+    'impl_func': False,
+    'client_test': False,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'trace_level': 1,
   },
   'DissociateMailbox': {
-    'trace_level': 1,
+    'impl_func': False,
+    'client_test': False,
   },
   'RequestAdapter': {
     'impl_func': False,
     'internal': True,
-    'cmd_args': 'uint32_t request_adapter_serial, uint32_t power_preference'
+    'cmd_args': 'uint64_t request_adapter_serial, uint32_t power_preference'
   },
   'RequestDevice': {
     'impl_func': False,
     'internal': True,
     'data_transfer_methods': ['shm'],
-    'cmd_args': 'uint32_t adapter_service_id, '
+    'cmd_args': 'uint64_t device_client_id, '
+                'uint32_t adapter_service_id, '
                 'uint32_t request_device_properties_shm_id, '
                 'uint32_t request_device_properties_shm_offset, '
                 'uint32_t request_device_properties_size',
@@ -78,6 +81,11 @@ _FUNCTION_INFO = {
       'request_device_properties':
         'request_device_properties_size * sizeof(char)',
     },
+  },
+  'RemoveDevice': {
+    'impl_func': False,
+    'internal': True,
+    'cmd_args': 'uint64_t device_client_id'
   },
 }
 

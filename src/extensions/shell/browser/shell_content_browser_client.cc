@@ -48,7 +48,6 @@
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "extensions/shell/common/version.h"  // Generated file.
-#include "storage/browser/quota/quota_settings.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -124,21 +123,12 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
 
 bool ShellContentBrowserClient::ShouldUseProcessPerSite(
     content::BrowserContext* browser_context,
-    const GURL& effective_url) {
+    const GURL& site_url) {
   // This ensures that all render views created for a single app will use the
   // same render process (see content::SiteInstance::GetProcess). Otherwise the
   // default behavior of ContentBrowserClient will lead to separate render
   // processes for the background page and each app window view.
   return true;
-}
-
-void ShellContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -323,6 +313,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
     bool* bypass_redirect_checks,
+    bool* disable_secure_dns,
     network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
@@ -349,11 +340,12 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
 }
 
 void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
-    content::RenderProcessHost* process,
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {
-  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(process, origin,
-                                                          factory_params);
+  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
+      browser_context, origin, is_for_isolated_world, factory_params);
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() {

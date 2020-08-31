@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Yoyish</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Ilova oʻrnatildi</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> va <ph name="SECOND_ITEM_TITLE" /> almashtirildi</translation>
 <translation id="1498028757988366001">Buni oldin qidirgan edingiz. Qidiruv tarixidan “<ph name="QUERY" />” oʻchirib tashlanganda u barcha . qurilmalaringizdagi hisobingizdan butunlay olib tashlanadi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 daqiqa va }other{# daqiqa va }}</translation>
 <translation id="1643823602425662293">Bildirishnoma</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Hammasini belgilash</translation>
-<translation id="1938451708255335766">Tahrirlar kuchga kirishi uchun ilovani yopib, qaytadan ishga tushiring.</translation>
 <translation id="2006524834898217237">Bu qurilma internetga ulanganini tekshiring.</translation>
 <translation id="208586643495776849">Qayta urining</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> orqali Android telefoningizga raqam yuborish uchun ikkala qurilma sozlamalarida <ph name="TROUBLESHOOT_LINK" /> sahifasini oching.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Pastga strelka</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 kun}other{# kun}}</translation>
 <translation id="3295886253693811851">Telefon qilish</translation>
+<translation id="3306688585798492231">Ichki displey</translation>
 <translation id="335581015389089642">Ovoz berish</translation>
 <translation id="3389286852084373014">Matn juda katta</translation>
-<translation id="3479552764303398839">Hozir emas</translation>
 <translation id="348799646910989694">Vaqtincha xotira avtomatik yopildi</translation>
 <translation id="3554637740840164787">Mahkamlandi: <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ 1 kun qoldi}other{ # kun qoldi}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783"><ph name="TITLE" /> mobil qurilmangizdan o‘qishda davom etish</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3889424535448813030">O‘ngga tugmasi</translation>
-<translation id="3892641579809465218">Ichki displey</translation>
 <translation id="3897092660631435901">Menyu</translation>
 <translation id="3909791450649380159">&amp;Kesib olish</translation>
 <translation id="3990502903496589789">O‘ng cheti</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 daqiqa}other{# daqiqa}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bugun onlayn edi}=1{1 kun oldin onlayn edi}other{# kun oldin onlayn edi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 kun va }other{# kun va }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 yildan keyin}other{# yildan keyin}}</translation>
-<translation id="5895138241574237353">Qayta ishga tushirish</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 soniya qoldi}other{# soniya qoldi}}</translation>
 <translation id="5941711191222866238">Yig‘ish</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 soat}other{# soat}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">O‘ngdan chapga</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ENG SEVIMLI</translation>
+<translation id="7170202025028120564">Ilovangizdagi ekran sozlamalari keyingi safar ishga tushganda kuchga kiradi.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 daqiqa qoldi}other{# daqiqa qoldi}}</translation>
 <translation id="7319740667687257810">Launcher, ajratib ko‘rsatish</translation>

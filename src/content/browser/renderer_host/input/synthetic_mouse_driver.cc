@@ -17,9 +17,9 @@ SyntheticMouseDriver::~SyntheticMouseDriver() {}
 void SyntheticMouseDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
   mouse_event_.SetTimeStamp(timestamp);
-  if (mouse_event_.GetType() != blink::WebInputEvent::kUndefined) {
+  if (mouse_event_.GetType() != blink::WebInputEvent::Type::kUndefined) {
     target->DispatchInputEventToPlatform(mouse_event_);
-    mouse_event_.SetType(blink::WebInputEvent::kUndefined);
+    mouse_event_.SetType(blink::WebInputEvent::Type::kUndefined);
   }
 }
 
@@ -37,7 +37,7 @@ void SyntheticMouseDriver::Press(float x,
   int modifiers =
       SyntheticPointerActionParams::GetWebMouseEventModifier(button);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseDown, x, y,
+      blink::WebInputEvent::Type::kMouseDown, x, y,
       modifiers | key_modifiers | last_modifiers_, mouse_event_.pointer_type);
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);
@@ -60,8 +60,8 @@ void SyntheticMouseDriver::Move(float x,
                                 float force) {
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseMove, x, y, key_modifiers | last_modifiers_,
-      mouse_event_.pointer_type);
+      blink::WebInputEvent::Type::kMouseMove, x, y,
+      key_modifiers | last_modifiers_, mouse_event_.pointer_type);
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButtonFromModifier(
           last_modifiers_);
@@ -73,12 +73,16 @@ void SyntheticMouseDriver::Release(int index,
                                    int key_modifiers) {
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::kMouseUp, mouse_event_.PositionInWidget().x,
-      mouse_event_.PositionInWidget().y, key_modifiers | last_modifiers_,
+      blink::WebInputEvent::Type::kMouseUp, mouse_event_.PositionInWidget().x(),
+      mouse_event_.PositionInWidget().y(), key_modifiers | last_modifiers_,
       mouse_event_.pointer_type);
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);
-  mouse_event_.click_count = click_count_;
+
+  // Set click count to 1 to allow pointer release without pointer down. This
+  // prevents MouseEvent::SetClickCount from throwing DCHECK error
+  click_count_ == 0 ? mouse_event_.click_count = 1
+                    : mouse_event_.click_count = click_count_;
   last_modifiers_ =
       last_modifiers_ &
       (~SyntheticPointerActionParams::GetWebMouseEventModifier(button));
@@ -113,7 +117,7 @@ bool SyntheticMouseDriver::UserInputCheck(
       SyntheticPointerActionParams::PointerActionType::RELEASE) {
     int modifiers =
         SyntheticPointerActionParams::GetWebMouseEventModifier(params.button());
-    if (!(last_modifiers_ & modifiers))
+    if (!modifiers)
       return false;
   }
 

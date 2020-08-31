@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_capturer_source.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
@@ -26,10 +26,8 @@ class AudioProcessorControls;
 
 namespace blink {
 
-class AudioServiceAudioProcessorProxy;
+class LocalFrame;
 class MediaStreamAudioProcessor;
-class MediaStreamInternalFrameWrapper;
-class WebLocalFrame;
 
 // Represents a local source of audio data that is routed through the WebRTC
 // audio pipeline for post-processing (e.g., for echo cancellation during a
@@ -37,18 +35,18 @@ class WebLocalFrame;
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
 class MODULES_EXPORT ProcessedLocalAudioSource final
-    : public blink::MediaStreamAudioSource,
+    : public MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
-  // |internal_consumer_frame_| references the blink::LocalFrame that will
+  // |consumer_frame_| references the LocalFrame that will
   // consume the audio data. Audio parameters and (optionally) a pre-existing
   // audio session ID are derived from |device_info|. |factory| must outlive
   // this instance.
   ProcessedLocalAudioSource(
-      WebLocalFrame* web_frame,
-      const blink::MediaStreamDevice& device,
+      LocalFrame* frame,
+      const MediaStreamDevice& device,
       bool disable_local_echo,
-      const blink::AudioProcessingProperties& audio_processing_properties,
+      const AudioProcessingProperties& audio_processing_properties,
       ConstraintsOnceCallback started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -119,23 +117,26 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   // processing will take place.
   int GetBufferSize(int sample_rate) const;
 
+  // Helper method which sends the log |message| to a native WebRTC log and
+  // adds the current session ID (from the associated media stream device) to
+  // make the log unique.
+  void SendLogMessageWithSessionId(const std::string& message) const;
+
   // The LocalFrame that will consume the audio data. Used when creating
   // AudioCapturerSources.
-  std::unique_ptr<MediaStreamInternalFrameWrapper> internal_consumer_frame_;
+  //
+  // TODO(crbug.com/704136): Consider moving ProcessedLocalAudioSource to
+  // Oilpan and use Member<> here.
+  WeakPersistent<LocalFrame> consumer_frame_;
 
   blink::AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
   ConstraintsOnceCallback started_callback_;
 
-  // At most one of |audio_processor_| and |audio_processor_proxy_| can be set.
-
   // Audio processor doing processing like FIFO, AGC, AEC and NS. Its output
   // data is in a unit of 10 ms data chunk.
   scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
-
-  // Proxy for the audio processor when it's run in the Audio Service process,
-  scoped_refptr<AudioServiceAudioProcessorProxy> audio_processor_proxy_;
 
   // The device created by the AudioDeviceFactory in EnsureSourceIsStarted().
   scoped_refptr<media::AudioCapturerSource> source_;

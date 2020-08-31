@@ -12,7 +12,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -22,7 +22,7 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
-                  QuicStringPiece data);
+                  quiche::QuicheStringPiece data);
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
@@ -35,11 +35,13 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame
 
   bool operator!=(const QuicStreamFrame& rhs) const;
 
-  bool fin;
-  QuicPacketLength data_length;
-  QuicStreamId stream_id;
-  const char* data_buffer;  // Not owned.
-  QuicStreamOffset offset;  // Location of this data in the stream.
+  bool fin = false;
+  QuicPacketLength data_length = 0;
+  // TODO(wub): Change to a QuicUtils::GetInvalidStreamId when it is not version
+  // dependent.
+  QuicStreamId stream_id = -1;
+  const char* data_buffer = nullptr;  // Not owned.
+  QuicStreamOffset offset = 0;        // Location of this data in the stream.
 
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,

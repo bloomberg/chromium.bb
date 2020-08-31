@@ -35,9 +35,9 @@
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
-    [Affects=Nothing, Unforgeable, CrossOrigin] readonly attribute Window window;
-    [Replaceable, CrossOrigin] readonly attribute Window self;
-    [Affects=Nothing, Unforgeable, CachedAccessor] readonly attribute Document document;
+    [Affects=Nothing, Unforgeable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window window;
+    [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window self;
+    [Affects=Nothing, Unforgeable, CachedAccessor=kWindowDocument] readonly attribute Document document;
     attribute DOMString name;
     [Affects=Nothing, PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     [CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;
@@ -56,7 +56,7 @@
     [CrossOrigin] void blur();
 
     // other browsing contexts
-    [Replaceable, CrossOrigin] readonly attribute Window frames;
+    [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window frames;
     [Replaceable, CrossOrigin] readonly attribute unsigned long length;
     [Unforgeable, CrossOrigin] readonly attribute Window? top;
     // FIXME: opener should be of type any.
@@ -74,7 +74,7 @@
 
     // the user agent
     [Affects=Nothing, LogActivity=GetterOnly] readonly attribute Navigator navigator;
-    [LogActivity=GetterOnly, SecureContext=RestrictAppCacheToSecureContexts] readonly attribute ApplicationCache applicationCache;
+    [LogActivity=GetterOnly, SecureContext=RestrictAppCacheToSecureContexts, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
 
     // user prompts
     [Measure, CallWith=ScriptState] void alert();
@@ -85,12 +85,14 @@
 
     [CrossOrigin, CallWith=Isolate, RaisesException] void postMessage(any message, USVString targetOrigin, optional sequence<object> transfer = []);
 
-    [CrossOrigin, CallWith=Isolate, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
+    [CrossOrigin, CallWith=Isolate, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options = {});
 
     // WindowOrWorkerGlobalScope mixin
     // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
+    // https://wicg.github.io/origin-policy/#monkeypatch-html-windoworworkerglobalscope
     [Replaceable] readonly attribute DOMString origin;
     void queueMicrotask(VoidFunction callback);
+    [RuntimeEnabled=OriginPolicy, SameObject, SaveSameObject] readonly attribute FrozenArray<DOMString> originPolicyIds;
 
     // AnimationFrameProvider mixin
     // https://html.spec.whatwg.org/C/#animation-frames
@@ -108,7 +110,7 @@
 
     // Cooperative Scheduling of Background Tasks
     // https://www.w3.org/TR/requestidlecallback/#window_extensions
-    [Measure] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options);
+    [Measure] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options = {});
     void cancelIdleCallback(long handle);
 
     // CSS Object Model (CSSOM)
@@ -135,11 +137,11 @@
     [HighEntropy, MeasureAs=WindowPageXOffset, Replaceable] readonly attribute double pageXOffset;
     [HighEntropy, MeasureAs=WindowScrollY, Replaceable] readonly attribute double scrollY;
     [HighEntropy, MeasureAs=WindowPageYOffset, Replaceable] readonly attribute double pageYOffset;
-    void scroll(optional ScrollToOptions options);
+    void scroll(optional ScrollToOptions options = {});
     void scroll(unrestricted double x, unrestricted double y);
-    void scrollTo(optional ScrollToOptions options);
+    void scrollTo(optional ScrollToOptions options = {});
     void scrollTo(unrestricted double x, unrestricted double y);
-    void scrollBy(optional ScrollToOptions options);
+    void scrollBy(optional ScrollToOptions options = {});
     void scrollBy(unrestricted double x, unrestricted double y);
 
     // Visual Viewport API
@@ -176,18 +178,18 @@
     [RuntimeEnabled=AccessibilityObjectModel, CallWith=ScriptState] Promise<ComputedAccessibleNode> getComputedAccessibleNode(Element element);
 
     // TODO(yhirano): Move this to url.idl when LegacyWindowAlias is supported.
-    attribute URLConstructor webkitURL;
+    [DisableInNewIDLCompiler] attribute URLConstructor webkitURL;
 
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [Replaceable, MeasureAs=WindowEvent, Custom=Getter, NotEnumerable] readonly attribute Event event;
-    [MeasureAs=WindowFind] boolean find([DefaultValue=Undefined] optional DOMString string,
-                                        [DefaultValue=Undefined] optional boolean caseSensitive,
-                                        [DefaultValue=Undefined] optional boolean backwards,
-                                        [DefaultValue=Undefined] optional boolean wrap,
-                                        [DefaultValue=Undefined] optional boolean wholeWord,
-                                        [DefaultValue=Undefined] optional boolean searchInFrames,
-                                        [DefaultValue=Undefined] optional boolean showDialog);
+    [MeasureAs=WindowFind] boolean find(optional DOMString string = "",
+                                        optional boolean caseSensitive = false,
+                                        optional boolean backwards = false,
+                                        optional boolean wrap = false,
+                                        optional boolean wholeWord = false,
+                                        optional boolean searchInFrames = false,
+                                        optional boolean showDialog = false);
     [MeasureAs=WindowOffscreenBuffering, Replaceable, NotEnumerable] readonly attribute boolean offscreenBuffering;
     [HighEntropy, MeasureAs=WindowScreenLeft, Replaceable] readonly attribute long screenLeft;
     [HighEntropy, MeasureAs=WindowScreenTop, Replaceable] readonly attribute long screenTop;
@@ -196,24 +198,18 @@
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
-    [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
+    [DisableInNewIDLCompiler, MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // Event handler attributes
     attribute EventHandler onsearch;
 
-    // TODO(crbug.com/999895): Move to global_event_handlers.idl
-    attribute EventHandler onwebkitanimationend;
-    attribute EventHandler onwebkitanimationiteration;
-    attribute EventHandler onwebkitanimationstart;
-    attribute EventHandler onwebkittransitionend;
-
     // https://w3c.github.io/webappsec-secure-contexts/#monkey-patching-global-object
     readonly attribute boolean isSecureContext;
 
-    attribute DOMMatrixConstructor WebKitCSSMatrix;
+    [DisableInNewIDLCompiler] attribute DOMMatrixConstructor WebKitCSSMatrix;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory trustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory trustedTypes;
 };
 
 Window includes GlobalEventHandlers;

@@ -27,13 +27,21 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as ProtocolClient from '../protocol_client/protocol_client.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {ExtensionServer} from './ExtensionServer.js';  // eslint-disable-line no-unused-vars
+import {ExtensionNotifierView, ExtensionView} from './ExtensionView.js';
+
 /**
- * @implements {UI.Searchable}
+ * @implements {UI.SearchableView.Searchable}
  * @unrestricted
  */
-export default class ExtensionPanel extends UI.Panel {
+export class ExtensionPanel extends UI.Panel.Panel {
   /**
-   * @param {!Extensions.ExtensionServer} server
+   * @param {!ExtensionServer} server
    * @param {string} panelName
    * @param {string} id
    * @param {string} pageURL
@@ -43,17 +51,17 @@ export default class ExtensionPanel extends UI.Panel {
     this._server = server;
     this._id = id;
     this.setHideOnDetach();
-    this._panelToolbar = new UI.Toolbar('hidden', this.element);
+    this._panelToolbar = new UI.Toolbar.Toolbar('hidden', this.element);
 
-    this._searchableView = new UI.SearchableView(this);
+    this._searchableView = new UI.SearchableView.SearchableView(this);
     this._searchableView.show(this.element);
 
-    const extensionView = new Extensions.ExtensionView(server, this._id, pageURL, 'extension');
+    const extensionView = new ExtensionView(server, this._id, pageURL, 'extension');
     extensionView.show(this._searchableView.element);
   }
 
   /**
-   * @param {!UI.ToolbarItem} item
+   * @param {!UI.Toolbar.ToolbarItem} item
    */
   addToolbarItem(item) {
     this._panelToolbar.element.classList.remove('hidden');
@@ -70,7 +78,7 @@ export default class ExtensionPanel extends UI.Panel {
 
   /**
    * @override
-   * @return {!UI.SearchableView}
+   * @return {!UI.SearchableView.SearchableView}
    */
   searchableView() {
     return this._searchableView;
@@ -123,7 +131,7 @@ export default class ExtensionPanel extends UI.Panel {
  */
 export class ExtensionButton {
   /**
-   * @param {!Extensions.ExtensionServer} server
+   * @param {!ExtensionServer} server
    * @param {string} id
    * @param {string} iconURL
    * @param {string=} tooltip
@@ -132,9 +140,9 @@ export class ExtensionButton {
   constructor(server, id, iconURL, tooltip, disabled) {
     this._id = id;
 
-    this._toolbarButton = new UI.ToolbarButton('', '');
+    this._toolbarButton = new UI.Toolbar.ToolbarButton('', '');
     this._toolbarButton.addEventListener(
-        UI.ToolbarButton.Events.Click, server.notifyButtonClicked.bind(server, this._id));
+        UI.Toolbar.ToolbarButton.Events.Click, server.notifyButtonClicked.bind(server, this._id));
     this.update(iconURL, tooltip, disabled);
   }
 
@@ -156,7 +164,7 @@ export class ExtensionButton {
   }
 
   /**
-   * @return {!UI.ToolbarButton}
+   * @return {!UI.Toolbar.ToolbarButton}
    */
   toolbarButton() {
     return this._toolbarButton;
@@ -166,9 +174,9 @@ export class ExtensionButton {
 /**
  * @unrestricted
  */
-export class ExtensionSidebarPane extends UI.SimpleView {
+export class ExtensionSidebarPane extends UI.View.SimpleView {
   /**
-   * @param {!Extensions.ExtensionServer} server
+   * @param {!ExtensionServer} server
    * @param {string} panelName
    * @param {string} title
    * @param {string} id
@@ -202,7 +210,7 @@ export class ExtensionSidebarPane extends UI.SimpleView {
    */
   setObject(object, title, callback) {
     this._createObjectPropertiesView();
-    this._setObject(SDK.RemoteObject.fromLocalObject(object), title, callback);
+    this._setObject(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
   }
 
   /**
@@ -230,7 +238,7 @@ export class ExtensionSidebarPane extends UI.SimpleView {
       this._extensionView.detach(true);
     }
 
-    this._extensionView = new Extensions.ExtensionView(this._server, this._id, url, 'extension fill');
+    this._extensionView = new ExtensionView(this._server, this._id, url, 'extension fill');
     this._extensionView.show(this.element);
 
     if (!this.element.style.height) {
@@ -248,8 +256,8 @@ export class ExtensionSidebarPane extends UI.SimpleView {
   /**
    * @param {string} title
    * @param {function(?string=)} callback
-   * @param {?Protocol.Error} error
-   * @param {?SDK.RemoteObject} result
+   * @param {?ProtocolClient.InspectorBackend.ProtocolError} error
+   * @param {?SDK.RemoteObject.RemoteObject} result
    * @param {boolean=} wasThrown
    */
   _onEvaluate(title, callback, error, result, wasThrown) {
@@ -268,12 +276,12 @@ export class ExtensionSidebarPane extends UI.SimpleView {
       this._extensionView.detach(true);
       delete this._extensionView;
     }
-    this._objectPropertiesView = new Extensions.ExtensionNotifierView(this._server, this._id);
+    this._objectPropertiesView = new ExtensionNotifierView(this._server, this._id);
     this._objectPropertiesView.show(this.element);
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {string} title
    * @param {function(?string=)} callback
    */
@@ -284,7 +292,7 @@ export class ExtensionSidebarPane extends UI.SimpleView {
       return;
     }
     this._objectPropertiesView.element.removeChildren();
-    UI.Renderer.render(object, {title, editable: false}).then(result => {
+    UI.UIUtils.Renderer.render(object, {title, editable: false}).then(result => {
       if (!result) {
         callback();
         return;
@@ -297,18 +305,3 @@ export class ExtensionSidebarPane extends UI.SimpleView {
     });
   }
 }
-
-/* Legacy exported object */
-self.Extensions = self.Extensions || {};
-
-/* Legacy exported object */
-Extensions = Extensions || {};
-
-/** @constructor */
-Extensions.ExtensionPanel = ExtensionPanel;
-
-/** @constructor */
-Extensions.ExtensionButton = ExtensionButton;
-
-/** @constructor */
-Extensions.ExtensionSidebarPane = ExtensionSidebarPane;

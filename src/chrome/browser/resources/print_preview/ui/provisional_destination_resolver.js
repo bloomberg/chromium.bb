@@ -80,7 +80,7 @@ Polymer({
    * @return {!Promise} Promise that is resolved when the destination has been
    *     resolved.
    */
-  resolveDestination: function(destination) {
+  resolveDestination(destination) {
     this.state_ = ResolverState.ACTIVE;
     this.destination_ = destination;
     this.$.dialog.showModal();
@@ -100,9 +100,9 @@ Polymer({
    * resolved destination and the dialog closes.
    * @private
    */
-  startResolveDestination_: function() {
+  startResolveDestination_() {
     assert(
-        this.state_ == ResolverState.ACTIVE,
+        this.state_ === ResolverState.ACTIVE,
         'Invalid state in request grant permission');
 
     this.state_ = ResolverState.GRANTING_PERMISSION;
@@ -112,11 +112,11 @@ Polymer({
         .then(
             /** @param {?Destination} resolvedDestination */
             (resolvedDestination) => {
-              if (this.state_ != ResolverState.GRANTING_PERMISSION) {
+              if (this.state_ !== ResolverState.GRANTING_PERMISSION) {
                 return;
               }
 
-              if (destination.id != this.destination_.id) {
+              if (destination.id !== this.destination_.id) {
                 return;
               }
 
@@ -135,21 +135,21 @@ Polymer({
    * @param {!KeyboardEvent} e Event containing the key
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     e.stopPropagation();
-    if (e.key == 'Escape') {
+    if (e.key === 'Escape') {
       this.$.dialog.cancel();
       e.preventDefault();
     }
   },
 
   /** @private */
-  onCancelClick_: function() {
+  onCancelClick_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onCancel_: function() {
+  onCancel_() {
     this.promiseResolver_.reject();
     this.state_ = ResolverState.INITIAL;
   },
@@ -158,8 +158,8 @@ Polymer({
    * @return {string} The USB permission message to display.
    * @private
    */
-  getPermissionMessage_: function() {
-    return this.state_ == ResolverState.ERROR ?
+  getPermissionMessage_() {
+    return this.state_ === ResolverState.ERROR ?
         this.i18n(
             'resolveExtensionUSBErrorMessage',
             this.destination_.extensionName) :
@@ -170,23 +170,23 @@ Polymer({
    * @return {boolean} Whether the resolver is in the ERROR state.
    * @private
    */
-  isInErrorState_: function() {
-    return this.state_ == ResolverState.ERROR;
+  isInErrorState_() {
+    return this.state_ === ResolverState.ERROR;
   },
 
   /**
    * @return {boolean} Whether the resolver is in the ACTIVE state.
    * @private
    */
-  isInActiveState_: function() {
-    return this.state_ == ResolverState.ACTIVE;
+  isInActiveState_() {
+    return this.state_ === ResolverState.ACTIVE;
   },
 
   /**
    * @return {string} 'throbber' if the resolver is in the GRANTING_PERMISSION
    *     state, empty otherwise.
    */
-  getThrobberClass_: function() {
-    return this.state_ == ResolverState.GRANTING_PERMISSION ? 'throbber' : '';
+  getThrobberClass_() {
+    return this.state_ === ResolverState.GRANTING_PERMISSION ? 'throbber' : '';
   },
 });

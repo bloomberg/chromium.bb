@@ -7,20 +7,27 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/ssl/tls_deprecation_config.pb.h"
+#include "chrome/browser/ssl/tls_deprecation_test_utils.h"
+#include "services/network/public/proto/tls_deprecation_config.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using chrome_browser_ssl::LegacyTLSExperimentConfig;
 
+class TLSDeprecationConfigTest : public testing::Test {
+ protected:
+  void SetUp() override { ResetTLSDeprecationConfigForTesting(); }
+  void TearDown() override { ResetTLSDeprecationConfigForTesting(); }
+};
+
 // Tests the case where no proto has been set by the component installer.
-TEST(TLSDeprecationConfigTest, NoProto) {
+TEST_F(TLSDeprecationConfigTest, NoProto) {
   EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(GURL("https://example.test")));
 }
 
 // This tests that when no sites are in the control set,
 // IsTLSDeprecationControlSite() returns false.
-TEST(TLSDeprecationConfigTest, NoControlSites) {
+TEST_F(TLSDeprecationConfigTest, NoControlSites) {
   GURL control_site("https://control.test");
   std::string control_site_hex =
       "f12b47771bb3c2bcc85a5347d195523013ec5a23b4c761b5d6aacf04bafc5e23";
@@ -28,7 +35,8 @@ TEST(TLSDeprecationConfigTest, NoControlSites) {
   // Setup proto (as if read from component installer), but don't add any
   // control sites to it.
   auto config = std::make_unique<LegacyTLSExperimentConfig>();
-  SetRemoteTLSDeprecationConfigProto(std::move(config));
+  config->set_version_id(1);
+  SetRemoteTLSDeprecationConfig(config->SerializeAsString());
 
   EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(control_site));
 }
@@ -36,7 +44,7 @@ TEST(TLSDeprecationConfigTest, NoControlSites) {
 // This tests that when only a single control site is in the control set,
 // IsTLSDeprecationControlSite() works correctly for the site in the control and
 // for sites not in the control.
-TEST(TLSDeprecationConfigTest, SingleControlSite) {
+TEST_F(TLSDeprecationConfigTest, SingleControlSite) {
   GURL control_site("https://control.test");
   std::string control_site_hex =
       "f12b47771bb3c2bcc85a5347d195523013ec5a23b4c761b5d6aacf04bafc5e23";
@@ -49,9 +57,10 @@ TEST(TLSDeprecationConfigTest, SingleControlSite) {
 
   // Setup proto (as if read from component installer).
   auto config = std::make_unique<LegacyTLSExperimentConfig>();
+  config->set_version_id(1);
   config->add_control_site_hashes(control_site_hex);
 
-  SetRemoteTLSDeprecationConfigProto(std::move(config));
+  SetRemoteTLSDeprecationConfig(config->SerializeAsString());
 
   EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(control_site));
   EXPECT_FALSE(ShouldSuppressLegacyTLSWarning(non_control_site));
@@ -62,7 +71,7 @@ TEST(TLSDeprecationConfigTest, SingleControlSite) {
 
 // This tests that the binary search in IsTLSDeprecationControlSite() works for
 // both a site that is in the control set and a site that is not.
-TEST(TLSDeprecationConfigTest, ManyControlSites) {
+TEST_F(TLSDeprecationConfigTest, ManyControlSites) {
   const struct {
     GURL url;
     std::string hash;
@@ -92,10 +101,11 @@ TEST(TLSDeprecationConfigTest, ManyControlSites) {
 
   // Setup proto (as if read from component installer).
   auto config = std::make_unique<LegacyTLSExperimentConfig>();
+  config->set_version_id(1);
   for (auto& site : kControlSites) {
     config->add_control_site_hashes(site.hash);
   }
-  SetRemoteTLSDeprecationConfigProto(std::move(config));
+  SetRemoteTLSDeprecationConfig(config->SerializeAsString());
 
   for (auto& site : kControlSites) {
     EXPECT_TRUE(ShouldSuppressLegacyTLSWarning(site.url));

@@ -7,11 +7,16 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class FilterTests(patch_unittest.GitRepoPatchTestCase):

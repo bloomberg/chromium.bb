@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -18,13 +19,11 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -196,18 +195,6 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     public TabGroupModelFilter(TabModel tabModel) {
         super(tabModel);
-
-        // Record the group count after all tabs are being restored. This only happen once per life
-        // cycle, therefore remove the observer after recording.
-        addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void restoreCompleted() {
-                RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
-                Tab currentTab = TabModelUtils.getCurrentTab(getTabModel());
-                if (currentTab != null) recordSessionsCount(currentTab);
-                removeObserver(this);
-            }
-        });
     }
 
     /**
@@ -699,8 +686,7 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
-        // Ignore didMoveTab calls in tab restoring stage. For incognito mode, bypass this check
-        // since there is no restoring stage.
+        // Ignore didMoveTab calls in tab restoring stage.
         if (!isTabModelRestored()) return;
         // Need to cache the flags before resetting the internal data map.
         boolean isMergeTabToGroup = isMergeTabToGroup(tab);

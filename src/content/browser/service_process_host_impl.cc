@@ -79,7 +79,9 @@ class ServiceProcessTracker {
   }
 
   void RemoveObserver(ServiceProcessHost::Observer* observer) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // NOTE: Some tests may remove observers after BrowserThreads are shut down.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+           !BrowserThread::IsThreadInitialized(BrowserThread::UI));
     observers_.RemoveObserver(observer);
   }
 
@@ -110,13 +112,11 @@ class ServiceProcessTracker {
 
   ServiceProcessId GenerateNextId() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    auto id = next_id_;
-    next_id_ = ServiceProcessId::FromUnsafeValue(next_id_.GetUnsafeValue() + 1);
-    return id;
+    return service_process_id_generator_.GenerateNextId();
   }
 
   const scoped_refptr<base::TaskRunner> ui_task_runner_;
-  ServiceProcessId next_id_{1};
+  ServiceProcessId::Generator service_process_id_generator_;
 
   base::Lock processes_lock_;
   std::map<ServiceProcessId, ServiceProcessInfo> processes_;

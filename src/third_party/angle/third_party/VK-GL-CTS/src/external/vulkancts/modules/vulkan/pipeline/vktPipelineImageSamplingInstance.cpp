@@ -188,6 +188,7 @@ static MovePtr<TestTexture> createTestTexture (const TcuFormatType format, VkIma
 
 void checkSupportImageSamplingInstance (Context& context, ImageSamplingInstanceParams params)
 {
+
 	if (de::abs(params.samplerParams.mipLodBias) > context.getDeviceProperties().limits.maxSamplerLodBias)
 		TCU_THROW(NotSupportedError, "Unsupported sampler Lod bias value");
 
@@ -205,12 +206,12 @@ void checkSupportImageSamplingInstance (Context& context, ImageSamplingInstanceP
 
 	if (params.separateStencilUsage)
 	{
-		context.requireDeviceExtension("VK_EXT_separate_stencil_usage");
-		context.requireInstanceExtension("VK_KHR_get_physical_device_properties2");
+		context.requireDeviceFunctionality("VK_EXT_separate_stencil_usage");
+		context.requireInstanceFunctionality("VK_KHR_get_physical_device_properties2");
 
-		const VkImageStencilUsageCreateInfoEXT  stencilUsage	=
+		const VkImageStencilUsageCreateInfo  stencilUsage	=
 		{
-			VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO_EXT,
+			VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO,
 			DE_NULL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT
 		};
@@ -253,16 +254,29 @@ void checkSupportImageSamplingInstance (Context& context, ImageSamplingInstanceP
 		}
 	}
 
-	if (params.samplerParams.pNext != DE_NULL)
+	void const* pNext = params.samplerParams.pNext;
+	while (pNext != DE_NULL)
 	{
-		const VkStructureType nextType = *reinterpret_cast<const VkStructureType*>(params.samplerParams.pNext);
-
-		if (nextType == VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT)
+		const VkStructureType nextType = *reinterpret_cast<const VkStructureType*>(pNext);
+		switch (nextType)
 		{
-			context.requireDeviceExtension("VK_EXT_sampler_filter_minmax");
+			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT:
+			{
+				context.requireDeviceFunctionality("VK_EXT_sampler_filter_minmax");
 
-			if (!isMinMaxFilteringSupported(context.getInstanceInterface(), context.getPhysicalDevice(), params.imageFormat, VK_IMAGE_TILING_OPTIMAL))
-				throw tcu::NotSupportedError(std::string("Unsupported format for min/max filtering: ") + getFormatName(params.imageFormat));
+				if (!isMinMaxFilteringSupported(context.getInstanceInterface(), context.getPhysicalDevice(), params.imageFormat, VK_IMAGE_TILING_OPTIMAL))
+					throw tcu::NotSupportedError(std::string("Unsupported format for min/max filtering: ") + getFormatName(params.imageFormat));
+
+				pNext = reinterpret_cast<const VkSamplerReductionModeCreateInfo*>(pNext)->pNext;
+				break;
+			}
+			case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO:
+				context.requireDeviceFunctionality("VK_KHR_sampler_ycbcr_conversion");
+
+				pNext = reinterpret_cast<const VkSamplerYcbcrConversionInfo*>(pNext)->pNext;
+				break;
+			default:
+				TCU_FAIL("Unrecognized sType in chained sampler create info");
 		}
 	}
 
@@ -270,7 +284,7 @@ void checkSupportImageSamplingInstance (Context& context, ImageSamplingInstanceP
 		params.samplerParams.addressModeV == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE ||
 		params.samplerParams.addressModeW == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE)
 	{
-		context.requireDeviceExtension("VK_KHR_sampler_mirror_clamp_to_edge");
+		context.requireDeviceFunctionality("VK_KHR_sampler_mirror_clamp_to_edge");
 	}
 
 	if ((isCompressedFormat(params.imageFormat) || isDepthStencilFormat(params.imageFormat)) && params.imageViewType == VK_IMAGE_VIEW_TYPE_3D)
@@ -301,7 +315,7 @@ void checkSupportImageSamplingInstance (Context& context, ImageSamplingInstanceP
 		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_IMAGE_CUBE_ARRAY);
 
 	if (params.allocationKind == ALLOCATION_KIND_DEDICATED)
-		context.requireDeviceExtension("VK_KHR_dedicated_allocation");
+		context.requireDeviceFunctionality("VK_KHR_dedicated_allocation");
 }
 
 ImageSamplingInstance::ImageSamplingInstance (Context&						context,
@@ -339,7 +353,7 @@ ImageSamplingInstance::ImageSamplingInstance (Context&						context,
 		{
 			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT:
 			{
-				VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT	physicalDeviceSamplerMinMaxProperties =
+				VkPhysicalDeviceSamplerFilterMinmaxProperties	physicalDeviceSamplerMinMaxProperties =
 				{
 					VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT,
 					DE_NULL,

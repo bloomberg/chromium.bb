@@ -11,12 +11,16 @@ import logging
 import md5
 import os
 import platform
+import qemu_image
 import shutil
 import subprocess
 import sys
 import tempfile
 
-from common import GetEmuRootForPlatform, EnsurePathExists
+from common import GetHostArchFromPlatform, GetEmuRootForPlatform
+from common import EnsurePathExists
+from qemu_image import ExecQemuImgWithRetry
+from target import FuchsiaTargetException
 
 
 # Virtual networking configuration data for QEMU.
@@ -43,14 +47,17 @@ class QemuTarget(emu_target.EmuTarget):
     return self._emu_type
 
   def _IsKvmEnabled(self):
-    if self._require_kvm:
-      if (sys.platform.startswith('linux') and
-          os.access('/dev/kvm', os.R_OK | os.W_OK)):
-        if self._target_cpu == 'arm64' and platform.machine() == 'aarch64':
-          return True
-        if self._target_cpu == 'x64' and platform.machine() == 'x86_64':
-          return True
-    return False
+    kvm_supported = sys.platform.startswith('linux') and \
+                    os.access('/dev/kvm', os.R_OK | os.W_OK)
+    same_arch = \
+        (self._target_cpu == 'arm64' and platform.machine() == 'aarch64') or \
+        (self._target_cpu == 'x64' and platform.machine() == 'x86_64')
+    if kvm_supported and same_arch:
+      return True
+    elif self._require_kvm:
+      raise FuchsiaTargetException('KVM required but unavailable.')
+    else:
+      return False
 
   def _BuildQemuConfig(self):
     boot_data.AssertBootImagesExist(self._GetTargetSdkArch(), 'qemu')
@@ -193,8 +200,13 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
 
   # Construct a QCOW image from the extended, temporary FVM volume.
   # The result will be retained in the build output directory for re-use.
-  subprocess.check_call([qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
-                         '-c', extended_blobstore.name, qcow_path])
+  qemu_img_cmd = [qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
+                  '-c', extended_blobstore.name, qcow_path]
+  # TODO(crbug.com/1046861): Remove arm64 call with retries when bug is fixed.
+  if common.GetHostArchFromPlatform() == 'arm64':
+    qemu_image.ExecQemuImgWithRetry(qemu_img_cmd)
+  else:
+    subprocess.check_call(qemu_img_cmd)
 
   # Write out a hash of the original blobstore file, so that subsequent runs
   # can trivially check if a cached extended FVM volume is available for reuse.
@@ -202,5 +214,3 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
     blobstore_hash_file.write(current_blobstore_hash)
 
   return qcow_path
-
-

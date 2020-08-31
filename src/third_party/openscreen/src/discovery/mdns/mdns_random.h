@@ -14,8 +14,6 @@ namespace discovery {
 
 class MdnsRandom {
  public:
-  using Clock = openscreen::platform::Clock;
-
   // RFC 6762 Section 5.2
   // https://tools.ietf.org/html/rfc6762#section-5.2
 
@@ -40,6 +38,11 @@ class MdnsRandom {
         truncated_query_response_delay_(random_engine_)};
   }
 
+  Clock::duration GetInitialProbeDelay() {
+    return std::chrono::milliseconds{
+        probe_initialization_delay_(random_engine_)};
+  }
+
  private:
   static constexpr int64_t kMinimumInitialQueryDelayMs = 20;
   static constexpr int64_t kMaximumInitialQueryDelayMs = 120;
@@ -53,6 +56,9 @@ class MdnsRandom {
   static constexpr int64_t kMinimumTruncatedQueryResponseDelayMs = 400;
   static constexpr int64_t kMaximumTruncatedQueryResponseDelayMs = 500;
 
+  static constexpr int64_t kMinimumProbeInitializationDelayMs = 0;
+  static constexpr int64_t kMaximumProbeInitializationDelayMs = 250;
+
   std::default_random_engine random_engine_{std::random_device{}()};
   std::uniform_int_distribution<int64_t> initial_query_delay_{
       kMinimumInitialQueryDelayMs, kMaximumInitialQueryDelayMs};
@@ -63,6 +69,8 @@ class MdnsRandom {
   std::uniform_int_distribution<int64_t> truncated_query_response_delay_{
       kMinimumTruncatedQueryResponseDelayMs,
       kMaximumTruncatedQueryResponseDelayMs};
+  std::uniform_int_distribution<int64_t> probe_initialization_delay_{
+      kMinimumProbeInitializationDelayMs, kMaximumProbeInitializationDelayMs};
 };
 
 }  // namespace discovery

@@ -27,7 +27,6 @@ CPWL_EditCtrl::CPWL_EditCtrl(
 
 CPWL_EditCtrl::~CPWL_EditCtrl() = default;
 
-
 void CPWL_EditCtrl::OnCreated() {
   SetFontSize(GetCreationParams()->fFontSize);
   m_pEdit->SetFontMap(GetFontMap());
@@ -247,8 +246,8 @@ bool CPWL_EditCtrl::OnChar(uint16_t nChar, uint32_t nFlag) {
   return true;
 }
 
-bool CPWL_EditCtrl::OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnLButtonDown(point, nFlag);
+bool CPWL_EditCtrl::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   if (ClientHitTest(point)) {
     if (m_bMouseDown && !InvalidateRect(nullptr))
@@ -263,8 +262,8 @@ bool CPWL_EditCtrl::OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) {
   return true;
 }
 
-bool CPWL_EditCtrl::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnLButtonUp(point, nFlag);
+bool CPWL_EditCtrl::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (m_bMouseDown) {
     // can receive keybord message
@@ -278,8 +277,8 @@ bool CPWL_EditCtrl::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
   return true;
 }
 
-bool CPWL_EditCtrl::OnMouseMove(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnMouseMove(point, nFlag);
+bool CPWL_EditCtrl::OnMouseMove(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnMouseMove(nFlag, point);
 
   if (m_bMouseDown)
     m_pEdit->OnMouseMove(point, false, false);
@@ -341,8 +340,8 @@ void CPWL_EditCtrl::SetSelection(int32_t nStartChar, int32_t nEndChar) {
   m_pEdit->SetSelection(nStartChar, nEndChar);
 }
 
-void CPWL_EditCtrl::GetSelection(int32_t& nStartChar, int32_t& nEndChar) const {
-  m_pEdit->GetSelection(nStartChar, nEndChar);
+std::pair<int32_t, int32_t> CPWL_EditCtrl::GetSelection() const {
+  return m_pEdit->GetSelection();
 }
 
 void CPWL_EditCtrl::ClearSelection() {

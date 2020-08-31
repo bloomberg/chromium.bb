@@ -8,6 +8,8 @@
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "url/origin.h"
 
 namespace password_manager {
 
@@ -28,13 +30,18 @@ void PasswordManagerClient::PostHSTSQueryForHost(const GURL& origin,
   std::move(callback).Run(HSTSResult::kError);
 }
 
-bool PasswordManagerClient::OnCredentialManagerUsed() {
-  return true;
-}
-
 void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 
+BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {
+  return nullptr;
+}
+
 void PasswordManagerClient::GeneratePassword() {}
+
+void PasswordManagerClient::UpdateCredentialCache(
+    const GURL& origin,
+    const std::vector<const autofill::PasswordForm*>& best_matches,
+    bool is_blacklisted) {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>& best_matches,
@@ -47,13 +54,25 @@ void PasswordManagerClient::AutofillHttpAuth(
 
 void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {}
+    const GURL& origin,
+    const base::string16& username) {}
+
+void PasswordManagerClient::TriggerReauthForPrimaryAccount(
+    base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
+  std::move(reauth_callback).Run(ReauthSucceeded(false));
+}
+
+void PasswordManagerClient::TriggerSignIn(signin_metrics::AccessPoint) {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }
 
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {
+  return false;
+}
+
+bool PasswordManagerClient::WasCredentialLeakDialogShown() const {
   return false;
 }
 
@@ -74,6 +93,11 @@ const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
 PasswordManager* PasswordManagerClient::GetPasswordManager() {
   return const_cast<PasswordManager*>(
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
+}
+
+const PasswordFeatureManager* PasswordManagerClient::GetPasswordFeatureManager()
+    const {
+  return nullptr;
 }
 
 PasswordFeatureManager* PasswordManagerClient::GetPasswordFeatureManager() {

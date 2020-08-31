@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -73,7 +72,8 @@ uint32_t BluetoothClassicDeviceMac::GetBluetoothClass() const {
   return [device_ classOfDevice];
 }
 
-void BluetoothClassicDeviceMac::CreateGattConnectionImpl() {
+void BluetoothClassicDeviceMac::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   // Classic devices do not support GATT connection.
   DidFailToConnectGatt(ERROR_UNSUPPORTED_DEVICE);
 }
@@ -253,13 +253,6 @@ void BluetoothClassicDeviceMac::ConnectToServiceInsecurely(
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   error_callback.Run(kApiUnavailable);
-}
-
-void BluetoothClassicDeviceMac::CreateGattConnection(
-    GattConnectionCallback callback,
-    ConnectErrorCallback error_callback) {
-  // TODO(armansito): Implement.
-  std::move(error_callback).Run(ERROR_UNSUPPORTED_DEVICE);
 }
 
 base::Time BluetoothClassicDeviceMac::GetLastUpdateTime() const {

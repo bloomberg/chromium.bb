@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
@@ -130,6 +129,14 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 
   for (ToolbarActionsBarObserver& observer : observers_)
     observer.OnToolbarActionsBarDestroyed();
+}
+
+// static
+ToolbarActionsBar* ToolbarActionsBar::FromBrowserWindow(BrowserWindow* window) {
+  DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  // The ToolbarActionsBar is the only implementation of the ExtensionsContainer
+  // if the ExtensionsMenu feature is disabled.
+  return static_cast<ToolbarActionsBar*>(window->GetExtensionsContainer());
 }
 
 // static
@@ -376,14 +383,19 @@ void ToolbarActionsBar::Update() {
   ReorderActions();  // Also triggers a draw.
 }
 
-bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
-                                               bool grant_active_tab) {
+bool ToolbarActionsBar::ShowToolbarActionPopupForAPICall(
+    const std::string& action_id) {
   // Don't override another popup, and only show in the active window.
   if (popup_owner() || !browser_->window()->IsActive())
     return false;
 
   ToolbarActionViewController* action = GetActionForId(action_id);
-  return action && action->ExecuteAction(grant_active_tab);
+  // Since this was triggered by an API call, we never want to grant activeTab
+  // to the extension.
+  constexpr bool kGrantActiveTab = false;
+  return action && action->ExecuteAction(
+                       kGrantActiveTab,
+                       ToolbarActionViewController::InvocationSource::kApi);
 }
 
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
@@ -485,6 +497,20 @@ bool ToolbarActionsBar::IsActionVisibleOnToolbar(
       return true;
 
   return false;
+}
+
+extensions::ExtensionContextMenuModel::ButtonVisibility
+ToolbarActionsBar::GetActionVisibility(
+    const ToolbarActionViewController* action) const {
+  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
+      extensions::ExtensionContextMenuModel::VISIBLE;
+
+  if (GetPoppedOutAction() == action) {
+    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  } else if (!IsActionVisibleOnToolbar(action)) {
+    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
+  }
+  return visibility;
 }
 
 void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,

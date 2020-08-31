@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
+namespace cc {
+class FakeLayerTreeFrameSink;
+}
+
 namespace content {
 
 class FakeCompositorDependencies : public CompositorDependencies {
@@ -21,7 +25,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   ~FakeCompositorDependencies() override;
 
   // CompositorDependencies implementation.
-  bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsZeroCopyEnabled() override;
@@ -29,10 +32,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorMainThreadTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorImplThreadTaskRunner() override;
+  bool IsSingleThreaded() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() override;
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -43,10 +43,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
-      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
-          render_frame_metadata_observer_client_receiver,
-      mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
-          render_frame_metadata_observer_remote,
       const char* client_name) override;
 #ifdef OS_ANDROID
   bool UsingSynchronousCompositing() override;
@@ -56,10 +52,20 @@ class FakeCompositorDependencies : public CompositorDependencies {
     use_zoom_for_dsf_ = enabled;
   }
 
+  // The returned pointer is valid after RequestNewLayerTreeFrameSink() occurs,
+  // until another call to RequestNewLayerTreeFrameSink() happens. It's okay to
+  // use this pointer on the main thread because this class causes the
+  // compositor to run in single thread mode by returning a null from
+  // GetCompositorImplThreadTaskRunner().
+  cc::FakeLayerTreeFrameSink* last_created_frame_sink() {
+    return last_created_frame_sink_;
+  }
+
  private:
   cc::TestTaskGraphRunner task_graph_runner_;
   blink::scheduler::WebFakeThreadScheduler main_thread_scheduler_;
   bool use_zoom_for_dsf_ = false;
+  cc::FakeLayerTreeFrameSink* last_created_frame_sink_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorDependencies);
 };

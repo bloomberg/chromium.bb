@@ -50,17 +50,6 @@ class LegacyLinker extends Linker {
         }
         libInfo.mLibFilePath = libFilePath;
 
-        // Print the load address to the logcat when testing the linker. The format
-        // of the string is expected by the Python test_runner script as one of:
-        //    BROWSER_LIBRARY_ADDRESS: <library-name> <address>
-        //    RENDERER_LIBRARY_ADDRESS: <library-name> <address>
-        // Where <library-name> is the library name, and <address> is the hexadecimal load
-        // address.
-        if (NativeLibraries.sEnableLinkerTests) {
-            String tag = mInBrowserProcess ? "BROWSER_LIBRARY_ADDRESS" : "RENDERER_LIBRARY_ADDRESS";
-            Log.i(TAG, "%s: %s %x", tag, libFilePath, libInfo.mLoadAddress);
-        }
-
         if (provideRelro) {
             if (!nativeCreateSharedRelro(sharedRelRoName, mBaseLoadAddress, libInfo)) {
                 Log.w(TAG, "Could not create shared RELRO for %s at %x", libFilePath,
@@ -85,9 +74,6 @@ class LegacyLinker extends Linker {
             mLibInfo = null;
             mState = State.DONE;
         }
-
-        // If testing, run tests now that all libraries are loaded and initialized.
-        if (NativeLibraries.sEnableLinkerTests) runTestRunnerClassForTesting(mInBrowserProcess);
     }
 
     /**

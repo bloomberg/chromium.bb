@@ -16,7 +16,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -33,15 +32,12 @@
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace viz {
 class ClientResourceProvider;
@@ -55,7 +51,6 @@ struct LayerDebugInfo;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class PrioritizedTile;
-class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
 
@@ -153,7 +148,7 @@ class CC_EXPORT LayerImpl {
 
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
-  virtual ScrollbarLayerImplBase* ToScrollbarLayer();
+  virtual bool IsScrollbarLayer() const;
 
   // Returns true if this layer has content to draw.
   void SetDrawsContent(bool draws_content);
@@ -170,9 +165,6 @@ class CC_EXPORT LayerImpl {
   // non-opaque color.  Tries to return background_color(), if possible.
   SkColor SafeOpaqueBackgroundColor() const;
 
-  void SetMasksToBounds(bool masks_to_bounds);
-  bool masks_to_bounds() const { return masks_to_bounds_; }
-
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return contents_opaque_; }
 
@@ -182,19 +174,14 @@ class CC_EXPORT LayerImpl {
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
 
-  void SetMirrorCount(int mirror_count);
-  int mirror_count() const { return mirror_count_; }
+  void SetFrameElementId(ElementId frame_element_id) {
+    frame_element_id_ = frame_element_id;
+  }
+  ElementId frame_element_id() const { return frame_element_id_; }
 
   bool IsAffectedByPageScale() const;
 
   bool Is3dSorted() const { return GetSortingContextId() != 0; }
-
-  void SetUseParentBackfaceVisibility(bool use) {
-    use_parent_backface_visibility_ = use;
-  }
-  bool use_parent_backface_visibility() const {
-    return use_parent_backface_visibility_;
-  }
 
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
     should_check_backface_visibility_ = should_check_backface_visibility;
@@ -218,8 +205,6 @@ class CC_EXPORT LayerImpl {
   PerformanceProperties<LayerImpl>& performance_properties() {
     return performance_properties_;
   }
-
-  bool CanUseLCDText() const;
 
   // Setter for draw_properties_.
   void set_visible_layer_rect(const gfx::Rect& visible_rect) {
@@ -255,22 +240,15 @@ class CC_EXPORT LayerImpl {
   }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  gfx::ScrollOffset CurrentScrollOffset() const;
-
-  gfx::ScrollOffset MaxScrollOffset() const;
-  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;
-  gfx::Vector2dF ClampScrollToMaxScrollOffset();
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
-  // Marks this layer as being scrollable and needing an associated scroll node.
-  // The scroll node's bounds and container_bounds will be kept in sync with
-  // this layer.
-  void SetScrollable(const gfx::Size& bounds);
-  gfx::Size scroll_container_bounds() const { return scroll_container_bounds_; }
-  bool scrollable() const { return scrollable_; }
+  // Called during a commit or activation, after the property trees are pushed.
+  // It detects changes of scrollable status and scroll container size in the
+  // scroll property, and invalidate scrollbar geometries etc. for the changes.
+  void UpdateScrollable();
 
   void SetNonFastScrollableRegion(const Region& region) {
     non_fast_scrollable_region_ = region;
@@ -309,8 +287,6 @@ class CC_EXPORT LayerImpl {
   // space. By default returns empty rect, but can be overridden by subclasses
   // as appropriate.
   virtual gfx::Rect GetDamageRect() const;
-
-  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson() const;
 
   // This includes |layer_property_changed_not_from_property_trees_| and
   // property_trees changes.
@@ -381,10 +357,6 @@ class CC_EXPORT LayerImpl {
     return contributes_to_drawn_render_surface_;
   }
 
-  bool is_scrollbar() const { return is_scrollbar_; }
-
-  void set_is_scrollbar(bool is_scrollbar) { is_scrollbar_ = is_scrollbar; }
-
   void set_may_contain_video(bool yes) { may_contain_video_ = yes; }
   bool may_contain_video() const { return may_contain_video_; }
 
@@ -436,6 +408,10 @@ class CC_EXPORT LayerImpl {
 
   int CalculateJitter();
 
+  std::string DebugName() const;
+
+  virtual gfx::ContentColorUsage GetContentColorUsage() const;
+
  protected:
   // When |will_always_push_properties| is true, the layer will not itself set
   // its SetNeedsPushProperties() state, as it expects to be always pushed to
@@ -458,6 +434,9 @@ class CC_EXPORT LayerImpl {
                              SkColor color,
                              float width) const;
 
+  static float GetPreferredRasterScale(
+      gfx::Vector2dF raster_space_scale_factor);
+
  private:
   void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
 
@@ -472,12 +451,16 @@ class CC_EXPORT LayerImpl {
 
   gfx::Vector2dF offset_to_transform_parent_;
 
-  // Size of the scroll container that this layer scrolls in.
+  // These fields are copies of |container_bounds|, |bounds| and |scrollable|
+  // fields in the associated ScrollNode, and are updated in UpdateScrollable().
+  // The copy is for change detection only.
+  // TODO(wangxianzhu): Actually we only need scroll_container_bounds_ in
+  // pre-CompositeAfterPaint where the scroll node is associated with the
+  // scrolling contents layer, and only need scroll_contents_bounds_ in
+  // CompositeAfterPaint where the scroll node is associated with the scroll
+  // container layer. Remove scroll_container_bounds_ when we launch CAP.
   gfx::Size scroll_container_bounds_;
-
-  // Indicates that this layer will have a scroll property node and that this
-  // layer's bounds correspond to the scroll node's bounds (both |bounds| and
-  // |scroll_container_bounds|).
+  gfx::Size scroll_contents_bounds_;
   bool scrollable_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
@@ -489,11 +472,9 @@ class CC_EXPORT LayerImpl {
   // damage from animations. http://crbug.com/755828.
   bool layer_property_changed_not_from_property_trees_ : 1;
   bool layer_property_changed_from_property_trees_ : 1;
-  bool may_contain_video_ : 1;
 
-  bool masks_to_bounds_ : 1;
+  bool may_contain_video_ : 1;
   bool contents_opaque_ : 1;
-  bool use_parent_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
@@ -519,14 +500,15 @@ class CC_EXPORT LayerImpl {
 
   DrawMode current_draw_mode_;
   EffectTree& GetEffectTree() const;
-
- private:
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
   ScrollTree& GetScrollTree() const;
   TransformTree& GetTransformTree() const;
 
+ private:
   ElementId element_id_;
+  // Element ID of the document containing this layer.
+  ElementId frame_element_id_;
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
   // This is in the layer's space.
@@ -545,7 +527,6 @@ class CC_EXPORT LayerImpl {
 
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
-  bool is_scrollbar_ : 1;
   bool scrollbars_hidden_ : 1;
 
   // The needs_show_scrollbars_ bit tracks a pending request from Blink to show
@@ -560,10 +541,6 @@ class CC_EXPORT LayerImpl {
   bool raster_even_if_not_drawn_ : 1;
 
   bool has_transform_node_ : 1;
-
-  // Number of layers mirroring this layer. If greater than zero, forces a
-  // render pass for the layer so it can be embedded by the mirroring layer.
-  int mirror_count_;
 };
 
 }  // namespace cc

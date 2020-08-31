@@ -55,6 +55,11 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   AXAuraObjWrapper* GetOrCreate(Widget* widget);
   AXAuraObjWrapper* GetOrCreate(aura::Window* window);
 
+  // Creates an entry in this cache given a wrapper object. Use this method when
+  // creating a wrapper not backed by any of the supported views above. This
+  // cache will take ownership. Will replace an existing entry with the same id.
+  void CreateOrReplace(std::unique_ptr<AXAuraObjWrapper> obj);
+
   // Gets an id given an Aura view.
   int32_t GetID(View* view) const;
   int32_t GetID(Widget* widget) const;
@@ -114,7 +119,7 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   template <typename AuraViewWrapper, typename AuraView>
   AXAuraObjWrapper* CreateInternal(
       AuraView* aura_view,
-      std::map<AuraView*, int32_t>& aura_view_to_id_map);
+      std::map<AuraView*, int32_t>* aura_view_to_id_map);
 
   template <typename AuraView>
   int32_t GetIDInternal(
@@ -123,7 +128,7 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
   template <typename AuraView>
   void RemoveInternal(AuraView* aura_view,
-                      std::map<AuraView*, int32_t>& aura_view_to_id_map);
+                      std::map<AuraView*, int32_t>* aura_view_to_id_map);
 
   std::map<views::View*, int32_t> view_to_id_map_;
   std::map<views::Widget*, int32_t> widget_to_id_map_;

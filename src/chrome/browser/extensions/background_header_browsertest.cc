@@ -7,6 +7,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -27,12 +28,7 @@ std::unique_ptr<net::ClientCertStore> CreateNullCertStore() {
 class BackgroundHeaderTest : public ExtensionBrowserTest {
  public:
   BackgroundHeaderTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    feature_list_.InitWithFeatures(
-        {network::features::kFetchMetadata,
-         network::features::kFetchMetadataDestination},
-        {});
-  }
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   BackgroundHeaderTest(const BackgroundHeaderTest& other) = delete;
   BackgroundHeaderTest& operator=(const BackgroundHeaderTest& other) = delete;

@@ -11,21 +11,16 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
-
-ServiceWorkerClient* ServiceWorkerClient::Create(
-    const mojom::blink::ServiceWorkerClientInfo& info) {
-  return MakeGarbageCollected<ServiceWorkerClient>(info);
-}
 
 ServiceWorkerClient::ServiceWorkerClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
@@ -58,13 +53,13 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kServiceWorkerClientFrameType);
   switch (frame_type_) {
-    case network::mojom::RequestContextFrameType::kAuxiliary:
+    case mojom::RequestContextFrameType::kAuxiliary:
       return "auxiliary";
-    case network::mojom::RequestContextFrameType::kNested:
+    case mojom::RequestContextFrameType::kNested:
       return "nested";
-    case network::mojom::RequestContextFrameType::kNone:
+    case mojom::RequestContextFrameType::kNone:
       return "none";
-    case network::mojom::RequestContextFrameType::kTopLevel:
+    case mojom::RequestContextFrameType::kTopLevel:
       return "top-level";
   }
 

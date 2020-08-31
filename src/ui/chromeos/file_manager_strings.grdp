@@ -86,8 +86,12 @@
   <message name="IDS_FILE_BROWSER_DOCPROVIDER_ROOT_LABEL_WITH_SUMMARY" desc="A label for a documents provider root, which has both title and summary.">
     <ph name="ROOT_TITLE">$1<ex>MyCloudProvider</ex></ph> (<ph name="ROOT_SUMMARY">$2<ex>me@example.com</ex></ph>)
   </message>
+  <!-- TODO (oto@): remove this msg as part of files-ng clean up process. -->
   <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
     <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING_FILESNG" desc="Warning displayed to user when viewing downloads folder.">
+    Caution: These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_NAME_COLUMN_LABEL" desc="Name column label.">
     Name
@@ -106,6 +110,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
     File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
+  </message>
+  <message name="IDS_FILE_BROWSER_EXTERNAL_LINK_MESSAGE" desc="Message read by Chromevox/screenreader when focusing a link that launches an external application.">
+    External link
   </message>
 
   <!-- File selection a11y -->
@@ -245,6 +252,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" desc="Label for button to open a file with external app.">
     Open
+  </message>
+  <message name="IDS_FILE_BROWSER_QUICK_VIEW_DELETE_BUTTON_LABEL" desc="Label for button to delete a file in QuickView.">
+    Delete
   </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" desc="Label for button to toggle show/hide status of metadata box.">
     File info
@@ -543,6 +553,9 @@
   <message name="IDS_FILE_BROWSER_MORE_ACTIONS_BUTTON_LABEL" desc="Menu item label, showing dialog to choose extension to open/share/pack/etc... selected files or directories.">
     More actions
   </message>
+  <message name="IDS_FILE_BROWSER_GO_TO_FILE_LOCATION_BUTTON_LABEL" desc="Menu item label, navigating the user to the file's containing folder.">
+    Go to file location
+  </message>
   <message name="IDS_FILE_BROWSER_OPEN_WITH_VERB_BUTTON_LABEL" desc="Verb that describe the action of opening one or more files or directories with the given extension.">
     Open with <ph name="EXTENSION_NAME">$1<ex>Gallery</ex></ph>
   </message>
@@ -587,6 +600,12 @@
   </message>
   <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" translateable="false" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
     Manage Plugin VM sharing
+  </message>
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="Title of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
+    Unable to open with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
+    To open files with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> apps, first move them to <ph name="SHARED_DIRECTORY_LABEL">$2<ex>Plugin VM</ex></ph> folder.
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files
@@ -910,6 +929,16 @@
     Erase and Format
   </message>
 
+  <message name="IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE" desc="Notification message displayed while formatting an external drive">
+    Formatting <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>...
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_SUCCESS_MESSAGE" desc="Notification message displayed when formatting of an external drive has succeeded">
+    Formatted <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE" desc="Notification message displayed if formatting of an external drive has failed">
+    Could not format <ph name="DRIVE_NAME">$1<ex>My USB</ex></ph>
+  </message>
+
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file
   </message>
@@ -995,6 +1024,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_EXIF_GEOGRAPHY" desc="Label for the latitude and the longitude where the image was taken.">
     Geography
+  </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_LOCATION" desc="Label for file location.">
+    File location
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_PATH" desc="Label for file path.">
     Path
@@ -1121,8 +1153,12 @@
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
     Welcome to Google Drive!
   </message>
+  <!-- TODO (oto@): remove this msg as part of files-ng clean up process. -->
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_SHORT" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
     All files saved in this folder are backed up online automatically
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_SHORT_FILESNG" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
+    All files saved in this folder are backed up online automatically.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_LONG" desc="In the Welcome to Google Drive banner, text of the welcome message, long version.">
     <ph name="MARKUP_1">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Access files from everywhere, even offline.<ph name="MARKUP_2">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
@@ -1344,6 +1380,9 @@
   <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in the Files app.">
     More...
   </message>
+<message name="IDS_FILE_BROWSER_READONLY_INDICATOR_TOOLTIP" desc="Tooltip for the readonly indicator in the Files app.">
+    Files in this folder are read only. Some activities are not supported.
+  </message>
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...
   </message>
@@ -1382,6 +1421,15 @@
   </message>
   <message name="IDS_FILE_BROWSER_A11Y_VOLUME_EJECT" desc="Text to be used by screen reader to indicate users that the eject volume action has finished.">
     <ph name="VOLUME_NAME">$1<ex>file_name.rar</ex></ph> has been ejected.
+  </message>
+  <message name="IDS_FILE_BROWSER_GRID_VIEW_FOLDERS_TITLE" desc="Title displayed in Grid View above the folders.">
+    Folders
+  </message>
+  <message name="IDS_FILE_BROWSER_GRID_VIEW_FILES_TITLE" desc="Title dislayed in Grid View above the files.">
+    Files
+  </message>
+  <message name="IDS_FILE_BROWSER_LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL" desc="Label for the breadcrumb sub-folder elider button in the Files app folder location line.">
+    More sub-folders...
   </message>
 
 <!-- Common for Audio player and Media player -->

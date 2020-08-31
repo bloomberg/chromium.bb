@@ -11,7 +11,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -96,6 +95,10 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
       port_->UnregisterFrame(render_frame_host);
   }
 
+  void OnServiceWorkerUnregistered(const WorkerId& worker_id) override {
+    port_->UnregisterWorker(worker_id);
+  }
+
   ScopedObserver<ProcessManager, ProcessManagerObserver> pm_observer_;
   ExtensionMessagePort* port_;  // Owns this FrameTracker.
 
@@ -156,28 +159,7 @@ ExtensionMessagePort::ExtensionMessagePort(
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
   content::WebContents* tab = content::WebContents::FromRenderFrameHost(rfh);
-  if (!tab) {
-    content::InterstitialPage* interstitial =
-        content::InterstitialPage::FromRenderFrameHost(rfh);
-    // A RenderFrameHost must be hosted in a WebContents or InterstitialPage.
-    CHECK(interstitial);
-
-    // Only the main frame of an interstitial is supported, because frames in
-    // the interstitial do not trigger RenderFrameCreated / RenderFrameDeleted
-    // on WebContentObservers. Consequently, (1) we cannot detect removal of
-    // RenderFrameHosts, and (2) even if the RenderFrameDeleted is propagated,
-    // then WebContentsObserverSanityChecker triggers a CHECK when it detects
-    // frame notifications without a corresponding RenderFrameCreated.
-    if (!rfh->GetParent()) {
-      // It is safe to pass the interstitial's WebContents here because we only
-      // use it to observe DidDetachInterstitialPage.
-      frame_tracker_->TrackInterstitialFrame(interstitial->GetWebContents(),
-                                             rfh);
-      RegisterFrame(rfh);
-    }
-    return;
-  }
-
+  CHECK(tab);
   frame_tracker_->TrackTabFrames(tab);
   if (include_child_frames) {
     tab->ForEachFrame(base::BindRepeating(&ExtensionMessagePort::RegisterFrame,
@@ -407,7 +389,8 @@ void ExtensionMessagePort::RegisterWorker(const WorkerId& worker_id) {
 }
 
 void ExtensionMessagePort::UnregisterWorker(const WorkerId& worker_id) {
-  DCHECK_EQ(extension_id_, worker_id.extension_id);
+  if (extension_id_ != worker_id.extension_id)
+    return;
   if (service_workers_.erase(worker_id) == 0)
     return;
 

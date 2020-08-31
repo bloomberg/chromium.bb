@@ -1,6 +1,8 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import itertools
 import json
 import os
 import sys
@@ -95,7 +97,8 @@ class PerfBenchmark(benchmark.Benchmark):
     # binary format that an older build does not expect.
     if (browser_options.browser_type != 'reference' and
         'no-field-trials' not in browser_options.compatibility_mode):
-      variations = self._GetVariationsBrowserArgs(finder_options)
+      variations = self._GetVariationsBrowserArgs(
+          finder_options, browser_options.extra_browser_args)
       browser_options.AppendExtraBrowserArgs(variations)
 
       browser_options.profile_files_to_copy.extend(
@@ -109,14 +112,13 @@ class PerfBenchmark(benchmark.Benchmark):
     browser_options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
-    # TODO(crbug.com/881469): remove this once Webview supports
-    # VizDisplayCompositor.
-    if (browser_options.browser_type and
-        'android-webview' in browser_options.browser_type):
-      browser_options.AppendExtraBrowserArgs(
-          '--disable-features=VizDisplayCompositor')
-
     self.SetExtraBrowserOptions(browser_options)
+
+  def GetExtraOutDirectories(self):
+    # Subclasses of PerfBenchmark should override this method instead of
+    # _GetPossibleBuildDirectories to consider more directories in
+    # _GetOutDirectoryEstimate.
+    return []
 
   @staticmethod
   def FixupTargetOS(target_os):
@@ -130,7 +132,7 @@ class PerfBenchmark(benchmark.Benchmark):
       return 'chromeos'
     return target_os
 
-  def _GetVariationsBrowserArgs(self, finder_options):
+  def _GetVariationsBrowserArgs(self, finder_options, current_args):
     chrome_root = finder_options.chrome_root
     if chrome_root is None:
       chrome_root = path_module.GetChromiumSrcDir()
@@ -142,7 +144,8 @@ class PerfBenchmark(benchmark.Benchmark):
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
-        [self.FixupTargetOS(possible_browser.target_os)])
+        self.FixupTargetOS(possible_browser.target_os),
+        current_args)
 
   @staticmethod
   def _GetPossibleBuildDirectories(chrome_src_dir, browser_type):
@@ -167,8 +170,12 @@ class PerfBenchmark(benchmark.Benchmark):
     if finder_options.chromium_output_dir is not None:
       return finder_options.chromium_output_dir
 
-    possible_directories = self._GetPossibleBuildDirectories(
-        finder_options.chrome_root, finder_options.browser_options.browser_type)
+    possible_directories = itertools.chain(
+        self._GetPossibleBuildDirectories(
+          finder_options.chrome_root,
+          finder_options.browser_options.browser_type),
+        self.GetExtraOutDirectories())
+
     return next((p for p in possible_directories if os.path.exists(p)), None)
 
   @staticmethod

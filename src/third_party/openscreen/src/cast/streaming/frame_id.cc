@@ -4,8 +4,8 @@
 
 #include "cast/streaming/frame_id.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 std::ostream& operator<<(std::ostream& out, const FrameId rhs) {
   out << "F";
@@ -14,5 +14,5 @@ std::ostream& operator<<(std::ostream& out, const FrameId rhs) {
   return out << rhs.value();
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

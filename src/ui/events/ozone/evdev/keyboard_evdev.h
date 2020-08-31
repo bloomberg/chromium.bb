@@ -39,15 +39,19 @@ class COMPONENT_EXPORT(EVDEV) KeyboardEvdev
 
   // Handlers for raw key presses & releases.
   //
-  // |code| is a Linux key code (from <linux/input.h>). |down| represents the
+  // |code| is a Linux key code (from <linux/input.h>). |scan_code| is a
+  // device dependent code that identifies the physical location of the key
+  // independent of it's mapping to a linux key code. |down| represents the
   // key state. |suppress_auto_repeat| prevents the event from triggering
   // auto-repeat, if enabled. |device_id| uniquely identifies the source
   // keyboard device.
   void OnKeyChange(unsigned int code,
+                   unsigned int scan_code,
                    bool down,
                    bool suppress_auto_repeat,
                    base::TimeTicks timestamp,
-                   int device_id);
+                   int device_id,
+                   int flags);
 
   // Handle Caps Lock modifier.
   void SetCapsLockEnabled(bool enabled);
@@ -71,10 +75,12 @@ class COMPONENT_EXPORT(EVDEV) KeyboardEvdev
   // EventAutoRepeatHandler::Delegate
   void FlushInput(base::OnceClosure closure) override;
   void DispatchKey(unsigned int key,
+                   unsigned int scan_code,
                    bool down,
                    bool repeat,
                    base::TimeTicks timestamp,
-                   int device_id) override;
+                   int device_id,
+                   int flags) override;
 
   // Aggregated key state. There is only one bit of state per key; we do not
   // attempt to count presses of the same key on multiple keyboards.

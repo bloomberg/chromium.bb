@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
+#include "base/callback.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/default_tick_clock.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
-#include "third_party/blink/renderer/core/css/font_face_descriptors.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_font_face_descriptors.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -34,6 +36,36 @@ Element* GetOrCreateElement(ContainerNode* parent,
 
 }  // namespace
 
+PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider(
+    blink::BrowserInterfaceBrokerProxy& interface_broker) {
+  Install(interface_broker);
+}
+
+PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider() = default;
+
+PageTestBase::MockClipboardHostProvider::~MockClipboardHostProvider() {
+  if (interface_broker_) {
+    interface_broker_->SetBinderForTesting(
+        blink::mojom::blink::ClipboardHost::Name_, {});
+  }
+}
+
+void PageTestBase::MockClipboardHostProvider::Install(
+    blink::BrowserInterfaceBrokerProxy& interface_broker) {
+  interface_broker_ = &interface_broker;
+  interface_broker_->SetBinderForTesting(
+      blink::mojom::blink::ClipboardHost::Name_,
+      base::BindRepeating(
+          &PageTestBase::MockClipboardHostProvider::BindClipboardHost,
+          base::Unretained(this)));
+}
+
+void PageTestBase::MockClipboardHostProvider::BindClipboardHost(
+    mojo::ScopedMessagePipeHandle handle) {
+  host_.Bind(mojo::PendingReceiver<blink::mojom::blink::ClipboardHost>(
+      std::move(handle)));
+}
+
 PageTestBase::PageTestBase() = default;
 
 PageTestBase::~PageTestBase() = default;
@@ -52,6 +84,10 @@ void PageTestBase::SetUp() {
   });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr, std::move(setter), GetTickClock());
+
+  // Mock out clipboard calls so that tests don't mess
+  // with each other's copies/pastes when running in parallel.
+  mock_clipboard_host_provider_.Install(GetFrame().GetBrowserInterfaceBroker());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -129,7 +165,7 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
           DOMArrayBuffer::Create(shared_buffer));
-  FontFace* ahem = FontFace::Create(&document, "Ahem", buffer,
+  FontFace* ahem = FontFace::Create(frame.DomWindow(), "Ahem", buffer,
                                     FontFaceDescriptors::Create());
 
   ScriptState* script_state = ToScriptStateForMainWorld(&frame);
@@ -140,8 +176,7 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
 
 // Both sets the inner html and runs the document lifecycle.
 void PageTestBase::SetBodyInnerHTML(const String& body_content) {
-  GetDocument().body()->SetInnerHTMLFromString(body_content,
-                                               ASSERT_NO_EXCEPTION);
+  GetDocument().body()->setInnerHTML(body_content, ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -150,8 +185,7 @@ void PageTestBase::SetBodyContent(const std::string& body_content) {
 }
 
 void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      String::FromUTF8(html_content));
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -166,18 +200,13 @@ void PageTestBase::InsertStyleElement(const std::string& style_rules) {
 }
 
 void PageTestBase::NavigateTo(const KURL& url,
-                              const String& feature_policy_header,
-                              const String& csp_header) {
+                              const WTF::HashMap<String, String>& headers) {
   auto params =
       WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url);
-  if (!feature_policy_header.IsEmpty()) {
-    params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
-                                        feature_policy_header);
-  }
-  if (!csp_header.IsEmpty()) {
-    params->response.SetHttpHeaderField(http_names::kContentSecurityPolicy,
-                                        csp_header);
-  }
+
+  for (const auto& header : headers)
+    params->response.SetHttpHeaderField(header.key, header.value);
+
   GetFrame().Loader().CommitNavigation(std::move(params),
                                        nullptr /* extra_data */);
 
@@ -186,8 +215,7 @@ void PageTestBase::NavigateTo(const KURL& url,
 }
 
 void PageTestBase::UpdateAllLifecyclePhasesForTest() {
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   GetDocument().View()->RunPostLifecycleSteps();
 }
 

@@ -6,15 +6,30 @@
  * @fileoverview 'security-keys-subpage' is a settings subpage
  * containing operations on security keys.
  */
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import '../settings_shared_css.m.js';
+import './security_keys_credential_management_dialog.js';
+import './security_keys_bio_enroll_dialog.js';
+import './security_keys_set_pin_dialog.js';
+import './security_keys_reset_dialog.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
 Polymer({
   is: 'security-keys-subpage',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /** @private */
     enableBioEnrollment_: {
       type: Boolean,
       readOnly: true,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableSecurityKeysBioEnrollment');
       }
     },
@@ -42,46 +57,46 @@ Polymer({
   },
 
   /** @private */
-  onSetPIN_: function() {
+  onSetPIN_() {
     this.showSetPINDialog_ = true;
   },
 
   /** @private */
-  onSetPINDialogClosed_: function() {
+  onSetPINDialogClosed_() {
     this.showSetPINDialog_ = false;
-    cr.ui.focusWithoutInk(this.$.setPINButton);
+    focusWithoutInk(this.$.setPINButton);
   },
 
   /** @private */
-  onCredentialManagement_: function() {
+  onCredentialManagement_() {
     this.showCredentialManagementDialog_ = true;
   },
 
   /** @private */
-  onCredentialManagementDialogClosed_: function() {
+  onCredentialManagementDialogClosed_() {
     this.showCredentialManagementDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#credentialManagementButton')));
+    focusWithoutInk(assert(this.$$('#credentialManagementButton')));
   },
 
   /** @private */
-  onReset_: function() {
+  onReset_() {
     this.showResetDialog_ = true;
   },
 
   /** @private */
-  onResetDialogClosed_: function() {
+  onResetDialogClosed_() {
     this.showResetDialog_ = false;
-    cr.ui.focusWithoutInk(this.$.resetButton);
+    focusWithoutInk(this.$.resetButton);
   },
 
   /** @private */
-  onBioEnroll_: function() {
+  onBioEnroll_() {
     this.showBioEnrollDialog_ = true;
   },
 
   /** @private */
-  onBioEnrollDialogClosed_: function() {
+  onBioEnrollDialogClosed_() {
     this.showBioEnrollDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#bioEnrollButton')));
+    focusWithoutInk(assert(this.$$('#bioEnrollButton')));
   },
 });

@@ -15,6 +15,9 @@ from chromite.lib import commandline
 from chromite.lib import dot_helper
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 NORMAL_COLOR = 'black'
 TARGET_COLOR = 'red'
 SEED_COLOR = 'green'

@@ -67,6 +67,8 @@ following changes which are not merged to upstream:
   - Implement 2x2 IDCT using Arm NEON intrinsics
   - Implement 4x4 IDCT using Arm NEON intrinsics
   - Implement slow IDCT using Arm NEON intrinsics
+  - Precompute DCT block output pointers in IDCT functions
+  - Implement fast IDCT using Arm NEON intrinsics
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from

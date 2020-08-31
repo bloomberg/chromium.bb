@@ -9,12 +9,12 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/long_task_detector.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/pod_interval.h"
@@ -23,6 +23,10 @@
 namespace base {
 class TickClock;
 }  // namespace base
+
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
 
 namespace blink {
 
@@ -37,7 +41,7 @@ class Event;
 class CORE_EXPORT InteractiveDetector
     : public GarbageCollected<InteractiveDetector>,
       public Supplement<Document>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public LongTaskObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
 
@@ -74,41 +78,27 @@ class CORE_EXPORT InteractiveDetector
   void OnResourceLoadEnd(base::Optional<base::TimeTicks> load_finish_time);
 
   void SetNavigationStartTime(base::TimeTicks navigation_start_time);
-  void OnFirstMeaningfulPaintDetected(
-      base::TimeTicks fmp_time,
-      FirstMeaningfulPaintDetector::HadUserInput user_input_before_fmp);
+  void OnFirstContentfulPaint(base::TimeTicks first_contentful_paint);
   void OnDomContentLoadedEnd(base::TimeTicks dcl_time);
   void OnInvalidatingInputEvent(base::TimeTicks invalidation_time);
   void OnPageHiddenChanged(bool is_hidden);
 
-  // Returns Interactive Time if already detected, or 0.0 otherwise.
-  base::TimeTicks GetInteractiveTime() const;
-
-  // Returns the time when page interactive was detected. The detection time can
-  // be useful to make decisions about metric invalidation in scenarios like tab
-  // backgrounding.
-  base::TimeTicks GetInteractiveDetectionTime() const;
-
-  // Returns the first time interactive detector received a significant input
-  // that may cause observers to discard the interactive time value.
-  base::TimeTicks GetFirstInvalidatingInputTime() const;
-
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancelable touchstart, or
   // pointer down followed by a pointer up.
-  base::TimeDelta GetFirstInputDelay() const;
+  base::Optional<base::TimeDelta> GetFirstInputDelay() const;
 
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
-  base::TimeTicks GetFirstInputTimestamp() const;
+  base::Optional<base::TimeTicks> GetFirstInputTimestamp() const;
 
   // Queueing Time of the meaningful input event with longest delay. Meaningful
   // input events are click, tap, key press, cancellable touchstart, or pointer
   // down followed by a pointer up.
-  base::TimeDelta GetLongestInputDelay() const;
+  base::Optional<base::TimeDelta> GetLongestInputDelay() const;
 
   // The timestamp of the event whose delay is reported by
   // GetLongestInputDelay().
-  base::TimeTicks GetLongestInputTimestamp() const;
+  base::Optional<base::TimeTicks> GetLongestInputTimestamp() const;
 
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
@@ -116,8 +106,8 @@ class CORE_EXPORT InteractiveDetector
                            base::TimeTicks event_platform_timestamp,
                            base::TimeTicks processing_start);
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 
@@ -125,6 +115,10 @@ class CORE_EXPORT InteractiveDetector
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing);
   // The caller owns the |clock| which must outlive the InteractiveDetector.
   void SetTickClockForTesting(const base::TickClock* clock);
+
+  ukm::UkmRecorder* GetUkmRecorder() const;
+
+  void SetUkmRecorderForTesting(ukm::UkmRecorder* test_ukm_recorder);
 
  private:
   friend class InteractiveDetectorTest;
@@ -137,15 +131,17 @@ class CORE_EXPORT InteractiveDetector
   // Page event times that Interactive Detector depends on.
   // Null base::TimeTicks values indicate the event has not been detected yet.
   struct {
-    base::TimeTicks first_meaningful_paint;
+    base::TimeTicks first_contentful_paint;
     base::TimeTicks dom_content_loaded_end;
     base::TimeTicks nav_start;
+    // The timestamp of the first input that would invalidate a Time to
+    // Interactive computation. This is used when reporting Time To Interactive
+    // on a trace event.
     base::TimeTicks first_invalidating_input;
-    base::TimeDelta first_input_delay;
-    base::TimeDelta longest_input_delay;
-    base::TimeTicks first_input_timestamp;
-    base::TimeTicks longest_input_timestamp;
-    bool first_meaningful_paint_invalidated = false;
+    base::Optional<base::TimeDelta> first_input_delay;
+    base::Optional<base::TimeDelta> longest_input_delay;
+    base::Optional<base::TimeTicks> first_input_timestamp;
+    base::Optional<base::TimeTicks> longest_input_timestamp;
   } page_event_times_;
 
   struct VisibilityChangeEvent {
@@ -153,22 +149,22 @@ class CORE_EXPORT InteractiveDetector
     bool was_hidden;
   };
 
-  // Stores sufficiently long quiet windows on main thread and network.
-  Vector<WTF::PODInterval<base::TimeTicks>> main_thread_quiet_windows_;
+  // Stores sufficiently long quiet windows on the network.
   Vector<WTF::PODInterval<base::TimeTicks>> network_quiet_windows_;
 
-  // Start times of currently active main thread and network quiet windows.
-  // Null base::TimeTicks values indicate main thread or network is not quiet at
-  // the moment.
-  base::TimeTicks active_main_thread_quiet_window_start_;
+  // Stores long tasks in order to compute Total Blocking Time (TBT) once Time
+  // To Interactive (TTI) is known.
+  Vector<WTF::PODInterval<base::TimeTicks>> long_tasks_;
+
+  // Start time of currently active network quiet windows.
+  // Null base::TimeTicks values indicate network is not quiet at the moment.
   base::TimeTicks active_network_quiet_window_start_;
 
-  // Adds currently active quiet main thread and network quiet windows to the
-  // vectors. Should be called before calling
-  // FindInteractiveCandidate.
-  void AddCurrentlyActiveQuietIntervals(base::TimeTicks current_time);
-  // Undoes AddCurrentlyActiveQuietIntervals.
-  void RemoveCurrentlyActiveQuietIntervals();
+  // Adds currently active quiet network quiet window to the
+  // vector. Should be called before calling FindInteractiveCandidate.
+  void AddCurrentlyActiveNetworkQuietInterval(base::TimeTicks current_time);
+  // Undoes AddCurrentlyActiveNetworkQuietInterval.
+  void RemoveCurrentlyActiveNetworkQuietInterval();
 
   std::unique_ptr<NetworkActivityChecker> network_activity_checker_;
   int ActiveConnections();
@@ -185,6 +181,8 @@ class CORE_EXPORT InteractiveDetector
   void TimeToInteractiveTimerFired(TimerBase*);
   void CheckTimeToInteractiveReached();
   void OnTimeToInteractiveDetected();
+  std::unique_ptr<TracedValue> ComputeTimeToInteractiveTraceArgs();
+  base::TimeDelta ComputeTotalBlockingTime();
 
   Vector<VisibilityChangeEvent> visibility_change_events_;
   bool initially_hidden_;
@@ -197,7 +195,8 @@ class CORE_EXPORT InteractiveDetector
   // long task before that quiet window, or lower_bound, whichever is bigger -
   // this is called the Interactive Candidate. Returns 0.0 if no such quiet
   // window is found.
-  base::TimeTicks FindInteractiveCandidate(base::TimeTicks lower_bound);
+  base::TimeTicks FindInteractiveCandidate(base::TimeTicks lower_bound,
+                                           base::TimeTicks current_time);
 
   // LongTaskObserver implementation
   void OnLongTaskDetected(base::TimeTicks start_time,
@@ -210,6 +209,8 @@ class CORE_EXPORT InteractiveDetector
   // The timestamp of a pending pointerdown event. Valid in the same cases as
   // pending_pointerdown_delay_.
   base::TimeTicks pending_pointerdown_timestamp_;
+
+  ukm::UkmRecorder* ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractiveDetector);
 };

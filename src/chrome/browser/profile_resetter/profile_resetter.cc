@@ -14,9 +14,9 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -324,11 +325,12 @@ void ProfileResetter::ResetPinnedTabs() {
 
 void ProfileResetter::ResetShortcuts() {
 #if defined(OS_WIN)
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTaskAndReply(FROM_HERE, base::Bind(&ResetShortcutsOnBlockingThread),
-                         base::Bind(&ProfileResetter::MarkAsDone,
-                                    weak_ptr_factory_.GetWeakPtr(), SHORTCUTS));
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+      ->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&ResetShortcutsOnBlockingThread),
+          base::BindOnce(&ProfileResetter::MarkAsDone,
+                         weak_ptr_factory_.GetWeakPtr(), SHORTCUTS));
 #else
   MarkAsDone(SHORTCUTS);
 #endif

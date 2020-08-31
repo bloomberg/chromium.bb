@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">менюдагы нерсе</translation>
 <translation id="10623998915015855">которгуч баскычы</translation>
 <translation id="1088086359088493902">Секунддар</translation>
+<translation id="1142001580032786438">Апта тандагычты көрсөтүү</translation>
 <translation id="1171774979989969504">Электрондук почта дарегин киргизиңиз.</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
 <translation id="1188858454923323853">кошумча</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">слайдер</translation>
 <translation id="1211441953136645838">түшүндүрмө</translation>
 <translation id="1281252709823657822">диалог</translation>
+<translation id="1306460908038601864">Өчүк</translation>
 <translation id="1335095011850992622">китептин чыгышы жөнүндөгү маалыматтар</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">баннер</translation>
@@ -18,9 +20,10 @@
 <translation id="1591562245178063882">Үстүбүздөгү ай</translation>
 <translation id="1637811476055996098">Файлдарды тандаңыз</translation>
 <translation id="1650423536718072820">үзүндү</translation>
-<translation id="1727886345390570319">жабык коштомо жазуулар менюсун жашыруу</translation>
+<translation id="1727886345390570319">коштомо жазуулар менюсун жашыруу</translation>
 <translation id="1729654308190250600">Бош эмес электрондук почта дарегин киргизиңиз.</translation>
 <translation id="1758486001363313524">Башка…</translation>
+<translation id="1787192514241997742">жалпы убакыт: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">айгай кабар_диалогу</translation>
 <translation id="1821985195704844674">дарак торчосу</translation>
 <translation id="1822429046913737220">күндүзгү-түнкү</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">Маани <ph name="MAXIMUM_DATE_OR_TIME" /> же андан мурунураак болушу керек.</translation>
 <translation id="1946271899482435442">Күн тандагычты көрсөтүү</translation>
 <translation id="1993104285338243655">Күзгүдөй чагылдырууга которулду</translation>
+<translation id="2031987842108996681">Кызыл канал</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />' ичинде '<ph name="DOT" />' туура эмес жерде колдонулду.</translation>
 <translation id="2148716181193084225">Бүгүн</translation>
 <translation id="2158401438286456825">барактардын тизмеси</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">белгилөө кутучасы</translation>
 <translation id="2311842470354187719">барактардын үзүлгөн жери</translation>
 <translation id="2335594187091864976">күн жана убакыт тандагыч</translation>
+<translation id="2393030564806080191">Он алты түстүү код</translation>
 <translation id="245932805758469625">видеонун бүтөөрүнө канча секунд калды</translation>
 <translation id="248395913932153421">Күн</translation>
 <translation id="2507943997699731163">Бул талааны толтуруңуз.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">көбүрөөк медианы көзөмөлдөө каражаттарын көрсөтүү</translation>
 <translation id="2572483411312390101">ойнотуу</translation>
 <translation id="2613802280814924224">Жарактуу маани киргизиңиз. Кыйла жарактуу маани: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Жашыл канал</translation>
 <translation id="2653659639078652383">Тапшыруу</translation>
 <translation id="2657045182931379222">графикалык объект</translation>
 <translation id="2674318244760992338">төмөнкү колонтитул</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">URL жазыңыз.</translation>
 <translation id="3175736971608411871">таймер</translation>
 <translation id="3199563858620722075">айкалыштырылган кутуча</translation>
+<translation id="3329013043687509092">Каныктыруу</translation>
 <translation id="3450233048674729344">Маани <ph name="MAXIMUM" /> кичирээк же барабар болушу керек.</translation>
 <translation id="3486220673238053218">аныктама</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />-башкы аталыш</translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">Бул текстти <ph name="MIN_CHARACTERS" /> белгиге же андан көбүрөөк кылып узартыңыз (учурда <ph name="CURRENT_LENGTH" /> белги турат).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' дегенден кийинки бөлүктө '<ph name="INVALIDCHARACTER" />' символу камтылбашы керек.</translation>
 <translation id="3846214748874656680">Толук экран режиминен чыгуу</translation>
-<translation id="3889183436948184105">карап чыгуу</translation>
 <translation id="3920932319529768807">корутунду</translation>
 <translation id="3924558731517983934">колдонмо</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">Төмөнкү жазылыптыр: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">глоссарийге шилтеме</translation>
 <translation id="4522570452068850558">Чоо-жайлары</translation>
-<translation id="4542388879936266156">калган убакыт: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4661075872484491155">дарак</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' дегенден кийинки бөлүктө '<ph name="INVALIDCHARACTER" />' символу болбошу керек.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">издөө</translation>
 <translation id="4812940957355064477">Номер киргизиңиз.</translation>
 <translation id="4912536737030637138">библиографиялык жазуу</translation>
+<translation id="4915360478455618802">Убакыт тандагычты көрсөтүү</translation>
 <translation id="492244087561876220">пикир</translation>
+<translation id="4950364064308314478">Жергиликтүү күн менен убакытты тандагычты көрсөтүү</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> тандалды</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> тандалды</translation>
 <translation id="4992066212339426712">Үнүн чыгаруу</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' дегенден кийинки бөлүгүн киргизиңиз. '<ph name="INVALIDADDRESS" />' толук эмес.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">илгерилөөнү көрсөткүч</translation>
 <translation id="5090250355906949916">видеонун убакытын түргүч</translation>
 <translation id="5093189678851173835">эпиграф</translation>
+<translation id="509897012892853729">Көк канал</translation>
 <translation id="5117590920725113268">Кийинки айды көрсөтүү</translation>
 <translation id="512758898067543763">саптын башкы аталышы</translation>
 <translation id="5143125788380636750">эпилог</translation>
@@ -129,12 +138,13 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' дегенден кийинки бөлүктү киргизиңиз. '<ph name="INVALIDADDRESS" />' толук болбой калды.</translation>
 <translation id="5334352251556557839">Аудио ойнотулбай жатат.</translation>
+<translation id="537648784377940524">Минималдуу күн (<ph name="MIN_DATE_OR_TIME" />) Максималдуу күндөн мурда болушу керек (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">сөлөкөт</translation>
 <translation id="5453733299334684579">дарактагы нерсе</translation>
 <translation id="5466621249238537318">Бир же бир нече файл тандаңыз.</translation>
 <translation id="5468998798572797635">толук экран режиминен чыгуу</translation>
 <translation id="5516424706154626233">күн тандагыч</translation>
-<translation id="5537725057119320332">Тышкы экранга чыгаруу</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">үнүн чыгаруу</translation>
 <translation id="5608153257855394627">бөлүп көрсөтүү</translation>
 <translation id="561939826962581046">убакыт</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">дагы параметрлер</translation>
 <translation id="576709008726043716">киришүү</translation>
 <translation id="57838592816432529">Үнсүз</translation>
-<translation id="5860033963881614850">Өчүк</translation>
 <translation id="588258955323874662">Толук экран</translation>
 <translation id="5888666972993069672">Азыр <ph name="DEVICE_FRIENDLY_NAME" /> экранына чыгарылууда</translation>
 <translation id="591047860372322273">издөө кутучасы</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">соңку сөз</translation>
 <translation id="6209276755895393898">Төмөнкү болуп чыкты: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">глоссарий</translation>
+<translation id="6281588256137006900">Жарыктык</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Сүрөт ичиндеги сүрөт режиминен чыгуу</translation>
 <translation id="6398862346408813489">Айды тандоо панелин көрсөтүү</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">Ойнотуу</translation>
 <translation id="6820355525329141109">Плагин жүктөлбөй койду.</translation>
 <translation id="6820615603175220800">библиографияга шилтеме</translation>
+<translation id="6831465880655513317">Каныккандык менен жарыктыкты тууралаган эки өлчөмдүү сыдырмасы бар түс дөңгөлөгү</translation>
 <translation id="6843725295806269523">үнсүз</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">чыгуу маалыматы</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">Тизмедеги нерсени тандап алыңыз.</translation>
 <translation id="727747134524199931">тилкенин башкы аталышы</translation>
 <translation id="7320576522385648310">буферленүүдө</translation>
+<translation id="7341556277900466204">Түс дөңгөлөгү</translation>
 <translation id="7353453495576941748">алкыш айтуу</translation>
 <translation id="7364796246159120393">Файл тандоо</translation>
 <translation id="739024184232394898">Башка…</translation>
@@ -216,21 +228,24 @@
 <translation id="775297008183122718">Жараксыз жазуу</translation>
 <translation id="7789962463072032349">бир азга токтотуу</translation>
 <translation id="7802800022689234070">ачып көрсөтүүчү үч бурчтук</translation>
+<translation id="7852167693871241274">Тандалган түстөрдүн сыдырмасы</translation>
 <translation id="7888071071722539607">'<ph name="ATSIGN" />' электрондук почта дарегине '<ph name="INVALIDADDRESS" />' кошуңуз, анда '<ph name="ATSIGN" />' жок экен.</translation>
 <translation id="7891486169920085145">бөлгүч</translation>
 <translation id="795667975304826397">Файл тандалган жок</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> тандалган жок</translation>
 <translation id="8034303206267677282">күчтүү</translation>
 <translation id="8053789581856978548">издөө текстинин талаасы</translation>
 <translation id="8057695513531652401">эскертүү</translation>
 <translation id="8105797009065549151">эскертүүгө шилтеме</translation>
 <translation id="811583516810654505">Сүрөттөмөсү алынууда…</translation>
-<translation id="8117451130807776954">Ушул апта</translation>
+<translation id="8117451130807776954">Ушул аптада</translation>
 <translation id="8199524924445686405">жжжж</translation>
 <translation id="8208673686607688524">жергиликтүү күн менен убакытты тандагыч</translation>
 <translation id="8261464734335370856">Орфографиялык ката</translation>
 <translation id="8284326494547611709">Коштомо жазуулар</translation>
 <translation id="8346634859695247203">бөлүм</translation>
 <translation id="835897206747267392">Жараксыз маани.</translation>
+<translation id="839593075537728968">Маани <ph name="MINIMUM_TIME" /> – <ph name="MAXIMUM_TIME" /> ортосунда болушу керек.</translation>
 <translation id="8403857369060869934">мөөнөтү аяктаган убакыт: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">бөлүм</translation>
 <translation id="8433900881053900389">куралдар тилкеси</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">мазмуну</translation>
 <translation id="8613126697340063924">алыстан ойнотууну көзөмөлдөө</translation>
 <translation id="862370744433916922">кичи жазуулар</translation>
+<translation id="8634971699417195529">Ай тандагычты көрсөтүү</translation>
 <translation id="8711688047404765493">чыгаруу</translation>
 <translation id="8750798805984357768">Булардын бирин тандаңыз.</translation>
 <translation id="8808573423886751634">бөлүм</translation>
 <translation id="8845239796550121995">Азыр сыналгыңызга чыгарылууда</translation>
 <translation id="8851136666856101339">башкы</translation>
 <translation id="8875657656876809964">Видеону ойнотууда ката кетти</translation>
+<translation id="8889402386540077796">Түс</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> Кб</translation>
+<translation id="894736920926684893">Өчүрүп күйгүзүүчү баскычты форматтоо</translation>
 <translation id="8987927404178983737">Ай</translation>
 <translation id="901493112792887934">учурдагы убакыт секунд менен</translation>
 <translation id="901834265349196618">электрондук почта</translation>
-<translation id="9023835124071926463">пикир бөлүмү</translation>
 <translation id="9048119486235211610">чабыттоо</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">сүрөт ичиндеги сүрөт режиминен чыгуу</translation>

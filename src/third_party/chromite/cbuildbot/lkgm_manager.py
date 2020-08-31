@@ -10,6 +10,7 @@ from __future__ import print_function
 import codecs
 import os
 import re
+import sys
 from xml.dom import minidom
 
 from chromite.lib import config_lib
@@ -20,6 +21,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Paladin constants for manifest names.
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
 
@@ -27,8 +31,6 @@ ANDROID_ELEMENT = 'android'
 ANDROID_VERSION_ATTR = 'version'
 CHROME_ELEMENT = 'chrome'
 CHROME_VERSION_ATTR = 'version'
-LKGM_ELEMENT = 'lkgm'
-LKGM_VERSION_ATTR = 'version'
 
 
 class PromoteCandidateException(Exception):
@@ -103,13 +105,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   """
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
-  CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
   ANDROID_PFQ_SUBDIR = 'android-LKGM-candidates'
-  COMMIT_QUEUE_SUBDIR = 'paladin'
   TOOLCHAIN_SUBDIR = 'toolchain'
   FULL_SUBDIR = 'full'
   INCREMENTAL_SUBDIR = 'incremental'
-  POSTSUBMIT_SUBDIR = 'postsubmit'
 
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
@@ -150,9 +149,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.build_type = build_type
     # Chrome PFQ and PFQ's exist at the same time and version separately so they
     # must have separate subdirs in the manifest-versions repository.
-    if self.build_type == constants.CHROME_PFQ_TYPE:
-      self.rel_working_dir = self.CHROME_PFQ_SUBDIR
-    elif self.build_type == constants.ANDROID_PFQ_TYPE:
+    if self.build_type == constants.ANDROID_PFQ_TYPE:
       self.rel_working_dir = self.ANDROID_PFQ_SUBDIR
     elif self.build_type == constants.TOOLCHAIN_TYPE:
       self.rel_working_dir = self.TOOLCHAIN_SUBDIR
@@ -160,10 +157,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.FULL_SUBDIR
     elif self.build_type == constants.INCREMENTAL_TYPE:
       self.rel_working_dir = self.INCREMENTAL_SUBDIR
-    elif self.build_type == constants.POSTSUBMIT_TYPE:
-      self.rel_working_dir = self.POSTSUBMIT_SUBDIR
-    elif config_lib.IsCQType(self.build_type):
-      self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     else:
       assert config_lib.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
@@ -370,105 +363,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     raise PromoteCandidateException(last_error)
 
-  def _ShouldGenerateBlameListSinceLKGM(self):
-    """Returns True if we should generate the blamelist."""
-    # We want to generate the blamelist only for valid pfq types and if we are
-    # building on the master branch i.e. revving the build number.
-    return (self.incr_type == 'build' and
-            config_lib.IsPFQType(self.build_type) and
-            self.build_type != constants.CHROME_PFQ_TYPE and
-            self.build_type != constants.ANDROID_PFQ_TYPE)
-
-  def GenerateBlameListSinceLKGM(self):
-    """Prints out links to all CL's that have been committed since LKGM.
-
-    Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
-    each CL committed since we last had a passing build.
-
-    Returns:
-      A boolean indicating whether the blamelist has chump CLs.
-    """
-    if not self._ShouldGenerateBlameListSinceLKGM():
-      logging.info('Not generating blamelist for lkgm as it is not appropriate '
-                   'for this build type.')
-      return False
-    # Suppress re-printing changes we tried ourselves on paladin
-    # builders since they are redundant.
-    only_print_chumps = self.build_type == constants.PALADIN_TYPE
-    return GenerateBlameList(self.cros_source, self.lkgm_path,
-                             only_print_chumps=only_print_chumps)
-
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
     raise NotImplementedError()
-
-
-def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
-  """Generate the blamelist since the specified manifest.
-
-  Args:
-    source_repo: Repository object for the source code.
-    lkgm_path: Path to LKGM manifest.
-    only_print_chumps: If True, only print changes that were chumped.
-
-  Returns:
-    A boolean indicating whether the blamelist has chump CLs.
-  """
-  has_chump_cls = False
-  handler = git.Manifest(lkgm_path)
-  reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
-  author_re = re.compile(r'^Author:.*<(\S+)@\S+>\s*')
-  committer_re = re.compile(r'^Commit:.*<(\S+)@\S+>\s*')
-  for rel_src_path, checkout in handler.checkouts_by_path.items():
-    project = checkout['name']
-
-    # Additional case in case the repo has been removed from the manifest.
-    src_path = source_repo.GetRelativePath(rel_src_path)
-    if not os.path.exists(src_path):
-      logging.info('Detected repo removed from manifest %s', project)
-      continue
-
-    revision = checkout['revision']
-    try:
-      stdout = git.Log(src_path, format='full', rev='%s..HEAD' % revision)
-    except cros_build_lib.RunCommandError as ex:
-      # Git returns 128 when the revision does not exist.
-      if ex.result.returncode != 128:
-        raise
-      logging.warning('Detected branch removed from local checkout.')
-      logging.PrintBuildbotStepWarnings()
-      return has_chump_cls
-    current_author = None
-    current_committer = None
-    for line in stdout.splitlines():
-      author_match = author_re.match(line)
-      if author_match:
-        current_author = author_match.group(1)
-
-      committer_match = committer_re.match(line)
-      if committer_match:
-        current_committer = committer_match.group(1)
-
-      review_match = reviewed_on_re.match(line)
-      if review_match:
-        review = review_match.group(1)
-        _, _, change_number = review.rpartition('/')
-        if not current_author:
-          logging.notice('Failed to locate author before the line of review: '
-                         '%s. Author name is set to <Unknown>', line)
-          current_author = '<Unknown>'
-        items = [
-            os.path.basename(project),
-            current_author,
-            change_number,
-        ]
-        # TODO(phobbs) verify the domain of the email address as well.
-        if current_committer not in ('chrome-bot', 'chrome-internal-fetch',
-                                     'chromeos-commit-bot', '3su6n15k.default'):
-          items.insert(0, 'CHUMP')
-          has_chump_cls = True
-        elif only_print_chumps:
-          continue
-        logging.PrintBuildbotLink(' | '.join(items), review)
-
-  return has_chump_cls

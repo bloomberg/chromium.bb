@@ -20,8 +20,7 @@ from core.external_modules import pandas
 RUNS_USED_FOR_LIMIT_UPDATE = 30
 CHANGE_PERCENTAGE_LIMIT = 0.01
 
-SWARMING_PATH = os.path.join(
-  CHROMIUM_PATH, 'tools', 'swarming_client', 'swarming.py')
+SWARMING_PATH = os.path.join(CHROMIUM_PATH, 'tools', 'luci-go', 'swarming')
 UPPER_LIMITS_DATA_DIR = os.path.join(
   CHROMIUM_PATH, 'testing', 'scripts', 'representative_perf_test_data')
 
@@ -36,16 +35,15 @@ def FetchItemIds(tags, limit):
   Returns:
     A list containing the item Id of the tasks.
   """
-  swarming_attributes = (
-    'tasks/list?tags=name:rendering_representative_perf_tests&tags=os:{os}'
-    '&tags=buildername:{buildername}&state=COMPLETED&fields=cursor,'
-    'items(task_id)').format(**tags)
 
   query = [
-    SWARMING_PATH, 'query', '-S', 'chromium-swarm.appspot.com', '--limit',
-    str(limit), swarming_attributes]
-  output = json.loads(subprocess.check_output(query))
-  return output.get('items')
+      SWARMING_PATH, 'tasks', '-S', 'chromium-swarm.appspot.com', '-limit',
+      str(limit), '-state=COMPLETED', '-field', 'items(task_id)', '-tag',
+      'master:chromium.gpu.fyi', '-tag', 'os:{os}'.format(**tags), '-tag',
+      'name:rendering_representative_perf_tests', '-tag',
+      'buildername:{buildername}'.format(**tags)
+  ]
+  return json.loads(subprocess.check_output(query))
 
 
 def FetchItemData(task_id, benchmark, index, temp_dir):
@@ -60,24 +58,26 @@ def FetchItemData(task_id, benchmark, index, temp_dir):
   Returns:
     A data_frame containing the averages and confidence interval ranges.
   """
-  output_directory = os.path.abspath(
-    os.path.join(temp_dir, task_id))
   query = [
-    SWARMING_PATH, 'collect', '-S', 'chromium-swarm.appspot.com',
-    '--task-output-dir', output_directory, task_id]
+      SWARMING_PATH, 'collect', '-S', 'chromium-swarm.appspot.com',
+      '-output-dir', temp_dir, '-perf', task_id
+  ]
   try:
     subprocess.check_output(query)
   except Exception as e:
     print(e)
 
-  result_file_path = os.path.join(
-    output_directory, '0', 'rendering.' + benchmark, 'perf_results.csv')
+  result_file_path = os.path.join(temp_dir, task_id, 'rendering.' + benchmark,
+                                  'perf_results.csv')
 
-  df = pandas.read_csv(result_file_path)
-  df = df.loc[df['name'] == 'frame_times']
-  df = df[['stories', 'avg', 'ci_095']]
-  df['index'] = index
-  return df
+  try:
+    df = pandas.read_csv(result_file_path)
+    df = df.loc[df['name'] == 'frame_times']
+    df = df[['stories', 'avg', 'ci_095']]
+    df['index'] = index
+    return df
+  except:
+    print("CSV results were not produced!")
 
 
 def GetPercentileValues(benchmark, tags, limit, percentile):
@@ -187,6 +187,9 @@ def RecalculateUpperLimits(data_point_count):
           current_upper_limits[platform][story]['ci_095'],
           results[platform][story]['ci_095'], 'CI', max_change)
         results[platform][story]['ci_095'] = new_ci
+
+        if current_upper_limits[platform][story].get('control', False):
+          results[platform][story]['control'] = True
 
   if max_change > CHANGE_PERCENTAGE_LIMIT:
     with open(

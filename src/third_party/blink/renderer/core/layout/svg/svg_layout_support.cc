@@ -210,10 +210,9 @@ inline void SVGLayoutSupport::UpdateObjectBoundingBox(
     bool& object_bounding_box_valid,
     LayoutObject* other,
     FloatRect other_bounding_box) {
+  auto* svg_container = DynamicTo<LayoutSVGContainer>(other);
   bool other_valid =
-      other->IsSVGContainer()
-          ? ToLayoutSVGContainer(other)->IsObjectBoundingBoxValid()
-          : true;
+      svg_container ? svg_container->IsObjectBoundingBoxValid() : true;
   if (!other_valid)
     return;
 
@@ -236,8 +235,8 @@ static bool HasValidBoundingBoxForContainer(const LayoutObject* object) {
   if (object->IsSVGHiddenContainer())
     return false;
 
-  if (object->IsSVGForeignObject())
-    return ToLayoutSVGForeignObject(object)->IsObjectBoundingBoxValid();
+  if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(object))
+    return foreign_object->IsObjectBoundingBoxValid();
 
   if (object->IsSVGImage())
     return ToLayoutSVGImage(object)->IsObjectBoundingBoxValid();
@@ -409,6 +408,34 @@ void SVGLayoutSupport::AdjustVisualRectWithResources(
     visual_rect.Intersect(masker->ResourceBoundingBox(object_bounding_box));
 }
 
+FloatRect SVGLayoutSupport::ExtendTextBBoxWithStroke(
+    const LayoutObject& layout_object,
+    const FloatRect& text_bounds) {
+  DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
+  FloatRect bounds = text_bounds;
+  const SVGComputedStyle& svg_style = layout_object.StyleRef().SvgStyle();
+  if (svg_style.HasStroke()) {
+    SVGLengthContext length_context(To<SVGElement>(layout_object.GetNode()));
+    // TODO(fs): This approximation doesn't appear to be conservative enough
+    // since while text (usually?) won't have caps it could have joins and thus
+    // miters.
+    bounds.Inflate(length_context.ValueForLength(svg_style.StrokeWidth()));
+  }
+  return bounds;
+}
+
+FloatRect SVGLayoutSupport::ComputeVisualRectForText(
+    const LayoutObject& layout_object,
+    const FloatRect& text_bounds,
+    const FloatRect& reference_box) {
+  DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
+  FloatRect visual_rect = ExtendTextBBoxWithStroke(layout_object, text_bounds);
+  if (const ShadowList* text_shadow = layout_object.StyleRef().TextShadow())
+    text_shadow->AdjustRectForShadow(visual_rect);
+  AdjustVisualRectWithResources(layout_object, reference_box, visual_rect);
+  return visual_rect;
+}
+
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(object);
@@ -442,8 +469,8 @@ bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
                                        HitTestAction hit_test_action) {
   for (LayoutObject* child = last_child; child;
        child = child->PreviousSibling()) {
-    if (child->IsSVGForeignObject()) {
-      if (ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
+    if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(child)) {
+      if (foreign_object->NodeAtPointFromSVG(
               result, location, accumulated_offset, hit_test_action))
         return true;
     } else {

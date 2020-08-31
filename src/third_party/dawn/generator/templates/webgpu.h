@@ -1,3 +1,24 @@
+//* Copyright 2020 The Dawn Authors
+//*
+//* Licensed under the Apache License, Version 2.0 (the "License");
+//* you may not use this file except in compliance with the License.
+//* You may obtain a copy of the License at
+//*
+//*     http://www.apache.org/licenses/LICENSE-2.0
+//*
+//* Unless required by applicable law or agreed to in writing, software
+//* distributed under the License is distributed on an "AS IS" BASIS,
+//* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//* See the License for the specific language governing permissions and
+//* limitations under the License.
+//*
+//*
+//* This template itself is part of the Dawn source and follows Dawn's license
+//* but the generated file is used for "WebGPU native". The template comments
+//* using //* at the top of the file are removed during generation such that
+//* the resulting file starts with the BSD 3-Clause comment.
+//*
+//*
 // BSD 3-Clause License
 //
 // Copyright (c) 2019, "WebGPU native" developers
@@ -52,7 +73,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-const uint64_t WGPU_WHOLE_SIZE = 0xffffffffffffffffULL; // UINT64_MAX
+#define WGPU_WHOLE_SIZE (0xffffffffffffffffULL)
 
 typedef uint32_t WGPUFlags;
 
@@ -73,10 +94,18 @@ typedef uint32_t WGPUFlags;
 
 {% endfor %}
 
+typedef struct WGPUChainedStruct {
+    struct WGPUChainedStruct const * next;
+    WGPUSType sType;
+} WGPUChainedStruct;
+
 {% for type in by_category["structure"] %}
     typedef struct {{as_cType(type.name)}} {
         {% if type.extensible %}
-            void const * nextInChain;
+            WGPUChainedStruct const * nextInChain;
+        {% endif %}
+        {% if type.chained %}
+            WGPUChainedStruct chain;
         {% endif %}
         {% for member in type.members %}
             {{as_annotated_cType(member)}};
@@ -97,10 +126,11 @@ extern "C" {
     );
 {% endfor %}
 
-typedef void (*WGPUProc)();
+typedef void (*WGPUProc)(void);
 
 #if !defined(WGPU_SKIP_PROCS)
 
+typedef WGPUInstance (*WGPUProcCreateInstance)(WGPUInstanceDescriptor const * descriptor);
 typedef WGPUProc (*WGPUProcGetProcAddress)(WGPUDevice device, char const * procName);
 
 {% for type in by_category["object"] if len(c_methods(type)) > 0 %}
@@ -119,6 +149,7 @@ typedef WGPUProc (*WGPUProcGetProcAddress)(WGPUDevice device, char const * procN
 
 #if !defined(WGPU_SKIP_DECLARATIONS)
 
+WGPU_EXPORT WGPUInstance wgpuCreateInstance(WGPUInstanceDescriptor const * descriptor);
 WGPU_EXPORT WGPUProc wgpuGetProcAddress(WGPUDevice device, char const * procName);
 
 {% for type in by_category["object"] if len(c_methods(type)) > 0 %}

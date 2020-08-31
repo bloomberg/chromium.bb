@@ -11,18 +11,19 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 
 namespace syncer {
 
 namespace {
 
-constexpr base::TaskTraits kTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+constexpr base::TaskTraits kBackendTaskTraits = {
+    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 sync_pb::LocalTrustedVault ReadEncryptedFile(const base::FilePath& file_path) {
@@ -61,14 +62,16 @@ class FileBasedTrustedVaultClient::Backend
 
   void ReadDataFromDisk() { data_ = ReadEncryptedFile(file_path_); }
 
-  std::vector<std::string> FetchKeys(const std::string& gaia_id) {
+  std::vector<std::vector<uint8_t>> FetchKeys(
+      const CoreAccountInfo& account_info) {
     const sync_pb::LocalTrustedVaultPerUser* per_user_vault =
-        FindUserVault(gaia_id);
+        FindUserVault(account_info.gaia);
 
-    std::vector<std::string> keys;
+    std::vector<std::vector<uint8_t>> keys;
     if (per_user_vault) {
       for (const sync_pb::LocalTrustedVaultKey& key : per_user_vault->key()) {
-        keys.push_back(key.key_material());
+        const std::string& key_material = key.key_material();
+        keys.emplace_back(key_material.begin(), key_material.end());
       }
     }
 
@@ -76,7 +79,8 @@ class FileBasedTrustedVaultClient::Backend
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) {
+                 const std::vector<std::vector<uint8_t>>& keys,
+                 int last_key_version) {
     // Find or create user for |gaid_id|.
     sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
     if (!per_user_vault) {
@@ -85,12 +89,18 @@ class FileBasedTrustedVaultClient::Backend
     }
 
     // Replace all keys.
+    per_user_vault->set_last_key_version(last_key_version);
     per_user_vault->clear_key();
-    for (const std::string& key : keys) {
-      per_user_vault->add_key()->set_key_material(key);
+    for (const std::vector<uint8_t>& key : keys) {
+      per_user_vault->add_key()->set_key_material(key.data(), key.size());
     }
 
     WriteToDisk(data_, file_path_);
+  }
+
+  void RemoveAllStoredKeys() {
+    base::DeleteFile(file_path_, /*recursive=*/false);
+    data_.Clear();
   }
 
  private:
@@ -119,25 +129,50 @@ class FileBasedTrustedVaultClient::Backend
 FileBasedTrustedVaultClient::FileBasedTrustedVaultClient(
     const base::FilePath& file_path)
     : file_path_(file_path),
-      backend_task_runner_(base::CreateSequencedTaskRunner(kTaskTraits)) {}
+      backend_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner(kBackendTaskTraits)) {}
 
 FileBasedTrustedVaultClient::~FileBasedTrustedVaultClient() = default;
 
+std::unique_ptr<FileBasedTrustedVaultClient::Subscription>
+FileBasedTrustedVaultClient::AddKeysChangedObserver(
+    const base::RepeatingClosure& cb) {
+  return observer_list_.Add(cb);
+}
+
 void FileBasedTrustedVaultClient::FetchKeys(
-    const std::string& gaia_id,
-    base::OnceCallback<void(const std::vector<std::string>&)> cb) {
+    const CoreAccountInfo& account_info,
+    base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   TriggerLazyInitializationIfNeeded();
   base::PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&Backend::FetchKeys, backend_, gaia_id), std::move(cb));
+      base::BindOnce(&Backend::FetchKeys, backend_, account_info),
+      std::move(cb));
 }
 
 void FileBasedTrustedVaultClient::StoreKeys(
     const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys,
+    int last_key_version) {
   TriggerLazyInitializationIfNeeded();
   backend_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Backend::StoreKeys, backend_, gaia_id, keys));
+      FROM_HERE, base::BindOnce(&Backend::StoreKeys, backend_, gaia_id, keys,
+                                last_key_version));
+  observer_list_.Notify();
+}
+
+void FileBasedTrustedVaultClient::RemoveAllStoredKeys() {
+  TriggerLazyInitializationIfNeeded();
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Backend::RemoveAllStoredKeys, backend_));
+  observer_list_.Notify();
+}
+
+void FileBasedTrustedVaultClient::MarkKeysAsStale(
+    const CoreAccountInfo& account_info,
+    base::OnceCallback<void(bool)> cb) {
+  // Not really supported and not useful for this particular implementation.
+  std::move(cb).Run(false);
 }
 
 void FileBasedTrustedVaultClient::WaitForFlushForTesting(

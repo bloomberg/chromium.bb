@@ -4,7 +4,6 @@
 
 import web_idl
 
-
 _CODE_GEN_EXPR_PASS_KEY = object()
 
 
@@ -144,20 +143,39 @@ def expr_uniq(terms):
     return uniq_terms
 
 
-def expr_from_exposure(exposure, in_global=None):
+def expr_from_exposure(exposure, global_names=None):
     """
+    Returns an expression to determine whether this property should be exposed
+    or not.
+
     Args:
-        exposure: web_idl.Exposure
-        in_global: A global name of [Exposed] that the ExecutionContext is
-            supposed to be / represent.
+        exposure: web_idl.Exposure of the target construct.
+        global_names: When specified, it's taken into account that the global
+            object implements |global_names|.
     """
     assert isinstance(exposure, web_idl.Exposure)
-    assert in_global is None or isinstance(in_global, str)
+    assert (global_names is None
+            or (isinstance(global_names, (list, tuple))
+                and all(isinstance(name, str) for name in global_names)))
 
     def ref_enabled(feature):
-        return _Expr("RuntimeEnabledFeatures::{}Enabled()".format(feature))
+        arg = "${execution_context}" if feature.is_context_dependent else ""
+        return _Expr("RuntimeEnabledFeatures::{}Enabled({})".format(
+            feature, arg))
 
     top_terms = [_Expr(True)]
+
+    # [SecureContext]
+    if exposure.only_in_secure_contexts is True:
+        top_terms.append(_Expr("${is_in_secure_context}"))
+    elif exposure.only_in_secure_contexts is False:
+        top_terms.append(_Expr(True))
+    else:
+        terms = map(ref_enabled, exposure.only_in_secure_contexts)
+        top_terms.append(
+            expr_or(
+                [_Expr("${is_in_secure_context}"),
+                 expr_not(expr_and(terms))]))
 
     # [Exposed]
     GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST = {
@@ -172,22 +190,26 @@ def expr_from_exposure(exposure, in_global=None):
         "Worker": "IsWorkerGlobalScope",
         "Worklet": "IsWorkletGlobalScope",
     }
-    in_globals = set()
-    if in_global:
-        in_globals.add(in_global)
-        for category_name in ("Worker", "Worklet"):
-            if in_global.endswith(category_name):
-                in_globals.add(category_name)
     exposed_terms = []
-    for entry in exposure.global_names_and_features:
-        terms = []
-        if entry.global_name not in in_globals:
+    if global_names:
+        matched_global_count = 0
+        for entry in exposure.global_names_and_features:
+            if entry.global_name not in global_names:
+                continue
+            matched_global_count += 1
+            if entry.feature:
+                exposed_terms.append(ref_enabled(entry.feature))
+        assert (not exposure.global_names_and_features
+                or matched_global_count > 0)
+    else:
+        for entry in exposure.global_names_and_features:
+            terms = []
             pred = GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST[entry.global_name]
             terms.append(_Expr("${{execution_context}}->{}()".format(pred)))
-        if entry.feature:
-            terms.append(ref_enabled(entry.feature))
-        if terms:
-            exposed_terms.append(expr_and(terms))
+            if entry.feature:
+                terms.append(ref_enabled(entry.feature))
+            if terms:
+                exposed_terms.append(expr_and(terms))
     if exposed_terms:
         top_terms.append(expr_or(exposed_terms))
 
@@ -196,15 +218,19 @@ def expr_from_exposure(exposure, in_global=None):
         terms = map(ref_enabled, exposure.runtime_enabled_features)
         top_terms.append(expr_or(terms))
 
-    # [SecureContext]
-    if exposure.only_in_secure_contexts is True:
-        top_terms.append(_Expr("${in_secure_context}"))
-    elif exposure.only_in_secure_contexts is False:
-        top_terms.append(_Expr(True))
-    else:
-        terms = map(ref_enabled, exposure.only_in_secure_contexts)
-        top_terms.append(
-            expr_or([_Expr("${in_secure_context}"),
-                     expr_not(expr_and(terms))]))
-
     return expr_and(top_terms)
+
+
+def expr_of_feature_selector(exposure):
+    """
+    Returns an expression that tells whether this property is a target of the
+    feature selector or not.
+
+    Args:
+        exposure: web_idl.Exposure of the target construct.
+    """
+    assert isinstance(exposure, web_idl.Exposure)
+
+    features = map(lambda feature: "OriginTrialFeature::k{}".format(feature),
+                   exposure.context_dependent_runtime_enabled_features)
+    return _Expr("${{feature_selector}}.AnyOf({})".format(", ".join(features)))

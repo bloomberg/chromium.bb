@@ -122,16 +122,13 @@ class AppListMainViewTest : public views::ViewsTestBase {
   // |point| is in |grid_view|'s coordinates.
   AppListItemView* GetItemViewAtPointInGrid(AppsGridView* grid_view,
                                             const gfx::Point& point) {
-    const views::ViewModelT<AppListItemView>* view_model =
-        grid_view->view_model();
-    for (int i = 0; i < view_model->view_size(); ++i) {
-      views::View* view = view_model->view_at(i);
-      if (view->bounds().Contains(point)) {
-        return static_cast<AppListItemView*>(view);
-      }
-    }
-
-    return nullptr;
+    const auto& entries = grid_view->view_model()->entries();
+    const auto iter = std::find_if(
+        entries.begin(), entries.end(), [&point](const auto& entry) {
+          return entry.view->bounds().Contains(point);
+        });
+    return iter == entries.end() ? nullptr
+                                 : static_cast<AppListItemView*>(iter->view);
   }
 
   void SimulateClick(views::View* view) {
@@ -173,11 +170,11 @@ class AppListMainViewTest : public views::ViewsTestBase {
   ContentsView* GetContentsView() { return main_view_->contents_view(); }
 
   AppsGridView* RootGridView() {
-    return GetContentsView()->GetAppsContainerView()->apps_grid_view();
+    return GetContentsView()->apps_container_view()->apps_grid_view();
   }
 
   AppListFolderView* FolderView() {
-    return GetContentsView()->GetAppsContainerView()->app_list_folder_view();
+    return GetContentsView()->apps_container_view()->app_list_folder_view();
   }
 
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
@@ -309,7 +306,7 @@ TEST_F(AppListMainViewTest, DISABLED_DragLastItemFromFolderAndDropAtLastSlot) {
   // Ensure keyboard selection works on the root grid view after a reparent.
   // This is a regression test for https://crbug.com/466058.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE);
-  GetContentsView()->GetAppsContainerView()->OnKeyPressed(key_event);
+  GetContentsView()->apps_container_view()->OnKeyPressed(key_event);
 
   EXPECT_TRUE(RootGridView()->has_selected_view());
   EXPECT_FALSE(FolderGridView()->has_selected_view());

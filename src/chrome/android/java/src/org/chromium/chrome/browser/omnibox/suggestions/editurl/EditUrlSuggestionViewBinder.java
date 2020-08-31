@@ -6,15 +6,17 @@ package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.content.res.AppCompatResources;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.graphics.drawable.DrawableCompat;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -39,13 +41,6 @@ public class EditUrlSuggestionViewBinder {
                             model.get(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER));
         } else if (EditUrlSuggestionProperties.TEXT_CLICK_LISTENER == propertyKey) {
             view.setOnClickListener(model.get(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER));
-        } else if (SuggestionCommonProperties.SHOW_SUGGESTION_ICONS == propertyKey) {
-            boolean showIcons = model.get(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS);
-            view.findViewById(R.id.edit_url_space)
-                    .setVisibility(showIcons ? View.GONE : View.VISIBLE);
-            view.findViewById(R.id.edit_url_favicon)
-                    .setVisibility(showIcons ? View.VISIBLE : View.GONE);
-            updateSiteFavicon(view.findViewById(R.id.edit_url_favicon), model);
         } else if (EditUrlSuggestionProperties.SITE_FAVICON == propertyKey
                 || SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
             updateSiteFavicon(view.findViewById(R.id.edit_url_favicon), model);
@@ -54,8 +49,6 @@ public class EditUrlSuggestionViewBinder {
     }
 
     private static void updateSiteFavicon(ImageView view, PropertyModel model) {
-        if (!model.get(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS)) return;
-
         Bitmap bitmap = model.get(EditUrlSuggestionProperties.SITE_FAVICON);
         if (bitmap != null) {
             view.setImageBitmap(bitmap);
@@ -63,9 +56,9 @@ public class EditUrlSuggestionViewBinder {
             boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
             Drawable icon =
                     AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_globe_24dp);
-            int color = view.getContext().getResources().getColor(useDarkColors
-                            ? R.color.default_icon_color_secondary_list
-                            : R.color.white_mode_tint);
+            @ColorRes
+            int color = view.getContext().getResources().getColor(
+                    ChromeColors.getSecondaryIconTintRes(!useDarkColors));
             DrawableCompat.setTint(icon, color);
             view.setImageDrawable(icon);
         }

@@ -31,7 +31,8 @@ class BackgroundImageGeometry {
 
  public:
   // Constructor for LayoutView where the coordinate space is different.
-  BackgroundImageGeometry(const LayoutView&);
+  BackgroundImageGeometry(const LayoutView&,
+                          const LayoutPoint& element_positioning_area_offset);
 
   // Constructor for table cells where background_object may be the row or
   // column the background image is attached to.
@@ -95,9 +96,9 @@ class BackgroundImageGeometry {
   const ComputedStyle& ImageStyle() const;
   InterpolationQuality ImageInterpolationQuality() const;
 
+ private:
   static bool ShouldUseFixedAttachment(const FillLayer&);
 
- private:
   void SetSpaceSize(const LayoutSize& repeat_spacing) {
     repeat_spacing_ = repeat_spacing;
   }
@@ -121,7 +122,8 @@ class BackgroundImageGeometry {
 
   void UseFixedAttachment(const LayoutPoint& attachment_point);
   void SetHasNonLocalGeometry() { has_non_local_geometry_ = true; }
-  LayoutPoint GetOffsetForCell(const LayoutTableCell&, const LayoutBox&);
+  LayoutPoint GetPositioningOffsetForCell(const LayoutTableCell&,
+                                          const LayoutBox&);
   LayoutSize GetBackgroundObjectDimensions(const LayoutTableCell&,
                                            const LayoutBox&);
 
@@ -157,6 +159,9 @@ class BackgroundImageGeometry {
                              const LayoutSize&,
                              const LayoutSize&);
 
+  // The offset of the background image within the background positioning area.
+  LayoutPoint OffsetInBackground(const FillLayer&) const;
+
   // |box_| is the source for the Document. In most cases it also provides the
   // background properties (see |positioning_box_| for exceptions.) It's also
   // the image client unless painting the view background.
@@ -172,19 +177,19 @@ class BackgroundImageGeometry {
   // differs from the requested paint rect.
   LayoutSize positioning_size_override_;
 
-  // Used only when painting table cells, this is the cell's background
-  // offset within the table's background positioning area.
-  LayoutPoint offset_in_background_;
+  // The background image offset from within the background positioning area for
+  // non-fixed background attachment. Used for table cells and the view.
+  LayoutPoint element_positioning_area_offset_;
 
   LayoutRect unsnapped_dest_rect_;
   LayoutRect snapped_dest_rect_;
   FloatPoint phase_;
   LayoutSize tile_size_;
   LayoutSize repeat_spacing_;
-  bool has_non_local_geometry_;
-  bool painting_view_;
-  bool painting_table_cell_;
-  bool cell_using_container_background_;
+  bool has_non_local_geometry_ = false;
+  bool painting_view_ = false;
+  bool painting_table_cell_ = false;
+  bool cell_using_container_background_ = false;
 };
 
 }  // namespace blink

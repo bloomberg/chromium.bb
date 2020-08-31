@@ -7,7 +7,9 @@
 
 #include "extensions/common/api/automation.h"
 #include "ui/accessibility/ax_event_generator.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_manager.h"
 
 struct ExtensionMsg_AccessibilityEventBundleParams;
 
@@ -17,7 +19,8 @@ class AutomationInternalCustomBindings;
 
 // A class that wraps one AXTree and all of the additional state
 // and helper methods needed to use it for the automation API.
-class AutomationAXTreeWrapper : public ui::AXTreeObserver {
+class AutomationAXTreeWrapper : public ui::AXTreeObserver,
+                                public ui::AXTreeManager {
  public:
   AutomationAXTreeWrapper(ui::AXTreeID tree_id,
                           AutomationInternalCustomBindings* owner);
@@ -30,7 +33,6 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   static std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
   GetChildTreeIDReverseMap();
 
-  ui::AXTreeID tree_id() const { return tree_id_; }
   ui::AXTree* tree() { return &tree_; }
   AutomationInternalCustomBindings* owner() { return owner_; }
 
@@ -56,10 +58,25 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // ignored.
   ui::AXNode* GetUnignoredNodeFromId(int32_t id);
 
+  // Accessibility focus is globally set via automation API from js.
+  void SetAccessibilityFocus(int32_t node_id);
+  ui::AXNode* GetAccessibilityFocusedNode();
+
+  int32_t accessibility_focused_id() { return accessibility_focused_id_; }
+
   // Updates or gets this wrapper with the latest state of listeners in js.
   void EventListenerAdded(ax::mojom::Event event_type, ui::AXNode* node);
   void EventListenerRemoved(ax::mojom::Event event_type, ui::AXNode* node);
   bool HasEventListener(ax::mojom::Event event_type, ui::AXNode* node);
+
+  // AXTreeManager overrides.
+  ui::AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
+                              const ui::AXNode::AXID node_id) const override;
+  ui::AXNode* GetNodeFromTree(const ui::AXNode::AXID node_id) const override;
+  ui::AXTreeID GetTreeID() const override;
+  ui::AXTreeID GetParentTreeID() const override;
+  ui::AXNode* GetRootAsAXNode() const override;
+  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
 
  private:
   // AXTreeObserver overrides.
@@ -82,6 +99,8 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
   ui::AXEventGenerator event_generator_;
+
+  int32_t accessibility_focused_id_ = ui::AXNode::kInvalidAXID;
 
   // Tracks whether a tree change event was sent during unserialization. Tree
   // changes outside of unserialization do not get reflected here. The value is

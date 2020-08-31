@@ -34,7 +34,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
                                          LocalFrameView* anchor_view)
       : main_chrome_client_(main_chrome_client), anchor_view_(anchor_view) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(main_chrome_client_);
     visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);
@@ -137,8 +137,7 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
   FrameView().GetLayoutView()->SetSubtreeShouldCheckForPaintInvalidation();
 
-  FrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+  FrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kOverlay);
 }
 
 void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
@@ -159,8 +158,8 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
       main_settings.GetMinimumLogicalFontSize());
 
   auto* frame = MakeGarbageCollected<LocalFrame>(
-      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr, nullptr,
-      nullptr);
+      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr,
+      base::UnguessableToken::Create(), nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame, view_size));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -191,8 +190,7 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   }
   // Get the size to decide position later.
   // TODO(schenney): This says get size, so we only need to update to layout.
-  FrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+  FrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kOverlay);
   bubble_size_ = container.VisibleBoundsInVisualViewport().Size();
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
@@ -201,8 +199,7 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.setAttribute(html_names::kClassAttr, "shown-initially");
-  FrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+  FrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kOverlay);
 }
 
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {

@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -26,7 +27,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -34,7 +34,7 @@
 // static
 scoped_refptr<password_manager::PasswordStore>
 IOSChromePasswordStoreFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   // |profile| gets always redirected to a non-Incognito profile below, so
   // Incognito & IMPLICIT_ACCESS means that incognito browsing session would
@@ -54,7 +54,7 @@ IOSChromePasswordStoreFactory* IOSChromePasswordStoreFactory::GetInstance() {
 
 // static
 void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   scoped_refptr<password_manager::PasswordStore> password_store =
       GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
@@ -90,21 +90,19 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
   // TODO(crbug.com/741660): Create the task runner inside password_manager
   // component instead.
   scoped_refptr<base::SequencedTaskRunner> db_task_runner(
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!store->Init(ios::sync_start_util::GetFlareForSyncableService(
-                       context->GetStatePath()),
-                   nullptr)) {
+  if (!store->Init(nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";
     return nullptr;
   }
   password_manager_util::RemoveUselessCredentials(
-      store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
+      store, ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
       base::NullCallback());
   return store;
 }

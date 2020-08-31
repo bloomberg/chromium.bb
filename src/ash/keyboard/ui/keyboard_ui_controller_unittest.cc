@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/container_floating_behavior.h"
 #include "ash/keyboard/ui/container_full_width_behavior.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
@@ -38,8 +39,6 @@
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/wm/core/default_activation_client.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -147,25 +146,21 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
     focus_controller_ = std::make_unique<TestFocusController>(root_window());
     layout_delegate_ =
         std::make_unique<TestKeyboardLayoutDelegate>(root_window());
-
-    aura::client::SetScreenPositionClient(root_window(),
-                                          &screen_position_client_);
 
     // Force enable the virtual keyboard.
     controller_.Initialize(
         std::make_unique<TestKeyboardUIFactory>(host()->GetInputMethod()),
         layout_delegate_.get());
-    keyboard::SetTouchKeyboardEnabled(true);
+    SetTouchKeyboardEnabled(true);
     controller_.AddObserver(this);
   }
 
   void TearDown() override {
-    keyboard::SetTouchKeyboardEnabled(false);
     controller_.RemoveObserver(this);
+    SetTouchKeyboardEnabled(false);
     focus_controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }
@@ -233,7 +228,7 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
         client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE) {
       input_method->ShowVirtualKeyboardIfEnabled();
-      ASSERT_TRUE(keyboard::WaitUntilShown());
+      ASSERT_TRUE(WaitUntilShown());
     }
   }
 
@@ -270,7 +265,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_disabled_ = false;
-  wm::DefaultScreenPositionClient screen_position_client_;
   ui::ScopedTestInputMethodFactory scoped_test_input_method_factory_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIControllerTest);
 };
@@ -494,7 +488,7 @@ TEST_F(KeyboardUIControllerTest, DisableKeyboard) {
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  keyboard::SetTouchKeyboardEnabled(false);
+  SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
@@ -533,7 +527,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_TRUE(keyboard_window()->IsVisible());
   float show_start_opacity = layer->opacity();
   gfx::Transform transform;
-  transform.Translate(0, keyboard::kFullWidthKeyboardAnimationDistance);
+  transform.Translate(0, kFullWidthKeyboardAnimationDistance);
   EXPECT_EQ(transform, layer->transform());
   // Actual final bounds should be notified after animation finishes to avoid
   // flash of background being seen.
@@ -574,7 +568,8 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_FALSE(notified_is_visible());
 
   SetModeCallbackInvocationCounter invocation_counter;
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating,
+                                gfx::Rect(0, 0, 400, 200),
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
@@ -590,7 +585,8 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // callback should do nothing when container mode is set to the current active
   // container type. An unnecessary call gets registered synchronously as a
   // failure status to the callback.
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating,
+                                gfx::Rect(0, 0, 400, 200),
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));
@@ -607,8 +603,7 @@ TEST_F(KeyboardControllerAnimationTest, ChangeContainerModeWithBounds) {
 
   // Changing the mode to another mode invokes hiding + showing.
   const gfx::Rect target_bounds(0, 0, 1200, 600);
-  controller().SetContainerType(ContainerType::kFloating,
-                                base::make_optional(target_bounds),
+  controller().SetContainerType(ContainerType::kFloating, target_bounds,
                                 invocation_counter.GetInvocationCallback());
   // The container window shouldn't be resized until it's hidden even if the
   // target bounds is passed to |SetContainerType|.
@@ -700,11 +695,25 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
     MOCK_METHOD(void, EnsureCaretNotInRect, (const gfx::Rect&), (override));
   };
 
-  // Floating keyboard should call EnsureCaretNotInRect with the empty rect.
-  MockTextInputClient mock_input_client;
-  EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(gfx::Rect())).Times(1);
+  gfx::Rect root_bounds = root_window()->bounds();
+  gfx::Rect target_bounds(0, 0, 400, 200);
 
-  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
+  // Default position of the floating keyboard window
+  gfx::Rect zeroed_occluded_bounds(root_bounds.width() - target_bounds.width() -
+                                       kDefaultDistanceFromScreenRight,
+                                   root_bounds.height() -
+                                       target_bounds.height() -
+                                       kDefaultDistanceFromScreenBottom,
+                                   0, 0);
+
+  // Floating keyboard should call EnsureCaretNotInRect with the empty rect
+  // twice, once when the window bounds change with SetContainerType, and then
+  // once when the animation finishes.
+  MockTextInputClient mock_input_client;
+  EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(zeroed_occluded_bounds))
+      .Times(2);
+
+  controller().SetContainerType(ContainerType::kFloating, target_bounds,
                                 base::DoNothing());
   ASSERT_EQ(ContainerType::kFloating, controller().GetActiveContainerType());
 
@@ -729,14 +738,14 @@ TEST_F(KeyboardUIControllerTest, DontClearObserverList) {
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  keyboard::SetTouchKeyboardEnabled(false);
+  SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 
-  keyboard::SetTouchKeyboardEnabled(true);
+  SetTouchKeyboardEnabled(true);
   ClearKeyboardDisabled();
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  keyboard::SetTouchKeyboardEnabled(false);
+  SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
@@ -754,6 +763,21 @@ TEST_F(KeyboardUIControllerTest,
       controller().SetAreaToRemainOnScreen(gfx::Rect(50, 50, 400, 600)));
 }
 
+TEST_F(KeyboardUIControllerTest,
+       SetWindowBoundsInScreenShouldRejectInvalidBounds) {
+  ShowKeyboard();
+  gfx::Rect root_bounds = root_window()->bounds();
+
+  EXPECT_FALSE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, root_bounds.width() + 1, 100)));
+  EXPECT_TRUE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, root_bounds.width(), 100)));
+  EXPECT_FALSE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, 100, root_bounds.height() + 1)));
+  EXPECT_TRUE(controller().SetKeyboardWindowBoundsInScreen(
+      gfx::Rect(0, 0, 100, root_bounds.height())));
+}
+
 class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
  public:
   MockKeyboardControllerObserver() = default;
@@ -768,21 +792,21 @@ class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
 
 TEST_F(KeyboardUIControllerTest, OnKeyboardEnabledChangedToEnabled) {
   // Start with the keyboard disabled.
-  keyboard::SetTouchKeyboardEnabled(false);
+  SetTouchKeyboardEnabled(false);
 
   MockKeyboardControllerObserver mock_observer;
   controller().AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(true))
       .WillOnce(testing::InvokeWithoutArgs([]() {
-        auto* controller = keyboard::KeyboardUIController::Get();
+        auto* controller = KeyboardUIController::Get();
         ASSERT_TRUE(controller);
         EXPECT_TRUE(controller->IsEnabled());
         EXPECT_TRUE(controller->GetKeyboardWindow());
         EXPECT_TRUE(controller->GetRootWindow());
       }));
 
-  keyboard::SetTouchKeyboardEnabled(true);
+  SetTouchKeyboardEnabled(true);
 
   controller().RemoveObserver(&mock_observer);
 }
@@ -793,14 +817,14 @@ TEST_F(KeyboardUIControllerTest, OnKeyboardEnabledChangedToDisabled) {
 
   EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(false))
       .WillOnce(testing::InvokeWithoutArgs([]() {
-        auto* controller = keyboard::KeyboardUIController::Get();
+        auto* controller = KeyboardUIController::Get();
         ASSERT_TRUE(controller);
         EXPECT_FALSE(controller->IsEnabled());
         EXPECT_FALSE(controller->GetKeyboardWindow());
         EXPECT_FALSE(controller->GetRootWindow());
       }));
 
-  keyboard::SetTouchKeyboardEnabled(false);
+  SetTouchKeyboardEnabled(false);
 
   controller().RemoveObserver(&mock_observer);
 }

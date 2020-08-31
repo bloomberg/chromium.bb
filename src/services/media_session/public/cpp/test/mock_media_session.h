@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
+  void WaitForAudioVideoState(mojom::MediaAudioVideoState wanted_state);
   void WaitForControllable(bool is_controllable);
 
   void WaitForEmptyMetadata();
@@ -63,7 +64,16 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
                                    const std::vector<MediaImage>& images);
 
   void WaitForEmptyPosition();
+
+  // Blocks until notified about MediaPosition changing to one matching
+  // |position|.
   void WaitForExpectedPosition(const MediaPosition& position);
+
+  // Blocks until notified about MediaPosition changing to one matching
+  // |position|, where media time is required to be equal to or greater than
+  // the media time of |position|. Returns the media time actually reported
+  // with MediaPosition.
+  base::TimeDelta WaitForExpectedPositionAtLeast(const MediaPosition& position);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -101,10 +111,12 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       std::pair<mojom::MediaSessionImageType, std::vector<MediaImage>>>
       expected_images_of_type_;
   base::Optional<MediaPosition> expected_position_;
+  base::Optional<MediaPosition> minimum_expected_position_;
   bool waiting_for_empty_metadata_ = false;
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
+  base::Optional<mojom::MediaAudioVideoState> wanted_audio_video_state_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   mojo::Receiver<mojom::MediaSessionObserver> receiver_{this};
@@ -140,6 +152,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
                            GetMediaImageBitmapCallback callback) override;
   void SeekTo(base::TimeDelta seek_time) override;
   void ScrubTo(base::TimeDelta scrub_to) override;
+  void EnterPictureInPicture() override;
+  void ExitPictureInPicture() override;
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }

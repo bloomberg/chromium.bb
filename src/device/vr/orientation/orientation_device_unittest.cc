@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -47,6 +48,11 @@ class FakeScreen : public display::Screen {
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return nullptr;
   }
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override {
+    return nullptr;
+  }
   display::Display GetDisplayNearestWindow(
       gfx::NativeWindow window) const override {
     return display;
@@ -80,7 +86,7 @@ class VROrientationDeviceTest : public testing::Test {
   VROrientationDeviceTest() = default;
   ~VROrientationDeviceTest() override = default;
   void SetUp() override {
-    fake_sensor_provider_ = std::make_unique<FakeSensorProvider>(
+    fake_sensor_provider_ = std::make_unique<FakeXRSensorProvider>(
         sensor_provider_.BindNewPipeAndPassReceiver());
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
@@ -225,7 +231,7 @@ class VROrientationDeviceTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VROrientationDevice> device_;
-  std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
+  std::unique_ptr<FakeXRSensorProvider> fake_sensor_provider_;
   mojo::Remote<mojom::SensorProvider> sensor_provider_;
 
   // Fake Sensor Init params objects

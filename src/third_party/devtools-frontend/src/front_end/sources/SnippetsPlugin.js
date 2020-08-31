@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Sources.SnippetsPlugin = class extends Sources.UISourceCodeFrame.Plugin {
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as Snippets from '../snippets/snippets.js';
+import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {Plugin} from './Plugin.js';
+
+export class SnippetsPlugin extends Plugin {
   /**
-   * @param {!SourceFrame.SourcesTextEditor} textEditor
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   constructor(textEditor, uiSourceCode) {
     super();
@@ -15,21 +24,22 @@ Sources.SnippetsPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   static accepts(uiSourceCode) {
-    return Snippets.isSnippetsUISourceCode(uiSourceCode);
+    return Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
   }
 
   /**
    * @override
-   * @return {!Array<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
-  rightToolbarItems() {
-    const runSnippet = UI.Toolbar.createActionButtonForId('debugger.run-snippet');
-    runSnippet.setText(Host.isMac() ? Common.UIString('\u2318+Enter') : Common.UIString('Ctrl+Enter'));
+  async rightToolbarItems() {
+    const runSnippet = UI.Toolbar.Toolbar.createActionButtonForId('debugger.run-snippet');
+    runSnippet.setText(
+        Host.Platform.isMac() ? Common.UIString.UIString('\u2318+Enter') : Common.UIString.UIString('Ctrl+Enter'));
 
     return [runSnippet];
   }
-};
+}

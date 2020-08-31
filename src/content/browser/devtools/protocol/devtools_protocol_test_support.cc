@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/security_style_explanations.h"
@@ -19,6 +20,7 @@ namespace content {
 namespace {
 
 const char kIdParam[] = "id";
+const char kSessionIdParam[] = "sessionId";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
 
@@ -46,9 +48,10 @@ bool DevToolsProtocolTest::DidAddMessageToConsole(
   return true;
 }
 
-base::DictionaryValue* DevToolsProtocolTest::SendCommand(
+base::DictionaryValue* DevToolsProtocolTest::SendSessionCommand(
     const std::string& method,
     std::unique_ptr<base::Value> params,
+    const std::string& session_id,
     bool wait) {
   in_dispatch_ = true;
   base::DictionaryValue command;
@@ -56,10 +59,13 @@ base::DictionaryValue* DevToolsProtocolTest::SendCommand(
   command.SetString(kMethodParam, method);
   if (params)
     command.Set(kParamsParam, std::move(params));
+  if (!session_id.empty())
+    command.SetString(kSessionIdParam, session_id);
 
   std::string json_command;
   base::JSONWriter::Write(command, &json_command);
-  agent_host_->DispatchProtocolMessage(this, json_command);
+  agent_host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(json_command)));
   // Some messages are dispatched synchronously.
   // Only run loop if we are not finished yet.
   if (in_dispatch_ && wait) {
@@ -230,10 +236,11 @@ void DevToolsProtocolTest::RunLoopUpdatingQuitClosure() {
 
 void DevToolsProtocolTest::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
-    const std::string& message) {
-  std::unique_ptr<base::DictionaryValue> root(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::ReadDeprecated(message).release()));
+    base::span<const uint8_t> message) {
+  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  auto root = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(message_str));
   int id;
   if (root->GetInteger("id", &id)) {
     result_ids_.push_back(id);

@@ -11,6 +11,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 class Browser;
 @class ChromeIdentity;
 @protocol SigninInteractionPresenting;
@@ -44,7 +45,8 @@ typedef void (^SigninInteractionControllerCompletionCallback)(
            presentationProvider:(id<SigninInteractionPresenting>)presenter
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
-                     dispatcher:(id<ApplicationCommands>)dispatcher;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher;
 
 // Starts user sign-in.
 // * |identity|, if not nil, the user will be signed in without requiring user
@@ -60,10 +62,6 @@ typedef void (^SigninInteractionControllerCompletionCallback)(
 // |succeeded| will notify the caller on whether the user has been
 // correctly re-authenticated.
 - (void)reAuthenticateWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion;
-
-// Starts the flow to add an identity via ChromeIdentityInteractionManager.
-- (void)addAccountWithCompletion:
     (SigninInteractionControllerCompletionCallback)completion;
 
 // Cancels any current process. Calls the completion callback when done.

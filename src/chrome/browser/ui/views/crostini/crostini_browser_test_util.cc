@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
@@ -38,12 +39,12 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
   // ChromeBrowserMainExtraParts:
   void PostEarlyInitialization() override {
     auto cros_component_manager =
-        std::make_unique<component_updater::FakeCrOSComponentManager>();
+        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
     cros_component_manager->set_supported_components(
         {imageloader::kTerminaComponentName});
 
     if (register_termina_) {
-      cros_component_manager->set_registered_components(
+      cros_component_manager->SetRegisteredComponents(
           {imageloader::kTerminaComponentName});
       cros_component_manager->ResetComponentState(
           imageloader::kTerminaComponentName,
@@ -88,6 +89,7 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
 CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
     : register_termina_(register_termina) {
   scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+  fake_crostini_features_.SetAll(true);
 }
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;
@@ -122,4 +124,33 @@ void CrostiniDialogBrowserTest::UnregisterTermina() {
       component_updater::FakeCrOSComponentManager::ComponentInfo(
           component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
           base::FilePath(), base::FilePath()));
+}
+
+class WebContentsWaiter : public content::WebContentsObserver {
+ public:
+  enum Operation { LOAD };  // Add other operations as required.
+  explicit WebContentsWaiter(content::WebContents* contents,
+                             Operation operation)
+      : content::WebContentsObserver(contents), operation_(operation) {}
+
+  ~WebContentsWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // content::WebContentsObserver:
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override {
+    if (operation_ == LOAD) {
+      run_loop_.Quit();
+    }
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  Operation operation_;
+};
+
+void CrostiniDialogBrowserTest::WaitForLoadFinished(
+    content::WebContents* contents) {
+  WebContentsWaiter(contents, WebContentsWaiter::LOAD).Wait();
 }

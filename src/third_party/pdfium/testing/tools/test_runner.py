@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 
+# pylint: disable=relative-import
 import common
 import gold
 import pngdiffer
@@ -92,10 +93,11 @@ class TestRunner:
     results = []
     if self.test_type in TEXT_TESTS:
       expected_txt_path = os.path.join(source_dir, input_root + '_expected.txt')
-      raised_exception = self.TestText(input_root, expected_txt_path, pdf_path)
+      raised_exception = self.TestText(input_filename, input_root,
+                                       expected_txt_path, pdf_path)
     else:
       use_ahem = 'use_ahem' in source_dir
-      raised_exception, results = self.TestPixel(input_root, pdf_path, use_ahem)
+      raised_exception, results = self.TestPixel(pdf_path, use_ahem)
 
     if raised_exception is not None:
       print 'FAILURE: %s; %s' % (input_filename, raised_exception)
@@ -117,6 +119,8 @@ class TestRunner:
       DeleteFiles(actual_images)
     return True, results
 
+  # TODO(crbug.com/pdfium/1508): Add support for an option to automatically
+  # generate Skia/SkiaPaths specific expected results.
   def RegenerateIfNeeded_(self, input_filename, source_dir):
     if (not self.options.regenerate_expected or
         self.test_suppressor.IsResultSuppressed(input_filename) or
@@ -148,17 +152,32 @@ class TestRunner:
         input_path
     ])
 
-  def TestText(self, input_root, expected_txt_path, pdf_path):
+  def TestText(self, input_filename, input_root, expected_txt_path, pdf_path):
     txt_path = os.path.join(self.working_dir, input_root + '.txt')
 
     with open(txt_path, 'w') as outfile:
       cmd_to_run = [
-          self.pdfium_test_path, '--send-events', '--time=' + TEST_SEED_TIME,
-          pdf_path
+          self.pdfium_test_path, '--send-events', '--time=' + TEST_SEED_TIME
       ]
+
+      if self.options.disable_javascript:
+        cmd_to_run.append('--disable-javascript')
+
+      if self.options.disable_xfa:
+        cmd_to_run.append('--disable-xfa')
+
+      cmd_to_run.append(pdf_path)
       subprocess.check_call(cmd_to_run, stdout=outfile)
 
+    # If the expected file does not exist, the output is expected to be empty.
     if not os.path.exists(expected_txt_path):
+      return self._VerifyEmptyText(txt_path)
+
+    # If JavaScript is disabled, the output should be empty.
+    # However, if the test is suppressed and JavaScript is disabled, do not
+    # verify that the text is empty so the suppressed test does not surprise.
+    if (self.options.disable_javascript and
+        not self.test_suppressor.IsResultSuppressed(input_filename)):
       return self._VerifyEmptyText(txt_path)
 
     cmd = [sys.executable, self.text_diff_path, expected_txt_path, txt_path]
@@ -177,7 +196,7 @@ class TestRunner:
     except Exception as e:
       return e
 
-  def TestPixel(self, input_root, pdf_path, use_ahem):
+  def TestPixel(self, pdf_path, use_ahem):
     cmd_to_run = [
         self.pdfium_test_path, '--send-events', '--png', '--md5',
         '--time=' + TEST_SEED_TIME
@@ -188,6 +207,12 @@ class TestRunner:
 
     if use_ahem:
       cmd_to_run.append('--font-dir=%s' % self.font_dir)
+
+    if self.options.disable_javascript:
+      cmd_to_run.append('--disable-javascript')
+
+    if self.options.disable_xfa:
+      cmd_to_run.append('--disable-xfa')
 
     if self.options.reverse_byte_order:
       cmd_to_run.append('--reverse-byte-order')
@@ -226,6 +251,9 @@ class TestRunner:
         self.failures.append(input_path)
 
   def Run(self):
+    # Running a test defines a number of attributes on the fly.
+    # pylint: disable=attribute-defined-outside-init
+
     parser = optparse.OptionParser()
 
     parser.add_option(
@@ -239,6 +267,18 @@ class TestRunner:
         dest='num_workers',
         type='int',
         help='run NUM_WORKERS jobs in parallel')
+
+    parser.add_option(
+        '--disable-javascript',
+        action="store_true",
+        dest="disable_javascript",
+        help='Prevents JavaScript from executing in PDF files.')
+
+    parser.add_option(
+        '--disable-xfa',
+        action="store_true",
+        dest="disable_xfa",
+        help='Prevents processing XFA forms.')
 
     parser.add_option(
         '--gold_properties',
@@ -317,10 +357,12 @@ class TestRunner:
     shutil.rmtree(self.working_dir, ignore_errors=True)
     os.makedirs(self.working_dir)
 
-    self.feature_string = subprocess.check_output(
-        [self.pdfium_test_path, '--show-config'])
-    self.test_suppressor = suppressor.Suppressor(finder, self.feature_string)
-    self.image_differ = pngdiffer.PNGDiffer(finder,
+    self.features = subprocess.check_output(
+        [self.pdfium_test_path, '--show-config']).strip().split(',')
+    self.test_suppressor = suppressor.Suppressor(
+        finder, self.features, self.options.disable_javascript,
+        self.options.disable_xfa)
+    self.image_differ = pngdiffer.PNGDiffer(finder, self.features,
                                             self.options.reverse_byte_order)
     error_message = self.image_differ.CheckMissingTools(
         self.options.regenerate_expected)

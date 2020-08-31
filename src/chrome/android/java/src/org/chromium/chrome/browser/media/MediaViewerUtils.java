@@ -23,15 +23,15 @@ import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.util.Locale;
 
@@ -233,12 +233,12 @@ public class MediaViewerUtils {
 
     private static boolean shouldEnableMediaLauncherActivity() {
         return sIsMediaLauncherActivityForceEnabledForTest
-                || ((FeatureUtilities.isAndroidGo() || isEnterpriseManaged())
+                || ((SysUtils.isAndroidGo() || isEnterpriseManaged())
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
     }
 
     private static boolean shouldEnableAudioLauncherActivity() {
-        return shouldEnableMediaLauncherActivity() && !FeatureUtilities.isAndroidGo();
+        return shouldEnableMediaLauncherActivity() && !SysUtils.isAndroidGo();
     }
 
     private static boolean isEnterpriseManaged() {

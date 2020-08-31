@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/exo/surface.h"
 
 namespace exo {
 
@@ -78,6 +79,8 @@ class DataSource {
   void ReadDataForTesting(const std::string& mime_type,
                           ReadDataCallback callback);
 
+  bool CanBeDataSourceForCopy(Surface* surface) const;
+
  private:
   // Reads data from the source. Then |callback| is invoked with read data. If
   // Cancelled() is invoked or DataSource is destroyed before completion,
@@ -88,7 +91,8 @@ class DataSource {
 
   void OnDataRead(ReadDataCallback callback,
                   const std::string& mime_type,
-                  const std::vector<uint8_t>&);
+                  base::OnceClosure failure_callback,
+                  const base::Optional<std::vector<uint8_t>>& data);
 
   void OnTextRead(ReadTextDataCallback callback,
                   const std::string& mime_type,

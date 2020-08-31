@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/acm_random.h"
@@ -27,7 +29,7 @@ namespace {
 typedef void (*HorverFunc)(const int16_t *diff, int stride, int w, int h,
                            float *hcorr, float *vcorr);
 
-typedef ::testing::tuple<const HorverFunc> HorverTestParam;
+typedef std::tuple<const HorverFunc> HorverTestParam;
 
 class HorverTest : public ::testing::TestWithParam<HorverTestParam> {
  public:
@@ -133,13 +135,13 @@ TEST_P(HorverTest, ExtremeValues) { RunHorverTest_ExtremeValues(); }
 TEST_P(HorverTest, DISABLED_Speed) { RunHorverSpeedTest(100000); }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, HorverTest,
     ::testing::Values(av1_get_horver_correlation_full_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, HorverTest, ::testing::Values(av1_get_horver_correlation_full_avx2));
 #endif  // HAVE_AVX2
 

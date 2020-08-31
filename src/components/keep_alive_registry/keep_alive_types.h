@@ -23,6 +23,7 @@ enum class KeepAliveOrigin {
   // c/b/background
   BACKGROUND_MODE_MANAGER,
   BACKGROUND_MODE_MANAGER_STARTUP,
+  BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
 
   // c/b/background_sync
   BACKGROUND_SYNC,
@@ -30,6 +31,9 @@ enum class KeepAliveOrigin {
   // c/b/chromeos
   LOGIN_DISPLAY_HOST_WEBUI,
   PIN_MIGRATION,
+
+  // c/b/devtools
+  REMOTE_DEBUGGING,
 
   // c/b/extensions
   NATIVE_MESSAGING_HOST_ERROR_REPORT,

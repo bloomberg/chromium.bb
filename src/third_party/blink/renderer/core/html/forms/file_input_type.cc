@@ -24,7 +24,6 @@
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
-#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -34,10 +33,12 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -162,9 +163,9 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (!LocalFrame::HasTransientUserActivation(document.GetFrame())) {
     String message =
         "File chooser dialog can only be shown with a user activation.";
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
     return;
   }
 
@@ -202,9 +203,22 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&,
-                                                LegacyLayout) const {
-  return new LayoutFileUploadControl(&GetElement());
+void FileInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
+  style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
+}
+
+bool FileInputType::TypeShouldForceLegacyLayout() const {
+  if (RuntimeEnabledFeatures::LayoutNGForControlsEnabled())
+    return false;
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByFileUploadControl);
+  return true;
+}
+
+LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) const {
+  return LayoutObjectFactory::CreateFileUploadControl(GetElement(), style,
+                                                      legacy);
 }
 
 InputType::ValueMode FileInputType::GetValueMode() const {
@@ -249,10 +263,8 @@ void FileInputType::SetValue(const String&,
     return;
 
   file_list_->clear();
-  GetElement().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(style_change_reason::kControlValue));
   GetElement().SetNeedsValidityCheck();
+  UpdateView();
 }
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
@@ -317,8 +329,10 @@ void FileInputType::CountUsage() {
 
 void FileInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
-  auto* button = MakeGarbageCollected<HTMLInputElement>(
-      GetElement().GetDocument(), CreateElementFlags());
+  Document& document = GetElement().GetDocument();
+
+  auto* button =
+      MakeGarbageCollected<HTMLInputElement>(document, CreateElementFlags());
   button->setType(input_type_names::kButton);
   button->setAttribute(
       html_names::kValueAttr,
@@ -326,25 +340,43 @@ void FileInputType::CreateShadowSubtree() {
           GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
                                   : IDS_FORM_FILE_BUTTON_LABEL)));
   button->SetShadowPseudoId(AtomicString("-webkit-file-upload-button"));
+  button->setAttribute(html_names::kIdAttr,
+                       shadow_element_names::FileUploadButton());
+  button->SetActive(GetElement().CanReceiveDroppedFiles());
   GetElement().UserAgentShadowRoot()->AppendChild(button);
+
+  // The following element is used only in LayoutNG.
+  // See LayoutFileUploadControl::IsChildAllowed().
+  auto* span = document.CreateRawElement(html_names::kSpanTag);
+  // This element is hidden from AX trees for a historical reason.
+  span->setAttribute(html_names::kAriaHiddenAttr, "true");
+  GetElement().UserAgentShadowRoot()->AppendChild(span);
+
+  UpdateView();
+}
+
+HTMLInputElement* FileInputType::UploadButton() const {
+  Element* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::FileUploadButton());
+  CHECK(!element || IsA<HTMLInputElement>(element));
+  return To<HTMLInputElement>(element);
+}
+
+Node* FileInputType::FileStatusElement() const {
+  return GetElement().UserAgentShadowRoot()->lastChild();
 }
 
 void FileInputType::DisabledAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
-  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
-        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
-  if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
+  if (Element* button = UploadButton()) {
     button->SetBooleanAttribute(html_names::kDisabledAttr,
                                 GetElement().IsDisabledFormControl());
+  }
 }
 
 void FileInputType::MultipleAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
-  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
-        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
-  if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild())) {
+  if (Element* button = UploadButton()) {
     button->setAttribute(
         html_names::kValueAttr,
         AtomicString(GetLocale().QueryString(
@@ -373,10 +405,7 @@ bool FileInputType::SetFiles(FileList* files) {
 
   GetElement().NotifyFormStateChanged();
   GetElement().SetNeedsValidityCheck();
-
-  if (GetElement().GetLayoutObject())
-    GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-
+  UpdateView();
   return files_changed;
 }
 
@@ -518,6 +547,29 @@ void FileInputType::WillOpenPopup() {
     UseCounter::Count(GetElement().GetDocument(),
                       WebFeature::kPopupOpenWhileFileChooserOpened);
   }
+}
+
+String FileInputType::FileStatusText() const {
+  Locale& locale = GetLocale();
+
+  if (file_list_->IsEmpty())
+    return locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
+
+  if (file_list_->length() == 1)
+    return LayoutTheme::GetTheme().DisplayNameForFile(*file_list_->item(0));
+
+  return locale.QueryString(
+      IDS_FORM_FILE_MULTIPLE_UPLOAD,
+      locale.ConvertToLocalizedNumber(String::Number(file_list_->length())));
+}
+
+void FileInputType::UpdateView() {
+  auto* layout_object = GetElement().GetLayoutObject();
+  if (layout_object && layout_object->IsFileUploadControl())
+    layout_object->SetShouldDoFullPaintInvalidation();
+
+  if (auto* span = FileStatusElement())
+    span->setTextContent(FileStatusText());
 }
 
 }  // namespace blink

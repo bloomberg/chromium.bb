@@ -52,6 +52,8 @@ class SocketsManifestPermission : public ManifestPermission {
       const ManifestPermission* rhs) const override;
   std::unique_ptr<ManifestPermission> Intersect(
       const ManifestPermission* rhs) const override;
+  bool RequiresManagementUIWarning() const override;
+  bool RequiresManagedSessionFullLoginWarning() const override;
 
   const SocketPermissionEntrySet& entries() const { return permissions_; }
 

@@ -50,6 +50,9 @@ const QuicByteCount kMaxGsoPacketSize = 65535 - 40 - 8;
 // The maximal IETF DATAGRAM frame size we'll accept. Choosing 2^16 ensures
 // that it is greater than the biggest frame we could ever fit in a QUIC packet.
 const QuicByteCount kMaxAcceptedDatagramFrameSize = 65536;
+// Default value of the max_packet_size transport parameter if it is not
+// transmitted.
+const QuicByteCount kDefaultMaxPacketSizeTransportParam = 65527;
 // Default maximum packet size used in the Linux TCP implementation.
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
@@ -69,9 +72,9 @@ const QuicPacketCount kMinInitialCongestionWindow = 10;
 
 // Minimum size of initial flow control window, for both stream and session.
 // This is only enforced when version.AllowsLowFlowControlLimits() is false.
-const uint32_t kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
+const QuicByteCount kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
 // Default size of initial flow control window, for both stream and session.
-const uint32_t kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
+const QuicByteCount kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 
 // Maximum flow control receive window limits for connection and stream.
 const QuicByteCount kStreamReceiveWindowLimit = 16 * 1024 * 1024;   // 16 MB
@@ -102,6 +105,10 @@ const size_t kPublicFlagsSize = 1;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
 
+// Length of the retry integrity tag in bytes.
+// https://tools.ietf.org/html/draft-ietf-quic-transport-25#section-17.2.5
+const size_t kRetryIntegrityTagLength = 16;
+
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
 // Signifies that the QuicPacket will include a diversification nonce.
@@ -124,8 +131,6 @@ static const int64_t kMinTailLossProbeTimeoutMs = 10;
 
 // The timeout before the handshake succeeds.
 const int64_t kInitialIdleTimeoutSecs = 5;
-// The default idle timeout.
-const int64_t kDefaultIdleTimeoutSecs = 30;
 // The maximum idle timeout that can be negotiated.
 const int64_t kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
 // The default timeout for a connection until the crypto handshake succeeds.
@@ -223,7 +228,6 @@ const QuicByteCount kMaxStreamLength = (UINT64_C(1) << 62) - 1;
 const uint64_t kMaxIetfVarInt = UINT64_C(0x3fffffffffffffff);
 
 // The maximum stream id value that is supported - (2^32)-1
-// TODO(fkastenholz): Should update this to 64 bits for IETF Quic.
 const QuicStreamId kMaxQuicStreamId = 0xffffffff;
 
 // The maximum value that can be stored in a 32-bit QuicStreamCount.
@@ -244,9 +248,15 @@ const size_t kMaxNewTokenTokenLength = 0xffff;
 // Default initial rtt used before any samples are received.
 const int kInitialRttMs = 100;
 
+// Default threshold of packet reordering before a packet is declared lost.
+static const QuicPacketCount kDefaultPacketReorderingThreshold = 3;
+
 // Default fraction (1/4) of an RTT the algorithm waits before determining a
 // packet is lost due to early retransmission by time based loss detection.
 static const int kDefaultLossDelayShift = 2;
+
+// Default fraction (1/8) of an RTT when doing IETF loss detection.
+static const int kDefaultIetfLossDelayShift = 3;
 
 // Maximum number of retransmittable packets received before sending an ack.
 const QuicPacketCount kDefaultRetransmittablePacketsBeforeAck = 2;
@@ -256,6 +266,9 @@ const QuicPacketCount kMaxRetransmittablePacketsBeforeAck = 10;
 // This intends to avoid the beginning of slow start, when CWNDs may be
 // rapidly increasing.
 const QuicPacketCount kMinReceivedBeforeAckDecimation = 100;
+
+// The default alarm granularity assumed by QUIC code.
+const QuicTime::Delta kAlarmGranularity = QuicTime::Delta::FromMilliseconds(1);
 
 // Packet number of first sending packet of a connection. Please note, this
 // cannot be used as first received packet because peer can choose its starting

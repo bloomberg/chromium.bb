@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -72,18 +71,15 @@ class CORE_EXPORT ScriptValue final {
   ScriptValue() = default;
 
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
-      : isolate_(isolate),
-        value_(SharedPersistent<v8::Value>::Create(isolate, value)) {
+      : isolate_(isolate), value_(isolate, value) {
     DCHECK(isolate_);
   }
 
   template <typename T>
   ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
       : isolate_(isolate),
-        value_(value.IsEmpty() ? nullptr
-                               : SharedPersistent<v8::Value>::Create(
-                                     isolate,
-                                     value.ToLocalChecked())) {
+        value_(isolate,
+               value.IsEmpty() ? v8::Local<T>() : value.ToLocalChecked()) {
     DCHECK(isolate_);
   }
 
@@ -103,7 +99,7 @@ class CORE_EXPORT ScriptValue final {
       return value.IsEmpty();
     if (value.IsEmpty())
       return false;
-    return *value_ == *value.value_;
+    return value_ == value.value_;
   }
 
   bool operator!=(const ScriptValue& value) const { return !operator==(value); }
@@ -140,11 +136,11 @@ class CORE_EXPORT ScriptValue final {
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool IsEmpty() const { return !value_ || value_->IsEmpty(); }
+  bool IsEmpty() const { return value_.IsEmpty(); }
 
   void Clear() {
     isolate_ = nullptr;
-    value_.reset();
+    value_.Reset();
   }
 
   v8::Local<v8::Value> V8Value() const;
@@ -157,12 +153,11 @@ class CORE_EXPORT ScriptValue final {
 
   static ScriptValue CreateNull(v8::Isolate*);
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
   v8::Isolate* isolate_ = nullptr;
-  // TODO(crbug.com/1029738): Use WorldSafeV8Reference once bug is fixed.
-  scoped_refptr<SharedPersistent<v8::Value>> value_;
+  WorldSafeV8Reference<v8::Value> value_;
 };
 
 template <>

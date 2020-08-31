@@ -10,23 +10,52 @@
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser_jni_headers/AwSafeBrowsingConfigHelper_jni.h"
+#include "base/android/jni_android.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/web_ui/constants.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "ui/base/page_transition_types.h"
 
 namespace android_webview {
+
+namespace {
+void CallOnReceivedError(AwContentsClientBridge* client,
+                         AwWebResourceRequest request,
+                         content::NavigationEntry* entry) {
+  if (!client)
+    return;
+  // We have no way of telling if a navigation was renderer initiated if entry
+  // is null but OnReceivedError requires the value to be set, we default to
+  // false for that case.
+  request.is_renderer_initiated =
+      entry ? ui::PageTransitionIsWebTriggerable(entry->GetTransitionType())
+            : false;
+
+  // We use ERR_ABORTED here since this is only used in cases where no
+  // interstitial is shown.
+  client->OnReceivedError(request, net::ERR_ABORTED, true, false);
+}
+}  // namespace
 
 AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
@@ -44,7 +73,7 @@ AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
 AwUrlCheckerDelegateImpl::~AwUrlCheckerDelegateImpl() = default;
 
 void AwUrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {}
+    content::WebContents::OnceGetter web_contents_getter) {}
 
 void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,
@@ -61,12 +90,18 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
                      ui_manager_, resource, std::move(request)));
 }
 
+void AwUrlCheckerDelegateImpl::
+    StartObservingInteractionsForDelayedBlockingPageHelper(
+        const security_interstitials::UnsafeResource& resource,
+        bool is_main_frame) {
+  NOTREACHED() << "Delayed warnings not implemented for WebView";
+}
+
 bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return whitelist_manager_->IsURLWhitelisted(url);
 }
 
 bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
-    content::ResourceContext* resource_context,
     const GURL& original_url,
     int frame_tree_node_id,
     int render_process_id,
@@ -83,8 +118,30 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
         AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
   }
 
-  // Consider the request as whitelisted, if SafeBrowsing is not enabled.
-  return client && !client->GetSafeBrowsingEnabled();
+  // If Safe Browsing is disabled by the app, skip the check. Default to
+  // performing the check if we can't find the |client|, since the |client| may
+  // be null for some service worker requests (see https://crbug.com/979321).
+  bool safe_browsing_enabled = client ? client->GetSafeBrowsingEnabled() : true;
+  if (!safe_browsing_enabled)
+    return true;
+
+  // If this is a hardcoded WebUI URL we use for testing, do not skip the safe
+  // browsing check. We do not check user consent here because we do not ever
+  // send such URLs to GMS anyway. It's important to ignore user consent in this
+  // case because the GMS APIs we rely on to check user consent often get
+  // confused during CTS tests, reporting the user has not consented regardless
+  // of the on-device setting. See https://crbug.com/938538.
+  bool is_hardcoded_url =
+      original_url.SchemeIs(content::kChromeUIScheme) &&
+      original_url.host() == safe_browsing::kChromeUISafeBrowsingHost;
+  if (is_hardcoded_url)
+    return false;
+
+  // For other requests, follow user consent.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  bool safe_browsing_user_consent =
+      Java_AwSafeBrowsingConfigHelper_getSafeBrowsingUserOptIn(env);
+  return !safe_browsing_user_consent;
 }
 
 void AwUrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
@@ -111,13 +168,27 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
     const security_interstitials::UnsafeResource& resource,
     const AwWebResourceRequest& request) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
+
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper = security_interstitials::
+          SecurityInterstitialTabHelper::FromWebContents(web_contents);
+  if (ui_manager->IsWhitelisted(resource) && security_interstitial_tab_helper &&
+      security_interstitial_tab_helper->IsDisplayingInterstitial()) {
+    // In this case we are about to leave an interstitial due to the user
+    // clicking proceed on it, we shouldn't call OnSafeBrowsingHit again.
+    resource.callback_thread->PostTask(
+        FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                  false /* showed_interstitial */));
+    return;
+  }
+
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContents(web_contents);
 
   if (client) {
     base::OnceCallback<void(SafeBrowsingAction, bool)> callback =
         base::BindOnce(&AwUrlCheckerDelegateImpl::DoApplicationResponse,
-                       ui_manager, resource);
+                       ui_manager, resource, request);
 
     client->OnSafeBrowsingHit(request, resource.threat_type,
                               std::move(callback));
@@ -128,6 +199,7 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
 void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     scoped_refptr<AwSafeBrowsingUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource,
+    const AwWebResourceRequest& request,
     SafeBrowsingAction action,
     bool reporting) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
@@ -138,15 +210,28 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     browser_context->SetExtendedReportingAllowed(false);
   }
 
+  content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
+
   // TODO(ntfschr): fully handle reporting once we add support (crbug/688629)
   bool proceed;
   switch (action) {
-    case SafeBrowsingAction::SHOW_INTERSTITIAL:
+    case SafeBrowsingAction::SHOW_INTERSTITIAL: {
       base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
               ui_manager, resource));
+      AwContents* contents = AwContents::FromWebContents(web_contents);
+      if (!contents || !contents->CanShowInterstitial()) {
+        // With committed interstitials OnReceivedError for safe browsing
+        // blocked sites is generally called from the blocking page object.
+        // When CanShowInterstitial is false, no blocking page is created from
+        // StartDisplayingDefaultBlockingPage, so we handle the call here.
+        CallOnReceivedError(
+            AwContentsClientBridge::FromWebContents(web_contents), request,
+            entry);
+      }
+    }
       return;
     case SafeBrowsingAction::PROCEED:
       proceed = true;
@@ -158,8 +243,13 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
       NOTREACHED();
   }
 
-  content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
-  GURL main_frame_url = entry ? entry->GetURL() : GURL();
+  if (!proceed) {
+    // With committed interstitials OnReceivedError for safe browsing blocked
+    // sites is generally called from the blocking page object. Since no
+    // blocking page is created in this case, we manually call it here.
+    CallOnReceivedError(AwContentsClientBridge::FromWebContents(web_contents),
+                        request, entry);
+  }
 
   // Navigate back for back-to-safety on subresources
   if (!proceed && resource.is_subframe) {
@@ -172,9 +262,10 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     }
   }
 
+  GURL main_frame_url = entry ? entry->GetURL() : GURL();
   ui_manager->OnBlockingPageDone(
       std::vector<security_interstitials::UnsafeResource>{resource}, proceed,
-      web_contents, main_frame_url);
+      web_contents, main_frame_url, false /* showed_interstitial */);
 }
 
 // static
@@ -189,7 +280,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
 
   // Reporting back that it is not okay to proceed with loading the URL.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false));
+                 base::BindOnce(resource.callback, false /* proceed */,
+                                false /* showed_interstitial */));
 }
 
 }  // namespace android_webview

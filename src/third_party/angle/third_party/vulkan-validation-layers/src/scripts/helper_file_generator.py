@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2019 The Khronos Group Inc.
-# Copyright (c) 2015-2019 Valve Corporation
-# Copyright (c) 2015-2019 LunarG, Inc.
-# Copyright (c) 2015-2019 Google Inc.
+# Copyright (c) 2015-2020 The Khronos Group Inc.
+# Copyright (c) 2015-2020 Valve Corporation
+# Copyright (c) 2015-2020 LunarG, Inc.
+# Copyright (c) 2015-2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,12 +83,14 @@ class HelperFileOutputGenerator(OutputGenerator):
         self.structTypes = dict()                         # Map of Vulkan struct typename to required VkStructureType
         self.structMembers = []                           # List of StructMemberData records for all Vulkan structs
         self.object_types = []                            # List of all handle types
+        self.object_guards = {}                           # Ifdef guards for object types
         self.object_type_aliases = []                     # Aliases to handles types (for handles that were extensions)
         self.debug_report_object_types = []               # Handy copy of debug_report_object_type enum data
         self.core_object_types = []                       # Handy copy of core_object_type enum data
         self.device_extension_info = dict()               # Dict of device extension name defines and ifdef values
         self.instance_extension_info = dict()             # Dict of instance extension name defines and ifdef values
         self.structextends_list = []                      # List of structs which extend another struct via pNext
+        self.structOrUnion = dict()                       # Map of Vulkan typename to 'struct' or 'union'
 
 
         # Named tuples to store struct and command data
@@ -122,10 +124,10 @@ class HelperFileOutputGenerator(OutputGenerator):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2015-2019 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2019 LunarG, Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Google Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2020 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Google Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -165,7 +167,7 @@ class HelperFileOutputGenerator(OutputGenerator):
         OutputGenerator.beginFeature(self, interface, emit)
         self.featureExtraProtect = GetFeatureProtect(interface)
 
-        if self.featureName == 'VK_VERSION_1_0' or self.featureName == 'VK_VERSION_1_1':
+        if interface.tag != 'extension':
             return
         name = self.featureName
         nameElem = interface[0][1]
@@ -232,9 +234,15 @@ class HelperFileOutputGenerator(OutputGenerator):
                 self.object_type_aliases.append((name,alias))
             else:
                 self.object_types.append(name)
+                self.object_guards[name] = self.featureExtraProtect
+
         elif (category == 'struct' or category == 'union'):
             self.structNames.append(name)
             self.genStruct(typeinfo, name, alias)
+            if (category == 'union'):
+                self.structOrUnion[name] = 'union'
+            else:
+                self.structOrUnion[name] = 'struct'
     #
     # Check if the parameter passed in is a pointer
     def paramIsPointer(self, param):
@@ -262,32 +270,6 @@ class HelperFileOutputGenerator(OutputGenerator):
             elif elem.tag == 'name':
                 name = noneStr(elem.text)
         return (type, name)
-    # Extract length values from latexmath.  Currently an inflexible solution that looks for specific
-    # patterns that are found in vk.xml.  Will need to be updated when new patterns are introduced.
-    def parseLateXMath(self, source):
-        name = 'ERROR'
-        decoratedName = 'ERROR'
-        if 'mathit' in source:
-            # Matches expressions similar to 'latexmath:[\lceil{\mathit{rasterizationSamples} \over 32}\rceil]'
-            match = re.match(r'latexmath\s*\:\s*\[\s*\\l(\w+)\s*\{\s*\\mathit\s*\{\s*(\w+)\s*\}\s*\\over\s*(\d+)\s*\}\s*\\r(\w+)\s*\]', source)
-            if not match or match.group(1) != match.group(4):
-                raise 'Unrecognized latexmath expression'
-            name = match.group(2)
-            # Need to add 1 for ceiling function; otherwise, the allocated packet
-            # size will be less than needed during capture for some title which use
-            # this in VkPipelineMultisampleStateCreateInfo. based on ceiling function
-            # definition,it is '{0}%{1}?{0}/{1} + 1:{0}/{1}'.format(*match.group(2, 3)),
-            # its value <= '{}/{} + 1'.
-            if match.group(1) == 'ceil':
-                decoratedName = '{}/{} + 1'.format(*match.group(2, 3))
-            else:
-                decoratedName = '{}/{}'.format(*match.group(2, 3))
-        else:
-            # Matches expressions similar to 'latexmath : [dataSize \over 4]'
-            match = re.match(r'latexmath\s*\:\s*\[\s*(\\textrm\{)?(\w+)\}?\s*\\over\s*(\d+)\s*\]', source)
-            name = match.group(2)
-            decoratedName = '{}/{}'.format(*match.group(2, 3))
-        return name, decoratedName
     #
     # Retrieve the value of the len tag
     def getLen(self, param):
@@ -302,8 +284,9 @@ class HelperFileOutputGenerator(OutputGenerator):
             else:
                 result = len
             if 'latexmath' in len:
-                param_type, param_name = self.getTypeNameTuple(param)
-                len_name, result = self.parseLateXMath(len)
+                # Elements with latexmath 'len' also contain a C equivalent 'altlen' attribute
+                # Use indexing operator instead of get() so we fail if the attribute is missing
+                result = param.attrib['altlen']
             # Spec has now notation for len attributes, using :: instead of platform specific pointer symbol
             result = str(result).replace('::', '->')
         return result
@@ -435,7 +418,7 @@ class HelperFileOutputGenerator(OutputGenerator):
     def GenerateEnumStringHelperHeader(self):
             enum_string_helper_header = '\n'
             enum_string_helper_header += '#pragma once\n'
-            enum_string_helper_header += '#ifdef _WIN32\n'
+            enum_string_helper_header += '#ifdef _MSC_VER\n'
             enum_string_helper_header += '#pragma warning( disable : 4065 )\n'
             enum_string_helper_header += '#endif\n'
             enum_string_helper_header += '\n'
@@ -474,13 +457,14 @@ class HelperFileOutputGenerator(OutputGenerator):
                 safe_struct_header += '\n'
                 if item.ifdef_protect is not None:
                     safe_struct_header += '#ifdef %s\n' % item.ifdef_protect
-                safe_struct_header += 'struct safe_%s {\n' % (item.name)
+                safe_struct_header += self.structOrUnion[item.name] + ' safe_%s {\n' % (item.name)
                 for member in item.members:
                     if member.type in self.structNames:
                         member_index = next((i for i, v in enumerate(self.structMembers) if v[0] == member.type), None)
                         if member_index is not None and self.NeedSafeStruct(self.structMembers[member_index]) == True:
                             if member.ispointer:
-                                safe_struct_header += '    safe_%s* %s;\n' % (member.type, member.name)
+                                num_indirections = member.cdecl.count('*')
+                                safe_struct_header += '    safe_%s%s %s;\n' % (member.type, '*' * num_indirections, member.name)
                             else:
                                 safe_struct_header += '    safe_%s %s;\n' % (member.type, member.name)
                             continue
@@ -489,12 +473,12 @@ class HelperFileOutputGenerator(OutputGenerator):
                     else:
                         safe_struct_header += '%s;\n' % member.cdecl
                 safe_struct_header += '    safe_%s(const %s* in_struct%s);\n' % (item.name, item.name, self.custom_construct_params.get(item.name, ''))
-                safe_struct_header += '    safe_%s(const safe_%s& src);\n' % (item.name, item.name)
-                safe_struct_header += '    safe_%s& operator=(const safe_%s& src);\n' % (item.name, item.name)
+                safe_struct_header += '    safe_%s(const safe_%s& copy_src);\n' % (item.name, item.name)
+                safe_struct_header += '    safe_%s& operator=(const safe_%s& copy_src);\n' % (item.name, item.name)
                 safe_struct_header += '    safe_%s();\n' % item.name
                 safe_struct_header += '    ~safe_%s();\n' % item.name
                 safe_struct_header += '    void initialize(const %s* in_struct%s);\n' % (item.name, self.custom_construct_params.get(item.name, ''))
-                safe_struct_header += '    void initialize(const safe_%s* src);\n' % (item.name)
+                safe_struct_header += '    void initialize(const safe_%s* copy_src);\n' % (item.name)
                 safe_struct_header += '    %s *ptr() { return reinterpret_cast<%s *>(this); }\n' % (item.name, item.name)
                 safe_struct_header += '    %s const *ptr() const { return reinterpret_cast<%s const *>(this); }\n' % (item.name, item.name)
                 safe_struct_header += '};\n'
@@ -538,6 +522,40 @@ class HelperFileOutputGenerator(OutputGenerator):
             'vk_khr_variable_pointers',
             ]
 
+        V_1_2_level_feature_set = [
+            'VK_VERSION_1_2',
+            ]
+
+        V_1_1_instance_extensions_promoted_to_V_1_2_core = [
+            ]
+
+        V_1_1_device_extensions_promoted_to_V_1_2_core = [
+            'vk_khr_8bit_storage',
+            'vk_khr_buffer_device_address',
+            'vk_khr_create_renderpass_2',
+            'vk_khr_depth_stencil_resolve',
+            'vk_khr_draw_indirect_count',
+            'vk_khr_driver_properties',
+            'vk_khr_image_format_list',
+            'vk_khr_imageless_framebuffer',
+            'vk_khr_sampler_mirror_clamp_to_edge',
+            'vk_khr_separate_depth_stencil_layouts',
+            'vk_khr_shader_atomic_int64',
+            'vk_khr_shader_float16_int8',
+            'vk_khr_shader_float_controls',
+            'vk_khr_shader_subgroup_extended_types',
+            'vk_khr_spirv_1_4',
+            'vk_khr_timeline_semaphore',
+            'vk_khr_uniform_buffer_standard_layout',
+            'vk_khr_vulkan_memory_model',
+            'vk_ext_descriptor_indexing',
+            'vk_ext_host_query_reset',
+            'vk_ext_sampler_filter_minmax',
+            'vk_ext_scalar_block_layout',
+            'vk_ext_separate_stencil_usage',
+            'vk_ext_shader_viewport_index_layer',
+            ]
+
         output = [
             '',
             '#ifndef VK_EXTENSION_HELPER_H_',
@@ -553,6 +571,25 @@ class HelperFileOutputGenerator(OutputGenerator):
             '#include <vulkan/vulkan.h>',
             '',
             '#define VK_VERSION_1_1_NAME "VK_VERSION_1_1"',
+            '',
+            '// Suppress unused warning on Linux',
+            '#if defined(__GNUC__)',
+            '#define DECORATE_UNUSED __attribute__((unused))',
+            '#else',
+            '#define DECORATE_UNUSED',
+            '#endif',
+            '',
+            'enum ExtEnabled : unsigned char {',
+            '    kNotEnabled,',
+            '    kEnabledByCreateinfo,',
+            '    kEnabledByApiLevel,',
+            '};',
+            '',
+            'static bool DECORATE_UNUSED IsExtEnabled(ExtEnabled feature) {',
+            '    if (feature == kNotEnabled) return false;',
+            '    return true;',
+            '};',
+            '#define VK_VERSION_1_2_NAME "VK_VERSION_1_2"',
             '']
 
         def guarded(ifdef, value):
@@ -565,12 +602,14 @@ class HelperFileOutputGenerator(OutputGenerator):
             struct_type = '%sExtensions' % type
             if type == 'Instance':
                 extension_dict = self.instance_extension_info
-                promoted_ext_list = V_1_0_instance_extensions_promoted_to_V_1_1_core
+                promoted_1_1_ext_list = V_1_0_instance_extensions_promoted_to_V_1_1_core
+                promoted_1_2_ext_list = V_1_1_instance_extensions_promoted_to_V_1_2_core
                 struct_decl = 'struct %s {' % struct_type
                 instance_struct_type = struct_type
             else:
                 extension_dict = self.device_extension_info
-                promoted_ext_list = V_1_0_device_extensions_promoted_to_V_1_1_core
+                promoted_1_1_ext_list = V_1_0_device_extensions_promoted_to_V_1_1_core
+                promoted_1_2_ext_list = V_1_1_device_extensions_promoted_to_V_1_2_core
                 struct_decl = 'struct %s : public %s {' % (struct_type, instance_struct_type)
 
             extension_items = sorted(extension_dict.items())
@@ -578,6 +617,8 @@ class HelperFileOutputGenerator(OutputGenerator):
             field_name = { ext_name: re.sub('_extension_name', '', info['define'].lower()) for ext_name, info in extension_items }
 
             # Add in pseudo-extensions for core API versions so real extensions can depend on them
+            extension_dict['VK_VERSION_1_2'] = {'define':"VK_VERSION_1_2_NAME", 'ifdef':None, 'reqs':[]}
+            field_name['VK_VERSION_1_2'] = "vk_feature_version_1_2"
             extension_dict['VK_VERSION_1_1'] = {'define':"VK_VERSION_1_1_NAME", 'ifdef':None, 'reqs':[]}
             field_name['VK_VERSION_1_1'] = "vk_feature_version_1_1"
 
@@ -592,8 +633,9 @@ class HelperFileOutputGenerator(OutputGenerator):
 
             # Output the data member list
             struct  = [struct_decl]
-            struct.extend([ '    bool vk_feature_version_1_1{false};'])
-            struct.extend([ '    bool %s{false};' % field_name[ext_name] for ext_name, info in extension_items])
+            struct.extend([ '    ExtEnabled vk_feature_version_1_1{kNotEnabled};'])
+            struct.extend([ '    ExtEnabled vk_feature_version_1_2{kNotEnabled};'])
+            struct.extend([ '    ExtEnabled %s{kNotEnabled};' % field_name[ext_name] for ext_name, info in extension_items])
 
             # Construct the extension information map -- mapping name to data member (field), and required extensions
             # The map is contained within a static function member for portability reasons.
@@ -604,14 +646,14 @@ class HelperFileOutputGenerator(OutputGenerator):
             struct.extend([
                 '',
                 '    struct %s {' % req_type,
-                '        const bool %s::* enabled;' % struct_type,
+                '        const ExtEnabled %s::* enabled;' % struct_type,
                 '        const char *name;',
                 '    };',
                 '    typedef std::vector<%s> %s;' % (req_type, req_vec_type),
                 '    struct %s {' % info_type,
-                '       %s(bool %s::* state_, const %s requires_): state(state_), requires(requires_) {}' % ( info_type, struct_type, req_vec_type),
-                '       bool %s::* state;' % struct_type,
-                '       %s requires;' % req_vec_type,
+                '       %s(ExtEnabled %s::* state_, const %s requirements_): state(state_), requirements(requirements_) {}' % ( info_type, struct_type, req_vec_type),
+                '       ExtEnabled %s::* state;' % struct_type,
+                '       %s requirements;' % req_vec_type,
                 '    };',
                 '',
                 '    typedef std::unordered_map<std::string,%s> %s;' % (info_type, info_map_type),
@@ -619,6 +661,8 @@ class HelperFileOutputGenerator(OutputGenerator):
                 '        static const %s info_map = {' % info_map_type ])
             struct.extend([
                 '            std::make_pair("VK_VERSION_1_1", %sInfo(&%sExtensions::vk_feature_version_1_1, {})),' % (type, type)])
+            struct.extend([
+                '            std::make_pair("VK_VERSION_1_2", %sInfo(&%sExtensions::vk_feature_version_1_2, {})),' % (type, type)])
 
             field_format = '&' + struct_type + '::%s'
             req_format = '{' + field_format+ ', %s}'
@@ -645,8 +689,12 @@ class HelperFileOutputGenerator(OutputGenerator):
             if type == 'Instance':
                 struct.extend([
                     '    uint32_t NormalizeApiVersion(uint32_t specified_version) {',
-                    '        uint32_t api_version = (specified_version < VK_API_VERSION_1_1) ? VK_API_VERSION_1_0 : VK_API_VERSION_1_1;',
-                    '        return api_version;',
+                    '        if (specified_version < VK_API_VERSION_1_1)',
+                    '            return VK_API_VERSION_1_0;',
+                    '        else if (specified_version < VK_API_VERSION_1_2)',
+                    '            return VK_API_VERSION_1_1;',
+                    '        else',
+                    '            return VK_API_VERSION_1_2;',
                     '    }',
                     '',
                     '    uint32_t InitFromInstanceCreateInfo(uint32_t requested_api_version, const VkInstanceCreateInfo *pCreateInfo) {'])
@@ -664,25 +712,40 @@ class HelperFileOutputGenerator(OutputGenerator):
             struct.extend([
                 '',
                 '        static const std::vector<const char *> V_1_1_promoted_%s_apis = {' % type.lower() ])
-            struct.extend(['            %s_EXTENSION_NAME,' % ext_name.upper() for ext_name in promoted_ext_list])
-            struct.extend(['            "VK_VERSION_1_1",'])
+            struct.extend(['            %s_EXTENSION_NAME,' % ext_name.upper() for ext_name in promoted_1_1_ext_list])
+            struct.extend([
+                '        };',
+                '        static const std::vector<const char *> V_1_2_promoted_%s_apis = {' % type.lower() ])
+            struct.extend(['            %s_EXTENSION_NAME,' % ext_name.upper() for ext_name in promoted_1_2_ext_list])
             struct.extend([
                 '        };',
                 '',
                 '        // Initialize struct data, robust to invalid pCreateInfo',
+                '        uint32_t api_version = NormalizeApiVersion(requested_api_version);',
+                '        if (api_version >= VK_API_VERSION_1_1) {',
+                '            auto info = get_info("VK_VERSION_1_1");',
+                '            if (info.state) this->*(info.state) = kEnabledByCreateinfo;',
+                '            for (auto promoted_ext : V_1_1_promoted_%s_apis) {' % type.lower(),
+                '                info = get_info(promoted_ext);',
+                '                assert(info.state);',
+                '                if (info.state) this->*(info.state) = kEnabledByApiLevel;',
+                '            }',
+                '        }',
+                '        if (api_version >= VK_API_VERSION_1_2) {',
+                '            auto info = get_info("VK_VERSION_1_2");',
+                '            if (info.state) this->*(info.state) = kEnabledByCreateinfo;',
+                '            for (auto promoted_ext : V_1_2_promoted_%s_apis) {' % type.lower(),
+                '                info = get_info(promoted_ext);',
+                '                assert(info.state);',
+                '                if (info.state) this->*(info.state) = kEnabledByApiLevel;',
+                '            }',
+                '        }',
+                '        // CreateInfo takes precedence over promoted',
                 '        if (pCreateInfo->ppEnabledExtensionNames) {',
                 '            for (uint32_t i = 0; i < pCreateInfo->enabledExtensionCount; i++) {',
                 '                if (!pCreateInfo->ppEnabledExtensionNames[i]) continue;',
                 '                auto info = get_info(pCreateInfo->ppEnabledExtensionNames[i]);',
-                '                if(info.state) this->*(info.state) = true;',
-                '            }',
-                '        }',
-                '        uint32_t api_version = NormalizeApiVersion(requested_api_version);',
-                '        if (api_version >= VK_API_VERSION_1_1) {',
-                '            for (auto promoted_ext : V_1_1_promoted_%s_apis) {' % type.lower(),
-                '                auto info = get_info(promoted_ext);',
-                '                assert(info.state);',
-                '                if (info.state) this->*(info.state) = true;',
+                '                if (info.state) this->*(info.state) = kEnabledByCreateinfo;',
                 '            }',
                 '        }',
                 '        return api_version;',
@@ -729,7 +792,7 @@ class HelperFileOutputGenerator(OutputGenerator):
             object_types_header += ' = %d,\n' % enum_num
             enum_num += 1
             type_list.append(enum_entry)
-            object_type_info[enum_entry] = { 'VkType': item }
+            object_type_info[enum_entry] = { 'VkType': item , 'Guard': self.object_guards[item]}
             # We'll want lists of the dispatchable and non dispatchable handles below with access to the same info
             if self.handle_types.IsNonDispatchable(item):
                 non_dispatchable[item] = enum_entry
@@ -768,21 +831,29 @@ class HelperFileOutputGenerator(OutputGenerator):
         for object_type in type_list:
             # VK_DEBUG_REPORT is not updated anymore; there might be missing object types
             kenum_type = dro_dict.get(kenum_to_key(object_type), 'VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT')
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#ifdef %s\n' % object_type_info[object_type]['Guard']
             object_types_header += '    %s,   // %s\n' % (kenum_type, object_type)
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#else\n'
+                object_types_header += '    VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,   // %s\n' % object_type
+                object_types_header += '#endif\n'
             object_type_info[object_type]['DbgType'] = kenum_type
         object_types_header += '};\n'
 
         # Output a conversion routine from the layer object definitions to the core object type definitions
         # This will intentionally *fail* for unmatched types as the VK_OBJECT_TYPE list should match the kVulkanObjectType list
         object_types_header += '\n'
-        object_types_header += '// Helper array to get Official Vulkan VkObjectType enum from the internal layers version\n'
-        object_types_header += 'const VkObjectType get_object_type_enum[] = {\n'
-        object_types_header += '    VK_OBJECT_TYPE_UNKNOWN, // kVulkanObjectTypeUnknown\n' # no unknown handle, so must be here explicitly
+        object_types_header += '// Helper function to get Official Vulkan VkObjectType enum from the internal layers version\n'
+        object_types_header += 'static inline VkObjectType ConvertVulkanObjectToCoreObject(VulkanObjectType internal_type) {\n'
+        object_types_header += '    switch (internal_type) {\n'
 
         for object_type in type_list:
             kenum_type = vko_dict[kenum_to_key(object_type)]
-            object_types_header += '    %s,   // %s\n' % (kenum_type, object_type)
+            object_types_header += '        case %s: return %s;\n' % (object_type, kenum_type)
             object_type_info[object_type]['VkoType'] = kenum_type
+        object_types_header += '        default: return VK_OBJECT_TYPE_UNKNOWN;\n'
+        object_types_header += '    }\n'
         object_types_header += '};\n'
 
         # Output a function converting from core object type definitions to the Vulkan object type enums
@@ -860,8 +931,12 @@ class HelperFileOutputGenerator(OutputGenerator):
         object_types_header += '#ifdef TYPESAFE_NONDISPATCHABLE_HANDLES\n'
         for vk_type, object_type in sorted(non_dispatchable.items()):
             info = object_type_info[object_type]
+            if info['Guard']:
+                object_types_header += '#ifdef {}\n'.format(info['Guard'])
             object_types_header += traits_format.format(vk_type=vk_type, obj_type=object_type, dbg_type=info['DbgType'],
                                                       vko_type=info['VkoType'])
+            if info['Guard']:
+                object_types_header += '#endif\n'
         object_types_header += '#endif // TYPESAFE_NONDISPATCHABLE_HANDLES\n'
 
         object_types_header += Outdent('''
@@ -1028,13 +1103,17 @@ class HelperFileOutputGenerator(OutputGenerator):
                        'VkXcbSurfaceCreateInfoKHR',
                        'VkWaylandSurfaceCreateInfoKHR',
                        'VkAndroidSurfaceCreateInfoKHR',
-                       'VkWin32SurfaceCreateInfoKHR'
+                       'VkWin32SurfaceCreateInfoKHR',
+                       'VkIOSSurfaceCreateInfoMVK',
+                       'VkMacOSSurfaceCreateInfoMVK',
+                       'VkMetalSurfaceCreateInfoEXT'
                        ]
 
         # For abstract types just want to save the pointer away
         # since we cannot make a copy.
         abstract_types = ['AHardwareBuffer',
                           'ANativeWindow',
+                          'CAMetalLayer'
                          ]
         for item in self.structMembers:
             if self.NeedSafeStruct(item) == False:
@@ -1179,24 +1258,39 @@ class HelperFileOutputGenerator(OutputGenerator):
                     '            pImmutableSamplers[i] = in_struct->pImmutableSamplers[i];\n'
                     '        }\n'
                     '    }\n',
+                #VkAccelerationStructureBuildGeometryInfoKHR is a special case because geometryArrayOfPointers changes the interpretation of ppGeometries
+                'VkAccelerationStructureBuildGeometryInfoKHR':
+                    '    if (geometryCount && in_struct->ppGeometries) {\n'
+                    '        if (geometryArrayOfPointers) {\n'
+                    '            ppGeometries = new safe_VkAccelerationStructureGeometryKHR *[geometryCount];\n'
+                    '            for (uint32_t i = 0; i < geometryCount; ++i) {\n'
+                    '                ppGeometries[i] = new safe_VkAccelerationStructureGeometryKHR(in_struct->ppGeometries[i]);\n'
+                    '            }\n'
+                    '        } else {\n'
+                    '            ppGeometries = new safe_VkAccelerationStructureGeometryKHR *(new safe_VkAccelerationStructureGeometryKHR[geometryCount]);\n'
+                    '            for (uint32_t i = 0; i < geometryCount; ++i) {\n'
+                    '                (*ppGeometries)[i] = safe_VkAccelerationStructureGeometryKHR(&(*in_struct->ppGeometries)[i]);\n'
+                    '            }\n'
+                    '        }\n'
+                    '    }\n',
             }
 
             custom_copy_txt = {
                 # VkGraphicsPipelineCreateInfo is special case because it has custom construct parameters
                 'VkGraphicsPipelineCreateInfo' :
-                    '    pNext = SafePnextCopy(src.pNext);\n'
-                    '    if (stageCount && src.pStages) {\n'
+                    '    pNext = SafePnextCopy(copy_src.pNext);\n'
+                    '    if (stageCount && copy_src.pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
-                    '            pStages[i].initialize(&src.pStages[i]);\n'
+                    '            pStages[i].initialize(&copy_src.pStages[i]);\n'
                     '        }\n'
                     '    }\n'
-                    '    if (src.pVertexInputState)\n'
-                    '        pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*src.pVertexInputState);\n'
+                    '    if (copy_src.pVertexInputState)\n'
+                    '        pVertexInputState = new safe_VkPipelineVertexInputStateCreateInfo(*copy_src.pVertexInputState);\n'
                     '    else\n'
                     '        pVertexInputState = NULL;\n'
-                    '    if (src.pInputAssemblyState)\n'
-                    '        pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*src.pInputAssemblyState);\n'
+                    '    if (copy_src.pInputAssemblyState)\n'
+                    '        pInputAssemblyState = new safe_VkPipelineInputAssemblyStateCreateInfo(*copy_src.pInputAssemblyState);\n'
                     '    else\n'
                     '        pInputAssemblyState = NULL;\n'
                     '    bool has_tessellation_stage = false;\n'
@@ -1204,55 +1298,84 @@ class HelperFileOutputGenerator(OutputGenerator):
                     '        for (uint32_t i = 0; i < stageCount && !has_tessellation_stage; ++i)\n'
                     '            if (pStages[i].stage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT || pStages[i].stage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT)\n'
                     '                has_tessellation_stage = true;\n'
-                    '    if (src.pTessellationState && has_tessellation_stage)\n'
-                    '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*src.pTessellationState);\n'
+                    '    if (copy_src.pTessellationState && has_tessellation_stage)\n'
+                    '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src.pTessellationState);\n'
                     '    else\n'
                     '        pTessellationState = NULL; // original pTessellationState pointer ignored\n'
-                    '    bool has_rasterization = src.pRasterizationState ? !src.pRasterizationState->rasterizerDiscardEnable : false;\n'
-                    '    if (src.pViewportState && has_rasterization) {\n'
-                    '        pViewportState = new safe_VkPipelineViewportStateCreateInfo(*src.pViewportState);\n'
+                    '    bool has_rasterization = copy_src.pRasterizationState ? !copy_src.pRasterizationState->rasterizerDiscardEnable : false;\n'
+                    '    if (copy_src.pViewportState && has_rasterization) {\n'
+                    '        pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src.pViewportState);\n'
                     '    } else\n'
                     '        pViewportState = NULL; // original pViewportState pointer ignored\n'
-                    '    if (src.pRasterizationState)\n'
-                    '        pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*src.pRasterizationState);\n'
+                    '    if (copy_src.pRasterizationState)\n'
+                    '        pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(*copy_src.pRasterizationState);\n'
                     '    else\n'
                     '        pRasterizationState = NULL;\n'
-                    '    if (src.pMultisampleState && has_rasterization)\n'
-                    '        pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*src.pMultisampleState);\n'
+                    '    if (copy_src.pMultisampleState && has_rasterization)\n'
+                    '        pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(*copy_src.pMultisampleState);\n'
                     '    else\n'
                     '        pMultisampleState = NULL; // original pMultisampleState pointer ignored\n'
-                    '    if (src.pDepthStencilState && has_rasterization)\n'
-                    '        pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*src.pDepthStencilState);\n'
+                    '    if (copy_src.pDepthStencilState && has_rasterization)\n'
+                    '        pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(*copy_src.pDepthStencilState);\n'
                     '    else\n'
                     '        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored\n'
-                    '    if (src.pColorBlendState && has_rasterization)\n'
-                    '        pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*src.pColorBlendState);\n'
+                    '    if (copy_src.pColorBlendState && has_rasterization)\n'
+                    '        pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(*copy_src.pColorBlendState);\n'
                     '    else\n'
                     '        pColorBlendState = NULL; // original pColorBlendState pointer ignored\n'
-                    '    if (src.pDynamicState)\n'
-                    '        pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*src.pDynamicState);\n'
+                    '    if (copy_src.pDynamicState)\n'
+                    '        pDynamicState = new safe_VkPipelineDynamicStateCreateInfo(*copy_src.pDynamicState);\n'
                     '    else\n'
                     '        pDynamicState = NULL;\n',
                  # VkPipelineViewportStateCreateInfo is special case because it has custom construct parameters
                 'VkPipelineViewportStateCreateInfo' :
-                    '    pNext = SafePnextCopy(src.pNext);\n'
-                    '    if (src.pViewports) {\n'
-                    '        pViewports = new VkViewport[src.viewportCount];\n'
-                    '        memcpy ((void *)pViewports, (void *)src.pViewports, sizeof(VkViewport)*src.viewportCount);\n'
+                    '    pNext = SafePnextCopy(copy_src.pNext);\n'
+                    '    if (copy_src.pViewports) {\n'
+                    '        pViewports = new VkViewport[copy_src.viewportCount];\n'
+                    '        memcpy ((void *)pViewports, (void *)copy_src.pViewports, sizeof(VkViewport)*copy_src.viewportCount);\n'
                     '    }\n'
                     '    else\n'
                     '        pViewports = NULL;\n'
-                    '    if (src.pScissors) {\n'
-                    '        pScissors = new VkRect2D[src.scissorCount];\n'
-                    '        memcpy ((void *)pScissors, (void *)src.pScissors, sizeof(VkRect2D)*src.scissorCount);\n'
+                    '    if (copy_src.pScissors) {\n'
+                    '        pScissors = new VkRect2D[copy_src.scissorCount];\n'
+                    '        memcpy ((void *)pScissors, (void *)copy_src.pScissors, sizeof(VkRect2D)*copy_src.scissorCount);\n'
                     '    }\n'
                     '    else\n'
                     '        pScissors = NULL;\n',
+                #VkAccelerationStructureBuildGeometryInfoKHR is a special case because geometryArrayOfPointers changes the interpretation of ppGeometries
+                'VkAccelerationStructureBuildGeometryInfoKHR':
+                    '    if (geometryCount && copy_src.ppGeometries) {\n'
+                    '        if (geometryArrayOfPointers) {\n'
+                    '            ppGeometries = new safe_VkAccelerationStructureGeometryKHR *[geometryCount];\n'
+                    '            for (uint32_t i = 0; i < geometryCount; ++i) {\n'
+                    '                ppGeometries[i] = new safe_VkAccelerationStructureGeometryKHR(*copy_src.ppGeometries[i]);\n'
+                    '            }\n'
+                    '        } else {\n'
+                    '            ppGeometries = new safe_VkAccelerationStructureGeometryKHR *(new safe_VkAccelerationStructureGeometryKHR[geometryCount]);\n'
+                    '            for (uint32_t i = 0; i < geometryCount; ++i) {\n'
+                    '                (*ppGeometries)[i] = safe_VkAccelerationStructureGeometryKHR((*copy_src.ppGeometries)[i]);\n'
+                    '            }\n'
+                    '        }\n'
+                    '    }\n',
             }
 
-            custom_destruct_txt = {'VkShaderModuleCreateInfo' :
-                                   '    if (pCode)\n'
-                                   '        delete[] reinterpret_cast<const uint8_t *>(pCode);\n' }
+            custom_destruct_txt = {
+                'VkShaderModuleCreateInfo' :
+                    '    if (pCode)\n'
+                    '        delete[] reinterpret_cast<const uint8_t *>(pCode);\n',
+                'VkAccelerationStructureBuildGeometryInfoKHR' :
+                    '    if (ppGeometries) {\n'
+                    '        if (geometryArrayOfPointers) {\n'
+                    '            for (uint32_t i = 0; i < geometryCount; ++i) {\n'
+                    '                delete ppGeometries[i];\n'
+                    '            }\n'
+                    '            delete[] ppGeometries;\n'
+                    '        } else {\n'
+                    '            delete[] *ppGeometries;\n'
+                    '            delete ppGeometries;\n'
+                    '        }\n'
+                    '    }\n',
+            }
             copy_pnext = ''
             copy_strings = ''
             for member in item.members:
@@ -1304,9 +1427,19 @@ class HelperFileOutputGenerator(OutputGenerator):
                                 destruct_txt += '    if (%s)\n' % member.name
                                 destruct_txt += '        delete %s;\n' % member.name
                             else:
-                                construct_txt += '    if (in_struct->%s) {\n' % member.name
-                                construct_txt += '        %s = new %s[in_struct->%s];\n' % (member.name, m_type, member.len)
-                                construct_txt += '        memcpy ((void *)%s, (void *)in_struct->%s, sizeof(%s)*in_struct->%s);\n' % (member.name, member.name, m_type, member.len)
+                                # Prepend struct members with struct name
+                                decorated_length = member.len
+                                for other_member in item.members:
+                                    decorated_length = re.sub(r'\b({})\b'.format(other_member.name), r'in_struct->\1', decorated_length)
+                                concurrent_clause = ''
+                                sharing_mode_name = 's'
+                                if member.name == 'pQueueFamilyIndices':
+                                    if item.name == 'VkSwapchainCreateInfoKHR':
+                                        sharing_mode_name = 'imageS'
+                                    concurrent_clause = '(in_struct->%sharingMode == VK_SHARING_MODE_CONCURRENT) && ' % sharing_mode_name
+                                construct_txt += '    if (%sin_struct->%s) {\n' % (concurrent_clause, member.name)
+                                construct_txt += '        %s = new %s[%s];\n' % (member.name, m_type, decorated_length)
+                                construct_txt += '        memcpy ((void *)%s, (void *)in_struct->%s, sizeof(%s)*%s);\n' % (member.name, member.name, m_type, decorated_length)
                                 construct_txt += '    }\n'
                                 destruct_txt += '    if (%s)\n' % member.name
                                 destruct_txt += '        delete[] %s;\n' % member.name
@@ -1367,27 +1500,29 @@ class HelperFileOutputGenerator(OutputGenerator):
             if copy_pnext:
                 destruct_txt += '    if (pNext)\n        FreePnextChain(pNext);\n'
 
-            safe_struct_body.append("\n%s::%s(const %s* in_struct%s) :%s\n{\n%s}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, ''), init_list, construct_txt))
+            if (self.structOrUnion[item.name] == 'union'):
+                # Unions don't allow multiple members in the initialization list, so just call initialize
+                safe_struct_body.append("\n%s::%s(const %s* in_struct%s)\n{\n    initialize(in_struct);\n}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, '')))
+            else:
+                safe_struct_body.append("\n%s::%s(const %s* in_struct%s) :%s\n{\n%s}" % (ss_name, ss_name, item.name, self.custom_construct_params.get(item.name, ''), init_list, construct_txt))
             if '' != default_init_list:
                 default_init_list = " :%s" % (default_init_list[:-1])
             safe_struct_body.append("\n%s::%s()%s\n{}" % (ss_name, ss_name, default_init_list))
-            # Create slight variation of init and construct txt for copy constructor that takes a src object reference vs. struct ptr
-            copy_construct_init = init_func_txt.replace('in_struct->', 'src.')
-            copy_construct_txt = construct_txt.replace(' (in_struct->', ' (src.')            # Exclude 'if' blocks from next line
-            copy_construct_txt = construct_txt.replace(' (in_struct->', ' (src.')               # Exclude 'if' blocks from next line
-            copy_construct_txt = re.sub('(new \\w+)\\(in_struct->', '\\1(*src.', construct_txt) # Pass object to copy constructors
-            copy_construct_txt = copy_construct_txt.replace('in_struct->', 'src.')              # Modify remaining struct refs for src object
+            # Create slight variation of init and construct txt for copy constructor that takes a copy_src object reference vs. struct ptr
+            copy_construct_init = init_func_txt.replace('in_struct->', 'copy_src.')
+            copy_construct_txt = re.sub('(new \\w+)\\(in_struct->', '\\1(*copy_src.', construct_txt) # Pass object to copy constructors
+            copy_construct_txt = copy_construct_txt.replace('in_struct->', 'copy_src.')              # Modify remaining struct refs for copy_src object
             if item.name in custom_copy_txt:
                 copy_construct_txt = custom_copy_txt[item.name]
-            copy_assign_txt = '    if (&src == this) return *this;\n\n' + destruct_txt + '\n' + copy_construct_init + copy_construct_txt + '\n    return *this;'
-            safe_struct_body.append("\n%s::%s(const %s& src)\n{\n%s%s}" % (ss_name, ss_name, ss_name, copy_construct_init, copy_construct_txt)) # Copy constructor
-            safe_struct_body.append("\n%s& %s::operator=(const %s& src)\n{\n%s\n}" % (ss_name, ss_name, ss_name, copy_assign_txt)) # Copy assignment operator
+            copy_assign_txt = '    if (&copy_src == this) return *this;\n\n' + destruct_txt + '\n' + copy_construct_init + copy_construct_txt + '\n    return *this;'
+            safe_struct_body.append("\n%s::%s(const %s& copy_src)\n{\n%s%s}" % (ss_name, ss_name, ss_name, copy_construct_init, copy_construct_txt)) # Copy constructor
+            safe_struct_body.append("\n%s& %s::operator=(const %s& copy_src)\n{\n%s\n}" % (ss_name, ss_name, ss_name, copy_assign_txt)) # Copy assignment operator
             safe_struct_body.append("\n%s::~%s()\n{\n%s}" % (ss_name, ss_name, destruct_txt))
             safe_struct_body.append("\nvoid %s::initialize(const %s* in_struct%s)\n{\n%s%s}" % (ss_name, item.name, self.custom_construct_params.get(item.name, ''), init_func_txt, construct_txt))
             # Copy initializer uses same txt as copy constructor but has a ptr and not a reference
-            init_copy = copy_construct_init.replace('src.', 'src->')
-            init_construct = copy_construct_txt.replace('src.', 'src->')
-            safe_struct_body.append("\nvoid %s::initialize(const %s* src)\n{\n%s%s}" % (ss_name, ss_name, init_copy, init_construct))
+            init_copy = copy_construct_init.replace('copy_src.', 'copy_src->')
+            init_construct = copy_construct_txt.replace('copy_src.', 'copy_src->')
+            safe_struct_body.append("\nvoid %s::initialize(const %s* copy_src)\n{\n%s%s}" % (ss_name, ss_name, init_copy, init_construct))
             if item.ifdef_protect is not None:
                 safe_struct_body.append("#endif // %s\n" % item.ifdef_protect)
         return "\n".join(safe_struct_body)

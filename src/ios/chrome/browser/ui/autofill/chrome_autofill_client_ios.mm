@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -26,6 +28,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
+#include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
@@ -54,11 +57,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace autofill {
+
 namespace {
 
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
-    std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate) {
+    std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
   if (IsSaveCardInfobarMessagesUIEnabled()) {
     InfobarSaveCardCoordinator* coordinator =
         [[InfobarSaveCardCoordinator alloc]
@@ -71,19 +76,17 @@ std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
   }
 }
 
-autofill::CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
-    autofill::CardUnmaskPromptControllerImpl* unmask_controller,
+CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
+    CardUnmaskPromptControllerImpl* unmask_controller,
     UIViewController* base_view_controller) {
-  return new autofill::CardUnmaskPromptViewBridge(unmask_controller,
-                                                  base_view_controller);
+  return new CardUnmaskPromptViewBridge(unmask_controller,
+                                        base_view_controller);
 }
 
 }  // namespace
 
-namespace autofill {
-
 ChromeAutofillClientIOS::ChromeAutofillClientIOS(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     web::WebState* web_state,
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,
@@ -119,11 +122,11 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       // renderer that indicates if log messages should be sent from the
       // renderer.
       log_manager_(LogManager::Create(
-          autofill::AutofillLogRouterFactory::GetForBrowserState(browser_state),
+          AutofillLogRouterFactory::GetForBrowserState(browser_state),
           base::Closure())) {}
 
 ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
 void ChromeAutofillClientIOS::SetBaseViewController(
@@ -200,6 +203,16 @@ std::string ChromeAutofillClientIOS::GetPageLanguage() const {
   return std::string();
 }
 
+std::string ChromeAutofillClientIOS::GetVariationConfigCountryCode() const {
+  variations::VariationsService* variation_service =
+      GetApplicationContext()->GetVariationsService();
+  // Retrieves the country code from variation service and converts it to upper
+  // case.
+  return variation_service
+             ? base::ToUpperASCII(variation_service->GetLatestCountry())
+             : std::string();
+}
+
 void ChromeAutofillClientIOS::ShowAutofillSettings(
     bool show_credit_card_settings) {
   NOTREACHED();
@@ -209,44 +222,16 @@ void ChromeAutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  unmask_controller_.ShowPrompt(base::Bind(&CreateCardUnmaskPromptViewBridge,
-                                    base::Unretained(&unmask_controller_),
-                                    base::Unretained(base_view_controller_)),
-                                card, reason, delegate);
+  unmask_controller_.ShowPrompt(
+      base::Bind(&CreateCardUnmaskPromptViewBridge,
+                 base::Unretained(&unmask_controller_),
+                 base::Unretained(base_view_controller_)),
+      card, reason, delegate);
 }
 
 void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
     PaymentsRpcResult result) {
   unmask_controller_.OnVerificationResult(result);
-}
-
-void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
-    base::OnceClosure show_migration_dialog_closure) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
-    const std::string& user_email,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    LocalCardMigrationCallback start_migrating_cards_callback) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
-    const bool has_server_error,
-    const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    MigrationDeleteCardCallback delete_local_card_callback) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
-    const AutofillProfile& profile,
-    base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
 }
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
@@ -258,8 +243,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/false, options, card, LegalMessageLines(),
           /*upload_save_card_callback=*/UploadSaveCardPromptCallback(),
-          /*local_save_card_callback=*/std::move(callback), GetPrefs(),
-          payments_client_->is_off_the_record())));
+          /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 }
 
 void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
@@ -272,10 +256,10 @@ void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
                            : base::string16();
 
   card_name_fix_flow_controller_.Show(
-      // autofill::CardNameFixFlowViewBridge manages its own lifetime, so
+      // CardNameFixFlowViewBridge manages its own lifetime, so
       // do not use std::unique_ptr<> here.
-      new autofill::CardNameFixFlowViewBridge(&card_name_fix_flow_controller_,
-                                              base_view_controller_),
+      new CardNameFixFlowViewBridge(&card_name_fix_flow_controller_,
+                                    base_view_controller_),
       account_name, std::move(callback));
 }
 
@@ -284,9 +268,9 @@ void ChromeAutofillClientIOS::ConfirmExpirationDateFixFlow(
     base::OnceCallback<void(const base::string16&, const base::string16&)>
         callback) {
   card_expiration_date_fix_flow_controller_.Show(
-      // autofill::CardExpirationDateFixFlowViewBridge manages its own lifetime,
+      // CardExpirationDateFixFlowViewBridge manages its own lifetime,
       // so do not use std::unique_ptr<> here.
-      new autofill::CardExpirationDateFixFlowViewBridge(
+      new CardExpirationDateFixFlowViewBridge(
           &card_expiration_date_fix_flow_controller_, base_view_controller_),
       card, std::move(callback));
 }
@@ -303,7 +287,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
           /*upload=*/true, options, card, legal_message_lines,
           /*upload_save_card_callback=*/std::move(callback),
           /*local_save_card_callback=*/LocalSaveCardPromptCallback(),
-          GetPrefs(), payments_client_->is_off_the_record());
+          GetPrefs());
 
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::move(save_card_info_bar_delegate_mobile)));
@@ -330,8 +314,7 @@ bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
 
-void ChromeAutofillClientIOS::ScanCreditCard(
-    const CreditCardScanCallback& callback) {
+void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 
@@ -351,7 +334,23 @@ void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
-void ChromeAutofillClientIOS::HideAutofillPopup() {
+base::span<const Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions()
+    const {
+  NOTIMPLEMENTED();
+  return base::span<const Suggestion>();
+}
+
+void ChromeAutofillClientIOS::PinPopupView() {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::UpdatePopup(
+    const std::vector<Suggestion>& suggestions,
+    PopupType popup_type) {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
   [bridge_ hideAutofillPopup];
 }
 

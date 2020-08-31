@@ -7,7 +7,6 @@
 #include "base/format_macros.h"
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -68,8 +67,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     DCHECK(dataManager);
 
@@ -172,8 +170,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cardNumberItem.textFieldValue =
       autofill::IsCreditCardLocal(_creditCard)
           ? base::SysUTF16ToNSString(_creditCard.number())
-          : base::SysUTF16ToNSString(
-                _creditCard.NetworkOrBankNameAndLastFourDigits());
+          : base::SysUTF16ToNSString(_creditCard.NetworkAndLastFourDigits());
   cardNumberItem.textFieldEnabled = isEditing;
   cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
   cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;

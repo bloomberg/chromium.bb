@@ -6,6 +6,11 @@
  * @fileoverview Closure compiler typedefs.
  */
 
+// clang-format off
+import {CertificateProvisioningProcess} from './certificate_provisioning_browser_proxy.js';
+import {CertificatesError, CertificatesImportError,CertificateSubnode, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
+// clang-format on
+
 /**
  * The payload of the 'certificate-action' event.
  * @typedef {{
@@ -15,7 +20,7 @@
  *   anchor: !HTMLElement
  * }}
  */
-let CertificateActionEventDetail;
+export let CertificateActionEventDetail;
 
 /**
  * The payload of the 'certificates-error' event.
@@ -24,13 +29,13 @@ let CertificateActionEventDetail;
  *   anchor: ?HTMLElement
  * }}
  */
-let CertificatesErrorEventDetail;
+export let CertificatesErrorEventDetail;
 
 /**
  * Enumeration of actions that require a popup menu to be shown to the user.
  * @enum {number}
  */
-const CertificateAction = {
+export const CertificateAction = {
   DELETE: 0,
   EDIT: 1,
   EXPORT_PERSONAL: 2,
@@ -41,4 +46,21 @@ const CertificateAction = {
  * The name of the event fired when a certificate action is selected from the
  * dropdown menu. CertificateActionEventDetail is passed as the event detail.
  */
-const CertificateActionEvent = 'certificate-action';
+export const CertificateActionEvent = 'certificate-action';
+
+/**
+ * The payload of the 'certificate-provisioning-view-details-action' event.
+ * @typedef {{
+ *   model: !CertificateProvisioningProcess,
+ *   anchor: !HTMLElement
+ * }}
+ */
+export let CertificateProvisioningActionEventDetail;
+
+/**
+ * The name of the event fired when a the "View Details" action is selected on
+ * the dropdown menu next to a certificate provisioning process.
+ * CertificateActionEventDetail is passed as the event detail.
+ */
+export const CertificateProvisioningViewDetailsActionEvent =
+    'certificate-provisioning-view-details-action';

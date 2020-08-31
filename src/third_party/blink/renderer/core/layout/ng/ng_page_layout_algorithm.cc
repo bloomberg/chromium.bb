@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -67,7 +66,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
+      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size,
+      border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   NGOutOfFlowLayoutPart(
@@ -81,13 +81,13 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
+MinMaxSizesResult NGPageLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(ConstraintSpace(), Node());
   NGBlockLayoutAlgorithm algorithm(
       {Node(), fragment_geometry, ConstraintSpace()});
-  return algorithm.ComputeMinMaxSize(input);
+  return algorithm.ComputeMinMaxSizes(input);
 }
 
 NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
@@ -96,9 +96,6 @@ NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(page_size);
   space_builder.SetPercentageResolutionSize(page_size);
-
-  if (NGBaseline::ShouldPropagateBaselines(Node()))
-    space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
   // TODO(mstensho): Handle auto block size.
   space_builder.SetFragmentationType(kFragmentPage);

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/system/network/vpn_list.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -54,7 +55,7 @@ class TrayNetworkStateModel::Impl
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   explicit Impl(TrayNetworkStateModel* model) : model_(model) {
-    ash::GetNetworkConfigService(
+    GetNetworkConfigService(
         remote_cros_network_config_.BindNewPipeAndPassReceiver());
     remote_cros_network_config_->AddObserver(
         cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
@@ -253,10 +254,9 @@ void TrayNetworkStateModel::OnGetVirtualNetworks(
 void TrayNetworkStateModel::NotifyNetworkListChanged() {
   if (timer_.IsRunning())
     return;
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
-      base::BindRepeating(&TrayNetworkStateModel::SendNetworkListChanged,
-                          base::Unretained(this)));
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
+               base::BindOnce(&TrayNetworkStateModel::SendNetworkListChanged,
+                              base::Unretained(this)));
 }
 
 void TrayNetworkStateModel::NotifyVpnProvidersChanged() {

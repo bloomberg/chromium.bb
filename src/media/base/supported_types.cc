@@ -5,6 +5,7 @@
 #include "media/base/supported_types.h"
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
@@ -30,6 +31,25 @@
 #endif
 
 namespace media {
+
+namespace {
+
+bool IsSupportedHdrMetadata(const HdrMetadataType& hdr_metadata_type) {
+  switch (hdr_metadata_type) {
+    case HdrMetadataType::kNone:
+      return true;
+
+    case HdrMetadataType::kSmpteSt2086:
+    case HdrMetadataType::kSmpteSt2094_10:
+    case HdrMetadataType::kSmpteSt2094_40:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
 
 bool IsSupportedAudioType(const AudioType& type) {
   MediaClient* media_client = GetMediaClient();
@@ -182,10 +202,13 @@ bool IsAudioCodecProprietary(AudioCodec codec) {
     case kUnknownAudioCodec:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 bool IsDefaultSupportedAudioType(const AudioType& type) {
-  if (type.spatialRendering)
+  if (type.spatial_rendering)
     return false;
 
 #if !BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -195,6 +218,15 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
 
   switch (type.codec) {
     case kCodecAAC:
+      if (type.profile != AudioCodecProfile::kXHE_AAC)
+        return true;
+#if defined(OS_ANDROID)
+      return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_P;
+#else
+      return false;
+#endif
+
     case kCodecFLAC:
     case kCodecMP3:
     case kCodecOpus:
@@ -243,11 +275,17 @@ bool IsVideoCodecProprietary(VideoCodec codec) {
     case kCodecAV1:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // TODO(chcunningham): Add platform specific logic for Android (move from
 // MimeUtilIntenral).
 bool IsDefaultSupportedVideoType(const VideoType& type) {
+  if (!IsSupportedHdrMetadata(type.hdr_metadata_type))
+    return false;
+
 #if !BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (IsVideoCodecProprietary(type.codec))
     return false;
@@ -258,13 +296,15 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       // If the AV1 decoder is enabled, or if we're on Q or later, yes.
 #if BUILDFLAG(ENABLE_AV1_DECODER)
       return IsColorSpaceSupported(type.color_space);
-#elif defined(OS_ANDROID)
+#else
+#if defined(OS_ANDROID)
       if (base::android::BuildInfo::GetInstance()->is_at_least_q() &&
           IsColorSpaceSupported(type.color_space)) {
         return true;
       }
 #endif
       return false;
+#endif
 
     case kCodecVP9:
       // Color management required for HDR to not look terrible.

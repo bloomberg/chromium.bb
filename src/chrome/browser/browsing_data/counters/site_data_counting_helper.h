@@ -14,14 +14,13 @@
 #include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 class Profile;
 class BrowsingDataFlashLSOHelper;
 class HostContentSettingsMap;
 
 namespace content {
-struct SessionStorageUsageInfo;
 struct StorageUsageInfo;
 }
 
@@ -49,10 +48,6 @@ class SiteDataCountingHelper {
   void GetOriginsFromHostContentSettignsMap(HostContentSettingsMap* hcsm,
                                             ContentSettingsType type);
   void GetCookiesCallback(const net::CookieList& cookies);
-  void GetSessionStorageUsageInfoCallback(
-      const scoped_refptr<storage::SpecialStoragePolicy>&
-          special_storage_policy,
-      const std::vector<content::SessionStorageUsageInfo>& infos);
   void GetLocalStorageUsageInfoCallback(
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,

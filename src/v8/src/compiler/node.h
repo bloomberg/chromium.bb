@@ -63,28 +63,19 @@ class V8_EXPORT_PRIVATE Node final {
 
 #ifdef DEBUG
   void Verify();
-#define BOUNDS_CHECK(index)                                                   \
-  do {                                                                        \
-    if (index < 0 || index >= InputCount()) {                                 \
-      FATAL("Node #%d:%s->InputAt(%d) out of bounds", id(), op()->mnemonic(), \
-            index);                                                           \
-    }                                                                         \
-  } while (false)
 #else
-  // No bounds checks or verification in release mode.
   inline void Verify() {}
-#define BOUNDS_CHECK(index) \
-  do {                      \
-  } while (false)
 #endif
 
   Node* InputAt(int index) const {
-    BOUNDS_CHECK(index);
+    CHECK_LE(0, index);
+    CHECK_LT(index, InputCount());
     return *GetInputPtrConst(index);
   }
 
   void ReplaceInput(int index, Node* new_to) {
-    BOUNDS_CHECK(index);
+    CHECK_LE(0, index);
+    CHECK_LT(index, InputCount());
     Node** input_ptr = GetInputPtr(index);
     Node* old_to = *input_ptr;
     if (old_to != new_to) {
@@ -94,8 +85,6 @@ class V8_EXPORT_PRIVATE Node final {
       if (new_to) new_to->AppendUse(use);
     }
   }
-
-#undef BOUNDS_CHECK
 
   void AppendInput(Zone* zone, Node* new_to);
   void InsertInput(Zone* zone, int index, Node* new_to);
@@ -150,15 +139,14 @@ class V8_EXPORT_PRIVATE Node final {
   Uses uses() { return Uses(this); }
 
   // Returns true if {owner} is the only user of {this} node.
-  bool OwnedBy(Node* owner) const {
-    return first_use_ && first_use_->from() == owner && !first_use_->next;
-  }
+  bool OwnedBy(Node const* owner) const;
 
   // Returns true if {owner1} and {owner2} are the only users of {this} node.
   bool OwnedBy(Node const* owner1, Node const* owner2) const;
 
-  void Print() const;
-  void Print(std::ostream&) const;
+  void Print() const { Print(1); }
+  void Print(int depth) const;
+  void Print(std::ostream&, int depth = 1) const;
 
  private:
   struct Use;

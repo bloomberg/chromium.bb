@@ -26,6 +26,12 @@ namespace content {
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
+    : EmbeddedWorkerTestHelper(user_data_directory,
+                               /*special_storage_policy=*/nullptr) {}
+
+EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
+    const base::FilePath& user_data_directory,
+    storage::SpecialStoragePolicy* special_storage_policy)
     : browser_context_(std::make_unique<TestBrowserContext>()),
       render_process_host_(
           std::make_unique<MockRenderProcessHost>(browser_context_.get())),
@@ -41,8 +47,9 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   wrapper_->InitOnCoreThread(
-      user_data_directory, std::move(database_task_runner), nullptr, nullptr,
-      nullptr, url_loader_factory_getter_.get(),
+      user_data_directory, std::move(database_task_runner),
+      /*quota_manager_proxy=*/nullptr, special_storage_policy, nullptr,
+      url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
           ? wrapper_
                 ->CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
@@ -61,18 +68,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       blink::mojom::EmbeddedWorkerInstanceClient::Name_,
       base::BindRepeating(&EmbeddedWorkerTestHelper::OnInstanceClientRequest,
                           base::Unretained(this)));
-
-  // Set a basic network URL loader factory so tests don't crash. Tests that
-  // want to customize further should use URLLoaderInterceptor which will
-  // override this.
-  // TODO(falken): Just make all MockRenderProcessHosts create and own
-  // their own url loader factory.
-  default_network_loader_factory_ =
-      std::make_unique<FakeNetworkURLLoaderFactory>();
-  render_process_host_->OverrideURLLoaderFactory(
-      default_network_loader_factory_.get());
-  new_render_process_host_->OverrideURLLoaderFactory(
-      default_network_loader_factory_.get());
 }
 
 void EmbeddedWorkerTestHelper::AddPendingInstanceClient(
@@ -163,37 +158,50 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
 }
 
 // static
-net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
-  net::HttpResponseInfo info;
+std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
+EmbeddedWorkerTestHelper::CreateMainScriptResponse() {
+  network::mojom::URLResponseHead response_head;
   const char data[] =
       "HTTP/1.1 200 OK\0"
       "Content-Type: application/javascript\0"
       "\0";
-  info.headers =
-      new net::HttpResponseHeaders(std::string(data, base::size(data)));
-  return info;
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      std::string(data, base::size(data)));
+  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+      response_head);
 }
 
 void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     int64_t version_id,
     base::OnceClosure callback) {
-  ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+  scoped_refptr<ServiceWorkerVersion> version =
+      context()->GetLiveVersion(version_id);
   if (!version) {
     std::move(callback).Run();
     return;
   }
+  if (!version->GetMainScriptResponse())
+    version->SetMainScriptResponse(CreateMainScriptResponse());
   if (!version->script_cache_map()->size()) {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     // Add a dummy ResourceRecord for the main script to the script cache map of
     // the ServiceWorkerVersion.
-    records.push_back(WriteToDiskCacheAsync(
-        context()->storage(), version->script_url(),
-        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
-        "I'm a meta data", std::move(callback)));
-    version->script_cache_map()->SetResources(records);
+    WriteToDiskCacheAsync(
+        context()->storage(), version->script_url(), {} /* headers */,
+        "I'm a body", "I'm a meta data",
+        base::BindOnce(
+            [](scoped_refptr<ServiceWorkerVersion> version,
+               base::OnceClosure callback,
+               storage::mojom::ServiceWorkerResourceRecordPtr record) {
+              std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+                  records;
+              records.push_back(std::move(record));
+              version->script_cache_map()->SetResources(records);
+
+              std::move(callback).Run();
+            },
+            version, std::move(callback)));
+    return;
   }
-  if (!version->GetMainScriptHttpResponseInfo())
-    version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
   // Call |callback| if |version| already has ResourceRecords.
   if (!callback.is_null())
     std::move(callback).Run();

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "net/socket/stream_socket.h"
@@ -110,7 +109,8 @@ void ControlConnection::SetStreamCountCallback(StreamCountCallback callback) {
   stream_count_callback_ = std::move(callback);
   if (socket_) {
     Generic message;
-    message.mutable_request_stream_count()->set_subscribe(!callback.is_null());
+    message.mutable_request_stream_count()->set_subscribe(
+        !stream_count_callback_.is_null());
     socket_->SendProto(message);
   }
 }

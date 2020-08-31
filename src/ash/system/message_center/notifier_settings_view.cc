@@ -17,10 +17,12 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"
@@ -48,7 +50,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -95,9 +96,15 @@ const int kQuietModeViewSpacing = 18;
 constexpr gfx::Insets kHeaderViewPadding(4, 0);
 constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
-constexpr gfx::Insets kQuietModeTogglePadding(0, 14);
 constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 const int kLabelFontSizeDelta = 1;
+
+void LogUserQuietModeEvent(const bool enabled) {
+  auto* logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    logger->LogQuietModeUkmEvent(enabled);
+  }
+}
 
 // NotifierButtonWrapperView ---------------------------------------------------
 
@@ -241,9 +248,8 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
-    const SkColor text_color =
-        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-            ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+    const SkColor text_color = AshColorProvider::Get()->GetContentLayerColor(
+        ContentLayerType::kTextPrimary, AshColorMode::kDark);
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
@@ -278,6 +284,21 @@ class EmptyNotifierView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(EmptyNotifierView);
 };
 
+class NotifierViewCheckbox : public views::Checkbox {
+ public:
+  using views::Checkbox::Checkbox;
+
+ private:
+  // views::Checkbox:
+  SkColor GetIconImageColor(int icon_state) const override {
+    if (icon_state & IconState::CHECKED) {
+      return AshColorProvider::Get()->GetContentLayerColor(
+          ContentLayerType::kProminentIconButton, AshColorMode::kDark);
+    }
+    return views::Checkbox::GetIconImageColor(icon_state);
+  }
+};
+
 }  // namespace
 
 // NotifierSettingsView::NotifierButton ---------------------------------------
@@ -290,12 +311,11 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     : views::Button(listener), notifier_id_(notifier.notifier_id) {
   auto icon_view = std::make_unique<views::ImageView>();
   auto name_view = std::make_unique<views::Label>(notifier.name);
-  auto checkbox =
-      std::make_unique<views::Checkbox>(base::string16(), this /* listener */);
+  auto checkbox = std::make_unique<NotifierViewCheckbox>(base::string16(),
+                                                         this /* listener */);
   name_view->SetAutoColorReadabilityEnabled(false);
-  name_view->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
+  name_view->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark));
   name_view->SetSubpixelRenderingEnabled(false);
   // "Roboto-Regular, 13sp" is specified in the mock.
   name_view->SetFontList(
@@ -377,18 +397,18 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   ColumnSet* cs = layout->AddColumnSet(0);
   // Add a column for the checkbox.
   cs->AddPaddingColumn(0, kInnateCheckboxRightPadding);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                kComputedCheckboxSize, 0);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                GridLayout::ColumnSize::kFixed, kComputedCheckboxSize, 0);
   cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
 
   // Add a column for the icon.
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                kEntryIconSize, 0);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                GridLayout::ColumnSize::kFixed, kEntryIconSize, 0);
   cs->AddPaddingColumn(0, kSmallerInternalHorizontalSpacing);
 
   // Add a column for the name.
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+                GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Add a padding column which contains expandable blank space.
   cs->AddPaddingColumn(1, 0);
@@ -404,8 +424,8 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
         kSystemMenuBusinessIcon, kEntryIconSize,
         AshColorProvider::Get()->GetContentLayerColor(
             ContentLayerType::kIconPrimary, AshColorMode::kDark)));
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                  kEntryIconSize, 0);
+    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                  GridLayout::ColumnSize::kFixed, kEntryIconSize, 0);
     layout->AddView(std::move(policy_enforced_icon));
   }
 
@@ -439,9 +459,8 @@ NotifierSettingsView::NotifierSettingsView() {
   auto quiet_mode_label =
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
-  const SkColor text_color =
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+  const SkColor text_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark);
   quiet_mode_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // "Roboto-Regular, 13sp" is specified in the mock.
   quiet_mode_label->SetFontList(
@@ -454,11 +473,8 @@ NotifierSettingsView::NotifierSettingsView() {
       quiet_mode_view->AddChildView(std::move(quiet_mode_label));
   quiet_mode_layout->SetFlexForView(quiet_mode_label_ptr, 1);
 
-  auto quiet_mode_toggle = std::make_unique<views::ToggleButton>(this);
-  quiet_mode_toggle->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
-  quiet_mode_toggle->SetBorder(
-      views::CreateEmptyBorder(kQuietModeTogglePadding));
+  views::ToggleButton* quiet_mode_toggle = TrayPopupUtils::CreateToggleButton(
+      this, IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
   quiet_mode_toggle->EnableCanvasFlippingForRTLUI(true);
   quiet_mode_toggle_ =
       quiet_mode_view->AddChildView(std::move(quiet_mode_toggle));
@@ -481,7 +497,7 @@ NotifierSettingsView::NotifierSettingsView() {
   header_view_ = AddChildView(std::move(header_view));
 
   auto scroller = std::make_unique<views::ScrollView>();
-  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller->SetBackgroundColor(base::nullopt);
   scroll_bar_ = scroller->SetVerticalScrollBar(
       std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
   scroller->SetDrawOverflowIndicator(false);
@@ -628,6 +644,7 @@ bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   if (sender == quiet_mode_toggle_) {
+    LogUserQuietModeEvent(quiet_mode_toggle_->GetIsOn());
     MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->GetIsOn());
     return;
   }

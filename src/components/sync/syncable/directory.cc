@@ -112,7 +112,7 @@ Directory::Kernel::~Kernel() {}
 Directory::Directory(
     std::unique_ptr<DirectoryBackingStore> store,
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function,
+    const base::RepeatingClosure& report_unrecoverable_error_function,
     NigoriHandler* nigori_handler)
     : store_(std::move(store)),
       unrecoverable_error_handler_(unrecoverable_error_handler),
@@ -202,7 +202,7 @@ DirOpenResult Directory::OpenImpl(
   // Now that we've successfully opened the store, install an error handler to
   // deal with catastrophic errors that may occur later on. Use a weak pointer
   // because we cannot guarantee that this Directory will outlive the Closure.
-  store_->SetCatastrophicErrorHandler(base::Bind(
+  store_->SetCatastrophicErrorHandler(base::BindRepeating(
       &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
   return result;
@@ -1001,7 +1001,7 @@ void Directory::MarkInitialSyncEndedForType(BaseWriteTransaction* trans,
   }
 }
 
-std::string Directory::legacy_store_birthday() const {
+std::string Directory::legacy_store_birthday_for_uma() const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.legacy_store_birthday;
 }
@@ -1023,16 +1023,10 @@ void Directory::set_legacy_bag_of_chips(const string& bag_of_chips) {
 }
 
 const string& Directory::cache_guid() const {
-  DCHECK(!cache_guid_.empty()) << this;
-  return cache_guid_;
+  return store_->cache_guid();
 }
 
-void Directory::set_cache_guid(const std::string& cache_guid) {
-  DCHECK(!cache_guid.empty());
-  cache_guid_ = cache_guid;
-}
-
-string Directory::legacy_cache_guid() const {
+string Directory::legacy_cache_guid_for_uma() const {
   // No need to lock since nothing ever writes to it after load.
   return kernel_->legacy_cache_guid;
 }

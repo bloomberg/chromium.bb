@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/ui_devtools/buildflags.h"
@@ -38,6 +39,10 @@
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom.h"
+#endif
 
 namespace gfx {
 struct FontRenderParams;
@@ -65,6 +70,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         const gpu::GpuExtraInfo& gpu_extra_info) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
+    virtual void MaybeShutdownGpuProcess() = 0;
+#if defined(OS_WIN)
+    virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
+#endif
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
                                        gpu::DomainGuilt guilt) = 0;
     virtual void DisableGpuCompositing() = 0;
@@ -85,10 +94,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
 #if defined(USE_OZONE)
     virtual void TerminateGpuProcess(const std::string& message) = 0;
-
-    // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
-    // is removed.
-    virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
 #endif
 
    protected:
@@ -115,6 +120,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
     // Task runner corresponding to the main thread.
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner;
+
+    // Whether this GPU process is used for GPU info collection only.
+    bool info_collection_gpu_process = false;
   };
 
   enum class EstablishChannelStatus {
@@ -175,6 +183,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   mojom::GpuService* gpu_service();
 
+#if defined(OS_WIN)
+  mojom::InfoCollectionGpuService* info_collection_gpu_service();
+#endif
+
   bool wake_up_gpu_before_drawing() const {
     return wake_up_gpu_before_drawing_;
   }
@@ -197,6 +209,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   void OnChannelEstablished(int client_id,
                             mojo::ScopedMessagePipeHandle channel_handle);
+  void MaybeShutdownGpuProcess();
 
   // mojom::GpuHost:
   void DidInitialize(
@@ -211,11 +224,13 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void DidCreateOffscreenContext(const GURL& url) override;
   void DidDestroyOffscreenContext(const GURL& url) override;
   void DidDestroyChannel(int32_t client_id) override;
+  void DidDestroyAllChannels() override;
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
 #if defined(OS_WIN)
+  void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
 #endif
@@ -234,6 +249,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner_;
 
   mojo::Remote<mojom::GpuService> gpu_service_remote_;
+#if defined(OS_WIN)
+  mojo::Remote<mojom::InfoCollectionGpuService>
+      info_collection_gpu_service_remote_;
+#endif
   mojo::Receiver<mojom::GpuHost> gpu_host_receiver_{this};
   gpu::GpuProcessHostActivityFlags activity_flags_;
 
@@ -261,6 +280,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // These are the channel requests that we have already sent to the GPU
   // service, but haven't heard back about yet.
   base::queue<EstablishChannelCallback> channel_requests_;
+
+  base::OneShotTimer shutdown_timeout_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -13,18 +13,20 @@ class Profile;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
-class PendingAppManager;
-class InstallManager;
-class InstallFinalizer;
+class AppIconManager;
 class AppRegistrar;
 class AppRegistryController;
-class FileHandlerManager;
-class AppIconManager;
 class AppShortcutManager;
-class WebAppPolicyManager;
+class FileHandlerManager;
+class InstallFinalizer;
+class InstallManager;
 class ManifestUpdateManager;
+class PendingAppManager;
+class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
+class WebAppPolicyManager;
 class WebAppUiManager;
+class SystemWebAppManager;
 
 class WebAppProviderBase : public KeyedService {
  public:
@@ -60,6 +62,8 @@ class WebAppProviderBase : public KeyedService {
   virtual AppIconManager& icon_manager() = 0;
 
   virtual AppShortcutManager& shortcut_manager() = 0;
+
+  virtual SystemWebAppManager& system_web_app_manager() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

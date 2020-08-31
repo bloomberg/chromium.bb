@@ -45,7 +45,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -196,12 +195,6 @@ class ConfigParserTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<network::SimpleURLLoader> CreateFakeURLLoader(
-      const GURL& url,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status);
-
   MOCK_METHOD0(Callback, void(void));
 
   content::BrowserTaskEnvironment task_environment_;

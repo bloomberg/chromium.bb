@@ -36,7 +36,7 @@ SVGClipPathElement::SVGClipPathElement(Document& document)
   AddToPropertyMap(clip_path_units_);
 }
 
-void SVGClipPathElement::Trace(blink::Visitor* visitor) {
+void SVGClipPathElement::Trace(Visitor* visitor) {
   visitor->Trace(clip_path_units_);
   SVGGraphicsElement::Trace(visitor);
 }
@@ -58,7 +58,7 @@ void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGClipPathElement::ChildrenChanged(const ChildrenChange& change) {
   SVGGraphicsElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

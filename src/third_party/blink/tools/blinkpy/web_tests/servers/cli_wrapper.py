@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """A utility module for making standalone scripts to start servers.
 
 Scripts in tools/ can use this module to start servers that are normally used
@@ -34,10 +33,16 @@ for web tests, outside of the web test runner.
 
 import logging
 import optparse
+import os
+import signal
 
 from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.port.factory import configuration_options
+from blinkpy.web_tests.port.factory import python_server_options
+from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
+
+_log = logging.getLogger(__name__)
 
 
 class RawTextHelpFormatter(optparse.IndentedHelpFormatter):
@@ -45,34 +50,62 @@ class RawTextHelpFormatter(optparse.IndentedHelpFormatter):
         return description
 
 
-def main(server_constructor, input_fn=None, argv=None, description=None, **kwargs):
-    input_fn = input_fn or raw_input
+def parse_python_server_options(argv=None):
+    parse = optparse.OptionParser()
+    for opt in python_server_options():
+        parse.add_option(opt)
+    option, args = parse.parse_args(argv)
+    return option, args
 
-    parser = optparse.OptionParser(description=description, formatter=RawTextHelpFormatter())
-    parser.add_option('--output-dir', type=str, default=None,
-                      help='output directory, for log files etc.')
-    parser.add_option('-v', '--verbose', action='store_true',
-                      help='print more information, including port numbers')
+
+def main(server_constructor,
+         sleep_fn=None,
+         argv=None,
+         description=None,
+         **kwargs):
+    host = Host()
+    # Signals will interrupt sleep, so we can use a long duration.
+    sleep_fn = sleep_fn or (lambda: host.sleep(10))
+
+    parser = optparse.OptionParser(
+        description=description, formatter=RawTextHelpFormatter())
+    parser.add_option(
+        '--output-dir',
+        type=str,
+        default=None,
+        help='output directory, for log files etc.')
+    parser.add_option(
+        '-v', '--verbose', action='store_true', help='print debug logs')
     for opt in configuration_options():
         parser.add_option(opt)
     options, _ = parser.parse_args(argv)
 
-    configure_logging(logging_level=logging.DEBUG if options.verbose else logging.INFO,
-                      include_time=options.verbose)
+    configure_logging(
+        logging_level=logging.DEBUG if options.verbose else logging.INFO,
+        include_time=options.verbose)
 
-    host = Host()
     port_obj = host.port_factory.get(options=options)
     if not options.output_dir:
-        options.output_dir = port_obj.default_results_directory()
+        options.output_dir = host.filesystem.join(
+            port_obj.default_results_directory(), ARTIFACTS_SUB_DIR)
 
     # Create the output directory if it doesn't already exist.
-    port_obj.host.filesystem.maybe_make_directory(options.output_dir)
+    host.filesystem.maybe_make_directory(options.output_dir)
+
+    def handler(signum, _):
+        _log.debug('Received signal %d', signum)
+        raise SystemExit
+
+    signal.signal(signal.SIGINT, handler)
+    signal.signal(signal.SIGTERM, handler)
 
     server = server_constructor(port_obj, options.output_dir, **kwargs)
     server.start()
-    try:
-        _ = input_fn('Hit any key to stop the server and exit.')
-    except (KeyboardInterrupt, EOFError):
-        pass
 
-    server.stop()
+    print 'Press Ctrl-C or `kill {}` to stop the server'.format(os.getpid())
+    try:
+        while True:
+            sleep_fn()
+    except (SystemExit, KeyboardInterrupt):
+        _log.info('Exiting...')
+        server.stop()

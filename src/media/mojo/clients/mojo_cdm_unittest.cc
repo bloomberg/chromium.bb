@@ -92,14 +92,13 @@ class MojoCdmTest : public ::testing::Test {
       if (expected_result == CONNECTION_ERROR_DURING) {
         // Create() will be successful, so provide a callback that will break
         // the connection before returning the CDM.
-        cdm_factory_.SetBeforeCreationCB(base::Bind(
+        cdm_factory_.SetBeforeCreationCB(base::BindRepeating(
             &MojoCdmTest::ForceConnectionError, base::Unretained(this)));
       }
     }
 
     MojoCdm::Create(key_system, url::Origin::Create(GURL(kTestSecurityOrigin)),
                     CdmConfig(), cdm_receiver_.BindNewPipeAndPassRemote(),
-                    nullptr,
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionClosed,
@@ -108,8 +107,8 @@ class MojoCdmTest : public ::testing::Test {
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
                                base::Unretained(&cdm_client_)),
-                    base::Bind(&MojoCdmTest::OnCdmCreated,
-                               base::Unretained(this), expected_result));
+                    base::BindOnce(&MojoCdmTest::OnCdmCreated,
+                                   base::Unretained(this), expected_result));
     base::RunLoop().RunUntilIdle();
   }
 

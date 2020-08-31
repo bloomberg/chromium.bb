@@ -111,8 +111,8 @@ class PeerConnectionWrapperForDataChannelTest : public PeerConnectionWrapper {
     sctp_transport_factory_ = sctp_transport_factory;
   }
 
-  absl::optional<std::string> sctp_content_name() {
-    return GetInternalPeerConnection()->sctp_content_name();
+  absl::optional<std::string> sctp_mid() {
+    return GetInternalPeerConnection()->sctp_mid();
   }
 
   absl::optional<std::string> sctp_transport_name() {
@@ -212,6 +212,13 @@ class PeerConnectionDataChannelTest
       : PeerConnectionDataChannelBaseTest(GetParam()) {}
 };
 
+class PeerConnectionDataChannelUnifiedPlanTest
+    : public PeerConnectionDataChannelBaseTest {
+ protected:
+  PeerConnectionDataChannelUnifiedPlanTest()
+      : PeerConnectionDataChannelBaseTest(SdpSemantics::kUnifiedPlan) {}
+};
+
 TEST_P(PeerConnectionDataChannelTest,
        NoSctpTransportCreatedIfRtpDataChannelEnabled) {
   RTCConfiguration config;
@@ -248,14 +255,14 @@ TEST_P(PeerConnectionDataChannelTest, InternalSctpTransportDeletedOnTeardown) {
             nullptr);
 }
 
-// Test that sctp_content_name/sctp_transport_name (used for stats) are correct
+// Test that sctp_mid/sctp_transport_name (used for stats) are correct
 // before and after BUNDLE is negotiated.
 TEST_P(PeerConnectionDataChannelTest, SctpContentAndTransportNameSetCorrectly) {
   auto caller = CreatePeerConnection();
   auto callee = CreatePeerConnection();
 
   // Initially these fields should be empty.
-  EXPECT_FALSE(caller->sctp_content_name());
+  EXPECT_FALSE(caller->sctp_mid());
   EXPECT_FALSE(caller->sctp_transport_name());
 
   // Create offer with audio/video/data.
@@ -278,8 +285,8 @@ TEST_P(PeerConnectionDataChannelTest, SctpContentAndTransportNameSetCorrectly) {
       caller->SetLocalDescription(CloneSessionDescription(offer.get())));
   ASSERT_TRUE(callee->SetRemoteDescription(std::move(offer)));
 
-  ASSERT_TRUE(caller->sctp_content_name());
-  EXPECT_EQ(data_mid, *caller->sctp_content_name());
+  ASSERT_TRUE(caller->sctp_mid());
+  EXPECT_EQ(data_mid, *caller->sctp_mid());
   ASSERT_TRUE(caller->sctp_transport_name());
   EXPECT_EQ(data_mid, *caller->sctp_transport_name());
 
@@ -290,8 +297,8 @@ TEST_P(PeerConnectionDataChannelTest, SctpContentAndTransportNameSetCorrectly) {
   ASSERT_TRUE(
       caller->SetRemoteDescription(callee->CreateAnswerAndSetAsLocal()));
 
-  ASSERT_TRUE(caller->sctp_content_name());
-  EXPECT_EQ(data_mid, *caller->sctp_content_name());
+  ASSERT_TRUE(caller->sctp_mid());
+  EXPECT_EQ(data_mid, *caller->sctp_mid());
   ASSERT_TRUE(caller->sctp_transport_name());
   EXPECT_EQ(audio_mid, *caller->sctp_transport_name());
 }
@@ -410,5 +417,29 @@ INSTANTIATE_TEST_SUITE_P(PeerConnectionDataChannelTest,
                          PeerConnectionDataChannelTest,
                          Values(SdpSemantics::kPlanB,
                                 SdpSemantics::kUnifiedPlan));
+
+TEST_F(PeerConnectionDataChannelUnifiedPlanTest,
+       ReOfferAfterPeerRejectsDataChannel) {
+  auto caller = CreatePeerConnectionWithDataChannel();
+  PeerConnectionFactoryInterface::Options options;
+  options.disable_sctp_data_channels = true;
+  auto callee = CreatePeerConnection(RTCConfiguration(), options);
+
+  ASSERT_TRUE(caller->ExchangeOfferAnswerWith(callee.get()));
+
+  auto offer = caller->CreateOffer();
+  ASSERT_TRUE(offer);
+  const auto& contents = offer->description()->contents();
+  ASSERT_EQ(1u, contents.size());
+  EXPECT_TRUE(contents[0].rejected);
+
+  ASSERT_TRUE(
+      caller->SetLocalDescription(CloneSessionDescription(offer.get())));
+  ASSERT_TRUE(callee->SetRemoteDescription(std::move(offer)));
+
+  auto answer = callee->CreateAnswerAndSetAsLocal();
+  ASSERT_TRUE(answer);
+  EXPECT_TRUE(caller->SetRemoteDescription(std::move(answer)));
+}
 
 }  // namespace webrtc

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -138,8 +139,8 @@ TEST_F(ExternalCacheImplTest, Basic) {
   base::FilePath cache_dir(CreateCacheDir(false));
   ExternalCacheImpl external_cache(
       cache_dir, url_loader_factory(),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-      this, true, false);
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}), this,
+      true, false);
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
@@ -183,11 +184,13 @@ TEST_F(ExternalCacheImplTest, Basic) {
   base::FilePath temp_dir(CreateTempDir());
   base::FilePath temp_file2 = temp_dir.Append("b.crx");
   CreateFile(temp_file2);
+  extensions::CRXFileInfo crx_info(temp_file2,
+                                   extensions::GetTestVerifierFormat());
+  crx_info.extension_id = kTestExtensionId2;
+  crx_info.expected_version = "2";
   external_cache.OnExtensionDownloadFinished(
-      extensions::CRXFileInfo(kTestExtensionId2,
-                              extensions::GetTestVerifierFormat(), temp_file2),
-      true, GURL(), "2", extensions::ExtensionDownloaderDelegate::PingResult(),
-      std::set<int>(),
+      crx_info, true, GURL(),
+      extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
       extensions::ExtensionDownloaderDelegate::InstallCallback());
 
   content::RunAllTasksUntilIdle();
@@ -210,12 +213,16 @@ TEST_F(ExternalCacheImplTest, Basic) {
   // Update not from Webstore.
   base::FilePath temp_file4 = temp_dir.Append("d.crx");
   CreateFile(temp_file4);
-  external_cache.OnExtensionDownloadFinished(
-      extensions::CRXFileInfo(kTestExtensionId4,
-                              extensions::GetTestVerifierFormat(), temp_file4),
-      true, GURL(), "4", extensions::ExtensionDownloaderDelegate::PingResult(),
-      std::set<int>(),
-      extensions::ExtensionDownloaderDelegate::InstallCallback());
+  {
+    extensions::CRXFileInfo crx_info(temp_file4,
+                                     extensions::GetTestVerifierFormat());
+    crx_info.extension_id = kTestExtensionId4;
+    crx_info.expected_version = "4";
+    external_cache.OnExtensionDownloadFinished(
+        crx_info, true, GURL(),
+        extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
+        extensions::ExtensionDownloaderDelegate::InstallCallback());
+  }
 
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(provided_prefs()->size(), 4ul);
@@ -260,8 +267,8 @@ TEST_F(ExternalCacheImplTest, PreserveInstalled) {
   base::FilePath cache_dir(CreateCacheDir(false));
   ExternalCacheImpl external_cache(
       cache_dir, url_loader_factory(),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-      this, true, false);
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}), this,
+      true, false);
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));

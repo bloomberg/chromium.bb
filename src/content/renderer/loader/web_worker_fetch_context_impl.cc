@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_constants_internal.h"
@@ -442,12 +444,12 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
                                "1");
   }
 
-  auto extra_data = std::make_unique<RequestExtraData>();
+  auto extra_data = base::MakeRefCounted<RequestExtraData>();
   extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
   if (throttle_provider_) {
-    extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
+    extra_data->set_url_loader_throttles(
+        throttle_provider_->CreateThrottles(ancestor_frame_id_, request));
   }
   if (response_override_) {
     using RequestContextType = blink::mojom::RequestContextType;
@@ -464,8 +466,8 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     request.SetUrl(g_rewrite_url(request.Url().GetString().Utf8(), false));
 
   if (!renderer_preferences_.enable_referrers) {
-    request.SetHttpReferrer(blink::WebString(),
-                            network::mojom::ReferrerPolicy::kNever);
+    request.SetReferrerString(blink::WebString());
+    request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
   }
 }
 
@@ -482,7 +484,7 @@ bool WebWorkerFetchContextImpl::IsOnSubframe() const {
   return is_on_sub_frame_;
 }
 
-blink::WebURL WebWorkerFetchContextImpl::SiteForCookies() const {
+net::SiteForCookies WebWorkerFetchContextImpl::SiteForCookies() const {
   return site_for_cookies_;
 }
 
@@ -543,6 +545,11 @@ WebWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   return receiver.PassPipe();
 }
 
+void WebWorkerFetchContextImpl::SetIsOfflineMode(bool is_offline_mode) {
+  // Worker doesn't support offline mode. There should be no callers.
+  NOTREACHED();
+}
+
 void WebWorkerFetchContextImpl::set_controller_service_worker_mode(
     blink::mojom::ControllerServiceWorkerMode mode) {
   controller_service_worker_mode_ = mode;
@@ -558,17 +565,13 @@ void WebWorkerFetchContextImpl::set_frame_request_blocker(
 }
 
 void WebWorkerFetchContextImpl::set_site_for_cookies(
-    const blink::WebURL& site_for_cookies) {
+    const net::SiteForCookies& site_for_cookies) {
   site_for_cookies_ = site_for_cookies;
 }
 
 void WebWorkerFetchContextImpl::set_top_frame_origin(
     const blink::WebSecurityOrigin& top_frame_origin) {
   top_frame_origin_ = top_frame_origin;
-}
-
-void WebWorkerFetchContextImpl::set_origin_url(const GURL& origin_url) {
-  origin_url_ = origin_url;
 }
 
 void WebWorkerFetchContextImpl::set_client_id(const std::string& client_id) {
@@ -621,6 +624,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;
+  new_context->site_for_cookies_ = site_for_cookies_;
   new_context->top_frame_origin_ = top_frame_origin_;
   child_preference_watchers_.Add(std::move(preference_watcher));
   return new_context;
@@ -649,11 +653,8 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       service_worker_container_host.InitWithNewPipeAndPassReceiver());
   // To avoid potential dead-lock while synchronous loading, create the
   // SubresourceLoaderFactory on a background thread.
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  auto current_task_runner =
-      base::CreateSequencedTaskRunner({base::CurrentThread()});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -661,7 +662,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
           std::move(service_worker_container_host), client_id_,
           fallback_factory_->Clone(),
           service_worker_url_loader_factory.InitWithNewPipeAndPassReceiver(),
-          task_runner, std::move(current_task_runner),
+          task_runner, base::SequencedTaskRunnerHandle::Get(),
           base::BindRepeating(
               &WebWorkerFetchContextImpl::AddPendingWorkerTimingReceiver,
               weak_factory_.GetWeakPtr())));

@@ -4,6 +4,10 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -17,6 +21,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
@@ -24,8 +29,15 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/window_move_client.h"
+
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostPlatform*)
 
 namespace views {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostPlatform*,
+                             kHostForRootWindow,
+                             nullptr)
 
 namespace {
 
@@ -42,36 +54,43 @@ bool DetermineInactivity(ui::WindowShowState show_state) {
   return show_state == ui::SHOW_STATE_INACTIVE;
 }
 
+ui::PlatformWindowOpacity GetPlatformWindowOpacity(
+    Widget::InitParams::WindowOpacity opacity) {
+  switch (opacity) {
+    case Widget::InitParams::WindowOpacity::kInferred:
+      return ui::PlatformWindowOpacity::kInferOpacity;
+    case Widget::InitParams::WindowOpacity::kOpaque:
+      return ui::PlatformWindowOpacity::kOpaqueWindow;
+    case Widget::InitParams::WindowOpacity::kTranslucent:
+      return ui::PlatformWindowOpacity::kTranslucentWindow;
+  }
+  return ui::PlatformWindowOpacity::kOpaqueWindow;
+}
+
+ui::PlatformWindowType GetPlatformWindowType(
+    Widget::InitParams::Type window_type) {
+  switch (window_type) {
+    case Widget::InitParams::TYPE_WINDOW:
+      return ui::PlatformWindowType::kWindow;
+    case Widget::InitParams::TYPE_MENU:
+      return ui::PlatformWindowType::kMenu;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      return ui::PlatformWindowType::kTooltip;
+    case Widget::InitParams::TYPE_DRAG:
+      return ui::PlatformWindowType::kDrag;
+    case Widget::InitParams::TYPE_BUBBLE:
+      return ui::PlatformWindowType::kBubble;
+    default:
+      return ui::PlatformWindowType::kPopup;
+  }
+  NOTREACHED();
+  return ui::PlatformWindowType::kPopup;
+}
+
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties;
-
-  switch (params.type) {
-    case Widget::InitParams::TYPE_WINDOW:
-      properties.type = ui::PlatformWindowType::kWindow;
-      break;
-
-    case Widget::InitParams::TYPE_MENU:
-      properties.type = ui::PlatformWindowType::kMenu;
-      break;
-
-    case Widget::InitParams::TYPE_TOOLTIP:
-      properties.type = ui::PlatformWindowType::kTooltip;
-      break;
-
-    case Widget::InitParams::TYPE_DRAG:
-      properties.type = ui::PlatformWindowType::kDrag;
-      break;
-
-    case Widget::InitParams::TYPE_BUBBLE:
-      properties.type = ui::PlatformWindowType::kBubble;
-      break;
-
-    default:
-      properties.type = ui::PlatformWindowType::kPopup;
-      break;
-  }
-
+  properties.type = GetPlatformWindowType(params.type);
   properties.activatable =
       params.activatable == Widget::InitParams::ACTIVATABLE_YES;
   properties.force_show_in_taskbar = params.force_show_in_taskbar;
@@ -80,21 +99,10 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
   properties.remove_standard_frame = params.remove_standard_frame;
   properties.workspace = params.workspace;
+  properties.opacity = GetPlatformWindowOpacity(params.opacity);
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
-
-  switch (params.opacity) {
-    case Widget::InitParams::WindowOpacity::kInferred:
-      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
-      break;
-    case Widget::InitParams::WindowOpacity::kOpaque:
-      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
-      break;
-    case Widget::InitParams::WindowOpacity::kTranslucent:
-      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
-      break;
-  }
 
   return properties;
 }
@@ -108,12 +116,29 @@ DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura) {}
+      desktop_native_widget_aura_(desktop_native_widget_aura),
+      window_move_client_(this) {}
 
 DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
+  window()->ClearProperty(kHostForRootWindow);
   DCHECK(!platform_window()) << "The host must be closed before destroying it.";
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
+}
+
+// static
+aura::Window* DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
+    gfx::AcceleratedWidget widget) {
+  auto* host = DesktopWindowTreeHostPlatform::GetHostForWidget(widget);
+  return host ? host->GetContentWindow() : nullptr;
+}
+
+// static
+DesktopWindowTreeHostPlatform* DesktopWindowTreeHostPlatform::GetHostForWidget(
+    gfx::AcceleratedWidget widget) {
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
+  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
 }
 
 aura::Window* DesktopWindowTreeHostPlatform::GetContentWindow() {
@@ -160,6 +185,11 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  window()->SetProperty(kHostForRootWindow, this);
+  // This reroutes RunMoveLoop requests to the DesktopWindowTreeHostPlatform.
+  // The availability of this feature depends on a platform (PlatformWindow)
+  // that implements RunMoveLoop.
+  wm::SetWindowMoveClient(window(), &window_move_client_);
   platform_window()->SetUseNativeFrame(params.type ==
                                            Widget::InitParams::TYPE_WINDOW &&
                                        !params.remove_standard_frame);
@@ -215,7 +245,7 @@ void DesktopWindowTreeHostPlatform::Close() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&DesktopWindowTreeHostPlatform::CloseNow,
                                 close_widget_factory_.GetWeakPtr()));
-}  // namespace views
+}
 
 void DesktopWindowTreeHostPlatform::CloseNow() {
   if (!platform_window())
@@ -504,14 +534,16 @@ Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  auto* move_loop_handler = ui::GetWmMoveLoopHandler(*platform_window());
+  if (move_loop_handler && move_loop_handler->RunMoveLoop(drag_offset))
+    return Widget::MOVE_LOOP_SUCCESSFUL;
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopWindowTreeHostPlatform::EndMoveLoop() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  auto* move_loop_handler = ui::GetWmMoveLoopHandler(*platform_window());
+  if (move_loop_handler)
+    move_loop_handler->EndMoveLoop();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
@@ -560,7 +592,7 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
   DCHECK_EQ(fullscreen, IsFullscreen());
 
   if (IsFullscreen() == fullscreen)
-    Relayout();
+    ScheduleRelayout();
   // Else: the widget will be relaid out either when the window bounds change
   // or when |platform_window|'s fullscreen state changes.
 }
@@ -646,6 +678,7 @@ void DesktopWindowTreeHostPlatform::HideImpl() {
 }
 
 void DesktopWindowTreeHostPlatform::OnClosed() {
+  wm::SetWindowMoveClient(window(), nullptr);
   SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();
 }
@@ -673,7 +706,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is
   // synchronous.)
-  Relayout();
+  ScheduleRelayout();
 }
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
@@ -681,9 +714,12 @@ void DesktopWindowTreeHostPlatform::OnCloseRequest() {
 }
 
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
+  if (is_active_ == active)
+    return;
   is_active_ = active;
   aura::WindowTreeHostPlatform::OnActivationChanged(active);
   desktop_native_widget_aura_->HandleActivationChanged(active);
+  ScheduleRelayout();
 }
 
 base::Optional<gfx::Size>
@@ -716,7 +752,7 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-void DesktopWindowTreeHostPlatform::Relayout() {
+void DesktopWindowTreeHostPlatform::ScheduleRelayout() {
   Widget* widget = native_widget_delegate_->AsWidget();
   NonClientView* non_client_view = widget->non_client_view();
   // non_client_view may be NULL, especially during creation.

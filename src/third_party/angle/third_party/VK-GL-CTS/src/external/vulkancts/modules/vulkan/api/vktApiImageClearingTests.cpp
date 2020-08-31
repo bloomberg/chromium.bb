@@ -467,20 +467,29 @@ std::string extentToString (VkExtent3D extent, VkImageType imageType)
 	return (std::string("_") + de::toString(extent.width) + std::string("x") + de::toString(extent.height) + (extent.depth != 1 ? (std::string("x") + de::toString(extent.depth)) : ""));
 }
 
+enum SeparateDepthStencilLayoutMode
+{
+	SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE = 0,
+	SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH,
+	SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL,
+};
+
 struct TestParams
 {
-	bool			useSingleMipLevel;	//!< only mip level 0, otherwise up to maxMipLevels
-	VkImageType		imageType;
-	VkFormat		imageFormat;
-	VkImageTiling	imageTiling;
-	VkExtent3D		imageExtent;
-	deUint32        imageLayerCount;
-	LayerRange      imageViewLayerRange;
-	VkClearValue	initValue;
-	VkClearValue	clearValue[2];		//!< the second value is used with more than one mip map
-	LayerRange		clearLayerRange;
-	AllocationKind	allocationKind;
-	bool			isCube;
+	bool							useSingleMipLevel;	//!< only mip level 0, otherwise up to maxMipLevels
+	VkImageType						imageType;
+	VkFormat						imageFormat;
+	VkImageTiling					imageTiling;
+	VkExtent3D						imageExtent;
+	deUint32						imageLayerCount;
+	LayerRange						imageViewLayerRange;
+	VkClearValue					initValue;
+	VkClearValue					clearValue[2];		//!< the second value is used with more than one mip map
+	LayerRange						clearLayerRange;
+	AllocationKind					allocationKind;
+	bool							isCube;
+	SeparateDepthStencilLayoutMode	separateDepthStencilLayoutMode;
+	bool							isColorMultipleSubresourceRangeTest;
 };
 
 class ImageClearingTestInstance : public vkt::TestInstance
@@ -501,7 +510,7 @@ public:
 	void								submitCommandBuffer				(void) const;
 	void								beginRenderPass					(VkSubpassContents content, VkClearValue clearValue) const;
 
-	void								pipelineImageBarrier			(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout) const;
+	void								pipelineImageBarrier			(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectMask = 0u) const;
 	de::MovePtr<TextureLevelPyramid>	readImage						(VkImageAspectFlags aspectMask, deUint32 baseLayer) const;
 	tcu::TestStatus						verifyResultImage				(const std::string& successMessage, const UVec4& clearCoords = UVec4()) const;
 
@@ -544,8 +553,8 @@ protected:
 	Unique<VkImage>						m_image;
 	de::MovePtr<Allocation>				m_imageMemory;
 	Unique<VkImageView>					m_imageView;
-	Unique<VkRenderPass>				m_renderPass;
-	Unique<VkFramebuffer>				m_frameBuffer;
+	Move<VkRenderPass>					m_renderPass;
+	Move<VkFramebuffer>					m_frameBuffer;
 };
 
 ImageClearingTestInstance::ImageClearingTestInstance (Context& context, const TestParams& params)
@@ -580,11 +589,18 @@ ImageClearingTestInstance::ImageClearingTestInstance (Context& context, const Te
 												 m_imageAspectFlags,
 												 params.imageViewLayerRange) : vk::Move<VkImageView>())
 
-	, m_renderPass				(m_isAttachmentFormat ? createRenderPass(params.imageFormat) : vk::Move<vk::VkRenderPass>())
-	, m_frameBuffer				(m_isAttachmentFormat ? createFrameBuffer(*m_imageView, *m_renderPass, params.imageExtent.width, params.imageExtent.height, params.imageViewLayerRange.layerCount) : vk::Move<vk::VkFramebuffer>())
 {
 	if (m_params.allocationKind == ALLOCATION_KIND_DEDICATED)
-		context.requireDeviceExtension("VK_KHR_dedicated_allocation");
+		context.requireDeviceFunctionality("VK_KHR_dedicated_allocation");
+
+	if (m_params.separateDepthStencilLayoutMode != SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE)
+		context.requireDeviceFunctionality("VK_KHR_separate_depth_stencil_layouts");
+
+	if (m_isAttachmentFormat)
+	{
+		m_renderPass = createRenderPass(params.imageFormat);
+		m_frameBuffer = createFrameBuffer(*m_imageView, *m_renderPass, params.imageExtent.width, params.imageExtent.height, params.imageViewLayerRange.layerCount);
+	}
 }
 
 ImageClearingTestInstance::ViewType ImageClearingTestInstance::getViewType (deUint32 imageLayerCount) const
@@ -770,82 +786,186 @@ Move<VkImageView> ImageClearingTestInstance::createImageView (VkImage image, VkI
 
 Move<VkRenderPass> ImageClearingTestInstance::createRenderPass (VkFormat format) const
 {
-	VkImageLayout							imageLayout;
-
-	if (isDepthStencilFormat(format))
-		imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	else
-		imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	const VkAttachmentDescription			attachmentDesc			=
+	if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE)
 	{
-		0u,													// VkAttachmentDescriptionFlags		flags;
-		format,												// VkFormat							format;
-		VK_SAMPLE_COUNT_1_BIT,								// VkSampleCountFlagBits			samples;
-		VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				loadOp;
-		VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				storeOp;
-		VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				stencilLoadOp;
-		VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				stencilStoreOp;
-		imageLayout,										// VkImageLayout					initialLayout;
-		imageLayout,										// VkImageLayout					finalLayout;
-	};
+		VkImageLayout							imageLayout;
 
-	const VkAttachmentDescription			attachments[1]			=
-	{
-		attachmentDesc
-	};
+		if (isDepthStencilFormat(format))
+			imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		else
+			imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	const VkAttachmentReference				attachmentRef			=
-	{
-		0u,													// deUint32							attachment;
-		imageLayout,										// VkImageLayout					layout;
-	};
-
-	const VkAttachmentReference*			pColorAttachments		= DE_NULL;
-	const VkAttachmentReference*			pDepthStencilAttachment	= DE_NULL;
-	deUint32								colorAttachmentCount	= 1;
-
-	if (isDepthStencilFormat(format))
-	{
-		colorAttachmentCount	= 0;
-		pDepthStencilAttachment	= &attachmentRef;
-	}
-	else
-	{
-		colorAttachmentCount	= 1;
-		pColorAttachments		= &attachmentRef;
-	}
-
-	const VkSubpassDescription				subpassDesc[1]			=
-	{
+		const VkAttachmentDescription			attachmentDesc			=
 		{
+			0u,													// VkAttachmentDescriptionFlags		flags;
+			format,												// VkFormat							format;
+			VK_SAMPLE_COUNT_1_BIT,								// VkSampleCountFlagBits			samples;
+			VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				loadOp;
+			VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				storeOp;
+			VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				stencilLoadOp;
+			VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				stencilStoreOp;
+			imageLayout,										// VkImageLayout					initialLayout;
+			imageLayout,										// VkImageLayout					finalLayout;
+		};
+
+		const VkAttachmentDescription			attachments[1]			=
+		{
+			attachmentDesc
+		};
+
+		const VkAttachmentReference				attachmentRef			=
+		{
+			0u,													// deUint32							attachment;
+			imageLayout,										// VkImageLayout					layout;
+		};
+
+		const VkAttachmentReference*			pColorAttachments		= DE_NULL;
+		const VkAttachmentReference*			pDepthStencilAttachment	= DE_NULL;
+		deUint32								colorAttachmentCount	= 1;
+
+		if (isDepthStencilFormat(format))
+		{
+			colorAttachmentCount	= 0;
+			pDepthStencilAttachment	= &attachmentRef;
+		}
+		else
+		{
+			colorAttachmentCount	= 1;
+			pColorAttachments		= &attachmentRef;
+		}
+
+		const VkSubpassDescription				subpassDesc[1]			=
+		{
+			{
+				0u,												// VkSubpassDescriptionFlags		flags;
+				VK_PIPELINE_BIND_POINT_GRAPHICS,				// VkPipelineBindPoint				pipelineBindPoint;
+				0u,												// deUint32							inputAttachmentCount;
+				DE_NULL,										// const VkAttachmentReference*		pInputAttachments;
+				colorAttachmentCount,							// deUint32							colorAttachmentCount;
+				pColorAttachments,								// const VkAttachmentReference*		pColorAttachments;
+				DE_NULL,										// const VkAttachmentReference*		pResolveAttachments;
+				pDepthStencilAttachment,						// const VkAttachmentReference*		pDepthStencilAttachment;
+				0u,												// deUint32							preserveAttachmentCount;
+				DE_NULL,										// const VkAttachmentReference*		pPreserveAttachments;
+			}
+		};
+
+		const VkRenderPassCreateInfo			renderPassCreateInfo	=
+		{
+			VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,			// VkStructureType					sType;
+			DE_NULL,											// const void*						pNext;
+			0u,													// VkRenderPassCreateFlags			flags;
+			1u,													// deUint32							attachmentCount;
+			attachments,										// const VkAttachmentDescription*	pAttachments;
+			1u,													// deUint32							subpassCount;
+			subpassDesc,										// const VkSubpassDescription*		pSubpasses;
+			0u,													// deUint32							dependencyCount;
+			DE_NULL,											// const VkSubpassDependency*		pDependencies;
+		};
+
+		return vk::createRenderPass(m_vkd, m_device, &renderPassCreateInfo, DE_NULL);
+	}
+	else
+	{
+		// Make sure VK_KHR_create_renderpass2 is supported. Due to InstanceFactory1 being used and the render pass being created in
+		// the instance constructor and not every time, this is the best moment to check.
+		m_context.requireDeviceFunctionality("VK_KHR_create_renderpass2");
+
+		VkImageLayout								initialLayout			= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		VkImageLayout								finalLayout				= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		VkAttachmentDescriptionStencilLayoutKHR		stencilLayouts			=
+		{
+			VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT_KHR,
+			DE_NULL,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		};
+
+		VkImageLayout								imageLayout;
+		VkAttachmentReferenceStencilLayoutKHR		stencilLayoutRef		=
+		{
+			VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT_KHR,
+			DE_NULL,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		};
+
+		if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH)
+		{
+			initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+			finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+			stencilLayouts.stencilInitialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			stencilLayouts.stencilFinalLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+			stencilLayoutRef.stencilLayout = VK_IMAGE_LAYOUT_GENERAL;
+		}
+		else
+		{
+			initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+			stencilLayouts.stencilInitialLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+			stencilLayouts.stencilFinalLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+			imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+			stencilLayoutRef.stencilLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+		}
+
+		const VkAttachmentDescription2KHR			attachmentDesc			=
+		{
+			VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR,		// VkStructureType					sType;
+			&stencilLayouts,									// const void*						pNext;
+			0u,													// VkAttachmentDescriptionFlags		flags;
+			format,												// VkFormat							format;
+			VK_SAMPLE_COUNT_1_BIT,								// VkSampleCountFlagBits			samples;
+			VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				loadOp;
+			VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				storeOp;
+			VK_ATTACHMENT_LOAD_OP_CLEAR,						// VkAttachmentLoadOp				stencilLoadOp;
+			VK_ATTACHMENT_STORE_OP_STORE,						// VkAttachmentStoreOp				stencilStoreOp;
+			initialLayout,										// VkImageLayout					initialLayout;
+			finalLayout,										// VkImageLayout					finalLayout;
+		};
+
+		const VkAttachmentReference2KHR				attachmentRef			=
+		{
+			VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR,		// VkStructureType		sType;
+			&stencilLayoutRef,									// const void*			pNext;
+			0u,													// deUint32				attachment;
+			imageLayout,										// VkImageLayout		layout;
+			0u,													// VkImageAspectFlags	aspectMask;
+		};
+
+		const VkSubpassDescription2KHR				subpassDesc			=
+		{
+			VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR,	// VkStructureType					sType;
+			DE_NULL,										// const void*						pNext;
 			0u,												// VkSubpassDescriptionFlags		flags;
 			VK_PIPELINE_BIND_POINT_GRAPHICS,				// VkPipelineBindPoint				pipelineBindPoint;
+			0u,												// deUint32							viewMask;
 			0u,												// deUint32							inputAttachmentCount;
-			DE_NULL,										// const VkAttachmentReference*		pInputAttachments;
-			colorAttachmentCount,							// deUint32							colorAttachmentCount;
-			pColorAttachments,								// const VkAttachmentReference*		pColorAttachments;
-			DE_NULL,										// const VkAttachmentReference*		pResolveAttachments;
-			pDepthStencilAttachment,						// const VkAttachmentReference*		pDepthStencilAttachment;
+			DE_NULL,										// const VkAttachmentReference2KHR*	pInputAttachments;
+			0u,												// deUint32							colorAttachmentCount;
+			DE_NULL,										// const VkAttachmentReference2KHR*	pColorAttachments;
+			DE_NULL,										// const VkAttachmentReference2KHR*	pResolveAttachments;
+			&attachmentRef,									// const VkAttachmentReference2KHR*	pDepthStencilAttachment;
 			0u,												// deUint32							preserveAttachmentCount;
-			DE_NULL,										// const VkAttachmentReference*		pPreserveAttachments;
-		}
-	};
+			DE_NULL,										// const VkAttachmentReference2KHR*	pPreserveAttachments;
+		};
 
-	const VkRenderPassCreateInfo			renderPassCreateInfo	=
-	{
-		VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,			// VkStructureType					sType;
-		DE_NULL,											// const void*						pNext;
-		0u,													// VkRenderPassCreateFlags			flags;
-		1u,													// deUint32							attachmentCount;
-		attachments,										// const VkAttachmentDescription*	pAttachments;
-		1u,													// deUint32							subpassCount;
-		subpassDesc,										// const VkSubpassDescription*		pSubpasses;
-		0u,													// deUint32							dependencyCount;
-		DE_NULL,											// const VkSubpassDependency*		pDependencies;
-	};
+		const VkRenderPassCreateInfo2KHR			renderPassCreateInfo	=
+		{
+			VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR,	// VkStructureType					sType;
+			DE_NULL,											// const void*						pNext;
+			0u,													// VkRenderPassCreateFlags			flags;
+			1u,													// deUint32							attachmentCount;
+			&attachmentDesc,									// const VkAttachmentDescription*	pAttachments;
+			1u,													// deUint32							subpassCount;
+			&subpassDesc,										// const VkSubpassDescription*		pSubpasses;
+			0u,													// deUint32							dependencyCount;
+			DE_NULL,											// const VkSubpassDependency*		pDependencies;
+			0u,													// deUint32							correlatedViewMaskCount;
+			DE_NULL,											// const deUint32*					pCorrelatedViewMasks;
+		};
 
-	return vk::createRenderPass(m_vkd, m_device, &renderPassCreateInfo, DE_NULL);
+		return vk::createRenderPass2(m_vkd, m_device, &renderPassCreateInfo, DE_NULL);
+	}
 }
 
 Move<VkFramebuffer> ImageClearingTestInstance::createFrameBuffer (VkImageView imageView, VkRenderPass renderPass, deUint32 imageWidth, deUint32 imageHeight, deUint32 imageLayersCount) const
@@ -886,8 +1006,11 @@ void ImageClearingTestInstance::submitCommandBuffer (void) const
 	submitCommandsAndWait(m_vkd, m_device, m_queue, m_commandBuffer.get());
 }
 
-void ImageClearingTestInstance::pipelineImageBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout) const
+void ImageClearingTestInstance::pipelineImageBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectMask) const
 {
+	if (!aspectMask || m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE)
+		aspectMask = m_imageAspectFlags;
+
 	const VkImageMemoryBarrier		imageBarrier	=
 	{
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
@@ -900,7 +1023,7 @@ void ImageClearingTestInstance::pipelineImageBarrier(VkPipelineStageFlags srcSta
 		VK_QUEUE_FAMILY_IGNORED,					// deUint32					destQueueFamilyIndex;
 		*m_image,									// VkImage					image;
 		{
-			m_imageAspectFlags,							// VkImageAspectFlags	aspectMask;
+			aspectMask,									// VkImageAspectFlags	aspectMask;
 			0u,											// deUint32				baseMipLevel;
 			VK_REMAINING_MIP_LEVELS,					// deUint32				levelCount;
 			0u,											// deUint32				baseArrayLayer;
@@ -992,7 +1115,8 @@ de::MovePtr<TextureLevelPyramid> ImageClearingTestInstance::readImage (VkImageAs
 						 VK_ACCESS_TRANSFER_WRITE_BIT,
 						 VK_ACCESS_TRANSFER_READ_BIT,
 						 VK_IMAGE_LAYOUT_GENERAL,
-						 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+						 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						 aspectMask);
 
 	m_vkd.cmdCopyImageToBuffer(*m_commandBuffer, *m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, *buffer, static_cast<deUint32>(copyRegions.size()), &copyRegions[0]);
 	m_vkd.cmdPipelineBarrier(*m_commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &bufferBarrier, 0, (const VkImageMemoryBarrier*)DE_NULL);
@@ -1002,7 +1126,8 @@ de::MovePtr<TextureLevelPyramid> ImageClearingTestInstance::readImage (VkImageAs
 						 VK_ACCESS_TRANSFER_READ_BIT,
 						 VK_ACCESS_TRANSFER_READ_BIT,
 						 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						 VK_IMAGE_LAYOUT_GENERAL);
+						 VK_IMAGE_LAYOUT_GENERAL,
+						 aspectMask);
 
 	endCommandBuffer();
 	submitCommandBuffer();
@@ -1030,7 +1155,7 @@ tcu::TestStatus ImageClearingTestInstance::verifyResultImage (const std::string&
 {
 	DE_ASSERT((clearCoords == UVec4()) || m_params.imageExtent.depth == 1u);
 
-	if (getIsDepthFormat(m_params.imageFormat))
+	if (getIsDepthFormat(m_params.imageFormat) && m_params.separateDepthStencilLayoutMode != SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL)
 	{
 		DE_ASSERT(m_imageMipLevels == 1u);
 
@@ -1059,7 +1184,7 @@ tcu::TestStatus ImageClearingTestInstance::verifyResultImage (const std::string&
 		}
 	}
 
-	if (getIsStencilFormat(m_params.imageFormat))
+	if (getIsStencilFormat(m_params.imageFormat) && m_params.separateDepthStencilLayoutMode != SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH)
 	{
 		DE_ASSERT(m_imageMipLevels == 1u);
 
@@ -1098,7 +1223,7 @@ tcu::TestStatus ImageClearingTestInstance::verifyResultImage (const std::string&
 
 			for (deUint32 mipLevel = 0; mipLevel < m_imageMipLevels; ++mipLevel)
 			{
-				const int			clearColorNdx	= (mipLevel < m_thresholdMipLevel ? 0 : 1);
+				const int			clearColorNdx	= ((mipLevel < m_thresholdMipLevel || m_params.isColorMultipleSubresourceRangeTest) ? 0 : 1);
 				const VkExtent3D	extent			= getMipLevelExtent(m_params.imageExtent, mipLevel);
 
 				for (deUint32 z = 0; z < extent.depth;  ++z)
@@ -1134,10 +1259,10 @@ void ImageClearingTestInstance::beginRenderPass (VkSubpassContents content, VkCl
 class ClearColorImageTestInstance : public ImageClearingTestInstance
 {
 public:
-				ClearColorImageTestInstance	(Context& context, const TestParams& testParams, bool twoStep = false) : ImageClearingTestInstance (context, testParams), m_twoStep(twoStep) {}
-	TestStatus	iterate						(void);
+						ClearColorImageTestInstance	(Context& context, const TestParams& testParams, bool twoStep = false) : ImageClearingTestInstance (context, testParams), m_twoStep(twoStep) {}
+	virtual TestStatus	iterate						(void);
 protected:
-	bool		m_twoStep;
+	bool				m_twoStep;
 };
 
 class TwoStepClearColorImageTestInstance : public ClearColorImageTestInstance
@@ -1145,6 +1270,67 @@ class TwoStepClearColorImageTestInstance : public ClearColorImageTestInstance
 public:
 	TwoStepClearColorImageTestInstance (Context& context, const TestParams& testParams) : ClearColorImageTestInstance(context, testParams, true) {}
 };
+
+class ClearColorImageMultipleSubresourceRangeTestInstance : public ClearColorImageTestInstance
+{
+public:
+	ClearColorImageMultipleSubresourceRangeTestInstance	(Context& context, const TestParams& testParams) : ClearColorImageTestInstance(context, testParams, false) {}
+	virtual TestStatus	iterate			(void);
+};
+
+TestStatus ClearColorImageMultipleSubresourceRangeTestInstance::iterate(void)
+{
+	std::vector<VkImageSubresourceRange> subresourceRanges;
+
+	DE_ASSERT(m_imageMipLevels > 1u);
+
+	deUint32 mipLevel = 0u;
+	// Create a subresource range per mipmap level.
+	do {
+		subresourceRanges.push_back(makeImageSubresourceRange(m_imageAspectFlags, mipLevel++, 1u, m_params.clearLayerRange.baseArrayLayer, m_params.clearLayerRange.layerCount));
+	} while (mipLevel < m_imageMipLevels);
+
+	beginCommandBuffer(0);
+
+	pipelineImageBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,				// VkPipelineStageFlags		srcStageMask
+						 VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,			// VkPipelineStageFlags		dstStageMask
+						 0,												// VkAccessFlags			srcAccessMask
+						 (m_isAttachmentFormat
+							? VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+							: VK_ACCESS_TRANSFER_WRITE_BIT),			// VkAccessFlags			dstAccessMask
+						 VK_IMAGE_LAYOUT_UNDEFINED,						// VkImageLayout			oldLayout;
+						 (m_isAttachmentFormat
+							? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+							: VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));	// VkImageLayout			newLayout;
+
+	if (m_isAttachmentFormat)
+	{
+		beginRenderPass(VK_SUBPASS_CONTENTS_INLINE, m_params.initValue);
+		endRenderPass(m_vkd, *m_commandBuffer);
+
+		pipelineImageBarrier(VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,		// VkPipelineStageFlags		srcStageMask
+			VK_PIPELINE_STAGE_TRANSFER_BIT,								// VkPipelineStageFlags		dstStageMask
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,						// VkAccessFlags			srcAccessMask
+			VK_ACCESS_TRANSFER_WRITE_BIT,								// VkAccessFlags			dstAccessMask
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,					// VkImageLayout			oldLayout;
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);						// VkImageLayout			newLayout;
+	}
+
+	// Test clear color in all ranges
+	m_vkd.cmdClearColorImage(*m_commandBuffer, *m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &m_params.clearValue[0].color, static_cast<deUint32>(subresourceRanges.size()), subresourceRanges.data());
+
+	pipelineImageBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,				// VkPipelineStageFlags		srcStageMask
+						 VK_PIPELINE_STAGE_TRANSFER_BIT,				// VkPipelineStageFlags		dstStageMask
+						 VK_ACCESS_TRANSFER_WRITE_BIT,					// VkAccessFlags			srcAccessMask
+						 VK_ACCESS_TRANSFER_READ_BIT,					// VkAccessFlags			dstAccessMask
+						 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,			// VkImageLayout			oldLayout;
+						 VK_IMAGE_LAYOUT_GENERAL);						// VkImageLayout			newLayout;
+
+	endCommandBuffer();
+	submitCommandBuffer();
+
+	return verifyResultImage("cmdClearColorImage passed");
+}
 
 TestStatus ClearColorImageTestInstance::iterate (void)
 {
@@ -1214,10 +1400,10 @@ TestStatus ClearColorImageTestInstance::iterate (void)
 class ClearDepthStencilImageTestInstance : public ImageClearingTestInstance
 {
 public:
-				ClearDepthStencilImageTestInstance	(Context& context, const TestParams& testParams, bool twoStep = false) : ImageClearingTestInstance (context, testParams), m_twoStep(twoStep) {}
-	TestStatus	iterate								(void);
+						ClearDepthStencilImageTestInstance	(Context& context, const TestParams& testParams, bool twoStep = false) : ImageClearingTestInstance (context, testParams), m_twoStep(twoStep) {}
+	virtual TestStatus	iterate								(void);
 protected:
-	bool		m_twoStep;
+	bool				m_twoStep;
 };
 
 class TwoStepClearDepthStencilImageTestInstance : public ClearDepthStencilImageTestInstance
@@ -1226,10 +1412,27 @@ public:
 	TwoStepClearDepthStencilImageTestInstance (Context& context, const TestParams& testParams) : ClearDepthStencilImageTestInstance (context, testParams, true) { }
 };
 
-TestStatus ClearDepthStencilImageTestInstance::iterate (void)
+class ClearDepthStencilImageMultipleSubresourceRangeTestInstance : public ClearDepthStencilImageTestInstance
 {
-	const VkImageSubresourceRange subresourceRange	= makeImageSubresourceRange(m_imageAspectFlags, 0u, 1u,							m_params.clearLayerRange.baseArrayLayer, m_twoStep ? 1 : m_params.clearLayerRange.layerCount);
-	const VkImageSubresourceRange steptwoRange		= makeImageSubresourceRange(m_imageAspectFlags, 0u, VK_REMAINING_MIP_LEVELS,	m_params.clearLayerRange.baseArrayLayer, VK_REMAINING_ARRAY_LAYERS);
+public:
+	ClearDepthStencilImageMultipleSubresourceRangeTestInstance	(Context& context, const TestParams& testParams) :  ClearDepthStencilImageTestInstance(context, testParams, false) { }
+	virtual TestStatus	iterate					(void);
+};
+
+TestStatus ClearDepthStencilImageMultipleSubresourceRangeTestInstance::iterate (void)
+{
+	VkImageLayout		layout	= (m_isAttachmentFormat
+									?	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+									:	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	VkImageAspectFlags	aspectMask	= m_imageAspectFlags;
+
+	// Depth/Stencil formats only. No separate layout modes.
+	DE_ASSERT(m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE);
+
+	std::vector<VkImageSubresourceRange> subresourceRanges;
+
+    subresourceRanges.push_back(makeImageSubresourceRange(VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, m_params.clearLayerRange.baseArrayLayer, m_params.clearLayerRange.layerCount));
+    subresourceRanges.push_back(makeImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, m_params.clearLayerRange.baseArrayLayer, m_params.clearLayerRange.layerCount));
 
 	beginCommandBuffer(0);
 
@@ -1240,9 +1443,8 @@ TestStatus ClearDepthStencilImageTestInstance::iterate (void)
 							?	VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
 							:	VK_ACCESS_TRANSFER_WRITE_BIT),				// VkAccessFlags			dstAccessMask
 						 VK_IMAGE_LAYOUT_UNDEFINED,							// VkImageLayout			oldLayout;
-						 (m_isAttachmentFormat
-							?	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-							:	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));		// VkImageLayout			newLayout;
+						 layout,											// VkImageLayout			newLayout;
+						 aspectMask);										// VkImageAspectFlags		aspectMask;
 
 	if (m_isAttachmentFormat)
 	{
@@ -1253,8 +1455,71 @@ TestStatus ClearDepthStencilImageTestInstance::iterate (void)
 							 VK_PIPELINE_STAGE_TRANSFER_BIT,						// VkPipelineStageFlags		dstStageMask
 							 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,			// VkAccessFlags			srcAccessMask
 							 VK_ACCESS_TRANSFER_WRITE_BIT,							// VkAccessFlags			dstAccessMask
-							 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,		// VkImageLayout			oldLayout;
-							 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);					// VkImageLayout			newLayout;
+							 layout,												// VkImageLayout			oldLayout;
+							 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,					// VkImageLayout			newLayout;
+							 aspectMask);											// VkImageAspectFlags		aspectMask;
+	}
+
+	m_vkd.cmdClearDepthStencilImage(*m_commandBuffer, *m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &m_params.clearValue[0].depthStencil, static_cast<deUint32>(subresourceRanges.size()), subresourceRanges.data());
+
+	pipelineImageBarrier(VK_PIPELINE_STAGE_TRANSFER_BIT,					// VkPipelineStageFlags		srcStageMask
+						 VK_PIPELINE_STAGE_TRANSFER_BIT,					// VkPipelineStageFlags		dstStageMask
+						 VK_ACCESS_TRANSFER_WRITE_BIT,						// VkAccessFlags			srcAccessMask
+						 VK_ACCESS_TRANSFER_READ_BIT,						// VkAccessFlags			dstAccessMask
+						 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,				// VkImageLayout			oldLayout;
+						 VK_IMAGE_LAYOUT_GENERAL,							// VkImageLayout			newLayout;
+						 aspectMask);										// VkImageAspectFlags		aspectMask;
+
+	endCommandBuffer();
+	submitCommandBuffer();
+
+	return verifyResultImage("cmdClearDepthStencilImage passed");
+}
+
+TestStatus ClearDepthStencilImageTestInstance::iterate (void)
+{
+	VkImageLayout		layout	= (m_isAttachmentFormat
+									?	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+									:	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	VkImageAspectFlags	aspectMask	= m_imageAspectFlags;
+	if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH)
+	{
+		layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
+	else if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL)
+	{
+		layout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+		aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+
+	const VkImageSubresourceRange subresourceRange	= makeImageSubresourceRange(aspectMask, 0u, 1u,							m_params.clearLayerRange.baseArrayLayer, m_twoStep ? 1 : m_params.clearLayerRange.layerCount);
+	const VkImageSubresourceRange steptwoRange		= makeImageSubresourceRange(aspectMask, 0u, VK_REMAINING_MIP_LEVELS,	m_params.clearLayerRange.baseArrayLayer, VK_REMAINING_ARRAY_LAYERS);
+
+	beginCommandBuffer(0);
+
+	pipelineImageBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,					// VkPipelineStageFlags		srcStageMask
+						 VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,				// VkPipelineStageFlags		dstStageMask
+						 0,													// VkAccessFlags			srcAccessMask
+						 (m_isAttachmentFormat
+							?	VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+							:	VK_ACCESS_TRANSFER_WRITE_BIT),				// VkAccessFlags			dstAccessMask
+						 VK_IMAGE_LAYOUT_UNDEFINED,							// VkImageLayout			oldLayout;
+						 layout,											// VkImageLayout			newLayout;
+						 aspectMask);										// VkImageAspectFlags		aspectMask;
+
+	if (m_isAttachmentFormat)
+	{
+		beginRenderPass(VK_SUBPASS_CONTENTS_INLINE, m_params.initValue);
+		endRenderPass(m_vkd, *m_commandBuffer);
+
+		pipelineImageBarrier(VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,					// VkPipelineStageFlags		srcStageMask
+							 VK_PIPELINE_STAGE_TRANSFER_BIT,						// VkPipelineStageFlags		dstStageMask
+							 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,			// VkAccessFlags			srcAccessMask
+							 VK_ACCESS_TRANSFER_WRITE_BIT,							// VkAccessFlags			dstAccessMask
+							 layout,												// VkImageLayout			oldLayout;
+							 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,					// VkImageLayout			newLayout;
+							 aspectMask);											// VkImageAspectFlags		aspectMask;
 	}
 
 	m_vkd.cmdClearDepthStencilImage(*m_commandBuffer, *m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &m_params.clearValue[0].depthStencil, 1, &subresourceRange);
@@ -1267,7 +1532,8 @@ TestStatus ClearDepthStencilImageTestInstance::iterate (void)
 						 VK_ACCESS_TRANSFER_WRITE_BIT,						// VkAccessFlags			srcAccessMask
 						 VK_ACCESS_TRANSFER_READ_BIT,						// VkAccessFlags			dstAccessMask
 						 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,				// VkImageLayout			oldLayout;
-						 VK_IMAGE_LAYOUT_GENERAL);							// VkImageLayout			newLayout;
+						 VK_IMAGE_LAYOUT_GENERAL,							// VkImageLayout			newLayout;
+						 aspectMask);										// VkImageAspectFlags		aspectMask;
 
 	endCommandBuffer();
 	submitCommandBuffer();
@@ -1294,9 +1560,25 @@ public:
 
 	TestStatus iterate (void)
 	{
+		const bool			isDepthStencil		= isDepthStencilFormat(m_params.imageFormat);
+		const VkAccessFlags	accessMask			= (isDepthStencil ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT     : VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+		VkImageLayout		attachmentLayout	= (isDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		VkImageAspectFlags	aspectMask			= m_imageAspectFlags;
+
+		if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH)
+		{
+			attachmentLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+			aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
+		else if (m_params.separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL)
+		{
+			attachmentLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+			aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+
 		const VkClearAttachment clearAttachment =
 		{
-			m_imageAspectFlags,					// VkImageAspectFlags	aspectMask;
+			aspectMask,							// VkImageAspectFlags	aspectMask;
 			0u,									// deUint32				colorAttachment;
 			m_params.clearValue[0]				// VkClearValue			clearValue;
 		};
@@ -1352,10 +1634,6 @@ public:
 			clearRects.push_back(rects[1]);
 		}
 
-		const bool			isDepthStencil		= isDepthStencilFormat(m_params.imageFormat);
-		const VkAccessFlags	accessMask			= (isDepthStencil ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT     : VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-		const VkImageLayout	attachmentLayout	= (isDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
 		beginCommandBuffer(0);
 
 		pipelineImageBarrier(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,				// VkPipelineStageFlags		srcStageMask
@@ -1363,7 +1641,8 @@ public:
 							 0,												// VkAccessFlags			srcAccessMask
 							 accessMask,									// VkAccessFlags			dstAccessMask
 							 VK_IMAGE_LAYOUT_UNDEFINED,						// VkImageLayout			oldLayout;
-							 attachmentLayout);								// VkImageLayout			newLayout;
+							 attachmentLayout,								// VkImageLayout			newLayout;
+							 aspectMask);									// VkImageAspectFlags		aspectMask;
 
 		beginRenderPass(VK_SUBPASS_CONTENTS_INLINE, m_params.initValue);
 		m_vkd.cmdClearAttachments(*m_commandBuffer, 1, &clearAttachment, static_cast<deUint32>(clearRects.size()), &clearRects[0]);
@@ -1374,7 +1653,8 @@ public:
 							 accessMask,									// VkAccessFlags			srcAccessMask
 							 VK_ACCESS_TRANSFER_READ_BIT,					// VkAccessFlags			dstAccessMask
 							 attachmentLayout,								// VkImageLayout			oldLayout;
-							 VK_IMAGE_LAYOUT_GENERAL);						// VkImageLayout			newLayout;
+							 VK_IMAGE_LAYOUT_GENERAL,						// VkImageLayout			newLayout;
+							 aspectMask);									// VkImageAspectFlags		aspectMask;
 
 		endCommandBuffer();
 		submitCommandBuffer();
@@ -1787,32 +2067,47 @@ TestCaseGroup* createImageClearingTestsCommon (TestContext& testCtx, tcu::TestCa
 						for (size_t imageFormatIndex = 0; imageFormatIndex < numOfColorImageFormatsToTest; ++imageFormatIndex)
 						{
 							const VkFormat		format			= colorImageFormatsToTest[imageFormatIndex];
-							const std::string	testCaseName	= getFormatCaseName(format) + dimensionsString;
-							const TestParams	testParams		=
+							std::string	testCaseName	= getFormatCaseName(format) + dimensionsString;
+							TestParams	testParams		=
 							{
-								false,																// bool				useSingleMipLevel;
-								imageTypesToTest[imageTypeIndex],									// VkImageType		imageType;
-								format,																// VkFormat			imageFormat;
-								imageTilingsToTest[imageTilingIndex],								// VkImageTiling	imageTiling;
-								dimensions,															// VkExtent3D		imageExtent;
-								imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,		// deUint32         imageLayerCount;
+								false,																// bool								useSingleMipLevel;
+								imageTypesToTest[imageTypeIndex],									// VkImageType						imageType;
+								format,																// VkFormat							imageFormat;
+								imageTilingsToTest[imageTilingIndex],								// VkImageTiling					imageTiling;
+								dimensions,															// VkExtent3D						imageExtent;
+								imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,		// deUint32							imageLayerCount;
 								{
 									0u,
 									imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount
-								},																	// LayerRange		imageViewLayerRange;
-								makeClearColorValue(format, 0.2f, 0.1f, 0.7f, 0.8f),				// VkClearValue		initValue;
+								},																	// LayerRange						imageViewLayerRange;
+								makeClearColorValue(format, 0.2f, 0.1f, 0.7f, 0.8f),				// VkClearValue						initValue;
 								{
-									makeClearColorValue(format, 0.1f, 0.5f, 0.3f, 0.9f),				// VkClearValue		clearValue[0];
-									makeClearColorValue(format, 0.3f, 0.6f, 0.2f, 0.7f),				// VkClearValue		clearValue[1];
+									makeClearColorValue(format, 0.1f, 0.5f, 0.3f, 0.9f),				// VkClearValue						clearValue[0];
+									makeClearColorValue(format, 0.3f, 0.6f, 0.2f, 0.7f),				// VkClearValue						clearValue[1];
 								},
-								imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,		// LayerRange       clearLayerRange;
-								allocationKind,														// AllocationKind	allocationKind;
-								false																// bool				isCube;
+								imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,		// LayerRange						clearLayerRange;
+								allocationKind,														// AllocationKind					allocationKind;
+								false,																// bool								isCube;
+								SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE,							// SeparateDepthStencilLayoutMode	separateDepthStencilLayoutMode;
+								false,																// bool								isColorMultipleSubresourceRangeTest;
 							};
+
 							if (!imageLayerParamsToTest[imageLayerParamsIndex].twoStep)
+							{
 								imageLayersGroup->addChild(new InstanceFactory1<ClearColorImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Color Image", testParams));
+
+								// Removing linear images as the miplevels may be 1
+								if (imageTilingsToTest[imageTilingIndex] == VK_IMAGE_TILING_OPTIMAL)
+								{
+									testParams.isColorMultipleSubresourceRangeTest = true;
+									testCaseName += "_multiple_subresourcerange";
+									imageLayersGroup->addChild(new InstanceFactory1<ClearColorImageMultipleSubresourceRangeTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Color Image with two ranges", testParams));
+								}
+							}
 							else
+							{
 								imageLayersGroup->addChild(new InstanceFactory1<TwoStepClearColorImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Color Image", testParams));
+							}
 						}
 					}
 					imageTilingGroup->addChild(imageLayersGroup.release());
@@ -1844,34 +2139,57 @@ TestCaseGroup* createImageClearingTestsCommon (TestContext& testCtx, tcu::TestCa
 
 				for (size_t imageFormatIndex = 0; imageFormatIndex < numOfDepthStencilImageFormatsToTest; ++imageFormatIndex)
 				{
-					const VkFormat		format			= depthStencilImageFormatsToTest[imageFormatIndex];
-					const std::string	testCaseName	= getFormatCaseName(format) + dimensionsString;
-					const TestParams	testParams		=
-					{
-						true,																// bool				useSingleMipLevel;
-						VK_IMAGE_TYPE_2D,													// VkImageType		imageType;
-						format,																// VkFormat			format;
-						VK_IMAGE_TILING_OPTIMAL,											// VkImageTiling	tiling;
-						dimensions,															// VkExtent3D		extent;
-						imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,		// deUint32         imageLayerCount;
-						{
-							0u,
-							imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount
-						},																	// LayerRange		imageViewLayerRange;
-						makeClearValueDepthStencil(0.5f, 0x03),								// VkClearValue		initValue
-						{
-							makeClearValueDepthStencil(0.1f, 0x06),								// VkClearValue		clearValue[0];
-							makeClearValueDepthStencil(0.3f, 0x04),								// VkClearValue		clearValue[1];
-						},
-						imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,		// LayerRange       clearLayerRange;
-						allocationKind,														// AllocationKind	allocationKind;
-						false																// bool				isCube;
-					};
+					const VkFormat	format						= depthStencilImageFormatsToTest[imageFormatIndex];
+					const bool		hasDepth					= tcu::hasDepthComponent(mapVkFormat(format).order);
+					const bool		hasStencil					= tcu::hasStencilComponent(mapVkFormat(format).order);
+					const int		separateLayoutsLoopCount	= (hasDepth && hasStencil) ? 3 : 1;
 
-					if (!imageLayerParamsToTest[imageLayerParamsIndex].twoStep)
-						imageLayersGroup->addChild(new InstanceFactory1<ClearDepthStencilImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Image", testParams));
-					else
-						imageLayersGroup->addChild(new InstanceFactory1<TwoStepClearDepthStencilImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Image", testParams));
+					for (int separateDepthStencilLayoutMode = 0; separateDepthStencilLayoutMode < separateLayoutsLoopCount; ++separateDepthStencilLayoutMode)
+					{
+						const std::string	testCaseName	= getFormatCaseName(format) +
+							((separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH) ? "_separate_layouts_depth" :
+							 (separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL) ? "_separate_layouts_stencil" :
+							 "")
+							+ dimensionsString;
+						TestParams	testParams		=
+						{
+							true,																// bool								useSingleMipLevel;
+							VK_IMAGE_TYPE_2D,													// VkImageType						imageType;
+							format,																// VkFormat							format;
+							VK_IMAGE_TILING_OPTIMAL,											// VkImageTiling					tiling;
+							dimensions,															// VkExtent3D						extent;
+							imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,		// deUint32							imageLayerCount;
+							{
+								0u,
+								imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount
+							},																	// LayerRange						imageViewLayerRange;
+							makeClearValueDepthStencil(0.5f, 0x03),								// VkClearValue						initValue
+							{
+								makeClearValueDepthStencil(0.1f, 0x06),								// VkClearValue						clearValue[0];
+								makeClearValueDepthStencil(0.3f, 0x04),								// VkClearValue						clearValue[1];
+							},
+							imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,		// LayerRange						clearLayerRange;
+							allocationKind,														// AllocationKind					allocationKind;
+							false,																// bool								isCube;
+							SeparateDepthStencilLayoutMode(separateDepthStencilLayoutMode),		// SeparateDepthStencilLayoutMode	separateDepthStencilLayoutMode;
+							false,																// bool								isColorMultipleSubresourceRangeTest;
+						};
+
+						if (!imageLayerParamsToTest[imageLayerParamsIndex].twoStep)
+						{
+							imageLayersGroup->addChild(new InstanceFactory1<ClearDepthStencilImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Image", testParams));
+
+							if (separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE && hasDepth && hasStencil)
+							{
+								const std::string	testCaseNameRanges	= getFormatCaseName(format) + dimensionsString + "_multiple_subresourcerange";
+								imageLayersGroup->addChild(new InstanceFactory1<ClearDepthStencilImageMultipleSubresourceRangeTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseNameRanges, "Clear Depth/Stencil Image with ranges", testParams));
+							}
+						}
+						else
+						{
+							imageLayersGroup->addChild(new InstanceFactory1<TwoStepClearDepthStencilImageTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Image", testParams));
+						}
+					}
 				}
 			}
 			depthStencilImageClearTests->addChild(imageLayersGroup.release());
@@ -1905,21 +2223,23 @@ TestCaseGroup* createImageClearingTestsCommon (TestContext& testCtx, tcu::TestCa
 						const std::string	testCaseName	= getFormatCaseName(format) + dimensionsString;
 						const TestParams	testParams		=
 						{
-							true,															// bool				useSingleMipLevel;
-							VK_IMAGE_TYPE_2D,												// VkImageType		imageType;
-							format,															// VkFormat			format;
-							VK_IMAGE_TILING_OPTIMAL,										// VkImageTiling	tiling;
-							dimensions,														// VkExtent3D		extent;
-							imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,	// deUint32         imageLayerCount;
-							imageLayerParamsToTest[imageLayerParamsIndex].imageViewRange,	// LayerRange		imageViewLayerRange;
-							makeClearColorValue(format, 0.2f, 0.1f, 0.7f, 0.8f),			// VkClearValue		initValue
+							true,															// bool								useSingleMipLevel;
+							VK_IMAGE_TYPE_2D,												// VkImageType						imageType;
+							format,															// VkFormat							format;
+							VK_IMAGE_TILING_OPTIMAL,										// VkImageTiling					tiling;
+							dimensions,														// VkExtent3D						extent;
+							imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,	// deUint32							imageLayerCount;
+							imageLayerParamsToTest[imageLayerParamsIndex].imageViewRange,	// LayerRange						imageViewLayerRange;
+							makeClearColorValue(format, 0.2f, 0.1f, 0.7f, 0.8f),			// VkClearValue						initValue
 							{
-								makeClearColorValue(format, 0.1f, 0.5f, 0.3f, 0.9f),			// VkClearValue		clearValue[0];
-								makeClearColorValue(format, 0.3f, 0.6f, 0.2f, 0.7f),			// VkClearValue		clearValue[1];
+								makeClearColorValue(format, 0.1f, 0.5f, 0.3f, 0.9f),			// VkClearValue						clearValue[0];
+								makeClearColorValue(format, 0.3f, 0.6f, 0.2f, 0.7f),			// VkClearValue						clearValue[1];
 							},
-							imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,	// LayerRange       clearLayerRange;
-							allocationKind,													// AllocationKind	allocationKind;
-							imageLayerParamsToTest[imageLayerParamsIndex].isCube			// bool				isCube;
+							imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,	// LayerRange						clearLayerRange;
+							allocationKind,													// AllocationKind					allocationKind;
+							imageLayerParamsToTest[imageLayerParamsIndex].isCube,			// bool								isCube;
+							SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_NONE,						// SeparateDepthStencilLayoutMode	separateDepthStencilLayoutMode;
+							false,															// bool								isColorMultipleSubresourceRangeTest;
 						};
 						colorAttachmentClearLayersGroup->addChild(new InstanceFactory1<ClearAttachmentTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Color Attachment", testParams));
 						if (dimensions.width > 1)
@@ -1956,29 +2276,43 @@ TestCaseGroup* createImageClearingTestsCommon (TestContext& testCtx, tcu::TestCa
 
 					for (size_t imageFormatIndex = 0; imageFormatIndex < numOfDepthStencilImageFormatsToTest; ++imageFormatIndex)
 					{
-						const VkFormat		format			= depthStencilImageFormatsToTest[imageFormatIndex];
-						const std::string	testCaseName	= getFormatCaseName(format) + dimensionsString;
-						const TestParams	testParams		=
+						const VkFormat		format						= depthStencilImageFormatsToTest[imageFormatIndex];
+						const bool			hasDepth					= tcu::hasDepthComponent(mapVkFormat(format).order);
+						const bool			hasStencil					= tcu::hasStencilComponent(mapVkFormat(format).order);
+						const int			separateLayoutsLoopCount	= (hasDepth && hasStencil) ? 3 : 1;
+
+						for (int separateDepthStencilLayoutMode = 0; separateDepthStencilLayoutMode < separateLayoutsLoopCount; ++separateDepthStencilLayoutMode)
 						{
-							true,															// bool				useSingleMipLevel;
-							VK_IMAGE_TYPE_2D,												// VkImageType		imageType;
-							format,															// VkFormat			format;
-							VK_IMAGE_TILING_OPTIMAL,										// VkImageTiling	tiling;
-							dimensions,														// VkExtent3D		extent;
-							imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,	// deUint32         imageLayerCount;
-							imageLayerParamsToTest[imageLayerParamsIndex].imageViewRange,	// LayerRange		imageViewLayerRange;
-							makeClearValueDepthStencil(0.5f, 0x03),							// VkClearValue		initValue
+							const std::string	testCaseName	= getFormatCaseName(format) +
+							((separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_DEPTH) ? "_separate_layouts_depth" :
+							 (separateDepthStencilLayoutMode == SEPARATE_DEPTH_STENCIL_LAYOUT_MODE_STENCIL) ? "_separate_layouts_stencil" :
+							 "")
+							+ dimensionsString;
+
+							const TestParams	testParams						=
 							{
-								makeClearValueDepthStencil(0.1f, 0x06),							// VkClearValue		clearValue[0];
-								makeClearValueDepthStencil(0.3f, 0x04),							// VkClearValue		clearValue[1];
-							},
-							imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,	// LayerRange       clearLayerRange;
-							allocationKind,													// AllocationKind	allocationKind;
-							imageLayerParamsToTest[imageLayerParamsIndex].isCube			// bool				isCube;
-						};
-						depthStencilLayersGroup->addChild(new InstanceFactory1<ClearAttachmentTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Attachment", testParams));
-						if (dimensions.width > 1)
-							partialDepthStencilLayersGroup->addChild(new InstanceFactory1<PartialClearAttachmentTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Partial Clear Depth/Stencil Attachment", testParams));
+								true,															// bool								useSingleMipLevel;
+								VK_IMAGE_TYPE_2D,												// VkImageType						imageType;
+								format,															// VkFormat							format;
+								VK_IMAGE_TILING_OPTIMAL,										// VkImageTiling					tiling;
+								dimensions,														// VkExtent3D						extent;
+								imageLayerParamsToTest[imageLayerParamsIndex].imageLayerCount,	// deUint32							imageLayerCount;
+								imageLayerParamsToTest[imageLayerParamsIndex].imageViewRange,	// LayerRange						imageViewLayerRange;
+								makeClearValueDepthStencil(0.5f, 0x03),							// VkClearValue						initValue
+								{
+									makeClearValueDepthStencil(0.1f, 0x06),							// VkClearValue						clearValue[0];
+									makeClearValueDepthStencil(0.3f, 0x04),							// VkClearValue						clearValue[1];
+								},
+								imageLayerParamsToTest[imageLayerParamsIndex].clearLayerRange,	// LayerRange						clearLayerRange;
+								allocationKind,													// AllocationKind					allocationKind;
+								imageLayerParamsToTest[imageLayerParamsIndex].isCube,			// bool								isCube;
+								SeparateDepthStencilLayoutMode(separateDepthStencilLayoutMode),	// SeparateDepthStencilLayoutMode	separateDepthStencilLayoutMode;
+								false,															// bool								isColorMultipleSubresourceRangeTest;
+							};
+							depthStencilLayersGroup->addChild(new InstanceFactory1<ClearAttachmentTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Clear Depth/Stencil Attachment", testParams));
+							if (dimensions.width > 1)
+								partialDepthStencilLayersGroup->addChild(new InstanceFactory1<PartialClearAttachmentTestInstance, TestParams>(testCtx, NODETYPE_SELF_VALIDATE, testCaseName, "Partial Clear Depth/Stencil Attachment", testParams));
+						}
 					}
 				}
 				depthStencilAttachmentClearTests->addChild(depthStencilLayersGroup.release());

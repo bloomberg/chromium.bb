@@ -43,7 +43,7 @@ class ASH_EXPORT AshColorProvider {
     kShield20 = 0,
     kShield40,
     kShield60,
-    kShield74,
+    kShield80,
     kShield90,
   };
 
@@ -60,7 +60,7 @@ class ASH_EXPORT AshColorProvider {
     kTransparent20 = 0,
     kTransparent40,
     kTransparent60,
-    kTransparent74,
+    kTransparent80,
     kTransparent90,
 
     // Base layer is opaque.
@@ -88,6 +88,15 @@ class ASH_EXPORT AshColorProvider {
     // Color for prominent icon button, e.g, "Add connection" icon button inside
     // VPN detailed view.
     kProminentIconButton,
+
+    // Color for system menu icon buttons with inverted dark mode colors, e.g,
+    // FeaturePodIconButton
+    kIconSystemMenu,
+    kIconSystemMenuToggled,
+
+    // Color for sliders (volume, brightness etc.)
+    kSliderThumbEnabled,
+    kSliderThumbDisabled,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

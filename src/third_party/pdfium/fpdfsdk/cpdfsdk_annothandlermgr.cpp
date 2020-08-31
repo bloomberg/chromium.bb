@@ -50,8 +50,9 @@ void CPDFSDK_AnnotHandlerMgr::SetFormFillEnv(
     m_pXFAWidgetHandler->SetFormFillEnvironment(pFormFillEnv);
 }
 
-CPDFSDK_Annot* CPDFSDK_AnnotHandlerMgr::NewAnnot(CPDF_Annot* pAnnot,
-                                                 CPDFSDK_PageView* pPageView) {
+std::unique_ptr<CPDFSDK_Annot> CPDFSDK_AnnotHandlerMgr::NewAnnot(
+    CPDF_Annot* pAnnot,
+    CPDFSDK_PageView* pPageView) {
   ASSERT(pPageView);
   return GetAnnotHandlerOfType(pAnnot->GetSubtype())
       ->NewAnnot(pAnnot, pPageView);
@@ -181,11 +182,11 @@ bool CPDFSDK_AnnotHandlerMgr::Annot_OnMouseWheel(
     CPDFSDK_PageView* pPageView,
     ObservedPtr<CPDFSDK_Annot>* pAnnot,
     uint32_t nFlags,
-    short zDelta,
-    const CFX_PointF& point) {
+    const CFX_PointF& point,
+    const CFX_Vector& delta) {
   ASSERT(pAnnot->HasObservable());
-  return GetAnnotHandler(pAnnot->Get())
-      ->OnMouseWheel(pPageView, pAnnot, nFlags, zDelta, point);
+  auto* handler = GetAnnotHandler(pAnnot->Get());
+  return handler->OnMouseWheel(pPageView, pAnnot, nFlags, point, delta);
 }
 
 bool CPDFSDK_AnnotHandlerMgr::Annot_OnRButtonDown(
@@ -230,20 +231,36 @@ bool CPDFSDK_AnnotHandlerMgr::Annot_OnChar(CPDFSDK_Annot* pAnnot,
   return GetAnnotHandler(pAnnot)->OnChar(pAnnot, nChar, nFlags);
 }
 
-bool CPDFSDK_AnnotHandlerMgr::Annot_OnKeyDown(CPDFSDK_Annot* pAnnot,
+bool CPDFSDK_AnnotHandlerMgr::Annot_OnKeyDown(CPDFSDK_PageView* pPageView,
+                                              CPDFSDK_Annot* pAnnot,
                                               int nKeyCode,
                                               int nFlag) {
+  if (!pAnnot) {
+    // If pressed key is not tab then no action is needed.
+    if (nKeyCode != FWL_VKEY_Tab)
+      return false;
+
+    // If ctrl key or alt key is pressed, then no action is needed.
+    if (CPWL_Wnd::IsCTRLKeyDown(nFlag) || CPWL_Wnd::IsALTKeyDown(nFlag))
+      return false;
+
+    ObservedPtr<CPDFSDK_Annot> end_annot(GetFirstOrLastFocusableAnnot(
+        pPageView, CPWL_Wnd::IsSHIFTKeyDown(nFlag)));
+    return end_annot && pPageView->GetFormFillEnv()->SetFocusAnnot(&end_annot);
+  }
+
   if (CPWL_Wnd::IsCTRLKeyDown(nFlag) || CPWL_Wnd::IsALTKeyDown(nFlag)) {
     return GetAnnotHandler(pAnnot)->OnKeyDown(pAnnot, nKeyCode, nFlag);
   }
   ObservedPtr<CPDFSDK_Annot> pObservedAnnot(pAnnot);
-  CPDFSDK_PageView* pPage = pAnnot->GetPageView();
-  CPDFSDK_Annot* pFocusAnnot = pPage->GetFocusAnnot();
+  CPDFSDK_Annot* pFocusAnnot = pPageView->GetFocusAnnot();
   if (pFocusAnnot && (nKeyCode == FWL_VKEY_Tab)) {
     ObservedPtr<CPDFSDK_Annot> pNext(
         GetNextAnnot(pFocusAnnot, !CPWL_Wnd::IsSHIFTKeyDown(nFlag)));
-    if (pNext && pNext.Get() != pFocusAnnot) {
-      pPage->GetFormFillEnv()->SetFocusAnnot(&pNext);
+    if (!pNext)
+      return false;
+    if (pNext.Get() != pFocusAnnot) {
+      pPageView->GetFormFillEnv()->SetFocusAnnot(&pNext);
       return true;
     }
   }
@@ -324,9 +341,28 @@ CPDFSDK_Annot* CPDFSDK_AnnotHandlerMgr::GetNextAnnot(CPDFSDK_Annot* pSDKAnnot,
     return static_cast<CPDFXFA_Page*>(pPage)->GetNextXFAAnnot(pSDKAnnot, bNext);
   }
 #endif  // PDF_ENABLE_XFA
+  CPDFSDK_FormFillEnvironment* pFormFillEnv =
+      pSDKAnnot->GetPageView()->GetFormFillEnv();
 
   // For PDF annots.
-  CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pSDKAnnot);
-  CPDFSDK_AnnotIterator ai(pWidget->GetPageView(), pWidget->GetAnnotSubtype());
-  return bNext ? ai.GetNextAnnot(pWidget) : ai.GetPrevAnnot(pWidget);
+  CPDFSDK_AnnotIterator ai(pSDKAnnot->GetPageView(),
+                           pFormFillEnv->GetFocusableAnnotSubtypes());
+  return bNext ? ai.GetNextAnnot(pSDKAnnot) : ai.GetPrevAnnot(pSDKAnnot);
+}
+
+CPDFSDK_Annot* CPDFSDK_AnnotHandlerMgr::GetFirstOrLastFocusableAnnot(
+    CPDFSDK_PageView* page_view,
+    bool last) const {
+#ifdef PDF_ENABLE_XFA
+  IPDF_Page* page = page_view->GetXFAPage();
+  if (page && !page->AsPDFPage()) {
+    // For XFA annots in XFA pages not backed by PDF pages.
+    return page->AsXFAPage()->GetFirstOrLastXFAAnnot(page_view, last);
+  }
+#endif  // PDF_ENABLE_XFA
+
+  CPDFSDK_FormFillEnvironment* form_fill_env = page_view->GetFormFillEnv();
+  CPDFSDK_AnnotIterator ai(page_view,
+                           form_fill_env->GetFocusableAnnotSubtypes());
+  return last ? ai.GetLastAnnot() : ai.GetFirstAnnot();
 }

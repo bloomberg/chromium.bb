@@ -16,13 +16,14 @@ class MockNativeFileSystemPermissionContext
   MockNativeFileSystemPermissionContext();
   ~MockNativeFileSystemPermissionContext();
 
-  MOCK_METHOD5(
-      GetReadPermissionGrant,
-      scoped_refptr<NativeFileSystemPermissionGrant>(const url::Origin& origin,
-                                                     const base::FilePath& path,
-                                                     bool is_directory,
-                                                     int process_id,
-                                                     int frame_id));
+  MOCK_METHOD6(GetReadPermissionGrant,
+               scoped_refptr<NativeFileSystemPermissionGrant>(
+                   const url::Origin& origin,
+                   const base::FilePath& path,
+                   bool is_directory,
+                   int process_id,
+                   int frame_id,
+                   NativeFileSystemPermissionContext::UserAction user_action));
 
   MOCK_METHOD6(GetWritePermissionGrant,
                scoped_refptr<NativeFileSystemPermissionGrant>(
@@ -73,7 +74,7 @@ class MockNativeFileSystemPermissionContext
                     int frame_id,
                     base::OnceCallback<void(AfterWriteCheckResult)>& callback));
 
-  MOCK_METHOD1(CanRequestWritePermission, bool(const url::Origin& origin));
+  MOCK_METHOD1(CanObtainWritePermission, bool(const url::Origin& origin));
 };
 
 }  // namespace content

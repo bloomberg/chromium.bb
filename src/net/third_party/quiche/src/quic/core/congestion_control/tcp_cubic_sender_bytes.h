@@ -46,6 +46,8 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public SendAlgorithmInterface {
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
                      Perspective perspective) override;
+  void ApplyConnectionOptions(
+      const QuicTagVector& /*connection_options*/) override {}
   void AdjustNetworkParameters(const NetworkParams& params) override;
   void SetNumEmulatedConnections(int num_connections);
   void SetInitialCongestionWindowInPackets(
@@ -61,6 +63,7 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public SendAlgorithmInterface {
                     QuicPacketNumber packet_number,
                     QuicByteCount bytes,
                     HasRetransmittableData is_retransmittable) override;
+  void OnPacketNeutered(QuicPacketNumber /*packet_number*/) override {}
   void OnRetransmissionTimeout(bool packets_retransmitted) override;
   bool CanSend(QuicByteCount bytes_in_flight) override;
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;

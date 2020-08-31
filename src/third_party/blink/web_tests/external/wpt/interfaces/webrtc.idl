@@ -8,18 +8,18 @@ dictionary RTCConfiguration {
   RTCIceTransportPolicy iceTransportPolicy;
   RTCBundlePolicy bundlePolicy;
   RTCRtcpMuxPolicy rtcpMuxPolicy;
-  DOMString peerIdentity;
   sequence<RTCCertificate> certificates;
   [EnforceRange] octet iceCandidatePoolSize = 0;
 };
 
 enum RTCIceCredentialType {
-  "password",
+  "password"
 };
 
 dictionary RTCIceServer {
   required (DOMString or sequence<DOMString>) urls;
   DOMString username;
+  DOMString credential;
   RTCIceCredentialType credentialType = "password";
 };
 
@@ -101,7 +101,7 @@ interface RTCPeerConnection : EventTarget  {
   readonly attribute boolean? canTrickleIceCandidates;
   void restartIce();
   RTCConfiguration getConfiguration();
-  void setConfiguration(RTCConfiguration configuration);
+  void setConfiguration(optional RTCConfiguration configuration = {});
   void close();
   attribute EventHandler onnegotiationneeded;
   attribute EventHandler onicecandidate;
@@ -229,7 +229,8 @@ interface RTCPeerConnectionIceErrorEvent : Event {
 };
 
 dictionary RTCPeerConnectionIceErrorEventInit : EventInit {
-  DOMString hostCandidate;
+  DOMString? address;
+  unsigned short? port;
   DOMString url;
   required unsigned short errorCode;
   USVString statusText;
@@ -296,11 +297,9 @@ dictionary RTCRtpParameters {
 dictionary RTCRtpSendParameters : RTCRtpParameters {
   required DOMString transactionId;
   required sequence<RTCRtpEncodingParameters> encodings;
-  RTCDegradationPreference degradationPreference = "balanced";
 };
 
 dictionary RTCRtpReceiveParameters : RTCRtpParameters {
-  required sequence<RTCRtpDecodingParameters> encodings;
 };
 
 dictionary RTCRtpCodingParameters {
@@ -313,12 +312,6 @@ dictionary RTCRtpEncodingParameters : RTCRtpCodingParameters {
   boolean active = true;
   unsigned long maxBitrate;
   double scaleResolutionDownBy;
-};
-
-enum RTCDegradationPreference {
-  "maintain-framerate",
-  "maintain-resolution",
-  "balanced"
 };
 
 dictionary RTCRtcpParameters {
@@ -568,12 +561,12 @@ interface RTCDTMFSender : EventTarget {
 
 [Exposed=Window]
 interface RTCDTMFToneChangeEvent : Event {
-  constructor(DOMString type, RTCDTMFToneChangeEventInit eventInitDict);
+  constructor(DOMString type, optional RTCDTMFToneChangeEventInit eventInitDict = {});
   readonly attribute DOMString tone;
 };
 
 dictionary RTCDTMFToneChangeEventInit : EventInit {
-  required DOMString tone;
+  DOMString tone = "";
 };
 
 partial interface RTCPeerConnection {
@@ -596,7 +589,6 @@ interface RTCError : DOMException {
   constructor(RTCErrorInit init, optional DOMString message = "");
   readonly attribute RTCErrorDetailType errorDetail;
   readonly attribute long? sdpLineNumber;
-  readonly attribute long? httpRequestStatusCode;
   readonly attribute long? sctpCauseCode;
   readonly attribute unsigned long? receivedAlert;
   readonly attribute unsigned long? sentAlert;
@@ -605,7 +597,6 @@ interface RTCError : DOMException {
 dictionary RTCErrorInit {
   required RTCErrorDetailType errorDetail;
   long sdpLineNumber;
-  long httpRequestStatusCode;
   long sctpCauseCode;
   unsigned long receivedAlert;
   unsigned long sentAlert;
@@ -615,14 +606,6 @@ enum RTCErrorDetailType {
   "data-channel-failure",
   "dtls-failure",
   "fingerprint-failure",
-  "idp-bad-script-failure",
-  "idp-execution-failure",
-  "idp-load-failure",
-  "idp-need-login",
-  "idp-timeout",
-  "idp-tls-failure",
-  "idp-token-expired",
-  "idp-token-invalid",
   "sctp-failure",
   "sdp-syntax-error",
   "hardware-encoder-not-available",

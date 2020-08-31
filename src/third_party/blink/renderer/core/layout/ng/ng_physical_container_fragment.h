@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 
+#include <iterator>
+
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -17,6 +19,7 @@
 namespace blink {
 
 class NGContainerFragmentBuilder;
+class NGFragmentItem;
 struct NGPhysicalOutOfFlowPositionedNode;
 enum class NGOutlineType;
 
@@ -30,10 +33,17 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
 
-    class ConstIterator {
+    class ConstIterator
+        : public std::iterator<std::input_iterator_tag, NGLink> {
       STACK_ALLOCATED();
 
      public:
+      using iterator_category = std::bidirectional_iterator_tag;
+      using value_type = NGLink;
+      using difference_type = ptrdiff_t;
+      using pointer = value_type*;
+      using reference = value_type&;
+
       ConstIterator(const NGLink* current) : current_(current) {}
 
       const NGLink& operator*() const { return *PostLayoutOrCurrent(); }
@@ -113,6 +123,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return has_adjoining_object_descendants_;
   }
 
+  // TODO(ikilpatrick): Remove this flag as its not used anymore.
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 
   // Returns true if we have a descendant within this formatting context, which
@@ -148,6 +159,19 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                               NGLink* buffer,
                               NGFragmentType,
                               unsigned sub_type);
+
+  void AddScrollableOverflowForInlineChild(
+      const NGPhysicalBoxFragment& container,
+      const ComputedStyle& container_style,
+      const NGFragmentItem& line,
+      bool has_hanging,
+      const NGInlineCursor& cursor,
+      PhysicalRect* overflow) const;
+
+  static void AdjustScrollableOverflowForHanging(
+      const PhysicalRect& rect,
+      const WritingMode container_writing_mode,
+      PhysicalRect* overflow);
 
   void AddOutlineRectsForNormalChildren(
       Vector<PhysicalRect>* outline_rects,

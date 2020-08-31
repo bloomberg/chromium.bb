@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -47,8 +48,14 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool ShouldSaveAndRestoreFormControlState() const override;
 
   bool UserHasEditedTheField() const { return user_has_edited_the_field_; }
+  void SetUserHasEditedTheField(bool value) {
+    user_has_edited_the_field_ = value;
+  }
   // This is only used in tests, to fake the user's action
   void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
+
+  void DispatchInputEvent();
+  void DispatchChangeEvent();
 
  protected:
   bool user_has_edited_the_field_ = false;
@@ -58,18 +65,18 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool IsFormControlElementWithState() const final;
 
  private:
-  bool TypeShouldForceLegacyLayout() const final { return true; }
   int DefaultTabIndex() const override;
 
   // https://html.spec.whatwg.org/C/#autofill-anchor-mantle
   bool IsWearingAutofillAnchorMantle() const;
 };
 
-DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,
-                  ListedElement,
-                  control,
-                  control->IsFormControlElementWithState(),
-                  control.IsFormControlElementWithState());
+template <>
+struct DowncastTraits<HTMLFormControlElementWithState> {
+  static bool AllowFrom(const ListedElement& control) {
+    return control.IsFormControlElementWithState();
+  }
+};
 
 }  // namespace blink
 

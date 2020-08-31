@@ -7,28 +7,51 @@
  * addresses for use in autofill and payments APIs.
  */
 
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../settings_shared_css.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../prefs/prefs.m.js';
+import './address_edit_dialog.js';
+import './passwords_shared_css.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
+/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+let CreditCardEntry;
+
 /**
  * Interface for all callbacks to the autofill API.
  * @interface
  */
-class AutofillManager {
+export class AutofillManager {
   /**
    * Add an observer to the list of personal data.
    * @param {function(!Array<!AutofillManager.AddressEntry>,
-   *     !Array<!PaymentsManager.CreditCardEntry>):void} listener
+   *     !Array<!CreditCardEntry>):void} listener
    */
   setPersonalDataManagerListener(listener) {}
 
   /**
    * Remove an observer from the list of personal data.
    * @param {function(!Array<!AutofillManager.AddressEntry>,
-   *     !Array<!PaymentsManager.CreditCardEntry>):void} listener
+   *     !Array<!CreditCardEntry>):void} listener
    */
   removePersonalDataManagerListener(listener) {}
 
   /**
    * Request the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} callback
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void}
+   *     callback
    */
   getAddressList(callback) {}
 
@@ -49,7 +72,7 @@ AutofillManager.AddressEntry;
  * Implementation that accesses the private API.
  * @implements {AutofillManager}
  */
-class AutofillManagerImpl {
+export class AutofillManagerImpl {
   /** @override */
   setPersonalDataManagerListener(listener) {
     chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
@@ -76,13 +99,12 @@ class AutofillManagerImpl {
   }
 }
 
-cr.addSingletonGetter(AutofillManagerImpl);
-
-(function() {
-'use strict';
+addSingletonGetter(AutofillManagerImpl);
 
 Polymer({
   is: 'settings-autofill-section',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -120,13 +142,13 @@ Polymer({
 
   /**
    * @type {?function(!Array<!AutofillManager.AddressEntry>,
-   *     !Array<!PaymentsManager.CreditCardEntry>)}
+   *     !Array<!CreditCardEntry>)}
    * @private
    */
   setPersonalDataListener_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     // Create listener functions.
     /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
     const setAddressesListener = addressList => {
@@ -135,7 +157,7 @@ Polymer({
 
     /**
      * @type {function(!Array<!AutofillManager.AddressEntry>,
-     *     !Array<!PaymentsManager.CreditCardEntry>)}
+     *     !Array<!CreditCardEntry>)}
      */
     const setPersonalDataListener = (addressList, cardList) => {
       this.addresses = addressList;
@@ -159,11 +181,11 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.autofillManager_.removePersonalDataManagerListener(
         /**
            @type {function(!Array<!AutofillManager.AddressEntry>,
-               !Array<!PaymentsManager.CreditCardEntry>)}
+               !Array<!CreditCardEntry>)}
          */
         (this.setPersonalDataListener_));
   },
@@ -173,7 +195,7 @@ Polymer({
    * @param {!Event} e The polymer event.
    * @private
    */
-  onAddressMenuTap_: function(e) {
+  onAddressMenuTap_(e) {
     const menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
     const item = menuEvent.model.item;
 
@@ -192,17 +214,17 @@ Polymer({
    * @param {!Event} e The polymer event.
    * @private
    */
-  onAddAddressTap_: function(e) {
+  onAddAddressTap_(e) {
     e.preventDefault();
     this.activeAddress = {};
     this.showAddressDialog_ = true;
-    this.activeDialogAnchor_ = this.$.addAddress;
+    this.activeDialogAnchor_ = /** @type {HTMLElement} */ (this.$.addAddress);
   },
 
   /** @private */
-  onAddressDialogClose_: function() {
+  onAddressDialogClose_() {
     this.showAddressDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
   },
 
@@ -211,14 +233,14 @@ Polymer({
    * @param {!Event} e The polymer event.
    * @private
    */
-  onMenuEditAddressTap_: function(e) {
+  onMenuEditAddressTap_(e) {
     e.preventDefault();
     this.showAddressDialog_ = true;
     this.$.addressSharedMenu.close();
   },
 
   /** @private */
-  onRemoteEditAddressTap_: function() {
+  onRemoteEditAddressTap_() {
     window.open(loadTimeData.getString('manageAddressesUrl'));
   },
 
@@ -226,7 +248,7 @@ Polymer({
    * Handles tapping on the "Remove" address button.
    * @private
    */
-  onMenuRemoveAddressTap_: function() {
+  onMenuRemoveAddressTap_() {
     this.autofillManager_.removeAddress(
         /** @type {string} */ (this.activeAddress.guid));
     this.$.addressSharedMenu.close();
@@ -238,7 +260,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSome_: function(list) {
+  hasSome_(list) {
     return !!(list && list.length);
   },
 
@@ -247,8 +269,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  saveAddress_: function(event) {
+  saveAddress_(event) {
     this.autofillManager_.saveAddress(event.detail);
   },
 });
-})();

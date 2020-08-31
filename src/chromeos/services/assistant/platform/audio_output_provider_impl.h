@@ -19,7 +19,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
@@ -35,7 +34,6 @@ class AssistantMediaSession;
 class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   AudioOutputProviderImpl(
-      mojom::Client* client,
       PowerManagerClient* power_manager_client,
       CrasAudioHandler* cras_audio_handler,
       AssistantMediaSession* media_session,
@@ -64,7 +62,6 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   void BindStreamFactory(
       mojo::PendingReceiver<audio::mojom::StreamFactory> receiver);
 
-  mojom::Client* const client_;
   AudioInputImpl loop_back_input_;
   VolumeControlImpl volume_control_impl_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

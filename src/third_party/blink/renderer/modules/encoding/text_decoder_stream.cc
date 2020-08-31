@@ -10,11 +10,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_text_decoder_options.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
-#include "third_party/blink/renderer/modules/encoding/text_decoder_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -54,16 +54,28 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     if (bufferSource.IsArrayBufferView()) {
       const auto* view = bufferSource.GetAsArrayBufferView().View();
       const char* start = static_cast<const char*>(view->BaseAddress());
-      uint32_t length = view->deprecatedByteLengthAsUnsigned();
-      DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
-                       controller, exception_state);
+      size_t length = view->byteLengthAsSizeT();
+      if (length > std::numeric_limits<uint32_t>::max()) {
+        exception_state.ThrowRangeError(
+            "Buffer size exceeds maximum heap object size.");
+        return ScriptPromise();
+      }
+      DecodeAndEnqueue(start, static_cast<uint32_t>(length),
+                       WTF::FlushBehavior::kDoNotFlush, controller,
+                       exception_state);
       return ScriptPromise::CastUndefined(script_state_);
     }
     DCHECK(bufferSource.IsArrayBuffer());
     const auto* array_buffer = bufferSource.GetAsArrayBuffer();
     const char* start = static_cast<const char*>(array_buffer->Data());
-    uint32_t length = array_buffer->DeprecatedByteLengthAsUnsigned();
-    DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
+    size_t length = array_buffer->ByteLengthAsSizeT();
+    if (length > std::numeric_limits<uint32_t>::max()) {
+      exception_state.ThrowRangeError(
+          "Buffer size exceeds maximum heap object size.");
+      return ScriptPromise();
+    }
+    DecodeAndEnqueue(start, static_cast<uint32_t>(length),
+                     WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
 
     return ScriptPromise::CastUndefined(script_state_);

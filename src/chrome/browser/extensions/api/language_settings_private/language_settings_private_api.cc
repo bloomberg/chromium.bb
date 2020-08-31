@@ -38,6 +38,7 @@
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -203,10 +204,6 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   std::vector<translate::TranslateLanguageInfo> languages;
   translate::TranslatePrefs::GetLanguageInfoList(
       app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
-
-  // Get the list of available locales (display languages) and convert to a set.
-  const base::flat_set<std::string> locale_set(
-      l10n_util::GetAvailableLocales());
 
   // Get the list of spell check languages and convert to a set.
   std::vector<std::string> spellcheck_languages =
@@ -503,7 +500,8 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
-    spellcheck_platform::AddWord(base::UTF8ToUTF16(params->word));
+    spellcheck_platform::AddWord(service->platform_spell_checker(),
+                                 base::UTF8ToUTF16(params->word));
   }
 #endif
 
@@ -528,7 +526,8 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
-    spellcheck_platform::RemoveWord(base::UTF8ToUTF16(params->word));
+    spellcheck_platform::RemoveWord(service->platform_spell_checker(),
+                                    base::UTF8ToUTF16(params->word));
   }
 #endif
 

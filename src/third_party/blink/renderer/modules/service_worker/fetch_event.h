@@ -12,16 +12,18 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_fetch_event_init.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
-#include "third_party/blink/renderer/modules/service_worker/fetch_event_init.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -42,14 +44,13 @@ class WorkerGlobalScope;
 class MODULES_EXPORT FetchEvent final
     : public ExtendableEvent,
       public ActiveScriptWrappable<FetchEvent>,
-      public ContextClient {
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FetchEvent);
 
  public:
-  using PreloadResponseProperty = ScriptPromiseProperty<Member<FetchEvent>,
-                                                        Member<Response>,
-                                                        Member<DOMException>>;
+  using PreloadResponseProperty =
+      ScriptPromiseProperty<Member<Response>, Member<DOMException>>;
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
                             const FetchEventInit*);
@@ -90,7 +91,7 @@ class MODULES_EXPORT FetchEvent final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<FetchRespondWithObserver> observer_;
@@ -100,7 +101,9 @@ class MODULES_EXPORT FetchEvent final
   Member<DataPipeBytesConsumer::CompletionNotifier> body_completion_notifier_;
   // This is currently null for navigation while https://crbug.com/900700 is
   // being implemented.
-  mojo::Remote<mojom::blink::WorkerTimingContainer> worker_timing_remote_;
+  HeapMojoRemote<mojom::blink::WorkerTimingContainer,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      worker_timing_remote_;
   String client_id_;
   String resulting_client_id_;
   bool is_reload_;

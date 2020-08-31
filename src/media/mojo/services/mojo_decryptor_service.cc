@@ -48,29 +48,6 @@ class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
 
 }  // namespace
 
-// static
-std::unique_ptr<MojoDecryptorService> MojoDecryptorService::Create(
-    int cdm_id,
-    MojoCdmServiceContext* mojo_cdm_service_context) {
-  auto cdm_context_ref = mojo_cdm_service_context->GetCdmContextRef(cdm_id);
-  if (!cdm_context_ref) {
-    DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id;
-    return nullptr;
-  }
-
-  auto* cdm_context = cdm_context_ref->GetCdmContext();
-  DCHECK(cdm_context);
-
-  auto* decryptor = cdm_context->GetDecryptor();
-  if (!decryptor) {
-    DVLOG(1) << "CdmContext does not support Decryptor";
-    return nullptr;
-  }
-
-  return std::make_unique<MojoDecryptorService>(decryptor,
-                                                std::move(cdm_context_ref));
-}
-
 MojoDecryptorService::MojoDecryptorService(
     media::Decryptor* decryptor,
     std::unique_ptr<CdmContextRef> cdm_context_ref)
@@ -123,8 +100,8 @@ void MojoDecryptorService::InitializeAudioDecoder(
     InitializeAudioDecoderCallback callback) {
   DVLOG(1) << __func__;
   decryptor_->InitializeAudioDecoder(
-      config, base::Bind(&MojoDecryptorService::OnAudioDecoderInitialized,
-                         weak_this_, base::Passed(&callback)));
+      config, base::BindOnce(&MojoDecryptorService::OnAudioDecoderInitialized,
+                             weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::InitializeVideoDecoder(
@@ -132,8 +109,8 @@ void MojoDecryptorService::InitializeVideoDecoder(
     InitializeVideoDecoderCallback callback) {
   DVLOG(2) << __func__;
   decryptor_->InitializeVideoDecoder(
-      config, base::Bind(&MojoDecryptorService::OnVideoDecoderInitialized,
-                         weak_this_, base::Passed(&callback)));
+      config, base::BindOnce(&MojoDecryptorService::OnVideoDecoderInitialized,
+                             weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::DecryptAndDecodeAudio(
@@ -162,8 +139,8 @@ void MojoDecryptorService::ResetDecoder(StreamType stream_type) {
     return;
 
   GetBufferReader(stream_type)
-      ->Flush(base::Bind(&MojoDecryptorService::OnReaderFlushDone, weak_this_,
-                         stream_type));
+      ->Flush(base::BindOnce(&MojoDecryptorService::OnReaderFlushDone,
+                             weak_this_, stream_type));
 }
 
 void MojoDecryptorService::DeinitializeDecoder(StreamType stream_type) {
@@ -183,8 +160,8 @@ void MojoDecryptorService::OnReadDone(StreamType stream_type,
   }
 
   decryptor_->Decrypt(stream_type, std::move(buffer),
-                      base::Bind(&MojoDecryptorService::OnDecryptDone,
-                                 weak_this_, base::Passed(&callback)));
+                      base::BindOnce(&MojoDecryptorService::OnDecryptDone,
+                                     weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::OnDecryptDone(DecryptCallback callback,

@@ -9,9 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/data_batch.h"
@@ -209,6 +211,9 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(RemoveLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
+  MOCK_METHOD1(
+      NotifyUnsyncedCredentialsWillBeDeleted,
+      void(const std::vector<autofill::PasswordForm>& unsynced_credentials));
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD0(RollbackTransaction, void());
@@ -259,12 +264,12 @@ class PasswordSyncBridgeTest : public testing::Test {
   }
 
   // Creates an EntityData around a copy of the given specifics.
-  std::unique_ptr<syncer::EntityData> SpecificsToEntity(
+  syncer::EntityData SpecificsToEntity(
       const sync_pb::PasswordSpecifics& specifics) {
-    auto data = std::make_unique<syncer::EntityData>();
-    *data->specifics.mutable_password() = specifics;
-    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
-        syncer::PASSWORDS, bridge()->GetClientTag(*data));
+    syncer::EntityData data;
+    *data.specifics.mutable_password() = specifics;
+    data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+        syncer::PASSWORDS, bridge()->GetClientTag(data));
     return data;
   }
 
@@ -436,7 +441,7 @@ TEST_F(PasswordSyncBridgeTest,
 
   EXPECT_CALL(mock_processor(),
               UntrackEntityForClientTagHash(
-                  SpecificsToEntity(specifics)->client_tag_hash));
+                  SpecificsToEntity(specifics).client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -672,6 +677,24 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_FALSE(error);
 }
 
+// This tests that if reading sync metadata from the store fails,
+// metadata should be deleted and Sync starts without error.
+TEST_F(
+    PasswordSyncBridgeTest,
+    ShouldMergeSyncRemoteAndLocalPasswordsWithoutErrorWhenMetadataReadFails) {
+  // Simulate a failed GetAllSyncMetadata() by returning a nullptr.
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault(testing::ReturnNull());
+
+  EXPECT_CALL(*mock_sync_metadata_store_sync(), DeleteAllSyncMetadata());
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/syncer::HasNotInitialSyncDone(),
+                                    /*entities=*/testing::SizeIs(0))));
+  auto bridge = std::make_unique<PasswordSyncBridge>(
+      mock_processor().CreateForwardingProcessor(), mock_password_store_sync(),
+      base::DoNothing());
+}
+
 // This tests that if reading logins from the store fails,
 // ShouldMergeSync() would return an error without crashing.
 TEST_F(PasswordSyncBridgeTest,
@@ -732,7 +755,7 @@ TEST_F(PasswordSyncBridgeTest,
 
   EXPECT_CALL(mock_processor(),
               UntrackEntityForClientTagHash(
-                  SpecificsToEntity(specifics)->client_tag_hash));
+                  SpecificsToEntity(specifics).client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -789,6 +812,7 @@ TEST_F(PasswordSyncBridgeTest,
                             mock_password_store_sync(), base::DoNothing());
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 // Tests that in case ReadAllLogins() during initial merge returns encryption
 // service failure, the bridge would try to do a DB clean up.
 TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {
@@ -806,6 +830,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {
       bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(), {});
   EXPECT_FALSE(error);
 }
+#endif
 
 TEST_F(PasswordSyncBridgeTest,
        ShouldDeleteSyncMetadataWhenApplyStopSyncChanges) {
@@ -870,6 +895,93 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotNotifyOnSyncDisableIfProfileStore) {
   // this should *not* trigger the callback.
   EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run()).Times(0);
 
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(true));
+
+  const std::string kPrimaryKeyUnsyncedCredentialStr = "1000";
+  const std::string kPrimaryKeySyncedCredentialStr = "1001";
+  const std::string kPrimaryKeyUnsyncedDeletionStr = "1002";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedCredentialStr))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedCredentialStr))
+      .WillByDefault(Return(false));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedDeletionStr))
+      .WillByDefault(Return(true));
+
+  sync_pb::EntityMetadata is_deletion_metadata;
+  is_deletion_metadata.set_is_deleted(true);
+  sync_pb::EntityMetadata is_not_deletion_metadata;
+  is_not_deletion_metadata.set_is_deleted(false);
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        auto batch = std::make_unique<syncer::MetadataBatch>();
+        batch->AddMetadata(kPrimaryKeyUnsyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
+        batch->AddMetadata(kPrimaryKeySyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
+        batch->AddMetadata(
+            kPrimaryKeyUnsyncedDeletionStr,
+            std::make_unique<sync_pb::EntityMetadata>(is_deletion_metadata));
+        return batch;
+      });
+
+  // No form is added to the database for the unsynced deletion primary key,
+  // because the deletion is supposed to have already removed such form.
+  const int kPrimaryKeyUnsyncedCredential = 1000;
+  const int kPrimaryKeySyncedCredential = 1001;
+  autofill::PasswordForm unsynced_credential = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm synced_credential = MakePasswordForm(kSignonRealm2);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedCredential,
+                                   unsynced_credential);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedCredential,
+                                   synced_credential);
+
+  // The notification should only contain new credentials that are unsynced,
+  // ignoring both synced ones and deletion entries.
+  EXPECT_CALL(*mock_password_store_sync(),
+              NotifyUnsyncedCredentialsWillBeDeleted(
+                  UnorderedElementsAre(unsynced_credential)));
+
+  // The content of the metadata change list does not matter in this case.
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldNotNotifyUnsyncedCredentialsIfProfileStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(false));
+
+  const int kPrimaryKeyUnsyncedCredential = 1000;
+  const std::string kPrimaryKeyUnsyncedCredentialStr = "1000";
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedCredentialStr))
+      .WillByDefault(Return(true));
+
+  sync_pb::EntityMetadata is_not_deletion_metadata;
+  is_not_deletion_metadata.set_is_deleted(false);
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        auto batch = std::make_unique<syncer::MetadataBatch>();
+        batch->AddMetadata(kPrimaryKeyUnsyncedCredentialStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
+        return batch;
+      });
+
+  autofill::PasswordForm unsynced_deletion = MakePasswordForm(kSignonRealm3);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedCredential,
+                                   MakePasswordForm(kSignonRealm1));
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              NotifyUnsyncedCredentialsWillBeDeleted)
+      .Times(0);
+
+  // The content of the metadata change list does not matter in this case.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
 }
 

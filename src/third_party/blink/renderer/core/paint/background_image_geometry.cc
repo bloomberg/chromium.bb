@@ -39,27 +39,12 @@ inline LayoutUnit GetSpaceBetweenImageTiles(LayoutUnit area_size,
 bool FixedBackgroundPaintsInLocalCoordinates(
     const LayoutObject& obj,
     const GlobalPaintFlags global_paint_flags) {
-  if (!obj.IsLayoutView())
+  const auto* view = DynamicTo<LayoutView>(obj);
+  if (!view)
     return false;
 
-  const LayoutView& view = ToLayoutView(obj);
-
-  // TODO(wangxianzhu): For CAP, inline this function into
-  // FixedBackgroundPaintsInLocalCoordinates().
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return view.GetBackgroundPaintLocation() !=
-           kBackgroundPaintInScrollingContents;
-  }
-
-  if (global_paint_flags & kGlobalPaintFlattenCompositingLayers)
-    return false;
-
-  PaintLayer* root_layer = view.Layer();
-  if (!root_layer || root_layer->GetCompositingState() == kNotComposited)
-    return false;
-
-  CompositedLayerMapping* mapping = root_layer->GetCompositedLayerMapping();
-  return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
+  return !(view->GetBackgroundPaintLocation() &
+           kBackgroundPaintInScrollingContents);
 }
 
 LayoutPoint AccumulatedScrollOffsetForFixedBackground(
@@ -103,15 +88,11 @@ void BackgroundImageGeometry::SetNoRepeatX(const FillLayer& fill_layer,
     return;
   }
 
-  // The snapped offset may not yet be snapped, so make sure it is an integer.
-  snapped_x_offset = LayoutUnit(RoundToInt(snapped_x_offset));
-
   if (x_offset > 0) {
-    DCHECK(snapped_x_offset >= LayoutUnit());
     // Move the dest rect if the offset is positive. The image "stays" where
     // it is over the dest rect, so this effectively modifies the phase.
     unsnapped_dest_rect_.Move(x_offset, LayoutUnit());
-    snapped_dest_rect_.Move(snapped_x_offset, LayoutUnit());
+    snapped_dest_rect_.SetX(LayoutUnit(unsnapped_dest_rect_.X().Round()));
 
     // Make the dest as wide as a tile, which will reduce the dest
     // rect if the tile is too small to fill the paint_rect. If not,
@@ -148,15 +129,11 @@ void BackgroundImageGeometry::SetNoRepeatY(const FillLayer& fill_layer,
     return;
   }
 
-  // The snapped offset may not yet be snapped, so make sure it is an integer.
-  snapped_y_offset = LayoutUnit(RoundToInt(snapped_y_offset));
-
   if (y_offset > 0) {
-    DCHECK(snapped_y_offset >= LayoutUnit());
     // Move the dest rect if the offset is positive. The image "stays" where
     // it is in the paint rect, so this effectively modifies the phase.
     unsnapped_dest_rect_.Move(LayoutUnit(), y_offset);
-    snapped_dest_rect_.Move(LayoutUnit(), snapped_y_offset);
+    snapped_dest_rect_.SetY(LayoutUnit(unsnapped_dest_rect_.Y().Round()));
 
     // Make the dest as wide as a tile, which will reduce the dest
     // rect if the tile is too small to fill the paint_rect. If not,
@@ -194,7 +171,7 @@ void BackgroundImageGeometry::SetRepeatX(const FillLayer& fill_layer,
     // unsnapped widths to correctly set the phase.
     LayoutUnit computed_position =
         MinimumValueForLength(fill_layer.PositionX(), available_width) -
-        offset_in_background_.X();
+        OffsetInBackground(fill_layer).X();
 
     // Identify the number of tiles that fit within the computed
     // position in the direction we should be moving.
@@ -231,7 +208,7 @@ void BackgroundImageGeometry::SetRepeatY(const FillLayer& fill_layer,
     // unsnapped widths to correctly set the phase.
     LayoutUnit computed_position =
         MinimumValueForLength(fill_layer.PositionY(), available_height) -
-        offset_in_background_.Y();
+        OffsetInBackground(fill_layer).Y();
 
     // Identify the number of tiles that fit within the computed
     // position in the direction we should be moving.
@@ -304,7 +281,7 @@ static void ExpandToTableColumnGroup(const LayoutTableCell& cell,
   }
 }
 
-LayoutPoint BackgroundImageGeometry::GetOffsetForCell(
+LayoutPoint BackgroundImageGeometry::GetPositioningOffsetForCell(
     const LayoutTableCell& cell,
     const LayoutBox& positioning_box) {
   LayoutSize border_spacing = LayoutSize(cell.Table()->HBorderSpacing(),
@@ -402,17 +379,9 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
   // The LayoutView is the only object that can paint a fixed background into
   // its scrolling contents layer, so it gets a special adjustment here.
-  if (obj.IsLayoutView()) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      DCHECK_EQ(obj.GetBackgroundPaintLocation(),
-                kBackgroundPaintInScrollingContents);
-      rect.SetLocation(LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
-    } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
-      if (mapping->BackgroundPaintsOntoScrollingContentsLayer()) {
-        rect.SetLocation(
-            LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
-      }
-    }
+  if (auto* layout_view = DynamicTo<LayoutView>(obj)) {
+    if (obj.GetBackgroundPaintLocation() & kBackgroundPaintInScrollingContents)
+      rect.SetLocation(LayoutPoint(layout_view->ScrolledContentOffset()));
   }
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
@@ -442,29 +411,23 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
 }  // Anonymous namespace
 
-BackgroundImageGeometry::BackgroundImageGeometry(const LayoutView& view)
-    : box_(view),
-      positioning_box_(view.RootBox()),
-      has_non_local_geometry_(false),
-      painting_view_(true),
-      painting_table_cell_(false),
-      cell_using_container_background_(false) {
+BackgroundImageGeometry::BackgroundImageGeometry(
+    const LayoutView& view,
+    const LayoutPoint& element_positioning_area_offset)
+    : box_(view), positioning_box_(view.RootBox()), painting_view_(true) {
   // The background of the box generated by the root element covers the
   // entire canvas and will be painted by the view object, but the we should
   // still use the root element box for positioning.
   positioning_size_override_ = view.RootBox().Size();
+  // The background image should paint from the root element's coordinate space.
+  element_positioning_area_offset_ = element_positioning_area_offset;
 }
 
 BackgroundImageGeometry::BackgroundImageGeometry(
     const LayoutBoxModelObject& obj)
-    : box_(obj),
-      positioning_box_(obj),
-      has_non_local_geometry_(false),
-      painting_view_(false),
-      painting_table_cell_(false),
-      cell_using_container_background_(false) {
+    : box_(obj), positioning_box_(obj) {
   // Specialized constructor should be used for LayoutView.
-  DCHECK(!obj.IsLayoutView());
+  DCHECK(!IsA<LayoutView>(obj));
 }
 
 BackgroundImageGeometry::BackgroundImageGeometry(
@@ -474,14 +437,12 @@ BackgroundImageGeometry::BackgroundImageGeometry(
       positioning_box_(background_object && !background_object->IsTableCell()
                            ? ToLayoutBoxModelObject(*background_object)
                            : cell),
-      has_non_local_geometry_(false),
-      painting_view_(false),
       painting_table_cell_(true) {
   cell_using_container_background_ =
       background_object && !background_object->IsTableCell();
   if (cell_using_container_background_) {
-    offset_in_background_ =
-        GetOffsetForCell(cell, ToLayoutBox(*background_object));
+    element_positioning_area_offset_ =
+        GetPositioningOffsetForCell(cell, ToLayoutBox(*background_object));
     positioning_size_override_ =
         GetBackgroundObjectDimensions(cell, ToLayoutBox(*background_object));
   }
@@ -652,7 +613,6 @@ void BackgroundImageGeometry::ComputePositioningArea(
   if (ShouldUseFixedAttachment(fill_layer)) {
     // No snapping for fixed attachment.
     SetHasNonLocalGeometry();
-    offset_in_background_ = LayoutPoint();
     unsnapped_positioning_area =
         FixedAttachmentPositioningArea(box_, container, flags);
     unsnapped_dest_rect_ = snapped_dest_rect_ = snapped_positioning_area =
@@ -729,14 +689,6 @@ void BackgroundImageGeometry::ComputePositioningArea(
     snapped_box_offset =
         LayoutPoint(snapped_box_outset.Left() - snapped_dest_adjust.Left(),
                     snapped_box_outset.Top() - snapped_dest_adjust.Top());
-    // For view backgrounds, the input paint rect is specified in root element
-    // local coordinate (i.e. a transform is applied on the context for
-    // painting), and is expanded to cover the whole canvas. Since left/top is
-    // relative to the paint rect, we need to offset them back.
-    if (painting_view_) {
-      unsnapped_box_offset -= paint_rect.Location();
-      snapped_box_offset -= paint_rect.Location();
-    }
   }
 }
 
@@ -756,7 +708,8 @@ void BackgroundImageGeometry::CalculateFillTileSize(
                                          : unsnapped_positioning_area_size;
   LayoutSize image_intrinsic_size(image->ImageSize(
       positioning_box_.GetDocument(),
-      positioning_box_.StyleRef().EffectiveZoom(), positioning_area_size));
+      positioning_box_.StyleRef().EffectiveZoom(), positioning_area_size,
+      LayoutObject::ShouldRespectImageOrientation(&box_)));
   switch (type) {
     case EFillSizeType::kSizeLength: {
       tile_size_ = positioning_area_size;
@@ -920,10 +873,10 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   // snapped values.
   LayoutUnit computed_x_position =
       MinimumValueForLength(fill_layer.PositionX(), snapped_available_width) -
-      offset_in_background_.X();
+      OffsetInBackground(fill_layer).X();
   LayoutUnit computed_y_position =
       MinimumValueForLength(fill_layer.PositionY(), snapped_available_height) -
-      offset_in_background_.Y();
+      OffsetInBackground(fill_layer).Y();
 
   if (background_repeat_x == EFillRepeat::kRoundFill &&
       snapped_positioning_area_size.Width() > LayoutUnit() &&
@@ -1001,7 +954,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
             : computed_x_position;
     SetNoRepeatX(fill_layer, unsnapped_box_offset.X() + x_offset,
                  snapped_box_offset.X() + snapped_x_offset);
-    if (offset_in_background_.X() > tile_size_.Width())
+    if (OffsetInBackground(fill_layer).X() > tile_size_.Width())
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
   }
 
@@ -1032,16 +985,20 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
             : computed_y_position;
     SetNoRepeatY(fill_layer, unsnapped_box_offset.Y() + y_offset,
                  snapped_box_offset.Y() + snapped_y_offset);
-    if (offset_in_background_.Y() > tile_size_.Height())
+    if (OffsetInBackground(fill_layer).Y() > tile_size_.Height())
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
   }
 
   if (ShouldUseFixedAttachment(fill_layer))
     UseFixedAttachment(paint_rect.Location());
 
-  // Clip the final output rect to the paint rect, maintaining snapping.
+  // Clip the final output rect to the paint rect.
   unsnapped_dest_rect_.Intersect(paint_rect);
-  snapped_dest_rect_.Intersect(LayoutRect(PixelSnappedIntRect(paint_rect)));
+
+  // Clip the snapped rect, and re-snap the dest rect as we may have
+  // adjusted it with unsnapped values.
+  snapped_dest_rect_.Intersect(paint_rect);
+  snapped_dest_rect_ = LayoutRect(PixelSnappedIntRect(snapped_dest_rect_));
 }
 
 const ImageResourceObserver& BackgroundImageGeometry::ImageClient() const {
@@ -1061,6 +1018,13 @@ const ComputedStyle& BackgroundImageGeometry::ImageStyle() const {
 InterpolationQuality BackgroundImageGeometry::ImageInterpolationQuality()
     const {
   return box_.StyleRef().GetInterpolationQuality();
+}
+
+LayoutPoint BackgroundImageGeometry::OffsetInBackground(
+    const FillLayer& fill_layer) const {
+  if (ShouldUseFixedAttachment(fill_layer))
+    return LayoutPoint();
+  return element_positioning_area_offset_;
 }
 
 }  // namespace blink

@@ -114,7 +114,7 @@ struct DataForDeserializer {
  public:
   DataForDeserializer(Document* document) : document(document) {}
 
-  Member<Document> document;
+  Document* document;
   // Figures if we failed the deserialization.
   bool did_fail = false;
 };
@@ -137,9 +137,9 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
       v8::DeserializeInternalFieldsCallback(&DeserializeInternalField, &data);
 
   v8::Local<v8::Context> context =
-      v8::Context::FromSnapshot(isolate, index, callback,
-                                extension_configuration, global_proxy,
-                                document->GetMicrotaskQueue())
+      v8::Context::FromSnapshot(
+          isolate, index, callback, extension_configuration, global_proxy,
+          document->GetExecutionContext()->GetMicrotaskQueue())
           .ToLocalChecked();
 
   // In case we fail to deserialize v8::Context from snapshot,
@@ -209,7 +209,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
   // The below code handles window.document on the main world.
   {
     CHECK(document);
-    DCHECK(document->IsHTMLDocument());
+    DCHECK(IsA<HTMLDocument>(document));
     CHECK(document->ContainsWrapper());
     v8::Local<v8::Object> document_wrapper =
         ToV8(document, global_proxy, isolate).As<v8::Object>();
@@ -402,7 +402,6 @@ void V8ContextSnapshot::DeserializeInternalField(v8::Local<v8::Object> object,
         embed_data->did_fail = true;
         return;
       }
-      WrapperTypeInfo::WrapperCreated();
       return;
     }
     case InternalFieldType::kNone:
@@ -426,7 +425,7 @@ bool V8ContextSnapshot::CanCreateContextFromSnapshot(
   // When creating a context for the main world from snapshot, we also need a
   // HTMLDocument instance. If typeof window.document is not HTMLDocument, e.g.
   // SVGDocument or XMLDocument, we can't create contexts from the snapshot.
-  return !world.IsMainWorld() || document->IsHTMLDocument();
+  return !world.IsMainWorld() || IsA<HTMLDocument>(document);
 }
 
 void V8ContextSnapshot::EnsureInterfaceTemplatesForWorld(

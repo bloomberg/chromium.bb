@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 
 #include <algorithm>
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
@@ -165,14 +164,16 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         Vector<float> input_parameters = GrayscaleMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::SEPIA: {
         Vector<float> input_parameters = SepiaMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::SATURATE: {
@@ -180,7 +181,8 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_SATURATE, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_SATURATE,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::HUE_ROTATE: {
@@ -188,7 +190,8 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_HUEROTATE, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_HUEROTATE,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::INVERT: {
@@ -412,22 +415,17 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
 
 Filter* FilterEffectBuilder::BuildReferenceFilter(
     const ReferenceFilterOperation& reference_operation,
-    FilterEffect* previous_effect) const {
-  SVGResource* resource = reference_operation.Resource();
-  if (auto* filter =
-          DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr))
-    return BuildReferenceFilter(*filter, previous_effect);
-  return nullptr;
-}
-
-Filter* FilterEffectBuilder::BuildReferenceFilter(
-    SVGFilterElement& filter_element,
     FilterEffect* previous_effect,
     SVGFilterGraphNodeMap* node_map) const {
+  SVGResource* resource = reference_operation.Resource();
+  auto* filter_element =
+      DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr);
+  if (!filter_element)
+    return nullptr;
   FloatRect filter_region =
       SVGLengthContext::ResolveRectangle<SVGFilterElement>(
-          &filter_element,
-          filter_element.filterUnits()->CurrentValue()->EnumValue(),
+          filter_element,
+          filter_element->filterUnits()->CurrentValue()->EnumValue(),
           reference_box_);
   // TODO(fs): We rely on the presence of a node map here to opt-in to the
   // check for an empty filter region. The reason for this is that we lack a
@@ -436,7 +434,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     return nullptr;
 
   bool primitive_bounding_box_mode =
-      filter_element.primitiveUnits()->CurrentValue()->EnumValue() ==
+      filter_element->primitiveUnits()->CurrentValue()->EnumValue() ==
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
   Filter::UnitScaling unit_scaling =
       primitive_bounding_box_mode ? Filter::kBoundingBox : Filter::kUserSpace;
@@ -446,7 +444,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     previous_effect = result->GetSourceGraphic();
   SVGFilterBuilder builder(previous_effect, node_map, fill_flags_,
                            stroke_flags_);
-  builder.BuildGraph(result, filter_element, reference_box_);
+  builder.BuildGraph(result, *filter_element, reference_box_);
   result->SetLastEffect(builder.LastEffect());
   return result;
 }

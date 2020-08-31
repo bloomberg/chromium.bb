@@ -6,16 +6,37 @@
  * @fileoverview 'settings-import-data-dialog' is a component for importing
  * bookmarks and other data from other sources.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../controls/settings_checkbox.js';
+import '../controls/settings_toggle_button.m.js';
+import '../icons.m.js';
+import '../settings_vars_css.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+
+import {BrowserProfile, ImportDataBrowserProxy, ImportDataBrowserProxyImpl, ImportDataStatus} from './import_data_browser_proxy.js';
+
 Polymer({
   is: 'settings-import-data-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior, WebUIListenerBehavior, PrefsBehavior],
 
   properties: {
-    /** @private {!Array<!settings.BrowserProfile>} */
+    /** @private {!Array<!BrowserProfile>} */
     browserProfiles_: Array,
 
-    /** @private {!settings.BrowserProfile} */
+    /** @private {!BrowserProfile} */
     selected_: Object,
 
     /**
@@ -30,7 +51,7 @@ Polymer({
     /** @private */
     importStatus_: {
       type: String,
-      value: settings.ImportDataStatus.INITIAL,
+      value: ImportDataStatus.INITIAL,
     },
 
     /**
@@ -39,7 +60,7 @@ Polymer({
      */
     importStatusEnum_: {
       type: Object,
-      value: settings.ImportDataStatus,
+      value: ImportDataStatus,
     },
   },
 
@@ -47,12 +68,12 @@ Polymer({
     'prefsChanged_(selected_, prefs.*)',
   ],
 
-  /** @private {?settings.ImportDataBrowserProxy} */
+  /** @private {?ImportDataBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
-    this.browserProxy_ = settings.ImportDataBrowserProxyImpl.getInstance();
+  attached() {
+    this.browserProxy_ = ImportDataBrowserProxyImpl.getInstance();
     this.browserProxy_.initializeImportDialog().then(data => {
       this.browserProfiles_ = data;
       this.selected_ = this.browserProfiles_[0];
@@ -64,14 +85,24 @@ Polymer({
 
     this.addWebUIListener('import-data-status-changed', importStatus => {
       this.importStatus_ = importStatus;
-      if (this.hasImportStatus_(settings.ImportDataStatus.FAILED)) {
+      if (this.hasImportStatus_(ImportDataStatus.FAILED)) {
         this.closeDialog_();
       }
     });
   },
 
+  /**
+   * @param {string} name
+   * @param {string} profileName
+   * @return {string}
+   * @private
+   */
+  getProfileDisplayName_(name, profileName) {
+    return profileName ? `${name} - ${profileName}` : name;
+  },
+
   /** @private */
-  prefsChanged_: function() {
+  prefsChanged_() {
     if (this.selected_ == undefined || this.prefs == undefined) {
       return;
     }
@@ -90,16 +121,16 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ImportDataStatus} status
+   * @param {!ImportDataStatus} status
    * @return {boolean} Whether |status| is the current status.
    * @private
    */
-  hasImportStatus_: function(status) {
+  hasImportStatus_(status) {
     return this.importStatus_ == status;
   },
 
   /** @private */
-  isImportFromFileSelected_: function() {
+  isImportFromFileSelected_() {
     // The last entry in |browserProfiles_| always refers to dummy profile for
     // importing from a bookmarks file.
     return this.selected_.index == this.browserProfiles_.length - 1;
@@ -109,27 +140,34 @@ Polymer({
    * @return {string}
    * @private
    */
-  getActionButtonText_: function() {
+  getActionButtonText_() {
     return this.i18n(
         this.isImportFromFileSelected_() ? 'importChooseFile' : 'importCommit');
   },
 
   /** @private */
-  onBrowserProfileSelectionChange_: function() {
+  onBrowserProfileSelectionChange_() {
     this.selected_ = this.browserProfiles_[this.$.browserSelect.selectedIndex];
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
+    const checkboxes = /** @type {!NodeList<!SettingsCheckboxElement>} */ (
+        this.shadowRoot.querySelectorAll('settings-checkbox'));
     if (this.isImportFromFileSelected_()) {
       this.browserProxy_.importFromBookmarksFile();
     } else {
-      this.browserProxy_.importData(this.$.browserSelect.selectedIndex);
+      const types = {};
+      checkboxes.forEach(checkbox => {
+        types[checkbox.pref.key] = checkbox.checked;
+      });
+      this.browserProxy_.importData(this.$.browserSelect.selectedIndex, types);
     }
+    checkboxes.forEach(checkbox => checkbox.sendPrefChange());
   },
 
   /** @private */
-  closeDialog_: function() {
+  closeDialog_() {
     this.$.dialog.close();
   },
 
@@ -137,8 +175,8 @@ Polymer({
    * @return {boolean} Whether the import button should be disabled.
    * @private
    */
-  shouldDisableImport_: function() {
-    return this.hasImportStatus_(settings.ImportDataStatus.IN_PROGRESS) ||
+  shouldDisableImport_() {
+    return this.hasImportStatus_(ImportDataStatus.IN_PROGRESS) ||
         this.noImportDataTypeSelected_;
   },
 });

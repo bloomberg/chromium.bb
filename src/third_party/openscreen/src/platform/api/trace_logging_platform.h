@@ -11,12 +11,13 @@
 #include "platform/base/trace_logging_types.h"
 
 namespace openscreen {
-namespace platform {
 
 // Optional platform API to support logging trace events from Open Screen. To
 // use this, implement the TraceLoggingPlatform interface and call
 // StartTracing() and StopTracing() to turn tracing on/off (see
 // platform/base/trace_logging_activation.h).
+//
+// All methods must be thread-safe and re-entrant.
 class TraceLoggingPlatform {
  public:
   virtual ~TraceLoggingPlatform();
@@ -48,7 +49,6 @@ class TraceLoggingPlatform {
                            Error::Code error) = 0;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_TRACE_LOGGING_PLATFORM_H_

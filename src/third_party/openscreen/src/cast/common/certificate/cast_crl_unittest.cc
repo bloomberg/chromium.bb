@@ -7,15 +7,22 @@
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/proto/test_suite.pb.h"
-#include "cast/common/certificate/test_helpers.h"
+#include "cast/common/certificate/testing/test_helpers.h"
 #include "gtest/gtest.h"
-#include "util/logging.h"
+#include "platform/test/paths.h"
+#include "testing/util/read_file.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
-namespace {
 
-using CastCertError = openscreen::Error::Code;
+// TODO(crbug.com/openscreen/90): Remove these after Chromium is migrated to
+// openscreen::cast
+using DeviceCertTestSuite = ::cast::certificate::DeviceCertTestSuite;
+using VerificationResult = ::cast::certificate::VerificationResult;
+using DeviceCertTest = ::cast::certificate::DeviceCertTest;
+
+namespace {
 
 // Indicates the expected result of test step's verification.
 enum TestStepResult {
@@ -31,10 +38,9 @@ bool TestVerifyCertificate(TestStepResult expected_result,
                            TrustStore* cast_trust_store) {
   std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
-  openscreen::Error result =
-      VerifyDeviceCert(der_certs, time, &context, &policy, nullptr,
-                       CRLPolicy::kCrlOptional, cast_trust_store);
-  bool success = (result.code() == CastCertError::kNone) ==
+  Error result = VerifyDeviceCert(der_certs, time, &context, &policy, nullptr,
+                                  CRLPolicy::kCrlOptional, cast_trust_store);
+  bool success = (result.code() == Error::Code::kNone) ==
                  (expected_result == kResultSuccess);
   EXPECT_TRUE(success);
   return success;
@@ -60,7 +66,7 @@ bool TestVerifyCRL(TestStepResult expected_result,
 // The provided CRL is verified at |crl_time|.
 // If |crl_required| is set, then a valid Cast CRL must be provided.
 // Otherwise, a missing CRL is be ignored.
-bool TestVerifyRevocation(CastCertError expected_result,
+bool TestVerifyRevocation(Error::Code expected_result,
                           const std::vector<std::string>& der_certs,
                           const std::string& crl_bundle,
                           const DateTime& crl_time,
@@ -78,23 +84,25 @@ bool TestVerifyRevocation(CastCertError expected_result,
   CastDeviceCertPolicy policy;
   CRLPolicy crl_policy =
       crl_required ? CRLPolicy::kCrlRequired : CRLPolicy::kCrlOptional;
-  openscreen::Error result =
-      VerifyDeviceCert(der_certs, cert_time, &context, &policy, crl.get(),
-                       crl_policy, cast_trust_store);
+  Error result = VerifyDeviceCert(der_certs, cert_time, &context, &policy,
+                                  crl.get(), crl_policy, cast_trust_store);
   EXPECT_EQ(expected_result, result.code());
   return expected_result == result.code();
 }
 
-#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/common/certificate/"
+const std::string& GetSpecificTestDataPath() {
+  static std::string data_path = GetTestDataPath() + "cast/common/certificate/";
+  return data_path;
+}
 
 bool RunTest(const DeviceCertTest& test_case) {
   std::unique_ptr<TrustStore> crl_trust_store;
   std::unique_ptr<TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
     crl_trust_store = testing::CreateTrustStoreFromPemFile(
-        TEST_DATA_PREFIX "certificates/cast_crl_test_root_ca.pem");
+        GetSpecificTestDataPath() + "certificates/cast_crl_test_root_ca.pem");
     cast_trust_store = testing::CreateTrustStoreFromPemFile(
-        TEST_DATA_PREFIX "certificates/cast_test_root_ca.pem");
+        GetSpecificTestDataPath() + "certificates/cast_test_root_ca.pem");
 
     EXPECT_FALSE(crl_trust_store->certs.empty());
     EXPECT_FALSE(cast_trust_store->certs.empty());
@@ -118,47 +126,47 @@ bool RunTest(const DeviceCertTest& test_case) {
 
   std::string crl_bundle = test_case.crl_bundle();
   switch (test_case.expected_result()) {
-    case PATH_VERIFICATION_FAILED:
+    case ::cast::certificate::PATH_VERIFICATION_FAILED:
       return TestVerifyCertificate(kResultFail, der_cert_path,
                                    cert_verification_time,
                                    cast_trust_store.get());
-    case CRL_VERIFICATION_FAILED:
+    case ::cast::certificate::CRL_VERIFICATION_FAILED:
       return TestVerifyCRL(kResultFail, crl_bundle, crl_verification_time,
                            crl_trust_store.get());
-    case REVOCATION_CHECK_FAILED_WITHOUT_CRL:
+    case ::cast::certificate::REVOCATION_CHECK_FAILED_WITHOUT_CRL:
       return TestVerifyCertificate(kResultSuccess, der_cert_path,
                                    cert_verification_time,
                                    cast_trust_store.get()) &&
              TestVerifyCRL(kResultFail, crl_bundle, crl_verification_time,
                            crl_trust_store.get()) &&
              TestVerifyRevocation(
-                 CastCertError::kErrCrlInvalid, der_cert_path, crl_bundle,
+                 Error::Code::kErrCrlInvalid, der_cert_path, crl_bundle,
                  crl_verification_time, cert_verification_time, true,
                  cast_trust_store.get(), crl_trust_store.get());
-    case CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:  // fallthrough
-    case REVOCATION_CHECK_FAILED:
+    case ::cast::certificate::
+        CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:  // fallthrough
+    case ::cast::certificate::REVOCATION_CHECK_FAILED:
       return TestVerifyCertificate(kResultSuccess, der_cert_path,
                                    cert_verification_time,
                                    cast_trust_store.get()) &&
              TestVerifyCRL(kResultSuccess, crl_bundle, crl_verification_time,
                            crl_trust_store.get()) &&
              TestVerifyRevocation(
-                 CastCertError::kErrCertsRevoked, der_cert_path, crl_bundle,
+                 Error::Code::kErrCertsRevoked, der_cert_path, crl_bundle,
                  crl_verification_time, cert_verification_time, true,
                  cast_trust_store.get(), crl_trust_store.get());
-    case SUCCESS:
+    case ::cast::certificate::SUCCESS:
       return (crl_bundle.empty() ||
               TestVerifyCRL(kResultSuccess, crl_bundle, crl_verification_time,
                             crl_trust_store.get())) &&
              TestVerifyCertificate(kResultSuccess, der_cert_path,
                                    cert_verification_time,
                                    cast_trust_store.get()) &&
-             TestVerifyRevocation(CastCertError::kNone, der_cert_path,
-                                  crl_bundle, crl_verification_time,
-                                  cert_verification_time, !crl_bundle.empty(),
-                                  cast_trust_store.get(),
+             TestVerifyRevocation(Error::Code::kNone, der_cert_path, crl_bundle,
+                                  crl_verification_time, cert_verification_time,
+                                  !crl_bundle.empty(), cast_trust_store.get(),
                                   crl_trust_store.get());
-    case UNSPECIFIED:
+    case ::cast::certificate::UNSPECIFIED:
       return false;
   }
   return false;
@@ -169,8 +177,7 @@ bool RunTest(const DeviceCertTest& test_case) {
 // To see the description of the test, execute the test.
 // These tests are generated by a test generator in google3.
 void RunTestSuite(const std::string& test_suite_file_name) {
-  std::string testsuite_raw =
-      testing::ReadEntireFileToString(test_suite_file_name);
+  std::string testsuite_raw = ReadEntireFileToString(test_suite_file_name);
   ASSERT_FALSE(testsuite_raw.empty());
   DeviceCertTestSuite test_suite;
   ASSERT_TRUE(test_suite.ParseFromString(testsuite_raw));
@@ -187,9 +194,9 @@ void RunTestSuite(const std::string& test_suite_file_name) {
 }
 
 TEST(CastCertificateTest, TestSuite1) {
-  RunTestSuite(TEST_DATA_PREFIX "testsuite/testsuite1.pb");
+  RunTestSuite(GetSpecificTestDataPath() + "testsuite/testsuite1.pb");
 }
 
 }  // namespace
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen

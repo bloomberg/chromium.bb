@@ -396,9 +396,41 @@ class PartialMock(object):
   *dependencies* mocked out is preferred over mocking out the entire function
   and re-implementing the side effect (return value, state modification) logic
   in the test.  It is also useful for creating re-usable mocks.
+
+  Methods mocked out will retain the same spec as their original, but will still
+  be bound to this class rather than the mocked class.  In the example below,
+  this is why the mocked print function has an extra |inst| argument after the
+  first |self| argument.
+
+  Examples:
+    # Defined in chromite/lib/foo.py.
+    class SomeClass(object):
+      def print(self, msg):
+        ...
+      def write(self, fd, msg):
+        ...
+
+    # Defined in chromite/lib/foo_unittest.py.
+    class SomeClassMock(partial_mock.PartialMock):
+      TARGET = 'chromite.lib.foo.SomeClass'
+      ATTRS = ('print',)
+
+      # NB: |self| refers to the instance of |SomeClassMock| while |inst| refers
+      # to the instance of |SomeClass|.  This allows access to state in either.
+      def print(self, inst, msg):
+        ...
+
+  Attributes:
+    TARGET: The import spec for the target object to be (partially) mocked.
+        This is like the target argument to mock.patch().
+    ATTRS: A tuple of attributes on |TARGET| to mock out.  Each attribute must
+        be defined with a corresponding signature.  You may mock out as many or
+        few attributes as needed (hence, "partial mock").
   """
 
+  # The import spec for the object being mocked.
   TARGET = None
+  # Tuples of attribute names on the target object to mock.
   ATTRS = None
 
   def __init__(self, create_tempdir=False):
@@ -559,20 +591,36 @@ class PartialCmdMock(PartialMock):
 
   DEFAULT_ATTR = None
 
+  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
   @CheckAttr
-  def SetDefaultCmdResult(self, returncode=0, output='', error='',
+  def SetDefaultCmdResult(self, returncode=0, output=None, error=None,
+                          stdout=None, stderr=None,
                           side_effect=None, mock_attr=None):
     """Specify the default command result if no command is matched.
 
     Args:
       returncode: See AddCmdResult.
-      output: See AddCmdResult.
-      error: See AddCmdResult.
+      output: (Deprecated) Alias to stdout.
+      error: (Deprecated) Alias to stderr.
+      stdout: See AddCmdResult.
+      stderr: See AddCmdResult.
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
+    if stdout is None:
+      stdout = output
+    elif output is not None:
+      raise ValueError('Only specify |stdout|, not |output|')
+    if stdout is None:
+      stdout = ''
+    if stderr is None:
+      stderr = error
+    elif error is not None:
+      raise ValueError('Only specify |stderr|, not |error|')
+    if stderr is None:
+      stderr = ''
     result = cros_build_lib.CommandResult(
-        returncode=returncode, output=output, error=error)
+        returncode=returncode, stdout=stdout, stderr=stderr)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
 
   # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
@@ -597,13 +645,13 @@ class PartialCmdMock(PartialMock):
     if stdout is None:
       stdout = output
     elif output is not None:
-      raise TypeError('Only specify |stdout|, not |output|')
+      raise ValueError('Only specify |stdout|, not |output|')
     if stdout is None:
       stdout = ''
     if stderr is None:
       stderr = error
     elif error is not None:
-      raise TypeError('Only specify |stderr|, not |error|')
+      raise ValueError('Only specify |stderr|, not |error|')
     if stderr is None:
       stderr = ''
     result = cros_build_lib.CommandResult(

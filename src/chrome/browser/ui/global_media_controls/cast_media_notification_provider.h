@@ -34,6 +34,7 @@ class CastMediaNotificationProvider : public media_router::MediaRoutesObserver {
           notification_controller,
       base::RepeatingClosure items_changed_callback);
   CastMediaNotificationProvider(
+      Profile* profile,
       media_router::MediaRouter* router,
       media_message_center::MediaNotificationController*
           notification_controller,
@@ -52,8 +53,10 @@ class CastMediaNotificationProvider : public media_router::MediaRoutesObserver {
   GetNotificationItem(const std::string& id);
 
   virtual bool HasItems() const;
+  size_t GetItemCount() const;
 
  private:
+  Profile* const profile_;
   media_router::MediaRouter* const router_;
   media_message_center::MediaNotificationController* const
       notification_controller_;

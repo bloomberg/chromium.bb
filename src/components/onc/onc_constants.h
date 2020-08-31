@@ -239,7 +239,6 @@ ONC_EXPORT extern const char kFTEnabled[];
 ONC_EXPORT extern const char kHexSSID[];
 ONC_EXPORT extern const char kHiddenSSID[];
 ONC_EXPORT extern const char kPassphrase[];
-ONC_EXPORT extern const char kRoamThreshold[];
 ONC_EXPORT extern const char kSSID[];
 ONC_EXPORT extern const char kSecurity[];
 ONC_EXPORT extern const char kSecurityNone[];
@@ -336,10 +335,19 @@ ONC_EXPORT extern const char kServerCAPEMs[];
 ONC_EXPORT extern const char kServerCARef[];
 ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kSubjectMatch[];
+ONC_EXPORT extern const char kSubjectAlternativeNameMatch[];
 ONC_EXPORT extern const char kTLSVersionMax[];
 ONC_EXPORT extern const char kUseSystemCAs[];
 ONC_EXPORT extern const char kUseProactiveKeyCaching[];
 }  // namespace eap
+
+namespace eap_subject_alternative_name_match {
+ONC_EXPORT extern const char kType[];
+ONC_EXPORT extern const char kValue[];
+ONC_EXPORT extern const char kEMAIL[];
+ONC_EXPORT extern const char kDNS[];
+ONC_EXPORT extern const char kURI[];
+}  // namespace eap_subject_alternative_name_match
 
 namespace vpn {
 ONC_EXPORT extern const char kAutoConnect[];
@@ -383,6 +391,7 @@ ONC_EXPORT extern const char kAuth[];
 ONC_EXPORT extern const char kCipher[];
 ONC_EXPORT extern const char kCompLZO[];
 ONC_EXPORT extern const char kCompNoAdapt[];
+ONC_EXPORT extern const char kCompressionAlgorithm[];
 ONC_EXPORT extern const char kExtraHosts[];
 ONC_EXPORT extern const char kIgnoreDefaultRoute[];
 ONC_EXPORT extern const char kInteract[];
@@ -416,6 +425,14 @@ ONC_EXPORT extern const char kVerb[];
 ONC_EXPORT extern const char kVerifyHash[];
 ONC_EXPORT extern const char kVerifyX509[];
 }  // namespace openvpn
+
+namespace openvpn_compression_algorithm {
+ONC_EXPORT extern const char kFramingOnly[];
+ONC_EXPORT extern const char kLz4[];
+ONC_EXPORT extern const char kLz4V2[];
+ONC_EXPORT extern const char kLzo[];
+ONC_EXPORT extern const char kNone[];
+}  // namespace openvpn_compression_algorithm
 
 namespace openvpn_user_auth_type {
 ONC_EXPORT extern const char kNone[];

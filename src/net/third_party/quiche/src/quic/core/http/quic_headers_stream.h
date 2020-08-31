@@ -43,11 +43,14 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
                           QuicByteCount data_length,
                           bool fin_acked,
                           QuicTime::Delta ack_delay_time,
+                          QuicTime receive_timestamp,
                           QuicByteCount* newly_acked_length) override;
 
   void OnStreamFrameRetransmitted(QuicStreamOffset offset,
                                   QuicByteCount data_length,
                                   bool fin_retransmitted) override;
+
+  void OnStreamReset(const QuicRstStreamFrame& frame) override;
 
  private:
   friend class test::QuicHeadersStreamPeer;
@@ -88,7 +91,7 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
   QuicSpdySession* spdy_session_;
 
   // Headers that have not been fully acked.
-  QuicDeque<CompressedHeaderInfo> unacked_headers_;
+  QuicCircularDeque<CompressedHeaderInfo> unacked_headers_;
 };
 
 }  // namespace quic

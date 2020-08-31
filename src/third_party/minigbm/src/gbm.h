@@ -28,19 +28,15 @@
 #ifndef _GBM_H_
 #define _GBM_H_
 
+#define __GBM__ 1
+
+#include <stddef.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-#define __GBM__ 1
-
-#ifndef MINIGBM
-#define MINIGBM
-#endif
-
-#include <stddef.h>
-#include <stdint.h>
 
 /**
  * \file gbm.h
@@ -73,8 +69,20 @@ union gbm_bo_handle {
    uint64_t u64;
 };
 
-#define GBM_MAX_PLANES 4
+/** Format of the allocated buffer */
+enum gbm_bo_format {
+   /** RGB with 8 bits per channel in a 32 bit value */
+   GBM_BO_FORMAT_XRGB8888, 
+   /** ARGB with 8 bits per channel in a 32 bit value */
+   GBM_BO_FORMAT_ARGB8888
+};
 
+
+/**
+ * The FourCC format codes are taken from the drm_fourcc.h definition, and
+ * re-namespaced. New GBM formats must not be added, unless they are
+ * identical ports from drm_fourcc.
+ */
 #define __gbm_fourcc_code(a,b,c,d) ((uint32_t)(a) | ((uint32_t)(b) << 8) | \
 			      ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24))
 
@@ -87,7 +95,6 @@ union gbm_bo_handle {
 #define GBM_FORMAT_R8		__gbm_fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
 
 /* 16 bpp RG */
-#define GBM_FORMAT_RG88		__gbm_fourcc_code('R', 'G', '8', '8') /* [15:0] R:G 8:8 little endian */
 #define GBM_FORMAT_GR88		__gbm_fourcc_code('G', 'R', '8', '8') /* [15:0] G:R 8:8 little endian */
 
 /* 8 bpp RGB */
@@ -143,6 +150,15 @@ union gbm_bo_handle {
 #define GBM_FORMAT_RGBA1010102	__gbm_fourcc_code('R', 'A', '3', '0') /* [31:0] R:G:B:A 10:10:10:2 little endian */
 #define GBM_FORMAT_BGRA1010102	__gbm_fourcc_code('B', 'A', '3', '0') /* [31:0] B:G:R:A 10:10:10:2 little endian */
 
+/*
+ * Floating point 64bpp RGB
+ * IEEE 754-2008 binary16 half-precision float
+ * [15:0] sign:exponent:mantissa 1:5:10
+ */
+#define GBM_FORMAT_XBGR16161616F __gbm_fourcc_code('X', 'B', '4', 'H') /* [63:0] x:B:G:R 16:16:16:16 little endian */
+
+#define GBM_FORMAT_ABGR16161616F __gbm_fourcc_code('A', 'B', '4', 'H') /* [63:0] A:B:G:R 16:16:16:16 little endian */
+
 /* packed YCbCr */
 #define GBM_FORMAT_YUYV		__gbm_fourcc_code('Y', 'U', 'Y', 'V') /* [31:0] Cr0:Y1:Cb0:Y0 8:8:8:8 little endian */
 #define GBM_FORMAT_YVYU		__gbm_fourcc_code('Y', 'V', 'Y', 'U') /* [31:0] Cb0:Y1:Cr0:Y0 8:8:8:8 little endian */
@@ -183,28 +199,9 @@ union gbm_bo_handle {
 #define GBM_FORMAT_YUV444	__gbm_fourcc_code('Y', 'U', '2', '4') /* non-subsampled Cb (1) and Cr (2) planes */
 #define GBM_FORMAT_YVU444	__gbm_fourcc_code('Y', 'V', '2', '4') /* non-subsampled Cr (1) and Cb (2) planes */
 
-/*
- * Format Modifiers:
- *
- * Format modifiers describe, typically, a re-ordering or modification
- * of the data in a plane of an FB.  This can be used to express tiled/
- * swizzled formats, or compression, or a combination of the two.
- *
- * The upper 8 bits of the format modifier are a vendor-id as assigned
- * below.  The lower 56 bits are assigned as vendor sees fit.
- */
-
-/* Vendor Ids: */
-#define GBM_FORMAT_MOD_NONE           0
-#define GBM_FORMAT_MOD_VENDOR_INTEL   0x01
-#define GBM_FORMAT_MOD_VENDOR_AMD     0x02
-#define GBM_FORMAT_MOD_VENDOR_NV      0x03
-#define GBM_FORMAT_MOD_VENDOR_SAMSUNG 0x04
-#define GBM_FORMAT_MOD_VENDOR_QCOM    0x05
-/* add more to the end as needed */
-
-#define gbm_fourcc_mod_code(vendor, val) \
-	((((__u64)GBM_FORMAT_MOD_VENDOR_## vendor) << 56) | (val & 0x00ffffffffffffffULL))
+struct gbm_format_name_desc {
+   char name[5];
+};
 
 /**
  * Flags to indicate the intended use for the buffer - these are passed into
@@ -233,17 +230,14 @@ enum gbm_bo_flags {
     */
    GBM_BO_USE_RENDERING    = (1 << 2),
    /**
-    * Deprecated
+    * Buffer can be used for gbm_bo_write.  This is guaranteed to work
+    * with GBM_BO_USE_CURSOR, but may not work for other combinations.
     */
    GBM_BO_USE_WRITE    = (1 << 3),
    /**
-    * Buffer is guaranteed to be laid out linearly in memory. That is, the
-    * buffer is laid out as an array with 'height' blocks, each block with
-    * length 'stride'. Each stride is in the same order as the rows of the
-    * buffer. This is intended to be used with buffers that will be accessed
-    * via dma-buf mmap().
+    * Buffer is linear, i.e. not tiled.
     */
-   GBM_BO_USE_LINEAR    = (1 << 4),
+   GBM_BO_USE_LINEAR = (1 << 4),
    /**
     * The buffer will be used as a texture that will be sampled from.
     */
@@ -277,6 +271,15 @@ enum gbm_bo_flags {
     * The buffer will be read by a video encode accelerator.
     */
    GBM_BO_USE_HW_VIDEO_ENCODER = (1 << 14),
+
+   /**
+    * If this flag is set, no backing memory will be allocated for the
+    * created buffer. The metadata of the buffer (e.g. size) can be
+    * queried, and the values will be equal to a buffer allocated with
+    * the same same arguments minus this flag. However, any methods
+    * which would otherwise access the underlying buffer will fail.
+    */
+   GBM_TEST_ALLOC = (1 << 15),
 };
 
 int
@@ -288,6 +291,11 @@ gbm_device_get_backend_name(struct gbm_device *gbm);
 int
 gbm_device_is_format_supported(struct gbm_device *gbm,
                                uint32_t format, uint32_t usage);
+
+int
+gbm_device_get_format_modifier_plane_count(struct gbm_device *gbm,
+                                           uint32_t format,
+                                           uint64_t modifier);
 
 void
 gbm_device_destroy(struct gbm_device *gbm);
@@ -304,8 +312,8 @@ struct gbm_bo *
 gbm_bo_create_with_modifiers(struct gbm_device *gbm,
                              uint32_t width, uint32_t height,
                              uint32_t format,
-                             const uint64_t *modifiers, uint32_t count);
-
+                             const uint64_t *modifiers,
+                             const unsigned int count);
 #define GBM_BO_IMPORT_WL_BUFFER         0x5501
 #define GBM_BO_IMPORT_EGL_IMAGE         0x5502
 #define GBM_BO_IMPORT_FD                0x5503
@@ -321,6 +329,8 @@ struct gbm_import_fd_data {
    uint32_t format;
 };
 
+#define GBM_MAX_PLANES 4
+
 struct gbm_import_fd_modifier_data {
    uint32_t width;
    uint32_t height;
@@ -330,17 +340,6 @@ struct gbm_import_fd_modifier_data {
    int strides[GBM_MAX_PLANES];
    int offsets[GBM_MAX_PLANES];
    uint64_t modifier;
-};
-
-// Deprecated. Use gbm_import_fd_modifier_data instead.
-struct gbm_import_fd_planar_data {
-   int fds[GBM_MAX_PLANES];
-   uint32_t width;
-   uint32_t height;
-   uint32_t format;
-   uint32_t strides[GBM_MAX_PLANES];
-   uint32_t offsets[GBM_MAX_PLANES];
-   uint64_t format_modifiers[GBM_MAX_PLANES];
 };
 
 struct gbm_bo *
@@ -374,11 +373,6 @@ enum gbm_bo_transfer_flags {
    GBM_BO_TRANSFER_READ_WRITE = (GBM_BO_TRANSFER_READ | GBM_BO_TRANSFER_WRITE),
 };
 
-void *
-gbm_bo_map(struct gbm_bo *bo,
-           uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-           uint32_t flags, uint32_t *stride, void **map_data, size_t plane);
-
 void
 gbm_bo_unmap(struct gbm_bo *bo, void *map_data);
 
@@ -391,19 +385,17 @@ gbm_bo_get_height(struct gbm_bo *bo);
 uint32_t
 gbm_bo_get_stride(struct gbm_bo *bo);
 
-/* Tegra bringup hack to pass tiling parameters at EGLImage creation. */
 uint32_t
-gbm_bo_get_stride_or_tiling(struct gbm_bo *bo);
+gbm_bo_get_stride_for_plane(struct gbm_bo *bo, size_t plane);
 
 uint32_t
 gbm_bo_get_format(struct gbm_bo *bo);
 
-/* Deprecated */
-uint64_t
-gbm_bo_get_format_modifier(struct gbm_bo *bo);
+uint32_t
+gbm_bo_get_bpp(struct gbm_bo *bo);
 
-uint64_t
-gbm_bo_get_modifier(struct gbm_bo *bo);
+uint32_t
+gbm_bo_get_offset(struct gbm_bo *bo, size_t plane);
 
 struct gbm_device *
 gbm_bo_get_device(struct gbm_bo *bo);
@@ -414,42 +406,17 @@ gbm_bo_get_handle(struct gbm_bo *bo);
 int
 gbm_bo_get_fd(struct gbm_bo *bo);
 
-/* Deprecated */
-size_t
-gbm_bo_get_num_planes(struct gbm_bo *bo);
-
-size_t
-gbm_bo_get_plane_count(struct gbm_bo *bo);
-
-/* Deprecated */
-union gbm_bo_handle
-gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
-
-union gbm_bo_handle
-gbm_bo_get_handle_for_plane(struct gbm_bo* bo, size_t plane);
+uint64_t
+gbm_bo_get_modifier(struct gbm_bo *bo);
 
 int
-gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);
+gbm_bo_get_plane_count(struct gbm_bo *bo);
 
-/* Deprecated */
-uint32_t
-gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane);
+union gbm_bo_handle
+gbm_bo_get_handle_for_plane(struct gbm_bo *bo, size_t plane);
 
-uint32_t
-gbm_bo_get_offset(struct gbm_bo *bo, size_t plane);
-
-uint32_t
-gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
-
-/* Deprecated */
-uint32_t
-gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane);
-
-uint32_t
-gbm_bo_get_stride_for_plane(struct gbm_bo *bo, size_t plane);
-
-uint64_t
-gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane);
+int
+gbm_bo_write(struct gbm_bo *bo, const void *buf, size_t count);
 
 void
 gbm_bo_set_user_data(struct gbm_bo *bo, void *data,
@@ -466,6 +433,13 @@ gbm_surface_create(struct gbm_device *gbm,
                    uint32_t width, uint32_t height,
 		   uint32_t format, uint32_t flags);
 
+struct gbm_surface *
+gbm_surface_create_with_modifiers(struct gbm_device *gbm,
+                                  uint32_t width, uint32_t height,
+                                  uint32_t format,
+                                  const uint64_t *modifiers,
+                                  const unsigned int count);
+
 struct gbm_bo *
 gbm_surface_lock_front_buffer(struct gbm_surface *surface);
 
@@ -477,6 +451,33 @@ gbm_surface_has_free_buffers(struct gbm_surface *surface);
 
 void
 gbm_surface_destroy(struct gbm_surface *surface);
+
+char *
+gbm_format_get_name(uint32_t gbm_format, struct gbm_format_name_desc *desc);
+
+
+#ifndef MINIGBM
+#define MINIGBM
+#endif
+/*
+ * The following functions are not deprecated, but not in the Mesa the gbm
+ * header. The main difference is minigbm allows for the possibility of
+ * disjoint YUV images, while Mesa GBM does not.
+ */
+uint32_t
+gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
+
+int
+gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);
+
+void *
+gbm_bo_map(struct gbm_bo *bo,
+           uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+           uint32_t flags, uint32_t *stride, void **map_data, size_t plane);
+void *
+gbm_bo_map2(struct gbm_bo *bo,
+	   uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+	   uint32_t flags, uint32_t *stride, void **map_data, int plane);
 
 #ifdef __cplusplus
 }

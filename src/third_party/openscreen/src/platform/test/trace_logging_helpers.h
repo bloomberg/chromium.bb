@@ -9,10 +9,9 @@
 
 #include "gmock/gmock.h"
 #include "platform/base/trace_logging_activation.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 enum TraceHierarchyParts { kRoot = 0x1, kParent = 0x2, kCurrent = 0x4 };
 
@@ -21,17 +20,13 @@ enum ArgumentId { kFirst, kSecond };
 class MockLoggingPlatform : public TraceLoggingPlatform {
  public:
   MockLoggingPlatform() {
-    OSP_DCHECK(!GetTracingDestination());
     StartTracing(this);
 
     ON_CALL(*this, IsTraceLoggingEnabled(::testing::_))
         .WillByDefault(::testing::Return(true));
   }
 
-  ~MockLoggingPlatform() override {
-    OSP_DCHECK_EQ(GetTracingDestination(), this);
-    StopTracing();
-  }
+  ~MockLoggingPlatform() override { StopTracing(); }
 
   MOCK_METHOD1(IsTraceLoggingEnabled, bool(TraceCategory::Value category));
   MOCK_METHOD7(LogTrace,
@@ -123,7 +118,6 @@ void ValidateTraceIdHierarchyOnAsyncTrace(const char* name,
   }
 }
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_TRACE_LOGGING_HELPERS_H_

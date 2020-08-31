@@ -56,11 +56,6 @@ def run_script(argv, funcs):
   # behavior of the script.
   parser.add_argument('--args', type=parse_json, default=[])
 
-  parser.add_argument(
-      '--use-src-side-runtest-py', action='store_true',
-      help='Use the src-side copy of runtest.py, as opposed to the build-side '
-           'one')
-
   subparsers = parser.add_subparsers()
 
   run_parser = subparsers.add_parser('run')
@@ -83,24 +78,6 @@ def run_command(argv, env=None, cwd=None):
   rc = test_env.run_command(argv, env=env, cwd=cwd)
   print 'Command %r returned exit code %d' % (argv, rc)
   return rc
-
-
-def run_runtest(cmd_args, runtest_args):
-  env = os.environ.copy()
-  env['CHROME_HEADLESS'] = '1'
-
-  return run_command([
-      sys.executable,
-      os.path.join(
-          cmd_args.paths['checkout'], 'infra', 'scripts', 'runtest_wrapper.py'),
-      '--',
-      '--target', cmd_args.build_config_fs,
-      '--xvfb',
-      '--builder-name', cmd_args.properties['buildername'],
-      '--slave-name', cmd_args.properties['slavename'],
-      '--build-number', str(cmd_args.properties['buildnumber']),
-      '--build-properties', json.dumps(cmd_args.properties),
-  ] + runtest_args, env=env)
 
 
 @contextlib.contextmanager
@@ -342,6 +319,9 @@ class BaseIsolatedScriptArgsAdapter(object):
   def clean_up_after_test_run(self):
     pass
 
+  def do_post_test_run_tasks(self):
+    pass
+
   def run_test(self):
     self.parse_args()
     cmd = self.generate_isolated_script_cmd()
@@ -362,6 +342,7 @@ class BaseIsolatedScriptArgsAdapter(object):
       else:
         exit_code = test_env.run_command(cmd, env=env)
       print 'Command returned exit code %d' % exit_code
+      self.do_post_test_run_tasks()
       return exit_code
     except Exception:
       traceback.print_exc()

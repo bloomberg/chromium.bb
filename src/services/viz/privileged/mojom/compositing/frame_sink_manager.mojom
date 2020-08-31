@@ -29,6 +29,8 @@ struct RootCompositorFrameSinkParams {
   bool send_swap_size_notifications = false;
   // Disables begin frame rate limiting for the display compositor.
   bool disable_frame_rate_limit = false;
+  bool use_preferred_interval_for_video = false;
+  uint32 num_of_frames_to_toggle_interval = 60;
 
   [EnableIf=is_android]
   float refresh_rate;
@@ -68,14 +70,6 @@ interface FrameSinkManager {
   // CompositorFrameSink for |frame_sink_id| then it will be destroyed and the
   // message pipe to the client will be closed.
   InvalidateFrameSinkId(FrameSinkId frame_sink_id);
-
-  // Tells FrameSinkManger to report when a synchronization event completes via
-  // tracing and UMA and the duration of that event. A synchronization event
-  // occurs when a CompositorFrame submitted to the CompositorFrameSink
-  // specified by |frame_sink_id| activates after having been blocked by
-  // unresolved dependencies.
-  EnableSynchronizationReporting(FrameSinkId frame_sink_id,
-                                 string reporting_label);
 
   // |debug_label| is used when printing out the surface hierarchy so we know
   // which clients are contributing which surfaces.

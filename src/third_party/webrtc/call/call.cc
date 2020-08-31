@@ -58,10 +58,10 @@
 #include "system_wrappers/include/cpu_info.h"
 #include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
-#include "video/call_stats.h"
+#include "video/call_stats2.h"
 #include "video/send_delay_stats.h"
 #include "video/stats_counter.h"
-#include "video/video_receive_stream.h"
+#include "video/video_receive_stream2.h"
 #include "video/video_send_stream.h"
 
 namespace webrtc {
@@ -155,6 +155,13 @@ std::unique_ptr<rtclog::StreamConfig> CreateRtcLogStreamConfig(
 bool IsRtcp(const uint8_t* packet, size_t length) {
   RtpUtility::RtpHeaderParser rtp_parser(packet, length);
   return rtp_parser.RTCP();
+}
+
+TaskQueueBase* GetCurrentTaskQueueOrThread() {
+  TaskQueueBase* current = TaskQueueBase::Current();
+  if (!current)
+    current = rtc::ThreadManager::Instance()->CurrentThread();
+  return current;
 }
 
 }  // namespace
@@ -279,7 +286,7 @@ class Call final : public webrtc::Call,
   // creates them.
   std::set<AudioReceiveStream*> audio_receive_streams_
       RTC_GUARDED_BY(receive_crit_);
-  std::set<VideoReceiveStream*> video_receive_streams_
+  std::set<VideoReceiveStream2*> video_receive_streams_
       RTC_GUARDED_BY(receive_crit_);
 
   std::map<std::string, AudioReceiveStream*> sync_stream_mapping_
@@ -440,7 +447,7 @@ Call::Call(Clock* clock,
       task_queue_factory_(task_queue_factory),
       num_cpu_cores_(CpuInfo::DetectNumberOfCores()),
       module_process_thread_(std::move(module_process_thread)),
-      call_stats_(new CallStats(clock_, module_process_thread_.get())),
+      call_stats_(new CallStats(clock_, GetCurrentTaskQueueOrThread())),
       bitrate_allocator_(new BitrateAllocator(this)),
       config_(config),
       audio_network_state_(kNetworkDown),
@@ -472,7 +479,6 @@ Call::Call(Clock* clock,
 
   module_process_thread_->RegisterModule(
       receive_side_cc_.GetRemoteBitrateEstimator(true), RTC_FROM_HERE);
-  module_process_thread_->RegisterModule(call_stats_.get(), RTC_FROM_HERE);
   module_process_thread_->RegisterModule(&receive_side_cc_, RTC_FROM_HERE);
 }
 
@@ -489,7 +495,6 @@ Call::~Call() {
   module_process_thread_->DeRegisterModule(
       receive_side_cc_.GetRemoteBitrateEstimator(true));
   module_process_thread_->DeRegisterModule(&receive_side_cc_);
-  module_process_thread_->DeRegisterModule(call_stats_.get());
   call_stats_->DeregisterStatsObserver(&receive_side_cc_);
 
   absl::optional<Timestamp> first_sent_packet_ms =
@@ -625,11 +630,11 @@ webrtc::AudioSendStream* Call::CreateAudioSendStream(
     }
   }
 
-  AudioSendStream* send_stream =
-      new AudioSendStream(clock_, config, config_.audio_state,
-                          task_queue_factory_, module_process_thread_.get(),
-                          transport_send_ptr_, bitrate_allocator_.get(),
-                          event_log_, call_stats_.get(), suspended_rtp_state);
+  AudioSendStream* send_stream = new AudioSendStream(
+      clock_, config, config_.audio_state, task_queue_factory_,
+      module_process_thread_.get(), transport_send_ptr_,
+      bitrate_allocator_.get(), event_log_, call_stats_->AsRtcpRttStats(),
+      suspended_rtp_state);
   {
     WriteLockScoped write_lock(*send_crit_);
     RTC_DCHECK(audio_send_ssrcs_.find(config.rtp.ssrc) ==
@@ -757,9 +762,9 @@ webrtc::VideoSendStream* Call::CreateVideoSendStream(
 
   VideoSendStream* send_stream = new VideoSendStream(
       clock_, num_cpu_cores_, module_process_thread_.get(), task_queue_factory_,
-      call_stats_.get(), transport_send_ptr_, bitrate_allocator_.get(),
-      video_send_delay_stats_.get(), event_log_, std::move(config),
-      std::move(encoder_config), suspended_video_send_ssrcs_,
+      call_stats_->AsRtcpRttStats(), transport_send_ptr_,
+      bitrate_allocator_.get(), video_send_delay_stats_.get(), event_log_,
+      std::move(config), std::move(encoder_config), suspended_video_send_ssrcs_,
       suspended_video_payload_states_, std::move(fec_controller));
 
   {
@@ -837,10 +842,13 @@ webrtc::VideoReceiveStream* Call::CreateVideoReceiveStream(
 
   RegisterRateObserver();
 
-  VideoReceiveStream* receive_stream = new VideoReceiveStream(
-      task_queue_factory_, &video_receiver_controller_, num_cpu_cores_,
+  TaskQueueBase* current = GetCurrentTaskQueueOrThread();
+  RTC_CHECK(current);
+  VideoReceiveStream2* receive_stream = new VideoReceiveStream2(
+      task_queue_factory_, current, &video_receiver_controller_, num_cpu_cores_,
       transport_send_ptr_->packet_router(), std::move(configuration),
-      module_process_thread_.get(), call_stats_.get(), clock_);
+      module_process_thread_.get(), call_stats_.get(), clock_,
+      new VCMTiming(clock_));
 
   const webrtc::VideoReceiveStream::Config& config = receive_stream->config();
   {
@@ -870,8 +878,8 @@ void Call::DestroyVideoReceiveStream(
   TRACE_EVENT0("webrtc", "Call::DestroyVideoReceiveStream");
   RTC_DCHECK_RUN_ON(&configuration_sequence_checker_);
   RTC_DCHECK(receive_stream != nullptr);
-  VideoReceiveStream* receive_stream_impl =
-      static_cast<VideoReceiveStream*>(receive_stream);
+  VideoReceiveStream2* receive_stream_impl =
+      static_cast<VideoReceiveStream2*>(receive_stream);
   const VideoReceiveStream::Config& config = receive_stream_impl->config();
   {
     WriteLockScoped write_lock(*receive_crit_);
@@ -913,7 +921,7 @@ FlexfecReceiveStream* Call::CreateFlexfecReceiveStream(
     // this locked scope.
     receive_stream = new FlexfecReceiveStreamImpl(
         clock_, &video_receiver_controller_, config, recovered_packet_receiver,
-        call_stats_.get(), module_process_thread_.get());
+        call_stats_->AsRtcpRttStats(), module_process_thread_.get());
 
     RTC_DCHECK(receive_rtp_config_.find(config.remote_ssrc) ==
                receive_rtp_config_.end());
@@ -1007,7 +1015,7 @@ void Call::SignalChannelNetworkState(MediaType media, NetworkState state) {
   UpdateAggregateNetworkState();
   {
     ReadLockScoped read_lock(*receive_crit_);
-    for (VideoReceiveStream* video_receive_stream : video_receive_streams_) {
+    for (VideoReceiveStream2* video_receive_stream : video_receive_streams_) {
       video_receive_stream->SignalNetworkState(video_network_state_);
     }
   }
@@ -1044,8 +1052,15 @@ void Call::UpdateAggregateNetworkState() {
       ((have_video && video_network_state_ == kNetworkUp) ||
        (have_audio && audio_network_state_ == kNetworkUp));
 
-  RTC_LOG(LS_INFO) << "UpdateAggregateNetworkState: aggregate_state="
-                   << (aggregate_network_up ? "up" : "down");
+  if (aggregate_network_up != aggregate_network_up_) {
+    RTC_LOG(LS_INFO)
+        << "UpdateAggregateNetworkState: aggregate_state change to "
+        << (aggregate_network_up ? "up" : "down");
+  } else {
+    RTC_LOG(LS_VERBOSE)
+        << "UpdateAggregateNetworkState: aggregate_state remains at "
+        << (aggregate_network_up ? "up" : "down");
+  }
   aggregate_network_up_ = aggregate_network_up;
 
   transport_send_ptr_->OnNetworkAvailability(aggregate_network_up);
@@ -1143,7 +1158,7 @@ void Call::ConfigureSync(const std::string& sync_group) {
   if (sync_audio_stream)
     sync_stream_mapping_[sync_group] = sync_audio_stream;
   size_t num_synced_streams = 0;
-  for (VideoReceiveStream* video_stream : video_receive_streams_) {
+  for (VideoReceiveStream2* video_stream : video_receive_streams_) {
     if (video_stream->config().sync_group != sync_group)
       continue;
     ++num_synced_streams;
@@ -1180,7 +1195,7 @@ PacketReceiver::DeliveryStatus Call::DeliverRtcp(MediaType media_type,
   bool rtcp_delivered = false;
   if (media_type == MediaType::ANY || media_type == MediaType::VIDEO) {
     ReadLockScoped read_lock(*receive_crit_);
-    for (VideoReceiveStream* stream : video_receive_streams_) {
+    for (VideoReceiveStream2* stream : video_receive_streams_) {
       if (stream->DeliverRtcp(packet, length))
         rtcp_delivered = true;
     }
@@ -1344,8 +1359,8 @@ void Call::NotifyBweOfReceivedPacket(const RtpPacketReceived& packet,
   packet.GetHeader(&header);
 
   ReceivedPacket packet_msg;
-  packet_msg.size = DataSize::bytes(packet.payload_size());
-  packet_msg.receive_time = Timestamp::ms(packet.arrival_time_ms());
+  packet_msg.size = DataSize::Bytes(packet.payload_size());
+  packet_msg.receive_time = Timestamp::Millis(packet.arrival_time_ms());
   if (header.extension.hasAbsoluteSendTime) {
     packet_msg.send_time = header.extension.GetAbsoluteSendTimestamp();
   }

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_SCROLL_BAR_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_SCROLL_BAR_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -13,7 +15,6 @@
 #include "ui/views/animation/scroll_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/repeat_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
@@ -95,7 +96,7 @@ class VIEWS_EXPORT ScrollBar : public View,
   bool IsHorizontal() const;
 
   void set_controller(ScrollBarController* controller) {
-     controller_ = controller;
+    controller_ = controller;
   }
   ScrollBarController* controller() const { return controller_; }
 

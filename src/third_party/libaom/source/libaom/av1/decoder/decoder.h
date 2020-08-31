@@ -19,8 +19,8 @@
 #include "aom_scale/yv12config.h"
 #include "aom_util/aom_thread.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/thread_common.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/decoder/dthread.h"
 #if CONFIG_ACCOUNTING
 #include "av1/decoder/accounting.h"
@@ -33,26 +33,66 @@
 extern "C" {
 #endif
 
+// Contains coding block data required by the decoder, which includes:
+// - Coding block info that is common between encoder and decoder.
+// - Other coding block info only needed by the decoder.
+// Contract this with a similar struct MACROBLOCK on encoder side.
+// This data is also common between ThreadData and AV1Decoder structs.
+typedef struct DecoderCodingBlock {
+  // Coding block info that is common between encoder and decoder.
+  DECLARE_ALIGNED(32, MACROBLOCKD, xd);
+  // True if the at least one of the coding blocks decoded was corrupted.
+  int corrupted;
+  // Pointer to 'mc_buf' inside 'pbi->td' (single-threaded decoding) or
+  // 'pbi->thread_data[i].td' (multi-threaded decoding).
+  uint8_t *mc_buf[2];
+  // Pointer to 'dqcoeff' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
+  // with appropriate offset for the current superblock, for each plane.
+  tran_low_t *dqcoeff_block[MAX_MB_PLANE];
+  // cb_offset[p] is the offset into the dqcoeff_block[p] for the current coding
+  // block, for each plane 'p'.
+  uint16_t cb_offset[MAX_MB_PLANE];
+  // Pointer to 'eob_data' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
+  // with appropriate offset for the current superblock, for each plane.
+  eob_info *eob_data[MAX_MB_PLANE];
+  // txb_offset[p] is the offset into the eob_data[p] for the current coding
+  // block, for each plane 'p'.
+  uint16_t txb_offset[MAX_MB_PLANE];
+  // ref_mv_count[i] specifies the number of number of motion vector candidates
+  // in xd->ref_mv_stack[i].
+  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
+} DecoderCodingBlock;
+
 typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,
-                                          MACROBLOCKD *const xd,
+                                          DecoderCodingBlock *dcb,
                                           aom_reader *const r, const int plane,
                                           const int row, const int col,
                                           const TX_SIZE tx_size);
 
 typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
-                                                 MACROBLOCKD *const xd,
-                                                 int mi_row, int mi_col,
+                                                 DecoderCodingBlock *dcb,
                                                  BLOCK_SIZE bsize);
 
 typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
                                                    MACROBLOCKD *const xd);
 
 typedef struct ThreadData {
-  aom_reader *bit_reader;
-  DECLARE_ALIGNED(32, MACROBLOCKD, xd);
+  DecoderCodingBlock dcb;
+
+  // Coding block buffer for the current superblock.
+  // Used only for single-threaded decoding and multi-threaded decoding with
+  // row_mt == 1 cases.
+  // See also: similar buffer in 'AV1Decoder'.
   CB_BUFFER cb_buffer_base;
+
+  aom_reader *bit_reader;
+
+  // Motion compensation buffer used to get a prediction buffer with extended
+  // borders. One buffer for each of the two possible references.
   uint8_t *mc_buf[2];
+  // Allocated size of 'mc_buf'.
   int32_t mc_buf_size;
+  // If true, the pointers in 'mc_buf' were converted from highbd pointers.
   int mc_buf_use_highbd;  // Boolean: whether the byte pointers stored in
                           // mc_buf were converted from highbd pointers.
 
@@ -157,7 +197,7 @@ typedef struct AV1DecTileMTData {
 } AV1DecTileMT;
 
 typedef struct AV1Decoder {
-  DECLARE_ALIGNED(32, MACROBLOCKD, mb);
+  DecoderCodingBlock dcb;
 
   DECLARE_ALIGNED(32, AV1_COMMON, common);
 
@@ -197,9 +237,7 @@ typedef struct AV1Decoder {
   int allow_lowbitdepth;
   int max_threads;
   int inv_tile_order;
-  int need_resync;   // wait for key/intra-only frame.
-  int hold_ref_buf;  // Boolean: whether we are holding reference buffers in
-                     // common.next_ref_frame_map.
+  int need_resync;  // wait for key/intra-only frame.
   int reset_decoder_state;
 
   int tile_size_bytes;
@@ -209,9 +247,6 @@ typedef struct AV1Decoder {
   int acct_enabled;
   Accounting accounting;
 #endif
-  int tg_size;   // Number of tiles in the current tilegroup
-  int tg_start;  // First tile in the current tilegroup
-  int tg_size_bit_offset;
   int sequence_header_ready;
   int sequence_header_changed;
 #if CONFIG_INSPECTION
@@ -221,6 +256,8 @@ typedef struct AV1Decoder {
   int operating_point;
   int current_operating_point;
   int seen_frame_header;
+  // The expected start_tile (tg_start syntax element) of the next tile group.
+  int next_start_tile;
 
   // State if the camera frame header is already decoded while
   // large_scale_tile = 1.
@@ -232,11 +269,24 @@ typedef struct AV1Decoder {
   int tile_count_minus_1;
   uint32_t coded_tile_data_size;
   unsigned int ext_tile_debug;  // for ext-tile software debug & testing
+
+  // Decoder has 3 modes of operation:
+  // (1) Single-threaded decoding.
+  // (2) Multi-threaded decoding with each tile decoded in parallel.
+  // (3) In addition to (2), each thread decodes 1 superblock row in parallel.
+  // row_mt = 1 triggers mode (3) above, while row_mt = 0, will trigger mode (1)
+  // or (2) depending on 'max_threads'.
   unsigned int row_mt;
+
   EXTERNAL_REFERENCES ext_refs;
   YV12_BUFFER_CONFIG tile_list_outbuf;
 
+  // Coding block buffer for the current frame.
+  // Allocated and used only for multi-threaded decoding with 'row_mt == 0'.
+  // See also: similar buffer in 'ThreadData' struct.
   CB_BUFFER *cb_buffer_base;
+  // Allocated size of 'cb_buffer_base'. Currently same as the number of
+  // superblocks in the coded frame.
   int cb_buffer_alloc_size;
 
   int allocated_row_mt_sync_rows;
@@ -247,6 +297,13 @@ typedef struct AV1Decoder {
 #endif
 
   AV1DecRowMTInfo frame_row_mt_info;
+  aom_metadata_array_t *metadata;
+
+  int context_update_tile_id;
+  int skip_loop_filter;
+  int skip_film_grain;
+  int is_annexb;
+  int valid_for_referencing[REF_FRAMES];
 } AV1Decoder;
 
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error
@@ -314,9 +371,8 @@ static INLINE int av1_read_uniform(aom_reader *r, int n) {
 typedef void (*palette_visitor_fn_t)(MACROBLOCKD *const xd, int plane,
                                      aom_reader *r);
 
-void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd, int mi_row,
-                       int mi_col, aom_reader *r, BLOCK_SIZE bsize,
-                       palette_visitor_fn_t visit);
+void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+                       aom_reader *r, palette_visitor_fn_t visit);
 
 typedef void (*block_visitor_fn_t)(AV1Decoder *const pbi, ThreadData *const td,
                                    int mi_row, int mi_col, aom_reader *r,

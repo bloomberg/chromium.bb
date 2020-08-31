@@ -21,7 +21,7 @@
 
 namespace ash {
 
-constexpr int kMenuItemWidthDp = 178;
+constexpr int kMenuItemWidthDp = 192;
 constexpr int kMenuItemHeightDp = 28;
 constexpr int kRegularMenuItemLeftPaddingDp = 2;
 constexpr int kGroupMenuItemLeftPaddingDp = 10;
@@ -135,7 +135,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   scroller_ = new views::ScrollView();
-  scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller_->SetBackgroundColor(base::nullopt);
   scroller_->SetDrawOverflowIndicator(false);
   scroller_->ClipHeightTo(kMenuItemHeightDp, kMenuItemHeightDp * 5);
   AddChildView(scroller_);

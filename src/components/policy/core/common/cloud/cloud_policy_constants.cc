@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_switches.h"
 
@@ -56,7 +55,6 @@ const char kValueRequestActiveDirectoryEnrollPlayUser[] =
     "active_directory_enroll_play_user";
 const char kValueRequestActiveDirectoryPlayActivity[] =
     "active_directory_play_activity";
-const char kValueRequestCheckDeviceLicense[] = "check_device_license";
 const char kValueRequestAppInstallReport[] = "app_install_report";
 const char kValueRequestTokenEnrollment[] = "register_browser";
 const char kValueRequestChromeDesktopReport[] = "chrome_desktop_report";
@@ -66,6 +64,7 @@ const char kValueRequestInitialEnrollmentStateRetrieval[] =
 const char kValueRequestUploadPolicyValidationReport[] =
     "policy_validation_report";
 const char kValueRequestPublicSamlUser[] = "public_saml_user_request";
+const char kValueRequestCertProvisioningRequest[] = "client_cert_provisioning";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 #if defined(OS_CHROMEOS)
@@ -86,6 +85,9 @@ const char kChromeMachineLevelUserCloudPolicyType[] =
 const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
 const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";
+
+const char kChromeMachineLevelUserCloudPolicyTypeBase64[] =
+    "Z29vZ2xlL2Nocm9tZS9tYWNoaW5lLWxldmVsLXVzZXI=";
 
 }  // namespace dm_protocol
 

@@ -134,10 +134,10 @@ void FirstAppRunToastManager::OnAppWindowActivated(
 void FirstAppRunToastManager::CreateAndShowToastDialog() {
   auto* toast_dialog = new ToastDialogView(
       base::UTF8ToUTF16(app_window_->GetExtension()->short_name()),
-      base::Bind(&FirstAppRunToastManager::ToastDialogDismissed,
-                 weak_ptr_factory_.GetWeakPtr()));
-  toast_dialog->Show();
-  toast_widget_ = toast_dialog->GetWidget();
+      base::BindOnce(&FirstAppRunToastManager::ToastDialogDismissed,
+                     weak_ptr_factory_.GetWeakPtr()));
+  toast_widget_ = views::BubbleDialogDelegateView::CreateBubble(toast_dialog);
+  toast_widget_->Show();
   AdjustToastWidgetBounds();
   toast_widget_observer_.Add(toast_widget_);
 }

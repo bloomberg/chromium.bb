@@ -18,6 +18,7 @@ struct PasswordForm;
 
 namespace password_manager {
 
+struct CompromisedCredentials;
 struct InteractionsStats;
 class PasswordFormMetricsRecorder;
 
@@ -55,8 +56,18 @@ class PasswordFormManagerForUI {
   // Statistics for recent password bubble usage.
   virtual base::span<const InteractionsStats> GetInteractionsStats() const = 0;
 
+  // List of compromised passwords for the current site.
+  virtual base::span<const CompromisedCredentials> GetCompromisedCredentials()
+      const = 0;
+
   // Determines if the user opted to 'never remember' passwords for this form.
   virtual bool IsBlacklisted() const = 0;
+
+  // Determines whether the submitted credentials returned by
+  // GetPendingCredentials() can be moved to the signed in account store.
+  // Returns true if the submitted credentials are stored in the profile store
+  // and the current signed in user didn't block moving them.
+  virtual bool IsMovableToAccountStore() const = 0;
 
   // Handles save-as-new or update of the form managed by this manager.
   virtual void Save() = 0;
@@ -95,6 +106,15 @@ class PasswordFormManagerForUI {
 
   // Called when the passwords were shown on on the bubble without obfuscation.
   virtual void OnPasswordsRevealed() = 0;
+
+  // A user opted to move the credentials used for a successful login from the
+  // profile store to the account store.
+  virtual void MoveCredentialsToAccountStore() = 0;
+
+  // Suppresses future prompts for moving the submitted credentials returned by
+  // GetPendingCredentials() to the account store of the currently signed in
+  // user.
+  virtual void BlockMovingCredentialsToAccountStore() = 0;
 };
 
 }  // namespace  password_manager

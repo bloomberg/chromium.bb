@@ -33,9 +33,9 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.prerender.PrerenderTestHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -198,6 +198,7 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
+    @DisabledTest(message = "crbug.com/1046749")
     public void testExitPersistentFullscreenAllowsManualFullscreen() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
@@ -281,27 +282,10 @@ public class FullscreenManagerTest {
         gestureListenerManager.addListener(scrollListener);
 
         final CallbackHelper viewportCallback = new CallbackHelper();
-        ChromeFullscreenManager.FullscreenListener fullscreenListener =
-                new ChromeFullscreenManager.FullscreenListener() {
-                    @Override
-                    public void onContentOffsetChanged(int offset) {}
-                    @Override
-                    public void onControlsOffsetChanged(
-                            int topOffset, int bottomOffset, boolean needsAnimate) {}
-                    @Override
-                    public void onToggleOverlayVideoMode(boolean enabled) {}
-                    @Override
-                    public void onBottomControlsHeightChanged(
-                            int bottomControlsHeight, int bottomControlsMinHeight) {}
-                    @Override
-                    public void onUpdateViewportSize() {
-                        viewportCallback.notifyCalled();
-                    }
-                };
 
         ChromeFullscreenManager fullscreenManager =
                 mActivityTestRule.getActivity().getFullscreenManager();
-        fullscreenManager.addListener(fullscreenListener);
+        fullscreenManager.setViewportSizeDelegate(viewportCallback::notifyCalled);
 
         Assert.assertEquals(0, scrollStartCallback.getCallCount());
         Assert.assertEquals(0, viewportCallback.getCallCount());

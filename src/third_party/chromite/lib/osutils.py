@@ -20,6 +20,7 @@ import pwd
 import re
 import shutil
 import stat
+import subprocess
 import tempfile
 
 import six
@@ -139,8 +140,8 @@ def WriteFile(path, content, mode='w', encoding=None, errors=None, atomic=False,
     raise ValueError('mode must be one of {"%s"}, not %r' %
                      ('", "'.join(sorted(_VALID_WRITE_MODES)), mode))
 
-  if sudo and ('a' in mode or '+' in mode):
-    raise ValueError('append mode does not work in sudo mode')
+  if sudo and atomic and ('a' in mode or '+' in mode):
+    raise ValueError('append mode does not work in sudo+atomic mode')
 
   if 'b' in mode:
     if encoding is not None or errors is not None:
@@ -167,24 +168,33 @@ def WriteFile(path, content, mode='w', encoding=None, errors=None, atomic=False,
   # If the file needs to be written as root and we are not root, write to a temp
   # file, move it and change the permission.
   if sudo and os.getuid() != 0:
-    with tempfile.NamedTemporaryFile(mode=mode, delete=False) as temp:
-      write_path = temp.name
-      temp.writelines(write_wrapper(cros_build_lib.iflatten_instance(content)))
-    os.chmod(write_path, 0o644)
+    if 'a' in mode or '+' in mode:
+      # Use dd to run through sudo & append the output, and write the new data
+      # to it through stdin.
+      cros_build_lib.sudo_run(
+          ['dd', 'conv=notrunc', 'oflag=append', 'status=none',
+           'of=%s' % (path,)], print_cmd=False, input=content)
 
-    try:
-      mv_target = path if not atomic else path + '.tmp'
-      cros_build_lib.sudo_run(['mv', write_path, mv_target],
-                              print_cmd=False, redirect_stderr=True)
-      Chown(mv_target, user='root', group='root')
-      if atomic:
-        cros_build_lib.sudo_run(['mv', mv_target, path],
-                                print_cmd=False, redirect_stderr=True)
+    else:
+      with tempfile.NamedTemporaryFile(mode=mode, delete=False) as temp:
+        write_path = temp.name
+        temp.writelines(write_wrapper(
+            cros_build_lib.iflatten_instance(content)))
+      os.chmod(write_path, 0o644)
 
-    except cros_build_lib.RunCommandError:
-      SafeUnlink(write_path)
-      SafeUnlink(mv_target)
-      raise
+      try:
+        mv_target = path if not atomic else path + '.tmp'
+        cros_build_lib.sudo_run(['mv', write_path, mv_target],
+                                print_cmd=False, stderr=True)
+        Chown(mv_target, user='root', group='root')
+        if atomic:
+          cros_build_lib.sudo_run(['mv', mv_target, path],
+                                  print_cmd=False, stderr=True)
+
+      except cros_build_lib.RunCommandError:
+        SafeUnlink(write_path)
+        SafeUnlink(mv_target)
+        raise
 
   else:
     # We have the right permissions, simply write the file in python.
@@ -249,7 +259,7 @@ def Chown(path, user=None, group=None, recursive=False):
       cmd += ['-R']
     cmd += ['%s:%s' % (user, group), path]
     cros_build_lib.sudo_run(cmd, print_cmd=False,
-                            redirect_stderr=True, redirect_stdout=True)
+                            stderr=True, stdout=True)
 
 
 def ReadFile(path, mode='r', encoding=None, errors=None):
@@ -315,7 +325,7 @@ def SafeSymlink(source, dest, sudo=False):
   """
   if sudo and os.getuid() != 0:
     cros_build_lib.sudo_run(['ln', '-sfT', source, dest],
-                            print_cmd=False, redirect_stderr=True)
+                            print_cmd=False, stderr=True)
   else:
     SafeUnlink(dest)
     os.symlink(source, dest)
@@ -327,23 +337,19 @@ def SafeUnlink(path, sudo=False):
   Returns:
     True if the file existed and was removed, False if it didn't exist.
   """
-  if sudo:
-    try:
-      cros_build_lib.sudo_run(
-          ['rm', '--', path], print_cmd=False, redirect_stderr=True)
-      return True
-    except cros_build_lib.RunCommandError:
-      if os.path.exists(path):
-        # Technically racey, but oh well; very hard to actually hit...
-        raise
-      return False
   try:
     os.unlink(path)
     return True
   except EnvironmentError as e:
-    if e.errno != errno.ENOENT:
+    if e.errno == errno.ENOENT:
+      return False
+
+    if not sudo:
       raise
-  return False
+
+  # If we're still here, we're falling back to sudo.
+  cros_build_lib.sudo_run(['rm', '--', path], print_cmd=False, stderr=True)
+  return True
 
 
 def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
@@ -368,10 +374,10 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
       return False
     cros_build_lib.sudo_run(
         ['mkdir', '-p', '--mode', '%o' % mode, path], user=user,
-        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
+        print_cmd=False, stderr=True, stdout=True)
     cros_build_lib.sudo_run(
         ['chmod', '%o' % mode, path],
-        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
+        print_cmd=False, stderr=True, stdout=True)
     return True
 
   try:
@@ -501,23 +507,27 @@ def RmDir(path, ignore_missing=False, sudo=False):
     ignore_missing: Do not error when path does not exist.
     sudo: Remove directories as root.
   """
-  if sudo:
-    try:
-      cros_build_lib.sudo_run(
-          ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
-          debug_level=logging.DEBUG,
-          redirect_stdout=True, redirect_stderr=True)
-    except cros_build_lib.RunCommandError as e:
-      if not ignore_missing or os.path.exists(path):
-        # If we're not ignoring the rm ENOENT equivalent, throw it;
-        # if the pathway still exists, something failed, thus throw it.
-        raise
-  else:
-    try:
-      shutil.rmtree(path)
-    except EnvironmentError as e:
-      if not ignore_missing or e.errno != errno.ENOENT:
-        raise
+  # Using `sudo` is a bit expensive, so try to delete everything natively first.
+  try:
+    shutil.rmtree(path)
+    return
+  except EnvironmentError as e:
+    if ignore_missing and e.errno == errno.ENOENT:
+      return
+
+    if not sudo:
+      raise
+
+  # If we're still here, we're falling back to sudo.
+  try:
+    cros_build_lib.sudo_run(
+        ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
+        debug_level=logging.DEBUG, stdout=True, stderr=True)
+  except cros_build_lib.RunCommandError as e:
+    if not ignore_missing or os.path.exists(path):
+      # If we're not ignoring the rm ENOENT equivalent, throw it;
+      # if the pathway still exists, something failed, thus throw it.
+      raise
 
 
 class EmptyDirNonExistentException(BadPathsException):
@@ -837,8 +847,8 @@ class TempDir(object):
           # Log all mounts at the time of the failure, since that's the most
           # common cause.
           mount_results = cros_build_lib.run(
-              ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
-              error_code_ok=True)
+              ['mount'], stdout=True, stderr=subprocess.STDOUT,
+              check=False)
           logging.error('Mounts were:')
           logging.error('  %s', mount_results.output)
 
@@ -848,6 +858,9 @@ class TempDir(object):
 
   def __del__(self):
     self.Cleanup()
+
+  def __str__(self):
+    return self.tempdir if self.tempdir else ''
 
 
 def TempDirDecorator(func):
@@ -1064,9 +1077,8 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
     env = {}
   elif env is True:
     env = None
-  output = cros_build_lib.run(['bash'], env=env, redirect_stdout=True,
-                              redirect_stderr=True, print_cmd=False,
-                              encoding='utf-8',
+  output = cros_build_lib.run(['bash'], env=env, capture_output=True,
+                              print_cmd=False, encoding='utf-8',
                               input='\n'.join(dump_script)).output
   return key_value_store.LoadData(output, multiline=multiline)
 

@@ -15,6 +15,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -175,9 +177,8 @@ TEST_F(WindowManagerTest, Focus) {
   // Touch on a sub-window (w122) to focus it.
   gfx::Point click_point = w122->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w122->parent(), root_window, &click_point);
-  ui::TouchEvent touchev(
-      ui::ET_TOUCH_PRESSED, click_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, getTime(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   details = sink->OnEventFromSource(&touchev);
   ASSERT_FALSE(details.dispatcher_destroyed);
   focus_client = aura::client::GetFocusClient(w122.get());
@@ -432,9 +433,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w2->parent(), root_window, &press_point);
-  ui::TouchEvent touchev1(
-      ui::ET_TOUCH_PRESSED, press_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, getTime(),
+                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   ui::EventSink* sink = root_window->GetHost()->event_sink();
   ui::EventDispatchDetails details = sink->OnEventFromSource(&touchev1);
@@ -454,9 +454,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w1->parent(), root_window, &press_point);
   d1.set_activate(false);
-  ui::TouchEvent touchev2(
-      ui::ET_TOUCH_PRESSED, press_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, getTime(),
+                          ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   details = sink->OnEventFromSource(&touchev2);
   ASSERT_FALSE(details.dispatcher_destroyed);
 
@@ -502,7 +501,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   ui::EventSink* sink = host->event_sink();
 
   // Cursor starts as a pointer (set during Shell::Init()).
-  EXPECT_EQ(ui::CursorType::kPointer, host->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, host->last_cursor().type());
 
   {
     // Resize edges and corners show proper cursors.
@@ -511,7 +510,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kSouthResize, host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kSouthResize, host->last_cursor().type());
   }
 
   {
@@ -520,8 +519,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kSouthWestResize,
-              host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kSouthWestResize,
+              host->last_cursor().type());
   }
 
   {
@@ -530,8 +529,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kSouthEastResize,
-              host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kSouthEastResize,
+              host->last_cursor().type());
   }
 
   {
@@ -540,7 +539,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kWestResize, host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kWestResize, host->last_cursor().type());
   }
 
   {
@@ -549,7 +548,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kEastResize, host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kEastResize, host->last_cursor().type());
   }
 
   {
@@ -558,7 +557,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kNorthResize, host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kNorthResize, host->last_cursor().type());
   }
 
   {
@@ -567,8 +566,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kNorthWestResize,
-              host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kNorthWestResize,
+              host->last_cursor().type());
   }
 
   {
@@ -577,8 +576,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kNorthEastResize,
-              host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kNorthEastResize,
+              host->last_cursor().type());
   }
 
   {
@@ -588,7 +587,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
                          ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = sink->OnEventFromSource(&move1);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(ui::CursorType::kNull, host->last_cursor().native_type());
+    EXPECT_EQ(ui::mojom::CursorType::kNull, host->last_cursor().type());
   }
 }
 
@@ -722,7 +721,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // Touch visually hides the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
@@ -741,7 +740,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 // Tests cursor visibility on key pressed event.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.
   generator->PressKey(ui::VKEY_A, ui::EF_NONE);
@@ -790,7 +789,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));

@@ -68,6 +68,7 @@ class AX_EXPORT AXNode final {
   template <typename NodeType,
             NodeType* (NodeType::*NextSibling)() const,
             NodeType* (NodeType::*PreviousSibling)() const,
+            NodeType* (NodeType::*FirstChild)() const,
             NodeType* (NodeType::*LastChild)() const>
   class ChildIteratorBase {
    public:
@@ -128,9 +129,17 @@ class AX_EXPORT AXNode final {
       ChildIteratorBase<AXNode,
                         &AXNode::GetNextUnignoredSibling,
                         &AXNode::GetPreviousUnignoredSibling,
+                        &AXNode::GetFirstUnignoredChild,
                         &AXNode::GetLastUnignoredChild>;
   UnignoredChildIterator UnignoredChildrenBegin() const;
   UnignoredChildIterator UnignoredChildrenEnd() const;
+
+  // Walking the tree including both ignored and unignored nodes.
+  // These methods consider only the direct children or siblings of a node.
+  AXNode* GetFirstChild() const;
+  AXNode* GetLastChild() const;
+  AXNode* GetPreviousSibling() const;
+  AXNode* GetNextSibling() const;
 
   // Returns true if the node has any of the text related roles.
   bool IsText() const;
@@ -162,7 +171,7 @@ class AX_EXPORT AXNode final {
 
   // Swap the internal children vector with |children|. This instance
   // now owns all of the passed children.
-  void SwapChildren(std::vector<AXNode*>& children);
+  void SwapChildren(std::vector<AXNode*>* children);
 
   // This is called when the AXTree no longer includes this node in the
   // tree. Reference counting is used on some platforms because the
@@ -172,7 +181,7 @@ class AX_EXPORT AXNode final {
   void Destroy();
 
   // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(AXNode* ancestor);
+  bool IsDescendantOf(const AXNode* ancestor) const;
 
   // Gets the text offsets where new lines start either from the node's data or
   // by computing them and caching the result.
@@ -264,6 +273,9 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
+  // Return the hierarchical level if supported.
+  base::Optional<int> GetHierarchicalLevel() const;
+
   // PosInSet and SetSize public methods.
   bool IsOrderedSetItem() const;
   bool IsOrderedSet() const;
@@ -274,6 +286,10 @@ class AX_EXPORT AXNode final {
   // Returns true if the role of ordered set matches the role of item.
   // Returns false otherwise.
   bool SetRoleMatchesItemRole(const AXNode* ordered_set) const;
+
+  // Container objects that should be ignored for computing PosInSet and SetSize
+  // for ordered sets.
+  bool IsIgnoredContainerForOrderedSet() const;
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
@@ -288,7 +304,7 @@ class AX_EXPORT AXNode final {
   // This language code will be BCP 47.
   //
   // Returns empty string if no appropriate language was found.
-  std::string GetLanguage();
+  std::string GetLanguage() const;
 
   //
   // Helper functions for tables, table rows, and table cells.
@@ -315,6 +331,7 @@ class AX_EXPORT AXNode final {
   base::Optional<int> GetTableAriaColCount() const;
   base::Optional<int> GetTableAriaRowCount() const;
   base::Optional<int> GetTableCellCount() const;
+  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const;
   AXNode* GetTableCaption() const;
   AXNode* GetTableCellFromIndex(int index) const;
   AXNode* GetTableCellFromCoords(int row_index, int col_index) const;
@@ -331,6 +348,8 @@ class AX_EXPORT AXNode final {
   // Table row-like nodes.
   bool IsTableRow() const;
   base::Optional<int> GetTableRowRowIndex() const;
+  // Get the node ids that represent rows in a table.
+  std::vector<AXNode::AXID> GetTableRowNodeIds() const;
 
 #if defined(OS_MACOSX)
   // Table column-like nodes. These nodes are only present on macOS.
@@ -356,18 +375,20 @@ class AX_EXPORT AXNode final {
   bool IsCellOrHeaderOfARIATable() const;
   bool IsCellOrHeaderOfARIAGrid() const;
 
-  // Return an object containing information about the languages used.
+  // Return an object containing information about the languages detected on
+  // this node.
   // Callers should not retain this pointer, instead they should request it
   // every time it is needed.
   //
-  // Clients likely want to use GetLanguage instead.
-  //
   // Returns nullptr if the node has no language info.
-  AXLanguageInfo* GetLanguageInfo();
+  AXLanguageInfo* GetLanguageInfo() const;
 
-  // This should only be called by the LabelLanguageForSubtree and is used as
-  // part of the language detection feature.
+  // This should only be called by LabelLanguageForSubtree and is used as part
+  // of the language detection feature.
   void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
+
+  // Destroy the language info for this node.
+  void ClearLanguageInfo();
 
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;
@@ -376,13 +397,22 @@ class AX_EXPORT AXNode final {
   // of a list marker node. Returns false otherwise.
   bool IsInListMarker() const;
 
+  // Returns true if this node is a collapsed popup button that is parent to a
+  // menu list popup.
+  bool IsCollapsedMenuListPopUpButton() const;
+
+  // Returns the popup button ancestor of this current node if any. The popup
+  // button needs to be the parent of a menu list popup and needs to be
+  // collapsed.
+  AXNode* GetCollapsedMenuListPopUpButtonAncestor() const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
   void ComputeLineStartOffsets(std::vector<int>* line_offsets,
                                int* start_offset) const;
   AXTableInfo* GetAncestorTableInfo() const;
-  void IdVectorToNodeVector(std::vector<int32_t>& ids,
+  void IdVectorToNodeVector(const std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
   int UpdateUnignoredCachedValuesRecursive(int startIndex);
@@ -392,11 +422,11 @@ class AX_EXPORT AXNode final {
   // Finds and returns a pointer to ordered set containing node.
   AXNode* GetOrderedSet() const;
 
-  OwnerTree* tree_;  // Owns this.
+  OwnerTree* const tree_;  // Owns this.
   size_t index_in_parent_;
   size_t unignored_index_in_parent_;
-  size_t unignored_child_count_;
-  AXNode* parent_;
+  size_t unignored_child_count_ = 0;
+  AXNode* const parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;
 
@@ -408,72 +438,125 @@ AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    ChildIteratorBase(const NodeType* parent, NodeType* child)
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>::ChildIteratorBase(const NodeType* parent,
+                                                        NodeType* child)
     : parent_(parent), child_(child) {}
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    ChildIteratorBase(const ChildIteratorBase& it)
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>::ChildIteratorBase(const ChildIteratorBase&
+                                                            it)
     : parent_(it.parent_), child_(it.child_) {}
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-bool AXNode::
-    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    operator==(const ChildIteratorBase& rhs) const {
+bool AXNode::ChildIteratorBase<NodeType,
+                               NextSibling,
+                               PreviousSibling,
+                               FirstChild,
+                               LastChild>::operator==(const ChildIteratorBase&
+                                                          rhs) const {
   return parent_ == rhs.parent_ && child_ == rhs.child_;
 }
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-bool AXNode::
-    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    operator!=(const ChildIteratorBase& rhs) const {
+bool AXNode::ChildIteratorBase<NodeType,
+                               NextSibling,
+                               PreviousSibling,
+                               FirstChild,
+                               LastChild>::operator!=(const ChildIteratorBase&
+                                                          rhs) const {
   return parent_ != rhs.parent_ || child_ != rhs.child_;
 }
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>&
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-operator++() {
-  if (child_)
-    child_ = (child_->*NextSibling)();
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>&
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>::operator++() {
+  // |child_ = nullptr| denotes the iterator's past-the-end condition. When we
+  // increment the iterator past the end, we remain at the past-the-end iterator
+  // condition.
+  if (child_ && parent_) {
+    if (child_ == (parent_->*LastChild)())
+      child_ = nullptr;
+    else
+      child_ = (child_->*NextSibling)();
+  }
+
   return *this;
 }
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>&
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-operator--() {
-  if (child_)
-    child_ = (child_->*PreviousSibling)();
-  else
-    child_ = (parent_->*LastChild)();
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>&
+AXNode::ChildIteratorBase<NodeType,
+                          NextSibling,
+                          PreviousSibling,
+                          FirstChild,
+                          LastChild>::operator--() {
+  if (parent_) {
+    // If the iterator is past the end, |child_=nullptr|, decrement the iterator
+    // gives us the last iterator element.
+    if (!child_)
+      child_ = (parent_->*LastChild)();
+    // Decrement the iterator gives us the previous element, except when the
+    // iterator is at the beginning; in which case, decrementing the iterator
+    // remains at the beginning.
+    else if (child_ != (parent_->*FirstChild)())
+      child_ = (child_->*PreviousSibling)();
+  }
+
   return *this;
 }
 
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-NodeType* AXNode::
-    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::get()
-        const {
+NodeType* AXNode::ChildIteratorBase<NodeType,
+                                    NextSibling,
+                                    PreviousSibling,
+                                    FirstChild,
+                                    LastChild>::get() const {
   DCHECK(child_);
   return child_;
 }
@@ -481,10 +564,13 @@ NodeType* AXNode::
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-NodeType& AXNode::
-    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    operator*() const {
+NodeType& AXNode::ChildIteratorBase<NodeType,
+                                    NextSibling,
+                                    PreviousSibling,
+                                    FirstChild,
+                                    LastChild>::operator*() const {
   DCHECK(child_);
   return *child_;
 }
@@ -492,10 +578,13 @@ NodeType& AXNode::
 template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
+          NodeType* (NodeType::*FirstChild)() const,
           NodeType* (NodeType::*LastChild)() const>
-NodeType* AXNode::
-    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    operator->() const {
+NodeType* AXNode::ChildIteratorBase<NodeType,
+                                    NextSibling,
+                                    PreviousSibling,
+                                    FirstChild,
+                                    LastChild>::operator->() const {
   DCHECK(child_);
   return child_;
 }

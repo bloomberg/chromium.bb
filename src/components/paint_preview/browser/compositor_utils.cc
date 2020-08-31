@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "components/strings/grit/components_strings.h"
@@ -32,12 +33,25 @@ void BindDiscardableSharedMemoryManagerOnIOThread(
 
 mojo::Remote<mojom::PaintPreviewCompositorCollection>
 CreateCompositorCollection() {
-  auto collection = content::ServiceProcessHost::Launch<
-      mojom::PaintPreviewCompositorCollection>(
+  mojo::Remote<mojom::PaintPreviewCompositorCollection> collection;
+  CreateCompositorCollectionPending(collection.BindNewPipeAndPassReceiver());
+  BindDiscardableSharedMemoryManager(&collection);
+  return collection;
+}
+
+void CreateCompositorCollectionPending(
+    mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection> collection) {
+  // TODO(crbug/1074323): Investigate using a different SandboxType.
+  content::ServiceProcessHost::Launch<mojom::PaintPreviewCompositorCollection>(
+      std::move(collection),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
+          .WithSandboxType(service_manager::SandboxType::kPrintCompositor)
           .Pass());
+}
+
+void BindDiscardableSharedMemoryManager(
+    mojo::Remote<mojom::PaintPreviewCompositorCollection>* collection) {
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       discardable_memory_manager;
 
@@ -47,9 +61,8 @@ CreateCompositorCollection() {
       base::BindOnce(
           &BindDiscardableSharedMemoryManagerOnIOThread,
           discardable_memory_manager.InitWithNewPipeAndPassReceiver()));
-  collection->SetDiscardableSharedMemoryManager(
+  collection->get()->SetDiscardableSharedMemoryManager(
       std::move(discardable_memory_manager));
-  return collection;
 }
 
 }  // namespace paint_preview

@@ -6,20 +6,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/public/test/android/test_support_content_jni_headers/NestedSystemMessageHandler_jni.h"
-
-namespace {
-
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject>>::
-    DestructorAtExit g_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 
 namespace content {
 
@@ -43,9 +34,6 @@ struct NestedMessagePumpAndroid::RunState {
 
   // Used to sleep until there is more work to do.
   base::WaitableEvent waitable_event;
-
-  // The time at which we should call DoDelayedWork.
-  base::TimeTicks delayed_work_time;
 };
 
 NestedMessagePumpAndroid::NestedMessagePumpAndroid()
@@ -72,59 +60,42 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
     if (state_->should_quit)
       break;
 
-    bool did_work = state_->delegate->DoWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoWork();
+    bool has_more_immediate_work = next_work_info.is_immediate();
     if (state_->should_quit)
       break;
 
-    did_work |= state_->delegate->DoDelayedWork(&state_->delayed_work_time);
-    if (state_->should_quit)
-      break;
-
-    if (did_work) {
+    if (has_more_immediate_work)
       continue;
-    }
 
-    did_work = state_->delegate->DoIdleWork();
+    has_more_immediate_work = state_->delegate->DoIdleWork();
     if (state_->should_quit)
       break;
 
-    if (did_work)
+    if (has_more_immediate_work)
       continue;
 
     // No native tasks to process right now. Process tasks from the Java
     // System message handler. This will return when the java message queue
     // is idle.
-    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(
-        env, g_message_handler_obj.Get());
+    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(env);
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
-    if (state_->delayed_work_time.is_null()) {
+    if (next_work_info.delayed_run_time.is_max()) {
       state_->waitable_event.TimedWait(max_delay);
     } else {
-      base::TimeDelta delay =
-          state_->delayed_work_time - base::TimeTicks::Now();
+      base::TimeDelta delay = next_work_info.remaining_delay();
       if (delay > max_delay)
         delay = max_delay;
-      if (delay > base::TimeDelta()) {
-        state_->waitable_event.TimedWait(delay);
-      } else {
-        // It looks like delayed_work_time indicates a time in the past, so we
-        // need to call DoDelayedWork now.
-        state_->delayed_work_time = base::TimeTicks();
-      }
+      DCHECK_GT(delay, base::TimeDelta());
+      state_->waitable_event.TimedWait(delay);
     }
   }
 
   state_ = previous_state;
 }
 
-void NestedMessagePumpAndroid::Attach(
-    base::MessagePump::Delegate* delegate) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-  g_message_handler_obj.Get().Reset(
-      Java_NestedSystemMessageHandler_create(env));
-}
+void NestedMessagePumpAndroid::Attach(base::MessagePump::Delegate* delegate) {}
 
 void NestedMessagePumpAndroid::Quit() {
   if (state_) {
@@ -143,13 +114,11 @@ void NestedMessagePumpAndroid::ScheduleWork() {
 
 void NestedMessagePumpAndroid::ScheduleDelayedWork(
     const base::TimeTicks& delayed_work_time) {
-  if (state_) {
-    // We know that we can't be blocked on Wait right now since this method can
-    // only be called on the same thread as Run, so we only need to update our
-    // record of how long to sleep when we do sleep.
-    state_->delayed_work_time = delayed_work_time;
-    return;
-  }
+  // Since this is always called from the same thread as Run(), there is nothing
+  // to do as the loop is already running. It will wait in Run() with the
+  // correct timeout when it's out of immediate tasks.
+  // TODO(gab): Consider removing ScheduleDelayedWork() when all pumps function
+  // this way (bit.ly/merge-message-pump-do-work).
 }
 
 }  // namespace content

@@ -13,9 +13,9 @@
 
 namespace cc {
 
+class Animation;
 class AnimationHost;
 class AnimationTimeline;
-class SingleKeyframeEffectAnimation;
 
 // Contains an AnimationTimeline and its Animation that owns the impl
 // only scroll offset animations running on a particular CC Layer.
@@ -47,8 +47,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
                                        base::TimeDelta delayed_by,
                                        base::TimeDelta animation_start_offset);
 
-  bool ScrollAnimationUpdateTarget(ElementId element_id,
-                                   const gfx::Vector2dF& scroll_delta,
+  bool ScrollAnimationUpdateTarget(const gfx::Vector2dF& scroll_delta,
                                    const gfx::ScrollOffset& max_scroll_offset,
                                    base::TimeTicks frame_monotonic_time,
                                    base::TimeDelta delayed_by);
@@ -79,6 +78,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
       base::Optional<base::TimeDelta> local_time) override {}
 
   bool IsAnimating() const;
+  ElementId GetElementId() const;
 
  private:
   void ScrollAnimationCreateInternal(ElementId element_id,
@@ -93,7 +93,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
   // We have just one animation for impl-only scroll offset animations.
   // I.e. only one element can have an impl-only scroll offset animation at
   // any given time.
-  scoped_refptr<SingleKeyframeEffectAnimation> scroll_offset_animation_;
+  scoped_refptr<Animation> scroll_offset_animation_;
 };
 
 }  // namespace cc

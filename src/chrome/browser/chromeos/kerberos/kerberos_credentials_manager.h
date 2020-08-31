@@ -8,16 +8,19 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "net/base/backoff_entry.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -49,11 +52,18 @@ class KerberosCredentialsManager : public KeyedService,
 
     // Called when the set of accounts was changed through Kerberos credentials
     // manager.
-    virtual void OnAccountsChanged() = 0;
+    virtual void OnAccountsChanged() {}
+
+    // Called when Kerberos enabled/disabled state changes. The new state is
+    // available via IsKerberosEnabled().
+    virtual void OnKerberosEnabledStateChanged() {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
+
+  // Maximum number of managed accounts addition retries per prefs change.
+  static constexpr int kMaxFailureCountForManagedAccounts = 10;
 
   KerberosCredentialsManager(PrefService* local_state,
                              Profile* primary_profile);
@@ -72,7 +82,7 @@ class KerberosCredentialsManager : public KeyedService,
   static const char* GetDefaultKerberosConfig();
 
   // Returns true if the Kerberos feature is enabled.
-  bool IsKerberosEnabled();
+  bool IsKerberosEnabled() const;
 
   // PolicyService:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -154,6 +164,11 @@ class KerberosCredentialsManager : public KeyedService,
   void SetKerberosFilesHandlerForTesting(
       std::unique_ptr<KerberosFilesHandler> kerberos_files_handler);
 
+  // Used on tests to optionally set a callback that will be called after adding
+  // a managed account.
+  void SetAddManagedAccountCallbackForTesting(
+      base::RepeatingCallback<void(kerberos::ErrorType)> callback);
+
  private:
   friend class KerberosAddAccountRunner;
   using RepeatedAccountField =
@@ -165,6 +180,9 @@ class KerberosCredentialsManager : public KeyedService,
                               bool is_managed,
                               ResultCallback callback,
                               kerberos::ErrorType error);
+
+  // Callback for KerberosAddAccountRunner when adding a managed account.
+  void OnAddManagedAccountRunnerDone(kerberos::ErrorType error);
 
   // Callback for RemoveAccount().
   void OnRemoveAccount(const std::string& principal_name,
@@ -209,6 +227,9 @@ class KerberosCredentialsManager : public KeyedService,
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
 
+  // Calls OnKerberosEnabledStateChanged() on all observers.
+  void NotifyEnabledStateChanged();
+
   // Accessors for active principal (stored in user pref).
   const std::string& GetActivePrincipalName() const;
   void SetActivePrincipalName(const std::string& principal_name);
@@ -227,7 +248,7 @@ class KerberosCredentialsManager : public KeyedService,
   void UpdateEnabledFromPref();
   void UpdateRememberPasswordEnabledFromPref();
   void UpdateAddAccountsAllowedFromPref();
-  void UpdateAccountsFromPref();
+  void UpdateAccountsFromPref(bool is_retry);
 
   // Does the main work for UpdateAccountsFromPref(). To clean up stale managed
   // accounts, an up-to-date accounts list is needed. UpdateAccountsFromPref()
@@ -267,6 +288,16 @@ class KerberosCredentialsManager : public KeyedService,
 
   // List of objects that observe this instance.
   base::ObserverList<Observer, true /* check_empty */> observers_;
+
+  // Backoff entry used to control managed accounts addition retries.
+  net::BackoffEntry backoff_entry_for_managed_accounts_;
+
+  // Timer for keeping track of managed accounts addition retries.
+  base::OneShotTimer managed_accounts_retry_timer_;
+
+  // Callback optionally used for testing.
+  base::RepeatingCallback<void(kerberos::ErrorType)>
+      add_managed_account_callback_for_testing_;
 
   base::WeakPtrFactory<KerberosCredentialsManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(KerberosCredentialsManager);

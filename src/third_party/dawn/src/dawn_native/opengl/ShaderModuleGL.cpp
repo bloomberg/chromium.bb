@@ -50,11 +50,9 @@ namespace dawn_native { namespace opengl {
     // static
     ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
                                                       const ShaderModuleDescriptor* descriptor) {
-        std::unique_ptr<ShaderModule> module(new ShaderModule(device, descriptor));
-        if (!module)
-            return DAWN_VALIDATION_ERROR("Unable to create ShaderModule");
-        DAWN_TRY(module->Initialize(descriptor));
-        return module.release();
+        Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
+        DAWN_TRY(module->Initialize());
+        return module.Detach();
     }
 
     const char* ShaderModule::GetSource() const {
@@ -69,14 +67,15 @@ namespace dawn_native { namespace opengl {
         : ShaderModuleBase(device, descriptor) {
     }
 
-    MaybeError ShaderModule::Initialize(const ShaderModuleDescriptor* descriptor) {
-        std::unique_ptr<spirv_cross::CompilerGLSL> compiler_impl;
-        spirv_cross::CompilerGLSL* compiler;
+    MaybeError ShaderModule::Initialize() {
+        const std::vector<uint32_t>& spirv = GetSpirv();
 
+        std::unique_ptr<spirv_cross::CompilerGLSL> compilerImpl;
+        spirv_cross::CompilerGLSL* compiler;
         if (GetDevice()->IsToggleEnabled(Toggle::UseSpvc)) {
             // If these options are changed, the values in DawnSPIRVCrossGLSLFastFuzzer.cpp need to
             // be updated.
-            shaderc_spvc::CompileOptions options;
+            shaderc_spvc::CompileOptions options = GetCompileOptions();
 
             // The range of Z-coordinate in the clipping volume of OpenGL is [-w, w], while it is
             // [0, w] in D3D12, Metal and Vulkan, so we should normalize it in shaders in all
@@ -91,12 +90,11 @@ namespace dawn_native { namespace opengl {
 #else
             options.SetGLSLLanguageVersion(440);
 #endif
-            shaderc_spvc_status status =
-                mSpvcContext.InitializeForGlsl(descriptor->code, descriptor->codeSize, options);
-            if (status != shaderc_spvc_status_success)
-                return DAWN_VALIDATION_ERROR("Unable to initialize instance of spvc");
-
-            compiler = reinterpret_cast<spirv_cross::CompilerGLSL*>(mSpvcContext.GetCompiler());
+            DAWN_TRY(CheckSpvcSuccess(
+                mSpvcContext.InitializeForGlsl(spirv.data(), spirv.size(), options),
+                "Unable to initialize instance of spvc"));
+            DAWN_TRY(CheckSpvcSuccess(mSpvcContext.GetCompiler(reinterpret_cast<void**>(&compiler)),
+                                      "Unable to get cross compiler"));
         } else {
             // If these options are changed, the values in DawnSPIRVCrossGLSLFastFuzzer.cpp need to
             // be updated.
@@ -111,49 +109,78 @@ namespace dawn_native { namespace opengl {
 
             // TODO(cwallez@chromium.org): discover the backing context version and use that.
 #if defined(DAWN_PLATFORM_APPLE)
-        options.version = 410;
+            options.version = 410;
 #else
-        options.version = 440;
+            options.version = 440;
 #endif
 
-        compiler_impl =
-            std::make_unique<spirv_cross::CompilerGLSL>(descriptor->code, descriptor->codeSize);
-        compiler = compiler_impl.get();
-        compiler->set_common_options(options);
+            compilerImpl = std::make_unique<spirv_cross::CompilerGLSL>(spirv);
+            compiler = compilerImpl.get();
+            compiler->set_common_options(options);
         }
 
-        ExtractSpirvInfo(*compiler);
+        DAWN_TRY(ExtractSpirvInfo(*compiler));
 
-        const auto& bindingInfo = GetBindingInfo();
+        const ShaderModuleBase::ModuleBindingInfo& bindingInfo = GetBindingInfo();
 
         // Extract bindings names so that it can be used to get its location in program.
         // Now translate the separate sampler / textures into combined ones and store their info.
         // We need to do this before removing the set and binding decorations.
-        compiler->build_combined_image_samplers();
+        if (GetDevice()->IsToggleEnabled(Toggle::UseSpvc)) {
+            mSpvcContext.BuildCombinedImageSamplers();
+        } else {
+            compiler->build_combined_image_samplers();
+        }
 
-        for (const auto& combined : compiler->get_combined_image_samplers()) {
-            mCombinedInfo.emplace_back();
+        if (GetDevice()->IsToggleEnabled(Toggle::UseSpvc)) {
+            std::vector<shaderc_spvc_combined_image_sampler> samplers;
+            mSpvcContext.GetCombinedImageSamplers(&samplers);
+            for (auto sampler : samplers) {
+                mCombinedInfo.emplace_back();
+                auto& info = mCombinedInfo.back();
 
-            auto& info = mCombinedInfo.back();
-            info.samplerLocation.group =
-                compiler->get_decoration(combined.sampler_id, spv::DecorationDescriptorSet);
-            info.samplerLocation.binding =
-                compiler->get_decoration(combined.sampler_id, spv::DecorationBinding);
-            info.textureLocation.group =
-                compiler->get_decoration(combined.image_id, spv::DecorationDescriptorSet);
-            info.textureLocation.binding =
-                compiler->get_decoration(combined.image_id, spv::DecorationBinding);
-            compiler->set_name(combined.combined_id, info.GetName());
+                mSpvcContext.GetDecoration(sampler.sampler_id,
+                                           shaderc_spvc_decoration_descriptorset,
+                                           &info.samplerLocation.group);
+                mSpvcContext.GetDecoration(sampler.sampler_id, shaderc_spvc_decoration_binding,
+                                           &info.samplerLocation.binding);
+                mSpvcContext.GetDecoration(sampler.image_id, shaderc_spvc_decoration_descriptorset,
+                                           &info.textureLocation.group);
+                mSpvcContext.GetDecoration(sampler.image_id, shaderc_spvc_decoration_binding,
+                                           &info.textureLocation.binding);
+                mSpvcContext.SetName(sampler.combined_id, info.GetName());
+            }
+        } else {
+            for (const auto& combined : compiler->get_combined_image_samplers()) {
+                mCombinedInfo.emplace_back();
+
+                auto& info = mCombinedInfo.back();
+                info.samplerLocation.group =
+                    compiler->get_decoration(combined.sampler_id, spv::DecorationDescriptorSet);
+                info.samplerLocation.binding =
+                    compiler->get_decoration(combined.sampler_id, spv::DecorationBinding);
+                info.textureLocation.group =
+                    compiler->get_decoration(combined.image_id, spv::DecorationDescriptorSet);
+                info.textureLocation.binding =
+                    compiler->get_decoration(combined.image_id, spv::DecorationBinding);
+                compiler->set_name(combined.combined_id, info.GetName());
+            }
         }
 
         // Change binding names to be "dawn_binding_<group>_<binding>".
         // Also unsets the SPIRV "Binding" decoration as it outputs "layout(binding=)" which
         // isn't supported on OSX's OpenGL.
         for (uint32_t group = 0; group < kMaxBindGroups; ++group) {
-            for (uint32_t binding = 0; binding < kMaxBindingsPerGroup; ++binding) {
-                const auto& info = bindingInfo[group][binding];
-                if (info.used) {
-                    compiler->set_name(info.base_type_id, GetBindingName(group, binding));
+            for (const auto& it : bindingInfo[group]) {
+                BindingNumber bindingNumber = it.first;
+                const auto& info = it.second;
+
+                if (GetDevice()->IsToggleEnabled(Toggle::UseSpvc)) {
+                    mSpvcContext.SetName(info.base_type_id, GetBindingName(group, bindingNumber));
+                    mSpvcContext.UnsetDecoration(info.id, shaderc_spvc_decoration_binding);
+                    mSpvcContext.UnsetDecoration(info.id, shaderc_spvc_decoration_descriptorset);
+                } else {
+                    compiler->set_name(info.base_type_id, GetBindingName(group, bindingNumber));
                     compiler->unset_decoration(info.id, spv::DecorationBinding);
                     compiler->unset_decoration(info.id, spv::DecorationDescriptorSet);
                 }
@@ -162,10 +189,10 @@ namespace dawn_native { namespace opengl {
 
         if (GetDevice()->IsToggleEnabled(Toggle::UseSpvc)) {
             shaderc_spvc::CompilationResult result;
-            shaderc_spvc_status status = mSpvcContext.CompileShader(&result);
-            if (status != shaderc_spvc_status_success)
-                return DAWN_VALIDATION_ERROR("Unable to compile shader using spvc");
-            mGlslSource = result.GetStringOutput();
+            DAWN_TRY(CheckSpvcSuccess(mSpvcContext.CompileShader(&result),
+                                      "Unable to compile GLSL shader using spvc"));
+            DAWN_TRY(CheckSpvcSuccess(result.GetStringOutput(&mGlslSource),
+                                      "Unable to get GLSL shader text"));
         } else {
             mGlslSource = compiler->compile();
         }

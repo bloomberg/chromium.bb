@@ -15,8 +15,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
@@ -30,8 +30,8 @@
 #include "components/cronet/version.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "third_party/zlib/zlib.h"
 #include "url/buildflags.h"
 
@@ -171,7 +171,8 @@ void EnsureInitialized() {
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   std::unique_ptr<net::ProxyConfigService> service =
-      net::ProxyResolutionService::CreateSystemProxyConfigService(io_task_runner);
+      net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
+          io_task_runner);
   // If a PAC URL is present, ignore it and use the address and port of
   // Android system's local HTTP proxy server. See: crbug.com/432539.
   // TODO(csharrison) Architect the wrapper better so we don't need to cast for
@@ -189,7 +190,7 @@ std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
   // Android provides a local HTTP proxy server that handles proxying when a PAC
   // URL is present. Create a proxy service without a resolver and rely on this
   // local HTTP proxy. See: crbug.com/432539.
-  return net::ProxyResolutionService::CreateWithoutProxyResolver(
+  return net::ConfiguredProxyResolutionService::CreateWithoutProxyResolver(
       std::move(proxy_config_service), net_log);
 }
 

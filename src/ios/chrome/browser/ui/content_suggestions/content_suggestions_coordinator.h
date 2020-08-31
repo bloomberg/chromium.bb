@@ -7,37 +7,22 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 namespace web {
 class WebState;
 }
 
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
 @class ContentSuggestionsHeaderViewController;
 @protocol NewTabPageControllerDelegate;
-@protocol OmniboxFocuser;
-@protocol FakeboxFocuser;
-@protocol SnackbarCommands;
 
 // Coordinator to manage the Suggestions UI via a
 // ContentSuggestionsViewController.
 @interface ContentSuggestionsCoordinator : ChromeCoordinator
 
-// BrowserState used to create the ContentSuggestionFactory.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// URLLoader used to open pages.
+// Webstate associated with this coordinator.
 @property(nonatomic, assign) web::WebState* webState;
+
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
-@property(nonatomic, weak) id<ApplicationCommands,
-                              BrowserCommands,
-                              OmniboxFocuser,
-                              FakeboxFocuser,
-                              SnackbarCommands>
-    dispatcher;
+
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;
 
@@ -62,6 +47,12 @@ class WebState;
 
 // Reloads the suggestions.
 - (void)reload;
+
+// The location bar has lost focus.
+- (void)locationBarDidResignFirstResponder;
+
+// Tell location bar has taken focus.
+- (void)locationBarDidBecomeFirstResponder;
 
 @end
 

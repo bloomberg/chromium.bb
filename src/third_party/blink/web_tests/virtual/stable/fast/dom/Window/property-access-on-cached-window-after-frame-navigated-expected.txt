@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 124: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 124: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -231,6 +231,7 @@ PASS oldChildWindow.status is newChildWindow.status
 PASS oldChildWindow.statusbar.visible is newChildWindow.statusbar.visible
 PASS oldChildWindow.styleMedia.type is newChildWindow.styleMedia.type
 PASS oldChildWindow.toolbar.visible is newChildWindow.toolbar.visible
+PASS oldChildWindow.trustedTypes.defaultPolicy is newChildWindow.trustedTypes.defaultPolicy
 PASS oldChildWindow.visualViewport.height is newChildWindow.visualViewport.height
 PASS oldChildWindow.visualViewport.offsetLeft is newChildWindow.visualViewport.offsetLeft
 PASS oldChildWindow.visualViewport.offsetTop is newChildWindow.visualViewport.offsetTop

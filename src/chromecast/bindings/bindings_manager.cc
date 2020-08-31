@@ -16,7 +16,7 @@ BindingsManager::~BindingsManager() {
 }
 
 void BindingsManager::RegisterPortHandler(base::StringPiece port_name,
-                                          PortConnectedHandler handler) {
+                                          MessagePortConnectedHandler handler) {
   auto result = port_handlers_.try_emplace(port_name, std::move(handler));
   DCHECK(result.second);
 }
@@ -27,7 +27,7 @@ void BindingsManager::UnregisterPortHandler(base::StringPiece port_name) {
 }
 
 void BindingsManager::OnPortConnected(base::StringPiece port_name,
-                                      mojo::ScopedMessagePipeHandle port) {
+                                      blink::WebMessagePort port) {
   auto handler = port_handlers_.find(port_name);
   if (handler == port_handlers_.end()) {
     LOG(ERROR) << "No handler found for port " << port_name << ".";

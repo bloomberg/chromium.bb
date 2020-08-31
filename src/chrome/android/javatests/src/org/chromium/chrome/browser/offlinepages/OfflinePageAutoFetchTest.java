@@ -24,19 +24,18 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.AutoFetchNotifier.NotificationAction;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -155,7 +154,7 @@ public class OfflinePageAutoFetchTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mInitialHistograms = histogramSnapshot();
-            mProfile = ((TabImpl) activityTab()).getProfile();
+            mProfile = Profile.fromWebContents(activityTab().getWebContents());
             mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
 
             if (!NetworkChangeNotifier.isInitialized()) {
@@ -243,6 +242,7 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
+    @DisabledTest(message = "https://crbug.com/1042215")
     public void testAutoFetchWithRedirect() throws Exception {
         startWebServer();
         useRedirectWebServerResponse();
@@ -338,7 +338,7 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
+    @DisabledTest(message = "https://crbug.com/923212")
     public void testAutoFetchRequestRetainedOnOtherTabClosed() throws Exception {
         startWebServer();
         final String testUrl = mWebServer.getBaseUrl();

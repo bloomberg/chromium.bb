@@ -34,8 +34,10 @@
   V(pslld, 66, 0F, F2)           \
   V(psllq, 66, 0F, F3)           \
   V(pmuludq, 66, 0F, F4)         \
+  V(pavgb, 66, 0F, E0)           \
   V(psraw, 66, 0F, E1)           \
   V(psrad, 66, 0F, E2)           \
+  V(pavgw, 66, 0F, E3)           \
   V(psrlw, 66, 0F, D1)           \
   V(psrld, 66, 0F, D2)           \
   V(psrlq, 66, 0F, D3)           \
@@ -65,6 +67,12 @@
   V(psignw, 66, 0F, 38, 09)       \
   V(psignd, 66, 0F, 38, 0A)
 
+// SSSE3 instructions whose AVX version has two operands.
+#define SSSE3_UNOP_INSTRUCTION_LIST(V) \
+  V(pabsb, 66, 0F, 38, 1C)             \
+  V(pabsw, 66, 0F, 38, 1D)             \
+  V(pabsd, 66, 0F, 38, 1E)
+
 #define SSE4_INSTRUCTION_LIST(V) \
   V(packusdw, 66, 0F, 38, 2B)    \
   V(pminsb, 66, 0F, 38, 38)      \
@@ -80,8 +88,10 @@
 #define SSE4_RM_INSTRUCTION_LIST(V) \
   V(pmovsxbw, 66, 0F, 38, 20)       \
   V(pmovsxwd, 66, 0F, 38, 23)       \
+  V(pmovsxdq, 66, 0F, 38, 25)       \
   V(pmovzxbw, 66, 0F, 38, 30)       \
   V(pmovzxwd, 66, 0F, 38, 33)       \
+  V(pmovzxdq, 66, 0F, 38, 35)       \
   V(ptest, 66, 0F, 38, 17)
 
 #endif  // V8_CODEGEN_IA32_SSE_INSTR_H_

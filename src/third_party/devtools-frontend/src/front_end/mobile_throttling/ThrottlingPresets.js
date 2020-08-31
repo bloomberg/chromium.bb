@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+
 /** @enum {number} */
 export const CPUThrottlingRates = {
   NoThrottling: 1,
@@ -9,48 +12,48 @@ export const CPUThrottlingRates = {
   LowEndMobile: 6,
 };
 
-/** @type {!MobileThrottling.Conditions} */
+/** @type {!Conditions} */
 export const NoThrottlingConditions = {
   title: SDK.NetworkManager.NoThrottlingConditions.title,
-  description: Common.UIString('No throttling'),
+  description: Common.UIString.UIString('No throttling'),
   network: SDK.NetworkManager.NoThrottlingConditions,
   cpuThrottlingRate: CPUThrottlingRates.NoThrottling,
 };
 
-/** @type {!MobileThrottling.Conditions} */
+/** @type {!Conditions} */
 export const OfflineConditions = {
   title: SDK.NetworkManager.OfflineConditions.title,
-  description: Common.UIString('No internet connectivity'),
+  description: Common.UIString.UIString('No internet connectivity'),
   network: SDK.NetworkManager.OfflineConditions,
   cpuThrottlingRate: CPUThrottlingRates.NoThrottling,
 };
 
-/** @type {!MobileThrottling.Conditions} */
+/** @type {!Conditions} */
 export const LowEndMobileConditions = {
-  title: Common.UIString('Low-end mobile'),
-  description: Common.UIString('Slow 3G & 6x CPU slowdown'),
+  title: Common.UIString.UIString('Low-end mobile'),
+  description: Common.UIString.UIString('Slow 3G & 6x CPU slowdown'),
   network: SDK.NetworkManager.Slow3GConditions,
   cpuThrottlingRate: CPUThrottlingRates.LowEndMobile,
 };
 
-/** @type {!MobileThrottling.Conditions} */
+/** @type {!Conditions} */
 export const MidTierMobileConditions = {
-  title: Common.UIString('Mid-tier mobile'),
-  description: Common.UIString('Fast 3G & 4x CPU slowdown'),
+  title: Common.UIString.UIString('Mid-tier mobile'),
+  description: Common.UIString.UIString('Fast 3G & 4x CPU slowdown'),
   network: SDK.NetworkManager.Fast3GConditions,
   cpuThrottlingRate: CPUThrottlingRates.MidTierMobile,
 };
 
-/** @type {!MobileThrottling.PlaceholderConditions} */
+/** @type {!PlaceholderConditions} */
 export const CustomConditions = {
-  title: Common.UIString('Custom'),
-  description: Common.UIString('Check Network and Performance panels'),
+  title: Common.UIString.UIString('Custom'),
+  description: Common.UIString.UIString('Check Network and Performance panels'),
 };
 
-/** @type {!Array.<!MobileThrottling.Conditions>} */
+/** @type {!Array.<!Conditions>} */
 export const mobilePresets = [MidTierMobileConditions, LowEndMobileConditions, CustomConditions];
 
-/** @type {!Array.<!MobileThrottling.Conditions>} */
+/** @type {!Array.<!Conditions>} */
 export const advancedMobilePresets = [
   OfflineConditions,
 ];
@@ -69,49 +72,29 @@ export const cpuThrottlingPresets = [
   CPUThrottlingRates.LowEndMobile,
 ];
 
-/* Legacy exported object */
-self.MobileThrottling = self.MobileThrottling || {};
-
-/* Legacy exported object */
-MobileThrottling = MobileThrottling || {};
-
-/** @enum {number} */
-MobileThrottling.CPUThrottlingRates = CPUThrottlingRates;
-
-MobileThrottling.NoThrottlingConditions = NoThrottlingConditions;
-MobileThrottling.OfflineConditions = OfflineConditions;
-MobileThrottling.LowEndMobileConditions = LowEndMobileConditions;
-MobileThrottling.MidTierMobileConditions = MidTierMobileConditions;
-MobileThrottling.CustomConditions = CustomConditions;
-
-MobileThrottling.mobilePresets = mobilePresets;
-MobileThrottling.advancedMobilePresets = advancedMobilePresets;
-MobileThrottling.networkPresets = networkPresets;
-MobileThrottling.cpuThrottlingPresets = cpuThrottlingPresets;
-
 /**
  * @typedef {{
- *   title: string,
- *   description: string,
- *   network: !SDK.NetworkManager.Conditions,
- *   cpuThrottlingRate: !CPUThrottlingRates
- * }}
- **/
-MobileThrottling.Conditions;
+  *   title: string,
+  *   description: string,
+  *   network: !SDK.NetworkManager.Conditions,
+  *   cpuThrottlingRate: !CPUThrottlingRates
+  * }}
+  **/
+export let Conditions;
 
 /** @typedef {!{title: string, items: !Array<!SDK.NetworkManager.Conditions>}} */
-MobileThrottling.NetworkThrottlingConditionsGroup;
+export let NetworkThrottlingConditionsGroup;
 
-/** @typedef {!{title: string, items: !Array<!MobileThrottling.Conditions|!MobileThrottling.PlaceholderConditions>}} */
-MobileThrottling.MobileThrottlingConditionsGroup;
+/** @typedef {!{title: string, items: !Array<!Conditions|!PlaceholderConditions>}} */
+export let MobileThrottlingConditionsGroup;
 
-/** @typedef {!Array<?MobileThrottling.Conditions|!MobileThrottling.PlaceholderConditions>} */
-MobileThrottling.ConditionsList;
+/** @typedef {!Array<?Conditions|!PlaceholderConditions>} */
+export let ConditionsList;
 
 /**
  * @typedef {{
- *   title: string,
- *   description: string
- * }}
- **/
-MobileThrottling.PlaceholderConditions;
+  *   title: string,
+  *   description: string
+  * }}
+  **/
+export let PlaceholderConditions;

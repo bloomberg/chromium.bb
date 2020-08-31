@@ -14,6 +14,7 @@ cr.define('printerBrowserProxy', function() {
         'getCupsPrinterModelsList',
         'getPrinterInfo',
         'getPrinterPpdManufacturerAndModel',
+        'queryPrintServer',
         'startDiscoveringPrinters',
         'stopDiscoveringPrinters',
         'cancelPrinterSetUp',
@@ -23,11 +24,18 @@ cr.define('printerBrowserProxy', function() {
         'getEulaUrl',
       ]);
 
-      this.printerList = /** @type{} CupsPrintersList*/ ({printerList: []});
-      this.manufacturers = [];
-      this.models = [];
+      this.printerList = /** @type{?CupsPrintersList} */ ({printerList: []});
+      this.printServerPrinters =
+          /** @type{?CupsPrintersList}  */ ({printerList: []});
+      this.manufacturers =
+          /** @type{?ManufacturersInfo} */ (
+              {success: false, manufacturers: []});
+      this.models =
+          /** @type{?ModelsInfo} */ ({success: false, models: []});
       this.printerInfo = {};
-      this.printerPpdMakeModel = {};
+      this.printerPpdMakeModel =
+          /** @type{PrinterPpdMakeModel */ (
+              {ppdManufacturer: '', ppdModel: ''});
 
       /**
        * |eulaUrl_| in conjunction with |setEulaUrl| mimics setting the EULA url
@@ -42,6 +50,12 @@ cr.define('printerBrowserProxy', function() {
        * @private {PrinterSetupResult}
        */
       this.getPrinterInfoResult_ = null;
+
+      /**
+       * Contains the result code from querying a print server.
+       * @private {PrintServerResult}
+       */
+      this.queryPrintServerResult_ = null;
 
       /**
        * If set, 'addDiscoveredPrinter' will fail and the promise will be
@@ -137,6 +151,16 @@ cr.define('printerBrowserProxy', function() {
       return Promise.resolve(this.eulaUrl_);
     }
 
+    /** @override */
+    queryPrintServer(serverUrl) {
+      this.methodCalled('queryPrintServer', serverUrl);
+      if (this.queryPrintServerResult_ !== PrintServerResult.NO_ERRORS) {
+        return Promise.reject(this.queryPrintServerResult_);
+      }
+      return Promise.resolve(this.printServerPrinters);
+    }
+
+
     /** @param {string} eulaUrl */
     setEulaUrl(eulaUrl) {
       this.eulaUrl_ = eulaUrl;
@@ -145,6 +169,11 @@ cr.define('printerBrowserProxy', function() {
     /** @param {PrinterSetupResult} result */
     setGetPrinterInfoResult(result) {
       this.getPrinterInfoResult_ = result;
+    }
+
+    /** @param {PrintServerResult} result */
+    setQueryPrintServerResult(result) {
+      this.queryPrintServerResult_ = result;
     }
 
     /** @param {!CupsPrinterInfo} printer */

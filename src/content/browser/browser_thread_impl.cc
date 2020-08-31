@@ -10,8 +10,8 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
@@ -83,6 +83,16 @@ BrowserThreadGlobals& GetBrowserThreadGlobals() {
 }
 
 }  // namespace
+
+scoped_refptr<base::SingleThreadTaskRunner> GetUIThreadTaskRunner(
+    const BrowserTaskTraits& traits) {
+  return BrowserTaskExecutor::GetUIThreadTaskRunner(traits);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner(
+    const BrowserTaskTraits& traits) {
+  return BrowserTaskExecutor::GetIOThreadTaskRunner(traits);
+}
 
 BrowserThreadImpl::BrowserThreadImpl(
     ID identifier,

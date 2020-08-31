@@ -4,10 +4,11 @@
 
 #include "platform/test/fake_task_runner.h"
 
-#include "util/logging.h"
+#include <utility>
+
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 FakeTaskRunner::FakeTaskRunner(FakeClock* clock) : clock_(clock) {
   OSP_CHECK(clock_);
@@ -62,5 +63,14 @@ bool FakeTaskRunner::IsRunningOnTaskRunner() {
   return true;
 }
 
-}  // namespace platform
+Clock::time_point FakeTaskRunner::GetResumeTime() const {
+  if (!ready_to_run_tasks_.empty()) {
+    return FakeClock::now();
+  }
+  if (!delayed_tasks_.empty()) {
+    return delayed_tasks_.begin()->first;
+  }
+  return Clock::time_point::max();
+}
+
 }  // namespace openscreen

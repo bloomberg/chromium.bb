@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 
-// #include <iostream>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -18,7 +17,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
@@ -34,6 +33,7 @@
 
 using base::test::IsJson;
 using base::test::ParseJson;
+using blink::mojom::PresentationConnectionCloseReason;
 using testing::_;
 using testing::AllOf;
 using testing::AnyNumber;
@@ -96,7 +96,7 @@ class CastSessionClientImplTest : public testing::Test {
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   url::Origin origin_;
   MediaRoute route_;
-  MockActivityRecord activity_{route_, "theAppId"};
+  MockCastActivityRecord activity_{route_, "theAppId"};
   std::unique_ptr<CastSessionClientImpl> client_ =
       std::make_unique<CastSessionClientImpl>("theClientId",
                                               origin_,
@@ -249,6 +249,35 @@ TEST_F(CastSessionClientImplTest, SendSetVolumeCommandToReceiver) {
           "type": "SET_VOLUME"
         }
       })"));
+}
+
+TEST_F(CastSessionClientImplTest, SendStopSessionCommandToReceiver) {
+  EXPECT_CALL(activity_, StopSessionOnReceiver)
+      .WillOnce([](const std::string& client_id, auto callback) {
+        EXPECT_EQ("theClientId", client_id);
+        std::move(callback).Run(cast_channel::Result::kOk);
+      });
+  client_->OnMessage(
+      blink::mojom::PresentationConnectionMessage::NewMessage(R"({
+        "type": "v2_message",
+        "clientId": "theClientId",
+        "sequenceNumber": 123,
+        "message": {
+          "requestId": 456,
+          "sessionId": "theSessionId",
+          "type": "STOP"
+        }
+      })"));
+}
+
+TEST_F(CastSessionClientImplTest, CloseConnection) {
+  EXPECT_CALL(activity_, CloseConnectionOnReceiver("theClientId"));
+  client_->CloseConnection(PresentationConnectionCloseReason::CLOSED);
+}
+
+TEST_F(CastSessionClientImplTest, DidCloseConnection) {
+  EXPECT_CALL(activity_, CloseConnectionOnReceiver("theClientId"));
+  client_->DidClose(PresentationConnectionCloseReason::WENT_AWAY);
 }
 
 }  // namespace media_router

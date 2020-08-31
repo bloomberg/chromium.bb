@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/optional.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Browser;
 class GURL;
@@ -19,16 +19,15 @@ class WebContents;
 
 namespace web_app {
 
-base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser);
+base::Optional<AppId> GetWebAppForActiveTab(Browser* browser);
 
 // Clears navigation history prior to user entering app scope.
 void PrunePreScopeNavigationHistory(const GURL& scope,
                                     content::WebContents* contents);
 
 // Reparents the active tab into a new app browser for the web app that has the
-// tab's URL in its scope. Does nothing if the tab is not secure or there is no
-// applicable web app.
-Browser* ReparentWebAppForSecureActiveTab(Browser* browser);
+// tab's URL in its scope. Does nothing if there is no web app in scope.
+Browser* ReparentWebAppForActiveTab(Browser* browser);
 
 // Reparents |contents| into a new app browser for |app_id|.
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
@@ -36,6 +35,12 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
 
 // Reparents contents to a new app browser when entering the Focus Mode.
 Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);
+
+// Set preferences that are unique to app windows.
+void SetAppPrefsForWebContents(content::WebContents* web_contents);
+
+// Clear preferences that are unique to app windows.
+void ClearAppPrefsForWebContents(content::WebContents* web_contents);
 
 }  // namespace web_app
 

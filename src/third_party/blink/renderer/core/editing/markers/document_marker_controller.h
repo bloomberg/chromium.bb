@@ -67,10 +67,14 @@ class CORE_EXPORT DocumentMarkerController final
   void AddCompositionMarker(const EphemeralRange&,
                             Color underline_color,
                             ui::mojom::ImeTextSpanThickness,
+                            ui::mojom::ImeTextSpanUnderlineStyle,
+                            Color text_color,
                             Color background_color);
   void AddActiveSuggestionMarker(const EphemeralRange&,
                                  Color underline_color,
                                  ui::mojom::ImeTextSpanThickness,
+                                 ui::mojom::ImeTextSpanUnderlineStyle,
+                                 Color text_color,
                                  Color background_color);
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);
@@ -166,7 +170,8 @@ class CORE_EXPORT DocumentMarkerController final
  private:
   void AddMarkerInternal(
       const EphemeralRange&,
-      std::function<DocumentMarker*(int, int)> create_marker_from_offsets);
+      std::function<DocumentMarker*(int, int)> create_marker_from_offsets,
+      const TextIteratorBehavior& iterator_behavior = {});
   void AddMarkerToNode(const Text&, DocumentMarker*);
 
   using MarkerLists = HeapVector<Member<DocumentMarkerList>,
@@ -184,7 +189,7 @@ class CORE_EXPORT DocumentMarkerController final
                              DocumentMarker::MarkerTypes);
 
   // Called after weak processing of |markers_| is done.
-  void DidProcessMarkerMap(const WeakCallbackInfo&);
+  void DidProcessMarkerMap(const LivenessBroker&);
 
   MarkerMap markers_;
   // Provide a quick way to determine whether a particular marker type is absent

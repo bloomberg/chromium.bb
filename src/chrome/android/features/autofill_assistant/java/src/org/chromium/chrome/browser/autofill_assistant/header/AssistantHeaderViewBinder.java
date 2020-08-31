@@ -11,14 +11,16 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantPreferences;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -59,9 +61,11 @@ class AssistantHeaderViewBinder
             mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
         }
 
-        @VisibleForTesting
-        void disableAnimationsForTesting(boolean disable) {
-            mProgressBar.disableAnimationsForTesting(disable);
+        void disableAnimations(boolean disable) {
+            mProgressBar.disableAnimations(disable);
+            // Hiding the animated poodle seems to be the easiest way to disable its animation since
+            // {@link LogoView#setAnimationEnabled(boolean)} is private.
+            mPoodle.getView().setVisibility(View.INVISIBLE);
         }
     }
 
@@ -69,8 +73,8 @@ class AssistantHeaderViewBinder
     public void bind(AssistantHeaderModel model, ViewHolder view, PropertyKey propertyKey) {
         if (AssistantHeaderModel.STATUS_MESSAGE == propertyKey) {
             String message = model.get(AssistantHeaderModel.STATUS_MESSAGE);
-            view.mStatusMessage.setText(message);
-            view.mStatusMessage.announceForAccessibility(message);
+            AssistantTextUtils.applyVisualAppearanceTags(view.mStatusMessage, message, null);
+            view.mStatusMessage.announceForAccessibility(view.mStatusMessage.getText());
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey) {
@@ -90,6 +94,8 @@ class AssistantHeaderViewBinder
             maybeShowChip(model, view);
         } else if (AssistantHeaderModel.BUBBLE_MESSAGE == propertyKey) {
             showOrDismissBubble(model, view);
+        } else if (AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING == propertyKey) {
+            view.disableAnimations(model.get(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING));
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }
@@ -138,8 +144,9 @@ class AssistantHeaderViewBinder
         view.mProfileIconMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.settings) {
-                PreferencesLauncher.launchSettingsPage(
-                        view.mHeader.getContext(), AutofillAssistantPreferences.class);
+                SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                settingsLauncher.launchSettingsActivity(
+                        view.mHeader.getContext(), SyncAndServicesSettings.class);
                 return true;
             } else if (itemId == R.id.send_feedback) {
                 if (feedbackCallback != null) {
@@ -163,7 +170,8 @@ class AssistantHeaderViewBinder
         view.mTextBubble = new TextBubble(
                 /*context = */ view.mContext, /*rootView = */ poodle, /*contentString = */ message,
                 /*accessibilityString = */ message, /*showArrow = */ true,
-                /*anchorRectProvider = */ new ViewRectProvider(poodle));
+                /*anchorRectProvider = */ new ViewRectProvider(poodle),
+                AccessibilityUtil.isAccessibilityEnabled());
         view.mTextBubble.setDismissOnTouchInteraction(true);
         view.mTextBubble.show();
     }

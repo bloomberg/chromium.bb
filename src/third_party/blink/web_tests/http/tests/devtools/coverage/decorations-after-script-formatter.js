@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(`Tests the gutter decorations in target source code after ScriptFormatterEditorAction\n`);
   await TestRunner.loadModule('coverage_test_runner');
   await TestRunner.loadHTML(`
@@ -18,9 +19,9 @@
 
   var decoratorPromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, '_innerDecorate');
   var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
-  for (action of editorActions) {
+  for (const action of editorActions) {
     if (action instanceof Sources.ScriptFormatterEditorAction) {
-      action._toggleFormatScriptSource();
+      action.toggleFormatScriptSource();
       break;
     }
   }

@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -23,25 +23,27 @@ enum class PushRegistrationStatus;
 }  // namespace mojom
 
 class KURL;
+class LocalDOMWindow;
 class PushSubscriptionOptions;
 class ServiceWorkerRegistration;
 
 class PushMessagingClient final : public GarbageCollected<PushMessagingClient>,
-                                  public Supplement<LocalFrame> {
+                                  public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(PushMessagingClient);
 
  public:
   static const char kSupplementName[];
 
-  explicit PushMessagingClient(LocalFrame& frame);
+  explicit PushMessagingClient(LocalDOMWindow&);
   ~PushMessagingClient() = default;
 
-  static PushMessagingClient* From(LocalFrame* frame);
+  static PushMessagingClient* From(LocalDOMWindow&);
 
   void Subscribe(ServiceWorkerRegistration* service_worker_registration,
                  PushSubscriptionOptions* options,
                  bool user_gesture,
                  std::unique_ptr<PushSubscriptionCallbacks> callbacks);
+  void Trace(Visitor*) override;
 
  private:
   // Returns an initialized PushMessaging service. A connection will be
@@ -65,13 +67,12 @@ class PushMessagingClient final : public GarbageCollected<PushMessagingClient>,
                     mojom::blink::PushRegistrationStatus status,
                     mojom::blink::PushSubscriptionPtr subscription);
 
-  mojo::Remote<mojom::blink::PushMessaging> push_messaging_manager_;
+  HeapMojoRemote<mojom::blink::PushMessaging,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingClient);
 };
-
-void ProvidePushMessagingClientTo(LocalFrame& frame,
-                                  PushMessagingClient* client);
 
 }  // namespace blink
 

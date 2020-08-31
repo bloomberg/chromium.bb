@@ -21,6 +21,9 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class PatchReporter(object):
   """Help discover patches being applied by ebuilds.
 
@@ -107,7 +110,7 @@ class PatchReporter(object):
       cmd = self.equery_cmd[:]
       cmd.extend(['which', cpv])
       ebuild_path = self._invoke_command(cmd, print_cmd=False,
-                                         redirect_stdout=True).output.rstrip()
+                                         stdout=True).output.rstrip()
       # Some of these packages will be from other portdirs. Since we are
       # only interested in extracting the patches from one particular
       # overlay, we skip ebuilds not from that overlay.
@@ -120,7 +123,7 @@ class PatchReporter(object):
       # complete log, and clean again afterwards to avoid leaving a mess.
       cmd = self.ebuild_cmd[:]
       cmd.extend([ebuild_path, 'clean', 'prepare', 'clean'])
-      self._invoke_command(cmd, print_cmd=False, redirect_stdout=True)
+      self._invoke_command(cmd, print_cmd=False, stdout=True)
       self.package_count += 1
 
     # Done with ebuild. Now just harvest the logs and we're finished.
@@ -132,7 +135,7 @@ class PatchReporter(object):
     patch_regex = r'^ [*] Applying ([^ ]*) [.][.][.].*'
     output = cros_build_lib.run(
         ['egrep', '-r', patch_regex, temp_space], print_cmd=False,
-        redirect_stdout=True).output
+        stdout=True).output
     lines = output.splitlines()
     patches = []
     patch_regex = re.compile(patch_regex)

@@ -17,6 +17,27 @@ enum class EmeInitDataType;
 
 namespace blink {
 
+// Reported to UKM. Existing values must not change and new values must be
+// added at the end of the list.
+enum KeySystemForUkm {
+  kClearKey = 0,
+  kWidevine = 1,
+};
+
+// Enum for EME MediaKeySystemAccess, MediaKeys and MediaKeySession APIs.
+// Reported to UKM. Existing values should NEVER be changed.
+enum class EmeApiType {
+  // Value 0 is reserved to detect errors.
+  kCreateMediaKeys = 1,
+  kSetServerCertificate = 2,
+  kGetStatusForPolicy = 3,
+  kGenerateRequest = 4,
+  kLoad = 5,
+  kUpdate = 6,
+  kClose = 7,
+  kRemove = 8,
+};
+
 constexpr const char* kEncryptedMediaFeaturePolicyConsoleWarning =
     "Encrypted Media access has been blocked because of a Feature Policy "
     "applied to the current document. See https://goo.gl/EuHzyv for more "
@@ -41,6 +62,11 @@ class EncryptedMediaUtils {
   ConvertToMediaKeysRequirement(const String&);
   static String ConvertMediaKeysRequirementToString(
       WebMediaKeySystemConfiguration::Requirement);
+
+  // Get interface and property name for |type|, e.t. "MediaKeys" and "load",
+  // respectively.
+  static const char* GetInterfaceName(EmeApiType type);
+  static const char* GetPropertyName(EmeApiType type);
 };
 
 }  // namespace blink

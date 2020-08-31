@@ -19,7 +19,7 @@
 // TODO(johan): Replace #include by forward declaration once proper
 // inheritance is defined for rtc::PacketTransportInterface and
 // cricket::TransportChannel.
-#include "third_party/webrtc/p2p/base/packet_transport_interface.h"
+#include "third_party/webrtc/p2p/base/packet_transport_internal.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
@@ -42,7 +42,7 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
   // Sets callback that should be called when the adapter is being
   // destroyed. The callback is not allowed to touch the adapter, but
   // can do anything else, e.g. destroy the TransportChannel.
-  void SetOnDestroyedCallback(const base::Closure& callback);
+  void SetOnDestroyedCallback(base::OnceClosure callback);
 
   // Closes the stream. |error_code| specifies error code that will
   // be returned by Recv() and Send() after the stream is closed.
@@ -58,19 +58,19 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
            const net::CompletionRepeatingCallback& callback) override;
 
  private:
-  void OnNewPacket(rtc::PacketTransportInterface* transport,
+  void OnNewPacket(rtc::PacketTransportInternal* transport,
                    const char* data,
                    size_t data_size,
                    const int64_t& packet_time,
                    int flags);
-  void OnWritableState(rtc::PacketTransportInterface* transport);
+  void OnWritableState(rtc::PacketTransportInternal* transport);
   void OnChannelDestroyed(cricket::IceTransportInternal* ice_transport);
 
   base::ThreadChecker thread_checker_;
 
   cricket::IceTransportInternal* channel_;
 
-  base::Closure destruction_callback_;
+  base::OnceClosure destruction_callback_;
 
   net::CompletionRepeatingCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;

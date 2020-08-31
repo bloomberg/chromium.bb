@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +41,7 @@ class DialogClientViewTest : public test::WidgetTest,
     WidgetTest::SetUp();
 
     DialogDelegate::set_use_custom_frame(false);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
     // Note: not using DialogDelegate::CreateDialogWidget(..), since that can
     // alter the frame type according to the platform.
@@ -48,6 +50,9 @@ class DialogClientViewTest : public test::WidgetTest,
     params.delegate = this;
     widget_->Init(std::move(params));
     EXPECT_EQ(this, GetContentsView());
+    layout_provider_ = std::make_unique<test::TestLayoutProvider>();
+    layout_provider_->SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH,
+                                        200);
   }
 
   void TearDown() override {
@@ -62,13 +67,6 @@ class DialogClientViewTest : public test::WidgetTest,
 
   void DeleteDelegate() override {
     // DialogDelegateView would delete this, but |this| is owned by the test.
-  }
-
-  int GetDialogButtons() const override { return dialog_buttons_; }
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    return button == ui::DIALOG_BUTTON_CANCEL && !cancel_label_.empty()
-               ? cancel_label_
-               : DialogDelegate::GetDialogButtonLabel(button);
   }
 
  protected:
@@ -91,7 +89,12 @@ class DialogClientViewTest : public test::WidgetTest,
 
   // Sets the buttons to show in the dialog and refreshes the dialog.
   void SetDialogButtons(int dialog_buttons) {
-    dialog_buttons_ = dialog_buttons;
+    DialogDelegate::SetButtons(dialog_buttons);
+    DialogModelChanged();
+  }
+
+  void SetDialogButtonLabel(ui::DialogButton button, const std::string& label) {
+    DialogDelegate::SetButtonLabel(button, base::UTF8ToUTF16(label));
     DialogModelChanged();
   }
 
@@ -124,7 +127,27 @@ class DialogClientViewTest : public test::WidgetTest,
   // exceeded. The resulting width is around 160 pixels, but depends on system
   // fonts.
   void SetLongCancelLabel() {
-    cancel_label_ = base::ASCIIToUTF16("Cancel Cancel Cancel");
+    DialogDelegate::SetButtonLabel(
+        ui::DIALOG_BUTTON_CANCEL, base::ASCIIToUTF16("Cancel Cancel Cancel"));
+    DialogModelChanged();
+  }
+
+  views::Button* GetButtonByAccessibleName(views::View* root,
+                                           const base::string16& name) {
+    views::Button* button = Button::AsButton(root);
+    if (button && button->GetAccessibleName() == name)
+      return button;
+    for (auto* child : root->children()) {
+      button = GetButtonByAccessibleName(child, name);
+      if (button)
+        return button;
+    }
+    return nullptr;
+  }
+
+  views::Button* GetButtonByAccessibleName(const std::string& label) {
+    return GetButtonByAccessibleName(widget_->GetRootView(),
+                                     base::UTF8ToUTF16(label));
   }
 
   DialogClientView* client_view() {
@@ -132,19 +155,16 @@ class DialogClientViewTest : public test::WidgetTest,
   }
 
   Widget* widget() { return widget_; }
+  test::TestLayoutProvider* layout_provider() { return layout_provider_.get(); }
 
  private:
   // The dialog Widget.
+  std::unique_ptr<test::TestLayoutProvider> layout_provider_;
   Widget* widget_ = nullptr;
-
-  // The bitmask of buttons to show in the dialog.
-  int dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
 
   gfx::Size preferred_size_;
   gfx::Size min_size_;
   gfx::Size max_size_;
-
-  base::string16 cancel_label_;  // If set, the label for the Cancel button.
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };
@@ -199,11 +219,7 @@ TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
 
 // Test that views inside the dialog client view have the correct focus order.
 TEST_F(DialogClientViewTest, SetupFocusChain) {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  const bool kIsOkButtonOnLeftSide = true;
-#else
-  const bool kIsOkButtonOnLeftSide = false;
-#endif
+  const bool kIsOkButtonOnLeftSide = PlatformStyle::kIsOkButtonLeading;
 
   GetContentsView()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   // Initially the dialog client view only contains the content view.
@@ -342,13 +358,11 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
 
 // Ensure button widths are linked under MD.
 TEST_F(DialogClientViewTest, LinkedWidthDoesLink) {
-  test::TestLayoutProvider layout_provider;
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
   SetLongCancelLabel();
 
   // Ensure there is no default button since getting a bold font can throw off
   // the cached sizes.
-  set_default_button(ui::DIALOG_BUTTON_NONE);
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
   CheckContentsIsSetToPreferredSize();
@@ -373,13 +387,13 @@ TEST_F(DialogClientViewTest, LinkedWidthDoesLink) {
   EXPECT_EQ(cancel_button_width, client_view()->ok_button()->width());
 
   // But not when the size of the cancel button exceeds the max linkable width.
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
+  layout_provider()->SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
   EXPECT_GT(cancel_button_width, 100);
 
   DialogModelChanged();
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
+  layout_provider()->SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
 
   // The extra view should also match, if it's a matching button type.
   View* extra_button =
@@ -389,13 +403,11 @@ TEST_F(DialogClientViewTest, LinkedWidthDoesLink) {
 }
 
 TEST_F(DialogClientViewTest, LinkedWidthDoesntLink) {
-  test::TestLayoutProvider layout_provider;
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
   SetLongCancelLabel();
 
   // Ensure there is no default button since getting a bold font can throw off
   // the cached sizes.
-  set_default_button(ui::DIALOG_BUTTON_NONE);
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
   CheckContentsIsSetToPreferredSize();
@@ -420,13 +432,13 @@ TEST_F(DialogClientViewTest, LinkedWidthDoesntLink) {
   EXPECT_EQ(cancel_button_width, client_view()->ok_button()->width());
 
   // But not when the size of the cancel button exceeds the max linkable width.
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
+  layout_provider()->SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
   EXPECT_GT(cancel_button_width, 100);
 
   DialogModelChanged();
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
-  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
+  layout_provider()->SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
 
   // Checkbox extends LabelButton, but it should not participate in linking.
   View* extra_button =
@@ -552,6 +564,76 @@ TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks_RepeatedClicks) {
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      event_time, ui::EF_NONE, ui::EF_NONE));
   EXPECT_TRUE(widget()->IsClosed());
+}
+
+TEST_F(DialogClientViewTest, ButtonLayoutWithExtra) {
+  // The dialog button row's layout should look like:
+  // | <inset> [extra] <flex-margin> [cancel] <margin> [ok] <inset> |
+  // Where:
+  // 1) The two insets are linkable
+  // 2) The ok & cancel buttons have their width linked
+  // 3) The extra button has its width linked to the other two
+  // 4) The margin should be invariant as the dialog changes width
+  // 5) The flex margin should change as the dialog changes width
+  //
+  // Note that cancel & ok may swap order depending on
+  // PlatformStyle::kIsOkButtonLeading; these invariants hold for either order.
+  SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  SetDialogButtonLabel(ui::DIALOG_BUTTON_OK, "ok");
+  SetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL, "cancel");
+  SetExtraView(
+      std::make_unique<LabelButton>(nullptr, base::UTF8ToUTF16("extra")));
+
+  widget()->Show();
+
+  Button* ok = GetButtonByAccessibleName("ok");
+  Button* cancel = GetButtonByAccessibleName("cancel");
+  Button* extra = GetButtonByAccessibleName("extra");
+
+  ASSERT_NE(ok, cancel);
+  ASSERT_NE(ok, extra);
+  ASSERT_NE(cancel, extra);
+
+  client_view()->SizeToPreferredSize();
+  client_view()->Layout();
+
+  auto bounds_left = [](View* v) { return v->GetBoundsInScreen().x(); };
+  auto bounds_right = [](View* v) { return v->GetBoundsInScreen().right(); };
+
+  // (1): left inset == right inset (and they shouldn't be 0):
+  int left_inset = bounds_left(extra) - bounds_left(this);
+  int right_inset =
+      bounds_right(this) - std::max(bounds_right(ok), bounds_right(cancel));
+  EXPECT_EQ(left_inset, right_inset);
+  EXPECT_GT(left_inset, 0);
+
+  // (2) & (3): All three buttons have their widths linked:
+  EXPECT_EQ(ok->width(), cancel->width());
+  EXPECT_EQ(ok->width(), extra->width());
+  EXPECT_GT(ok->width(), 0);
+
+  // (4): Margin between ok & cancel should be invariant as dialog width
+  // changes:
+  auto get_margin = [&]() {
+    return std::max(bounds_left(ok), bounds_left(cancel)) -
+           std::min(bounds_right(ok), bounds_right(cancel));
+  };
+
+  // (5): Flex margin between ok/cancel and extra should vary with dialog width
+  // (it should absorb 100% of the change in width)
+  auto get_flex_margin = [&]() {
+    return std::min(bounds_left(ok), bounds_left(cancel)) - bounds_right(extra);
+  };
+
+  int old_margin = get_margin();
+  int old_flex_margin = get_flex_margin();
+
+  SetSizeConstraints(gfx::Size(), gfx::Size(width() + 100, 0), gfx::Size());
+  client_view()->SizeToPreferredSize();
+  client_view()->Layout();
+
+  EXPECT_EQ(old_margin, get_margin());
+  EXPECT_EQ(old_flex_margin + 100, get_flex_margin());
 }
 
 }  // namespace views

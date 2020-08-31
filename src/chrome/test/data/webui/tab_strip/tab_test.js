@@ -7,7 +7,7 @@ import 'chrome://tab-strip/tab.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
-import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {CloseTabAction, TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
@@ -22,6 +22,7 @@ suite('Tab', function() {
     alertStates: [],
     id: 1001,
     networkState: TabNetworkState.NONE,
+    pinned: false,
     title: 'My title',
   };
 
@@ -38,6 +39,7 @@ suite('Tab', function() {
     document.body.innerHTML = '';
 
     // Set CSS variable for animations
+    document.body.style.setProperty('--tabstrip-tab-height', '100px');
     document.body.style.setProperty('--tabstrip-tab-width', '280px');
     document.body.style.setProperty('--tabstrip-tab-spacing', '20px');
 
@@ -60,13 +62,13 @@ suite('Tab', function() {
     const animationPromise = tabElement.slideIn();
     // Before animation completes.
     assertEquals('20px', tabElementStyle.paddingRight);
-    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('280px', tabElementStyle.maxWidth);
     assertEquals('matrix(0, 0, 0, 0, 0, 0)', tabElementStyle.transform);
     await animationPromise;
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingRight);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideIn animations for not the last tab', async () => {
@@ -87,7 +89,7 @@ suite('Tab', function() {
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingRight);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideIn animations right to left for RTL languages', async () => {
@@ -108,7 +110,7 @@ suite('Tab', function() {
     // After animation completes.
     assertEquals('100px', tabElementStyle.paddingLeft);
     assertEquals('none', tabElementStyle.maxWidth);
-    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+    assertEquals('none', tabElementStyle.transform);
   });
 
   test('slideOut animates out the element', async () => {
@@ -289,10 +291,23 @@ suite('Tab', function() {
     assertEquals('1001', tabElement.getAttribute('data-tab-id'));
   });
 
-  test('closes the tab', () => {
+  test('closes the tab when clicking close button', () => {
     tabElement.shadowRoot.querySelector('#close').click();
-    return testTabsApiProxy.whenCalled('closeTab').then(tabId => {
+    return testTabsApiProxy.whenCalled('closeTab').then(([
+                                                          tabId, closeTabAction
+                                                        ]) => {
       assertEquals(tabId, tab.id);
+      assertEquals(closeTabAction, CloseTabAction.CLOSE_BUTTON);
+    });
+  });
+
+  test('closes the tab on swipe', () => {
+    tabElement.dispatchEvent(new CustomEvent('swipe'));
+    return testTabsApiProxy.whenCalled('closeTab').then(([
+                                                          tabId, closeTabAction
+                                                        ]) => {
+      assertEquals(tabId, tab.id);
+      assertEquals(closeTabAction, CloseTabAction.SWIPED_TO_CLOSE);
     });
   });
 
@@ -356,9 +371,10 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('dragging_'));
   });
 
-  test('getting the drag image grabs the contents', () => {
+  test('gets the drag image', () => {
     assertEquals(
-        tabElement.getDragImage(), tabElement.shadowRoot.querySelector('#tab'));
+        tabElement.getDragImage(),
+        tabElement.shadowRoot.querySelector('#dragImage'));
   });
 
   test('has custom context menu', async () => {
@@ -417,5 +433,20 @@ suite('Tab', function() {
     innerTabElement.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
     assertEquals(await testTabsApiProxy.whenCalled('activateTab'), tab.id);
     testTabsApiProxy.reset();
+  });
+
+  test('DragImagePreservesAspectRatio', () => {
+    const originalBoundingBox = tabElement.$('#tab').getBoundingClientRect();
+    const originalAspectRatio =
+        originalBoundingBox.width / originalBoundingBox.height;
+    tabElement.setDragging(true);
+    const dragImageBoundingBox =
+        tabElement.getDragImage().querySelector('#tab').getBoundingClientRect();
+    const dragImageAspectRatio =
+        dragImageBoundingBox.width / dragImageBoundingBox.height;
+    // Check the Math.floor values of these values to prevent possible
+    // flakiness caused by comparing float values.
+    assertEquals(
+        Math.floor(originalAspectRatio), Math.floor(dragImageAspectRatio));
   });
 });

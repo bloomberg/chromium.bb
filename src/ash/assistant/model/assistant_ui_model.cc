@@ -5,14 +5,10 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 
 namespace ash {
 
-AssistantUiModel::AssistantUiModel()
-    : ui_mode_(app_list_features::IsAssistantLauncherUIEnabled()
-                   ? AssistantUiMode::kLauncherEmbeddedUi
-                   : AssistantUiMode::kMainUi) {}
+AssistantUiModel::AssistantUiModel() = default;
 
 AssistantUiModel::~AssistantUiModel() = default;
 
@@ -36,11 +32,6 @@ void AssistantUiModel::SetUiMode(AssistantUiMode ui_mode,
 void AssistantUiModel::SetVisible(AssistantEntryPoint entry_point) {
   SetVisibility(AssistantVisibility::kVisible, entry_point,
                 /*exit_point=*/base::nullopt);
-}
-
-void AssistantUiModel::SetHidden(AssistantExitPoint exit_point) {
-  SetVisibility(AssistantVisibility::kHidden,
-                /*entry_point=*/base::nullopt, exit_point);
 }
 
 void AssistantUiModel::SetClosed(AssistantExitPoint exit_point) {

@@ -23,6 +23,7 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
@@ -54,14 +55,16 @@ class WebContentsImpl;
 
 namespace protocol {
 
+class BrowserHandler;
 class EmulationHandler;
 
 class PageHandler : public DevToolsDomainHandler,
                     public Page::Backend,
-                    public RenderWidgetHostObserver {
+                    public RenderWidgetHostObserver,
+                    public download::DownloadItem::Observer {
  public:
-  PageHandler(EmulationHandler* handler,
-              bool allow_set_download_behavior,
+  PageHandler(EmulationHandler* emulation_handler,
+              BrowserHandler* browser_handler,
               bool allow_file_access);
   ~PageHandler() override;
 
@@ -91,7 +94,7 @@ class PageHandler : public DevToolsDomainHandler,
                                  JavaScriptDialogCallback callback);
   void DidCloseJavaScriptDialog(bool success, const base::string16& user_input);
   void NavigationReset(NavigationRequest* navigation_request);
-  void DownloadWillBegin(FrameTreeNode* ftn, const GURL& url);
+  void DownloadWillBegin(FrameTreeNode* ftn, download::DownloadItem* item);
 
   WebContentsImpl* GetWebContents();
 
@@ -107,6 +110,7 @@ class PageHandler : public DevToolsDomainHandler,
                 Maybe<std::string> referrer,
                 Maybe<std::string> transition_type,
                 Maybe<std::string> frame_id,
+                Maybe<std::string> referrer_policy,
                 std::unique_ptr<NavigateCallback> callback) override;
   Response StopLoading() override;
 
@@ -166,6 +170,9 @@ class PageHandler : public DevToolsDomainHandler,
   void GetInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
+  void GetManifestIcons(
+      std::unique_ptr<GetManifestIconsCallback> callback) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 
@@ -190,12 +197,17 @@ class PageHandler : public DevToolsDomainHandler,
 
   void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                    const GURL& manifest_url,
+                   const ::blink::Manifest& parsed_manifest,
                    blink::mojom::ManifestDebugInfoPtr debug_info);
 
   // RenderWidgetHostObserver overrides.
   void RenderWidgetHostVisibilityChanged(RenderWidgetHost* widget_host,
                                          bool became_visible) override;
   void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override;
+
+  // DownloadItem::Observer overrides
+  void OnDownloadUpdated(download::DownloadItem* item) override;
+  void OnDownloadDestroyed(download::DownloadItem* item) override;
 
   bool enabled_;
 
@@ -222,14 +234,14 @@ class PageHandler : public DevToolsDomainHandler,
 
   RenderFrameHostImpl* host_;
   EmulationHandler* emulation_handler_;
-  bool allow_set_download_behavior_;
+  BrowserHandler* browser_handler_;
 
   std::unique_ptr<Page::Frontend> frontend_;
   ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_{this};
   JavaScriptDialogCallback pending_dialog_;
-  scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>
       navigate_callbacks_;
+  base::flat_set<download::DownloadItem*> pending_downloads_;
 
   base::WeakPtrFactory<PageHandler> weak_factory_{this};
 

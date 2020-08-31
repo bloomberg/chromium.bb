@@ -10,9 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -338,14 +338,24 @@ TEST_F(ImportantFileWriterTest, WriteFileAtomicallyHistogramSuffixTest) {
 
   FilePath invalid_file_ = FilePath().AppendASCII("bad/../non_existent/path");
   EXPECT_FALSE(PathExists(invalid_file_));
-  EXPECT_FALSE(
-      ImportantFileWriter::WriteFileAtomically(invalid_file_, nullptr));
+  EXPECT_FALSE(ImportantFileWriter::WriteFileAtomically(invalid_file_, ""));
   histogram_tester.ExpectTotalCount("ImportantFile.FileCreateError", 1);
   histogram_tester.ExpectTotalCount("ImportantFile.FileCreateError.test", 0);
   EXPECT_FALSE(
-      ImportantFileWriter::WriteFileAtomically(invalid_file_, nullptr, "test"));
+      ImportantFileWriter::WriteFileAtomically(invalid_file_, "", "test"));
   histogram_tester.ExpectTotalCount("ImportantFile.FileCreateError", 1);
   histogram_tester.ExpectTotalCount("ImportantFile.FileCreateError.test", 1);
+}
+
+// Test that the chunking to avoid very large writes works.
+TEST_F(ImportantFileWriterTest, WriteLargeFile) {
+  // One byte larger than kMaxWriteAmount.
+  const std::string large_data(8 * 1024 * 1024 + 1, 'g');
+  EXPECT_FALSE(PathExists(file_));
+  EXPECT_TRUE(ImportantFileWriter::WriteFileAtomically(file_, large_data));
+  std::string actual;
+  EXPECT_TRUE(ReadFileToString(file_, &actual));
+  EXPECT_EQ(large_data, actual);
 }
 
 }  // namespace base

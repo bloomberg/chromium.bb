@@ -8,6 +8,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -70,8 +71,10 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   views::Widget* widget =
       views::Widget::GetTopLevelWidgetForNativeView(focus->window());
   ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
-  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+  if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
+      ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL) {
     return false;
+  }
 
   // Case 1:
   // When IME ate a key event but did not emit character insertion event yet
@@ -171,8 +174,11 @@ Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
           kExpirationDelayForPendingKeyAcksMs)) {
   AddEventHandler();
   seat_->AddObserver(this);
-  keyboard::KeyboardUIController::Get()->AddObserver(this);
+  ash::KeyboardController::Get()->AddObserver(this);
+
   OnSurfaceFocused(seat_->GetFocusedSurface());
+  OnKeyRepeatSettingsChanged(
+      ash::KeyboardController::Get()->GetKeyRepeatSettings());
 }
 
 Keyboard::~Keyboard() {
@@ -182,7 +188,7 @@ Keyboard::~Keyboard() {
     focus_->RemoveSurfaceObserver(this);
   RemoveEventHandler();
   seat_->RemoveObserver(this);
-  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
+  ash::KeyboardController::Get()->RemoveObserver(this);
 }
 
 bool Keyboard::HasDeviceConfigurationDelegate() const {
@@ -243,15 +249,21 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   if (!focus_)
     return;
 
-  // Ignore synthetic key repeat events.
-  if (event->is_repeat())
-    return;
-
   // If the event target is not an exo::Surface, let another handler process the
   // event. This check may not be necessary once https://crbug.com/624168 is
   // resolved.
   if (!GetShellMainSurface(static_cast<aura::Window*>(event->target())) &&
       !Surface::AsSurface(static_cast<aura::Window*>(event->target()))) {
+    return;
+  }
+
+  // Ignore synthetic key repeat events.
+  if (event->is_repeat()) {
+    // Clients should not see key repeat events and instead handle them on the
+    // client side.
+    // Mark the key repeat events as handled to avoid them from invoking
+    // accelerators.
+    event->SetHandled();
     return;
   }
 
@@ -290,10 +302,11 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 
   switch (event->type()) {
     case ui::ET_KEY_PRESSED: {
-      // Process key press event if not already handled and not already pressed.
       auto it = pressed_keys_.find(physical_code);
       if (it == pressed_keys_.end() && !consumed_by_ime && !event->handled() &&
           physical_code != ui::DomCode::NONE) {
+        // Process key press event if not already handled and not already
+        // pressed.
         uint32_t serial =
             delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
         if (AreKeyboardKeyAcksNeeded()) {
@@ -306,6 +319,14 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
         // Keep track of both the physical code and potentially re-written
         // code that this event generated.
         pressed_keys_.insert({physical_code, event->code()});
+      } else if (it != pressed_keys_.end() && !event->handled()) {
+        // Non-repeate key events for already pressed key can be sent in some
+        // cases (e.g. Holding 'A' key then holding 'B' key then releasing 'A'
+        // key sends a non-repeat 'B' key press event).
+        // When it happens, we don't want to send the press event to a client
+        // and also want to avoid it from invoking any accelerator.
+        if (AreKeyboardKeyAcksNeeded())
+          event->SetHandled();
       }
     } break;
     case ui::ET_KEY_RELEASED: {
@@ -374,6 +395,12 @@ void Keyboard::OnKeyboardEnabledChanged(bool enabled) {
     bool is_physical = !IsVirtualKeyboardEnabled();
     device_configuration_delegate_->OnKeyboardTypeChanged(is_physical);
   }
+}
+
+void Keyboard::OnKeyRepeatSettingsChanged(
+    const ash::KeyRepeatSettings& settings) {
+  delegate_->OnKeyRepeatSettingsChanged(settings.enabled, settings.delay,
+                                        settings.interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/resource_load_info.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
@@ -116,6 +116,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) = 0;
 
+  // Returns true if escape should immediately close the dialog. Default is
+  // true.
+  virtual bool ShouldCloseDialogOnEscape() const;
+
   // A callback to allow the delegate to dictate that the window should not
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
@@ -157,7 +161,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
 
   virtual void OnWebContentsFinishedLoad() {}
   virtual void OnMainFrameResourceLoadComplete(
-      const content::mojom::ResourceLoadInfo& resource_load_info) {}
+      const blink::mojom::ResourceLoadInfo& resource_load_info) {}
 
   virtual ~WebDialogDelegate() {}
 };

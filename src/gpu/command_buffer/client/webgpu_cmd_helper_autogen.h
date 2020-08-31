@@ -11,16 +11,17 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_
 
-void DawnCommands(uint32_t commands_shm_id,
+void DawnCommands(uint64_t device_client_id,
+                  uint32_t commands_shm_id,
                   uint32_t commands_shm_offset,
                   uint32_t size) {
   webgpu::cmds::DawnCommands* c = GetCmdSpace<webgpu::cmds::DawnCommands>();
   if (c) {
-    c->Init(commands_shm_id, commands_shm_offset, size);
+    c->Init(device_client_id, commands_shm_id, commands_shm_offset, size);
   }
 }
 
-void AssociateMailboxImmediate(GLuint device_id,
+void AssociateMailboxImmediate(GLuint64 device_client_id,
                                GLuint device_generation,
                                GLuint id,
                                GLuint generation,
@@ -31,19 +32,22 @@ void AssociateMailboxImmediate(GLuint device_id,
       GetImmediateCmdSpaceTotalSize<webgpu::cmds::AssociateMailboxImmediate>(
           size);
   if (c) {
-    c->Init(device_id, device_generation, id, generation, usage, mailbox);
+    c->Init(device_client_id, device_generation, id, generation, usage,
+            mailbox);
   }
 }
 
-void DissociateMailbox(GLuint texture_id, GLuint texture_generation) {
+void DissociateMailbox(GLuint64 device_client_id,
+                       GLuint texture_id,
+                       GLuint texture_generation) {
   webgpu::cmds::DissociateMailbox* c =
       GetCmdSpace<webgpu::cmds::DissociateMailbox>();
   if (c) {
-    c->Init(texture_id, texture_generation);
+    c->Init(device_client_id, texture_id, texture_generation);
   }
 }
 
-void RequestAdapter(uint32_t request_adapter_serial,
+void RequestAdapter(uint64_t request_adapter_serial,
                     uint32_t power_preference) {
   webgpu::cmds::RequestAdapter* c = GetCmdSpace<webgpu::cmds::RequestAdapter>();
   if (c) {
@@ -51,15 +55,23 @@ void RequestAdapter(uint32_t request_adapter_serial,
   }
 }
 
-void RequestDevice(uint32_t adapter_service_id,
+void RequestDevice(uint64_t device_client_id,
+                   uint32_t adapter_service_id,
                    uint32_t request_device_properties_shm_id,
                    uint32_t request_device_properties_shm_offset,
                    uint32_t request_device_properties_size) {
   webgpu::cmds::RequestDevice* c = GetCmdSpace<webgpu::cmds::RequestDevice>();
   if (c) {
-    c->Init(adapter_service_id, request_device_properties_shm_id,
-            request_device_properties_shm_offset,
-            request_device_properties_size);
+    c->Init(
+        device_client_id, adapter_service_id, request_device_properties_shm_id,
+        request_device_properties_shm_offset, request_device_properties_size);
+  }
+}
+
+void RemoveDevice(uint64_t device_client_id) {
+  webgpu::cmds::RemoveDevice* c = GetCmdSpace<webgpu::cmds::RemoveDevice>();
+  if (c) {
+    c->Init(device_client_id);
   }
 }
 

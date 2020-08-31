@@ -26,10 +26,18 @@ const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
-const char kXrCompositingSandbox[] = "xr_compositing";
-const char kPdfCompositorSandbox[] = "pdf_compositor";
-const char kProfilingSandbox[] = "profiling";
+const char kPrintCompositorSandbox[] = "print_compositor";
 const char kAudioSandbox[] = "audio";
+const char kSharingServiceSandbox[] = "sharing_service";
+const char kSpeechRecognitionSandbox[] = "speech_recognition";
+const char kVideoCaptureSandbox[] = "video_capture";
+
+#if defined(OS_WIN)
+const char kPdfConversionSandbox[] = "pdf_conversion";
+const char kProxyResolverSandbox[] = "proxy_resolver";
+const char kXrCompositingSandbox[] = "xr_compositing";
+#endif  // OS_WIN
+
 #if defined(OS_CHROMEOS)
 const char kImeSandbox[] = "ime";
 #endif  // OS_CHROMEOS
@@ -74,6 +82,12 @@ const char kGpuSandboxFailuresFatal[] = "gpu-sandbox-failures-fatal";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[] = "no-sandbox";
 
+#if defined(OS_LINUX)
+// Instructs the zygote to launch without a sandbox. Processes forked from this
+// type of zygote will apply their own custom sandboxes later.
+const char kNoZygoteSandbox[] = "no-zygote-sandbox";
+#endif
+
 #if defined(OS_WIN)
 // Allows third party modules to inject by disabling the BINARY_SIGNATURE
 // mitigation policy on Win10+. Also has other effects in ELF.
@@ -81,15 +95,6 @@ const char kAllowThirdPartyModules[] = "allow-third-party-modules";
 
 // Add additional capabilities to the AppContainer sandbox on the GPU process.
 const char kAddGpuAppContainerCaps[] = "add-gpu-appcontainer-caps";
-
-// Disables AppContainer sandbox on the GPU process.
-const char kDisableGpuAppContainer[] = "disable-gpu-appcontainer";
-
-// Disables low-privilege AppContainer sandbox on the GPU process.
-const char kDisableGpuLpac[] = "disable-gpu-lpac";
-
-// Enables AppContainer sandbox on the GPU process.
-const char kEnableGpuAppContainer[] = "enable-gpu-appcontainer";
 
 // Disables the sandbox and gives the process elevated privileges.
 const char kNoSandboxAndElevatedPrivileges[] = "no-sandbox-and-elevated";
@@ -107,11 +112,14 @@ const char kEnableSandboxLogging[] = "enable-sandbox-logging";
 
 // Flags spied upon from other layers.
 const char kGpuProcess[] = "gpu-process";
+const char kNaClBrokerProcess[] = "nacl-broker";
 const char kNaClLoaderProcess[] = "nacl-loader";
 const char kPpapiBrokerProcess[] = "ppapi-broker";
 const char kPpapiPluginProcess[] = "ppapi";
 const char kRendererProcess[] = "renderer";
 const char kUtilityProcess[] = "utility";
+const char kCloudPrintServiceProcess[] = "service";
+const char kZygoteProcessType[] = "zygote";
 
 }  // namespace switches
 

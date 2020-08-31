@@ -82,7 +82,8 @@ std::unique_ptr<voe::ChannelReceiveInterface> CreateChannelReceive(
       config.jitter_buffer_max_packets, config.jitter_buffer_fast_accelerate,
       config.jitter_buffer_min_delay_ms,
       config.jitter_buffer_enable_rtx_handling, config.decoder_factory,
-      config.codec_pair_id, config.frame_decryptor, config.crypto_options);
+      config.codec_pair_id, config.frame_decryptor, config.crypto_options,
+      std::move(config.frame_transformer));
 }
 }  // namespace
 
@@ -222,6 +223,9 @@ webrtc::AudioReceiveStream::Stats AudioReceiveStream::GetStats() const {
       static_cast<double>(ns.jitterBufferDelayMs) /
       static_cast<double>(rtc::kNumMillisecsPerSec);
   stats.jitter_buffer_emitted_count = ns.jitterBufferEmittedCount;
+  stats.jitter_buffer_target_delay_seconds =
+      static_cast<double>(ns.jitterBufferTargetDelayMs) /
+      static_cast<double>(rtc::kNumMillisecsPerSec);
   stats.inserted_samples_for_deceleration = ns.insertedSamplesForDeceleration;
   stats.removed_samples_for_acceleration = ns.removedSamplesForAcceleration;
   stats.expand_rate = Q14ToFloat(ns.currentExpandRate);
@@ -295,7 +299,7 @@ int AudioReceiveStream::PreferredSampleRate() const {
   return channel_receive_->PreferredSampleRate();
 }
 
-int AudioReceiveStream::id() const {
+uint32_t AudioReceiveStream::id() const {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
   return config_.rtp.remote_ssrc;
 }
@@ -404,6 +408,12 @@ void AudioReceiveStream::ConfigureStream(AudioReceiveStream* stream,
   }
   if (first_time || old_config.decoder_map != new_config.decoder_map) {
     channel_receive->SetReceiveCodecs(new_config.decoder_map);
+  }
+
+  if (first_time ||
+      old_config.frame_transformer != new_config.frame_transformer) {
+    channel_receive->SetDepacketizerToDecoderFrameTransformer(
+        new_config.frame_transformer);
   }
 
   stream->config_ = new_config;

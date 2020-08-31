@@ -13,11 +13,8 @@
 
 @protocol ApplicationCommands;
 class AudioSessionController;
+class Browser;
 class VoiceSearchController;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // VoiceSearchProvider allows embedders to provide functionality related to
 // voice search.
@@ -38,7 +35,7 @@ class VoiceSearchProvider {
 
   // Creates a new VoiceSearchController object.
   virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
-      ios::ChromeBrowserState* browser_state) const;
+      Browser* browser) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

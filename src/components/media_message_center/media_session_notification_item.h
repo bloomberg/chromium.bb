@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -77,8 +78,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
       media_session::mojom::MediaSessionInfoPtr session_info);
 
   // This will freeze the item and start a timer to destroy the item after
-  // some time has passed.
-  void Freeze();
+  // some time has passed. If and when the item unfreezes, |unfrozen_callback|
+  // will be run. If the item does not unfreeze before timing out, then
+  // |unfrozen_callback| will not be called.
+  void Freeze(base::OnceClosure unfrozen_callback);
 
   bool frozen() const { return frozen_; }
 
@@ -95,6 +98,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
   void MaybeUnfreeze();
 
   void Unfreeze();
+
+  bool HasActions() const;
 
   bool HasArtwork() const;
 
@@ -136,6 +141,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
   // data and no actions will be executed.
   bool frozen_ = false;
 
+  // True if we're currently frozen and the frozen view contains at least 1
+  // action.
+  bool frozen_with_actions_ = false;
+
+  // True if we have the necessary metadata to unfreeze, but we're waiting for
+  // new actions.
+  bool waiting_for_actions_ = false;
+
   // True if we're currently frozen and the frozen view contains non-null
   // artwork.
   bool frozen_with_artwork_ = false;
@@ -147,6 +160,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
   // The timer that will notify the controller to destroy this item after it
   // has been frozen for a certain period of time.
   base::OneShotTimer freeze_timer_;
+
+  // Called when the item unfreezes.
+  base::OnceClosure unfrozen_callback_;
 
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       observer_receiver_{this};

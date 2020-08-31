@@ -6,7 +6,9 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
+#include "build/build_config.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
 #include "media/mojo/services/test_mojo_media_client.h"
@@ -17,42 +19,38 @@
 
 namespace media {
 
-std::unique_ptr<service_manager::Service> CreateMediaService(
-    service_manager::mojom::ServiceRequest request) {
-#if defined(ENABLE_TEST_MOJO_MEDIA_CLIENT)
-  return CreateMediaServiceForTesting(std::move(request));
-#elif defined(OS_ANDROID)
+std::unique_ptr<MediaService> CreateMediaService(
+    mojo::PendingReceiver<mojom::MediaService> receiver) {
+#if defined(OS_ANDROID)
   return std::make_unique<MediaService>(
-      std::make_unique<AndroidMojoMediaClient>(), std::move(request));
+      std::make_unique<AndroidMojoMediaClient>(), std::move(receiver));
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;
 #endif
 }
 
-std::unique_ptr<service_manager::Service> CreateGpuMediaService(
-    service_manager::mojom::ServiceRequest request,
+std::unique_ptr<MediaService> CreateGpuMediaService(
+    mojo::PendingReceiver<mojom::MediaService> receiver,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
-    CdmProxyFactoryCB cdm_proxy_factory_cb) {
+    AndroidOverlayMojoFactoryCB android_overlay_factory_cb) {
   return std::make_unique<MediaService>(
       std::make_unique<GpuMojoMediaClient>(
           gpu_preferences, gpu_workarounds, gpu_feature_info, task_runner,
           media_gpu_channel_manager, gpu_memory_buffer_factory,
-          std::move(android_overlay_factory_cb),
-          std::move(cdm_proxy_factory_cb)),
-      std::move(request));
+          std::move(android_overlay_factory_cb)),
+      std::move(receiver));
 }
 
-std::unique_ptr<service_manager::Service> CreateMediaServiceForTesting(
-    service_manager::mojom::ServiceRequest request) {
+std::unique_ptr<MediaService> CreateMediaServiceForTesting(
+    mojo::PendingReceiver<mojom::MediaService> receiver) {
   return std::make_unique<MediaService>(std::make_unique<TestMojoMediaClient>(),
-                                        std::move(request));
+                                        std::move(receiver));
 }
 
 }  // namespace media

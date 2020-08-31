@@ -17,10 +17,6 @@ DEPS = [
 
 
 def RunSteps(api):
-  if api.properties.get('set_failure_hash_with_no_steps'):
-    with api.tryserver.set_failure_hash():
-      raise api.step.StepFailure('boom!')
-
   api.path['checkout'] = api.path['start_dir']
   if api.properties.get('patch_text'):
     api.step('patch_text test', [
@@ -47,7 +43,6 @@ def RunSteps(api):
     api.tryserver.set_subproject_tag('v8')
 
   api.tryserver.set_patch_failure_tryjob_result()
-  api.tryserver.set_do_not_retry_build()
   api.tryserver.set_compile_failure_tryjob_result()
   api.tryserver.set_test_failure_tryjob_result()
   api.tryserver.set_invalid_test_results_tryjob_result()
@@ -56,13 +51,8 @@ def RunSteps(api):
 
   api.tryserver.normalize_footer_name('Cr-Commit-Position')
 
-  with api.tryserver.set_failure_hash():
-    api.python.failing_step('fail', 'foo')
-
 
 def GenTests(api):
-  description_step = api.override_step_data(
-      'git_cl description', stdout=api.raw_io.output_text('foobar'))
   # The 'test_patch_root' property used below is just so that these
   # tests can avoid using the gclient module to calculate the
   # patch root. Normal users would use gclient.get_gerrit_patch_root().
@@ -103,6 +93,3 @@ def GenTests(api):
              'parse description (2)',
              api.json.output({'Foo': ['bar']}))
   )
-
-  yield (api.test('set_failure_hash_with_no_steps') +
-         api.properties(set_failure_hash_with_no_steps=True))

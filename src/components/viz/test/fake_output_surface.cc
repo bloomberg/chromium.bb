@@ -10,8 +10,9 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/gl/color_space_utils.h"
+#include "ui/gfx/swap_result.h"
 
 namespace viz {
 
@@ -32,12 +33,12 @@ FakeOutputSurface::~FakeOutputSurface() = default;
 void FakeOutputSurface::Reshape(const gfx::Size& size,
                                 float device_scale_factor,
                                 const gfx::ColorSpace& color_space,
-                                bool has_alpha,
+                                gfx::BufferFormat format,
                                 bool use_stencil) {
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
-        gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
+        color_space.AsGLColorSpace(), gfx::AlphaBitsForBufferFormat(format));
   } else {
     software_device()->Resize(size, device_scale_factor);
   }
@@ -84,10 +85,6 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
 
-gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool FakeOutputSurface::IsDisplayedAsOverlayPlane() const {
   return overlay_texture_id_ != 0;
 }
@@ -103,8 +100,15 @@ unsigned FakeOutputSurface::UpdateGpuFence() {
 void FakeOutputSurface::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {}
 
+void FakeOutputSurface::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  if (support_display_transform_hint_)
+    display_transform_hint_ = transform;
+}
+
 gfx::OverlayTransform FakeOutputSurface::GetDisplayTransform() {
-  return gfx::OVERLAY_TRANSFORM_NONE;
+  return support_display_transform_hint_ ? display_transform_hint_
+                                         : gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -112,4 +116,12 @@ void FakeOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {}
 #endif
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+FakeOutputSurface::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
+gpu::MemoryTracker* FakeOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

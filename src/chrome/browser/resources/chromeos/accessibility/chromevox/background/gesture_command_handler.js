@@ -13,7 +13,7 @@ goog.require('EventSourceState');
 goog.require('GestureCommandData');
 
 goog.scope(function() {
-var RoleType = chrome.automation.RoleType;
+const RoleType = chrome.automation.RoleType;
 
 /**
  * Global setting for the enabled state of this handler.
@@ -38,43 +38,43 @@ GestureCommandHandler.getEnabled = function() {
  * @private
  */
 GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
-  if (!GestureCommandHandler.enabled_ ||
-      !ChromeVoxState.instance.currentRange) {
+  if (!GestureCommandHandler.enabled_) {
     return;
   }
 
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
-  var commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+  const commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
   if (!commandData) {
     return;
   }
 
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
-  // Map gestures to arrow keys while within menus.
-  var range = ChromeVoxState.instance.currentRange;
-  if (commandData.menuKeyOverride && range.start && range.start.node &&
-      range.start.node.role == RoleType.MENU_ITEM &&
-      (range.start.node.root.docUrl.indexOf(chrome.extension.getURL('')) == 0 ||
-       range.start.node.root.role == RoleType.DESKTOP)) {
-    var key = commandData.keyOverride;
-    BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
-    return;
-  }
-
-  var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (textEditHandler && commandData.keyOverride) {
-    var key = commandData.keyOverride;
-    if (!key.multiline ||
-        ((!key.skipStart || !textEditHandler.isSelectionOnFirstLine()) &&
-         (!key.skipEnd || !textEditHandler.isSelectionOnLastLine()))) {
+  // Map gestures to arrow keys while within menus belonging to the desktop or
+  // generally in the ChromeVox Panel.
+  if (ChromeVoxState.instance.currentRange) {
+    const range = ChromeVoxState.instance.currentRange;
+    if (commandData.menuKeyOverride && range.start && range.start.node &&
+        ((range.start.node.role == RoleType.MENU_ITEM &&
+          range.start.node.root.role == RoleType.DESKTOP) ||
+         range.start.node.root.docUrl.indexOf(
+             chrome.extension.getURL('chromevox/panel/panel.html')) == 0)) {
+      const key = commandData.menuKeyOverride;
       BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
       return;
     }
   }
 
-  var command = commandData.command;
+  if (!ChromeVoxState.instance.currentRange && commandData.shouldRecoverRange) {
+    const recoverTo = DesktopAutomationHandler.instance.lastHoverTarget;
+    if (recoverTo) {
+      ChromeVoxState.instance.setCurrentRange(
+          cursors.Range.fromNode(recoverTo));
+    }
+  }
+
+  const command = commandData.command;
   if (command) {
     CommandHandler.onCommand(command);
   }

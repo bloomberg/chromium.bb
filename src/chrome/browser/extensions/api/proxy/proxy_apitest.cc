@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension.h"
@@ -334,9 +335,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests setting values also for incognito mode
-// Test disabled due to http://crbug.com/88972.
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-                       DISABLED_ProxyFixedIndividualIncognitoAlso) {
+                       ProxyFixedIndividualIncognitoAlso) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_also")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();

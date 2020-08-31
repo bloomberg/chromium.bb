@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/public/browser/dedicated_worker_id.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -20,7 +22,7 @@ namespace content {
 
 class AppCacheHost;
 class BrowserContext;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 class ResourceContext;
 class WorkerScriptLoader;
 
@@ -48,7 +50,9 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      ServiceWorkerNavigationHandle* service_worker_handle,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id,
+      ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
@@ -71,7 +75,9 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
 
  private:
   const int process_id_;
-  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  const DedicatedWorkerId dedicated_worker_id_;
+  const SharedWorkerId shared_worker_id_;
+  base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;

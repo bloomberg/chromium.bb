@@ -13,6 +13,7 @@
 
 #include <errno.h>
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
@@ -164,6 +165,7 @@ class SctpTransport : public SctpTransportInternal,
                             size_t len,
                             const int64_t& packet_time_us,
                             int flags);
+  void OnClosed(rtc::PacketTransportInternal* transport);
 
   // Methods related to usrsctp callbacks.
   void OnSendThresholdCallback();
@@ -265,6 +267,10 @@ class SctpTransport : public SctpTransportInternal,
   // Number of channels negotiated. Not set before negotiation completes.
   absl::optional<int> max_outbound_streams_;
   absl::optional<int> max_inbound_streams_;
+
+  // Used for associating this transport with the underlying sctp socket in
+  // various callbacks.
+  uintptr_t id_ = 0;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(SctpTransport);
 };

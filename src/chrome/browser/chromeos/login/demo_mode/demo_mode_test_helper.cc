@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -84,7 +84,7 @@ base::FilePath DemoModeTestHelper::GetPreinstalledDemoResourcesPath() {
 
 void DemoModeTestHelper::InitializeCrosComponentManager() {
   auto cros_component_manager =
-      std::make_unique<component_updater::FakeCrOSComponentManager>();
+      base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
   fake_cros_component_manager_ = cros_component_manager.get();
 
   // Set up the Demo Mode Resources component. Ensure we queue load requests

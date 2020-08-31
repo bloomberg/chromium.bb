@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
@@ -42,17 +43,37 @@ bool ReturnsValidPath(int dir_type) {
   if (dir_type == DIR_USER_DESKTOP)
     check_path_exists = false;
 #endif
+#if defined(OS_WIN)
+  if (dir_type == DIR_TASKBAR_PINS)
+    check_path_exists = false;
+#endif
 #if defined(OS_MACOSX)
   if (dir_type != DIR_EXE && dir_type != DIR_MODULE && dir_type != FILE_EXE &&
       dir_type != FILE_MODULE) {
-    if (path.ReferencesParent())
+    if (path.ReferencesParent()) {
+      LOG(INFO) << "Path (" << path << ") references parent.";
       return false;
+    }
   }
 #else
-  if (path.ReferencesParent())
+  if (path.ReferencesParent()) {
+    LOG(INFO) << "Path (" << path << ") references parent.";
     return false;
+  }
 #endif
-  return result && !path.empty() && (!check_path_exists || PathExists(path));
+  if (!result) {
+    LOG(INFO) << "PathService::Get() returned false.";
+    return false;
+  }
+  if (path.empty()) {
+    LOG(INFO) << "PathService::Get() returned an empty path.";
+    return false;
+  }
+  if (check_path_exists && !PathExists(path)) {
+    LOG(INFO) << "Path (" << path << ") does not exist.";
+    return false;
+  }
+  return true;
 }
 
 #if defined(OS_WIN)
@@ -99,9 +120,9 @@ TEST_F(PathServiceTest, Get) {
       valid = base::win::GetVersion() >= base::win::Version::WIN8;
 
     if (valid)
-      EXPECT_TRUE(ReturnsValidPath(key)) << key;
+      EXPECT_PRED1(ReturnsValidPath, key);
     else
-      EXPECT_TRUE(ReturnsInvalidPath(key)) << key;
+      EXPECT_PRED1(ReturnsInvalidPath, key);
   }
 #elif defined(OS_MACOSX)
   for (int key = PATH_MAC_START + 1; key < PATH_MAC_END; ++key) {
@@ -181,12 +202,12 @@ TEST_F(PathServiceTest, OverrideMultiple) {
   FilePath fake_cache_dir1(temp_dir.GetPath().AppendASCII("1"));
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir1));
   EXPECT_TRUE(PathExists(fake_cache_dir1));
-  ASSERT_EQ(1, WriteFile(fake_cache_dir1.AppendASCII("t1"), ".", 1));
+  ASSERT_TRUE(WriteFile(fake_cache_dir1.AppendASCII("t1"), "."));
 
   FilePath fake_cache_dir2(temp_dir.GetPath().AppendASCII("2"));
   EXPECT_TRUE(PathService::Override(my_special_key + 1, fake_cache_dir2));
   EXPECT_TRUE(PathExists(fake_cache_dir2));
-  ASSERT_EQ(1, WriteFile(fake_cache_dir2.AppendASCII("t2"), ".", 1));
+  ASSERT_TRUE(WriteFile(fake_cache_dir2.AppendASCII("t2"), "."));
 
   FilePath result;
   EXPECT_TRUE(PathService::Get(my_special_key, &result));

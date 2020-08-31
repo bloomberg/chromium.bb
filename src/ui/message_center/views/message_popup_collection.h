@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -48,7 +49,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void NotifyPopupResized();
 
   // Notify the popup is closed. Called from MessagePopupView.
-  void NotifyPopupClosed(MessagePopupView* popup);
+  virtual void NotifyPopupClosed(MessagePopupView* popup);
 
   // MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
@@ -103,6 +104,23 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Returns true if the display which notifications show on is the primary
   // display.
   virtual bool IsPrimaryDisplayForNotification() const = 0;
+
+  // Returns true if |notification| should be blocked because this display to
+  // show the notification is fullscreen. If all (1 of 1, or n of n) displays
+  // are fullscreen, the notification will already be blocked by the associated
+  // FullscreenNotificationBlocker, but this function is required for the case
+  // where there are multiple displays, and the notification should be blocked
+  // on those that are fullscreen, but displayed on the others.
+  //
+  // This function can return false when only a single display is supported
+  // since FullscreenNotificationBlocker will have already blocked anything.
+  virtual bool BlockForMixedFullscreen(
+      const Notification& notification) const = 0;
+
+  // Called when a new popup item is added.
+  virtual void NotifyPopupAdded(MessagePopupView* popup) {}
+  // Called with |notification_id| when a popup is marked to be removed.
+  virtual void NotifyPopupRemoved(const std::string& notification_id) {}
 
   // virtual for testing.
   virtual MessagePopupView* CreatePopup(const Notification& notification);
@@ -177,6 +195,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Update bounds and opacity of popups during animation.
   void UpdateByAnimation();
+
+  // Get popup notifications in sort order from MessageCenter, filtered for any
+  // that should not show on this display.
+  std::vector<Notification*> GetPopupNotifications() const;
 
   // Add a new popup to |popup_items_| for FADE_IN animation.
   // Return true if a popup is actually added. It may still return false when

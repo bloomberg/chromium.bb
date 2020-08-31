@@ -4,40 +4,38 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Intent;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stores info about a web app.
  */
 public class WebappInfo {
-    protected final BrowserServicesIntentDataProvider mProvider;
+    private final @NonNull BrowserServicesIntentDataProvider mProvider;
 
-    protected static BrowserServicesIntentDataProvider createEmptyIntentDataProvider() {
-        return new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                false /* hasCustomToolbarColor */, WebappExtras.createEmpty(),
-                WebApkExtras.createEmpty());
-    }
-
-    public static WebappInfo createEmpty() {
-        return new WebappInfo(createEmptyIntentDataProvider());
-    }
+    // Initialized lazily by {@link getWebApkExtras()}.
+    private @Nullable WebApkExtras mWebApkExtras;
 
     /**
      * Construct a WebappInfo.
      * @param intent Intent containing info about the app.
      */
-    public static WebappInfo create(Intent intent) {
-        BrowserServicesIntentDataProvider provider = WebappIntentDataProviderFactory.create(intent);
+    public static WebappInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
         return (provider == null) ? null : new WebappInfo(provider);
     }
 
-    protected WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
+    private WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
         mProvider = provider;
     }
 
@@ -79,11 +77,11 @@ public class WebappInfo {
     }
 
     public boolean isForWebApk() {
-        return false;
+        return !TextUtils.isEmpty(webApkPackageName());
     }
 
     public String webApkPackageName() {
-        return null;
+        return getWebApkExtras().webApkPackageName;
     }
 
     public int orientation() {
@@ -139,6 +137,7 @@ public class WebappInfo {
     /**
      * Returns the icon.
      */
+    @NonNull
     public WebappIcon icon() {
         return getWebappExtras().icon;
     }
@@ -162,29 +161,62 @@ public class WebappInfo {
      * and (2) has a content provider which provides a screenshot of the splash screen.
      */
     public boolean isSplashProvidedByWebApk() {
-        return false;
+        return getWebApkExtras().isSplashProvidedByWebApk;
     }
 
     /**
-     * Sets extras on an Intent that will launch a WebappActivity.
-     * @param intent Intent that will be used to launch a WebappActivity.
+     * Returns the WebAPK's splash icon.
      */
-    public void setWebappIntentExtras(Intent intent) {
-        intent.putExtra(ShortcutHelper.EXTRA_ID, id());
-        intent.putExtra(ShortcutHelper.EXTRA_URL, url());
-        intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
-        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
-        intent.putExtra(ShortcutHelper.EXTRA_ICON, icon().encoded());
-        intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
-        intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
-        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());
-        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode());
-        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());
-        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor());
-        intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
-        intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
-        intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());
+    @NonNull
+    public WebappIcon splashIcon() {
+        return getWebApkExtras().splashIcon;
+    }
+
+    public boolean isSplashIconMaskable() {
+        return getWebApkExtras().isSplashIconMaskable;
+    }
+
+    /** Returns data about the WebAPK's share intent handlers. */
+    @NonNull
+    public WebApkShareTarget shareTarget() {
+        return getWebApkExtras().shareTarget;
+    }
+
+    /**
+     * Returns the WebAPK's version code.
+     */
+    public int webApkVersionCode() {
+        return getWebApkExtras().webApkVersionCode;
+    }
+
+    public int shellApkVersion() {
+        return getWebApkExtras().shellApkVersion;
+    }
+
+    public String manifestUrl() {
+        return getWebApkExtras().manifestUrl;
+    }
+
+    public String manifestStartUrl() {
+        return getWebApkExtras().manifestStartUrl;
+    }
+
+    public @WebApkDistributor int distributor() {
+        return getWebApkExtras().distributor;
+    }
+
+    @NonNull
+    public Map<String, String> iconUrlToMurmur2HashMap() {
+        return getWebApkExtras().iconUrlToMurmur2HashMap;
+    }
+
+    public ShareData shareData() {
+        return mProvider.getShareData();
+    }
+
+    @NonNull
+    public List<ShortcutItem> shortcutItems() {
+        return getWebApkExtras().shortcutItems;
     }
 
     /**
@@ -203,5 +235,15 @@ public class WebappInfo {
         WebappExtras extras = mProvider.getWebappExtras();
         assert extras != null;
         return extras;
+    }
+
+    private @NonNull WebApkExtras getWebApkExtras() {
+        if (mWebApkExtras != null) return mWebApkExtras;
+
+        mWebApkExtras = mProvider.getWebApkExtras();
+        if (mWebApkExtras == null) {
+            mWebApkExtras = WebApkExtras.createEmpty();
+        }
+        return mWebApkExtras;
     }
 }

@@ -421,7 +421,7 @@ sadly they are side effects of C++'s limitations):
     `NiceMock<StrictMock<MockFoo> >`) is **not** supported.
 2.  `NiceMock<MockFoo>` and `StrictMock<MockFoo>` may not work correctly if the
     destructor of `MockFoo` is not virtual. We would like to fix this, but it
-    requires cleaning up existing tests. http://b/28934720 tracks the issue.
+    requires cleaning up existing tests.
 3.  During the constructor or destructor of `MockFoo`, the mock object is *not*
     nice or strict. This may cause surprises if the constructor or destructor
     calls a mock method on `this` object. (This behavior, however, is consistent
@@ -1024,9 +1024,8 @@ using ::testing::Lt;
 says that the first argument of `InRange()` must not be 0, and must be less than
 the second argument.
 
-The expression inside `With()` must be a matcher of type
-`Matcher< ::std::tuple<A1, ..., An> >`, where `A1`, ..., `An` are the types of
-the function arguments.
+The expression inside `With()` must be a matcher of type `Matcher<std::tuple<A1,
+..., An>>`, where `A1`, ..., `An` are the types of the function arguments.
 
 You can also write `AllArgs(m)` instead of `m` inside `.With()`. The two forms
 are equivalent, but `.With(AllArgs(Lt()))` is more readable than `.With(Lt())`.
@@ -1054,8 +1053,8 @@ complete list.
 
 Note that if you want to pass the arguments to a predicate of your own (e.g.
 `.With(Args<0, 1>(Truly(&MyPredicate)))`), that predicate MUST be written to
-take a `::std::tuple` as its argument; gMock will pass the `n` selected
-arguments as *one* single tuple to the predicate.
+take a `std::tuple` as its argument; gMock will pass the `n` selected arguments
+as *one* single tuple to the predicate.
 
 ### Using Matchers as Predicates
 
@@ -1331,11 +1330,11 @@ class BarPlusBazEqMatcher : public MatcherInterface<const Foo&> {
     return (foo.bar() + foo.baz()) == expected_sum_;
   }
 
-  void DescribeTo(::std::ostream* os) const override {
+  void DescribeTo(std::ostream* os) const override {
     *os << "bar() + baz() equals " << expected_sum_;
   }
 
-  void DescribeNegationTo(::std::ostream* os) const override {
+  void DescribeNegationTo(std::ostream* os) const override {
     *os << "bar() + baz() does not equal " << expected_sum_;
   }
  private:
@@ -1713,8 +1712,8 @@ brittle tests. For example, we may care about `A` occurring before both `B` and
 the test should reflect our real intent, instead of being overly constraining.
 
 gMock allows you to impose an arbitrary DAG (directed acyclic graph) on the
-calls. One way to express the DAG is to use the [After](#AfterClause) clause of
-`EXPECT_CALL`.
+calls. One way to express the DAG is to use the
+[After](cheat_sheet.md#AfterClause) clause of `EXPECT_CALL`.
 
 Another way is via the `InSequence()` clause (not the same as the `InSequence`
 class), which we borrowed from jMock 2. It's less flexible than `After()`, but
@@ -2175,7 +2174,7 @@ own precedence order distinct from the `ON_CALL` precedence order.
 ### Using Functions/Methods/Functors/Lambdas as Actions {#FunctionsAsActions}
 
 If the built-in actions don't suit you, you can use an existing callable
-(function, `std::function`, method, functor, lambda as an action.
+(function, `std::function`, method, functor, lambda) as an action.
 
 <!-- GOOGLETEST_CM0024 DO NOT DELETE -->
 
@@ -2203,7 +2202,8 @@ class Helper {
       .WillOnce(&CalculateSum)
       .WillRepeatedly(Invoke(NewPermanentCallback(Sum3, 1)));
   EXPECT_CALL(foo, ComplexJob(_))
-      .WillOnce(Invoke(&helper, &Helper::ComplexJob));
+      .WillOnce(Invoke(&helper, &Helper::ComplexJob))
+      .WillOnce([] { return true; })
       .WillRepeatedly([](int x) { return x > 0; });
 
   foo.Sum(5, 6);         // Invokes CalculateSum(5, 6).
@@ -2213,11 +2213,11 @@ class Helper {
 ```
 
 The only requirement is that the type of the function, etc must be *compatible*
-with the signature of the mock function, meaning that the latter's arguments can
-be implicitly converted to the corresponding arguments of the former, and the
-former's return type can be implicitly converted to that of the latter. So, you
-can invoke something whose type is *not* exactly the same as the mock function,
-as long as it's safe to do so - nice, huh?
+with the signature of the mock function, meaning that the latter's arguments (if
+it takes any) can be implicitly converted to the corresponding arguments of the
+former, and the former's return type can be implicitly converted to that of the
+latter. So, you can invoke something whose type is *not* exactly the same as the
+mock function, as long as it's safe to do so - nice, huh?
 
 **`Note:`{.escaped}**
 
@@ -2268,19 +2268,20 @@ TEST_F(FooTest, Test) {
 
 ### Invoking a Function/Method/Functor/Lambda/Callback Without Arguments
 
-`Invoke()` is very useful for doing actions that are more complex. It passes the
-mock function's arguments to the function, etc being invoked such that the
-callee has the full context of the call to work with. If the invoked function is
-not interested in some or all of the arguments, it can simply ignore them.
+`Invoke()` passes the mock function's arguments to the function, etc being
+invoked such that the callee has the full context of the call to work with. If
+the invoked function is not interested in some or all of the arguments, it can
+simply ignore them.
 
 Yet, a common pattern is that a test author wants to invoke a function without
-the arguments of the mock function. `Invoke()` allows her to do that using a
-wrapper function that throws away the arguments before invoking an underlining
-nullary function. Needless to say, this can be tedious and obscures the intent
-of the test.
+the arguments of the mock function. She could do that using a wrapper function
+that throws away the arguments before invoking an underlining nullary function.
+Needless to say, this can be tedious and obscures the intent of the test.
 
-`InvokeWithoutArgs()` solves this problem. It's like `Invoke()` except that it
-doesn't pass the mock function's arguments to the callee. Here's an example:
+There are two solutions to this problem. First, you can pass any callable of
+zero args as an action. Alternatively, use `InvokeWithoutArgs()`, which is like
+`Invoke()` except that it doesn't pass the mock function's arguments to the
+callee. Here's an example of each:
 
 ```cpp
 using ::testing::_;
@@ -2297,7 +2298,7 @@ bool Job2(int n, char c) { ... }
 ...
   MockFoo foo;
   EXPECT_CALL(foo, ComplexJob(_))
-      .WillOnce(InvokeWithoutArgs(Job1))
+      .WillOnce([] { Job1(); });
       .WillOnce(InvokeWithoutArgs(NewPermanentCallback(Job2, 5, 'a')));
 
   foo.ComplexJob(10);  // Invokes Job1().
@@ -3565,7 +3566,7 @@ class MatchResultListener {
   MatchResultListener& operator<<(const T& x);
 
   // Returns the underlying ostream.
-  ::std::ostream* stream();
+  std::ostream* stream();
 };
 
 template <typename T>
@@ -3578,10 +3579,10 @@ class MatcherInterface {
   virtual bool MatchAndExplain(T x, MatchResultListener* listener) const = 0;
 
   // Describes this matcher to an ostream.
-  virtual void DescribeTo(::std::ostream* os) const = 0;
+  virtual void DescribeTo(std::ostream* os) const = 0;
 
   // Describes the negation of this matcher to an ostream.
-  virtual void DescribeNegationTo(::std::ostream* os) const;
+  virtual void DescribeNegationTo(std::ostream* os) const;
 };
 ```
 
@@ -3609,11 +3610,11 @@ class DivisibleBy7Matcher : public MatcherInterface<int> {
     return (n % 7) == 0;
   }
 
-  void DescribeTo(::std::ostream* os) const override {
+  void DescribeTo(std::ostream* os) const override {
     *os << "is divisible by 7";
   }
 
-  void DescribeNegationTo(::std::ostream* os) const override {
+  void DescribeNegationTo(std::ostream* os) const override {
     *os << "is not divisible by 7";
   }
 };
@@ -3995,7 +3996,7 @@ ACTION_TEMPLATE(DuplicateArg,
                 // Note the comma between int and k:
                 HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
                 AND_1_VALUE_PARAMS(output)) {
-  *output = T(::std::get<k>(args));
+  *output = T(std::get<k>(args));
 }
 ```
 
@@ -4087,7 +4088,7 @@ class ActionInterface {
   //
 
   // For example, if F is int(bool, const string&), then Result would
-  // be int, and ArgumentTuple would be ::std::tuple<bool, const string&>.
+  // be int, and ArgumentTuple would be std::tuple<bool, const string&>.
   virtual Result Perform(const ArgumentTuple& args) = 0;
 };
 ```
@@ -4102,8 +4103,8 @@ typedef int IncrementMethod(int*);
 
 class IncrementArgumentAction : public ActionInterface<IncrementMethod> {
  public:
-  int Perform(const ::std::tuple<int*>& args) override {
-    int* p = ::std::get<0>(args);  // Grabs the first argument.
+  int Perform(const std::tuple<int*>& args) override {
+    int* p = std::get<0>(args);  // Grabs the first argument.
     return *p++;
   }
 };
@@ -4148,8 +4149,8 @@ class ReturnSecondArgumentAction {
  public:
   template <typename Result, typename ArgumentTuple>
   Result Perform(const ArgumentTuple& args) const {
-    // To get the i-th (0-based) argument, use ::std::get(args).
-    return ::std::get<1>(args);
+    // To get the i-th (0-based) argument, use std::get(args).
+    return std::get<1>(args);
   }
 };
 ```

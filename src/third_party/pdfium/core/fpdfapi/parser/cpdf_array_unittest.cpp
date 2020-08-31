@@ -10,15 +10,16 @@
 #include "core/fpdfapi/parser/cpdf_boolean.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/ptr_util.h"
 
 TEST(cpdf_array, GetBooleanAt) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
-  arr->AddNew<CPDF_Boolean>(true);
-  arr->AddNew<CPDF_Boolean>(false);
-  arr->AddNew<CPDF_Number>(100);
-  arr->AddNew<CPDF_Number>(0);
+  arr->AppendNew<CPDF_Boolean>(true);
+  arr->AppendNew<CPDF_Boolean>(false);
+  arr->AppendNew<CPDF_Number>(100);
+  arr->AppendNew<CPDF_Number>(0);
 
   ASSERT_EQ(4u, arr->size());
   EXPECT_TRUE(arr->GetBooleanAt(0, true));
@@ -38,7 +39,7 @@ TEST(cpdf_array, RemoveAt) {
     const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto arr = pdfium::MakeRetain<CPDF_Array>();
     for (size_t i = 0; i < FX_ArraySize(elems); ++i)
-      arr->AddNew<CPDF_Number>(elems[i]);
+      arr->AppendNew<CPDF_Number>(elems[i]);
     for (size_t i = 0; i < 3; ++i)
       arr->RemoveAt(3);
     const int expected[] = {1, 2, 3, 7, 8, 9, 10};
@@ -57,7 +58,7 @@ TEST(cpdf_array, RemoveAt) {
     const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto arr = pdfium::MakeRetain<CPDF_Array>();
     for (size_t i = 0; i < FX_ArraySize(elems); ++i)
-      arr->AddNew<CPDF_Number>(elems[i]);
+      arr->AppendNew<CPDF_Number>(elems[i]);
     arr->RemoveAt(11);
     EXPECT_EQ(FX_ArraySize(elems), arr->size());
   }
@@ -68,7 +69,7 @@ TEST(cpdf_array, Clear) {
   auto arr = pdfium::MakeRetain<CPDF_Array>();
   EXPECT_EQ(0U, arr->size());
   for (size_t i = 0; i < FX_ArraySize(elems); ++i)
-    arr->AddNew<CPDF_Number>(elems[i]);
+    arr->AppendNew<CPDF_Number>(elems[i]);
   EXPECT_EQ(FX_ArraySize(elems), arr->size());
   arr->Clear();
   EXPECT_EQ(0U, arr->size());

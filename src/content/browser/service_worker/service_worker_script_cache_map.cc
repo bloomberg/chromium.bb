@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -29,23 +29,23 @@ ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 int64_t ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
-    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
-  return found->second.resource_id;
+    return blink::mojom::kInvalidServiceWorkerResourceId;
+  return found->second->resource_id;
 }
 
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
                                                        int64_t resource_id) {
-  DCHECK_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  DCHECK_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING)
       << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  resource_map_[url] = ServiceWorkerDatabase::ResourceRecord(
-      resource_id, url,
-      ServiceWorkerDatabase::ResourceRecord::ErrorState::kStartedCaching);
-  context_->storage()->StoreUncommittedResourceId(resource_id);
+  resource_map_[url] =
+      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, url, -1);
+  context_->registry()->StoreUncommittedResourceId(resource_id,
+                                                   owner_->scope().GetOrigin());
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
@@ -53,56 +53,45 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     int64_t size_bytes,
     net::Error net_error,
     const std::string& status_message) {
-  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(url));
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
          owner_->status() == ServiceWorkerVersion::REDUNDANT);
-  if (!context_) {
-    // For debugging. See https://crbug.com/946719.
-    DCHECK(resource_map_.find(url) != resource_map_.end());
-    ServiceWorkerDatabase::ResourceRecord& record = resource_map_[url];
-    if (record.size_bytes ==
-        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
-                                 kStartedCaching)) {
-      record.size_bytes =
-          static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::
-                                   ErrorState::kFinishedCachingNoContext);
-    }
+  if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  }
+
   if (net_error != net::OK) {
-    context_->storage()->DoomUncommittedResource(LookupResourceId(url));
+    context_->registry()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
     if (owner_->script_url() == url) {
-      main_script_status_ = net::URLRequestStatus::FromError(net_error);
+      main_script_net_error_ = net_error;
       main_script_status_message_ = status_message;
     }
-  } else if (size_bytes >= 0) {
-    resource_map_[url].size_bytes = size_bytes;
   } else {
-    resource_map_[url].size_bytes =
-        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
-                                 kFinishedCachingNoBytesWritten);
+    // |size_bytes| should not be negative when caching finished successfully.
+    CHECK_GE(size_bytes, 0);
+    resource_map_[url]->size_bytes = size_bytes;
   }
 }
 
 void ServiceWorkerScriptCacheMap::GetResources(
-    std::vector<ServiceWorkerDatabase::ResourceRecord>* resources) {
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>* resources) {
   DCHECK(resources->empty());
   for (ResourceMap::const_iterator it = resource_map_.begin();
        it != resource_map_.end();
        ++it) {
-    resources->push_back(it->second);
+    resources->push_back(it->second->Clone());
   }
 }
 
 void ServiceWorkerScriptCacheMap::SetResources(
-    const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+    const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
+        resources) {
   DCHECK(resource_map_.empty());
   for (auto it = resources.begin(); it != resources.end(); ++it) {
-    resource_map_[it->url] = *it;
+    resource_map_[(*it)->url] = (*it)->Clone();
   }
 }
 
@@ -117,8 +106,8 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
 
   auto found = resource_map_.find(url);
   if (found == resource_map_.end() ||
-      found->second.resource_id ==
-          ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+      found->second->resource_id ==
+          blink::mojom::kInvalidServiceWorkerResourceId) {
     std::move(callback).Run(net::ERR_FILE_NOT_FOUND);
     return;
   }
@@ -129,7 +118,7 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     memmove(buffer->data(), &data[0], data.size());
   std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer;
   writer = context_->storage()->CreateResponseMetadataWriter(
-      found->second.resource_id);
+      found->second->resource_id);
   ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
   raw_writer->WriteMetadata(
       buffer.get(), data.size(),

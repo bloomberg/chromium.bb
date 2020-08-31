@@ -12,7 +12,6 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -38,10 +37,10 @@ class XScopedEventSelector;
 ////////////////////////////////////////////////////////////////////////////////
 // XWindow class
 //
-// Encapsulates a full featured Xlib-based X11 Window, intended mainly to be
-// used in Linux desktop. Abstracts away most of X11 API interaction and
-// communicates events (and ask some required information) through
-// |XWindow::Delegate| interface.
+// Base class that encapsulates a full featured Xlib-based X11 Window, meant
+// to be used mainly in Linux desktop. Abstracts away most of X11 API
+// interaction and assumes event handling and some required getters are
+// implemented in subclasses.
 //
 // |XWindow::Configuration| holds parameters used in window initialization.
 // Fields are equivalent and a sub-set of Widget::InitParams.
@@ -49,8 +48,6 @@ class XScopedEventSelector;
 // All bounds and size values are assumed to be expressed in pixels.
 class COMPONENT_EXPORT(UI_BASE_X) XWindow {
  public:
-  class Delegate;
-
   using NativeShapeRects = std::vector<gfx::Rect>;
 
   enum class WindowType {
@@ -84,14 +81,16 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     bool visible_on_all_workspaces;
     bool remove_standard_frame;
     bool prefer_dark_theme;
+    bool override_redirect;
     std::string workspace;
     std::string wm_class_name;
     std::string wm_class_class;
     std::string wm_role_name;
-    base::Optional<int> visual_id;
   };
 
   XWindow();
+  XWindow(const XWindow&) = delete;
+  XWindow& operator=(const XWindow&) = delete;
   virtual ~XWindow();
 
   void Init(const Configuration& config);
@@ -140,6 +139,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
   void LowerWindow();
+  void SetOverrideRedirect(bool override_redirect);
 
   // Returns if the point is within XWindow shape. If shape is not set, always
   // returns true.
@@ -169,6 +169,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   ::Region shape() const { return window_shape_.get(); }
   XID update_counter() const { return update_counter_; }
   XID extended_update_counter() const { return extended_update_counter_; }
+  ::Cursor last_cursor() const { return last_cursor_; }
+
+ protected:
+  // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
+  void UpdateWMUserTime(ui::Event* event);
 
  private:
   // Called on an XFocusInEvent, XFocusOutEvent, XIFocusInEvent, or an
@@ -202,9 +207,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void DelayedResize(const gfx::Rect& bounds_in_pixels);
 
-  // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
-  void UpdateWMUserTime(XEvent* event);
-
   // If mapped, sends a message to the window manager to enable or disable the
   // states |state1| and |state2|.  Otherwise, the states will be enabled or
   // disabled on the next map.  It's the caller's responsibility to make sure
@@ -221,11 +223,12 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void UnconfineCursor();
 
-  void SetVisualId(base::Optional<int> visual_id);
-
   void UpdateWindowRegion(XRegion* xregion);
 
   void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
+
+  // Initializes as a status icon window.
+  bool InitializeAsStatusIcon();
 
   // Interface that must be used by a class that inherits the XWindow to receive
   // different messages from X Server.
@@ -235,12 +238,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowBoundsChanged(const gfx::Rect& size) = 0;
   virtual void OnXWindowCloseRequested() = 0;
   virtual void OnXWindowIsActiveChanged(bool active) = 0;
-  virtual void OnXWindowMapped() = 0;
-  virtual void OnXWindowUnmapped() = 0;
   virtual void OnXWindowWorkspaceChanged() = 0;
   virtual void OnXWindowLostPointerGrab() = 0;
   virtual void OnXWindowLostCapture() = 0;
-  virtual void OnXWindowEvent(ui::Event* event) = 0;
   virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
   virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
@@ -373,15 +373,13 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool pending_counter_value_is_extended_ = false;
   bool configure_counter_value_is_extended_ = false;
 
-  base::CancelableOnceCallback<void()> delayed_resize_task_;
+  base::CancelableOnceClosure delayed_resize_task_;
 
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;
   std::array<XID, 4> pointer_barriers_;
 
-  base::WeakPtrFactory<XWindow> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(XWindow);
+  ::Cursor last_cursor_ = x11::None;
 };
 
 }  // namespace ui

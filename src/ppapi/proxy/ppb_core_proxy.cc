@@ -8,7 +8,7 @@
 #include <stdlib.h>  // For malloc
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -74,7 +74,7 @@ void CallOnMainThread(int delay_in_ms,
 
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
+      RunWhileLocked(base::BindOnce(&CallbackWrapper, callback, result)),
       base::TimeDelta::FromMilliseconds(delay_in_ms));
 }
 

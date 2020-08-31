@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"  // nogncheck
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
@@ -29,7 +29,6 @@ class DictionaryValue;
 namespace chromeos {
 
 class ErrorScreen;
-class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkStateInformer;
 class OobeDisplayChooser;
@@ -45,7 +44,6 @@ class OobeUI : public ui::MojoWebUIController {
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
   // example chrome://oobe/user-adding.
   static const char kAppLaunchSplashDisplay[];
-  static const char kArcKioskSplashDisplay[];
   static const char kDiscoverDisplay[];
   static const char kGaiaSigninDisplay[];
   static const char kLockDisplay[];
@@ -89,8 +87,7 @@ class OobeUI : public ui::MojoWebUIController {
   void ShowOobeUI(bool show);
 
   // Shows the signin screen.
-  void ShowSigninScreen(const LoginScreenContext& context,
-                        SigninScreenHandlerDelegate* delegate,
+  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
                         NativeWindowDelegate* native_window_delegate);
 
   // Forwards an accelerator to the webui to be handled.
@@ -145,6 +142,22 @@ class OobeUI : public ui::MojoWebUIController {
     return nullptr;
   }
 
+  // Instantiates implementor of the mojom::MultiDeviceSetup mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver);
+  // Instantiates implementor of the mojom::PrivilegedHostDeviceSetter mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<
+          multidevice_setup::mojom::PrivilegedHostDeviceSetter> receiver);
+  // Instantiates implementor of the mojom::CrosNetworkConfig mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver);
+
  private:
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
@@ -152,17 +165,6 @@ class OobeUI : public ui::MojoWebUIController {
   // Configures all the relevant screen shandlers and resources for OOBE/Login
   // display type.
   void ConfigureOobeDisplay();
-
-  // Adds Mojo receivers for this WebUIController.
-  void BindMultiDeviceSetup(
-      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
-          receiver);
-  void BindPrivilegedHostDeviceSetter(
-      mojo::PendingReceiver<
-          multidevice_setup::mojom::PrivilegedHostDeviceSetter> receiver);
-  void BindCrosNetworkConfig(
-      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
-          receiver);
 
   // Type of UI.
   std::string display_type_;
@@ -205,6 +207,8 @@ class OobeUI : public ui::MojoWebUIController {
   // Store the deferred JS calls before the screen handler instance is
   // initialized.
   std::unique_ptr<JSCallsContainer> js_calls_container_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

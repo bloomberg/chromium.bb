@@ -9,6 +9,7 @@ import os
 import subprocess
 import unittest
 
+import iossim_util
 import test_runner
 import test_runner_test
 import wpr_runner
@@ -20,12 +21,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
   def setUp(self):
     super(WprProxySimulatorTestRunnerTest, self).setUp()
 
-    def install_xcode(build, mac_toolchain_cmd, xcode_app_path):
-      return True
-
     self.mock(test_runner, 'get_current_xcode_info', lambda: {
         'version': 'test version', 'build': 'test build', 'path': 'test/path'})
-    self.mock(test_runner, 'install_xcode', install_xcode)
     self.mock(test_runner.subprocess, 'check_output',
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
@@ -38,6 +35,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
               lambda a, b: True)
     self.mock(wpr_runner.WprProxySimulatorTestRunner,
               'copy_trusted_certificate', lambda a: True)
+    self.mock(iossim_util, 'get_simulator',
+              lambda a, b: 'E4E66320-177A-450A-9BA1-488D85B7278E')
 
   def test_app_not_found(self):
     """Ensures AppNotFoundError is raised."""
@@ -53,8 +52,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'wpr-tools-path',
-          'xcode-version',
-          'xcode-build',
           'out-dir',
       )
 
@@ -72,8 +69,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'wpr-tools-path',
-          'xcode-version',
-          'xcode-build',
           'out-dir',
       )
 
@@ -91,8 +86,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'bad-tools-path',
-          'xcode-version',
-          'xcode-build',
           'out-dir',
       )
 
@@ -106,8 +99,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
         'platform',
         'os',
         'wpr-tools-path',
-        'xcode-version',
-        'xcode-build',
         'out-dir',
     )
 
@@ -162,8 +153,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
         'platform',
         'os',
         'wpr-tools-path',
-        'xcode-version',
-        'xcode-build',
         'out-dir',
     )
     self.mock(wpr_runner.WprProxySimulatorTestRunner, 'wprgo_start',
@@ -178,7 +167,7 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
     self.mock(subprocess, 'Popen', popen)
 
     tr.xctest_path = 'fake.xctest'
-    cmd = tr.get_launch_command(test_filter=test_filter, invert=invert)
+    cmd = {'invert': invert, 'test_filter': test_filter}
     return tr._run(cmd=cmd, shards=1)
 
   def test_run_no_filter(self):

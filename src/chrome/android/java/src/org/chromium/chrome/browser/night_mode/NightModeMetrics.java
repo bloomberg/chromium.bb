@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.night_mode;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,17 +16,6 @@ import java.lang.annotation.RetentionPolicy;
  * Records user actions and histograms related to the night mode state.
  */
 public class NightModeMetrics {
-    private static final CachedMetrics.BooleanHistogramSample BOOLEAN_NIGHT_MODE_STATE =
-            new CachedMetrics.BooleanHistogramSample("Android.DarkTheme.EnabledState");
-
-    private static final CachedMetrics
-            .EnumeratedHistogramSample ENUMERATED_NIGHT_MODE_ENABLED_REASON =
-            new CachedMetrics.EnumeratedHistogramSample(
-                    "Android.DarkTheme.EnabledReason", NightModeEnabledReason.NUM_ENTRIES);
-
-    private static final CachedMetrics.EnumeratedHistogramSample ENUMERATED_THEME_PREFERENCE_STATE =
-            new CachedMetrics.EnumeratedHistogramSample("Android.DarkTheme.Preference.State",
-                    ThemePreferences.ThemeSetting.NUM_ENTRIES);
 
     /**
      * Different ways that night mode (aka dark theme) can be enabled. This is used for histograms
@@ -50,24 +38,24 @@ public class NightModeMetrics {
      * @param isInNightMode Whether the app is currently in night mode.
      */
     public static void recordNightModeState(boolean isInNightMode) {
-        BOOLEAN_NIGHT_MODE_STATE.record(isInNightMode);
+        RecordHistogram.recordBooleanHistogram("Android.DarkTheme.EnabledState", isInNightMode);
     }
 
     /**
      * Records the reason that night mode is turned on.
-     * @param setting The {@link ThemePreferences.ThemeSetting} that the user selects.
+     * @param theme The {@link ThemeType} that the user selects.
      * @param powerSaveModeOn Whether or not power save mode is on.
      */
-    public static void recordNightModeEnabledReason(
-            @ThemePreferences.ThemeSetting int setting, boolean powerSaveModeOn) {
-        ENUMERATED_NIGHT_MODE_ENABLED_REASON.record(
-                calculateNightModeEnabledReason(setting, powerSaveModeOn));
+    public static void recordNightModeEnabledReason(@ThemeType int theme, boolean powerSaveModeOn) {
+        RecordHistogram.recordEnumeratedHistogram("Android.DarkTheme.EnabledReason",
+                calculateNightModeEnabledReason(theme, powerSaveModeOn),
+                NightModeEnabledReason.NUM_ENTRIES);
     }
 
     @NightModeEnabledReason
     private static int calculateNightModeEnabledReason(
-            @ThemePreferences.ThemeSetting int setting, boolean powerSaveModeOn) {
-        if (setting == ThemePreferences.ThemeSetting.DARK) {
+            @ThemeType int theme, boolean powerSaveModeOn) {
+        if (theme == ThemeType.DARK) {
             return NightModeEnabledReason.USER_PREFERENCE;
         }
         if (powerSaveModeOn) return NightModeEnabledReason.POWER_SAVE_MODE;
@@ -76,30 +64,31 @@ public class NightModeMetrics {
 
     /**
      * Records the theme preference state on start up and when theme preference changes.
-     * @param setting The new {@link ThemePreferences.ThemeSetting} that the user selects.
+     * @param theme The new {@link ThemeType} that the user selects.
      */
-    public static void recordThemePreferencesState(@ThemePreferences.ThemeSetting int setting) {
-        ENUMERATED_THEME_PREFERENCE_STATE.record(setting);
+    public static void recordThemePreferencesState(@ThemeType int theme) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DarkTheme.Preference.State", theme, ThemeType.NUM_ENTRIES);
     }
 
     /**
      * Records when user changes the theme preferences.
-     * @param setting The new {@link ThemePreferences.ThemeSetting} that the user selects.
+     * @param theme The new {@link ThemeType} that the user selects.
      */
-    public static void recordThemePreferencesChanged(@ThemePreferences.ThemeSetting int setting) {
-        switch (setting) {
-            case ThemePreferences.ThemeSetting.SYSTEM_DEFAULT:
+    public static void recordThemePreferencesChanged(@ThemeType int theme) {
+        switch (theme) {
+            case ThemeType.SYSTEM_DEFAULT:
                 RecordUserAction.record("Android.DarkTheme.Preference.SystemDefault");
                 break;
-            case ThemePreferences.ThemeSetting.LIGHT:
+            case ThemeType.LIGHT:
                 RecordUserAction.record("Android.DarkTheme.Preference.Light");
                 break;
-            case ThemePreferences.ThemeSetting.DARK:
+            case ThemeType.DARK:
                 RecordUserAction.record("Android.DarkTheme.Preference.Dark");
                 break;
             default:
                 assert false : "Theme preferences change should be recorded.";
         }
-        recordThemePreferencesState(setting);
+        recordThemePreferencesState(theme);
     }
 }

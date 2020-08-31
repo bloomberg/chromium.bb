@@ -5,13 +5,14 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -19,9 +20,11 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
@@ -32,21 +35,13 @@ namespace chromeos {
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
-      : LoginManagerTest(true, true),
-        input_settings_(nullptr),
-        keyboard_(nullptr) {
-    struct {
-      const char* email;
-      const char* gaia_id;
-    } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
-                            {"test-user2@gmail.com", "2222222222"}};
-    for (size_t i = 0; i < base::size(kTestUsers); ++i) {
-      test_users_.push_back(AccountId::FromUserEmailGaiaId(
-          kTestUsers[i].email, kTestUsers[i].gaia_id));
-    }
-
+      : LoginManagerTest(), input_settings_(nullptr), keyboard_(nullptr) {
+    login_mixin_.AppendRegularUsers(2);
     scoped_testing_cros_settings_.device_settings()->Set(
-        kDeviceOwner, base::Value(test_users_[0].GetUserEmail()));
+        kDeviceOwner,
+        base::Value(login_mixin_.users()[0].account_id.GetUserEmail()));
+
+    feature_list_.InitAndEnableFeature(features::kAllowScrollSettings);
   }
 
   void SetUpOnMainThread() override {
@@ -63,18 +58,22 @@ class PreferencesTest : public LoginManagerTest {
   // |variant| value. For opposite |variant| values all preferences receive
   // different values.
   void SetPrefs(PrefService* prefs, bool variant) {
+    prefs->SetBoolean(ash::prefs::kMouseReverseScroll, variant);
+    prefs->SetBoolean(ash::prefs::kNaturalScroll, variant);
     prefs->SetBoolean(prefs::kTapToClickEnabled, variant);
     prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, !variant);
-    prefs->SetBoolean(prefs::kMouseReverseScroll, variant);
     prefs->SetBoolean(prefs::kMouseAcceleration, variant);
+    prefs->SetBoolean(prefs::kMouseScrollAcceleration, variant);
     prefs->SetBoolean(prefs::kTouchpadAcceleration, variant);
+    prefs->SetBoolean(prefs::kTouchpadScrollAcceleration, variant);
     prefs->SetBoolean(prefs::kEnableTouchpadThreeFingerClick, !variant);
-    prefs->SetBoolean(prefs::kNaturalScroll, variant);
     prefs->SetInteger(prefs::kMouseSensitivity, !variant);
+    prefs->SetInteger(prefs::kMouseScrollSensitivity, variant ? 1 : 4);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
-    prefs->SetBoolean(prefs::kLanguageXkbAutoRepeatEnabled, variant);
-    prefs->SetInteger(prefs::kLanguageXkbAutoRepeatDelay, variant ? 100 : 500);
-    prefs->SetInteger(prefs::kLanguageXkbAutoRepeatInterval, variant ? 1 : 4);
+    prefs->SetInteger(prefs::kTouchpadScrollSensitivity, variant ? 1 : 4);
+    prefs->SetBoolean(ash::prefs::kXkbAutoRepeatEnabled, variant);
+    prefs->SetInteger(ash::prefs::kXkbAutoRepeatDelay, variant ? 100 : 500);
+    prefs->SetInteger(ash::prefs::kXkbAutoRepeatInterval, variant ? 1 : 4);
     prefs->SetString(prefs::kLanguagePreloadEngines,
                      variant ? "xkb:us::eng,xkb:us:dvorak:eng"
                              : "xkb:us::eng,xkb:ru::rus");
@@ -86,25 +85,36 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(prefs->GetBoolean(prefs::kPrimaryMouseButtonRight),
               input_settings_->current_mouse_settings()
                   .GetPrimaryButtonRight());
-    EXPECT_EQ(prefs->GetBoolean(prefs::kMouseReverseScroll),
+    EXPECT_EQ(prefs->GetBoolean(ash::prefs::kMouseReverseScroll),
               input_settings_->current_mouse_settings().GetReverseScroll());
     EXPECT_EQ(prefs->GetBoolean(prefs::kMouseAcceleration),
               input_settings_->current_mouse_settings().GetAcceleration());
+    EXPECT_EQ(
+        prefs->GetBoolean(prefs::kMouseScrollAcceleration),
+        input_settings_->current_mouse_settings().GetScrollAcceleration());
     EXPECT_EQ(prefs->GetBoolean(prefs::kTouchpadAcceleration),
               input_settings_->current_touchpad_settings().GetAcceleration());
+    EXPECT_EQ(
+        prefs->GetBoolean(prefs::kTouchpadScrollAcceleration),
+        input_settings_->current_touchpad_settings().GetScrollAcceleration());
     EXPECT_EQ(prefs->GetBoolean(prefs::kEnableTouchpadThreeFingerClick),
               input_settings_->current_touchpad_settings()
                   .GetThreeFingerClick());
     EXPECT_EQ(prefs->GetInteger(prefs::kMouseSensitivity),
               input_settings_->current_mouse_settings().GetSensitivity());
+    EXPECT_EQ(prefs->GetInteger(prefs::kMouseScrollSensitivity),
+              input_settings_->current_mouse_settings().GetScrollSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kTouchpadSensitivity),
               input_settings_->current_touchpad_settings().GetSensitivity());
-    EXPECT_EQ(prefs->GetBoolean(prefs::kLanguageXkbAutoRepeatEnabled),
+    EXPECT_EQ(
+        prefs->GetInteger(prefs::kTouchpadScrollSensitivity),
+        input_settings_->current_touchpad_settings().GetScrollSensitivity());
+    EXPECT_EQ(prefs->GetBoolean(ash::prefs::kXkbAutoRepeatEnabled),
               keyboard_->auto_repeat_is_enabled_);
     input_method::AutoRepeatRate rate = keyboard_->last_auto_repeat_rate_;
-    EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatDelay),
+    EXPECT_EQ(prefs->GetInteger(ash::prefs::kXkbAutoRepeatDelay),
               (int)rate.initial_delay_in_ms);
-    EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatInterval),
+    EXPECT_EQ(prefs->GetInteger(ash::prefs::kXkbAutoRepeatInterval),
               (int)rate.repeat_interval_in_ms);
     EXPECT_EQ(prefs->GetString(prefs::kLanguageCurrentInputMethod),
               input_method::InputMethodManager::Get()
@@ -121,44 +131,25 @@ class PreferencesTest : public LoginManagerTest {
               prefs->GetBoolean(prefs::kPrimaryMouseButtonRight));
   }
 
-  std::vector<AccountId> test_users_;
+  LoginManagerMixin login_mixin_{&mixin_host_};
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   system::InputDeviceSettings::FakeInterface* input_settings_;
   input_method::FakeImeKeyboard* keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);
 };
 
-class PreferencesTestForceWebUiLogin : public PreferencesTest {
- public:
-  PreferencesTestForceWebUiLogin() = default;
-  ~PreferencesTestForceWebUiLogin() override = default;
-
-  // PreferencesTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PreferencesTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PreferencesTestForceWebUiLogin);
-};
-
-IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, PRE_MultiProfiles) {
-  RegisterUser(test_users_[0]);
-  RegisterUser(test_users_[1]);
-  StartupUtils::MarkOobeCompleted();
-}
-
-IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
+IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
+  const auto& users = login_mixin_.users();
   // Add first user and init its preferences. Check that corresponding
   // settings has been changed.
-  LoginUser(test_users_[0]);
-  const user_manager::User* user1 = user_manager->FindUser(test_users_[0]);
+  LoginUser(users[0].account_id);
+  const user_manager::User* user1 = user_manager->FindUser(users[0].account_id);
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   SetPrefs(prefs1, false);
@@ -168,9 +159,9 @@ IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
   // Add second user and init its prefs with different values.
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_users_[1]);
+  AddUser(users[1].account_id);
   content::RunAllPendingInMessageLoop();
-  const user_manager::User* user2 = user_manager->FindUser(test_users_[1]);
+  const user_manager::User* user2 = user_manager->FindUser(users[1].account_id);
   EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
@@ -207,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
 
   // Check that changing non-owner prefs doesn't change corresponding local
   // state prefs and vice versa.
-  EXPECT_EQ(user_manager->GetOwnerAccountId(), test_users_[0]);
+  EXPECT_EQ(user_manager->GetOwnerAccountId(), users[0].account_id);
   CheckLocalStateCorrespondsToPrefs(prefs1);
   prefs2->SetBoolean(prefs::kTapToClickEnabled,
                      !prefs1->GetBoolean(prefs::kTapToClickEnabled));
@@ -217,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTestForceWebUiLogin, MultiProfiles) {
   CheckLocalStateCorrespondsToPrefs(prefs1);
 
   // Switch user back.
-  user_manager->SwitchActiveUser(test_users_[0]);
+  user_manager->SwitchActiveUser(users[0].account_id);
   CheckSettingsCorrespondToPrefs(prefs1);
   CheckLocalStateCorrespondsToPrefs(prefs1);
 }

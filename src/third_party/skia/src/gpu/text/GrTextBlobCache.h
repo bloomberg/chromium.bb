@@ -34,28 +34,19 @@ public:
     ~GrTextBlobCache();
 
     sk_sp<GrTextBlob> makeBlob(const SkGlyphRunList& glyphRunList,
-                               GrStrikeCache* strikeCache,
                                const SkMatrix& viewMatrix,
                                GrColor color,
                                bool forceW) {
-        return GrTextBlob::Make(
-                glyphRunList.totalGlyphCount(),
-                strikeCache,
-                viewMatrix,
-                glyphRunList.origin(),
-                color,
-                forceW);
+        return GrTextBlob::Make(glyphRunList, viewMatrix, color, forceW);
     }
 
     sk_sp<GrTextBlob> makeCachedBlob(const SkGlyphRunList& glyphRunList,
-                                     GrStrikeCache* strikeCache,
                                      const GrTextBlob::Key& key,
                                      const SkMaskFilterBase::BlurRec& blurRec,
                                      const SkMatrix& viewMatrix,
                                      GrColor color,
                                      bool forceW) {
-        sk_sp<GrTextBlob> cacheBlob(
-                this->makeBlob(glyphRunList, strikeCache, viewMatrix, color, forceW));
+        sk_sp<GrTextBlob> cacheBlob(this->makeBlob(glyphRunList, viewMatrix, color, forceW));
         cacheBlob->setupKey(key, blurRec, glyphRunList.paint());
         this->add(cacheBlob);
         glyphRunList.temporaryShuntBlobNotifyAddedToCache(fUniqueID);
@@ -161,10 +152,10 @@ private:
             return -1;
         }
 
-        uint32_t                             fID;
+        uint32_t                        fID;
         // Current clients don't generate multiple GrAtlasTextBlobs per SkTextBlob, so an array w/
         // linear search is acceptable.  If usage changes, we should re-evaluate this structure.
-        SkSTArray<1, sk_sp<GrTextBlob>, true> fBlobs;
+        SkSTArray<1, sk_sp<GrTextBlob>> fBlobs;
     };
 
     void add(sk_sp<GrTextBlob> blob) {

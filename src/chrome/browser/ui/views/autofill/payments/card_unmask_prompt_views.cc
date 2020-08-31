@@ -54,12 +54,12 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   views::ColumnSet* columns = overlay_layout->AddColumnSet(0);
   // The throbber's checkmark is 18dp.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0.5, views::GridLayout::FIXED, 18, 0);
+                     0.5, views::GridLayout::ColumnSize::kFixed, 18, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             ChromeLayoutProvider::Get()->GetDistanceMetric(
                                 views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.5,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   overlay_layout->StartRow(1.0, 0);
   return overlay_layout;
 }
@@ -85,11 +85,11 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
   if (controller_->CanStoreLocally()) {
-    storage_checkbox_ = DialogDelegate::SetFootnoteView(
+    storage_checkbox_ = SetFootnoteView(
         CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
   }
 
-  UpdateButtonLabels();
+  UpdateButtons();
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
@@ -111,7 +111,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   controls_container_->SetVisible(false);
   overlay_->SetVisible(true);
   progress_throbber_->Start();
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
   Layout();
 }
@@ -173,7 +173,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       layout->AddView(std::move(error_icon));
       layout->AddView(std::move(error_label));
     }
-    UpdateButtonLabels();
+    UpdateButtons();
     DialogModelChanged();
   }
 
@@ -181,23 +181,6 @@ void CardUnmaskPromptViews::GotVerificationResult(
   // layout of the whole dialog (contents and button row).
   InvalidateLayout();
   parent()->Layout();
-}
-
-void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(source, new_card_link_);
-  controller_->NewCardLinkClicked();
-  for (views::View* child : input_row_->children())
-    child->SetVisible(true);
-
-  new_card_link_->SetVisible(false);
-  input_row_->InvalidateLayout();
-  cvc_input_->SetInvalid(false);
-  cvc_input_->SetText(base::string16());
-  UpdateButtonLabels();
-  DialogModelChanged();
-  GetWidget()->UpdateWindowTitle();
-  instructions_->SetText(controller_->GetInstructionsMessage());
-  SetRetriableErrorMessage(base::string16());
 }
 
 void CardUnmaskPromptViews::SetRetriableErrorMessage(
@@ -230,11 +213,11 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
   if (new_card_link_)
     return;
 
-  new_card_link_ = new views::Link(
+  auto new_card_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link_->SetUnderline(false);
-  new_card_link_->set_listener(this);
-  input_row_->AddChildView(new_card_link_);
+  new_card_link->set_callback(base::BindRepeating(
+      &CardUnmaskPromptViews::LinkClicked, base::Unretained(this)));
+  new_card_link_ = input_row_->AddChildView(std::move(new_card_link));
 }
 
 views::View* CardUnmaskPromptViews::GetContentsView() {
@@ -258,6 +241,7 @@ void CardUnmaskPromptViews::AddedToWidget() {
 }
 
 void CardUnmaskPromptViews::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   SkColor bg_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   overlay_->SetBackground(views::CreateSolidBackground(bg_color));
@@ -275,18 +259,6 @@ base::string16 CardUnmaskPromptViews::GetWindowTitle() const {
 
 void CardUnmaskPromptViews::DeleteDelegate() {
   delete this;
-}
-
-int CardUnmaskPromptViews::GetDialogButtons() const {
-  // In permanent error state, only the "close" button is shown.
-  AutofillClient::PaymentsRpcResult result =
-      controller_->GetVerificationResult();
-  if (result == AutofillClient::PERMANENT_FAILURE ||
-      result == AutofillClient::NETWORK_ERROR) {
-    return ui::DIALOG_BUTTON_CANCEL;
-  }
-
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool CardUnmaskPromptViews::IsDialogButtonEnabled(
@@ -336,7 +308,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   if (controller_->InputCvcIsValid(new_contents))
     cvc_input_->SetInvalid(false);
 
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
 }
 
@@ -357,7 +329,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
 
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
 }
 
@@ -490,9 +462,31 @@ void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
 }
 
-void CardUnmaskPromptViews::UpdateButtonLabels() {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   controller_->GetOkButtonLabel());
+void CardUnmaskPromptViews::UpdateButtons() {
+  // In permanent error state, only the "close" button is shown.
+  AutofillClient::PaymentsRpcResult result =
+      controller_->GetVerificationResult();
+  bool has_ok = result != AutofillClient::PERMANENT_FAILURE &&
+                result != AutofillClient::NETWORK_ERROR;
+  SetButtons(has_ok ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                    : ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetOkButtonLabel());
+}
+
+void CardUnmaskPromptViews::LinkClicked() {
+  controller_->NewCardLinkClicked();
+  for (views::View* child : input_row_->children())
+    child->SetVisible(true);
+
+  new_card_link_->SetVisible(false);
+  input_row_->InvalidateLayout();
+  cvc_input_->SetInvalid(false);
+  cvc_input_->SetText(base::string16());
+  UpdateButtons();
+  DialogModelChanged();
+  GetWidget()->UpdateWindowTitle();
+  instructions_->SetText(controller_->GetInstructionsMessage());
+  SetRetriableErrorMessage(base::string16());
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(

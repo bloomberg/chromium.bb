@@ -67,7 +67,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
@@ -79,24 +79,26 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
+  gfx::Rect GetCurrentFramebufferDamage() const override;
+  void SetFrameRate(float frame_rate) override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ImageContext*>& contexts,
-      SkYUVColorSpace yuv_color_space,
-      sk_sp<SkColorSpace> dst_color_space,
+      sk_sp<SkColorSpace> image_color_space,
       bool has_alpha) override;
-  void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  void SwapBuffersSkipped() override;
   void ScheduleOutputSurfaceAsOverlay(
-      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane)
+      OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;
 
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
@@ -128,7 +130,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
   // ExternalUseClient implementation:
-  void ReleaseImageContexts(
+  gpu::SyncToken ReleaseImageContexts(
       std::vector<std::unique_ptr<ImageContext>> image_contexts) override;
   std::unique_ptr<ExternalUseClient::ImageContext> CreateImageContext(
       const gpu::MailboxHolder& holder,
@@ -137,22 +139,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
+  gpu::MemoryTracker* GetMemoryTracker() override;
+
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
-  void SetCapabilitiesForTesting(bool flipped_output_surface);
+  void SetCapabilitiesForTesting(gfx::SurfaceOrigin output_surface_origin);
 
   // Used in unit tests.
   void ScheduleGpuTaskForTesting(
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) override;
-
-  // Wait on the resource sync tokens, and send the promotion hints to
-  // the |SharedImage| instances based on the |Mailbox| instances. This should
-  // exclude the actual overlay candidate.
-  void SendOverlayPromotionNotification(
-      std::vector<gpu::SyncToken> sync_tokens,
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
 
  private:
   bool Initialize();
@@ -163,7 +159,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const gfx::Size& surface_size,
       ResourceFormat format,
       bool mipmap,
-      sk_sp<SkColorSpace> color_space);
+      sk_sp<SkColorSpace> color_space,
+      bool is_root_render_pass);
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
@@ -201,7 +198,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   GpuVSyncCallback gpu_vsync_callback_;
   bool is_displayed_as_overlay_ = false;
 
-  std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
+  gfx::Size size_;
+  gfx::ColorSpace color_space_;
+  bool is_hdr_ = false;
   SkSurfaceCharacterization characterization_;
   base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
 
@@ -253,19 +252,29 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // increments or flips.
   gfx::OverlayTransform pre_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
-  // |task_sequence| is used to schedule task on GPU as a single
-  // sequence. In regular Viz it is implemented by SchedulerSequence. For
-  // Android WebView it is implemented on top of WebView's task queue.
-  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
+  // |gpu_task_scheduler_| holds a gpu::SingleTaskSequence, and helps schedule
+  // tasks on GPU as a single sequence. It is shared with OverlayProcessor so
+  // compositing and overlay processing are in order. A gpu::SingleTaskSequence
+  // in regular Viz is implemented by SchedulerSequence. In Android WebView
+  // gpu::SingleTaskSequence is implemented on top of WebView's task queue.
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
+  bool has_set_draw_rectangle_for_frame_ = false;
   base::Optional<gfx::Rect> draw_rectangle_;
 
   // We defer the draw to the framebuffer until SwapBuffers or CopyOutput
   // to avoid the expense of posting a task and calling MakeCurrent.
   base::OnceCallback<bool()> deferred_framebuffer_draw_closure_;
+
+  // Current buffer index.
+  size_t current_buffer_ = 0;
+  // Damage area of the buffer. Differ to the last submit buffer.
+  std::vector<gfx::Rect> damage_of_buffers_;
+  // Track if the current buffer content is changed.
+  bool current_buffer_modified_ = false;
 
   base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
   base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_{this};

@@ -48,6 +48,11 @@ class Diagnostic(object):
       return self._guid
     return self.AsDict()
 
+  def AsProtoOrReference(self):
+    if self._guid:
+      return self._guid
+    return self.AsProto()
+
   def AsDict(self):
     dct = {'type': self.__class__.__name__}
     if self._guid:
@@ -55,8 +60,14 @@ class Diagnostic(object):
     self._AsDictInto(dct)
     return dct
 
+  def AsProto(self):
+    return self._AsProto()
+
   def _AsDictInto(self, unused_dct):
-    raise NotImplementedError
+    raise NotImplementedError()
+
+  def _AsProto(self):
+    raise NotImplementedError()
 
   @staticmethod
   def FromDict(dct):
@@ -67,6 +78,23 @@ class Diagnostic(object):
     if 'guid' in dct:
       diagnostic.guid = dct['guid']
     return diagnostic
+
+  @staticmethod
+  def FromProto(d):
+    # Here we figure out which field is set and downcast to the right diagnostic
+    # type. The diagnostic names in the proto must be the same as the class
+    # names in the python code, for instance Breakdown.
+    attr_name = d.WhichOneof('diagnostic_oneof')
+    assert attr_name, 'The diagnostic oneof cannot be empty.'
+
+    d = getattr(d, attr_name)
+    assert type(d).__name__ in all_diagnostics.GetDiagnosticTypenames(), (
+        'Unrecognized diagnostic type ' + type(d).__name__)
+
+    diag_type = type(d).__name__
+    cls = all_diagnostics.GetDiagnosticClassForName(diag_type)
+
+    return cls.FromProto(d)
 
   def ResetGuid(self, guid=None):
     if guid:

@@ -1,14 +1,22 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {Keys} from './KeyboardShortcut.js';
+import {ElementFocusRestorer, markBeingEdited} from './UIUtils.js';
+
 /**
  * @unrestricted
  */
-export default class InplaceEditor {
+export class InplaceEditor {
   /**
    * @param {!Element} element
-   * @param {!InplaceEditor.Config=} config
-   * @return {?InplaceEditor.Controller}
+   * @param {!Config<?>=} config
+   * @return {?Controller}
    */
   static startEditing(element, config) {
     if (!InplaceEditor._defaultInstance) {
@@ -35,14 +43,14 @@ export default class InplaceEditor {
     element.setAttribute('contenteditable', 'plaintext-only');
 
     const oldRole = element.getAttribute('role');
-    UI.ARIAUtils.markAsTextBox(element);
+    ARIAUtils.markAsTextBox(element);
     editingContext.oldRole = oldRole;
 
     const oldTabIndex = element.getAttribute('tabIndex');
     if (typeof oldTabIndex !== 'number' || oldTabIndex < 0) {
       element.tabIndex = 0;
     }
-    this._focusRestorer = new UI.ElementFocusRestorer(element);
+    this._focusRestorer = new ElementFocusRestorer(element);
     editingContext.oldTabIndex = oldTabIndex;
   }
 
@@ -80,15 +88,15 @@ export default class InplaceEditor {
 
   /**
    * @param {!Element} element
-   * @param {!InplaceEditor.Config=} config
-   * @return {?InplaceEditor.Controller}
+   * @param {!Config<*>=} config
+   * @return {?Controller}
    */
   startEditing(element, config) {
-    if (!UI.markBeingEdited(element, true)) {
+    if (!markBeingEdited(element, true)) {
       return null;
     }
 
-    config = config || new InplaceEditor.Config(function() {}, function() {});
+    config = config || new Config(function() {}, function() {});
     const editingContext = {element: element, config: config};
     const committedCallback = config.commitHandler;
     const cancelledCallback = config.cancelHandler;
@@ -112,7 +120,7 @@ export default class InplaceEditor {
     }
 
     function cleanUpAfterEditing() {
-      UI.markBeingEdited(element, false);
+      markBeingEdited(element, false);
 
       element.removeEventListener('blur', blurEventListener, false);
       element.removeEventListener('keydown', keyDownEventListener, true);
@@ -147,9 +155,11 @@ export default class InplaceEditor {
     function defaultFinishHandler(event) {
       if (isEnterKey(event)) {
         return 'commit';
-      } else if (event.keyCode === UI.KeyboardShortcut.Keys.Esc.code || event.key === 'Escape') {
+      }
+      if (event.keyCode === Keys.Esc.code || event.key === 'Escape') {
         return 'cancel';
-      } else if (event.key === 'Tab') {
+      }
+      if (event.key === 'Tab') {
         return 'move-' + (event.shiftKey ? 'backward' : 'forward');
       }
       return '';
@@ -209,8 +219,8 @@ export default class InplaceEditor {
  */
 export class Config {
   /**
-   * @param {function(!Element,string,string,T,string)} commitHandler
-   * @param {function(!Element,T)} cancelHandler
+   * @param {function(!Element,string,string,T,string):void} commitHandler
+   * @param {function(!Element,T):void} cancelHandler
    * @param {T=} context
    * @param {function(!Element,!Event):boolean=} blurHandler
    */
@@ -243,21 +253,7 @@ export class Config {
   }
 }
 
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.InplaceEditor = InplaceEditor;
-
 /**
- * @constructor
+ * @typedef {{cancel: function():void, commit: function():void}}
  */
-UI.InplaceEditor.Config = Config;
-
-/**
- * @typedef {{cancel: function(), commit: function()}}
- */
-UI.InplaceEditor.Controller;
+export let Controller;

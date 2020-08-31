@@ -11,6 +11,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_DICTIONARY_DERIVED_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_DICTIONARY_DERIVED_H_
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -40,7 +41,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDer
 }
 
 template <>
-struct NativeValueTraits<TestDictionaryDerivedImplementedAs> : public NativeValueTraitsBase<TestDictionaryDerivedImplementedAs> {
+struct NativeValueTraits<TestDictionaryDerivedImplementedAs> : public NativeValueTraitsBase<TestDictionaryDerivedImplementedAs*> {
   CORE_EXPORT static TestDictionaryDerivedImplementedAs* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 

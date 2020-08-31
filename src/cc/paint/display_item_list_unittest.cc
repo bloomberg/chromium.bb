@@ -63,6 +63,16 @@ bool CompareN32Pixels(void* actual_pixels,
 
 }  // namespace
 
+class DisplayItemListTest : public testing::Test {
+ protected:
+  std::unique_ptr<base::Value> ToBaseValue(const DisplayItemList* list,
+                                           bool include_items) {
+    base::trace_event::TracedValueJSON value;
+    list->AddToValue(&value, include_items);
+    return value.ToBaseValue();
+  }
+};
+
 #define EXPECT_TRACED_RECT(x, y, width, height, rect_list) \
   do {                                                     \
     ASSERT_EQ(4u, rect_list->GetSize());                   \
@@ -77,9 +87,9 @@ bool CompareN32Pixels(void* actual_pixels,
     EXPECT_EQ(height, d);                                  \
   } while (false)
 
-// CreateTracedValue should not crash if there are different numbers of
-// visual_rect are paint_op
-TEST(DisplayItemListTest, TraceEmptyVisualRect) {
+// AddToValue should not crash if there are different numbers of visual_rect
+// are paint_op
+TEST_F(DisplayItemListTest, TraceEmptyVisualRect) {
   PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   auto list = base::MakeRefCounted<DisplayItemList>();
@@ -97,8 +107,7 @@ TEST(DisplayItemListTest, TraceEmptyVisualRect) {
   list->Finalize();
 
   // Pass: we don't crash
-  std::unique_ptr<base::Value> root =
-      list->CreateTracedValue(true)->ToBaseValue();
+  std::unique_ptr<base::Value> root = ToBaseValue(list.get(), true);
 
   const base::DictionaryValue* root_dict;
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
@@ -125,7 +134,7 @@ TEST(DisplayItemListTest, TraceEmptyVisualRect) {
   EXPECT_EQ("DrawRect", name);
 }
 
-TEST(DisplayItemListTest, SingleUnpairedRange) {
+TEST_F(DisplayItemListTest, SingleUnpairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
   blue_flags.setColor(SK_ColorBLUE);
@@ -166,7 +175,7 @@ TEST(DisplayItemListTest, SingleUnpairedRange) {
   EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
-TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
+TEST_F(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
   gfx::Rect layer_rect(100, 100);
   auto list = base::MakeRefCounted<DisplayItemList>();
 
@@ -187,7 +196,7 @@ TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
   EXPECT_EQ(2u, list->TotalOpCount());
 }
 
-TEST(DisplayItemListTest, ClipPairedRange) {
+TEST_F(DisplayItemListTest, ClipPairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
   blue_flags.setColor(SK_ColorBLUE);
@@ -261,7 +270,7 @@ TEST(DisplayItemListTest, ClipPairedRange) {
   EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
-TEST(DisplayItemListTest, TransformPairedRange) {
+TEST_F(DisplayItemListTest, TransformPairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
   blue_flags.setColor(SK_ColorBLUE);
@@ -324,7 +333,7 @@ TEST(DisplayItemListTest, TransformPairedRange) {
       SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
                        60.f + first_offset.x(), 60.f + first_offset.y()),
       red_paint);
-  expected_canvas.setMatrix(transform.matrix());
+  expected_canvas.setMatrix(SkMatrix(transform.matrix()));
   expected_canvas.drawRect(
       SkRect::MakeLTRB(50.f + second_offset.x(), 50.f + second_offset.y(),
                        75.f + second_offset.x(), 75.f + second_offset.y()),
@@ -333,7 +342,7 @@ TEST(DisplayItemListTest, TransformPairedRange) {
   EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
-TEST(DisplayItemListTest, FilterPairedRange) {
+TEST_F(DisplayItemListTest, FilterPairedRange) {
   gfx::Rect layer_rect(100, 100);
   FilterOperations filters;
   unsigned char pixels[4 * 100 * 100] = {0};
@@ -421,7 +430,7 @@ TEST(DisplayItemListTest, FilterPairedRange) {
   EXPECT_TRUE(CompareN32Pixels(pixels, expected_pixels, 100, 100));
 }
 
-TEST(DisplayItemListTest, BytesUsed) {
+TEST_F(DisplayItemListTest, BytesUsed) {
   const int kNumPaintOps = 1000;
   size_t memory_usage;
 
@@ -443,13 +452,12 @@ TEST(DisplayItemListTest, BytesUsed) {
   EXPECT_LE(memory_usage, 2 * sizeof(DrawRectOp) * kNumPaintOps);
 }
 
-TEST(DisplayItemListTest, AsValueWithNoOps) {
+TEST_F(DisplayItemListTest, AsValueWithNoOps) {
   auto list = base::MakeRefCounted<DisplayItemList>();
   list->Finalize();
 
   // Pass |true| to ask for PaintOps even though there are none.
-  std::unique_ptr<base::Value> root =
-      list->CreateTracedValue(true)->ToBaseValue();
+  std::unique_ptr<base::Value> root = ToBaseValue(list.get(), true);
   const base::DictionaryValue* root_dict;
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
   // The traced value has a params dictionary as its root.
@@ -472,7 +480,7 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
   }
 
   // Pass |false| to not include PaintOps.
-  root = list->CreateTracedValue(false)->ToBaseValue();
+  root = ToBaseValue(list.get(), false);
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
   // The traced value has a params dictionary as its root.
   {
@@ -493,7 +501,7 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
   }
 }
 
-TEST(DisplayItemListTest, AsValueWithOps) {
+TEST_F(DisplayItemListTest, AsValueWithOps) {
   gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
   auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Transform transform;
@@ -531,8 +539,7 @@ TEST(DisplayItemListTest, AsValueWithOps) {
   list->Finalize();
 
   // Pass |true| to ask for PaintOps to be included.
-  std::unique_ptr<base::Value> root =
-      list->CreateTracedValue(true)->ToBaseValue();
+  std::unique_ptr<base::Value> root = ToBaseValue(list.get(), true);
   const base::DictionaryValue* root_dict;
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
   // The traced value has a params dictionary as its root.
@@ -577,7 +584,7 @@ TEST(DisplayItemListTest, AsValueWithOps) {
   }
 
   // Pass |false| to not include PaintOps.
-  root = list->CreateTracedValue(false)->ToBaseValue();
+  root = ToBaseValue(list.get(), false);
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
   // The traced value has a params dictionary as its root.
   {
@@ -597,12 +604,12 @@ TEST(DisplayItemListTest, AsValueWithOps) {
   }
 }
 
-TEST(DisplayItemListTest, SizeEmpty) {
+TEST_F(DisplayItemListTest, SizeEmpty) {
   auto list = base::MakeRefCounted<DisplayItemList>();
   EXPECT_EQ(0u, list->TotalOpCount());
 }
 
-TEST(DisplayItemListTest, SizeOne) {
+TEST_F(DisplayItemListTest, SizeOne) {
   auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Rect drawing_bounds(5, 6, 1, 1);
   {
@@ -613,7 +620,7 @@ TEST(DisplayItemListTest, SizeOne) {
   EXPECT_EQ(1u, list->TotalOpCount());
 }
 
-TEST(DisplayItemListTest, SizeMultiple) {
+TEST_F(DisplayItemListTest, SizeMultiple) {
   auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Rect clip_bounds(5, 6, 7, 8);
   {
@@ -631,7 +638,7 @@ TEST(DisplayItemListTest, SizeMultiple) {
   EXPECT_EQ(3u, list->TotalOpCount());
 }
 
-TEST(DisplayItemListTest, AppendVisualRectSimple) {
+TEST_F(DisplayItemListTest, AppendVisualRectSimple) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One drawing: D.
@@ -647,7 +654,7 @@ TEST(DisplayItemListTest, AppendVisualRectSimple) {
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
 }
 
-TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
+TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlock) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block: B1, E1.
@@ -672,7 +679,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
 }
 
-TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
+TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Two nested blocks: B1, B2, E2, E1.
@@ -711,7 +718,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(4));
 }
 
-TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
+TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block with one drawing: B1, Da, E1.
@@ -745,7 +752,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
-TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
+TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block with one drawing: B1, Da (escapes), E1.
@@ -779,8 +786,8 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
-TEST(DisplayItemListTest,
-     AppendVisualRectDrawingFollowedByBlockContainingEscapedDrawing) {
+TEST_F(DisplayItemListTest,
+       AppendVisualRectDrawingFollowedByBlockContainingEscapedDrawing) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One drawing followed by one block with one drawing: Da, B1, Db (escapes),
@@ -823,7 +830,7 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
 }
 
-TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
+TEST_F(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db, E2, E1.
@@ -884,8 +891,8 @@ TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
-TEST(DisplayItemListTest,
-     AppendVisualRectTwoBlocksTwoDrawingsInnerDrawingEscaped) {
+TEST_F(DisplayItemListTest,
+       AppendVisualRectTwoBlocksTwoDrawingsInnerDrawingEscaped) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db (escapes), E2,
@@ -947,8 +954,8 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
-TEST(DisplayItemListTest,
-     AppendVisualRectTwoBlocksTwoDrawingsOuterDrawingEscaped) {
+TEST_F(DisplayItemListTest,
+       AppendVisualRectTwoBlocksTwoDrawingsOuterDrawingEscaped) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da (escapes), B2, Db, E2,
@@ -1010,8 +1017,8 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
-TEST(DisplayItemListTest,
-     AppendVisualRectTwoBlocksTwoDrawingsBothDrawingsEscaped) {
+TEST_F(DisplayItemListTest,
+       AppendVisualRectTwoBlocksTwoDrawingsBothDrawingsEscaped) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst:
@@ -1073,7 +1080,7 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
-TEST(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
+TEST_F(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
   auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Some paired operations have drawing effect (e.g. some image filters),
@@ -1104,7 +1111,7 @@ TEST(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
   EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(2));
 }
 
-TEST(DisplayItemListTest, TotalOpCount) {
+TEST_F(DisplayItemListTest, TotalOpCount) {
   auto list = base::MakeRefCounted<DisplayItemList>();
   auto sub_list = base::MakeRefCounted<DisplayItemList>();
 
@@ -1123,6 +1130,57 @@ TEST(DisplayItemListTest, TotalOpCount) {
   list->push<RestoreOp>();
   list->EndPaintOfUnpaired(gfx::Rect());
   EXPECT_EQ(8u, list->TotalOpCount());
+}
+
+TEST_F(DisplayItemListTest, AreaOfDrawText) {
+  auto list = base::MakeRefCounted<DisplayItemList>();
+  auto sub_list = base::MakeRefCounted<DisplayItemList>();
+
+  auto text_blob1 = SkTextBlob::MakeFromString("ABCD", SkFont());
+  auto text_blob1_bounds = text_blob1->bounds();
+  auto text_blob1_area = text_blob1_bounds.width() * text_blob1_bounds.height();
+  auto text_blob2 = SkTextBlob::MakeFromString("EFG", SkFont());
+  auto text_blob2_bounds = text_blob2->bounds();
+  auto text_blob2_area = text_blob2_bounds.width() * text_blob2_bounds.height();
+
+  sub_list->StartPaint();
+  sub_list->push<DrawRectOp>(SkRect::MakeWH(100, 200), PaintFlags());
+  sub_list->push<DrawTextBlobOp>(text_blob1, 0, 0, PaintFlags());
+  sub_list->EndPaintOfUnpaired(gfx::Rect());
+  auto record = sub_list->ReleaseAsRecord();
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(100, 100);
+  list->push<DrawRecordOp>(record);
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect(100, 100, 100, 200));
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(100, 400);
+  list->push<DrawRecordOp>(record);
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect(100, 400, 100, 200));
+
+  list->StartPaint();
+  list->push<DrawRectOp>(SkRect::MakeWH(100, 100), PaintFlags());
+  list->push<DrawTextBlobOp>(text_blob2, 10, 20, PaintFlags());
+  list->EndPaintOfUnpaired(gfx::Rect(0, 0, 100, 100));
+
+  list->StartPaint();
+  list->push<DrawTextBlobOp>(text_blob2, 400, 100, PaintFlags());
+  list->push<DrawRectOp>(SkRect::MakeXYWH(400, 100, 100, 100), PaintFlags());
+  list->EndPaintOfUnpaired(gfx::Rect(400, 100, 100, 100));
+
+  list->Finalize();
+  // This includes the DrawTextBlobOp in the first DrawRecordOp the the first
+  // direct DrawTextBlobOp.
+  EXPECT_EQ(static_cast<int>(text_blob1_area + text_blob2_area),
+            static_cast<int>(list->AreaOfDrawText(gfx::Rect(0, 0, 200, 200))));
+  // This includes all DrawTextBlobOps.
+  EXPECT_EQ(static_cast<int>(text_blob1_area * 2 + text_blob2_area * 2),
+            static_cast<int>(list->AreaOfDrawText(gfx::Rect(0, 0, 500, 500))));
 }
 
 }  // namespace cc

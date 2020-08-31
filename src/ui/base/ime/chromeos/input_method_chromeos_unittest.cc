@@ -205,7 +205,7 @@ class NiceMockIMEEngine : public chromeos::MockIMEEngineHandler {
   MOCK_METHOD1(FocusIn, void(const InputContext&));
   MOCK_METHOD0(FocusOut, void());
   MOCK_METHOD4(SetSurroundingText,
-               void(const std::string&, uint32_t, uint32_t, uint32_t));
+               void(const base::string16&, uint32_t, uint32_t, uint32_t));
 };
 
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
@@ -580,7 +580,9 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
   CompositionText composition_text;
   composition_text.text = kSampleText;
   ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
-                        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
+                        ui::ImeTextSpan::Thickness::kThin,
+                        ui::ImeTextSpan::UnderlineStyle::kSolid,
+                        SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
   CompositionText composition_text2;
@@ -612,6 +614,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
   composition_text.text = kSampleText;
   ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
                         ui::ImeTextSpan::Thickness::kThick,
+                        ui::ImeTextSpan::UnderlineStyle::kSolid,
                         SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
@@ -643,7 +646,9 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
   CompositionText composition_text;
   composition_text.text = kSampleText;
   ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
-                        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
+                        ui::ImeTextSpan::Thickness::kThin,
+                        ui::ImeTextSpan::UnderlineStyle::kSolid,
+                        SK_ColorTRANSPARENT);
   underline.underline_color = SK_ColorRED;
   composition_text.ime_text_spans.push_back(underline);
 
@@ -777,7 +782,7 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_NoSelectionTest) {
   // Check the call count.
   EXPECT_EQ(1,
             mock_ime_engine_handler_->set_surrounding_text_call_count());
-  EXPECT_EQ(UTF16ToUTF8(surrounding_text_),
+  EXPECT_EQ(surrounding_text_,
             mock_ime_engine_handler_->last_set_surrounding_text());
   EXPECT_EQ(3U,
             mock_ime_engine_handler_->last_set_surrounding_cursor_pos());
@@ -803,7 +808,7 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_SelectionTest) {
   // Check the call count.
   EXPECT_EQ(1,
             mock_ime_engine_handler_->set_surrounding_text_call_count());
-  EXPECT_EQ(UTF16ToUTF8(surrounding_text_),
+  EXPECT_EQ(surrounding_text_,
             mock_ime_engine_handler_->last_set_surrounding_text());
   EXPECT_EQ(2U,
             mock_ime_engine_handler_->last_set_surrounding_cursor_pos());
@@ -828,7 +833,7 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_PartialText) {
             mock_ime_engine_handler_->set_surrounding_text_call_count());
   // Set the verifier for SetSurroundingText mock call.
   // Here (2, 4) is selection range in expected surrounding text coordinates.
-  EXPECT_EQ("fghij",
+  EXPECT_EQ(base::UTF8ToUTF16("fghij"),
             mock_ime_engine_handler_->last_set_surrounding_text());
   EXPECT_EQ(2U,
             mock_ime_engine_handler_->last_set_surrounding_cursor_pos());

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/editing/layout_selection.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -43,7 +43,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
       cursor.MoveTo(layout_text);
       if (!cursor)
         return;
-      const unsigned text_start = cursor.CurrentTextStartOffset();
+      const unsigned text_start = cursor.Current().TextStartOffset();
       for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
         const LayoutSelectionStatus status =
             selection.ComputeLayoutSelectionStatus(cursor);
@@ -148,7 +148,9 @@ class LayoutSelectionTest : public ::testing::WithParamInterface<bool>,
  protected:
   LayoutSelectionTest() : ScopedLayoutNGForTest(GetParam()) {}
 
-  bool LayoutNGEnabled() const { return GetParam(); }
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(All, LayoutSelectionTest, ::testing::Bool());
@@ -776,7 +778,7 @@ TEST_P(LayoutSelectionTest, ClearByRemoveNode) {
 
   Node* baz = GetDocument().body()->lastChild();
   baz->remove();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
@@ -809,7 +811,7 @@ TEST_P(LayoutSelectionTest, ClearByRemoveLayoutObject) {
 
   auto* span_baz = To<Element>(GetDocument().body()->lastChild());
   span_baz->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
@@ -853,7 +855,7 @@ TEST_P(LayoutSelectionTest, ClearBySlotChange) {
       GetDocument().body()->firstChild()->GetShadowRoot()->QuerySelector(
           "slot");
   slot->setAttribute("name", "s2");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"

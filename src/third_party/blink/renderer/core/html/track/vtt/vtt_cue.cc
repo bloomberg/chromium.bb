@@ -145,7 +145,7 @@ VTTCueBackgroundBox::VTTCueBackgroundBox(Document& document)
   SetShadowPseudoId(TextTrackCue::CueShadowPseudoId());
 }
 
-void VTTCueBackgroundBox::Trace(blink::Visitor* visitor) {
+void VTTCueBackgroundBox::Trace(Visitor* visitor) {
   visitor->Trace(track_);
   HTMLDivElement::Trace(visitor);
 }
@@ -237,6 +237,7 @@ LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
   if (style.GetPosition() == EPosition::kRelative)
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByVTTCue);
   return new LayoutVTTCue(this, snap_to_lines_position_);
 }
 
@@ -814,7 +815,8 @@ VTTCueBox* VTTCue::GetDisplayTree() {
   CreateVTTNodeTree();
 
   cue_background_box_->RemoveChildren();
-  cue_background_box_->CloneChildNodesFrom(*vtt_node_tree_);
+  cue_background_box_->CloneChildNodesFrom(*vtt_node_tree_,
+                                           CloneChildrenFlag::kClone);
 
   if (!region()) {
     VTTDisplayParameters display_parameters = CalculateDisplayParameters();

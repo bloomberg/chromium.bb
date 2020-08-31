@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/third_party/features.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/remoting_locales.gni")
 
@@ -10,16 +11,14 @@ group("all") {
 
   deps = [
     ":ios_core",
-    "./app:all",
+    "app:all",
   ]
 }
 
 group("all_test") {
   testonly = true
 
-  deps = [
-    ":ios_core_unit_tests",
-  ]
+  deps = [ ":ios_core_unit_tests" ]
 }
 
 source_set("ios_core") {
@@ -85,18 +84,20 @@ test("ios_remoting_unittests") {
   foreach(locale, remoting_locales_with_underscores) {
     deps += [ ":unittests_locale_${locale}_bundle_data" ]
   }
+
+  if (ios_third_party_material_components_built_as_framework) {
+    deps += [
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
+
+    bundle_deps = [ "//ios/third_party/material_components_ios:material_components_ios+bundle" ]
+  }
 }
 
 foreach(locale, remoting_locales_with_underscores) {
   bundle_data("unittests_locale_${locale}_bundle_data") {
-    sources = [
-      "$root_out_dir/remoting/resources/$locale.lproj/locale.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
-    ]
-    public_deps = [
-      "//remoting/resources:copy_locales",
-    ]
+    sources = [ "$root_out_dir/remoting/resources/$locale.lproj/locale.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}" ]
+    public_deps = [ "//remoting/resources:copy_locales" ]
   }
 }

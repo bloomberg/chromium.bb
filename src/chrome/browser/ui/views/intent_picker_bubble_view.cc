@@ -216,38 +216,30 @@ void IntentPickerBubbleView::CloseBubble() {
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
-bool IntentPickerBubbleView::Accept() {
+void IntentPickerBubbleView::OnDialogAccepted() {
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
   RunCallbackAndCloseBubble(app_info_[selected_app_tag_].launch_name,
                             app_info_[selected_app_tag_].type,
                             apps::IntentPickerCloseReason::OPEN_APP,
                             should_persist);
-  return true;
 }
 
-bool IntentPickerBubbleView::Cancel() {
-  const char* launch_name =
-#if defined(OS_CHROMEOS)
-      arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
-#else
-      kInvalidLaunchName;
-#endif
+void IntentPickerBubbleView::OnDialogCancelled() {
+  const char* launch_name = apps::AppsNavigationThrottle::kUseBrowserForLink;
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
   RunCallbackAndCloseBubble(launch_name, apps::PickerEntryType::kUnknown,
                             apps::IntentPickerCloseReason::STAY_IN_CHROME,
                             should_persist);
-  return true;
 }
 
-bool IntentPickerBubbleView::Close() {
+void IntentPickerBubbleView::OnDialogClosed() {
   // Whenever closing the bubble without pressing |Just once| or |Always| we
   // need to report back that the user didn't select anything.
   RunCallbackAndCloseBubble(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
                             apps::IntentPickerCloseReason::DIALOG_DEACTIVATED,
                             false);
-  return true;
 }
 
 bool IntentPickerBubbleView::ShouldShowCloseButton() const {
@@ -283,20 +275,31 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       icon_view_(icon_view),
       icon_type_(icon_type),
       initiating_origin_(initiating_origin) {
-  DialogDelegate::set_buttons(
-      show_stay_in_chrome_ ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
-                           : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  SetButtons(show_stay_in_chrome_
+                 ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           icon_type_ == PageActionIconType::kClickToCall
               ? IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL
               : IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN));
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
+  SetAcceptCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogAccepted,
+                                   base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogCancelled,
+                                   base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(&IntentPickerBubbleView::OnDialogClosed,
+                                  base::Unretained(this)));
 
-  set_close_on_main_frame_origin_navigation(true);
+  // Click to call bubbles need to be closed after navigation if the main frame
+  // origin changed. Other intent picker bubbles will be handled in
+  // AppsNavigationThrottle, they will get closed on each navigation start and
+  // should stay open until after navigation finishes.
+  set_close_on_main_frame_origin_navigation(icon_type ==
+                                            PageActionIconType::kClickToCall);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
@@ -395,7 +398,8 @@ void IntentPickerBubbleView::Initialize() {
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kFixed,
                 kMaxIntentPickerLabelButtonWidth, 0);
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetId,
@@ -410,7 +414,7 @@ void IntentPickerBubbleView::Initialize() {
     cs_origin->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
     cs_origin->AddColumn(
         views::GridLayout::FILL, views::GridLayout::CENTER,
-        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
         kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
 
     layout->StartRowWithPadding(views::GridLayout::kFixedSize,
@@ -436,7 +440,7 @@ void IntentPickerBubbleView::Initialize() {
     cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
     cs_padded->AddColumn(
         views::GridLayout::FILL, views::GridLayout::CENTER,
-        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
         kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
 
     layout->StartRowWithPadding(views::GridLayout::kFixedSize,
@@ -512,7 +516,7 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
   // there is a central Chrome OS apps registry to store persistence.
   // TODO(crbug.com/1000037): allow to persist remote devices too.
   bool should_enable = false;
-  if (base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)) {
+  if (base::FeatureList::IsEnabled(features::kIntentPickerPWAPersistence)) {
     should_enable = true;
   } else {
     auto selected_app_type = app_info_[selected_app_tag_].type;

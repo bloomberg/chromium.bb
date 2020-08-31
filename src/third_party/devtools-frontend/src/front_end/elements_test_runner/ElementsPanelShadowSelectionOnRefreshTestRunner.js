@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@ ElementsTestRunner.selectReloadAndDump = function(next, node) {
   let selected = false;
 
   function onSelected() {
-    TestRunner.reloadPage(onReloaded);
     TestRunner.addSniffer(Elements.ElementsPanel.prototype, '_lastSelectedNodeSelectedForTest', onReSelected);
+    TestRunner.reloadPage(onReloaded);
   }
 
   function onReloaded() {
@@ -31,7 +31,6 @@ ElementsTestRunner.selectReloadAndDump = function(next, node) {
     if (!reloaded || !selected) {
       return;
     }
-
     const selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
     const nodeName = (selectedElement ? selectedElement.node().nodeNameInCorrectCase() : 'null');
     TestRunner.addResult('Selected node: \'' + nodeName + '\'');

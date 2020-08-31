@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_pose.h"
@@ -16,94 +17,95 @@ XRSpace::XRSpace(XRSession* session) : session_(session) {}
 
 XRSpace::~XRSpace() = default;
 
-std::unique_ptr<TransformationMatrix> XRSpace::MojoFromSpace() {
-  // The base XRSpace does not have any relevant information, so can't determine
-  // a transform here.
-  return nullptr;
+base::Optional<TransformationMatrix> XRSpace::NativeFromViewer(
+    const base::Optional<TransformationMatrix>& mojo_from_viewer) {
+  if (!mojo_from_viewer)
+    return base::nullopt;
+
+  base::Optional<TransformationMatrix> native_from_mojo = NativeFromMojo();
+  if (!native_from_mojo)
+    return base::nullopt;
+
+  native_from_mojo->Multiply(*mojo_from_viewer);
+
+  // This is now native_from_viewer
+  return native_from_mojo;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::DefaultViewerPose() {
-  return nullptr;
-}
-
-std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromMojo(
-    const TransformationMatrix& mojo_from_viewer) {
-  return nullptr;
-}
-
-std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromViewer(
-    const TransformationMatrix& mojo_from_viewer) {
-  return nullptr;
-}
-
-std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromInputForViewer(
-    const TransformationMatrix& mojo_from_input,
-    const TransformationMatrix& mojo_from_viewer) {
-  return nullptr;
-}
-
-TransformationMatrix XRSpace::OriginOffsetMatrix() {
+TransformationMatrix XRSpace::NativeFromOffsetMatrix() {
   TransformationMatrix identity;
   return identity;
 }
 
-TransformationMatrix XRSpace::InverseOriginOffsetMatrix() {
+TransformationMatrix XRSpace::OffsetFromNativeMatrix() {
   TransformationMatrix identity;
   return identity;
 }
 
-XRPose* XRSpace::getPose(XRSpace* other_space,
-                         const TransformationMatrix* base_pose_matrix) {
-  std::unique_ptr<TransformationMatrix> mojo_from_space = MojoFromSpace();
-  if (!mojo_from_space) {
+base::Optional<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
+  auto maybe_mojo_from_native = MojoFromNative();
+  if (!maybe_mojo_from_native) {
+    return base::nullopt;
+  }
+
+  // Modifies maybe_mojo_from_native - it becomes mojo_from_offset_matrix.
+  // Saves a heap allocation since there is no need to create a new unique_ptr.
+  maybe_mojo_from_native->Multiply(NativeFromOffsetMatrix());
+  return maybe_mojo_from_native;
+}
+
+base::Optional<TransformationMatrix> XRSpace::TryInvert(
+    const base::Optional<TransformationMatrix>& matrix) {
+  if (!matrix)
+    return base::nullopt;
+
+  DCHECK(matrix->IsInvertible());
+  return matrix->Inverse();
+}
+
+bool XRSpace::EmulatedPosition() const {
+  return session()->EmulatedPosition();
+}
+
+XRPose* XRSpace::getPose(XRSpace* other_space) {
+  // Named mojo_from_offset because that is what we will leave it as, though it
+  // starts mojo_from_native.
+  base::Optional<TransformationMatrix> mojo_from_offset = MojoFromNative();
+  if (!mojo_from_offset) {
     return nullptr;
   }
 
-  std::unique_ptr<TransformationMatrix> mojo_from_other =
-      other_space->MojoFromSpace();
-  if (!mojo_from_other) {
-    return nullptr;
-  }
+  // Add any origin offset now.
+  mojo_from_offset->Multiply(NativeFromOffsetMatrix());
 
-  // Rigid transforms should always be invertible.
-  DCHECK(mojo_from_other->IsInvertible());
-  TransformationMatrix other_from_mojo = mojo_from_other->Inverse();
+  base::Optional<TransformationMatrix> other_from_mojo =
+      other_space->NativeFromMojo();
+  if (!other_from_mojo)
+    return nullptr;
+
+  // Add any origin offset from the other space now.
+  TransformationMatrix other_offset_from_mojo =
+      other_space->OffsetFromNativeMatrix().Multiply(*other_from_mojo);
 
   // TODO(crbug.com/969133): Update how EmulatedPosition is determined here once
   // spec issue https://github.com/immersive-web/webxr/issues/534 has been
   // resolved.
-  TransformationMatrix other_from_space =
-      other_from_mojo.Multiply(*mojo_from_space);
-  return MakeGarbageCollected<XRPose>(other_from_space,
-                                      session()->EmulatedPosition());
+  TransformationMatrix other_offset_from_offset =
+      other_offset_from_mojo.Multiply(*mojo_from_offset);
+  return MakeGarbageCollected<XRPose>(
+      other_offset_from_offset,
+      EmulatedPosition() || other_space->EmulatedPosition());
 }
 
-std::unique_ptr<TransformationMatrix>
-XRSpace::SpaceFromViewerWithDefaultAndOffset(
-    const TransformationMatrix* mojo_from_viewer) {
-  std::unique_ptr<TransformationMatrix> space_from_viewer;
+base::Optional<TransformationMatrix> XRSpace::OffsetFromViewer() {
+  base::Optional<TransformationMatrix> native_from_viewer = NativeFromViewer(
+      session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer));
 
-  // If we don't have a valid base pose, request the reference space's default
-  // viewer pose. Most common when tracking is lost.
-  if (mojo_from_viewer) {
-    space_from_viewer = SpaceFromViewer(*mojo_from_viewer);
-  } else {
-    space_from_viewer = DefaultViewerPose();
+  if (!native_from_viewer) {
+    return base::nullopt;
   }
 
-  // Can only update an XRViewerPose's views with an invertible matrix.
-  if (!space_from_viewer || !space_from_viewer->IsInvertible()) {
-    return nullptr;
-  }
-
-  // Account for any changes made to the reference space's origin offset so that
-  // things like teleportation works.
-  //
-  // This is offset_from_viewer = offset_from_space * space_from_viewer,
-  // where offset_from_viewer = inverse(viewer_from_offset).
-  // TODO(https://crbug.com/1008466): move originOffset to separate class?
-  return std::make_unique<TransformationMatrix>(
-      InverseOriginOffsetMatrix().Multiply(*space_from_viewer));
+  return OffsetFromNativeMatrix().Multiply(*native_from_viewer);
 }
 
 ExecutionContext* XRSpace::GetExecutionContext() const {
@@ -118,7 +120,7 @@ base::Optional<XRNativeOriginInformation> XRSpace::NativeOrigin() const {
   return base::nullopt;
 }
 
-void XRSpace::Trace(blink::Visitor* visitor) {
+void XRSpace::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

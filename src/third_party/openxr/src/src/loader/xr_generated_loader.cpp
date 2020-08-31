@@ -65,14 +65,11 @@ void LoaderCleanUpMapsForInstance(LoaderInstance *instance) {
     g_spatialanchormsft_map.RemoveHandlesForLoader(*instance);
 }
 
-#ifdef __cplusplus
-extern "C" { 
-#endif
 
 // Automatically generated instance trampolines and terminators
 
 // ---- Core 1.0 commands
-XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProperties(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProperties(
     XrInstance                                  instance,
     XrInstanceProperties*                       instanceProperties) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_instance_map.Get(instance);
@@ -81,7 +78,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProperties(
                 "VUID-xrGetInstanceProperties-instance-parameter",
                 "xrGetInstanceProperties",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -90,7 +87,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProperties(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrPollEvent(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrPollEvent(
     XrInstance                                  instance,
     XrEventDataBuffer*                          eventData) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_instance_map.Get(instance);
@@ -99,7 +96,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPollEvent(
                 "VUID-xrPollEvent-instance-parameter",
                 "xrPollEvent",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -108,7 +105,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPollEvent(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrResultToString(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrResultToString(
     XrInstance                                  instance,
     XrResult                                    value,
     char                                        buffer[XR_MAX_RESULT_STRING_SIZE]) XRLOADER_ABI_TRY {
@@ -118,7 +115,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrResultToString(
                 "VUID-xrResultToString-instance-parameter",
                 "xrResultToString",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -127,7 +124,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrResultToString(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrStructureTypeToString(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStructureTypeToString(
     XrInstance                                  instance,
     XrStructureType                             value,
     char                                        buffer[XR_MAX_STRUCTURE_NAME_SIZE]) XRLOADER_ABI_TRY {
@@ -137,7 +134,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrStructureTypeToString(
                 "VUID-xrStructureTypeToString-instance-parameter",
                 "xrStructureTypeToString",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -146,7 +143,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrStructureTypeToString(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetSystem(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetSystem(
     XrInstance                                  instance,
     const XrSystemGetInfo*                      getInfo,
     XrSystemId*                                 systemId) XRLOADER_ABI_TRY {
@@ -156,7 +153,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSystem(
                 "VUID-xrGetSystem-instance-parameter",
                 "xrGetSystem",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -165,7 +162,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSystem(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetSystemProperties(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetSystemProperties(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrSystemProperties*                         properties) XRLOADER_ABI_TRY {
@@ -175,7 +172,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSystemProperties(
                 "VUID-xrGetSystemProperties-instance-parameter",
                 "xrGetSystemProperties",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -184,7 +181,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSystemProperties(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentBlendModes(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentBlendModes(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrViewConfigurationType                     viewConfigurationType,
@@ -197,7 +194,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentBlendModes(
                 "VUID-xrEnumerateEnvironmentBlendModes-instance-parameter",
                 "xrEnumerateEnvironmentBlendModes",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -206,7 +203,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentBlendModes(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateSession(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateSession(
     XrInstance                                  instance,
     const XrSessionCreateInfo*                  createInfo,
     XrSession*                                  session) XRLOADER_ABI_TRY {
@@ -216,7 +213,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSession(
                 "VUID-xrCreateSession-instance-parameter",
                 "xrCreateSession",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -235,7 +232,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSession(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroySession(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrDestroySession(
     XrSession                                   session) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
     // Destroy the mapping entry for this item if it was valid.
@@ -247,7 +244,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySession(
                 "VUID-xrDestroySession-session-parameter",
                 "xrDestroySession",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -258,7 +255,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySession(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateReferenceSpaces(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateReferenceSpaces(
     XrSession                                   session,
     uint32_t                                    spaceCapacityInput,
     uint32_t*                                   spaceCountOutput,
@@ -269,7 +266,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateReferenceSpaces(
                 "VUID-xrEnumerateReferenceSpaces-session-parameter",
                 "xrEnumerateReferenceSpaces",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -278,7 +275,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateReferenceSpaces(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateReferenceSpace(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateReferenceSpace(
     XrSession                                   session,
     const XrReferenceSpaceCreateInfo*           createInfo,
     XrSpace*                                    space) XRLOADER_ABI_TRY {
@@ -288,7 +285,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateReferenceSpace(
                 "VUID-xrCreateReferenceSpace-session-parameter",
                 "xrCreateReferenceSpace",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -307,7 +304,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateReferenceSpace(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetReferenceSpaceBoundsRect(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetReferenceSpaceBoundsRect(
     XrSession                                   session,
     XrReferenceSpaceType                        referenceSpaceType,
     XrExtent2Df*                                bounds) XRLOADER_ABI_TRY {
@@ -317,7 +314,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetReferenceSpaceBoundsRect(
                 "VUID-xrGetReferenceSpaceBoundsRect-session-parameter",
                 "xrGetReferenceSpaceBoundsRect",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -326,7 +323,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetReferenceSpaceBoundsRect(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSpace(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSpace(
     XrSession                                   session,
     const XrActionSpaceCreateInfo*              createInfo,
     XrSpace*                                    space) XRLOADER_ABI_TRY {
@@ -336,7 +333,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSpace(
                 "VUID-xrCreateActionSpace-session-parameter",
                 "xrCreateActionSpace",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -355,7 +352,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSpace(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpace(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpace(
     XrSpace                                     space,
     XrSpace                                     baseSpace,
     XrTime                                      time,
@@ -366,7 +363,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpace(
                 "VUID-xrLocateSpace-space-parameter",
                 "xrLocateSpace",
                 "space is not a valid XrSpace",
-                {XrLoaderLogObjectInfo{space, XR_OBJECT_TYPE_SPACE}});
+                {XrSdkLogObjectInfo{space, XR_OBJECT_TYPE_SPACE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -375,7 +372,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpace(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpace(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpace(
     XrSpace                                     space) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_space_map.Get(space);
     // Destroy the mapping entry for this item if it was valid.
@@ -387,7 +384,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpace(
                 "VUID-xrDestroySpace-space-parameter",
                 "xrDestroySpace",
                 "space is not a valid XrSpace",
-                {XrLoaderLogObjectInfo{space, XR_OBJECT_TYPE_SPACE}});
+                {XrSdkLogObjectInfo{space, XR_OBJECT_TYPE_SPACE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -398,7 +395,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpace(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurations(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurations(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     uint32_t                                    viewConfigurationTypeCapacityInput,
@@ -410,7 +407,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurations(
                 "VUID-xrEnumerateViewConfigurations-instance-parameter",
                 "xrEnumerateViewConfigurations",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -419,7 +416,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurations(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetViewConfigurationProperties(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetViewConfigurationProperties(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrViewConfigurationType                     viewConfigurationType,
@@ -430,7 +427,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetViewConfigurationProperties(
                 "VUID-xrGetViewConfigurationProperties-instance-parameter",
                 "xrGetViewConfigurationProperties",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -439,7 +436,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetViewConfigurationProperties(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurationViews(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurationViews(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrViewConfigurationType                     viewConfigurationType,
@@ -452,7 +449,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurationViews(
                 "VUID-xrEnumerateViewConfigurationViews-instance-parameter",
                 "xrEnumerateViewConfigurationViews",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -461,7 +458,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateViewConfigurationViews(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainFormats(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainFormats(
     XrSession                                   session,
     uint32_t                                    formatCapacityInput,
     uint32_t*                                   formatCountOutput,
@@ -472,7 +469,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainFormats(
                 "VUID-xrEnumerateSwapchainFormats-session-parameter",
                 "xrEnumerateSwapchainFormats",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -481,7 +478,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainFormats(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchain(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchain(
     XrSession                                   session,
     const XrSwapchainCreateInfo*                createInfo,
     XrSwapchain*                                swapchain) XRLOADER_ABI_TRY {
@@ -491,7 +488,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchain(
                 "VUID-xrCreateSwapchain-session-parameter",
                 "xrCreateSwapchain",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -510,7 +507,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchain(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroySwapchain(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrDestroySwapchain(
     XrSwapchain                                 swapchain) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_swapchain_map.Get(swapchain);
     // Destroy the mapping entry for this item if it was valid.
@@ -522,7 +519,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySwapchain(
                 "VUID-xrDestroySwapchain-swapchain-parameter",
                 "xrDestroySwapchain",
                 "swapchain is not a valid XrSwapchain",
-                {XrLoaderLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
+                {XrSdkLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -533,7 +530,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySwapchain(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainImages(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainImages(
     XrSwapchain                                 swapchain,
     uint32_t                                    imageCapacityInput,
     uint32_t*                                   imageCountOutput,
@@ -544,7 +541,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainImages(
                 "VUID-xrEnumerateSwapchainImages-swapchain-parameter",
                 "xrEnumerateSwapchainImages",
                 "swapchain is not a valid XrSwapchain",
-                {XrLoaderLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
+                {XrSdkLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -553,7 +550,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSwapchainImages(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrAcquireSwapchainImage(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrAcquireSwapchainImage(
     XrSwapchain                                 swapchain,
     const XrSwapchainImageAcquireInfo*          acquireInfo,
     uint32_t*                                   index) XRLOADER_ABI_TRY {
@@ -563,7 +560,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrAcquireSwapchainImage(
                 "VUID-xrAcquireSwapchainImage-swapchain-parameter",
                 "xrAcquireSwapchainImage",
                 "swapchain is not a valid XrSwapchain",
-                {XrLoaderLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
+                {XrSdkLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -572,7 +569,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrAcquireSwapchainImage(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrWaitSwapchainImage(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrWaitSwapchainImage(
     XrSwapchain                                 swapchain,
     const XrSwapchainImageWaitInfo*             waitInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_swapchain_map.Get(swapchain);
@@ -581,7 +578,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrWaitSwapchainImage(
                 "VUID-xrWaitSwapchainImage-swapchain-parameter",
                 "xrWaitSwapchainImage",
                 "swapchain is not a valid XrSwapchain",
-                {XrLoaderLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
+                {XrSdkLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -590,7 +587,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrWaitSwapchainImage(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrReleaseSwapchainImage(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrReleaseSwapchainImage(
     XrSwapchain                                 swapchain,
     const XrSwapchainImageReleaseInfo*          releaseInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_swapchain_map.Get(swapchain);
@@ -599,7 +596,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrReleaseSwapchainImage(
                 "VUID-xrReleaseSwapchainImage-swapchain-parameter",
                 "xrReleaseSwapchainImage",
                 "swapchain is not a valid XrSwapchain",
-                {XrLoaderLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
+                {XrSdkLogObjectInfo{swapchain, XR_OBJECT_TYPE_SWAPCHAIN}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -608,7 +605,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrReleaseSwapchainImage(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrBeginSession(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrBeginSession(
     XrSession                                   session,
     const XrSessionBeginInfo*                   beginInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -617,7 +614,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrBeginSession(
                 "VUID-xrBeginSession-session-parameter",
                 "xrBeginSession",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -626,7 +623,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrBeginSession(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEndSession(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEndSession(
     XrSession                                   session) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
     if (nullptr == loader_instance) {
@@ -634,7 +631,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEndSession(
                 "VUID-xrEndSession-session-parameter",
                 "xrEndSession",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -643,7 +640,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEndSession(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrRequestExitSession(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrRequestExitSession(
     XrSession                                   session) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
     if (nullptr == loader_instance) {
@@ -651,7 +648,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrRequestExitSession(
                 "VUID-xrRequestExitSession-session-parameter",
                 "xrRequestExitSession",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -660,7 +657,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrRequestExitSession(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrWaitFrame(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrWaitFrame(
     XrSession                                   session,
     const XrFrameWaitInfo*                      frameWaitInfo,
     XrFrameState*                               frameState) XRLOADER_ABI_TRY {
@@ -670,7 +667,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrWaitFrame(
                 "VUID-xrWaitFrame-session-parameter",
                 "xrWaitFrame",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -679,7 +676,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrWaitFrame(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrBeginFrame(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrBeginFrame(
     XrSession                                   session,
     const XrFrameBeginInfo*                     frameBeginInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -688,7 +685,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrBeginFrame(
                 "VUID-xrBeginFrame-session-parameter",
                 "xrBeginFrame",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -697,7 +694,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrBeginFrame(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEndFrame(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEndFrame(
     XrSession                                   session,
     const XrFrameEndInfo*                       frameEndInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -706,7 +703,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEndFrame(
                 "VUID-xrEndFrame-session-parameter",
                 "xrEndFrame",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -715,7 +712,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEndFrame(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrLocateViews(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateViews(
     XrSession                                   session,
     const XrViewLocateInfo*                     viewLocateInfo,
     XrViewState*                                viewState,
@@ -728,7 +725,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrLocateViews(
                 "VUID-xrLocateViews-session-parameter",
                 "xrLocateViews",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -737,7 +734,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrLocateViews(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrStringToPath(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStringToPath(
     XrInstance                                  instance,
     const char*                                 pathString,
     XrPath*                                     path) XRLOADER_ABI_TRY {
@@ -747,7 +744,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrStringToPath(
                 "VUID-xrStringToPath-instance-parameter",
                 "xrStringToPath",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -756,7 +753,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrStringToPath(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrPathToString(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrPathToString(
     XrInstance                                  instance,
     XrPath                                      path,
     uint32_t                                    bufferCapacityInput,
@@ -768,7 +765,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPathToString(
                 "VUID-xrPathToString-instance-parameter",
                 "xrPathToString",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -777,7 +774,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPathToString(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSet(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSet(
     XrInstance                                  instance,
     const XrActionSetCreateInfo*                createInfo,
     XrActionSet*                                actionSet) XRLOADER_ABI_TRY {
@@ -787,7 +784,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSet(
                 "VUID-xrCreateActionSet-instance-parameter",
                 "xrCreateActionSet",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -806,7 +803,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateActionSet(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroyActionSet(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrDestroyActionSet(
     XrActionSet                                 actionSet) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_actionset_map.Get(actionSet);
     // Destroy the mapping entry for this item if it was valid.
@@ -818,7 +815,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroyActionSet(
                 "VUID-xrDestroyActionSet-actionSet-parameter",
                 "xrDestroyActionSet",
                 "actionSet is not a valid XrActionSet",
-                {XrLoaderLogObjectInfo{actionSet, XR_OBJECT_TYPE_ACTION_SET}});
+                {XrSdkLogObjectInfo{actionSet, XR_OBJECT_TYPE_ACTION_SET}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -829,7 +826,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroyActionSet(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateAction(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrCreateAction(
     XrActionSet                                 actionSet,
     const XrActionCreateInfo*                   createInfo,
     XrAction*                                   action) XRLOADER_ABI_TRY {
@@ -839,7 +836,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateAction(
                 "VUID-xrCreateAction-actionSet-parameter",
                 "xrCreateAction",
                 "actionSet is not a valid XrActionSet",
-                {XrLoaderLogObjectInfo{actionSet, XR_OBJECT_TYPE_ACTION_SET}});
+                {XrSdkLogObjectInfo{actionSet, XR_OBJECT_TYPE_ACTION_SET}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -858,7 +855,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateAction(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroyAction(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrDestroyAction(
     XrAction                                    action) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_action_map.Get(action);
     // Destroy the mapping entry for this item if it was valid.
@@ -870,7 +867,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroyAction(
                 "VUID-xrDestroyAction-action-parameter",
                 "xrDestroyAction",
                 "action is not a valid XrAction",
-                {XrLoaderLogObjectInfo{action, XR_OBJECT_TYPE_ACTION}});
+                {XrSdkLogObjectInfo{action, XR_OBJECT_TYPE_ACTION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -881,7 +878,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroyAction(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrSuggestInteractionProfileBindings(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrSuggestInteractionProfileBindings(
     XrInstance                                  instance,
     const XrInteractionProfileSuggestedBinding* suggestedBindings) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_instance_map.Get(instance);
@@ -890,7 +887,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSuggestInteractionProfileBindings(
                 "VUID-xrSuggestInteractionProfileBindings-instance-parameter",
                 "xrSuggestInteractionProfileBindings",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -899,7 +896,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSuggestInteractionProfileBindings(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrAttachSessionActionSets(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrAttachSessionActionSets(
     XrSession                                   session,
     const XrSessionActionSetsAttachInfo*        attachInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -908,7 +905,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrAttachSessionActionSets(
                 "VUID-xrAttachSessionActionSets-session-parameter",
                 "xrAttachSessionActionSets",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -917,7 +914,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrAttachSessionActionSets(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetCurrentInteractionProfile(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetCurrentInteractionProfile(
     XrSession                                   session,
     XrPath                                      topLevelUserPath,
     XrInteractionProfileState*                  interactionProfile) XRLOADER_ABI_TRY {
@@ -927,7 +924,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetCurrentInteractionProfile(
                 "VUID-xrGetCurrentInteractionProfile-session-parameter",
                 "xrGetCurrentInteractionProfile",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -936,7 +933,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetCurrentInteractionProfile(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateBoolean(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateBoolean(
     XrSession                                   session,
     const XrActionStateGetInfo*                 getInfo,
     XrActionStateBoolean*                       state) XRLOADER_ABI_TRY {
@@ -946,7 +943,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateBoolean(
                 "VUID-xrGetActionStateBoolean-session-parameter",
                 "xrGetActionStateBoolean",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -955,7 +952,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateBoolean(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateFloat(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateFloat(
     XrSession                                   session,
     const XrActionStateGetInfo*                 getInfo,
     XrActionStateFloat*                         state) XRLOADER_ABI_TRY {
@@ -965,7 +962,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateFloat(
                 "VUID-xrGetActionStateFloat-session-parameter",
                 "xrGetActionStateFloat",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -974,7 +971,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateFloat(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateVector2f(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateVector2f(
     XrSession                                   session,
     const XrActionStateGetInfo*                 getInfo,
     XrActionStateVector2f*                      state) XRLOADER_ABI_TRY {
@@ -984,7 +981,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateVector2f(
                 "VUID-xrGetActionStateVector2f-session-parameter",
                 "xrGetActionStateVector2f",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -993,7 +990,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStateVector2f(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStatePose(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStatePose(
     XrSession                                   session,
     const XrActionStateGetInfo*                 getInfo,
     XrActionStatePose*                          state) XRLOADER_ABI_TRY {
@@ -1003,7 +1000,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStatePose(
                 "VUID-xrGetActionStatePose-session-parameter",
                 "xrGetActionStatePose",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1012,7 +1009,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetActionStatePose(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrSyncActions(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrSyncActions(
     XrSession                                   session,
     const XrActionsSyncInfo*                    syncInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -1021,7 +1018,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSyncActions(
                 "VUID-xrSyncActions-session-parameter",
                 "xrSyncActions",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1030,7 +1027,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSyncActions(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateBoundSourcesForAction(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateBoundSourcesForAction(
     XrSession                                   session,
     const XrBoundSourcesForActionEnumerateInfo* enumerateInfo,
     uint32_t                                    sourceCapacityInput,
@@ -1042,7 +1039,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateBoundSourcesForAction(
                 "VUID-xrEnumerateBoundSourcesForAction-session-parameter",
                 "xrEnumerateBoundSourcesForAction",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1051,7 +1048,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateBoundSourcesForAction(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrGetInputSourceLocalizedName(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetInputSourceLocalizedName(
     XrSession                                   session,
     const XrInputSourceLocalizedNameGetInfo*    getInfo,
     uint32_t                                    bufferCapacityInput,
@@ -1063,7 +1060,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetInputSourceLocalizedName(
                 "VUID-xrGetInputSourceLocalizedName-session-parameter",
                 "xrGetInputSourceLocalizedName",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1072,7 +1069,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetInputSourceLocalizedName(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
     XrSession                                   session,
     const XrHapticActionInfo*                   hapticActionInfo,
     const XrHapticBaseHeader*                   hapticFeedback) XRLOADER_ABI_TRY {
@@ -1082,7 +1079,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
                 "VUID-xrApplyHapticFeedback-session-parameter",
                 "xrApplyHapticFeedback",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1091,7 +1088,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
     XrSession                                   session,
     const XrHapticActionInfo*                   hapticActionInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_session_map.Get(session);
@@ -1100,7 +1097,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
                 "VUID-xrStopHapticFeedback-session-parameter",
                 "xrStopHapticFeedback",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1112,7 +1109,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_android_thread_settings extension commands
 #if defined(XR_USE_PLATFORM_ANDROID)
-XRAPI_ATTR XrResult XRAPI_CALL xrSetAndroidApplicationThreadKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetAndroidApplicationThreadKHR(
     XrSession                                   session,
     XrAndroidThreadTypeKHR                      threadType,
     uint32_t                                    threadId) XRLOADER_ABI_TRY {
@@ -1122,7 +1119,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetAndroidApplicationThreadKHR(
                 "VUID-xrSetAndroidApplicationThreadKHR-session-parameter",
                 "xrSetAndroidApplicationThreadKHR",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1142,7 +1139,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_android_surface_swapchain extension commands
 #if defined(XR_USE_PLATFORM_ANDROID)
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchainAndroidSurfaceKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchainAndroidSurfaceKHR(
     XrSession                                   session,
     const XrSwapchainCreateInfo*                info,
     XrSwapchain*                                swapchain,
@@ -1153,7 +1150,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSwapchainAndroidSurfaceKHR(
                 "VUID-xrCreateSwapchainAndroidSurfaceKHR-session-parameter",
                 "xrCreateSwapchainAndroidSurfaceKHR",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1175,7 +1172,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_opengl_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_OPENGL)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLGraphicsRequirementsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLGraphicsRequirementsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrGraphicsRequirementsOpenGLKHR*            graphicsRequirements) XRLOADER_ABI_TRY {
@@ -1185,7 +1182,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLGraphicsRequirementsKHR(
                 "VUID-xrGetOpenGLGraphicsRequirementsKHR-instance-parameter",
                 "xrGetOpenGLGraphicsRequirementsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1205,7 +1202,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_opengl_es_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLESGraphicsRequirementsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLESGraphicsRequirementsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrGraphicsRequirementsOpenGLESKHR*          graphicsRequirements) XRLOADER_ABI_TRY {
@@ -1215,7 +1212,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetOpenGLESGraphicsRequirementsKHR(
                 "VUID-xrGetOpenGLESGraphicsRequirementsKHR-instance-parameter",
                 "xrGetOpenGLESGraphicsRequirementsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1235,7 +1232,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_vulkan_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanInstanceExtensionsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanInstanceExtensionsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     uint32_t                                    bufferCapacityInput,
@@ -1247,7 +1244,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanInstanceExtensionsKHR(
                 "VUID-xrGetVulkanInstanceExtensionsKHR-instance-parameter",
                 "xrGetVulkanInstanceExtensionsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1265,7 +1262,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanDeviceExtensionsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanDeviceExtensionsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     uint32_t                                    bufferCapacityInput,
@@ -1277,7 +1274,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanDeviceExtensionsKHR(
                 "VUID-xrGetVulkanDeviceExtensionsKHR-instance-parameter",
                 "xrGetVulkanDeviceExtensionsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1295,7 +1292,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsDeviceKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsDeviceKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     VkInstance                                  vkInstance,
@@ -1306,7 +1303,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsDeviceKHR(
                 "VUID-xrGetVulkanGraphicsDeviceKHR-instance-parameter",
                 "xrGetVulkanGraphicsDeviceKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1324,7 +1321,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirementsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirementsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrGraphicsRequirementsVulkanKHR*            graphicsRequirements) XRLOADER_ABI_TRY {
@@ -1334,7 +1331,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirementsKHR(
                 "VUID-xrGetVulkanGraphicsRequirementsKHR-instance-parameter",
                 "xrGetVulkanGraphicsRequirementsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1354,7 +1351,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_D3D11_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_D3D11)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrGraphicsRequirementsD3D11KHR*             graphicsRequirements) XRLOADER_ABI_TRY {
@@ -1364,7 +1361,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
                 "VUID-xrGetD3D11GraphicsRequirementsKHR-instance-parameter",
                 "xrGetD3D11GraphicsRequirementsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1384,7 +1381,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_D3D12_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_D3D12)
-XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D12GraphicsRequirementsKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D12GraphicsRequirementsKHR(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrGraphicsRequirementsD3D12KHR*             graphicsRequirements) XRLOADER_ABI_TRY {
@@ -1394,7 +1391,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D12GraphicsRequirementsKHR(
                 "VUID-xrGetD3D12GraphicsRequirementsKHR-instance-parameter",
                 "xrGetD3D12GraphicsRequirementsKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1413,7 +1410,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 
 // ---- XR_KHR_visibility_mask extension commands
-XRAPI_ATTR XrResult XRAPI_CALL xrGetVisibilityMaskKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrGetVisibilityMaskKHR(
     XrSession                                   session,
     XrViewConfigurationType                     viewConfigurationType,
     uint32_t                                    viewIndex,
@@ -1425,7 +1422,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVisibilityMaskKHR(
                 "VUID-xrGetVisibilityMaskKHR-session-parameter",
                 "xrGetVisibilityMaskKHR",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1444,7 +1441,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_win32_convert_performance_counter_time extension commands
 #if defined(XR_USE_PLATFORM_WIN32)
-XRAPI_ATTR XrResult XRAPI_CALL xrConvertWin32PerformanceCounterToTimeKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrConvertWin32PerformanceCounterToTimeKHR(
     XrInstance                                  instance,
     const LARGE_INTEGER*                        performanceCounter,
     XrTime*                                     time) XRLOADER_ABI_TRY {
@@ -1454,7 +1451,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertWin32PerformanceCounterToTimeKHR(
                 "VUID-xrConvertWin32PerformanceCounterToTimeKHR-instance-parameter",
                 "xrConvertWin32PerformanceCounterToTimeKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1472,7 +1469,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 #endif // defined(XR_USE_PLATFORM_WIN32)
 
 #if defined(XR_USE_PLATFORM_WIN32)
-XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToWin32PerformanceCounterKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToWin32PerformanceCounterKHR(
     XrInstance                                  instance,
     XrTime                                      time,
     LARGE_INTEGER*                              performanceCounter) XRLOADER_ABI_TRY {
@@ -1482,7 +1479,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToWin32PerformanceCounterKHR(
                 "VUID-xrConvertTimeToWin32PerformanceCounterKHR-instance-parameter",
                 "xrConvertTimeToWin32PerformanceCounterKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1502,7 +1499,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 // ---- XR_KHR_convert_timespec_time extension commands
 #if defined(XR_USE_TIMESPEC)
-XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimespecTimeToTimeKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimespecTimeToTimeKHR(
     XrInstance                                  instance,
     const struct timespec*                      timespecTime,
     XrTime*                                     time) XRLOADER_ABI_TRY {
@@ -1512,7 +1509,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimespecTimeToTimeKHR(
                 "VUID-xrConvertTimespecTimeToTimeKHR-instance-parameter",
                 "xrConvertTimespecTimeToTimeKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1530,7 +1527,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 #endif // defined(XR_USE_TIMESPEC)
 
 #if defined(XR_USE_TIMESPEC)
-XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToTimespecTimeKHR(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToTimespecTimeKHR(
     XrInstance                                  instance,
     XrTime                                      time,
     struct timespec*                            timespecTime) XRLOADER_ABI_TRY {
@@ -1540,7 +1537,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrConvertTimeToTimespecTimeKHR(
                 "VUID-xrConvertTimeToTimespecTimeKHR-instance-parameter",
                 "xrConvertTimeToTimespecTimeKHR",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1559,7 +1556,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 
 // ---- XR_EXT_performance_settings extension commands
-XRAPI_ATTR XrResult XRAPI_CALL xrPerfSettingsSetPerformanceLevelEXT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrPerfSettingsSetPerformanceLevelEXT(
     XrSession                                   session,
     XrPerfSettingsDomainEXT                     domain,
     XrPerfSettingsLevelEXT                      level) XRLOADER_ABI_TRY {
@@ -1569,7 +1566,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrPerfSettingsSetPerformanceLevelEXT(
                 "VUID-xrPerfSettingsSetPerformanceLevelEXT-session-parameter",
                 "xrPerfSettingsSetPerformanceLevelEXT",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1587,7 +1584,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 
 // ---- XR_EXT_thermal_query extension commands
-XRAPI_ATTR XrResult XRAPI_CALL xrThermalGetTemperatureTrendEXT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrThermalGetTemperatureTrendEXT(
     XrSession                                   session,
     XrPerfSettingsDomainEXT                     domain,
     XrPerfSettingsNotificationLevelEXT*         notificationLevel,
@@ -1599,7 +1596,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrThermalGetTemperatureTrendEXT(
                 "VUID-xrThermalGetTemperatureTrendEXT-session-parameter",
                 "xrThermalGetTemperatureTrendEXT",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1617,7 +1614,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 
 // ---- XR_EXT_debug_utils extension commands
-XRAPI_ATTR XrResult XRAPI_CALL xrSetDebugUtilsObjectNameEXT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetDebugUtilsObjectNameEXT(
     XrInstance                                  instance,
     const XrDebugUtilsObjectNameInfoEXT*        nameInfo) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_instance_map.Get(instance);
@@ -1626,7 +1623,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetDebugUtilsObjectNameEXT(
                 "VUID-xrSetDebugUtilsObjectNameEXT-instance-parameter",
                 "xrSetDebugUtilsObjectNameEXT",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1642,7 +1639,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrSetDebugUtilsObjectNameEXT(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult                                    XRAPI_CALL xrSubmitDebugUtilsMessageEXT(
+extern "C" XRAPI_ATTR XrResult                                    XRAPI_CALL xrSubmitDebugUtilsMessageEXT(
     XrInstance                                  instance,
     XrDebugUtilsMessageSeverityFlagsEXT         messageSeverity,
     XrDebugUtilsMessageTypeFlagsEXT             messageTypes,
@@ -1653,7 +1650,7 @@ XRAPI_ATTR XrResult                                    XRAPI_CALL xrSubmitDebugU
                 "VUID-xrSubmitDebugUtilsMessageEXT-instance-parameter",
                 "xrSubmitDebugUtilsMessageEXT",
                 "instance is not a valid XrInstance",
-                {XrLoaderLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
+                {XrSdkLogObjectInfo{instance, XR_OBJECT_TYPE_INSTANCE}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1671,7 +1668,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 
 // ---- XR_MSFT_spatial_anchor extension commands
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorMSFT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorMSFT(
     XrSession                                   session,
     const XrSpatialAnchorCreateInfoMSFT*        createInfo,
     XrSpatialAnchorMSFT*                        anchor) XRLOADER_ABI_TRY {
@@ -1681,7 +1678,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorMSFT(
                 "VUID-xrCreateSpatialAnchorMSFT-session-parameter",
                 "xrCreateSpatialAnchorMSFT",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1707,7 +1704,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorMSFT(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorSpaceMSFT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorSpaceMSFT(
     XrSession                                   session,
     const XrSpatialAnchorSpaceCreateInfoMSFT*   createInfo,
     XrSpace*                                    space) XRLOADER_ABI_TRY {
@@ -1717,7 +1714,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorSpaceMSFT(
                 "VUID-xrCreateSpatialAnchorSpaceMSFT-session-parameter",
                 "xrCreateSpatialAnchorSpaceMSFT",
                 "session is not a valid XrSession",
-                {XrLoaderLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1743,7 +1740,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorSpaceMSFT(
 XRLOADER_ABI_CATCH_FALLBACK
 
 
-XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialAnchorMSFT(
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialAnchorMSFT(
     XrSpatialAnchorMSFT                         anchor) XRLOADER_ABI_TRY {
     LoaderInstance *loader_instance = g_spatialanchormsft_map.Get(anchor);
     // Destroy the mapping entry for this item if it was valid.
@@ -1755,7 +1752,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialAnchorMSFT(
                 "VUID-xrDestroySpatialAnchorMSFT-anchor-parameter",
                 "xrDestroySpatialAnchorMSFT",
                 "anchor is not a valid XrSpatialAnchorMSFT",
-                {XrLoaderLogObjectInfo{anchor, XR_OBJECT_TYPE_SPATIAL_ANCHOR_MSFT}});
+                {XrSdkLogObjectInfo{anchor, XR_OBJECT_TYPE_SPATIAL_ANCHOR_MSFT}});
         return XR_ERROR_HANDLE_INVALID;
     }
     const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
@@ -1769,6 +1766,144 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialAnchorMSFT(
 
     result = dispatch_table->DestroySpatialAnchorMSFT(anchor);
     return result;
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+
+
+// ---- XR_EXT_conformance_automation extension commands
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetInputDeviceActiveEXT(
+    XrSession                                   session,
+    XrPath                                      interactionProfile,
+    XrPath                                      topLevelPath,
+    XrBool32                                    isActive) XRLOADER_ABI_TRY {
+    LoaderInstance *loader_instance = g_session_map.Get(session);
+    if (nullptr == loader_instance) {
+            LoaderLogger::LogValidationErrorMessage(
+                "VUID-xrSetInputDeviceActiveEXT-session-parameter",
+                "xrSetInputDeviceActiveEXT",
+                "session is not a valid XrSession",
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+        return XR_ERROR_HANDLE_INVALID;
+    }
+    const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
+    if (!loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+        LoaderLogger::LogValidationErrorMessage("VUID-xrSetInputDeviceActiveEXT-extension-notenabled",
+                                                "xrSetInputDeviceActiveEXT",
+                                                "The XR_EXT_conformance_automation extension has not been enabled prior to calling xrSetInputDeviceActiveEXT");
+        return XR_ERROR_FUNCTION_UNSUPPORTED;
+    }
+
+    return dispatch_table->SetInputDeviceActiveEXT(session, interactionProfile, topLevelPath, isActive);
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetInputDeviceStateBoolEXT(
+    XrSession                                   session,
+    XrPath                                      topLevelPath,
+    XrPath                                      inputSourcePath,
+    XrBool32                                    state) XRLOADER_ABI_TRY {
+    LoaderInstance *loader_instance = g_session_map.Get(session);
+    if (nullptr == loader_instance) {
+            LoaderLogger::LogValidationErrorMessage(
+                "VUID-xrSetInputDeviceStateBoolEXT-session-parameter",
+                "xrSetInputDeviceStateBoolEXT",
+                "session is not a valid XrSession",
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+        return XR_ERROR_HANDLE_INVALID;
+    }
+    const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
+    if (!loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+        LoaderLogger::LogValidationErrorMessage("VUID-xrSetInputDeviceStateBoolEXT-extension-notenabled",
+                                                "xrSetInputDeviceStateBoolEXT",
+                                                "The XR_EXT_conformance_automation extension has not been enabled prior to calling xrSetInputDeviceStateBoolEXT");
+        return XR_ERROR_FUNCTION_UNSUPPORTED;
+    }
+
+    return dispatch_table->SetInputDeviceStateBoolEXT(session, topLevelPath, inputSourcePath, state);
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetInputDeviceStateFloatEXT(
+    XrSession                                   session,
+    XrPath                                      topLevelPath,
+    XrPath                                      inputSourcePath,
+    float                                       state) XRLOADER_ABI_TRY {
+    LoaderInstance *loader_instance = g_session_map.Get(session);
+    if (nullptr == loader_instance) {
+            LoaderLogger::LogValidationErrorMessage(
+                "VUID-xrSetInputDeviceStateFloatEXT-session-parameter",
+                "xrSetInputDeviceStateFloatEXT",
+                "session is not a valid XrSession",
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+        return XR_ERROR_HANDLE_INVALID;
+    }
+    const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
+    if (!loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+        LoaderLogger::LogValidationErrorMessage("VUID-xrSetInputDeviceStateFloatEXT-extension-notenabled",
+                                                "xrSetInputDeviceStateFloatEXT",
+                                                "The XR_EXT_conformance_automation extension has not been enabled prior to calling xrSetInputDeviceStateFloatEXT");
+        return XR_ERROR_FUNCTION_UNSUPPORTED;
+    }
+
+    return dispatch_table->SetInputDeviceStateFloatEXT(session, topLevelPath, inputSourcePath, state);
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetInputDeviceStateVector2fEXT(
+    XrSession                                   session,
+    XrPath                                      topLevelPath,
+    XrPath                                      inputSourcePath,
+    XrVector2f                                  state) XRLOADER_ABI_TRY {
+    LoaderInstance *loader_instance = g_session_map.Get(session);
+    if (nullptr == loader_instance) {
+            LoaderLogger::LogValidationErrorMessage(
+                "VUID-xrSetInputDeviceStateVector2fEXT-session-parameter",
+                "xrSetInputDeviceStateVector2fEXT",
+                "session is not a valid XrSession",
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+        return XR_ERROR_HANDLE_INVALID;
+    }
+    const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
+    if (!loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+        LoaderLogger::LogValidationErrorMessage("VUID-xrSetInputDeviceStateVector2fEXT-extension-notenabled",
+                                                "xrSetInputDeviceStateVector2fEXT",
+                                                "The XR_EXT_conformance_automation extension has not been enabled prior to calling xrSetInputDeviceStateVector2fEXT");
+        return XR_ERROR_FUNCTION_UNSUPPORTED;
+    }
+
+    return dispatch_table->SetInputDeviceStateVector2fEXT(session, topLevelPath, inputSourcePath, state);
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
+
+extern "C" XRAPI_ATTR XrResult XRAPI_CALL xrSetInputDeviceLocationEXT(
+    XrSession                                   session,
+    XrPath                                      topLevelPath,
+    XrPath                                      inputSourcePath,
+    XrSpace                                     space,
+    XrPosef                                     pose) XRLOADER_ABI_TRY {
+    LoaderInstance *loader_instance = g_session_map.Get(session);
+    if (nullptr == loader_instance) {
+            LoaderLogger::LogValidationErrorMessage(
+                "VUID-xrSetInputDeviceLocationEXT-session-parameter",
+                "xrSetInputDeviceLocationEXT",
+                "session is not a valid XrSession",
+                {XrSdkLogObjectInfo{session, XR_OBJECT_TYPE_SESSION}});
+        return XR_ERROR_HANDLE_INVALID;
+    }
+    const std::unique_ptr<XrGeneratedDispatchTable>& dispatch_table = loader_instance->DispatchTable();
+    if (!loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+        LoaderLogger::LogValidationErrorMessage("VUID-xrSetInputDeviceLocationEXT-extension-notenabled",
+                                                "xrSetInputDeviceLocationEXT",
+                                                "The XR_EXT_conformance_automation extension has not been enabled prior to calling xrSetInputDeviceLocationEXT");
+        return XR_ERROR_FUNCTION_UNSUPPORTED;
+    }
+
+    return dispatch_table->SetInputDeviceLocationEXT(session, topLevelPath, inputSourcePath, space, pose);
 }
 XRLOADER_ABI_CATCH_FALLBACK
 
@@ -2103,6 +2238,29 @@ LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProcAddr(XrInstance in
             if (loader_instance->ExtensionIsEnabled("XR_MSFT_spatial_anchor")) {
                 *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->DestroySpatialAnchorMSFT);
             }
+
+        // ---- XR_EXT_conformance_automation extension commands
+
+        } else if (func_name == "SetInputDeviceActiveEXT") {
+            if (loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+                *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->SetInputDeviceActiveEXT);
+            }
+        } else if (func_name == "SetInputDeviceStateBoolEXT") {
+            if (loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+                *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->SetInputDeviceStateBoolEXT);
+            }
+        } else if (func_name == "SetInputDeviceStateFloatEXT") {
+            if (loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+                *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->SetInputDeviceStateFloatEXT);
+            }
+        } else if (func_name == "SetInputDeviceStateVector2fEXT") {
+            if (loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+                *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->SetInputDeviceStateVector2fEXT);
+            }
+        } else if (func_name == "SetInputDeviceLocationEXT") {
+            if (loader_instance->ExtensionIsEnabled("XR_EXT_conformance_automation")) {
+                *function = reinterpret_cast<PFN_xrVoidFunction>(loader_instance->DispatchTable()->SetInputDeviceLocationEXT);
+            }
         }
     }
     if (*function == nullptr) {
@@ -2289,6 +2447,13 @@ void LoaderGenInitInstanceDispatchTable(XrInstance instance, std::unique_ptr<XrG
     LoaderXrTermGetInstanceProcAddr(instance, "xrCreateSpatialAnchorMSFT", reinterpret_cast<PFN_xrVoidFunction*>(&table->CreateSpatialAnchorMSFT));
     LoaderXrTermGetInstanceProcAddr(instance, "xrCreateSpatialAnchorSpaceMSFT", reinterpret_cast<PFN_xrVoidFunction*>(&table->CreateSpatialAnchorSpaceMSFT));
     LoaderXrTermGetInstanceProcAddr(instance, "xrDestroySpatialAnchorMSFT", reinterpret_cast<PFN_xrVoidFunction*>(&table->DestroySpatialAnchorMSFT));
+
+    // ---- XR_EXT_conformance_automation extension commands
+    LoaderXrTermGetInstanceProcAddr(instance, "xrSetInputDeviceActiveEXT", reinterpret_cast<PFN_xrVoidFunction*>(&table->SetInputDeviceActiveEXT));
+    LoaderXrTermGetInstanceProcAddr(instance, "xrSetInputDeviceStateBoolEXT", reinterpret_cast<PFN_xrVoidFunction*>(&table->SetInputDeviceStateBoolEXT));
+    LoaderXrTermGetInstanceProcAddr(instance, "xrSetInputDeviceStateFloatEXT", reinterpret_cast<PFN_xrVoidFunction*>(&table->SetInputDeviceStateFloatEXT));
+    LoaderXrTermGetInstanceProcAddr(instance, "xrSetInputDeviceStateVector2fEXT", reinterpret_cast<PFN_xrVoidFunction*>(&table->SetInputDeviceStateVector2fEXT));
+    LoaderXrTermGetInstanceProcAddr(instance, "xrSetInputDeviceLocationEXT", reinterpret_cast<PFN_xrVoidFunction*>(&table->SetInputDeviceLocationEXT));
 }
 
 // Instance Update Dispatch Table with an API Layer Interface
@@ -2296,219 +2461,219 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
     PFN_xrVoidFunction cur_func_ptr;
 
     // ---- Core 1_0 commands
-    table->GetInstanceProcAddr = _get_instant_proc_addr;
-    _get_instant_proc_addr(instance, "xrCreateInstance", &cur_func_ptr);
+    table->GetInstanceProcAddr = _get_instance_proc_addr;
+    _get_instance_proc_addr(instance, "xrCreateInstance", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateInstance = reinterpret_cast<PFN_xrCreateInstance>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroyInstance", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroyInstance", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroyInstance = reinterpret_cast<PFN_xrDestroyInstance>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetInstanceProperties", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetInstanceProperties", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetInstanceProperties = reinterpret_cast<PFN_xrGetInstanceProperties>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrPollEvent", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrPollEvent", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->PollEvent = reinterpret_cast<PFN_xrPollEvent>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrResultToString", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrResultToString", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ResultToString = reinterpret_cast<PFN_xrResultToString>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrStructureTypeToString", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrStructureTypeToString", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->StructureTypeToString = reinterpret_cast<PFN_xrStructureTypeToString>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetSystem", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetSystem", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetSystem = reinterpret_cast<PFN_xrGetSystem>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetSystemProperties", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetSystemProperties", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetSystemProperties = reinterpret_cast<PFN_xrGetSystemProperties>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateEnvironmentBlendModes", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateEnvironmentBlendModes", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateEnvironmentBlendModes = reinterpret_cast<PFN_xrEnumerateEnvironmentBlendModes>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateSession", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateSession", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateSession = reinterpret_cast<PFN_xrCreateSession>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroySession", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroySession", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroySession = reinterpret_cast<PFN_xrDestroySession>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateReferenceSpaces", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateReferenceSpaces", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateReferenceSpaces = reinterpret_cast<PFN_xrEnumerateReferenceSpaces>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateReferenceSpace", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateReferenceSpace", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateReferenceSpace = reinterpret_cast<PFN_xrCreateReferenceSpace>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetReferenceSpaceBoundsRect", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetReferenceSpaceBoundsRect", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetReferenceSpaceBoundsRect = reinterpret_cast<PFN_xrGetReferenceSpaceBoundsRect>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateActionSpace", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateActionSpace", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateActionSpace = reinterpret_cast<PFN_xrCreateActionSpace>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrLocateSpace", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrLocateSpace", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->LocateSpace = reinterpret_cast<PFN_xrLocateSpace>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroySpace", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroySpace", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroySpace = reinterpret_cast<PFN_xrDestroySpace>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateViewConfigurations", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateViewConfigurations", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateViewConfigurations = reinterpret_cast<PFN_xrEnumerateViewConfigurations>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetViewConfigurationProperties", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetViewConfigurationProperties", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetViewConfigurationProperties = reinterpret_cast<PFN_xrGetViewConfigurationProperties>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateViewConfigurationViews", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateViewConfigurationViews", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateViewConfigurationViews = reinterpret_cast<PFN_xrEnumerateViewConfigurationViews>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateSwapchainFormats", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateSwapchainFormats", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateSwapchainFormats = reinterpret_cast<PFN_xrEnumerateSwapchainFormats>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateSwapchain", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateSwapchain", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateSwapchain = reinterpret_cast<PFN_xrCreateSwapchain>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroySwapchain", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroySwapchain", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroySwapchain = reinterpret_cast<PFN_xrDestroySwapchain>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateSwapchainImages", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateSwapchainImages", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateSwapchainImages = reinterpret_cast<PFN_xrEnumerateSwapchainImages>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrAcquireSwapchainImage", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrAcquireSwapchainImage", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->AcquireSwapchainImage = reinterpret_cast<PFN_xrAcquireSwapchainImage>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrWaitSwapchainImage", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrWaitSwapchainImage", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->WaitSwapchainImage = reinterpret_cast<PFN_xrWaitSwapchainImage>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrReleaseSwapchainImage", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrReleaseSwapchainImage", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ReleaseSwapchainImage = reinterpret_cast<PFN_xrReleaseSwapchainImage>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrBeginSession", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrBeginSession", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->BeginSession = reinterpret_cast<PFN_xrBeginSession>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEndSession", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEndSession", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EndSession = reinterpret_cast<PFN_xrEndSession>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrRequestExitSession", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrRequestExitSession", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->RequestExitSession = reinterpret_cast<PFN_xrRequestExitSession>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrWaitFrame", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrWaitFrame", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->WaitFrame = reinterpret_cast<PFN_xrWaitFrame>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrBeginFrame", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrBeginFrame", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->BeginFrame = reinterpret_cast<PFN_xrBeginFrame>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEndFrame", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEndFrame", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EndFrame = reinterpret_cast<PFN_xrEndFrame>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrLocateViews", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrLocateViews", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->LocateViews = reinterpret_cast<PFN_xrLocateViews>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrStringToPath", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrStringToPath", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->StringToPath = reinterpret_cast<PFN_xrStringToPath>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrPathToString", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrPathToString", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->PathToString = reinterpret_cast<PFN_xrPathToString>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateActionSet", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateActionSet", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateActionSet = reinterpret_cast<PFN_xrCreateActionSet>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroyActionSet", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroyActionSet", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroyActionSet = reinterpret_cast<PFN_xrDestroyActionSet>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateAction", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateAction", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateAction = reinterpret_cast<PFN_xrCreateAction>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroyAction", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroyAction", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroyAction = reinterpret_cast<PFN_xrDestroyAction>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSuggestInteractionProfileBindings", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSuggestInteractionProfileBindings", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SuggestInteractionProfileBindings = reinterpret_cast<PFN_xrSuggestInteractionProfileBindings>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrAttachSessionActionSets", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrAttachSessionActionSets", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->AttachSessionActionSets = reinterpret_cast<PFN_xrAttachSessionActionSets>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetCurrentInteractionProfile", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetCurrentInteractionProfile", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetCurrentInteractionProfile = reinterpret_cast<PFN_xrGetCurrentInteractionProfile>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetActionStateBoolean", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetActionStateBoolean", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetActionStateBoolean = reinterpret_cast<PFN_xrGetActionStateBoolean>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetActionStateFloat", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetActionStateFloat", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetActionStateFloat = reinterpret_cast<PFN_xrGetActionStateFloat>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetActionStateVector2f", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetActionStateVector2f", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetActionStateVector2f = reinterpret_cast<PFN_xrGetActionStateVector2f>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetActionStatePose", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetActionStatePose", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetActionStatePose = reinterpret_cast<PFN_xrGetActionStatePose>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSyncActions", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSyncActions", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SyncActions = reinterpret_cast<PFN_xrSyncActions>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrEnumerateBoundSourcesForAction", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrEnumerateBoundSourcesForAction", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->EnumerateBoundSourcesForAction = reinterpret_cast<PFN_xrEnumerateBoundSourcesForAction>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrGetInputSourceLocalizedName", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetInputSourceLocalizedName", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetInputSourceLocalizedName = reinterpret_cast<PFN_xrGetInputSourceLocalizedName>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrApplyHapticFeedback", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrApplyHapticFeedback", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ApplyHapticFeedback = reinterpret_cast<PFN_xrApplyHapticFeedback>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrStopHapticFeedback", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrStopHapticFeedback", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->StopHapticFeedback = reinterpret_cast<PFN_xrStopHapticFeedback>(cur_func_ptr);
     }
 
     // ---- XR_KHR_android_thread_settings extension commands
 #if defined(XR_USE_PLATFORM_ANDROID)
-    _get_instant_proc_addr(instance, "xrSetAndroidApplicationThreadKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSetAndroidApplicationThreadKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SetAndroidApplicationThreadKHR = reinterpret_cast<PFN_xrSetAndroidApplicationThreadKHR>(cur_func_ptr);
     }
@@ -2516,7 +2681,7 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_android_surface_swapchain extension commands
 #if defined(XR_USE_PLATFORM_ANDROID)
-    _get_instant_proc_addr(instance, "xrCreateSwapchainAndroidSurfaceKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateSwapchainAndroidSurfaceKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateSwapchainAndroidSurfaceKHR = reinterpret_cast<PFN_xrCreateSwapchainAndroidSurfaceKHR>(cur_func_ptr);
     }
@@ -2524,7 +2689,7 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_opengl_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_OPENGL)
-    _get_instant_proc_addr(instance, "xrGetOpenGLGraphicsRequirementsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetOpenGLGraphicsRequirementsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetOpenGLGraphicsRequirementsKHR = reinterpret_cast<PFN_xrGetOpenGLGraphicsRequirementsKHR>(cur_func_ptr);
     }
@@ -2532,7 +2697,7 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_opengl_es_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
-    _get_instant_proc_addr(instance, "xrGetOpenGLESGraphicsRequirementsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetOpenGLESGraphicsRequirementsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetOpenGLESGraphicsRequirementsKHR = reinterpret_cast<PFN_xrGetOpenGLESGraphicsRequirementsKHR>(cur_func_ptr);
     }
@@ -2540,25 +2705,25 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_vulkan_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-    _get_instant_proc_addr(instance, "xrGetVulkanInstanceExtensionsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetVulkanInstanceExtensionsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetVulkanInstanceExtensionsKHR = reinterpret_cast<PFN_xrGetVulkanInstanceExtensionsKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-    _get_instant_proc_addr(instance, "xrGetVulkanDeviceExtensionsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetVulkanDeviceExtensionsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetVulkanDeviceExtensionsKHR = reinterpret_cast<PFN_xrGetVulkanDeviceExtensionsKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-    _get_instant_proc_addr(instance, "xrGetVulkanGraphicsDeviceKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetVulkanGraphicsDeviceKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetVulkanGraphicsDeviceKHR = reinterpret_cast<PFN_xrGetVulkanGraphicsDeviceKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_GRAPHICS_API_VULKAN)
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
-    _get_instant_proc_addr(instance, "xrGetVulkanGraphicsRequirementsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetVulkanGraphicsRequirementsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetVulkanGraphicsRequirementsKHR = reinterpret_cast<PFN_xrGetVulkanGraphicsRequirementsKHR>(cur_func_ptr);
     }
@@ -2566,7 +2731,7 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_D3D11_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_D3D11)
-    _get_instant_proc_addr(instance, "xrGetD3D11GraphicsRequirementsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetD3D11GraphicsRequirementsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetD3D11GraphicsRequirementsKHR = reinterpret_cast<PFN_xrGetD3D11GraphicsRequirementsKHR>(cur_func_ptr);
     }
@@ -2574,27 +2739,27 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_D3D12_enable extension commands
 #if defined(XR_USE_GRAPHICS_API_D3D12)
-    _get_instant_proc_addr(instance, "xrGetD3D12GraphicsRequirementsKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetD3D12GraphicsRequirementsKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetD3D12GraphicsRequirementsKHR = reinterpret_cast<PFN_xrGetD3D12GraphicsRequirementsKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_GRAPHICS_API_D3D12)
 
     // ---- XR_KHR_visibility_mask extension commands
-    _get_instant_proc_addr(instance, "xrGetVisibilityMaskKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrGetVisibilityMaskKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->GetVisibilityMaskKHR = reinterpret_cast<PFN_xrGetVisibilityMaskKHR>(cur_func_ptr);
     }
 
     // ---- XR_KHR_win32_convert_performance_counter_time extension commands
 #if defined(XR_USE_PLATFORM_WIN32)
-    _get_instant_proc_addr(instance, "xrConvertWin32PerformanceCounterToTimeKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrConvertWin32PerformanceCounterToTimeKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ConvertWin32PerformanceCounterToTimeKHR = reinterpret_cast<PFN_xrConvertWin32PerformanceCounterToTimeKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_PLATFORM_WIN32)
 #if defined(XR_USE_PLATFORM_WIN32)
-    _get_instant_proc_addr(instance, "xrConvertTimeToWin32PerformanceCounterKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrConvertTimeToWin32PerformanceCounterKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ConvertTimeToWin32PerformanceCounterKHR = reinterpret_cast<PFN_xrConvertTimeToWin32PerformanceCounterKHR>(cur_func_ptr);
     }
@@ -2602,75 +2767,94 @@ void ApiLayerInterface::GenUpdateInstanceDispatchTable(XrInstance instance, std:
 
     // ---- XR_KHR_convert_timespec_time extension commands
 #if defined(XR_USE_TIMESPEC)
-    _get_instant_proc_addr(instance, "xrConvertTimespecTimeToTimeKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrConvertTimespecTimeToTimeKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ConvertTimespecTimeToTimeKHR = reinterpret_cast<PFN_xrConvertTimespecTimeToTimeKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_TIMESPEC)
 #if defined(XR_USE_TIMESPEC)
-    _get_instant_proc_addr(instance, "xrConvertTimeToTimespecTimeKHR", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrConvertTimeToTimespecTimeKHR", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ConvertTimeToTimespecTimeKHR = reinterpret_cast<PFN_xrConvertTimeToTimespecTimeKHR>(cur_func_ptr);
     }
 #endif // defined(XR_USE_TIMESPEC)
 
     // ---- XR_EXT_performance_settings extension commands
-    _get_instant_proc_addr(instance, "xrPerfSettingsSetPerformanceLevelEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrPerfSettingsSetPerformanceLevelEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->PerfSettingsSetPerformanceLevelEXT = reinterpret_cast<PFN_xrPerfSettingsSetPerformanceLevelEXT>(cur_func_ptr);
     }
 
     // ---- XR_EXT_thermal_query extension commands
-    _get_instant_proc_addr(instance, "xrThermalGetTemperatureTrendEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrThermalGetTemperatureTrendEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->ThermalGetTemperatureTrendEXT = reinterpret_cast<PFN_xrThermalGetTemperatureTrendEXT>(cur_func_ptr);
     }
 
     // ---- XR_EXT_debug_utils extension commands
-    _get_instant_proc_addr(instance, "xrSetDebugUtilsObjectNameEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSetDebugUtilsObjectNameEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_xrSetDebugUtilsObjectNameEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateDebugUtilsMessengerEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateDebugUtilsMessengerEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_xrCreateDebugUtilsMessengerEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroyDebugUtilsMessengerEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroyDebugUtilsMessengerEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_xrDestroyDebugUtilsMessengerEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSubmitDebugUtilsMessageEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSubmitDebugUtilsMessageEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SubmitDebugUtilsMessageEXT = reinterpret_cast<PFN_xrSubmitDebugUtilsMessageEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSessionBeginDebugUtilsLabelRegionEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSessionBeginDebugUtilsLabelRegionEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SessionBeginDebugUtilsLabelRegionEXT = reinterpret_cast<PFN_xrSessionBeginDebugUtilsLabelRegionEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSessionEndDebugUtilsLabelRegionEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSessionEndDebugUtilsLabelRegionEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SessionEndDebugUtilsLabelRegionEXT = reinterpret_cast<PFN_xrSessionEndDebugUtilsLabelRegionEXT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrSessionInsertDebugUtilsLabelEXT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrSessionInsertDebugUtilsLabelEXT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->SessionInsertDebugUtilsLabelEXT = reinterpret_cast<PFN_xrSessionInsertDebugUtilsLabelEXT>(cur_func_ptr);
     }
 
     // ---- XR_MSFT_spatial_anchor extension commands
-    _get_instant_proc_addr(instance, "xrCreateSpatialAnchorMSFT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateSpatialAnchorMSFT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateSpatialAnchorMSFT = reinterpret_cast<PFN_xrCreateSpatialAnchorMSFT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrCreateSpatialAnchorSpaceMSFT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrCreateSpatialAnchorSpaceMSFT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->CreateSpatialAnchorSpaceMSFT = reinterpret_cast<PFN_xrCreateSpatialAnchorSpaceMSFT>(cur_func_ptr);
     }
-    _get_instant_proc_addr(instance, "xrDestroySpatialAnchorMSFT", &cur_func_ptr);
+    _get_instance_proc_addr(instance, "xrDestroySpatialAnchorMSFT", &cur_func_ptr);
     if (nullptr != cur_func_ptr) {
         table->DestroySpatialAnchorMSFT = reinterpret_cast<PFN_xrDestroySpatialAnchorMSFT>(cur_func_ptr);
     }
+
+    // ---- XR_EXT_conformance_automation extension commands
+    _get_instance_proc_addr(instance, "xrSetInputDeviceActiveEXT", &cur_func_ptr);
+    if (nullptr != cur_func_ptr) {
+        table->SetInputDeviceActiveEXT = reinterpret_cast<PFN_xrSetInputDeviceActiveEXT>(cur_func_ptr);
+    }
+    _get_instance_proc_addr(instance, "xrSetInputDeviceStateBoolEXT", &cur_func_ptr);
+    if (nullptr != cur_func_ptr) {
+        table->SetInputDeviceStateBoolEXT = reinterpret_cast<PFN_xrSetInputDeviceStateBoolEXT>(cur_func_ptr);
+    }
+    _get_instance_proc_addr(instance, "xrSetInputDeviceStateFloatEXT", &cur_func_ptr);
+    if (nullptr != cur_func_ptr) {
+        table->SetInputDeviceStateFloatEXT = reinterpret_cast<PFN_xrSetInputDeviceStateFloatEXT>(cur_func_ptr);
+    }
+    _get_instance_proc_addr(instance, "xrSetInputDeviceStateVector2fEXT", &cur_func_ptr);
+    if (nullptr != cur_func_ptr) {
+        table->SetInputDeviceStateVector2fEXT = reinterpret_cast<PFN_xrSetInputDeviceStateVector2fEXT>(cur_func_ptr);
+    }
+    _get_instance_proc_addr(instance, "xrSetInputDeviceLocationEXT", &cur_func_ptr);
+    if (nullptr != cur_func_ptr) {
+        table->SetInputDeviceLocationEXT = reinterpret_cast<PFN_xrSetInputDeviceLocationEXT>(cur_func_ptr);
+    }
 }
-#ifdef __cplusplus
-} // extern "C"
-#endif
 

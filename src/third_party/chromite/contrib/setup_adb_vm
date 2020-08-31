@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+""" Set up ADB auth with ARCVM.
+
+A test ADB key is pre-installed in ARCVM on test image (go/tast-adb-key).
+This script installs the private ADB key (paired with the pre-installed key)
+to local ADB server.
+"""
+
+import os
+import subprocess
+import sys
+
+TRADEFED_PATH = '../../src/third_party/autotest/files/server/cros/tradefed/'
+
+def main(argv):
+  # We import tradefed_constants.py and use private ADB key in it.
+  sys.path.append(os.path.join(os.path.dirname(__file__), TRADEFED_PATH))
+  import tradefed_constants
+
+  print("INFO: Installing private ADB key to ~/.android/arcvm_adbkey")
+  adbkey_path = os.path.expanduser('~/.android/arcvm_adbkey')
+  with open(adbkey_path, 'w', encoding='utf-8') as f:
+    f.write(tradefed_constants.PRIVATE_KEY)
+
+  print("INFO: Restarting ADB server with the new key path.")
+  os.environ['ADB_VENDOR_KEYS'] = adbkey_path
+  subprocess.call(['adb', 'kill-server'])
+  subprocess.call(['adb', 'start-server'])
+
+  print("INFO: ADB set up complete. You are ready to run adb connect.")
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

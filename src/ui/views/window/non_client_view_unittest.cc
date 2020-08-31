@@ -4,6 +4,8 @@
 
 #include "ui/views/window/non_client_view.h"
 
+#include <memory>
+
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -11,8 +13,6 @@
 
 namespace views {
 namespace test {
-
-using NonClientViewTest = ViewsTestBase;
 
 namespace {
 
@@ -58,18 +58,24 @@ class TestWidgetDelegate : public WidgetDelegateView {
   }
 };
 
+class NonClientViewTest : public ViewsTestBase {
+ public:
+  Widget::InitParams CreateParams(Widget::InitParams::Type type) override {
+    Widget::InitParams params = ViewsTestBase::CreateParams(type);
+    params.delegate = new TestWidgetDelegate;
+    return params;
+  }
+};
+
 }  // namespace
 
 // Ensure Layout() is not called excessively on a ClientView when Widget bounds
 // are changing.
 TEST_F(NonClientViewTest, OnlyLayoutChildViewsOnce) {
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new TestWidgetDelegate;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  views::Widget widget;
-  widget.Init(std::move(params));
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
 
-  NonClientView* non_client_view = widget.non_client_view();
+  NonClientView* non_client_view = widget->non_client_view();
   non_client_view->Layout();
 
   auto* frame_view =
@@ -86,7 +92,7 @@ TEST_F(NonClientViewTest, OnlyLayoutChildViewsOnce) {
   EXPECT_EQ(client_view->layout_count(), initial_client_view_layouts);
 
   // Ensure changing bounds triggers a (single) layout.
-  widget.SetBounds(gfx::Rect(0, 0, 161, 100));
+  widget->SetBounds(gfx::Rect(0, 0, 161, 100));
   EXPECT_EQ(frame_view->layout_count(), initial_frame_view_layouts + 1);
   EXPECT_EQ(client_view->layout_count(), initial_client_view_layouts + 1);
 }

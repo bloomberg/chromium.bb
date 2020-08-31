@@ -5,20 +5,19 @@
 #include "chrome/browser/safe_browsing/download_protection/download_reporter.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
 
 namespace safe_browsing {
 
@@ -86,24 +85,50 @@ void ReportDangerousDownloadWarningBypassed(
   }
 }
 
+void ReportSensitiveDataWarningBypassed(download::DownloadItem* download) {
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(download);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (profile) {
+    std::string raw_digest_sha256 = download->GetHash();
+    // TODO(crbug/1069109): Use actual DlpDeepScanningVerdict that triggered the
+    // original warning here.
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnSensitiveDataWarningBypassed(
+            DlpDeepScanningVerdict(), download->GetURL(),
+            download->GetTargetFilePath().AsUTF8Unsafe(),
+            base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+            download->GetMimeType(),
+            extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            download->GetTotalBytes());
+  }
+}
+
 }  // namespace
 
 DownloadReporter::DownloadReporter() {
-  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                          content::NotificationService::AllSources());
+  // Profile manager can be null in unit tests.
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->AddObserver(this);
 }
 
-DownloadReporter::~DownloadReporter() = default;
+DownloadReporter::~DownloadReporter() {
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->RemoveObserver(this);
+}
 
-void DownloadReporter::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_CREATED);
-  Profile* profile = content::Source<Profile>(source).ptr();
-  download::SimpleDownloadManagerCoordinator* coordinator =
-      SimpleDownloadManagerCoordinatorFactory::GetForKey(
-          profile->GetProfileKey());
-  observed_coordinators_.Add(coordinator);
+void DownloadReporter::OnProfileAdded(Profile* profile) {
+  observed_profiles_.Add(profile);
+  observed_coordinators_.Add(SimpleDownloadManagerCoordinatorFactory::GetForKey(
+      profile->GetProfileKey()));
+}
+
+void DownloadReporter::OnOffTheRecordProfileCreated(Profile* off_the_record) {
+  OnProfileAdded(off_the_record);
+}
+
+void DownloadReporter::OnProfileWillBeDestroyed(Profile* profile) {
+  observed_profiles_.Remove(profile);
 }
 
 void DownloadReporter::OnManagerGoingDown(
@@ -137,6 +162,12 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
   if (DangerTypeIsDangerous(old_danger_type) &&
       current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
     ReportDangerousDownloadWarningBypassed(download, old_danger_type);
+  }
+
+  if (old_danger_type ==
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING &&
+      current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
+    ReportSensitiveDataWarningBypassed(download);
   }
 
   danger_types_[download] = current_danger_type;

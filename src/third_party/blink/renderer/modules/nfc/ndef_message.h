@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -25,23 +24,27 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // |is_embedded| indicates if this message serves as payload for a parent
+  // record.
   static NDEFMessage* Create(const ExecutionContext*,
                              const NDEFMessageInit*,
-                             ExceptionState&);
+                             ExceptionState&,
+                             bool is_embedded = false);
   static NDEFMessage* Create(const ExecutionContext*,
                              const NDEFMessageSource&,
                              ExceptionState&);
+  static NDEFMessage* CreateAsPayloadOfSmartPoster(const ExecutionContext*,
+                                                   const NDEFMessageInit*,
+                                                   ExceptionState&);
 
   NDEFMessage();
   explicit NDEFMessage(const device::mojom::blink::NDEFMessage&);
 
-  const String& url() const;
   const HeapVector<Member<NDEFRecord>>& records() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  String url_;
   HeapVector<Member<NDEFRecord>> records_;
 };
 

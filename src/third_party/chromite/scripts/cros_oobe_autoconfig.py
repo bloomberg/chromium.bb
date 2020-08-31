@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import uuid
 
 from chromite.lib import commandline
@@ -28,6 +29,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import image_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # OOBE auto-config parameters as they appear in

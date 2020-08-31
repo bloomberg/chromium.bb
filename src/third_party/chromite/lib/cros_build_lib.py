@@ -26,6 +26,7 @@ import time
 
 import six
 
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
@@ -480,11 +481,6 @@ def sudo_run(cmd, user='root', preserve_env=False, **kwargs):
   return run(sudo_cmd, **kwargs)
 
 
-def SudoRunCommand(cmd, **kwargs):
-  """Backwards compat API."""
-  return sudo_run(cmd, **kwargs)
-
-
 def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       signum, frame):
   """Used as a signal handler by run.
@@ -503,16 +499,16 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
   # the Popen instance was created, but no process was generated.
   if proc.returncode is None and proc.pid is not None:
     try:
-      while proc.poll() is None and int_timeout >= 0:
+      while proc.poll_lock_breaker() is None and int_timeout >= 0:
         time.sleep(0.1)
         int_timeout -= 0.1
 
       proc.terminate()
-      while proc.poll() is None and kill_timeout >= 0:
+      while proc.poll_lock_breaker() is None and kill_timeout >= 0:
         time.sleep(0.1)
         kill_timeout -= 0.1
 
-      if proc.poll() is None:
+      if proc.poll_lock_breaker() is None:
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
     except EnvironmentError as e:
@@ -520,7 +516,11 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       e)
 
     # Ensure our child process has been reaped.
-    proc.wait()
+    kwargs = {}
+    if sys.version_info.major >= 3:
+      # ... but don't wait forever.
+      kwargs['timeout'] = 60
+    proc.wait_lock_breaker(**kwargs)
 
   if not signals.RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signaling.
@@ -560,8 +560,8 @@ class _Popen(subprocess.Popen):
         # delivered).  This isn't particularly informative, but we still
         # need that info to decide what to do, thus the check=False.
         ret = sudo_run(['kill', '-%i' % sig, str(self.pid)],
-                       print_cmd=False, redirect_stdout=True,
-                       redirect_stderr=True, check=False)
+                       print_cmd=False, stdout=True,
+                       stderr=True, check=False)
         if ret.returncode == 1:
           # The kill binary doesn't distinguish between permission denied,
           # and the pid is missing.  Denied can only occur under weird
@@ -576,6 +576,31 @@ class _Popen(subprocess.Popen):
       else:
         raise
 
+  def _lock_breaker(self, func, *args, **kwargs):
+    """Helper to manage the waitpid lock.
+
+    Workaround https://bugs.python.org/issue25960.
+    """
+    # If the lock doesn't exist, or is not locked, call the func directly.
+    lock = getattr(self, '_waitpid_lock', None)
+    if lock is not None and lock.locked():
+      try:
+        lock.release()
+        return func(*args, **kwargs)
+      finally:
+        if not lock.locked():
+          lock.acquire()
+    else:
+      return func(*args, **kwargs)
+
+  def poll_lock_breaker(self, *args, **kwargs):
+    """Wrapper around poll() to break locks if needed."""
+    return self._lock_breaker(self.poll, *args, **kwargs)
+
+  def wait_lock_breaker(self, *args, **kwargs):
+    """Wrapper around wait() to break locks if needed."""
+    return self._lock_breaker(self.wait, *args, **kwargs)
+
 
 # pylint: disable=redefined-builtin
 def run(cmd, print_cmd=True, stdout=None, stderr=None,
@@ -584,7 +609,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
-        quiet=False, mute_output=None, encoding=None, errors=None, **kwargs):
+        quiet=False, encoding=None, errors=None, dryrun=False,
+        **kwargs):
   """Runs a command.
 
   Args:
@@ -595,9 +621,12 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     stdout: Where to send stdout.  This may be many things to control
       redirection:
         * None is the default; the existing stdout is used.
+        * An existing file object (must be opened with mode 'w' or 'wb').
         * A string to a file (will be truncated & opened automatically).
+        * subprocess.PIPE to capture & return the output.
         * A boolean to indicate whether to capture the output.
           True will capture the output via a tempfile (good for large output).
+        * An open file descriptor (as a positive integer).
     stderr: Where to send stderr.  See |stdout| for possible values.  This also
       may be subprocess.STDOUT to indicate stderr & stdout should be combined.
     cwd: the working directory to run this cmd.
@@ -630,14 +659,12 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
     capture_output: Set |stdout| and |stderr| to True.
-    quiet: Set |print_cmd| to False, |stdout| to True, and |stderr| to
-      subprocess.STDOUT.
-    mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
-      None, which bases muting on |debug_level|.
+    quiet: Set |print_cmd| to False, and |capture_output| to True.
     encoding: Encoding for stdin/stdout/stderr, otherwise bytes are used.  Most
       users want 'utf-8' here for string data.
     errors: How to handle errors when |encoding| is used.  Defaults to 'strict',
       but 'ignore' and 'replace' are common settings.
+    dryrun: Only log the command,and return a stub result.
 
   Returns:
     A CommandResult object.
@@ -646,27 +673,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     RunCommandError: Raised on error.
   """
   # Handle backwards compatible settings.
-  if 'error_code_ok' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: error_code_ok= is renamed/inverted to check=')
-    check = not kwargs.pop('error_code_ok')
-  if 'redirect_stdout' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: redirect_stdout=True is now stdout=True')
-    stdout = True if kwargs.pop('redirect_stdout') else None
-  if 'redirect_stderr' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: redirect_stderr=True is now stderr=True')
-    stderr = True if kwargs.pop('redirect_stderr') else None
-  if 'combine_stdout_stderr' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: combine_stdout_stderr=True is now '
-    #                 'stderr=subprocess.STDOUT')
-    if kwargs.pop('combine_stdout_stderr'):
-      stderr = subprocess.STDOUT
   if 'log_stdout_to_file' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: log_stdout_to_file=X is now stdout=X')
+    logging.warning('run: log_stdout_to_file=X is now stdout=X')
     log_stdout_to_file = kwargs.pop('log_stdout_to_file')
     if log_stdout_to_file is not None:
       stdout = log_stdout_to_file
@@ -677,6 +685,10 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     if kwargs.pop('append_to_file'):
       stdout_file_mode = 'a+b'
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
+
+  if quiet:
+    print_cmd = False
+    capture_output = True
 
   if capture_output:
     # TODO(vapier): Enable this once we migrate all the legacy arguments above.
@@ -689,13 +701,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     if stderr is None:
       stderr = True
 
-  stdout_to_pipe = False
-  if quiet:
-    debug_level = logging.DEBUG
-    stdout_to_pipe = True
-    if stderr is None:
-      stderr = subprocess.STDOUT
-
   if encoding is not None and errors is None:
     errors = 'strict'
 
@@ -704,9 +709,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   popen_stderr = None
   stdin = None
   cmd_result = CommandResult()
-
-  if mute_output is None:
-    mute_output = logging.getLogger().getEffectiveLevel() > debug_level
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
@@ -732,14 +734,29 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   if isinstance(stdout, six.string_types):
     popen_stdout = open(stdout, stdout_file_mode)
     log_stdout_to_file = True
-  elif stdout_to_pipe:
-    popen_stdout = subprocess.PIPE
-  elif stdout or mute_output or log_output:
+  elif hasattr(stdout, 'fileno'):
+    popen_stdout = stdout
+    log_stdout_to_file = True
+  elif isinstance(stdout, bool):
+    # This check must come before isinstance(int) because bool subclasses int.
+    if stdout:
+      popen_stdout = _get_tempfile()
+  elif isinstance(stdout, int):
+    popen_stdout = stdout
+  elif log_output:
     popen_stdout = _get_tempfile()
 
-  if stderr == subprocess.STDOUT:
-    popen_stderr = subprocess.STDOUT
-  elif stderr or mute_output or log_output:
+  log_stderr_to_file = False
+  if hasattr(stderr, 'fileno'):
+    popen_stderr = stderr
+    log_stderr_to_file = True
+  elif isinstance(stderr, bool):
+    # This check must come before isinstance(int) because bool subclasses int.
+    if stderr:
+      popen_stderr = _get_tempfile()
+  elif isinstance(stderr, int):
+    popen_stderr = stderr
+  elif log_output:
     popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
@@ -813,13 +830,20 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       env[var] = os.environ[var]
 
   # Print out the command before running.
-  if print_cmd or log_output:
+  if dryrun or print_cmd or log_output:
+    log = ''
+    if dryrun:
+      log += '(dryrun) '
+    log += 'run: %s' % (CmdToStr(cmd),)
     if cwd:
-      logging.log(debug_level, 'run: %s in %s', CmdToStr(cmd), cwd)
-    else:
-      logging.log(debug_level, 'run: %s', CmdToStr(cmd))
+      log += ' in %s' % (cwd,)
+    logging.log(debug_level, '%s', log)
 
   cmd_result.args = cmd
+
+  # We want to still something in dryrun mode so we process all the options
+  # and return appropriate values (e.g. output with correct encoding).
+  popen_cmd = ['true'] if dryrun else cmd
 
   proc = None
   # Verify that the signals modules is actually usable, and won't segfault
@@ -827,7 +851,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   # details and upstream python bug.
   use_signals = signals.SignalModuleUsable()
   try:
-    proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=popen_stdout,
+    proc = _Popen(popen_cmd, cwd=cwd, stdin=stdin, stdout=popen_stdout,
                   stderr=popen_stderr, shell=False, env=env,
                   close_fds=True)
 
@@ -852,14 +876,16 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         signal.signal(signal.SIGINT, old_sigint)
         signal.signal(signal.SIGTERM, old_sigterm)
 
-      if popen_stdout and not log_stdout_to_file and not stdout_to_pipe:
+      if (popen_stdout and not isinstance(popen_stdout, int) and
+          not log_stdout_to_file):
         popen_stdout.seek(0)
         cmd_result.stdout = popen_stdout.read()
         popen_stdout.close()
       elif log_stdout_to_file:
         popen_stdout.close()
 
-      if popen_stderr and popen_stderr != subprocess.STDOUT:
+      if (popen_stderr and not isinstance(popen_stderr, int) and
+          not log_stderr_to_file):
         popen_stderr.seek(0)
         cmd_result.stderr = popen_stderr.read()
         popen_stderr.close()
@@ -900,13 +926,16 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       # Ensure the process is dead.
       _KillChildProcess(proc, int_timeout, kill_timeout, cmd, None, None, None)
 
+  # We might capture stdout/stderr for internal reasons (like logging), but we
+  # don't want to let it leak back out to the callers.  They only get output if
+  # they explicitly requested it.
+  if stdout is None:
+    cmd_result.stdout = None
+  if stderr is None:
+    cmd_result.stderr = None
+
   return cmd_result
 # pylint: enable=redefined-builtin
-
-
-def RunCommand(cmd, **kwargs):
-  """Backwards compat API."""
-  return run(cmd, **kwargs)
 
 
 # Convenience run methods.
@@ -1047,15 +1076,14 @@ def FindCompressor(compression, chroot=None):
   Raises:
     ValueError: If compression is unknown.
   """
-  if compression == COMP_GZIP:
+  if compression == COMP_XZ:
+    return os.path.join(constants.CHROMITE_SCRIPTS_DIR, 'xz_auto')
+  elif compression == COMP_GZIP:
     std = 'gzip'
     para = 'pigz'
   elif compression == COMP_BZIP2:
     std = 'bzip2'
     para = 'pbzip2'
-  elif compression == COMP_XZ:
-    std = 'xz'
-    para = 'pixz'
   elif compression == COMP_NONE:
     return 'cat'
   else:
@@ -1135,7 +1163,7 @@ def CompressFile(infile, outfile):
     run(cmd)
   else:
     cmd = [comp, '-c', infile]
-    run(cmd, log_stdout_to_file=outfile)
+    run(cmd, stdout=outfile)
 
 
 def UncompressFile(infile, outfile):
@@ -1156,7 +1184,7 @@ def UncompressFile(infile, outfile):
     run(cmd)
   else:
     cmd = [comp, '-dc', infile]
-    run(cmd, log_stdout_to_file=outfile)
+    run(cmd, stdout=outfile)
 
 
 class CreateTarballError(RunCommandError):
@@ -1213,12 +1241,26 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   # If tar fails with status 1, retry twice. Once after timeout seconds and
   # again 2*timeout seconds after that.
   for try_count in range(3):
-    result = rc_func(cmd, cwd=cwd, **dict(kwargs, check=False, input=rc_input))
+    try:
+      result = rc_func(cmd, cwd=cwd, **dict(kwargs, check=False,
+                                            input=rc_input))
+    except RunCommandError as rce:
+      # There are cases where run never executes the command (cannot find tar,
+      # cannot execute tar, such as when cwd does not exist). Although the run
+      # command will show low-level problems, we also want to log the context
+      # of what CreateTarball was trying to do.
+      logging.error('CreateTarball unable to run tar for %s in %s. cmd={%s}',
+                    target, cwd, cmd)
+      raise rce
     if result.returncode == 0:
       return result
     if result.returncode != 1 or try_count > 1:
       # Since the build is abandoned at this point, we will take 5
       # entire minutes to track down the competing process.
+      # Error will have the low-level tar command error, so log the context
+      # of the tar command (target file, current working dir).
+      logging.error('CreateTarball failed creating %s in %s. cmd={%s}',
+                    target, cwd, cmd)
       raise CreateTarballError('CreateTarball', result)
 
     assert result.returncode == 1
@@ -1411,11 +1453,6 @@ class MasterPidContextManager(object):
 
   def _exit(self, exc_type, exc, exc_tb):
     raise NotImplementedError(self, '_exit')
-
-
-@contextlib.contextmanager
-def NoOpContextManager():
-  yield
 
 
 class ContextManagerStack(object):
@@ -1692,8 +1729,12 @@ def GetBoard(device_board, override_board=None, force=False, strict=False):
 
 
 def GetSysroot(board=None):
-  """Returns the sysroot for |board| or '/' if |board| is None."""
-  return '/' if board is None else os.path.join('/build', board)
+  """Returns the sysroot for |board| or '/' if |board| is None.
+
+  Deprecated: Use chromite.lib.build_target_lib.get_default_sysroot_path().
+  TODO: Convert the usages of this function to the new one.
+  """
+  return build_target_lib.get_default_sysroot_path(board)
 
 
 # Structure to hold the values produced by TimedSection.

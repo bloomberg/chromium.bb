@@ -21,6 +21,10 @@
     background-color: #eee;
 }
 
+.thread-item[data-keyboard-focus="true"] {
+    background-color: var(--focus-bg-color);
+}
+
 .thread-item-title,
 .thread-item-paused-state {
     text-overflow: ellipsis;
@@ -45,3 +49,14 @@
     display: block;
 }
 
+@media (forced-colors: active) {
+    .thread-item:hover,
+    .thread-item[data-keyboard-focus="true"] {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .thread-item:hover > div,
+    .thread-item[data-keyboard-focus="true"] > div {
+        color: HighlightText;
+    }
+}

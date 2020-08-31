@@ -59,7 +59,8 @@ const uint32_t kTransferBufferSize = 16384;
 const uint32_t kSmallTransferBufferSize = 16;
 const uint32_t kTinyTransferBufferSize = 3;
 
-#if !defined(GPU_FUZZER_USE_ANGLE) && !defined(GPU_FUZZER_USE_SWIFTSHADER)
+#if !defined(GPU_FUZZER_USE_ANGLE) && !defined(GPU_FUZZER_USE_SWIFTSHADER) && \
+    !defined(GPU_FUZZER_USE_SWANGLE)
 #define GPU_FUZZER_USE_STUB
 #endif
 
@@ -137,6 +138,8 @@ constexpr const char* kExtensions[] = {
     "GL_EXT_shader_texture_lod",
     "GL_EXT_sRGB",
     "GL_EXT_sRGB_write_control",
+    "GL_EXT_texture_compression_bptc",
+    "GL_EXT_texture_compression_rgtc",
     "GL_EXT_texture_compression_dxt1",
     "GL_EXT_texture_compression_s3tc",
     "GL_EXT_texture_compression_s3tc_srgb",
@@ -317,20 +320,25 @@ class CommandBufferSetup {
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);
+#if defined(GPU_FUZZER_USE_SWANGLE)
+    command_line->AppendSwitchASCII(switches::kUseANGLE,
+                                    gl::kANGLEImplementationSwiftShaderName);
+#else
     command_line->AppendSwitchASCII(switches::kUseANGLE,
                                     gl::kANGLEImplementationNullName);
+#endif
 
     CHECK(gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationEGLANGLE, false));
-    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
-                                                             false, true));
+    CHECK(
+        gl::init::InitializeGLOneOffPlatformImplementation(false, false, true));
 #elif defined(GPU_FUZZER_USE_SWIFTSHADER)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationSwiftShaderName);
     CHECK(gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationSwiftShaderGL, false));
-    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
-                                                             false, true));
+    CHECK(
+        gl::init::InitializeGLOneOffPlatformImplementation(false, false, true));
 #elif defined(GPU_FUZZER_USE_STUB)
     gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
     // Because the context depends on configuration bits, we want to recreate
@@ -339,9 +347,10 @@ class CommandBufferSetup {
 #else
 #error invalid configuration
 #endif
-    discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
+    discardable_manager_ =
+        std::make_unique<ServiceDiscardableManager>(gpu_preferences_);
     passthrough_discardable_manager_ =
-        std::make_unique<PassthroughDiscardableManager>();
+        std::make_unique<PassthroughDiscardableManager>(gpu_preferences_);
 
     if (gpu_preferences_.use_passthrough_cmd_decoder)
       recreate_context_ = true;
@@ -384,7 +393,8 @@ class CommandBufferSetup {
         share_group_, surface_, std::move(shared_context),
         config_.workarounds.use_virtualized_gl_contexts, base::DoNothing(),
         gpu_preferences_.gr_context_type);
-    context_state_->InitializeGrContext(config_.workarounds, nullptr);
+    context_state_->InitializeGrContext(gpu_preferences_, config_.workarounds,
+                                        nullptr);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
 
     shared_image_manager_ = std::make_unique<SharedImageManager>();
@@ -408,7 +418,7 @@ class CommandBufferSetup {
       mailbox.SetName(name);
       shared_image_factory_->CreateSharedImage(
           mailbox, viz::RGBA_8888, gfx::Size(256, 256),
-          gfx::ColorSpace::CreateSRGB(), usage);
+          gfx::ColorSpace::CreateSRGB(), gfx::kNullAcceleratedWidget, usage);
     }
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
@@ -418,7 +428,7 @@ class CommandBufferSetup {
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
-        shared_image_manager_.get(), context_state_));
+        shared_image_manager_.get(), context_state_, true /* is_privileged */));
 #else
     context_->MakeCurrent(surface_.get());
     // GLES2Decoder may Initialize feature_info differently than
@@ -452,7 +462,9 @@ class CommandBufferSetup {
 
     decoder_->set_max_bucket_size(8 << 20);
 #if !defined(GPU_FUZZER_USE_RASTER_DECODER)
-    context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    if (context_group->buffer_manager()) {
+        context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    }
 #endif
     return decoder_->MakeCurrent();
   }

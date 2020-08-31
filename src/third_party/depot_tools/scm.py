@@ -4,6 +4,7 @@
 
 """SCM-specific utility classes."""
 
+import distutils.version
 import glob
 import io
 import os
@@ -113,15 +114,13 @@ class GIT(object):
   def Capture(args, cwd, strip_out=True, **kwargs):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
-        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env,
-        **kwargs).decode('utf-8', 'replace')
+        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
+    output = output.decode('utf-8', 'replace')
     return output.strip() if strip_out else output
 
   @staticmethod
-  def CaptureStatus(files, cwd, upstream_branch):
+  def CaptureStatus(cwd, upstream_branch):
     """Returns git status.
-
-    @files is a list of files.
 
     Returns an array of (status, file) tuples."""
     if upstream_branch is None:
@@ -130,8 +129,6 @@ class GIT(object):
         raise gclient_utils.Error('Cannot determine upstream branch')
     command = ['-c', 'core.quotePath=false', 'diff',
                '--name-status', '--no-renames', '-r', '%s...' % upstream_branch]
-    if files:
-      command.extend(files)
     status = GIT.Capture(command, cwd)
     results = []
     if status:
@@ -148,16 +145,40 @@ class GIT(object):
     return results
 
   @staticmethod
+  def GetConfig(cwd, key, default=None):
+    try:
+      return GIT.Capture(['config', key], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return default
+
+  @staticmethod
+  def GetBranchConfig(cwd, branch, key, default=None):
+    assert branch, 'A branch must be given'
+    key = 'branch.%s.%s' % (branch, key)
+    return GIT.GetConfig(cwd, key, default)
+
+  @staticmethod
+  def SetConfig(cwd, key, value=None):
+    if value is None:
+      args = ['config', '--unset', key]
+    else:
+      args = ['config', key, value]
+    GIT.Capture(args, cwd=cwd)
+
+  @staticmethod
+  def SetBranchConfig(cwd, branch, key, value=None):
+    assert branch, 'A branch must be given'
+    key = 'branch.%s.%s' % (branch, key)
+    GIT.SetConfig(cwd, key, value)
+
+  @staticmethod
   def IsWorkTreeDirty(cwd):
     return GIT.Capture(['status', '-s'], cwd=cwd) != ''
 
   @staticmethod
   def GetEmail(cwd):
     """Retrieves the user email address if known."""
-    try:
-      return GIT.Capture(['config', 'user.email'], cwd=cwd)
-    except subprocess2.CalledProcessError:
-      return ''
+    return GIT.GetConfig(cwd, 'user.email', '')
 
   @staticmethod
   def ShortBranchName(branch):
@@ -167,55 +188,49 @@ class GIT(object):
   @staticmethod
   def GetBranchRef(cwd):
     """Returns the full branch reference, e.g. 'refs/heads/master'."""
-    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
+    try:
+      return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return None
 
   @staticmethod
   def GetBranch(cwd):
     """Returns the short branch name, e.g. 'master'."""
-    return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
+    branchref = GIT.GetBranchRef(cwd)
+    if branchref:
+      return GIT.ShortBranchName(branchref)
+    return None
 
   @staticmethod
-  def FetchUpstreamTuple(cwd):
-    """Returns a tuple containg remote and remote ref,
+  def GetRemoteBranches(cwd):
+    return GIT.Capture(['branch', '-r'], cwd=cwd).split()
+
+  @staticmethod
+  def FetchUpstreamTuple(cwd, branch=None):
+    """Returns a tuple containing remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
-    remote = '.'
-    branch = GIT.GetBranch(cwd)
     try:
-      upstream_branch = GIT.Capture(
-          ['config', '--local', 'branch.%s.merge' % branch], cwd=cwd)
+      branch = branch or GIT.GetBranch(cwd)
     except subprocess2.CalledProcessError:
-      upstream_branch = None
-    if upstream_branch:
-      try:
-        remote = GIT.Capture(
-            ['config', '--local', 'branch.%s.remote' % branch], cwd=cwd)
-      except subprocess2.CalledProcessError:
-        pass
-    else:
-      try:
-        upstream_branch = GIT.Capture(
-            ['config', '--local', 'rietveld.upstream-branch'], cwd=cwd)
-      except subprocess2.CalledProcessError:
-        upstream_branch = None
+      pass
+    if branch:
+      upstream_branch = GIT.GetBranchConfig(cwd, branch, 'merge')
       if upstream_branch:
-        try:
-          remote = GIT.Capture(
-              ['config', '--local', 'rietveld.upstream-remote'], cwd=cwd)
-        except subprocess2.CalledProcessError:
-          pass
-      else:
-        # Else, try to guess the origin remote.
-        remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
-          remote = 'origin'
-          upstream_branch = 'refs/heads/master'
-        else:
-          # Give up.
-          remote = None
-          upstream_branch = None
-    return remote, upstream_branch
+        remote = GIT.GetBranchConfig(cwd, branch, 'remote', '.')
+        return remote, upstream_branch
+
+    upstream_branch = GIT.GetConfig(cwd, 'rietveld.upstream-branch')
+    if upstream_branch:
+      remote = GIT.GetConfig(cwd, 'rietveld.upstream-remote', '.')
+      return remote, upstream_branch
+
+    # Else, try to guess the origin remote.
+    if 'origin/master' in GIT.GetRemoteBranches(cwd):
+      # Fall back on origin/master if it exits.
+      return 'origin', 'refs/heads/master'
+
+    return None, None
 
   @staticmethod
   def RefToRemoteRef(ref, remote):
@@ -322,6 +337,12 @@ class GIT(object):
     return GIT.Capture(command, cwd=cwd).splitlines(False)
 
   @staticmethod
+  def GetAllFiles(cwd):
+    """Returns the list of all files under revision control."""
+    command = ['-c', 'core.quotePath=false', 'ls-files', '--', '.']
+    return GIT.Capture(command, cwd=cwd).splitlines(False)
+
+  @staticmethod
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
     short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd=cwd)
@@ -356,37 +377,39 @@ class GIT(object):
     return bool(GIT.Capture(['clean', '-df', relative_dir], cwd=cwd))
 
   @staticmethod
+  def ResolveCommit(cwd, rev):
+    # We do this instead of rev-parse --verify rev^{commit}, since on Windows
+    # git can be either an executable or batch script, each of which requires
+    # escaping the caret (^) a different way.
+    if gclient_utils.IsFullGitSha(rev):
+      # git-rev parse --verify FULL_GIT_SHA always succeeds, even if we don't
+      # have FULL_GIT_SHA locally. Removing the last character forces git to
+      # check if FULL_GIT_SHA refers to an object in the local database.
+      rev = rev[:-1]
+    try:
+      return GIT.Capture(['rev-parse', '--quiet', '--verify', rev], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return None
+
+  @staticmethod
   def IsValidRevision(cwd, rev, sha_only=False):
     """Verifies the revision is a proper git revision.
 
     sha_only: Fail unless rev is a sha hash.
     """
-    if sys.platform.startswith('win'):
-      # Windows .bat scripts use ^ as escape sequence, which means we have to
-      # escape it with itself for every .bat invocation.
-      needle = '%s^^^^{commit}' % rev
-    else:
-      needle = '%s^{commit}' % rev
-    try:
-      sha = GIT.Capture(['rev-parse', '--verify', needle], cwd=cwd)
-      if sha_only:
-        return sha == rev.lower()
-      return True
-    except subprocess2.CalledProcessError:
+    sha = GIT.ResolveCommit(cwd, rev)
+    if sha is None:
       return False
+    if sha_only:
+      return sha == rev.lower()
+    return True
 
   @classmethod
   def AssertVersion(cls, min_version):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
       current_version = cls.Capture(['--version'], '.')
-      matched = re.search(r'version ([0-9\.]+)', current_version)
-      cls.current_version = matched.group(1)
-    current_version_list = list(map(only_int, cls.current_version.split('.')))
-    for min_ver in map(int, min_version.split('.')):
-      ver = current_version_list.pop(0)
-      if ver < min_ver:
-        return (False, cls.current_version)
-      elif ver > min_ver:
-        return (True, cls.current_version)
-    return (True, cls.current_version)
+      matched = re.search(r'git version (.+)', current_version)
+      cls.current_version = distutils.version.LooseVersion(matched.group(1))
+    min_version = distutils.version.LooseVersion(min_version)
+    return (min_version <= cls.current_version, cls.current_version)

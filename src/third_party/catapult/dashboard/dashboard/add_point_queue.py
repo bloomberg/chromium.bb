@@ -17,12 +17,12 @@ from dashboard import add_point
 from dashboard import find_anomalies
 from dashboard import graph_revisions
 from dashboard import units_to_direction
+from dashboard import sheriff_config_client
 from dashboard.common import datastore_hooks
 from dashboard.common import request_handler
 from dashboard.common import utils
 from dashboard.models import anomaly
 from dashboard.models import graph_data
-
 
 class AddPointQueueHandler(request_handler.RequestHandler):
   """Request handler to process points and add them to the datastore.
@@ -67,9 +67,22 @@ class AddPointQueueHandler(request_handler.RequestHandler):
 
     ndb.Future.wait_all(all_put_futures)
 
-    monitored_test_keys = [
-        t.key for t in parent_tests if t.sheriff and t.has_rows]
-    tests_keys = [k for k in monitored_test_keys if not IsRefBuild(k)]
+    client = sheriff_config_client.GetSheriffConfigClient()
+    tests_keys = []
+    for t in parent_tests:
+      reason = []
+      subscriptions, _ = client.Match(t.test_path, check=True)
+      if not subscriptions:
+        reason.append('subscriptions')
+      if not t.has_rows:
+        reason.append('has_rows')
+      if IsRefBuild(t.key):
+        reason.append('RefBuild')
+      if reason:
+        logging.info('Skip test: %s reason=%s', t.key, ','.join(reason))
+        continue
+      logging.info('Process test: %s', t.key)
+      tests_keys.append(t.key)
 
     # Updating of the cached graph revisions should happen after put because
     # it requires the new row to have a timestamp, which happens upon put.

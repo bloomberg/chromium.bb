@@ -1996,8 +1996,7 @@ class ResponseAnalyzerTest : public testing::Test,
 
     std::string charset;
     bool had_charset = false;
-    response_headers->AddHeader(std::string("Content-Type: ") +
-                                response_content_type);
+    response_headers->SetHeader("Content-Type", response_content_type);
     net::HttpUtil::ParseContentType(response_content_type, &response->mime_type,
                                     &charset, &had_charset, nullptr);
     EXPECT_FALSE(response->mime_type.empty())
@@ -2037,7 +2036,9 @@ class ResponseAnalyzerTest : public testing::Test,
     // Create a ResponseAnalyzer to test.
     analyzer_ = std::make_unique<ResponseAnalyzer>(
         request->url(), request->initiator(), response,
-        request_initiator_site_lock, request_mode);
+        request_initiator_site_lock, request_mode,
+        base::nullopt /* isolated_world_origin */,
+        nullptr /* network_service_client */);
 
     // Verify MIME type was classified correctly.
     EXPECT_EQ(scenario.canonical_mime_type,
@@ -2635,14 +2636,14 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
 
       // Types protected without sniffing.
       {"application/gzip", MimeType::kNeverSniffed},
+      {"application/pdf", MimeType::kNeverSniffed},
       {"application/x-protobuf", MimeType::kNeverSniffed},
       {"application/x-gzip", MimeType::kNeverSniffed},
       {"application/zip", MimeType::kNeverSniffed},
       {"multipart/byteranges", MimeType::kNeverSniffed},
+      {"multipart/signed", MimeType::kNeverSniffed},
+      {"text/csv", MimeType::kNeverSniffed},
       {"text/event-stream", MimeType::kNeverSniffed},
-      // TODO(lukasza): https://crbug.com/944162: Add application/pdf and
-      // text/csv to the list of content types tested here (after
-      // kMimeHandlerViewInCrossProcessFrame gets enabled by default).
   };
 
   for (const auto& test : tests) {

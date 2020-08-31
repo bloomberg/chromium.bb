@@ -50,14 +50,16 @@ class QuicPacketCreatorPeer {
                                              const QuicFrames& frames,
                                              char* buffer,
                                              size_t buffer_len);
-  static OwningSerializedPacketPointer SerializeConnectivityProbingPacket(
+  static std::unique_ptr<SerializedPacket> SerializeConnectivityProbingPacket(
       QuicPacketCreator* creator);
-  static OwningSerializedPacketPointer
+  static std::unique_ptr<SerializedPacket>
   SerializePathChallengeConnectivityProbingPacket(QuicPacketCreator* creator,
                                                   QuicPathFrameBuffer* payload);
 
   static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
   static QuicFramer* framer(QuicPacketCreator* creator);
+  static std::string GetRetryToken(QuicPacketCreator* creator);
+  static QuicFrames& QueuedFrames(QuicPacketCreator* creator);
 };
 
 }  // namespace test

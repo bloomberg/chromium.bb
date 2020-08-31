@@ -17,19 +17,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -125,7 +127,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // May return NULL if the request isn't subject to retrieval from an appache.
   std::unique_ptr<AppCacheRequestHandler> CreateRequestHandler(
       std::unique_ptr<AppCacheRequest> request,
-      ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       bool should_reset_appcache);
 
   // Support for devtools inspecting appcache resources.
@@ -177,6 +179,12 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
     return process_id_;
   }
+
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
+  SecurityPolicyHandle* security_policy_handle() {
+    return &security_policy_handle_;
+  }
+
   // SetProcessId may only be called once, and only if kInvalidUniqueID was
   // passed to the AppCacheHost's constructor (e.g. in a scenario where
   // NavigationRequest needs to delay specifying the |process_id| until
@@ -213,10 +221,21 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
            !pending_selected_manifest_url_.is_empty();
   }
 
-  const GURL& first_party_url() const { return first_party_url_; }
-  void SetFirstPartyUrlForTesting(const GURL& url) {
-    first_party_url_ = url;
-    first_party_url_initialized_ = true;
+  const net::SiteForCookies& site_for_cookies() const {
+    return site_for_cookies_;
+  }
+  void SetSiteForCookiesForTesting(
+      const net::SiteForCookies& site_for_cookies) {
+    site_for_cookies_ = site_for_cookies;
+    site_for_cookies_initialized_ = true;
+  }
+
+  const base::Optional<url::Origin>& top_frame_origin() const {
+    return top_frame_origin_;
+  }
+
+  void set_origin_for_url_loader_factory(const url::Origin& origin) {
+    origin_for_url_loader_factory_ = origin;
   }
 
   // Returns a weak pointer reference to the host.
@@ -233,6 +252,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
       AppCacheSubresourceURLFactory* subresource_factory);
 
   void OnContentBlocked(const GURL& manifest_url);
+
+  bool IsOriginTrialRequiredForAppCache();
 
  private:
   friend class content::AppCacheStorageImplTest;
@@ -272,8 +293,19 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   const base::UnguessableToken host_id_;
 
   // Identifies the renderer process associated with the AppCacheHost.  Used for
-  // security checks via ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin.
+  // selecting the appropriate AppCacheBackend and creating
+  // |security_policy_handle_|.
   int process_id_;
+
+  // Security policy handle for the renderer process associated with this
+  // AppCacheHost.  Used for performing CanAccessDataForOrigin() security
+  // checks.
+  //
+  // Using this handle allows these checks to work even after the corresponding
+  // RenderProcessHost has been destroyed, in the case where there are still
+  // in-flight appcache requests that need to be processed. See
+  // https://crbug.com/943887.
+  SecurityPolicyHandle security_policy_handle_;
 
   // Information about the host that created this one; the manifest
   // preferred by our creator influences which cache our main resource
@@ -379,9 +411,16 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // Used to inform the QuotaManager of what origins are currently in use.
   url::Origin origin_in_use_;
 
-  // First party url to be used in policy checks.
-  GURL first_party_url_;
-  bool first_party_url_initialized_ = false;
+  // The origin used when calling
+  // ContentBrowserClient::WillCreateURLLoaderFactory().
+  url::Origin origin_for_url_loader_factory_;
+
+  // To be used in policy checks.
+  net::SiteForCookies site_for_cookies_;
+  bool site_for_cookies_initialized_ = false;
+  base::Optional<url::Origin> top_frame_origin_;
+
+  bool is_origin_trial_required_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);

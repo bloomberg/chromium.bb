@@ -14,9 +14,11 @@ import subprocess2
 import sys
 import tempfile
 
+import gclient_utils
 import git_footers
 import owners
 import owners_finder
+import scm
 
 import git_common as git
 
@@ -77,7 +79,7 @@ def AddUploadedByGitClSplitToDescription(description):
 
 def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
              description, comment, reviewers, changelist, cmd_upload,
-             cq_dry_run, enable_auto_submit):
+             cq_dry_run, enable_auto_submit, repository_root):
   """Uploads a CL with all changes to |files| in |refactor_branch|.
 
   Args:
@@ -101,22 +103,27 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     return
 
   # Checkout all changes to files in |files|.
-  deleted_files = [f.AbsoluteLocalPath() for f in files if f.Action() == 'D']
+  deleted_files = []
+  modified_files = []
+  for action, f in files:
+    abspath = os.path.abspath(os.path.join(repository_root, f))
+    if action == 'D':
+      deleted_files.append(abspath)
+    else:
+      modified_files.append(abspath)
+
   if deleted_files:
     git.run(*['rm'] + deleted_files)
-  modified_files = [f.AbsoluteLocalPath() for f in files if f.Action() != 'D']
   if modified_files:
     git.run(*['checkout', refactor_branch, '--'] + modified_files)
 
   # Commit changes. The temporary file is created with delete=False so that it
   # can be deleted manually after git has read it rather than automatically
   # when it is closed.
-  with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-    tmp_file.write(FormatDescriptionOrComment(description, directory))
-    # Close the file to let git open it at the next line.
-    tmp_file.close()
-    git.run('commit', '-F', tmp_file.name)
-    os.remove(tmp_file.name)
+  with gclient_utils.temporary_file() as tmp_file:
+    gclient_utils.FileWrite(
+        tmp_file, FormatDescriptionOrComment(description, directory))
+    git.run('commit', '-F', tmp_file)
 
   # Upload a CL.
   upload_args = ['-f', '-r', ','.join(reviewers)]
@@ -141,9 +148,9 @@ def GetFilesSplitByOwners(owners_database, files):
     values are lists of files sharing an OWNERS file.
   """
   files_split_by_owners = collections.defaultdict(list)
-  for f in files:
-    files_split_by_owners[owners_database.enclosing_dir_with_owners(
-        f.LocalPath())].append(f)
+  for action, path in files:
+    enclosing_dir = owners_database.enclosing_dir_with_owners(path)
+    files_split_by_owners[enclosing_dir].append((action, path))
   return files_split_by_owners
 
 
@@ -173,7 +180,7 @@ def PrintClInfo(cl_index, num_cls, directory, file_paths, description,
 
 
 def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
-            cq_dry_run, enable_auto_submit):
+            cq_dry_run, enable_auto_submit, repository_root):
   """"Splits a branch into smaller branches and uploads CLs.
 
   Args:
@@ -195,8 +202,11 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     EnsureInGitRepository()
 
     cl = changelist()
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
-    files = change.AffectedFiles()
+    upstream = cl.GetCommonAncestorWithUpstream()
+    files = [
+        (action.strip(), f)
+        for action, f in scm.GIT.CaptureStatus(repository_root, upstream)
+    ]
 
     if not files:
       print('Cannot split an empty CL.')
@@ -209,8 +219,8 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     assert refactor_branch_upstream, \
         "Branch %s must have an upstream." % refactor_branch
 
-    owners_database = owners.Database(change.RepositoryRoot(), file, os.path)
-    owners_database.load_data_needed_for([f.LocalPath() for f in files])
+    owners_database = owners.Database(repository_root, open, os.path)
+    owners_database.load_data_needed_for([f for _, f in files])
 
     files_split_by_owners = GetFilesSplitByOwners(owners_database, files)
 
@@ -224,7 +234,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
         ' infra-dev@chromium.org to ensure that this won\'t  break anything.'
         ' The infra team reserves the right to cancel your jobs if they are'
         ' overloading the CQ.' % num_cls)
-      answer = raw_input('Proceed? (y/n):')
+      answer = gclient_utils.AskForData('Proceed? (y/n):')
       if answer.lower() != 'y':
         return 0
 
@@ -233,7 +243,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
       # Use '/' as a path separator in the branch name and the CL description
       # and comment.
       directory = directory.replace(os.path.sep, '/')
-      file_paths = [f.LocalPath() for f in files]
+      file_paths = [f for _, f in files]
       reviewers = owners_database.reviewers_for(file_paths, author)
 
       if dry_run:
@@ -242,7 +252,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
       else:
         UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
                  description, comment, reviewers, changelist, cmd_upload,
-                 cq_dry_run, enable_auto_submit)
+                 cq_dry_run, enable_auto_submit, repository_root)
 
     # Go back to the original branch.
     git.run('checkout', refactor_branch)

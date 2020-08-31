@@ -47,7 +47,6 @@ class FakeEmbeddedWorkerInstanceClient
   // blink::mojom::EmbeddedWorkerInstanceClient implementation.
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void StopWorker() override;
-  void ResumeAfterDownload() override;
 
   virtual void EvaluateScript();
 
@@ -57,9 +56,11 @@ class FakeEmbeddedWorkerInstanceClient
     return start_params_;
   }
 
-  void OnConnectionError();
+  virtual void OnConnectionError();
 
  private:
+  void CallOnConnectionError();
+
   // |helper_| owns |this|.
   EmbeddedWorkerTestHelper* const helper_;
 

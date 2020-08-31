@@ -44,9 +44,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameSinkId AllocateFrameSinkId();
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
-  void DrawAndSwap(const gfx::Size& viewport,
-                   const gfx::Rect& clip,
-                   const gfx::Transform& transform,
+  void DrawAndSwap(gfx::Size viewport,
+                   gfx::Rect clip,
+                   gfx::Transform transform,
                    const gfx::Size& frame_size,
                    const viz::SurfaceId& child_id,
                    float device_scale_factor,
@@ -73,9 +73,11 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
+  void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const viz::FrameSinkId& id) override;
+      const viz::FrameSinkId& id,
+      viz::mojom::CompositorFrameSinkType* type) override;
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

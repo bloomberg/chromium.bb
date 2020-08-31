@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list_types.h"
+#include "remoting/signaling/signaling_tracker_impl.h"
 
 namespace jingle_xmpp {
 class XmlElement;
@@ -109,8 +110,12 @@ class SignalStrategy {
   // Remove a |listener| previously added with AddListener().
   virtual void RemoveListener(Listener* listener) = 0;
 
-  // Sends a raw XMPP stanza. Returns false if the stanza couldn't be send.
+  // Sends a raw XMPP stanza. Returns false if the stanza couldn't be sent.
   virtual bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) = 0;
+
+  // Sends a ChromotingMessage. Returns false if the message couldn't be sent.
+  virtual bool SendMessage(const SignalingAddress& destination_address,
+                           const ftl::ChromotingMessage& message) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.
@@ -120,6 +125,13 @@ class SignalStrategy {
   // to sign in. You can get back the actual error by calling GetError().
   // The default implementation always returns false.
   virtual bool IsSignInError() const;
+
+  // Returns a signaling tracker to extract extra information about the
+  // signaling channel.
+  virtual const SignalingTracker& signaling_tracker() const;
+
+ protected:
+  SignalingTrackerImpl signaling_tracker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignalStrategy);

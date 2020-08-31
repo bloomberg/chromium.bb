@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "third_party/blink/public/platform/interface_registry.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 
@@ -42,15 +41,13 @@ struct MediaStreamDeviceObserver::Stream {
   MediaStreamDevices video_devices;
 };
 
-MediaStreamDeviceObserver::MediaStreamDeviceObserver(WebLocalFrame* frame) {
+MediaStreamDeviceObserver::MediaStreamDeviceObserver(LocalFrame* frame) {
   // There is no frame on unit tests.
-  if (!frame)
-    return;
-  static_cast<LocalFrame*>(WebFrame::ToCoreFrame(*frame))
-      ->GetInterfaceRegistry()
-      ->AddInterface(WTF::BindRepeating(
-          &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver,
-          WTF::Unretained(this)));
+  if (frame) {
+    frame->GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver,
+        WTF::Unretained(this)));
+  }
 }
 
 MediaStreamDeviceObserver::~MediaStreamDeviceObserver() {}
@@ -135,9 +132,6 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 
 void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver(
     mojo::PendingReceiver<mojom::blink::MediaStreamDeviceObserver> receiver) {
-  if (receiver_.is_bound())
-    return;
-
   receiver_.Bind(std::move(receiver));
 }
 

@@ -11,29 +11,5 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kToolbarNewTabButton{"ToolbarNewTabButton",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kIconForSearchButtonFeature{
-    "IconForSearchButtonFeature", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const char kIconForSearchButtonFeatureParameterName[] = "icon";
-
-const char kIconForSearchButtonParameterGrey[] = "grey";
-const char kIconForSearchButtonParameterColorful[] = "colorful";
-const char kIconForSearchButtonParameterMagnifying[] = "magnifying";
-
-ToolbarSearchButtonIcon IconForSearchButton() {
-  if (base::FeatureList::IsEnabled(kIconForSearchButtonFeature)) {
-    std::string parameter = base::GetFieldTrialParamValueByFeature(
-        kIconForSearchButtonFeature, kIconForSearchButtonFeatureParameterName);
-    if (parameter == kIconForSearchButtonParameterGrey) {
-      return ToolbarSearchButtonIconGrey;
-    } else if (parameter == kIconForSearchButtonParameterColorful) {
-      return ToolbarSearchButtonIconColorful;
-    } else if (parameter == kIconForSearchButtonParameterMagnifying) {
-      return ToolbarSearchButtonIconMagnifying;
-    }
-  }
-  return ToolbarSearchButtonIconMagnifying;
-}
+const base::Feature kChangeTabSwitcherPosition{
+    "kChangeTabSwitcherPosition", base::FEATURE_DISABLED_BY_DEFAULT};

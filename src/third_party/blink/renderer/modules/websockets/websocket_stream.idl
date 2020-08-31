@@ -5,16 +5,13 @@
 // TODO(ricea): Add standard link when there is one.
 
 [
-    Constructor(USVString url, optional WebSocketStreamOptions options),
-    ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
     RuntimeEnabled=WebSocketStream,
-    ActiveScriptWrappable,
-    MeasureAs=WebSocketStreamConstructor
+    ActiveScriptWrappable
 ] interface WebSocketStream {
+  [CallWith=ScriptState, RaisesException, MeasureAs=WebSocketStreamConstructor] constructor(USVString url, optional WebSocketStreamOptions options = {});
   readonly attribute USVString url;
   [CallWith=ScriptState] readonly attribute Promise<WebSocketConnection> connection;
   [CallWith=ScriptState] readonly attribute Promise<WebSocketCloseInfo> closed;
-  [RaisesException] void close(optional WebSocketCloseInfo closeInfo);
+  [RaisesException] void close(optional WebSocketCloseInfo closeInfo = {});
 };

@@ -27,23 +27,25 @@
 
 #include <memory>
 
+#include "base/strings/stringprintf.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
-#include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
-#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
-#include "third_party/blink/renderer/modules/mediastream/media_track_settings.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
@@ -66,6 +68,10 @@ static const char kContentHintStringAudioMusic[] = "music";
 static const char kContentHintStringVideoMotion[] = "motion";
 static const char kContentHintStringVideoDetail[] = "detail";
 static const char kContentHintStringVideoText[] = "text";
+
+void SendLogMessage(const std::string& message) {
+  blink::WebRtcLogMessage("MST::" + message);
+}
 
 // The set of constrainable properties for image capture is available at
 // https://w3c.github.io/mediacapture-image/#constrainable-properties
@@ -209,11 +215,6 @@ void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
 
 }  // namespace
 
-MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
-                                           MediaStreamComponent* component) {
-  return MakeGarbageCollected<MediaStreamTrack>(context, component);
-}
-
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,
@@ -226,6 +227,7 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
     : ready_state_(ready_state),
       component_(component),
       execution_context_(context) {
+  SendLogMessage(GetTrackLogString());
   component_->Source()->AddObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
@@ -241,6 +243,16 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
 }
 
 MediaStreamTrack::~MediaStreamTrack() = default;
+
+std::string MediaStreamTrack::GetTrackLogString() const {
+  String str = String::Format(
+      "MediaStreamTrack([kind: %s, id: %s, label: %s, enabled: %s, muted: %s, "
+      "readyState: %s])",
+      kind().Utf8().c_str(), id().Utf8().c_str(), label().Utf8().c_str(),
+      enabled() ? "true" : "false", muted() ? "true" : "false",
+      readyState().Utf8().c_str());
+  return str.Utf8();
+}
 
 String MediaStreamTrack::kind() const {
   DEFINE_STATIC_LOCAL(String, audio_kind, ("audio"));
@@ -270,6 +282,9 @@ bool MediaStreamTrack::enabled() const {
 }
 
 void MediaStreamTrack::setEnabled(bool enabled) {
+  SendLogMessage(base::StringPrintf("setEnabled([id=%s] {enabled=%s})",
+                                    id().Utf8().c_str(),
+                                    enabled ? "true" : "false"));
   if (enabled == component_->Enabled())
     return;
 
@@ -305,6 +320,8 @@ String MediaStreamTrack::ContentHint() const {
 }
 
 void MediaStreamTrack::SetContentHint(const String& hint) {
+  SendLogMessage(base::StringPrintf("SetContentHint([id=%s] {hint=%s})",
+                                    id().Utf8().c_str(), hint.Utf8().c_str()));
   WebMediaStreamTrack::ContentHintType translated_hint =
       WebMediaStreamTrack::ContentHintType::kNone;
   switch (component_->Source()->GetType()) {
@@ -361,13 +378,13 @@ String MediaStreamTrack::readyState() const {
 }
 
 void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
+  SendLogMessage(base::StringPrintf("stopTrack([id=%s])", id().Utf8().c_str()));
   if (Ended())
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  Document* document = To<Document>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
+      UserMediaController::From(To<LocalDOMWindow>(execution_context));
   if (user_media)
     user_media->StopTrack(Component());
 
@@ -382,7 +399,7 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   return cloned_track;
 }
 
-void MediaStreamTrack::SetConstraints(const WebMediaConstraints& constraints) {
+void MediaStreamTrack::SetConstraints(const MediaConstraints& constraints) {
   component_->SetConstraints(constraints);
 }
 
@@ -629,12 +646,15 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
 ScriptPromise MediaStreamTrack::applyConstraints(
     ScriptState* script_state,
     const MediaTrackConstraints* constraints) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   MediaErrorState error_state;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebMediaConstraints web_constraints = media_constraints_impl::Create(
+  MediaConstraints web_constraints = media_constraints_impl::Create(
       execution_context, constraints, error_state);
   if (error_state.HadException()) {
     resolver->Reject(
@@ -674,9 +694,8 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  Document* document = To<Document>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(document->GetFrame());
+      UserMediaController::From(To<LocalDOMWindow>(execution_context));
   if (!user_media) {
     resolver->Reject(OverconstrainedError::Create(
         String(), "Cannot apply constraints due to unexpected error"));
@@ -724,6 +743,9 @@ void MediaStreamTrack::SourceChangedState() {
       PropagateTrackEnded();
       break;
   }
+  SendLogMessage(
+      base::StringPrintf("SourceChangedState([id=%s] {readyState=%s})",
+                         id().Utf8().c_str(), readyState().Utf8().c_str()));
 }
 
 void MediaStreamTrack::PropagateTrackEnded() {
@@ -781,7 +803,7 @@ ExecutionContext* MediaStreamTrack::GetExecutionContext() const {
   return execution_context_.Get();
 }
 
-void MediaStreamTrack::Trace(blink::Visitor* visitor) {
+void MediaStreamTrack::Trace(Visitor* visitor) {
   visitor->Trace(registered_media_streams_);
   visitor->Trace(component_);
   visitor->Trace(image_capture_);

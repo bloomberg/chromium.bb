@@ -33,7 +33,7 @@ class CPWLEditEmbedderTest : public EmbedderTest {
 
     m_pFormFillEnv =
         CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle());
-    CPDFSDK_AnnotIterator iter(m_pFormFillEnv->GetPageView(0),
+    CPDFSDK_AnnotIterator iter(m_pFormFillEnv->GetPageViewAtIndex(0),
                                CPDF_Annot::Subtype::WIDGET);
     // Normal text field.
     m_pAnnot = iter.GetFirstAnnot();
@@ -48,8 +48,14 @@ class CPWLEditEmbedderTest : public EmbedderTest {
     ASSERT_TRUE(m_pAnnotCharLimit);
     ASSERT_EQ(CPDF_Annot::Subtype::WIDGET,
               m_pAnnotCharLimit->GetAnnotSubtype());
+
+    // Password text field.
+    CPDFSDK_Annot* password_annot = iter.GetNextAnnot(m_pAnnotCharLimit);
+    ASSERT_TRUE(password_annot);
+    ASSERT_EQ(CPDF_Annot::Subtype::WIDGET, password_annot->GetAnnotSubtype());
+
     CPDFSDK_Annot* pLastAnnot = iter.GetLastAnnot();
-    ASSERT_EQ(m_pAnnotCharLimit, pLastAnnot);
+    ASSERT_EQ(password_annot, pLastAnnot);
   }
 
   void FormFillerAndWindowSetup(CPDFSDK_Annot* pAnnotTextField) {
@@ -64,8 +70,8 @@ class CPWLEditEmbedderTest : public EmbedderTest {
         pInteractiveFormFiller->GetFormFillerForTesting(pAnnotTextField);
     ASSERT_TRUE(m_pFormFiller);
 
-    CPWL_Wnd* pWindow =
-        m_pFormFiller->GetPWLWindow(m_pFormFillEnv->GetPageView(0), false);
+    CPWL_Wnd* pWindow = m_pFormFiller->GetPWLWindow(
+        m_pFormFillEnv->GetPageViewAtIndex(0), false);
     ASSERT_TRUE(pWindow);
     m_pEdit = static_cast<CPWL_Edit*>(pWindow);
   }

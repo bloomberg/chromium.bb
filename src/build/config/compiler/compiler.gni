@@ -56,20 +56,19 @@ declare_args() {
 
   # Enables support for ThinLTO, which links 3x-10x faster than full LTO. See
   # also http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html
-  use_thin_lto = is_cfi || (is_android && is_official_build)
+  # Use it by default on official-optimized android and Chrome OS builds, but
+  # not ARC or linux-chromeos since it's been seen to not play nicely with
+  # Chrome's clang. crbug.com/1033839
+  use_thin_lto = is_cfi || (is_official_build &&
+                            (target_os == "android" ||
+                             (target_os == "chromeos" && is_chromeos_device)))
+
+  # If true, use Goma for ThinLTO code generation where applicable.
+  use_goma_thin_lto = false
 
   # Limit the number of jobs (threads/processes) the linker is allowed
   # to use (for linkers that support this).
   max_jobs_per_link = 8
-
-  # Tell VS to create a PDB that references information in .obj files rather
-  # than copying it all. This should improve linker performance. mspdbcmf.exe
-  # can be used to convert a fastlink pdb to a normal one.
-  is_win_fastlink = false
-
-  # Whether or not we should turn on incremental WPO. Only affects the VS
-  # Windows build.
-  use_incremental_wpo = false
 
   # Whether we're using a sample profile collected on an architecture different
   # than the one we're compiling for.
@@ -82,18 +81,18 @@ declare_args() {
   # is_component_build=false. Very large debug symbols can have unwanted side
   # effects so this is enforced by default for chromium.
   forbid_non_component_debug_builds = build_with_chromium
+
+  # Exclude unwind tables by default for official builds as unwinding can be
+  # done from stack dumps produced by Crashpad at a later time "offline" in the
+  # crash server. Since this increases binary size, we don't recommend including
+  # them in shipping builds.
+  # For unofficial (e.g. development) builds and non-Chrome branded (e.g. Cronet
+  # which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
+  # to unwind at runtime.
+  exclude_unwind_tables = is_official_build
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
-
-# Exclude unwind tables for official builds as unwinding can be done from stack
-# dumps produced by Crashpad at a later time "offline" in the crash server.
-# For unofficial (e.g. development) builds and non-Chrome branded (e.g. Cronet
-# which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
-# to unwind at runtime.
-exclude_unwind_tables =
-    is_official_build || (is_chromecast && !is_cast_desktop_build &&
-                          !is_debug && !cast_is_debug && !is_fuchsia)
 
 # If true, optimize for size. Does not affect windows builds.
 # Linux & Mac favor speed over size.
@@ -170,16 +169,6 @@ can_unwind_with_cfi_table = is_android && !is_component_build &&
                             !enable_frame_pointers && current_cpu == "arm"
 
 declare_args() {
-  # Whether or not the official builds should be built with full WPO. Enabled by
-  # default for the PGO and the x64 builds.
-  if (chrome_pgo_phase > 0) {
-    full_wpo_on_official = true
-  } else {
-    full_wpo_on_official = false
-  }
-}
-
-declare_args() {
   # Set to true to use lld, the LLVM linker.
   use_lld = is_clang && (!is_ios && !is_mac)
 }
@@ -200,14 +189,14 @@ declare_args() {
 # results independent of the checkout and build directory names, which
 # in turn is important for goma compile hit rate.
 # Setting this to true may make it harder to debug binaries on Linux, see
-# https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
+# https://chromium.googlesource.com/chromium/src/+/master/docs/linux/debugging.md#Source-level-debug-with-fdebug_compilation_dir
 # It's not clear if the crash server will correctly handle dSYMs with relative
 # paths, so we disable this feature for official benefit. The main benefit is
 # deterministic builds to reduce compile times, so this is less relevant for
 # official builders.
 strip_absolute_paths_from_debug_symbols_default =
     is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
-    (is_mac && !enable_dsyms)
+    (is_mac && !enable_dsyms) || ios_use_goma_rbe
 
 # If the platform uses stripped absolute paths by default, then we don't expose
 # it as a configuration option. If this is causing problems, please file a bug.
@@ -252,13 +241,6 @@ if (symbol_level == -1) {
   } else {
     symbol_level = 0
   }
-} else if (symbol_level == 2) {
-  if (is_win) {
-    # See crbug.com/630074
-    assert(is_win_fastlink || use_lld || !use_goma || is_clang,
-           "VC++ goma builds that use symbol_level 2 must use " +
-               "is_win_fastlink or use_lld.")
-  }
 }
 
 # Non-component debug builds with symbol_level = 2 are an undesirable (very slow
@@ -282,15 +264,3 @@ assert(ignore_elf32_limitations || !is_android || target_os == "chromeos" ||
            "due to 4GiB file size limit, see https://crbug.com/648948. " +
            "If you really want to try this out, " +
            "set ignore_elf32_limitations=true.")
-
-# This variable is true if the current toolchain is either the default
-# toolchain, or, on Android, the secondary ABI toolchain. In other words, it's
-# a toolchain that generates targets for the product, as opposed to the host
-# OS. It can be used in situations where we wish to avoid doing work on the
-# host toolchain, but we don't want to break Android's secondary ABI.
-# Ie. "current_toolchain == default_toolchain" is not a good way to infer
-# "not the host toolchain".
-is_a_target_toolchain =
-    current_toolchain == default_toolchain ||
-    (is_android && defined(android_secondary_abi_toolchain) &&
-     current_toolchain == android_secondary_abi_toolchain)

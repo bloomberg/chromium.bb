@@ -12,13 +12,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/onc/onc_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
@@ -360,9 +360,8 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("networking_private",
-                               "main.html?" + subtest,
-                               kFlagEnableFileAccess | kFlagLoadAsComponent);
+    return RunExtensionSubtest("networking_private", "main.html?" + subtest,
+                               kFlagEnableFileAccess, kFlagLoadAsComponent);
   }
 
  private:
@@ -401,12 +400,6 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 // library state is reset for each subtest run. This way they won't affect each
 // other. TODO(stevenjb): Use extensions::ApiUnitTest once moved to
 // src/extensions.
-
-// These fail on Windows due to crbug.com/177163. Note: we still have partial
-// coverage in NetworkingPrivateServiceClientApiTest. TODO(stevenjb): Enable
-// these on Windows once we switch to extensions::ApiUnitTest.
-
-#if !defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
@@ -514,8 +507,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetGlobalPolicy) {
   EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
 }
 
-// Test failure case
+namespace {
 
+// Test failure case
 class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  public:
   NetworkingPrivateApiTestFail() { test_failure_ = true; }
@@ -525,6 +519,8 @@ class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  protected:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTestFail);
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetProperties) {
   EXPECT_FALSE(RunNetworkingSubtest("getProperties")) << message_;
@@ -616,7 +612,5 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail,
                        SelectCellularMobileNetwork) {
   EXPECT_FALSE(RunNetworkingSubtest("selectCellularMobileNetwork")) << message_;
 }
-
-#endif // defined(OS_WIN)
 
 }  // namespace extensions

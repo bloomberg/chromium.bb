@@ -433,6 +433,12 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
             ' milestone format (M*), or "never": found %s.', name,
             EXPIRY_DATE_PATTERN, expiry_str)
         have_errors = True
+    else:
+      logging.error(
+          'Your histogram must have an expiry date. If you are marking a '
+          'histogram as obsolete, please set the expiry date to the current '
+          'date.')
+      have_errors = True
 
     # Find <owner> tag.
     owners, has_owner = _ExtractOwners(histogram)
@@ -467,6 +473,12 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     if (not histogram.hasAttribute('units') and
         not histogram.hasAttribute('enum')):
       logging.error('histogram %s should have either units or enum', name)
+      have_errors = True
+
+    # Histograms should not have both units and enum.
+    if (histogram.hasAttribute('units') and
+        histogram.hasAttribute('enum')):
+      logging.error('histogram %s should not have both units and enum', name)
       have_errors = True
 
     # Handle units.

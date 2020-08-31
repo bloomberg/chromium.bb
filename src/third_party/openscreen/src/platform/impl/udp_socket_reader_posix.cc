@@ -9,10 +9,9 @@
 
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 UdpSocketReaderPosix::UdpSocketReaderPosix(SocketHandleWaiter* waiter)
     : waiter_(waiter) {}
@@ -21,22 +20,27 @@ UdpSocketReaderPosix::~UdpSocketReaderPosix() {
   waiter_->UnsubscribeAll(this);
 }
 
-void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  // NOTE: Because sockets_ is expected to remain small, the performance here
-  // is better than using an unordered_set.
-  for (UdpSocketPosix* socket : sockets_) {
-    if (socket->GetHandle() == handle) {
-      socket->ReceiveMessage();
-      break;
+void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle,
+                                              uint32_t flags) {
+  if (flags & SocketHandleWaiter::Flags::kReadable) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    // NOTE: Because sockets_ is expected to remain small, the performance here
+    // is better than using an unordered_set.
+    for (UdpSocketPosix* socket : sockets_) {
+      if (socket->GetHandle() == handle) {
+        socket->ReceiveMessage();
+        break;
+      }
     }
   }
 }
 
 void UdpSocketReaderPosix::OnCreate(UdpSocket* socket) {
-  std::lock_guard<std::mutex> lock(mutex_);
   UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
-  sockets_.push_back(read_socket);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    sockets_.push_back(read_socket);
+  }
   waiter_->Subscribe(this, std::cref(read_socket->GetHandle()));
 }
 
@@ -64,5 +68,4 @@ bool UdpSocketReaderPosix::IsMappedReadForTesting(
   return std::find(sockets_.begin(), sockets_.end(), socket) != sockets_.end();
 }
 
-}  // namespace platform
 }  // namespace openscreen

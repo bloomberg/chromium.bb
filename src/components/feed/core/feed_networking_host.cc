@@ -14,12 +14,13 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/feed/core/pref_names.h"
+#include "components/feed/core/common/pref_names.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
@@ -77,7 +78,8 @@ class NetworkFetch {
                                 signin::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
-  void SetRequestHeaders(network::ResourceRequest* request) const;
+  void SetRequestHeaders(bool has_request_body,
+                         network::ResourceRequest* request) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
@@ -150,7 +152,7 @@ void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
 }
 
 void NetworkFetch::StartAccessTokenFetch() {
-  identity::ScopeSet scopes{kAuthenticationScope};
+  signin::ScopeSet scopes{kAuthenticationScope};
   // It's safe to pass base::Unretained(this) since deleting the token fetcher
   // will prevent the callback from being completed.
   token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
@@ -229,10 +231,10 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   if (host_overridden_) {
     resource_request->credentials_mode =
         network::mojom::CredentialsMode::kInclude;
-    resource_request->site_for_cookies = url;
+    resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
   }
 
-  SetRequestHeaders(resource_request.get());
+  SetRequestHeaders(!request_body_.empty(), resource_request.get());
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -243,10 +245,13 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   return simple_loader;
 }
 
-void NetworkFetch::SetRequestHeaders(network::ResourceRequest* request) const {
-  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                             kContentType);
-  request->headers.SetHeader(kContentEncoding, kGzip);
+void NetworkFetch::SetRequestHeaders(bool has_request_body,
+                                     network::ResourceRequest* request) const {
+  if (has_request_body) {
+    request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                               kContentType);
+    request->headers.SetHeader(kContentEncoding, kGzip);
+  }
 
   variations::SignedIn signed_in_status = variations::SignedIn::kNo;
   if (!access_token_.empty()) {
@@ -306,7 +311,7 @@ void NetworkFetch::OnSimpleLoaderComplete(
     status_code = simple_loader_->ResponseInfo()->headers->response_code();
 
     if (status_code == net::HTTP_UNAUTHORIZED) {
-      identity::ScopeSet scopes{kAuthenticationScope};
+      signin::ScopeSet scopes{kAuthenticationScope};
       CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
       if (!account_id.empty()) {
         identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,

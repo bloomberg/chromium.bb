@@ -36,9 +36,6 @@ const char kTestHostDeviceName[] = "Test Device";
 // This is the expected return value from GetChromeOSDeviceName() in tests.
 const char kTestDeviceType[] = "Chrome device";
 
-const base::Token kTestServiceInstanceGroup{0x0123456789abcdefull,
-                                            0xfedcba9876543210ull};
-
 class TestMessageCenter : public message_center::FakeMessageCenter {
  public:
   TestMessageCenter() = default;
@@ -97,19 +94,19 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
   MultiDeviceNotificationPresenterTest() = default;
 
   void SetUp() override {
-    NoSessionAshTestBase::SetUp();
+    fake_multidevice_setup_ =
+        std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
+    auto delegate = std::make_unique<TestShellDelegate>();
+    delegate->SetMultiDeviceSetupBinder(base::BindRepeating(
+        &chromeos::multidevice_setup::MultiDeviceSetupBase::BindReceiver,
+        base::Unretained(fake_multidevice_setup_.get())));
+    NoSessionAshTestBase::SetUp(std::move(delegate));
 
     test_system_tray_client_ = GetSystemTrayClient();
 
-    fake_multidevice_setup_ =
-        std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
     notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
             &test_message_center_);
-    ash_test_helper()->test_shell_delegate()->SetMultiDeviceSetupBinder(
-        base::BindRepeating(
-            &chromeos::multidevice_setup::MultiDeviceSetupBase::BindReceiver,
-            base::Unretained(fake_multidevice_setup_.get())));
   }
 
   void TearDown() override {
@@ -125,7 +122,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     test_session_client->AddUserSession(
         kTestUserEmail, user_manager::USER_TYPE_REGULAR,
         true /* enable_settings */, true /* provide_pref_service */,
-        false /* is_new_profile */, kTestServiceInstanceGroup);
+        false /* is_new_profile */);
     test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
     test_session_client->SwitchActiveUser(
         AccountId::FromUserEmail(kTestUserEmail));

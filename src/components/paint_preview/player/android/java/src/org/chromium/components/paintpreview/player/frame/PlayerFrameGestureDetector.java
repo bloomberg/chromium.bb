@@ -19,6 +19,17 @@ class PlayerFrameGestureDetector
     private ScaleGestureDetector mScaleGestureDetector;
     private boolean mCanDetectZoom;
     private PlayerFrameViewDelegate mPlayerFrameViewDelegate;
+    private PlayerFrameGestureDetector mParentGestureDetector;
+    /**
+     * Last horizontal scroll distance that was detected by this {@link PlayerFrameGestureDetector}
+     * and consumed by {@link #mParentGestureDetector}.
+     */
+    private float mLastParentScrollX;
+    /**
+     * Last vertical scroll distance that was detected by this {@link PlayerFrameGestureDetector}
+     * and consumed by {@link #mParentGestureDetector}.
+     */
+    private float mLastParentScrollY;
 
     /**
      * @param context Used for initializing {@link GestureDetector} and
@@ -36,6 +47,15 @@ class PlayerFrameGestureDetector
     }
 
     /**
+     * Sets the {@link PlayerFrameGestureDetector} that corresponds to the parent view of this
+     * {@link PlayerFrameGestureDetector}'s view. This is used for forwarding unconsumed touch
+     * events.
+     */
+    void setParentGestureDetector(PlayerFrameGestureDetector parentGestureDetector) {
+        mParentGestureDetector = parentGestureDetector;
+    }
+
+    /**
      * This should be called on every touch event.
      * @return Whether the event was consumed.
      */
@@ -49,7 +69,7 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onDown(MotionEvent e) {
-        return false;
+        return true;
     }
 
     @Override
@@ -63,7 +83,27 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        return mPlayerFrameViewDelegate.scrollBy(distanceX, distanceY);
+        if (mPlayerFrameViewDelegate.scrollBy(distanceX, distanceY)) {
+            mLastParentScrollX = 0f;
+            mLastParentScrollY = 0f;
+            return true;
+        }
+
+        // We need to keep track of the distance passed to the parent
+        // {@link PlayerFrameGestureDetector} and accumulate them for the following events. This is
+        // because if the parent view scrolls, the coordinates of the future touch events that this
+        // view received will be transformed since the View associated with this
+        // {@link PlayerFrameGestureDetector} moves along with the parent.
+        mLastParentScrollX += distanceX;
+        mLastParentScrollY += distanceY;
+        if (mParentGestureDetector != null
+                && mParentGestureDetector.onScroll(
+                        e1, e2, mLastParentScrollX, mLastParentScrollY)) {
+            return true;
+        }
+        mLastParentScrollX = 0f;
+        mLastParentScrollY = 0f;
+        return false;
     }
 
     @Override
@@ -71,6 +111,11 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (mPlayerFrameViewDelegate.onFling(velocityX, velocityY)) return true;
+
+        if (mParentGestureDetector != null) {
+            return mParentGestureDetector.onFling(e1, e2, velocityX, velocityY);
+        }
         return false;
     }
 

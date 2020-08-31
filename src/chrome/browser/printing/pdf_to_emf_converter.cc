@@ -219,7 +219,7 @@ std::unique_ptr<MetafilePlayer> PdfConverterImpl::GetMetaFileFromMapping(
   } else {
     metafile = std::make_unique<Emf>();
   }
-  if (!metafile->InitFromData(mapping.memory(), mapping.size()))
+  if (!metafile->InitFromData(mapping.GetMemoryAsSpan<const uint8_t>()))
     metafile.reset();
   return metafile;
 }
@@ -265,7 +265,7 @@ void PdfConverterImpl::Initialize(scoped_refptr<base::RefCountedMemory> data) {
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(data->size());
-  if (!memory.region.IsValid() || !memory.mapping.IsValid()) {
+  if (!memory.IsValid()) {
     OnFailed(std::string("Failed to create PDF data mapping."));
     return;
   }
@@ -407,6 +407,16 @@ void PdfConverterImpl::RecordConversionMetrics() {
     case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
       UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.PostScript3",
                               average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION:
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Printing.ConversionSize.EmfWithReducedRasterization",
+          average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText",
+          average_page_size_in_kb);
       return;
     default:
       NOTREACHED();

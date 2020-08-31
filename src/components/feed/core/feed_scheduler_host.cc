@@ -16,7 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/feed/core/pref_names.h"
+#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_service.h"
@@ -26,9 +27,6 @@
 namespace feed {
 
 namespace {
-
-using TriggerType = FeedSchedulerHost::TriggerType;
-using UserClass = UserClassifier::UserClass;
 
 // Enum for the relation between boolean fields the Feed and host both track.
 // Reported through UMA and must match the corresponding definition in
@@ -41,21 +39,16 @@ enum class FeedHostMismatch {
   kMaxValue = kBothAreSet,
 };
 
-// Copies boolean args into temps to avoid evaluating them multiple times.
-#define UMA_HISTOGRAM_MISMATCH(name, feed_is_set, host_is_set)  \
-  do {                                                          \
-    bool copied_feed_is_set = feed_is_set;                      \
-    bool copied_host_is_set = host_is_set;                      \
-    FeedHostMismatch status = FeedHostMismatch::kNeitherAreSet; \
-    if (copied_feed_is_set && copied_host_is_set) {             \
-      status = FeedHostMismatch::kBothAreSet;                   \
-    } else if (copied_feed_is_set) {                            \
-      status = FeedHostMismatch::kFeedIsSetOnly;                \
-    } else if (copied_host_is_set) {                            \
-      status = FeedHostMismatch::kHostIsSetOnly;                \
-    }                                                           \
-    UMA_HISTOGRAM_ENUMERATION(name, status);                    \
-  } while (false);
+FeedHostMismatch GetMismatch(bool feed_is_set, bool host_is_set) {
+  if (feed_is_set && host_is_set) {
+    return FeedHostMismatch::kBothAreSet;
+  } else if (feed_is_set) {
+    return FeedHostMismatch::kFeedIsSetOnly;
+  } else if (host_is_set) {
+    return FeedHostMismatch::kHostIsSetOnly;
+  }
+  return FeedHostMismatch::kNeitherAreSet;
+}
 
 struct ParamPair {
   std::string name;
@@ -136,15 +129,15 @@ void TryRun(base::OnceClosure closure) {
   }
 }
 
-// Converts UserClassifier::UserClass to a string that corresponds to the
+// Converts UserClass to a string that corresponds to the
 // entries in histogram suffix "UserClasses".
-std::string UserClassToHistogramSuffix(UserClassifier::UserClass user_class) {
+std::string UserClassToHistogramSuffix(UserClass user_class) {
   switch (user_class) {
-    case UserClassifier::UserClass::kRareSuggestionsViewer:
+    case UserClass::kRareSuggestionsViewer:
       return "RareNTPUser";
-    case UserClassifier::UserClass::kActiveSuggestionsViewer:
+    case UserClass::kActiveSuggestionsViewer:
       return "ActiveNTPUser";
-    case UserClassifier::UserClass::kActiveSuggestionsConsumer:
+    case UserClass::kActiveSuggestionsConsumer:
       return "ActiveSuggestionsConsumer";
   }
 }
@@ -155,7 +148,7 @@ std::string UserClassToHistogramSuffix(UserClassifier::UserClass user_class) {
 // because this method is only called as a result of a direct user interaction,
 // like opening the NTP or foregrounding the browser.
 void ReportAgeWithSuffix(const std::string& qualified_trigger,
-                         UserClassifier::UserClass user_class,
+                         UserClass user_class,
                          base::TimeDelta sample) {
   std::string name = base::StringPrintf(
       "NewTabPage.ContentSuggestions.%s.%s", qualified_trigger.c_str(),
@@ -165,10 +158,9 @@ void ReportAgeWithSuffix(const std::string& qualified_trigger,
                                 /*bucket_count=*/50);
 }
 
-void ReportReasonForNotRefreshingByBehavior(
-    NativeRequestBehavior behavior,
-    FeedSchedulerHost::ShouldRefreshResult status) {
-  DCHECK_NE(status, FeedSchedulerHost::kShouldRefresh);
+void ReportReasonForNotRefreshingByBehavior(NativeRequestBehavior behavior,
+                                            ShouldRefreshResult status) {
+  DCHECK_NE(status, ShouldRefreshResult::kShouldRefresh);
   switch (behavior) {
     case kNoRequestWithWait:
       UMA_HISTOGRAM_ENUMERATION(
@@ -197,24 +189,23 @@ void ReportReasonForNotRefreshingByBehavior(
   }
 }
 
-void ReportReasonForNotRefreshingByTrigger(
-    FeedSchedulerHost::TriggerType trigger_type,
-    FeedSchedulerHost::ShouldRefreshResult status) {
-  DCHECK_NE(status, FeedSchedulerHost::kShouldRefresh);
+void ReportReasonForNotRefreshingByTrigger(TriggerType trigger_type,
+                                           ShouldRefreshResult status) {
+  DCHECK_NE(status, ShouldRefreshResult::kShouldRefresh);
   switch (trigger_type) {
-    case FeedSchedulerHost::TriggerType::kNtpShown:
+    case TriggerType::kNtpShown:
       UMA_HISTOGRAM_ENUMERATION(
           "ContentSuggestions.Feed.Scheduler.ShouldRefreshResult."
           "RequestByNtpShown",
           status);
       break;
-    case FeedSchedulerHost::TriggerType::kForegrounded:
+    case TriggerType::kForegrounded:
       UMA_HISTOGRAM_ENUMERATION(
           "ContentSuggestions.Feed.Scheduler.ShouldRefreshResult."
           "RequestByForegrounded",
           status);
       break;
-    case FeedSchedulerHost::TriggerType::kFixedTimer:
+    case TriggerType::kFixedTimer:
       UMA_HISTOGRAM_ENUMERATION(
           "ContentSuggestions.Feed.Scheduler.ShouldRefreshResult."
           "RequestByFixedTimer",
@@ -240,18 +231,18 @@ FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
     eula_accepted_notifier_->Init(this);
   }
 
-  throttlers_.emplace(UserClassifier::UserClass::kRareSuggestionsViewer,
-                      std::make_unique<RefreshThrottler>(
-                          UserClassifier::UserClass::kRareSuggestionsViewer,
-                          profile_prefs_, clock_));
-  throttlers_.emplace(UserClassifier::UserClass::kActiveSuggestionsViewer,
-                      std::make_unique<RefreshThrottler>(
-                          UserClassifier::UserClass::kActiveSuggestionsViewer,
-                          profile_prefs_, clock_));
-  throttlers_.emplace(UserClassifier::UserClass::kActiveSuggestionsConsumer,
-                      std::make_unique<RefreshThrottler>(
-                          UserClassifier::UserClass::kActiveSuggestionsConsumer,
-                          profile_prefs_, clock_));
+  throttlers_.emplace(
+      UserClass::kRareSuggestionsViewer,
+      std::make_unique<RefreshThrottler>(UserClass::kRareSuggestionsViewer,
+                                         profile_prefs_, clock_));
+  throttlers_.emplace(
+      UserClass::kActiveSuggestionsViewer,
+      std::make_unique<RefreshThrottler>(UserClass::kActiveSuggestionsViewer,
+                                         profile_prefs_, clock_));
+  throttlers_.emplace(
+      UserClass::kActiveSuggestionsConsumer,
+      std::make_unique<RefreshThrottler>(UserClass::kActiveSuggestionsConsumer,
+                                         profile_prefs_, clock_));
 }
 
 FeedSchedulerHost::~FeedSchedulerHost() = default;
@@ -292,9 +283,10 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   // Both the Feed and the scheduler track if there are outstanding requests.
   // It's possible that this data gets out of sync. We treat the Feed as
   // authoritative and we change our values to match.
-  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.OutstandingRequest",
-                         has_outstanding_request,
-                         !outstanding_request_until_.is_null());
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSuggestions.Feed.Scheduler.OutstandingRequest",
+      GetMismatch(has_outstanding_request,
+                  !outstanding_request_until_.is_null()));
   if (has_outstanding_request == outstanding_request_until_.is_null()) {
     if (has_outstanding_request) {
       outstanding_request_until_ =
@@ -312,8 +304,9 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   bool scheduler_thinks_has_content =
       !profile_prefs_->FindPreference(prefs::kLastFetchAttemptTime)
            ->IsDefaultValue();
-  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.HasContent",
-                         has_content, scheduler_thinks_has_content);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSuggestions.Feed.Scheduler.HasContent",
+      GetMismatch(has_content, scheduler_thinks_has_content));
   if (has_content != scheduler_thinks_has_content) {
     if (has_content) {
       profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,
@@ -342,7 +335,7 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
 
   NativeRequestBehavior behavior;
   ShouldRefreshResult refresh_status = ShouldRefresh(TriggerType::kNtpShown);
-  if (kShouldRefresh == refresh_status) {
+  if (ShouldRefreshResult::kShouldRefresh == refresh_status) {
     if (!has_content) {
       behavior = kRequestWithWait;
     } else if (IsContentStale(content_creation_date_time)) {
@@ -406,7 +399,7 @@ void FeedSchedulerHost::OnForegrounded() {
   DCHECK(refresh_callback_);
   ShouldRefreshResult refresh_status =
       ShouldRefresh(TriggerType::kForegrounded);
-  if (kShouldRefresh == refresh_status) {
+  if (ShouldRefreshResult::kShouldRefresh == refresh_status) {
     refresh_callback_.Run();
   } else {
     ReportReasonForNotRefreshingByTrigger(TriggerType::kForegrounded,
@@ -426,7 +419,7 @@ void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
   }
 
   ShouldRefreshResult refresh_status = ShouldRefresh(TriggerType::kFixedTimer);
-  if (kShouldRefresh == refresh_status) {
+  if (ShouldRefreshResult::kShouldRefresh == refresh_status) {
     // There shouldn't typically be anything in |fixed_timer_completion_| right
     // now, but if there was, run it before we replace it.
     TryRun(std::move(fixed_timer_completion_));
@@ -476,7 +469,7 @@ bool FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
   }
 
   ShouldRefreshResult refresh_status = ShouldRefresh(TriggerType::kNtpShown);
-  if (kShouldRefresh == refresh_status) {
+  if (ShouldRefreshResult::kShouldRefresh == refresh_status) {
     // Instead of using |refresh_callback_|, instead return our desire to
     // refresh back up to our caller. This allows more information to be given
     // all at once to the Feed which allows it to act more intelligently.
@@ -509,41 +502,40 @@ void FeedSchedulerHost::OnEulaAccepted() {
   OnForegrounded();
 }
 
-FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
-    TriggerType trigger) {
+ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
   if (clock_->Now() < outstanding_request_until_) {
     DVLOG(2) << "Outstanding request stopped refresh from trigger "
              << static_cast<int>(trigger);
-    return kDontRefreshOutstandingRequest;
+    return ShouldRefreshResult::kDontRefreshOutstandingRequest;
   }
 
   if (base::Contains(disabled_triggers_, trigger)) {
     DVLOG(2) << "Disabled trigger stopped refresh from trigger "
              << static_cast<int>(trigger);
-    return kDontRefreshTriggerDisabled;
+    return ShouldRefreshResult::kDontRefreshTriggerDisabled;
   }
 
   if (net::NetworkChangeNotifier::IsOffline()) {
     DVLOG(2) << "Network is offline stopped refresh from trigger "
              << static_cast<int>(trigger);
-    return kDontRefreshNetworkOffline;
+    return ShouldRefreshResult::kDontRefreshNetworkOffline;
   }
 
   if (eula_accepted_notifier_ && !eula_accepted_notifier_->IsEulaAccepted()) {
     DVLOG(2) << "EULA not being accepted stopped refresh from trigger "
              << static_cast<int>(trigger);
-    return kDontRefreshEulaNotAccepted;
+    return ShouldRefreshResult::kDontRefreshEulaNotAccepted;
   }
 
   if (!profile_prefs_->GetBoolean(prefs::kArticlesListVisible)) {
     DVLOG(2) << "Articles being hidden stopped refresh from trigger "
              << static_cast<int>(trigger);
-    return kDontRefreshArticlesHidden;
+    return ShouldRefreshResult::kDontRefreshArticlesHidden;
   }
 
   base::TimeDelta attempt_age =
       clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
-  UserClassifier::UserClass user_class = user_classifier_.GetUserClass();
+  UserClass user_class = user_classifier_.GetUserClass();
   if (trigger == TriggerType::kNtpShown &&
       !time_until_first_shown_trigger_reported_) {
     time_until_first_shown_trigger_reported_ = true;
@@ -560,7 +552,7 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
   if (clock_->Now() < suppress_refreshes_until_) {
     DVLOG(2) << "Refresh suppression until " << suppress_refreshes_until_
              << " stopped refresh from trigger " << static_cast<int>(trigger);
-    return kDontRefreshRefreshSuppressed;
+    return ShouldRefreshResult::kDontRefreshRefreshSuppressed;
   }
 
   // https://crbug.com/988165: When kThrottleBackgroundFetches == false, skip
@@ -569,7 +561,7 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
     if (attempt_age < GetTriggerThreshold(trigger)) {
       DVLOG(2) << "Last attempt age of " << attempt_age
                << " stopped refresh from trigger " << static_cast<int>(trigger);
-      return kDontRefreshNotStale;
+      return ShouldRefreshResult::kDontRefreshNotStale;
     }
 
     auto throttlerIter = throttlers_.find(user_class);
@@ -577,7 +569,7 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
         !throttlerIter->second->RequestQuota()) {
       DVLOG(2) << "Throttler stopped refresh from trigger "
                << static_cast<int>(trigger);
-      return kDontRefreshRefreshThrottled;
+      return ShouldRefreshResult::kDontRefreshRefreshThrottled;
     }
   }
 
@@ -602,7 +594,7 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
 
   last_fetch_trigger_type_ = std::make_unique<TriggerType>(trigger);
 
-  return kShouldRefresh;
+  return ShouldRefreshResult::kShouldRefresh;
 }
 
 bool FeedSchedulerHost::IsContentStale(base::Time content_creation_date_time) {

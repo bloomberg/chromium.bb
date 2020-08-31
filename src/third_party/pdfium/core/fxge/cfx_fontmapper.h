@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxge/cfx_face.h"
 #include "third_party/base/optional.h"
@@ -44,9 +45,12 @@ class CFX_FontMapper {
   static Optional<StandardFont> GetStandardFontName(ByteString* name);
   static bool IsSymbolicFont(StandardFont font);
   static bool IsFixedFont(StandardFont font);
+  static constexpr uint32_t MakeTag(char c1, char c2, char c3, char c4) {
+    return static_cast<uint8_t>(c1) << 24 | static_cast<uint8_t>(c2) << 16 |
+           static_cast<uint8_t>(c3) << 8 | static_cast<uint8_t>(c4);
+  }
 
   void SetSystemFontInfo(std::unique_ptr<SystemFontInfoIface> pFontInfo);
-  SystemFontInfoIface* GetSystemFontInfo() { return m_pFontInfo.get(); }
   void AddInstalledFont(const ByteString& name, int charset);
   void LoadInstalledFonts();
 
@@ -62,12 +66,18 @@ class CFX_FontMapper {
   int GetFaceSize() const;
   ByteString GetFaceName(int index) const { return m_FaceArray[index].name; }
 
+#ifdef PDF_ENABLE_XFA
+  std::unique_ptr<uint8_t, FxFreeDeleter> RawBytesForIndex(
+      uint32_t index,
+      size_t* returned_length);
+#endif  // PDF_ENABLE_XFA
+
   std::vector<ByteString> m_InstalledTTFonts;
   std::vector<std::pair<ByteString, ByteString>> m_LocalizedTTFonts;
 
  private:
-  static const size_t MM_FACE_COUNT = 2;
-  static const size_t FOXIT_FACE_COUNT = 14;
+  static constexpr size_t MM_FACE_COUNT = 2;
+  static constexpr size_t FOXIT_FACE_COUNT = 14;
 
   uint32_t GetChecksumFromTT(void* hFont);
   ByteString GetPSNameFromTT(void* hFont);

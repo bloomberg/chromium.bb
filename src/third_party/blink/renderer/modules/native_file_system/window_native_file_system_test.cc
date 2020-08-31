@@ -118,7 +118,7 @@ class WindowNativeFileSystemTest : public PageTestBase {
 
 TEST_F(WindowNativeFileSystemTest, UserActivationRequiredOtherwiseDenied) {
   LocalFrame* frame = &GetFrame();
-  EXPECT_FALSE(frame->HasBeenActivated());
+  EXPECT_FALSE(frame->HasStickyUserActivation());
 
   MockNativeFileSystemManager manager(frame->GetBrowserInterfaceBroker());
   manager.SetChooseEntriesResponse(WTF::Bind(
@@ -126,17 +126,17 @@ TEST_F(WindowNativeFileSystemTest, UserActivationRequiredOtherwiseDenied) {
         FAIL();
       }));
   GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-      "window.chooseFileSystemEntries({type: 'openFile'});");
+      "window.chooseFileSystemEntries({type: 'open-file'});");
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(frame->HasBeenActivated());
+  EXPECT_FALSE(frame->HasStickyUserActivation());
 }
 
 TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesSuccessful) {
   LocalFrame* frame = &GetFrame();
-  EXPECT_FALSE(frame->HasBeenActivated());
+  EXPECT_FALSE(frame->HasStickyUserActivation());
 
   LocalFrame::NotifyUserActivation(frame);
-  EXPECT_TRUE(frame->HasBeenActivated());
+  EXPECT_TRUE(frame->HasStickyUserActivation());
 
   base::RunLoop manager_run_loop;
   MockNativeFileSystemManager manager(frame->GetBrowserInterfaceBroker(),
@@ -160,23 +160,23 @@ TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesSuccessful) {
         std::move(callback).Run(std::move(error), std::move(entries));
       }));
   GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-      "window.chooseFileSystemEntries({type: 'openFile'});");
+      "window.chooseFileSystemEntries({type: 'open-file'});");
   manager_run_loop.Run();
 
   // Mock Manager finished sending data over the mojo pipe.
   // Clearing the user activation.
-  frame->ClearActivation();
-  EXPECT_FALSE(frame->HasBeenActivated());
+  frame->ClearUserActivation();
+  EXPECT_FALSE(frame->HasStickyUserActivation());
 
   // Let blink-side receiver process the response and set the user activation
   // again.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(frame->HasBeenActivated());
+  EXPECT_TRUE(frame->HasStickyUserActivation());
 }
 
 TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesErrors) {
   LocalFrame* frame = &GetFrame();
-  EXPECT_FALSE(frame->HasBeenActivated());
+  EXPECT_FALSE(frame->HasStickyUserActivation());
 
   using mojom::blink::NativeFileSystemStatus;
 
@@ -192,7 +192,7 @@ TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesErrors) {
 
   for (const NativeFileSystemStatus& status : statuses) {
     LocalFrame::NotifyUserActivation(frame);
-    EXPECT_TRUE(frame->HasBeenActivated());
+    EXPECT_TRUE(frame->HasStickyUserActivation());
 
     base::RunLoop manager_run_loop;
     manager.SetQuitClosure(manager_run_loop.QuitClosure());
@@ -208,16 +208,16 @@ TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesErrors) {
         },
         status));
     GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-        "window.chooseFileSystemEntries({type: 'openFile'});");
+        "window.chooseFileSystemEntries({type: 'open-file'});");
     manager_run_loop.Run();
 
     // Mock Manager finished sending data over the mojo pipe.
     // Clearing the user activation.
-    frame->ClearActivation();
-    EXPECT_FALSE(frame->HasBeenActivated());
+    frame->ClearUserActivation();
+    EXPECT_FALSE(frame->HasStickyUserActivation());
 
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(frame->HasBeenActivated());
+    EXPECT_FALSE(frame->HasStickyUserActivation());
   }
 }
 

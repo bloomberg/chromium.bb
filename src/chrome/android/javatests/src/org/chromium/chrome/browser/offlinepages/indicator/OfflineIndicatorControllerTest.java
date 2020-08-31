@@ -18,23 +18,23 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.DownloadActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -349,7 +349,7 @@ public class OfflineIndicatorControllerTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         mActivityTestRule.loadUrl(pageUrl);
-        Assert.assertEquals(pageUrl, tab.getUrl());
+        Assert.assertEquals(pageUrl, tab.getUrlString());
         if (mIsConnected) {
             Assert.assertFalse(isErrorPage(tab));
             Assert.assertFalse(isOfflinePage(tab));
@@ -383,7 +383,7 @@ public class OfflineIndicatorControllerTest {
 
         final Semaphore semaphore = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
             offlinePageBridge.savePage(mActivityTestRule.getWebContents(), CLIENT_ID,
                     new OfflinePageBridge.SavePageCallback() {

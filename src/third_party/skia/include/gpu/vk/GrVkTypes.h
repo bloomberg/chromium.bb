@@ -201,11 +201,7 @@ struct GrVkImageInfo {
             , fProtected(info.fProtected)
             , fYcbcrConversionInfo(info.fYcbcrConversionInfo) {}
 
-    // This gives a way for a client to update the layout of the Image if they change the layout
-    // while we're still holding onto the wrapped texture. They will first need to get a handle
-    // to our internal GrVkImageInfo by calling getTextureHandle on a GrVkTexture.
-    void updateImageLayout(VkImageLayout layout) { fImageLayout = layout; }
-
+#if GR_TEST_UTILS
     bool operator==(const GrVkImageInfo& that) const {
         return fImage == that.fImage && fAlloc == that.fAlloc &&
                fImageTiling == that.fImageTiling && fImageLayout == that.fImageLayout &&
@@ -213,6 +209,7 @@ struct GrVkImageInfo {
                fCurrentQueueFamily == that.fCurrentQueueFamily && fProtected == that.fProtected &&
                fYcbcrConversionInfo == that.fYcbcrConversionInfo;
     }
+#endif
 };
 
 using GrVkGetProc = std::function<PFN_vkVoidFunction(

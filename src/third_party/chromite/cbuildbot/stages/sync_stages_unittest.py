@@ -24,8 +24,10 @@ from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
-from chromite.lib import metadata_lib
 from chromite.lib.buildstore import FakeBuildStore
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # It's normal for unittests to access protected members.
 # pylint: disable=protected-access
@@ -76,7 +78,7 @@ class BootstrapStageTest(generic_stages_unittest.AbstractStageTestCase,
     #   '--nobootstrap'
     #   '--manifest-repo-url'
     self.assertCommandContains([
-        'chromite/cbuildbot/cbuildbot',
+        'chromite/bin/cbuildbot',
         'sync-test-cbuildbot',
         '-r',
         os.path.join(self.tempdir, 'buildroot'),
@@ -231,14 +233,14 @@ class MockPatch(mock.MagicMock):
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""
 
-  BOT_ID = constants.MST_ANDROID_PFQ_MASTER
+  BOT_ID = constants.VMMST_ANDROID_PFQ_MASTER
 
   def setUp(self):
     """Setup"""
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_name = 'master-mst-android-pfq'
+    self.build_name = 'master-vmmst-android-pfq'
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None
@@ -280,33 +282,6 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
         self._run, self.buildstore)
     self.sync_stage.manifest_manager = self.manager
     self._run.attrs.manifest_manager = self.manager
-
-  def testGetLastChromeOSVersion(self):
-    """Test GetLastChromeOSVersion"""
-    id1 = self.buildstore.InsertBuild(
-        builder_name='test_builder',
-        build_number=666,
-        build_config='master-mst-android-pfq',
-        bot_hostname='test_hostname')
-    id2 = self.buildstore.InsertBuild(
-        builder_name='test_builder',
-        build_number=667,
-        build_config='master-mst-android-pfq',
-        bot_hostname='test_hostname')
-    metadata_1 = metadata_lib.CBuildbotMetadata()
-    metadata_1.UpdateWithDict({'version': {'full': 'R42-7140.0.0-rc1'}})
-    metadata_2 = metadata_lib.CBuildbotMetadata()
-    metadata_2.UpdateWithDict({'version': {'full': 'R43-7141.0.0-rc1'}})
-    self._run.attrs.metadata.UpdateWithDict({
-        'version': {
-            'full': 'R44-7142.0.0-rc1'
-        }
-    })
-    self.fake_db.UpdateMetadata(id1, metadata_1)
-    self.fake_db.UpdateMetadata(id2, metadata_2)
-    v = self.sync_stage.GetLastChromeOSVersion()
-    self.assertEqual(v.milestone, '43')
-    self.assertEqual(v.platform, '7141.0.0-rc1')
 
   def testGetInitializedManager(self):
     self.sync_stage.repo = self.repo

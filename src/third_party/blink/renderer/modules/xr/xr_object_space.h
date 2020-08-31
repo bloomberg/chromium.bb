@@ -13,29 +13,39 @@ namespace blink {
 class XRSession;
 
 // Helper class that returns an XRSpace that tracks the position of object of
-// type T (for example XRPlane, XRAnchor). The type T has to have a poseMatrix()
-// method.
+// type T (for example XRPlane, XRAnchor). The type T has to have a
+// MojoFromObject() method, returning a base::Optional<TransformationMatrix>.
+//
+// If the object's MojoFromObject() method returns a base::nullopt, it means
+// that the object is not localizable in the current frame (i.e. its pose is
+// unknown) - the `frame.getPose(objectSpace, otherSpace)` will return null.
+// That does not necessarily mean that object tracking is lost - it may be that
+// the object's location will become known in subsequent frames.
 template <typename T>
 class XRObjectSpace : public XRSpace {
  public:
   explicit XRObjectSpace(XRSession* session, const T* object)
       : XRSpace(session), object_(object) {}
 
-  std::unique_ptr<TransformationMatrix> MojoFromSpace() override {
-    auto object_from_mojo = object_->poseMatrix();
+  base::Optional<TransformationMatrix> MojoFromNative() override {
+    return object_->MojoFromObject();
+  }
 
-    if (!object_from_mojo.IsInvertible()) {
-      return nullptr;
-    }
-
-    return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
+  base::Optional<TransformationMatrix> NativeFromMojo() final {
+    return XRSpace::TryInvert(MojoFromNative());
   }
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override {
     return XRNativeOriginInformation::Create(object_);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  bool IsStationary() const override {
+    // Object spaces are considered stationary - they are supposed to remain
+    // fixed relative to their surroundings (at least locally).
+    return true;
+  }
+
+  void Trace(Visitor* visitor) override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);
   }

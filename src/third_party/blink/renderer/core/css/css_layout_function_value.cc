@@ -14,8 +14,6 @@ CSSLayoutFunctionValue::CSSLayoutFunctionValue(CSSCustomIdentValue* name,
                                                bool is_inline)
     : CSSValue(kLayoutFunctionClass), name_(name), is_inline_(is_inline) {}
 
-CSSLayoutFunctionValue::~CSSLayoutFunctionValue() = default;
-
 String CSSLayoutFunctionValue::CustomCSSText() const {
   StringBuilder result;
   if (is_inline_)
@@ -34,7 +32,7 @@ bool CSSLayoutFunctionValue::Equals(const CSSLayoutFunctionValue& other) const {
   return GetName() == other.GetName() && IsInline() == other.IsInline();
 }
 
-void CSSLayoutFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSLayoutFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(name_);
   CSSValue::TraceAfterDispatch(visitor);
 }

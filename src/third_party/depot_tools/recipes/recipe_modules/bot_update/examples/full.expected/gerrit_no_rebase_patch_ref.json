@@ -19,6 +19,10 @@
       "--gerrit_no_rebase_patch_ref",
       "--disable-syntax-validation"
     ],
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "300"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -122,6 +126,10 @@
       "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--no_fetch_tags"
     ],
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "300"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"

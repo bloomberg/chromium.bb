@@ -17,11 +17,11 @@
 #include "ash/public/cpp/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -69,10 +69,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
@@ -81,10 +81,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -152,14 +149,14 @@ void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
 // brltty.
 void RestartBrltty(const std::string& address) {
   chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
-  client->StopJob(kBrlttyUpstartJobName, {}, EmptyVoidDBusMethodCallback());
+  client->StopJob(kBrlttyUpstartJobName, {}, base::DoNothing());
 
   std::vector<std::string> args;
   if (address.empty())
     return;
 
   args.push_back(base::StringPrintf("ADDRESS=%s", address.c_str()));
-  client->StartJob(kBrlttyUpstartJobName, args, EmptyVoidDBusMethodCallback());
+  client->StartJob(kBrlttyUpstartJobName, args, base::DoNothing());
 }
 
 bool VolumeAdjustSoundEnabled() {
@@ -199,6 +196,78 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
   base::OnceCallback<void()> on_destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
+};
+
+// Responsible for deferring ChromeVox load until a text-to-speech voice is
+// ready to be used. Plays progress tones while waiting.
+class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
+                                public content::VoicesChangedDelegate {
+ public:
+  explicit ChromeVoxDeferredLoader(AccessibilityManager* manager)
+      : manager_(manager) {
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
+                 &ChromeVoxDeferredLoader::OnTimer);
+
+    if (IsGoogleTtsVoiceAvailable())
+      SendWarmupUtterance();
+    else
+      content::TtsController::GetInstance()->AddVoicesChangedDelegate(this);
+  }
+
+  ~ChromeVoxDeferredLoader() override {
+    content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+    content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
+    manager_->UnloadChromeVox();
+  }
+
+ private:
+  // content::UtteranceEventDelegate:
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int length,
+                  const std::string& error_message) override {
+    utterance->SetEventDelegate(nullptr);
+    timer_.Stop();
+    manager_->LoadChromeVox();
+  }
+
+  // content::VoicesChangedDelegate:
+  void OnVoicesChanged() override {
+    if (IsGoogleTtsVoiceAvailable()) {
+      content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+      SendWarmupUtterance();
+    }
+  }
+
+  void SendWarmupUtterance() {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::unique_ptr<content::TtsUtterance> utterance =
+        content::TtsUtterance::Create(profile);
+    utterance->SetEventDelegate(this);
+    utterance->SetEngineId(extension_misc::kGoogleSpeechSynthesisExtensionId);
+    content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
+  }
+
+  void OnTimer() { manager_->PlaySpokenFeedbackToggleCountdown(tick_count_++); }
+
+  bool IsGoogleTtsVoiceAvailable() const {
+    Profile* profile = manager_->profile();
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    std::vector<content::VoiceData> voices;
+    content::TtsController::GetInstance()->GetVoices(profile, &voices);
+    return std::any_of(voices.begin(), voices.end(), [](const auto& voice) {
+      return voice.engine_id ==
+             extension_misc::kGoogleSpeechSynthesisExtensionId;
+    });
+  }
+
+  AccessibilityManager* manager_;
+  int tick_count_ = 0;
+  base::RepeatingTimer timer_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,22 +367,27 @@ AccessibilityManager::AccessibilityManager() {
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
+      extension_misc::kChromeVoxManifestFilename,
+      extension_misc::kChromeVoxGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadChromeVox,
                           weak_ptr_factory_.GetWeakPtr())));
   select_to_speak_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSelectToSpeakExtensionId,
       resources_path.Append(extension_misc::kSelectToSpeakExtensionPath),
+      extension_misc::kSelectToSpeakManifestFilename,
+      extension_misc::kSelectToSpeakGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSelectToSpeak,
                           weak_ptr_factory_.GetWeakPtr())));
   switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
+      extension_misc::kSwitchAccessManifestFilename,
+      extension_misc::kSwitchAccessGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSwitchAccess,
                           weak_ptr_factory_.GetWeakPtr())));
 
   // Connect to the media session service.
-  content::GetSystemConnector()->Connect(
-      media_session::mojom::kServiceName,
+  content::GetMediaSessionService().BindAudioFocusManager(
       audio_focus_manager_.BindNewPipeAndPassReceiver());
 
   ash::AcceleratorController::SetVolumeAdjustmentSoundCallback(
@@ -459,9 +533,12 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
     }
   }
 
-  user_manager::known_user::SetBooleanPref(
-      multi_user_util::GetAccountIdFromProfile(profile_),
-      kUserSpokenFeedbackEnabled, enabled);
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile_) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
+    user_manager::known_user::SetBooleanPref(
+        multi_user_util::GetAccountIdFromProfile(profile_),
+        kUserSpokenFeedbackEnabled, enabled);
+  }
 
   if (enabled) {
     chromevox_loader_->SetProfile(
@@ -480,11 +557,10 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    chromevox_loader_->Load(
-        profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
-                                      weak_ptr_factory_.GetWeakPtr()));
+    chromevox_deferred_loader_ =
+        std::make_unique<ChromeVoxDeferredLoader>(this);
   } else {
-    chromevox_loader_->Unload();
+    chromevox_deferred_loader_.reset();
   }
   UpdateBrailleImeState();
 }
@@ -913,18 +989,6 @@ void AccessibilityManager::OnSwitchAccessChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySwitchAccessEnabled);
 
-  // The Switch Access setting is behind a flag. Don't enable the feature
-  // even if the preference is enabled, if the flag isn't also set.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
-    if (enabled) {
-      LOG(WARNING) << "Switch Access enabled but experimental accessibility "
-                   << "Switch Access flag is not set.";
-    }
-    return;
-  }
-
   if (enabled) {
     if (IsSpokenFeedbackEnabled()) {
       LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";
@@ -970,10 +1034,10 @@ void AccessibilityManager::CheckBrailleState() {
     scoped_braille_observer_.Add(braille_controller);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&BrailleController::GetDisplayState,
-                 base::Unretained(braille_controller)),
-      base::Bind(&AccessibilityManager::ReceiveBrailleDisplayState,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BrailleController::GetDisplayState,
+                     base::Unretained(braille_controller)),
+      base::BindOnce(&AccessibilityManager::ReceiveBrailleDisplayState,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AccessibilityManager::ReceiveBrailleDisplayState(
@@ -1336,6 +1400,21 @@ void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
   extension_registry_observer_.Remove(registry);
 }
 
+void AccessibilityManager::LoadChromeVox() {
+  chromevox_loader_->Load(
+      profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
+                                    weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AccessibilityManager::UnloadChromeVox() {
+  // In browser_tests unloading the ChromeVox extension can race with shutdown.
+  // http://crbug.com/801700
+  if (app_terminating_)
+    return;
+
+  chromevox_loader_->Unload();
+}
+
 void AccessibilityManager::PostLoadChromeVox() {
   // In browser_tests loading the ChromeVox extension can race with shutdown.
   // http://crbug.com/801700
@@ -1353,7 +1432,7 @@ void AccessibilityManager::PostLoadChromeVox() {
     // ChromeVox is toggled off then back on all while a usb braille display is
     // connected.
     chromeos::UpstartClient::Get()->StartJob(kBrlttyUpstartJobName, {},
-                                             EmptyVoidDBusMethodCallback());
+                                             base::DoNothing());
   }
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
@@ -1389,7 +1468,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
   chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {},
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 

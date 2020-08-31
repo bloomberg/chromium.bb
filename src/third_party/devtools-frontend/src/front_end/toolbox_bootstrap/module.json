@@ -1,9 +1,10 @@
 {
-    "dependencies": [
-        "platform",
-        "dom_extension"
-    ],
-    "scripts": [
-        "Toolbox.js"
-    ]
+  "dependencies": [
+    "platform",
+    "dom_extension"
+  ],
+  "scripts": [],
+  "modules": [
+    "toolbox_bootstrap.js"
+  ]
 }

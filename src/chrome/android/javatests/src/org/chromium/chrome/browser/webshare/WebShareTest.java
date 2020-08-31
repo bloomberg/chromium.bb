@@ -10,7 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.app.AlertDialog;
+
+import androidx.appcompat.app.AlertDialog;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -122,7 +123,7 @@ public class WebShareTest {
     public void testWebShareNoUserGesture() throws Exception {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE));
         mActivityTestRule.runJavaScriptCodeInCurrentTab("initiate_share()");
-        Assert.assertEquals("Fail: NotAllowedError: "
+        Assert.assertEquals("Fail: NotAllowedError: Failed to execute 'share' on 'Navigator': "
                         + "Must be handling a user gesture to perform a share request.",
                 mUpdateWaiter.waitForUpdate());
     }
@@ -263,8 +264,9 @@ public class WebShareTest {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_MANY));
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
-        Assert.assertEquals(
-                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+        Assert.assertEquals("Fail: NotAllowedError: "
+                        + "Failed to execute 'share' on 'Navigator': Permission denied",
+                mUpdateWaiter.waitForUpdate());
     }
 
     /**
@@ -278,8 +280,9 @@ public class WebShareTest {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_LARGE));
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
-        Assert.assertEquals(
-                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+        Assert.assertEquals("Fail: NotAllowedError: "
+                        + "Failed to execute 'share' on 'Navigator': Permission denied",
+                mUpdateWaiter.waitForUpdate());
     }
 
     /**

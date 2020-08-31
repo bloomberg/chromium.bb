@@ -51,6 +51,11 @@ mr.ProviderManager = class extends mr.Module {
     super();
 
     /**
+     * @type {?mojo.MediaRouteProviderConfig}
+     */
+    this.config = null;
+
+    /**
      * @private {mr.Logger}
      */
     this.logger_ = mr.Logger.getInstance('mr.ProviderManager');
@@ -154,19 +159,6 @@ mr.ProviderManager = class extends mr.Module {
     this.externalMessageHandler_ =
         mr.InitHelper.getExternalMessageHandler(this);
 
-    /**
-     * The type of the Cast dialog used (WebUI or Views). This value is
-     * submitted with feedback reports.
-     * @type {string}
-     */
-    this.dialogType = '';
-
-    /**
-     * Indicates whether to use mirroring service for cast mirroring.
-     * @private {boolean}
-     */
-    this.useMirroringService_ = false;
-
     mr.ProviderManager.exportProperties_(this);
   }
 
@@ -193,7 +185,8 @@ mr.ProviderManager = class extends mr.Module {
     const moduleId = this.mirrorServiceModules_.get(serviceName);
     return mr.Module.load(moduleId).then(module => {
       let service = /** @type {!mr.mirror.Service} */ (module);
-      service.initialize(this, this.useMirroringService_);
+      service.initialize(
+          this, !!this.config && this.config.use_mirroring_service);
       return service;
     });
   }
@@ -202,9 +195,9 @@ mr.ProviderManager = class extends mr.Module {
    * Registers and initalizes providers.
    *
    * @param {!Array<!mr.Provider>} providers
-   * @param {!mojo.MediaRouteProviderConfig=} config
+   * @param {!mojo.MediaRouteProviderConfig} config
    */
-  registerAllProviders(providers, config = undefined) {
+  registerAllProviders(providers, config) {
     providers.forEach(provider => {
       this.registerProvider_(provider, config);
     });
@@ -215,9 +208,9 @@ mr.ProviderManager = class extends mr.Module {
    * and registers itself with PersistentDataManager.
    * @param {!mr.MediaRouterService} mediaRouterService
    * @param {!Array<!mr.Provider>} providers
-   * @param {!mojo.MediaRouteProviderConfig=} config
+   * @param {!mojo.MediaRouteProviderConfig} config
    */
-  initialize(mediaRouterService, providers, config = undefined) {
+  initialize(mediaRouterService, providers, config) {
     this.mirrorServiceModules_.set(
         mr.mirror.ServiceName.WEBRTC, mr.ModuleId.WEBRTC_STREAMING_SERVICE);
     this.mirrorServiceModules_.set(
@@ -235,12 +228,7 @@ mr.ProviderManager = class extends mr.Module {
         this.mediaRouterService_.onRouteMessagesReceived.bind(
             this.mediaRouterService_));
     this.registerAllProviders(providers, config);
-    if (config && config.use_views_dialog !== undefined) {
-      this.dialogType = config.use_views_dialog ? 'Views' : 'WebUI';
-    }
-    if (config && config.use_mirroring_service !== undefined) {
-      this.useMirroringService_ = config.use_mirroring_service;
-    }
+    this.config = config;
 
     mr.PersistentDataManager.register(this);
     mr.Module.onModuleLoaded(mr.ModuleId.PROVIDER_MANAGER, this);
@@ -1075,7 +1063,7 @@ mr.ProviderManager = class extends mr.Module {
   provideSinks(providerName, sinks) {
     const provider = this.getProviderByName(providerName);
     if (!provider) {
-      this.logger_.error(
+      this.logger_.info(
           `provideSinks: Provider not found for providerName ${providerName}`);
       return;
     }

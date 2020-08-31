@@ -6,7 +6,6 @@
 #define PLATFORM_TEST_FAKE_UDP_SOCKET_H_
 
 #include <algorithm>
-#include <memory>
 #include <queue>
 
 #include "gmock/gmock.h"
@@ -14,10 +13,9 @@
 #include "platform/api/udp_socket.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 class FakeUdpSocket : public UdpSocket {
  public:
@@ -32,12 +30,9 @@ class FakeUdpSocket : public UdpSocket {
     }
   };
 
-  static std::unique_ptr<FakeUdpSocket> CreateDefault(
-      Version version = Version::kV4);
-
-  FakeUdpSocket(TaskRunner* task_runner,
-                Client* client,
-                Version version = Version::kV4);
+  explicit FakeUdpSocket(TaskRunner* task_runner = nullptr,
+                         Client* client = nullptr,
+                         Version version = Version::kV4);
   ~FakeUdpSocket() override;
 
   bool IsIPv4() const override;
@@ -76,11 +71,7 @@ class FakeUdpSocket : public UdpSocket {
   }
   size_t set_dscp_queue_size() { return set_dscp_errors_.size(); }
 
-  void MockReceivePacket(UdpPacket packet) {
-    client_->OnRead(this, std::move(packet));
-  }
-
-  FakeUdpSocket::MockClient* client_mock() { return fake_client_.get(); }
+  void MockReceivePacket(UdpPacket packet);
 
  private:
   void ProcessConfigurationMethod(std::queue<Error>* errors);
@@ -94,14 +85,8 @@ class FakeUdpSocket : public UdpSocket {
   std::queue<Error> set_multicast_outbound_interface_errors_;
   std::queue<Error> join_multicast_group_errors_;
   std::queue<Error> set_dscp_errors_;
-
-  // Fake implementations to be set by CreateDefault().
-  std::unique_ptr<FakeTaskRunner> fake_task_runner_;
-  std::unique_ptr<FakeUdpSocket::MockClient> fake_client_;
-  std::unique_ptr<FakeClock> fake_clock_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_FAKE_UDP_SOCKET_H_

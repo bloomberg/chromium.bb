@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2019 The Khronos Group Inc.
- * Copyright (c) 2015-2019 Valve Corporation
- * Copyright (c) 2015-2019 LunarG, Inc.
- * Copyright (C) 2015-2019 Google Inc.
+/* Copyright (c) 2015-2020 The Khronos Group Inc.
+ * Copyright (c) 2015-2020 Valve Corporation
+ * Copyright (c) 2015-2020 LunarG, Inc.
+ * Copyright (C) 2015-2020 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "vulkan/vulkan.h"
-#include <SPIRV/spirv.hpp>
+#include <spirv/unified1/spirv.hpp>
 #include <generated/spirv_tools_commit_id.h>
 #include "spirv-tools/optimizer.hpp"
 #include "core_validation_types.h"
@@ -76,6 +76,13 @@ struct spirv_inst_iter {
     // The iterator and the value are the same thing.
     spirv_inst_iter &operator*() { return *this; }
     spirv_inst_iter const &operator*() const { return *this; }
+};
+
+struct shader_stage_attributes {
+    char const *const name;
+    bool arrayed_input;
+    bool arrayed_output;
+    VkShaderStageFlags stage;
 };
 
 struct decoration_set {
@@ -126,7 +133,7 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     };
     std::unordered_multimap<std::string, EntryPoint> entry_points;
     bool has_valid_spirv;
-    bool has_specialization_constants;
+    bool has_specialization_constants{false};
     VkShaderModule vk_shader_module;
     uint32_t gpu_validation_shader_id;
 
@@ -183,11 +190,8 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
 
     SHADER_MODULE_STATE(VkShaderModuleCreateInfo const *pCreateInfo, VkShaderModule shaderModule, spv_target_env env,
                         uint32_t unique_shader_id)
-        : words(PreprocessShaderBinary((uint32_t *)pCreateInfo->pCode, pCreateInfo->codeSize, env)),
-          def_index(),
-          has_valid_spirv(true),
-          vk_shader_module(shaderModule),
-          gpu_validation_shader_id(unique_shader_id) {
+        : words(), def_index(), has_valid_spirv(true), vk_shader_module(shaderModule), gpu_validation_shader_id(unique_shader_id) {
+        words = PreprocessShaderBinary((uint32_t *)pCreateInfo->pCode, pCreateInfo->codeSize, env);
         BuildDefIndex();
     }
 
@@ -297,9 +301,15 @@ class ValidationCache {
         // Convert sha1_str from a hex string to binary. We only need VK_UUID_SIZE bytes of
         // output, so pad with zeroes if the input string is shorter than that, and truncate
         // if it's longer.
+#if defined(__GNUC__) && (__GNUC__ > 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
         char padded_sha1_str[2 * VK_UUID_SIZE + 1] = {};  // 2 hex digits == 1 byte
         std::strncpy(padded_sha1_str, sha1_str, 2 * VK_UUID_SIZE);
-
+#if defined(__GNUC__) && (__GNUC__ > 8)
+#pragma GCC diagnostic pop
+#endif
         for (uint32_t i = 0; i < VK_UUID_SIZE; ++i) {
             const char byte_str[] = {padded_sha1_str[2 * i + 0], padded_sha1_str[2 * i + 1], '\0'};
             uuid[i] = static_cast<uint8_t>(std::strtoul(byte_str, nullptr, 16));
@@ -321,8 +331,7 @@ std::unordered_set<uint32_t> MarkAccessibleIds(SHADER_MODULE_STATE const *src, s
 void ProcessExecutionModes(SHADER_MODULE_STATE const *src, const spirv_inst_iter &entrypoint, PIPELINE_STATE *pipeline);
 
 std::vector<std::pair<descriptor_slot_t, interface_var>> CollectInterfaceByDescriptorSlot(
-    debug_report_data const *report_data, SHADER_MODULE_STATE const *src, std::unordered_set<uint32_t> const &accessible_ids,
-    bool *has_writable_descriptor);
+    SHADER_MODULE_STATE const *src, std::unordered_set<uint32_t> const &accessible_ids, bool *has_writable_descriptor);
 
 uint32_t DescriptorTypeToReqs(SHADER_MODULE_STATE const *module, uint32_t type_id);
 

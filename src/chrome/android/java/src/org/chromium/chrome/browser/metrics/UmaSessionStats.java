@@ -10,20 +10,21 @@ import android.content.res.Configuration;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.policy.EnterpriseInfo;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -33,6 +34,7 @@ import org.chromium.content_public.browser.WebContents;
  * and the framework's MetricService.
  */
 public class UmaSessionStats {
+    private static final String TAG = "UmaSessionStats";
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
 
     private static long sNativeUmaSessionStats;
@@ -60,7 +62,7 @@ public class UmaSessionStats {
             UmaSessionStatsJni.get().recordPageLoadedWithKeyboard();
         }
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         if (!TextUtils.isEmpty(url) && UrlUtilities.isHttpOrHttps(url)) {
             PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 boolean isEligible =
@@ -119,6 +121,7 @@ public class UmaSessionStats {
         updatePreferences();
         updateMetricsServiceState();
         DefaultBrowserInfo.logDefaultBrowserStats();
+        EnterpriseInfo.logDeviceEnterpriseInfo();
     }
 
     private static void ensureNativeInitialized() {
@@ -213,6 +216,7 @@ public class UmaSessionStats {
     }
 
     public static void registerSyntheticFieldTrial(String trialName, String groupName) {
+        Log.d(TAG, "registerSyntheticFieldTrial(%s, %s)", trialName, groupName);
         assert isMetricsServiceAvailable();
         UmaSessionStatsJni.get().registerSyntheticFieldTrial(trialName, groupName);
     }
@@ -223,8 +227,7 @@ public class UmaSessionStats {
      * be used in full-browser mode and as such you must check this before calling them.
      */
     public static boolean isMetricsServiceAvailable() {
-        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isFullBrowserStarted();
+        return BrowserStartupController.getInstance().isFullBrowserStarted();
     }
 
     /**

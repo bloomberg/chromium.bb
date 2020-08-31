@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -90,7 +91,14 @@ class UserLevelMemoryPressureSignalGeneratorTest : public testing::Test {
 
 constexpr double kMemoryThresholdBytes = 1024 * 1024 * 1024;
 
-TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
+// Flaky on Android, see crbug/1054788.
+#if defined(OS_ANDROID)
+#define MAYBE_GeneratesWhenOverThreshold DISABLED_GeneratesWhenOverThreshold
+#else
+#define MAYBE_GeneratesWhenOverThreshold GeneratesWhenOverThreshold
+#endif
+TEST_F(UserLevelMemoryPressureSignalGeneratorTest,
+       MAYBE_GeneratesWhenOverThreshold) {
   {
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();
@@ -98,6 +106,8 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
     generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+    // Ensure we are not loading as no signals are sent during a loading phase.
+    generator.OnRAILModeChanged(RAILMode::kAnimation);
     {
       EXPECT_CALL(generator, Generate(_)).Times(0);
       MemoryUsage usage;
@@ -127,7 +137,13 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
   }
 }
 
-TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
+// Flaky on Android, see crbug/1058178.
+#if defined(OS_ANDROID)
+#define MAYBE_GenerationPauses DISABLED_GenerationPauses
+#else
+#define MAYBE_GenerationPauses GenerationPauses
+#endif
+TEST_F(UserLevelMemoryPressureSignalGeneratorTest, MAYBE_GenerationPauses) {
   {
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();
@@ -135,6 +151,8 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
     generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+    // Ensure we are not loading as no signals are sent during a loading phase.
+    generator.OnRAILModeChanged(RAILMode::kAnimation);
     {
       MemoryUsage usage;
       usage.v8_bytes = 0;

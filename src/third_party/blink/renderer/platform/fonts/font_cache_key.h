@@ -93,12 +93,18 @@ struct FontCacheKey {
   }
 
   bool operator==(const FontCacheKey& other) const {
+    bool variation_settings_equal =
+        (!variation_settings_ && !other.variation_settings_) ||
+        (variation_settings_ && other.variation_settings_ &&
+         *variation_settings_ == *other.variation_settings_);
     return creation_params_ == other.creation_params_ &&
            font_size_ == other.font_size_ && options_ == other.options_ &&
            device_scale_factor_ == other.device_scale_factor_ &&
-           variation_settings_ == other.variation_settings_ &&
+           variation_settings_equal &&
            is_unique_match_ == other.is_unique_match_;
   }
+
+  bool operator!=(const FontCacheKey& other) const { return !(*this == other); }
 
   static constexpr unsigned PrecisionMultiplier() {
     return kFontSizePrecisionMultiplier;
@@ -140,5 +146,24 @@ struct FontCacheKeyTraits : WTF::SimpleClassHashTraits<FontCacheKey> {
 };
 
 }  // namespace blink
+
+namespace WTF {
+template <>
+struct DefaultHash<blink::FontCacheKey> {
+  STATIC_ONLY(DefaultHash);
+  typedef blink::FontCacheKeyHash Hash;
+};
+
+template <>
+struct HashTraits<blink::FontCacheKey>
+    : WTF::SimpleClassHashTraits<blink::FontCacheKey> {
+  STATIC_ONLY(HashTraits);
+
+  // std::string's empty state need not be zero in all implementations,
+  // and it is held within FontFaceCreationParams.
+  static const bool kEmptyValueIsZero = false;
+};
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_KEY_H_

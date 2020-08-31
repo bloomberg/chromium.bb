@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 
 #include <memory>
-#include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -65,13 +64,13 @@ bool HasTouchHandlers(const EventHandlerRegistry& registry) {
 const AtomicString& TouchEventNameForPointerEventType(
     WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::kPointerUp:
+    case WebInputEvent::Type::kPointerUp:
       return event_type_names::kTouchend;
-    case WebInputEvent::kPointerCancel:
+    case WebInputEvent::Type::kPointerCancel:
       return event_type_names::kTouchcancel;
-    case WebInputEvent::kPointerDown:
+    case WebInputEvent::Type::kPointerDown:
       return event_type_names::kTouchstart;
-    case WebInputEvent::kPointerMove:
+    case WebInputEvent::Type::kPointerMove:
       return event_type_names::kTouchmove;
     default:
       NOTREACHED();
@@ -83,19 +82,19 @@ WebTouchPoint::State TouchPointStateFromPointerEventType(
     WebInputEvent::Type type,
     bool stale) {
   if (stale)
-    return WebTouchPoint::kStateStationary;
+    return WebTouchPoint::State::kStateStationary;
   switch (type) {
     case WebInputEvent::Type::kPointerUp:
-      return WebTouchPoint::kStateReleased;
+      return WebTouchPoint::State::kStateReleased;
     case WebInputEvent::Type::kPointerCancel:
-      return WebTouchPoint::kStateCancelled;
+      return WebTouchPoint::State::kStateCancelled;
     case WebInputEvent::Type::kPointerDown:
-      return WebTouchPoint::kStatePressed;
+      return WebTouchPoint::State::kStatePressed;
     case WebInputEvent::Type::kPointerMove:
-      return WebTouchPoint::kStateMoved;
+      return WebTouchPoint::State::kStateMoved;
     default:
       NOTREACHED();
-      return WebTouchPoint::kStateUndefined;
+      return WebTouchPoint::State::kStateUndefined;
   }
 }
 
@@ -139,7 +138,7 @@ class ChangedTouches final {
  public:
   // The touches corresponding to the particular change state this struct
   // instance represents.
-  Member<TouchList> touches_;
+  TouchList* touches_ = nullptr;
 
   using EventTargetSet = HeapHashSet<Member<EventTarget>>;
   // Set of targets involved in m_touches.
@@ -157,10 +156,10 @@ void TouchEventManager::Clear() {
   touch_attribute_map_.clear();
   last_coalesced_touch_event_ = WebTouchEvent();
   suppressing_touchmoves_within_slop_ = false;
-  current_touch_action_ = TouchAction::kTouchActionAuto;
+  current_touch_action_ = TouchAction::kAuto;
 }
 
-void TouchEventManager::Trace(blink::Visitor* visitor) {
+void TouchEventManager::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(touch_sequence_document_);
   visitor->Trace(touch_attribute_map_);
@@ -207,18 +206,19 @@ Touch* TouchEventManager::CreateDomTouch(
       point_attr->event_.WebPointerEventInRootFrame();
   float scale_factor = 1.0f / target_frame->PageZoomFactor();
 
-  FloatPoint document_point =
-      target_frame->View()
-          ->RootFrameToDocument(transformed_event.PositionInWidget())
-          .ScaledBy(scale_factor);
+  FloatPoint document_point = target_frame->View()
+                                  ->RootFrameToDocument(FloatPoint(
+                                      transformed_event.PositionInWidget()))
+                                  .ScaledBy(scale_factor);
   FloatSize adjusted_radius =
       FloatSize(transformed_event.width / 2.f, transformed_event.height / 2.f)
           .ScaledBy(scale_factor);
 
   return MakeGarbageCollected<Touch>(
       target_frame, touch_node, point_attr->event_.id,
-      transformed_event.PositionInScreen(), document_point, adjusted_radius,
-      transformed_event.rotation_angle, transformed_event.force, region_id);
+      FloatPoint(transformed_event.PositionInScreen()), document_point,
+      adjusted_radius, transformed_event.rotation_angle,
+      transformed_event.force, region_id);
 }
 
 WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
@@ -233,7 +233,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
                                                 first_touch_pointer_event);
   SetWebTouchEventAttributesFromWebPointerEvent(&last_coalesced_touch_event_,
                                                 first_touch_pointer_event);
-  WebInputEvent::Type touch_event_type = WebInputEvent::kTouchMove;
+  WebInputEvent::Type touch_event_type = WebInputEvent::Type::kTouchMove;
   Vector<WebPointerEvent> all_coalesced_events;
   Vector<int> available_ids;
   for (const auto& id : touch_attribute_map_.Keys())
@@ -256,13 +256,14 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     // TODO(crbug.com/732842): Note that event sender API allows sending any
     // mix of input and as long as we don't crash or anything we should be good
     // for now.
-    if (touch_event_type == WebInputEvent::kTouchMove) {
-      if (touch_pointer_event.GetType() == WebInputEvent::kPointerDown)
-        touch_event_type = WebInputEvent::kTouchStart;
-      else if (touch_pointer_event.GetType() == WebInputEvent::kPointerCancel)
-        touch_event_type = WebInputEvent::kTouchCancel;
-      else if (touch_pointer_event.GetType() == WebInputEvent::kPointerUp)
-        touch_event_type = WebInputEvent::kTouchEnd;
+    if (touch_event_type == WebInputEvent::Type::kTouchMove) {
+      if (touch_pointer_event.GetType() == WebInputEvent::Type::kPointerDown)
+        touch_event_type = WebInputEvent::Type::kTouchStart;
+      else if (touch_pointer_event.GetType() ==
+               WebInputEvent::Type::kPointerCancel)
+        touch_event_type = WebInputEvent::Type::kTouchCancel;
+      else if (touch_pointer_event.GetType() == WebInputEvent::Type::kPointerUp)
+        touch_event_type = WebInputEvent::Type::kTouchEnd;
     }
 
     for (const WebPointerEvent& coalesced_event :
@@ -281,9 +282,9 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
   } timestamp_based_event_comparison;
   std::sort(all_coalesced_events.begin(), all_coalesced_events.end(),
             timestamp_based_event_comparison);
-  WebCoalescedInputEvent result(event, {}, {});
+  WebCoalescedInputEvent result(event.Clone(), {}, {}, ui::LatencyInfo());
   for (const auto& web_pointer_event : all_coalesced_events) {
-    if (web_pointer_event.GetType() == WebInputEvent::kPointerDown) {
+    if (web_pointer_event.GetType() == WebInputEvent::Type::kPointerDown) {
       // TODO(crbug.com/732842): Technically we should never receive the
       // pointerdown twice for the same touch point. But event sender API allows
       // that. So we should handle it gracefully.
@@ -331,9 +332,9 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
           for (unsigned j = 0; j < last_coalesced_touch_event_.touches_length;
                j++) {
             if (last_coalesced_touch_event_.touches[j].state !=
-                    WebTouchPoint::kStateCancelled &&
+                    WebTouchPoint::State::kStateCancelled &&
                 last_coalesced_touch_event_.touches[j].state !=
-                    WebTouchPoint::kStateReleased) {
+                    WebTouchPoint::State::kStateReleased) {
               last_coalesced_touch_event_.touches[result_size++] =
                   last_coalesced_touch_event_.touches[j];
             }
@@ -345,7 +346,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     }
 
     for (unsigned i = 0; i < event.touches_length; ++i) {
-      event.touches[i].state = blink::WebTouchPoint::kStateStationary;
+      event.touches[i].state = blink::WebTouchPoint::State::kStateStationary;
       event.touches[i].movement_x = 0;
       event.touches[i].movement_y = 0;
     }
@@ -368,10 +369,10 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   for (const auto& attr : touch_attribute_map_.Values()) {
     if (!attr->stale_)
       new_touch_point_since_last_dispatch = true;
-    if (attr->event_.GetType() == WebInputEvent::kPointerUp ||
-        attr->event_.GetType() == WebInputEvent::kPointerCancel)
+    if (attr->event_.GetType() == WebInputEvent::Type::kPointerUp ||
+        attr->event_.GetType() == WebInputEvent::Type::kPointerCancel)
       any_touch_canceled_or_ended = true;
-    if (attr->event_.GetType() != WebInputEvent::kPointerDown)
+    if (attr->event_.GetType() != WebInputEvent::Type::kPointerDown)
       all_touch_points_pressed = false;
   }
 
@@ -387,7 +388,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     DCHECK_EQ(1U, touch_attribute_map_.size());
     const auto& touch_point_attribute = touch_attribute_map_.begin()->value;
     if (touch_point_attribute->event_.GetType() ==
-        WebInputEvent::kPointerMove) {
+        WebInputEvent::Type::kPointerMove) {
       if (!touch_point_attribute->event_.moved_beyond_slop_region)
         return WebInputEventResult::kHandledSuppressed;
       suppressing_touchmoves_within_slop_ = false;
@@ -395,7 +396,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   }
 
   // Holds the complete set of touches on the screen.
-  auto* touches = MakeGarbageCollected<TouchList>();
+  TouchList* touches = TouchList::Create();
 
   // A different view on the 'touches' list above, filtered and grouped by
   // event target. Used for the |targetTouches| list in the JS event.
@@ -403,8 +404,10 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   TargetTouchesHeapMap touches_by_target;
 
   // Array of touches per state, used to assemble the |changedTouches| list.
-  ChangedTouches changed_touches[WebInputEvent::kPointerTypeLast -
-                                 WebInputEvent::kPointerTypeFirst + 1];
+  ChangedTouches
+      changed_touches[static_cast<int>(WebInputEvent::Type::kPointerTypeLast) -
+                      static_cast<int>(WebInputEvent::Type::kPointerTypeFirst) +
+                      1];
 
   Vector<int> available_ids;
   for (const auto& id : touch_attribute_map_.Keys())
@@ -423,15 +426,15 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     TargetTouchesHeapMap::iterator target_touches_iterator =
         touches_by_target.find(touch_target);
     if (target_touches_iterator == touches_by_target.end()) {
-      touches_by_target.Set(touch_target, MakeGarbageCollected<TouchList>());
+      touches_by_target.Set(touch_target, TouchList::Create());
       target_touches_iterator = touches_by_target.find(touch_target);
     }
 
     // |touches| and |targetTouches| should only contain information about
     // touches still on the screen, so if this point is released or
     // cancelled it will only appear in the |changedTouches| list.
-    if (event_type != WebInputEvent::kPointerUp &&
-        event_type != WebInputEvent::kPointerCancel) {
+    if (event_type != WebInputEvent::Type::kPointerUp &&
+        event_type != WebInputEvent::Type::kPointerCancel) {
       touches->Append(touch);
       target_touches_iterator->value->Append(touch);
     }
@@ -443,11 +446,11 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     // explicitly here. See https://bugs.webkit.org/show_bug.cgi?id=37609
     // for further discussion about the TouchStationary state.
     if (!touch_point_attribute->stale_ && known_target) {
-      size_t event_type_idx = event_type - WebInputEvent::kPointerTypeFirst;
-      if (!changed_touches[event_type_idx].touches_) {
-        changed_touches[event_type_idx].touches_ =
-            MakeGarbageCollected<TouchList>();
-      }
+      size_t event_type_idx =
+          static_cast<int>(event_type) -
+          static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
+      if (!changed_touches[event_type_idx].touches_)
+        changed_touches[event_type_idx].touches_ = TouchList::Create();
       changed_touches[event_type_idx].touches_->Append(touch);
       changed_touches[event_type_idx].targets_.insert(touch_target);
     }
@@ -461,9 +464,12 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
 
   // Now iterate through the |changedTouches| list and |m_targets| within it,
   // sending TouchEvents to the targets as required.
-  for (unsigned action = WebInputEvent::kPointerTypeFirst;
-       action <= WebInputEvent::kPointerTypeLast; ++action) {
-    size_t action_idx = action - WebInputEvent::kPointerTypeFirst;
+  for (unsigned action =
+           static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
+       action <= static_cast<int>(WebInputEvent::Type::kPointerTypeLast);
+       ++action) {
+    size_t action_idx =
+        action - static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
     if (!changed_touches[action_idx].touches_)
       continue;
 
@@ -474,7 +480,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
       EventTarget* touch_event_target = event_target;
       TouchEvent* touch_event = TouchEvent::Create(
           coalesced_event, touches, touches_by_target.at(touch_event_target),
-          changed_touches[action_idx].touches_.Get(), event_name,
+          changed_touches[action_idx].touches_, event_name,
           touch_event_target->ToNode()->GetDocument().domWindow(),
           current_touch_action_);
 
@@ -507,7 +513,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   // active/hover states themselves (Gesture events do). So we only need
   // to hit-test on touchstart and when the target could be different than
   // the corresponding pointer event target.
-  DCHECK(event.GetType() == WebInputEvent::kPointerDown);
+  DCHECK(event.GetType() == WebInputEvent::Type::kPointerDown);
   // Ideally we'd DCHECK(!touch_attribute_map_.Contains(event.id))
   // since we shouldn't get a touchstart for a touch that's already
   // down. However EventSender allows this to be violated and there's
@@ -536,7 +542,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
     if (touch_sequence_document_->GetFrame()) {
       HitTestLocation location(PhysicalOffset::FromFloatPointRound(
           touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
-              event.PositionInWidget())));
+              FloatPoint(event.PositionInWidget()))));
       result = event_handling_util::HitTestResultInFrame(
           touch_sequence_document_->GetFrame(), location, hit_type);
       Node* node = result.InnerNode();
@@ -580,9 +586,9 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   if (should_enforce_vertical_scroll_ &&
       HasEventHandlerInAncestorPath(
           touch_node, EventHandlerRegistry::kTouchStartOrMoveEventBlocking)) {
-    delayed_effective_touch_action_ = delayed_effective_touch_action_.value_or(
-                                          TouchAction::kTouchActionAuto) &
-                                      effective_touch_action;
+    delayed_effective_touch_action_ =
+        delayed_effective_touch_action_.value_or(TouchAction::kAuto) &
+        effective_touch_action;
   }
   if (!delayed_effective_touch_action_) {
     frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
@@ -597,9 +603,9 @@ void TouchEventManager::HandleTouchPoint(
     const WebPointerEvent& event,
     const Vector<WebPointerEvent>& coalesced_events,
     const event_handling_util::PointerEventTarget& pointer_event_target) {
-  DCHECK_GE(event.GetType(), WebInputEvent::kPointerTypeFirst);
-  DCHECK_LE(event.GetType(), WebInputEvent::kPointerTypeLast);
-  DCHECK_NE(event.GetType(), WebInputEvent::kPointerCausedUaAction);
+  DCHECK_GE(event.GetType(), WebInputEvent::Type::kPointerTypeFirst);
+  DCHECK_LE(event.GetType(), WebInputEvent::Type::kPointerTypeLast);
+  DCHECK_NE(event.GetType(), WebInputEvent::Type::kPointerCausedUaAction);
 
   if (touch_attribute_map_.IsEmpty()) {
     // Ideally we'd DCHECK(!m_touchSequenceDocument) here since we should
@@ -626,7 +632,7 @@ void TouchEventManager::HandleTouchPoint(
 
   // In touch event model only touch starts can set the target and after that
   // the touch event always goes to that target.
-  if (event.GetType() == WebInputEvent::kPointerDown) {
+  if (event.GetType() == WebInputEvent::Type::kPointerDown) {
     UpdateTouchAttributeMapsForPointerDown(event, pointer_event_target);
   }
 
@@ -662,8 +668,8 @@ WebInputEventResult TouchEventManager::FlushEvents() {
   // touch points.
   Vector<int> released_canceled_points;
   for (auto& attributes : touch_attribute_map_.Values()) {
-    if (attributes->event_.GetType() == WebInputEvent::kPointerUp ||
-        attributes->event_.GetType() == WebInputEvent::kPointerCancel) {
+    if (attributes->event_.GetType() == WebInputEvent::Type::kPointerUp ||
+        attributes->event_.GetType() == WebInputEvent::Type::kPointerCancel) {
       released_canceled_points.push_back(attributes->event_.id);
     } else {
       attributes->stale_ = true;
@@ -683,7 +689,7 @@ WebInputEventResult TouchEventManager::FlushEvents() {
 
 void TouchEventManager::AllTouchesReleasedCleanup() {
   touch_sequence_document_.Clear();
-  current_touch_action_ = TouchAction::kTouchActionAuto;
+  current_touch_action_ = TouchAction::kAuto;
   last_coalesced_touch_event_ = WebTouchEvent();
   // Ideally, we should have DCHECK(!delayed_effective_touch_action_) but we do
   // we do actually get here from HandleTouchPoint(). Supposedly, if there has
@@ -705,7 +711,7 @@ WebInputEventResult TouchEventManager::EnsureVerticalScrollIsPossible(
       event_result == WebInputEventResult::kHandledApplication;
   if (prevent_defaulted && delayed_effective_touch_action_) {
     // Make sure that only vertical scrolling is permitted.
-    *delayed_effective_touch_action_ &= TouchAction::kTouchActionPanY;
+    *delayed_effective_touch_action_ &= TouchAction::kPanY;
   }
 
   if (delayed_effective_touch_action_) {

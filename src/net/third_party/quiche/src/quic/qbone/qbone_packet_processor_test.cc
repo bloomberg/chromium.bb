@@ -8,6 +8,7 @@
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor_test_tools.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace {
@@ -100,15 +101,15 @@ static const char kReferenceClientSubnetPacketData[] = {
 
 // clang-format on
 
-static const QuicStringPiece kReferenceClientPacket(
+static const quiche::QuicheStringPiece kReferenceClientPacket(
     kReferenceClientPacketData,
     arraysize(kReferenceClientPacketData));
 
-static const QuicStringPiece kReferenceNetworkPacket(
+static const quiche::QuicheStringPiece kReferenceNetworkPacket(
     kReferenceNetworkPacketData,
     arraysize(kReferenceNetworkPacketData));
 
-static const QuicStringPiece kReferenceClientSubnetPacket(
+static const quiche::QuicheStringPiece kReferenceClientSubnetPacket(
     kReferenceClientSubnetPacketData,
     arraysize(kReferenceClientSubnetPacketData));
 
@@ -124,12 +125,14 @@ MATCHER_P(IsIcmpMessage,
 
 class MockPacketFilter : public QbonePacketProcessor::Filter {
  public:
-  MOCK_METHOD5(FilterPacket,
-               ProcessingResult(Direction,
-                                QuicStringPiece,
-                                QuicStringPiece,
-                                icmp6_hdr*,
-                                OutputInterface*));
+  MOCK_METHOD(ProcessingResult,
+              FilterPacket,
+              (Direction,
+               quiche::QuicheStringPiece,
+               quiche::QuicheStringPiece,
+               icmp6_hdr*,
+               OutputInterface*),
+              (override));
 };
 
 class QbonePacketProcessorTest : public QuicTest {
@@ -144,13 +147,13 @@ class QbonePacketProcessorTest : public QuicTest {
         &stats_);
   }
 
-  void SendPacketFromClient(QuicStringPiece packet) {
-    string packet_buffer(packet.data(), packet.size());
-    processor_->ProcessPacket(&packet_buffer, Direction::FROM_CLIENT);
+  void SendPacketFromClient(quiche::QuicheStringPiece packet) {
+    std::string packet_buffer(packet.data(), packet.size());
+    processor_->ProcessPacket(&packet_buffer, Direction::FROM_OFF_NETWORK);
   }
 
-  void SendPacketFromNetwork(QuicStringPiece packet) {
-    string packet_buffer(packet.data(), packet.size());
+  void SendPacketFromNetwork(quiche::QuicheStringPiece packet) {
+    std::string packet_buffer(packet.data(), packet.size());
     processor_->ProcessPacket(&packet_buffer, Direction::FROM_NETWORK);
   }
 
@@ -164,7 +167,7 @@ class QbonePacketProcessorTest : public QuicTest {
 };
 
 TEST_F(QbonePacketProcessorTest, EmptyPacket) {
-  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_OFF_NETWORK));
   SendPacketFromClient("");
 
   EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_NETWORK));
@@ -172,31 +175,31 @@ TEST_F(QbonePacketProcessorTest, EmptyPacket) {
 }
 
 TEST_F(QbonePacketProcessorTest, RandomGarbage) {
-  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_CLIENT));
-  SendPacketFromClient(string(1280, 'a'));
+  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_OFF_NETWORK));
+  SendPacketFromClient(std::string(1280, 'a'));
 
   EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_NETWORK));
-  SendPacketFromNetwork(string(1280, 'a'));
+  SendPacketFromNetwork(std::string(1280, 'a'));
 }
 
 TEST_F(QbonePacketProcessorTest, RandomGarbageWithCorrectLengthFields) {
-  string packet(40, 'a');
+  std::string packet(40, 'a');
   packet[4] = 0;
   packet[5] = 0;
 
-  EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_OFF_NETWORK));
   EXPECT_CALL(output_, SendPacketToClient(IsIcmpMessage(ICMP6_DST_UNREACH)));
   SendPacketFromClient(packet);
 }
 
 TEST_F(QbonePacketProcessorTest, GoodPacketFromClient) {
-  EXPECT_CALL(stats_, OnPacketForwarded(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketForwarded(Direction::FROM_OFF_NETWORK));
   EXPECT_CALL(output_, SendPacketToNetwork(_));
   SendPacketFromClient(kReferenceClientPacket);
 }
 
 TEST_F(QbonePacketProcessorTest, GoodPacketFromClientSubnet) {
-  EXPECT_CALL(stats_, OnPacketForwarded(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketForwarded(Direction::FROM_OFF_NETWORK));
   EXPECT_CALL(output_, SendPacketToNetwork(_));
   SendPacketFromClient(kReferenceClientSubnetPacket);
 }
@@ -208,13 +211,13 @@ TEST_F(QbonePacketProcessorTest, GoodPacketFromNetwork) {
 }
 
 TEST_F(QbonePacketProcessorTest, GoodPacketFromNetworkWrongDirection) {
-  EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_OFF_NETWORK));
   EXPECT_CALL(output_, SendPacketToClient(IsIcmpMessage(ICMP6_DST_UNREACH)));
   SendPacketFromClient(kReferenceNetworkPacket);
 }
 
 TEST_F(QbonePacketProcessorTest, TtlExpired) {
-  string packet(kReferenceNetworkPacket);
+  std::string packet(kReferenceNetworkPacket);
   packet[7] = 1;
 
   EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_NETWORK));
@@ -223,7 +226,7 @@ TEST_F(QbonePacketProcessorTest, TtlExpired) {
 }
 
 TEST_F(QbonePacketProcessorTest, UnknownProtocol) {
-  string packet(kReferenceNetworkPacket);
+  std::string packet(kReferenceNetworkPacket);
   packet[6] = IPPROTO_SCTP;
 
   EXPECT_CALL(stats_, OnPacketDroppedWithIcmp(Direction::FROM_NETWORK));
@@ -237,7 +240,7 @@ TEST_F(QbonePacketProcessorTest, FilterFromClient) {
       .WillRepeatedly(Return(ProcessingResult::SILENT_DROP));
   processor_->set_filter(std::move(filter));
 
-  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_OFF_NETWORK));
   SendPacketFromClient(kReferenceClientPacket);
 }
 
@@ -246,8 +249,8 @@ class TestFilter : public QbonePacketProcessor::Filter {
   TestFilter(QuicIpAddress client_ip, QuicIpAddress network_ip)
       : client_ip_(client_ip), network_ip_(network_ip) {}
   ProcessingResult FilterPacket(Direction direction,
-                                QuicStringPiece full_packet,
-                                QuicStringPiece payload,
+                                quiche::QuicheStringPiece full_packet,
+                                quiche::QuicheStringPiece payload,
                                 icmp6_hdr* icmp_header,
                                 OutputInterface* output) override {
     EXPECT_EQ(kIPv6HeaderSize, full_packet.size() - payload.size());
@@ -275,7 +278,7 @@ TEST_F(QbonePacketProcessorTest, FilterHelperFunctions) {
   TestFilter* filter = filter_owned.get();
   processor_->set_filter(std::move(filter_owned));
 
-  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_CLIENT));
+  EXPECT_CALL(stats_, OnPacketDroppedSilently(Direction::FROM_OFF_NETWORK));
   SendPacketFromClient(kReferenceClientPacket);
   ASSERT_EQ(1, filter->called());
 }

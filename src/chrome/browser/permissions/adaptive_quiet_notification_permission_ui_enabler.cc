@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/adapters.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
@@ -18,13 +19,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/permission_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -108,11 +109,9 @@ AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(Profile* profile) {
 }
 
 void AdaptiveQuietNotificationPermissionUiEnabler::
-    RecordPermissionPromptOutcome(PermissionAction action) {
+    RecordPermissionPromptOutcome(permissions::PermissionAction action) {
   ListPrefUpdate update(profile_->GetPrefs(),
                         prefs::kNotificationPermissionActions);
-  base::Value::ListStorage& permission_actions = update.Get()->GetList();
-
   // Discard permission actions older than |kPermissionActionMaxAge|.
   const base::Time cutoff = clock_->Now() - kPermissionActionMaxAge;
   update->EraseListValueIf([cutoff](const base::Value& entry) {
@@ -122,14 +121,12 @@ void AdaptiveQuietNotificationPermissionUiEnabler::
   });
 
   // Record the new permission action.
-  base::Value::DictStorage new_action_attributes;
-  new_action_attributes.emplace(
-      kPermissionActionEntryTimestampKey,
-      std::make_unique<base::Value>(util::TimeToValue(clock_->Now())));
-  new_action_attributes.emplace(
-      kPermissionActionEntryActionKey,
-      std::make_unique<base::Value>(static_cast<int>(action)));
-  permission_actions.emplace_back(std::move(new_action_attributes));
+  base::DictionaryValue new_action_attributes;
+  new_action_attributes.SetKey(kPermissionActionEntryTimestampKey,
+                               util::TimeToValue(clock_->Now()));
+  new_action_attributes.SetIntKey(kPermissionActionEntryActionKey,
+                                  static_cast<int>(action));
+  update->Append(std::move(new_action_attributes));
 
   // If adaptive activation is disabled, or if the quiet UI is already active,
   // nothing else to do.
@@ -144,25 +141,25 @@ void AdaptiveQuietNotificationPermissionUiEnabler::
   size_t rolling_denies_in_a_row = 0u;
   bool recently_accepted_prompt = false;
 
-  for (auto it = permission_actions.rbegin(); it != permission_actions.rend();
-       ++it) {
+  base::Value::ConstListView permission_actions = update->GetList();
+  for (const auto& action : base::Reversed(permission_actions)) {
     const base::Optional<int> past_action_as_int =
-        it->FindIntKey(kPermissionActionEntryActionKey);
+        action.FindIntKey(kPermissionActionEntryActionKey);
     DCHECK(past_action_as_int);
 
-    const PermissionAction past_action =
-        static_cast<PermissionAction>(*past_action_as_int);
+    const permissions::PermissionAction past_action =
+        static_cast<permissions::PermissionAction>(*past_action_as_int);
 
     switch (past_action) {
-      case PermissionAction::DENIED:
+      case permissions::PermissionAction::DENIED:
         ++rolling_denies_in_a_row;
         break;
-      case PermissionAction::GRANTED:
+      case permissions::PermissionAction::GRANTED:
         recently_accepted_prompt = true;
         break;
-      case PermissionAction::DISMISSED:
-      case PermissionAction::IGNORED:
-      case PermissionAction::REVOKED:
+      case permissions::PermissionAction::DISMISSED:
+      case permissions::PermissionAction::IGNORED:
+      case permissions::PermissionAction::REVOKED:
       default:
         // Ignored.
         break;

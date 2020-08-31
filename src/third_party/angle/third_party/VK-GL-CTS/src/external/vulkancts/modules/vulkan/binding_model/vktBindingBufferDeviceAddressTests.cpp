@@ -38,6 +38,7 @@
 #include "deDefs.h"
 #include "deMath.h"
 #include "deRandom.h"
+#include "deRandom.hpp"
 #include "deSharedPtr.hpp"
 #include "deString.h"
 
@@ -55,6 +56,9 @@ namespace
 {
 using namespace vk;
 using namespace std;
+
+typedef de::MovePtr<Unique<VkBuffer> >	VkBufferSp;
+typedef de::MovePtr<Allocation>			AllocationSp;
 
 static const deUint32 DIM = 8;
 
@@ -87,13 +91,24 @@ typedef enum
 	LAYOUT_SCALAR,
 } Layout;
 
+typedef enum
+{
+	CONVERT_NONE = 0,
+	CONVERT_UINT64,
+	CONVERT_UVEC2,
+	CONVERT_U64CMP,
+	CONVERT_UVEC2CMP,
+	CONVERT_UVEC2TOU64,
+	CONVERT_U64TOUVEC2,
+} Convert;
+
 struct CaseDef
 {
 	deUint32 set;
 	deUint32 depth;
 	Base base;
 	Stage stage;
-	bool convertUToPtr;
+	Convert convertUToPtr;
 	bool storeInLocal;
 	BufType bufType;
 	Layout layout;
@@ -154,7 +169,7 @@ BufferAddressTestCase::~BufferAddressTestCase	(void)
 
 void BufferAddressTestCase::checkSupport (Context& context) const
 {
-	if (!context.getBufferDeviceAddressFeatures().bufferDeviceAddress)
+	if (!context.isBufferDeviceAddressSupported())
 		TCU_THROW(NotSupportedError, "Physical storage buffer pointers not supported");
 
 	if (m_data.stage == STAGE_VERTEX && !context.getDeviceFeatures().vertexPipelineStoresAndAtomics)
@@ -163,11 +178,10 @@ void BufferAddressTestCase::checkSupport (Context& context) const
 	if (m_data.set >= context.getDeviceProperties().limits.maxBoundDescriptorSets)
 		TCU_THROW(NotSupportedError, "descriptor set number not supported");
 
-	if (m_data.convertUToPtr == VK_TRUE && !context.getDeviceFeatures().shaderInt64)
-		TCU_THROW(NotSupportedError, "64-bit integers in shader not supported");
-
-	if (m_data.bufType == BT_REPLAY &&
-		!context.getBufferDeviceAddressFeatures().bufferDeviceAddressCaptureReplay)
+	bool isBufferDeviceAddressWithCaptureReplaySupported =
+			(context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address") && context.getBufferDeviceAddressFeatures().bufferDeviceAddressCaptureReplay) ||
+			(context.isDeviceFunctionalitySupported("VK_EXT_buffer_device_address") && context.getBufferDeviceAddressFeaturesEXT().bufferDeviceAddressCaptureReplay);
+	if (m_data.bufType == BT_REPLAY && !isBufferDeviceAddressWithCaptureReplaySupported)
 		TCU_THROW(NotSupportedError, "Capture/replay of physical storage buffer pointers not supported");
 
 	if (m_data.layout == LAYOUT_SCALAR && !context.getScalarBlockLayoutFeatures().scalarBlockLayout)
@@ -175,18 +189,38 @@ void BufferAddressTestCase::checkSupport (Context& context) const
 
 #if ENABLE_RAYTRACING
 	if (m_data.stage == STAGE_RAYGEN &&
-		!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_NV_ray_tracing"))
+		!context.isDeviceFunctionalitySupported("VK_NV_ray_tracing"))
 	{
 		TCU_THROW(NotSupportedError, "Ray tracing not supported");
 	}
 #endif
+
+	const bool needsInt64	= (	m_data.convertUToPtr == CONVERT_UINT64		||
+								m_data.convertUToPtr == CONVERT_U64CMP		||
+								m_data.convertUToPtr == CONVERT_U64TOUVEC2	||
+								m_data.convertUToPtr == CONVERT_UVEC2TOU64	);
+
+	const bool needsKHR		= (	m_data.convertUToPtr == CONVERT_UVEC2		||
+								m_data.convertUToPtr == CONVERT_UVEC2CMP	||
+								m_data.convertUToPtr == CONVERT_U64TOUVEC2	||
+								m_data.convertUToPtr == CONVERT_UVEC2TOU64	);
+
+	if (needsInt64 && !context.getDeviceFeatures().shaderInt64)
+		TCU_THROW(NotSupportedError, "Int64 not supported");
+	if (needsKHR && !context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address"))
+		TCU_THROW(NotSupportedError, "VK_KHR_buffer_device_address not supported");
 }
 
 void BufferAddressTestCase::checkBuffer (std::stringstream& checks, deUint32 bufNum, deUint32 curDepth, const std::string &prefix) const
 {
 	string newPrefix = prefix;
-	if (curDepth > 0 && m_data.convertUToPtr)
-		newPrefix = "T1(uint64_t(T1(" + newPrefix + ")))";
+	if (curDepth > 0)
+	{
+		if (m_data.convertUToPtr == CONVERT_UINT64 || m_data.convertUToPtr == CONVERT_UVEC2TOU64)
+			newPrefix = "T1(uint64_t(T1(" + newPrefix + ")))";
+		else if (m_data.convertUToPtr == CONVERT_UVEC2 || m_data.convertUToPtr == CONVERT_U64TOUVEC2)
+			newPrefix = "T1(uvec2(T1(" + newPrefix + ")))";
+	}
 
 	if (m_data.storeInLocal && curDepth != 0)
 	{
@@ -211,17 +245,72 @@ void BufferAddressTestCase::checkBuffer (std::stringstream& checks, deUint32 buf
 		checks << "   accum |= f.z - " << bufNum*3+9 << ";\n";
 	}
 
+	const std::string localPrefix = "l" + de::toString(bufNum);
+
+	if (m_data.convertUToPtr == CONVERT_U64CMP || m_data.convertUToPtr == CONVERT_UVEC2CMP)
+	{
+		const std::string type = ((m_data.convertUToPtr == CONVERT_U64CMP) ? "uint64_t" : "uvec2");
+
+		checks << "   " << type << " " << localPrefix << "c0 = " << type << "(" << newPrefix << ".c[0]);\n";
+		checks << "   " << type << " " << localPrefix << "c1 = " << type << "(" << newPrefix << ".c[pc.identity[1]]);\n";
+		checks << "   " << type << " " << localPrefix << "d  = " << type << "(" << newPrefix << ".d);\n";
+	}
+
 	if (curDepth != m_data.depth)
 	{
+		// Check non-null pointers and inequality among them.
+		if (m_data.convertUToPtr == CONVERT_U64CMP)
+		{
+			checks << "   if (" << localPrefix << "c0 == zero ||\n"
+				   << "       " << localPrefix << "c1 == zero ||\n"
+				   << "       " << localPrefix << "d  == zero ||\n"
+				   << "       " << localPrefix << "c0 == " << localPrefix << "c1 ||\n"
+				   << "       " << localPrefix << "c1 == " << localPrefix << "d  ||\n"
+				   << "       " << localPrefix << "c0 == " << localPrefix << "d  ) {\n"
+				   << "     accum |= 1;\n"
+				   << "   }\n";
+		}
+		else if (m_data.convertUToPtr == CONVERT_UVEC2CMP)
+		{
+			checks << "   if (all(equal(" << localPrefix << "c0, zero)) ||\n"
+				   << "       all(equal(" << localPrefix << "c1, zero)) ||\n"
+				   << "       all(equal(" << localPrefix << "d , zero)) ||\n"
+				   << "       all(equal(" << localPrefix << "c0, " << localPrefix << "c1)) ||\n"
+				   << "       all(equal(" << localPrefix << "c1, " << localPrefix << "d )) ||\n"
+				   << "       all(equal(" << localPrefix << "c0, " << localPrefix << "d )) ) {\n"
+				   << "     accum |= 1;\n"
+				   << "   }\n";
+		}
+
 		checkBuffer(checks, bufNum*3+1, curDepth+1, newPrefix + ".c[0]");
 		checkBuffer(checks, bufNum*3+2, curDepth+1, newPrefix + ".c[pc.identity[1]]");
 		checkBuffer(checks, bufNum*3+3, curDepth+1, newPrefix + ".d");
 	}
+	else
+	{
+		// Check null pointers nonexplicitly.
+		if (m_data.convertUToPtr == CONVERT_U64CMP)
+		{
+			checks << "   if (!(" << localPrefix << "c0 == " << localPrefix << "c1 &&\n"
+				   << "         " << localPrefix << "c1 == " << localPrefix << "d  &&\n"
+				   << "         " << localPrefix << "c0 == " << localPrefix << "d  )) {\n"
+				   << "     accum |= 1;\n"
+				   << "   }\n";
+		}
+		else if (m_data.convertUToPtr == CONVERT_UVEC2CMP)
+		{
+			checks << "   if (!(all(equal(" << localPrefix << "c0, " << localPrefix << "c1)) &&\n"
+				   << "         all(equal(" << localPrefix << "c1, " << localPrefix << "d )) &&\n"
+				   << "         all(equal(" << localPrefix << "c0, " << localPrefix << "d )) )) {\n"
+				   << "     accum |= 1;\n"
+				   << "   }\n";
+		}
+	}
 }
 
 void BufferAddressTestInstance::fillBuffer (const std::vector<deUint8 *>& cpuAddrs,
-										  const std::vector<deUint64>& gpuAddrs,
-										  deUint32 bufNum, deUint32 curDepth) const
+											const std::vector<deUint64>& gpuAddrs,
+											deUint32 bufNum, deUint32 curDepth) const
 {
 	deUint8 *buf = cpuAddrs[bufNum];
 
@@ -259,19 +348,45 @@ void BufferAddressTestInstance::fillBuffer (const std::vector<deUint8 *>& cpuAdd
 		fillBuffer(cpuAddrs, gpuAddrs, bufNum*3+2, curDepth+1);
 		fillBuffer(cpuAddrs, gpuAddrs, bufNum*3+3, curDepth+1);
 	}
+	else
+	{
+		// c
+		((deUint64 *)(buf+48))[0] = 0ull;
+		((deUint64 *)(buf+48))[cStride] = 0ull;
+		// d
+		((deUint64 *)(buf+80))[0] = 0ull;
+	}
 }
 
 
 void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) const
 {
-	std::stringstream decls, checks;
+	std::stringstream decls, checks, localDecls;
 
 	std::string baseStorage = m_data.base == BASE_UBO ? "uniform" : "buffer";
 	std::string memberStorage = "buffer";
 
 	decls << "layout(r32ui, set = " << m_data.set << ", binding = 0) uniform uimage2D image0_0;\n";
 	decls << "layout(buffer_reference) " << memberStorage << " T1;\n";
-	std::string refType = m_data.convertUToPtr ? "uint64_t" : "T1";
+
+	std::string refType;
+	switch (m_data.convertUToPtr)
+	{
+	case CONVERT_UINT64:
+	case CONVERT_U64TOUVEC2:
+		refType = "uint64_t";
+		break;
+
+	case CONVERT_UVEC2:
+	case CONVERT_UVEC2TOU64:
+		refType = "uvec2";
+		break;
+
+	default:
+		refType = "T1";
+		break;
+	}
+
 	std::string layout = m_data.layout == LAYOUT_SCALAR ? "scalar" : "std140";
 	decls <<
 			"layout(set = " << m_data.set << ", binding = 1, " << layout << ") " << baseStorage << " T2 {\n"
@@ -292,6 +407,11 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 			"   layout(offset = 96, row_major) mat2 e; // tightly packed for scalar, 16 byte matrix stride for std140\n"
 			"};\n";
 
+	if (m_data.convertUToPtr == CONVERT_U64CMP)
+		localDecls << "  uint64_t zero = uint64_t(0);\n";
+	else if (m_data.convertUToPtr == CONVERT_UVEC2CMP)
+		localDecls << "  uvec2 zero = uvec2(0, 0);\n";
+
 	checkBuffer(checks, 0, 0, "x");
 
 	std::stringstream pushdecl;
@@ -300,6 +420,9 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 	vk::ShaderBuildOptions::Flags flags = vk::ShaderBuildOptions::Flags(0);
 	if (m_data.layout == LAYOUT_SCALAR)
 		flags = vk::ShaderBuildOptions::FLAG_ALLOW_SCALAR_OFFSETS;
+
+	// The conversion and comparison in uvec2 form test needs SPIR-V 1.5 for OpBitcast.
+	const vk::SpirvVersion spirvVersion = ((m_data.convertUToPtr == CONVERT_UVEC2CMP) ? vk::SPIRV_VERSION_1_5 : vk::SPIRV_VERSION_1_0);
 
 	switch (m_data.stage)
 	{
@@ -312,6 +435,7 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"#extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable\n"
 				"#extension GL_EXT_buffer_reference : enable\n"
 				"#extension GL_EXT_scalar_block_layout : enable\n"
+				"#extension GL_EXT_buffer_reference_uvec2 : enable\n"
 				<< pushdecl.str()
 				<< decls.str() <<
 				"layout(local_size_x = 1, local_size_y = 1) in;\n"
@@ -319,13 +443,14 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"{\n"
 				"  int accum = 0, temp;\n"
 				"  ivec3 f;\n"
+				<< localDecls.str()
 				<< checks.str() <<
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_GlobalInvocationID.xy), color);\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::ComputeSource(css.str())
-				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, flags);
+				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, flags);
 			break;
 		}
 #if ENABLE_RAYTRACING
@@ -337,6 +462,7 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"#extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable\n"
 				"#extension GL_EXT_buffer_reference : enable\n"
 				"#extension GL_EXT_scalar_block_layout : enable\n"
+				"#extension GL_EXT_buffer_reference_uvec2 : enable\n"
 				"#extension GL_NV_ray_tracing : require\n"
 				<< pushdecl.str()
 				<< decls.str() <<
@@ -344,13 +470,14 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"{\n"
 				"  int accum = 0, temp;\n"
 				"  ivec3 f;\n"
+				<< localDecls.str()
 				<< checks.str() <<
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_LaunchIDNV.xy), color);\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::RaygenSource(css.str())
-				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, flags);
+				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, flags);
 			break;
 		}
 #endif
@@ -362,19 +489,22 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"#extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable\n"
 				"#extension GL_EXT_buffer_reference : enable\n"
 				"#extension GL_EXT_scalar_block_layout : enable\n"
+				"#extension GL_EXT_buffer_reference_uvec2 : enable\n"
 				<< pushdecl.str()
 				<< decls.str()  <<
 				"void main()\n"
 				"{\n"
 				"  int accum = 0, temp;\n"
 				"  ivec3 f;\n"
+				<< localDecls.str()
 				<< checks.str() <<
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_VertexIndex % " << DIM << ", gl_VertexIndex / " << DIM << "), color);\n"
+				"  gl_PointSize = 1.0f;\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::VertexSource(vss.str())
-				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, flags);
+				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, flags);
 			break;
 		}
 	case STAGE_FRAGMENT:
@@ -396,19 +526,21 @@ void BufferAddressTestCase::initPrograms (SourceCollections& programCollection) 
 				"#extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable\n"
 				"#extension GL_EXT_buffer_reference : enable\n"
 				"#extension GL_EXT_scalar_block_layout : enable\n"
+				"#extension GL_EXT_buffer_reference_uvec2 : enable\n"
 				<< pushdecl.str()
 				<< decls.str() <<
 				"void main()\n"
 				"{\n"
 				"  int accum = 0, temp;\n"
 				"  ivec3 f;\n"
+				<< localDecls.str()
 				<< checks.str() <<
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_FragCoord.x, gl_FragCoord.y), color);\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::FragmentSource(fss.str())
-				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_0, flags);
+				<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, spirvVersion, flags);
 			break;
 		}
 	}
@@ -441,9 +573,12 @@ VkBufferCreateInfo makeBufferCreateInfo (const void*				pNext,
 
 tcu::TestStatus BufferAddressTestInstance::iterate (void)
 {
+	const InstanceInterface&vki						= m_context.getInstanceInterface();
 	const DeviceInterface&	vk						= m_context.getDeviceInterface();
+	const VkPhysicalDevice&	physDevice				= m_context.getPhysicalDevice();
 	const VkDevice			device					= m_context.getDevice();
 	Allocator&				allocator				= m_context.getDefaultAllocator();
+	const bool				useKHR					= m_context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address");
 
 
 	VkFlags allShaderStages = VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -466,7 +601,7 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 	deMemset(&rayTracingProperties, 0, sizeof(rayTracingProperties));
 	rayTracingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV;
 
-	if (isDeviceExtensionSupported(m_context.getUsedApiVersion(), m_context.getDeviceExtensions(), "VK_NV_ray_tracing"))
+	if (m_context.isDeviceFunctionalitySupported("VK_NV_ray_tracing"))
 	{
 		properties.pNext = &rayTracingProperties;
 	}
@@ -539,60 +674,132 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 		numBindings = numBindings*3+1;
 	}
 
-	VkBufferDeviceAddressCreateInfoEXT addressCreateInfo =
+	VkBufferDeviceAddressCreateInfoEXT addressCreateInfoEXT =
 	{
 		VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,	// VkStructureType	 sType;
 		DE_NULL,													// const void*		 pNext;
-		0x000000000ULL,												// VkDeviceSize		deviceAddress
+		0x000000000ULL,												// VkDeviceSize		 deviceAddress
+	};
+
+	VkBufferOpaqueCaptureAddressCreateInfo bufferOpaqueCaptureAddressCreateInfo =
+	{
+		VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,	// VkStructureType	 sType;
+		DE_NULL,														// const void*		 pNext;
+		0x000000000ULL,													// VkDeviceSize		 opaqueCaptureAddress
 	};
 
 	std::vector<deUint8 *> cpuAddrs(numBindings);
 	std::vector<VkDeviceAddress> gpuAddrs(numBindings);
+	std::vector<deUint64> opaqueBufferAddrs(numBindings);
+	std::vector<deUint64> opaqueMemoryAddrs(numBindings);
 
-	VkBufferDeviceAddressInfoEXT info =
+	VkBufferDeviceAddressInfo bufferDeviceAddressInfo =
 	{
-		VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_EXT,	// VkStructureType	 sType;
-		DE_NULL,											// const void*		 pNext;
-		0,													// VkBuffer			buffer
+		VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,	// VkStructureType	 sType;
+		DE_NULL,										// const void*		 pNext;
+		0,												// VkBuffer			 buffer
+	};
+
+	VkDeviceMemoryOpaqueCaptureAddressInfo deviceMemoryOpaqueCaptureAddressInfo =
+	{
+		VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO,	// VkStructureType	 sType;
+		DE_NULL,														// const void*		 pNext;
+		0,																// VkDeviceMemory	 memory;
 	};
 
 	bool multiBuffer = m_data.bufType != BT_SINGLE;
 	deUint32 numBuffers = multiBuffer ? numBindings : 1;
 	VkDeviceSize bufferSize = multiBuffer ? align : (align*numBindings);
 
-	vector<de::SharedPtr<BufferWithMemory> > buffers(numBuffers);
-	for (deUint32 i = 0; i < numBuffers; ++i)
-	{
-		buffers[i] = de::SharedPtr<BufferWithMemory>(new BufferWithMemory(
-			vk, device, allocator, makeBufferCreateInfo(DE_NULL, bufferSize,
+	vector<VkBufferSp>			buffers(numBuffers);
+	vector<AllocationSp>		allocations(numBuffers);
+
+	VkBufferCreateInfo			bufferCreateInfo = makeBufferCreateInfo(DE_NULL, bufferSize,
 														VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
 														VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-														VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT,
-														m_data.bufType == BT_REPLAY ? VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT : 0),
-														MemoryRequirement::HostVisible));
+														VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+														m_data.bufType == BT_REPLAY ? VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT : 0);
+
+	// VkMemoryAllocateFlags to be filled out later
+	VkMemoryAllocateFlagsInfo	allocFlagsInfo =
+	{
+		VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,	//	VkStructureType	sType
+		DE_NULL,										//	const void*		pNext
+		0,												//	VkMemoryAllocateFlags    flags
+		0,												//	uint32_t                 deviceMask
+	};
+
+	VkMemoryOpaqueCaptureAddressAllocateInfo memoryOpaqueCaptureAddressAllocateInfo =
+	{
+		VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,	// VkStructureType    sType;
+		DE_NULL,														// const void*        pNext;
+		0,																// uint64_t           opaqueCaptureAddress;
+	};
+
+	if (useKHR)
+		allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+
+	if (useKHR && m_data.bufType == BT_REPLAY)
+	{
+		allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+		allocFlagsInfo.pNext = &memoryOpaqueCaptureAddressAllocateInfo;
+	}
+
+	for (deUint32 i = 0; i < numBuffers; ++i)
+	{
+		buffers[i] = VkBufferSp(new Unique<VkBuffer>(createBuffer(vk, device, &bufferCreateInfo)));
+
+		// query opaque capture address before binding memory
+		if (useKHR)
+		{
+			bufferDeviceAddressInfo.buffer = **buffers[i];
+			opaqueBufferAddrs[i] = vk.getBufferOpaqueCaptureAddress(device, &bufferDeviceAddressInfo);
+		}
+
+		allocations[i] = AllocationSp(allocateExtended(vki, vk, physDevice, device, getBufferMemoryRequirements(vk, device, **buffers[i]), MemoryRequirement::HostVisible, &allocFlagsInfo));
+
+		if (useKHR)
+		{
+			deviceMemoryOpaqueCaptureAddressInfo.memory = allocations[i]->getMemory();
+			opaqueMemoryAddrs[i] = vk.getDeviceMemoryOpaqueCaptureAddress(device, &deviceMemoryOpaqueCaptureAddressInfo);
+		}
+
+		VK_CHECK(vk.bindBufferMemory(device, **buffers[i], allocations[i]->getMemory(), 0));
 	}
 
 	if (m_data.bufType == BT_REPLAY)
 	{
 		for (deUint32 i = 0; i < numBuffers; ++i)
 		{
-			info.buffer = **buffers[i];
-			gpuAddrs[i] = vk.getBufferDeviceAddressEXT(device, &info);
+			bufferDeviceAddressInfo.buffer = **buffers[i];
+			if (useKHR)
+				gpuAddrs[i] = vk.getBufferDeviceAddress(device, &bufferDeviceAddressInfo);
+			else
+				gpuAddrs[i] = vk.getBufferDeviceAddressEXT(device, &bufferDeviceAddressInfo);
 		}
 		buffers.clear();
 		buffers.resize(numBuffers);
+		allocations.clear();
+		allocations.resize(numBuffers);
+
+		bufferCreateInfo.pNext = useKHR ? (void *)&bufferOpaqueCaptureAddressCreateInfo : (void *)&addressCreateInfoEXT;
+
 		for (deInt32 i = numBuffers-1; i >= 0; --i)
 		{
-			addressCreateInfo.deviceAddress = gpuAddrs[i];
-			buffers[i] = de::SharedPtr<BufferWithMemory>(new BufferWithMemory(
-				vk, device, allocator, makeBufferCreateInfo(&addressCreateInfo, bufferSize,
-															VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-															VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-															VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT,
-															m_data.bufType == BT_REPLAY ? VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT : 0),
-															MemoryRequirement::HostVisible));
-			info.buffer = **buffers[i];
-			VkDeviceSize newAddr = vk.getBufferDeviceAddressEXT(device, &info);
+			addressCreateInfoEXT.deviceAddress = gpuAddrs[i];
+			bufferOpaqueCaptureAddressCreateInfo.opaqueCaptureAddress = opaqueBufferAddrs[i];
+			memoryOpaqueCaptureAddressAllocateInfo.opaqueCaptureAddress = opaqueMemoryAddrs[i];
+
+			buffers[i] = VkBufferSp(new Unique<VkBuffer>(createBuffer(vk, device, &bufferCreateInfo)));
+			allocations[i] = AllocationSp(allocateExtended(vki, vk, physDevice, device, getBufferMemoryRequirements(vk, device, **buffers[i]), MemoryRequirement::HostVisible, &allocFlagsInfo));
+			VK_CHECK(vk.bindBufferMemory(device, **buffers[i], allocations[i]->getMemory(), 0));
+
+			bufferDeviceAddressInfo.buffer = **buffers[i];
+			VkDeviceSize newAddr;
+			if (useKHR)
+				newAddr = vk.getBufferDeviceAddress(device, &bufferDeviceAddressInfo);
+			else
+				newAddr = vk.getBufferDeviceAddressEXT(device, &bufferDeviceAddressInfo);
 			if (newAddr != gpuAddrs[i])
 				return tcu::TestStatus(QP_TEST_RESULT_FAIL, "address mismatch");
 		}
@@ -601,10 +808,13 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 	// Create a buffer and compute the address for each "align" bytes.
 	for (deUint32 i = 0; i < numBindings; ++i)
 	{
-		info.buffer = **buffers[multiBuffer ? i : 0];
+		bufferDeviceAddressInfo.buffer = **buffers[multiBuffer ? i : 0];
 
-		gpuAddrs[i] = vk.getBufferDeviceAddressEXT(device, &info);
-		cpuAddrs[i] = (deUint8 *)buffers[multiBuffer ? i : 0]->getAllocation().getHostPtr();
+		if (useKHR)
+			gpuAddrs[i] = vk.getBufferDeviceAddress(device, &bufferDeviceAddressInfo);
+		else
+			gpuAddrs[i] = vk.getBufferDeviceAddressEXT(device, &bufferDeviceAddressInfo);
+		cpuAddrs[i] = (deUint8 *)allocations[multiBuffer ? i : 0]->getHostPtr();
 		if (!multiBuffer)
 		{
 			cpuAddrs[i] = cpuAddrs[i] + align*i;
@@ -616,7 +826,7 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 	fillBuffer(cpuAddrs, gpuAddrs, 0, 0);
 
 	for (deUint32 i = 0; i < numBuffers; ++i)
-		flushAlloc(vk, device, buffers[i]->getAllocation());
+		flushAlloc(vk, device, *allocations[i]);
 
 	const VkQueue					queue					= m_context.getUniversalQueue();
 	Move<VkCommandPool>				cmdPool					= createCommandPool(vk, device, 0, m_context.getUniversalQueueFamilyIndex());
@@ -829,7 +1039,7 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 		sbtBuffer = de::MovePtr<BufferWithMemory>(new BufferWithMemory(
 			vk, device, allocator, makeBufferCreateInfo(DE_NULL, rayTracingProperties.shaderGroupHandleSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_RAY_TRACING_BIT_NV, 0), MemoryRequirement::HostVisible));
 		deUint32 *ptr = (deUint32 *)sbtBuffer->getAllocation().getHostPtr();
-		invalidateMappedMemoryRange(vk, device, sbtBuffer->getAllocation().getMemory(), sbtBuffer->getAllocation().getOffset(), rayTracingProperties.shaderGroupHandleSize);
+		invalidateAlloc(vk, device, sbtBuffer->getAllocation());
 
 		vk.getRayTracingShaderGroupHandlesNV(device, *pipeline, 0, 1, rayTracingProperties.shaderGroupHandleSize, ptr);
 	}
@@ -1101,7 +1311,7 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 	submitCommandsAndWait(vk, device, queue, cmdBuffer.get());
 
 	deUint32 *ptr = (deUint32 *)copyBuffer->getAllocation().getHostPtr();
-	invalidateMappedMemoryRange(vk, device, copyBuffer->getAllocation().getMemory(), copyBuffer->getAllocation().getOffset(), DIM*DIM*sizeof(deUint32));
+	invalidateAlloc(vk, device, copyBuffer->getAllocation());
 
 	qpTestResult res = QP_TEST_RESULT_PASS;
 
@@ -1114,6 +1324,209 @@ tcu::TestStatus BufferAddressTestInstance::iterate (void)
 	}
 
 	return tcu::TestStatus(res, qpGetTestResultName(res));
+}
+
+class CaptureReplayTestCase : public TestCase
+{
+public:
+							CaptureReplayTestCase	(tcu::TestContext& context, const char* name, const char* desc, deUint32 seed);
+							~CaptureReplayTestCase	(void);
+	virtual	void			initPrograms			(SourceCollections& programCollection) const { DE_UNREF(programCollection); }
+	virtual TestInstance*	createInstance			(Context& context) const;
+	virtual void			checkSupport			(Context& context) const;
+private:
+	deUint32				m_seed;
+};
+
+CaptureReplayTestCase::CaptureReplayTestCase (tcu::TestContext& context, const char* name, const char* desc, deUint32 seed)
+	: vkt::TestCase	(context, name, desc)
+	, m_seed(seed)
+{
+}
+
+CaptureReplayTestCase::~CaptureReplayTestCase	(void)
+{
+}
+
+void CaptureReplayTestCase::checkSupport (Context& context) const
+{
+	if (!context.isBufferDeviceAddressSupported())
+		TCU_THROW(NotSupportedError, "Physical storage buffer pointers not supported");
+
+	bool isBufferDeviceAddressWithCaptureReplaySupported =
+			(context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address") && context.getBufferDeviceAddressFeatures().bufferDeviceAddressCaptureReplay) ||
+			(context.isDeviceFunctionalitySupported("VK_EXT_buffer_device_address") && context.getBufferDeviceAddressFeaturesEXT().bufferDeviceAddressCaptureReplay);
+
+	if (!isBufferDeviceAddressWithCaptureReplaySupported)
+		TCU_THROW(NotSupportedError, "Capture/replay of physical storage buffer pointers not supported");
+}
+
+class CaptureReplayTestInstance : public TestInstance
+{
+public:
+						CaptureReplayTestInstance	(Context& context, deUint32 seed);
+						~CaptureReplayTestInstance	(void);
+	tcu::TestStatus		iterate						(void);
+private:
+	deUint32			m_seed;
+};
+
+CaptureReplayTestInstance::CaptureReplayTestInstance (Context& context, deUint32 seed)
+	: vkt::TestInstance		(context)
+	, m_seed(seed)
+{
+}
+
+CaptureReplayTestInstance::~CaptureReplayTestInstance (void)
+{
+}
+
+TestInstance* CaptureReplayTestCase::createInstance (Context& context) const
+{
+	return new CaptureReplayTestInstance(context, m_seed);
+}
+
+tcu::TestStatus CaptureReplayTestInstance::iterate (void)
+{
+	const InstanceInterface&vki						= m_context.getInstanceInterface();
+	const DeviceInterface&	vk						= m_context.getDeviceInterface();
+	const VkPhysicalDevice&	physDevice				= m_context.getPhysicalDevice();
+	const VkDevice			device					= m_context.getDevice();
+	const bool				useKHR					= m_context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address");
+	de::Random				rng(m_seed);
+
+	VkBufferDeviceAddressCreateInfoEXT addressCreateInfoEXT =
+	{
+		VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,	// VkStructureType	 sType;
+		DE_NULL,													// const void*		 pNext;
+		0x000000000ULL,												// VkDeviceSize		 deviceAddress
+	};
+
+	VkBufferOpaqueCaptureAddressCreateInfo bufferOpaqueCaptureAddressCreateInfo =
+	{
+		VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,	// VkStructureType	 sType;
+		DE_NULL,														// const void*		 pNext;
+		0x000000000ULL,													// VkDeviceSize		 opaqueCaptureAddress
+	};
+
+	const deUint32 numBuffers = 100;
+	std::vector<VkDeviceSize> bufferSizes(numBuffers);
+	// random sizes, powers of two [4K, 4MB]
+	for (deUint32 i = 0; i < numBuffers; ++i)
+		bufferSizes[i] = 4096 << (rng.getUint32() % 11);
+
+	std::vector<VkDeviceAddress> gpuAddrs(numBuffers);
+	std::vector<deUint64> opaqueBufferAddrs(numBuffers);
+	std::vector<deUint64> opaqueMemoryAddrs(numBuffers);
+
+	VkBufferDeviceAddressInfo bufferDeviceAddressInfo =
+	{
+		VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,	// VkStructureType	 sType;
+		DE_NULL,										// const void*		 pNext;
+		0,												// VkBuffer			 buffer
+	};
+
+	VkDeviceMemoryOpaqueCaptureAddressInfo deviceMemoryOpaqueCaptureAddressInfo =
+	{
+		VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO,	// VkStructureType	 sType;
+		DE_NULL,														// const void*		 pNext;
+		0,																// VkDeviceMemory	 memory;
+	};
+
+	vector<VkBufferSp>			buffers(numBuffers);
+	vector<AllocationSp>		allocations(numBuffers);
+
+	VkBufferCreateInfo			bufferCreateInfo = makeBufferCreateInfo(DE_NULL, 0,
+														VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+														VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+														VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+														VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT);
+
+	// VkMemoryAllocateFlags to be filled out later
+	VkMemoryAllocateFlagsInfo	allocFlagsInfo =
+	{
+		VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,	//	VkStructureType	sType
+		DE_NULL,										//	const void*		pNext
+		0,												//	VkMemoryAllocateFlags    flags
+		0,												//	uint32_t                 deviceMask
+	};
+
+	VkMemoryOpaqueCaptureAddressAllocateInfo memoryOpaqueCaptureAddressAllocateInfo =
+	{
+		VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,	// VkStructureType    sType;
+		DE_NULL,														// const void*        pNext;
+		0,																// uint64_t           opaqueCaptureAddress;
+	};
+
+	if (useKHR)
+		allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+
+	if (useKHR)
+	{
+		allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+		allocFlagsInfo.pNext = &memoryOpaqueCaptureAddressAllocateInfo;
+	}
+
+	for (deUint32 i = 0; i < numBuffers; ++i)
+	{
+		bufferCreateInfo.size = bufferSizes[i];
+		buffers[i] = VkBufferSp(new Unique<VkBuffer>(createBuffer(vk, device, &bufferCreateInfo)));
+
+		// query opaque capture address before binding memory
+		if (useKHR)
+		{
+			bufferDeviceAddressInfo.buffer = **buffers[i];
+			opaqueBufferAddrs[i] = vk.getBufferOpaqueCaptureAddress(device, &bufferDeviceAddressInfo);
+		}
+
+		allocations[i] = AllocationSp(allocateExtended(vki, vk, physDevice, device, getBufferMemoryRequirements(vk, device, **buffers[i]), MemoryRequirement::HostVisible, &allocFlagsInfo));
+
+		if (useKHR)
+		{
+			deviceMemoryOpaqueCaptureAddressInfo.memory = allocations[i]->getMemory();
+			opaqueMemoryAddrs[i] = vk.getDeviceMemoryOpaqueCaptureAddress(device, &deviceMemoryOpaqueCaptureAddressInfo);
+		}
+
+		VK_CHECK(vk.bindBufferMemory(device, **buffers[i], allocations[i]->getMemory(), 0));
+	}
+
+	for (deUint32 i = 0; i < numBuffers; ++i)
+	{
+		bufferDeviceAddressInfo.buffer = **buffers[i];
+		if (useKHR)
+			gpuAddrs[i] = vk.getBufferDeviceAddress(device, &bufferDeviceAddressInfo);
+		else
+			gpuAddrs[i] = vk.getBufferDeviceAddressEXT(device, &bufferDeviceAddressInfo);
+	}
+	buffers.clear();
+	buffers.resize(numBuffers);
+	allocations.clear();
+	allocations.resize(numBuffers);
+
+	bufferCreateInfo.pNext = useKHR ? (void *)&bufferOpaqueCaptureAddressCreateInfo : (void *)&addressCreateInfoEXT;
+
+	for (deInt32 i = numBuffers-1; i >= 0; --i)
+	{
+		addressCreateInfoEXT.deviceAddress = gpuAddrs[i];
+		bufferOpaqueCaptureAddressCreateInfo.opaqueCaptureAddress = opaqueBufferAddrs[i];
+		memoryOpaqueCaptureAddressAllocateInfo.opaqueCaptureAddress = opaqueMemoryAddrs[i];
+
+		bufferCreateInfo.size = bufferSizes[i];
+		buffers[i] = VkBufferSp(new Unique<VkBuffer>(createBuffer(vk, device, &bufferCreateInfo)));
+		allocations[i] = AllocationSp(allocateExtended(vki, vk, physDevice, device, getBufferMemoryRequirements(vk, device, **buffers[i]), MemoryRequirement::HostVisible, &allocFlagsInfo));
+		VK_CHECK(vk.bindBufferMemory(device, **buffers[i], allocations[i]->getMemory(), 0));
+
+		bufferDeviceAddressInfo.buffer = **buffers[i];
+		VkDeviceSize newAddr;
+		if (useKHR)
+			newAddr = vk.getBufferDeviceAddress(device, &bufferDeviceAddressInfo);
+		else
+			newAddr = vk.getBufferDeviceAddressEXT(device, &bufferDeviceAddressInfo);
+		if (newAddr != gpuAddrs[i])
+			return tcu::TestStatus(QP_TEST_RESULT_FAIL, "address mismatch");
+	}
+
+	return tcu::TestStatus(QP_TEST_RESULT_PASS, qpGetTestResultName(QP_TEST_RESULT_PASS));
 }
 
 }	// anonymous
@@ -1153,8 +1566,13 @@ tcu::TestCaseGroup*	createBufferDeviceAddressTests (tcu::TestContext& testCtx)
 
 	TestGroupCase cvtCases[] =
 	{
-		{ 0,	"load",		"load reference"				},
-		{ 1,	"convert",	"load and convert reference"	},
+		{ CONVERT_NONE,			"load",				"load reference"										},
+		{ CONVERT_UINT64,		"convert",			"load and convert reference"							},
+		{ CONVERT_UVEC2,		"convertuvec2",		"load and convert reference to uvec2"					},
+		{ CONVERT_U64CMP,		"convertchecku64",	"load, convert and compare references as uint64_t"		},
+		{ CONVERT_UVEC2CMP,		"convertcheckuv2",	"load, convert and compare references as uvec2"			},
+		{ CONVERT_UVEC2TOU64,	"crossconvertu2p",	"load reference as uint64_t and convert it to uvec2"	},
+		{ CONVERT_U64TOUVEC2,	"crossconvertp2u",	"load reference as uvec2 and convert it to uint64_t"	},
 	};
 
 	TestGroupCase storeCases[] =
@@ -1215,7 +1633,7 @@ tcu::TestCaseGroup*	createBufferDeviceAddressTests (tcu::TestContext& testCtx)
 										depthCases[depthNdx].count,					// deUint32 depth;
 										(Base)baseCases[baseNdx].count,				// Base base;
 										(Stage)stageCases[stageNdx].count,			// Stage stage;
-										!!cvtCases[cvtNdx].count,					// bool convertUToPtr;
+										(Convert)cvtCases[cvtNdx].count,			// Convert convertUToPtr;
 										!!storeCases[storeNdx].count,				// bool storeInLocal;
 										(BufType)btCases[btNdx].count,				// BufType bufType;
 										(Layout)layoutCases[layoutNdx].count,		// Layout layout;
@@ -1241,6 +1659,13 @@ tcu::TestCaseGroup*	createBufferDeviceAddressTests (tcu::TestContext& testCtx)
 		}
 		group->addChild(setGroup.release());
 	}
+
+	de::MovePtr<tcu::TestCaseGroup> capGroup(new tcu::TestCaseGroup(testCtx, "capture_replay_stress", "Test VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT"));
+	for (deUint32 i = 0; i < 10; ++i)
+	{
+		capGroup->addChild(new CaptureReplayTestCase(testCtx, (std::string("seed_") + de::toString(i)).c_str(), "", i));
+	}
+	group->addChild(capGroup.release());
 	return group.release();
 }
 

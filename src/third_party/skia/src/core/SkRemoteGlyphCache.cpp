@@ -19,8 +19,8 @@
 #include "src/core/SkDraw.h"
 #include "src/core/SkEnumerate.h"
 #include "src/core/SkGlyphRun.h"
+#include "src/core/SkScalerCache.h"
 #include "src/core/SkSpan.h"
-#include "src/core/SkStrike.h"
 #include "src/core/SkStrikeCache.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkTraceEvent.h"
@@ -37,14 +37,13 @@ static SkDescriptor* auto_descriptor_from_desc(const SkDescriptor* source_desc,
                                                SkAutoDescriptor* ad) {
     ad->reset(source_desc->getLength());
     auto* desc = ad->getDesc();
-    desc->init();
 
     // Rec.
     {
         uint32_t size;
         auto ptr = source_desc->findEntry(kRec_SkDescriptorTag, &size);
         SkScalerContextRec rec;
-        std::memcpy(&rec, ptr, size);
+        std::memcpy((void*)&rec, ptr, size);
         rec.fFontID = font_id;
         desc->addEntry(kRec_SkDescriptorTag, sizeof(rec), &rec);
     }
@@ -602,7 +601,7 @@ SkStrikeServer::RemoteStrike* SkStrikeServer::getOrCreateCache(
                     [&desc](){
                         auto ptr = desc.findEntry(kRec_SkDescriptorTag, nullptr);
                         SkScalerContextRec rec;
-                        std::memcpy(&rec, ptr, sizeof(rec));
+                        std::memcpy((void*)&rec, ptr, sizeof(rec));
                         return rec.dump();
                     }().c_str()
             )
@@ -639,7 +638,7 @@ SkStrikeServer::RemoteStrike* SkStrikeServer::getOrCreateCache(
 
     auto context = typeface.createScalerContext(effects, &desc);
     auto newHandle = fDiscardableHandleManager->createHandle();  // Locked on creation
-    auto remoteStrike = skstd::make_unique<RemoteStrike>(desc, std::move(context), newHandle);
+    auto remoteStrike = std::make_unique<RemoteStrike>(desc, std::move(context), newHandle);
     remoteStrike->setTypefaceAndEffects(&typeface, effects);
     auto remoteStrikePtr = remoteStrike.get();
     fRemoteStrikesToSend.add(remoteStrikePtr);
@@ -775,7 +774,11 @@ void SkStrikeServer::RemoteStrike::prepareForMaskDrawing(
     for (auto [i, variant, _] : SkMakeEnumerate(drawables->input())) {
         SkPackedGlyphID packedID = variant.packedID();
         if (fSentLowGlyphIDs.test(packedID)) {
-            SkASSERT(fSentGlyphs.find(packedID) != nullptr);
+            #ifdef SK_DEBUG
+                MaskSummary* summary = fSentGlyphs.find(packedID);
+                SkASSERT(summary != nullptr);
+                SkASSERT(summary->canDrawAsMask && summary->canDrawAsSDFT);
+            #endif
             continue;
         }
 
@@ -789,11 +792,14 @@ void SkStrikeServer::RemoteStrike::prepareForMaskDrawing(
             this->ensureScalerContext();
             fContext->getMetrics(glyph);
 
-            fSentLowGlyphIDs.setIfLower(packedID);
-
             MaskSummary newSummary =
                     {packedID.value(), CanDrawAsMask(*glyph), CanDrawAsSDFT(*glyph)};
+
             summary = fSentGlyphs.set(newSummary);
+
+            if (summary->canDrawAsMask && summary->canDrawAsSDFT) {
+                fSentLowGlyphIDs.setIfLower(packedID);
+            }
         }
 
         // Reject things that are too big.
@@ -944,7 +950,7 @@ bool SkStrikeClient::readStrikeData(const volatile void* memory, size_t memorySi
         SkAutoDescriptor ad;
         auto* client_desc = auto_descriptor_from_desc(sourceAd.getDesc(), tf->uniqueID(), &ad);
 
-        auto strike = fStrikeCache->findStrikeExclusive(*client_desc);
+        auto strike = fStrikeCache->findStrike(*client_desc);
         // Metrics are only sent the first time. If the metrics are not initialized, there must
         // be an existing strike.
         if (fontMetricsInitialized && strike == nullptr) READ_FAILURE
@@ -953,13 +959,11 @@ bool SkStrikeClient::readStrikeData(const volatile void* memory, size_t memorySi
             // glyphs here anyway, and the desc is still correct since it includes the serialized
             // effects.
             SkScalerContextEffects effects;
-            auto scaler = SkStrikeCache::CreateScalerContext(*client_desc, effects, *tf);
-            strike = fStrikeCache->createStrikeExclusive(
+            auto scaler = tf->createScalerContext(effects, client_desc);
+            strike = fStrikeCache->createStrike(
                     *client_desc, std::move(scaler), &fontMetrics,
-                    skstd::make_unique<DiscardableStrikePinner>(spec.discardableHandleId,
-                                                                fDiscardableHandleManager));
-            auto proxyContext = static_cast<SkScalerContextProxy*>(strike->getScalerContext());
-            proxyContext->initCache(strike.get(), fStrikeCache);
+                    std::make_unique<DiscardableStrikePinner>(
+                            spec.discardableHandleId, fDiscardableHandleManager));
         }
 
         if (!deserializer.read<uint64_t>(&glyphImagesCount)) READ_FAILURE
@@ -996,7 +1000,7 @@ bool SkStrikeClient::readStrikeData(const volatile void* memory, size_t memorySi
                 pathPtr = &path;
             }
 
-            strike->preparePath(allocatedGlyph, pathPtr);
+            strike->mergePath(allocatedGlyph, pathPtr);
         }
     }
 
@@ -1018,5 +1022,5 @@ sk_sp<SkTypeface> SkStrikeClient::addTypeface(const WireTypeface& wire) {
             wire.typefaceID, wire.glyphCount, wire.style, wire.isFixed,
             fDiscardableHandleManager, fIsLogging);
     fRemoteFontIdToTypeface.set(wire.typefaceID, newTypeface);
-    return newTypeface;
+    return std::move(newTypeface);
 }

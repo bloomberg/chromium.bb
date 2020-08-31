@@ -18,7 +18,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
@@ -1039,7 +1038,6 @@ TEST_F(RlzLibTest, ConcurrentStoreAccessWithProcessExitsWhileLockHeld) {
         EXPECT_TRUE(success);
         _exit(success ? 0 : 1);
       }
-      _exit(0);
     } else {
       // Parent.
       pids.push_back(pid);

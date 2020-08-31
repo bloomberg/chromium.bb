@@ -42,10 +42,6 @@ namespace blink {
 
 namespace {
 
-// TODO(crbug.com/1008708): Remove this flag when we're sure the new behavior
-// is better than the previous one.
-constexpr bool kRestoreOnLoad = true;
-
 inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
@@ -62,8 +58,9 @@ const AtomicString& ControlType(const ListedElement& control) {
 }
 
 bool IsDirtyControl(const ListedElement& control) {
-  if (control.IsFormControlElementWithState())
-    return ToHTMLFormControlElementWithState(control).UserHasEditedTheField();
+  if (auto* form_control_element =
+          DynamicTo<HTMLFormControlElementWithState>(control))
+    return form_control_element->UserHasEditedTheField();
   if (control.IsElementInternals()) {
     // We have no ways to know the dirtiness of a form-associated custom
     // element.  Assume it is dirty if it has focus.
@@ -567,7 +564,7 @@ void FormController::WillDeleteForm(HTMLFormElement* form) {
 }
 
 void FormController::RestoreControlStateFor(ListedElement& control) {
-  if (kRestoreOnLoad && !document_->HasFinishedParsing())
+  if (!document_->HasFinishedParsing())
     return;
   if (OwnerFormForState(control))
     return;
@@ -575,7 +572,7 @@ void FormController::RestoreControlStateFor(ListedElement& control) {
 }
 
 void FormController::RestoreControlStateIn(HTMLFormElement& form) {
-  if (kRestoreOnLoad && !document_->HasFinishedParsing())
+  if (!document_->HasFinishedParsing())
     return;
   EventQueueScope scope;
   const ListedElement::List& elements = form.ListedElements();
@@ -619,8 +616,6 @@ void FormController::RestoreControlStateOnUpgrade(ListedElement& control) {
 }
 
 void FormController::ScheduleRestore() {
-  if (!kRestoreOnLoad)
-    return;
   document_->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&FormController::RestoreAllControlsInDocumentOrder,
@@ -628,8 +623,6 @@ void FormController::ScheduleRestore() {
 }
 
 void FormController::RestoreImmediately() {
-  if (!kRestoreOnLoad)
-    return;
   if (did_restore_all_ || !HasControlStates())
     return;
   RestoreAllControlsInDocumentOrder();

@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -13,7 +14,7 @@ QuicSimpleDispatcher::QuicSimpleDispatcher(
     const QuicCryptoServerConfig* crypto_config,
     QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
-    std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
+    std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
     std::unique_ptr<QuicAlarmFactory> alarm_factory,
     QuicSimpleServerBackend* quic_simple_server_backend,
     uint8_t expected_server_connection_id_length)
@@ -47,10 +48,10 @@ void QuicSimpleDispatcher::OnRstStreamReceived(
   }
 }
 
-QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
+std::unique_ptr<QuicSession> QuicSimpleDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const QuicSocketAddress& client_address,
-    QuicStringPiece /*alpn*/,
+    quiche::QuicheStringPiece /*alpn*/,
     const ParsedQuicVersion& version) {
   // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
@@ -58,7 +59,7 @@ QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
       /* owns_writer= */ false, Perspective::IS_SERVER,
       ParsedQuicVersionVector{version});
 
-  QuicServerSessionBase* session = new QuicSimpleServerSession(
+  auto session = std::make_unique<QuicSimpleServerSession>(
       config(), GetSupportedVersions(), connection, this, session_helper(),
       crypto_config(), compressed_certs_cache(), quic_simple_server_backend_);
   session->Initialize();

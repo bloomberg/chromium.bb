@@ -12,12 +12,14 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -65,8 +67,8 @@ void ComponentInstaller::Register(ComponentUpdateService* cus,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Some components may affect user visible features, hence USER_VISIBLE.
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   if (!installer_policy_) {
@@ -159,9 +161,12 @@ Result ComponentInstaller::InstallHelper(
   return Result(InstallError::NONE);
 }
 
-void ComponentInstaller::Install(const base::FilePath& unpack_path,
-                                 const std::string& /*public_key*/,
-                                 Callback callback) {
+void ComponentInstaller::Install(
+    const base::FilePath& unpack_path,
+    const std::string& /*public_key*/,
+    std::unique_ptr<InstallParams> /*install_params*/,
+    ProgressCallback /*progress_callback*/,
+    Callback callback) {
   std::unique_ptr<base::DictionaryValue> manifest;
   base::Version version;
   base::FilePath install_path;
@@ -287,7 +292,7 @@ void ComponentInstaller::StartRegistration(
   base::FilePath base_dir_ = base_component_dir;
   std::vector<base::FilePath::StringType> components;
   installer_policy_->GetRelativeInstallDir().GetComponents(&components);
-  for (const base::FilePath::StringType component : components) {
+  for (const base::FilePath::StringType& component : components) {
     base_dir_ = base_dir_.Append(component);
     if (!base::SetPosixFilePermissions(base_dir_, 0755)) {
       PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();
@@ -417,6 +422,8 @@ void ComponentInstaller::FinishRegistration(
   if (!cus->RegisterComponent(crx)) {
     LOG(ERROR) << "Component registration failed for "
                << installer_policy_->GetName();
+    if (!callback.is_null())
+      std::move(callback).Run();
     return;
   }
 

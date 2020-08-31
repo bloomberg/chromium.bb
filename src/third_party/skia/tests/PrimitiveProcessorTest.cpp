@@ -18,12 +18,14 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
 class Op : public GrMeshDrawOp {
@@ -54,7 +56,13 @@ private:
         this->setBounds(SkRect::MakeWH(1.f, 1.f), HasAABloat::kNo, IsHairline::kNo);
     }
 
-    void onPrepareDraws(Target* target) override {
+    GrProgramInfo* programInfo() override { return fProgramInfo; }
+
+    void onCreateProgramInfo(const GrCaps* caps,
+                             SkArenaAlloc* arena,
+                             const GrSurfaceProxyView* writeView,
+                             GrAppliedClip&& appliedClip,
+                             const GrXferProcessor::DstProxyView& dstProxyView) override {
         class GP : public GrGeometryProcessor {
         public:
             static GrGeometryProcessor* Make(SkArenaAlloc* arena, int numAttribs) {
@@ -115,20 +123,44 @@ private:
             typedef GrGeometryProcessor INHERITED;
         };
 
-        GrGeometryProcessor* gp = GP::Make(target->allocator(), fNumAttribs);
-        size_t vertexStride = gp->vertexStride();
+        GrGeometryProcessor* gp = GP::Make(arena, fNumAttribs);
+
+        fProgramInfo = GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps,
+                                                                   arena,
+                                                                   writeView,
+                                                                   std::move(appliedClip),
+                                                                   dstProxyView,
+                                                                   gp,
+                                                                   GrProcessorSet::MakeEmptySet(),
+                                                                   GrPrimitiveType::kTriangles,
+                                                                   GrPipeline::InputFlags::kNone);
+    }
+
+    void onPrepareDraws(Target* target) override {
+        if (!fProgramInfo) {
+            this->createProgramInfo(target);
+        }
+
+        size_t vertexStride = fProgramInfo->primProc().vertexStride();
         QuadHelper helper(target, vertexStride, 1);
         SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.vertices());
         SkPointPriv::SetRectTriStrip(vertices, 0.f, 0.f, 1.f, 1.f, vertexStride);
-        helper.recordDraw(target, gp);
+        fMesh = helper.mesh();
     }
 
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
-        flushState->executeDrawsAndUploadsForMeshDrawOp(
-                this, chainBounds, GrProcessorSet::MakeEmptySet());
+        if (!fProgramInfo || !fMesh) {
+            return;
+        }
+
+        flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
+        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->drawMesh(*fMesh);
     }
 
-    int fNumAttribs;
+    int            fNumAttribs;
+    GrSimpleMesh*  fMesh = nullptr;
+    GrProgramInfo* fProgramInfo = nullptr;
 
     typedef GrMeshDrawOp INHERITED;
 };
@@ -140,8 +172,8 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     GrGpu* gpu = context->priv().getGpu();
 #endif
 
-    auto renderTargetContext = context->priv().makeDeferredRenderTargetContext(
-            SkBackingFit::kApprox, 1, 1, GrColorType::kRGBA_8888, nullptr);
+    auto renderTargetContext = GrRenderTargetContext::Make(
+            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox, {1, 1});
     if (!renderTargetContext) {
         ERRORF(reporter, "Could not create render target context.");
         return;

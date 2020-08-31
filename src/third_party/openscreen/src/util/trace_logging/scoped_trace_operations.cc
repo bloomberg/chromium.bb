@@ -5,17 +5,11 @@
 #include "util/trace_logging/scoped_trace_operations.h"
 
 #include "absl/types/optional.h"
-#include "build/config/features.h"
 #include "platform/api/trace_logging_platform.h"
 #include "platform/base/trace_logging_activation.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 #if defined(ENABLE_TRACE_LOGGING)
-
-using openscreen::platform::kUnsetTraceId;
-using openscreen::platform::TraceCategory;
-using openscreen::platform::TraceId;
-using openscreen::platform::TraceIdHierarchy;
 
 namespace openscreen {
 namespace internal {
@@ -25,13 +19,13 @@ bool ScopedTraceOperation::TraceAsyncEnd(const uint32_t line,
                                          const char* file,
                                          TraceId id,
                                          Error::Code e) {
-  auto end_time = platform::Clock::now();
-  auto* const current_platform = platform::GetTracingDestination();
-  if (current_platform == nullptr) {
-    return false;
+  auto end_time = Clock::now();
+  const CurrentTracingDestination destination;
+  if (destination) {
+    destination->LogAsyncEnd(line, file, end_time, id, e);
+    return true;
   }
-  current_platform->LogAsyncEnd(line, file, end_time, id, e);
-  return true;
+  return false;
 }
 
 ScopedTraceOperation::ScopedTraceOperation(TraceId trace_id,
@@ -95,7 +89,7 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                                  TraceId parent,
                                  TraceId root)
     : ScopedTraceOperation(current, parent, root),
-      start_time_(platform::Clock::now()),
+      start_time_(Clock::now()),
       result_(Error::Code::kNone),
       name_(name),
       file_name_(file),
@@ -116,24 +110,22 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                       ids.root) {}
 
 SynchronousTraceLogger::~SynchronousTraceLogger() {
-  auto* const current_platform = platform::GetTracingDestination();
-  if (current_platform == nullptr) {
-    return;
+  const CurrentTracingDestination destination;
+  if (destination) {
+    auto end_time = Clock::now();
+    destination->LogTrace(this->name_, this->line_number_, this->file_name_,
+                          this->start_time_, end_time, this->to_hierarchy(),
+                          this->result_);
   }
-  auto end_time = platform::Clock::now();
-  current_platform->LogTrace(this->name_, this->line_number_, this->file_name_,
-                             this->start_time_, end_time, this->to_hierarchy(),
-                             this->result_);
 }
 
 AsynchronousTraceLogger::~AsynchronousTraceLogger() {
-  auto* const current_platform = platform::GetTracingDestination();
-  if (current_platform == nullptr) {
-    return;
+  const CurrentTracingDestination destination;
+  if (destination) {
+    destination->LogAsyncStart(this->name_, this->line_number_,
+                               this->file_name_, this->start_time_,
+                               this->to_hierarchy());
   }
-  current_platform->LogAsyncStart(this->name_, this->line_number_,
-                                  this->file_name_, this->start_time_,
-                                  this->to_hierarchy());
 }
 
 TraceIdSetter::~TraceIdSetter() = default;

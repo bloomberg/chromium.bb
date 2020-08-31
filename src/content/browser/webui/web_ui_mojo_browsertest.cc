@@ -32,15 +32,16 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/service_manager/public/cpp/binder_map.h"
 
 namespace content {
 namespace {
@@ -247,8 +248,7 @@ class TestWebUIContentBrowserClient : public ContentBrowserClient {
 
   void RegisterBrowserInterfaceBindersForFrame(
       RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      override {
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override {
     map->Add<mojom::BrowserTarget>(
         base::BindRepeating(&TestWebUIContentBrowserClient::BindBrowserTarget,
                             base::Unretained(this)));

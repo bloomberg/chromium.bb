@@ -6,6 +6,12 @@
  * @fileoverview Behavior common to Site Settings classes.
  */
 
+// clang-format off
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import {ContentSetting,ContentSettingsTypes} from './constants.js';
+import {RawSiteException,SiteException,SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.js';
+// clang-format on
 
 /**
  * The source information on site exceptions doesn't exactly match the
@@ -13,7 +19,7 @@
  * TODO(dschuyler): Can they be unified (and this dictionary removed)?
  * @type {!Object}
  */
-const kControlledByLookup = {
+export const kControlledByLookup = {
   'extension': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'HostedApp': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'platform_app': chrome.settingsPrivate.ControlledBy.EXTENSION,
@@ -27,7 +33,7 @@ const SiteSettingsBehaviorImpl = {
     /**
      * The string ID of the category this element is displaying data for.
      * See site_settings/constants.js for possible values.
-     * @type {!settings.ContentSettingsTypes}
+     * @type {!ContentSettingsTypes}
      */
     category: String,
 
@@ -35,7 +41,7 @@ const SiteSettingsBehaviorImpl = {
      * A cached list of ContentSettingsTypes with a standard allow-block-ask
      * pattern that are currently enabled for use. This property is the same
      * across all elements with SiteSettingsBehavior ('static').
-     * @type {Array<settings.ContentSettingsTypes>}
+     * @type {Array<ContentSettingsTypes>}
      * @private
      */
     contentTypes_: {
@@ -46,20 +52,19 @@ const SiteSettingsBehaviorImpl = {
     /**
      * The browser proxy used to retrieve and change information about site
      * settings categories and the sites within.
-     * @type {settings.SiteSettingsPrefsBrowserProxy}
+     * @type {SiteSettingsPrefsBrowserProxy}
      */
     browserProxy: Object,
   },
 
   /** @override */
-  created: function() {
-    this.browserProxy =
-        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy = SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
-    this.ContentSetting = settings.ContentSetting;
+  ready() {
+    this.ContentSetting = ContentSetting;
   },
 
   /**
@@ -67,7 +72,7 @@ const SiteSettingsBehaviorImpl = {
    * @param {string} url The URL with or without a scheme.
    * @return {string} The URL with a scheme, or an empty string.
    */
-  ensureUrlHasScheme: function(url) {
+  ensureUrlHasScheme(url) {
     if (url.length == 0) {
       return url;
     }
@@ -79,7 +84,7 @@ const SiteSettingsBehaviorImpl = {
    * @param {string} url The URL to sanitize.
    * @return {string} The URL without redundant ports, if any.
    */
-  sanitizePort: function(url) {
+  sanitizePort(url) {
     const urlWithScheme = this.ensureUrlHasScheme(url);
     if (urlWithScheme.startsWith('https://') &&
         urlWithScheme.endsWith(':443')) {
@@ -97,8 +102,8 @@ const SiteSettingsBehaviorImpl = {
    * @return {boolean}
    * @protected
    */
-  computeIsSettingEnabled: function(setting) {
-    return setting != settings.ContentSetting.BLOCK;
+  computeIsSettingEnabled(setting) {
+    return setting != ContentSetting.BLOCK;
   },
 
   /**
@@ -107,7 +112,7 @@ const SiteSettingsBehaviorImpl = {
    * @return {URL} The URL to return (or null if origin is not a valid URL).
    * @protected
    */
-  toUrl: function(originOrPattern) {
+  toUrl(originOrPattern) {
     if (originOrPattern.length == 0) {
       return null;
     }
@@ -122,18 +127,33 @@ const SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * Returns a user-friendly name for the origin.
+   * @param {string} origin
+   * @return {string} The user-friendly name.
+   * @protected
+   */
+  originRepresentation(origin) {
+    try {
+      const url = this.toUrl(origin);
+      return url ? (url.host || url.origin) : '';
+    } catch (error) {
+      return '';
+    }
+  },
+
+  /**
    * Convert an exception (received from the C++ handler) to a full
    * SiteException.
    * @param {!RawSiteException} exception The raw site exception from C++.
    * @return {!SiteException} The expanded (full) SiteException.
    * @protected
    */
-  expandSiteException: function(exception) {
+  expandSiteException(exception) {
     const origin = exception.origin;
     const embeddingOrigin = exception.embeddingOrigin;
 
     // TODO(patricialor): |exception.source| should be one of the values defined
-    // in |settings.SiteSettingSource|.
+    // in |SiteSettingSource|.
     let enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
     if (exception.source == 'extension' || exception.source == 'HostedApp' ||
         exception.source == 'platform_app' || exception.source == 'policy') {
@@ -159,21 +179,21 @@ const SiteSettingsBehaviorImpl = {
   /**
    * Returns list of categories for each setting.ContentSettingsTypes that are
    * currently enabled.
-   * @return {!Array<!settings.ContentSettingsTypes>}
+   * @return {!Array<!ContentSettingsTypes>}
    */
-  getCategoryList: function() {
+  getCategoryList() {
     if (this.contentTypes_.length == 0) {
-      for (const typeName in settings.ContentSettingsTypes) {
-        const contentType = settings.ContentSettingsTypes[typeName];
+      for (const typeName in ContentSettingsTypes) {
+        const contentType = ContentSettingsTypes[typeName];
         // <if expr="not chromeos">
-        if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
+        if (contentType == ContentSettingsTypes.PROTECTED_CONTENT) {
           continue;
         }
         // </if>
         // Some categories store their data in a custom way.
-        if (contentType == settings.ContentSettingsTypes.COOKIES ||
-            contentType == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
-            contentType == settings.ContentSettingsTypes.ZOOM_LEVELS) {
+        if (contentType == ContentSettingsTypes.COOKIES ||
+            contentType == ContentSettingsTypes.PROTOCOL_HANDLERS ||
+            contentType == ContentSettingsTypes.ZOOM_LEVELS) {
           continue;
         }
         this.contentTypes_.push(contentType);
@@ -193,24 +213,36 @@ const SiteSettingsBehaviorImpl = {
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+        ContentSettingsTypes.BLUETOOTH_SCANNING,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.ADS,
-        'enableSafeBrowsingSubresourceFilter');
+        ContentSettingsTypes.ADS, 'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.PAYMENT_HANDLER,
+        ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
         'enableNativeFileSystemWriteContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.MIXEDSCRIPT,
+        ContentSettingsTypes.MIXEDSCRIPT,
         'enableInsecureContentContentSetting');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.HID_DEVICES,
+        'enableExperimentalWebPlatformFeatures');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.AR, 'enableWebXrContentSetting');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.VR, 'enableWebXrContentSetting');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.BLUETOOTH_DEVICES,
+        'enableWebBluetoothNewPermissionsBackend');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.WINDOW_PLACEMENT,
+        'enableExperimentalWebPlatformFeatures');
     return this.contentTypes_.slice(0);
   },
 
 };
 
 /** @polymerBehavior */
-const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];
+export const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];

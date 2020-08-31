@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.test.util.browser;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -39,7 +40,10 @@ public class ThemeTestUtils {
 
     /**
      * Asserts that the status bar color equals the passed-in color.
+     * Method is for Android L+ because it relies on Window#getStatusBarColor() which was introduced
+     * in L.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     public static void assertStatusBarColor(ChromeActivity activity, int expectedColor) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             expectedColor = ColorUtils.getDarkenedColorForStatusBar(expectedColor);

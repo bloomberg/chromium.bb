@@ -140,7 +140,7 @@ class VizSerializationPerfTest : public testing::Test {
   }
 
   static void RunComplexCompositorFrameTest(const std::string& story) {
-    CompositorFrame frame;
+    CompositorFrame frame = MakeEmptyCompositorFrame();
     frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
 
     std::vector<TransferableResource>& resource_list = frame.resource_list;
@@ -197,7 +197,8 @@ class VizSerializationPerfTest : public testing::Test {
     ResourceId arbitrary_resourceid3 = 23;
     ResourceId arbitrary_resourceid4 = 16;
     SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
-    gfx::ColorSpace arbitrary_color_space = gfx::ColorSpace::CreateXYZD50();
+    gfx::ContentColorUsage arbitrary_content_color_usage =
+        gfx::ContentColorUsage::kSRGB;
     int root_id = 14;
 
     cc::FilterOperations arbitrary_filters1;
@@ -215,8 +216,9 @@ class VizSerializationPerfTest : public testing::Test {
     std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
     pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2,
                     arbitrary_matrix1, arbitrary_filters2, arbitrary_filters1,
-                    arbitrary_rrectf1, arbitrary_color_space, arbitrary_bool1,
-                    arbitrary_bool1, arbitrary_bool1, arbitrary_bool1);
+                    arbitrary_rrectf1, arbitrary_content_color_usage,
+                    arbitrary_bool1, arbitrary_bool1, arbitrary_bool1,
+                    arbitrary_bool1);
 
     // Texture quads
     for (uint32_t i = 0; i < 10; ++i) {

@@ -10,6 +10,7 @@
  */
 
 #include <immintrin.h>  // AVX2
+#include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/synonyms.h"
 #include "aom_dsp/x86/synonyms_avx2.h"
 #include "aom_dsp/x86/transpose_sse2.h"
@@ -22,9 +23,9 @@ static INLINE void acc_stat_avx2(int32_t *dst, const uint8_t *src,
                                  const __m128i *shuffle, const __m256i *kl) {
   const __m128i s = _mm_shuffle_epi8(xx_loadu_128(src), *shuffle);
   const __m256i d0 = _mm256_madd_epi16(*kl, _mm256_cvtepu8_epi16(s));
-  const __m256i dst0 = yy_loadu_256(dst);
+  const __m256i dst0 = yy_load_256(dst);
   const __m256i r0 = _mm256_add_epi32(dst0, d0);
-  yy_storeu_256(dst, r0);
+  yy_store_256(dst, r0);
 }
 
 static INLINE void acc_stat_win7_one_line_avx2(
@@ -49,7 +50,7 @@ static INLINE void acc_stat_win7_one_line_avx2(
         M_int[k][l] += D1 * X1 + D2 * X2;
 
         const __m256i kl =
-            _mm256_cvtepu8_epi16(_mm_set1_epi16(*((uint16_t *)(dgd_ijk + l))));
+            _mm256_cvtepu8_epi16(_mm_set1_epi16(loadu_uint16(dgd_ijk + l)));
         acc_stat_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 1 * 8, dgd_ij + 1 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 2 * 8, dgd_ij + 2 * dgd_stride, shuffle, &kl);
@@ -74,7 +75,9 @@ static INLINE void compute_stats_win7_opt_avx2(
 
   int32_t M_int32[WIENER_WIN][WIENER_WIN] = { { 0 } };
   int64_t M_int64[WIENER_WIN][WIENER_WIN] = { { 0 } };
-  int32_t H_int32[WIENER_WIN2][WIENER_WIN * 8] = { { 0 } };
+
+  DECLARE_ALIGNED(32, int32_t,
+                  H_int32[WIENER_WIN2][WIENER_WIN * 8]) = { { 0 } };
   int64_t H_int64[WIENER_WIN2][WIENER_WIN * 8] = { { 0 } };
   int32_t sumY[WIENER_WIN][WIENER_WIN] = { { 0 } };
   int32_t sumX = 0;
@@ -120,6 +123,7 @@ static INLINE void compute_stats_win7_opt_avx2(
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE void acc_stat_highbd_avx2(int64_t *dst, const uint16_t *dgd,
                                         const __m256i *shuffle,
                                         const __m256i *dgd_ijkl) {
@@ -145,14 +149,14 @@ static INLINE void acc_stat_highbd_avx2(int64_t *dst, const uint16_t *dgd,
   // Take the lower-half of d0, extend to u64, add it on to dst (H)
   const __m256i d0l = _mm256_cvtepu32_epi64(_mm256_extracti128_si256(d0, 0));
   // d0l = [a b] [c d] as u64
-  const __m256i dst0 = yy_loadu_256(dst);
-  yy_storeu_256(dst, _mm256_add_epi64(d0l, dst0));
+  const __m256i dst0 = yy_load_256(dst);
+  yy_store_256(dst, _mm256_add_epi64(d0l, dst0));
 
   // Take the upper-half of d0, extend to u64, add it on to dst (H)
   const __m256i d0h = _mm256_cvtepu32_epi64(_mm256_extracti128_si256(d0, 1));
   // d0h = [e f] [g h] as u64
-  const __m256i dst1 = yy_loadu_256(dst + 4);
-  yy_storeu_256(dst + 4, _mm256_add_epi64(d0h, dst1));
+  const __m256i dst1 = yy_load_256(dst + 4);
+  yy_store_256(dst + 4, _mm256_add_epi64(d0h, dst1));
 }
 
 static INLINE void acc_stat_highbd_win7_one_line_avx2(
@@ -178,8 +182,7 @@ static INLINE void acc_stat_highbd_win7_one_line_avx2(
 
         // Load two u16 values from dgd_ijkl combined as a u32,
         // then broadcast to 8x u32 slots of a 256
-        const __m256i dgd_ijkl =
-            _mm256_set1_epi32(*((uint32_t *)(dgd_ijk + l)));
+        const __m256i dgd_ijkl = _mm256_set1_epi32(loadu_uint32(dgd_ijk + l));
         // dgd_ijkl = [y x y x y x y x] [y x y x y x y x] where each is a u16
 
         acc_stat_highbd_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle,
@@ -216,7 +219,7 @@ static INLINE void compute_stats_highbd_win7_opt_avx2(
       find_average_highbd(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
   int64_t M_int[WIENER_WIN][WIENER_WIN] = { { 0 } };
-  int64_t H_int[WIENER_WIN2][WIENER_WIN * 8] = { { 0 } };
+  DECLARE_ALIGNED(32, int64_t, H_int[WIENER_WIN2][WIENER_WIN * 8]) = { { 0 } };
   int32_t sumY[WIENER_WIN][WIENER_WIN] = { { 0 } };
   int32_t sumX = 0;
   const uint16_t *dgd_win = dgd - wiener_halfwin * dgd_stride - wiener_halfwin;
@@ -282,8 +285,7 @@ static INLINE void acc_stat_highbd_win5_one_line_avx2(
 
         // Load two u16 values from dgd_ijkl combined as a u32,
         // then broadcast to 8x u32 slots of a 256
-        const __m256i dgd_ijkl =
-            _mm256_set1_epi32(*((uint32_t *)(dgd_ijk + l)));
+        const __m256i dgd_ijkl = _mm256_set1_epi32(loadu_uint32(dgd_ijk + l));
         // dgd_ijkl = [x y x y x y x y] [x y x y x y x y] where each is a u16
 
         acc_stat_highbd_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle,
@@ -316,7 +318,9 @@ static INLINE void compute_stats_highbd_win5_opt_avx2(
       find_average_highbd(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
   int64_t M_int64[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
-  int64_t H_int64[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8] = { { 0 } };
+  DECLARE_ALIGNED(
+      32, int64_t,
+      H_int64[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8]) = { { 0 } };
   int32_t sumY[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
   int32_t sumX = 0;
   const uint16_t *dgd_win = dgd - wiener_halfwin * dgd_stride - wiener_halfwin;
@@ -376,6 +380,7 @@ void av1_compute_stats_highbd_avx2(int wiener_win, const uint8_t *dgd8,
                                v_end, dgd_stride, src_stride, M, H, bit_depth);
   }
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 static INLINE void acc_stat_win5_one_line_avx2(
     const uint8_t *dgd, const uint8_t *src, int h_start, int h_end,
@@ -400,7 +405,7 @@ static INLINE void acc_stat_win5_one_line_avx2(
         M_int[k][l] += D1 * X1 + D2 * X2;
 
         const __m256i kl =
-            _mm256_cvtepu8_epi16(_mm_set1_epi16(*((uint16_t *)(dgd_ijk + l))));
+            _mm256_cvtepu8_epi16(_mm_set1_epi16(loadu_uint16(dgd_ijk + l)));
         acc_stat_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 1 * 8, dgd_ij + 1 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 2 * 8, dgd_ij + 2 * dgd_stride, shuffle, &kl);
@@ -423,7 +428,9 @@ static INLINE void compute_stats_win5_opt_avx2(
 
   int32_t M_int32[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
   int64_t M_int64[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
-  int32_t H_int32[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8] = { { 0 } };
+  DECLARE_ALIGNED(
+      32, int32_t,
+      H_int32[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8]) = { { 0 } };
   int64_t H_int64[WIENER_WIN2_CHROMA][WIENER_WIN_CHROMA * 8] = { { 0 } };
   int32_t sumY[WIENER_WIN_CHROMA][WIENER_WIN_CHROMA] = { { 0 } };
   int32_t sumX = 0;
@@ -485,7 +492,7 @@ void av1_compute_stats_avx2(int wiener_win, const uint8_t *dgd,
   }
 }
 
-static INLINE __m256i pair_set_epi16(uint16_t a, uint16_t b) {
+static INLINE __m256i pair_set_epi16(int a, int b) {
   return _mm256_set1_epi32(
       (int32_t)(((uint16_t)(a)) | (((uint32_t)(b)) << 16)));
 }
@@ -622,6 +629,238 @@ int64_t av1_lowbd_pixel_proj_error_avx2(
   return err;
 }
 
+// When params->r[0] > 0 and params->r[1] > 0. In this case all elements of
+// C and H need to be computed.
+static AOM_INLINE void calc_proj_params_r0_r1_avx2(
+    const uint8_t *src8, int width, int height, int src_stride,
+    const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
+    int32_t *flt1, int flt1_stride, int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m256i h00, h01, h11, c0, c1;
+  const __m256i zero = _mm256_setzero_si256();
+  h01 = h11 = c0 = c1 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 8) {
+      const __m256i u_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m256i s_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m256i f1 = _mm256_loadu_si256((__m256i *)(flt0 + i * flt0_stride + j));
+      __m256i f2 = _mm256_loadu_si256((__m256i *)(flt1 + i * flt1_stride + j));
+      __m256i d = _mm256_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m256i s = _mm256_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm256_sub_epi32(s, d);
+      f1 = _mm256_sub_epi32(f1, d);
+      f2 = _mm256_sub_epi32(f2, d);
+
+      const __m256i h00_even = _mm256_mul_epi32(f1, f1);
+      const __m256i h00_odd = _mm256_mul_epi32(_mm256_srli_epi64(f1, 32),
+                                               _mm256_srli_epi64(f1, 32));
+      h00 = _mm256_add_epi64(h00, h00_even);
+      h00 = _mm256_add_epi64(h00, h00_odd);
+
+      const __m256i h01_even = _mm256_mul_epi32(f1, f2);
+      const __m256i h01_odd = _mm256_mul_epi32(_mm256_srli_epi64(f1, 32),
+                                               _mm256_srli_epi64(f2, 32));
+      h01 = _mm256_add_epi64(h01, h01_even);
+      h01 = _mm256_add_epi64(h01, h01_odd);
+
+      const __m256i h11_even = _mm256_mul_epi32(f2, f2);
+      const __m256i h11_odd = _mm256_mul_epi32(_mm256_srli_epi64(f2, 32),
+                                               _mm256_srli_epi64(f2, 32));
+      h11 = _mm256_add_epi64(h11, h11_even);
+      h11 = _mm256_add_epi64(h11, h11_odd);
+
+      const __m256i c0_even = _mm256_mul_epi32(f1, s);
+      const __m256i c0_odd =
+          _mm256_mul_epi32(_mm256_srli_epi64(f1, 32), _mm256_srli_epi64(s, 32));
+      c0 = _mm256_add_epi64(c0, c0_even);
+      c0 = _mm256_add_epi64(c0, c0_odd);
+
+      const __m256i c1_even = _mm256_mul_epi32(f2, s);
+      const __m256i c1_odd =
+          _mm256_mul_epi32(_mm256_srli_epi64(f2, 32), _mm256_srli_epi64(s, 32));
+      c1 = _mm256_add_epi64(c1, c1_even);
+      c1 = _mm256_add_epi64(c1, c1_odd);
+    }
+  }
+
+  __m256i c_low = _mm256_unpacklo_epi64(c0, c1);
+  const __m256i c_high = _mm256_unpackhi_epi64(c0, c1);
+  c_low = _mm256_add_epi64(c_low, c_high);
+  const __m128i c_128bit = _mm_add_epi64(_mm256_extracti128_si256(c_low, 1),
+                                         _mm256_castsi256_si128(c_low));
+
+  __m256i h0x_low = _mm256_unpacklo_epi64(h00, h01);
+  const __m256i h0x_high = _mm256_unpackhi_epi64(h00, h01);
+  h0x_low = _mm256_add_epi64(h0x_low, h0x_high);
+  const __m128i h0x_128bit = _mm_add_epi64(_mm256_extracti128_si256(h0x_low, 1),
+                                           _mm256_castsi256_si128(h0x_low));
+
+  // Using the symmetric properties of H,  calculations of H[1][0] are not
+  // needed.
+  __m256i h1x_low = _mm256_unpacklo_epi64(zero, h11);
+  const __m256i h1x_high = _mm256_unpackhi_epi64(zero, h11);
+  h1x_low = _mm256_add_epi64(h1x_low, h1x_high);
+  const __m128i h1x_128bit = _mm_add_epi64(_mm256_extracti128_si256(h1x_low, 1),
+                                           _mm256_castsi256_si128(h1x_low));
+
+  xx_storeu_128(C, c_128bit);
+  xx_storeu_128(H[0], h0x_128bit);
+  xx_storeu_128(H[1], h1x_128bit);
+
+  H[0][0] /= size;
+  H[0][1] /= size;
+  H[1][1] /= size;
+
+  // Since H is a symmetric matrix
+  H[1][0] = H[0][1];
+  C[0] /= size;
+  C[1] /= size;
+}
+
+// When only params->r[0] > 0. In this case only H[0][0] and C[0] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r0_avx2(const uint8_t *src8, int width,
+                                                int height, int src_stride,
+                                                const uint8_t *dat8,
+                                                int dat_stride, int32_t *flt0,
+                                                int flt0_stride,
+                                                int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m256i h00, c0;
+  const __m256i zero = _mm256_setzero_si256();
+  c0 = h00 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 8) {
+      const __m256i u_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m256i s_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m256i f1 = _mm256_loadu_si256((__m256i *)(flt0 + i * flt0_stride + j));
+      __m256i d = _mm256_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m256i s = _mm256_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm256_sub_epi32(s, d);
+      f1 = _mm256_sub_epi32(f1, d);
+
+      const __m256i h00_even = _mm256_mul_epi32(f1, f1);
+      const __m256i h00_odd = _mm256_mul_epi32(_mm256_srli_epi64(f1, 32),
+                                               _mm256_srli_epi64(f1, 32));
+      h00 = _mm256_add_epi64(h00, h00_even);
+      h00 = _mm256_add_epi64(h00, h00_odd);
+
+      const __m256i c0_even = _mm256_mul_epi32(f1, s);
+      const __m256i c0_odd =
+          _mm256_mul_epi32(_mm256_srli_epi64(f1, 32), _mm256_srli_epi64(s, 32));
+      c0 = _mm256_add_epi64(c0, c0_even);
+      c0 = _mm256_add_epi64(c0, c0_odd);
+    }
+  }
+  const __m128i h00_128bit = _mm_add_epi64(_mm256_extracti128_si256(h00, 1),
+                                           _mm256_castsi256_si128(h00));
+  const __m128i h00_val =
+      _mm_add_epi64(h00_128bit, _mm_srli_si128(h00_128bit, 8));
+
+  const __m128i c0_128bit = _mm_add_epi64(_mm256_extracti128_si256(c0, 1),
+                                          _mm256_castsi256_si128(c0));
+  const __m128i c0_val = _mm_add_epi64(c0_128bit, _mm_srli_si128(c0_128bit, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(c0_val, _mm256_castsi256_si128(zero));
+  const __m128i h0x = _mm_unpacklo_epi64(h00_val, _mm256_castsi256_si128(zero));
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[0], h0x);
+
+  H[0][0] /= size;
+  C[0] /= size;
+}
+
+// When only params->r[1] > 0. In this case only H[1][1] and C[1] are
+// non-zero and need to be computed.
+static AOM_INLINE void calc_proj_params_r1_avx2(const uint8_t *src8, int width,
+                                                int height, int src_stride,
+                                                const uint8_t *dat8,
+                                                int dat_stride, int32_t *flt1,
+                                                int flt1_stride,
+                                                int64_t H[2][2], int64_t C[2]) {
+  const int size = width * height;
+  const uint8_t *src = src8;
+  const uint8_t *dat = dat8;
+  __m256i h11, c1;
+  const __m256i zero = _mm256_setzero_si256();
+  c1 = h11 = zero;
+
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; j += 8) {
+      const __m256i u_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(dat + i * dat_stride + j)));
+      const __m256i s_load = _mm256_cvtepu8_epi32(
+          _mm_loadl_epi64((__m128i *)(src + i * src_stride + j)));
+      __m256i f2 = _mm256_loadu_si256((__m256i *)(flt1 + i * flt1_stride + j));
+      __m256i d = _mm256_slli_epi32(u_load, SGRPROJ_RST_BITS);
+      __m256i s = _mm256_slli_epi32(s_load, SGRPROJ_RST_BITS);
+      s = _mm256_sub_epi32(s, d);
+      f2 = _mm256_sub_epi32(f2, d);
+
+      const __m256i h11_even = _mm256_mul_epi32(f2, f2);
+      const __m256i h11_odd = _mm256_mul_epi32(_mm256_srli_epi64(f2, 32),
+                                               _mm256_srli_epi64(f2, 32));
+      h11 = _mm256_add_epi64(h11, h11_even);
+      h11 = _mm256_add_epi64(h11, h11_odd);
+
+      const __m256i c1_even = _mm256_mul_epi32(f2, s);
+      const __m256i c1_odd =
+          _mm256_mul_epi32(_mm256_srli_epi64(f2, 32), _mm256_srli_epi64(s, 32));
+      c1 = _mm256_add_epi64(c1, c1_even);
+      c1 = _mm256_add_epi64(c1, c1_odd);
+    }
+  }
+
+  const __m128i h11_128bit = _mm_add_epi64(_mm256_extracti128_si256(h11, 1),
+                                           _mm256_castsi256_si128(h11));
+  const __m128i h11_val =
+      _mm_add_epi64(h11_128bit, _mm_srli_si128(h11_128bit, 8));
+
+  const __m128i c1_128bit = _mm_add_epi64(_mm256_extracti128_si256(c1, 1),
+                                          _mm256_castsi256_si128(c1));
+  const __m128i c1_val = _mm_add_epi64(c1_128bit, _mm_srli_si128(c1_128bit, 8));
+
+  const __m128i c = _mm_unpacklo_epi64(_mm256_castsi256_si128(zero), c1_val);
+  const __m128i h1x = _mm_unpacklo_epi64(_mm256_castsi256_si128(zero), h11_val);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[1], h1x);
+
+  H[1][1] /= size;
+  C[1] /= size;
+}
+
+// AVX2 variant of av1_calc_proj_params_c.
+void av1_calc_proj_params_avx2(const uint8_t *src8, int width, int height,
+                               int src_stride, const uint8_t *dat8,
+                               int dat_stride, int32_t *flt0, int flt0_stride,
+                               int32_t *flt1, int flt1_stride, int64_t H[2][2],
+                               int64_t C[2], const sgr_params_type *params) {
+  if ((params->r[0] > 0) && (params->r[1] > 0)) {
+    calc_proj_params_r0_r1_avx2(src8, width, height, src_stride, dat8,
+                                dat_stride, flt0, flt0_stride, flt1,
+                                flt1_stride, H, C);
+  } else if (params->r[0] > 0) {
+    calc_proj_params_r0_avx2(src8, width, height, src_stride, dat8, dat_stride,
+                             flt0, flt0_stride, H, C);
+  } else if (params->r[1] > 0) {
+    calc_proj_params_r1_avx2(src8, width, height, src_stride, dat8, dat_stride,
+                             flt1, flt1_stride, H, C);
+  }
+}
+
+#if CONFIG_AV1_HIGHBITDEPTH
 int64_t av1_highbd_pixel_proj_error_avx2(
     const uint8_t *src8, int width, int height, int src_stride,
     const uint8_t *dat8, int dat_stride, int32_t *flt0, int flt0_stride,
@@ -841,3 +1080,4 @@ int64_t av1_highbd_pixel_proj_error_avx2(
   err += sum[0] + sum[1] + sum[2] + sum[3];
   return err;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH

@@ -34,6 +34,16 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
+  struct ConnectorProperties {
+    ConnectorProperties();
+    ConnectorProperties(const ConnectorProperties&);
+    ~ConnectorProperties();
+
+    uint32_t id;
+
+    std::vector<DrmDevice::Property> properties;
+  };
+
   struct PlaneProperties {
     PlaneProperties();
     PlaneProperties(const PlaneProperties&);
@@ -44,7 +54,7 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
-  MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device);
+  explicit MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device);
 
   static ScopedDrmPropertyBlobPtr AllocateInFormatsBlob(
       uint32_t id,
@@ -53,7 +63,6 @@ class MockDrmDevice : public DrmDevice {
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
-  int get_restore_crtc_call_count() const { return restore_crtc_call_count_; }
   int get_add_framebuffer_call_count() const {
     return add_framebuffer_call_count_;
   }
@@ -89,17 +98,23 @@ class MockDrmDevice : public DrmDevice {
     return it != crtc_cursor_map_.end() ? it->second : 0;
   }
 
-  void set_connector_type(uint32_t type) { connector_type_ = type; }
-
-  void InitializeState(const std::vector<CrtcProperties>& crtc_properties,
-                       const std::vector<PlaneProperties>& plane_properties,
-                       const std::map<uint32_t, std::string>& property_names,
-                       bool use_atomic);
-  bool InitializeStateWithResult(
+  void InitializeState(
       const std::vector<CrtcProperties>& crtc_properties,
+      const std::vector<ConnectorProperties>& connector_properties,
       const std::vector<PlaneProperties>& plane_properties,
       const std::map<uint32_t, std::string>& property_names,
       bool use_atomic);
+  bool InitializeStateWithResult(
+      const std::vector<CrtcProperties>& crtc_properties,
+      const std::vector<ConnectorProperties>& connector_properties,
+      const std::vector<PlaneProperties>& plane_properties,
+      const std::map<uint32_t, std::string>& property_names,
+      bool use_atomic);
+
+  void UpdateState(const std::vector<CrtcProperties>& crtc_properties,
+                   const std::vector<ConnectorProperties>& connector_properties,
+                   const std::vector<PlaneProperties>& plane_properties,
+                   const std::map<uint32_t, std::string>& property_names);
 
   void RunCallbacks();
 
@@ -114,8 +129,7 @@ class MockDrmDevice : public DrmDevice {
   bool SetCrtc(uint32_t crtc_id,
                uint32_t framebuffer,
                std::vector<uint32_t> connectors,
-               drmModeModeInfo* mode) override;
-  bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) override;
+               const drmModeModeInfo& mode) override;
   bool DisableCrtc(uint32_t crtc_id) override;
   ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
   bool AddFramebuffer2(uint32_t width,
@@ -139,7 +153,8 @@ class MockDrmDevice : public DrmDevice {
   bool SetProperty(uint32_t connector_id,
                    uint32_t property_id,
                    uint64_t value) override;
-  ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size) override;
+  ScopedDrmPropertyBlob CreatePropertyBlob(const void* blob,
+                                           size_t size) override;
   void DestroyPropertyBlob(uint32_t id) override;
   bool GetCapability(uint64_t capability, uint64_t* value) override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) override;
@@ -183,7 +198,6 @@ class MockDrmDevice : public DrmDevice {
 
   int get_crtc_call_count_;
   int set_crtc_call_count_;
-  int restore_crtc_call_count_;
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;
   int page_flip_call_count_;
@@ -214,7 +228,7 @@ class MockDrmDevice : public DrmDevice {
   base::queue<PageFlipCallback> callbacks_;
 
   std::vector<CrtcProperties> crtc_properties_;
-
+  std::vector<ConnectorProperties> connector_properties_;
   std::vector<PlaneProperties> plane_properties_;
 
   std::map<uint32_t, std::string> property_names_;
@@ -224,8 +238,6 @@ class MockDrmDevice : public DrmDevice {
   uint32_t property_id_generator_ = 0xff000000;
 
   std::set<uint32_t> allocated_property_blobs_;
-
-  uint32_t connector_type_ = DRM_MODE_CONNECTOR_eDP;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };

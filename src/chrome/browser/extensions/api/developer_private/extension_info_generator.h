@@ -12,7 +12,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/api/developer_private.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+class SupervisedUserService;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace content {
 class BrowserContext;
@@ -67,7 +72,7 @@ class ExtensionInfoGenerator {
       const gfx::Image& image);
 
   // Returns the icon url for the default icon to use.
-  const std::string& GetDefaultIconUrl(bool is_app, bool is_disabled);
+  std::string GetDefaultIconUrl(const std::string& name);
 
   // Returns an icon url from the given image.
   std::string GetIconUrlFromImage(const gfx::Image& image);
@@ -81,15 +86,12 @@ class ExtensionInfoGenerator {
   WarningService* warning_service_;
   ErrorConsole* error_console_;
   ImageLoader* image_loader_;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* supervised_user_service_;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // The number of pending image loads.
   size_t pending_image_loads_;
-
-  // Default icons, cached and lazily initialized.
-  std::string default_app_icon_url_;
-  std::string default_extension_icon_url_;
-  std::string default_disabled_app_icon_url_;
-  std::string default_disabled_extension_icon_url_;
 
   // The list of extension infos that have been generated.
   ExtensionInfoList list_;

@@ -65,7 +65,15 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
     run_loop_closure.Run();
   }
 
-  void OnPrintJobsRetrieved(
+  void OnPrintJobsRetrieved(base::RepeatingClosure run_loop_closure,
+                            bool success,
+                            std::vector<PrintJobInfo> entries) {
+    EXPECT_TRUE(success);
+    entries_ = std::move(entries);
+    run_loop_closure.Run();
+  }
+
+  void OnPrintJobsRetrievedFromDatabase(
       base::RepeatingClosure run_loop_closure,
       bool success,
       std::unique_ptr<std::vector<PrintJobInfo>> entries) {
@@ -99,6 +107,14 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void Clear() {
+    base::RunLoop run_loop;
+    print_job_database_->Clear(
+        base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobsDeleted,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   void OnPrintJobsDeleted(base::RepeatingClosure run_loop_closure,
                           bool success) {
     EXPECT_TRUE(success);
@@ -116,9 +132,9 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
 
   std::vector<PrintJobInfo> GetPrintJobsFromProtoDatabase() {
     base::RunLoop run_loop;
-    print_job_database_->GetPrintJobsFromProtoDatabase(
-        base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobsRetrieved,
-                       base::Unretained(this), run_loop.QuitClosure()));
+    print_job_database_->GetPrintJobsFromProtoDatabase(base::BindOnce(
+        &PrintJobDatabaseImplTest::OnPrintJobsRetrievedFromDatabase,
+        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return entries_;
   }
@@ -149,7 +165,7 @@ TEST_F(PrintJobDatabaseImplTest, SavePrintJob) {
   PrintJobInfo print_job_info = ConstructPrintJobInfo(kId1, kTitle1);
   SavePrintJob(print_job_info);
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
   EXPECT_EQ(kTitle1, entries[0].title());
 }
@@ -162,9 +178,22 @@ TEST_F(PrintJobDatabaseImplTest, DeletePrintJobs) {
   SavePrintJob(print_job_info2);
   DeletePrintJobs({kId1});
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
   EXPECT_EQ(kTitle2, entries[0].title());
+}
+
+TEST_F(PrintJobDatabaseImplTest, Clear) {
+  Initialize();
+  PrintJobInfo print_job_info1 = ConstructPrintJobInfo(kId1, kTitle1);
+  SavePrintJob(print_job_info1);
+  PrintJobInfo print_job_info2 = ConstructPrintJobInfo(kId2, kTitle2);
+  SavePrintJob(print_job_info2);
+  std::vector<PrintJobInfo> entries = GetPrintJobs();
+  EXPECT_EQ(2u, entries.size());
+  Clear();
+  entries = GetPrintJobs();
+  EXPECT_EQ(0u, entries.size());
 }
 
 TEST_F(PrintJobDatabaseImplTest, GetPrintJobsFromDatabase) {
@@ -172,7 +201,7 @@ TEST_F(PrintJobDatabaseImplTest, GetPrintJobsFromDatabase) {
   PrintJobInfo print_job_info = ConstructPrintJobInfo(kId1, kTitle1);
   SavePrintJob(print_job_info);
   std::vector<PrintJobInfo> entries = GetPrintJobsFromProtoDatabase();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
   EXPECT_EQ(kTitle1, entries[0].title());
 }
@@ -196,7 +225,7 @@ TEST_F(PrintJobDatabaseImplTest, TwoSimultaneousSavePrintJobRequests) {
   run_loop2.Run();
 
   std::vector<PrintJobInfo> entries = GetPrintJobsFromProtoDatabase();
-  EXPECT_EQ(2u, entries.size());
+  ASSERT_EQ(2u, entries.size());
   std::vector<std::string> ids = {entries[0].id(), entries[1].id()};
   EXPECT_TRUE(std::find(ids.begin(), ids.end(), kId1) != ids.end());
   EXPECT_TRUE(std::find(ids.begin(), ids.end(), kId2) != ids.end());
@@ -218,7 +247,7 @@ TEST_F(PrintJobDatabaseImplTest, RequestsBeforeInitialization) {
   get_print_jobs_run_loop.Run();
 
   std::vector<PrintJobInfo> print_job_entries = entries();
-  EXPECT_EQ(1u, print_job_entries.size());
+  ASSERT_EQ(1u, print_job_entries.size());
   EXPECT_EQ(kId1, print_job_entries[0].id());
   EXPECT_EQ(kTitle1, print_job_entries[0].title());
 }

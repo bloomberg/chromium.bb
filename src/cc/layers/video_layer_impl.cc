@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -78,7 +81,8 @@ void VideoLayerImpl::DidBecomeActive() {
 }
 
 bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
-                              viz::ClientResourceProvider* resource_provider) {
+                              viz::ClientResourceProvider* resource_provider)
+    NO_THREAD_SAFETY_ANALYSIS {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
@@ -98,6 +102,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     // Drop any resources used by the updater if there is no frame to display.
     updater_ = nullptr;
 
+    // NO_THREAD_SAFETY_ANALYSIS: Releasing the lock in some return paths only.
     provider_client_impl_->ReleaseLock();
     return false;
   }
@@ -165,6 +170,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 }
 
 void VideoLayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {
+  provider_client_impl_->AssertLocked();
   LayerImpl::DidDraw(resource_provider);
 
   DCHECK(frame_.get());
@@ -185,6 +191,13 @@ SimpleEnclosedRegion VideoLayerImpl::VisibleOpaqueRegion() const {
 
 void VideoLayerImpl::ReleaseResources() {
   updater_ = nullptr;
+}
+
+gfx::ContentColorUsage VideoLayerImpl::GetContentColorUsage() const {
+  gfx::ColorSpace frame_color_space;
+  if (frame_)
+    frame_color_space = frame_->ColorSpace();
+  return frame_color_space.GetContentColorUsage();
 }
 
 void VideoLayerImpl::SetNeedsRedraw() {

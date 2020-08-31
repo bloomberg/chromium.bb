@@ -20,8 +20,10 @@
 #include <vector>
 
 #include "api/crypto/frame_decryptor_interface.h"
+#include "api/frame_transformer_interface.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "audio/audio_level.h"
+#include "audio/channel_receive_frame_transformer_delegate.h"
 #include "audio/channel_send.h"
 #include "audio/utility/audio_frame_operations.h"
 #include "logging/rtc_event_log/events/rtc_event_audio_playout.h"
@@ -32,6 +34,7 @@
 #include "modules/rtp_rtcp/include/receive_statistics.h"
 #include "modules/rtp_rtcp/include/remote_ntp_time_estimator.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp.h"
+#include "modules/rtp_rtcp/source/absolute_capture_time_receiver.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_config.h"
@@ -78,22 +81,24 @@ AudioCodingModule::Config AcmConfig(
 class ChannelReceive : public ChannelReceiveInterface {
  public:
   // Used for receive streams.
-  ChannelReceive(Clock* clock,
-                 ProcessThread* module_process_thread,
-                 NetEqFactory* neteq_factory,
-                 AudioDeviceModule* audio_device_module,
-                 Transport* rtcp_send_transport,
-                 RtcEventLog* rtc_event_log,
-                 uint32_t local_ssrc,
-                 uint32_t remote_ssrc,
-                 size_t jitter_buffer_max_packets,
-                 bool jitter_buffer_fast_playout,
-                 int jitter_buffer_min_delay_ms,
-                 bool jitter_buffer_enable_rtx_handling,
-                 rtc::scoped_refptr<AudioDecoderFactory> decoder_factory,
-                 absl::optional<AudioCodecPairId> codec_pair_id,
-                 rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
-                 const webrtc::CryptoOptions& crypto_options);
+  ChannelReceive(
+      Clock* clock,
+      ProcessThread* module_process_thread,
+      NetEqFactory* neteq_factory,
+      AudioDeviceModule* audio_device_module,
+      Transport* rtcp_send_transport,
+      RtcEventLog* rtc_event_log,
+      uint32_t local_ssrc,
+      uint32_t remote_ssrc,
+      size_t jitter_buffer_max_packets,
+      bool jitter_buffer_fast_playout,
+      int jitter_buffer_min_delay_ms,
+      bool jitter_buffer_enable_rtx_handling,
+      rtc::scoped_refptr<AudioDecoderFactory> decoder_factory,
+      absl::optional<AudioCodecPairId> codec_pair_id,
+      rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
+      const webrtc::CryptoOptions& crypto_options,
+      rtc::scoped_refptr<FrameTransformerInterface> frame_transformer);
   ~ChannelReceive() override;
 
   void SetSink(AudioSinkInterface* sink) override;
@@ -160,6 +165,12 @@ class ChannelReceive : public ChannelReceiveInterface {
   // Used for obtaining RTT for a receive-only channel.
   void SetAssociatedSendChannel(const ChannelSendInterface* channel) override;
 
+  // Sets a frame transformer between the depacketizer and the decoder, to
+  // transform the received frames before decoding them.
+  void SetDepacketizerToDecoderFrameTransformer(
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
+      override;
+
  private:
   void ReceivePacket(const uint8_t* packet,
                      size_t packet_length,
@@ -172,6 +183,9 @@ class ChannelReceive : public ChannelReceiveInterface {
 
   void OnReceivedPayloadData(rtc::ArrayView<const uint8_t> payload,
                              const RTPHeader& rtpHeader);
+
+  void InitFrameTransformerDelegate(
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer);
 
   bool Playing() const {
     rtc::CritScope lock(&playing_lock_);
@@ -259,6 +273,11 @@ class ChannelReceive : public ChannelReceiveInterface {
   // E2EE Audio Frame Decryption
   rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor_;
   webrtc::CryptoOptions crypto_options_;
+
+  webrtc::AbsoluteCaptureTimeReceiver absolute_capture_time_receiver_;
+
+  rtc::scoped_refptr<ChannelReceiveFrameTransformerDelegate>
+      frame_transformer_delegate_;
 };
 
 void ChannelReceive::OnReceivedPayloadData(
@@ -286,6 +305,25 @@ void ChannelReceive::OnReceivedPayloadData(
     // compilers.
     ResendPackets(&(nack_list[0]), static_cast<int>(nack_list.size()));
   }
+}
+
+void ChannelReceive::InitFrameTransformerDelegate(
+    rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer) {
+  RTC_DCHECK(frame_transformer);
+  RTC_DCHECK(!frame_transformer_delegate_);
+
+  // Pass a callback to ChannelReceive::OnReceivedPayloadData, to be called by
+  // the delegate to receive transformed audio.
+  ChannelReceiveFrameTransformerDelegate::ReceiveFrameCallback
+      receive_audio_callback = [this](rtc::ArrayView<const uint8_t> packet,
+                                      const RTPHeader& header) {
+        OnReceivedPayloadData(packet, header);
+      };
+  frame_transformer_delegate_ =
+      new rtc::RefCountedObject<ChannelReceiveFrameTransformerDelegate>(
+          std::move(receive_audio_callback), std::move(frame_transformer),
+          rtc::Thread::Current());
+  frame_transformer_delegate_->Init();
 }
 
 AudioMixer::Source::AudioFrameInfo ChannelReceive::GetAudioFrameWithInfo(
@@ -419,7 +457,8 @@ ChannelReceive::ChannelReceive(
     rtc::scoped_refptr<AudioDecoderFactory> decoder_factory,
     absl::optional<AudioCodecPairId> codec_pair_id,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
-    const webrtc::CryptoOptions& crypto_options)
+    const webrtc::CryptoOptions& crypto_options,
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer)
     : event_log_(rtc_event_log),
       rtp_receive_statistics_(ReceiveStatistics::Create(clock)),
       remote_ssrc_(remote_ssrc),
@@ -440,7 +479,8 @@ ChannelReceive::ChannelReceive(
       _outputGain(1.0f),
       associated_send_channel_(nullptr),
       frame_decryptor_(frame_decryptor),
-      crypto_options_(crypto_options) {
+      crypto_options_(crypto_options),
+      absolute_capture_time_receiver_(clock) {
   // TODO(nisse): Use _moduleProcessThreadPtr instead?
   module_process_thread_checker_.Detach();
 
@@ -464,6 +504,9 @@ ChannelReceive::ChannelReceive(
   configuration.event_log = event_log_;
   configuration.local_media_ssrc = local_ssrc;
 
+  if (frame_transformer)
+    InitFrameTransformerDelegate(std::move(frame_transformer));
+
   _rtpRtcpModule = RtpRtcp::Create(configuration);
   _rtpRtcpModule->SetSendingMediaStatus(false);
   _rtpRtcpModule->SetRemoteSSRC(remote_ssrc_);
@@ -476,6 +519,10 @@ ChannelReceive::ChannelReceive(
 
 ChannelReceive::~ChannelReceive() {
   RTC_DCHECK(construction_thread_.IsCurrent());
+
+  // Resets the delegate's callback to ChannelReceive::OnReceivedPayloadData.
+  if (frame_transformer_delegate_)
+    frame_transformer_delegate_->Reset();
 
   StopPlayout();
 
@@ -543,6 +590,15 @@ void ChannelReceive::OnRtpPacket(const RtpPacketReceived& packet) {
   RTPHeader header;
   packet_copy.GetHeader(&header);
 
+  // Interpolates absolute capture timestamp RTP header extension.
+  header.extension.absolute_capture_time =
+      absolute_capture_time_receiver_.OnReceivePacket(
+          AbsoluteCaptureTimeReceiver::GetSource(header.ssrc,
+                                                 header.arrOfCSRCs),
+          header.timestamp,
+          rtc::saturated_cast<uint32_t>(packet_copy.payload_type_frequency()),
+          header.extension.absolute_capture_time);
+
   ReceivePacket(packet_copy.data(), packet_copy.size(), header);
 }
 
@@ -587,8 +643,14 @@ void ChannelReceive::ReceivePacket(const uint8_t* packet,
     payload_data_length = 0;
   }
 
-  OnReceivedPayloadData(
-      rtc::ArrayView<const uint8_t>(payload, payload_data_length), header);
+  rtc::ArrayView<const uint8_t> payload_data(payload, payload_data_length);
+  if (frame_transformer_delegate_) {
+    // Asynchronously transform the received payload. After the payload is
+    // transformed, the delegate will call OnReceivedPayloadData to handle it.
+    frame_transformer_delegate_->Transform(payload_data, header, remote_ssrc_);
+  } else {
+    OnReceivedPayloadData(payload_data, header);
+  }
 }
 
 // May be called on either worker thread or network thread.
@@ -729,6 +791,16 @@ void ChannelReceive::SetAssociatedSendChannel(
   associated_send_channel_ = channel;
 }
 
+void ChannelReceive::SetDepacketizerToDecoderFrameTransformer(
+    rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer) {
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
+  // Depending on when the channel is created, the transformer might be set
+  // twice. Don't replace the delegate if it was already initialized.
+  if (!frame_transformer || frame_transformer_delegate_)
+    return;
+  InitFrameTransformerDelegate(std::move(frame_transformer));
+}
+
 NetworkStatistics ChannelReceive::GetNetworkStatistics() const {
   RTC_DCHECK(worker_thread_checker_.IsCurrent());
   NetworkStatistics stats;
@@ -834,7 +906,7 @@ void ChannelReceive::UpdatePlayoutTimestamp(bool rtcp, int64_t now_ms) {
   if (_audioDeviceModulePtr->PlayoutDelay(&delay_ms) == -1) {
     RTC_DLOG(LS_WARNING)
         << "ChannelReceive::UpdatePlayoutTimestamp() failed to read"
-        << " playout delay from the ADM";
+           " playout delay from the ADM";
     return;
   }
 
@@ -846,7 +918,7 @@ void ChannelReceive::UpdatePlayoutTimestamp(bool rtcp, int64_t now_ms) {
 
   {
     rtc::CritScope lock(&video_sync_lock_);
-    if (!rtcp) {
+    if (!rtcp && playout_timestamp != playout_timestamp_rtp_) {
       playout_timestamp_rtp_ = playout_timestamp;
       playout_timestamp_rtp_time_ms_ = now_ms;
     }
@@ -914,13 +986,15 @@ std::unique_ptr<ChannelReceiveInterface> CreateChannelReceive(
     rtc::scoped_refptr<AudioDecoderFactory> decoder_factory,
     absl::optional<AudioCodecPairId> codec_pair_id,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
-    const webrtc::CryptoOptions& crypto_options) {
+    const webrtc::CryptoOptions& crypto_options,
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer) {
   return std::make_unique<ChannelReceive>(
       clock, module_process_thread, neteq_factory, audio_device_module,
       rtcp_send_transport, rtc_event_log, local_ssrc, remote_ssrc,
       jitter_buffer_max_packets, jitter_buffer_fast_playout,
       jitter_buffer_min_delay_ms, jitter_buffer_enable_rtx_handling,
-      decoder_factory, codec_pair_id, frame_decryptor, crypto_options);
+      decoder_factory, codec_pair_id, frame_decryptor, crypto_options,
+      std::move(frame_transformer));
 }
 
 }  // namespace voe

@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "VkDebug.hpp"
+#include "VkStringify.hpp"
+
+#include "System/Debug.hpp"
 #include "System/Linux/MemFd.hpp"
 
 #include <errno.h>
@@ -34,39 +36,44 @@ public:
 		AllocateInfo() = default;
 
 		// Parse the VkMemoryAllocateInfo.pNext chain to initialize an AllocateInfo.
-		AllocateInfo(const VkMemoryAllocateInfo* pAllocateInfo)
+		AllocateInfo(const VkMemoryAllocateInfo *pAllocateInfo)
 		{
-			const auto* createInfo = reinterpret_cast<const VkBaseInStructure*>(pAllocateInfo->pNext);
-			while (createInfo)
+			const auto *createInfo = reinterpret_cast<const VkBaseInStructure *>(pAllocateInfo->pNext);
+			while(createInfo)
 			{
-				switch (createInfo->sType)
+				switch(createInfo->sType)
 				{
-				case VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR:
+					case VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR:
 					{
-						const auto* importInfo = reinterpret_cast<const VkImportMemoryFdInfoKHR*>(createInfo);
+						const auto *importInfo = reinterpret_cast<const VkImportMemoryFdInfoKHR *>(createInfo);
 
-						if (importInfo->handleType != VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+						if(importInfo->handleType != VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
 						{
-							UNIMPLEMENTED("importInfo->handleType");
+							UNSUPPORTED("VkImportMemoryFdInfoKHR::handleType %d", int(importInfo->handleType));
 						}
 						importFd = true;
 						fd = importInfo->fd;
 					}
 					break;
-				case VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO:
+					case VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO:
 					{
-						const auto* exportInfo = reinterpret_cast<const VkExportMemoryAllocateInfo*>(createInfo);
+						const auto *exportInfo = reinterpret_cast<const VkExportMemoryAllocateInfo *>(createInfo);
 
-						if (exportInfo->handleTypes != VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+						if(exportInfo->handleTypes != VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
 						{
-							UNIMPLEMENTED("exportInfo->handleTypes");
+							UNSUPPORTED("VkExportMemoryAllocateInfo::handleTypes %d", int(exportInfo->handleTypes));
 						}
 						exportFd = true;
 					}
 					break;
+					case VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO:
+						// This can safely be ignored, as the Vulkan spec mentions:
+						// "If the pNext chain includes a VkMemoryDedicatedAllocateInfo structure, then that structure
+						//  includes a handle of the sole buffer or image resource that the memory *can* be bound to."
+						break;
 
-				default:
-					;
+					default:
+						WARN("VkMemoryAllocateInfo->pNext sType = %s", vk::Stringify(createInfo->sType).c_str());
 				}
 				createInfo = createInfo->pNext;
 			}
@@ -75,14 +82,14 @@ public:
 
 	static const VkExternalMemoryHandleTypeFlagBits typeFlagBit = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
 
-	static bool supportsAllocateInfo(const VkMemoryAllocateInfo* pAllocateInfo)
+	static bool supportsAllocateInfo(const VkMemoryAllocateInfo *pAllocateInfo)
 	{
 		AllocateInfo info(pAllocateInfo);
 		return info.importFd || info.exportFd;
 	}
 
-	explicit OpaqueFdExternalMemory(const VkMemoryAllocateInfo* pAllocateInfo)
-			: allocateInfo(pAllocateInfo)
+	explicit OpaqueFdExternalMemory(const VkMemoryAllocateInfo *pAllocateInfo)
+	    : allocateInfo(pAllocateInfo)
 	{
 	}
 
@@ -91,12 +98,12 @@ public:
 		memfd.close();
 	}
 
-	VkResult allocate(size_t size, void** pBuffer) override
+	VkResult allocate(size_t size, void **pBuffer) override
 	{
-		if (allocateInfo.importFd)
+		if(allocateInfo.importFd)
 		{
 			memfd.importFd(allocateInfo.fd);
-			if (!memfd.isValid())
+			if(!memfd.isValid())
 			{
 				return VK_ERROR_INVALID_EXTERNAL_HANDLE;
 			}
@@ -107,14 +114,14 @@ public:
 			static int counter = 0;
 			char name[40];
 			snprintf(name, sizeof(name), "SwiftShader.Memory.%d", ++counter);
-			if (!memfd.allocate(name, size))
+			if(!memfd.allocate(name, size))
 			{
 				TRACE("memfd.allocate() returned %s", strerror(errno));
 				return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 			}
 		}
-		void* addr = memfd.mapReadWrite(0, size);
-		if (!addr)
+		void *addr = memfd.mapReadWrite(0, size);
+		if(!addr)
 		{
 			return VK_ERROR_MEMORY_MAP_FAILED;
 		}
@@ -122,7 +129,7 @@ public:
 		return VK_SUCCESS;
 	}
 
-	void deallocate(void* buffer, size_t size) override
+	void deallocate(void *buffer, size_t size) override
 	{
 		memfd.unmap(buffer, size);
 	}
@@ -132,10 +139,10 @@ public:
 		return typeFlagBit;
 	}
 
-	VkResult exportFd(int* pFd) const override
+	VkResult exportFd(int *pFd) const override
 	{
 		int fd = memfd.exportFd();
-		if (fd < 0)
+		if(fd < 0)
 		{
 			return VK_ERROR_INVALID_EXTERNAL_HANDLE;
 		}
@@ -144,6 +151,6 @@ public:
 	}
 
 private:
-	LinuxMemFd   memfd;
+	LinuxMemFd memfd;
 	AllocateInfo allocateInfo;
 };

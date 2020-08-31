@@ -28,6 +28,11 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -55,7 +60,6 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
@@ -65,9 +69,7 @@
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -78,8 +80,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -185,7 +185,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
 
   if ((css_box && css_box->IsListItem()) || IsA<HTMLLIElement>(node))
     return ax::mojom::Role::kListItem;
-  if (layout_object_->IsListMarkerIncludingNGInside())
+  if (layout_object_->IsListMarkerIncludingNGOutsideAndInside())
     return ax::mojom::Role::kListMarker;
   if (layout_object_->IsBR())
     return ax::mojom::Role::kLineBreak;
@@ -219,7 +219,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLCanvasElement>(node))
     return ax::mojom::Role::kCanvas;
 
-  if (css_box && css_box->IsLayoutView())
+  if (IsA<LayoutView>(css_box))
     return ax::mojom::Role::kRootWebArea;
 
   if (layout_object_->IsSVGImage())
@@ -266,18 +266,17 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (IsDetached())
     return nullptr;
 
-  if (layout_object_->IsListMarker())
-    return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
-
-  if (layout_object_->IsLayoutNGListMarkerIncludingInside()) {
-    if (LayoutNGListItem* list_item =
-            LayoutNGListItem::FromMarker(*layout_object_))
-      return list_item->GetNode();
-    return nullptr;
+  if (layout_object_->IsListMarker()) {
+    // Return the originating list item node.
+    return layout_object_->GetNode()->parentNode();
   }
 
-  if (layout_object_->IsAnonymous() && layout_object_->ContainingBlock()) {
-    return layout_object_->ContainingBlock()->GetNode();
+  if (layout_object_->IsAnonymous()) {
+    if (LayoutBlock* layout_block =
+            LayoutObject::FindNonAnonymousContainingBlock(layout_object_)) {
+      return layout_block->GetNode();
+    }
+    return nullptr;
   }
 
   return GetNode();
@@ -297,6 +296,14 @@ void AXLayoutObject::Detach() {
     layout_object_->SetHasAXObject(false);
 #endif
   layout_object_ = nullptr;
+}
+
+bool AXLayoutObject::IsDetached() const {
+  return !layout_object_ || AXObject::IsDetached();
+}
+
+bool AXLayoutObject::IsAXLayoutObject() const {
+  return true;
 }
 
 //
@@ -319,8 +326,9 @@ bool AXLayoutObject::IsDefault() const {
 
   // Checks for any kind of disabled, including aria-disabled.
   if (Restriction() == kRestrictionDisabled ||
-      RoleValue() != ax::mojom::Role::kButton)
+      RoleValue() != ax::mojom::Role::kButton) {
     return false;
+  }
 
   // Will only match :default pseudo class if it's the first default button in
   // a form.
@@ -337,21 +345,9 @@ bool AXLayoutObject::IsEditable() const {
   if (!node)
     return false;
 
-  // TODO(accessibility) pursue standards track so that aria-goog-editable
-  // becomes aria-editable. At that time, create ariaEditableAttr in
-  // html_element.cc. The current version of the editable attribute does not
-  // inherit, in order to match the automatic Gecko implementation, but
-  // hopefully the standardized version will, in which case a more performant
-  // implementation will be required, e.g. cache it or only expose on ancestor,
-  // having browser-side propagate it.
   const auto* elem = DynamicTo<Element>(node);
   if (!elem)
     elem = FlatTreeTraversal::ParentElement(*node);
-  if (elem && elem->hasAttribute("aria-goog-editable")) {
-    auto editable = elem->getAttribute("aria-goog-editable");
-    return !EqualIgnoringASCIICase("false", editable);
-  }
-
   if (GetLayoutObject()->IsTextControl())
     return true;
 
@@ -385,20 +381,9 @@ bool AXLayoutObject::IsRichlyEditable() const {
   if (!node)
     return false;
 
-  // TODO(accessibility) pursue standards track so that aria-goog-editable
-  // becomes aria-editable. At that time, create ariaEditableAttr in
-  // html_element.cc. The current version of the editable attribute does not
-  // inherit, in order to match the automatic Gecko implementation, but
-  // hopefully the standardized version will, in which case a more performant
-  // implementation will be required, e.g. cache it or only expose on ancestor,
-  // having browser-side propagate it.
   const Element* elem = DynamicTo<Element>(node);
   if (!elem)
     elem = FlatTreeTraversal::ParentElement(*node);
-  if (elem && elem->hasAttribute("aria-goog-editable")) {
-    auto editable = elem->getAttribute("aria-goog-editable");
-    return !EqualIgnoringASCIICase("false", editable);
-  }
 
   // Contrary to Firefox, we mark richly editable all auto-generated content,
   // such as list bullets and soft line breaks, that are contained within a
@@ -478,7 +463,7 @@ bool AXLayoutObject::IsFocused() const {
   if (!focused_element)
     return false;
   AXObject* focused_object = AXObjectCache().GetOrCreate(focused_element);
-  if (!focused_object || !focused_object->IsAXLayoutObject())
+  if (!IsA<AXLayoutObject>(focused_object))
     return false;
 
   // A web area is represented by the Document node in the DOM tree, which isn't
@@ -505,23 +490,34 @@ AccessibilitySelectedState AXLayoutObject::IsSelected() const {
   if (!GetLayoutObject() || !GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
 
-  // aria-selected overrides automatic behaviors
+  // The aria-selected attribute overrides automatic behaviors.
   bool is_selected;
   if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected, is_selected))
     return is_selected ? kSelectedStateTrue : kSelectedStateFalse;
 
-  // Tab item with focus in the associated tab
-  if (IsTabItem() && IsTabItemSelected())
-    return kSelectedStateTrue;
+  // The selection should only follow the focus when the aria-selected attribute
+  // is marked as required or implied for this element in the ARIA specs.
+  // If this object can't follow the focus, then we can't say that it's selected
+  // nor that it's not.
+  if (!SelectionShouldFollowFocus())
+    return kSelectedStateUndefined;
 
-  // Selection follows focus, but ONLY in single selection containers,
-  // and only if aria-selected was not present to override
+  // Selection follows focus, but ONLY in single selection containers, and only
+  // if aria-selected was not present to override.
   return IsSelectedFromFocus() ? kSelectedStateTrue : kSelectedStateFalse;
 }
 
 // In single selection containers, selection follows focus unless aria_selected
-// is set to false.
+// is set to false. This is only valid for a subset of elements.
 bool AXLayoutObject::IsSelectedFromFocus() const {
+  if (!SelectionShouldFollowFocus())
+    return false;
+
+  // A tab item can also be selected if it is associated to a focused tabpanel
+  // via the aria-labelledby attribute.
+  if (IsTabItem() && IsTabItemSelected())
+    return kSelectedStateTrue;
+
   // If not a single selection container, selection does not follow focus.
   AXObject* container = ContainerWidget();
   if (!container || container->IsMultiSelectable())
@@ -539,6 +535,20 @@ bool AXLayoutObject::IsSelectedFromFocus() const {
   bool is_selected;
   return !HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected,
                                         is_selected);
+}
+
+// Returns true if the node's aria-selected attribute should be set to true
+// when the node is focused. This is true for only a subset of roles.
+bool AXLayoutObject::SelectionShouldFollowFocus() const {
+  switch (RoleValue()) {
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kTab:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 //
@@ -583,11 +593,11 @@ bool AXLayoutObject::IsPlaceholder() const {
     return false;
 
   LayoutObject* parent_layout_object = parent_object->GetLayoutObject();
-  if (!parent_layout_object || !parent_layout_object->IsTextControl())
+  auto* layout_text_control =
+      DynamicTo<LayoutTextControl>(parent_layout_object);
+  if (!layout_text_control)
     return false;
 
-  LayoutTextControl* layout_text_control =
-      ToLayoutTextControl(parent_layout_object);
   DCHECK(layout_text_control);
 
   TextControlElement* text_control_element =
@@ -610,6 +620,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // kRootWebArea, so force kRootWebArea to always be unignored.
   if (role_ == ax::mojom::Role::kRootWebArea)
     return false;
+
+  if (IsA<HTMLHtmlElement>(GetNode()))
+    return true;
 
   if (!layout_object_) {
     if (ignored_reasons)
@@ -698,7 +711,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (alt_text)
     return alt_text->IsEmpty();
 
-  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGInside())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGOutsideAndInside())
     return false;
 
   // Positioned elements and scrollable containers are important for
@@ -720,7 +733,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // are usually dummy layout objects that pad out the tree, but there are
   // some exceptions below.
   auto* block_flow = DynamicTo<LayoutBlockFlow>(*layout_object_);
-  if (block_flow && block_flow->ChildrenInline() && !CanSetFocusAttribute()) {
+  if (block_flow && block_flow->ChildrenInline()) {
     // If the layout object has any plain text in it, that text will be
     // inside a LineBox, so the layout object will have a first LineBox.
     bool has_any_text = HasLineBox(*block_flow);
@@ -733,6 +746,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
+
   // By default, objects should be ignored so that the AX hierarchy is not
   // filled with unnecessary items.
   if (ignored_reasons)
@@ -959,16 +973,15 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
 
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap = nullptr;
-  Document* document = &node->GetDocument();
   if (auto* image = DynamicTo<HTMLImageElement>(node)) {
-    image_bitmap = ImageBitmap::Create(image, base::Optional<IntRect>(),
-                                       document, options);
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        image, base::Optional<IntRect>(), options);
   } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
-    image_bitmap =
-        ImageBitmap::Create(canvas, base::Optional<IntRect>(), options);
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        canvas, base::Optional<IntRect>(), options);
   } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
-    image_bitmap = ImageBitmap::Create(video, base::Optional<IntRect>(),
-                                       document, options);
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        video, base::Optional<IntRect>(), options);
   }
   if (!image_bitmap)
     return String();
@@ -1222,25 +1235,6 @@ AXLayoutObject::TextDecorationStyleToAXTextDecorationStyle(
   return ax::mojom::TextDecorationStyle::kNone;
 }
 
-//
-// Inline text boxes.
-//
-
-void AXLayoutObject::LoadInlineTextBoxes() {
-  if (!GetLayoutObject())
-    return;
-
-  if (GetLayoutObject()->IsText()) {
-    ClearChildren();
-    AddInlineTextBoxChildren(true);
-    return;
-  }
-
-  for (const auto& child : children_) {
-    child->LoadInlineTextBoxes();
-  }
-}
-
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
   return (layout_object.IsInline() || layout_object.IsLayoutInline() ||
           layout_object.IsText()) &&
@@ -1256,7 +1250,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG() ||
+  if (layout_object.IsListMarkerIncludingNGOutside() ||
       !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
   NGInlineCursor cursor;
@@ -1280,15 +1274,24 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
 }
 
 AXObject* AXLayoutObject::NextOnLine() const {
-  if (!GetLayoutObject())
+  // If this is the last object on the line, nullptr is returned. Otherwise, all
+  // AXLayoutObjects, regardless of role and tree depth, are connected to the
+  // next inline text box on the same line. If there is no inline text box, they
+  // are connected to the next leaf AXObject.
+  if (IsDetached())
     return nullptr;
 
   AXObject* result = nullptr;
-  if (GetLayoutObject()->IsListMarkerIncludingNG()) {
-    AXObject* next_sibling = RawNextSibling();
-    if (!next_sibling || !next_sibling->Children().size())
-      return nullptr;
-    result = next_sibling->Children()[0].Get();
+  if (GetLayoutObject()->IsListMarkerIncludingNGOutside()) {
+    // A list marker should be followed by a list item on the same line. The
+    // list item might have no text children, so we don't eagerly descend to the
+    // inline text box.
+    //
+    // For example, <li><button aria-label="button"></button></li>.
+    //
+    // This AXLayoutObject might not be included in the accessibility tree at
+    // all, so "RawNextSibling" needs to be used to walk the layout tree.
+    result = RawNextSibling();
   } else if (ShouldUseLayoutNG(*GetLayoutObject())) {
     result = NextOnLineInternalNG(*this);
   } else {
@@ -1296,7 +1299,12 @@ AXObject* AXLayoutObject::NextOnLine() const {
     if (GetLayoutObject()->IsBox()) {
       inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
     } else if (GetLayoutObject()->IsLayoutInline()) {
-      inline_box = ToLayoutInline(GetLayoutObject())->LastLineBox();
+      // For performance and memory consumption, LayoutInline may ignore some
+      // inline-boxes during line layout because they don't actually impact
+      // layout. This is known as "culled inline". We have to recursively look
+      // to the LayoutInline's children via "LastLineBoxIncludingCulling".
+      inline_box =
+          ToLayoutInline(GetLayoutObject())->LastLineBoxIncludingCulling();
     } else if (GetLayoutObject()->IsText()) {
       inline_box = ToLayoutText(GetLayoutObject())->LastTextBox();
     }
@@ -1314,17 +1322,40 @@ AXObject* AXLayoutObject::NextOnLine() const {
     }
 
     if (!result) {
-      AXObject* computed_parent = ComputeParent();
-      if (computed_parent)
-        result = computed_parent->NextOnLine();
+      AXObject* parent = ParentObject();
+      // Our parent object could have been created based on an ignored inline or
+      // inline block spanning multiple lines. We need to ensure that we are
+      // really at the end of our parent before attempting to connect to the
+      // next AXObject that is on the same line as its last line.
+      //
+      // For example, look at the following layout tree:
+      // LayoutBlockFlow
+      // ++LayoutInline
+      // ++++LayoutText "Beginning of line one "
+      // ++++AnonymousLayoutInline
+      // ++++++LayoutText "end of line one"
+      // ++++++LayoutBR
+      // ++++++LayoutText "Beginning of line two "
+      // ++++LayoutText "End of line two"
+      //
+      // If we are on kStaticText "End of line one", and retrieve the parent
+      // AXObject, it will be the anonymous layout inline which actually ends
+      // somewhere in the second line, not the first line. Its "NextOnLine"
+      // AXObject will be kStaticText "End of line two", which is obviously
+      // wrong.
+      //
+      // Note that we can't use AXObject::IndexInParent() to do this, because
+      // for performance reasons we don't define it on objects that are not
+      // included in the accessibility tree at all.
+      if (parent && !RawNextSibling())
+        result = parent->NextOnLine();
     }
   }
 
   // For consistency between the forward and backward directions, try to always
   // return leaf nodes.
-  while (result && result->Children().size())
-    result = result->Children()[0].Get();
-
+  if (result && result->ChildCount())
+    return result->DeepestFirstChild();
   return result;
 }
 
@@ -1337,9 +1368,10 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG() ||
-      !layout_object.IsInLayoutNGInlineFormattingContext())
+  if (layout_object.IsListMarkerIncludingNGOutside() ||
+      !layout_object.IsInLayoutNGInlineFormattingContext()) {
     return nullptr;
+  }
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   if (!cursor)
@@ -1350,8 +1382,9 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
       break;
     LayoutObject* earlier_layout_object = cursor.CurrentMutableLayoutObject();
     if (AXObject* result =
-            ax_object.AXObjectCache().GetOrCreate(earlier_layout_object))
+            ax_object.AXObjectCache().GetOrCreate(earlier_layout_object)) {
       return result;
+    }
   }
   if (!ax_object.ParentObject())
     return nullptr;
@@ -1361,7 +1394,11 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
 }
 
 AXObject* AXLayoutObject::PreviousOnLine() const {
-  if (!GetLayoutObject())
+  // If this is the first object on the line, nullptr is returned. Otherwise,
+  // all AXLayoutObjects, regardless of role and tree depth, are connected to
+  // the previous inline text box on the same line. If there is no inline text
+  // box, they are connected to the previous leaf AXObject.
+  if (IsDetached())
     return nullptr;
 
   AXObject* result = nullptr;
@@ -1369,10 +1406,9 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
                                    ? PreviousSiblingIncludingIgnored()
                                    : nullptr;
   if (previous_sibling && previous_sibling->GetLayoutObject() &&
-      previous_sibling->GetLayoutObject()->IsLayoutNGListMarker()) {
-    if (!previous_sibling->Children().size())
-      return nullptr;
-    result = previous_sibling->LastChild();
+      previous_sibling->GetLayoutObject()->IsLayoutNGOutsideListMarker()) {
+    // A list item should be proceeded by a list marker on the same line.
+    result = previous_sibling;
   } else if (ShouldUseLayoutNG(*GetLayoutObject())) {
     result = PreviousOnLineInlineNG(*this);
   } else {
@@ -1380,7 +1416,12 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     if (GetLayoutObject()->IsBox()) {
       inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
     } else if (GetLayoutObject()->IsLayoutInline()) {
-      inline_box = ToLayoutInline(GetLayoutObject())->FirstLineBox();
+      // For performance and memory consumption, LayoutInline may ignore some
+      // inline-boxes during line layout because they don't actually impact
+      // layout. This is known as "culled inline". We have to recursively look
+      // to the LayoutInline's children via "FirstLineBoxIncludingCulling".
+      inline_box =
+          ToLayoutInline(GetLayoutObject())->FirstLineBoxIncludingCulling();
     } else if (GetLayoutObject()->IsText()) {
       inline_box = ToLayoutText(GetLayoutObject())->FirstTextBox();
     }
@@ -1398,17 +1439,38 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     }
 
     if (!result) {
-      AXObject* computed_parent = ComputeParent();
-      if (computed_parent)
-        result = computed_parent->PreviousOnLine();
+      AXObject* parent = ParentObject();
+      // Our parent object could have been created based on an ignored inline or
+      // inline block spanning multiple lines. We need to ensure that we are
+      // really at the start of our parent before attempting to connect to the
+      // previous AXObject that is on the same line as its first line.
+      //
+      // For example, fook at the following layout tree:
+      // LayoutBlockFlow
+      // ++LayoutInline
+      // ++++LayoutText "Beginning of line one "
+      // ++++AnonymousLayoutInline
+      // ++++++LayoutText "end of line one"
+      // ++++++LayoutBR
+      // ++++++LayoutText "Line two"
+      //
+      // If we are on kStaticText "Line two", and retrieve the parent AXObject,
+      // it will be the anonymous layout inline which actually started somewhere
+      // in the first line, not the second line. Its "PreviousOnLine" AXObject
+      // will be kStaticText "Start of line one", which is obviously wrong.
+      //
+      // Note that we can't use AXObject::IndexInParent() to do this, because
+      // for performance reasons we don't define it on objects that are not
+      // included in the accessibility tree at all.
+      if (parent && parent->RawFirstChild() == this)
+        result = parent->PreviousOnLine();
     }
   }
 
   // For consistency between the forward and backward directions, try to always
   // return leaf nodes.
-  while (result && result->Children().size())
-    result = result->Children()[result->Children().size() - 1].Get();
-
+  if (result && result->ChildCount())
+    return result->DeepestLastChild();
   return result;
 }
 
@@ -1422,11 +1484,12 @@ String AXLayoutObject::StringValue() const {
 
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
 
-  if (css_box && css_box->IsMenuList()) {
+  auto* select_element =
+      DynamicTo<HTMLSelectElement>(layout_object_->GetNode());
+  if (css_box && select_element && select_element->UsesMenuList()) {
     // LayoutMenuList will go straight to the text() of its selected item.
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
-    auto* select_element = To<HTMLSelectElement>(layout_object_->GetNode());
     int selected_index = select_element->SelectedListIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
@@ -1438,7 +1501,7 @@ String AXLayoutObject::StringValue() const {
       if (!overridden_description.IsNull())
         return overridden_description;
     }
-    return ToLayoutMenuList(layout_object_)->GetText();
+    return select_element->InnerElement().innerText();
   }
 
   if (IsWebArea()) {
@@ -1462,6 +1525,8 @@ String AXLayoutObject::StringValue() const {
   // buttons which will return their name.
   // https://html.spec.whatwg.org/C/#dom-input-value
   if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
+    if (input->type() == input_type_names::kFile)
+      return input->FileStatusText();
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&
         input->type() != input_type_names::kImage &&
@@ -1470,6 +1535,12 @@ String AXLayoutObject::StringValue() const {
         input->type() != input_type_names::kSubmit) {
       return input->value();
     }
+  }
+
+  // ARIA combobox can get value from  inner contents.
+  if (AriaRoleAttribute() == ax::mojom::Role::kComboBoxMenuButton) {
+    AXObjectSet visited;
+    return TextFromDescendants(visited, false);
   }
 
   // FIXME: We might need to implement a value here for more types
@@ -1524,10 +1595,11 @@ String AXLayoutObject::TextAlternative(bool recursive,
     } else if (layout_object_->IsListMarker() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
-    } else if (layout_object_->IsLayoutNGListMarkerIncludingInside() &&
-               !recursive) {
-      text_alternative = LayoutNGListItem::TextAlternative(*layout_object_);
-      found_text_alternative = true;
+    } else if (!recursive) {
+      if (ListMarker* marker = ListMarker::Get(layout_object_)) {
+        text_alternative = marker->TextAlternative(*layout_object_);
+        found_text_alternative = true;
+      }
     }
 
     if (found_text_alternative) {
@@ -1639,10 +1711,6 @@ ax::mojom::Dropeffect AXLayoutObject::ParseDropeffect(
   return ax::mojom::Dropeffect::kNone;
 }
 
-bool AXLayoutObject::SupportsARIAFlowTo() const {
-  return !GetAttribute(html_names::kAriaFlowtoAttr).IsEmpty();
-}
-
 bool AXLayoutObject::SupportsARIAOwns() const {
   if (!layout_object_)
     return false;
@@ -1705,9 +1773,9 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
       !layout_object_->IsBox())
     return nullptr;
 
-  auto* frame_view = DocumentFrameView();
-  if (!frame_view || !frame_view->UpdateAllLifecyclePhasesExceptPaint())
-    return nullptr;
+  // Must be called with lifecycle >= compositing clean.
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kCompositingClean);
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 
@@ -1732,6 +1800,13 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   }
 
   LayoutObject* obj = node->GetLayoutObject();
+
+  // Retarget to respect https://dom.spec.whatwg.org/#retarget.
+  if (auto* elem = DynamicTo<Element>(node)) {
+    Element* element = &(GetDocument()->Retarget(*elem));
+    obj = element->GetLayoutObject();
+  }
+
   if (!obj)
     return nullptr;
 
@@ -1744,9 +1819,9 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (result && result->AccessibilityIsIgnored()) {
     // If this element is the label of a control, a hit test should return the
     // control.
-    if (result->IsAXLayoutObject()) {
+    if (auto* ax_object = DynamicTo<AXLayoutObject>(result)) {
       AXObject* control_object =
-          ToAXLayoutObject(result)->CorrespondingControlForLabelElement();
+          ax_object->CorrespondingControlAXObjectForLabelElement();
       if (control_object && control_object->NameFromLabelElement())
         return control_object;
     }
@@ -2064,59 +2139,6 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
   return nullptr;
 }
 
-void AXLayoutObject::AddChildren() {
-  if (IsDetached())
-    return;
-
-  // Avoid calling AXNodeObject logic for continuations.
-  bool is_continuation = layout_object_->IsElementContinuation();
-
-  if (auto* element = DynamicTo<Element>(GetNode())) {
-    if (!is_continuation &&
-        !IsA<HTMLMapElement>(
-            *element) &&  // Handled in AddImageMapChildren (img)
-        !IsA<HTMLRubyElement>(*element) &&   // Special layout handling
-        !IsA<HTMLTableElement>(*element) &&  // thead/tfoot move around
-        !element->IsPseudoElement()) {       // Not visited in layout traversal
-      AXNodeObject::AddChildren();
-      return;
-    }
-  }
-
-  // If the need to add more children in addition to existing children arises,
-  // childrenChanged should have been called, leaving the object with no
-  // children.
-  DCHECK(!have_children_);
-  have_children_ = true;
-
-  AXObjectVector owned_children;
-  ComputeAriaOwnsChildren(owned_children);
-
-  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AXObjectCache().IsAriaOwned(obj))
-      AddChild(obj);
-  }
-
-  AddHiddenChildren();
-  AddPopupChildren();
-  AddRemoteSVGChildren();
-  AddTableChildren();
-  AddInlineTextBoxChildren(false);
-  AddValidationMessageChild();
-  AddAccessibleNodeChildren();
-
-  for (const auto& child : children_) {
-    if (!is_continuation && !child->CachedParentObject()) {
-      // Never set continuations as a parent object. The first layout object
-      // in the chain must be used instead.
-      child->SetParent(this);
-    }
-  }
-
-  for (const auto& owned_child : owned_children)
-    AddChild(owned_child);
-}
-
 bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
@@ -2367,44 +2389,6 @@ void AXLayoutObject::TextChanged() {
   AXNodeObject::TextChanged();
 }
 
-void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
-  Document* document = GetDocument();
-  if (!document)
-    return;
-
-  Settings* settings = document->GetSettings();
-  if (!force &&
-      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled()))
-    return;
-
-  if (!GetLayoutObject() || !GetLayoutObject()->IsText())
-    return;
-
-  if (GetLayoutObject()->NeedsLayout()) {
-    // If a LayoutText needs layout, its inline text boxes are either
-    // nonexistent or invalid, so defer until the layout happens and
-    // the layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
-    return;
-  }
-
-  LayoutText* layout_text = ToLayoutText(GetLayoutObject());
-  for (scoped_refptr<AbstractInlineTextBox> box =
-           layout_text->FirstAbstractInlineTextBox();
-       box.get(); box = box->NextInlineTextBox()) {
-    AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
-    if (ax_object->AccessibilityIsIncludedInTree())
-      children_.push_back(ax_object);
-  }
-}
-
-void AXLayoutObject::AddValidationMessageChild() {
-  if (!IsWebArea())
-    return;
-  AXObject* ax_object = AXObjectCache().ValidationMessageObjectIfInvalid();
-  if (ax_object)
-    children_.push_back(ax_object);
-}
-
 AXObject* AXLayoutObject::ErrorMessage() const {
   // Check for aria-errormessage.
   Element* existing_error_message =
@@ -2433,27 +2417,17 @@ bool AXLayoutObject::IsDataTable() const {
   if (HasAOMPropertyOrARIAAttribute(AOMStringProperty::kRole, role))
     return true;
 
-  if (!layout_object_->IsTable())
-    return false;
-
   // When a section of the document is contentEditable, all tables should be
   // treated as data tables, otherwise users may not be able to work with rich
   // text editors that allow creating and editing tables.
   if (GetNode() && HasEditableStyle(*GetNode()))
     return true;
 
-  // If there's no node, it's definitely a layout table. This happens
-  // when table CSS styles are used without a complete table DOM structure.
-  LayoutNGTableInterface* table =
-      ToInterface<LayoutNGTableInterface>(layout_object_);
-  table->RecalcSectionsIfNeeded();
-  Node* table_node = layout_object_->GetNode();
-
   // This employs a heuristic to determine if this table should appear.
   // Only "data" tables should be exposed as tables.
   // Unfortunately, there is no good way to determine the difference
   // between a "layout" table and a "data" table.
-  auto* table_element = DynamicTo<HTMLTableElement>(table_node);
+  auto* table_element = DynamicTo<HTMLTableElement>(GetNode());
   if (!table_element)
     return false;
 
@@ -2471,30 +2445,29 @@ bool AXLayoutObject::IsDataTable() const {
   if (Traversal<HTMLTableColElement>::FirstChild(*table_element))
     return true;
 
-  // go through the cell's and check for tell-tale signs of "data" table status
-  // cells have borders, or use attributes like headers, abbr, scope or axis
-  table->RecalcSectionsIfNeeded();
-  LayoutNGTableSectionInterface* first_body = table->FirstBodyInterface();
-  if (!first_body)
+  // If there are at least 20 rows, we'll call it a data table.
+  HTMLTableRowsCollection* rows = table_element->rows();
+  int num_rows = rows->length();
+  if (num_rows >= 20)
+    return true;
+  if (num_rows <= 0)
     return false;
 
-  int num_cols_in_first_body = first_body->NumEffectiveColumns();
-  int num_rows = first_body->NumRows();
+  int num_cols_in_first_body = rows->Item(0)->cells()->length();
   // If there's only one cell, it's not a good AXTable candidate.
   if (num_rows == 1 && num_cols_in_first_body == 1)
     return false;
 
-  // If there are at least 20 rows, we'll call it a data table.
-  if (num_rows >= 20)
-    return true;
-
   // Store the background color of the table to check against cell's background
   // colors.
-  const ComputedStyle* table_style = table->ToLayoutObject()->Style();
+  const ComputedStyle* table_style = layout_object_->Style();
   if (!table_style)
     return false;
+
   Color table_bg_color =
       table_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+  bool has_cell_spacing = table_style->HorizontalBorderSpacing() &&
+                          table_style->VerticalBorderSpacing();
 
   // check enough of the cells to find if the table matches our criteria
   // Criteria:
@@ -2513,37 +2486,36 @@ bool AXLayoutObject::IsDataTable() const {
   Color alternating_row_colors[5];
   int alternating_row_color_count = 0;
   for (int row = 0; row < num_rows; ++row) {
-    int n_cols = first_body->NumCols(row);
+    HTMLTableRowElement* row_element = rows->Item(row);
+    int n_cols = row_element->cells()->length();
     for (int col = 0; col < n_cols; ++col) {
-      const LayoutNGTableCellInterface* cell =
-          first_body->PrimaryCellInterfaceAt(row, col);
+      const Element* cell = row_element->cells()->item(col);
       if (!cell)
         continue;
-      const LayoutBlock* cell_layout_block =
-          To<LayoutBlock>(cell->ToLayoutObject());
-      Node* cell_node = cell_layout_block->GetNode();
-      if (!cell_node)
+      // Any <th> tag -> treat as data table.
+      if (cell->HasTagName(html_names::kThTag))
+        return true;
+
+      // Check for an explicitly assigned a "data" table attribute.
+      auto* cell_elem = DynamicTo<HTMLTableCellElement>(*cell);
+      if (cell_elem) {
+        if (!cell_elem->Headers().IsEmpty() || !cell_elem->Abbr().IsEmpty() ||
+            !cell_elem->Axis().IsEmpty() ||
+            !cell_elem->FastGetAttribute(html_names::kScopeAttr).IsEmpty())
+          return true;
+      }
+
+      LayoutObject* cell_layout_object = cell->GetLayoutObject();
+      if (!cell_layout_object || !cell_layout_object->IsLayoutBlock())
         continue;
 
+      const LayoutBlock* cell_layout_block =
+          To<LayoutBlock>(cell_layout_object);
       if (cell_layout_block->Size().Width() < 1 ||
           cell_layout_block->Size().Height() < 1)
         continue;
 
       valid_cell_count++;
-
-      // Any <th> tag -> treat as data table.
-      if (cell_node->HasTagName(html_names::kThTag))
-        return true;
-
-      // In this case, the developer explicitly assigned a "data" table
-      // attribute.
-      if (IsHTMLTableCellElement(*cell_node)) {
-        HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
-        if (!cell_element.Headers().IsEmpty() ||
-            !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
-            !cell_element.FastGetAttribute(html_names::kScopeAttr).IsEmpty())
-          return true;
-      }
 
       const ComputedStyle* computed_style = cell_layout_block->Style();
       if (!computed_style)
@@ -2576,8 +2548,8 @@ bool AXLayoutObject::IsDataTable() const {
       // the place of borders).
       Color cell_color = computed_style->VisitedDependentColor(
           GetCSSPropertyBackgroundColor());
-      if (table->HBorderSpacing() > 0 && table->VBorderSpacing() > 0 &&
-          table_bg_color != cell_color && cell_color.Alpha() != 1)
+      if (has_cell_spacing && table_bg_color != cell_color &&
+          cell_color.Alpha() != 1)
         background_difference_cell_count++;
 
       // If we've found 10 "good" cells, we don't need to keep searching.
@@ -2961,20 +2933,9 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
   return nullptr;
 }
 
-bool AXLayoutObject::IsSVGImage() const {
-  return RemoteSVGRootElement();
-}
-
 void AXLayoutObject::DetachRemoteSVGRoot() {
   if (AXSVGRoot* root = RemoteSVGRootElement())
     root->SetParent(nullptr);
-}
-
-AXSVGRoot* AXLayoutObject::RemoteSVGRootElement() const {
-  // FIXME(dmazzoni): none of this code properly handled multiple references to
-  // the same remote SVG document. I'm disabling this support until it can be
-  // fixed properly.
-  return nullptr;
 }
 
 AXObject* AXLayoutObject::RemoteSVGElementHitTest(const IntPoint& point) const {
@@ -2998,147 +2959,6 @@ void AXLayoutObject::OffsetBoundingBoxForRemoteSVGElement(
       rect.MoveBy(
           parent->ParentObject()->GetBoundsInFrameCoordinates().Location());
       break;
-    }
-  }
-}
-
-// Hidden children are those that are not laid out or visible, but are
-// specifically marked as aria-hidden=false,
-// meaning that they should be exposed to the AX hierarchy.
-void AXLayoutObject::AddHiddenChildren() {
-  Node* node = this->GetNode();
-  if (!node)
-    return;
-
-  // First do a quick run through to determine if we have any hidden nodes (most
-  // often we will not).  If we do have hidden nodes, we need to determine where
-  // to insert them so they match DOM order as close as possible.
-  bool should_insert_hidden_nodes = false;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (!child.GetLayoutObject() && IsNodeAriaVisible(&child)) {
-      should_insert_hidden_nodes = true;
-      break;
-    }
-  }
-
-  if (!should_insert_hidden_nodes)
-    return;
-
-  // Iterate through all of the children, including those that may have already
-  // been added, and try to insert hidden nodes in the correct place in the DOM
-  // order.
-  unsigned insertion_index = 0;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (child.GetLayoutObject()) {
-      // Find out where the last layout sibling is located within m_children.
-      if (AXObject* child_object =
-              AXObjectCache().Get(child.GetLayoutObject())) {
-        if (!child_object->AccessibilityIsIncludedInTree()) {
-          const auto& children = child_object->Children();
-          child_object = children.size() ? children.back().Get() : nullptr;
-        }
-        if (child_object)
-          insertion_index = children_.Find(child_object) + 1;
-        continue;
-      }
-    }
-
-    if (!IsNodeAriaVisible(&child))
-      continue;
-
-    unsigned previous_size = children_.size();
-    if (insertion_index > previous_size)
-      insertion_index = previous_size;
-
-    InsertChild(AXObjectCache().GetOrCreate(&child), insertion_index);
-    insertion_index += (children_.size() - previous_size);
-  }
-}
-
-void AXLayoutObject::AddImageMapChildren() {
-  LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
-  if (!css_box || !css_box->IsLayoutImage())
-    return;
-
-  HTMLMapElement* map = ToLayoutImage(css_box)->ImageMap();
-  if (!map)
-    return;
-
-  for (HTMLAreaElement& area :
-       Traversal<HTMLAreaElement>::DescendantsOf(*map)) {
-    // add an <area> element for this child if it has a link
-    AXObject* obj = AXObjectCache().GetOrCreate(&area);
-    if (obj) {
-      AXImageMapLink* area_object = ToAXImageMapLink(obj);
-      area_object->SetParent(this);
-      DCHECK_NE(area_object->AXObjectID(), 0U);
-      if (area_object->AccessibilityIsIncludedInTree())
-        children_.push_back(area_object);
-      else
-        AXObjectCache().Remove(area_object->AXObjectID());
-    }
-  }
-}
-
-void AXLayoutObject::AddListMarker() {
-  if (!CanHaveChildren() || !GetLayoutObject() || AccessibilityIsIgnored() ||
-      !GetLayoutObject()->IsListItemIncludingNG()) {
-    return;
-  }
-  if (GetLayoutObject()->IsLayoutNGListItem()) {
-    LayoutNGListItem* list_item = ToLayoutNGListItem(GetLayoutObject());
-    LayoutObject* list_marker = list_item->Marker();
-    AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
-    if (list_marker_obj)
-      children_.push_back(list_marker_obj);
-    return;
-  }
-  LayoutListItem* list_item = ToLayoutListItem(GetLayoutObject());
-  LayoutObject* list_marker = list_item->Marker();
-  AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
-  if (list_marker_obj)
-    children_.push_back(list_marker_obj);
-}
-
-void AXLayoutObject::AddPopupChildren() {
-  auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
-  if (!html_input_element)
-    return;
-  if (AXObject* ax_popup = html_input_element->PopupRootAXObject())
-    children_.push_back(ax_popup);
-}
-
-void AXLayoutObject::AddRemoteSVGChildren() {
-  AXSVGRoot* root = RemoteSVGRootElement();
-  if (!root)
-    return;
-
-  root->SetParent(this);
-
-  if (!root->AccessibilityIsIncludedInTree()) {
-    for (const auto& child : root->Children())
-      children_.push_back(child);
-  } else {
-    children_.push_back(root);
-  }
-}
-
-void AXLayoutObject::AddTableChildren() {
-  if (!IsTableLikeRole())
-    return;
-
-  AXObjectCacheImpl& ax_cache = AXObjectCache();
-  if (layout_object_->IsTable()) {
-    LayoutNGTableInterface* table =
-        ToInterface<LayoutNGTableInterface>(layout_object_);
-    table->RecalcSectionsIfNeeded();
-    Node* table_node = table->ToLayoutObject()->GetNode();
-    if (auto* html_table_element = DynamicTo<HTMLTableElement>(table_node)) {
-      if (HTMLTableCaptionElement* caption = html_table_element->caption()) {
-        AXObject* caption_object = ax_cache.GetOrCreate(caption);
-        if (caption_object && caption_object->AccessibilityIsIncludedInTree())
-          children_.push_front(caption_object);
-      }
     }
   }
 }

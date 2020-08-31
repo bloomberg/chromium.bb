@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function newAcceletator(keyCode, shift, control, alt, search) {
+function newAccelerator(keyCode, shift, control, alt, search) {
   var accelerator = new Object();
   accelerator.keyCode = keyCode;
   accelerator.shift = shift ? true : false;
@@ -15,6 +15,28 @@ function newAcceletator(keyCode, shift, control, alt, search) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Returns a promise that gets resolved after "window.requestAnimationFrame"
+// callbacks happened on a front window.
+var pendingRafPromise = null;
+function raf() {
+  chrome.test.assertTrue(pendingRafPromise === null);
+
+  var res;
+  pendingRafPromise = new Promise((resolve) => {
+    res = resolve;
+  });
+  pendingRafPromise.resolve = res;
+
+  chrome.windows.create({'url': 'raf.html'}, function() {});
+  return pendingRafPromise;
+}
+function onRaf(rafWin) {
+  chrome.test.assertTrue(pendingRafPromise !== null);
+  pendingRafPromise.resolve();
+  pendingRafPromise = null;
+  rafWin.close();
 }
 
 var defaultTests = [
@@ -145,26 +167,6 @@ var defaultTests = [
       });
     });
   },
-  function getHistogramExists() {
-    // Request an arbitrary histogram that is reported once at startup and seems
-    // unlikely to go away.
-    chrome.autotestPrivate.getHistogram(
-        "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime",
-        chrome.test.callbackPass(function(histogram) {
-          chrome.test.assertEq(typeof histogram, 'object');
-          chrome.test.assertEq(histogram.buckets.length, 1);
-          chrome.test.assertEq(histogram.buckets[0].count, 1);
-          chrome.test.assertTrue(histogram.sum <= histogram.buckets[0].max);
-          chrome.test.assertTrue(histogram.sum >= histogram.buckets[0].min);
-          chrome.test.assertTrue(
-              histogram.buckets[0].max > histogram.buckets[0].min);
-        }));
-  },
-  function getHistogramMissing() {
-    chrome.autotestPrivate.getHistogram(
-        'Foo.Nonexistent',
-        chrome.test.callbackFail('Histogram Foo.Nonexistent not found'));
-  },
   // This test verifies that Play Store window is not shown by default but
   // Chrome is shown.
   function isAppShown() {
@@ -244,34 +246,45 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // The state dumped in Assistant API error message is AssistantAllowedState
+  // defined in ash/public/cpp/assistant/assistant_state_base.h
+  // 3 is DISALLOWED_BY_NONPRIMARY_USER from IsAssistantAllowedForProfile when
+  // running under test without setting up a primary account.
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
   function waitForAssistantQueryStatus() {
     chrome.autotestPrivate.waitForAssistantQueryStatus(10 /* timeout_s */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Assistant not allowed - state: 3'));
   },
+  // This test verifies the error message when trying to set Assistant-related
+  // preferences without enabling Assistant service first.
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 8'));
+            'Unable to set the pref because Assistant has not been enabled.'));
+    chrome.autotestPrivate.setWhitelistedPref(
+        'settings.voice_interaction.context.enabled' /* pref_name */,
+        true /* value */,
+        chrome.test.callbackFail(
+            'Unable to set the pref because Assistant has not been enabled.'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
-  function arcNotProvisioned() {chrome.autotestPrivate.getArcState(
-    function(state) {
+  function arcNotProvisioned() {
+    chrome.autotestPrivate.getArcState(function(state) {
       chrome.test.assertFalse(state.provisioned);
       chrome.test.assertNoLastError();
       chrome.test.succeed();
@@ -329,7 +342,7 @@ var defaultTests = [
   // This test verifies that api to wait for launcher state transition
   // works as expected
   function waitForLauncherStatePeeking() {
-    var togglePeeking = newAcceletator('search', /*shift=*/false);
+    var togglePeeking = newAccelerator('search', false /* shift */);
 
     function closeLauncher() {
       togglePeeking.pressed = true;
@@ -370,7 +383,7 @@ var defaultTests = [
   // This test verifies that api to wait for launcher state transition
   // works as expected
   function waitForLauncherStateFullscreen() {
-    var toggleFullscreen = newAcceletator('search', /*shift=*/true);
+    var toggleFullscreen = newAccelerator('search', true /* shift */);
     function closeLauncher() {
       toggleFullscreen.pressed = true;
       chrome.autotestPrivate.activateAccelerator(
@@ -678,8 +691,16 @@ var defaultTests = [
                       window.captionButtonVisibleStatus,
                       kMinimizeMask | kMaximizeRestoreMask | kCloseMask |
                         kLeftSnappedMask | kRightSnappedMask);
-                  chrome.test.assertNoLastError();
-                  chrome.test.succeed();
+
+                  // Revert window state back to normal for the next test.
+                  var revert_change = new Object();
+                  revert_change.eventType = 'WMEventNormal';
+                  chrome.autotestPrivate.setAppWindowState(
+                      window.id, revert_change, function(state) {
+                        chrome.test.assertEq(state, 'Normal');
+                        chrome.test.assertNoLastError();
+                        chrome.test.succeed();
+                      });
                 });
               });
             });
@@ -688,32 +709,171 @@ var defaultTests = [
     });
   },
 
+  // Tests that setting the window state in tablet mode works.
+  function setWindowStateInTabletMode() {
+    chrome.autotestPrivate.setTabletModeEnabled(true, function(isEnabled) {
+      chrome.test.assertTrue(isEnabled);
+
+      chrome.autotestPrivate.getAppWindowList(function(list) {
+        chrome.test.assertEq(1, list.length);
+        var window = list[0];
+        chrome.test.assertEq(window.stateType, 'Maximized');
+        chrome.test.assertTrue(window.isVisible);
+        chrome.test.assertTrue(window.isActive);
+
+        var change = new Object();
+        change.eventType = 'WMEventFullscreen';
+        chrome.autotestPrivate.setAppWindowState(
+            window.id, change, function(state) {
+              chrome.test.assertEq(state, 'Fullscreen');
+
+              chrome.autotestPrivate.setTabletModeEnabled(
+                  false, function(isEnabled) {
+                    chrome.test.assertFalse(isEnabled);
+
+                    // Revert window state back to normal and exit tablet mode
+                    // for the next test.
+                    var revert_change = new Object();
+                    revert_change.eventType = 'WMEventNormal';
+                    chrome.autotestPrivate.setAppWindowState(
+                        window.id, revert_change, function(state) {
+                          chrome.test.assertEq(state, 'Normal');
+                          chrome.test.assertNoLastError();
+                          chrome.test.succeed();
+                        });
+                  });
+            });
+      });
+    });
+  },
+
   // This test verifies that api to activate accelrator works as expected.
   function acceleratorTest() {
     // Ash level accelerator.
-    var newBrowser = newAcceletator('n', /*shift=*/false, /*control=*/true);
+    var newBrowser = newAccelerator('n', false /* shift */, true /* control */);
     chrome.autotestPrivate.activateAccelerator(
         newBrowser,
         function() {
           chrome.autotestPrivate.getAppWindowList(function(list) {
             chrome.test.assertEq(2, list.length);
-            var closeWindow = newAcceletator(
-                'w', /*shift=*/false, /*control=*/true);
+            var closeWindow =
+                newAccelerator('w', false /* shift */, true /* control */);
             chrome.autotestPrivate.activateAccelerator(
                 closeWindow,
                 function(success) {
                   chrome.test.assertTrue(success);
-                  chrome.autotestPrivate.getAppWindowList(function(list) {
-                    chrome.test.assertEq(1, list.length);
-                    chrome.test.assertNoLastError();
-                    chrome.test.succeed();
-                  });
+                  // Actual window close might happen sometime later after the
+                  // accelerator. So keep trying until window count drops to 1.
+                  var timer = window.setInterval(() => {
+                    chrome.autotestPrivate.getAppWindowList(function(list) {
+                      chrome.test.assertNoLastError();
+
+                      if (list.length != 1)
+                        return;
+
+                      window.clearInterval(timer);
+                      chrome.test.succeed();
+                    });
+                  }, 100);
                 });
           });
         });
   },
   function setMetricsEnabled() {
     chrome.autotestPrivate.setMetricsEnabled(true, chrome.test.callbackPass());
+  },
+  // This test verifies that the API to set window bounds works as expected.
+  function setWindowBoundsTest() {
+    chrome.autotestPrivate.getAppWindowList(function(list) {
+      chrome.test.assertEq(1, list.length);
+      var window = list[0];
+      chrome.test.assertEq(window.stateType, 'Normal');
+      chrome.test.assertTrue(window.isVisible);
+      chrome.test.assertTrue(window.isActive);
+
+      // Test changing the bounds.
+      var newBounds = Object.assign({}, window.boundsInRoot);
+      newBounds.width /= 2;
+      newBounds.height /= 2;
+      chrome.autotestPrivate.setWindowBounds(window.id, newBounds,
+          window.displayId, function(result) {
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq(result.bounds, newBounds);
+            chrome.test.assertEq(result.displayId, window.displayId);
+            // Reset bounds to original.
+            chrome.autotestPrivate.setWindowBounds(window.id,
+                window.boundsInRoot, window.displayId, function(result) {
+                  chrome.test.assertNoLastError();
+                  chrome.test.assertEq(result.bounds, window.boundsInRoot);
+                  chrome.test.assertEq(result.displayId, window.displayId);
+
+                  // Test calling setWindowBounds without changing the bounds
+                  // succeeds.
+                  chrome.autotestPrivate.setWindowBounds(window.id,
+                      window.boundsInRoot, window.displayId, function(result) {
+                        chrome.test.assertNoLastError();
+                        chrome.test.assertEq(result.bounds,
+                            window.boundsInRoot);
+                        chrome.test.assertEq(result.displayId,
+                            window.displayId);
+                        // Test calling setWindowBounds with an invalid display
+                        // fails.
+                        chrome.autotestPrivate.setWindowBounds(window.id,
+                            window.boundsInRoot, '-1', function(result) {
+                              chrome.test.assertLastError(
+                                  'Given display ID does not ' +
+                                  'correspond to a valid display');
+                              chrome.test.succeed();
+                            });
+                      });
+                });
+          });
+    });
+  },
+
+  function startSmoothnessTracking() {
+    chrome.autotestPrivate.startSmoothnessTracking(async function() {
+      chrome.test.assertNoLastError();
+
+      // Wait for a few frames.
+      await raf();
+
+      chrome.autotestPrivate.stopSmoothnessTracking(function(smoothness) {
+        chrome.test.assertNoLastError();
+        chrome.test.assertTrue(smoothness >= 0 && smoothness <= 100);
+        chrome.test.succeed();
+      });
+    });
+  },
+  function startSmoothnessTrackingExplicitDisplay() {
+    const badDisplay = '-1';
+    chrome.autotestPrivate.startSmoothnessTracking(badDisplay, function() {
+      chrome.test.assertEq(chrome.runtime.lastError.message,
+          'Invalid display_id; no root window found for the display id -1');
+      chrome.system.display.getInfo(function(info) {
+        var displayId = info[0].id;
+        chrome.autotestPrivate.startSmoothnessTracking(displayId,
+                                                       async function() {
+          chrome.test.assertNoLastError();
+
+          // Wait for a few frames.
+          await raf();
+
+          chrome.autotestPrivate.stopSmoothnessTracking(badDisplay,
+                                                        function(smoothness) {
+            chrome.test.assertEq(chrome.runtime.lastError.message,
+                'Smoothness is not tracked for display: -1');
+
+            chrome.autotestPrivate.stopSmoothnessTracking(displayId,
+                                                          function(smoothness) {
+              chrome.test.assertNoLastError();
+              chrome.test.assertTrue(smoothness >= 0 && smoothness <= 100);
+              chrome.test.succeed();
+            });
+          });
+        });
+      });
+    });
   },
 
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
@@ -960,6 +1120,63 @@ var splitviewLeftSnappedTests = [
   }
 ];
 
+var startStopTracingTests = [function startStopTracing() {
+  chrome.autotestPrivate.startTracing({}, function() {
+    chrome.test.assertNoLastError();
+    chrome.autotestPrivate.stopTracing(function(trace) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertTrue(trace.length > 0);
+      try {
+        chrome.test.assertTrue(JSON.parse(trace) instanceof Object);
+        chrome.test.succeed();
+      } catch (e) {
+        chrome.test.fail('stopTracing callback returned invalid JSON');
+      }
+    });
+  });
+}];
+
+var scrollableShelfTests = [
+  function fetchScrollableShelfInfoWithoutScroll() {
+    chrome.autotestPrivate.getScrollableShelfInfoForState(
+        {}, chrome.test.callbackPass(info => {
+          chrome.test.assertEq(0, info.mainAxisOffset);
+          chrome.test.assertEq(0, info.rightArrowBounds.width);
+          chrome.test.assertFalse(info.hasOwnProperty('targetMainAxisOffset'));
+        }));
+  },
+
+  function fetchScrolableShelfInfoWithScroll() {
+    chrome.autotestPrivate.getScrollableShelfInfoForState(
+        {'scrollDistance': 10}, chrome.test.callbackPass(info => {
+          chrome.test.assertEq(0, info.mainAxisOffset);
+          chrome.test.assertEq(0, info.rightArrowBounds.width);
+          chrome.test.assertTrue(info.hasOwnProperty('targetMainAxisOffset'));
+        }));
+  },
+
+  function pinShelfIcon() {
+    chrome.autotestPrivate.getAllInstalledApps(
+        chrome.test.callbackPass(apps => {
+          apps.forEach(app => {
+            chrome.autotestPrivate.pinShelfIcon(
+                app.appId, chrome.test.callbackPass());
+          });
+        }));
+  }
+];
+
+var shelfTests = [function fetchShelfUIInfo() {
+  chrome.autotestPrivate.setTabletModeEnabled(
+      false, chrome.test.callbackPass(isEnabled => {
+        chrome.test.assertFalse(isEnabled);
+        chrome.autotestPrivate.getShelfUIInfoForState(
+            {}, chrome.test.callbackPass(info => {
+              chrome.test.assertEq('ShownClamShell', info.hotseatInfo.state);
+            }));
+      }));
+}];
+
 var test_suites = {
   'default': defaultTests,
   'arcEnabled': arcEnabledTests,
@@ -967,7 +1184,10 @@ var test_suites = {
   'arcPerformanceTracing': arcPerformanceTracingTests,
   'overviewDefault': overviewTests,
   'overviewDrag': overviewDragTests,
-  'splitviewLeftSnapped': splitviewLeftSnappedTests
+  'splitviewLeftSnapped': splitviewLeftSnappedTests,
+  'startStopTracing': startStopTracingTests,
+  'scrollableShelf': scrollableShelfTests,
+  'shelf': shelfTests,
 };
 
 chrome.test.getConfig(function(config) {

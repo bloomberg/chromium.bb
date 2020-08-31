@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -80,6 +80,20 @@ Status Device::SetUp(const std::string& package,
     command_line_file = base::StringPrintf("/data/local/tmp/%s_devtools_remote",
                                            exec_name.c_str());
     use_debug_flag = true;
+  } else if (package.find("webview") != std::string::npos) {
+    command_line_file = "/data/local/tmp/webview-command-line";
+    // This name isn't really important, what is important is that it's
+    // non-empty. If empty, it means webview treats the the first value of
+    // |args| as the executable name, and not an argument (in other words,
+    // args[0] is effectively ignored as a command line switch).
+    known_exec_name = "webview";
+  } else if (package.find("weblayer") != std::string::npos) {
+    command_line_file = "/data/local/tmp/weblayer-command-line";
+    // This name isn't really important, what is important is that it's
+    // non-empty. If empty, it means weblayer treats the the first value of
+    // |args| as the executable name, and not an argument (in other words,
+    // args[0] is effectively ignored as a command line switch).
+    known_exec_name = "weblayer_shell";
   }
 
   if (!use_running_app) {

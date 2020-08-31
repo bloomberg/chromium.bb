@@ -47,19 +47,6 @@ class ThreadState::SweepForbiddenScope final {
   ThreadState* const state_;
 };
 
-class ThreadState::MainThreadGCForbiddenScope final {
-  STACK_ALLOCATED();
-
- public:
-  MainThreadGCForbiddenScope() : thread_state_(ThreadState::MainThreadState()) {
-    thread_state_->EnterGCForbiddenScope();
-  }
-  ~MainThreadGCForbiddenScope() { thread_state_->LeaveGCForbiddenScope(); }
-
- private:
-  ThreadState* const thread_state_;
-};
-
 class ThreadState::GCForbiddenScope final {
   STACK_ALLOCATED();
 
@@ -88,6 +75,23 @@ class ThreadState::AtomicPauseScope final {
  private:
   ThreadState* const thread_state_;
   GCForbiddenScope gc_forbidden_scope;
+};
+
+class ThreadState::HeapPointersOnStackScope final {
+  STACK_ALLOCATED();
+
+ public:
+  explicit HeapPointersOnStackScope(ThreadState* state) : state_(state) {
+    DCHECK(!state_->heap_pointers_on_stack_forced_);
+    state_->heap_pointers_on_stack_forced_ = true;
+  }
+  ~HeapPointersOnStackScope() {
+    DCHECK(state_->heap_pointers_on_stack_forced_);
+    state_->heap_pointers_on_stack_forced_ = false;
+  }
+
+ private:
+  ThreadState* const state_;
 };
 
 #if defined(LEAK_SANITIZER)

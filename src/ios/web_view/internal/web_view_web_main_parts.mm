@@ -5,18 +5,20 @@
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "ios/web_view/cwv_web_view_buildflags.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
+#include "ios/web_view/internal/webui/web_view_web_ui_ios_controller_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -49,28 +51,28 @@ void WebViewWebMainParts::PreCreateThreads() {
 
   ApplicationContext::GetInstance()->PreCreateThreads();
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::string enable_features = base::JoinString(
-      {autofill::features::kAutofillUpstream.name,
-       autofill::features::kAutofillNoLocalSaveOnUploadSuccess.name,
-       autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name},
+      {
+          autofill::features::kAutofillUpstream.name,
+          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name,
+          autofill::features::kAutofillEnableAccountWalletStorage.name,
+          password_manager::features::kEnablePasswordsAccountStorage.name,
+          switches::kSyncDeviceInfoInTransportMode.name,
+      },
       ",");
   std::string disabled_features = base::JoinString({}, ",");
   feature_list->InitializeFromCommandLine(
       /*enable_features=*/enable_features,
       /*disable_features=*/disabled_features);
   base::FeatureList::SetInstance(std::move(feature_list));
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-  ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
-      /*schemes=*/nullptr, 0);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+  web::WebUIIOSControllerFactory::RegisterFactory(
+      WebViewWebUIIOSControllerFactory::GetInstance());
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

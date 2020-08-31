@@ -11,13 +11,14 @@
 namespace quic {
 
 void DummyProofSource::GetProof(const QuicSocketAddress& server_address,
+                                const QuicSocketAddress& client_address,
                                 const std::string& hostname,
                                 const std::string& /*server_config*/,
                                 QuicTransportVersion /*transport_version*/,
-                                QuicStringPiece /*chlo_hash*/,
+                                quiche::QuicheStringPiece /*chlo_hash*/,
                                 std::unique_ptr<Callback> callback) {
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
-      GetCertChain(server_address, hostname);
+      GetCertChain(server_address, client_address, hostname);
   QuicCryptoProof proof;
   proof.signature = "Dummy signature";
   proof.leaf_cert_scts = "Dummy timestamp";
@@ -26,6 +27,7 @@ void DummyProofSource::GetProof(const QuicSocketAddress& server_address,
 
 QuicReferenceCountedPointer<DummyProofSource::Chain>
 DummyProofSource::GetCertChain(const QuicSocketAddress& /*server_address*/,
+                               const QuicSocketAddress& /*client_address*/,
                                const std::string& /*hostname*/) {
   std::vector<std::string> certs;
   certs.push_back(kDummyCertName);
@@ -35,11 +37,12 @@ DummyProofSource::GetCertChain(const QuicSocketAddress& /*server_address*/,
 
 void DummyProofSource::ComputeTlsSignature(
     const QuicSocketAddress& /*server_address*/,
+    const QuicSocketAddress& /*client_address*/,
     const std::string& /*hostname*/,
     uint16_t /*signature_algorithm*/,
-    QuicStringPiece /*in*/,
+    quiche::QuicheStringPiece /*in*/,
     std::unique_ptr<SignatureCallback> callback) {
-  callback->Run(true, "Dummy signature");
+  callback->Run(true, "Dummy signature", /*details=*/nullptr);
 }
 
 QuicAsyncStatus InsecureProofVerifier::VerifyProof(
@@ -47,7 +50,7 @@ QuicAsyncStatus InsecureProofVerifier::VerifyProof(
     const uint16_t /*port*/,
     const std::string& /*server_config*/,
     QuicTransportVersion /*transport_version*/,
-    QuicStringPiece /*chlo_hash*/,
+    quiche::QuicheStringPiece /*chlo_hash*/,
     const std::vector<std::string>& /*certs*/,
     const std::string& /*cert_sct*/,
     const std::string& /*signature*/,
@@ -60,6 +63,7 @@ QuicAsyncStatus InsecureProofVerifier::VerifyProof(
 
 QuicAsyncStatus InsecureProofVerifier::VerifyCertChain(
     const std::string& /*hostname*/,
+    const uint16_t /*port*/,
     const std::vector<std::string>& /*certs*/,
     const std::string& /*ocsp_response*/,
     const std::string& /*cert_sct*/,
@@ -85,7 +89,7 @@ bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
 }
 
 std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
-    QuicStringPiece pre_shared_key) {
+    quiche::QuicheStringPiece pre_shared_key) {
   auto config = std::make_unique<QuicCryptoClientConfig>(
       std::make_unique<InsecureProofVerifier>());
   config->set_pad_inchoate_hello(false);
@@ -96,9 +100,10 @@ std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
   return config;
 }
 
-CryptoServerConfig CreateCryptoServerConfig(QuicRandom* random,
-                                            const QuicClock* clock,
-                                            QuicStringPiece pre_shared_key) {
+CryptoServerConfig CreateCryptoServerConfig(
+    QuicRandom* random,
+    const QuicClock* clock,
+    quiche::QuicheStringPiece pre_shared_key) {
   CryptoServerConfig crypto_server_config;
 
   // Generate a random source address token secret. For long-running servers

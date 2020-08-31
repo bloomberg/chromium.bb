@@ -4,9 +4,13 @@
 
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 
-#include "base/logging.h"
+#include <algorithm>
+
+#include "base/check_op.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace ui {
 
@@ -20,14 +24,15 @@ PlatformCursor ToPlatformCursor(BitmapCursorOzone* cursor) {
   return static_cast<PlatformCursor>(cursor);
 }
 
-scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
+scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(
+    mojom::CursorType type) {
   Cursor cursor(type);
   // Ozone must honor the lowest possible scale value, which is 1.0f. Otherwise,
   // it can happen that cursor chooses wrong hotspots if max scaling value is
   // set to 200p, for example.
-  cursor.set_device_scale_factor(1.0f);
-  SkBitmap bitmap = cursor.GetBitmap();
-  gfx::Point hotspot = cursor.GetHotspot();
+  cursor.set_image_scale_factor(1.0f);
+  SkBitmap bitmap = GetCursorBitmap(cursor);
+  gfx::Point hotspot = GetCursorHotspot(cursor);
   if (!bitmap.isNull())
     return new BitmapCursorOzone(bitmap, hotspot);
   return nullptr;
@@ -84,7 +89,8 @@ scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
   return base::WrapRefCounted(ToBitmapCursorOzone(platform_cursor));
 }
 
-PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(CursorType type) {
+PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(
+    mojom::CursorType type) {
   return GetDefaultCursorInternal(type).get();
 }
 
@@ -118,16 +124,16 @@ void BitmapCursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 }
 
 scoped_refptr<BitmapCursorOzone>
-BitmapCursorFactoryOzone::GetDefaultCursorInternal(CursorType type) {
-  if (type == CursorType::kNone)
+BitmapCursorFactoryOzone::GetDefaultCursorInternal(mojom::CursorType type) {
+  if (type == mojom::CursorType::kNone)
     return nullptr;  // Null is used for hidden cursor.
 
   if (!default_cursors_.count(type)) {
     // Create new image cursor from default aura bitmap for this type. We hold a
     // ref forever because clients do not do refcounting for default cursors.
     scoped_refptr<BitmapCursorOzone> cursor = CreateDefaultBitmapCursor(type);
-    if (!cursor.get() && type != CursorType::kPointer)
-      cursor = GetDefaultCursorInternal(CursorType::kPointer);
+    if (!cursor.get() && type != mojom::CursorType::kPointer)
+      cursor = GetDefaultCursorInternal(mojom::CursorType::kPointer);
     DCHECK(cursor.get()) << "Failed to load default cursor bitmap";
     default_cursors_[type] = cursor;
   }

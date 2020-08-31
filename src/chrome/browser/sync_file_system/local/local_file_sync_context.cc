@@ -28,6 +28,7 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemFileUtil;
@@ -94,7 +95,8 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
       FROM_HERE,
       base::BindOnce(&storage::SandboxFileSystemBackendDelegate::OpenFileSystem,
                      base::Unretained(file_system_context->sandbox_delegate()),
-                     source_url, storage::kFileSystemTypeSyncable,
+                     url::Origin::Create(source_url),
+                     storage::kFileSystemTypeSyncable,
                      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                      std::move(open_filesystem_callback), GURL()));
 }
@@ -115,10 +117,10 @@ void LocalFileSyncContext::GetFileForLocalSync(
 
   base::PostTaskAndReplyWithResult(
       file_system_context->default_file_task_runner(), FROM_HERE,
-      base::Bind(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread, this,
-                 base::RetainedRef(file_system_context)),
-      base::Bind(&LocalFileSyncContext::TryPrepareForLocalSync, this,
-                 base::RetainedRef(file_system_context), callback));
+      base::BindOnce(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread,
+                     this, base::RetainedRef(file_system_context)),
+      base::BindOnce(&LocalFileSyncContext::TryPrepareForLocalSync, this,
+                     base::RetainedRef(file_system_context), callback));
 }
 
 void LocalFileSyncContext::ClearChangesForURL(
@@ -317,8 +319,8 @@ void LocalFileSyncContext::HandleRemoteDelete(
 
   file_system_context->operation_runner()->Remove(
       url_for_sync, true /* recursive */,
-      base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
-                 this, url, callback));
+      base::BindOnce(&LocalFileSyncContext::DidApplyRemoteChange, this, url,
+                     callback));
 }
 
 void LocalFileSyncContext::HandleRemoteAddOrUpdate(
@@ -337,7 +339,7 @@ void LocalFileSyncContext::HandleRemoteAddOrUpdate(
 
   file_system_context->operation_runner()->Remove(
       url_for_sync, true /* recursive */,
-      base::Bind(
+      base::BindOnce(
           &LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate,
           this, base::RetainedRef(file_system_context), change, local_path, url,
           callback));
@@ -379,7 +381,7 @@ void LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate(
             local_path, url_for_sync, std::move(operation_callback));
       } else {
         FileSystemURL dir_url = file_system_context->CreateCrackedFileSystemURL(
-            url_for_sync.origin().GetURL(), url_for_sync.mount_type(),
+            url_for_sync.origin(), url_for_sync.mount_type(),
             storage::VirtualPath::DirName(url_for_sync.virtual_path()));
         file_system_context->operation_runner()->CreateDirectory(
             dir_url, false /* exclusive */, true /* recursive */,
@@ -446,10 +448,12 @@ void LocalFileSyncContext::GetFileMetadata(
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
   file_system_context->operation_runner()->GetMetadata(
-      url_for_sync, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-                        FileSystemOperation::GET_METADATA_FIELD_SIZE |
-                        FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-      base::Bind(&LocalFileSyncContext::DidGetFileMetadata, this, callback));
+      url_for_sync,
+      FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          FileSystemOperation::GET_METADATA_FIELD_SIZE |
+          FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::BindOnce(&LocalFileSyncContext::DidGetFileMetadata, this,
+                     callback));
 }
 
 void LocalFileSyncContext::HasPendingLocalChanges(
@@ -577,8 +581,8 @@ void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread(
   } else if (!timer_on_io_->IsRunning()) {
     timer_on_io_->Start(
         FROM_HERE, NotifyChangesDuration(),
-        base::Bind(&LocalFileSyncContext::NotifyAvailableChangesOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&LocalFileSyncContext::NotifyAvailableChangesOnIOThread,
+                       base::Unretained(this)));
   }
 }
 
@@ -642,13 +646,15 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
         new std::unique_ptr<LocalFileChangeTracker>);
     base::PostTaskAndReplyWithResult(
         file_system_context->default_file_task_runner(), FROM_HERE,
-        base::Bind(&LocalFileSyncContext::InitializeChangeTrackerOnFileThread,
-                   this, tracker_ptr, base::RetainedRef(file_system_context),
-                   origins_with_changes),
-        base::Bind(&LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread,
-                   this, base::Owned(tracker_ptr), source_url,
-                   base::RetainedRef(file_system_context),
-                   base::Owned(origins_with_changes)));
+        base::BindOnce(
+            &LocalFileSyncContext::InitializeChangeTrackerOnFileThread, this,
+            tracker_ptr, base::RetainedRef(file_system_context),
+            origins_with_changes),
+        base::BindOnce(
+            &LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread, this,
+            base::Owned(tracker_ptr), source_url,
+            base::RetainedRef(file_system_context),
+            base::Owned(origins_with_changes)));
     return;
   }
   if (!operation_runner_) {

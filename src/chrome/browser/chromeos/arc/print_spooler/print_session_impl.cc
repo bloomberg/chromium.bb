@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/print_spooler/print_session_impl.h"
 
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/arc_custom_tab.h"
@@ -19,6 +20,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_util.h"
@@ -27,9 +29,8 @@
 #include "components/arc/mojom/print_common.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/filename_util.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -46,17 +47,19 @@ constexpr int kMinimumPdfSize = 50;
 
 // Converts a color mode to its Mojo type.
 mojom::PrintColorMode ToArcColorMode(int color_mode) {
-  return printing::IsColorModelSelected(color_mode)
-             ? mojom::PrintColorMode::COLOR
-             : mojom::PrintColorMode::MONOCHROME;
+  base::Optional<bool> is_color = printing::IsColorModelSelected(color_mode);
+  return is_color.value() ? mojom::PrintColorMode::COLOR
+                          : mojom::PrintColorMode::MONOCHROME;
 }
 
 // Converts a duplex mode to its Mojo type.
 mojom::PrintDuplexMode ToArcDuplexMode(int duplex_mode) {
-  switch (duplex_mode) {
-    case printing::LONG_EDGE:
+  printing::mojom::DuplexMode mode =
+      static_cast<printing::mojom::DuplexMode>(duplex_mode);
+  switch (mode) {
+    case printing::mojom::DuplexMode::kLongEdge:
       return mojom::PrintDuplexMode::LONG_EDGE;
-    case printing::SHORT_EDGE:
+    case printing::mojom::DuplexMode::kShortEdge:
       return mojom::PrintDuplexMode::SHORT_EDGE;
     default:
       return mojom::PrintDuplexMode::NONE;
@@ -156,7 +159,7 @@ base::ReadOnlySharedMemoryRegion ReadPreviewDocument(
   }
 
   base::MappedReadOnlyRegion region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(data_size);
+      base::ReadOnlySharedMemoryRegion::Create(data_size);
   if (!region_mapping.IsValid())
     return std::move(region_mapping.region);
 
@@ -205,30 +208,31 @@ bool IsPdfPluginLoaded(content::WebContents* web_contents) {
 }  // namespace
 
 // static
-mojom::PrintSessionHostPtr PrintSessionImpl::Create(
+mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance) {
   if (!custom_tab || !instance)
-    return nullptr;
+    return mojo::NullRemote();
 
   // This object will be deleted when the mojo connection is closed.
-  mojom::PrintSessionHostPtr ptr;
+  mojo::PendingRemote<mojom::PrintSessionHost> remote;
   new PrintSessionImpl(std::move(web_contents), std::move(custom_tab),
-                       std::move(instance), mojo::MakeRequest(&ptr));
-  return ptr;
+                       std::move(instance),
+                       remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance,
-    mojom::PrintSessionHostRequest request)
-    : ArcCustomTabModalDialogHost(std::move(custom_tab),
-                                  std::move(web_contents)),
+    mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
+    : ArcCustomTabModalDialogHost(std::move(custom_tab), web_contents.get()),
       instance_(std::move(instance)),
-      session_binding_(this, std::move(request)) {
-  session_binding_.set_connection_error_handler(
+      session_receiver_(this, std::move(receiver)),
+      web_contents_(std::move(web_contents)) {
+  session_receiver_.set_disconnect_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
   web_contents_->SetUserData(UserDataKey(), base::WrapUnique(this));
 
@@ -250,8 +254,8 @@ PrintSessionImpl::~PrintSessionImpl() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&DeletePrintDocument, file_path));
+  base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                             base::BindOnce(&DeletePrintDocument, file_path));
 }
 
 void PrintSessionImpl::CreatePreviewDocument(
@@ -264,13 +268,16 @@ void PrintSessionImpl::CreatePreviewDocument(
     return;
   }
 
+  int request_id = job_settings.FindIntKey(printing::kPreviewRequestID).value();
   instance_->CreatePreviewDocument(
       std::move(request),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentCreated,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
+                     std::move(callback)));
 }
 
 void PrintSessionImpl::OnPreviewDocumentCreated(
+    int request_id,
     CreatePreviewDocumentCallback callback,
     mojo::ScopedHandle preview_document,
     int64_t data_size) {
@@ -280,15 +287,17 @@ void PrintSessionImpl::OnPreviewDocumentCreated(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ReadPreviewDocument, std::move(preview_document),
                      static_cast<size_t>(data_size)),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentRead,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
+                     std::move(callback)));
 }
 
 void PrintSessionImpl::OnPreviewDocumentRead(
+    int request_id,
     CreatePreviewDocumentCallback callback,
     base::ReadOnlySharedMemoryRegion preview_document_region) {
   if (!preview_document_region.IsValid()) {
@@ -299,11 +308,32 @@ void PrintSessionImpl::OnPreviewDocumentRead(
   if (!pdf_flattener_.is_bound()) {
     GetPrintingService()->BindPdfFlattener(
         pdf_flattener_.BindNewPipeAndPassReceiver());
+    pdf_flattener_.set_disconnect_handler(
+        base::BindOnce(&PrintSessionImpl::OnPdfFlattenerDisconnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+
+  bool inserted = callbacks_.emplace(request_id, std::move(callback)).second;
+  DCHECK(inserted);
+
   pdf_flattener_->FlattenPdf(
       std::move(preview_document_region),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(callback), base::ReadOnlySharedMemoryRegion()));
+      base::BindOnce(&PrintSessionImpl::OnPdfFlattened,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
+}
+
+void PrintSessionImpl::OnPdfFlattened(
+    int request_id,
+    base::ReadOnlySharedMemoryRegion flattened_document_region) {
+  auto it = callbacks_.find(request_id);
+  std::move(it->second).Run(std::move(flattened_document_region));
+  callbacks_.erase(it);
+}
+
+void PrintSessionImpl::OnPdfFlattenerDisconnected() {
+  for (auto& it : callbacks_)
+    std::move(it.second).Run(base::ReadOnlySharedMemoryRegion());
+  callbacks_.clear();
 }
 
 void PrintSessionImpl::Close() {

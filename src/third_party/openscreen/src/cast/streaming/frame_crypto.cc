@@ -12,8 +12,8 @@
 #include "util/big_endian.h"
 #include "util/crypto/openssl_util.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 EncryptedFrame::EncryptedFrame() {
   data = absl::Span<uint8_t>(owned_data_);
@@ -91,8 +91,7 @@ void FrameCrypto::EncryptCommon(FrameId frame_id,
   std::array<uint8_t, 16> aes_nonce{/* zero initialized */};
   static_assert(AES_BLOCK_SIZE == sizeof(aes_nonce),
                 "AES_BLOCK_SIZE is not 16 bytes.");
-  openscreen::WriteBigEndian<uint32_t>(frame_id.lower_32_bits(),
-                                       aes_nonce.data() + 8);
+  WriteBigEndian<uint32_t>(frame_id.lower_32_bits(), aes_nonce.data() + 8);
   for (size_t i = 0; i < aes_nonce.size(); ++i) {
     aes_nonce[i] ^= cast_iv_mask_[i];
   }
@@ -116,5 +115,5 @@ std::array<uint8_t, 16> FrameCrypto::GenerateRandomBytes() {
   return result;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

@@ -10,75 +10,108 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
-class MockObserver : public TlsWriteBuffer::Observer {
- public:
-  MOCK_METHOD1(NotifyWriteBufferFill, void(double));
-};
-
-}  // namespace
-
 TEST(TlsWriteBufferTest, CheckBasicFunctionality) {
-  MockObserver observer;
-  TlsWriteBuffer buffer(&observer);
+  TlsWriteBuffer buffer;
   constexpr size_t write_size = TlsWriteBuffer::kBufferSizeBytes / 2;
   uint8_t write_buffer[write_size];
   std::fill_n(write_buffer, write_size, uint8_t{1});
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.5)).Times(1);
-  EXPECT_EQ(buffer.Write(write_buffer, write_size), write_size);
+  EXPECT_TRUE(buffer.Push(write_buffer, write_size));
 
   absl::Span<const uint8_t> readable_data = buffer.GetReadableRegion();
-  EXPECT_EQ(readable_data.size(), write_size);
+  ASSERT_EQ(readable_data.size(), write_size);
   for (size_t i = 0; i < readable_data.size(); i++) {
     EXPECT_EQ(readable_data[i], 1);
   }
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.25)).Times(1);
   buffer.Consume(write_size / 2);
 
   readable_data = buffer.GetReadableRegion();
-  EXPECT_EQ(readable_data.size(), write_size / 2);
+  ASSERT_EQ(readable_data.size(), write_size / 2);
   for (size_t i = 0; i < readable_data.size(); i++) {
     EXPECT_EQ(readable_data[i], 1);
   }
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0)).Times(1);
   buffer.Consume(write_size / 2);
 
   readable_data = buffer.GetReadableRegion();
-  EXPECT_EQ(readable_data.size(), size_t{0});
+  ASSERT_EQ(readable_data.size(), size_t{0});
+
+  // Test that the entire buffer can be used.
+  EXPECT_TRUE(buffer.Push(write_buffer, write_size));
+  EXPECT_TRUE(buffer.Push(write_buffer, write_size));
+  // The buffer should be 100% full at this point. Confirm that no more can be
+  // written.
+  EXPECT_FALSE(buffer.Push(write_buffer, write_size));
+  EXPECT_FALSE(buffer.Push(write_buffer, 1));
 }
 
 TEST(TlsWriteBufferTest, TestWrapAround) {
-  MockObserver observer;
-  TlsWriteBuffer buffer(&observer);
-  constexpr size_t write_size = TlsWriteBuffer::kBufferSizeBytes;
-  uint8_t write_buffer[write_size];
+  TlsWriteBuffer buffer;
+  constexpr size_t buffer_size = TlsWriteBuffer::kBufferSizeBytes;
+  uint8_t write_buffer[buffer_size];
+  std::fill_n(write_buffer, buffer_size, uint8_t{1});
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.75)).Times(1);
-  constexpr size_t partial_write_size = write_size * 3 / 4;
-  EXPECT_EQ(buffer.Write(write_buffer, partial_write_size), partial_write_size);
+  constexpr size_t partial_buffer_size = buffer_size * 3 / 4;
+  EXPECT_TRUE(buffer.Push(write_buffer, partial_buffer_size));
+  // Buffer contents should now be: |111111111111····|
+  auto region = buffer.GetReadableRegion();
+  auto* const buffer_begin = region.data();
+  ASSERT_TRUE(buffer_begin);
+  EXPECT_EQ(region.size(), partial_buffer_size);
+  EXPECT_TRUE(std::all_of(region.begin(), region.end(),
+                          [](uint8_t byte) { return byte == 1; }));
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.25)).Times(1);
-  buffer.Consume(write_size / 2);
+  buffer.Consume(buffer_size / 2);
+  // Buffer contents should now be: |········1111····|
+  region = buffer.GetReadableRegion();
+  EXPECT_EQ(region.data(), buffer_begin + buffer_size / 2);
+  EXPECT_EQ(region.size(), buffer_size / 4);
+  EXPECT_TRUE(std::all_of(region.begin(), region.end(),
+                          [](uint8_t byte) { return byte == 1; }));
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.75)).Times(1);
-  EXPECT_EQ(buffer.Write(write_buffer, write_size / 2), write_size / 2);
+  std::fill_n(write_buffer, buffer_size, uint8_t{2});
+  EXPECT_TRUE(buffer.Push(write_buffer, buffer_size / 2));
+  // Buffer contents should now be: |2222····11112222|
+  // Readable region should just be the end part.
+  region = buffer.GetReadableRegion();
+  EXPECT_EQ(region.data(), buffer_begin + buffer_size / 2);
+  EXPECT_EQ(region.size(), buffer_size / 2);
+  EXPECT_TRUE(std::all_of(region.begin(), region.begin() + buffer_size / 4,
+                          [](uint8_t byte) { return byte == 1; }));
+  EXPECT_TRUE(std::all_of(region.begin() + buffer_size / 4, region.end(),
+                          [](uint8_t byte) { return byte == 2; }));
 
-  absl::Span<const uint8_t> readable_data = buffer.GetReadableRegion();
+  buffer.Consume(buffer_size / 2);
+  // Buffer contents should now be: |2222············|
+  region = buffer.GetReadableRegion();
+  EXPECT_EQ(region.data(), buffer_begin);
+  EXPECT_EQ(region.size(), buffer_size / 4);
+  EXPECT_TRUE(std::all_of(region.begin(), region.end(),
+                          [](uint8_t byte) { return byte == 2; }));
 
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0.25)).Times(1);
-  buffer.Consume(write_size / 2);
+  std::fill_n(write_buffer, buffer_size, uint8_t{3});
+  // The following Push() fails (not enough room).
+  EXPECT_FALSE(buffer.Push(write_buffer, buffer_size));
+  // Buffer contents should still be: |2222············|
+  EXPECT_TRUE(buffer.Push(write_buffer, buffer_size * 3 / 4));
+  // Buffer contents should now be: |2222333333333333|
+  EXPECT_FALSE(buffer.Push(write_buffer, buffer_size));  // Not enough room.
+  EXPECT_FALSE(buffer.Push(write_buffer, 1));            // Not enough room.
+  region = buffer.GetReadableRegion();
+  EXPECT_EQ(region.data(), buffer_begin);
+  EXPECT_EQ(region.size(), buffer_size);
+  EXPECT_TRUE(std::all_of(region.begin(), region.begin() + buffer_size / 4,
+                          [](uint8_t byte) { return byte == 2; }));
+  EXPECT_TRUE(std::all_of(region.begin() + buffer_size / 4, region.end(),
+                          [](uint8_t byte) { return byte == 3; }));
 
-  readable_data = buffer.GetReadableRegion();
-  EXPECT_EQ(readable_data.size(), write_size / 4);
-
-  EXPECT_CALL(observer, NotifyWriteBufferFill(0)).Times(1);
-  buffer.Consume(write_size / 4);
+  buffer.Consume(buffer_size);
+  // Buffer contents should now be: |················|
+  EXPECT_TRUE(buffer.GetReadableRegion().empty());
 }
 
-}  // namespace platform
+}  // namespace
 }  // namespace openscreen

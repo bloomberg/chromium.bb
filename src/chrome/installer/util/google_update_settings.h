@@ -94,10 +94,6 @@ class GoogleUpdateSettings {
   static bool SetCollectStatsConsent(bool consented);
 
 #if defined(OS_WIN)
-  // Returns whether the user has given consent to collect UMA data and send
-  // crash dumps to Google for the deprecated Chrome binaries.
-  static google_update::Tristate GetCollectStatsConsentForBinaries();
-
   // Returns the default (original) state of the "send usage stats" checkbox
   // shown to the user when they downloaded Chrome. The value is returned via
   // the out parameter |stats_consent_default|. This function returns true if
@@ -170,9 +166,6 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
-  // Updates Chrome's "did run" state, returning true if the update succeeds.
-  static bool UpdateDidRunState(bool did_run);
-
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.
   // - If incremental installer fails we append a magic string ("-full"), if
@@ -181,8 +174,6 @@ class GoogleUpdateSettings {
   // - If we are currently running full installer, we remove this magic
   // string (if it is present) regardless of whether installer failed or not.
   // There is no fall-back for full installer :)
-  // - Unconditionally remove "-multifail" since we haven't crashed.
-  // |state_key| should be obtained via InstallerState::state_key().
   // - Unconditionally clear a legacy "-stage:" modifier.
   static void UpdateInstallStatus(bool system_install,
                                   installer::ArchiveType archive_type,
@@ -205,7 +196,7 @@ class GoogleUpdateSettings {
   //   not present already).
   // - If full installer failed, still remove this magic
   //   string (if it is present already).
-  // Additionally, any legacy "-multifail" or "-stage:*" values are
+  // Additionally, any legacy ""-stage:*" values are
   // unconditionally removed.
   //
   // archive_type: tells whether this is incremental install or not.
@@ -223,11 +214,8 @@ class GoogleUpdateSettings {
                                          bool* is_overridden);
 
   // Returns true if Chrome should be updated automatically by Google Update
-  // based on current autoupdate settings. This is distinct from
-  // GetAppUpdatePolicy (which checks only the policy for a given app), as it
-  // checks for general Google Update configuration as well as multi-install
-  // Chrome. Note that for Chromium builds, this returns false since Chromium is
-  // assumed not to autoupdate.
+  // based on current autoupdate settings. Note that for Chromium builds, this
+  // returns false since Chromium is assumed not to autoupdate.
   static bool AreAutoupdatesEnabled();
 
   // Attempts to reenable auto-updates for Chrome by removing any group policy

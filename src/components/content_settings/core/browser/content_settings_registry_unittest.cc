@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -137,6 +136,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
       ContentSettingsType::ADS,                  //
       ContentSettingsType::DURABLE_STORAGE,      //
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
+      ContentSettingsType::STORAGE_ACCESS,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {
@@ -173,6 +173,11 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
 
 #if defined(OS_CHROMEOS)
   info = registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
+  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+#endif
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  info = registry()->Get(ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
 }

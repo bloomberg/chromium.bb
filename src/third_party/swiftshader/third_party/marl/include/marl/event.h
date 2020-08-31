@@ -26,7 +26,7 @@ namespace marl {
 // Event is a synchronization primitive used to block until a signal is raised.
 class Event {
  public:
-  enum class Mode {
+  enum class Mode : uint8_t {
     // The event signal will be automatically reset when a call to wait()
     // returns.
     // A single call to signal() will only unblock a single (possibly
@@ -102,7 +102,7 @@ class Event {
 
  private:
   struct Shared {
-    inline Shared(Mode mode, bool initialState);
+    inline Shared(Allocator* allocator, Mode mode, bool initialState);
     inline void signal();
     inline void wait();
 
@@ -113,21 +113,21 @@ class Event {
     inline bool wait_until(
         const std::chrono::time_point<Clock, Duration>& timeout);
 
-    std::mutex mutex;
+    marl::mutex mutex;
     ConditionVariable cv;
+    containers::vector<std::shared_ptr<Shared>, 1> deps;
     const Mode mode;
     bool signalled;
-    containers::vector<std::shared_ptr<Shared>, 2> deps;
   };
 
   const std::shared_ptr<Shared> shared;
 };
 
-Event::Shared::Shared(Mode mode, bool initialState)
-    : mode(mode), signalled(initialState) {}
+Event::Shared::Shared(Allocator* allocator, Mode mode, bool initialState)
+    : cv(allocator), mode(mode), signalled(initialState) {}
 
 void Event::Shared::signal() {
-  std::unique_lock<std::mutex> lock(mutex);
+  marl::lock lock(mutex);
   if (signalled) {
     return;
   }
@@ -143,7 +143,7 @@ void Event::Shared::signal() {
 }
 
 void Event::Shared::wait() {
-  std::unique_lock<std::mutex> lock(mutex);
+  marl::lock lock(mutex);
   cv.wait(lock, [&] { return signalled; });
   if (mode == Mode::Auto) {
     signalled = false;
@@ -153,7 +153,7 @@ void Event::Shared::wait() {
 template <typename Rep, typename Period>
 bool Event::Shared::wait_for(
     const std::chrono::duration<Rep, Period>& duration) {
-  std::unique_lock<std::mutex> lock(mutex);
+  marl::lock lock(mutex);
   if (!cv.wait_for(lock, duration, [&] { return signalled; })) {
     return false;
   }
@@ -166,7 +166,7 @@ bool Event::Shared::wait_for(
 template <typename Clock, typename Duration>
 bool Event::Shared::wait_until(
     const std::chrono::time_point<Clock, Duration>& timeout) {
-  std::unique_lock<std::mutex> lock(mutex);
+  marl::lock lock(mutex);
   if (!cv.wait_until(lock, timeout, [&] { return signalled; })) {
     return false;
   }
@@ -179,14 +179,14 @@ bool Event::Shared::wait_until(
 Event::Event(Mode mode /* = Mode::Auto */,
              bool initialState /* = false */,
              Allocator* allocator /* = Allocator::Default */)
-    : shared(allocator->make_shared<Shared>(mode, initialState)) {}
+    : shared(allocator->make_shared<Shared>(allocator, mode, initialState)) {}
 
 void Event::signal() const {
   shared->signal();
 }
 
 void Event::clear() const {
-  std::unique_lock<std::mutex> lock(shared->mutex);
+  marl::lock lock(shared->mutex);
   shared->signalled = false;
 }
 
@@ -206,7 +206,7 @@ bool Event::wait_until(
 }
 
 bool Event::test() const {
-  std::unique_lock<std::mutex> lock(shared->mutex);
+  marl::lock lock(shared->mutex);
   if (!shared->signalled) {
     return false;
   }
@@ -217,7 +217,7 @@ bool Event::test() const {
 }
 
 bool Event::isSignalled() const {
-  std::unique_lock<std::mutex> lock(shared->mutex);
+  marl::lock lock(shared->mutex);
   return shared->signalled;
 }
 
@@ -226,7 +226,7 @@ Event Event::any(Mode mode, const Iterator& begin, const Iterator& end) {
   Event any(mode, false);
   for (auto it = begin; it != end; it++) {
     auto s = it->shared;
-    std::unique_lock<std::mutex> lock(s->mutex);
+    marl::lock lock(s->mutex);
     if (s->signalled) {
       any.signal();
     }

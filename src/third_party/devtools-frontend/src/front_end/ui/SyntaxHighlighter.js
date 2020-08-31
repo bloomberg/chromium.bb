@@ -28,10 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 /**
  * @unrestricted
  */
-export default class SyntaxHighlighter {
+export class SyntaxHighlighter {
   /**
    * @param {string} mimeType
    * @param {boolean} stripExtraWhitespace
@@ -109,12 +112,3 @@ export default class SyntaxHighlighter {
     }
   }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.SyntaxHighlighter = SyntaxHighlighter;

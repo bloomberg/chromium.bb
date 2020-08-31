@@ -17,6 +17,7 @@ class Value;
 
 namespace net {
 
+class NetworkIsolationKey;
 class ReportingContext;
 
 class NET_EXPORT ReportingHeaderParser {
@@ -80,6 +81,7 @@ class NET_EXPORT ReportingHeaderParser {
   static void RecordHeaderDiscardedForJsonTooBig();
 
   static void ParseHeader(ReportingContext* context,
+                          const NetworkIsolationKey& network_isolation_key,
                           const GURL& url,
                           std::unique_ptr<base::Value> value);
 

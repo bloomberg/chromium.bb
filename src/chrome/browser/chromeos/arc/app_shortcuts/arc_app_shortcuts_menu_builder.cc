@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace arc {
@@ -106,7 +108,9 @@ void ArcAppShortcutsMenuBuilder::OnGetAppShortcutItems(
     for (const auto& item : items) {
       if (command_id != command_id_first_)
         menu_model->AddSeparator(ui::PADDED_SEPARATOR);
-      menu_model->AddItemWithIcon(command_id++, item.short_label, item.icon);
+      menu_model->AddItemWithIcon(command_id++,
+                                  base::UTF8ToUTF16(item.short_label),
+                                  ui::ImageModel::FromImageSkia(item.icon));
     }
   }
   std::move(callback).Run(std::move(menu_model));

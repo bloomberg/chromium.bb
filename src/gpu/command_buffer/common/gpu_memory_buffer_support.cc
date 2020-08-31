@@ -7,12 +7,17 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 
 namespace gpu {
+
+#if defined(OS_MACOSX)
+static uint32_t macos_specific_texture_target = GL_TEXTURE_RECTANGLE_ARB;
+#endif  // defined(OS_MACOSX)
 
 bool IsImageFromGpuMemoryBufferFormatSupported(
     gfx::BufferFormat format,
@@ -32,8 +37,8 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::RGBA_F16:
       return true;
     case gfx::BufferFormat::YVU_420:
@@ -49,7 +54,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
 
 uint32_t GetPlatformSpecificTextureTarget() {
 #if defined(OS_MACOSX)
-  return GL_TEXTURE_RECTANGLE_ARB;
+  return macos_specific_texture_target;
 #elif defined(OS_ANDROID) || defined(OS_LINUX)
   return GL_TEXTURE_EXTERNAL_OES;
 #elif defined(OS_WIN) || defined(OS_FUCHSIA)
@@ -62,6 +67,14 @@ uint32_t GetPlatformSpecificTextureTarget() {
 #endif
 }
 
+#if defined(OS_MACOSX)
+GPU_EXPORT void SetMacOSSpecificTextureTarget(uint32_t texture_target) {
+  DCHECK(texture_target == GL_TEXTURE_2D ||
+         texture_target == GL_TEXTURE_RECTANGLE_ARB);
+  macos_specific_texture_target = texture_target;
+}
+#endif  // defined(OS_MACOSX)
+
 GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
                                            gfx::BufferFormat format,
                                            const Capabilities& capabilities) {
@@ -72,14 +85,16 @@ GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
 
 GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
     gfx::BufferFormat format) {
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_LINUX)
   // Always use GL_TEXTURE_2D as the target for RGB textures.
   // https://crbug.com/916728
   if (format == gfx::BufferFormat::R_8 || format == gfx::BufferFormat::RG_88 ||
       format == gfx::BufferFormat::RGBA_8888 ||
       format == gfx::BufferFormat::BGRA_8888 ||
       format == gfx::BufferFormat::RGBX_8888 ||
-      format == gfx::BufferFormat::BGRX_8888) {
+      format == gfx::BufferFormat::BGRX_8888 ||
+      format == gfx::BufferFormat::RGBA_1010102 ||
+      format == gfx::BufferFormat::BGRA_1010102) {
     return false;
   }
 #elif defined(OS_ANDROID)

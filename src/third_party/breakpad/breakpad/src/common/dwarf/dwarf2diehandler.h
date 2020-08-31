@@ -199,23 +199,23 @@ class DIEHandler {
   // The default definitions ignore the values they are passed.
   virtual void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                         enum DwarfForm form,
-                                        uint64 data) { }
+                                        uint64_t data) { }
   virtual void ProcessAttributeSigned(enum DwarfAttribute attr,
                                       enum DwarfForm form,
-                                      int64 data) { }
+                                      int64_t data) { }
   virtual void ProcessAttributeReference(enum DwarfAttribute attr,
                                          enum DwarfForm form,
-                                         uint64 data) { }
+                                         uint64_t data) { }
   virtual void ProcessAttributeBuffer(enum DwarfAttribute attr,
                                       enum DwarfForm form,
                                       const uint8_t *data,
-                                      uint64 len) { }
+                                      uint64_t len) { }
   virtual void ProcessAttributeString(enum DwarfAttribute attr,
                                       enum DwarfForm form,
                                       const string& data) { }
   virtual void ProcessAttributeSignature(enum DwarfAttribute attr,
                                          enum DwarfForm form,
-                                         uint64 signture) { }
+                                         uint64_t signture) { }
 
   // Once we have reported all the DIE's attributes' values, we call
   // this member function.  If it returns false, we skip all the DIE's
@@ -244,7 +244,7 @@ class DIEHandler {
   // it is.
   //
   // The default definition skips all children.
-  virtual DIEHandler *FindChildHandler(uint64 offset, enum DwarfTag tag) {
+  virtual DIEHandler *FindChildHandler(uint64_t offset, enum DwarfTag tag) {
     return NULL;
   }
 
@@ -268,9 +268,9 @@ class RootDIEHandler: public DIEHandler {
   // returns false.  So the root DIE handler is actually also
   // responsible for handling the compilation unit metadata.
   // The default definition always visits the compilation unit.
-  virtual bool StartCompilationUnit(uint64 offset, uint8 address_size,
-                                    uint8 offset_size, uint64 cu_length,
-                                    uint8 dwarf_version) { return true; }
+  virtual bool StartCompilationUnit(uint64_t offset, uint8_t address_size,
+                                    uint8_t offset_size, uint64_t cu_length,
+                                    uint8_t dwarf_version) { return true; }
 
   // For the root DIE handler only, we pass the offset, tag and
   // attributes of the compilation unit's root DIE.  This is the only
@@ -280,7 +280,7 @@ class RootDIEHandler: public DIEHandler {
   // unit.
   //
   // The default definition elects to visit the root DIE.
-  virtual bool StartRootDIE(uint64 offset, enum DwarfTag tag) { return true; }
+  virtual bool StartRootDIE(uint64_t offset, enum DwarfTag tag) { return true; }
 };
 
 class DIEDispatcher: public Dwarf2Handler {
@@ -292,36 +292,36 @@ class DIEDispatcher: public Dwarf2Handler {
   // Destroying a DIEDispatcher destroys all active handler objects
   // except the root handler.
   ~DIEDispatcher();
-  bool StartCompilationUnit(uint64 offset, uint8 address_size,
-                            uint8 offset_size, uint64 cu_length,
-                            uint8 dwarf_version);
-  bool StartDIE(uint64 offset, enum DwarfTag tag);
-  void ProcessAttributeUnsigned(uint64 offset,
+  bool StartCompilationUnit(uint64_t offset, uint8_t address_size,
+                            uint8_t offset_size, uint64_t cu_length,
+                            uint8_t dwarf_version);
+  bool StartDIE(uint64_t offset, enum DwarfTag tag);
+  void ProcessAttributeUnsigned(uint64_t offset,
                                 enum DwarfAttribute attr,
                                 enum DwarfForm form,
-                                uint64 data);
-  void ProcessAttributeSigned(uint64 offset,
+                                uint64_t data);
+  void ProcessAttributeSigned(uint64_t offset,
                               enum DwarfAttribute attr,
                               enum DwarfForm form,
-                              int64 data);
-  void ProcessAttributeReference(uint64 offset,
+                              int64_t data);
+  void ProcessAttributeReference(uint64_t offset,
                                  enum DwarfAttribute attr,
                                  enum DwarfForm form,
-                                 uint64 data);
-  void ProcessAttributeBuffer(uint64 offset,
+                                 uint64_t data);
+  void ProcessAttributeBuffer(uint64_t offset,
                               enum DwarfAttribute attr,
                               enum DwarfForm form,
                               const uint8_t *data,
-                              uint64 len);
-  void ProcessAttributeString(uint64 offset,
+                              uint64_t len);
+  void ProcessAttributeString(uint64_t offset,
                               enum DwarfAttribute attr,
                               enum DwarfForm form,
                               const string &data);
-  void ProcessAttributeSignature(uint64 offset,
+  void ProcessAttributeSignature(uint64_t offset,
                                  enum DwarfAttribute attr,
                                  enum DwarfForm form,
-                                 uint64 signature);
-  void EndDIE(uint64 offset);
+                                 uint64_t signature);
+  void EndDIE(uint64_t offset);
 
  private:
 
@@ -331,7 +331,7 @@ class DIEDispatcher: public Dwarf2Handler {
   // makes it easier to see that the code is correct.
   struct HandlerStack {
     // The offset of the DIE for this handler stack entry.
-    uint64 offset_;
+    uint64_t offset_;
 
     // The handler object interested in this DIE's attributes and
     // children.  If NULL, we're not interested in either.

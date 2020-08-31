@@ -12,7 +12,7 @@
 ## ./git-foo-command  #=> runs `python git_foo_command.py`
 
 ## Constants
-PYTHONDONTWRITEBYTECODE=1
+PYTHONDONTWRITEBYTECODE=1; export PYTHONDONTWRITEBYTECODE
 
 ## "Input parameters".
 # If set before the script is sourced, then we'll use the pre-set values.
@@ -48,12 +48,13 @@ SCRIPT="${SCRIPT-${BASENAME//-/_}.py}"
 # standalone, but allow other PATH manipulations to take priority.
 PATH=$PATH:$DEPOT_TOOLS
 
-if [[ $PYTHON_DIRECT = 1 ]]; then
-  python.exe "$DEPOT_TOOLS\\$SCRIPT" "$@"
+if [[ $GCLIENT_PY3 = 1 ]]; then
+  # Explicitly run on Python 3
+  vpython3 "$DEPOT_TOOLS/$SCRIPT" "$@"
+elif [[ $GCLIENT_PY3 = 0 ]]; then
+  # Explicitly run on Python 2
+  vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
 else
-  if [[ -e "$DEPOT_TOOLS/python.bat" && $OSTYPE = msys ]]; then
-    cmd.exe //c "$DEPOT_TOOLS\\vpython.bat" "$DEPOT_TOOLS\\$SCRIPT" "$@"
-  else
-    vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
-  fi
+  # Run on Python 3, allows default to be flipped.
+  vpython3 "$DEPOT_TOOLS/$SCRIPT" "$@"
 fi

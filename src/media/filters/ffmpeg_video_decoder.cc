@@ -134,13 +134,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   gfx::Size coded_size(std::max(size.width(), codec_context->coded_width),
                        std::max(size.height(), codec_context->coded_height));
 
-  if (!VideoFrame::IsValidConfig(format, VideoFrame::STORAGE_UNKNOWN,
-                                 coded_size, gfx::Rect(size), natural_size)) {
-    return AVERROR(EINVAL);
-  }
-
-  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
-  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
+  // FFmpeg expects the initial allocation to be zero-initialized.  Failure to
+  // do so can lead to uninitialized value usage.  See http://crbug.com/390941
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp);
 
@@ -219,12 +214,12 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
   if (config.is_encrypted()) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
     return;
   }
 
   if (!ConfigureDecoder(config, low_delay)) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -232,7 +227,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   output_cb_ = output_cb;
   state_ = kNormal;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -295,7 +290,7 @@ void FFmpegVideoDecoder::Reset(base::OnceClosure closure) {
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
-  // PostTask() to avoid calling |closure| inmediately.
+  // PostTask() to avoid calling |closure| immediately.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 

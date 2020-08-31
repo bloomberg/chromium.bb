@@ -28,17 +28,22 @@ class FileMonitorTest : public testing::Test {
   FileMonitorTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         handle_(task_runner_),
-        completion_callback_called_(false) {
+        completion_callback_called_(false) {}
+
+  ~FileMonitorTest() override = default;
+
+  void HardRecoveryResponse(bool result);
+  void CompletionCallback() { completion_callback_called_ = true; }
+
+  void SetUp() override {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     download_dir_ = scoped_temp_dir_.GetPath();
     base::TimeDelta keep_alive_time = base::TimeDelta::FromHours(12);
     monitor_ = std::make_unique<FileMonitorImpl>(download_dir_, task_runner_,
                                                  keep_alive_time);
   }
-  ~FileMonitorTest() override = default;
 
-  void HardRecoveryResponse(bool result);
-  void CompletionCallback() { completion_callback_called_ = true; }
+  void TearDown() override { ASSERT_TRUE(scoped_temp_dir_.Delete()); }
 
  protected:
   base::FilePath CreateTemporaryFile(std::string file_name);
@@ -136,8 +141,8 @@ TEST_F(FileMonitorTest, TestCleanupFilesForCompletedEntries) {
 
   std::vector<Entry*> entries = {&entry1, &entry2};
   monitor_->CleanupFilesForCompletedEntries(
-      entries,
-      base::Bind(&FileMonitorTest::CompletionCallback, base::Unretained(this)));
+      entries, base::BindOnce(&FileMonitorTest::CompletionCallback,
+                              base::Unretained(this)));
   task_runner_->RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(entry1.target_file_path));
@@ -149,13 +154,13 @@ TEST_F(FileMonitorTest, TestHardRecovery) {
   base::FilePath temp_file1 = CreateTemporaryFile("temp1");
   base::FilePath temp_file2 = CreateTemporaryFile("temp2");
 
-  auto callback = base::Bind(&FileMonitorTest::HardRecoveryResponse,
-                             base::Unretained(this));
+  auto callback = base::BindOnce(&FileMonitorTest::HardRecoveryResponse,
+                                 base::Unretained(this));
 
   EXPECT_TRUE(base::PathExists(temp_file1));
   EXPECT_TRUE(base::PathExists(temp_file2));
 
-  monitor_->HardRecover(callback);
+  monitor_->HardRecover(std::move(callback));
   task_runner_->RunUntilIdle();
 
   EXPECT_TRUE(hard_recovery_result_.has_value());

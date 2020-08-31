@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/hash/hash.h"
 #include "base/json/json_writer.h"
@@ -365,7 +366,7 @@ std::string FakeServer::GetTopLevelPermanentItemId(
   return loopback_server_->GetTopLevelPermanentItemId(model_type);
 }
 
-const std::vector<std::string>& FakeServer::GetKeystoreKeys() const {
+const std::vector<std::vector<uint8_t>>& FakeServer::GetKeystoreKeys() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return loopback_server_->GetKeystoreKeysForTesting();
 }
@@ -607,6 +608,10 @@ base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
 void FakeServer::LogForTestFailure(const base::Location& location,
                                    const std::string& title,
                                    const std::string& body) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "disable-fake-server-failure-output")) {
+    return;
+  }
   gtest_scoped_traces_.push_back(std::make_unique<testing::ScopedTrace>(
       location.file_name(), location.line_number(),
       base::StringPrintf("--- %s %d (reverse chronological order) ---\n%s",

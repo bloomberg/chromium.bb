@@ -65,6 +65,10 @@ double WebPerformance::NavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->navigationStart());
 }
 
+base::TimeTicks WebPerformance::NavigationStartAsMonotonicTime() const {
+  return private_->timing()->NavigationStartAsMonotonicTime();
+}
+
 double WebPerformance::InputForNavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->inputStart());
 }
@@ -146,10 +150,6 @@ double WebPerformance::LoadEventEnd() const {
   return MillisecondsToSeconds(private_->timing()->loadEventEnd());
 }
 
-double WebPerformance::FirstLayout() const {
-  return MillisecondsToSeconds(private_->timing()->FirstLayout());
-}
-
 double WebPerformance::FirstPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstPaint());
 }
@@ -160,6 +160,10 @@ double WebPerformance::FirstImagePaint() const {
 
 double WebPerformance::FirstContentfulPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstContentfulPaint());
+}
+
+base::TimeTicks WebPerformance::FirstContentfulPaintAsMonotonicTime() const {
+  return private_->timing()->FirstContentfulPaintAsMonotonicTime();
 }
 
 double WebPerformance::FirstMeaningfulPaint() const {
@@ -187,33 +191,25 @@ uint64_t WebPerformance::LargestTextPaintSize() const {
   return private_->timing()->LargestTextPaintSize();
 }
 
-double WebPerformance::PageInteractive() const {
-  return MillisecondsToSeconds(private_->timing()->PageInteractive());
-}
-
-double WebPerformance::PageInteractiveDetection() const {
-  return MillisecondsToSeconds(private_->timing()->PageInteractiveDetection());
-}
-
-double WebPerformance::FirstInputInvalidatingInteractive() const {
+double WebPerformance::FirstInputOrScrollNotifiedTimestamp() const {
   return MillisecondsToSeconds(
-      private_->timing()->FirstInputInvalidatingInteractive());
+      private_->timing()->FirstInputOrScrollNotifiedTimestamp());
 }
 
-double WebPerformance::FirstInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->FirstInputDelay());
+base::Optional<base::TimeDelta> WebPerformance::FirstInputDelay() const {
+  return private_->timing()->FirstInputDelay();
 }
 
-double WebPerformance::FirstInputTimestamp() const {
-  return MillisecondsToSeconds(private_->timing()->FirstInputTimestamp());
+base::Optional<base::TimeDelta> WebPerformance::FirstInputTimestamp() const {
+  return private_->timing()->FirstInputTimestamp();
 }
 
-double WebPerformance::LongestInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->LongestInputDelay());
+base::Optional<base::TimeDelta> WebPerformance::LongestInputDelay() const {
+  return private_->timing()->LongestInputDelay();
 }
 
-double WebPerformance::LongestInputTimestamp() const {
-  return MillisecondsToSeconds(private_->timing()->LongestInputTimestamp());
+base::Optional<base::TimeDelta> WebPerformance::LongestInputTimestamp() const {
+  return private_->timing()->LongestInputTimestamp();
 }
 
 double WebPerformance::ParseStart() const {

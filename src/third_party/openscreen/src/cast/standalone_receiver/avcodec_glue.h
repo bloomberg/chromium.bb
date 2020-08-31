@@ -14,8 +14,8 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 }
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Macro that, for an AVFoo, generates code for:
 //
@@ -50,7 +50,7 @@ DEFINE_AV_UNIQUE_PTR(AVFrame, av_frame_alloc, av_frame_free(&obj));
 
 #undef DEFINE_AV_UNIQUE_PTR
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_AVCODEC_GLUE_H_

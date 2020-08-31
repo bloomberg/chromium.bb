@@ -9,14 +9,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/api/packet_socket_factory.h"
 
 namespace remoting {
 namespace protocol {
 
+class SessionOptionsProvider;
+
 class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
-  explicit ChromiumPacketSocketFactory();
+  explicit ChromiumPacketSocketFactory(
+      base::WeakPtr<SessionOptionsProvider> session_options_provider);
   ~ChromiumPacketSocketFactory() override;
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
@@ -37,6 +41,8 @@ class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
   rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
  private:
+  base::WeakPtr<SessionOptionsProvider> session_options_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromiumPacketSocketFactory);
 };
 

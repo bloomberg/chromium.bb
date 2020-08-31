@@ -15,6 +15,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -30,7 +31,6 @@ class GestureEvent;
 }  // namespace ui
 
 namespace ash {
-class BackGestureAffordance;
 namespace mojom {
 enum class WindowStateType;
 }
@@ -44,14 +44,6 @@ class ASH_EXPORT ToplevelWindowEventHandler
       public ui::EventHandler,
       public ::wm::WindowMoveClient {
  public:
-  // The threshold of the fling velocity while fling from left edge to go
-  // previous page.
-  static constexpr int kFlingVelocityForGoingBack = 1000;
-
-  // How many dips are reserved for gesture events to start swiping to previous
-  // page from the left edge of the screen in tablet mode.
-  static constexpr int kStartGoingBackLeftEdgeInset = 16;
-
   // Describes what triggered ending the drag.
   enum class DragResult {
     // The drag successfully completed.
@@ -71,11 +63,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  // Overridden from ui::EventHandler:
+  // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Attempts to start a drag if one is not already in progress. Returns true if
   // successful. |end_closure| is run when the drag completes, including if the
@@ -83,11 +74,11 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // target is forcefully updated and gesture events are transferred to
   // new target if any. In general, prefer the first version.
   bool AttemptToStartDrag(aura::Window* window,
-                          const gfx::Point& point_in_parent,
+                          const gfx::PointF& point_in_parent,
                           int window_component,
                           ToplevelWindowEventHandler::EndClosure end_closure);
   bool AttemptToStartDrag(aura::Window* window,
-                          const gfx::Point& point_in_parent,
+                          const gfx::PointF& point_in_parent,
                           int window_component,
                           ::wm::WindowMoveSource source,
                           EndClosure end_closure,
@@ -110,7 +101,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Returns the window that is currently handling gesture events and its
   // location.
   aura::Window* gesture_target() { return gesture_target_; }
-  const gfx::Point& event_location_in_gesture_target() {
+  const gfx::PointF& event_location_in_gesture_target() {
     return event_location_in_gesture_target_;
   }
 
@@ -128,7 +119,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // true on success, false if there is something preventing the resize from
   // starting.
   bool PrepareForDrag(aura::Window* window,
-                      const gfx::Point& point_in_parent,
+                      const gfx::PointF& point_in_parent,
                       int window_component,
                       ::wm::WindowMoveSource source);
 
@@ -165,10 +156,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // Update the gesture target and event location.
   void UpdateGestureTarget(aura::Window* window,
-                           const gfx::Point& location = gfx::Point());
-
-  // True if the event is handled for swiping to previous page.
-  bool HandleGoingBackFromLeftEdge(ui::GestureEvent* event);
+                           const gfx::PointF& location = gfx::PointF());
 
   // The hittest result for the first finger at the time that it initially
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h
@@ -176,13 +164,13 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // The point for the first finger at the time that it initially touched the
   // screen.
-  gfx::Point first_finger_touch_point_;
+  gfx::PointF first_finger_touch_point_;
 
   // Is a window move/resize in progress because of gesture events?
   bool in_gesture_drag_ = false;
 
   aura::Window* gesture_target_ = nullptr;
-  gfx::Point event_location_in_gesture_target_;
+  gfx::PointF event_location_in_gesture_target_;
 
   std::unique_ptr<ScopedWindowResizer> window_resizer_;
 
@@ -190,28 +178,6 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // Are we running a nested run loop from RunMoveLoop().
   bool in_move_loop_ = false;
-
-  // True if swiping from left edge to go to previous page is in progress.
-  bool going_back_started_ = false;
-
-  // Tracks the x-axis and y-axis drag amount through touch events. Used for
-  // back gesture affordance in tablet mode. The gesture movement of back
-  // gesture can't be recognized by GestureRecognizer, which leads to wrong
-  // gesture locations of back gesture. See crbug.com/1015464 for the details.
-  int x_drag_amount_ = 0;
-  int y_drag_amount_ = 0;
-
-  // True if back gesture dragging on the negative direction of x-axis.
-  bool during_reverse_dragging_ = false;
-
-  // Position of last touch event. Used to calculate |y_drag_amount_|. Note,
-  // only touch events from |first_touch_id_| will be recorded.
-  gfx::Point last_touch_point_;
-  ui::PointerId first_touch_id_ = ui::kPointerIdUnknown;
-
-  // Used to show the affordance while swiping from left edge to go to the
-  // previout page.
-  std::unique_ptr<BackGestureAffordance> back_gesture_affordance_;
 
   base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_{this};
 

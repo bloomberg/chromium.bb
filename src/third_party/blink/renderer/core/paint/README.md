@@ -165,12 +165,11 @@ most recent step towards CompositeAfterPaint was a project called
 which uses the compositing decisions from the current compositor
 (PaintLayerCompositor, which produces GraphicsLayers) with the new
 CompositeAfterPaint compositor (PaintArtifactCompositor). This is done by a step
-at the end of paint which collects all painted GraphicsLayers (and their
-associated cc::Layers) as a list of
-[ForeignLayerDisplayItem](../../platform/graphics/paint/foreign_layer_display_item.h)s.
-Foreign layers are typically used for cc::Layers managed outside blink (e.g.,
+at the end of paint which collects all painted GraphicsLayers as a list of
+[GraphicsLayerDisplayItem](../../platform/graphics/paint/graphics_layer_display_item.h)s.
+Additionaly, [ForeignLayerDisplayItem](../../platform/graphics/paint/foreign_layer_display_item.h)s are used for cc::Layers managed outside blink (e.g.,
 video layers, plugin layers) and are treated as opaque composited content by
-the PaintArtifactCompositor. This approach of using foreign layers starts using
+the PaintArtifactCompositor. This approach starts using
 much of the new PaintArtifactCompositor logic (e.g., converting blink property
 trees to cc property trees) without changing how compositing decisions are made.
 
@@ -292,9 +291,9 @@ from layout
       |<--------------------------------------------------+
       | PaintChunksToCcLayer::Convert()                   |
       v                                                   |
-+----------------+                                        |
-| Foreign layers |                                        |
-+----------------+                                        |
++--------------------------------------------------+      |
+| GraphicsLayerDisplayItem/ForeignLayerDisplayItem |      |
++--------------------------------------------------+      |
   |                                                       |
   |    LocalFrameView::PushPaintArtifactToCompositor()    |
   |         PaintArtifactCompositor::Update()             |
@@ -647,8 +646,7 @@ a PaintLayer and whether we can use cached subsequence for a PaintLayer. See
 During painting, we walk the layout tree multiple times for multiple paint
 phases. Sometimes a layer contain nothing needing a certain paint phase and we
 can skip tree walk for such empty phases. Now we have optimized
-`PaintPhaseDescendantBlockBackgroundsOnly`, `PaintPhaseDescendantOutlinesOnly`
-and `PaintPhaseFloat` for empty paint phases.
+`PaintPhaseDescendantOutlinesOnly` and `PaintPhaseFloat` for empty paint phases.
 
 During paint invalidation, we set the containing self-painting layer's
 `NeedsPaintPhaseXXX` flag if the object has something needing to be painted in
@@ -663,36 +661,40 @@ if an object changes style and creates a self-painting-layer, we copy the flags
 from its containing self-painting layer to this layer, assuming that this layer
 needs all paint phases that its container self-painting layer needs.
 
-We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
-would regress performance of the first paint. For CompositeAfterPaint, we can
-update the flags during the pre-painting tree walk to simplify the logic.
-
-### Hit test painting
+### Hit test information recording
 
 Hit testing is done in paint-order, and to preserve this information the paint
-system is re-used to paint hit test display items in the background phase of
-painting. This information is then used in the compositor to implement cc-side
-hit testing. Hit test display items are produced even if there is no painted
-content.
+system is re-used to record hit test information when painting the background.
+This information is then used in the compositor to implement cc-side hit
+testing. Hit test information is recorded even if there is no painted content.
 
-There are two types of hit test painting:
+We record different types of hit test information in the following data
+structures:
 
-1. [HitTestDisplayItem](../../platform/graphics/paint/hit_test_display_item.h)
+1. Paint chunk bounds
 
-    Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
-    which are areas of the page that allow certain gesture effects, as well as
-    areas of the page that disallow touch events due to blocking touch event
-    handlers.
+   The bounds of the current paint chunk are expanded to ensure the bounds
+   contain the hit testable area.
 
-2. [ScrollHitTestDisplayItem](../../platform/graphics/paint/scroll_hit_test_display_item.h)
+2. [`HitTestData::touch_action_rects`](../../platform/graphics/paint/hit_test_data.h)
 
-    Used to create
-    [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)
-    to prevent compositor scrolling of non-composited scrollers, plugins with
-    blocking scroll event handlers, and resize handles.
+   Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
+   which are areas of the page that allow certain gesture effects, as well as
+   areas of the page that disallow touch events due to blocking touch event
+   handlers.
 
-    This is also used for CompositeAfterPaint to force a special cc::Layer that
-    is marked as being scrollable.
+3. [`HitTestData::scroll_translation`](../../platform/graphics/paint/hit_test_data.h)
+   and
+   [`HitTestData::scroll_hit_test_rect`](../../platform/graphics/paint/hit_test_data.h)
+
+   Used to create
+   [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)
+   to prevent compositor scrolling of non-composited scrollers, plugins with
+   blocking scroll event handlers, and resize handles.
+
+   If `scroll_translation` is not null, this is also used for
+   CompositeAfterPaint to force a special cc::Layer that is marked as being
+   scrollable when composited scrolling is needed for the scroller.
 
 ### Scrollbar painting
 

@@ -17,7 +17,6 @@
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_download_manager_delegate.h"
 #include "chromecast/browser/cast_permission_manager.h"
-#include "chromecast/browser/url_request_context_factory.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,7 +77,6 @@ void CastBrowserContext::InitWhileIOAllowed() {
   // shared in a single location as defined here.
   CHECK(base::PathService::Get(DIR_CAST_HOME, &path_));
 #endif  // defined(OS_ANDROID)
-  BrowserContext::Initialize(this, path_);
 }
 
 #if !defined(OS_ANDROID)

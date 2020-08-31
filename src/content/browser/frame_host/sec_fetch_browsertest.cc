@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -31,12 +32,7 @@ namespace content {
 class SecFetchBrowserTest : public ContentBrowserTest {
  public:
   SecFetchBrowserTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    feature_list_.InitWithFeatures(
-        {network::features::kFetchMetadata,
-         network::features::kFetchMetadataDestination},
-        {});
-  }
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");

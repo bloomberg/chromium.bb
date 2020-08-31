@@ -8,8 +8,9 @@
 #include <unordered_map>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
@@ -98,7 +99,9 @@ bool BluetoothDeviceWin::IsConnected() const {
 }
 
 bool BluetoothDeviceWin::IsGattConnected() const {
-  return gatt_connected_;
+  // If a BLE device is not GATT connected, Windows will automatically
+  // reconnect.
+  return is_low_energy_;
 }
 
 bool BluetoothDeviceWin::IsConnectable() const {
@@ -222,7 +225,7 @@ bool BluetoothDeviceWin::IsEqual(
       bluetooth_class_ != device_state.bluetooth_class ||
       visible_ != device_state.visible ||
       connected_ != device_state.connected ||
-      gatt_connected_ == device_state.is_bluetooth_classic() ||
+      is_low_energy_ == device_state.is_bluetooth_classic() ||
       paired_ != device_state.authenticated) {
     return false;
   }
@@ -263,9 +266,7 @@ void BluetoothDeviceWin::Update(
   bluetooth_class_ = device_state.bluetooth_class;
   visible_ = device_state.visible;
   connected_ = device_state.connected;
-  // If a BLE device is not GATT connected, Windows will automatically
-  // reconnect.
-  gatt_connected_ = !device_state.is_bluetooth_classic();
+  is_low_energy_ = !device_state.is_bluetooth_classic();
   paired_ = device_state.authenticated;
   UpdateServices(device_state);
 }
@@ -285,7 +286,8 @@ void BluetoothDeviceWin::GattServiceDiscoveryComplete(
   adapter_->NotifyGattServicesDiscovered(this);
 }
 
-void BluetoothDeviceWin::CreateGattConnectionImpl() {
+void BluetoothDeviceWin::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   // Windows will create the Gatt connection as needed.  See:
   // https://docs.microsoft.com/en-us/windows/uwp/devices-sensors/gatt-client#connecting-to-the-device
 }

@@ -4,7 +4,10 @@
 
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
-#include "base/logging.h"
+#include <cstring>
+
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"

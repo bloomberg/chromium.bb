@@ -82,20 +82,6 @@ base::string16 MediaRemotingDialogView::GetWindowTitle() const {
   return dialog_title_;
 }
 
-bool MediaRemotingDialogView::Accept() {
-  ReportPermission(true);
-  return true;
-}
-
-bool MediaRemotingDialogView::Cancel() {
-  ReportPermission(false);
-  return true;
-}
-
-bool MediaRemotingDialogView::Close() {
-  return true;
-}
-
 gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
@@ -115,14 +101,18 @@ MediaRemotingDialogView::MediaRemotingDialogView(
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
   DCHECK(pref_service_);
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(
-          IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON));
+
+  SetAcceptCallback(base::BindOnce(&MediaRemotingDialogView::ReportPermission,
+                                   base::Unretained(this), true));
+  SetCancelCallback(base::BindOnce(&MediaRemotingDialogView::ReportPermission,
+                                   base::Unretained(this), false));
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   // Depress the Cast toolbar icon.

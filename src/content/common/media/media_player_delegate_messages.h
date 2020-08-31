@@ -33,7 +33,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType, media::MediaContentType::Max)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFullscreenVideoStatus,
-                          blink::WebFullscreenVideoStatus::kMax)
+                          blink::WebFullscreenVideoStatus::kMaxValue)
 
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer requesting playback state changes.
@@ -67,6 +67,16 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
                     int /* delegate_id, distinguishes instances */,
                     double /* is_persistent */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EnterPictureInPicture,
+                    int /* delegate_id, distinguishes instances */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_ExitPictureInPicture,
+                    int /* delegate_id, distinguishes instances */)
+
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
+                    int /* delegate_id, distinguishes instances */,
+                    bool /* is experiment starting (true) or stopping? */)
 
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
@@ -102,5 +112,10 @@ IPC_MESSAGE_ROUTED2(
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
+
+IPC_MESSAGE_ROUTED2(
+    MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
+    int /* delegate_id, distinguishes instances */,
+    bool /* picture-in-picture availability */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

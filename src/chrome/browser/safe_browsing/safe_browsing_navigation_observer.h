@@ -10,7 +10,7 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -46,8 +46,8 @@ struct NavigationEvent {
   std::vector<GURL> server_redirect_urls;
 
   // Which tab contains the frame with source_url. Tab ID is returned by
-  // SessionTabHelper::IdForTab. This ID is immutable for a given tab and unique
-  // across Chrome within the current session.
+  // sessions::SessionTabHelper::IdForTab. This ID is immutable for a given tab
+  // and unique across Chrome within the current session.
   SessionID source_tab_id;
 
   // Which tab this request url is targeting to.

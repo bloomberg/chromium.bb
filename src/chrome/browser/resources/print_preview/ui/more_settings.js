@@ -40,10 +40,10 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  toggleExpandButton_: function(e) {
+  toggleExpandButton_(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag) {
+    if (e.target.tagName === expandButtonTag) {
       return;
     }
 

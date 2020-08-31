@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -27,7 +26,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
 #include "ui/base/ui_base_features.h"
@@ -36,13 +34,6 @@
 namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
-
-// Map any ARC Camera app to internal Camera app.
-ash::ShelfID MaybeMapShelfId(const arc::ArcAppShelfId& arc_app_shelf_id) {
-  if (IsCameraApp(arc_app_shelf_id.app_id()))
-    return ash::ShelfID(ash::kInternalAppIdCamera);
-  return ash::ShelfID(arc_app_shelf_id.ToString());
-}
 
 }  // namespace
 
@@ -235,10 +226,6 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   if (task_id == arc::kNoTaskId)
     return;
 
-  // System windows are also arc apps.
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::ARC_APP));
-
   if (task_id == arc::kSystemWindowTaskId)
     return;
 
@@ -346,13 +333,15 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
 
   // Check if we may close controller now, at this point we can safely remove
   // controllers without window.
-  auto it_controller =
-      app_shelf_group_to_controller_map_.find(it->second->app_shelf_id());
+  const auto& app_shelf_id = it->second->app_shelf_id();
+  auto it_controller = app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it_controller != app_shelf_group_to_controller_map_.end()) {
-    it_controller->second->RemoveTaskId(task_id);
-    if (!it_controller->second->HasAnyTasks()) {
-      owner()->CloseLauncherItem(it_controller->second->shelf_id());
+    ArcAppWindowLauncherItemController* const controller =
+        it_controller->second;
+    controller->RemoveTaskId(task_id);
+    if (!controller->HasAnyTasks()) {
       app_shelf_group_to_controller_map_.erase(it_controller);
+      owner()->CloseLauncherItem(controller->shelf_id());
     }
   }
 
@@ -372,8 +361,8 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
     previous_app_window->SetFullscreenMode(
         previous_app_window->widget() &&
                 previous_app_window->widget()->IsFullscreen()
-            ? ArcAppWindow::FullScreenMode::ACTIVE
-            : ArcAppWindow::FullScreenMode::NON_ACTIVE);
+            ? ArcAppWindow::FullScreenMode::kActive
+            : ArcAppWindow::FullScreenMode::kNonActive);
   }
 
   active_task_id_ = task_id;
@@ -390,9 +379,13 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
     // if (new_active_app_it->second->widget()) {
     //   new_active_app_it->second->widget()->SetFullscreen(
     //       new_active_app_it->second->fullscreen_mode() ==
-    //       ArcAppWindow::FullScreenMode::ACTIVE);
+    //       ArcAppWindow::FullScreenMode::kActive);
     // }
   }
+}
+
+int ArcAppWindowLauncherController::GetActiveTaskId() const {
+  return active_task_id_;
 }
 
 AppWindowLauncherItemController*
@@ -477,13 +470,12 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   const arc::ArcAppShelfId& app_shelf_id = app_window_info.app_shelf_id();
   const auto it = app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it != app_shelf_group_to_controller_map_.end()) {
-    DCHECK(IsCameraApp(app_shelf_id.ToString()) ||
-           it->second->app_id() == app_shelf_id.ToString());
+    DCHECK(it->second->app_id() == app_shelf_id.ToString());
     it->second->AddTaskId(task_id);
     return it->second;
   }
 
-  const ash::ShelfID shelf_id = MaybeMapShelfId(app_shelf_id);
+  const ash::ShelfID shelf_id = ash::ShelfID(app_shelf_id.ToString());
   std::unique_ptr<ArcAppWindowLauncherItemController> controller =
       std::make_unique<ArcAppWindowLauncherItemController>(shelf_id);
   ArcAppWindowLauncherItemController* item_controller = controller.get();

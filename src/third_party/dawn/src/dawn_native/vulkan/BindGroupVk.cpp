@@ -28,16 +28,14 @@ namespace dawn_native { namespace vulkan {
     // static
     ResultOrError<BindGroup*> BindGroup::Create(Device* device,
                                                 const BindGroupDescriptor* descriptor) {
-        std::unique_ptr<BindGroup> group = std::make_unique<BindGroup>(device, descriptor);
-        DAWN_TRY(group->Initialize());
-        return group.release();
+        return ToBackend(descriptor->layout)->AllocateBindGroup(device, descriptor);
     }
 
-    MaybeError BindGroup::Initialize() {
-        Device* device = ToBackend(GetDevice());
-
-        DAWN_TRY_ASSIGN(mAllocation, ToBackend(GetLayout())->AllocateOneSet());
-
+    BindGroup::BindGroup(Device* device,
+                         const BindGroupDescriptor* descriptor,
+                         DescriptorSetAllocation descriptorSetAllocation)
+        : BindGroupBase(this, device, descriptor),
+          mDescriptorSetAllocation(descriptorSetAllocation) {
         // Now do a write of a single descriptor set with all possible chained data allocated on the
         // stack.
         uint32_t numWrites = 0;
@@ -45,34 +43,41 @@ namespace dawn_native { namespace vulkan {
         std::array<VkDescriptorBufferInfo, kMaxBindingsPerGroup> writeBufferInfo;
         std::array<VkDescriptorImageInfo, kMaxBindingsPerGroup> writeImageInfo;
 
-        const auto& layoutInfo = GetLayout()->GetBindingInfo();
-        for (uint32_t bindingIndex : IterateBitSet(layoutInfo.mask)) {
+        for (const auto& it : GetLayout()->GetBindingMap()) {
+            BindingNumber bindingNumber = it.first;
+            BindingIndex bindingIndex = it.second;
+            const BindingInfo& bindingInfo = GetLayout()->GetBindingInfo(bindingIndex);
+
             auto& write = writes[numWrites];
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.pNext = nullptr;
-            write.dstSet = mAllocation.set;
-            write.dstBinding = bindingIndex;
+            write.dstSet = GetHandle();
+            write.dstBinding = bindingNumber;
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
-            write.descriptorType = VulkanDescriptorType(layoutInfo.types[bindingIndex],
-                                                        layoutInfo.hasDynamicOffset[bindingIndex]);
+            write.descriptorType =
+                VulkanDescriptorType(bindingInfo.type, bindingInfo.hasDynamicOffset);
 
-            switch (layoutInfo.types[bindingIndex]) {
+            switch (bindingInfo.type) {
                 case wgpu::BindingType::UniformBuffer:
-                case wgpu::BindingType::StorageBuffer: {
+                case wgpu::BindingType::StorageBuffer:
+                case wgpu::BindingType::ReadonlyStorageBuffer: {
                     BufferBinding binding = GetBindingAsBufferBinding(bindingIndex);
 
                     writeBufferInfo[numWrites].buffer = ToBackend(binding.buffer)->GetHandle();
                     writeBufferInfo[numWrites].offset = binding.offset;
                     writeBufferInfo[numWrites].range = binding.size;
                     write.pBufferInfo = &writeBufferInfo[numWrites];
-                } break;
+                    break;
+                }
 
-                case wgpu::BindingType::Sampler: {
+                case wgpu::BindingType::Sampler:
+                case wgpu::BindingType::ComparisonSampler: {
                     Sampler* sampler = ToBackend(GetBindingAsSampler(bindingIndex));
                     writeImageInfo[numWrites].sampler = sampler->GetHandle();
                     write.pImageInfo = &writeImageInfo[numWrites];
-                } break;
+                    break;
+                }
 
                 case wgpu::BindingType::SampledTexture: {
                     TextureView* view = ToBackend(GetBindingAsTextureView(bindingIndex));
@@ -84,8 +89,19 @@ namespace dawn_native { namespace vulkan {
                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
                     write.pImageInfo = &writeImageInfo[numWrites];
-                } break;
+                    break;
+                }
 
+                case wgpu::BindingType::ReadonlyStorageTexture:
+                case wgpu::BindingType::WriteonlyStorageTexture: {
+                    TextureView* view = ToBackend(GetBindingAsTextureView(bindingIndex));
+
+                    writeImageInfo[numWrites].imageView = view->GetHandle();
+                    writeImageInfo[numWrites].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    write.pImageInfo = &writeImageInfo[numWrites];
+                    break;
+                }
                 default:
                     UNREACHABLE();
             }
@@ -96,16 +112,14 @@ namespace dawn_native { namespace vulkan {
         // TODO(cwallez@chromium.org): Batch these updates
         device->fn.UpdateDescriptorSets(device->GetVkDevice(), numWrites, writes.data(), 0,
                                         nullptr);
-
-        return {};
     }
 
     BindGroup::~BindGroup() {
-        ToBackend(GetLayout())->Deallocate(&mAllocation);
+        ToBackend(GetLayout())->DeallocateBindGroup(this, &mDescriptorSetAllocation);
     }
 
     VkDescriptorSet BindGroup::GetHandle() const {
-        return mAllocation.set;
+        return mDescriptorSetAllocation.set;
     }
 
 }}  // namespace dawn_native::vulkan

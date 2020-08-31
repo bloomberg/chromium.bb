@@ -140,6 +140,15 @@ async function generateAnswer(offer) {
   return answer;
 }
 
+// Helper function to generate offer using a freshly
+// created RTCPeerConnection object
+async function generateOffer() {
+  const pc = new RTCPeerConnection();
+  const offer = await pc.createOffer();
+  pc.close();
+  return offer;
+}
+
 // Run a test function that return a promise that should
 // never be resolved. For lack of better options,
 // we wait for a time out and pass the test if the
@@ -573,7 +582,7 @@ const trackFactories = {
     return dst.stream.getAudioTracks()[0];
   },
 
-  video({width = 640, height = 480} = {}) {
+  video({width = 640, height = 480, signal = null} = {}) {
     const canvas = Object.assign(
       document.createElement("canvas"), {width, height}
     );
@@ -584,8 +593,13 @@ const trackFactories = {
     setInterval(() => {
       ctx.fillStyle = `rgb(${count%255}, ${count*count%255}, ${count%255})`;
       count += 1;
-
       ctx.fillRect(0, 0, width, height);
+      // If signal is set, add a constant-color box to the video frame
+      // at coordinates 10 to 30 in both X and Y direction.
+      if (signal !== null) {
+        ctx.fillStyle = `rgb(${signal}, ${signal}, ${signal})`;
+        ctx.fillRect(10, 10, 20, 20);
+      }
     }, 100);
 
     if (document.body) {
@@ -600,13 +614,44 @@ const trackFactories = {
   }
 };
 
+// Get the signal from a video element inserted by createNoiseStream
+function getVideoSignal(v) {
+  if (v.videoWidth < 21 || v.videoHeight < 21) {
+    return null;
+  }
+  const canvas = new OffscreenCanvas(v.videoWidth, v.videoHeight);
+  let context = canvas.getContext('2d');
+  context.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
+  // Extract pixel value at position 20, 20
+  let pixel = context.getImageData(20, 20, 1, 1);
+  // Use luma reconstruction to get back original value according to
+  // ITU-R rec BT.709
+  return (pixel.data[0] * 0.21 + pixel.data[1] * 0.72 + pixel.data[2] * 0.07);
+}
+
+function detectSignal(t, v, value) {
+  return new Promise((resolve) => {
+    let check = () => {
+      const signal = getVideoSignal(v);
+      if (signal !== null && signal < value + 1 && signal > value - 1) {
+        resolve();
+      } else {
+        // We would like to wait for each new frame instead here,
+        // but there seems to be no such callback.
+        t.step_timeout(check, 100);
+      }
+    }
+    check();
+  });
+}
+
 // Generate a MediaStream bearing the specified tracks.
 //
 // @param {object} [caps]
 // @param {boolean} [caps.audio] - flag indicating whether the generated stream
 //                                 should include an audio track
 // @param {boolean} [caps.video] - flag indicating whether the generated stream
-//                                 should include a video track
+//                                 should include a video track, or parameters for video
 async function getNoiseStream(caps = {}) {
   if (!trackFactories.canCreate(caps)) {
     return navigator.mediaDevices.getUserMedia(caps);
@@ -618,7 +663,7 @@ async function getNoiseStream(caps = {}) {
   }
 
   if (caps.video) {
-    tracks.push(trackFactories.video());
+    tracks.push(trackFactories.video(caps.video));
   }
 
   return new MediaStream(tracks);
@@ -764,6 +809,18 @@ function findTransceiverForSender(pc, sender) {
       return transceivers[i];
   }
   return null;
+}
+
+function preferCodec(transceiver, mimeType, sdpFmtpLine) {
+  const {codecs} = RTCRtpSender.getCapabilities(transceiver.receiver.track.kind);
+  // sdpFmtpLine is optional, pick the first partial match if not given.
+  const selectedCodecIndex = codecs.findIndex(c => {
+    return c.mimeType === mimeType && (c.sdpFmtpLine === sdpFmtpLine || !sdpFmtpLine);
+  });
+  const selectedCodec = codecs[selectedCodecIndex];
+  codecs.slice(selectedCodecIndex, 1);
+  codecs.unshift(selectedCodec);
+  return transceiver.setCodecPreferences(codecs);
 }
 
 // Contains a set of values and will yell at you if you try to add a value twice.

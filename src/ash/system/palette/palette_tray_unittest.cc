@@ -7,7 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
+#include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -26,7 +27,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -91,10 +91,6 @@ class PaletteTrayTest : public AshTestBase {
     return Shell::Get()->session_controller()->GetActivePrefService();
   }
 
-  PrefService* local_state_pref_service() {
-    return ash_test_helper()->GetLocalStatePrefService();
-  }
-
   PaletteTray* palette_tray_ = nullptr;  // not owned
 
   std::unique_ptr<PaletteTrayTestApi> test_api_;
@@ -113,7 +109,7 @@ TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   ASSERT_FALSE(palette_tray_->GetVisible());
-  ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
+  ASSERT_FALSE(local_state()->GetBoolean(prefs::kHasSeenStylus));
 
   // Send a stylus event.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -129,7 +125,7 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
   ASSERT_FALSE(palette_tray_->GetVisible());
-  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+  local_state()->SetBoolean(prefs::kHasSeenStylus, true);
 
   EXPECT_TRUE(palette_tray_->GetVisible());
 }
@@ -199,7 +195,7 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
 }
 
 TEST_F(PaletteTrayTest, EnableStylusPref) {
-  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+  local_state()->SetBoolean(prefs::kHasSeenStylus, true);
 
   // kEnableStylusTools is true by default
   ASSERT_TRUE(
@@ -243,7 +239,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
   // PaletteTrayTest:
   void SetUp() override {
-    assistant::util::OverrideIsGoogleDeviceForTesting();
+    assistant::util::OverrideIsGoogleDeviceForTesting(true);
 
     PaletteTrayTest::SetUp();
 
@@ -260,6 +256,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
   }
 
   void TearDown() override {
+    assistant::util::OverrideIsGoogleDeviceForTesting(false);
     ui::SetEventTickClockForTesting(nullptr);
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
@@ -309,6 +306,9 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
     EXPECT_EQ(expected, highlighter_showing());
     EXPECT_EQ(expected, metalayer_enabled());
     generator->ReleaseTouch();
+    // If the tool is not enabled, the gesture may open a context menu instead.
+    // Press escape to close the menu.
+    generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   }
 
   void WaitDragAndAssertMetalayer(const std::string& context,
@@ -326,6 +326,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
  private:
   base::SimpleTestTickClock simulated_clock_;
+  TestAssistantClient assistant_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithAssistant);
 };
@@ -338,7 +339,10 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolViewCreated) {
 TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
+  assistant_state()->NotifyFeatureAllowed(
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
+  assistant_state()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
@@ -417,7 +421,8 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
 TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::NOT_READY);
+  assistant_state()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::NOT_READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       false);
@@ -453,7 +458,8 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
                              false /* no highlighter on press */);
 
   // Once the service is ready, the button should start working.
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
+  assistant_state()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
 
   // Press and drag with no button, still no highlighter.
   WaitDragAndAssertMetalayer("all enabled, no button ", origin, ui::EF_NONE,

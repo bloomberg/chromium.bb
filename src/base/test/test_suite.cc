@@ -37,6 +37,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -259,17 +260,23 @@ class CheckThreadPriority : public testing::EmptyTestEventListener {
   CheckThreadPriority(bool check_thread_priority_at_test_end)
       : check_thread_priority_at_test_end_(check_thread_priority_at_test_end) {
     CHECK_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-             base::ThreadPriority::NORMAL);
+             base::ThreadPriority::NORMAL)
+        << " -- The thread priority of this process is not the default. This "
+           "usually indicates nice has been used, which is not supported.";
   }
 
   void OnTestStart(const testing::TestInfo& test) override {
     EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-              base::ThreadPriority::NORMAL);
+              base::ThreadPriority::NORMAL)
+        << " -- The thread priority of this process is not the default. This "
+           "usually indicates nice has been used, which is not supported.";
   }
   void OnTestEnd(const testing::TestInfo& test) override {
     if (check_thread_priority_at_test_end_) {
       EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-                base::ThreadPriority::NORMAL);
+                base::ThreadPriority::NORMAL)
+          << " -- The thread priority of this process is not the default. This "
+             "usually indicates nice has been used, which is not supported.";
     }
   }
 
@@ -573,6 +580,8 @@ void TestSuite::SuppressErrorDialogs() {
 
 void TestSuite::Initialize() {
   DCHECK(!is_initialized_);
+
+  test::ScopedRunLoopTimeout::SetAddGTestFailureOnTimeout();
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if !defined(OS_IOS)

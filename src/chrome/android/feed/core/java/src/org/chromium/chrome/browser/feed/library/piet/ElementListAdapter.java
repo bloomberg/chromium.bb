@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.feed.library.piet;
 import static org.chromium.chrome.browser.feed.library.piet.StyleProvider.DIMENSION_NOT_SET;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
@@ -28,8 +30,10 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
     private static final String TAG = "ElementListAdapter";
 
     // Only needed for reporting errors during updateChildLayoutParams.
-    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromCreate;
-    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromBind;
+    @Nullable
+    private FrameContext mFrameContextForDebugLogsFromCreate;
+    @Nullable
+    private FrameContext mFrameContextForDebugLogsFromBind;
 
     private ElementListAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, createView(context), KeySupplier.SINGLETON_KEY);
@@ -84,7 +88,7 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
         }
     }
 
-    /*@Nullable*/
+    @Nullable
     private FrameContext getLoggingFrameContext() {
         return mFrameContextForDebugLogsFromBind != null ? mFrameContextForDebugLogsFromBind
                                                          : mFrameContextForDebugLogsFromCreate;

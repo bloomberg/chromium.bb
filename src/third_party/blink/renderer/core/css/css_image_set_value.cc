@@ -67,6 +67,12 @@ void CSSImageSetValue::FillImageSet() {
     image.referrer.referrer = image_value.GetReferrer().referrer;
     image.referrer.referrer_policy = image_value.GetReferrer().referrer_policy;
     image.scale_factor = scale_factor;
+
+    // Only set for the first image as all images in a set should have identical
+    // is_ad_related bits.
+    if (!images_in_set_.size())
+      is_ad_related_ = image_value.GetIsAdRelated();
+    DCHECK_EQ(is_ad_related_, image_value.GetIsAdRelated());
     images_in_set_.push_back(image);
     ++i;
   }
@@ -101,7 +107,7 @@ StyleImage* CSSImageSetValue::CachedImage(float device_scale_factor) const {
 StyleImage* CSSImageSetValue::CacheImage(
     const Document& document,
     float device_scale_factor,
-    FetchParameters::ImageRequestOptimization image_request_optimization,
+    FetchParameters::ImageRequestBehavior image_request_behavior,
     CrossOriginAttributeValue cross_origin) {
   if (!images_in_set_.size())
     FillImageSet();
@@ -116,11 +122,14 @@ StyleImage* CSSImageSetValue::CacheImage(
     resource_request.SetReferrerPolicy(
         ReferrerPolicyResolveDefault(image.referrer.referrer_policy));
     resource_request.SetReferrerString(image.referrer.referrer);
+    if (is_ad_related_)
+      resource_request.SetIsAdResource();
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss
                                       : fetch_initiator_type_names::kCSS;
-    FetchParameters params(resource_request, options);
+    options.initiator_info.referrer = image.referrer.referrer;
+    FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {
       params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
@@ -174,7 +183,7 @@ bool CSSImageSetValue::HasFailedOrCanceledSubresources() const {
   return true;
 }
 
-void CSSImageSetValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSImageSetValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(cached_image_);
   CSSValueList::TraceAfterDispatch(visitor);
 }

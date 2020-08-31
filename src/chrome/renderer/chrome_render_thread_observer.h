@@ -20,7 +20,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/chromeos_delayed_callback_group.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace content {
@@ -116,9 +115,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void SetConfiguration(chrome::mojom::DynamicParamsPtr params) override;
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;
-  void SetFieldTrialGroup(const std::string& trial_name,
-                          const std::string& group_name) override;
-
   void OnRendererConfigurationAssociatedRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::RendererConfiguration>
           receiver);

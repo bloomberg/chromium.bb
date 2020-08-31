@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/system/message_center/metrics_utils.h"
 #include "base/observer_list.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
@@ -121,6 +122,14 @@ void MessageCenterUiController::OnNotificationClicked(
     const base::Optional<base::string16>& reply) {
   if (popups_visible_)
     OnMessageCenterChanged();
+
+  // Note: we use |message_center_visible_| instead of |popups_visible_| here
+  // due to timing issues when dismissing the last popup notification.
+  bool is_popup = !message_center_visible_;
+  if (button_index.has_value())
+    metrics_utils::LogClickedActionButton(notification_id, is_popup);
+  else
+    metrics_utils::LogClickedBody(notification_id, is_popup);
 }
 
 void MessageCenterUiController::OnNotificationDisplayed(
@@ -136,6 +145,14 @@ void MessageCenterUiController::OnQuietModeChanged(bool in_quiet_mode) {
 void MessageCenterUiController::OnBlockingStateChanged(
     message_center::NotificationBlocker* blocker) {
   OnMessageCenterChanged();
+}
+
+void MessageCenterUiController::OnNotificationPopupShown(
+    const std::string& notification_id,
+    bool mark_notification_as_read) {
+  // Timed out popup notifications are not marked as read.
+  if (!mark_notification_as_read)
+    metrics_utils::LogPopupExpiredToTray(notification_id);
 }
 
 void MessageCenterUiController::OnMessageCenterChanged() {

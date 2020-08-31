@@ -71,7 +71,12 @@ struct PropertyBase {
 
   // Statically-determined type, such as from .tq definition. Can be an empty
   // string if this property is itself a Torque-defined struct; in that case use
-  // |struct_fields| instead.
+  // |struct_fields| instead. This type should be treated as if it were used in
+  // the v8::internal namespace; that is, type "X::Y" can mean any of the
+  // following, in order of decreasing preference:
+  // - v8::internal::X::Y
+  // - v8::X::Y
+  // - X::Y
   const char* type;
 
   // In some cases, |type| may be a simple type representing a compressed
@@ -86,6 +91,14 @@ struct PropertyBase {
 struct StructProperty : public PropertyBase {
   // The offset from the beginning of the struct to this field.
   size_t offset;
+
+  // The number of bits that are present, if this value is a bitfield. Zero
+  // indicates that this value is not a bitfield (the full value is stored).
+  uint8_t num_bits;
+
+  // The number of bits by which this value has been left-shifted for storage as
+  // a bitfield.
+  uint8_t shift_bits;
 };
 
 struct ObjectProperty : public PropertyBase {
@@ -104,10 +117,9 @@ struct ObjectProperty : public PropertyBase {
   // tightly packed like in C.
   size_t size;
 
-  // If |type| is nullptr, then this property does not correspond directly to
-  // any C++ type. Instead, the property is a struct made up of several pieces
-  // of data packed together. In that case, the |struct_fields| array contains
-  // the struct fields.
+  // If the property is a struct made up of several pieces of data packed
+  // together, then the |struct_fields| array contains descriptions of those
+  // fields.
   size_t num_struct_fields;
   StructProperty** struct_fields;
 

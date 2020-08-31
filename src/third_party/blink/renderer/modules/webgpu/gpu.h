@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 struct WGPUDeviceProperties;
@@ -21,7 +21,8 @@ class ScriptState;
 class WebGraphicsContext3DProvider;
 class DawnControlClientHolder;
 
-class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
+class GPU final : public ScriptWrappable,
+                  public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(GPU);
 
@@ -32,10 +33,10 @@ class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
   ~GPU() override;
 
   // ScriptWrappable overrides
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
-  // ContextLifecycleObserver overrides
-  void ContextDestroyed(ExecutionContext* execution_context) override;
+  // ExecutionContextLifecycleObserver overrides
+  void ContextDestroyed() override;
 
   // gpu.idl
   ScriptPromise requestAdapter(ScriptState* script_state,

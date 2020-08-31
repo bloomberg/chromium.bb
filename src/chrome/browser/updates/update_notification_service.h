@@ -5,20 +5,38 @@
 #ifndef CHROME_BROWSER_UPDATES_UPDATE_NOTIFICATION_SERVICE_H_
 #define CHROME_BROWSER_UPDATES_UPDATE_NOTIFICATION_SERVICE_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace updates {
+
+struct UpdateNotificationInfo;
 
 // Service to schedule update notification via
 // notifications::NotificationScheduleService.
 class UpdateNotificationService : public KeyedService {
  public:
+  using ExtraData = std::map<std::string, std::string>;
+
   // Try yo schedule an update notification.
-  virtual void Schedule(notifications::NotificationData data) = 0;
+  virtual void Schedule(UpdateNotificationInfo data) = 0;
+
+  // Validate the notification is ready to show.
+  virtual bool IsReadyToDisplay() const = 0;
+
+  // Called when the notification is dismissed by user.
+  virtual void OnUserDismiss() = 0;
+
+  // Called when the notification is clicked by user. Passing |extra| for
+  // processing custom data.
+  virtual void OnUserClick(const ExtraData& extra) = 0;
+
+  // Called when the helpful/unhelpful buttons are clicked.
+  virtual void OnUserClickButton(bool is_positive_button) = 0;
 
   ~UpdateNotificationService() override = default;
 

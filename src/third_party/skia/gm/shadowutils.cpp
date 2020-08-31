@@ -156,7 +156,7 @@ void draw_paths(SkCanvas* canvas, ShadowMode mode) {
 
                 canvas->translate(dx, 0);
                 x += dx;
-                dy = SkTMax(dy, postMBounds.height() + kPad + kHeight);
+                dy = std::max(dy, postMBounds.height() + kPad + kHeight);
                 ++pathCounter;
             }
         }
@@ -207,7 +207,7 @@ void draw_paths(SkCanvas* canvas, ShadowMode mode) {
 
             canvas->translate(dx, 0);
             x += dx;
-            dy = SkTMax(dy, postMBounds.height() + kPad + kHeight);
+            dy = std::max(dy, postMBounds.height() + kPad + kHeight);
         }
     }
 
@@ -234,4 +234,29 @@ DEF_SIMPLE_GM(shadow_utils_occl, canvas, kW, kH) {
 
 DEF_SIMPLE_GM(shadow_utils_gray, canvas, kW, kH) {
     draw_paths(canvas, kGrayscale);
+}
+
+#include "include/effects/SkGradientShader.h"
+#include "src/core/SkColorFilterPriv.h"
+
+DEF_SIMPLE_GM(shadow_utils_gaussian_colorfilter, canvas, 512, 256) {
+    const SkRect r = SkRect::MakeWH(256, 256);
+
+    const SkColor colors[] = { 0, 0xFF000000 };
+    auto sh = SkGradientShader::MakeRadial({r.centerX(), r.centerY()}, r.width(),
+                                           colors, nullptr, SK_ARRAY_COUNT(colors),
+                                           SkTileMode::kClamp);
+
+    SkPaint redPaint;
+    redPaint.setColor(SK_ColorRED);
+
+    SkPaint paint;
+    paint.setShader(sh);
+    canvas->drawRect(r, redPaint);
+    canvas->drawRect(r, paint);
+
+    canvas->translate(256, 0);
+    paint.setColorFilter(SkColorFilterPriv::MakeGaussian());
+    canvas->drawRect(r, redPaint);
+    canvas->drawRect(r, paint);
 }

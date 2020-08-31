@@ -13,28 +13,27 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
 
 namespace {
 
 // Create a basic mode for a 6x4 screen.
-const drmModeModeInfo kDefaultMode =
-    {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                      0, 0, 0, 0, 0, 0, {'\0'}};
 
 constexpr uint32_t kCrtcIdBase = 1;
 constexpr uint32_t kPrimaryCrtc = kCrtcIdBase;
 constexpr uint32_t kSecondaryCrtc = kCrtcIdBase + 1;
-constexpr uint32_t kPrimaryConnector = 10;
-constexpr uint32_t kSecondaryConnector = 11;
+constexpr uint32_t kConnectorIdBase = 10;
 constexpr uint32_t kPlaneOffset = 1000;
 
 const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
@@ -63,13 +62,14 @@ class HardwareDisplayControllerTest : public testing::Test {
   scoped_refptr<ui::DrmFramebuffer> CreateBuffer() {
     std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, kDefaultModeSize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get(),
+                                              kDefaultModeSize);
   }
 
   scoped_refptr<ui::DrmFramebuffer> CreateOverlayBuffer() {
     std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, kOverlaySize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), kOverlaySize);
   }
 
  protected:
@@ -94,7 +94,7 @@ void HardwareDisplayControllerTest::SetUp() {
 
   controller_ = std::make_unique<ui::HardwareDisplayController>(
       std::make_unique<ui::CrtcController>(drm_.get(), kPrimaryCrtc,
-                                           kPrimaryConnector),
+                                           kConnectorIdBase),
       gfx::Point());
 }
 
@@ -104,24 +104,41 @@ void HardwareDisplayControllerTest::TearDown() {
 }
 
 void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
-  constexpr uint32_t kTypePropId = 300;
-  constexpr uint32_t kInFormatsPropId = 301;
+  constexpr uint32_t kTypePropId = 3010;
+  constexpr uint32_t kInFormatsPropId = 3011;
   constexpr uint32_t kInFormatsBlobPropId = 400;
 
   std::vector<ui::MockDrmDevice::CrtcProperties> crtc_properties(2);
+  std::map<uint32_t, std::string> crtc_property_names = {
+      {1000, "ACTIVE"},
+      {1001, "MODE_ID"},
+  };
+
+  std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(2);
+  std::map<uint32_t, std::string> connector_property_names = {
+      {2000, "CRTC_ID"},
+  };
+  for (size_t i = 0; i < connector_properties.size(); ++i) {
+    connector_properties[i].id = kConnectorIdBase + i;
+    for (const auto& pair : connector_property_names) {
+      connector_properties[i].properties.push_back(
+          {/* .id = */ pair.first, /* .value = */ 0});
+    }
+  }
+
   std::vector<ui::MockDrmDevice::PlaneProperties> plane_properties;
-  std::map<uint32_t, std::string> property_names = {
+  std::map<uint32_t, std::string> plane_property_names = {
       // Add all required properties.
-      {200, "CRTC_ID"},
-      {201, "CRTC_X"},
-      {202, "CRTC_Y"},
-      {203, "CRTC_W"},
-      {204, "CRTC_H"},
-      {205, "FB_ID"},
-      {206, "SRC_X"},
-      {207, "SRC_Y"},
-      {208, "SRC_W"},
-      {209, "SRC_H"},
+      {3000, "CRTC_ID"},
+      {3001, "CRTC_X"},
+      {3002, "CRTC_Y"},
+      {3003, "CRTC_W"},
+      {3004, "CRTC_H"},
+      {3005, "FB_ID"},
+      {3006, "SRC_X"},
+      {3007, "SRC_Y"},
+      {3008, "SRC_W"},
+      {3009, "SRC_H"},
       // Add some optional properties we use for convenience.
       {kTypePropId, "type"},
       {kInFormatsPropId, "IN_FORMATS"},
@@ -129,6 +146,10 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
 
   for (size_t i = 0; i < crtc_properties.size(); ++i) {
     crtc_properties[i].id = kCrtcIdBase + i;
+    for (const auto& pair : crtc_property_names) {
+      crtc_properties[i].properties.push_back(
+          {/* .id = */ pair.first, /* .value = */ 0});
+    }
 
     for (size_t j = 0; j < 2; ++j) {
       const uint32_t offset = plane_properties.size();
@@ -136,7 +157,7 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
       ui::MockDrmDevice::PlaneProperties plane;
       plane.id = kPlaneOffset + offset;
       plane.crtc_mask = 1 << i;
-      for (const auto& pair : property_names) {
+      for (const auto& pair : plane_property_names) {
         uint32_t value = 0;
         if (pair.first == kTypePropId)
           value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY;
@@ -147,24 +168,21 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
             {/* .id = */ pair.first, /*.value = */ value});
       };
 
-      drm_format_modifier y_css = {.formats = 1UL,
-                                   .modifier = I915_FORMAT_MOD_Y_TILED_CCS};
-      drm_format_modifier yf_css = {.formats = 1UL,
-                                    .modifier = I915_FORMAT_MOD_Yf_TILED_CCS};
-      drm_format_modifier x = {.formats = 1UL,
-                               .modifier = I915_FORMAT_MOD_X_TILED};
-      drm_format_modifier linear = {.formats = 1UL,
-                                    .modifier = DRM_FORMAT_MOD_LINEAR};
       drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
-          kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888},
-          {y_css, yf_css, x, linear}));
+          kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
 
       plane_properties.emplace_back(std::move(plane));
     }
   }
 
-  drm_->InitializeState(crtc_properties, plane_properties, property_names,
-                        use_atomic);
+  std::map<uint32_t, std::string> property_names;
+  property_names.insert(crtc_property_names.begin(), crtc_property_names.end());
+  property_names.insert(connector_property_names.begin(),
+                        connector_property_names.end());
+  property_names.insert(plane_property_names.begin(),
+                        plane_property_names.end());
+  drm_->InitializeState(crtc_properties, connector_properties, plane_properties,
+                        property_names, use_atomic);
 }
 
 void HardwareDisplayControllerTest::SchedulePageFlip(
@@ -205,52 +223,6 @@ TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
 
   EXPECT_TRUE(controller_->Modeset(plane, kDefaultMode));
   EXPECT_FALSE(plane.buffer->HasOneRef());
-}
-
-TEST_F(HardwareDisplayControllerTest, ModifiersWithConnectorType) {
-  ui::DrmOverlayPlane plane(CreateBuffer(), nullptr);
-
-  // With internal displays, all modifiers including compressed (css) should be
-  // there.
-  drm_->set_connector_type(DRM_MODE_CONNECTOR_eDP);
-
-  std::vector<uint64_t> internal_modifiers =
-      controller_->GetFormatModifiers(DRM_FORMAT_XRGB8888);
-  ASSERT_FALSE(internal_modifiers.empty());
-
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_Y_TILED_CCS),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_Yf_TILED_CCS),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_X_TILED),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      DRM_FORMAT_MOD_LINEAR),
-            internal_modifiers.end());
-
-  // With external displays, *_CSS modifiers (2 of them) should not exist.
-  drm_->set_connector_type(DRM_MODE_CONNECTOR_DisplayPort);
-
-  std::vector<uint64_t> external_modifiers =
-      controller_->GetFormatModifiers(DRM_FORMAT_XRGB8888);
-  ASSERT_FALSE(external_modifiers.empty());
-  EXPECT_EQ(external_modifiers.size(), internal_modifiers.size() - 2);
-
-  EXPECT_EQ(std::find(external_modifiers.begin(), external_modifiers.end(),
-                      I915_FORMAT_MOD_Y_TILED_CCS),
-            external_modifiers.end());
-  EXPECT_EQ(std::find(external_modifiers.begin(), external_modifiers.end(),
-                      I915_FORMAT_MOD_Yf_TILED_CCS),
-            external_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      I915_FORMAT_MOD_X_TILED),
-            internal_modifiers.end());
-  EXPECT_NE(std::find(internal_modifiers.begin(), internal_modifiers.end(),
-                      DRM_FORMAT_MOD_LINEAR),
-            internal_modifiers.end());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
@@ -375,8 +347,9 @@ TEST_F(HardwareDisplayControllerTest, AcceptUnderlays) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
-  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
-      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+  controller_->AddCrtc(
+      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
+          drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1)));
 
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
@@ -400,8 +373,9 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
-  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
-      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+  controller_->AddCrtc(
+      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
+          drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1)));
 
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
@@ -472,8 +446,9 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
-  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
-      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+  controller_->AddCrtc(
+      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
+          drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1)));
 
   ui::DrmOverlayPlane plane1(CreateBuffer(), nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
@@ -565,8 +540,9 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
   planes.push_back(plane1.Clone());
   SchedulePageFlip(std::move(planes));
 
-  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
-      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+  controller_->AddCrtc(
+      std::unique_ptr<ui::CrtcController>(new ui::CrtcController(
+          drm_.get(), kSecondaryCrtc, kConnectorIdBase + 1)));
 
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);

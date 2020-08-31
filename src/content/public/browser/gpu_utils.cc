@@ -21,7 +21,9 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -90,7 +92,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kDisableOopRasterization);
 
   gpu_preferences.enable_oop_rasterization_ddl =
-      command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
+      base::FeatureList::IsEnabled(features::kOopRasterizationDDL);
   gpu_preferences.enforce_vulkan_protected_memory =
       command_line->HasSwitch(switches::kEnforceVulkanProtectedMemory);
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
@@ -105,6 +107,15 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_android_surface_control =
       ShouldEnableAndroidSurfaceControl(*command_line);
+
+  gpu_preferences.enable_native_gpu_memory_buffers =
+      command_line->HasSwitch(switches::kEnableNativeGpuMemoryBuffers);
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  gpu_preferences.force_disable_new_accelerated_video_decoder =
+      command_line->HasSwitch(
+          switches::kForceDisableNewAcceleratedVideoDecoder);
+#endif
 
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
@@ -123,5 +134,18 @@ void StopGpuProcess(base::OnceClosure callback) {
 gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() {
   return BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
 }
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void DumpGpuProfilingData(base::OnceClosure callback) {
+  content::GpuProcessHost::CallOnIO(
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindOnce(
+          [](base::OnceClosure callback, content::GpuProcessHost* host) {
+            host->gpu_service()->WriteClangProfilingProfile(
+                std::move(callback));
+          },
+          std::move(callback)));
+}
+#endif  // BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 
 }  // namespace content

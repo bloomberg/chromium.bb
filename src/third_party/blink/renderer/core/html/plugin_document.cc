@@ -133,9 +133,9 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;
   }
 
-  ToPluginDocument(GetDocument())->SetPluginNode(embed_element_);
+  To<PluginDocument>(GetDocument())->SetPluginNode(embed_element_);
 
-  GetDocument()->UpdateStyleAndLayout();
+  GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPlugin);
 
   // We need the plugin to load synchronously so we can get the
   // WebPluginContainerImpl below so flush the layout tasks now instead of
@@ -177,13 +177,12 @@ void PluginDocumentParser::StopParsing() {
 }
 
 WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {
-  return ToPluginDocument(GetDocument())->GetPluginView();
+  return To<PluginDocument>(GetDocument())->GetPluginView();
 }
 
-PluginDocument::PluginDocument(const DocumentInit& initializer,
-                               Color background_color)
+PluginDocument::PluginDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, kPluginDocumentClass),
-      background_color_(background_color) {
+      background_color_(initializer.GetPluginBackgroundColor()) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
   if (GetScheduler()) {

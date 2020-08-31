@@ -18,14 +18,27 @@ class StatusIndicatorProperties {
     static final PropertyModel.WritableObjectPropertyKey<Drawable> STATUS_ICON =
             new PropertyModel.WritableObjectPropertyKey<>();
 
-    /** Whether the Android view version of the status indicator is visible. */
-    static final PropertyModel.WritableBooleanPropertyKey ANDROID_VIEW_VISIBLE =
-            new PropertyModel.WritableBooleanPropertyKey();
+    /** Visibility of the status indicator's Android view. */
+    static final PropertyModel.WritableIntPropertyKey ANDROID_VIEW_VISIBILITY =
+            new PropertyModel.WritableIntPropertyKey();
 
     /** Whether the composited version of the status indicator is visible. */
     static final PropertyModel.WritableBooleanPropertyKey COMPOSITED_VIEW_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
-            STATUS_TEXT, STATUS_ICON, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE};
+    static final PropertyModel.WritableIntPropertyKey BACKGROUND_COLOR =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyModel.WritableFloatPropertyKey TEXT_ALPHA =
+            new PropertyModel.WritableFloatPropertyKey();
+
+    static final PropertyModel.WritableIntPropertyKey TEXT_COLOR =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyModel.WritableIntPropertyKey ICON_TINT =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {STATUS_TEXT, STATUS_ICON, ANDROID_VIEW_VISIBILITY,
+                    COMPOSITED_VIEW_VISIBLE, BACKGROUND_COLOR, TEXT_ALPHA, TEXT_COLOR, ICON_TINT};
 }

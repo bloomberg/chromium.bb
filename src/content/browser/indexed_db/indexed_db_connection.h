@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 
@@ -27,9 +26,7 @@ class IndexedDBOriginStateHandle;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:
-  IndexedDBConnection(IndexedDBExecutionContextConnectionTracker::Handle
-                          execution_context_connection_handle,
-                      IndexedDBOriginStateHandle origin_state_handle,
+  IndexedDBConnection(IndexedDBOriginStateHandle origin_state_handle,
                       IndexedDBClassFactory* indexed_db_class_factory,
                       base::WeakPtr<IndexedDBDatabase> database,
                       base::RepeatingClosure on_version_change_ignored,
@@ -60,9 +57,6 @@ class CONTENT_EXPORT IndexedDBConnection {
   virtual void RemoveObservers(const std::vector<int32_t>& remove_observer_ids);
 
   int32_t id() const { return id_; }
-  int child_process_id() const {
-    return execution_context_connection_handle_.render_process_id();
-  }
 
   base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
@@ -109,11 +103,6 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   const int32_t id_;
 
-  // Allows IndexedDBExecutionContextConnectionTracker to keep track of the
-  // number of connections per execution context.
-  const IndexedDBExecutionContextConnectionTracker::Handle
-      execution_context_connection_handle_;
-
   // Keeps the factory for this origin alive.
   IndexedDBOriginStateHandle origin_state_handle_;
   IndexedDBClassFactory* const indexed_db_class_factory_;
@@ -128,7 +117,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   base::flat_map<int64_t, std::unique_ptr<IndexedDBTransaction>> transactions_;
 
   // The callbacks_ member is cleared when the connection is closed.
-  // May be NULL in unit tests.
+  // May be nullptr in unit tests.
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   std::vector<std::unique_ptr<IndexedDBObserver>> active_observers_;
 

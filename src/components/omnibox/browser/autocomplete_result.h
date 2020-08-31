@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/match_compare.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
@@ -30,8 +31,10 @@ class AutocompleteResult {
   typedef ACMatches::iterator iterator;
   using MatchDedupComparator = std::pair<GURL, bool>;
 
-  // Max number of matches we'll show from the various providers.
-  static size_t GetMaxMatches(bool is_zero_suggest = false);
+  // Max number of matches we'll show from the various providers. This limit may
+  // be different for zero suggest (i.e. when |input_from_omnibox_focus| is
+  // true) and non zero suggest.
+  static size_t GetMaxMatches(bool input_from_omnibox_focus = false);
 
   AutocompleteResult();
   ~AutocompleteResult();
@@ -69,6 +72,9 @@ class AutocompleteResult {
   void AppendDedicatedPedalMatches(AutocompleteProviderClient* client,
                                    const AutocompleteInput& input);
 
+  // Sets |pedal| in matches that have Pedal-triggering text.
+  void ConvertInSuggestionPedalMatches(AutocompleteProviderClient* client);
+
   // Sets |has_tab_match| in matches whose URL matches an open tab's URL.
   // Also, fixes up the description if not using another UI element to
   // annotate (e.g. tab switch button). |input| can be null; if provided,
@@ -100,8 +106,7 @@ class AutocompleteResult {
   bool TopMatchIsStandaloneVerbatimMatch() const;
 
   // Returns the first match in |matches| which might be chosen as default.
-  // If |kOmniboxPreserveDefaultMatchScore| is enabled and the page is not
-  // the fake box, the scores are not demoted by type.
+  // If the page is not the fake box, the scores are not demoted by type.
   static ACMatches::const_iterator FindTopMatch(const AutocompleteInput& input,
                                                 const ACMatches& matches);
   static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,
@@ -119,6 +124,10 @@ class AutocompleteResult {
       bool input_from_omnibox_focus,
       const ACMatches& matches,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
+
+  const SearchSuggestionParser::HeadersMap& headers_map() const {
+    return headers_map_;
+  }
 
   // Clears the matches for this result set.
   void Reset();
@@ -148,11 +157,19 @@ class AutocompleteResult {
   // Get a list of comparators used for deduping for the matches in this result.
   std::vector<MatchDedupComparator> GetMatchDedupComparators() const;
 
+  // Gets the header string associated with |suggestion_group_id|. Returns an
+  // empty string if no header is found.
+  base::string16 GetHeaderForGroupId(int suggestion_group_id) const;
+
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
   // |old_result| a list of the comparators for the old matches.
   static void LogAsynchronousUpdateMetrics(
       const std::vector<MatchDedupComparator>& old_result,
       const AutocompleteResult& new_result);
+
+  void set_headers_map(const SearchSuggestionParser::HeadersMap& headers_map) {
+    headers_map_ = headers_map;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
@@ -177,9 +194,7 @@ class AutocompleteResult {
   // Modifies |matches| such that any duplicate matches are coalesced into
   // representative "best" matches. The erased matches are moved into the
   // |duplicate_matches| members of their representative matches.
-  static void DeduplicateMatches(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
+  static void DeduplicateMatches(ACMatches* matches);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
@@ -201,10 +216,8 @@ class AutocompleteResult {
   // Moves matches into this result. |old_matches| gives the matches from the
   // last result, and |new_matches| the results from this result. |old_matches|
   // should not be used afterwards.
-  void MergeMatchesByProvider(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* old_matches,
-      const ACMatches& new_matches);
+  void MergeMatchesByProvider(ACMatches* old_matches,
+                              const ACMatches& new_matches);
 
   // This pulls the relevant fields out of a match for comparison with other
   // matches for the purpose of deduping. It uses the stripped URL, so that we
@@ -218,6 +231,7 @@ class AutocompleteResult {
   // |max_url_matches| but will allow more if there are no other types to
   // replace them.
   void LimitNumberOfURLsShown(
+      size_t max_matches,
       size_t max_url_count,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
@@ -238,6 +252,9 @@ class AutocompleteResult {
   void DemoteOnDeviceSearchSuggestions();
 
   ACMatches matches_;
+
+  // The map of suggestion group IDs to headers.
+  SearchSuggestionParser::HeadersMap headers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };

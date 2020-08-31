@@ -42,7 +42,8 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
   void SetCompositorValue(CompositorKeyframeValue*);
   PropertyHandleSet Properties() const final;
 
-  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const override;
+  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
+                                       Element*) const override;
 
   void Trace(Visitor*) override;
 
@@ -64,6 +65,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     }
 
     bool IsNeutral() const final { return false; }
+    bool IsRevert() const final { return false; }
     Keyframe::PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const final {
@@ -109,16 +111,18 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
 using TransitionPropertySpecificKeyframe =
     TransitionKeyframe::PropertySpecificKeyframe;
 
-DEFINE_TYPE_CASTS(TransitionKeyframe,
-                  Keyframe,
-                  value,
-                  value->IsTransitionKeyframe(),
-                  value.IsTransitionKeyframe());
-DEFINE_TYPE_CASTS(TransitionPropertySpecificKeyframe,
-                  Keyframe::PropertySpecificKeyframe,
-                  value,
-                  value->IsTransitionPropertySpecificKeyframe(),
-                  value.IsTransitionPropertySpecificKeyframe());
+template <>
+struct DowncastTraits<TransitionKeyframe> {
+  static bool AllowFrom(const Keyframe& value) {
+    return value.IsTransitionKeyframe();
+  }
+};
+template <>
+struct DowncastTraits<TransitionPropertySpecificKeyframe> {
+  static bool AllowFrom(const Keyframe::PropertySpecificKeyframe& value) {
+    return value.IsTransitionPropertySpecificKeyframe();
+  }
+};
 
 }  // namespace blink
 

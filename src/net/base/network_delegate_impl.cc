@@ -21,12 +21,6 @@ int NetworkDelegateImpl::OnBeforeStartTransaction(
   return OK;
 }
 
-void NetworkDelegateImpl::OnBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {}
-
 int NetworkDelegateImpl::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
@@ -69,7 +63,7 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
 
 bool NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) const {
   return false;
 }

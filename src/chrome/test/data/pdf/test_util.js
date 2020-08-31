@@ -4,16 +4,17 @@
 
 // Utilities that are used in multiple tests.
 
+import {Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 export function MockWindow(width, height, sizer) {
   this.innerWidth = width;
   this.innerHeight = height;
   this.addEventListener = function(e, f) {
-    if (e == 'scroll') {
+    if (e === 'scroll') {
       this.scrollCallback = f;
     }
-    if (e == 'resize') {
+    if (e === 'resize') {
       this.resizeCallback = f;
     }
   };
@@ -98,7 +99,7 @@ export function MockDocumentDimensions(width, height, layoutOptions) {
   this.pageDimensions = [];
   this.addPage = function(w, h) {
     let y = 0;
-    if (this.pageDimensions.length != 0) {
+    if (this.pageDimensions.length !== 0) {
       y = this.pageDimensions[this.pageDimensions.length - 1].y +
           this.pageDimensions[this.pageDimensions.length - 1].height;
     }
@@ -136,4 +137,23 @@ export function createBookmarksForTest() {
     },
   });
   return document.createElement('test-bookmarks');
+}
+
+/**
+ * Create a viewport with basic default zoom values.
+ * @param {!Window} window
+ * @param {!HTMLDivElement} sizer The element which represents the size of the
+ *     document in the viewport
+ * @param {number} scrollbarWidth The width of scrollbars on the page
+ * @param {number} defaultZoom The default zoom level.
+ * @param {number} topToolbarHeight The number of pixels that should initially
+ *     be left blank above the document for the toolbar.
+ * @return {!Viewport} The viewport object with zoom values set.
+ */
+export function getZoomableViewport(
+    window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+  const viewport = new Viewport(
+      window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight);
+  viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
+  return viewport;
 }

@@ -34,7 +34,6 @@ class CSSCursorImageValue : public CSSValue {
   CSSCursorImageValue(const CSSValue& image_value,
                       bool hot_spot_specified,
                       const IntPoint& hot_spot);
-  ~CSSCursorImageValue();
 
   bool HotSpotSpecified() const { return hot_spot_specified_; }
   const IntPoint& HotSpot() const { return hot_spot_; }
@@ -44,7 +43,7 @@ class CSSCursorImageValue : public CSSValue {
 
   bool Equals(const CSSCursorImageValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   Member<const CSSValue> image_value_;

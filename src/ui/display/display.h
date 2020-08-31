@@ -12,10 +12,8 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/transform.h"
 
 namespace display {
 
@@ -170,11 +168,6 @@ class DISPLAY_EXPORT Display final {
   void set_panel_rotation(Rotation rotation) { panel_rotation_ = rotation; }
   int PanelRotationAsDegree() const;
 
-  // Returns an exact matrix representation of the transform that corrects for
-  // the display's rotation.
-  static gfx::Transform GetRotationTransform(Rotation rotation,
-                                             const gfx::SizeF& size);
-
   TouchSupport touch_support() const { return touch_support_; }
   void set_touch_support(TouchSupport support) { touch_support_ = support; }
 
@@ -235,20 +228,11 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
-  // The color space of the display.
-  gfx::ColorSpace color_space() const { return color_space_; }
-  void set_color_space(const gfx::ColorSpace& color_space) {
-    color_space_ = color_space;
+  // The color spaces used by the display.
+  const gfx::DisplayColorSpaces& color_spaces() const { return color_spaces_; }
+  void set_color_spaces(const gfx::DisplayColorSpaces& color_spaces) {
+    color_spaces_ = color_spaces;
   }
-
-  // SDR white level used to scale HDR color spaces.
-  float sdr_white_level() const { return sdr_white_level_; }
-
-  // Set the color space and SDR white level of the display, and reset the color
-  // depth and depth per component based on whether the color space is HDR.
-  void SetColorSpaceAndDepth(
-      const gfx::ColorSpace& color_space,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Default values for color_depth and depth_per_component.
   static constexpr int kDefaultBitsPerPixel = 24;
@@ -289,9 +273,6 @@ class DISPLAY_EXPORT Display final {
  private:
   friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
 
-  static constexpr int kSCRGBLinearBitsPerPixel = 48;
-  static constexpr int kSCRGBLinearBitsPerComponent = 16;
-
   int64_t id_ = kInvalidDisplayId;
   gfx::Rect bounds_;
   // If non-empty, then should be same size as |bounds_|. Used to avoid rounding
@@ -304,10 +285,7 @@ class DISPLAY_EXPORT Display final {
   TouchSupport touch_support_ = TouchSupport::UNKNOWN;
   AccelerometerSupport accelerometer_support_ = AccelerometerSupport::UNKNOWN;
   gfx::Size maximum_cursor_size_;
-  // NOTE: this is not currently written to the mojom as it is not used in
-  // aura.
-  gfx::ColorSpace color_space_;
-  float sdr_white_level_;
+  gfx::DisplayColorSpaces color_spaces_;
   int color_depth_;
   int depth_per_component_;
   bool is_monochrome_ = false;

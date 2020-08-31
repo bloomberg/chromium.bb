@@ -8,12 +8,12 @@
 # files to be included, or for multiple sets of default configs to be toggled
 # on a single target type (e.g. source_set, static_library)
 config("openscreen_include_dirs") {
-  openscreen_root = get_path_info("../", "abspath")
+  openscreen_root = rebase_path("../", "//")
 
-  defines = [ "OPENSCREEN_TEST_DATA_DIR=\".${openscreen_root}test/data/\"" ]
+  defines = [ "OPENSCREEN_TEST_DATA_DIR=\"${openscreen_root}test/data/\"" ]
 
   include_dirs = [
-    "$openscreen_root",
+    "//$openscreen_root",
     "$root_gen_dir/$openscreen_root",
   ]
 }

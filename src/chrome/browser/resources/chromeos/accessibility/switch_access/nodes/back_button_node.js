@@ -16,9 +16,6 @@ class BackButtonNode extends SAChildNode {
      * @private {!SARootNode}
      */
     this.group_ = group;
-
-    /** @private {chrome.automation.AutomationNode} */
-    this.node_ = SwitchAccess.get().getBackButtonAutomationNode();
   }
 
   // ================= Getters and setters =================
@@ -30,13 +27,16 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get automationNode() {
-    return this.node_;
+    return BackButtonNode.automationNode;
   }
 
   /** @override */
   get location() {
-    if (this.node_) {
-      return this.node_.location;
+    if (BackButtonNode.locationForTesting) {
+      return BackButtonNode.locationForTesting;
+    }
+    if (this.automationNode) {
+      return this.automationNode.location;
     }
   }
 
@@ -59,7 +59,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
-    return this.node_ === node;
+    return node instanceof BackButtonNode || this.automationNode === node;
   }
 
   /** @override */
@@ -68,27 +68,32 @@ class BackButtonNode extends SAChildNode {
   }
 
   /** @override */
+  isValidAndVisible() {
+    return this.automationNode !== null;
+  }
+
+  /** @override */
   onFocus() {
+    super.onFocus();
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         true, this.group_.location, 0 /* num_actions */);
   }
 
   /** @override */
   onUnfocus() {
+    super.onUnfocus();
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false, RectHelper.ZERO_RECT, 0 /* num_actions */);
   }
 
   /** @override */
   performAction(action) {
-    if (action !== SAConstants.MenuAction.SELECT) {
-      return false;
+    if (action === SAConstants.MenuAction.SELECT &&
+        BackButtonNode.automationNode_) {
+      BackButtonNode.automationNode_.doDefault();
+      return SAConstants.ActionResponse.CLOSE_MENU;
     }
-
-    if (this.node_) {
-      this.node_.doDefault();
-    }
-    return true;
+    return SAConstants.ActionResponse.NO_ACTION_TAKEN;
   }
 
   // ================= Debug methods =================
@@ -96,5 +101,23 @@ class BackButtonNode extends SAChildNode {
   /** @override */
   debugString() {
     return 'BackButtonNode';
+  }
+
+  // ================= Static methods =================
+
+  /**
+   * Looks for the back button node.
+   * @return {?chrome.automation.AutomationNode}
+   */
+  static get automationNode() {
+    if (BackButtonNode.automationNode_) {
+      return BackButtonNode.automationNode_;
+    }
+
+    const treeWalker = new AutomationTreeWalker(
+        NavigationManager.desktopNode, constants.Dir.FORWARD,
+        {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
+    BackButtonNode.automationNode_ = treeWalker.next().node;
+    return BackButtonNode.automationNode_;
   }
 }

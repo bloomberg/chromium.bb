@@ -18,13 +18,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verify;
 
-import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -39,7 +40,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Icon;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
@@ -47,8 +47,9 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.MaterialProgressBar;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -101,8 +102,7 @@ public class AutofillAssistantHeaderUiTest {
 
             ViewGroup chromeCoordinatorView = getActivity().findViewById(R.id.coordinator);
             chromeCoordinatorView.addView(coordinator.getView(), lp);
-            coordinator.disableAnimationsForTesting(true);
-
+            model.set(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING, true);
             return coordinator;
         });
     }
@@ -132,13 +132,14 @@ public class AutofillAssistantHeaderUiTest {
         AssistantHeaderCoordinator coordinator = createCoordinator(model);
         ViewHolder viewHolder = new ViewHolder(coordinator.getView());
 
-        String statusMessage = "Hello World";
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, statusMessage));
-
+                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, "Hello World"));
         onView(is(viewHolder.mStatusMessage))
-                .check(matches(isDisplayed()))
-                .check(matches(withText(statusMessage)));
+                .check(matches(allOf(isDisplayed(), withText("Hello World"))));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.STATUS_MESSAGE, "<b>Hello Bold</b>"));
+        onView(is(viewHolder.mStatusMessage)).check(matches(withText("Hello Bold")));
 
         int progress = 42;
         TestThreadUtils.runOnUiThreadBlocking(
@@ -157,7 +158,7 @@ public class AutofillAssistantHeaderUiTest {
 
         String chipText = "Hello World";
         AssistantChip chip = new AssistantChip(AssistantChip.Type.BUTTON_FILLED_BLUE, Icon.DONE,
-                chipText, /* disabled= */ false, /* sticky= */ false, () -> {});
+                chipText, /* disabled= */ false, /* sticky= */ false, "", () -> {});
 
         // Set the header chip without displaying it.
         TestThreadUtils.runOnUiThreadBlocking(() -> model.set(AssistantHeaderModel.CHIP, chip));

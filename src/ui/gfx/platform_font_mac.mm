@@ -13,6 +13,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
@@ -180,6 +181,12 @@ NSFont* ValidateFont(NSFont* font) {
   return font ? font : [NSFont systemFontOfSize:[NSFont systemFontSize]];
 }
 
+std::string GetFamilyNameFromTypeface(sk_sp<SkTypeface> typeface) {
+  SkString family;
+  typeface->getFamilyName(&family);
+  return family.c_str();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +210,16 @@ PlatformFontMac::PlatformFontMac(const std::string& font_name, int font_size)
                       font_size,
                       Font::NORMAL,
                       Font::Weight::NORMAL) {}
+
+PlatformFontMac::PlatformFontMac(sk_sp<SkTypeface> typeface,
+                                 int font_size_pixels,
+                                 const base::Optional<FontRenderParams>& params)
+    : PlatformFontMac(
+          base::mac::CFToNSCast(SkTypeface_GetCTFontRef(typeface.get())),
+          GetFamilyNameFromTypeface(typeface),
+          font_size_pixels,
+          (typeface->isItalic() ? Font::ITALIC : Font::NORMAL),
+          FontWeightFromInt(typeface->fontStyle().weight())) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontMac, PlatformFont implementation:
@@ -311,8 +328,8 @@ NativeFont PlatformFontMac::GetNativeFont() const {
   return [[native_font_.get() retain] autorelease];
 }
 
-sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypefaceIfAvailable() const {
-  return nullptr;
+sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypeface() const {
+  return SkMakeTypefaceFromCTFont(base::mac::NSToCFCast(GetNativeFont()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -385,6 +402,14 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   return new PlatformFontMac(font_name, font_size);
+}
+
+// static
+PlatformFont* PlatformFont::CreateFromSkTypeface(
+    sk_sp<SkTypeface> typeface,
+    int font_size_pixels,
+    const base::Optional<FontRenderParams>& params) {
+  return new PlatformFontMac(typeface, font_size_pixels, params);
 }
 
 }  // namespace gfx

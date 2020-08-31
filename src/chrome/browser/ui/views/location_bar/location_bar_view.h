@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
@@ -44,6 +44,7 @@ class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
+class PageActionIconController;
 class PageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
@@ -69,10 +70,10 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
+                        public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
-                        public PageActionIconView::Delegate,
-                        public ui::MaterialDesignControllerObserver {
+                        public PageActionIconView::Delegate {
  public:
   class Delegate {
    public:
@@ -129,8 +130,8 @@ class LocationBarView : public LocationBar,
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
-  PageActionIconContainerView* page_action_icon_container() {
-    return page_action_icon_container_;
+  PageActionIconController* page_action_icon_controller() {
+    return page_action_icon_controller_;
   }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
@@ -185,8 +186,12 @@ class LocationBarView : public LocationBar,
   LocationBarModel* GetLocationBarModel() override;
   content::WebContents* GetWebContents() override;
 
+  // IconLabelBubbleView::Delegate:
+  SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
+  SkColor GetIconLabelBubbleBackgroundColor() const override;
+
   // ContentSettingImageView::Delegate:
-  SkColor GetContentSettingInkDropColor() const override;
+  bool ShouldHideContentSettingImage() override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -212,7 +217,7 @@ class LocationBarView : public LocationBar,
   Browser* browser() { return browser_; }
   Profile* profile() { return profile_; }
 
-  // LocationIconView::Delegate
+  // LocationIconView::Delegate:
   bool IsEditingOrEmpty() const override;
   void OnLocationIconPressed(const ui::MouseEvent& event) override;
   void OnLocationIconDragged(const ui::MouseEvent& event) override;
@@ -221,7 +226,6 @@ class LocationBarView : public LocationBar,
       security_state::SecurityLevel security_level) const override;
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
-  SkColor GetLocationIconInkDropColor() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -305,9 +309,8 @@ class LocationBarView : public LocationBar,
                            const gfx::Point& p) override;
 
   // PageActionIconView::Delegate:
-  SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
-  bool IsLocationBarUserInputInProgress() const override;
+  bool ShouldHidePageActionIcons() const override;
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -322,13 +325,16 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate:
   void FocusAndSelectAll() override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
+  void OnTouchUiChanged();
 
   // Called with an async fetched for the keyword view.
   void OnKeywordFaviconFetched(const gfx::Image& icon);
 
+  // Updates the visibility of the QR Code Generator icon.
+  void UpdateQRCodeGeneratorIcon();
+
   // Updates the visibility of the send tab to self icon.
+  // Returns true if visibility changed.
   bool UpdateSendTabToSelfIcon();
 
   // The Browser this LocationBarView is in.  Note that at least
@@ -369,7 +375,10 @@ class LocationBarView : public LocationBar,
   // The content setting views.
   ContentSettingViews content_setting_views_;
 
-  // The page action icons.
+  // The controller for page action icons.
+  PageActionIconController* page_action_icon_controller_ = nullptr;
+
+  // The container for page action icons.
   PageActionIconContainerView* page_action_icon_container_ = nullptr;
 
   // An [x] that appears in touch mode (when the OSK is visible) and allows the
@@ -388,9 +397,10 @@ class LocationBarView : public LocationBar,
 
   bool is_initialized_ = false;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&LocationBarView::OnTouchUiChanged,
+                              base::Unretained(this)));
 
   base::WeakPtrFactory<LocationBarView> weak_factory_{this};
 

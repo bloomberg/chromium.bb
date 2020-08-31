@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the the Import Data dialog to allow
- * users to import data (like bookmarks) from other web browsers.
- */
-cr.exportPath('settings');
+// clang-format off
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
 /**
  * An object describing a source browser profile that may be imported.
@@ -14,6 +12,7 @@ cr.exportPath('settings');
  * @typedef {{
  *   name: string,
  *   index: number,
+ *   profileName: string,
  *   history: boolean,
  *   favorites: boolean,
  *   passwords: boolean,
@@ -21,67 +20,59 @@ cr.exportPath('settings');
  *   autofillFormData: boolean,
  * }}
  */
-settings.BrowserProfile;
+export let BrowserProfile;
 
 /**
  * @enum {string}
  * These string values must be kept in sync with the C++ ImportDataHandler.
  */
-settings.ImportDataStatus = {
+export const ImportDataStatus = {
   INITIAL: 'initial',
   IN_PROGRESS: 'inProgress',
   SUCCEEDED: 'succeeded',
   FAILED: 'failed',
 };
 
-cr.define('settings', function() {
-  /** @interface */
-  class ImportDataBrowserProxy {
-    /**
-     * Returns the source profiles available for importing from other browsers.
-     * @return {!Promise<!Array<!settings.BrowserProfile>>}
-     */
-    initializeImportDialog() {}
-
-    /**
-     * Starts importing data for the specified source browser profile. The C++
-     * responds with the 'import-data-status-changed' WebUIListener event.
-     * @param {number} sourceBrowserProfileIndex
-     */
-    importData(sourceBrowserProfileIndex) {}
-
-    /**
-     * Prompts the user to choose a bookmarks file to import bookmarks from.
-     */
-    importFromBookmarksFile() {}
-  }
+/** @interface */
+export class ImportDataBrowserProxy {
+  /**
+   * Returns the source profiles available for importing from other browsers.
+   * @return {!Promise<!Array<!BrowserProfile>>}
+   */
+  initializeImportDialog() {}
 
   /**
-   * @implements {settings.ImportDataBrowserProxy}
+   * Starts importing data for the specified source browser profile. The C++
+   * responds with the 'import-data-status-changed' WebUIListener event.
+   * @param {number} sourceBrowserProfileIndex
+   * @param {!Object<boolean>} types Which types of data to import.
    */
-  class ImportDataBrowserProxyImpl {
-    /** @override */
-    initializeImportDialog() {
-      return cr.sendWithPromise('initializeImportDialog');
-    }
+  importData(sourceBrowserProfileIndex, types) {}
 
-    /** @override */
-    importData(sourceBrowserProfileIndex) {
-      chrome.send('importData', [sourceBrowserProfileIndex]);
-    }
+  /**
+   * Prompts the user to choose a bookmarks file to import bookmarks from.
+   */
+  importFromBookmarksFile() {}
+}
 
-    /** @override */
-    importFromBookmarksFile() {
-      chrome.send('importFromBookmarksFile');
-    }
+/** @implements {ImportDataBrowserProxy} */
+export class ImportDataBrowserProxyImpl {
+  /** @override */
+  initializeImportDialog() {
+    return sendWithPromise('initializeImportDialog');
   }
 
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  cr.addSingletonGetter(ImportDataBrowserProxyImpl);
+  /** @override */
+  importData(sourceBrowserProfileIndex, types) {
+    chrome.send('importData', [sourceBrowserProfileIndex, types]);
+  }
 
-  return {
-    ImportDataBrowserProxy: ImportDataBrowserProxy,
-    ImportDataBrowserProxyImpl: ImportDataBrowserProxyImpl,
-  };
-});
+  /** @override */
+  importFromBookmarksFile() {
+    chrome.send('importFromBookmarksFile');
+  }
+}
+
+// The singleton instance_ is replaced with a test version of this wrapper
+// during testing.
+addSingletonGetter(ImportDataBrowserProxyImpl);

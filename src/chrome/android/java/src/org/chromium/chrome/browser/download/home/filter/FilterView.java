@@ -5,16 +5,17 @@
 package org.chromium.chrome.browser.download.home.filter;
 
 import android.content.Context;
-import android.support.design.widget.TabLayout;
-import android.support.design.widget.TabLayout.Tab;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayout.Tab;
+
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator.TabType;
-import org.chromium.chrome.download.R;
 
 /**
  * A View class responsible for setting specific properties from a {@link FilterModel} to a

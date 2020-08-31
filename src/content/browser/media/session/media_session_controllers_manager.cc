@@ -44,7 +44,8 @@ bool MediaSessionControllersManager::RequestPlay(
     const MediaPlayerId& id,
     bool has_audio,
     bool is_remote,
-    media::MediaContentType media_content_type) {
+    media::MediaContentType media_content_type,
+    bool has_video) {
   if (!IsMediaSessionEnabled())
     return true;
 
@@ -55,6 +56,11 @@ bool MediaSessionControllersManager::RequestPlay(
   if (position_it != position_map_.end())
     position = &position_it->second;
 
+  bool is_pip_available = false;
+  auto pip_it = pip_availability_map_.find(id);
+  if (pip_it != pip_availability_map_.end())
+    is_pip_available = pip_it->second;
+
   // Since we don't remove session instances on pause, there may be an existing
   // instance for this playback attempt.
   //
@@ -64,19 +70,18 @@ bool MediaSessionControllersManager::RequestPlay(
   auto it = controllers_map_.find(id);
   if (it != controllers_map_.end()) {
     if (it->second->Initialize(has_audio, is_remote, media_content_type,
-                               position)) {
+                               position, is_pip_available, has_video)) {
       return true;
     }
 
     controllers_map_.erase(it);
     return false;
   }
-
   std::unique_ptr<MediaSessionController> controller(
       new MediaSessionController(id, media_web_contents_observer_));
 
   if (!controller->Initialize(has_audio, is_remote, media_content_type,
-                              position)) {
+                              position, is_pip_available, has_video)) {
     return false;
   }
 
@@ -116,12 +121,36 @@ void MediaSessionControllersManager::OnMediaPositionStateChanged(
   it->second->OnMediaPositionStateChanged(position);
 }
 
+void MediaSessionControllersManager::PictureInPictureStateChanged(
+    bool is_picture_in_picture) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  for (auto& entry : controllers_map_)
+    entry.second->PictureInPictureStateChanged(is_picture_in_picture);
+}
+
 void MediaSessionControllersManager::WebContentsMutedStateChanged(bool muted) {
   if (!IsMediaSessionEnabled())
     return;
 
   for (auto& entry : controllers_map_)
     entry.second->WebContentsMutedStateChanged(muted);
+}
+
+void MediaSessionControllersManager::OnPictureInPictureAvailabilityChanged(
+    const MediaPlayerId& id,
+    bool available) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  base::InsertOrAssign(pip_availability_map_, id, available);
+
+  auto it = controllers_map_.find(id);
+  if (it == controllers_map_.end())
+    return;
+
+  it->second->OnPictureInPictureAvailabilityChanged(available);
 }
 
 }  // namespace content

@@ -15,144 +15,149 @@
 #ifndef sw_Context_hpp
 #define sw_Context_hpp
 
-#include "Vulkan/VkConfig.h"
-#include "Vulkan/VkDescriptorSet.hpp"
 #include "Config.hpp"
 #include "Memset.hpp"
 #include "Stream.hpp"
 #include "System/Types.hpp"
+#include "Vulkan/VkConfig.hpp"
+#include "Vulkan/VkDescriptorSet.hpp"
 
-namespace vk
+namespace vk {
+
+class ImageView;
+class PipelineLayout;
+
+}  // namespace vk
+
+namespace sw {
+
+class SpirvShader;
+
+struct PushConstantStorage
 {
-	class ImageView;
-	class PipelineLayout;
-}
+	unsigned char data[vk::MAX_PUSH_CONSTANT_SIZE];
+};
 
-namespace sw
+struct BlendState : Memset<BlendState>
 {
-	class SpirvShader;
+	BlendState()
+	    : Memset(this, 0)
+	{}
 
-	struct PushConstantStorage
-	{
-		unsigned char data[vk::MAX_PUSH_CONSTANT_SIZE];
-	};
+	BlendState(bool alphaBlendEnable,
+	           VkBlendFactor sourceBlendFactor,
+	           VkBlendFactor destBlendFactor,
+	           VkBlendOp blendOperation,
+	           VkBlendFactor sourceBlendFactorAlpha,
+	           VkBlendFactor destBlendFactorAlpha,
+	           VkBlendOp blendOperationAlpha)
+	    : Memset(this, 0)
+	    , alphaBlendEnable(alphaBlendEnable)
+	    , sourceBlendFactor(sourceBlendFactor)
+	    , destBlendFactor(destBlendFactor)
+	    , blendOperation(blendOperation)
+	    , sourceBlendFactorAlpha(sourceBlendFactorAlpha)
+	    , destBlendFactorAlpha(destBlendFactorAlpha)
+	    , blendOperationAlpha(blendOperationAlpha)
+	{}
 
-	struct BlendState : Memset<BlendState>
-	{
-		BlendState() : Memset(this, 0) {}
+	bool alphaBlendEnable;
+	VkBlendFactor sourceBlendFactor;
+	VkBlendFactor destBlendFactor;
+	VkBlendOp blendOperation;
+	VkBlendFactor sourceBlendFactorAlpha;
+	VkBlendFactor destBlendFactorAlpha;
+	VkBlendOp blendOperationAlpha;
+};
 
-		BlendState(bool alphaBlendEnable,
-		           VkBlendFactor sourceBlendFactor,
-		           VkBlendFactor destBlendFactor,
-		           VkBlendOp blendOperation,
-		           VkBlendFactor sourceBlendFactorAlpha,
-		           VkBlendFactor destBlendFactorAlpha,
-		           VkBlendOp blendOperationAlpha) :
-			Memset(this, 0),
-			alphaBlendEnable(alphaBlendEnable),
-			sourceBlendFactor(sourceBlendFactor),
-			destBlendFactor(destBlendFactor),
-			blendOperation(blendOperation),
-			sourceBlendFactorAlpha(sourceBlendFactorAlpha),
-			destBlendFactorAlpha(destBlendFactorAlpha),
-			blendOperationAlpha(blendOperationAlpha)
-		{}
+class Context
+{
+public:
+	Context() = default;
 
-		bool alphaBlendEnable;
-		VkBlendFactor sourceBlendFactor;
-		VkBlendFactor destBlendFactor;
-		VkBlendOp blendOperation;
-		VkBlendFactor sourceBlendFactorAlpha;
-		VkBlendFactor destBlendFactorAlpha;
-		VkBlendOp blendOperationAlpha;
-	};
+	bool isDrawPoint(bool polygonModeAware) const;
+	bool isDrawLine(bool polygonModeAware) const;
+	bool isDrawTriangle(bool polygonModeAware) const;
 
-	class Context
-	{
-	public:
-		Context();
+	bool depthWriteActive() const;
+	bool depthBufferActive() const;
+	bool stencilActive() const;
 
-		void init();
+	bool allTargetsColorClamp() const;
 
-		bool isDrawPoint(bool polygonModeAware) const;
-		bool isDrawLine(bool polygonModeAware) const;
-		bool isDrawTriangle(bool polygonModeAware) const;
+	void setBlendState(int index, BlendState state);
+	BlendState getBlendState(int index) const;
 
-		bool depthWriteActive() const;
-		bool depthBufferActive() const;
-		bool stencilActive() const;
+	VkPrimitiveTopology topology;
+	VkProvokingVertexModeEXT provokingVertexMode;
 
-		bool allTargetsColorClamp() const;
+	bool stencilEnable;
+	VkStencilOpState frontStencil;
+	VkStencilOpState backStencil;
 
-		void setBlendState(int index, BlendState state);
-		BlendState getBlendState(int index) const;
+	// Pixel processor states
+	VkCullModeFlags cullMode;
+	VkFrontFace frontFace;
+	VkPolygonMode polygonMode;
+	VkLineRasterizationModeEXT lineRasterizationMode;
 
-		VkPrimitiveTopology topology;
-		VkProvokingVertexModeEXT provokingVertexMode;
+	float depthBias;
+	float slopeDepthBias;
+	float depthBiasClamp;
+	bool depthRangeUnrestricted;
 
-		bool stencilEnable;
-		VkStencilOpState frontStencil;
-		VkStencilOpState backStencil;
+	VkFormat renderTargetInternalFormat(int index) const;
+	int colorWriteActive(int index) const;
 
-		// Pixel processor states
-		VkCullModeFlags cullMode;
-		VkFrontFace frontFace;
-		VkPolygonMode polygonMode;
-		VkLineRasterizationModeEXT lineRasterizationMode;
+	vk::DescriptorSet::Array descriptorSetObjects = {};
+	vk::DescriptorSet::Bindings descriptorSets = {};
+	vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
+	Stream input[MAX_INTERFACE_COMPONENTS / 4];
+	bool robustBufferAccess;
 
-		float depthBias;
-		float slopeDepthBias;
+	vk::ImageView *renderTarget[RENDERTARGETS];
+	vk::ImageView *depthBuffer;
+	vk::ImageView *stencilBuffer;
 
-		VkFormat renderTargetInternalFormat(int index) const;
-		int colorWriteActive(int index) const;
+	vk::PipelineLayout const *pipelineLayout;
 
-		vk::DescriptorSet::Bindings descriptorSets = {};
-		vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
-		Stream input[MAX_INTERFACE_COMPONENTS / 4];
-		bool robustBufferAccess;
+	// Shaders
+	const SpirvShader *pixelShader;
+	const SpirvShader *vertexShader;
 
-		vk::ImageView *renderTarget[RENDERTARGETS];
-		vk::ImageView *depthBuffer;
-		vk::ImageView *stencilBuffer;
+	bool occlusionEnabled;
 
-		vk::PipelineLayout const *pipelineLayout;
+	// Pixel processor states
+	bool rasterizerDiscard;
+	bool depthBoundsTestEnable;
+	bool depthBufferEnable;
+	VkCompareOp depthCompareMode;
+	bool depthWriteEnable;
 
-		// Shaders
-		const SpirvShader *pixelShader;
-		const SpirvShader *vertexShader;
+	float lineWidth;
 
-		bool occlusionEnabled;
+	int colorWriteMask[RENDERTARGETS];  // RGBA
+	unsigned int sampleMask;
+	unsigned int multiSampleMask;
+	int sampleCount;
+	bool alphaToCoverage;
 
-		// Pixel processor states
-		bool rasterizerDiscard;
-		bool depthBoundsTestEnable;
-		bool depthBufferEnable;
-		VkCompareOp depthCompareMode;
-		bool depthWriteEnable;
+private:
+	bool colorWriteActive() const;
+	bool colorUsed() const;
 
-		float lineWidth;
+	bool alphaBlendActive(int index) const;
+	VkBlendFactor sourceBlendFactor(int index) const;
+	VkBlendFactor destBlendFactor(int index) const;
+	VkBlendOp blendOperation(int index) const;
 
-		int colorWriteMask[RENDERTARGETS];   // RGBA
-		unsigned int sampleMask;
-		unsigned int multiSampleMask;
-		int sampleCount;
-		bool alphaToCoverage;
+	VkBlendFactor sourceBlendFactorAlpha(int index) const;
+	VkBlendFactor destBlendFactorAlpha(int index) const;
+	VkBlendOp blendOperationAlpha(int index) const;
 
-	private:
-		bool colorWriteActive() const;
-		bool colorUsed() const;
+	BlendState blendState[RENDERTARGETS];
+};
 
-		bool alphaBlendActive(int index) const;
-		VkBlendFactor sourceBlendFactor(int index) const;
-		VkBlendFactor destBlendFactor(int index) const;
-		VkBlendOp blendOperation(int index) const;
+}  // namespace sw
 
-		VkBlendFactor sourceBlendFactorAlpha(int index) const;
-		VkBlendFactor destBlendFactorAlpha(int index) const;
-		VkBlendOp blendOperationAlpha(int index) const;
-
-		BlendState blendState[RENDERTARGETS];
-	};
-}
-
-#endif   // sw_Context_hpp
+#endif  // sw_Context_hpp

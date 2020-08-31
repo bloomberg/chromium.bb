@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrEllipseEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -31,11 +31,11 @@ public:
         (void)radii;
         prevRadii = float2(-1.0);
         medPrecision = !sk_Caps.floatIs32Bits;
-        ellipseVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kFloat4_GrSLType,
-                                                      "ellipse");
+        ellipseVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                      kFloat4_GrSLType, "ellipse");
         if (medPrecision) {
-            scaleVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kFloat2_GrSLType,
-                                                        "scale");
+            scaleVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                        kFloat2_GrSLType, "scale");
         }
         fragBuilder->codeAppendf(
                 "float2 prevCenter;\nfloat2 prevRadii = float2(%f, %f);\nbool medPrecision = "

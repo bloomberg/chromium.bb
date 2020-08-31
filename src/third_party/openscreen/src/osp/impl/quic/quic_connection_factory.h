@@ -18,7 +18,7 @@ namespace osp {
 
 // This interface provides a way to make new QUIC connections to endpoints.  It
 // also provides a way to receive incoming QUIC connections (as a server).
-class QuicConnectionFactory : public platform::UdpSocket::Client {
+class QuicConnectionFactory : public UdpSocket::Client {
  public:
   class ServerDelegate {
    public:

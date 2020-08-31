@@ -4,7 +4,11 @@
 
 #include "storage/browser/blob/blob_transport_strategy.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -13,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/core/embedder/embedder.h"
@@ -52,7 +57,7 @@ class BlobTransportStrategyTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     bytes_provider_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     mock_time_ = base::Time::Now();
 
     limits_.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;
@@ -100,7 +105,7 @@ class BlobTransportStrategyTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> bytes_provider_runner_;
   base::Time mock_time_;
-  storage::BlobStorageLimits limits_;
+  BlobStorageLimits limits_;
 
   std::vector<std::string> bad_messages_;
 

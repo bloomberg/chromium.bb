@@ -9,10 +9,10 @@
 #include "cast/streaming/rtcp_session.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  using cast::streaming::CompoundRtcpParser;
-  using cast::streaming::FrameId;
-  using cast::streaming::RtcpSession;
-  using cast::streaming::Ssrc;
+  using openscreen::cast::CompoundRtcpParser;
+  using openscreen::cast::FrameId;
+  using openscreen::cast::RtcpSession;
+  using openscreen::cast::Ssrc;
 
   constexpr Ssrc kSenderSsrcInSeedCorpus = 1;
   constexpr Ssrc kReceiverSsrcInSeedCorpus = 2;
@@ -25,7 +25,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
   static RtcpSession session(kSenderSsrcInSeedCorpus, kReceiverSsrcInSeedCorpus,
-                             openscreen::platform::Clock::time_point{});
+                             openscreen::Clock::time_point{});
   static CompoundRtcpParser::Client client_that_ignores_everything;
   static CompoundRtcpParser parser(&session, &client_that_ignores_everything);
 #pragma clang diagnostic pop

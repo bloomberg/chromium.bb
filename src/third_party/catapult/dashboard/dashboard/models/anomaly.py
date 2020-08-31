@@ -17,7 +17,7 @@ from dashboard.common import timing
 from dashboard.common import utils
 from dashboard.common import datastore_hooks
 from dashboard.models import internal_only_model
-from dashboard.models import sheriff as sheriff_module
+from dashboard.models.subscription import Subscription
 
 # A string to describe the magnitude of a change from zero to non-zero.
 FREAKIN_HUGE = 'zero-to-nonzero'
@@ -43,8 +43,12 @@ class Anomaly(internal_only_model.InternalOnlyModel):
   # By default, this is None, which denotes a non-triaged alert.
   bug_id = ndb.IntegerProperty(indexed=True)
 
-  # The sheriff rotation that should handle this alert.
-  sheriff = ndb.KeyProperty(kind=sheriff_module.Sheriff, indexed=True)
+  # AlertGroups used for grouping
+  groups = ndb.KeyProperty(indexed=True, repeated=True)
+
+  # The subscribers who recieve alerts
+  subscriptions = ndb.LocalStructuredProperty(Subscription, repeated=True)
+  subscription_names = ndb.StringProperty(indexed=True, repeated=True)
 
   # Each Alert is related to one Test.
   test = ndb.KeyProperty(indexed=True)
@@ -193,7 +197,7 @@ class Anomaly(internal_only_model.InternalOnlyModel):
       min_start_revision=None,
       min_timestamp=None,
       recovered=None,
-      sheriff=None,
+      subscriptions=None,
       start_cursor=None,
       test=None,
       test_keys=None,
@@ -212,13 +216,10 @@ class Anomaly(internal_only_model.InternalOnlyModel):
     while not results and time.time() < deadline:
       query = cls.query()
       equality_properties = []
-      if sheriff is not None:
-        sheriff_key = ndb.Key('Sheriff', sheriff)
-        sheriff_entity = yield sheriff_key.get_async()
-        if sheriff_entity:
-          query = query.filter(cls.sheriff == sheriff_key)
-          equality_properties.append('sheriff')
-          inequality_property = 'key'
+      if subscriptions: # Empty subscriptions is not allowed in query
+        query = query.filter(cls.subscription_names.IN(subscriptions))
+        equality_properties.append('subscription_names')
+        inequality_property = 'key'
       if is_improvement is not None:
         query = query.filter(cls.is_improvement == is_improvement)
         equality_properties.append('is_improvement')
@@ -268,11 +269,7 @@ class Anomaly(internal_only_model.InternalOnlyModel):
           min_timestamp, max_timestamp)
       if post_filters:
         keys_only = False
-      query = query.order(-cls.timestamp)
-
-      if start_cursor:
-        # "BadArgumentError: _MultiQuery with cursors requires __key__ order"
-        query = query.order(cls.key)
+      query = query.order(-cls.timestamp, cls.key)
 
       futures = [query.fetch_page_async(
           limit, start_cursor=start_cursor, keys_only=keys_only)]
@@ -326,20 +323,29 @@ class Anomaly(internal_only_model.InternalOnlyModel):
       if bug_id != '*':
         inequality_property = None
     elif inequality_property == 'key':
-      if equality_properties == ['sheriff'] and min_start_revision:
-        # Use the composite index (sheriff, start_revision, -timestamp). See
-        # index.yaml.
+      if equality_properties == ['subscription_names'] and (
+          min_start_revision or max_start_revision):
+        # Use the composite index (subscription_names, start_revision,
+        # -timestamp). See index.yaml.
         inequality_property = 'start_revision'
     else:
       inequality_property = None
 
     if inequality_property is None:
       # Compute a default inequality_property.
-      if min_start_revision or max_start_revision:
+      # We prioritise the 'min' filters first because that lets us limit the
+      # amount of data the Datastore instances might handle.
+      if min_start_revision:
         inequality_property = 'start_revision'
-      elif min_end_revision or max_end_revision:
+      elif min_end_revision:
         inequality_property = 'end_revision'
-      elif min_timestamp or max_timestamp:
+      elif min_timestamp:
+        inequality_property = 'timestamp'
+      elif max_start_revision:
+        inequality_property = 'start_revision'
+      elif max_end_revision:
+        inequality_property = 'end_revision'
+      elif max_timestamp:
         inequality_property = 'timestamp'
       elif bug_id == '*':
         inequality_property = 'bug_id'
@@ -362,6 +368,9 @@ class Anomaly(internal_only_model.InternalOnlyModel):
         logging.info('post_filter:bug_id!=None')
         post_filters.append(lambda a: a.bug_id != None)
 
+    # Apply the min filters before the max filters, because that lets us
+    # optimise the query application for more recent data, reducing the amount
+    # of data post-processing.
     if min_start_revision:
       min_start_revision = int(min_start_revision)
       if inequality_property == 'start_revision':
@@ -371,16 +380,6 @@ class Anomaly(internal_only_model.InternalOnlyModel):
       else:
         logging.info('post_filter:min_start_revision=%d', min_start_revision)
         post_filters.append(lambda a: a.start_revision >= min_start_revision)
-
-    if max_start_revision:
-      max_start_revision = int(max_start_revision)
-      if inequality_property == 'start_revision':
-        logging.info('filter:max_start_revision=%d', max_start_revision)
-        query = query.filter(cls.start_revision <= max_start_revision)
-        query = query.order(-cls.start_revision)
-      else:
-        logging.info('post_filter:max_start_revision=%d', max_start_revision)
-        post_filters.append(lambda a: a.start_revision <= max_start_revision)
 
     if min_end_revision:
       min_end_revision = int(min_end_revision)
@@ -392,16 +391,6 @@ class Anomaly(internal_only_model.InternalOnlyModel):
         logging.info('post_filter:min_end_revision=%d', min_end_revision)
         post_filters.append(lambda a: a.end_revision >= min_end_revision)
 
-    if max_end_revision:
-      max_end_revision = int(max_end_revision)
-      if inequality_property == 'end_revision':
-        logging.info('filter:max_end_revision=%d', max_end_revision)
-        query = query.filter(cls.end_revision <= max_end_revision)
-        query = query.order(-cls.end_revision)
-      else:
-        logging.info('post_filter:max_end_revision=%d', max_end_revision)
-        post_filters.append(lambda a: a.end_revision <= max_end_revision)
-
     if min_timestamp:
       if inequality_property == 'timestamp':
         logging.info('filter:min_timestamp=%d',
@@ -411,6 +400,26 @@ class Anomaly(internal_only_model.InternalOnlyModel):
         logging.info('post_filter:min_timestamp=%d',
                      time.mktime(min_timestamp.utctimetuple()))
         post_filters.append(lambda a: a.timestamp >= min_timestamp)
+
+    if max_start_revision:
+      max_start_revision = int(max_start_revision)
+      if inequality_property == 'start_revision':
+        logging.info('filter:max_start_revision=%d', max_start_revision)
+        query = query.filter(cls.start_revision <= max_start_revision)
+        query = query.order(-cls.start_revision)
+      else:
+        logging.info('post_filter:max_start_revision=%d', max_start_revision)
+        post_filters.append(lambda a: a.start_revision <= max_start_revision)
+
+    if max_end_revision:
+      max_end_revision = int(max_end_revision)
+      if inequality_property == 'end_revision':
+        logging.info('filter:max_end_revision=%d', max_end_revision)
+        query = query.filter(cls.end_revision <= max_end_revision)
+        query = query.order(-cls.end_revision)
+      else:
+        logging.info('post_filter:max_end_revision=%d', max_end_revision)
+        post_filters.append(lambda a: a.end_revision <= max_end_revision)
 
     if max_timestamp:
       if inequality_property == 'timestamp':

@@ -18,22 +18,29 @@ class Value;
 
 namespace network {
 
+// https://wicg.github.io/origin-policy/#parsing
 class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyParser {
  public:
   // Parse the given origin policy. Returns an empty policy if parsing is not
   // successful.
-  // TODO(vogelheim): Decide how parsing errors should be handled.
   static OriginPolicyContentsPtr Parse(base::StringPiece);
 
  private:
   OriginPolicyParser();
   ~OriginPolicyParser();
 
-  bool DoParse(base::StringPiece);
-  bool ParseContentSecurityPolicies(const base::Value&);
-  bool ParseContentSecurityPolicy(const base::Value&);
-  bool ParseFeaturePolicies(const base::Value&);
-  bool ParseFeaturePolicy(const base::Value&);
+  void DoParse(base::StringPiece);
+
+  // Only parsing IDs can cause a parsing failure (i.e. returning the empty
+  // policy from Parse()), so only it gets a bool return value. Failures parsing
+  // the others will just result in not filling out their piece of
+  // policy_contents_.
+  bool ParseIds(const base::Value&);
+  void ParseContentSecurity(const base::Value&);
+  void ParseFeatures(const base::Value&);
+  void ParseIsolation(const base::Value&);
+
+  static bool IsValidOriginPolicyId(const std::string&);
 
   OriginPolicyContentsPtr policy_contents_;
 

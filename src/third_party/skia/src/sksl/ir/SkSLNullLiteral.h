@@ -27,7 +27,7 @@ struct NullLiteral : public Expression {
         return "null";
     }
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

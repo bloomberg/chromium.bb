@@ -6,6 +6,36 @@
     <output filename="grit/components_google_chrome_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <if expr="is_android">
+      <output filename="components_google_chrome_strings_af.pak" type="data_package" lang="af" />
+      <output filename="components_google_chrome_strings_as.pak" type="data_package" lang="as" />
+      <output filename="components_google_chrome_strings_az.pak" type="data_package" lang="az" />
+      <output filename="components_google_chrome_strings_be.pak" type="data_package" lang="be" />
+      <output filename="components_google_chrome_strings_bs.pak" type="data_package" lang="bs" />
+      <output filename="components_google_chrome_strings_eu.pak" type="data_package" lang="eu" />
+      <output filename="components_google_chrome_strings_fr-CA.pak" type="data_package" lang="fr-CA" />
+      <output filename="components_google_chrome_strings_gl.pak" type="data_package" lang="gl" />
+      <output filename="components_google_chrome_strings_hy.pak" type="data_package" lang="hy" />
+      <output filename="components_google_chrome_strings_is.pak" type="data_package" lang="is" />
+      <output filename="components_google_chrome_strings_ka.pak" type="data_package" lang="ka" />
+      <output filename="components_google_chrome_strings_kk.pak" type="data_package" lang="kk" />
+      <output filename="components_google_chrome_strings_km.pak" type="data_package" lang="km" />
+      <output filename="components_google_chrome_strings_ky.pak" type="data_package" lang="ky" />
+      <output filename="components_google_chrome_strings_lo.pak" type="data_package" lang="lo" />
+      <output filename="components_google_chrome_strings_mk.pak" type="data_package" lang="mk" />
+      <output filename="components_google_chrome_strings_mn.pak" type="data_package" lang="mn" />
+      <output filename="components_google_chrome_strings_my.pak" type="data_package" lang="my" />
+      <output filename="components_google_chrome_strings_ne.pak" type="data_package" lang="ne" />
+      <output filename="components_google_chrome_strings_or.pak" type="data_package" lang="or" />
+      <output filename="components_google_chrome_strings_pa.pak" type="data_package" lang="pa" />
+      <output filename="components_google_chrome_strings_si.pak" type="data_package" lang="si" />
+      <output filename="components_google_chrome_strings_sq.pak" type="data_package" lang="sq" />
+      <output filename="components_google_chrome_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
+      <output filename="components_google_chrome_strings_ur.pak" type="data_package" lang="ur" />
+      <output filename="components_google_chrome_strings_uz.pak" type="data_package" lang="uz" />
+      <output filename="components_google_chrome_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
+      <output filename="components_google_chrome_strings_zu.pak" type="data_package" lang="zu" />
+    </if>
     <output filename="components_google_chrome_strings_am.pak" type="data_package" lang="am" />
     <output filename="components_google_chrome_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="components_google_chrome_strings_bg.pak" type="data_package" lang="bg" />
@@ -142,6 +172,7 @@
     <file path="strings/components_google_chrome_strings_sl.xtb" lang="sl" />
     <file path="strings/components_google_chrome_strings_sq.xtb" lang="sq" />
     <file path="strings/components_google_chrome_strings_sr.xtb" lang="sr" />
+    <file path="strings/components_google_chrome_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="strings/components_google_chrome_strings_sv.xtb" lang="sv" />
     <file path="strings/components_google_chrome_strings_sw.xtb" lang="sw" />
     <file path="strings/components_google_chrome_strings_ta.xtb" lang="ta" />
@@ -251,13 +282,6 @@
       <message name="IDS_PAGE_INFO_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome:// page or about:something.">
         You're viewing a secure Google Chrome page
       </message>
-
-      <if expr="is_android">
-      <!-- Only used in the dialog shown after tapping "Details" in page info -->
-      <message name="IDS_PAGE_INFO_SECURE_IDENTITY_VERIFIED" desc="The text of the identity section when the page is secure and uses a valid certificate.">
-        Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
-      </message>
-      </if>
 
       <!-- Session Crash -->
       <message name="IDS_SESSION_CRASHED_VIEW_MESSAGE" desc="Message shown when the last session didn't exit cleanly.">

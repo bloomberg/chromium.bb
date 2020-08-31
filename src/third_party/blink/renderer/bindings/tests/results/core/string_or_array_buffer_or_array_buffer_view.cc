@@ -44,7 +44,7 @@ NotShared<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::GetAsArrayB
 
 void StringOrArrayBufferOrArrayBufferView::SetArrayBufferView(NotShared<TestArrayBufferView> value) {
   DCHECK(IsNull());
-  array_buffer_view_ = Member<TestArrayBufferView>(value.View());
+  array_buffer_view_ = value;
   type_ = SpecificType::kArrayBufferView;
 }
 
@@ -75,7 +75,7 @@ StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView(const
 StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = default;
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
 
-void StringOrArrayBufferOrArrayBufferView::Trace(blink::Visitor* visitor) {
+void StringOrArrayBufferOrArrayBufferView::Trace(Visitor* visitor) {
   visitor->Trace(array_buffer_);
   visitor->Trace(array_buffer_view_);
 }

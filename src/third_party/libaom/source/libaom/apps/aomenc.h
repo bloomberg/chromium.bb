@@ -11,6 +11,7 @@
 #ifndef AOM_APPS_AOMENC_H_
 #define AOM_APPS_AOMENC_H_
 
+#include "aom/aom_codec.h"
 #include "aom/aom_encoder.h"
 
 #ifdef __cplusplus
@@ -30,14 +31,12 @@ typedef enum {
   YV12,  // 4:2:0 with uv flipped, only 8-bit depth
 } ColorInputType;
 
-struct AvxInterface;
-
 /* Configuration elements common to all streams. */
 struct AvxEncoderConfig {
-  const struct AvxInterface *codec;
+  aom_codec_iface_t *codec;
   int passes;
   int pass;
-  int usage;
+  unsigned int usage;
   ColorInputType color_type;
   int quiet;
   int verbose;
@@ -54,6 +53,7 @@ struct AvxEncoderConfig {
   int disable_warning_prompt;
   int experimental_bitstream;
   aom_chroma_sample_position_t csp;
+  cfg_options_t encoder_config;
 };
 
 #ifdef __cplusplus

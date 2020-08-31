@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -33,6 +34,9 @@ if cros_build_lib.IsInsideChroot():
   # We'll check in main() if the operation needs portage.
   # pylint: disable=import-error
   import portage
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
@@ -55,9 +59,7 @@ HOST_PACKAGES = (
     'dev-lang/go',
     'dev-libs/elfutils',
     'sys-devel/binutils',
-    'sys-devel/clang',
     'sys-devel/gcc',
-    'sys-devel/lld',
     'sys-devel/llvm',
     'sys-kernel/linux-headers',
     'sys-libs/glibc',
@@ -134,8 +136,6 @@ class Crossdev(object):
   # Packages that needs separate handling, in addition to what we have from
   # crossdev.
   MANUAL_PKGS = {
-      'clang': 'sys-devel',
-      'lld': 'sys-devel',
       'llvm': 'sys-devel',
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
@@ -228,7 +228,7 @@ class Crossdev(object):
         cmd.extend(['-t', target])
         # Catch output of crossdev.
         out = cros_build_lib.run(
-            cmd, print_cmd=False, redirect_stdout=True,
+            cmd, print_cmd=False, stdout=True,
             encoding='utf-8').stdout.splitlines()
         # List of tuples split at the first '=', converted into dict.
         conf = dict((k, cros_build_lib.ShellUnquote(v))
@@ -303,7 +303,7 @@ class Crossdev(object):
       if config_only:
         # In this case we want to just quietly reinit
         cmd.append('--init-target')
-        cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
+        cros_build_lib.run(cmd, print_cmd=False, stdout=True)
       else:
         cros_build_lib.run(cmd)
 
@@ -643,7 +643,7 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
         extra_env['ROOT'] = root
       cmd = ['%s-config' % package, '-c', target]
       result = cros_build_lib.run(
-          cmd, print_cmd=False, redirect_stdout=True, encoding='utf-8',
+          cmd, print_cmd=False, stdout=True, encoding='utf-8',
           extra_env=extra_env)
       current = result.output.splitlines()[0]
 
@@ -855,9 +855,9 @@ def FileIsCrosSdkElf(elf):
     data = f.read(20)
     # Check the magic number, EI_CLASS, EI_DATA, and e_machine.
     return (data[0:4] == b'\x7fELF' and
-            data[4] == b'\x02' and
-            data[5] == b'\x01' and
-            data[18] == b'\x3e')
+            data[4:5] == b'\x02' and
+            data[5:6] == b'\x01' and
+            data[18:19] == b'\x3e')
 
 
 def IsPathPackagable(ptype, path):
@@ -1027,6 +1027,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   libdir = os.path.join(output_dir, 'lib')
   osutils.SafeMakedirs(libdir)
   donelibs = set()
+  basenamelibs = set()
   glibc_re = re.compile(r'/lib(c|pthread)-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
@@ -1045,15 +1046,31 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
         link = sym_paths[elf]
         GeneratePathWrapper(output_dir, link, elf)
 
-    for lib, lib_data in e['libs'].items():
-      if lib in donelibs:
-        continue
+    # TODO(crbug.com/917193): Drop this hack once libopcodes linkage is fixed.
+    if os.path.basename(elf).startswith('libopcodes-'):
+      continue
 
+    for lib, lib_data in e['libs'].items():
       src = path = lib_data['path']
       if path is None:
         logging.warning('%s: could not locate %s', elf, lib)
         continue
-      donelibs.add(lib)
+
+      # No need to try and copy the same source lib multiple times.
+      if path in donelibs:
+        continue
+      donelibs.add(path)
+
+      # Die if we try to normalize different source libs with the same basename.
+      if lib in basenamelibs:
+        logging.error('Multiple sources detected for %s:\n  new: %s\n  old: %s',
+                      os.path.join('/lib', lib), path,
+                      ' '.join(x for x in donelibs
+                               if x != path and os.path.basename(x) == lib))
+        # TODO(crbug.com/917193): Make this fatal.
+        # cros_build_lib.Die('Unable to resolve lib conflicts')
+        continue
+      basenamelibs.add(lib)
 
       # Needed libs are the SONAME, but that is usually a symlink, not a
       # real file.  So link in the target rather than the symlink itself.

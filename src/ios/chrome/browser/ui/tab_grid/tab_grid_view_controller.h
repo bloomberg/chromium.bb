@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
-#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_state_providing.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 
 @protocol ApplicationCommands;
 @protocol GridConsumer;
@@ -28,9 +28,9 @@
 // View controller representing a tab switcher. The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
-    : UIViewController<TabGridPaging, GridTransitionStateProviding>
+    : UIViewController <TabGridPaging, GridTransitionAnimationLayoutProviding>
 
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;
@@ -48,6 +48,11 @@
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
+// Readwrite override of the UIViewController property. This object will ignore
+// the value supplied by UIViewController.
+@property(nonatomic, weak, readwrite)
+    UIViewController* childViewControllerForStatusBarStyle;
+
 // The view controller for remote tabs.
 // TODO(crbug.com/845192) : This was only exposed in the public interface so
 // that TabGridViewController does not need to know about model objects. The
@@ -59,6 +64,11 @@
 // resources it needs from data sources. This should be called before any
 // transitions are triggered.
 - (void)prepareForAppearance;
+
+// Notifies the ViewController that its content is being displayed or hidden.
+- (void)contentWillAppearAnimated:(BOOL)animated;
+- (void)contentDidAppear;
+- (void)contentWillDisappearAnimated:(BOOL)animated;
 
 @end
 

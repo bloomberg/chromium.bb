@@ -4,16 +4,17 @@
 
 #include "util/crypto/openssl_util.h"
 
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/ssl.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "absl/strings/string_view.h"
-#include "openssl/crypto.h"
-#include "openssl/err.h"
-#include "openssl/ssl.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 
@@ -36,7 +37,8 @@ int OpenSSLErrorCallback(const char* str, size_t len, void* context) {
 }  // namespace
 
 void EnsureOpenSSLInit() {
-  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, nullptr);
+  // If SSL fails to initialize, we can't run crypto.
+  OSP_CHECK(OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, nullptr) == 1);
 }
 
 void EnsureOpenSSLCleanup() {
@@ -46,8 +48,9 @@ void EnsureOpenSSLCleanup() {
 void ClearOpenSSLERRStack(const Location& location) {
   if (OSP_DCHECK_IS_ON()) {
     uint32_t error_num = ERR_peek_error();
-    if (error_num == 0)
+    if (error_num == 0) {
       return;
+    }
 
     OSP_DVLOG << "OpenSSL ERR_get_error stack from " << location.ToString();
     ERR_print_errors_cb(&OpenSSLErrorCallback, nullptr);
@@ -56,27 +59,35 @@ void ClearOpenSSLERRStack(const Location& location) {
   }
 }
 
+// General note about SSL errors. Error messages are pushed to the general
+// OpenSSL error queue. Call ClearOpenSSLERRStack before calling any
+// SSL methods.
 Error GetSSLError(const SSL* ssl, int return_code) {
-  switch (SSL_get_error(ssl, return_code)) {
-    case SSL_ERROR_NONE:
-      return Error::None();
+  const int error_code = SSL_get_error(ssl, return_code);
+  if (error_code == SSL_ERROR_NONE) {
+    return Error::None();
+  }
 
+  std::string message = ERR_reason_error_string(ERR_get_error());
+  switch (error_code) {
     case SSL_ERROR_ZERO_RETURN:
-      return Error::Code::kSocketClosedFailure;
+      return Error(Error::Code::kSocketClosedFailure, std::move(message));
 
     case SSL_ERROR_WANT_READ:     // fallthrough
     case SSL_ERROR_WANT_WRITE:    // fallthrough
     case SSL_ERROR_WANT_CONNECT:  // fallthrough
     case SSL_ERROR_WANT_ACCEPT:   // fallthrough
     case SSL_ERROR_WANT_X509_LOOKUP:
-      return Error::Code::kAgain;
+      return Error(Error::Code::kAgain, std::move(message));
 
     case SSL_ERROR_SYSCALL:  // fallthrough
     case SSL_ERROR_SSL:
-      return Error::Code::kFatalSSLError;
+      return Error(Error::Code::kFatalSSLError, std::move(message));
   }
 
-  OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
+  OSP_NOTREACHED() << "Unknown SSL error occurred. All error cases should "
+                      "be covered in the above switch statement. Error code: "
+                   << error_code << ", message: " << message;
+  return Error(Error::Code::kUnknownError, std::move(message));
 }
 }  // namespace openscreen

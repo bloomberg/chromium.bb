@@ -57,6 +57,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
         QuicByteCount /*byte_size*/) {}
 
     virtual void OnIncomingAck(QuicPacketNumber /*ack_packet_number*/,
+                               EncryptionLevel /*ack_decrypted_level*/,
                                const QuicAckFrame& /*ack_frame*/,
                                QuicTime /*ack_receive_time*/,
                                QuicPacketNumber /*largest_observed*/,
@@ -65,6 +66,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     }
 
     virtual void OnPacketLoss(QuicPacketNumber /*lost_packet_number*/,
+                              EncryptionLevel /*encryption_level*/,
                               TransmissionType /*transmission_type*/,
                               QuicTime /*detection_time*/) {}
 
@@ -107,36 +109,18 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     PTO_MODE,
   };
 
-  // Handshake state of this connection.
-  enum HandshakeState {
-    // Initial state.
-    HANDSHAKE_START,
-    // Only used in IETF QUIC with TLS handshake. State proceeds to
-    // HANDSHAKE_PROCESSED after a packet of HANDSHAKE packet number space
-    // gets successfully processed, and the initial key can be dropped.
-    HANDSHAKE_PROCESSED,
-    // In QUIC crypto, state proceeds to HANDSHAKE_COMPLETE if client receives
-    // SHLO or server successfully processes an ENCRYPTION_FORWARD_SECURE
-    // packet, such that the handshake packets can be neutered. In IETF QUIC
-    // with TLS handshake, state proceeds to HANDSHAKE_COMPLETE once the
-    // endpoint has both 1-RTT send and receive keys.
-    HANDSHAKE_COMPLETE,
-    // Only used in IETF QUIC with TLS handshake. State proceeds to
-    // HANDSHAKE_CONFIRMED if a 1-RTT packet gets acknowledged.
-    HANDSHAKE_CONFIRMED,
-  };
-
   QuicSentPacketManager(Perspective perspective,
                         const QuicClock* clock,
                         QuicRandom* random,
                         QuicConnectionStats* stats,
-                        CongestionControlType congestion_control_type,
-                        LossDetectionType loss_type);
+                        CongestionControlType congestion_control_type);
   QuicSentPacketManager(const QuicSentPacketManager&) = delete;
   QuicSentPacketManager& operator=(const QuicSentPacketManager&) = delete;
   virtual ~QuicSentPacketManager();
 
   virtual void SetFromConfig(const QuicConfig& config);
+
+  void ApplyConnectionOptions(const QuicTagVector& connection_options);
 
   // Pass the CachedNetworkParameters to the send algorithm.
   void ResumeConnectionState(
@@ -171,6 +155,11 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   void AdjustNetworkParameters(
       const SendAlgorithmInterface::NetworkParams& params);
 
+  void SetLossDetectionTuner(
+      std::unique_ptr<LossDetectionTunerInterface> tuner);
+  void OnConfigNegotiated();
+  void OnConnectionClosed();
+
   // Retransmits the oldest pending packet there is still a tail loss probe
   // pending.  Invoked after OnRetransmissionTimeout.
   bool MaybeRetransmitTailLossProbe();
@@ -180,7 +169,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
-  // TODO(fayang): Consider replace this function with NeuterHandshakePackets.
   void NeuterUnencryptedPackets();
 
   // Returns true if there's outstanding crypto data.
@@ -226,6 +214,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the current delay for the path degrading timer, which is used to
   // notify the session that this connection is degrading.
   const QuicTime::Delta GetPathDegradingDelay() const;
+
+  // Returns the current delay for detecting network blackhole.
+  const QuicTime::Delta GetNetworkBlackholeDelay() const;
 
   const RttStats* GetRttStats() const { return &rtt_stats_; }
 
@@ -323,9 +314,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return unacked_packets_.largest_sent_packet();
   }
 
-  QuicPacketNumber GetLargestSentPacket(
-      EncryptionLevel decrypted_packet_level) const;
-
   QuicPacketNumber GetLargestPacketPeerKnowsIsAcked(
       EncryptionLevel decrypted_packet_level) const;
 
@@ -353,7 +341,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     unacked_packets_.SetSessionNotifier(session_notifier);
   }
 
-  QuicTime GetNextReleaseTime() const;
+  NextReleaseTimeResult GetNextReleaseTime() const;
 
   QuicPacketCount initial_congestion_window() const {
     return initial_congestion_window_;
@@ -363,8 +351,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     DCHECK(!supports_multiple_packet_number_spaces());
     return largest_packet_peer_knows_is_acked_;
   }
-
-  HandshakeState handshake_state() const { return handshake_state_; }
 
   size_t pending_timer_transmission_count() const {
     return pending_timer_transmission_count_;
@@ -380,6 +366,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   const QuicUnackedPacketMap& unacked_packets() const {
     return unacked_packets_;
+  }
+
+  const UberLossAlgorithm* uber_loss_algorithm() const {
+    return &uber_loss_algorithm_;
   }
 
   // Sets the send algorithm to the given congestion control type and points the
@@ -419,6 +409,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return skip_packet_number_for_pto_;
   }
 
+  bool one_rtt_packet_acked() const { return one_rtt_packet_acked_; }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -436,28 +428,13 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the timeout for retransmitting crypto handshake packets.
   const QuicTime::Delta GetCryptoRetransmissionDelay() const;
 
-  // Returns the timeout for a new tail loss probe. |consecutive_tlp_count| is
-  // the number of consecutive tail loss probes that have already been sent.
-  const QuicTime::Delta GetTailLossProbeDelay(
-      size_t consecutive_tlp_count) const;
-
   // Calls GetTailLossProbeDelay() with values from the current state of this
   // packet manager as its params.
-  const QuicTime::Delta GetTailLossProbeDelay() const {
-    return GetTailLossProbeDelay(consecutive_tlp_count_);
-  }
-
-  // Returns the retransmission timeout, after which a full RTO occurs.
-  // |consecutive_rto_count| is the number of consecutive RTOs that have already
-  // occurred.
-  const QuicTime::Delta GetRetransmissionDelay(
-      size_t consecutive_rto_count) const;
+  const QuicTime::Delta GetTailLossProbeDelay() const;
 
   // Calls GetRetransmissionDelay() with values from the current state of this
   // packet manager as its params.
-  const QuicTime::Delta GetRetransmissionDelay() const {
-    return GetRetransmissionDelay(consecutive_rto_count_);
-  }
+  const QuicTime::Delta GetRetransmissionDelay() const;
 
   // Returns the probe timeout.
   const QuicTime::Delta GetProbeTimeoutDelay() const;
@@ -504,6 +481,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Called after packets have been marked handled with last received ack frame.
   void PostProcessNewlyAckedPackets(QuicPacketNumber ack_packet_number,
+                                    EncryptionLevel ack_decrypted_level,
                                     const QuicAckFrame& ack_frame,
                                     QuicTime ack_receive_time,
                                     bool rtt_updated,
@@ -518,19 +496,28 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Sets the initial RTT of the connection.
   void SetInitialRtt(QuicTime::Delta rtt);
 
-  // Should only be called from constructor.
-  LossDetectionInterface* GetInitialLossAlgorithm();
-
   // Called when handshake is confirmed to remove the retransmittable frames
   // from all packets of HANDSHAKE_DATA packet number space to ensure they don't
   // get retransmitted and will eventually be removed from unacked packets map.
-  // Please note, this only applies to QUIC Crypto and needs to be changed when
-  // switches to IETF QUIC with QUIC TLS.
   void NeuterHandshakePackets();
 
   // Indicates whether including peer_max_ack_delay_ when calculating PTO
   // timeout.
   bool ShouldAddMaxAckDelay() const;
+
+  // Gets the earliest in flight packet sent time to calculate PTO. Also
+  // updates |packet_number_space| if a PTO timer should be armed.
+  QuicTime GetEarliestPacketSentTimeForPto(
+      PacketNumberSpace* packet_number_space) const;
+
+  // Returns true if application data should be used to arm PTO. Only used when
+  // multiple packet number space is enabled.
+  bool ShouldArmPtoForApplicationData() const;
+
+  // A helper function to return total delay of |num_timeouts| retransmission
+  // timeout with TLP and RTO mode.
+  QuicTime::Delta GetNConsecutiveRetransmissionTimeoutDelay(
+      int num_timeouts) const;
 
   // Newly serialized retransmittable packets are added to this map, which
   // contains owning pointers to any contained frames.  If a packet is
@@ -551,7 +538,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketCount initial_congestion_window_;
   RttStats rtt_stats_;
   std::unique_ptr<SendAlgorithmInterface> send_algorithm_;
-  // Not owned. Always points to |general_loss_algorithm_| outside of tests.
+  // Not owned. Always points to |uber_loss_algorithm_| outside of tests.
   LossDetectionInterface* loss_algorithm_;
   UberLossAlgorithm uber_loss_algorithm_;
 
@@ -595,8 +582,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Calls into |send_algorithm_| for the underlying congestion control.
   PacingSender pacing_sender_;
 
-  // Indicates current handshake state.
-  HandshakeState handshake_state_;
+  // Indicates whether handshake is finished. This is purely used to determine
+  // retransmission mode. DONOT use this to infer handshake state.
+  bool handshake_finished_;
 
   // Records bandwidth from server to client in normal operation, over periods
   // of time with no loss events.
@@ -652,8 +640,25 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // The multiplier of rttvar when calculating PTO timeout.
   int pto_rttvar_multiplier_;
 
-  // Latched value of quic_neuter_handshake_packets_once2.
-  const bool neuter_handshake_packets_once_;
+  // Number of PTOs similar to TLPs.
+  size_t num_tlp_timeout_ptos_;
+
+  // True if any 1-RTT packet gets acknowledged.
+  bool one_rtt_packet_acked_;
+
+  // True if any 1-RTT packet gets sent.
+  bool one_rtt_packet_sent_;
+
+  // If > 0, arm the 1st PTO with max of earliest in flight sent time + PTO
+  // delay and multiplier * srtt from last in flight packet.
+  float first_pto_srtt_multiplier_;
+
+  // If true, use standard deviation (instead of mean deviation) when
+  // calculating PTO timeout.
+  bool use_standard_deviation_for_pto_;
+
+  const bool avoid_overestimate_bandwidth_with_aggregation_ =
+      GetQuicReloadableFlag(quic_avoid_overestimate_bandwidth_with_aggregation);
 };
 
 }  // namespace quic

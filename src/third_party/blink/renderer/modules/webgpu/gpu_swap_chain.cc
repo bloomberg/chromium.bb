@@ -4,37 +4,34 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_swap_chain.h"
 
-#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_swap_chain_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
-// static
-GPUSwapChain* GPUSwapChain::Create(GPUCanvasContext* context,
-                                   const GPUSwapChainDescriptor* descriptor) {
-  return MakeGarbageCollected<GPUSwapChain>(context, descriptor);
-}
-
 GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
-                           const GPUSwapChainDescriptor* descriptor)
-    : DawnObjectBase(descriptor->device()->GetDawnControlClient()),
-      device_(descriptor->device()),
+                           GPUDevice* device,
+                           WGPUTextureUsage usage,
+                           WGPUTextureFormat format,
+                           SkFilterQuality filter_quality)
+    : DawnObjectBase(device->GetDawnControlClient()),
+      device_(device),
       context_(context),
-      usage_(AsDawnEnum<WGPUTextureUsage>(descriptor->usage())) {
+      usage_(usage),
+      format_(format) {
   // TODO: Use label from GPUObjectDescriptorBase.
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
-      this, GetDawnControlClient(), usage_,
-      AsDawnEnum<WGPUTextureFormat>(descriptor->format())));
+      this, GetDawnControlClient(), device_->GetClientID(), usage_, format));
+  swap_buffers_->SetFilterQuality(filter_quality);
 }
 
 GPUSwapChain::~GPUSwapChain() {
   Neuter();
 }
 
-void GPUSwapChain::Trace(blink::Visitor* visitor) {
+void GPUSwapChain::Trace(Visitor* visitor) {
   visitor->Trace(device_);
   visitor->Trace(context_);
   visitor->Trace(texture_);
@@ -43,9 +40,7 @@ void GPUSwapChain::Trace(blink::Visitor* visitor) {
 
 void GPUSwapChain::Neuter() {
   texture_ = nullptr;
-
-  DCHECK(swap_buffers_);
-  if (!swap_buffers_) {
+  if (swap_buffers_) {
     swap_buffers_->Neuter();
     swap_buffers_ = nullptr;
   }
@@ -54,6 +49,13 @@ void GPUSwapChain::Neuter() {
 cc::Layer* GPUSwapChain::CcLayer() {
   DCHECK(swap_buffers_);
   return swap_buffers_->CcLayer();
+}
+
+void GPUSwapChain::SetFilterQuality(SkFilterQuality filter_quality) {
+  DCHECK(swap_buffers_);
+  if (swap_buffers_) {
+    swap_buffers_->SetFilterQuality(filter_quality);
+  }
 }
 
 // gpu_swap_chain.idl
@@ -71,10 +73,11 @@ GPUTexture* GPUSwapChain::getCurrentTexture() {
     return texture_;
   }
 
-  WGPUTexture dawn_client_texture = swap_buffers_->GetNewTexture(
-      device_->GetHandle(), context_->CanvasSize());
+  WGPUTexture dawn_client_texture =
+      swap_buffers_->GetNewTexture(context_->CanvasSize());
   DCHECK(dawn_client_texture);
-  texture_ = MakeGarbageCollected<GPUTexture>(device_, dawn_client_texture);
+  texture_ =
+      MakeGarbageCollected<GPUTexture>(device_, dawn_client_texture, format_);
   return texture_;
 }
 

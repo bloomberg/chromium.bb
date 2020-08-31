@@ -93,6 +93,16 @@ class TestCompileSSHConnectSettings(cros_test_lib.TestCase):
         remote_access.CompileSSHConnectSettings(Protocol=None))
 
 
+class CreateTunnelPopenMock(partial_mock.PartialCmdMock):
+  """Mocks the subprocess.Popen function where it is used in RemoteAccess."""
+  TARGET = 'chromite.lib.remote_access.RemoteAccess'
+  ATTRS = ('_mockable_popen',)
+  DEFAULT_ATTR = '_mockable_popen'
+
+  def _mockable_popen(self, inst, *args, **kwargs):
+    return inst, args, kwargs
+
+
 class RemoteShMock(partial_mock.PartialCmdMock):
   """Mocks the RemoteSh function."""
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
@@ -128,6 +138,50 @@ class RemoteDeviceMock(partial_mock.PartialMock):
 
   def Pingable(self, _):
     return True
+
+
+class CreateTunnelTest(cros_test_lib.MockTempDirTestCase):
+  """Base class with popen mocked out for RemoteAccess.CreateTunnel() tests."""
+
+  def setUp(self):
+    self.popen_mock = self.StartPatcher(CreateTunnelPopenMock())
+    self.host = remote_access.RemoteAccess('foon', self.tempdir)
+
+  def testDefault(self):
+    """Test default behavior."""
+    plain_result = self.host.CreateTunnel()[0]
+    self.assertRaises(ValueError, plain_result.index, '-R')
+    self.assertRaises(ValueError, plain_result.index, '-L')
+
+  def testLocal(self):
+    """Test behavior of to_local parameter."""
+    for spec, expected_output in (
+        (remote_access.PortForwardSpec(local_port=3240),
+         'localhost:3240:localhost:3240',),
+        (remote_access.PortForwardSpec(local_host='foo', local_port=3240,
+                                       remote_host='', remote_port=12345),
+         '12345:foo:3240',),
+        ):
+      result = self.host.CreateTunnel(to_local=[spec])[0]
+      self.assertEqual(result[result.index('-L') + 1], expected_output)
+
+  def testRemote(self):
+    """Test behavior of to_remote parameter."""
+    for spec, expected_output in (
+        (remote_access.PortForwardSpec(local_port=3240),
+         'localhost:3240:localhost:3240',),
+        (remote_access.PortForwardSpec(local_host='foo', local_port=3240,
+                                       remote_host='', remote_port=12345),
+         '12345:foo:3240',),
+        ):
+      result = self.host.CreateTunnel(to_remote=[spec])[0]
+      self.assertEqual(result[result.index('-R') + 1], expected_output)
+
+  def testInvalid(self):
+    """Test behavior of invalid parameters."""
+    for kwargs in ({'to_local': ''}, {'to_local': ['']}, {'to_remote': ''},
+                   {'to_remote': ['']}):
+      self.assertRaises(AttributeError, self.host.CreateTunnel, [], kwargs)
 
 
 class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
@@ -173,16 +227,16 @@ class RemoteShTest(RemoteAccessTest):
     self.SetRemoteShResult(returncode=1)
     self.assertRemoteShRaises()
     self.assertRemoteShRaises(ssh_error_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, error_code_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, error_code_ok=True)
+    self.host.RemoteSh(self.TEST_CMD, check=False)
+    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, check=False)
 
   def testSshFailure(self):
     """Test failure in ssh command."""
     self.SetRemoteShResult(returncode=remote_access.SSH_ERROR_CODE)
     self.assertRemoteShRaisesSSHConnectionError()
-    self.assertRemoteShRaisesSSHConnectionError(error_code_ok=True)
+    self.assertRemoteShRaisesSSHConnectionError(check=False)
     self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, error_code_ok=True)
+    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, check=False)
 
   def testEnvLcMessagesSet(self):
     """Test that LC_MESSAGES is set to 'C' for an SSH command."""
@@ -249,15 +303,14 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
     self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
 
   def testCommands(self):
-    """Tests simple RunCommand() and BaseRunCommand() usage."""
+    """Tests simple run() and BaseRunCommand() usage."""
     command = ['echo', 'foo']
     expected_output = 'foo'
     self.rsh_mock.AddCmdResult(command, output=expected_output)
     self._SetupRemoteTempDir()
 
     with remote_access.RemoteDeviceHandler(remote_access.TEST_IP) as device:
-      self.assertEqual(expected_output,
-                       device.RunCommand(['echo', 'foo']).output)
+      self.assertEqual(expected_output, device.run(['echo', 'foo']).stdout)
       self.assertEqual(expected_output,
                        device.BaseRunCommand(['echo', 'foo']).output)
 
@@ -267,7 +320,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
       self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir',
                        side_effect=Exception('should not be copying files'))
       self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
-      device.RunCommand(['runit'], extra_env={'VAR': 'val'})
+      device.run(['runit'], extra_env={'VAR': 'val'})
 
   def testRunCommandLongCmdline(self):
     """Verify long command lines execute env settings via script."""
@@ -275,7 +328,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
       self._SetupRemoteTempDir()
       m = self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir')
       self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
-      device.RunCommand(['runit'], extra_env={'VAR': 'v' * 1024 * 1024})
+      device.run(['runit'], extra_env={'VAR': 'v' * 1024 * 1024})
       # We'll assume that the test passed when it tries to copy a file to the
       # remote side (the shell script to run indirectly).
       self.assertEqual(m.call_count, 1)

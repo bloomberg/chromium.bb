@@ -82,11 +82,16 @@ container{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "container",
     "nodeWidth": "300",
-    "nodeHeight": "300"
+    "nodeHeight": "300",
+    "showAccessibilityInfo": true,
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 child{
@@ -171,11 +176,16 @@ child{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "child",
     "nodeWidth": "240",
-    "nodeHeight": "220"
+    "nodeHeight": "220",
+    "showAccessibilityInfo": true,
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 span{
@@ -260,11 +270,16 @@ span{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "span",
     "idValue": "span",
     "nodeWidth": "10",
-    "nodeHeight": "70"
+    "nodeHeight": "70",
+    "showAccessibilityInfo": true,
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 TEXT{
@@ -349,10 +364,12 @@ TEXT{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "10",
     "nodeHeight": "70",
-    "tagName": "#text"
+    "tagName": "#text",
+    "showAccessibilityInfo": false
   }
 }
 

@@ -7,6 +7,8 @@
 #include <set>
 #include <utility>
 
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -21,7 +23,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 using base::trace_event::TraceConfig;
@@ -79,9 +83,11 @@ class PerfettoTracingSession
         raw_data_(std::make_unique<std::string>()) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
-    // Perfetto-related deadlocks are resolved.
+    // Perfetto-related deadlocks are resolved and we also handle concurrent
+    // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
+      tracing::EnableStartupTracingForProcess(
+          chrome_config,
           /*privacy_filtering_enabled=*/true);
     }
 #endif
@@ -122,7 +128,12 @@ class PerfettoTracingSession
   }
 
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {
-    on_abort_callback.Run();
+    if (is_tracing_disabled_) {
+      on_abort_callback.Run();
+      return;
+    }
+    on_abort_callback_ = on_abort_callback;
+    tracing_session_host_->DisableTracing();
   }
 
   // mojo::DataPipeDrainer::Client implementation:
@@ -142,6 +153,12 @@ class PerfettoTracingSession
   }
 
   void OnTracingDisabled() override {
+    is_tracing_disabled_ = true;
+    if (on_abort_callback_) {
+      std::move(on_abort_callback_).Run();
+      return;
+    }
+
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
 
@@ -180,6 +197,8 @@ class PerfettoTracingSession
   std::unique_ptr<std::string> raw_data_;
   bool has_finished_read_buffers_ = false;
   bool has_finished_receiving_data_ = false;
+  bool is_tracing_disabled_ = false;
+  base::OnceClosure on_abort_callback_;
 };
 
 class LegacyTracingSession
@@ -190,9 +209,11 @@ class LegacyTracingSession
       : parent_scenario_(parent_scenario) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
-    // Perfetto-related deadlocks are resolved.
+    // Perfetto-related deadlocks are resolved and we also handle concurrent
+    // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
+      tracing::EnableStartupTracingForProcess(
+          chrome_config,
           /*privacy_filtering_enabled=*/false);
     }
 #endif
@@ -248,7 +269,7 @@ class LegacyTracingSession
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {
     if (TracingControllerImpl::GetInstance()->IsTracing()) {
       TracingControllerImpl::GetInstance()->StopTracing(
-          TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+          TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
               [](const base::RepeatingClosure& on_abort_callback,
                  std::unique_ptr<std::string>) { on_abort_callback.Run(); },
               std::move(on_abort_callback))));
@@ -349,20 +370,6 @@ bool BackgroundTracingActiveScenario::StartTracing() {
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   if (!chrome_config.event_filters().empty())
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
-
-// TODO(crbug.com/941318): Re-enable startup tracing for Perfetto backend on
-// Android once all Perfetto-related deadlocks are resolved.
-#if !defined(OS_ANDROID)
-  TraceConfig chrome_config_for_trace_log(chrome_config);
-  // Perfetto backend configures buffer sizes when tracing is started in the
-  // service (see perfetto_config.cc). Zero them out here for TraceLog to avoid
-  // DCHECKs in TraceConfig::Merge.
-  chrome_config_for_trace_log.SetTraceBufferSizeInKb(0);
-  chrome_config_for_trace_log.SetTraceBufferSizeInEvents(0);
-
-  base::trace_event::TraceLog::GetInstance()->SetEnabled(
-      chrome_config_for_trace_log, modes);
-#endif  // !defined(OS_ANDROID)
 
   DCHECK(!tracing_session_);
   if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {

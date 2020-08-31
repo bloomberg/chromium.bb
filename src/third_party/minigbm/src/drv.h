@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include <drm_fourcc.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #define DRV_MAX_PLANES 4
@@ -23,22 +24,24 @@ extern "C" {
 #define BO_USE_CURSOR			(1ull << 1)
 #define BO_USE_CURSOR_64X64		BO_USE_CURSOR
 #define BO_USE_RENDERING		(1ull << 2)
-#define BO_USE_LINEAR			(1ull << 3)
-#define BO_USE_SW_READ_NEVER		(1ull << 4)
-#define BO_USE_SW_READ_RARELY		(1ull << 5)
-#define BO_USE_SW_READ_OFTEN		(1ull << 6)
-#define BO_USE_SW_WRITE_NEVER		(1ull << 7)
-#define BO_USE_SW_WRITE_RARELY		(1ull << 8)
-#define BO_USE_SW_WRITE_OFTEN		(1ull << 9)
-#define BO_USE_EXTERNAL_DISP		(1ull << 10)
-#define BO_USE_PROTECTED		(1ull << 11)
-#define BO_USE_HW_VIDEO_ENCODER		(1ull << 12)
-#define BO_USE_CAMERA_WRITE		(1ull << 13)
-#define BO_USE_CAMERA_READ		(1ull << 14)
+/* Skip for GBM_BO_USE_WRITE */
+#define BO_USE_LINEAR			(1ull << 4)
+#define BO_USE_TEXTURE			(1ull << 5)
+#define BO_USE_CAMERA_WRITE		(1ull << 6)
+#define BO_USE_CAMERA_READ		(1ull << 7)
+#define BO_USE_PROTECTED		(1ull << 8)
+#define BO_USE_SW_READ_OFTEN		(1ull << 9)
+#define BO_USE_SW_READ_RARELY	        (1ull << 10)
+#define BO_USE_SW_WRITE_OFTEN	        (1ull << 11)
+#define BO_USE_SW_WRITE_RARELY		(1ull << 12)
+#define BO_USE_HW_VIDEO_DECODER         (1ull << 13)
+#define BO_USE_HW_VIDEO_ENCODER         (1ull << 14)
+#define BO_USE_TEST_ALLOC		(1ull << 15)
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
-#define BO_USE_TEXTURE			(1ull << 17)
-#define BO_USE_HW_VIDEO_DECODER		(1ull << 18)
 
+/* Quirks for allocating a buffer. */
+#define BO_QUIRK_NONE			0
+#define BO_QUIRK_DUMB32BPP		(1ull << 0)
 
 /* Map flags */
 #define BO_MAP_NONE 0
@@ -50,11 +53,15 @@ extern "C" {
  * on the namespace of already defined formats, which can be done by using invalid
  * fourcc codes.
  */
-
 #define DRM_FORMAT_NONE				fourcc_code('0', '0', '0', '0')
 #define DRM_FORMAT_YVU420_ANDROID		fourcc_code('9', '9', '9', '7')
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
+
+/* This is a 10-bit bayer format for private reprocessing on MediaTek ISP. It's
+ * a private RAW format that other DRM drivers will never support and thus
+ * making it not upstreamable (i.e., defined in official DRM headers). */
+#define DRM_FORMAT_MTISP_SXYZW10		fourcc_code('M', 'B', '1', '0')
 
 // TODO(crbug.com/958181): remove this definition once drm_fourcc.h contains it.
 #ifndef DRM_FORMAT_P010
@@ -119,7 +126,7 @@ const char *drv_get_name(struct driver *drv);
 struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t use_flags);
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-		      uint64_t use_flags);
+		      uint64_t use_flags, bool is_test_buffer);
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
 			 uint64_t use_flags);
@@ -143,8 +150,6 @@ int drv_bo_flush_or_unmap(struct bo *bo, struct mapping *mapping);
 uint32_t drv_bo_get_width(struct bo *bo);
 
 uint32_t drv_bo_get_height(struct bo *bo);
-
-uint32_t drv_bo_get_stride_or_tiling(struct bo *bo);
 
 size_t drv_bo_get_num_planes(struct bo *bo);
 
@@ -170,7 +175,12 @@ uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_fl
 
 size_t drv_num_planes_from_format(uint32_t format);
 
+size_t drv_num_planes_from_modifier(struct driver *drv, uint32_t format, uint64_t modifier);
+
 uint32_t drv_num_buffers_per_bo(struct bo *bo);
+
+int drv_resource_info(struct bo *bo, uint32_t strides[DRV_MAX_PLANES],
+		      uint32_t offsets[DRV_MAX_PLANES]);
 
 #define drv_log(format, ...)                                                                       \
 	do {                                                                                       \

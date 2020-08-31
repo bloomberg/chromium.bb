@@ -40,6 +40,23 @@ namespace net {
 
 namespace {
 
+// This turns all rules with a hostname into wildcard matches, which will
+// match not just the indicated hostname but also any hostname that ends with
+// it.
+void RewriteRulesForSuffixMatching(ProxyBypassRules* out) {
+  // Prepend a wildcard (*) to any hostname based rules, provided it isn't an IP
+  // address.
+  for (size_t i = 0; i < out->rules().size(); ++i) {
+    if (!out->rules()[i]->IsHostnamePatternRule())
+      continue;
+
+    const SchemeHostPortMatcherHostnamePatternRule* prev_rule =
+        static_cast<const SchemeHostPortMatcherHostnamePatternRule*>(
+            out->rules()[i].get());
+    out->ReplaceRule(i, prev_rule->GenerateSuffixMatchingRule());
+  }
+}
+
 // Given a proxy hostname from a setting, returns that hostname with
 // an appropriate proxy server scheme prefix.
 // scheme indicates the desired proxy scheme: usually http, with
@@ -199,8 +216,9 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromEnv() {
   }
   // Note that this uses "suffix" matching. So a bypass of "google.com"
   // is understood to mean a bypass of "*google.com".
-  config.proxy_rules().bypass_rules.ParseFromString(
-      no_proxy, ProxyBypassRules::ParseFormat::kHostnameSuffixMatching);
+  config.proxy_rules().bypass_rules.ParseFromString(no_proxy);
+  RewriteRulesForSuffixMatching(&config.proxy_rules().bypass_rules);
+
   return ProxyConfigWithAnnotation(
       config, NetworkTrafficAnnotationTag(traffic_annotation_));
 }
@@ -381,9 +399,7 @@ class SettingGetterImplGSettings
     return false;
   }
 
-  ProxyBypassRules::ParseFormat GetBypassListFormat() override {
-    return ProxyBypassRules::ParseFormat::kDefault;
-  }
+  bool UseSuffixMatching() override { return false; }
 
  private:
   bool GetStringByPath(GSettings* client,
@@ -598,9 +614,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
       return false;
     }
 
-    constexpr base::TaskTraits kTraits = {
-        base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()};
-    file_task_runner_ = base::CreateSequencedTaskRunner(kTraits);
+    constexpr base::TaskTraits kTraits = {base::TaskPriority::USER_VISIBLE,
+                                          base::MayBlock()};
+    file_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(kTraits);
 
     // The initial read is done on the current thread, not
     // |file_task_runner_|, since we will need to have it for
@@ -635,8 +651,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
     }
     notify_delegate_ = delegate;
     inotify_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        inotify_fd_, base::Bind(&SettingGetterImplKDE::OnChangeNotification,
-                                base::Unretained(this)));
+        inotify_fd_,
+        base::BindRepeating(&SettingGetterImplKDE::OnChangeNotification,
+                            base::Unretained(this)));
     // Simulate a change to avoid possibly losing updates before this point.
     OnChangeNotification();
     return true;
@@ -673,9 +690,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
 
   bool BypassListIsReversed() override { return reversed_bypass_list_; }
 
-  ProxyBypassRules::ParseFormat GetBypassListFormat() override {
-    return ProxyBypassRules::ParseFormat::kHostnameSuffixMatching;
-  }
+  bool UseSuffixMatching() override { return true; }
 
  private:
   void ResetCachedSettings() {
@@ -1141,16 +1156,19 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
   }
 
   // Now the bypass list.
-  auto format = setting_getter_->GetBypassListFormat();
-
   std::vector<std::string> ignore_hosts_list;
   config.proxy_rules().bypass_rules.Clear();
   if (setting_getter_->GetStringList(SettingGetter::PROXY_IGNORE_HOSTS,
                                      &ignore_hosts_list)) {
     for (const auto& rule : ignore_hosts_list) {
-      config.proxy_rules().bypass_rules.AddRuleFromString(rule, format);
+      config.proxy_rules().bypass_rules.AddRuleFromString(rule);
     }
   }
+
+  if (setting_getter_->UseSuffixMatching()) {
+    RewriteRulesForSuffixMatching(&config.proxy_rules().bypass_rules);
+  }
+
   // Note that there are no settings with semantics corresponding to
   // bypass of local names in GNOME. In KDE, "<local>" is supported
   // as a hostname rule.
@@ -1227,7 +1245,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
   // cached_config_, where GetLatestProxyConfig() running on the main TaskRunner
   // will expect to find it. This is safe to do because we return
   // before this ProxyConfigServiceLinux is passed on to
-  // the ProxyResolutionService.
+  // the ConfiguredProxyResolutionService.
 
   // Note: It would be nice to prioritize environment variables
   // and only fall back to gsettings if env vars were unset. But

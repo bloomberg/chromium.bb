@@ -111,7 +111,7 @@ TEST_F(ShadowDOMV0Test, FeatureSetMultipleSelectors) {
 TEST_F(ShadowDOMV0Test, FeatureSetSubtree) {
   LoadURL("about:blank");
   auto* host = GetDocument().CreateRawElement(html_names::kDivTag);
-  host->CreateV0ShadowRootForTesting().SetInnerHTMLFromString(R"HTML(
+  host->CreateV0ShadowRootForTesting().setInnerHTML(R"HTML(
     <div>
       <div></div>
       <content select='*'></content>
@@ -130,7 +130,7 @@ TEST_F(ShadowDOMV0Test, FeatureSetMultipleShadowRoots) {
   LoadURL("about:blank");
   auto* host = GetDocument().CreateRawElement(html_names::kDivTag);
   auto& host_shadow = host->CreateV0ShadowRootForTesting();
-  host_shadow.SetInnerHTMLFromString("<content select='#foo'></content>");
+  host_shadow.setInnerHTML("<content select='#foo'></content>");
   auto* child = GetDocument().CreateRawElement(html_names::kDivTag);
   auto& child_root = child->CreateV0ShadowRootForTesting();
   auto* child_content = GetDocument().CreateRawElement(html_names::kContentTag);
@@ -157,8 +157,7 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
   host->appendChild(inner_host);
   inner_host->appendChild(span);
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   host->CreateV0ShadowRootForTesting();
   inner_host->CreateV0ShadowRootForTesting();
@@ -166,8 +165,7 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
                                      CSSValueID::kInlineBlock);
   span->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_FALSE(span->NeedsReattachLayoutTree());
 }
@@ -180,8 +178,7 @@ TEST_F(ShadowDOMV0Test, DetachLayoutTreeOnShadowRootCreation) {
   auto* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   host->appendChild(span);
   GetDocument().body()->appendChild(host);
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   EXPECT_TRUE(span->GetLayoutObject());
 

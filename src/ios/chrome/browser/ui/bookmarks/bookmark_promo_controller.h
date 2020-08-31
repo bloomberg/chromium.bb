@@ -7,13 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+class ChromeBrowserState;
 @protocol SigninPresenter;
 @class SigninPromoViewConfigurator;
 @class SigninPromoViewMediator;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 @protocol BookmarkPromoControllerDelegate
 
@@ -40,7 +37,7 @@ class ChromeBrowserState;
 
 @property(nonatomic, readonly) SigninPromoViewMediator* signinPromoViewMediator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                             delegate:
                                 (id<BookmarkPromoControllerDelegate>)delegate
                            presenter:(id<SigninPresenter>)presenter;

@@ -77,25 +77,15 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
 
 void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
-                            const InterpFilterParams *filter_params_x,
                             const InterpFilterParams *filter_params_y,
-                            const int subpel_x_q4, const int subpel_y_q4,
-                            ConvolveParams *conv_params) {
+                            const int subpel_y_qn) {
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const uint8_t *src_ptr = src - fo_vert * src_stride;
   const __m128i round_const = _mm_set1_epi32((1 << FILTER_BITS) >> 1);
   const __m128i round_shift = _mm_cvtsi32_si128(FILTER_BITS);
   __m128i coeffs[4];
 
-  (void)filter_params_x;
-  (void)subpel_x_q4;
-  (void)conv_params;
-
-  assert(conv_params->round_0 <= FILTER_BITS);
-  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
-         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
-
-  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
+  prepare_coeffs(filter_params_y, subpel_y_qn, coeffs);
 
   if (w <= 4) {
     __m128i s[8], src6, res, res_round, res16;
@@ -132,7 +122,7 @@ void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
       res_int = _mm_cvtsi128_si32(_mm_packus_epi16(res16, res16));
 
       if (w == 2)
-        *(uint16_t *)dst = res_int;
+        *(uint16_t *)dst = (uint16_t)res_int;
       else
         *(uint32_t *)dst = res_int;
 
@@ -145,7 +135,7 @@ void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
       res_int = _mm_cvtsi128_si32(_mm_packus_epi16(res16, res16));
 
       if (w == 2)
-        *(uint16_t *)dst = res_int;
+        *(uint16_t *)dst = (uint16_t)res_int;
       else
         *(uint32_t *)dst = res_int;
 
@@ -239,8 +229,7 @@ void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
 void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             const InterpFilterParams *filter_params_x,
-                            const InterpFilterParams *filter_params_y,
-                            const int subpel_x_q4, const int subpel_y_q4,
+                            const int subpel_x_qn,
                             ConvolveParams *conv_params) {
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *src_ptr = src - fo_horiz;
@@ -252,14 +241,11 @@ void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
   const __m128i round_shift = _mm_cvtsi32_si128(bits);
   __m128i coeffs[4];
 
-  (void)filter_params_y;
-  (void)subpel_y_q4;
-
   assert(bits >= 0);
   assert((FILTER_BITS - conv_params->round_1) >= 0 ||
          ((conv_params->round_0 + conv_params->round_1) == 2 * FILTER_BITS));
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
+  prepare_coeffs(filter_params_x, subpel_x_qn, coeffs);
 
   if (w <= 4) {
     do {
@@ -284,7 +270,7 @@ void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
 
       uint32_t r = _mm_cvtsi128_si32(res);
       if (w == 2)
-        *(uint16_t *)dst = r;
+        *(uint16_t *)dst = (uint16_t)r;
       else
         *(uint32_t *)dst = r;
 

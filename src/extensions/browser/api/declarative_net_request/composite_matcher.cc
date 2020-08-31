@@ -5,26 +5,30 @@
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "extensions/browser/api/declarative_net_request/action_tracker.h"
+#include "base/stl_util.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
 namespace flat_rule = url_pattern_index::flat;
 using PageAccess = PermissionsData::PageAccess;
-using RedirectActionInfo = CompositeMatcher::RedirectActionInfo;
+using ActionInfo = CompositeMatcher::ActionInfo;
 
 namespace {
 
 bool AreIDsUnique(const CompositeMatcher::MatcherList& matchers) {
-  std::set<size_t> ids;
+  std::set<RulesetID> ids;
   for (const auto& matcher : matchers) {
     bool did_insert = ids.insert(matcher->id()).second;
     if (!did_insert)
@@ -34,144 +38,138 @@ bool AreIDsUnique(const CompositeMatcher::MatcherList& matchers) {
   return true;
 }
 
-bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
-  base::Optional<size_t> previous_priority;
-  for (const auto& matcher : matchers) {
-    if (matcher->priority() == previous_priority)
-      return false;
-    previous_priority = matcher->priority();
+// Helper to log the time taken in CompositeMatcher::GetBeforeRequestAction.
+class ScopedGetBeforeRequestActionTimer {
+ public:
+  ScopedGetBeforeRequestActionTimer() = default;
+  ~ScopedGetBeforeRequestActionTimer() {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime."
+        "SingleExtension2",
+        timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(50), 50);
   }
 
-  return true;
-}
+ private:
+  base::ElapsedTimer timer_;
+};
 
 }  // namespace
 
-RedirectActionInfo::RedirectActionInfo(base::Optional<RequestAction> action,
-                                       bool notify_request_withheld)
+ActionInfo::ActionInfo(base::Optional<RequestAction> action,
+                       bool notify_request_withheld)
     : action(std::move(action)),
-      notify_request_withheld(notify_request_withheld) {
-  if (action)
-    DCHECK_EQ(RequestAction::Type::REDIRECT, action->type);
-}
+      notify_request_withheld(notify_request_withheld) {}
 
-RedirectActionInfo::~RedirectActionInfo() = default;
+ActionInfo::~ActionInfo() = default;
 
-RedirectActionInfo::RedirectActionInfo(RedirectActionInfo&&) = default;
-RedirectActionInfo& RedirectActionInfo::operator=(RedirectActionInfo&& other) =
-    default;
+ActionInfo::ActionInfo(ActionInfo&&) = default;
+ActionInfo& ActionInfo::operator=(ActionInfo&& other) = default;
 
-CompositeMatcher::CompositeMatcher(MatcherList matchers,
-                                   ActionTracker* action_tracker)
-    : matchers_(std::move(matchers)), action_tracker_(action_tracker) {
-  SortMatchersByPriority();
+CompositeMatcher::CompositeMatcher(MatcherList matchers)
+    : matchers_(std::move(matchers)) {
   DCHECK(AreIDsUnique(matchers_));
 }
 
 CompositeMatcher::~CompositeMatcher() = default;
 
+CompositeMatcher::MatcherList CompositeMatcher::GetAndResetMatchers() {
+  MatcherList result;
+  std::swap(result, matchers_);
+  OnMatchersModified();
+  return result;
+}
+
+void CompositeMatcher::SetMatchers(MatcherList matchers) {
+  matchers_ = std::move(matchers);
+  OnMatchersModified();
+}
+
 void CompositeMatcher::AddOrUpdateRuleset(
     std::unique_ptr<RulesetMatcher> new_matcher) {
   // A linear search is ok since the number of rulesets per extension is
   // expected to be quite small.
-  auto it = std::find_if(
-      matchers_.begin(), matchers_.end(),
-      [&new_matcher](const std::unique_ptr<RulesetMatcher>& matcher) {
-        return new_matcher->id() == matcher->id();
-      });
+  base::EraseIf(matchers_,
+                [&new_matcher](const std::unique_ptr<RulesetMatcher>& matcher) {
+                  return matcher->id() == new_matcher->id();
+                });
+  matchers_.push_back(std::move(new_matcher));
 
-  if (it == matchers_.end()) {
-    matchers_.push_back(std::move(new_matcher));
-    SortMatchersByPriority();
-  } else {
-    // Update the matcher. The priority for a given ID should remain the same.
-    DCHECK_EQ(new_matcher->priority(), (*it)->priority());
-    *it = std::move(new_matcher);
-  }
-
-  // Clear the renderers' cache so that they take the updated rules into
-  // account.
-  ClearRendererCacheOnNavigation();
-  has_any_extra_headers_matcher_.reset();
+  OnMatchersModified();
 }
 
-base::Optional<RequestAction> CompositeMatcher::GetBlockOrCollapseAction(
-    const RequestParams& params) const {
-  // TODO(karandeepb): change this to report time in micro-seconds.
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime."
-      "SingleExtension");
+std::set<RulesetID> CompositeMatcher::ComputeStaticRulesetIDs() const {
+  std::set<RulesetID> result;
+  for (const std::unique_ptr<RulesetMatcher>& matcher : matchers_) {
+    if (matcher->id() == kDynamicRulesetID)
+      continue;
 
-  for (const auto& matcher : matchers_) {
-    if (HasAllowAction(*matcher, params))
-      return base::nullopt;
-
-    base::Optional<RequestAction> action =
-        matcher->GetBlockOrCollapseAction(params);
-    if (action)
-      return action;
+    result.insert(matcher->id());
   }
 
-  return base::nullopt;
+  return result;
 }
 
-RedirectActionInfo CompositeMatcher::GetRedirectAction(
+ActionInfo CompositeMatcher::GetBeforeRequestAction(
     const RequestParams& params,
     PageAccess page_access) const {
-  // TODO(karandeepb): change this to report time in micro-seconds.
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime."
-      "SingleExtension");
+  ScopedGetBeforeRequestActionTimer timer;
 
   bool notify_request_withheld = false;
+  base::Optional<RequestAction> final_action;
   for (const auto& matcher : matchers_) {
-    if (HasAllowAction(*matcher, params)) {
-      return RedirectActionInfo(base::nullopt /* action */,
-                                false /* notify_request_withheld */);
+    base::Optional<RequestAction> action =
+        matcher->GetBeforeRequestAction(params);
+    params.allow_rule_cache[matcher.get()] =
+        action && action->IsAllowOrAllowAllRequests();
+
+    if (action && action->type == RequestAction::Type::REDIRECT) {
+      // Redirecting requires host permissions.
+      // TODO(crbug.com/1033780): returning base::nullopt here results in
+      // counterintuitive behavior.
+      if (page_access == PageAccess::kDenied) {
+        action = base::nullopt;
+      } else if (page_access == PageAccess::kWithheld) {
+        action = base::nullopt;
+        notify_request_withheld = true;
+      }
     }
 
-    if (page_access == PageAccess::kAllowed) {
-      base::Optional<RequestAction> action =
-          matcher->GetRedirectOrUpgradeActionByPriority(params);
-      if (!action)
-        continue;
-
-      return RedirectActionInfo(std::move(action),
-                                false /* notify_request_withheld */);
-    }
-
-    // If the extension has no host permissions for the request, it can still
-    // upgrade the request.
-    base::Optional<RequestAction> upgrade_action =
-        matcher->GetUpgradeAction(params);
-    if (upgrade_action) {
-      return RedirectActionInfo(std::move(upgrade_action),
-                                false /* notify_request_withheld */);
-    }
-
-    notify_request_withheld |= (page_access == PageAccess::kWithheld &&
-                                matcher->GetRedirectAction(params));
+    final_action =
+        GetMaxPriorityAction(std::move(final_action), std::move(action));
   }
 
-  return RedirectActionInfo(base::nullopt /* action */,
-                            notify_request_withheld);
+  if (final_action)
+    return ActionInfo(std::move(final_action), false);
+  return ActionInfo(base::nullopt, notify_request_withheld);
 }
 
-uint8_t CompositeMatcher::GetRemoveHeadersMask(
-    const RequestParams& params,
-    uint8_t excluded_remove_headers_mask,
-    std::vector<RequestAction>* remove_headers_actions) const {
-  uint8_t mask = 0;
+std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
+    const RequestParams& params) const {
+  std::vector<RequestAction> modify_headers_actions;
+
   for (const auto& matcher : matchers_) {
-    // The allow rule will override lower priority remove header rules.
-    if (HasAllowAction(*matcher, params))
-      return mask;
-    mask |= matcher->GetRemoveHeadersMask(
-        params, mask | excluded_remove_headers_mask, remove_headers_actions);
+    // TODO(crbug.com/947591): An allow or allowAllRequests rule should override
+    // all equal or lower priority modifyHeaders rules specified by |matcher|.
+    DCHECK(params.allow_rule_cache.contains(matcher.get()));
+    if (params.allow_rule_cache[matcher.get()])
+      return std::vector<RequestAction>();
+
+    std::vector<RequestAction> actions_for_matcher =
+        matcher->GetModifyHeadersActions(params);
+
+    modify_headers_actions.insert(
+        modify_headers_actions.end(),
+        std::make_move_iterator(actions_for_matcher.begin()),
+        std::make_move_iterator(actions_for_matcher.end()));
   }
 
-  DCHECK(!(mask & excluded_remove_headers_mask));
-  return mask;
+  // Sort |modify_headers_actions| in descending order of priority.
+  std::sort(modify_headers_actions.begin(), modify_headers_actions.end(),
+            [](const RequestAction& lhs, const RequestAction& rhs) {
+              return lhs.index_priority > rhs.index_priority;
+            });
+  return modify_headers_actions;
 }
 
 bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {
@@ -180,37 +178,37 @@ bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {
   return has_any_extra_headers_matcher_.value();
 }
 
+void CompositeMatcher::OnRenderFrameCreated(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnRenderFrameCreated(host);
+}
+
+void CompositeMatcher::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnRenderFrameDeleted(host);
+}
+
+void CompositeMatcher::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnDidFinishNavigation(host);
+}
+
+void CompositeMatcher::OnMatchersModified() {
+  DCHECK(AreIDsUnique(matchers_));
+
+  // Clear the renderers' cache so that they take the updated rules into
+  // account.
+  ClearRendererCacheOnNavigation();
+
+  has_any_extra_headers_matcher_.reset();
+}
+
 bool CompositeMatcher::ComputeHasAnyExtraHeadersMatcher() const {
   for (const auto& matcher : matchers_) {
     if (matcher->IsExtraHeadersMatcher())
       return true;
   }
   return false;
-}
-
-void CompositeMatcher::SortMatchersByPriority() {
-  std::sort(matchers_.begin(), matchers_.end(),
-            [](const std::unique_ptr<RulesetMatcher>& a,
-               const std::unique_ptr<RulesetMatcher>& b) {
-              return a->priority() > b->priority();
-            });
-  DCHECK(AreSortedPrioritiesUnique(matchers_));
-}
-
-bool CompositeMatcher::HasAllowAction(const RulesetMatcher& matcher,
-                                      const RequestParams& params) const {
-  if (!params.allow_rule_cache.contains(&matcher)) {
-    base::Optional<RequestAction> allow_action = matcher.GetAllowAction(params);
-    params.allow_rule_cache[&matcher] = allow_action.has_value();
-
-    // OnRuleMatched is called only once, when the allow action is entered into
-    // the cache. This is done because an allow rule might override an action
-    // multiple times during a request and extraneous matches should be ignored.
-    if (allow_action && action_tracker_ && params.request_info)
-      action_tracker_->OnRuleMatched(*allow_action, *params.request_info);
-  }
-
-  return params.allow_rule_cache[&matcher];
 }
 
 }  // namespace declarative_net_request

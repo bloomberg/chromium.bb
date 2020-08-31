@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_WAIT_UNTIL_OBSERVER_H_
 
 #include "base/callback.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -21,7 +21,7 @@ class ScriptValue;
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollected<WaitUntilObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
 
  public:
@@ -36,6 +36,7 @@ class MODULES_EXPORT WaitUntilObserver final
     kFetch,
     kInstall,
     kMessage,
+    kMessageerror,
     kNotificationClick,
     kNotificationClose,
     kPaymentRequest,
@@ -49,8 +50,6 @@ class MODULES_EXPORT WaitUntilObserver final
     kBackgroundFetchSuccess,
     kContentDelete,
   };
-
-  static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
 
   WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
@@ -92,7 +91,7 @@ class MODULES_EXPORT WaitUntilObserver final
   // TODO(falken): Can this just use Event::IsBeingDispatched?
   bool IsDispatchingEvent() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class InternalsServiceWorker;

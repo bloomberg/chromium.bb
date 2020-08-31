@@ -112,17 +112,38 @@ static constexpr GrUserStencilSettings kResolveStencilCoverageAndReset(
         GrUserStencilTest::kNotEqual,     GrUserStencilTest::kNotEqual,
         0xffff,                           0x0001,
         GrUserStencilOp::kZero,           GrUserStencilOp::kZero,
+        GrUserStencilOp::kKeep,           GrUserStencilOp::kZero,
+        0xffff,                           0xffff>()
+);
+
+// Same as above, but done in two passes for D3D, which doesn't support mismatched refs or masks on
+// dual sided stencil settings.
+static constexpr GrUserStencilSettings kResolveWindingCoverageAndReset(
+    GrUserStencilSettings::StaticInitSeparate<
+        0x0000,                           0x0000,
+        GrUserStencilTest::kNotEqual,     GrUserStencilTest::kNever,
+        0xffff,                           0xffff,
+        GrUserStencilOp::kZero,           GrUserStencilOp::kKeep,
         GrUserStencilOp::kKeep,           GrUserStencilOp::kKeep,
         0xffff,                           0xffff>()
 );
+static constexpr GrUserStencilSettings kResolveEvenOddCoverageAndReset(
+    GrUserStencilSettings::StaticInitSeparate<
+        0x0000,                           0x0000,
+        GrUserStencilTest::kNever,        GrUserStencilTest::kNotEqual,
+        0x0001,                           0x0001,
+        GrUserStencilOp::kKeep,           GrUserStencilOp::kZero,
+        GrUserStencilOp::kKeep,           GrUserStencilOp::kZero,
+        0xffff,                           0xffff>()
+);
+
 
 void GrStencilAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {
     SkIRect drawBoundsRect = SkIRect::MakeWH(fDrawBounds.width(), fDrawBounds.height());
 
-    GrPipeline pipeline(
-            GrScissorTest::kEnabled, GrDisableColorXPFactory::MakeXferProcessor(),
-            flushState->drawOpArgs().outputSwizzle(), GrPipeline::InputFlags::kHWAntialias,
-            &kIncrDecrStencil);
+    GrPipeline pipeline(GrScissorTest::kEnabled, GrDisableColorXPFactory::MakeXferProcessor(),
+                        flushState->drawOpArgs().writeSwizzle(),
+                        GrPipeline::InputFlags::kHWAntialias, &kIncrDecrStencil);
 
     GrSampleMaskProcessor sampleMaskProc;
 
@@ -136,33 +157,42 @@ void GrStencilAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chain
     // not necessary, and will even cause artifacts if using mixed samples.
     constexpr auto noHWAA = GrPipeline::InputFlags::kNone;
 
-    const auto* stencilResolveSettings = (flushState->caps().discardStencilValuesAfterRenderPass())
-            // The next draw will be the final op in the renderTargetContext. So if Ganesh is
-            // planning to discard the stencil values anyway, we don't actually need to reset them
-            // back to zero.
-            ? &kResolveStencilCoverage
-            : &kResolveStencilCoverageAndReset;
-
     GrPipeline resolvePipeline(GrScissorTest::kEnabled, SkBlendMode::kSrc,
-                               flushState->drawOpArgs().outputSwizzle(), noHWAA,
-                               stencilResolveSettings);
-    GrPipeline::FixedDynamicState scissorRectState(drawBoundsRect);
-
-    GrMesh mesh(GrPrimitiveType::kTriangleStrip);
-    mesh.setInstanced(fResources->refStencilResolveBuffer(),
-                      fEndStencilResolveInstance - fBaseStencilResolveInstance,
-                      fBaseStencilResolveInstance, 4);
-
+                               flushState->drawOpArgs().writeSwizzle(), noHWAA);
     StencilResolveProcessor primProc;
 
+    if (!flushState->caps().twoSidedStencilRefsAndMasksMustMatch()) {
+        if (flushState->caps().discardStencilValuesAfterRenderPass()) {
+            resolvePipeline.setUserStencil(&kResolveStencilCoverage);
+        } else {
+            resolvePipeline.setUserStencil(&kResolveStencilCoverageAndReset);
+        }
+        this->drawResolve(flushState, resolvePipeline, primProc, drawBoundsRect);
+        return;
+    }
+
+    // If this ever becomes true then we should add new per-fill-type stencil settings that also
+    // don't reset back to zero.
+    SkASSERT(!flushState->caps().discardStencilValuesAfterRenderPass());
+
+    resolvePipeline.setUserStencil(&kResolveWindingCoverageAndReset);
+    this->drawResolve(flushState, resolvePipeline, primProc, drawBoundsRect);
+
+    resolvePipeline.setUserStencil(&kResolveEvenOddCoverageAndReset);
+    this->drawResolve(flushState, resolvePipeline, primProc, drawBoundsRect);
+}
+
+void GrStencilAtlasOp::drawResolve(GrOpFlushState* flushState, const GrPipeline& resolvePipeline,
+                                   const GrPrimitiveProcessor& primProc,
+                                   const SkIRect& drawBounds) const {
     GrProgramInfo programInfo(flushState->proxy()->numSamples(),
                               flushState->proxy()->numStencilSamples(),
                               flushState->proxy()->backendFormat(),
-                              flushState->view()->origin(),
-                              &resolvePipeline,
-                              &primProc,
-                              &scissorRectState,
-                              nullptr, 0, GrPrimitiveType::kTriangleStrip);
-
-    flushState->opsRenderPass()->draw(programInfo, &mesh, 1, SkRect::Make(drawBoundsRect));
+                              flushState->writeView()->origin(), &resolvePipeline, &primProc,
+                              GrPrimitiveType::kTriangleStrip);
+    flushState->bindPipeline(programInfo, SkRect::Make(drawBounds));
+    flushState->setScissorRect(drawBounds);
+    flushState->bindBuffers(nullptr, fResources->stencilResolveBuffer(), nullptr);
+    flushState->drawInstanced(fEndStencilResolveInstance - fBaseStencilResolveInstance,
+                              fBaseStencilResolveInstance, 4, 0);
 }

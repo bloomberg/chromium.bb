@@ -5,21 +5,29 @@
 #include "ui/base/clipboard/clipboard_android.h"
 
 #include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_jni_headers/Clipboard_jni.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 
 // TODO:(andrewhayden) Support additional formats in Android: Bitmap, URI, HTML,
 // HTML+text now that Android's clipboard system supports them, then nuke the
@@ -38,10 +46,34 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaByteArray;
 
 namespace ui {
 
 namespace {
+
+constexpr char kPngExtension[] = ".png";
+
+using ReadImageCallback = ClipboardAndroid::ReadImageCallback;
+
+// Fetching image data from Java.
+SkBitmap GetImageData(
+    const base::android::ScopedJavaGlobalRef<jobject>& clipboard_manager) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jbitmap =
+      Java_Clipboard_getImage(env, clipboard_manager);
+  if (jbitmap.is_null()) {
+    return SkBitmap();
+  }
+
+  gfx::JavaBitmap java_bitmap(jbitmap);
+  if (java_bitmap.size().IsEmpty() || java_bitmap.stride() == 0U ||
+      java_bitmap.pixels() == nullptr) {
+    return SkBitmap();
+  }
+
+  return gfx::CreateSkBitmapFromJavaBitmap(java_bitmap);
+}
 
 class ClipboardMap {
  public:
@@ -49,10 +81,12 @@ class ClipboardMap {
   void SetModifiedCallback(ClipboardAndroid::ModifiedCallback cb);
   void SetJavaSideNativePtr(Clipboard* clipboard);
   std::string Get(const std::string& format);
+  void GetImage(ReadImageCallback callback);
   uint64_t GetSequenceNumber() const;
   base::Time GetLastModifiedTime() const;
   void ClearLastModifiedTime();
   bool HasFormat(const std::string& format);
+  std::vector<std::string> GetFormats();
   void OnPrimaryClipboardChanged();
   void OnPrimaryClipTimestampInvalidated(int64_t timestamp_ms);
   void Set(const std::string& format, const std::string& data);
@@ -75,8 +109,11 @@ class ClipboardMap {
   // Updates |map_| and |map_state_| if necessary by fetching data from Java.
   void UpdateFromAndroidClipboard();
 
-  std::map<std::string, std::string> map_;
+  // TODO(huangdarwin): Refactor this to hold base::string16.
+  std::map<std::string, std::string> map_ GUARDED_BY(lock_);
   MapState map_state_;
+
+  // This lock is for read/write |map_|.
   base::Lock lock_;
 
   uint64_t sequence_number_;
@@ -111,6 +148,13 @@ std::string ClipboardMap::Get(const std::string& format) {
   return it == map_.end() ? std::string() : it->second;
 }
 
+void ClipboardMap::GetImage(ReadImageCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&GetImageData, clipboard_manager_), std::move(callback));
+}
+
 uint64_t ClipboardMap::GetSequenceNumber() const {
   return sequence_number_;
 }
@@ -127,6 +171,16 @@ bool ClipboardMap::HasFormat(const std::string& format) {
   base::AutoLock lock(lock_);
   UpdateFromAndroidClipboard();
   return base::Contains(map_, format);
+}
+
+std::vector<std::string> ClipboardMap::GetFormats() {
+  base::AutoLock lock(lock_);
+  UpdateFromAndroidClipboard();
+  std::vector<std::string> formats;
+  formats.reserve(map_.size());
+  for (const auto& it : map_)
+    formats.push_back(it.first);
+  return formats;
 }
 
 void ClipboardMap::OnPrimaryClipboardChanged() {
@@ -153,26 +207,35 @@ void ClipboardMap::Set(const std::string& format, const std::string& data) {
 void ClipboardMap::CommitToAndroidClipboard() {
   JNIEnv* env = AttachCurrentThread();
   base::AutoLock lock(lock_);
-  if (base::Contains(map_, ClipboardFormatType::GetHtmlType().ToString())) {
+  if (base::Contains(map_, ClipboardFormatType::GetHtmlType().GetName())) {
     // Android's API for storing HTML content on the clipboard requires a plain-
     // text representation to be available as well.
     if (!base::Contains(map_,
-                        ClipboardFormatType::GetPlainTextType().ToString()))
+                        ClipboardFormatType::GetPlainTextType().GetName()))
       return;
 
     ScopedJavaLocalRef<jstring> html = ConvertUTF8ToJavaString(
-        env, map_[ClipboardFormatType::GetHtmlType().ToString()]);
+        env, map_[ClipboardFormatType::GetHtmlType().GetName()]);
     ScopedJavaLocalRef<jstring> text = ConvertUTF8ToJavaString(
-        env, map_[ClipboardFormatType::GetPlainTextType().ToString()]);
+        env, map_[ClipboardFormatType::GetPlainTextType().GetName()]);
 
     DCHECK(html.obj() && text.obj());
     Java_Clipboard_setHTMLText(env, clipboard_manager_, html, text);
   } else if (base::Contains(
-                 map_, ClipboardFormatType::GetPlainTextType().ToString())) {
+                 map_, ClipboardFormatType::GetPlainTextType().GetName())) {
     ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(
-        env, map_[ClipboardFormatType::GetPlainTextType().ToString()]);
+        env, map_[ClipboardFormatType::GetPlainTextType().GetName()]);
     DCHECK(str.obj());
     Java_Clipboard_setText(env, clipboard_manager_, str);
+  } else if (base::Contains(map_,
+                            ClipboardFormatType::GetBitmapType().GetName())) {
+    ScopedJavaLocalRef<jbyteArray> image_data = ToJavaByteArray(
+        env, map_[ClipboardFormatType::GetBitmapType().GetName()]);
+    ScopedJavaLocalRef<jstring> image_extension =
+        ConvertUTF8ToJavaString(env, kPngExtension);
+    DCHECK(image_data.obj());
+    Java_Clipboard_setImage(env, clipboard_manager_, image_data,
+                            image_extension);
   } else {
     Java_Clipboard_clear(env, clipboard_manager_);
     // TODO(huangdarwin): Implement raw clipboard support for arbitrary formats.
@@ -217,7 +280,7 @@ void JNI_Clipboard_AddMapEntry(JNIEnv* env,
 
 void ClipboardMap::UpdateLastModifiedTime(base::Time time) {
   last_modified_time_ = time;
-  // |modified_callback_| may be null in tests.
+  // |modified_cb_| may be null in tests.
   if (modified_cb_)
     modified_cb_.Run(time);
 }
@@ -235,12 +298,15 @@ void ClipboardMap::UpdateFromAndroidClipboard() {
       Java_Clipboard_getCoercedText(env, clipboard_manager_);
   ScopedJavaLocalRef<jstring> jhtml =
       Java_Clipboard_getHTMLText(env, clipboard_manager_);
+  ScopedJavaLocalRef<jstring> jimageuri =
+      Java_Clipboard_getImageUriString(env, clipboard_manager_);
 
   JNI_Clipboard_AddMapEntry(
-      env, &map_, ClipboardFormatType::GetPlainTextType().ToString().c_str(),
+      env, &map_, ClipboardFormatType::GetPlainTextType().GetName().c_str(),
       jtext);
   JNI_Clipboard_AddMapEntry(
-      env, &map_, ClipboardFormatType::GetHtmlType().ToString().c_str(), jhtml);
+      env, &map_, ClipboardFormatType::GetHtmlType().GetName().c_str(), jhtml);
+  JNI_Clipboard_AddMapEntry(env, &map_, kMimeTypeImageURI, jimageuri);
 
   map_state_ = MapState::kUpToDate;
 }
@@ -302,7 +368,11 @@ bool ClipboardAndroid::IsFormatAvailable(const ClipboardFormatType& format,
                                          ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-  return g_map.Get().HasFormat(format.ToString());
+
+  if (ClipboardFormatType::GetBitmapType().Equals(format)) {
+    return g_map.Get().HasFormat(kMimeTypeImageURI);
+  }
+  return g_map.Get().HasFormat(format.GetName());
 }
 
 void ClipboardAndroid::Clear(ClipboardBuffer buffer) {
@@ -311,16 +381,12 @@ void ClipboardAndroid::Clear(ClipboardBuffer buffer) {
   g_map.Get().Clear();
 }
 
-void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
-                                          std::vector<base::string16>* types,
-                                          bool* contains_filenames) const {
+void ClipboardAndroid::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(types);
 
   types->clear();
 
@@ -337,7 +403,20 @@ void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
+}
+
+std::vector<base::string16>
+ClipboardAndroid::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  std::vector<std::string> formats = g_map.Get().GetFormats();
+
+  std::vector<base::string16> types;
+  types.reserve(formats.size());
+  for (const std::string& format : formats)
+    types.push_back(base::UTF8ToUTF16(format));
+
+  return types;
 }
 
 void ClipboardAndroid::ReadText(ClipboardBuffer buffer,
@@ -353,7 +432,7 @@ void ClipboardAndroid::ReadAsciiText(ClipboardBuffer buffer,
                                      std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-  *result = g_map.Get().Get(ClipboardFormatType::GetPlainTextType().ToString());
+  *result = g_map.Get().Get(ClipboardFormatType::GetPlainTextType().GetName());
 }
 
 // Note: |src_url| isn't really used. It is only implemented in Windows
@@ -368,7 +447,7 @@ void ClipboardAndroid::ReadHTML(ClipboardBuffer buffer,
     src_url->clear();
 
   std::string input =
-      g_map.Get().Get(ClipboardFormatType::GetHtmlType().ToString());
+      g_map.Get().Get(ClipboardFormatType::GetHtmlType().GetName());
   *markup = base::UTF8ToUTF16(input);
 
   *fragment_start = 0;
@@ -381,25 +460,11 @@ void ClipboardAndroid::ReadRTF(ClipboardBuffer buffer,
   NOTIMPLEMENTED();
 }
 
-SkBitmap ClipboardAndroid::ReadImage(ClipboardBuffer buffer) const {
+void ClipboardAndroid::ReadImage(ClipboardBuffer buffer,
+                                 ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-  std::string input =
-      g_map.Get().Get(ClipboardFormatType::GetBitmapType().ToString());
-
-  SkBitmap bmp;
-  if (!input.empty()) {
-    DCHECK_LE(sizeof(gfx::Size), input.size());
-    const gfx::Size* size = reinterpret_cast<const gfx::Size*>(input.data());
-
-    bmp.allocN32Pixels(size->width(), size->height());
-
-    DCHECK_EQ(sizeof(gfx::Size) + bmp.computeByteSize(), input.size());
-
-    memcpy(bmp.getPixels(), input.data() + sizeof(gfx::Size),
-           bmp.computeByteSize());
-  }
-  return bmp;
+  g_map.Get().GetImage(std::move(callback));
 }
 
 void ClipboardAndroid::ReadCustomData(ClipboardBuffer buffer,
@@ -418,7 +483,7 @@ void ClipboardAndroid::ReadBookmark(base::string16* title,
 void ClipboardAndroid::ReadData(const ClipboardFormatType& format,
                                 std::string* result) const {
   DCHECK(CalledOnValidThread());
-  *result = g_map.Get().Get(format.ToString());
+  *result = g_map.Get().Get(format.GetName());
 }
 
 base::Time ClipboardAndroid::GetLastModifiedTime() const {
@@ -457,7 +522,7 @@ void ClipboardAndroid::WritePlatformRepresentations(
 }
 
 void ClipboardAndroid::WriteText(const char* text_data, size_t text_len) {
-  g_map.Get().Set(ClipboardFormatType::GetPlainTextType().ToString(),
+  g_map.Get().Set(ClipboardFormatType::GetPlainTextType().GetName(),
                   std::string(text_data, text_len));
 }
 
@@ -465,7 +530,7 @@ void ClipboardAndroid::WriteHTML(const char* markup_data,
                                  size_t markup_len,
                                  const char* url_data,
                                  size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::GetHtmlType().ToString(),
+  g_map.Get().Set(ClipboardFormatType::GetHtmlType().GetName(),
                   std::string(markup_data, markup_len));
 }
 
@@ -479,32 +544,31 @@ void ClipboardAndroid::WriteBookmark(const char* title_data,
                                      size_t title_len,
                                      const char* url_data,
                                      size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::GetBookmarkType().ToString(),
+  g_map.Get().Set(ClipboardFormatType::GetUrlType().GetName(),
                   std::string(url_data, url_len));
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void ClipboardAndroid::WriteWebSmartPaste() {
-  g_map.Get().Set(ClipboardFormatType::GetWebKitSmartPasteType().ToString(),
+  g_map.Get().Set(ClipboardFormatType::GetWebKitSmartPasteType().GetName(),
                   std::string());
 }
 
-// Note: we implement this to pass all unit tests but it is currently unclear
-// how some code would consume this.
-void ClipboardAndroid::WriteBitmap(const SkBitmap& bitmap) {
-  gfx::Size size(bitmap.width(), bitmap.height());
+// Encoding SkBitmap to PNG data. Then, |g_map| can commit the PNG data to
+// Android system clipboard without encode/decode.
+void ClipboardAndroid::WriteBitmap(const SkBitmap& sk_bitmap) {
+  scoped_refptr<base::RefCountedMemory> image_memory =
+      gfx::Image::CreateFrom1xBitmap(sk_bitmap).As1xPNGBytes();
+  std::string packed(image_memory->front_as<char>(), image_memory->size());
 
-  std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
-  packed += std::string(static_cast<const char*>(bitmap.getPixels()),
-                        bitmap.computeByteSize());
-  g_map.Get().Set(ClipboardFormatType::GetBitmapType().ToString(), packed);
+  g_map.Get().Set(ClipboardFormatType::GetBitmapType().GetName(), packed);
 }
 
 void ClipboardAndroid::WriteData(const ClipboardFormatType& format,
                                  const char* data_data,
                                  size_t data_len) {
-  g_map.Get().Set(format.ToString(), std::string(data_data, data_len));
+  g_map.Get().Set(format.GetName(), std::string(data_data, data_len));
 }
 
 }  // namespace ui

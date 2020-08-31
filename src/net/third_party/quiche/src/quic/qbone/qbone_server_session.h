@@ -5,7 +5,7 @@
 #ifndef QUICHE_QUIC_QBONE_QBONE_SERVER_SESSION_H_
 #define QUICHE_QUIC_QBONE_QBONE_SERVER_SESSION_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_control.pb.h"
@@ -13,18 +13,20 @@
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_writer.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_session_base.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 // A helper class is used by the QuicCryptoServerStream.
-class QboneCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
+class QboneCryptoServerStreamHelper
+    : public QuicCryptoServerStreamBase::Helper {
  public:
-  // This will look for the qbone alpn.
+  // This will look for the QBONE alpn.
   bool CanAcceptClientHello(const CryptoHandshakeMessage& chlo,
                             const QuicSocketAddress& client_address,
                             const QuicSocketAddress& peer_address,
                             const QuicSocketAddress& self_address,
-                            string* error_details) const override;
+                            std::string* error_details) const override;
 };
 
 class QUIC_EXPORT_PRIVATE QboneServerSession
@@ -51,12 +53,12 @@ class QUIC_EXPORT_PRIVATE QboneServerSession
 
   virtual bool SendClientRequest(const QboneClientRequest& request);
 
-  void ProcessPacketFromNetwork(QuicStringPiece packet) override;
-  void ProcessPacketFromPeer(QuicStringPiece packet) override;
+  void ProcessPacketFromNetwork(quiche::QuicheStringPiece packet) override;
+  void ProcessPacketFromPeer(quiche::QuicheStringPiece packet) override;
 
   // QbonePacketProcessor::OutputInterface implementation.
-  void SendPacketToClient(QuicStringPiece packet) override;
-  void SendPacketToNetwork(QuicStringPiece packet) override;
+  void SendPacketToClient(quiche::QuicheStringPiece packet) override;
+  void SendPacketToNetwork(quiche::QuicheStringPiece packet) override;
 
   // QbonePacketProcessor::StatsInterface implementation.
   void OnPacketForwarded(QbonePacketProcessor::Direction direction) override {}

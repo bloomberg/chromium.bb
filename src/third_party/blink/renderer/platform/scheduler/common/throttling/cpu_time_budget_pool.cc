@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 
@@ -82,11 +82,11 @@ bool CPUTimeBudgetPool::CanRunTasksAt(base::TimeTicks moment,
   return moment >= GetNextAllowedRunTime(moment);
 }
 
-base::Optional<base::TimeTicks> CPUTimeBudgetPool::GetTimeTasksCanRunUntil(
+base::TimeTicks CPUTimeBudgetPool::GetTimeTasksCanRunUntil(
     base::TimeTicks now,
     bool is_wake_up) const {
   if (CanRunTasksAt(now, is_wake_up))
-    return base::nullopt;
+    return base::TimeTicks::Max();
   return base::TimeTicks();
 }
 

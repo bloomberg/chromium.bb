@@ -266,7 +266,7 @@ Matcher                     | Description
 | `IsTrue()`             | `argument` evaluates to `true` in a Boolean context. |
 | `IsNull()`             | `argument` is a `NULL` pointer (raw or smart).      |
 | `NotNull()`            | `argument` is a non-null pointer (raw or smart).    |
-| `Optional(m)`          | `argument` is `optional<>` that contains a value matching `m`. |
+| `Optional(m)`          | `argument` is `optional<>` that contains a value matching `m`. (For testing whether an `optional<>` is set, check for equality with `nullopt`. You may need to use `Eq(nullopt)` if the inner type doesn't have `==`.)|
 | `VariantWith<T>(m)`    | `argument` is `variant<>` that holds the alternative of type T with a value matching `m`. |
 | `Ref(variable)`        | `argument` is a reference to `variable`.            |
 | `TypedEq<type>(value)` | `argument` has type `type` and is equal to `value`. You may need to use this instead of `Eq(value)` when the mock function is overloaded. |
@@ -278,6 +278,12 @@ copy constructor, try wrap it in `ByRef()`, e.g.
 `Eq(ByRef(non_copyable_value))`. If you do that, make sure `non_copyable_value`
 is not changed afterwards, or the meaning of your matcher will be changed.
 
+`IsTrue` and `IsFalse` are useful when you need to use a matcher, or for types
+that can be explicitly converted to Boolean, but are not implicitly converted to
+Boolean. In other cases, you can use the basic
+[`EXPECT_TRUE` and `EXPECT_FALSE`](../../googletest/docs/primer#basic-assertions)
+assertions.
+
 #### Floating-Point Matchers {#FpMatchers}
 
 <!-- mdformat off(no multiline tables) -->
@@ -287,6 +293,7 @@ is not changed afterwards, or the meaning of your matcher will be changed.
 | `FloatEq(a_float)`               | `argument` is a `float` value approximately equal to `a_float`, treating two NaNs as unequal. |
 | `NanSensitiveDoubleEq(a_double)` | `argument` is a `double` value approximately equal to `a_double`, treating two NaNs as equal. |
 | `NanSensitiveFloatEq(a_float)`   | `argument` is a `float` value approximately equal to `a_float`, treating two NaNs as equal. |
+| `IsNan()`   | `argument` is any floating-point type with a NaN value. |
 <!-- mdformat on -->
 
 The above matchers use ULP-based comparison (the same as used in googletest).
@@ -325,9 +332,9 @@ The `argument` can be either a C string or a C++ string object:
 
 `ContainsRegex()` and `MatchesRegex()` take ownership of the `RE` object. They
 use the regular expression syntax defined
-[here](../../googletest/docs/advanced.md#regular-expression-syntax).
-`StrCaseEq()`, `StrCaseNe()`, `StrEq()`, and `StrNe()` work for wide strings as
-well.
+[here](../../googletest/docs/advanced.md#regular-expression-syntax). All of
+these matchers, except `ContainsRegex()` and `MatchesRegex()` work for wide
+strings as well.
 
 #### Container Matchers
 
@@ -482,7 +489,7 @@ which must be a permanent callback.
 | Matcher                              | Description                           |
 | :----------------------------------- | :------------------------------------ |
 | `MATCHER(IsEven, "") { return (arg % 2) == 0; }` | Defines a matcher `IsEven()` to match an even number. |
-| `MATCHER_P(IsDivisibleBy, n, "") { *result_listener << "where the remainder is " << (arg % n); return (arg % n) == 0; }` | Defines a macher `IsDivisibleBy(n)` to match a number divisible by `n`. |
+| `MATCHER_P(IsDivisibleBy, n, "") { *result_listener << "where the remainder is " << (arg % n); return (arg % n) == 0; }` | Defines a matcher `IsDivisibleBy(n)` to match a number divisible by `n`. |
 | `MATCHER_P2(IsBetween, a, b, std::string(negation ? "isn't" : "is") + " between " + PrintToString(a) + " and " + PrintToString(b)) { return a <= arg && arg <= b; }` | Defines a matcher `IsBetween(a, b)` to match a value in the range [`a`, `b`]. |
 <!-- mdformat on -->
 
@@ -502,16 +509,17 @@ which must be a permanent callback.
 #### Returning a Value
 
 <!-- mdformat off(no multiline tables) -->
-|                             |                                               |
-| :-------------------------- | :-------------------------------------------- |
-| `Return()`                  | Return from a `void` mock function.           |
-| `Return(value)`             | Return `value`. If the type of `value` is     different to the mock function's return type, `value` is converted to the latter type <i>at the time the expectation is set</i>, not when the action is executed. |
-| `ReturnArg<N>()`            | Return the `N`-th (0-based) argument.         |
-| `ReturnNew<T>(a1, ..., ak)` | Return `new T(a1, ..., ak)`; a different      object is created each time. |
-| `ReturnNull()`              | Return a null pointer.                        |
-| `ReturnPointee(ptr)`        | Return the value pointed to by `ptr`.         |
-| `ReturnRef(variable)`       | Return a reference to `variable`.             |
-| `ReturnRefOfCopy(value)`    | Return a reference to a copy of `value`; the  copy lives as long as the action. |
+|                                   |                                               |
+| :-------------------------------- | :-------------------------------------------- |
+| `Return()`                        | Return from a `void` mock function.           |
+| `Return(value)`                   | Return `value`. If the type of `value` is     different to the mock function's return type, `value` is converted to the latter type <i>at the time the expectation is set</i>, not when the action is executed. |
+| `ReturnArg<N>()`                  | Return the `N`-th (0-based) argument.         |
+| `ReturnNew<T>(a1, ..., ak)`       | Return `new T(a1, ..., ak)`; a different      object is created each time. |
+| `ReturnNull()`                    | Return a null pointer.                        |
+| `ReturnPointee(ptr)`              | Return the value pointed to by `ptr`.         |
+| `ReturnRef(variable)`             | Return a reference to `variable`.             |
+| `ReturnRefOfCopy(value)`          | Return a reference to a copy of `value`; the  copy lives as long as the action. |
+| `ReturnRoundRobin({a1, ..., ak})` | Each call will return the next `ai` in the list, starting at the beginning when the end of the list is reached. |
 <!-- mdformat on -->
 
 #### Side Effects
@@ -611,19 +619,6 @@ composite action - trying to do so will result in a run-time error.
 <!-- mdformat on -->
 
 #### Defining Actions
-
-<table border="1" cellspacing="0" cellpadding="1">
-  <tr>
-    <td>`struct SumAction {` <br>
-        &emsp;`template <typename T>` <br>
-        &emsp;`T operator()(T x, Ty) { return x + y; }` <br>
-        `};`
-    </td>
-    <td> Defines a generic functor that can be used as an action summing its
-    arguments. </td> </tr>
-  <tr>
-  </tr>
-</table>
 
 <!-- mdformat off(no multiline tables) -->
 |                                    |                                         |

@@ -24,9 +24,9 @@ def pack(values):
   Returns:
     compressed buffer as a str.
   """
-  out = ''
+  out = bytearray()
   if not values:
-    return ''
+    return b''
   last = 0
   max_value = long(2)**63 if sys.version_info.major == 2 else 2**63
   assert 0 <= values[0] < max_value, 'Values must be between 0 and 2**63'
@@ -37,10 +37,10 @@ def pack(values):
     assert value >= 0, 'List must be sorted ascending'
     last = v
     while value > 127:
-      out += chr((1 << 7) | (value & 0x7F))
+      out.append((1 << 7) | (value & 0x7F))
       value >>=  7
-    out += chr(value)
-  return zlib.compress(out)
+    out.append(value)
+  return zlib.compress(bytes(out))
 
 
 def unpack(data):
@@ -53,13 +53,16 @@ def unpack(data):
     values: sorted list of int.
   """
   out = []
-  if data == '':
+  if data == b'':
     return out
   value = 0
   base = 1
   last = 0
   for d in zlib.decompress(data):
-    val_byte = ord(d)
+    if sys.version_info.major == 2:
+      val_byte = ord(d)
+    else:
+      val_byte = d
     value += (val_byte & 0x7F) * base
     if val_byte & 0x80:
       base <<= 7

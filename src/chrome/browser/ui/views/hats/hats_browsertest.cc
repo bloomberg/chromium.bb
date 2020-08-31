@@ -9,12 +9,15 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -52,9 +55,9 @@ class TestHatsWebDialog : public HatsWebDialog {
   }
 
   void OnMainFrameResourceLoadComplete(
-      const content::mojom::ResourceLoadInfo& resource_load_info) {
+      const blink::mojom::ResourceLoadInfo& resource_load_info) {
     if (resource_load_info.net_error == net::Error::OK &&
-        resource_load_info.url == resource_url_) {
+        resource_load_info.original_url == resource_url_) {
       // The resource is loaded successfully.
       resource_loaded_ = true;
     }
@@ -152,4 +155,26 @@ IN_PROC_BROWSER_TEST_F(HatsWebDialogBrowserTest, LoadFailureInPreloading) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+// Test cookies aren't blocked.
+IN_PROC_BROWSER_TEST_F(HatsWebDialogBrowserTest, Cookies) {
+  auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  settings_map->SetDefaultContentSetting(ContentSettingsType::COOKIES,
+                                         CONTENT_SETTING_BLOCK);
+
+  TestHatsWebDialog* dialog =
+      Create(browser(), base::TimeDelta::FromSeconds(100));
+
+  settings_map = HostContentSettingsMapFactory::GetForProfile(
+      dialog->otr_profile_for_testing());
+  GURL url1("https://survey.google.com/");
+  GURL url2("https://survey.g.doubleclick.net/");
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            settings_map->GetContentSetting(
+                url1, url1, ContentSettingsType::COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            settings_map->GetContentSetting(
+                url2, url2, ContentSettingsType::COOKIES, std::string()));
 }

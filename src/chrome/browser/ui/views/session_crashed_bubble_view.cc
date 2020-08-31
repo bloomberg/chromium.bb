@@ -77,19 +77,6 @@ bool DoesSupportConsentCheck() {
 #endif
 }
 
-// Returns the app menu view, except when the browser window is Cocoa; Cocoa
-// browser windows always have a null anchor view and use
-// GetSessionCrashedBubbleAnchorRect() instead.
-views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
-  return BrowserView::GetBrowserViewForBrowser(browser)
-      ->toolbar_button_provider()
-      ->GetAppMenuButton();
-}
-
-gfx::Rect GetSessionCrashedBubbleAnchorRect(Browser* browser) {
-  return gfx::Rect();
-}
-
 }  // namespace
 
 // A helper class that listens to browser removal event.
@@ -131,9 +118,9 @@ void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(Browser* browser) {
   if (DoesSupportConsentCheck()) {
     base::PostTaskAndReplyWithResult(
         GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
-        base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
-        base::Bind(&SessionCrashedBubbleView::Show,
-                   base::Passed(&browser_observer)));
+        base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
+        base::BindOnce(&SessionCrashedBubbleView::Show,
+                       std::move(browser_observer)));
   } else {
     SessionCrashedBubbleView::Show(std::move(browser_observer), false);
   }
@@ -158,9 +145,11 @@ void SessionCrashedBubbleView::Show(
     return;
   }
 
-  SessionCrashedBubbleView* crash_bubble = new SessionCrashedBubbleView(
-      GetSessionCrashedBubbleAnchorView(browser),
-      GetSessionCrashedBubbleAnchorRect(browser), browser, offer_uma_optin);
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
+                                 ->toolbar_button_provider()
+                                 ->GetAppMenuButton();
+  SessionCrashedBubbleView* crash_bubble =
+      new SessionCrashedBubbleView(anchor_view, browser, offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
@@ -168,8 +157,11 @@ void SessionCrashedBubbleView::Show(
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
 }
 
+ax::mojom::Role SessionCrashedBubbleView::GetAccessibleWindowRole() {
+  return ax::mojom::Role::kAlertDialog;
+}
+
 SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
-                                                   const gfx::Rect& anchor_rect,
                                                    Browser* browser,
                                                    bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
@@ -177,35 +169,39 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
-  DialogDelegate::set_button_label(
+  DCHECK(anchor_view);
+
+  SetShowCloseButton(true);
+  SetTitle(l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE));
+
+  // Allow unit tests to leave out Browser.
+  const SessionStartupPref session_startup_pref =
+      browser_ ? SessionStartupPref::GetStartupPref(browser_->profile())
+               : SessionStartupPref{SessionStartupPref::DEFAULT};
+  // Offer the option to open the startup pages using the cancel button, but
+  // only when the user has selected the URLS option, and set at least one url.
+  SetButtons((session_startup_pref.type == SessionStartupPref::URLS &&
+              !session_startup_pref.urls.empty())
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON));
+
+  SetAcceptCallback(
+      base::BindOnce(&SessionCrashedBubbleView::RestorePreviousSession,
+                     base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&SessionCrashedBubbleView::OpenStartupPages,
+                                   base::Unretained(this)));
+
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
-
-  if (!anchor_view) {
-    SetAnchorRect(anchor_rect);
-    set_parent_window(
-        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
-  }
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {
-}
-
-base::string16 SessionCrashedBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE);
-}
-
-bool SessionCrashedBubbleView::ShouldShowWindowTitle() const {
-  return true;
-}
-
-bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
-  return true;
 }
 
 void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {
@@ -274,50 +270,19 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
   cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                        ChromeLayoutProvider::Get()->GetDistanceMetric(
                            views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                views::GridLayout::USE_PREF, 0, 0);
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   uma_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
   uma_option_ = uma_layout->AddView(std::move(uma_option));
   uma_layout->AddView(std::move(uma_label));
 
   return uma_view;
-}
-
-bool SessionCrashedBubbleView::Accept() {
-  RestorePreviousSession();
-  return true;
-}
-
-// The cancel button is used as an option to open the startup pages instead of
-// restoring the previous session.
-bool SessionCrashedBubbleView::Cancel() {
-  OpenStartupPages();
-  return true;
-}
-
-bool SessionCrashedBubbleView::Close() {
-  // Don't default to Accept() just because that's the only choice. Instead, do
-  // nothing.
-  return true;
-}
-
-int SessionCrashedBubbleView::GetDialogButtons() const {
-  int buttons = ui::DIALOG_BUTTON_OK;
-  // Offer the option to open the startup pages using the cancel button, but
-  // only when the user has selected the URLS option, and set at least one url.
-  SessionStartupPref session_startup_pref =
-      SessionStartupPref::GetStartupPref(browser_->profile());
-  if (session_startup_pref.type == SessionStartupPref::URLS &&
-      !session_startup_pref.urls.empty()) {
-    buttons |= ui::DIALOG_BUTTON_CANCEL;
-  }
-  return buttons;
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,

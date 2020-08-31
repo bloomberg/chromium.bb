@@ -18,7 +18,6 @@ namespace internal {
 namespace compiler {
 
 // Forward declarations.
-struct MachineOperatorGlobalCache;
 class Operator;
 
 
@@ -181,6 +180,16 @@ V8_EXPORT_PRIVATE S8x16ShuffleParameter const& S8x16ShuffleParameterOf(
 
 StackCheckKind StackCheckKindOf(Operator const* op) V8_WARN_UNUSED_RESULT;
 
+// ShiftKind::kShiftOutZeros means that it is guaranteed that the bits shifted
+// out of the left operand are all zeros. If this is not the case, undefined
+// behavior (i.e., incorrect optimizations) will happen.
+// This is mostly useful for Smi untagging.
+enum class ShiftKind { kNormal, kShiftOutZeros };
+
+size_t hash_value(ShiftKind);
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, ShiftKind);
+ShiftKind ShiftKindOf(Operator const*) V8_WARN_UNUSED_RESULT;
+
 // Interface for building machine-level operators. These operators are
 // machine-level but machine-independent and thus define a language suitable
 // for generating code to run on architectures such as ia32, x64, arm, etc.
@@ -211,13 +220,15 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
     kWord64ReverseBits = 1u << 17,
     kInt32AbsWithOverflow = 1u << 20,
     kInt64AbsWithOverflow = 1u << 21,
-    kAllOptionalOps = kFloat32RoundDown | kFloat64RoundDown | kFloat32RoundUp |
-                      kFloat64RoundUp | kFloat32RoundTruncate |
-                      kFloat64RoundTruncate | kFloat64RoundTiesAway |
-                      kFloat32RoundTiesEven | kFloat64RoundTiesEven |
-                      kWord32Ctz | kWord64Ctz | kWord32Popcnt | kWord64Popcnt |
-                      kWord32ReverseBits | kWord64ReverseBits |
-                      kInt32AbsWithOverflow | kInt64AbsWithOverflow
+    kWord32Rol = 1u << 22,
+    kWord64Rol = 1u << 23,
+    kAllOptionalOps =
+        kFloat32RoundDown | kFloat64RoundDown | kFloat32RoundUp |
+        kFloat64RoundUp | kFloat32RoundTruncate | kFloat64RoundTruncate |
+        kFloat64RoundTiesAway | kFloat32RoundTiesEven | kFloat64RoundTiesEven |
+        kWord32Ctz | kWord64Ctz | kWord32Popcnt | kWord64Popcnt |
+        kWord32ReverseBits | kWord64ReverseBits | kInt32AbsWithOverflow |
+        kInt64AbsWithOverflow | kWord32Rol | kWord64Rol
   };
   using Flags = base::Flags<Flag, unsigned>;
 
@@ -294,7 +305,12 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* Word32Xor();
   const Operator* Word32Shl();
   const Operator* Word32Shr();
-  const Operator* Word32Sar();
+  const Operator* Word32Sar(ShiftKind kind);
+  const Operator* Word32Sar() { return Word32Sar(ShiftKind::kNormal); }
+  const Operator* Word32SarShiftOutZeros() {
+    return Word32Sar(ShiftKind::kShiftOutZeros);
+  }
+  const OptionalOperator Word32Rol();
   const Operator* Word32Ror();
   const Operator* Word32Equal();
   const Operator* Word32Clz();
@@ -319,7 +335,12 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* Word64Xor();
   const Operator* Word64Shl();
   const Operator* Word64Shr();
-  const Operator* Word64Sar();
+  const Operator* Word64Sar(ShiftKind kind);
+  const Operator* Word64Sar() { return Word64Sar(ShiftKind::kNormal); }
+  const Operator* Word64SarShiftOutZeros() {
+    return Word64Sar(ShiftKind::kShiftOutZeros);
+  }
+  const OptionalOperator Word64Rol();
   const Operator* Word64Ror();
   const Operator* Word64Clz();
   const OptionalOperator Word64Ctz();
@@ -413,7 +434,6 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* ChangeInt64ToFloat64();
   const Operator* ChangeUint32ToFloat64();
   const Operator* ChangeUint32ToUint64();
-  const Operator* ChangeTaggedToCompressed();
 
   // These operators truncate or round numbers, both changing the representation
   // of the number and mapping multiple input values onto the same output value.
@@ -537,8 +557,6 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
 
   // SIMD operators.
   const Operator* F64x2Splat();
-  const Operator* F64x2SConvertI64x2();
-  const Operator* F64x2UConvertI64x2();
   const Operator* F64x2Abs();
   const Operator* F64x2Neg();
   const Operator* F64x2Sqrt();
@@ -556,6 +574,8 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* F64x2Le();
   const Operator* F64x2Qfma();
   const Operator* F64x2Qfms();
+  const Operator* F64x2Pmin();
+  const Operator* F64x2Pmax();
 
   const Operator* F32x4Splat();
   const Operator* F32x4ExtractLane(int32_t);
@@ -580,6 +600,8 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* F32x4Le();
   const Operator* F32x4Qfma();
   const Operator* F32x4Qfms();
+  const Operator* F32x4Pmin();
+  const Operator* F32x4Pmax();
 
   const Operator* I64x2Splat();
   const Operator* I64x2SplatI32Pair();
@@ -632,6 +654,8 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I32x4MaxU();
   const Operator* I32x4GtU();
   const Operator* I32x4GeU();
+  const Operator* I32x4Abs();
+  const Operator* I32x4BitMask();
 
   const Operator* I16x8Splat();
   const Operator* I16x8ExtractLaneU(int32_t);
@@ -666,6 +690,9 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I16x8MaxU();
   const Operator* I16x8GtU();
   const Operator* I16x8GeU();
+  const Operator* I16x8RoundingAverageU();
+  const Operator* I16x8Abs();
+  const Operator* I16x8BitMask();
 
   const Operator* I8x16Splat();
   const Operator* I8x16ExtractLaneU(int32_t);
@@ -695,6 +722,9 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* I8x16MaxU();
   const Operator* I8x16GtU();
   const Operator* I8x16GeU();
+  const Operator* I8x16RoundingAverageU();
+  const Operator* I8x16Abs();
+  const Operator* I8x16BitMask();
 
   const Operator* S128Load();
   const Operator* S128Store();
@@ -705,6 +735,7 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   const Operator* S128Xor();
   const Operator* S128Not();
   const Operator* S128Select();
+  const Operator* S128AndNot();
 
   const Operator* S8x16Swizzle();
   const Operator* S8x16Shuffle(const uint8_t shuffle[16]);
@@ -836,7 +867,6 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
   V(Word, Xor)                 \
   V(Word, Shl)                 \
   V(Word, Shr)                 \
-  V(Word, Sar)                 \
   V(Word, Ror)                 \
   V(Word, Clz)                 \
   V(Word, Equal)               \
@@ -859,9 +889,15 @@ class V8_EXPORT_PRIVATE MachineOperatorBuilder final
 #undef PSEUDO_OP
 #undef PSEUDO_OP_LIST
 
+  const Operator* WordSar(ShiftKind kind = ShiftKind::kNormal) {
+    return Is32() ? Word32Sar(kind) : Word64Sar(kind);
+  }
+  const Operator* WordSarShiftOutZeros() {
+    return WordSar(ShiftKind::kShiftOutZeros);
+  }
+
  private:
   Zone* zone_;
-  MachineOperatorGlobalCache const& cache_;
   MachineRepresentation const word_;
   Flags const flags_;
   AlignmentRequirements const alignment_requirements_;

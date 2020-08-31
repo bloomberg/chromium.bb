@@ -35,15 +35,12 @@
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -57,7 +54,9 @@
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
+#include "components/permissions/permission_manager.h"
 #include "components/prefs/json_pref_store.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -71,7 +70,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/http/transport_security_state.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID)
@@ -121,14 +119,15 @@ constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
 }  // namespace
 
-OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
+OffTheRecordProfileImpl::OffTheRecordProfileImpl(
+    Profile* real_profile,
+    const OTRProfileID& otr_profile_id)
     : profile_(real_profile),
+      otr_profile_id_(otr_profile_id),
+      io_data_(this),
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
                                         profile_->GetProfileKey())) {
-  // Must happen before we ask for prefs as prefs needs the connection to the
-  // service manager, which is set up in Initialize.
-  BrowserContext::Initialize(this, profile_->GetPath());
   prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
       CreateExtensionPrefStore(profile_, true));
@@ -141,24 +140,20 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 }
 
 void OffTheRecordProfileImpl::Init() {
-  // The construction of OffTheRecordProfileIOData::Handle needs the profile
-  // type returned by this->GetProfileType().  Since GetProfileType() is a
-  // virtual member function, we cannot call the function defined in the most
-  // derived class (e.g. GuestSessionProfile) until a ctor finishes.  Thus,
-  // we have to instantiate OffTheRecordProfileIOData::Handle here after a ctor.
-  InitIoData();
-
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
+
+  // Must be done before CreateBrowserContextServices(), since some of them
+  // change behavior based on whether the provided context is a guest session.
+  set_is_guest_profile(profile_->IsGuestSession());
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
 
-  set_is_guest_profile(
-      profile_->GetPath() == ProfileManager::GetGuestProfilePath());
-
   // Always crash when incognito is not available.
-  // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.
+  // Guest profiles may always be OTR, and non primary OTRs are always allowed.
+  // Check IncognitoModePrefs otherwise.
   CHECK(profile_->IsGuestSession() || profile_->IsSystemProfile() ||
+        !IsPrimaryOTRProfile() ||
         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
             IncognitoModePrefs::DISABLED);
 
@@ -196,12 +191,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
 
-  // Clears any data the network stack contains that may be related to the
-  // OTR session. Must be done before DestroyBrowserContextServices, since
-  // the NetworkContext is managed by one such service.
-  GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
-      nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
-
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
   // The SimpleDependencyManager should always be passed after the
@@ -232,10 +221,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   }
 }
 
-void OffTheRecordProfileImpl::InitIoData() {
-  io_data_.reset(new OffTheRecordProfileIOData::Handle(this));
-}
-
 #if !defined(OS_ANDROID)
 void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   DCHECK(!profile_->IsIncognitoProfile());
@@ -250,8 +235,8 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   // Observe parent profile's HostZoomMap changes so they can also be applied
   // to this profile's HostZoomMap.
   track_zoom_subscription_ = parent_host_zoom_map->AddZoomLevelChangedCallback(
-      base::Bind(&OffTheRecordProfileImpl::OnParentZoomLevelChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&OffTheRecordProfileImpl::OnParentZoomLevelChanged,
+                          base::Unretained(this)));
   if (!profile_->GetZoomLevelPrefs())
     return;
 
@@ -312,21 +297,36 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }
 
-bool OffTheRecordProfileImpl::IsIndependentOffTheRecordProfile() {
-  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
-         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+const Profile::OTRProfileID& OffTheRecordProfileImpl::GetOTRProfileID() const {
+  return otr_profile_id_;
 }
 
-Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile() {
-  return this;
+Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (otr_profile_id_ == otr_profile_id)
+    return this;
+  return profile_->GetOffTheRecordProfile(otr_profile_id);
 }
 
-void OffTheRecordProfileImpl::DestroyOffTheRecordProfile() {
-  // Suicide is bad!
+std::vector<Profile*> OffTheRecordProfileImpl::GetAllOffTheRecordProfiles() {
+  return profile_->GetAllOffTheRecordProfiles();
+}
+
+void OffTheRecordProfileImpl::DestroyOffTheRecordProfile(
+    Profile* /*otr_profile*/) {
+  // OffTheRecord profiles should be destroyed through a request to their
+  // original profile.
   NOTREACHED();
 }
 
-bool OffTheRecordProfileImpl::HasOffTheRecordProfile() {
+bool OffTheRecordProfileImpl::HasOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (otr_profile_id_ == otr_profile_id)
+    return true;
+  return profile_->HasOffTheRecordProfile(otr_profile_id);
+}
+
+bool OffTheRecordProfileImpl::HasAnyOffTheRecordProfile() {
   return true;
 }
 
@@ -407,7 +407,7 @@ OffTheRecordProfileImpl::GetURLLoaderFactory() {
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {
-  return io_data_->GetResourceContext();
+  return io_data_.GetResourceContext();
 }
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
@@ -440,7 +440,7 @@ OffTheRecordProfileImpl::GetStorageNotificationService() {
 
 content::SSLHostStateDelegate*
 OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
-  return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+  return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 // TODO(mlamouri): we should all these BrowserContext implementation to Profile
@@ -604,7 +604,7 @@ void OffTheRecordProfileImpl::SetCreationTimeForTesting(
 class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
-      : OffTheRecordProfileImpl(real_profile) {
+      : OffTheRecordProfileImpl(real_profile, OTRProfileID::PrimaryID()) {
     set_is_guest_profile(true);
   }
 
@@ -622,17 +622,19 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
 };
 #endif
 
-Profile* Profile::CreateOffTheRecordProfile() {
-  OffTheRecordProfileImpl* profile = NULL;
+// static
+std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
+    Profile* parent,
+    const OTRProfileID& otr_profile_id) {
+  std::unique_ptr<OffTheRecordProfileImpl> profile;
 #if defined(OS_CHROMEOS)
-  if (IsGuestSession())
-    profile = new GuestSessionProfile(this);
+  if (parent->IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
+    profile.reset(new GuestSessionProfile(parent));
 #endif
   if (!profile)
-    profile = new OffTheRecordProfileImpl(this);
+    profile.reset(new OffTheRecordProfileImpl(parent, otr_profile_id));
   profile->Init();
-  NotifyOffTheRecordProfileCreated(profile);
-  return profile;
+  return std::move(profile);
 }
 
 #if !defined(OS_ANDROID)

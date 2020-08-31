@@ -63,7 +63,6 @@ namespace blink {
 // dependencies to core/.
 
 class DOMWindow;
-class EventTarget;
 class ExceptionState;
 class ExecutionContext;
 class FlexibleArrayBufferView;
@@ -81,88 +80,6 @@ enum class UnionTypeConversionMode {
   kNullable,
   kNotNullable,
 };
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             DOMWindow* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info,
-                             EventTarget* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callback_info, Node* impl) {
-  V8SetReturnValue(callback_info, static_cast<ScriptWrappable*>(impl));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         DOMWindow* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         EventTarget* impl) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
-                                         Node* impl) {
-  // Since EventTarget has a special version of ToV8 and V8EventTarget.h
-  // defines its own v8SetReturnValue family, which are slow, we need to
-  // override them with optimized versions for Node and its subclasses.
-  // Without this overload, V8SetReturnValueForMainWorld for Node would be
-  // very slow.
-  //
-  // class hierarchy:
-  //     ScriptWrappable <-- EventTarget <--+-- Node <-- ...
-  //                                        +-- Window
-  // overloads:
-  //     V8SetReturnValueForMainWorld(ScriptWrappable*)
-  //         Optimized and very fast.
-  //     V8SetReturnValueForMainWorld(EventTarget*)
-  //         Uses custom ToV8 function and slow.
-  //     V8SetReturnValueForMainWorld(Node*)
-  //         Optimized and very fast.
-  //     V8SetReturnValueForMainWorld(Window*)
-  //         Uses custom ToV8 function and slow.
-  V8SetReturnValueForMainWorld(callback_info,
-                               static_cast<ScriptWrappable*>(impl));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 DOMWindow* impl,
-                                 const ScriptWrappable*) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 EventTarget* impl,
-                                 const ScriptWrappable*) {
-  V8SetReturnValue(callback_info, ToV8(impl, callback_info.Holder(),
-                                       callback_info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
-                                 Node* impl,
-                                 const ScriptWrappable* wrappable) {
-  V8SetReturnValueFast(callback_info, static_cast<ScriptWrappable*>(impl),
-                       wrappable);
-}
 
 template <typename CallbackInfo, typename T>
 inline void V8SetReturnValue(const CallbackInfo& callbackInfo,
@@ -199,8 +116,8 @@ CORE_EXPORT void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>&,
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
   kNormalConversion,
+  kClamp,
   kEnforceRange,
-  kClamp
 };
 
 // Convert a value to a boolean.
@@ -439,6 +356,33 @@ VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
   return result;
 }
 
+template <typename IDLType>
+VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    int start_index,
+    ExceptionState& exception_state,
+    ExecutionContext* execution_context) {
+  using TraitsType = NativeValueTraits<IDLType>;
+  using VectorType = VectorOf<typename TraitsType::ImplType>;
+
+  int length = info.Length();
+  VectorType result;
+  if (start_index < length) {
+    if (static_cast<size_t>(length - start_index) > VectorType::MaxCapacity()) {
+      exception_state.ThrowRangeError("Array length exceeds supported limit.");
+      return VectorType();
+    }
+    result.ReserveInitialCapacity(length - start_index);
+    for (int i = start_index; i < length; ++i) {
+      result.UncheckedAppend(TraitsType::NativeValue(
+          info.GetIsolate(), info[i], exception_state, execution_context));
+      if (exception_state.HadException())
+        return VectorType();
+    }
+  }
+  return result;
+}
+
 // The functions below implement low-level abstract ES operations for dealing
 // with iterators. Most code should use ScriptIterator instead.
 //
@@ -503,13 +447,9 @@ CORE_EXPORT ScriptState* ToScriptStateForMainWorld(LocalFrame*);
 // a context, if the window is currently being displayed in a Frame.
 CORE_EXPORT LocalFrame* ToLocalFrameIfNotDetached(v8::Local<v8::Context>);
 
-// If 'storage' is non-null, it must be large enough to copy all bytes in the
-// array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)
-// to allocate it using alloca() in the callers stack frame.
 CORE_EXPORT void ToFlexibleArrayBufferView(v8::Isolate*,
                                            v8::Local<v8::Value>,
-                                           FlexibleArrayBufferView&,
-                                           void* storage = nullptr);
+                                           FlexibleArrayBufferView&);
 
 CORE_EXPORT bool IsValidEnum(const String& value,
                              const char* const* valid_values,
@@ -521,10 +461,6 @@ CORE_EXPORT bool IsValidEnum(const Vector<String>& values,
                              size_t length,
                              const String& enum_name,
                              ExceptionState&);
-
-// Result values for platform object 'deleter' methods,
-// http://www.w3.org/TR/WebIDL/#delete
-enum DeleteResult { kDeleteSuccess, kDeleteReject, kDeleteUnknownProperty };
 
 CORE_EXPORT v8::Local<v8::Value> FromJSONString(v8::Isolate*,
                                                 v8::Local<v8::Context>,

@@ -46,8 +46,8 @@ class InstanceID {
     // Other errors.
     UNKNOWN_ERROR = 7,
 
-    // Used for UMA. Keep LAST_RESULT up to date and sync with histograms.xml.
-    LAST_RESULT = UNKNOWN_ERROR
+    // Used for UMA. Keep kMaxValue up to date and sync with histograms.xml.
+    kMaxValue = UNKNOWN_ERROR
   };
 
   // Flags to be used to create a token. These might be platform specific.
@@ -64,11 +64,9 @@ class InstanceID {
 
   // Asynchronous callbacks. Must not synchronously delete |this| (using
   // InstanceIDDriver::RemoveInstanceID).
-  using TokenRefreshCallback =
-      base::Callback<void(const std::string& app_id, bool update_id)>;
-  using GetIDCallback = base::Callback<void(const std::string& id)>;
+  using GetIDCallback = base::OnceCallback<void(const std::string& id)>;
   using GetCreationTimeCallback =
-      base::Callback<void(const base::Time& creation_time)>;
+      base::OnceCallback<void(const base::Time& creation_time)>;
   using GetTokenCallback =
       base::OnceCallback<void(const std::string& token, Result result)>;
   using ValidateTokenCallback = base::OnceCallback<void(bool is_valid)>;
@@ -88,15 +86,11 @@ class InstanceID {
 
   virtual ~InstanceID();
 
-  // Sets the callback that will be invoked when the token refresh event needs
-  // to be triggered.
-  void SetTokenRefreshCallback(const TokenRefreshCallback& callback);
-
   // Returns the Instance ID.
-  virtual void GetID(const GetIDCallback& callback) = 0;
+  virtual void GetID(GetIDCallback callback) = 0;
 
   // Returns the time when the InstanceID has been generated.
-  virtual void GetCreationTime(const GetCreationTimeCallback& callback) = 0;
+  virtual void GetCreationTime(GetCreationTimeCallback callback) = 0;
 
   // Retrieves a token that allows the authorized entity to access the service
   // defined as "scope".
@@ -105,6 +99,7 @@ class InstanceID {
   //                      another Instance ID or a project ID.
   // |scope|: identifies authorized actions that the authorized entity can take.
   //          E.g. for sending GCM messages, "GCM" scope should be used.
+  // |time_to_live|: TTL of retrieved token, unlimited if zero value passed.
   // |options|: allows including a small number of string key/value pairs that
   //            will be associated with the token and may be used in processing
   //            the request.
@@ -112,6 +107,7 @@ class InstanceID {
   // |callback|: to be called once the asynchronous operation is done.
   virtual void GetToken(const std::string& authorized_entity,
                         const std::string& scope,
+                        base::TimeDelta time_to_live,
                         const std::map<std::string, std::string>& options,
                         std::set<Flags> flags,
                         GetTokenCallback callback) = 0;
@@ -169,7 +165,6 @@ class InstanceID {
   gcm::GCMDriver* gcm_driver_;
 
   std::string app_id_;
-  TokenRefreshCallback token_refresh_callback_;
 
   base::WeakPtrFactory<InstanceID> weak_ptr_factory_{this};
 

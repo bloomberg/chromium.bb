@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.os.SystemClock;
-import android.support.design.widget.TabLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,11 +26,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -205,15 +206,15 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                item.findViewById(R.id.close_btn_modern));
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), item.getCloseButtonForTests());
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
@@ -236,7 +237,7 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();
@@ -286,15 +287,15 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceivePendingClosureHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabPendingClosure(Tab tab) {
                 didReceivePendingClosureHelper.notifyCalled();
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                item.findViewById(R.id.close_btn_modern));
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), item.getCloseButtonForTests());
 
         didReceivePendingClosureHelper.waitForCallback(0);
 
@@ -452,7 +453,7 @@ public class OverviewListLayoutTest {
         getListItemAndDisableAnimations(0);
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();

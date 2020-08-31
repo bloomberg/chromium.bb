@@ -23,6 +23,107 @@ namespace internal {
 
 enum SlotCallbackResult { KEEP_SLOT, REMOVE_SLOT };
 
+// Possibly empty buckets (buckets that do not contain any slots) are discovered
+// by the scavenger. Buckets might become non-empty when promoting objects later
+// or in another thread, so all those buckets need to be revisited.
+// Track possibly empty buckets within a SlotSet in this data structure. The
+// class contains a word-sized bitmap, in case more bits are needed the bitmap
+// is replaced with a pointer to a malloc-allocated bitmap.
+class PossiblyEmptyBuckets {
+ public:
+  PossiblyEmptyBuckets() : bitmap_(kNullAddress) {}
+  PossiblyEmptyBuckets(PossiblyEmptyBuckets&& other) V8_NOEXCEPT
+      : bitmap_(other.bitmap_) {
+    other.bitmap_ = kNullAddress;
+  }
+
+  ~PossiblyEmptyBuckets() { Release(); }
+
+  void Initialize() {
+    bitmap_ = kNullAddress;
+    DCHECK(!IsAllocated());
+  }
+
+  void Release() {
+    if (IsAllocated()) {
+      AlignedFree(BitmapArray());
+    }
+    bitmap_ = kNullAddress;
+    DCHECK(!IsAllocated());
+  }
+
+  void Insert(size_t bucket_index, size_t buckets) {
+    if (IsAllocated()) {
+      InsertAllocated(bucket_index);
+    } else if (bucket_index + 1 < kBitsPerWord) {
+      bitmap_ |= static_cast<uintptr_t>(1) << (bucket_index + 1);
+    } else {
+      Allocate(buckets);
+      InsertAllocated(bucket_index);
+    }
+  }
+
+  bool Contains(size_t bucket_index) {
+    if (IsAllocated()) {
+      size_t word_idx = bucket_index / kBitsPerWord;
+      uintptr_t* word = BitmapArray() + word_idx;
+      return *word &
+             (static_cast<uintptr_t>(1) << (bucket_index % kBitsPerWord));
+    } else if (bucket_index + 1 < kBitsPerWord) {
+      return bitmap_ & (static_cast<uintptr_t>(1) << (bucket_index + 1));
+    } else {
+      return false;
+    }
+  }
+
+  bool IsEmpty() { return bitmap_ == kNullAddress; }
+
+ private:
+  Address bitmap_;
+  static const Address kPointerTag = 1;
+  static const int kWordSize = sizeof(uintptr_t);
+  static const int kBitsPerWord = kWordSize * kBitsPerByte;
+
+  bool IsAllocated() { return bitmap_ & kPointerTag; }
+
+  void Allocate(size_t buckets) {
+    DCHECK(!IsAllocated());
+    size_t words = WordsForBuckets(buckets);
+    uintptr_t* ptr = reinterpret_cast<uintptr_t*>(
+        AlignedAlloc(words * kWordSize, kSystemPointerSize));
+    ptr[0] = bitmap_ >> 1;
+
+    for (size_t word_idx = 1; word_idx < words; word_idx++) {
+      ptr[word_idx] = 0;
+    }
+    bitmap_ = reinterpret_cast<Address>(ptr) + kPointerTag;
+    DCHECK(IsAllocated());
+  }
+
+  void InsertAllocated(size_t bucket_index) {
+    DCHECK(IsAllocated());
+    size_t word_idx = bucket_index / kBitsPerWord;
+    uintptr_t* word = BitmapArray() + word_idx;
+    *word |= static_cast<uintptr_t>(1) << (bucket_index % kBitsPerWord);
+  }
+
+  static size_t WordsForBuckets(size_t buckets) {
+    return (buckets + kBitsPerWord - 1) / kBitsPerWord;
+  }
+
+  uintptr_t* BitmapArray() {
+    DCHECK(IsAllocated());
+    return reinterpret_cast<uintptr_t*>(bitmap_ & ~kPointerTag);
+  }
+
+  FRIEND_TEST(PossiblyEmptyBucketsTest, WordsForBuckets);
+
+  DISALLOW_COPY_AND_ASSIGN(PossiblyEmptyBuckets);
+};
+
+STATIC_ASSERT(std::is_standard_layout<PossiblyEmptyBuckets>::value);
+STATIC_ASSERT(sizeof(PossiblyEmptyBuckets) == kSystemPointerSize);
+
 // Data structure for maintaining a set of slots in a standard (non-large)
 // page.
 // The data structure assumes that the slots are pointer size aligned and
@@ -35,42 +136,33 @@ class SlotSet {
     KEEP_EMPTY_BUCKETS   // An empty bucket will be kept.
   };
 
-  enum class PossiblyEmpty : uint8_t {
-    kYes,       // Bucket is non-null but might be empty.
-    kNoOrNull,  // Bucket is null or cannot be empty.
-  };
-
   SlotSet() = delete;
 
   static SlotSet* Allocate(size_t buckets) {
-    //  SlotSet* slot_set ----------------------+
-    //                                          |
-    //                                          v
-    // +----------------------+-----------------+-------------------------+
-    // | possibly empty array | initial buckets |     buckets array       |
-    // +----------------------+-----------------+-------------------------+
-    //    1 byte * buckets       pointer-sized    pointer-sized * buckets
+    //  SlotSet* slot_set --+
+    //                      |
+    //                      v
+    //    +-----------------+-------------------------+
+    //    | initial buckets |     buckets array       |
+    //    +-----------------+-------------------------+
+    //       pointer-sized    pointer-sized * buckets
     //
     //
     // The SlotSet pointer points to the beginning of the buckets array for
     // faster access in the write barrier. The number of buckets is needed for
     // calculating the size of this data structure.
-    // Since pages can shrink we also store the initial_buckets size.
-    //
-    size_t possibly_empty_array_size = PossiblyEmptyArraySize(buckets);
     size_t buckets_size = buckets * sizeof(Bucket*);
-    size_t size =
-        possibly_empty_array_size + kInitialBucketsSize + buckets_size;
+    size_t size = kInitialBucketsSize + buckets_size;
     void* allocation = AlignedAlloc(size, kSystemPointerSize);
     SlotSet* slot_set = reinterpret_cast<SlotSet*>(
-        reinterpret_cast<uint8_t*>(allocation) + possibly_empty_array_size +
-        kInitialBucketsSize);
+        reinterpret_cast<uint8_t*>(allocation) + kInitialBucketsSize);
     DCHECK(
         IsAligned(reinterpret_cast<uintptr_t>(slot_set), kSystemPointerSize));
+#ifdef DEBUG
     *slot_set->initial_buckets() = buckets;
+#endif
     for (size_t i = 0; i < buckets; i++) {
       *slot_set->bucket(i) = nullptr;
-      *slot_set->possibly_empty(i) = PossiblyEmpty::kNoOrNull;
     }
     return slot_set;
   }
@@ -82,22 +174,26 @@ class SlotSet {
       slot_set->ReleaseBucket(i);
     }
 
+#ifdef DEBUG
     size_t initial_buckets = *slot_set->initial_buckets();
 
-#ifdef DEBUG
     for (size_t i = buckets; i < initial_buckets; i++) {
       DCHECK_NULL(*slot_set->bucket(i));
     }
 #endif
 
-    size_t possibly_empty_array_size = PossiblyEmptyArraySize(initial_buckets);
-    AlignedFree(reinterpret_cast<uint8_t*>(slot_set) - kInitialBucketsSize -
-                possibly_empty_array_size);
+    AlignedFree(reinterpret_cast<uint8_t*>(slot_set) - kInitialBucketsSize);
   }
 
   static size_t BucketsForSize(size_t size) {
     return (size + (kTaggedSize * kBitsPerBucket) - 1) >>
            (kTaggedSizeLog2 + kBitsPerBucketLog2);
+  }
+
+  // Converts the slot offset into bucket index.
+  static size_t BucketForSlot(size_t slot_offset) {
+    DCHECK(IsAligned(slot_offset, kTaggedSize));
+    return slot_offset >> (kTaggedSizeLog2 + kBitsPerBucketLog2);
   }
 
   // The slot offset specifies a slot at address page_start_ + slot_offset.
@@ -245,9 +341,9 @@ class SlotSet {
   //
   // Releases memory for empty buckets with FREE_EMPTY_BUCKETS.
   template <typename Callback>
-  size_t Iterate(Address chunk_start, size_t buckets, Callback callback,
-                 EmptyBucketMode mode) {
-    return Iterate(chunk_start, buckets, callback,
+  size_t Iterate(Address chunk_start, size_t start_bucket, size_t end_bucket,
+                 Callback callback, EmptyBucketMode mode) {
+    return Iterate(chunk_start, start_bucket, end_bucket, callback,
                    [this, mode](size_t bucket_index) {
                      if (mode == EmptyBucketMode::FREE_EMPTY_BUCKETS) {
                        ReleaseBucket(bucket_index);
@@ -260,13 +356,12 @@ class SlotSet {
   // Assumes that the possibly empty-array was already cleared by
   // CheckPossiblyEmptyBuckets.
   template <typename Callback>
-  size_t IterateAndTrackEmptyBuckets(Address chunk_start, size_t buckets,
-                                     Callback callback,
-                                     bool* empty_bucket_found) {
-    return Iterate(chunk_start, buckets, callback,
-                   [this, empty_bucket_found](size_t bucket_index) {
-                     *possibly_empty(bucket_index) = PossiblyEmpty::kYes;
-                     *empty_bucket_found = true;
+  size_t IterateAndTrackEmptyBuckets(
+      Address chunk_start, size_t start_bucket, size_t end_bucket,
+      Callback callback, PossiblyEmptyBuckets* possibly_empty_buckets) {
+    return Iterate(chunk_start, start_bucket, end_bucket, callback,
+                   [possibly_empty_buckets, end_bucket](size_t bucket_index) {
+                     possibly_empty_buckets->Insert(bucket_index, end_bucket);
                    });
   }
 
@@ -283,40 +378,31 @@ class SlotSet {
 
   // Check whether possibly empty buckets are really empty. Empty buckets are
   // freed and the possibly empty state is cleared for all buckets.
-  bool CheckPossiblyEmptyBuckets(size_t buckets) {
+  bool CheckPossiblyEmptyBuckets(size_t buckets,
+                                 PossiblyEmptyBuckets* possibly_empty_buckets) {
     bool empty = true;
     for (size_t bucket_index = 0; bucket_index < buckets; bucket_index++) {
       Bucket* bucket = LoadBucket<AccessMode::NON_ATOMIC>(bucket_index);
       if (bucket) {
-        if (*possibly_empty(bucket_index) == PossiblyEmpty::kYes) {
+        if (possibly_empty_buckets->Contains(bucket_index)) {
           if (bucket->IsEmpty()) {
             ReleaseBucket<AccessMode::NON_ATOMIC>(bucket_index);
           } else {
             empty = false;
           }
-          *possibly_empty(bucket_index) = PossiblyEmpty::kNoOrNull;
         } else {
           empty = false;
         }
       } else {
-        DCHECK_EQ(*possibly_empty(bucket_index), PossiblyEmpty::kNoOrNull);
+        // Unfortunately we cannot DCHECK here that the corresponding bit in
+        // possibly_empty_buckets is not set. After scavenge, the
+        // MergeOldToNewRememberedSets operation might remove a recorded bucket.
       }
     }
+
+    possibly_empty_buckets->Release();
 
     return empty;
-  }
-
-  // Check wether all possibly empty entries are cleared. Only used
-  // for testing in debug-builds.
-  bool IsPossiblyEmptyCleared() {
-    size_t buckets = *initial_buckets();
-    for (size_t bucket_index = 0; bucket_index < buckets; bucket_index++) {
-      if (*possibly_empty(bucket_index) != PossiblyEmpty::kNoOrNull) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   static const int kCellsPerBucket = 32;
@@ -381,10 +467,11 @@ class SlotSet {
 
  private:
   template <typename Callback, typename EmptyBucketCallback>
-  size_t Iterate(Address chunk_start, size_t buckets, Callback callback,
-                 EmptyBucketCallback empty_bucket_callback) {
+  size_t Iterate(Address chunk_start, size_t start_bucket, size_t end_bucket,
+                 Callback callback, EmptyBucketCallback empty_bucket_callback) {
     size_t new_count = 0;
-    for (size_t bucket_index = 0; bucket_index < buckets; bucket_index++) {
+    for (size_t bucket_index = start_bucket; bucket_index < end_bucket;
+         bucket_index++) {
       Bucket* bucket = LoadBucket(bucket_index);
       if (bucket != nullptr) {
         size_t in_bucket_count = 0;
@@ -500,20 +587,15 @@ class SlotSet {
     *bit_index = static_cast<int>(slot & (kBitsPerCell - 1));
   }
 
-  static size_t PossiblyEmptyArraySize(size_t buckets) {
-    return (sizeof(PossiblyEmpty) * buckets + (kSystemPointerSize - 1)) /
-           kSystemPointerSize * kSystemPointerSize;
-  }
-
   Bucket** buckets() { return reinterpret_cast<Bucket**>(this); }
   Bucket** bucket(size_t bucket_index) { return buckets() + bucket_index; }
-  PossiblyEmpty* possibly_empty(size_t bucket_index) {
-    return reinterpret_cast<PossiblyEmpty*>(buckets()) - kInitialBucketsSize -
-           1 - bucket_index;
-  }
 
+#ifdef DEBUG
   size_t* initial_buckets() { return reinterpret_cast<size_t*>(this) - 1; }
   static const int kInitialBucketsSize = sizeof(size_t);
+#else
+  static const int kInitialBucketsSize = 0;
+#endif
 };
 
 STATIC_ASSERT(std::is_standard_layout<SlotSet>::value);
@@ -522,7 +604,8 @@ STATIC_ASSERT(std::is_standard_layout<SlotSet::Bucket>::value);
 enum SlotType {
   FULL_EMBEDDED_OBJECT_SLOT,
   COMPRESSED_EMBEDDED_OBJECT_SLOT,
-  OBJECT_SLOT,
+  FULL_OBJECT_SLOT,
+  COMPRESSED_OBJECT_SLOT,
   CODE_TARGET_SLOT,
   CODE_ENTRY_SLOT,
   CLEARED_SLOT

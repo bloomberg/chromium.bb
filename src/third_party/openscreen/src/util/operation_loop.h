@@ -15,8 +15,6 @@
 
 namespace openscreen {
 
-using Clock = platform::Clock;
-
 class OperationLoop {
  public:
   using OperationWithTimeout = std::function<void(Clock::duration)>;

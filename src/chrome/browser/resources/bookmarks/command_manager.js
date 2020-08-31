@@ -79,8 +79,8 @@ export const CommandManager = Polymer({
   /** @private {?Function} */
   confirmOpenCallback_: null,
 
-  attached: function() {
-    assert(CommandManager.instance_ == null);
+  attached() {
+    assert(CommandManager.instance_ === null);
     CommandManager.instance_ = this;
 
     /** @private {!BrowserProxy} */
@@ -126,7 +126,7 @@ export const CommandManager = Polymer({
 
     const addDocumentListenerForCommand = (eventName, command) => {
       addDocumentListener(eventName, (e) => {
-        if (e.path[0].tagName == 'INPUT') {
+        if (e.path[0].tagName === 'INPUT') {
           return;
         }
 
@@ -146,7 +146,7 @@ export const CommandManager = Polymer({
     });
   },
 
-  detached: function() {
+  detached() {
     CommandManager.instance_ = null;
     this.boundListeners_.forEach(
         (handler, eventName) =>
@@ -162,7 +162,7 @@ export const CommandManager = Polymer({
    * @param {MenuSource} source
    * @param {Set<string>=} items
    */
-  openCommandMenuAtPosition: function(x, y, source, items) {
+  openCommandMenuAtPosition(x, y, source, items) {
     this.menuSource_ = source;
     this.menuIds_ = items || this.getState().selection.items;
 
@@ -182,7 +182,7 @@ export const CommandManager = Polymer({
    * @param {!Element} target
    * @param {MenuSource} source
    */
-  openCommandMenuAtElement: function(target, source) {
+  openCommandMenuAtElement(target, source) {
     this.menuSource_ = source;
     this.menuIds_ = this.getState().selection.items;
 
@@ -196,7 +196,7 @@ export const CommandManager = Polymer({
         });
   },
 
-  closeCommandMenu: function() {
+  closeCommandMenu() {
     this.menuIds_ = new Set();
     this.menuSource_ = MenuSource.NONE;
     /** @type {!CrActionMenuElement} */ (this.$.dropdown.get()).close();
@@ -213,7 +213,7 @@ export const CommandManager = Polymer({
    * @param {!Set<string>} itemIds
    * @return {boolean}
    */
-  canExecute: function(command, itemIds) {
+  canExecute(command, itemIds) {
     const state = this.getState();
     switch (command) {
       case Command.OPEN:
@@ -232,7 +232,7 @@ export const CommandManager = Polymer({
               return !canEditNode(state, node.id);
             });
       case Command.PASTE:
-        return state.search.term == '' &&
+        return state.search.term === '' &&
             canReorderChildren(state, state.selectedFolder);
       default:
         return this.isCommandVisible_(command, itemIds) &&
@@ -246,10 +246,10 @@ export const CommandManager = Polymer({
    * @return {boolean} True if the command should be visible in the context
    *     menu.
    */
-  isCommandVisible_: function(command, itemIds) {
+  isCommandVisible_(command, itemIds) {
     switch (command) {
       case Command.EDIT:
-        return itemIds.size == 1 && this.globalCanEdit_;
+        return itemIds.size === 1 && this.globalCanEdit_;
       case Command.PASTE:
         return this.globalCanEdit_;
       case Command.CUT:
@@ -260,10 +260,10 @@ export const CommandManager = Polymer({
       case Command.DELETE:
         return itemIds.size > 0 && this.globalCanEdit_;
       case Command.SHOW_IN_FOLDER:
-        return this.menuSource_ == MenuSource.ITEM && itemIds.size == 1 &&
-            this.getState().search.term != '' &&
+        return this.menuSource_ === MenuSource.ITEM && itemIds.size === 1 &&
+            this.getState().search.term !== '' &&
             !this.containsMatchingNode_(itemIds, function(node) {
-              return !node.parentId || node.parentId == ROOT_NODE_ID;
+              return !node.parentId || node.parentId === ROOT_NODE_ID;
             });
       case Command.OPEN_NEW_TAB:
       case Command.OPEN_NEW_WINDOW:
@@ -286,7 +286,7 @@ export const CommandManager = Polymer({
    * @return {boolean} True if the command should be clickable in the context
    *     menu.
    */
-  isCommandEnabled_: function(command, itemIds) {
+  isCommandEnabled_(command, itemIds) {
     const state = this.getState();
     switch (command) {
       case Command.EDIT:
@@ -299,7 +299,8 @@ export const CommandManager = Polymer({
         return this.expandUrls_(itemIds).length > 0;
       case Command.OPEN_INCOGNITO:
         return this.expandUrls_(itemIds).length > 0 &&
-            state.prefs.incognitoAvailability != IncognitoAvailability.DISABLED;
+            state.prefs.incognitoAvailability !==
+            IncognitoAvailability.DISABLED;
       case Command.SORT:
         return this.canChangeList_() &&
             state.nodes[state.selectedFolder].children.length > 1;
@@ -320,9 +321,9 @@ export const CommandManager = Polymer({
    * @private
    * @return {boolean}
    */
-  canChangeList_: function() {
+  canChangeList_() {
     const state = this.getState();
-    return state.search.term == '' &&
+    return state.search.term === '' &&
         canReorderChildren(state, state.selectedFolder);
   },
 
@@ -330,7 +331,7 @@ export const CommandManager = Polymer({
    * @param {Command} command
    * @param {!Set<string>} itemIds
    */
-  handle: function(command, itemIds) {
+  handle(command, itemIds) {
     const state = this.getState();
     switch (command) {
       case Command.EDIT: {
@@ -344,10 +345,10 @@ export const CommandManager = Polymer({
         const idList = Array.from(itemIds);
         chrome.bookmarkManagerPrivate.copy(idList, () => {
           let labelPromise;
-          if (command == Command.COPY_URL) {
+          if (command === Command.COPY_URL) {
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastUrlCopied'));
-          } else if (idList.length == 1) {
+          } else if (idList.length === 1) {
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastItemCopied'));
           } else {
@@ -373,7 +374,7 @@ export const CommandManager = Polymer({
         const title = state.nodes[idList[0]].title;
         let labelPromise;
 
-        if (idList.length == 1) {
+        if (idList.length === 1) {
           labelPromise =
               Promise.resolve(loadTimeData.getString('toastItemDeleted'));
         } else {
@@ -462,7 +463,7 @@ export const CommandManager = Polymer({
    * @return {boolean} True if the event was handled, triggering a keyboard
    *     shortcut.
    */
-  handleKeyEvent: function(e, itemIds) {
+  handleKeyEvent(e, itemIds) {
     for (const commandTuple of this.shortcuts_) {
       const command = /** @type {Command} */ (commandTuple[0]);
       const shortcut =
@@ -492,7 +493,7 @@ export const CommandManager = Polymer({
    * @param {string=} macShortcut If set, enables a replacement shortcut for
    *     Mac.
    */
-  addShortcut_: function(command, shortcut, macShortcut) {
+  addShortcut_(command, shortcut, macShortcut) {
     shortcut = (isMac && macShortcut) ? macShortcut : shortcut;
     this.shortcuts_.set(command, new KeyboardShortcutList(shortcut));
   },
@@ -506,12 +507,12 @@ export const CommandManager = Polymer({
    * @param {!Set<string>} itemIds
    * @return {!Set<string>}
    */
-  minimizeDeletionSet_: function(itemIds) {
+  minimizeDeletionSet_(itemIds) {
     const minimizedSet = new Set();
     const nodes = this.getState().nodes;
     itemIds.forEach(function(itemId) {
       let currentId = itemId;
-      while (currentId != ROOT_NODE_ID) {
+      while (currentId !== ROOT_NODE_ID) {
         currentId = assert(nodes[currentId].parentId);
         if (itemIds.has(currentId)) {
           return;
@@ -529,22 +530,22 @@ export const CommandManager = Polymer({
    * @param {Command} command
    * @private
    */
-  openUrls_: function(urls, command) {
+  openUrls_(urls, command) {
     assert(
-        command == Command.OPEN || command == Command.OPEN_NEW_TAB ||
-        command == Command.OPEN_NEW_WINDOW ||
-        command == Command.OPEN_INCOGNITO);
+        command === Command.OPEN || command === Command.OPEN_NEW_TAB ||
+        command === Command.OPEN_NEW_WINDOW ||
+        command === Command.OPEN_INCOGNITO);
 
-    if (urls.length == 0) {
+    if (urls.length === 0) {
       return;
     }
 
     const openUrlsCallback = function() {
-      const incognito = command == Command.OPEN_INCOGNITO;
-      if (command == Command.OPEN_NEW_WINDOW || incognito) {
+      const incognito = command === Command.OPEN_INCOGNITO;
+      if (command === Command.OPEN_NEW_WINDOW || incognito) {
         chrome.windows.create({url: urls, incognito: incognito});
       } else {
-        if (command == Command.OPEN) {
+        if (command === Command.OPEN) {
           chrome.tabs.create({url: urls.shift(), active: true});
         }
         urls.forEach(function(url) {
@@ -575,7 +576,7 @@ export const CommandManager = Polymer({
    * @return {!Array<string>}
    * @private
    */
-  expandUrls_: function(itemIds) {
+  expandUrls_(itemIds) {
     const urls = [];
     const nodes = this.getState().nodes;
 
@@ -602,7 +603,7 @@ export const CommandManager = Polymer({
    * @return {boolean} True if any node in |itemIds| returns true for
    *     |predicate|.
    */
-  containsMatchingNode_: function(itemIds, predicate) {
+  containsMatchingNode_(itemIds, predicate) {
     const nodes = this.getState().nodes;
 
     return Array.from(itemIds).some(function(id) {
@@ -616,8 +617,8 @@ export const CommandManager = Polymer({
    *     node.
    * @private
    */
-  isSingleBookmark_: function(itemIds) {
-    return itemIds.size == 1 &&
+  isSingleBookmark_(itemIds) {
+    return itemIds.size === 1 &&
         this.containsMatchingNode_(itemIds, function(node) {
           return !!node.url;
         });
@@ -628,8 +629,8 @@ export const CommandManager = Polymer({
    * @return {boolean}
    * @private
    */
-  isFolder_: function(itemIds) {
-    return itemIds.size == 1 &&
+  isFolder_(itemIds) {
+    return itemIds.size === 1 &&
         this.containsMatchingNode_(itemIds, node => !node.url);
   },
 
@@ -638,7 +639,7 @@ export const CommandManager = Polymer({
    * @return {string}
    * @private
    */
-  getCommandLabel_: function(command) {
+  getCommandLabel_(command) {
     const multipleNodes = this.menuIds_.size > 1 ||
         this.containsMatchingNode_(this.menuIds_, function(node) {
           return !node.url;
@@ -646,7 +647,7 @@ export const CommandManager = Polymer({
     let label;
     switch (command) {
       case Command.EDIT:
-        if (this.menuIds_.size != 1) {
+        if (this.menuIds_.size !== 1) {
           return '';
         }
 
@@ -710,7 +711,7 @@ export const CommandManager = Polymer({
    * @return {string}
    * @private
    */
-  getCommandSublabel_: function(command) {
+  getCommandSublabel_(command) {
     const multipleNodes = this.menuIds_.size > 1 ||
         this.containsMatchingNode_(this.menuIds_, function(node) {
           return !node.url;
@@ -725,7 +726,7 @@ export const CommandManager = Polymer({
   },
 
   /** @private */
-  computeMenuCommands_: function() {
+  computeMenuCommands_() {
     switch (this.menuSource_) {
       case MenuSource.ITEM:
       case MenuSource.TREE:
@@ -770,13 +771,13 @@ export const CommandManager = Polymer({
    * @return {boolean}
    * @private
    */
-  computeHasAnySublabel_: function() {
-    if (this.menuIds_ == undefined || this.menuCommands_ == undefined) {
+  computeHasAnySublabel_() {
+    if (this.menuIds_ === undefined || this.menuCommands_ === undefined) {
       return false;
     }
 
     return this.menuCommands_.some(
-        (command) => this.getCommandSublabel_(command) != '');
+        (command) => this.getCommandSublabel_(command) !== '');
   },
 
   /**
@@ -785,12 +786,12 @@ export const CommandManager = Polymer({
    * @return {boolean}
    * @private
    */
-  showDividerAfter_: function(command, itemIds) {
+  showDividerAfter_(command, itemIds) {
     switch (command) {
       case Command.SORT:
       case Command.ADD_FOLDER:
       case Command.EXPORT:
-        return this.menuSource_ == MenuSource.TOOLBAR;
+        return this.menuSource_ === MenuSource.TOOLBAR;
       case Command.DELETE:
         return this.globalCanEdit_;
       case Command.PASTE:
@@ -805,8 +806,8 @@ export const CommandManager = Polymer({
    * @param {number} command
    * @private
    */
-  recordCommandHistogram_: function(itemIds, histogram, command) {
-    if (command == Command.OPEN) {
+  recordCommandHistogram_(itemIds, histogram, command) {
+    if (command === Command.OPEN) {
       command =
           this.isFolder_(itemIds) ? Command.OPEN_FOLDER : Command.OPEN_BOOKMARK;
     }
@@ -844,7 +845,7 @@ export const CommandManager = Polymer({
    * @param {number} targetId
    * @private
    */
-  updateCanPaste_: function(targetId) {
+  updateCanPaste_(targetId) {
     return new Promise(resolve => {
       chrome.bookmarkManagerPrivate.canPaste(`${targetId}`, result => {
         this.canPaste_ = result;
@@ -876,7 +877,7 @@ export const CommandManager = Polymer({
    * @param {Event} e
    * @private
    */
-  onCommandClick_: function(e) {
+  onCommandClick_(e) {
     this.handle(
         /** @type {Command} */ (
             Number(e.currentTarget.getAttribute('command'))),
@@ -888,13 +889,13 @@ export const CommandManager = Polymer({
    * @param {!Event} e
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     const path = e.composedPath();
-    if (path[0].tagName == 'INPUT') {
+    if (path[0].tagName === 'INPUT') {
       return;
     }
-    if ((e.target == document.body ||
-         path.some(el => el.tagName == 'BOOKMARKS-TOOLBAR')) &&
+    if ((e.target === document.body ||
+         path.some(el => el.tagName === 'BOOKMARKS-TOOLBAR')) &&
         !DialogFocusManager.getInstance().hasOpenDialog()) {
       this.handleKeyEvent(e, this.getState().selection.items);
     }
@@ -907,8 +908,8 @@ export const CommandManager = Polymer({
    * @param {Event} e
    * @private
    */
-  onMenuMousedown_: function(e) {
-    if (e.path[0].tagName != 'DIALOG') {
+  onMenuMousedown_(e) {
+    if (e.path[0].tagName !== 'DIALOG') {
       return;
     }
 
@@ -916,12 +917,12 @@ export const CommandManager = Polymer({
   },
 
   /** @private */
-  onOpenCancelTap_: function() {
+  onOpenCancelTap_() {
     this.$.openDialog.get().cancel();
   },
 
   /** @private */
-  onOpenConfirmTap_: function() {
+  onOpenConfirmTap_() {
     this.confirmOpenCallback_();
     this.$.openDialog.get().close();
   },

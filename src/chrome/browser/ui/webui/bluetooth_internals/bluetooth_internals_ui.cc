@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/bluetooth_internals_resources.h"
 #include "chrome/grit/bluetooth_internals_resources_map.h"
@@ -31,22 +32,20 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_MOJO_JS);
   html_source->AddResourcePath("uuid.mojom-lite.js",
                                IDR_BLUETOOTH_INTERNALS_UUID_MOJO_JS);
-  for (size_t i = 0; i < kBluetoothInternalsResourcesSize; i++) {
-    html_source->AddResourcePath(kBluetoothInternalsResources[i].name,
-                                 kBluetoothInternalsResources[i].value);
-  }
+  webui::AddResourcePathsBulk(
+      html_source, base::make_span(kBluetoothInternalsResources,
+                                   kBluetoothInternalsResourcesSize));
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
-  AddHandlerToRegistry(
-      base::BindRepeating(&BluetoothInternalsUI::BindBluetoothInternalsHandler,
-                          base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(BluetoothInternalsUI)
 
 BluetoothInternalsUI::~BluetoothInternalsUI() {}
 
-void BluetoothInternalsUI::BindBluetoothInternalsHandler(
+void BluetoothInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver) {
   page_handler_ =
       std::make_unique<BluetoothInternalsHandler>(std::move(receiver));

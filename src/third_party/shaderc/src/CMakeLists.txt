@@ -26,9 +26,19 @@ else()
   message(STATUS "Configuring Shaderc to avoid building tests.")
 endif()
 
-set (CMAKE_CXX_STANDARD 11)
+option(SHADERC_SPVC_ENABLE_DIRECT_LOGGING "Send logging messages from spvc directly to stdout/err" OFF)
+if (${SHADERC_SPVC_ENABLE_DIRECT_LOGGING})
+  add_definitions(-DSHADERC_SPVC_ENABLE_DIRECT_LOGGING)
+endif()
 
-option(SHADERC_ENABLE_NV_EXTENSIONS "Enables support of Nvidia-specific extensions" ON)
+option(SHADERC_SPVC_DISABLE_CONTEXT_LOGGING "Send logging messages from spvc to context object" OFF)
+if (${SHADERC_SPVC_DISABLE_CONTEXT_LOGGING})
+  add_definitions(-DSHADERC_SPVC_DISABLE_CONTEXT_LOGGING)
+endif()
+
+option(SHADERC_ENABLE_WERROR_COMPILE "Enable passing -Werror to compiler, if available" ON)
+
+set (CMAKE_CXX_STANDARD 11)
 
 include(GNUInstallDirs)
 include(cmake/setup_build.cmake)
@@ -55,10 +65,6 @@ check_cxx_compiler_flag(-Wextra-semi COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
 if (COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
     add_compile_options("-Wextra-semi")
 endif()
-
-if(SHADERC_ENABLE_NV_EXTENSIONS)
-    add_definitions(-DNV_EXTENSIONS)
-endif(SHADERC_ENABLE_NV_EXTENSIONS)
 
 find_host_package(PythonInterp 3 REQUIRED)
 

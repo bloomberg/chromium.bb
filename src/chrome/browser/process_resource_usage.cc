@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
@@ -17,8 +17,8 @@ ProcessResourceUsage::ProcessResourceUsage(
     mojo::PendingRemote<content::mojom::ResourceUsageReporter> service)
     : service_(std::move(service)), update_in_progress_(false) {
   service_.set_disconnect_handler(
-      base::Bind(&ProcessResourceUsage::RunPendingRefreshCallbacks,
-                 base::Unretained(this)));
+      base::BindOnce(&ProcessResourceUsage::RunPendingRefreshCallbacks,
+                     base::Unretained(this)));
 }
 
 ProcessResourceUsage::~ProcessResourceUsage() {
@@ -46,8 +46,8 @@ void ProcessResourceUsage::Refresh(const base::Closure& callback) {
 
   if (!update_in_progress_) {
     update_in_progress_ = true;
-    service_->GetUsageData(base::Bind(&ProcessResourceUsage::OnRefreshDone,
-                                      base::Unretained(this)));
+    service_->GetUsageData(base::BindOnce(&ProcessResourceUsage::OnRefreshDone,
+                                          base::Unretained(this)));
   }
 }
 

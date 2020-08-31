@@ -31,8 +31,6 @@
 
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
-struct PrintMsg_PrintFrame_Params;
-struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 // RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
@@ -53,6 +51,10 @@ class DictionaryValue;
 namespace blink {
 class WebLocalFrame;
 class WebView;
+}
+
+namespace content {
+class AXTreeSnapshotter;
 }
 
 namespace printing {
@@ -97,10 +99,6 @@ class PrintRenderFrameHelper
    public:
     virtual ~Delegate() {}
 
-    // Cancels prerender if it's currently in progress and returns true if the
-    // cancellation succeeded.
-    virtual bool CancelPrerender(content::RenderFrame* render_frame) = 0;
-
     // Returns the element to be printed. Returns a null WebElement if
     // a pdf plugin element can't be extracted from the frame.
     virtual blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) = 0;
@@ -110,6 +108,10 @@ class PrintRenderFrameHelper
     // If false, window.print() won't do anything.
     // The default implementation returns |true|.
     virtual bool IsScriptedPrintEnabled();
+
+    // Whether we should send extra metadata necessary to produce a tagged
+    // (accessible) PDF.
+    virtual bool ShouldGenerateTaggedPDF();
 
     // Returns true if printing is overridden and the default behavior should be
     // skipped for |frame|.
@@ -182,7 +184,7 @@ class PrintRenderFrameHelper
     PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED_DEPRECATED = 5,
     PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE_DEPRECATED = 6,
     PREVIEW_ERROR_INVALID_PRINTER_SETTINGS = 7,
-    PREVIEW_ERROR_METAFILE_CAPTURE_FAILED = 8,
+    PREVIEW_ERROR_METAFILE_CAPTURE_FAILED_DEPRECATED = 8,
     PREVIEW_ERROR_LAST_ENUM  // Always last.
   };
 
@@ -218,7 +220,6 @@ class PrintRenderFrameHelper
   void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void BindPrintRenderFrameReceiver(
       mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver);
@@ -227,19 +228,18 @@ class PrintRenderFrameHelper
   void PrintRequestedPages() override;
   void PrintForSystemDialog() override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void SetPrintPreviewUI(
+      mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) override;
   void InitiatePrintPreview(
       mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
       bool has_selection) override;
+  void PrintPreview(base::Value settings) override;
   void OnPrintPreviewDialogClosed() override;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params) override;
   void PrintingDone(bool success) override;
   void SetPrintingEnabled(bool enabled) override;
-
-  // Message handlers ---------------------------------------------------------
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnPrintPreview(const base::DictionaryValue& settings);
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnPrintFrameContent(const PrintMsg_PrintFrame_Params& params);
+  void PrintNodeUnderContextMenu() override;
 
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.
@@ -309,8 +309,7 @@ class PrintRenderFrameHelper
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Set options for print preset from source PDF document.
-  bool SetOptionsFromPdfDocument(
-      PrintHostMsg_SetOptionsFromDocument_Params* options);
+  mojom::OptionsFromDocumentParamsPtr SetOptionsFromPdfDocument();
 
   // Update the current print settings with new |passed_job_settings|.
   // |passed_job_settings| dictionary contains print job details such as printer
@@ -421,6 +420,9 @@ class PrintRenderFrameHelper
   // Returns true if print preview should continue, false on failure.
   bool PreviewPageRendered(int page_number,
                            std::unique_ptr<MetafileSkia> metafile);
+
+  // Called when the connection with the |preview_ui_| goes away.
+  void OnPreviewDisconnect();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   void SetPrintPagesParams(const PrintMsg_PrintPages_Params& settings);
@@ -450,6 +452,11 @@ class PrintRenderFrameHelper
   // etc.).
   mojo::AssociatedRemote<mojom::PrintRenderer> print_renderer_;
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  // Used to notify the browser of preview UI actions.
+  mojo::AssociatedRemote<mojom::PrintPreviewUI> preview_ui_;
+#endif
+
   mojo::AssociatedReceiverSet<mojom::PrintRenderFrame> receivers_;
 
   // Keeps track of the state of print preview between messages.
@@ -473,7 +480,8 @@ class PrintRenderFrameHelper
         std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
         const std::vector<int>& pages,
         SkiaDocumentType doc_type,
-        int document_cookie);
+        int document_cookie,
+        bool require_document_metafile);
 
     // Called after a page gets rendered. |page_time| is how long the
     // rendering took.
@@ -548,6 +556,8 @@ class PrintRenderFrameHelper
     blink::WebNode source_node_;
 
     std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
+
+    // A document metafile is needed when not using the print compositor.
     std::unique_ptr<MetafileSkia> metafile_;
 
     // Total page count in the renderer.
@@ -607,6 +617,13 @@ class PrintRenderFrameHelper
   bool is_scripted_preview_delayed_ = false;
   int ipc_nesting_level_ = 0;
   bool render_frame_gone_ = false;
+
+  // If tagged PDF exporting is enabled, we also need to capture an
+  // accessibility tree and store it in the metafile. AXTreeSnapshotter should
+  // stay alive through the duration of printing one document, because text
+  // drawing commands are only annotated with a DOMNodeId if accessibility
+  // is enabled.
+  std::unique_ptr<content::AXTreeSnapshotter> snapshotter_;
 
   // Used to fix a race condition where the source is a PDF and print preview
   // hangs because RequestPrintPreview is called before DidStopLoading() is

@@ -8,13 +8,15 @@ import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.List;
@@ -34,15 +36,20 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
     private ViewResourceFrameLayout mStatusIndicator;
 
+    /** A {@link Supplier} for accessing the {@link BrowserControlsStateProvider}. */
+    private Supplier<BrowserControlsStateProvider> mBrowserControlsStateProviderSupplier;
+
     private boolean mIsVisible;
 
     /**
      * Build a composited status view layer.
      * @param statusIndicator The view used to generate the composited version.
      */
-    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator) {
+    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator,
+            Supplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
         mStatusIndicator = statusIndicator;
         mResourceId = mStatusIndicator.getId();
+        mBrowserControlsStateProviderSupplier = browserControlsStateProviderSupplier;
     }
 
     /**
@@ -70,8 +77,13 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
+        final BrowserControlsStateProvider browserControlsStateProvider =
+                mBrowserControlsStateProviderSupplier.get();
+        final int offset = browserControlsStateProvider != null
+                ? browserControlsStateProvider.getTopControlsMinHeightOffset()
+                : 0;
         StatusIndicatorSceneLayerJni.get().updateStatusIndicatorLayer(
-                mNativePtr, StatusIndicatorSceneLayer.this, resourceManager, mResourceId);
+                mNativePtr, StatusIndicatorSceneLayer.this, resourceManager, mResourceId, offset);
         return this;
     }
 
@@ -134,6 +146,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
                 SceneLayer contentTree);
         void updateStatusIndicatorLayer(long nativeStatusIndicatorSceneLayer,
                 StatusIndicatorSceneLayer caller, ResourceManager resourceManager,
-                int viewResourceId);
+                int viewResourceId, int offset);
     }
 }

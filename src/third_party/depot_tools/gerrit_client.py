@@ -16,8 +16,13 @@ import logging
 import optparse
 import subcommand
 import sys
-import urllib
-import urlparse
+
+if sys.version_info.major == 2:
+  import urlparse
+  from urllib import quote_plus
+else:
+  from urllib.parse import quote_plus
+  import urllib.parse as urlparse
 
 import fix_encoding
 import gerrit_util
@@ -38,8 +43,8 @@ def CMDbranchinfo(parser, args):
 
   (opt, args) = parser.parse_args(args)
   host = urlparse.urlparse(opt.host).netloc
-  project = urllib.quote_plus(opt.project)
-  branch = urllib.quote_plus(opt.branch)
+  project = quote_plus(opt.project)
+  branch = quote_plus(opt.branch)
   result = gerrit_util.GetGerritBranch(host, project, branch)
   logging.info(result)
   write_result(result, opt)
@@ -51,11 +56,14 @@ def CMDbranch(parser, args):
   parser.add_option('--commit', dest='commit', help='commit hash')
 
   (opt, args) = parser.parse_args(args)
+  assert opt.project, "--project not defined"
+  assert opt.branch, "--branch not defined"
+  assert opt.commit, "--commit not defined"
 
-  project = urllib.quote_plus(opt.project)
+  project = quote_plus(opt.project)
   host = urlparse.urlparse(opt.host).netloc
-  branch = urllib.quote_plus(opt.branch)
-  commit = urllib.quote_plus(opt.commit)
+  branch = quote_plus(opt.branch)
+  commit = quote_plus(opt.commit)
   result = gerrit_util.CreateGerritBranch(host, project, branch, commit)
   logging.info(result)
   write_result(result, opt)
@@ -92,6 +100,7 @@ def CMDabandon(parser, args):
   parser.add_option('-m', '--message', default='', help='reason for abandoning')
 
   (opt, args) = parser.parse_args(args)
+  assert opt.change, "-c not defined"
   result = gerrit_util.AbandonChange(
       urlparse.urlparse(opt.host).netloc,
       opt.change, opt.message)
@@ -102,8 +111,7 @@ def CMDabandon(parser, args):
 class OptionParser(optparse.OptionParser):
   """Creates the option parse and add --verbose support."""
   def __init__(self, *args, **kwargs):
-    optparse.OptionParser.__init__(
-        self, *args, prog='git cl', version=__version__, **kwargs)
+    optparse.OptionParser.__init__(self, *args, version=__version__, **kwargs)
     self.add_option(
         '--verbose', action='count', default=0,
         help='Use 2 times for more debugging info')
@@ -114,6 +122,8 @@ class OptionParser(optparse.OptionParser):
 
   def parse_args(self, args=None, values=None):
     options, args = optparse.OptionParser.parse_args(self, args, values)
+    # Host is always required
+    assert options.host, "--host not defined."
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
     return options, args

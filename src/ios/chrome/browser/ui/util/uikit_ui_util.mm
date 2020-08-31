@@ -12,9 +12,10 @@
 #include <stdint.h>
 #include <cmath>
 
+#include "base/check_op.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -65,7 +66,19 @@ void GetRGBA(UIColor* color, CGFloat* r, CGFloat* g, CGFloat* b, CGFloat* a) {
   }
 }
 
+// Store a reference to the current first responder.
+UIResponder* g_first_responder = nil;
+
 }  // namespace
+
+// Category used to get the first responder.
+@implementation UIResponder (FirstResponder)
+
+- (void)cr_markSelfCurrentFirstResponder {
+  g_first_responder = self;
+}
+
+@end
 
 void SetA11yLabelAndUiAutomationName(
     NSObject<UIAccessibilityIdentification>* element,
@@ -630,6 +643,18 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 UIResponder* GetFirstResponder() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  if (base::FeatureList::IsEnabled(kFirstResponderSendAction)) {
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
+    DCHECK(!g_first_responder);
+    [[UIApplication sharedApplication]
+        sendAction:@selector(cr_markSelfCurrentFirstResponder)
+                to:nil
+              from:nil
+          forEvent:nil];
+    UIResponder* firstResponder = g_first_responder;
+    g_first_responder = nil;
+    return firstResponder;
+  }
   return GetFirstResponderSubview([UIApplication sharedApplication].keyWindow);
 }
 

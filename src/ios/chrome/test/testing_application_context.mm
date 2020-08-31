@@ -4,11 +4,15 @@
 
 #include "ios/chrome/test/testing_application_context.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/safe_browsing/core/features.h"
+#import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -184,8 +188,28 @@ TestingApplicationContext::GetComponentUpdateService() {
   return nullptr;
 }
 
+SafeBrowsingService* TestingApplicationContext::GetSafeBrowsingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(
+      base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingAvailableOnIOS));
+  if (!fake_safe_browsing_service_) {
+    fake_safe_browsing_service_ =
+        base::MakeRefCounted<FakeSafeBrowsingService>();
+  }
+  return fake_safe_browsing_service_.get();
+}
+
 network::NetworkConnectionTracker*
 TestingApplicationContext::GetNetworkConnectionTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return test_network_connection_tracker_.get();
+}
+
+BrowserPolicyConnectorIOS*
+TestingApplicationContext::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(crbug.com/1055318): Determine what level of support is needed for
+  // unittesting and return a mock or fake here.
+  return nullptr;
 }

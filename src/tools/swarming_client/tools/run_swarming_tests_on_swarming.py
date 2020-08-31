@@ -94,9 +94,8 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
       cmd.append('--verbose')
     items = [i.split() for i in check_output(cmd).splitlines()]
     assert len(items) == len(tests)
-    assert all(
-        items[i][1].endswith(os.path.basename(tests[i]) + '.isolated')
-        for i in xrange(len(tests)))
+    assert all(items[i][1].endswith(os.path.basename(tests[i]) + '.isolated')
+               for i in range(len(tests)))
     return zip(tests, [i[0] for i in items])
   finally:
     file_path.rmtree(tempdir)

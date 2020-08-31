@@ -14,6 +14,8 @@ from __future__ import print_function
 import collections
 import errno
 import fnmatch
+import glob
+import io
 import itertools
 import mimetypes
 import os
@@ -25,7 +27,6 @@ from elftools.elf import elffile
 from elftools.common import exceptions
 import lddtree
 import magic  # pylint: disable=import-error
-from six.moves import StringIO
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -351,8 +352,8 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     if file_name in self._known_symtabs:
       return self._known_symtabs[file_name]
 
-    # We use StringIO here to obviate fseek/fread time in pyelftools.
-    stream = StringIO(osutils.ReadFile(file_name))
+    # We use BytesIO here to obviate fseek/fread time in pyelftools.
+    stream = io.BytesIO(osutils.ReadFile(file_name, mode='rb'))
 
     try:
       elf = elffile.ELFFile(stream)
@@ -408,9 +409,11 @@ class SymbolsTest(image_test_lib.ImageTestCase):
           exported.update(exp)
 
     known_unsatisfieds = {
-        'libthread_db-1.0.so': set([
-            'ps_pdwrite', 'ps_pdread', 'ps_lgetfpregs', 'ps_lsetregs',
-            'ps_lgetregs', 'ps_lsetfpregs', 'ps_pglobal_lookup', 'ps_getpid']),
+        'libthread_db-1.0.so': {
+            b'ps_pdwrite', b'ps_pdread', b'ps_lgetfpregs', b'ps_lsetregs',
+            b'ps_lgetregs', b'ps_lsetfpregs', b'ps_pglobal_lookup',
+            b'ps_getpid',
+        },
     }
 
     excluded_files = set([
@@ -674,6 +677,9 @@ class SymlinkTest(image_test_lib.ImageTestCase):
   # The key is the symlink and the value is the symlink target.
   # Both accept fnmatch style expressions (i.e. globs).
   _ACCEPTABLE_LINKS = {
+      # Allow any /etc path to point to any /run path.
+      '/etc/*': {'/run/*'},
+
       '/etc/localtime': {'/var/lib/timezone/localtime'},
       '/etc/machine-id': {'/var/lib/dbus/machine-id'},
       '/etc/mtab': {'/proc/mounts'},
@@ -705,15 +711,16 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       # Used by `file` and libmagic.so when the package is in /usr/local.
       '/usr/share/misc/magic.mgc': {'/usr/local/share/misc/magic.mgc'},
       '/usr/share/portage': {'/usr/local/share/portage'},
+      # Needed for the ARC++/ARCVM dual build. For test images only.
+      '/opt/google/vms/android': {'/usr/local/vms/android'},
+      # TODO(b/150806692): Clenaup this library symlink.
+      # Allow /opt/pita/lib path to point to any /run path. For PluginVM DLC.
+      '/opt/pita/lib': {'/run/*'},
   }
 
   @classmethod
   def _SymlinkTargetAllowed(cls, source, target):
     """See whether |source| points to an acceptable |target|."""
-    # Allow any /etc path to point to any /run path.
-    if source.startswith('/etc') and target.startswith('/run'):
-      return True
-
     # Scan the allow list.
     for allow_source, allow_targets in cls._ACCEPTABLE_LINKS.items():
       if (fnmatch.fnmatch(source, allow_source) and
@@ -786,3 +793,129 @@ class PermissionTest(image_test_lib.ImageTestCase):
                         filename)
 
     self.assertTrue(success)
+
+
+class IntelWifiTest(image_test_lib.ImageTestCase):
+  """Verify installation of iwlwifi driver and firmware.
+
+  Intel WiFi chips need a kernel module and a firmware file. Test that they're
+  installed correctly, in particular that there's no version mismatch between
+  the two or that the firmware file for a particular chip is missing entirely.
+  """
+
+  def _FindKernelVersion(self):
+    """Detect the version of the kernel used by the image."""
+    module_top = os.path.join(image_test_lib.ROOT_A, 'lib', 'modules')
+    if not os.path.isdir(module_top):
+      logging.error('Path "%s" is not a directory.', module_top)
+      return None
+
+    kernels = os.listdir(module_top)
+    if len(kernels) != 1:
+      logging.error('Image has %d kernel versions, expected 1.', len(kernels))
+      logging.error('Found kernel versions: %s', ', '.join(kernels))
+      return None
+
+    return kernels[0]
+
+  def _FindDriverSupportedFirmware(self, kernel):
+    """List all the firmware files supported by the driver.
+
+    The iwlwifi driver has the path of the various firmware versions that it
+    supports built in. The list of firmware versions is available through the
+    'modinfo' command.
+
+    Args:
+      kernel: A string containing the kernel version.
+
+    Returns:
+      A list of strings containing the names of all the firmware files that can
+      be loaded by the iwlwifi driver.
+    """
+    # The iwlwifi module lists the firmware files that it can load.
+    # Typical output of the 'modinfo' command:
+    # iwlwifi-7265-17.ucode
+    # iwlwifi-7265D-29.ucode
+    # iwlwifi-8000C-36.ucode
+    # iwlwifi-8265-36.ucode
+    # iwlwifi-9000-pu-b0-jf-b0-46.ucode
+    # iwlwifi-9260-th-b0-jf-b0-46.ucode
+    try:
+      cmd = ['modinfo', '-F', 'firmware', '-b', image_test_lib.ROOT_A,
+             '-k', kernel, 'iwlwifi']
+      modinfo = cros_build_lib.run(cmd, print_cmd=False, capture_output=True,
+                                   encoding='utf-8')
+    except cros_build_lib.RunCommandError as e:
+      # It's not necessarily an error to have enabled the firmware but not the
+      # iwlwifi driver (e.g. bringup) -> log a warning, not an error.
+      logging.warning('Could not query iwlwifi driver.')
+      logging.warning('"%s" returned code %d.', ' '.join(cmd), e.returncode)
+      logging.warning('stdout: %s', e.stdout)
+      logging.warning('stderr: %s', e.stderr)
+      return []
+
+    return modinfo.output.splitlines()
+
+  def _GetLinuxFirmwareIwlwifiFlags(self):
+    """Extract 'iwlwifi-*' flags from LINUX_FIRMWARE."""
+    linux_firmware = portage_util.PortageqEnvvar('LINUX_FIRMWARE',
+                                                 board=self._board,
+                                                 allow_undefined=True)
+    if not linux_firmware:
+      logging.info("Board %s doesn't use LINUX_FIRMWARE.", self._board)
+      return []
+
+    # Look for flags 'iwlwifi-all', 'iwlwifi-9260', 'iwlwifi-QuZ', etc.
+    flags = [x for x in linux_firmware.split() if x.startswith('iwlwifi-')]
+    if not flags:
+      logging.info("Board %s doesn't support iwlwifi.", self._board)
+      return []
+
+    logging.info('Expecting the following WiFi chips: %s', ', '.join(flags))
+    return flags
+
+  def _GetIwlwifiFirmwareFiles(self):
+    """List all the iwlwifi-* files in /lib/firmware."""
+    pathname = os.path.join(image_test_lib.ROOT_A, 'lib', 'firmware',
+                            'iwlwifi-*')
+    return [os.path.basename(x) for x in glob.glob(pathname)]
+
+  def TestIwlwifiFirmwareAndKernelMatch(self):
+    """Ensure that the firmware files are supported by the kernel.
+
+    The iwlwifi firmware files expected by the driver must be present in
+    /lib/firmware. This will also ensure that there's no version mismatch
+    between the driver and the firmware.
+    """
+    iwlwifi_flags = self._GetLinuxFirmwareIwlwifiFlags()
+    if not iwlwifi_flags:
+      self.skipTest('Could not find iwlwifi flags.')
+    if 'iwlwifi-all' in iwlwifi_flags:
+      self.skipTest('All firmware files have been installed.')
+
+    # Find the kernel version of the image, necessary to call 'modinfo' later.
+    kernel = self._FindKernelVersion()
+    if kernel is None:
+      self.skipTest('Failed to detect the kernel version.')
+
+    modinfo_files = self._FindDriverSupportedFirmware(kernel)
+    if not modinfo_files:
+      self.skipTest('Could not find iwlwifi module.')
+
+    iwlwifi_files = self._GetIwlwifiFirmwareFiles()
+    # We have at least one iwlwifi-* flag listed in LINUX_FIRMWARE, ensure that
+    # at least one firmware file is present.
+    self.assertTrue(iwlwifi_files, 'No iwlwifi firmware file installed.')
+
+    # Ensure that for every iwlwifi-* flag listed in LINUX_FIRMWARE, the driver
+    # has at least one corresponding firmware file listed, and at least one of
+    # the firmware files is present on the rootfs.
+    for flag in iwlwifi_flags:
+      supported_fw = {x for x in modinfo_files if x.startswith(flag)}
+      available_fw = {x for x in iwlwifi_files if x.startswith(flag)}
+      logging.info('The driver supports the following "%s" files: %s', flag,
+                   ', '.join(supported_fw))
+      logging.info('The rootfs provides the following "%s" files: %s', flag,
+                   ', '.join(available_fw))
+      self.assertTrue(supported_fw & available_fw,
+                      'Driver/firmware mismatch for %s' % flag)

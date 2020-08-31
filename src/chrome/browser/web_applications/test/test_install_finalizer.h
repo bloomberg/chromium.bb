@@ -36,9 +36,13 @@ class TestInstallFinalizer final : public InstallFinalizer {
                                   UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(const GURL& app_url,
+  void UninstallExternalWebApp(const AppId& app_id,
                                ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
+  void UninstallExternalWebAppByUrl(
+      const GURL& app_url,
+      ExternalInstallSource external_install_source,
+      UninstallWebAppCallback callback) override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                      UninstallWebAppCallback callback) override;
@@ -53,8 +57,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void ReparentTab(const AppId& app_id,
                    bool shortcut_created,
                    content::WebContents* web_contents) override;
-  bool CanRevealAppShim() const override;
-  void RevealAppShim(const AppId& app_id) override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,
                                     InstallResultCode code);
@@ -79,7 +81,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   }
 
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
-  int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
   int num_add_app_to_quick_launch_bar_calls() {
     return num_add_app_to_quick_launch_bar_calls_;
   }
@@ -99,7 +100,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   std::set<AppId> user_uninstalled_external_apps_;
 
   int num_reparent_tab_calls_ = 0;
-  int num_reveal_appshim_calls_ = 0;
   int num_add_app_to_quick_launch_bar_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestInstallFinalizer);

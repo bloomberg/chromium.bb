@@ -12,6 +12,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/aw_metrics_service_client_delegate.h"
 #include "android_webview/browser/aw_pref_names.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
@@ -25,10 +26,10 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -58,6 +59,12 @@ const char* const kPersistentPrefsWhitelist[] = {
     metrics::prefs::kInstallDate,
     metrics::prefs::kMetricsReportingEnabledTimestamp,
     metrics::prefs::kMetricsSessionID,
+    // Logged in system_profile.stability fields.
+    metrics::prefs::kStabilityLaunchCount,
+    metrics::prefs::kStabilityPageLoadCount,
+    metrics::prefs::kStabilityRendererHangCount,
+    metrics::prefs::kStabilityRendererLaunchCount,
+    metrics::prefs::kUninstallMetricsPageLoadCount,
     // Current and past country codes, to filter variations studies by country.
     variations::prefs::kVariationsCountry,
     variations::prefs::kVariationsPermanentConsistencyCountry,
@@ -70,7 +77,6 @@ const char* const kPersistentPrefsWhitelist[] = {
     prefs::kRestartsWithStaleSeed,
 };
 
-// Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 base::FilePath GetPrefStorePath() {
@@ -83,7 +89,7 @@ base::FilePath GetPrefStorePath() {
 std::unique_ptr<PrefService> CreatePrefService() {
   auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
 
-  metrics::MetricsService::RegisterPrefs(pref_registry.get());
+  AwMetricsServiceClient::RegisterPrefs(pref_registry.get());
   variations::VariationsService::RegisterPrefs(pref_registry.get());
   pref_registry->RegisterIntegerPref(prefs::kRestartsWithStaleSeed, 0);
 
@@ -207,7 +213,11 @@ void AwFeatureListCreator::CreateLocalState() {
 }
 
 void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
+  TRACE_EVENT0("startup",
+               "AwFeatureListCreator::CreateFeatureListAndFieldTrials");
   CreateLocalState();
+  AwMetricsServiceClient::SetInstance(std::make_unique<AwMetricsServiceClient>(
+      std::make_unique<AwMetricsServiceClientDelegate>()));
   AwMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
   SetUpFieldTrials();
 }

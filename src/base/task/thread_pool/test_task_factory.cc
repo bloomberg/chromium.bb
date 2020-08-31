@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -53,7 +53,11 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
   if (post_nested_task == PostNestedTask::YES)
     PostTask(PostNestedTask::NO, OnceClosure());
 
-  EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
+  if (execution_mode_ == TaskSourceExecutionMode::kSingleThread ||
+      execution_mode_ == TaskSourceExecutionMode::kSequenced) {
+    EXPECT_TRUE(static_cast<SequencedTaskRunner*>(task_runner_.get())
+                    ->RunsTasksInCurrentSequence());
+  }
 
   // Verify TaskRunnerHandles are set as expected in the task's scope.
   switch (execution_mode_) {

@@ -6,7 +6,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -36,7 +36,8 @@ using base::UserMetricsAction;
 OmniboxPopupViewIOS::OmniboxPopupViewIOS(
     OmniboxEditModel* edit_model,
     OmniboxPopupViewSuggestionsDelegate* delegate)
-    : model_(new OmniboxPopupModel(this, edit_model)), delegate_(delegate) {
+    : model_(new OmniboxPopupModel(this, edit_model, nullptr)),
+      delegate_(delegate) {
   DCHECK(delegate);
   DCHECK(edit_model);
 }

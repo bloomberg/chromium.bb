@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""The build API entry point."""
+"""The Build API entry point."""
 
 from __future__ import print_function
 
@@ -12,94 +12,62 @@ import sys
 
 from chromite.api import api_config as api_config_lib
 from chromite.api import controller
+from chromite.api import message_util
 from chromite.api import router as router_lib
+from chromite.api.gen.chromite.api import build_api_config_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import tee
 from chromite.utils import matching
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 def GetParser():
   """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
-  call_group = parser.add_argument_group(
-      'API Call Options',
-      'These options are used to execute an endpoint. When making a call every '
-      'argument in this group is required.')
-  call_group.add_argument(
+  parser.add_argument(
       'service_method',
-      nargs='?',
       help='The "chromite.api.Service/Method" that is being called.')
-  call_group.add_argument(
+  # Input arguments.
+  input_args = parser.add_mutually_exclusive_group(required=True)
+  input_args.add_argument(
+      '--input-binary',
+      type='path',
+      help='Path to the protobuf binary serialization of the input message.')
+  input_args.add_argument(
       '--input-json',
       type='path',
       help='Path to the JSON serialized input argument protobuf message.')
-  call_group.add_argument(
+  # Output options.
+  parser.add_argument(
+      '--output-binary',
+      type='path',
+      help='The path to which the protobuf binary serialization of the '
+           'response message should be written.')
+  parser.add_argument(
       '--output-json',
       type='path',
-      help='The path to which the result protobuf message should be written.')
-  call_group.add_argument(
+      help='The path to which the JSON serialization of the response message '
+           'should be written.')
+  # Config options.
+  config_args = parser.add_mutually_exclusive_group()
+  config_args.add_argument(
+      '--config-binary',
+      type='path',
+      help='The path to the protobuf binary serialization of the Build API '
+           'call configs.')
+  config_args.add_argument(
+      '--config-json',
+      type='path',
+      help='The path to the JSON encoded Build API call configs.')
+  # TODO(crbug.com/1040978): Remove after usages removed.
+  parser.add_argument(
       '--tee-log',
       type='path',
       help='The path to which stdout and stderr should be teed to.')
-
-  ux_group = parser.add_argument_group('Developer Options',
-                                       'Options to help developers.')
-  # Lists the full chromite.api.Service/Method, has both names to match
-  # whichever mental model people prefer.
-  ux_group.add_argument(
-      '--list-methods',
-      '--list-services',
-      action='store_true',
-      dest='list_services',
-      help='List the name of each registered "chromite.api.Service/Method".')
-
-  # Run configuration options.
-  test_group = parser.add_argument_group(
-      'Testing Options',
-      'These options are used to execute various tests against the API. These '
-      'options are mutually exclusive. Calling code can use these options to '
-      'validate inputs and test their handling of each return code case for '
-      'each endpoint.')
-  call_modifications = test_group.add_mutually_exclusive_group()
-  call_modifications.add_argument(
-      '--validate-only',
-      action='store_true',
-      default=False,
-      help='When set, only runs the argument validation logic. Calls produce '
-           'a return code of 0 iff the input proto comprises arguments that '
-           'are a valid call to the endpoint, or 1 otherwise.')
-  # See: api/faux.py for the mock call and error implementations.
-  call_modifications.add_argument(
-      '--mock-call',
-      action='store_true',
-      default=False,
-      help='When set, returns a valid, mock response rather than running the '
-           'endpoint. This allows API consumers to more easily test their '
-           'implementations against the version of the API being called. '
-           'This argument will always result in a return code of 0.')
-  call_modifications.add_argument(
-      '--mock-error',
-      action='store_true',
-      default=False,
-      help='When set, return a valid, mock error response rather than running '
-           'the endpoint. This allows API consumers to test their error '
-           'handling semantics against the version of the API being called. '
-           'This argument will always result in a return code of 2 iff the '
-           'endpoint ever produces a return code of 2, otherwise will always'
-           'produce a return code of 1.')
-  call_modifications.add_argument(
-      '--mock-invalid',
-      action='store_true',
-      default=False,
-      help='When set, return a mock validation error response rather than '
-           'running the endpoint. This allows API consumers to test their '
-           'validation error handling semantics against the version of the API '
-           'being called without having to understand how to construct an '
-           'invalid request. '
-           'This argument will always result in a return code of 1.')
 
   return parser
 
@@ -107,25 +75,20 @@ def GetParser():
 def _ParseArgs(argv, router):
   """Parse and validate arguments."""
   parser = GetParser()
-  opts = parser.parse_args(argv)
+  opts, unknown = parser.parse_known_args(
+      argv, namespace=commandline.ArgumentNamespace())
+  parser.DoPostParseSetup(opts, unknown)
+
+  if unknown:
+    logging.warning('Unknown args ignored: %s', ' '.join(unknown))
 
   methods = router.ListMethods()
 
-  if opts.list_services:
-    # We just need to print the methods and we're done.
-    for method in methods:
-      print(method)
-    sys.exit(0)
-
   # Positional service_method argument validation.
-  if not opts.service_method:
-    parser.error('Must pass "Service/Method".')
-
   parts = opts.service_method.split('/')
   if len(parts) != 2:
-    parser.error(
-        'Must pass the correct format: (e.g. chromite.api.SdkService/Create).'
-        'Use --list-methods to see a full list.')
+    parser.error('Invalid service/method specification format. It should be '
+                 'something like chromite.api.SdkService/Create.')
 
   if opts.service_method not in methods:
     # Unknown method, try to match against known methods and make a suggestion.
@@ -140,42 +103,84 @@ def _ParseArgs(argv, router):
   opts.service = parts[0]
   opts.method = parts[1]
 
-  # --input-json and --output-json validation.
-  if not opts.input_json or not opts.output_json:
-    parser.error('--input-json and --output-json are both required.')
+  # Input and output validation.
+  if not opts.output_binary and not opts.output_json:
+    parser.error('At least one output file must be specified.')
 
-  if not os.path.exists(opts.input_json):
+  if not os.path.exists(opts.input_binary or opts.input_json):
     parser.error('Input file does not exist.')
 
-  # Build the config object from the options.
-  opts.config = api_config_lib.ApiConfig(
-      validate_only=opts.validate_only,
-      mock_call=opts.mock_call,
-      mock_error=opts.mock_error)
+  config_msg = build_api_config_pb2.BuildApiConfig()
+  if opts.config_json:
+    handler = message_util.get_message_handler(opts.config_json,
+                                               message_util.FORMAT_JSON)
+  else:
+    handler = message_util.get_message_handler(opts.config_binary,
+                                               message_util.FORMAT_BINARY)
+
+  if opts.config_json or opts.config_binary:
+    # We have been given a config, so read it.
+    try:
+      handler.read_into(config_msg)
+    except message_util.Error as e:
+      parser.error(str(e))
+
+  opts.config = api_config_lib.build_config_from_proto(config_msg)
+  opts.config_handler = handler
 
   opts.Freeze()
   return opts
 
 
+def _get_io_handlers(opts):
+  """Build the input and output handlers."""
+  if opts.input_binary:
+    input_handler = message_util.get_message_handler(opts.input_binary,
+                                                     message_util.FORMAT_BINARY)
+  else:
+    input_handler = message_util.get_message_handler(opts.input_json,
+                                                     message_util.FORMAT_JSON)
+
+  output_handlers = []
+  if opts.output_binary:
+    handler = message_util.get_message_handler(opts.output_binary,
+                                               message_util.FORMAT_BINARY)
+    output_handlers.append(handler)
+  if opts.output_json:
+    handler = message_util.get_message_handler(opts.output_json,
+                                               message_util.FORMAT_JSON)
+    output_handlers.append(handler)
+
+  return input_handler, output_handlers
+
+
 def main(argv):
   with cros_build_lib.ContextManagerStack() as stack:
-
     router = router_lib.GetRouter()
     opts = _ParseArgs(argv, router)
 
     if opts.tee_log:
       stack.Add(tee.Tee, opts.tee_log)
       logging.info('Teeing stdout and stderr to %s', opts.tee_log)
+    if opts.config.log_path:
+      stack.Add(tee.Tee, opts.config.log_path)
+      logging.info('Teeing stdout and stderr to %s', opts.config.log_path)
+    tee_log_env_value = os.environ.get('BUILD_API_TEE_LOG_FILE')
+    if tee_log_env_value:
+      stack.Add(tee.Tee, tee_log_env_value)
+      logging.info('Teeing stdout and stderr to env path %s', tee_log_env_value)
 
-    if opts.mock_invalid:
+    if opts.config.mock_invalid:
       # --mock-invalid handling. We print error messages, but no output is ever
       # set for validation errors, so we can handle it by just giving back the
       # correct return code here.
       return controller.RETURN_CODE_INVALID_INPUT
 
+    input_handler, output_handlers = _get_io_handlers(opts)
+
     try:
-      return router.Route(opts.service, opts.method, opts.input_json,
-                          opts.output_json, opts.config)
+      return router.Route(opts.service, opts.method, opts.config, input_handler,
+                          output_handlers, opts.config_handler)
     except router_lib.Error as e:
       # Handle router_lib.Error derivatives nicely, but let anything else bubble
       # up.

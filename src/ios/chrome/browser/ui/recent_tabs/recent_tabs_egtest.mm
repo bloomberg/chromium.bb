@@ -130,8 +130,9 @@ id<GREYMatcher> TitleOfTestPage() {
 
   // Tap "Show Full History"
   id<GREYMatcher> showHistoryMatcher =
-      chrome_test_util::StaticTextWithAccessibilityLabelId(
-          IDS_HISTORY_SHOWFULLHISTORY_LINK);
+      grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_HISTORY_SHOWFULLHISTORY_LINK),
+                 grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:showHistoryMatcher]
       performAction:grey_tap()];
 
@@ -179,8 +180,9 @@ id<GREYMatcher> TitleOfTestPage() {
   // Tap on "Other Devices", to hide the sign-in promo.
   NSString* otherDevicesLabel =
       l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
-  id<GREYMatcher> otherDevicesMatcher =
-      chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
+  id<GREYMatcher> otherDevicesMatcher = grey_allOf(
+      chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel),
+      grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
@@ -208,25 +210,33 @@ id<GREYMatcher> TitleOfTestPage() {
   }
   OpenRecentTabsPanel();
 
+  id<GREYMatcher> recentTabsViewController =
+      grey_allOf(grey_accessibilityID(
+                     kRecentTabsTableViewControllerAccessibilityIdentifier),
+                 grey_sufficientlyVisible(), nil);
+
   // Check that the TableView is presented.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:recentTabsViewController]
       assertWithMatcher:grey_notNil()];
 
   // Swipe TableView down.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:recentTabsViewController]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
 
   // Check that the TableView has been dismissed.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kRecentTabsTableViewControllerAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:recentTabsViewController]
       assertWithMatcher:grey_nil()];
 
   [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that the Recent Tabs can be opened while signed in (prevent regression
+// for https://crbug.com/1056613).
+- (void)testOpenWhileSignedIn {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  OpenRecentTabsPanel();
 }
 
 @end

@@ -4,14 +4,15 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -70,7 +71,7 @@ void GPURenderBundleEncoder::setBindGroup(
 void GPURenderBundleEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bind_group,
-    const FlexibleUint32ArrayView& dynamic_offsets_data,
+    const FlexibleUint32Array& dynamic_offsets_data,
     uint64_t dynamic_offsets_data_start,
     uint32_t dynamic_offsets_data_length,
     ExceptionState& exception_state) {
@@ -107,16 +108,18 @@ void GPURenderBundleEncoder::setPipeline(GPURenderPipeline* pipeline) {
 }
 
 void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
-                                            uint64_t offset) {
+                                            uint64_t offset,
+                                            uint64_t size) {
   GetProcs().renderBundleEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
-                                               offset);
+                                               offset, size);
 }
 
 void GPURenderBundleEncoder::setVertexBuffer(uint32_t slot,
                                              const GPUBuffer* buffer,
-                                             uint64_t offset) {
-  GetProcs().renderBundleEncoderSetVertexBuffer(GetHandle(), slot,
-                                                buffer->GetHandle(), offset);
+                                             uint64_t offset,
+                                             uint64_t size) {
+  GetProcs().renderBundleEncoderSetVertexBuffer(
+      GetHandle(), slot, buffer->GetHandle(), offset, size);
 }
 
 void GPURenderBundleEncoder::draw(uint32_t vertexCount,
@@ -159,7 +162,7 @@ GPURenderBundle* GPURenderBundleEncoder::finish(
 
   WGPURenderBundle render_bundle =
       GetProcs().renderBundleEncoderFinish(GetHandle(), &dawn_desc);
-  return GPURenderBundle::Create(device_, render_bundle);
+  return MakeGarbageCollected<GPURenderBundle>(device_, render_bundle);
 }
 
 }  // namespace blink

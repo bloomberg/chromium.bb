@@ -7,9 +7,21 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
+#include "components/services/storage/dom_storage/local_storage_impl.h"
+#include "components/services/storage/dom_storage/session_storage_impl.h"
 #include "components/services/storage/storage_service_impl.h"
 
 namespace storage {
+
+namespace {
+
+const char kSessionStorageDirectory[] = "Session Storage";
+
+}  // namespace
 
 PartitionImpl::PartitionImpl(StorageServiceImpl* service,
                              const base::Optional<base::FilePath>& path)
@@ -39,6 +51,37 @@ void PartitionImpl::BindOriginContext(
   }
 
   iter->second->BindReceiver(std::move(receiver));
+}
+
+void PartitionImpl::BindSessionStorageControl(
+    mojo::PendingReceiver<mojom::SessionStorageControl> receiver) {
+  // This object deletes itself on disconnection.
+  session_storage_ = new SessionStorageImpl(
+      path_.value_or(base::FilePath()),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      base::SequencedTaskRunnerHandle::Get(),
+#if defined(OS_ANDROID)
+      // On Android there is no support for session storage restoring, and since
+      // the restoring code is responsible for database cleanup, we must
+      // manually delete the old database here before we open a new one.
+      SessionStorageImpl::BackingMode::kClearDiskStateOnOpen,
+#else
+      path_.has_value() ? SessionStorageImpl::BackingMode::kRestoreDiskState
+                        : SessionStorageImpl::BackingMode::kNoDisk,
+#endif
+      std::string(kSessionStorageDirectory), std::move(receiver));
+}
+
+void PartitionImpl::BindLocalStorageControl(
+    mojo::PendingReceiver<mojom::LocalStorageControl> receiver) {
+  // This object deletes itself on disconnection.
+  local_storage_ = new LocalStorageImpl(
+      path_.value_or(base::FilePath()), base::SequencedTaskRunnerHandle::Get(),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      std::move(receiver));
 }
 
 void PartitionImpl::OnDisconnect() {

@@ -26,11 +26,6 @@ class InterThreadMessagingProxy;
 // proxy objects then deal with safely posting the messages to the DRM thread.
 class DrmThreadProxy {
  public:
-  using OverlayCapabilitiesCallback =
-      base::OnceCallback<void(gfx::AcceleratedWidget,
-                              const std::vector<OverlaySurfaceCandidate>&,
-                              const std::vector<OverlayStatus>&)>;
-
   DrmThreadProxy();
   ~DrmThreadProxy();
 
@@ -43,6 +38,7 @@ class DrmThreadProxy {
 
   void CreateBuffer(gfx::AcceleratedWidget widget,
                     const gfx::Size& size,
+                    const gfx::Size& framebuffer_size,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     uint32_t flags,
@@ -77,7 +73,12 @@ class DrmThreadProxy {
   void CheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const std::vector<OverlaySurfaceCandidate>& candidates,
-      OverlayCapabilitiesCallback callback);
+      DrmThread::OverlayCapabilitiesCallback callback);
+
+  // Similar to CheckOverlayCapabilities() but returns the result synchronously.
+  std::vector<OverlayStatus> CheckOverlayCapabilitiesSync(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates);
 
   void AddDrmDeviceReceiver(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);

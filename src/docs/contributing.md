@@ -33,6 +33,21 @@ policies][code-reviews] for more) for the code being changed.
 - Just because there is a bug in the bug system doesn't necessarily mean that a
   patch will be accepted.
 
+## Design Documents
+Any nontrivial technical effort that will significantly impact Chromium should
+have a design doc ([template][design-doc-template]). Specifically, we require
+design docs in the following cases:
+- When writing code that will have a large impact on Chromium as a whole, e.g.
+  when you are changing code in Chromium's critical path (page loading,
+  rendering).
+- When beginning a large technical undertaking that should be documented for
+  historical reasons (>1 person-month of work can be used as a general guideline).
+
+Send public design docs to
+[chromium-design-docs@chromium.org][chromium-design-docs]. Google internal Chrome
+design docs should follow the process at
+[go/chrome-dd-review-process][chrome-dd-review-process].
+
 ## Legal stuff
 
 All contributors must complete the contributor license agreement. For
@@ -59,6 +74,7 @@ contribution can be accepted:
 - If the author or their company is not listed, the CL should include a new
   AUTHORS entry.
   - Ensure the new entry is reviewed by a reviewer who works for Google.
+  - Contributor License Agreement can be verified by Googlers at http://go/cla.
   - If there is a corporate CLA for the author's company, it must list the
     person explicitly (or the list of authorized contributors must say
     something like "All employees"). If the author is not on their company's
@@ -80,6 +96,9 @@ contribution can be accepted:
    # Uncomment if you want new branches to track the current branch.
    # git config --global branch.autosetupmerge always
    ```
+3. Visit <https://chromium-review.googlesource.com/settings/> to ensure that
+   your preferred email is set to the same one you use in your git
+   configuration.
 
 ## Creating a change
 
@@ -96,7 +115,7 @@ Write and test your change.
 - Conform to the [style guide][cr-styleguide].
 - Include tests.
 - Patches should be a reasonable size to review. Review time often increases
-  expontentially with patch size.
+  exponentially with patch size.
 
 Commit your change locally in git:
 
@@ -194,9 +213,22 @@ nearest ancestor OWNERS file.
 - Anybody can review code, but there must be at least one owner for each
   affected directory.
 - If there are multiple reviewers, make it clear what each reviewer is expected
-  to review. Otherwise, people might assume their input is not required or
-  waste time with redundant reviews.
+  to review.
 - `git cl owners` automatically suggests reviewers based on the OWNERS files.
+
+_Note:_ By default, please only select one reviewer for each file (that is, a
+single reviewer may review multiple files, but typically each file only needs
+to be reviewed by one person). It can be tempting to add multiple reviewers so
+that "whoever gets to it first" can review, but this has two common failure
+modes:
+- Reviewer Alpha and Beta both review the CL, resulting in duplicate effort.
+- Out of fear of the above failure case, neither reviewer Alpha nor Beta review
+  the CL.
+
+There are times when requesting multiple reviewers for the same file may be
+desirable - such as when the code is particularly complicated, or when the file
+uses multiple systems and a perspective from each is valuable. In this case,
+please make it explicit that you would like both reviewers to review.
 
 ### Requesting review
 
@@ -215,8 +247,8 @@ list of the reviewers you picked.
 
 In the same dialog, you can include an optional message to your reviewers. This
 space can be used for specific questions or instructions. Once you're done,
-make sure to click **Send**, which notifies the requested reviewers that they
-should review your change.
+make sure to click **Start Review**, which notifies the requested reviewers that
+they should review your change.
 
 **IMPORTANT: UNTIL YOU SEND THE REVIEW REQUEST, NO ONE WILL LOOK AT THE REVIEW**
 
@@ -343,6 +375,8 @@ feature in order to receive email notifications.
 
 [//]: # (the reference link section should be alphabetically sorted)
 [checkout-and-build]: https://chromium.googlesource.com/chromium/src/+/master/docs/#checking-out-and-building
+[chrome-dd-review-process]: http://go/chrome-dd-review-process
+[chromium-design-docs]: https://groups.google.com/a/chromium.org/forum/#!forum/chromium-design-docs
 [cl-footer-syntax]: https://dev.chromium.org/developers/contributing-code/-bug-syntax
 [code-reviews-owners]: code_reviews.md#OWNERS-files
 [code-reviews]: code_reviews.md
@@ -359,6 +393,7 @@ feature in order to receive email notifications.
 [cros-dev-guide]: https://chromium.googlesource.com/chromiumos/docs/+/master/developer_guide.md
 [crrev]: https://chromium-review.googlesource.com
 [depot-tools-setup]: https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+[design-doc-template]: https://docs.google.com/document/d/14YBYKgk-uSfjfwpKFlp_omgUq5hwMVazy_M965s_1KA
 [direct-commit]: https://dev.chromium.org/developers/contributing-code/direct-commit
 [discussion-groups]: https://www.chromium.org/developers/discussion-groups
 [github-tutorial]: https://try.github.io

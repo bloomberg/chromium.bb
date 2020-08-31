@@ -7,6 +7,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
@@ -22,20 +23,48 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
-ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser)
+// A view wrapper class that owns the ExtensionsToolbarContainer.
+// This is used when we don't have a "real" browser window, because the
+// TestBrowserWindow does not have a view instantiated for the container.
+class ExtensionsMenuTestUtil::Wrapper {
+ public:
+  explicit Wrapper(Browser* browser)
+      : extensions_container_(new ExtensionsToolbarContainer(browser)) {
+    container_parent_.SetSize(gfx::Size(1000, 1000));
+    container_parent_.Layout();
+    container_parent_.AddChildView(extensions_container_);
+  }
+  ~Wrapper() = default;
+
+  Wrapper(const Wrapper& other) = delete;
+  Wrapper& operator=(const Wrapper& other) = delete;
+
+  ExtensionsToolbarContainer* extensions_container() {
+    return extensions_container_;
+  }
+
+ private:
+  views::View container_parent_;
+  ExtensionsToolbarContainer* extensions_container_ = nullptr;
+};
+
+ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser,
+                                               bool is_real_window)
     : scoped_allow_extensions_menu_instances_(
           ExtensionsMenuView::AllowInstancesForTesting()),
-      browser_(browser),
-      extensions_container_(BrowserView::GetBrowserViewForBrowser(browser_)
+      browser_(browser) {
+  if (is_real_window) {
+    extensions_container_ = BrowserView::GetBrowserViewForBrowser(browser_)
                                 ->toolbar()
-                                ->extensions_container()),
-      menu_view_(std::make_unique<ExtensionsMenuView>(
-          extensions_container_->extensions_button(),
-          browser_,
-          extensions_container_)) {
-  menu_view_->set_owned_by_client();
+                                ->extensions_container();
+  } else {
+    wrapper_ = std::make_unique<Wrapper>(browser);
+    extensions_container_ = wrapper_->extensions_container();
+  }
+  menu_view_ = std::make_unique<ExtensionsMenuView>(
+      extensions_container_->extensions_button(), browser_,
+      extensions_container_);
 }
 ExtensionsMenuTestUtil::~ExtensionsMenuTestUtil() = default;
 
@@ -53,8 +82,10 @@ int ExtensionsMenuTestUtil::VisibleBrowserActions() {
 }
 
 void ExtensionsMenuTestUtil::InspectPopup(int index) {
-  // TODO(https://crbug.com/984654): Implement this.
-  NOTREACHED();
+  ExtensionsMenuItemView* view = GetMenuItemViewAtIndex(index);
+  DCHECK(view);
+  static_cast<ExtensionActionViewController*>(view->view_controller())
+      ->InspectPopup();
 }
 
 bool ExtensionsMenuTestUtil::HasIcon(int index) {
@@ -89,7 +120,7 @@ void ExtensionsMenuTestUtil::Press(int index) {
 std::string ExtensionsMenuTestUtil::GetExtensionId(int index) {
   ExtensionsMenuItemView* view = GetMenuItemViewAtIndex(index);
   DCHECK(view);
-  return view->view_controller_for_testing()->GetId();
+  return view->view_controller()->GetId();
 }
 
 std::string ExtensionsMenuTestUtil::GetTooltip(int index) {
@@ -110,23 +141,11 @@ bool ExtensionsMenuTestUtil::HasPopup() {
   return !!GetPopupNativeView();
 }
 
-gfx::Size ExtensionsMenuTestUtil::GetPopupSize() {
-  gfx::NativeView popup = GetPopupNativeView();
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
-  return widget->GetWindowBoundsInScreen().size();
-}
-
 bool ExtensionsMenuTestUtil::HidePopup() {
   // ExtensionsToolbarContainer::HideActivePopup() is private. Get around it by
   // casting to an ExtensionsContainer.
   static_cast<ExtensionsContainer*>(extensions_container_)->HideActivePopup();
   return !HasPopup();
-}
-
-bool ExtensionsMenuTestUtil::ActionButtonWantsToRun(size_t index) {
-  // TODO(devlin): Investigate if wants-to-run behavior is still necessary.
-  NOTREACHED();
-  return false;
 }
 
 void ExtensionsMenuTestUtil::SetWidth(int width) {
@@ -143,11 +162,20 @@ ToolbarActionsBar* ExtensionsMenuTestUtil::GetToolbarActionsBar() {
   return nullptr;
 }
 
-std::unique_ptr<BrowserActionTestUtil>
+ExtensionsContainer* ExtensionsMenuTestUtil::GetExtensionsContainer() {
+  return extensions_container_;
+}
+
+std::unique_ptr<ExtensionActionTestHelper>
 ExtensionsMenuTestUtil::CreateOverflowBar(Browser* browser) {
   // There is no overflow bar with the ExtensionsMenu implementation.
   NOTREACHED();
   return nullptr;
+}
+
+void ExtensionsMenuTestUtil::LayoutForOverflowBar() {
+  // There is no overflow bar with the ExtensionsMenu implementation.
+  NOTREACHED();
 }
 
 gfx::Size ExtensionsMenuTestUtil::GetMinPopupSize() {
@@ -158,10 +186,8 @@ gfx::Size ExtensionsMenuTestUtil::GetMaxPopupSize() {
   return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
 }
 
-bool ExtensionsMenuTestUtil::CanBeResized() {
-  // TODO(https://crbug.com/984654): Implement this.
-  NOTREACHED();
-  return false;
+gfx::Size ExtensionsMenuTestUtil::GetToolbarActionSize() {
+  return extensions_container_->GetToolbarActionSize();
 }
 
 ExtensionsMenuItemView* ExtensionsMenuTestUtil::GetMenuItemViewAtIndex(

@@ -4,8 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 
-#include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -25,6 +25,7 @@
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -33,6 +34,7 @@ namespace {
 
 constexpr ukm::SourceId kTestSourceId = 0x1234;
 
+using metrics_util::PasswordAccountStorageUsageLevel;
 using UkmEntry = ukm::builders::PasswordForm;
 
 // Create a UkmEntryBuilder with kTestSourceId.
@@ -194,105 +196,6 @@ TEST(PasswordFormMetricsRecorder, Generation) {
           NOTREACHED();
       }
     }
-  }
-}
-
-// Test the recording of metrics around manager_action, user_action, and
-// submit_result.
-TEST(PasswordFormMetricsRecorder, Actions) {
-  base::test::TaskEnvironment task_environment_;
-  static constexpr struct {
-    // Stimuli:
-    bool is_main_frame_secure;
-    PasswordFormMetricsRecorder::ManagerAction manager_action;
-    UserAction user_action;
-    PasswordFormMetricsRecorder::SubmitResult submit_result;
-    // Expectations:
-    // Histogram bucket for PasswordManager.ActionsTakenV3 and
-    // PasswordManager.ActionsTakenOnNonSecureForm.
-    int32_t actions_taken;
-    // Result of GetActionsTakenNew.
-    int32_t actions_taken_new;
-  } kTests[] = {
-      // Test values of manager_action.
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kNone /*0*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 0, 0},
-      {true, PasswordFormMetricsRecorder::kManagerActionAutofilled /*1*/,
-       UserAction::kNone /*0*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 5, 5},
-      // Test values of user_action.
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kChoose /*1*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 1, 1},
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kChoosePslMatch /*2*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 2, 2},
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kOverridePassword /*3*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 3, 3},
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kOverrideUsernameAndPassword /*4*/,
-       PasswordFormMetricsRecorder::kSubmitResultNotSubmitted /*0*/, 4, 4},
-      // Test values of submit_result.
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kNone /*0*/,
-       PasswordFormMetricsRecorder::kSubmitResultFailed /*1*/, 15, 10},
-      {true, PasswordFormMetricsRecorder::kManagerActionNone /*0*/,
-       UserAction::kNone /*0*/,
-       PasswordFormMetricsRecorder::kSubmitResultPassed /*2*/, 30, 20},
-      // Test combination.
-      {true, PasswordFormMetricsRecorder::kManagerActionAutofilled /*1*/,
-       UserAction::kOverrideUsernameAndPassword /*4*/,
-       PasswordFormMetricsRecorder::kSubmitResultFailed /*2*/, 24, 19},
-      // Test non-secure form.
-      {false, PasswordFormMetricsRecorder::kManagerActionAutofilled /*1*/,
-       UserAction::kOverrideUsernameAndPassword /*4*/,
-       PasswordFormMetricsRecorder::kSubmitResultFailed /*2*/, 24, 19},
-  };
-
-  for (const auto& test : kTests) {
-    SCOPED_TRACE(testing::Message()
-                 << "is_main_frame_secure=" << test.is_main_frame_secure
-                 << ", manager_action=" << test.manager_action
-                 << ", user_action=" << static_cast<int>(test.user_action)
-                 << ", submit_result=" << test.submit_result);
-
-    base::HistogramTester histogram_tester;
-    base::UserActionTester user_action_tester;
-    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
-    // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
-    // on destruction.
-    {
-      auto recorder = CreatePasswordFormMetricsRecorder(
-          test.is_main_frame_secure, &test_ukm_recorder);
-
-      recorder->SetManagerAction(test.manager_action);
-      recorder->SetUserActionForTesting(test.user_action);
-      if (test.submit_result ==
-          PasswordFormMetricsRecorder::kSubmitResultFailed) {
-        recorder->LogSubmitFailed();
-      } else if (test.submit_result ==
-                 PasswordFormMetricsRecorder::kSubmitResultPassed) {
-        recorder->LogSubmitPassed();
-      }
-
-      EXPECT_EQ(test.actions_taken_new, recorder->GetActionsTakenNew());
-    }
-
-    EXPECT_THAT(
-        histogram_tester.GetAllSamples("PasswordManager.ActionsTakenV3"),
-        ::testing::ElementsAre(base::Bucket(test.actions_taken, 1)));
-    if (!test.is_main_frame_secure) {
-      EXPECT_THAT(histogram_tester.GetAllSamples(
-                      "PasswordManager.ActionsTakenOnNonSecureForm"),
-                  ::testing::ElementsAre(base::Bucket(test.actions_taken, 1)));
-    }
-
-    ExpectUkmValueCount(&test_ukm_recorder,
-                        UkmEntry::kUser_ActionSimplifiedName,
-                        static_cast<int64_t>(test.user_action), 1);
   }
 }
 
@@ -670,23 +573,23 @@ TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedMultipleTimes) {
 
 // todo add namespace
 
-struct FillingAssistanceTestCase {
-  struct FieldInfo {
-    std::string value;
-    std::string typed_value;
-    bool user_typed = false;
-    bool automatically_filled = false;
-    bool manually_filled = false;
-    bool is_password = false;
-  };
+struct TestCaseFieldInfo {
+  std::string value;
+  std::string typed_value;
+  bool user_typed = false;
+  bool automatically_filled = false;
+  bool manually_filled = false;
+  bool is_password = false;
+};
 
+struct FillingAssistanceTestCase {
   const char* description_for_logging;
 
   bool is_blacklisted = false;
   bool submission_detected = true;
   bool submission_is_successful = true;
 
-  std::vector<FieldInfo> fields;
+  std::vector<TestCaseFieldInfo> fields;
   std::vector<std::string> saved_usernames;
   std::vector<std::string> saved_passwords;
   std::vector<InteractionsStats> interactions_stats;
@@ -694,8 +597,7 @@ struct FillingAssistanceTestCase {
   base::Optional<PasswordFormMetricsRecorder::FillingAssistance> expectation;
 };
 
-FormData ConvertToFormData(
-    const std::vector<FillingAssistanceTestCase::FieldInfo>& fields) {
+FormData ConvertToFormData(const std::vector<TestCaseFieldInfo>& fields) {
   FormData form;
   for (const auto& field : fields) {
     FormFieldData form_field;
@@ -703,15 +605,14 @@ FormData ConvertToFormData(
     form_field.typed_value = ASCIIToUTF16(field.typed_value);
 
     if (field.user_typed)
-      form_field.properties_mask |= FieldPropertiesFlags::USER_TYPED;
+      form_field.properties_mask |= FieldPropertiesFlags::kUserTyped;
 
     if (field.manually_filled)
       form_field.properties_mask |=
-          FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+          FieldPropertiesFlags::kAutofilledOnUserTrigger;
 
     if (field.automatically_filled)
-      form_field.properties_mask |=
-          FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+      form_field.properties_mask |= FieldPropertiesFlags::kAutofilledOnPageLoad;
 
     form_field.form_control_type = field.is_password ? "password" : "text";
 
@@ -720,37 +621,96 @@ FormData ConvertToFormData(
   return form;
 }
 
-std::set<base::string16> ConvertToString16Set(
-    const std::vector<std::string>& v) {
-  std::set<base::string16> result;
-  for (const std::string& str : v)
-    result.insert(ASCIIToUTF16(str));
+std::set<std::pair<base::string16, PasswordForm::Store>>
+ConvertToString16AndStoreSet(
+    const std::vector<std::string>& profile_store_values,
+    const std::vector<std::string>& account_store_values) {
+  std::set<std::pair<base::string16, PasswordForm::Store>> result;
+  for (const std::string& str : profile_store_values)
+    result.emplace(ASCIIToUTF16(str), PasswordForm::Store::kProfileStore);
+  for (const std::string& str : account_store_values)
+    result.emplace(ASCIIToUTF16(str), PasswordForm::Store::kAccountStore);
   return result;
 }
 
 void CheckFillingAssistanceTestCase(
     const FillingAssistanceTestCase& test_case) {
-  for (bool is_main_frame_secure : {false, true}) {
-    SCOPED_TRACE(testing::Message("Test description: ")
-                 << test_case.description_for_logging
-                 << ", is_main_frame_secure: " << std::boolalpha
-                 << is_main_frame_secure);
+  struct SubCase {
+    bool is_main_frame_secure;
+    PasswordAccountStorageUsageLevel account_storage_usage_level;
+    // Is mixed form only makes sense when is_main_frame_secure is true.
+    bool is_mixed_form = false;
+  } sub_cases[] = {
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage,
+       .is_mixed_form = true},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = true},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kSyncing,
+       .is_mixed_form = false},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage,
+       .is_mixed_form = true},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kSyncing}};
+  for (SubCase sub_case : sub_cases) {
+    SCOPED_TRACE(
+        testing::Message("Test description: ")
+        << test_case.description_for_logging
+        << ", is_main_frame_secure: " << std::boolalpha
+        << sub_case.is_main_frame_secure << ", account_storage_usage_level: "
+        << metrics_util::GetPasswordAccountStorageUsageLevelHistogramSuffix(
+               sub_case.account_storage_usage_level)
+        << ", is_mixed_form: " << std::boolalpha << sub_case.is_mixed_form);
 
-    base::test::TaskEnvironment task_environment_;
+    base::test::TaskEnvironment task_environment;
     base::HistogramTester histogram_tester;
 
     FormData form_data = ConvertToFormData(test_case.fields);
-    std::set<base::string16> saved_usernames =
-        ConvertToString16Set(test_case.saved_usernames);
-    std::set<base::string16> saved_passwords =
-        ConvertToString16Set(test_case.saved_passwords);
+    if (sub_case.is_main_frame_secure) {
+      if (sub_case.is_mixed_form) {
+        form_data.action = GURL("http://notsecure.test");
+      } else {
+        form_data.action = GURL("https://secure.test");
+      }
+    }
 
-    auto recorder =
-        CreatePasswordFormMetricsRecorder(is_main_frame_secure, nullptr);
+    // Note: Don't bother with the profile store vs. account store distinction
+    // here; there are separate tests that cover the filling source.
+    std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+        ConvertToString16AndStoreSet(test_case.saved_usernames,
+                                     /*account_store_values=*/{});
+    std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+        ConvertToString16AndStoreSet(test_case.saved_passwords,
+                                     /*account_store_values=*/{});
+
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        sub_case.is_main_frame_secure, nullptr);
     if (test_case.submission_detected) {
       recorder->CalculateFillingAssistanceMetric(
           form_data, saved_usernames, saved_passwords, test_case.is_blacklisted,
-          test_case.interactions_stats);
+          test_case.interactions_stats, sub_case.account_storage_usage_level);
     }
 
     if (test_case.submission_is_successful)
@@ -758,24 +718,86 @@ void CheckFillingAssistanceTestCase(
     recorder.reset();
 
     int expected_count = test_case.expectation ? 1 : 0;
-    int expected_insecure_count = !is_main_frame_secure ? expected_count : 0;
-    int expected_secure_count = is_main_frame_secure ? expected_count : 0;
+
+    // Split by secure/insecure origin.
+    int expected_insecure_count =
+        !sub_case.is_main_frame_secure ? expected_count : 0;
+    int expected_secure_count =
+        sub_case.is_main_frame_secure ? expected_count : 0;
+    int expected_mixed_count =
+        sub_case.is_main_frame_secure && sub_case.is_mixed_form ? expected_count
+                                                                : 0;
+
+    // Split by account storage usage level.
+    int expected_not_using_account_storage_count = 0;
+    int expected_using_account_storage_count = 0;
+    int expected_syncing_count = 0;
+    switch (sub_case.account_storage_usage_level) {
+      case PasswordAccountStorageUsageLevel::kNotUsingAccountStorage:
+        expected_not_using_account_storage_count = expected_count;
+        break;
+      case PasswordAccountStorageUsageLevel::kUsingAccountStorage:
+        expected_using_account_storage_count = expected_count;
+        break;
+      case PasswordAccountStorageUsageLevel::kSyncing:
+        expected_syncing_count = expected_count;
+        break;
+    }
+
     histogram_tester.ExpectTotalCount("PasswordManager.FillingAssistance",
                                       expected_count);
+
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.InsecureOrigin",
         expected_insecure_count);
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.SecureOrigin",
         expected_secure_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.MixedForm", expected_mixed_count);
+
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.NotUsingAccountStorage",
+        expected_not_using_account_storage_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.UsingAccountStorage",
+        expected_using_account_storage_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.Syncing", expected_syncing_count);
+
     if (test_case.expectation) {
       histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
                                           *test_case.expectation, 1);
+
       histogram_tester.ExpectUniqueSample(
-          is_main_frame_secure
+          sub_case.is_main_frame_secure
               ? "PasswordManager.FillingAssistance.SecureOrigin"
               : "PasswordManager.FillingAssistance.InsecureOrigin",
           *test_case.expectation, 1);
+
+      if (sub_case.is_main_frame_secure && sub_case.is_mixed_form) {
+        histogram_tester.ExpectUniqueSample(
+            "PasswordManager.FillingAssistance.MixedForm",
+            *test_case.expectation, 1);
+      }
+
+      std::string account_storage_histogram;
+      switch (sub_case.account_storage_usage_level) {
+        case PasswordAccountStorageUsageLevel::kNotUsingAccountStorage:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.NotUsingAccountStorage";
+          break;
+        case PasswordAccountStorageUsageLevel::kUsingAccountStorage:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.UsingAccountStorage";
+          break;
+        case PasswordAccountStorageUsageLevel::kSyncing:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.Syncing";
+          break;
+      }
+      histogram_tester.ExpectUniqueSample(account_storage_histogram,
+                                          *test_case.expectation, 1);
     }
   }
 }
@@ -1027,6 +1049,156 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedBySmartBubble) {
                                .dismissal_count = 10}},
        .expectation = PasswordFormMetricsRecorder::FillingAssistance::
            kNoSavedCredentialsAndBlacklistedBySmartBubble});
+}
+
+TEST(PasswordFormMetricsRecorder, FilledPasswordMatchesSavedUsername) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "A filled password matches a saved username",
+       .fields = {{.value = "secret",
+                   .automatically_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"secret"},
+       .saved_passwords = {"secret"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder, FilledValueMatchesSavedUsernameAndPassword) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "A filled value matches a saved username and password. Field is "
+           "likely not a password field",
+       .fields = {{.value = "secret", .automatically_filled = true},
+                  {.value = "password", .automatically_filled = true}},
+       .saved_usernames = {"secret"},
+       .saved_passwords = {"secret", "password"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+struct FillingSourceTestCase {
+  std::vector<TestCaseFieldInfo> fields;
+
+  std::vector<std::string> saved_profile_usernames;
+  std::vector<std::string> saved_profile_passwords;
+  std::vector<std::string> saved_account_usernames;
+  std::vector<std::string> saved_account_passwords;
+
+  base::Optional<PasswordFormMetricsRecorder::FillingSource> expectation;
+};
+
+void CheckFillingSourceTestCase(const FillingSourceTestCase& test_case) {
+  base::test::TaskEnvironment task_environment;
+  base::HistogramTester histogram_tester;
+
+  FormData form_data = ConvertToFormData(test_case.fields);
+
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+      ConvertToString16AndStoreSet(test_case.saved_profile_usernames,
+                                   test_case.saved_account_usernames);
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+      ConvertToString16AndStoreSet(test_case.saved_profile_passwords,
+                                   test_case.saved_account_passwords);
+
+  {
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        /*is_main_frame_secure=*/true, nullptr);
+    recorder->CalculateFillingAssistanceMetric(
+        form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+        /*interactions_stats=*/{},
+        PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+    recorder->LogSubmitPassed();
+  }
+
+  if (test_case.expectation) {
+    histogram_tester.ExpectUniqueSample("PasswordManager.FillingSource",
+                                        *test_case.expectation, 1);
+  } else {
+    histogram_tester.ExpectTotalCount("PasswordManager.FillingSource", 0);
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceNone) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "manualuser", .automatically_filled = true},
+                 {.value = "manualpass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation = PasswordFormMetricsRecorder::FillingSource::kNotFilled,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceProfile) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "profileuser", .automatically_filled = true},
+                 {.value = "profilepass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceAccount) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "accountuser", .automatically_filled = true},
+                 {.value = "accountpass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceBoth) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "user", .automatically_filled = true},
+                 {.value = "pass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"user"},
+      .saved_profile_passwords = {"pass"},
+      .saved_account_usernames = {"user"},
+      .saved_account_passwords = {"pass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceBothDifferent) {
+  // This test covers a rare edge case: If a password from the profile store and
+  // a *different* password from the account store were both filled, then this
+  // should also be recorded as kFilledFromBothStores.
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "profileuser", .manually_filled = true},
+                 {.value = "profilepass",
+                  .manually_filled = true,
+                  .is_password = true},
+                 {.value = "accountuser", .manually_filled = true},
+                 {.value = "accountpass",
+                  .manually_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores,
+  });
 }
 
 }  // namespace password_manager

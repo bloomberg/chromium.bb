@@ -205,9 +205,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
   //   encryption key is needed to decrypt the content.
   // |media_log| Used to report content and engine debug messages.
-  ChunkDemuxer(const base::Closure& open_cb,
-               const base::Closure& progress_cb,
-               const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+  ChunkDemuxer(base::OnceClosure open_cb,
+               base::RepeatingClosure progress_cb,
+               EncryptedMediaInitDataCB encrypted_media_init_data_cb,
                MediaLog* media_log);
   ~ChunkDemuxer() override;
 
@@ -223,6 +223,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   std::vector<DemuxerStream*> GetAllStreams() override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
+  base::Optional<container_names::MediaContainerName> GetContainerForMetrics()
+      const override;
   void AbortPendingReads() override;
 
   // ChunkDemuxer reads are abortable. StartWaitingForSeek() and
@@ -250,9 +252,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                         const MediaTracksUpdatedCB& tracks_updated_cb);
 
   // Notifies a caller via |parse_warning_cb| of a parse warning.
-  void SetParseWarningCallback(
-      const std::string& id,
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(const std::string& id,
+                               SourceBufferParseWarningCB parse_warning_cb);
 
   // Removed an ID & associated resources that were previously added with
   // AddId().
@@ -472,8 +473,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool cancel_next_seek_;
 
   DemuxerHost* host_;
-  base::Closure open_cb_;
-  base::Closure progress_cb_;
+  base::OnceClosure open_cb_;
+  const base::RepeatingClosure progress_cb_;
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
 
   // MediaLog for reporting messages and properties to debug content and engine.

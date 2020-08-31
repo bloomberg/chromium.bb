@@ -63,7 +63,7 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   virtual void ShowParentAccessButton(bool show) = 0;
 
   // Shows a standalone Parent Access dialog. If |child_account_id| is valid, it
-  // validates the parent access code for that child only, when it is  empty it
+  // validates the parent access code for that child only, when it is empty it
   // validates the code for any child signed in the device. |callback| is
   // invoked when the back button is clicked or the correct code was entered.
   // |reason| contains information about why the parent access view is
@@ -78,7 +78,7 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // necessarily fail.
   virtual void ShowParentAccessWidget(
       const AccountId& child_account_id,
-      base::RepeatingCallback<void(bool success)> callback,
+      base::OnceCallback<void(bool success)> callback,
       ParentAccessRequestReason reason,
       bool extra_dimmer,
       base::Time validation_time) = 0;
@@ -97,6 +97,30 @@ class ASH_PUBLIC_EXPORT LoginScreen {
 
   // Called to close the UI previously opened with RequestSecurityTokenPin().
   virtual void ClearSecurityTokenPinRequest() = 0;
+
+  // Sets a handler for login shelf gestures. This will enable gesture detection
+  // on the login shelf for upward fling from the shelf.
+  // |message| - The text to be shown above login shelf drag handle.
+  // |fling_callback| - The callback to be called when a fling is detected.
+  // |exit_callback| - The callback to be called when the login shelf gesture
+  // detection stops, for example when the session is unblocked, or the handler
+  // is cleared.
+  //
+  // Returns whether the handler was successfully set. If not, |exit_callback|
+  // will not be run. The handler will not be set if the current shelf state
+  // does not support login shelf gestures, e.g. if the session is active, or
+  // when not in tablet mode.
+  //
+  // Note that this does not support more than one handler - if another handler
+  // is already set, this method will replace it (and the previous handler's
+  // exit_callback will be run).
+  virtual bool SetLoginShelfGestureHandler(
+      const base::string16& message,
+      const base::RepeatingClosure& fling_callback,
+      base::OnceClosure exit_callback) = 0;
+
+  // Stops login shelf gesture detection.
+  virtual void ClearLoginShelfGestureHandler() = 0;
 
  protected:
   LoginScreen();

@@ -10,13 +10,11 @@
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/memory/memory_pressure_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
-#include "fuchsia/engine/browser/web_engine_memory_pressure_evaluator.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context,
                          WebEngineDevToolsController* devtools_controller)
@@ -29,15 +27,6 @@ ContextImpl::ContextImpl(content::BrowserContext* browser_context,
   DCHECK(browser_context_);
   DCHECK(devtools_controller_);
   devtools_controller_->OnContextCreated();
-
-  // In browser tests there will be no MemoryPressureMonitor.
-  if (base::MemoryPressureMonitor::Get()) {
-    memory_pressure_evaluator_ =
-        std::make_unique<WebEngineMemoryPressureEvaluator>(
-            static_cast<util::MultiSourceMemoryPressureMonitor*>(
-                base::MemoryPressureMonitor::Get())
-                ->CreateVoter());
-  }
 }
 
 ContextImpl::~ContextImpl() {
@@ -47,7 +36,7 @@ ContextImpl::~ContextImpl() {
 void ContextImpl::DestroyFrame(FrameImpl* frame) {
   auto iter = frames_.find(frame);
   DCHECK(iter != frames_.end());
-  frames_.erase(frames_.find(frame));
+  frames_.erase(iter);
 }
 
 bool ContextImpl::IsJavaScriptInjectionAllowed() {

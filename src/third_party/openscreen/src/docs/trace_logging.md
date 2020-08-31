@@ -83,31 +83,27 @@ call. As with scoped traces, the result must be some Error::Code enum value.
 ## Tracing Functions
 All of the below functions rely on the Platform Layer's IsTraceLoggingEnabled()
 function. When logging is disabled, either for the specific category of trace
-logging which the Macro specifies or for TraceCategory::Any in all other caes,
+logging which the Macro specifies or for TraceCategory::Any in all other cases,
 the below functions will be treated as a NoOp.
 
 ### Synchronous Tracing
-  `TRACE_SCOPED(category, name)`
-    If logging is enabled for the provided category, this function will trace
-    the current function until the current scope ends with name as provided.
-    When this call is used, the Trace ID Hierarchy will be determined
-    automatically and the caller does not need to worry about it and, as such,
-    **this call should be used in the majority of synchronous tracing cases**.
+  ```c++
+  TRACE_SCOPED(category, name)
+  TRACE_SCOPED(category, name, traceId, parentId, rootId)
+  TRACE_SCOPED(category, name, traceIdHierarchy)
+  ```
+  If logging is enabled for the provided |category|, trace the current scope. The scope
+  should encompass the operation described by |name|. The latter two uses of this macro are
+  for manually providing the trace ID hierarchy; the first auto-generates a new trace ID for
+  this scope and sets its parent trace ID to that of the encompassing scope (if any).
 
-  `TRACE_SCOPED(category, name, traceId, parentId, rootId)`
-    If logging is enabled for the provided category, this function will trace
-    the current function until the current scope ends with name as provided. The
-    Trace ID used for tracing this function will be set to the one provided, as
-    will the parent and root ids. Each of Trace ID, Parent ID, and Root ID is
-    optional, so providing only a subset of these values is also valid if the
-    caller only desires to set specific ones.
-
-  `TRACE_SCOPED(category, name, traceIdHierarchy)`
-    This call is intended for use in conjunction with the TRACE_HIERARCHY macro
-    (as described below). If logging is enabled for the provided category, this
-    function will trace the current function until the current scope ends with
-    name as provided. The Trace ID Hierarchy will be set as provided in the
-    provided Trace ID Hierarchy parameter.
+  ```c++
+  TRACE_DEFAULT_SCOPED(category)
+  TRACE_DEFAULT_SCOPED(category, traceId, parentId, rootId)
+  TRACE_DEFAULT_SCOPED(category, traceIdHierarchy)
+  ```
+  Same as TRACE_SCOPED(), but use the current function/method signature as the operation
+  name.
 
 ### Asynchronous Tracing
   `TRACE_ASYNC_START(category, name)`
@@ -229,7 +225,7 @@ For an embedder to create a custom TraceLogging implementation:
   called frequently (especially `IsLoggingEnabled(TraceCategory)`) and are often
   in the critical execution path of the library's code.
 
-2. *Call `openscreen::platform::StartTracing()` and `StopTracing()`*
+2. *Call `openscreen::StartTracing()` and `StopTracing()`*
   These activate/deactivate tracing by providing the TraceLoggingPlatform
   instance and later clearing references to it.
 

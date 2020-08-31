@@ -18,7 +18,6 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_boolean.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
-#include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_null.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
@@ -171,7 +170,7 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
   uint32_t dwStreamSize;
   if (decoder.IsEmpty()) {
     dwOrigSize = std::min<uint32_t>(dwOrigSize, m_pBuf.size() - m_Pos);
-    pData.reset(FX_Alloc(uint8_t, dwOrigSize));
+    pData.reset(FX_AllocUninit(uint8_t, dwOrigSize));
     auto copy_span = m_pBuf.subspan(m_Pos, dwOrigSize);
     memcpy(pData.get(), copy_span.data(), copy_span.size());
     dwStreamSize = dwOrigSize;
@@ -179,7 +178,7 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
   } else {
     dwStreamSize = DecodeInlineStream(m_pBuf.subspan(m_Pos), width, height,
                                       decoder, pParam, dwOrigSize);
-    if (static_cast<int>(dwStreamSize) < 0)
+    if (!pdfium::base::IsValueInRangeForNumericType<int>(dwStreamSize))
       return nullptr;
 
     uint32_t dwSavePos = m_Pos;
@@ -201,7 +200,7 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
       dwStreamSize += m_Pos - dwPrevPos;
     }
     m_Pos = dwSavePos;
-    pData.reset(FX_Alloc(uint8_t, dwStreamSize));
+    pData.reset(FX_AllocUninit(uint8_t, dwStreamSize));
     auto copy_span = m_pBuf.subspan(m_Pos, dwStreamSize);
     memcpy(pData.get(), copy_span.data(), copy_span.size());
     m_Pos += dwStreamSize;
@@ -217,7 +216,7 @@ CPDF_StreamParser::SyntaxType CPDF_StreamParser::ParseNextElement() {
   if (!PositionIsInBounds())
     return EndOfData;
 
-  int ch = m_pBuf[m_Pos++];
+  uint8_t ch = m_pBuf[m_Pos++];
   while (1) {
     while (PDFCharIsWhitespace(ch)) {
       if (!PositionIsInBounds())
@@ -352,7 +351,7 @@ RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
       RetainPtr<CPDF_Object> pObj =
           ReadNextObject(bAllowNestedArray, true, dwRecursionLevel + 1);
       if (pObj) {
-        pArray->Add(std::move(pObj));
+        pArray->Append(std::move(pObj));
         continue;
       }
       if (!m_WordSize || m_WordBuffer[0] == ']')
@@ -377,7 +376,7 @@ void CPDF_StreamParser::GetNextWord(bool& bIsNumber) {
   if (!PositionIsInBounds())
     return;
 
-  int ch = m_pBuf[m_Pos++];
+  uint8_t ch = m_pBuf[m_Pos++];
   while (1) {
     while (PDFCharIsWhitespace(ch)) {
       if (!PositionIsInBounds()) {
@@ -561,8 +560,7 @@ ByteString CPDF_StreamParser::ReadHexString() {
   bool bFirst = true;
   int code = 0;
   while (PositionIsInBounds()) {
-    int ch = m_pBuf[m_Pos++];
-
+    uint8_t ch = m_pBuf[m_Pos++];
     if (ch == '>')
       break;
 

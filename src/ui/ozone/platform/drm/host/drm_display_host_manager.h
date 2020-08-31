@@ -18,6 +18,7 @@
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -28,10 +29,7 @@ class DrmDeviceHandle;
 class DrmDisplayHost;
 class DrmDisplayHostManager;
 class DrmNativeDisplayDelegate;
-class DrmOverlayManager;
 class GpuThreadAdapter;
-
-struct DisplaySnapshot_Params;
 
 // The portion of the DrmDisplayHostManager implementation that is agnostic
 // in how its communication with GPU-specific functionality is implemented.
@@ -42,7 +40,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
       GpuThreadAdapter* proxy,
       DeviceManager* device_manager,
       OzonePlatform::InitializedHostProperties* host_properties,
-      DrmOverlayManager* overlay_manager,
       InputControllerEvdev* input_controller);
   ~DrmDisplayHostManager() override;
 
@@ -65,8 +62,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
-  void GpuHasUpdatedNativeDisplays(
-      const std::vector<DisplaySnapshot_Params>& displays);
+  void GpuHasUpdatedNativeDisplays(MovableDisplaySnapshots displays);
   void GpuConfiguredDisplay(int64_t display_id, bool status);
   void GpuReceivedHDCPState(int64_t display_id,
                             bool status,
@@ -102,8 +98,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   GpuThreadAdapter* const proxy_;                 // Not owned.
   DeviceManager* const device_manager_;           // Not owned.
-  // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
-  DrmOverlayManager* const overlay_manager_;      // Not owned.
   InputControllerEvdev* const input_controller_;  // Not owned.
 
   DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.

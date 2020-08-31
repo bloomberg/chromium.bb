@@ -7,11 +7,10 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/android/modules/dev_ui/provider/dev_ui_module_provider.h"
 #include "chrome/browser/dev_ui/android/dev_ui_loader_error_page.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/safe_browsing/web_ui/constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
@@ -21,6 +20,11 @@
 namespace {
 
 // Decides whether WebUI |host| (assumed for chrome://) is in the DevUI DFM.
+// These should exclude WebUI hosts that are used outside of Chrome, e.g., those
+// used by Android WebView (see AwWebUIControllerFactory). The test
+// DevUiLoaderThrottleTest.PreventAccidentalInclusion safeguards against the
+// inclusion of WebUI hosts that are purposefully left in the base module (i.e.,
+// installed by default, and not in the DevUI DFM).
 bool IsWebUiHostInDevUiDfm(const std::string& host) {
   // Each WebUI host (including synonyms) in the DevUI DFM must have an entry.
   // Assume linear search is fast enough. Can optimize later if needed.
@@ -70,8 +74,7 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
          host == content::kChromeUINetworkErrorsListingHost ||
          host == content::kChromeUIProcessInternalsHost ||
          host == content::kChromeUIServiceWorkerInternalsHost ||
-         host == content::kChromeUIWebRTCInternalsHost ||
-         host == safe_browsing::kChromeUISafeBrowsingHost;
+         host == content::kChromeUIWebRTCInternalsHost;
 }
 
 }  // namespace
@@ -95,10 +98,8 @@ DevUiLoaderThrottle::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
   if (!ShouldInstallDevUiDfm(handle->GetURL()))
     return nullptr;
 
-  // If module is already installed, ensure that it is loaded.
   if (dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
-    // Synchronously load module (if not already loaded).
-    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
+    dev_ui::DevUiModuleProvider::GetInstance()->EnsureLoaded();
     return nullptr;
   }
 
@@ -129,7 +130,7 @@ DevUiLoaderThrottle::WillStartRequest() {
 
 void DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus(bool success) {
   if (success) {
-    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
+    dev_ui::DevUiModuleProvider::GetInstance()->EnsureLoaded();
     Resume();
   } else {
     std::string html = BuildErrorPageHtml();

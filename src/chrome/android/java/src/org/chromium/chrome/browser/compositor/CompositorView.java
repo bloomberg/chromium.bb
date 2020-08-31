@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -482,6 +482,8 @@ public class CompositorView
         if (swappedCurrentSize) {
             runDrawFinishedCallbacks();
         }
+
+        mRenderHost.didSwapBuffers(swappedCurrentSize);
     }
 
     @CalledByNative
@@ -608,7 +610,15 @@ public class CompositorView
         mCompositorSurfaceManager.setVisibility(getVisibility());
     }
 
-   @NativeMethods
+    /**
+     * Notifies the native compositor that a tab change has occurred. This
+     * should be called when changing to a valid tab.
+     */
+    public void onTabChanged() {
+        CompositorViewJni.get().onTabChanged(mNativeCompositorView, CompositorView.this);
+    }
+
+    @NativeMethods
     interface Natives {
         long init(CompositorView caller, boolean lowMemDevice, WindowAndroid windowAndroid,
                 LayerTitleCache layerTitleCache, TabContentManager tabContentManager);
@@ -631,5 +641,6 @@ public class CompositorView
                 long nativeCompositorView, CompositorView caller, WindowAndroid window);
         void cacheBackBufferForCurrentSurface(long nativeCompositorView, CompositorView caller);
         void evictCachedBackBuffer(long nativeCompositorView, CompositorView caller);
+        void onTabChanged(long nativeCompositorView, CompositorView caller);
     }
 }

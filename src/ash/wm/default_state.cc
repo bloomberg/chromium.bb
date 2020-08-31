@@ -197,20 +197,10 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       return;
     }
     case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
-      bounds.AdjustToFit(work_area_in_parent);
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
+      UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+          window_state, /*ensure_full_window_visibility=*/true);
       return;
     }
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
@@ -227,21 +217,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       if (in_fullscreen && window_state->IsMaximized())
         return;
 
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
-      if (!::wm::GetTransientParent(window_state->window())) {
-        AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                    &bounds);
-      }
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
+      UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+          window_state, /*ensure_full_window_visibility=*/false);
       return;
     }
     case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
@@ -462,8 +439,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   // we still need this.
   if (window_state->window()->parent()) {
     if (!window_state->HasRestoreBounds() &&
-        (previous_state_type == WindowStateType::kDefault ||
-         previous_state_type == WindowStateType::kNormal) &&
+        IsNormalWindowStateType(previous_state_type) &&
         !window_state->IsMinimized() && !window_state->IsNormalStateType()) {
       window_state->SaveCurrentBoundsForRestore();
     }
@@ -525,9 +501,7 @@ void DefaultState::ReenterToCurrentState(
   window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
-  if ((state_type_ == WindowStateType::kNormal ||
-       state_type_ == WindowStateType::kDefault) &&
-      !stored_bounds_.IsEmpty()) {
+  if (IsNormalWindowStateType(state_type_) && !stored_bounds_.IsEmpty()) {
     // Use the restore mechanism to set the bounds for
     // the window in normal state. This also covers unminimize case.
     window_state->SetRestoreBoundsInParent(stored_bounds_);
@@ -630,6 +604,34 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     } else {
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
+  }
+}
+
+void DefaultState::UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+    WindowState* window_state,
+    bool ensure_full_window_visibility) {
+  if (window_state->is_dragged() || window_state->allow_set_bounds_direct() ||
+      SetMaximizedOrFullscreenBounds(window_state)) {
+    return;
+  }
+
+  const gfx::Rect work_area_in_parent =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
+  gfx::Rect bounds = window_state->window()->GetTargetBounds();
+  if (ensure_full_window_visibility)
+    bounds.AdjustToFit(work_area_in_parent);
+  else if (!::wm::GetTransientParent(window_state->window()))
+    AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
+  window_state->AdjustSnappedBounds(&bounds);
+
+  if (window_state->window()->GetTargetBounds() == bounds)
+    return;
+
+  if (window_state->bounds_animation_type() ==
+      WindowState::BoundsChangeAnimationType::IMMEDIATE) {
+    window_state->SetBoundsDirect(bounds);
+  } else {
+    window_state->SetBoundsDirectAnimated(bounds);
   }
 }
 

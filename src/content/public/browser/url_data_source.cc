@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
-#include "content/browser/resource_context_impl.h"
+#include "base/task_runner_util.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -20,20 +19,6 @@
 
 namespace content {
 
-namespace {
-
-URLDataSource* GetSourceForURLHelper(ResourceContext* resource_context,
-                                     const GURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  URLDataSourceImpl* source =
-      GetURLDataManagerForResourceContext(resource_context)
-          ->GetDataSourceFromURL(url);
-  return source->source();
-}
-
-}  // namespace
-
 // static
 void URLDataSource::Add(BrowserContext* browser_context,
                         std::unique_ptr<URLDataSource> source) {
@@ -41,15 +26,11 @@ void URLDataSource::Add(BrowserContext* browser_context,
 }
 
 // static
-void URLDataSource::GetSourceForURL(
-    BrowserContext* browser_context,
-    const GURL& url,
-    base::OnceCallback<void(URLDataSource*)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&GetSourceForURLHelper,
-                     browser_context->GetResourceContext(), url),
-      std::move(callback));
+URLDataSource* URLDataSource::GetSourceForURL(BrowserContext* browser_context,
+                                              const GURL& url) {
+  return URLDataManagerBackend::GetForBrowserContext(browser_context)
+      ->GetDataSourceFromURL(url)
+      ->source();
 }
 
 // static
@@ -65,11 +46,6 @@ std::string URLDataSource::URLToRequestPath(const GURL& url) {
   return std::string();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-}
-
 bool URLDataSource::ShouldReplaceExistingSource() {
   return true;
 }
@@ -82,21 +58,11 @@ bool URLDataSource::ShouldAddContentSecurityPolicy() {
   return true;
 }
 
-std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
-  // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
-  // specific pages that need it, see context http://crbug.com/525224.
-  return "script-src chrome://resources 'self';";
-}
-
-std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
-  return "object-src 'none';";
-}
-
 std::string URLDataSource::GetContentSecurityPolicyChildSrc() {
   return "child-src 'none';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyStyleSrc() {
+std::string URLDataSource::GetContentSecurityPolicyDefaultSrc() {
   return std::string();
 }
 
@@ -104,8 +70,26 @@ std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 
+std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
+  return "object-src 'none';";
+}
+
+std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
+  // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
+  // specific pages that need it, see context http://crbug.com/525224.
+  return "script-src chrome://resources 'self';";
+}
+
+std::string URLDataSource::GetContentSecurityPolicyStyleSrc() {
+  return std::string();
+}
+
 std::string URLDataSource::GetContentSecurityPolicyWorkerSrc() {
   return std::string();
+}
+
+std::string URLDataSource::GetContentSecurityPolicyFrameAncestors() {
+  return "frame-ancestors 'none';";
 }
 
 bool URLDataSource::ShouldDenyXFrameOptions() {
@@ -113,9 +97,10 @@ bool URLDataSource::ShouldDenyXFrameOptions() {
 }
 
 bool URLDataSource::ShouldServiceRequest(const GURL& url,
-                                         ResourceContext* resource_context,
+                                         BrowserContext* browser_context,
                                          int render_process_id) {
-  return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme);
+  return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
+         url.SchemeIs(kChromeUIUntrustedScheme);
 }
 
 bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
@@ -128,6 +113,10 @@ std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
 }
 
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
+
+const ui::TemplateReplacements* URLDataSource::GetReplacements() {
+  return nullptr;
+}
 
 bool URLDataSource::ShouldReplaceI18nInJS() {
   return false;

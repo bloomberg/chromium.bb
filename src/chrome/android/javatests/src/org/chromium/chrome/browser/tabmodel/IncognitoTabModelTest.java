@@ -16,9 +16,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -44,7 +45,7 @@ public class IncognitoTabModelTest {
         mTabModel = mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
     }
 
-    private class CloseAllDuringAddTabTabModelObserver extends EmptyTabModelObserver {
+    private class CloseAllDuringAddTabTabModelObserver implements TabModelObserver {
         @Override
         public void willAddTab(Tab tab, @TabLaunchType int type) {
             mTabModel.closeAllTabs();

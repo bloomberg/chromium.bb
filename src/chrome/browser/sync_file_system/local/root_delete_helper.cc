@@ -61,9 +61,9 @@ void RootDeleteHelper::Run() {
             "%s", url_.DebugString().c_str());
 
   file_system_context_->DeleteFileSystem(
-      url_.origin().GetURL(), url_.type(),
-      base::Bind(&RootDeleteHelper::DidDeleteFileSystem,
-                 weak_factory_.GetWeakPtr()));
+      url_.origin(), url_.type(),
+      base::BindOnce(&RootDeleteHelper::DidDeleteFileSystem,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void RootDeleteHelper::DidDeleteFileSystem(base::File::Error error) {
@@ -90,10 +90,10 @@ void RootDeleteHelper::DidResetFileChangeTracker() {
 
   // Reopening the filesystem.
   file_system_context_->sandbox_delegate()->OpenFileSystem(
-      url_.origin().GetURL(), url_.type(),
+      url_.origin(), url_.type(),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      base::Bind(&RootDeleteHelper::DidOpenFileSystem,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&RootDeleteHelper::DidOpenFileSystem,
+                     weak_factory_.GetWeakPtr()),
       GURL());
 }
 

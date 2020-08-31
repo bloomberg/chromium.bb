@@ -4,7 +4,6 @@
 /out
 /testing/corpus
 /third_party/android_ndk
-/third_party/binutils
 /third_party/catapult
 /third_party/depot_tools
 /third_party/freetype/src
@@ -16,9 +15,8 @@
 /third_party/llvm
 /third_party/llvm-build
 /third_party/markupsafe
+/third_party/nasm
 /third_party/skia
-/third_party/yasm/binaries
-/third_party/yasm/source/patched-yasm
 /third_party/zlib
 /tools/clang
 /tools/code_coverage

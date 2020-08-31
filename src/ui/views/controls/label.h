@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/context_menu_controller.h"
@@ -33,6 +34,12 @@ class VIEWS_EXPORT Label : public View,
                            public ui::SimpleMenuModel::Delegate {
  public:
   METADATA_HEADER(Label);
+
+  enum MenuCommands {
+    kCopy = 1,
+    kSelectAll,
+    kLastCommandId = kSelectAll,
+  };
 
   // Helper to construct a Label that doesn't use the views typography spec.
   // Using this causes Label to obtain colors from ui::NativeTheme and line
@@ -260,9 +267,6 @@ class VIEWS_EXPORT Label : public View,
   // Create a single RenderText instance to actually be painted.
   virtual std::unique_ptr<gfx::RenderText> CreateRenderText() const;
 
-  // Draw a focus ring. The default implementation does nothing.
-  virtual void PaintFocusRing(gfx::Canvas* canvas) const;
-
   // Returns the preferred size and position of the text in local coordinates,
   // which may exceed the local bounds of the label.
   gfx::Rect GetTextBounds() const;
@@ -373,6 +377,7 @@ class VIEWS_EXPORT Label : public View,
   void BuildContextMenuContents();
 
   const int text_context_;
+  const int text_style_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> full_text_;
@@ -383,34 +388,34 @@ class VIEWS_EXPORT Label : public View,
   // Persists the current selection range between the calls to
   // ClearDisplayText() and MaybeBuildDisplayText(). Holds an InvalidRange when
   // not in use.
-  mutable gfx::Range stored_selection_range_;
+  mutable gfx::Range stored_selection_range_ = gfx::Range::InvalidRange();
 
-  SkColor requested_enabled_color_ = SK_ColorRED;
-  SkColor actual_enabled_color_ = SK_ColorRED;
-  SkColor background_color_ = SK_ColorRED;
-  SkColor requested_selection_text_color_ = SK_ColorRED;
-  SkColor actual_selection_text_color_ = SK_ColorRED;
-  SkColor selection_background_color_ = SK_ColorRED;
+  SkColor requested_enabled_color_ = gfx::kPlaceholderColor;
+  SkColor actual_enabled_color_ = gfx::kPlaceholderColor;
+  SkColor background_color_ = gfx::kPlaceholderColor;
+  SkColor requested_selection_text_color_ = gfx::kPlaceholderColor;
+  SkColor actual_selection_text_color_ = gfx::kPlaceholderColor;
+  SkColor selection_background_color_ = gfx::kPlaceholderColor;
 
   // Set to true once the corresponding setter is invoked.
-  bool enabled_color_set_;
-  bool background_color_set_;
-  bool selection_text_color_set_;
-  bool selection_background_color_set_;
+  bool enabled_color_set_ = false;
+  bool background_color_set_ = false;
+  bool selection_text_color_set_ = false;
+  bool selection_background_color_set_ = false;
 
-  gfx::ElideBehavior elide_behavior_;
+  gfx::ElideBehavior elide_behavior_ = gfx::ELIDE_TAIL;
 
-  bool subpixel_rendering_enabled_;
-  bool auto_color_readability_enabled_;
+  bool subpixel_rendering_enabled_ = true;
+  bool auto_color_readability_enabled_ = true;
   // TODO(mukai): remove |multi_line_| when all RenderText can render multiline.
-  bool multi_line_;
-  int max_lines_;
+  bool multi_line_ = false;
+  int max_lines_ = 0;
   base::string16 tooltip_text_;
-  bool handles_tooltips_;
+  bool handles_tooltips_ = true;
   // Whether to collapse the label when it's not visible.
-  bool collapse_when_hidden_;
-  int fixed_width_;
-  int max_width_;
+  bool collapse_when_hidden_ = false;
+  int fixed_width_ = 0;
+  int max_width_ = 0;
 
   std::unique_ptr<SelectionController> selection_controller_;
 

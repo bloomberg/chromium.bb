@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -23,7 +25,6 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_api_provider.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_interface_binders.h"
-#include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 #include "chrome/browser/extensions/chrome_kiosk_delegate.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/chrome_url_request_util.h"
@@ -39,15 +40,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,9 +60,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
-#include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
 
 #if defined(OS_CHROMEOS)
@@ -77,6 +79,9 @@
 namespace extensions {
 
 namespace {
+
+const char kCrxUrlPath[] = "/service/update2/crx";
+const char kJsonUrlPath[] = "/service/update2/json";
 
 // If true, the extensions client will behave as though there is always a
 // new chrome update.
@@ -131,13 +136,7 @@ bool ChromeExtensionsBrowserClient::IsSameContext(
     content::BrowserContext* second) {
   Profile* first_profile = Profile::FromBrowserContext(first);
   Profile* second_profile = Profile::FromBrowserContext(second);
-  // TODO(crbug.com/727487): We need to check both ways because of offscreen
-  // presentation profiles, which are not registered with the original profile.
-  // This can be reverted to check just first->IsSameProfile(second) when Bug
-  // 727487 is fixed and presentations have a proper profile type.  See Bug
-  // 664351 for background.
-  return first_profile->IsSameProfile(second_profile) ||
-         second_profile->IsSameProfile(first_profile);
+  return first_profile->IsSameProfile(second_profile);
 }
 
 bool ChromeExtensionsBrowserClient::HasOffTheRecordContext(
@@ -206,7 +205,7 @@ void ChromeExtensionsBrowserClient::LoadResourceFromResourceBundle(
 
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const GURL& url,
-    content::ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     ui::PageTransition page_transition,
     int child_id,
     bool is_incognito,
@@ -329,18 +328,8 @@ ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ExtensionSystemFactory::GetInstance();
 }
 
-void ChromeExtensionsBrowserClient::RegisterExtensionInterfaces(
-    service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-        registry,
-    content::RenderFrameHost* render_frame_host,
-    const Extension* extension) const {
-  RegisterInterfacesForExtension(registry, render_frame_host, extension);
-  RegisterChromeInterfacesForExtension(registry, render_frame_host, extension);
-}
-
 void ChromeExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>*
-        binder_map,
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
   PopulateExtensionFrameBinders(binder_map, render_frame_host, extension);
@@ -373,6 +362,8 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
 #if defined(OS_CHROMEOS)
+    // TODO(crbug.com/1012892): Replace this with just BEST_EFFORT, since the
+    // sign-in profile extensions use a different caching mechanism now.
     base::TaskPriority task_priority =
         chromeos::ProfileHelper::IsSigninProfileInitialized() &&
                 chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions()
@@ -458,8 +449,17 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
 scoped_refptr<update_client::UpdateClient>
 ChromeExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {
+  base::Optional<GURL> override_url;
+  GURL update_url = extension_urls::GetWebstoreUpdateUrl();
+  if (update_url != extension_urls::GetDefaultWebstoreUpdateUrl()) {
+    if (update_url.path() == kCrxUrlPath) {
+      override_url = update_url.GetWithEmptyPath().Resolve(kJsonUrlPath);
+    } else {
+      override_url = update_url;
+    }
+  }
   return update_client::UpdateClientFactory(
-      ChromeUpdateClientConfig::Create(context));
+      ChromeUpdateClientConfig::Create(context, override_url));
 }
 
 std::unique_ptr<content::BluetoothChooser>
@@ -480,8 +480,8 @@ void ChromeExtensionsBrowserClient::GetTabAndWindowIdForWebContents(
     content::WebContents* web_contents,
     int* tab_id,
     int* window_id) {
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(web_contents);
+  sessions::SessionTabHelper* session_tab_helper =
+      sessions::SessionTabHelper::FromWebContents(web_contents);
   if (session_tab_helper) {
     *tab_id = session_tab_helper->session_id().id();
     *window_id = session_tab_helper->window_id().id();
@@ -553,8 +553,12 @@ bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
     return false;
 
   // Enables the enforcement if the prefs is managed by the enterprise policy.
-  return Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
-      prefs::kCorsMitigationList);
+  bool apply_cors_mitigation_list =
+      !base::FeatureList::IsEnabled(
+          features::kHideCorsMitigationListPolicySupport) &&
+      Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
+          prefs::kCorsMitigationList);
+  return apply_cors_mitigation_list;
 }
 
 // static

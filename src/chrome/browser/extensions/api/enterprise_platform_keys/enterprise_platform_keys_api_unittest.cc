@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/attestation/mock_tpm_challenge_key.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -40,7 +41,8 @@ void FakeRunCheckNotRegister(
     const std::string& key_name_for_spkac) {
   EXPECT_FALSE(register_key);
   std::move(callback).Run(
-      chromeos::attestation::TpmChallengeKeyResult::MakeResult("response"));
+      chromeos::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
+          "response"));
 }
 
 class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {

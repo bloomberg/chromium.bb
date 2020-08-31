@@ -12,7 +12,9 @@
 // boundary point marker "^".
 //
 // |tester| is either name with parameter of execCommand or function taking
-// one parameter |Selection|.
+// up to two parameters: |selection|, and |testRunner|. The |testRunner| is for
+// the frame in which the test is run, and allows the |tester| to inject test
+// behaviour into the frame, such as execCommand().
 //
 // |expectedText| is an HTML fragment text containing at most one focus marker
 // and anchor marker. If resulting selection is none, you don't need to have
@@ -761,8 +763,50 @@ class Sample {
   /** @return {!HTMLDocument} */
   get document() { return this.document_; }
 
+  /** @return {!DomWindow} */
+  get window() { return this.iframe_.contentWindow; }
+
   /** @return {!Selection} */
   get selection() { return this.selection_; }
+
+  /**
+   * @public
+   * Enables or disables the test runner's spell checker.
+   */
+  setMockSpellCheckerEnabled(enabled) {
+    this.iframe_.contentWindow.eval(
+      "testRunner.setMockSpellCheckerEnabled(" + enabled + ");");
+  }
+
+  /**
+   * @public
+   * Sets the callback to run when spell checks are resolved.
+   */
+  setSpellCheckResolvedCallback(resolved_cb) {
+    var add = resolved_cb && !this.listener_;
+    var remove = !resolved_cb && this.listener_;
+    if (add) {
+      this.listener_ = (e) => {
+        if (e.data != "resolved_spellcheck")
+          return;
+        resolved_cb();
+      };
+      window.addEventListener("message", this.listener_, false);
+      this.iframe_.contentWindow.eval(
+         "testRunner.setSpellCheckResolvedCallback(() => { \
+           window.parent.postMessage('resolved_spellcheck', '*'); \
+         });");
+    } else if (remove) {
+      window.removeEventListener("message", this.listener_, false);
+      this.listener_ = null;
+    }
+  }
+
+  /**
+   * @public
+   * @param {string} JS code to run in the Sample's iframe.
+   */
+  eval(string) { this.iframe_.window.eval(string); }
 
   /** @return {string} */
   static get playgroundId() { return 'playground'; }
@@ -990,7 +1034,7 @@ function assertSelectionAndReturnSample(
   checkExpectedText(expectedText);
   const sample = new Sample(inputText);
   if (typeof(tester) === 'function') {
-    tester.call(window, sample.selection);
+    tester.call(window, sample.selection, sample.window.testRunner);
   } else if (typeof(tester) === 'string') {
     const strings = tester.split(/ (.+)/);
     sample.document.execCommand(strings[0], false, strings[1]);

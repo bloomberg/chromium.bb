@@ -18,13 +18,14 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_scoped_pref_update.h"
@@ -92,10 +93,9 @@ constexpr base::TimeDelta kDetectDefaultAppAvailabilityTimeout =
     base::TimeDelta::FromMinutes(1);
 
 // Accessor for deferred set notifications enabled requests in prefs.
-class SetNotificationsEnabledDeferred {
+class NotificationsEnabledDeferred {
  public:
-  explicit SetNotificationsEnabledDeferred(PrefService* prefs)
-      : prefs_(prefs) {}
+  explicit NotificationsEnabledDeferred(PrefService* prefs) : prefs_(prefs) {}
 
   void Put(const std::string& app_id, bool enabled) {
     DictionaryPrefUpdate update(
@@ -104,10 +104,10 @@ class SetNotificationsEnabledDeferred {
     dict->SetKey(app_id, base::Value(enabled));
   }
 
-  bool Get(const std::string& app_id, bool* enabled) {
+  bool Get(const std::string& app_id) {
     const base::DictionaryValue* dict =
         prefs_->GetDictionary(arc::prefs::kArcSetNotificationsEnabledDeferred);
-    return dict->GetBoolean(app_id, enabled);
+    return dict->FindBoolKey(app_id).value_or(false);
   }
 
   void Remove(const std::string& app_id) {
@@ -322,9 +322,8 @@ class ArcAppListPrefs::ResizeRequest : public ImageDecoder::ImageRequest {
   void OnImageDecoded(const SkBitmap& bitmap) override {
     // See host_ comments.
     DCHECK(host_);
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ResizeRequest::ResizeAndEncodeIconAsyncronously, bitmap,
                        descriptor_.GetSizeInPixels()),
         base::BindOnce(&ArcAppListPrefs::OnIconResized, host_, app_id_,
@@ -377,9 +376,8 @@ ArcAppListPrefs::ArcAppListPrefs(
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       app_connection_holder_for_testing_(app_connection_holder_for_testing),
-      file_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
@@ -433,8 +431,13 @@ void ArcAppListPrefs::StartPrefs() {
       // Note: If ArcSessionManager has profile, it should be as same as the one
       // this instance has, because ArcAppListPrefsFactory creates an instance
       // only if the given Profile meets ARC's requirement.
-      // Anyway, just in case, check it here.
-      DCHECK_EQ(profile_, arc_session_manager->profile());
+      // Anyway, just in case, check it here and log. Only some browser tests
+      // will log the error. If you see the log outside browser_tests, something
+      // unexpected may have happened.
+      if (profile_ != arc_session_manager->profile()) {
+        LOG(ERROR)
+            << "This object's profile_ and ArcSessionManager's don't match.";
+      }
       OnArcPlayStoreEnabledChanged(
           arc::IsArcPlayStoreEnabledForProfile(profile_));
     }
@@ -576,7 +579,7 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
 
   // In case app is not ready, defer this request.
   if (!ready_apps_.count(app_id)) {
-    SetNotificationsEnabledDeferred(prefs_).Put(app_id, enabled);
+    NotificationsEnabledDeferred(prefs_).Put(app_id, enabled);
     for (auto& observer : observer_list_)
       observer.OnNotificationsEnabledChanged(app_info->package_name, enabled);
     return;
@@ -587,7 +590,7 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
   if (!app_instance)
     return;
 
-  SetNotificationsEnabledDeferred(prefs_).Remove(app_id);
+  NotificationsEnabledDeferred(prefs_).Remove(app_id);
   app_instance->SetNotificationsEnabled(app_info->package_name, enabled);
 }
 
@@ -626,25 +629,16 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
       !packages->GetDictionaryWithoutPathExpansion(package_name, &package))
     return std::unique_ptr<PackageInfo>();
 
-  bool uninstalled = false;
-  if (package->GetBoolean(kUninstalled, &uninstalled) && uninstalled)
+  if (package->FindBoolKey(kUninstalled).value_or(false))
     return nullptr;
 
-  int32_t package_version = 0;
   int64_t last_backup_android_id = 0;
   int64_t last_backup_time = 0;
-  bool should_sync = false;
-  bool system = false;
-  bool vpn_provider = false;
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions;
 
   GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
-  package->GetInteger(kPackageVersion, &package_version);
-  package->GetBoolean(kShouldSync, &should_sync);
-  package->GetBoolean(kSystem, &system);
-  package->GetBoolean(kVPNProvider, &vpn_provider);
   const base::Value* permission_val = package->FindKey(kPermissionStates);
   if (permission_val) {
     const base::DictionaryValue* permission_dict = nullptr;
@@ -678,8 +672,12 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   }
 
   return std::make_unique<PackageInfo>(
-      package_name, package_version, last_backup_android_id, last_backup_time,
-      should_sync, system, vpn_provider, std::move(permissions));
+      package_name, package->FindIntKey(kPackageVersion).value_or(0),
+      last_backup_android_id, last_backup_time,
+      package->FindBoolKey(kShouldSync).value_or(false),
+      package->FindBoolKey(kSystem).value_or(false),
+      package->FindBoolKey(kVPNProvider).value_or(false),
+      std::move(permissions));
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
@@ -745,22 +743,16 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
   std::string activity;
   std::string intent_uri;
   std::string icon_resource_id;
-  bool suspended = false;
-  bool sticky = false;
-  bool notifications_enabled = true;
-  bool shortcut = false;
-  bool launchable = true;
+  bool notifications_enabled =
+      app->FindBoolKey(kNotificationsEnabled).value_or(true);
+  const bool shortcut = app->FindBoolKey(kShortcut).value_or(false);
+  const bool launchable = app->FindBoolKey(kLaunchable).value_or(true);
 
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
   app->GetString(kIntentUri, &intent_uri);
   app->GetString(kIconResourceId, &icon_resource_id);
-  app->GetBoolean(kSuspended, &suspended);
-  app->GetBoolean(kSticky, &sticky);
-  app->GetBoolean(kNotificationsEnabled, &notifications_enabled);
-  app->GetBoolean(kShortcut, &shortcut);
-  app->GetBoolean(kLaunchable, &launchable);
 
   DCHECK(!name.empty());
   DCHECK(!shortcut || activity.empty());
@@ -772,14 +764,16 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
     last_launch_time = base::Time::FromInternalValue(last_launch_time_internal);
   }
 
-  bool deferred;
-  if (SetNotificationsEnabledDeferred(prefs_).Get(app_id, &deferred))
+  const bool deferred = NotificationsEnabledDeferred(prefs_).Get(app_id);
+  if (deferred)
     notifications_enabled = deferred;
 
   return std::make_unique<AppInfo>(
       name, package_name, activity, intent_uri, icon_resource_id,
-      last_launch_time, GetInstallTime(app_id), sticky, notifications_enabled,
-      ready_apps_.count(app_id) > 0 /* ready */, suspended,
+      last_launch_time, GetInstallTime(app_id),
+      app->FindBoolKey(kSticky).value_or(false), notifications_enabled,
+      ready_apps_.count(app_id) > 0 /* ready */,
+      app->FindBoolKey(kSuspended).value_or(false),
       launchable && arc::ShouldShowInLauncher(app_id), shortcut, launchable);
 }
 
@@ -1101,12 +1095,19 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
                                         const bool launchable) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
-  // TODO(khmel): Use show_in_launcher flag to hide the Play Store app.
-  if (app_id == arc::kPlayStoreAppId &&
-      arc::IsRobotOrOfflineDemoAccountMode() &&
-      !(chromeos::DemoSession::IsDeviceInDemoMode() &&
-        chromeos::features::ShouldShowPlayStoreInDemoMode())) {
-    return;
+
+  // Do not add Play Store in certain conditions.
+  if (app_id == arc::kPlayStoreAppId) {
+    // TODO(khmel): Use show_in_launcher flag to hide the Play Store app.
+    // Display Play Store if we are in Demo Mode.
+    // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when
+    //                    fixed in Play Store.
+    if (arc::IsRobotOrOfflineDemoAccountMode() &&
+        !(chromeos::DemoSession::IsDeviceInDemoMode() &&
+          chromeos::features::ShouldShowPlayStoreInDemoMode() &&
+          !chromeos::DemoSession::IsDemoModeOfflineEnrolled())) {
+      return;
+    }
   }
 
   std::string updated_name = name;
@@ -1177,11 +1178,10 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
   }
 
   if (app_ready) {
-    bool deferred_notifications_enabled;
-    if (SetNotificationsEnabledDeferred(prefs_).Get(
-            app_id, &deferred_notifications_enabled)) {
+    const bool deferred_notifications_enabled =
+        NotificationsEnabledDeferred(prefs_).Get(app_id);
+    if (deferred_notifications_enabled)
       SetNotificationsEnabled(app_id, deferred_notifications_enabled);
-    }
 
     // Invalidate app icons in case it was already registered, becomes ready and
     // icon version is updated. This allows to use previous icons until new
@@ -1277,9 +1277,8 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
       base::NumberToString(package.last_backup_android_id);
   const std::string time_str = base::NumberToString(package.last_backup_time);
 
-  int old_package_version = -1;
-  package_dict->GetInteger(kPackageVersion, &old_package_version);
-
+  int old_package_version =
+      package_dict->FindIntKey(kPackageVersion).value_or(-1);
   package_dict->SetBoolean(kShouldSync, package.sync);
   package_dict->SetInteger(kPackageVersion, package.package_version);
   package_dict->SetString(kLastBackupAndroidId, id_str);
@@ -1538,17 +1537,15 @@ void ArcAppListPrefs::OnUninstallShortcut(const std::string& package_name,
        app_it.Advance()) {
     const base::Value* value = &app_it.value();
     const base::DictionaryValue* app;
-    bool shortcut;
     std::string installed_package_name;
     std::string installed_intent_uri;
     if (!value->GetAsDictionary(&app) ||
-        !app->GetBoolean(kShortcut, &shortcut) ||
         !app->GetString(kPackageName, &installed_package_name) ||
         !app->GetString(kIntentUri, &installed_intent_uri)) {
       VLOG(2) << "Failed to extract information for " << app_it.key() << ".";
       continue;
     }
-
+    const bool shortcut = app->FindBoolKey(kShortcut).value_or(false);
     if (!shortcut || installed_package_name != package_name ||
         installed_intent_uri != intent_uri) {
       continue;
@@ -1597,15 +1594,13 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
       continue;
 
     if (!include_shortcuts) {
-      bool shortcut = false;
-      if (app->GetBoolean(kShortcut, &shortcut) && shortcut)
+      if (app->FindBoolKey(kShortcut).value_or(false))
         continue;
     }
 
     if (include_only_launchable_apps) {
       // Filter out non-lauchable apps.
-      bool launchable = false;
-      if (!app->GetBoolean(kLaunchable, &launchable) || !launchable)
+      if (!app->FindBoolKey(kLaunchable).value_or(false))
         continue;
     }
 
@@ -1816,8 +1811,8 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
       continue;
     }
 
-    bool uninstalled = false;
-    package_info->GetBoolean(kUninstalled, &uninstalled);
+    const bool uninstalled =
+        package_info->FindBoolKey(kUninstalled).value_or(false);
     if (installed != !uninstalled)
       continue;
 

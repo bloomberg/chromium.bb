@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -638,7 +639,9 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
     ReadNode bookmark_node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
     EXPECT_EQ("", bookmark_node.GetTitle());
-    EXPECT_EQ(" ", bookmark_node.GetEntitySpecifics().bookmark().title());
+    EXPECT_EQ(" ", bookmark_node.GetEntitySpecifics()
+                       .bookmark()
+                       .legacy_canonicalized_title());
     EXPECT_EQ(" ", bookmark_node.GetEntry()->GetNonUniqueName());
   }
 }
@@ -1177,7 +1180,7 @@ class SyncManagerTest : public testing::Test,
 
  private:
   // Needed by |sync_manager_|.
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Needed by |sync_manager_|.
   base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
@@ -1579,7 +1582,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
@@ -1588,7 +1591,8 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
     EXPECT_EQ(raw_title2, node2.GetTitle());
-    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title2,
+              node2.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 
@@ -1615,7 +1619,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
@@ -1624,7 +1628,8 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
     EXPECT_EQ(raw_title2, node2.GetTitle());
-    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title2,
+              node2.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 }
@@ -1668,7 +1673,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -1777,7 +1782,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   // Manually change to different data. Should set is_unsynced.
   {
     entity_specifics.mutable_bookmark()->set_url("url2");
-    entity_specifics.mutable_bookmark()->set_title("title2");
+    entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+        "title2");
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
@@ -2111,7 +2117,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);
     sync_pb::EntitySpecifics bm_specifics;
-    bm_specifics.mutable_bookmark()->set_title("title");
+    bm_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
     sync_pb::EncryptedData encrypted;
     other_cryptographer.Encrypt(bm_specifics, &encrypted);
@@ -2144,7 +2150,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2178,7 +2184,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2380,7 +2386,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     DirectoryCryptographer* crypto = GetCryptographer(&trans);
     sync_pb::EntitySpecifics bm_specifics;
-    bm_specifics.mutable_bookmark()->set_title("title");
+    bm_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
     sync_pb::EncryptedData encrypted;
     crypto->Encrypt(bm_specifics, &encrypted);
@@ -2446,7 +2452,7 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
 
@@ -2499,7 +2505,10 @@ class MockSyncScheduler : public FakeSyncScheduler {
   ~MockSyncScheduler() override {}
 
   MOCK_METHOD2(Start, void(SyncScheduler::Mode, base::Time));
-  MOCK_METHOD1(ScheduleConfiguration, void(const ConfigurationParams&));
+  void ScheduleConfiguration(ConfigurationParams params) override {
+    ScheduleConfiguration_(params);
+  }
+  MOCK_METHOD1(ScheduleConfiguration_, void(ConfigurationParams&));
 };
 
 class ComponentsFactory : public TestEngineComponentsFactory {
@@ -2551,14 +2560,14 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
 
   ConfigurationParams params;
   EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE, _));
-  EXPECT_CALL(*scheduler(), ScheduleConfiguration(_))
-      .WillOnce(SaveArg<0>(&params));
+  EXPECT_CALL(*scheduler(), ScheduleConfiguration_(_))
+      .WillOnce(MoveArg<0>(&params));
 
   CallbackCounter ready_task_counter;
   sync_manager_.ConfigureSyncer(
       reason, types_to_download, SyncManager::SyncFeatureState::ON,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)));
+      base::BindOnce(&CallbackCounter::Callback,
+                     base::Unretained(&ready_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, params.origin);
   EXPECT_EQ(types_to_download, params.types_to_download);
@@ -2838,14 +2847,6 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
     EXPECT_GT(bookmark_node.GetServerVersion(), 0);
     EXPECT_EQ(bookmark_node.GetBaseVersion(), -1);
   }
-}
-
-TEST(SyncManagerImplTest, GenerateCacheGUID) {
-  const std::string guid1 = SyncManagerImpl::GenerateCacheGUIDForTest();
-  const std::string guid2 = SyncManagerImpl::GenerateCacheGUIDForTest();
-  EXPECT_EQ(24U, guid1.size());
-  EXPECT_EQ(24U, guid2.size());
-  EXPECT_NE(guid1, guid2);
 }
 
 // A test harness to exercise the code that processes and passes changes from

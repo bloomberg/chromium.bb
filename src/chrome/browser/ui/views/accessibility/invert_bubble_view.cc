@@ -23,13 +23,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -48,16 +48,14 @@ constexpr char kLearnMoreUrl[] =
 constexpr int kLearnMoreButton = 100;
 
 std::unique_ptr<views::View> CreateExtraView(views::ButtonListener* listener) {
-  auto learn_more = views::CreateVectorImageButton(listener);
-  views::SetImageFromVectorIcon(learn_more.get(),
-                                vector_icons::kHelpOutlineIcon);
+  auto learn_more = views::CreateVectorImageButtonWithNativeTheme(
+      listener, vector_icons::kHelpOutlineIcon);
   learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_tag(kLearnMoreButton);
   return learn_more;
 }
 
 class InvertBubbleView : public views::BubbleDialogDelegateView,
-                         public views::LinkListener,
                          public views::ButtonListener {
  public:
   InvertBubbleView(Browser* browser, views::View* anchor_view);
@@ -71,17 +69,12 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
 
-  // Overridden from views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  void OpenLink(const std::string& url, int event_flags);
+  void OpenLink(const std::string& url, views::Link* source, int event_flags);
 
   Browser* browser_;
-  views::Link* high_contrast_;
-  views::Link* dark_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(InvertBubbleView);
 };
@@ -89,13 +82,10 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
 InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
-      browser_(browser),
-      high_contrast_(nullptr),
-      dark_theme_(nullptr) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
-  DialogDelegate::SetExtraView(::CreateExtraView(this));
+      browser_(browser) {
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
+  SetExtraView(::CreateExtraView(this));
   set_margins(gfx::Insets());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
 }
@@ -108,15 +98,6 @@ void InvertBubbleView::Init() {
   SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(views::INSETS_DIALOG)));
 
-  auto high_contrast = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT),
-      CONTEXT_BODY_TEXT_LARGE);
-  high_contrast->set_listener(this);
-
-  auto dark_theme = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_DARK_THEME), CONTEXT_BODY_TEXT_LARGE);
-  dark_theme->set_listener(this);
-
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
@@ -126,8 +107,19 @@ void InvertBubbleView::Init() {
   AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),
       CONTEXT_BODY_TEXT_LARGE));
-  high_contrast_ = AddChildView(std::move(high_contrast));
-  dark_theme_ = AddChildView(std::move(dark_theme));
+
+  auto* high_contrast = AddChildView(std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT),
+      CONTEXT_BODY_TEXT_LARGE));
+  high_contrast->set_callback(base::BindRepeating(&InvertBubbleView::OpenLink,
+                                                  base::Unretained(this),
+                                                  kHighContrastExtensionUrl));
+
+  auto* dark_theme = AddChildView(std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_DARK_THEME), CONTEXT_BODY_TEXT_LARGE));
+  dark_theme->set_callback(base::BindRepeating(&InvertBubbleView::OpenLink,
+                                               base::Unretained(this),
+                                               kDarkThemeSearchUrl));
 
   // Switching to high-contrast mode has a nasty habit of causing Chrome
   // top-level windows to lose focus, so closing the bubble on deactivate
@@ -145,30 +137,19 @@ bool InvertBubbleView::ShouldShowCloseButton() const {
   return true;
 }
 
-void InvertBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  if (source == high_contrast_)
-    OpenLink(kHighContrastExtensionUrl, event_flags);
-  else if (source == dark_theme_)
-    OpenLink(kDarkThemeSearchUrl, event_flags);
-  else
-    NOTREACHED();
-}
-
 void InvertBubbleView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender->tag() == kLearnMoreButton)
-    OpenLink(kLearnMoreUrl, event.flags());
+    OpenLink(kLearnMoreUrl, nullptr, event.flags());
 }
 
-void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event_flags);
-  content::OpenURLParams params(
-      GURL(url), content::Referrer(),
-      disposition == WindowOpenDisposition::CURRENT_TAB
-          ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-          : disposition,
-      ui::PAGE_TRANSITION_LINK, false);
+void InvertBubbleView::OpenLink(const std::string& url,
+                                views::Link* source,
+                                int event_flags) {
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  content::OpenURLParams params(GURL(url), content::Referrer(), disposition,
+                                ui::PAGE_TRANSITION_LINK, false);
   browser_->OpenURL(params);
 }
 
@@ -176,10 +157,14 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
 
 void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   Browser* browser = browser_view->browser();
+  if (browser->profile()->IsIncognitoProfile())
+    return;
   PrefService* pref_service = browser->profile()->GetPrefs();
   views::View* anchor =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
-  if (color_utils::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
+  if (anchor && anchor->GetWidget() &&
+      anchor->GetNativeTheme()->GetHighContrastColorScheme() ==
+          ui::NativeTheme::HighContrastColorScheme::kDark &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     ShowInvertBubbleView(browser, anchor);

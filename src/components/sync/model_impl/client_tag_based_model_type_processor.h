@@ -20,7 +20,6 @@
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
-#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -28,6 +27,7 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -89,12 +89,16 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
                        GetLocalChangesCallback callback) override;
-  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
+  void OnCommitCompleted(
+      const sync_pb::ModelTypeState& type_state,
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list) override;
+  void OnCommitFailed(SyncCommitError commit_error) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         UpdateResponseDataList updates) override;
 
   // ModelTypeControllerDelegate implementation.
+  // |start_callback| will never be called synchronously.
   void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override;
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
@@ -126,27 +130,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // If preconditions are met, inform sync that we are ready to connect.
   void ConnectIfReady();
-
-  // Helper function to process the update for a single entity. If a local data
-  // change is required, it will be added to |entity_changes|. The return value
-  // is the tracked entity, or nullptr if the update should be ignored.
-  // |storage_key_to_clear| must not be null and allows the implementation to
-  // indicate that a certain storage key is now obsolete and should be cleared,
-  // which is leveraged in certain conflict resolution scenarios.
-  ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
-                                 EntityChangeList* entity_changes,
-                                 std::string* storage_key_to_clear);
-
-  // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution ResolveConflict(std::unique_ptr<UpdateResponseData> update,
-                                     ProcessorEntity* entity,
-                                     EntityChangeList* changes,
-                                     std::string* storage_key_to_clear);
-
-  // Recommit all entities for encryption except those in |already_updated|.
-  void RecommitAllForEncryption(
-      const std::unordered_set<std::string>& already_updated,
-      MetadataChangeList* metadata_changes);
 
   // Validates the update specified by the input parameters and returns whether
   // it should get further processed. If the update is incorrect, this function
@@ -186,45 +169,27 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Nudges worker if there are any local entities to be committed.
   void NudgeForCommitIfNeeded();
 
-  // Returns true if there are any local entities to be committed.
-  bool HasLocalChanges() const;
-
   // Looks up the client tag hash for the given |storage_key|, and regenerates
   // with |data| if the lookup finds nothing. Does not update the storage key to
   // client tag hash mapping.
   ClientTagHash GetClientTagHash(const std::string& storage_key,
                                  const EntityData& data) const;
 
-  // Gets the entity for the given storage key, or null if there isn't one.
-  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key);
-  const ProcessorEntity* GetEntityForStorageKey(
-      const std::string& storage_key) const;
-
-  // Gets the entity for the given tag hash, or null if there isn't one.
-  ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
-  const ProcessorEntity* GetEntityForTagHash(
-      const ClientTagHash& tag_hash) const;
-
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
   // Requires that no entity for |storage_key| already exists in the map.
+  // Never returns nullptr.
   ProcessorEntity* CreateEntity(const std::string& storage_key,
                                 const EntityData& data);
-
-  // Version of the above that generates a tag for |data|.
-  ProcessorEntity* CreateEntity(const EntityData& data);
-
-  // Returns true if all processor entities have non-empty storage keys.
-  bool AllStorageKeysPopulated() const;
 
   // Removes metadata for all entries unless they are unsynced.
   // This is used to limit the amount of data stored in sync, and this does not
   // tell the bridge to delete the actual data.
   void ExpireAllEntries(MetadataChangeList* metadata_changes);
 
-  // Removes |entity| and clears metadata for |entity| from
-  // |metadata_change_list|.
-  void RemoveEntity(ProcessorEntity* entity,
+  // Removes entity with specified |storage_key| and clears metadata for it from
+  // |metadata_change_list|. |storage_key| must not be empty.
+  void RemoveEntity(const std::string& storage_key,
                     MetadataChangeList* metadata_change_list);
 
   // Resets the internal state of the processor to the one right after calling
@@ -240,15 +205,16 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void MergeDataWithMetadataForDebugging(AllNodesCallback callback,
                                          std::unique_ptr<DataBatch> batch);
 
+  // Checks for valid cache GUID and data type id. Resets state if metadata is
+  // invalid.
+  void CheckForInvalidPersistedMetadata();
+
   /////////////////////
   // Processor state //
   /////////////////////
 
   // The model type this object syncs.
   const ModelType type_;
-
-  // The model type metadata (progress marker, initial sync done, etc).
-  sync_pb::ModelTypeState model_type_state_;
 
   // ModelTypeSyncBridge linked to this processor. The bridge owns this
   // processor instance so the pointer should never become invalid.
@@ -274,6 +240,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   ////////////////
 
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
+  // |start_callback_| will never be called synchronously.
   StartCallback start_callback_;
 
   // The request context passed in as part of OnSyncStarting().
@@ -290,21 +257,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Entity state //
   //////////////////
 
-  // A map of client tag hash to sync entities known to this processor. This
-  // should contain entries and metadata for most everything, although the
-  // entities may not always contain model type data/specifics.
-  std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>> entities_;
-
-  // The bridge wants to communicate entirely via storage keys that it is free
-  // to define and can understand more easily. All of the sync machinery wants
-  // to use client tag hash. This mapping allows us to convert from storage key
-  // to client tag hash. The other direction can use |entities_|.
-  // Entity is temporarily not included in this map for the duration of
-  // MergeSyncData/ApplySyncChanges call when the bridge doesn't support
-  // GetStorageKey(). In this case the bridge is responsible for updating
-  // storage key with UpdateStorageKey() call from within
-  // MergeSyncData/ApplySyncChanges.
-  std::map<std::string, ClientTagHash> storage_key_to_tag_hash_;
+  std::unique_ptr<ProcessorEntityTracker> entity_tracker_;
 
   // If the processor should behave as if |type_| is one of the commit only
   // model types. For this processor, being commit only means that on commit

@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -83,6 +82,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) final;
   void OnStopped() final;
+  void OnLog(const std::string& message) final;
 
   // These are called to notify when the capture target has changed or was
   // permanently lost.
@@ -127,7 +127,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   // Helper that requests wake lock to prevent the display from sleeping while
   // capturing is going on.
-  void RequestWakeLock(std::unique_ptr<service_manager::Connector> connector);
+  void RequestWakeLock();
 
   // Current capture target. This is cached to resolve a race where
   // OnTargetChanged() can be called before the |capturer_| is created in

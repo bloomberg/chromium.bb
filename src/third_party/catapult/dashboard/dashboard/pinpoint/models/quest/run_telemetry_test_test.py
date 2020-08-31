@@ -91,6 +91,21 @@ class StartTest(unittest.TestCase):
                                    'change': str(change), 'hasfilter': '1',
                                    'storyfilter': 'sfilter'})
 
+  def testSwarmingTagsWithStoryFilter_RevMissingCommitPosition(self):
+    """Reproduce crbug/1051943."""
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview'
+    arguments['story'] = 'sfilter'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+    change = mock.MagicMock(spec=change_module.Change)
+    change.base_commit = mock.MagicMock(spec=commit.Commit)
+    # No 'commit_position' property in base_commit.
+    change.base_commit.AsDict = mock.MagicMock(return_value={})
+    with mock.patch('dashboard.pinpoint.models.quest.run_test.RunTest._Start',
+                    wraps=quest._Start) as internal_start:
+      quest.Start(change, 'https://isolate.server', 'isolate hash')
+      self.assertIn('--run-full-story-set', internal_start.call_args[0][3])
+
   def testSwarmingTagsWithStoryTagFilter(self):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
@@ -152,46 +167,14 @@ class FromDictTest(unittest.TestCase):
         'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)
 
-  def testWebviewFlag(self):
+  def testWebview(self):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
         '--benchmarks', 'speedometer', '--pageset-repeat', '1',
-        '--browser', 'android-webview', '--webview-embedder-apk',
-        '../../out/Release/apks/SystemWebViewShell.apk',
-    ] + _COMBINED_DEFAULT_EXTRA_ARGS
-    expected = run_telemetry_test.RunTelemetryTest(
-        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
-    self.assertEqual(quest, expected)
-
-  def testWebviewFlagNonExact(self):
-    arguments = dict(_BASE_ARGUMENTS)
-    arguments['browser'] = 'android-webview-google'
-    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-
-    extra_args = [
-        '--benchmarks', 'speedometer', '--pageset-repeat', '1',
-        '--browser', 'android-webview-google', '--webview-embedder-apk',
-        '../../out/Release/apks/SystemWebViewShell.apk',
-    ] + _COMBINED_DEFAULT_EXTRA_ARGS
-    expected = run_telemetry_test.RunTelemetryTest(
-        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
-    self.assertEqual(quest, expected)
-
-  def testWeblayerFlagNonExact(self):
-    arguments = dict(_BASE_ARGUMENTS)
-    arguments['browser'] = 'android-weblayer-google'
-    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-
-    extra_args = [
-        '--benchmarks', 'speedometer', '--pageset-repeat', '1',
-        '--browser', 'android-weblayer-google',
-        '--webview-embedder-apk',
-        '../../out/Release/apks/WebLayerShell.apk',
-        '--webview-embedder-apk',
-        '../../out/Release/apks/WebLayerSupport.apk',
+        '--browser', 'android-webview',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(
         'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)

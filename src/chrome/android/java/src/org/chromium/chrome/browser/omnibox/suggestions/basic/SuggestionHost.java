@@ -14,4 +14,19 @@ public interface SuggestionHost {
      * @return A delegate for the specified suggestion.
      */
     SuggestionViewDelegate createSuggestionViewDelegate(OmniboxSuggestion suggestion, int position);
+
+    /**
+     * Triggered when the user selects to refine one of the omnibox suggestions.
+     *
+     * @param suggestion Suggestion to use to refine Omnibox query.
+     */
+    void onRefineSuggestion(OmniboxSuggestion suggestion);
+
+    /**
+     * Toggle expanded state of suggestion items belonging to specific group.
+     *
+     * @param groupId ID of Suggestion Group whose visibility changed.
+     * @param state True if elements should be visible, otherwise false.
+     */
+    void setGroupVisibility(int groupId, boolean state);
 }

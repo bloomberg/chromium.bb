@@ -58,8 +58,7 @@ class CWVAutofillDataManagerTest : public PlatformTest {
     personal_data_manager_->SetAutofillWalletImportEnabled(true);
 
     password_store_ = new password_manager::TestPasswordStore();
-    password_store_->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
-                          nullptr);
+    password_store_->Init(nullptr);
 
     autofill_data_manager_ = [[CWVAutofillDataManager alloc]
         initWithPersonalDataManager:personal_data_manager_.get()
@@ -109,7 +108,6 @@ class CWVAutofillDataManagerTest : public PlatformTest {
     password_form.password_value = base::SysNSStringToUTF16(@"test");
     password_form.submit_element = base::SysNSStringToUTF16(@"signIn");
     password_form.signon_realm = "http://www.example.com/";
-    password_form.preferred = false;
     password_form.scheme = autofill::PasswordForm::Scheme::kHtml;
     password_form.blacklisted_by_user = false;
     return password_form;
@@ -214,42 +212,14 @@ TEST_F(CWVAutofillDataManagerTest, ReturnCreditCard) {
   }));
 }
 
-// Tests CWVAutofillDataManager properly deletes credit cards.
-TEST_F(CWVAutofillDataManagerTest, DeleteCreditCard) {
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    for (CWVCreditCard* cwv_credit_card in credit_cards) {
-      [autofill_data_manager_ deleteCreditCard:cwv_credit_card];
-    }
-  }));
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_EQ(0ul, credit_cards.count);
-  }));
-}
-
-// Tests CWVAutofillDataManager properly updates credit cards.
-TEST_F(CWVAutofillDataManagerTest, UpdateCreditCard) {
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    CWVCreditCard* cwv_credit_card = credit_cards.firstObject;
-    cwv_credit_card.cardHolderFullName = kNewName;
-    [autofill_data_manager_ updateCreditCard:cwv_credit_card];
-  }));
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_NSEQ(kNewName, credit_cards.firstObject.cardHolderFullName);
-  }));
-}
-
 // Tests CWVAutofillDataManager properly returns passwords.
 TEST_F(CWVAutofillDataManagerTest, ReturnPassword) {
   autofill::PasswordForm test_password = GetTestPassword();
   password_store_->AddLogin(test_password);
   NSArray<CWVPassword*>* fetched_passwords = FetchPasswords();
   EXPECT_EQ(1ul, fetched_passwords.count);
-  EXPECT_EQ(test_password, *[fetched_passwords[0] internalPasswordForm]);
+  EXPECT_THAT(test_password, password_manager::MatchesFormExceptStore(
+                                 *[fetched_passwords[0] internalPasswordForm]));
 }
 
 // Tests CWVAutofillDataManager properly deletes passwords.

@@ -63,13 +63,14 @@ class ElfReader {
   // file_offset - offset in the file where the mapping begins
   // length - length of the mapped segment
   void AddSymbols(SymbolMap *symbols,
-                  uint64 mem_offset, uint64 file_offset,
-                  uint64 length);
+                  uint64_t mem_offset, uint64_t file_offset,
+                  uint64_t length);
 
   class SymbolSink {
    public:
     virtual ~SymbolSink() {}
-    virtual void AddSymbol(const char *name, uint64 address, uint64 size) = 0;
+    virtual void AddSymbol(const char *name, uint64_t address,
+                           uint64_t size) = 0;
   };
 
   // Like AddSymbols above, but with no address correction.
@@ -90,14 +91,14 @@ class ElfReader {
   // segments are present. This is the address an ELF image was linked
   // (by static linker) to be loaded at. Usually (but not always) 0 for
   // shared libraries and position-independent executables.
-  uint64 VaddrOfFirstLoadSegment();
+  uint64_t VaddrOfFirstLoadSegment();
 
   // Return the name of section "shndx".  Returns NULL if the section
   // is not found.
   const char *GetSectionName(int shndx);
 
   // Return the number of sections in the given ELF file.
-  uint64 GetNumSections();
+  uint64_t GetNumSections();
 
   // Get section "shndx" from the given ELF file.  On success, return
   // the pointer to the section and store the size in "size".
@@ -118,15 +119,15 @@ class ElfReader {
   // here so that the many short macro names in <elf.h> don't have to be
   // added to our already cluttered namespace.
   struct SectionInfo {
-    uint32 type;                // Section type (SHT_xxx constant from elf.h).
-    uint64 flags;               // Section flags (SHF_xxx constants from elf.h).
-    uint64 addr;                // Section virtual address at execution.
-    uint64 offset;              // Section file offset.
-    uint64 size;                // Section size in bytes.
-    uint32 link;                // Link to another section.
-    uint32 info;                // Additional section information.
-    uint64 addralign;           // Section alignment.
-    uint64 entsize;             // Entry size if section holds a table.
+    uint32_t type;              // Section type (SHT_xxx constant from elf.h).
+    uint64_t flags;             // Section flags (SHF_xxx constants from elf.h).
+    uint64_t addr;              // Section virtual address at execution.
+    uint64_t offset;            // Section file offset.
+    uint64_t size;              // Section size in bytes.
+    uint32_t link;              // Link to another section.
+    uint32_t info;              // Additional section information.
+    uint64_t addralign;         // Section alignment.
+    uint64_t entsize;           // Entry size if section holds a table.
   };
   const char *GetSectionInfoByName(const string &section_name,
                                    SectionInfo *info);

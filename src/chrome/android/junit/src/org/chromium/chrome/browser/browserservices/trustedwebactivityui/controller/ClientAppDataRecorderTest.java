@@ -30,8 +30,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
-import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 
 /**
  * Tests for {@link ClientAppDataRecorder}.

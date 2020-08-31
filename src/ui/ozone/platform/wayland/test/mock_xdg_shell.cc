@@ -5,9 +5,9 @@
 #include "ui/ozone/platform/wayland/test/mock_xdg_shell.h"
 
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_positioner.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 namespace wl {
 
@@ -29,15 +29,16 @@ void GetXdgSurfaceImpl(wl_client* client,
     wl_resource_post_error(resource, xdg_error, "surface already has a role");
     return;
   }
-  wl_resource* xdg_surface_resource = wl_resource_create(
-      client, interface, wl_resource_get_version(resource), id);
 
+  wl_resource* xdg_surface_resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockXdgSurface>>(
+          client, interface, wl_resource_get_version(resource), implementation,
+          id, surface_resource);
   if (!xdg_surface_resource) {
     wl_client_post_no_memory(client);
     return;
   }
-  surface->set_xdg_surface(
-      std::make_unique<MockXdgSurface>(xdg_surface_resource, implementation));
+  surface->set_xdg_surface(GetUserDataAs<MockXdgSurface>(xdg_surface_resource));
 }
 
 void CreatePositioner(wl_client* client,

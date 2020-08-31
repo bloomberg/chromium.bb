@@ -70,7 +70,9 @@ bool ManualPasswordGenerationEnabled(
 bool ShowAllSavedPasswordsContextMenuEnabled(
     password_manager::PasswordManagerDriver* driver);
 
-// Triggers password generation flow and records the metrics.
+// Triggers password generation flow and records the metrics. If the user should
+// be asked to opt in to account storage, will trigger a reauth flow first and
+// generation will only happen on success.
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 
@@ -104,13 +106,12 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
 // Given all non-blacklisted |non_federated_matches|, finds and populates
 // |non_federated_same_scheme|, |best_matches|, and |preferred_match|
 // accordingly. For comparing credentials the following rule is used: non-psl
-// match is better than psl match, preferred match is better than non-preferred
-// match. In case of tie, an arbitrary credential from the tied ones is chosen
+// match is better than psl match, most recently used match is better than other
+// matches. In case of tie, an arbitrary credential from the tied ones is chosen
 // for |best_matches| and |preferred_match|.
 void FindBestMatches(
     const std::vector<const autofill::PasswordForm*>& non_federated_matches,
     autofill::PasswordForm::Scheme scheme,
-    bool sort_matches_by_date_last_used,
     std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
     std::vector<const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);
@@ -140,31 +141,6 @@ const autofill::PasswordForm* GetMatchForUpdating(
 // credentials), the original origin is kept.
 autofill::PasswordForm MakeNormalizedBlacklistedForm(
     password_manager::PasswordStore::FormDigest digest);
-
-// Whether the current signed-in user (aka unconsented primary account) has
-// opted in to use the Google account storage for passwords (as opposed to
-// local/profile storage).
-// |pref_service| must not be null.
-// |sync_service| may be null (commonly the case in incognito mode), in which
-// case this will simply return false.
-bool IsOptedInForAccountStorage(const PrefService* pref_service,
-                                const syncer::SyncService* sync_service);
-
-// Whether it makes sense to ask the user to opt-in for account-based
-// password storage. This is true if the opt-in doesn't exist yet, but all
-// other requirements are met (i.e. there is a signed-in user etc).
-// |pref_service| must not be null.
-// |sync_service| may be null (commonly the case in incognito mode), in which
-// case this will simply return false.
-bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
-                                   const syncer::SyncService* sync_service);
-
-// Sets or clears the opt-in to using account storage for passwords for the
-// current signed-in user (unconsented primary account).
-// |pref_service| and |sync_service| must not be null.
-void SetAccountStorageOptIn(PrefService* pref_service,
-                            const syncer::SyncService* sync_service,
-                            bool opt_in);
 
 }  // namespace password_manager_util
 

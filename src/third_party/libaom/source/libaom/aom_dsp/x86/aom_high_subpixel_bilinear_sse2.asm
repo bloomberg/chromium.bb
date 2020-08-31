@@ -177,7 +177,7 @@
 
 SECTION .text
 
-global sym(aom_highbd_filter_block1d4_v2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d4_v2_sse2)
 sym(aom_highbd_filter_block1d4_v2_sse2):
     push        rbp
     mov         rbp, rsp
@@ -201,7 +201,7 @@ sym(aom_highbd_filter_block1d4_v2_sse2):
     pop         rbp
     ret
 
-global sym(aom_highbd_filter_block1d8_v2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d8_v2_sse2)
 sym(aom_highbd_filter_block1d8_v2_sse2):
     push        rbp
     mov         rbp, rsp
@@ -235,7 +235,7 @@ sym(aom_highbd_filter_block1d8_v2_sse2):
     pop         rbp
     ret
 
-global sym(aom_highbd_filter_block1d16_v2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d16_v2_sse2)
 sym(aom_highbd_filter_block1d16_v2_sse2):
     push        rbp
     mov         rbp, rsp
@@ -271,7 +271,7 @@ sym(aom_highbd_filter_block1d16_v2_sse2):
     pop         rbp
     ret
 
-global sym(aom_highbd_filter_block1d4_h2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d4_h2_sse2)
 sym(aom_highbd_filter_block1d4_h2_sse2):
     push        rbp
     mov         rbp, rsp
@@ -296,7 +296,7 @@ sym(aom_highbd_filter_block1d4_h2_sse2):
     pop         rbp
     ret
 
-global sym(aom_highbd_filter_block1d8_h2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d8_h2_sse2)
 sym(aom_highbd_filter_block1d8_h2_sse2):
     push        rbp
     mov         rbp, rsp
@@ -330,7 +330,7 @@ sym(aom_highbd_filter_block1d8_h2_sse2):
     pop         rbp
     ret
 
-global sym(aom_highbd_filter_block1d16_h2_sse2) PRIVATE
+globalsym(aom_highbd_filter_block1d16_h2_sse2)
 sym(aom_highbd_filter_block1d16_h2_sse2):
     push        rbp
     mov         rbp, rsp

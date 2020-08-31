@@ -16,8 +16,8 @@
 #include "openssl/aes.h"
 #include "platform/base/macros.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 class FrameCollector;
 class FrameCrypto;
@@ -91,7 +91,7 @@ class FrameCrypto {
                      absl::Span<uint8_t> out) const;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_FRAME_CRYPTO_H_

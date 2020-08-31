@@ -10,26 +10,39 @@ endpoint. The scripts can be called without arguments. They instead make
 assumptions about the input and output json file names and locations.
 
 The system supports checking in example files which are automatically copied
-in to the input file location. The example files should be along side this
-script and of the form "service__method_example_input.json". When not found,
-it will write out an empty json dict to the input file.
+in to the input file location. The example files are found in the
+call_templates/ directory, and of the form "service__method_example_input.json".
+When not found, it will write out an empty json dict to the input file.
+
+See the api/contrib and api/ READMEs for more info about the gen_call_scripts
+script and the Build API itself, respectively.
+https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/master/api/contrib/README.md
+https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/master/api/README.md
 """
 
 from __future__ import print_function
 
 import os
 import re
+import sys
 
+from chromite.api import message_util
 from chromite.api import router as router_lib
+from chromite.api.gen.chromite.api import build_api_config_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
-_SCRIPT_TEMPLATE_FILE = os.path.join(
-    os.path.dirname(__file__), 'call_templates', 'script_template')
-SCRIPT_TEMPLATE = osutils.ReadFile(_SCRIPT_TEMPLATE_FILE)
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 EXAMPLES_PATH = os.path.join(os.path.dirname(__file__), 'call_templates')
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), 'call_scripts')
+_SCRIPT_TEMPLATE_FILE = os.path.join(EXAMPLES_PATH, 'script_template')
+SCRIPT_TEMPLATE = osutils.ReadFile(_SCRIPT_TEMPLATE_FILE)
+BUILD_TARGET_FILE = os.path.join(OUTPUT_PATH, '.build_target')
+CONFIG_FILE = os.path.join(OUTPUT_PATH, 'config.json')
 
 
 def _camel_to_snake(string):
@@ -116,10 +129,29 @@ def _input_file_empty(input_file):
   return not contents or contents == '{}'
 
 
+def write_config(call_type):
+  config = build_api_config_pb2.BuildApiConfig()
+  config.call_type = call_type
+  msg_handler = message_util.get_message_handler(CONFIG_FILE,
+                                                 message_util.FORMAT_JSON)
+  msg_handler.write_from(config)
+
+
+def read_build_target_file():
+  if os.path.exists(BUILD_TARGET_FILE):
+    return osutils.ReadFile(BUILD_TARGET_FILE).strip()
+  else:
+    return None
+
+
+def write_build_target_file(build_target_name):
+  osutils.WriteFile(BUILD_TARGET_FILE, build_target_name)
+
+
 def GetParser():
   """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
-
+  parser.add_argument_group()
   parser.add_argument(
       '--force',
       action='store_true',
@@ -127,11 +159,39 @@ def GetParser():
       help='Force replace all input files, even if not empty.')
   parser.add_argument(
       '-b',
-      '--board',
       '--build-target',
+      type='build_target',
       dest='build_target',
-      help='Generate the configs with the given build target. Implies --force. '
-           'Defaults to "betty".')
+      default='amd64-generic',
+      help='Generate the configs with the given build target. Implies --force '
+           'when generating for a new build target. Defaults to amd64-generic.')
+
+  call_type_group = parser.add_mutually_exclusive_group()
+  call_type_group.add_argument(
+      '--validate-only',
+      action='store_const',
+      dest='call_type',
+      const=build_api_config_pb2.CALL_TYPE_VALIDATE_ONLY,
+      help='Generate a validate-only config.')
+  call_type_group.add_argument(
+      '--mock-success',
+      action='store_const',
+      dest='call_type',
+      const=build_api_config_pb2.CALL_TYPE_MOCK_SUCCESS,
+      help='Generate a mock-success config.')
+  call_type_group.add_argument(
+      '--mock-failure',
+      action='store_const',
+      dest='call_type',
+      const=build_api_config_pb2.CALL_TYPE_MOCK_FAILURE,
+      help='Generate a mock-success config.')
+  call_type_group.add_argument(
+      '--mock-invalid',
+      action='store_const',
+      dest='call_type',
+      const=build_api_config_pb2.CALL_TYPE_MOCK_INVALID,
+      help='Generate a mock-success config.')
+
   return parser
 
 
@@ -140,10 +200,7 @@ def _ParseArgs(argv):
   parser = GetParser()
   opts = parser.parse_args(argv)
 
-  if opts.build_target:
-    opts.force = True
-  else:
-    opts.build_target = 'betty'
+  opts.force = opts.force or opts.build_target.name != read_build_target_file()
 
   opts.Freeze()
   return opts
@@ -151,4 +208,6 @@ def _ParseArgs(argv):
 
 def main(argv):
   opts = _ParseArgs(argv)
-  write_scripts(opts.build_target, force=opts.force)
+  write_scripts(opts.build_target.name, force=opts.force)
+  write_build_target_file(opts.build_target.name)
+  write_config(opts.call_type or build_api_config_pb2.CALL_TYPE_EXECUTE)

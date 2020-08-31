@@ -68,7 +68,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) override;
   bool AllowCrossRendererResourceLoad(const GURL& url,
-                                      content::ResourceType resource_type,
+                                      blink::mojom::ResourceType resource_type,
                                       ui::PageTransition page_transition,
                                       int child_id,
                                       bool is_incognito,
@@ -90,12 +90,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsAppModeForcedForApp(const ExtensionId& extension_id) override;
   bool IsLoggedInAsPublicAccount() override;
   ExtensionSystemProvider* GetExtensionSystemFactory() override;
-  void RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<
-                                       content::RenderFrameHost*>* registry,
-                                   content::RenderFrameHost* render_frame_host,
-                                   const Extension* extension) const override;
   void RegisterBrowserInterfaceBindersForFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map,
       content::RenderFrameHost* render_frame_host,
       const Extension* extension) const override;
   std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(

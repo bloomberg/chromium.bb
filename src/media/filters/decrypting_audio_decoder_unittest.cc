@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AtMost;
 using ::testing::Return;
@@ -82,7 +83,12 @@ class DecryptingAudioDecoderTest : public testing::Test {
         kNoTimestamp);
     decoded_frame_list_.push_back(decoded_frame_);
 
-    decoder_->Initialize(config, cdm_context_.get(), NewExpectedBoolCB(success),
+    decoder_->Initialize(config, cdm_context_.get(),
+                         base::BindOnce(
+                             [](bool success, Status status) {
+                               EXPECT_EQ(status.is_ok(), success);
+                             },
+                             success),
                          base::Bind(&DecryptingAudioDecoderTest::FrameReady,
                                     base::Unretained(this)),
                          base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
@@ -102,7 +108,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     SetCdmType(CDM_WITH_DECRYPTOR);
     EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
         .Times(AtMost(1))
-        .WillOnce(RunCallback<1>(true));
+        .WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -117,15 +123,16 @@ class DecryptingAudioDecoderTest : public testing::Test {
   void ReinitializeConfigChange(const AudioDecoderConfig& new_config) {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
     EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-        .WillOnce(RunCallback<1>(true));
+        .WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
-    decoder_->Initialize(new_config, cdm_context_.get(),
-                         NewExpectedBoolCB(true),
-                         base::Bind(&DecryptingAudioDecoderTest::FrameReady,
-                                    base::Unretained(this)),
-                         base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
-                                    base::Unretained(this)));
+    decoder_->Initialize(
+        new_config, cdm_context_.get(),
+        base::BindOnce([](Status status) { EXPECT_TRUE(status.is_ok()); }),
+        base::Bind(&DecryptingAudioDecoderTest::FrameReady,
+                   base::Unretained(this)),
+        base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
+                   base::Unretained(this)));
   }
 
   // Decode |buffer| and expect DecodeDone to get called with |status|.
@@ -285,7 +292,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
   SetCdmType(CDM_WITH_DECRYPTOR);
   EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-      .WillOnce(RunCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(false));
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate,
@@ -356,7 +363,7 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_EncryptedToEncrypted) {
 
   EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .Times(AtMost(1))
-      .WillOnce(RunCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(true));
 
   // The new config is different from the initial config in bits-per-channel,
   // channel layout and samples_per_second.
@@ -378,7 +385,7 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_EncryptedToClear) {
 
   EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .Times(AtMost(1))
-      .WillOnce(RunCallback<1>(true));
+      .WillOnce(RunOnceCallback<1>(true));
 
   // The new config is different from the initial config in bits-per-channel,
   // channel layout and samples_per_second.

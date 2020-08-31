@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 static_library("arc") {
@@ -34,8 +35,6 @@ static_library("arc") {
     "intent_helper/arc_intent_helper_observer.h",
     "intent_helper/control_camera_app_delegate.h",
     "intent_helper/factory_reset_delegate.h",
-    "intent_helper/font_size_util.cc",
-    "intent_helper/font_size_util.h",
     "intent_helper/intent_constants.cc",
     "intent_helper/intent_constants.h",
     "intent_helper/intent_filter.cc",
@@ -43,8 +42,6 @@ static_library("arc") {
     "intent_helper/link_handler_model.cc",
     "intent_helper/link_handler_model.h",
     "intent_helper/open_url_delegate.h",
-    "keymaster/arc_keymaster_bridge.cc",
-    "keymaster/arc_keymaster_bridge.h",
     "lock_screen/arc_lock_screen_bridge.cc",
     "lock_screen/arc_lock_screen_bridge.h",
     "metrics/arc_metrics_service.cc",
@@ -165,19 +162,25 @@ static_library("arc_base_enums") {
     "session/arc_supervision_transition.h",
   ]
 
-  deps = [
-    "//base",
+  deps = [ "//base" ]
+}
+
+source_set("arc_features") {
+  sources = [
+    "arc_features.cc",
+    "arc_features.h",
   ]
+
+  deps = [ "//base" ]
 }
 
 static_library("arc_base_utils") {
   sources = [
-    "arc_features.cc",
-    "arc_features.h",
     "arc_util.cc",
     "arc_util.h",
   ]
 
+  public_deps = [ ":arc_features" ]
   deps = [
     "//ash/public/cpp",
     "//base",
@@ -208,6 +211,8 @@ static_library("arc_base") {
     "session/arc_container_client_adapter.h",
     "session/arc_data_remover.cc",
     "session/arc_data_remover.h",
+    "session/arc_property_util.cc",
+    "session/arc_property_util.h",
     "session/arc_session.cc",
     "session/arc_session.h",
     "session/arc_session_impl.cc",
@@ -220,8 +225,6 @@ static_library("arc_base") {
     "session/arc_upgrade_params.h",
     "session/arc_vm_client_adapter.cc",
     "session/arc_vm_client_adapter.h",
-    "session/arc_vm_client_adapter_util.cc",
-    "session/arc_vm_client_adapter_util.h",
     "session/file_system_status.cc",
     "session/file_system_status.h",
   ]
@@ -237,6 +240,7 @@ static_library("arc_base") {
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/upstart",
+    "//chromeos/memory:memory",
     "//chromeos/system:system",
     "//components/account_id",
     "//components/keyed_service/content",
@@ -306,6 +310,8 @@ static_library("arc_test_support") {
     "test/fake_bluetooth_instance.h",
     "test/fake_clipboard_instance.cc",
     "test/fake_clipboard_instance.h",
+    "test/fake_cros_config.cc",
+    "test/fake_cros_config.h",
     "test/fake_file_system_instance.cc",
     "test/fake_file_system_instance.h",
     "test/fake_intent_helper_instance.cc",
@@ -343,9 +349,7 @@ static_library("arc_test_support") {
 }
 
 source_set("arc_metrics_constants") {
-  sources = [
-    "metrics/arc_metrics_constants.h",
-  ]
+  sources = [ "metrics/arc_metrics_constants.h" ]
 }
 
 source_set("unit_tests") {
@@ -359,7 +363,6 @@ source_set("unit_tests") {
     "ime/arc_ime_service_unittest.cc",
     "intent_helper/activity_icon_loader_unittest.cc",
     "intent_helper/arc_intent_helper_bridge_unittest.cc",
-    "intent_helper/font_size_util_unittest.cc",
     "intent_helper/intent_filter_unittest.cc",
     "intent_helper/link_handler_model_unittest.cc",
     "metrics/arc_metrics_service_unittest.cc",
@@ -369,12 +372,13 @@ source_set("unit_tests") {
     "power/arc_power_bridge_unittest.cc",
     "property/arc_property_bridge_unittest.cc",
     "session/arc_data_remover_unittest.cc",
+    "session/arc_property_util_unittest.cc",
     "session/arc_session_impl_unittest.cc",
     "session/arc_session_runner_unittest.cc",
     "session/arc_vm_client_adapter_unittest.cc",
-    "session/arc_vm_client_adapter_util_unittest.cc",
     "session/file_system_status_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
+    "video_accelerator/arc_video_accelerator_util_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]
 
@@ -397,6 +401,7 @@ source_set("unit_tests") {
     "//chromeos/network:test_support",
     "//chromeos/system:system",
     "//components/account_id",
+    "//components/arc/video_accelerator",
     "//components/keyed_service/content",
     "//components/prefs:test_support",
     "//components/session_manager/core:core",
@@ -409,7 +414,6 @@ source_set("unit_tests") {
     "//mojo/public/cpp/system:system",
     "//services/device/public/cpp:test_support",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
@@ -420,5 +424,14 @@ source_set("unit_tests") {
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//url:url",
+  ]
+}
+
+fuzzer_test("arc_property_util_expand_property_contents_fuzzer") {
+  sources = [ "session/arc_property_util_expand_property_contents_fuzzer.cc" ]
+  deps = [
+    ":arc",
+    ":arc_test_support",
+    "//base",
   ]
 }

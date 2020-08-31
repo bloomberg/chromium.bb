@@ -11,13 +11,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.Browser;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.view.LayoutInflater;
@@ -26,6 +24,7 @@ import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -34,17 +33,17 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.download.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -90,7 +89,6 @@ public class OMADownloadHandler extends BroadcastReceiver {
     public interface TestObserver { void onDownloadEnqueued(long downloadId); }
 
     private static final String TAG = "OMADownloadHandler";
-    private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
 
     // Valid download descriptor attributes.
     protected static final String OMA_TYPE = "type";
@@ -121,7 +119,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
     private static final String DOWNLOAD_STATUS_LOADER_ERROR = "954 Loader Error \n\r";
 
     private final Context mContext;
-    private final SharedPreferences mSharedPrefs;
+    private final SharedPreferencesManager mSharedPrefs;
     private final LongSparseArray<DownloadItem> mSystemDownloadIdMap =
             new LongSparseArray<DownloadItem>();
     private final LongSparseArray<OMAInfo> mPendingOMADownloads =
@@ -254,7 +252,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
     /** Constructor. */
     public OMADownloadHandler(Context context) {
         mContext = context;
-        mSharedPrefs = ContextUtils.getAppSharedPreferences();
+        mSharedPrefs = SharedPreferencesManager.getInstance();
     }
 
     /**
@@ -883,8 +881,9 @@ public class OMADownloadHandler extends BroadcastReceiver {
      * Clear any pending OMA downloads by reading them from shared prefs.
      */
     void clearPendingOMADownloads() {
-        if (mSharedPrefs.contains(PENDING_OMA_DOWNLOADS)) {
-            Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
+        if (mSharedPrefs.contains(ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS)) {
+            Set<String> omaDownloads = getStoredDownloadInfo(
+                    mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
             for (String omaDownload : omaDownloads) {
                 OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
                 clearPendingOMADownload(entry.mDownloadId, entry.mInstallNotifyURI);
@@ -898,7 +897,8 @@ public class OMADownloadHandler extends BroadcastReceiver {
      * @param type Type of the information to retrieve.
      * @return download information saved to the SharedPrefs for the given type.
      */
-    private static Set<String> getStoredDownloadInfo(SharedPreferences sharedPrefs, String type) {
+    private static Set<String> getStoredDownloadInfo(
+            SharedPreferencesManager sharedPrefs, String type) {
         return DownloadManagerService.getStoredDownloadInfo(sharedPrefs, type);
     }
 
@@ -911,7 +911,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
      * @param downloadInfo Information to be saved.
      */
     static void storeDownloadInfo(
-            SharedPreferences sharedPrefs, String type, Set<String> downloadInfo) {
+            SharedPreferencesManager sharedPrefs, String type, Set<String> downloadInfo) {
         DownloadManagerService.storeDownloadInfo(
                 sharedPrefs, type, downloadInfo, false /* forceCommit */);
     }
@@ -1058,9 +1058,11 @@ public class OMADownloadHandler extends BroadcastReceiver {
      * @param omaInfo OMA download information to save.
      */
     private void addOMADownloadToSharedPrefs(String omaInfo) {
-        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(
+                mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
         omaDownloads.add(omaInfo);
-        storeDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS, omaDownloads);
+        storeDownloadInfo(
+                mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS, omaDownloads);
     }
 
     /**
@@ -1068,12 +1070,14 @@ public class OMADownloadHandler extends BroadcastReceiver {
      * @param downloadId ID to be removed.
      */
     private void removeOMADownloadFromSharedPrefs(long downloadId) {
-        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(
+                mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
         for (String omaDownload : omaDownloads) {
             OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
             if (entry.mDownloadId == downloadId) {
                 omaDownloads.remove(omaDownload);
-                storeDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS, omaDownloads);
+                storeDownloadInfo(mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS,
+                        omaDownloads);
                 return;
             }
         }
@@ -1082,10 +1086,11 @@ public class OMADownloadHandler extends BroadcastReceiver {
     /**
      * Check if a download ID is in OMA SharedPrefs.
      * @param downloadId Download identifier to check.
-     * @param true if it is in the SharedPrefs, or false otherwise.
+     * @return true if it is in the SharedPrefs, or false otherwise.
      */
     private boolean isDownloadIdInOMASharedPrefs(long downloadId) {
-        Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
+        Set<String> omaDownloads = getStoredDownloadInfo(
+                mSharedPrefs, ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
         for (String omaDownload : omaDownloads) {
             OMAEntry entry = OMAEntry.parseOMAEntry(omaDownload);
             if (entry.mDownloadId == downloadId) return true;

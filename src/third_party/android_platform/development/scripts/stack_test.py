@@ -24,9 +24,11 @@ sys.path.insert(1,
                 constants.host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH)
 import stack
 
-_ZIPALIGN_PATH = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'android_sdk', 'public',
-    'build-tools', constants.ANDROID_SDK_BUILD_TOOLS_VERSION, 'zipalign')
+# Use Python-based zipalign so that these tests can run on the Presubmit bot.
+sys.path.insert(
+    1, os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
+from util import zipalign
+
 
 # These tests exercise stack.py by generating fake APKs (zip-aligned archives),
 # full of fake .so files (with ELF headers), and using a fake symbolizer.
@@ -54,14 +56,14 @@ class FakeSymbolizer:
   def __init__(self, directory):
     self._lib_directory = directory
 
-  def GetSymbolInformation(self, file, address_string):
-    basename = os.path.basename(file)
+  def GetSymbolInformation(self, library, address_string):
+    basename = os.path.basename(library)
     local_file = os.path.join(self._lib_directory, basename)
 
     # If the library doesn't exist, the LLVM symbolizer wrapper script
     # intercepts the call and returns <UNKNOWN>.
     if not os.path.exists(local_file):
-      return [('<UNKNOWN>', file)]
+      return [('<UNKNOWN>', library)]
 
     # If the address isn't in the library, LLVM symbolizer yields ??.
     lib_size = os.stat(local_file).st_size
@@ -70,29 +72,43 @@ class FakeSymbolizer:
       return [('??', '??:0:0')]
 
     namespace = basename.split('.')[0].replace('lib', '', 1)
+
+    # Determine if the lib is a secondary ABI library, in which case, preface
+    # its namespace with '32'.
+    if 'android_clang_' in library:
+      namespace += '32'
+
     method_name = '{}::Func_{:X}'.format(namespace, address)
     return [(method_name, '{}.cc:1:1'.format(namespace))]
 
 
 class StackDecodeTest(unittest.TestCase):
-
   def setUp(self):
+    self._num_libraries = 0
     self._temp_dir = tempfile.mkdtemp()
 
   def tearDown(self):
     shutil.rmtree(self._temp_dir)
 
-  def _MakeElf(self, file):
+  def _MakeElf(self, library):
+    # Make the unstripped lib directory in case stack.py looks for it.
+    lib_dir = os.path.join(os.path.dirname(library), 'lib.unstripped')
+    if not os.path.exists(lib_dir):
+      os.makedirs(lib_dir)
+
     # Create a library slightly less than 4K in size, so that when added to an
-    # APK archive, all libraries end up on 4K boundaries.
-    data = '\x7fELF' + ' ' * 0xE00
-    with open(file, 'wb') as f:
+    # APK archive, all libraries end up on 4K boundaries. Also, make each
+    # library a slightly different size, since stack.py may utilize size when
+    # matching up libraries.
+    data = '\x7fELF' + ' ' * (0xE00 - self._num_libraries)
+    self._num_libraries += 1
+    with open(library, 'wb') as f:
       f.write(data)
 
   # Build a dummy APK with native libraries in it.
-  def _MakeApk(self, apk, libs, apk_dir, out_dir):
-    unaligned_apk = os.path.join(self._temp_dir, 'unaligned_apk')
-    with zipfile.ZipFile(unaligned_apk, 'w') as archive:
+  def _MakeApk(self, apk, libs, apk_dir, out_dir, crazy):
+    apk_file = os.path.join(apk_dir, apk)
+    with zipfile.ZipFile(apk_file, 'w') as archive:
       for lib in libs:
         # Make an ELF-format .so file. The fake symbolizer will fudge functions
         # for libraries that exist.
@@ -100,12 +116,13 @@ class StackDecodeTest(unittest.TestCase):
         self._MakeElf(library_file)
 
         # Add the library to the APK.
-        archive.write(library_file, lib, compress_type=None)
-
-    # Zip-align the APK so library offsets are round numbers.
-    apk_file = os.path.join(apk_dir, apk)
-    subprocess.check_output(
-        [_ZIPALIGN_PATH, '-p', '-f', '4', unaligned_apk, apk_file])
+        name_in_apk = 'crazy.' + lib if crazy else lib
+        zipalign.AddToZipHermetic(
+            archive,
+            name_in_apk,
+            src_path=library_file,
+            compress=False,
+            alignment=0x1000)
 
   # Accept either a multi-line string or a list of strings, strip leading and
   # trailing whitespace, and return the strings as a list.
@@ -118,7 +135,7 @@ class StackDecodeTest(unittest.TestCase):
     lines = [line.strip() for line in lines]
     return [line for line in lines if line]
 
-  def _RunCase(self, logcat, expected, apks):
+  def _RunCase(self, logcat, expected, apks, crazy=False):
     # Set up staging directories.
     temp = self._temp_dir
     out_dir = os.path.join(temp, 'out', 'Debug')
@@ -132,7 +149,7 @@ class StackDecodeTest(unittest.TestCase):
     # Create test APKs, with .so libraries in them, that are real enough to
     # trick the stack decoder.
     for name, libs in apks.items():
-      self._MakeApk(name, libs, apk_dir, out_dir)
+      self._MakeApk(name, libs, apk_dir, out_dir, crazy)
 
     symbolizer = FakeSymbolizer(out_dir)
 
@@ -155,7 +172,7 @@ class StackDecodeTest(unittest.TestCase):
       sys.stdout = f
       try:
         stack.main(stack_script_args, test_symbolizer=symbolizer)
-      except:
+      except Exception:
         pass
       sys.stdout.flush()
       sys.stdout = old_stdout
@@ -185,17 +202,17 @@ class StackDecodeTest(unittest.TestCase):
     apks = {
         'chrome.apk': ['libchrome.so', 'libfoo.so'],
     }
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
       DEBUG : #02 pc 00000274  /path==/base.apk (offset 0x00002000)
       DEBUG : #03 pc 00000374  /path==/lib/arm/libchrome.so
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000174   chrome::Func_174         chrome.cc:1:1
       00000274   foo::Func_274            foo.cc:1:1
       00000374   chrome::Func_374         chrome.cc:1:1
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_OutOfRangeAddresses(self):
     apks = {
@@ -203,15 +220,15 @@ class StackDecodeTest(unittest.TestCase):
     }
     # Test offsets where the address is outside the range of a valid library,
     # and when the offset does not correspond to a valid library.
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00777777  /path==/base.apk (offset 0x00001000)
       DEBUG : #02 pc 00000374  /path==/base.apk (offset 0x00003000)
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00777777   ??                       ??:0:0
       00000374   offset 0x00003000        /path==/base.apk
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
 
   def test_SystemLibraries(self):
     apks = {
@@ -219,15 +236,78 @@ class StackDecodeTest(unittest.TestCase):
     }
     # Here, the frames are in an on-device system library. If the trace is able
     # to supply a symbol name, ensure it's preserved in the output.
-    input = textwrap.dedent('''
+    input_trace = textwrap.dedent('''
       DEBUG : #01 pc 00000474  /system/lib/libart.so (art_function+40)
       DEBUG : #02 pc 00000474  /system/lib/libart.so
       ''')
-    expected = textwrap.dedent('''
+    expected_decode = textwrap.dedent('''
       00000474   art_function+40          /system/lib/libart.so
       00000474   <UNKNOWN>                /system/lib/libart.so
       ''')
-    self._RunCase(input, expected, apks)
+    self._RunCase(input_trace, expected_decode, apks)
+
+  def test_MultiArchPrimaryAbi(self):
+    apks = {
+        'monochrome.apk': [
+            'libmonochrome.so', 'android_clang_arm/libmonochrome.so'
+        ],
+    }
+    # With both architectures present, verify that the correct ABI output and
+    # directory is chosen, even if identically-named libraries exist in both.
+    input_trace = textwrap.dedent('''
+      DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000174   monochrome::Func_174         monochrome.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks)
+
+  def test_MultiArchSecondary(self):
+    apks = {
+        'monochrome.apk': [
+            'libmonochrome.so', 'android_clang_arm/libmonochrome.so'
+        ],
+    }
+    # With both architectures present, verify that the secondary ABI output
+    # directory is chosen when appropriate, even if identically-named libraries
+    # exist in both. This must be a different test from the primary ABI case,
+    # since in practice, traces are from a single ABI (and the script relies on
+    # this).
+    input_trace = textwrap.dedent('''
+      DEBUG : #02 pc 00000274  /path==/base.apk (offset 0x00002000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000274   monochrome32::Func_274       monochrome32.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks)
+
+  def test_CrazyUncompressedLibraries(self):
+    # Here, the library in the APK is prefixed with "crazy.", as in
+    # ChromeModern.
+    apks = {
+        'chrome.apk': ['libchrome.so'],
+    }
+    input_trace = textwrap.dedent('''
+      DEBUG : #01 pc 00000174  /path==/base.apk (offset 0x00001000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000174   chrome::Func_174         chrome.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks, crazy=True)
+
+  def test_AndroidQ(self):
+    apks = {
+        'chrome.apk': ['libchrome.so'],
+    }
+    # Android Q helpfully prints both APK and library, so we don't need to do
+    # any matching, as long as we can parse this.
+    input_trace = textwrap.dedent('''
+      DEBUG : #01 pc 00000174  /path==/base.apk!libchrome.so (offset 0x00001000)
+      ''')
+    expected_decode = textwrap.dedent('''
+      00000174   chrome::Func_174         chrome.cc:1:1
+      ''')
+    self._RunCase(input_trace, expected_decode, apks)
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 
@@ -31,17 +31,15 @@ class FontFaceCache;
 using FontFaceSetIterable = SetlikeIterable<Member<FontFace>>;
 
 class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
-                                public ContextClient,
+                                public ExecutionContextClient,
                                 public FontFaceSetIterable,
                                 public FontFace::LoadFontCallback {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   FontFaceSet(ExecutionContext& context)
-      : ContextClient(&context),
-        ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext(),
-                                                   this,
-                                                   ReadyProperty::kReady)) {}
+      : ExecutionContextClient(&context),
+        ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext())) {}
   ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading)
@@ -53,7 +51,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual ScriptPromise ready(ScriptState*) = 0;
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   const AtomicString& InterfaceName() const override {
@@ -70,7 +68,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   wtf_size_t size() const;
   virtual AtomicString status() const = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   static const int kDefaultFontSize;
@@ -94,7 +92,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   void FireDoneEvent();
 
   using ReadyProperty = ScriptPromiseProperty<Member<FontFaceSet>,
-                                              Member<FontFaceSet>,
                                               Member<DOMException>>;
 
   bool is_loading_ = false;
@@ -115,7 +112,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
               Member<FontFace>&,
               ExceptionState&) override;
 
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       visitor->Trace(font_faces_);
       FontFaceSetIterable::IterationSource::Trace(visitor);
     }
@@ -131,16 +128,11 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
 
    public:
-    static LoadFontPromiseResolver* Create(FontFaceArray faces,
-                                           ScriptState* script_state) {
-      return MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
-    }
-
-    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
-        : num_loading_(faces.size()),
+    LoadFontPromiseResolver(FontFaceArray* faces, ScriptState* script_state)
+        : num_loading_(faces->size()),
           error_occured_(false),
           resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {
-      font_faces_.swap(faces);
+      font_faces_.swap(*faces);
     }
 
     void LoadFonts();
@@ -149,7 +141,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void NotifyLoaded(FontFace*) override;
     void NotifyError(FontFace*) override;
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
     HeapVector<Member<FontFace>> font_faces_;

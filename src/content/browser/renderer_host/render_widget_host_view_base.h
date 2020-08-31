@@ -19,23 +19,20 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/common/tab_switch_time_recorder.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/widget_type.h"
-#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/web/web_text_direction.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -47,10 +44,6 @@
 #include "ui/surface/transport_dib.h"
 
 struct WidgetHostMsg_SelectionBounds_Params;
-
-namespace cc {
-struct BeginFrameAck;
-}  // namespace cc
 
 namespace blink {
 class WebMouseEvent;
@@ -84,9 +77,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
     : public RenderWidgetHostView,
       public RenderFrameMetadataProvider::Observer {
  public:
-  using CreateCompositorFrameSinkCallback =
-      base::OnceCallback<void(const viz::FrameSinkId&)>;
-
   ~RenderWidgetHostViewBase() override;
 
   float current_device_scale_factor() const {
@@ -128,9 +118,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float GetDeviceScaleFactor() final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
-  void SetRecordTabSwitchTimeRequest(base::TimeTicks start_time,
-                                     bool destination_is_loaded,
-                                     bool destination_is_frozen) final;
+  void SetRecordContentToVisibleTimeRequest(
+      base::TimeTicks start_time,
+      base::Optional<bool> destination_is_loaded,
+      base::Optional<bool> destination_is_frozen,
+      bool show_reason_tab_switching,
+      bool show_reason_unoccluded,
+      bool show_reason_bfcache_restore) final;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -148,7 +142,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const cc::RenderFrameMetadata& metadata) override;
 
   virtual void UpdateIntrinsicSizingInfo(
-      const blink::WebIntrinsicSizingInfo& sizing_info);
+      blink::mojom::IntrinsicSizingInfoPtr sizing_info);
 
   static void CopyMainAndPopupFromSurface(
       base::WeakPtr<RenderWidgetHostImpl> main_host,
@@ -190,12 +184,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata);
 
-  // Returns the time set by SetLastRecordTabSwitchTimeRequest. If this was not
-  // preceded by a call to SetLastRecordTabSwitchTimeRequest the
-  // |tab_switch_start_time| field of the returned struct will have a null
-  // timestamp. Calling this will reset
-  // |last_tab_switch_start_state_.tab_switch_start_time| to null.
-  base::Optional<RecordTabSwitchTimeRequest> TakeRecordTabSwitchTimeRequest();
+  // Returns the time set by SetLastRecordContentToVisibleTimeRequest. If this
+  // was not preceded by a call to SetLastRecordContentToVisibleTimeRequest the
+  // |event_start_time| field of the returned struct will have a null
+  // timestamp. Calling this will reset |last_record_tab_switch_time_request_|
+  // to null.
+  base::Optional<RecordContentToVisibleTimeRequest>
+  TakeRecordContentToVisibleTimeRequest();
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -230,25 +225,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // the view a chance to perform in-process event filtering or processing.
   // Return values of |NOT_CONSUMED| or |UNKNOWN| will result in |input_event|
   // being forwarded.
-  virtual InputEventAckState FilterInputEvent(
+  virtual blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event);
 
   virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
-                             InputEventAckState ack_result);
+                             blink::mojom::InputEventResultState ack_result);
 
   virtual void GestureEventAck(const blink::WebGestureEvent& event,
-                               InputEventAckState ack_result);
+                               blink::mojom::InputEventResultState ack_result);
 
-  // When key event is not uncosumed in render, browser may want to consume it.
-  virtual bool OnUnconsumedKeyboardEventAck(
-      const NativeWebKeyboardEventWithLatencyInfo& event);
-
-  // Call platform APIs for Fallback Cursor Mode.
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down);
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible);
+  virtual void ChildDidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result);
 
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
@@ -273,27 +261,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
-  // This method is called by RenderWidgetHostImpl when a new
-  // RendererCompositorFrameSink is created in the renderer. The view is
-  // expected not to return resources belonging to the old
-  // RendererCompositorFrameSink after this method finishes.
-  virtual void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient*
-          renderer_compositor_frame_sink) = 0;
-
-  // This is called by the RenderWidgetHostImpl to provide a new compositor
-  // frame that was received from the renderer process. if Viz service hit
-  // testing is enabled then a HitTestRegionList provides hit test data
-  // that is used for routing input events.
-  // TODO(kenrb): When Viz service is enabled on all platforms,
-  // |hit_test_region_list| should stop being an optional argument.
-  virtual void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) = 0;
-
-  virtual void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {}
-
   // This method will reset the fallback to the first surface after navigation.
   virtual void ResetFallbackToFirstNavigationSurface() = 0;
 
@@ -308,8 +275,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // or ignored (when |ack_result| is CONSUMED).
   // |touch|'s coordinates are in the coordinate space of the view to which it
   // was targeted.
-  virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                                      InputEventAckState ack_result);
+  virtual void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result);
 
   virtual void DidOverscroll(const ui::DidOverscrollParams& params) {}
 
@@ -577,20 +545,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // Stops flinging if a GSU event with momentum phase is sent to the renderer
   // but not consumed.
-  virtual void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
-                                       InputEventAckState ack_result);
+  virtual void StopFlingingIfNecessary(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result);
 
   // If |event| is a touchpad pinch or double tap event for which we've sent a
   // synthetic wheel event, forward the |event| to the renderer, subject to
   // |ack_result| which is the ACK result of the synthetic wheel.
   virtual void ForwardTouchpadZoomEventIfNecessary(
       const blink::WebGestureEvent& event,
-      InputEventAckState ack_result);
+      blink::mojom::InputEventResultState ack_result);
 
   virtual bool HasFallbackSurface() const;
 
-  // The model object. Members will become private when
-  // RenderWidgetHostViewGuest is removed.
+  // The model object. Access is protected to allow access to
+  // RenderWidgetHostViewChildFrame.
   RenderWidgetHostImpl* host_;
 
   // Is this a fullscreen view?
@@ -610,7 +579,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float current_device_scale_factor_ = 0;
 
   // The color space of the display the renderer is currently on.
-  gfx::ColorSpace current_display_color_space_;
+  gfx::DisplayColorSpaces current_display_color_spaces_;
 
   // The orientation of the display the renderer is currently on.
   display::Display::Rotation current_display_rotation_ =
@@ -668,9 +637,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
 
   // The last tab switch processing start request. This should only be set and
-  // retrieved using SetRecordTabSwitchTimeRequest and
-  // TakeRecordTabSwitchTimeRequest.
-  base::Optional<RecordTabSwitchTimeRequest>
+  // retrieved using SetRecordContentToVisibleTimeRequest and
+  // TakeRecordContentToVisibleTimeRequest.
+  base::Optional<RecordContentToVisibleTimeRequest>
       last_record_tab_switch_time_request_;
 
   // True when StopFlingingIfNecessary() calls StopFling().

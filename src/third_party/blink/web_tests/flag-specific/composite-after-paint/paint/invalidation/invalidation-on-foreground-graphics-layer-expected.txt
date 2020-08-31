@@ -8,7 +8,20 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV",
+      "bounds": [200, 200],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [185, 185],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
       "bounds": [300, 300],
+      "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
       "transform": 1
     },
@@ -28,6 +41,7 @@
       "name": "Scroll corner of LayoutNGBlockFlow DIV",
       "position": [185, 185],
       "bounds": [15, 15],
+      "contentsOpaque": true,
       "transform": 1
     },
     {
@@ -43,12 +57,8 @@
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 200, 200]
       ],
       "transform": 1
     }

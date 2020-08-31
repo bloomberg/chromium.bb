@@ -69,17 +69,16 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties = new Properties(
+    return new Properties(
         object_proxy, interface_name,
-        base::Bind(&BluetoothGattServiceClientImpl::OnPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+        base::BindRepeating(&BluetoothGattServiceClientImpl::OnPropertyChanged,
+                            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   // dbus::ObjectManager::Interface override.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT service added: " << object_path.value();
+    DVLOG(2) << "Remote GATT service added: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattServiceAdded(object_path);
   }
@@ -87,7 +86,7 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   // dbus::ObjectManager::Interface override.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT service removed: " << object_path.value();
+    DVLOG(2) << "Remote GATT service removed: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattServiceRemoved(object_path);
   }
@@ -110,8 +109,8 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   // observers.
   virtual void OnPropertyChanged(const dbus::ObjectPath& object_path,
                                  const std::string& property_name) {
-    VLOG(2) << "Remote GATT service property changed: " << object_path.value()
-            << ": " << property_name;
+    DVLOG(2) << "Remote GATT service property changed: " << object_path.value()
+             << ": " << property_name;
     for (auto& observer : observers_)
       observer.GattServicePropertyChanged(object_path, property_name);
   }

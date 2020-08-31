@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "jingle/glue/utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -19,7 +19,6 @@ namespace blink {
 P2PAsyncAddressResolver::P2PAsyncAddressResolver(
     P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher), state_(STATE_CREATED) {
-  AddRef();  // Balanced in Destroy().
 }
 
 P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
@@ -37,8 +36,8 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
       blink::features::kWebRtcHideLocalIpsWithMdns);
   dispatcher_->GetP2PSocketManager()->GetHostAddress(
       String(host_name.hostname().data()), enable_mdns,
-      base::BindOnce(&P2PAsyncAddressResolver::OnResponse,
-                     base::Unretained(this)));
+      WTF::Bind(&P2PAsyncAddressResolver::OnResponse,
+                scoped_refptr<P2PAsyncAddressResolver>(this)));
 }
 
 void P2PAsyncAddressResolver::Cancel() {

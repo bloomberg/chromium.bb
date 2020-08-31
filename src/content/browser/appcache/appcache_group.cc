@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
@@ -98,8 +98,8 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
     newest_complete_cache_ = complete_cache;
 
     // Update hosts of older caches to add a reference to the newest cache.
-    // (This loop mutates |old_caches_| so a range-based for-loop cannot be
-    // used, because it caches the end iterator.)
+    // This loop mutates |old_caches_| so a range-based for-loop cannot be
+    // used, because it caches the end iterator. NOLINTNEXTLINE
     for (auto it = old_caches_.begin(); it != old_caches_.end(); ++it) {
       AppCache* cache = *it;
       for (AppCacheHost* host : cache->associated_hosts())

@@ -46,6 +46,10 @@ enum {
   kOsIos = 1 << 6,
   kDeprecated = 1 << 7,
   kOsFuchsia = 1 << 8,
+
+  // Flags marked with this are internal to the flags system. Never set this on
+  // a manually-added flag.
+  kFlagInfrastructure = 1 << 9,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
@@ -129,12 +133,16 @@ class FlagsState {
   // Gets the list of feature entries. Entries that are available for the
   // current platform are appended to |supported_entries|; all other entries are
   // appended to |unsupported_entries|.
+  //
+  // |skip_feature_entry| is called once for each feature in |feature_entries_|,
+  // and entry data for a feature is only included in the output data if the
+  // callback returns |false| for the entry.
   void GetFlagFeatureEntries(
       FlagsStorage* flags_storage,
       FlagAccess access,
       base::ListValue* supported_entries,
       base::ListValue* unsupported_entries,
-      base::Callback<bool(const FeatureEntry&)> skip_feature_entry);
+      base::RepeatingCallback<bool(const FeatureEntry&)> skip_feature_entry);
 
   // Returns the value for the current platform. This is one of the values
   // defined by the OS enum above.

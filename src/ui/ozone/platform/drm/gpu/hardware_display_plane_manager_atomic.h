@@ -15,10 +15,16 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerAtomic(DrmDevice* drm);
+  explicit HardwareDisplayPlaneManagerAtomic(DrmDevice* drm);
   ~HardwareDisplayPlaneManagerAtomic() override;
 
   // HardwareDisplayPlaneManager:
+  bool Modeset(uint32_t crtc_id,
+               uint32_t framebuffer_id,
+               uint32_t connector_id,
+               const drmModeModeInfo& mode,
+               const HardwareDisplayPlaneList& plane_list) override;
+  bool DisableModeset(uint32_t crtc_id, uint32_t connector) override;
   bool Commit(HardwareDisplayPlaneList* plane_list,
               scoped_refptr<PageFlipRequest> page_flip_request,
               std::unique_ptr<gfx::GpuFence>* out_fence) override;
@@ -38,8 +44,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,
                     uint32_t crtc_id,
-                    const gfx::Rect& src_rect,
-                    CrtcController* crtc) override;
+                    const gfx::Rect& src_rect) override;
 
  private:
   bool InitializePlanes() override;
@@ -48,7 +53,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
   bool AddOutFencePtrProperties(
       drmModeAtomicReqPtr property_set,
-      const std::vector<CrtcController*>& crtcs,
+      const std::vector<uint32_t>& crtcs,
       std::vector<base::ScopedFD>* out_fence_fds,
       std::vector<base::ScopedFD::Receiver>* out_fence_fd_receivers);
 

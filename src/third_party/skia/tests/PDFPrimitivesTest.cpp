@@ -22,7 +22,6 @@
 #include "include/private/SkTo.h"
 #include "src/core/SkGlyphRun.h"
 #include "src/core/SkImageFilter_Base.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/pdf/SkClusterator.h"
@@ -60,7 +59,7 @@ static void assert_eql(skiatest::Reporter* reporter,
                        size_t len) {
     if (!eq(skString, str, len)) {
         REPORT_FAILURE(reporter, "", SkStringPrintf(
-                "'%*s' != '%s'", len, str, skString.c_str()));
+                "'%*s' != '%s'", (int)len, str, skString.c_str()));
     }
 }
 

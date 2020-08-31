@@ -1,10 +1,13 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export default class AnimationScreenshotPopover extends UI.VBox {
+export class AnimationScreenshotPopover extends UI.Widget.VBox {
   /**
    * @param {!Array.<!Image>} images
    */
@@ -60,15 +63,3 @@ export default class AnimationScreenshotPopover extends UI.VBox {
     this._progressBar.style.width = (this._currentFrame % numFrames + 1) / numFrames * 100 + '%';
   }
 }
-
-/* Legacy exported object */
-self.Animation = self.Animation || {};
-
-/* Legacy exported object */
-Animation = Animation || {};
-
-/**
- * @unrestricted
- * @constructor
- */
-Animation.AnimationScreenshotPopover = AnimationScreenshotPopover;

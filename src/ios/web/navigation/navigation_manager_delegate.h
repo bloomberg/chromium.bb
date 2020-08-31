@@ -40,10 +40,6 @@ class NavigationManagerDelegate {
   virtual void OnGoToIndexSameDocumentNavigation(NavigationInitiationType type,
                                                  bool has_user_gesture) = 0;
 
-  // Instructs the delegate to perform book keeping in preparation for a new
-  // navigation using a different user agent type.
-  virtual void WillChangeUserAgentType() = 0;
-
   // Instructs the delegate to load the current navigation item.
   virtual void LoadCurrentItem(NavigationInitiationType type) = 0;
 
@@ -53,9 +49,6 @@ class NavigationManagerDelegate {
 
   // Instructs the delegate to reload.
   virtual void Reload() = 0;
-
-  // Informs the delegate that committed navigation items have been pruned.
-  virtual void OnNavigationItemsPruned(size_t pruned_item_count) = 0;
 
   // Informs the delegate that a navigation item has been committed.
   virtual void OnNavigationItemCommitted(NavigationItem* item) = 0;

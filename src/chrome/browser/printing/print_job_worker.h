@@ -18,6 +18,10 @@
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace printing {
 
 class PrintJob;
@@ -97,6 +101,9 @@ class PrintJobWorker {
   // Starts the thread.
   bool Start();
 
+  // Returns the WebContents this work corresponds to.
+  content::WebContents* GetWebContents();
+
  protected:
   // Retrieves the context for testing only.
   PrintingContext* printing_context() { return printing_context_.get(); }
@@ -114,12 +121,16 @@ class PrintJobWorker {
   void PostWaitForPage();
 
 #if defined(OS_WIN)
+  // Windows print GDI-specific handling for OnNewPage().
+  bool OnNewPageHelperGdi();
+
   // Renders a page in the printer.
+  // This is applicable when using the Windows GDI print API.
   void SpoolPage(PrintedPage* page);
-#else
+#endif  // defined(OS_WIN)
+
   // Renders the document to the printer.
   void SpoolJob();
-#endif
 
   // Closes the job since spooling is done.
   void OnDocumentDone();

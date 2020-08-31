@@ -4,27 +4,27 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
-std::unique_ptr<base::Value> ParseTracedValue(
-    std::unique_ptr<TracedValue> value) {
-  base::JSONReader reader;
-  return reader.ReadDeprecated(value->ToString().Utf8());
+base::Optional<base::Value> ParseTracedValue(
+    std::unique_ptr<TracedValueJSON> value) {
+  return base::JSONReader::Read(value->ToJSON().Utf8());
 }
 
 TEST(TracedValueTest, FlatDictionary) {
-  auto value = std::make_unique<TracedValue>();
+  auto value = std::make_unique<TracedValueJSON>();
   value->SetIntegerWithCopiedName("int", 2014);
   value->SetDoubleWithCopiedName("double", 0.0);
   value->SetBooleanWithCopiedName("bool", true);
   value->SetStringWithCopiedName("string", "string");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int int_value;
@@ -39,7 +39,7 @@ TEST(TracedValueTest, FlatDictionary) {
 }
 
 TEST(TracedValueTest, Hierarchy) {
-  auto value = std::make_unique<TracedValue>();
+  auto value = std::make_unique<TracedValueJSON>();
   value->SetIntegerWithCopiedName("i0", 2014);
   value->BeginDictionaryWithCopiedName("dict1");
   value->SetIntegerWithCopiedName("i1", 2014);
@@ -59,7 +59,7 @@ TEST(TracedValueTest, Hierarchy) {
   value->EndArray();
   value->SetStringWithCopiedName("s0", "foo");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int i0;
@@ -99,14 +99,14 @@ TEST(TracedValueTest, Hierarchy) {
 }
 
 TEST(TracedValueTest, Escape) {
-  auto value = std::make_unique<TracedValue>();
+  auto value = std::make_unique<TracedValueJSON>();
   value->SetStringWithCopiedName("s0", "value0\\");
   value->SetStringWithCopiedName("s1", "value\n1");
   value->SetStringWithCopiedName("s2", "\"value2\"");
   value->SetStringWithCopiedName("s3\\", "value3");
   value->SetStringWithCopiedName("\"s4\"", "value4");
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   std::string s0;
@@ -127,7 +127,7 @@ TEST(TracedValueTest, Escape) {
 }
 
 TEST(TracedValueTest, NonCopiedNames) {
-  auto value = std::make_unique<TracedValue>();
+  auto value = std::make_unique<TracedValueJSON>();
   const char* int_str = "int";
   const char* double_str = "double";
   const char* bool_str = "bool";
@@ -142,7 +142,7 @@ TEST(TracedValueTest, NonCopiedNames) {
   value->PushInteger(2);
   value->EndArray();
 
-  std::unique_ptr<base::Value> parsed = ParseTracedValue(std::move(value));
+  base::Optional<base::Value> parsed = ParseTracedValue(std::move(value));
   base::DictionaryValue* dictionary;
   ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
   int int_value;

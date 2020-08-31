@@ -21,10 +21,10 @@ ProtocolConnectionServerFactory::Create(
     const ServerConfig& config,
     MessageDemuxer* demuxer,
     ProtocolConnectionServer::Observer* observer,
-    platform::TaskRunner* task_runner) {
+    TaskRunner* task_runner) {
   return std::make_unique<QuicServer>(
       config, demuxer, std::make_unique<QuicConnectionFactoryImpl>(task_runner),
-      observer, &platform::Clock::now, task_runner);
+      observer, &Clock::now, task_runner);
 }
 
 }  // namespace osp

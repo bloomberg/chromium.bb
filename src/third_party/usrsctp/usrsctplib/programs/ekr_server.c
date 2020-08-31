@@ -49,6 +49,7 @@
 #include <ws2tcpip.h>
 #endif
 #include <usrsctp.h>
+#include "programs_helper.h"
 
 #define PORT 5001
 #define MAX_PACKET_SIZE (1<<16)
@@ -152,16 +153,6 @@ receive_cb(struct socket *s, union sctp_sockstore addr, void *data,
 	return (1);
 }
 
-void
-debug_printf(const char *format, ...)
-{
-	va_list ap;
-
-	va_start(ap, format);
-	vprintf(format, ap);
-	va_end(ap);
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -193,7 +184,7 @@ main(int argc, char *argv[])
 		exit (EXIT_FAILURE);
 	}
 #endif
-	usrsctp_init(0, conn_output, debug_printf);
+	usrsctp_init(0, conn_output, debug_printf_stack);
 	/* set up a connected UDP socket */
 #ifdef _WIN32
 	if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET) {

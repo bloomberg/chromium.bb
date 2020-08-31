@@ -10,6 +10,7 @@
 #include <stddef.h>         // For size_t
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -34,10 +35,6 @@ CONTENT_EXPORT extern const char kFlashPluginSplDescription[];
 
 // The maximum number of session history entries per tab.
 constexpr int kMaxSessionHistoryEntries = 50;
-
-// The maximum number of characters of the document's title that we're willing
-// to accept in the browser process.
-extern const size_t kMaxTitleChars;
 
 // The maximum number of characters in the URL that we're willing to accept
 // in the browser process. It is set low enough to avoid damage to the browser
@@ -67,6 +64,19 @@ CONTENT_EXPORT extern const int kDefaultDetachableCancelDelayMs;
 // network::ResourceRequest::cors_exempt_headers.
 CONTENT_EXPORT extern const char kCorsExemptPurposeHeaderName[];
 CONTENT_EXPORT extern const char kCorsExemptRequestedWithHeaderName[];
+
+#if defined(OS_LINUX)
+// The OOM score adj constants
+// The highest and lowest assigned OOM score adjustment (oom_score_adj) for
+// renderers and extensions used by the OomPriority Manager.
+CONTENT_EXPORT extern const int kLowestRendererOomScore;
+CONTENT_EXPORT extern const int kHighestRendererOomScore;
+
+CONTENT_EXPORT extern const int kZygoteOomScore;
+CONTENT_EXPORT extern const int kMiscOomScore;
+CONTENT_EXPORT extern const int kPluginOomScore;
+
+#endif
 
 }  // namespace content
 

@@ -31,11 +31,10 @@ namespace {
 
 class MockDelegate : public HeaderModificationDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
-  MOCK_METHOD1(ShouldInterceptNavigation,
-               bool(content::NavigationUIData* navigation_ui_data));
+  MOCK_METHOD1(ShouldInterceptNavigation, bool(content::WebContents* contents));
   MOCK_METHOD2(ProcessRequest,
                void(ChromeRequestAdapter* request_adapter,
                     const GURL& redirect_url));
@@ -139,7 +138,8 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = kTestURL;
   request->referrer = kTestReferrer;
-  request->resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request->resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   request->is_main_frame = true;
   request->headers.SetHeader("X-Request-1", "Foo");
 
@@ -158,7 +158,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
-            EXPECT_EQ(content::ResourceType::kMainFrame,
+            EXPECT_EQ(blink::mojom::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
 
@@ -175,7 +175,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
           }))
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
-            EXPECT_EQ(content::ResourceType::kMainFrame,
+            EXPECT_EQ(blink::mojom::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 
             // Changes to the URL and referrer take effect after the redirect
@@ -253,13 +253,13 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
 
     auto redirect_head = network::mojom::URLResponseHead::New();
     redirect_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    redirect_head->headers->AddHeader("X-Response-1: Foo");
-    redirect_head->headers->AddHeader("X-Response-2: Bar");
+    redirect_head->headers->SetHeader("X-Response-1", "Foo");
+    redirect_head->headers->SetHeader("X-Response-2", "Bar");
 
     auto response_head = network::mojom::URLResponseHead::New();
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head->headers->AddHeader("X-Response-3: Foo");
-    response_head->headers->AddHeader("X-Response-4: Bar");
+    response_head->headers->SetHeader("X-Response-3", "Foo");
+    response_head->headers->SetHeader("X-Response-4", "Bar");
     std::string body("Hello.");
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = body.size();

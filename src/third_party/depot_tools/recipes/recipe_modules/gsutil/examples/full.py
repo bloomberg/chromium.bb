@@ -36,6 +36,20 @@ def RunSteps(api):
       multithreaded=True,
       use_retry_wrapper=False)
 
+  # Upload directory contents.
+  api.gsutil.upload(
+      api.path['tmp_base'],
+      bucket,
+      'some/random/path',
+      args=['-r'],
+      name='upload -r')
+  api.gsutil.upload(
+      api.path['tmp_base'],
+      bucket,
+      'some/other/random/path',
+      args=['--recursive'],
+      name='upload --recursive')
+
   api.gsutil(['cp',
                     'gs://%s/some/random/path/**' % bucket,
                     'gs://%s/staging' % bucket])

@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 
@@ -118,10 +119,7 @@ IN_PROC_BROWSER_TEST_P(ForceFieldTrialsBrowserTest, PRE_ForceTrials) {
                 trial_group == kDisabledGroupName);
 
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int bytes_to_write = base::checked_cast<int>(trial_group.length());
-    int bytes_written = base::WriteFile(GetTestFilePath(i), trial_group.c_str(),
-                                        bytes_to_write);
-    ASSERT_EQ(bytes_to_write, bytes_written);
+    ASSERT_TRUE(base::WriteFile(GetTestFilePath(i), trial_group));
   }
 }
 

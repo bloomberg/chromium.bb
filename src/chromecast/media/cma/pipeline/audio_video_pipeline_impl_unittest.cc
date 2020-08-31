@@ -11,13 +11,13 @@
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/media/api/test/mock_cma_backend.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
-#include "chromecast/media/cma/test/mock_cma_backend.h"
 #include "chromecast/media/cma/test/mock_frame_provider.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -65,9 +65,10 @@ class CastCdmContextForTest : public CastCdmContext {
   }
 
   // CastCdmContext implementation:
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override {
-    return player_tracker_.RegisterPlayer(new_key_cb, cdm_unset_cb);
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) override {
+    return player_tracker_.RegisterPlayer(std::move(new_key_cb),
+                                          std::move(cdm_unset_cb));
   }
 
   void UnregisterPlayer(int registration_id) override {

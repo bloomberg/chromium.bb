@@ -26,8 +26,26 @@ enable_testing()
 
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS API_NAME="Vulkan")
 
+# Enable beta Vulkan extensions
+add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PythonInterp 3 QUIET)
+
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
+    option(BUILD_TESTS "Build Tests" ON)
+else()
+    option(BUILD_TESTS "Build Tests" OFF)
+endif()
+
+if(APPLE)
+    option(BUILD_STATIC_LOADER "Build a loader that can be statically linked" OFF)
+endif()
+
+if(BUILD_STATIC_LOADER)
+    message(WARNING "The ENABLE_STATIC_LOADER option has been set. Note that this will only work on MacOS and is not supported "
+        "or tested as part of the loader. Use it at your own risk.")
+endif()
 
 if (TARGET Vulkan::Headers)
     message(STATUS "Using Vulkan headers from Vulkan::Headers target")
@@ -120,16 +138,9 @@ endif()
 
 if(WIN32)
     option(ENABLE_WIN10_ONECORE "Link the loader with OneCore umbrella libraries" OFF)
-    option(ENABLE_STATIC_LOADER "Build the loader as a static library" OFF)
 endif()
 
 option(BUILD_LOADER "Build loader" ON)
-
-if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
-    option(BUILD_TESTS "Build Tests" ON)
-else()
-    option(BUILD_TESTS "Build Tests" OFF)
-endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     set(COMMON_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")

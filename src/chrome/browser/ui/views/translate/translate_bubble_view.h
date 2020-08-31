@@ -26,8 +26,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -45,7 +45,6 @@ class View;
 class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ButtonListener,
                             public views::ComboboxListener,
-                            public views::LinkListener,
                             public ui::SimpleMenuModel::Delegate,
                             public views::StyledLabelListener,
                             public views::TabbedPaneListener {
@@ -102,9 +101,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // views::ComboboxListener:
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
@@ -123,10 +119,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void CloseBubble() override;
 
  private:
-  enum LinkID {
-    LINK_ID_ADVANCED,
-  };
-
   enum ButtonID {
     BUTTON_ID_TRANSLATE,
     BUTTON_ID_DONE,
@@ -221,9 +213,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Triggers options menu in TAB UI.
   void ShowOptionsMenuTab(views::Button* source);
 
-  // Handles the event when the user clicks a link.
-  void HandleLinkClicked(LinkID sender_id);
-
   // Handles the event when the user changes an index of a combobox.
   void HandleComboboxPerformAction(ComboboxID sender_id);
 
@@ -280,6 +269,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
       std::unique_ptr<views::Button> advance_done_button,
       std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox);
 
+  // Creates a translate icon for when the bottom branding isn't showing. This
+  // should only be used on non-Chrome-branded builds.
+  std::unique_ptr<views::ImageView> CreateTranslateIcon();
+
+  // Creates a three dot options menu button.
+  std::unique_ptr<views::Button> CreateOptionsMenuButton();
+
+  // Creates a close button.
   std::unique_ptr<views::Button> CreateCloseButton();
 
   // Get the current always translate checkbox
@@ -311,6 +308,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            base::string16* target_language_name);
 
   void UpdateInsets(TranslateBubbleModel::ViewState state);
+
+  // If the page is already translated, revert it. Otherwise decline
+  // translation. Then close the bubble view.
+  void RevertOrDeclineTranslation();
 
   static TranslateBubbleView* translate_bubble_view_;
 
@@ -359,6 +360,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   const language::TranslateUIBubbleModel bubble_ui_model_;
 
   bool should_always_translate_ = false;
+  bool should_never_translate_language_ = false;
+  bool should_never_translate_site_ = false;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 

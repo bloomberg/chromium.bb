@@ -17,8 +17,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/sequenced_task_runner.h"
@@ -171,6 +171,7 @@ static_assert(sizeof(XboxOneRumbleData) == 13, "XboxOneRumbleData wrong size");
 // data, which is at the beginning of the report and has the same structure as
 // the standard XboxOneButtonData report.
 const size_t kXboxOneEliteButtonDataBytes = 29;
+const size_t kXboxOneElite2ButtonDataBytes = 34;
 const size_t kXboxAdaptiveButtonDataBytes = 50;
 
 // From MSDN:
@@ -290,6 +291,8 @@ XboxControllerMac::ControllerType ControllerTypeFromIds(uint16_t vendor_id,
         return XboxControllerMac::XBOX_ONE_CONTROLLER_2015;
       case XboxControllerMac::kProductXboxOneEliteController:
         return XboxControllerMac::XBOX_ONE_ELITE_CONTROLLER;
+      case XboxControllerMac::kProductXboxOneEliteController2:
+        return XboxControllerMac::XBOX_ONE_ELITE_CONTROLLER_2;
       case XboxControllerMac::kProductXboxOneSController:
         return XboxControllerMac::XBOX_ONE_S_CONTROLLER;
       case XboxControllerMac::kProductXboxAdaptiveController:
@@ -339,6 +342,7 @@ void XboxControllerMac::SetVibration(double strong_magnitude,
   } else if (controller_type_ == XBOX_ONE_CONTROLLER_2013 ||
              controller_type_ == XBOX_ONE_CONTROLLER_2015 ||
              controller_type_ == XBOX_ONE_ELITE_CONTROLLER ||
+             controller_type_ == XBOX_ONE_ELITE_CONTROLLER_2 ||
              controller_type_ == XBOX_ONE_S_CONTROLLER) {
     WriteXboxOneRumble(static_cast<uint8_t>(strong_magnitude * 255.0),
                        static_cast<uint8_t>(weak_magnitude * 255.0));
@@ -376,7 +380,9 @@ XboxControllerMac::OpenDeviceResult XboxControllerMac::OpenDevice(
   // elsewhere.
   DCHECK_NE(kXInputTypeNone,
             GamepadIdList::Get().GetXInputType(vendor_id, product_id));
-  RecordConnectedGamepad(vendor_id, product_id);
+  GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+      base::StringPiece(), vendor_id, product_id);
+  RecordConnectedGamepad(gamepad_id);
 
   // Only genuine Microsoft Xbox, Xbox 360, and Xbox One devices are supported.
   if (vendor_id != kVendorMicrosoft)
@@ -397,6 +403,7 @@ XboxControllerMac::OpenDeviceResult XboxControllerMac::OpenDevice(
     case XBOX_ONE_CONTROLLER_2013:
     case XBOX_ONE_CONTROLLER_2015:
     case XBOX_ONE_ELITE_CONTROLLER:
+    case XBOX_ONE_ELITE_CONTROLLER_2:
     case XBOX_ONE_S_CONTROLLER:
     case XBOX_ADAPTIVE_CONTROLLER:
       read_endpoint_ = kXboxOneReadEndpoint;
@@ -532,6 +539,7 @@ XboxControllerMac::OpenDeviceResult XboxControllerMac::OpenDevice(
       if (controller_type_ == XBOX_ONE_CONTROLLER_2013 ||
           controller_type_ == XBOX_ONE_CONTROLLER_2015 ||
           controller_type_ == XBOX_ONE_ELITE_CONTROLLER ||
+          controller_type_ == XBOX_ONE_ELITE_CONTROLLER_2 ||
           controller_type_ == XBOX_ONE_S_CONTROLLER ||
           controller_type_ == XBOX_ADAPTIVE_CONTROLLER)
         WriteXboxOneInit();
@@ -575,6 +583,7 @@ uint16_t XboxControllerMac::GetVendorId() const {
     case XBOX_ONE_CONTROLLER_2013:
     case XBOX_ONE_CONTROLLER_2015:
     case XBOX_ONE_ELITE_CONTROLLER:
+    case XBOX_ONE_ELITE_CONTROLLER_2:
     case XBOX_ONE_S_CONTROLLER:
     case XBOX_ADAPTIVE_CONTROLLER:
       return kVendorMicrosoft;
@@ -593,6 +602,8 @@ uint16_t XboxControllerMac::GetProductId() const {
       return kProductXboxOneController2015;
     case XBOX_ONE_ELITE_CONTROLLER:
       return kProductXboxOneEliteController;
+    case XBOX_ONE_ELITE_CONTROLLER_2:
+      return kProductXboxOneEliteController2;
     case XBOX_ONE_S_CONTROLLER:
       return kProductXboxOneSController;
     case XBOX_ADAPTIVE_CONTROLLER:
@@ -613,6 +624,7 @@ std::string XboxControllerMac::GetControllerTypeString() const {
     case XBOX_ONE_CONTROLLER_2013:
     case XBOX_ONE_CONTROLLER_2015:
     case XBOX_ONE_ELITE_CONTROLLER:
+    case XBOX_ONE_ELITE_CONTROLLER_2:
     case XBOX_ONE_S_CONTROLLER:
     case XBOX_ADAPTIVE_CONTROLLER:
       return "Xbox One Controller";
@@ -728,6 +740,7 @@ void XboxControllerMac::ProcessXboxOnePacket(size_t length) {
     case XBOX_ONE_STATUS_MESSAGE_BUTTONS: {
       if (length != sizeof(XboxOneButtonData) &&
           length != kXboxOneEliteButtonDataBytes &&
+          length != kXboxOneElite2ButtonDataBytes &&
           length != kXboxAdaptiveButtonDataBytes) {
         return;
       }

@@ -149,14 +149,7 @@ struct WebBluetoothRemoteGATTCharacteristic {
   uint32 properties;
 };
 
-// On success, |options| contains the values used for the scan request. On
-// error, |result| will indicate the failure type.
-union RequestScanningStartResult {
-  WebBluetoothResult error_result;
-  WebBluetoothRequestLEScanOptions options;
-};
-
-struct WebBluetoothScanResult {
+struct WebBluetoothAdvertisingEvent {
   WebBluetoothDevice device;
   string? name;
   array<bluetooth.mojom.UUID> uuids;
@@ -181,8 +174,19 @@ interface WebBluetoothService {
   // Checks if Web Bluetooth is allowed and if a Bluetooth radio is available.
   GetAvailability() => (bool is_available);
 
+  // Requests access to a Bluetooth device which matches
+  // |options->filters->services|. Access is limited to the current origin, and
+  // to the union of |options->filters->services| and
+  // |options->optional_services|. Multiple devices may be discoverable that
+  // match and one must be selected via a chooser user interface.
   RequestDevice(WebBluetoothRequestDeviceOptions options)
     => (WebBluetoothResult result, WebBluetoothDevice? device);
+
+  // Returns a list of permitted Bluetooth devices that the current origin can
+  // access services on. These devices are granted access via RequestDevice(),
+  // but the permission can be revoked at any time by the user through the
+  // browser's UI.
+  GetDevices() => (array<WebBluetoothDevice> devices);
 
   // Creates a GATT Connection to a Bluetooth Device identified by |device_id|
   // if a connection to the device didn't exist already. If a GATT connection
@@ -287,9 +291,9 @@ interface WebBluetoothService {
 
   // Starts scanning for low energy devices.
   RequestScanningStart(
-    pending_associated_remote<WebBluetoothScanClient> client,
+    pending_associated_remote<WebBluetoothAdvertisementClient> client,
     WebBluetoothRequestLEScanOptions options) => (
-    RequestScanningStartResult result);
+    WebBluetoothResult result);
 };
 
 // Classes that implement this interface will be notified of device events.
@@ -305,9 +309,9 @@ interface WebBluetoothCharacteristicClient {
   RemoteCharacteristicValueChanged(array<uint8> value);
 };
 
-// Classes that implement this interface will be notified of scan
-// events.
-interface WebBluetoothScanClient {
-  // Called when we receive a notification for the characteristic.
-  ScanEvent(WebBluetoothScanResult result);
+// Classes that implement this interface will be notified of device
+// advertisement events.
+interface WebBluetoothAdvertisementClient {
+  // Called when we receive a device advertisement.
+  AdvertisingEvent(WebBluetoothAdvertisingEvent result);
 };

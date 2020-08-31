@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,7 +39,7 @@ namespace {
 
 class TestDevToolsClientHost : public DevToolsAgentHostClient {
  public:
-  TestDevToolsClientHost() : last_sent_message(nullptr), closed_(false) {}
+  TestDevToolsClientHost() : closed_(false) {}
 
   ~TestDevToolsClientHost() override { EXPECT_TRUE(closed_); }
 
@@ -52,9 +53,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host) override { FAIL(); }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    last_sent_message = &message;
-  }
+                               base::span<const uint8_t> message) override {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     agent_host_ = agent_host;
@@ -68,8 +67,6 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   }
 
   static int close_counter;
-
-  const std::string* last_sent_message;
 
  private:
   bool closed_;
@@ -144,33 +141,18 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
       WebContents::FromRenderViewHost(inspected_rvh)));
   client_host.InspectAgentHost(agent_host.get());
 
-  // Start with a short timeout.
-  inspected_rvh->GetWidget()->StartInputEventAckTimeout(
-      TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired. We use quit-when-
-    // idle so that all tasks due after the timeout get a chance to run.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
-        TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Start a timeout.
+  inspected_rvh->GetWidget()->StartInputEventAckTimeout();
+  task_environment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
   client_host.Close();
-  // Start with a short timeout.
-  inspected_rvh->GetWidget()->StartInputEventAckTimeout(
-      TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
-        TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Start a timeout.
+  inspected_rvh->GetWidget()->StartInputEventAckTimeout();
+  task_environment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(nullptr);
@@ -221,8 +203,9 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   base::TimeTicks GetLastActivityTime() override { return base::TimeTicks(); }
 
   void SendMessageToBackend(DevToolsExternalAgentProxy* proxy,
-                            const std::string& message) override {
-    recordEvent(std::string("SendMessageToBackend.") + message);
+                            base::span<const uint8_t> message) override {
+    recordEvent(std::string("SendMessageToBackend.") +
+                std::string(message.begin(), message.end()));
   }
 };
 
@@ -236,9 +219,16 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
 
   TestDevToolsClientHost client_host;
   client_host.InspectAgentHost(agent_host.get());
-  agent_host->DispatchProtocolMessage(&client_host, "message1");
-  agent_host->DispatchProtocolMessage(&client_host, "message2");
-  agent_host->DispatchProtocolMessage(&client_host, "message2");
+
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message1", strlen("message1"))));
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message2", strlen("message2"))));
+  agent_host->DispatchProtocolMessage(
+      &client_host,
+      base::as_bytes(base::make_span("message2", strlen("message2"))));
 
   client_host.Close();
 }

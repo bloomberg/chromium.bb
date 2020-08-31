@@ -14,14 +14,11 @@ extern const char kSharingFCMAppID[];
 // Sender ID for Sharing.
 extern const char kSharingSenderID[];
 
-// Amount of time before a message is considered timeout if no ack is received.
-extern const base::TimeDelta kSendMessageTimeout;
-
-// Amount of time before an ack message is expired.
-extern const base::TimeDelta kAckTimeToLive;
-
 // Amount of time before FCM registration should happen again.
 extern const base::TimeDelta kRegistrationExpiration;
+
+// Time until we treat a WebRTC connection as timed out and force close it.
+extern const base::TimeDelta kSharingWebRtcTimeout;
 
 // Backoff policy for registration retry.
 extern const net::BackoffEntry::Policy kRetryBackoffPolicy;
@@ -52,6 +49,15 @@ enum class SharingDevicePlatform {
   kLinux,
   kMac,
   kWindows,
+  kServer,
+};
+
+enum class SharingChannelType {
+  kUnknown,
+  kFcmVapid,
+  kFcmSenderId,
+  kServer,
+  kWebRtc
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_CONSTANTS_H_

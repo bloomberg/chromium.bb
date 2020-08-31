@@ -91,12 +91,12 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 public class SettingsControllerForCodelab extends PageController {
     // TODO: Replace null with a an actual locator.  (Hint, see Ui2Locators.with*.)
     private static final IUi2Locator LOCATOR_SETTINGS =
-            Ui2Locators.withTextString(R.string.preferences);
+            Ui2Locators.withTextString(R.string.settings);
 
     // TODO: (Hint, you may need more IUi2Locators than just LOCATOR_SETTINGS,
     // add them here.
     private static final IUi2Locator LOCATOR_SEARCH_ENGINE =
-            Ui2Locators.withTextString(R.string.prefs_search_engine);
+            Ui2Locators.withTextString(R.string.search_engine_settings);
 
     // The next 5 lines are boilerplate, no need to modify.
     private static final SettingsControllerForCodelab sInstance =
@@ -150,13 +150,13 @@ import java.util.List;
 
 /**
  * Search Engine Selection Page Controller for the Code Lab, corresponds to
- * {@link org.chromium.chrome.browser.settings.SearchEnginePreference}.
+ * {@link org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings}.
  */
 public class SearchEngineSelectionControllerForCodelab extends PageController {
     // TODO: Put locators here.
     private static final IUi2Locator LOCATOR_SEARCH_ENGINE =
             Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.action_bar),
-                    Ui2Locators.withTextString(R.string.prefs_search_engine));
+                    Ui2Locators.withTextString(R.string.search_engine_settings));
     private static final IUi2Locator LOCATOR_ALL_ENGINES = Ui2Locators.withPath(
             Ui2Locators.withAnyResEntry(R.id.name), Ui2Locators.withTextRegex("^(.+)$"));
     private class EngineSelectionIndicator
@@ -242,7 +242,7 @@ public class ChromeMenu extends PageController {
 ...
 +    private static final IUi2Locator LOCATOR_SETTINGS_FOR_CODELAB =
 +            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.menu_item_text),
-+                    Ui2Locators.withTextString(R.string.menu_preferences));
++                    Ui2Locators.withTextString(R.string.menu_settings));
 ...
 +    public SettingsControllerForCodelab openSettingsForCodelab() {
 +        mUtils.click(LOCATOR_SETTINGS_FOR_CODELAB);
@@ -256,7 +256,7 @@ public class ChromeMenu extends PageController {
 ```
 android_library("chrome_java_test_pagecontroller") {
   testonly = true
-  java_files = [
+  sources = [
 ...
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/android/PermissionDialog.java",
 +    "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/codelab/SettingsControllerForCodelab.java",

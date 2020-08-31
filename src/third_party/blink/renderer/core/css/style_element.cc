@@ -40,9 +40,9 @@
 namespace blink {
 
 static bool IsCSS(const Element& element, const AtomicString& type) {
-  return type.IsEmpty() || (element.IsHTMLElement()
-                                ? DeprecatedEqualIgnoringCase(type, "text/css")
-                                : (type == "text/css"));
+  return type.IsEmpty() ||
+         (element.IsHTMLElement() ? EqualIgnoringASCIICase(type, "text/css")
+                                  : (type == "text/css"));
 }
 
 StyleElement::StyleElement(Document* document, bool created_by_parser)
@@ -150,8 +150,10 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   if (IsCSS(element, type) && passes_content_security_policy_checks) {
     scoped_refptr<MediaQuerySet> media_queries;
     const AtomicString& media_string = media();
-    if (!media_string.IsEmpty())
-      media_queries = MediaQuerySet::Create(media_string);
+    if (!media_string.IsEmpty()) {
+      media_queries =
+          MediaQuerySet::Create(media_string, element.GetExecutionContext());
+    }
     loading_ = true;
     TextPosition start_position =
         start_position_ == TextPosition::BelowRangePosition()
@@ -193,7 +195,7 @@ void StyleElement::StartLoadingDynamicSheet(Document& document) {
   document.GetStyleEngine().AddPendingSheet(style_engine_context_);
 }
 
-void StyleElement::Trace(blink::Visitor* visitor) {
+void StyleElement::Trace(Visitor* visitor) {
   visitor->Trace(sheet_);
 }
 

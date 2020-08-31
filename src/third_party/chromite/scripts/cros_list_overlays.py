@@ -8,10 +8,14 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _ParseArguments(argv):

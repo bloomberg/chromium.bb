@@ -1,10 +1,12 @@
-/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-export default class TracingModel {
+import * as Common from '../common/common.js';
+
+import {EventPayload} from './TracingManager.js';  // eslint-disable-line no-unused-vars
+
+export class TracingModel {
   /**
    * @param {!BackingStorage} backingStorage
    */
@@ -16,9 +18,11 @@ export default class TracingModel {
     this._processById = new Map();
     this._processByName = new Map();
     this._minimumRecordTime = 0;
+    /** @type {number} */
     this._maximumRecordTime = 0;
-    this._devToolsMetadataEvents = [];
     /** @type {!Array<!Event>} */
+    this._devToolsMetadataEvents = [];
+    /** @type {!Array<!AsyncEvent>} */
     this._asyncEvents = [];
     /** @type {!Map<string, !AsyncEvent>} */
     this._openAsyncEvents = new Map();
@@ -74,7 +78,7 @@ export default class TracingModel {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {string|undefined}
    */
   static _extractId(payload) {
@@ -89,6 +93,7 @@ export default class TracingModel {
     }
     console.error(
         `Unexpected id2 field at ${payload.ts / 1000}, one and only one of 'local' and 'global' should be present.`);
+    return undefined;
   }
 
   /**
@@ -125,19 +130,19 @@ export default class TracingModel {
     if (tracingStartedInBrowser.length === 1) {
       return tracingStartedInBrowser[0].thread;
     }
-    Common.console.error('Failed to find browser main thread in trace, some timeline features may be unavailable');
+    Common.Console.Console.instance().error('Failed to find browser main thread in trace, some timeline features may be unavailable');
     return null;
   }
 
   /**
-   * @return {!Array.<!Event>}
+   * @return {!Array<!Event>}
    */
   devToolsMetadataEvents() {
     return this._devToolsMetadataEvents;
   }
 
   /**
-   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   * @param {!Array<!EventPayload>} events
    */
   addEvents(events) {
     for (let i = 0; i < events.length; ++i) {
@@ -188,7 +193,7 @@ export default class TracingModel {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    */
   _addEvent(payload) {
     let process = this._processById.get(payload.pid);
@@ -232,7 +237,7 @@ export default class TracingModel {
     // chronological order. However, also add individual async events to the thread flow (above), so we can easily
     // display them on the same chart as other events, should we choose so.
     if (TracingModel.isAsyncPhase(payload.ph)) {
-      this._asyncEvents.push(event);
+      this._asyncEvents.push(/** @type {!AsyncEvent} */ (event));
     }
     event._setBackingStorage(backingStorage);
     if (event.hasCategory(DevToolsMetadataEventCategory)) {
@@ -244,20 +249,24 @@ export default class TracingModel {
     }
 
     switch (payload.name) {
-      case MetadataEvent.ProcessSortIndex:
+      case MetadataEvent.ProcessSortIndex: {
         process._setSortIndex(payload.args['sort_index']);
         break;
-      case MetadataEvent.ProcessName:
+      }
+      case MetadataEvent.ProcessName: {
         const processName = payload.args['name'];
         process._setName(processName);
         this._processByName.set(processName, process);
         break;
-      case MetadataEvent.ThreadSortIndex:
+      }
+      case MetadataEvent.ThreadSortIndex: {
         process.threadById(payload.tid)._setSortIndex(payload.args['sort_index']);
         break;
-      case MetadataEvent.ThreadName:
+      }
+      case MetadataEvent.ThreadName: {
         process.threadById(payload.tid)._setName(payload.args['name']);
         break;
+      }
     }
   }
 
@@ -297,10 +306,10 @@ export default class TracingModel {
   }
 
   /**
-   * @return {!Array.<!Process>}
+   * @return {!Array<!Process>}
    */
   sortedProcesses() {
-    return NamedObject._sort(this._processById.valuesArray());
+    return Sorter.sort([...this._processById.values()]);
   }
 
   /**
@@ -329,6 +338,21 @@ export default class TracingModel {
     return process && process.threadByName(threadName);
   }
 
+  /**
+   * @param {string} processName
+   * @param {string} threadName
+   * @param {string} eventName
+   * @return {!Array<!Event>}
+   */
+  extractEventsFromThreadByName(processName, threadName, eventName) {
+    const thread = this.threadByName(processName, threadName);
+    if (!thread) {
+      return [];
+    }
+
+    return thread.removeEventsByName(eventName);
+  }
+
   _processPendingAsyncEvents() {
     this._asyncEvents.sort(Event.compareStartTime);
     for (let i = 0; i < this._asyncEvents.length; ++i) {
@@ -354,7 +378,11 @@ export default class TracingModel {
 
     for (const eventStack of this._openNestableAsyncEvents.values()) {
       while (eventStack.length) {
-        eventStack.pop().setEndTime(this._maximumRecordTime);
+        const event = eventStack.pop();
+        if (!event) {
+          continue;
+        }
+        event.setEndTime(this._maximumRecordTime);
       }
     }
     this._openNestableAsyncEvents.clear();
@@ -369,7 +397,7 @@ export default class TracingModel {
     let openEventsStack = this._openNestableAsyncEvents.get(key);
 
     switch (event.phase) {
-      case phase.NestableAsyncBegin:
+      case phase.NestableAsyncBegin: {
         if (!openEventsStack) {
           openEventsStack = [];
           this._openNestableAsyncEvents.set(key, openEventsStack);
@@ -378,24 +406,33 @@ export default class TracingModel {
         openEventsStack.push(asyncEvent);
         event.thread._addAsyncEvent(asyncEvent);
         break;
+      }
 
-      case phase.NestableAsyncInstant:
+      case phase.NestableAsyncInstant: {
         if (openEventsStack && openEventsStack.length) {
-          openEventsStack.peekLast()._addStep(event);
+          const event = openEventsStack.peekLast();
+          if (event) {
+            event._addStep(event);
+          }
         }
         break;
+      }
 
-      case phase.NestableAsyncEnd:
+      case phase.NestableAsyncEnd: {
         if (!openEventsStack || !openEventsStack.length) {
           break;
         }
         const top = openEventsStack.pop();
+        if (!top) {
+          break;
+        }
         if (top.name !== event.name) {
           console.error(
               `Begin/end event mismatch for nestable async event, ${top.name} vs. ${event.name}, key: ${key}`);
           break;
         }
         top._addStep(event);
+      }
     }
   }
 
@@ -428,7 +465,7 @@ export default class TracingModel {
     }
     if (event.phase === phase.AsyncStepInto || event.phase === phase.AsyncStepPast) {
       const lastStep = asyncEvent.steps.peekLast();
-      if (lastStep.phase !== phase.AsyncBegin && lastStep.phase !== event.phase) {
+      if (lastStep && lastStep.phase !== phase.AsyncBegin && lastStep.phase !== event.phase) {
         console.assert(
             false, 'Async event step phase mismatch: ' + lastStep.phase + ' at ' + lastStep.startTime + ' vs. ' +
                 event.phase + ' at ' + event.startTime);
@@ -513,9 +550,10 @@ export class BackingStorage {
 
   /**
    * @param {string} string
-   * @return {function():!Promise.<?string>}
+   * @return {function():!Promise<?string>}
    */
   appendAccessibleString(string) {
+    throw new Error('Not implemented yet');
   }
 
   finishWriting() {
@@ -523,6 +561,9 @@ export class BackingStorage {
 
   reset() {}
 }
+
+/** @typedef {*} */
+let Args;  // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
@@ -548,8 +589,14 @@ export class Event {
     this.startTime = startTime;
     /** @type {!Thread} */
     this.thread = thread;
-    /** @type {!Object} */
+    /** @type {!Args} */
     this.args = {};
+    /** @type {?string} */
+    this.id;
+    /** @type {?string} */
+    this.bind_id;
+    /** @type {number} */
+    this.ordinal = 0;
 
     /** @type {number} */
     this.selfTime = 0;
@@ -557,7 +604,7 @@ export class Event {
 
   /**
    * @this {null}
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @param {!Thread} thread
    * @return {!Event}
    */
@@ -581,11 +628,15 @@ export class Event {
   }
 
   /**
-   * @param {!Event} a
-   * @param {!Event} b
+   * @param {?Event} a
+   * @param {?Event} b
    * @return {number}
    */
   static compareStartTime(a, b) {
+    if (!a || !b) {
+      return 0;
+    }
+
     return a.startTime - b.startTime;
   }
 
@@ -622,7 +673,7 @@ export class Event {
   }
 
   /**
-   * @param {!Object} args
+   * @param {!Args} args
    */
   addArgs(args) {
     // Shallow copy args to avoid modifying original payload which may be saved to file.
@@ -630,7 +681,9 @@ export class Event {
       if (name in this.args) {
         console.error('Same argument name (' + name + ') is used for begin and end phases of ' + this.name);
       }
-      this.args[name] = args[name];
+      /** @typedef {Object<string, string|number|ObjectSnapshot>} */
+      let BlackboxArgs;  // eslint-disable-line no-unused-vars
+      /** @type {!BlackboxArgs} */ (this.args)[name] = /** @type {!BlackboxArgs} */ (args)[name];
     }
   }
 
@@ -673,7 +726,7 @@ export class ObjectSnapshot extends Event {
   /**
    * @override
    * @this {null}
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @param {!Thread} thread
    * @return {!ObjectSnapshot}
    */
@@ -694,15 +747,19 @@ export class ObjectSnapshot extends Event {
   }
 
   /**
-   * @param {function(?)} callback
+   * @param {function(?ObjectSnapshot):void} callback
    */
   requestObject(callback) {
     const snapshot = this.args['snapshot'];
     if (snapshot) {
-      callback(snapshot);
+      callback(/** @type {!ObjectSnapshot} */ (snapshot));
       return;
     }
-    this._backingStorage().then(onRead, callback.bind(null, null));
+    const storage = this._backingStorage;
+    if (storage) {
+      storage().then(onRead, callback.bind(null, null));
+    }
+
     /**
      * @param {?string} result
      */
@@ -715,7 +772,7 @@ export class ObjectSnapshot extends Event {
         const payload = JSON.parse(result);
         callback(payload['args']['snapshot']);
       } catch (e) {
-        Common.console.error('Malformed event data in backing storage');
+        Common.Console.Console.instance().error('Malformed event data in backing storage');
         callback(null);
       }
     }
@@ -790,6 +847,33 @@ class ProfileEventsGroup {
     this.children.push(event);
   }
 }
+/**
+  @typedef {{
+    _sortIndex: number,
+    name: function():string,
+  }}
+ */
+let Sortable;  // eslint-disable-line no-unused-vars
+
+class Sorter {
+  /**
+   * @template Item
+   * @param {!Array<!Item>} array
+   * @return {!Array<!Item>}
+   */
+  static sort(array) {
+    /**
+     * @param {!Sortable} a
+     * @param {!Sortable} b
+     */
+    function comparator(a, b) {
+      return a._sortIndex !== b._sortIndex ? a._sortIndex - b._sortIndex : a.name().localeCompare(b.name());
+    }
+    // TODO(crbug.com/1082064): In TS the definition would be `param {!Array<Item & Sortable>} array`.
+    // But Closure compiler does not support that, therefore, a cast is needed.
+    return (/** @type {?} */ (array)).sort(comparator);
+  }
+}
 
 class NamedObject {
   /**
@@ -801,20 +885,6 @@ class NamedObject {
     this._id = id;
     this._name = '';
     this._sortIndex = 0;
-  }
-
-  /**
-   * @param {!Array.<!NamedObject>} array
-   */
-  static _sort(array) {
-    /**
-     * @param {!NamedObject} a
-     * @param {!NamedObject} b
-     */
-    function comparator(a, b) {
-      return a._sortIndex !== b._sortIndex ? a._sortIndex - b._sortIndex : a.name().localeCompare(b.name());
-    }
-    return array.sort(comparator);
   }
 
   /**
@@ -888,7 +958,7 @@ export class Process extends NamedObject {
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {?Event} event
    */
   _addEvent(payload) {
@@ -896,10 +966,10 @@ export class Process extends NamedObject {
   }
 
   /**
-   * @return {!Array.<!Thread>}
+   * @return {!Array<!Thread>}
    */
   sortedThreads() {
-    return NamedObject._sort(this._threads.valuesArray());
+    return Sorter.sort([...this._threads.values()]);
   }
 }
 
@@ -911,7 +981,14 @@ export class Thread extends NamedObject {
   constructor(process, id) {
     super(process._model, id);
     this._process = process;
+
+    /**
+     * @type {!Array<!Event>};
+     */
     this._events = [];
+    /**
+     * @type {!Array<!AsyncEvent>};
+     */
     this._asyncEvents = [];
     this._lastTopLevelEvent = null;
   }
@@ -921,17 +998,22 @@ export class Thread extends NamedObject {
     this._events.sort(Event.compareStartTime);
     const phases = Phase;
     const stack = [];
+    /** @type {!Set<number>} */
+    const toDelete = new Set();
     for (let i = 0; i < this._events.length; ++i) {
       const e = this._events[i];
       e.ordinal = i;
       switch (e.phase) {
-        case phases.End:
-          this._events[i] = null;  // Mark for removal.
+        case phases.End: {
+          toDelete.add(i);  // Mark for removal.
           // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
           if (!stack.length) {
             continue;
           }
           const top = stack.pop();
+          if (!top) {
+            continue;
+          }
           if (top.name !== e.name || top.categoriesString !== e.categoriesString) {
             console.error(
                 'B/E events mismatch at ' + top.startTime + ' (' + top.name + ') vs. ' + e.startTime + ' (' + e.name +
@@ -940,19 +1022,24 @@ export class Thread extends NamedObject {
             top._complete(e);
           }
           break;
-        case phases.Begin:
+        }
+        case phases.Begin: {
           stack.push(e);
           break;
+        }
       }
     }
     while (stack.length) {
-      stack.pop().setEndTime(this._model.maximumRecordTime());
+      const event = stack.pop();
+      if (event) {
+        event.setEndTime(this._model.maximumRecordTime());
+      }
     }
-    this._events.remove(null, false);
+    this._events = this._events.filter((_, idx) => !toDelete.has(idx));
   }
 
   /**
-   * @param {!SDK.TracingManager.EventPayload} payload
+   * @param {!EventPayload} payload
    * @return {?Event} event
    */
   _addEvent(payload) {
@@ -960,7 +1047,8 @@ export class Thread extends NamedObject {
                                                         Event.fromPayload(payload, this);
     if (TracingModel.isTopLevelEvent(event)) {
       // Discard nested "top-level" events.
-      if (this._lastTopLevelEvent && this._lastTopLevelEvent.endTime > event.startTime) {
+      const lastTopLevelEvent = this._lastTopLevelEvent;
+      if (lastTopLevelEvent && (lastTopLevelEvent.endTime || 0) > event.startTime) {
         return null;
       }
       this._lastTopLevelEvent = event;
@@ -1000,49 +1088,40 @@ export class Thread extends NamedObject {
   }
 
   /**
-   * @return {!Array.<!Event>}
+   * @return {!Array<!Event>}
    */
   events() {
     return this._events;
   }
 
   /**
-   * @return {!Array.<!AsyncEvent>}
+   * @return {!Array<!AsyncEvent>}
    */
   asyncEvents() {
     return this._asyncEvents;
   }
+
+  /**
+   * @param {string} name
+   */
+  removeEventsByName(name) {
+    /**
+     * @type {!Array<!Event>}
+     */
+    const extracted = [];
+    this._events = this._events.filter(e => {
+      if (!e) {
+        return false;
+      }
+
+      if (e.name !== name) {
+        return true;
+      }
+
+      extracted.push(e);
+      return false;
+    });
+
+    return extracted;
+  }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.TracingModel = TracingModel;
-
-SDK.TracingModel.Phase = Phase;
-SDK.TracingModel.MetadataEvent = MetadataEvent;
-SDK.TracingModel.LegacyTopLevelEventCategory = LegacyTopLevelEventCategory;
-SDK.TracingModel.DevToolsMetadataEventCategory = DevToolsMetadataEventCategory;
-SDK.TracingModel.DevToolsTimelineEventCategory = DevToolsTimelineEventCategory;
-
-/** @constructor */
-SDK.TracingModel.Event = Event;
-
-/** @constructor */
-SDK.TracingModel.ObjectSnapshot = ObjectSnapshot;
-
-/** @constructor */
-SDK.TracingModel.AsyncEvent = AsyncEvent;
-
-/** @constructor */
-SDK.TracingModel.Process = Process;
-
-/** @constructor */
-SDK.TracingModel.Thread = Thread;
-
-/** @interface */
-SDK.BackingStorage = BackingStorage;

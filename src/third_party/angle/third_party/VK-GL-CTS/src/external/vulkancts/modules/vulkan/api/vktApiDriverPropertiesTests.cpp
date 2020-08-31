@@ -65,22 +65,27 @@ static const deUint32 knownDriverIds[] =
 
 static const VkConformanceVersionKHR knownConformanceVersions[] =
 {
-	makeConformanceVersionKHR(1, 1, 6, 0),
-	makeConformanceVersionKHR(1, 1, 5, 2),
-	makeConformanceVersionKHR(1, 1, 5, 1),
-	makeConformanceVersionKHR(1, 1, 5, 0),
-	makeConformanceVersionKHR(1, 1, 4, 3),
-	makeConformanceVersionKHR(1, 1, 4, 2),
-	makeConformanceVersionKHR(1, 1, 4, 1),
-	makeConformanceVersionKHR(1, 1, 4, 0),
-	makeConformanceVersionKHR(1, 1, 3, 3),
-	makeConformanceVersionKHR(1, 1, 3, 2),
-	makeConformanceVersionKHR(1, 1, 3, 1),
-	makeConformanceVersionKHR(1, 1, 3, 0),
-	makeConformanceVersionKHR(1, 1, 2, 3),
-	makeConformanceVersionKHR(1, 1, 2, 2),
-	makeConformanceVersionKHR(1, 1, 2, 1),
-	makeConformanceVersionKHR(1, 1, 2, 0),
+	makeConformanceVersion(1, 2, 2, 0),
+	makeConformanceVersion(1, 2, 1, 1),
+	makeConformanceVersion(1, 2, 1, 0),
+	makeConformanceVersion(1, 2, 0, 2),
+	makeConformanceVersion(1, 2, 0, 1),
+	makeConformanceVersion(1, 2, 0, 0),
+	makeConformanceVersion(1, 1, 6, 3),
+	makeConformanceVersion(1, 1, 6, 2),
+	makeConformanceVersion(1, 1, 6, 1),
+	makeConformanceVersion(1, 1, 6, 0),
+	makeConformanceVersion(1, 1, 5, 2),
+	makeConformanceVersion(1, 1, 5, 1),
+	makeConformanceVersion(1, 1, 5, 0),
+	makeConformanceVersion(1, 1, 4, 3),
+	makeConformanceVersion(1, 1, 4, 2),
+	makeConformanceVersion(1, 1, 4, 1),
+	makeConformanceVersion(1, 1, 4, 0),
+	makeConformanceVersion(1, 1, 3, 3),
+	makeConformanceVersion(1, 1, 3, 2),
+	makeConformanceVersion(1, 1, 3, 1),
+	makeConformanceVersion(1, 1, 3, 0),
 };
 
 DE_INLINE bool isNullTerminated(const char* str, const deUint32 maxSize)
@@ -88,7 +93,7 @@ DE_INLINE bool isNullTerminated(const char* str, const deUint32 maxSize)
 	return deStrnlen(str, maxSize) < maxSize;
 }
 
-DE_INLINE bool operator==(const VkConformanceVersionKHR& a, const VkConformanceVersionKHR& b)
+DE_INLINE bool operator==(const VkConformanceVersion& a, const VkConformanceVersion& b)
 {
 	return ((a.major == b.major)		&&
 			(a.minor == b.minor)		&&
@@ -99,7 +104,7 @@ DE_INLINE bool operator==(const VkConformanceVersionKHR& a, const VkConformanceV
 void checkSupport (Context& context, const TestType config)
 {
 	DE_UNREF(config);
-	context.requireDeviceExtension("VK_KHR_driver_properties");
+	context.requireDeviceFunctionality("VK_KHR_driver_properties");
 }
 
 void testDriverMatch (const VkPhysicalDeviceDriverPropertiesKHR& deviceDriverProperties)
@@ -131,8 +136,18 @@ void testInfoZeroTerminated (const VkPhysicalDeviceDriverPropertiesKHR& deviceDr
 		TCU_FAIL("Driver info is not a null-terminated string");
 }
 
-void testVersion (const VkPhysicalDeviceDriverPropertiesKHR& deviceDriverProperties)
+void testVersion (const VkPhysicalDeviceDriverPropertiesKHR& deviceDriverProperties, deUint32 usedApiVersion)
 {
+	const deUint32 apiMajorVersion = VK_VERSION_MAJOR(usedApiVersion);
+	const deUint32 apiMinorVersion = VK_VERSION_MINOR(usedApiVersion);
+
+	if (deviceDriverProperties.conformanceVersion.major < apiMajorVersion ||
+		(deviceDriverProperties.conformanceVersion.major == apiMajorVersion &&
+		 deviceDriverProperties.conformanceVersion.minor < apiMinorVersion))
+	{
+		TCU_FAIL("Wrong driver conformance version (older than used API version)");
+	}
+
 	for (const VkConformanceVersionKHR* pConformanceVersion  = knownConformanceVersions;
 										pConformanceVersion != DE_ARRAY_END(knownConformanceVersions);
 									  ++pConformanceVersion)
@@ -141,7 +156,7 @@ void testVersion (const VkPhysicalDeviceDriverPropertiesKHR& deviceDriverPropert
 			return;
 	}
 
-	TCU_FAIL("Wrong driver conformance version");
+	TCU_FAIL("Wrong driver conformance version (not known)");
 }
 
 tcu::TestStatus testQueryProperties (Context& context, const TestType testType)
@@ -150,7 +165,7 @@ tcu::TestStatus testQueryProperties (Context& context, const TestType testType)
 	const VkPhysicalDevice				physDevice			= context.getPhysicalDevice();
 	const int							memsetPattern		= 0xaa;
 	VkPhysicalDeviceProperties2			deviceProperties2;
-	VkPhysicalDeviceDriverPropertiesKHR	deviceDriverProperties;
+	VkPhysicalDeviceDriverProperties	deviceDriverProperties;
 
 	deMemset(&deviceDriverProperties, memsetPattern, sizeof(deviceDriverProperties));
 	deviceDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
@@ -165,11 +180,11 @@ tcu::TestStatus testQueryProperties (Context& context, const TestType testType)
 	// Verify the returned values
 	switch (testType)
 	{
-		case TEST_TYPE_DRIVER_ID_MATCH:			testDriverMatch			(deviceDriverProperties);	break;
-		case TEST_TYPE_NAME_IS_NOT_EMPTY:		testNameIsNotEmpty		(deviceDriverProperties);	break;
-		case TEST_TYPE_NAME_ZERO_TERMINATED:	testNameZeroTerminated	(deviceDriverProperties);	break;
-		case TEST_TYPE_INFO_ZERO_TERMINATED:	testInfoZeroTerminated	(deviceDriverProperties);	break;
-		case TEST_TYPE_VERSION:					testVersion				(deviceDriverProperties);	break;
+		case TEST_TYPE_DRIVER_ID_MATCH:			testDriverMatch			(deviceDriverProperties);								break;
+		case TEST_TYPE_NAME_IS_NOT_EMPTY:		testNameIsNotEmpty		(deviceDriverProperties);								break;
+		case TEST_TYPE_NAME_ZERO_TERMINATED:	testNameZeroTerminated	(deviceDriverProperties);								break;
+		case TEST_TYPE_INFO_ZERO_TERMINATED:	testInfoZeroTerminated	(deviceDriverProperties);								break;
+		case TEST_TYPE_VERSION:					testVersion				(deviceDriverProperties, context.getUsedApiVersion());	break;
 		default:								TCU_THROW(InternalError, "Unknown test type specified");
 	}
 

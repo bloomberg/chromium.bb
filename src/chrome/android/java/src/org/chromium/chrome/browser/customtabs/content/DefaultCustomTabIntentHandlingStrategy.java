@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import javax.inject.Inject;
@@ -91,6 +91,15 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
         String url = intentDataProvider.getUrlToLoad();
         if (TextUtils.isEmpty(url)) return;
         LoadUrlParams params = new LoadUrlParams(url);
+
+        if (intentDataProvider.isWebApkActivity()) {
+            // The back stack should be cleared when a WebAPK receives a deep link intent. This is
+            // unnecessary for Trusted Web Activities and new-style WebAPKs because Trusted Web
+            // Activities and new-style WebAPKs are restarted when they receive an intent from a
+            // deep link.
+            params.setShouldClearHistoryList(true);
+        }
+
         mNavigationController.navigate(params, getTimestamp(intentDataProvider));
     }
 

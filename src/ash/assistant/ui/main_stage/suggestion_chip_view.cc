@@ -9,7 +9,8 @@
 #include <utility>
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -23,39 +24,36 @@ namespace ash {
 
 namespace {
 
+// Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kFocusColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 constexpr SkColor kStrokeColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 constexpr SkColor kTextColor = gfx::kGoogleGrey700;
 constexpr int kStrokeWidthDip = 1;
 constexpr int kIconMarginDip = 8;
+constexpr int kIconSizeDip = 16;
 constexpr int kChipPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 
 }  // namespace
 
-// Params ----------------------------------------------------------------------
-
-SuggestionChipView::Params::Params() = default;
-
-SuggestionChipView::Params::~Params() = default;
-
 // SuggestionChipView ----------------------------------------------------------
 
-SuggestionChipView::SuggestionChipView(const Params& params,
-                                       views::ButtonListener* listener)
-    : Button(listener),
-      icon_view_(new views::ImageView()),
-      text_view_(new views::Label()) {
-  // Configure focus. Note that we don't install the default focus ring as we
-  // use custom highlighting instead.
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetInstallFocusRingOnFocus(false);
+// static
+constexpr char SuggestionChipView::kClassName[];
 
-  InitLayout(params);
+SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
+                                       const AssistantSuggestion* suggestion,
+                                       views::ButtonListener* listener)
+    : Button(listener), delegate_(delegate), suggestion_(suggestion) {
+  InitLayout();
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
+
+const char* SuggestionChipView::GetClassName() const {
+  return kClassName;
+}
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
@@ -77,9 +75,22 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void SuggestionChipView::InitLayout(const Params& params) {
-  // Layout padding differs depending on icon visibility.
-  const int padding_left_dip = params.icon ? kIconMarginDip : kChipPaddingDip;
+void SuggestionChipView::InitLayout() {
+  const base::string16 text = base::UTF8ToUTF16(suggestion_->text);
+
+  // Accessibility.
+  SetAccessibleName(text);
+
+  // Focus.
+  // Note that we don't install the default focus ring as we use custom
+  // highlighting instead.
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetInstallFocusRingOnFocus(false);
+
+  // Layout.
+  // Note that padding differs depending on icon visibility.
+  const int padding_left_dip =
+      suggestion_->icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -89,26 +100,29 @@ void SuggestionChipView::InitLayout(const Params& params) {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Icon.
-  const int icon_size =
-      AppListConfig::instance().suggestion_chip_icon_dimension();
-  icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
-  icon_view_->SetPreferredSize(gfx::Size(icon_size, icon_size));
+  icon_view_ = AddChildView(std::make_unique<views::ImageView>());
+  icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
 
-  if (params.icon)
-    icon_view_->SetImage(params.icon.value());
-  else
+  // Download our icon if necessary. Note that we *don't* hide the associated
+  // view while an image is being downloaded. This prevents layout jank that
+  // would otherwise occur when the image is finally rendered.
+  if (suggestion_->icon_url.is_empty()) {
     icon_view_->SetVisible(false);
-
-  AddChildView(icon_view_);
+  } else {
+    delegate_->DownloadImage(suggestion_->icon_url,
+                             base::BindOnce(&SuggestionChipView::SetIcon,
+                                            weak_factory_.GetWeakPtr()));
+  }
 
   // Text.
+  text_view_ = AddChildView(std::make_unique<views::Label>());
   text_view_->SetAutoColorReadabilityEnabled(false);
   text_view_->SetEnabledColor(kTextColor);
   text_view_->SetSubpixelRenderingEnabled(false);
   text_view_->SetFontList(
-      ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
-  SetText(params.text);
-  AddChildView(text_view_);
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
+  SetText(text);
 }
 
 void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -153,7 +167,7 @@ bool SuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetImage(icon);
-  icon_view_->SetVisible(true);
+  icon_view_->SetVisible(!icon.isNull());
 }
 
 void SuggestionChipView::SetText(const base::string16& text) {

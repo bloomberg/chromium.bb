@@ -58,8 +58,8 @@ const int16_t SDP_Table[513] = {
 FXDIB_ResampleOptions::FXDIB_ResampleOptions() = default;
 
 bool FXDIB_ResampleOptions::HasAnyOptions() const {
-  return bInterpolateDownsample || bInterpolateBilinear ||
-         bInterpolateBicubic || bHalftone || bNoSmoothing || bLossy;
+  return bInterpolateBilinear || bInterpolateBicubic || bHalftone ||
+         bNoSmoothing || bLossy;
 }
 
 FX_RECT FXDIB_SwapClipBox(const FX_RECT& clip,
@@ -106,7 +106,7 @@ FX_ARGB AlphaAndColorRefToArgb(int a, FX_COLORREF colorref) {
 
 FX_ARGB StringToFXARGB(WideStringView view) {
   static constexpr FX_ARGB kDefaultValue = 0xff000000;
-  if (view.GetLength() == 0)
+  if (view.IsEmpty())
     return kDefaultValue;
 
   int cc = 0;

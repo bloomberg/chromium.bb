@@ -12,13 +12,16 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
+import org.chromium.components.browser_ui.modaldialog.R;
+import org.chromium.components.browser_ui.modaldialog.TabModalPresenter;
+import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -26,7 +29,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -214,8 +216,10 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private void replyToPromptAndWaitForUpdates(PermissionUpdateWaiter updateWaiter, boolean allow,
             int nUpdates, boolean isDialog) throws Exception {
         if (isDialog) {
-            DialogShownCriteria criteria = new DialogShownCriteria(
-                    getActivity().getModalDialogManager(), "Dialog not shown", true);
+            ModalDialogManager dialogManager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                    getActivity()::getModalDialogManager);
+            DialogShownCriteria criteria =
+                    new DialogShownCriteria(dialogManager, "Dialog not shown", true);
             CriteriaHelper.pollUiThread(criteria);
             replyToDialogAndWaitForUpdates(updateWaiter, nUpdates, allow);
         } else {
@@ -254,13 +258,12 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      */
     private void replyToDialogAndWaitForUpdates(
             PermissionUpdateWaiter updateWaiter, int nUpdates, boolean allow) throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PermissionDialogController.getInstance().clickButtonForTest(allow
-                                ? ModalDialogProperties.ButtonType.POSITIVE
-                                : ModalDialogProperties.ButtonType.NEGATIVE);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabModalPresenter presenter = (TabModalPresenter) getActivity()
+                                                  .getModalDialogManager()
+                                                  .getCurrentPresenterForTest();
+            TouchCommon.singleClickView(presenter.getDialogContainerForTest().findViewById(
+                    allow ? R.id.positive_button : R.id.negative_button));
         });
         updateWaiter.waitForNumUpdates(nUpdates);
     }

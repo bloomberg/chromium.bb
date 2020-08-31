@@ -9,4 +9,4 @@ MYPATH=$(dirname "${BASH_SOURCE[0]}")
 source "$MYPATH/cipd_bin_setup.sh"
 cipd_bin_setup &> /dev/null
 
-PYTHONDONTWRITEBYTECODE=1 exec python "$MYPATH/.cipd_bin/goma_ctl.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec vpython "$MYPATH/.cipd_bin/goma_ctl.py" "$@"

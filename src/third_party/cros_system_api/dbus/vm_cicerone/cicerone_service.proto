@@ -25,6 +25,9 @@ message NotifyVmStartedRequest {
   // The token to identify the VM, only used with plugin VMs that don't have
   // containers.
   string vm_token = 4;
+
+  // The pid of the main VM process.
+  uint32 pid = 5;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
@@ -82,6 +85,9 @@ message ContainerStartedSignal {
 
   // The home directory of uid 1000 in the container.
   string container_homedir = 5;
+
+  // The IPv4 address of the container.
+  string ipv4_address = 6;
 }
 
 // Message used in the signal for when a container has shut down.
@@ -810,12 +816,12 @@ message SetUpLxdContainerUserResponse {
 }
 
 // Request for debug information about virtual machine and container state.
-message GetDebugInformationRequest {
-}
+message GetDebugInformationRequest {}
 
 // Response for debug information about virtual machine and container state.
 message GetDebugInformationResponse {
-  // Debug information about virtual machine and container state in arbitrary format.
+  // Debug information about virtual machine and container state in arbitrary
+  // format.
   string debug_information = 1;
 }
 
@@ -1124,6 +1130,7 @@ message ApplyAnsiblePlaybookRequest {
 
 message ApplyAnsiblePlaybookResponse {
   enum Status {
+    // The status is unknown.
     UNKNOWN = 0;
 
     // Application process was successfully started, all further updates will be
@@ -1151,6 +1158,7 @@ message ApplyAnsiblePlaybookProgressSignal {
   string owner_id = 3;
 
   enum Status {
+    // The signal has unknown status.
     UNKNOWN = 0;
 
     // Application has completed and was successfull. No further signals will be
@@ -1170,6 +1178,36 @@ message ApplyAnsiblePlaybookProgressSignal {
 
   // Contains a textual reason for the failure in case of a FAILED status.
   string failure_details = 5;
+}
+
+message ConfigureForArcSideloadRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+message ConfigureForArcSideloadResponse {
+  enum Status {
+    // The status is unknown.
+    UNKNOWN = 0;
+
+    // The configuration succeeded.
+    SUCCEEDED = 2;
+
+    // The configuration failed.
+    FAILED = 3;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
 }
 
 // Request for a container to create a tunnel to a prepared port on the host.
@@ -1333,4 +1371,67 @@ message UpgradeContainerProgressSignal {
 
   // Human readable upgrade progress.
   repeated string progress_messages = 6;
+}
+
+message StartLxdRequest {
+  // Name of the VM to start LXD in.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
+message StartLxdResponse {
+  enum Status {
+    // The status of creating the container is unknown.
+    UNKNOWN = 0;
+
+    // LXD is starting.
+    STARTING = 1;
+
+    // LXD is already running.
+    ALREADY_RUNNING = 2;
+
+    // Could not launch LXD.
+    FAILED = 3;
+  }
+
+  // LXD launch status
+  Status status = 1;
+
+  // The failure_reason if LXD could not be started.
+  string failure_reason = 2;
+}
+
+// Sent by tremplin to update the host on the start progress of starting LXD.
+message StartLxdProgressSignal {
+  enum Status {
+    // The status of creating the container is unknown.
+    UNKNOWN = 0;
+
+    // LXD is starting.
+    STARTING = 1;
+
+    // Something went wrong, Tremplin is trying to recover LXD.
+    // This is still an in-progress status.
+    RECOVERING = 2;
+
+    // LXD is now running.
+    STARTED = 3;
+
+    // Could not launch LXD.
+    FAILED = 4;
+  }
+
+  // Name of the VM to start LXD in.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // LXD launch status
+  Status status = 3;
+
+  // The failure_reason if LXD could not be started.
+  string failure_reason = 4;
 }

@@ -6,8 +6,6 @@ import("//build/config/jumbo.gni")
 
 jumbo_source_set("browser") {
   sources = [
-    "cdm_message_filter_android.cc",
-    "cdm_message_filter_android.h",
     "media_drm_storage_impl.cc",
     "media_drm_storage_impl.h",
   ]
@@ -22,17 +20,24 @@ jumbo_source_set("browser") {
   deps = [
     "//components/cdm/common",
     "//components/prefs",
+    "//components/user_prefs",
     "//content/public/common",
     "//ipc",
     "//media",
   ]
+
+  if (is_android) {
+    sources += [
+      "cdm_message_filter_android.cc",
+      "cdm_message_filter_android.h",
+    ]
+    deps += [ "//third_party/widevine/cdm:headers" ]
+  }
 }
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "media_drm_storage_impl_unittest.cc",
-  ]
+  sources = [ "media_drm_storage_impl_unittest.cc" ]
   deps = [
     ":browser",
     "//base/test:test_support",

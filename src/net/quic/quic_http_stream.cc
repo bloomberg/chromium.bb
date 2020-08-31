@@ -22,11 +22,11 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_info.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
@@ -105,10 +105,12 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3
                  ? HttpResponseInfo::CONNECTION_INFO_QUIC_T050
                  : HttpResponseInfo::CONNECTION_INFO_QUIC_Q050;
-    case quic::QUIC_VERSION_99:
-      return quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3
-                 ? HttpResponseInfo::CONNECTION_INFO_QUIC_T099
-                 : HttpResponseInfo::CONNECTION_INFO_QUIC_Q099;
+    case quic::QUIC_VERSION_IETF_DRAFT_25:
+      DCHECK(quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3);
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_25;
+    case quic::QUIC_VERSION_IETF_DRAFT_27:
+      DCHECK(quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3);
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_27;
     case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_999;
   }
@@ -410,7 +412,7 @@ void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   details->connection_info =
       ConnectionInfoFromQuicVersion(quic_session()->GetQuicVersion());
   quic_session()->PopulateNetErrorDetails(details);
-  if (quic_session()->IsCryptoHandshakeConfirmed() && stream_ &&
+  if (quic_session()->OneRttKeysAvailable() && stream_ &&
       stream_->connection_error() != quic::QUIC_NO_ERROR)
     details->quic_connection_error = stream_->connection_error();
 }
@@ -649,7 +651,7 @@ int QuicHttpStream::DoSendBody() {
   int len = request_body_buf_->BytesRemaining();
   if (len > 0 || eof) {
     next_state_ = STATE_SEND_BODY_COMPLETE;
-    quic::QuicStringPiece data(request_body_buf_->data(), len);
+    quiche::QuicheStringPiece data(request_body_buf_->data(), len);
     return stream_->WriteStreamData(
         data, eof,
         base::BindOnce(&QuicHttpStream::OnIOComplete,
@@ -750,8 +752,7 @@ void QuicHttpStream::ResetStream() {
 }
 
 int QuicHttpStream::MapStreamError(int rv) {
-  if (rv == ERR_QUIC_PROTOCOL_ERROR &&
-      !quic_session()->IsCryptoHandshakeConfirmed()) {
+  if (rv == ERR_QUIC_PROTOCOL_ERROR && !quic_session()->OneRttKeysAvailable()) {
     return ERR_QUIC_HANDSHAKE_FAILED;
   }
   return rv;
@@ -777,7 +778,7 @@ int QuicHttpStream::ComputeResponseStatus() const {
 
   // If the handshake has failed this will be handled by the QuicStreamFactory
   // and HttpStreamFactory to mark QUIC as broken if TCP is actually working.
-  if (!quic_session()->IsCryptoHandshakeConfirmed())
+  if (!quic_session()->OneRttKeysAvailable())
     return ERR_QUIC_HANDSHAKE_FAILED;
 
   // If the session was aborted by a higher layer, simply use that error code.

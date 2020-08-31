@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
@@ -31,11 +32,12 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -51,6 +53,10 @@
 #include "printing/print_settings.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN)
+#include "printing/printing_features.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_error_dialog.h"
@@ -161,17 +167,23 @@ void PrintViewManagerBase::PrintDocument(
     const gfx::Rect& content_area,
     const gfx::Point& offsets) {
 #if defined(OS_WIN)
-  print_job_->StartConversionToNativeFormat(print_data, page_size, content_area,
-                                            offsets);
-#else
+  const bool source_is_pdf =
+      !print_job_->document()->settings().is_modifiable();
+  if (!printing::features::ShouldPrintUsingXps(source_is_pdf)) {
+    // Print using GDI, which first requires conversion to EMF.
+    print_job_->StartConversionToNativeFormat(print_data, page_size,
+                                              content_area, offsets);
+    return;
+  }
+#endif
+
   std::unique_ptr<MetafileSkia> metafile = std::make_unique<MetafileSkia>();
-  CHECK(metafile->InitFromData(print_data->front(), print_data->size()));
+  CHECK(metafile->InitFromData(*print_data));
 
   // Update the rendered document. It will send notifications to the listener.
   PrintedDocument* document = print_job_->document();
-  document->SetDocument(std::move(metafile), page_size, content_area);
+  document->SetDocument(std::move(metafile));
   ShouldQuitFromInnerMessageLoop();
-#endif
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -284,10 +296,10 @@ void PrintViewManagerBase::OnComposePdfDone(
     const gfx::Rect& content_area,
     const gfx::Point& physical_offsets,
     std::unique_ptr<DelayedFrameDispatchHelper> helper,
-    mojom::PdfCompositor::Status status,
+    mojom::PrintCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (status != mojom::PdfCompositor::Status::kSuccess) {
+  if (status != mojom::PrintCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
@@ -561,8 +573,14 @@ bool PrintViewManagerBase::CreateNewPrintJob(
   print_job_ = base::MakeRefCounted<PrintJob>();
   print_job_->Initialize(std::move(query), RenderSourceName(), number_pages_);
 #if defined(OS_CHROMEOS)
-  print_job_->SetSource(PrintJob::Source::PRINT_PREVIEW, /*source_id=*/"");
-#endif  // defined(OS_CHROMEOS)
+  PrintJob::Source source = PrintJob::Source::PRINT_PREVIEW;
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kPrintJobManagementApp) &&
+      web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+    source = PrintJob::Source::PRINT_PREVIEW_INCOGNITO;
+  }
+  print_job_->SetSource(source, /*source_id=*/"");
+#endif
 
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::Source<PrintJob>(print_job_.get()));

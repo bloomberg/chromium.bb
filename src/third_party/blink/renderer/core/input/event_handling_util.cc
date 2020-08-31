@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -105,7 +105,8 @@ ContainerNode* ParentForClickEventInteractiveElementSensitive(
     const Node& node) {
   // IE doesn't dispatch click events for mousedown/mouseup events across form
   // controls.
-  if (node.IsHTMLElement() && ToHTMLElement(node).IsInteractiveContent())
+  auto* html_element = DynamicTo<HTMLElement>(node);
+  if (html_element && html_element->IsInteractiveContent())
     return nullptr;
 
   return FlatTreeTraversal::Parent(node);
@@ -134,15 +135,13 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
   DCHECK(frame->GetDocument());
 
   return frame->GetDocument()->PerformMouseEventHitTest(
-      request, ContentPointFromRootFrame(frame, mev.PositionInRootFrame()),
+      request,
+      ContentPointFromRootFrame(frame, FloatPoint(mev.PositionInRootFrame())),
       mev);
 }
 
 bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
                                       const LocalFrame& frame) {
-  if (!RuntimeEnabledFeatures::DiscardInputToMovingIframesEnabled())
-    return false;
-
   // There are two different mechanisms for tracking whether an iframe has moved
   // recently, for OOPIF and in-process iframes. For OOPIF's, frame movement is
   // tracked in the browser process using hit test data, and it's propagated
@@ -150,7 +149,7 @@ bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
   // during lifecycle updates, in FrameView::UpdateViewportIntersection, and
   // propagated via FrameView::RectInParentIsStable.
   bool should_discard = false;
-  if (frame.NeedsOcclusionTracking() && frame.IsCrossOriginSubframe()) {
+  if (frame.NeedsOcclusionTracking() && frame.IsCrossOriginToMainFrame()) {
     should_discard =
         (event.GetModifiers() & WebInputEvent::kTargetFrameMovedRecently) ||
         !frame.View()->RectInParentIsStable(event.TimeStamp());

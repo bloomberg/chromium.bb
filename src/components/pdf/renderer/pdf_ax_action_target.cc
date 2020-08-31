@@ -35,6 +35,17 @@ PP_PdfAccessibilityScrollAlignment ConvertAXScrollToPdfScrollAlignment(
 
 }  // namespace
 
+// static
+const PdfAXActionTarget* PdfAXActionTarget::FromAXActionTarget(
+    const ui::AXActionTarget* ax_action_target) {
+  if (ax_action_target &&
+      ax_action_target->GetType() == ui::AXActionTarget::Type::kPdf) {
+    return static_cast<const PdfAXActionTarget*>(ax_action_target);
+  }
+
+  return nullptr;
+}
+
 PdfAXActionTarget::PdfAXActionTarget(const ui::AXNode& plugin_node,
                                      PdfAccessibilityTree* pdf_tree_source)
     : target_plugin_node_(plugin_node),
@@ -55,13 +66,20 @@ bool PdfAXActionTarget::ClearAccessibilityFocus() const {
 bool PdfAXActionTarget::Click() const {
   PP_PdfAccessibilityActionData pdf_action_data = {};
 
-  if ((target_plugin_node_.data().role != ax::mojom::Role::kLink) ||
-      !pdf_accessibility_tree_source_->GetPdfLinkInfoFromAXNode(
-          target_plugin_node_.data().id, &pdf_action_data.page_index,
-          &pdf_action_data.link_index)) {
+  if (target_plugin_node_.data().role != ax::mojom::Role::kLink)
     return false;
-  }
 
+  base::Optional<PdfAccessibilityTree::AnnotationInfo> annotation_info_result =
+      pdf_accessibility_tree_source_->GetPdfAnnotationInfoFromAXNode(
+          target_plugin_node_.data().id);
+  if (!annotation_info_result.has_value())
+    return false;
+
+  const auto& annotation_info = annotation_info_result.value();
+  pdf_action_data.page_index = annotation_info.page_index;
+  pdf_action_data.annotation_index = annotation_info.annotation_index;
+  pdf_action_data.annotation_type =
+      PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
   pdf_action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
   return true;
@@ -109,7 +127,25 @@ bool PdfAXActionTarget::SetSelection(const ui::AXActionTarget* anchor_object,
                                      int anchor_offset,
                                      const ui::AXActionTarget* focus_object,
                                      int focus_offset) const {
-  return false;
+  const PdfAXActionTarget* pdf_anchor_object =
+      FromAXActionTarget(anchor_object);
+  const PdfAXActionTarget* pdf_focus_object = FromAXActionTarget(focus_object);
+  if (!pdf_anchor_object || !pdf_focus_object || anchor_offset < 0 ||
+      focus_offset < 0) {
+    return false;
+  }
+  PP_PdfAccessibilityActionData pdf_action_data = {};
+  if (!pdf_accessibility_tree_source_->FindCharacterOffset(
+          pdf_anchor_object->AXNode(), anchor_offset,
+          &pdf_action_data.selection_start_index) ||
+      !pdf_accessibility_tree_source_->FindCharacterOffset(
+          pdf_focus_object->AXNode(), focus_offset,
+          &pdf_action_data.selection_end_index)) {
+    return false;
+  }
+  pdf_action_data.action = PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION;
+  pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
+  return true;
 }
 
 bool PdfAXActionTarget::SetSequentialFocusNavigationStartingPoint() const {
@@ -150,7 +186,17 @@ bool PdfAXActionTarget::ScrollToMakeVisibleWithSubFocus(
 }
 
 bool PdfAXActionTarget::ScrollToGlobalPoint(const gfx::Point& point) const {
-  return false;
+  PP_PdfAccessibilityActionData pdf_action_data = {};
+  pdf_action_data.action =
+      PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT;
+  pdf_action_data.target_point = {point.x(), point.y()};
+  pdf_action_data.target_rect = {
+      {target_plugin_node_.data().relative_bounds.bounds.x(),
+       target_plugin_node_.data().relative_bounds.bounds.y()},
+      {target_plugin_node_.data().relative_bounds.bounds.width(),
+       target_plugin_node_.data().relative_bounds.bounds.height()}};
+  pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
+  return true;
 }
 
 }  // namespace pdf

@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,10 +13,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/content/session_tab_helper.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
 
   ExtensionTestMessageListener background_page_ready("ready",
                                                      false /*will_reply*/);
-  const Extension* extension =
+  scoped_refptr<const Extension> extension =
       LoadExtension(test_data_dir_.AppendASCII("active_tab_file_urls"));
   ASSERT_TRUE(extension);
   const std::string extension_id = extension->id();
@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
     ExtensionTestMessageListener listener(false /*will_reply*/);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), page, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
 
     EXPECT_TRUE(listener.message() == "allowed" ||
@@ -288,8 +288,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   };
 
   auto get_active_tab_id = [this]() {
-    SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents());
     if (!session_tab_helper) {
       ADD_FAILURE();
       return extension_misc::kUnknownTabId;
@@ -312,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
       net::FilePathToFileURL(extension->path().AppendASCII("background.js"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), file_url_2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   int active_tab_id = get_active_tab_id();
   EXPECT_NE(extension_misc::kUnknownTabId, active_tab_id);
 
@@ -333,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ExtensionActionRunner::GetForWebContents(web_contents)
-      ->RunAction(extension, false /*grant_tab_permissions*/);
+      ->RunAction(extension.get(), false /*grant_tab_permissions*/);
   EXPECT_FALSE(can_xhr_file_urls());
   EXPECT_FALSE(can_script_tab(active_tab_id));
   EXPECT_FALSE(can_script_tab(inactive_tab_id));
@@ -343,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   // script the active tab and embed file iframes. It should still not be able
   // to script the background tab.
   ExtensionActionRunner::GetForWebContents(web_contents)
-      ->RunAction(extension, true /*grant_tab_permissions*/);
+      ->RunAction(extension.get(), true /*grant_tab_permissions*/);
   EXPECT_TRUE(can_xhr_file_urls());
   EXPECT_TRUE(can_script_tab(active_tab_id));
   EXPECT_TRUE(can_load_file_iframe());
@@ -366,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   // still can't xhr file urls, script the active tab or embed file iframes
   // (since it does not have file access).
   ExtensionActionRunner::GetForWebContents(web_contents)
-      ->RunAction(extension, true /*grant_tab_permissions*/);
+      ->RunAction(extension.get(), true /*grant_tab_permissions*/);
   EXPECT_FALSE(can_xhr_file_urls());
   EXPECT_FALSE(can_script_tab(active_tab_id));
   EXPECT_FALSE(can_script_tab(inactive_tab_id));

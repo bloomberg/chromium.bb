@@ -52,13 +52,13 @@ CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
     return CSSValueID::kUpperRoman;
   if (value == "1")
     return CSSValueID::kDecimal;
-  if (DeprecatedEqualIgnoringCase(value, "disc"))
+  if (EqualIgnoringASCIICase(value, "disc"))
     return CSSValueID::kDisc;
-  if (DeprecatedEqualIgnoringCase(value, "circle"))
+  if (EqualIgnoringASCIICase(value, "circle"))
     return CSSValueID::kCircle;
-  if (DeprecatedEqualIgnoringCase(value, "square"))
+  if (EqualIgnoringASCIICase(value, "square"))
     return CSSValueID::kSquare;
-  if (DeprecatedEqualIgnoringCase(value, "none"))
+  if (EqualIgnoringASCIICase(value, "none"))
     return CSSValueID::kNone;
   return CSSValueID::kInvalid;
 }
@@ -92,24 +92,6 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
 
   if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this)) {
     DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
-
-    // Find the enclosing list node.
-    Element* list_node = nullptr;
-    Element* current = this;
-    while (!list_node) {
-      current = LayoutTreeBuilderTraversal::ParentElement(*current);
-      if (!current)
-        break;
-      if (IsA<HTMLUListElement>(*current) || IsA<HTMLOListElement>(*current))
-        list_node = current;
-    }
-
-    // If we are not in a list, tell the layoutObject so it can position us
-    // inside.  We don't want to change our style to say "inside" since that
-    // would affect nested nodes.
-    if (!list_node)
-      ordinal->SetNotInList(true, *this);
-
     ParseValue(FastGetAttribute(html_names::kValueAttr), ordinal);
   }
 }

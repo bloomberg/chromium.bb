@@ -7,24 +7,13 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom-forward.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom-forward.h"
 
 namespace crostini {
 
 class CrostiniInstallerUIDelegate {
  public:
-  // The size of the download for the VM image.
-  // TODO(timloh): This is just a placeholder.
-  static constexpr int64_t kDownloadSizeInBytes = 300 * 1024 * 1024;
-  // The minimum feasible size for a VM disk image.
-  static constexpr int64_t kMinimumDiskSize =
-      1ll * 1024 * 1024 * 1024;  // 1 GiB
-  // Minimum amount of free disk space to install crostini successfully.
-  static constexpr int64_t kMinimumFreeDiskSpace =
-      crostini::CrostiniInstallerUIDelegate::kDownloadSizeInBytes +
-      kMinimumDiskSize;
-
   // |progress_fraction| ranges from 0.0 to 1.0.
   using ProgressCallback =
       base::RepeatingCallback<void(crostini::mojom::InstallerState state,

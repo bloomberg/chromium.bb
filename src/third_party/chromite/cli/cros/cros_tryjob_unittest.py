@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.cli import command_unittest
@@ -15,6 +17,9 @@ from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
 from chromite.lib import cros_test_lib
 from chromite.utils import outcap
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class MockTryjobCommand(command_unittest.MockCommand):

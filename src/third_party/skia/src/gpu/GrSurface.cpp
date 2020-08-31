@@ -6,11 +6,12 @@
  */
 
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrSurface.h"
-#include "include/gpu/GrTexture.h"
+#include "src/core/SkCompressedDataUtils.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurface.h"
 #include "src/gpu/GrSurfacePriv.h"
+#include "src/gpu/GrTexture.h"
 
 #include "src/core/SkMathPriv.h"
 #include "src/gpu/SkGr.h"
@@ -33,10 +34,10 @@ size_t GrSurface::ComputeSize(const GrCaps& caps,
         dimensions = GrResourceProvider::MakeApprox(dimensions);
     }
 
-    // Just setting a defualt value here to appease warnings on uninitialized object.
-    SkImage::CompressionType compressionType = SkImage::kETC1_CompressionType;
-    if (caps.isFormatCompressed(format, &compressionType)) {
-        colorSize = GrCompressedFormatDataSize(compressionType, dimensions);
+    SkImage::CompressionType compressionType = caps.compressionType(format);
+    if (compressionType != SkImage::CompressionType::kNone) {
+        colorSize = SkCompressedFormatDataSize(compressionType, dimensions,
+                                               mipMapped == GrMipMapped::kYes);
     } else {
         colorSize = (size_t)dimensions.width() * dimensions.height() * caps.bytesPerPixel(format);
     }

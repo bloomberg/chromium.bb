@@ -30,7 +30,7 @@ OriginPolicyInterstitialPage::OriginPolicyInterstitialPage(
                                std::move(controller)),
       error_reason_(error_reason) {}
 
-OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() {}
+OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() = default;
 
 void OriginPolicyInterstitialPage::OnInterstitialClosing() {}
 
@@ -46,14 +46,14 @@ void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
   load_time_data->SetBoolean("overridable", true);
 
   // Custom messages depending on the OriginPolicyState:
-  int explanation_paragraph_id = IDS_ORIGIN_POLICY_EXPLANATION_OTHER;
+  int explanation_paragraph_id = 0;
   switch (error_reason_) {
     case network::OriginPolicyState::kCannotLoadPolicy:
       explanation_paragraph_id = IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD;
       break;
-    case network::OriginPolicyState::kInvalidRedirect:
+    case network::OriginPolicyState::kCannotParseHeader:
       explanation_paragraph_id =
-          IDS_ORIGIN_POLICY_EXPLANATION_SHOULD_NOT_REDIRECT;
+          IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_PARSE_HEADER;
       break;
     default:
       NOTREACHED();
@@ -105,9 +105,9 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
   // TODO(carlosil): After non-committed insterstitials have been removed this
   //                 should be cleaned up to use enum values (or somesuch).
   if (command == "0") {
-    OnDontProceed();
+    DontProceed();
   } else if (command == "1") {
-    OnProceed();
+    Proceed();
   } else if (command == "2") {
     // "Advanced" button, which shows extra text. This is handled within
     // the page.
@@ -116,13 +116,13 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
   }
 }
 
-void OriginPolicyInterstitialPage::OnProceed() {
+void OriginPolicyInterstitialPage::Proceed() {
   content::OriginPolicyAddExceptionFor(web_contents()->GetBrowserContext(),
                                        request_url());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
-void OriginPolicyInterstitialPage::OnDontProceed() {
+void OriginPolicyInterstitialPage::DontProceed() {
   // "Go Back" / "Don't Proceed" button should be disabled if we can't go back.
   DCHECK(web_contents()->GetController().CanGoBack());
   web_contents()->GetController().GoBack();

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_
 #define COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_
 
+#include "base/feature_list.h"
 #include "components/signin/public/base/signin_buildflags.h"
 
 namespace switches {
@@ -18,12 +19,8 @@ namespace switches {
 extern const char kClearTokenService[];
 extern const char kDisableSigninScopedDeviceId[];
 
-#if !BUILDFLAG(ENABLE_MIRROR)
-// Note: Account consistency (Mirror) is already enabled on mobile platforms, so
-// this switch only exist on desktop platforms.
-extern const char kAccountConsistency[];
-extern const char kAccountConsistencyMirror[];
-extern const char kAccountConsistencyDice[];
+#if defined(OS_CHROMEOS)
+extern const base::Feature kAccountIdMigration;
 #endif
 
 }  // namespace switches

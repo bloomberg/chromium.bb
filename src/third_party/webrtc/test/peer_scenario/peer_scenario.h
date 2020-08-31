@@ -21,6 +21,7 @@
 #include <list>
 #include <vector>
 
+#include "api/test/time_controller.h"
 #include "test/gtest.h"
 #include "test/logging/log_writer.h"
 #include "test/network/network_emulation_manager.h"
@@ -31,7 +32,6 @@
 
 namespace webrtc {
 namespace test {
-
 // The PeerScenario class represents a PeerConnection simulation scenario. The
 // main purpose is to maintain ownership and ensure safe destruction order of
 // clients and network emulation. Additionally it reduces the amount of boiler
@@ -46,13 +46,15 @@ class PeerScenario {
   // The name is used for log output when those are enabled by the --peer_logs
   // command line flag. Optionally, the TestInfo struct available in gtest can
   // be used to automatically generate a path based on the test name.
-  explicit PeerScenario(const testing::TestInfo& test_info);
-  explicit PeerScenario(std::string file_name);
+  explicit PeerScenario(const testing::TestInfo& test_info,
+                        TimeMode mode = TimeMode::kSimulated);
+  explicit PeerScenario(std::string file_name,
+                        TimeMode mode = TimeMode::kSimulated);
   explicit PeerScenario(
-      std::unique_ptr<LogWriterFactoryInterface> log_writer_manager);
+      std::unique_ptr<LogWriterFactoryInterface> log_writer_manager,
+      TimeMode mode = TimeMode::kSimulated);
 
   NetworkEmulationManagerImpl* net() { return &net_; }
-  rtc::Thread* thread() { return signaling_thread_; }
 
   // Creates a client wrapping a peer connection conforming to the given config.
   // The client  will share the signaling thread with the scenario. To maintain
@@ -84,8 +86,8 @@ class PeerScenario {
                                   PeerScenarioClient* receiver);
 
   // Waits on |event| while processing messages on the signaling thread.
-  bool WaitAndProcess(rtc::Event* event,
-                      TimeDelta max_duration = TimeDelta::seconds(5));
+  bool WaitAndProcess(std::atomic<bool>* event,
+                      TimeDelta max_duration = TimeDelta::Seconds(5));
 
   // Process messages on the signaling thread for the given duration.
   void ProcessMessages(TimeDelta duration);
@@ -102,15 +104,16 @@ class PeerScenario {
     CapturedFrameTap capture_tap_;
     DecodedFrameTap decode_tap_;
   };
+
   Clock* clock() { return Clock::GetRealTimeClock(); }
 
   std::unique_ptr<LogWriterFactoryInterface> GetLogWriterFactory(
       std::string name);
 
-  rtc::Thread* const signaling_thread_;
   const std::unique_ptr<LogWriterFactoryInterface> log_writer_manager_;
-  std::list<PeerVideoQualityPair> video_quality_pairs_;
   NetworkEmulationManagerImpl net_;
+  rtc::Thread* const signaling_thread_;
+  std::list<PeerVideoQualityPair> video_quality_pairs_;
   std::list<PeerScenarioClient> peer_clients_;
 };
 

@@ -93,7 +93,7 @@ void MojoRendererService::Initialize(
   renderer_->Initialize(
       media_resource_.get(), this,
       base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                     base::Passed(&callback)));
+                     std::move(callback)));
 }
 
 void MojoRendererService::Flush(FlushCallback callback) {
@@ -103,7 +103,7 @@ void MojoRendererService::Flush(FlushCallback callback) {
   state_ = STATE_FLUSHING;
   CancelPeriodicMediaTimeUpdates();
   renderer_->Flush(base::BindOnce(&MojoRendererService::OnFlushCompleted,
-                                  weak_this_, base::Passed(&callback)));
+                                  weak_this_, std::move(callback)));
 }
 
 void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
@@ -124,6 +124,12 @@ void MojoRendererService::SetVolume(float volume) {
 }
 
 void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
+  if (cdm_context_ref_) {
+    DVLOG(1) << "Switching CDM not supported";
+    std::move(callback).Run(false);
+    return;
+  }
+
   if (!mojo_cdm_service_context_) {
     DVLOG(1) << "CDM service context not available.";
     std::move(callback).Run(false);
@@ -144,8 +150,8 @@ void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
   DCHECK(cdm_context);
 
   renderer_->SetCdm(cdm_context,
-                    base::Bind(&MojoRendererService::OnCdmAttached, weak_this_,
-                               base::Passed(&callback)));
+                    base::BindOnce(&MojoRendererService::OnCdmAttached,
+                                   weak_this_, std::move(callback)));
 }
 
 void MojoRendererService::OnError(PipelineStatus error) {
@@ -199,6 +205,11 @@ void MojoRendererService::OnVideoOpacityChange(bool opaque) {
   client_->OnVideoOpacityChange(opaque);
 }
 
+void MojoRendererService::OnVideoFrameRateChange(base::Optional<int> fps) {
+  DVLOG(2) << __func__ << "(" << (fps ? *fps : -1) << ")";
+  // TODO(liberato): plumb to |client_|.
+}
+
 void MojoRendererService::OnStreamReady(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_EQ(state_, STATE_INITIALIZING);
@@ -206,7 +217,7 @@ void MojoRendererService::OnStreamReady(
   renderer_->Initialize(
       media_resource_.get(), this,
       base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                     base::Passed(&callback)));
+                     std::move(callback)));
 }
 
 void MojoRendererService::OnRendererInitializeDone(

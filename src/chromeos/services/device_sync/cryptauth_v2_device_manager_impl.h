@@ -22,6 +22,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 
+class PrefService;
+
 namespace chromeos {
 
 namespace device_sync {
@@ -45,18 +47,29 @@ class CryptAuthV2DeviceManagerImpl
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthV2DeviceManager> BuildInstance(
+    static std::unique_ptr<CryptAuthV2DeviceManager> Create(
         ClientAppMetadataProvider* client_app_metadata_provider,
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
+        PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthV2DeviceManager> CreateInstance(
+        ClientAppMetadataProvider* client_app_metadata_provider,
+        CryptAuthDeviceRegistry* device_registry,
+        CryptAuthKeyRegistry* key_registry,
+        CryptAuthClientFactory* client_factory,
+        CryptAuthGCMManager* gcm_manager,
+        CryptAuthScheduler* scheduler,
+        PrefService* pref_service,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;
@@ -72,6 +85,7 @@ class CryptAuthV2DeviceManagerImpl
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
+      PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer);
 
  private:
@@ -115,6 +129,9 @@ class CryptAuthV2DeviceManagerImpl
 
   State state_ = State::kIdle;
 
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
+
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   std::unique_ptr<CryptAuthDeviceSyncer> device_syncer_;
@@ -125,6 +142,7 @@ class CryptAuthV2DeviceManagerImpl
   CryptAuthClientFactory* client_factory_ = nullptr;
   CryptAuthGCMManager* gcm_manager_ = nullptr;
   CryptAuthScheduler* scheduler_ = nullptr;
+  PrefService* pref_service_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;
 
   // For weak pointers used in callbacks. These weak pointers are invalidated

@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -48,6 +49,12 @@ class Annotator : public mojom::Annotator {
 
     virtual void BindJsonParser(
         mojo::PendingReceiver<data_decoder::mojom::JsonParser> receiver) = 0;
+
+    virtual std::vector<std::string> GetAcceptLanguages() = 0;
+    virtual std::vector<std::string> GetTopLanguages() = 0;
+    virtual void RecordLanguageMetrics(
+        const std::string& page_language,
+        const std::string& requested_language) = 0;
   };
 
   // The HTTP request header in which the API key should be transmitted.
@@ -60,10 +67,12 @@ class Annotator : public mojom::Annotator {
   static constexpr double kDescMaxAspectRatio = 2.5;
 
   // Constructs an annotator.
-  //  |server_url|        : the URL of the server with which the annotator
-  //                        communicates. The annotator gracefully handles (i.e.
-  //                        returns errors when constructed with) an empty
-  //                        server URL.
+  //  |pixels_server_url| : the URL to use when the annotator sends image
+  //                        pixel data to get back annotations. The
+  //                        annotator gracefully handles (i.e. returns
+  //                        errors when constructed with) an empty server URL.
+  //  |langs_server_url|  : the URL to use when the annotator requests the
+  //                        set of languages supported by the server.
   //  |api_key|           : the Google API key used to authenticate
   //                        communication with the image annotation server. If
   //                        empty, no API key header will be sent.
@@ -74,7 +83,8 @@ class Annotator : public mojom::Annotator {
   //                        server.
   //  |min_ocr_confidence|: The minimum confidence value needed to return an OCR
   //                        result.
-  Annotator(GURL server_url,
+  Annotator(GURL pixels_server_url,
+            GURL langs_server_url,
             std::string api_key,
             base::TimeDelta throttle,
             int batch_size,
@@ -93,6 +103,11 @@ class Annotator : public mojom::Annotator {
                      AnnotateImageCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, DescLanguage);
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, ComputePreferredLanguage);
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, FetchServerLanguages);
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, ServerLanguagesMustContainEnglish);
+
   // The relevant info for a request from a client feature for a single image.
   struct ClientRequestInfo {
     ClientRequestInfo(
@@ -152,13 +167,10 @@ class Annotator : public mojom::Annotator {
       std::deque<ServerRequestInfo>::iterator begin_it,
       std::deque<ServerRequestInfo>::iterator end_it);
 
-  // Creates a URL loader that calls the image annotation server with an
-  // annotation request for the given images.
+  // Creates a URL loader for an image annotation request.
   static std::unique_ptr<network::SimpleURLLoader> MakeRequestLoader(
       const GURL& server_url,
-      const std::string& api_key,
-      std::deque<ServerRequestInfo>::iterator begin_it,
-      std::deque<ServerRequestInfo>::iterator end_it);
+      const std::string& api_key);
 
   // Create or reuse a connection to the data decoder service for safe JSON
   // parsing.
@@ -200,6 +212,20 @@ class Annotator : public mojom::Annotator {
       const std::set<RequestKey>& request_keys,
       const std::map<std::string, mojom::AnnotateImageResultPtr>& results);
 
+  std::string ComputePreferredLanguage(const std::string& page_lang) const;
+
+  // Fetch the set of languages that the server supports.
+  void FetchServerLanguages();
+
+  // Handle the reply with the server languages.
+  void OnServerLangsResponseReceived(
+      const std::unique_ptr<std::string> json_response);
+
+  // Parse the JSON from the reply with server languages.
+  void OnServerLangsResponseJsonParsed(
+      base::Optional<base::Value> json_data,
+      const base::Optional<std::string>& error);
+
   const std::unique_ptr<Client> client_;
 
   // Maps from request key to previously-obtained annotation results.
@@ -236,6 +262,9 @@ class Annotator : public mojom::Annotator {
   //   - A server query has been returned and is being parsed.
   std::set<RequestKey> pending_requests_;
 
+  // The request for server languages.
+  std::unique_ptr<network::SimpleURLLoader> langs_url_loader_;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   mojo::ReceiverSet<mojom::Annotator> receivers_;
@@ -244,15 +273,22 @@ class Annotator : public mojom::Annotator {
   mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 
   // A timer used to throttle server request frequency.
-  base::RepeatingTimer server_request_timer_;
+  std::unique_ptr<base::RepeatingTimer> server_request_timer_;
 
-  const GURL server_url_;
+  const GURL pixels_server_url_;
+  const GURL langs_server_url_;
 
   const std::string api_key_;
 
   const int batch_size_;
 
   const double min_ocr_confidence_;
+
+  // The languages that the server accepts.
+  std::vector<std::string> server_languages_;
+
+  // Used for all callbacks.
+  base::WeakPtrFactory<Annotator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Annotator);
 };

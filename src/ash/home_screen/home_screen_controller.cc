@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
@@ -27,11 +28,13 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace {
@@ -55,10 +58,48 @@ bool MinimizeAllWindows(const aura::Window::Windows& windows,
     }
   }
 
-  window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_minimize,
-                                                    /*minimize=*/true);
+  window_util::MinimizeAndHideWithoutAnimation(windows_to_minimize);
   return !windows_to_minimize.empty();
 }
+
+// Layer animation observer that waits for layer animator to schedule, and
+// complete animations. When all animations complete, it fires |callback| and
+// deletes itself.
+class WindowAnimationsCallback : public ui::LayerAnimationObserver {
+ public:
+  WindowAnimationsCallback(base::OnceClosure callback,
+                           ui::LayerAnimator* animator)
+      : callback_(std::move(callback)), animator_(animator) {
+    animator_->AddObserver(this);
+  }
+  ~WindowAnimationsCallback() override { animator_->RemoveObserver(this); }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+  void OnDetachedFromSequence(ui::LayerAnimationSequence* sequence) override {
+    FireCallbackIfDone();
+  }
+
+ private:
+  // Fires the callback if all scheduled animations completed (either ended or
+  // got aborted).
+  void FireCallbackIfDone() {
+    if (!callback_ || animator_->is_animating())
+      return;
+    std::move(callback_).Run();
+    delete this;
+  }
+
+  base::OnceClosure callback_;
+  ui::LayerAnimator* animator_;
+};
 
 }  // namespace
 
@@ -91,6 +132,10 @@ void HomeScreenController::Show() {
 bool HomeScreenController::GoHome(int64_t display_id) {
   DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  if (app_list_controller->IsShowingEmbeddedAssistantUI()) {
+    app_list_controller->presenter()->ShowEmbeddedAssistantUI(false);
+  }
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
@@ -104,8 +149,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
 
     if (overview_controller->InOverviewSession()) {
       // End overview mode.
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kSlideOutExit);
+      overview_controller->EndOverview(OverviewEnterExitType::kSlideOutExit);
       return true;
     }
 
@@ -136,92 +180,86 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   // The foreground window or windows (for split mode) - the windows that will
   // not be minimized without animations (instead they wil bee animated into the
   // home screen).
-  std::vector<aura::Window*> active_windows;
+  std::vector<aura::Window*> foreground_windows;
   if (split_view_active) {
-    active_windows = {split_view_controller->left_window(),
-                      split_view_controller->right_window()};
-    base::EraseIf(active_windows, [](aura::Window* window) { return !window; });
+    foreground_windows = {split_view_controller->left_window(),
+                          split_view_controller->right_window()};
+    base::EraseIf(foreground_windows,
+                  [](aura::Window* window) { return !window; });
   } else if (!windows.empty() && !WindowState::Get(windows[0])->IsMinimized()) {
-    active_windows.push_back(windows[0]);
+    foreground_windows.push_back(windows[0]);
   }
 
   if (split_view_active) {
-    // End split view mode.
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kHomeLauncherPressed);
-
     // If overview session is active (e.g. on one side of the split view), end
     // it immediately, to prevent overview UI being visible while transitioning
     // to home screen.
-    if (overview_controller->InOverviewSession()) {
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kImmediateExit);
-    }
+    if (overview_controller->InOverviewSession())
+      overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
+
+    // End split view mode.
+    split_view_controller->EndSplitView(
+        SplitViewController::EndReason::kHomeLauncherPressed);
   }
 
   // If overview is active (if overview was active in split view, it exited by
   // this point), just fade it out to home screen.
   if (overview_controller->InOverviewSession()) {
-    overview_controller->EndOverview(
-        OverviewSession::EnterExitOverviewType::kFadeOutExit);
+    overview_controller->EndOverview(OverviewEnterExitType::kFadeOutExit);
     return true;
   }
 
   // First minimize all inactive windows.
   const bool window_minimized =
-      MinimizeAllWindows(windows, active_windows /*windows_to_ignore*/);
+      MinimizeAllWindows(windows, foreground_windows /*windows_to_ignore*/);
 
-  // Animate currently active windows into the home screen - they will be
-  // minimized by WindowTransformToHomeScreenAnimation when the transition
-  // finishes.
-  if (!active_windows.empty()) {
-    {
-      // Disable window animations before updating home launcher target
-      // position. Calling OnHomeLauncherPositionChanged() can cause
-      // display work area update, and resulting cross-fade window bounds change
-      // animation can interfere with WindowTransformToHomeScreenAnimation
-      // visuals.
-      //
-      // TODO(https://crbug.com/1019531): This can be removed once transitions
-      // between in-app state and home do not cause work area updates.
-      std::vector<std::unique_ptr<ScopedAnimationDisabler>> animation_disablers;
-      for (auto* window : active_windows) {
-        animation_disablers.push_back(
-            std::make_unique<ScopedAnimationDisabler>(window));
-      }
+  if (foreground_windows.empty())
+    return window_minimized;
 
-      delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
-                                               display_id);
+  {
+    // Disable window animations before updating home launcher target
+    // position. Calling OnHomeLauncherPositionChanged() can cause
+    // display work area update, and resulting cross-fade window bounds change
+    // animation can interfere with WindowTransformToHomeScreenAnimation
+    // visuals.
+    //
+    // TODO(https://crbug.com/1019531): This can be removed once transitions
+    // between in-app state and home do not cause work area updates.
+    std::vector<std::unique_ptr<ScopedAnimationDisabler>> animation_disablers;
+    for (auto* window : foreground_windows) {
+      animation_disablers.push_back(
+          std::make_unique<ScopedAnimationDisabler>(window));
     }
 
-    StartTrackingAnimationSmoothness(display_id);
-    base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
-        active_windows.size(),
-        base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
-                       weak_ptr_factory_.GetWeakPtr(), true /*shown*/,
-                       display_id));
+    delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
+                                             display_id);
+  }
 
-    for (auto* active_window : active_windows) {
-      BackdropWindowMode original_backdrop_mode =
-          active_window->GetProperty(kBackdropWindowMode);
-      active_window->SetProperty(kBackdropWindowMode,
-                                 BackdropWindowMode::kDisabled);
+  StartTrackingAnimationSmoothness(display_id);
 
-      // Do the scale-down transform for the entire transient tree.
-      for (auto* window : GetTransientTreeIterator(active_window)) {
-        // Self-destructed when window transform animation is done.
-        new WindowScaleAnimation(
-            window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
-            window == active_window
-                ? base::make_optional(original_backdrop_mode)
-                : base::nullopt,
-            window == active_window ? window_transforms_callback
-                                    : base::NullCallback());
-      }
+  base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
+      foreground_windows.size(),
+      base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
+                     weak_ptr_factory_.GetWeakPtr(), true /*shown*/,
+                     display_id));
+
+  // Minimize currently active windows, but this time, using animation.
+  // Home screen will show when all the windows are done minimizing.
+  for (auto* foreground_window : foreground_windows) {
+    if (::wm::WindowAnimationsDisabled(foreground_window)) {
+      WindowState::Get(foreground_window)->Minimize();
+      window_transforms_callback.Run();
+    } else {
+      // Create animator observer that will fire |window_transforms_callback|
+      // once the window layer stops animating - it deletes itself when
+      // animations complete.
+      new WindowAnimationsCallback(window_transforms_callback,
+                                   foreground_window->layer()->GetAnimator());
+      WindowState::Get(foreground_window)->Minimize();
     }
   }
 
-  return window_minimized || !active_windows.empty();
+  return true;
 }
 
 void HomeScreenController::NotifyHomeLauncherTransitionEnded(
@@ -239,6 +277,12 @@ void HomeScreenController::SetDelegate(HomeScreenDelegate* delegate) {
 void HomeScreenController::OnWindowDragStarted() {
   in_window_dragging_ = true;
   UpdateVisibility();
+
+  // Dismiss Assistant if it's running when a window drag starts.
+  if (Shell::Get()->app_list_controller()->IsShowingEmbeddedAssistantUI()) {
+    Shell::Get()->app_list_controller()->presenter()->ShowEmbeddedAssistantUI(
+        false);
+  }
 }
 
 void HomeScreenController::OnWindowDragEnded(bool animate) {
@@ -270,8 +314,24 @@ void HomeScreenController::RecordAnimationSmoothness() {
   fps_counter_.reset();
 }
 
+void HomeScreenController::OnAppListViewShown() {
+  split_view_observer_.Add(
+      SplitViewController::Get(delegate_->GetHomeScreenWindow()));
+  UpdateVisibility();
+}
+
+void HomeScreenController::OnAppListViewClosing() {
+  split_view_observer_.RemoveAll();
+}
+
+void HomeScreenController::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  UpdateVisibility();
+}
+
 void HomeScreenController::OnOverviewModeStarting() {
-  const OverviewSession::EnterExitOverviewType overview_enter_type =
+  const OverviewEnterExitType overview_enter_type =
       Shell::Get()
           ->overview_controller()
           ->overview_session()
@@ -279,15 +339,15 @@ void HomeScreenController::OnOverviewModeStarting() {
 
   const bool animate =
       IsHomeScreenVisible() &&
-      (overview_enter_type ==
-           OverviewSession::EnterExitOverviewType::kSlideInEnter ||
-       overview_enter_type ==
-           OverviewSession::EnterExitOverviewType::kFadeInEnter);
+      (overview_enter_type == OverviewEnterExitType::kSlideInEnter ||
+       overview_enter_type == OverviewEnterExitType::kFadeInEnter);
+  const bool use_scale_transition =
+      overview_enter_type == OverviewEnterExitType::kFadeInEnter ||
+      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+       overview_enter_type != OverviewEnterExitType::kSlideInEnter);
   const HomeScreenPresenter::TransitionType transition =
-      overview_enter_type ==
-              OverviewSession::EnterExitOverviewType::kFadeInEnter
-          ? HomeScreenPresenter::TransitionType::kScaleHomeOut
-          : HomeScreenPresenter::TransitionType::kSlideHomeOut;
+      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeOut
+                           : HomeScreenPresenter::TransitionType::kSlideHomeOut;
 
   home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
 }
@@ -304,7 +364,7 @@ void HomeScreenController::OnOverviewModeEnding(
   // Otherwise the transition will be initiated in
   // OnOverviewModeEndingAnimationComplete().
   if (overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+      OverviewEnterExitType::kFadeOutExit) {
     home_screen_presenter_.ScheduleOverviewModeAnimation(
         HomeScreenPresenter::TransitionType::kScaleHomeIn, true /*animate*/);
 
@@ -318,24 +378,23 @@ void HomeScreenController::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
   DCHECK(overview_exit_type_.has_value());
 
-  // For kFadeOutExit EnterExitOverviewType, the home animation is scheduled in
+  // For kFadeOutExit OverviewEnterExitType, the home animation is scheduled in
   // OnOverviewModeEnding(), so there is nothing else to do at this point.
-  if (canceled || *overview_exit_type_ ==
-                      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+  if (canceled || *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit) {
     overview_exit_type_ = base::nullopt;
     return;
   }
 
   const bool animate =
-      *overview_exit_type_ ==
-          OverviewSession::EnterExitOverviewType::kSlideOutExit ||
-      *overview_exit_type_ ==
-          OverviewSession::EnterExitOverviewType::kFadeOutExit;
+      *overview_exit_type_ == OverviewEnterExitType::kSlideOutExit ||
+      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit;
+  const bool use_scale_transition =
+      *overview_exit_type_ == OverviewEnterExitType::kFadeOutExit ||
+      (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+       *overview_exit_type_ != OverviewEnterExitType::kSlideOutExit);
   const HomeScreenPresenter::TransitionType transition =
-      *overview_exit_type_ ==
-              OverviewSession::EnterExitOverviewType::kFadeOutExit
-          ? HomeScreenPresenter::TransitionType::kScaleHomeIn
-          : HomeScreenPresenter::TransitionType::kSlideHomeIn;
+      use_scale_transition ? HomeScreenPresenter::TransitionType::kScaleHomeIn
+                           : HomeScreenPresenter::TransitionType::kSlideHomeIn;
   overview_exit_type_ = base::nullopt;
 
   home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
@@ -374,8 +433,11 @@ bool HomeScreenController::ShouldShowHomeScreen() const {
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   const bool in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
+  const bool in_split_view =
+      SplitViewController::Get(delegate_->GetHomeScreenWindow())
+          ->InSplitViewMode();
   return in_tablet_mode && !in_overview && !in_wallpaper_preview_ &&
-         !in_window_dragging_;
+         !in_window_dragging_ && !in_split_view;
 }
 
 }  // namespace ash

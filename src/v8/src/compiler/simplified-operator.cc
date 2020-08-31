@@ -4,11 +4,13 @@
 
 #include "src/compiler/simplified-operator.h"
 
+#include "include/v8-fast-api-calls.h"
 #include "src/base/lazy-instance.h"
 #include "src/compiler/opcodes.h"
 #include "src/compiler/operator.h"
 #include "src/compiler/types.h"
 #include "src/handles/handles-inl.h"
+#include "src/objects/feedback-cell.h"
 #include "src/objects/map.h"
 #include "src/objects/name.h"
 #include "src/objects/objects-inl.h"
@@ -820,7 +822,6 @@ bool operator==(CheckMinusZeroParameters const& lhs,
   V(CheckedUint32Mod, 2, 1)
 
 #define CHECKED_WITH_FEEDBACK_OP_LIST(V)    \
-  V(CheckBounds, 2, 1)                      \
   V(CheckNumber, 1, 1)                      \
   V(CheckSmi, 1, 1)                         \
   V(CheckString, 1, 1)                      \
@@ -834,11 +835,12 @@ bool operator==(CheckMinusZeroParameters const& lhs,
   V(CheckedTaggedToTaggedSigned, 1, 1)      \
   V(CheckedUint32ToInt32, 1, 1)             \
   V(CheckedUint32ToTaggedSigned, 1, 1)      \
-  V(CheckedUint64Bounds, 2, 1)              \
   V(CheckedUint64ToInt32, 1, 1)             \
   V(CheckedUint64ToTaggedSigned, 1, 1)
 
-#define CHECKED_BOUNDS_OP_LIST(V) V(CheckedUint32Bounds)
+#define CHECKED_BOUNDS_OP_LIST(V) \
+  V(CheckedUint32Bounds)          \
+  V(CheckedUint64Bounds)
 
 struct SimplifiedOperatorGlobalCache final {
 #define PURE(Name, properties, value_input_count, control_input_count)     \
@@ -851,16 +853,14 @@ struct SimplifiedOperatorGlobalCache final {
   PURE_OP_LIST(PURE)
 #undef PURE
 
-#define EFFECT_DEPENDENT(Name, properties, value_input_count,              \
-                         control_input_count)                              \
-  struct Name##Operator final : public Operator {                          \
-    Name##Operator()                                                       \
-        : Operator(IrOpcode::k##Name,                                      \
-                   Operator::kNoDeopt | Operator::kNoWrite |               \
-                       Operator::kNoThrow | properties,                    \
-                   #Name, value_input_count, 1, control_input_count, 1, 1, \
-                   0) {}                                                   \
-  };                                                                       \
+#define EFFECT_DEPENDENT(Name, properties, value_input_count,               \
+                         control_input_count)                               \
+  struct Name##Operator final : public Operator {                           \
+    Name##Operator()                                                        \
+        : Operator(IrOpcode::k##Name, Operator::kEliminatable | properties, \
+                   #Name, value_input_count, 1, control_input_count, 1, 1,  \
+                   0) {}                                                    \
+  };                                                                        \
   Name##Operator k##Name;
   EFFECT_DEPENDENT_OP_LIST(EFFECT_DEPENDENT)
 #undef EFFECT_DEPENDENT
@@ -888,19 +888,26 @@ struct SimplifiedOperatorGlobalCache final {
   CHECKED_WITH_FEEDBACK_OP_LIST(CHECKED_WITH_FEEDBACK)
 #undef CHECKED_WITH_FEEDBACK
 
-#define CHECKED_BOUNDS(Name)                                                  \
-  struct Name##Operator final : public Operator1<CheckBoundsParameters> {     \
-    Name##Operator(FeedbackSource feedback, CheckBoundsParameters::Mode mode) \
-        : Operator1<CheckBoundsParameters>(                                   \
-              IrOpcode::k##Name, Operator::kFoldable | Operator::kNoThrow,    \
-              #Name, 2, 1, 1, 1, 1, 0,                                        \
-              CheckBoundsParameters(feedback, mode)) {}                       \
-  };                                                                          \
-  Name##Operator k##Name##Deopting = {                                        \
-      FeedbackSource(), CheckBoundsParameters::kDeoptOnOutOfBounds};          \
-  Name##Operator k##Name##Aborting = {                                        \
-      FeedbackSource(), CheckBoundsParameters::kAbortOnOutOfBounds};
+#define CHECKED_BOUNDS(Name)                                               \
+  struct Name##Operator final : public Operator1<CheckBoundsParameters> {  \
+    Name##Operator(FeedbackSource feedback, CheckBoundsFlags flags)        \
+        : Operator1<CheckBoundsParameters>(                                \
+              IrOpcode::k##Name, Operator::kFoldable | Operator::kNoThrow, \
+              #Name, 2, 1, 1, 1, 1, 0,                                     \
+              CheckBoundsParameters(feedback, flags)) {}                   \
+  };                                                                       \
+  Name##Operator k##Name = {FeedbackSource(), CheckBoundsFlags()};         \
+  Name##Operator k##Name##Aborting = {FeedbackSource(),                    \
+                                      CheckBoundsFlag::kAbortOnOutOfBounds};
   CHECKED_BOUNDS_OP_LIST(CHECKED_BOUNDS)
+  CHECKED_BOUNDS(CheckBounds)
+  // For IrOpcode::kCheckBounds, we allow additional flags:
+  CheckBoundsOperator kCheckBoundsConverting = {
+      FeedbackSource(), CheckBoundsFlag::kConvertStringAndMinusZero};
+  CheckBoundsOperator kCheckBoundsAbortingAndConverting = {
+      FeedbackSource(),
+      CheckBoundsFlags(CheckBoundsFlag::kAbortOnOutOfBounds) |
+          CheckBoundsFlags(CheckBoundsFlag::kConvertStringAndMinusZero)};
 #undef CHECKED_BOUNDS
 
   template <DeoptimizeReason kDeoptimizeReason>
@@ -1126,10 +1133,9 @@ struct SimplifiedOperatorGlobalCache final {
     LoadStackArgumentOperator()
         : Operator(                          // --
               IrOpcode::kLoadStackArgument,  // opcode
-              Operator::kNoDeopt | Operator::kNoThrow |
-                  Operator::kNoWrite,  // flags
-              "LoadStackArgument",     // name
-              2, 1, 1, 1, 1, 0) {}     // counts
+              Operator::kEliminatable,       // flags
+              "LoadStackArgument",           // name
+              2, 1, 1, 1, 1, 0) {}           // counts
   };
   LoadStackArgumentOperator kLoadStackArgument;
 
@@ -1206,22 +1212,44 @@ GET_FROM_CACHE(LoadFieldByIndex)
 CHECKED_WITH_FEEDBACK_OP_LIST(GET_FROM_CACHE_WITH_FEEDBACK)
 #undef GET_FROM_CACHE_WITH_FEEDBACK
 
-#define GET_FROM_CACHE_WITH_FEEDBACK(Name)                                \
-  const Operator* SimplifiedOperatorBuilder::Name(                        \
-      const FeedbackSource& feedback, CheckBoundsParameters::Mode mode) { \
-    if (!feedback.IsValid()) {                                            \
-      switch (mode) {                                                     \
-        case CheckBoundsParameters::kDeoptOnOutOfBounds:                  \
-          return &cache_.k##Name##Deopting;                               \
-        case CheckBoundsParameters::kAbortOnOutOfBounds:                  \
-          return &cache_.k##Name##Aborting;                               \
-      }                                                                   \
-    }                                                                     \
-    return new (zone())                                                   \
-        SimplifiedOperatorGlobalCache::Name##Operator(feedback, mode);    \
+#define GET_FROM_CACHE_WITH_FEEDBACK(Name)                              \
+  const Operator* SimplifiedOperatorBuilder::Name(                      \
+      const FeedbackSource& feedback, CheckBoundsFlags flags) {         \
+    DCHECK(!(flags & CheckBoundsFlag::kConvertStringAndMinusZero));     \
+    if (!feedback.IsValid()) {                                          \
+      if (flags & CheckBoundsFlag::kAbortOnOutOfBounds) {               \
+        return &cache_.k##Name##Aborting;                               \
+      } else {                                                          \
+        return &cache_.k##Name;                                         \
+      }                                                                 \
+    }                                                                   \
+    return new (zone())                                                 \
+        SimplifiedOperatorGlobalCache::Name##Operator(feedback, flags); \
   }
 CHECKED_BOUNDS_OP_LIST(GET_FROM_CACHE_WITH_FEEDBACK)
 #undef GET_FROM_CACHE_WITH_FEEDBACK
+
+// For IrOpcode::kCheckBounds, we allow additional flags:
+const Operator* SimplifiedOperatorBuilder::CheckBounds(
+    const FeedbackSource& feedback, CheckBoundsFlags flags) {
+  if (!feedback.IsValid()) {
+    if (flags & CheckBoundsFlag::kAbortOnOutOfBounds) {
+      if (flags & CheckBoundsFlag::kConvertStringAndMinusZero) {
+        return &cache_.kCheckBoundsAbortingAndConverting;
+      } else {
+        return &cache_.kCheckBoundsAborting;
+      }
+    } else {
+      if (flags & CheckBoundsFlag::kConvertStringAndMinusZero) {
+        return &cache_.kCheckBoundsConverting;
+      } else {
+        return &cache_.kCheckBounds;
+      }
+    }
+  }
+  return new (zone())
+      SimplifiedOperatorGlobalCache::CheckBoundsOperator(feedback, flags);
+}
 
 bool IsCheckedWithFeedback(const Operator* op) {
 #define CASE(Name, ...) case IrOpcode::k##Name:
@@ -1254,6 +1282,16 @@ const Operator* SimplifiedOperatorBuilder::AssertType(Type type) {
   return new (zone()) Operator1<Type>(IrOpcode::kAssertType,
                                       Operator::kNoThrow | Operator::kNoDeopt,
                                       "AssertType", 1, 0, 0, 1, 0, 0, type);
+}
+
+const Operator* SimplifiedOperatorBuilder::FastApiCall(
+    const CFunctionInfo* signature, FeedbackSource const& feedback) {
+  // function, c args
+  int value_input_count = signature->ArgumentCount() + 1;
+  return new (zone()) Operator1<FastApiCallParameters>(
+      IrOpcode::kFastApiCall, Operator::kNoThrow, "FastApiCall",
+      value_input_count, 1, 1, 1, 1, 0,
+      FastApiCallParameters(signature, feedback));
 }
 
 const Operator* SimplifiedOperatorBuilder::CheckIf(
@@ -1476,6 +1514,21 @@ const Operator* SimplifiedOperatorBuilder::SpeculativeBigIntNegate(
       1, 1, 1, 0, hint);
 }
 
+const Operator* SimplifiedOperatorBuilder::CheckClosure(
+    const Handle<FeedbackCell>& feedback_cell) {
+  return new (zone()) Operator1<Handle<FeedbackCell>>(  // --
+      IrOpcode::kCheckClosure,                          // opcode
+      Operator::kNoThrow | Operator::kNoWrite,          // flags
+      "CheckClosure",                                   // name
+      1, 1, 1, 1, 1, 0,                                 // counts
+      feedback_cell);                                   // parameter
+}
+
+Handle<FeedbackCell> FeedbackCellOf(const Operator* op) {
+  DCHECK(IrOpcode::kCheckClosure == op->opcode());
+  return OpParameter<Handle<FeedbackCell>>(op);
+}
+
 const Operator* SimplifiedOperatorBuilder::SpeculativeToNumber(
     NumberOperationHint hint, const FeedbackSource& feedback) {
   if (!feedback.IsValid()) {
@@ -1589,7 +1642,9 @@ std::ostream& operator<<(std::ostream& os, CheckParameters const& p) {
 }
 
 CheckParameters const& CheckParametersOf(Operator const* op) {
-  if (op->opcode() == IrOpcode::kCheckedUint32Bounds) {
+  if (op->opcode() == IrOpcode::kCheckBounds ||
+      op->opcode() == IrOpcode::kCheckedUint32Bounds ||
+      op->opcode() == IrOpcode::kCheckedUint64Bounds) {
     return OpParameter<CheckBoundsParameters>(op).check_parameters();
   }
 #define MAKE_OR(name, arg2, arg3) op->opcode() == IrOpcode::k##name ||
@@ -1601,28 +1656,22 @@ CheckParameters const& CheckParametersOf(Operator const* op) {
 bool operator==(CheckBoundsParameters const& lhs,
                 CheckBoundsParameters const& rhs) {
   return lhs.check_parameters() == rhs.check_parameters() &&
-         lhs.mode() == rhs.mode();
+         lhs.flags() == rhs.flags();
 }
 
 size_t hash_value(CheckBoundsParameters const& p) {
-  return base::hash_combine(hash_value(p.check_parameters()), p.mode());
+  return base::hash_combine(hash_value(p.check_parameters()), p.flags());
 }
 
 std::ostream& operator<<(std::ostream& os, CheckBoundsParameters const& p) {
-  os << p.check_parameters() << ", ";
-  switch (p.mode()) {
-    case CheckBoundsParameters::kDeoptOnOutOfBounds:
-      os << "deopt";
-      break;
-    case CheckBoundsParameters::kAbortOnOutOfBounds:
-      os << "abort";
-      break;
-  }
+  os << p.check_parameters() << ", " << p.flags();
   return os;
 }
 
 CheckBoundsParameters const& CheckBoundsParametersOf(Operator const* op) {
-  CHECK_EQ(op->opcode(), IrOpcode::kCheckedUint32Bounds);
+  DCHECK(op->opcode() == IrOpcode::kCheckBounds ||
+         op->opcode() == IrOpcode::kCheckedUint32Bounds ||
+         op->opcode() == IrOpcode::kCheckedUint64Bounds);
   return OpParameter<CheckBoundsParameters>(op);
 }
 
@@ -1679,12 +1728,30 @@ int NewArgumentsElementsMappedCountOf(const Operator* op) {
   return OpParameter<int>(op);
 }
 
+FastApiCallParameters const& FastApiCallParametersOf(const Operator* op) {
+  DCHECK_EQ(IrOpcode::kFastApiCall, op->opcode());
+  return OpParameter<FastApiCallParameters>(op);
+}
+
+std::ostream& operator<<(std::ostream& os, FastApiCallParameters const& p) {
+  return os << p.signature() << ", " << p.feedback();
+}
+
+size_t hash_value(FastApiCallParameters const& p) {
+  return base::hash_combine(p.signature(),
+                            FeedbackSource::Hash()(p.feedback()));
+}
+
+bool operator==(FastApiCallParameters const& lhs,
+                FastApiCallParameters const& rhs) {
+  return lhs.signature() == rhs.signature() && lhs.feedback() == rhs.feedback();
+}
+
 const Operator* SimplifiedOperatorBuilder::Allocate(Type type,
                                                     AllocationType allocation) {
   return new (zone()) Operator1<AllocateParameters>(
-      IrOpcode::kAllocate,
-      Operator::kNoDeopt | Operator::kNoThrow | Operator::kNoWrite, "Allocate",
-      1, 1, 1, 1, 1, 0, AllocateParameters(type, allocation));
+      IrOpcode::kAllocate, Operator::kEliminatable, "Allocate", 1, 1, 1, 1, 1,
+      0, AllocateParameters(type, allocation));
 }
 
 const Operator* SimplifiedOperatorBuilder::AllocateRaw(
@@ -1696,10 +1763,8 @@ const Operator* SimplifiedOperatorBuilder::AllocateRaw(
            allocation == AllocationType::kYoung &&
            !FLAG_young_generation_large_objects));
   return new (zone()) Operator1<AllocateParameters>(
-      IrOpcode::kAllocateRaw,
-      Operator::kNoDeopt | Operator::kNoThrow | Operator::kNoWrite,
-      "AllocateRaw", 1, 1, 1, 1, 1, 1,
-      AllocateParameters(type, allocation, allow_large_objects));
+      IrOpcode::kAllocateRaw, Operator::kEliminatable, "AllocateRaw", 1, 1, 1,
+      1, 1, 1, AllocateParameters(type, allocation, allow_large_objects));
 }
 
 #define SPECULATIVE_NUMBER_BINOP(Name)                                        \
@@ -1747,10 +1812,8 @@ ACCESS_OP_LIST(ACCESS)
 #undef ACCESS
 
 const Operator* SimplifiedOperatorBuilder::LoadMessage() {
-  return new (zone())
-      Operator(IrOpcode::kLoadMessage,
-               Operator::kNoDeopt | Operator::kNoThrow | Operator::kNoWrite,
-               "LoadMessage", 1, 1, 1, 1, 1, 0);
+  return new (zone()) Operator(IrOpcode::kLoadMessage, Operator::kEliminatable,
+                               "LoadMessage", 1, 1, 1, 1, 1, 0);
 }
 
 const Operator* SimplifiedOperatorBuilder::StoreMessage() {

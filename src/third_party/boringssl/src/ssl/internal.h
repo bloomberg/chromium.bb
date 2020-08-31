@@ -1356,22 +1356,16 @@ bool tls13_init_early_key_schedule(SSL_HANDSHAKE *hs, Span<const uint8_t> psk);
 bool tls13_advance_key_schedule(SSL_HANDSHAKE *hs, Span<const uint8_t> in);
 
 // tls13_set_traffic_key sets the read or write traffic keys to
-// |traffic_secret|. It returns true on success and false on error.
+// |traffic_secret|. The version and cipher suite are determined from |session|.
+// It returns true on success and false on error.
 bool tls13_set_traffic_key(SSL *ssl, enum ssl_encryption_level_t level,
                            enum evp_aead_direction_t direction,
+                           const SSL_SESSION *session,
                            Span<const uint8_t> traffic_secret);
 
 // tls13_derive_early_secret derives the early traffic secret. It returns true
-// on success and false on error. Unlike with other traffic secrets, this
-// function does not pass the keys to QUIC. Call
-// |tls13_set_early_secret_for_quic| to do so. This is done to due to an
-// ordering complication around resolving HelloRetryRequest on the server.
+// on success and false on error.
 bool tls13_derive_early_secret(SSL_HANDSHAKE *hs);
-
-// tls13_set_early_secret_for_quic passes the early traffic secrets, as
-// derived by |tls13_derive_early_secret|, to QUIC. It returns true on success
-// and false on error.
-bool tls13_set_early_secret_for_quic(SSL_HANDSHAKE *hs);
 
 // tls13_derive_handshake_secrets derives the handshake traffic secret. It
 // returns true on success and false on error.
@@ -1485,6 +1479,7 @@ enum tls13_server_hs_state_t {
   state13_send_server_hello,
   state13_send_server_certificate_verify,
   state13_send_server_finished,
+  state13_send_half_rtt_ticket,
   state13_read_second_client_flight,
   state13_process_end_of_early_data,
   state13_read_client_certificate,
@@ -1498,9 +1493,11 @@ enum tls13_server_hs_state_t {
 // handback_t lists the points in the state machine where a handback can occur.
 // These are the different points at which key material is no longer needed.
 enum handback_t {
-  handback_after_session_resumption,
-  handback_after_ecdhe,
-  handback_after_handshake,
+  handback_after_session_resumption = 0,
+  handback_after_ecdhe = 1,
+  handback_after_handshake = 2,
+  handback_tls13 = 3,
+  handback_max_value = handback_tls13,
 };
 
 
@@ -1997,21 +1994,14 @@ bool tls1_choose_signature_algorithm(SSL_HANDSHAKE *hs, uint16_t *out);
 Span<const uint16_t> tls1_get_peer_verify_algorithms(const SSL_HANDSHAKE *hs);
 
 // tls12_add_verify_sigalgs adds the signature algorithms acceptable for the
-// peer signature to |out|. It returns true on success and false on error. If
-// |for_certs| is true, the potentially more restrictive list of algorithms for
-// certificates is used. Otherwise, the online signature one is used.
-bool tls12_add_verify_sigalgs(const SSL *ssl, CBB *out, bool for_certs);
+// peer signature to |out|. It returns true on success and false on error.
+bool tls12_add_verify_sigalgs(const SSL_HANDSHAKE *hs, CBB *out);
 
 // tls12_check_peer_sigalg checks if |sigalg| is acceptable for the peer
 // signature. It returns true on success and false on error, setting
 // |*out_alert| to an alert to send.
-bool tls12_check_peer_sigalg(const SSL *ssl, uint8_t *out_alert,
+bool tls12_check_peer_sigalg(const SSL_HANDSHAKE *hs, uint8_t *out_alert,
                              uint16_t sigalg);
-
-// tls12_has_different_verify_sigalgs_for_certs returns whether |ssl| has a
-// different, more restrictive, list of signature algorithms acceptable for the
-// certificate than the online signature.
-bool tls12_has_different_verify_sigalgs_for_certs(const SSL *ssl);
 
 
 // Underdocumented functions.
@@ -2114,6 +2104,9 @@ struct SSL_PROTOCOL_METHOD {
   bool (*get_message)(const SSL *ssl, SSLMessage *out);
   // next_message is called to release the current handshake message.
   void (*next_message)(SSL *ssl);
+  // has_unprocessed_handshake_data returns whether there is buffered
+  // handshake data that has not been consumed by |get_message|.
+  bool (*has_unprocessed_handshake_data)(const SSL *ssl);
   // Use the |ssl_open_handshake| wrapper.
   ssl_open_record_t (*open_handshake)(SSL *ssl, size_t *out_consumed,
                                       uint8_t *out_alert, Span<uint8_t> in);
@@ -2146,14 +2139,20 @@ struct SSL_PROTOCOL_METHOD {
   int (*flush_flight)(SSL *ssl);
   // on_handshake_complete is called when the handshake is complete.
   void (*on_handshake_complete)(SSL *ssl);
-  // set_read_state sets |ssl|'s read cipher state to |aead_ctx|. It returns
-  // true on success and false if changing the read state is forbidden at this
-  // point.
-  bool (*set_read_state)(SSL *ssl, UniquePtr<SSLAEADContext> aead_ctx);
-  // set_write_state sets |ssl|'s write cipher state to |aead_ctx|. It returns
-  // true on success and false if changing the write state is forbidden at this
-  // point.
-  bool (*set_write_state)(SSL *ssl, UniquePtr<SSLAEADContext> aead_ctx);
+  // set_read_state sets |ssl|'s read cipher state and level to |aead_ctx| and
+  // |level|. In QUIC, |aead_ctx| is a placeholder object and |secret_for_quic|
+  // is the original secret. This function returns true on success and false on
+  // error.
+  bool (*set_read_state)(SSL *ssl, ssl_encryption_level_t level,
+                         UniquePtr<SSLAEADContext> aead_ctx,
+                         Span<const uint8_t> secret_for_quic);
+  // set_write_state sets |ssl|'s write cipher state and level to |aead_ctx| and
+  // |level|. In QUIC, |aead_ctx| is a placeholder object and |secret_for_quic|
+  // is the original secret. This function returns true on success and false on
+  // error.
+  bool (*set_write_state)(SSL *ssl, ssl_encryption_level_t level,
+                          UniquePtr<SSLAEADContext> aead_ctx,
+                          Span<const uint8_t> secret_for_quic);
 };
 
 // The following wrappers call |open_*| but handle |read_shutdown| correctly.
@@ -2686,6 +2685,9 @@ struct SSL_CONFIG {
   // Contains the QUIC transport params that this endpoint will send.
   Array<uint8_t> quic_transport_params;
 
+  // Contains the context used to decide whether to accept early data in QUIC.
+  Array<uint8_t> quic_early_data_context;
+
   // verify_sigalgs, if not empty, is the set of signature algorithms
   // accepted from the peer in decreasing order of preference.
   Array<uint16_t> verify_sigalgs;
@@ -2737,6 +2739,11 @@ struct SSL_CONFIG {
   // workaround for https://bugs.openjdk.java.net/browse/JDK-8211806.
   bool jdk11_workaround : 1;
 };
+
+// Computes a SHA-256 hash of the transport parameters and early data context
+// for QUIC, putting the hash in |SHA256_DIGEST_LENGTH| bytes at |hash_out|.
+bool compute_quic_early_data_hash(const SSL_CONFIG *config,
+                                  uint8_t hash_out[SHA256_DIGEST_LENGTH]);
 
 // From RFC 8446, used in determining PSK modes.
 #define SSL_PSK_DHE_KE 0x1
@@ -2841,29 +2848,29 @@ void ssl_update_cache(SSL_HANDSHAKE *hs, int mode);
 
 void ssl_send_alert(SSL *ssl, int level, int desc);
 int ssl_send_alert_impl(SSL *ssl, int level, int desc);
-bool ssl3_get_message(const SSL *ssl, SSLMessage *out);
-ssl_open_record_t ssl3_open_handshake(SSL *ssl, size_t *out_consumed,
-                                      uint8_t *out_alert, Span<uint8_t> in);
-void ssl3_next_message(SSL *ssl);
+bool tls_get_message(const SSL *ssl, SSLMessage *out);
+ssl_open_record_t tls_open_handshake(SSL *ssl, size_t *out_consumed,
+                                     uint8_t *out_alert, Span<uint8_t> in);
+void tls_next_message(SSL *ssl);
 
-int ssl3_dispatch_alert(SSL *ssl);
-ssl_open_record_t ssl3_open_app_data(SSL *ssl, Span<uint8_t> *out,
-                                     size_t *out_consumed, uint8_t *out_alert,
-                                     Span<uint8_t> in);
-ssl_open_record_t ssl3_open_change_cipher_spec(SSL *ssl, size_t *out_consumed,
-                                               uint8_t *out_alert,
-                                               Span<uint8_t> in);
-int ssl3_write_app_data(SSL *ssl, bool *out_needs_handshake, const uint8_t *buf,
-                        int len);
+int tls_dispatch_alert(SSL *ssl);
+ssl_open_record_t tls_open_app_data(SSL *ssl, Span<uint8_t> *out,
+                                    size_t *out_consumed, uint8_t *out_alert,
+                                    Span<uint8_t> in);
+ssl_open_record_t tls_open_change_cipher_spec(SSL *ssl, size_t *out_consumed,
+                                              uint8_t *out_alert,
+                                              Span<uint8_t> in);
+int tls_write_app_data(SSL *ssl, bool *out_needs_handshake, const uint8_t *buf,
+                       int len);
 
-bool ssl3_new(SSL *ssl);
-void ssl3_free(SSL *ssl);
+bool tls_new(SSL *ssl);
+void tls_free(SSL *ssl);
 
-bool ssl3_init_message(SSL *ssl, CBB *cbb, CBB *body, uint8_t type);
-bool ssl3_finish_message(SSL *ssl, CBB *cbb, Array<uint8_t> *out_msg);
-bool ssl3_add_message(SSL *ssl, Array<uint8_t> msg);
-bool ssl3_add_change_cipher_spec(SSL *ssl);
-int ssl3_flush_flight(SSL *ssl);
+bool tls_init_message(SSL *ssl, CBB *cbb, CBB *body, uint8_t type);
+bool tls_finish_message(SSL *ssl, CBB *cbb, Array<uint8_t> *out_msg);
+bool tls_add_message(SSL *ssl, Array<uint8_t> msg);
+bool tls_add_change_cipher_spec(SSL *ssl);
+int tls_flush_flight(SSL *ssl);
 
 bool dtls1_init_message(SSL *ssl, CBB *cbb, CBB *body, uint8_t type);
 bool dtls1_finish_message(SSL *ssl, CBB *cbb, Array<uint8_t> *out_msg);
@@ -3313,13 +3320,6 @@ struct ssl_ctx_st {
   // protocols from the peer.
   bool allow_unknown_alpn_protos : 1;
 
-  // ed25519_enabled is whether Ed25519 is advertised in the handshake.
-  bool ed25519_enabled : 1;
-
-  // rsa_pss_rsae_certs_enabled is whether rsa_pss_rsae_* are supported by the
-  // certificate verifier.
-  bool rsa_pss_rsae_certs_enabled : 1;
-
   // false_start_allowed_without_alpn is whether False Start (if
   // |SSL_MODE_ENABLE_FALSE_START| is enabled) is allowed without ALPN.
   bool false_start_allowed_without_alpn : 1;
@@ -3555,6 +3555,13 @@ struct ssl_session_st {
 
   // is_server is whether this session was created by a server.
   bool is_server : 1;
+
+  // is_quic indicates whether this session was created using QUIC.
+  bool is_quic : 1;
+
+  // quic_early_data_hash is used to determine whether early data must be
+  // rejected when performing a QUIC handshake.
+  bssl::Array<uint8_t> quic_early_data_hash;
 
  private:
   ~ssl_session_st();

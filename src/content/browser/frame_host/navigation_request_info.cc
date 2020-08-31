@@ -9,8 +9,7 @@ namespace content {
 NavigationRequestInfo::NavigationRequestInfo(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
-    const GURL& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     bool is_main_frame,
     bool parent_is_main_frame,
     bool are_ancestors_secure,
@@ -23,11 +22,11 @@ NavigationRequestInfo::NavigationRequestInfo(
         blob_url_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     const base::UnguessableToken& devtools_frame_token,
-    bool obey_origin_policy)
+    bool obey_origin_policy,
+    net::HttpRequestHeaders cors_exempt_headers)
     : common_params(std::move(common_params)),
       begin_params(std::move(begin_params)),
-      site_for_cookies(site_for_cookies),
-      network_isolation_key(network_isolation_key),
+      isolation_info(isolation_info),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       are_ancestors_secure(are_ancestors_secure),
@@ -39,7 +38,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
       devtools_navigation_token(devtools_navigation_token),
       devtools_frame_token(devtools_frame_token),
-      obey_origin_policy(obey_origin_policy) {}
+      obey_origin_policy(obey_origin_policy),
+      cors_exempt_headers(std::move(cors_exempt_headers)) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

@@ -12,7 +12,8 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipCallbackApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -29,15 +30,16 @@ public class BasicTooltipApi implements TooltipApi {
                 FeedTooltipUtils.getFeatureForIPH(tooltipInfo.getFeatureName());
         if (TextUtils.isEmpty(featureForIPH)) return false;
 
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         if (!tracker.shouldTriggerHelpUI(featureForIPH)) return false;
 
         ViewRectProvider rectProvider = new ViewRectProvider(view);
         rectProvider.setInsetPx(0, tooltipInfo.getTopInset(), 0, tooltipInfo.getBottomInset());
 
         TextBubble textBubble = new TextBubble(view.getContext(), view, tooltipInfo.getLabel(),
-                tooltipInfo.getAccessibilityLabel(), true, rectProvider);
+                tooltipInfo.getAccessibilityLabel(), true, rectProvider,
+                AccessibilityUtil.isAccessibilityEnabled());
         textBubble.setAutoDismissTimeout(TEXT_BUBBLE_TIMEOUT_MS);
         textBubble.addOnDismissListener(() -> {
             tracker.dismissed(featureForIPH);

@@ -23,6 +23,10 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #endif
 
+#if BUILDFLAG(BLINK_BINDINGS_TRACE_ENABLED)
+#include "base/trace_event/trace_event.h"
+#endif
+
 namespace base {
 class TickClock;
 }
@@ -167,6 +171,15 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   } while (false)
 #endif
 
+#if BUILDFLAG(BLINK_BINDINGS_TRACE_ENABLED)
+#define BLINK_BINDINGS_TRACE_EVENT(trace_event_name) \
+  TRACE_EVENT0("blink.bindings", trace_event_name)
+#else
+#define BLINK_BINDINGS_TRACE_EVENT(trace_event_name) \
+  do {                                               \
+  } while (false)
+#endif
+
 // Maintains a stack of timers and provides functions to manage recording scopes
 // by pausing and resuming timers in the chain when entering and leaving a
 // scope.
@@ -236,6 +249,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
 #define CALLBACK_COUNTERS(V)                       \
   BINDINGS_METHOD(V, ElementGetBoundingClientRect) \
+  BINDINGS_METHOD(V, ElementGetInnerHTML)          \
   BINDINGS_METHOD(V, EventTargetDispatchEvent)     \
   BINDINGS_METHOD(V, HTMLElementClick)             \
   BINDINGS_METHOD(V, NodeAppendChild)              \

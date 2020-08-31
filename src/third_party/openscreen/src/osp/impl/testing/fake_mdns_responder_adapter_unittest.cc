@@ -15,10 +15,10 @@ constexpr char kTestServiceInstance[] = "turtle";
 constexpr char kTestServiceName[] = "_foo";
 constexpr char kTestServiceProtocol[] = "_udp";
 
-platform::UdpSocket* const kDefaultSocket =
-    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(8));
-platform::UdpSocket* const kSecondSocket =
-    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(32));
+UdpSocket* const kDefaultSocket =
+    reinterpret_cast<UdpSocket*>(static_cast<uintptr_t>(8));
+UdpSocket* const kSecondSocket =
+    reinterpret_cast<UdpSocket*>(static_cast<uintptr_t>(32));
 
 }  // namespace
 
@@ -260,18 +260,18 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
   ASSERT_TRUE(mdns_responder.running());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 
-  Error result = mdns_responder.RegisterInterface(
-      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
+  Error result = mdns_responder.RegisterInterface(InterfaceInfo{}, IPSubnet{},
+                                                  kDefaultSocket);
   EXPECT_TRUE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(
-      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
+  result = mdns_responder.RegisterInterface(InterfaceInfo{}, IPSubnet{},
+                                            kDefaultSocket);
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(
-      platform::InterfaceInfo{}, platform::IPSubnet{}, kSecondSocket);
+  result = mdns_responder.RegisterInterface(InterfaceInfo{}, IPSubnet{},
+                                            kSecondSocket);
   EXPECT_TRUE(result.ok());
   EXPECT_EQ(2u, mdns_responder.registered_interfaces().size());
 
@@ -286,8 +286,8 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
   ASSERT_FALSE(mdns_responder.running());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(
-      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
+  result = mdns_responder.RegisterInterface(InterfaceInfo{}, IPSubnet{},
+                                            kDefaultSocket);
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 }

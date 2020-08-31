@@ -13,9 +13,26 @@
 // limitations under the License.
 
 #include <fstream>
+#include <string>
 
 #include "gflags/gflags.h"
+#include "google/protobuf/util/json_util.h"
 #include "tools/render/trace_program.h"
+
+enum InputFormat {
+  INPUT_JSON,
+  INPUT_QTR,
+};
+
+namespace {
+InputFormat GuessInputFileFormat(const std::string& filename) {
+  if (filename.find(".json") != std::string::npos) {
+    return INPUT_JSON;
+  } else {
+    return INPUT_QTR;
+  }
+}
+}  // namespace
 
 // render_trace renders the specified trace file using an OpenGL-based viewer.
 int main(int argc, char* argv[]) {
@@ -25,8 +42,27 @@ int main(int argc, char* argv[]) {
   CHECK_GE(argc, 2) << "Specify file path";
   auto trace = absl::make_unique<quic_trace::Trace>();
   {
-    std::ifstream f(argv[1]);
-    trace->ParseFromIstream(&f);
+    std::string filename(argv[1]);
+    std::ifstream f(filename);
+    switch (GuessInputFileFormat(filename)) {
+      case INPUT_QTR: {
+        trace->ParseFromIstream(&f);
+        break;
+      }
+      case INPUT_JSON: {
+        std::istreambuf_iterator<char> it(f);
+        std::istreambuf_iterator<char> end;
+
+        auto status = google::protobuf::util::JsonStringToMessage(
+            std::string(it, end), &*trace);
+        if (!status.ok()) {
+          LOG(FATAL) << "Failed to load '" << filename << "': " << status;
+        }
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected format";
+    }
   }
 
   quic_trace::render::TraceProgram program;

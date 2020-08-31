@@ -28,11 +28,9 @@
 #include "av1/encoder/corner_match.h"
 #include "av1/encoder/ransac.h"
 
-#define MAX_CORNERS 4096
 #define MIN_INLIER_PROB 0.1
 
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
-#define USE_GM_FEATURE_BASED 1
 
 // Border over which to compute the global motion
 #define ERRORADV_BORDER 0
@@ -65,9 +63,6 @@ typedef struct {
   double *level_dx_buffer;
   double *level_dy_buffer;
 } ImagePyramid;
-
-static const double erroradv_tr[] = { 0.65, 0.60, 0.55 };
-static const double erroradv_prod_tr[] = { 20000, 18000, 16000 };
 
 int av1_is_enough_erroradvantage(double best_erroradvantage, int params_cost,
                                  int erroradv_type) {
@@ -166,13 +161,122 @@ static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
   wm->wmtype = wmtype;
 }
 
-int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
-                                     TransformationType wmtype, int use_hbd,
-                                     int bd, uint8_t *ref, int r_width,
-                                     int r_height, int r_stride, uint8_t *dst,
-                                     int d_width, int d_height, int d_stride,
-                                     int n_refinements,
-                                     int64_t best_frame_error) {
+#if CONFIG_AV1_HIGHBITDEPTH
+static int64_t highbd_warp_error(
+    WarpedMotionParams *wm, const uint16_t *const ref, int width, int height,
+    int stride, const uint16_t *const dst, int p_col, int p_row, int p_width,
+    int p_height, int p_stride, int subsampling_x, int subsampling_y, int bd,
+    int64_t best_error, uint8_t *segment_map, int segment_map_stride) {
+  int64_t gm_sumerr = 0;
+  const int error_bsize_w = AOMMIN(p_width, WARP_ERROR_BLOCK);
+  const int error_bsize_h = AOMMIN(p_height, WARP_ERROR_BLOCK);
+  uint16_t tmp[WARP_ERROR_BLOCK * WARP_ERROR_BLOCK];
+
+  ConvolveParams conv_params = get_conv_params(0, 0, bd);
+  conv_params.use_dist_wtd_comp_avg = 0;
+  for (int i = p_row; i < p_row + p_height; i += WARP_ERROR_BLOCK) {
+    for (int j = p_col; j < p_col + p_width; j += WARP_ERROR_BLOCK) {
+      int seg_x = j >> WARP_ERROR_BLOCK_LOG;
+      int seg_y = i >> WARP_ERROR_BLOCK_LOG;
+      // Only compute the error if this block contains inliers from the motion
+      // model
+      if (!segment_map[seg_y * segment_map_stride + seg_x]) continue;
+      // avoid warping extra 8x8 blocks in the padded region of the frame
+      // when p_width and p_height are not multiples of WARP_ERROR_BLOCK
+      const int warp_w = AOMMIN(error_bsize_w, p_col + p_width - j);
+      const int warp_h = AOMMIN(error_bsize_h, p_row + p_height - i);
+      highbd_warp_plane(wm, ref, width, height, stride, tmp, j, i, warp_w,
+                        warp_h, WARP_ERROR_BLOCK, subsampling_x, subsampling_y,
+                        bd, &conv_params);
+      gm_sumerr += av1_calc_highbd_frame_error(tmp, WARP_ERROR_BLOCK,
+                                               dst + j + i * p_stride, warp_w,
+                                               warp_h, p_stride, bd);
+      if (gm_sumerr > best_error) return INT64_MAX;
+    }
+  }
+  return gm_sumerr;
+}
+#endif
+
+static int64_t warp_error(WarpedMotionParams *wm, const uint8_t *const ref,
+                          int width, int height, int stride,
+                          const uint8_t *const dst, int p_col, int p_row,
+                          int p_width, int p_height, int p_stride,
+                          int subsampling_x, int subsampling_y,
+                          int64_t best_error, uint8_t *segment_map,
+                          int segment_map_stride) {
+  int64_t gm_sumerr = 0;
+  int warp_w, warp_h;
+  const int error_bsize_w = AOMMIN(p_width, WARP_ERROR_BLOCK);
+  const int error_bsize_h = AOMMIN(p_height, WARP_ERROR_BLOCK);
+  DECLARE_ALIGNED(16, uint8_t, tmp[WARP_ERROR_BLOCK * WARP_ERROR_BLOCK]);
+  ConvolveParams conv_params = get_conv_params(0, 0, 8);
+  conv_params.use_dist_wtd_comp_avg = 0;
+
+  for (int i = p_row; i < p_row + p_height; i += WARP_ERROR_BLOCK) {
+    for (int j = p_col; j < p_col + p_width; j += WARP_ERROR_BLOCK) {
+      int seg_x = j >> WARP_ERROR_BLOCK_LOG;
+      int seg_y = i >> WARP_ERROR_BLOCK_LOG;
+      // Only compute the error if this block contains inliers from the motion
+      // model
+      if (!segment_map[seg_y * segment_map_stride + seg_x]) continue;
+      // avoid warping extra 8x8 blocks in the padded region of the frame
+      // when p_width and p_height are not multiples of WARP_ERROR_BLOCK
+      warp_w = AOMMIN(error_bsize_w, p_col + p_width - j);
+      warp_h = AOMMIN(error_bsize_h, p_row + p_height - i);
+      warp_plane(wm, ref, width, height, stride, tmp, j, i, warp_w, warp_h,
+                 WARP_ERROR_BLOCK, subsampling_x, subsampling_y, &conv_params);
+
+      gm_sumerr +=
+          av1_calc_frame_error(tmp, WARP_ERROR_BLOCK, dst + j + i * p_stride,
+                               warp_w, warp_h, p_stride);
+      if (gm_sumerr > best_error) return INT64_MAX;
+    }
+  }
+  return gm_sumerr;
+}
+
+int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
+                       const uint8_t *ref, int width, int height, int stride,
+                       uint8_t *dst, int p_col, int p_row, int p_width,
+                       int p_height, int p_stride, int subsampling_x,
+                       int subsampling_y, int64_t best_error,
+                       uint8_t *segment_map, int segment_map_stride) {
+  if (wm->wmtype <= AFFINE)
+    if (!av1_get_shear_params(wm)) return INT64_MAX;
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (use_hbd)
+    return highbd_warp_error(wm, CONVERT_TO_SHORTPTR(ref), width, height,
+                             stride, CONVERT_TO_SHORTPTR(dst), p_col, p_row,
+                             p_width, p_height, p_stride, subsampling_x,
+                             subsampling_y, bd, best_error, segment_map,
+                             segment_map_stride);
+#endif
+  (void)use_hbd;
+  (void)bd;
+  return warp_error(wm, ref, width, height, stride, dst, p_col, p_row, p_width,
+                    p_height, p_stride, subsampling_x, subsampling_y,
+                    best_error, segment_map, segment_map_stride);
+}
+
+// Factors used to calculate the thresholds for av1_warp_error
+static double thresh_factors[GM_REFINEMENT_COUNT] = { 1.25, 1.20, 1.15, 1.10,
+                                                      1.05 };
+
+static INLINE int64_t calc_approx_erroradv_threshold(
+    double scaling_factor, int64_t erroradv_threshold) {
+  return erroradv_threshold <
+                 (int64_t)(((double)INT64_MAX / scaling_factor) + 0.5)
+             ? (int64_t)(scaling_factor * erroradv_threshold + 0.5)
+             : INT64_MAX;
+}
+
+int64_t av1_refine_integerized_param(
+    WarpedMotionParams *wm, TransformationType wmtype, int use_hbd, int bd,
+    uint8_t *ref, int r_width, int r_height, int r_stride, uint8_t *dst,
+    int d_width, int d_height, int d_stride, int n_refinements,
+    int64_t best_frame_error, uint8_t *segment_map, int segment_map_stride,
+    int64_t erroradv_threshold) {
   static const int max_trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6 };
   const int border = ERRORADV_BORDER;
   int i = 0, p;
@@ -185,13 +289,16 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
   int32_t best_param;
 
   force_wmtype(wm, wmtype);
-  best_error = av1_warp_error(wm, use_hbd, bd, ref, r_width, r_height, r_stride,
-                              dst + border * d_stride + border, border, border,
-                              d_width - 2 * border, d_height - 2 * border,
-                              d_stride, 0, 0, best_frame_error);
+  best_error =
+      av1_warp_error(wm, use_hbd, bd, ref, r_width, r_height, r_stride,
+                     dst + border * d_stride + border, border, border,
+                     d_width - 2 * border, d_height - 2 * border, d_stride, 0,
+                     0, best_frame_error, segment_map, segment_map_stride);
   best_error = AOMMIN(best_error, best_frame_error);
   step = 1 << (n_refinements - 1);
   for (i = 0; i < n_refinements; i++, step >>= 1) {
+    int64_t error_adv_thresh =
+        calc_approx_erroradv_threshold(thresh_factors[i], erroradv_threshold);
     for (p = 0; p < n_params; ++p) {
       int step_dir = 0;
       // Skip searches for parameters that are forced to be 0
@@ -204,7 +311,8 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
           av1_warp_error(wm, use_hbd, bd, ref, r_width, r_height, r_stride,
                          dst + border * d_stride + border, border, border,
                          d_width - 2 * border, d_height - 2 * border, d_stride,
-                         0, 0, best_error);
+                         0, 0, AOMMIN(best_error, error_adv_thresh),
+                         segment_map, segment_map_stride);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -217,7 +325,8 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
           av1_warp_error(wm, use_hbd, bd, ref, r_width, r_height, r_stride,
                          dst + border * d_stride + border, border, border,
                          d_width - 2 * border, d_height - 2 * border, d_stride,
-                         0, 0, best_error);
+                         0, 0, AOMMIN(best_error, error_adv_thresh),
+                         segment_map, segment_map_stride);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -233,7 +342,8 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
             av1_warp_error(wm, use_hbd, bd, ref, r_width, r_height, r_stride,
                            dst + border * d_stride + border, border, border,
                            d_width - 2 * border, d_height - 2 * border,
-                           d_stride, 0, 0, best_error);
+                           d_stride, 0, 0, AOMMIN(best_error, error_adv_thresh),
+                           segment_map, segment_map_stride);
         if (step_error < best_error) {
           best_error = step_error;
           best_param = *param;
@@ -249,17 +359,7 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
   return best_error;
 }
 
-static INLINE RansacFunc get_ransac_type(TransformationType type) {
-  switch (type) {
-    case AFFINE: return ransac_affine;
-    case ROTZOOM: return ransac_rotzoom;
-    case TRANSLATION: return ransac_translation;
-    default: assert(0); return NULL;
-  }
-}
-
-static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
-                                        int bit_depth) {
+unsigned char *av1_downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
   uint8_t *buf_8bit = frm->y_buffer_8bit;
@@ -276,70 +376,99 @@ static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
   return buf_8bit;
 }
 
-#if USE_GM_FEATURE_BASED
+static void get_inliers_from_indices(MotionModel *params,
+                                     int *correspondences) {
+  int *inliers_tmp = (int *)aom_malloc(2 * MAX_CORNERS * sizeof(*inliers_tmp));
+  memset(inliers_tmp, 0, 2 * MAX_CORNERS * sizeof(*inliers_tmp));
+
+  for (int i = 0; i < params->num_inliers; i++) {
+    int index = params->inliers[i];
+    inliers_tmp[2 * i] = correspondences[4 * index];
+    inliers_tmp[2 * i + 1] = correspondences[4 * index + 1];
+  }
+  memcpy(params->inliers, inliers_tmp, sizeof(*inliers_tmp) * 2 * MAX_CORNERS);
+  aom_free(inliers_tmp);
+}
+
+#define FEAT_COUNT_TR 3
+#define SEG_COUNT_TR 0.40
+void av1_compute_feature_segmentation_map(uint8_t *segment_map, int width,
+                                          int height, int *inliers,
+                                          int num_inliers) {
+  int seg_count = 0;
+  memset(segment_map, 0, sizeof(*segment_map) * width * height);
+
+  for (int i = 0; i < num_inliers; i++) {
+    int x = inliers[i * 2];
+    int y = inliers[i * 2 + 1];
+    int seg_x = x >> WARP_ERROR_BLOCK_LOG;
+    int seg_y = y >> WARP_ERROR_BLOCK_LOG;
+    segment_map[seg_y * width + seg_x] += 1;
+  }
+
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      uint8_t feat_count = segment_map[i * width + j];
+      segment_map[i * width + j] = (feat_count >= FEAT_COUNT_TR);
+      seg_count += (segment_map[i * width + j]);
+    }
+  }
+
+  // If this motion does not make up a large enough portion of the frame,
+  // use the unsegmented version of the error metric
+  if (seg_count < (width * height * SEG_COUNT_TR))
+    memset(segment_map, 1, width * height * sizeof(*segment_map));
+}
+
 static int compute_global_motion_feature_based(
-    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
-    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
-    int num_motions) {
+    TransformationType type, unsigned char *src_buffer, int src_width,
+    int src_height, int src_stride, int *src_corners, int num_src_corners,
+    YV12_BUFFER_CONFIG *ref, int bit_depth, int *num_inliers_by_motion,
+    MotionModel *params_by_motion, int num_motions) {
   int i;
-  int num_frm_corners, num_ref_corners;
+  int num_ref_corners;
   int num_correspondences;
   int *correspondences;
-  int frm_corners[2 * MAX_CORNERS], ref_corners[2 * MAX_CORNERS];
-  unsigned char *frm_buffer = frm->y_buffer;
+  int ref_corners[2 * MAX_CORNERS];
   unsigned char *ref_buffer = ref->y_buffer;
-  RansacFunc ransac = get_ransac_type(type);
+  RansacFunc ransac = av1_get_ransac_type(type);
 
-  if (frm->flags & YV12_FLAG_HIGHBITDEPTH) {
-    // The frame buffer is 16-bit, so we need to convert to 8 bits for the
-    // following code. We cache the result until the frame is released.
-    frm_buffer = downconvert_frame(frm, bit_depth);
-  }
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
-    ref_buffer = downconvert_frame(ref, bit_depth);
+    ref_buffer = av1_downconvert_frame(ref, bit_depth);
   }
 
-  // compute interest points in images using FAST features
-  num_frm_corners = fast_corner_detect(frm_buffer, frm->y_width, frm->y_height,
-                                       frm->y_stride, frm_corners, MAX_CORNERS);
-  num_ref_corners = fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
-                                       ref->y_stride, ref_corners, MAX_CORNERS);
+  num_ref_corners =
+      av1_fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
+                             ref->y_stride, ref_corners, MAX_CORNERS);
 
   // find correspondences between the two images
   correspondences =
-      (int *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
-  num_correspondences = determine_correspondence(
-      frm_buffer, (int *)frm_corners, num_frm_corners, ref_buffer,
-      (int *)ref_corners, num_ref_corners, frm->y_width, frm->y_height,
-      frm->y_stride, ref->y_stride, correspondences);
+      (int *)malloc(num_src_corners * 4 * sizeof(*correspondences));
+  num_correspondences = av1_determine_correspondence(
+      src_buffer, (int *)src_corners, num_src_corners, ref_buffer,
+      (int *)ref_corners, num_ref_corners, src_width, src_height, src_stride,
+      ref->y_stride, correspondences);
 
   ransac(correspondences, num_correspondences, num_inliers_by_motion,
          params_by_motion, num_motions);
 
-  free(correspondences);
-
   // Set num_inliers = 0 for motions with too few inliers so they are ignored.
   for (i = 0; i < num_motions; ++i) {
-    if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences) {
+    if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences ||
+        num_correspondences == 0) {
       num_inliers_by_motion[i] = 0;
+    } else {
+      get_inliers_from_indices(&params_by_motion[i], correspondences);
     }
   }
+
+  free(correspondences);
 
   // Return true if any one of the motions has inliers.
   for (i = 0; i < num_motions; ++i) {
     if (num_inliers_by_motion[i] > 0) return 1;
   }
   return 0;
-}
-#else
-static INLINE RansacFuncDouble
-get_ransac_double_prec_type(TransformationType type) {
-  switch (type) {
-    case AFFINE: return ransac_affine_double_prec;
-    case ROTZOOM: return ransac_rotzoom_double_prec;
-    case TRANSLATION: return ransac_translation_double_prec;
-    default: assert(0); return NULL;
-  }
 }
 
 // Don't use points around the frame border since they are less reliable
@@ -371,22 +500,22 @@ static int determine_disflow_correspondence(int *frm_corners,
   return num_correspondences;
 }
 
-double getCubicValue(double p[4], double x) {
+static double getCubicValue(double p[4], double x) {
   return p[1] + 0.5 * x *
                     (p[2] - p[0] +
                      x * (2.0 * p[0] - 5.0 * p[1] + 4.0 * p[2] - p[3] +
                           x * (3.0 * (p[1] - p[2]) + p[3] - p[0])));
 }
 
-void get_subcolumn(unsigned char *ref, double col[4], int stride, int x,
-                   int y_start) {
+static void get_subcolumn(unsigned char *ref, double col[4], int stride, int x,
+                          int y_start) {
   int i;
   for (i = 0; i < 4; ++i) {
     col[i] = ref[(i + y_start) * stride + x];
   }
 }
 
-double bicubic(unsigned char *ref, double x, double y, int stride) {
+static double bicubic(unsigned char *ref, double x, double y, int stride) {
   double arr[4];
   int k;
   int i = (int)x;
@@ -400,8 +529,8 @@ double bicubic(unsigned char *ref, double x, double y, int stride) {
 }
 
 // Interpolate a warped block using bicubic interpolation when possible
-unsigned char interpolate(unsigned char *ref, double x, double y, int width,
-                          int height, int stride) {
+static unsigned char interpolate(unsigned char *ref, double x, double y,
+                                 int width, int height, int stride) {
   if (x < 0 && y < 0)
     return ref[0];
   else if (x < 0 && y > height - 1)
@@ -472,9 +601,9 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
 }
 
 // Warps a block using flow vector [u, v] and computes the mse
-double compute_warp_and_error(unsigned char *ref, unsigned char *frm, int width,
-                              int height, int stride, int x, int y, double u,
-                              double v, int16_t *dt) {
+static double compute_warp_and_error(unsigned char *ref, unsigned char *frm,
+                                     int width, int height, int stride, int x,
+                                     int y, double u, double v, int16_t *dt) {
   int i, j;
   unsigned char warped;
   double x_w, y_w;
@@ -543,6 +672,7 @@ static INLINE void solve_2x2_system(const double *M, const double *b,
   output_vec[1] = -M[2] * mult_b0 + M_0 * mult_b1;
 }
 
+/*
 static INLINE void image_difference(const uint8_t *src, int src_stride,
                                     const uint8_t *ref, int ref_stride,
                                     int16_t *dst, int dst_stride, int height,
@@ -557,6 +687,7 @@ static INLINE void image_difference(const uint8_t *src, int src_stride,
     }
   }
 }
+*/
 
 // Compute an image gradient using a sobel filter.
 // If dir == 1, compute the x gradient. If dir == 0, compute y. This function
@@ -777,21 +908,17 @@ static void compute_flow_field(ImagePyramid *frm_pyr, ImagePyramid *ref_pyr,
 }
 
 static int compute_global_motion_disflow_based(
-    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
-    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
-    int num_motions) {
-  unsigned char *frm_buffer = frm->y_buffer;
+    TransformationType type, unsigned char *frm_buffer, int frm_width,
+    int frm_height, int frm_stride, int *frm_corners, int num_frm_corners,
+    YV12_BUFFER_CONFIG *ref, int bit_depth, int *num_inliers_by_motion,
+    MotionModel *params_by_motion, int num_motions) {
   unsigned char *ref_buffer = ref->y_buffer;
-  const int frm_width = frm->y_width;
-  const int frm_height = frm->y_height;
   const int ref_width = ref->y_width;
   const int ref_height = ref->y_height;
   const int pad_size = AOMMAX(PATCH_SIZE, MIN_PAD);
-  int num_frm_corners;
   int num_correspondences;
   double *correspondences;
-  int frm_corners[2 * MAX_CORNERS];
-  RansacFuncDouble ransac = get_ransac_double_prec_type(type);
+  RansacFuncDouble ransac = av1_get_ransac_double_prec_type(type);
   assert(frm_width == ref_width);
   assert(frm_height == ref_height);
 
@@ -800,13 +927,8 @@ static int compute_global_motion_disflow_based(
       frm_width < frm_height ? get_msb(frm_width) : get_msb(frm_height);
   const int n_levels = AOMMIN(msb, N_LEVELS);
 
-  if (frm->flags & YV12_FLAG_HIGHBITDEPTH) {
-    // The frame buffer is 16-bit, so we need to convert to 8 bits for the
-    // following code. We cache the result until the frame is released.
-    frm_buffer = downconvert_frame(frm, bit_depth);
-  }
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
-    ref_buffer = downconvert_frame(ref, bit_depth);
+    ref_buffer = av1_downconvert_frame(ref, bit_depth);
   }
 
   // TODO(sarahparker) We will want to do the source pyramid computation
@@ -819,8 +941,8 @@ static int compute_global_motion_disflow_based(
   int compute_gradient = 1;
   ImagePyramid *frm_pyr =
       alloc_pyramid(frm_width, frm_height, pad_size, compute_gradient);
-  compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm->y_stride,
-                        n_levels, pad_size, compute_gradient, frm_pyr);
+  compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm_stride, n_levels,
+                        pad_size, compute_gradient, frm_pyr);
   // Allocate ref image pyramids
   compute_gradient = 0;
   ImagePyramid *ref_pyr =
@@ -840,9 +962,6 @@ static int compute_global_motion_disflow_based(
 
   compute_flow_field(frm_pyr, ref_pyr, flow_u, flow_v);
 
-  // compute interest points in images using FAST features
-  num_frm_corners = fast_corner_detect(frm_buffer, frm_width, frm_height,
-                                       frm->y_stride, frm_corners, MAX_CORNERS);
   // find correspondences between the two images using the flow field
   correspondences = aom_malloc(num_frm_corners * 4 * sizeof(*correspondences));
   num_correspondences = determine_disflow_correspondence(
@@ -869,19 +988,27 @@ static int compute_global_motion_disflow_based(
   }
   return 0;
 }
-#endif
 
-int av1_compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
-                              YV12_BUFFER_CONFIG *ref, int bit_depth,
+int av1_compute_global_motion(TransformationType type,
+                              unsigned char *src_buffer, int src_width,
+                              int src_height, int src_stride, int *src_corners,
+                              int num_src_corners, YV12_BUFFER_CONFIG *ref,
+                              int bit_depth,
+                              GlobalMotionEstimationType gm_estimation_type,
                               int *num_inliers_by_motion,
-                              double *params_by_motion, int num_motions) {
-#if USE_GM_FEATURE_BASED
-  return compute_global_motion_feature_based(type, frm, ref, bit_depth,
-                                             num_inliers_by_motion,
-                                             params_by_motion, num_motions);
-#else
-  return compute_global_motion_disflow_based(type, frm, ref, bit_depth,
-                                             num_inliers_by_motion,
-                                             params_by_motion, num_motions);
-#endif
+                              MotionModel *params_by_motion, int num_motions) {
+  switch (gm_estimation_type) {
+    case GLOBAL_MOTION_FEATURE_BASED:
+      return compute_global_motion_feature_based(
+          type, src_buffer, src_width, src_height, src_stride, src_corners,
+          num_src_corners, ref, bit_depth, num_inliers_by_motion,
+          params_by_motion, num_motions);
+    case GLOBAL_MOTION_DISFLOW_BASED:
+      return compute_global_motion_disflow_based(
+          type, src_buffer, src_width, src_height, src_stride, src_corners,
+          num_src_corners, ref, bit_depth, num_inliers_by_motion,
+          params_by_motion, num_motions);
+    default: assert(0 && "Unknown global motion estimation type");
+  }
+  return 0;
 }

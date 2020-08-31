@@ -31,7 +31,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.ui.widget.LoadingView;
+import org.chromium.components.browser_ui.widget.LoadingView;
 
 import java.lang.ref.WeakReference;
 
@@ -129,6 +129,17 @@ public class LogoView extends FrameLayout implements OnClickListener {
         mLoadingView.setLayoutParams(lp);
         mLoadingView.setVisibility(View.GONE);
         addView(mLoadingView);
+    }
+
+    /**
+     * Clean up member variables when this view is no longer needed.
+     */
+    public void destroy() {
+        // Need to end the animation otherwise it can cause memory leaks since the AnimationHandler
+        // has a reference to the animation callback which then can link back to the
+        // {@code mTransitionProperty}.
+        endFadeAnimation();
+        mLoadingView.destroy();
     }
 
     /**

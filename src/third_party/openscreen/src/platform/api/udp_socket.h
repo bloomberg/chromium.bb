@@ -5,11 +5,10 @@
 #ifndef PLATFORM_API_UDP_SOCKET_H_
 #define PLATFORM_API_UDP_SOCKET_H_
 
-#include <atomic>
-#include <cstdint>
-#include <functional>
+#include <stddef.h>  // size_t
+#include <stdint.h>  // uint8_t
+
 #include <memory>
-#include <mutex>
 
 #include "platform/api/network_interface.h"
 #include "platform/base/error.h"
@@ -17,12 +16,8 @@
 #include "platform/base/udp_packet.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
-class UdpSocket;
-
-using UdpSocketUniquePtr = std::unique_ptr<UdpSocket>;
 
 // An open UDP socket for sending/receiving datagrams to/from either specific
 // endpoints or over IP multicast.
@@ -75,9 +70,10 @@ class UdpSocket {
   // will be queued on the provided |task_runner|. For this reason, the provided
   // TaskRunner and Client must exist for the duration of the created socket's
   // lifetime.
-  static ErrorOr<UdpSocketUniquePtr> Create(TaskRunner* task_runner,
-                                            Client* client,
-                                            const IPEndpoint& local_endpoint);
+  static ErrorOr<std::unique_ptr<UdpSocket>> Create(
+      TaskRunner* task_runner,
+      Client* client,
+      const IPEndpoint& local_endpoint);
 
   virtual ~UdpSocket();
 
@@ -119,7 +115,6 @@ class UdpSocket {
   UdpSocket();
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_UDP_SOCKET_H_

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -77,12 +78,6 @@ class NGInlineNodeForTest : public NGInlineNode {
 
   void CollectInlines() { NGInlineNode::CollectInlines(MutableData()); }
   void ShapeText() { NGInlineNode::ShapeText(MutableData()); }
-
-  bool MarkLineBoxesDirty() {
-    LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
-    return NGInlineNode::MarkLineBoxesDirty(block_flow,
-                                            block_flow->PaintFragment());
-  }
 };
 
 class NGInlineNodeTest : public NGLayoutTest {
@@ -90,7 +85,6 @@ class NGInlineNodeTest : public NGLayoutTest {
   void SetUp() override {
     NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
-    style_->GetFont().Update(nullptr);
   }
 
   void SetupHtml(const char* id, String html) {
@@ -115,55 +109,19 @@ class NGInlineNodeTest : public NGLayoutTest {
     return node;
   }
 
-  MinMaxSize ComputeMinMaxSize(NGInlineNode node) {
-    return node.ComputeMinMaxSize(
-        node.Style().GetWritingMode(),
-        MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
-  }
-
-  void CreateLine(
-      NGInlineNode node,
-      Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
-    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
-                                     WritingMode::kHorizontalTb,
-                                     /* is_new_fc */ false);
-    builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)});
-    NGConstraintSpace constraint_space = builder.ToConstraintSpace();
-    NGInlineChildLayoutContext context;
-    scoped_refptr<const NGLayoutResult> result =
-        NGInlineLayoutAlgorithm(node, constraint_space,
-                                nullptr /* break_token */, &context)
-            .Layout();
-
-    const auto& line =
-        To<NGPhysicalLineBoxFragment>(result->PhysicalFragment());
-    for (const auto& child : line.Children()) {
-      fragments_out->push_back(To<NGPhysicalTextFragment>(child.get()));
-    }
+  MinMaxSizes ComputeMinMaxSizes(NGInlineNode node) {
+    return node
+        .ComputeMinMaxSizes(
+            node.Style().GetWritingMode(),
+            MinMaxSizesInput(
+                /* percentage_resolution_block_size */ LayoutUnit()))
+        .sizes;
   }
 
   const String& GetText() const {
     NGInlineNodeData* data = layout_block_flow_->GetNGInlineNodeData();
     CHECK(data);
     return data->text_content;
-  }
-
-  // Mark line boxes dirty and returns child paint fragments of
-  // |layout_block_flow_|.
-  Vector<NGPaintFragment*, 16> MarkLineBoxesDirty() const {
-    // Attach new LayoutObjects if there were any, but do not run layout,
-    // because running layout will re-create fragments.
-    GetDocument().UpdateStyleAndLayoutTree();
-
-    NGInlineNodeForTest node(layout_block_flow_);
-    EXPECT_TRUE(node.MarkLineBoxesDirty());
-
-    scoped_refptr<const NGPaintFragment> fragment =
-        layout_block_flow_->PaintFragment();
-    EXPECT_TRUE(fragment);
-    Vector<NGPaintFragment*, 16> children;
-    fragment->Children().ToList(&children);
-    return children;
   }
 
   Vector<NGInlineItem>& Items() {
@@ -177,9 +135,18 @@ class NGInlineNodeTest : public NGLayoutTest {
   Vector<unsigned> ToEndOffsetList(
       NGInlineItemSegments::const_iterator segments) {
     Vector<unsigned> end_offsets;
-    for (const NGInlineItemSegment& segment : segments)
-      end_offsets.push_back(segment.EndOffset());
+    for (const RunSegmenter::RunSegmenterRange& segment : segments)
+      end_offsets.push_back(segment.end);
     return end_offsets;
+  }
+
+  void TestFirstLineIsDirty(LayoutBlockFlow* block_flow, bool expected) {
+    const NGFragmentItems* items = block_flow->FragmentItems();
+    items->DirtyLinesFromNeedsLayout(block_flow);
+    const NGFragmentItem* end_reusable_item = items->EndOfReusableItems();
+    NGInlineCursor cursor(*items);
+    cursor.MoveToFirstLine();
+    EXPECT_EQ(cursor.Current().Item() == end_reusable_item, expected);
   }
 
   scoped_refptr<const ComputedStyle> style_;
@@ -187,20 +154,6 @@ class NGInlineNodeTest : public NGLayoutTest {
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
 };
-
-class NodeParameterTest : public NGInlineNodeTest,
-                          public testing::WithParamInterface<const char*> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    NGInlineNodeTest,
-    NodeParameterTest,
-    testing::Values("text",
-                    "<span>span</span>",
-                    "<span>1234 12345678</span>",
-                    "<span style='display: inline-block'>box</span>",
-                    "<img>",
-                    "<div style='float: left'>float</div>",
-                    "<div style='position: absolute'>abs</div>"));
 
 #define TEST_ITEM_TYPE_OFFSET(item, type, start, end) \
   EXPECT_EQ(NGInlineItem::type, item.Type());         \
@@ -442,49 +395,27 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
 }
 
-#define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \
-  EXPECT_EQ(start_offset, fragment->StartOffset());            \
-  EXPECT_EQ(end_offset, fragment->EndOffset());
-
-TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
-  UseLayoutObjectAndAhem();
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetLineHeight(Length::Fixed(1));
-  style->GetFont().Update(nullptr);
-  NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, layout_object_);
-  node.ShapeText();
-  Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
-  CreateLine(node, &fragments);
-  EXPECT_EQ(5u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], 0u, 6u);
-  TEST_TEXT_FRAGMENT(fragments[1], 16u, 21u);
-  TEST_TEXT_FRAGMENT(fragments[2], 14u, 15u);
-  TEST_TEXT_FRAGMENT(fragments[3], 7u, 13u);
-  TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
-}
-
-TEST_F(NGInlineNodeTest, MinMaxSize) {
+TEST_F(NGInlineNodeTest, MinMaxSizes) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   EXPECT_EQ(40, sizes.min_size);
   EXPECT_EQ(70, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
+TEST_F(NGInlineNodeTest, MinMaxSizesElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   EXPECT_EQ(20, sizes.min_size);
   EXPECT_EQ(60, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
+TEST_F(NGInlineNodeTest, MinMaxSizesFloats) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -496,13 +427,13 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(130, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
+TEST_F(NGInlineNodeTest, MinMaxSizesCloseTagAfterForcedBreak) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -514,14 +445,14 @@ TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   // The right border of the `</span>` is included in the line even if it
   // appears after `<br>`. crbug.com/991320.
   EXPECT_EQ(80, sizes.min_size);
   EXPECT_EQ(80, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
+TEST_F(NGInlineNodeTest, MinMaxSizesFloatsClearance) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -534,13 +465,13 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(160, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
+TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -554,7 +485,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   EXPECT_EQ(160, sizes.min_size);
   EXPECT_EQ(170, sizes.max_size);
 }
@@ -704,10 +635,9 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 
   if (data.is_line_dirty &&
-      RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
-    layout_block_flow_ = ToLayoutNGBlockFlow(container->GetLayoutObject());
-    auto lines = MarkLineBoxesDirty();
-    EXPECT_EQ(*data.is_line_dirty, lines[0]->IsDirty());
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    TestFirstLineIsDirty(To<LayoutBlockFlow>(container->GetLayoutObject()),
+                         *data.is_line_dirty);
   }
 
   ForceLayout();  // Ensure running layout does not crash.
@@ -882,7 +812,12 @@ TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
 
   // Running |CollectInlines| should not clear |FirstInlineFragment|.
   LayoutObject* first_child = container->firstChild()->GetLayoutObject();
-  EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // TODO(yosin): We should use |FirstInlineItemFragmentIndex()| once we
+    // implement it.
+  } else {
+    EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
+  }
 }
 
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
@@ -1054,331 +989,6 @@ TEST_F(NGInlineNodeTest, SpaceRestoredByInsertingWord) {
   EXPECT_EQ(String("before mid after"), GetText());
 }
 
-// Test marking line boxes when inserting a span before the first child.
-TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnInsert) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <style>
-    .abspos { position: absolute; }
-    .float { float: left; }
-    </style>
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-    </div>
-  )HTML");
-
-  Node* insert = (*GetParam())(GetDocument());
-  Element* container = GetElementById("container");
-  container->insertBefore(insert, container->firstChild());
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when appending a span.
-TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <style>
-    .abspos { position: absolute; }
-    .float { float: left; }
-    </style>
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-    </div>
-  )HTML");
-
-  Node* insert = (*GetParam())(GetDocument());
-  layout_block_flow_->GetNode()->appendChild(insert);
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when appending a span on 2nd line.
-TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend2) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <style>
-    .abspos { position: absolute; }
-    .float { float: left; }
-    </style>
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-      2234
-    </div>
-  )HTML");
-
-  Node* insert = (*GetParam())(GetDocument());
-  layout_block_flow_->GetNode()->appendChild(insert);
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
-// Test marking line boxes when appending a span on 2nd line.
-TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppendAfterBR) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <style>
-    .abspos { position: absolute; }
-    .float { float: left; }
-    </style>
-    <div id=container style="font-size: 10px; width: 10ch">
-      <br>
-      <br>
-    </div>
-  )HTML");
-
-  Node* insert = (*GetParam())(GetDocument());
-  layout_block_flow_->GetNode()->appendChild(insert);
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
-// Test marking line boxes when removing a span.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      1234<span id=t>5678</span>
-    </div>
-  )HTML");
-
-  Element* span = GetElementById("t");
-  span->remove();
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when removing a span.
-TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveFirst) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", String(R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">)HTML") +
-                             GetParam() + R"HTML(<span>after</span>
-    </div>
-  )HTML");
-
-  Element* container = GetElementById("container");
-  Node* node = container->firstChild();
-  ASSERT_TRUE(node);
-  node->remove();
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when removing a span on 2nd line.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove2) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-      2234<span id=t>5678 3334</span>
-    </div>
-  )HTML");
-
-  Element* span = GetElementById("t");
-  span->remove();
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
-// Test marking line boxes when removing a text node on 2nd line.
-TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", String(R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      line 1
-      <br>)HTML") + GetParam() +
-                             "</div>");
-
-  Element* container = GetElementById("container");
-  Node* node = container->lastChild();
-  ASSERT_TRUE(node);
-  node->remove();
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-  // Currently, only the first dirty line is marked.
-  EXPECT_FALSE(lines[1]->IsDirty());
-
-  ForceLayout();  // Ensure running layout does not crash.
-}
-
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnEndSpaceCollapsed) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <style>
-    div {
-      font-size: 10px;
-      width: 8ch;
-    }
-    #empty {
-      background: yellow; /* ensure fragment is created */
-    }
-    #target {
-      display: inline-block;
-    }
-    </style>
-    <div id=container>
-      1234567890
-      1234567890
-      <span id=empty> </span>
-      <span id=target></span></div>
-  )HTML");
-
-  // Removing #target makes the spaces before it to be collapsed.
-  Element* target = GetElementById("target");
-  target->remove();
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-
-  ForceLayout();  // Ensure running layout does not crash.
-}
-
-// Test marking line boxes when the first span has NeedsLayout. The span is
-// culled.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirst) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      <span id=t>1234</span>5678
-    </div>
-  )HTML");
-
-  LayoutObject* span = GetLayoutObjectByElementId("t");
-  span->SetNeedsLayout("");
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when the first span has NeedsLayout. The span has a
-// box fragment.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirstWithBox) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      <span id=t style="background: blue">1234</span>5678
-    </div>
-  )HTML");
-
-  LayoutObject* span = GetLayoutObjectByElementId("t");
-  span->SetNeedsLayout("");
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when a span has NeedsLayout. The span is culled.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayout) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-      2234<span id=t>5678 3334</span>
-    </div>
-  )HTML");
-
-  LayoutObject* span = GetLayoutObjectByElementId("t");
-  span->SetNeedsLayout("");
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
-// Test marking line boxes when a span has NeedsLayout. The span has a box
-// fragment.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutWithBox) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      12345678
-      2234<span id=t style="background: blue">5678 3334</span>
-    </div>
-  )HTML");
-
-  LayoutObject* span = GetLayoutObjectByElementId("t");
-  span->SetNeedsLayout("");
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_FALSE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
-// Test marking line boxes when a span inside a span has NeedsLayout.
-// The parent span has a box fragment, and wraps, so that its fragment
-// is seen earlier in pre-order DFS.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px">
-      <span style="background: yellow">
-        <span id=t>target</span>
-        <br>
-        12345678
-      </span>
-    </div>
-  )HTML");
-
-  LayoutObject* span = GetLayoutObjectByElementId("t");
-  span->SetNeedsLayout("");
-
-  auto lines = MarkLineBoxesDirty();
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-// Test marking line boxes when a span has NeedsLayout. The span has a box
-// fragment.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetupHtml("container", R"HTML(
-    <div id=container style="display: inline-block; font-size: 10px">
-      12345678<br>
-      12345678<br>
-    </div>
-  )HTML");
-
-  Element* container = GetElementById("container");
-  container->appendChild(GetDocument().createTextNode("append"));
-
-  // Inline block with auto-size calls |ComputeMinMaxSize|, which may call
-  // |CollectInlines|. Emulate it to ensure it does not let tests to fail.
-  GetDocument().UpdateStyleAndLayoutTree();
-  ComputeMinMaxSize(NGInlineNode(layout_block_flow_));
-
-  auto lines = MarkLineBoxesDirty();
-  // TODO(kojii): Ideally, 0 should be false, or even 1 as well.
-  EXPECT_TRUE(lines[0]->IsDirty());
-  EXPECT_TRUE(lines[1]->IsDirty());
-}
-
 TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty1) {
   SetupHtml("container", "<div id=container><b id=remove><i>foo</i></b></div>");
   ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
@@ -1394,7 +1004,7 @@ TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty2) {
   SetupHtml("container", "<div id=container><b><i>foo</i></b></div>");
   ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
 
-  GetElementById("container")->SetInnerHTMLFromString("");
+  GetElementById("container")->setInnerHTML("");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
@@ -1435,13 +1045,14 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   outer_span->appendChild(div);
 
   // Update tree but do NOT update layout. At this point, there's no guarantee,
-  // but there are some clients (e.g., Schroll Anchor) who try to read
+  // but there are some clients (e.g., Scroll Anchor) who try to read
   // associated fragments.
   //
   // NGPaintFragment is owned by LayoutNGBlockFlow. Because the original owner
   // no longer has an inline formatting context, the NGPaintFragment subtree is
   // destroyed, and should not be accessible.
   GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(text->GetLayoutObject()->IsInLayoutNGInlineFormattingContext());
   scoped_refptr<NGPaintFragment> text_fragment_before_layout =
       text->GetLayoutObject()->FirstInlineFragment();
   EXPECT_EQ(text_fragment_before_layout, nullptr);

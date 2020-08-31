@@ -7,7 +7,6 @@ LIBDRM_FREEDRENO_FILES := \
 	freedreno_bo_cache.c \
 	msm/msm_bo.c \
 	msm/msm_device.c \
-	msm/msm_drm.h \
 	msm/msm_pipe.c \
 	msm/msm_priv.h \
 	msm/msm_ringbuffer.c

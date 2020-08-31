@@ -105,6 +105,14 @@ void OnSafetyTipClosed(ReputationCheckResult result,
   RecordHeuristicsUKMData(result, navigation_source_id, action);
 }
 
+// Safety Tips does not use starts_active (since flagged sites are so rare to
+// begin with), so this function records the same metric as "SafetyTipShown",
+// but does so after the flag check, which may impact flag recording.
+void RecordPostFlagCheckHistogram(security_state::SafetyTipStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown_AfterFlag",
+                            status);
+}
+
 }  // namespace
 
 ReputationWebContentsObserver::~ReputationWebContentsObserver() = default;
@@ -114,7 +122,7 @@ void ReputationWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
-    MaybeCallReputationCheckCallback();
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
@@ -125,12 +133,14 @@ void ReputationWebContentsObserver::DidFinishNavigation(
   MaybeShowSafetyTip(
       ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                              ukm::SourceIdType::NAVIGATION_ID),
+      /*called_from_visibility_check=*/false,
       /*record_ukm_if_tip_not_shown=*/true);
 }
 
 void ReputationWebContentsObserver::OnVisibilityChanged(
     content::Visibility visibility) {
   MaybeShowSafetyTip(ukm::GetSourceIdForWebContentsDocument(web_contents()),
+                     /*called_from_visibility_check=*/true,
                      /*record_ukm_if_tip_not_shown=*/false);
 }
 
@@ -155,6 +165,7 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      reputation_check_pending_for_testing_(true),
       weak_factory_(this) {
   last_navigation_safety_tip_info_ = {security_state::SafetyTipStatus::kUnknown,
                                       GURL()};
@@ -162,31 +173,40 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
 
 void ReputationWebContentsObserver::MaybeShowSafetyTip(
     ukm::SourceId navigation_source_id,
+    bool called_from_visibility_check,
     bool record_ukm_if_tip_not_shown) {
   if (web_contents()->GetMainFrame()->GetVisibilityState() !=
       content::PageVisibilityState::kVisible) {
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.SchemeIsHTTPOrHTTPS()) {
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
   ReputationService* service = ReputationService::Get(profile_);
   service->GetReputationStatus(
-      url, base::BindRepeating(
+      url, base::BindOnce(
                &ReputationWebContentsObserver::HandleReputationCheckResult,
                weak_factory_.GetWeakPtr(), navigation_source_id,
-               record_ukm_if_tip_not_shown));
+               called_from_visibility_check, record_ukm_if_tip_not_shown));
 }
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     ukm::SourceId navigation_source_id,
+    bool called_from_visibility_check,
     bool record_ukm_if_tip_not_shown,
     ReputationCheckResult result) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
                             result.safety_tip_status);
+  base::UmaHistogramEnumeration(
+      called_from_visibility_check
+          ? "Security.SafetyTips.ReputationCheckComplete.VisibilityChanged"
+          : "Security.SafetyTips.ReputationCheckComplete.DidFinishNavigation",
+      result.safety_tip_status);
 
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record
@@ -225,19 +245,35 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   }
 
   if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    // When the feature isn't enabled, we 'ignore' the UI after the first visit
+    // to make it easier to disambiguate the control groups' first visit from
+    // subsequent navigations to the flagged page in metrics. Since the user
+    // never sees the UI, this is a no-op from their perspective.
+    if (result.safety_tip_status ==
+            security_state::SafetyTipStatus::kLookalike ||
+        result.safety_tip_status ==
+            security_state::SafetyTipStatus::kBadReputation) {
+      ReputationService::Get(profile_)->OnUIDisabledFirstVisit(result.url);
+    }
+
+    RecordPostFlagCheckHistogram(result.safety_tip_status);
     FinalizeReputationCheckWhenTipNotShown(record_ukm_if_tip_not_shown, result,
                                            navigation_source_id);
     return;
   }
 
+  RecordPostFlagCheckHistogram(result.safety_tip_status);
   ShowSafetyTipDialog(web_contents(), result.safety_tip_status, result.url,
                       result.suggested_url,
                       base::BindOnce(OnSafetyTipClosed, result,
                                      base::Time::Now(), navigation_source_id));
-  MaybeCallReputationCheckCallback();
+  MaybeCallReputationCheckCallback(true);
 }
 
-void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {
+void ReputationWebContentsObserver::MaybeCallReputationCheckCallback(
+    bool heuristics_checked) {
+  if (heuristics_checked)
+    reputation_check_pending_for_testing_ = false;
   if (reputation_check_callback_for_testing_.is_null())
     return;
   std::move(reputation_check_callback_for_testing_).Run();
@@ -251,7 +287,7 @@ void ReputationWebContentsObserver::FinalizeReputationCheckWhenTipNotShown(
     RecordHeuristicsUKMData(result, navigation_source_id,
                             SafetyTipInteraction::kNotShown);
   }
-  MaybeCallReputationCheckCallback();
+  MaybeCallReputationCheckCallback(true);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ReputationWebContentsObserver)

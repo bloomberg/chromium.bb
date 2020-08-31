@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -84,12 +85,11 @@ class JsonStringOutputWriter
 
 class ConsumerHost::StreamWriter {
  public:
-  using Slices = std::vector<std::string>;
+  using Slice = std::string;
 
   static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-    return base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                            base::WithBaseSyncPrimitives(),
-                                            base::TaskPriority::BEST_EFFORT});
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT});
   }
 
   StreamWriter(mojo::ScopedDataPipeProducerHandle stream,
@@ -101,34 +101,32 @@ class ConsumerHost::StreamWriter {
         disconnect_callback_(std::move(disconnect_callback)),
         callback_task_runner_(callback_task_runner) {}
 
-  void WriteToStream(std::unique_ptr<Slices> slices, bool has_more) {
+  void WriteToStream(std::unique_ptr<Slice> slice, bool has_more) {
     DCHECK(stream_.is_valid());
-    for (const auto& slice : *slices) {
-      uint32_t write_position = 0;
 
-      while (write_position < slice.size()) {
-        uint32_t write_bytes = slice.size() - write_position;
+    uint32_t write_position = 0;
+    while (write_position < slice->size()) {
+      uint32_t write_bytes = slice->size() - write_position;
 
-        MojoResult result =
-            stream_->WriteData(slice.data() + write_position, &write_bytes,
-                               MOJO_WRITE_DATA_FLAG_NONE);
+      MojoResult result =
+          stream_->WriteData(slice->data() + write_position, &write_bytes,
+                             MOJO_WRITE_DATA_FLAG_NONE);
 
-        if (result == MOJO_RESULT_OK) {
-          write_position += write_bytes;
-          continue;
+      if (result == MOJO_RESULT_OK) {
+        write_position += write_bytes;
+        continue;
+      }
+
+      if (result == MOJO_RESULT_SHOULD_WAIT) {
+        result = mojo::Wait(stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
+      }
+
+      if (result != MOJO_RESULT_OK) {
+        if (!disconnect_callback_.is_null()) {
+          callback_task_runner_->PostTask(FROM_HERE,
+                                          std::move(disconnect_callback_));
         }
-
-        if (result == MOJO_RESULT_SHOULD_WAIT) {
-          result = mojo::Wait(stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
-        }
-
-        if (result != MOJO_RESULT_OK) {
-          if (!disconnect_callback_.is_null()) {
-            callback_task_runner_->PostTask(FROM_HERE,
-                                            std::move(disconnect_callback_));
-          }
-          return;
-        }
+        return;
       }
     }
 
@@ -394,18 +392,6 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
   json_agent_label_filter_ = agent_label_filter;
 
   perfetto::trace_processor::Config processor_config;
-  // Chrome uses a smaller block size than the default even on 64-bit machines,
-  // because the sandbox for our utility process may restrict our address space.
-  // The string pool can still grow larger across multiple blocks if necessary.
-  if (sizeof(void*) == 8) {
-    // Work-around for crbug.com/1041573: To make it less likely that we need
-    // more than one block, use a larger block size. This is to avoid a bug in
-    // trace processor that could lead to a crash during trace processing
-    // otherwise.
-    processor_config.string_pool_block_size_bytes = 256 * 1024 * 1024;
-  } else {
-    processor_config.string_pool_block_size_bytes = 32 * 1024 * 1024;
-  }
   trace_processor_ =
       perfetto::trace_processor::TraceProcessorStorage::CreateInstance(
           processor_config);
@@ -473,11 +459,10 @@ void ConsumerHost::TracingSession::ExportJson() {
 
 void ConsumerHost::TracingSession::OnJSONTraceData(std::string json,
                                                    bool has_more) {
-  auto slices = std::make_unique<StreamWriter::Slices>();
-  slices->push_back(std::string());
-  slices->back().swap(json);
+  auto slice = std::make_unique<StreamWriter::Slice>();
+  slice->swap(json);
   read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(slices), has_more);
+                                   std::move(slice), has_more);
 
   if (!has_more) {
     read_buffers_stream_writer_.Reset();
@@ -488,14 +473,15 @@ void ConsumerHost::TracingSession::OnTraceData(
     std::vector<perfetto::TracePacket> packets,
     bool has_more) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (trace_processor_) {
-    // Calculate space needed for trace chunk. Each packet has a preamble and
-    // payload size.
-    size_t max_size = packets.size() * perfetto::TracePacket::kMaxPreambleBytes;
-    for (const auto& packet : packets) {
-      max_size += packet.size();
-    }
 
+  // Calculate space needed for trace chunk. Each packet has a preamble and
+  // payload size.
+  size_t max_size = packets.size() * perfetto::TracePacket::kMaxPreambleBytes;
+  for (const auto& packet : packets) {
+    max_size += packet.size();
+  }
+
+  if (trace_processor_) {
     // Copy packets into a trace file chunk.
     size_t position = 0;
     std::unique_ptr<uint8_t[]> data(new uint8_t[max_size]);
@@ -526,19 +512,21 @@ void ConsumerHost::TracingSession::OnTraceData(
     return;
   }
 
-  auto copy = std::make_unique<StreamWriter::Slices>();
+  // Copy packets into a trace slice.
+  auto chunk = std::make_unique<StreamWriter::Slice>();
+  chunk->reserve(max_size);
   for (auto& packet : packets) {
     char* data;
     size_t size;
     std::tie(data, size) = packet.GetProtoPreamble();
-    copy->emplace_back(data, size);
+    chunk->append(data, size);
     auto& slices = packet.slices();
     for (auto& slice : slices) {
-      copy->emplace_back(static_cast<const char*>(slice.start), slice.size);
+      chunk->append(static_cast<const char*>(slice.start), slice.size);
     }
   }
   read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(copy), has_more);
+                                   std::move(chunk), has_more);
   if (!has_more) {
     read_buffers_stream_writer_.Reset();
   }
@@ -601,8 +589,7 @@ ConsumerHost::ConsumerHost(PerfettoService* service) : service_(service) {
   consumer_endpoint_ =
       service_->GetService()->ConnectConsumer(this, 0 /*uid_t*/);
   consumer_endpoint_->ObserveEvents(
-      perfetto::TracingService::ConsumerEndpoint::ObservableEventType::
-          kDataSourceInstances);
+      perfetto::ObservableEvents::TYPE_DATA_SOURCES_INSTANCES);
 }
 
 ConsumerHost::~ConsumerHost() {

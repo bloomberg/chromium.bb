@@ -7,9 +7,8 @@
 
 #include "base/callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -23,14 +22,16 @@ class Document;
 class Element;
 class ExceptionState;
 class IntersectionObserverDelegate;
+class IntersectionObserverEntry;
 class IntersectionObserverInit;
+class Node;
 class ScriptState;
 class V8IntersectionObserverCallback;
 
 class CORE_EXPORT IntersectionObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<IntersectionObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserver);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -72,20 +73,17 @@ class CORE_EXPORT IntersectionObserver final
 
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
-                                      ExceptionState&);
+                                      ExceptionState& = ASSERT_NO_EXCEPTION);
   static IntersectionObserver* Create(ScriptState*,
                                       V8IntersectionObserverCallback*,
                                       const IntersectionObserverInit*,
-                                      ExceptionState&);
+                                      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // Creates an IntersectionObserver that monitors changes to the intersection
   // between its target element relative to its implicit root and notifies via
   // the given |callback|. |thresholds| should be in the range [0,1], and are
   // interpreted according to the given |semantics|. |delay| specifies the
   // minimum period between change notifications.
-  //
-  // TODO(crbug.com/915495): The |delay| feature is broken. See comments in
-  // intersection_observation.cc.
   static IntersectionObserver* Create(
       const Vector<Length>& root_margin,
       const Vector<float>& thresholds,
@@ -101,7 +99,7 @@ class CORE_EXPORT IntersectionObserver final
   static void ResumeSuspendedObservers();
 
   explicit IntersectionObserver(IntersectionObserverDelegate&,
-                                Element*,
+                                Node*,
                                 const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds,
                                 ThresholdInterpretation semantics,
@@ -113,23 +111,25 @@ class CORE_EXPORT IntersectionObserver final
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   void unobserve(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   void disconnect(ExceptionState& = ASSERT_NO_EXCEPTION);
-  HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
+  HeapVector<Member<IntersectionObserverEntry>> takeRecords(
+      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // API attributes.
-  Element* root() const { return root_.Get(); }
+  Node* root() const { return root_.Get(); }
   String rootMargin() const;
   const Vector<float>& thresholds() const { return thresholds_; }
   DOMHighResTimeStamp delay() const { return delay_; }
   bool trackVisibility() const { return track_visibility_; }
   bool trackFractionOfRoot() const { return track_fraction_of_root_; }
 
-  // An observer can either track intersections with an explicit root Element,
+  // An observer can either track intersections with an explicit root Node,
   // or with the the top-level frame's viewport (the "implicit root").  When
   // tracking the implicit root, root_ will be null, but because root_ is a
   // weak pointer, we cannot surmise that this observer tracks the implicit
   // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
 
+  bool HasObservations() const { return !observations_.IsEmpty(); }
   bool AlwaysReportRootBounds() const { return always_report_root_bounds_; }
   bool NeedsOcclusionTracking() const {
     return trackVisibility() && !observations_.IsEmpty();
@@ -149,24 +149,29 @@ class CORE_EXPORT IntersectionObserver final
   DeliveryBehavior GetDeliveryBehavior() const;
   void Deliver();
 
-  // Returns false if this observer has an explicit root element which has been
+  // Returns false if this observer has an explicit root node which has been
   // deleted; true otherwise.
   bool RootIsValid() const;
+  bool CanUseCachedRects() const { return can_use_cached_rects_; }
+  void InvalidateCachedRects() { can_use_cached_rects_ = 0; }
 
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Enable/disable throttling of visibility checking, so we don't have to add
   // sleep() calls to tests to wait for notifications to show up.
   static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   const Member<IntersectionObserverDelegate> delegate_;
-  UntracedMember<Element> root_;
+
+  // We use UntracedMember<> here to do custom weak processing.
+  UntracedMember<Node> root_;
+
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;
@@ -176,6 +181,7 @@ class CORE_EXPORT IntersectionObserver final
   unsigned track_fraction_of_root_ : 1;
   unsigned always_report_root_bounds_ : 1;
   unsigned needs_delivery_ : 1;
+  unsigned can_use_cached_rects_ : 1;
 };
 
 }  // namespace blink

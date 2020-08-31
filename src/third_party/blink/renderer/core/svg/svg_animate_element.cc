@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -180,9 +181,11 @@ void SVGAnimateElement::ResolveTargetProperty() {
     }
   } else {
     type_ = SVGElement::AnimatedPropertyTypeForCSSAttribute(AttributeName());
-    css_property_id_ = type_ != kAnimatedUnknown
-                           ? cssPropertyID(AttributeName().LocalName())
-                           : CSSPropertyID::kInvalid;
+    css_property_id_ =
+        type_ != kAnimatedUnknown
+            ? cssPropertyID(targetElement()->GetExecutionContext(),
+                            AttributeName().LocalName())
+            : CSSPropertyID::kInvalid;
   }
   // Blacklist <script> targets here for now to prevent unpleasantries. This
   // also disallows the perfectly "valid" animation of 'className' on said
@@ -236,7 +239,7 @@ SVGPropertyBase* SVGAnimateElement::CreatePropertyForAttributeAnimation(
   // http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
   DCHECK_NE(type_, kAnimatedTransformList);
   DCHECK(target_property_);
-  return target_property_->CurrentValueBase()->CloneForAnimation(value);
+  return target_property_->BaseValueBase().CloneForAnimation(value);
 }
 
 SVGPropertyBase* SVGAnimateElement::CreatePropertyForCSSAnimation(
@@ -486,11 +489,10 @@ void SVGAnimateElement::ApplyResultsToTarget() {
     MutableCSSPropertyValueSet* properties =
         target_element->EnsureAnimatedSMILStyleProperties();
     auto animated_value_string = animated_value_->ValueAsString();
-    auto secure_context_mode =
-        target_element->GetDocument().GetSecureContextMode();
-    auto set_result =
-        properties->SetProperty(css_property_id_, animated_value_string, false,
-                                secure_context_mode, nullptr);
+    auto& document = target_element->GetDocument();
+    auto set_result = properties->SetProperty(
+        css_property_id_, animated_value_string, false,
+        document.GetSecureContextMode(), document.ElementSheet().Contents());
     if (set_result.did_change) {
       target_element->SetNeedsStyleRecalc(
           kLocalStyleChange,
@@ -584,7 +586,7 @@ void SVGAnimateElement::SetAttributeType(
   AnimationAttributeChanged();
 }
 
-void SVGAnimateElement::Trace(blink::Visitor* visitor) {
+void SVGAnimateElement::Trace(Visitor* visitor) {
   visitor->Trace(from_property_);
   visitor->Trace(to_property_);
   visitor->Trace(to_at_end_of_duration_property_);

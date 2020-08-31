@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.ProfileInfoBrowserProxy} */
+// clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
+/** @implements {OnStartupBrowserProxy} */
 class TestOnStartupBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['getNtpExtension']);
@@ -23,7 +30,7 @@ class TestOnStartupBrowserProxy extends TestBrowserProxy {
    */
   setNtpExtension(ntpExtension) {
     this.ntpExtension_ = ntpExtension;
-    cr.webUIListenerCallback('update-ntp-extension', ntpExtension);
+    webUIListenerCallback('update-ntp-extension', ntpExtension);
   }
 }
 
@@ -65,20 +72,20 @@ suite('OnStartupPage', function() {
     };
     document.body.appendChild(testElement);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
     });
   }
 
   function getSelectedOptionLabel() {
     return Array
         .from(testElement.root.querySelectorAll('controlled-radio-button'))
-        .find(el => el.name == testElement.$.onStartupRadioGroup.selected)
+        .find(el => el.name === testElement.$.onStartupRadioGroup.selected)
         .label;
   }
 
   setup(function() {
     onStartupBrowserProxy = new TestOnStartupBrowserProxy();
-    settings.OnStartupBrowserProxyImpl.instance_ = onStartupBrowserProxy;
+    OnStartupBrowserProxyImpl.instance_ = onStartupBrowserProxy;
     return initPage();
   });
 
@@ -118,7 +125,7 @@ suite('OnStartupPage', function() {
   test('given ntp extension, extension indicator always exists', function() {
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
       assertTrue(extensionControlledIndicatorExists());
       Object.values(RestoreOnStartupEnum).forEach(function(option) {
         testElement.set('prefs.session.restore_on_startup.value', option);
@@ -141,7 +148,7 @@ suite('OnStartupPage', function() {
     assertFalse(extensionControlledIndicatorExists());
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
       assertTrue(extensionControlledIndicatorExists());
     });
   });

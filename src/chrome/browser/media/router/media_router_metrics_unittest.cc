@@ -273,12 +273,6 @@ TEST(MediaRouterMetricsTest, RecordStopRoute) {
                           Bucket(/* Remote route */ 1, 1)));
 }
 
-TEST(MediaRouterMetricsTest, RecordSearchSinkOutcome) {
-  TestRecordBooleanMetric(
-      base::BindRepeating(&MediaRouterMetrics::RecordSearchSinkOutcome),
-      MediaRouterMetrics::kHistogramRecordSearchSinkOutcome);
-}
-
 TEST(MediaRouterMetricsTest, RecordIconStateAtDialogOpen) {
   TestRecordBooleanMetric(
       base::BindRepeating(&MediaRouterMetrics::RecordIconStateAtDialogOpen),
@@ -289,6 +283,18 @@ TEST(MediaRouterMetricsTest, RecordIconStateAtInit) {
   TestRecordBooleanMetric(
       base::BindRepeating(&MediaRouterMetrics::RecordIconStateAtInit),
       MediaRouterMetrics::kHistogramUiIconStateAtInit);
+}
+
+TEST(MediaRouterMetricsTest, RecordCloudPrefAtDialogOpen) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordCloudPrefAtDialogOpen),
+      MediaRouterMetrics::kHistogramCloudPrefAtDialogOpen);
+}
+
+TEST(MediaRouterMetricsTest, RecordCloudPrefAtInit) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordCloudPrefAtInit),
+      MediaRouterMetrics::kHistogramCloudPrefAtInit);
 }
 
 }  // namespace media_router

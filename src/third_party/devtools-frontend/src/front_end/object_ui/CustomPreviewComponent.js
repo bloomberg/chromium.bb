@@ -1,15 +1,23 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
+import {ObjectPropertiesSection} from './ObjectPropertiesSection.js';
+
 /**
  * @unrestricted
  */
-class CustomPreviewSection {
+export class CustomPreviewSection {
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    */
   constructor(object) {
-    this._sectionElement = createElementWithClass('span', 'custom-expandable-section');
+    this._sectionElement = document.createElement('span');
+    this._sectionElement.classList.add('custom-expandable-section');
     this._object = object;
     this._expanded = false;
     this._cachedContent = null;
@@ -19,19 +27,19 @@ class CustomPreviewSection {
     try {
       headerJSON = JSON.parse(customPreview.header);
     } catch (e) {
-      Common.console.error('Broken formatter: header is invalid json ' + e);
+      Common.Console.Console.instance().error('Broken formatter: header is invalid json ' + e);
       return;
     }
     this._header = this._renderJSONMLTag(headerJSON);
     if (this._header.nodeType === Node.TEXT_NODE) {
-      Common.console.error('Broken formatter: header should be an element node.');
+      Common.Console.Console.instance().error('Broken formatter: header should be an element node.');
       return;
     }
 
     if (customPreview.hasBody || customPreview.bodyGetterId) {
       this._header.classList.add('custom-expandable-section-header');
       this._header.addEventListener('click', this._onClick.bind(this), false);
-      this._expandIcon = UI.Icon.create('smallicon-triangle-right', 'custom-expand-icon');
+      this._expandIcon = UI.Icon.Icon.create('smallicon-triangle-right', 'custom-expand-icon');
       this._header.insertBefore(this._expandIcon, this._header.firstChild);
     }
 
@@ -66,7 +74,7 @@ class CustomPreviewSection {
   _renderElement(object) {
     const tagName = object.shift();
     if (!CustomPreviewSection._tagsWhiteList.has(tagName)) {
-      Common.console.error('Broken formatter: element ' + tagName + ' is not allowed!');
+      Common.Console.Console.instance().error('Broken formatter: element ' + tagName + ' is not allowed!');
       return createElement('span');
     }
     const element = createElement(/** @type {string} */ (tagName));
@@ -99,7 +107,7 @@ class CustomPreviewSection {
       return (new CustomPreviewSection(remoteObject)).element();
     }
 
-    const sectionElement = ObjectUI.ObjectPropertiesSection.defaultObjectPresentation(remoteObject);
+    const sectionElement = ObjectPropertiesSection.defaultObjectPresentation(remoteObject);
     sectionElement.classList.toggle('custom-expandable-section-standard-section', remoteObject.hasChildren);
     return sectionElement;
   }
@@ -221,15 +229,16 @@ class CustomPreviewSection {
 /**
  * @unrestricted
  */
-export default class CustomPreviewComponent {
+export class CustomPreviewComponent {
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    */
   constructor(object) {
     this._object = object;
     this._customPreviewSection = new CustomPreviewSection(object);
-    this.element = createElementWithClass('span', 'source-code');
-    const shadowRoot = UI.createShadowRootWithCoreStyles(this.element, 'object_ui/customPreviewComponent.css');
+    this.element = document.createElement('span');
+    this.element.classList.add('source-code');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(this.element, 'object_ui/customPreviewComponent.css');
     this.element.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), false);
     shadowRoot.appendChild(this._customPreviewSection.element());
   }
@@ -245,10 +254,10 @@ export default class CustomPreviewComponent {
    * @param {!Event} event
    */
   _contextMenuEventFired(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     if (this._customPreviewSection) {
       contextMenu.revealSection().appendItem(
-          Common.UIString('Show as JavaScript object'), this._disassemble.bind(this));
+          Common.UIString.UIString('Show as JavaScript object'), this._disassemble.bind(this));
     }
     contextMenu.appendApplicableItems(this._object);
     contextMenu.show();
@@ -257,17 +266,8 @@ export default class CustomPreviewComponent {
   _disassemble() {
     this.element.shadowRoot.textContent = '';
     this._customPreviewSection = null;
-    this.element.shadowRoot.appendChild(ObjectUI.ObjectPropertiesSection.defaultObjectPresentation(this._object));
+    this.element.shadowRoot.appendChild(ObjectPropertiesSection.defaultObjectPresentation(this._object));
   }
 }
 
 CustomPreviewSection._tagsWhiteList = new Set(['span', 'div', 'ol', 'li', 'table', 'tr', 'td']);
-
-/* Legacy exported object */
-self.ObjectUI = self.ObjectUI || {};
-
-/* Legacy exported object */
-ObjectUI = ObjectUI || {};
-
-/** @constructor */
-ObjectUI.CustomPreviewComponent = CustomPreviewComponent;

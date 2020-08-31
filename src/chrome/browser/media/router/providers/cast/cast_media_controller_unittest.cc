@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
-#include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/test/browser_task_environment.h"
@@ -55,14 +55,18 @@ Value GetPlayerStateValue(const mojom::MediaStatus& status) {
 }
 
 Value GetSupportedMediaCommandsValue(const mojom::MediaStatus& status) {
-  int commands = 0;
+  base::ListValue commands;
   // |can_set_volume| and |can_mute| are not used, because the receiver volume
   // is used instead.
   if (status.can_play_pause)
-    commands |= 1;
+    commands.AppendString("pause");
   if (status.can_seek)
-    commands |= 2;
-  return Value(commands);
+    commands.AppendString("seek");
+  if (status.can_skip_to_next_track)
+    commands.AppendString("queue_next");
+  if (status.can_skip_to_previous_track)
+    commands.AppendString("queue_next");
+  return std::move(commands);
 }
 
 Value CreateImagesValue(const std::vector<mojom::MediaImagePtr>& images) {
@@ -88,6 +92,8 @@ mojom::MediaStatusPtr CreateSampleMediaStatus() {
   status->can_mute = true;
   status->can_set_volume = false;
   status->can_seek = false;
+  status->can_skip_to_next_track = true;
+  status->can_skip_to_previous_track = false;
   status->is_muted = false;
   status->volume = 0.7;
   status->play_state = mojom::MediaStatus::PlayState::BUFFERING;
@@ -177,7 +183,7 @@ class CastMediaControllerTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  MockActivityRecord activity_;
+  MockCastActivityRecord activity_;
   std::unique_ptr<CastMediaController> controller_;
   mojo::Remote<mojom::MediaController> mojo_controller_;
   std::unique_ptr<MockMediaStatusObserver> status_observer_;
@@ -286,6 +292,11 @@ TEST_F(CastMediaControllerTest, UpdateMediaStatus) {
       .WillOnce([&](mojom::MediaStatusPtr status) {
         EXPECT_EQ(expected_status->title, status->title);
         EXPECT_EQ(expected_status->can_play_pause, status->can_play_pause);
+        EXPECT_EQ(expected_status->can_seek, status->can_seek);
+        EXPECT_EQ(expected_status->can_skip_to_next_track,
+                  status->can_skip_to_next_track);
+        EXPECT_EQ(expected_status->can_skip_to_previous_track,
+                  status->can_skip_to_previous_track);
         EXPECT_EQ(expected_status->play_state, status->play_state);
         EXPECT_EQ(expected_status->duration, status->duration);
         EXPECT_EQ(expected_status->current_time, status->current_time);

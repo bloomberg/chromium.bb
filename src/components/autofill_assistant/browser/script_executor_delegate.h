@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list_types.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
@@ -31,14 +32,15 @@ namespace autofill_assistant {
 
 class Service;
 class WebController;
-class ClientMemory;
 struct ClientSettings;
 class TriggerContext;
-class WebsiteLoginFetcher;
+class WebsiteLoginManager;
+class EventHandler;
+class UserModel;
 
 class ScriptExecutorDelegate {
  public:
-  class Listener {
+  class NavigationListener : public base::CheckedObserver {
    public:
     // The values returned by IsNavigatingToNewDocument() or
     // HasNavigationError() might have changed.
@@ -48,16 +50,18 @@ class ScriptExecutorDelegate {
   virtual const ClientSettings& GetSettings() = 0;
   virtual const GURL& GetCurrentURL() = 0;
   virtual const GURL& GetDeeplinkURL() = 0;
+  virtual const GURL& GetScriptURL() = 0;
   virtual Service* GetService() = 0;
   virtual WebController* GetWebController() = 0;
-  virtual ClientMemory* GetClientMemory() = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
+  virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
   virtual content::WebContents* GetWebContents() = 0;
-  virtual std::string GetAccountEmailAddress() = 0;
+  virtual std::string GetEmailAddressForAccessTokenAccount() = 0;
   virtual std::string GetLocale() = 0;
-  virtual void EnterState(AutofillAssistantState state) = 0;
+
+  // Enters the given state. Returns true if the state was changed.
+  virtual bool EnterState(AutofillAssistantState state) = 0;
 
   // Make the area of the screen that correspond to the given elements
   // touchable.
@@ -74,6 +78,8 @@ class ScriptExecutorDelegate {
   virtual void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
+  virtual void WriteUserModel(
+      base::OnceCallback<void(UserModel*)> write_callback) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(
@@ -82,10 +88,14 @@ class ScriptExecutorDelegate {
   virtual void SetViewportMode(ViewportMode mode) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+  virtual void ExpandBottomSheet() = 0;
+  virtual void CollapseBottomSheet() = 0;
   virtual bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) = 0;
+  virtual UserModel* GetUserModel() = 0;
+  virtual EventHandler* GetEventHandler() = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {
@@ -122,11 +132,27 @@ class ScriptExecutorDelegate {
 
   // Register a listener that can be told about changes. Duplicate calls are
   // ignored.
-  virtual void AddListener(Listener* listener) = 0;
+  virtual void AddListener(NavigationListener* listener) = 0;
 
   // Removes a previously registered listener. Does nothing if no such listeners
   // exists.
-  virtual void RemoveListener(Listener* listener) = 0;
+  virtual void RemoveListener(NavigationListener* listener) = 0;
+
+  // Set how the sheet should behave when entering a prompt state.
+  virtual void SetExpandSheetForPromptAction(bool expand) = 0;
+
+  // Set the domains whitelist for browse mode.
+  virtual void SetBrowseDomainsWhitelist(std::vector<std::string> domains) = 0;
+
+  // Sets the generic UI to show to the user.
+  virtual void SetGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(bool,
+                              ProcessedActionStatusProto,
+                              const UserModel*)> end_action_callback) = 0;
+
+  // Clears the generic UI.
+  virtual void ClearGenericUi() = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

@@ -28,6 +28,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,10 +99,14 @@ class ServiceProcessControlBrowserTest
   void SetUp() override {
     InProcessBrowserTest::SetUp();
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
-    // on Mac.
+    // on Mac, and on Linux asan builds (https://crbug.com/1059446).
+    // Note that closing the process handle means that the exit-code check in
+    // TearDown will be skipped.
     service_process_.Close();
+#endif
   }
 
   void TearDown() override {

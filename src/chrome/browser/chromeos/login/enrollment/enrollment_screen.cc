@@ -16,19 +16,21 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
+#include "chrome/browser/policy/enrollment_status.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 using policy::EnrollmentConfig;
 
@@ -50,52 +52,11 @@ const char* const kMetricEnrollmentTimeFailure =
 const char* const kMetricEnrollmentTimeSuccess =
     "Enterprise.EnrollmentTime.Success";
 
-const char* const kLicenseTypePerpetual = "perpetual";
-const char* const kLicenseTypeAnnual = "annual";
-const char* const kLicenseTypeKiosk = "kiosk";
-
 // Retry policy constants.
 constexpr int kInitialDelayMS = 4 * 1000;  // 4 seconds
 constexpr double kMultiplyFactor = 1.5;
 constexpr double kJitterFactor = 0.1;           // +/- 10% jitter
 constexpr int64_t kMaxDelayMS = 8 * 60 * 1000;  // 8 minutes
-
-::policy::LicenseType GetLicenseTypeById(const std::string& id) {
-  if (id == kLicenseTypePerpetual)
-    return ::policy::LicenseType::PERPETUAL;
-  if (id == kLicenseTypeAnnual)
-    return ::policy::LicenseType::ANNUAL;
-  if (id == kLicenseTypeKiosk)
-    return ::policy::LicenseType::KIOSK;
-  return ::policy::LicenseType::UNKNOWN;
-}
-
-std::string GetLicenseIdByType(::policy::LicenseType type) {
-  switch (type) {
-    case ::policy::LicenseType::PERPETUAL:
-      return kLicenseTypePerpetual;
-    case ::policy::LicenseType::ANNUAL:
-      return kLicenseTypeAnnual;
-    case ::policy::LicenseType::KIOSK:
-      return kLicenseTypeKiosk;
-    default:
-      NOTREACHED();
-      return std::string();
-  }
-}
-
-bool HasPublicUser() {
-  // Some tests don't initialize the UserManager.
-  if (!user_manager::UserManager::IsInitialized())
-    return false;
-
-  for (const user_manager::User* user :
-       user_manager::UserManager::Get()->GetUsers()) {
-    if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-      return true;
-  }
-  return false;
-}
 
 bool ShouldAttemptRestart() {
   // Restart browser to switch from DeviceCloudPolicyManagerChromeOS to
@@ -109,18 +70,29 @@ bool ShouldAttemptRestart() {
     return true;
   }
 
-  // Restart browser to switch to Views account picker if we have public
-  // accounts (which have user pods on the login screen).
-  // TODO(crbug.com/943720): Switch to Views account without Chrome restart.
-  if (HasPublicUser())
-    return true;
-
   return false;
+}
+
+// Returns the enterprise display domain after enrollment, or an empty string.
+std::string GetEnterpriseDisplayDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetEnterpriseDisplayDomain();
 }
 
 }  // namespace
 
 namespace chromeos {
+
+// static
+std::string EnrollmentScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::BACK:
+      return "Back";
+  }
+}
 
 // static
 EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
@@ -130,7 +102,7 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
 
 EnrollmentScreen::EnrollmentScreen(EnrollmentScreenView* view,
                                    const ScreenExitCallback& exit_callback)
-    : BaseScreen(EnrollmentScreenView::kScreenId),
+    : BaseScreen(EnrollmentScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   retry_policy_.num_errors_to_ignore = 0;
@@ -155,15 +127,15 @@ void EnrollmentScreen::SetEnrollmentConfig(
   switch (enrollment_config_.auth_mechanism) {
     case EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE:
       current_auth_ = AUTH_OAUTH;
-      last_auth_ = AUTH_OAUTH;
+      next_auth_ = AUTH_OAUTH;
       break;
     case EnrollmentConfig::AUTH_MECHANISM_ATTESTATION:
       current_auth_ = AUTH_ATTESTATION;
-      last_auth_ = AUTH_ATTESTATION;
+      next_auth_ = AUTH_ATTESTATION;
       break;
     case EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE:
       current_auth_ = AUTH_ATTESTATION;
-      last_auth_ = enrollment_config_.should_enroll_interactively()
+      next_auth_ = enrollment_config_.should_enroll_interactively()
                        ? AUTH_OAUTH
                        : AUTH_ATTESTATION;
       break;
@@ -193,10 +165,10 @@ void EnrollmentScreen::SetConfig() {
 }
 
 bool EnrollmentScreen::AdvanceToNextAuth() {
-  if (current_auth_ != last_auth_ && current_auth_ == AUTH_ATTESTATION) {
+  if (current_auth_ != next_auth_ && current_auth_ == AUTH_ATTESTATION) {
     LOG(WARNING) << "User stopped using auth: " << current_auth_
-                 << ", current auth: " << last_auth_ << ".";
-    current_auth_ = last_auth_;
+                 << ", current auth: " << next_auth_ << ".";
+    current_auth_ = next_auth_;
     SetConfig();
     return true;
   }
@@ -215,9 +187,9 @@ void EnrollmentScreen::ClearAuth(const base::Closure& callback) {
     callback.Run();
     return;
   }
-  enrollment_helper_->ClearAuth(base::Bind(&EnrollmentScreen::OnAuthCleared,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           callback));
+  enrollment_helper_->ClearAuth(base::BindOnce(&EnrollmentScreen::OnAuthCleared,
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               callback));
 }
 
 void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
@@ -225,7 +197,8 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
   callback.Run();
 }
 
-void EnrollmentScreen::Show() {
+void EnrollmentScreen::ShowImpl() {
+  VLOG(1) << "Show enrollment screen";
   UMA(policy::kMetricEnrollmentTriggered);
   if (enrollment_config_.mode ==
       policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
@@ -250,7 +223,7 @@ void EnrollmentScreen::ShowInteractiveScreen() {
                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnrollmentScreen::Hide() {
+void EnrollmentScreen::HideImpl() {
   view_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -290,14 +263,6 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
   view_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
   enrollment_helper_->EnrollUsingAuthCode(auth_code);
-}
-
-void EnrollmentScreen::OnLicenseTypeSelected(const std::string& license_type) {
-  view_->ShowEnrollmentSpinnerScreen();
-  const ::policy::LicenseType license = GetLicenseTypeById(license_type);
-  CHECK(license != ::policy::LicenseType::UNKNOWN)
-      << "license_type = " << license_type;
-  enrollment_helper_->UseLicenseType(license);
 }
 
 void EnrollmentScreen::OnRetry() {
@@ -352,6 +317,7 @@ void EnrollmentScreen::OnCancel() {
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
+  VLOG(1) << "Confirmation closed.";
   // The callback passed to ClearAuth is called either immediately or gets
   // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
   // either case, passing exit_callback_ directly should be safe.
@@ -362,35 +328,13 @@ void EnrollmentScreen::OnConfirmationClosed() {
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "Auth error: " << error.state();
   RecordEnrollmentErrorMetrics();
   view_->ShowAuthError(error);
 }
 
-void EnrollmentScreen::OnMultipleLicensesAvailable(
-    const EnrollmentLicenseMap& licenses) {
-  if (GetConfiguration()) {
-    auto* license_type_value = GetConfiguration()->FindKeyOfType(
-        configuration::kEnrollmentLicenseType, base::Value::Type::STRING);
-    if (license_type_value) {
-      const std::string& license_type = license_type_value->GetString();
-      for (const auto& it : licenses) {
-        if (license_type == GetLicenseIdByType(it.first) && it.second > 0) {
-          VLOG(1) << "Using License type from configuration " << license_type;
-          OnLicenseTypeSelected(license_type);
-          return;
-        }
-      }
-      VLOG(1) << "No licenses for License type from configuration "
-              << license_type;
-    }
-  }
-  base::DictionaryValue license_dict;
-  for (const auto& it : licenses)
-    license_dict.SetInteger(GetLicenseIdByType(it.first), it.second);
-  view_->ShowLicenseTypeSelectionScreen(license_dict);
-}
-
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
+  LOG(ERROR) << "Enrollment error: " << status.status();
   RecordEnrollmentErrorMetrics();
   // If the DM server does not have a device pre-provisioned for attestation-
   // based enrollment and we have a fallback authentication, show it.
@@ -411,6 +355,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
 
 void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
+  LOG(ERROR) << "Other enrollment error: " << error;
   RecordEnrollmentErrorMetrics();
   view_->ShowOtherError(error);
   if (WizardController::UsingHandsOffEnrollment())
@@ -418,7 +363,12 @@ void EnrollmentScreen::OnOtherError(
 }
 
 void EnrollmentScreen::OnDeviceEnrolled() {
+  VLOG(1) << "Device enrolled.";
   enrollment_succeeded_ = true;
+  // Some info to be shown on the success screen.
+  view_->SetEnterpriseDomainAndDeviceType(GetEnterpriseDisplayDomain(),
+                                          ui::GetChromeOSDeviceName());
+
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
 
   // Evaluates device policy TPMFirmwareUpdateSettings and updates the TPM if
@@ -462,6 +412,10 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
 }
 
 void EnrollmentScreen::OnRestoreAfterRollbackCompleted() {
+  // Pass the enterprise domain and the device type to be shown.
+  view_->SetEnterpriseDomainAndDeviceType(GetEnterpriseDisplayDomain(),
+                                          ui::GetChromeOSDeviceName());
+  // Show the success screen
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -556,7 +510,7 @@ void EnrollmentScreen::ShowSigninScreen() {
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
   enrollment_failed_once_ = true;
   //  TODO(crbug.com/896793): Have other metrics for each auth mechanism.
-  if (elapsed_timer_ && current_auth_ == last_auth_)
+  if (elapsed_timer_ && current_auth_ == next_auth_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
 }
 
@@ -578,10 +532,12 @@ void EnrollmentScreen::OnActiveDirectoryJoined(
     authpolicy::ErrorType error,
     const std::string& machine_domain) {
   if (error == authpolicy::ERROR_NONE) {
+    VLOG(1) << "Joined active directory";
     view_->ShowEnrollmentSpinnerScreen();
     std::move(on_joined_callback_).Run(machine_domain);
     return;
   }
+  LOG(ERROR) << "Active directory join error: " << error;
   view_->ShowActiveDirectoryScreen(std::string() /* domain_join_config */,
                                    machine_name, username, error);
 }

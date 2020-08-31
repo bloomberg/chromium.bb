@@ -213,13 +213,17 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
-  const Study::Platform platforms[] = {
-      Study::PLATFORM_WINDOWS,         Study::PLATFORM_MAC,
-      Study::PLATFORM_LINUX,           Study::PLATFORM_CHROMEOS,
-      Study::PLATFORM_ANDROID,         Study::PLATFORM_IOS,
-      Study::PLATFORM_ANDROID_WEBVIEW, Study::PLATFORM_FUCHSIA};
+  const Study::Platform platforms[] = {Study::PLATFORM_WINDOWS,
+                                       Study::PLATFORM_MAC,
+                                       Study::PLATFORM_LINUX,
+                                       Study::PLATFORM_CHROMEOS,
+                                       Study::PLATFORM_ANDROID,
+                                       Study::PLATFORM_IOS,
+                                       Study::PLATFORM_ANDROID_WEBLAYER,
+                                       Study::PLATFORM_FUCHSIA,
+                                       Study::PLATFORM_ANDROID_WEBVIEW};
   ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(base::size(platforms)));
-  bool platform_added[base::size(platforms)] = {0};
+  bool platform_added[base::size(platforms)] = {false};
 
   Study::Filter filter;
 
@@ -290,6 +294,49 @@ TEST(VariationsStudyFilteringTest, CheckStudyEnterprise) {
   filter.set_is_enterprise(false);
   EXPECT_FALSE(internal::CheckStudyEnterprise(filter, client_enterprise));
   EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_non_enterprise));
+}
+
+TEST(VariationsStudyFilteringTest, CheckStudyPolicyRestriction) {
+  Study::Filter filter;
+
+  // Check that if the filter is not set, study applies to clients with no
+  // restrictive policy.
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // Explicitly set to none filter should be the same as no filter.
+  filter.set_policy_restriction(Study::NONE);
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // If the filter is set to CRITICAL then apply it to all clients that do not
+  // disable all experiements.
+  filter.set_policy_restriction(Study::CRITICAL);
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
+
+  // If the filter is set to CRITICAL_ONLY then apply it only to clients that
+  // have requested critical studies but not to clients with no or full
+  // restrictions.
+  filter.set_policy_restriction(Study::CRITICAL_ONLY);
+  EXPECT_FALSE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::NO_RESTRICTIONS));
+  EXPECT_TRUE(internal::CheckStudyPolicyRestriction(
+      filter, RestrictionPolicy::CRITICAL_ONLY));
+  EXPECT_FALSE(
+      internal::CheckStudyPolicyRestriction(filter, RestrictionPolicy::ALL));
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {

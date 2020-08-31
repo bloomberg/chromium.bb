@@ -24,13 +24,13 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
+#include "content/shell/browser/shell_platform_delegate.h"
 #include "content/shell/common/shell_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -55,6 +55,15 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #elif defined(OS_LINUX)
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
+#endif  // #elif defined(OS_LINUX)
+
+#if BUILDFLAG(USE_GTK)
+#include "ui/gtk/gtk_ui.h"
+#include "ui/gtk/gtk_ui_delegate.h"
+#if defined(USE_X11)
+#include "ui/gfx/x/x11_types.h"            // nogncheck
+#include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
+#endif
 #endif
 
 namespace content {
@@ -65,13 +74,12 @@ GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kBrowserTest))
     return GURL();
-  const base::CommandLine::StringVector& args = command_line->GetArgs();
 
 #if defined(OS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
   return GURL();
-#endif
-
+#else
+  const base::CommandLine::StringVector& args = command_line->GetArgs();
   if (args.empty())
     return GURL("https://www.google.com/");
 
@@ -81,6 +89,7 @@ GURL GetStartupURL() {
 
   return net::FilePathToFileURL(
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
+#endif
 }
 
 scoped_refptr<base::RefCountedMemory> PlatformResourceProvider(int key) {
@@ -139,9 +148,23 @@ void ShellBrowserMainParts::InitializeBrowserContexts() {
 }
 
 void ShellBrowserMainParts::InitializeMessageLoopContext() {
-  ui::MaterialDesignController::Initialize();
   Shell::CreateNewWindow(browser_context_.get(), GetStartupURL(), nullptr,
                          gfx::Size());
+}
+
+// Copied from ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized().
+// See that function for details.
+void ShellBrowserMainParts::ToolkitInitialized() {
+#if BUILDFLAG(USE_GTK) && defined(USE_X11)
+  if (switches::IsRunWebTestsSwitchPresent())
+    return;
+  gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
+  ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+  views::LinuxUI* linux_ui = BuildGtkUi(gtk_ui_delegate_.get());
+  linux_ui->UpdateDeviceScaleFactor();
+  views::LinuxUI::SetInstance(linux_ui);
+  linux_ui->Initialize();
+#endif
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
@@ -159,7 +182,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   InitializeBrowserContexts();
-  Shell::Initialize();
+  Shell::Initialize(CreateShellPlatformDelegate());
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
   ShellDevToolsManagerDelegate::StartHttpHandler(browser_context_.get());
   InitializeMessageLoopContext();
@@ -179,6 +202,9 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   ShellDevToolsManagerDelegate::StopHttpHandler();
   browser_context_.reset();
   off_the_record_browser_context_.reset();
+#if BUILDFLAG(USE_GTK)
+  views::LinuxUI::SetInstance(nullptr);
+#endif
 }
 
 void ShellBrowserMainParts::PreDefaultMainMessageLoopRun(
@@ -195,6 +221,11 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();
 #endif
+}
+
+std::unique_ptr<ShellPlatformDelegate>
+ShellBrowserMainParts::CreateShellPlatformDelegate() {
+  return std::make_unique<ShellPlatformDelegate>();
 }
 
 }  // namespace

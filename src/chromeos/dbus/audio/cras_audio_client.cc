@@ -105,6 +105,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CrasAudioClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for changes in Bluetooth headset battery level.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface, cras::kBluetoothBatteryChanged,
+        base::BindRepeating(
+            &CrasAudioClientImpl::BluetoothBatteryChangedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~CrasAudioClientImpl() override = default;
@@ -253,6 +262,26 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetFixA2dpPacketSize(bool enabled) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetFixA2dpPacketSize);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(enabled);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetNextHandsfreeProfile(bool enabled) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetNextHandsfreeProfile);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(enabled);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
   void AddActiveInputNode(uint64_t node_id) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kAddActiveInputNode);
@@ -311,6 +340,79 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(channels);
     writer.AppendArrayOfDoubles(mixer.data(), mixer.size());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerPlaybackStatus(const std::string& playback_status) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerPlaybackStatus);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(playback_status);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerIdentity(const std::string& identity) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerIdentity);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(identity);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerPosition(const int64_t& position) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerPosition);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt64(position);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerDuration(const int64_t& duration) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerMetadata);
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter array_writer(nullptr);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+
+    writer.OpenArray("{sv}", &array_writer);
+    array_writer.OpenDictEntry(&dict_entry_writer);
+    dict_entry_writer.AppendString("length");
+    dict_entry_writer.AppendVariantOfInt64(duration);
+    array_writer.CloseContainer(&dict_entry_writer);
+    writer.CloseContainer(&array_writer);
+
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerMetadata(
+      const std::map<std::string, std::string>& metadata) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerMetadata);
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter array_writer(nullptr);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+
+    writer.OpenArray("{sv}", &array_writer);
+
+    for (auto& it : metadata) {
+      array_writer.OpenDictEntry(&dict_entry_writer);
+      dict_entry_writer.AppendString(it.first);
+      dict_entry_writer.AppendVariantOfString(it.second);
+      array_writer.CloseContainer(&dict_entry_writer);
+    }
+
+    writer.CloseContainer(&array_writer);
+
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                             base::DoNothing());
@@ -422,6 +524,24 @@ class CrasAudioClientImpl : public CrasAudioClient {
     // We skip reading the output because it is not used by the observers.
     for (auto& observer : observers_)
       observer.NumberOfActiveStreamsChanged();
+  }
+
+  void BluetoothBatteryChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    std::string address;
+    uint32_t level;
+
+    if (!reader.PopString(&address)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+
+    if (!reader.PopUint32(&level)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+    for (auto& observer : observers_)
+      observer.BluetoothBatteryChanged(address, level);
   }
 
   void OnGetVolumeState(DBusMethodCallback<VolumeState> callback,
@@ -666,6 +786,10 @@ void CrasAudioClient::Observer::HotwordTriggered(uint64_t tv_sec,
                                                  uint64_t tv_nsec) {}
 
 void CrasAudioClient::Observer::NumberOfActiveStreamsChanged() {}
+
+void CrasAudioClient::Observer::BluetoothBatteryChanged(
+    const std::string& address,
+    uint32_t level) {}
 
 CrasAudioClient::CrasAudioClient() {
   DCHECK(!g_instance);

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_USB_INTERNALS_USB_INTERNALS_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
@@ -18,11 +18,15 @@ class UsbInternalsUI : public ui::MojoWebUIController {
   explicit UsbInternalsUI(content::WebUI* web_ui);
   ~UsbInternalsUI() override;
 
- private:
-  void BindUsbInternalsPageHandler(
+  // Instantiates the implementor of the mojom::UsbInternalsPageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver);
 
+ private:
   std::unique_ptr<UsbInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(UsbInternalsUI);
 };

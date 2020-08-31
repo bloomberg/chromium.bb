@@ -39,7 +39,7 @@ def run_shell_out(url, mode):
   on_error.authenticators.OAuthAuthenticator = lambda *_: None
 
   if not on_error.report_on_exception_exit(url):
-    print 'Failure to register the handler'
+    print('Failure to register the handler')
     return 83
 
   # Hack out certificate verification because we are using a self-signed

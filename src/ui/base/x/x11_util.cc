@@ -13,6 +13,7 @@
 #include <sys/shm.h>
 
 #include <bitset>
+#include <limits>
 #include <list>
 #include <map>
 #include <utility>
@@ -39,7 +40,8 @@
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPostConfig.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -56,9 +58,11 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
+#include "ui/gfx/x/xproto_util.h"
 
 #if defined(OS_FREEBSD)
 #include <sys/sysctl.h>
@@ -92,14 +96,13 @@ int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
 
   if (base::MessageLoopCurrent::Get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&LogErrorEventDescription, d, *e));
+        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *e));
   } else {
-    LOG(ERROR)
-        << "X error received: "
-        << "serial " << e->serial << ", "
-        << "error_code " << static_cast<int>(e->error_code) << ", "
-        << "request_code " << static_cast<int>(e->request_code) << ", "
-        << "minor_code " << static_cast<int>(e->minor_code);
+    LOG(ERROR) << "X error received: "
+               << "serial " << e->serial << ", "
+               << "error_code " << static_cast<int>(e->error_code) << ", "
+               << "request_code " << static_cast<int>(e->request_code) << ", "
+               << "minor_code " << static_cast<int>(e->minor_code);
   }
   return 0;
 }
@@ -110,18 +113,47 @@ int DefaultX11IOErrorHandler(XDisplay* d) {
   _exit(1);
 }
 
-// Note: The caller should free the resulting value data.
-bool GetProperty(XID window, const std::string& property_name, long max_length,
-                 XAtom* type, int* format, unsigned long* num_items,
-                 unsigned char** property) {
-  XAtom property_atom = gfx::GetAtom(property_name.c_str());
-  unsigned long remaining_bytes = 0;
-  return XGetWindowProperty(gfx::GetXDisplay(), window, property_atom,
-                            0,           // offset into property data to read
-                            max_length,  // max length to get
-                            x11::False,  // deleted
-                            AnyPropertyType, type, format, num_items,
-                            &remaining_bytes, property);
+template <typename T>
+bool GetProperty(XID window, const std::string& property_name, T* value) {
+  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
+  auto response = x11::Connection::Get()
+                      ->GetProperty({
+                          .window = static_cast<x11::Window>(window),
+                          .property = static_cast<x11::Atom>(
+                              gfx::GetAtom(property_name.c_str())),
+                          .long_length = std::max<uint32_t>(1, sizeof(T) / 4),
+                      })
+                      .Sync();
+  if (!response || response->format != 8 * sizeof(T) ||
+      response->value.size() != sizeof(T)) {
+    return false;
+  }
+
+  DCHECK_EQ(response->format / 8 * response->value_len, response->value.size());
+  memcpy(value, response->value.data(), sizeof(T));
+  return true;
+}
+
+template <typename T>
+bool GetArrayProperty(XID window,
+                      const std::string& property_name,
+                      std::vector<T>* value) {
+  static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4, "");
+  auto response = x11::Connection::Get()
+                      ->GetProperty({
+                          .window = static_cast<x11::Window>(window),
+                          .property = static_cast<x11::Atom>(
+                              gfx::GetAtom(property_name.c_str())),
+                          .long_length = std::numeric_limits<uint32_t>::max(),
+                      })
+                      .Sync();
+  if (!response || response->format != 8 * sizeof(T))
+    return false;
+
+  DCHECK_EQ(response->format / 8 * response->value_len, response->value.size());
+  value->resize(response->value_len);
+  memcpy(value->data(), response->value.data(), response->value.size());
+  return true;
 }
 
 bool SupportsEWMH() {
@@ -131,8 +163,7 @@ bool SupportsEWMH() {
     supports_ewmh_cached = true;
 
     int wm_window = 0u;
-    if (!GetIntProperty(GetX11RootWindow(),
-                        "_NET_SUPPORTING_WM_CHECK",
+    if (!GetIntProperty(GetX11RootWindow(), "_NET_SUPPORTING_WM_CHECK",
                         &wm_window)) {
       supports_ewmh = false;
       return false;
@@ -149,10 +180,9 @@ bool SupportsEWMH() {
     // we check that too.
     gfx::X11ErrorTracker err_tracker;
     int wm_window_property = 0;
-    bool result = GetIntProperty(
-        wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
-    supports_ewmh = !err_tracker.FoundNewError() &&
-                    result &&
+    bool result = GetIntProperty(wm_window, "_NET_SUPPORTING_WM_CHECK",
+                                 &wm_window_property);
+    supports_ewmh = !err_tracker.FoundNewError() && result &&
                     wm_window_property == wm_window;
   }
 
@@ -165,15 +195,14 @@ bool GetWindowManagerName(std::string* wm_name) {
     return false;
 
   int wm_window = 0;
-  if (!GetIntProperty(GetX11RootWindow(),
-                      "_NET_SUPPORTING_WM_CHECK",
+  if (!GetIntProperty(GetX11RootWindow(), "_NET_SUPPORTING_WM_CHECK",
                       &wm_window)) {
     return false;
   }
 
   gfx::X11ErrorTracker err_tracker;
-  bool result = GetStringProperty(
-      static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
+  bool result =
+      GetStringProperty(static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
   return !err_tracker.FoundNewError() && result;
 }
 
@@ -207,18 +236,14 @@ class XCustomCursorCache {
     return xcursor;
   }
 
-  void Ref(::Cursor cursor) {
-    cache_[cursor]->Ref();
-  }
+  void Ref(::Cursor cursor) { cache_[cursor]->Ref(); }
 
   void Unref(::Cursor cursor) {
     if (cache_[cursor]->Unref())
       cache_.erase(cursor);
   }
 
-  void Clear() {
-    cache_.clear();
-  }
+  void Clear() { cache_.clear(); }
 
   const XcursorImage* GetXcursorImage(::Cursor cursor) const {
     return cache_.find(cursor)->second->image();
@@ -230,9 +255,7 @@ class XCustomCursorCache {
   class XCustomCursor {
    public:
     // This takes ownership of the image.
-    XCustomCursor(XcursorImage* image)
-        : image_(image),
-          ref_(1) {
+    explicit XCustomCursor(XcursorImage* image) : image_(image), ref_(1) {
       cursor_ = XcursorImageLoadCursor(gfx::GetXDisplay(), image);
     }
 
@@ -243,9 +266,7 @@ class XCustomCursorCache {
 
     ::Cursor cursor() const { return cursor_; }
 
-    void Ref() {
-      ++ref_;
-    }
+    void Ref() { ++ref_; }
 
     // Returns true if the cursor was destroyed because of the unref.
     bool Unref() {
@@ -266,14 +287,26 @@ class XCustomCursorCache {
     DISALLOW_COPY_AND_ASSIGN(XCustomCursor);
   };
 
-  XCustomCursorCache() {}
-  ~XCustomCursorCache() {
-    Clear();
-  }
+  XCustomCursorCache() = default;
+  ~XCustomCursorCache() { Clear(); }
 
-  std::map< ::Cursor, XCustomCursor*> cache_;
+  std::map<::Cursor, XCustomCursor*> cache_;
   DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
 };
+
+// Converts a SKBitmap to unpremul alpha.
+SkBitmap ConvertSkBitmapToUnpremul(const SkBitmap& bitmap) {
+  DCHECK_NE(bitmap.alphaType(), kUnpremul_SkAlphaType);
+
+  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
+                                                kUnpremul_SkAlphaType);
+  SkBitmap converted_bitmap;
+  converted_bitmap.allocPixels(image_info);
+  bitmap.readPixels(image_info, converted_bitmap.getPixels(),
+                    image_info.minRowBytes(), 0, 0);
+
+  return converted_bitmap;
+}
 
 }  // namespace
 
@@ -315,11 +348,18 @@ void UnrefCustomXCursor(::Cursor cursor) {
   XCustomCursorCache::GetInstance()->Unref(cursor);
 }
 
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
                                      const gfx::Point& hotspot) {
   // TODO(crbug.com/596782): It is possible for cursor_image to be zeroed out
   // at this point, which leads to benign debug errors. Once this is fixed, we
-  // should  DCHECK_EQ(cursor_image->colorType(), kN32_SkColorType).
+  // should  DCHECK_EQ(cursor_image.colorType(), kN32_SkColorType).
+
+  // X11 expects bitmap with unpremul alpha. If bitmap is premul then convert,
+  // otherwise semi-transparent parts of cursor will look strange.
+  const SkBitmap converted = (cursor_image.alphaType() != kUnpremul_SkAlphaType)
+                                 ? ConvertSkBitmapToUnpremul(cursor_image)
+                                 : cursor_image;
+
   gfx::Point hotspot_point = hotspot;
   SkBitmap scaled;
 
@@ -327,99 +367,119 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
   // pixels. So rescale the image if necessary.
   static const float kMaxPixel = GetMaxCursorSize();
   bool needs_scale = false;
-  if (cursor_image->width() > kMaxPixel || cursor_image->height() > kMaxPixel) {
+  if (converted.width() > kMaxPixel || converted.height() > kMaxPixel) {
     float scale = 1.f;
-    if (cursor_image->width() > cursor_image->height())
-      scale = kMaxPixel / cursor_image->width();
+    if (converted.width() > converted.height())
+      scale = kMaxPixel / converted.width();
     else
-      scale = kMaxPixel / cursor_image->height();
+      scale = kMaxPixel / converted.height();
 
-    scaled = skia::ImageOperations::Resize(*cursor_image,
-        skia::ImageOperations::RESIZE_BETTER,
-        static_cast<int>(cursor_image->width() * scale),
-        static_cast<int>(cursor_image->height() * scale));
+    scaled = skia::ImageOperations::Resize(
+        converted, skia::ImageOperations::RESIZE_BETTER,
+        static_cast<int>(converted.width() * scale),
+        static_cast<int>(converted.height() * scale));
     hotspot_point = gfx::ScaleToFlooredPoint(hotspot, scale);
     needs_scale = true;
   }
 
-  const SkBitmap* bitmap = needs_scale ? &scaled : cursor_image;
-  XcursorImage* image = XcursorImageCreate(bitmap->width(), bitmap->height());
-  image->xhot = std::min(bitmap->width() - 1, hotspot_point.x());
-  image->yhot = std::min(bitmap->height() - 1, hotspot_point.y());
+  const SkBitmap& bitmap = needs_scale ? scaled : converted;
+  XcursorImage* image = XcursorImageCreate(bitmap.width(), bitmap.height());
+  image->xhot = std::min(bitmap.width() - 1, hotspot_point.x());
+  image->yhot = std::min(bitmap.height() - 1, hotspot_point.y());
 
-  if (bitmap->width() && bitmap->height()) {
+  if (bitmap.width() && bitmap.height()) {
     // The |bitmap| contains ARGB image, so just copy it.
-    memcpy(image->pixels,
-           bitmap->getPixels(),
-           bitmap->width() * bitmap->height() * 4);
+    memcpy(image->pixels, bitmap.getPixels(),
+           bitmap.width() * bitmap.height() * 4);
   }
 
   return image;
 }
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  int num_coalesced = 0;
+  DCHECK(xev->type == MotionNotify || xev->type == GenericEvent);
   XDisplay* display = xev->xany.display;
-  int event_type = xev->xgeneric.evtype;
+  XEvent next_event;
+  bool is_motion = false;
+  int num_coalesced = 0;
 
-  DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
-
-  while (XPending(display)) {
-    XEvent next_event;
-    XPeekEvent(display, &next_event);
-
-    // If we can't get the cookie, abort the check.
-    if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
-      return num_coalesced;
-
-    // If this isn't from a valid device, throw the event away, as
-    // that's what the message pump would do. Device events come in pairs
-    // with one from the master and one from the slave so there will
-    // always be at least one pending.
-    if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      XFreeEventData(display, &next_event.xcookie);
-      XNextEvent(display, &next_event);
-      continue;
-    }
-
-    if (next_event.type == GenericEvent &&
-        next_event.xgeneric.evtype == event_type &&
-        !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
-            next_event) &&
-        ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
-            next_event) == SCROLL_TYPE_NO_SCROLL) {
-      XIDeviceEvent* next_xievent =
-          static_cast<XIDeviceEvent*>(next_event.xcookie.data);
-      // Confirm that the motion event is targeted at the same window
-      // and that no buttons or modifiers have changed.
-      if (xievent->event == next_xievent->event &&
-          xievent->child == next_xievent->child &&
-          xievent->detail == next_xievent->detail &&
-          xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
-          (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
-                  xievent->buttons.mask_len) == 0) &&
-          xievent->mods.base == next_xievent->mods.base &&
-          xievent->mods.latched == next_xievent->mods.latched &&
-          xievent->mods.locked == next_xievent->mods.locked &&
-          xievent->mods.effective == next_xievent->mods.effective) {
-        XFreeEventData(display, &next_event.xcookie);
-        // Free the previous cookie.
-        if (num_coalesced > 0)
-          XFreeEventData(display, &last_event->xcookie);
-        // Get the event and its cookie data.
-        XNextEvent(display, last_event);
-        XGetEventData(display, &last_event->xcookie);
-        ++num_coalesced;
-        continue;
+  if (xev->type == MotionNotify) {
+    is_motion = true;
+    while (XPending(display)) {
+      XPeekEvent(xev->xany.display, &next_event);
+      // Discard all but the most recent motion event that targets the same
+      // window with unchanged state.
+      if (next_event.type == MotionNotify &&
+          next_event.xmotion.window == xev->xmotion.window &&
+          next_event.xmotion.subwindow == xev->xmotion.subwindow &&
+          next_event.xmotion.state == xev->xmotion.state) {
+        XNextEvent(xev->xany.display, last_event);
+      } else {
+        break;
       }
     }
-    // This isn't an event we want so free its cookie data.
-    XFreeEventData(display, &next_event.xcookie);
-    break;
+  } else {
+    int event_type = xev->xgeneric.evtype;
+    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
+    is_motion = event_type == XI_Motion;
+
+    while (XPending(display)) {
+      XPeekEvent(display, &next_event);
+
+      // If we can't get the cookie, abort the check.
+      if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
+        return num_coalesced;
+
+      // If this isn't from a valid device, throw the event away, as
+      // that's what the message pump would do. Device events come in pairs
+      // with one from the master and one from the slave so there will
+      // always be at least one pending.
+      if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(
+              &next_event)) {
+        XFreeEventData(display, &next_event.xcookie);
+        XNextEvent(display, &next_event);
+        continue;
+      }
+
+      if (next_event.type == GenericEvent &&
+          next_event.xgeneric.evtype == event_type &&
+          !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
+              next_event) &&
+          ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
+              next_event) == SCROLL_TYPE_NO_SCROLL) {
+        XIDeviceEvent* next_xievent =
+            static_cast<XIDeviceEvent*>(next_event.xcookie.data);
+        // Confirm that the motion event is targeted at the same window
+        // and that no buttons or modifiers have changed.
+        if (xievent->event == next_xievent->event &&
+            xievent->child == next_xievent->child &&
+            xievent->detail == next_xievent->detail &&
+            xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
+            (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
+                    xievent->buttons.mask_len) == 0) &&
+            xievent->mods.base == next_xievent->mods.base &&
+            xievent->mods.latched == next_xievent->mods.latched &&
+            xievent->mods.locked == next_xievent->mods.locked &&
+            xievent->mods.effective == next_xievent->mods.effective) {
+          XFreeEventData(display, &next_event.xcookie);
+          // Free the previous cookie.
+          if (num_coalesced > 0)
+            XFreeEventData(display, &last_event->xcookie);
+          // Get the event and its cookie data.
+          XNextEvent(display, last_event);
+          XGetEventData(display, &last_event->xcookie);
+          ++num_coalesced;
+          continue;
+        }
+      }
+      // This isn't an event we want so free its cookie data.
+      XFreeEventData(display, &next_event.xcookie);
+      break;
+    }
   }
 
-  if (event_type == XI_Motion && num_coalesced > 0)
+  if (is_motion && num_coalesced > 0)
     UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
   return num_coalesced;
 }
@@ -434,14 +494,13 @@ void HideHostCursor() {
 ::Cursor CreateInvisibleCursor() {
   XDisplay* xdisplay = gfx::GetXDisplay();
   ::Cursor invisible_cursor;
-  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  char nodata[] = {0, 0, 0, 0, 0, 0, 0, 0};
   XColor black;
   black.red = black.green = black.blue = 0;
-  Pixmap blank = XCreateBitmapFromData(xdisplay,
-                                       DefaultRootWindow(xdisplay),
+  Pixmap blank = XCreateBitmapFromData(xdisplay, DefaultRootWindow(xdisplay),
                                        nodata, 8, 8);
-  invisible_cursor = XCreatePixmapCursor(xdisplay, blank, blank,
-                                         &black, &black, 0, 0);
+  invisible_cursor =
+      XCreatePixmapCursor(xdisplay, blank, blank, &black, &black, 0, 0);
   XFreePixmap(xdisplay, blank);
   return invisible_cursor;
 }
@@ -467,14 +526,10 @@ void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
   motif_hints.decorations = use_os_window_frame ? 1 : 0;
 
   XAtom hint_atom = gfx::GetAtom("_MOTIF_WM_HINTS");
-  XChangeProperty(gfx::GetXDisplay(),
-                  window,
-                  hint_atom,
-                  hint_atom,
-                  32,
+  XChangeProperty(gfx::GetXDisplay(), window, hint_atom, hint_atom, 32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&motif_hints),
-                  sizeof(MotifWmHints)/sizeof(long));
+                  sizeof(MotifWmHints) / sizeof(long));
 }
 
 bool IsShapeExtensionAvailable() {
@@ -515,11 +570,8 @@ void ClearX11DefaultRootWindow() {
   XGCValues gc_values = {0};
   gc_values.foreground = BlackPixel(display, DefaultScreen(display));
   GC gc = XCreateGC(display, root_window, GCForeground, &gc_values);
-  XFillRectangle(display, root_window, gc,
-                 root_bounds.x(),
-                 root_bounds.y(),
-                 root_bounds.width(),
-                 root_bounds.height());
+  XFillRectangle(display, root_window, gc, root_bounds.x(), root_bounds.y(),
+                 root_bounds.width(), root_bounds.height());
   XFreeGC(display, gc);
 }
 
@@ -545,8 +597,7 @@ bool IsWindowVisible(XID window) {
   int window_desktop, current_desktop;
   return (!GetWindowDesktop(window, &window_desktop) ||
           !GetCurrentDesktop(&current_desktop) ||
-          window_desktop == kAllDesktops ||
-          window_desktop == current_desktop);
+          window_desktop == kAllDesktops || window_desktop == current_desktop);
 }
 
 bool GetInnerWindowBounds(XID window, gfx::Rect* rect) {
@@ -555,12 +606,12 @@ bool GetInnerWindowBounds(XID window, gfx::Rect* rect) {
   unsigned int width, height;
   unsigned int border_width, depth;
 
-  if (!XGetGeometry(gfx::GetXDisplay(), window, &root, &x, &y,
-                    &width, &height, &border_width, &depth))
+  if (!XGetGeometry(gfx::GetXDisplay(), window, &root, &x, &y, &width, &height,
+                    &border_width, &depth))
     return false;
 
-  if (!XTranslateCoordinates(gfx::GetXDisplay(), window, root,
-                             0, 0, &x, &y, &child))
+  if (!XTranslateCoordinates(gfx::GetXDisplay(), window, root, 0, 0, &x, &y,
+                             &child))
     return false;
 
   *rect = gfx::Rect(x, y, width, height);
@@ -596,7 +647,6 @@ bool GetOuterWindowBounds(XID window, gfx::Rect* rect) {
   return true;
 }
 
-
 bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   TRACE_EVENT0("ui", "WindowContainsPoint");
 
@@ -624,13 +674,11 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   // included in both the default input region and the client bounding region
   // will not be included in the effective input region on the screen.
   int rectangle_kind[] = {ShapeInput, ShapeBounding};
-  for (size_t kind_index = 0; kind_index < base::size(rectangle_kind);
-       kind_index++) {
+  for (int kind_index : rectangle_kind) {
     int dummy;
     int shape_rects_size = 0;
     gfx::XScopedPtr<XRectangle[]> shape_rects(XShapeGetRectangles(
-        gfx::GetXDisplay(), window, rectangle_kind[kind_index],
-        &shape_rects_size, &dummy));
+        gfx::GetXDisplay(), window, kind_index, &shape_rects_size, &dummy));
     if (!shape_rects) {
       // The shape is empty. This can occur when |window| is minimized.
       DCHECK_EQ(0, shape_rects_size);
@@ -655,20 +703,16 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   return true;
 }
 
-
 bool PropertyExists(XID window, const std::string& property_name) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* property = nullptr;
-
-  int result = GetProperty(window, property_name, 1,
-                           &type, &format, &num_items, &property);
-  gfx::XScopedPtr<unsigned char> scoped_property(property);
-  if (result != x11::Success)
-    return false;
-
-  return num_items > 0;
+  auto response = x11::Connection::Get()
+                      ->GetProperty({
+                          .window = static_cast<x11::Window>(window),
+                          .property = static_cast<x11::Atom>(
+                              gfx::GetAtom(property_name.c_str())),
+                          .long_length = 1,
+                      })
+                      .Sync();
+  return response && response->format;
 }
 
 bool GetRawBytesOfProperty(XID window,
@@ -724,110 +768,41 @@ bool GetRawBytesOfProperty(XID window,
 }
 
 bool GetIntProperty(XID window, const std::string& property_name, int* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* property = nullptr;
-
-  int result = GetProperty(window, property_name, 1,
-                           &type, &format, &num_items, &property);
-  gfx::XScopedPtr<unsigned char> scoped_property(property);
-  if (result != x11::Success)
-    return false;
-
-  if (format != 32 || num_items != 1)
-    return false;
-
-  *value = static_cast<int>(*(reinterpret_cast<long*>(property)));
-  return true;
+  return GetProperty(window, property_name, value);
 }
 
 bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* property = nullptr;
-
-  int result = GetProperty(window, property_name, 1,
-                           &type, &format, &num_items, &property);
-  gfx::XScopedPtr<unsigned char> scoped_property(property);
-  if (result != x11::Success)
+  uint32_t xid;
+  if (!GetProperty(window, property_name, &xid))
     return false;
-
-  if (format != 32 || num_items != 1)
-    return false;
-
-  *value = *(reinterpret_cast<XID*>(property));
+  *value = xid;
   return true;
 }
 
 bool GetIntArrayProperty(XID window,
                          const std::string& property_name,
                          std::vector<int>* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* properties = nullptr;
-
-  int result = GetProperty(window, property_name,
-                           (~0L), // (all of them)
-                           &type, &format, &num_items, &properties);
-  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
-  if (result != x11::Success)
-    return false;
-
-  if (format != 32)
-    return false;
-
-  long* int_properties = reinterpret_cast<long*>(properties);
-  value->clear();
-  for (unsigned long i = 0; i < num_items; ++i) {
-    value->push_back(static_cast<int>(int_properties[i]));
-  }
-  return true;
+  return GetArrayProperty(window, property_name, value);
 }
 
 bool GetAtomArrayProperty(XID window,
                           const std::string& property_name,
                           std::vector<XAtom>* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* properties = nullptr;
-
-  int result = GetProperty(window, property_name,
-                           (~0L), // (all of them)
-                           &type, &format, &num_items, &properties);
-  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
-  if (result != x11::Success)
+  std::vector<uint32_t> value32;
+  if (!GetArrayProperty(window, property_name, &value32))
     return false;
-
-  if (type != XA_ATOM)
-    return false;
-
-  XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
-  value->clear();
-  value->insert(value->begin(), atom_properties, atom_properties + num_items);
+  *value = std::vector<XAtom>(value32.begin(), value32.end());
   return true;
 }
 
-bool GetStringProperty(
-    XID window, const std::string& property_name, std::string* value) {
-  XAtom type = x11::None;
-  int format = 0;  // size in bits of each item in 'property'
-  unsigned long num_items = 0;
-  unsigned char* property = nullptr;
-
-  int result = GetProperty(window, property_name, 1024,
-                           &type, &format, &num_items, &property);
-  gfx::XScopedPtr<unsigned char> scoped_property(property);
-  if (result != x11::Success)
+bool GetStringProperty(XID window,
+                       const std::string& property_name,
+                       std::string* value) {
+  std::vector<char> str;
+  if (!GetArrayProperty(window, property_name, &str))
     return false;
 
-  if (format != 8)
-    return false;
-
-  value->assign(reinterpret_cast<char*>(property), num_items);
+  value->assign(str.data(), str.size());
   return true;
 }
 
@@ -853,10 +828,7 @@ bool SetIntArrayProperty(XID window,
     data[i] = value[i];
 
   gfx::X11ErrorTracker err_tracker;
-  XChangeProperty(gfx::GetXDisplay(),
-                  window,
-                  name_atom,
-                  type_atom,
+  XChangeProperty(gfx::GetXDisplay(), window, name_atom, type_atom,
                   32,  // size in bits of items in 'value'
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(data.get()),
@@ -886,10 +858,7 @@ bool SetAtomArrayProperty(XID window,
     data[i] = value[i];
 
   gfx::X11ErrorTracker err_tracker;
-  XChangeProperty(gfx::GetXDisplay(),
-                  window,
-                  name_atom,
-                  type_atom,
+  XChangeProperty(gfx::GetXDisplay(), window, name_atom, type_atom,
                   32,  // size in bits of items in 'value'
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(data.get()),
@@ -902,14 +871,9 @@ bool SetStringProperty(XID window,
                        XAtom type,
                        const std::string& value) {
   gfx::X11ErrorTracker err_tracker;
-  XChangeProperty(gfx::GetXDisplay(),
-                  window,
-                  property,
-                  type,
-                  8,
-                  PropModeReplace,
-                  reinterpret_cast<const unsigned char*>(value.c_str()),
-                  value.size());
+  XChangeProperty(
+      gfx::GetXDisplay(), window, property, type, 8, PropModeReplace,
+      reinterpret_cast<const unsigned char*>(value.c_str()), value.size());
   return !err_tracker.FoundNewError();
 }
 
@@ -997,25 +961,57 @@ bool GetCustomFramePrefDefault() {
   // Also disable custom frames for (at-least-partially-)EWMH-supporting tiling
   // window managers.
   ui::WindowManagerName wm = GuessWindowManager();
-  if (wm == WM_AWESOME ||
-      wm == WM_I3 ||
-      wm == WM_ION3 ||
-      wm == WM_MATCHBOX ||
-      wm == WM_NOTION ||
-      wm == WM_QTILE ||
-      wm == WM_RATPOISON ||
-      wm == WM_STUMPWM ||
-      wm == WM_WMII)
+  if (wm == WM_AWESOME || wm == WM_I3 || wm == WM_ION3 || wm == WM_MATCHBOX ||
+      wm == WM_NOTION || wm == WM_QTILE || wm == WM_RATPOISON ||
+      wm == WM_STUMPWM || wm == WM_WMII)
     return false;
 
   // Handle a few more window managers that don't get along well with custom
   // frames.
-  if (wm == WM_ICE_WM ||
-      wm == WM_KWIN)
+  if (wm == WM_ICE_WM || wm == WM_KWIN)
     return false;
 
   // For everything else, use custom frames.
   return true;
+}
+
+bool IsWmTiling(WindowManagerName window_manager) {
+  switch (window_manager) {
+    case WM_BLACKBOX:
+    case WM_COMPIZ:
+    case WM_ENLIGHTENMENT:
+    case WM_FLUXBOX:
+    case WM_ICE_WM:
+    case WM_KWIN:
+    case WM_MATCHBOX:
+    case WM_METACITY:
+    case WM_MUFFIN:
+    case WM_MUTTER:
+    case WM_OPENBOX:
+    case WM_XFWM4:
+      // Stacking window managers.
+      return false;
+
+    case WM_I3:
+    case WM_ION3:
+    case WM_NOTION:
+    case WM_RATPOISON:
+    case WM_STUMPWM:
+      // Tiling window managers.
+      return true;
+
+    case WM_AWESOME:
+    case WM_QTILE:
+    case WM_XMONAD:
+    case WM_WMII:
+      // Dynamic (tiling and stacking) window managers.  Assume tiling.
+      return true;
+
+    case WM_OTHER:
+    case WM_UNNAMED:
+      // Unknown.  Assume stacking.
+      return false;
+  }
 }
 
 bool GetWindowDesktop(XID window, int* desktop) {
@@ -1038,8 +1034,10 @@ bool IsWindowNamed(XID window) {
   return true;
 }
 
-bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
-                       const int max_depth, int depth) {
+bool EnumerateChildren(EnumerateWindowsDelegate* delegate,
+                       XID window,
+                       const int max_depth,
+                       int depth) {
   if (depth > max_depth)
     return false;
 
@@ -1114,27 +1112,13 @@ void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
 }
 
 bool GetXWindowStack(Window window, std::vector<XID>* windows) {
-  windows->clear();
-
-  Atom type;
-  int format;
-  unsigned long count;
-  unsigned char* data = nullptr;
-  if (GetProperty(window, "_NET_CLIENT_LIST_STACKING", ~0L, &type, &format,
-                  &count, &data) != x11::Success) {
+  std::vector<uint32_t> value32;
+  if (!GetArrayProperty(window, "_NET_CLIENT_LIST_STACKING", &value32))
     return false;
-  }
-  gfx::XScopedPtr<unsigned char> scoped_data(data);
-
-  bool result = false;
-  if (type == XA_WINDOW && format == 32 && data && count > 0) {
-    result = true;
-    XID* stack = reinterpret_cast<XID*>(data);
-    for (long i = static_cast<long>(count) - 1; i >= 0; i--)
-      windows->push_back(stack[i]);
-  }
-
-  return result;
+  // It's more common to iterate from lowest window to highest,
+  // so reverse the vector.
+  *windows = std::vector<XID>(value32.rbegin(), value32.rend());
+  return true;
 }
 
 WindowManagerName GuessWindowManager() {
@@ -1214,9 +1198,7 @@ bool IsX11WindowFullScreen(XID window) {
   XAtom fullscreen_atom = gfx::GetAtom("_NET_WM_STATE_FULLSCREEN");
   if (WmSupportsHint(fullscreen_atom)) {
     std::vector<XAtom> atom_properties;
-    if (GetAtomArrayProperty(window,
-                             "_NET_WM_STATE",
-                             &atom_properties)) {
+    if (GetAtomArrayProperty(window, "_NET_WM_STATE", &atom_properties)) {
       return base::Contains(atom_properties, fullscreen_atom);
     }
   }
@@ -1242,8 +1224,7 @@ bool WmSupportsHint(XAtom atom) {
     return false;
 
   std::vector<XAtom> supported_atoms;
-  if (!GetAtomArrayProperty(GetX11RootWindow(),
-                            "_NET_SUPPORTED",
+  if (!GetAtomArrayProperty(GetX11RootWindow(), "_NET_SUPPORTED",
                             &supported_atoms)) {
     return false;
   }
@@ -1281,11 +1262,24 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
 }
 
 bool IsSyncExtensionAvailable() {
+// Chrome for ChromeOS can be run with X11 on a Linux desktop. In this case,
+// NotifySwapAfterResize is never called as the compositor does not notify about
+// swaps after resize. Thus, simply disable usage of XSyncCounter on ChromeOS
+// builds.
+//
+// TODO(https://crbug.com/1036285): Also, disable sync extension for all ozone
+// builds as long as our EGL impl for Ozone/X11 is not mature enough and we do
+// not receive swap completions on time, which results in weird resize behaviour
+// as X Server waits for the XSyncCounter changes.
+#if defined(OS_CHROMEOS) || defined(USE_OZONE)
+  return false;
+#else
   auto* display = gfx::GetXDisplay();
   int unused;
   static bool result = XSyncQueryExtension(display, &unused, &unused) &&
                        XSyncInitialize(display, &unused, &unused);
   return result;
+#endif
 }
 
 SkColorType ColorTypeForVisual(void* visual) {
@@ -1300,8 +1294,12 @@ SkColorType ColorTypeForVisual(void* visual) {
       {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
       {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
       {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
+      {kBGRA_1010102_SkColorType, 0x3ff00000, 0xffc00, 0x3ff},
   };
   Visual* vis = reinterpret_cast<Visual*>(visual);
+  // When running under Xvfb, a visual may not be set.
+  if (!vis->red_mask && !vis->green_mask && !vis->blue_mask)
+    return kUnknown_SkColorType;
   for (const auto& color_info : color_infos) {
     if (vis->red_mask == color_info.red_mask &&
         vis->green_mask == color_info.green_mask &&
@@ -1309,7 +1307,7 @@ SkColorType ColorTypeForVisual(void* visual) {
       return color_info.color_type;
     }
   }
-  LOG(FATAL) << "Unsupported visual with rgb mask 0x" << std::hex
+  LOG(ERROR) << "Unsupported visual with rgb mask 0x" << std::hex
              << vis->red_mask << ", 0x" << vis->green_mask << ", 0x"
              << vis->blue_mask
              << ".  Please report this to https://crbug.com/1025266";
@@ -1317,8 +1315,7 @@ SkColorType ColorTypeForVisual(void* visual) {
 }
 
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)
-    : x11_data_(length ? x11_data : nullptr), length_(length) {
-}
+    : x11_data_(length ? x11_data : nullptr), length_(length) {}
 
 const unsigned char* XRefcountedMemory::front() const {
   return x11_data_.get();
@@ -1328,13 +1325,10 @@ size_t XRefcountedMemory::size() const {
   return length_;
 }
 
-XRefcountedMemory::~XRefcountedMemory() {
-}
+XRefcountedMemory::~XRefcountedMemory() = default;
 
 XScopedCursor::XScopedCursor(::Cursor cursor, XDisplay* display)
-    : cursor_(cursor),
-      display_(display) {
-}
+    : cursor_(cursor), display_(display) {}
 
 XScopedCursor::~XScopedCursor() {
   reset(0U);
@@ -1359,7 +1353,7 @@ namespace test {
 const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
   return XCustomCursorCache::GetInstance()->GetXcursorImage(cursor);
 }
-}
+}  // namespace test
 
 // ----------------------------------------------------------------------------
 // These functions are declared in x11_util_internal.h because they require
@@ -1382,11 +1376,9 @@ XRenderPictFormat* GetRenderARGB32Format(XDisplay* dpy) {
   templ.direct.alphaMask = 0;
 
   static const unsigned long kMask =
-    PictFormatType | PictFormatDepth |
-    PictFormatRed | PictFormatRedMask |
-    PictFormatGreen | PictFormatGreenMask |
-    PictFormatBlue | PictFormatBlueMask |
-    PictFormatAlphaMask;
+      PictFormatType | PictFormatDepth | PictFormatRed | PictFormatRedMask |
+      PictFormatGreen | PictFormatGreenMask | PictFormatBlue |
+      PictFormatBlueMask | PictFormatAlphaMask;
 
   pictformat = XRenderFindFormat(dpy, kMask, &templ, 0 /* first result */);
 
@@ -1403,51 +1395,8 @@ XRenderPictFormat* GetRenderARGB32Format(XDisplay* dpy) {
 void SetX11ErrorHandlers(XErrorHandler error_handler,
                          XIOErrorHandler io_error_handler) {
   XSetErrorHandler(error_handler ? error_handler : DefaultX11ErrorHandler);
-  XSetIOErrorHandler(
-      io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
-}
-
-void LogErrorEventDescription(XDisplay* dpy,
-                              const XErrorEvent& error_event) {
-  char error_str[256];
-  char request_str[256];
-
-  XGetErrorText(dpy, error_event.error_code, error_str, sizeof(error_str));
-
-  strncpy(request_str, "Unknown", sizeof(request_str));
-  if (error_event.request_code < 128) {
-    std::string num = base::NumberToString(error_event.request_code);
-    XGetErrorDatabaseText(
-        dpy, "XRequest", num.c_str(), "Unknown", request_str,
-        sizeof(request_str));
-  } else {
-    int num_ext;
-    gfx::XScopedPtr<char* [],
-                    gfx::XObjectDeleter<char*, int, XFreeExtensionList>>
-        ext_list(XListExtensions(dpy, &num_ext));
-
-    for (int i = 0; i < num_ext; i++) {
-      int ext_code, first_event, first_error;
-      XQueryExtension(dpy, ext_list[i], &ext_code, &first_event, &first_error);
-      if (error_event.request_code == ext_code) {
-        std::string msg = base::StringPrintf(
-            "%s.%d", ext_list[i], error_event.minor_code);
-        XGetErrorDatabaseText(
-            dpy, "XRequest", msg.c_str(), "Unknown", request_str,
-            sizeof(request_str));
-        break;
-      }
-    }
-  }
-
-  LOG(WARNING)
-      << "X error received: "
-      << "serial " << error_event.serial << ", "
-      << "error_code " << static_cast<int>(error_event.error_code)
-      << " (" << error_str << "), "
-      << "request_code " << static_cast<int>(error_event.request_code) << ", "
-      << "minor_code " << static_cast<int>(error_event.minor_code)
-      << " (" << request_str << ")";
+  XSetIOErrorHandler(io_error_handler ? io_error_handler
+                                      : DefaultX11IOErrorHandler);
 }
 
 // static
@@ -1500,7 +1449,7 @@ XVisualManager::XVisualManager()
     DCHECK(visuals_.find(transparent_visual_id_) != visuals_.end());
 }
 
-XVisualManager::~XVisualManager() {}
+XVisualManager::~XVisualManager() = default;
 
 void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
                                            Visual** visual,
@@ -1571,7 +1520,8 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
   if (depth)
     *depth = visual_info.depth;
   if (colormap)
-    *colormap = is_default_visual ? CopyFromParent : visual_data.GetColormap();
+    *colormap =
+        is_default_visual ? 0 /* CopyFromParent */ : visual_data.GetColormap();
   if (visual_has_alpha) {
     auto popcount = [](auto x) {
       return std::bitset<8 * sizeof(decltype(x))>(x).count();
@@ -1585,16 +1535,15 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
 }
 
 XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)
-    : visual_info(visual_info), colormap_(CopyFromParent) {}
+    : visual_info(visual_info), colormap_(0 /* CopyFromParent */) {}
 
-XVisualManager::XVisualData::~XVisualData() {
-  // Do not XFreeColormap as this would uninstall the colormap even for
-  // non-Chromium clients.
-}
+// Do not XFreeColormap as this would uninstall the colormap even for
+// non-Chromium clients.
+XVisualManager::XVisualData::~XVisualData() = default;
 
 Colormap XVisualManager::XVisualData::GetColormap() {
   XDisplay* display = gfx::GetXDisplay();
-  if (colormap_ == CopyFromParent) {
+  if (colormap_ == 0 /* CopyFromParent */) {
     colormap_ = XCreateColormap(display, DefaultRootWindow(display),
                                 visual_info.visual, AllocNone);
   }
@@ -1603,6 +1552,5 @@ Colormap XVisualManager::XVisualData::GetColormap() {
 
 // ----------------------------------------------------------------------------
 // End of x11_util_internal.h
-
 
 }  // namespace ui

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_info_idl_conversions.h"
 
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace proto = chromeos::printing::proto;
@@ -63,9 +64,12 @@ idl::PrintJobSource PrintJobSourceProtoToIdl(
     proto::PrintJobInfo_PrintJobSource print_job_source_proto) {
   switch (print_job_source_proto) {
     case proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW:
+    case proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW_INCOGNITO:
       return idl::PRINT_JOB_SOURCE_PRINT_PREVIEW;
     case proto::PrintJobInfo_PrintJobSource_ARC:
       return idl::PRINT_JOB_SOURCE_ANDROID_APP;
+    case proto::PrintJobInfo_PrintJobSource_EXTENSION:
+      return idl::PRINT_JOB_SOURCE_EXTENSION;
     default:
       NOTREACHED();
   }

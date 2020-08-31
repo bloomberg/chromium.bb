@@ -4,6 +4,8 @@
 
 #include "chrome/browser/win/jumplist.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,19 +17,24 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/win/jumplist_file_util.h"
@@ -96,18 +103,25 @@ constexpr base::TimeDelta kTimeOutForCommitUpdate =
     base::TimeDelta::FromMilliseconds(1000);
 
 // Appends the common switches to each shell link.
-void AppendCommonSwitches(ShellLinkItem* shell_link) {
+void AppendCommonSwitches(const base::FilePath& cmd_line_profile_dir,
+                          ShellLinkItem* shell_link) {
   const char* kSwitchNames[] = { switches::kUserDataDir };
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   shell_link->GetCommandLine()->CopySwitchesFrom(command_line, kSwitchNames,
                                                  base::size(kSwitchNames));
+  if (!cmd_line_profile_dir.empty()) {
+    shell_link->GetCommandLine()->AppendSwitchPath(switches::kProfileDirectory,
+                                                   cmd_line_profile_dir);
+  }
 }
 
-// Creates a ShellLinkItem preloaded with common switches.
-scoped_refptr<ShellLinkItem> CreateShellLink() {
+// Creates a ShellLinkItem preloaded with common switches, and the profile
+// directory, if |profile_dir| is non-empty.
+scoped_refptr<ShellLinkItem> CreateShellLink(
+    const base::FilePath& cmd_line_profile_dir) {
   auto link = base::MakeRefCounted<ShellLinkItem>();
-  AppendCommonSwitches(link.get());
+  AppendCommonSwitches(cmd_line_profile_dir, link.get());
   return link;
 }
 
@@ -150,9 +164,9 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
 }
 
 // Updates the "Tasks" category of the JumpList.
-bool UpdateTaskCategory(
-    JumpListUpdater* jumplist_updater,
-    IncognitoModePrefs::Availability incognito_availability) {
+bool UpdateTaskCategory(JumpListUpdater* jumplist_updater,
+                        IncognitoModePrefs::Availability incognito_availability,
+                        const base::FilePath& cmd_line_profile_dir) {
   base::FilePath chrome_path;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
@@ -166,7 +180,7 @@ bool UpdateTaskCategory(
   // We remove '&' characters from this string so we can share it with our
   // system menu.
   if (incognito_availability != IncognitoModePrefs::FORCED) {
-    scoped_refptr<ShellLinkItem> chrome = CreateShellLink();
+    scoped_refptr<ShellLinkItem> chrome = CreateShellLink(cmd_line_profile_dir);
     base::string16 chrome_title = l10n_util::GetStringUTF16(IDS_NEW_WINDOW);
     base::ReplaceSubstringsAfterOffset(
         &chrome_title, 0, L"&", base::StringPiece16());
@@ -178,7 +192,8 @@ bool UpdateTaskCategory(
   // Create an IShellLink object which launches Chrome in incognito mode, and
   // add it to the collection.
   if (incognito_availability != IncognitoModePrefs::DISABLED) {
-    scoped_refptr<ShellLinkItem> incognito = CreateShellLink();
+    scoped_refptr<ShellLinkItem> incognito =
+        CreateShellLink(cmd_line_profile_dir);
     incognito->GetCommandLine()->AppendSwitch(switches::kIncognito);
     base::string16 incognito_title =
         l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW);
@@ -197,8 +212,8 @@ bool UpdateTaskCategory(
 base::FilePath GenerateJumplistIconDirName(
     const base::FilePath& profile_dir,
     const base::FilePath::StringPieceType& suffix) {
-  base::FilePath::StringType dir_name(chrome::kJumpListIconDirname);
-  suffix.AppendToString(&dir_name);
+  base::FilePath::StringType dir_name =
+      base::StrCat({chrome::kJumpListIconDirname, suffix});
   return profile_dir.Append(dir_name);
 }
 
@@ -220,14 +235,13 @@ void JumpList::Shutdown() {
 
 JumpList::JumpList(Profile* profile)
     : profile_(profile),
-      update_jumplist_task_runner_(base::CreateCOMSTATaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      update_jumplist_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      delete_jumplisticons_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
+      delete_jumplisticons_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
   // the observer list of the TabRestoreService class.
@@ -327,12 +341,12 @@ void JumpList::InitializeTimerForUpdate() {
     timer_.Reset();
   } else {
     // base::Unretained is safe since |this| is guaranteed to outlive timer_.
-    timer_.Start(
-        FROM_HERE,
-        profile_->GetUserData(chrome::kJumpListIconDirname)
-            ? kShortDelayForUpdate
-            : kLongDelayForUpdate,
-        base::Bind(&JumpList::ProcessNotifications, base::Unretained(this)));
+    timer_.Start(FROM_HERE,
+                 profile_->GetUserData(chrome::kJumpListIconDirname)
+                     ? kShortDelayForUpdate
+                     : kLongDelayForUpdate,
+                 base::BindOnce(&JumpList::ProcessNotifications,
+                                base::Unretained(this)));
   }
 }
 
@@ -387,7 +401,7 @@ void JumpList::ProcessTopSitesNotification() {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    top_sites->GetMostVisitedURLs(base::Bind(
+    top_sites->GetMostVisitedURLs(base::BindOnce(
         &JumpList::OnMostVisitedURLsAvailable, weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -410,18 +424,20 @@ void JumpList::ProcessTabRestoreServiceNotification() {
 
   recently_closed_pages_.clear();
 
+  base::FilePath profile_dir(GetCmdLineProfileDir());
+
   for (const auto& entry : tab_restore_service->entries()) {
     if (recently_closed_pages_.size() >= kRecentlyClosedItems)
       break;
     switch (entry->type) {
       case sessions::TabRestoreService::TAB:
         AddTab(static_cast<const sessions::TabRestoreService::Tab&>(*entry),
-               kRecentlyClosedItems);
+               profile_dir, kRecentlyClosedItems);
         break;
       case sessions::TabRestoreService::WINDOW:
         AddWindow(
             static_cast<const sessions::TabRestoreService::Window&>(*entry),
-            kRecentlyClosedItems);
+            profile_dir, kRecentlyClosedItems);
         break;
     }
   }
@@ -441,11 +457,11 @@ void JumpList::OnMostVisitedURLsAvailable(
     return;
 
   most_visited_pages_.clear();
-
+  base::FilePath profile_dir = GetCmdLineProfileDir();
   const size_t num_items = std::min(urls.size(), kMostVisitedItems);
   for (size_t i = 0; i < num_items; ++i) {
     const history::MostVisitedURL& url = urls[i];
-    scoped_refptr<ShellLinkItem> link = CreateShellLink();
+    scoped_refptr<ShellLinkItem> link = CreateShellLink(profile_dir);
     std::string url_string = url.url.spec();
     base::string16 url_string_wide = base::UTF8ToUTF16(url_string);
     link->GetCommandLine()->AppendArgNative(url_string_wide);
@@ -465,6 +481,7 @@ void JumpList::OnMostVisitedURLsAvailable(
 }
 
 bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
+                      const base::FilePath& cmd_line_profile_dir,
                       size_t max_items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -473,7 +490,7 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
   if (recently_closed_pages_.size() >= max_items)
     return false;
 
-  scoped_refptr<ShellLinkItem> link = CreateShellLink();
+  scoped_refptr<ShellLinkItem> link = CreateShellLink(cmd_line_profile_dir);
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
@@ -490,12 +507,13 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
 }
 
 void JumpList::AddWindow(const sessions::TabRestoreService::Window& window,
+                         const base::FilePath& cmd_line_profile_dir,
                          size_t max_items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!window.tabs.empty());
 
   for (const auto& tab : window.tabs) {
-    if (!AddTab(*tab, max_items))
+    if (!AddTab(*tab, cmd_line_profile_dir, max_items))
       return;
   }
 }
@@ -519,7 +537,7 @@ void JumpList::StartLoadingFavicon() {
   // cancelable_task_tracker_.
   task_id_ = favicon_service->GetFaviconImageForPageURL(
       GURL(icon_urls_.front().first),
-      base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
+      base::BindOnce(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
@@ -571,19 +589,19 @@ void JumpList::PostRunUpdate() {
   // Parameter evaluation order is unspecified in C++. Do the first bind and
   // then move it into PostTaskAndReply to ensure the pointer value is obtained
   // before base::Passed() is called.
-  auto run_update =
-      base::Bind(&JumpList::RunUpdateJumpList, app_id_, profile_dir,
-                 most_visited_pages_, recently_closed_pages_,
-                 most_visited_should_update_, recently_closed_should_update_,
-                 incognito_availability, update_transaction.get());
+  auto run_update = base::BindOnce(
+      &JumpList::RunUpdateJumpList, app_id_, profile_dir, most_visited_pages_,
+      recently_closed_pages_, GetCmdLineProfileDir(),
+      most_visited_should_update_, recently_closed_should_update_,
+      incognito_availability, update_transaction.get());
 
   // Post a task to update the JumpList, which consists of 1) create new icons,
   // 2) notify the OS, 3) delete old icons.
   if (!update_jumplist_task_runner_->PostTaskAndReply(
           FROM_HERE, std::move(run_update),
-          base::Bind(&JumpList::OnRunUpdateCompletion,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(update_transaction))))) {
+          base::BindOnce(&JumpList::OnRunUpdateCompletion,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(update_transaction)))) {
     OnRunUpdateCompletion(std::make_unique<UpdateTransaction>());
   }
 }
@@ -673,6 +691,7 @@ void JumpList::RunUpdateJumpList(
     const base::FilePath& profile_dir,
     const ShellLinkItemList& most_visited_pages,
     const ShellLinkItemList& recently_closed_pages,
+    const base::FilePath& cmd_line_profile_dir,
     bool most_visited_should_update,
     bool recently_closed_should_update,
     IncognitoModePrefs::Availability incognito_availability,
@@ -686,9 +705,9 @@ void JumpList::RunUpdateJumpList(
 
   CreateNewJumpListAndNotifyOS(
       app_id, most_visited_icon_dir, recently_closed_icon_dir,
-      most_visited_pages, recently_closed_pages, most_visited_should_update,
-      recently_closed_should_update, incognito_availability,
-      update_transaction);
+      most_visited_pages, recently_closed_pages, cmd_line_profile_dir,
+      most_visited_should_update, recently_closed_should_update,
+      incognito_availability, update_transaction);
 
   // Delete any obsolete icon files.
   if (most_visited_should_update) {
@@ -708,6 +727,7 @@ void JumpList::CreateNewJumpListAndNotifyOS(
     const base::FilePath& recently_closed_icon_dir,
     const ShellLinkItemList& most_visited_pages,
     const ShellLinkItemList& recently_closed_pages,
+    const base::FilePath& cmd_line_profile_dir,
     bool most_visited_should_update,
     bool recently_closed_should_update,
     IncognitoModePrefs::Availability incognito_availability,
@@ -793,7 +813,8 @@ void JumpList::CreateNewJumpListAndNotifyOS(
   }
 
   // Update the "Tasks" category of the JumpList.
-  if (!UpdateTaskCategory(&jumplist_updater, incognito_availability))
+  if (!UpdateTaskCategory(&jumplist_updater, incognito_availability,
+                          cmd_line_profile_dir))
     return;
 
   base::ElapsedTimer commit_update_timer;
@@ -891,4 +912,12 @@ void JumpList::DeleteIconFiles(const base::FilePath& icon_dir,
     cached_files.insert(url_path_pair.second);
 
   DeleteNonCachedFiles(icon_dir, cached_files);
+}
+
+base::FilePath JumpList::GetCmdLineProfileDir() {
+  return g_browser_process->profile_manager()
+                     ->GetProfileAttributesStorage()
+                     .GetNumberOfProfiles() < 2
+             ? base::FilePath()
+             : profile_->GetPath().BaseName();
 }

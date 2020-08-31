@@ -92,8 +92,6 @@ void MockHandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
@@ -122,8 +120,8 @@ class TestSSLErrorNavigationThrottle : public SSLErrorNavigationThrottle {
       : SSLErrorNavigationThrottle(
             handle,
             std::make_unique<FakeSSLCertReporter>(),
-            base::Bind(&MockHandleSSLError, async_handle_ssl_error),
-            base::Bind(&IsInHostedApp)),
+            base::BindOnce(&MockHandleSSLError, async_handle_ssl_error),
+            base::BindOnce(&IsInHostedApp)),
         on_cancel_deferred_navigation_(
             std::move(on_cancel_deferred_navigation)) {}
 

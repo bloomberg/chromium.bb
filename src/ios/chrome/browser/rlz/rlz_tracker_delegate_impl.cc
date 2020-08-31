@@ -5,8 +5,9 @@
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/search_engines/template_url.h"
@@ -24,7 +25,7 @@ RLZTrackerDelegateImpl::~RLZTrackerDelegateImpl() {}
 
 // static
 bool RLZTrackerDelegateImpl::IsGoogleDefaultSearch(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   bool is_google_default_search = false;
   TemplateURLService* template_url_service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
@@ -40,14 +41,14 @@ bool RLZTrackerDelegateImpl::IsGoogleDefaultSearch(
 
 // static
 bool RLZTrackerDelegateImpl::IsGoogleHomepage(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   // iOS does not have a notion of home page.
   return false;
 }
 
 // static
 bool RLZTrackerDelegateImpl::IsGoogleInStartpages(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   // iOS does not have a notion of start pages.
   return false;
 }
@@ -101,9 +102,9 @@ bool RLZTrackerDelegateImpl::ClearReferral() {
 }
 
 void RLZTrackerDelegateImpl::SetOmniboxSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(!callback.is_null());
-  on_omnibox_search_callback_ = callback;
+  on_omnibox_search_callback_ = std::move(callback);
   on_omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
           base::Bind(&RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox,
@@ -111,7 +112,7 @@ void RLZTrackerDelegateImpl::SetOmniboxSearchCallback(
 }
 
 void RLZTrackerDelegateImpl::SetHomepageSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   NOTREACHED();
 }
 
@@ -130,9 +131,6 @@ void RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 
   on_omnibox_url_opened_subscription_.reset();
 
-  using std::swap;
-  base::Closure callback_to_run;
-  swap(callback_to_run, on_omnibox_search_callback_);
-  if (!callback_to_run.is_null())
-    callback_to_run.Run();
+  if (!on_omnibox_search_callback_.is_null())
+    std::move(on_omnibox_search_callback_).Run();
 }

@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_builder.h"
@@ -185,6 +188,9 @@ class ToolbarActionViewInteractiveUITest
   // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void TearDownOnMainThread() override;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 ToolbarActionViewInteractiveUITest::ToolbarActionViewInteractiveUITest() {}
@@ -193,6 +199,7 @@ ToolbarActionViewInteractiveUITest::~ToolbarActionViewInteractiveUITest() {}
 void ToolbarActionViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
   extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
@@ -221,6 +228,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Reduce visible count to 0 so that the action is overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   // When the extension is activated, it will send a message that its popup
   // opened. Listen for the message.
@@ -246,9 +254,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(pkasting): https://crbug.com/911374 Menu controller thinks the mouse is
-// already down when handling the left click.
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
+// TODO(pkasting): https://crbug.com/911374 On ChromeOS, menu controller thinks
+// the mouse is already down when handling the left click.
+// TODO(https://crbug.com/1046028): Fails on Windows 7.
+// TODO(https://crbug.com/955316): Flaky on linux.
 #define MAYBE_TestContextMenuOnOverflowedAction \
   DISABLED_TestContextMenuOnOverflowedAction
 #else
@@ -278,11 +288,13 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
     extension_service()->AddExtension(extension.get());
   }
 
-  const auto* const actions_bar = browser()->window()->GetToolbarActionsBar();
+  const auto* const actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   ASSERT_EQ(16u, actions_bar->toolbar_actions_unordered().size());
 
   // Reduce visible count to 0 so that all actions are overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   auto* app_menu_button = GetAppMenuButtonFromBrowser(browser());
   // Click on the app button.
@@ -319,6 +331,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
   base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  RunScheduledLayouts();
 
   BrowserActionsContainer* browser_actions_container =
       BrowserView::GetBrowserViewForBrowser(browser())
@@ -384,6 +398,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Reduce visible count to 0 so that all actions are overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   // Set up a listener for the extension being triggered.
   ExtensionTestMessageListener listener("Popup opened", false);

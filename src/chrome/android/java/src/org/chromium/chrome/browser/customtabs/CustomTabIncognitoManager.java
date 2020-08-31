@@ -4,16 +4,17 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.support.annotation.Nullable;
 import android.view.WindowManager;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -29,7 +30,7 @@ import javax.inject.Inject;
 public class CustomTabIncognitoManager implements NativeInitObserver, Destroyable {
     private static final String TAG = "CctIncognito";
 
-    private final ChromeActivity mChromeActivity;
+    private final ChromeActivity<?> mChromeActivity;
     private final CustomTabActivityNavigationController mNavigationController;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
 
@@ -37,7 +38,7 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
     private IncognitoTabHost mIncognitoTabHost;
 
     @Inject
-    public CustomTabIncognitoManager(ChromeActivity customTabActivity,
+    public CustomTabIncognitoManager(ChromeActivity<?> customTabActivity,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabActivityNavigationController navigationController,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
@@ -61,6 +62,11 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
         if (mIncognitoTabHost != null) {
             IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
         }
+    }
+
+    // TODO(crbug.com/1023759): Remove this function.
+    public static boolean hasIsolatedProfile() {
+        return false;
     }
 
     private void initializeIncognito() {

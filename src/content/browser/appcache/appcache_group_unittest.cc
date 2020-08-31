@@ -6,12 +6,12 @@
 
 #include <string>
 
-#include "base/test/task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -104,7 +104,7 @@ class TestAppCacheHost : public AppCacheHost {
 
 class AppCacheGroupTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(AppCacheGroupTest, AddRemoveCache) {
@@ -281,7 +281,8 @@ TEST_F(AppCacheGroupTest, QueueUpdate) {
   EXPECT_TRUE(group->update_job_);
 
   // Pretend group's update job is terminating so that next update is queued.
-  group->update_job_->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+  group->update_job_->internal_state_ =
+      AppCacheUpdateJobState::REFETCH_MANIFEST;
   EXPECT_TRUE(group->update_job_->IsTerminating());
 
   TestAppCacheFrontend frontend;

@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {appendStyle} from './utils/append-style.js';
+import {XElement} from './XElement.js';
+
 /**
- * @extends {UI.XElement}
+ * @extends {XElement}
  */
-export default class XWidget extends UI.XElement {
+export class XWidget extends XElement {
   constructor() {
     super();
     this.style.setProperty('display', 'flex');
@@ -21,11 +27,11 @@ export default class XWidget extends UI.XElement {
     this._defaultFocusedElement = null;
     /** @type {!Array<!Element>} */
     this._elementsToRestoreScrollPositionsFor = [];
-    /** @type {?function()} */
+    /** @type {?function():void} */
     this._onShownCallback;
-    /** @type {?function()} */
+    /** @type {?function():void} */
     this._onHiddenCallback;
-    /** @type {?function()} */
+    /** @type {?function():void} */
     this._onResizedCallback;
 
     if (!XWidget._observer) {
@@ -43,23 +49,6 @@ export default class XWidget extends UI.XElement {
   }
 
   /**
-   * @param {?Node} node
-   */
-  static focusWidgetForNode(node) {
-    node = node && node.parentNodeOrShadowHost();
-    let widget = null;
-    while (node) {
-      if (node instanceof XWidget) {
-        if (widget) {
-          node._defaultFocusedElement = widget;
-        }
-        widget = node;
-      }
-      node = node.parentNodeOrShadowHost();
-    }
-  }
-
-  /**
    * @return {boolean}
    */
   isShowing() {
@@ -70,25 +59,25 @@ export default class XWidget extends UI.XElement {
    * @param {string} cssFile
    */
   registerRequiredCSS(cssFile) {
-    UI.appendStyle(this._shadowRoot || this, cssFile);
+    appendStyle(this._shadowRoot || this, cssFile);
   }
 
   /**
-   * @param {?function()} callback
+   * @param {?function():void} callback
    */
   setOnShown(callback) {
     this._onShownCallback = callback;
   }
 
   /**
-   * @param {?function()} callback
+   * @param {?function():void} callback
    */
   setOnHidden(callback) {
     this._onHiddenCallback = callback;
   }
 
   /**
-   * @param {?function()} callback
+   * @param {?function():void} callback
    */
   setOnResized(callback) {
     this._onResizedCallback = callback;
@@ -194,12 +183,4 @@ export default class XWidget extends UI.XElement {
 }
 
 self.customElements.define('x-widget', XWidget);
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.XWidget = XWidget;
+self.XWidget = XWidget;

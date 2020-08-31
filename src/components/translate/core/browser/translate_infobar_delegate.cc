@@ -31,7 +31,7 @@ namespace {
 const int kAutoAlwaysThreshold = 5;
 // The default number of times user should consecutively dismiss the translate
 // infobar for "Never Translate" to automatically trigger.
-const int kAutoNeverThreshold = 10;
+const int kAutoNeverThreshold = 20;
 // The default maximum number of times "Always Translate" is automatically
 // triggered.
 const int kMaxNumberOfAutoAlways = 2;
@@ -52,8 +52,9 @@ const base::Feature kTranslateCompactUI{"TranslateCompactUI",
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
-  if (observer_)
-    observer_->OnTranslateInfoBarDelegateDestroyed(this);
+  for (auto& observer : observers_) {
+    observer.OnTranslateInfoBarDelegateDestroyed(this);
+  }
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -88,10 +89,12 @@ void TranslateInfoBarDelegate::Create(
     }
   }
 
-  // Do not create the after translate infobar if we are auto translating.
+  // Do not create the after translate infobar for navigation if we are auto
+  // translating.
   if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
        (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
-      translate_manager->GetLanguageState().InTranslateNavigation()) {
+      translate_manager->GetLanguageState().InTranslateNavigation() &&
+      !triggered_from_menu) {
     return;
   }
 
@@ -109,8 +112,11 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Try to reuse existing translate infobar delegate.
-  if (old_delegate && old_delegate->observer_) {
-    old_delegate->observer_->OnTranslateStepChanged(step, error_type);
+  if (old_delegate) {
+    old_delegate->step_ = step;
+    for (auto& observer : old_delegate->observers_) {
+      observer.OnTranslateStepChanged(step, error_type);
+    }
     return;
   }
 
@@ -138,10 +144,6 @@ base::string16 TranslateInfoBarDelegate::language_name_at(size_t index) const {
   return ui_delegate_.GetLanguageNameAt(index);
 }
 
-void TranslateInfoBarDelegate::SetObserver(Observer* observer) {
-  observer_ = observer;
-}
-
 base::string16 TranslateInfoBarDelegate::original_language_name() const {
   return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
 }
@@ -167,6 +169,7 @@ void TranslateInfoBarDelegate::RevertTranslation() {
 
 void TranslateInfoBarDelegate::RevertWithoutClosingInfobar() {
   ui_delegate_.RevertTranslation();
+  step_ = TRANSLATE_STEP_BEFORE_TRANSLATE;
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -226,8 +229,7 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   }
 
   DCHECK_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR, step_);
-  UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar",
-                            error_type_,
+  UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar", error_type_,
                             TranslateErrors::TRANSLATE_ERROR_MAX);
   ui_delegate_.OnErrorShown(error_type_);
   switch (error_type_) {
@@ -264,8 +266,9 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
   } else if ((error_type_ != TranslateErrors::IDENTICAL_LANGUAGES) &&
              (error_type_ != TranslateErrors::UNKNOWN_LANGUAGE)) {
     return l10n_util::GetStringUTF16(
-        (error_type_ == TranslateErrors::UNSUPPORTED_LANGUAGE) ?
-        IDS_TRANSLATE_INFOBAR_REVERT : IDS_TRANSLATE_INFOBAR_RETRY);
+        (error_type_ == TranslateErrors::UNSUPPORTED_LANGUAGE)
+            ? IDS_TRANSLATE_INFOBAR_REVERT
+            : IDS_TRANSLATE_INFOBAR_RETRY);
   }
   return base::string16();
 }
@@ -278,8 +281,8 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
   }
   // This is the "Try again..." case.
   DCHECK(translate_manager_);
-  translate_manager_->TranslatePage(
-      original_language_code(), target_language_code(), false);
+  translate_manager_->TranslatePage(original_language_code(),
+                                    target_language_code(), false);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
@@ -403,8 +406,7 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
     size_t offset;
     base::string16 text = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_AUTODETERMINED_SOURCE_LANGUAGE,
-        base::string16(),
-        &offset);
+        base::string16(), &offset);
 
     strings->push_back(text.substr(0, offset));
     strings->push_back(text.substr(offset));
@@ -413,9 +415,9 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
   DCHECK(swap_languages);
 
   std::vector<size_t> offsets;
-  base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE, base::string16(), base::string16(),
-      &offsets);
+  base::string16 text =
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE,
+                                 base::string16(), base::string16(), &offsets);
   DCHECK_EQ(2U, offsets.size());
 
   *swap_languages = (offsets[0] > offsets[1]);
@@ -434,6 +436,14 @@ TranslateDriver* TranslateInfoBarDelegate::GetTranslateDriver() {
   return translate_manager_->translate_client()->GetTranslateDriver();
 }
 
+void TranslateInfoBarDelegate::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TranslateInfoBarDelegate::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     const base::WeakPtr<TranslateManager>& translate_manager,
     bool is_off_the_record,
@@ -449,8 +459,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       translate_manager_(translate_manager),
       error_type_(error_type),
       prefs_(translate_manager->translate_client()->GetTranslatePrefs()),
-      triggered_from_menu_(triggered_from_menu),
-      observer_(nullptr) {
+      triggered_from_menu_(triggered_from_menu) {
   DCHECK_NE((step_ == translate::TRANSLATE_STEP_TRANSLATE_ERROR),
             (error_type_ == TranslateErrors::NONE));
   DCHECK(translate_manager_);
@@ -461,9 +470,16 @@ int TranslateInfoBarDelegate::GetIconId() const {
 }
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
-  bool declined = observer_
-                      ? observer_->IsDeclinedByUser()
-                      : (step_ == translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
+  bool declined = false;
+  bool has_observer = false;
+  for (auto& observer : observers_) {
+    has_observer = true;
+    if (observer.IsDeclinedByUser())
+      declined = true;
+  }
+
+  if (!has_observer)
+    declined = step_ == translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
 
   if (declined) {
     // The user closed the infobar without clicking the translate button.
@@ -473,7 +489,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
 }
 
 TranslateInfoBarDelegate*
-    TranslateInfoBarDelegate::AsTranslateInfoBarDelegate() {
+TranslateInfoBarDelegate::AsTranslateInfoBarDelegate() {
   return this;
 }
 

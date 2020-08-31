@@ -7,12 +7,11 @@
 namespace switches {
 
 // Disable GPU rasterization, i.e. rasterize on the CPU only.
-// Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
+// Overrides the kEnableGpuRasterization flag.
 const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 
 // Allow heuristics to determine when a layer tile should be drawn with the
-// Skia GPU backend. Only valid with GPU accelerated compositing +
-// impl-side painting.
+// Skia GPU backend. Only valid with GPU accelerated compositing.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
 // Select a different set of GPU blacklist entries with the specificed
@@ -40,6 +39,9 @@ const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 
+// Enable validation layers in Dawn backends.
+const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
+
 // Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
 // thread.
 // This is only to be used for perf tests on macOS for more reliable values.
@@ -54,5 +56,25 @@ const char kNoDelayForDX12VulkanInfoCollection[] =
 
 // Enables measures of how long GPU Main Thread was blocked between SwapBuffers
 const char kEnableGpuBlockedTime[] = "enable-gpu-blocked-time";
+
+// Passes the active graphics vendor id from browser process to info collection
+// GPU process.
+const char kGpuVendorId[] = "gpu-vendor-id";
+
+// Passes the active graphics device id from browser process to info collection
+// GPU process.
+const char kGpuDeviceId[] = "gpu-device-id";
+
+// Passes the active graphics sub system id from browser process to info
+// collection GPU process.
+const char kGpuSubSystemId[] = "gpu-sub-system-id";
+
+// Passes the active graphics revision info from browser process to info
+// collection GPU process.
+const char kGpuRevision[] = "gpu-revision";
+
+// Passes the active graphics driver version from browser process to info
+// collection GPU process.
+const char kGpuDriverVersion[] = "gpu-driver-version";
 
 }  // namespace switches

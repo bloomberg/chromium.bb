@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "components/cbor/constants.h"
@@ -134,11 +136,6 @@ bool Writer::EncodeCBOR(const Value& node,
       return true;
     }
   }
-
-  // This is needed because, otherwise, MSVC complains that not all paths return
-  // a value. We should be able to remove it once MSVC builders are gone.
-  NOTREACHED();
-  return false;
 }
 
 void Writer::StartItem(Value::Type type, uint64_t size) {

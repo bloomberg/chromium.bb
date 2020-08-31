@@ -29,7 +29,7 @@ namespace blink {
 
 class BodyStreamBuffer::LoaderClient final
     : public GarbageCollected<LoaderClient>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
 
@@ -37,7 +37,7 @@ class BodyStreamBuffer::LoaderClient final
   LoaderClient(ExecutionContext* execution_context,
                BodyStreamBuffer* buffer,
                FetchDataLoader::Client* client)
-      : ContextLifecycleObserver(execution_context),
+      : ExecutionContextLifecycleObserver(execution_context),
         buffer_(buffer),
         client_(client) {}
 
@@ -84,50 +84,70 @@ class BodyStreamBuffer::LoaderClient final
 
   void Abort() override { NOTREACHED(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(buffer_);
     visitor->Trace(client_);
-    ContextLifecycleObserver::Trace(visitor);
+    ExecutionContextLifecycleObserver::Trace(visitor);
     FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
-  void ContextDestroyed(ExecutionContext*) override { buffer_->StopLoading(); }
+  void ContextDestroyed() override { buffer_->StopLoading(); }
 
   Member<BodyStreamBuffer> buffer_;
   Member<FetchDataLoader::Client> client_;
   DISALLOW_COPY_AND_ASSIGN(LoaderClient);
 };
 
-BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
+// Use a Create() method to split construction from initialisation.
+// Initialisation may result in nested calls to ContextDestroyed() and so is not
+// safe to do during construction.
+
+// static
+BodyStreamBuffer* BodyStreamBuffer::Create(
+    ScriptState* script_state,
+    BytesConsumer* consumer,
+    AbortSignal* signal,
+    scoped_refptr<BlobDataHandle> side_data_blob) {
+  auto* buffer = MakeGarbageCollected<BodyStreamBuffer>(
+      PassKey(), script_state, consumer, signal, std::move(side_data_blob));
+  buffer->Init();
+  return buffer;
+}
+
+BodyStreamBuffer::BodyStreamBuffer(PassKey,
+                                   ScriptState* script_state,
                                    BytesConsumer* consumer,
-                                   AbortSignal* signal)
+                                   AbortSignal* signal,
+                                   scoped_refptr<BlobDataHandle> side_data_blob)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       consumer_(consumer),
       signal_(signal),
-      made_from_readable_stream_(false) {
-  // inside_create_stream_ is set to track down the cause of the crash in
-  // https://crbug.com/1007162.
-  // TODO(ricea): Remove it and the CHECK once the cause is found.
-  inside_create_stream_ = true;
-  CHECK(consumer_);
+      side_data_blob_(std::move(side_data_blob)),
+      made_from_readable_stream_(false) {}
+
+void BodyStreamBuffer::Init() {
+  DCHECK(consumer_);
 
   stream_ =
       ReadableStream::CreateWithCountQueueingStrategy(script_state_, this, 0);
   stream_broken_ = !stream_;
 
-  // TODO(ricea): Remove this and the CHECK once https://crbug.com/1007162 is
-  // fixed.
-  inside_create_stream_ = false;
-  CHECK(consumer_);
+  // ContextDestroyed() can be called inside the ReadableStream constructor when
+  // a worker thread is being terminated. See https://crbug.com/1007162 for
+  // details. If consumer_ is null, assume that this happened and this object
+  // will never actually be used, and so it is fine to skip the rest of
+  // initialisation.
+  if (!consumer_)
+    return;
 
   consumer_->SetClient(this);
-  if (signal) {
-    if (signal->aborted()) {
+  if (signal_) {
+    if (signal_->aborted()) {
       Abort();
     } else {
-      signal->AddAlgorithm(
+      signal_->AddAlgorithm(
           WTF::Bind(&BodyStreamBuffer::Abort, WrapWeakPersistent(this)));
     }
   }
@@ -135,11 +155,13 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
 }
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
-                                   ReadableStream* stream)
+                                   ReadableStream* stream,
+                                   scoped_refptr<BlobDataHandle> side_data_blob)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       stream_(stream),
       signal_(nullptr),
+      side_data_blob_(std::move(side_data_blob)),
       made_from_readable_stream_(true) {
   DCHECK(stream_);
 }
@@ -223,6 +245,7 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   DCHECK(!IsStreamDisturbedForDCheck(exception_state));
   *branch1 = nullptr;
   *branch2 = nullptr;
+  scoped_refptr<BlobDataHandle> side_data_blob = TakeSideDataBlob();
 
   if (made_from_readable_stream_) {
     if (stream_broken_) {
@@ -242,8 +265,10 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
       return;
     }
 
-    *branch1 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream1);
-    *branch2 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream2);
+    *branch1 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream1,
+                                                      side_data_blob);
+    *branch2 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream2,
+                                                      side_data_blob);
     return;
   }
   BytesConsumer* dest1 = nullptr;
@@ -256,9 +281,9 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   BytesConsumerTee(ExecutionContext::From(script_state_), handle, &dest1,
                    &dest2);
   *branch1 =
-      MakeGarbageCollected<BodyStreamBuffer>(script_state_, dest1, signal_);
+      BodyStreamBuffer::Create(script_state_, dest1, signal_, side_data_blob);
   *branch2 =
-      MakeGarbageCollected<BodyStreamBuffer>(script_state_, dest2, signal_);
+      BodyStreamBuffer::Create(script_state_, dest2, signal_, side_data_blob);
 }
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
@@ -309,9 +334,9 @@ bool BodyStreamBuffer::HasPendingActivity() const {
   return loader_;
 }
 
-void BodyStreamBuffer::ContextDestroyed(ExecutionContext* destroyed_context) {
+void BodyStreamBuffer::ContextDestroyed() {
   CancelConsumer();
-  UnderlyingSourceBase::ContextDestroyed(destroyed_context);
+  UnderlyingSourceBase::ContextDestroyed();
 }
 
 base::Optional<bool> BodyStreamBuffer::IsStreamReadable(
@@ -388,7 +413,11 @@ bool BodyStreamBuffer::IsAborted() {
   return signal_->aborted();
 }
 
-void BodyStreamBuffer::Trace(blink::Visitor* visitor) {
+scoped_refptr<BlobDataHandle> BodyStreamBuffer::TakeSideDataBlob() {
+  return std::move(side_data_blob_);
+}
+
+void BodyStreamBuffer::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(stream_);
   visitor->Trace(consumer_);
@@ -426,10 +455,8 @@ void BodyStreamBuffer::GetError() {
 }
 
 void BodyStreamBuffer::CancelConsumer() {
+  side_data_blob_.reset();
   if (consumer_) {
-    // TODO(ricea): Remove this CHECK once the cause of
-    // https://crbug.com/1007162 is found.
-    CHECK(!inside_create_stream_);
     consumer_->Cancel();
     consumer_ = nullptr;
   }
@@ -518,6 +545,8 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   DCHECK(!IsStreamLockedForDCheck(exception_state));
   DCHECK(!IsStreamDisturbedForDCheck(exception_state));
 
+  side_data_blob_.reset();
+
   if (stream_broken_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -543,9 +572,6 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   if (exception_state.HadException())
     return nullptr;
 
-  // TODO(ricea): Remove this CHECK once the cause of https://crbug.com/1007162
-  // is found.
-  CHECK(!inside_create_stream_);
   BytesConsumer* consumer = consumer_.Release();
 
   CloseAndLockAndDisturb(exception_state);

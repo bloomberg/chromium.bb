@@ -6,9 +6,10 @@
  */
 
 #include "include/core/SkDeferredDisplayListRecorder.h"
+
+#include "include/core/SkDeferredDisplayList.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkSurfaceCharacterization.h"
-#include "include/private/SkDeferredDisplayList.h"
 #include "src/core/SkMessageBus.h"
 
 #if !SK_SUPPORT_GPU
@@ -60,11 +61,10 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
 
 #include "include/core/SkPromiseImageTexture.h"
 #include "include/core/SkYUVASizeInfo.h"
-#include "include/gpu/GrTexture.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkImage_GpuYUVA.h"
@@ -132,17 +132,6 @@ bool SkDeferredDisplayListRecorder::init() {
 
     GrColorType grColorType = SkColorTypeToGrColorType(fCharacterization.colorType());
 
-    GrPixelConfig config = caps->getConfigFromBackendFormat(fCharacterization.backendFormat(),
-                                                            grColorType);
-    if (config == kUnknown_GrPixelConfig) {
-        return false;
-    }
-
-    GrSurfaceDesc desc;
-    desc.fWidth = fCharacterization.width();
-    desc.fHeight = fCharacterization.height();
-    desc.fConfig = config;
-
     sk_sp<SkDeferredDisplayList::LazyProxyData> lazyProxyData = fLazyProxyData;
 
     // What we're doing here is we're creating a lazy proxy to back the SkSurface. The lazy
@@ -161,18 +150,21 @@ bool SkDeferredDisplayListRecorder::init() {
         optionalTextureInfo = &kTextureInfo;
     }
 
+    GrSwizzle readSwizzle = caps->getReadSwizzle(fCharacterization.backendFormat(), grColorType);
+
     sk_sp<GrRenderTargetProxy> proxy = proxyProvider->createLazyRenderTargetProxy(
-            [lazyProxyData](GrResourceProvider* resourceProvider) {
+            [lazyProxyData](GrResourceProvider* resourceProvider,
+                            const GrSurfaceProxy::LazySurfaceDesc&) {
                 // The proxy backing the destination surface had better have been instantiated
-                // prior to the proxy backing the DLL's surface. Steal its GrRenderTarget.
+                // prior to the this one (i.e., the proxy backing the DLL's surface).
+                // Fulfill this lazy proxy with the destination surface's GrRenderTarget.
                 SkASSERT(lazyProxyData->fReplayDest->peekSurface());
                 auto surface = sk_ref_sp<GrSurface>(lazyProxyData->fReplayDest->peekSurface());
                 return GrSurfaceProxy::LazyCallbackResult(std::move(surface));
             },
             fCharacterization.backendFormat(),
-            desc,
+            fCharacterization.dimensions(),
             fCharacterization.sampleCount(),
-            fCharacterization.origin(),
             surfaceFlags,
             optionalTextureInfo,
             GrMipMapsStatus::kNotAllocated,
@@ -186,13 +178,15 @@ bool SkDeferredDisplayListRecorder::init() {
         return false;
     }
 
-    auto c = fContext->priv().makeWrappedSurfaceContext(std::move(proxy),
-                                                        grColorType,
-                                                        kPremul_SkAlphaType,
-                                                        fCharacterization.refColorSpace(),
-                                                        &fCharacterization.surfaceProps());
-    SkASSERT(c->asRenderTargetContext());
-    std::unique_ptr<GrRenderTargetContext> rtc(c.release()->asRenderTargetContext());
+    GrSwizzle writeSwizzle = caps->getWriteSwizzle(fCharacterization.backendFormat(), grColorType);
+
+    GrSurfaceProxyView readView(proxy, fCharacterization.origin(), readSwizzle);
+    GrSurfaceProxyView writeView(std::move(proxy), fCharacterization.origin(), writeSwizzle);
+
+    auto rtc = std::make_unique<GrRenderTargetContext>(fContext.get(), std::move(readView),
+                                                       std::move(writeView), grColorType,
+                                                       fCharacterization.refColorSpace(),
+                                                       &fCharacterization.surfaceProps());
     fSurface = SkSurface_Gpu::MakeWrappedRenderTarget(fContext.get(), std::move(rtc));
     return SkToBool(fSurface.get());
 }

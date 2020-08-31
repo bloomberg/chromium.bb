@@ -20,11 +20,6 @@
 class Profile;
 class UpgradeDetector;
 
-namespace ui {
-class NativeTheme;
-class ThemeProvider;
-}  // namespace ui
-
 // AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
 class AppMenuIconController : public GlobalErrorObserver,
@@ -55,9 +50,8 @@ class AppMenuIconController : public GlobalErrorObserver,
     // |type_and_severity|.
     virtual void UpdateTypeAndSeverity(TypeAndSeverity type_and_severity) = 0;
 
-    // Accessors for properties of the View hosting the controller.
-    virtual const ui::ThemeProvider* GetViewThemeProvider() const = 0;
-    virtual ui::NativeTheme* GetViewNativeTheme() = 0;
+    // Get the appropriate colors for various severity levels.
+    virtual SkColor GetDefaultColorForSeverity(Severity severity) const = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -83,15 +77,17 @@ class AppMenuIconController : public GlobalErrorObserver,
   // Returns the image to be used for the app menu's icon and the upgrade item
   // in the app menu (when the IconType is UPGRADE_NOTIFICATION). |touch_ui|
   // indicates whether the touch-friendly variant is requested.
-  // |promo_highlight_color|, if provided, overrides the basic color when the
-  // app menu icon's Severity is NONE.
+  // |severity_none_color|, if provided, will be used when the Severity is NONE.
+  // Otherwise the basic toolbar button icon color will be used.
   gfx::ImageSkia GetIconImage(
       bool touch_ui,
-      base::Optional<SkColor> promo_highlight_color = base::nullopt) const;
+      const base::Optional<SkColor>& severity_none_color = base::nullopt) const;
 
-  // Gets the color to be used for the app menu's icon. |promo_highlight_color|,
-  // if provided, overrides the basic color when the icon's Severity is NONE.
-  SkColor GetIconColor(base::Optional<SkColor> promo_highlight_color) const;
+  // Gets the color to be used for the app menu's icon.
+  // |severity_none_color|, if provided, will be used when the Severity is NONE.
+  // Otherwise the basic toolbar button icon color will be used.
+  SkColor GetIconColor(
+      const base::Optional<SkColor>& severity_none_color) const;
 
  private:
   // GlobalErrorObserver:

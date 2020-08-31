@@ -38,6 +38,13 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static HTMLOptionElement* CreateForJSConstructor(
+      Document& document,
+      const String& data,
+      ExceptionState& exception_state) {
+    return CreateForJSConstructor(document, data, AtomicString(), false, false,
+                                  exception_state);
+  }
   static HTMLOptionElement* CreateForJSConstructor(Document&,
                                                    const String& data,
                                                    const AtomicString& value,
@@ -94,6 +101,11 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void SetMultiSelectFocusedState(bool);
   bool IsMultiSelectFocused() const;
 
+  void SetWasOptionInsertedCalled(bool flag) {
+    was_option_inserted_called_ = true;
+  }
+  bool WasOptionInsertedCalled() const { return was_option_inserted_called_; }
+
  private:
   ~HTMLOptionElement() override;
 
@@ -101,8 +113,6 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   bool MatchesDefaultPseudoClass() const override;
   bool MatchesEnabledPseudoClass() const override;
   void ParseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode&) override;
   void AccessKeyAction(bool) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
@@ -121,6 +131,11 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   // Represents the option being focused on in a multi-select non-contiguous
   // traversal via the keyboard.
   bool is_multi_select_focused_ = false;
+
+  // True while HTMLSelectElement::OptionInserted(this) and OptionRemoved(this);
+  // This flag is necessary to detect a state where DOM tree is updated and
+  // OptionInserted() is not called yet.
+  bool was_option_inserted_called_ = false;
 };
 
 }  // namespace blink

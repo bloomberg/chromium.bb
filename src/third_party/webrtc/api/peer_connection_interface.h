@@ -570,12 +570,6 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // binding requests to keep NAT bindings open.
     absl::optional<int> stun_candidate_keepalive_interval;
 
-    // ICE Periodic Regathering
-    // If set, WebRTC will periodically create and propose candidates without
-    // starting a new ICE generation. The regathering happens continuously with
-    // interval specified in milliseconds by the uniform distribution [a, b].
-    absl::optional<rtc::IntervalRange> ice_regather_interval_range;
-
     // Optional TurnCustomizer.
     // With this class one can modify outgoing TURN messages.
     // The object passed in must remain valid until PeerConnection::Close() is
@@ -671,6 +665,8 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
 
     // Whether network condition based codec switching is allowed.
     absl::optional<bool> allow_codec_switching;
+
+    bool enable_simulcast_stats = true;
 
     //
     // Don't forget to update operator== if adding something.
@@ -1114,6 +1110,13 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   virtual PeerConnectionState peer_connection_state() = 0;
 
   virtual IceGatheringState ice_gathering_state() = 0;
+
+  // Returns the current state of canTrickleIceCandidates per
+  // https://w3c.github.io/webrtc-pc/#attributes-1
+  virtual absl::optional<bool> can_trickle_ice_candidates() {
+    // TODO(crbug.com/708484): Remove default implementation.
+    return absl::nullopt;
+  }
 
   // Start RtcEventLog using an existing output-sink. Takes ownership of
   // |output| and passes it on to Call, which will take the ownership. If the

@@ -75,11 +75,13 @@ extern "C" {
 // Refer to PDF Reference version 1.7 table 8.77 for field flags specific to
 // interactive form text fields.
 #define FPDF_FORMFLAG_TEXT_MULTILINE (1 << 12)
+#define FPDF_FORMFLAG_TEXT_PASSWORD (1 << 13)
 
 // Refer to PDF Reference version 1.7 table 8.79 for field flags specific to
 // interactive form choice fields.
 #define FPDF_FORMFLAG_CHOICE_COMBO (1 << 17)
 #define FPDF_FORMFLAG_CHOICE_EDIT (1 << 18)
+#define FPDF_FORMFLAG_CHOICE_MULTI_SELECT (1 << 21)
 
 typedef enum FPDFANNOT_COLORTYPE {
   FPDFANNOT_COLORTYPE_Color = 0,
@@ -191,6 +193,34 @@ FPDFAnnot_IsObjectSupportedSubtype(FPDF_ANNOTATION_SUBTYPE subtype);
 // Return true if successful.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFAnnot_UpdateObject(FPDF_ANNOTATION annot, FPDF_PAGEOBJECT obj);
+
+// Experimental API.
+// Add a new InkStroke, represented by an array of points, to the InkList of
+// |annot|. The API creates an InkList if one doesn't already exist in |annot|.
+// This API works only for ink annotations. Please refer section 12.5.6.13 in
+// PDF 32000-1:2008 Specification.
+//
+//   annot       - handle to an annotation.
+//   points      - pointer to a FS_POINTF array representing input points.
+//   point_count - number of elements in |points| array. This should not exceed
+//                 the maximum value that can be represented by an int32_t).
+//
+// Returns the 0-based index at which the new InkStroke is added in the InkList
+// of the |annot|. Returns -1 on failure.
+FPDF_EXPORT int FPDF_CALLCONV FPDFAnnot_AddInkStroke(FPDF_ANNOTATION annot,
+                                                     const FS_POINTF* points,
+                                                     size_t point_count);
+
+// Experimental API.
+// Removes an InkList in |annot|.
+// This API works only for ink annotations.
+//
+//   annot  - handle to an annotation.
+//
+// Return true on successful removal of /InkList entry from context of the
+// non-null ink |annot|. Returns false on failure.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_RemoveInkList(FPDF_ANNOTATION annot);
 
 // Experimental API.
 // Add |obj| to |annot|. |obj| must have been created by
@@ -528,16 +558,65 @@ FPDFAnnot_GetFormFieldFlags(FPDF_FORMHANDLE handle,
 //    hHandle     -   handle to the form fill module, returned by
 //                    FPDFDOC_InitFormFillEnvironment().
 //    page        -   handle to the page, returned by FPDF_LoadPage function.
-//    page_x      -   X position in PDF "user space".
-//    page_y      -   Y position in PDF "user space".
+//    point       -   position in PDF "user space".
 //
 // Returns the interactive form annotation whose rectangle contains the given
 // coordinates on the page. If there is no such annotation, return NULL.
 FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV
 FPDFAnnot_GetFormFieldAtPoint(FPDF_FORMHANDLE hHandle,
                               FPDF_PAGE page,
-                              double page_x,
-                              double page_y);
+                              const FS_POINTF* point);
+
+// Experimental API.
+// Gets the name of |annot|, which is an interactive form annotation.
+// |buffer| is only modified if |buflen| is longer than the length of contents.
+// In case of error, nothing will be added to |buffer| and the return value will
+// be 0. Note that return value of empty string is 2 for "\0\0".
+//
+//    hHandle     -   handle to the form fill module, returned by
+//                    FPDFDOC_InitFormFillEnvironment().
+//    annot       -   handle to an interactive form annotation.
+//    buffer      -   buffer for holding the name string, encoded in UTF-16LE.
+//    buflen      -   length of the buffer in bytes.
+//
+// Returns the length of the string value in bytes.
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetFormFieldName(FPDF_FORMHANDLE hHandle,
+                           FPDF_ANNOTATION annot,
+                           FPDF_WCHAR* buffer,
+                           unsigned long buflen);
+
+// Experimental API.
+// Gets the form field type of |annot|, which is an interactive form annotation.
+//
+//    hHandle     -   handle to the form fill module, returned by
+//                    FPDFDOC_InitFormFillEnvironment().
+//    annot       -   handle to an interactive form annotation.
+//
+// Returns the type of the form field (one of the FPDF_FORMFIELD_* values) on
+// success. Returns -1 on error.
+// See field types in fpdf_formfill.h.
+FPDF_EXPORT int FPDF_CALLCONV
+FPDFAnnot_GetFormFieldType(FPDF_FORMHANDLE hHandle, FPDF_ANNOTATION annot);
+
+// Experimental API.
+// Gets the value of |annot|, which is an interactive form annotation.
+// |buffer| is only modified if |buflen| is longer than the length of contents.
+// In case of error, nothing will be added to |buffer| and the return value will
+// be 0. Note that return value of empty string is 2 for "\0\0".
+//
+//    hHandle     -   handle to the form fill module, returned by
+//                    FPDFDOC_InitFormFillEnvironment().
+//    annot       -   handle to an interactive form annotation.
+//    buffer      -   buffer for holding the value string, encoded in UTF-16LE.
+//    buflen      -   length of the buffer in bytes.
+//
+// Returns the length of the string value in bytes.
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFAnnot_GetFormFieldValue(FPDF_FORMHANDLE hHandle,
+                            FPDF_ANNOTATION annot,
+                            FPDF_WCHAR* buffer,
+                            unsigned long buflen);
 
 // Experimental API.
 // Get the number of options in the |annot|'s "Opt" dictionary. Intended for
@@ -578,6 +657,22 @@ FPDFAnnot_GetOptionLabel(FPDF_FORMHANDLE hHandle,
                          unsigned long buflen);
 
 // Experimental API.
+// Determine whether or not the option at |index| in |annot|'s "Opt" dictionary
+// is selected. Intended for use with listbox and combobox widget annotations.
+//
+//   handle  - handle to the form fill module, returned by
+//             FPDFDOC_InitFormFillEnvironment.
+//   annot   - handle to an annotation.
+//   index   - numeric index of the option in the "Opt" array.
+//
+// Returns true if the option at |index| in |annot|'s "Opt" dictionary is
+// selected, false otherwise.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_IsOptionSelected(FPDF_FORMHANDLE handle,
+                           FPDF_ANNOTATION annot,
+                           int index);
+
+// Experimental API.
 // Get the float value of the font size for an |annot| with variable text.
 // If 0, the font is to be auto-sized: its size is computed as a function of
 // the height of the annotation rectangle.
@@ -605,6 +700,60 @@ FPDFAnnot_GetFontSize(FPDF_FORMHANDLE hHandle,
 // Returns true if |annot| is a form widget and is checked, false otherwise.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_IsChecked(FPDF_FORMHANDLE hHandle,
                                                         FPDF_ANNOTATION annot);
+
+// Experimental API.
+// Set the list of focusable annotation subtypes. Annotations of subtype
+// FPDF_ANNOT_WIDGET are by default focusable. New subtypes set using this API
+// will override the existing subtypes.
+//
+//   hHandle  - handle to the form fill module, returned by
+//              FPDFDOC_InitFormFillEnvironment.
+//   subtypes - list of annotation subtype which can be tabbed over.
+//   count    - total number of annotation subtype in list.
+// Returns true if list of annotation subtype is set successfully, false
+// otherwise.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_SetFocusableSubtypes(FPDF_FORMHANDLE hHandle,
+                               const FPDF_ANNOTATION_SUBTYPE* subtypes,
+                               size_t count);
+
+// Experimental API.
+// Get the count of focusable annotation subtypes as set by host
+// for a |hHandle|.
+//
+//   hHandle  - handle to the form fill module, returned by
+//              FPDFDOC_InitFormFillEnvironment.
+// Returns the count of focusable annotation subtypes or -1 on error.
+// Note : Annotations of type FPDF_ANNOT_WIDGET are by default focusable.
+FPDF_EXPORT int FPDF_CALLCONV
+FPDFAnnot_GetFocusableSubtypesCount(FPDF_FORMHANDLE hHandle);
+
+// Experimental API.
+// Get the list of focusable annotation subtype as set by host.
+//
+//   hHandle  - handle to the form fill module, returned by
+//              FPDFDOC_InitFormFillEnvironment.
+//   subtypes - receives the list of annotation subtype which can be tabbed
+//              over. Caller must have allocated |subtypes| more than or
+//              equal to the count obtained from
+//              FPDFAnnot_GetFocusableSubtypesCount() API.
+//   count    - size of |subtypes|.
+// Returns true on success and set list of annotation subtype to |subtypes|,
+// false otherwise.
+// Note : Annotations of type FPDF_ANNOT_WIDGET are by default focusable.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFAnnot_GetFocusableSubtypes(FPDF_FORMHANDLE hHandle,
+                               FPDF_ANNOTATION_SUBTYPE* subtypes,
+                               size_t count);
+
+// Experimental API.
+// Gets FPDF_LINK object for |annot|. Intended to use for link annotations.
+//
+//   annot   - handle to an annotation.
+//
+// Returns FPDF_LINK from the FPDF_ANNOTATION and NULL on failure,
+// if the input annot is NULL or input annot's subtype is not link.
+FPDF_EXPORT FPDF_LINK FPDF_CALLCONV FPDFAnnot_GetLink(FPDF_ANNOTATION annot);
 
 #ifdef __cplusplus
 }  // extern "C"

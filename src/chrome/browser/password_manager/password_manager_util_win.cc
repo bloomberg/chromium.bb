@@ -28,6 +28,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/win_util.h"
@@ -254,8 +255,7 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
   if (need_recheck) {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
-    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
-        FROM_HERE);
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
     HANDLE handle = INVALID_HANDLE_VALUE;
 
@@ -340,12 +340,11 @@ void GetOsPasswordStatus() {
   PasswordCheckPrefs* prefs_weak = prefs.get();
   OsPasswordStatus* status_weak = status.get();
   // This task calls ::LogonUser(), hence MayBlock().
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
-      base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
-                 base::Passed(&status)));
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
+      base::BindOnce(&ReplyOsPasswordStatus, base::Passed(&prefs),
+                     base::Passed(&status)));
 }
 
 // Authenticate the user using the old Windows credential prompt.
@@ -365,6 +364,14 @@ bool AuthenticateUserOld(gfx::NativeWindow window,
     case password_manager::ReauthPurpose::VIEW_PASSWORD:
       password_prompt =
           l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::COPY_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_COPY_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EDIT_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EDIT_AUTHENTICATION_PROMPT);
       break;
     case password_manager::ReauthPurpose::EXPORT:
       password_prompt = l10n_util::GetStringUTF16(
@@ -485,6 +492,14 @@ bool AuthenticateUserNew(gfx::NativeWindow window,
     case password_manager::ReauthPurpose::VIEW_PASSWORD:
       password_prompt =
           l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::COPY_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_COPY_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EDIT_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EDIT_AUTHENTICATION_PROMPT);
       break;
     case password_manager::ReauthPurpose::EXPORT:
       password_prompt = l10n_util::GetStringUTF16(

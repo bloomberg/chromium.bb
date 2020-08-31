@@ -27,6 +27,10 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
+  float GetBorderRadiusForPart(Part part,
+                               float width,
+                               float height,
+                               float zoom) const override;
   void Paint(cc::PaintCanvas* canvas,
              Part part,
              State state,
@@ -44,22 +48,29 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
     kBorder,
     kDisabledBorder,
     kHoveredBorder,
+    kPressedBorder,
     kAccent,
     kDisabledAccent,
     kHoveredAccent,
+    kPressedAccent,
     kBackground,
     kDisabledBackground,
     kFill,
     kDisabledFill,
     kHoveredFill,
+    kPressedFill,
     kLightenLayer,
     kProgressValue,
     kSlider,
     kDisabledSlider,
-    kHoveredSlider
+    kHoveredSlider,
+    kPressedSlider,
+    kAutoCompleteBackground
   };
 
+  using NativeTheme::NativeTheme;
   NativeThemeBase();
+  explicit NativeThemeBase(bool should_only_use_dark_colors);
   ~NativeThemeBase() override;
 
   // Draw the arrow. Used by scrollbar and inner spin button.
@@ -203,7 +214,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   // Returns the color used to draw the arrow.
   SkColor GetArrowColor(State state, ColorScheme color_scheme) const;
 
-  int scrollbar_width_;
+  int scrollbar_width_ = 15;
 
  private:
   friend class NativeThemeAuraTest;
@@ -248,6 +259,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                                       ColorScheme color_scheme) const;
   SkColor GetHighContrastControlColor(ControlColorId color_id,
                                       ColorScheme color_scheme) const;
+  SkColor GetDarkModeControlColor(ControlColorId color_id) const;
   SkColor GetControlColor(ControlColorId color_id,
                           ColorScheme color_scheme) const;
   SkRect AlignSliderTrack(const gfx::Rect& slider_rect,
@@ -256,7 +268,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                           float track_height) const;
 
   // The length of the arrow buttons, 0 means no buttons are drawn.
-  int scrollbar_button_length_;
+  int scrollbar_button_length_ = 14;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);
 };

@@ -48,21 +48,21 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
  public:
   class Factory {
    public:
-    static std::unique_ptr<RemoteDeviceProvider> NewInstance(
+    static std::unique_ptr<RemoteDeviceProvider> Create(
         CryptAuthDeviceManager* v1_device_manager,
         CryptAuthV2DeviceManager* v2_device_manager,
-        const CoreAccountId& user_account_id,
+        const std::string& user_email,
         const std::string& user_private_key);
 
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetFactoryForTesting(Factory* factory);
 
    protected:
     virtual ~Factory();
-    virtual std::unique_ptr<RemoteDeviceProvider> BuildInstance(
+    virtual std::unique_ptr<RemoteDeviceProvider> CreateInstance(
         CryptAuthDeviceManager* v1_device_manager,
         CryptAuthV2DeviceManager* v2_device_manager,
-        const CoreAccountId& user_account_id,
-        const std::string& user_private_key);
+        const std::string& user_email,
+        const std::string& user_private_key) = 0;
 
    private:
     static Factory* factory_instance_;
@@ -70,7 +70,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
 
   RemoteDeviceProviderImpl(CryptAuthDeviceManager* v1_device_manager,
                            CryptAuthV2DeviceManager* v2_device_manager,
-                           const CoreAccountId& user_account_id,
+                           const std::string& user_email,
                            const std::string& user_private_key);
 
   ~RemoteDeviceProviderImpl() override;
@@ -100,15 +100,15 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   void MergeV1andV2SyncedDevices();
 
   // To get cryptauth::ExternalDeviceInfo needed to retrieve RemoteDevices. Null
-  // if v1 DeviceSync is deprecated.
+  // if v1 DeviceSync is disabled.
   CryptAuthDeviceManager* v1_device_manager_;
 
   // Used to retrieve CryptAuthDevices from the last v2 DeviceSync. Null if v2
   // DeviceSync is disabled.
   CryptAuthV2DeviceManager* v2_device_manager_;
 
-  // The account ID of the current user.
-  const CoreAccountId user_account_id_;
+  // The email of the current user.
+  const std::string user_email_;
 
   // The private key used to generate RemoteDevices.
   const std::string user_private_key_;

@@ -19,14 +19,13 @@ namespace cssvalue {
 class CSSLayoutFunctionValue : public CSSValue {
  public:
   CSSLayoutFunctionValue(CSSCustomIdentValue* name, bool is_inline);
-  ~CSSLayoutFunctionValue();
 
   String CustomCSSText() const;
   AtomicString GetName() const;
   bool IsInline() const { return is_inline_; }
 
   bool Equals(const CSSLayoutFunctionValue&) const;
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   Member<CSSCustomIdentValue> name_;

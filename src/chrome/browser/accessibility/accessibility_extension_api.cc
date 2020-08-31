@@ -33,7 +33,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -46,6 +45,7 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -87,7 +87,7 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
 
 #if defined(OS_CHROMEOS)
   Profile* profile = chromeos::AccessibilityManager::Get()->profile();
-  if (chrome::IsOSSettingsSubPage(params->subpage)) {
+  if (chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
   }
@@ -127,12 +127,11 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
       return RespondNow(Error("Could not parse hex color"));
     }
 
-    if (focus_ring_info.secondary_color) {
-      if (!extensions::image_util::ParseHexColorString(
-              *(focus_ring_info.secondary_color),
-              &(focus_ring->secondary_color))) {
-        return RespondNow(Error("Could not parse secondary hex color"));
-      }
+    if (focus_ring_info.secondary_color &&
+        !extensions::image_util::ParseHexColorString(
+            *(focus_ring_info.secondary_color),
+            &(focus_ring->secondary_color))) {
+      return RespondNow(Error("Could not parse secondary hex color"));
     }
 
     switch (focus_ring_info.type) {
@@ -147,6 +146,13 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
         break;
       default:
         NOTREACHED();
+    }
+
+    if (focus_ring_info.background_color &&
+        !extensions::image_util::ParseHexColorString(
+            *(focus_ring_info.background_color),
+            &(focus_ring->background_color))) {
+      return RespondNow(Error("Could not parse background hex color"));
     }
 
     // Update the touch exploration controller so that synthesized touch events
@@ -415,6 +421,7 @@ AccessibilityPrivateToggleDictationFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
+  // TODO(anastasi): Remove this function once menu refactor is complete.
   std::unique_ptr<accessibility_private::SetSwitchAccessMenuState::Params>
       params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
           *args_);
@@ -474,6 +481,54 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
   ash::AccessibilityController::Get()->ForwardKeyEventsToSwitchAccess(
       params->should_forward);
 
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
+  std::unique_ptr<accessibility_private::UpdateSwitchAccessBubble::Params>
+      params = accessibility_private::UpdateSwitchAccessBubble::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (!params->show) {
+    if (params->bubble ==
+        accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON)
+      ash::AccessibilityController::Get()->HideSwitchAccessBackButton();
+    else if (params->bubble == accessibility_private::SWITCH_ACCESS_BUBBLE_MENU)
+      ash::AccessibilityController::Get()->HideSwitchAccessMenu();
+    return RespondNow(NoArguments());
+  }
+
+  if (!params->anchor)
+    return RespondNow(Error("An anchor rect is required to show a bubble."));
+
+  gfx::Rect anchor(params->anchor->left, params->anchor->top,
+                   params->anchor->width, params->anchor->height);
+
+  if (params->bubble ==
+      accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON) {
+    ash::AccessibilityController::Get()->ShowSwitchAccessBackButton(anchor);
+    return RespondNow(NoArguments());
+  }
+
+  if (!params->actions)
+    return RespondNow(Error("The menu cannot be shown without actions."));
+
+  std::vector<std::string> actions_to_show;
+  for (accessibility_private::SwitchAccessMenuAction extension_action :
+       *(params->actions)) {
+    std::string action = accessibility_private::ToString(extension_action);
+    // Check that this action is not already in our actions list.
+    if (std::find(actions_to_show.begin(), actions_to_show.end(), action) !=
+        actions_to_show.end()) {
+      continue;
+    }
+    actions_to_show.push_back(action);
+  }
+
+  ash::AccessibilityController::Get()->ShowSwitchAccessMenu(anchor,
+                                                            actions_to_show);
   return RespondNow(NoArguments());
 }
 

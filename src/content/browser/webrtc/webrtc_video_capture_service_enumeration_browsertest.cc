@@ -9,6 +9,7 @@
 #include "content/public/browser/video_capture_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -205,6 +206,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Note: We are not planning to actually use any fake device, but we want
     // to avoid enumerating or otherwise calling into real capture devices.
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kUseFakeDeviceForMediaStream,
                                     "device-count=0");
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);

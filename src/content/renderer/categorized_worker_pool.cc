@@ -80,7 +80,6 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
                        base::TimeDelta delay) override {
     return PostNonNestableDelayedTask(from_here, std::move(task), delay);
   }
-  bool RunsTasksInCurrentSequence() const override { return true; }
 
   // Overridden from base::SequencedTaskRunner:
   bool PostNonNestableDelayedTask(const base::Location& from_here,
@@ -120,6 +119,8 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
     completed_tasks_.clear();
     return true;
   }
+
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
  private:
   ~CategorizedWorkerPoolSequencedTaskRunner() override {
@@ -238,9 +239,10 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
   DCHECK(completed_tasks_.empty());
   CollectCompletedTasksWithLockAcquired(namespace_token_, &completed_tasks_);
 
-  base::EraseIf(tasks_, [this](const scoped_refptr<cc::Task>& e) {
-    return base::Contains(this->completed_tasks_, e);
-  });
+  base::EraseIf(tasks_, [this](const scoped_refptr<cc::Task>& e)
+                            EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+                              return base::Contains(this->completed_tasks_, e);
+                            });
 
   tasks_.push_back(base::MakeRefCounted<ClosureTask>(std::move(task)));
   graph_.Reset();
@@ -254,10 +256,6 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
 
   ScheduleTasksWithLockAcquired(namespace_token_, &graph_);
   completed_tasks_.clear();
-  return true;
-}
-
-bool CategorizedWorkerPool::RunsTasksInCurrentSequence() const {
   return true;
 }
 

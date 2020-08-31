@@ -68,9 +68,14 @@ export const DeviceReportingType = {
   DEVICE_ACTIVITY: 'device activity',
   STATISTIC: 'device statistics',
   DEVICE: 'device',
+  CRASH_REPORT: 'crash report',
   LOGS: 'logs',
   PRINT: 'print',
-  CROSTINI: 'crostini'
+  CROSTINI: 'crostini',
+  USERNAME: 'username',
+  EXTENSION: 'extension',
+  ANDROID_APPLICATION: 'android application',
+  PROXY_SERVER: 'proxy server'
 };
 
 

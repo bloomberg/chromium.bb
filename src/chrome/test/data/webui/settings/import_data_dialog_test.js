@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.ImportDataBrowserProxy} */
+// clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ImportDataBrowserProxyImpl, ImportDataStatus} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
+/** @implements {ImportDataBrowserProxy} */
 class TestImportDataBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -11,11 +18,11 @@ class TestImportDataBrowserProxy extends TestBrowserProxy {
       'importData',
     ]);
 
-    /** @private {!Array<!settings.BrowserProfile} */
+    /** @private {!Array<!BrowserProfile} */
     this.browserProfiles_ = [];
   }
 
-  /** @param {!Array<!settings.BrowserProfile} browserProfiles */
+  /** @param {!Array<!BrowserProfile} browserProfiles */
   setBrowserProfiles(browserProfiles) {
     this.browserProfiles_ = browserProfiles;
   }
@@ -32,13 +39,13 @@ class TestImportDataBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  importData(browserProfileIndex) {
-    this.methodCalled('importData', browserProfileIndex);
+  importData(browserProfileIndex, types) {
+    this.methodCalled('importData', [browserProfileIndex, types]);
   }
 }
 
 suite('ImportDataDialog', function() {
-  /** @type {!Array<!settings.BrowserProfile} */
+  /** @type {!Array<!BrowserProfile} */
   const browserProfiles = [
     {
       autofillFormData: true,
@@ -50,10 +57,20 @@ suite('ImportDataDialog', function() {
       search: true
     },
     {
+      autofillFormData: true,
+      favorites: true,
+      history: true,
+      index: 1,
+      name: 'Mozilla Firefox',
+      passwords: true,
+      profileName: 'My profile',
+      search: true
+    },
+    {
       autofillFormData: false,
       favorites: true,
       history: false,
-      index: 1,
+      index: 2,
       name: 'Bookmarks HTML File',
       passwords: false,
       search: false
@@ -69,8 +86,10 @@ suite('ImportDataDialog', function() {
   }
 
   const prefs = {};
-  ['import_dialog_history', 'import_dialog_bookmarks',
-   'import_dialog_saved_passwords', 'import_dialog_search_engine',
+  ['import_dialog_history',
+   'import_dialog_bookmarks',
+   'import_dialog_saved_passwords',
+   'import_dialog_search_engine',
    'import_dialog_autofill_form_data',
   ].forEach(function(name) {
     prefs[name] = createBooleanPref(name);
@@ -78,17 +97,19 @@ suite('ImportDataDialog', function() {
 
   let dialog = null;
 
+  let browserProxy = null;
+
   setup(function() {
     browserProxy = new TestImportDataBrowserProxy();
     browserProxy.setBrowserProfiles(browserProfiles);
-    settings.ImportDataBrowserProxyImpl.instance_ = browserProxy;
+    ImportDataBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-import-data-dialog');
     dialog.set('prefs', prefs);
     document.body.appendChild(dialog);
     return browserProxy.whenCalled('initializeImportDialog').then(function() {
       assertTrue(dialog.$.dialog.open);
-      Polymer.dom.flush();
+      flush();
     });
   });
 
@@ -104,6 +125,18 @@ suite('ImportDataDialog', function() {
     assertFalse(dialog.$.cancel.disabled);
     assertTrue(dialog.$.done.hidden);
     assertTrue(dialog.$.successIcon.parentElement.hidden);
+
+    // Check that the displayed text correctly combines browser name and profile
+    // name (if any).
+    const expectedText = [
+      'Mozilla Firefox',
+      'Mozilla Firefox - My profile',
+      'Bookmarks HTML File',
+    ];
+
+    Array.from(dialog.$.browserSelect.options).forEach((option, i) => {
+      assertEquals(expectedText[i], option.textContent.trim());
+    });
   });
 
   test('ImportButton', function() {
@@ -116,7 +149,7 @@ suite('ImportDataDialog', function() {
     assertTrue(dialog.$.import.disabled);
 
     // Change browser selection to "Import from Bookmarks HTML file".
-    simulateBrowserProfileChange(1);
+    simulateBrowserProfileChange(2);
     assertTrue(dialog.$.import.disabled);
 
     // Ensure everything except |import_dialog_bookmarks| is ignored.
@@ -145,19 +178,19 @@ suite('ImportDataDialog', function() {
     assertTrue(dialog.$$('paper-spinner-lite').hidden);
   }
 
-  /** @param {!settings.ImportDataStatus} status */
+  /** @param {!ImportDataStatus} status */
   function simulateImportStatusChange(status) {
-    cr.webUIListenerCallback('import-data-status-changed', status);
+    webUIListenerCallback('import-data-status-changed', status);
   }
 
   test('ImportFromBookmarksFile', function() {
-    simulateBrowserProfileChange(1);
+    simulateBrowserProfileChange(2);
     dialog.$.import.click();
     return browserProxy.whenCalled('importFromBookmarksFile').then(function() {
-      simulateImportStatusChange(settings.ImportDataStatus.IN_PROGRESS);
+      simulateImportStatusChange(ImportDataStatus.IN_PROGRESS);
       assertInProgressButtons();
 
-      simulateImportStatusChange(settings.ImportDataStatus.SUCCEEDED);
+      simulateImportStatusChange(ImportDataStatus.SUCCEEDED);
       assertSucceededButtons();
 
       assertFalse(dialog.$.successIcon.parentElement.hidden);
@@ -167,17 +200,22 @@ suite('ImportDataDialog', function() {
 
   test('ImportFromBrowserProfile', function() {
     dialog.set('prefs.import_dialog_bookmarks.value', false);
+    dialog.set('prefs.import_dialog_search_engine.value', true);
 
     const expectedIndex = 0;
     simulateBrowserProfileChange(expectedIndex);
     dialog.$.import.click();
-    return browserProxy.whenCalled('importData').then(function(actualIndex) {
-      assertEquals(expectedIndex, actualIndex);
 
-      simulateImportStatusChange(settings.ImportDataStatus.IN_PROGRESS);
+    const importCalled = browserProxy.whenCalled('importData');
+    return importCalled.then(([actualIndex, types]) => {
+      assertEquals(expectedIndex, actualIndex);
+      assertFalse(types['import_dialog_bookmarks']);
+      assertTrue(types['import_dialog_search_engine']);
+
+      simulateImportStatusChange(ImportDataStatus.IN_PROGRESS);
       assertInProgressButtons();
 
-      simulateImportStatusChange(settings.ImportDataStatus.SUCCEEDED);
+      simulateImportStatusChange(ImportDataStatus.SUCCEEDED);
       assertSucceededButtons();
 
       assertFalse(dialog.$.successIcon.parentElement.hidden);
@@ -186,7 +224,7 @@ suite('ImportDataDialog', function() {
   });
 
   test('ImportError', function() {
-    simulateImportStatusChange(settings.ImportDataStatus.FAILED);
+    simulateImportStatusChange(ImportDataStatus.FAILED);
     assertFalse(dialog.$.dialog.open);
   });
 });

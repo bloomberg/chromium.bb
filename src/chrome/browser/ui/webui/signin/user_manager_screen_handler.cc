@@ -484,13 +484,11 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   // not needing authentication.  If it is, just ignore the "launch" request.
   if (entry->IsSigninRequired())
     return;
-  ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
   profiles::SwitchToProfile(
       profile_path, false, /* reuse any existing windows */
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
-      ProfileMetrics::SWITCH_PROFILE_MANAGER);
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
@@ -515,8 +513,8 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
   } else {
     g_browser_process->profile_manager()->LoadProfileByPath(
         profile_path, false,
-        base::Bind(&UserManagerScreenHandler::GatherStatistics,
-                   weak_ptr_factory_.GetWeakPtr(), start_time));
+        base::BindOnce(&UserManagerScreenHandler::GatherStatistics,
+                       weak_ptr_factory_.GetWeakPtr(), start_time));
   }
 }
 
@@ -540,11 +538,6 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
     auto stat = std::make_unique<base::DictionaryValue>();
     stat->SetKey("count", base::Value(item.count));
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
-  }
-  if (result.size() == profiles::kProfileStatisticsCategories.size()) {
-    // All categories are finished.
-    UMA_HISTOGRAM_TIMES("Profile.RemoveUserWarningStatsTime",
-                        base::Time::Now() - start_time);
   }
   web_ui()->CallJavascriptFunctionUnsafe("updateRemoveWarningDialog",
                                          base::Value(profile_path.value()),
@@ -614,6 +607,7 @@ void UserManagerScreenHandler::RegisterMessages() {
   // Unused callbacks from display_manager.js
   web_ui()->RegisterMessageCallback("showAddUser", base::DoNothing());
   web_ui()->RegisterMessageCallback("updateCurrentScreen", base::DoNothing());
+  web_ui()->RegisterMessageCallback("updateOobeUIState", base::DoNothing());
   web_ui()->RegisterMessageCallback("loginVisible", base::DoNothing());
   // Unused callbacks from user_pod_row.js
   web_ui()->RegisterMessageCallback("focusPod", base::DoNothing());
@@ -838,15 +832,13 @@ void UserManagerScreenHandler::SendUserList() {
 void UserManagerScreenHandler::ReportAuthenticationResult(
     bool success,
     ProfileMetrics::ProfileAuth auth) {
-  ProfileMetrics::LogProfileAuthResult(auth);
   email_address_.clear();
 
   if (success) {
     profiles::SwitchToProfile(
         authenticating_profile_path_, true,
         base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
-                   weak_ptr_factory_.GetWeakPtr()),
-        ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
         "cr.ui.UserManager.showSignInError", base::Value(0),

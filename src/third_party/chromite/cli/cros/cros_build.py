@@ -7,6 +7,9 @@
 
 from __future__ import print_function
 
+import subprocess
+import sys
+
 from chromite.cli import command
 from chromite.lib import chroot_util
 from chromite.lib import commandline
@@ -15,6 +18,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import operation
 from chromite.lib import parallel
 from chromite.lib import workon_helper
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BrilloBuildOperation(operation.ParallelEmergeOperation):
@@ -120,7 +126,7 @@ To just build a single package:
       cmd = chroot_util.GetEmergeCommand(sysroot=self.sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
-        cros_build_lib.run(cmd, combine_stdout_stderr=True,
+        cros_build_lib.run(cmd, stderr=subprocess.STDOUT,
                            debug_level=logging.DEBUG)
       except cros_build_lib.RunCommandError as ex:
         ex.msg += self._BAD_DEPEND_MSG

@@ -37,7 +37,6 @@ WaylandTest::WaylandTest()
   buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
   surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
       connection_.get(), buffer_manager_gpu_.get());
-  window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 
 WaylandTest::~WaylandTest() {}
@@ -52,8 +51,11 @@ void WaylandTest::SetUp() {
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 800, 600);
   properties.type = PlatformWindowType::kWindow;
-  ASSERT_TRUE(window_->Initialize(std::move(properties)));
+  window_ = WaylandWindow::Create(&delegate_, connection_.get(),
+                                  std::move(properties));
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
+
+  window_->Show(false);
 
   // Wait for the client to flush all pending requests from initialization.
   base::RunLoop().RunUntilIdle();

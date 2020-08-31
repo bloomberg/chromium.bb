@@ -12,10 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "cc/metrics/video_playback_roughness_reporter.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/task_runner_provider.h"
@@ -37,6 +39,7 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
@@ -102,19 +105,12 @@ class VideoMockCompositorFrameSink
   }
 
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
-
-  MOCK_METHOD2(DidAllocateSharedBitmap_,
-               void(base::ReadOnlySharedMemoryRegion* region,
-                    gpu::mojom::blink::MailboxPtr* id));
-  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
-                               gpu::mojom::blink::MailboxPtr id) override {
-    DidAllocateSharedBitmap_(&region, &id);
-  }
-
-  MOCK_METHOD1(DidDeleteSharedBitmap_, void(gpu::mojom::blink::MailboxPtr* id));
-  void DidDeleteSharedBitmap(gpu::mojom::blink::MailboxPtr id) override {
-    DidDeleteSharedBitmap_(&id);
-  }
+  MOCK_METHOD2(DidAllocateSharedBitmap,
+               void(base::ReadOnlySharedMemoryRegion region,
+                    const gpu::Mailbox& id));
+  MOCK_METHOD1(DidDeleteSharedBitmap, void(const gpu::Mailbox& id));
+  MOCK_METHOD1(InitializeCompositorFrameSinkType,
+               void(viz::mojom::CompositorFrameSinkType));
 
  private:
   mojo::Receiver<viz::mojom::blink::CompositorFrameSink> receiver_{this};
@@ -169,14 +165,16 @@ class VideoFrameSubmitterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void MakeSubmitter() {
+  void MakeSubmitter() { MakeSubmitter(base::DoNothing()); }
+
+  void MakeSubmitter(cc::PlaybackRoughnessReportingCallback reporting_cb) {
     resource_provider_ = new StrictMock<MockVideoFrameResourceProvider>(
         context_provider_.get(), nullptr);
     submitter_ = std::make_unique<VideoFrameSubmitter>(
-        base::DoNothing(),
+        base::DoNothing(), reporting_cb,
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
-    submitter_->Initialize(video_frame_provider_.get());
+    submitter_->Initialize(video_frame_provider_.get(), false);
     mojo::PendingRemote<viz::mojom::blink::CompositorFrameSink> submitter_sink;
     sink_ = std::make_unique<StrictMock<VideoMockCompositorFrameSink>>(
         submitter_sink.InitWithNewPipeAndPassReceiver());
@@ -307,8 +305,8 @@ TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
 
   // No frames should be produced after StopRendering().
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
-  begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
-                                            now_src_.get());
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }
@@ -498,6 +496,8 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }
@@ -640,6 +640,27 @@ TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
   task_environment_.RunUntilIdle();
 }
 
+// Test that after context is lost, the CompositorFrameSink is recreated but the
+// SurfaceEmbedder isn't even with software compositing.
+TEST_F(VideoFrameSubmitterTest,
+       RecreateCompositorFrameSinkAfterContextLostSoftwareCompositing) {
+  MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  auto override =
+      mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
+          &embedded_frame_sink_provider_binding);
+
+  EXPECT_CALL(*resource_provider_, Initialize(_, _));
+  EXPECT_CALL(mock_embedded_frame_sink_provider, ConnectToEmbedder(_, _))
+      .Times(0);
+  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_))
+      .Times(1);
+  submitter_->OnContextLost();
+  OnReceivedContextProvider(false, nullptr);
+  task_environment_.RunUntilIdle();
+}
+
 // This test simulates a race condition in which the |video_frame_provider_| is
 // destroyed before OnReceivedContextProvider returns.
 TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
@@ -662,7 +683,7 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
 }
 
 // Test the behaviour of the ChildLocalSurfaceIdAllocator instance. It checks
-// that the LocalSurfaceId is propoerly set at creation and updated when the
+// that the LocalSurfaceId is properly set at creation and updated when the
 // video frames change.
 TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
@@ -893,6 +914,8 @@ TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesOnBeginFrame) {
       .WillOnce(Return(true));
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
 }
@@ -926,6 +949,68 @@ TEST_F(VideoFrameSubmitterTest, ZeroSizedFramesAreNotSubmitted) {
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(0);
   submitter_->DidReceiveFrame();
   task_environment_.RunUntilIdle();
+}
+
+// Check that given enough frames with wallclock duration and enough
+// presentation feedback data, VideoFrameSubmitter will call the video roughness
+// reporting callback.
+TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
+  int fps = 24;
+  int reports = 0;
+  base::TimeDelta frame_duration = base::TimeDelta::FromSecondsD(1.0 / fps);
+  int frames_to_run =
+      (fps / 2) *
+      (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
+  WTF::HashMap<uint32_t, viz::mojom::blink::FrameTimingDetailsPtr>
+      timing_details;
+
+  MakeSubmitter(
+      base::BindLambdaForTesting([&](int frames, base::TimeDelta duration,
+                                     double roughness) { reports++; }));
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  submitter_->StartRendering();
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(IsRendering());
+
+  auto sink_submit = [&](const viz::LocalSurfaceId&,
+                         viz::CompositorFrame* frame) {
+    auto token = frame->metadata.frame_token;
+    viz::mojom::blink::FrameTimingDetailsPtr details =
+        viz::mojom::blink::FrameTimingDetails::New();
+    details->presentation_feedback =
+        gfx::mojom::blink::PresentationFeedback::New();
+    details->presentation_feedback->timestamp =
+        base::TimeTicks() + frame_duration * token;
+    timing_details.clear();
+    timing_details.Set(token, std::move(details));
+  };
+
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame).Times(AnyNumber());
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame)
+      .WillRepeatedly(Invoke(sink_submit));
+  EXPECT_CALL(*resource_provider_, AppendQuads).Times(AnyNumber());
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent).Times(AnyNumber());
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources).Times(AnyNumber());
+
+  for (int i = 0; i < frames_to_run; i++) {
+    auto frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+        gfx::Size(8, 8), i * frame_duration);
+    frame->metadata()->SetTimeDelta(
+        media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION, frame_duration);
+    EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+        .WillRepeatedly(Return(frame));
+
+    auto args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                          now_src_.get());
+    submitter_->OnBeginFrame(args, std::move(timing_details));
+    task_environment_.RunUntilIdle();
+    AckSubmittedFrame();
+  }
+  submitter_->StopRendering();
+  EXPECT_EQ(reports, 1);
 }
 
 }  // namespace blink

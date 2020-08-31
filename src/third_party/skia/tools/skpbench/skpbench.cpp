@@ -6,6 +6,7 @@
  */
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkDeferredDisplayList.h"
 #include "include/core/SkGraphics.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkPictureRecorder.h"
@@ -13,7 +14,6 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkSurfaceProps.h"
 #include "include/effects/SkPerlinNoiseShader.h"
-#include "include/private/SkDeferredDisplayList.h"
 #include "src/core/SkOSFile.h"
 #include "src/core/SkTaskGroup.h"
 #include "src/gpu/GrCaps.h"
@@ -28,6 +28,7 @@
 #include "tools/flags/CommandLineFlags.h"
 #include "tools/flags/CommonFlags.h"
 #include "tools/flags/CommonFlagsConfig.h"
+#include "tools/gpu/FlushFinishTracker.h"
 #include "tools/gpu/GpuTimer.h"
 #include "tools/gpu/GrContextFactory.h"
 
@@ -62,7 +63,9 @@ static DEFINE_bool(ddl, false, "record the skp into DDLs before rendering");
 static DEFINE_int(ddlNumAdditionalThreads, 0,
                     "number of DDL recording threads in addition to main one");
 static DEFINE_int(ddlTilingWidthHeight, 0, "number of tiles along one edge when in DDL mode");
-static DEFINE_bool(ddlRecordTime, false, "report just the cpu time spent recording DDLs");
+
+static DEFINE_bool(comparableDDL, false, "render in a way that is comparable to 'comparableSKP'");
+static DEFINE_bool(comparableSKP, false, "report in a way that is comparable to 'comparableDDL'");
 
 static DEFINE_int(duration, 5000, "number of milliseconds to run the benchmark");
 static DEFINE_int(sampleMs, 50, "minimum duration of a sample");
@@ -73,12 +76,13 @@ static DEFINE_string(src, "",
 static DEFINE_string(png, "", "if set, save a .png proof to disk at this file location");
 static DEFINE_int(verbosity, 4, "level of verbosity (0=none to 5=debug)");
 static DEFINE_bool(suppressHeader, false, "don't print a header row before the results");
+static DEFINE_double(scale, 1, "Scale the size of the canvas and the zoom level by this factor.");
 
-static const char* header =
+static const char header[] =
 "   accum    median       max       min   stddev  samples  sample_ms  clock  metric  config    bench";
 
-static const char* resultFormat =
-"%8.4g  %8.4g  %8.4g  %8.4g  %6.3g%%  %7li  %9i  %-5s  %-6s  %-9s %s";
+static const char resultFormat[] =
+"%8.4g  %8.4g  %8.4g  %8.4g  %6.3g%%  %7zu  %9i  %-5s  %-6s  %-9s %s";
 
 static constexpr int kNumFlushesToPrimeCache = 3;
 
@@ -97,16 +101,17 @@ struct Sample {
 
 class GpuSync {
 public:
-    GpuSync(const sk_gpu_test::FenceSync* fenceSync);
-    ~GpuSync();
+    GpuSync() {}
+    ~GpuSync() {}
 
-    void syncToPreviousFrame();
+    void waitIfNeeded();
+
+    sk_gpu_test::FlushFinishTracker* newFlushTracker(GrContext* context);
 
 private:
-    void updateFence();
-
-    const sk_gpu_test::FenceSync* const   fFenceSync;
-    sk_gpu_test::PlatformFence            fFence;
+    enum { kMaxFrameLag = 3 };
+    sk_sp<sk_gpu_test::FlushFinishTracker> fFinishTrackers[kMaxFrameLag - 1];
+    int fCurrentFlushIdx = 0;
 };
 
 enum class ExitErr {
@@ -118,7 +123,8 @@ enum class ExitErr {
     kSoftware     = 70
 };
 
-static void draw_skp_and_flush(SkSurface*, const SkPicture*);
+static void flush_with_sync(GrContext*, GpuSync&);
+static void draw_skp_and_flush_with_sync(GrContext*, SkSurface*, const SkPicture*, GpuSync&);
 static sk_sp<SkPicture> create_warmup_skp();
 static sk_sp<SkPicture> create_skp_from_svg(SkStream*, const char* filename);
 static bool mkdir_p(const SkString& name);
@@ -127,25 +133,25 @@ static void exitf(ExitErr, const char* format, ...);
 
 // An interface used by both static SKPs and animated SKPs
 class SkpProducer {
- public:
-  virtual ~SkpProducer() {}
-  // Draw an SkPicture to the provided surface, flush the surface, and sync the GPU.
-  // You may use the static draw_skp_and_flush declared above.
-  // returned int tells how many draw/flush/sync were done.
-  virtual int drawAndFlushAndSync(SkSurface* surface, GpuSync& gpuSync) = 0;
+public:
+    virtual ~SkpProducer() {}
+    // Draw an SkPicture to the provided surface, flush the surface, and sync the GPU.
+    // You may use the static draw_skp_and_flush_with_sync declared above.
+    // returned int tells how many draw/flush/sync were done.
+    virtual int drawAndFlushAndSync(GrContext*, SkSurface* surface, GpuSync& gpuSync) = 0;
 };
 
 class StaticSkp : public SkpProducer {
- public:
-  StaticSkp(sk_sp<SkPicture> skp) : fSkp(skp) {}
+public:
+    StaticSkp(sk_sp<SkPicture> skp) : fSkp(skp) {}
 
-    int drawAndFlushAndSync(SkSurface* surface, GpuSync& gpuSync) override {
-        draw_skp_and_flush(surface, fSkp.get());
-        gpuSync.syncToPreviousFrame();
+    int drawAndFlushAndSync(GrContext* context, SkSurface* surface, GpuSync& gpuSync) override {
+        draw_skp_and_flush_with_sync(context, surface, fSkp.get(), gpuSync);
         return 1;
     }
- private:
-  sk_sp<SkPicture> fSkp;
+
+private:
+    sk_sp<SkPicture> fSkp;
 };
 
 // A class for playing/benchmarking a multi frame SKP file.
@@ -181,10 +187,9 @@ public:
     }
 
     // Draw the whole animation once.
-    int drawAndFlushAndSync(SkSurface* surface, GpuSync& gpuSync) override {
+    int drawAndFlushAndSync(GrContext* context, SkSurface* surface, GpuSync& gpuSync) override {
         for (int i=0; i<this->count(); i++){
-            draw_skp_and_flush(surface, this->frame(i).get());
-            gpuSync.syncToPreviousFrame();
+            draw_skp_and_flush_with_sync(context, surface, this->frame(i).get(), gpuSync);
         }
         return this->count();
     }
@@ -196,40 +201,50 @@ private:
     std::vector<SkDocumentPage> fFrames;
 };
 
-static void ddl_sample(GrContext* context, DDLTileHelper* tiles, GpuSync* gpuSync, Sample* sample,
+static void ddl_sample(GrContext* context, DDLTileHelper* tiles, GpuSync& gpuSync, Sample* sample,
                        std::chrono::high_resolution_clock::time_point* startStopTime) {
     using clock = std::chrono::high_resolution_clock;
 
     clock::time_point start = *startStopTime;
 
-    tiles->createDDLsInParallel();
+    if (FLAGS_comparableDDL) {
+        SkASSERT(!FLAGS_comparableSKP);
 
-    if (!FLAGS_ddlRecordTime) {
-        tiles->drawAllTilesAndFlush(context, true);
-        if (gpuSync) {
-            gpuSync->syncToPreviousFrame();
-        }
+        // In this mode we simply alternate between creating a DDL and drawing it - all on one
+        // thread. The interleaving is so that we don't starve the GPU.
+        // One unfortunate side effect of this is that we can't delete the DDLs until after
+        // the GPU work is flushed.
+        tiles->interleaveDDLCreationAndDraw(context);
+    } else if (FLAGS_comparableSKP) {
+        // In this mode simply draw the re-inflated per-tile SKPs directly to the GPU w/o going
+        // through a DDL.
+        tiles->drawAllTilesDirectly(context);
+    } else {
+        // TODO: Here we create all the DDLs, wait, and then draw them all. This should be updated
+        // to use the GPUDDLSink method of having a separate GPU thread.
+        tiles->createDDLsInParallel();
+        tiles->precompileAndDrawAllTiles(context);
     }
+    flush_with_sync(context, gpuSync);
 
     *startStopTime = clock::now();
 
-    tiles->resetAllTiles();
-
     if (sample) {
-        SkASSERT(gpuSync);
         sample->fDuration += *startStopTime - start;
         sample->fFrames++;
     }
 }
 
-static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
-                              GrContext* context, SkCanvas* finalCanvas,
+static void run_ddl_benchmark(GrContext* context, sk_sp<SkSurface> dstSurface,
                               SkPicture* inputPicture, std::vector<Sample>* samples) {
     using clock = std::chrono::high_resolution_clock;
     const Sample::duration sampleDuration = std::chrono::milliseconds(FLAGS_sampleMs);
     const clock::duration benchDuration = std::chrono::milliseconds(FLAGS_duration);
 
-    SkIRect viewport = finalCanvas->imageInfo().bounds();
+    SkSurfaceCharacterization dstCharacterization;
+    SkAssertResult(dstSurface->characterize(&dstCharacterization));
+
+    SkIRect viewport = dstSurface->imageInfo().bounds();
 
     DDLPromiseImageHelper promiseImageHelper;
     sk_sp<SkData> compressedPictureData = promiseImageHelper.deflateSKP(inputPicture);
@@ -237,9 +252,13 @@ static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
         exitf(ExitErr::kUnavailable, "DDL: conversion of skp failed");
     }
 
-    promiseImageHelper.uploadAllToGPU(context);
+    promiseImageHelper.createCallbackContexts(context);
 
-    DDLTileHelper tiles(finalCanvas, viewport, FLAGS_ddlTilingWidthHeight);
+    promiseImageHelper.uploadAllToGPU(nullptr, context);
+
+    DDLTileHelper tiles(context, dstCharacterization, viewport, FLAGS_ddlTilingWidthHeight);
+
+    tiles.createBackendTextures(nullptr, context);
 
     tiles.createSKPPerTile(compressedPictureData.get(), promiseImageHelper);
 
@@ -247,9 +266,8 @@ static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
 
     clock::time_point startStopTime = clock::now();
 
-    ddl_sample(context, &tiles, nullptr, nullptr, &startStopTime);
-    GpuSync gpuSync(fenceSync);
-    ddl_sample(context, &tiles, &gpuSync, nullptr, &startStopTime);
+    GpuSync gpuSync;
+    ddl_sample(context, &tiles, gpuSync, nullptr, &startStopTime);
 
     clock::duration cumulativeDuration = std::chrono::milliseconds(0);
 
@@ -258,7 +276,8 @@ static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
         Sample& sample = samples->back();
 
         do {
-            ddl_sample(context, &tiles, &gpuSync, &sample, &startStopTime);
+            tiles.resetAllTiles();
+            ddl_sample(context, &tiles, gpuSync, &sample, &startStopTime);
         } while (sample.fDuration < sampleDuration);
 
         cumulativeDuration += sample.fDuration;
@@ -266,20 +285,34 @@ static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
 
     if (!FLAGS_png.isEmpty()) {
         // The user wants to see the final result
-        tiles.composeAllTiles(finalCanvas);
+        dstSurface->draw(tiles.composeDDL());
+        dstSurface->flush();
     }
+
+    tiles.resetAllTiles();
+
+    // Make sure the gpu has finished all its work before we exit this function and delete the
+    // fence.
+    GrFlushInfo flushInfo;
+    flushInfo.fFlags = kSyncCpu_GrFlushFlag;
+    context->flush(flushInfo);
+
+    promiseImageHelper.deleteAllFromGPU(nullptr, context);
+
+    tiles.deleteBackendTextures(nullptr, context);
+
 }
 
-static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkSurface* surface,
-                          SkpProducer* skpp, std::vector<Sample>* samples) {
+static void run_benchmark(GrContext* context, SkSurface* surface, SkpProducer* skpp,
+                          std::vector<Sample>* samples) {
     using clock = std::chrono::high_resolution_clock;
     const Sample::duration sampleDuration = std::chrono::milliseconds(FLAGS_sampleMs);
     const clock::duration benchDuration = std::chrono::milliseconds(FLAGS_duration);
 
-    GpuSync gpuSync(fenceSync);
+    GpuSync gpuSync;
     int i = 0;
     do {
-        i += skpp->drawAndFlushAndSync(surface, gpuSync);
+        i += skpp->drawAndFlushAndSync(context, surface, gpuSync);
     } while(i < kNumFlushesToPrimeCache);
 
     clock::time_point now = clock::now();
@@ -291,16 +324,22 @@ static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkSurface* su
         Sample& sample = samples->back();
 
         do {
-          sample.fFrames += skpp->drawAndFlushAndSync(surface, gpuSync);
-          now = clock::now();
-          sample.fDuration = now - sampleStart;
+            sample.fFrames += skpp->drawAndFlushAndSync(context, surface, gpuSync);
+            now = clock::now();
+            sample.fDuration = now - sampleStart;
         } while (sample.fDuration < sampleDuration);
     } while (now < endTime || 0 == samples->size() % 2);
+
+    // Make sure the gpu has finished all its work before we exit this function and delete the
+    // fence.
+    GrFlushInfo flushInfo;
+    flushInfo.fFlags = kSyncCpu_GrFlushFlag;
+    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, flushInfo);
 }
 
-static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
-                                   const sk_gpu_test::FenceSync* fenceSync, SkSurface* surface,
-                                   const SkPicture* skp, std::vector<Sample>* samples) {
+static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer, GrContext* context,
+                                   SkSurface* surface, const SkPicture* skp,
+                                   std::vector<Sample>* samples) {
     using sk_gpu_test::PlatformTimerQuery;
     using clock = std::chrono::steady_clock;
     const clock::duration sampleDuration = std::chrono::milliseconds(FLAGS_sampleMs);
@@ -311,15 +350,14 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
                         "results may be unreliable\n");
     }
 
-    draw_skp_and_flush(surface, skp);
-    GpuSync gpuSync(fenceSync);
+    GpuSync gpuSync;
+    draw_skp_and_flush_with_sync(context, surface, skp, gpuSync);
 
     PlatformTimerQuery previousTime = 0;
     for (int i = 1; i < kNumFlushesToPrimeCache; ++i) {
         gpuTimer->queueStart();
-        draw_skp_and_flush(surface, skp);
+        draw_skp_and_flush_with_sync(context, surface, skp, gpuSync);
         previousTime = gpuTimer->queueStop();
-        gpuSync.syncToPreviousFrame();
     }
 
     clock::time_point now = clock::now();
@@ -332,9 +370,8 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
 
         do {
             gpuTimer->queueStart();
-            draw_skp_and_flush(surface, skp);
+            draw_skp_and_flush_with_sync(context, surface, skp, gpuSync);
             PlatformTimerQuery time = gpuTimer->queueStop();
-            gpuSync.syncToPreviousFrame();
 
             switch (gpuTimer->checkQueryStatus(previousTime)) {
                 using QueryStatus = sk_gpu_test::GpuTimer::QueryStatus;
@@ -359,6 +396,12 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
     } while (now < endTime || 0 == samples->size() % 2);
 
     gpuTimer->deleteQuery(previousTime);
+
+    // Make sure the gpu has finished all its work before we exit this function and delete the
+    // fence.
+    GrFlushInfo flushInfo;
+    flushInfo.fFlags = kSyncCpu_GrFlushFlag;
+    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, flushInfo);
 }
 
 void print_result(const std::vector<Sample>& samples, const char* config, const char* bench)  {
@@ -450,13 +493,21 @@ int main(int argc, char** argv) {
         }
         srcname = SkOSPath::Basename(srcfile.c_str());
     }
-    int width = SkTMin(SkScalarCeilToInt(skp->cullRect().width()), 2048),
-        height = SkTMin(SkScalarCeilToInt(skp->cullRect().height()), 2048);
+    int width = std::min(SkScalarCeilToInt(skp->cullRect().width()), 2048),
+        height = std::min(SkScalarCeilToInt(skp->cullRect().height()), 2048);
     if (FLAGS_verbosity >= 3 &&
         (width != skp->cullRect().width() || height != skp->cullRect().height())) {
         fprintf(stderr, "%s is too large (%ix%i), cropping to %ix%i.\n",
                         srcname.c_str(), SkScalarCeilToInt(skp->cullRect().width()),
                         SkScalarCeilToInt(skp->cullRect().height()), width, height);
+    }
+    if (FLAGS_scale != 1) {
+        width *= FLAGS_scale;
+        height *= FLAGS_scale;
+        if (FLAGS_verbosity >= 3) {
+            fprintf(stderr, "Scale factor of %.2f: scaling to %ix%i.\n",
+                    FLAGS_scale, width, height);
+        }
     }
 
     if (config->getSurfType() != SkCommandLineConfigGpu::SurfType::kDefault) {
@@ -475,7 +526,7 @@ int main(int argc, char** argv) {
         exitf(ExitErr::kUnavailable, "failed to create context for config %s",
                                      config->getTag().c_str());
     }
-    if (ctx->maxRenderTargetSize() < SkTMax(width, height)) {
+    if (ctx->maxRenderTargetSize() < std::max(width, height)) {
         exitf(ExitErr::kUnavailable, "render target size %ix%i not supported by platform (max: %i)",
               width, height, ctx->maxRenderTargetSize());
     }
@@ -521,14 +572,17 @@ int main(int argc, char** argv) {
     }
     SkCanvas* canvas = surface->getCanvas();
     canvas->translate(-skp->cullRect().x(), -skp->cullRect().y());
+    if (FLAGS_scale != 1) {
+        canvas->scale(FLAGS_scale, FLAGS_scale);
+    }
     if (!FLAGS_gpuClock) {
         if (FLAGS_ddl) {
-            run_ddl_benchmark(testCtx->fenceSync(), ctx, canvas, skp.get(), &samples);
+            run_ddl_benchmark(ctx, surface, skp.get(), &samples);
         } else if (!mskp) {
             auto s = std::make_unique<StaticSkp>(skp);
-            run_benchmark(testCtx->fenceSync(), surface.get(), s.get(), &samples);
+            run_benchmark(ctx, surface.get(), s.get(), &samples);
         } else {
-            run_benchmark(testCtx->fenceSync(), surface.get(), mskp.get(), &samples);
+            run_benchmark(ctx, surface.get(), mskp.get(), &samples);
         }
     } else {
         if (FLAGS_ddl) {
@@ -537,8 +591,7 @@ int main(int argc, char** argv) {
         if (!testCtx->gpuTimingSupport()) {
             exitf(ExitErr::kUnavailable, "GPU does not support timing");
         }
-        run_gpu_time_benchmark(testCtx->gpuTimer(), testCtx->fenceSync(), surface.get(),
-                               skp.get(), &samples);
+        run_gpu_time_benchmark(testCtx->gpuTimer(), ctx, surface.get(), skp.get(), &samples);
     }
     print_result(samples, config->getTag().c_str(), srcname.c_str());
 
@@ -557,13 +610,25 @@ int main(int argc, char** argv) {
         }
     }
 
-    exit(0);
+    return(0);
 }
 
-static void draw_skp_and_flush(SkSurface* surface, const SkPicture* skp) {
+static void flush_with_sync(GrContext* context, GpuSync& gpuSync) {
+    gpuSync.waitIfNeeded();
+
+    GrFlushInfo flushInfo;
+    flushInfo.fFinishedProc = sk_gpu_test::FlushFinishTracker::FlushFinished;
+    flushInfo.fFinishedContext = gpuSync.newFlushTracker(context);
+
+    context->flush(flushInfo);
+}
+
+static void draw_skp_and_flush_with_sync(GrContext* context, SkSurface* surface,
+                                         const SkPicture* skp, GpuSync& gpuSync) {
     auto canvas = surface->getCanvas();
     canvas->drawPicture(skp);
-    surface->flush();
+
+    flush_with_sync(context, gpuSync);
 }
 
 static sk_sp<SkPicture> create_warmup_skp() {
@@ -639,29 +704,20 @@ static void exitf(ExitErr err, const char* format, ...) {
     exit((int)err);
 }
 
-GpuSync::GpuSync(const sk_gpu_test::FenceSync* fenceSync)
-    : fFenceSync(fenceSync) {
-    this->updateFence();
+void GpuSync::waitIfNeeded() {
+    if (fFinishTrackers[fCurrentFlushIdx]) {
+        fFinishTrackers[fCurrentFlushIdx]->waitTillFinished();
+    }
 }
 
-GpuSync::~GpuSync() {
-    fFenceSync->deleteFence(fFence);
-}
+sk_gpu_test::FlushFinishTracker* GpuSync::newFlushTracker(GrContext* context) {
+    fFinishTrackers[fCurrentFlushIdx].reset(new sk_gpu_test::FlushFinishTracker(context));
 
-void GpuSync::syncToPreviousFrame() {
-    if (sk_gpu_test::kInvalidFence == fFence) {
-        exitf(ExitErr::kSoftware, "attempted to sync with invalid fence");
-    }
-    if (!fFenceSync->waitFence(fFence)) {
-        exitf(ExitErr::kUnavailable, "failed to wait for fence");
-    }
-    fFenceSync->deleteFence(fFence);
-    this->updateFence();
-}
+    sk_gpu_test::FlushFinishTracker* tracker = fFinishTrackers[fCurrentFlushIdx].get();
+    // We add an additional ref to the current flush tracker here. This ref is owned by the finish
+    // callback on the flush call. The finish callback will unref the tracker when called.
+    tracker->ref();
 
-void GpuSync::updateFence() {
-    fFence = fFenceSync->insertFence();
-    if (sk_gpu_test::kInvalidFence == fFence) {
-        exitf(ExitErr::kUnavailable, "failed to insert fence");
-    }
+    fCurrentFlushIdx = (fCurrentFlushIdx + 1) % SK_ARRAY_COUNT(fFinishTrackers);
+    return tracker;
 }

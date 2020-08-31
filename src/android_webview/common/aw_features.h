@@ -15,9 +15,10 @@ namespace features {
 
 // Alphabetical:
 extern const base::Feature kWebViewBrotliSupport;
+extern const base::Feature kWebViewCollectNonembeddedMetrics;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
+extern const base::Feature kWebViewOriginCheckForStreamReader;
 extern const base::Feature kWebViewSniffMimeType;
-extern const base::Feature kWebViewWakeMetricsService;
 extern const base::Feature kWebViewWideColorGamutSupport;
 
 }  // namespace features

@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 #if !defined(_MSC_VER) && !defined(__CYGWIN__) && !defined(__MINGW32__)
 #include <sys/mman.h>
 #include <unistd.h>  /* for sysconf */
@@ -473,28 +474,27 @@ TEST(ProgramFanout, BigProgram) {
   RE2 re100("(?:(?:(?:(?:(?:.)?){100})*)+)");
   RE2 re1000("(?:(?:(?:(?:(?:.)?){1000})*)+)");
 
-  std::map<int, int> histogram;
+  std::vector<int> histogram;
 
   // 3 is the largest non-empty bucket and has 1 element.
   ASSERT_EQ(3, re1.ProgramFanout(&histogram));
   ASSERT_EQ(1, histogram[3]);
 
-  // 7 is the largest non-empty bucket and has 10 elements.
-  ASSERT_EQ(7, re10.ProgramFanout(&histogram));
-  ASSERT_EQ(10, histogram[7]);
+  // 6 is the largest non-empty bucket and has 10 elements.
+  ASSERT_EQ(6, re10.ProgramFanout(&histogram));
+  ASSERT_EQ(10, histogram[6]);
 
-  // 10 is the largest non-empty bucket and has 100 elements.
-  ASSERT_EQ(10, re100.ProgramFanout(&histogram));
-  ASSERT_EQ(100, histogram[10]);
+  // 9 is the largest non-empty bucket and has 100 elements.
+  ASSERT_EQ(9, re100.ProgramFanout(&histogram));
+  ASSERT_EQ(100, histogram[9]);
 
   // 13 is the largest non-empty bucket and has 1000 elements.
   ASSERT_EQ(13, re1000.ProgramFanout(&histogram));
   ASSERT_EQ(1000, histogram[13]);
 
-  // 2 is the largest non-empty bucket and has 3 elements.
-  // This differs from the others due to how reverse `.' works.
+  // 2 is the largest non-empty bucket and has 1 element.
   ASSERT_EQ(2, re1.ReverseProgramFanout(&histogram));
-  ASSERT_EQ(3, histogram[2]);
+  ASSERT_EQ(1, histogram[2]);
 
   // 5 is the largest non-empty bucket and has 10 elements.
   ASSERT_EQ(5, re10.ReverseProgramFanout(&histogram));
@@ -1232,11 +1232,10 @@ TEST(RE2, DeepRecursion) {
 // Suggested by Josh Hyman.  Failed when SearchOnePass was
 // not implementing case-folding.
 TEST(CaseInsensitive, MatchAndConsume) {
-  std::string result;
   std::string text = "A fish named *Wanda*";
   StringPiece sp(text);
-
-  EXPECT_TRUE(RE2::PartialMatch(sp, "(?i)([wand]{5})", &result));
+  StringPiece result;
+  EXPECT_TRUE(RE2::PartialMatch(text, "(?i)([wand]{5})", &result));
   EXPECT_TRUE(RE2::FindAndConsume(&sp, "(?i)([wand]{5})", &result));
 }
 

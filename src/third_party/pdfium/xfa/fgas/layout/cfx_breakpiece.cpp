@@ -8,20 +8,7 @@
 
 #include "xfa/fgas/layout/cfx_textuserdata.h"
 
-CFX_BreakPiece::CFX_BreakPiece()
-    : m_dwStatus(CFX_BreakType::Piece),
-      m_iStartPos(0),
-      m_iWidth(-1),
-      m_iStartChar(0),
-      m_iChars(0),
-      m_iBidiLevel(0),
-      m_iBidiPos(0),
-      m_iFontSize(0),
-      m_iHorizontalScale(100),
-      m_iVerticalScale(100),
-      m_dwIdentity(0),
-      m_dwCharStyles(0),
-      m_pChars(nullptr) {}
+CFX_BreakPiece::CFX_BreakPiece() = default;
 
 CFX_BreakPiece::CFX_BreakPiece(const CFX_BreakPiece& other) = default;
 
@@ -33,23 +20,23 @@ int32_t CFX_BreakPiece::GetEndPos() const {
 
 CFX_Char* CFX_BreakPiece::GetChar(int32_t index) const {
   ASSERT(index >= 0);
-  ASSERT(index < m_iChars);
+  ASSERT(index < m_iCharCount);
   ASSERT(m_pChars);
   return &(*m_pChars)[m_iStartChar + index];
 }
 
 WideString CFX_BreakPiece::GetString() const {
   WideString ret;
-  ret.Reserve(m_iChars);
-  for (int32_t i = m_iStartChar; i < m_iStartChar + m_iChars; i++)
+  ret.Reserve(m_iCharCount);
+  for (int32_t i = m_iStartChar; i < m_iStartChar + m_iCharCount; i++)
     ret += static_cast<wchar_t>((*m_pChars)[i].char_code());
   return ret;
 }
 
 std::vector<int32_t> CFX_BreakPiece::GetWidths() const {
   std::vector<int32_t> ret;
-  ret.reserve(m_iChars);
-  for (int32_t i = m_iStartChar; i < m_iStartChar + m_iChars; i++)
+  ret.reserve(m_iCharCount);
+  for (int32_t i = m_iStartChar; i < m_iStartChar + m_iCharCount; i++)
     ret.push_back((*m_pChars)[i].m_iCharWidth);
   return ret;
 }

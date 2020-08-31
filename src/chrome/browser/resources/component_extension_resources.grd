@@ -59,6 +59,7 @@
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_CSS" file="identity_scope_approval_dialog/scope_approval_dialog.css" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG" file="identity_scope_approval_dialog/scope_approval_dialog.html" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_JS" file="identity_scope_approval_dialog/scope_approval_dialog.js" type="BINDATA" />
+      <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_INJECT_JS" file="identity_scope_approval_dialog/inject.js" type="BINDATA" />
       <if expr="chromeos">
         <include name="IDR_WALLPAPER_MANAGER_CONSTANTS_JS" file="chromeos/wallpaper_manager/js/constants.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_EVENT_JS" file="chromeos/wallpaper_manager/js/event_page.js" flattenhtml="true" type="BINDATA" />
@@ -94,16 +95,18 @@
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_list_view.html" type="chrome_html" flattenhtml="true" />
       </if>
       <if expr="enable_plugins">
-        <!-- Note that resources included here also must be included in
-             print_preview_ui.cc such these resources will be exposed to
-             PDF in print preview. -->
-        <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" preprocess="true" />
-        <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" allowexternalscript="true" type="BINDATA" />
+        <!-- Note that resources included here that are used in Print Preview
+             also must be included in print_preview_ui.cc such these resources
+             will be exposed to PDF in print preview. -->
+        <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" type="BINDATA" preprocess="true" />
+        <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" preprocess="true" />
+        <include name="IDR_PDF_MAIN_UTIL_JS" file="pdf/main_util.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_VIEWER_JS" file="pdf/pdf_viewer.js" type="BINDATA" />
+        <include name="IDR_PDF_BOOKMARK_TYPE_JS" file="pdf/bookmark_type.js" type="BINDATA" />
+        <include name="IDR_PDF_CONSTANTS_JS" file="pdf/constants.js" type="BINDATA" />
         <include name="IDR_PDF_CONTROLLER_JS" file="pdf/controller.js" type="BINDATA" />
         <include name="IDR_PDF_TOOLBAR_MANAGER_JS" file="pdf/toolbar_manager.js" type="BINDATA" />
-        <include name="IDR_PDF_PDF_FITTING_TYPE_JS" file="pdf/pdf_fitting_type.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
         <include name="IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS" file="pdf/open_pdf_params_parser.js" type="BINDATA" />
         <include name="IDR_PDF_NAVIGATOR_JS" file="pdf/navigator.js" type="BINDATA" />
@@ -125,7 +128,6 @@
           <include name="IDR_PDF_VIEWER_PEN_OPTIONS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pen-options.js" use_base_dir="false" type="BINDATA" />
           <include name="IDR_PDF_VIEWER_FORM_WARNING_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-form-warning.js" use_base_dir="false" type="BINDATA" />
         </if>
-        <include name="IDR_PDF_VIEWER_PAGE_INDICATOR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-page-indicator.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-page-selector.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-password-screen.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PDF_TOOLBAR_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-pdf-toolbar.js" use_base_dir="false" type="BINDATA" preprocess="true"/>

@@ -24,8 +24,6 @@ namespace cc {
 class Animation;
 struct PropertyAnimationState;
 
-typedef size_t KeyframeEffectId;
-
 // A KeyframeEffect owns a group of KeyframeModels for a single target
 // (identified by an ElementId). It is responsible for managing the
 // KeyframeModels' running states (starting, running, paused, etc), as well as
@@ -39,14 +37,11 @@ typedef size_t KeyframeEffectId;
 // given target.
 class CC_ANIMATION_EXPORT KeyframeEffect {
  public:
-  explicit KeyframeEffect(KeyframeEffectId id);
+  explicit KeyframeEffect(Animation* animation);
   KeyframeEffect(const KeyframeEffect&) = delete;
   virtual ~KeyframeEffect();
 
   KeyframeEffect& operator=(const KeyframeEffect&) = delete;
-
-  static std::unique_ptr<KeyframeEffect> Create(KeyframeEffectId id);
-  std::unique_ptr<KeyframeEffect> CreateImplInstance() const;
 
   // ElementAnimations object where this controller is listed.
   scoped_refptr<ElementAnimations> element_animations() const {
@@ -87,7 +82,6 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
                                 KeyframeModel* keyframe_model,
                                 AnimationTarget* target);
   void RemoveFromTicking();
-  bool is_ticking() const { return is_ticking_; }
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   void UpdateTickingState();
@@ -95,13 +89,13 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void Pause(base::TimeDelta pause_offset);
 
   void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
-  void PauseKeyframeModel(int keyframe_model_id, double time_offset);
+  void PauseKeyframeModel(int keyframe_model_id, base::TimeDelta time_offset);
   void RemoveKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
                                        bool needs_completion);
 
-  void ActivateKeyframeEffects();
+  void ActivateKeyframeModels();
 
   void KeyframeModelAdded();
 
@@ -156,10 +150,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
       KeyframeEffect* element_keyframe_effect_impl) const;
   void PushPropertiesTo(KeyframeEffect* keyframe_effect_impl);
 
-  void SetAnimation(Animation* animation);
-
   std::string KeyframeModelsToString() const;
-  KeyframeEffectId id() const { return id_; }
 
  private:
   void StartKeyframeModels(base::TimeTicks monotonic_time);
@@ -183,7 +174,6 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   std::vector<std::unique_ptr<KeyframeModel>> keyframe_models_;
   Animation* animation_;
 
-  KeyframeEffectId id_;
   ElementId element_id_;
 
   // element_animations_ is non-null if controller is attached to an element.
@@ -197,7 +187,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   bool scroll_offset_animation_was_interrupted_;
 
   bool is_ticking_;
-  base::TimeTicks last_tick_time_;
+  base::Optional<base::TimeTicks> last_tick_time_;
 
   bool needs_push_properties_;
 };

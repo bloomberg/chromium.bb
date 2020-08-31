@@ -11,9 +11,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,8 +58,10 @@ static const int kEstimatedEntryOverhead = 512;
 
 namespace disk_cache {
 
-const base::Feature kSimpleCacheEvictionWithSize = {
-    "SimpleCacheEvictionWithSize", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature
+    SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache{
+        "SimpleCacheDisableEvictionSizeHeuristicForCodeCache",
+        base::FEATURE_DISABLED_BY_DEFAULT};
 
 EntryMetadata::EntryMetadata()
     : last_used_time_seconds_since_epoch_(0),
@@ -189,9 +190,9 @@ SimpleIndex::SimpleIndex(
       task_runner_(task_runner),
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
-      write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk,
-                                   AsWeakPtr(),
-                                   INDEX_WRITE_REASON_IDLE)) {}
+      write_to_disk_cb_(base::BindRepeating(&SimpleIndex::WriteToDisk,
+                                            AsWeakPtr(),
+                                            INDEX_WRITE_REASON_IDLE)) {}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -221,11 +222,10 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
 
   SimpleIndexLoadResult* load_result = new SimpleIndexLoadResult();
   std::unique_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
-  base::Closure reply = base::Bind(
-      &SimpleIndex::MergeInitializingSet,
-      AsWeakPtr(),
-      base::Passed(&load_result_scoped));
-  index_file_->LoadIndexEntries(cache_mtime, reply, load_result);
+  base::OnceClosure reply =
+      base::BindOnce(&SimpleIndex::MergeInitializingSet, AsWeakPtr(),
+                     std::move(load_result_scoped));
+  index_file_->LoadIndexEntries(cache_mtime, std::move(reply), load_result);
 }
 
 void SimpleIndex::SetMaxSize(uint64_t max_bytes) {
@@ -422,19 +422,25 @@ void SimpleIndex::StartEvictionIfNeeded() {
       MEMORY_KB, "Eviction.MaxCacheSizeOnStart2", cache_type_,
       static_cast<base::HistogramBase::Sample>(max_size_ / kBytesInKb));
 
+  bool use_size_heuristic = true;
+  if (cache_type_ == net::GENERATED_BYTE_CODE_CACHE) {
+    use_size_heuristic = !base::FeatureList::IsEnabled(
+        kSimpleCacheDisableEvictionSizeHeuristicForCodeCache);
+  }
+
   // Flatten for sorting.
   std::vector<std::pair<uint64_t, const EntrySet::value_type*>> entries;
   entries.reserve(entries_set_.size());
   uint32_t now = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
-  bool use_size = base::FeatureList::IsEnabled(kSimpleCacheEvictionWithSize);
   for (EntrySet::const_iterator i = entries_set_.begin();
        i != entries_set_.end(); ++i) {
     uint64_t sort_value = now - i->second.RawTimeForSorting();
-    if (use_size) {
-      // Will not overflow since we're multiplying two 32-bit values and storing
-      // them in a 64-bit variable.
+    // See crbug.com/736437 for context.
+    //
+    // Will not overflow since we're multiplying two 32-bit values and storing
+    // them in a 64-bit variable.
+    if (use_size_heuristic)
       sort_value *= i->second.GetEntrySize() + kEstimatedEntryOverhead;
-    }
     // Subtract so we don't need a custom comparator.
     entries.emplace_back(std::numeric_limits<uint64_t>::max() - sort_value,
                          &*i);
@@ -664,17 +670,17 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   }
   last_write_to_disk_ = start;
 
-  base::Closure after_write;
+  base::OnceClosure after_write;
   if (cleanup_tracker_) {
     // Make anyone synchronizing with our cleanup wait for the index to be
     // written back.
-    after_write = base::Bind(
-        base::DoNothing::Repeatedly<scoped_refptr<BackendCleanupTracker>>(),
+    after_write = base::BindOnce(
+        base::DoNothing::Once<scoped_refptr<BackendCleanupTracker>>(),
         cleanup_tracker_);
   }
 
   index_file_->WriteToDisk(cache_type_, reason, entries_set_, cache_size_,
-                           start, app_on_background_, after_write);
+                           start, app_on_background_, std::move(after_write));
 }
 
 }  // namespace disk_cache

@@ -114,16 +114,10 @@ class GetFallbackFontTest
   }
 
   bool DoesFontSupportCodePoints(Font font, const base::string16& text) {
-    sk_sp<SkTypeface> skia_face =
-        font.platform_font()->GetNativeSkTypefaceIfAvailable();
+    sk_sp<SkTypeface> skia_face = font.platform_font()->GetNativeSkTypeface();
     if (!skia_face) {
-      skia_face =
-          SkTypeface::MakeFromName(font.GetFontName().c_str(), SkFontStyle());
-    }
-
-    if (!skia_face) {
-      LOG(ERROR) << "Cannot create typeface for '" << font.GetFontName()
-                 << "'.";
+      ADD_FAILURE() << "Cannot create typeface for '" << font.GetFontName()
+                    << "'.";
       return false;
     }
 
@@ -162,13 +156,7 @@ class GetFallbackFontTest
 //
 // The previous checks can be activated or deactivated through the class
 // FallbackFontTestOption (e.g. test_option_).
-#if defined(OS_MACOSX)
-// https://crbug.com/1022455
-#define MAYBE_GetFallbackFont DISABLED_GetFallbackFont
-#else
-#define MAYBE_GetFallbackFont GetFallbackFont
-#endif
-TEST_P(GetFallbackFontTest, MAYBE_GetFallbackFont) {
+TEST_P(GetFallbackFontTest, GetFallbackFont) {
   // Default system font.
   Font base_font;
   // Apply font options to the base font.

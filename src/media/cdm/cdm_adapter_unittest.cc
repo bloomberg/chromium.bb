@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -151,8 +151,8 @@ class CdmAdapterTestBase : public testing::Test,
                                   base::Unretained(&cdm_client_)),
                        base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
                                   base::Unretained(&cdm_client_)),
-                       base::Bind(&CdmAdapterTestBase::OnCdmCreated,
-                                  base::Unretained(this), expected_result));
+                       base::BindOnce(&CdmAdapterTestBase::OnCdmCreated,
+                                      base::Unretained(this), expected_result));
     RunUntilIdle();
     ASSERT_EQ(expected_result == SUCCESS, !!cdm_);
   }
@@ -293,10 +293,10 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
     }
 
     std::unique_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
-        base::Bind(&CdmAdapterTestWithClearKeyCdm::OnResolve,
-                   base::Unretained(this)),
-        base::Bind(&CdmAdapterTestWithClearKeyCdm::OnReject,
-                   base::Unretained(this))));
+        base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnResolve,
+                       base::Unretained(this)),
+        base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnReject,
+                       base::Unretained(this))));
     return promise;
   }
 
@@ -313,10 +313,10 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
 
     std::unique_ptr<NewSessionCdmPromise> promise(
         new CdmCallbackPromise<std::string>(
-            base::Bind(&CdmAdapterTestWithClearKeyCdm::OnResolveWithSession,
-                       base::Unretained(this)),
-            base::Bind(&CdmAdapterTestWithClearKeyCdm::OnReject,
-                       base::Unretained(this))));
+            base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnResolveWithSession,
+                           base::Unretained(this)),
+            base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnReject,
+                           base::Unretained(this))));
     return promise;
   }
 
@@ -556,15 +556,6 @@ TEST_P(CdmAdapterTestWithMockCdm, GetDecryptor) {
   auto* cdm_context = cdm_->GetCdmContext();
   ASSERT_TRUE(cdm_context);
   EXPECT_TRUE(cdm_context->GetDecryptor());
-}
-
-TEST_P(CdmAdapterTestWithMockCdm, GetDecryptor_UseHwSecureCodecs) {
-  CdmConfig cdm_config;
-  cdm_config.use_hw_secure_codecs = true;
-  InitializeWithCdmConfig(cdm_config);
-  auto* cdm_context = cdm_->GetCdmContext();
-  ASSERT_TRUE(cdm_context);
-  EXPECT_FALSE(cdm_context->GetDecryptor());
 }
 
 }  // namespace media

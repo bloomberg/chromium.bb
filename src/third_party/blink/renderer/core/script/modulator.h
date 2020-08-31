@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/script/layered_api_module.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -28,6 +27,7 @@ namespace blink {
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
+class ModuleScriptLoader;
 class ImportMap;
 class ReferrerScriptInfo;
 class ResourceFetcher;
@@ -121,9 +121,6 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   virtual bool IsScriptingDisabled() const = 0;
 
   virtual bool ImportMapsEnabled() const = 0;
-  virtual bool BuiltInModuleInfraEnabled() const = 0;
-  virtual bool BuiltInModuleEnabled(layered_api::Module) const = 0;
-  virtual void BuiltInModuleUseCount(layered_api::Module) const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
@@ -132,7 +129,8 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // used in the "fetch a module worker script graph" algorithm.
   virtual void FetchTree(const KURL&,
                          ResourceFetcher* fetch_client_settings_object_fetcher,
-                         mojom::RequestContextType destination,
+                         mojom::RequestContextType context_type,
+                         network::mojom::RequestDestination destination,
                          const ScriptFetchOptions&,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*) = 0;
@@ -154,7 +152,8 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
       ResourceFetcher* fetch_client_settings_object_fetcher,
-      mojom::RequestContextType destination,
+      mojom::RequestContextType context_type,
+      network::mojom::RequestDestination destination,
       ModuleTreeClient*) = 0;
 
   // Synchronously retrieves a single module script from existing module map
@@ -208,14 +207,18 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // CaptureEvalErrorFlag is used to implement "rethrow errors" parameter in
   // run-a-module-script.
   // - When "rethrow errors" is to be set, use kCapture for EvaluateModule().
-  // Then EvaluateModule() returns an exception if any (instead of throwing it),
-  // and the caller should rethrow the returned exception. - When "rethrow
-  // errors" is not to be set, use kReport. EvaluateModule() "report the error"
-  // inside it (if any), and always returns null ScriptValue().
-  virtual ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) = 0;
+  // Then EvaluateModule() wraps exceptions in a ModuleEvaluationResult instead
+  // of throwing it and the caller should rethrow the exception.
+  // - When "rethrow errors" is not to be set, use kReport. EvaluateModule()
+  // "report the error" inside it (if any), and returns either a
+  // ModuleEvaluationResult that is empty or contains the successful
+  // evaluation result.
+  virtual ModuleEvaluationResult ExecuteModule(ModuleScript*,
+                                               CaptureEvalErrorFlag) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) = 0;
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader> pass_key) = 0;
 };
 
 }  // namespace blink

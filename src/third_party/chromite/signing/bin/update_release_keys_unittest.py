@@ -13,9 +13,6 @@ import os
 
 import mock
 
-from six.moves import configparser
-from six.moves import StringIO
-
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -23,11 +20,6 @@ from chromite.signing.bin import update_release_keys
 
 
 # pylint: disable=protected-access
-
-def MockConfig(config_str):
-  ret = configparser.ConfigParser()
-  ret.readfp(StringIO.StringIO(config_str))
-  return ret
 
 
 class TestImportKeyset(cros_test_lib.MockTempDirTestCase):

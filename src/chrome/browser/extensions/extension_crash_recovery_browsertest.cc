@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
@@ -129,8 +130,9 @@ class ExtensionCrashRecoveryTest : public extensions::ExtensionBrowserTest {
     display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                     "app.background.crashed." + extension_id,
                                     base::nullopt, base::nullopt);
-    auto* extension = observer.WaitForExtensionLoaded();
-    extensions::BackgroundPageWatcher(GetProcessManager(), extension)
+    scoped_refptr<const Extension> extension =
+        observer.WaitForExtensionLoaded();
+    extensions::BackgroundPageWatcher(GetProcessManager(), extension.get())
         .WaitForOpen();
   }
 
@@ -543,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     observer.Wait();
   }
-  auto* extension = observer.WaitForExtensionLoaded();
+  scoped_refptr<const Extension> extension = observer.WaitForExtensionLoaded();
   EXPECT_EQ(first_extension_id_, extension->id());
 
   // Extension should now be loaded.

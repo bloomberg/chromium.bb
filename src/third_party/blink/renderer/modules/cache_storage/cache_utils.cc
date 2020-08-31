@@ -24,18 +24,18 @@ Response* CreateEagerResponse(ScriptState* script_state,
                                                              *response);
 
   DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
-  fetch_data->ReplaceBodyStreamBuffer(MakeGarbageCollected<BodyStreamBuffer>(
+  fetch_data->ReplaceBodyStreamBuffer(BodyStreamBuffer::Create(
       script_state,
       MakeGarbageCollected<DataPipeBytesConsumer>(
           context->GetTaskRunner(TaskType::kNetworking),
           std::move(eager_response->pipe), &completion_notifier),
-      nullptr /* AbortSignal */));
+      nullptr /* AbortSignal */, std::move(response->side_data_blob)));
 
   // Create a BlobReaderClient in the provided list.  This will track the
   // completion of the eagerly read blob and propagate it to the given
   // DataPipeBytesConsumer::CompletionNotifier.  The list will also hold
   // the client alive.
-  client_list->AddClient(std::move(eager_response->client_receiver),
+  client_list->AddClient(context, std::move(eager_response->client_receiver),
                          std::move(completion_notifier));
 
   fetch_data = Response::FilterResponseData(

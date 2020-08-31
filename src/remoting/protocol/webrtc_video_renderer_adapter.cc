@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/client_video_stats_dispatcher.h"
 #include "remoting/protocol/frame_consumer.h"
@@ -175,14 +176,12 @@ void WebrtcVideoRendererAdapter::HandleFrameOnMainThread(
       video_renderer_->GetFrameConsumer()->AllocateFrame(
           webrtc::DesktopSize(frame->width(), frame->height()));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&ConvertYuvToRgb, base::Passed(&frame),
-                 base::Passed(&rgb_frame),
-                 video_renderer_->GetFrameConsumer()->GetPixelFormat()),
-      base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
-                 weak_factory_.GetWeakPtr(), frame_id, base::Passed(&stats)));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&ConvertYuvToRgb, std::move(frame), std::move(rgb_frame),
+                     video_renderer_->GetFrameConsumer()->GetPixelFormat()),
+      base::BindOnce(&WebrtcVideoRendererAdapter::DrawFrame,
+                     weak_factory_.GetWeakPtr(), frame_id, std::move(stats)));
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
@@ -193,8 +192,8 @@ void WebrtcVideoRendererAdapter::DrawFrame(
   stats->time_decoded = base::TimeTicks::Now();
   video_renderer_->GetFrameConsumer()->DrawFrame(
       std::move(frame),
-      base::Bind(&WebrtcVideoRendererAdapter::FrameRendered,
-                 weak_factory_.GetWeakPtr(), frame_id, base::Passed(&stats)));
+      base::BindOnce(&WebrtcVideoRendererAdapter::FrameRendered,
+                     weak_factory_.GetWeakPtr(), frame_id, std::move(stats)));
 }
 
 void WebrtcVideoRendererAdapter::FrameRendered(

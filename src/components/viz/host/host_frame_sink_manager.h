@@ -23,7 +23,6 @@
 #include "components/viz/host/hit_test/hit_test_region_observer.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/viz_host_export.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -36,8 +35,6 @@ class SingleThreadTaskRunner;
 
 namespace viz {
 
-class CompositorFrameSinkSupport;
-class FrameSinkManagerImpl;
 class SurfaceInfo;
 
 enum class ReportFirstSurfaceActivation { kYes, kNo };
@@ -46,8 +43,7 @@ enum class ReportFirstSurfaceActivation { kYes, kNo };
 // UI thread. Manages frame sinks and is intended to replace all usage of
 // FrameSinkManagerImpl.
 class VIZ_HOST_EXPORT HostFrameSinkManager
-    : public mojom::FrameSinkManagerClient,
-      public CompositorFrameSinkSupportManager {
+    : public mojom::FrameSinkManagerClient {
  public:
   using DisplayHitTestQueryMap =
       base::flat_map<FrameSinkId, std::unique_ptr<HitTestQuery>>;
@@ -60,7 +56,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   }
 
   // Sets a local FrameSinkManagerImpl instance and connects directly to it.
-  void SetLocalManager(FrameSinkManagerImpl* frame_sink_manager_impl);
+  void SetLocalManager(mojom::FrameSinkManager* frame_sink_manager);
 
   // Binds |this| as a FrameSinkManagerClient for |receiver| on |task_runner|.
   // On Mac |task_runner| will be the resize helper task runner. May only be
@@ -74,9 +70,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Sets a callback to be notified when the connection to the FrameSinkManager
   // on |frame_sink_manager_remote_| is lost.
   void SetConnectionLostCallback(base::RepeatingClosure callback);
-
-  // Sets a callback to be notified after Viz sent bad message to Viz host.
-  void SetBadMessageReceivedFromGpuCallback(base::RepeatingClosure callback);
 
   // Registers |frame_sink_id| so that a client can submit CompositorFrames
   // using it. This must be called before creating a CompositorFrameSink or
@@ -102,14 +95,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // code. If the same client wants to submit CompositorFrames later a new
   // FrameSinkId should be allocated.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
-
-  // Tells FrameSinkManger to report when a synchronization event completes via
-  // tracing and UMA and the duration of that event. A synchronization event
-  // occurs when a CompositorFrame submitted to the CompositorFrameSink
-  // specified by |frame_sink_id| activates after having been blocked by
-  // unresolved dependencies.
-  void EnableSynchronizationReporting(const FrameSinkId& frame_sink_id,
-                                      const std::string& reporting_label);
 
   // |debug_label| is used when printing out the surface hierarchy so we know
   // which clients are contributing which surfaces.
@@ -191,16 +176,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void AddHitTestRegionObserver(HitTestRegionObserver* observer);
   void RemoveHitTestRegionObserver(HitTestRegionObserver* observer);
 
-  // CompositorFrameSinkSupportManager:
-  std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
-      mojom::CompositorFrameSinkClient* client,
-      const FrameSinkId& frame_sink_id,
-      bool is_root,
-      bool needs_sync_points) override;
-
-  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                           uint32_t frame_token) override;
-
   void SetHitTestAsyncQueriedDebugRegions(
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
@@ -212,8 +187,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void EvictCachedBackBuffer(uint32_t cache_id);
 
  private:
+  friend class HostFrameSinkManagerTest;
   friend class HostFrameSinkManagerTestApi;
-  friend class HostFrameSinkManagerTestBase;
 
   struct FrameSinkData {
     FrameSinkData();
@@ -236,10 +211,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     // FirstSurfaceActivation notifications.
     ReportFirstSurfaceActivation report_activation =
         ReportFirstSurfaceActivation::kYes;
-
-    // The label to use whether this client would like reporting for
-    // synchronization events.
-    std::string synchronization_reporting_label;
 
     // The name of the HostFrameSinkClient used for debug purposes.
     std::string debug_label;
@@ -267,27 +238,21 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterAfterConnectionLoss();
 
   // mojom::FrameSinkManagerClient:
+  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
+                           uint32_t frame_token) override;
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,
       const std::vector<AggregatedHitTestRegion>& hit_test_data) override;
 
-  // This will point to |frame_sink_manager_remote_| if using Mojo or
-  // |frame_sink_manager_impl_| if directly connected. Use this to make function
+  // This will point to |frame_sink_manager_remote_| if using mojo or it may
+  // point directly at FrameSinkManagerImpl in tests. Use this to make function
   // calls.
   mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
 
-  // Mojo connection to the FrameSinkManager. If this is bound then
-  // |frame_sink_manager_impl_| must be null.
+  // Connections to/from FrameSinkManagerImpl.
   mojo::Remote<mojom::FrameSinkManager> frame_sink_manager_remote_;
-
-  // Mojo connection back from the FrameSinkManager.
   mojo::Receiver<mojom::FrameSinkManagerClient> receiver_{this};
-
-  // A direct connection to FrameSinkManagerImpl. If this is set then
-  // |frame_sink_manager_remote_| must be unbound. For use in browser process
-  // only, viz process should not set this.
-  FrameSinkManagerImpl* frame_sink_manager_impl_ = nullptr;
 
   // Per CompositorFrameSink data.
   std::unordered_map<FrameSinkId, FrameSinkData, FrameSinkIdHash>

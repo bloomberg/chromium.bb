@@ -47,6 +47,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // opting itself into isolation via a header.
   static bool AreDynamicIsolatedOriginsEnabled();
 
+  // Returns true if isolated origins preloaded with the browser should be
+  // applied.  For example, this is used to apply memory limits to preloaded
+  // isolated origins on Android.
+  static bool ArePreloadedIsolatedOriginsEnabled();
+
   // Applies isolated origins from all available sources, including the
   // command-line switch, field trials, enterprise policy, and the embedder.
   // See also AreIsolatedOriginsEnabled. These origins apply globally to the
@@ -54,20 +59,12 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // startup.
   static void ApplyGlobalIsolatedOrigins();
 
-  // Records metrics about which site isolation command-line flags are present,
-  // and sets up a timer to keep recording them every 24 hours.  This should be
-  // called once on browser startup.
-  static void StartRecordingSiteIsolationFlagUsage();
-
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
   static std::string GetIsolatedOriginsFromCommandLine();
   static std::string GetIsolatedOriginsFromFieldTrial();
-
-  // Records metrics about which site isolation command-line flags are present.
-  static void RecordSiteIsolationFlagUsage();
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
 };

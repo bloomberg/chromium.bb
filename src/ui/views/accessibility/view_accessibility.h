@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -17,6 +18,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/views_export.h"
+
+namespace ui {
+
+class AXPlatformNodeDelegate;
+
+}  // namespace ui
 
 namespace views {
 
@@ -34,6 +41,9 @@ class Widget;
 // that implements the native accessibility APIs on a specific platform.
 class VIEWS_EXPORT ViewAccessibility {
  public:
+  using AccessibilityEventsCallback =
+      base::RepeatingCallback<void(const ui::AXPlatformNodeDelegate*,
+                                   const ax::mojom::Event)>;
   using AXVirtualViews = AXVirtualView::AXVirtualViews;
 
   static std::unique_ptr<ViewAccessibility> Create(View* view);
@@ -87,8 +97,8 @@ class VIEWS_EXPORT ViewAccessibility {
   Widget* GetNextFocus();
   Widget* GetPreviousFocus();
 
-  virtual gfx::NativeViewAccessible GetNativeObject();
-  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
+  virtual gfx::NativeViewAccessible GetNativeObject() const;
+  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type);
 
   // Causes the screen reader to announce |text|. If the current user is not
   // using a screen reader, has no effect.
@@ -134,8 +144,17 @@ class VIEWS_EXPORT ViewAccessibility {
   // native accessibility object associated with this view.
   gfx::NativeViewAccessible GetFocusedDescendant();
 
+  virtual void FireFocusAfterMenuClose();
+
+  // Used for testing. Allows a test to watch accessibility events.
+  const AccessibilityEventsCallback& accessibility_events_callback() const;
+  void set_accessibility_events_callback(AccessibilityEventsCallback callback);
+
  protected:
   explicit ViewAccessibility(View* view);
+
+  // Used for testing. Called every time an accessibility event is fired.
+  AccessibilityEventsCallback accessibility_events_callback_;
 
  private:
   // Weak. Owns this.

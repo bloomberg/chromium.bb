@@ -4,17 +4,22 @@
 
 library chromium.cast;
 
-// TODO(crbug.com/1028409): Remove this interface and use ApplicationContext.
-[Discoverable]
-protocol ApplicationControllerReceiver {
-  /// Used by the Agent to receive a controller from the Cast Runner.
-  /// Can only be called at most one time for the lifetime of the Component.
-  SetApplicationController(ApplicationController controller);
-};
+using fuchsia.media.sessions2;
 
 /// Allows clients to access and modify certain aspects of the Cast receiver
 /// application runtime.
 protocol ApplicationController {
   /// Enables or disables touch event processing.
   SetTouchInputEnabled(bool enable);
+
+  /// Sets whether to block all HTMLMediaElements in the frame from fetching and
+  /// loading media resources.
+  /// See fuchsia.web.Frame for usage details.
+  SetBlockMediaLoading(bool blocked);
+
+  /// Connects to the application's media control & observation API.
+  GetMediaPlayer(request<fuchsia.media.sessions2.Player> request);
+
+  /// Gets the private memory footprint of the application's main frame.
+  GetPrivateMemorySize() -> (uint64 size_bytes);
 };

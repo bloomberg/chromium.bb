@@ -28,7 +28,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -40,7 +40,7 @@ class ExceptionState;
 class LocalFrame;
 
 class StorageArea final : public ScriptWrappable,
-                          public ContextClient,
+                          public ExecutionContextClient,
                           public CachedStorageArea::Source {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
@@ -66,8 +66,10 @@ class StorageArea final : public ScriptWrappable,
   unsigned length(ExceptionState&) const;
   String key(unsigned index, ExceptionState&) const;
   String getItem(const String& key, ExceptionState&) const;
-  bool setItem(const String& key, const String& value, ExceptionState&);
-  DeleteResult removeItem(const String& key, ExceptionState&);
+  NamedPropertySetterResult setItem(const String& key,
+                                    const String& value,
+                                    ExceptionState&);
+  NamedPropertyDeleterResult removeItem(const String& key, ExceptionState&);
   void clear(ExceptionState&);
   bool Contains(const String& key, ExceptionState& ec) const;
 
@@ -76,7 +78,7 @@ class StorageArea final : public ScriptWrappable,
 
   bool CanAccessStorage() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // CachedStorageArea::Source:
   KURL GetPageUrl() const override;

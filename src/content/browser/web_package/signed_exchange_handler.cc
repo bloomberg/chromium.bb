@@ -48,7 +48,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
@@ -171,7 +171,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
-    std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
+    std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
     int frame_tree_node_id)
@@ -252,10 +252,10 @@ void SignedExchangeHandler::DoHeaderLoop() {
   DCHECK(state_ == State::kReadingPrologueBeforeFallbackUrl ||
          state_ == State::kReadingPrologueFallbackUrlAndAfter ||
          state_ == State::kReadingHeaders);
-  int rv = source_->Read(
-      header_read_buf_.get(), header_read_buf_->BytesRemaining(),
-      base::BindRepeating(&SignedExchangeHandler::DidReadHeader,
-                          base::Unretained(this), false /* sync */));
+  int rv =
+      source_->Read(header_read_buf_.get(), header_read_buf_->BytesRemaining(),
+                    base::BindOnce(&SignedExchangeHandler::DidReadHeader,
+                                   base::Unretained(this), false /* sync */));
   if (rv != net::ERR_IO_PENDING)
     DidReadHeader(true /* sync */, rv);
 }

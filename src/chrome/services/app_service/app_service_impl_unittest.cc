@@ -9,15 +9,17 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
-#include "chrome/services/app_service/public/cpp/preferred_apps.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
+#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -27,7 +29,7 @@
 
 namespace apps {
 
-class FakePublisher : public apps::mojom::Publisher {
+class FakePublisher : public apps::PublisherBase {
  public:
   FakePublisher(AppServiceImpl* impl,
                 apps::mojom::AppType app_type,
@@ -83,27 +85,6 @@ class FakePublisher : public apps::mojom::Publisher {
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override {}
 
-  void LaunchAppWithIntent(const std::string& app_id,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override {}
-
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override {}
-
-  void PromptUninstall(const std::string& app_id) override {}
-  void Uninstall(const std::string& app_id,
-                 bool clear_site_data,
-                 bool report_abuse) override {}
-  void PauseApp(const std::string& app_id) override {}
-  void UnpauseApps(const std::string& app_id) override {}
-
-  void OpenNativeSettings(const std::string& app_id) override {}
-
-  void OnPreferredAppSet(const std::string& app_id,
-                         apps::mojom::IntentFilterPtr intent_filter,
-                         apps::mojom::IntentPtr intent) override {}
-
   void CallOnApps(apps::mojom::Subscriber* subscriber,
                   std::vector<std::string>& app_ids,
                   bool uninstall) {
@@ -142,7 +123,7 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     return ss.str();
   }
 
-  PreferredApps& PreferredApps() { return preferred_apps_; }
+  PreferredAppsList& PreferredApps() { return preferred_apps_; }
 
  private:
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override {
@@ -169,72 +150,75 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     preferred_apps_.DeletePreferredApp(app_id, intent_filter);
   }
 
-  void InitializePreferredApps(base::Value preferred_apps) override {
-    preferred_apps_.Init(
-        std::make_unique<base::Value>(std::move(preferred_apps)));
+  void InitializePreferredApps(
+      PreferredAppsList::PreferredApps preferred_apps) override {
+    preferred_apps_.Init(preferred_apps);
   }
 
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
   std::set<std::string> app_ids_seen_;
-  apps::PreferredApps preferred_apps_;
+  apps::PreferredAppsList preferred_apps_;
 };
 
 class AppServiceImplTest : public testing::Test {
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  // base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(AppServiceImplTest, PubSub) {
   const int size_hint_in_dip = 64;
 
   AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
-  AppServiceImpl impl(&pref_service_);
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(&pref_service_, temp_dir_.GetPath());
 
   // Start with one subscriber.
   FakeSubscriber sub0(&impl);
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("", sub0.AppIdsSeen());
 
   // Add one publisher.
   FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
                      std::vector<std::string>{"A", "B"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("AB", sub0.AppIdsSeen());
 
   // Have that publisher publish more apps.
   pub0.PublishMoreApps(std::vector<std::string>{"C", "D", "E"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("ABCDE", sub0.AppIdsSeen());
 
   // Add a second publisher.
   FakePublisher pub1(&impl, apps::mojom::AppType::kBuiltIn,
                      std::vector<std::string>{"m"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("ABCDEm", sub0.AppIdsSeen());
 
   // Have both publishers publish more apps.
   pub0.PublishMoreApps(std::vector<std::string>{"F"});
   pub1.PublishMoreApps(std::vector<std::string>{"n"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("ABCDEFmn", sub0.AppIdsSeen());
 
   // Add a second subscriber.
   FakeSubscriber sub1(&impl);
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("ABCDEFmn", sub0.AppIdsSeen());
   EXPECT_EQ("ABCDEFmn", sub1.AppIdsSeen());
 
   // Publish more apps.
   pub1.PublishMoreApps(std::vector<std::string>{"o", "p", "q"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("ABCDEFmnopq", sub0.AppIdsSeen());
   EXPECT_EQ("ABCDEFmnopq", sub1.AppIdsSeen());
 
   // Add a third publisher.
   FakePublisher pub2(&impl, apps::mojom::AppType::kCrostini,
                      std::vector<std::string>{"$"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("$ABCDEFmnopq", sub0.AppIdsSeen());
   EXPECT_EQ("$ABCDEFmnopq", sub1.AppIdsSeen());
 
@@ -242,7 +226,7 @@ TEST_F(AppServiceImplTest, PubSub) {
   pub2.PublishMoreApps(std::vector<std::string>{"&"});
   pub1.PublishMoreApps(std::vector<std::string>{"r"});
   pub0.PublishMoreApps(std::vector<std::string>{"G"});
-  base::RunLoop().RunUntilIdle();
+  impl.FlushMojoCallsForTesting();
   EXPECT_EQ("$&ABCDEFGmnopqr", sub0.AppIdsSeen());
   EXPECT_EQ("$&ABCDEFGmnopqr", sub1.AppIdsSeen());
 
@@ -270,7 +254,7 @@ TEST_F(AppServiceImplTest, PubSub) {
         base::BindOnce(
             [](bool* ran, apps::mojom::IconValuePtr iv) { *ran = true; },
             &callback_ran));
-    base::RunLoop().RunUntilIdle();
+    impl.FlushMojoCallsForTesting();
     EXPECT_TRUE(callback_ran);
     EXPECT_EQ("-", pub0.load_icon_app_id);
     EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_app_id);
@@ -278,14 +262,14 @@ TEST_F(AppServiceImplTest, PubSub) {
   }
 }
 
+// TODO(https://crbug.com/1074596) Test to see if the flakiness is fixed. If it
+// is not fixed, please update to the same bug.
 TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
   AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
-  AppServiceImpl impl(&pref_service_);
-  impl.GetPreferredAppsForTesting().Init(nullptr);
-
-  // TODO(crbug.com/853604): Update this test after reading from disk done.
-  EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(&pref_service_, temp_dir_.GetPath());
+  impl.GetPreferredAppsForTesting().Init();
 
   const char kAppId1[] = "abcdefg";
   const char kAppId2[] = "aaaaaaa";
@@ -296,19 +280,19 @@ TEST_F(AppServiceImplTest, PreferredApps) {
 
   // Add one subscriber.
   FakeSubscriber sub0(&impl);
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(sub0.PreferredApps().GetValue(),
             impl.GetPreferredAppsForTesting().GetValue());
 
   // Add another subscriber.
   FakeSubscriber sub1(&impl);
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(sub1.PreferredApps().GetValue(),
             impl.GetPreferredAppsForTesting().GetValue());
 
   FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
                      std::vector<std::string>{kAppId1, kAppId2});
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Test sync preferred app to all subscribers.
   filter_url = GURL("https://www.abc.com/");
@@ -317,7 +301,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   auto another_intent_filter =
       apps_util::CreateIntentFilterForUrlScope(another_filter_url);
 
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(base::nullopt,
             sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(base::nullopt,
@@ -334,8 +318,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
                        another_intent_filter->Clone(),
                        apps_util::CreateIntentFromUrl(another_filter_url),
                        /*from_publisher=*/true);
-
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2,
@@ -345,7 +328,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
 
   // Test that uninstall removes all the settings for the app.
   pub0.UninstallApps(std::vector<std::string>{kAppId2}, &impl);
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(base::nullopt,
             sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(base::nullopt,
@@ -362,8 +345,8 @@ TEST_F(AppServiceImplTest, PreferredApps) {
                        another_intent_filter->Clone(),
                        apps_util::CreateIntentFromUrl(another_filter_url),
                        /*from_publisher=*/true);
+  task_environment_.RunUntilIdle();
 
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2,
@@ -374,8 +357,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   // Test that remove setting for one filter.
   impl.RemovePreferredAppForFilter(apps::mojom::AppType::kUnknown, kAppId2,
                                    intent_filter->Clone());
-
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(base::nullopt,
             sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(base::nullopt,
@@ -384,6 +366,40 @@ TEST_F(AppServiceImplTest, PreferredApps) {
             sub0.PreferredApps().FindPreferredAppForUrl(another_filter_url));
   EXPECT_EQ(kAppId2,
             sub1.PreferredApps().FindPreferredAppForUrl(another_filter_url));
+}
+
+TEST_F(AppServiceImplTest, PreferredAppsPersistency) {
+  AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  const char kAppId1[] = "abcdefg";
+  GURL filter_url = GURL("https://www.google.com/abc");
+  auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+  {
+    base::RunLoop run_loop_read;
+    AppServiceImpl impl(&pref_service_, temp_dir_.GetPath(),
+                        run_loop_read.QuitClosure());
+    impl.FlushMojoCallsForTesting();
+    run_loop_read.Run();
+    base::RunLoop run_loop_write;
+    impl.SetWriteCompletedCallbackForTesting(run_loop_write.QuitClosure());
+    impl.AddPreferredApp(apps::mojom::AppType::kUnknown, kAppId1,
+                         intent_filter->Clone(),
+                         apps_util::CreateIntentFromUrl(filter_url),
+                         /*from_publisher=*/false);
+    run_loop_write.Run();
+    impl.FlushMojoCallsForTesting();
+  }
+  // Create a new impl to initialize preferred apps from the disk.
+  {
+    base::RunLoop run_loop_read;
+    AppServiceImpl impl(&pref_service_, temp_dir_.GetPath(),
+                        run_loop_read.QuitClosure());
+    impl.FlushMojoCallsForTesting();
+    run_loop_read.Run();
+    EXPECT_EQ(kAppId1, impl.GetPreferredAppsForTesting().FindPreferredAppForUrl(
+                           filter_url));
+  }
 }
 
 }  // namespace apps

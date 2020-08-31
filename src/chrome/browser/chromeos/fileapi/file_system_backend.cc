@@ -9,11 +9,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -33,6 +35,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace chromeos {
 namespace {
@@ -67,6 +70,7 @@ FileSystemBackend::FileSystemBackend(
     std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_documents_provider_delegate,
     std::unique_ptr<FileSystemBackendDelegate> drivefs_delegate,
+    std::unique_ptr<FileSystemBackendDelegate> smbfs_delegate,
     scoped_refptr<storage::ExternalMountPoints> mount_points,
     storage::ExternalMountPoints* system_mount_points)
     : file_access_permissions_(new FileAccessPermissions()),
@@ -77,6 +81,7 @@ FileSystemBackend::FileSystemBackend(
       arc_documents_provider_delegate_(
           std::move(arc_documents_provider_delegate)),
       drivefs_delegate_(std::move(drivefs_delegate)),
+      smbfs_delegate_(std::move(smbfs_delegate)),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {}
 
@@ -280,7 +285,6 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return file_system_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
-    case storage::kFileSystemTypeSmbFs:
       return local_file_util_.get();
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->GetAsyncFileUtil(type);
@@ -290,6 +294,8 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return arc_documents_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeDriveFs:
       return drivefs_delegate_->GetAsyncFileUtil(type);
+    case storage::kFileSystemTypeSmbFs:
+      return smbfs_delegate_->GetAsyncFileUtil(type);
     default:
       NOTREACHED();
   }
@@ -346,9 +352,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     return storage::FileSystemOperation::Create(
         url, context,
         std::make_unique<storage::FileSystemOperationContext>(
-            context, base::CreateSequencedTaskRunner(
-                         {base::ThreadPool(), base::MayBlock(),
-                          base::TaskPriority::USER_VISIBLE})
+            context, base::ThreadPool::CreateSequencedTaskRunner(
+                         {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
                          .get()));
   }
 
@@ -412,8 +417,8 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeSmbFs:
       return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForLocalFile(
-              base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                      base::TaskPriority::USER_VISIBLE})
+              base::ThreadPool::CreateTaskRunner(
+                  {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
                   .get(),
               url.path(), offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -449,8 +454,8 @@ FileSystemBackend::CreateFileStreamWriter(
     case storage::kFileSystemTypeDriveFs:
     case storage::kFileSystemTypeSmbFs:
       return storage::FileStreamWriter::CreateForLocalFile(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_VISIBLE})
+          base::ThreadPool::CreateTaskRunner(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
               .get(),
           url.path(), offset, storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -514,7 +519,7 @@ storage::FileSystemURL FileSystemBackend::CreateInternalURL(
     return storage::FileSystemURL();
 
   return context->CreateCrackedFileSystemURL(
-      GURL() /* origin */, storage::kFileSystemTypeExternal, virtual_path);
+      url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
 }
 
 }  // namespace chromeos

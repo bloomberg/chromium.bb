@@ -28,13 +28,6 @@ ReprocessTask::ReprocessTask(ReprocessTask&& other)
 
 ReprocessTask::~ReprocessTask() = default;
 
-bool CameraAppDeviceImpl::SizeComparator::operator()(
-    const gfx::Size& size_1,
-    const gfx::Size& size_2) const {
-  return size_1.width() < size_2.width() || (size_1.width() == size_2.width() &&
-                                             size_1.height() < size_2.height());
-}
-
 // static
 int CameraAppDeviceImpl::GetReprocessReturnCode(
     cros::mojom::Effect effect,
@@ -57,6 +50,9 @@ ReprocessTaskQueue CameraAppDeviceImpl::GetSingleShotReprocessOptions(
   still_capture_task.effect = cros::mojom::Effect::NO_EFFECT;
   still_capture_task.callback =
       base::BindOnce(&OnStillCaptureDone, std::move(take_photo_callback));
+  // Explicitly disable edge enhancement and noise reduction for YUV -> JPG
+  // conversion.
+  DisableEeNr(&still_capture_task);
   result_task_queue.push(std::move(still_capture_task));
   return result_task_queue;
 }
@@ -90,6 +86,9 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   still_capture_task.effect = cros::mojom::Effect::NO_EFFECT;
   still_capture_task.callback =
       base::BindOnce(&OnStillCaptureDone, std::move(take_photo_callback));
+  // Explicitly disable edge enhancement and noise reduction for YUV -> JPG
+  // conversion.
+  DisableEeNr(&still_capture_task);
   result_task_queue.push(std::move(still_capture_task));
 
   base::AutoLock lock(reprocess_tasks_lock_);
@@ -101,16 +100,16 @@ void CameraAppDeviceImpl::ConsumeReprocessOptions(
   std::move(consumption_callback).Run(std::move(result_task_queue));
 }
 
-void CameraAppDeviceImpl::GetFpsRange(const gfx::Size& resolution,
-                                      GetFpsRangeCallback callback) {
+base::Optional<gfx::Range> CameraAppDeviceImpl::GetFpsRange() {
   base::AutoLock lock(fps_ranges_lock_);
 
-  auto it = resolution_fps_range_map_.find(resolution);
-  if (it == resolution_fps_range_map_.end()) {
-    std::move(callback).Run({});
-    return;
-  }
-  std::move(callback).Run(it->second);
+  return specified_fps_range_;
+}
+
+gfx::Size CameraAppDeviceImpl::GetStillCaptureResolution() {
+  base::AutoLock lock(still_capture_resolution_lock_);
+
+  return still_capture_resolution_;
 }
 
 cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
@@ -136,19 +135,6 @@ void CameraAppDeviceImpl::OnShutterDone() {
   for (auto& observer : camera_event_observers_) {
     observer.second->OnShutterDone();
   }
-}
-
-void CameraAppDeviceImpl::SetReprocessResult(
-    SetReprocessOptionCallback callback,
-    const int32_t status,
-    media::mojom::BlobPtr blob) {
-  auto callback_on_mojo_thread = base::BindOnce(
-      [](const int32_t status, media::mojom::BlobPtr blob,
-         SetReprocessOptionCallback callback) {
-        std::move(callback).Run(status, std::move(blob));
-      },
-      status, std::move(blob), std::move(callback));
-  task_runner_->PostTask(FROM_HERE, std::move(callback_on_mojo_thread));
 }
 
 void CameraAppDeviceImpl::GetCameraInfo(GetCameraInfoCallback callback) {
@@ -177,8 +163,7 @@ void CameraAppDeviceImpl::SetReprocessOption(
   reprocess_task_queue_.push(std::move(task));
 }
 
-void CameraAppDeviceImpl::SetFpsRange(const gfx::Size& resolution,
-                                      const gfx::Range& fps_range,
+void CameraAppDeviceImpl::SetFpsRange(const gfx::Range& fps_range,
                                       SetFpsRangeCallback callback) {
   const int entry_length = 2;
 
@@ -202,19 +187,20 @@ void CameraAppDeviceImpl::SetFpsRange(const gfx::Size& resolution,
 
   base::AutoLock lock(fps_ranges_lock_);
 
-  if (!is_valid) {
-    // If the input range is invalid, we should still clear the cache range so
-    // that it will fallback to use default fps range rather than the cache one.
-    auto it = resolution_fps_range_map_.find(resolution);
-    if (it != resolution_fps_range_map_.end()) {
-      resolution_fps_range_map_.erase(it);
-    }
-    std::move(callback).Run(false);
-    return;
+  if (is_valid) {
+    specified_fps_range_ = fps_range;
+  } else {
+    specified_fps_range_ = {};
   }
+  std::move(callback).Run(is_valid);
+}
 
-  resolution_fps_range_map_[resolution] = fps_range;
-  std::move(callback).Run(true);
+void CameraAppDeviceImpl::SetStillCaptureResolution(
+    const gfx::Size& resolution,
+    SetStillCaptureResolutionCallback callback) {
+  base::AutoLock lock(still_capture_resolution_lock_);
+  still_capture_resolution_ = resolution;
+  std::move(callback).Run();
 }
 
 void CameraAppDeviceImpl::SetCaptureIntent(
@@ -274,6 +260,31 @@ void CameraAppDeviceImpl::RemoveCameraEventObserver(
 
   bool is_success = camera_event_observers_.erase(id) == 1;
   std::move(callback).Run(is_success);
+}
+
+// static
+void CameraAppDeviceImpl::DisableEeNr(ReprocessTask* task) {
+  auto ee_entry =
+      BuildMetadataEntry(cros::mojom::CameraMetadataTag::ANDROID_EDGE_MODE,
+                         cros::mojom::AndroidEdgeMode::ANDROID_EDGE_MODE_OFF);
+  auto nr_entry = BuildMetadataEntry(
+      cros::mojom::CameraMetadataTag::ANDROID_NOISE_REDUCTION_MODE,
+      cros::mojom::AndroidNoiseReductionMode::ANDROID_NOISE_REDUCTION_MODE_OFF);
+  task->extra_metadata.push_back(std::move(ee_entry));
+  task->extra_metadata.push_back(std::move(nr_entry));
+}
+
+void CameraAppDeviceImpl::SetReprocessResult(
+    SetReprocessOptionCallback callback,
+    const int32_t status,
+    media::mojom::BlobPtr blob) {
+  auto callback_on_mojo_thread = base::BindOnce(
+      [](const int32_t status, media::mojom::BlobPtr blob,
+         SetReprocessOptionCallback callback) {
+        std::move(callback).Run(status, std::move(blob));
+      },
+      status, std::move(blob), std::move(callback));
+  task_runner_->PostTask(FROM_HERE, std::move(callback_on_mojo_thread));
 }
 
 }  // namespace media

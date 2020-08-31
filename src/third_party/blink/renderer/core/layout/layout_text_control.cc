@@ -55,8 +55,11 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   LayoutBlock* inner_editor_layout_object =
       To<LayoutBlock>(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
+    // This is necessary to update the style on the inner_editor based on the
+    // changes in the input element ComputedStyle.
+    // (See TextControlInnerEditorElement::CreateInnerEditorStyle()).
     inner_editor->SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+        kLocalStyleChange,
         StyleChangeReasonForTracing::Create(style_change_reason::kControl));
 
     // The inner editor element uses the LayoutTextControl's ::selection style
@@ -208,69 +211,25 @@ float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
   return font.Width(text_run);
 }
 
-void LayoutTextControl::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
+MinMaxSizes LayoutTextControl::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth();
+
   // Use average character width. Matches IE.
   AtomicString family =
       StyleRef().GetFont().GetFontDescription().Family().Family();
-  max_logical_width = PreferredContentLogicalWidth(
+  sizes.max_size += PreferredContentLogicalWidth(
       const_cast<LayoutTextControl*>(this)->GetAvgCharWidth(family));
   if (InnerEditorElement()) {
     if (LayoutBox* inner_editor_layout_box =
-            InnerEditorElement()->GetLayoutBox())
-      max_logical_width += inner_editor_layout_box->PaddingStart() +
-                           inner_editor_layout_box->PaddingEnd();
+            InnerEditorElement()->GetLayoutBox()) {
+      sizes.max_size += inner_editor_layout_box->PaddingStart() +
+                        inner_editor_layout_box->PaddingEnd();
+    }
   }
   if (!StyleRef().LogicalWidth().IsPercentOrCalc())
-    min_logical_width = max_logical_width;
-}
-
-void LayoutTextControl::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
-
-  min_preferred_logical_width_ = LayoutUnit();
-  max_preferred_logical_width_ = LayoutUnit();
-  const ComputedStyle& style_to_use = StyleRef();
-
-  if (style_to_use.LogicalWidth().IsFixed() &&
-      style_to_use.LogicalWidth().Value() >= 0)
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        AdjustContentBoxLogicalWidthForBoxSizing(
-            style_to_use.LogicalWidth().Value());
-  else
-    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                  max_preferred_logical_width_);
-
-  if (style_to_use.LogicalMinWidth().IsFixed() &&
-      style_to_use.LogicalMinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
-  }
-
-  if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
-  }
-
-  LayoutUnit to_add = BorderAndPaddingLogicalWidth();
-
-  min_preferred_logical_width_ += to_add;
-  max_preferred_logical_width_ += to_add;
-
-  ClearPreferredLogicalWidthsDirty();
+    sizes.min_size = sizes.max_size;
+  return sizes;
 }
 
 void LayoutTextControl::AddOutlineRects(Vector<PhysicalRect>& rects,

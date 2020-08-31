@@ -53,7 +53,7 @@ void PrintersToValues(const PrinterList& printer_list,
                             printer.printer_description);
 
     auto options = std::make_unique<base::DictionaryValue>();
-    for (const auto opt_it : printer.options)
+    for (const auto& opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
 #if defined(OS_CHROMEOS)
@@ -61,10 +61,6 @@ void PrintersToValues(const PrinterList& printer_list,
         kCUPSEnterprisePrinter,
         base::Contains(printer.options, kCUPSEnterprisePrinter) &&
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
-
-    auto it = printer.options.find(kPrinterEulaURL);
-    options->SetString(kPrinterEulaURL,
-                       it != printer.options.end() ? it->second : "");
 #endif  // defined(OS_CHROMEOS)
 
     printer_info->Set(kSettingPrinterOptions, std::move(options));

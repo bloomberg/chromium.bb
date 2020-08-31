@@ -25,7 +25,7 @@ class XRRenderState : public ScriptWrappable {
   // Session's views.
   double depthNear() const { return depth_near_; }
   double depthFar() const { return depth_far_; }
-  double inlineVerticalFieldOfView(bool& is_null) const;
+  base::Optional<double> inlineVerticalFieldOfView() const;
   XRWebGLLayer* baseLayer() const { return base_layer_; }
 
   HTMLCanvasElement* output_canvas() const;
@@ -36,7 +36,7 @@ class XRRenderState : public ScriptWrappable {
   // bound to a different session.
   void removeOutputContext();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool immersive_;

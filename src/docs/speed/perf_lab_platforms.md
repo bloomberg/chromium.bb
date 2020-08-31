@@ -9,9 +9,7 @@
  * [android-go-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go-perf): Android O (gobo).
  * [android-go_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go_webview-perf): Android OPM1.171019.021 (gobo).
  * [Android Nexus5 Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus5%20Perf): Android KOT49H.
- * [android-nexus5x-perf](https://ci.chromium.org/p/chrome/builders/ci/android-nexus5x-perf): Android MMB29Q.
  * [Android Nexus5X WebView Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus5X%20WebView%20Perf): Android AOSP MOB30K.
- * [Android Nexus6 WebView Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus6%20WebView%20Perf): Android AOSP MOB30K.
  * [android-pixel2-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2-perf): Android OPM1.171019.021.
  * [android-pixel2_weblayer-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_weblayer-perf): Android OPM1.171019.021.
  * [android-pixel2_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2_webview-perf): Android OPM1.171019.021.
@@ -28,6 +26,7 @@
 ## Win
 
  * [win-10-perf](https://ci.chromium.org/p/chrome/builders/ci/win-10-perf): Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM, Intel Kaby Lake HD Graphics 630.
+ * [win-10_laptop_low_end-perf](https://ci.chromium.org/p/chrome/builders/ci/win-10_laptop_low_end-perf): Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, SSD, 4GB RAM..
  * [Win 7 Nvidia GPU Perf](https://ci.chromium.org/p/chrome/builders/ci/Win%207%20Nvidia%20GPU%20Perf): N/A.
  * [Win 7 Perf](https://ci.chromium.org/p/chrome/builders/ci/Win%207%20Perf): N/A.
 

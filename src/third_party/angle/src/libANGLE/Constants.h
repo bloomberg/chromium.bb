@@ -73,10 +73,17 @@ enum
 
     // Implementation upper limits, real maximums depend on the hardware.
     IMPLEMENTATION_MAX_SHADER_STORAGE_BUFFER_BINDINGS = 64,
+
+    // Implementation upper limits of max number of clip distances
+    IMPLEMENTATION_MAX_CLIP_DISTANCES = 32,
 };
 
 namespace limits
 {
+// Almost all drivers use 2048 (the minimum value) as GL_MAX_VERTEX_ATTRIB_STRIDE.  ANGLE advertizes
+// the same limit.
+constexpr uint32_t kMaxVertexAttribStride = 2048;
+
 // Some of the minimums required by GL, used to detect if the backend meets the minimum requirement.
 // Currently, there's no need to separate these values per spec version.
 constexpr uint32_t kMinimumComputeStorageBuffers = 4;

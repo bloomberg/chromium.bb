@@ -93,6 +93,8 @@ bool SVGScriptElement::IsURLAttribute(const Attribute& attribute) const {
 void SVGScriptElement::FinishParsingChildren() {
   SVGElement::FinishParsingChildren();
   have_fired_load_ = true;
+  DCHECK(!script_text_internal_slot_.length());
+  script_text_internal_slot_ = ParkableString(TextFromChildren().Impl());
 }
 
 bool SVGScriptElement::HaveLoadedRequiredResources() {
@@ -107,8 +109,12 @@ String SVGScriptElement::TypeAttributeValue() const {
   return getAttribute(svg_names::kTypeAttr).GetString();
 }
 
-String SVGScriptElement::TextFromChildren() {
-  return Element::TextFromChildren();
+String SVGScriptElement::ChildTextContent() {
+  return TextFromChildren();
+}
+
+String SVGScriptElement::ScriptTextInternalSlot() const {
+  return script_text_internal_slot_.ToString();
 }
 
 bool SVGScriptElement::HasSourceAttribute() const {
@@ -141,6 +147,10 @@ Document& SVGScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
 
+ExecutionContext* SVGScriptElement::GetExecutionContext() const {
+  return Node::GetExecutionContext();
+}
+
 Element& SVGScriptElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
   CreateElementFlags flags =
@@ -164,6 +174,10 @@ void SVGScriptElement::SetScriptElementForBinding(
     element.SetSVGScriptElement(this);
 }
 
+ScriptElementBase::Type SVGScriptElement::GetScriptElementType() {
+  return ScriptElementBase::Type::kSVGScriptElement;
+}
+
 #if DCHECK_IS_ON()
 bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
   if (name == svg_names::kTypeAttr || name == svg_names::kHrefAttr ||
@@ -175,15 +189,15 @@ bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
 
 const AttrNameToTrustedType& SVGScriptElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({
-                          {svg_names::kHrefAttr.LocalName(),
-                           SpecificTrustedType::kTrustedScriptURL},
-                      }));
+  DEFINE_STATIC_LOCAL(
+      AttrNameToTrustedType, attribute_map,
+      ({
+          {svg_names::kHrefAttr.LocalName(), SpecificTrustedType::kScriptURL},
+      }));
   return attribute_map;
 }
 
-void SVGScriptElement::Trace(blink::Visitor* visitor) {
+void SVGScriptElement::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

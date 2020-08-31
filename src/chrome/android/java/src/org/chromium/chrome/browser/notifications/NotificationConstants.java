@@ -116,6 +116,18 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_CLICK_TO_CALL_ERROR = 12;
 
     /**
+     * Unique identifier for the high priority "Running in Chrome" notification displayed the first
+     * time a TWA is run.
+     */
+    public static final int NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL = 13;
+
+    /**
+     * Unique identifier for the low priority "Running in Chrome" notifications that are disabled
+     * subsequent times a TWA is run.
+     */
+    public static final int NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT = 14;
+
+    /**
      * Separator used to separate the notification origin from additional data such as the
      * developer specified tag. This and the prefix following it need to be the same as the one
      * specified in notification_id_generator.cc.
@@ -139,6 +151,7 @@ public class NotificationConstants {
     public static final String GROUP_SEND_TAB_TO_SELF = "SendTabToSelf";
     public static final String GROUP_CLICK_TO_CALL = "ClickToCall";
     public static final String GROUP_SHARED_CLIPBOARD = "SharedClipboard";
+    public static final String GROUP_SHARE_SAVE_IMAGE = "ShareSaveImage";
 
     // Web notification group names are set dynamically as this prefix + notification origin.
     // For example, 'Web:chromium.org' for a notification from chromium.org.

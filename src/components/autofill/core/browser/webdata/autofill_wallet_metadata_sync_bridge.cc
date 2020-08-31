@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
@@ -404,7 +405,7 @@ void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
   // disabled, so we want to delete the data as well (i.e. the wallet metadata
   // entities).
   if (delete_metadata_change_list) {
-    for (const std::pair<std::string, AutofillMetadata>& pair : cache_) {
+    for (const std::pair<const std::string, AutofillMetadata>& pair : cache_) {
       TypeAndMetadataId parsed_storage_key =
           ParseWalletMetadataStorageKey(pair.first);
       RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
@@ -525,7 +526,7 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
-  for (const std::string storage_key : old_orphan_keys) {
+  for (const std::string& storage_key : old_orphan_keys) {
     TypeAndMetadataId parsed_storage_key =
         ParseWalletMetadataStorageKey(storage_key);
     if (RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,

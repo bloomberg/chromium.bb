@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -18,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -68,12 +70,6 @@ const int32_t kMaxDecodeHistory = 32;
 // requesting fallback to software decode.
 const int32_t kMaxConsecutiveErrors = 5;
 
-// Currently, RTCVideoDecoderAdapter only tries one VideoDecoderImplementation.
-// Since we use it in multiple places, memorize it here to make it clear that
-// they must be changed together.
-constexpr media::VideoDecoderImplementation kImplementation =
-    media::VideoDecoderImplementation::kDefault;
-
 // Map webrtc::VideoCodecType to media::VideoCodec.
 media::VideoCodec ToVideoCodec(webrtc::VideoCodecType video_codec_type) {
   switch (video_codec_type) {
@@ -123,10 +119,10 @@ void FinishWait(base::WaitableEvent* waiter, bool* result_out, bool result) {
 }
 
 void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
-                          const media::ProvideOverlayInfoCB& overlay_info_cb) {
+                          media::ProvideOverlayInfoCB overlay_info_cb) {
   // Android overlays are not supported.
   if (overlay_info_cb)
-    overlay_info_cb.Run(media::OverlayInfo());
+    std::move(overlay_info_cb).Run(media::OverlayInfo());
 }
 
 }  // namespace
@@ -157,8 +153,9 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
       kDefaultSize, media::EmptyExtraData(),
       media::EncryptionScheme::kUnencrypted);
   if (gpu_factories->IsDecoderConfigSupported(kImplementation, config) ==
-      media::GpuVideoAcceleratorFactories::Supported::kFalse)
+      media::GpuVideoAcceleratorFactories::Supported::kFalse) {
     return nullptr;
+  }
 
   // Synchronously verify that the decoder can be initialized.
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
@@ -209,7 +206,9 @@ bool RTCVideoDecoderAdapter::InitializeSync(
           CrossThreadBindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
                               CrossThreadUnretained(this), config,
                               std::move(init_cb)))) {
-    waiter.Wait();
+    // TODO(crbug.com/1076817) Remove if a root cause is found.
+    if (!waiter.TimedWait(base::TimeDelta::FromSeconds(10)))
+      return false;
   }
   return result;
 }
@@ -225,6 +224,11 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
 
   base::AutoLock auto_lock(lock_);
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
+  if (!has_error_) {
+    UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderProfile",
+                              GuessVideoCodecProfile(format_),
+                              media::VIDEO_CODEC_PROFILE_MAX + 1);
+  }
   return has_error_ ? WEBRTC_VIDEO_CODEC_UNINITIALIZED : WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -388,9 +392,17 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
   media::VideoDecoder::OutputCB output_cb = ConvertToBaseRepeatingCallback(
       CrossThreadBindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_));
-  video_decoder_->Initialize(config, low_delay, cdm_context,
-                             ConvertToBaseOnceCallback(std::move(init_cb)),
-                             output_cb, base::DoNothing());
+  video_decoder_->Initialize(
+      config, low_delay, cdm_context,
+      base::BindOnce(&RTCVideoDecoderAdapter::OnInitializeDone,
+                     ConvertToBaseOnceCallback(std::move(init_cb))),
+      output_cb, base::DoNothing());
+}
+
+// static
+void RTCVideoDecoderAdapter::OnInitializeDone(base::OnceCallback<void(bool)> cb,
+                                              media::Status status) {
+  std::move(cb).Run(status.is_ok());
 }
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
@@ -454,7 +466,8 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
               new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(
-                  std::move(frame)))
+                  std::move(frame),
+                  WebRtcVideoFrameAdapter::LogStatus::kNoLogging))
           .set_timestamp_rtp(static_cast<uint32_t>(timestamp.InMicroseconds()))
           .set_timestamp_us(0)
           .set_rotation(webrtc::kVideoRotation_0)

@@ -8,10 +8,12 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContextOptions.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 
@@ -32,11 +34,19 @@ class VulkanContextProvider;
 
 namespace gpu {
 
+#if BUILDFLAG(ENABLE_VULKAN)
+class VulkanImage;
+#endif
+
 namespace gles2 {
 class FeatureInfo;
 }  // namespace gles2
 
 class SharedContextState;
+
+// Returns default GrContextOptions.
+GPU_GLES2_EXPORT GrContextOptions
+GetDefaultGrContextOptions(GrContextType type);
 
 // Returns internal gl format of texture for Skia
 GPU_GLES2_EXPORT GLuint
@@ -74,6 +84,8 @@ GPU_GLES2_EXPORT void DeleteSkSurface(SharedContextState* context_state,
                                       sk_sp<SkSurface> sk_surface);
 
 #if BUILDFLAG(ENABLE_VULKAN)
+GPU_GLES2_EXPORT GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image);
+
 GPU_GLES2_EXPORT GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
     VkPhysicalDevice physical_device,
     VkImageTiling tiling,

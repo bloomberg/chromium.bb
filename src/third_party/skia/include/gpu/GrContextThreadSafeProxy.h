@@ -14,6 +14,7 @@ class GrBackendFormat;
 class GrContextThreadSafeProxyPriv;
 struct SkImageInfo;
 class SkSurfaceCharacterization;
+class SkSurfaceProps;
 
 /**
  * Can be used to perform actions related to the generating GrContext in a thread safe manner. The
@@ -94,7 +95,7 @@ private:
     // DDL TODO: need to add unit tests for backend & maybe options
     GrContextThreadSafeProxy(GrBackendApi, const GrContextOptions&, uint32_t contextID);
 
-    bool init(sk_sp<const GrCaps>, sk_sp<GrSkSLFPFactoryCache>) override;
+    bool init(sk_sp<const GrCaps>) override;
 
     typedef GrContext_Base INHERITED;
 };

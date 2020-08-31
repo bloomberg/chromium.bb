@@ -24,6 +24,8 @@ class Change(collections.namedtuple('Change', ('commits', 'patch'))):
   then apply patch 2423293002.
   """
 
+  __slots__ = ()
+
   def __new__(cls, commits, patch=None):
     """Creates a Change.
 
@@ -199,6 +201,12 @@ def _ExpandDepsToMatchRepositories(commits_a, commits_b):
     commits_a: A list of Commits.
     commits_b: A list of Commits.
   """
+  # First, scrub the list of commits of things we shouldn't be looking into.
+  commits_a[:] = [
+      c for c in commits_a if commit_module.RepositoryInclusionFilter(c)]
+  commits_b[:] = [
+      c for c in commits_b if commit_module.RepositoryInclusionFilter(c)]
+
   # The lists may be given in any order. Let's make commits_b the bigger list.
   if len(commits_a) > len(commits_b):
     commits_a, commits_b = commits_b, commits_a
@@ -213,7 +221,9 @@ def _ExpandDepsToMatchRepositories(commits_a, commits_b):
     for commit_b in commits_b[len(commits_a):]:
       dep_a = _FindRepositoryUrlInDeps(deps_a, commit_b.repository_url)
       if dep_a:
-        commits_a.append(commit_module.Commit.FromDep(dep_a))
+        dep_commit = commit_module.Commit.FromDep(dep_a)
+        if dep_commit is not None:
+          commits_a.append(dep_commit)
       else:
         break
 
@@ -255,12 +265,14 @@ def _FindMidpoints(commits_a, commits_b):
       # Add any DEPS changes to the commit lists.
       deps_a = commit_a.Deps()
       deps_b = commit_b.Deps()
-      commits_a += sorted(
+      dep_commits_a = sorted(
           commit_module.Commit.FromDep(dep) for dep in deps_a.difference(deps_b)
           if not _FindRepositoryUrlInCommits(commits_a, dep.repository_url))
-      commits_b += sorted(
+      dep_commits_b = sorted(
           commit_module.Commit.FromDep(dep) for dep in deps_b.difference(deps_a)
           if not _FindRepositoryUrlInCommits(commits_b, dep.repository_url))
+      commits_a += [c for c in dep_commits_a if c is not None]
+      commits_b += [c for c in dep_commits_b if c is not None]
 
   return commits_midpoint
 
@@ -277,3 +289,4 @@ def _FindRepositoryUrlInCommits(commits, repository_url):
     if commit.repository_url == repository_url:
       return commit
   return None
+

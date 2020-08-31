@@ -5,9 +5,11 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
@@ -50,7 +52,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                                   base::WeakPtr<ResultDelegate> result_delegate,
                                   base::WeakPtr<UIDelegate> ui_delegate) {
   DCHECK(ui_delegate);
-  GetFullCard(card, reason, result_delegate, ui_delegate, base::Value());
+  GetFullCard(card, reason, result_delegate, ui_delegate,
+              /*fido_assertion_info=*/base::nullopt);
 }
 
 void FullCardRequest::GetFullCardViaFIDO(
@@ -63,15 +66,16 @@ void FullCardRequest::GetFullCardViaFIDO(
               std::move(fido_assertion_info));
 }
 
-void FullCardRequest::GetFullCard(const CreditCard& card,
-                                  AutofillClient::UnmaskCardReason reason,
-                                  base::WeakPtr<ResultDelegate> result_delegate,
-                                  base::WeakPtr<UIDelegate> ui_delegate,
-                                  base::Value fido_assertion_info) {
+void FullCardRequest::GetFullCard(
+    const CreditCard& card,
+    AutofillClient::UnmaskCardReason reason,
+    base::WeakPtr<ResultDelegate> result_delegate,
+    base::WeakPtr<UIDelegate> ui_delegate,
+    base::Optional<base::Value> fido_assertion_info) {
   // Retrieval of card information should happen via CVC auth or FIDO, but not
   // both. Use |ui_delegate|'s existence as evidence of doing CVC auth and
   // |fido_assertion_info| as evidence of doing FIDO auth.
-  DCHECK_NE(fido_assertion_info.is_dict(), !!ui_delegate);
+  DCHECK_NE(fido_assertion_info.has_value(), !!ui_delegate);
   DCHECK(result_delegate);
 
   // Only one request can be active at a time. If the member variable
@@ -107,8 +111,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
 
   if (should_unmask_card_) {
     risk_data_loader_->LoadRiskData(
-        base::Bind(&FullCardRequest::OnDidGetUnmaskRiskData,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&FullCardRequest::OnDidGetUnmaskRiskData,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -139,6 +143,17 @@ void FullCardRequest::OnUnmaskPromptAccepted(
   }
 
   request_->user_response = user_response;
+#if defined(OS_ANDROID)
+  if (ui_delegate_) {
+    // An opt-in request to Payments must be included either if the user chose
+    // to opt-in through the CVC prompt or if the UI delegate indicates that the
+    // user previously chose to opt-in through the settings page.
+    request_->user_response.enable_fido_auth =
+        user_response.enable_fido_auth ||
+        ui_delegate_->UserOptedInToFidoFromSettingsPageOnMobile();
+  }
+#endif
+
   if (!request_->risk_data.empty())
     SendUnmaskCardRequest();
 }
@@ -150,10 +165,20 @@ void FullCardRequest::OnUnmaskPromptClosed() {
   Reset();
 }
 
+bool FullCardRequest::ShouldOfferFidoAuth() const {
+  // FIDO opt-in is only handled from card unmask on mobile. Desktop platforms
+  // provide a separate opt-in bubble.
+#if defined(OS_ANDROID)
+  return ui_delegate_ && ui_delegate_->ShouldOfferFidoAuth();
+#else
+  return false;
+#endif
+}
+
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
   if (!request_->user_response.cvc.empty() ||
-      !request_->fido_assertion_info.is_none()) {
+      request_->fido_assertion_info.has_value()) {
     SendUnmaskCardRequest();
   }
 }
@@ -171,12 +196,12 @@ void FullCardRequest::OnDidGetRealPan(
   // If the CVC field is populated, that means the user performed a CVC check.
   // If FIDO AssertionInfo is populated, then the user must have performed FIDO
   // authentication. Exactly one of these fields must be populated.
-  DCHECK_NE(request_->user_response.cvc.empty(),
-            request_->fido_assertion_info.is_none());
+  DCHECK_NE(!request_->user_response.cvc.empty(),
+            request_->fido_assertion_info.has_value());
   if (!request_->user_response.cvc.empty()) {
     AutofillMetrics::LogRealPanDuration(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
-  } else if (!request_->fido_assertion_info.is_none()) {
+  } else if (request_->fido_assertion_info.has_value()) {
     AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
         AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
   }
@@ -215,8 +240,10 @@ void FullCardRequest::OnDidGetRealPan(
       unmask_response_details_ = response_details;
 
       const base::string16 cvc =
-          base::FeatureList::IsEnabled(
-              features::kAutofillAlwaysReturnCloudTokenizedCard) &&
+          (base::FeatureList::IsEnabled(
+               features::kAutofillEnableGoogleIssuedCard) ||
+           base::FeatureList::IsEnabled(
+               features::kAutofillAlwaysReturnCloudTokenizedCard)) &&
                   !response_details.dcvv.empty()
               ? base::UTF8ToUTF16(response_details.dcvv)
               : request_->user_response.cvc;

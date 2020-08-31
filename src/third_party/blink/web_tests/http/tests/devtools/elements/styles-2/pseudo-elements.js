@@ -8,6 +8,14 @@
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
       <style>
+      #inspected {
+        display: list-item;
+      }
+
+      #inspected::marker {
+        content: "MARKER";
+      }
+
       #inspected:before, .some-other-selector {
         content: "BEFORE";
       }
@@ -17,6 +25,14 @@
       }
       </style>
       <style>
+      #empty {
+        display: list-item;
+      }
+
+      #empty::marker {
+        content: "EmptyMarker";
+      }
+
       #empty::before {
         content: "EmptyBefore";
       }
@@ -44,6 +60,12 @@
       function addBeforeRule()
       {
           document.styleSheets[0].addRule("#inspected:before", "content: \\"BEFORE\\"");
+      }
+
+      function addMarkerRule()
+      {
+          document.styleSheets[0].addRule("#inspected", "display: list-item");
+          document.styleSheets[0].addRule("#inspected::marker", "content: \\"MARKER\\"");
       }
 
       function modifyTextContent()
@@ -89,6 +111,10 @@
       selectNodeAndDumpStyles('inspected', 'after', next);
     },
 
+    function dumpMarkerStyles(next) {
+      selectNodeAndDumpStyles('inspected', 'marker', next);
+    },
+
     function removeAfter(next) {
       executeAndDumpTree('removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
     },
@@ -97,12 +123,20 @@
       executeAndDumpTree('removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
     },
 
+    function removeMarker(next) {
+      executeAndDumpTree('removeLastRule(); removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
+    },
+
     function addAfter(next) {
       executeAndDumpTree('addAfterRule()', SDK.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
     },
 
     function addBefore(next) {
       executeAndDumpTree('addBeforeRule()', SDK.DOMModel.Events.NodeInserted, next);
+    },
+
+    function addMarker(next) {
+      executeAndDumpTree('addMarkerRule()', SDK.DOMModel.Events.NodeInserted, next);
     },
 
     function modifyTextContent(next) {
@@ -116,6 +150,7 @@
     function removeNodeAndCheckPseudoElementsUnbound(next) {
       var inspectedBefore = inspectedNode.beforePseudoElement();
       var inspectedAfter = inspectedNode.afterPseudoElement();
+      var inspectedMarker = inspectedNode.markerPseudoElement();
 
       executeAndDumpTree('removeNode()', SDK.DOMModel.Events.NodeRemoved, callback);
       function callback() {
@@ -123,6 +158,8 @@
             'inspected:before DOMNode in DOMAgent: ' + !!(TestRunner.domModel.nodeForId(inspectedBefore.id)));
         TestRunner.addResult(
             'inspected:after DOMNode in DOMAgent: ' + !!(TestRunner.domModel.nodeForId(inspectedAfter.id)));
+        TestRunner.addResult(
+            'inspected::marker DOMNode in DOMAgent: ' + !!(TestRunner.domModel.nodeForId(inspectedMarker.id)));
         next();
       }
     }
@@ -161,8 +198,8 @@
     else
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected', stylesCallback);
 
-    function stylesCallback() {
-      ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+    async function stylesCallback() {
+      await ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
       callback();
     }
   }

@@ -15,6 +15,7 @@
 #include <string>
 
 #include "absl/types/optional.h"
+#include "api/test/frame_generator_interface.h"
 #include "api/video/video_codec_type.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_decoder.h"
@@ -22,13 +23,12 @@
 #include "rtc_base/critical_section.h"
 #include "rtc_base/event.h"
 #include "rtc_base/synchronization/sequence_checker.h"
-#include "test/frame_generator.h"
 
 namespace webrtc {
 namespace test {
 
 // All methods except constructor must be used from the same thread.
-class IvfVideoFrameGenerator : public FrameGenerator {
+class IvfVideoFrameGenerator : public FrameGeneratorInterface {
  public:
   explicit IvfVideoFrameGenerator(const std::string& file_name);
   ~IvfVideoFrameGenerator() override;
@@ -63,11 +63,22 @@ class IvfVideoFrameGenerator : public FrameGenerator {
   size_t width_;
   size_t height_;
 
-  rtc::Event next_frame_decoded_;
-  SequenceChecker sequence_checker_;
-
+  // This lock is used to ensure that all API method will be called
+  // sequentially. It is required because we need to ensure that generator
+  // won't be destroyed while it is reading the next frame on another thread,
+  // because it will cause SIGSEGV when decoder callback will be invoked.
+  //
+  // FrameGenerator is injected into PeerConnection via some scoped_ref object
+  // and it can happen that the last pointer will be destroyed on the different
+  // thread comparing to the one from which frames were read.
   rtc::CriticalSection lock_;
-  absl::optional<VideoFrame> next_frame_ RTC_GUARDED_BY(lock_);
+  // This lock is used to sync between sending and receiving frame from decoder.
+  // We can't reuse |lock_| because then generator can be destroyed between
+  // frame was sent to decoder and decoder callback was invoked.
+  rtc::CriticalSection frame_decode_lock_;
+
+  rtc::Event next_frame_decoded_;
+  absl::optional<VideoFrame> next_frame_ RTC_GUARDED_BY(frame_decode_lock_);
 };
 
 }  // namespace test

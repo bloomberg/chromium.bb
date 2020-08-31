@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -27,7 +26,7 @@ bool ConsoleLevelToLogLevel(const std::string& name, Log::Level *out_level) {
     *out_level = Log::kInfo;
   else if (name == "warning")
     *out_level = Log::kWarning;
-  else if (name == "error")
+  else if (name == "error" || name == "assert")
     *out_level = Log::kError;
   else
     return false;

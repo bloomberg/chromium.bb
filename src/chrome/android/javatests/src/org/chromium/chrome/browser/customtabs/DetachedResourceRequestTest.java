@@ -29,12 +29,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -42,6 +41,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -567,10 +567,10 @@ public class DetachedResourceRequestTest {
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
 
-            // TODO(carlosil): For now, we check the presence of an interstitial through the title
-            // since isShowingInterstitialPage does not work with committed interstitials. Once we
-            // fully migrate to committed interstitials, this should be changed to a more robust
-            // check.
+            // TODO(crbug.com/1039443): For now, we check the presence of an interstitial through
+            // the title since isShowingInterstitialPage does not work with committed interstitials.
+            // Once we fully migrate to committed interstitials, this should be changed to a more
+            // robust check.
             CriteriaHelper.pollUiThread(
                     () -> tab.getWebContents().getTitle().equals("Security error"));
 
@@ -609,8 +609,11 @@ public class DetachedResourceRequestTest {
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
             WebContents webContents = tab.getWebContents();
-            // Need to poll as the subresource request is async.
-            CriteriaHelper.pollUiThread(() -> webContents.isShowingInterstitialPage());
+            // TODO(crbug.com/1039443): For now, we check the presence of an interstitial through
+            // the title since isShowingInterstitialPage does not work with committed interstitials.
+            // Once we fully migrate to committed interstitials, this should be changed to a more
+            // robust check.
+            CriteriaHelper.pollUiThread(() -> webContents.getTitle().equals("Security error"));
         } finally {
             MockSafeBrowsingApiHandler.clearMockResponses();
         }

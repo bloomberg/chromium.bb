@@ -41,7 +41,8 @@ void GrGLConvexPolyEffect::emitCode(EmitArgs& args) {
     const GrConvexPolyEffect& cpe = args.fFp.cast<GrConvexPolyEffect>();
 
     const char *edgeArrayName;
-    fEdgeUniform = args.fUniformHandler->addUniformArray(kFragment_GrShaderFlag,
+    fEdgeUniform = args.fUniformHandler->addUniformArray(&cpe,
+                                                         kFragment_GrShaderFlag,
                                                          kHalf3_GrSLType,
                                                          "edges",
                                                          cpe.getEdgeCount(),
@@ -81,7 +82,7 @@ void GrGLConvexPolyEffect::onSetData(const GrGLSLProgramDataManager& pdman,
 void GrGLConvexPolyEffect::GenKey(const GrProcessor& processor, const GrShaderCaps&,
                                   GrProcessorKeyBuilder* b) {
     const GrConvexPolyEffect& cpe = processor.cast<GrConvexPolyEffect>();
-    GR_STATIC_ASSERT(kGrClipEdgeTypeCnt <= 8);
+    static_assert(kGrClipEdgeTypeCnt <= 8);
     uint32_t key = (cpe.getEdgeCount() << 3) | (int) cpe.getEdgeType();
     b->add32(key);
 }

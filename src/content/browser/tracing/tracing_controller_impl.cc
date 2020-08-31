@@ -463,9 +463,12 @@ void TracingControllerImpl::EndStartupTracing() {
   if (!tracing::TraceStartupConfig::GetInstance()->IsEnabled())
     return;
 
+  // Use USER_VISIBLE priority because BEST_EFFORT tasks are not run at startup
+  // and we want the trace file to be written soon.
   StopTracing(CreateFileEndpoint(
       startup_trace_file_,
-      base::BindRepeating(OnStoppedStartupTracing, startup_trace_file_)));
+      base::BindOnce(OnStoppedStartupTracing, startup_trace_file_),
+      base::TaskPriority::USER_VISIBLE));
 }
 
 void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
@@ -495,7 +498,7 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   const base::TaskPriority kWritePriority = base::TaskPriority::USER_VISIBLE;
   bool success = StopTracing(CreateFileEndpoint(
       startup_trace_file.value(),
-      base::BindRepeating(
+      base::BindOnce(
           [](base::FilePath trace_file, base::OnceClosure quit_closure) {
             OnStoppedStartupTracing(trace_file);
             std::move(quit_closure).Run();

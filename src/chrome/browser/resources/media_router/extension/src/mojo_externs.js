@@ -6,6 +6,7 @@
  * @fileoverview Closure definitions of Mojo service objects. Note that these
  *     definitions are bound only after chrome.mojoPrivate.requireAsync resolves
  *     in mojo.js.
+ * @externs
  */
 
 
@@ -129,28 +130,6 @@ mojo.Url = function() {};
 /** @type {string} */
 mojo.Url.prototype.url;
 
-
-
-/**
- * @constructor
- * @struct
- */
-mojo.DialMediaSink = function() {};
-
-
-/** @type {mojo.IPAddress} */
-mojo.DialMediaSink.prototype.ip_address;
-
-
-/** @type {string} */
-mojo.DialMediaSink.prototype.model_name;
-
-
-/** @type {mojo.Url} */
-mojo.DialMediaSink.prototype.app_url;
-
-
-
 /**
  * @constructor
  * @struct
@@ -186,9 +165,6 @@ mojo.CastMediaSink.prototype.cast_channel_id;
  */
 mojo.SinkExtraData = function() {};
 
-
-/** @type {mojo.DialMediaSink} */
-mojo.SinkExtraData.prototype.dial_media_sink;
 
 
 /** @type {mojo.CastMediaSink} */

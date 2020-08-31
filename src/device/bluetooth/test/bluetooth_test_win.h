@@ -38,6 +38,8 @@ class BluetoothTestWin : public BluetoothTestBase,
   bool DenyPermission() override;
   void StartLowEnergyDiscoverySession() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  base::Optional<BluetoothUUID> GetTargetGattService(
+      BluetoothDevice* device) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateStatusChangeToDisconnect(BluetoothDevice* device) override;
   void SimulateGattServicesDiscovered(
@@ -116,6 +118,11 @@ class BluetoothTestWinrt : public BluetoothTestWin,
  public:
   BluetoothTestWinrt();
   ~BluetoothTestWinrt() override;
+
+  // Simulate a fake adapter whose power status cannot be
+  // controlled because of a Windows Privacy setting.
+  void InitFakeAdapterWithRadioAccessDenied();
+  void SimulateSpuriousRadioStateChangedEvent();
 
   // BluetoothTestBase:
   bool PlatformSupportsLowEnergy() override;

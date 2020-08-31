@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
@@ -14,15 +16,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
     PluginResponseInterceptorURLLoaderThrottle(int resource_type,
@@ -53,6 +57,16 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   if (extension_id.empty())
     return;
+
+  // Chrome's PDF Extension does not work properly in the face of a restrictive
+  // Content-Security-Policy, and does not currently respect the policy anyway.
+  // Ignore CSP served on a PDF response. https://crbug.com/271452
+  if (extension_id == extension_misc::kPdfExtensionId &&
+      response_head->headers) {
+    response_head->headers->RemoveHeader("Content-Security-Policy");
+  }
+
+  MimeTypesHandler::ReportUsedHandler(extension_id);
 
   std::string view_id = base::GenerateGUID();
   // The string passed down to the original client with the response body.
@@ -110,8 +124,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->head = std::move(deep_copied_response);
   transferrable_loader->head->intercepted_by_plugin = true;
 
-  bool embedded =
-      resource_type_ != static_cast<int>(content::ResourceType::kMainFrame);
+  bool embedded = resource_type_ !=
+                  static_cast<int>(blink::mojom::ResourceType::kMainFrame);
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(

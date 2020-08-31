@@ -31,7 +31,7 @@ class NDEFReadingEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const String& serialNumber() const;
   NDEFMessage* message() const;
@@ -40,14 +40,6 @@ class NDEFReadingEvent final : public Event {
   String serial_number_;
   Member<NDEFMessage> message_;
 };
-
-DEFINE_TYPE_CASTS(NDEFReadingEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kNDEFReadingEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kNDEFReadingEvent);
 
 }  // namespace blink
 

@@ -7,14 +7,28 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol AppNavigation;
+@class AppState;
 @protocol BrowserLauncher;
+@class SceneState;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
 @class MetricsMediator;
 @protocol StartupInformation;
 @protocol TabOpening;
 @protocol TabSwitching;
+
+@protocol AppStateObserver <NSObject>
+
+@optional
+
+// Called when the first scene becomes active.
+- (void)appState:(AppState*)appState
+    firstSceneActivated:(SceneState*)sceneState;
+
+// Called after the app exits safe mode.
+- (void)appStateDidExitSafeMode:(AppState*)appState;
+
+@end
 
 // Represents the application state and responds to application state changes
 // and system events.
@@ -32,9 +46,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // application has been woken up by the system for background work.
 @property(nonatomic, readonly) BOOL userInteracted;
 
-// Window for the application, it is not set during the initialization method.
-// Set the property before calling methods related to it.
-@property(nonatomic, weak) UIWindow* window;
+// Current foreground active for the application, if any. Some scene's window
+// otherwise. For legacy use cases only, use scene windows instead.
+@property(nonatomic, readonly) UIWindow* window;
+
+// When multiwindow is unavailable, this is the only scene state. It is created
+// by the app delegate.
+@property(nonatomic, strong) SceneState* mainSceneState;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
@@ -54,8 +72,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // Called when the application is getting terminated. It stops all outgoing
 // requests, config updates, clears the device sharing manager and stops the
 // mainChrome instance.
-- (void)applicationWillTerminate:(UIApplication*)application
-           applicationNavigation:(id<AppNavigation>)appNavigation;
+- (void)applicationWillTerminate:(UIApplication*)application;
 
 // Resumes the session: reinitializing metrics and opening new tab if necessary.
 // User sessions are defined in terms of BecomeActive/ResignActive so that
@@ -75,13 +92,25 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)applicationWillEnterForeground:(UIApplication*)application
                        metricsMediator:(MetricsMediator*)metricsMediator
                           memoryHelper:(MemoryWarningHelper*)memoryHelper
-                             tabOpener:(id<TabOpening>)tabOpener
-                         appNavigation:(id<AppNavigation>)appNavigation;
+                             tabOpener:(id<TabOpening>)tabOpener;
 
 // Sets the return value for -didFinishLaunchingWithOptions that determines if
 // UIKit should make followup delegate calls such as
 // -performActionForShortcutItem or -openURL.
 - (void)launchFromURLHandled:(BOOL)URLHandled;
+
+// Returns the foreground and active scene, if there is one.
+- (SceneState*)foregroundActiveScene;
+
+// Returns a list of all connected scenes.
+- (NSArray<SceneState*>*)connectedScenes;
+
+// Adds an observer to this app state. The observers will be notified about
+// app state changes per AppStateObserver protocol.
+- (void)addObserver:(id<AppStateObserver>)observer;
+// Removes the observer. It's safe to call this at any time, including from
+// AppStateObserver callbacks.
+- (void)removeObserver:(id<AppStateObserver>)observer;
 
 @end
 

@@ -5,8 +5,9 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -20,6 +21,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace offline_pages {
 
@@ -42,14 +44,15 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
   redirect_info.new_referrer_policy = net::URLRequest::NO_REFERRER;
   redirect_info.new_method = "GET";
   redirect_info.status_code = response_code;
-  redirect_info.new_site_for_cookies = redirect_info.new_url;
+  redirect_info.new_site_for_cookies =
+      net::SiteForCookies::FromUrl(redirect_info.new_url);
   return redirect_info;
 }
 
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   // Ignore the requests not for the main frame.
   if (resource_request.resource_type !=
-      static_cast<int>(content::ResourceType::kMainFrame))
+      static_cast<int>(blink::mojom::ResourceType::kMainFrame))
     return false;
 
   // Ignore non-http/https requests.
@@ -112,6 +115,7 @@ void OfflinePageURLLoader::SetTabIdGetterForTesting(
 void OfflinePageURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED();
 }

@@ -6,11 +6,10 @@
 
 #include <vector>
 
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -18,7 +17,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
@@ -30,12 +28,6 @@
 namespace ash {
 namespace {
 
-// Checks if virtual keyboard is force-enabled by enable-virtual-keyboard flag.
-bool IsVirtualKeyboardEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      keyboard::switches::kEnableVirtualKeyboard);
-}
-
 void ResetVirtualKeyboard() {
   keyboard::SetKeyboardEnabledFromShelf(false);
 
@@ -43,7 +35,7 @@ void ResetVirtualKeyboard() {
   // extension from accidentally loading the default keyset while it's shutting
   // down. See https://crbug.com/875456.
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
+      chromeos::input_method::ImeKeyset::kNone);
 }
 
 }  // namespace
@@ -61,8 +53,7 @@ VirtualKeyboardController::VirtualKeyboardController()
   // Set callback to show the emoji panel
   ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
       &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
-      base::Unretained(this),
-      chromeos::input_method::mojom::ImeKeyset::kEmoji));
+      base::Unretained(this), chromeos::input_method::ImeKeyset::kEmoji));
 
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
@@ -86,7 +77,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
 }
 
 void VirtualKeyboardController::ForceShowKeyboardWithKeyset(
-    chromeos::input_method::mojom::ImeKeyset keyset) {
+    chromeos::input_method::ImeKeyset keyset) {
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       keyset, base::BindOnce(&VirtualKeyboardController::ForceShowKeyboard,
                              base::Unretained(this)));
@@ -137,13 +128,6 @@ void VirtualKeyboardController::UpdateDevices() {
 }
 
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
-  if (IsVirtualKeyboardEnabled()) {
-    keyboard::SetTouchKeyboardEnabled(
-        Shell::Get()
-            ->tablet_mode_controller()
-            ->AreInternalInputDeviceEventsBlocked());
-    return;
-  }
   bool ignore_internal_keyboard = Shell::Get()
                                       ->tablet_mode_controller()
                                       ->AreInternalInputDeviceEventsBlocked();
@@ -176,7 +160,7 @@ void VirtualKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
     // TODO(shend/shuchen): Consider moving this logic to ImeController.
     // https://crbug.com/896284.
     Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-        chromeos::input_method::mojom::ImeKeyset::kNone);
+        chromeos::input_method::ImeKeyset::kNone);
   }
 }
 

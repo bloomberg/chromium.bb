@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/profiler_trace_builder.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_frame.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_sample.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_stack.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_trace.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
-#include "third_party/blink/renderer/core/timing/profiler_frame.h"
-#include "third_party/blink/renderer/core/timing/profiler_sample.h"
-#include "third_party/blink/renderer/core/timing/profiler_stack.h"
-#include "third_party/blink/renderer/core/timing/profiler_trace.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -25,11 +25,13 @@ ProfilerTrace* ProfilerTraceBuilder::FromProfile(
   TRACE_EVENT0("blink", "ProfilerTraceBuilder::FromProfile");
   ProfilerTraceBuilder* builder = MakeGarbageCollected<ProfilerTraceBuilder>(
       script_state, allowed_origin, time_origin);
-  for (int i = 0; i < profile->GetSamplesCount(); i++) {
-    const auto* node = profile->GetSample(i);
-    auto timestamp = base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                             profile->GetSampleTimestamp(i));
-    builder->AddSample(node, timestamp);
+  if (profile) {
+    for (int i = 0; i < profile->GetSamplesCount(); i++) {
+      const auto* node = profile->GetSample(i);
+      auto timestamp = base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                                               profile->GetSampleTimestamp(i));
+      builder->AddSample(node, timestamp);
+    }
   }
   return builder->GetTrace();
 }
@@ -41,7 +43,7 @@ ProfilerTraceBuilder::ProfilerTraceBuilder(ScriptState* script_state,
       allowed_origin_(allowed_origin),
       time_origin_(time_origin) {}
 
-void ProfilerTraceBuilder::Trace(blink::Visitor* visitor) {
+void ProfilerTraceBuilder::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(frames_);
   visitor->Trace(stacks_);

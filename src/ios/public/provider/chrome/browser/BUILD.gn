@@ -19,8 +19,9 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/metrics",
-    "//ios//web/public",
     "//ios/public/provider/chrome/browser/mailto",
+    "//ios/web/public",
+    "//url",
   ]
   libs = [ "CoreLocation.framework" ]
 }
@@ -37,10 +38,11 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
-    "//ios/public/provider/chrome/browser/distribution:test_support",
+    "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/mailto:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/public/provider/chrome/browser/spotlight:test_support",
     "//ios/public/provider/chrome/browser/ui",

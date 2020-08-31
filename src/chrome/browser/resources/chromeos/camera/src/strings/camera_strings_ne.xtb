@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1276998909102132017">ग्यालेरीका छविहरू</translation>
-<translation id="1430915738399379752">छाप्नुहोस्</translation>
+<translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1627744224761163218">४ x ४</translation>
 <translation id="1664224225747386870">केही पनि रेकर्ड गरिएन</translation>
@@ -20,7 +20,7 @@
 <translation id="2912439424121107408">यस यन्त्रमा विशेषज्ञ मोड चलाउन मिल्दैन</translation>
 <translation id="2968794441791257519">क्यामेरामार्फत खिचिएका तस्बिर र भिडियोहरू डाउनलोडहरू नामक फोल्डरमा सारिने छ। तपाईं फाइलहरू नामक फोल्डरमा गई तिनीहरूमाथि पहुँच राख्न सक्नुहुन्छ।
 
-भण्डारणको अनुमति भएका अनुप्रयोगहरूले तपाईंका तस्बिर र भिडियोहरूमाथि पहुँच राख्न सक्ने छन्।</translation>
+भण्डारणको अनुमति भएका एपहरूले तपाईंका तस्बिर र भिडियोहरूमाथि पहुँच राख्न सक्ने छन्।</translation>
 <translation id="3081586908890909590">भिडियो रेकर्ड गर्ने मोड प्रयोग गर्नुहोस्</translation>
 <translation id="313467653172006084">३० FPS</translation>
 <translation id="3183731565330012717">ग्रिडको प्रकार</translation>
@@ -31,6 +31,7 @@
 <translation id="3810838688059735925">भिडियो</translation>
 <translation id="4279490309300973883">प्रतिबिम्ब गर्दै</translation>
 <translation id="4329152592498422850">वर्गाकार तस्बिर खिच्न थाल्नुहोस्</translation>
+<translation id="4383571725254449280">प्रिन्ट सम्पादनका लगहरू</translation>
 <translation id="4445542136948522167">तस्बिर खिच्न छाड्नुहोस्‌</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> मेगा पिक्सेल</translation>
 <translation id="4570032796877367747">अगाडिको क्यामेरा</translation>

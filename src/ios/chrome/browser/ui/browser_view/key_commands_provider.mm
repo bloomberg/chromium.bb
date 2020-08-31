@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -21,17 +20,19 @@
 
 @implementation KeyCommandsProvider
 
-- (NSArray*)
-    keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-        baseViewController:(UIViewController*)baseViewController
-                dispatcher:
-                    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
-                        dispatcher
-               editingText:(BOOL)editingText {
+- (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+                baseViewController:(UIViewController*)baseViewController
+                        dispatcher:(id<ApplicationCommands,
+                                       BrowserCommands,
+                                       FindInPageCommands,
+                                       OmniboxCommands>)dispatcher
+                    omniboxHandler:(id<OmniboxCommands>)omniboxHandler
+                       editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
   __weak UIViewController* weakBaseViewController = baseViewController;
-  __weak id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
+  __weak id<ApplicationCommands, BrowserCommands, FindInPageCommands>
       weakDispatcher = dispatcher;
+  __weak id<OmniboxCommands> weakOmniboxHandler = omniboxHandler;
 
   // Block to have the tab model open the tab at |index|, if there is one.
   void (^focusTab)(NSUInteger) = ^(NSUInteger index) {
@@ -125,7 +126,7 @@
                              title:l10n_util::GetNSStringWithFixup(
                                        IDS_IOS_TOOLS_MENU_FIND_IN_PAGE)
                             action:^{
-                              [weakDispatcher showFindInPage];
+                              [weakDispatcher openFindInPage];
                             }],
         [UIKeyCommand cr_keyCommandWithInput:@"g"
                                modifierFlags:UIKeyModifierCommand
@@ -149,7 +150,7 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_IOS_KEYBOARD_OPEN_LOCATION)
                                     action:^{
-                                      [weakDispatcher focusOmnibox];
+                                      [weakOmniboxHandler focusOmnibox];
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"w"
                              modifierFlags:UIKeyModifierCommand
@@ -226,14 +227,19 @@
     ]];
   }
 
+  if (self.canDismissModals) {
+    [keyCommands
+        addObject:[UIKeyCommand
+                      cr_keyCommandWithInput:UIKeyInputEscape
+                               modifierFlags:Cr_UIKeyModifierNone
+                                       title:nil
+                                      action:^{
+                                        [weakDispatcher dismissModalDialogs];
+                                      }]];
+  }
+
   // List the commands that don't appear in the HUD but are always present.
   [keyCommands addObjectsFromArray:@[
-    [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                           modifierFlags:Cr_UIKeyModifierNone
-                                   title:nil
-                                  action:^{
-                                    [weakDispatcher dismissModalDialogs];
-                                  }],
     [UIKeyCommand cr_keyCommandWithInput:@"n"
                            modifierFlags:UIKeyModifierCommand
                                    title:nil

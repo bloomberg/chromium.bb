@@ -5,20 +5,24 @@
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 
 #include "base/base_switches.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/heap_profiling/in_process/heap_profiler_controller.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
+#include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -26,6 +30,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -44,6 +49,7 @@
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -61,6 +67,10 @@
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#include "base/allocator/allocator_shim.h"
+#endif
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -75,6 +85,12 @@ IOSChromeMainParts::IOSChromeMainParts(
 }
 
 IOSChromeMainParts::~IOSChromeMainParts() {}
+
+void IOSChromeMainParts::PreEarlyInitialization() {
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  base::allocator::InitializeAllocatorShim();
+#endif
+}
 
 void IOSChromeMainParts::PreMainMessageLoopStart() {
   l10n_util::OverrideLocaleWithCocoaLocale();
@@ -100,9 +116,8 @@ void IOSChromeMainParts::PreCreateThreads() {
   // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
   // shutdown.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   base::FilePath local_state_path;
@@ -118,6 +133,11 @@ void IOSChromeMainParts::PreCreateThreads() {
   // use.)
   FirstRun::IsChromeFirstRun();
 
+  // Convert freeform experimental settings into switches before initializing
+  // local state, in case any of the settings affect policy.
+  AppendSwitchesFromExperimentalSettings(
+      base::CommandLine::ForCurrentProcess());
+
   // Initialize local state.
   local_state_ = application_context_->GetLocalState();
   DCHECK(local_state_);
@@ -132,6 +152,16 @@ void IOSChromeMainParts::PreCreateThreads() {
   // initialization which happens in BrowserProcess:PreCreateThreads. Metrics
   // initialization is handled in PreMainMessageLoopRun since it posts tasks.
   SetupFieldTrials();
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  // Start heap profiling as early as possible so it can start recording
+  // memory allocations. Requires the allocator shim to be enabled.
+  heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
+  metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
+      base::BindRepeating(
+          &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
+  heap_profiler_controller_->Start();
+#endif
 
   variations::InitCrashKeys();
 
@@ -155,7 +185,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
   ios::ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();
-  ios::ChromeBrowserState* last_used_browser_state =
+  ChromeBrowserState* last_used_browser_state =
       browser_state_manager->GetLastUsedBrowserState();
 
   // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
@@ -198,6 +228,17 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
     variations_service->set_policy_pref_service(
         last_used_browser_state->GetPrefs());
     variations_service->PerformPreMainMessageLoopStartup();
+  }
+
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAvailableOnIOS)) {
+    // Ensure that Safe Browsing is initialized.
+    SafeBrowsingService* safe_browsing_service =
+        application_context_->GetSafeBrowsingService();
+    base::FilePath user_data_path;
+    CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
+    safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
+                                      user_data_path);
   }
 }
 

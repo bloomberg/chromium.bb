@@ -6,8 +6,9 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/api/messaging/message.h"
@@ -18,7 +19,7 @@
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 namespace messaging_util {
@@ -119,9 +120,9 @@ std::unique_ptr<Message> MessageFromJSONString(
     return nullptr;
   }
 
-  return std::make_unique<Message>(
-      message,
-      blink::WebUserGestureIndicator::IsProcessingUserGesture(web_frame));
+  bool has_transient_user_activation =
+      web_frame ? web_frame->HasTransientUserActivation() : false;
+  return std::make_unique<Message>(message, has_transient_user_activation);
 }
 
 v8::Local<v8::Value> MessageToV8(v8::Local<v8::Context> context,
@@ -171,19 +172,6 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
     }
   }
 
-  if ((flags & PARSE_INCLUDE_TLS_CHANNEL_ID) != 0) {
-    v8::Local<v8::Value> v8_include_tls_channel_id;
-    bool success =
-        options_dict.Get("includeTlsChannelId", &v8_include_tls_channel_id);
-    DCHECK(success);
-
-    if (!v8_include_tls_channel_id->IsUndefined()) {
-      DCHECK(v8_include_tls_channel_id->IsBoolean());
-      options.include_tls_channel_id =
-          v8_include_tls_channel_id.As<v8::Boolean>()->Value();
-    }
-  }
-
   if ((flags & PARSE_FRAME_ID) != 0) {
     v8::Local<v8::Value> v8_frame_id;
     bool success = options_dict.Get("frameId", &v8_frame_id);
@@ -198,6 +186,8 @@ MessageOptions ParseMessageOptions(v8::Local<v8::Context> context,
     }
   }
 
+  // Note: the options object may also include an includeTlsChannelId property.
+  // That property has been a no-op since M72. See crbug.com/1045232.
   return options;
 }
 

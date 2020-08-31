@@ -175,6 +175,10 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton() {
   return [ChromeMatchersAppInterface bookmarksNavigationBarDoneButton];
 }
 
+id<GREYMatcher> BookmarksNavigationBarBackButton() {
+  return [ChromeMatchersAppInterface bookmarksNavigationBarBackButton];
+}
+
 id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
   return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }
@@ -351,6 +355,10 @@ id<GREYMatcher> ClearSavedPasswordsButton() {
   return [ChromeMatchersAppInterface clearSavedPasswordsButton];
 }
 
+id<GREYMatcher> ClearAutofillButton() {
+  return [ChromeMatchersAppInterface clearAutofillButton];
+}
+
 id<GREYMatcher> ContentSuggestionCollectionView() {
   return [ChromeMatchersAppInterface contentSuggestionCollectionView];
 }
@@ -487,6 +495,10 @@ id<GREYMatcher> SettingsBottomToolbarDeleteButton() {
   return [ChromeMatchersAppInterface settingsBottomToolbarDeleteButton];
 }
 
+id<GREYMatcher> SettingsSearchEngineButton() {
+  return [ChromeMatchersAppInterface settingsSearchEngineButton];
+}
+
 id<GREYMatcher> AutofillSuggestionViewMatcher() {
   return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
 }
@@ -501,6 +513,12 @@ id<GREYMatcher> AutofillSaveCardLocallyInfobar() {
 
 id<GREYMatcher> AutofillUploadCardInfobar() {
   return [ChromeMatchersAppInterface autofillUploadCardInfobar];
+}
+
+id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
+  return [ChromeMatchersAppInterface
+      historyEntryForURL:base::SysUTF8ToNSString(url)
+                   title:base::SysUTF8ToNSString(title)];
 }
 
 #pragma mark - Manual Fallback

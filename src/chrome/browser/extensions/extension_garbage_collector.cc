@@ -11,10 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/one_shot_event.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -230,8 +231,7 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
        ++iter) {
     if (AppIsolationInfo::HasIsolatedStorage(iter->get())) {
       active_paths->insert(
-          content::BrowserContext::GetStoragePartitionForSite(
-              context_, util::GetSiteForExtensionId((*iter)->id(), context_))
+          util::GetStoragePartitionForExtensionId((*iter)->id(), context_)
               ->GetPath());
     }
   }
@@ -240,7 +240,7 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
   installs_delayed_for_gc_ = true;
   content::BrowserContext::GarbageCollectStoragePartitions(
       context_, std::move(active_paths),
-      base::Bind(
+      base::BindOnce(
           &ExtensionGarbageCollector::OnGarbageCollectIsolatedStorageFinished,
           weak_factory_.GetWeakPtr()));
 }

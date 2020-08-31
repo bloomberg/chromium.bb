@@ -5,11 +5,13 @@
 #include "sandbox/linux/syscall_broker/broker_simple_message.h"
 
 #include <errno.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "base/check_op.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"

@@ -27,7 +27,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,9 +53,9 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
     return test_name.find("PRE_") != base::StringPiece::npos;
   }
 
-  // Returns some future Chrome version.
+  // Returns the next Chrome milestone version.
   static std::string GetNextChromeVersion() {
-    return base::Version(std::string(chrome::kChromeVersion) + "1").GetString();
+    return base::NumberToString(version_info::GetVersion().components()[0] + 1);
   }
 
   UserDataDowngradeBrowserTestBase()
@@ -74,7 +76,7 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
   // Returns the path to some generated file in User Data.
   const base::FilePath& other_file() const { return other_file_; }
 
-  // CrossBrowserRelaunchTest:
+  // InProcessBrowserTest:
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(root_key_));
@@ -93,12 +95,12 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
                                .AddExtension(kDowngradeDeleteSuffix);
     if (IsPreTest()) {
       // Create some "other file" to be convinced that stuff is moved.
-      if (base::WriteFile(other_file_, "data", 4) != 4)
+      if (!base::WriteFile(other_file_, "data"))
         return false;
       // Pretend that a higher version of Chrome previously wrote User Data.
       const std::string last_version = GetNextChromeVersion();
       base::WriteFile(user_data_dir_.Append(kDowngradeLastVersionFile),
-                      last_version.c_str(), last_version.size());
+                      last_version);
     }
     return true;
   }

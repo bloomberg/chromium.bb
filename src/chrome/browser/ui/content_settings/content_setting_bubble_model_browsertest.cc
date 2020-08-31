@@ -10,7 +10,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -20,9 +19,11 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -31,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/event_constants.h"
+
+using content_settings::TabSpecificContentSettings;
 
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  public:
@@ -128,11 +131,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
 
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
-
-  // Check that the UMA counts are as expected.
-  histograms.ExpectBucketCount(
-      "ContentSettings.MixedScript",
-      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW, 1);
 }
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel does not work

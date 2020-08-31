@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/safe_browsing/core/proto/download_file_types.pb.h"
 
 struct DownloadTargetInfo {
   DownloadTargetInfo();
@@ -77,6 +77,9 @@ struct DownloadTargetInfo {
 
   // Result of the download target determination.
   download::DownloadInterruptReason result;
+
+  // What sort of blocking should be used if the download is of mixed content.
+  download::DownloadItem::MixedContentStatus mixed_content_status;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_INFO_H_

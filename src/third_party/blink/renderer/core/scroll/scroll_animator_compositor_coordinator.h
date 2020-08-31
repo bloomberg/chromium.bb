@@ -99,7 +99,7 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
   // Updates the scroll offset of the animator's ScrollableArea by
   // adjustment and update the target of an ongoing scroll offset animation.
   virtual void AdjustAnimationAndSetScrollOffset(const ScrollOffset&,
-                                                 ScrollType);
+                                                 mojom::blink::ScrollType);
   virtual void UpdateCompositorAnimations();
 
   virtual ScrollableArea* GetScrollableArea() const = 0;
@@ -111,12 +111,12 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
 
   RunState RunStateForTesting() { return run_state_; }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   explicit ScrollAnimatorCompositorCoordinator();
 
-  void ScrollOffsetChanged(const ScrollOffset&, ScrollType);
+  void ScrollOffsetChanged(const ScrollOffset&, mojom::blink::ScrollType);
 
   void AdjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
   IntSize ImplOnlyAnimationAdjustmentForTesting() {

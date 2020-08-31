@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -114,16 +115,16 @@ TEST_F(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
 
   EXPECT_CALL(GetAnimationMockChromeClient(),
               MockSetToolTip(GetDocument().GetFrame(), String(), _));
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(1, 1),
-                                                          kUserScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(1, 1), mojom::blink::ScrollType::kUser);
 
   // Programmatic scrolling should not dismiss the tooltip, so setToolTip
   // should not be called for this invocation.
   EXPECT_CALL(GetAnimationMockChromeClient(),
               MockSetToolTip(GetDocument().GetFrame(), String(), _))
       .Times(0);
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(2, 2),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(2, 2), mojom::blink::ScrollType::kProgrammatic);
 }
 
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
@@ -157,8 +158,8 @@ TEST_F(LocalFrameViewTest,
   sticky->Layer()->UpdateAncestorOverflowLayer(nullptr);
 
   // This call should not crash.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 100),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 100), mojom::blink::ScrollType::kProgrammatic);
 }
 
 TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
@@ -181,8 +182,8 @@ TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
   SetBodyInnerHTML("<iframe scrolling='no'></iframe>");
   EXPECT_FALSE(ChildDocument().View()->CanHaveScrollbars());
 
-  ChildDocument().WillChangeFrameOwnerProperties(0, 0, ScrollbarMode::kAlwaysOn,
-                                                 false);
+  ChildDocument().WillChangeFrameOwnerProperties(
+      0, 0, mojom::blink::ScrollbarMode::kAlwaysOn, false);
   EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
 }
 
@@ -343,9 +344,9 @@ TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
       << "Scroll offset changed while rendering is blocked";
 
   // Force a layout.
-  anchor->style()->setProperty(&GetDocument(), "display", "block", String(),
-                               ASSERT_NO_EXCEPTION);
-  GetDocument().UpdateStyleAndLayout();
+  anchor->style()->setProperty(GetDocument().GetExecutionContext(), "display",
+                               "block", String(), ASSERT_NO_EXCEPTION);
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   EXPECT_EQ(GetDocument().body(), GetDocument().ActiveElement())
       << "Active element changed due to layout while rendering is blocked";
@@ -385,7 +386,7 @@ TEST_F(SimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
   // Mark the top-level document for layout and then force layout. This will
   // cause the layout tree in the <object> object to be built.
   GetDocument().View()->SetNeedsLayout();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   svg_resource.Finish();
 }

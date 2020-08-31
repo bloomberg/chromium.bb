@@ -181,6 +181,15 @@ void DataChannelController::OnReadyToSend() {
       });
 }
 
+void DataChannelController::OnTransportClosed() {
+  RTC_DCHECK_RUN_ON(network_thread());
+  data_channel_transport_invoker_->AsyncInvoke<void>(
+      RTC_FROM_HERE, signaling_thread(), [this] {
+        RTC_DCHECK_RUN_ON(signaling_thread());
+        OnTransportChannelClosed();
+      });
+}
+
 void DataChannelController::SetupDataChannelTransport_n() {
   RTC_DCHECK_RUN_ON(network_thread());
   data_channel_transport_invoker_ = std::make_unique<rtc::AsyncInvoker>();
@@ -213,7 +222,7 @@ void DataChannelController::OnTransportChanged(
       data_channel_transport_invoker_->AsyncInvoke<void>(
           RTC_FROM_HERE, signaling_thread(), [this] {
             RTC_DCHECK_RUN_ON(signaling_thread());
-            for (auto channel : sctp_data_channels_) {
+            for (const auto& channel : sctp_data_channels_) {
               channel->OnTransportChannelCreated();
             }
           });
@@ -330,7 +339,7 @@ void DataChannelController::AllocateSctpSids(rtc::SSLRole role) {
   // Since closing modifies the list of channels, we have to do the actual
   // closing outside the loop.
   for (const auto& channel : channels_to_close) {
-    channel->CloseAbruptly();
+    channel->CloseAbruptlyWithDataChannelFailure("Failed to allocate SCTP SID");
   }
 }
 

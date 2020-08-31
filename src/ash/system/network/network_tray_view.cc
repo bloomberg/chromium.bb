@@ -56,7 +56,10 @@ const char* NetworkTrayView::GetClassName() const {
 void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
   node_data->SetDescription(accessible_description_);
-  node_data->role = ax::mojom::Role::kButton;
+}
+
+base::string16 NetworkTrayView::GetAccessibleNameString() const {
+  return tooltip_;
 }
 
 views::View* NetworkTrayView::GetTooltipHandlerForPoint(

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.config',
   syntax='proto3',
   serialized_options=_b('Z>go.chromium.org/chromiumos/infra/proto/go/test_platform/config'),
-  serialized_pb=_b('\n!test_platform/config/config.proto\x12\x14test_platform.config\"\xbc\x05\n\x06\x43onfig\x12>\n\x0fskylab_swarming\x18\x01 \x01(\x0b\x32%.test_platform.config.Config.Swarming\x12=\n\x0e\x61utotest_proxy\x18\x02 \x01(\x0b\x32%.test_platform.config.Config.Swarming\x12<\n\x0eskylab_isolate\x18\x03 \x01(\x0b\x32$.test_platform.config.Config.Isolate\x12@\n\rskylab_worker\x18\x04 \x01(\x0b\x32).test_platform.config.Config.SkylabWorker\x12\x46\n\x10\x61utotest_backend\x18\x05 \x01(\x0b\x32,.test_platform.config.Config.AutotestBackend\x12L\n\x13scheduler_migration\x18\x06 \x01(\x0b\x32/.test_platform.config.Config.SchedulerMigration\x1a\x32\n\x08Swarming\x12\x0e\n\x06server\x18\x01 \x01(\t\x12\x16\n\x0e\x61uth_json_path\x18\x02 \x01(\t\x1a!\n\x07Isolate\x12\x16\n\x0e\x61uth_json_path\x18\x01 \x01(\t\x1a:\n\x0cSkylabWorker\x12\x14\n\x0cluci_project\x18\x01 \x01(\t\x12\x14\n\x0clog_dog_host\x18\x02 \x01(\t\x1a#\n\x0f\x41utotestBackend\x12\x10\n\x08\x61\x66\x65_host\x18\x01 \x01(\t\x1a\x65\n\x12SchedulerMigration\x12\x14\n\x0cgitiles_host\x18\x01 \x01(\t\x12\x13\n\x0bgit_project\x18\x02 \x01(\t\x12\x11\n\tfile_path\x18\x03 \x01(\t\x12\x11\n\tcommitish\x18\x04 \x01(\tB@Z>go.chromium.org/chromiumos/infra/proto/go/test_platform/configb\x06proto3')
+  serialized_pb=_b('\n!test_platform/config/config.proto\x12\x14test_platform.config\"\xa4\x06\n\x06\x43onfig\x12>\n\x0fskylab_swarming\x18\x01 \x01(\x0b\x32%.test_platform.config.Config.Swarming\x12<\n\x0eskylab_isolate\x18\x03 \x01(\x0b\x32$.test_platform.config.Config.Isolate\x12@\n\rskylab_worker\x18\x04 \x01(\x0b\x32).test_platform.config.Config.SkylabWorker\x12;\n\nversioning\x18\x07 \x01(\x0b\x32\'.test_platform.config.Config.Versioning\x12<\n\x0btest_runner\x18\x08 \x01(\x0b\x32\'.test_platform.config.Config.TestRunner\x1a\x32\n\x08Swarming\x12\x0e\n\x06server\x18\x01 \x01(\t\x12\x16\n\x0e\x61uth_json_path\x18\x02 \x01(\t\x1a!\n\x07Isolate\x12\x16\n\x0e\x61uth_json_path\x18\x01 \x01(\t\x1a:\n\x0cSkylabWorker\x12\x14\n\x0cluci_project\x18\x01 \x01(\t\x12\x14\n\x0clog_dog_host\x18\x02 \x01(\t\x1a\x9d\x01\n\nVersioning\x12\x61\n\x19\x63ros_test_platform_binary\x18\x01 \x01(\x0b\x32>.test_platform.config.Config.Versioning.CrosTestPlatformBinary\x1a,\n\x16\x43rosTestPlatformBinary\x12\x12\n\ncipd_label\x18\x01 \x01(\t\x1aM\n\x0b\x42uildbucket\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0f\n\x07project\x18\x02 \x01(\t\x12\x0e\n\x06\x62ucket\x18\x03 \x01(\t\x12\x0f\n\x07\x62uilder\x18\x04 \x01(\t\x1aK\n\nTestRunner\x12=\n\x0b\x62uildbucket\x18\x01 \x01(\x0b\x32(.test_platform.config.Config.BuildbucketJ\x04\x08\x02\x10\x03J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\x42@Z>go.chromium.org/chromiumos/infra/proto/go/test_platform/configb\x06proto3')
 )
 
 
@@ -58,8 +58,8 @@ _CONFIG_SWARMING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=475,
-  serialized_end=525,
+  serialized_start=385,
+  serialized_end=435,
 )
 
 _CONFIG_ISOLATE = _descriptor.Descriptor(
@@ -88,8 +88,8 @@ _CONFIG_ISOLATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=527,
-  serialized_end=560,
+  serialized_start=437,
+  serialized_end=470,
 )
 
 _CONFIG_SKYLABWORKER = _descriptor.Descriptor(
@@ -125,19 +125,19 @@ _CONFIG_SKYLABWORKER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=562,
-  serialized_end=620,
+  serialized_start=472,
+  serialized_end=530,
 )
 
-_CONFIG_AUTOTESTBACKEND = _descriptor.Descriptor(
-  name='AutotestBackend',
-  full_name='test_platform.config.Config.AutotestBackend',
+_CONFIG_VERSIONING_CROSTESTPLATFORMBINARY = _descriptor.Descriptor(
+  name='CrosTestPlatformBinary',
+  full_name='test_platform.config.Config.Versioning.CrosTestPlatformBinary',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='afe_host', full_name='test_platform.config.Config.AutotestBackend.afe_host', index=0,
+      name='cipd_label', full_name='test_platform.config.Config.Versioning.CrosTestPlatformBinary.cipd_label', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -155,40 +155,70 @@ _CONFIG_AUTOTESTBACKEND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=622,
-  serialized_end=657,
+  serialized_start=646,
+  serialized_end=690,
 )
 
-_CONFIG_SCHEDULERMIGRATION = _descriptor.Descriptor(
-  name='SchedulerMigration',
-  full_name='test_platform.config.Config.SchedulerMigration',
+_CONFIG_VERSIONING = _descriptor.Descriptor(
+  name='Versioning',
+  full_name='test_platform.config.Config.Versioning',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='gitiles_host', full_name='test_platform.config.Config.SchedulerMigration.gitiles_host', index=0,
+      name='cros_test_platform_binary', full_name='test_platform.config.Config.Versioning.cros_test_platform_binary', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_CONFIG_VERSIONING_CROSTESTPLATFORMBINARY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=533,
+  serialized_end=690,
+)
+
+_CONFIG_BUILDBUCKET = _descriptor.Descriptor(
+  name='Buildbucket',
+  full_name='test_platform.config.Config.Buildbucket',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='host', full_name='test_platform.config.Config.Buildbucket.host', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='git_project', full_name='test_platform.config.Config.SchedulerMigration.git_project', index=1,
+      name='project', full_name='test_platform.config.Config.Buildbucket.project', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='file_path', full_name='test_platform.config.Config.SchedulerMigration.file_path', index=2,
+      name='bucket', full_name='test_platform.config.Config.Buildbucket.bucket', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='commitish', full_name='test_platform.config.Config.SchedulerMigration.commitish', index=3,
+      name='builder', full_name='test_platform.config.Config.Buildbucket.builder', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -206,8 +236,38 @@ _CONFIG_SCHEDULERMIGRATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=659,
-  serialized_end=760,
+  serialized_start=692,
+  serialized_end=769,
+)
+
+_CONFIG_TESTRUNNER = _descriptor.Descriptor(
+  name='TestRunner',
+  full_name='test_platform.config.Config.TestRunner',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='buildbucket', full_name='test_platform.config.Config.TestRunner.buildbucket', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=771,
+  serialized_end=846,
 )
 
 _CONFIG = _descriptor.Descriptor(
@@ -225,36 +285,29 @@ _CONFIG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='autotest_proxy', full_name='test_platform.config.Config.autotest_proxy', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='skylab_isolate', full_name='test_platform.config.Config.skylab_isolate', index=2,
+      name='skylab_isolate', full_name='test_platform.config.Config.skylab_isolate', index=1,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='skylab_worker', full_name='test_platform.config.Config.skylab_worker', index=3,
+      name='skylab_worker', full_name='test_platform.config.Config.skylab_worker', index=2,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='autotest_backend', full_name='test_platform.config.Config.autotest_backend', index=4,
-      number=5, type=11, cpp_type=10, label=1,
+      name='versioning', full_name='test_platform.config.Config.versioning', index=3,
+      number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='scheduler_migration', full_name='test_platform.config.Config.scheduler_migration', index=5,
-      number=6, type=11, cpp_type=10, label=1,
+      name='test_runner', full_name='test_platform.config.Config.test_runner', index=4,
+      number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -262,7 +315,7 @@ _CONFIG = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_CONFIG_SWARMING, _CONFIG_ISOLATE, _CONFIG_SKYLABWORKER, _CONFIG_AUTOTESTBACKEND, _CONFIG_SCHEDULERMIGRATION, ],
+  nested_types=[_CONFIG_SWARMING, _CONFIG_ISOLATE, _CONFIG_SKYLABWORKER, _CONFIG_VERSIONING, _CONFIG_BUILDBUCKET, _CONFIG_TESTRUNNER, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -272,20 +325,23 @@ _CONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=60,
-  serialized_end=760,
+  serialized_end=864,
 )
 
 _CONFIG_SWARMING.containing_type = _CONFIG
 _CONFIG_ISOLATE.containing_type = _CONFIG
 _CONFIG_SKYLABWORKER.containing_type = _CONFIG
-_CONFIG_AUTOTESTBACKEND.containing_type = _CONFIG
-_CONFIG_SCHEDULERMIGRATION.containing_type = _CONFIG
+_CONFIG_VERSIONING_CROSTESTPLATFORMBINARY.containing_type = _CONFIG_VERSIONING
+_CONFIG_VERSIONING.fields_by_name['cros_test_platform_binary'].message_type = _CONFIG_VERSIONING_CROSTESTPLATFORMBINARY
+_CONFIG_VERSIONING.containing_type = _CONFIG
+_CONFIG_BUILDBUCKET.containing_type = _CONFIG
+_CONFIG_TESTRUNNER.fields_by_name['buildbucket'].message_type = _CONFIG_BUILDBUCKET
+_CONFIG_TESTRUNNER.containing_type = _CONFIG
 _CONFIG.fields_by_name['skylab_swarming'].message_type = _CONFIG_SWARMING
-_CONFIG.fields_by_name['autotest_proxy'].message_type = _CONFIG_SWARMING
 _CONFIG.fields_by_name['skylab_isolate'].message_type = _CONFIG_ISOLATE
 _CONFIG.fields_by_name['skylab_worker'].message_type = _CONFIG_SKYLABWORKER
-_CONFIG.fields_by_name['autotest_backend'].message_type = _CONFIG_AUTOTESTBACKEND
-_CONFIG.fields_by_name['scheduler_migration'].message_type = _CONFIG_SCHEDULERMIGRATION
+_CONFIG.fields_by_name['versioning'].message_type = _CONFIG_VERSIONING
+_CONFIG.fields_by_name['test_runner'].message_type = _CONFIG_TESTRUNNER
 DESCRIPTOR.message_types_by_name['Config'] = _CONFIG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -312,17 +368,31 @@ Config = _reflection.GeneratedProtocolMessageType('Config', (_message.Message,),
     ))
   ,
 
-  AutotestBackend = _reflection.GeneratedProtocolMessageType('AutotestBackend', (_message.Message,), dict(
-    DESCRIPTOR = _CONFIG_AUTOTESTBACKEND,
+  Versioning = _reflection.GeneratedProtocolMessageType('Versioning', (_message.Message,), dict(
+
+    CrosTestPlatformBinary = _reflection.GeneratedProtocolMessageType('CrosTestPlatformBinary', (_message.Message,), dict(
+      DESCRIPTOR = _CONFIG_VERSIONING_CROSTESTPLATFORMBINARY,
+      __module__ = 'test_platform.config.config_pb2'
+      # @@protoc_insertion_point(class_scope:test_platform.config.Config.Versioning.CrosTestPlatformBinary)
+      ))
+    ,
+    DESCRIPTOR = _CONFIG_VERSIONING,
     __module__ = 'test_platform.config.config_pb2'
-    # @@protoc_insertion_point(class_scope:test_platform.config.Config.AutotestBackend)
+    # @@protoc_insertion_point(class_scope:test_platform.config.Config.Versioning)
     ))
   ,
 
-  SchedulerMigration = _reflection.GeneratedProtocolMessageType('SchedulerMigration', (_message.Message,), dict(
-    DESCRIPTOR = _CONFIG_SCHEDULERMIGRATION,
+  Buildbucket = _reflection.GeneratedProtocolMessageType('Buildbucket', (_message.Message,), dict(
+    DESCRIPTOR = _CONFIG_BUILDBUCKET,
     __module__ = 'test_platform.config.config_pb2'
-    # @@protoc_insertion_point(class_scope:test_platform.config.Config.SchedulerMigration)
+    # @@protoc_insertion_point(class_scope:test_platform.config.Config.Buildbucket)
+    ))
+  ,
+
+  TestRunner = _reflection.GeneratedProtocolMessageType('TestRunner', (_message.Message,), dict(
+    DESCRIPTOR = _CONFIG_TESTRUNNER,
+    __module__ = 'test_platform.config.config_pb2'
+    # @@protoc_insertion_point(class_scope:test_platform.config.Config.TestRunner)
     ))
   ,
   DESCRIPTOR = _CONFIG,
@@ -333,8 +403,10 @@ _sym_db.RegisterMessage(Config)
 _sym_db.RegisterMessage(Config.Swarming)
 _sym_db.RegisterMessage(Config.Isolate)
 _sym_db.RegisterMessage(Config.SkylabWorker)
-_sym_db.RegisterMessage(Config.AutotestBackend)
-_sym_db.RegisterMessage(Config.SchedulerMigration)
+_sym_db.RegisterMessage(Config.Versioning)
+_sym_db.RegisterMessage(Config.Versioning.CrosTestPlatformBinary)
+_sym_db.RegisterMessage(Config.Buildbucket)
+_sym_db.RegisterMessage(Config.TestRunner)
 
 
 DESCRIPTOR._options = None

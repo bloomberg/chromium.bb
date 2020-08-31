@@ -19,7 +19,7 @@ const EnableKioskMode = {
 Polymer({
   is: 'kiosk-enable',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     /**
@@ -38,19 +38,19 @@ Polymer({
   ],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('KioskEnableScreen', {
       resetAllowed: true,
     });
   },
 
   /** Called after resources are updated. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.state_ = EnableKioskMode.CONFIRM;
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
@@ -62,19 +62,19 @@ Polymer({
    * "Enable" button handler
    * @private
    */
-  onEnableButton_: function(event) {
-    chrome.send('kioskOnEnable');
+  onEnableButton_(event) {
+    this.userActed('enable');
   },
 
   /**
    * "Cancel" / "Ok" button handler
    * @private
    */
-  closeDialog_: function(event) {
-    chrome.send('kioskOnClose');
+  closeDialog_(event) {
+    this.userActed('close');
   },
 
-  onCompleted: function(success) {
+  onCompleted(success) {
     this.state_ = success ? EnableKioskMode.SUCCESS : EnableKioskMode.ERROR;
   },
 
@@ -82,7 +82,7 @@ Polymer({
    * Simple equality comparison function.
    * @private
    */
-  eq_: function(one, another) {
+  eq_(one, another) {
     return one === another;
   },
 
@@ -90,9 +90,9 @@ Polymer({
    *
    * @private
    */
-  primaryButtonText_(locale, state) {
+  primaryButtonTextKey_(state) {
     if (state === EnableKioskMode.CONFIRM)
-      return this.i18n('kioskOKButton');
-    return this.i18n('kioskCancelButton');
+      return 'kioskOKButton';
+    return 'kioskCancelButton';
   }
 });

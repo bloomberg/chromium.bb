@@ -16,8 +16,10 @@ import sys
 import unittest
 
 if sys.version_info.major == 2:
+  import mock
   import Queue
 else:
+  from unittest import mock
   import queue as Queue
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,7 +32,6 @@ import gclient
 import gclient_utils
 import gclient_scm
 from testing_support import trial_dir
-from third_party import mock
 
 
 def write(filename, content):
@@ -712,7 +713,7 @@ class GclientTest(trial_dir.TestCase):
     This is what we mean to check here:
     - |recursedeps| = [...] on 2 levels means we pull exactly 3 deps
       (up to /fizz, but not /fuzz)
-    - pulling foo/bar with no recursion (in .gclient) is overriden by
+    - pulling foo/bar with no recursion (in .gclient) is overridden by
       a later pull of foo/bar with recursion (in the dep tree)
     - pulling foo/tar with no recursion (in .gclient) is no recursively
       pulled (taz is left out)
@@ -1001,7 +1002,6 @@ class GclientTest(trial_dir.TestCase):
         '}')
     options, _ = gclient.OptionParser().parse_args([])
     options.ignore_dep_type = 'git'
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))
@@ -1131,7 +1131,7 @@ class GclientTest(trial_dir.TestCase):
       obj.RunOnDeps('None', [])
       self.fail()
     except gclient_utils.Error as e:
-      self.assertIn('allowed_hosts must be', str(e))
+      self.assertIn('Key \'allowed_hosts\' error:', str(e))
     finally:
       self._get_processed()
 
@@ -1159,7 +1159,6 @@ class GclientTest(trial_dir.TestCase):
         '  }\n'
         '}')
     options, _ = gclient.OptionParser().parse_args([])
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))
@@ -1201,7 +1200,6 @@ class GclientTest(trial_dir.TestCase):
         '}')
     options, _ = gclient.OptionParser().parse_args([])
     options.ignore_dep_type = 'cipd'
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))

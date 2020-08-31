@@ -27,12 +27,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
-Resources.DOMStorage = class extends Common.Object {
+export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Resources.DOMStorageModel} model
+   * @param {!DOMStorageModel} model
    * @param {string} securityOrigin
    * @param {boolean} isLocalStorage
    */
@@ -54,7 +57,7 @@ Resources.DOMStorage = class extends Common.Object {
 
   /** @return {!Protocol.DOMStorage.StorageId} */
   get id() {
-    return Resources.DOMStorage.storageId(this._securityOrigin, this._isLocalStorage);
+    return DOMStorage.storageId(this._securityOrigin, this._isLocalStorage);
   }
 
   /** @return {string} */
@@ -92,11 +95,11 @@ Resources.DOMStorage = class extends Common.Object {
   clear() {
     this._model._agent.clear(this.id);
   }
-};
+}
 
 
 /** @enum {symbol} */
-Resources.DOMStorage.Events = {
+DOMStorage.Events = {
   DOMStorageItemsCleared: Symbol('DOMStorageItemsCleared'),
   DOMStorageItemRemoved: Symbol('DOMStorageItemRemoved'),
   DOMStorageItemAdded: Symbol('DOMStorageItemAdded'),
@@ -106,15 +109,15 @@ Resources.DOMStorage.Events = {
 /**
  * @unrestricted
  */
-Resources.DOMStorageModel = class extends SDK.SDKModel {
+export class DOMStorageModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
 
-    this._securityOriginManager = target.model(SDK.SecurityOriginManager);
-    /** @type {!Object.<string, !Resources.DOMStorage>} */
+    this._securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
+    /** @type {!Object.<string, !DOMStorage>} */
     this._storages = {};
     this._agent = target.domstorageAgent();
   }
@@ -124,7 +127,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
       return;
     }
 
-    this.target().registerDOMStorageDispatcher(new Resources.DOMStorageDispatcher(this));
+    this.target().registerDOMStorageDispatcher(new DOMStorageDispatcher(this));
     this._securityOriginManager.addEventListener(
         SDK.SecurityOriginManager.Events.SecurityOriginAdded, this._securityOriginAdded, this);
     this._securityOriginManager.addEventListener(
@@ -155,7 +158,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _securityOriginAdded(event) {
     this._addOrigin(/** @type {string} */ (event.data));
@@ -165,7 +168,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
    * @param {string} securityOrigin
    */
   _addOrigin(securityOrigin) {
-    const parsed = new Common.ParsedURL(securityOrigin);
+    const parsed = new Common.ParsedURL.ParsedURL(securityOrigin);
     // These are "opaque" origins which are not supposed to support DOM storage.
     if (!parsed.isValid || parsed.scheme === 'data' || parsed.scheme === 'about' || parsed.scheme === 'javascript') {
       return;
@@ -174,14 +177,14 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     for (const isLocal of [true, false]) {
       const key = this._storageKey(securityOrigin, isLocal);
       console.assert(!this._storages[key]);
-      const storage = new Resources.DOMStorage(this, securityOrigin, isLocal);
+      const storage = new DOMStorage(this, securityOrigin, isLocal);
       this._storages[key] = storage;
-      this.dispatchEventToListeners(Resources.DOMStorageModel.Events.DOMStorageAdded, storage);
+      this.dispatchEventToListeners(Events.DOMStorageAdded, storage);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _securityOriginRemoved(event) {
     this._removeOrigin(/** @type {string} */ (event.data));
@@ -198,7 +201,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
         continue;
       }
       delete this._storages[key];
-      this.dispatchEventToListeners(Resources.DOMStorageModel.Events.DOMStorageRemoved, storage);
+      this.dispatchEventToListeners(Events.DOMStorageRemoved, storage);
     }
   }
 
@@ -208,7 +211,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
    * @return {string}
    */
   _storageKey(securityOrigin, isLocalStorage) {
-    return JSON.stringify(Resources.DOMStorage.storageId(securityOrigin, isLocalStorage));
+    return JSON.stringify(DOMStorage.storageId(securityOrigin, isLocalStorage));
   }
 
   /**
@@ -221,7 +224,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     }
 
     const eventData = {};
-    domStorage.dispatchEventToListeners(Resources.DOMStorage.Events.DOMStorageItemsCleared, eventData);
+    domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemsCleared, eventData);
   }
 
   /**
@@ -235,7 +238,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     }
 
     const eventData = {key: key};
-    domStorage.dispatchEventToListeners(Resources.DOMStorage.Events.DOMStorageItemRemoved, eventData);
+    domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemRemoved, eventData);
   }
 
   /**
@@ -250,7 +253,7 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     }
 
     const eventData = {key: key, value: value};
-    domStorage.dispatchEventToListeners(Resources.DOMStorage.Events.DOMStorageItemAdded, eventData);
+    domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemAdded, eventData);
   }
 
   /**
@@ -266,19 +269,19 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     }
 
     const eventData = {key: key, oldValue: oldValue, value: value};
-    domStorage.dispatchEventToListeners(Resources.DOMStorage.Events.DOMStorageItemUpdated, eventData);
+    domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemUpdated, eventData);
   }
 
   /**
    * @param {!Protocol.DOMStorage.StorageId} storageId
-   * @return {!Resources.DOMStorage}
+   * @return {!DOMStorage}
    */
   storageForId(storageId) {
     return this._storages[JSON.stringify(storageId)];
   }
 
   /**
-   * @return {!Array.<!Resources.DOMStorage>}
+   * @return {!Array.<!DOMStorage>}
    */
   storages() {
     const result = [];
@@ -287,12 +290,12 @@ Resources.DOMStorageModel = class extends SDK.SDKModel {
     }
     return result;
   }
-};
+}
 
-SDK.SDKModel.register(Resources.DOMStorageModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(DOMStorageModel, SDK.SDKModel.Capability.DOM, false);
 
 /** @enum {symbol} */
-Resources.DOMStorageModel.Events = {
+export const Events = {
   DOMStorageAdded: Symbol('DOMStorageAdded'),
   DOMStorageRemoved: Symbol('DOMStorageRemoved')
 };
@@ -301,9 +304,9 @@ Resources.DOMStorageModel.Events = {
  * @implements {Protocol.DOMStorageDispatcher}
  * @unrestricted
  */
-Resources.DOMStorageDispatcher = class {
+export class DOMStorageDispatcher {
   /**
-   * @param {!Resources.DOMStorageModel} model
+   * @param {!DOMStorageModel} model
    */
   constructor(model) {
     this._model = model;
@@ -346,4 +349,4 @@ Resources.DOMStorageDispatcher = class {
   domStorageItemUpdated(storageId, key, oldValue, value) {
     this._model._domStorageItemUpdated(storageId, key, oldValue, value);
   }
-};
+}

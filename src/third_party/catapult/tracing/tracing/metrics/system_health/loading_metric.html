@@ -13,6 +13,7 @@ found in the LICENSE file.
 <link rel="import" href="/tracing/extras/chrome/time_to_interactive.html">
 <link rel="import" href="/tracing/metrics/metric_registry.html">
 <link rel="import" href="/tracing/metrics/system_health/breakdown_tree_helpers.html">
+<link rel="import" href="/tracing/metrics/system_health/rects_based_speed_index_metric.html">
 <link rel="import" href="/tracing/metrics/system_health/utils.html">
 <link rel="import" href="/tracing/model/helpers/chrome_model_helper.html">
 <link rel="import" href="/tracing/model/helpers/chrome_thread_helper.html">
@@ -136,6 +137,8 @@ tr.exportTo('tr.metrics.sh', function() {
         navigationStartEvent.start, pcEvent.start);
     const networkEvents = EventFinderUtils.getNetworkEventsInRange(
         rendererHelper.process, navStartToEventRange);
+    // Main thread may be missing. See crbug.com/1059726 for an example.
+    if (rendererHelper.mainThread === undefined) return samples;
     const breakdownTree = tr.metrics.sh.generateWallClockTimeBreakdownTree(
         rendererHelper.mainThread, networkEvents, navStartToEventRange);
     samples.push({
@@ -341,13 +344,13 @@ tr.exportTo('tr.metrics.sh', function() {
    * @param {?number} eventTimestamp - Timestamp of the event for which the
    *     sample is being generated.
    * @param {tr.model.ThreadSlice} navigationStartEvent
-   * @param {number} firstMeaningfulPaintTime
+   * @param {number} firstContentfulPaintTime
    * @param {number} domContentLoadedEndTime
    * @param {string} url - URL of the current main frame document.
    * @returns {MetricSample|undefined}
    */
   function decorateInteractivitySampleWithDiagnostics_(rendererHelper,
-      eventTimestamp, navigationStartEvent, firstMeaningfulPaintTime,
+      eventTimestamp, navigationStartEvent, firstContentfulPaintTime,
       domContentLoadedEndTime, url) {
     if (eventTimestamp === undefined) return undefined;
     const navigationStartTime = navigationStartEvent.start;
@@ -368,7 +371,7 @@ tr.exportTo('tr.metrics.sh', function() {
           url,
           pid: rendererHelper.pid,
           navigationStartTime,
-          firstMeaningfulPaintTime,
+          firstContentfulPaintTime,
           domContentLoadedEndTime,
           // eventTimestamp can be derived from value and navigationStartEvent,
           // but it's useful to directly see the value in the UI.
@@ -485,6 +488,9 @@ tr.exportTo('tr.metrics.sh', function() {
         rendererHelper, frameToNavStartEvents,
         navIdToNavStartEvents);
     const layoutShiftSamples = findLayoutShiftSamples(rendererHelper);
+    const navigationStartSamples = timeToFCPEntries.map(entry => {
+      return { value: entry.navigationStartEvent.start};
+    });
 
     return {
       frameToNavStartEvents,
@@ -497,6 +503,7 @@ tr.exportTo('tr.metrics.sh', function() {
       largestImagePaintSamples,
       largestTextPaintSamples,
       layoutShiftSamples,
+      navigationStartSamples,
     };
   }
 
@@ -506,6 +513,7 @@ tr.exportTo('tr.metrics.sh', function() {
     const firstCpuIdleSamples = [];
     const firstMeaningfulPaintSamples = [];
     const firstMeaningfulPaintCpuTimeSamples = [];
+    const totalBlockingTimeSamples = [];
     for (const expectation of model.userModel.expectations) {
       if (!(expectation instanceof tr.model.um.LoadExpectation)) continue;
       if (tr.e.chrome.CHROME_INTERNAL_URLS.includes(expectation.url)) {
@@ -525,15 +533,26 @@ tr.exportTo('tr.metrics.sh', function() {
         firstCpuIdleSamples.push(decorateInteractivitySampleWithDiagnostics_(
             rendererHelper, expectation.firstCpuIdleTime,
             expectation.navigationStart,
-            expectation.fmpEvent.start,
+            expectation.fcpEvent.start,
             expectation.domContentLoadedEndEvent.start, expectation.url));
       }
       if (expectation.timeToInteractive !== undefined) {
         interactiveSamples.push(decorateInteractivitySampleWithDiagnostics_(
             rendererHelper, expectation.timeToInteractive,
             expectation.navigationStart,
-            expectation.fmpEvent.start,
+            expectation.fcpEvent.start,
             expectation.domContentLoadedEndEvent.start, expectation.url));
+      }
+      if (expectation.totalBlockingTime !== undefined) {
+        totalBlockingTimeSamples.push({
+          value: expectation.totalBlockingTime,
+          diagnostics: {
+            url: new tr.v.d.GenericSet([expectation.url]),
+            navigationStart: new RelatedEventSet(expectation.navigationStart),
+            firstContentfulPaint: new RelatedEventSet(expectation.fcpEvent),
+            interactiveTime: new tr.v.d.GenericSet(
+                [expectation.timeToInteractive]),
+          }});
       }
     }
 
@@ -542,6 +561,7 @@ tr.exportTo('tr.metrics.sh', function() {
       firstMeaningfulPaintCpuTimeSamples,
       firstCpuIdleSamples,
       interactiveSamples,
+      totalBlockingTimeSamples,
     };
   }
 
@@ -629,6 +649,12 @@ tr.exportTo('tr.metrics.sh', function() {
           description: 'Time to Interactive',
           summaryOptions: SUMMARY_OPTIONS,
         });
+    const totalBlockingTimeHistogram = histograms.createHistogram(
+        'totalBlockingTime', timeDurationInMs_smallerIsBetter, [], {
+          binBoundaries: TIME_TO_INTERACTIVE_BOUNDARIES,
+          description: 'Total Blocking Time',
+          summaryOptions: SUMMARY_OPTIONS,
+        });
     const timeToFirstCpuIdleHistogram = histograms.createHistogram(
         'timeToFirstCpuIdle', timeDurationInMs_smallerIsBetter, [], {
           binBoundaries: TIME_TO_INTERACTIVE_BOUNDARIES,
@@ -671,6 +697,13 @@ tr.exportTo('tr.metrics.sh', function() {
           description: 'Main Frame Document Cumulative Layout Shift Score',
           summaryOptions: SUMMARY_OPTIONS,
         });
+    const navigationStartHistogram = histograms.createHistogram(
+        'navigationStart', timeDurationInMs_smallerIsBetter, [], {
+          binBoundaries: LOADING_METRIC_BOUNDARIES,
+          description: 'navigationStart',
+          summaryOptions: SUMMARY_OPTIONS,
+        });
+    tr.metrics.sh.rectsBasedSpeedIndexMetric(histograms, model);
 
     const chromeHelper = model.getOrCreateHelper(
         tr.model.helpers.ChromeModelHelper);
@@ -716,6 +749,10 @@ tr.exportTo('tr.metrics.sh', function() {
           histograms);
       addSamplesToHistogram(
           samplesSet.layoutShiftSamples, layoutShiftHistogram, histograms);
+      addSamplesToHistogram(
+          samplesSet.navigationStartSamples,
+          navigationStartHistogram,
+          histograms);
     }
 
     const samplesSet = collectMetricsFromLoadExpectations(model, chromeHelper);
@@ -734,6 +771,10 @@ tr.exportTo('tr.metrics.sh', function() {
     addSamplesToHistogram(
         samplesSet.firstCpuIdleSamples,
         timeToFirstCpuIdleHistogram,
+        histograms);
+    addSamplesToHistogram(
+        samplesSet.totalBlockingTimeSamples,
+        totalBlockingTimeHistogram,
         histograms);
   }
 

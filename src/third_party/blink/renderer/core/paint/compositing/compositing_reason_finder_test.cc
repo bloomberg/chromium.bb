@@ -23,11 +23,13 @@ class CompositingReasonFinderTest : public RenderingTest {
   CompositingReasonFinderTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
- private:
+ protected:
   void SetUp() override {
     EnableCompositing();
     RenderingTest::SetUp();
   }
+
+  void CheckCompositingReasonsForAnimation(bool supports_transform_animation);
 };
 
 TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
@@ -40,42 +42,7 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
                CompositingReason::kComboAllStyleDeterminedReasons);
 }
 
-class CompositingReasonFinderTestWithDoNotCompositeTrivial3D
-    : public CompositingReasonFinderTest {
- public:
-  CompositingReasonFinderTestWithDoNotCompositeTrivial3D() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kDoNotCompositeTrivial3D);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CompositingReasonFinderTestWithDoNotCompositeTrivial3D,
-       DontPromoteTrivial3D) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='target'
-      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
-  )HTML");
-
-  Element* target = GetDocument().getElementById("target");
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
-}
-
-class CompositingReasonFinderTestWithCompositeTrivial3D
-    : public CompositingReasonFinderTest {
- public:
-  CompositingReasonFinderTestWithCompositeTrivial3D() {
-    scoped_feature_list_.InitAndDisableFeature(
-        blink::features::kDoNotCompositeTrivial3D);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CompositingReasonFinderTestWithCompositeTrivial3D, PromoteTrivial3D) {
+TEST_F(CompositingReasonFinderTest, PromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>
@@ -169,7 +136,9 @@ TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
           ->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {
+void CompositingReasonFinderTest::CheckCompositingReasonsForAnimation(
+    bool supports_transform_animation) {
+  auto* object = GetLayoutObjectByElementId("target");
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   style->SetSubtreeWillChangeContents(false);
@@ -177,32 +146,47 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {
   style->SetHasCurrentOpacityAnimation(false);
   style->SetHasCurrentFilterAnimation(false);
   style->SetHasCurrentBackdropFilterAnimation(false);
+  object->SetStyle(style);
+
   EXPECT_EQ(CompositingReason::kNone,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+            CompositingReasonFinder::CompositingReasonsForAnimation(*object));
+
+  CompositingReasons expected_compositing_reason_for_transform_animation =
+      supports_transform_animation
+          ? CompositingReason::kActiveTransformAnimation
+          : CompositingReason::kNone;
 
   style->SetHasCurrentTransformAnimation(true);
-  EXPECT_EQ(CompositingReason::kActiveTransformAnimation,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+  EXPECT_EQ(expected_compositing_reason_for_transform_animation,
+            CompositingReasonFinder::CompositingReasonsForAnimation(*object));
 
   style->SetHasCurrentOpacityAnimation(true);
-  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+  EXPECT_EQ(expected_compositing_reason_for_transform_animation |
                 CompositingReason::kActiveOpacityAnimation,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+            CompositingReasonFinder::CompositingReasonsForAnimation(*object));
 
   style->SetHasCurrentFilterAnimation(true);
-  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+  EXPECT_EQ(expected_compositing_reason_for_transform_animation |
                 CompositingReason::kActiveOpacityAnimation |
                 CompositingReason::kActiveFilterAnimation,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+            CompositingReasonFinder::CompositingReasonsForAnimation(*object));
 
   style->SetHasCurrentBackdropFilterAnimation(true);
-  EXPECT_EQ(CompositingReason::kActiveTransformAnimation |
+  EXPECT_EQ(expected_compositing_reason_for_transform_animation |
                 CompositingReason::kActiveOpacityAnimation |
                 CompositingReason::kActiveFilterAnimation |
                 CompositingReason::kActiveBackdropFilterAnimation,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
-  EXPECT_EQ(CompositingReason::kComboActiveAnimation,
-            CompositingReasonFinder::CompositingReasonsForAnimation(*style));
+            CompositingReasonFinder::CompositingReasonsForAnimation(*object));
+}
+
+TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimationBox) {
+  SetBodyInnerHTML("<div id='target'>Target</div>");
+  CheckCompositingReasonsForAnimation(/*supports_transform_animation*/ true);
+}
+
+TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimationInline) {
+  SetBodyInnerHTML("<span id='target'>Target</span>");
+  CheckCompositingReasonsForAnimation(/*supports_transform_animation*/ false);
 }
 
 TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
@@ -241,7 +225,7 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   ASSERT_TRUE(iframe_layer);
   ASSERT_FALSE(To<HTMLFrameOwnerElement>(iframe)
                    ->ContentFrame()
-                   ->IsCrossOriginSubframe());
+                   ->IsCrossOriginToMainFrame());
   EXPECT_EQ(kNotComposited, iframe_layer->DirectCompositingReasons());
 
   SetBodyInnerHTML(R"HTML(
@@ -256,8 +240,8 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   ASSERT_TRUE(iframe_layer);
   ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
                   ->ContentFrame()
-                  ->IsCrossOriginSubframe());
-  EXPECT_EQ(CompositingReason::kCrossOriginIframe,
+                  ->IsCrossOriginToMainFrame());
+  EXPECT_EQ(CompositingReason::kIFrame,
             iframe_layer->DirectCompositingReasons());
 }
 

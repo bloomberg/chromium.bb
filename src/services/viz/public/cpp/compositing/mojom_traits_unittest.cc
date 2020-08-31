@@ -81,8 +81,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   const uint64_t sequence_number = 10;
   const bool animate_only = true;
   BeginFrameArgs input;
-  input.source_id = source_id;
-  input.sequence_number = sequence_number;
+  input.frame_id = BeginFrameId(source_id, sequence_number);
   input.frame_time = frame_time;
   input.deadline = deadline;
   input.interval = interval;
@@ -93,8 +92,8 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   BeginFrameArgs output;
   mojo::test::SerializeAndDeserialize<mojom::BeginFrameArgs>(&input, &output);
 
-  EXPECT_EQ(source_id, output.source_id);
-  EXPECT_EQ(sequence_number, output.sequence_number);
+  EXPECT_EQ(source_id, output.frame_id.source_id);
+  EXPECT_EQ(sequence_number, output.frame_id.sequence_number);
   EXPECT_EQ(frame_time, output.frame_time);
   EXPECT_EQ(deadline, output.deadline);
   EXPECT_EQ(interval, output.interval);
@@ -108,15 +107,14 @@ TEST_F(StructTraitsTest, BeginFrameAck) {
   const uint64_t sequence_number = 10;
   const bool has_damage = true;
   BeginFrameAck input;
-  input.source_id = source_id;
-  input.sequence_number = sequence_number;
+  input.frame_id = BeginFrameId(source_id, sequence_number);
   input.has_damage = has_damage;
 
   BeginFrameAck output;
   mojo::test::SerializeAndDeserialize<mojom::BeginFrameAck>(&input, &output);
 
-  EXPECT_EQ(source_id, output.source_id);
-  EXPECT_EQ(sequence_number, output.sequence_number);
+  EXPECT_EQ(source_id, output.frame_id.source_id);
+  EXPECT_EQ(sequence_number, output.frame_id.sequence_number);
   EXPECT_TRUE(output.has_damage);
 }
 
@@ -659,7 +657,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.activation_dependencies = activation_dependencies;
   input.deadline = frame_deadline;
   input.frame_token = frame_token;
-  input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
+  input.begin_frame_ack.frame_id.sequence_number =
+      begin_frame_ack_sequence_number;
   input.min_page_scale_factor = min_page_scale_factor;
   input.top_controls_visible_height.emplace(top_controls_visible_height);
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
@@ -688,7 +687,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(frame_deadline, output.deadline);
   EXPECT_EQ(frame_token, output.frame_token);
   EXPECT_EQ(begin_frame_ack_sequence_number,
-            output.begin_frame_ack.sequence_number);
+            output.begin_frame_ack.frame_id.sequence_number);
   EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
   EXPECT_EQ(*output.top_controls_visible_height, top_controls_visible_height);
   EXPECT_EQ(local_surface_id_allocation_time,
@@ -713,16 +712,17 @@ TEST_F(StructTraitsTest, RenderPass) {
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
   base::Optional<gfx::RRectF> backdrop_filter_bounds(
       {10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8});
-  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kHDR;
   const bool has_transparent_background = true;
   const bool cache_render_pass = true;
   const bool has_damage_from_contributing_content = true;
   const bool generate_mipmap = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-                filters, backdrop_filters, backdrop_filter_bounds, color_space,
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap);
+                filters, backdrop_filters, backdrop_filter_bounds,
+                content_color_usage, has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap);
   input->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
   const gfx::Rect copy_output_area(24, 42, 75, 57);
   input->copy_requests.back()->set_area(copy_output_area);
@@ -783,7 +783,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
-  EXPECT_EQ(color_space, output->color_space);
+  EXPECT_EQ(content_color_usage, output->content_color_usage);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(backdrop_filters, output->backdrop_filters);
@@ -861,9 +861,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   const base::Optional<gfx::RRectF> backdrop_filter_bounds;
-  skcms_Matrix3x3 to_XYZD50 = SkNamedGamut::kXYZ;
-  skcms_TransferFunction fn = {1, 0, 1, 0, 0, 0, 1};
-  gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kHDR;
   const bool has_transparent_background = true;
   const bool cache_render_pass = false;
   const bool has_damage_from_contributing_content = false;
@@ -871,9 +869,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(),
-                backdrop_filter_bounds, color_space, has_transparent_background,
-                cache_render_pass, has_damage_from_contributing_content,
-                generate_mipmap);
+                backdrop_filter_bounds, content_color_usage,
+                has_transparent_background, cache_render_pass,
+                has_damage_from_contributing_content, generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.
@@ -888,8 +886,8 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(backdrop_filter_bounds, output->backdrop_filter_bounds);
+  EXPECT_EQ(content_color_usage, output->content_color_usage);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
-  EXPECT_EQ(color_space, output->color_space);
 }
 
 TEST_F(StructTraitsTest, QuadListBasic) {
@@ -908,7 +906,6 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const gfx::Rect rect2(2468, 8642, 4321, 1234);
   const uint32_t color2 = 0xffffffff;
   const bool force_anti_aliasing_off = true;
-  const float backdrop_filter_quality = 1.0f;
   SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
@@ -926,7 +923,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       sqs, rect3, rect3, SurfaceRange(fallback_surface_id, primary_surface_id),
       SK_ColorBLUE, false);
 
-  const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
+  const gfx::Rect rect4(1234, 5678, 91012, 13141);
+  const bool needs_blending = true;
   const ResourceId resource_id4(1337);
   const RenderPassId render_pass_id = 1234u;
   const gfx::RectF mask_uv_rect(0, 0, 1337.1f, 1234.2f);
@@ -934,15 +932,18 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
   gfx::PointF filters_origin(8765.4f, 4567.8f);
   gfx::RectF tex_coord_rect(1.f, 1.f, 1234.f, 5678.f);
+  const float backdrop_filter_quality = 1.0f;
+  const bool can_use_backdrop_filter_cache = true;
 
   RenderPassDrawQuad* render_pass_quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
-                           mask_uv_rect, mask_texture_size, filters_scale,
-                           filters_origin, tex_coord_rect,
-                           force_anti_aliasing_off, backdrop_filter_quality);
+  render_pass_quad->SetAll(sqs, rect4, rect4, needs_blending, render_pass_id,
+                           resource_id4, mask_uv_rect, mask_texture_size,
+                           filters_scale, filters_origin, tex_coord_rect,
+                           force_anti_aliasing_off, backdrop_filter_quality,
+                           can_use_backdrop_filter_cache);
 
-  const gfx::Rect rect5(123, 567, 91011, 131415);
+  const gfx::Rect rect5(123, 567, 91011, 13141);
   const ResourceId resource_id5(1337);
   const float vertex_opacity[4] = {1.f, 2.f, 3.f, 4.f};
   const bool premultiplied_alpha = true;
@@ -952,7 +953,6 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool y_flipped = true;
   const bool nearest_neighbor = true;
   const bool secure_output_only = true;
-  const bool needs_blending = true;
   const gfx::ProtectedVideoType protected_video_type =
       gfx::ProtectedVideoType::kClear;
   const gfx::Size resource_size_in_pixels5(1234, 5678);
@@ -1014,10 +1014,17 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(rect4, out_render_pass_draw_quad->visible_rect);
   EXPECT_EQ(render_pass_id, out_render_pass_draw_quad->render_pass_id);
   EXPECT_EQ(resource_id4, out_render_pass_draw_quad->mask_resource_id());
+  EXPECT_EQ(mask_uv_rect, out_render_pass_draw_quad->mask_uv_rect);
   EXPECT_EQ(mask_texture_size, out_render_pass_draw_quad->mask_texture_size);
   EXPECT_EQ(filters_scale, out_render_pass_draw_quad->filters_scale);
+  EXPECT_EQ(filters_origin, out_render_pass_draw_quad->filters_origin);
+  EXPECT_EQ(tex_coord_rect, out_render_pass_draw_quad->tex_coord_rect);
   EXPECT_EQ(force_anti_aliasing_off,
             out_render_pass_draw_quad->force_anti_aliasing_off);
+  EXPECT_EQ(backdrop_filter_quality,
+            out_render_pass_draw_quad->backdrop_filter_quality);
+  EXPECT_EQ(can_use_backdrop_filter_cache,
+            out_render_pass_draw_quad->can_use_backdrop_filter_cache);
 
   const TextureDrawQuad* out_texture_draw_quad =
       TextureDrawQuad::MaterialCast(output->quad_list.ElementAt(4));

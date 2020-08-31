@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 
+#include <deque>
 #include <list>
 #include <map>
 #include <memory>
@@ -12,7 +13,6 @@
 #include <set>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/cancelable_callback.h"
@@ -95,15 +95,9 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       SequenceManager::Settings settings);
 
-  // Create a SequenceManager that funnels it's tasks down onto |task_runner|.
-  static std::unique_ptr<SequenceManagerImpl> CreateSequenceFunneled(
-      scoped_refptr<SingleThreadTaskRunner> task_runner,
-      SequenceManager::Settings settings);
-
   // SequenceManager implementation:
   void BindToCurrentThread() override;
-  const scoped_refptr<SequencedTaskRunner>& GetTaskRunnerForCurrentTask()
-      override;
+  scoped_refptr<SequencedTaskRunner> GetTaskRunnerForCurrentTask() override;
   void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
   void SetObserver(Observer* observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
@@ -308,7 +302,9 @@ class BASE_EXPORT SequenceManagerImpl
     bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
-    std::vector<ExecutingTask> task_execution_stack;
+    // Note that this uses std::deque for pointer stability, since pointers to
+    // objects in this container are stored in TLS.
+    std::deque<ExecutingTask> task_execution_stack;
 
     Observer* observer = nullptr;  // NOT OWNED
 
@@ -348,6 +344,9 @@ class BASE_EXPORT SequenceManagerImpl
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
                             bool force_verbose) const;
+  void AsValueWithSelectorResultInto(trace_event::TracedValue*,
+                                     internal::WorkQueue* selected_work_queue,
+                                     bool force_verbose) const;
 
   // Used in construction of TaskQueueImpl to obtain an AtomicFlag which it can
   // use to request reload by ReloadEmptyWorkQueues. The lifetime of

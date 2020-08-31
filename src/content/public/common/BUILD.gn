@@ -15,41 +15,29 @@ import("//third_party/webrtc/webrtc.gni")
 # See //content/BUILD.gn for how this works.
 group("common") {
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":common_sources",
-    ]
+    public_deps = [ ":common_sources" ]
   }
 }
 
 # This target allows other targets to depend on result_codes.h which is a
 # header-only dependency, without bringing in all of content.
 source_set("result_codes") {
-  sources = [
-    "result_codes.h",
-  ]
+  sources = [ "result_codes.h" ]
 
-  deps = [
-    "//services/service_manager/embedder:embedder_result_codes",
-  ]
+  deps = [ "//services/service_manager/embedder:embedder_result_codes" ]
 }
 
 # This target allows other targets to depend on content_descriptors.h which is
 # a header-only dependency, without bringing in all of content.
 source_set("content_descriptors") {
-  sources = [
-    "content_descriptors.h",
-  ]
+  sources = [ "content_descriptors.h" ]
 
   # The header uses V8_USE_EXTERNAL_STARTUP_DATA.
   public_configs = [ "//v8:external_startup_data" ]
 
-  deps = [
-    "//ipc",
-  ]
+  deps = [ "//ipc" ]
 }
 
 source_set("content_descriptor_keys") {
@@ -71,9 +59,7 @@ config("static_switches_defines") {
 # link to it, without depending on the rest of content. This is only for use
 # without content, or you will get multiply defined symbols.
 source_set("static_switches") {
-  public = [
-    "content_switches.h",
-  ]
+  public = [ "content_switches.h" ]
   sources = [
     "//content/common/content_export.h",
     "content_switches.cc",
@@ -82,25 +68,19 @@ source_set("static_switches") {
   public_configs = [ ":static_switches_defines" ]
 
   # Deps required by the above headers.
-  deps = [
-    "//media:media_buildflags",
-  ]
+  deps = [ "//media:media_buildflags" ]
 }
 
 # This target allows you to use the content_features constants and statically
 # link to it, without depending on the rest of content. This is only for use
 # without content, or you will get multiply defined symbols.
 source_set("static_features") {
-  public = [
-    "content_features.h",
-  ]
+  public = [ "content_features.h" ]
   sources = [
     "//content/common/content_export.h",
     "content_features.cc",
   ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   public_configs = [ ":static_switches_defines" ]
 
@@ -137,20 +117,15 @@ jumbo_source_set("common_sources") {
     "content_switch_dependent_feature_overrides.h",
     "content_switches.cc",
     "content_switches.h",
-    "context_menu_params.cc",
-    "context_menu_params.h",
-    "cursor_info.cc",
-    "cursor_info.h",
     "drop_data.cc",
     "drop_data.h",
-    "favicon_url.cc",
-    "favicon_url.h",
     "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",
+    "impression.cc",
+    "impression.h",
     "injection_test_mac.h",
     "injection_test_win.h",
-    "input_event_ack_source.h",
     "input_event_ack_state.h",
     "isolated_world_ids.h",
     "javascript_dialog_type.h",
@@ -164,7 +139,6 @@ jumbo_source_set("common_sources") {
     "network_service_util.cc",
     "network_service_util.h",
     "origin_util.h",
-    "page_importance_signals.h",
     "page_state.cc",
     "page_state.h",
     "page_type.h",
@@ -185,7 +159,6 @@ jumbo_source_set("common_sources") {
     "resource_intercept_policy.h",
     "resource_request_body_android.cc",
     "resource_request_body_android.h",
-    "resource_type.cc",
     "resource_usage_reporter_type_converters.cc",
     "resource_usage_reporter_type_converters.h",
     "result_codes.h",
@@ -200,6 +173,8 @@ jumbo_source_set("common_sources") {
     "stop_find_action.h",
     "storage_quota_params.h",
     "three_d_api_types.h",
+    "untrustworthy_context_menu_params.cc",
+    "untrustworthy_context_menu_params.h",
     "url_constants.cc",
     "url_constants.h",
     "url_utils.cc",
@@ -224,7 +199,7 @@ jumbo_source_set("common_sources") {
 
   public_deps = [
     ":interfaces",
-    ":resource_type_header",
+    ":renderer_type",
     ":service_names",
     "//content/common",
     "//ipc",
@@ -238,6 +213,8 @@ jumbo_source_set("common_sources") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/mojom:mojom_platform_headers",
     "//ui/accessibility",
+    "//ui/base/cursor/mojom:cursor_type",
+    "//ui/gfx/geometry",
     "//ui/surface",
     "//url/ipc:url_ipc",
   ]
@@ -262,6 +239,7 @@ jumbo_source_set("common_sources") {
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/cursor",
     "//ui/gfx",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/color",
@@ -303,24 +281,10 @@ jumbo_source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
-}
 
-# This target exists because mojo bindings use this header and depending
-# on the whole of content/common would create a dependency cycle
-# //content/public/common:resource_type_bindings ->
-# //content/public/common:common ->
-# //content:content
-# //content/public/app:both_sources ->
-# //content/public/common:common_sources ->
-# //content/public/common:interfaces ->
-# //content/public/common:resource_type_bindings ->
-source_set("resource_type_header") {
-  sources = [
-    "resource_type.h",
-  ]
-  public_deps = [
-    "//content:export",
-  ]
+  if (use_clang_profiling_inside_sandbox) {
+    sources += [ "profiling_utils.h" ]
+  }
 }
 
 mojom("interfaces") {
@@ -341,7 +305,6 @@ mojom("interfaces") {
     "browser_controls_state.mojom",
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
-    "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
     "was_activated_option.mojom",
@@ -353,44 +316,54 @@ mojom("interfaces") {
     sources += [ "font_cache_win.mojom" ]
   }
 
-  public_deps = [
-    ":client_hints_mojom",
-    ":resource_type_bindings",
+  public_deps = [ ":client_hints_mojom" ]
+
+  deps = [
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
-    "//services/network/public/mojom:mojom_ip_address",
-    "//services/network/public/mojom:websocket_mojom",
-    "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
+
+    # This dependency is really a dependency for the typemaps, but we need
+    # it here so that we can override it correctly for the component build.
+    "//third_party/blink/public/mojom:mojom_platform",
   ]
 
   component_output_prefix = "content_public_common_mojo_bindings"
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
   export_header = "content/common/content_export.h"
+
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+  component_deps = [ "//third_party/blink/public/common" ]
+}
+
+mojom("renderer_type") {
+  sources = [ "media_playback_renderer_type.mojom" ]
+}
+
+mojom("web_preferences_mojom") {
+  sources = [ "web_preferences.mojom" ]
+
+  public_deps = [
+    # This dependency is really a dependency for the typemaps, but we need
+    # it here so that we can override it correctly for the component build.
+    "//third_party/blink/public/mojom:mojom_platform",
+  ]
+
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+  component_deps = [ "//third_party/blink/public/common" ]
 }
 
 mojom("client_hints_mojom") {
-  sources = [
-    "client_hints.mojom",
-  ]
+  sources = [ "client_hints.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//third_party/blink/public/mojom:web_client_hints_types_mojo_bindings",
+    "//services/network/public/mojom",
     "//url/mojom:url_mojom_origin",
   ]
 }
 
 mojom("service_names") {
-  sources = [
-    "service_names.mojom",
-  ]
-}
-
-mojom("resource_type_bindings") {
-  sources = [
-    "resource_type.mojom",
-  ]
+  sources = [ "service_names.mojom" ]
 }

@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
@@ -88,7 +89,7 @@ class TracingControllerImpl : public TracingController,
   // exists.
   void FinalizeStartupTracingIfNeeded();
 
-  const PerfettoFileTracer* perfetto_file_tracer_for_testing() const {
+  PerfettoFileTracer* perfetto_file_tracer_for_testing() const {
     return perfetto_file_tracer_.get();
   }
 

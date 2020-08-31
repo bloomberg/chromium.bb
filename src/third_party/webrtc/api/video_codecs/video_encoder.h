@@ -34,6 +34,8 @@ class RTPFragmentationHeader;
 // TODO(pbos): Expose these through a public (root) header or change these APIs.
 struct CodecSpecificInfo;
 
+constexpr int kDefaultMinPixelsPerFrame = 320 * 180;
+
 class EncodedImageCallback {
  public:
   virtual ~EncodedImageCallback() {}
@@ -89,7 +91,7 @@ class RTC_EXPORT VideoEncoder {
   };
 
   // Quality scaling is enabled if thresholds are provided.
-  struct ScalingSettings {
+  struct RTC_EXPORT ScalingSettings {
    private:
     // Private magic type for kOff, implicitly convertible to
     // ScalingSettings.
@@ -115,7 +117,7 @@ class RTC_EXPORT VideoEncoder {
     // TODO(kthelgason): Lower this limit when better testing
     // on MediaCodec and fallback implementations are in place.
     // See https://bugs.chromium.org/p/webrtc/issues/detail?id=7206
-    int min_pixels_per_frame = 320 * 180;
+    int min_pixels_per_frame = kDefaultMinPixelsPerFrame;
 
    private:
     // Private constructor; to get an object without thresholds, use
@@ -165,6 +167,14 @@ class RTC_EXPORT VideoEncoder {
     // Any encoder implementation wishing to use the WebRTC provided
     // quality scaler must populate this field.
     ScalingSettings scaling_settings;
+
+    // The width and height of the incoming video frames should be divisible
+    // by |requested_resolution_alignment|. If they are not, the encoder may
+    // drop the incoming frame.
+    // For example: With I420, this value would be a multiple of 2.
+    // Note that this field is unrelated to any horizontal or vertical stride
+    // requirements the encoder has on the incoming video frame buffers.
+    int requested_resolution_alignment;
 
     // If true, encoder supports working with a native handle (e.g. texture
     // handle for hw codecs) rather than requiring a raw I420 buffer.
@@ -225,6 +235,11 @@ class RTC_EXPORT VideoEncoder {
 
     // Recommended bitrate limits for different resolutions.
     std::vector<ResolutionBitrateLimits> resolution_bitrate_limits;
+
+    // Obtains the limits from |resolution_bitrate_limits| that best matches the
+    // |frame_size_pixels|.
+    absl::optional<ResolutionBitrateLimits>
+    GetEncoderBitrateLimitsForResolution(int frame_size_pixels) const;
 
     // If true, this encoder has internal support for generating simulcast
     // streams. Otherwise, an adapter class will be needed.

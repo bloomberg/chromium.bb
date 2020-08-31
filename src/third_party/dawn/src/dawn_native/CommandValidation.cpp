@@ -37,39 +37,46 @@ namespace dawn_native {
                 case Command::Draw: {
                     commands->NextCommand<DrawCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDraw());
-                } break;
+                    break;
+                }
 
                 case Command::DrawIndexed: {
                     commands->NextCommand<DrawIndexedCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDrawIndexed());
-                } break;
+                    break;
+                }
 
                 case Command::DrawIndirect: {
                     commands->NextCommand<DrawIndirectCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDraw());
-                } break;
+                    break;
+                }
 
                 case Command::DrawIndexedIndirect: {
                     commands->NextCommand<DrawIndexedIndirectCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDrawIndexed());
-                } break;
+                    break;
+                }
 
                 case Command::InsertDebugMarker: {
                     InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
                     commands->NextData<char>(cmd->length + 1);
-                } break;
+                    break;
+                }
 
                 case Command::PopDebugGroup: {
                     commands->NextCommand<PopDebugGroupCmd>();
                     DAWN_TRY(ValidateCanPopDebugGroup(*debugGroupStackSize));
                     *debugGroupStackSize -= 1;
-                } break;
+                    break;
+                }
 
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
                     commands->NextData<char>(cmd->length + 1);
                     *debugGroupStackSize += 1;
-                } break;
+                    break;
+                }
 
                 case Command::SetRenderPipeline: {
                     SetRenderPipelineCmd* cmd = commands->NextCommand<SetRenderPipelineCmd>();
@@ -79,7 +86,8 @@ namespace dawn_native {
                         return DAWN_VALIDATION_ERROR("Pipeline attachment state is not compatible");
                     }
                     commandBufferState->SetRenderPipeline(pipeline);
-                } break;
+                    break;
+                }
 
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
@@ -88,17 +96,20 @@ namespace dawn_native {
                     }
 
                     commandBufferState->SetBindGroup(cmd->index, cmd->group.Get());
-                } break;
+                    break;
+                }
 
                 case Command::SetIndexBuffer: {
                     commands->NextCommand<SetIndexBufferCmd>();
                     commandBufferState->SetIndexBuffer();
-                } break;
+                    break;
+                }
 
                 case Command::SetVertexBuffer: {
                     SetVertexBufferCmd* cmd = commands->NextCommand<SetVertexBufferCmd>();
                     commandBufferState->SetVertexBuffer(cmd->slot);
-                } break;
+                    break;
+                }
 
                 default:
                     return DAWN_VALIDATION_ERROR(disallowedMessage);
@@ -150,7 +161,7 @@ namespace dawn_native {
                     commands->NextCommand<EndRenderPassCmd>();
                     DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
                     return {};
-                } break;
+                }
 
                 case Command::ExecuteBundles: {
                     ExecuteBundlesCmd* cmd = commands->NextCommand<ExecuteBundlesCmd>();
@@ -168,23 +179,28 @@ namespace dawn_native {
                         commandBufferState = CommandBufferStateTracker{};
                     }
 
-                } break;
+                    break;
+                }
 
                 case Command::SetStencilReference: {
                     commands->NextCommand<SetStencilReferenceCmd>();
-                } break;
+                    break;
+                }
 
                 case Command::SetBlendColor: {
                     commands->NextCommand<SetBlendColorCmd>();
-                } break;
+                    break;
+                }
 
                 case Command::SetViewport: {
                     commands->NextCommand<SetViewportCmd>();
-                } break;
+                    break;
+                }
 
                 case Command::SetScissorRect: {
                     commands->NextCommand<SetScissorRectCmd>();
-                } break;
+                    break;
+                }
 
                 default:
                     DAWN_TRY(ValidateRenderBundleCommand(
@@ -208,40 +224,46 @@ namespace dawn_native {
                     commands->NextCommand<EndComputePassCmd>();
                     DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
                     return {};
-                } break;
+                }
 
                 case Command::Dispatch: {
                     commands->NextCommand<DispatchCmd>();
                     DAWN_TRY(commandBufferState.ValidateCanDispatch());
-                } break;
+                    break;
+                }
 
                 case Command::DispatchIndirect: {
                     commands->NextCommand<DispatchIndirectCmd>();
                     DAWN_TRY(commandBufferState.ValidateCanDispatch());
-                } break;
+                    break;
+                }
 
                 case Command::InsertDebugMarker: {
                     InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
                     commands->NextData<char>(cmd->length + 1);
-                } break;
+                    break;
+                }
 
                 case Command::PopDebugGroup: {
                     commands->NextCommand<PopDebugGroupCmd>();
                     DAWN_TRY(ValidateCanPopDebugGroup(debugGroupStackSize));
                     debugGroupStackSize--;
-                } break;
+                    break;
+                }
 
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
                     commands->NextData<char>(cmd->length + 1);
                     debugGroupStackSize++;
-                } break;
+                    break;
+                }
 
                 case Command::SetComputePipeline: {
                     SetComputePipelineCmd* cmd = commands->NextCommand<SetComputePipelineCmd>();
                     ComputePipelineBase* pipeline = cmd->pipeline.Get();
                     commandBufferState.SetComputePipeline(pipeline);
-                } break;
+                    break;
+                }
 
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
@@ -249,7 +271,8 @@ namespace dawn_native {
                         commands->NextData<uint32_t>(cmd->dynamicOffsetCount);
                     }
                     commandBufferState.SetBindGroup(cmd->index, cmd->group.Get());
-                } break;
+                    break;
+                }
 
                 default:
                     return DAWN_VALIDATION_ERROR("Command disallowed inside a compute pass");
@@ -276,29 +299,43 @@ namespace dawn_native {
             bool readOnly = (usage & kReadOnlyBufferUsages) == usage;
             bool singleUse = wgpu::HasZeroOrOneBits(usage);
 
-            if (!readOnly && !singleUse) {
+            if (pass.passType == PassType::Render && !readOnly && !singleUse) {
                 return DAWN_VALIDATION_ERROR(
                     "Buffer used as writable usage and another usage in pass");
             }
         }
 
         // Textures can only be used as single-write or multiple read.
-        // TODO(cwallez@chromium.org): implement per-subresource tracking
         for (size_t i = 0; i < pass.textures.size(); ++i) {
             const TextureBase* texture = pass.textures[i];
-            wgpu::TextureUsage usage = pass.textureUsages[i];
+            const PassTextureUsage& textureUsage = pass.textureUsages[i];
+            wgpu::TextureUsage usage = textureUsage.usage;
 
             if (usage & ~texture->GetUsage()) {
                 return DAWN_VALIDATION_ERROR("Texture missing usage for the pass");
             }
 
-            // For textures the only read-only usage in a pass is Sampled, so checking the
-            // usage constraint simplifies to checking a single usage bit is set.
-            if (!wgpu::HasZeroOrOneBits(usage)) {
-                return DAWN_VALIDATION_ERROR("Texture used with more than one usage in pass");
+            // TODO (yunchao.he@intel.com): add read/write usage tracking for compute
+
+            // The usage variable for the whole texture is a fast path for texture usage tracking.
+            // Because in most cases a texture (with or without subresources) is used as
+            // single-write or multiple read, then we can skip iterating the subresources' usages.
+            bool readOnly = (usage & kReadOnlyTextureUsages) == usage;
+            bool singleUse = wgpu::HasZeroOrOneBits(usage);
+            if (pass.passType != PassType::Render || readOnly || singleUse) {
+                continue;
+            }
+            // Inspect the subresources if the usage of the whole texture violates usage validation.
+            // Every single subresource can only be used as single-write or multiple read.
+            for (wgpu::TextureUsage subresourceUsage : textureUsage.subresourceUsages) {
+                bool readOnly = (subresourceUsage & kReadOnlyTextureUsages) == subresourceUsage;
+                bool singleUse = wgpu::HasZeroOrOneBits(subresourceUsage);
+                if (!readOnly && !singleUse) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Texture used as writable usage and another usage in render pass");
+                }
             }
         }
-
         return {};
     }
 

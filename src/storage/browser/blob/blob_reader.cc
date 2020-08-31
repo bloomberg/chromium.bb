@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
@@ -25,7 +26,6 @@
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "storage/common/storage_histograms.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
@@ -72,9 +72,8 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
 BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() = default;
 
 BlobReader::BlobReader(const BlobDataHandle* blob_handle)
-    : file_task_runner_(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_VISIBLE})),
+    : file_task_runner_(base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       net_error_(net::OK) {
   if (blob_handle) {
     if (blob_handle->IsBroken()) {
@@ -352,7 +351,7 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
       continue;
     }
     ++pending_get_file_info_count_;
-    storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
+    FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
     if (!reader)
       return ReportError(net::ERR_FILE_NOT_FOUND);
 
@@ -509,7 +508,7 @@ BlobReader::Status BlobReader::ReadItem() {
     NOTREACHED();
     return ReportError(net::ERR_UNEXPECTED);
   }
-  storage::FileStreamReader* const reader =
+  FileStreamReader* const reader =
       GetOrCreateFileReaderAtIndex(current_item_index_);
   if (!reader)
     return ReportError(net::ERR_FILE_NOT_FOUND);
@@ -723,7 +722,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
     case BlobDataItem::Type::kFileFilesystem: {
       int64_t max_bytes_to_read =
           item.length() == std::numeric_limits<uint64_t>::max()
-              ? storage::kMaximumLength
+              ? kMaximumLength
               : item.length() - additional_offset;
       if (file_stream_provider_for_testing_) {
         return file_stream_provider_for_testing_->CreateFileStreamReader(
@@ -731,7 +730,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
             max_bytes_to_read, item.expected_modification_time());
       }
       return item.file_system_context()->CreateFileStreamReader(
-          storage::FileSystemURL(
+          FileSystemURL(
               item.file_system_context()->CrackURL(item.filesystem_url())),
           item.offset() + additional_offset, max_bytes_to_read,
           item.expected_modification_time());
@@ -826,10 +825,6 @@ void BlobReader::RecordBytesReadFromDataHandle(int item_index, int result) {
   const auto& items = blob_data_->items();
   BlobDataItem& item = *items.at(item_index);
   DCHECK_EQ(item.type(), BlobDataItem::Type::kReadableDataHandle);
-  if (item.data_handle()->BytesReadHistogramLabel()) {
-    storage::RecordBytesRead(item.data_handle()->BytesReadHistogramLabel(),
-                             result);
-  }
 }
 
 }  // namespace storage

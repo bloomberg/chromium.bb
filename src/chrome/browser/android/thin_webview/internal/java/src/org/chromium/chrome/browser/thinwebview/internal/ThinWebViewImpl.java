@@ -11,12 +11,15 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -25,6 +28,7 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("thin_webview::android")
 public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     private final CompositorView mCompositorView;
+    private WindowAndroid mWindowAndroid;
     private long mNativeThinWebViewImpl;
     private WebContents mWebContents;
     private View mContentView;
@@ -36,17 +40,21 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
      *         displayed.
      * @param constraints A set of constraints associated with this view.
      */
-    public ThinWebViewImpl(
-            Context context, WindowAndroid windowAndroid, ThinWebViewConstraints constraints) {
+    public ThinWebViewImpl(Context context, ThinWebViewConstraints constraints) {
         super(context);
-        mCompositorView = new CompositorViewImpl(context, windowAndroid, constraints);
+        if (ContextUtils.activityFromContext(context) != null) {
+            mWindowAndroid = new ActivityWindowAndroid(context);
+        } else {
+            mWindowAndroid = new WindowAndroid(context);
+        }
+        mCompositorView = new CompositorViewImpl(context, mWindowAndroid, constraints);
 
         LayoutParams layoutParams = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mCompositorView.getView(), layoutParams);
 
-        mNativeThinWebViewImpl =
-                ThinWebViewImplJni.get().init(ThinWebViewImpl.this, mCompositorView, windowAndroid);
+        mNativeThinWebViewImpl = ThinWebViewImplJni.get().init(
+                ThinWebViewImpl.this, mCompositorView, mWindowAndroid);
     }
 
     @Override
@@ -55,22 +63,28 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     }
 
     @Override
-    public void attachWebContents(WebContents webContents, @Nullable View contentView) {
+    public void attachWebContents(WebContents webContents, @Nullable View contentView,
+            @Nullable WebContentsDelegateAndroid delegate) {
+        if (mNativeThinWebViewImpl == 0) return;
         mWebContents = webContents;
 
         setContentView(contentView);
         ThinWebViewImplJni.get().setWebContents(
-                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents);
+                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents, delegate);
         mWebContents.onShow();
     }
 
     @Override
     public void destroy() {
-        mCompositorView.destroy();
-        if (mNativeThinWebViewImpl != 0) {
-            ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
-            mNativeThinWebViewImpl = 0;
+        if (mNativeThinWebViewImpl == 0) return;
+        if (mContentView != null) {
+            removeView(mContentView);
+            mContentView = null;
         }
+        mCompositorView.destroy();
+        ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
+        mNativeThinWebViewImpl = 0;
+        mWindowAndroid.destroy();
     }
 
     @Override
@@ -80,6 +94,7 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if (mNativeThinWebViewImpl == 0) return;
         if (w != oldw || h != oldh) {
             ThinWebViewImplJni.get().sizeChanged(
                     mNativeThinWebViewImpl, ThinWebViewImpl.this, w, h);
@@ -103,8 +118,8 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
         long init(
                 ThinWebViewImpl caller, CompositorView compositorView, WindowAndroid windowAndroid);
         void destroy(long nativeThinWebView, ThinWebViewImpl caller);
-        void setWebContents(
-                long nativeThinWebView, ThinWebViewImpl caller, WebContents webContents);
+        void setWebContents(long nativeThinWebView, ThinWebViewImpl caller, WebContents webContents,
+                WebContentsDelegateAndroid delegate);
         void sizeChanged(long nativeThinWebView, ThinWebViewImpl caller, int width, int height);
     }
 }

@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter_primitive.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_filter_primitive.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
@@ -69,7 +69,7 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(
   AddToPropertyMap(result_);
 }
 
-void SVGFilterPrimitiveStandardAttributes::Trace(blink::Visitor* visitor) {
+void SVGFilterPrimitiveStandardAttributes::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -111,7 +111,7 @@ void SVGFilterPrimitiveStandardAttributes::ChildrenChanged(
     const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (!change.by_parser)
+  if (!change.ByParser())
     Invalidate();
 }
 
@@ -167,7 +167,7 @@ void SVGFilterPrimitiveStandardAttributes::SetStandardAttributes(
 LayoutObject* SVGFilterPrimitiveStandardAttributes::CreateLayoutObject(
     const ComputedStyle&,
     LegacyLayout) {
-  return new LayoutSVGResourceFilterPrimitive(this);
+  return new LayoutSVGFilterPrimitive(this);
 }
 
 bool SVGFilterPrimitiveStandardAttributes::LayoutObjectIsNeeded(

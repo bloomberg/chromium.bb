@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -34,7 +34,6 @@
 #include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
@@ -117,8 +116,7 @@ class RenderFrameAudioInputStreamFactory::Core final
       const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
-      uint32_t shared_memory_count,
-      audio::mojom::AudioProcessingConfigPtr processing_config) final;
+      uint32_t shared_memory_count) final;
 
   void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
@@ -220,8 +218,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
-    uint32_t shared_memory_count,
-    audio::mojom::AudioProcessingConfigPtr processing_config) {
+    uint32_t shared_memory_count) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT1("audio", "RenderFrameAudioInputStreamFactory::CreateStream",
                "session id", session_id.ToString());
@@ -264,8 +261,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
   } else {
     forwarding_factory_->CreateInputStream(
         process_id_, frame_id_, device->id, audio_params, shared_memory_count,
-        automatic_gain_control, std::move(processing_config),
-        std::move(client));
+        automatic_gain_control, std::move(client));
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
@@ -326,12 +322,11 @@ void RenderFrameAudioInputStreamFactory::Core::
   } else {
     EnumerateOutputDevices(
         media_stream_manager_,
-        base::BindRepeating(
-            &TranslateDeviceId, output_device_id, salt_and_origin,
-            base::BindRepeating(&RenderFrameAudioInputStreamFactory::Core::
-                                    AssociateTranslatedOutputDeviceForAec,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                input_stream_id)));
+        base::BindOnce(&TranslateDeviceId, output_device_id, salt_and_origin,
+                       base::BindRepeating(
+                           &RenderFrameAudioInputStreamFactory::Core::
+                               AssociateTranslatedOutputDeviceForAec,
+                           weak_ptr_factory_.GetWeakPtr(), input_stream_id)));
   }
 }
 

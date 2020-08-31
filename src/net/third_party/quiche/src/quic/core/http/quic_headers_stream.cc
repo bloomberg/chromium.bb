@@ -6,9 +6,9 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 
 namespace quic {
 
@@ -60,6 +60,7 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                            QuicByteCount data_length,
                                            bool fin_acked,
                                            QuicTime::Delta ack_delay_time,
+                                           QuicTime receive_timestamp,
                                            QuicByteCount* newly_acked_length) {
   QuicIntervalSet<QuicStreamOffset> newly_acked(offset, offset + data_length);
   newly_acked.Difference(bytes_acked());
@@ -85,8 +86,8 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
       if (header.unacked_length < header_length) {
         QUIC_BUG << "Unsent stream data is acked. unacked_length: "
                  << header.unacked_length << " acked_length: " << header_length;
-        CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                                   "Unsent stream data is acked");
+        OnUnrecoverableError(QUIC_INTERNAL_ERROR,
+                             "Unsent stream data is acked");
         return false;
       }
       if (header.ack_listener != nullptr && header_length > 0) {
@@ -104,7 +105,8 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
     unacked_headers_.pop_front();
   }
   return QuicStream::OnStreamFrameAcked(offset, data_length, fin_acked,
-                                        ack_delay_time, newly_acked_length);
+                                        ack_delay_time, receive_timestamp,
+                                        newly_acked_length);
 }
 
 void QuicHeadersStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
@@ -151,6 +153,11 @@ void QuicHeadersStream::OnDataBuffered(
     unacked_headers_.push_back(
         CompressedHeaderInfo(offset, data_length, ack_listener));
   }
+}
+
+void QuicHeadersStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
+  stream_delegate()->OnStreamError(QUIC_INVALID_STREAM_ID,
+                                   "Attempt to reset headers stream");
 }
 
 }  // namespace quic

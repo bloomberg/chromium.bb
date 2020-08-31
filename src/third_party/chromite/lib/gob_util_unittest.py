@@ -18,6 +18,9 @@ from chromite.lib import gob_util
 from chromite.lib import timeout_util
 
 
+gob_util.TRY_LIMIT = 1
+
+
 class FakeHTTPResponse(object):
   """Enough of a HTTPResponse for FetchUrl.
 
@@ -159,8 +162,3 @@ class NetworkGobTest(cros_test_lib.TestCase):
       gob_util.FetchUrlJson(config_lib.GetSiteParams().EXTERNAL_GOB_HOST,
                             'foo/bar/baz', ignore_404=False)
     self.assertEqual(ex.exception.http_status, 404)
-
-
-def main(_argv):
-  gob_util.TRY_LIMIT = 1
-  cros_test_lib.main(module=__name__)

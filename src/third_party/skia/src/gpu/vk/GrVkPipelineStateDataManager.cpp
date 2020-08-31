@@ -15,13 +15,12 @@ GrVkPipelineStateDataManager::GrVkPipelineStateDataManager(const UniformInfoArra
     : fUniformSize(uniformSize)
     , fUniformsDirty(false) {
     fUniformData.reset(uniformSize);
-    int count = uniforms.count();
-    fUniforms.push_back_n(count);
+    fUniforms.push_back_n(uniforms.count());
     // We must add uniforms in same order is the UniformInfoArray so that UniformHandles already
     // owned by other objects will still match up here.
-    for (int i = 0; i < count; i++) {
+    int i = 0;
+    for (const auto& uniformInfo : uniforms.items()) {
         Uniform& uniform = fUniforms[i];
-        const GrVkUniformHandler::UniformInfo uniformInfo = uniforms[i];
         SkASSERT(GrShaderVar::kNonArray == uniformInfo.fVariable.getArrayCount() ||
                  uniformInfo.fVariable.getArrayCount() > 0);
         SkDEBUGCODE(
@@ -30,6 +29,7 @@ GrVkPipelineStateDataManager::GrVkPipelineStateDataManager(const UniformInfoArra
         )
 
         uniform.fOffset = uniformInfo.fUBOffset;
+        ++i;
     }
 }
 
@@ -313,7 +313,7 @@ template<int N> inline void GrVkPipelineStateDataManager::setMatrices(UniformHan
 
 template<int N> struct set_uniform_matrix {
     inline static void set(void* buffer, int uniformOffset, int count, const float matrices[]) {
-        GR_STATIC_ASSERT(sizeof(float) == 4);
+        static_assert(sizeof(float) == 4);
         buffer = static_cast<char*>(buffer) + uniformOffset;
         for (int i = 0; i < count; ++i) {
             const float* matrix = &matrices[N * N * i];
@@ -327,7 +327,7 @@ template<int N> struct set_uniform_matrix {
 
 template<> struct set_uniform_matrix<4> {
     inline static void set(void* buffer, int uniformOffset, int count, const float matrices[]) {
-        GR_STATIC_ASSERT(sizeof(float) == 4);
+        static_assert(sizeof(float) == 4);
         buffer = static_cast<char*>(buffer) + uniformOffset;
         memcpy(buffer, matrices, count * 16 * sizeof(float));
     }

@@ -4,18 +4,28 @@
 
 module android_webview.mojom;
 
+import "android_webview/common/aw_origin_matcher.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "services/network/public/mojom/proxy_config.mojom";
+import "third_party/blink/public/mojom/messaging/message_port_descriptor.mojom";
 
 // JsObject struct represents a JavaScript object we will inject in the main
 // JavaScript world of a frame. |js_object_name| will be used as the name
 // of the JavaScript object. We will inject the object if the frame's origin
-// matches |allowed_origin_rules|. |js_to_java_messaging| will be used for
-// that JavaScript object to send message back to browser (hence Java) side.
+// matches |origin_matcher|. |js_to_java_messaging| will be used for that
+// JavaScript object to send message back to browser (hence Java) side.
 struct JsObject {
   mojo_base.mojom.String16 js_object_name;
   pending_associated_remote<JsToJavaMessaging> js_to_java_messaging;
-  network.mojom.ProxyBypassRules allowed_origin_rules;
+  android_webview.mojom.AwOriginMatcher origin_matcher;
+};
+
+// DocumentStartJavascript struct contains the JavaScript snippet |script| and
+// the corresponding |origin_matcher|. We will run the script if the frame's
+// origin matches any rules in the |origin_matcher|.
+struct DocumentStartJavascript {
+  int32 script_id;
+  mojo_base.mojom.String16 script;
+  android_webview.mojom.AwOriginMatcher origin_matcher;
 };
 
 // For JavaScript postMessage() API, implemented by browser.
@@ -24,7 +34,7 @@ interface JsToJavaMessaging {
   // The |message| is an opaque type and the contents are defined by the client
   // of this API.
   PostMessage(mojo_base.mojom.String16 message,
-              array<handle<message_pipe>> ports);
+              array<blink.mojom.MessagePortDescriptor> ports);
 
   // When there is a new JavaToJsMessaging created in renderer, we need to send
   // it to browser, so browser could send message back to Js.
@@ -44,4 +54,12 @@ interface JsJavaConfigurator {
   // Called from browser, to tell renderer that if we need to inject
   // JavaScript objects to the frame based on the |js_objects| array.
   SetJsObjects(array<android_webview.mojom.JsObject> js_objects);
+
+  // Called from browser, to add a script for a frame to run at document start
+  // stage. The script will run only if the frame's origin matches any of the
+  // allowed_origin_rules.
+  AddDocumentStartScript(android_webview.mojom.DocumentStartJavascript script);
+
+  // Called from browser, to remove the script by the given script_id.
+  RemoveDocumentStartScript(int32 script_id);
 };

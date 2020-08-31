@@ -109,7 +109,7 @@ uint32_t IdentifyDirection(const ui::WaylandConnection& connection,
 bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer) {
   DCHECK(out_buffer);
   DCHECK(out_buffer->GetMemory());
-  DCHECK(out_buffer->size() == gfx::Size(bitmap.width(), bitmap.height()));
+  DCHECK_EQ(out_buffer->size(), gfx::Size(bitmap.width(), bitmap.height()));
 
   auto* mapped_memory = out_buffer->GetMemory();
   auto size = out_buffer->size();
@@ -139,6 +139,25 @@ void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents) {
   ssize_t length;
   while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
     contents->insert(contents->end(), buffer, buffer + length);
+}
+
+gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
+                                             const gfx::Rect& parent_bounds) {
+  return gfx::Rect(
+      (child_bounds.origin() - parent_bounds.origin().OffsetFromOrigin()),
+      child_bounds.size());
+}
+
+gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
+                                               const gfx::Rect& parent_bounds) {
+  return gfx::Rect(
+      (child_bounds.origin() + parent_bounds.origin().OffsetFromOrigin()),
+      child_bounds.size());
+}
+
+bool IsMenuType(ui::PlatformWindowType type) {
+  return type == ui::PlatformWindowType::kMenu ||
+         type == ui::PlatformWindowType::kPopup;
 }
 
 }  // namespace wl

@@ -26,12 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
-Resources.Database = class {
+export class Database {
   /**
-   * @param {!Resources.DatabaseModel} model
+   * @param {!DatabaseModel} model
    * @param {string} id
    * @param {string} domain
    * @param {string} name
@@ -95,7 +99,7 @@ Resources.Database = class {
    */
   async executeSql(query, onSuccess, onError) {
     const response = await this._model._agent.invoke_executeSQL({'databaseId': this._id, 'query': query});
-    const error = response[Protocol.Error];
+    const error = response[ProtocolClient.InspectorBackend.ProtocolError];
     if (error) {
       onError(error);
       return;
@@ -109,27 +113,27 @@ Resources.Database = class {
     if (sqlError.message) {
       message = sqlError.message;
     } else if (sqlError.code === 2) {
-      message = Common.UIString('Database no longer has expected version.');
+      message = Common.UIString.UIString('Database no longer has expected version.');
     } else {
-      message = Common.UIString('An unexpected error %s occurred.', sqlError.code);
+      message = Common.UIString.UIString('An unexpected error %s occurred.', sqlError.code);
     }
     onError(message);
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Resources.DatabaseModel = class extends SDK.SDKModel {
+export class DatabaseModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
 
     this._databases = [];
     this._agent = target.databaseAgent();
-    this.target().registerDatabaseDispatcher(new Resources.DatabaseDispatcher(this));
+    this.target().registerDatabaseDispatcher(new DatabaseDispatcher(this));
   }
 
   enable() {
@@ -147,11 +151,11 @@ Resources.DatabaseModel = class extends SDK.SDKModel {
     this._enabled = false;
     this._databases = [];
     this._agent.disable();
-    this.dispatchEventToListeners(Resources.DatabaseModel.Events.DatabasesRemoved);
+    this.dispatchEventToListeners(Events.DatabasesRemoved);
   }
 
   /**
-   * @return {!Array.<!Resources.Database>}
+   * @return {!Array.<!Database>}
    */
   databases() {
     const result = [];
@@ -162,18 +166,18 @@ Resources.DatabaseModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Resources.Database} database
+   * @param {!Database} database
    */
   _addDatabase(database) {
     this._databases.push(database);
-    this.dispatchEventToListeners(Resources.DatabaseModel.Events.DatabaseAdded, database);
+    this.dispatchEventToListeners(Events.DatabaseAdded, database);
   }
-};
+}
 
-SDK.SDKModel.register(Resources.DatabaseModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(DatabaseModel, SDK.SDKModel.Capability.DOM, false);
 
 /** @enum {symbol} */
-Resources.DatabaseModel.Events = {
+export const Events = {
   DatabaseAdded: Symbol('DatabaseAdded'),
   DatabasesRemoved: Symbol('DatabasesRemoved'),
 };
@@ -182,9 +186,9 @@ Resources.DatabaseModel.Events = {
  * @implements {Protocol.DatabaseDispatcher}
  * @unrestricted
  */
-Resources.DatabaseDispatcher = class {
+export class DatabaseDispatcher {
   /**
-   * @param {!Resources.DatabaseModel} model
+   * @param {!DatabaseModel} model
    */
   constructor(model) {
     this._model = model;
@@ -195,7 +199,6 @@ Resources.DatabaseDispatcher = class {
    * @param {!Protocol.Database.Database} payload
    */
   addDatabase(payload) {
-    this._model._addDatabase(
-        new Resources.Database(this._model, payload.id, payload.domain, payload.name, payload.version));
+    this._model._addDatabase(new Database(this._model, payload.id, payload.domain, payload.name, payload.version));
   }
-};
+}

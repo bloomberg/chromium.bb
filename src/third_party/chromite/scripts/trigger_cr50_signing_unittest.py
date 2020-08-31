@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import sys
 
 import mock
 
@@ -16,6 +17,10 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromiumos import sign_image_pb2
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # pylint: disable=protected-access
 

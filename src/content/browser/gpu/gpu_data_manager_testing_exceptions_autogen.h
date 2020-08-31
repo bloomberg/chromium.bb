@@ -16,8 +16,8 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
     {
         GpuControlList::kOsAny,  // os_type
         {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-         nullptr, nullptr},                               // os_version
-        0x00,                                             // vendor_id
+         GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // os_version
+        0x00,                                                      // vendor_id
         0,                                                // DeviceIDs size
         nullptr,                                          // DeviceIDs
         GpuControlList::kMultiGpuCategoryNone,            // multi_gpu_category
@@ -25,10 +25,11 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
         nullptr,                                          // driver info
         &kGLStringsForGpuManagerTestingEntry5Exception0,  // GL strings
         nullptr,                                          // machine model info
-        0,                                                // gpu_series size
-        nullptr,                                          // gpu_series
+        0,        // intel_gpu_series size
+        nullptr,  // intel_gpu_series
         {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-         nullptr, nullptr},                   // intel_gpu_generation
+         GpuControlList::kVersionSchemaCommon, nullptr,
+         nullptr},                            // intel_gpu_generation
         &kMoreForEntry5_572251052Exception0,  // more data
     },
 };

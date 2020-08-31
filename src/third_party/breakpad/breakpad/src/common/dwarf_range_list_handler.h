@@ -51,16 +51,16 @@ namespace google_breakpad {
 
 class DwarfRangeListHandler: public dwarf2reader::RangeListHandler {
  public:
-  DwarfRangeListHandler(uint64 base_address, vector<Module::Range> *ranges)
+  DwarfRangeListHandler(uint64_t base_address, vector<Module::Range> *ranges)
       : base_address_(base_address), ranges_(ranges) { }
 
   ~DwarfRangeListHandler() { }
 
   // Add a range to the list
-  void AddRange(uint64 begin, uint64 end);
+  void AddRange(uint64_t begin, uint64_t end);
 
   // Record the new base address and use it for the following entries
-  void SetBaseAddress(uint64 base_address);
+  void SetBaseAddress(uint64_t base_address);
 
   // Sort the ranges so that they are in ascending order of starting address
   void Finish();
@@ -68,7 +68,7 @@ class DwarfRangeListHandler: public dwarf2reader::RangeListHandler {
  private:
   // The current PC to add to every entry, this can be overridden by a special
   // list entry
-  uint64 base_address_;
+  uint64_t base_address_;
 
   // The list of ranges to be populated
   vector<Module::Range> *ranges_;

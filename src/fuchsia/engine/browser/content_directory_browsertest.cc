@@ -13,14 +13,15 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/test/browser_test.h"
+#include "content/public/test/content_test_suite_base.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
 #include "fuchsia/engine/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 
 namespace {
 
@@ -58,9 +59,7 @@ void ServePseudoDir(base::StringPiece name, vfs::PseudoDir* dir) {
 
 class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  ContentDirectoryTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {}
+  ContentDirectoryTest() = default;
   ~ContentDirectoryTest() override = default;
 
   void SetUp() override {
@@ -68,6 +67,11 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
     // registered at browser startup.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kContentDirectories);
+
+    // Scheme initialization for the WebEngineContentClient depends on the above
+    // command line modification, which won't have been present when the schemes
+    // were initially registered.
+    content::ContentTestSuiteBase::ReRegisterContentSchemes();
 
     cr_fuchsia::WebEngineBrowserTest::SetUp();
   }
@@ -108,7 +112,7 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
   cr_fuchsia::TestNavigationListener navigation_listener_;
 
  private:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDirectoryTest);
 };

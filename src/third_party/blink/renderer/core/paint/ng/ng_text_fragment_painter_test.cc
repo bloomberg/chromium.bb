@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -39,14 +40,14 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   const LayoutNGBlockFlow& block_flow = ToLayoutNGBlockFlow(container);
 
   InvalidateAll(RootPaintController());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
   Paint(IntRect(0, 0, 640, 480));
 
-  const NGPaintFragment& root_fragment = *block_flow.PaintFragment();
-  EXPECT_EQ(1u, root_fragment.Children().size());
-  const NGPaintFragment& line_box_fragment = *root_fragment.FirstChild();
-  EXPECT_EQ(1u, line_box_fragment.Children().size());
-  const NGPaintFragment& text_fragment = *line_box_fragment.FirstChild();
+  NGInlineCursor cursor;
+  cursor.MoveTo(*block_flow.FirstChild());
+  const DisplayItemClient& text_fragment =
+      *cursor.Current().GetDisplayItemClient();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
@@ -63,6 +64,23 @@ TEST_P(NGTextFragmentPainterTest, LineBreak) {
   UpdateAllLifecyclePhasesForTest();
   // 0: view background, 1: A, 2: <br>, 3: B, 4: <br>, 5: C
   EXPECT_EQ(6u, RootPaintController().GetDisplayItemList().size());
+}
+
+TEST_P(NGTextFragmentPainterTest, DegenerateUnderlineIntercepts) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      span {
+        font-size: 20px;
+        text-decoration: underline;
+      }
+    </style>
+    <span style="letter-spacing: -1e9999em;">a|b|c d{e{f{</span>
+    <span style="letter-spacing: 1e9999em;">a|b|c d{e{f{</span>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  // Test for https://crbug.com/1043753: the underline intercepts are infinite
+  // due to letter spacing and this test passes if that does not cause a crash.
 }
 
 }  // namespace blink

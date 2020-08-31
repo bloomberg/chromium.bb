@@ -33,7 +33,7 @@ Polymer({
      */
     customItems: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -56,7 +56,7 @@ Polymer({
      */
     networkStateList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -68,7 +68,7 @@ Polymer({
     isScanOngoing_: {type: Boolean, value: false},
 
     /**
-     * Cached Cellular Device state or undefined if there is no Cellular device.
+     * The cellular DeviceState, or undefined if there is no Cellular device.
      * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
      */
     cellularDeviceState_: Object,
@@ -85,13 +85,13 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.refreshNetworks();
 
     const INTERVAL_MS = 10 * 1000;
@@ -103,7 +103,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.scanIntervalId_ !== null) {
       window.clearInterval(this.scanIntervalId_);
     }
@@ -112,14 +112,14 @@ Polymer({
   /**
    * Returns network list object for testing.
    */
-  getNetworkListForTest: function() {
+  getNetworkListForTest() {
     return this.$.networkList.$$('#networkList');
   },
 
   /**
    * Returns network list item object for testing.
    */
-  getNetworkListItemByNameForTest: function(name) {
+  getNetworkListItemByNameForTest(name) {
     const networkList = this.$.networkList.$$('#networkList');
     assert(networkList);
     for (const network of networkList.children) {
@@ -131,17 +131,17 @@ Polymer({
     return null;
   },
 
-  focus: function() {
+  focus() {
     this.$.networkList.focus();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onNetworkStateListChanged: function() {
+  onNetworkStateListChanged() {
     this.refreshNetworks();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onDeviceStateListChanged: function() {
+  onDeviceStateListChanged() {
     this.refreshNetworks();
   },
 
@@ -149,7 +149,7 @@ Polymer({
    * Requests the device and network states. May be called externally to force a
    * refresh and list update (e.g. when the element is shown).
    */
-  refreshNetworks: function() {
+  refreshNetworks() {
     this.networkConfig_.getDeviceStateList().then(response => {
       this.onGetDeviceStates_(response.result);
     });
@@ -159,7 +159,7 @@ Polymer({
    * Returns default network if it is present.
    * @return {!OncMojo.NetworkStateProperties|undefined}
    */
-  getDefaultNetwork: function() {
+  getDefaultNetwork() {
     let defaultNetwork;
     for (let i = 0; i < this.networkStateList_.length; ++i) {
       const state = this.networkStateList_[i];
@@ -167,12 +167,12 @@ Polymer({
         defaultNetwork = state;
         break;
       }
-      if (state.connectionState == mojom.ConnectionStateType.kConnecting &&
+      if (state.connectionState === mojom.ConnectionStateType.kConnecting &&
           !defaultNetwork) {
         defaultNetwork = state;
         // Do not break here in case a non WiFi network is connecting but a
         // WiFi network is connected.
-      } else if (state.type == mojom.NetworkType.kWiFi) {
+      } else if (state.type === mojom.NetworkType.kWiFi) {
         break;  // Non connecting or connected WiFI networks are always last.
       }
     }
@@ -184,9 +184,9 @@ Polymer({
    * @param {string} guid of network.
    * @return {!OncMojo.NetworkStateProperties|undefined}
    */
-  getNetwork: function(guid) {
+  getNetwork(guid) {
     return this.networkStateList_.find(function(network) {
-      return network.guid == guid;
+      return network.guid === guid;
     });
   },
 
@@ -194,7 +194,7 @@ Polymer({
    * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStates
    * @private
    */
-  onGetDeviceStates_: function(deviceStates) {
+  onGetDeviceStates_(deviceStates) {
     this.isScanOngoing_ =
         deviceStates.some((deviceState) => !!deviceState.scanning);
 
@@ -213,9 +213,9 @@ Polymer({
    * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
-  onGetNetworkStateList_: function(deviceStates, networkStates) {
+  onGetNetworkStateList_(deviceStates, networkStates) {
     this.cellularDeviceState_ = deviceStates.find(function(device) {
-      return device.type == mojom.NetworkType.kCellular;
+      return device.type === mojom.NetworkType.kCellular;
     });
     if (this.cellularDeviceState_) {
       this.ensureCellularNetwork_(networkStates);
@@ -227,8 +227,8 @@ Polymer({
 
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
-         defaultNetwork.guid == this.defaultNetworkState_.guid &&
-         defaultNetwork.connectionState ==
+         defaultNetwork.guid === this.defaultNetworkState_.guid &&
+         defaultNetwork.connectionState ===
              this.defaultNetworkState_.connectionState)) {
       return;  // No change to network or ConnectionState
     }
@@ -246,21 +246,17 @@ Polymer({
    * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
-  ensureCellularNetwork_: function(networkStates) {
+  ensureCellularNetwork_(networkStates) {
     if (networkStates.find(function(network) {
-          return network.type == mojom.NetworkType.kCellular;
+          return network.type === mojom.NetworkType.kCellular;
         })) {
       return;
     }
     const deviceState = this.cellularDeviceState_.deviceState;
-    if (deviceState == mojom.DeviceStateType.kDisabled ||
-        deviceState == mojom.DeviceStateType.kProhibited) {
+    if (deviceState === mojom.DeviceStateType.kDisabled ||
+        deviceState === mojom.DeviceStateType.kProhibited) {
       return;  // No Cellular network
     }
-
-    const cellular =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular);
-    cellular.typeState.cellular.scanning = this.cellularDeviceState_.scanning;
 
     // Note: the default connectionState is kNotConnected.
     // TODO(khorimoto): Maybe set an 'initializing' CellularState property if
@@ -268,10 +264,11 @@ Polymer({
 
     // Insert the Cellular network after the Ethernet network if it exists.
     const idx = (networkStates.length > 0 &&
-                 networkStates[0].type == mojom.NetworkType.kEthernet) ?
+                 networkStates[0].type === mojom.NetworkType.kEthernet) ?
         1 :
         0;
-    networkStates.splice(idx, 0, cellular);
+    networkStates.splice(
+        idx, 0, OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular));
   },
 
   /**
@@ -279,7 +276,7 @@ Polymer({
    * @param {!{target: HTMLElement, detail: !OncMojo.NetworkStateProperties}} e
    * @private
    */
-  onNetworkListItemSelected_: function(e) {
+  onNetworkListItemSelected_(e) {
     const state = e.detail;
     e.target.blur();
 

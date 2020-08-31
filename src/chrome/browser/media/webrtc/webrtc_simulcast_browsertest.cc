@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -37,17 +38,14 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
-
-    // Use fake devices in order to run on VMs.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 };
 
-// Fails/times out on Windows and Chrome OS. Flaky on Mac.
+// Fails/times out on Windows and Chrome OS. Flaky on Mac and Linux.
 // http://crbug.com/452623
 // http://crbug.com/1004546
 // MSan reports errors. http://crbug.com/452892
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(MEMORY_SANITIZER)
 #define MAYBE_TestVgaReturnsTwoSimulcastStreams DISABLED_TestVgaReturnsTwoSimulcastStreams
 #else

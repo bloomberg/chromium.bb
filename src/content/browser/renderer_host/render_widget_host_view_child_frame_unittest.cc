@@ -17,10 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
@@ -36,7 +32,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -67,10 +62,14 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
     last_surface_info_ = surface_info;
   }
 
-  void SetViewportIntersection(const blink::WebRect& intersection,
-                               const blink::WebRect& compositor_visible_rect,
-                               blink::FrameOcclusionState occlusion_state) {
-    intersection_state_.viewport_intersection = intersection;
+  void SetViewportIntersection(
+      const blink::WebRect& viewport_intersection,
+      const blink::WebRect& main_frame_document_intersection,
+      const blink::WebRect& compositor_visible_rect,
+      blink::FrameOcclusionState occlusion_state) {
+    intersection_state_.viewport_intersection = viewport_intersection;
+    intersection_state_.main_frame_document_intersection =
+        main_frame_document_intersection;
     intersection_state_.compositor_visible_rect = compositor_visible_rect;
     intersection_state_.occlusion_state = occlusion_state;
   }
@@ -86,7 +85,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
 
   blink::WebInputEvent::Type GetAndResetLastBubbledEventType() {
     blink::WebInputEvent::Type last = last_bubbled_event_type_;
-    last_bubbled_event_type_ = blink::WebInputEvent::kUndefined;
+    last_bubbled_event_type_ = blink::WebInputEvent::Type::kUndefined;
     return last;
   }
 
@@ -96,7 +95,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
 
  private:
   blink::WebInputEvent::Type last_bubbled_event_type_ =
-      blink::WebInputEvent::kUndefined;
+      blink::WebInputEvent::Type::kUndefined;
   bool can_bubble_ = true;
 };
 
@@ -129,22 +128,22 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, routing_id, std::move(widget),
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    auto frame_widget_host_receiver =
+        frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
+    auto frame_widget_receiver =
+        frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    widget_host_->BindFrameWidgetInterfaces(
+        std::move(frame_widget_host_receiver), frame_widget.Unbind());
+
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
     test_frame_connector_ =
         new MockFrameConnectorDelegate(use_zoom_for_device_scale_factor);
     test_frame_connector_->SetView(view_);
     view_->SetFrameConnectorDelegate(test_frame_connector_);
-
-    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
-    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
-        sink.InitWithNewPipeAndPassReceiver();
-    renderer_compositor_frame_sink_ =
-        std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), renderer_compositor_frame_sink_remote_
-                                 .BindNewPipeAndPassReceiver());
-    view_->DidCreateNewRendererCompositorFrameSink(
-        renderer_compositor_frame_sink_remote_.get());
   }
 
   void TearDown() override {
@@ -185,28 +184,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewChildFrame* view_;
   MockFrameConnectorDelegate* test_frame_connector_;
-  std::unique_ptr<FakeRendererCompositorFrameSink>
-      renderer_compositor_frame_sink_;
-
- private:
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_remote_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameTest);
 };
-
-viz::CompositorFrame CreateDelegatedFrame(float scale_factor,
-                                          gfx::Size size,
-                                          const gfx::Rect& damage) {
-  viz::CompositorFrame frame;
-  frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
-
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
-  frame.render_pass_list.push_back(std::move(pass));
-  return frame;
-}
 
 TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
   // Calling show and hide also needs to be propagated to child frame by the
@@ -226,10 +204,12 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // whenever screen rects are updated.
 TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
   blink::WebRect intersection_rect(5, 5, 100, 80);
+  blink::WebRect main_frame_document_intersection(5, 10, 200, 200);
   blink::FrameOcclusionState occlusion_state =
       blink::FrameOcclusionState::kPossiblyOccluded;
   test_frame_connector_->SetViewportIntersection(
-      intersection_rect, intersection_rect, occlusion_state);
+      intersection_rect, main_frame_document_intersection, intersection_rect,
+      occlusion_state);
 
   MockRenderProcessHost* process =
       static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
@@ -247,6 +227,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
                                           &intersection_state);
   EXPECT_EQ(intersection_rect,
             std::get<0>(intersection_state).viewport_intersection);
+  EXPECT_EQ(main_frame_document_intersection,
+            std::get<0>(intersection_state).main_frame_document_intersection);
   EXPECT_EQ(intersection_rect,
             std::get<0>(intersection_state).compositor_visible_rect);
   EXPECT_EQ(occlusion_state, std::get<0>(intersection_state).occlusion_state);
@@ -342,19 +324,20 @@ TEST_F(RenderWidgetHostViewChildFrameTest, UncomsumedGestureScrollBubbled) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::kGestureScrollEnd,
+      blink::WebInputEvent::Type::kGestureScrollEnd,
       blink::WebGestureDevice::kTouchscreen);
 
-  view_->GestureEventAck(scroll_begin,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+  view_->GestureEventAck(
+      scroll_begin, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_update,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate,
+  view_->GestureEventAck(
+      scroll_update, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_end, INPUT_EVENT_ACK_STATE_IGNORED);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+  view_->GestureEventAck(scroll_end,
+                         blink::mojom::InputEventResultState::kIgnored);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollEnd,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 }
 
@@ -368,25 +351,28 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ConsumedGestureScrollNotBubbled) {
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::kGestureScrollEnd,
+      blink::WebInputEvent::Type::kGestureScrollEnd,
       blink::WebGestureDevice::kTouchscreen);
 
-  view_->GestureEventAck(scroll_begin, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(scroll_begin,
+                         blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_update, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(scroll_update,
+                         blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 
   // Scrolling in a child my reach its extent and no longer be consumed, however
   // scrolling is latched to the child so we do not bubble the update.
-  view_->GestureEventAck(scroll_update,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(
+      scroll_update, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 
-  view_->GestureEventAck(scroll_end, INPUT_EVENT_ACK_STATE_IGNORED);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(scroll_end,
+                         blink::mojom::InputEventResultState::kIgnored);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 }
 
@@ -401,39 +387,41 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::kGestureScrollEnd,
+      blink::WebInputEvent::Type::kGestureScrollEnd,
       blink::WebGestureDevice::kTouchscreen);
 
   test_frame_connector_->SetCanBubble(false);
 
-  view_->GestureEventAck(scroll_begin,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+  view_->GestureEventAck(
+      scroll_begin, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 
   // The GSB was rejected, so the child view must not attempt to bubble the
   // remaining events of the scroll sequence.
-  view_->GestureEventAck(scroll_update,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(
+      scroll_update, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_end, INPUT_EVENT_ACK_STATE_IGNORED);
-  EXPECT_EQ(blink::WebInputEvent::kUndefined,
+  view_->GestureEventAck(scroll_end,
+                         blink::mojom::InputEventResultState::kIgnored);
+  EXPECT_EQ(blink::WebInputEvent::Type::kUndefined,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 
   test_frame_connector_->SetCanBubble(true);
 
   // When we have a new scroll gesture, the view may try bubbling again.
-  view_->GestureEventAck(scroll_begin,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+  view_->GestureEventAck(
+      scroll_begin, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollBegin,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_update,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollUpdate,
+  view_->GestureEventAck(
+      scroll_update, blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollUpdate,
             test_frame_connector_->GetAndResetLastBubbledEventType());
-  view_->GestureEventAck(scroll_end, INPUT_EVENT_ACK_STATE_IGNORED);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+  view_->GestureEventAck(scroll_end,
+                         blink::mojom::InputEventResultState::kIgnored);
+  EXPECT_EQ(blink::WebInputEvent::Type::kGestureScrollEnd,
             test_frame_connector_->GetAndResetLastBubbledEventType());
 }
 

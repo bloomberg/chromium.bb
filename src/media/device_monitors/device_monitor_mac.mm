@@ -125,16 +125,16 @@ class SuspendObserverDelegate;
 @interface CrAVFoundationDeviceObserver : NSObject {
  @private
   // Callback for device changed, has to run on Device Thread.
-  base::Closure onDeviceChangedCallback_;
+  base::RepeatingClosure _onDeviceChangedCallback;
 
   // Member to keep track of the devices we are already monitoring.
-  std::set<base::scoped_nsobject<AVCaptureDevice>> monitoredDevices_;
+  std::set<base::scoped_nsobject<AVCaptureDevice>> _monitoredDevices;
 
   // Pegged to the "main" thread -- usually content::BrowserThread::UI.
-  base::ThreadChecker mainThreadChecker_;
+  base::ThreadChecker _mainThreadChecker;
 }
 
-- (id)initWithOnChangedCallback:(const base::Closure&)callback;
+- (id)initWithOnChangedCallback:(const base::RepeatingClosure&)callback;
 - (void)startObserving:(base::scoped_nsobject<AVCaptureDevice>)device;
 - (void)stopObserving:(AVCaptureDevice*)device;
 - (void)clearOnDeviceChangedCallback;
@@ -196,7 +196,7 @@ void SuspendObserverDelegate::StartObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_thread) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  base::Closure on_device_changed_callback = base::Bind(
+  base::RepeatingClosure on_device_changed_callback = base::BindRepeating(
       &SuspendObserverDelegate::OnDeviceChanged, this, device_thread);
   suspend_observer_.reset([[CrAVFoundationDeviceObserver alloc]
       initWithOnChangedCallback:on_device_changed_callback]);
@@ -348,30 +348,30 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 
 @implementation CrAVFoundationDeviceObserver
 
-- (id)initWithOnChangedCallback:(const base::Closure&)callback {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+- (id)initWithOnChangedCallback:(const base::RepeatingClosure&)callback {
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   if ((self = [super init])) {
     DCHECK(!callback.is_null());
-    onDeviceChangedCallback_ = callback;
+    _onDeviceChangedCallback = callback;
   }
   return self;
 }
 
 - (void)dealloc {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   std::set<base::scoped_nsobject<AVCaptureDevice>>::iterator it =
-      monitoredDevices_.begin();
-  while (it != monitoredDevices_.end())
+      _monitoredDevices.begin();
+  while (it != _monitoredDevices.end())
     [self removeObservers:*(it++)];
   [super dealloc];
 }
 
 - (void)startObserving:(base::scoped_nsobject<AVCaptureDevice>)device {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   DCHECK(device != nil);
   // Skip this device if there are already observers connected to it.
-  if (std::find(monitoredDevices_.begin(), monitoredDevices_.end(), device) !=
-      monitoredDevices_.end()) {
+  if (std::find(_monitoredDevices.begin(), _monitoredDevices.end(), device) !=
+      _monitoredDevices.end()) {
     return;
   }
   [device addObserver:self
@@ -382,27 +382,27 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
            forKeyPath:@"connected"
               options:0
               context:device.get()];
-  monitoredDevices_.insert(device);
+  _monitoredDevices.insert(device);
 }
 
 - (void)stopObserving:(AVCaptureDevice*)device {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   DCHECK(device != nil);
 
   std::set<base::scoped_nsobject<AVCaptureDevice>>::iterator found =
-      std::find(monitoredDevices_.begin(), monitoredDevices_.end(), device);
-  DCHECK(found != monitoredDevices_.end());
+      std::find(_monitoredDevices.begin(), _monitoredDevices.end(), device);
+  DCHECK(found != _monitoredDevices.end());
   [self removeObservers:*found];
-  monitoredDevices_.erase(found);
+  _monitoredDevices.erase(found);
 }
 
 - (void)clearOnDeviceChangedCallback {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
-  onDeviceChangedCallback_.Reset();
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
+  _onDeviceChangedCallback.Reset();
 }
 
 - (void)removeObservers:(AVCaptureDevice*)device {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   // Check sanity of |device| via its -observationInfo. http://crbug.com/371271.
   if ([device observationInfo]) {
     [device removeObserver:self
@@ -416,9 +416,9 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  DCHECK(mainThreadChecker_.CalledOnValidThread());
+  DCHECK(_mainThreadChecker.CalledOnValidThread());
   if ([keyPath isEqual:@"suspended"])
-    onDeviceChangedCallback_.Run();
+    _onDeviceChangedCallback.Run();
   if ([keyPath isEqual:@"connected"])
     [self stopObserving:static_cast<AVCaptureDevice*>(context)];
 }

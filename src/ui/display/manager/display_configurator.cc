@@ -568,6 +568,7 @@ DisplayConfigurator::DisplayConfigurator()
       configure_display_(chromeos::IsRunningAsSystemCompositor()),
       current_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
+      current_internal_display_(nullptr),
       requested_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       pending_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       has_pending_power_state_(false),
@@ -662,7 +663,7 @@ void DisplayConfigurator::TakeControl(DisplayControlCallback callback) {
   display_control_changing_ = true;
   native_display_delegate_->TakeDisplayControl(
       base::BindOnce(&DisplayConfigurator::OnDisplayControlTaken,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DisplayConfigurator::OnDisplayControlTaken(DisplayControlCallback callback,
@@ -706,7 +707,7 @@ void DisplayConfigurator::RelinquishControl(DisplayControlCallback callback) {
   SetDisplayPowerInternal(
       chromeos::DISPLAY_POWER_ALL_OFF, kSetDisplayPowerNoFlags,
       base::BindOnce(&DisplayConfigurator::SendRelinquishDisplayControl,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DisplayConfigurator::SendRelinquishDisplayControl(
@@ -716,9 +717,9 @@ void DisplayConfigurator::SendRelinquishDisplayControl(
     // Set the flag early such that an incoming configuration event won't start
     // while we're releasing control of the displays.
     display_externally_controlled_ = true;
-    native_display_delegate_->RelinquishDisplayControl(base::BindOnce(
-        &DisplayConfigurator::OnDisplayControlRelinquished,
-        weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+    native_display_delegate_->RelinquishDisplayControl(
+        base::BindOnce(&DisplayConfigurator::OnDisplayControlRelinquished,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
     display_control_changing_ = false;
     std::move(callback).Run(false);
@@ -782,9 +783,41 @@ bool DisplayConfigurator::SetGammaCorrection(
                      display_id, degamma_lut, gamma_lut));
 }
 
+bool DisplayConfigurator::IsPrivacyScreenSupportedOnInternalDisplay() const {
+  return current_internal_display_ &&
+         current_internal_display_->privacy_screen_state() != kNotSupported;
+}
+
+bool DisplayConfigurator::SetPrivacyScreenOnInternalDisplay(bool enabled) {
+  if (!current_internal_display_) {
+    LOG(ERROR) << "This device does not have an internal display.";
+    return false;
+  }
+
+  if (!IsPrivacyScreenSupportedOnInternalDisplay()) {
+    LOG(ERROR) << "The internal display of this device does not support "
+                  "privacy screeny.";
+    return false;
+  }
+
+  native_display_delegate_->SetPrivacyScreen(
+      current_internal_display_->display_id(), enabled);
+  return true;
+}
+
 chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()
     const {
   return requested_power_state_.value_or(chromeos::DISPLAY_POWER_ALL_ON);
+}
+
+void DisplayConfigurator::UpdateInternalDisplayCache() {
+  for (DisplaySnapshot* display : cached_displays_) {
+    if (display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      current_internal_display_ = display;
+      return;
+    }
+  }
+  current_internal_display_ = nullptr;
 }
 
 void DisplayConfigurator::PrepareForExit() {
@@ -999,6 +1032,9 @@ void DisplayConfigurator::OnConfigured(
   if (success) {
     current_display_state_ = new_display_state;
     UpdatePowerState(new_power_state);
+    UpdateInternalDisplayCache();
+  } else {
+    current_internal_display_ = nullptr;
   }
 
   configuration_task_.reset();
@@ -1022,11 +1058,18 @@ void DisplayConfigurator::UpdatePowerState(
     chromeos::DisplayPowerState new_power_state) {
   chromeos::DisplayPowerState old_power_state = current_power_state_;
   current_power_state_ = new_power_state;
+
+  // Don't notify observers of |current_power_state_| when there is a pending
+  // power state. Notifying the observers may confuse them because they may
+  // already know the up-to-date state via PowerManagerClient. Please refer to
+  // b/134459602 for details.
+  if (has_pending_power_state_)
+    return;
+
   // If the pending power state hasn't changed then make sure that value gets
   // updated as well since the last requested value may have been dependent on
   // certain conditions (ie: if only the internal monitor was present).
-  if (!has_pending_power_state_)
-    pending_power_state_ = new_power_state;
+  pending_power_state_ = new_power_state;
   if (old_power_state != current_power_state_)
     NotifyPowerStateObservers();
 }

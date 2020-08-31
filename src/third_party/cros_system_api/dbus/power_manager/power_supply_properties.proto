@@ -193,5 +193,14 @@ message PowerSupplyProperties {
   // Battery model name reported by |model_name|.
   optional string battery_model_name = 28;
 
-  // Next ID to use: 29
+  // Battery current as of now, measured in amperes (A).
+  optional double battery_current = 29;
+
+  // Battery technology read from sysfs.
+  optional string battery_technology = 30;
+
+  // Battery status read from sysfs.
+  optional string battery_status = 31;
+
+  // Next ID to use: 32
 }

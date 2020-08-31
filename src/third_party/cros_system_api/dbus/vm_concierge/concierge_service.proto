@@ -29,6 +29,9 @@ enum DiskImageType {
 
   // Automatically choose a disk image type.
   DISK_IMAGE_AUTO = 2;
+
+  // A plugin VM disk image.
+  DISK_IMAGE_PLUGINVM = 3;
 }
 
 // Describes any additional disk images that should be mounted inside the VM.
@@ -76,6 +79,12 @@ message VmInfo {
   uint64 seneschal_server_handle = 4;
 }
 
+// Optional fields for network configuration.
+message NetworkOptions {
+  // Toggles the IFF_VNET_HDR option for the TAP device.
+  bool enable_vnet_hdr = 1;
+}
+
 // Information that must be included with every StartVm dbus message.
 message StartVmRequest {
   // The VM that should be started. This is ignored if starting a termina VM,
@@ -121,6 +130,10 @@ message StartVmRequest {
 
   // Enable audio capture in the started Vm.
   bool enable_audio_capture = 11;
+
+  // The number of CPUs to give to the VM.  Cannot be larger than the number of
+  // CPUs on the device and cannot be 0.
+  uint32 cpus = 12;
 }
 
 // Information that must be included with every StartPluginVm request.
@@ -140,13 +153,28 @@ message StartPluginVmRequest {
 
   // The IPv4 address to assign to the VM in network-byte order.  Must be in the
   // 100.115.92.128/28 subnet and must not be already assigned to another VM.
+  // If unspecified, a /29 subnet will be dynamically allocated
+  // from 100.115.93.0/24.
+  // Note: this field will be deprecated.
   fixed32 guest_ipv4_address = 5;
 
   // The EUI-48 MAC address to assign to the host side of the ethernet interface
   // to the VM. Must be exactly 6 bytes and must not be in use by another VM.
   // Must have the locally administered bit (0x02) set and the multicast bit
   // (0x01) unset.
+  // If empty, a random MAC address will be generated and assigned.
+  // Note: this field will be deprecated.
   bytes host_mac_address = 6;
+
+  // Indicates that a specific /29 subnet should be allocated from
+  // 100.115.93.0/24 for use by this VM; and if it is not available, then the
+  // request should fail.
+  // This field is only used if |guest_ipv4_address| is empty.
+  // Valid values are 1 - 32, inclusive.
+  uint32 subnet_index = 7;
+
+  // Additional networking options.
+  NetworkOptions net_options = 8;
 }
 
 // Information that must be included with every StartArcVm request.
@@ -273,6 +301,40 @@ message VmStoppedSignal {
   int64 cid = 3;
 }
 
+// Information that must be included with every SuspendVm dbus message.
+message SuspendVmRequest {
+  // The name of the VM to be stopped.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
+}
+
+message SuspendVmResponse {
+  // If true, the requested VM was suspended.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not be suspended.
+  string failure_reason = 2;
+}
+
+// Information that must be included with every ResumeVm dbus message.
+message ResumeVmRequest {
+  // The name of the VM to be stopped.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
+}
+
+message ResumeVmResponse {
+  // If true, the requested VM was suspended.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not be suspended.
+  string failure_reason = 2;
+}
+
 // Response to a SyncTimes RPC.
 message SyncVmTimesResponse {
   // The total number of VMs we attempted to update.
@@ -330,6 +392,8 @@ enum StorageLocation {
   STORAGE_CRYPTOHOME_PLUGINVM = 1;
 }
 
+// Any changes here must be reflected in the CrostiniDiskImageStatus enum in
+// Chrome's enums.xml.
 enum DiskImageStatus {
   // Unknown status.
   DISK_STATUS_UNKNOWN = 0;
@@ -351,6 +415,9 @@ enum DiskImageStatus {
 
   // The command is executing.
   DISK_STATUS_IN_PROGRESS = 6;
+
+  // The disk image was resized.
+  DISK_STATUS_RESIZED = 7;
 }
 
 // Request to concierge to create a disk image.
@@ -363,7 +430,8 @@ message CreateDiskImageRequest {
   string disk_path = 2;
 
   // The logical size of the new disk image, in bytes.
-  // If unspecified or 0, a size will be chosen automatically.
+  // If non-zero, the disk will be preallocated and fixed to the given size.
+  // If unspecified or 0, a size will be chosen automatically and the image will be sparse.
   uint64 disk_size = 3;
 
   // The type of disk image to be created.
@@ -415,6 +483,30 @@ message DestroyDiskImageResponse {
   string failure_reason = 3;
 }
 
+// Request to concierge to resize a disk image.
+message ResizeDiskImageRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The name of the vm image.
+  string vm_name = 2;
+
+  // The desired logical size of the disk image, in bytes.
+  uint64 disk_size = 3;
+}
+
+// Response to a ResizeDiskImageRequest.
+message ResizeDiskImageResponse {
+  // If DISK_STATUS_RESIZED, the disk image has been successfully resized.
+  DiskImageStatus status = 1;
+
+  // The failure reason if the disk image could not be resized.
+  string failure_reason = 2;
+
+  // Command identifier if status is DISK_STATUS_IN_PROGRESS.
+  string command_uuid = 3;
+}
+
 // Request to concierge to export a disk image.
 // Must be accompanied by an FD. The contents of `disk_path` will be written to
 // the passed FD.
@@ -424,6 +516,10 @@ message ExportDiskImageRequest {
 
   // The path to the disk image. This must be a relative path.
   string disk_path = 2;
+
+  // Whether we should calculate SHA256 digest of the resulting image. The
+  // digest is supposed to be written into the second attached file descriptor.
+  bool generate_sha256_digest = 3;
 }
 
 // Response to a ExportDiskImageRequest.
@@ -468,7 +564,7 @@ message ImportDiskImageResponse {
   string command_uuid = 3;
 }
 
-// Request about status of image import or export command.
+// Request about status of image import, export, or resize command.
 message DiskImageStatusRequest {
   // Command identifier.
   string command_uuid = 1;
@@ -535,6 +631,16 @@ message VmDiskInfo {
 
   // The size of the image in bytes.
   uint64 size = 3;
+
+  // The minimum size the image may be resized to, or 0 if unknown.
+  uint64 min_size = 4;
+
+  // The type of the disk image (raw, qcow2, etc.).
+  DiskImageType image_type = 5;
+
+  // True if the user chose the size for this disk.
+  // False if the disk is automatically sized based on free space.
+  bool user_chosen_size = 6;
 }
 
 // Response to ListVmDisks {

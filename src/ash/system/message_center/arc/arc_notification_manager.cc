@@ -74,15 +74,16 @@ class ArcNotificationManager::InstanceOwner {
   InstanceOwner() = default;
   ~InstanceOwner() = default;
 
-  void SetInstancePtr(NotificationsInstancePtr instance_ptr) {
+  void SetInstanceRemote(
+      mojo::PendingRemote<arc::mojom::NotificationsInstance> instance_remote) {
     DCHECK(!channel_);
 
     channel_ =
         std::make_unique<MojoChannel<NotificationsInstance, NotificationsHost>>(
-            &holder_, std::move(instance_ptr));
+            &holder_, std::move(instance_remote));
 
     // Using base::Unretained because |this| owns |channel_|.
-    channel_->set_connection_error_handler(
+    channel_->set_disconnect_handler(
         base::BindOnce(&InstanceOwner::OnDisconnected, base::Unretained(this)));
     channel_->QueryVersion();
   }
@@ -130,6 +131,9 @@ ArcNotificationManager::ArcNotificationManager(
 }
 
 ArcNotificationManager::~ArcNotificationManager() {
+  for (auto& obs : observers_)
+    obs.OnArcNotificationManagerDestroyed(this);
+
   message_center_->RemoveObserver(do_not_disturb_manager_.get());
 
   instance_owner_->holder()->RemoveObserver(this);
@@ -139,8 +143,9 @@ ArcNotificationManager::~ArcNotificationManager() {
   instance_owner_.reset();
 }
 
-void ArcNotificationManager::SetInstance(NotificationsInstancePtr instance) {
-  instance_owner_->SetInstancePtr(std::move(instance));
+void ArcNotificationManager::SetInstance(
+    mojo::PendingRemote<arc::mojom::NotificationsInstance> instance_remote) {
+  instance_owner_->SetInstanceRemote(std::move(instance_remote));
 }
 
 ConnectionHolder<NotificationsInstance, NotificationsHost>*
@@ -197,6 +202,9 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
           ? ArcAppIdProvider::Get()->GetAppIdByPackageName(*data->package_name)
           : std::string();
   it->second->OnUpdatedFromAndroid(std::move(data), app_id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationUpdated(it->second->GetNotificationId(), app_id);
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
@@ -242,6 +250,9 @@ void ArcNotificationManager::OnNotificationUpdated(
           ? ArcAppIdProvider::Get()->GetAppIdByPackageName(*data->package_name)
           : std::string();
   it->second->OnUpdatedFromAndroid(std::move(data), app_id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationUpdated(it->second->GetNotificationId(), app_id);
 }
 
 void ArcNotificationManager::OpenMessageCenter() {
@@ -324,6 +335,9 @@ void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
   std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
   item->OnClosedFromAndroid();
+
+  for (auto& observer : observers_)
+    observer.OnNotificationRemoved(item->GetNotificationId());
 }
 
 void ArcNotificationManager::SendNotificationRemovedFromChrome(
@@ -339,6 +353,9 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   // given argument |key| may be a part of the removed item.
   std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationRemoved(item->GetNotificationId());
 
   auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
       instance_owner_->holder(), SendNotificationEventToAndroid);
@@ -573,10 +590,18 @@ void ArcNotificationManager::SetNotificationConfiguration() {
 
   NotificationConfigurationPtr configuration = NotificationConfiguration::New();
   configuration->expansion_animation =
-      ash::features::IsNotificationExpansionAnimationEnabled();
+      features::IsNotificationExpansionAnimationEnabled();
 
   notifications_instance->SetNotificationConfiguration(
       std::move(configuration));
+}
+
+void ArcNotificationManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ArcNotificationManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

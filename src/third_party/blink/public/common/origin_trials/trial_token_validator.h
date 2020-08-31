@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -25,6 +25,20 @@ namespace blink {
 class OriginTrialPolicy;
 enum class OriginTrialTokenStatus;
 
+struct BLINK_COMMON_EXPORT TrialTokenResult {
+  TrialTokenResult();
+  explicit TrialTokenResult(OriginTrialTokenStatus);
+  TrialTokenResult(OriginTrialTokenStatus status,
+                   std::string name,
+                   base::Time expiry);
+  ~TrialTokenResult();
+
+  OriginTrialTokenStatus status;
+  std::string feature_name;
+  base::Time expiry_time;
+  bool is_third_party = false;
+};
+
 // TrialTokenValidator checks that a page's OriginTrial token enables a certain
 // feature.
 //
@@ -35,16 +49,16 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
   TrialTokenValidator();
   virtual ~TrialTokenValidator();
 
-  using FeatureToTokensMap = std::map<std::string /* feature_name */,
-                                      std::vector<std::string /* token */>>;
+  using FeatureToTokensMap =
+      base::flat_map<std::string /* feature_name */,
+                     std::vector<std::string /* token */>>;
 
-  // If token validates, |*feature_name| is set to the name of the feature the
-  // token enables.
-  // This method is thread-safe.
-  virtual OriginTrialTokenStatus ValidateToken(base::StringPiece token,
-                                               const url::Origin& origin,
-                                               std::string* feature_name,
-                                               base::Time current_time) const;
+  // If the token validates, status is set to OriginTrialTokenStatus::kSuccess,
+  // feature_name is set to name of the feature this token enables, expiry_time
+  // is set to the expiry time of the token. This method is thread-safe.
+  virtual TrialTokenResult ValidateToken(base::StringPiece token,
+                                         const url::Origin& origin,
+                                         base::Time current_time) const;
 
   bool RequestEnablesFeature(const net::URLRequest* request,
                              base::StringPiece feature_name,
@@ -73,9 +87,7 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
   static void ResetOriginTrialPolicyGetter();
   static OriginTrialPolicy* Policy();
 
- private:
-  bool IsTrialPossibleOnOrigin(const url::Origin& origin) const;
-  bool IsTrialPossibleOnOrigin(const GURL& url) const;
+  static bool IsTrialPossibleOnOrigin(const GURL& url);
 };  // class TrialTokenValidator
 
 }  // namespace blink

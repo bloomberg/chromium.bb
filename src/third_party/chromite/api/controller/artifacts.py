@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -15,13 +16,15 @@ from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.cbuildbot import commands
-from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _GetImageDir(build_root, target):
@@ -452,18 +455,13 @@ def _BundleSimpleChromeArtifactsResponse(input_proto, output_proto, _config):
 @validate.validation_complete
 def BundleSimpleChromeArtifacts(input_proto, output_proto, _config):
   """Create the simple chrome artifacts."""
-  # Required args.
   sysroot_path = input_proto.sysroot.path
-  build_target_name = input_proto.sysroot.build_target.name
   output_dir = input_proto.output_dir
 
-  # Optional args.
-  chroot_path = input_proto.chroot.path or constants.DEFAULT_CHROOT_PATH
-  cache_dir = input_proto.chroot.cache_dir
-
   # Build out the argument instances.
-  build_target = build_target_util.BuildTarget(build_target_name)
-  chroot = chroot_lib.Chroot(path=chroot_path, cache_dir=cache_dir)
+  build_target = controller_util.ParseBuildTarget(
+      input_proto.sysroot.build_target)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
   # Sysroot.path needs to be the fully qualified path, including the chroot.
   full_sysroot_path = os.path.join(chroot.path, sysroot_path.lstrip(os.sep))
   sysroot = sysroot_lib.Sysroot(full_sysroot_path)
@@ -534,15 +532,11 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
     output_proto (BundleResponse): The output proto.
     _config (api_config.ApiConfig): The API call config.
   """
-
-  # Required args.
-  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
   chrome_root = input_proto.chroot.chrome_dir
-  if not chrome_root:
-    cros_build_lib.Die('chrome_root is not included in chroot')
   output_dir = input_proto.output_dir
   artifact_type = input_proto.artifact_type
 
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   try:

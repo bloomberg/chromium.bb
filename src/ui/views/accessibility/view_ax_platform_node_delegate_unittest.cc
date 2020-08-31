@@ -4,10 +4,16 @@
 
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,6 +53,7 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
+    ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
 
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -95,30 +102,21 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
 
   // Sets up a more complicated structure of Views - one parent View with four
   // child Views.
-  std::vector<View*> SetUpExtraViews() {
-    View* parent_view = new View();
-    widget_->GetContentsView()->AddChildView(parent_view);
-    std::vector<View*> views{parent_view};
-
-    const int num_children = 4;
-    for (int i = 0; i < num_children; i++) {
-      View* child_view = new View();
-      parent_view->AddChildView(child_view);
-      views.push_back(child_view);
-    }
+  View::Views SetUpExtraViews() {
+    View* parent_view =
+        widget_->GetContentsView()->AddChildView(std::make_unique<View>());
+    View::Views views{parent_view};
+    for (int i = 0; i < 4; i++)
+      views.push_back(parent_view->AddChildView(std::make_unique<View>()));
     return views;
   }
 
-  // Adds group id information to the first 5 values in |views|. If |views| is
-  // empty, populates it with one parent View and four child Views. It is
-  // assumed |views| is either empty or has at least 5 items.
-  void SetUpExtraViewsWithGroups(std::vector<View*>& views) {
+  // Adds group id information to the first 5 values in |views|.
+  void SetUpExtraViewsGroups(const View::Views& views) {
     //                v[0] g1
     //     |        |        |      |
     // v[1] g1  v[2] g1  v[3] g2  v[4]
-    if (views.empty())
-      views = SetUpExtraViews();
-    EXPECT_GE(views.size(), (size_t)5);
+    ASSERT_GE(views.size(), 5u);
 
     views[0]->SetGroup(1);
     views[1]->SetGroup(1);
@@ -127,16 +125,12 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     // Skip views[4] - no group id.
   }
 
-  // Adds posInSet and setSize overrides to the first 5 values in |views|. If
-  // |views| is empty, populates it with one parent View and four child Views.
-  // It is assumed |views| is either empty or has at least 5 items.
-  void SetUpExtraViewsWithSetOverrides(std::vector<View*>& views) {
+  // Adds posInSet and setSize overrides to the first 5 values in |views|.
+  void SetUpExtraViewsSetOverrides(const View::Views& views) {
     //                     v[0] p4 s4
     //      |            |            |            |
     //  v[1] p3 s4   v[2] p2 s4   v[3] p- s-   v[4] p1 s4
-    if (views.empty())
-      views = SetUpExtraViews();
-    EXPECT_GE(views.size(), (size_t)5);
+    ASSERT_GE(views.size(), 5u);
 
     views[0]->GetViewAccessibility().OverridePosInSet(4, 4);
     views[1]->GetViewAccessibility().OverridePosInSet(3, 4);
@@ -243,8 +237,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdNonDefault) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
-  std::vector<View*> group_ids;
-  SetUpExtraViewsWithGroups(group_ids);
+  View::Views group_ids = SetUpExtraViews();
+  SetUpExtraViewsGroups(group_ids);
   // Only last element has no group id.
   EXPECT_TRUE(view_accessibility(group_ids[0])->IsOrderedSet());
   EXPECT_TRUE(view_accessibility(group_ids[1])->IsOrderedSet());
@@ -258,8 +252,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
   EXPECT_TRUE(view_accessibility(group_ids[3])->IsOrderedSetItem());
   EXPECT_FALSE(view_accessibility(group_ids[4])->IsOrderedSetItem());
 
-  std::vector<View*> overrides;
-  SetUpExtraViewsWithSetOverrides(overrides);
+  View::Views overrides = SetUpExtraViews();
+  SetUpExtraViewsSetOverrides(overrides);
   // Only overrides[3] has no override values for setSize/ posInSet.
   EXPECT_TRUE(view_accessibility(overrides[0])->IsOrderedSet());
   EXPECT_TRUE(view_accessibility(overrides[1])->IsOrderedSet());
@@ -276,8 +270,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
 
 TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   // Test Views with group ids.
-  std::vector<View*> group_ids;
-  SetUpExtraViewsWithGroups(group_ids);
+  View::Views group_ids = SetUpExtraViews();
+  SetUpExtraViewsGroups(group_ids);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 3);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 1);
   EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 3);
@@ -304,8 +298,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   group_ids[2]->GetViewAccessibility().OverrideIsIgnored(false);
 
   // Test Views with setSize/ posInSet override values set.
-  std::vector<View*> overrides;
-  SetUpExtraViewsWithSetOverrides(overrides);
+  View::Views overrides = SetUpExtraViews();
+  SetUpExtraViewsSetOverrides(overrides);
   EXPECT_EQ(view_accessibility(overrides[0])->GetSetSize(), 4);
   EXPECT_EQ(view_accessibility(overrides[0])->GetPosInSet(), 4);
   EXPECT_EQ(view_accessibility(overrides[1])->GetSetSize(), 4);
@@ -322,7 +316,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   // Test Views with both group ids and setSize/ posInSet override values set.
   // Make sure the override values take precedence when both are set.
   // Add setSize/ posInSet overrides to the Views with group ids.
-  SetUpExtraViewsWithSetOverrides(group_ids);
+  SetUpExtraViewsSetOverrides(group_ids);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 4);
   EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 4);
   EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 4);
@@ -338,7 +332,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, Navigation) {
-  std::vector<View*> view_ids = SetUpExtraViews();
+  View::Views view_ids = SetUpExtraViews();
 
   EXPECT_EQ(view_accessibility(view_ids[0])->GetNextSibling(), nullptr);
   EXPECT_EQ(view_accessibility(view_ids[0])->GetPreviousSibling(),
@@ -369,7 +363,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, Navigation) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, OverrideHasPopup) {
-  std::vector<View*> view_ids = SetUpExtraViews();
+  View::Views view_ids = SetUpExtraViews();
 
   view_ids[1]->GetViewAccessibility().OverrideHasPopup(
       ax::mojom::HasPopup::kTrue);
@@ -387,6 +381,26 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideHasPopup) {
   ui::AXNodeData node_data_2;
   view_ids[2]->GetViewAccessibility().GetAccessibleNodeData(&node_data_2);
   EXPECT_EQ(node_data_2.GetHasPopup(), ax::mojom::HasPopup::kMenu);
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, FocusOnMenuClose) {
+  // Set Focus on the button
+  button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, button_accessibility()->GetFocus());
+
+  EXPECT_TRUE(SetFocused(button_accessibility(), true));
+  EXPECT_EQ(button_->GetNativeViewAccessible(),
+            button_accessibility()->GetFocus());
+
+  // Fire FocusAfterMenuClose event on the button.
+  base::RunLoop run_loop;
+  ui::AXPlatformNodeBase::SetOnNotifyEventCallbackForTesting(
+      ax::mojom::Event::kFocusAfterMenuClose, run_loop.QuitClosure());
+  button_accessibility()->FireFocusAfterMenuClose();
+  run_loop.Run();
+  EXPECT_EQ(button_->GetNativeViewAccessible(),
+            button_accessibility()->GetFocus());
 }
 
 #if defined(USE_AURA)
@@ -425,8 +439,8 @@ using ViewAccessibilityTest = ViewsTestBase;
 // Check if the destruction of the widget ends successfully if |view|'s
 // visibility changed during destruction.
 TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
-  // TODO: Construct a real AutomationManagerAura rather than using this
-  // observer to simulate it.
+  // TODO(jamescook): Construct a real AutomationManagerAura rather than using
+  // this observer to simulate it.
   AXAuraObjCache cache;
   TestAXEventObserver observer(&cache);
   std::unique_ptr<Widget> widget(new Widget);

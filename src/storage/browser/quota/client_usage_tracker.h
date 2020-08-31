@@ -59,20 +59,15 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GetHostUsage(const std::string& host, UsageCallback callback);
   void UpdateUsageCache(const url::Origin& origin, int64_t delta);
   int64_t GetCachedUsage() const;
-  void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
-  void GetCachedOriginsUsage(
-      std::map<url::Origin, int64_t>* origin_usage) const;
-  void GetCachedOrigins(std::set<url::Origin>* origins) const;
+  std::map<std::string, int64_t> GetCachedHostsUsage() const;
+  std::map<url::Origin, int64_t> GetCachedOriginsUsage() const;
+  std::set<url::Origin> GetCachedOrigins() const;
   bool IsUsageCacheEnabledForOrigin(const url::Origin& origin) const;
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled);
  private:
   using UsageMap = std::map<url::Origin, int64_t>;
 
-  struct AccumulateInfo {
-    size_t pending_jobs = 0;
-    int64_t limited_usage = 0;
-    int64_t unlimited_usage = 0;
-  };
+  struct AccumulateInfo;
 
   void AccumulateLimitedOriginUsage(AccumulateInfo* info,
                                     UsageCallback callback,
@@ -104,8 +99,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   bool GetCachedOriginUsage(const url::Origin& origin, int64_t* usage) const;
 
   // SpecialStoragePolicy::Observer overrides
-  void OnGranted(const GURL& origin_url, int change_flags) override;
-  void OnRevoked(const GURL& origin_url, int change_flags) override;
+  void OnGranted(const url::Origin& origin_url, int change_flags) override;
+  void OnRevoked(const url::Origin& origin_url, int change_flags) override;
   void OnCleared() override;
 
   void UpdateGlobalUsageValue(int64_t* usage_value, int64_t delta);

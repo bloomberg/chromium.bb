@@ -26,6 +26,8 @@ class PanelItem extends HTMLElement {
     this.panelTypeDone = 2;
     this.panelTypeError = 3;
     this.panelTypeInfo = 4;
+    this.panelTypeFormatProgress = 5;
+    this.panelTypeSyncProgress = 6;
 
     /** @private {number} */
     this.panelType_ = this.panelTypeDefault;
@@ -60,7 +62,7 @@ class PanelItem extends HTMLElement {
     return `<style>
               .xf-panel-item {
                   align-items: center;
-                  background-color: #FFF;
+                  background-color: rgba(0,0,0,0);
                   border-radius: 4px;
                   display: flex;
                   flex-direction: row;
@@ -123,8 +125,10 @@ class PanelItem extends HTMLElement {
                   padding: 16px;
               }
 
-              xf-activity-complete {
+              iron-icon {
+                  height: 36px;
                   padding: 16px;
+                  width: 36px;
               }
 
               // TODO(crbug.com/947388) Use '--goog' prefixed CSS varables.
@@ -258,6 +262,13 @@ class PanelItem extends HTMLElement {
         break;
       case this.panelTypeInfo:
         break;
+      case this.panelTypeFormatProgress:
+        this.setAttribute('indicator', 'status');
+        this.setAttribute('status', 'hard-drive');
+        break;
+      case this.panelTypeSyncProgress:
+        this.setAttribute('indicator', 'progress');
+        break;
     }
 
     this.panelType_ = type;
@@ -321,10 +332,10 @@ class PanelItem extends HTMLElement {
             }
             break;
           case 'status':
-            indicator = document.createElement('xf-activity-complete');
+            indicator = document.createElement('iron-icon');
             const status = this.getAttribute('status');
             if (status) {
-              indicator.status = status;
+              indicator.setAttribute('icon', `files36:${status}`);
             }
             break;
         }
@@ -351,7 +362,7 @@ class PanelItem extends HTMLElement {
         break;
       case 'status':
         if (this.indicator_) {
-          this.indicator_.status = newValue;
+          this.indicator_.setAttribute('icon', `files36:${newValue}`);
         }
         break;
       case 'primary-text':
@@ -436,7 +447,7 @@ class PanelItem extends HTMLElement {
       return;
     }
 
-    let id = assert(event.target.dataset.category);
+    const id = assert(event.target.dataset.category);
     this.signal_(id);
   }
 
@@ -583,7 +594,7 @@ class PanelItem extends HTMLElement {
    * @param {string} text Text to set for the 'aria-label'.
    */
   set closeButtonAriaLabel(text) {
-    let action = this.shadowRoot.querySelector('#secondary-action');
+    const action = this.shadowRoot.querySelector('#secondary-action');
     if (action && action.dataset.category === 'cancel') {
       action.setAttribute('aria-label', text);
     }

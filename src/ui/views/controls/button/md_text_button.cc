@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/button/md_text_button.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -27,30 +31,12 @@
 namespace views {
 
 // static
-std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
-    ButtonListener* listener,
-    const base::string16& text) {
-  return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-}
-
-// static
-std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiBlueButton(
-    ButtonListener* listener,
-    const base::string16& text) {
-  auto md_button =
-      MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-  md_button->SetProminent(true);
-  return md_button;
-}
-
-// static
 std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
                                                    const base::string16& text,
                                                    int button_context) {
   auto button = base::WrapUnique<MdTextButton>(
       new MdTextButton(listener, button_context));
   button->SetText(text);
-  button->SetFocusForPlatform();
 
   return button;
 }
@@ -90,25 +76,6 @@ float MdTextButton::GetCornerRadius() const {
   return corner_radius_;
 }
 
-void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
-  LabelButton::OnPaintBackground(canvas);
-  if (hover_animation().is_animating() || state() == STATE_HOVERED) {
-    bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
-    int hover_alpha = is_prominent_ ? 0x0C : 0x05;
-    if (should_use_dark_colors)
-      hover_alpha = 0x0A;
-    const SkColor hover_color = should_use_dark_colors && !is_prominent_
-                                    ? gfx::kGoogleBlue300
-                                    : SK_ColorBLACK;
-    SkScalar alpha = hover_animation().CurrentValueBetween(0, hover_alpha);
-    cc::PaintFlags flags;
-    flags.setColor(SkColorSetA(hover_color, alpha));
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setAntiAlias(true);
-    canvas->DrawRoundRect(gfx::RectF(GetLocalBounds()), corner_radius_, flags);
-  }
-}
-
 void MdTextButton::OnThemeChanged() {
   LabelButton::OnThemeChanged();
   UpdateColors();
@@ -135,32 +102,43 @@ void MdTextButton::OnBlur() {
 
 std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
-  bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
+  const ui::NativeTheme* theme = GetNativeTheme();
   // The prominent button hover effect is a shadow.
   constexpr int kYOffset = 1;
   constexpr int kSkiaBlurRadius = 2;
-  const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
-  const SkColor shadow_color = should_use_dark_colors && is_prominent_
-                                   ? gfx::kGoogleBlue300
-                                   : SK_ColorBLACK;
+  ui::NativeTheme::ColorId fill_color_id;
+  ui::NativeTheme::ColorId shadow_color_id =
+      is_prominent_
+          ? ui::NativeTheme::kColorId_ProminentButtonInkDropShadowColor
+          : ui::NativeTheme::kColorId_ButtonInkDropShadowColor;
+  if (state() == STATE_HOVERED) {
+    fill_color_id = is_prominent_
+                        ? ui::NativeTheme::kColorId_ProminentButtonHoverColor
+                        : ui::NativeTheme::kColorId_ButtonHoverColor;
+  } else {
+    fill_color_id =
+        is_prominent_
+            ? ui::NativeTheme::kColorId_ProminentButtonInkDropFillColor
+            : ui::NativeTheme::kColorId_ButtonInkDropFillColor;
+  }
   std::vector<gfx::ShadowValue> shadows;
   // The notion of blur that gfx::ShadowValue uses is twice the Skia/CSS value.
   // Skia counts the number of pixels outside the mask area whereas
   // gfx::ShadowValue counts together the number of pixels inside and outside
   // the mask bounds.
-  shadows.emplace_back(
-      gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
-      SkColorSetA(shadow_color, should_use_dark_colors ? 0x7F : shadow_alpha));
-  const SkColor fill_color =
-      SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
-  return std::make_unique<InkDropHighlight>(
+  shadows.emplace_back(gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
+                       theme->GetSystemColor(shadow_color_id));
+  auto highlight = std::make_unique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
-      base::WrapUnique(new BorderShadowLayerDelegate(
-          shadows, GetLocalBounds(), fill_color, corner_radius_)));
+      std::make_unique<BorderShadowLayerDelegate>(
+          shadows, GetLocalBounds(), theme->GetSystemColor(fill_color_id),
+          corner_radius_));
+  highlight->set_visible_opacity(1.0f);
+  return highlight;
 }
 
-void MdTextButton::SetEnabledTextColors(SkColor color) {
-  LabelButton::SetEnabledTextColors(color);
+void MdTextButton::SetEnabledTextColors(base::Optional<SkColor> color) {
+  LabelButton::SetEnabledTextColors(std::move(color));
   UpdateColors();
 }
 
@@ -176,10 +154,10 @@ PropertyEffects MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
-    : LabelButton(listener, base::string16(), button_context),
-      is_prominent_(false) {
+    : LabelButton(listener, base::string16(), button_context) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
+  set_show_ink_drop_when_hot_tracked(true);
   SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
@@ -262,7 +240,7 @@ void MdTextButton::UpdateColors() {
 
   ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonColor);
 
   if (bg_color_override_) {
     bg_color = *bg_color_override_;
@@ -277,9 +255,7 @@ void MdTextButton::UpdateColors() {
   }
 
   if (state() == STATE_PRESSED) {
-    SkColor shade =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonPressedShade);
-    bg_color = color_utils::GetResultingPaintColor(shade, bg_color);
+    bg_color = theme->GetSystemButtonPressedColor(bg_color);
   }
 
   SkColor stroke_color;

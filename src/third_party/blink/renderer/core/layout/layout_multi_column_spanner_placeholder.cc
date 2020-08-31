@@ -72,7 +72,7 @@ void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
   LayoutBox::InsertedIntoTree();
   // The object may previously have been laid out as a non-spanner, but since
   // it's a spanner now, it needs to be relaid out.
-  layout_object_in_flow_thread_->SetNeedsLayoutAndPrefWidthsRecalc(
+  layout_object_in_flow_thread_->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kColumnsChanged);
 }
 
@@ -83,7 +83,7 @@ void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
     // Even if the placeholder is going away, the object in the flow thread
     // might live on. Since it's not a spanner anymore, it needs to be relaid
     // out.
-    ex_spanner->SetNeedsLayoutAndPrefWidthsRecalc(
+    ex_spanner->SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kColumnsChanged);
   }
   LayoutBox::WillBeRemovedFromTree();
@@ -101,7 +101,7 @@ void LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
       layout_object_in_flow_thread_->VisualOverflowRect());
 }
 
-LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
+MinMaxSizes LayoutMultiColumnSpannerPlaceholder::PreferredLogicalWidths()
     const {
   // There should be no contribution from a spanner if the multicol container is
   // size-contained. Normally we'd stop at the object that has contain:size
@@ -111,17 +111,8 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
   // siblings of the flow thread, we need this check.
   // TODO(crbug.com/953919): What should we return for display-locked content?
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
-    return LayoutUnit();
-  return layout_object_in_flow_thread_->MinPreferredLogicalWidth();
-}
-
-LayoutUnit LayoutMultiColumnSpannerPlaceholder::MaxPreferredLogicalWidth()
-    const {
-  // See above.
-  // TODO(crbug.com/953919): What should we return for display-locked content?
-  if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
-    return LayoutUnit();
-  return layout_object_in_flow_thread_->MaxPreferredLogicalWidth();
+    return MinMaxSizes();
+  return layout_object_in_flow_thread_->PreferredLogicalWidths();
 }
 
 void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {

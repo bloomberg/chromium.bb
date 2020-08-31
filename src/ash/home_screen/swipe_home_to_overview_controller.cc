@@ -6,11 +6,15 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
@@ -94,6 +98,10 @@ void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
         display.bounds().y() +
         display.bounds().height() * kHomeScalingThresholdDisplayHeightRatio;
     state_ = State::kTrackingDrag;
+    home_screen_blur_disabler_ = Shell::Get()
+                                     ->home_screen_controller()
+                                     ->delegate()
+                                     ->DisableHomeScreenBackgroundBlur();
   } else {
     if (location_in_screen.y() <= overview_transition_threshold_y_ &&
         std::abs(scroll_x) + std::abs(scroll_y) <= kMovementVelocityThreshold) {
@@ -154,6 +162,10 @@ void SwipeHomeToOverviewController::CancelDrag() {
       ->UpdateScaleAndOpacityForHomeLauncher(
           1.0f /*scale*/, 1.0f /*opacity*/, base::nullopt /*animation_info*/,
           base::BindRepeating(&UpdateHomeAnimationForGestureCancel));
+
+  // No need to keep blur disabled for the drag - note that blur might remain
+  // disabled at this point due to the started home screen scale animation.
+  home_screen_blur_disabler_.reset();
 }
 
 void SwipeHomeToOverviewController::ScheduleFinalizeDragAndShowOverview() {
@@ -171,9 +183,20 @@ void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
   state_ = State::kFinished;
   overview_transition_threshold_y_ = 0;
 
+  if (features::AreContextualNudgesEnabled()) {
+    contextual_tooltip::HandleGesturePerformed(
+        Shell::Get()->session_controller()->GetActivePrefService(),
+        contextual_tooltip::TooltipType::kHomeToOverview);
+  }
+
   UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
                             EnterOverviewFromHomeLauncher::kSuccess);
   Shell::Get()->overview_controller()->StartOverview();
+
+  // No need to keep blur disabled for the drag - note that blur might remain
+  // disabled at this point due to the started overview transition (which
+  // triggers home screen scale animation).
+  home_screen_blur_disabler_.reset();
 }
 
 }  // namespace ash

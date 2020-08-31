@@ -6,43 +6,38 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
-<dom-module id="oobe-reset-md">
+<dom-module id="oobe-reset">
   <template>
-    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="chrome://resources/css/throbber.css">
-    <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_reset.css">
     <oobe-dialog id="resetDialog" role="dialog"
-        i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons
-        footer-shrinkable>
+        title-key="resetWarningTitle"
+        aria-label$="[[i18nDynamic(locale, 'resetScreenAccessibleTitle')]]"
+        has-buttons footer-shrinkable>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nDynamic(locale, 'resetWarningTitle')]]
-      </h1>
       <div slot="subtitle" class="powerwash-warning">
-        <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
-          [[i18nDynamic(locale, 'resetPowerwashWarningDetails')]]
-        </div>
-        <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
-          [[i18nDynamic(locale, 'resetWarningDataDetails')]]
-        </div>
-        <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]">
-          [[i18nDynamic(locale, 'resetPowerwashRollbackWarningDetails')]]
-        </div>
-        <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]">
-          [[i18nDynamic(locale, 'resetWarningDataDetails')]]
-        </div>
-        <div hidden="[[!isState_(uiState_, 'restart-required-view')]]">
+        <!-- Subtitle:  Restart required  -->
+        <div hidden="[[!inRestartRequiredState_]]">
           [[i18nDynamic(locale, 'resetRestartMessage')]]
         </div>
-        <a id="powerwash-help-link-md" href="#"
-            hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
-            on-tap="onLearnMoreTap_">
-          [[i18nDynamic(locale, 'learnMore')]]
-        </a>
-        <div hidden="[[!isState_(uiState_, 'revert-promise-view')]]">
+        <!-- Subtitle: Powerwash state (depends on powerwash mode) -->
+        <div hidden="[[!inPowerwashState_]]">
+          <div>[[powerwashStateSubtitle_]]</div>
+          <div>[[i18nDynamic(locale, 'resetWarningDataDetails')]]</div>
+        </div>
+        <!-- Help Link - Hidden when reverting/rolling back. -->
+        <if expr="_google_chrome">
+          <a id="powerwash-help-link-md" href="#"
+              class="oobe-local-link"
+              hidden="[[inRevertState_]]"
+             on-tap="onLearnMoreTap_">[[i18nDynamic(locale, 'learnMore')]]
+          </a>
+        </if>
+        <!-- Spinner - Shown when the revert process is ongoing -->
+        <div hidden="[[!inRevertState_]]">
           <div>
             [[i18nDynamic(locale, 'resetRevertPromise')]]
           </div>
@@ -54,49 +49,63 @@
           </div>
         </div>
       </div>
-      <div slot="footer" class="flex layout vertical center center-justified">
+      <div slot="footer" class="flex layout vertical">
+        <!-- Reset screen illustration -->
         <img id="illustration" srcset="images/1x/reset_illustration_1x.svg 1x,
                                        images/2x/reset_illustration_2x.svg 2x"
-            i18n-values="alt:resetScreenIllustrationTitle"
-            class="oobe-illustration">
+            alt$="[[i18nDynamic(locale, 'resetScreenIllustrationTitle')]]">
+        <!-- TPM Update - Only shown during powerwash state -->
         <div id="tpmFirmwareUpdate" class="layout horizontal"
-            hidden="[[!tpmFirmwareUpdateAvailable_]]">
+            hidden="[[!inPowerwashState_]]">
           <cr-checkbox id="tpmFirmwareUpdateCheckbox"
-              checked="{{tpmFirmwareUpdateChecked_}}"
-              disabled="[[!tpmFirmwareUpdateEditable_]]"
+              checked="{{tpmUpdateChecked_}}"
+              disabled="[[!tpmUpdateEditable_]]"
+              hidden="[[!tpmUpdateAvailable_]]"
               on-change="onTPMFirmwareUpdateChanged_">
+            <div id="tpmFirmwareUpdateContainer">
+              <span>
+                [[i18nDynamic(locale, 'resetTPMFirmwareUpdate')]]
+              </span>
+              <if expr="_google_chrome">
+                <a href="#"
+                    class="oobe-local-link"
+                    on-tap="onTPMFirmwareUpdateLearnMore_"
+                    >[[i18nDynamic(locale, 'learnMore')]]</a>
+              </if>
+            </div>
           </cr-checkbox>
-          <div id="tpmFirmwareUpdateContainer">
-            <span>
-              [[i18nDynamic(locale, 'resetTPMFirmwareUpdate')]]
-            </span>
-            <a href="#" hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
-                on-tap="onTPMFirmwareUpdateLearnMore_">
-              [[i18nDynamic(locale, 'learnMore')]]
-            </a>
-          </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button border on-tap="onCancelTap_"
-            hidden="[[isCancelHidden_(uiState_)]]">
-          <div>[[i18nDynamic(locale, 'cancelButton')]]</div>
-        </oobe-text-button>
+        <!-- Cancel button, only disabled when reverting -->
+        <oobe-text-button border on-tap="onCancelTap_" text-key="cancelButton"
+            id="resetCancel" disabled="[[inRevertState_]]"></oobe-text-button>
+        <!-- Restart button -->
         <oobe-text-button inverse on-tap="onRestartTap_" class="focus-on-show"
-            hidden="[[!isState_(uiState_, 'restart-required-view')]]">
-          <div>[[i18nDynamic(locale, 'resetButtonRestart')]]</div>
+            id="restart" text-key="resetButtonRestart"
+            hidden="[[!inRestartRequiredState_]]">
         </oobe-text-button>
+        <!-- Powerwash button (depends on powerwash mode) -->
         <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
-            hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
-            disabled="[[tpmFirmwareUpdateChecked_]]">
-          <div>[[i18nDynamic(locale, 'resetButtonPowerwashAndRollback')]]</div>
-        </oobe-text-button>
-        <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
-            hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
-          <div>[[i18nDynamic(locale, 'resetButtonPowerwash')]]</div>
+            id="powerwash" hidden="[[!inPowerwashState_]]"
+            text-key="[[powerwashButtonTextKey_]]"
+            disabled="[[powerwashButtonDisabled_]]">
         </oobe-text-button>
       </div>
     </oobe-dialog>
+
+    <!-- Powerwash confirmation dialog (depends on powerwash mode) -->
+    <oobe-help-dialog id="confirmationDialog" on-close="onDialogClosed_">
+      <div slot="title">[[confirmationDialogTitle_]]</div>
+      <div slot="content">[[confirmationDialogText_]]</div>
+      <div slot="buttons">
+        <oobe-text-button id="cancelButton" border on-tap="onDialogCancelTap_"
+            text-key="cancel"></oobe-text-button>
+        <oobe-text-button inverse on-tap="onDialogContinueTap_"
+            id="confirmPowerwash"
+            text-key="confirmResetButton"></oobe-text-button>
+      </div>
+    </oobe-help-dialog>
   </template>
 </dom-module>

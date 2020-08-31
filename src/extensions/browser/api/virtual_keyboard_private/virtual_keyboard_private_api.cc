@@ -29,6 +29,8 @@ const char kSetDraggableAreaFailed[] =
     "Setting draggable area of virtual keyboard failed.";
 const char kSetAreaToRemainOnScreenFailed[] =
     "Setting area to remain on screen of virtual keyboard failed.";
+const char kSetWindowBoundsInScreenFailed[] =
+    "Setting bounds of the virtual keyboard failed";
 const char kUnknownError[] = "Unknown error.";
 
 namespace keyboard = api::virtual_keyboard_private;
@@ -138,10 +140,8 @@ VirtualKeyboardPrivateSetContainerBehaviorFunction::Run() {
   std::unique_ptr<keyboard::SetContainerBehavior::Params> params =
       keyboard::SetContainerBehavior::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::Optional<gfx::Rect> target_bounds(base::nullopt);
-  if (params->options.bounds)
-    target_bounds = KeyboardBoundsToRect(*params->options.bounds);
 
+  gfx::Rect target_bounds = KeyboardBoundsToRect(params->options.bounds);
   if (!delegate()->SetVirtualKeyboardMode(
           params->options.mode, std::move(target_bounds),
           base::BindOnce(&VirtualKeyboardPrivateSetContainerBehaviorFunction::
@@ -219,6 +219,21 @@ VirtualKeyboardPrivateSetAreaToRemainOnScreenFunction::Run() {
     return RespondNow(Error(kSetAreaToRemainOnScreenFailed));
   return RespondNow(NoArguments());
 }
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetWindowBoundsInScreenFunction::Run() {
+  std::unique_ptr<keyboard::SetWindowBoundsInScreen::Params> params =
+      keyboard::SetWindowBoundsInScreen::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const gfx::Rect bounds_in_screen = KeyboardBoundsToRect(params->bounds);
+  if (!delegate()->SetWindowBoundsInScreen(bounds_in_screen))
+    return RespondNow(Error(kSetWindowBoundsInScreenFailed));
+  return RespondNow(NoArguments());
+}
+
+VirtualKeyboardPrivateSetWindowBoundsInScreenFunction ::
+    ~VirtualKeyboardPrivateSetWindowBoundsInScreenFunction() = default;
 
 VirtualKeyboardAPI::VirtualKeyboardAPI(content::BrowserContext* context) {
   delegate_ =

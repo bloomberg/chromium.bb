@@ -14,10 +14,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "ui/events/blink/input_handler_proxy.h"
-#include "ui/events/blink/input_handler_proxy_client.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy_client.h"
 
 namespace blink {
+class WebInputEventAttribution;
 namespace scheduler {
 class WebThreadScheduler;
 }  // namespace scheduler
@@ -37,7 +38,7 @@ class SynchronousCompositorProxyRegistry;
 // The lifecycle of this object matches that of the RenderWidget.
 class CONTENT_EXPORT WidgetInputHandlerManager final
     : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
-      public ui::InputHandlerProxyClient,
+      public blink::InputHandlerProxyClient,
       public base::SupportsWeakPtr<WidgetInputHandlerManager> {
   // Used in UMA metrics reporting. Do not re-order, and rename the metric if
   // additional states are required.
@@ -77,22 +78,18 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void WillShutdown() override;
   void DispatchNonBlockingEventToMainThread(
       ui::WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info) override;
+      const ui::LatencyInfo& latency_info,
+      const blink::WebInputEventAttribution& attribution) override;
 
-  void DidOverscroll(
-      const gfx::Vector2dF& accumulated_overscroll,
-      const gfx::Vector2dF& latest_overscroll_delta,
-      const gfx::Vector2dF& current_fling_velocity,
-      const gfx::PointF& causal_event_viewport_point,
-      const cc::OverscrollBehavior& overscroll_behavior) override;
   void DidAnimateForInput() override;
   void DidStartScrollingViewport() override;
   void GenerateScrollBeginAndSendToMainThread(
-      const blink::WebGestureEvent& update_event) override;
+      const blink::WebGestureEvent& update_event,
+      const blink::WebInputEventAttribution& attribution) override;
   void SetWhiteListedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
-      ui::InputHandlerProxy::EventDisposition event_disposition) override;
+      blink::InputHandlerProxy::EventDisposition event_disposition) override;
 
   void ObserveGestureEventOnMainThread(
       const blink::WebGestureEvent& gesture_event,
@@ -119,9 +116,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InputWasProcessed(const gfx::PresentationFeedback& feedback);
   void WaitForInputProcessed(base::OnceClosure callback);
 
-  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
-  void FallbackCursorModeSetCursorVisibility(bool visible);
-
   // Called when the RenderWidget is notified of a navigation. Resets
   // the renderer pipeline deferral status, and resets the UMA recorder for
   // time of first input.
@@ -139,6 +133,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // hit test regions.
   void AllowPreCommitInput() { allow_pre_commit_input_ = true; }
 
+  // Called on the main thread. Finds the matching element under the given
+  // point in visual viewport coordinates and runs the callback with the
+  // found element id on input thread task runner.
+  using ElementAtPointCallback = base::OnceCallback<void(uint64_t)>;
+  void FindScrollTargetOnMainThread(const gfx::PointF& point,
+                                    ElementAtPointCallback callback);
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;
@@ -151,27 +152,49 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InitInputHandler();
   void InitOnInputHandlingThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      bool smooth_scroll_enabled,
       bool sync_compositing);
   void BindAssociatedChannel(
       mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver);
   void BindChannel(mojo::PendingReceiver<mojom::WidgetInputHandler> receiver);
-  void HandleInputEvent(
+
+  // This method skips the input handler proxy and sends the event directly to
+  // the RenderWidget (main thread). Should only be used by non-frame
+  // RenderWidgets that don't use a compositor (e.g. popups, plugins). Events
+  // for a frame RenderWidget should always be passed through the
+  // InputHandlerProxy by calling DispatchEvent which will re-route to the main
+  // thread if needed.
+  void DispatchDirectlyToWidget(
       const ui::WebScopedInputEvent& event,
       const ui::LatencyInfo& latency,
       mojom::WidgetInputHandler::DispatchEventCallback callback);
-  void DidHandleInputEventAndOverscroll(
+
+  // This method is the callback used by the compositor input handler to
+  // communicate back whether the event was successfully handled on the
+  // compositor thread or whether it needs to forwarded to the main thread.
+  // This method is responsible for passing the event on to the main thread or
+  // replying to the browser that the event was handled. This is always called
+  // on the input handling thread (i.e. if a compositor thread exists, it'll be
+  // called from it).
+  void DidHandleInputEventSentToCompositor(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
-      ui::InputHandlerProxy::EventDisposition event_disposition,
+      blink::InputHandlerProxy::EventDisposition event_disposition,
       ui::WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
-  void HandledInputEvent(
+      std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
+          overscroll_params,
+      const blink::WebInputEventAttribution& attribution);
+
+  // Similar to the above; this is used by the main thread input handler to
+  // communicate back the result of handling the event. Note: this may be
+  // called on either thread as non-blocking events sent to the main thread
+  // will be ACKed immediately when added to the main thread event queue.
+  void DidHandleInputEventSentToMain(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
-      InputEventAckState ack_state,
+      blink::mojom::InputEventResultState ack_state,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+      blink::mojom::DidOverscrollParamsPtr overscroll_params,
       base::Optional<cc::TouchAction> touch_action);
+
   void ObserveGestureEventOnInputHandlingThread(
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
@@ -189,7 +212,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // InputHandlerProxy is only interacted with on the compositor
   // thread.
-  std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
+  std::unique_ptr<blink::InputHandlerProxy> input_handler_proxy_;
 
   // The WidgetInputHandlerHost is bound on the compositor task runner
   // but class can be called on the compositor and main thread.
@@ -212,7 +235,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   base::OnceClosure input_processed_callback_;
 
   // Whether this widget uses an InputHandler or forwards all input to the
-  // WebWidget (Popups, Plugins).
+  // WebWidget (Popups, Plugins). This is always true if we have a compositor
+  // thread; however, we can use an input handler if we don't have a compositor
+  // thread (e.g. in tests). Conversely, if we're not using an input handler,
+  // we definitely don't have a compositor thread.
   bool uses_input_handler_ = false;
 
   // State tracking which parts of the rendering pipeline are currently
@@ -236,8 +262,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // Control of UMA. We emit one UMA metric per navigation telling us
   // whether any non-move input arrived before we starting updating the page or
-  // displaying content to the user.
-  bool have_emitted_uma_ = false;
+  // displaying content to the user. It must be atomic because navigation can
+  // occur on the renderer thread (resetting this) coincident with the UMA
+  // being sent on the compositor thread.
+  std::atomic<bool> have_emitted_uma_{false};
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>

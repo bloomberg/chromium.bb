@@ -5,6 +5,7 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_HTTP_ENCODER_H_
 #define QUICHE_QUIC_CORE_HTTP_HTTP_ENCODER_H_
 
+#include <memory>
 #include "net/third_party/quiche/src/quic/core/http/http_frames.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -30,11 +31,6 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
   static QuicByteCount SerializeHeadersFrameHeader(
       QuicByteCount payload_length,
       std::unique_ptr<char[]>* output);
-
-  // Serializes a PRIORITY frame into a new buffer stored in |output|.
-  // Returns the length of the buffer on success, or 0 otherwise.
-  static QuicByteCount SerializePriorityFrame(const PriorityFrame& priority,
-                                              std::unique_ptr<char[]>* output);
 
   // Serializes a CANCEL_PUSH frame into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.
@@ -65,11 +61,15 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
       const MaxPushIdFrame& max_push_id,
       std::unique_ptr<char[]>* output);
 
-  // Serialize a DUPLICATE_PUSH frame into a new buffer stored in |output|.
+  // Serializes a PRIORITY_UPDATE frame into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.
-  static QuicByteCount SerializeDuplicatePushFrame(
-      const DuplicatePushFrame& duplicate_push,
+  static QuicByteCount SerializePriorityUpdateFrame(
+      const PriorityUpdateFrame& priority_update,
       std::unique_ptr<char[]>* output);
+
+  // Serializes a frame with reserved frame type specified in
+  // https://tools.ietf.org/html/draft-ietf-quic-http-25#section-7.2.9.
+  static QuicByteCount SerializeGreasingFrame(std::unique_ptr<char[]>* output);
 };
 
 }  // namespace quic

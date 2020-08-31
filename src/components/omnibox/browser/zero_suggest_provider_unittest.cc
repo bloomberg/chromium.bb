@@ -20,7 +20,7 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -41,7 +41,7 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
+  void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
   void SyncWithHistory() override {}
   bool HasBlacklistedItems() const override {
     return false;
@@ -68,7 +68,7 @@ class FakeEmptyTopSites : public history::TopSites {
   // set per call.
   void RunACallback(const history::MostVisitedURLList& urls) {
     DCHECK(!callbacks.empty());
-    callbacks.front().Run(urls);
+    std::move(callbacks.front()).Run(urls);
     callbacks.pop_front();
   }
 
@@ -83,8 +83,8 @@ class FakeEmptyTopSites : public history::TopSites {
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback) {
-  callbacks.push_back(callback);
+    GetMostVisitedURLsCallback callback) {
+  callbacks.push_back(std::move(callback));
 }
 
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
@@ -215,58 +215,46 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   GURL current_url = GURL("https://example.com/");
   GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
 
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
       .WillRepeatedly(testing::Return(true));
 
   // Verify the unconfigured state returns platorm-specific defaults.
+  auto ExpectPlatformSpecificDefaultZeroSuggestBehavior = [&]() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
+              provider_->TypeOfResultToRun(current_url, suggest_url));
 #else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
+              provider_->TypeOfResultToRun(current_url, suggest_url));
 #endif
+  };
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
 
-  // Verify remote suggestions are only allowed when the user is signed in.
-  // Otherwise, falls back to platorm-specific defaults.
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(false));
-
-  CreateRemoteNoUrlFieldTrial();
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
-
-  // Restore authentication state.
+  // Verify RemoteNoUrl works when the user is signed in.
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
+  CreateRemoteNoUrlFieldTrial();
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
 
-  // Verify remote suggestions are only allowed when user has set up Google as
-  // default search engine. Otherwise, falls back to platorm-specific defaults.
+  // But if the user has signed out, fall back to platform-specific defaults.
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(false));
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
+
+  // Restore authentication state, but now set a non-Google default search
+  // engine. Verify that we still disallow remote suggestions.
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
   TemplateURLService* turl_model = client_->GetTemplateURLService();
   auto* google_search_provider = turl_model->GetDefaultSearchProvider();
-
   TemplateURLData data;
   data.SetURL("https://www.example.com/?q={searchTerms}");
   data.suggestions_url = "https://www.example.com/suggest/?q={searchTerms}";
   auto* other_search_provider =
       turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(other_search_provider);
-
-  CreateRemoteNoUrlFieldTrial();
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
 
   // Restore Google as the default search provider.
   turl_model->SetUserSelectedDefaultSearchProvider(

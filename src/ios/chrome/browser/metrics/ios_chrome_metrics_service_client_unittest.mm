@@ -10,7 +10,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/metrics_switches.h"
-#include "components/metrics/test_enabled_state_provider.h"
+#include "components/metrics/test/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/ukm_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -57,7 +57,7 @@ class IOSChromeMetricsServiceClientTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   metrics::TestEnabledStateProvider enabled_state_provider_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
@@ -113,8 +113,19 @@ TEST_F(IOSChromeMetricsServiceClientTest,
 
   std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
       IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
+
+  ukm::UkmService* ukmService =
+      chrome_metrics_service_client->GetUkmService();
   // Verify that the UKM service is instantiated when enabled.
-  EXPECT_TRUE(chrome_metrics_service_client->GetUkmService());
+  EXPECT_TRUE(ukmService);
+
+  // Number of providers registered by
+  // IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders(), namely
+  // CPUMetricsProvider, ScreenInfoMetricsProvider, FieldTrialsProvider.
+  const size_t expected_providers = 3;
+
+  EXPECT_EQ(expected_providers,
+            ukmService->metrics_providers_.GetProviders().size());
 }
 
 TEST_F(IOSChromeMetricsServiceClientTest,

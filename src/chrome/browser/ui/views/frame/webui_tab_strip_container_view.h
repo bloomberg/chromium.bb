@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_
 
 #include <memory>
+#include <set>
 
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/common/buildflags.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
@@ -22,10 +25,6 @@
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #error
 #endif
-
-namespace feature_engagement {
-class Tracker;
-}  // namespace feature_engagement
 
 namespace ui {
 class MenuModel;
@@ -38,28 +37,32 @@ class WebView;
 }  // namespace views
 
 class Browser;
-class FeaturePromoBubbleView;
 
-class WebUITabStripContainerView : public TabStripUI::Embedder,
+class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
                                    public views::AccessiblePaneView,
                                    public views::ButtonListener,
-                                   public views::ViewObserver,
-                                   public views::WidgetObserver {
+                                   public views::ViewObserver {
  public:
   WebUITabStripContainerView(Browser* browser,
-                             views::View* tab_contents_container);
+                             views::View* tab_contents_container,
+                             views::View* drag_handle);
   ~WebUITabStripContainerView() override;
 
   static bool UseTouchableTabStrip();
 
+  // For drag-and-drop support:
+  static void GetDropFormatsForView(
+      int* formats,
+      std::set<ui::ClipboardFormatType>* format_types);
+  static bool IsDraggedTab(const ui::OSExchangeData& data);
+
+  void OpenForTabDrag();
+
   views::NativeViewHost* GetNativeViewHost();
 
-  // Control buttons. Each must only be called once.
-  std::unique_ptr<ToolbarButton> CreateNewTabButton();
+  // Control button. Must only be called once.
   std::unique_ptr<views::View> CreateTabCounter();
-
-  void UpdateButtons();
 
   // Should be called on BrowserView re-layout. If IPH is showing,
   // updates the promo for the new tab counter location.
@@ -71,9 +74,26 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // the container's preferred size will change.
   void SetVisibleForTesting(bool visible);
   views::WebView* web_view_for_testing() const { return web_view_; }
+  views::View* tab_counter_for_testing() const { return tab_counter_; }
 
  private:
   class AutoCloser;
+  class DragToOpenHandler;
+  class IPHController;
+
+  // Called as we are dragged open.
+  void UpdateHeightForDragToOpen(float height_delta);
+
+  enum class FlingDirection {
+    kUp,
+    kDown,
+  };
+
+  // Called when drag-to-open finishes. If |fling_direction| is present,
+  // the user released their touch with a high velocity. We should use
+  // just this direction to animate open or closed.
+  void EndDragToOpen(
+      base::Optional<FlingDirection> fling_direction = base::nullopt);
 
   void SetContainerTargetVisibility(bool target_visible);
 
@@ -91,7 +111,11 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override;
+  void ShowEditDialogForGroupAtPoint(gfx::Point point,
+                                     gfx::Rect rect,
+                                     tab_groups::TabGroupId group) override;
   TabStripUILayout GetLayout() override;
+  SkColor GetColor(int id) const override;
 
   // views::View:
   void AddedToWidget() override;
@@ -109,36 +133,31 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-
   // views::AccessiblePaneView
   bool SetPaneFocusAndFocusDefault() override;
 
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* tab_contents_container_;
-  ToolbarButton* new_tab_button_ = nullptr;
   views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
+  base::Optional<float> current_drag_height_;
 
   // When opened, if currently open. Used to calculate metric for how
   // long the tab strip is kept open.
   base::Optional<base::TimeTicks> time_at_open_;
 
-  feature_engagement::Tracker* const iph_tracker_;
-  FeaturePromoBubbleView* tab_counter_promo_ = nullptr;
-
   gfx::SlideAnimation animation_{this};
 
   std::unique_ptr<AutoCloser> auto_closer_;
+  std::unique_ptr<DragToOpenHandler> drag_to_open_handler_;
+  std::unique_ptr<IPHController> iph_controller_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
   std::unique_ptr<ui::MenuModel> context_menu_model_;
 
   ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

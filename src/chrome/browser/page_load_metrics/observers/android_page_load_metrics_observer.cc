@@ -115,8 +115,8 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (extra_request_complete_info.resource_type ==
-      content::ResourceType::kMainFrame) {
+  if (extra_request_complete_info.request_destination ==
+      network::mojom::RequestDestination::kDocument) {
     DCHECK(!did_dispatch_on_main_resource_);
     if (did_dispatch_on_main_resource_) {
       // We are defensive for the case of something strange happening and return
@@ -180,7 +180,7 @@ void AndroidPageLoadMetricsObserver::ReportBufferedMetrics(
       (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds();
   const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
-  if (!largest_contentful_paint.IsEmpty()) {
+  if (largest_contentful_paint.ContainsValidTime()) {
     Java_PageLoadMetrics_onLargestContentfulPaint(
         env, java_web_contents, static_cast<jlong>(navigation_id_),
         static_cast<jlong>(navigation_start_tick),

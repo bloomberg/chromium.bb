@@ -9,10 +9,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/drag_drop/tab_drag_drop_delegate.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
@@ -118,6 +120,9 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   int drag_operation_;
   int current_drag_actions_ = 0;
 
+  // Used when processing a Chrome tab drag from a WebUI tab strip.
+  base::Optional<TabDragDropDelegate> tab_drag_drop_delegate_;
+
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;
 
@@ -126,6 +131,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   gfx::Rect drag_image_final_bounds_for_cancel_animation_;
 
   std::unique_ptr<gfx::LinearAnimation> cancel_animation_;
+  std::unique_ptr<gfx::AnimationDelegate> cancel_animation_notifier_;
 
   // Window that started the drag.
   aura::Window* drag_source_window_;
@@ -137,7 +143,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Closure for quitting nested run loop.
   base::OnceClosure quit_closure_;
 
-  std::unique_ptr<ash::DragDropTracker> drag_drop_tracker_;
+  std::unique_ptr<DragDropTracker> drag_drop_tracker_;
   std::unique_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
 
   ui::DragDropTypes::DragEventSource current_drag_event_source_;

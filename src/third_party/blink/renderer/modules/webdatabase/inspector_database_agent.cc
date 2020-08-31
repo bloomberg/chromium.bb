@@ -235,20 +235,20 @@ void InspectorDatabaseAgent::InnerEnable() {
 
 Response InspectorDatabaseAgent::enable() {
   if (enabled_.Get())
-    return Response::OK();
+    return Response::Success();
   enabled_.Set(true);
   InnerEnable();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDatabaseAgent::disable() {
   if (!enabled_.Get())
-    return Response::OK();
+    return Response::Success();
   enabled_.Set(false);
   if (DatabaseClient* client = DatabaseClient::FromPage(page_))
     client->SetInspectorAgent(nullptr);
   resources_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorDatabaseAgent::Restore() {
@@ -260,7 +260,7 @@ Response InspectorDatabaseAgent::getDatabaseTableNames(
     const String& database_id,
     std::unique_ptr<protocol::Array<String>>* names) {
   if (!enabled_.Get())
-    return Response::Error("Database agent is not enabled");
+    return Response::ServerError("Database agent is not enabled");
 
   blink::Database* database = DatabaseForId(database_id);
   if (database) {
@@ -270,7 +270,7 @@ Response InspectorDatabaseAgent::getDatabaseTableNames(
   } else {
     *names = std::make_unique<protocol::Array<String>>();
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorDatabaseAgent::executeSQL(
@@ -282,13 +282,13 @@ void InspectorDatabaseAgent::executeSQL(
 
   if (!enabled_.Get()) {
     request_callback->sendFailure(
-        Response::Error("Database agent is not enabled"));
+        Response::ServerError("Database agent is not enabled"));
     return;
   }
 
   blink::Database* database = DatabaseForId(database_id);
   if (!database) {
-    request_callback->sendFailure(Response::Error("Database not found"));
+    request_callback->sendFailure(Response::ServerError("Database not found"));
     return;
   }
 
@@ -319,7 +319,7 @@ blink::Database* InspectorDatabaseAgent::DatabaseForId(
   return it->value->GetDatabase();
 }
 
-void InspectorDatabaseAgent::Trace(blink::Visitor* visitor) {
+void InspectorDatabaseAgent::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(resources_);
   InspectorBaseAgent::Trace(visitor);

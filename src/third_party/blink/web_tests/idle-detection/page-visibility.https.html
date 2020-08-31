@@ -12,6 +12,9 @@
 'use strict';
 
 promise_test(async t => {
+  await internals.setPermission({name: 'notifications'}, 'granted',
+                                location.origin, location.origin);
+
   let monitor;
 
   expect(addMonitor).andReturn((threshold, monitorPtr) => {
@@ -24,17 +27,15 @@ promise_test(async t => {
       });
     });
 
+  const controller = new AbortController();
+  const detector = new IdleDetector();
+  const watcher = new EventWatcher(t, detector, ["change"]);
+  const initial_state = watcher.wait_for("change");
 
-  let detector = new IdleDetector({threshold: 60});
+  await detector.start({threshold: 60000, signal: controller.signal});
+  await initial_state;
 
-  let watcher = new EventWatcher(t, detector, ["change"]);
-
-  await detector.start();
-
-  // Waits for the first event.
-  await watcher.wait_for("change");
-
-  assert_equals(detector.state.user, "active");
+  assert_equals(detector.userState, "active");
 
   testRunner.setPageVisibility("hidden");
 
@@ -45,7 +46,7 @@ promise_test(async t => {
 
   // Assert that the detector works while the page is not visible.
   await watcher.wait_for("change");
-  assert_equals(detector.state.user, "idle");
+  assert_equals(detector.userState, "idle");
 
   testRunner.setPageVisibility("visible");
 
@@ -55,10 +56,9 @@ promise_test(async t => {
   });
 
   await watcher.wait_for("change");
-  assert_equals(detector.state.user, "active");
+  assert_equals(detector.userState, "active");
 
-  detector.stop();
-
+  controller.abort();
 }, 'Page visibility.');
 
 </script>

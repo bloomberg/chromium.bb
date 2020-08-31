@@ -16,6 +16,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
+using extensions::ActivationSequence;
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionSet;
@@ -61,7 +62,8 @@ ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     const Extension* extension,
-    bool include_tab_permissions)
+    bool include_tab_permissions,
+    base::Optional<ActivationSequence> worker_activation_sequence)
     : manifest(static_cast<base::DictionaryValue&&>(
           extension->manifest()->value()->Clone())),
       location(extension->location()),
@@ -76,6 +78,7 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
       uses_default_policy_blocked_allowed_hosts(
           extension->permissions_data()->UsesDefaultPolicyHostRestrictions()),
       id(extension->id()),
+      worker_activation_sequence(worker_activation_sequence),
       creation_flags(extension->creation_flags()) {
   if (include_tab_permissions) {
     for (const auto& pair :
@@ -92,6 +95,7 @@ ExtensionMsg_Loaded_Params& ExtensionMsg_Loaded_Params::operator=(
     ExtensionMsg_Loaded_Params&& other) = default;
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
+    const int context_id,
     std::string* error) const {
   // We pass in the |id| to the create call because it will save work in the
   // normal case, and because in tests, extensions may not have paths or keys,
@@ -104,7 +108,7 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     permissions_data->SetPermissions(active_permissions.ToPermissionSet(),
                                      withheld_permissions.ToPermissionSet());
     if (uses_default_policy_blocked_allowed_hosts) {
-      permissions_data->SetUsesDefaultHostRestrictions();
+      permissions_data->SetUsesDefaultHostRestrictions(context_id);
     } else {
       permissions_data->SetPolicyHostRestrictions(policy_blocked_hosts,
                                                   policy_allowed_hosts);
@@ -327,6 +331,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(base::Pickle* m,
   WriteParam(m, p.policy_blocked_hosts);
   WriteParam(m, p.policy_allowed_hosts);
   WriteParam(m, p.uses_default_policy_blocked_allowed_hosts);
+  WriteParam(m, p.worker_activation_sequence);
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
@@ -341,7 +346,8 @@ bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
          ReadParam(m, iter, &p->tab_specific_permissions) &&
          ReadParam(m, iter, &p->policy_blocked_hosts) &&
          ReadParam(m, iter, &p->policy_allowed_hosts) &&
-         ReadParam(m, iter, &p->uses_default_policy_blocked_allowed_hosts);
+         ReadParam(m, iter, &p->uses_default_policy_blocked_allowed_hosts) &&
+         ReadParam(m, iter, &p->worker_activation_sequence);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Log(const param_type& p,

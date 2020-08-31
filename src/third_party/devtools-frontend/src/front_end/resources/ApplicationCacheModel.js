@@ -26,22 +26,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
-Resources.ApplicationCacheModel = class extends SDK.SDKModel {
+export class ApplicationCacheModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
 
-    target.registerApplicationCacheDispatcher(new Resources.ApplicationCacheDispatcher(this));
+    target.registerApplicationCacheDispatcher(new ApplicationCacheDispatcher(this));
     this._agent = target.applicationCacheAgent();
     this._agent.enable();
 
-    const resourceTreeModel = target.model(SDK.ResourceTreeModel);
-    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, this._frameNavigated, this);
+    const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, event => {
+      this._frameNavigated(event);
+    }, this);
     resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameDetached, this._frameDetached, this);
 
     this._statuses = {};
@@ -52,10 +57,10 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   async _frameNavigated(event) {
-    const frame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
+    const frame = /** @type {!SDK.ResourceTreeModel.ResourceTreeFrame} */ (event.data);
     if (frame.isMainFrame()) {
       this._mainFrameNavigated();
       return;
@@ -69,17 +74,17 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _frameDetached(event) {
-    const frame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
+    const frame = /** @type {!SDK.ResourceTreeModel.ResourceTreeFrame} */ (event.data);
     this._frameManifestRemoved(frame.id);
   }
 
   reset() {
     this._statuses = {};
     this._manifestURLsByFrame = {};
-    this.dispatchEventToListeners(Resources.ApplicationCacheModel.Events.FrameManifestsReset);
+    this.dispatchEventToListeners(Events.FrameManifestsReset);
   }
 
   async _mainFrameNavigated() {
@@ -95,7 +100,7 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
    * @param {number} status
    */
   _frameManifestUpdated(frameId, manifestURL, status) {
-    if (status === Resources.ApplicationCacheModel.UNCACHED) {
+    if (status === UNCACHED) {
       this._frameManifestRemoved(frameId);
       return;
     }
@@ -113,11 +118,11 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
 
     if (!this._manifestURLsByFrame[frameId]) {
       this._manifestURLsByFrame[frameId] = manifestURL;
-      this.dispatchEventToListeners(Resources.ApplicationCacheModel.Events.FrameManifestAdded, frameId);
+      this.dispatchEventToListeners(Events.FrameManifestAdded, frameId);
     }
 
     if (statusChanged) {
-      this.dispatchEventToListeners(Resources.ApplicationCacheModel.Events.FrameManifestStatusUpdated, frameId);
+      this.dispatchEventToListeners(Events.FrameManifestStatusUpdated, frameId);
     }
   }
 
@@ -132,7 +137,7 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
     delete this._manifestURLsByFrame[frameId];
     delete this._statuses[frameId];
 
-    this.dispatchEventToListeners(Resources.ApplicationCacheModel.Events.FrameManifestRemoved, frameId);
+    this.dispatchEventToListeners(Events.FrameManifestRemoved, frameId);
   }
 
   /**
@@ -148,7 +153,7 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
    * @return {number}
    */
   frameManifestStatus(frameId) {
-    return this._statuses[frameId] || Resources.ApplicationCacheModel.UNCACHED;
+    return this._statuses[frameId] || UNCACHED;
   }
 
   /**
@@ -180,14 +185,14 @@ Resources.ApplicationCacheModel = class extends SDK.SDKModel {
    */
   _networkStateUpdated(isNowOnline) {
     this._onLine = isNowOnline;
-    this.dispatchEventToListeners(Resources.ApplicationCacheModel.Events.NetworkStateChanged, isNowOnline);
+    this.dispatchEventToListeners(Events.NetworkStateChanged, isNowOnline);
   }
-};
+}
 
-SDK.SDKModel.register(Resources.ApplicationCacheModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(ApplicationCacheModel, SDK.SDKModel.Capability.DOM, false);
 
 /** @enum {symbol} */
-Resources.ApplicationCacheModel.Events = {
+export const Events = {
   FrameManifestStatusUpdated: Symbol('FrameManifestStatusUpdated'),
   FrameManifestAdded: Symbol('FrameManifestAdded'),
   FrameManifestRemoved: Symbol('FrameManifestRemoved'),
@@ -199,7 +204,7 @@ Resources.ApplicationCacheModel.Events = {
  * @implements {Protocol.ApplicationCacheDispatcher}
  * @unrestricted
  */
-Resources.ApplicationCacheDispatcher = class {
+export class ApplicationCacheDispatcher {
   constructor(applicationCacheModel) {
     this._applicationCacheModel = applicationCacheModel;
   }
@@ -221,11 +226,11 @@ Resources.ApplicationCacheDispatcher = class {
   networkStateUpdated(isNowOnline) {
     this._applicationCacheModel._networkStateUpdated(isNowOnline);
   }
-};
+}
 
-Resources.ApplicationCacheModel.UNCACHED = 0;
-Resources.ApplicationCacheModel.IDLE = 1;
-Resources.ApplicationCacheModel.CHECKING = 2;
-Resources.ApplicationCacheModel.DOWNLOADING = 3;
-Resources.ApplicationCacheModel.UPDATEREADY = 4;
-Resources.ApplicationCacheModel.OBSOLETE = 5;
+export const UNCACHED = 0;
+export const IDLE = 1;
+export const CHECKING = 2;
+export const DOWNLOADING = 3;
+export const UPDATEREADY = 4;
+export const OBSOLETE = 5;

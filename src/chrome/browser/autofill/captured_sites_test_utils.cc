@@ -23,13 +23,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -111,15 +111,10 @@ std::vector<CapturedSiteParams> GetCapturedSites(
     JSONReader::ValueWithError value_with_error =
         JSONReader().ReadAndReturnValueWithError(
             json_text, JSONParserOptions::JSON_PARSE_RFC);
-    if (value_with_error.error_code !=
-        JSONReader::JsonParseError::JSON_NO_ERROR) {
+    if (!value_with_error.value) {
       LOG(WARNING) << "Could not load test config from json file: "
                    << "`testcases.json` because: "
                    << value_with_error.error_message;
-      return sites;
-    }
-    if (!value_with_error.value) {
-      LOG(WARNING) << "JSON Reader could not any object from `testcases.json`";
       return sites;
     }
     root_node = std::move(value_with_error.value.value());
@@ -330,8 +325,8 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
       base::StringPrintf(
           "MAP *:80 127.0.0.1:%d,"
           "MAP *:443 127.0.0.1:%d,"
-          // Uncomment to use the live autofill prediction server.
-          // "EXCLUDE clients1.google.com,"
+          // Set to always exclude, allows cache_replayer overwrite
+          "EXCLUDE clients1.google.com,"
           "EXCLUDE localhost",
           kHostHttpPort, kHostHttpsPort));
   command_line->AppendSwitchASCII(
@@ -344,8 +339,9 @@ void TestRecipeReplayer::Setup() {
   CleanupSiteData();
 
   // Bypass permission dialogs.
-  PermissionRequestManager::FromWebContents(GetWebContents())
-      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
+  permissions::PermissionRequestManager::FromWebContents(GetWebContents())
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::ACCEPT_ALL);
 }
 
 void TestRecipeReplayer::Cleanup() {
@@ -614,7 +610,7 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
           web_page_replay_support_file_dir.AppendASCII("wpr_key.pem").value())
           .c_str()));
 
-  for (const auto arg : args)
+  for (const auto& arg : args)
     full_command.AppendArg(arg);
 
   LOG(INFO) << full_command.GetArgumentsString();
@@ -647,12 +643,13 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   }
 
   // Convert the file text into a json object.
-  std::unique_ptr<base::DictionaryValue> recipe = base::DictionaryValue::From(
-      base::JSONReader().ReadToValueDeprecated(json_text));
-  if (!recipe) {
+  base::Optional<base::Value> parsed_json = base::JSONReader::Read(json_text);
+  if (!parsed_json) {
     ADD_FAILURE() << "Failed to deserialize json text!";
     return false;
   }
+  std::unique_ptr<base::DictionaryValue> recipe = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*parsed_json)));
 
   if (!InitializeBrowserToExecuteRecipe(recipe))
     return false;
@@ -1715,7 +1712,8 @@ bool TestRecipeReplayer::SimulateLeftMouseClickAt(
     return false;
 
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(point.x(), point.y());
@@ -1730,7 +1728,7 @@ bool TestRecipeReplayer::SimulateLeftMouseClickAt(
   content::RenderWidgetHost* widget = view->GetRenderWidgetHost();
 
   widget->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   widget->ForwardMouseEvent(mouse_event);
   return true;
 }
@@ -1764,9 +1762,9 @@ void TestRecipeReplayer::NavigateAwayAndDismissBeforeUnloadDialog() {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
-  app_modal::JavaScriptAppModalDialog* alert =
+  javascript_dialogs::AppModalDialogController* alert =
       ui_test_utils::WaitForAppModalDialog();
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 }
 
 bool TestRecipeReplayer::HasChromeStoredCredential(

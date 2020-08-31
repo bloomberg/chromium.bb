@@ -32,7 +32,10 @@ protected:
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
   void willRestore() override;
 
+  void didConcat44(const SkM44&) override;
   void didConcat(const SkMatrix&) override;
+  void didScale(SkScalar, SkScalar) override;
+  void didTranslate(SkScalar, SkScalar) override;
   void didSetMatrix(const SkMatrix&) override;
 
   void onClipRect(const SkRect&, SkClipOp, ClipEdgeStyle) override;
@@ -51,14 +54,9 @@ protected:
 
   void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
-  void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
-  void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst,
-                        const SkPaint*, SrcRectConstraint) override;
   void onDrawImage(const SkImage*, SkScalar left, SkScalar top, const SkPaint*) override;
   void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst,
                        const SkPaint*, SrcRectConstraint) override;
-  void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
-                        const SkPaint*) override;
 
   void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                       const SkPaint& paint) override;

@@ -11,8 +11,6 @@ import androidx.annotation.LayoutRes;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -20,7 +18,7 @@ import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
+import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 
 /**
  * The model and controller for a group of site suggestions.
@@ -111,11 +109,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     private static int getMaxTileRows() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)
-                && !ExploreSitesBridge.isIntegratedWithMostLikely(
-                        ExploreSitesBridge.getVariation())) {
-            return 1;
-        }
         return 2;
     }
 

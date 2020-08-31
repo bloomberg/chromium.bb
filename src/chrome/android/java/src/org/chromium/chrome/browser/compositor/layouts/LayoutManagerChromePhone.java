@@ -13,8 +13,8 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -26,7 +26,7 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  */
 public class LayoutManagerChromePhone extends LayoutManagerChrome {
     // Layouts
-    private final SimpleAnimationLayout mSimpleAnimationLayout;
+    private SimpleAnimationLayout mSimpleAnimationLayout;
 
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
@@ -36,15 +36,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
      */
     public LayoutManagerChromePhone(LayoutManagerHost host, StartSurface startSurface) {
         super(host, true, startSurface);
-        Context context = host.getContext();
-        LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
-        // Build Layouts
-        mSimpleAnimationLayout = new SimpleAnimationLayout(context, this, renderHost);
-
-        // Set up layout parameters
-        mStaticLayout.setLayoutHandlesTabLifecycles(false);
-        mToolbarSwipeLayout.setMovesToolbar(true);
     }
 
     @Override
@@ -52,8 +44,19 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
+        Context context = mHost.getContext();
+        LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
+
+        // Build Layouts
+        mSimpleAnimationLayout = new SimpleAnimationLayout(context, this, renderHost);
+
+        // Set up layout parameters
+        mStaticLayout.setLayoutHandlesTabLifecycles(false);
+
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
                 dynamicResourceLoader);
+
+        mToolbarSwipeLayout.setMovesToolbar(true);
 
         // Initialize Layouts
         mSimpleAnimationLayout.setTabModelSelector(selector, content);

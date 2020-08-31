@@ -11,8 +11,12 @@ import copy
 import collections
 import json
 import os
+import sys
 
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _ToolchainTuple = collections.namedtuple('_ToolchainTuple',

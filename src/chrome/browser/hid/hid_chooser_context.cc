@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/system_connector.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/device_service.h"
 
 namespace {
 
@@ -33,18 +33,18 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
 }  // namespace
 
 HidChooserContext::HidChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         ContentSettingsType::HID_GUARD,
-                         ContentSettingsType::HID_CHOOSER_DATA),
+    : ChooserContextBase(ContentSettingsType::HID_GUARD,
+                         ContentSettingsType::HID_CHOOSER_DATA,
+                         HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 HidChooserContext::~HidChooserContext() = default;
 
-// static
-std::string HidChooserContext::GetObjectName(const base::Value& object) {
+base::string16 HidChooserContext::GetObjectDisplayName(
+    const base::Value& object) {
   const std::string* name = object.FindStringKey(kHidDeviceNameKey);
   DCHECK(name);
-  return *name;
+  return base::UTF8ToUTF16(*name);
 }
 
 bool HidChooserContext::IsValidObject(const base::Value& object) {
@@ -57,7 +57,7 @@ bool HidChooserContext::IsValidObject(const base::Value& object) {
   return guid && !guid->empty();
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
                                      const url::Origin& embedding_origin) {
   // TODO(crbug.com/958918): Include devices with persistent permissions in the
@@ -86,7 +86,7 @@ HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
   return objects;
 }
 
-std::vector<std::unique_ptr<ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 HidChooserContext::GetAllGrantedObjects() {
   // TODO(crbug.com/958918): Include devices with persistent permissions in the
   // returned list.
@@ -181,8 +181,8 @@ void HidChooserContext::EnsureHidManagerConnection() {
     return;
 
   mojo::PendingRemote<device::mojom::HidManager> manager;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName, manager.InitWithNewPipeAndPassReceiver());
+  content::GetDeviceService().BindHidManager(
+      manager.InitWithNewPipeAndPassReceiver());
   SetUpHidManagerConnection(std::move(manager));
 }
 

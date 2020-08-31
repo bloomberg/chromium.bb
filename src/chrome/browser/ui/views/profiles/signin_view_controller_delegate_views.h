@@ -14,6 +14,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
+class WebContents;
 class WebContentsDelegate;
 }
 
@@ -31,12 +32,15 @@ class SigninViewControllerDelegateViews
       public content::WebContentsDelegate,
       public ChromeWebModalDialogManagerDelegate {
  public:
-
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
       Browser* browser);
 
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);
+
+  static std::unique_ptr<views::WebView> CreateReauthWebView(
+      Browser* browser,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
@@ -69,11 +73,11 @@ class SigninViewControllerDelegateViews
   // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
   // be called by the base class before displaying the constrained window.
   SigninViewControllerDelegateViews(
-      SigninViewController* signin_view_controller,
       std::unique_ptr<views::WebView> content_view,
       Browser* browser,
       ui::ModalType dialog_modal_type,
-      bool wait_for_size);
+      bool wait_for_size,
+      bool should_show_close_button);
   ~SigninViewControllerDelegateViews() override;
 
   // Creates a WebView for a dialog with the specified URL.
@@ -83,21 +87,18 @@ class SigninViewControllerDelegateViews
       int dialog_height,
       base::Optional<int> dialog_width);
 
-  // Notifies the SigninViewController that this instance is being deleted.
-  void ResetSigninViewControllerDelegate();
-
   // Displays the modal dialog.
   void DisplayModal();
 
   Browser* browser() { return browser_; }
 
-  SigninViewController* signin_view_controller_;  // Not owned.
   content::WebContents* const web_contents_;      // Not owned.
   Browser* const browser_;                        // Not owned.
   views::WebView* content_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
   ui::ModalType dialog_modal_type_;
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+  bool should_show_close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);
 };

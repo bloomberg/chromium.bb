@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace base {
 class ReadOnlySharedMemoryRegion;
@@ -28,14 +30,21 @@ namespace blink {
 class GamepadListener;
 class LocalFrame;
 
-class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
+class GamepadSharedMemoryReader
+    : public GarbageCollected<GamepadSharedMemoryReader>,
+      public device::mojom::blink::GamepadObserver {
  public:
   explicit GamepadSharedMemoryReader(LocalFrame& frame);
   ~GamepadSharedMemoryReader() override;
+  void Trace(Visitor*);
 
-  void SampleGamepads(device::Gamepads& gamepads);
+  void SampleGamepads(device::Gamepads* gamepads);
   void Start(blink::GamepadListener* listener);
   void Stop();
+
+  GamepadSharedMemoryReader(const GamepadSharedMemoryReader&) = delete;
+  GamepadSharedMemoryReader& operator=(const GamepadSharedMemoryReader&) =
+      delete;
 
  protected:
   void SendStartMessage();
@@ -56,11 +65,14 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
 
   bool ever_interacted_with_ = false;
 
-  mojo::Receiver<device::mojom::blink::GamepadObserver> receiver_{this};
-  mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;
+  HeapMojoReceiver<device::mojom::blink::GamepadObserver,
+                   GamepadSharedMemoryReader,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
+  HeapMojoRemote<device::mojom::blink::GamepadMonitor,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      gamepad_monitor_remote_;
   blink::GamepadListener* listener_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };
 
 }  // namespace blink

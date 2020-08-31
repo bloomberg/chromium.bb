@@ -6,15 +6,18 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/file_chip_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
 
@@ -50,14 +53,18 @@ internal::ValidAndInvalidResults ValidateFiles(
 ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  // TODO(crbug.com/959679): Add a metric for if this succeeds or fails.
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              profile_)) {
+  auto* notifier =
+      file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Apps.AppList.ZeroStateFileProvider.NotifierCreationSuccess",
+      notifier != nullptr);
+
+  if (notifier) {
     file_tasks_observer_.Add(notifier);
 
     RecurrenceRankerConfigProto config;
@@ -100,7 +107,13 @@ void ZeroStateFileProvider::SetSearchResults(
   for (const auto& filepath_score : results.first) {
     new_results.emplace_back(std::make_unique<ZeroStateFileResult>(
         filepath_score.first, filepath_score.second, profile_));
+    // Add suggestion chip file results
+    if (app_list_features::IsSuggestedFilesEnabled()) {
+      new_results.emplace_back(std::make_unique<FileChipResult>(
+          filepath_score.first, filepath_score.second, profile_));
+    }
   }
+
   UMA_HISTOGRAM_TIMES("Apps.AppList.ZeroStateFileProvider.Latency",
                       base::TimeTicks::Now() - query_start_time_);
   SwapResults(&new_results);

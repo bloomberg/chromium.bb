@@ -24,87 +24,49 @@
 
 namespace {
 
-fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
-    const base::FilePath& path) {
-  auto directory = base::fuchsia::OpenDirectory(path);
-  CHECK(directory) << "Failed to open " << path;
-  return directory;
+fuchsia::web::ContextPtr CreateWebContext(
+    fuchsia::web::CreateContextParams context_params) {
+  auto context_provider = base::fuchsia::ComponentContextForCurrentProcess()
+                              ->svc()
+                              ->Connect<fuchsia::web::ContextProvider>();
+  fuchsia::web::ContextPtr web_context;
+  context_provider->Create(std::move(context_params), web_context.NewRequest());
+
+  return web_context;
 }
 
 }  // namespace
 
-// static
-fuchsia::web::ContextPtr WebContentRunner::CreateWebContext(
-    fuchsia::web::CreateContextParams create_params) {
-  auto web_context_provider = base::fuchsia::ComponentContextForCurrentProcess()
-                                  ->svc()
-                                  ->Connect<fuchsia::web::ContextProvider>();
-
-  fuchsia::web::ContextPtr web_context;
-  web_context_provider->Create(std::move(create_params),
-                               web_context.NewRequest());
-  web_context.set_error_handler([](zx_status_t status) {
-    // If the browser instance died, then exit everything and do not attempt
-    // to recover. appmgr will relaunch the runner when it is needed again.
-    ZX_LOG(ERROR, status) << "Connection to Context lost.";
-    exit(1);
-  });
-  return web_context;
-}
-
-// static
-fuchsia::web::ContextPtr WebContentRunner::CreateDefaultWebContext(
-    fuchsia::web::ContextFeatureFlags features) {
-  fuchsia::web::CreateContextParams create_context_params =
-      BuildCreateContextParams(OpenDirectoryOrFail(base::FilePath(
-                                   base::fuchsia::kPersistedDataDirectoryPath)),
-                               features);
-
-  if (BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0) {
-    create_context_params.set_remote_debugging_port(
-        BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT));
-  }
-
-  return CreateWebContext(std::move(create_context_params));
-}
-
-// static
-fuchsia::web::CreateContextParams WebContentRunner::BuildCreateContextParams(
-    fidl::InterfaceHandle<fuchsia::io::Directory> data_directory,
-    fuchsia::web::ContextFeatureFlags features) {
-  fuchsia::web::CreateContextParams create_params;
-  create_params.set_service_directory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kServiceDirectoryPath)));
-
-  if (data_directory)
-    create_params.set_data_directory(std::move(data_directory));
-
-  create_params.set_features(features);
-
-  return create_params;
-}
+WebContentRunner::WebContentRunner(
+    GetContextParamsCallback get_context_params_callback)
+    : get_context_params_callback_(std::move(get_context_params_callback)) {}
 
 WebContentRunner::WebContentRunner(
-    sys::OutgoingDirectory* outgoing_directory,
-    CreateContextCallback create_context_callback)
-    : create_context_callback_(std::move(create_context_callback)) {
-  DCHECK(create_context_callback_);
-  service_binding_.emplace(outgoing_directory, this);
+    fuchsia::web::CreateContextParams context_params)
+    : context_(CreateWebContext(std::move(context_params))) {
+  context_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "Connection to one-shot Context lost.";
+  });
 }
-
-WebContentRunner::WebContentRunner(fuchsia::web::ContextPtr context)
-    : context_(std::move(context)) {}
 
 WebContentRunner::~WebContentRunner() = default;
 
-fuchsia::web::Context* WebContentRunner::GetContext() {
+fuchsia::web::FramePtr WebContentRunner::CreateFrame(
+    fuchsia::web::CreateFrameParams params) {
   if (!context_) {
-    DCHECK(create_context_callback_);
-    context_ = std::move(create_context_callback_).Run();
-    DCHECK(context_);
+    DCHECK(get_context_params_callback_);
+    context_ = CreateWebContext(get_context_params_callback_.Run());
+    context_.set_error_handler([this](zx_status_t status) {
+      ZX_LOG(ERROR, status) << "Connection to Context lost.";
+      if (on_context_lost_callback_) {
+        std::move(on_context_lost_callback_).Run();
+      }
+    });
   }
 
-  return context_.get();
+  fuchsia::web::FramePtr frame;
+  context_->CreateFrameWithParams(std::move(params), frame.NewRequest());
+  return frame;
 }
 
 void WebContentRunner::StartComponent(
@@ -122,27 +84,37 @@ void WebContentRunner::StartComponent(
       this,
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info)),
       std::move(controller_request));
-  if (BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0)
-    component->EnableRemoteDebugging();
+#if BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0
+  component->EnableRemoteDebugging();
+#endif
   component->StartComponent();
   component->LoadUrl(url, std::vector<fuchsia::net::http::Header>());
   RegisterComponent(std::move(component));
 }
 
-void WebContentRunner::SetWebComponentCreatedCallbackForTest(
-    base::RepeatingCallback<void(WebComponent*)> callback) {
-  DCHECK(components_.empty());
-  web_component_created_callback_for_test_ = std::move(callback);
+WebComponent* WebContentRunner::GetAnyComponent() {
+  if (components_.empty())
+    return nullptr;
+
+  return components_.begin()->get();
 }
 
 void WebContentRunner::DestroyComponent(WebComponent* component) {
   components_.erase(components_.find(component));
+  if (components_.empty() && on_empty_callback_)
+    std::move(on_empty_callback_).Run();
 }
 
 void WebContentRunner::RegisterComponent(
     std::unique_ptr<WebComponent> component) {
-  if (web_component_created_callback_for_test_)
-    web_component_created_callback_for_test_.Run(component.get());
-
   components_.insert(std::move(component));
+}
+
+void WebContentRunner::SetOnEmptyCallback(base::OnceClosure on_empty) {
+  on_empty_callback_ = std::move(on_empty);
+}
+
+void WebContentRunner::SetOnContextLostCallbackForTest(
+    base::OnceClosure callback) {
+  on_context_lost_callback_ = std::move(callback);
 }

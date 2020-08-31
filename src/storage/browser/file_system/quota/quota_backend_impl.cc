@@ -6,11 +6,13 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
@@ -25,7 +27,7 @@ QuotaBackendImpl::QuotaBackendImpl(
     base::SequencedTaskRunner* file_task_runner,
     ObfuscatedFileUtil* obfuscated_file_util,
     FileSystemUsageCache* file_system_usage_cache,
-    storage::QuotaManagerProxy* quota_manager_proxy)
+    QuotaManagerProxy* quota_manager_proxy)
     : file_task_runner_(file_task_runner),
       obfuscated_file_util_(obfuscated_file_util),
       file_system_usage_cache_(file_system_usage_cache),
@@ -138,7 +140,7 @@ void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(!info.origin.opaque());
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kFileSystem, info.origin,
+      QuotaClientType::kFileSystem, info.origin,
       FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 
@@ -152,7 +154,7 @@ base::File::Error QuotaBackendImpl::GetUsageCachePath(
   base::File::Error error = base::File::FILE_OK;
   *usage_file_path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
-          obfuscated_file_util_, origin.GetURL(), type, &error);
+          obfuscated_file_util_, origin, type, &error);
   return error;
 }
 

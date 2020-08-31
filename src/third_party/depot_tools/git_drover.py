@@ -17,6 +17,7 @@ import sys
 import tempfile
 
 import git_common
+import gclient_utils
 
 if sys.version_info.major == 2:
   import cPickle
@@ -69,12 +70,6 @@ if os.name == 'nt':
 else:
   mk_symlink = os.symlink
 
-
-def _raw_input(message):
-  # Use this so that it can be mocked in tests on Python 2 and 3.
-  if sys.version_info.major == 2:
-    return raw_input(message)
-  return input(message)
 
 class _Drover(object):
 
@@ -192,7 +187,7 @@ class _Drover(object):
     result = ''
     while result not in ('y', 'n'):
       try:
-        result = _raw_input('%s Continue (y/n)? ' % message)
+        result = gclient_utils.AskForData('%s Continue (y/n)? ' % message)
       except EOFError:
         result = 'n'
     return result == 'y'
@@ -293,9 +288,9 @@ class _Drover(object):
                           error_message='Upload failed',
                           interactive=True)
 
-    if not self._confirm('About to land on %s.' % self._branch):
+    if not self._confirm('About to start CQ on %s.' % self._branch):
       return False
-    self._run_git_command(['cl', 'land', '--bypass-hooks'], interactive=True)
+    self._run_git_command(['cl', 'set-commit'], interactive=True)
     return True
 
   def _run_git_command(self, args, error_message=None, interactive=False):
@@ -325,7 +320,10 @@ class _Drover(object):
     stderr = None if self._verbose else _DEV_NULL_FILE
 
     try:
-      return run(['git'] + args, shell=False, cwd=cwd, stderr=stderr)
+      rv = run(['git'] + args, shell=False, cwd=cwd, stderr=stderr)
+      if not interactive and sys.version_info.major == 3:
+        return rv.decode('utf-8', 'ignore')
+      return rv
     except (OSError, subprocess.CalledProcessError) as e:
       if error_message:
         raise Error(error_message)

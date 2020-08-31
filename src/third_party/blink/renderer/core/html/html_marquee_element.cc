@@ -25,11 +25,11 @@
 #include <cstdlib>
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_marquee_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
-#include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
-#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -270,7 +270,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
   if (!ShouldContinue())
     return;
 
-  if (player_ && player_->playState() == "paused") {
+  if (player_ && player_->PlayStateString() == "paused") {
     player_->play();
     return;
   }
@@ -354,10 +354,11 @@ HTMLMarqueeElement::Metrics HTMLMarqueeElement::GetMetrics() {
   }
 
   if (IsHorizontal()) {
-    mover_->style()->setProperty(&GetDocument(), "width", "-webkit-max-content",
-                                 "important", ASSERT_NO_EXCEPTION);
+    mover_->style()->setProperty(GetExecutionContext(), "width",
+                                 "-webkit-max-content", "important",
+                                 ASSERT_NO_EXCEPTION);
   } else {
-    mover_->style()->setProperty(&GetDocument(), "height",
+    mover_->style()->setProperty(GetExecutionContext(), "height",
                                  "-webkit-max-content", "important",
                                  ASSERT_NO_EXCEPTION);
   }

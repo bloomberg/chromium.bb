@@ -19,15 +19,19 @@
 #include "dawn_native/DawnNative.h"
 #include "gtest/gtest.h"
 
-#define ASSERT_DEVICE_ERROR(statement) \
-    StartExpectDeviceError(); \
-    statement; \
-    ASSERT_TRUE(EndExpectDeviceError());
+#define ASSERT_DEVICE_ERROR(statement)                          \
+    StartExpectDeviceError();                                   \
+    statement;                                                  \
+    if (!EndExpectDeviceError()) {                              \
+        FAIL() << "Expected device error in:\n " << #statement; \
+    }                                                           \
+    do {                                                        \
+    } while (0)
 
 class ValidationTest : public testing::Test {
   public:
     ValidationTest();
-    ~ValidationTest();
+    ~ValidationTest() override;
 
     wgpu::Device CreateDeviceFromAdapter(dawn_native::Adapter adapter,
                                          const std::vector<const char*>& requiredExtensions);

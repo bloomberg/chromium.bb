@@ -16,7 +16,7 @@
 #include "src/objects/map.h"
 #include "src/objects/string.h"
 #include "src/snapshot/deserializer-allocator.h"
-#include "src/snapshot/serializer-common.h"
+#include "src/snapshot/serializer-deserializer.h"
 #include "src/snapshot/snapshot-source-sink.h"
 
 namespace v8 {
@@ -29,7 +29,7 @@ class Object;
 // of objects found in code.
 #if defined(V8_TARGET_ARCH_MIPS) || defined(V8_TARGET_ARCH_MIPS64) || \
     defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_S390) ||    \
-    V8_EMBEDDED_CONSTANT_POOL
+    defined(V8_TARGET_ARCH_PPC64) || V8_EMBEDDED_CONSTANT_POOL
 #define V8_CODE_EMBEDS_OBJECT_POINTER 1
 #else
 #define V8_CODE_EMBEDS_OBJECT_POINTER 0
@@ -76,6 +76,10 @@ class V8_EXPORT_PRIVATE Deserializer : public SerializerDeserializer {
     attached_objects_.push_back(attached_object);
   }
 
+  void CheckNoArrayBufferBackingStores() {
+    CHECK_EQ(new_off_heap_array_buffers().size(), 0);
+  }
+
   Isolate* isolate() const { return isolate_; }
   SnapshotByteSource* source() { return &source_; }
   const std::vector<AllocationSite>& new_allocation_sites() const {
@@ -98,6 +102,15 @@ class V8_EXPORT_PRIVATE Deserializer : public SerializerDeserializer {
     return new_scripts_;
   }
 
+  const std::vector<Handle<JSArrayBuffer>>& new_off_heap_array_buffers() const {
+    return new_off_heap_array_buffers_;
+  }
+
+  std::shared_ptr<BackingStore> backing_store(size_t i) {
+    DCHECK_LT(i, backing_stores_.size());
+    return backing_stores_[i];
+  }
+
   DeserializerAllocator* allocator() { return &allocator_; }
   bool deserializing_user_code() const { return deserializing_user_code_; }
   bool can_rehash() const { return can_rehash_; }
@@ -118,6 +131,9 @@ class V8_EXPORT_PRIVATE Deserializer : public SerializerDeserializer {
 
   template <typename TSlot>
   inline TSlot WriteAddress(TSlot dest, Address value);
+
+  template <typename TSlot>
+  inline TSlot WriteExternalPointer(TSlot dest, Address value);
 
   // Fills in some heap data in an area from start to end (non-inclusive).  The
   // space id is used for the write barrier.  The object_address is the address
@@ -172,6 +188,7 @@ class V8_EXPORT_PRIVATE Deserializer : public SerializerDeserializer {
   std::vector<CallHandlerInfo> call_handler_infos_;
   std::vector<Handle<String>> new_internalized_strings_;
   std::vector<Handle<Script>> new_scripts_;
+  std::vector<Handle<JSArrayBuffer>> new_off_heap_array_buffers_;
   std::vector<std::shared_ptr<BackingStore>> backing_stores_;
 
   DeserializerAllocator allocator_;

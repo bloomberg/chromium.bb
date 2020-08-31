@@ -183,8 +183,7 @@ static void ism_free(AVFormatContext *s)
             av_write_trailer(os->ctx);
         if (os->ctx && os->ctx->pb)
             avio_context_free(&os->ctx->pb);
-        if (os->ctx)
-            avformat_free_context(os->ctx);
+        avformat_free_context(os->ctx);
         av_freep(&os->private_str);
         for (j = 0; j < os->nb_fragments; j++)
             av_freep(&os->fragments[j]);
@@ -333,12 +332,11 @@ static int ism_write_header(AVFormatContext *s)
             goto fail;
         }
 
-        ctx = avformat_alloc_context();
+        os->ctx = ctx = avformat_alloc_context();
         if (!ctx || ff_copy_whiteblacklists(ctx, s) < 0) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
-        os->ctx = ctx;
         ctx->oformat = oformat;
         ctx->interrupt_callback = s->interrupt_callback;
 
@@ -358,12 +356,13 @@ static int ism_write_header(AVFormatContext *s)
 
         av_dict_set_int(&opts, "ism_lookahead", c->lookahead_count, 0);
         av_dict_set(&opts, "movflags", "frag_custom", 0);
-        if ((ret = avformat_write_header(ctx, &opts)) < 0) {
+        ret = avformat_write_header(ctx, &opts);
+        av_dict_free(&opts);
+        if (ret < 0) {
              goto fail;
         }
         os->ctx_inited = 1;
         avio_flush(ctx->pb);
-        av_dict_free(&opts);
         s->streams[i]->time_base = st->time_base;
         if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             c->has_video = 1;

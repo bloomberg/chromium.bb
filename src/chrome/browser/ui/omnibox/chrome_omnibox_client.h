@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/common/search/instant_types.h"
@@ -99,6 +100,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::vector<BitmapFetcherService::RequestId> request_ids_;
   FaviconCache favicon_cache_;
+
+  base::WeakPtrFactory<ChromeOmniboxClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };

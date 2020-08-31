@@ -18,6 +18,8 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
+using BlacklistedStatus = OriginCredentialStore::BlacklistedStatus;
+
 UiCredential::UiCredential(base::string16 username,
                            base::string16 password,
                            url::Origin origin,
@@ -77,6 +79,21 @@ void OriginCredentialStore::SaveCredentials(
 
 base::span<const UiCredential> OriginCredentialStore::GetCredentials() const {
   return credentials_;
+}
+
+void OriginCredentialStore::SetBlacklistedStatus(bool is_blacklisted) {
+  if (is_blacklisted) {
+    blacklisted_status_ = BlacklistedStatus::kIsBlacklisted;
+    return;
+  }
+
+  if (blacklisted_status_ == BlacklistedStatus::kIsBlacklisted) {
+    blacklisted_status_ = BlacklistedStatus::kWasBlacklisted;
+  }
+}
+
+BlacklistedStatus OriginCredentialStore::GetBlacklistedStatus() const {
+  return blacklisted_status_;
 }
 
 void OriginCredentialStore::ClearCredentials() {

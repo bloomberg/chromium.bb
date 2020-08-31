@@ -66,7 +66,8 @@ namespace dawn_native { namespace vulkan {
             if (usage & (wgpu::BufferUsage::Index | wgpu::BufferUsage::Vertex)) {
                 flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             }
-            if (usage & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage)) {
+            if (usage & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage |
+                         kReadOnlyStorageBuffer)) {
                 flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
@@ -116,17 +117,29 @@ namespace dawn_native { namespace vulkan {
 
     // static
     ResultOrError<Buffer*> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
-        std::unique_ptr<Buffer> buffer = std::make_unique<Buffer>(device, descriptor);
+        Ref<Buffer> buffer = AcquireRef(new Buffer(device, descriptor));
         DAWN_TRY(buffer->Initialize());
-        return buffer.release();
+        return buffer.Detach();
     }
 
     MaybeError Buffer::Initialize() {
+        // Avoid passing ludicrously large sizes to drivers because it causes issues: drivers add
+        // some constants to the size passed and align it, but for values close to the maximum
+        // VkDeviceSize this can cause overflows and makes drivers crash or return bad sizes in the
+        // VkmemoryRequirements. See https://gitlab.khronos.org/vulkan/vulkan/issues/1904
+        // Any size with one of two top bits of VkDeviceSize set is a HUGE allocation and we can
+        // safely return an OOM error.
+        if (GetSize() & (uint64_t(3) << uint64_t(62))) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer size is HUGE and could cause overflows");
+        }
+
         VkBufferCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.size = GetSize();
+        // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
+        // of creating a new 4-byte buffer?
+        createInfo.size = std::max(GetSize(), uint64_t(4u));
         // Add CopyDst for non-mappable buffer initialization in CreateBufferMapped
         // and robust resource initialization.
         createInfo.usage = VulkanBufferUsage(GetUsage() | wgpu::BufferUsage::CopyDst);
@@ -136,7 +149,7 @@ namespace dawn_native { namespace vulkan {
 
         Device* device = ToBackend(GetDevice());
         DAWN_TRY(CheckVkSuccess(
-            device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &mHandle),
+            device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
             "vkCreateBuffer"));
 
         VkMemoryRequirements requirements;

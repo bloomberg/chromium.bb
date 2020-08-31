@@ -23,13 +23,14 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -121,9 +122,6 @@ class BottomSheet extends FrameLayout
     /** A handle to the content being shown by the sheet. */
     @Nullable
     protected BottomSheetContent mSheetContent;
-
-    /** A handle to the find-in-page toolbar. */
-    private View mFindInPageView;
 
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
     private TouchRestrictingFrameLayout mBottomSheetContentContainer;
@@ -227,7 +225,7 @@ class BottomSheet extends FrameLayout
         // anything with them.
         if (!mIsTouchEnabled) return true;
 
-        if (!canMoveSheet()) return false;
+        if (isHiding()) return false;
 
         return mGestureDetector.onInterceptTouchEvent(e);
     }
@@ -316,7 +314,10 @@ class BottomSheet extends FrameLayout
                     // This shrinks the content size while retaining the default background color
                     // where the keyboard is appearing. If the sheet is not showing, resize the
                     // sheet to its default state.
-                    mBottomSheetContentContainer.setPadding(0, 0, 0, keyboardHeight);
+                    mBottomSheetContentContainer.setPadding(
+                            mBottomSheetContentContainer.getPaddingLeft(),
+                            mBottomSheetContentContainer.getPaddingTop(),
+                            mBottomSheetContentContainer.getPaddingRight(), keyboardHeight);
                 }
 
                 if (previousHeight != mContainerHeight
@@ -1133,19 +1134,6 @@ class BottomSheet extends FrameLayout
      */
     public int getToolbarShadowHeight() {
         return mToolbarShadowHeight;
-    }
-
-    /**
-     * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
-     * mode, when "find in page" is visible, when the toolbar is in the animation to hide, or when
-     * the toolbar is hidden.
-     */
-    protected boolean canMoveSheet() {
-        if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
-        boolean isFindInPageVisible =
-                mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
-
-        return !isFindInPageVisible && mTargetState != SheetState.HIDDEN;
     }
 
     /**

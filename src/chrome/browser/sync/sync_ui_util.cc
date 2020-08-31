@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -20,6 +21,11 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/url_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace sync_ui_util {
 
@@ -38,7 +44,7 @@ StatusLabels GetStatusForUnrecoverableError(bool is_user_signout_allowed) {
       IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT;
 #endif
 
-  return {SYNC_ERROR, status_label_string_id, IDS_SYNC_RELOGIN_LINK_LABEL,
+  return {SYNC_ERROR, status_label_string_id, IDS_SYNC_RELOGIN_BUTTON,
           REAUTHENTICATE};
 }
 
@@ -61,7 +67,7 @@ StatusLabels GetStatusForAuthError(const GoogleServiceAuthError& auth_error) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
     default:
-      return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_LINK_LABEL,
+      return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_BUTTON,
               REAUTHENTICATE};
   }
 
@@ -85,8 +91,8 @@ StatusLabels GetStatusLabelsImpl(const syncer::SyncService* service,
 
   // First check if Chrome needs to be updated.
   if (service->RequiresClientUpgrade()) {
-    return {SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
-            IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT};
+    return {SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT, IDS_SYNC_UPGRADE_CLIENT_BUTTON,
+            UPGRADE_CLIENT};
   }
 
   // Then check for an unrecoverable error.
@@ -121,7 +127,7 @@ StatusLabels GetStatusLabelsImpl(const syncer::SyncService* service,
       // TODO(mastiz): This should return PASSWORDS_ONLY_SYNC_ERROR if only
       // passwords are encrypted as per IsEncryptEverythingEnabled().
       return {SYNC_ERROR, IDS_SYNC_STATUS_NEEDS_PASSWORD,
-              IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL, ENTER_PASSPHRASE};
+              IDS_SYNC_STATUS_NEEDS_PASSWORD_BUTTON, ENTER_PASSPHRASE};
     }
 
     if (service->IsSyncFeatureActive() &&
@@ -130,7 +136,7 @@ StatusLabels GetStatusLabelsImpl(const syncer::SyncService* service,
       return {service->GetUserSettings()->IsEncryptEverythingEnabled()
                   ? SYNC_ERROR
                   : PASSWORDS_ONLY_SYNC_ERROR,
-              IDS_SETTINGS_EMPTY_STRING, IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL,
+              IDS_SETTINGS_EMPTY_STRING, IDS_SYNC_STATUS_NEEDS_KEYS_BUTTON,
               RETRIEVE_TRUSTED_VAULT_KEYS};
     }
 
@@ -173,8 +179,23 @@ void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
   FocusWebContents(browser);
 
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  // Allow the window to close itself.
+  params.created_with_opener = true;
+  Navigate(&params);
+}
+
+// Returns true if the user has consented to browser sync-the-feature or
+// Chrome OS sync.
+bool HasUserOptedInToSync(const syncer::SyncUserSettings* settings) {
+  if (settings->IsFirstSetupComplete())
+    return true;
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled() &&
+      settings->IsOsSyncFeatureEnabled()) {
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
 }
 
 }  // namespace
@@ -206,7 +227,6 @@ MessageType GetStatus(Profile* profile) {
   return GetStatusLabels(profile).message_type;
 }
 
-#if !defined(OS_CHROMEOS)
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
     int* content_string_id,
@@ -277,13 +297,14 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   if (ShouldShowSyncKeysMissingError(service)) {
     *content_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE;
     *button_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON;
-    return TRUSTED_VAULT_KEY_MISSING_ERROR;
+    return service->GetUserSettings()->IsEncryptEverythingEnabled()
+               ? TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR
+               : TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;
   }
 
   // There is no error.
   return NO_SYNC_ERROR;
 }
-#endif  // !defined(OS_CHROMEOS)
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
   // This method mostly handles two situations:
@@ -304,20 +325,29 @@ bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
 }
 
 bool ShouldShowPassphraseError(const syncer::SyncService* service) {
-  return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()
-             ->IsPassphraseRequiredForPreferredDataTypes();
+  const syncer::SyncUserSettings* settings = service->GetUserSettings();
+  return HasUserOptedInToSync(settings) &&
+         settings->IsPassphraseRequiredForPreferredDataTypes();
 }
 
 bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service) {
-  return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()
-             ->IsTrustedVaultKeyRequiredForPreferredDataTypes();
+  const syncer::SyncUserSettings* settings = service->GetUserSettings();
+  return HasUserOptedInToSync(settings) &&
+         settings->IsTrustedVaultKeyRequiredForPreferredDataTypes();
 }
 
-void OpenTabForSyncKeyRetrieval(Browser* browser) {
-  OpenTabForSyncKeyRetrievalWithURL(
-      browser, GaiaUrls::GetInstance()->signin_chrome_sync_keys_url());
+void OpenTabForSyncKeyRetrieval(
+    Browser* browser,
+    syncer::KeyRetrievalTriggerForUMA key_retrieval_trigger) {
+  RecordKeyRetrievalTrigger(key_retrieval_trigger);
+  const GURL continue_url =
+      GURL(UIThreadSearchTermsData().GoogleBaseURLValue());
+  GURL retrieval_url = GaiaUrls::GetInstance()->signin_chrome_sync_keys_url();
+  if (continue_url.is_valid()) {
+    retrieval_url = net::AppendQueryParameter(retrieval_url, "continue",
+                                              continue_url.spec());
+  }
+  OpenTabForSyncKeyRetrievalWithURL(browser, retrieval_url);
 }
 
 void OpenTabForSyncKeyRetrievalWithURLForTesting(Browser* browser,

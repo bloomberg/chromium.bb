@@ -37,11 +37,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
   void WindowClosing() override;
 
   // Called by MigratableCardView when the user clicks the trash can button.
@@ -53,6 +49,8 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   friend class LocalCardMigrationBrowserTest;
 
   void ConstructView();
+  void OnDialogAccepted();
+  void OnDialogCancelled();
 
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;

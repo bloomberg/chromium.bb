@@ -7,14 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "android_webview/browser/gfx/aw_attaching_to_window_recorder.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/root_frame_sink.h"
 #include "android_webview/browser/gfx/root_frame_sink_proxy.h"
 #include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
@@ -113,16 +114,24 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false) {
+      offscreen_pre_raster_(false),
+      recorder_(base::MakeRefCounted<AwAttachingToWindowRecorder>()) {
+  begin_frame_source_ = std::make_unique<BeginFrameSourceWebView>();
   if (::features::IsUsingVizForWebView()) {
-    root_frame_sink_proxy_ =
-        std::make_unique<RootFrameSinkProxy>(ui_task_runner_, this);
+    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
+        ui_task_runner_, this, begin_frame_source_.get());
   }
+  UpdateBeginFrameSource();
+  recorder_->Start();
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
+  recorder_->OnDestroyed();
   DCHECK(compositor_map_.empty());
   DCHECK(!current_compositor_frame_consumer_);
+
+  // We need to destroy |root_frame_sink_proxy_| before |begin_frame_source_|;
+  root_frame_sink_proxy_.reset();
 }
 
 base::WeakPtr<CompositorFrameProducer> BrowserViewRenderer::GetWeakPtr() {
@@ -454,6 +463,7 @@ void BrowserViewRenderer::SetIsPaused(bool paused) {
                        "paused",
                        paused);
   is_paused_ = paused;
+  UpdateBeginFrameSource();
 }
 
 void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
@@ -472,6 +482,7 @@ void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
                        "window_visible",
                        window_visible);
   window_visible_ = window_visible;
+  UpdateBeginFrameSource();
 }
 
 void BrowserViewRenderer::OnSizeChanged(int width, int height) {
@@ -500,12 +511,15 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
   size_.SetSize(width, height);
   if (offscreen_pre_raster_)
     ComputeTileRectAndUpdateMemoryPolicy();
+  UpdateBeginFrameSource();
+  recorder_->OnAttachedToWindow();
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
   attached_to_window_ = false;
   ReleaseHardware();
+  UpdateBeginFrameSource();
 }
 
 void BrowserViewRenderer::ZoomBy(float delta) {
@@ -547,6 +561,15 @@ bool BrowserViewRenderer::IsClientVisible() const {
              : !was_attached_ || (attached_to_window_ && window_visible_);
 }
 
+void BrowserViewRenderer::UpdateBeginFrameSource() {
+  if (IsClientVisible()) {
+    begin_frame_source_->SetParentSource(
+        RootBeginFrameSourceWebView::GetInstance());
+  } else {
+    begin_frame_source_->SetParentSource(nullptr);
+  }
+}
+
 gfx::Rect BrowserViewRenderer::GetScreenRect() const {
   return gfx::Rect(client_->GetLocationOnScreen(), size_);
 }
@@ -564,6 +587,8 @@ void BrowserViewRenderer::DidInitializeCompositor(
   compositor_map_[frame_sink_id] = compositor;
   if (root_frame_sink_proxy_)
     root_frame_sink_proxy_->AddChildFrameSinkId(frame_sink_id);
+
+  compositor->SetBeginFrameSource(begin_frame_source_.get());
 
   // At this point, the RVHChanged event for the new RVH that contains the
   // |compositor| might have been fired already, in which case just set the
@@ -838,14 +863,26 @@ void BrowserViewRenderer::CopyOutput(
 }
 
 void BrowserViewRenderer::Invalidate() {
+  if (compositor_)
+    compositor_->DidInvalidate();
   PostInvalidate(compositor_);
 }
 
-void BrowserViewRenderer::ProgressFling(base::TimeTicks frame_time) {
-  if (!compositor_)
-    return;
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::ProgressFling");
-  compositor_->ProgressFling(frame_time);
+void BrowserViewRenderer::ReturnResourcesFromViz(
+    viz::FrameSinkId frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
+    std::vector<viz::ReturnedResource> resources) {
+  ReturnUsedResources(resources, frame_sink_id, layer_tree_frame_sink_id);
+}
+
+void BrowserViewRenderer::OnInputEvent() {
+  if (root_frame_sink_proxy_)
+    root_frame_sink_proxy_->OnInputEvent();
+}
+
+void BrowserViewRenderer::AddBeginFrameCompletionCallback(
+    base::OnceClosure callback) {
+  begin_frame_source_->AddBeginFrameCompletionCallback(std::move(callback));
 }
 
 void BrowserViewRenderer::PostInvalidate(

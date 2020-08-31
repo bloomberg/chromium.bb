@@ -66,7 +66,7 @@ class ProofVerifierChromium::Job {
       const uint16_t port,
       const std::string& server_config,
       quic::QuicTransportVersion quic_version,
-      quic::QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -79,6 +79,7 @@ class ProofVerifierChromium::Job {
   // asynchronously when the verification completes.
   quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
+      const uint16_t port,
       const std::vector<std::string>& certs,
       const std::string& ocsp_response,
       const std::string& cert_sct,
@@ -116,9 +117,11 @@ class ProofVerifierChromium::Job {
 
   bool VerifySignature(const std::string& signed_data,
                        quic::QuicTransportVersion quic_version,
-                       quic::QuicStringPiece chlo_hash,
+                       quiche::QuicheStringPiece chlo_hash,
                        const std::string& signature,
                        const std::string& cert);
+
+  bool ShouldAllowUnknownRootForHost(const std::string& hostname);
 
   // Proof verifier to notify when this jobs completes.
   ProofVerifierChromium* proof_verifier_;
@@ -153,9 +156,6 @@ class ProofVerifierChromium::Job {
   // passed to CertVerifier::Verify.
   int cert_verify_flags_;
 
-  // If set to true, enforces policy checking in DoVerifyCertComplete().
-  bool enforce_policy_checking_;
-
   State next_state_;
 
   base::TimeTicks start_time_;
@@ -179,7 +179,6 @@ ProofVerifierChromium::Job::Job(
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       cert_verify_flags_(cert_verify_flags),
-      enforce_policy_checking_(true),
       next_state_(STATE_NONE),
       start_time_(base::TimeTicks::Now()),
       net_log_(net_log) {
@@ -206,7 +205,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const uint16_t port,
     const string& server_config,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const std::vector<string>& certs,
     const std::string& cert_sct,
     const string& signature,
@@ -240,8 +239,8 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
 
   // We call VerifySignature first to avoid copying of server_config and
   // signature.
-  if (!signature.empty() && !VerifySignature(server_config, quic_version,
-                                             chlo_hash, signature, certs[0])) {
+  if (!VerifySignature(server_config, quic_version, chlo_hash, signature,
+                       certs[0])) {
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
@@ -249,13 +248,13 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     return quic::QUIC_FAILURE;
   }
 
-  DCHECK(enforce_policy_checking_);
   return VerifyCert(hostname, port, /*ocsp_response=*/std::string(), cert_sct,
                     error_details, verify_details, std::move(callback));
 }
 
 quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
     const string& hostname,
+    const uint16_t port,
     const std::vector<string>& certs,
     const std::string& ocsp_response,
     const std::string& cert_sct,
@@ -280,10 +279,15 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
   if (!GetX509Certificate(certs, error_details, verify_details))
     return quic::QUIC_FAILURE;
 
-  enforce_policy_checking_ = false;
-  // |port| is not needed because |enforce_policy_checking_| is false.
-  return VerifyCert(hostname, /*port=*/0, ocsp_response, cert_sct,
-                    error_details, verify_details, std::move(callback));
+  // Note that this is a completely synchronous operation: The CT Log Verifier
+  // gets all the data it needs for SCT verification and does not do any
+  // external communication.
+  cert_transparency_verifier_->Verify(
+      hostname, cert_.get(), std::string(), cert_sct,
+      &verify_details_->ct_verify_result.scts, net_log_);
+
+  return VerifyCert(hostname, port, ocsp_response, cert_sct, error_details,
+                    verify_details, std::move(callback));
 }
 
 bool ProofVerifierChromium::Job::GetX509Certificate(
@@ -299,9 +303,9 @@ bool ProofVerifierChromium::Job::GetX509Certificate(
   }
 
   // Convert certs to X509Certificate.
-  std::vector<quic::QuicStringPiece> cert_pieces(certs.size());
+  std::vector<quiche::QuicheStringPiece> cert_pieces(certs.size());
   for (unsigned i = 0; i < certs.size(); i++) {
-    cert_pieces[i] = quic::QuicStringPiece(certs[i]);
+    cert_pieces[i] = quiche::QuicheStringPiece(certs[i]);
   }
   cert_ = X509Certificate::CreateFromDERCertChain(cert_pieces);
   if (!cert_.get()) {
@@ -390,6 +394,15 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
       &cert_verifier_request_, net_log_);
 }
 
+bool ProofVerifierChromium::Job::ShouldAllowUnknownRootForHost(
+    const std::string& hostname) {
+  if (base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_, "")) {
+    return true;
+  }
+  return base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_,
+                        hostname);
+}
+
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   base::UmaHistogramSparse("Net.QuicSession.CertVerificationResult", -result);
   cert_verifier_request_.reset();
@@ -400,7 +413,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
-  if (enforce_policy_checking_ && result == OK) {
+  if (result == OK) {
     ct::SCTList verified_scts = ct::SCTsMatchingStatus(
         verify_details_->ct_verify_result.scts, ct::SCT_STATUS_OK);
 
@@ -504,8 +517,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   if (result == OK &&
       !verify_details_->cert_verify_result.is_issued_by_known_root &&
-      !base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_,
-                      hostname_)) {
+      !ShouldAllowUnknownRootForHost(hostname_)) {
     result = ERR_QUIC_CERT_ROOT_NOT_KNOWN;
   }
 
@@ -529,7 +541,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 bool ProofVerifierChromium::Job::VerifySignature(
     const string& signed_data,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const string& signature,
     const string& cert) {
   size_t size_bits;
@@ -546,6 +558,11 @@ bool ProofVerifierChromium::Job::VerifySignature(
     default:
       LOG(ERROR) << "Unsupported public key type " << type;
       return false;
+  }
+
+  if (signature.empty()) {
+    DLOG(WARNING) << "Signature is empty, thus cannot possibly be valid";
+    return false;
   }
 
   crypto::SignatureVerifier verifier;
@@ -596,7 +613,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const uint16_t port,
     const std::string& server_config,
     quic::QuicTransportVersion quic_version,
-    quic::QuicStringPiece chlo_hash,
+    quiche::QuicheStringPiece chlo_hash,
     const std::vector<std::string>& certs,
     const std::string& cert_sct,
     const std::string& signature,
@@ -627,6 +644,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
 
 quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     const std::string& hostname,
+    const uint16_t port,
     const std::vector<std::string>& certs,
     const std::string& ocsp_response,
     const std::string& cert_sct,
@@ -645,7 +663,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
       cert_transparency_verifier_, chromium_context->cert_verify_flags,
       chromium_context->net_log);
   quic::QuicAsyncStatus status =
-      job->VerifyCertChain(hostname, certs, ocsp_response, cert_sct,
+      job->VerifyCertChain(hostname, port, certs, ocsp_response, cert_sct,
                            error_details, verify_details, std::move(callback));
   if (status == quic::QUIC_PENDING) {
     Job* job_ptr = job.get();

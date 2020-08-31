@@ -27,13 +27,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Platform from '../platform/platform.js';
+
+import {FormatMapping, FormatResult, formatterWorkerPool} from './FormatterWorkerPool.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @interface
  */
 export class FormatterInterface {}
 
 /**
- * @param {!Common.ResourceType} contentType
+ * @param {!Common.ResourceType.ResourceType} contentType
  * @param {string} mimeType
  * @param {string} content
  * @param {function(string, !FormatterSourceMapping)} callback
@@ -87,17 +93,20 @@ export class ScriptFormatter {
     this._callback = callback;
     this._originalContent = content;
 
-    Formatter.formatterWorkerPool()
-        .format(mimeType, content, Common.moduleSetting('textEditorIndent').get())
+    formatterWorkerPool()
+        .format(mimeType, content, Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get())
         .then(this._didFormatContent.bind(this));
   }
 
   /**
-   * @param {!Formatter.FormatterWorkerPool.FormatResult} formatResult
+   * @param {!FormatResult} formatResult
    */
   _didFormatContent(formatResult) {
-    const sourceMapping = new FormatterSourceMappingImpl(
-        this._originalContent.computeLineEndings(), formatResult.content.computeLineEndings(), formatResult.mapping);
+    const originalContentLineEndings = Platform.StringUtilities.findLineEndingIndexes(this._originalContent);
+    const formattedContentLineEndings = Platform.StringUtilities.findLineEndingIndexes(formatResult.content);
+
+    const sourceMapping =
+        new FormatterSourceMappingImpl(originalContentLineEndings, formattedContentLineEndings, formatResult.mapping);
     this._callback(formatResult.content, sourceMapping);
   }
 }
@@ -171,7 +180,7 @@ class FormatterSourceMappingImpl {
   /**
    * @param {!Array.<number>} originalLineEndings
    * @param {!Array.<number>} formattedLineEndings
-   * @param {!Formatter.FormatterWorkerPool.FormatMapping} mapping
+   * @param {!FormatMapping} mapping
    */
   constructor(originalLineEndings, formattedLineEndings, mapping) {
     this._originalLineEndings = originalLineEndings;
@@ -221,18 +230,3 @@ class FormatterSourceMappingImpl {
     return convertedPosition;
   }
 }
-
-/* Legacy exported object */
-self.Formatter = self.Formatter || {};
-
-/* Legacy exported object */
-Formatter = Formatter || {};
-
-/** @interface */
-Formatter.Formatter = FormatterInterface;
-
-/** @constructor */
-Formatter.ScriptFormatter = ScriptFormatter;
-
-/** @interface */
-Formatter.FormatterSourceMapping = FormatterSourceMapping;

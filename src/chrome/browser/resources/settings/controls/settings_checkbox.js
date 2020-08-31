@@ -6,8 +6,18 @@
  * @fileoverview
  * `settings-checkbox` is a checkbox that controls a supplied preference.
  */
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SettingsBooleanControlBehavior} from './settings_boolean_control_behavior.m.js';
+
 Polymer({
   is: 'settings-checkbox',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBooleanControlBehavior],
 
@@ -28,7 +38,7 @@ Polymer({
   ],
 
   /** @private */
-  onSubLabelChanged_: function() {
+  onSubLabelChanged_() {
     this.$.checkbox.ariaDescription = this.$.subLabel.textContent;
   },
 
@@ -36,7 +46,7 @@ Polymer({
    * Don't let clicks on a link inside the secondary label reach the checkbox.
    * @private
    */
-  onSubLabelHtmlChanged_: function() {
+  onSubLabelHtmlChanged_() {
     const links = this.root.querySelectorAll('.secondary.label a');
     links.forEach((link) => {
       link.addEventListener('click', this.stopPropagation);
@@ -47,7 +57,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  stopPropagation: function(event) {
+  stopPropagation(event) {
     event.stopPropagation();
   },
 
@@ -57,7 +67,7 @@ Polymer({
    * @return {boolean} Whether there is a subLabel
    * @private
    */
-  hasSubLabel_: function(subLabel, subLabelHtml) {
+  hasSubLabel_(subLabel, subLabelHtml) {
     return !!subLabel || !!subLabelHtml;
   },
 

@@ -5,12 +5,15 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 #include "extensions/common/constants.h"
@@ -231,8 +234,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("window_api"));
   EXPECT_TRUE(extension);
 
-  apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(apps::AppLaunchParams(
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceTest));

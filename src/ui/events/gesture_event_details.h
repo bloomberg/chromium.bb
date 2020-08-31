@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -21,12 +22,11 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   GestureEventDetails();
   explicit GestureEventDetails(EventType type);
 
-  GestureEventDetails(
-      EventType type,
-      float delta_x,
-      float delta_y,
-      ui::input_types::ScrollGranularity units =
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  GestureEventDetails(EventType type,
+                      float delta_x,
+                      float delta_y,
+                      ui::ScrollGranularity units =
+                          ui::ScrollGranularity::kScrollByPrecisePixel);
 
   // The caller is responsible for ensuring that the gesture data from |other|
   // is compatible and sufficient for that expected by gestures of |type|.
@@ -81,7 +81,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     return data_.scroll_begin.y_hint;
   }
 
-  ui::input_types::ScrollGranularity scroll_begin_units() const {
+  ui::ScrollGranularity scroll_begin_units() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_BEGIN, type_);
     return data_.scroll_begin.delta_hint_units;
   }
@@ -96,7 +96,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     return data_.scroll_update.y;
   }
 
-  ui::input_types::ScrollGranularity scroll_update_units() const {
+  ui::ScrollGranularity scroll_update_units() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
     return data_.scroll_update.delta_units;
   }
@@ -185,13 +185,13 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
       // the x/y values from the first scroll_update.
       float x_hint;
       float y_hint;
-      ui::input_types::ScrollGranularity delta_hint_units;
+      ui::ScrollGranularity delta_hint_units;
     } scroll_begin;
 
     struct {  // SCROLL delta.
       float x;
       float y;
-      ui::input_types::ScrollGranularity delta_units;
+      ui::ScrollGranularity delta_units;
       // Whether any previous scroll update in the current scroll sequence was
       // suppressed because the underlying touch was consumed.
     } scroll_update;
@@ -227,8 +227,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   bool is_source_touch_event_set_non_blocking_ = false;
 
   // The pointer type for the first touch point in the gesture.
-  EventPointerType primary_pointer_type_ =
-      EventPointerType::POINTER_TYPE_UNKNOWN;
+  EventPointerType primary_pointer_type_ = EventPointerType::kUnknown;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

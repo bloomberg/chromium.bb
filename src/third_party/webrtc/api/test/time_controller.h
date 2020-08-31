@@ -12,16 +12,17 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 #include "api/task_queue/task_queue_factory.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
 #include "modules/utility/include/process_thread.h"
 #include "rtc_base/synchronization/yield_policy.h"
+#include "rtc_base/thread.h"
 #include "system_wrappers/include/clock.h"
 
 namespace webrtc {
-
 // Interface for controlling time progress. This allows us to execute test code
 // in either real time or simulated time by using different implementation of
 // this interface.
@@ -34,12 +35,32 @@ class TimeController {
   // The returned factory will created task queues that runs in implementation
   // defined time domain.
   virtual TaskQueueFactory* GetTaskQueueFactory() = 0;
+  // Simple helper to create an owned factory that can be used as a parameter
+  // for PeerConnectionFactory. Note that this might depend on the underlying
+  // time controller and therfore must be destroyed before the time controller
+  // is destroyed.
+  std::unique_ptr<TaskQueueFactory> CreateTaskQueueFactory();
+
   // Creates a process thread.
   virtual std::unique_ptr<ProcessThread> CreateProcessThread(
       const char* thread_name) = 0;
+  // Creates an rtc::Thread instance. If |socket_server| is nullptr, a default
+  // noop socket server is created.
+  virtual std::unique_ptr<rtc::Thread> CreateThread(
+      const std::string& name,
+      std::unique_ptr<rtc::SocketServer> socket_server = nullptr) = 0;
+
+  // Creates an rtc::Thread instance that ensure that it's set as the current
+  // thread.
+  virtual rtc::Thread* GetMainThread() = 0;
   // Allow task queues and process threads created by this instance to execute
   // for the given |duration|.
   virtual void AdvanceTime(TimeDelta duration) = 0;
+
+  // Waits until condition() == true, polling condition() in small time
+  // intervals.
+  bool Wait(const std::function<bool()>& condition,
+            TimeDelta max_duration = TimeDelta::Seconds(5));
 };
 
 // Interface for telling time, scheduling an event to fire at a particular time,

@@ -26,6 +26,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -39,6 +41,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/google/core/common/google_util.h"
@@ -50,7 +53,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -95,8 +97,11 @@ SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
   SkColor color = tp.GetColor(id);
   // If web contents are being inverted because the system is in high-contrast
   // mode, any system theme colors we use must be inverted too to cancel out.
-  return color_utils::IsInvertedColorScheme() ?
-      color_utils::InvertColor(color) : color;
+  return ui::NativeTheme::GetInstanceForNativeUi()
+                     ->GetHighContrastColorScheme() ==
+                 ui::NativeTheme::HighContrastColorScheme::kDark
+             ? color_utils::InvertColor(color)
+             : color;
 }
 
 // Get the CSS string for the background position on the new tab page for the
@@ -303,28 +308,31 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
   replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
   replacements["hideCookieControls"] =
-      CookieControlsHandler::ShouldHideCookieControlsUI(profile_) ? "hidden"
-                                                                  : "";
+      CookieControlsServiceFactory::GetForProfile(profile_)
+              ->ShouldHideCookieControlsUI()
+          ? "hidden"
+          : "";
   replacements["cookieControlsTitle"] =
-      l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
-  replacements["cookieControlsDescription"] = l10n_util::GetStringUTF8(
-      IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL);
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
+  replacements["cookieControlsDescription"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
   // Ensure passing off-the-record profile; |profile_| might not be incognito.
-  DCHECK(profile_->HasOffTheRecordProfile());
+  DCHECK(profile_->HasPrimaryOTRProfile());
   replacements["cookieControlsToggleChecked"] =
-      CookieControlsHandler::GetToggleCheckedValue(
-          profile_->GetOffTheRecordProfile())
+      CookieControlsServiceFactory::GetForProfile(
+          profile_->GetPrimaryOTRProfile())
+              ->GetToggleCheckedValue()
           ? "checked"
           : "";
   replacements["hideTooltipIcon"] =
-      CookieControlsHandler::ShouldEnforceCookieControls(profile_) ? ""
-                                                                   : "hidden";
+      CookieControlsServiceFactory::GetForProfile(profile_)
+              ->ShouldEnforceCookieControls()
+          ? ""
+          : "hidden";
   replacements["cookieControlsToolTipIcon"] =
       CookieControlsHandler::GetEnforcementIcon(profile_);
-  replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(
-      IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT,
-      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE),
-      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_COOKIES));
+  replacements["cookieControlsTooltipText"] = l10n_util::GetStringUTF8(
+      IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT);
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);
@@ -338,6 +346,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       incognito_tab_html(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               IDR_INCOGNITO_TAB_HTML));
+  CHECK(*incognito_tab_html);
 
   std::string full_html =
       ReplaceTemplateExpressions(*incognito_tab_html, replacements);
@@ -404,6 +413,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       guest_tab_html(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               guest_tab_idr));
+  CHECK(*guest_tab_html);
   ui::TemplateReplacements replacements;
   ui::TemplateReplacementsFromDictionaryValue(localized_strings, &replacements);
   std::string full_html =
@@ -520,6 +530,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       new_tab_html(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               IDR_NEW_TAB_4_HTML));
+  CHECK(*new_tab_html);
   std::string full_html = webui::GetI18nTemplateHtml(
       base::StringPiece(reinterpret_cast<const char*>((*new_tab_html)->front()),
                         (*new_tab_html)->size()),
@@ -529,7 +540,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
   const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
-      profile_->GetOffTheRecordProfile());
+      profile_->GetPrimaryOTRProfile());
 
   // Generate the replacements.
   ui::TemplateReplacements substitutions;
@@ -549,7 +560,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
       new_tab_theme_css(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_NEW_INCOGNITO_TAB_THEME_CSS));
+              IDR_INCOGNITO_TAB_THEME_CSS));
+  CHECK(*new_tab_theme_css);
 
   // Create the string from our template and the replacements.
   std::string full_css =
@@ -629,6 +641,7 @@ void NTPResourceCache::CreateNewTabCSS() {
       new_tab_theme_css(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               IDR_NEW_TAB_4_THEME_CSS));
+  CHECK(*new_tab_theme_css);
 
   // Create the string from our template and the replacements.
   std::string css_string =

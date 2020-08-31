@@ -54,12 +54,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.CHROMEOS_CONFIG_FILE, new_dump)
-      else:
-        self.fail('config_dump.json does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('config_dump.json does not match the defined configs. Run '
+                'config/refresh_generated_files')
 
     # watefall_layout_dump.txt
     # We run this as a sep program to avoid the config cache.
@@ -70,12 +66,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.WATERFALL_CONFIG_FILE, new_dump)
-      else:
-        self.fail('waterfall_layout_dump.txt does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('waterfall_layout_dump.txt does not match the defined configs. '
+                'Run config/refresh_generated_files')
 
     # luci-scheduler.cfg
     # We run this as a sep program to avoid the config cache.
@@ -86,12 +78,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.LUCI_SCHEDULER_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.LUCI_SCHEDULER_CONFIG_FILE, new_dump)
-      else:
-        self.fail('luci-scheduler.cfg does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('luci-scheduler.cfg does not match the defined configs. Run '
+                'config/refresh_generated_files')
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
@@ -632,16 +620,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
     expected_exceptions = set((
-        # See b/140317527.
-        'arkham-release',
-        'gale-release',
-        'mistral-release',
-        'whirlwind-release',
-        # See crbug.com/1011171.
-        'expresso-release',
-        'jacuzzi-release',
-        'zork-release',
-    ))
+        build_name
+        for build_name, config in self.site_config.items()
+        if config.hw_tests_disabled_bug))
     missing_tests = set()
     running_tests = set()
     for build_name, config in self.site_config.items():
@@ -658,7 +639,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           continue
         elif check_name not in expected_exceptions:
           # If it's not listed as an exception, it needs to run hardware tests.
-          if not config.hw_tests:
+          if not config.hw_tests and not config.hw_tests_disabled_bug:
             missing_tests.add(build_name)
         elif config.hw_tests:
           # It is listed as an exception, and it is running hardware tests.  It
@@ -673,30 +654,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""
     for build_name, config in self.site_config.items():
-      # crbug/871967: clapper-release* hwtests are intentionally currently
-      # turned off.
-      if build_name.startswith('clapper'):
+      if config.hw_tests_disabled_bug:
         continue
-
-      if build_name.startswith('betty'):
-        continue
-
-      if build_name.startswith('novato'):
-        continue
-
-      if build_name.startswith('amd64-generic'):
-        continue
-
-      # crbug.com/1011171: expresso, jacuzzi, and zork do not run hwtests in the
-      # release builder.
-      if build_name.startswith(('expresso', 'jacuzzi', 'zork')):
-        continue
-
-      # Jetstream boards currently do not run hwtests in the release builder,
-      # b/140317527.
-      if build_name.startswith(('arkham', 'gale', 'mistral', 'whirlwind')):
-        continue
-
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
@@ -715,8 +674,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         # they are internal or not.
         if not config['internal']:
           self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS, error)
-        elif config_lib.IsCQType(config['build_type']):
-          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
 
   def testGetSlaves(self):
     """Make sure every master has a sane list of slaves"""
@@ -728,39 +685,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
 
-        # Our logic for calculating what slaves have completed their critical
-        # stages will break if the master is considered a slave of itself,
-        # because db.GetSlaveStages(...) doesn't include master stages.
-        if config.build_type == constants.PALADIN_TYPE:
-          self.assertEqual(
-              config.boards, [],
-              'Master paladin %s cannot have boards.' % build_name)
-          self.assertNotIn(
-              build_name, [x.name for x in configs],
-              'Master paladin %s cannot be a slave of itself.' % build_name)
-
   def _getSlaveConfigsForMaster(self, master_config_name):
     """Helper to fetch the configs for all slaves of a given master."""
     master_config = self.site_config[master_config_name]
 
     # Get a list of all active Paladins.
     return [self.site_config[n] for n in master_config.slave_configs]
-
-  def testNoCqPrebuilts(self):
-    """Make sure every master has a sane list of slaves"""
-    for build_name, config in self.site_config.items():
-      if config.build_type == constants.PALADIN_TYPE:
-        self.assertFalse(
-            config.prebuilts,
-            'Paladin %s should not generate prebuilts.' % build_name)
-
-  # Disabled due to https://crbug.com/984316
-  # def testPreCQHasVMTests(self):
-  #   """Make sure that at least one pre-cq builder enables VM tests."""
-  #   pre_cq_configs = constants.PRE_CQ_DEFAULT_CONFIGS
-  #   have_vm_tests = any([self.site_config[name].vm_tests
-  #                        for name in pre_cq_configs])
-  #   self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
 
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""
@@ -821,39 +751,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
             self.assertEqual(child_config.afdo_use, prev_value,
                              msg % (child_config.name, build_name))
 
-  def testReleaseAFDOConfigs(self):
-    """Verify that <board>-release-afdo config have generate and use children.
-
-    These configs should have a 'generate' and a 'use' child config. Also,
-    any 'generate' and 'use' configs should be children of a release-afdo
-    config.
-    """
-    msg = 'Config %s should have %s as a parent'
-    parent_suffix = config_lib.CONFIG_TYPE_RELEASE_AFDO
-    generate_suffix = '%s-generate' % parent_suffix
-    use_suffix = '%s-use' % parent_suffix
-    for build_name, config in self.site_config.items():
-      if build_name.endswith(parent_suffix):
-        self.assertEqual(
-            len(config.child_configs), 2,
-            'Config %s should have 2 child configs' % build_name)
-        for child_config in config.child_configs:
-          child_name = child_config.name
-          self.assertTrue(child_name.endswith(generate_suffix) or
-                          child_name.endswith(use_suffix),
-                          'Config %s has wrong %s child' %
-                          (build_name, child_config))
-      if build_name.endswith(generate_suffix):
-        parent_config_name = build_name.replace(generate_suffix,
-                                                parent_suffix)
-        self.assertTrue(parent_config_name in self.site_config,
-                        msg % (build_name, parent_config_name))
-      if build_name.endswith(use_suffix):
-        parent_config_name = build_name.replace(use_suffix,
-                                                parent_suffix)
-        self.assertTrue(parent_config_name in self.site_config,
-                        msg % (build_name, parent_config_name))
-
   def testNoGrandChildConfigs(self):
     """Verify that no child configs have a child config."""
     for build_name, config in self.site_config.items():
@@ -887,23 +784,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     return False
 
-  def testNoDuplicateSlavePrebuilts(self):
-    """Test that no two same-board paladin slaves upload prebuilts."""
-    for cfg in self.site_config.values():
-      if cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']:
-        slaves = self.site_config.GetSlavesForMaster(cfg)
-        prebuilt_slaves = [s for s in slaves if s['prebuilts']]
-        # Dictionary from board name to builder name that uploads prebuilt
-        prebuilt_slave_boards = {}
-        for slave in prebuilt_slaves:
-          for board in slave['boards']:
-            self.assertNotIn(board, prebuilt_slave_boards,
-                             'Configs %s and %s both upload prebuilts for '
-                             'board %s.' % (prebuilt_slave_boards.get(board),
-                                            slave['name'],
-                                            board))
-            prebuilt_slave_boards[board] = slave['name']
-
   def testCantBeBothTypesOfAFDO(self):
     """Using afdo_generate and afdo_use together doesn't work."""
     for config in self.site_config.values():
@@ -917,14 +797,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
       msg = 'Config %s: has unexpected prebuilts value.' % build_name
       valid_values = (False, constants.PRIVATE, constants.PUBLIC)
       self.assertTrue(config['prebuilts'] in valid_values, msg)
-
-  def testInternalPrebuilts(self):
-    for build_name, config in self.site_config.items():
-      if (config['internal'] and
-          config['build_type'] not in [constants.CHROME_PFQ_TYPE,
-                                       constants.PALADIN_TYPE]):
-        msg = 'Config %s is internal but has public prebuilts.' % build_name
-        self.assertNotEqual(config['prebuilts'], constants.PUBLIC, msg)
 
   def testValidHWTestPriority(self):
     """Verify that hw test priority is valid."""
@@ -1125,20 +997,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
                      "Simple example: [['url', ['refs/heads/master']]]") %
                     (config.name, config.triggered_gitiles))
 
-  def testNoTestsInPostsubmit(self):
-    """Configs must have names set."""
-    for build_name, config in self.site_config.items():
-      if config.build_type != constants.POSTSUBMIT_TYPE:
-        continue
-
-      msg = 'Unexpected test in: %s' % build_name
-      self.assertFalse(config.unittests, msg)
-      self.assertFalse(config.hw_tests, msg)
-      self.assertFalse(config.vm_tests, msg)
-      self.assertFalse(config.gce_tests, msg)
-      self.assertFalse(config.tast_vm_tests, msg)
-      self.assertFalse(config.moblab_vm_tests, msg)
-
 
 class TemplateTest(ChromeosConfigTestBase):
   """Tests for templates."""
@@ -1146,6 +1004,10 @@ class TemplateTest(ChromeosConfigTestBase):
   def testConfigNamesMatchTemplate(self):
     """Test that all configs have names that match their templates."""
     for name, config in self.site_config.items():
+      # Rapid builders are special snowflakes that are release-tryjobs but
+      # scheduled as a priority builder.
+      if name.endswith('-rapid'):
+        return
       # Tryjob configs should be tested based on what they are mirrored from.
       if name.endswith('-tryjob'):
         name = name[:-len('-tryjob')]

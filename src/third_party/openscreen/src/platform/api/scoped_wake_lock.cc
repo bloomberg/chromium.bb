@@ -5,10 +5,8 @@
 #include "platform/api/scoped_wake_lock.h"
 
 namespace openscreen {
-namespace platform {
 
 ScopedWakeLock::ScopedWakeLock() = default;
 ScopedWakeLock::~ScopedWakeLock() = default;
 
-}  // namespace platform
 }  // namespace openscreen

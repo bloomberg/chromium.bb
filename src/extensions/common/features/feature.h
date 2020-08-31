@@ -38,6 +38,7 @@ class Feature {
     WEB_PAGE_CONTEXT,
     BLESSED_WEB_PAGE_CONTEXT,
     WEBUI_CONTEXT,
+    WEBUI_UNTRUSTED_CONTEXT,
     LOCK_SCREEN_EXTENSION_CONTEXT,
   };
 
@@ -67,6 +68,7 @@ class Feature {
     UNSUPPORTED_CHANNEL,
     FOUND_IN_BLACKLIST,
     MISSING_COMMAND_LINE_SWITCH,
+    FEATURE_FLAG_DISABLED,
   };
 
   // Container for AvailabiltyResult that also exposes a user-visible error

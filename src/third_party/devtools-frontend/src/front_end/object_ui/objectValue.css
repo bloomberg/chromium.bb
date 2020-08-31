@@ -48,9 +48,18 @@
 .object-value-string,
 .object-value-regexp,
 .object-value-symbol {
-    white-space: pre !important;
+    white-space: pre;
     unicode-bidi: -webkit-isolate;
     color: rgb(196, 26, 22);
+}
+
+.-theme-with-dark-background .object-value-string,
+:host-context(.-theme-with-dark-background) .object-value-string,
+.-theme-with-dark-background .object-value-regexp,
+:host-context(.-theme-with-dark-background) .object-value-regexp,
+.-theme-with-dark-background .object-value-symbol,
+:host-context(.-theme-with-dark-background) .object-value-symbol {
+    color: rgb(242, 139, 84);
 }
 
 .object-value-string-quote {
@@ -100,4 +109,11 @@
 
 .object-properties-preview .name {
     color: #565656;
+}
+
+@media (forced-colors: active) {
+    .object-value-calculate-value-button:hover {
+        forced-color-adjust: none;
+        color: Highlight;
+    }
 }

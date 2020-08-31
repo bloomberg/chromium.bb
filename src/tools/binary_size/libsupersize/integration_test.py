@@ -1,12 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import cStringIO
+import argparse
 import contextlib
 import copy
 import glob
+import io
 import itertools
 import os
 import unittest
@@ -86,7 +87,7 @@ def _AddMocksToPath():
 
 
 def _RunApp(name, args, debug_measures=False):
-  argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name, '--no-pypy']
+  argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name]
   argv.extend(args)
   with _AddMocksToPath():
     env = None
@@ -95,7 +96,7 @@ def _RunApp(name, args, debug_measures=False):
       env['SUPERSIZE_DISABLE_ASYNC'] = '1'
       env['SUPERSIZE_MEASURE_GZIP'] = '1'
 
-    return subprocess.check_output(argv, env=env).splitlines()
+    return subprocess.check_output(argv, env=env).decode('utf-8').splitlines()
 
 
 class IntegrationTest(unittest.TestCase):
@@ -157,6 +158,18 @@ class IntegrationTest(unittest.TestCase):
       _TEST_MINIMAL_APKS_PATH,
     ])
 
+  def _CreateTestArgs(self):
+    return argparse.Namespace(
+        **{
+            'is_bundle': False,
+            'java_only': False,
+            'native_only': False,
+            'no_java': False,
+            'no_native': False,
+            'relocations': False,
+            'source_directory': _TEST_SOURCE_DIR,
+        })
+
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True,
                      use_apk=False, use_minimal_apks=False, use_pak=False):
     assert not use_elf or use_output_directory
@@ -167,10 +180,10 @@ class IntegrationTest(unittest.TestCase):
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
       knobs = archive.SectionSizeKnobs()
+      opts = archive.ContainerArchiveOptions(self._CreateTestArgs())
       # Override for testing. Lower the bar for compacting symbols, to allow
       # smaller test cases to be created.
       knobs.max_same_name_alias_count = 3
-      knobs.src_root = _TEST_SOURCE_DIR
       apk_path = None
       minimal_apks_path = None
       apk_so_path = None
@@ -195,14 +208,14 @@ class IntegrationTest(unittest.TestCase):
       if use_pak:
         pak_files = [_TEST_APK_LOCALE_PAK_PATH, _TEST_APK_PAK_PATH]
         pak_info_file = _TEST_PAK_INFO_PATH
-      metadata = None
       linker_name = 'gold'
       with _AddMocksToPath():
-        if use_elf:
-          metadata = archive.CreateMetadata(
-              _TEST_MAP_PATH, elf_path, apk_path, minimal_apks_path,
-              _TEST_TOOL_PREFIX, output_directory, linker_name)
+        metadata = archive.CreateMetadata(_TEST_MAP_PATH, elf_path, apk_path,
+                                          minimal_apks_path, _TEST_TOOL_PREFIX,
+                                          output_directory, linker_name)
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+            knobs=knobs,
+            opts=opts,
             map_path=_TEST_MAP_PATH,
             tool_prefix=_TEST_TOOL_PREFIX,
             elf_path=elf_path,
@@ -213,10 +226,9 @@ class IntegrationTest(unittest.TestCase):
             pak_files=pak_files,
             pak_info_file=pak_info_file,
             linker_name=linker_name,
-            size_info_prefix=size_info_prefix,
-            knobs=knobs)
+            size_info_prefix=size_info_prefix)
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
-            section_sizes, raw_symbols, metadata=metadata)
+            [section_sizes], [raw_symbols], [metadata])
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self,
@@ -279,13 +291,13 @@ class IntegrationTest(unittest.TestCase):
     expected_size_info = self._CloneSizeInfo(
         use_output_directory=use_output_directory, use_elf=use_elf,
         use_apk=use_apk, use_minimal_apks=use_minimal_apks, use_pak=use_pak)
-    self.assertEquals(expected_size_info.metadata, size_info.metadata)
+    self.assertEqual(expected_size_info.metadata, size_info.metadata)
     # Don't cluster.
     expected_size_info.symbols = expected_size_info.raw_symbols
     size_info.symbols = size_info.raw_symbols
     expected = list(describe.GenerateLines(expected_size_info, verbose=True))
     actual = list(describe.GenerateLines(size_info, verbose=True))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
     sym_strs = (repr(sym) for sym in size_info.symbols)
     stats = describe.DescribeSizeInfoCoverage(size_info)
@@ -372,7 +384,7 @@ class IntegrationTest(unittest.TestCase):
   # Runs archive 3 times, and asserts the contents are the same each time.
   def test_Idempotent(self):
     prev_contents = None
-    for _ in xrange(3):
+    for _ in range(3):
       with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
         self._DoArchive(temp_file.name)
         contents = temp_file.read()
@@ -399,14 +411,14 @@ class IntegrationTest(unittest.TestCase):
 
     # Serialize & de-serialize so that name normalization runs again for the pak
     # symbol.
-    stringio = cStringIO.StringIO()
-    file_format.SaveSizeInfo(size_info2, 'path', file_obj=stringio)
-    stringio.seek(0)
-    size_info2 = archive.LoadAndPostProcessSizeInfo('path', file_obj=stringio)
+    bytesio = io.BytesIO()
+    file_format.SaveSizeInfo(size_info2, 'path', file_obj=bytesio)
+    bytesio.seek(0)
+    size_info2 = archive.LoadAndPostProcessSizeInfo('path', file_obj=bytesio)
 
     d = diff.Diff(size_info1, size_info2)
     d.raw_symbols = d.raw_symbols.Sorted()
-    self.assertEquals(d.raw_symbols.CountsByDiffStatus()[1:], (2, 2, 3))
+    self.assertEqual(d.raw_symbols.CountsByDiffStatus()[1:], (2, 2, 3))
     changed_sym = d.raw_symbols.WhereNameMatches('Patcher::Name_')[0]
     padding_sym = d.raw_symbols.WhereNameMatches('symbol gap 0')[0]
     bss_sym = d.raw_symbols.WhereInSection(models.SECTION_BSS)[0]

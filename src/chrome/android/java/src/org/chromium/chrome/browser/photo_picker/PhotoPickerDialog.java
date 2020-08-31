@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
-import android.support.v7.app.AlertDialog;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -79,21 +80,34 @@ public class PhotoPickerDialog
     /**
      * The PhotoPickerDialog constructor.
      * @param context The context to use.
+     * @param contentResolver The ContentResolver to use to retrieve image metadata from disk.
      * @param listener The listener object that gets notified when an action is taken.
      * @param multiSelectionAllowed Whether the photo picker should allow multiple items to be
      *                              selected.
      * @param mimeTypes A list of mime types to show in the dialog.
      */
-    public PhotoPickerDialog(Context context, PhotoPickerListener listener,
-            boolean multiSelectionAllowed, List<String> mimeTypes) {
+    public PhotoPickerDialog(Context context, ContentResolver contentResolver,
+            PhotoPickerListener listener, boolean multiSelectionAllowed, List<String> mimeTypes) {
         super(context, R.style.Theme_Chromium_Fullscreen);
         mContext = context;
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context, multiSelectionAllowed, this);
+        mCategoryView =
+                new PickerCategoryView(context, contentResolver, multiSelectionAllowed, this);
         mCategoryView.initialize(this, mListenerWrapper, mimeTypes);
         setView(mCategoryView);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Pressing Back when a video is playing, should only end the video playback.
+        boolean videoWasStopped = mCategoryView.closeVideoPlayer();
+        if (videoWasStopped) {
+            return;
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override

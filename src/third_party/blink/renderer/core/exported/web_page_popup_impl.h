@@ -32,11 +32,15 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/widget/widget_base_client.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace cc {
@@ -50,11 +54,14 @@ class PagePopupChromeClient;
 class PagePopupClient;
 class WebViewImpl;
 class LocalDOMWindow;
+class WidgetBase;
+class DOMRect;
 
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
                                            public PagePopup,
-                                           public RefCounted<WebPagePopupImpl> {
+                                           public RefCounted<WebPagePopupImpl>,
+                                           public WidgetBaseClient {
   USING_FAST_MALLOC(WebPagePopupImpl);
 
  public:
@@ -92,42 +99,51 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   LocalDOMWindow* Window();
 
-  // WebWidget implementation.
-  WebInputEventResult DispatchBufferedTouchEvents() override;
-
   // WebPagePopup implementation.
-  WebPoint PositionRelativeToOwner() override;
+  gfx::Point PositionRelativeToOwner() override;
   WebDocument GetDocument() override;
   WebPagePopupClient* GetClientForTesting() const override;
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
+  void Update() override;
 
   // PageWidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
 
  private:
+  // WidgetBaseClient overrides:
+  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
+  void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
+  void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
+  WebInputEventResult DispatchBufferedTouchEvents() override;
+
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be
   // closed and destroyed. But the Page and the MainFrame are destroyed
   // immediately. So all methods (outside of initialization) that are part
   // of the WebWidget need to check if close has already been initiated (they
   // can do so by checking |page_|) and not crash! https://crbug.com/906340
-  void SetAnimationHost(cc::AnimationHost*) override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time,
-                  bool record_main_frame_metrics) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
+  void SetCompositorVisible(bool visible) override;
+  void UpdateLifecycle(WebLifecycleUpdate requested_update,
+                       DocumentUpdateReason reason) override;
   void Resize(const WebSize&) override;
-  void Close() override;
+  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+             base::OnceCallback<void()> cleanup_task) override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
-  bool IsAcceleratedCompositingActive() const override {
-    return is_accelerated_compositing_active_;
-  }
   WebURL GetURLForDebugTrace() override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override { return {}; }
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override { return {}; }
+  cc::LayerTreeHost* InitializeCompositing(
+      cc::TaskGraphRunner* task_graph_runner,
+      const cc::LayerTreeSettings& settings,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
+  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
+      override;
+  void SetCursor(const ui::Cursor& cursor) override;
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
@@ -147,7 +163,12 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   AXObject* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
-  explicit WebPagePopupImpl(WebPagePopupClient*);
+  WebPagePopupImpl(
+      WebPagePopupClient*,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   void DestroyPage();
   void SetRootLayer(scoped_refptr<cc::Layer>);
 
@@ -165,12 +186,15 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   PagePopupClient* popup_client_;
   bool closing_ = false;
 
-  cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   base::TimeTicks raf_aligned_input_start_time_;
-  bool is_accelerated_compositing_active_ = false;
 
   bool suppress_next_keypress_event_ = false;
+  Persistent<DOMRect> popup_owner_client_rect_;
+
+  // Base functionality all widgets have. This is a member as to avoid
+  // complicated inheritance structures.
+  std::unique_ptr<WidgetBase> widget_base_;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;
@@ -180,8 +204,11 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
 // WebPagePopupImpl is the only implementation of WebPagePopup and PagePopup, so
 // no further checking required.
-DEFINE_TYPE_CASTS(WebPagePopupImpl, WebPagePopup, widget, true, true);
-DEFINE_TYPE_CASTS(WebPagePopupImpl, PagePopup, popup, true, true);
+template <>
+struct DowncastTraits<WebPagePopupImpl> {
+  static bool AllowFrom(const WebPagePopup& widget) { return true; }
+  static bool AllowFrom(const PagePopup& popup) { return true; }
+};
 
 }  // namespace blink
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_

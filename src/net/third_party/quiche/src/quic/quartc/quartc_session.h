@@ -9,7 +9,7 @@
 #include <string>
 
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
@@ -18,6 +18,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -73,8 +74,8 @@ class QuartcSession : public QuicSession,
     return VersionSupportsMessageFrames(transport_version());
   }
 
-  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
   void SetDefaultEncryptionLevel(EncryptionLevel level) override;
+  void OnOneRttKeysAvailable() override;
 
   // QuicConnectionVisitorInterface overrides.
   void OnCongestionWindowChange(QuicTime now) override;
@@ -139,7 +140,7 @@ class QuartcSession : public QuicSession,
                                     ConnectionCloseSource source) = 0;
 
     // Called when message (sent as SendMessage) is received.
-    virtual void OnMessageReceived(QuicStringPiece message) = 0;
+    virtual void OnMessageReceived(quiche::QuicheStringPiece message) = 0;
 
     // Called when message is sent to QUIC.
     //
@@ -179,7 +180,7 @@ class QuartcSession : public QuicSession,
   // QuicConnection.
   void OnTransportReceived(const char* data, size_t data_len) override;
 
-  void OnMessageReceived(QuicStringPiece message) override;
+  void OnMessageReceived(quiche::QuicheStringPiece message) override;
 
   // Called when message with |message_id| gets acked.
   void OnMessageAcked(QuicMessageId message_id,
@@ -203,7 +204,7 @@ class QuartcSession : public QuicSession,
   // returns an unowned pointer to the stream for convenience.
   QuartcStream* ActivateDataStream(std::unique_ptr<QuartcStream> stream);
 
-  void ResetStream(QuicStreamId stream_id, QuicRstStreamErrorCode error);
+  void ResetQuartcStream(QuicStreamId stream_id, QuicRstStreamErrorCode error);
 
   const QuicClock* clock() { return clock_; }
 
@@ -239,11 +240,11 @@ class QuartcSession : public QuicSession,
   // Queue of pending messages sent by SendQuartcMessage that were not sent
   // yet or blocked by congestion control. Messages are queued in the order
   // of sent by SendOrQueueMessage().
-  QuicDeque<QueuedMessage> send_message_queue_;
+  QuicCircularDeque<QueuedMessage> send_message_queue_;
 
   // Maps message ids to datagram ids, so we could translate message ACKs
   // received from QUIC to datagram ACKs that are propagated up the stack.
-  QuicUnorderedMap<QuicMessageId, int64_t> message_to_datagram_id_;
+  QuicHashMap<QuicMessageId, int64_t> message_to_datagram_id_;
 };
 
 class QuartcClientSession : public QuartcSession,
@@ -256,7 +257,7 @@ class QuartcClientSession : public QuartcSession,
       const QuicClock* clock,
       std::unique_ptr<QuartcPacketWriter> packet_writer,
       std::unique_ptr<QuicCryptoClientConfig> client_crypto_config,
-      QuicStringPiece server_crypto_config);
+      quiche::QuicheStringPiece server_crypto_config);
   QuartcClientSession(const QuartcClientSession&) = delete;
   QuartcClientSession& operator=(const QuartcClientSession&) = delete;
 
@@ -308,7 +309,7 @@ class QuartcServerSession : public QuartcSession {
                       const QuicClock* clock,
                       const QuicCryptoServerConfig* server_crypto_config,
                       QuicCompressedCertsCache* const compressed_certs_cache,
-                      QuicCryptoServerStream::Helper* const stream_helper);
+                      QuicCryptoServerStreamBase::Helper* const stream_helper);
   QuartcServerSession(const QuartcServerSession&) = delete;
   QuartcServerSession& operator=(const QuartcServerSession&) = delete;
 
@@ -327,10 +328,10 @@ class QuartcServerSession : public QuartcSession {
   QuicCompressedCertsCache* const compressed_certs_cache_;
 
   // This helper is needed to create QuicCryptoServerStream.
-  QuicCryptoServerStream::Helper* const stream_helper_;
+  QuicCryptoServerStreamBase::Helper* const stream_helper_;
 
   // Server perspective crypto stream.
-  std::unique_ptr<QuicCryptoServerStream> crypto_stream_;
+  std::unique_ptr<QuicCryptoServerStreamBase> crypto_stream_;
 };
 
 }  // namespace quic

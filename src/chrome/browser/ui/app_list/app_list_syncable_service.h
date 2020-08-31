@@ -178,14 +178,14 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // syncer::SyncableService
   void WaitUntilReadyToSync(base::OnceClosure done) override;
-  syncer::SyncMergeResult MergeDataAndStartSyncing(
+  base::Optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
       std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
-  syncer::SyncError ProcessSyncChanges(
+  syncer::SyncDataList GetAllSyncDataForTesting() const;
+  base::Optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
@@ -241,6 +241,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Creates or updates a SyncItem from |specifics|. Returns true if a new item
   // was created.
+  // TODO(crbug.com/1057577): Change return type to void.
   bool ProcessSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
   // Handles a newly created sync item (e.g. creates a new AppItem and adds it
@@ -331,6 +332,9 @@ class AppListSyncableService : public syncer::SyncableService,
   bool initial_sync_data_processed_;
   bool first_app_list_sync_;
   std::string oem_folder_name_;
+  // Callback to install default page breaks.
+  // Only set for first time user for tablet form devices.
+  base::OnceClosure install_default_page_breaks_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // List of observers.

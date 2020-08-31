@@ -738,12 +738,16 @@ def VerifyEndpoint(fetch, context, rev, profile, num_runs, command, try_args,
                    evaluate, expected_answer):
   fetch.WaitFor()
   try:
-    (exit_status, stdout, stderr) = RunRevision(
-        context, rev, fetch.zip_file, profile, num_runs, command, try_args)
+    answer = 'r'
+    # This is intended to allow evaluate() to return 'r' to retry RunRevision.
+    while answer == 'r':
+      (exit_status, stdout, stderr) = RunRevision(
+          context, rev, fetch.zip_file, profile, num_runs, command, try_args)
+      answer = evaluate(rev, exit_status, stdout, stderr);
   except Exception, e:
     print(e, file=sys.stderr)
     raise SystemExit
-  if (evaluate(rev, exit_status, stdout, stderr) != expected_answer):
+  if (answer != expected_answer):
     print('Unexpected result at a range boundary! Your range is not correct.')
     raise SystemExit
 
@@ -836,6 +840,7 @@ def Bisect(context,
   fetch.WaitFor()
 
   # Binary search time!
+  prefetch_revisions = True
   while fetch and fetch.zip_file and maxrev - minrev > 1:
     if bad_rev < good_rev:
       min_str, max_str = 'bad', 'good'
@@ -852,20 +857,22 @@ def Bisect(context,
     #   - up_pivot is the next revision to check if the current revision turns
     #     out to be good.
     down_pivot = int((pivot - minrev) / 2) + minrev
-    down_fetch = None
-    if down_pivot != pivot and down_pivot != minrev:
-      down_rev = revlist[down_pivot]
-      down_fetch = DownloadJob(context, 'down_fetch', down_rev,
-                               _GetDownloadPath(down_rev))
-      down_fetch.Start()
+    if prefetch_revisions:
+      down_fetch = None
+      if down_pivot != pivot and down_pivot != minrev:
+        down_rev = revlist[down_pivot]
+        down_fetch = DownloadJob(context, 'down_fetch', down_rev,
+                                 _GetDownloadPath(down_rev))
+        down_fetch.Start()
 
     up_pivot = int((maxrev - pivot) / 2) + pivot
-    up_fetch = None
-    if up_pivot != pivot and up_pivot != maxrev:
-      up_rev = revlist[up_pivot]
-      up_fetch = DownloadJob(context, 'up_fetch', up_rev,
-                             _GetDownloadPath(up_rev))
-      up_fetch.Start()
+    if prefetch_revisions:
+      up_fetch = None
+      if up_pivot != pivot and up_pivot != maxrev:
+        up_rev = revlist[up_pivot]
+        up_fetch = DownloadJob(context, 'up_fetch', up_rev,
+                               _GetDownloadPath(up_rev))
+        up_fetch.Start()
 
     # Run test on the pivot revision.
     exit_status = None
@@ -882,6 +889,7 @@ def Bisect(context,
     # other, as described in the comments above.
     try:
       answer = evaluate(rev, exit_status, stdout, stderr)
+      prefetch_revisions = True
       if ((answer == 'g' and good_rev < bad_rev)
           or (answer == 'b' and bad_rev < good_rev)):
         fetch.Stop()
@@ -905,7 +913,8 @@ def Bisect(context,
           pivot = down_pivot
           fetch = down_fetch
       elif answer == 'r':
-        pass  # Retry requires no changes.
+        # Don't redundantly prefetch.
+        prefetch_revisions = False
       elif answer == 'u':
         # Nuke the revision from the revlist and choose a new pivot.
         fetch.Stop()

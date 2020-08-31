@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SHARING_MOCK_SHARING_SERVICE_H_
 #define CHROME_BROWSER_SHARING_MOCK_SHARING_SERVICE_H_
 
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockSharingService : public SharingService {
@@ -29,6 +30,15 @@ class MockSharingService : public SharingService {
   MOCK_CONST_METHOD1(
       GetDeviceByGuid,
       std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
+
+  MOCK_METHOD2(
+      RegisterSharingHandler,
+      void(std::unique_ptr<SharingMessageHandler> handler,
+           chrome_browser_sharing::SharingMessage::PayloadCase payload_case));
+
+  MOCK_METHOD1(
+      UnregisterSharingHandler,
+      void(chrome_browser_sharing::SharingMessage::PayloadCase payload_case));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSharingService);

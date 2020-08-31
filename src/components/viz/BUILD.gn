@@ -6,9 +6,7 @@ import("//components/viz/viz.gni")
 import("//testing/test.gni")
 
 viz_test("viz_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -22,11 +20,10 @@ viz_test("viz_unittests") {
     "//mojo/core/embedder",
   ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   data_deps = [
+    "//testing/buildbot/filters:viz_unittests_filters",
     "//third_party/mesa_headers",
   ]
 
@@ -37,9 +34,7 @@ viz_test("viz_unittests") {
 }
 
 viz_test("viz_perftests") {
-  sources = [
-    "test/run_all_perftests.cc",
-  ]
+  sources = [ "test/run_all_perftests.cc" ]
 
   deps = [
     "//base",
@@ -47,6 +42,7 @@ viz_test("viz_perftests") {
     "//components/viz/common:perf_tests",
     "//components/viz/service:perf_tests",
     "//components/viz/test:test_suite",
+    "//components/viz/test:test_support",
     "//mojo/core/embedder",
     "//skia",
   ]

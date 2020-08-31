@@ -18,8 +18,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -27,13 +25,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.StyleRes;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -128,13 +129,20 @@ class AssistantDetailsViewBinder
     }
 
     private void setDetails(AssistantDetails details, ViewHolder viewHolder) {
-        viewHolder.mTitleView.setText(details.getTitle());
-        viewHolder.mDescriptionLine1View.setText(details.getDescriptionLine1());
-        viewHolder.mDescriptionLine2View.setText(details.getDescriptionLine2());
-        viewHolder.mDescriptionLine3View.setText(details.getDescriptionLine3());
-        viewHolder.mTotalPriceLabelView.setText(details.getTotalPriceLabel());
-        viewHolder.mTotalPriceView.setText(details.getTotalPrice());
-        viewHolder.mPriceAttributionView.setText(details.getPriceAttribution());
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mTitleView, details.getTitle(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mDescriptionLine1View, details.getDescriptionLine1(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mDescriptionLine2View, details.getDescriptionLine2(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mDescriptionLine3View, details.getDescriptionLine3(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mTotalPriceLabelView, details.getTotalPriceLabel(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mTotalPriceView, details.getTotalPrice(), null);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                viewHolder.mPriceAttributionView, details.getPriceAttribution(), null);
 
         // Allow title line wrapping according to number of maximum allowed lines.
         if (details.getTitleMaxLines() == 1) {
@@ -194,15 +202,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine1(), R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine2(), R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
-                details.getHighlightLine3(), R.style.TextAppearance_BlackDisabledText2);
+                details.getHighlightLine3(), R.style.TextAppearance_TextSmall_Tertiary);
         setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
-                details.getHighlightLine3(), R.style.TextAppearance_BlackDisabledText2);
+                details.getHighlightLine3(), R.style.TextAppearance_TextSmall_Tertiary);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, R.style.TextAppearance_BlackBody);
+                /* highlight= */ false, R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 
@@ -232,6 +240,7 @@ class AssistantDetailsViewBinder
             view.setTypeface(view.getTypeface(), Typeface.BOLD_ITALIC);
         } else if (approvalRequired) {
             // De-emphasized style.
+            // TODO(b/154592651) Use setTextAppearance instead of setTextColor.
             view.setTextColor(ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.modern_grey_300));
         }

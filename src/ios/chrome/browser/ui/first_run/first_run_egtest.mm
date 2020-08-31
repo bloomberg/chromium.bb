@@ -4,6 +4,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
@@ -32,8 +33,7 @@ id<GREYMatcher> FirstRunOptInAcceptButton() {
 
 // Returns matcher for the skip sign in button.
 id<GREYMatcher> SkipSigninButton() {
-  return grey_accessibilityID(
-      first_run::kSignInSkipButtonAccessibilityIdentifier);
+  return grey_accessibilityID(kSkipSigninAccessibilityIdentifier);
 }
 }
 
@@ -51,30 +51,8 @@ id<GREYMatcher> SkipSigninButton() {
 
 - (void)tearDown {
   [super tearDown];
+  [FirstRunAppInterface setUMACollectionEnabled:NO];
   [FirstRunAppInterface resetUMACollectionEnabledByDefault];
-}
-
-// Navigates to the terms of service and back.
-- (void)testPrivacy {
-  [FirstRunAppInterface showFirstRunUI];
-
-  id<GREYMatcher> privacyLink = grey_accessibilityLabel(@"Privacy Notice");
-  [[EarlGrey selectElementWithMatcher:privacyLink] performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                          IDS_IOS_FIRSTRUN_PRIVACY_TITLE))]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-
-  // Ensure we went back to the First Run screen.
-  [[EarlGrey selectElementWithMatcher:privacyLink]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Navigates to the terms of service and back.
@@ -113,9 +91,14 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
-  GREYAssert([FirstRunAppInterface isUMACollectionEnabled] !=
-                 [FirstRunAppInterface isUMACollectionEnabledByDefault],
-             @"Metrics reporting pref is incorrect.");
+  GREYAssertNotEqual([FirstRunAppInterface isUMACollectionEnabled],
+                     [FirstRunAppInterface isUMACollectionEnabledByDefault],
+                     @"Metrics reporting pref is incorrect.");
+
+  // Ensure that we have completed First Run, otherwise Earl Grey test crashes
+  // on check that the sign-in coordinator is no longer running.
+  [[EarlGrey selectElementWithMatcher:SkipSigninButton()]
+      performAction:grey_tap()];
 }
 
 // Dismisses the first run screens.
@@ -125,9 +108,9 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
-  GREYAssert([FirstRunAppInterface isUMACollectionEnabled] ==
-                 [FirstRunAppInterface isUMACollectionEnabledByDefault],
-             @"Metrics reporting does not match.");
+  GREYAssertEqual([FirstRunAppInterface isUMACollectionEnabled],
+                  [FirstRunAppInterface isUMACollectionEnabledByDefault],
+                  @"Metrics reporting does not match.");
 
   [[EarlGrey selectElementWithMatcher:SkipSigninButton()]
       performAction:grey_tap()];

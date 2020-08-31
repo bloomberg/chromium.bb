@@ -25,9 +25,16 @@ CryptoModulePasswordDialogView::CryptoModulePasswordDialogView(
     const std::string& hostname,
     const CryptoModulePasswordCallback& callback)
     : callback_(callback) {
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL));
+  SetAcceptCallback(base::BindOnce(
+      [](CryptoModulePasswordDialogView* dialog) {
+        dialog->callback_.Run(
+            base::UTF16ToUTF8(dialog->password_entry_->GetText()));
+      },
+      base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(callback_, std::string()));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
   Init(hostname, slot_name, reason);
@@ -50,20 +57,6 @@ ui::ModalType CryptoModulePasswordDialogView::GetModalType() const {
 
 base::string16 CryptoModulePasswordDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE);
-}
-
-bool CryptoModulePasswordDialogView::Cancel() {
-  callback_.Run(std::string());
-  const base::string16 empty;
-  password_entry_->SetText(empty);
-  return true;
-}
-
-bool CryptoModulePasswordDialogView::Accept() {
-  callback_.Run(base::UTF16ToUTF8(password_entry_->GetText()));
-  const base::string16 empty;
-  password_entry_->SetText(empty);
-  return true;
 }
 
 void CryptoModulePasswordDialogView::ContentsChanged(
@@ -126,19 +119,19 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
       SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* reason_column_set = layout->AddColumnSet(0);
-  reason_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::LEADING, 1.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  reason_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::LEADING, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   views::ColumnSet* column_set = layout->AddColumnSet(1);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   reason_label_ = layout->AddView(std::move(reason_label));

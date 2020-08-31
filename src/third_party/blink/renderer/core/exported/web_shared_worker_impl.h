@@ -38,7 +38,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom-blink.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
@@ -68,11 +72,16 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   // WebSharedWorker methods:
   void StartWorkerContext(
       const WebURL&,
+      mojom::ScriptType,
+      network::mojom::CredentialsMode,
       const WebString& name,
+      WebSecurityOrigin constructor_origin,
       const WebString& user_agent,
+      const blink::UserAgentMetadata& ua_metadata,
       const WebString& content_security_policy,
       network::mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
+      const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
@@ -84,7 +93,9 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
   void DidFailToFetchClassicScript();
+  void DidFailToFetchModuleScript();
   void DidEvaluateClassicScript(bool success);
+  void DidEvaluateModuleScript(bool success);
   void DidCloseWorkerGlobalScope();
   // This synchronously destroys |this|.
   void DidTerminateWorkerThread();
@@ -102,6 +113,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
 
   // |client_| owns |this|.
   WebSharedWorkerClient* client_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_connect_event_;
 
   bool asked_to_terminate_ = false;
 

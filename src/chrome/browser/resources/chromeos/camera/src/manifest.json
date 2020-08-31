@@ -11,11 +11,11 @@
     "128": "images/camera_app_icons_128.png"
   },
   "permissions": [
+    "notifications",
     "videoCapture",
     "audioCapture",
     "storage",
     "unlimitedStorage",
-    "idle",
     "chromeosInfoPrivate",
     "metricsPrivate",
     "fileManagerPrivate",
@@ -25,14 +25,7 @@
   ],
   "app": {
     "background": {
-      "scripts": [
-        "js/mojo/mojo_bindings_lite.js",
-        "js/mojo/camera_intent.mojom-lite.js",
-        "js/mojo/camera_app_helper.mojom-lite.js",
-        "js/mojo/chrome_helper.js",
-        "js/intent.js",
-        "js/background.js"
-      ]
+      "page": "views/background.html"
     }
   }
 }

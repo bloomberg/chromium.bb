@@ -5,17 +5,25 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) UL id='submenu'",
-          "rect": [48, 92, 40, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u25E6 '",
-          "rect": [71, 92, 7, 18],
-          "reason": "disappeared"
-        }
+      "invalidations": [
+        [48, 92, 40, 18]
+      ]
+    },
+    {
+      "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [48, 42, 0, 1]
       ]
     }
   ]

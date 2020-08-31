@@ -33,7 +33,7 @@ public:
         , fType(std::move(type)) {}
 
         const String description() const {
-            return fType->description() + " " + fName + ";";
+            return fType->displayName() + " " + fName + ";";
         }
 
         Modifiers fModifiers;
@@ -232,7 +232,7 @@ public:
         return fNameString;
     }
 
-    String description() const override {
+    const String displayName() const {
         if (fNameString == "$floatLiteral") {
             return "float";
         }
@@ -240,6 +240,10 @@ public:
             return "int";
         }
         return fNameString;
+    }
+
+    String description() const override {
+        return this->displayName();
     }
 
     bool operator==(const Type& other) const {

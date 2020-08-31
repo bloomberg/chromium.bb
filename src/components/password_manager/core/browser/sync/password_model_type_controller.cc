@@ -6,8 +6,7 @@
 
 #include <utility>
 
-#include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
@@ -22,22 +21,28 @@ PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_transport_mode,
     PrefService* pref_service,
+    signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
     const base::RepeatingClosure& state_changed_callback)
     : ModelTypeController(syncer::PASSWORDS,
                           std::move(delegate_for_full_sync_mode),
                           std::move(delegate_for_transport_mode)),
       pref_service_(pref_service),
+      identity_manager_(identity_manager),
       sync_service_(sync_service),
-      state_changed_callback_(state_changed_callback) {
-  pref_registrar_.Init(pref_service_);
-  pref_registrar_.Add(
-      prefs::kAccountStorageOptedInAccounts,
-      base::BindRepeating(&PasswordModelTypeController::OnOptInPrefChanged,
-                          base::Unretained(this)));
+      state_changed_callback_(state_changed_callback),
+      account_storage_settings_watcher_(
+          pref_service_,
+          sync_service_,
+          base::BindRepeating(
+              &PasswordModelTypeController::OnOptInStateMaybeChanged,
+              base::Unretained(this))) {
+  identity_manager_->AddObserver(this);
 }
 
-PasswordModelTypeController::~PasswordModelTypeController() = default;
+PasswordModelTypeController::~PasswordModelTypeController() {
+  identity_manager_->RemoveObserver(this);
+}
 
 void PasswordModelTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
@@ -74,10 +79,13 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
 
 syncer::DataTypeController::PreconditionState
 PasswordModelTypeController::GetPreconditionState() const {
-  if (sync_mode_ == syncer::SyncMode::kFull)
+  // If Sync-the-feature is enabled, then the user has opted in to that, and no
+  // additional opt-in is required here.
+  if (sync_service_->IsSyncFeatureEnabled())
     return PreconditionState::kPreconditionsMet;
-  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
-                                                           sync_service_)
+  // If Sync-the-feature is *not* enabled, then password sync should only be
+  // turned on if the user has opted in to the account-scoped storage.
+  return features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
 }
@@ -88,7 +96,14 @@ void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   state_changed_callback_.Run();
 }
 
-void PasswordModelTypeController::OnOptInPrefChanged() {
+void PasswordModelTypeController::OnAccountsCookieDeletedByUserAction() {
+  features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
+}
+
+void PasswordModelTypeController::OnOptInStateMaybeChanged() {
+  // Note: This method gets called in many other situations as well, not just
+  // when the opt-in state changes, but DataTypePreconditionChanged() is cheap
+  // if nothing actually changed, so some spurious calls don't hurt.
   sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
 }
 

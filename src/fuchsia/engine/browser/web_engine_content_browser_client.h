@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
-#include "fuchsia/engine/browser/web_engine_cdm_service.h"
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "fuchsia/engine/browser/media_resource_provider_service.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 
 class WebEngineBrowserMainParts;
 
@@ -38,8 +38,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
                            content::WebPreferences* web_prefs) final;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      final;
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) final;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) final;
@@ -56,20 +55,24 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) final;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;
 
+  const std::vector<std::string> cors_exempt_headers_;
+  const bool allow_insecure_content_;
+
   // Owned by content::BrowserMainLoop.
   WebEngineBrowserMainParts* main_parts_;
 
-  WebEngineCdmService cdm_service_;
-
-  bool allow_insecure_content_;
+  MediaResourceProviderService media_resource_provider_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };

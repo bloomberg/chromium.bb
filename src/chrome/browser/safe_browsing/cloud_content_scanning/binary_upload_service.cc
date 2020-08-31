@@ -19,12 +19,15 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
@@ -34,8 +37,41 @@ namespace {
 
 const int kScanningTimeoutSeconds = 5 * 60;  // 5 minutes
 
-const char kSbBinaryUploadUrl[] =
+const char kSbEnterpriseUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/scan";
+
+const char kSbAppUploadUrl[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/app";
+
+bool IsAdvancedProtectionRequest(const BinaryUploadService::Request& request) {
+  return !request.deep_scanning_request().has_dlp_scan_request() &&
+         request.deep_scanning_request().has_malware_scan_request() &&
+         request.deep_scanning_request().malware_scan_request().population() ==
+             MalwareDeepScanningClientRequest::POPULATION_TITANIUM;
+}
+
+std::string ResultToString(BinaryUploadService::Result result) {
+  switch (result) {
+    case BinaryUploadService::Result::UNKNOWN:
+      return "UNKNOWN";
+    case BinaryUploadService::Result::SUCCESS:
+      return "SUCCESS";
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+      return "UPLOAD_FAILURE";
+    case BinaryUploadService::Result::TIMEOUT:
+      return "TIMEOUT";
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+      return "FILE_TOO_LARGE";
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+      return "FAILED_TO_GET_TOKEN";
+    case BinaryUploadService::Result::UNAUTHORIZED:
+      return "UNAUTHORIZED";
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      return "FILE_ENCRYPTED";
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      return "UNSUPPORTED_FILE_TYPE";
+  }
+}
 
 }  // namespace
 
@@ -49,10 +85,11 @@ BinaryUploadService::BinaryUploadService(
 
 BinaryUploadService::BinaryUploadService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    Profile* profile,
     std::unique_ptr<BinaryFCMService> binary_fcm_service)
     : url_loader_factory_(url_loader_factory),
       binary_fcm_service_(std::move(binary_fcm_service)),
-      profile_(nullptr),
+      profile_(profile),
       weakptr_factory_(this) {}
 
 BinaryUploadService::~BinaryUploadService() {}
@@ -60,7 +97,16 @@ BinaryUploadService::~BinaryUploadService() {}
 void BinaryUploadService::MaybeUploadForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!can_upload_data_.has_value()) {
+  if (IsAdvancedProtectionRequest(*request)) {
+    MaybeUploadForDeepScanningCallback(
+        std::move(request),
+        /*authorized=*/safe_browsing::AdvancedProtectionStatusManagerFactory::
+            GetForProfile(profile_)
+                ->IsUnderAdvancedProtection());
+    return;
+  }
+
+  if (!can_upload_enterprise_data_.has_value()) {
     IsAuthorized(
         base::BindOnce(&BinaryUploadService::MaybeUploadForDeepScanningCallback,
                        weakptr_factory_.GetWeakPtr(), std::move(request)));
@@ -68,7 +114,7 @@ void BinaryUploadService::MaybeUploadForDeepScanning(
   }
 
   MaybeUploadForDeepScanningCallback(std::move(request),
-                                     can_upload_data_.value());
+                                     can_upload_enterprise_data_.value());
 }
 
 void BinaryUploadService::MaybeUploadForDeepScanningCallback(
@@ -92,6 +138,11 @@ void BinaryUploadService::UploadForDeepScanning(
   active_requests_[raw_request] = std::move(request);
   start_times_[raw_request] = base::TimeTicks::Now();
 
+  std::string token = base::RandBytesAsString(128);
+  token = base::HexEncode(token.data(), token.size());
+  active_tokens_[raw_request] = token;
+  raw_request->set_request_token(token);
+
   if (!binary_fcm_service_) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(&BinaryUploadService::FinishRequest,
@@ -101,14 +152,9 @@ void BinaryUploadService::UploadForDeepScanning(
     return;
   }
 
-  std::string token = base::RandBytesAsString(128);
-  token = base::HexEncode(token.data(), token.size());
-  active_tokens_[raw_request] = token;
   binary_fcm_service_->SetCallbackForToken(
       token, base::BindRepeating(&BinaryUploadService::OnGetResponse,
                                  weakptr_factory_.GetWeakPtr(), raw_request));
-  raw_request->set_request_token(std::move(token));
-
   binary_fcm_service_->GetInstanceID(
       base::BindOnce(&BinaryUploadService::OnGetInstanceID,
                      weakptr_factory_.GetWeakPtr(), raw_request));
@@ -129,6 +175,9 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
                   DeepScanningClientResponse());
     return;
   }
+
+  base::UmaHistogramTimes("SafeBrowsingBinaryUploadRequest.TimeToGetToken",
+                          base::TimeTicks::Now() - start_times_[request]);
 
   request->set_fcm_token(instance_id);
   request->GetRequestData(base::BindOnce(&BinaryUploadService::OnGetRequestData,
@@ -190,12 +239,15 @@ void BinaryUploadService::OnGetRequestData(Request* request,
   base::Base64Encode(metadata, &metadata);
 
   auto upload_request = MultipartUploadRequest::Create(
-      url_loader_factory_, GURL(kSbBinaryUploadUrl), metadata, data.contents,
-      traffic_annotation,
+      url_loader_factory_, GetUploadUrl(IsAdvancedProtectionRequest(*request)),
+      metadata, data.contents, traffic_annotation,
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
   upload_request->Start();
   active_uploads_[request] = std::move(upload_request);
+
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->deep_scanning_request());
 }
 
 void BinaryUploadService::OnUploadComplete(Request* request,
@@ -230,10 +282,14 @@ void BinaryUploadService::OnGetResponse(Request* request,
     return;
 
   if (response.has_dlp_scan_verdict()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " finished DLP scanning";
     received_dlp_verdicts_[request].reset(response.release_dlp_scan_verdict());
   }
 
   if (response.has_malware_scan_verdict()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " finished malware scanning";
     received_malware_verdicts_[request].reset(
         response.release_malware_scan_verdict());
   }
@@ -247,6 +303,8 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   auto received_dlp_response = received_dlp_verdicts_.find(request);
   if (requested_dlp_scan_response &&
       received_dlp_response == received_dlp_verdicts_.end()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " is waiting for DLP scanning to complete.";
     return;
   }
 
@@ -255,10 +313,13 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   auto received_malware_response = received_malware_verdicts_.find(request);
   if (requested_malware_scan_response &&
       received_malware_response == received_malware_verdicts_.end()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " is waiting for malware scanning to complete.";
     return;
   }
 
   DeepScanningClientResponse response;
+  response.set_token(request->deep_scanning_request().request_token());
   if (requested_dlp_scan_response) {
     // Transfers ownership of the DLP response to |response|.
     response.set_allocated_dlp_scan_verdict(
@@ -284,6 +345,16 @@ void BinaryUploadService::FinishRequest(Request* request,
                                         DeepScanningClientResponse response) {
   RecordRequestMetrics(request, result, response);
 
+  // We add the request here in case we never actually uploaded anything, so it
+  // wasn't added in OnGetRequestData
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->deep_scanning_request());
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
+      active_tokens_[request], ResultToString(result), response);
+
+  std::string instance_id =
+      request->deep_scanning_request().fcm_notification_token();
+
   request->FinishRequest(result, response);
   active_requests_.erase(request);
   active_timers_.erase(request);
@@ -292,10 +363,16 @@ void BinaryUploadService::FinishRequest(Request* request,
   received_dlp_verdicts_.erase(request);
 
   auto token_it = active_tokens_.find(request);
-  if (token_it != active_tokens_.end()) {
+  DCHECK(token_it != active_tokens_.end());
+  if (binary_fcm_service_) {
     binary_fcm_service_->ClearCallbackForToken(token_it->second);
-    active_tokens_.erase(token_it);
+
+    // The BinaryFCMService will handle all recoverable errors. In case of
+    // unrecoverable error, there's nothing we can do here.
+    binary_fcm_service_->UnregisterInstanceID(instance_id, base::DoNothing());
   }
+
+  active_tokens_.erase(token_it);
 }
 
 void BinaryUploadService::RecordRequestMetrics(
@@ -311,8 +388,8 @@ void BinaryUploadService::RecordRequestMetrics(
 
   if (response.has_malware_scan_verdict()) {
     base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
-                              response.malware_scan_verdict().status() ==
-                                  MalwareDeepScanningVerdict::SUCCESS);
+                              response.malware_scan_verdict().verdict() !=
+                                  MalwareDeepScanningVerdict::SCAN_FAILURE);
   }
 
   if (response.has_dlp_scan_verdict()) {
@@ -352,6 +429,18 @@ void BinaryUploadService::Request::set_request_token(const std::string& token) {
   deep_scanning_request_.set_request_token(token);
 }
 
+void BinaryUploadService::Request::set_filename(const std::string& filename) {
+  deep_scanning_request_.set_filename(filename);
+}
+
+void BinaryUploadService::Request::set_digest(const std::string& digest) {
+  deep_scanning_request_.set_digest(digest);
+}
+
+void BinaryUploadService::Request::clear_dlp_scan_request() {
+  deep_scanning_request_.clear_dlp_scan_request();
+}
+
 void BinaryUploadService::Request::FinishRequest(
     Result result,
     DeepScanningClientResponse response) {
@@ -389,12 +478,14 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
                  &BinaryUploadService::ResetAuthorizationData);
   }
 
-  if (!can_upload_data_.has_value()) {
+  if (!can_upload_enterprise_data_.has_value()) {
     // Send a request to check if the browser can upload data.
+    authorization_callbacks_.push_back(std::move(callback));
     if (!pending_validate_data_upload_request_) {
       auto dm_token = GetDMToken(profile_);
       if (!dm_token.is_valid()) {
-        std::move(callback).Run(false);
+        can_upload_enterprise_data_ = false;
+        RunAuthorizationCallbacks();
         return;
       }
 
@@ -405,57 +496,49 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
       request->set_dm_token(dm_token.value());
       UploadForDeepScanning(std::move(request));
     }
-    authorization_callbacks_.push_back(std::move(callback));
     return;
   }
-  std::move(callback).Run(can_upload_data_.value());
+  std::move(callback).Run(can_upload_enterprise_data_.value());
 }
 
 void BinaryUploadService::ValidateDataUploadRequestCallback(
     BinaryUploadService::Result result,
     DeepScanningClientResponse response) {
   pending_validate_data_upload_request_ = false;
-  can_upload_data_ = result == BinaryUploadService::Result::SUCCESS;
+  can_upload_enterprise_data_ = result == BinaryUploadService::Result::SUCCESS;
   RunAuthorizationCallbacks();
 }
 
 void BinaryUploadService::RunAuthorizationCallbacks() {
-  DCHECK(can_upload_data_.has_value());
+  DCHECK(can_upload_enterprise_data_.has_value());
   for (auto& callback : authorization_callbacks_) {
-    std::move(callback).Run(can_upload_data_.value());
+    std::move(callback).Run(can_upload_enterprise_data_.value());
   }
   authorization_callbacks_.clear();
 }
 
 void BinaryUploadService::ResetAuthorizationData() {
-  // Setting |can_upload_data_| to base::nullopt will make the next call to
-  // IsAuthorized send out a request to validate data uploads.
-  can_upload_data_ = base::nullopt;
+  // Setting |can_upload_enterprise_data_| to base::nullopt will make the next
+  // call to IsAuthorized send out a request to validate data uploads.
+  can_upload_enterprise_data_ = base::nullopt;
 
-  // Call IsAuthorized  to update |can_upload_data_| right away.
+  // Call IsAuthorized  to update |can_upload_enterprise_data_| right away.
   IsAuthorized(base::DoNothing());
 }
 
+void BinaryUploadService::Shutdown() {
+  if (binary_fcm_service_)
+    binary_fcm_service_->Shutdown();
+}
+
 void BinaryUploadService::SetAuthForTesting(bool authorized) {
-  can_upload_data_ = authorized;
+  can_upload_enterprise_data_ = authorized;
 }
 
 // static
-bool BinaryUploadService::ShouldBlockFileSize(size_t file_size) {
-  int block_large_file_transfer = g_browser_process->local_state()->GetInteger(
-      prefs::kBlockLargeFileTransfer);
-  if (block_large_file_transfer !=
-          BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS &&
-      block_large_file_transfer !=
-          BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS)
-    return false;
-
-  return (file_size > kMaxUploadSizeBytes);
-}
-
-// static
-GURL BinaryUploadService::GetUploadUrl() {
-  return GURL(kSbBinaryUploadUrl);
+GURL BinaryUploadService::GetUploadUrl(bool is_advanced_protection) {
+  return is_advanced_protection ? GURL(kSbAppUploadUrl)
+                                : GURL(kSbEnterpriseUploadUrl);
 }
 
 }  // namespace safe_browsing

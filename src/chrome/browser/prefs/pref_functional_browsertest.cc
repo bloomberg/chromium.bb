@@ -22,9 +22,11 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/embedder_support/pref_names.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -220,8 +222,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, PRE_TestPrivacySecurityPrefs) {
   EXPECT_TRUE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
 
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
-  prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
+  EXPECT_TRUE(prefs->GetBoolean(embedder_support::kAlternateErrorPagesEnabled));
+  prefs->SetBoolean(embedder_support::kAlternateErrorPagesEnabled, false);
 
   EXPECT_TRUE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
@@ -234,7 +236,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestPrivacySecurityPrefs) {
   EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_NEVER,
             prefs->GetInteger(prefs::kNetworkPredictionOptions));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled));
+  EXPECT_FALSE(
+      prefs->GetBoolean(embedder_support::kAlternateErrorPagesEnabled));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
 }
 

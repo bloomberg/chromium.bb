@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -19,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace content {
 
@@ -79,9 +82,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // gives us better numbers.
 
   // Some things can be done on another thread safely.
-  base::PostDelayedTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
@@ -124,7 +126,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = ui::AXMode();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = ui::kAXModeComplete;
+    AddAccessibilityModeFlags(ui::kAXModeComplete);
   }
 }
 
@@ -170,11 +172,15 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
     std::move(callback).Run();
   ui_thread_histogram_callbacks_.clear();
 
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
-                        color_utils::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));
+#if defined(OS_WIN)
+  UMA_HISTOGRAM_ENUMERATION(
+      "Accessibility.WinHighContrastTheme",
+      ui::NativeTheme::GetInstanceForNativeUi()->GetHighContrastColorScheme(),
+      ui::NativeTheme::HighContrastColorScheme::kMaxValue);
+#endif
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread() {
@@ -214,6 +220,9 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
   if (accessibility_mode_ == previous_mode)
     return;
 
+  // Proxy the AXMode to AXPlatformNode to enable accessibility.
+  ui::AXPlatformNode::NotifyAddAXModeFlags(accessibility_mode_);
+
   // Retrieve only newly added modes for the purposes of logging.
   int new_mode_flags = mode.mode() & (~previous_mode.mode());
   if (new_mode_flags & ui::AXMode::kNativeAPIs)
@@ -231,6 +240,16 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
     web_contents_vector[i]->AddAccessibilityMode(accessibility_mode_);
+
+  // Add a crash key with the ax_mode, to enable searching for top crashes that
+  // occur when accessibility is turned on. This adds it for the browser
+  // process, and elsewhere the same key is added to renderer processes.
+  static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
+      "ax_mode", base::debug::CrashKeySize::Size64);
+  if (ax_mode_crash_key) {
+    base::debug::SetCrashKeyString(ax_mode_crash_key,
+                                   accessibility_mode_.ToString());
+  }
 }
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(

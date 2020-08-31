@@ -168,7 +168,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentTab) {
                                    WindowOpenDisposition::CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
 
-  chrome::BookmarkCurrentTabAllowingExtensionOverrides(browser());
+  chrome::BookmarkCurrentTab(browser());
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());
@@ -263,7 +263,8 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTabWithGroup) {
   NavigateAndCommitActiveTab(url2);
 
   // Add the tab to a Tab Group.
-  const TabGroupId group_id = browser()->tab_strip_model()->AddToNewGroup({0});
+  const tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0});
 
   // Go back in a new background tab.
   chrome::GoBack(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);

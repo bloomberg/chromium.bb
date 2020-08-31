@@ -55,7 +55,7 @@ constexpr char kInterfaceMapLabel[] =
 
 }  // namespace
 
-// Wrapper function defined in blink.h
+// Function defined in third_party/blink/public/web/blink.h.
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
 }
@@ -165,16 +165,28 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
     data->profiler_group_ = nullptr;
   }
 
-  data->active_script_wrappables_.Clear();
-
   // Detach V8's garbage collector.
   // Need to finalize an already running garbage collection as otherwise
   // callbacks are missing and state gets out of sync.
   ThreadState* const thread_state = ThreadState::Current();
   thread_state->FinishIncrementalMarkingIfRunning(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
+      BlinkGC::GCReason::kThreadTerminationGC);
+  data->active_script_wrappable_manager_.Clear();
   thread_state->DetachFromIsolate();
+  isolate->RemoveGCPrologueCallback(data->prologue_callback_);
+  isolate->RemoveGCEpilogueCallback(data->epilogue_callback_);
+}
+
+void V8PerIsolateData::SetGCCallbacks(
+    v8::Isolate* isolate,
+    v8::Isolate::GCCallback prologue_callback,
+    v8::Isolate::GCCallback epilogue_callback) {
+  prologue_callback_ = prologue_callback;
+  epilogue_callback_ = epilogue_callback;
+  isolate->AddGCPrologueCallback(prologue_callback_);
+  isolate->AddGCEpilogueCallback(epilogue_callback_);
 }
 
 // destroy() clear things that should be cleared after ThreadState::detach()
@@ -267,26 +279,28 @@ void V8PerIsolateData::ClearPersistentsForV8ContextSnapshot() {
   private_property_.reset();
 }
 
-const v8::Eternal<v8::Name>* V8PerIsolateData::FindOrCreateEternalNameCache(
+const base::span<const v8::Eternal<v8::Name>>
+V8PerIsolateData::FindOrCreateEternalNameCache(
     const void* lookup_key,
-    const char* const names[],
-    size_t count) {
+    const base::span<const char* const>& names) {
   auto it = eternal_name_cache_.find(lookup_key);
   const Vector<v8::Eternal<v8::Name>>* vector = nullptr;
   if (UNLIKELY(it == eternal_name_cache_.end())) {
     v8::Isolate* isolate = this->GetIsolate();
-    Vector<v8::Eternal<v8::Name>> new_vector(count);
-    std::transform(
-        names, names + count, new_vector.begin(), [isolate](const char* name) {
-          return v8::Eternal<v8::Name>(isolate, V8AtomicString(isolate, name));
-        });
+    Vector<v8::Eternal<v8::Name>> new_vector(names.size());
+    std::transform(names.begin(), names.end(), new_vector.begin(),
+                   [isolate](const char* name) {
+                     return v8::Eternal<v8::Name>(
+                         isolate, V8AtomicString(isolate, name));
+                   });
     vector = &eternal_name_cache_.Set(lookup_key, std::move(new_vector))
                   .stored_value->value;
   } else {
     vector = &it->value;
   }
-  DCHECK_EQ(vector->size(), count);
-  return vector->data();
+  DCHECK_EQ(vector->size(), names.size());
+  return base::span<const v8::Eternal<v8::Name>>(vector->data(),
+                                                 vector->size());
 }
 
 v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {
@@ -386,16 +400,6 @@ void V8PerIsolateData::SetProfilerGroup(
 
 V8PerIsolateData::GarbageCollectedData* V8PerIsolateData::ProfilerGroup() {
   return profiler_group_;
-}
-
-void V8PerIsolateData::AddActiveScriptWrappable(
-    ActiveScriptWrappableBase* wrappable) {
-  if (!active_script_wrappables_) {
-    active_script_wrappables_ =
-        MakeGarbageCollected<ActiveScriptWrappableSet>();
-  }
-
-  active_script_wrappables_->insert(wrappable);
 }
 
 }  // namespace blink

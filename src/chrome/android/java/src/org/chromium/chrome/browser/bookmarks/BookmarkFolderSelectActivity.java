@@ -8,10 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,13 +18,19 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -336,8 +338,8 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                 return convertView;
             }
             if (convertView == null) {
-                convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.bookmark_folder_select_item, parent, false);
+                convertView = LayoutInflater.from(parent.getContext())
+                                      .inflate(R.layout.modern_list_item_view, parent, false);
             }
             TextView textView = (TextView) convertView.findViewById(R.id.title);
             textView.setText(entry.mTitle);
@@ -359,7 +361,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
          * i.e. New Folder, Normal and Selected.
          */
         private void setUpIcons(FolderListEntry entry, View view) {
-            ImageView startIcon = view.findViewById(R.id.icon_view);
+            ImageView startIcon = view.findViewById(R.id.start_icon);
 
             Drawable iconDrawable;
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
@@ -369,7 +371,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                 VectorDrawableCompat vectorDrawable = VectorDrawableCompat.create(
                         view.getResources(), R.drawable.ic_add, view.getContext().getTheme());
                 vectorDrawable.setTintList(AppCompatResources.getColorStateList(
-                        view.getContext(), R.color.standard_mode_tint));
+                        view.getContext(), R.color.default_icon_color_tint_list));
                 iconDrawable = vectorDrawable;
             }
 
@@ -385,5 +387,19 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
             ViewCompat.setPaddingRelative(view, paddingStart, view.getPaddingTop(), mBasePadding,
                     view.getPaddingBottom());
         }
+    }
+
+    @VisibleForTesting
+    int getFolderPositionForTesting(BookmarkId bookmarkId) {
+        for (int i = 0; i < mBookmarkIdsAdapter.mEntryList.size(); i++) {
+            FolderListEntry entry = mBookmarkIdsAdapter.mEntryList.get(i);
+            if (bookmarkId.equals(entry.mId)) return i;
+        }
+        return -1;
+    }
+
+    @VisibleForTesting
+    void performClickForTesting(int adapterPosition) {
+        onItemClick(mBookmarkIdsList, null, adapterPosition, adapterPosition);
     }
 }

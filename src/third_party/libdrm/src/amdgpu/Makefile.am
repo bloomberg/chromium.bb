@@ -26,6 +26,7 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm
@@ -47,5 +48,6 @@ libdrm_amdgpuinclude_HEADERS = $(LIBDRM_AMDGPU_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_amdgpu.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = amdgpu-symbol-check
 EXTRA_DIST = $(TESTS)

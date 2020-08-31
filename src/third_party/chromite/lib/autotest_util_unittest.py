@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -16,6 +17,9 @@ from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.utils import matching
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
@@ -97,4 +101,4 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     self.builder.BuildAutotestServerPackageTarball()
 
     tar_mock.assert_called_once_with(expected_files, tar_path,
-                                     extra_args=mock.ANY, error_code_ok=True)
+                                     extra_args=mock.ANY, check=False)

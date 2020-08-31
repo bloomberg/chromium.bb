@@ -38,6 +38,7 @@
 
 #include "gluDefs.hpp"
 #include "gluRenderContext.hpp"
+#include "gluContextInfo.hpp"
 #include "gluShaderProgram.hpp"
 
 #include "glw.h"
@@ -1121,7 +1122,7 @@ void WideColorSurfaceTest::testFramebufferColorEncoding()
 	bool correct = false;
 	if (m_colorSpace == EGL_GL_COLORSPACE_SRGB_KHR || m_colorSpace == EGL_GL_COLORSPACE_DISPLAY_P3_EXT)
 	{
-		if (m_redSize == 8 || m_redSize == 10)
+		if (m_redSize == 8)
 		{
 			correct = framebufferColorEncoding == GL_SRGB;
 		}
@@ -1194,15 +1195,9 @@ void WideColorSurfaceTest::doClearTest (EGLSurface surface)
 
 				reference += it->increment;
 
-				// Detect compatible GLES context by querying GL_MAJOR_VERSION.
-				// This query does not exist on GLES2 so succeeding query implies GLES3+ context.
-				glw::GLint majorVersion = 0;
-				m_gl.getIntegerv(GL_MAJOR_VERSION, &majorVersion);
-				if (m_gl.getError() == GL_NO_ERROR)
-				{
-					// This device is ES3 compatible, so do some additional testing
+				// If this device is ES3 compatible, so do some additional testing
+				if (glu::IsES3Compatible(m_gl))
 					testFramebufferColorEncoding();
-				}
 			}
 
 			EGLU_CHECK_CALL(egl, swapBuffers(m_eglDisplay, surface));

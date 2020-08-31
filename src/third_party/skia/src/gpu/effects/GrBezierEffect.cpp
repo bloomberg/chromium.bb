@@ -11,7 +11,6 @@
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
-#include "src/gpu/glsl/GrGLSLUtil.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
@@ -29,11 +28,11 @@ public:
                  const CoordTransformRange& transformRange) override {
         const GrConicEffect& ce = primProc.cast<GrConicEffect>();
 
-        if (!ce.viewMatrix().isIdentity() && !fViewMatrix.cheapEqualTo(ce.viewMatrix())) {
+        if (!ce.viewMatrix().isIdentity() &&
+            !SkMatrixPriv::CheapEqual(fViewMatrix, ce.viewMatrix()))
+        {
             fViewMatrix = ce.viewMatrix();
-            float viewMatrix[3 * 3];
-            GrGLSLGetMatrix<3>(viewMatrix, fViewMatrix);
-            pdman.setMatrix3f(fViewMatrixUniform, viewMatrix);
+            pdman.setSkMatrix(fViewMatrixUniform, fViewMatrix);
         }
 
         if (ce.color() != fColor) {
@@ -193,7 +192,8 @@ void GrGLConicEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
     // TODO should we really be doing this?
     if (gp.coverageScale() != 0xff) {
         const char* coverageScale;
-        fCoverageScaleUniform = uniformHandler->addUniform(kFragment_GrShaderFlag,
+        fCoverageScaleUniform = uniformHandler->addUniform(nullptr,
+                                                           kFragment_GrShaderFlag,
                                                            kFloat_GrSLType,
                                                            "Coverage",
                                                            &coverageScale);
@@ -281,11 +281,11 @@ public:
                  const CoordTransformRange& transformRange) override {
         const GrQuadEffect& qe = primProc.cast<GrQuadEffect>();
 
-        if (!qe.viewMatrix().isIdentity() && !fViewMatrix.cheapEqualTo(qe.viewMatrix())) {
+        if (!qe.viewMatrix().isIdentity() &&
+            !SkMatrixPriv::CheapEqual(fViewMatrix, qe.viewMatrix()))
+        {
             fViewMatrix = qe.viewMatrix();
-            float viewMatrix[3 * 3];
-            GrGLSLGetMatrix<3>(viewMatrix, fViewMatrix);
-            pdman.setMatrix3f(fViewMatrixUniform, viewMatrix);
+            pdman.setSkMatrix(fViewMatrixUniform, fViewMatrix);
         }
 
         if (qe.color() != fColor) {
@@ -394,7 +394,8 @@ void GrGLQuadEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 
     if (0xff != gp.coverageScale()) {
         const char* coverageScale;
-        fCoverageScaleUniform = uniformHandler->addUniform(kFragment_GrShaderFlag,
+        fCoverageScaleUniform = uniformHandler->addUniform(nullptr,
+                                                           kFragment_GrShaderFlag,
                                                            kHalf_GrSLType,
                                                            "Coverage",
                                                            &coverageScale);

@@ -4,12 +4,13 @@
 
 #include "ash/system/message_center/arc/arc_notification_surface_impl.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
@@ -36,7 +37,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
     // set on the cursor.
     if (widget)
       return widget->GetNativeWindow()->GetCursor(point /* not used */);
-    return ui::CursorType::kNull;
+    return ui::mojom::CursorType::kNull;
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;

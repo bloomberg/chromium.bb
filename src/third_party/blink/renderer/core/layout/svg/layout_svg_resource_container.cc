@@ -22,6 +22,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cycle_solver.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 
@@ -83,12 +84,73 @@ void LayoutSVGResourceContainer::StyleDidChange(
     resource->NotifyResourceAttached(*this);
 }
 
+bool LayoutSVGResourceContainer::FindCycle(
+    SVGResourcesCycleSolver& solver) const {
+  if (solver.IsKnownAcyclic(this))
+    return false;
+  SVGResourcesCycleSolver::Scope scope(solver);
+  if (!scope.Enter(this) || FindCycleFromSelf(solver))
+    return true;
+  solver.AddAcyclicSubgraph(this);
+  return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleInResources(
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& layout_object) {
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
+  if (!resources)
+    return false;
+  // Fetch all the referenced resources.
+  HashSet<LayoutSVGResourceContainer*> local_resources;
+  resources->BuildSetOfResources(local_resources);
+  // This performs a depth-first search for a back-edge in all the
+  // (potentially disjoint) graphs formed by the referenced resources.
+  for (auto* local_resource : local_resources) {
+    if (local_resource->FindCycle(solver))
+      return true;
+  }
+  return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleFromSelf(
+    SVGResourcesCycleSolver& solver) const {
+  return FindCycleInSubtree(solver, *this);
+}
+
+bool LayoutSVGResourceContainer::FindCycleInDescendants(
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& root) {
+  LayoutObject* node = root.SlowFirstChild();
+  while (node) {
+    // Skip subtrees which are themselves resources. (They will be
+    // processed - if needed - when they are actually referenced.)
+    if (node->IsSVGResourceContainer()) {
+      node = node->NextInPreOrderAfterChildren(&root);
+      continue;
+    }
+    if (FindCycleInResources(solver, *node))
+      return true;
+    node = node->NextInPreOrder(&root);
+  }
+  return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleInSubtree(
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& root) {
+  if (FindCycleInResources(solver, root))
+    return true;
+  return FindCycleInDescendants(solver, root);
+}
+
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     InvalidationModeMask invalidation_mask) {
   if (is_invalidating_)
     return;
   LocalSVGResource* resource = ResourceForContainer(*this);
-  if (!resource || !resource->HasClients())
+  if (!resource)
     return;
   // Remove modes for which invalidations have already been
   // performed. If no modes remain we are done.
@@ -100,8 +162,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   is_invalidating_ = true;
 
   // Invalidate clients registered via an SVGResource.
-  if (resource)
-    resource->NotifyContentChanged(invalidation_mask);
+  resource->NotifyContentChanged(invalidation_mask);
 
   is_invalidating_ = false;
 }
@@ -154,7 +215,7 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
 
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
-    SVGResourceClient* client = element->GetSVGResourceClient();
+    SVGElementResourceClient* client = element->GetSVGResourceClient();
     if (InvalidationModeMask invalidation_mask =
             resources->RemoveClientFromCacheAffectingObjectBounds(*client)) {
       LayoutSVGResourceContainer::MarkClientForInvalidation(object,

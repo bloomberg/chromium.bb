@@ -2,26 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {NetworkGroupNode} from './NetworkDataGridNode.js';
+import {GroupLookupInterface, NetworkLogView} from './NetworkLogView.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Network.GroupLookupInterface}
+ * @implements {GroupLookupInterface}
  */
-Network.NetworkFrameGrouper = class {
+export class NetworkFrameGrouper {
   /**
-   * @param {!Network.NetworkLogView} parentView
+   * @param {!NetworkLogView} parentView
    */
   constructor(parentView) {
     this._parentView = parentView;
-    /** @type {!Map<!SDK.ResourceTreeFrame, !Network.FrameGroupNode>} */
+    /** @type {!Map<!SDK.ResourceTreeModel.ResourceTreeFrame, !FrameGroupNode>} */
     this._activeGroups = new Map();
   }
 
   /**
    * @override
-   * @param {!SDK.NetworkRequest} request
-   * @return {?Network.NetworkGroupNode}
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @return {?NetworkGroupNode}
    */
   groupNodeForRequest(request) {
-    const frame = SDK.ResourceTreeModel.frameForRequest(request);
+    const frame = SDK.ResourceTreeModel.ResourceTreeModel.frameForRequest(request);
     if (!frame || frame.isTopFrame()) {
       return null;
     }
@@ -29,7 +36,7 @@ Network.NetworkFrameGrouper = class {
     if (groupNode) {
       return groupNode;
     }
-    groupNode = new Network.FrameGroupNode(this._parentView, frame);
+    groupNode = new FrameGroupNode(this._parentView, frame);
     this._activeGroups.set(frame, groupNode);
     return groupNode;
   }
@@ -40,12 +47,12 @@ Network.NetworkFrameGrouper = class {
   reset() {
     this._activeGroups.clear();
   }
-};
+}
 
-Network.FrameGroupNode = class extends Network.NetworkGroupNode {
+export class FrameGroupNode extends NetworkGroupNode {
   /**
-   * @param {!Network.NetworkLogView} parentView
-   * @param {!SDK.ResourceTreeFrame} frame
+   * @param {!NetworkLogView} parentView
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
   constructor(parentView, frame) {
     super(parentView);
@@ -56,7 +63,7 @@ Network.FrameGroupNode = class extends Network.NetworkGroupNode {
    * @override
    */
   displayName() {
-    return new Common.ParsedURL(this._frame.url).domain() || this._frame.name || '<iframe>';
+    return new Common.ParsedURL.ParsedURL(this._frame.url).domain() || this._frame.name || '<iframe>';
   }
 
   /**
@@ -69,9 +76,10 @@ Network.FrameGroupNode = class extends Network.NetworkGroupNode {
     const columnIndex = this.dataGrid.indexOfVisibleColumn(columnId);
     if (columnIndex === 0) {
       const name = this.displayName();
-      cell.appendChild(UI.Icon.create('largeicon-navigator-frame', 'network-frame-group-icon'));
+      cell.appendChild(UI.Icon.Icon.create('largeicon-navigator-frame', 'network-frame-group-icon'));
       cell.createTextChild(name);
       cell.title = name;
+      this.setCellAccessibleName(cell.textContent, cell, columnId);
     }
   }
-};
+}

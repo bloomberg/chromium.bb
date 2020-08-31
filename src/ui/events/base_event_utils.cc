@@ -5,9 +5,9 @@
 #include "ui/events/base_event_utils.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
@@ -25,6 +25,11 @@ const int kSystemKeyModifierMask = EF_COMMAND_DOWN;
 #else
 const int kSystemKeyModifierMask = EF_ALT_DOWN;
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+
+bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
+  int64_t delta = (now - timestamp).InMilliseconds();
+  return delta >= 0 && delta <= 60 * 1000;
+}
 
 }  // namespace
 
@@ -65,6 +70,17 @@ double EventTimeStampToSeconds(base::TimeTicks time_stamp) {
 
 base::TimeTicks EventTimeStampFromSeconds(double time_stamp_seconds) {
   return base::TimeTicks() + base::TimeDelta::FromSecondsD(time_stamp_seconds);
+}
+
+void ValidateEventTimeClock(base::TimeTicks* timestamp) {
+  // Some fraction of devices, across all platforms provide bogus event
+  // timestamps. See https://crbug.com/650338#c1. Correct timestamps which are
+  // clearly bogus.
+  // TODO(861855): Replace this with an approach that doesn't require an extra
+  // read of the current time per event.
+  base::TimeTicks now = EventTimeForNow();
+  if (!IsValidTimebase(now, *timestamp))
+    *timestamp = now;
 }
 
 }  // namespace ui

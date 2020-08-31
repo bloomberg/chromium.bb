@@ -11,11 +11,9 @@ import base64
 import glob
 import os
 
-from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import buildbucket_lib
@@ -30,7 +28,6 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
-from chromite.lib import path_util
 from chromite.lib import request_build
 
 
@@ -562,8 +559,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                update_metadata=False,
                record_packages_under_test=True,
                **kwargs):
-    if afdo_use:
-      suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
+    if not afdo_use:
+      suffix = self.UpdateSuffix('-' + constants.USE_AFDO_USE, suffix)
     super(BuildPackagesStage, self).__init__(
         builder_run, buildstore, board, suffix=suffix, **kwargs)
     self._afdo_generate_min = afdo_generate_min
@@ -572,8 +569,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
-    if afdo_use:
-      useflags.append(constants.USE_AFDO_USE)
+    if not afdo_use:
+      useflags.append('-' + constants.USE_AFDO_USE)
 
     if useflags:
       self._portage_extra_env['USE'] = ' '.join(useflags)
@@ -603,6 +600,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     logging.info('Sucessfully extract packages under test')
     self.board_runattrs.SetParallel('packages_under_test', packages)
 
+  def _IsGomaEnabledOnlyForLogs(self):
+    # HACK: our ninja log uploading bits for Chromium are pretty closely tied
+    # to goma's logging bits. In latest-toolchain builds, these logs are
+    # useful, but actually using goma isn't, since it just does local
+    # fallbacks.
+    return self._latest_toolchain
+
   def _ShouldEnableGoma(self):
     # Enable goma if 1) chrome actually needs to be built, or we want to use
     # goma to build regular packages 2) not latest_toolchain (because toolchain
@@ -610,7 +614,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # 3) goma is available.
     return ((self._run.options.managed_chrome or
              self._run.config.build_all_with_goma) and
-            not self._latest_toolchain and self._run.options.goma_dir)
+            self._run.options.goma_dir)
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
@@ -634,7 +638,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         chromeos_goma_dir=self._run.options.chromeos_goma_dir)
 
     # Set USE_GOMA env var so that chrome is built with goma.
-    self._portage_extra_env['USE_GOMA'] = 'true'
+    if not self._IsGomaEnabledOnlyForLogs():
+      self._portage_extra_env['USE_GOMA'] = 'true'
     self._portage_extra_env.update(goma.GetChrootExtraEnv())
 
     # Keep GOMA_TMP_DIR for Report stage to upload logs.
@@ -653,18 +658,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if self._record_packages_under_test:
       self.RecordPackagesUnderTest()
 
-    try:
-      event_filename = 'build-events.json'
-      event_file = os.path.join(self.archive_path, event_filename)
-      logging.info('Logging events to %s', event_file)
-      event_file_in_chroot = path_util.ToChrootPath(event_file)
-    except cbuildbot_run.VersionNotSetError:
-      # TODO(chingcodes): Add better detection of archive options.
-      logging.info('Unable to archive, disabling build events file')
-      event_filename = None
-      event_file = None
-      event_file_in_chroot = None
-
     # Set up goma. Use goma iff chrome needs to be built.
     chroot_args = self._SetupGomaIfNecessary()
     run_goma = bool(chroot_args)
@@ -678,7 +671,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # packages causing races & build failures.
     clean_build = (
         self._run.config.build_type == constants.CANARY_TYPE or
-        self._run.config.build_type == constants.FULL_TYPE)
+        self._run.config.build_type == constants.FULL_TYPE or
+        self._run.config.build_type == constants.TOOLCHAIN_TYPE)
 
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
@@ -695,7 +689,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           noretry=self._run.config.nobuildretry,
           chroot_args=chroot_args,
           extra_env=self._portage_extra_env,
-          event_file=event_file_in_chroot,
           run_goma=run_goma,
           build_all_with_goma=self._run.config.build_all_with_goma,
           disable_revdep_logic=clean_build,
@@ -712,26 +705,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       gs_url = os.path.join(self.upload_url, 'BuildCompileFailureOutput.json')
       logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', gs_url)
       raise
-
-    if event_file and os.path.isfile(event_file):
-      logging.info('Archive build-events.json file')
-      # TODO(chingcodes): Remove upload after events DB is final.
-      self.UploadArtifact(event_filename, archive=False, strict=True)
-
-      creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
-
-      build_identifier, db = self._run.GetCIDBHandle()
-      buildbucket_id = build_identifier.buildbucket_id
-      if db and creds_file:
-        parent_key = ('Build', buildbucket_id)
-        commands.ExportToGCloud(
-            self._build_root,
-            creds_file,
-            event_file,
-            parent_key=parent_key,
-            caller=type(self).__name__)
-    else:
-      logging.info('No build-events.json file to archive')
 
     if self._update_metadata:
       # Extract firmware version information from the newly created updater.

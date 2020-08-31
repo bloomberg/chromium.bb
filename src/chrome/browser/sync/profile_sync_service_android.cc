@@ -293,6 +293,13 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForPreferredDataTypes(
       ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
+jboolean ProfileSyncServiceAndroid::IsTrustedVaultKeyRequired(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetUserSettings()->IsTrustedVaultKeyRequired();
+}
+
 jboolean
 ProfileSyncServiceAndroid::IsTrustedVaultKeyRequiredForPreferredDataTypes(
     JNIEnv* env,
@@ -487,6 +494,14 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(IDS_SYNC_ENTER_PASSPHRASE_BODY));
+}
+
+void ProfileSyncServiceAndroid::RecordKeyRetrievalTrigger(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint trigger) {
+  syncer::RecordKeyRetrievalTrigger(
+      static_cast<syncer::KeyRetrievalTriggerForUMA>(trigger));
 }
 
 // Functionality only available for testing purposes.

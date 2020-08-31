@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -23,7 +23,6 @@ class BackgroundFetchIconLoader;
 class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
 class ExceptionState;
-class ExecutionContext;
 class RequestOrUSVStringOrRequestOrUSVStringSequence;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -33,18 +32,13 @@ class ServiceWorkerRegistration;
 // by developers through ServiceWorkerRegistration.backgroundFetch.
 class MODULES_EXPORT BackgroundFetchManager final
     : public ScriptWrappable,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchManager);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   explicit BackgroundFetchManager(ServiceWorkerRegistration* registration);
   ~BackgroundFetchManager() override = default;
-
-  static BackgroundFetchManager* Create(
-      ServiceWorkerRegistration* registration) {
-    return MakeGarbageCollected<BackgroundFetchManager>(registration);
-  }
 
   // Web Exposed methods defined in the IDL file.
   ScriptPromise fetch(
@@ -53,13 +47,15 @@ class MODULES_EXPORT BackgroundFetchManager final
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       const BackgroundFetchOptions* options,
       ExceptionState& exception_state);
-  ScriptPromise get(ScriptState* script_state, const String& id);
+  ScriptPromise get(ScriptState* script_state,
+                    const String& id,
+                    ExceptionState& exception_state);
   ScriptPromise getIds(ScriptState* script_state);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
-  // ContextLifecycleObserver interface
-  void ContextDestroyed(ExecutionContext* context) override;
+  // ExecutionContextLifecycleObserver interface
+  void ContextDestroyed() override;
 
  private:
   friend class BackgroundFetchManagerTest;

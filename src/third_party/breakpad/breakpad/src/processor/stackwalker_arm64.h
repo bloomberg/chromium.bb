@@ -90,6 +90,13 @@ class StackwalkerARM64 : public Stackwalker {
   // of the returned frame. Return NULL on failure.
   StackFrameARM64* GetCallerByStackScan(const vector<StackFrame*> &frames);
 
+  // GetCallerByFramePointer() depends on the previous frame having recovered
+  // x30($LR) which may not have been done when using CFI.
+  // This function recovers $LR in the previous frame by using the frame-pointer
+  // two frames back to read it from the stack.
+  void CorrectRegLRByFramePointer(const vector<StackFrame*>& frames,
+                                  StackFrameARM64* last_frame);
+
   // Stores the CPU context corresponding to the youngest stack frame, to
   // be returned by GetContextFrame.
   const MDRawContextARM64* context_;

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/no_destructor.h"
+#include "components/crash/core/common/crash_key.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_language_detection.h"
-#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace extensions {
 
@@ -45,6 +46,7 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
     case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
+    case ax::mojom::Event::kFocusAfterMenuClose:
     case ax::mojom::Event::kFocusContext:
       return api::automation::EVENT_TYPE_NONE;
     case ax::mojom::Event::kHide:
@@ -221,6 +223,7 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
     case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
@@ -244,12 +247,14 @@ AutomationAXTreeWrapper::AutomationAXTreeWrapper(
     AutomationInternalCustomBindings* owner)
     : tree_id_(tree_id), owner_(owner), event_generator_(&tree_) {
   tree_.AddObserver(this);
+  ui::AXTreeManagerMap::GetInstance().AddTreeManager(tree_id, this);
 }
 
 AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   // Stop observing so we don't get a callback for every node being deleted.
   event_generator_.SetTree(nullptr);
   tree_.RemoveObserver(this);
+  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_id_);
 }
 
 // static
@@ -267,6 +272,9 @@ AutomationAXTreeWrapper* AutomationAXTreeWrapper::GetParentOfTreeId(
 bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
+  base::Optional<gfx::Rect> previous_accessibility_focused_global_bounds =
+      owner_->GetAccessibilityFocusedLocation();
+
   std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
       GetChildTreeIDReverseMap();
   const auto& child_tree_ids = tree_.GetAllChildTreeIds();
@@ -285,6 +293,9 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     did_send_tree_change_during_unserialization_ = false;
 
     if (!tree_.Unserialize(update)) {
+      static crash_reporter::CrashKeyString<4> crash_key(
+          "ax-tree-wrapper-unserialize-failed");
+      crash_key.Set("yes");
       event_generator_.ClearEvents();
       return false;
     }
@@ -326,8 +337,16 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& targeted_event : event_generator_) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      tree_.language_detection_manager->DetectLanguageForSubtree(tree_.root());
-      tree_.language_detection_manager->LabelLanguageForSubtree(tree_.root());
+      tree_.language_detection_manager->DetectLanguages();
+      tree_.language_detection_manager->LabelLanguages();
+
+      // After initial language detection, enable language detection for future
+      // content updates in order to support dynamic content changes.
+      //
+      // If the LanguageDetectionDynamic feature flag is not enabled then this
+      // is a no-op.
+      tree_.language_detection_manager->RegisterLanguageDetectionObserver();
+
       break;
     }
   }
@@ -368,6 +387,12 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     }
   }
 
+  if (previous_accessibility_focused_global_bounds.has_value() &&
+      previous_accessibility_focused_global_bounds !=
+          owner_->GetAccessibilityFocusedLocation()) {
+    owner_->SendAccessibilityFocusedLocationChange(event_bundle.mouse_location);
+  }
+
   return true;
 }
 
@@ -383,48 +408,56 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
   if (IsDesktopTree())
     return true;
 
-  AutomationAXTreeWrapper* child_of_ancestor = this;
-  AutomationAXTreeWrapper* ancestor = nullptr;
-  while ((ancestor =
-              GetParentOfTreeId(child_of_ancestor->tree()->data().tree_id))) {
+  AutomationAXTreeWrapper* descendant = this;
+  ui::AXTreeID descendant_tree_id = GetTreeID();
+  AutomationAXTreeWrapper* ancestor = descendant;
+  bool found = true;
+  while ((ancestor = GetParentOfTreeId(ancestor->tree()->data().tree_id))) {
     int32_t focus_id = ancestor->tree()->data().focus_id;
     ui::AXNode* focus = ancestor->tree()->GetFromId(focus_id);
     if (!focus)
       return false;
 
-    const ui::AXTreeID& child_tree_id =
-        child_of_ancestor->tree()->data().tree_id;
-
-    // Either the focused node points to the child tree, or the ancestor tree
-    // points to the child tree via the focused tree id. Exit early if both are
-    // not true.
+    // Surprisingly, an ancestor frame can "skip" a child frame to point to a
+    // descendant granchild, so we have to scan upwards.
     if (ui::AXTreeID::FromString(focus->GetStringAttribute(
-            ax::mojom::StringAttribute::kChildTreeId)) != child_tree_id &&
-        ancestor->tree()->data().focused_tree_id != child_tree_id)
-      return false;
+            ax::mojom::StringAttribute::kChildTreeId)) != descendant_tree_id &&
+        ancestor->tree()->data().focused_tree_id != descendant_tree_id) {
+      found = false;
+      continue;
+    }
+
+    found = true;
 
     if (ancestor->IsDesktopTree())
       return true;
 
-    child_of_ancestor = ancestor;
+    descendant_tree_id = ancestor->GetTreeID();
   }
 
-  // The only way we end up here is if the tree is detached from any desktop.
-  // This can occur in tabs-only mode.
-  return true;
+  // We can end up here if the tree is detached from any desktop.  This can
+  // occur in tabs-only mode. This is also the codepath for frames with inner
+  // focus, but which are not focused by ancestor frames.
+  return found;
 }
 
 ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
-  // As there is no Tree Manager, this is necessary for AXPositions to work.
-  ui::AXNodePosition::SetTree(tree());
-  ui::AXTree::Selection unignored_selection = tree()->GetUnignoredSelection();
-  ui::AXNodePosition::SetTree(nullptr);
-  return unignored_selection;
+  return tree()->GetUnignoredSelection();
 }
 
 ui::AXNode* AutomationAXTreeWrapper::GetUnignoredNodeFromId(int32_t id) {
   ui::AXNode* node = tree_.GetFromId(id);
   return (node && !node->IsIgnored()) ? node : nullptr;
+}
+
+void AutomationAXTreeWrapper::SetAccessibilityFocus(int32_t node_id) {
+  accessibility_focused_id_ = node_id;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetAccessibilityFocusedNode() {
+  return accessibility_focused_id_ == ui::AXNode::kInvalidAXID
+             ? nullptr
+             : tree_.GetFromId(accessibility_focused_id_);
 }
 
 void AutomationAXTreeWrapper::EventListenerAdded(ax::mojom::Event event_type,
@@ -523,8 +556,6 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
     case api::automation::EVENT_TYPE_INVALIDSTATUSCHANGED:
-    case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:
-    case api::automation::EVENT_TYPE_LIVEREGIONCREATED:
     case api::automation::EVENT_TYPE_LOADCOMPLETE:
     case api::automation::EVENT_TYPE_LOADSTART:
     case api::automation::EVENT_TYPE_ROWCOLLAPSED:
@@ -555,6 +586,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED:
     case api::automation::EVENT_TYPE_CLICKED:
     case api::automation::EVENT_TYPE_ENDOFTEST:
+    case api::automation::EVENT_TYPE_FOCUSAFTERMENUCLOSE:
     case api::automation::EVENT_TYPE_FOCUSCONTEXT:
     case api::automation::EVENT_TYPE_HITTESTRESULT:
     case api::automation::EVENT_TYPE_HOVER:
@@ -579,6 +611,8 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_CONTROLSCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
+    case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:
+    case api::automation::EVENT_TYPE_LIVEREGIONCREATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:
     case api::automation::EVENT_TYPE_MENUEND:
     case api::automation::EVENT_TYPE_MENULISTITEMSELECTED:
@@ -592,6 +626,38 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
 
   NOTREACHED();
   return false;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
+    const ui::AXTreeID tree_id,
+    const ui::AXNode::AXID node_id) const {
+  AutomationAXTreeWrapper* tree_wrapper =
+      owner_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  return tree_wrapper ? tree_wrapper->GetNodeFromTree(node_id) : nullptr;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
+    const ui::AXNode::AXID node_id) const {
+  return tree_.GetFromId(node_id);
+}
+
+ui::AXTreeID AutomationAXTreeWrapper::GetTreeID() const {
+  return tree_id_;
+}
+
+ui::AXTreeID AutomationAXTreeWrapper::GetParentTreeID() const {
+  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(tree_id_);
+  return parent_tree ? parent_tree->GetTreeID() : ui::AXTreeIDUnknown();
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetRootAsAXNode() const {
+  return tree_.root();
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetParentNodeFromParentTreeAsAXNode()
+    const {
+  AutomationAXTreeWrapper* wrapper = const_cast<AutomationAXTreeWrapper*>(this);
+  return owner_->GetParent(tree_.root(), &wrapper);
 }
 
 }  // namespace extensions

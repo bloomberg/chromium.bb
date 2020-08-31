@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 
-#include "base/test/task_environment.h"
-#include "base/time/time.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,9 +14,10 @@
 // Test fixture for testing BreadcrumbManager class.
 class BreadcrumbManagerTest : public PlatformTest {
  protected:
-  BreadcrumbManagerTest() {}
+  BreadcrumbManagerTest() = default;
 
-  base::test::TaskEnvironment task_env_{
+  web::WebTaskEnvironment task_env_{
+      web::WebTaskEnvironment::Options::DEFAULT,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   BreadcrumbManager breadcrumb_manager_;
 };

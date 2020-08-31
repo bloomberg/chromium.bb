@@ -28,10 +28,10 @@ import subprocess
 import sys
 
 
-# This contains binaries from Xcode 10.12.1, along with the 10.14 SDKs. To build
-# this package, see comments in build/xcode_binaries.yaml
+# This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
+# 11B53). To build this package, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
-MAC_BINARIES_TAG = 'yjQtk3auAegQO4t18uBtBlKbj76xBjVtLE-3UM2faRUC'
+MAC_BINARIES_TAG = 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC'
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
 # 17 is the major version number for macOS 10.13.
@@ -42,6 +42,12 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLCHAIN_ROOT = os.path.join(BASE_DIR, 'mac_files')
 TOOLCHAIN_BUILD_DIR = os.path.join(TOOLCHAIN_ROOT, 'Xcode.app')
 
+# Always integrity-check the entire SDK. Mac SDK packages are complex and often
+# hit edge cases in cipd (eg https://crbug.com/1033987,
+# https://crbug.com/915278), and generally when this happens it requires manual
+# intervention to fix.
+# Note the trailing \n!
+PARANOID_MODE = '$ParanoidMode CheckIntegrity\n'
 
 def PlatformMeetsHermeticXcodeRequirements():
   major_version = int(platform.release().split('.')[0])
@@ -112,7 +118,7 @@ def InstallXcodeBinaries():
       args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
   stdout, stderr = p.communicate(
-      input=MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
+      input=PARANOID_MODE + MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
   if p.returncode != 0:
     print(stdout)
     print(stderr)

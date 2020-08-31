@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -22,12 +23,12 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/common/utils.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/utils.h"
+#include "components/safe_browsing/core/proto/client_model.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -49,26 +50,6 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
-namespace {
-
-// malware report type for UMA histogram counting.
-enum MalwareReportTypes {
-  REPORT_SENT,
-  REPORT_HIT_LIMIT,
-  REPORT_FAILED_SERIALIZATION,
-
-  // Always at the end
-  REPORT_RESULT_MAX
-};
-
-void UpdateEnumUMAHistogram(MalwareReportTypes report_type) {
-  DCHECK(report_type >= 0 && report_type < REPORT_RESULT_MAX);
-  UMA_HISTOGRAM_ENUMERATION("SBClientMalware.SentReports", report_type,
-                            REPORT_RESULT_MAX);
-}
-
-}  // namespace
-
 const int ClientSideDetectionService::kInitialClientModelFetchDelayMs = 10000;
 const int ClientSideDetectionService::kReportsIntervalDays = 1;
 const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
@@ -77,8 +58,6 @@ const int ClientSideDetectionService::kPositiveCacheIntervalMinutes = 30;
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
-const char ClientSideDetectionService::kClientReportMalwareUrl[] =
-    "https://sb-ssl.google.com/safebrowsing/clientreport/malware-check";
 
 struct ClientSideDetectionService::ClientPhishingReportInfo {
   std::unique_ptr<network::SimpleURLLoader> loader;
@@ -86,26 +65,35 @@ struct ClientSideDetectionService::ClientPhishingReportInfo {
   GURL phishing_url;
 };
 
-struct ClientSideDetectionService::ClientMalwareReportInfo {
-  std::unique_ptr<network::SimpleURLLoader> loader;
-  ClientReportMalwareRequestCallback callback;
-  // This is the original landing url, may not be the malware url.
-  GURL original_url;
-};
-
 ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
     : is_phishing(phish), timestamp(time) {}
 
+ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
+    : ClientSideDetectionService(profile ? profile->GetURLLoaderFactory()
+                                         : nullptr) {
+  profile_ = profile;
+
+  // profile_ can be null in unit tests
+  if (!profile_)
+    return;
+
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kSafeBrowsingEnabled,
+      base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
+                 base::Unretained(this)));
+}
+
 ClientSideDetectionService::ClientSideDetectionService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : enabled_(false), url_loader_factory_(url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader)
+    : enabled_(false), url_loader_factory_(url_loader) {
   base::Closure update_renderers =
       base::Bind(&ClientSideDetectionService::SendModelToRenderers,
                  base::Unretained(this));
   model_loader_standard_.reset(
-      new ModelLoader(update_renderers, url_loader_factory, false));
+      new ModelLoader(update_renderers, url_loader_factory_, false));
   model_loader_extended_.reset(
-      new ModelLoader(update_renderers, url_loader_factory, true));
+      new ModelLoader(update_renderers, url_loader_factory_, true));
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -115,11 +103,12 @@ ClientSideDetectionService::~ClientSideDetectionService() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-// static
-std::unique_ptr<ClientSideDetectionService> ClientSideDetectionService::Create(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return base::WrapUnique(new ClientSideDetectionService(url_loader_factory));
+void ClientSideDetectionService::Shutdown() {
+  url_loader_factory_.reset();
+}
+
+void ClientSideDetectionService::OnPrefsUpdated() {
+  SetEnabledAndRefreshState(IsSafeBrowsingEnabled(*profile_->GetPrefs()));
 }
 
 void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
@@ -148,13 +137,6 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
         info->callback.Run(info->phishing_url, false);
     }
     client_phishing_reports_.clear();
-    for (auto it = client_malware_reports_.begin();
-         it != client_malware_reports_.end(); ++it) {
-      ClientMalwareReportInfo* info = it->second.get();
-      if (!info->callback.is_null())
-        info->callback.Run(info->original_url, info->original_url, false);
-    }
-    client_malware_reports_.clear();
     cache_.clear();
   }
 }
@@ -162,6 +144,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
 void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     bool is_extended_reporting,
+    bool is_enhanced_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -169,18 +152,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
       base::BindOnce(
           &ClientSideDetectionService::StartClientReportPhishingRequest,
           weak_factory_.GetWeakPtr(), verdict, is_extended_reporting,
-          callback));
-}
-
-void ClientSideDetectionService::SendClientReportMalwareRequest(
-    ClientMalwareRequest* verdict,
-    const ClientReportMalwareRequestCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ClientSideDetectionService::StartClientReportMalwareRequest,
-          weak_factory_.GetWeakPtr(), verdict, callback));
+          is_enhanced_reporting, callback));
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
@@ -204,15 +176,9 @@ void ClientSideDetectionService::OnURLLoaderComplete(
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
     response_code = url_loader->ResponseInfo()->headers->response_code();
 
-  if (base::Contains(client_phishing_reports_, url_loader)) {
-    HandlePhishingVerdict(url_loader, url_loader->GetFinalURL(),
-                          url_loader->NetError(), response_code, data);
-  } else if (base::Contains(client_malware_reports_, url_loader)) {
-    HandleMalwareVerdict(url_loader, url_loader->GetFinalURL(),
-                         url_loader->NetError(), response_code, data);
-  } else {
-    NOTREACHED();
-  }
+  DCHECK(base::Contains(client_phishing_reports_, url_loader));
+  HandlePhishingVerdict(url_loader, url_loader->GetFinalURL(),
+                        url_loader->NetError(), response_code, data);
 }
 
 void ClientSideDetectionService::Observe(
@@ -221,21 +187,21 @@ void ClientSideDetectionService::Observe(
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  SendModelToProcess(content::Source<content::RenderProcessHost>(source).ptr());
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  if (process->GetBrowserContext() == profile_)
+    SendModelToProcess(process);
 }
 
 void ClientSideDetectionService::SendModelToProcess(
     content::RenderProcessHost* process) {
   DCHECK(process->IsInitializedAndNotDead());
+  DCHECK_EQ(process->GetBrowserContext(), profile_);
 
-  // The ClientSideDetectionService is enabled if _any_ active profile has
-  // SafeBrowsing turned on.  Here we check the profile for each renderer
-  // process and only send the model to those that have SafeBrowsing enabled,
-  // and we select the model based on the extended reporting setting.
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
+  if (IsSafeBrowsingEnabled(*profile_->GetPrefs())) {
+    if (IsExtendedReportingEnabled(*profile_->GetPrefs()) ||
+        IsEnhancedProtectionEnabled(*profile_->GetPrefs())) {
       DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
                << " to RenderProcessHost @" << process;
       model = model_loader_extended_->model_str();
@@ -259,7 +225,8 @@ void ClientSideDetectionService::SendModelToRenderers() {
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     content::RenderProcessHost* process = i.GetCurrentValue();
-    if (process->IsInitializedAndNotDead())
+    if (process->IsInitializedAndNotDead() &&
+        process->GetBrowserContext() == profile_)
       SendModelToProcess(process);
   }
 }
@@ -267,6 +234,7 @@ void ClientSideDetectionService::SendModelToRenderers() {
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     bool is_extended_reporting,
+    bool is_enhanced_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<ClientPhishingRequest> request(verdict);
@@ -278,10 +246,15 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   }
 
   // Fill in metadata about which model we used.
-  if (is_extended_reporting) {
+  if (is_extended_reporting || is_enhanced_reporting) {
     request->set_model_filename(model_loader_extended_->name());
-    request->mutable_population()->set_user_population(
-        ChromeUserPopulation::EXTENDED_REPORTING);
+    if (is_enhanced_reporting) {
+      request->mutable_population()->set_user_population(
+          ChromeUserPopulation::ENHANCED_PROTECTION);
+    } else {
+      request->mutable_population()->set_user_population(
+          ChromeUserPopulation::EXTENDED_REPORTING);
+    }
   } else {
     request->set_model_filename(model_loader_standard_->name());
     request->mutable_population()->set_user_population(
@@ -361,89 +334,6 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   phishing_report_times_.push(base::Time::Now());
 }
 
-void ClientSideDetectionService::StartClientReportMalwareRequest(
-    ClientMalwareRequest* verdict,
-    const ClientReportMalwareRequestCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<ClientMalwareRequest> request(verdict);
-
-  if (!enabled_) {
-    if (!callback.is_null())
-      callback.Run(GURL(request->url()), GURL(request->url()), false);
-    return;
-  }
-
-  std::string request_data;
-  if (!request->SerializeToString(&request_data)) {
-    UpdateEnumUMAHistogram(REPORT_FAILED_SERIALIZATION);
-    DVLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
-    if (!callback.is_null())
-      callback.Run(GURL(request->url()), GURL(request->url()), false);
-    return;
-  }
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation(
-          "safe_browsing_client_side_malware_detector", R"(
-          semantics {
-            sender: "Safe Browsing Client-Side Malware Detector"
-            description:
-              "If the client-side malware detector determines that a requested "
-              "page's IP is in the blacklisted malware IPs, it will send a "
-              "request to Safe Browsing to ask for a final verdict. If Safe "
-              "Browsing agrees the page is dangerous, Chrome will show a "
-              "full-page interstitial warning."
-            trigger:
-              "Whenever the IP of the page is in malware blacklist."
-            data:
-              "Top-level page URL without CGI parameters, its non-https "
-              "referrer, URLs of resources that match IP blacklist."
-            destination: GOOGLE_OWNED_SERVICE
-          }
-          policy {
-            cookies_allowed: YES
-            cookies_store: "Safe browsing cookie store"
-            setting:
-              "Users can enable or disable this feature by toggling 'Protect "
-              "you and your device from dangerous sites' in Chrome settings "
-              "under Privacy. This feature is enabled by default."
-            chrome_policy {
-              SafeBrowsingEnabled {
-                policy_options {mode: MANDATORY}
-                SafeBrowsingEnabled: false
-              }
-            }
-          })");
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GetClientReportUrl(kClientReportMalwareUrl);
-  resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
-  loader->AttachStringForUpload(request_data, "application/octet-stream");
-  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
-      base::BindOnce(&ClientSideDetectionService::OnURLLoaderComplete,
-                     base::Unretained(this), loader.get()));
-
-  // Remember which callback and URL correspond to the current fetcher object.
-  std::unique_ptr<ClientMalwareReportInfo> info(new ClientMalwareReportInfo);
-  auto* loader_ptr = loader.get();
-  info->loader = std::move(loader);
-  info->callback = callback;
-  info->original_url = GURL(request->url());
-  client_malware_reports_[loader_ptr] = std::move(info);
-
-  UMA_HISTOGRAM_ENUMERATION("SBClientMalware.SentReports", REPORT_SENT,
-                            REPORT_RESULT_MAX);
-
-  UMA_HISTOGRAM_COUNTS_1M("SBClientMalware.IPBlacklistRequestPayloadSize",
-                          request_data.size());
-
-  // Record that we made a malware request
-  malware_report_times_.push(base::Time::Now());
-}
-
 void ClientSideDetectionService::HandlePhishingVerdict(
     network::SimpleURLLoader* source,
     const GURL& url,
@@ -469,44 +359,6 @@ void ClientSideDetectionService::HandlePhishingVerdict(
   }
   if (!info->callback.is_null())
     info->callback.Run(info->phishing_url, is_phishing);
-}
-
-void ClientSideDetectionService::HandleMalwareVerdict(
-    network::SimpleURLLoader* source,
-    const GURL& url,
-    int net_error,
-    int response_code,
-    const std::string& data) {
-  if (net_error == net::OK) {
-    base::UmaHistogramSparse("SBClientMalware.IPBlacklistRequestResponseCode",
-                             response_code);
-  }
-  // status error is negative, so we put - in front of it.
-  base::UmaHistogramSparse("SBClientMalware.IPBlacklistRequestNetError",
-                           -net_error);
-
-  ClientMalwareResponse response;
-  std::unique_ptr<ClientMalwareReportInfo> info =
-      std::move(client_malware_reports_[source]);
-  client_malware_reports_.erase(source);
-
-  bool should_blacklist = false;
-  if (net_error == net::OK && net::HTTP_OK == response_code &&
-      response.ParseFromString(data)) {
-    should_blacklist = response.blacklist();
-  } else {
-    DLOG(ERROR) << "Unable to get the server verdict for URL: "
-                << info->original_url << " net_error: " << net_error << " "
-                << "response_code:" << response_code;
-  }
-
-  if (!info->callback.is_null()) {
-    if (response.has_bad_url())
-      info->callback.Run(info->original_url, GURL(response.bad_url()),
-                         should_blacklist);
-    else
-      info->callback.Run(info->original_url, info->original_url, false);
-  }
 }
 
 bool ClientSideDetectionService::IsInCache(const GURL& url) {
@@ -566,16 +418,8 @@ void ClientSideDetectionService::UpdateCache() {
   }
 }
 
-bool ClientSideDetectionService::OverMalwareReportLimit() {
-  return GetMalwareNumReports() > kMaxReportsPerInterval;
-}
-
 bool ClientSideDetectionService::OverPhishingReportLimit() {
   return GetPhishingNumReports() > kMaxReportsPerInterval;
-}
-
-int ClientSideDetectionService::GetMalwareNumReports() {
-  return GetNumReports(&malware_report_times_);
 }
 
 int ClientSideDetectionService::GetPhishingNumReports() {
@@ -605,6 +449,13 @@ GURL ClientSideDetectionService::GetClientReportUrl(
     url = url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
 
   return url;
+}
+
+ModelLoader::ClientModelStatus ClientSideDetectionService::GetLastModelStatus(
+    bool use_extended_model) {
+  ModelLoader* model_loader = use_extended_model ? model_loader_extended_.get()
+                                                 : model_loader_standard_.get();
+  return model_loader->last_client_model_status();
 }
 
 }  // namespace safe_browsing

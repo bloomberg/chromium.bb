@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.share.qrcode.share_tab;
 import android.content.Context;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialogTab;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Creates and represents the QrCode share panel UI.
@@ -16,7 +19,12 @@ public class QrCodeShareCoordinator implements QrCodeDialogTab {
     private final QrCodeShareView mShareView;
 
     public QrCodeShareCoordinator(Context context) {
-        mShareView = new QrCodeShareView(context);
+        PropertyModel shareViewModel = new PropertyModel(QrCodeShareViewProperties.ALL_KEYS);
+        QrCodeShareMediator shareViewMediator = new QrCodeShareMediator(context, shareViewModel);
+
+        mShareView = new QrCodeShareView(context, shareViewMediator::downloadQrCode);
+        PropertyModelChangeProcessor.create(
+                shareViewModel, mShareView, new QrCodeShareViewBinder());
     }
 
     /** QrCodeDialogTab implementation. */
@@ -26,8 +34,13 @@ public class QrCodeShareCoordinator implements QrCodeDialogTab {
     }
 
     @Override
-    public void onResume() {}
+    public void onResume() {
+        RecordUserAction.record("SharingQRCode.TabVisible.Share");
+    }
 
     @Override
     public void onPause() {}
+
+    @Override
+    public void onDestroy() {}
 }

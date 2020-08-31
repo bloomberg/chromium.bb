@@ -15,7 +15,7 @@ if (is_android) {
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -24,9 +24,7 @@ set_sources_assignment_filter([])
 # targets can all have a dependency for header checking purposes without
 # creating circular dependencies.
 source_set("gfx_export") {
-  sources = [
-    "gfx_export.h",
-  ]
+  sources = [ "gfx_export.h" ]
 }
 
 # Used for color generation at build time without importing all the gfx.
@@ -196,8 +194,6 @@ jumbo_component("gfx") {
       "font_render_params_win.cc",
       "path_win.cc",
       "path_win.h",
-      "platform_font_win.cc",
-      "platform_font_win.h",
       "system_fonts_win.cc",
       "system_fonts_win.h",
       "win/crash_id_helper.cc",
@@ -288,6 +284,7 @@ jumbo_component("gfx") {
     ":gfx_switches",
     ":memory_buffer_sources",
     ":native_widget_types",
+    ":resize_image_dimensions",
     ":selection_bound_sources",
     "//base",
     "//skia",
@@ -300,7 +297,6 @@ jumbo_component("gfx") {
   ]
   deps = [
     ":gfx_export",
-    ":resize_image_dimensions",
     "//base",
     "//base:base_static",
     "//base:i18n",
@@ -348,7 +344,7 @@ jumbo_component("gfx") {
     ]
   }
 
-  if (is_android || is_fuchsia || is_win) {
+  if (is_android || is_fuchsia || is_win || is_mac) {
     sources += [
       "font_fallback_skia_impl.cc",
       "font_fallback_skia_impl.h",
@@ -414,7 +410,6 @@ jumbo_component("gfx") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-    configs += [ "//build/config/linux:x11" ]
   }
 }
 
@@ -423,6 +418,8 @@ jumbo_component("color_space") {
     "color_space.cc",
     "color_space.h",
     "color_space_export.h",
+    "display_color_spaces.cc",
+    "display_color_spaces.h",
     "icc_profile.cc",
     "icc_profile.h",
     "skia_color_space_util.cc",
@@ -436,6 +433,7 @@ jumbo_component("color_space") {
   }
   deps = [
     "//skia:skcms",
+    "//ui/gfx:buffer_types",
   ]
   public_deps = [
     "//base",
@@ -453,7 +451,6 @@ jumbo_component("color_space") {
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-    configs += [ "//build/config/linux:x11" ]
   }
   defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
 }
@@ -461,16 +458,12 @@ jumbo_component("color_space") {
 # Depend on this to use image/resize_image_dimensions.h without pulling in
 # all of gfx.
 source_set("resize_image_dimensions") {
-  sources = [
-    "image/resize_image_dimensions.h",
-  ]
+  sources = [ "image/resize_image_dimensions.h" ]
 }
 
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
 source_set("native_widget_types") {
-  public = [
-    "native_widget_types.h",
-  ]
+  public = [ "native_widget_types.h" ]
 
   public_deps = [
     ":gfx_export",
@@ -480,13 +473,9 @@ source_set("native_widget_types") {
 
 group("selection_bound") {
   if (is_component_build) {
-    public_deps = [
-      ":gfx",
-    ]
+    public_deps = [ ":gfx" ]
   } else {
-    public_deps = [
-      ":selection_bound_sources",
-    ]
+    public_deps = [ ":selection_bound_sources" ]
   }
 }
 
@@ -513,9 +502,7 @@ source_set("selection_bound_sources") {
 
 # Depend on this to use buffer_types.h without pulling in all of gfx.
 source_set("buffer_types") {
-  sources = [
-    "buffer_types.h",
-  ]
+  sources = [ "buffer_types.h" ]
 }
 
 # The GPU memory buffer stuff is separate from "gfx" to allow GPU-related
@@ -526,13 +513,9 @@ source_set("buffer_types") {
 # in the component build, but be a separate source set in a static build.
 group("memory_buffer") {
   if (is_component_build) {
-    public_deps = [
-      ":gfx",
-    ]
+    public_deps = [ ":gfx" ]
   } else {
-    public_deps = [
-      ":memory_buffer_sources",
-    ]
+    public_deps = [ ":memory_buffer_sources" ]
   }
 }
 
@@ -560,6 +543,7 @@ jumbo_source_set("memory_buffer_sources") {
     "gpu_fence_handle.h",
     "native_pixmap.h",
     "overlay_transform.h",
+    "surface_origin.h",
   ]
 
   if (!is_ios) {
@@ -573,14 +557,13 @@ jumbo_source_set("memory_buffer_sources") {
 
   defines = [ "GFX_IMPLEMENTATION" ]
 
-  public_deps = [
-    ":buffer_types",
-  ]
+  public_deps = [ ":buffer_types" ]
 
   deps = [
     ":gfx_switches",
     ":native_widget_types",
     "//base",
+    "//build:chromecast_buildflags",
     "//ui/gfx/geometry",
   ]
 
@@ -632,9 +615,7 @@ jumbo_component("gfx_switches") {
 
   defines = [ "GFX_SWITCHES_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 jumbo_static_library("test_support") {
@@ -661,9 +642,7 @@ jumbo_static_library("test_support") {
     sources += [ "image/image_unittest_util_mac.mm" ]
   }
 
-  public_deps = [
-    ":gfx",
-  ]
+  public_deps = [ ":gfx" ]
 
   deps = [
     "//base",
@@ -711,10 +690,7 @@ test("gfx_unittests") {
     ]
   }
   if (is_win) {
-    sources += [
-      "font_fallback_win_unittest.cc",
-      "range/range_win_unittest.cc",
-    ]
+    sources += [ "font_fallback_win_unittest.cc" ]
   }
   if (is_ios) {
     sources += [
@@ -726,9 +702,7 @@ test("gfx_unittests") {
 
   include_dirs = [ "//third_party/skia/include/private" ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   if (!is_ios) {
     sources += [
@@ -774,6 +748,7 @@ test("gfx_unittests") {
       "paint_vector_icon_unittest.cc",
       "range/range_unittest.cc",
       "selection_bound_unittest.cc",
+      "selection_model_unittest.cc",
       "sequential_id_generator_unittest.cc",
       "shadow_value_unittest.cc",
       "skbitmap_operations_unittest.cc",
@@ -783,14 +758,10 @@ test("gfx_unittests") {
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
-    data += [ "$root_out_dir/ui_test.pak" ]
   }
 
   if (is_win) {
-    sources += [
-      "platform_font_win_unittest.cc",
-      "system_fonts_win_unittest.cc",
-    ]
+    sources += [ "system_fonts_win_unittest.cc" ]
   }
 
   if (is_linux || is_android || is_fuchsia || is_win) {
@@ -803,6 +774,7 @@ test("gfx_unittests") {
     "//base",
     "//base/test:test_support",
     "//skia",
+    "//skia:skcms",
     "//testing/gtest",
     "//third_party/icu:icuuc",
     "//third_party/libpng",
@@ -811,7 +783,6 @@ test("gfx_unittests") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gfx/range",
-    "//ui/resources:ui_test_pak",
   ]
 
   if (!is_ios) {
@@ -822,9 +793,7 @@ test("gfx_unittests") {
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
 
-  data_deps = [
-    "//ui/resources:ui_test_pak",
-  ]
+  data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
   if (is_mac || is_ios) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
@@ -847,10 +816,6 @@ test("gfx_unittests") {
 
   if (!use_aura && !is_ios) {
     sources -= [ "nine_image_painter_unittest.cc" ]
-  }
-
-  if (is_chromeos) {
-    sources += [ "codec/chromeos/jpeg_codec_robust_slow_unittest.cc" ]
   }
 
   if (is_win) {
@@ -915,33 +880,23 @@ if (is_android) {
 }
 
 fuzzer_test("color_analysis_fuzzer") {
-  sources = [
-    "color_analysis_fuzzer.cc",
-  ]
+  sources = [ "color_analysis_fuzzer.cc" ]
 
-  deps = [
-    ":gfx",
-  ]
+  deps = [ ":gfx" ]
 }
 
 fuzzer_test("color_transform_fuzzer") {
-  sources = [
-    "color_transform_fuzzer.cc",
-  ]
+  sources = [ "color_transform_fuzzer.cc" ]
 
   dict = "//testing/libfuzzer/fuzzers/dicts/icc.dict"
 
-  deps = [
-    ":gfx",
-  ]
+  deps = [ ":gfx" ]
 
   libfuzzer_options = [ "max_len=4194304" ]
 }
 
 fuzzer_test("render_text_fuzzer") {
-  sources = [
-    "render_text_fuzzer.cc",
-  ]
+  sources = [ "render_text_fuzzer.cc" ]
 
   deps = [
     ":gfx",
@@ -953,9 +908,7 @@ fuzzer_test("render_text_fuzzer") {
 }
 
 fuzzer_test("render_text_api_fuzzer") {
-  sources = [
-    "render_text_api_fuzzer.cc",
-  ]
+  sources = [ "render_text_api_fuzzer.cc" ]
 
   deps = [
     ":gfx",

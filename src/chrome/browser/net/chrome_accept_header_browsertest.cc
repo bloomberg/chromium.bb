@@ -7,8 +7,11 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "third_party/blink/public/common/features.h"
 
 using ChromeAcceptHeaderTest = InProcessBrowserTest;
 
@@ -40,12 +43,28 @@ IN_PROC_BROWSER_TEST_F(ChromeAcceptHeaderTest, Check) {
 
   // With MimeHandlerViewInCrossProcessFrame, embedded PDF will go through the
   // navigation code path and behaves similarly to PDF loaded inside <iframe>.
-  ASSERT_EQ(
+  const char* expected_plugin_accept_header =
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/"
-      "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      plugin_accept_header);
+      "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    expected_plugin_accept_header =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,image/apng,*/*;q=0.8,"
+        "application/signed-exchange;v=b3;q=0.9";
+  }
+#endif
+  ASSERT_EQ(expected_plugin_accept_header, plugin_accept_header);
 
-  ASSERT_EQ("image/webp,image/apng,image/*,*/*;q=0.8", favicon_accept_header);
+  const char* expected_favicon_accept_header =
+      "image/webp,image/apng,image/*,*/*;q=0.8";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    expected_favicon_accept_header =
+        "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+  }
+#endif
+  ASSERT_EQ(expected_favicon_accept_header, favicon_accept_header);
 
   // Since the server uses local variables.
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());

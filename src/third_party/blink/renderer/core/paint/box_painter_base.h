@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
@@ -23,6 +24,7 @@ class FloatRoundedRect;
 class GraphicsContext;
 class ImageResourceObserver;
 class IntRect;
+class LayoutBox;
 struct PaintInfo;
 struct PhysicalOffset;
 struct PhysicalRect;
@@ -102,6 +104,8 @@ class BoxPainterBase {
       FillLayerOcclusionOutputList& reversed_paint_list,
       const FillLayer&);
 
+  static bool ShouldSkipPaintUnderInvalidationChecking(const LayoutBox&);
+
   struct FillLayerInfo {
     STACK_ALLOCATED();
 
@@ -112,16 +116,19 @@ class BoxPainterBase {
                   Color bg_color,
                   const FillLayer&,
                   BackgroundBleedAvoidance,
+                  RespectImageOrientationEnum,
                   bool include_left_edge,
                   bool include_right_edge,
-                  bool is_inline);
+                  bool is_inline,
+                  bool is_painting_scrolling_background);
 
     // FillLayerInfo is a temporary, stack-allocated container which cannot
     // outlive the StyleImage.  This would normally be a raw pointer, if not for
     // the Oilpan tooling complaints.
-    Member<StyleImage> image;
+    StyleImage* image;
     Color color;
 
+    RespectImageOrientationEnum respect_image_orientation;
     bool include_left_edge;
     bool include_right_edge;
     bool is_bottom_layer;
@@ -152,9 +159,12 @@ class BoxPainterBase {
   virtual PhysicalRect AdjustRectForScrolledContent(const PaintInfo&,
                                                     const FillLayerInfo&,
                                                     const PhysicalRect&) = 0;
-  virtual FillLayerInfo GetFillLayerInfo(const Color&,
-                                         const FillLayer&,
-                                         BackgroundBleedAvoidance) const = 0;
+  virtual FillLayerInfo GetFillLayerInfo(
+      const Color&,
+      const FillLayer&,
+      BackgroundBleedAvoidance,
+      bool is_painting_scrolling_background) const = 0;
+  virtual bool IsPaintingScrollingBackground(const PaintInfo&) const = 0;
   static void PaintInsetBoxShadow(const PaintInfo&,
                                   const FloatRoundedRect&,
                                   const ComputedStyle&,
@@ -162,9 +172,9 @@ class BoxPainterBase {
                                   bool include_logical_right_edge = true);
 
  private:
-  Member<const Document> document_;
+  const Document* document_;
   const ComputedStyle& style_;
-  Member<Node> node_;
+  Node* node_;
 };
 
 }  // namespace blink

@@ -15,10 +15,11 @@
 #include "src/gpu/GrDrawOpTest.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProcessor.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
-#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
@@ -27,7 +28,7 @@
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrAAConvexPathRenderer.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
 
 GrAAConvexPathRenderer::GrAAConvexPathRenderer() {
 }
@@ -48,15 +49,15 @@ struct Segment {
     SkVector fMid;
 
     int countPoints() {
-        GR_STATIC_ASSERT(0 == kLine && 1 == kQuad);
+        static_assert(0 == kLine && 1 == kQuad);
         return fType + 1;
     }
     const SkPoint& endPt() const {
-        GR_STATIC_ASSERT(0 == kLine && 1 == kQuad);
+        static_assert(0 == kLine && 1 == kQuad);
         return fPts[fType];
     }
     const SkPoint& endNorm() const {
-        GR_STATIC_ASSERT(0 == kLine && 1 == kQuad);
+        static_assert(0 == kLine && 1 == kQuad);
         return fNorms[fType];
     }
 };
@@ -472,24 +473,27 @@ static void create_vertices(const SegmentArray& segments,
                         color, skipUVs,
                         -segb.fNorms[0].dot(qpts[2]) + c0,
                         0.0f);
-
+            // We need a negative value that is very large that it won't effect results if it is
+            // interpolated with. However, the value can't be too large of a negative that it
+            // effects numerical precision on less powerful GPUs.
+            static const SkScalar kStableLargeNegativeValue = -SK_ScalarMax/1000000;
             verts.write(qpts[0] + segb.fNorms[0],
                         color, skipUVs,
-                        -SK_ScalarMax/100,
-                        -SK_ScalarMax/100);
+                        kStableLargeNegativeValue,
+                        kStableLargeNegativeValue);
 
             verts.write(qpts[2] + segb.fNorms[1],
                         color, skipUVs,
-                        -SK_ScalarMax/100,
-                        -SK_ScalarMax/100);
+                        kStableLargeNegativeValue,
+                        kStableLargeNegativeValue);
 
             SkVector midVec = segb.fNorms[0] + segb.fNorms[1];
             midVec.normalize();
 
             verts.write(qpts[1] + midVec,
                         color, skipUVs,
-                        -SK_ScalarMax/100,
-                        -SK_ScalarMax/100);
+                        kStableLargeNegativeValue,
+                        kStableLargeNegativeValue);
 
             GrPathUtils::QuadUVMatrix toUV(qpts);
             toUV.apply(quadVertsBegin, 6, vertexStride, uvOffset);
@@ -710,7 +714,11 @@ public:
     const char* name() const override { return "AAConvexPathOp"; }
 
     void visitProxies(const VisitProxyFunc& func) const override {
-        fHelper.visitProxies(func);
+        if (fProgramInfo) {
+            fProgramInfo->visitFPProxies(func);
+        } else {
+            fHelper.visitProxies(func);
+        }
     }
 
 #ifdef SK_DEBUG
@@ -734,19 +742,41 @@ public:
     }
 
 private:
-    void onPrepareDraws(Target* target) override {
-        int instanceCount = fPaths.count();
+    GrProgramInfo* programInfo() override { return fProgramInfo; }
 
+    void onCreateProgramInfo(const GrCaps* caps,
+                             SkArenaAlloc* arena,
+                             const GrSurfaceProxyView* writeView,
+                             GrAppliedClip&& appliedClip,
+                             const GrXferProcessor::DstProxyView& dstProxyView) override {
         SkMatrix invert;
         if (fHelper.usesLocalCoords() && !fPaths.back().fViewMatrix.invert(&invert)) {
             return;
         }
 
-        // Setup GrGeometryProcessor
-        GrGeometryProcessor* quadProcessor = QuadEdgeEffect::Make(target->allocator(), invert,
+        GrGeometryProcessor* quadProcessor = QuadEdgeEffect::Make(arena, invert,
                                                                   fHelper.usesLocalCoords(),
                                                                   fWideColor);
-        const size_t kVertexStride = quadProcessor->vertexStride();
+
+        fProgramInfo = fHelper.createProgramInfoWithStencil(caps, arena, writeView,
+                                                            std::move(appliedClip),
+                                                            dstProxyView, quadProcessor,
+                                                            GrPrimitiveType::kTriangles);
+    }
+
+    void onPrepareDraws(Target* target) override {
+        int instanceCount = fPaths.count();
+
+        if (!fProgramInfo) {
+            this->createProgramInfo(target);
+            if (!fProgramInfo) {
+                return;
+            }
+        }
+
+        const size_t kVertexStride = fProgramInfo->primProc().vertexStride();
+
+        fDraws.reserve(instanceCount);
 
         // TODO generate all segments for all paths and use one vertex buffer
         for (int i = 0; i < instanceCount; i++) {
@@ -806,31 +836,42 @@ private:
             GrVertexColor color(args.fColor, fWideColor);
             create_vertices(segments, fanPt, color, &draws, verts, idxs, kVertexStride);
 
-            GrMesh* meshes = target->allocMeshes(draws.count());
+            GrSimpleMesh* meshes = target->allocMeshes(draws.count());
             for (int j = 0; j < draws.count(); ++j) {
                 const Draw& draw = draws[j];
-                meshes[j].setPrimitiveType(GrPrimitiveType::kTriangles);
                 meshes[j].setIndexed(indexBuffer, draw.fIndexCnt, firstIndex, 0,
-                                     draw.fVertexCnt - 1, GrPrimitiveRestart::kNo);
-                meshes[j].setVertexData(vertexBuffer, firstVertex);
+                                     draw.fVertexCnt - 1, GrPrimitiveRestart::kNo, vertexBuffer,
+                                     firstVertex);
                 firstIndex += draw.fIndexCnt;
                 firstVertex += draw.fVertexCnt;
             }
-            target->recordDraw(quadProcessor, meshes, draws.count(), GrPrimitiveType::kTriangles);
+
+            fDraws.push_back({ meshes, draws.count() });
         }
     }
 
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
-        fHelper.executeDrawsAndUploads(this, flushState, chainBounds);
+        if (!fProgramInfo || fDraws.isEmpty()) {
+            return;
+        }
+
+        flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
+        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        for (int i = 0; i < fDraws.count(); ++i) {
+            for (int j = 0; j < fDraws[i].fMeshCount; ++j) {
+                flushState->drawMesh(fDraws[i].fMeshes[j]);
+            }
+        }
     }
 
-    CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*,
+                                      const GrCaps& caps) override {
         AAConvexPathOp* that = t->cast<AAConvexPathOp>();
         if (!fHelper.isCompatible(that->fHelper, caps, this->bounds(), that->bounds())) {
             return CombineResult::kCannotCombine;
         }
         if (fHelper.usesLocalCoords() &&
-            !fPaths[0].fViewMatrix.cheapEqualTo(that->fPaths[0].fViewMatrix)) {
+            !SkMatrixPriv::CheapEqual(fPaths[0].fViewMatrix, that->fPaths[0].fViewMatrix)) {
             return CombineResult::kCannotCombine;
         }
 
@@ -840,14 +881,22 @@ private:
     }
 
     struct PathData {
-        SkMatrix fViewMatrix;
-        SkPath fPath;
+        SkMatrix    fViewMatrix;
+        SkPath      fPath;
         SkPMColor4f fColor;
     };
 
     Helper fHelper;
     SkSTArray<1, PathData, true> fPaths;
     bool fWideColor;
+
+    struct MeshDraw {
+        GrSimpleMesh* fMeshes;
+        int fMeshCount;
+    };
+
+    SkTDArray<MeshDraw> fDraws;
+    GrProgramInfo*      fProgramInfo = nullptr;
 
     typedef GrMeshDrawOp INHERITED;
 };

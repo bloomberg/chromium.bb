@@ -8,8 +8,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "components/feed/core/pref_names.h"
-#include "components/feed/core/user_classifier.h"
+#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/common/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +21,6 @@ using testing::SizeIs;
 
 namespace feed {
 namespace {
-
-GURL kVisitedUrl("http://visited_url.com/");
 
 // Fixed "now" to make tests more deterministic.
 char kNowString[] = "2018-06-11 15:41";
@@ -39,9 +37,15 @@ enum FeedActionType {
   DOWNLOAD = 5,
 };
 
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL VisitedUrl() {
+  return GURL("http://visited_url.com/");
+}
+
 void CheckURLVisit(const GURL& url,
                    FeedLoggingMetrics::CheckURLVisitCallback callback) {
-  if (url == kVisitedUrl) {
+  if (url == VisitedUrl()) {
     std::move(callback).Run(true);
   } else {
     std::move(callback).Run(false);
@@ -178,7 +182,7 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedCommitIfVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, VisitedUrl(),
                                                 true);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.DismissedVisited.Commit"),
@@ -198,7 +202,7 @@ TEST_F(FeedLoggingMetricsTest,
 TEST_F(FeedLoggingMetricsTest,
        ShouldLogOnSuggestionDismissedUndoIfUndoDismissAndVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, VisitedUrl(),
                                                 false);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.DismissedVisited.Undo"),

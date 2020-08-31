@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +12,14 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.Adapter;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -164,7 +163,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         private long mTimestamp;
 
         public DateHeaderTimedItem(long timestamp) {
-            mTimestamp = DownloadUtils.getDateAtMidnight(timestamp).getTime();
+            mTimestamp = getDateAtMidnight(timestamp).getTime();
         }
 
         @Override
@@ -855,4 +854,17 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+
+    /**
+     * Calculates the {@link Date} for midnight of the date represented by the |timestamp|.
+     */
+    public static Date getDateAtMidnight(long timestamp) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(timestamp);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
+}

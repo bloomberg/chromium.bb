@@ -14,7 +14,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
 class Profile;
@@ -26,6 +26,7 @@ class WebContents;
 namespace web_app {
 
 class AppShortcutManager;
+class FileHandlerManager;
 class InstallFinalizer;
 class WebAppUiManager;
 enum class InstallResultCode;
@@ -58,6 +59,7 @@ class PendingAppInstallTask {
   explicit PendingAppInstallTask(Profile* profile,
                                  AppRegistrar* registrar,
                                  AppShortcutManager* shortcut_manager,
+                                 FileHandlerManager* file_handler_manager,
                                  WebAppUiManager* ui_manager,
                                  InstallFinalizer* install_finalizer,
                                  ExternalInstallOptions install_options);
@@ -91,6 +93,7 @@ class PendingAppInstallTask {
   Profile* const profile_;
   AppRegistrar* const registrar_;
   AppShortcutManager* const shortcut_manager_;
+  FileHandlerManager* const file_handler_manager_;
   InstallFinalizer* const install_finalizer_;
   WebAppUiManager* const ui_manager_;
 

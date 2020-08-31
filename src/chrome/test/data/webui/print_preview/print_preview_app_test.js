@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterface, Destination, DuplexMode, NativeLayer, PluginProxy, setCloudPrintInterfaceForTesting} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
 import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
@@ -17,7 +18,8 @@ print_preview_app_test.TestNames = {
   PrintPresets: 'print presets',
   DestinationsManaged: 'destinations managed',
   HeaderFooterManaged: 'header footer managed',
-  CssBackgroundManaged: 'css background managed'
+  CssBackgroundManaged: 'css background managed',
+  SheetsManaged: 'sheets managed'
 };
 
 suite(print_preview_app_test.suiteName, function() {
@@ -75,7 +77,7 @@ suite(print_preview_app_test.suiteName, function() {
     nativeLayer = new NativeLayerStub();
     NativeLayer.setInstance(nativeLayer);
     cloudPrintInterface = new CloudPrintInterfaceStub();
-    setCloudPrintInterfaceForTesting(cloudPrintInterface);
+    CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
     pluginProxy = new PDFPluginStub();
     PluginProxy.setInstance(pluginProxy);
   });
@@ -109,8 +111,7 @@ suite(print_preview_app_test.suiteName, function() {
     // Send preset values of duplex LONG_EDGE and 2 copies.
     const copies = 2;
     const duplex = DuplexMode.LONG_EDGE;
-    window.cr.webUIListenerCallback(
-        'print-preset-options', true, copies, duplex);
+    webUIListenerCallback('print-preset-options', true, copies, duplex);
     assertEquals(copies, page.getSettingValue('copies'));
     assertTrue(page.getSettingValue('duplex'));
     assertFalse(page.getSetting('duplex').setFromUi);
@@ -143,4 +144,11 @@ suite(print_preview_app_test.suiteName, function() {
         const sidebar = page.$$('print-preview-sidebar');
         assertTrue(sidebar.controlsManaged);
       });
+
+  test(assert(print_preview_app_test.TestNames.SheetsManaged), async () => {
+    initialSettings.policies = {sheets: {value: 2}};
+    await initialize();
+    const sidebar = page.$$('print-preview-sidebar');
+    assertTrue(sidebar.controlsManaged);
+  });
 });

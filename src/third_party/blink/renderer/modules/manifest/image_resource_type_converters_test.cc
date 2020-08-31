@@ -8,7 +8,7 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/modules/manifest/image_resource.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_image_resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -19,7 +19,6 @@ namespace {
 using Purpose = blink::mojom::blink::ManifestImageResource::Purpose;
 using blink::mojom::blink::ManifestImageResource;
 using blink::mojom::blink::ManifestImageResourcePtr;
-using blink::WebSize;
 
 TEST(ImageResourceConverter, EmptySizesTest) {
   blink::ManifestImageResource* resource =
@@ -41,40 +40,40 @@ TEST(ImageResourceConverter, ValidSizesTest) {
   resource->setSizes("2x3");
   ManifestImageResourcePtr converted = ManifestImageResource::From(resource);
   ASSERT_EQ(converted->sizes.size(), 1u);
-  EXPECT_EQ(converted->sizes.front(), WebSize(2, 3));
+  EXPECT_EQ(converted->sizes.front(), gfx::Size(2, 3));
 
   resource->setSizes("42X24");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(converted->sizes.size(), 1u);
-  EXPECT_EQ(converted->sizes.front(), WebSize(42, 24));
+  EXPECT_EQ(converted->sizes.front(), gfx::Size(42, 24));
 
   resource->setSizes("any");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(converted->sizes.size(), 1u);
-  EXPECT_EQ(converted->sizes.front(), WebSize(0, 0));
+  EXPECT_EQ(converted->sizes.front(), gfx::Size(0, 0));
 
   resource->setSizes("ANY");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(converted->sizes.size(), 1u);
-  EXPECT_EQ(converted->sizes.front(), WebSize(0, 0));
+  EXPECT_EQ(converted->sizes.front(), gfx::Size(0, 0));
 
   resource->setSizes("2x2 4x4");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(converted->sizes.size(), 2u);
-  EXPECT_EQ(converted->sizes.front(), WebSize(2, 2));
-  EXPECT_EQ(converted->sizes.back(), WebSize(4, 4));
+  EXPECT_EQ(converted->sizes.front(), gfx::Size(2, 2));
+  EXPECT_EQ(converted->sizes.back(), gfx::Size(4, 4));
 
   resource->setSizes("2x2 4x4 2x2");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(2u, converted->sizes.size());
-  EXPECT_EQ(WebSize(2, 2), converted->sizes.front());
-  EXPECT_EQ(WebSize(4, 4), converted->sizes.back());
+  EXPECT_EQ(gfx::Size(2, 2), converted->sizes.front());
+  EXPECT_EQ(gfx::Size(4, 4), converted->sizes.back());
 
   resource->setSizes(" 2x2 any");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(2u, converted->sizes.size());
-  EXPECT_EQ(WebSize(2, 2), converted->sizes.front());
-  EXPECT_EQ(WebSize(0, 0), converted->sizes.back());
+  EXPECT_EQ(gfx::Size(2, 2), converted->sizes.front());
+  EXPECT_EQ(gfx::Size(0, 0), converted->sizes.back());
 }
 
 TEST(ImageResourceConverter, InvalidSizesTest) {

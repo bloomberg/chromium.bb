@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_range.h"
@@ -43,8 +44,6 @@ using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
   }
 
 namespace ui {
-
-enum class AXTextBoundaryDirection;
 
 struct FindInPageResultInfo {
   AtkObject* node;
@@ -82,11 +81,47 @@ struct AX_EXPORT AtkTableCellInterface {
   static bool Exists();
 };
 
+// This class with an enum is used to generate a bitmask which tracks the ATK
+// interfaces that an AXPlatformNodeAuraLinux's ATKObject implements.
+class ImplementedAtkInterfaces {
+ public:
+  enum class Value {
+    kDefault = 1 << 1,
+    kDocument = 1 << 1,
+    kHyperlink = 1 << 2,
+    kHypertext = 1 << 3,
+    kImage = 1 << 4,
+    kSelection = 1 << 5,
+    kTableCell = 1 << 6,
+    kTable = 1 << 7,
+    kText = 1 << 8,
+    kValue = 1 << 9,
+    kWindow = 1 << 10,
+  };
+
+  bool Implements(Value interface) const {
+    return value_ & static_cast<int>(interface);
+  }
+
+  void Add(Value other) { value_ |= static_cast<int>(other); }
+
+  bool operator!=(const ImplementedAtkInterfaces& other) {
+    return value_ != other.value_;
+  }
+
+  int value() const { return value_; }
+
+ private:
+  int value_ = static_cast<int>(Value::kDefault);
+};
+
 // Implements accessibility on Aura Linux using ATK.
 class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
   AXPlatformNodeAuraLinux();
   ~AXPlatformNodeAuraLinux() override;
+
+  static AXPlatformNodeAuraLinux* FromAtkObject(const AtkObject*);
 
   // Set or get the root-level Application object that's the parent of all
   // top-level windows.
@@ -97,6 +132,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // Do asynchronous static initialization.
   static void StaticInitialize();
+
+  // Enables AXMode calling AXPlatformNode::NotifyAddAXModeFlags. It's used
+  // when ATK APIs are called.
+  static void EnableAXMode();
 
   // EnsureAtkObjectIsValid will destroy and recreate |atk_object_| if the
   // interface mask is different. This partially relies on looking at the tree's
@@ -175,6 +214,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnValueChanged();
   void OnNameChanged();
   void OnDescriptionChanged();
+  void OnSortDirectionChanged();
   void OnInvalidStatusChanged();
   void OnDocumentTitleChanged();
   void OnSubtreeCreated();
@@ -182,6 +222,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnParentChanged();
   void OnWindowVisibilityChanged();
   void OnScrolledToAnchor();
+  void OnAlertShown();
 
   void ResendFocusSignalsForCurrentlyFocusedNode();
   bool SupportsSelectionWithAtkSelection();
@@ -196,8 +237,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;
-  int GetIndexInParent() override;
-  base::string16 GetHypertext() const override;
 
   bool IsNameExposed();
 
@@ -268,25 +307,14 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   using AXPositionInstanceType = typename AXPositionInstance::element_type;
   using AXNodeRange = AXRange<AXPositionInstanceType>;
 
-  enum AtkInterfaces {
-    ATK_ACTION_INTERFACE,
-    ATK_COMPONENT_INTERFACE,
-    ATK_DOCUMENT_INTERFACE,
-    ATK_EDITABLE_TEXT_INTERFACE,
-    ATK_HYPERLINK_INTERFACE,
-    ATK_HYPERTEXT_INTERFACE,
-    ATK_IMAGE_INTERFACE,
-    ATK_SELECTION_INTERFACE,
-    ATK_TABLE_INTERFACE,
-    ATK_TABLE_CELL_INTERFACE,
-    ATK_TEXT_INTERFACE,
-    ATK_VALUE_INTERFACE,
-    ATK_WINDOW_INTERFACE,
-  };
+  // This is static to ensure that we aren't trying to access the rest of the
+  // accessibility tree during node initialization.
+  static ImplementedAtkInterfaces GetGTypeInterfaceMask(const AXNodeData& data);
 
-  int GetGTypeInterfaceMask();
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
+  // Get or Create AtkObject. Note that it could return nullptr except
+  // ax::mojom::Role::kApplication when the mode is not enabled.
   gfx::NativeViewAccessible GetOrCreateAtkObject();
   void DestroyAtkObjects();
   void AddRelationToSet(AtkRelationSet*,
@@ -296,7 +324,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   base::Optional<std::pair<int, int>> GetEmbeddedObjectIndicesForId(int id);
 
   void ComputeStylesIfNeeded();
-  int FindStartOfStyle(int start_offset, ui::AXTextBoundaryDirection direction);
+  int FindStartOfStyle(int start_offset, ax::mojom::MoveDirection direction);
 
   // Reset any find in page operations for the toplevel document of this node.
   void ForgetCurrentFindInPageResult();
@@ -357,9 +385,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   gfx::Point ConvertPointToScreenCoordinates(const gfx::Point& point,
                                              AtkCoordType atk_coord_type);
 
-  // Keep information of latest AtkInterfaces mask to refresh atk object
-  // interfaces accordingly if needed.
-  int interface_mask_ = 0;
+  // Keep information of latest ImplementedAtkInterfaces mask to rebuild the
+  // ATK object accordingly when the platform node changes.
+  ImplementedAtkInterfaces interface_mask_;
 
   // We own a reference to these ref-counted objects.
   AtkObject* atk_object_ = nullptr;

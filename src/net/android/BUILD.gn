@@ -6,7 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 android_library("net_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/net/AndroidCellularSignalStrength.java",
     "java/src/org/chromium/net/AndroidCertVerifyResult.java",
     "java/src/org/chromium/net/AndroidKeyStore.java",
@@ -33,17 +33,17 @@ android_library("net_java") {
     "//base:base_java",
     "//base:jni_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [
-    ":net_errors_java",
     ":net_android_java_enums_srcjar",
+    ":net_errors_java",
   ]
 }
 
 android_library("net_thread_stats_uid_java") {
-  java_files = [ "java/src/org/chromium/net/ThreadStatsUid.java" ]
+  sources = [ "java/src/org/chromium/net/ThreadStatsUid.java" ]
 }
 
 android_aidl("embedded_test_server_aidl") {
@@ -56,15 +56,13 @@ android_aidl("embedded_test_server_aidl") {
 
 android_library("embedded_test_server_aidl_java") {
   testonly = true
-  deps = [
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-  ]
+  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
   srcjar_deps = [ ":embedded_test_server_aidl" ]
 }
 
 android_library("net_java_test_support") {
   testonly = true
-  java_files = [
+  sources = [
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java",
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerRule.java",
     "../test/android/javatests/src/org/chromium/net/test/util/CertTestUtil.java",
@@ -78,6 +76,8 @@ android_library("net_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
@@ -87,7 +87,7 @@ android_library("net_java_test_support") {
 
 android_library("net_java_test_support_provider") {
   testonly = true
-  java_files = [
+  sources = [
     "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
     "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticatorService.java",
     "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
@@ -101,9 +101,7 @@ android_library("net_java_test_support_provider") {
     "//base:base_java_test_support",
   ]
 
-  data_deps = [
-    "//net:test_support",
-  ]
+  data_deps = [ "//net:test_support" ]
 }
 
 source_set("java_test_native_support") {
@@ -116,12 +114,8 @@ source_set("java_test_native_support") {
     "../test/embedded_test_server/android/embedded_test_server_android.h",
   ]
 
-  deps = [
-    "//net:test_support",
-  ]
-  public_deps = [
-    "//net:net_test_jni_headers",
-  ]
+  deps = [ "//net:test_support" ]
+  public_deps = [ "//net:net_test_jni_headers" ]
 }
 
 shared_library("net_java_test_native_support") {
@@ -156,17 +150,26 @@ android_apk("net_test_support_apk") {
 }
 
 android_resources("net_unittests_apk_resources") {
-  resource_dirs = [ "unittest_support/res" ]
+  sources = [
+    "unittest_support/res/mipmap-hdpi/app_icon.png",
+    "unittest_support/res/mipmap-mdpi/app_icon.png",
+    "unittest_support/res/mipmap-xhdpi/app_icon.png",
+    "unittest_support/res/mipmap-xxhdpi/app_icon.png",
+    "unittest_support/res/mipmap-xxxhdpi/app_icon.png",
+    "unittest_support/res/xml/dummy_spnego_account_preferences.xml",
+    "unittest_support/res/xml/dummy_spnego_authenticator.xml",
+  ]
   custom_package = "org.chromium.native_test"
 }
 
 android_library("net_javatests") {
   testonly = true
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
     "javatests/src/org/chromium/net/AndroidNetworkLibraryTestUtil.java",
     "javatests/src/org/chromium/net/AndroidProxyConfigServiceTestUtil.java",
     "javatests/src/org/chromium/net/AndroidProxySelectorTest.java",
+    "javatests/src/org/chromium/net/EmbeddedTestServerTest.java",
     "javatests/src/org/chromium/net/HttpUtilTest.java",
     "javatests/src/org/chromium/net/MimeTypeFilterTest.java",
     "javatests/src/org/chromium/net/NetErrorsTest.java",
@@ -190,12 +193,8 @@ android_library("net_javatests") {
 
 java_cpp_template("net_errors_java") {
   package_path = "org/chromium/net"
-  sources = [
-    "java/NetError.template",
-  ]
-  inputs = [
-    "../base/net_error_list.h",
-  ]
+  sources = [ "java/NetError.template" ]
+  inputs = [ "../base/net_error_list.h" ]
 }
 
 java_cpp_enum("net_java_test_support_enums_srcjar") {
@@ -218,8 +217,7 @@ java_cpp_enum("net_android_java_enums_srcjar") {
 }
 
 junit_binary("net_junit_tests") {
-  java_files =
-      [ "junit/src/org/chromium/net/HttpNegotiateAuthenticatorTest.java" ]
+  sources = [ "junit/src/org/chromium/net/HttpNegotiateAuthenticatorTest.java" ]
   deps = [
     ":net_java",
     "//base:base_java",

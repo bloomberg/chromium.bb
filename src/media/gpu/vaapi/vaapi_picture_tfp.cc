@@ -14,19 +14,21 @@
 namespace media {
 
 VaapiTFPPicture::VaapiTFPPicture(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
     const gfx::Size& size,
+    const gfx::Size& visible_size,
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
-    : VaapiPicture(vaapi_wrapper,
+    : VaapiPicture(std::move(vaapi_wrapper),
                    make_context_current_cb,
                    bind_image_cb,
                    picture_buffer_id,
                    size,
+                   visible_size,
                    texture_id,
                    client_texture_id,
                    texture_target),
@@ -55,7 +57,7 @@ bool VaapiTFPPicture::Initialize() {
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
     return false;
 
-  glx_image_ = new gl::GLImageGLX(size_, GL_RGB);
+  glx_image_ = new gl::GLImageGLX(size_, gfx::BufferFormat::BGRX_8888);
   if (!glx_image_->Initialize(x_pixmap_)) {
     // x_pixmap_ will be freed in the destructor.
     DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
@@ -103,8 +105,7 @@ bool VaapiTFPPicture::ImportGpuMemoryBufferHandle(
   return false;
 }
 
-bool VaapiTFPPicture::DownloadFromSurface(
-    const scoped_refptr<VASurface>& va_surface) {
+bool VaapiTFPPicture::DownloadFromSurface(scoped_refptr<VASurface> va_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return vaapi_wrapper_->PutSurfaceIntoPixmap(va_surface->id(), x_pixmap_,
                                               va_surface->size());

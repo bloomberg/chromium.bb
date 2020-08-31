@@ -72,6 +72,8 @@ class CORE_EXPORT FileInputType final : public InputType,
   bool ValueMissing(const String&) const override;
   String ValueMissingText() const override;
   void HandleDOMActivateEvent(Event&) override;
+  void CustomStyleForLayoutObject(ComputedStyle& style) override;
+  bool TypeShouldForceLegacyLayout() const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
                                    LegacyLayout) const override;
   bool CanSetStringValue() const override;
@@ -88,10 +90,13 @@ class CORE_EXPORT FileInputType final : public InputType,
   bool ReceiveDroppedFiles(const DragData*) override;
   String DroppedFileSystemId() override;
   void CreateShadowSubtree() override;
+  HTMLInputElement* UploadButton() const override;
   void DisabledAttributeChanged() override;
   void MultipleAttributeChanged() override;
   String DefaultToolTip(const InputTypeView&) const override;
   void CopyNonAttributeProperties(const HTMLInputElement&) override;
+  String FileStatusText() const override;
+  void UpdateView() override;
 
   // KeyboardClickableInputTypeView overrides.
   void HandleKeypressEvent(KeyboardEvent&) override;
@@ -106,6 +111,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void WillOpenPopup() override;
 
   void SetFilesFromDirectory(const String&);
+  Node* FileStatusElement() const;
 
   Member<FileList> file_list_;
   String dropped_file_system_id_;

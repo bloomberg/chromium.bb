@@ -11,15 +11,17 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -35,10 +37,6 @@
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 
 class SkDeferredDisplayList;
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace gfx {
 class ColorSpace;
@@ -74,8 +72,7 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
-                                   public gpu::DisplayContext {
+class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
  public:
   class ScopedUseContextProvider;
 
@@ -123,11 +120,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil,
-               gfx::OverlayTransform transform,
-               SkSurfaceCharacterization* characterization,
-               base::WaitableEvent* event);
+               gfx::OverlayTransform transform);
   bool FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
@@ -137,9 +132,14 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
       base::OnceClosure on_finished,
       base::Optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
-      const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane);
+      const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
+          output_surface_plane);
   void SwapBuffers(
       OutputSurfaceFrame frame,
+      base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
+  // Runs |deferred_framebuffer_draw_closure| when SwapBuffers() or CopyOutput()
+  // will not.
+  void SwapBuffersSkipped(
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
@@ -148,7 +148,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
                              std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
                              uint64_t sync_fence_release);
+  // Deletes resources for RenderPasses in |ids|. Also takes ownership of
+  // |images_contexts| and destroys them on GPU thread.
   void RemoveRenderPassResource(
+      std::vector<RenderPassId> ids,
       std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
   void CopyOutput(RenderPassId id,
                   copy_output::RenderPassGeometry geometry,
@@ -166,7 +169,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
-          image_contexts);
+          image_contexts,
+      uint64_t sync_fence_release);
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
 #if defined(OS_WIN)
@@ -174,6 +178,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
 #endif
   void SetGpuVSyncEnabled(bool enabled);
 
+  void SetFrameRate(float frame_rate);
   bool was_context_lost() { return context_state_->context_lost(); }
 
   void SetCapabilitiesForTesting(
@@ -194,24 +199,21 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
-  void SendOverlayPromotionNotification(
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions);
-
-#if defined(OS_ANDROID)
-  void RenderToOverlay(const OverlayCandidate& overlay);
-#endif
-
-  // gpu::DisplayContext implementation:
-  void MarkContextLost() override;
-
   void PostTaskToClientThread(base::OnceClosure closure) {
     dependency_->PostTaskToClientThread(std::move(closure));
   }
 
+  void ReadbackDone() {
+    DCHECK_GT(num_readbacks_pending_, 0);
+    num_readbacks_pending_--;
+  }
+
+  gpu::MemoryTracker* GetMemoryTracker() { return memory_tracker_.get(); }
+
  private:
   class ScopedPromiseImageAccess;
   class OffscreenSurface;
+  class DisplayContext;
 
   bool Initialize();
   bool InitializeForGL();
@@ -221,6 +223,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_fbo0);
+  void MarkContextLost(ContextLostReason reason);
 
   void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
 
@@ -245,6 +248,31 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     return scoped_output_device_paint_->sk_surface();
   }
 
+  // Schedules a task to check if any skia readback requests have completed
+  // after a short delay. Will not schedule a task if there is already a
+  // scheduled task or no readback requests are pending.
+  void ScheduleCheckReadbackCompletion();
+
+  // Checks if any skia readback requests have completed. If there are still
+  // pending readback requests after checking then it will reschedule itself
+  // after a short delay.
+  void CheckReadbackCompletion();
+
+  class ReleaseCurrent {
+   public:
+    ReleaseCurrent(scoped_refptr<gl::GLSurface> gl_surface,
+                   scoped_refptr<gpu::SharedContextState> context_state);
+    ~ReleaseCurrent();
+
+   private:
+    scoped_refptr<gl::GLSurface> gl_surface_;
+    scoped_refptr<gpu::SharedContextState> context_state_;
+  };
+
+  // This must remain the first member variable to ensure that other member
+  // dtors are called first.
+  base::Optional<ReleaseCurrent> release_current_last_;
+
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
@@ -262,6 +290,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
   GpuVSyncCallback gpu_vsync_callback_;
+  bool use_gl_renderer_copier_ = false;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.
@@ -276,10 +305,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   size_t max_resource_cache_bytes_ = 0u;
 
+  std::unique_ptr<DisplayContext> display_context_;
+  bool context_is_lost_ = false;
+
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
 
-  base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
+  base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
       output_surface_plane_;
 
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
@@ -298,6 +330,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
 
   const gpu::ContextUrl copier_active_url_;
+
+  int num_readbacks_pending_ = 0;
+  bool readback_poll_pending_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

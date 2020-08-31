@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -99,9 +99,8 @@ void AppInstallEventLogUploader::StartSerialization() {
 
 void AppInstallEventLogUploader::OnSerialized(
     const em::AppInstallReportRequest* report) {
-  base::Value event_list = ConvertProtoToValue(report, profile_);
   base::Value context = reporting::GetContext(profile_);
-  AppendEventId(&event_list, context);
+  base::Value event_list = ConvertProtoToValue(report, context);
 
   base::Value value_report = RealtimeReportingJobConfiguration::BuildReport(
       std::move(event_list), std::move(context));

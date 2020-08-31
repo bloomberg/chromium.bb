@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
@@ -35,11 +35,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -55,6 +58,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -79,6 +83,8 @@
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,6 +102,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -132,6 +139,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
@@ -147,6 +155,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -162,13 +171,14 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
 
-using chromeos::LoginScreenContext;
 using chromeos::test::GetOobeElementPath;
 using testing::_;
 using testing::InvokeWithoutArgs;
@@ -205,9 +215,6 @@ const char kHostedAppVersion[] = "1.0.0.0";
 const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
-// Chrome RDP extension
-const char kPublicSessionWhitelistedExtensionID[] =
-    "cbkkbcmdlboombapidmoeolnmdacpkch";
 const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
 const char kShowManagedStorageID[] = "ongnjlefhnoajpbodoldndkbkdgfomlp";
 const char kShowManagedStorageCRXPath[] = "extensions/show_managed_storage.crx";
@@ -313,94 +320,6 @@ class TestingUpdateManifestProvider
 
   DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
 };
-
-// Helper base class used for waiting for a pref value stored in local state
-// to change to a particular expected value.
-class PrefValueWaiter {
- public:
-  PrefValueWaiter(const std::string& pref, base::Value expected_value)
-      : pref_(pref), expected_value_(std::move(expected_value)) {
-    pref_change_registrar_.Init(g_browser_process->local_state());
-  }
-
-  PrefValueWaiter(const PrefValueWaiter&) = delete;
-  PrefValueWaiter& operator=(const PrefValueWaiter&) = delete;
-
-  virtual bool ExpectedValueFound();
-  virtual ~PrefValueWaiter() = default;
-
-  void Wait();
-
- protected:
-  const std::string pref_;
-  const base::Value expected_value_;
-
-  PrefChangeRegistrar pref_change_registrar_;
-
- private:
-  base::RunLoop run_loop_;
-  void QuitLoopIfExpectedValueFound();
-};
-
-bool PrefValueWaiter::ExpectedValueFound() {
-  const base::Value* pref_value =
-      pref_change_registrar_.prefs()->Get(pref_.c_str());
-  if (!pref_value) {
-    // Can't use ASSERT_* in non-void functions so this is the next best
-    // thing.
-    ADD_FAILURE() << "Pref " << pref_ << " not found";
-    return true;
-  }
-  return *pref_value == expected_value_;
-}
-
-void PrefValueWaiter::QuitLoopIfExpectedValueFound() {
-  if (ExpectedValueFound())
-    run_loop_.Quit();
-}
-
-void PrefValueWaiter::Wait() {
-  pref_change_registrar_.Add(
-      pref_.c_str(), base::Bind(&PrefValueWaiter::QuitLoopIfExpectedValueFound,
-                                base::Unretained(this)));
-  // Necessary if the pref value changes before the run loop is run. It is
-  // safe to call RunLoop::Quit before RunLoop::Run (in which case the call
-  // to Run will do nothing).
-  QuitLoopIfExpectedValueFound();
-  run_loop_.Run();
-}
-
-class DictionaryPrefValueWaiter : public PrefValueWaiter {
- public:
-  DictionaryPrefValueWaiter(const std::string& pref,
-                            const std::string& expected_value,
-                            const std::string& key)
-      : PrefValueWaiter(pref, base::Value(expected_value)), key_(key) {}
-
-  DictionaryPrefValueWaiter(const DictionaryPrefValueWaiter&) = delete;
-  DictionaryPrefValueWaiter& operator=(const DictionaryPrefValueWaiter&) =
-      delete;
-  ~DictionaryPrefValueWaiter() override = default;
-
- private:
-  bool ExpectedValueFound() override;
-
-  const std::string key_;
-};
-
-bool DictionaryPrefValueWaiter::ExpectedValueFound() {
-  const base::DictionaryValue* pref =
-      pref_change_registrar_.prefs()->GetDictionary(pref_.c_str());
-  if (!pref) {
-    // Can't use ASSERT_* in non-void functions so this is the next best
-    // thing.
-    ADD_FAILURE() << "Pref " << pref_ << " not found";
-    return true;
-  }
-  std::string actual_value;
-  return (pref->GetStringWithoutPathExpansion(key_, &actual_value) &&
-          actual_value == expected_value_.GetString());
-}
 
 TestingUpdateManifestProvider::Update::Update(const std::string& version,
                                               const GURL& crx_url)
@@ -508,10 +427,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-
-    // LoginDisplayHostMojo does not support dynamic device policy changes (see
-    // https://crbug.com/956456).
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -561,11 +476,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void TearDownOnMainThread() override {
     BrowserList::RemoveObserver(this);
-
-    // This shuts down the login UI.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-    base::RunLoop().RunUntilIdle();
     DevicePolicyCrosBrowserTest::TearDownOnMainThread();
   }
 
@@ -594,18 +504,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void InitializePolicy() {
     device_policy()->policy_data().set_public_key_version(1);
-    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.mutable_show_user_names()->set_show_user_names(true);
-
-    device_local_account_policy_.policy_data().set_policy_type(
-        dm_protocol::kChromePublicAccountPolicyType);
-    device_local_account_policy_.policy_data().set_username(kAccountId1);
-    device_local_account_policy_.policy_data().set_settings_entity_id(
-        kAccountId1);
-    device_local_account_policy_.policy_data().set_public_key_version(1);
-    device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
-        kDisplayName1);
-
+    DeviceLocalAccountTestHelper::SetupDeviceLocalAccount(
+        &device_local_account_policy_, kAccountId1, kDisplayName1);
     // Don't enable new managed sessions, use old public sessions.
     SetManagedSessionsEnabled(/* managed_sessions_enabled */ false);
   }
@@ -641,13 +541,24 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     }
   }
 
+  void WaitForPublicSessionLocalesChange(const AccountId& account_id) {
+    std::vector<ash::LocaleItem> locales =
+        ash::LoginScreenTestApi::GetPublicSessionLocales(account_id);
+    chromeos::test::TestPredicateWaiter(
+        base::BindRepeating(
+            [](const std::vector<ash::LocaleItem>& locales,
+               const AccountId& account_id) {
+              return locales !=
+                     ash::LoginScreenTestApi::GetPublicSessionLocales(
+                         account_id);
+            },
+            locales, account_id))
+        .Wait();
+  }
+
   void AddPublicSessionToDevicePolicy(const std::string& username) {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    em::DeviceLocalAccountInfoProto* account =
-        proto.mutable_device_local_accounts()->add_account();
-    account->set_account_id(username);
-    account->set_type(
-        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
+    DeviceLocalAccountTestHelper::AddPublicSession(&proto, username);
     RefreshDevicePolicy();
     ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
@@ -684,8 +595,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     proto.mutable_system_timezone()->set_timezone_detection_type(policy);
     RefreshDevicePolicy();
 
-    PrefValueWaiter(prefs::kSystemTimezoneAutomaticDetectionPolicy,
-                    base::Value(policy))
+    LocalStateValueWaiter(prefs::kSystemTimezoneAutomaticDetectionPolicy,
+                          base::Value(policy))
         .Wait();
     ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
@@ -723,7 +634,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void WaitForDisplayName(const std::string& user_id,
                           const std::string& expected_display_name) {
-    DictionaryPrefValueWaiter("UserDisplayName", expected_display_name, user_id)
+    DictionaryLocalStateValueWaiter("UserDisplayName", expected_display_name,
+                                    user_id)
         .Wait();
   }
 
@@ -735,20 +647,9 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   }
 
   void ExpandPublicSessionPod(bool expect_advanced) {
-    bool advanced = false;
-    // Click on the pod to expand it.
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        contents_,
-        base::StringPrintf(
-            "var pod ="
-            "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-            "pod.click();"
-            "domAutomationController.send(pod.classList.contains('advanced'));",
-            account_id_1_.Serialize().c_str()),
-        &advanced));
-    // Verify that the pod expanded to its basic/advanced form, as expected.
-    EXPECT_EQ(expect_advanced, advanced);
-
+    ASSERT_TRUE(ash::LoginScreenTestApi::ExpandPublicSessionPod(account_id_1_));
+    ASSERT_EQ(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced(),
+              expect_advanced);
     // Verify that the construction of the pod's language list did not affect
     // the current ICU locale.
     EXPECT_EQ(initial_language_, icu::Locale::getDefault().getLanguage());
@@ -771,7 +672,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     chromeos::LoginDisplayHost* host =
         chromeos::LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
-    host->StartSignInScreen(LoginScreenContext());
+    host->StartSignInScreen();
     chromeos::ExistingUserController* controller =
         chromeos::ExistingUserController::current_controller();
     ASSERT_TRUE(controller);
@@ -797,17 +698,25 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     user_manager::UserManager::Get()->RemoveObserver(this);
   }
 
-  void VerifyKeyboardLayoutMatchesLocale() {
+  static std::string GetDefaultKeyboardIdFromLanguageCode(
+      const std::string& language_code) {
     chromeos::input_method::InputMethodManager* input_method_manager =
         chromeos::input_method::InputMethodManager::Get();
     std::vector<std::string> layouts_from_locale;
-    input_method_manager->GetInputMethodUtil()->
-        GetInputMethodIdsFromLanguageCode(
-            g_browser_process->GetApplicationLocale(),
-            chromeos::input_method::kKeyboardLayoutsOnly,
+    input_method_manager->GetInputMethodUtil()
+        ->GetInputMethodIdsFromLanguageCode(
+            language_code, chromeos::input_method::kKeyboardLayoutsOnly,
             &layouts_from_locale);
-    ASSERT_FALSE(layouts_from_locale.empty());
-    EXPECT_EQ(layouts_from_locale.front(),
+    EXPECT_FALSE(layouts_from_locale.empty());
+    if (layouts_from_locale.empty())
+      return std::string();
+    return layouts_from_locale.front();
+  }
+  void VerifyKeyboardLayoutMatchesLocale() {
+    chromeos::input_method::InputMethodManager* input_method_manager =
+        chromeos::input_method::InputMethodManager::Get();
+    EXPECT_EQ(GetDefaultKeyboardIdFromLanguageCode(
+                  g_browser_process->GetApplicationLocale()),
               input_method_manager->GetActiveIMEState()
                   ->GetCurrentInputMethod()
                   .id());
@@ -1000,44 +909,18 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
                   ->IsAffiliated());
 }
 
-// Flaky: http://crbug.com/512670.
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   WaitForPolicy();
 
   // Verify that the display name is shown in the UI.
-  const std::string get_compact_pod_display_name = base::StringPrintf(
-      "domAutomationController.send(document.getElementById('pod-row')"
-      "    .getPodWithUsername_('%s').nameElement.textContent);",
-      account_id_1_.Serialize().c_str());
-  std::string display_name;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      get_compact_pod_display_name,
-      &display_name));
+  std::string display_name =
+      ash::LoginScreenTestApi::GetDisplayedName(account_id_1_);
   EXPECT_EQ(kDisplayName1, display_name);
-  const std::string get_expanded_pod_display_name = base::StringPrintf(
-      "domAutomationController.send(document.getElementById('pod-row')"
-      "    .getPodWithUsername_('%s').querySelector('.expanded-pane-name')"
-      "        .textContent);",
-      account_id_1_.Serialize().c_str());
-  display_name.clear();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      get_expanded_pod_display_name,
-      &display_name));
-  EXPECT_EQ(kDisplayName1, display_name);
-
   // Click on the pod to expand it.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .click();",
-          account_id_1_.Serialize().c_str())));
-
+  ASSERT_TRUE(ash::LoginScreenTestApi::ExpandPublicSessionPod(account_id_1_));
   // Change the display name.
   device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
       kDisplayName2);
@@ -1048,34 +931,28 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
           account_id_1_.GetUserEmail());
   ASSERT_TRUE(broker);
-  broker->core()->store()->Load();
+  broker->core()->client()->FetchPolicy();
   WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName2);
 
   // Verify that the new display name is shown in the UI.
-  display_name.clear();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      get_compact_pod_display_name,
-      &display_name));
+  display_name = ash::LoginScreenTestApi::GetDisplayedName(account_id_1_);
   EXPECT_EQ(kDisplayName2, display_name);
-  display_name.clear();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      get_expanded_pod_display_name,
-      &display_name));
-  EXPECT_EQ(kDisplayName2, display_name);
-
   // Verify that the pod is still expanded. This indicates that the UI updated
   // without reloading and losing state.
-  bool expanded = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents_,
-      base::StringPrintf(
-          "domAutomationController.send(document.getElementById('pod-row')"
-          "    .getPodWithUsername_('%s').expanded);",
-          account_id_1_.Serialize().c_str()),
-      &expanded));
-  EXPECT_TRUE(expanded);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsPublicSessionExpanded());
+}
+
+// Tests that display name is saved in kUserDisplayName pref in local state.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, CachedDisplayName) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
+  auto* dict = g_browser_process->local_state()->GetDictionary(
+      policy::key::kUserDisplayName);
+  ASSERT_TRUE(dict);
+  ASSERT_TRUE(dict->HasKey(account_id_1_.GetUserEmail()));
+  EXPECT_EQ(kDisplayName1, *dict->FindStringKey(account_id_1_.GetUserEmail()));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
@@ -1154,7 +1031,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
   EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount());
+      IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount(
+          signin::ConsentLevel::kNotRequired));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenAllowed) {
@@ -1358,7 +1236,7 @@ static void CreateFile(const base::FilePath& file,
                 const base::Time& timestamp) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string data(size, 0);
-  EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
+  EXPECT_TRUE(base::WriteFile(file, data));
   EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
 }
 
@@ -1697,10 +1575,17 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      app->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceTest));
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  proxy->FlushMojoCallsForTesting();
+  proxy->Launch(
+      app->id(),
+      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          false /* preferred_containner */),
+      apps::mojom::LaunchSource::kFromChromeInternal,
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  proxy->FlushMojoCallsForTesting();
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());
 
@@ -1806,12 +1691,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleNoSwitch) {
   ExpandPublicSessionPod(false);
 
   // Click the enter button to start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str())));
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   WaitForSessionStart();
 
@@ -1832,47 +1712,18 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
 
   // Click the link that switches the pod to its advanced form. Verify that the
   // pod switches from basic to advanced.
-  bool advanced = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents_,
-      base::StringPrintf(
-          "var pod ="
-          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-          "pod.querySelector('.language-and-input').click();"
-          "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.Serialize().c_str()),
-      &advanced));
-  // Public session pods switch to advanced form immediately upon being
-  // clicked, instead of waiting for animation to end which were in the old UI.
-  EXPECT_TRUE(advanced);
-
-  // Manually select a different locale.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "var languageSelect = document.getElementById('pod-row')"
-          "    .getPodWithUsername_('%s').querySelector('.language-select');"
-          "languageSelect.value = '%s';"
-          "var event = document.createEvent('HTMLEvents');"
-          "event.initEvent('change', false, true);"
-          "languageSelect.dispatchEvent(event);",
-          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
-
+  ash::LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton();
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced());
+  ash::LoginScreenTestApi::SetPublicSessionLocale(kPublicSessionLocale);
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
   WaitForGetKeyboardLayoutsForLocaleToFinish();
 
-  // Manually select a different keyboard layout and click the enter button to
-  // start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "var pod ="
-          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-          "pod.querySelector('.keyboard-select').value = '%s';"
-          "pod.querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str(),
-          public_session_input_method_id_.c_str())));
+  // Manually select a different keyboard layout.
+  ash::LoginScreenTestApi::SetPublicSessionKeyboard(
+      public_session_input_method_id_);
+
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   WaitForSessionStart();
 
@@ -1955,13 +1806,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
 
   ExpandPublicSessionPod(false);
 
+  WaitForGetKeyboardLayoutsForLocaleToFinish();
+
   // Click the enter button to start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str())));
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   WaitForSessionStart();
 
@@ -1987,30 +1835,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
 
   // Verify that the pod shows a list of locales beginning with the recommended
   // ones, followed by others.
-  const std::string get_locale_list = base::StringPrintf(
-      "var languageSelect = document.getElementById('pod-row')"
-      "    .getPodWithUsername_('%s').querySelector('.language-select');"
-      "var locales = [];"
-      "for (var i = 0; i < languageSelect.length; ++i)"
-      "  locales.push(languageSelect.options[i].value);"
-      "domAutomationController.send(JSON.stringify(locales));",
-      account_id_1_.Serialize().c_str());
-  std::string json;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
-                                                     get_locale_list,
-                                                     &json));
-  std::unique_ptr<base::Value> value_ptr =
-      base::JSONReader::ReadDeprecated(json);
-  const base::ListValue* locales = NULL;
-  ASSERT_TRUE(value_ptr);
-  ASSERT_TRUE(value_ptr->GetAsList(&locales));
-  EXPECT_LT(base::size(kRecommendedLocales1), locales->GetSize());
+  std::vector<ash::LocaleItem> locales =
+      ash::LoginScreenTestApi::GetExpandedPublicSessionLocales();
+  EXPECT_LT(base::size(kRecommendedLocales1), locales.size());
 
   // Verify that the list starts with the recommended locales, in correct order.
   for (size_t i = 0; i < base::size(kRecommendedLocales1); ++i) {
-    std::string locale;
-    EXPECT_TRUE(locales->GetString(i, &locale));
-    EXPECT_EQ(kRecommendedLocales1[i], locale);
+    EXPECT_EQ(kRecommendedLocales1[i], locales[i].language_code);
   }
 
   // Verify that the recommended locales do not appear again in the remainder of
@@ -2018,32 +1849,20 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   std::set<std::string> recommended_locales;
   for (size_t i = 0; i < base::size(kRecommendedLocales1); ++i)
     recommended_locales.insert(kRecommendedLocales1[i]);
-  for (size_t i = base::size(kRecommendedLocales1); i < locales->GetSize();
-       ++i) {
-    std::string locale;
-    EXPECT_TRUE(locales->GetString(i, &locale));
+  for (size_t i = base::size(kRecommendedLocales1); i < locales.size(); ++i) {
+    const std::string& locale = locales[i].language_code;
     EXPECT_EQ(recommended_locales.end(), recommended_locales.find(locale));
   }
 
   // Verify that the first recommended locale is selected.
-  const std::string get_selected_locale = base::StringPrintf(
-      "domAutomationController.send(document.getElementById('pod-row')"
-      "    .getPodWithUsername_('%s').querySelector('.language-select')"
-      "        .value);",
-      account_id_1_.Serialize().c_str());
-  std::string selected_locale;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
-                                                     get_selected_locale,
-                                                     &selected_locale));
+  std::string selected_locale =
+      ash::LoginScreenTestApi::GetExpandedPublicSessionSelectedLocale();
+
   EXPECT_EQ(kRecommendedLocales1[0], selected_locale);
 
   // Change the list of recommended locales.
   SetRecommendedLocales(kRecommendedLocales2, base::size(kRecommendedLocales2));
 
-  // Also change the display name as it is easy to ensure that policy has been
-  // updated by waiting for a display name change.
-  device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
-      kDisplayName2);
   UploadAndInstallDeviceLocalAccountPolicy();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -2051,54 +1870,35 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
           account_id_1_.GetUserEmail());
   ASSERT_TRUE(broker);
-  broker->core()->store()->Load();
-  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName2);
+  broker->core()->client()->FetchPolicy();
+  WaitForPublicSessionLocalesChange(account_id_1_);
 
   // Verify that the new list of locales is shown in the UI.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
-                                                     get_locale_list,
-                                                     &json));
-  value_ptr = base::JSONReader::ReadDeprecated(json);
-  locales = NULL;
-  ASSERT_TRUE(value_ptr);
-  ASSERT_TRUE(value_ptr->GetAsList(&locales));
-  EXPECT_LT(base::size(kRecommendedLocales2), locales->GetSize());
+  locales = ash::LoginScreenTestApi::GetExpandedPublicSessionLocales();
+  EXPECT_LT(base::size(kRecommendedLocales2), locales.size());
   for (size_t i = 0; i < base::size(kRecommendedLocales2); ++i) {
-    std::string locale;
-    EXPECT_TRUE(locales->GetString(i, &locale));
+    const std::string& locale = locales[i].language_code;
     EXPECT_EQ(kRecommendedLocales2[i], locale);
   }
 
   // Verify that the first new recommended locale is selected.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
-                                                     get_selected_locale,
-                                                     &selected_locale));
+  selected_locale =
+      ash::LoginScreenTestApi::GetExpandedPublicSessionSelectedLocale();
   EXPECT_EQ(kRecommendedLocales2[0], selected_locale);
 
   // Manually select a different locale.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "var languageSelect = document.getElementById('pod-row')"
-          "    .getPodWithUsername_('%s').querySelector('.language-select');"
-          "languageSelect.value = '%s';"
-          "var event = document.createEvent('HTMLEvents');"
-          "event.initEvent('change', false, true);"
-          "languageSelect.dispatchEvent(event);",
-          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
+  ash::LoginScreenTestApi::SetPublicSessionLocale(kPublicSessionLocale);
 
   // Change the list of recommended locales.
-  SetRecommendedLocales(kRecommendedLocales2, base::size(kRecommendedLocales2));
-  device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
-      kDisplayName1);
+  SetRecommendedLocales(kRecommendedLocales1, base::size(kRecommendedLocales1));
+
   UploadAndInstallDeviceLocalAccountPolicy();
-  broker->core()->store()->Load();
-  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
+  broker->core()->client()->FetchPolicy();
+  WaitForPublicSessionLocalesChange(account_id_1_);
 
   // Verify that the manually selected locale is still selected.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
-                                                     get_selected_locale,
-                                                     &selected_locale));
+  selected_locale =
+      ash::LoginScreenTestApi::GetExpandedPublicSessionSelectedLocale();
   EXPECT_EQ(kPublicSessionLocale, selected_locale);
 
   // The UI will request an updated list of keyboard layouts at this point. Wait
@@ -2106,61 +1906,37 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   WaitForGetKeyboardLayoutsForLocaleToFinish();
 
   // Manually select a different keyboard layout.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .querySelector('.keyboard-select').value = '%s';",
-          account_id_1_.Serialize().c_str(),
-          public_session_input_method_id_.c_str())));
+  ash::LoginScreenTestApi::SetPublicSessionKeyboard(
+      public_session_input_method_id_);
+
+  ASSERT_TRUE(ash::LoginScreenTestApi::HidePublicSessionExpandedPod());
 
   // Click on a different pod, causing focus to shift away and the pod to
   // contract.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .click();",
-          account_id_2_.Serialize().c_str())));
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id_2_));
 
   // Click on the pod again, causing it to expand again. Verify that the pod has
-  // kept all its state (the advanced form is being shown, the manually selected
-  // locale and keyboard layout are selected).
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      base::StringPrintf(
-          "var pod ="
-          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-          "pod.click();"
-          "var state = {};"
-          "state.advanced = pod.classList.contains('advanced');"
-          "state.locale = pod.querySelector('.language-select').value;"
-          "state.keyboardLayout = pod.querySelector('.keyboard-select').value;"
-          "console.log(JSON.stringify(state));"
-          "domAutomationController.send(JSON.stringify(state));",
-          account_id_1_.Serialize().c_str()),
-      &json));
-  LOG(ERROR) << json;
-  value_ptr = base::JSONReader::ReadDeprecated(json);
-  const base::DictionaryValue* state = NULL;
-  ASSERT_TRUE(value_ptr);
-  ASSERT_TRUE(value_ptr->GetAsDictionary(&state));
-  bool advanced = false;
-  EXPECT_TRUE(state->GetBoolean("advanced", &advanced));
-  EXPECT_TRUE(advanced);
-  EXPECT_TRUE(state->GetString("locale", &selected_locale));
-  EXPECT_EQ(kPublicSessionLocale, selected_locale);
-  std::string selected_keyboard_layout;
-  EXPECT_TRUE(state->GetString("keyboardLayout", &selected_keyboard_layout));
-  EXPECT_EQ(public_session_input_method_id_, selected_keyboard_layout);
+  // reset all its state (the advanced form is being shown, the manually
+  // selected locale and keyboard layout are selected).
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id_1_));
+  ExpandPublicSessionPod(true);
+  EXPECT_EQ(kRecommendedLocales1[0],
+            ash::LoginScreenTestApi::GetExpandedPublicSessionSelectedLocale());
+
+  std::string selected_keyboard_layout =
+      ash::LoginScreenTestApi::GetExpandedPublicSessionSelectedKeyboard();
+
+  std::string default_keyboard_id =
+      GetDefaultKeyboardIdFromLanguageCode(kRecommendedLocales1[0]);
+  EXPECT_EQ(default_keyboard_id, selected_keyboard_layout);
+
+  ash::LoginScreenTestApi::SetPublicSessionLocale(kPublicSessionLocale);
+  WaitForGetKeyboardLayoutsForLocaleToFinish();
+  ash::LoginScreenTestApi::SetPublicSessionKeyboard(
+      public_session_input_method_id_);
 
   // Click the enter button to start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str())));
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   WaitForSessionStart();
 
@@ -2186,27 +1962,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
 
   // Click on the pod to expand it. Verify that the pod expands to its basic
   // form as there is only one recommended locale.
-  bool advanced = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents_,
-      base::StringPrintf(
-          "var pod ="
-          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-          "pod.click();"
-          "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.Serialize().c_str()),
-      &advanced));
-  EXPECT_FALSE(advanced);
-  EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
-            icu::Locale::getDefault().getLanguage());
-
-  // Click the enter button to start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "document.getElementById('pod-row').getPodWithUsername_('%s')"
-          "    .querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str())));
+  ExpandPublicSessionPod(false);
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   WaitForSessionStart();
 
@@ -2288,18 +2045,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   WaitForPolicy();
+  ExpandPublicSessionPod(false);
 
   // Select a different locale.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "var languageSelect = document.getElementById('pod-row')"
-          "    .getPodWithUsername_('%s').querySelector('.language-select');"
-          "languageSelect.value = '%s';"
-          "var event = document.createEvent('HTMLEvents');"
-          "event.initEvent('change', false, true);"
-          "languageSelect.dispatchEvent(event);",
-          account_id_1_.Serialize().c_str(), kPublicSessionLocale)));
+  ash::LoginScreenTestApi::SetPublicSessionLocale(kPublicSessionLocale);
 
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
@@ -2319,15 +2068,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
 
   // Manually select a different keyboard layout and click the enter button to
   // start the session.
-  ASSERT_TRUE(content::ExecuteScript(
-      contents_,
-      base::StringPrintf(
-          "var pod ="
-          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
-          "pod.querySelector('.keyboard-select').value = '%s';"
-          "pod.querySelector('.enter-button').click();",
-          account_id_1_.Serialize().c_str(),
-          public_session_input_method_id_.c_str())));
+  ash::LoginScreenTestApi::SetPublicSessionKeyboard(
+      public_session_input_method_id_);
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
 
   // Spin the loop until the login observer fires. Then, unregister the
   // observer.
@@ -2503,6 +2246,10 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
         kGoodExtensionID, kGoodExtensionVersion,
         embedded_test_server()->GetURL(std::string("/") +
                                        kGoodExtensionCRXPath));
+    testing_update_manifest_provider->AddUpdate(
+        kShowManagedStorageID, kShowManagedStorageVersion,
+        embedded_test_server()->GetURL(std::string("/") +
+                                       kShowManagedStorageCRXPath));
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&TestingUpdateManifestProvider::HandleRequest,
                             testing_update_manifest_provider));
@@ -2529,7 +2276,7 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
   void AddForceInstalledExtension() { AddExtension(kGoodExtensionID); }
 
   void AddForceInstalledWhitelistedExtension() {
-    AddExtension(kPublicSessionWhitelistedExtensionID);
+    AddExtension(kShowManagedStorageID);
   }
 
   void WaitForCertificateUpdate() {
@@ -2600,6 +2347,16 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that management disclosure warning is not shown when managed sessions
   // are enabled, but policy settings are not risky.
   ASSERT_FALSE(
@@ -2630,6 +2387,20 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledExtension) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ExtensionInstallObserver install_observer(kGoodExtensionID);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  install_observer.Wait();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that force-installed extension activates managed session mode for
   // device-local users.
   EXPECT_TRUE(
@@ -2660,6 +2431,20 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ExtensionInstallObserver install_observer(kShowManagedStorageID);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  install_observer.Wait();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that white-listed extension is not considered risky and doesn't
   // activate managed session mode.
   EXPECT_FALSE(
@@ -2919,3 +2704,74 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, WebAppsInPublicSession) {
 }
 
 }  // namespace policy
+
+class AmbientAuthenticationManagedGuestSessionTest
+    : public policy::DeviceLocalAccountTest,
+      public testing::WithParamInterface<net::AmbientAuthAllowedProfileTypes> {
+ public:
+  AmbientAuthenticationManagedGuestSessionTest() {
+    // Switching off the feature flags to test policies in isolation.
+    AmbientAuthenticationTestHelper::CookTheFeatureList(
+        scoped_feature_list_,
+        AmbientAuthenticationFeatureState::GUEST_OFF_INCOGNITO_OFF);
+  }
+
+  void SetAmbientAuthPolicy(net::AmbientAuthAllowedProfileTypes value) {
+    device_local_account_policy_.payload()
+        .mutable_ambientauthenticationinprivatemodesenabled()
+        ->set_value(static_cast<int>(value));
+    UploadDeviceLocalAccountPolicy();
+  }
+
+  void IsAmbientAuthAllowedForProfilesTest() {
+    int policy_value = device_local_account_policy_.payload()
+                           .ambientauthenticationinprivatemodesenabled()
+                           .value();
+    Profile* regular_profile = GetCurrentBrowser()->profile();
+    Profile* incognito_profile = regular_profile->GetOffTheRecordProfile();
+
+    EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+        regular_profile));
+    EXPECT_EQ(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+                  incognito_profile),
+              AmbientAuthenticationTestHelper::IsIncognitoAllowedInPolicy(
+                  policy_value));
+  }
+
+  Browser* GetCurrentBrowser() {
+    BrowserList* browser_list = BrowserList::GetInstance();
+    EXPECT_EQ(1U, browser_list->size());
+    Browser* browser = browser_list->get(0);
+    DCHECK(browser);
+    return browser;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(AmbientAuthenticationManagedGuestSessionTest,
+                       AmbientAuthenticationInPrivateModesEnabledPolicy) {
+  SetManagedSessionsEnabled(true);
+  SetAmbientAuthPolicy(GetParam());
+
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(policy::kAccountId1);
+  EnableAutoLogin();
+
+  WaitForPolicy();
+
+  WaitForSessionStart();
+
+  CheckPublicSessionPresent(account_id_1_);
+
+  IsAmbientAuthAllowedForProfilesTest();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AmbientAuthAllPolicyValuesTest,
+    AmbientAuthenticationManagedGuestSessionTest,
+    testing::Values(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY,
+                    net::AmbientAuthAllowedProfileTypes::INCOGNITO_AND_REGULAR,
+                    net::AmbientAuthAllowedProfileTypes::GUEST_AND_REGULAR,
+                    net::AmbientAuthAllowedProfileTypes::ALL));

@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -18,9 +19,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "content/browser/appcache/appcache.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
+#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/grit/content_resources.h"
+#include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +83,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
                         appcache_info.last_update_time.ToJsTime());
   dict_value->SetDouble("lastAccessTime",
                         appcache_info.last_access_time.ToJsTime());
+  dict_value->SetDouble("tokenExpires", appcache_info.token_expires.ToJsTime());
   dict_value->SetString("responseSizes",
                         base::UTF16ToUTF8(base::FormatBytesUnlocalized(
                             appcache_info.response_sizes)));
@@ -367,11 +370,12 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
   source->AddResourcePath("appcache_internals.css", IDR_APPCACHE_INTERNALS_CSS);
   source->SetDefaultResource(IDR_APPCACHE_INTERNALS_HTML);
 
-  WebUIDataSource::Add(browser_context(), source);
+  WebUIDataSource::Add(GetBrowserContext(), source);
 
-  BrowserContext::StoragePartitionCallback callback = base::BindRepeating(
-      &AppCacheInternalsUI::CreateProxyForPartition, AsWeakPtr());
-  BrowserContext::ForEachStoragePartition(browser_context(), callback);
+  BrowserContext::ForEachStoragePartition(
+      GetBrowserContext(),
+      base::BindRepeating(&AppCacheInternalsUI::CreateProxyForPartition,
+                          AsWeakPtr()));
 }
 
 AppCacheInternalsUI::~AppCacheInternalsUI() {
@@ -432,7 +436,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     scoped_refptr<AppCacheInfoCollection> collection,
     const base::FilePath& partition_path) {
   std::string incognito_path_prefix;
-  if (browser_context()->IsOffTheRecord())
+  if (GetBrowserContext()->IsOffTheRecord())
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
@@ -510,6 +514,10 @@ void AppCacheInternalsUI::OnFileDetailsFailed(
       kFunctionOnFileDetailsFailed,
       *GetDictionaryValueForResponseEnquiry(response_enquiry),
       base::Value(net_result_code));
+}
+
+BrowserContext* AppCacheInternalsUI::GetBrowserContext() {
+  return web_ui()->GetWebContents()->GetBrowserContext();
 }
 
 AppCacheInternalsUI::Proxy* AppCacheInternalsUI::GetProxyForPartitionPath(

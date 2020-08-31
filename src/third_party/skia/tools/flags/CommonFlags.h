@@ -28,8 +28,10 @@ bool CollectImages(CommandLineFlags::StringArray dir, SkTArray<SkString>* output
  *  Helper to set GrContextOptions from common GPU flags, including
  *     --gpuThreads
  *     --cachePathMasks
- *     --noGS
+ *     --(no)gs
+ *     --(no)ts
  *     --pr
+ *     --internalSamples
  *     --disableDriverCorrectnessWorkarounds
  *     --reduceOpsTaskSplitting
  *     --dontReduceOpsTaskSplitting

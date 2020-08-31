@@ -29,6 +29,7 @@ component("accelerated_widget_mac") {
 
   deps = [
     "//base",
+    "//components/metal_util",
     "//skia",
     "//ui/base",
     "//ui/events",
@@ -52,9 +53,7 @@ component("accelerated_widget_mac") {
 
 test("accelerated_widget_mac_unittests") {
   configs += [ "//build/config:precompiled_headers" ]
-  sources = [
-    "ca_layer_tree_unittest_mac.mm",
-  ]
+  sources = [ "ca_layer_tree_unittest_mac.mm" ]
   deps = [
     ":accelerated_widget_mac",
     "//base",

@@ -37,7 +37,6 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
@@ -308,27 +307,15 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   int set_cookie_count() const { return set_cookie_count_; }
 
-  void set_experimental_cookie_features_enabled(bool val) {
-    experimental_cookie_features_enabled_ = val;
-  }
-
   void set_cancel_request_with_policy_violating_referrer(bool val) {
     cancel_request_with_policy_violating_referrer_ = val;
   }
 
-  int before_send_headers_with_proxy_count() const {
-    return before_send_headers_with_proxy_count_;
-  }
   int before_start_transaction_count() const {
     return before_start_transaction_count_;
   }
 
   int headers_received_count() const { return headers_received_count_; }
-
-  // Last observed proxy in proxy header sent callback.
-  HostPortPair last_observed_proxy() {
-    return last_observed_proxy_;
-  }
 
   void set_before_start_transaction_fails() {
     before_start_transaction_fails_ = true;
@@ -342,10 +329,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int OnBeforeStartTransaction(URLRequest* request,
                                CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override;
-  void OnBeforeSendHeaders(URLRequest* request,
-                           const ProxyInfo& proxy_info,
-                           const ProxyRetryInfoMap& proxy_retry_info,
-                           HttpRequestHeaders* headers) override;
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -391,11 +374,8 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_get_cookies_count_;
   int blocked_set_cookie_count_;
   int set_cookie_count_;
-  int before_send_headers_with_proxy_count_;
   int before_start_transaction_count_;
   int headers_received_count_;
-  // Last observed proxy in before proxy header sent callback.
-  HostPortPair last_observed_proxy_;
 
   // NetworkDelegate callbacks happen in a particular order (e.g.
   // OnBeforeURLRequest is always called before OnBeforeStartTransaction).
@@ -410,7 +390,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   LoadTimingInfo load_timing_info_before_redirect_;
   bool has_load_timing_info_before_redirect_;
 
-  bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool before_start_transaction_fails_;
   bool add_header_to_first_response_;

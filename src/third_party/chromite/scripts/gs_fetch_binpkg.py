@@ -17,11 +17,15 @@ This is needed for two reasons:
 from __future__ import print_function
 
 import shutil
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():

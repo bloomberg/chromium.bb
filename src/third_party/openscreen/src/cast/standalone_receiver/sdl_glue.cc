@@ -6,20 +6,17 @@
 
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
-using openscreen::platform::Clock;
-using openscreen::platform::TaskRunner;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 SDLEventLoopProcessor::SDLEventLoopProcessor(
     TaskRunner* task_runner,
     std::function<void()> quit_callback)
     : alarm_(&Clock::now, task_runner),
       quit_callback_(std::move(quit_callback)) {
-  alarm_.Schedule([this] { ProcessPendingEvents(); }, {});
+  alarm_.Schedule([this] { ProcessPendingEvents(); }, Alarm::kImmediately);
 }
 
 SDLEventLoopProcessor::~SDLEventLoopProcessor() = default;
@@ -38,9 +35,8 @@ void SDLEventLoopProcessor::ProcessPendingEvents() {
 
   // Schedule a task to come back and process more pending events.
   constexpr auto kEventPollPeriod = std::chrono::milliseconds(10);
-  alarm_.Schedule([this] { ProcessPendingEvents(); },
-                  Clock::now() + kEventPollPeriod);
+  alarm_.ScheduleFromNow([this] { ProcessPendingEvents(); }, kEventPollPeriod);
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

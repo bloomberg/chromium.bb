@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -67,7 +68,7 @@ class LoginScreenUiApitest : public LoginScreenApitestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenWindow) {
-  SetUpExtensionAndRunTest(kCanOpenWindow);
+  SetUpLoginScreenExtensionAndRunTest(kCanOpenWindow);
   ASSERT_TRUE(HasOpenWindow());
   // userCanClose defaults to false
   EXPECT_TRUE(IsMovementDisabled());
@@ -77,22 +78,22 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenWindow) {
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest,
                        ExtensionCannotOpenMultipleWindows) {
-  SetUpExtensionAndRunTest(kCannotOpenMultipleWindows);
+  SetUpLoginScreenExtensionAndRunTest(kCannotOpenMultipleWindows);
   EXPECT_TRUE(HasOpenWindow());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenAndCloseWindow) {
-  SetUpExtensionAndRunTest(kCanOpenAndCloseWindow);
+  SetUpLoginScreenExtensionAndRunTest(kCanOpenAndCloseWindow);
   EXPECT_FALSE(HasOpenWindow());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCannotCloseNoWindow) {
-  SetUpExtensionAndRunTest(kCannotCloseNoWindow);
+  SetUpLoginScreenExtensionAndRunTest(kCannotCloseNoWindow);
   EXPECT_FALSE(HasOpenWindow());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCanCloseWindow) {
-  SetUpExtensionAndRunTest(kUserCanCloseWindow);
+  SetUpLoginScreenExtensionAndRunTest(kUserCanCloseWindow);
   ASSERT_TRUE(HasOpenWindow());
   EXPECT_TRUE(IsMovementDisabled());
   EXPECT_TRUE(CanCloseDialog());
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCanCloseWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCannotCloseWindow) {
-  SetUpExtensionAndRunTest(kUserCannotCloseWindow);
+  SetUpLoginScreenExtensionAndRunTest(kUserCannotCloseWindow);
   ASSERT_TRUE(HasOpenWindow());
   EXPECT_TRUE(IsMovementDisabled());
   EXPECT_FALSE(CanCloseDialog());

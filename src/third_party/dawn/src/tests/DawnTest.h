@@ -15,6 +15,7 @@
 #ifndef TESTS_DAWNTEST_H_
 #define TESTS_DAWNTEST_H_
 
+#include "common/Log.h"
 #include "dawn/dawn_proc_table.h"
 #include "dawn/webgpu_cpp.h"
 #include "dawn_native/DawnNative.h"
@@ -31,39 +32,42 @@
 // them.
 #define EXPECT_BUFFER_U32_EQ(expected, buffer, offset)                         \
     AddBufferExpectation(__FILE__, __LINE__, buffer, offset, sizeof(uint32_t), \
-                         new detail::ExpectEq<uint32_t>(expected))
+                         new ::detail::ExpectEq<uint32_t>(expected))
 
 #define EXPECT_BUFFER_U32_RANGE_EQ(expected, buffer, offset, count)                    \
     AddBufferExpectation(__FILE__, __LINE__, buffer, offset, sizeof(uint32_t) * count, \
-                         new detail::ExpectEq<uint32_t>(expected, count))
+                         new ::detail::ExpectEq<uint32_t>(expected, count))
 
 // Test a pixel of the mip level 0 of a 2D texture.
 #define EXPECT_PIXEL_RGBA8_EQ(expected, texture, x, y)                                  \
     AddTextureExpectation(__FILE__, __LINE__, texture, x, y, 1, 1, 0, 0, sizeof(RGBA8), \
-                          new detail::ExpectEq<RGBA8>(expected))
+                          new ::detail::ExpectEq<RGBA8>(expected))
 
 #define EXPECT_TEXTURE_RGBA8_EQ(expected, texture, x, y, width, height, level, slice)     \
     AddTextureExpectation(__FILE__, __LINE__, texture, x, y, width, height, level, slice, \
                           sizeof(RGBA8),                                                  \
-                          new detail::ExpectEq<RGBA8>(expected, (width) * (height)))
+                          new ::detail::ExpectEq<RGBA8>(expected, (width) * (height)))
 
-#define EXPECT_LAZY_CLEAR(N, statement)                                                   \
-    if (UsesWire()) {                                                                     \
-        statement;                                                                        \
-    } else {                                                                              \
-        size_t lazyClearsBefore = dawn_native::GetLazyClearCountForTesting(device.Get()); \
-        statement;                                                                        \
-        size_t lazyClearsAfter = dawn_native::GetLazyClearCountForTesting(device.Get());  \
-        EXPECT_EQ(N, lazyClearsAfter - lazyClearsBefore);                                 \
-    }
+#define EXPECT_PIXEL_FLOAT_EQ(expected, texture, x, y)                                  \
+    AddTextureExpectation(__FILE__, __LINE__, texture, x, y, 1, 1, 0, 0, sizeof(float), \
+                          new ::detail::ExpectEq<float>(expected))
+
+#define EXPECT_TEXTURE_FLOAT_EQ(expected, texture, x, y, width, height, level, slice)     \
+    AddTextureExpectation(__FILE__, __LINE__, texture, x, y, width, height, level, slice, \
+                          sizeof(float),                                                  \
+                          new ::detail::ExpectEq<float>(expected, (width) * (height)))
 
 // Should only be used to test validation of function that can't be tested by regular validation
 // tests;
-#define ASSERT_DEVICE_ERROR(statement) \
-    StartExpectDeviceError();          \
-    statement;                         \
-    FlushWire();                       \
-    ASSERT_TRUE(EndExpectDeviceError());
+#define ASSERT_DEVICE_ERROR(statement)                          \
+    StartExpectDeviceError();                                   \
+    statement;                                                  \
+    FlushWire();                                                \
+    if (!EndExpectDeviceError()) {                              \
+        FAIL() << "Expected device error in:\n " << #statement; \
+    }                                                           \
+    do {                                                        \
+    } while (0)
 
 struct RGBA8 {
     constexpr RGBA8() : RGBA8(0, 0, 0, 0) {
@@ -86,10 +90,11 @@ struct RGBA8 {
 std::ostream& operator<<(std::ostream& stream, const RGBA8& color);
 
 struct DawnTestParam {
-    explicit DawnTestParam(dawn_native::BackendType backendType) : backendType(backendType) {
-    }
+    DawnTestParam(wgpu::BackendType backendType,
+                  std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                  std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
-    dawn_native::BackendType backendType;
+    wgpu::BackendType backendType;
 
     std::vector<const char*> forceEnabledWorkarounds;
     std::vector<const char*> forceDisabledWorkarounds;
@@ -97,15 +102,20 @@ struct DawnTestParam {
 
 std::ostream& operator<<(std::ostream& os, const DawnTestParam& param);
 
-// Shorthands for backend types used in the DAWN_INSTANTIATE_TEST
-extern const DawnTestParam D3D12Backend;
-extern const DawnTestParam MetalBackend;
-extern const DawnTestParam OpenGLBackend;
-extern const DawnTestParam VulkanBackend;
+DawnTestParam D3D12Backend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                           std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
-DawnTestParam ForceWorkarounds(const DawnTestParam& originParam,
-                               std::initializer_list<const char*> forceEnabledWorkarounds,
-                               std::initializer_list<const char*> forceDisabledWorkarounds = {});
+DawnTestParam MetalBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                           std::initializer_list<const char*> forceDisabledWorkarounds = {});
+
+DawnTestParam NullBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                          std::initializer_list<const char*> forceDisabledWorkarounds = {});
+
+DawnTestParam OpenGLBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                            std::initializer_list<const char*> forceDisabledWorkarounds = {});
+
+DawnTestParam VulkanBackend(std::initializer_list<const char*> forceEnabledWorkarounds = {},
+                            std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
 namespace utils {
     class TerribleCommandBuffer;
@@ -116,6 +126,7 @@ namespace detail {
 }  // namespace detail
 
 namespace dawn_wire {
+    class CommandHandler;
     class WireClient;
     class WireServer;
 }  // namespace dawn_wire
@@ -125,7 +136,7 @@ void InitDawnEnd2EndTestEnvironment(int argc, char** argv);
 class DawnTestEnvironment : public testing::Environment {
   public:
     DawnTestEnvironment(int argc, char** argv);
-    ~DawnTestEnvironment() = default;
+    ~DawnTestEnvironment() override = default;
 
     static void SetEnvironment(DawnTestEnvironment* env);
 
@@ -136,9 +147,11 @@ class DawnTestEnvironment : public testing::Environment {
     bool IsBackendValidationEnabled() const;
     bool IsDawnValidationSkipped() const;
     bool IsSpvcBeingUsed() const;
+    bool IsSpvcParserBeingUsed() const;
     dawn_native::Instance* GetInstance() const;
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
+    const char* GetWireTraceDir() const;
 
   protected:
     std::unique_ptr<dawn_native::Instance> mInstance;
@@ -150,9 +163,13 @@ class DawnTestEnvironment : public testing::Environment {
     bool mEnableBackendValidation = false;
     bool mSkipDawnValidation = false;
     bool mUseSpvc = false;
+    bool mSpvcFlagSeen = false;
+    bool mUseSpvcParser = false;
+    bool mSpvcParserFlagSeen = false;
     bool mBeginCaptureOnStartup = false;
     bool mHasVendorIdFilter = false;
     uint32_t mVendorIdFilter = 0;
+    std::string mWireTraceDir;
 };
 
 class DawnTestBase {
@@ -167,6 +184,7 @@ class DawnTestBase {
 
     bool IsD3D12() const;
     bool IsMetal() const;
+    bool IsNull() const;
     bool IsOpenGL() const;
     bool IsVulkan() const;
 
@@ -176,6 +194,7 @@ class DawnTestBase {
     bool IsIntel() const;
     bool IsNvidia() const;
     bool IsQualcomm() const;
+    bool IsSwiftshader() const;
 
     bool IsWindows() const;
     bool IsLinux() const;
@@ -185,6 +204,7 @@ class DawnTestBase {
     bool IsBackendValidationEnabled() const;
     bool IsDawnValidationSkipped() const;
     bool IsSpvcBeingUsed() const;
+    bool IsSpvcParserBeingUsed() const;
 
     void StartExpectDeviceError();
     bool EndExpectDeviceError();
@@ -192,7 +212,8 @@ class DawnTestBase {
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
 
-    dawn_native::PCIInfo GetPCIInfo() const;
+    wgpu::Instance GetInstance() const;
+    dawn_native::Adapter GetAdapter() const;
 
   protected:
     wgpu::Device device;
@@ -232,6 +253,8 @@ class DawnTestBase {
     // code path to handle the situation when not all extensions are supported.
     virtual std::vector<const char*> GetRequiredExtensions();
 
+    const wgpu::AdapterProperties& GetAdapterProperties() const;
+
   private:
     DawnTestParam mParam;
 
@@ -241,8 +264,11 @@ class DawnTestBase {
     std::unique_ptr<utils::TerribleCommandBuffer> mC2sBuf;
     std::unique_ptr<utils::TerribleCommandBuffer> mS2cBuf;
 
+    std::unique_ptr<dawn_wire::CommandHandler> mWireServerTraceLayer;
+
     // Tracking for validation errors
     static void OnDeviceError(WGPUErrorType type, const char* message, void* userdata);
+    static void OnDeviceLost(const char* message, void* userdata);
     bool mExpectError = false;
     bool mError = false;
 
@@ -277,7 +303,7 @@ class DawnTestBase {
         uint64_t readbackOffset;
         uint64_t size;
         uint32_t rowBytes;
-        uint32_t rowPitch;
+        uint32_t bytesPerRow;
         std::unique_ptr<detail::Expectation> expectation;
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54316
         // Use unique_ptr because of missing move/copy constructors on std::basic_ostringstream
@@ -288,18 +314,19 @@ class DawnTestBase {
     // Assuming the data is mapped, checks all expectations
     void ResolveExpectations();
 
-    dawn_native::PCIInfo mPCIInfo;
-
     dawn_native::Adapter mBackendAdapter;
+    wgpu::AdapterProperties mAdapterProperties;
 };
 
 // Skip a test when the given condition is satisfied.
-#define DAWN_SKIP_TEST_IF(condition)                               \
-    if (condition) {                                               \
-        std::cout << "Test skipped: " #condition "." << std::endl; \
-        GTEST_SKIP();                                              \
-        return;                                                    \
-    }
+#define DAWN_SKIP_TEST_IF(condition)                            \
+    do {                                                        \
+        if (condition) {                                        \
+            dawn::InfoLog() << "Test skipped: " #condition "."; \
+            GTEST_SKIP();                                       \
+            return;                                             \
+        }                                                       \
+    } while (0)
 
 template <typename Params = DawnTestParam>
 class DawnTestWithParams : public DawnTestBase, public ::testing::TestWithParam<Params> {
@@ -331,20 +358,23 @@ DawnTestWithParams<Params>::DawnTestWithParams() : DawnTestBase(this->GetParam()
 
 using DawnTest = DawnTestWithParams<>;
 
+// Helpers to get the first element of a __VA_ARGS__ without triggering empty __VA_ARGS__ warnings.
+#define DAWN_INTERNAL_PP_GET_HEAD(firstParam, ...) firstParam
+#define DAWN_PP_GET_HEAD(...) DAWN_INTERNAL_PP_GET_HEAD(__VA_ARGS__, dummyArg)
+
 // Instantiate the test once for each backend provided after the first argument. Use it like this:
 //     DAWN_INSTANTIATE_TEST(MyTestFixture, MetalBackend, OpenGLBackend)
-#define DAWN_INSTANTIATE_TEST(testName, firstParam, ...)                         \
-    const decltype(firstParam) testName##params[] = {firstParam, ##__VA_ARGS__}; \
-    INSTANTIATE_TEST_SUITE_P(                                                    \
-        , testName,                                                              \
-        testing::ValuesIn(::detail::FilterBackends(                              \
-            testName##params, sizeof(testName##params) / sizeof(firstParam))),   \
+#define DAWN_INSTANTIATE_TEST(testName, ...)                                            \
+    const decltype(DAWN_PP_GET_HEAD(__VA_ARGS__)) testName##params[] = {__VA_ARGS__};   \
+    INSTANTIATE_TEST_SUITE_P(                                                           \
+        , testName,                                                                     \
+        testing::ValuesIn(::detail::FilterBackends(                                     \
+            testName##params, sizeof(testName##params) / sizeof(testName##params[0]))), \
         testing::PrintToStringParamName())
-
 
 namespace detail {
     // Helper functions used for DAWN_INSTANTIATE_TEST
-    bool IsBackendAvailable(dawn_native::BackendType type);
+    bool IsBackendAvailable(wgpu::BackendType type);
     std::vector<DawnTestParam> FilterBackends(const DawnTestParam* params, size_t numParams);
 
     // All classes used to implement the deferred expectations should inherit from this.
@@ -371,6 +401,7 @@ namespace detail {
     extern template class ExpectEq<uint8_t>;
     extern template class ExpectEq<uint32_t>;
     extern template class ExpectEq<RGBA8>;
+    extern template class ExpectEq<float>;
 }  // namespace detail
 
 #endif  // TESTS_DAWNTEST_H_

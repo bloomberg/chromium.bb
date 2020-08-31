@@ -9,10 +9,10 @@
 
 #include <limits>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Abstract base template class for common "sequence value" data types such as
 // RtpTimeTicks, FrameId, or PacketId which generally increment/decrement in
@@ -158,7 +158,7 @@ class ExpandedValueBase {
   FullWidthInteger value_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_EXPANDED_VALUE_BASE_H_

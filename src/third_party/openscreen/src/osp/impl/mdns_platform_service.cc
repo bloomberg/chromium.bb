@@ -6,15 +6,15 @@
 
 #include <cstring>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {
 
 MdnsPlatformService::BoundInterface::BoundInterface(
-    const platform::InterfaceInfo& interface_info,
-    const platform::IPSubnet& subnet,
-    platform::UdpSocket* socket)
+    const InterfaceInfo& interface_info,
+    const IPSubnet& subnet,
+    UdpSocket* socket)
     : interface_info(interface_info), subnet(subnet), socket(socket) {
   OSP_DCHECK(socket);
 }

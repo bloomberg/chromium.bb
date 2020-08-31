@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -246,7 +247,7 @@ void UpdatePathService(const base::FilePath& path) {
 class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   FlashComponentInstallerPolicy();
-  ~FlashComponentInstallerPolicy() override {}
+  ~FlashComponentInstallerPolicy() override = default;
 
  private:
   // The following methods override ComponentInstallerPolicy.
@@ -270,7 +271,7 @@ class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerPolicy);
 };
 
-FlashComponentInstallerPolicy::FlashComponentInstallerPolicy() {}
+FlashComponentInstallerPolicy::FlashComponentInstallerPolicy() = default;
 
 bool FlashComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
@@ -320,9 +321,8 @@ void FlashComponentInstallerPolicy::ComponentReady(
   // Flash version, so we do not do this.
   RegisterPepperFlashWithChrome(path.Append(chrome::kPepperFlashPluginFilename),
                                 version);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&UpdatePathService, path));
 #endif  // !defined(OS_LINUX)
 }

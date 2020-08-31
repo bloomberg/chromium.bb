@@ -45,7 +45,7 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
 namespace {
 
 std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
-  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto edit_button = views::MdTextButton::Create(
       listener, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
   edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   return edit_button;
@@ -57,8 +57,6 @@ std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
 views::Widget* BookmarkBubbleView::ShowBubble(
     views::View* anchor_view,
     views::Button* highlighted_button,
-    const gfx::Rect& anchor_rect,
-    gfx::NativeView parent_window,
     bookmarks::BookmarkBubbleObserver* observer,
     std::unique_ptr<BubbleSyncPromoDelegate> delegate,
     Profile* profile,
@@ -70,14 +68,6 @@ views::Widget* BookmarkBubbleView::ShowBubble(
   bookmark_bubble_ =
       new BookmarkBubbleView(anchor_view, observer, std::move(delegate),
                              profile, url, !already_bookmarked);
-  // Bookmark bubble should always anchor TOP_RIGHT, but the
-  // LocationBarBubbleDelegateView does not know that and may use different
-  // arrow anchoring.
-  bookmark_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
-  if (!anchor_view) {
-    bookmark_bubble_->SetAnchorRect(anchor_rect);
-    bookmark_bubble_->set_parent_window(parent_window);
-  }
   if (highlighted_button)
     bookmark_bubble_->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget =
@@ -117,24 +107,6 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
   return name_field_;
 }
 
-base::string16 BookmarkBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(newly_bookmarked_
-                                       ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
-}
-
-bool BookmarkBubbleView::ShouldShowCloseButton() const {
-  return true;
-}
-
-gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
-  return gfx::ImageSkia();
-}
-
-bool BookmarkBubbleView::ShouldShowWindowIcon() const {
-  return false;
-}
-
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
@@ -147,33 +119,17 @@ void BookmarkBubbleView::WindowClosing() {
 
 // views::DialogDelegate -------------------------------------------------------
 
-bool BookmarkBubbleView::Cancel() {
+void BookmarkBubbleView::OnDialogCancelled() {
   base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
   apply_edits_ = false;
-  return true;
-}
-
-bool BookmarkBubbleView::Accept() {
-  return true;
-}
-
-bool BookmarkBubbleView::Close() {
-  // Allow closing when activation lost. Default would call Accept().
-  return true;
 }
 
 void BookmarkBubbleView::OnDialogInitialized() {
   views::Button* cancel = GetCancelButton();
   if (cancel)
     cancel->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
-}
-
-// views::View -----------------------------------------------------------------
-
-const char* BookmarkBubbleView::GetClassName() const {
-  return "BookmarkBubbleView";
 }
 
 // views::ButtonListener -------------------------------------------------------
@@ -197,8 +153,8 @@ void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
 
 void BookmarkBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  bookmark_contents_view_ = new views::View();
-  views::GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
+  auto bookmark_contents_view = std::make_unique<views::View>();
+  views::GridLayout* layout = bookmark_contents_view->SetLayoutManager(
       std::make_unique<views::GridLayout>());
 
   constexpr int kColumnId = 0;
@@ -221,7 +177,7 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL));
 
-  AddChildView(bookmark_contents_view_);
+  bookmark_contents_view_ = AddChildView(std::move(bookmark_contents_view));
 }
 
 // Private methods -------------------------------------------------------------
@@ -237,15 +193,24 @@ BookmarkBubbleView::BookmarkBubbleView(
       observer_(observer),
       delegate_(std::move(delegate)),
       profile_(profile),
-      url_(url),
-      newly_bookmarked_(newly_bookmarked) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
-  DialogDelegate::set_button_label(
+      url_(url) {
+  DCHECK(anchor_view);
+
+  WidgetDelegate::SetTitle(l10n_util::GetStringUTF16(
+      newly_bookmarked ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
+                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
+  WidgetDelegate::SetShowCloseButton(true);
+
+  SetArrow(views::BubbleBorder::TOP_RIGHT);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
+  SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
-  DialogDelegate::SetExtraView(CreateEditButton(this));
-  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
+  SetExtraView(CreateEditButton(this));
+  SetFootnoteView(CreateSigninPromoView());
+
+  SetCancelCallback(base::BindOnce(&BookmarkBubbleView::OnDialogCancelled,
+                                   base::Unretained(this)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -316,3 +281,7 @@ std::unique_ptr<views::View> BookmarkBubbleView::CreateSigninPromoView() {
       /*dice_signin_button_prominent=*/false);
 #endif
 }
+
+BEGIN_METADATA(BookmarkBubbleView)
+METADATA_PARENT_CLASS(LocationBarBubbleDelegateView);
+END_METADATA()

@@ -28,6 +28,10 @@ class DemoSetupScreenView {
   // Sets view and screen.
   virtual void Bind(DemoSetupScreen* screen) = 0;
 
+  // Updates current setup step.
+  virtual void SetCurrentSetupStep(
+      DemoSetupController::DemoSetupStep current_step) = 0;
+
   // Handles successful setup.
   virtual void OnSetupSucceeded() = 0;
 
@@ -36,7 +40,7 @@ class DemoSetupScreenView {
       const DemoSetupController::DemoSetupError& error) = 0;
 };
 
-// WebUI implementation of DemoSetupScreenView. It controlls UI, receives UI
+// WebUI implementation of DemoSetupScreenView. It controls UI, receives UI
 // events and notifies the Delegate.
 class DemoSetupScreenHandler : public BaseScreenHandler,
                                public DemoSetupScreenView {
@@ -50,6 +54,8 @@ class DemoSetupScreenHandler : public BaseScreenHandler,
   void Show() override;
   void Hide() override;
   void Bind(DemoSetupScreen* screen) override;
+  void SetCurrentSetupStep(
+      DemoSetupController::DemoSetupStep current_step) override;
   void OnSetupFailed(const DemoSetupController::DemoSetupError& error) override;
   void OnSetupSucceeded() override;
 
@@ -57,6 +63,9 @@ class DemoSetupScreenHandler : public BaseScreenHandler,
   void Initialize() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+
+  // BaseWebUIHandler:
+  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
  private:
   DemoSetupScreen* screen_ = nullptr;

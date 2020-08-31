@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -94,12 +96,6 @@ void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
   uninstall_auto_confirm_ =
       std::make_unique<extensions::ScopedTestDialogAutoConfirm>(
           extensions::ScopedTestDialogAutoConfirm::ACCEPT);
-}
-
-void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
-  error_console_override_ =
-      std::make_unique<extensions::FeatureSwitch::ScopedOverride>(
-          extensions::FeatureSwitch::error_console(), true);
 }
 
 void ExtensionSettingsUIBrowserTest::SetDevModeEnabled(bool enabled) {
@@ -203,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://extensions"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   {
     SCOPED_TRACE("With page loaded");

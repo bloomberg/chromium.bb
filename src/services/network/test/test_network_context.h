@@ -18,8 +18,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -31,6 +33,7 @@
 
 namespace net {
 class NetworkIsolationKey;
+class IsolationInfo;
 }
 
 namespace network {
@@ -54,11 +57,12 @@ class TestNetworkContext : public mojom::NetworkContext {
           restricted_cookie_manager,
       mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id) override {}
+      mojo::PendingRemote<mojom::CookieAccessObserver> observer) override {}
+  void GetHasTrustTokensAnswerer(
+      mojo::PendingReceiver<mojom::HasTrustTokensAnswerer> receiver,
+      const url::Origin& top_frame_origin) override {}
   void ClearNetworkingHistorySince(
       base::Time start_time,
       ClearNetworkingHistorySinceCallback callback) override {}
@@ -86,6 +90,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::ClearDataFilterPtr filter,
       DomainReliabilityClearMode mode,
       ClearDomainReliabilityCallback callback) override {}
+  void ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
+                           ClearTrustTokenDataCallback callback) override {}
   void GetDomainReliabilityJSON(
       GetDomainReliabilityJSONCallback callback) override {}
   void QueueReport(const std::string& type,
@@ -106,11 +112,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::AdditionalCertificatesPtr additional_certificates) override {}
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
-  void SetCTPolicy(
-      const std::vector<std::string>& required_hosts,
-      const std::vector<std::string>& excluded_hosts,
-      const std::vector<std::string>& excluded_spkis,
-      const std::vector<std::string>& excluded_legacy_spkis) override {}
+  void SetCTPolicy(mojom::CTPolicyPtr ct_policy) override {}
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,
@@ -149,8 +151,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateWebSocket(
       const GURL& url,
       const std::vector<std::string>& requested_protocols,
-      const GURL& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::SiteForCookies& site_for_cookies,
+      const net::IsolationInfo& isolation_info,
       std::vector<mojom::HttpHeaderPtr> additional_headers,
       int32_t process_id,
       int32_t render_frame_id,
@@ -189,6 +191,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override {}
+  void ParseHeaders(const GURL& base_url,
+                    const scoped_refptr<net::HttpResponseHeaders>& headers,
+                    ParseHeadersCallback callback) override {}
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override {}
   void SetCorsOriginAccessListsForOrigin(
@@ -207,9 +212,6 @@ class TestNetworkContext : public mojom::NetworkContext {
                     GetHSTSStateCallback callback) override {}
   void EnableStaticKeyPinningForTesting(
       EnableStaticKeyPinningForTestingCallback callback) override {}
-  void SetFailingHttpTransactionForTesting(
-      int32_t rv,
-      SetFailingHttpTransactionForTestingCallback callback) override {}
   void VerifyCertificateForTesting(
       const scoped_refptr<net::X509Certificate>& certificate,
       const std::string& hostname,

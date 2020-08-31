@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_sampler_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_sampler_descriptor.h"
 
 namespace blink {
 
@@ -29,7 +29,9 @@ WGPUSamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc) {
       AsDawnEnum<WGPUFilterMode>(webgpu_desc->mipmapFilter());
   dawn_desc.lodMinClamp = webgpu_desc->lodMinClamp();
   dawn_desc.lodMaxClamp = webgpu_desc->lodMaxClamp();
-  dawn_desc.compare = AsDawnEnum<WGPUCompareFunction>(webgpu_desc->compare());
+  if (webgpu_desc->hasCompare()) {
+    dawn_desc.compare = AsDawnEnum<WGPUCompareFunction>(webgpu_desc->compare());
+  }
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }

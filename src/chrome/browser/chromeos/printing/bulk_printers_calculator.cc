@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -45,24 +46,29 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
     LOG(WARNING) << "Received null data";
     return nullptr;
   }
-  int error_code = 0;
-  int error_line = 0;
 
   // This could be really slow.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  std::unique_ptr<base::Value> json_blob =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          *data, base::JSONParserOptions::JSON_PARSE_RFC, &error_code,
-          nullptr /* error_msg_out */, &error_line);
-  // It's not valid JSON.  Give up.
-  if (!json_blob || !json_blob->is_list()) {
-    LOG(WARNING) << "Failed to parse printers policy (" << error_code
-                 << ") on line " << error_line;
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          *data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+
+  if (!value_with_error.value) {
+    LOG(WARNING) << "Failed to parse printers policy ("
+                 << value_with_error.error_message << ") on line "
+                 << value_with_error.error_line << " at position "
+                 << value_with_error.error_column;
     return nullptr;
   }
 
-  base::Value::ConstListView printer_list = json_blob->GetList();
+  base::Value& json_blob = value_with_error.value.value();
+  if (!json_blob.is_list()) {
+    LOG(WARNING) << "Failed to parse printers policy (an array was expected)";
+    return nullptr;
+  }
+
+  base::Value::ConstListView printer_list = json_blob.GetList();
   if (printer_list.size() > kMaxRecords) {
     LOG(WARNING) << "Too many records in printers policy: "
                  << printer_list.size();
@@ -220,10 +226,9 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
  public:
   BulkPrintersCalculatorImpl()
       : restrictions_(base::MakeRefCounted<Restrictions>()),
-        restrictions_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
-  }
+        restrictions_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   BulkPrintersCalculatorImpl(const BulkPrintersCalculatorImpl&) = delete;
   BulkPrintersCalculatorImpl& operator=(const BulkPrintersCalculatorImpl&) =

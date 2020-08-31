@@ -9,6 +9,7 @@
 #include "content/public/browser/video_capture_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -113,7 +114,6 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
   }
 
@@ -131,7 +131,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
             subscriber_.InitWithNewPipeAndPassReceiver());
   }
 
-  scoped_refptr<base::TaskRunner> main_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   std::unique_ptr<video_capture::MockVideoFrameHandler>
       mock_video_frame_handler_;
 

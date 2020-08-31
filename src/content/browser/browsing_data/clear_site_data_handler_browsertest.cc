@@ -29,6 +29,7 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/mock_browsing_data_remover_delegate.h"
@@ -43,7 +44,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
@@ -176,7 +176,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, url.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cookie, url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
                        run_loop.QuitClosure()));
     run_loop.Run();
@@ -189,9 +189,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         storage_partition()->GetCookieManagerForBrowserProcess();
     base::RunLoop run_loop;
     net::CookieList cookie_list;
-    cookie_manager->GetAllCookies(base::BindRepeating(
-        &ClearSiteDataHandlerBrowserTest::GetCookiesCallback,
-        run_loop.QuitClosure(), base::Unretained(&cookie_list)));
+    cookie_manager->GetAllCookies(
+        base::BindOnce(&ClearSiteDataHandlerBrowserTest::GetCookiesCallback,
+                       run_loop.QuitClosure(), base::Unretained(&cookie_list)));
     run_loop.Run();
     return cookie_list;
   }

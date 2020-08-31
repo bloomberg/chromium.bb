@@ -9,6 +9,7 @@
 // clang-format off
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <poll.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,12 +36,12 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 #ifdef MTK_MT8183
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8,     DRM_FORMAT_NV21,
-						   DRM_FORMAT_NV12,   DRM_FORMAT_YUYV,
-						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV21, DRM_FORMAT_NV12,
+						   DRM_FORMAT_YUYV, DRM_FORMAT_YVU420,
+						   DRM_FORMAT_YVU420_ANDROID };
 #else
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_NV12 };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID,
+						   DRM_FORMAT_NV12 };
 #endif
 
 static int mediatek_init(struct driver *drv)
@@ -48,11 +49,13 @@ static int mediatek_init(struct driver *drv)
 	struct format_metadata metadata;
 
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
+	drv_add_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
+			    BO_USE_SW_MASK | BO_USE_LINEAR | BO_USE_PROTECTED);
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
@@ -83,6 +86,9 @@ static int mediatek_init(struct driver *drv)
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	/* Private formats for private reprocessing in camera */
+	drv_add_combination(drv, DRM_FORMAT_MTISP_SXYZW10, &metadata,
+			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK);
 #endif
 
 	return drv_modify_linear_combinations(drv);
@@ -109,18 +115,41 @@ static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	 */
 	stride = drv_stride_from_format(format, width, 0);
 	stride = ALIGN(stride, 64);
-	drv_bo_from_format(bo, stride, height, format);
+
+	if (bo->meta.use_flags & BO_USE_HW_VIDEO_ENCODER) {
+		uint32_t aligned_height = ALIGN(height, 32);
+		uint32_t padding[DRV_MAX_PLANES] = { 0 };
+
+		for (plane = 0; plane < bo->meta.num_planes; ++plane) {
+			uint32_t plane_stride = drv_stride_from_format(format, stride, plane);
+			padding[plane] = plane_stride *
+					 (32 / drv_vertical_subsampling_from_format(format, plane));
+		}
+
+		drv_bo_from_format_and_padding(bo, stride, aligned_height, format, padding);
+	} else {
+#ifdef MTK_MT8183
+		/*
+		 * JPEG Encoder Accelerator requires 16x16 alignment. We want the buffer
+		 * from camera can be put in JEA directly so align the height to 16
+		 * bytes.
+		 */
+		if (format == DRM_FORMAT_NV12)
+			height = ALIGN(height, 16);
+#endif
+		drv_bo_from_format(bo, stride, height, format);
+	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->total_size;
+	gem_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
-		drv_log("DRM_IOCTL_MTK_GEM_CREATE failed (size=%llu)\n", gem_create.size);
+		drv_log("DRM_IOCTL_MTK_GEM_CREATE failed (size=%" PRIu64 ")\n", gem_create.size);
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
@@ -149,23 +178,23 @@ static void *mediatek_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 		return MAP_FAILED;
 	}
 
-	ret = drmPrimeHandleToFD(bo->drv->fd, gem_map.handle, DRM_CLOEXEC, &prime_fd);
-	if (ret) {
+	prime_fd = drv_bo_get_plane_fd(bo, 0);
+	if (prime_fd < 0) {
 		drv_log("Failed to get a prime fd\n");
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	void *addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
 	priv = calloc(1, sizeof(*priv));
 	priv->prime_fd = prime_fd;
 	vma->priv = priv;
 
-	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
-		priv->cached_addr = calloc(1, bo->total_size);
+	if (bo->meta.use_flags & BO_USE_RENDERSCRIPT) {
+		priv->cached_addr = calloc(1, bo->meta.total_size);
 		priv->gem_addr = addr;
 		addr = priv->cached_addr;
 	}
@@ -211,7 +240,7 @@ static int mediatek_bo_invalidate(struct bo *bo, struct mapping *mapping)
 			drv_log("poll prime_fd failed\n");
 
 		if (priv->cached_addr)
-			memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
+			memcpy(priv->cached_addr, priv->gem_addr, bo->meta.total_size);
 	}
 
 	return 0;
@@ -221,7 +250,7 @@ static int mediatek_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct mediatek_private_map_data *priv = mapping->vma->priv;
 	if (priv && priv->cached_addr && (mapping->vma->map_flags & BO_MAP_WRITE))
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+		memcpy(priv->gem_addr, priv->cached_addr, bo->meta.total_size);
 
 	return 0;
 }
@@ -231,17 +260,25 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 #ifdef MTK_MT8183
-		/* Only for MT8183 Camera subsystem requires NV12. */
-		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+		/* Only MT8183 Camera subsystem offers private reprocessing
+		 * capability. CAMERA_READ indicates the buffer is intended for
+		 * reprocessing and hence given the private format for MTK. */
+		if (use_flags & BO_USE_CAMERA_READ)
+			return DRM_FORMAT_MTISP_SXYZW10;
+		/* For non-reprocessing uses, only MT8183 Camera subsystem
+		 * requires NV12. */
+		else if (use_flags & BO_USE_CAMERA_WRITE)
 			return DRM_FORMAT_NV12;
 #endif
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
 #ifdef MTK_MT8183
-		/* Only for MT8183 Camera subsystem requires NV12 */
-		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+		/* MT8183 camera and decoder subsystems require NV12. */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE |
+				 BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER)) {
 			return DRM_FORMAT_NV12;
+		}
 #endif
 		return DRM_FORMAT_YVU420;
 	default:

@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-forward.h"
 
 namespace base {
 class FilePath;
@@ -64,10 +64,15 @@ class CONTENT_EXPORT ChromeAppCacheService
   void Shutdown();
 
   // AppCachePolicy overrides
-  bool CanLoadAppCache(const GURL& manifest_url,
-                       const GURL& first_party) override;
-  bool CanCreateAppCache(const GURL& manifest_url,
-                         const GURL& first_party) override;
+  bool CanLoadAppCache(
+      const GURL& manifest_url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) override;
+  bool CanCreateAppCache(
+      const GURL& manifest_url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) override;
+  bool IsOriginTrialRequiredForAppCache() override;
 
  protected:
   ~ChromeAppCacheService() override;

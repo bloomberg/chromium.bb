@@ -5,15 +5,15 @@
 
 import os
 
+# pylint: disable=relative-import
 import common
 
 
 class Suppressor:
 
-  def __init__(self, finder, feature_string):
-    feature_vector = feature_string.strip().split(",")
-    self.has_v8 = "V8" in feature_vector
-    self.has_xfa = "XFA" in feature_vector
+  def __init__(self, finder, features, js_disabled, xfa_disabled):
+    self.has_v8 = not js_disabled and 'V8' in features
+    self.has_xfa = not js_disabled and not xfa_disabled and 'XFA' in features
     self.suppression_set = self._LoadSuppressedSet('SUPPRESSIONS', finder)
     self.image_suppression_set = self._LoadSuppressedSet(
         'SUPPRESSIONS_IMAGE_DIFF', finder)
@@ -32,16 +32,18 @@ class Suppressor:
                                for x in f.readlines()] if y
     ]
 
-  def _FilterSuppressions(self, os, js, xfa, unfiltered_list):
+  def _FilterSuppressions(self, os_name, js, xfa, unfiltered_list):
     return [
-        x[0] for x in unfiltered_list if self._MatchSuppression(x, os, js, xfa)
+        x[0]
+        for x in unfiltered_list
+        if self._MatchSuppression(x, os_name, js, xfa)
     ]
 
-  def _MatchSuppression(self, item, os, js, xfa):
+  def _MatchSuppression(self, item, os_name, js, xfa):
     os_column = item[1].split(",")
     js_column = item[2].split(",")
     xfa_column = item[3].split(",")
-    return (('*' in os_column or os in os_column) and
+    return (('*' in os_column or os_name in os_column) and
             ('*' in js_column or js in js_column) and
             ('*' in xfa_column or xfa in xfa_column))
 

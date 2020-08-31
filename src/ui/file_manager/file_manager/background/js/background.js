@@ -42,7 +42,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
      * Event handler for C++ sides notifications.
      * @private {!DeviceHandler}
      */
-    this.deviceHandler_ = new DeviceHandler();
+    this.deviceHandler_ = new DeviceHandler(this.progressCenter);
 
     // Handle device navigation requests.
     this.deviceHandler_.addEventListener(
@@ -127,9 +127,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
 
-    launcher.queue.run(callback => {
-      this.initializationPromise_.then(callback);
-    });
+    launcher.setInitializationPromise(this.initializationPromise_);
   }
 
   /**
@@ -169,7 +167,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
          */
         volumeManager => {
           if (event.devicePath) {
-            let volume = volumeManager.findByDevicePath(event.devicePath);
+            const volume = volumeManager.findByDevicePath(event.devicePath);
             if (volume) {
               this.navigateToVolumeRoot_(volume, event.filePath);
             } else {
@@ -330,13 +328,13 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
           }
         });
       }
-      let appState = {};
+      const appState = {};
       let launchType = LaunchType.FOCUS_ANY_OR_CREATE;
       if (urls) {
         appState.selectionURL = urls[0];
         launchType = LaunchType.FOCUS_SAME_OR_CREATE;
       }
-      launcher.launchFileManager(appState, undefined, launchType, () => {
+      launcher.launchFileManager(appState, undefined, launchType).then(() => {
         metrics.recordInterval('Load.BackgroundLaunch');
       });
     });
@@ -349,7 +347,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
    * @param {MessageSender} sender
    */
   onExternalMessageReceived_(message, sender) {
-    if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
+    if ('origin' in sender && sender.origin === GPLUS_PHOTOS_APP_ORIGIN) {
       importer.handlePhotosAppMessage(message);
     }
   }
@@ -370,7 +368,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
             const id = Number(match[1]);
             try {
               const appState = /** @type {Object} */ (JSON.parse(items[key]));
-              launcher.launchFileManager(appState, id, undefined, () => {
+              launcher.launchFileManager(appState, id, undefined).then(() => {
                 metrics.recordInterval('Load.BackgroundRestart');
               });
             } catch (e) {
@@ -456,9 +454,9 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     // mounted volume.
     this.findFocusedWindow_()
         .then(key => {
-          let statusOK = event.status === 'success' ||
+          const statusOK = event.status === 'success' ||
               event.status === 'error_path_already_mounted';
-          let volumeTypeOK = event.volumeMetadata.volumeType ===
+          const volumeTypeOK = event.volumeMetadata.volumeType ===
                   VolumeManagerCommon.VolumeType.PROVIDED &&
               event.volumeMetadata.source === VolumeManagerCommon.Source.FILE;
           if (key === null && event.eventType === 'mount' && statusOK &&
@@ -529,7 +527,8 @@ function registerDialog(dialogWindow) {
 }
 
 /** @const {!string} */
-const GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
+const GPLUS_PHOTOS_APP_ORIGIN =
+    'chrome-extension://efjnaogkjbogokcnohkmnjdojkikgobo';
 
 /**
  * Singleton instance of Background object.

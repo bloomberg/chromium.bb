@@ -16,13 +16,27 @@
 #define IPC_MESSAGE_EXPORT GFX_IPC_COLOR_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::PrimaryID,
-                          gfx::ColorSpace::PrimaryID::LAST)
+                          gfx::ColorSpace::PrimaryID::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::TransferID,
-                          gfx::ColorSpace::TransferID::LAST)
+                          gfx::ColorSpace::TransferID::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::MatrixID,
-                          gfx::ColorSpace::MatrixID::LAST)
+                          gfx::ColorSpace::MatrixID::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::RangeID,
-                          gfx::ColorSpace::RangeID::LAST)
+                          gfx::ColorSpace::RangeID::kMaxValue)
+
+IPC_STRUCT_TRAITS_BEGIN(skcms_Matrix3x3)
+  IPC_STRUCT_TRAITS_MEMBER(vals)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(skcms_TransferFunction)
+  IPC_STRUCT_TRAITS_MEMBER(a)
+  IPC_STRUCT_TRAITS_MEMBER(b)
+  IPC_STRUCT_TRAITS_MEMBER(c)
+  IPC_STRUCT_TRAITS_MEMBER(d)
+  IPC_STRUCT_TRAITS_MEMBER(e)
+  IPC_STRUCT_TRAITS_MEMBER(f)
+  IPC_STRUCT_TRAITS_MEMBER(g)
+IPC_STRUCT_TRAITS_END()
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT

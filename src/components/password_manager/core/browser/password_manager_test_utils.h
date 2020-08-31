@@ -30,7 +30,22 @@ namespace password_manager {
 template <class Context, class Store>
 scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(new Store);
-  if (!store->Init(syncer::SyncableService::StartSyncFlare(), nullptr))
+  if (!store->Init(nullptr))
+    return nullptr;
+  return store;
+}
+
+// As above, but allows passing parameters to the to-be-created store. The
+// parameters are specified *before* context so that they can be bound (as in
+// base::BindRepeating(&BuildPasswordStoreWithArgs<...>, my_arg)), leaving
+// |context| as a free parameter for TestingFactory.
+template <class Context, class Store, typename... Args>
+scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithArgs(
+    Args... args,
+    Context* context) {
+  scoped_refptr<password_manager::PasswordStore> store(
+      new Store(std::forward<Args>(args)...));
+  if (!store->Init(nullptr))
     return nullptr;
   return store;
 }
@@ -47,7 +62,6 @@ struct PasswordFormData {
   const wchar_t* password_element;
   const wchar_t* username_value;  // Set to NULL for a blacklist entry.
   const wchar_t* password_value;
-  const bool preferred;
   const double last_usage_time;
   const double creation_time;
 };
@@ -106,7 +120,7 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MOCK_METHOD4(OnReuseFound,
                void(size_t,
                     base::Optional<PasswordHashData>,
-                    const std::vector<std::string>&,
+                    const std::vector<MatchingReusedCredential>&,
                     int));
 };
 

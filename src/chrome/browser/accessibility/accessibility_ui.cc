@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/dev_ui_browser_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
@@ -222,8 +222,8 @@ void HandleAccessibilityRequestCallback(
     content::WebContentsDelegate* delegate = web_contents->GetDelegate();
     if (!delegate)
       continue;
-    // Ignore views that are never visible, like background pages.
-    if (delegate->IsNeverVisible(web_contents))
+    // Ignore views that are never user-visible, like background pages.
+    if (delegate->IsNeverComposited(web_contents))
       continue;
     content::BrowserContext* context = rvh->GetProcess()->GetBrowserContext();
     if (context != current_context)
@@ -360,7 +360,7 @@ AccessibilityUIObserver::~AccessibilityUIObserver() = default;
 
 void AccessibilityUIObserver::AccessibilityEventReceived(
     const content::AXEventNotificationDetails& details) {
-  for (const ui::AXEvent event : details.events) {
+  for (const ui::AXEvent& event : details.events) {
     event_logs_->push_back(event.ToString());
   }
 }
@@ -555,6 +555,8 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   // because we are about to show the accessibility tree
   web_contents->SetAccessibilityMode(
       ui::AXMode(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents));
+  // Enable AXMode to access to AX objects.
+  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
 
   std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
       property_filters;

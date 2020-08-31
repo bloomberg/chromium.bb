@@ -4,6 +4,8 @@
 
 #include "ui/views/animation/slide_out_controller.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
@@ -30,7 +32,7 @@ SlideOutController::SlideOutController(ui::EventTarget* target,
                                        SlideOutControllerDelegate* delegate)
     : target_handling_(target, this), delegate_(delegate) {}
 
-SlideOutController::~SlideOutController() {}
+SlideOutController::~SlideOutController() = default;
 
 void SlideOutController::CaptureControlOpenState() {
   if (!has_swipe_control_)

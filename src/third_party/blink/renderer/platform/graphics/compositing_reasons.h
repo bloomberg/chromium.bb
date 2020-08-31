@@ -27,7 +27,6 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
-  V(ImmersiveArOverlay)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrolling)                                                        \
   V(OverflowScrollingParent)                                                  \
@@ -35,12 +34,14 @@ using CompositingReasons = uint64_t;
   V(VideoOverlay)                                                             \
   V(WillChangeTransform)                                                      \
   V(WillChangeOpacity)                                                        \
-  /* This flag is needed only when neither kWillChangeTransform nor           \
-     kWillChangeOpacity is set */                                             \
+  V(WillChangeFilter)                                                         \
+  V(WillChangeBackdropFilter)                                                 \
+  /* This flag is needed only when none of the explicit kWillChange* reasons  \
+     are set. */                                                              \
   V(WillChangeOther)                                                          \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
-  V(CrossOriginIframe)                                                        \
+  V(XrOverlay)                                                                \
                                                                               \
   /* Overlap reasons that require knowing what's behind you in paint-order    \
      before knowing the answer. */                                            \
@@ -119,13 +120,13 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectStyleDeterminedReasons =
         k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
-        kWillChangeTransform | kWillChangeOpacity | kWillChangeOther |
-        kBackdropFilter,
+        kWillChangeTransform | kWillChangeOpacity | kWillChangeFilter |
+        kWillChangeOther | kBackdropFilter | kWillChangeBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
-        kOutOfFlowClipping | kVideoOverlay | kImmersiveArOverlay | kRoot |
-        kRootScroller | kScrollDependentPosition | kCrossOriginIframe,
+        kOutOfFlowClipping | kVideoOverlay | kXrOverlay | kRoot |
+        kRootScroller | kScrollDependentPosition,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
                              kComboAllDirectNonStyleDeterminedReasons,
@@ -149,16 +150,20 @@ class PLATFORM_EXPORT CompositingReason {
     kComboSquashableReasons =
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
 
+    kDirectReasonsForPaintOffsetTranslationProperty =
+        kScrollDependentPosition | kVideo | kCanvas | kPlugin | kIFrame,
+
     kDirectReasonsForTransformProperty =
         k3DTransform | kWillChangeTransform | kWillChangeOther |
         kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
         kActiveTransformAnimation,
     kDirectReasonsForScrollTranslationProperty =
         kRootScroller | kOverflowScrolling,
-    kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
-                                      kWillChangeOpacity | kBackdropFilter |
-                                      kActiveBackdropFilterAnimation,
-    kDirectReasonsForFilterProperty = kActiveFilterAnimation,
+    kDirectReasonsForEffectProperty =
+        kActiveOpacityAnimation | kWillChangeOpacity | kBackdropFilter |
+        kWillChangeBackdropFilter | kActiveBackdropFilterAnimation,
+    kDirectReasonsForFilterProperty =
+        kActiveFilterAnimation | kWillChangeFilter,
   };
 };
 

@@ -18,7 +18,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -57,6 +57,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -69,6 +70,16 @@ namespace {
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using ::i18n::addressinput::STREET_ADDRESS;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MigrateUserOptedInWalletSyncType {
+  kNotMigrated = 0,
+  kMigratedFromCanonicalEmail = 1,
+  kMigratedFromNonCanonicalEmail = 2,
+  kNotMigratedUnexpectedPrimaryAccountIdWithEmail = 3,
+  kMaxValue = kNotMigratedUnexpectedPrimaryAccountIdWithEmail,
+};
 
 template <typename T>
 const T& Deref(T* x) {
@@ -247,11 +258,17 @@ class PersonalDatabaseHelper
   DISALLOW_COPY_AND_ASSIGN(PersonalDatabaseHelper);
 };
 
-PersonalDataManager::PersonalDataManager(const std::string& app_locale)
+PersonalDataManager::PersonalDataManager(
+    const std::string& app_locale,
+    const std::string& variations_country_code)
     : app_locale_(app_locale),
+      variations_country_code_(variations_country_code),
       test_data_creator_(kDisusedDataModelDeletionTimeDelta, app_locale_) {
   database_helper_ = std::make_unique<PersonalDatabaseHelper>(this);
 }
+
+PersonalDataManager::PersonalDataManager(const std::string& app_locale)
+    : PersonalDataManager(app_locale, std::string()) {}
 
 void PersonalDataManager::Init(
     scoped_refptr<AutofillWebDataService> profile_database,
@@ -304,9 +321,7 @@ void PersonalDataManager::Init(
       base::BindRepeating(&PersonalDataManager::OnAutofillProfileChanged,
                           weak_factory_.GetWeakPtr()));
 
-  LoadProfiles();
-  LoadCreditCards();
-  LoadPaymentsCustomerData();
+  Refresh();
 
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
@@ -321,9 +336,8 @@ void PersonalDataManager::Init(
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingLocalQuery(&pending_profiles_query_);
   CancelPendingLocalQuery(&pending_creditcards_query_);
-  CancelPendingServerQuery(&pending_server_profiles_query_);
-  CancelPendingServerQuery(&pending_server_creditcards_query_);
-  CancelPendingServerQuery(&pending_customer_data_query_);
+  CancelPendingLocalQuery(&pending_upi_ids_query_);
+  CancelPendingServerQueries();
 }
 
 void PersonalDataManager::Shutdown() {
@@ -370,6 +384,8 @@ void PersonalDataManager::OnSyncServiceInitialized(
       database_helper_->SetUseAccountStorageForServerData(
           !sync_service->IsSyncFeatureEnabled());
     }
+
+    MigrateUserOptedInWalletSyncTransportIfNeeded();
   }
 }
 
@@ -386,7 +402,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     std::unique_ptr<WDTypedResult> result) {
   DCHECK(pending_profiles_query_ || pending_server_profiles_query_ ||
          pending_creditcards_query_ || pending_server_creditcards_query_ ||
-         pending_customer_data_query_);
+         pending_server_creditcard_cloud_token_data_query_ ||
+         pending_customer_data_query_ || pending_upi_ids_query_);
 
   if (!result) {
     // Error from the web database.
@@ -398,8 +415,12 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_server_creditcards_query_ = 0;
     else if (h == pending_server_profiles_query_)
       pending_server_profiles_query_ = 0;
+    else if (h == pending_server_creditcard_cloud_token_data_query_)
+      pending_server_creditcard_cloud_token_data_query_ = 0;
     else if (h == pending_customer_data_query_)
       pending_customer_data_query_ = 0;
+    else if (h == pending_upi_ids_query_)
+      pending_upi_ids_query_ = 0;
   } else {
     switch (result->GetType()) {
       case AUTOFILL_PROFILES_RESULT:
@@ -431,6 +452,13 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
             ResetFullServerCards();
         }
         break;
+      case AUTOFILL_CLOUDTOKEN_RESULT:
+        DCHECK_EQ(h, pending_server_creditcard_cloud_token_data_query_)
+            << "received credit card cloud token data from invalid request.";
+        ReceiveLoadedDbValues(
+            h, result.get(), &pending_server_creditcard_cloud_token_data_query_,
+            &server_credit_card_cloud_token_data_);
+        break;
       case AUTOFILL_CUSTOMERDATA_RESULT:
         DCHECK_EQ(h, pending_customer_data_query_)
             << "received customer data from invalid request.";
@@ -441,6 +469,15 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
                 result.get())
                 ->GetValue();
         break;
+      case AUTOFILL_UPI_RESULT:
+        DCHECK_EQ(h, pending_upi_ids_query_)
+            << "received UPI IDs from invalid request.";
+        pending_upi_ids_query_ = 0;
+
+        upi_ids_ =
+            static_cast<WDResult<std::vector<std::string>>*>(result.get())
+                ->GetValue();
+        break;
       default:
         NOTREACHED();
     }
@@ -449,11 +486,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If all requests have responded, then all personal data is loaded.
   // We need to check if the server database is set here, because we won't have
   // the server data yet if we don't have the database.
-  if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
-      pending_server_profiles_query_ == 0 &&
-      pending_server_creditcards_query_ == 0 &&
-      pending_customer_data_query_ == 0 &&
-      database_helper_->GetServerDatabase()) {
+  if (!HasPendingQueries() && database_helper_->GetServerDatabase()) {
     // On initial data load, is_data_loaded_ will be false here.
     if (!is_data_loaded_) {
       // If sync is enabled for addresses, defer running cleanups until address
@@ -519,15 +552,14 @@ void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
 }
 
 CoreAccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
-  // If butter is enabled or the feature to get the Payment Identity from Sync
-  // is enabled, return the account of the active signed-in user irrespective of
-  // whether they enabled sync or not.
-  // Otherwise, return the latest cached AccountInfo of the user's primary
-  // account, which is empty if the user has disabled sync.
+  // Return the account of the active signed-in user irrespective of whether
+  // they enabled sync or not.
+  // However if there is no |sync_service_| (e.g. in incognito), return the
+  // latest cached AccountInfo of the user's primary account, which is empty if
+  // the user has disabled sync.
   // In both cases, the AccountInfo will be empty if the user is not signed in.
-  return ShouldUseActiveSignedInAccount() && sync_service_
-             ? sync_service_->GetAuthenticatedAccountInfo()
-             : identity_manager_->GetPrimaryAccountInfo();
+  return sync_service_ ? sync_service_->GetAuthenticatedAccountInfo()
+                       : identity_manager_->GetPrimaryAccountInfo();
 }
 
 // TODO(crbug.com/903914): Clean up this function so that it's more clear what
@@ -637,11 +669,23 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   }
 }
 
-void PersonalDataManager::AddVPA(const std::string& vpa_id) {
-  DCHECK(!vpa_id.empty());
+void PersonalDataManager::AddUpiId(const std::string& upi_id) {
+  DCHECK(!upi_id.empty());
   if (is_off_the_record_ || !database_helper_->GetLocalDatabase())
     return;
-  database_helper_->GetLocalDatabase()->AddVPA(vpa_id);
+
+  // Don't add a duplicate.
+  if (std::find(upi_ids_.begin(), upi_ids_.end(), upi_id) != upi_ids_.end())
+    return;
+
+  database_helper_->GetLocalDatabase()->AddUpiId(upi_id);
+
+  // Refresh our local cache and send notifications to observers.
+  Refresh();
+}
+
+std::vector<std::string> PersonalDataManager::GetUpiIds() {
+  return upi_ids_;
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
@@ -870,6 +914,7 @@ void PersonalDataManager::ClearAllServerData() {
   server_credit_cards_.clear();
   server_profiles_.clear();
   payments_customer_data_.reset();
+  server_credit_card_cloud_token_data_.clear();
 }
 
 void PersonalDataManager::ClearAllLocalData() {
@@ -1062,8 +1107,15 @@ std::vector<CreditCard*> PersonalDataManager::GetServerCreditCards() const {
     return result;
 
   result.reserve(server_credit_cards_.size());
-  for (const auto& card : server_credit_cards_)
+  for (const auto& card : server_credit_cards_) {
+    // Do not add Google issued credit card if experiment is disabled.
+    if (card.get()->IsGoogleIssuedCard() &&
+        !base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableGoogleIssuedCard)) {
+      continue;
+    }
     result.push_back(card.get());
+  }
   return result;
 }
 
@@ -1074,8 +1126,15 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   for (const auto& card : local_credit_cards_)
     result.push_back(card.get());
   if (IsAutofillWalletImportEnabled()) {
-    for (const auto& card : server_credit_cards_)
+    for (const auto& card : server_credit_cards_) {
+      // Do not add Google issued credit card if experiment is disabled.
+      if (card.get()->IsGoogleIssuedCard() &&
+          !base::FeatureList::IsEnabled(
+              autofill::features::kAutofillEnableGoogleIssuedCard)) {
+        continue;
+      }
       result.push_back(card.get());
+    }
   }
   return result;
 }
@@ -1084,10 +1143,24 @@ PaymentsCustomerData* PersonalDataManager::GetPaymentsCustomerData() const {
   return payments_customer_data_ ? payments_customer_data_.get() : nullptr;
 }
 
+std::vector<CreditCardCloudTokenData*>
+PersonalDataManager::GetCreditCardCloudTokenData() const {
+  std::vector<CreditCardCloudTokenData*> result;
+  if (!IsAutofillWalletImportEnabled())
+    return result;
+
+  result.reserve(server_credit_card_cloud_token_data_.size());
+  for (const auto& data : server_credit_card_cloud_token_data_)
+    result.push_back(data.get());
+  return result;
+}
+
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
+  LoadCreditCardCloudTokenData();
   LoadPaymentsCustomerData();
+  LoadUpiIds();
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1430,6 +1503,13 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
   if (default_country_code_.empty())
     default_country_code_ = MostCommonCountryCodeFromProfiles();
 
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUseVariationCountryCode)) {
+    // Failing that, use the country code from variations service.
+    if (default_country_code_.empty())
+      default_country_code_ = variations_country_code_;
+  }
+
   // Failing that, guess based on system timezone.
   if (default_country_code_.empty())
     default_country_code_ = CountryCodeForCurrentTimezone();
@@ -1471,10 +1551,16 @@ void PersonalDataManager::DedupeCreditCardToSuggest(
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
-  if (is_off_the_record_)
+  if (is_off_the_record_) {
+    // TODO(crbug.com/997629): Remove after investigation is over.
+    DLOG(WARNING) << "Cannot SetProfiles because off-the-record";
     return;
-  if (!database_helper_->GetLocalDatabase())
+  }
+  if (!database_helper_->GetLocalDatabase()) {
+    // TODO(crbug.com/997629): Remove after investigation is over.
+    DLOG(WARNING) << "Cannot SetProfiles because no local DB";
     return;
+  }
 
   ClearOnGoingProfileChanges();
 
@@ -1597,6 +1683,26 @@ void PersonalDataManager::LoadCreditCards() {
   }
 }
 
+void PersonalDataManager::LoadCreditCardCloudTokenData() {
+  if (!database_helper_->GetServerDatabase())
+    return;
+
+  CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
+
+  pending_server_creditcard_cloud_token_data_query_ =
+      database_helper_->GetServerDatabase()->GetCreditCardCloudTokenData(this);
+}
+
+void PersonalDataManager::LoadUpiIds() {
+  if (!database_helper_->GetLocalDatabase())
+    return;
+
+  CancelPendingLocalQuery(&pending_upi_ids_query_);
+
+  pending_upi_ids_query_ =
+      database_helper_->GetLocalDatabase()->GetAllUpiIds(this);
+}
+
 void PersonalDataManager::CancelPendingLocalQuery(
     WebDataServiceBase::Handle* handle) {
   if (*handle) {
@@ -1622,15 +1728,14 @@ void PersonalDataManager::CancelPendingServerQuery(
 }
 
 void PersonalDataManager::CancelPendingServerQueries() {
-  if (pending_server_profiles_query_) {
-    CancelPendingServerQuery(&pending_server_profiles_query_);
-  }
-  if (pending_server_creditcards_query_) {
-    CancelPendingServerQuery(&pending_server_creditcards_query_);
-  }
-  if (pending_customer_data_query_) {
-    CancelPendingServerQuery(&pending_customer_data_query_);
-  }
+  CancelPendingServerQuery(&pending_server_profiles_query_);
+  CancelPendingServerQuery(&pending_server_creditcards_query_);
+  CancelPendingServerQuery(&pending_customer_data_query_);
+  CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
+}
+
+bool PersonalDataManager::HasPendingQueriesForTesting() {
+  return HasPendingQueries();
 }
 
 void PersonalDataManager::LoadPaymentsCustomerData() {
@@ -1650,7 +1755,7 @@ std::string PersonalDataManager::SaveImportedProfile(
 
   std::vector<AutofillProfile> profiles;
   std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, &web_profiles_, app_locale_, &profiles);
+      imported_profile, web_profiles_, app_locale_, &profiles);
   SetProfiles(&profiles);
   return guid;
 }
@@ -1819,9 +1924,7 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 #if (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) || \
     defined(OS_CHROMEOS)
   return false;
-#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) ||
-        // defined(OS_CHROMEOS)
-
+#else
   // This option should only be shown for users that have not enabled the Sync
   // Feature and that have server credit cards available.
   if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
@@ -1842,6 +1945,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 
   // The option should only be shown if the user has not already opted-in.
   return !is_opted_in;
+#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) ||
+        // defined(OS_CHROMEOS)
 }
 
 void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
@@ -1956,7 +2061,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       Suggestion* suggestion = &suggestions.back();
 
       suggestion->value = credit_card->GetInfo(type, app_locale_);
-      suggestion->icon = credit_card->network();
+      suggestion->icon = credit_card->CardIconStringForAutofillSuggestion();
       suggestion->backend_id = credit_card->guid();
       suggestion->match = prefix_matched_suggestion
                               ? Suggestion::PREFIX_MATCH
@@ -1966,7 +2071,8 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
+        suggestion->value =
+            credit_card->CardIdentifierStringForAutofillDisplay();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
@@ -1976,28 +2082,29 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
       } else if (credit_card->number().empty()) {
+        // TODO(crbug/1059087): Update suggestion label with nickname for
+        // empty-number local cards when nickname is supported for local card.
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
               AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
         }
       } else {
 #if defined(OS_ANDROID)
-        // On Android devices, the label is formatted as "Visa  ••••1234" when
-        // the keyboard accessory experiment is disabled and as "••••1234" when
-        // it's enabled.
+        // On Android devices, the label is formatted as
+        // "Nickname/Network  ••••1234" when the keyboard accessory experiment
+        // is disabled and as "••••1234" when it's enabled.
         suggestion->label =
             base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
                 ? credit_card->ObfuscatedLastFourDigits()
-                : credit_card->NetworkOrBankNameAndLastFourDigits();
+                : credit_card->CardIdentifierStringForAutofillDisplay();
 #elif defined(OS_IOS)
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
 #else
-        // E.g. "Visa  ••••1234, expires on 01/25".
+        // E.g. "Nickname/Network  ••••1234, expires on 01/25".
         suggestion->label =
-            credit_card
-                ->NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
-                    app_locale_);
+            credit_card->CardIdentifierStringAndDescriptiveExpiration(
+                app_locale_);
 #endif
       }
     }
@@ -2249,7 +2356,7 @@ bool PersonalDataManager::DeleteDisusedCreditCards() {
 
   size_t num_deleted_cards = guid_to_delete.size();
 
-  for (auto const guid : guid_to_delete) {
+  for (auto const& guid : guid_to_delete) {
     database_helper_->GetLocalDatabase()->RemoveCreditCard(guid);
   }
 
@@ -2288,7 +2395,7 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 
   size_t num_deleted_addresses = guids_to_delete.size();
 
-  for (auto const guid : guids_to_delete) {
+  for (auto const& guid : guids_to_delete) {
     RemoveAutofillProfileByGUIDAndBlankCreditCardReference(guid);
   }
 
@@ -2474,6 +2581,74 @@ void PersonalDataManager::OnProfileChangeDone(const std::string& guid) {
 
 void PersonalDataManager::ClearOnGoingProfileChanges() {
   ongoing_profile_changes_.clear();
+}
+
+bool PersonalDataManager::HasPendingQueries() {
+  return pending_profiles_query_ != 0 || pending_creditcards_query_ != 0 ||
+         pending_server_profiles_query_ != 0 ||
+         pending_server_creditcards_query_ != 0 ||
+         pending_server_creditcard_cloud_token_data_query_ != 0 ||
+         pending_customer_data_query_ != 0 || pending_upi_ids_query_ != 0;
+}
+
+void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
+  CoreAccountInfo primary_account =
+      sync_service_->GetAuthenticatedAccountInfo();
+  if (primary_account.IsEmpty())
+    return;
+
+  if (identity_manager_->GetAccountIdMigrationState() ==
+      signin::IdentityManager::MIGRATION_NOT_STARTED) {
+    return;
+  }
+
+  CoreAccountId primary_account_id = primary_account.account_id;
+
+  // When migration is started or done, the primary account is created from a
+  // Gaia ID.
+  if (primary_account_id.IsEmail()) {
+    DLOG(ERROR) << "Unexpected primary account id from an email ["
+                << primary_account_id << "].";
+    base::UmaHistogramEnumeration(
+        "Autofill.MigrateUserOptedInToWalletSync",
+        MigrateUserOptedInWalletSyncType::
+            kNotMigratedUnexpectedPrimaryAccountIdWithEmail);
+    return;
+  }
+
+  CoreAccountId legacy_account_id_from_email =
+      CoreAccountId::FromEmail(gaia::CanonicalizeEmail(primary_account.email));
+
+  MigrateUserOptedInWalletSyncType migrate =
+      prefs::IsUserOptedInWalletSyncTransport(pref_service_,
+                                              legacy_account_id_from_email)
+          ? MigrateUserOptedInWalletSyncType::kMigratedFromCanonicalEmail
+          : MigrateUserOptedInWalletSyncType::kNotMigrated;
+
+  if (migrate == MigrateUserOptedInWalletSyncType::kNotMigrated &&
+      prefs::IsUserOptedInWalletSyncTransport(
+          pref_service_, CoreAccountId::FromEmail(primary_account.email))) {
+    // Only canonicalized emails should be used to create CoreAccountId objects
+    // by the IdentityManager. Be overly caution and also check whether
+    // the non-canonical email was used when the user opted in to wallet sync.
+    legacy_account_id_from_email =
+        CoreAccountId::FromEmail(primary_account.email);
+    migrate = MigrateUserOptedInWalletSyncType::kMigratedFromNonCanonicalEmail;
+  }
+
+  base::UmaHistogramEnumeration("Autofill.MigrateUserOptedInToWalletSync",
+                                migrate);
+
+  if (migrate == MigrateUserOptedInWalletSyncType::kNotMigrated)
+    return;
+
+  DCHECK(prefs::IsUserOptedInWalletSyncTransport(pref_service_,
+                                                 legacy_account_id_from_email));
+  prefs::SetUserOptedInWalletSyncTransport(pref_service_,
+                                           legacy_account_id_from_email,
+                                           /*opted_in=*/false);
+  prefs::SetUserOptedInWalletSyncTransport(pref_service_, primary_account_id,
+                                           /*opted_in=*/true);
 }
 
 }  // namespace autofill

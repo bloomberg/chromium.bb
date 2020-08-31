@@ -18,6 +18,7 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.scripts import cros_extract_deps
 
+
 class Error(Exception):
   """Base error class for the module."""
 
@@ -189,7 +190,7 @@ def GenerateSourcePathMapping(packages, board):
   results = {}
 
   packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
-      packages, sysroot=cros_build_lib.GetSysroot(board), error_code_ok=False)
+      packages, sysroot=cros_build_lib.GetSysroot(board), check=True)
 
   # Source paths which are the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.items():
@@ -345,3 +346,48 @@ def GetBuildDependency(board, packages=None):
       GenerateSourcePathMapping(list(board_bdeps), None))
 
   return results, sdk_results
+
+
+def DetermineToolchainSourcePaths():
+  """Returns a list of all source paths relevant to toolchain packages.
+
+  A package is a 'toolchain package' if it is listed as a direct dependency
+  of virtual/toolchain-packages. This function deliberately does not return
+  deeper transitive dependencies so that only direct changes to toolchain
+  packages trigger the expensive full re-compilation required to test toolchain
+  changes. Eclasses & overlays are not returned as relevant paths for the same
+  reason.
+
+  Returned paths are relative to the root of the project checkout.
+
+  Returns:
+    List[str]: A list of paths considered relevant to toolchain packages.
+  """
+  source_paths = set()
+  toolchain_pkgs = portage_util.GetFlattenedDepsForPackage(
+      'virtual/toolchain-packages', depth=1)
+  toolchain_pkg_ebuilds = portage_util.FindEbuildsForPackages(
+      toolchain_pkgs, sysroot='/', check=True)
+
+  # Include the entire directory containing the toolchain ebuild, as the
+  # package's FILESDIR and patches also live there.
+  source_paths.update(
+      os.path.dirname(ebuild_path)
+      for ebuild_path in toolchain_pkg_ebuilds.values())
+
+  # Source paths which are cros workon source paths.
+  buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
+  manifest = git.ManifestCheckout.Cached(buildroot)
+  for ebuild_path in toolchain_pkg_ebuilds.values():
+    attrs = portage_util.EBuild.Classify(ebuild_path)
+    if (not attrs.is_workon or
+        # Blacklisted ebuild is pinned to a specific git sha1, so change in
+        # that repo matter to the ebuild.
+        attrs.is_blacklisted):
+      continue
+    ebuild = portage_util.EBuild(ebuild_path)
+    workon_subtrees = ebuild.GetSourceInfo(buildroot, manifest).subtrees
+    for path in workon_subtrees:
+      source_paths.add(path)
+
+  return NormalizeSourcePaths(list(source_paths))

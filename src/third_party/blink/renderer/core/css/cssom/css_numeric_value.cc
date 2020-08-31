@@ -6,6 +6,7 @@
 
 #include <numeric>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_css_numeric_type.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -251,10 +252,9 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
     case kFunctionToken:
       if (range.Peek().FunctionId() == CSSValueID::kCalc ||
           range.Peek().FunctionId() == CSSValueID::kWebkitCalc ||
-          (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled() &&
-           (range.Peek().FunctionId() == CSSValueID::kMin ||
-            range.Peek().FunctionId() == CSSValueID::kMax ||
-            range.Peek().FunctionId() == CSSValueID::kClamp))) {
+          range.Peek().FunctionId() == CSSValueID::kMin ||
+          range.Peek().FunctionId() == CSSValueID::kMax ||
+          range.Peek().FunctionId() == CSSValueID::kClamp) {
         CSSMathExpressionNode* expression =
             CSSMathExpressionNode::ParseCalc(range);
         if (expression)

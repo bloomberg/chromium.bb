@@ -5,16 +5,14 @@
 // https://html.spec.whatwg.org/C/#the-offscreencanvas-interface
 
 [
-    Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     Exposed=(Window,Worker),
     Transferable,
-    ConstructorCallWith=ExecutionContext,
-    MeasureAs=OffscreenCanvas,
     RuntimeEnabled=SurfaceEmbeddingFeatures
 ] interface OffscreenCanvas : EventTarget {
+    [CallWith=ExecutionContext, MeasureAs=OffscreenCanvas] constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height);
     attribute [EnforceRange] unsigned long width;
     attribute [EnforceRange] unsigned long height;
 
     [CallWith=ScriptState, HighEntropy, MeasureAs=OffscreenCanvasTransferToImageBitmap, RaisesException] ImageBitmap transferToImageBitmap();
-    [CallWith=ScriptState, HighEntropy, MeasureAs=OffscreenCanvasConvertToBlob, RaisesException] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
+    [CallWith=ScriptState, HighEntropy, MeasureAs=OffscreenCanvasConvertToBlob, RaisesException] Promise<Blob> convertToBlob(optional ImageEncodeOptions options = {});
 };

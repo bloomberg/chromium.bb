@@ -9,12 +9,14 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_interface_binders.h"
@@ -53,14 +55,21 @@ class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegate);
 };
 
+std::vector<std::string> GetCorsExemptHeaders() {
+  return base::SplitString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kCorsExemptHeaders),
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+}
+
 }  // namespace
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)) {
-  allow_insecure_content_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowRunningInsecureContent);
-}
+    : request_(std::move(request)),
+      cors_exempt_headers_(GetCorsExemptHeaders()),
+      allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowRunningInsecureContent)) {}
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
@@ -107,15 +116,15 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
   if (allow_insecure_content_)
     web_prefs->allow_running_insecure_content = true;
 
-  // Allow videos to autoplay.
-  // TODO(crbug.com/1033272): Provide a FIDL API to configure AutoplayPolicy.
+  // Allow media to autoplay.
+  // TODO(crbug.com/1067101): Provide a FIDL API to configure AutoplayPolicy.
   web_prefs->autoplay_policy = content::AutoplayPolicy::kNoUserGestureRequired;
 }
 
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  PopulateFuchsiaFrameBinders(map, &cdm_service_);
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  PopulateFuchsiaFrameBinders(map, &media_resource_provider_service_);
 }
 
 void WebEngineContentBrowserClient::
@@ -124,7 +133,7 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
+    (*factories)[cr_fuchsia::kFuchsiaDirScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -136,7 +145,7 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
+    (*factories)[cr_fuchsia::kFuchsiaDirScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -146,8 +155,8 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   constexpr char const* kSwitchesToCopy[] = {
       switches::kContentDirectories,
+      switches::kCorsExemptHeaders,
       switches::kDisableSoftwareVideoDecoders,
-      switches::kEnableFuchsiaAudioConsumer,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
       switches::kForceProtectedVideoOutputBuffers,
@@ -183,23 +192,22 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
   return throttles;
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-WebEngineContentBrowserClient::CreateNetworkContext(
+void WebEngineContentBrowserClient::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  // Same as ContentBrowserClient::CreateNetworkContext().
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  // Same as ContentBrowserClient::ConfigureNetworkContextParams().
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language = "en-us,en";
 
-  // Whitelist some headers to be used for CORS requests, e.g. for resource
-  // prefetching.
-  content::UpdateCorsExemptHeader(context_params.get());
+  // Set the list of cors_exempt_headers which may be specified in a URLRequest,
+  // starting with the headers passed in via
+  // |CreateContextParams.cors_exempt_headers|.
+  network_context_params->cors_exempt_header_list = cors_exempt_headers_;
 
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+  // Exempt the minimal headers needed for CORS preflight checks (Purpose,
+  // X-Requested-With).
+  content::UpdateCorsExemptHeader(network_context_params);
 }

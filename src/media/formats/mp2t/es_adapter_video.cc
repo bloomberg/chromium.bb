@@ -25,19 +25,17 @@ static const int kDefaultFrameDurationMs = 40;
 // to emulate the H264 dpb bumping process.
 static const size_t kHistorySize = 5;
 
-EsAdapterVideo::EsAdapterVideo(
-    const NewVideoConfigCB& new_video_config_cb,
-    const EmitBufferCB& emit_buffer_cb)
-    : new_video_config_cb_(new_video_config_cb),
-      emit_buffer_cb_(emit_buffer_cb),
+EsAdapterVideo::EsAdapterVideo(NewVideoConfigCB new_video_config_cb,
+                               EmitBufferCB emit_buffer_cb)
+    : new_video_config_cb_(std::move(new_video_config_cb)),
+      emit_buffer_cb_(std::move(emit_buffer_cb)),
       has_valid_config_(false),
       has_valid_frame_(false),
       last_frame_duration_(
           base::TimeDelta::FromMilliseconds(kDefaultFrameDurationMs)),
       buffer_index_(0),
       has_valid_initial_timestamp_(false),
-      discarded_frame_count_(0) {
-}
+      discarded_frame_count_(0) {}
 
 EsAdapterVideo::~EsAdapterVideo() {
 }

@@ -156,7 +156,7 @@ def report_cache_stats_at_exit(func, cache):
       return size + sum(get_size(x, seen) for x in obj)
     elif isinstance(obj, dict):
       return size + sum(
-          get_size(k, seen) + get_size(v, seen) for k, v in obj.iteritems())
+          get_size(k, seen) + get_size(v, seen) for k, v in obj.items())
     return size
 
   def report_caches_state():
@@ -180,6 +180,13 @@ def report_cache_stats_at_exit(func, cache):
     _caches.append((func, cache))
     if len(_caches) == 1:
       atexit.register(report_caches_state)
+
+
+_CACHED_FUNCS = set()
+
+def clear_cache_all():
+  for f in _CACHED_FUNCS:
+    clear_cache(f)
 
 
 def cached(func):
@@ -210,11 +217,15 @@ def cached(func):
     return v
 
   wrapper.__cache__ = cache
+  _CACHED_FUNCS.add(wrapper)
   return wrapper
 
 
 def clear_cache(func):
   """Clears all accumulated cached results of the given decorated function."""
+  if not hasattr(func, '__cache__'):
+    logging.debug("This function isn't decorated with @cached properly.")
+    return
   func.__cache__.clear()
 
 
@@ -354,7 +365,7 @@ def write_json(filepath_or_handle, data, dense):
   if hasattr(filepath_or_handle, 'write'):
     json.dump(data, filepath_or_handle, **kwargs)
   else:
-    with open(filepath_or_handle, 'wb') as f:
+    with open(filepath_or_handle, 'w') as f:
       json.dump(data, f, **kwargs)
 
 
@@ -426,18 +437,30 @@ def sliding_timeout(timeout):
 _THIRD_PARTY_FIXED = False
 
 
-def force_local_third_party():
+def force_local_third_party(root=None):
   """Put the local third_party in front of sys.path.
 
   This is important for tools, especially the Swarming bot, as we don't know
   what python packages are installed and which version.
+
+  Arguments:
+    root: override base directory as it assumes the root is one directory up
+          from the current executable
   """
   global _THIRD_PARTY_FIXED
   if _THIRD_PARTY_FIXED:
     return
   _THIRD_PARTY_FIXED = True
-  src = os.path.abspath(zip_package.get_main_script_path())
-  root = os.path.dirname(src)
+  if not root:
+    src = zip_package.get_main_script_path()
+    if src:
+      root = os.path.dirname(os.path.abspath(src))
+    else:
+      # The only case where src is not set is when importing at the python
+      # interactive prompt. Make this case work since it's helpful during the
+      # python3 transition, as it makes the edit-debug loop much faster.
+      root = os.path.dirname(os.getcwd())
+      logging.warning('Falling back to current directory %s', root)
   sys.path.insert(0, os.path.join(
       root, 'third_party', 'httplib2', 'python%d' % sys.version_info.major))
   sys.path.insert(0, os.path.join(root, 'third_party', 'pyasn1'))

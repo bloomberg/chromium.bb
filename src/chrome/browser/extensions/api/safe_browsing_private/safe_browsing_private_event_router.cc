@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 
+#include "base/bind_helpers.h"
 #include "build/build_config.h"
 
 #include <utility>
@@ -17,6 +18,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -27,7 +30,6 @@
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #endif
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -43,8 +45,8 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user.h"
@@ -66,12 +68,60 @@ const char kChromeBrowserCloudManagementClientDescription[] =
     "a machine-level user";
 #endif
 
+void AddDlpVerdictToEvent(const safe_browsing::DlpDeepScanningVerdict& verdict,
+                          base::Value* event) {
+  DCHECK(event);
+  base::ListValue triggered_rule_info;
+  for (const auto& rule : verdict.triggered_rules()) {
+    base::Value triggered_rule(base::Value::Type::DICTIONARY);
+    triggered_rule.SetIntKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
+        rule.rule_id());
+    triggered_rule.SetStringKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
+        rule.rule_name());
+    triggered_rule.SetStringKey(extensions::SafeBrowsingPrivateEventRouter::
+                                    kKeyTriggeredRuleResourceName,
+                                rule.rule_resource_name());
+    triggered_rule.SetStringKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity,
+        rule.rule_severity());
+    triggered_rule.SetIntKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction,
+        rule.action());
+
+    base::ListValue matched_detectors;
+    for (const auto& detector : rule.matched_detectors()) {
+      base::Value matched_detector(base::Value::Type::DICTIONARY);
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId,
+          detector.detector_id());
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName,
+          detector.display_name());
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType,
+          detector.detector_type());
+
+      matched_detectors.Append(std::move(matched_detector));
+    }
+    triggered_rule.SetKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors,
+        std::move(matched_detectors));
+
+    triggered_rule_info.Append(std::move(triggered_rule));
+  }
+  event->SetKey(
+      extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo,
+      std::move(triggered_rule_info));
+}
+
 }  // namespace
 
 namespace extensions {
 
 const base::Feature SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature{
-    "SafeBrowsingRealtimeReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingRealtimeReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Key names used with when building the dictionary to pass to the real-time
 // reporting API.
@@ -88,8 +138,23 @@ const char SafeBrowsingPrivateEventRouter::kKeyReason[] = "reason";
 const char SafeBrowsingPrivateEventRouter::kKeyNetErrorCode[] = "netErrorCode";
 const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
     "clickedThrough";
-const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
-    "triggeredRules";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId[] = "ruleId";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName[] = "ruleName";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleResourceName[] =
+    "ruleResourceName";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity[] =
+    "severity";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction[] = "action";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors[] =
+    "matchedDetectors";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId[] =
+    "detectorId";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName[] =
+    "displayName";
+const char SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType[] =
+    "detectorType";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo[] =
+    "triggeredRuleInfo";
 const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentType[] = "contentType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentSize[] = "contentSize";
@@ -426,12 +491,53 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
             if (content_size >= 0)
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
+            event.SetBoolKey(kKeyClickedThrough, false);
 
-            base::ListValue triggered_rules;
-            for (auto rule : verdict.triggered_rules()) {
-              triggered_rules.AppendString(rule.rule_name());
-            }
-            event.SetKey(kKeyTriggeredRules, std::move(triggered_rules));
+            AddDlpVerdictToEvent(verdict, &event);
+
+            return event;
+          },
+          verdict, url.spec(), file_name, download_digest_sha256,
+          GetProfileUserName(), mime_type, trigger, content_size));
+}
+
+void SafeBrowsingPrivateEventRouter::OnSensitiveDataWarningBypassed(
+    const safe_browsing::DlpDeepScanningVerdict& verdict,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    const int64_t content_size) {
+  if (!IsRealtimeReportingEnabled())
+    return;
+
+  ReportRealtimeEvent(
+      kKeySensitiveDataEvent,
+      base::BindOnce(
+          [](const safe_browsing::DlpDeepScanningVerdict& verdict,
+             const std::string& url, const std::string& file_name,
+             const std::string& download_digest_sha256,
+             const std::string& profile_user_name, const std::string& mime_type,
+             const std::string& trigger, const int64_t content_size) {
+            // Create a real-time event dictionary from the arguments and
+            // report it.
+            base::Value event(base::Value::Type::DICTIONARY);
+            event.SetStringKey(kKeyUrl, url);
+            event.SetStringKey(kKeyFileName, file_name);
+            event.SetStringKey(kKeyDownloadDigestSha256,
+                               download_digest_sha256);
+            event.SetStringKey(kKeyProfileUserName, profile_user_name);
+            event.SetStringKey(kKeyContentType, mime_type);
+            // |content_size| can be set to -1 to indicate an unknown size, in
+            // which case the field is not set.
+            if (content_size >= 0)
+              event.SetIntKey(kKeyContentSize, content_size);
+            event.SetStringKey(kKeyTrigger, trigger);
+            event.SetBoolKey(kKeyClickedThrough, true);
+
+            AddDlpVerdictToEvent(verdict, &event);
+
             return event;
           },
           verdict, url.spec(), file_name, download_digest_sha256,
@@ -573,8 +679,12 @@ bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
 
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
     policy::CloudPolicyClient* client) {
-  DCHECK_EQ(nullptr, client_);
   client_ = client;
+}
+
+void SafeBrowsingPrivateEventRouter::SetBinaryUploadServiceForTesting(
+    safe_browsing::BinaryUploadService* binary_upload_service) {
+  binary_upload_service_ = binary_upload_service;
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
@@ -611,7 +721,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
 
   if (g_browser_process) {
     binary_upload_service_ =
-        g_browser_process->safe_browsing_service()->GetBinaryUploadService(
+        safe_browsing::BinaryUploadServiceFactory::GetForProfile(
             Profile::FromBrowserContext(context_));
     IfAuthorized(base::BindOnce(
         &SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback,
@@ -637,6 +747,9 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   auto* user = GetChromeOSUser();
   if (user) {
     auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    // If primary user profile is not finalized, use the current profile.
+    if (!profile)
+      profile = Profile::FromBrowserContext(context_);
     DCHECK(profile);
     if (user->IsActiveDirectoryUser()) {
       // TODO(crbug.com/1012048): Handle AD, likely through crbug.com/1012170.
@@ -674,11 +787,8 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   device_management_service->ScheduleInitialization(0);
 
   private_client_ = std::make_unique<policy::CloudPolicyClient>(
-      /*machine_id=*/std::string(), /*machine_model=*/std::string(),
-      /*brand_code=*/std::string(), /*ethernet_mac_address=*/std::string(),
-      /*dock_mac_address=*/std::string(), /*manufacture_date=*/std::string(),
       device_management_service, g_browser_process->shared_url_loader_factory(),
-      nullptr, policy::CloudPolicyClient::DeviceDMTokenCallback());
+      policy::CloudPolicyClient::DeviceDMTokenCallback());
   client = private_client_.get();
 
   if (!client->is_registered()) {
@@ -759,6 +869,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event_builder).Run());
 
+  // Show the report on chrome://safe-browsing, if appropriate.
+  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToReportingEvents(
+      wrapper);
+
   base::Value event_list(base::Value::Type::LIST);
   event_list.Append(std::move(wrapper));
 
@@ -794,14 +908,10 @@ bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
            ->IsEnterpriseManaged())
     return false;
 
-  // The Chrome OS user must be afiliated with the device.
+  // The Chrome OS user must be affiliated with the device.
+  // This also implies that the user is managed.
   auto* user = GetChromeOSUser();
-  if (!user || !user->IsAffiliated())
-    return false;
-
-  // And that user must be managed.
-  auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  return profile && profile->GetProfilePolicyConnector()->IsManaged();
+  return user && user->IsAffiliated();
 #else
   return policy::ChromeBrowserCloudManagementController::IsEnabled();
 #endif

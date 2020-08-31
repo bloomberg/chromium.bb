@@ -805,7 +805,7 @@ error::Error DoUnmapBuffer(GLenum target);
 error::Error DoResizeCHROMIUM(GLuint width,
                               GLuint height,
                               GLfloat scale_factor,
-                              GLenum color_space,
+                              gfx::ColorSpace color_space,
                               GLboolean alpha);
 error::Error DoGetRequestableExtensionsCHROMIUM(const char** extensions);
 error::Error DoRequestExtensionCHROMIUM(const char* extension);
@@ -1141,4 +1141,6 @@ error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
 error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
                                                     GLenum mode);
 error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
+error::Error DoBeginBatchReadAccessSharedImageCHROMIUM(void);
+error::Error DoEndBatchReadAccessSharedImageCHROMIUM(void);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

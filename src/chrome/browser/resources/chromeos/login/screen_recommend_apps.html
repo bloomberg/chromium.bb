@@ -3,12 +3,12 @@
      found in the LICENSE file. -->
 
 <div class="step right hidden" id="recommend-apps" hidden>
-  <link rel="stylesheet" href="oobe_dialog_host.css">
+  <style include="oobe-dialog-host"></style>
   <recommend-apps id="recommend-apps-screen" hidden></recommend-apps>
   <oobe-dialog id="recommend-apps-loading" role="dialog" no-header
                no-footer-padding>
     <div slot="footer" class="flex layout vertical center center-justified">
-      <throbber-notice i18n-values="text:recommendAppsLoading">
+      <throbber-notice text-key="recommendAppsLoading">
       </throbber-notice>
     </div>
   </oobe-dialog>

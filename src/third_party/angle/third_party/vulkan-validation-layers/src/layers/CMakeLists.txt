@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2020 Valve Corporation
+# Copyright (c) 2014-2020 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ if(WIN32)
 elseif(ANDROID)
     add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR -DVK_USE_PLATFORM_ANDROID_KHX)
 elseif(APPLE)
-    add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
+    add_definitions(-DVK_USE_PLATFORM_MACOS_MVK -DVK_USE_PLATFORM_METAL_EXT)
     if(CMAKE_GENERATOR MATCHES "^Xcode.*")
         add_custom_target(mk_layer_config_dir ALL
                           COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
@@ -61,6 +61,8 @@ if(BUILD_LAYER_SUPPORT_FILES)
         vk_layer_utils.h
         vk_layer_utils.cpp
         vk_loader_platform.h
+        xxhash.h
+        xxhash.c
         generated/vk_validation_error_messages.h
         generated/vk_layer_dispatch_table.h
         generated/vk_dispatch_table_helper.h
@@ -74,8 +76,7 @@ if(BUILD_LAYER_SUPPORT_FILES)
 endif()
 
 set(TARGET_NAMES
-    VkLayer_khronos_validation
-    VkLayer_standard_validation)
+    VkLayer_khronos_validation)
 
 if(BUILD_LAYERS)
     # Install the layer json files
@@ -140,7 +141,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/gene
 
 if(WIN32)
     # Applies to all configurations
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DNOMINMAX)
     # Avoid: fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj
     add_compile_options("/bigobj")
     # Allow Windows to use multiprocessor compilation
@@ -162,22 +163,35 @@ set(CHASSIS_LIBRARY_FILES
     generated/chassis.cpp
     generated/layer_chassis_dispatch.cpp
     generated/command_counter_helper.cpp
-    state_tracker.cpp)
+    state_tracker.cpp
+    state_tracker.h
+    image_layout_map.cpp
+    image_layout_map.h
+    range_vector.h
+    subresource_adapter.cpp
+    subresource_adapter.h)
 
 set(CORE_VALIDATION_LIBRARY_FILES
     core_validation.cpp
+    core_validation.h
+    core_validation_error_enums.h
+    core_validation_types.h
     drawdispatch.cpp
     convert_to_renderpass2.cpp
     descriptor_sets.cpp
+    descriptor_sets.h
     buffer_validation.cpp
+    buffer_validation.h
     shader_validation.cpp
+    shader_validation.h
     gpu_validation.cpp
     xxhash.c)
 
 set(OBJECT_LIFETIMES_LIBRARY_FILES
     generated/object_tracker.cpp
     generated/object_tracker.h
-    object_tracker_utils.cpp)
+    object_tracker_utils.cpp
+    object_lifetime_validation.h)
 
 set(THREAD_SAFETY_LIBRARY_FILES
     generated/thread_safety.cpp
@@ -186,15 +200,27 @@ set(THREAD_SAFETY_LIBRARY_FILES
 set(STATELESS_VALIDATION_LIBRARY_FILES
     generated/parameter_validation.cpp
     generated/parameter_validation.h
-    parameter_validation_utils.cpp)
+    parameter_validation_utils.cpp
+    stateless_validation.h)
 
 set(BEST_PRACTICES_LIBRARY_FILES
-    best_practices.cpp
-    best_practices.h)
+    best_practices_utils.cpp
+    generated/best_practices.cpp
+    generated/best_practices.h
+    best_practices_validation.h
+    best_practices_error_enums.h)
 
 set(GPU_ASSISTED_LIBRARY_FILES
     gpu_validation.cpp
     gpu_validation.h)
+
+set(DEBUG_PRINTF_LIBRARY_FILES
+    debug_printf.cpp
+    debug_printf.h)
+
+set(GPU_UTILITY_LIBRARY_FILES
+    gpu_utils.cpp
+    gpu_utils.h)
 
 if(BUILD_LAYERS)
     AddVkLayer(khronos_validation ""
@@ -204,11 +230,14 @@ if(BUILD_LAYERS)
         ${THREAD_SAFETY_LIBRARY_FILES}
         ${STATELESS_VALIDATION_LIBRARY_FILES}
         ${BEST_PRACTICES_LIBRARY_FILES}
-        ${GPU_ASSISTED_LIBRARY_FILES})
+        ${GPU_UTILITY_LIBRARY_FILES}
+        ${GPU_ASSISTED_LIBRARY_FILES}
+        ${DEBUG_PRINTF_LIBRARY_FILES})
 
     # Khronos validation additional dependencies
     target_include_directories(VkLayer_khronos_validation PRIVATE ${GLSLANG_SPIRV_INCLUDE_DIR})
     target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_INCLUDE_DIR})
+    target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_HEADERS_INCLUDE_DIR})
     target_link_libraries(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_LIBRARIES})
 
     # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
@@ -224,7 +253,7 @@ if(BUILD_LAYERS)
     # TARGET_FILE_DIR, specifically)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\")")
     foreach(TARGET_NAME ${TARGET_NAMES})
-        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.1.${vk_header_version})
+        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
         # If this json file is not a metalayer, get the needed properties from that target
         if(TARGET ${TARGET_NAME})
             set(CONFIG_DEFINES
@@ -249,7 +278,7 @@ if(BUILD_LAYERS)
             set(INSTALL_DEFINES
                 -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in"
                 -DOUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/staging-json/${TARGET_NAME}.json"
-                -DVK_VERSION=1.1.${vk_header_version})
+                -DVK_VERSION=1.2.${vk_header_version})
             # If this json file is not a metalayer, get the needed properties from that target
             if(TARGET ${TARGET_NAME})
                 set(INSTALL_DEFINES ${INSTALL_DEFINES} -DRELATIVE_LAYER_BINARY="$<TARGET_FILE_NAME:${TARGET_NAME}>")

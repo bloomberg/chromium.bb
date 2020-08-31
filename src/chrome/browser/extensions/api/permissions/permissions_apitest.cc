@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -11,6 +12,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
@@ -68,13 +70,28 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, ExperimentalPermissionsFail) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FaviconPermission) {
+// TODO(crbug/1065399): Flaky on ChromeOS and Linux non-dbg builds.
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(NDEBUG)
+#define MAYBE_FaviconPermission DISABLED_FaviconPermission
+#else
+#define MAYBE_FaviconPermission FaviconPermission
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_FaviconPermission) {
+  base::HistogramTester tester;
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
+  tester.ExpectBucketCount("Extensions.FaviconResourceRequested",
+                           Manifest::TYPE_EXTENSION, 1);
 }
 
 // Test functions and APIs that are always allowed (even if you ask for no
 // permissions).
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, AlwaysAllowed) {
+// Flaky on MacOS (see crbug/1064929).
+#if defined(OS_MACOSX)
+#define MAYBE_AlwaysAllowed DISABLED_AlwaysAllowed
+#else
+#define MAYBE_AlwaysAllowed AlwaysAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
 }
 
@@ -201,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
   }
   EXPECT_TRUE(RunExtensionTestWithFlagsAndArg(
       "permissions/file_load", temp_dir.GetPath().MaybeAsASCII().c_str(),
-      kFlagEnableFileAccess))
+      kFlagEnableFileAccess, kFlagNone))
       << message_;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;

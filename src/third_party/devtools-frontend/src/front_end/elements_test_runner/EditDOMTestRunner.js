@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ ElementsTestRunner.doAddAttribute = function(testName, dataNodeId, attributeText
     TestRunner.deprecatedRunAfterPendingDispatches(testContinuation);
 
     function testContinuation() {
-      const editorElement = UI.panels.elements._treeOutlines[0]._shadowRoot.getSelection().anchorNode.parentElement;
+      const editorElement = ElementsTestRunner.firstElementsTreeOutline()._shadowRoot.getSelection().anchorNode.parentElement;
       editorElement.textContent = attributeText;
       editorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
       TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, '_updateModifiedNodes', done);

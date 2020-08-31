@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.widget.Button;
 
@@ -18,8 +19,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -45,6 +45,7 @@ public class SadTabTest {
     }
 
     private static boolean isShowingSadTab(Tab tab) {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         try {
             return TestThreadUtils.runOnUiThreadBlocking(() -> SadTab.isShowing(tab));
         } catch (ExecutionException e) {
@@ -171,7 +172,7 @@ public class SadTabTest {
      */
     private static void simulateRendererKilled(final Tab tab, final boolean visible) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            if (!visible) ((TabImpl) tab).hide(TabHidingType.CHANGED_TABS);
+            if (!visible) tab.hide(TabHidingType.CHANGED_TABS);
             ChromeTabUtils.simulateRendererKilledForTesting(tab, false);
         });
     }
@@ -194,7 +195,12 @@ public class SadTabTest {
      *         doesn't exist.
      */
     private static Button getSadTabButton(Tab tab) {
-        return (Button) tab.getContentView().findViewById(R.id.sad_tab_button);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        try {
+            return TestThreadUtils.runOnUiThreadBlocking(
+                    () -> tab.getView().findViewById(R.id.sad_tab_button));
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
-
 }

@@ -65,6 +65,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakePasswordRecoveryManager* fake_password_recovery_manager() {
     return &fake_password_recovery_manager_;
   }
+  FakeGemDeviceDetailsManager* fake_gem_device_details_manager() {
+    return &fake_gem_device_details_manager_;
+  }
   FakeCredentialProviderEvents* fake_provider_events() {
     return &fake_provider_events_;
   }
@@ -74,6 +77,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   }
   FakeInternetAvailabilityChecker* fake_internet_checker() {
     return &fake_internet_checker_;
+  }
+  FakeChromeAvailabilityChecker* fake_chrome_checker() {
+    return &fake_chrome_checker_;
   }
 
   const Microsoft::WRL::ComPtr<ICredentialProvider>& created_provider() const {
@@ -195,11 +201,13 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeInternetAvailabilityChecker fake_internet_checker_;
   FakeAssociatedUserValidator fake_associated_user_validator_;
   FakePasswordRecoveryManager fake_password_recovery_manager_;
+  FakeGemDeviceDetailsManager fake_gem_device_details_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   FakeCredentialProviderEvents fake_provider_events_;
   FakeCredentialProviderCredentialEvents
       fake_credential_provider_credential_events_;
   FakeCredentialProviderUserArray fake_user_array_;
+  FakeChromeAvailabilityChecker fake_chrome_checker_;
 
   // SID of the user that is considered to be locking the workstation. This is
   // only relevant for CPUS_UNLOCK_WORKSTATION usage.

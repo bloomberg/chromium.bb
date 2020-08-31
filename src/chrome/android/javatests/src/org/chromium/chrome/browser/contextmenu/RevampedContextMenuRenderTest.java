@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.LargeTest;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import org.junit.Rule;
@@ -22,15 +21,16 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
-import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.NightModeTestUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,7 +46,7 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule = new RenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     private ModelListAdapter mAdapter;
     private ModelList mListItems;
@@ -73,24 +73,20 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
             // clang-format off
             mAdapter.registerType(
                     ListItemType.HEADER,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_header, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_header),
                     RevampedContextMenuHeaderViewBinder::bind);
             mAdapter.registerType(
                     ListItemType.DIVIDER,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.app_menu_divider, null),
+                    new LayoutViewBuilder(R.layout.app_menu_divider),
                     (m, v, p) -> {
                     });
             mAdapter.registerType(
                     ListItemType.CONTEXT_MENU_ITEM,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_row, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_row),
                     RevampedContextMenuItemViewBinder::bind);
             mAdapter.registerType(
                     ListItemType.CONTEXT_MENU_SHARE_ITEM,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_share_row, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_share_row),
                     RevampedContextMenuShareItemViewBinder::bind);
             // clang-format on
         });
@@ -98,8 +94,10 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
-        TestThreadUtils.runOnUiThreadBlocking(() -> mListItems.clear());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            NightModeTestUtils.tearDownNightModeForDummyUiActivity();
+            mListItems.clear();
+        });
         super.tearDownTest();
     }
 

@@ -37,6 +37,10 @@ constexpr int kWin7BackgroundThreadModePriority = 4;
 // set to normal on Windows 7.
 constexpr int kWin7NormalPriority = 3;
 
+// These values are sometimes returned by ::GetThreadPriority().
+constexpr int kWinNormalPriority1 = 5;
+constexpr int kWinNormalPriority2 = 6;
+
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
 const DWORD kVCThreadNameException = 0x406D1388;
@@ -139,19 +143,13 @@ bool CreateThreadInternal(size_t stack_size,
   params->joinable = out_thread_handle != nullptr;
   params->priority = priority;
 
-  void* thread_handle;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Windows.CreateThreadTime");
-
-    // Using CreateThread here vs _beginthreadex makes thread creation a bit
-    // faster and doesn't require the loader lock to be available.  Our code
-    // will  have to work running on CreateThread() threads anyway, since we run
-    // code on the Windows thread pool, etc.  For some background on the
-    // difference:
-    //   http://www.microsoft.com/msj/1099/win32/win321099.aspx
-    thread_handle =
-        ::CreateThread(nullptr, stack_size, ThreadFunc, params, flags, nullptr);
-  }
+  // Using CreateThread here vs _beginthreadex makes thread creation a bit
+  // faster and doesn't require the loader lock to be available.  Our code will
+  // have to work running on CreateThread() threads anyway, since we run code on
+  // the Windows thread pool, etc.  For some background on the difference:
+  // http://www.microsoft.com/msj/1099/win32/win321099.aspx
+  void* thread_handle =
+      ::CreateThread(nullptr, stack_size, ThreadFunc, params, flags, nullptr);
 
   if (!thread_handle) {
     DWORD last_error = ::GetLastError();
@@ -183,11 +181,6 @@ bool CreateThreadInternal(size_t stack_size,
 }
 
 }  // namespace
-
-namespace features {
-const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
-                                           FEATURE_DISABLED_BY_DEFAULT};
-}  // namespace features
 
 namespace internal {
 
@@ -313,7 +306,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
 
   base::internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      base::BlockingType::MAY_BLOCK);
+      FROM_HERE, base::BlockingType::MAY_BLOCK);
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.
@@ -334,23 +327,10 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 
 // static
 void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
-  // A DCHECK is triggered on FeatureList initialization if the state of a
-  // feature has been checked before. We only want to trigger that DCHECK if the
-  // priority has been set to BACKGROUND before, so we are careful not to access
-  // the state of the feature needlessly. We don't DCHECK here because it is ok
-  // if the FeatureList is never initialized in the process (e.g. in tests).
-  //
-  // TODO(fdoray): Remove experiment code. https://crbug.com/872820
-  const bool use_thread_mode_background =
-      (priority == ThreadPriority::BACKGROUND
-           ? FeatureList::IsEnabled(features::kWindowsThreadModeBackground)
-           : (FeatureList::GetInstance() &&
-              FeatureList::IsEnabled(features::kWindowsThreadModeBackground)));
-
   PlatformThreadHandle::Handle thread_handle =
       PlatformThread::CurrentHandle().platform_handle();
 
-  if (use_thread_mode_background && priority != ThreadPriority::BACKGROUND) {
+  if (priority != ThreadPriority::BACKGROUND) {
     // Exit background mode if the new priority is not BACKGROUND. This is a
     // no-op if not in background mode.
     ::SetThreadPriority(thread_handle, THREAD_MODE_BACKGROUND_END);
@@ -360,9 +340,14 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
     case ThreadPriority::BACKGROUND:
-      desired_priority = use_thread_mode_background
-                             ? THREAD_MODE_BACKGROUND_BEGIN
-                             : THREAD_PRIORITY_LOWEST;
+      // Using THREAD_MODE_BACKGROUND_BEGIN instead of THREAD_PRIORITY_LOWEST
+      // improves input latency and navigation time. See
+      // https://docs.google.com/document/d/16XrOwuwTwKWdgPbcKKajTmNqtB4Am8TgS9GjbzBYLc0
+      //
+      // MSDN recommends THREAD_MODE_BACKGROUND_BEGIN for threads that perform
+      // background work, as it reduces disk and memory priority in addition to
+      // CPU priority.
+      desired_priority = THREAD_MODE_BACKGROUND_BEGIN;
       break;
     case ThreadPriority::NORMAL:
       desired_priority = THREAD_PRIORITY_NORMAL;
@@ -386,7 +371,7 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
                             << desired_priority;
 
-  if (use_thread_mode_background && priority == ThreadPriority::BACKGROUND) {
+  if (priority == ThreadPriority::BACKGROUND) {
     // In a background process, THREAD_MODE_BACKGROUND_BEGIN lowers the memory
     // and I/O priorities but not the CPU priority (kernel bug?). Use
     // THREAD_PRIORITY_LOWEST to also lower the CPU priority.
@@ -399,8 +384,6 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
       internal::AssertMemoryPriority(thread_handle, MEMORY_PRIORITY_VERY_LOW);
     }
   }
-
-  DCHECK_EQ(GetCurrentThreadPriority(), priority);
 }
 
 // static
@@ -449,6 +432,10 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
       DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
       FALLTHROUGH;
     case THREAD_PRIORITY_NORMAL:
+      return ThreadPriority::NORMAL;
+    case kWinNormalPriority1:
+      FALLTHROUGH;
+    case kWinNormalPriority2:
       return ThreadPriority::NORMAL;
     case THREAD_PRIORITY_ABOVE_NORMAL:
     case THREAD_PRIORITY_HIGHEST:

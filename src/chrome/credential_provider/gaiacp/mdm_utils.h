@@ -17,13 +17,23 @@ namespace credential_provider {
 
 // Mdm registry value key name.
 
+// Enables verbose logging in GCPW.
+extern const wchar_t kRegEnableVerboseLogging[];
+
+// Determines if crash reporting is initialized for credential provider DLL.
+extern const wchar_t kRegInitializeCrashReporting[];
+
 // The url used to register the machine to MDM. If specified and non-empty
 // additional user access restrictions will be applied to users associated
 // to GCPW that have invalid token handles.
 extern const wchar_t kRegMdmUrl[];
 
-// Base server url for the password recovery escrow service.
-extern const wchar_t kRegEscrowServiceServerUrl[];
+// The registry entry is used to control whether to enable enrollment
+// Google device management solution.
+extern const wchar_t kRegEnableDmEnrollment[];
+
+// Disables password escrowing feature in GCPW.
+extern const wchar_t kRegDisablePasswordSync[];
 
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
@@ -36,6 +46,29 @@ extern const wchar_t kRegMdmEnableForcePasswordReset[];
 
 // Password lsa store key prefix.
 extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
+
+// Error key name that is likely to be present in HTTP responses.
+extern const char kErrorKeyInRequestResult[];
+
+// Upload status for device details.
+extern const wchar_t kRegDeviceDetailsUploadStatus[];
+
+// Number of consecutive failures encountered when uploading device details.
+extern const wchar_t kRegDeviceDetailsUploadFailures[];
+
+// Specifies custom Chrome path to use for GLS.
+extern const wchar_t kRegGlsPath[];
+
+// Registry key where user device resource ID is stored.
+extern const wchar_t kRegUserDeviceResourceId[];
+
+// Maximum number of consecutive Upload device details failures for which we do
+// enforce auth.
+extern const int kMaxNumConsecutiveUploadDeviceFailures;
+
+// The URL part that is used when constructing the developer complete URL. When
+// it is empty, developer mode isn't enabled.
+extern const wchar_t kRegDeveloperMode[];
 
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
@@ -52,25 +85,21 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
-// Class used in tests to set registration data for testing.
-class GoogleRegistrationDataForTesting {
+// Class used in tests to force upload device details needed.
+class GoogleUploadDeviceDetailsNeededForTesting {
  public:
-  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
-  ~GoogleRegistrationDataForTesting();
-};
-
-// Class used in tests to force password escrow service availability when not
-// in a Google Chrome build (where the service is disabled).
-class GoogleMdmEscrowServiceEnablerForTesting {
- public:
-  GoogleMdmEscrowServiceEnablerForTesting();
-  ~GoogleMdmEscrowServiceEnablerForTesting();
+  explicit GoogleUploadDeviceDetailsNeededForTesting(bool success);
+  ~GoogleUploadDeviceDetailsNeededForTesting();
 };
 
 // If MdmEnrollmentEnabled returns true, this function verifies that the machine
 // is enrolled to MDM AND that the server to which it is enrolled is the same
 // as the one specified in |kGlobalMdmUrlRegKey|, otherwise returns false.
 bool NeedsToEnrollWithMdm();
+
+// Checks user properties to determine whether last upload device details
+// attempt succeeded for the given user.
+bool UploadDeviceDetailsNeeded(const base::string16& sid);
 
 // Checks whether the |kRegMdmUrl| is set on this machine and points
 // to a valid URL. Returns false otherwise.
@@ -80,15 +109,36 @@ bool MdmEnrollmentEnabled();
 // machine.
 bool PasswordRecoveryEnabled();
 
-// Gets the escrow service URL as defined in the registry or a default value if
-// nothing is set.
+// Returns true if the |kKeyEnableGemFeatures| is set to 1.
+bool IsGemEnabled();
+
+// Checks if online login is enforced. Returns true if
+// |kRegMdmEnforceOnlineLogin| is set to true at global or user level.
+bool IsOnlineLoginEnforced(const base::string16& sid);
+
+// Gets the escrow service URL unless password sync is disabled. Otherwise an
+// empty url is returned.
 GURL EscrowServiceUrl();
+
+// Gets the gcpw service URL.
+GURL GetGcpwServiceUrl();
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
 
 // Constructs the password lsa store key for the given |sid|.
 base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid);
+
+// Get device resource ID for the user with given |sid|. Returns an empty string
+// if one has not been set for the user.
+base::string16 GetUserDeviceResourceId(const base::string16& sid);
+
+// Converts the |url| in the form of http://xxxxx.googleapis.com/...
+// to a form that points to a development URL as specified with |dev|
+// environment. Final url will be in the form
+// https://{dev}-xxxxx.sandbox.googleapis.com/...
+base::string16 GetDevelopmentUrl(const base::string16& url,
+                                 const base::string16& dev);
 
 }  // namespace credential_provider
 

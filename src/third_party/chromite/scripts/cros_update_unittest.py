@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 
 from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
@@ -28,7 +29,8 @@ class CrosUpdateTest(cros_test_lib.RunCommandTestCase):
         original_build='foo-original-build', static_url='foo-static',
         devserver_url='foo-devserver-url')
     self._cros_updater = auto_updater.ChromiumOSUpdater(
-        mock.MagicMock(work_dir='foo-dir'), 'foo-build-name', 'foo-payload-dir')
+        mock.MagicMock(work_dir='foo-dir'), 'foo-build-name', 'foo-payload-dir',
+        transfer_class=auto_updater_transfer.LocalTransfer)
 
   def test_GetOriginalPayloadDir(self):
     """Tests getting the original payload directory."""
@@ -48,13 +50,15 @@ class CrosUpdateTest(cros_test_lib.RunCommandTestCase):
 
   @mock.patch.object(cros_update.CrOSUpdateTrigger, '_MakeStatusUrl',
                      return_value='foo-url')
-  @mock.patch.object(remote_access.RemoteDevice, 'RunCommand',
+  @mock.patch.object(remote_access.RemoteDevice, 'run',
                      return_value=cros_build_lib.CommandResult(output='output'))
   def test_QuickProvision(self, run_command_call, _):
     """Tests launching quick provision."""
-    cmd = ('curl -o /tmp/quick-provision foo-static/quick-provision && '
-           'bash /tmp/quick-provision --status_url foo-url foo-build-name '
-           'foo-static')
+    cmd = ('mkdir -p /usr/local/tmp && '
+           'curl -o /usr/local/tmp/quick-provision '
+           'foo-static/quick-provision && '
+           'bash /usr/local/tmp/quick-provision --status_url foo-url '
+           'foo-build-name foo-static')
     device = remote_access.RemoteDevice('fake-hostname')
     self._cros_update_trigger._QuickProvision(device)
     run_command_call.assert_called_with(cmd, log_output=True, shell=True,

@@ -5,14 +5,15 @@
 #ifndef QUICHE_QUIC_QUIC_TRANSPORT_QUIC_TRANSPORT_SERVER_SESSION_H_
 #define QUICHE_QUIC_QUIC_TRANSPORT_QUIC_TRANSPORT_SERVER_SESSION_H_
 
+#include "url/gurl.h"
 #include "url/origin.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_session_interface.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -25,7 +26,14 @@ class QUIC_EXPORT_PRIVATE QuicTransportServerSession
    public:
     virtual ~ServerVisitor() {}
 
+    // Allows the server to decide whether the specified origin is allowed to
+    // connect to it.
     virtual bool CheckOrigin(url::Origin origin) = 0;
+
+    // Indicates that the server received a path parameter from the client.  The
+    // path parameter is parsed, and can be retrived from url.path() and
+    // url.query().  If this method returns false, the connection is closed.
+    virtual bool ProcessPath(const GURL& url) = 0;
   };
 
   QuicTransportServerSession(QuicConnection* connection,
@@ -36,17 +44,17 @@ class QUIC_EXPORT_PRIVATE QuicTransportServerSession
                              QuicCompressedCertsCache* compressed_certs_cache,
                              ServerVisitor* visitor);
 
-  std::vector<QuicStringPiece>::const_iterator SelectAlpn(
-      const std::vector<QuicStringPiece>& alpns) const override {
+  std::vector<quiche::QuicheStringPiece>::const_iterator SelectAlpn(
+      const std::vector<quiche::QuicheStringPiece>& alpns) const override {
     return std::find(alpns.cbegin(), alpns.cend(), QuicTransportAlpn());
   }
 
   bool ShouldKeepConnectionAlive() const override { return true; }
 
-  QuicCryptoStream* GetMutableCryptoStream() override {
+  QuicCryptoServerStreamBase* GetMutableCryptoStream() override {
     return crypto_stream_.get();
   }
-  const QuicCryptoStream* GetCryptoStream() const override {
+  const QuicCryptoServerStreamBase* GetCryptoStream() const override {
     return crypto_stream_.get();
   }
 
@@ -78,7 +86,7 @@ class QUIC_EXPORT_PRIVATE QuicTransportServerSession
   class QUIC_EXPORT_PRIVATE ClientIndicationParser {
    public:
     ClientIndicationParser(QuicTransportServerSession* session,
-                           QuicStringPiece indication)
+                           quiche::QuicheStringPiece indication)
         : session_(session), reader_(indication) {}
 
     // Parses the specified indication.  Automatically closes the connection
@@ -88,7 +96,10 @@ class QUIC_EXPORT_PRIVATE QuicTransportServerSession
 
    private:
     void Error(const std::string& error_message);
-    void ParseError(QuicStringPiece error_message);
+    void ParseError(quiche::QuicheStringPiece error_message);
+
+    // Processes the path portion of the client indication.
+    bool ProcessPath(quiche::QuicheStringPiece path);
 
     QuicTransportServerSession* session_;
     QuicDataReader reader_;
@@ -96,11 +107,11 @@ class QUIC_EXPORT_PRIVATE QuicTransportServerSession
 
   // Parses and processes the client indication as described in
   // https://vasilvv.github.io/webtransport/draft-vvv-webtransport-quic.html#rfc.section.3.2
-  void ProcessClientIndication(QuicStringPiece indication);
+  void ProcessClientIndication(quiche::QuicheStringPiece indication);
 
   virtual void OnIncomingDataStream(QuicTransportStream* /*stream*/) {}
 
-  std::unique_ptr<QuicCryptoServerStream> crypto_stream_;
+  std::unique_ptr<QuicCryptoServerStreamBase> crypto_stream_;
   bool ready_ = false;
   ServerVisitor* visitor_;
 };

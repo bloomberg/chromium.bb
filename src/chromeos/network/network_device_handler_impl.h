@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // NetworkDeviceHandler overrides
   void GetDeviceProperties(
       const std::string& device_path,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
   void SetDeviceProperty(
@@ -191,7 +191,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   bool mac_addr_randomization_enabled_ = false;
 
   std::string usb_ethernet_mac_address_source_;
-  bool usb_ethernet_mac_address_source_needs_update_ = false;
   std::string primary_enabled_usb_ethernet_device_path_;
   // Set of device's MAC addresses that do not support MAC address source change
   // to |usb_ethernet_mac_address_source_|. Use MAC address as unique device

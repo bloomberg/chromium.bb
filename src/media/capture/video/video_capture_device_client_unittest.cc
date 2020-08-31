@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
@@ -225,6 +225,7 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
     PIXEL_FORMAT_NV12,
     PIXEL_FORMAT_NV21,
     PIXEL_FORMAT_YUY2,
+    PIXEL_FORMAT_UYVY,
 #if defined(OS_WIN) || defined(OS_LINUX)
     PIXEL_FORMAT_RGB24,
 #endif

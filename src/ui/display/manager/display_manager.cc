@@ -35,6 +35,7 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -48,6 +49,7 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/events/devices/touchscreen_device.h"
 #endif
 
 #if defined(OS_WIN)
@@ -172,11 +174,11 @@ bool GetDisplayModeForNextResolution(const ManagedDisplayInfo& info,
       info.display_modes();
   ManagedDisplayMode tmp(info.size_in_pixel(), 0.0, false, false,
                          info.device_scale_factor());
-  const gfx::Size resolution = tmp.GetSizeInDIP(false);
+  const gfx::Size resolution = tmp.GetSizeInDIP();
 
   auto iter = std::find_if(modes.begin(), modes.end(),
                            [resolution](const ManagedDisplayMode& mode) {
-                             return mode.GetSizeInDIP(false) == resolution;
+                             return mode.GetSizeInDIP() == resolution;
                            });
   if (iter == modes.end())
     return false;
@@ -351,6 +353,7 @@ bool DisplayManager::InitFromCommandLine() {
            size_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     info_list.push_back(ManagedDisplayInfo::CreateFromSpec(part));
     info_list.back().set_native(true);
+    info_list.back().set_from_native_platform(true);
   }
   MaybeInitInternalDisplay(&info_list[0]);
   OnNativeDisplaysChanged(info_list);
@@ -734,7 +737,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     const DisplayInfoList& updated_displays) {
   if (updated_displays.empty()) {
     VLOG(1) << __func__
-             << "(0): # of current displays=" << active_display_list_.size();
+            << "(0): # of current displays=" << active_display_list_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
     // default display.
@@ -840,18 +843,20 @@ void DisplayManager::OnNativeDisplaysChanged(
 #if defined(OS_CHROMEOS)
   if (!configure_displays_ && new_display_info_list.size() > 1 &&
       hardware_mirroring_display_id_list.empty()) {
-    // Mirror mode is set by DisplayConfigurator on the device. Emulate it when
-    // running on linux desktop. Do not emulate it when hardware mirroring is
-    // on (This only happens in test).
     DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
         [](const ManagedDisplayInfo& display_info) {
           return display_info.id();
         });
+    // Mirror mode is set by DisplayConfigurator on the device. Emulate it when
+    // running on linux desktop.  Carry over HW mirroring state only in unified
+    // desktop so that it can switch to software mirroring to avoid exiting
+    // unified desktop.
+    // Note that this is only for testing.
     bool should_enable_software_mirroring =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kEnableSoftwareMirroring) ||
-        ShouldSetMirrorModeOn(list);
+        ShouldSetMirrorModeOn(list, unified_desktop_enabled_);
     SetSoftwareMirroring(should_enable_software_mirroring);
   }
 #endif
@@ -1130,6 +1135,22 @@ const Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   return GetDisplayForId(layout.primary_id);
 }
 
+// static
+const Display& DisplayManager::GetFakePrimaryDisplay() {
+  static Display* fake_display = nullptr;
+  if (!fake_display) {
+    fake_display = new Display(Display::GetDefaultDisplay());
+    // Note that if an inappropriate gfx::BufferFormat is specified in the
+    // gfx::DisplayColorSpaces of the fake display, this can sometimes
+    // propagate to allocation code and cause errors.
+    // https://crbug.com/1057501
+    gfx::DisplayColorSpaces display_color_spaces(
+        gfx::ColorSpace::CreateSRGB(), DisplaySnapshot::PrimaryFormat());
+    fake_display->set_color_spaces(display_color_spaces);
+  }
+  return *fake_display;
+}
+
 size_t DisplayManager::GetNumDisplays() const {
   return active_display_list_.size();
 }
@@ -1281,7 +1302,9 @@ std::string DisplayManager::GetDisplayNameForId(int64_t id) const {
   return base::StringPrintf("Display %d", static_cast<int>(id));
 }
 
-bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
+bool DisplayManager::ShouldSetMirrorModeOn(
+    const DisplayIdList& new_id_list,
+    bool should_check_hardware_mirroring) {
   DCHECK(new_id_list.size() > 1);
   if (layout_store_->forced_mirror_mode_for_tablet())
     return true;
@@ -1311,7 +1334,8 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
   }
   // Mirror mode should remain unchanged as long as there are more than one
   // connected displays.
-  return IsInMirrorMode();
+  return IsInSoftwareMirrorMode() ||
+         (should_check_hardware_mirroring && IsInHardwareMirrorMode());
 }
 
 void DisplayManager::SetMirrorMode(
@@ -1449,25 +1473,25 @@ void DisplayManager::SetTouchCalibrationData(
     int64_t display_id,
     const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
     const gfx::Size& display_bounds,
-    const TouchDeviceIdentifier& touch_device_identifier) {
+    const ui::TouchscreenDevice& touchdevice) {
   // We do not proceed with setting the calibration and association if the
   // touch device identified by |touch_device_identifier| is an internal touch
   // device.
-  if (IsInternalTouchscreenDevice(touch_device_identifier))
+  if (touchdevice.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL)
     return;
 
   // Id of the display the touch device in context is currently associated
   // with. This display id will be equal to |display_id| if no reassociation is
   // being performed.
   int64_t previous_display_id =
-      touch_device_manager_->GetAssociatedDisplay(touch_device_identifier);
+      touch_device_manager_->GetAssociatedDisplay(touchdevice);
 
   bool update_add_support = false;
   bool update_remove_support = false;
 
   TouchCalibrationData calibration_data(point_pair_quad, display_bounds);
-  touch_device_manager_->AddTouchCalibrationData(touch_device_identifier,
-                                                 display_id, calibration_data);
+  touch_device_manager_->AddTouchCalibrationData(touchdevice, display_id,
+                                                 calibration_data);
 
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
@@ -1508,10 +1532,9 @@ void DisplayManager::SetTouchCalibrationData(
 
 void DisplayManager::ClearTouchCalibrationData(
     int64_t display_id,
-    base::Optional<TouchDeviceIdentifier> touch_device_identifier) {
-  if (touch_device_identifier) {
-    touch_device_manager_->ClearTouchCalibrationData(*touch_device_identifier,
-                                                     display_id);
+    base::Optional<ui::TouchscreenDevice> touchdevice) {
+  if (touchdevice) {
+    touch_device_manager_->ClearTouchCalibrationData(*touchdevice, display_id);
   } else {
     touch_device_manager_->ClearAllTouchCalibrationData(display_id);
   }
@@ -2041,7 +2064,7 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_panel_rotation(display_info.GetLogicalActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
-  new_display.SetColorSpaceAndDepth(display_info.color_space());
+  new_display.set_color_spaces(display_info.display_color_spaces());
   constexpr uint32_t kNormalBitDepthNumBitsPerChannel = 8u;
   if (display_info.bits_per_channel() > kNormalBitDepthNumBitsPerChannel) {
     new_display.set_depth_per_component(display_info.bits_per_channel());
@@ -2107,7 +2130,7 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 
 void DisplayManager::CreateMirrorWindowIfAny() {
   if (software_mirroring_display_list_.empty() || !delegate_) {
-    if (!created_mirror_window_.is_null())
+    if (created_mirror_window_)
       std::move(created_mirror_window_).Run();
     return;
   }
@@ -2115,7 +2138,7 @@ void DisplayManager::CreateMirrorWindowIfAny() {
   for (auto& display : software_mirroring_display_list_)
     list.push_back(GetDisplayInfo(display.id()));
   delegate_->CreateOrUpdateMirroringDisplay(list);
-  if (!created_mirror_window_.is_null())
+  if (created_mirror_window_)
     std::move(created_mirror_window_).Run();
 }
 
@@ -2163,13 +2186,6 @@ void DisplayManager::AddObserver(DisplayObserver* observer) {
 
 void DisplayManager::RemoveObserver(DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-const Display& DisplayManager::GetSecondaryDisplay() const {
-  CHECK_LE(2U, GetNumDisplays());
-  return GetDisplayAt(0).id() == Screen::GetScreen()->GetPrimaryDisplay().id()
-             ? GetDisplayAt(1)
-             : GetDisplayAt(0);
 }
 
 void DisplayManager::UpdateInfoForRestoringMirrorMode() {

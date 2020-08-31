@@ -26,43 +26,72 @@ inline bool IsBigEndianArchitecture() {
   return !!bytes[0];
 }
 
-// Returns the bytes of |x| in reverse order. This is only defined for 16-, 32-,
-// and 64-bit unsigned integers.
-template <typename Integer>
-Integer ByteSwap(Integer x);
+namespace internal {
+
+template <int size>
+struct MakeSizedUnsignedInteger;
 
 template <>
-inline uint8_t ByteSwap(uint8_t x) {
+struct MakeSizedUnsignedInteger<1> {
+  using type = uint8_t;
+};
+
+template <>
+struct MakeSizedUnsignedInteger<2> {
+  using type = uint16_t;
+};
+
+template <>
+struct MakeSizedUnsignedInteger<4> {
+  using type = uint32_t;
+};
+
+template <>
+struct MakeSizedUnsignedInteger<8> {
+  using type = uint64_t;
+};
+
+template <int size>
+inline typename MakeSizedUnsignedInteger<size>::type ByteSwap(
+    typename MakeSizedUnsignedInteger<size>::type x) {
+  static_assert(size <= 8,
+                "ByteSwap() specialization missing in " __FILE__
+                ". "
+                "Are you trying to use an integer larger than 64 bits?");
+}
+
+template <>
+inline uint8_t ByteSwap<1>(uint8_t x) {
   return x;
 }
 
 #if defined(__clang__) || defined(__GNUC__)
 
 template <>
-inline uint64_t ByteSwap(uint64_t x) {
+inline uint64_t ByteSwap<8>(uint64_t x) {
   return __builtin_bswap64(x);
 }
 template <>
-inline uint32_t ByteSwap(uint32_t x) {
+inline uint32_t ByteSwap<4>(uint32_t x) {
   return __builtin_bswap32(x);
 }
 template <>
-inline uint16_t ByteSwap(uint16_t x) {
+inline uint16_t ByteSwap<2>(uint16_t x) {
   return __builtin_bswap16(x);
 }
 
 #elif defined(_MSC_VER)
 
 template <>
-inline uint64_t ByteSwap(uint64_t x) {
+inline uint64_t ByteSwap<8>(uint64_t x) {
   return _byteswap_uint64(x);
 }
 template <>
-inline uint32_t ByteSwap(uint32_t x) {
+inline uint32_t ByteSwap<4>(uint32_t x) {
   return _byteswap_ulong(x);
 }
 template <>
-inline uint16_t ByteSwap(uint16_t x) {
+inline uint16_t ByteSwap<2>(uint16_t x) {
   return _byteswap_ushort(x);
 }
 
@@ -71,19 +100,29 @@ inline uint16_t ByteSwap(uint16_t x) {
 #include <byteswap.h>
 
 template <>
-inline uint64_t ByteSwap(uint64_t x) {
+inline uint64_t ByteSwap<8>(uint64_t x) {
   return bswap_64(x);
 }
 template <>
-inline uint32_t ByteSwap(uint32_t x) {
+inline uint32_t ByteSwap<4>(uint32_t x) {
   return bswap_32(x);
 }
 template <>
-inline uint16_t ByteSwap(uint16_t x) {
+inline uint16_t ByteSwap<2>(uint16_t x) {
   return bswap_16(x);
 }
 
 #endif
+
+}  // namespace internal
+
+// Returns the bytes of |x| in reverse order. This is only defined for 16-, 32-,
+// and 64-bit unsigned integers.
+template <typename Integer>
+inline std::enable_if_t<std::is_unsigned<Integer>::value, Integer> ByteSwap(
+    Integer x) {
+  return internal::ByteSwap<sizeof(Integer)>(x);
+}
 
 // Read a POD integer from |src| in big-endian byte order, returning the integer
 // in native byte order.

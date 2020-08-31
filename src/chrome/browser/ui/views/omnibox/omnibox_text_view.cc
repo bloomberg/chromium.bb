@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -151,6 +150,8 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OmniboxTextView::ApplyTextColor(OmniboxPart part) {
+  if (text().empty())
+    return;
   render_text_->SetColor(result_view_->GetColor(part));
   SchedulePaint();
 }
@@ -236,6 +237,10 @@ int OmniboxTextView::GetLineHeight() const {
 }
 
 void OmniboxTextView::ReapplyStyling() {
+  // No work required if there are no preexisting styles.
+  if (!cached_classifications_)
+    return;
+
   const size_t text_length = text().length();
   for (size_t i = 0; i < cached_classifications_->size(); ++i) {
     const size_t text_start = (*cached_classifications_)[i].offset;

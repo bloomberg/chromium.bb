@@ -117,6 +117,9 @@ def generate_protocol_externs(output_path, file1, file2):
     load_schema(file1, domains)
     load_schema(file2, domains)
     output_file = open(output_path, "w")
+    output_file.write("var ProtocolProxyApi = {};\n")
+    output_file.write("/** @typedef {string} */")
+    output_file.write("Protocol.binary;")
 
     for domain in domains:
         domain_name = domain["domain"]
@@ -131,6 +134,8 @@ def generate_protocol_externs(output_path, file1, file2):
         output_file.write("Protocol.%s = {};\n" % domain_name)
         output_file.write("\n\n/**\n * @constructor\n*/\n")
         output_file.write("Protocol.%sAgent = function(){};\n" % domain_name)
+        output_file.write("\n\n/**\n * @constructor\n*/\n")
+        output_file.write("ProtocolProxyApi.%sApi = Protocol.%sAgent;\n" % (domain_name, domain_name))
 
         if "commands" in domain:
             for command in domain["commands"]:
@@ -140,16 +145,26 @@ def generate_protocol_externs(output_path, file1, file2):
                 out_param_to_type = {}
                 has_return_value = "returns" in command
                 if "parameters" in command:
+                    # Only declare trailing optional parameters as optional in
+                    # JSDoc annotations.
+                    trailing_optional = set()
+                    for in_param in reversed(command["parameters"]):
+                        if "optional" not in in_param:
+                            break
+                        trailing_optional.add(param_name(in_param))
+
                     for in_param in command["parameters"]:
                         in_param_name = param_name(in_param)
+                        real_in_param_name = "opt_" + in_param_name if in_param_name in trailing_optional else in_param_name
+                        params.append(real_in_param_name)
                         if "optional" in in_param:
                             in_param_to_type[in_param_name] = "(%s|undefined)" % param_type(domain_name, in_param)
-                            params.append("opt_%s" % in_param_name)
-                            output_file.write(" * @param {%s=} opt_%s\n" % (param_type(domain_name, in_param), in_param_name))
+                            annotation_suffix = "=" if in_param_name in trailing_optional else "|undefined"
                         else:
                             in_param_to_type[in_param_name] = param_type(domain_name, in_param)
-                            params.append(in_param_name)
-                            output_file.write(" * @param {%s} %s\n" % (param_type(domain_name, in_param), in_param_name))
+                            annotation_suffix = ""
+                        output_file.write(
+                            " * @param {%s%s} %s\n" % (param_type(domain_name, in_param), annotation_suffix, real_in_param_name))
                 returns = []
                 returns.append("?Protocol.Error")
                 if ("error" in command):
@@ -197,7 +212,7 @@ def generate_protocol_externs(output_path, file1, file2):
                 output_file.write("%s;\n" % response_type)
 
                 output_file.write("/**\n")
-                output_file.write(" * @param {!%s} obj\n" % request_type)
+                output_file.write(" * @param {!%s=} obj\n" % request_type)
                 output_file.write(" * @return {!Promise<!%s>}" % response_type)
                 output_file.write(" */\n")
                 output_file.write("Protocol.%sAgent.prototype.invoke_%s = function(obj) {};\n" % (domain_name, command["name"]))
@@ -259,11 +274,11 @@ def generate_protocol_externs(output_path, file1, file2):
             uppercase_length += 1
 
         output_file.write("/** @return {!Protocol.%sAgent}*/\n" % domain_name)
-        output_file.write("Protocol.TargetBase.prototype.%s = function(){};\n" %
+        output_file.write("ProtocolClient.TargetBase.prototype.%s = function(){};\n" %
                           (domain_name[:uppercase_length].lower() + domain_name[uppercase_length:] + "Agent"))
 
         output_file.write("/**\n * @param {!Protocol.%sDispatcher} dispatcher\n */\n" % domain_name)
-        output_file.write("Protocol.TargetBase.prototype.register%sDispatcher = function(dispatcher) {}\n" % domain_name)
+        output_file.write("ProtocolClient.TargetBase.prototype.register%sDispatcher = function(dispatcher) {}\n" % domain_name)
 
     output_file.close()
 

@@ -19,6 +19,10 @@
 namespace v8 {
 namespace internal {
 
+// Enum for functions that offer a second mode that does not cause allocations.
+// Used in conjunction with LookupIterator and unboxed double fields.
+enum class AllocationPolicy { kAllocationAllowed, kAllocationDisallowed };
+
 enum InstanceType : uint16_t;
 class JSGlobalObject;
 class JSGlobalProxy;
@@ -202,15 +206,17 @@ class JSReceiver : public HeapObject {
   V8_WARN_UNUSED_RESULT static Maybe<bool> IsExtensible(
       Handle<JSReceiver> object);
 
-  // Returns the class name ([[Class]] property in the specification).
+  // Returns the class name.
   V8_EXPORT_PRIVATE String class_name();
 
   // Returns the constructor (the function that was used to instantiate the
   // object).
   static MaybeHandle<JSFunction> GetConstructor(Handle<JSReceiver> receiver);
 
-  // Returns the constructor name (the name (possibly, inferred name) of the
-  // function that was used to instantiate the object).
+  // Returns the constructor name (the (possibly inferred) name of the function
+  // that was used to instantiate the object), if any. If a FunctionTemplate is
+  // used to instantiate the object, the class_name of the FunctionTemplate is
+  // returned instead.
   static Handle<String> GetConstructorName(Handle<JSReceiver> receiver);
 
   V8_EXPORT_PRIVATE Handle<NativeContext> GetCreationContext();
@@ -237,7 +243,9 @@ class JSReceiver : public HeapObject {
 
   inline static Handle<Object> GetDataProperty(Handle<JSReceiver> object,
                                                Handle<Name> name);
-  V8_EXPORT_PRIVATE static Handle<Object> GetDataProperty(LookupIterator* it);
+  V8_EXPORT_PRIVATE static Handle<Object> GetDataProperty(
+      LookupIterator* it, AllocationPolicy allocation_policy =
+                              AllocationPolicy::kAllocationAllowed);
 
   // Retrieves a permanent object identity hash code. The undefined value might
   // be returned in case no hash was created yet.
@@ -269,9 +277,6 @@ class JSReceiver : public HeapObject {
   DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
                                 TORQUE_GENERATED_JS_RECEIVER_FIELDS)
   bool HasProxyInPrototype(Isolate* isolate);
-
-  V8_WARN_UNUSED_RESULT static MaybeHandle<FixedArray> GetPrivateEntries(
-      Isolate* isolate, Handle<JSReceiver> receiver);
 
   OBJECT_CONSTRUCTORS(JSReceiver, HeapObject);
 };
@@ -477,7 +482,6 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   GetPropertyAttributesWithFailedAccessCheck(LookupIterator* it);
 
   // Defines an AccessorPair property on the given object.
-  // TODO(mstarzinger): Rename to SetAccessor().
   V8_EXPORT_PRIVATE static MaybeHandle<Object> DefineAccessor(
       Handle<JSObject> object, Handle<Name> name, Handle<Object> getter,
       Handle<Object> setter, PropertyAttributes attributes);
@@ -513,7 +517,7 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
                                               uint32_t length,
                                               EnsureElementsMode mode);
   static void EnsureCanContainElements(Handle<JSObject> object,
-                                       Arguments* arguments, uint32_t first_arg,
+                                       JavaScriptArguments* arguments,
                                        uint32_t arg_count,
                                        EnsureElementsMode mode);
 
@@ -1079,7 +1083,10 @@ class JSFunction : public JSFunctionOrBoundFunction {
 
   // Resets function to clear compiled data after bytecode has been flushed.
   inline bool NeedsResetDueToFlushedBytecode();
-  inline void ResetIfBytecodeFlushed();
+  inline void ResetIfBytecodeFlushed(
+      base::Optional<std::function<void(HeapObject object, ObjectSlot slot,
+                                        HeapObject target)>>
+          gc_notify_updated_slot = base::nullopt);
 
   DECL_GETTER(has_prototype_slot, bool)
 
@@ -1229,6 +1236,10 @@ class JSGlobalObject : public JSSpecialObject {
 
   inline bool IsDetached();
 
+  // May be called by the concurrent GC when the global object is not
+  // fully initialized.
+  DECL_GETTER(native_context_unchecked, Object)
+
   // Dispatched behavior.
   DECL_PRINTER(JSGlobalObject)
   DECL_VERIFIER(JSGlobalObject)
@@ -1269,7 +1280,8 @@ class JSDate : public TorqueGeneratedJSDate<JSDate, JSObject> {
   // {raw_date} is a tagged Object pointer.
   // {smi_index} is a tagged Smi.
   // The return value is a tagged Object pointer.
-  static Address GetField(Address raw_date, Address smi_index);
+  static Address GetField(Isolate* isolate, Address raw_date,
+                          Address smi_index);
 
   static Handle<Object> SetValue(Handle<JSDate> date, double v);
 
@@ -1309,8 +1321,7 @@ class JSDate : public TorqueGeneratedJSDate<JSDate, JSObject> {
   };
 
  private:
-  inline Object DoGetField(FieldIndex index);
-
+  Object DoGetField(Isolate* isolate, FieldIndex index);
   Object GetUTCField(FieldIndex index, double value, DateCache* date_cache);
 
   // Computes and caches the cacheable fields of the date.
@@ -1433,10 +1444,6 @@ class JSStringIterator
   // Dispatched behavior.
   DECL_PRINTER(JSStringIterator)
   DECL_VERIFIER(JSStringIterator)
-
-  // [index]: The [[StringIteratorNextIndex]] slot.
-  inline int index() const;
-  inline void set_index(int value);
 
   TQ_OBJECT_CONSTRUCTORS(JSStringIterator)
 };

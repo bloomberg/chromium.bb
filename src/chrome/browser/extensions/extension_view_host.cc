@@ -18,8 +18,7 @@
 #include "chrome/browser/ui/color_chooser.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
-#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -30,7 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -82,9 +81,9 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
       autofill::ChromeAutofillClient::FromWebContents(host_contents()),
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  if (performance_manager::PerformanceManager::IsAvailable()) {
-    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-        host_contents());
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(host_contents());
   }
 
   // The popup itself cannot be zoomed, but we must specify a zoom level to use.
@@ -205,7 +204,7 @@ content::KeyboardEventProcessingResult
 ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
                                           const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP &&
-      event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+      event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
       event.windows_key_code == ui::VKEY_ESCAPE) {
     return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
   }
@@ -221,7 +220,7 @@ bool ExtensionViewHost::HandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
-    if (event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
+    if (event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
         event.windows_key_code == ui::VKEY_ESCAPE) {
       Close();
       return true;

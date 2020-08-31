@@ -7,14 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class CommandDispatcher;
 @protocol PageInfoPresentation;
-class WebStateList;
-
-// Notification sent when the page info is shown.
-extern NSString* const kPageInfoWillShowNotification;
-// Notification sent when the page info is hidden.
-extern NSString* const kPageInfoWillHideNotification;
 
 // The coordinator that manages the display of the Page Info UI. When
 // |dispatcher| is set, this coordinator uses |dispatcher| to register itself
@@ -23,16 +16,13 @@ extern NSString* const kPageInfoWillHideNotification;
 // before |-stop| is called.
 @interface PageInfoLegacyCoordinator : ChromeCoordinator
 
-// The dispatcher for this coordinator. When |dispatcher| is set, the
-// coordinator will register itself as the target for PageInfoCommands.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
+//|originPoint| is the midpoint of the UI element from which the page info
+// should start presenting.
+@property(nonatomic, assign) CGPoint originPoint;
 
 // |presentationProvider| provides information and runs tasks necessary to
 // present Page Info.
 @property(nonatomic, weak) id<PageInfoPresentation> presentationProvider;
-
-// The active WebStateList to be used to display Page Info.
-@property(nonatomic, assign) WebStateList* webStateList;
 
 @end
 

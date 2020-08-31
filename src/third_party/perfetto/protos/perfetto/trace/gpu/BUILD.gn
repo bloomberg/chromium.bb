@@ -15,13 +15,12 @@
 import("../../../../gn/proto_library.gni")
 
 perfetto_proto_library("@TYPE@") {
-  deps = [
-    "../../common:@TYPE@",
-  ]
+  deps = [ "../../common:@TYPE@" ]
   sources = [
     "gpu_counter_event.proto",
     "gpu_log.proto",
     "gpu_render_stage_event.proto",
+    "vulkan_api_event.proto",
     "vulkan_memory_event.proto",
   ]
 }

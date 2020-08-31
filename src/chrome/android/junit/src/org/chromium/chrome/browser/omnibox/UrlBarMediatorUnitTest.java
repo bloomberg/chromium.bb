@@ -11,7 +11,6 @@ import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,9 +21,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
@@ -49,8 +48,6 @@ public class UrlBarMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         mModel = new PropertyModel(UrlBarProperties.ALL_KEYS);
@@ -60,12 +57,6 @@ public class UrlBarMediatorUnitTest {
                 return text.trim();
             }
         };
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
-        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test
@@ -162,13 +153,13 @@ public class UrlBarMediatorUnitTest {
 
         // Equal complex display text and editing text
         SpannableStringBuilder text1 = spannable("Test");
-        text1.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(3), 0, 3, 0);
-        text1.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(4), 1, 3, 0);
+        text1.setSpan(new UrlEmphasisColorSpan(3), 0, 3, 0);
+        text1.setSpan(new UrlEmphasisColorSpan(4), 1, 3, 0);
         text1.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan(), 0, 1, 0);
 
         SpannableStringBuilder text2 = spannable("Test");
-        text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(3), 0, 3, 0);
-        text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(4), 1, 3, 0);
+        text2.setSpan(new UrlEmphasisColorSpan(3), 0, 3, 0);
+        text2.setSpan(new UrlEmphasisColorSpan(4), 1, 3, 0);
         text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan(), 0, 1, 0);
 
         Assert.assertTrue(UrlBarMediator.isNewTextEquivalentToExistingText(
@@ -208,8 +199,8 @@ public class UrlBarMediatorUnitTest {
         // Equal display text content, but different emphasis spans
         SpannableStringBuilder text1 = spannable("Test");
         SpannableStringBuilder text2 = spannable("Test");
-        text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(3), 0, 3, 0);
-        text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(4), 1, 3, 0);
+        text2.setSpan(new UrlEmphasisColorSpan(3), 0, 3, 0);
+        text2.setSpan(new UrlEmphasisColorSpan(4), 1, 3, 0);
         text2.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan(), 0, 1, 0);
 
         Assert.assertFalse(UrlBarMediator.isNewTextEquivalentToExistingText(
@@ -217,8 +208,8 @@ public class UrlBarMediatorUnitTest {
                 UrlBarData.create(null, text2, 0, 0, "Blah")));
 
         // Add a subset of emphasis spans, but not all.
-        text1.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(3), 0, 3, 0);
-        text1.setSpan(new OmniboxUrlEmphasizer.UrlEmphasisColorSpan(4), 1, 3, 0);
+        text1.setSpan(new UrlEmphasisColorSpan(3), 0, 3, 0);
+        text1.setSpan(new UrlEmphasisColorSpan(4), 1, 3, 0);
         Assert.assertFalse(UrlBarMediator.isNewTextEquivalentToExistingText(
                 UrlBarData.create(null, text1, 0, 0, "Blah"),
                 UrlBarData.create(null, text2, 0, 0, "Blah")));

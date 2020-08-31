@@ -36,6 +36,7 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
@@ -445,12 +446,18 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
   ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
                   ->RegisterDownloadsDirectoryForTesting(downloads_dir));
 
-  // Create an empty file.
+  // Create test files.
   {
     base::ScopedAllowBlockingForTesting allow_io;
-    base::File file(downloads_dir.Append("all-justice.jpg"),
-                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-    ASSERT_TRUE(file.IsValid());
+    base::File image_file(downloads_dir.Append("all-justice.jpg"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(image_file.IsValid());
+    base::File audio_file(downloads_dir.Append("all-justice.mp3"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(audio_file.IsValid());
+    base::File video_file(downloads_dir.Append("all-justice.mp4"),
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(video_file.IsValid());
   }
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/recent_test"));
@@ -469,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   crostini_manager->AddRunningContainerForTesting(
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                              "testuser", "/home/testuser"));
+                              "testuser", "/home/testuser", "PLACEHOLDER_IP"));
 
   ExpectCrostiniMount();
 
@@ -512,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
   crostini_manager->AddRunningContainerForTesting(
       crostini::kCrostiniDefaultVmName,
       crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                              "testuser", "/home/testuser"));
+                              "testuser", "/home/testuser", "PLACEHOLDER_IP"));
 
   ExpectCrostiniMount();
 

@@ -24,6 +24,7 @@
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "url/origin.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -31,6 +32,10 @@ class CreditCard;
 class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
+
+namespace content {
+class RenderFrameHost;
+}  // namespace content
 
 namespace payments {
 
@@ -111,8 +116,10 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   PaymentRequestState(
       content::WebContents* web_contents,
+      content::RenderFrameHost* initiator_render_frame_host,
       const GURL& top_level_origin,
       const GURL& frame_origin,
+      const url::Origin& frame_security_origin,
       PaymentRequestSpec* spec,
       Delegate* delegate,
       const std::string& app_locale,
@@ -124,10 +131,16 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   // PaymentAppFactory::Delegate
   content::WebContents* GetWebContents() override;
-  ContentPaymentRequestDelegate* GetPaymentRequestDelegate() override;
-  PaymentRequestSpec* GetSpec() override;
+  ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
+  PaymentRequestSpec* GetSpec() const override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
+  const url::Origin& GetFrameSecurityOrigin() override;
+  content::RenderFrameHost* GetInitiatorRenderFrameHost() const override;
+  const std::vector<mojom::PaymentMethodDataPtr>& GetMethodData()
+      const override;
+  scoped_refptr<PaymentManifestWebDataService>
+  GetPaymentManifestWebDataService() const override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
@@ -135,6 +148,11 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                              int64_t registration_id) override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;
+  bool SkipCreatingNativePaymentApps() const override;
+  void OnCreatingNativePaymentAppsSkipped(
+      content::PaymentAppProvider::PaymentApps apps,
+      ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps)
+      override;
   void OnDoneCreatingPaymentApps() override;
 
   // PaymentResponseHelper::Delegate
@@ -159,6 +177,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // requested are supported asynchronously. For example, may return true for
   // "basic-card", but false for "https://bobpay.com".
   void AreRequestedMethodsSupported(MethodsSupportedCallback callback);
+
+  // Resets pending MethodsSupportedCallback after abort.
+  void OnAbort();
 
   // Returns authenticated user email, or empty string.
   std::string GetAuthenticatedEmail() const;
@@ -330,8 +351,10 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                                 SectionSelectionStatus selection_status);
 
   content::WebContents* web_contents_;
+  content::RenderFrameHost* initiator_render_frame_host_;
   const GURL top_origin_;
   const GURL frame_origin_;
+  const url::Origin frame_security_origin_;
   size_t number_of_payment_app_factories_ = 0;
 
   // True when the requested autofill data (shipping address and/or contact

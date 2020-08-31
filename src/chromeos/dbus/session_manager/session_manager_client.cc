@@ -67,8 +67,8 @@ RetrievePolicyResponseType GetPolicyResponseTypeByError(
     return RetrievePolicyResponseType::SUCCESS;
   } else if (error_name == login_manager::dbus_error::kGetServiceFail ||
              error_name == login_manager::dbus_error::kSessionDoesNotExist) {
-    // TODO(crbug.com/765644, ljusten): Remove kSessionDoesNotExist case once
-    // Chrome OS has switched to kGetServiceFail.
+    // TODO(crbug.com/765644): Remove kSessionDoesNotExist case once Chrome OS
+    // has switched to kGetServiceFail.
     return RetrievePolicyResponseType::GET_SERVICE_FAIL;
   } else if (error_name == login_manager::dbus_error::kSigEncodeFail) {
     return RetrievePolicyResponseType::POLICY_ENCODE_ERROR;
@@ -578,9 +578,16 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StopArcInstance(VoidDBusMethodCallback callback) override {
+  void StopArcInstance(const std::string& account_id,
+                       bool should_backup_log,
+                       VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStopArcInstance);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(account_id);
+    writer.AppendBool(should_backup_log);
+
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
@@ -1093,8 +1100,10 @@ void SessionManagerClient::InitializeFake() {
 
 // static
 void SessionManagerClient::InitializeFakeInMemory() {
-  new FakeSessionManagerClient(
-      FakeSessionManagerClient::PolicyStorageType::kInMemory);
+  if (!FakeSessionManagerClient::Get()) {
+    new FakeSessionManagerClient(
+        FakeSessionManagerClient::PolicyStorageType::kInMemory);
+  }
 }
 
 // static

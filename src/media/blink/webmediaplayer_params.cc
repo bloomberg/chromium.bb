@@ -7,6 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/demuxer.h"
 
 namespace media {
 
@@ -27,11 +28,14 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     bool embedded_media_experience_enabled,
     mojo::PendingRemote<mojom::MediaMetricsProvider> metrics_provider,
     CreateSurfaceLayerBridgeCB create_bridge_callback,
-    scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
     bool is_background_suspend_enabled,
     bool is_background_video_playback_enabled,
-    bool is_background_video_track_optimization_supported)
+    bool is_background_video_track_optimization_supported,
+    bool is_remoting_renderer_enabled,
+    std::unique_ptr<Demuxer> demuxer_override,
+    std::unique_ptr<PowerStatusHelper> power_status_helper)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(std::move(media_log)),
@@ -47,14 +51,21 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       embedded_media_experience_enabled_(embedded_media_experience_enabled),
       metrics_provider_(std::move(metrics_provider)),
       create_bridge_callback_(std::move(create_bridge_callback)),
-      context_provider_(std::move(context_provider)),
+      raster_context_provider_(std::move(raster_context_provider)),
       use_surface_layer_for_video_(use_surface_layer_for_video),
       is_background_suspend_enabled_(is_background_suspend_enabled),
       is_background_video_playback_enabled_(
           is_background_video_playback_enabled),
       is_background_video_track_optimization_supported_(
-          is_background_video_track_optimization_supported) {}
+          is_background_video_track_optimization_supported),
+      is_remoting_renderer_enabled_(is_remoting_renderer_enabled),
+      demuxer_override_(std::move(demuxer_override)),
+      power_status_helper_(std::move(power_status_helper)) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() = default;
+
+std::unique_ptr<Demuxer> WebMediaPlayerParams::TakeDemuxerOverride() {
+  return std::move(demuxer_override_);
+}
 
 }  // namespace media

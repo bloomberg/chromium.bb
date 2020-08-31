@@ -7,8 +7,10 @@
 #include <iostream>
 #include <string>
 
+#include "src/base/bits.h"
 #include "src/base/logging.h"
 #include "src/torque/ast.h"
+#include "src/torque/constants.h"
 #include "src/torque/declarable.h"
 #include "src/torque/utils.h"
 
@@ -191,9 +193,17 @@ bool IsKeywordLikeName(const std::string& s) {
 // naming convention and are those exempt from the normal type convention.
 bool IsMachineType(const std::string& s) {
   static const char* const machine_types[]{
-      "void",    "never", "int8",   "uint8", "int16",  "uint16",  "int31",
-      "uint31",  "int32", "uint32", "int64", "intptr", "uintptr", "float32",
-      "float64", "bool",  "string", "bint",  "char8",  "char16"};
+      VOID_TYPE_STRING,    NEVER_TYPE_STRING,
+      INT8_TYPE_STRING,    UINT8_TYPE_STRING,
+      INT16_TYPE_STRING,   UINT16_TYPE_STRING,
+      INT31_TYPE_STRING,   UINT31_TYPE_STRING,
+      INT32_TYPE_STRING,   UINT32_TYPE_STRING,
+      INT64_TYPE_STRING,   INTPTR_TYPE_STRING,
+      UINTPTR_TYPE_STRING, FLOAT32_TYPE_STRING,
+      FLOAT64_TYPE_STRING, FLOAT64_OR_HOLE_TYPE_STRING,
+      BOOL_TYPE_STRING,    "string",
+      BINT_TYPE_STRING,    CHAR8_TYPE_STRING,
+      CHAR16_TYPE_STRING};
 
   return std::find(std::begin(machine_types), std::end(machine_types), s) !=
          std::end(machine_types);
@@ -212,7 +222,7 @@ bool IsUpperCamelCase(const std::string& s) {
   if (s.empty()) return false;
   size_t start = 0;
   if (s[0] == '_') start = 1;
-  return isupper(s[start]) && !ContainsUnderscore(s.substr(1));
+  return isupper(s[start]);
 }
 
 bool IsSnakeCase(const std::string& s) {
@@ -355,6 +365,18 @@ IncludeObjectMacrosScope::IncludeObjectMacrosScope(std::ostream& os) : os_(os) {
 }
 IncludeObjectMacrosScope::~IncludeObjectMacrosScope() {
   os_ << "\n#include \"src/objects/object-macros-undef.h\"\n";
+}
+
+size_t ResidueClass::AlignmentLog2() const {
+  if (value_ == 0) return modulus_log_2_;
+  return base::bits::CountTrailingZeros(value_);
+}
+
+const size_t ResidueClass::kMaxModulusLog2;
+
+std::ostream& operator<<(std::ostream& os, const ResidueClass& a) {
+  if (a.SingleValue().has_value()) return os << *a.SingleValue();
+  return os << "[" << a.value_ << " mod 2^" << a.modulus_log_2_ << "]";
 }
 
 }  // namespace torque

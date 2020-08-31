@@ -38,6 +38,8 @@ class BASE_EXPORT RegKey {
   RegKey();
   explicit RegKey(HKEY key);
   RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
+  RegKey(RegKey&& other) noexcept;
+  RegKey& operator=(RegKey&& other);
   ~RegKey();
 
   LONG Create(HKEY rootkey, const wchar_t* subkey, REGSAM access);
@@ -77,7 +79,7 @@ class BASE_EXPORT RegKey {
   LONG GetValueNameAt(int index, std::wstring* name) const;
 
   // True while the key is valid.
-  bool Valid() const { return key_ != NULL; }
+  bool Valid() const { return key_ != nullptr; }
 
   // Kills a key and everything that lives below it; please be careful when
   // using it.
@@ -145,8 +147,8 @@ class BASE_EXPORT RegKey {
   // Recursively deletes a key and all of its subkeys.
   static LONG RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access);
 
-  HKEY key_;  // The registry key being iterated.
-  REGSAM wow64access_;
+  HKEY key_ = nullptr;  // The registry key being iterated.
+  REGSAM wow64access_ = 0;
   std::unique_ptr<Watcher> key_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RegKey);

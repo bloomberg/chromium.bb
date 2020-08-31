@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -79,6 +80,7 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
   block_resource_type_[static_cast<int>(ResourceType::kCSSStyleSheet)] = true;
   block_resource_type_[static_cast<int>(ResourceType::kScript)] = true;
   block_resource_type_[static_cast<int>(ResourceType::kRaw)] = true;
+  block_resource_type_[static_cast<int>(ResourceType::kFont)] = true;
   for (int i = 0; i < static_cast<int>(ResourceType::kMaxValue) + 1; ++i) {
     // Parameter names are of format: "block_resource_type_%d". The value
     // should be either "true" or "false".
@@ -114,8 +116,7 @@ bool PreviewsResourceLoadingHints::AllowLoad(
   bool allow_load = true;
 
   int pattern_index = 0;
-  for (const WTF::String& subresource_pattern :
-       subresource_patterns_to_block_) {
+  for (const WebString& subresource_pattern : subresource_patterns_to_block_) {
     // TODO(tbansal): https://crbug.com/856247. Add support for wildcard
     // matching.
     if (resource_url_string.Find(subresource_pattern) != kNotFound) {
@@ -149,12 +150,12 @@ bool PreviewsResourceLoadingHints::AllowLoad(
 
 void PreviewsResourceLoadingHints::ReportBlockedLoading(
     const KURL& resource_url) const {
-  execution_context_->AddConsoleMessage(ConsoleMessage::Create(
+  execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       GetConsoleLogStringForBlockedLoad(resource_url)));
 }
 
-void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {
+void PreviewsResourceLoadingHints::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

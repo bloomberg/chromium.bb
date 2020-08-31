@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -52,7 +53,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -196,10 +196,10 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_ = std::make_unique<ServiceProcessPrefs>(
-      pref_path, base::CreateSequencedTaskRunner(
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
-                     .get());
+      pref_path,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+          .get());
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.
@@ -221,7 +221,6 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
     if (locale.empty())
       locale = kDefaultServiceProcessLocale;
   }
-  ui::MaterialDesignController::Initialize();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 

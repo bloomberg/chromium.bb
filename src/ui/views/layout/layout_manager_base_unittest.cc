@@ -36,9 +36,17 @@ class TestLayoutManagerBase : public LayoutManagerBase {
     return included;
   }
 
+  void OverrideProposedLayout(const ProposedLayout& forced_layout) {
+    forced_layout_ = forced_layout;
+    InvalidateHost(true);
+  }
+
   // LayoutManagerBase:
   ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const override {
+    if (forced_layout_)
+      return *forced_layout_;
+
     ProposedLayout layout;
     layout.host_size.set_width(
         std::max(kMinimumSize.width(),
@@ -48,6 +56,19 @@ class TestLayoutManagerBase : public LayoutManagerBase {
                  size_bounds.height().value_or(kPreferredSize.height())));
     return layout;
   }
+
+  void LayoutImpl() override {
+    ++layout_count_;
+    LayoutManagerBase::LayoutImpl();
+  }
+
+  size_t layout_count() const { return layout_count_; }
+
+ private:
+  // If specified, will always return this layout.
+  base::Optional<ProposedLayout> forced_layout_;
+
+  size_t layout_count_ = 0;
 };
 
 // This layout layout lays out included child views in the upper-left of the
@@ -67,11 +88,10 @@ class MockLayoutManagerBase : public LayoutManagerBase {
       const SizeBounds& size_bounds) const override {
     ProposedLayout layout;
     layout.host_size = {kChildViewPadding, kChildViewPadding};
-    for (auto it = host_view()->children().begin();
-         it != host_view()->children().end(); ++it) {
-      if (!IsChildIncludedInLayout(*it))
+    for (auto* it : host_view()->children()) {
+      if (!IsChildIncludedInLayout(it))
         continue;
-      const gfx::Size preferred_size = (*it)->GetPreferredSize();
+      const gfx::Size preferred_size = it->GetPreferredSize();
       bool visible = false;
       gfx::Rect bounds;
       const int required_width = preferred_size.width() + 2 * kChildViewPadding;
@@ -87,7 +107,7 @@ class MockLayoutManagerBase : public LayoutManagerBase {
         layout.host_size.set_height(std::max(
             layout.host_size.height(), bounds.bottom() + kChildViewPadding));
       }
-      layout.child_layouts.push_back({*it, visible, bounds});
+      layout.child_layouts.push_back({it, visible, bounds});
     }
     ++num_layouts_generated_;
     return layout;
@@ -623,6 +643,179 @@ TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
   EXPECT_FALSE(a == b);
   b.child_layouts[1].child_view = ptr1;
   EXPECT_TRUE(a == b);
+}
+
+class LayoutManagerBaseAvailableSizeTest : public testing::Test {
+ public:
+  void SetUp() override {
+    view_ = std::make_unique<View>();
+    layout_ =
+        view_->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  }
+
+  View* view() { return view_.get(); }
+  TestLayoutManagerBase* layout() { return layout_; }
+
+ private:
+  std::unique_ptr<View> view_;
+  TestLayoutManagerBase* layout_;
+};
+
+TEST_F(LayoutManagerBaseAvailableSizeTest, ReturnsCorrectValues) {
+  const SizeBounds kChild1Bounds(3, 7);
+  const SizeBounds kChild2Bounds(11, 13);
+  View* const child1 = view()->AddChildView(std::make_unique<View>());
+  View* const child2 = view()->AddChildView(std::make_unique<View>());
+  View not_a_child;
+
+  layout()->OverrideProposedLayout(
+      {{10, 10},
+       {{child1, true, {1, 1, 1, 1}, kChild1Bounds},
+        {child2, true, {2, 2, 2, 2}, kChild2Bounds}}});
+  view()->SizeToPreferredSize();
+
+  EXPECT_EQ(kChild1Bounds, view()->GetAvailableSize(child1));
+  EXPECT_EQ(kChild2Bounds, view()->GetAvailableSize(child2));
+  EXPECT_EQ(SizeBounds(), view()->GetAvailableSize(&not_a_child));
+}
+
+TEST_F(LayoutManagerBaseAvailableSizeTest, AvailableSizesInNestedValuesAdd) {
+  View* const child = view()->AddChildView(std::make_unique<View>());
+  View* const grandchild = child->AddChildView(std::make_unique<View>());
+  auto* const child_layout =
+      child->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+
+  constexpr gfx::Size kViewSize(18, 17);
+  constexpr SizeBounds kChildAvailableSize(16, 15);
+  constexpr gfx::Size kChildSize(13, 12);
+  constexpr SizeBounds kGrandchildAvailableSize(10, 9);
+  constexpr gfx::Size kGrandchildSize(3, 2);
+  layout()->OverrideProposedLayout(
+      {kViewSize, {{child, true, {{3, 3}, kChildSize}, kChildAvailableSize}}});
+  child_layout->OverrideProposedLayout({kChildSize,
+                                        {{grandchild,
+                                          true,
+                                          {{2, 2}, kGrandchildSize},
+                                          kGrandchildAvailableSize}}});
+  view()->SizeToPreferredSize();
+
+  EXPECT_EQ(kChildAvailableSize, view()->GetAvailableSize(child));
+  SizeBounds expected;
+  expected.set_width(*kGrandchildAvailableSize.width() +
+                     *kChildAvailableSize.width() - kChildSize.width());
+  expected.set_height(*kGrandchildAvailableSize.height() +
+                      *kChildAvailableSize.height() - kChildSize.height());
+  EXPECT_EQ(expected, child->GetAvailableSize(grandchild));
+}
+
+TEST_F(LayoutManagerBaseAvailableSizeTest,
+       PartiallySpecifiedAvailableSizesInNestedLayoutsAddPartially) {
+  View* const child = view()->AddChildView(std::make_unique<View>());
+  View* const grandchild = child->AddChildView(std::make_unique<View>());
+  auto* const child_layout =
+      child->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+
+  constexpr gfx::Size kViewSize(18, 17);
+  constexpr SizeBounds kChildAvailableSize(16, base::nullopt);
+  constexpr gfx::Size kChildSize(13, 12);
+  constexpr SizeBounds kGrandchildAvailableSize(10, 9);
+  constexpr gfx::Size kGrandchildSize(3, 2);
+  layout()->OverrideProposedLayout(
+      {kViewSize, {{child, true, {{3, 3}, kChildSize}, kChildAvailableSize}}});
+  child_layout->OverrideProposedLayout({kChildSize,
+                                        {{grandchild,
+                                          true,
+                                          {{2, 2}, kGrandchildSize},
+                                          kGrandchildAvailableSize}}});
+  view()->SizeToPreferredSize();
+
+  EXPECT_EQ(kChildAvailableSize, view()->GetAvailableSize(child));
+  SizeBounds expected;
+  expected.set_width(*kGrandchildAvailableSize.width() +
+                     *kChildAvailableSize.width() - kChildSize.width());
+  expected.set_height(*kGrandchildAvailableSize.height());
+  EXPECT_EQ(expected, child->GetAvailableSize(grandchild));
+}
+
+TEST_F(LayoutManagerBaseAvailableSizeTest,
+       MismatchedAvailableSizesInNestedLayoutsDoNotAdd) {
+  View* const child = view()->AddChildView(std::make_unique<View>());
+  View* const grandchild = child->AddChildView(std::make_unique<View>());
+  auto* const child_layout =
+      child->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+
+  constexpr gfx::Size kViewSize(18, 17);
+  constexpr SizeBounds kChildAvailableSize(16, base::nullopt);
+  constexpr gfx::Size kChildSize(13, 12);
+  constexpr SizeBounds kGrandchildAvailableSize(base::nullopt, 9);
+  constexpr gfx::Size kGrandchildSize(3, 2);
+  layout()->OverrideProposedLayout(
+      {kViewSize, {{child, true, {{3, 3}, kChildSize}, kChildAvailableSize}}});
+  child_layout->OverrideProposedLayout({kChildSize,
+                                        {{grandchild,
+                                          true,
+                                          {{2, 2}, kGrandchildSize},
+                                          kGrandchildAvailableSize}}});
+  view()->SizeToPreferredSize();
+
+  EXPECT_EQ(kChildAvailableSize, view()->GetAvailableSize(child));
+  EXPECT_EQ(kGrandchildAvailableSize, child->GetAvailableSize(grandchild));
+}
+
+TEST_F(LayoutManagerBaseAvailableSizeTest,
+       AvaialbleSizeChangeTriggersDescendantLayout) {
+  View* const child = view()->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const child_layout =
+      child->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  View* const grandchild = child->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const grandchild_layout =
+      grandchild->SetLayoutManager(std::make_unique<TestLayoutManagerBase>());
+  View* const great_grandchild =
+      grandchild->AddChildView(std::make_unique<View>());
+  TestLayoutManagerBase* const great_grandchild_layout =
+      great_grandchild->SetLayoutManager(
+          std::make_unique<TestLayoutManagerBase>());
+
+  // Create a default root layout with non-visible, zero-size child with no
+  // available size.
+  ProposedLayout root_layout;
+  root_layout.child_layouts.push_back(ChildLayout());
+  root_layout.child_layouts[0].child_view = child;
+  root_layout.child_layouts[0].available_size = SizeBounds(0, 0);
+
+  // Set some default layouts for the rest of the hierarchy.
+  layout()->OverrideProposedLayout(root_layout);
+  child_layout->OverrideProposedLayout({{}, {{grandchild, false, {}, {0, 0}}}});
+  grandchild_layout->OverrideProposedLayout(
+      {{}, {{great_grandchild, false, {}, {0, 0}}}});
+
+  view()->Layout();
+
+  const size_t num_grandchild_layouts = grandchild_layout->layout_count();
+  const size_t num_great_grandchild_layouts =
+      great_grandchild_layout->layout_count();
+
+  // Set the same rootlayout again as a control. This should not have an effect
+  // on the layout of the grand- and great-grandchild views.
+  layout()->OverrideProposedLayout(root_layout);
+  view()->Layout();
+
+  EXPECT_EQ(num_grandchild_layouts, grandchild_layout->layout_count());
+  EXPECT_EQ(num_great_grandchild_layouts,
+            great_grandchild_layout->layout_count());
+
+  // Now set the child view to be visible with nonzero size and even larger
+  // available size. Applying this layout should change the size available to
+  // all views down the hierarchy, forcing a re-layout.
+  root_layout.child_layouts[0].visible = true;
+  root_layout.child_layouts[0].bounds = gfx::Rect(0, 0, 5, 5);
+  root_layout.child_layouts[0].available_size = SizeBounds(10, 10);
+  layout()->OverrideProposedLayout(root_layout);
+  view()->Layout();
+
+  EXPECT_EQ(num_grandchild_layouts + 1, grandchild_layout->layout_count());
+  EXPECT_EQ(num_great_grandchild_layouts + 1,
+            great_grandchild_layout->layout_count());
 }
 
 }  // namespace views

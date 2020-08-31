@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, application installée</translation>
 <translation id="1450753235335490080">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Élément <ph name="FIRST_ITEM_TITLE" /> remplacé par <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Vous avez effectué cette recherche précédemment. Si vous supprimez "<ph name="QUERY" />" de votre historique, cette entrée n'apparaîtra plus dans votre compte sur aucun de vos appareils.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et  }one{# minute et  }other{# minutes et  }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Insér.</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Tout sélectionner</translation>
-<translation id="1938451708255335766">Pour ajuster la densité d'affichage des fenêtres, redémarrez l'application.</translation>
 <translation id="2006524834898217237">Assurez-vous que cet appareil est bien connecté à Internet.</translation>
 <translation id="208586643495776849">Veuillez réessayer</translation>
 <translation id="2090963878406559571">Pour envoyer un numéro depuis <ph name="ORIGIN" /> vers votre téléphone Android, <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Bas</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 jour}one{# jour}other{# jours}}</translation>
 <translation id="3295886253693811851">Passer un appel avec</translation>
+<translation id="3306688585798492231">Écran de l'appareil</translation>
 <translation id="335581015389089642">Voix</translation>
 <translation id="3389286852084373014">Volume de texte trop important</translation>
-<translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="348799646910989694">Étagère automatiquement masquée</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> a été épinglé</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 jour restant}one{# jour restant}other{# jours restants}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Poursuivre la lecture de "<ph name="TITLE" />" depuis votre appareil mobile</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3889424535448813030">Droite</translation>
-<translation id="3892641579809465218">Affichage interne</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cou&amp;per</translation>
 <translation id="3990502903496589789">Côté droit</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Actif aujourd'hui}=1{Actif il y a 1 jour}one{Actif il y a # jour}other{Actif il y a # jours}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 jour et  }one{# jour et  }other{# jours et  }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dans 1 a}one{dans # a}other{dans # a}}</translation>
-<translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde restante}one{# seconde restante}other{# secondes restantes}}</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">De droite à gauche</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">CLIC PROBABLE</translation>
+<translation id="7170202025028120564">Les paramètres d'affichage de votre application s'appliqueront à son prochain redémarrage.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restante}one{# min restante}other{# min restantes}}</translation>
 <translation id="7319740667687257810">Lanceur d'applications, vue partielle</translation>
@@ -247,7 +247,7 @@
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Réduire la notification</translation>
 <translation id="9150735707954472829">Onglet</translation>
-<translation id="9161053988251441839">APPLICATIONS SUGGÉRÉES</translation>
+<translation id="9161053988251441839">SUGGESTIONS D'APPLICATIONS</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="9178475906033259337">1 résultat pour <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Accueil</translation>

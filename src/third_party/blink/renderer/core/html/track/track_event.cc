@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/track/track_event.h"
 
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_track_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/video_track_or_audio_track_or_text_track.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/html/track/audio_track.h"
@@ -65,13 +66,13 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& return_value) {
 
   switch (track_->GetType()) {
     case WebMediaPlayer::kTextTrack:
-      return_value.SetTextTrack(ToTextTrack(track_.Get()));
+      return_value.SetTextTrack(To<TextTrack>(track_.Get()));
       break;
     case WebMediaPlayer::kAudioTrack:
-      return_value.SetAudioTrack(ToAudioTrack(track_.Get()));
+      return_value.SetAudioTrack(To<AudioTrack>(track_.Get()));
       break;
     case WebMediaPlayer::kVideoTrack:
-      return_value.SetVideoTrack(ToVideoTrack(track_.Get()));
+      return_value.SetVideoTrack(To<VideoTrack>(track_.Get()));
       break;
     default:
       NOTREACHED();

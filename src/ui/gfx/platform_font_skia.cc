@@ -304,7 +304,8 @@ const FontRenderParams& PlatformFontSkia::GetFontRenderParams() {
   return font_render_params_;
 }
 
-sk_sp<SkTypeface> PlatformFontSkia::GetNativeSkTypefaceIfAvailable() const {
+sk_sp<SkTypeface> PlatformFontSkia::GetNativeSkTypeface() const {
+  DCHECK(typeface_);
   return sk_sp<SkTypeface>(typeface_);
 }
 
@@ -443,7 +444,6 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFont, public:
 
-#if !defined(OS_WIN)
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontSkia;
@@ -464,6 +464,5 @@ PlatformFont* PlatformFont::CreateFromSkTypeface(
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
   return new PlatformFontSkia(typeface, font_size_pixels, params);
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace gfx

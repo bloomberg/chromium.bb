@@ -11,6 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -19,7 +23,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
@@ -46,6 +49,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
   ProxyLookupRequest(
       network::mojom::NetworkContext* network_context,
       const GURL& source_url,
+      const net::NetworkIsolationKey& network_isolation_key,
       ProxyResolutionServiceProvider::NotifyCallback notify_callback)
       : notify_callback_(std::move(notify_callback)) {
     mojo::PendingRemote<network::mojom::ProxyLookupClient> proxy_lookup_client =
@@ -54,9 +58,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
         &ProxyLookupRequest::OnProxyLookupComplete, base::Unretained(this),
         net::ERR_ABORTED, base::nullopt));
 
-    // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
-    network_context->LookUpProxyForURL(source_url,
-                                       net::NetworkIsolationKey::Todo(),
+    network_context->LookUpProxyForURL(source_url, network_isolation_key,
                                        std::move(proxy_lookup_client));
   }
 
@@ -75,14 +77,38 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
       result = kProxyInfoOnFailure;
     } else {
       result = proxy_info->ToPacString();
+      if (proxy_info->is_http()) {
+        AppendSystemProxyIfActive(&result);
+      }
     }
-
     receiver_.reset();
     std::move(notify_callback_).Run(error, result);
     delete this;
   }
 
  private:
+  // Appends the System-proxy address, if active, to the list of existing
+  // proxies, which can still be used by system services as a fallback if the
+  // local proxy connection fails. System-proxy itself does proxy resolution
+  // trough the same Chrome proxy resolution service to connect to the
+  // remote proxy server. The availability of this feature is controlled by the
+  // |SystemProxySettings| policy.
+  void AppendSystemProxyIfActive(std::string* pac_proxy_list) {
+    policy::SystemProxyManager* system_proxy_manager =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetSystemProxyManager();
+
+    // |system_proxy_manager| may be missing in tests.
+    if (!system_proxy_manager ||
+        system_proxy_manager->SystemServicesProxyPacString().empty()) {
+      return;
+    }
+    *pac_proxy_list = base::StringPrintf(
+        "%s; %s", system_proxy_manager->SystemServicesProxyPacString().c_str(),
+        pac_proxy_list->c_str());
+  }
+
   mojo::Receiver<network::mojom::ProxyLookupClient> receiver_{this};
   ProxyResolutionServiceProvider::NotifyCallback notify_callback_;
 
@@ -92,7 +118,8 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
 }  // namespace
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider()
-    : origin_thread_(base::ThreadTaskRunnerHandle::Get()) {}
+    : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+      network_isolation_key_(net::NetworkIsolationKey::CreateTransient()) {}
 
 ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() {
   DCHECK(OnOriginThread());
@@ -107,8 +134,8 @@ void ProxyResolutionServiceProvider::Start(
       kNetworkProxyServiceInterface, kNetworkProxyServiceResolveProxyMethod,
       base::BindRepeating(&ProxyResolutionServiceProvider::DbusResolveProxy,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ProxyResolutionServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ProxyResolutionServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ProxyResolutionServiceProvider::OnOriginThread() {
@@ -169,7 +196,8 @@ void ProxyResolutionServiceProvider::ResolveProxyInternal(
   }
 
   VLOG(1) << "Starting network proxy resolution for " << url;
-  new ProxyLookupRequest(network_context, url, std::move(callback));
+  new ProxyLookupRequest(network_context, url, network_isolation_key_,
+                         std::move(callback));
 }
 
 void ProxyResolutionServiceProvider::NotifyProxyResolved(

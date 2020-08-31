@@ -7,16 +7,14 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/ash_interfaces.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/system_display/display_info_provider.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/common/api/system_display.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -315,11 +313,8 @@ void LogErrorResult(ash::mojom::DisplayConfigResult result) {
 }  // namespace
 
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS(
-    service_manager::Connector* connector) {
-  CHECK(connector);
-  connector->Connect(ash::mojom::kServiceName,
-                     cros_display_config_.BindNewPipeAndPassReceiver());
-}
+    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config)
+    : cros_display_config_(std::move(display_config)) {}
 
 DisplayInfoProviderChromeOS::~DisplayInfoProviderChromeOS() = default;
 
@@ -483,22 +478,23 @@ void DisplayInfoProviderChromeOS::CallGetDisplayUnitInfoList(
     ash::mojom::DisplayLayoutInfoPtr layout) {
   cros_display_config_->GetDisplayUnitInfoList(
       single_unified,
-      base::BindOnce(
-          [](ash::mojom::DisplayLayoutInfoPtr layout,
-             base::OnceCallback<void(DisplayUnitInfoList)> callback,
-             std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
-            DisplayUnitInfoList all_displays;
-            for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
-              system_display::DisplayUnitInfo display =
-                  GetDisplayUnitInfoFromMojo(*info);
-              SetDisplayUnitInfoLayoutProperties(*layout, &display);
-              all_displays.emplace_back(std::move(display));
-            }
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE,
-                base::BindOnce(std::move(callback), std::move(all_displays)));
-          },
-          std::move(layout), std::move(callback)));
+      base::BindOnce(&DisplayInfoProviderChromeOS::OnGetDisplayUnitInfoList,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(layout),
+                     std::move(callback)));
+}
+
+void DisplayInfoProviderChromeOS::OnGetDisplayUnitInfoList(
+    ash::mojom::DisplayLayoutInfoPtr layout,
+    base::OnceCallback<void(DisplayUnitInfoList)> callback,
+    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+  DisplayUnitInfoList all_displays;
+  for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+    system_display::DisplayUnitInfo display = GetDisplayUnitInfoFromMojo(*info);
+    SetDisplayUnitInfoLayoutProperties(*layout, &display);
+    all_displays.push_back(std::move(display));
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(all_displays)));
 }
 
 void DisplayInfoProviderChromeOS::GetDisplayLayout(
@@ -665,8 +661,11 @@ void DisplayInfoProviderChromeOS::OnDisplayConfigChanged() {
 }
 
 std::unique_ptr<DisplayInfoProvider> CreateChromeDisplayInfoProvider() {
+  mojo::PendingRemote<ash::mojom::CrosDisplayConfigController> display_config;
+  ash::BindCrosDisplayConfigController(
+      display_config.InitWithNewPipeAndPassReceiver());
   return std::make_unique<DisplayInfoProviderChromeOS>(
-      content::GetSystemConnector());
+      std::move(display_config));
 }
 
 }  // namespace extensions

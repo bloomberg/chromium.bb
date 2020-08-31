@@ -36,6 +36,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/browser/browser_context.h"
@@ -49,10 +50,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -72,6 +73,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
@@ -123,6 +126,10 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
     std::string script =
         "internals.runtimeFlags.fractionalScrollOffsetsEnabled";
     return EvalJs(shell(), script).ExtractBool();
+  }
+
+  WebContentsImpl* contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 };
 
@@ -881,7 +888,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
     // Don't pay attention to pending delete RenderFrameHosts in the main frame,
     // which might happen in a race if a cross-process navigation happens
     // quickly.
-    if (!rfh->is_active()) {
+    if (rfh->IsPendingDeletion()) {
       DLOG(INFO) << "Skipping pending delete RFH: "
                  << rfh->GetSiteInstance()->GetSiteURL();
       return;
@@ -2292,7 +2299,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
   }
 
-  // 3. Perform back same document navigation.
+  // 3. Perform same document back navigation.
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
@@ -2314,6 +2321,81 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): Check subframe entries once we create them in this case.
   // See https://crbug.com/608402.
   EXPECT_EQ(grandchild_url, root->child_at(0)->child_at(0)->current_url());
+}
+
+// Verify that the main frame can navigate a grandchild frame to about:blank,
+// even if GetFrameEntry might not find the corresponding FrameNavigationEntry
+// due to https://crbug.com/608402.  Prevents regression of
+// https://crbug.com/1054209.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_BackSameDocumentThenNestedBlank) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Perform same document navigation.
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "history.pushState({}, 'foo', 'foo')";
+    EXPECT_TRUE(ExecJs(root, script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
+    EXPECT_TRUE(capturer.is_same_document());
+  }
+
+  // 2. Create an iframe.
+  GURL child_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, child_url)));
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
+  }
+
+  // 3. Create a cross-process nested iframe.
+  GURL grandchild_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    EXPECT_TRUE(ExecJs(root->child_at(0),
+                       JsReplace(kAddFrameWithSrcScript, grandchild_url)));
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
+  }
+
+  // 4. Perform same document back navigation.  The subframes are still present
+  // but the previous NavigationEntry doesn't have a record of them (per
+  // https://crbug.com/608402).
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+
+  // 5. Navigate the nested iframe to about:blank in the main frame's process.
+  // This should end up in the main frame's process (without crashing).
+  {
+    FrameNavigateParamsCapturer capturer(root->child_at(0)->child_at(0));
+    std::string script = "frames[0][0].location.href = 'about:blank'";
+    EXPECT_TRUE(ExecJs(root, script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
+    EXPECT_FALSE(capturer.is_same_document());
+  }
+
+  // TODO(creis): Check subframe entries once we create them in this case.
+  // See https://crbug.com/608402.
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            root->child_at(0)->child_at(0)->current_url());
+  EXPECT_EQ(
+      root->current_frame_host()->GetSiteInstance(),
+      root->child_at(0)->child_at(0)->current_frame_host()->GetSiteInstance());
 }
 
 // Verify the tree of FrameNavigationEntries when a nested iframe commits after
@@ -3793,12 +3875,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url,
             entry2->GetFrameEntry(root->child_at(1)->child_at(0))->url());
 
-  // In --site-per-process, we're misclassifying the subframe redirect in step 6
-  // below.  For now, skip the rest of the test in that mode.
-  // TODO(creis): Fix this in https://crbug.com/628782.
-  if (AreAllSitesIsolatedForTesting())
-    return;
-
   // Now cause the second iframe to redirect when we come back to it.
   {
     TestNavigationObserver observer(shell()->web_contents());
@@ -3862,7 +3938,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
 
   // 8. Go back, causing the main frame to redirect to a page with no frames.
-  // All child items should be gone.
+  // All child items should be gone, and |entry2| is deleted and replaced with a
+  // new entry.
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
@@ -3870,7 +3947,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
   EXPECT_EQ(redirect_dest_url, root->current_url());
   EXPECT_EQ(0U, root->child_count());
-  EXPECT_EQ(0U, entry2->root_node()->children.size());
+  EXPECT_EQ(0U,
+            controller.GetLastCommittedEntry()->root_node()->children.size());
   EXPECT_EQ(4, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 }
@@ -5458,8 +5536,7 @@ class FailureWatcher : public WebContentsObserver {
  private:
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override {
+                   int error_code) override {
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(render_frame_host);
     if (rfh->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
@@ -7310,33 +7387,62 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-// A BrowserMessageFilter that delays the FrameHostMsg_RunJavaScriptDialog IPC
-// message until a commit happens on a given WebContents. This allows testing a
-// race condition.
-class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
-                                     public WebContentsDelegate {
+class AllowDialogInterceptor
+    : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
-  explicit AllowDialogIPCOnCommitFilter(WebContents* web_contents)
-      : BrowserMessageFilter(FrameMsgStart),
-        render_frame_host_(web_contents->GetMainFrame()) {
-    web_contents_observer_.Observe(web_contents);
+  AllowDialogInterceptor() = default;
+  ~AllowDialogInterceptor() override = default;
+
+  void Init(RenderFrameHostImpl* render_frame_host) {
+    render_frame_host_ = render_frame_host;
+    render_frame_host_->local_frame_host_receiver_for_testing()
+        .SwapImplForTesting(this);
   }
 
- protected:
-  ~AllowDialogIPCOnCommitFilter() override {}
+  blink::mojom::LocalFrameHost* GetForwardingInterface() override {
+    return render_frame_host_;
+  }
+
+  void RunModalAlertDialog(const base::string16& alert_message,
+                           RunModalAlertDialogCallback callback) override {
+    alert_callback_ = std::move(callback);
+    alert_message_ = alert_message;
+  }
+
+  void ResumeProcessingModalAlertDialogHandling() {
+    has_called_callback_ = true;
+    render_frame_host_->RunModalAlertDialog(alert_message_,
+                                            std::move(alert_callback_));
+  }
+
+  bool HasCalledAlertCallback() const { return has_called_callback_; }
 
  private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (message.type() != FrameHostMsg_RunJavaScriptDialog::ID)
-      return false;
+  RenderFrameHostImpl* render_frame_host_;
+  base::string16 alert_message_;
+  RunModalAlertDialogCallback alert_callback_;
+  bool has_called_callback_ = false;
+};
 
-    // Suspend the message.
-    web_contents_observer_.SetCallback(
-        base::BindOnce(&RenderFrameHost::OnMessageReceived,
-                       base::Unretained(render_frame_host_), message));
-    return true;
+class NavigationControllerAlertDialogBrowserTest
+    : public NavigationControllerBrowserTest,
+      public WebContentsObserver,
+      public WebContentsDelegate {
+ public:
+  void BindWebContents(WebContents* web_contents) {
+    alert_interceptor_.Init(
+        static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame()));
+    Observe(web_contents);
+    web_contents->SetDelegate(this);
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!navigation_handle->HasCommitted())
+      return;
+
+    // Continue handling the rest of the alert dialog handling.
+    alert_interceptor_.ResumeProcessingModalAlertDialogHandling();
   }
 
   // WebContentsDelegate:
@@ -7346,50 +7452,29 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
     return nullptr;  // agh compiler
   }
 
-  // Separate because WebContentsObserver and BrowserMessageFilter each have an
-  // OnMessageReceived function; this is the simplest way to disambiguate.
-  class : public WebContentsObserver {
-   public:
-    using Callback = base::OnceCallback<bool()>;
+  bool HasCalledAlertCallback() const {
+    return alert_interceptor_.HasCalledAlertCallback();
+  }
 
-    using WebContentsObserver::Observe;
-
-    void SetCallback(Callback callback) { callback_ = std::move(callback); }
-
-   private:
-    void DidFinishNavigation(NavigationHandle* navigation_handle) override {
-      DCHECK_CURRENTLY_ON(BrowserThread::UI);
-      if (!navigation_handle->HasCommitted())
-        return;
-
-      // Resume the message.
-      std::move(callback_).Run();
-    }
-
-    Callback callback_;
-  } web_contents_observer_;
-
-  RenderFrameHost* render_frame_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllowDialogIPCOnCommitFilter);
+ private:
+  AllowDialogInterceptor alert_interceptor_;
 };
 
 }  // namespace
 
 // Check that swapped out frames cannot spawn JavaScript dialogs.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerAlertDialogBrowserTest,
                        NoDialogsFromSwappedOutFrames) {
   // Start on a normal page.
   GURL url1 = embedded_test_server()->GetURL(
       "/navigation_controller/beforeunload_dialog.html");
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  // Add a filter to allow us to force an IPC race.
+  // Bind the WebContents observer to start watching for the finished
+  // navigation callback. When the navigation is called we resume the
+  // suspended alert dialog handling.
   WebContents* web_contents = shell()->web_contents();
-  scoped_refptr<AllowDialogIPCOnCommitFilter> filter =
-      new AllowDialogIPCOnCommitFilter(web_contents);
-  web_contents->SetDelegate(filter.get());
-  web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+  BindWebContents(web_contents);
 
   // Use a chrome:// url to force the second page to be in a different process.
   GURL url2(std::string(kChromeUIScheme) + url::kStandardSchemeSeparator +
@@ -7397,11 +7482,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   // What happens now is that attempting to unload the first page will trigger a
-  // JavaScript alert but allow navigation. The alert IPC will be suspended by
-  // the message filter. The commit of the second page will unblock the IPC. If
-  // the dialog IPC is allowed to spawn a dialog, the call by the WebContents to
-  // its delegate to get the JavaScriptDialogManager will cause a CHECK and the
-  // test will fail.
+  // JavaScript alert but allow navigation. The alert mojo message will be
+  // suspended by the subclassed RenderFrameHostImplForAllowDialogInterceptor.
+  // The commit of the second page will cause the alert dialog message handling
+  // to resume. If the dialog mojo message is allowed to spawn a dialog, the
+  // call by the WebContents to its delegate to get the JavaScriptDialogManager
+  // will cause a CHECK and the test will fail.
+  EXPECT_TRUE(HasCalledAlertCallback());
 }
 
 // Check that the referrer is stored inside FrameNavigationEntry for subframes.
@@ -8568,7 +8655,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("\"done\"", message);
 
   // |frame| is now pending deletion.
-  EXPECT_FALSE(static_cast<RenderFrameHostImpl*>(frame)->is_active());
+  EXPECT_TRUE(static_cast<RenderFrameHostImpl*>(frame)->IsPendingDeletion());
 
   std::string error_html = "Error page";
   DidStartNavigationObserver did_start_navigation_observer(
@@ -8783,7 +8870,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -8838,7 +8925,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new cross-site document from the renderer with a user
@@ -8892,7 +8979,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -8943,7 +9030,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9000,7 +9087,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9057,7 +9144,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9107,7 +9194,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -9227,7 +9314,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9247,7 +9334,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   // Simulate a user gesture.
   root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation);
 
   // Since the last navigations refer to a different document, a user gesture
   // here should not reset the skippable bit in the previous entries.
@@ -9272,7 +9359,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer.
@@ -9320,7 +9407,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -9365,7 +9452,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9415,7 +9502,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9473,7 +9560,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9529,7 +9616,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
                             ->GetFrameTree()
                             ->root();
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Navigate to a new same-site document from the renderer without a user
@@ -9575,7 +9662,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Invoke pushstate from a subframe.
@@ -9613,8 +9700,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   // A user gesture in the main frame now will lead to all same document
   // entries to be marked as non-skippable.
   root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
-  EXPECT_TRUE(root->HasBeenActivated());
+      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -9641,15 +9728,15 @@ IN_PROC_BROWSER_TEST_F(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_with_frames));
 
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   // Simulate user gesture in the main frame. Subframes creating entries without
   // user gesture will not lead to the last committed entry being marked as
   // skippable.
   root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
-  EXPECT_TRUE(root->HasBeenActivated());
+      blink::mojom::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
 
   // Invoke pushstate from a subframe.
@@ -9693,7 +9780,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasStickyUserActivation());
   EXPECT_FALSE(root->HasTransientUserActivation());
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -9714,7 +9801,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   script = "history.pushState('', '','" + a4_url.spec() + "');";
   ASSERT_TRUE(ExecJs(shell()->web_contents(), script));
 
-  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasStickyUserActivation());
   EXPECT_TRUE(root->HasTransientUserActivation());
 
   // None of the entries should be skippable.
@@ -9950,9 +10037,9 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
       ->current_frame_host()
       ->GetRenderWidgetHost()
       ->ForwardMouseEvent(blink::WebMouseEvent(
-          blink::WebInputEvent::Type::kMouseUp, blink::WebFloatPoint(),
-          blink::WebFloatPoint(), blink::WebPointerProperties::Button::kBack, 0,
-          0, base::TimeTicks::Now()));
+          blink::WebInputEvent::Type::kMouseUp, gfx::PointF(), gfx::PointF(),
+          blink::WebPointerProperties::Button::kBack, 0, 0,
+          base::TimeTicks::Now()));
   RunUntilInputProcessed(
       root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -10261,6 +10348,253 @@ IN_PROC_BROWSER_TEST_F(
 
   // Verify that the navigation was aborted as expected.
   EXPECT_FALSE(abort_observer.has_committed());
+}
+
+namespace {
+
+// A request handler that returns a simple page for requests using |method| to
+// /handle-method-only, and closes the socket for any other method.
+std::unique_ptr<net::test_server::HttpResponse> HandleMethodOnly(
+    net::test_server::HttpMethod method,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/handle-method-only")
+    return nullptr;
+
+  if (request.method != method) {
+    return std::make_unique<net::test_server::RawHttpResponse>("", "");
+  }
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/html");
+  response->set_content("Success!");
+  return response;
+}
+
+}  // namespace
+
+// Tests that the navigation entry's method is updated to GET when following a
+// 301 redirect that encounters an error page. See https://crbug.com/1041597.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       UpdateMethodOn301RedirectError) {
+  // HandleMethodOnly serves the final endpoint that the test ends up at. It
+  // lets the test distinguish a GET from a POST by serving a response only for
+  // POST requests.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleMethodOnly, net::test_server::METHOD_POST));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL post_only_url = embedded_test_server()->GetURL("/handle-method-only");
+  GURL form_action_url(embedded_test_server()->GetURL("/server-redirect-301?" +
+                                                      post_only_url.spec()));
+
+  // Inject a form into the page and submit it, to create a POST request to
+  // |form_action_url|. This POST request will redirect to |post_only_url|. The
+  // request's method should change to GET while following the redirect,
+  // resulting in an error page since |post_only_url| closes the connection on
+  // GETs.
+  TestNavigationObserver form_nav_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("var form = document.createElement('form');"
+                               "form.method = 'POST';"
+                               "form.action = $1;"
+                               "document.body.appendChild(form);"
+                               "form.submit();",
+                               form_action_url.spec())));
+  form_nav_observer.Wait();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(post_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_FALSE(entry->GetHasPostData());
+
+  // When the error page is reloaded, the method should still be GET, resulting
+  // in an error page. If https://crbug.com/1041597 regresses, the
+  // NavigationEntry's method would be POST and this test would fail, seeing a
+  // successful response instead of an error page from |post_only_url|.
+  TestNavigationObserver reload_observer(shell()->web_contents(), 1);
+  // Set |check_for_repost| to false to avoid hanging the test if the method is
+  // improperly set to POST.
+  controller.Reload(ReloadType::NORMAL, false);
+  reload_observer.Wait();
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(post_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+// Tests that the navigation entry's method is preserved as POST when following
+// a 307 redirect that encounters an error page. This test is similar to the
+// above UpdateMethodOn301RedirectError, but reversed: in this test, the method
+// should be preserved as POST.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       UpdateMethodOn307RedirectError) {
+  // HandleMethodOnly serves the final endpoint that the test ends up at. It
+  // lets the test distinguish a GET from a POST by serving a response only for
+  // GET requests.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleMethodOnly, net::test_server::METHOD_GET));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL get_only_url = embedded_test_server()->GetURL("/handle-method-only");
+  GURL form_action_url(embedded_test_server()->GetURL("/server-redirect-307?" +
+                                                      get_only_url.spec()));
+
+  // Inject a form into the page and submit it, to create a POST request to
+  // |form_action_url|. This POST request will redirect to |get_only_url|. The
+  // request's method should stay as POST while following the redirect,
+  // resulting in an error page since |get_only_url| closes the connection on
+  // POSTs.
+  TestNavigationObserver form_nav_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("var form = document.createElement('form');"
+                               "form.method = 'POST';"
+                               "form.action = $1;"
+                               "document.body.appendChild(form);"
+                               "form.submit();",
+                               form_action_url.spec())));
+  form_nav_observer.Wait();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(get_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_TRUE(entry->GetHasPostData());
+
+  // When the error page is reloaded, the method should still be POST, resulting
+  // in an error page.
+  TestNavigationObserver reload_observer(shell()->web_contents(), 1);
+  // Set |check_for_repost| to false to avoid hanging the test with the prompt.
+  controller.Reload(ReloadType::NORMAL, false);
+  reload_observer.Wait();
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(get_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+// Test for a navigation that is
+// 1) initiated by a cross-site frame
+// 2) same-document
+// 3) to a http URL with port 0.
+// This is the scenario behind https://crbug.com/1065532.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SameDocumentNavigationToHttpPortZero) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+
+  // Inject a HTTP subframe.
+  const char kSubframeScriptTemplate[] = R"(
+      var iframe = document.createElement('iframe');
+      iframe.src = $1;
+      document.body.appendChild(iframe);
+  )";
+  GURL subframe_initial_url =
+      embedded_test_server()->GetURL("another-site.com", "/title2.html");
+  {
+    TestNavigationObserver subframe_injection_observer(shell()->web_contents(),
+                                                       1);
+    ASSERT_TRUE(ExecJs(
+        shell(), JsReplace(kSubframeScriptTemplate, subframe_initial_url)));
+    subframe_injection_observer.WaitForNavigationFinished();
+    ASSERT_TRUE(subframe_injection_observer.last_navigation_succeeded());
+  }
+
+  // From the main page initiate a navigation of the cross-site subframe to a
+  // http URL that has port=0.  Note that this is valid port according to the
+  // URL spec (https://url.spec.whatwg.org/#port-state).
+  //
+  // Before the fix for SchemeHostPort's handling of port=0 the 2nd iteration
+  // below would produce a browser process CHECK/crash:
+  // - Iteration #1: The navigation will error out (because nothing is listening
+  //   on port zero in the test case).  Since
+  //   RenderFrameHostImpl::FailedNavigation doesn't call
+  //   GetOriginForURLLoaderFactory, this iteration wouldn't trigger a crash.
+  // - Iteration #2: The navigation will be treated as a same-document
+  //   navigation, because |old_url| and |new_url| will be considered the same
+  //   when inspected by GetNavigationType in navigation_controller_impl.cc.
+  //   This will trigger a call to GetOriginForURLLoaderFactory which will
+  //   crash if port=0 confuses url::Origin::Resolve.  It is unclear if treating
+  //   the 2nd iteration as same-document should be considered a bug (see also
+  //   https://crbug.com/1065532#c4).
+  //
+  // After the fix for SchemeHostPort's handling of port=0, both iterations
+  // would trigger a CANNOT_COMMIT_ORIGIN kill (see below).
+  GURL::Replacements replace_port_and_ref;
+  replace_port_and_ref.SetPortStr("0");
+  replace_port_and_ref.SetRefStr("someRef");
+  GURL subframe_ref_url =
+      subframe_initial_url.ReplaceComponents(replace_port_and_ref);
+  // Doing 2 iterations, to test the same-document navigation case as outlined
+  // in the big comment above.  This test coverage will be important if we ever
+  // fix the renderer kill that started happening after fixing SchemeHostPort's
+  // handling of port=0..
+  for (int i = 0; i < 2; i++) {
+    SCOPED_TRACE(::testing::Message() << "Navigation #" << i);
+
+    // TODO(lukasza): https://crbug.com/1065532: blink::KURL and
+    // blink::SecurityOrigin treat port=0 as an invalid port, which leads to
+    // committing an origin with port=80 rather than port=0 which leads to a
+    // CANNOT_COMMIT_ORIGIN renderer kill.  This is bad, but not as bad as a
+    // browser crash from the bug, so let's keep things this way going forward.
+    ASSERT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+    RenderProcessHostBadIpcMessageWaiter bad_ipc_waiter(
+        shell()->web_contents()->GetAllFrames()[1]->GetProcess());
+
+    TestNavigationObserver subframe_ref_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(
+        ExecJs(shell(), JsReplace("document.querySelector('iframe').src = $1;",
+                                  subframe_ref_url)));
+
+#if 1
+    // TODO(lukasza): https://crbug.com/1065532: blink::KURL and
+    // blink::SecurityOrigin treat port=0 as an invalid port [...]
+    // (see the same comment above).
+    EXPECT_EQ(bad_message::RFH_INVALID_ORIGIN_ON_COMMIT, bad_ipc_waiter.Wait());
+    if (!AreAllSitesIsolatedForTesting()) {
+      // Without site-per-process the main frame and the subframe are hosted in
+      // the same (killed) renderer process, which makes it difficult to
+      // continue the test after the first kill.
+      return;
+    }
+#else
+    subframe_ref_url.WaitForNavigationFinished();
+#endif
+  }
+}
+
+// Navigating a subframe to the same URL should not generate a history entry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoHistoryOnNavigationToSameUrl) {
+  {
+    GURL frame_url = embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(a)");
+
+    ASSERT_TRUE(NavigateToURL(shell(), frame_url));
+    FrameTreeNode* child = contents()->GetFrameTree()->root()->child_at(0);
+    GURL child_url = child->current_url();
+    int entry_count = contents()->GetController().GetEntryCount();
+    ASSERT_TRUE(NavigateFrameToURL(child, child_url));
+    EXPECT_EQ(entry_count, contents()->GetController().GetEntryCount());
+  }
+  {
+    GURL frame_url = embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(b)");
+
+    ASSERT_TRUE(NavigateToURL(shell(), frame_url));
+    FrameTreeNode* child = contents()->GetFrameTree()->root()->child_at(0);
+    GURL child_url = child->current_url();
+    int entry_count = contents()->GetController().GetEntryCount();
+    ASSERT_TRUE(NavigateFrameToURL(child, child_url));
+    EXPECT_EQ(entry_count, contents()->GetController().GetEntryCount());
+  }
 }
 
 }  // namespace content

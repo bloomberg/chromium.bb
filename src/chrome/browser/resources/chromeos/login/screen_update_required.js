@@ -14,7 +14,8 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
     UPDATE_NEED_PERMISSION: 'update-need-permission',
     UPDATE_COMPLETED_NEED_REBOOT: 'update-completed-need-reboot',
     UPDATE_ERROR: 'update-error',
-    EOL: 'eol'
+    EOL_REACHED: 'eol',
+    UPDATE_NO_NETWORK: 'update-no-network'
   };
 
   // Array of the possible UI states of the screen. Must be in the
@@ -22,25 +23,46 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
   /** @const */ var UI_STATES = [
     UI_STATE.UPDATE_REQUIRED_MESSAGE, UI_STATE.UPDATE_PROCESS,
     UI_STATE.UPDATE_NEED_PERMISSION, UI_STATE.UPDATE_COMPLETED_NEED_REBOOT,
-    UI_STATE.UPDATE_ERROR, UI_STATE.EOL
+    UI_STATE.UPDATE_ERROR, UI_STATE.EOL_REACHED, UI_STATE.UPDATE_NO_NETWORK
   ];
 
   return {
     EXTERNAL_API: [
       'setIsConnected', 'setUpdateProgressUnavailable',
       'setUpdateProgressValue', 'setUpdateProgressMessage',
-      'setEstimatedTimeLeftVisible', 'setEstimatedTimeLeft', 'setUIState'
+      'setEstimatedTimeLeftVisible', 'setEstimatedTimeLeft', 'setUIState',
+      'setEnterpriseAndDeviceName'
     ],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.BLOCKING;
+    },
+
+    /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('update-required-card');
+    },
+
+    /** @param {string} domain Enterprise domain name */
+    /** @param {string} device Device name */
+    setEnterpriseAndDeviceName(enterpriseDomain, device) {
+      $('update-required-card').enterpriseDomain = enterpriseDomain;
+      $('update-required-card').deviceName = device;
+    },
+
     /** @param {boolean} connected */
-    setIsConnected: function(connected) {
-      $('update-required-card').isConnected = connected;
+    setIsConnected(connected) {
+      $('update-required-card').isNetworkConnected = connected;
     },
 
     /**
      * @param {boolean} unavailable.
      */
-    setUpdateProgressUnavailable: function(unavailable) {
+    setUpdateProgressUnavailable(unavailable) {
       $('update-required-card').updateProgressUnavailable = unavailable;
     },
 
@@ -48,7 +70,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets update's progress bar value.
      * @param {number} progress Percentage of the progress bar.
      */
-    setUpdateProgressValue: function(progress) {
+    setUpdateProgressValue(progress) {
       $('update-required-card').updateProgressValue = progress;
     },
 
@@ -56,7 +78,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets message below progress bar.
      * @param {string} message Message that should be shown.
      */
-    setUpdateProgressMessage: function(message) {
+    setUpdateProgressMessage(message) {
       $('update-required-card').updateProgressMessage = message;
     },
 
@@ -64,7 +86,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Shows or hides downloading ETA message.
      * @param {boolean} visible Are ETA message visible?
      */
-    setEstimatedTimeLeftVisible: function(visible) {
+    setEstimatedTimeLeftVisible(visible) {
       $('update-required-card').estimatedTimeLeftVisible = visible;
     },
 
@@ -72,31 +94,15 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets estimated time left until download will complete.
      * @param {number} seconds Time left in seconds.
      */
-    setEstimatedTimeLeft: function(seconds) {
-      var minutes = Math.ceil(seconds / 60);
-      var message = '';
-      if (minutes > 60) {
-        message = loadTimeData.getString('downloadingTimeLeftLong');
-      } else if (minutes > 55) {
-        message = loadTimeData.getString('downloadingTimeLeftStatusOneHour');
-      } else if (minutes > 20) {
-        message = loadTimeData.getStringF(
-            'downloadingTimeLeftStatusMinutes', Math.ceil(minutes / 5) * 5);
-      } else if (minutes > 1) {
-        message = loadTimeData.getStringF(
-            'downloadingTimeLeftStatusMinutes', minutes);
-      } else {
-        message = loadTimeData.getString('downloadingTimeLeftSmall');
-      }
-      $('update-required-card').estimatedTimeLeft =
-          loadTimeData.getStringF('downloading', message);
+    setEstimatedTimeLeft(seconds) {
+      $('update-required-card').estimatedTimeLeft = seconds;
     },
 
     /**
      * Sets current UI state of the screen.
      * @param {number} ui_state New UI state of the screen.
      */
-    setUIState: function(ui_state) {
+    setUIState(ui_state) {
       $('update-required-card').ui_state = UI_STATES[ui_state];
     },
   };

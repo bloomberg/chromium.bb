@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 
 namespace cursor {
@@ -94,7 +96,7 @@ class ASH_EXPORT CursorWindowController {
   display::Display::Rotation rotation_ = display::Display::ROTATE_0;
 
   // The native cursor, see definitions in cursor.h
-  gfx::NativeCursor cursor_ = ui::CursorType::kNone;
+  gfx::NativeCursor cursor_ = ui::mojom::CursorType::kNone;
 
   // The last requested cursor visibility.
   bool visible_ = true;
@@ -102,7 +104,7 @@ class ASH_EXPORT CursorWindowController {
   ui::CursorSize cursor_size_ = ui::CursorSize::kNormal;
   gfx::Point hot_point_;
 
-  int large_cursor_size_in_dip_ = ash::kDefaultLargeCursorSize;
+  int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.

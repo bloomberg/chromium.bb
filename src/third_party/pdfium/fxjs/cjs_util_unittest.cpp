@@ -4,6 +4,7 @@
 
 #include "fxjs/cjs_util.h"
 
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(CJS_Util, ParseDataType) {
@@ -105,7 +106,7 @@ TEST(CJS_Util, ParseDataType) {
   };
 
   for (size_t i = 0; i < FX_ArraySize(cases); i++) {
-    std::wstring input(cases[i].input_string);
+    WideString input(cases[i].input_string);
     EXPECT_EQ(cases[i].expected, CJS_Util::ParseDataType(&input))
         << cases[i].input_string;
   }

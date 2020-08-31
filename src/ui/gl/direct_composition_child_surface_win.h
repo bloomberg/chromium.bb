@@ -10,13 +10,14 @@
 #include <dcomp.h>
 #include <wrl/client.h>
 
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
 
-class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
+class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
-  DirectCompositionChildSurfaceWin();
+  explicit DirectCompositionChildSurfaceWin(bool use_angle_texture_offset);
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;
@@ -25,7 +26,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   bool IsOffscreen() override;
   void* GetHandle() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;
@@ -34,7 +35,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   void SetVSyncEnabled(bool enabled) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool SetEnableDCLayers(bool enable) override;
 
@@ -48,6 +49,9 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
 
   uint64_t dcomp_surface_serial() const { return dcomp_surface_serial_; }
 
+  void SetDCompSurfaceForTesting(
+      Microsoft::WRL::ComPtr<IDCompositionSurface> surface);
+
  protected:
   ~DirectCompositionChildSurfaceWin() override;
 
@@ -57,11 +61,13 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   // to it. Returns false if this fails.
   bool ReleaseDrawTexture(bool will_discard);
 
+  const bool use_angle_texture_offset_;
+
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_dc_layers_ = false;
   bool has_alpha_ = true;
   bool vsync_enabled_ = true;
-  ColorSpace color_space_ = ColorSpace::UNSPECIFIED;
+  gfx::ColorSpace color_space_;
 
   // This is a placeholder surface used when not rendering to the
   // DirectComposition surface.

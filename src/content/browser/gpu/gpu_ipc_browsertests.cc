@@ -15,6 +15,7 @@
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_stream_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/test/gpu_browsertest_helpers.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
@@ -339,6 +340,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
 class GpuProcessHostDisableGLBrowserTest : public GpuProcessHostBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    UseSoftwareCompositing();
     GpuProcessHostBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationDisabledName);

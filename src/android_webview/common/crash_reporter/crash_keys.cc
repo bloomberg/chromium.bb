@@ -17,9 +17,12 @@ const char kAndroidSdkInt[] = "android-sdk-int";
 
 const char kSupportLibraryWebkitVersion[] = "androidx-webkit-version";
 
+extern const char kWeblayerWebViewCompatMode[] =
+    "WEBLAYER_WEB_VIEW_COMPAT_MODE";
+
 // clang-format off
-const char* const kWebViewCrashKeyWhiteList[] = {
-    "AW_WHITELISTED_DEBUG_KEY",
+const char* const kWebViewCrashKeyAllowList[] = {
+    "AW_ALLOWED_DEBUG_KEY",
     kAppPackageName,
     kAppPackageVersionCode,
     kAndroidSdkInt,
@@ -45,11 +48,14 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "bad_message_reason",
     "discardable-memory-allocated",
     "discardable-memory-free",
+    "mojo-message-error",
     "mojo-message-error__1",
     "mojo-message-error__2",
     "mojo-message-error__3",
     "mojo-message-error__4",
     "total-discardable-memory-allocated",
+    // TODO(https://crbug.com/1006814): Remove this.
+    "IsRenderFrameLive",
 
     // GWP-ASan
     gwp_asan::kMallocCrashKey,
@@ -66,6 +72,9 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "variations__7",
     "variations__8",
     "num-experiments",
+
+    kWeblayerWebViewCompatMode,
+
     nullptr};
 // clang-format on
 

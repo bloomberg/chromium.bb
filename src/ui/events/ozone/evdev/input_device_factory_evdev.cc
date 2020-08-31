@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,8 +23,10 @@
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/gamepad_event_converter_evdev.h"
+#include "ui/events/ozone/evdev/stylus_button_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
+#include "ui/events/ozone/features.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 
 #if defined(USE_EVDEV_GESTURES)
@@ -122,6 +125,12 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   if (devinfo.HasGamepad()) {
     return base::WrapUnique<EventConverterEvdev>(new GamepadEventConverterEvdev(
         std::move(fd), params.path, params.id, devinfo, params.dispatcher));
+  }
+
+  if (devinfo.IsStylusButtonDevice()) {
+    return base::WrapUnique<EventConverterEvdev>(
+        new StylusButtonEventConverterEvdev(
+            std::move(fd), params.path, params.id, devinfo, params.dispatcher));
   }
 
   // Everything else: use EventConverterEvdevImpl.
@@ -227,7 +236,8 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
       DetachInputDevice(path);
 
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        converter->HasPen()) {
+        converter->HasPen() &&
+        base::FeatureList::IsEnabled(kEnablePalmSuppression)) {
       converter->SetPalmSuppressionCallback(
           base::BindRepeating(&InputDeviceFactoryEvdev::EnablePalmSuppression,
                               base::Unretained(this)));
@@ -316,10 +326,13 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity",
                            input_device_settings_.touchpad_sensitivity);
   SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity",
-                           input_device_settings_.touchpad_sensitivity);
+                           input_device_settings_.touchpad_scroll_sensitivity);
   SetBoolPropertyForOneType(
       DT_TOUCHPAD, "Pointer Acceleration",
       input_device_settings_.touchpad_acceleration_enabled);
+  SetBoolPropertyForOneType(
+      DT_TOUCHPAD, "Scroll Acceleration",
+      input_device_settings_.touchpad_scroll_acceleration_enabled);
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Enable",
                             input_device_settings_.tap_to_click_enabled);
@@ -333,13 +346,19 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity",
                            input_device_settings_.mouse_sensitivity);
-  SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity",
-                           input_device_settings_.mouse_sensitivity);
+  SetIntPropertyForOneType(DT_MOUSE, "Mouse Scroll Sensitivity",
+                           input_device_settings_.mouse_scroll_sensitivity);
   SetBoolPropertyForOneType(DT_MOUSE, "Pointer Acceleration",
                             input_device_settings_.mouse_acceleration_enabled);
   SetBoolPropertyForOneType(
+      DT_MOUSE, "Mouse Scroll Acceleration",
+      input_device_settings_.mouse_scroll_acceleration_enabled);
+  SetBoolPropertyForOneType(
       DT_MOUSE, "Mouse Reverse Scrolling",
       input_device_settings_.mouse_reverse_scroll_enabled);
+  SetBoolPropertyForOneType(
+      DT_MOUSE, "Mouse High Resolution Scrolling",
+      base::FeatureList::IsEnabled(ui::kEnableHighResolutionMouseScrolling));
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);

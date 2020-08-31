@@ -19,6 +19,7 @@ endobj
   /Parent 2 0 R
   /MediaBox [0 0 612 792]
 >>
+endobj
 % OpenAction action
 {{object 10 0}} <<
   /Type /Action
@@ -26,7 +27,7 @@ endobj
   /JS 11 0 R
 >>
 endobj
-% JS program to exexute
+% JS program to execute
 {{object 11 0}} <<
   {{streamlen}}
 >>

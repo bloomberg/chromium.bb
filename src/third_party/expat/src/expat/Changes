@@ -3,19 +3,38 @@ NOTE: We are looking for help with a few things:
       If you can help, please get in touch.  Thanks!
 
 Release x.x.x xxx xxxxxxxxx xx xxxx
+        Bug fixes:
+  #390 #395 #398  Fix undefined behavior during parsing caused by
+                    pointer arithmetic with NULL pointers
+
         Other changes:
+            #396  Windows: Drop support for Visual Studio <=8.0/2005
+       #383 #392  Autotools: Use -Werror while configure tests the compiler
+                    for supported compile flags to avoid false positives
+       #383 #393  Autotools: Improve handling of user (C|CPP|CXX|LD)FLAGS,
+                    e.g. ensure that they have the last word over flags added
+                    while running ./configure
             #360  CMake: Create libexpatw.{dll,so} and expatw.pc (with emphasis
                     on suffix "w") with -DEXPAT_CHAR_TYPE=(ushort|wchar_t)
             #360  CMake: Detect and deny unsupported build combinations
                     involving -DEXPAT_CHAR_TYPE=(ushort|wchar_t)
             #360  CMake: Install pre-compiled shipped xmlwf.1 manpage in case
                     of -DEXPAT_BUILD_DOCS=OFF
+       #375 #380  CMake: Fix use of Expat by means of add_subdirectory
+                  CMake: Expose ${EXPAT_TARGET}(="libexpat"/"expatw"/"expat")
+                    to parent scope for use by means of add_subdirectory
+            #385  CMake: Fix compilation with -DEXPAT_SHARED_LIBS=OFF for
+                    Windows
+                  CMake: Expose man page compilation as target "xmlwf-manpage"
             #354  Fix testsuite for -DEXPAT_DTD=OFF and -DEXPAT_NS=OFF, each
   #354 #355 #356  Address compiler warnings
 
         Special thanks to:
             asavah
+            Ben Wagner
+            Jeffrey Walton
             Ma Lin
+            Maciej Sroczyński
             Mohammed Khajapasha
             Vadim Zeitlin
 

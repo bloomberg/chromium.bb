@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ BindingsTestRunner.cleanupURL = function(url) {
 };
 
 BindingsTestRunner.dumpWorkspace = function(previousSnapshot) {
-  const uiSourceCodes = Workspace.workspace.uiSourceCodes().slice();
+  const uiSourceCodes = self.Workspace.workspace.uiSourceCodes().slice();
   let urls = uiSourceCodes.map(code => code.url());
 
   urls = urls.map(BindingsTestRunner.cleanupURL);
@@ -199,27 +199,28 @@ const createdSymbol = Symbol('LiveLocationCreated');
 BindingsTestRunner.createDebuggerLiveLocation = function(name, urlSuffix, lineNumber, columnNumber) {
   const script = TestRunner.debuggerModel.scripts().find(script => script.sourceURL.endsWith(urlSuffix));
   const rawLocation = TestRunner.debuggerModel.createRawLocation(script, lineNumber || 0, columnNumber || 0);
-  return Bindings.debuggerWorkspaceBinding.createLiveLocation(
+  return self.Bindings.debuggerWorkspaceBinding.createLiveLocation(
       rawLocation, updateDelegate.bind(null, name), locationPool);
 };
 
 BindingsTestRunner.createCSSLiveLocation = function(name, urlSuffix, lineNumber, columnNumber) {
   const header = TestRunner.cssModel.styleSheetHeaders().find(header => header.resourceURL().endsWith(urlSuffix));
   const rawLocation = new SDK.CSSLocation(header, lineNumber || 0, columnNumber || 0);
-  return Bindings.cssWorkspaceBinding.createLiveLocation(rawLocation, updateDelegate.bind(null, name), locationPool);
+  return self.Bindings.cssWorkspaceBinding.createLiveLocation(
+      rawLocation, updateDelegate.bind(null, name), locationPool);
 };
 
-function updateDelegate(name, liveLocation) {
+async function updateDelegate(name, liveLocation) {
   liveLocation[nameSymbol] = name;
   const hint = (liveLocation[createdSymbol] ? '[ UPDATE ]' : '[ CREATE ]');
   liveLocation[createdSymbol] = true;
-  BindingsTestRunner.dumpLocation(liveLocation, hint);
+  await BindingsTestRunner.dumpLocation(liveLocation, hint);
 }
 
-BindingsTestRunner.dumpLocation = function(liveLocation, hint) {
+BindingsTestRunner.dumpLocation = async function(liveLocation, hint) {
   hint = hint || '[  GET   ]';
   const prefix = `${hint}  LiveLocation-${liveLocation[nameSymbol]}: `;
-  const uiLocation = liveLocation.uiLocation();
+  const uiLocation = await liveLocation.uiLocation();
 
   if (!uiLocation) {
     TestRunner.addResult(prefix + 'null');

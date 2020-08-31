@@ -144,6 +144,8 @@ namespace dawn_native { namespace vulkan {
                     return VK_FRONT_FACE_COUNTER_CLOCKWISE;
                 case wgpu::FrontFace::CW:
                     return VK_FRONT_FACE_CLOCKWISE;
+                default:
+                    UNREACHABLE();
             }
         }
 
@@ -155,6 +157,8 @@ namespace dawn_native { namespace vulkan {
                     return VK_CULL_MODE_FRONT_BIT;
                 case wgpu::CullMode::Back:
                     return VK_CULL_MODE_BACK_BIT;
+                default:
+                    UNREACHABLE();
             }
         }
 
@@ -323,10 +327,9 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<RenderPipeline*> RenderPipeline::Create(
         Device* device,
         const RenderPipelineDescriptor* descriptor) {
-        std::unique_ptr<RenderPipeline> pipeline =
-            std::make_unique<RenderPipeline>(device, descriptor);
+        Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.release();
+        return pipeline.Detach();
     }
 
     MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
@@ -495,12 +498,12 @@ namespace dawn_native { namespace vulkan {
         createInfo.layout = ToBackend(GetLayout())->GetHandle();
         createInfo.renderPass = renderPass;
         createInfo.subpass = 0;
-        createInfo.basePipelineHandle = VK_NULL_HANDLE;
+        createInfo.basePipelineHandle = VkPipeline{};
         createInfo.basePipelineIndex = -1;
 
         return CheckVkSuccess(
-            device->fn.CreateGraphicsPipelines(device->GetVkDevice(), VK_NULL_HANDLE, 1,
-                                               &createInfo, nullptr, &mHandle),
+            device->fn.CreateGraphicsPipelines(device->GetVkDevice(), VkPipelineCache{}, 1,
+                                               &createInfo, nullptr, &*mHandle),
             "CreateGraphicsPipeline");
     }
 

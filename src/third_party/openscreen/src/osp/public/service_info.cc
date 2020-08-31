@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {
@@ -23,11 +23,10 @@ bool ServiceInfo::operator!=(const ServiceInfo& other) const {
   return !(*this == other);
 }
 
-bool ServiceInfo::Update(
-    std::string new_friendly_name,
-    platform::NetworkInterfaceIndex new_network_interface_index,
-    const IPEndpoint& new_v4_endpoint,
-    const IPEndpoint& new_v6_endpoint) {
+bool ServiceInfo::Update(std::string new_friendly_name,
+                         NetworkInterfaceIndex new_network_interface_index,
+                         const IPEndpoint& new_v4_endpoint,
+                         const IPEndpoint& new_v6_endpoint) {
   OSP_DCHECK(!new_v4_endpoint.address ||
              IPAddress::Version::kV4 == new_v4_endpoint.address.version());
   OSP_DCHECK(!new_v6_endpoint.address ||

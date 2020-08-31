@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as Root from '../root/root.js';
+
+import {TargetManager} from './SDKModel.js';
+
 /**
- * @implements {Protocol.Connection}
+ * @implements {ProtocolClient.InspectorBackend.Connection}
  */
 export class MainConnection {
   constructor() {
@@ -12,16 +19,16 @@ export class MainConnection {
     this._messageBuffer = '';
     this._messageSize = 0;
     this._eventListeners = [
-      Host.InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this),
-      Host.InspectorFrontendHost.events.addEventListener(
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
           Host.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this._dispatchMessageChunk, this),
     ];
   }
 
   /**
    * @override
-   * @param {function((!Object|string))} onMessage
+   * @param {function((!Object|string)):void} onMessage
    */
   setOnMessage(onMessage) {
     this._onMessage = onMessage;
@@ -29,7 +36,7 @@ export class MainConnection {
 
   /**
    * @override
-   * @param {function(string)} onDisconnect
+   * @param {function(string):void} onDisconnect
    */
   setOnDisconnect(onDisconnect) {
     this._onDisconnect = onDisconnect;
@@ -41,12 +48,12 @@ export class MainConnection {
    */
   sendRawMessage(message) {
     if (this._onMessage) {
-      Host.InspectorFrontendHost.sendMessageToBackend(message);
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.sendMessageToBackend(message);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _dispatchMessage(event) {
     if (this._onMessage) {
@@ -55,7 +62,7 @@ export class MainConnection {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _dispatchMessageChunk(event) {
     const messageChunk = /** @type {string} */ (event.data['messageChunk']);
@@ -65,7 +72,7 @@ export class MainConnection {
       this._messageSize = messageSize;
     }
     this._messageBuffer += messageChunk;
-    if (this._messageBuffer.length === this._messageSize) {
+    if (this._messageBuffer.length === this._messageSize && this._onMessage) {
       this._onMessage.call(null, this._messageBuffer);
       this._messageBuffer = '';
       this._messageSize = 0;
@@ -74,11 +81,11 @@ export class MainConnection {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   disconnect() {
     const onDisconnect = this._onDisconnect;
-    Common.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
     this._onDisconnect = null;
     this._onMessage = null;
 
@@ -90,14 +97,15 @@ export class MainConnection {
 }
 
 /**
- * @implements {Protocol.Connection}
+ * @implements {ProtocolClient.InspectorBackend.Connection}
  */
 export class WebSocketConnection {
   /**
    * @param {string} url
-   * @param {function()} onWebSocketDisconnect
+   * @param {function():void} onWebSocketDisconnect
    */
   constructor(url, onWebSocketDisconnect) {
+    /** @type {?WebSocket} */
     this._socket = new WebSocket(url);
     this._socket.onerror = this._onError.bind(this);
     this._socket.onopen = this._onOpen.bind(this);
@@ -110,14 +118,16 @@ export class WebSocketConnection {
 
     this._onMessage = null;
     this._onDisconnect = null;
+    /** @type {?function():void} */
     this._onWebSocketDisconnect = onWebSocketDisconnect;
     this._connected = false;
+    /** @type {!Array<string>} */
     this._messages = [];
   }
 
   /**
    * @override
-   * @param {function((!Object|string))} onMessage
+   * @param {function((!Object|string)):void} onMessage
    */
   setOnMessage(onMessage) {
     this._onMessage = onMessage;
@@ -125,44 +135,56 @@ export class WebSocketConnection {
 
   /**
    * @override
-   * @param {function(string)} onDisconnect
+   * @param {function(string):void} onDisconnect
    */
   setOnDisconnect(onDisconnect) {
     this._onDisconnect = onDisconnect;
   }
 
   _onError() {
-    this._onWebSocketDisconnect.call(null);
-    // This is called if error occurred while connecting.
-    this._onDisconnect.call(null, 'connection failed');
+    if (this._onWebSocketDisconnect) {
+      this._onWebSocketDisconnect.call(null);
+    }
+    if (this._onDisconnect) {
+      // This is called if error occurred while connecting.
+      this._onDisconnect.call(null, 'connection failed');
+    }
     this._close();
   }
 
   _onOpen() {
-    this._socket.onerror = console.error;
     this._connected = true;
-    for (const message of this._messages) {
-      this._socket.send(message);
+    if (this._socket) {
+      this._socket.onerror = console.error;
+      for (const message of this._messages) {
+        this._socket.send(message);
+      }
     }
     this._messages = [];
   }
 
   _onClose() {
-    this._onWebSocketDisconnect.call(null);
-    this._onDisconnect.call(null, 'websocket closed');
+    if (this._onWebSocketDisconnect) {
+      this._onWebSocketDisconnect.call(null);
+    }
+    if (this._onDisconnect) {
+      this._onDisconnect.call(null, 'websocket closed');
+    }
     this._close();
   }
 
   /**
-   * @param {function()=} callback
+   * @param {function():void=} callback
    */
   _close(callback) {
-    this._socket.onerror = null;
-    this._socket.onopen = null;
-    this._socket.onclose = callback || null;
-    this._socket.onmessage = null;
-    this._socket.close();
-    this._socket = null;
+    if (this._socket) {
+      this._socket.onerror = null;
+      this._socket.onopen = null;
+      this._socket.onclose = callback || null;
+      this._socket.onmessage = null;
+      this._socket.close();
+      this._socket = null;
+    }
     this._onWebSocketDisconnect = null;
   }
 
@@ -171,7 +193,7 @@ export class WebSocketConnection {
    * @param {string} message
    */
   sendRawMessage(message) {
-    if (this._connected) {
+    if (this._connected && this._socket) {
       this._socket.send(message);
     } else {
       this._messages.push(message);
@@ -180,9 +202,10 @@ export class WebSocketConnection {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   disconnect() {
+    /** @type {function():void} */
     let fulfill;
     const promise = new Promise(f => fulfill = f);
     this._close(() => {
@@ -196,7 +219,7 @@ export class WebSocketConnection {
 }
 
 /**
- * @implements {Protocol.Connection}
+ * @implements {ProtocolClient.InspectorBackend.Connection}
  */
 export class StubConnection {
   constructor() {
@@ -206,7 +229,7 @@ export class StubConnection {
 
   /**
    * @override
-   * @param {function((!Object|string))} onMessage
+   * @param {function((!Object|string)):void} onMessage
    */
   setOnMessage(onMessage) {
     this._onMessage = onMessage;
@@ -214,7 +237,7 @@ export class StubConnection {
 
   /**
    * @override
-   * @param {function(string)} onDisconnect
+   * @param {function(string):void} onDisconnect
    */
   setOnDisconnect(onDisconnect) {
     this._onDisconnect = onDisconnect;
@@ -235,7 +258,7 @@ export class StubConnection {
     const messageObject = JSON.parse(message);
     const error = {
       message: 'This is a stub connection, can\'t dispatch message.',
-      code: Protocol.DevToolsStubErrorCode,
+      code: ProtocolClient.InspectorBackend.DevToolsStubErrorCode,
       data: messageObject
     };
     if (this._onMessage) {
@@ -245,7 +268,7 @@ export class StubConnection {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   disconnect() {
     if (this._onDisconnect) {
@@ -258,11 +281,11 @@ export class StubConnection {
 }
 
 /**
- * @implements {Protocol.Connection}
+ * @implements {ProtocolClient.InspectorBackend.Connection}
  */
 export class ParallelConnection {
   /**
-   * @param {!Protocol.Connection} connection
+   * @param {!ProtocolClient.InspectorBackend.Connection} connection
    * @param {string} sessionId
    */
   constructor(connection, sessionId) {
@@ -274,7 +297,7 @@ export class ParallelConnection {
 
   /**
    * @override
-   * @param {function(!Object)} onMessage
+   * @param {function(!Object):void} onMessage
    */
   setOnMessage(onMessage) {
     this._onMessage = onMessage;
@@ -282,7 +305,7 @@ export class ParallelConnection {
 
   /**
    * @override
-   * @param {function(string)} onDisconnect
+   * @param {function(string):void} onDisconnect
    */
   setOnDisconnect(onDisconnect) {
     this._onDisconnect = onDisconnect;
@@ -303,7 +326,7 @@ export class ParallelConnection {
 
   /**
    * @override
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   disconnect() {
     if (this._onDisconnect) {
@@ -317,54 +340,41 @@ export class ParallelConnection {
 
 /**
  * @param {function():!Promise<undefined>} createMainTarget
- * @param {function()} websocketConnectionLost
- * @return {!Promise}
+ * @param {function():void} websocketConnectionLost
+ * @return {!Promise<void>}
  */
 export async function initMainConnection(createMainTarget, websocketConnectionLost) {
-  Protocol.Connection.setFactory(_createMainConnection.bind(null, websocketConnectionLost));
+  ProtocolClient.InspectorBackend.Connection.setFactory(_createMainConnection.bind(null, websocketConnectionLost));
   await createMainTarget();
-  Host.InspectorFrontendHost.connectionReady();
-  Host.InspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ReattachMainTarget, () => {
-    SDK.targetManager.mainTarget().router().connection().disconnect();
-    createMainTarget();
-  });
+  Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
+  Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
+      Host.InspectorFrontendHostAPI.Events.ReattachMainTarget, () => {
+        const target = TargetManager.instance().mainTarget();
+        if (target) {
+          const router = target.router();
+          if (router) {
+            router.connection().disconnect();
+          }
+        }
+        createMainTarget();
+      });
   return Promise.resolve();
 }
 
 /**
- * @param {function()} websocketConnectionLost
- * @return {!Protocol.Connection}
+ * @param {function():void} websocketConnectionLost
+ * @return {!ProtocolClient.InspectorBackend.Connection}
  */
 export function _createMainConnection(websocketConnectionLost) {
-  const wsParam = Root.Runtime.queryParam('ws');
-  const wssParam = Root.Runtime.queryParam('wss');
+  const wsParam = Root.Runtime.Runtime.queryParam('ws');
+  const wssParam = Root.Runtime.Runtime.queryParam('wss');
   if (wsParam || wssParam) {
     const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
     return new WebSocketConnection(ws, websocketConnectionLost);
-  } else if (Host.InspectorFrontendHost.isHostedMode()) {
+  }
+  if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
     return new StubConnection();
   }
 
   return new MainConnection();
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.MainConnection = MainConnection;
-
-/** @constructor */
-SDK.WebSocketConnection = WebSocketConnection;
-
-/** @constructor */
-SDK.StubConnection = StubConnection;
-
-/** @constructor */
-SDK.ParallelConnection = ParallelConnection;
-
-SDK.initMainConnection = initMainConnection;
-SDK._createMainConnection = _createMainConnection;

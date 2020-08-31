@@ -37,6 +37,17 @@ struct StrutStyle {
     bool getHeightOverride() const { return fHeightOverride; }
     void setHeightOverride(bool v) { fHeightOverride = v; }
 
+    bool operator==(const StrutStyle& rhs) const {
+        return this->fEnabled == rhs.fEnabled &&
+               this->fHeightOverride == rhs.fHeightOverride &&
+               this->fForceHeight == rhs.fForceHeight &&
+               nearlyEqual(this->fLeading, rhs.fLeading) &&
+               nearlyEqual(this->fHeight, rhs.fHeight) &&
+               nearlyEqual(this->fFontSize, rhs.fFontSize) &&
+               this->fFontStyle == rhs.fFontStyle &&
+               this->fFontFamilies == rhs.fFontFamilies;
+    }
+
 private:
 
     std::vector<SkString> fFontFamilies;
@@ -80,6 +91,10 @@ struct ParagraphStyle {
     SkScalar getHeight() const { return fHeight; }
     void setHeight(SkScalar height) { fHeight = height; }
 
+
+    TextHeightBehavior getTextHeightBehavior() const { return fTextHeightBehavior; }
+    void setTextHeightBehavior(TextHeightBehavior v) { fTextHeightBehavior = v; }
+
     bool unlimited_lines() const {
         return fLinesLimit == std::numeric_limits<size_t>::max();
     }
@@ -96,6 +111,7 @@ private:
     size_t fLinesLimit;
     SkString fEllipsis;
     SkScalar fHeight;
+    TextHeightBehavior fTextHeightBehavior;
     bool fHintingIsOn;
 };
 }  // namespace textlayout

@@ -37,7 +37,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
-  using DisplayLocation = ash::SearchResultDisplayLocation;
   using DisplayIndex = ash::SearchResultDisplayIndex;
 
   SearchResult();
@@ -108,13 +107,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->result_type = result_type;
   }
 
-  DisplayLocation display_location() const {
-    return metadata_->display_location;
-  }
-  void set_display_location(DisplayLocation display_location) {
-    metadata_->display_location = display_location;
-  }
-
   DisplayIndex display_index() const { return metadata_->display_index; }
   void set_display_index(DisplayIndex display_index) {
     metadata_->display_index = display_index;
@@ -138,12 +130,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Actions& actions() const { return metadata_->actions; }
   void SetActions(const Actions& sets);
 
-  bool is_installing() const { return is_installing_; }
-  void SetIsInstalling(bool is_installing);
-
-  int percent_downloaded() const { return percent_downloaded_; }
-  void SetPercentDownloaded(int percent_downloaded);
-
   bool notify_visibility_change() const {
     return metadata_->notify_visibility_change;
   }
@@ -160,7 +146,10 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_visible() const { return is_visible_; }
   void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
 
-  void NotifyItemInstalled();
+  bool is_recommendation() const { return metadata_->is_recommendation; }
+  void set_is_recommendation(bool is_recommendation) {
+    metadata_->is_recommendation = is_recommendation;
+  }
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
@@ -168,12 +157,12 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
-  void SetMetadata(std::unique_ptr<ash::SearchResultMetadata> metadata);
-  std::unique_ptr<ash::SearchResultMetadata> TakeMetadata() {
+  void SetMetadata(std::unique_ptr<SearchResultMetadata> metadata);
+  std::unique_ptr<SearchResultMetadata> TakeMetadata() {
     return std::move(metadata_);
   }
-  std::unique_ptr<ash::SearchResultMetadata> CloneMetadata() const {
-    return std::make_unique<ash::SearchResultMetadata>(*metadata_);
+  std::unique_ptr<SearchResultMetadata> CloneMetadata() const {
+    return std::make_unique<SearchResultMetadata>(*metadata_);
   }
 
  protected:
@@ -189,11 +178,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // result. This is logged for UMA.
   int distance_from_origin_ = -1;
 
-  bool is_installing_ = false;
-  int percent_downloaded_ = 0;
   bool is_visible_ = true;
 
-  std::unique_ptr<ash::SearchResultMetadata> metadata_;
+  std::unique_ptr<SearchResultMetadata> metadata_;
 
   base::ObserverList<SearchResultObserver>::Unchecked observers_;
 

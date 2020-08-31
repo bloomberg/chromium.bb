@@ -36,8 +36,8 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
   writer_ = std::make_unique<BufferedSocketWriter>();
   writer_->Start(
       base::Bind(&P2PStreamSocket::Write, base::Unretained(socket_.get())),
-      base::Bind(&StreamMessagePipeAdapter::CloseOnError,
-                 base::Unretained(this)));
+      base::BindOnce(&StreamMessagePipeAdapter::CloseOnError,
+                     base::Unretained(this)));
 
   reader_ = std::make_unique<MessageReader>();
   reader_->StartReading(socket_.get(),
@@ -54,7 +54,7 @@ void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("stream_message_pipe_adapter", R"(
         semantics {
-          sender: "Stream Message Pipe Adapter"
+          sender: "Chrome Remote Desktop"
           description: "Chrome Remote Desktop P2P channel."
           trigger: "Initiating a Chrome Remote Desktop connection."
           data:

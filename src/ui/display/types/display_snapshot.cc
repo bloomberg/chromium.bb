@@ -10,6 +10,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 namespace display {
@@ -66,6 +67,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  DisplayConnectionType type,
                                  bool is_aspect_preserving_scaling,
                                  bool has_overscan,
+                                 PrivacyScreenState privacy_screen_state,
                                  bool has_color_correction_matrix,
                                  bool color_correction_in_linear_space,
                                  const gfx::ColorSpace& color_space,
@@ -86,6 +88,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       type_(type),
       is_aspect_preserving_scaling_(is_aspect_preserving_scaling),
       has_overscan_(has_overscan),
+      privacy_screen_state_(privacy_screen_state),
       has_color_correction_matrix_(has_color_correction_matrix),
       color_correction_in_linear_space_(color_correction_in_linear_space),
       color_space_(color_space),
@@ -127,7 +130,7 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
 
   return std::make_unique<DisplaySnapshot>(
       display_id_, origin_, physical_size_, type_,
-      is_aspect_preserving_scaling_, has_overscan_,
+      is_aspect_preserving_scaling_, has_overscan_, privacy_screen_state_,
       has_color_correction_matrix_, color_correction_in_linear_space_,
       color_space_, bits_per_channel_, display_name_, sys_path_,
       std::move(clone_modes), panel_orientation_, edid_, cloned_current_mode,

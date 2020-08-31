@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -95,12 +96,19 @@ class ImageDocumentParser : public RawDataDocumentParser {
       : RawDataDocumentParser(document) {}
 
   ImageDocument* GetDocument() const {
-    return ToImageDocument(RawDataDocumentParser::GetDocument());
+    return To<ImageDocument>(RawDataDocumentParser::GetDocument());
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(image_resource_);
+    RawDataDocumentParser::Trace(visitor);
   }
 
  private:
   void AppendBytes(const char*, size_t) override;
   void Finish() override;
+
+  Member<ImageResource> image_resource_;
 };
 
 // --------
@@ -133,50 +141,49 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!allow_image)
     return;
 
-  if (GetDocument()->CachedImageResourceDeprecated()) {
-    CHECK_LE(length, std::numeric_limits<unsigned>::max());
-    // If decoding has already failed, there's no point in sending additional
-    // data to the ImageResource.
-    if (GetDocument()->CachedImageResourceDeprecated()->GetStatus() !=
-        ResourceStatus::kDecodeError)
-      GetDocument()->CachedImageResourceDeprecated()->AppendData(data, length);
+  if (!image_resource_) {
+    ResourceRequest request(GetDocument()->Url());
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
+    image_resource_ = ImageResource::Create(request);
+    image_resource_->NotifyStartLoad();
+
+    GetDocument()->CreateDocumentStructure(image_resource_->GetContent());
+
+    if (IsStopped())
+      return;
+
+    if (DocumentLoader* loader = GetDocument()->Loader())
+      image_resource_->ResponseReceived(loader->GetResponse());
   }
+
+  CHECK_LE(length, std::numeric_limits<unsigned>::max());
+  // If decoding has already failed, there's no point in sending additional
+  // data to the ImageResource.
+  if (image_resource_->GetStatus() != ResourceStatus::kDecodeError)
+    image_resource_->AppendData(data, length);
 
   if (!IsDetached())
     GetDocument()->ImageUpdated();
 }
 
 void ImageDocumentParser::Finish() {
-  if (!IsStopped() && GetDocument()->ImageElement() &&
-      GetDocument()->CachedImageResourceDeprecated()) {
+  if (!IsStopped() && image_resource_) {
     // TODO(hiroshige): Use ImageResourceContent instead of ImageResource.
-    ImageResource* cached_image =
-        GetDocument()->CachedImageResourceDeprecated();
     DocumentLoader* loader = GetDocument()->Loader();
-    cached_image->SetResponse(loader->GetResponse());
-    cached_image->Finish(
+    image_resource_->SetResponse(loader->GetResponse());
+    image_resource_->Finish(
         loader->GetTiming().ResponseEnd(),
         GetDocument()->GetTaskRunner(TaskType::kInternalLoading).get());
 
-    // Report the natural image size in the page title, regardless of zoom
-    // level.  At a zoom level of 1 the image is guaranteed to have an integer
-    // size.
-    IntSize size = GetDocument()->ImageSize();
-    if (size.Width()) {
-      // Compute the title, we use the decoded filename of the resource, falling
-      // back on the (decoded) hostname if there is no path.
-      String file_name =
-          DecodeURLEscapeSequences(GetDocument()->Url().LastPathComponent(),
-                                   DecodeURLMode::kUTF8OrIsomorphic);
-      if (file_name.IsEmpty())
-        file_name = GetDocument()->Url().Host();
-      GetDocument()->setTitle(ImageTitle(file_name, size));
+    if (GetDocument()->CachedImage()) {
+      GetDocument()->UpdateTitle();
+
       if (IsDetached())
         return;
-    }
 
-    GetDocument()->ImageUpdated();
-    GetDocument()->ImageLoaded();
+      GetDocument()->ImageUpdated();
+      GetDocument()->ImageLoaded();
+    }
   }
 
   if (!IsDetached()) {
@@ -215,7 +222,8 @@ IntSize ImageDocument::ImageSize() const {
           image_element_->GetLayoutObject()));
 }
 
-void ImageDocument::CreateDocumentStructure() {
+void ImageDocument::CreateDocumentStructure(
+    ImageResourceContent* image_content) {
   auto* root_element = MakeGarbageCollected<HTMLHtmlElement>(*this);
   AppendChild(root_element);
   root_element->InsertedByParser();
@@ -264,14 +272,8 @@ void ImageDocument::CreateDocumentStructure() {
 
   image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
-  image_element_->SetLoadingImageDocument();
-  image_element_->setAttribute(html_names::kSrcAttr,
-                               AtomicString(Url().GetString()));
+  image_element_->StartLoadingImageDocument(image_content);
   body->AppendChild(image_element_.Get());
-  if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
-    image_element_->CachedImageResourceForImageDocument()->ResponseReceived(
-        Loader()->GetResponse());
-  }
 
   if (ShouldShrinkToFit()) {
     // Add event listeners
@@ -292,6 +294,25 @@ void ImageDocument::CreateDocumentStructure() {
 
   root_element->AppendChild(head);
   root_element->AppendChild(body);
+
+  if (IsStopped())
+    image_element_ = nullptr;
+}
+
+void ImageDocument::UpdateTitle() {
+  // Report the natural image size in the page title, regardless of zoom
+  // level.  At a zoom level of 1 the image is guaranteed to have an integer
+  // size.
+  IntSize size = ImageSize();
+  if (!size.Width())
+    return;
+  // Compute the title, we use the decoded filename of the resource, falling
+  // back on the (decoded) hostname if there is no path.
+  String file_name = DecodeURLEscapeSequences(Url().LastPathComponent(),
+                                              DecodeURLMode::kUTF8OrIsomorphic);
+  if (file_name.IsEmpty())
+    file_name = Url().Host();
+  setTitle(ImageTitle(file_name, size));
 }
 
 float ImageDocument::Scale() const {
@@ -349,7 +370,7 @@ void ImageDocument::ImageClicked(int x, int y) {
 
     RestoreImageSize();
 
-    UpdateStyleAndLayout();
+    UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
     double scale = Scale();
     double device_scale_factor =
@@ -362,7 +383,8 @@ void ImageDocument::ImageClicked(int x, int y) {
                      static_cast<float>(GetFrame()->View()->Height()) / 2;
 
     GetFrame()->View()->LayoutViewport()->SetScrollOffset(
-        ScrollOffset(scroll_x, scroll_y), kProgrammaticScroll);
+        ScrollOffset(scroll_x, scroll_y),
+        mojom::blink::ScrollType::kProgrammatic);
   }
 }
 
@@ -526,27 +548,9 @@ void ImageDocument::WindowSizeChanged() {
 }
 
 ImageResourceContent* ImageDocument::CachedImage() {
-  if (!image_element_) {
-    CreateDocumentStructure();
-    if (IsStopped()) {
-      image_element_ = nullptr;
-      return nullptr;
-    }
-  }
-
+  if (!image_element_)
+    return nullptr;
   return image_element_->CachedImage();
-}
-
-ImageResource* ImageDocument::CachedImageResourceDeprecated() {
-  if (!image_element_) {
-    CreateDocumentStructure();
-    if (IsStopped()) {
-      image_element_ = nullptr;
-      return nullptr;
-    }
-  }
-
-  return image_element_->CachedImageResourceForImageDocument();
 }
 
 bool ImageDocument::ShouldShrinkToFit() const {
@@ -567,15 +571,14 @@ void ImageDocument::Trace(Visitor* visitor) {
 // --------
 
 void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   if (event->type() == event_type_names::kResize) {
     doc_->WindowSizeChanged();
-  } else if (event->type() == event_type_names::kClick &&
-             event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
+  } else if (event->type() == event_type_names::kClick && mouse_event) {
     doc_->ImageClicked(mouse_event->x(), mouse_event->y());
   } else if ((event->type() == event_type_names::kTouchend ||
               event->type() == event_type_names::kTouchcancel) &&
-             event->IsTouchEvent()) {
+             IsA<TouchEvent>(event)) {
     doc_->UpdateImageStyle();
   }
 }

@@ -36,7 +36,6 @@ class Extension;
 
 namespace chromeos {
 
-class AppSession;
 class ExternalCache;
 class KioskAppData;
 class KioskExternalUpdater;
@@ -152,9 +151,6 @@ class KioskAppManager : public KioskAppManagerBase,
   // |app| is populated. Otherwise, return false.
   bool GetApp(const std::string& app_id, App* app) const;
 
-  // Gets whether the bailout shortcut is disabled.
-  bool GetDisableBailoutShortcut() const;
-
   // Clears locally cached Gdata.
   void ClearAppData(const std::string& app_id);
 
@@ -249,8 +245,6 @@ class KioskAppManager : public KioskAppManagerBase,
                      const GURL& update_url,
                      const std::string& required_platform_version);
 
-  AppSession* app_session() { return app_session_.get(); }
-
  private:
   friend struct base::LazyInstanceTraitsBase<KioskAppManager>;
   friend std::default_delete<KioskAppManager>;
@@ -318,6 +312,9 @@ class KioskAppManager : public KioskAppManagerBase,
   bool GetSwitchesForSessionRestore(const std::string& app_id,
                                     base::CommandLine* switches);
 
+  // KioskAppDataDelegate:
+  void OnExternalCacheDamaged(const std::string& app_id) override;
+
   // Converts kiosk app data from internal representation KioskAppData to
   // App.
   App ConstructApp(const KioskAppData& data) const;
@@ -343,8 +340,6 @@ class KioskAppManager : public KioskAppManagerBase,
 
   // Callback registered using SetSecondaryAppsLoaderPrefsChangedHandler().
   base::RepeatingClosure secondary_apps_changed_handler_;
-
-  std::unique_ptr<AppSession> app_session_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };

@@ -20,14 +20,18 @@
       request => request.name() === 'empty.html?xhr');
   var xhrNode = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
   TestRunner.addResult('Node rendered showing fetch resource');
-  UI.panels.network._showRequest(request);
-
+  UI.panels.network._onRequestSelected({data: request});
+  UI.panels.network._showRequestPanel();
+  // Wait for NetworkLogViewColumn._updateRowsSize to update the header height
+  await new Promise(window.requestAnimationFrame);
   TestRunner.addResult('Height of waterfall header: ' + NetworkTestRunner.networkWaterfallColumn()._headerHeight);
 
   TestRunner.addResult('Setting large row setting to true');
   UI.panels.network._networkLogLargeRowsSetting.set(true);
   TestRunner.addResult('Unselecting request from grid');
-  UI.panels.network._showRequest(null);
+  UI.panels.network._hideRequestPanel();
+  // Wait for NetworkLogViewColumn._updateRowsSize to update the header height
+  await new Promise(window.requestAnimationFrame);
   TestRunner.addResult('Height of waterfall header: ' + NetworkTestRunner.networkWaterfallColumn()._headerHeight);
 
   TestRunner.completeTest();

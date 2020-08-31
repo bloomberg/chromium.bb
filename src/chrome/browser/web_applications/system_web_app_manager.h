@@ -16,11 +16,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Version;
+}
+
+namespace content {
+class NavigationHandle;
 }
 
 namespace user_prefs {
@@ -33,6 +39,8 @@ class Profile;
 namespace web_app {
 
 class WebAppUiManager;
+class FileHandlerManager;
+class AppRegistryController;
 
 // An enum that lists the different System Apps that exist. Can be used to
 // retrieve the App ID from the underlying Web App system.
@@ -43,7 +51,13 @@ enum class SystemAppType {
   TERMINAL,
   MEDIA,
   HELP,
+  PRINT_MANAGEMENT,
+#if !defined(OFFICIAL_BUILD)
+  SAMPLE,
+#endif  // !defined(OFFICIAL_BUILD)
 };
+
+using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
 
 // The configuration options for a System App.
 struct SystemAppInfo {
@@ -69,6 +83,24 @@ struct SystemAppInfo {
 
   // If set, we allow only a single window for this app.
   bool single_window = true;
+
+  // If set, when the app is launched through the File Handling Web API, we will
+  // include the file's directory in window.launchQueue as the first value.
+  bool include_launch_directory = false;
+
+  // Map from origin to enabled origin trial names for this app. For example,
+  // "chrome://sample-web-app/" to ["Frobulate"]. If set, we will enable the
+  // given origin trials when the corresponding origin is loaded in the app.
+  OriginTrialsMap enabled_origin_trials;
+
+  // Resource Ids for additional search terms.
+  std::vector<int> additional_search_terms;
+
+  // If set to false, this app will be hidden from the Chrome OS app launcher.
+  bool show_in_launcher = true;
+
+  // If set to false, this app will be hidden from the Chrome OS search.
+  bool show_in_search = true;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -95,7 +127,9 @@ class SystemWebAppManager {
 
   void SetSubsystems(PendingAppManager* pending_app_manager,
                      AppRegistrar* registrar,
-                     WebAppUiManager* ui_manager);
+                     AppRegistryController* registry_controller,
+                     WebAppUiManager* ui_manager,
+                     FileHandlerManager* file_handler_manager);
 
   void Start();
 
@@ -120,11 +154,32 @@ class SystemWebAppManager {
   // Returns the System App Type for the given |app_id|.
   base::Optional<SystemAppType> GetSystemAppTypeForAppId(AppId app_id) const;
 
+  // Returns the App Ids for all installed System Web Apps.
+  std::vector<AppId> GetAppIds() const;
+
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
 
   // Returns whether the given System App |type| should use a single window.
   bool IsSingleWindow(SystemAppType type) const;
+
+  // Returns whether the given System App |type| should get launch directory in
+  // launch parameter.
+  bool AppShouldReceiveLaunchDirectory(SystemAppType type) const;
+
+  // Perform tab-specific setup when a navigation in a System Web App is about
+  // to be committed.
+  void OnReadyToCommitNavigation(const AppId& app_id,
+                                 content::NavigationHandle* navigation_handle);
+
+  // Returns terms to be used when searching for the app.
+  std::vector<std::string> GetAdditionalSearchTerms(SystemAppType type) const;
+
+  // Returns whether the app should be shown in the launcher.
+  bool ShouldShowInLauncher(SystemAppType type) const;
+
+  // Returns whether the app should be shown in search.
+  bool ShouldShowInSearch(SystemAppType type) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.
@@ -134,10 +189,15 @@ class SystemWebAppManager {
     return *on_apps_synchronized_;
   }
 
+  // This call will override default System Apps configuration. You should call
+  // Start() after this call to install |system_apps|.
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, SystemAppInfo> system_apps);
 
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
+
+  // Updates each system app either disabled/not disabled.
+  void OnAppsPolicyChanged();
 
   void Shutdown();
 
@@ -146,6 +206,14 @@ class SystemWebAppManager {
   virtual const std::string& CurrentLocale() const;
 
  private:
+  // Returns the list of origin trials to enable for |url| loaded in System App
+  // |type|. Returns nullptr if the App does not specify origin trials for
+  // |url|.
+  const std::vector<std::string>* GetEnabledOriginTrials(SystemAppType type,
+                                                         const GURL& url);
+
+  bool AppHasFileHandlingOriginTrial(SystemAppType type);
+
   void OnAppsSynchronized(const base::TimeTicks& install_start_time,
                           std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
@@ -154,6 +222,8 @@ class SystemWebAppManager {
   void RecordSystemWebAppInstallMetrics(
       const std::map<GURL, InstallResultCode>& install_results,
       const base::TimeDelta& install_duration) const;
+
+  Profile* profile_;
 
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 
@@ -174,7 +244,13 @@ class SystemWebAppManager {
 
   AppRegistrar* registrar_ = nullptr;
 
+  AppRegistryController* registry_controller_ = nullptr;
+
   WebAppUiManager* ui_manager_ = nullptr;
+
+  FileHandlerManager* file_handler_manager_ = nullptr;
+
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 

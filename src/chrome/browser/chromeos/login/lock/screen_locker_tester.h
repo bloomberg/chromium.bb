@@ -22,6 +22,8 @@ class ScreenLockerTester {
   // Synchronously lock the device.
   void Lock();
 
+  void WaitForUnlock();
+
   // Injects authenticators that only authenticate with the given password.
   void SetUnlockPassword(const AccountId& account_id,
                          const std::string& password);
@@ -35,12 +37,13 @@ class ScreenLockerTester {
   // Returns true if Shutdown button is visible.
   bool IsLockShutdownButtonShown();
 
-  // Returns true if there is an auth error button on the lock screen.
-  bool IsAuthErrorBubbleShown();
-
   // Enters and submits the given password for the given account.
   void UnlockWithPassword(const AccountId& account_id,
                           const std::string& password);
+
+  // Same as UnlockWithPassword but submits even if the password auth disabled.
+  void ForceSubmitPassword(const AccountId& account_id,
+                           const std::string& password);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTester);

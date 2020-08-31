@@ -5,12 +5,16 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_EVENTS_CALLBACK;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_FIRST_TIME;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
@@ -26,12 +30,12 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.BrowserServicesStore;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 /**
  * Tests for {@link TrustedWebActivityDisclosureController}.
@@ -42,7 +46,8 @@ public class TrustedWebActivityDisclosureControllerTest {
     private static final String CLIENT_PACKAGE = "com.example.twaclient";
     private static final String SCOPE = "https://www.example.com";
 
-    @Mock public ChromePreferenceManager mPreferences;
+    @Mock
+    public BrowserServicesStore mStore;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock public CurrentPageVerifier mCurrentPageVerifier;
     @Mock public TrustedWebActivityUmaRecorder mRecorder;
@@ -59,9 +64,9 @@ public class TrustedWebActivityDisclosureControllerTest {
         doReturn(CLIENT_PACKAGE).when(mClientPackageNameProvider).get();
         doNothing().when(mCurrentPageVerifier)
                 .addVerificationObserver(mVerificationObserverCaptor.capture());
-        doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
+        doReturn(false).when(mStore).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
-        new TrustedWebActivityDisclosureController(mPreferences, mModel, mLifecycleDispatcher,
+        new TrustedWebActivityDisclosureController(mStore, mModel, mLifecycleDispatcher,
                 mCurrentPageVerifier, mRecorder, mClientPackageNameProvider);
     }
 
@@ -70,6 +75,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     public void showsWhenOriginVerified() {
         enterVerifiedOrigin();
         assertSnackbarShown();
+        assertScope(SCOPE);
     }
 
     @Test
@@ -78,6 +84,7 @@ public class TrustedWebActivityDisclosureControllerTest {
         enterVerifiedOrigin();
         exitVerifiedOrigin();
         assertSnackbarNotShown();
+        assertScope(null);
     }
 
     @Test
@@ -92,7 +99,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     @Test
     @Feature("TrustedWebActivities")
     public void noShowIfAlreadyAccepted() {
-        doReturn(true).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
+        doReturn(true).when(mStore).hasUserAcceptedTwaDisclosureForPackage(anyString());
         enterVerifiedOrigin();
         assertSnackbarNotShown();
     }
@@ -102,7 +109,31 @@ public class TrustedWebActivityDisclosureControllerTest {
     public void recordDismiss() {
         enterVerifiedOrigin();
         dismissSnackbar();
-        verify(mPreferences).setUserAcceptedTwaDisclosureForPackage(CLIENT_PACKAGE);
+        verify(mStore).setUserAcceptedTwaDisclosureForPackage(CLIENT_PACKAGE);
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void reportsFirstTime_firstTime() {
+        doReturn(false).when(mStore).hasUserSeenTwaDisclosureForPackage(anyString());
+        enterVerifiedOrigin();
+        assertTrue(mModel.get(DISCLOSURE_FIRST_TIME));
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void reportsFirstTime_notFirstTime() {
+        doReturn(true).when(mStore).hasUserSeenTwaDisclosureForPackage(anyString());
+        enterVerifiedOrigin();
+        assertFalse(mModel.get(DISCLOSURE_FIRST_TIME));
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void recordsShown() {
+        enterVerifiedOrigin();
+        mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
+        verify(mStore).setUserSeenTwaDisclosureForPackage(CLIENT_PACKAGE);
     }
 
     private void enterVerifiedOrigin() {
@@ -126,6 +157,10 @@ public class TrustedWebActivityDisclosureControllerTest {
 
     private void assertSnackbarNotShown() {
         assertEquals(DISCLOSURE_STATE_NOT_SHOWN, mModel.get(DISCLOSURE_STATE));
+    }
+
+    private void assertScope(String scope) {
+        assertEquals(scope, mModel.get(DISCLOSURE_SCOPE));
     }
 
     private void dismissSnackbar() {

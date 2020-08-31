@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -39,6 +41,12 @@ void ShowSettingsOnCurrentDesktop(Browser* browser) {
                                       window_manager->CurrentAccountId());
     browser->window()->Show();
   }
+}
+
+bool AreSystemWebAppsEnabled(Profile* profile) {
+  return web_app::SystemWebAppManager::IsEnabled() &&
+         web_app::AreWebAppsEnabled(profile) &&
+         !chrome::IsRunningInForcedAppMode();
 }
 
 }  // namespace
@@ -67,7 +75,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 
   // TODO(calamity): Auto-launch the settings app on install if not found, and
   // figure out how to invoke OnNewSettingsWindow() in that case.
-  if (web_app::SystemWebAppManager::IsEnabled()) {
+  if (AreSystemWebAppsEnabled(profile)) {
     bool did_create;
     Browser* browser = web_app::LaunchSystemWebApp(
         profile, web_app::SystemAppType::SETTINGS, gurl, &did_create);
@@ -92,8 +100,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
       browser->window()->Show();
       return;
     }
-  }
-  if (browser) {
+
     NavigateParams params(browser, gurl, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.user_gesture = true;
@@ -117,9 +124,9 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   DCHECK(browser->is_trusted_source());
 
   auto* window = browser->window()->GetNativeWindow();
-  window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_SETTINGS_LOGO_192);
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CHROME_APP));
+  window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_SETTINGS_LOGO_192);
 
   for (SettingsWindowManagerObserver& observer : observers_)
     observer.OnNewSettingsWindow(browser);
@@ -135,7 +142,7 @@ void SettingsWindowManager::ShowOSSettings(Profile* profile,
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
-  if (web_app::SystemWebAppManager::IsEnabled()) {
+  if (AreSystemWebAppsEnabled(profile)) {
     return web_app::FindSystemWebAppBrowser(profile,
                                             web_app::SystemAppType::SETTINGS);
   }
@@ -148,14 +155,19 @@ Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
 }
 
 bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
+  DCHECK(browser);
+
   Profile* profile = browser->profile();
-  if (web_app::SystemWebAppManager::IsEnabled()) {
+  if (AreSystemWebAppsEnabled(profile)) {
+    if (!browser->app_controller() || !browser->app_controller()->HasAppId())
+      return false;
+
     // TODO(calamity): Determine whether, during startup, we need to wait for
     // app install and then provide a valid answer here.
     base::Optional<std::string> settings_app_id =
         web_app::GetAppIdForSystemWebApp(profile,
                                          web_app::SystemAppType::SETTINGS);
-    return settings_app_id && browser->app_controller() &&
+    return settings_app_id &&
            browser->app_controller()->GetAppId() == settings_app_id.value();
   } else {
     auto iter = settings_session_map_.find(profile);

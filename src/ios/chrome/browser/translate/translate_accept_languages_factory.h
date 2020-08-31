@@ -11,12 +11,10 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace translate {
 class TranslateAcceptLanguages;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // TranslateAcceptLanguagesFactory is a way to associate a
@@ -24,7 +22,7 @@ class ChromeBrowserState;
 class TranslateAcceptLanguagesFactory : public BrowserStateKeyedServiceFactory {
  public:
   static translate::TranslateAcceptLanguages* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static TranslateAcceptLanguagesFactory* GetInstance();
 
  private:

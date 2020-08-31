@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/keyboard/test_keyboard_ui.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/session/test_pref_service_provider.h"
@@ -20,7 +20,6 @@
 #include "ash/shell/shell_views_delegate.h"
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
-#include "ash/shell_init_params.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/bind.h"
@@ -31,13 +30,9 @@
 #include "chromeos/network/network_handler.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "net/base/net_module.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/views/examples/examples_window_with_content.h"
@@ -86,41 +81,34 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
-  ash_test_helper_ = std::make_unique<AshTestHelper>();
+  if (!parameters_.ui_task)
+    new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
 
-  AshTestHelper::InitParams init_params;
   // TODO(oshima): Separate the class for ash_shell to reduce the test binary
   // size.
-  if (parameters_.ui_task)
-    init_params.config_type = AshTestHelper::kPerfTest;
-  else {
-    new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
-    init_params.config_type = AshTestHelper::kShell;
-  }
-
-  ShellInitParams shell_init_params;
-  shell_init_params.delegate = std::make_unique<shell::ShellDelegateImpl>();
-  shell_init_params.context_factory = content::GetContextFactory();
-  shell_init_params.context_factory_private =
-      content::GetContextFactoryPrivate();
-  shell_init_params.connector = content::GetSystemConnector();
-  shell_init_params.keyboard_ui_factory =
-      std::make_unique<TestKeyboardUIFactory>();
-
-  ash_test_helper_->SetUp(init_params, std::move(shell_init_params));
+  ash_test_helper_ = std::make_unique<AshTestHelper>(
+      parameters_.ui_task ? AshTestHelper::kPerfTest : AshTestHelper::kShell,
+      content::GetContextFactory());
+  AshTestHelper::InitParams init_params;
+  init_params.delegate = std::make_unique<ShellDelegateImpl>();
+  ash_test_helper_->SetUp(std::move(init_params));
 
   window_watcher_ = std::make_unique<WindowWatcher>();
-
-  Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
   Shell::Get()->InitWaylandServer(nullptr);
 
   if (!parameters_.ui_task) {
     // Install Rewriter so that function keys are properly re-mapped.
     auto* event_rewriter_controller = EventRewriterController::Get();
+    bool privacy_screen_supported = false;
+    if (Shell::Get()->privacy_screen_controller() &&
+        Shell::Get()->privacy_screen_controller()->IsSupported()) {
+      privacy_screen_supported = true;
+    }
     event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(
-            nullptr, Shell::Get()->sticky_keys_controller()));
+            nullptr, Shell::Get()->sticky_keys_controller(),
+            privacy_screen_supported));
 
     // Initialize session controller client and create fake user sessions. The
     // fake user sessions makes ash into the logged in state.
@@ -133,7 +121,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     example_app_list_client_ = std::make_unique<ExampleAppListClient>(
         Shell::Get()->app_list_controller());
 
-    shell::InitWindowTypeLauncher(
+    InitWindowTypeLauncher(
         base::BindRepeating(views::examples::ShowExamplesWindowWithContent,
                             base::Passed(base::OnceClosure()),
                             base::Unretained(browser_context_.get()), nullptr),
@@ -161,7 +149,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   example_app_list_client_.reset();
   example_session_controller_client_.reset();
 
-  ash_test_helper_->TearDown();
   ash_test_helper_.reset();
 
   views_delegate_.reset();

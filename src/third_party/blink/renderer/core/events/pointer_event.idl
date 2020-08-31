@@ -5,9 +5,9 @@
 // https://w3c.github.io/pointerevents/#pointerevent-interface
 
 [
-    Constructor(DOMString type, optional PointerEventInit eventInitDict),
     Exposed=Window
 ] interface PointerEvent : MouseEvent {
+    constructor(DOMString type, optional PointerEventInit eventInitDict = {});
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      pointerId;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute double    width;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute double    height;
@@ -21,5 +21,5 @@
 
     // https://w3c.github.io/pointerevents/extension.html#extensions-to-the-pointerevent-interface
     sequence<PointerEvent> getCoalescedEvents();
-    [RuntimeEnabled=PredictedEvents, Measure] sequence<PointerEvent> getPredictedEvents();
+    [Measure] sequence<PointerEvent> getPredictedEvents();
 };

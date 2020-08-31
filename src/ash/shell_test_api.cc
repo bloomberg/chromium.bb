@@ -25,7 +25,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -95,7 +94,6 @@ class WindowAnimationWaiter : public ui::LayerAnimationObserver {
       ui::LayerAnimationSequence* sequence) override {}
 
   void Wait() {
-    DCHECK(animator_->is_animating());
     run_loop_.Run();
   }
 
@@ -165,6 +163,7 @@ void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
   // to prevent the callback from evdev thread from overwriting whatever we set
   // here below. See `InputDeviceFactoryEvdevProxy::OnStartupScanComplete()`.
   base::RunLoop().RunUntilIdle();
+  ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
   ui::DeviceDataManagerTestApi().SetMouseDevices({});
 
   TabletMode::Waiter waiter(enable);
@@ -178,7 +177,7 @@ void ShellTestApi::EnableVirtualKeyboard() {
 }
 
 void ShellTestApi::ToggleFullscreen() {
-  ash::accelerators::ToggleFullscreen();
+  accelerators::ToggleFullscreen();
 }
 
 bool ShellTestApi::IsOverviewSelecting() {
@@ -231,7 +230,7 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
 }
 
 void ShellTestApi::WaitForLauncherAnimationState(
-    ash::AppListViewState target_state) {
+    AppListViewState target_state) {
   base::RunLoop run_loop;
   WaitForLauncherState(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
@@ -240,6 +239,12 @@ void ShellTestApi::WaitForLauncherAnimationState(
 void ShellTestApi::WaitForWindowFinishAnimating(aura::Window* window) {
   WindowAnimationWaiter waiter(window);
   waiter.Wait();
+}
+
+base::OnceClosure ShellTestApi::CreateWaiterForFinishingWindowAnimation(
+    aura::Window* window) {
+  auto waiter = std::make_unique<WindowAnimationWaiter>(window);
+  return base::BindOnce(&WindowAnimationWaiter::Wait, std::move(waiter));
 }
 
 PaginationModel* ShellTestApi::GetAppListPaginationModel() {
@@ -251,7 +256,7 @@ PaginationModel* ShellTestApi::GetAppListPaginationModel() {
 }
 
 std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
-  return ash::Shell::Get()
+  return Shell::Get()
       ->overview_controller()
       ->GetItemWindowListInOverviewGridsForTest();
 }

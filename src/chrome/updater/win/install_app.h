@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
+
 namespace updater {
 
-// Sets the updater up, shows up a splash screen, then installs an application
-// while displaying the UI progress window.
-int InstallApp(const std::string& app_id);
+class App;
+
+scoped_refptr<App> AppInstallInstance();
 
 }  // namespace updater
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -21,6 +22,10 @@ class HttpRequestHeaders;
 
 namespace network {
 struct ResourceRequest;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -40,7 +45,12 @@ class CONTENT_EXPORT AppCacheRequest {
   const std::string& GetMethod() const { return request_.method; }
 
   // Used for cookie policy.
-  const GURL& GetSiteForCookies() const { return request_.site_for_cookies; }
+  net::SiteForCookies GetSiteForCookies() const {
+    return request_.site_for_cookies;
+  }
+
+  // Used for cookie policy.
+  base::Optional<url::Origin> GetTopFrameOrigin() const;
 
   // The referrer for this request.
   const GURL GetReferrer() const { return request_.referrer; }
@@ -80,8 +90,8 @@ class CONTENT_EXPORT AppCacheRequest {
 
  protected:
   friend class AppCacheRequestHandler;
-  // Enables the AppCacheJob to call GetResourceRequest().
-  friend class AppCacheJob;
+  // Enables the AppCacheURLLoader to call GetResourceRequest().
+  friend class AppCacheURLLoader;
 
   // Returns the underlying ResourceRequest.
   network::ResourceRequest* GetResourceRequest() { return &request_; }

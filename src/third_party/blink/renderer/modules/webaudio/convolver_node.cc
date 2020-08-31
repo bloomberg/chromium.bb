@@ -24,14 +24,17 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/convolver_node.h"
+
 #include <memory>
+
+#include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_convolver_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
-#include "third_party/blink/renderer/modules/webaudio/convolver_options.h"
 #include "third_party/blink/renderer/platform/audio/reverb.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.
@@ -89,7 +92,8 @@ void ConvolverHandler::Process(uint32_t frames_to_process) {
       // FIXME:  If we wanted to get fancy we could try to factor in the 'tail
       // time' and stop processing once the tail dies down if
       // we keep getting fed silence.
-      reverb_->Process(Input(0).Bus(), output_bus, frames_to_process);
+      scoped_refptr<AudioBus> input_bus = Input(0).Bus();
+      reverb_->Process(input_bus.get(), output_bus, frames_to_process);
     }
   } else {
     // Too bad - the tryLock() failed.  We must be in the middle of setting a
@@ -219,11 +223,19 @@ void ConvolverHandler::SetChannelCount(unsigned channel_count,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
 
-  // channelCount must be 2.
-  if (channel_count != 2) {
+  // channelCount must be 1 or 2
+  if (channel_count == 1 || channel_count == 2) {
+    if (channel_count_ != channel_count) {
+      channel_count_ = channel_count;
+      UpdateChannelsForInputs();
+    }
+  } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "ConvolverNode: channelCount cannot be changed from 2");
+        ExceptionMessages::IndexOutsideRange<uint32_t>(
+            "channelCount", channel_count, 1,
+            ExceptionMessages::kInclusiveBound, 2,
+            ExceptionMessages::kInclusiveBound));
   }
 }
 
@@ -232,11 +244,27 @@ void ConvolverHandler::SetChannelCountMode(const String& mode,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
 
-  // channcelCountMode must be 'clamped-max'.
-  if (mode != "clamped-max") {
+  ChannelCountMode old_mode = InternalChannelCountMode();
+
+  // The channelCountMode cannot be "max".  For a convolver node, the
+  // number of input channels must be 1 or 2 (see
+  // https://webaudio.github.io/web-audio-api/#audionode-channelcount-constraints)
+  // and "max" would be incompatible with that.
+  if (mode == "max") {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "ConvolverNode: channelCountMode cannot be changed from 'clamped-max'");
+        "ConvolverNode: channelCountMode cannot be changed to 'max'");
+    new_channel_count_mode_ = old_mode;
+  } else if (mode == "explicit") {
+    new_channel_count_mode_ = kExplicit;
+  } else if (mode == "clamped-max") {
+    new_channel_count_mode_ = kClampedMax;
+  } else {
+    NOTREACHED();
+  }
+
+  if (new_channel_count_mode_ != old_mode) {
+    Context()->GetDeferredTaskHandler().AddChangedChannelCountMode(this);
   }
 }
 

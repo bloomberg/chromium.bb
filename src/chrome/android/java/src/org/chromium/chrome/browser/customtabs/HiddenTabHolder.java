@@ -21,11 +21,9 @@ import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -45,23 +43,45 @@ public class HiddenTabHolder {
         public final CustomTabsSessionToken session;
         public final String url;
         public final Tab tab;
-        public final TabObserver observer;
         public final String referrer;
 
-        private SpeculationParams(CustomTabsSessionToken session, String url, Tab tab,
-                TabObserver observer, String referrer) {
+        private SpeculationParams(
+                CustomTabsSessionToken session, String url, Tab tab, String referrer) {
             this.session = session;
             this.url = url;
             this.tab = tab;
-            this.observer = observer;
             this.referrer = referrer;
         }
     }
 
     private class HiddenTabObserver extends EmptyTabObserver {
+        // This WindowAndroid is "owned" by the Tab and should be destroyed when it is no longer
+        // needed by the Tab or when the Tab is destroyed.
+        private WindowAndroid mOwnedWindowAndroid;
+        public HiddenTabObserver(WindowAndroid ownedWindowAndroid) {
+            mOwnedWindowAndroid = ownedWindowAndroid;
+        }
+
         @Override
         public void onCrash(Tab tab) {
             destroyHiddenTab(null);
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            destroyOwnedWindow(tab);
+        }
+
+        @Override
+        public void onActivityAttachmentChanged(Tab tab, WindowAndroid window) {
+            destroyOwnedWindow(tab);
+        }
+
+        private void destroyOwnedWindow(Tab tab) {
+            assert mOwnedWindowAndroid != null;
+            mOwnedWindowAndroid.destroy();
+            mOwnedWindowAndroid = null;
+            tab.removeObserver(this);
         }
     }
 
@@ -86,7 +106,7 @@ public class HiddenTabHolder {
 
         Tab tab = buildDetachedTab();
 
-        HiddenTabObserver observer = new HiddenTabObserver();
+        HiddenTabObserver observer = new HiddenTabObserver(tab.getWindowAndroid());
         tab.addObserver(observer);
 
         // Updating post message as soon as we have a valid WebContents.
@@ -102,7 +122,7 @@ public class HiddenTabHolder {
             loadParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));
         }
 
-        mSpeculation = new SpeculationParams(session, url, tab, observer, referrer);
+        mSpeculation = new SpeculationParams(session, url, tab, referrer);
         mSpeculation.tab.loadUrl(loadParams);
     }
 
@@ -128,7 +148,7 @@ public class HiddenTabHolder {
         int width = bounds.right - bounds.left;
         int height = bounds.bottom - bounds.top;
         tab.getWebContents().setSize(width, height);
-        ReparentingTask.detach(tab);
+        ReparentingTask.from(tab).detach();
         return tab;
     }
 
@@ -152,7 +172,6 @@ public class HiddenTabHolder {
             String speculatedUrl = mSpeculation.url;
             String speculationReferrer = mSpeculation.referrer;
 
-            tab.removeObserver(mSpeculation.observer);
             mSpeculation = null;
 
             boolean urlsMatch = ignoreFragments
@@ -166,7 +185,7 @@ public class HiddenTabHolder {
                 return tab;
             } else {
                 CustomTabsConnection.recordSpeculationStatusSwapTabNotMatched();
-                ((TabImpl) tab).destroy();
+                tab.destroy();
                 return null;
             }
         }
@@ -177,7 +196,7 @@ public class HiddenTabHolder {
         if (mSpeculation == null) return;
         if (session!= null && !session.equals(mSpeculation.session)) return;
 
-        ((TabImpl) (mSpeculation.tab)).destroy();
+        mSpeculation.tab.destroy();
         mSpeculation = null;
     }
 

@@ -8,14 +8,14 @@
 #include <memory>
 #include <utility>
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_subsurface.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 struct wl_resource;
 
@@ -42,15 +42,10 @@ class MockSurface : public ServerObject {
   MOCK_METHOD4(DamageBuffer,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
 
-  void set_xdg_surface(std::unique_ptr<MockXdgSurface> xdg_surface) {
-    xdg_surface_ = std::move(xdg_surface);
+  void set_xdg_surface(MockXdgSurface* xdg_surface) {
+    xdg_surface_ = xdg_surface;
   }
-  MockXdgSurface* xdg_surface() const { return xdg_surface_.get(); }
-
-  void set_xdg_popup(std::unique_ptr<MockXdgPopup> xdg_popup) {
-    xdg_popup_ = std::move(xdg_popup);
-  }
-  MockXdgPopup* xdg_popup() const { return xdg_popup_.get(); }
+  MockXdgSurface* xdg_surface() const { return xdg_surface_; }
 
   void set_sub_surface(TestSubSurface* sub_surface) {
     sub_surface_ = sub_surface;
@@ -62,17 +57,15 @@ class MockSurface : public ServerObject {
     frame_callback_ = callback_resource;
   }
 
-  bool has_role() const {
-    return !!xdg_surface_ || !!xdg_popup_ || !!sub_surface_;
-  }
+  bool has_role() const { return !!xdg_surface_ || !!sub_surface_; }
 
   void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
+  void DestroyPrevAttachedBuffer();
   void ReleasePrevAttachedBuffer();
   void SendFrameCallback();
 
  private:
-  std::unique_ptr<MockXdgSurface> xdg_surface_;
-  std::unique_ptr<MockXdgPopup> xdg_popup_;
+  MockXdgSurface* xdg_surface_ = nullptr;
   TestSubSurface* sub_surface_ = nullptr;
 
   wl_resource* frame_callback_ = nullptr;

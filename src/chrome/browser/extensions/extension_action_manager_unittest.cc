@@ -6,15 +6,14 @@
 
 #include <memory>
 
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,23 +29,6 @@ class ExtensionActionManagerTest
   ExtensionActionManagerTest();
 
  protected:
-  const char* GetManifestKey() {
-    const char* key = nullptr;
-    switch (GetParam()) {
-      case ActionInfo::TYPE_ACTION:
-        key = manifest_keys::kAction;
-        break;
-      case ActionInfo::TYPE_PAGE:
-        key = manifest_keys::kPageAction;
-        break;
-      case ActionInfo::TYPE_BROWSER:
-        key = manifest_keys::kBrowserAction;
-        break;
-    }
-
-    return key;
-  }
-
   ExtensionActionManager* manager() { return manager_; }
   ExtensionRegistry* registry() { return registry_; }
 
@@ -63,8 +45,7 @@ class ExtensionActionManagerTest
 };
 
 ExtensionActionManagerTest::ExtensionActionManagerTest()
-    : current_channel_(
-          extension_test_util::GetOverrideChannelForActionType(GetParam())),
+    : current_channel_(GetOverrideChannelForActionType(GetParam())),
       profile_(std::make_unique<TestingProfile>()) {
   registry_ = ExtensionRegistry::Get(profile_.get());
   manager_ = ExtensionActionManager::Get(profile_.get());
@@ -82,7 +63,7 @@ TEST_P(ExtensionActionManagerTest, TestPopulateMissingValues_Icons) {
                                        .Set("48", "icon48.png")
                                        .Set("128", "icon128.png")
                                        .Build())
-          .SetManifestKey(GetManifestKey(),
+          .SetManifestKey(GetManifestKeyForActionType(GetParam()),
                           std::make_unique<base::DictionaryValue>())
           .Build();
 
@@ -102,7 +83,7 @@ TEST_P(ExtensionActionManagerTest, TestPopulateMissingValues_Icons) {
 TEST_P(ExtensionActionManagerTest, TestPopulateMissingValues_Title) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("Test Extension")
-          .SetManifestKey(GetManifestKey(),
+          .SetManifestKey(GetManifestKeyForActionType(GetParam()),
                           std::make_unique<base::DictionaryValue>())
           .Build();
 
@@ -124,7 +105,7 @@ TEST_P(ExtensionActionManagerTest, TestDontOverrideIfDefaultsProvided) {
           .SetManifestKey("icons",
                           DictionaryBuilder().Set("24", "icon24.png").Build())
           .SetManifestKey(
-              GetManifestKey(),
+              GetManifestKeyForActionType(GetParam()),
               DictionaryBuilder()
                   .Set("default_icon",
                        DictionaryBuilder().Set("19", "icon19.png").Build())

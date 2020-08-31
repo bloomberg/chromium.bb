@@ -7,12 +7,9 @@
 
 #include "extensions/renderer/bindings/interaction_provider.h"
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "v8/include/v8.h"
-
-namespace blink {
-class WebLocalFrame;
-}  // namespace blink
 
 namespace extensions {
 
@@ -47,8 +44,6 @@ class ExtensionInteractionProvider : public InteractionProvider {
 
     // Creates a Scope for a Service Worker context, without token.
     static std::unique_ptr<Scope> ForWorker(v8::Local<v8::Context> v8_context);
-    // Creates a scope for a RenderFrame, without token.
-    static std::unique_ptr<Scope> ForFrame(blink::WebLocalFrame* web_frame);
 
     // Creates a scope from a |token|.
     static std::unique_ptr<Scope> ForToken(

@@ -25,11 +25,13 @@ class UpdateLayout;
 class V8Compile;
 }  // namespace probe
 
+using blink::protocol::Maybe;
+
 class CORE_EXPORT InspectorPerformanceAgent final
     : public InspectorBaseAgent<protocol::Performance::Metainfo>,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   explicit InspectorPerformanceAgent(InspectedFrames*);
   ~InspectorPerformanceAgent() override;
@@ -37,7 +39,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Restore() override;
 
   // Performance protocol domain implementation.
-  protocol::Response enable() override;
+  protocol::Response enable(Maybe<String> time_domain) override;
   protocol::Response disable() override;
   protocol::Response setTimeDomain(const String& time_domain) override;
   protocol::Response getMetrics(
@@ -56,6 +58,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Did(const probe::UpdateLayout&);
   void Will(const probe::V8Compile&);
   void Did(const probe::V8Compile&);
+  void WillStartDebuggerTask();
+  void DidFinishDebuggerTask();
 
   // TaskTimeObserver implementation.
   void WillProcessTask(base::TimeTicks start_time) override;
@@ -68,6 +72,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void InnerEnable();
   base::TimeTicks GetTimeTicksNow();
   base::TimeTicks GetThreadTimeNow();
+  bool HasTimeDomain(const String& time_domain);
+  protocol::Response InnerSetTimeDomain(const String& time_domain);
 
   Member<InspectedFrames> inspected_frames_;
   base::TimeDelta layout_duration_;
@@ -80,6 +86,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   base::TimeTicks task_start_ticks_;
   base::TimeDelta v8compile_duration_;
   base::TimeTicks v8compile_start_ticks_;
+  base::TimeDelta devtools_command_duration_;
+  base::TimeTicks devtools_command_start_ticks_;
   base::TimeTicks thread_time_origin_;
   uint64_t layout_count_ = 0;
   uint64_t recalc_style_count_ = 0;

@@ -23,6 +23,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_random.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
@@ -93,7 +94,7 @@ bool CFX_FileBufferArchive::WriteBlock(const void* pBuf, size_t size) {
     buffer += buf_size;
   }
 
-  pdfium::base::CheckedNumeric<FX_FILESIZE> safe_offset = offset_;
+  FX_SAFE_FILESIZE safe_offset = offset_;
   safe_offset += size;
   if (!safe_offset.IsValid())
     return false;
@@ -596,26 +597,26 @@ void CPDF_Creator::InitID() {
   const CPDF_Array* pOldIDArray = m_pParser ? m_pParser->GetIDArray() : nullptr;
   const CPDF_Object* pID1 = pOldIDArray ? pOldIDArray->GetObjectAt(0) : nullptr;
   if (pID1) {
-    m_pIDArray->Add(pID1->Clone());
+    m_pIDArray->Append(pID1->Clone());
   } else {
     ByteString bsBuffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
-    m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
+    m_pIDArray->AppendNew<CPDF_String>(bsBuffer, true);
   }
 
   if (pOldIDArray) {
     const CPDF_Object* pID2 = pOldIDArray->GetObjectAt(1);
     if (m_IsIncremental && m_pEncryptDict && pID2) {
-      m_pIDArray->Add(pID2->Clone());
+      m_pIDArray->Append(pID2->Clone());
       return;
     }
     ByteString bsBuffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
-    m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
+    m_pIDArray->AppendNew<CPDF_String>(bsBuffer, true);
     return;
   }
 
-  m_pIDArray->Add(m_pIDArray->GetObjectAt(0)->Clone());
+  m_pIDArray->Append(m_pIDArray->GetObjectAt(0)->Clone());
   if (m_pEncryptDict) {
     ASSERT(m_pParser);
     int revision = m_pEncryptDict->GetIntegerFor("R");
@@ -625,7 +626,7 @@ void CPDF_Creator::InitID() {
       m_pEncryptDict = m_pNewEncryptDict;
       m_pSecurityHandler = pdfium::MakeRetain<CPDF_SecurityHandler>();
       m_pSecurityHandler->OnCreate(m_pNewEncryptDict.Get(), m_pIDArray.Get(),
-                                   m_pParser->GetPassword());
+                                   m_pParser->GetEncodedPassword());
       m_bSecurityChanged = true;
     }
   }

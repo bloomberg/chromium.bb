@@ -97,7 +97,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
  public:
   enum CodecMode {
     kDecode,
-    kEncode,
+    kEncode,  // Encode with Constant Bitrate algorithm.
+    kEncodeConstantQuantizationParameter,  // Encode with Constant Quantization
+                                           // Parameter algorithm.
     kVideoProcess,
     kCodecModeMax,
   };
@@ -203,6 +205,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Returns the list of VAImageFormats supported by the driver.
   static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
+  // Returns the list of supported profiles and entrypoints for a given |mode|.
+  static std::map<VAProfile, std::vector<VAEntrypoint>>
+  GetSupportedConfigurationsForCodecModeForTesting(CodecMode mode);
+
+  static VAEntrypoint GetDefaultVaEntryPoint(CodecMode mode, VAProfile profile);
+
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
   // Creates |num_surfaces| VASurfaceIDs of |va_format|, |size| and
@@ -251,13 +259,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       unsigned int va_rt_format,
       const gfx::Size& size,
       const base::Optional<gfx::Size>& visible_size = base::nullopt);
-
-  // Creates a self-releasing VASurface from |frame|. The created VASurface
-  // doesn't have the ownership of |frame|, while it shares the ownership of the
-  // underlying buffer represented by |frame|. In other words, the buffer is
-  // alive at least until both |frame| and the created VASurface are destroyed.
-  scoped_refptr<VASurface> CreateVASurfaceForVideoFrame(
-      const VideoFrame* frame);
 
   // Creates a self-releasing VASurface from |pixmap|. The created VASurface
   // shares the ownership of the underlying buffer represented by |pixmap|. The
@@ -380,8 +381,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // |va_surface_dest| applying pixel format conversion, cropping and scaling
   // if needed. |src_rect| and |dest_rect| are optional. They can be used to
   // specify the area used in the blit.
-  bool BlitSurface(const scoped_refptr<VASurface>& va_surface_src,
-                   const scoped_refptr<VASurface>& va_surface_dest,
+  bool BlitSurface(const VASurface& va_surface_src,
+                   const VASurface& va_surface_dest,
                    base::Optional<gfx::Rect> src_rect = base::nullopt,
                    base::Optional<gfx::Rect> dest_rect = base::nullopt);
 
@@ -427,8 +428,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();
 
-  // Check low-power encode support for the given profile
-  bool IsLowPowerEncSupported(VAProfile va_profile) const;
+  // Check low-power encode support for |profile| and |mode|.
+  bool IsLowPowerEncSupported(VAProfile va_profile, CodecMode mode) const;
 
   const CodecMode mode_;
 
@@ -443,6 +444,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Created in CreateContext() or CreateContextAndSurfaces() and valid until
   // DestroyContext() or DestroyContextAndSurfaces().
   VAContextID va_context_id_;
+
+  //Entrypoint configured for the corresponding context
+  VAEntrypoint va_entrypoint_;
 
   // Data queued up for HW codec, to be committed on next execution.
   std::vector<VABufferID> pending_slice_bufs_;

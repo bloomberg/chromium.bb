@@ -326,16 +326,14 @@ void TreeNode::WriteIntoJson(
     std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>
         compare_func,
     bool is_sparse,
+    bool method_count_mode,
     Json::Value* out) {
   if (symbol) {
+    (*out)["helpme"] = std::string(symbol->Name());
+    (*out)["idPath"] = std::string(symbol->TemplateName());
+    (*out)["fullName"] = std::string(symbol->FullName());
     if (symbol->NumAliases() > 1) {
       (*out)["numAliases"] = symbol->NumAliases();
-    }
-    if (symbol->IsDex()) {
-      (*out)["idPath"] = std::string(symbol->FullName());
-    } else {
-      (*out)["idPath"] = std::string(symbol->TemplateName());
-      (*out)["fullName"] = std::string(symbol->FullName());
     }
     if (symbol->SourcePath()) {
       (*out)["srcPath"] = symbol->SourcePath();
@@ -365,7 +363,7 @@ void TreeNode::WriteIntoJson(
 
   (*out)["size"] = size;
   (*out)["flags"] = flags;
-  node_stats.WriteIntoJson(&(*out)["childStats"]);
+  node_stats.WriteIntoJson(method_count_mode, &(*out)["childStats"]);
 
   const size_t kMaxChildNodesToExpand = 1000;
   if (children.size() > kMaxChildNodesToExpand) {
@@ -383,7 +381,7 @@ void TreeNode::WriteIntoJson(
     std::sort(children.begin(), children.end(), compare_func);
     for (unsigned int i = 0; i < children.size(); i++) {
       children[i]->WriteIntoJson(depth - 1, compare_func, is_sparse,
-                                 &(*out)["children"][i]);
+                                 method_count_mode, &(*out)["children"][i]);
     }
   }
 }
@@ -410,17 +408,24 @@ NodeStats::NodeStats(const BaseSymbol& symbol) {
   }
 }
 
-void NodeStats::WriteIntoJson(Json::Value* out) const {
+void NodeStats::WriteIntoJson(bool method_count_mode, Json::Value* out) const {
   (*out) = Json::Value(Json::objectValue);
   for (const auto kv : child_stats) {
     const std::string sectionId = std::string(1, static_cast<char>(kv.first));
     const Stat stats = kv.second;
     (*out)[sectionId] = Json::Value(Json::objectValue);
     (*out)[sectionId]["size"] = stats.size;
-    (*out)[sectionId]["count"] = stats.count;
     (*out)[sectionId]["added"] = stats.added;
     (*out)[sectionId]["removed"] = stats.removed;
     (*out)[sectionId]["changed"] = stats.changed;
+    // Count is used to store value for "method count" mode.
+    // Why? Because that's how it was implemented in the .ndjson worker.
+    int count = stats.count;
+    bool is_diff = stats.added > 0 || stats.removed > 0 || stats.changed > 0;
+    if (method_count_mode && is_diff) {
+      count = stats.added - stats.removed;
+    }
+    (*out)[sectionId]["count"] = count;
   }
 }
 

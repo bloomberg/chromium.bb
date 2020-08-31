@@ -18,9 +18,9 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.minidump_uploader.MinidumpUploader;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.ICrashReporterControllerClient;
-import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.io.File;
@@ -49,19 +49,9 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
         static CrashReporterControllerImpl sInstance = new CrashReporterControllerImpl();
     }
 
-    private CrashReporterControllerImpl() {
-        ChildProcessCrashObserver.registerCrashCallback(
-                new ChildProcessCrashObserver.ChildCrashedCallback() {
-                    @Override
-                    public void childCrashed(int pid) {
-                        processNewMinidumps();
-                    }
-                });
-    }
+    private CrashReporterControllerImpl() {}
 
-    public static CrashReporterControllerImpl getInstance(IObjectWrapper appContextWrapper) {
-        // This is a no-op if init has already happened.
-        WebLayerImpl.minimalInitForContext(appContextWrapper);
+    public static CrashReporterControllerImpl getInstance() {
         return Holder.sInstance;
     }
 
@@ -91,16 +81,16 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
         AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
             File minidumpFile = getCrashFileManager().getCrashFileWithLocalId(localId);
             MinidumpUploader.Result result = new MinidumpUploader().upload(minidumpFile);
-            if (result.mSuccess) {
+            if (result.isSuccess()) {
                 CrashFileManager.markUploadSuccess(minidumpFile);
             } else {
                 CrashFileManager.tryIncrementAttemptNumber(minidumpFile);
             }
             try {
-                if (result.mSuccess) {
-                    mClient.onCrashUploadSucceeded(localId, result.mResult);
+                if (result.isSuccess()) {
+                    mClient.onCrashUploadSucceeded(localId, result.message());
                 } else {
-                    mClient.onCrashUploadFailed(localId, result.mResult);
+                    mClient.onCrashUploadFailed(localId, result.message());
                 }
             } catch (RemoteException e) {
                 throw new AndroidRuntimeException(e);
@@ -147,6 +137,15 @@ public final class CrashReporterControllerImpl extends ICrashReporterController.
         if (mIsNativeInitialized) {
             processNewMinidumps();
         }
+
+        // Now that there is a client, register to observe child process crashes.
+        ChildProcessCrashObserver.registerCrashCallback(
+                new ChildProcessCrashObserver.ChildCrashedCallback() {
+                    @Override
+                    public void childCrashed(int pid) {
+                        processNewMinidumps();
+                    }
+                });
     }
 
     /** Start an async task to import crashes, and notify if any are found. */

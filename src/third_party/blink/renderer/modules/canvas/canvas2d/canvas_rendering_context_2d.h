@@ -30,13 +30,13 @@
 #include <random>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
-#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -176,10 +176,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool CanCreateCanvas2dResourceProvider() const final;
 
+  RespectImageOrientationEnum RespectImageOrientation() const final;
+
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  cc::PaintCanvas* DrawingCanvas() const final;
-  cc::PaintCanvas* ExistingDrawingCanvas() const final;
+  cc::PaintCanvas* GetOrCreatePaintCanvas() final;
+  cc::PaintCanvas* GetPaintCanvas() const final;
 
   void DidDraw(const SkIRect& dirty_rect) final;
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final;
@@ -188,7 +190,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
 
-  void ValidateStateStack() const final;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   void FinalizeFrame() override;
 
@@ -198,7 +200,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void WillDrawImage(CanvasImageSource*) const final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
@@ -267,7 +269,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   TaskRunnerTimer<CanvasRenderingContext2D> try_restore_context_event_timer_;
 
   FilterOperations filter_operations_;
-  HashMap<String, Font> fonts_resolved_using_current_style_;
+  HashMap<String, FontDescription> fonts_resolved_using_current_style_;
   bool should_prune_local_font_cache_;
   LinkedHashSet<String> font_lru_list_;
 

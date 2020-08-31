@@ -112,24 +112,24 @@ class CPWL_Wnd : public Observable {
     CreateParams(const CreateParams& other);
     ~CreateParams();
 
-    CFX_FloatRect rcRectWnd;                          // required
-    UnownedPtr<TimerHandlerIface> pTimerHandler;      // required
-    UnownedPtr<IPWL_SystemHandler> pSystemHandler;    // required
-    UnownedPtr<IPVT_FontMap> pFontMap;                // required
-    ObservedPtr<ProviderIface> pProvider;             // required
-    UnownedPtr<FocusHandlerIface> pFocusHandler;      // optional
-    uint32_t dwFlags = 0;                             // optional
-    CFX_Color sBackgroundColor;                       // optional
-    BorderStyle nBorderStyle = BorderStyle::SOLID;    // optional
-    int32_t dwBorderWidth = 1;                        // optional
-    CFX_Color sBorderColor;                           // optional
-    CFX_Color sTextColor;                             // optional
-    int32_t nTransparency = 255;                      // optional
-    float fFontSize;                                  // optional
-    CPWL_Dash sDash;                                  // optional
-    CPWL_MsgControl* pMsgControl = nullptr;           // ignore
-    int32_t eCursorType = FXCT_ARROW;                 // ignore
-    CFX_Matrix mtChild;                               // ignore
+    CFX_FloatRect rcRectWnd;                        // required
+    UnownedPtr<TimerHandlerIface> pTimerHandler;    // required
+    UnownedPtr<IPWL_SystemHandler> pSystemHandler;  // required
+    UnownedPtr<IPVT_FontMap> pFontMap;              // required
+    ObservedPtr<ProviderIface> pProvider;           // required
+    UnownedPtr<FocusHandlerIface> pFocusHandler;    // optional
+    uint32_t dwFlags = 0;                           // optional
+    CFX_Color sBackgroundColor;                     // optional
+    BorderStyle nBorderStyle = BorderStyle::SOLID;  // optional
+    int32_t dwBorderWidth = 1;                      // optional
+    CFX_Color sBorderColor;                         // optional
+    CFX_Color sTextColor;                           // optional
+    int32_t nTransparency = 255;                    // optional
+    float fFontSize;                                // optional
+    CPWL_Dash sDash;                                // optional
+    CPWL_MsgControl* pMsgControl = nullptr;         // ignore
+    int32_t eCursorType = FXCT_ARROW;               // ignore
+    CFX_Matrix mtChild;                             // ignore
   };
 
   static bool IsSHIFTKeyDown(uint32_t nFlag);
@@ -145,15 +145,15 @@ class CPWL_Wnd : public Observable {
 
   virtual bool OnKeyDown(uint16_t nChar, uint32_t nFlag);
   virtual bool OnChar(uint16_t nChar, uint32_t nFlag);
-  virtual bool OnLButtonDblClk(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnLButtonDown(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnLButtonUp(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnRButtonDown(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnRButtonUp(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnMouseMove(const CFX_PointF& point, uint32_t nFlag);
-  virtual bool OnMouseWheel(short zDelta,
+  virtual bool OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnRButtonDown(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnRButtonUp(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnMouseMove(uint32_t nFlag, const CFX_PointF& point);
+  virtual bool OnMouseWheel(uint32_t nFlag,
                             const CFX_PointF& point,
-                            uint32_t nFlag);
+                            const CFX_Vector& delta);
   virtual void SetScrollInfo(const PWL_SCROLL_INFO& info);
   virtual void SetScrollPosition(float pos);
   virtual void ScrollWindowVertically(float pos);

@@ -13,16 +13,18 @@
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
 #include "components/autofill_assistant/browser/actions/prompt_action.h"
-#include "components/autofill_assistant/browser/actions/reset_action.h"
+#include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
 #include "components/autofill_assistant/browser/actions/show_form_action.h"
+#include "components/autofill_assistant/browser/actions/show_generic_ui_action.h"
 #include "components/autofill_assistant/browser/actions/show_info_box_action.h"
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
@@ -43,6 +45,7 @@ namespace {
 
 void FillClientContext(const ClientContextProto& client_context,
                        const TriggerContext& trigger_context,
+                       const std::string& client_account_hash,
                        ClientContextProto* proto) {
   proto->CopyFrom(client_context);
   std::string experiment_ids = trigger_context.experiment_ids();
@@ -58,6 +61,18 @@ void FillClientContext(const ClientContextProto& client_context,
   if (trigger_context.is_direct_action()) {
     proto->set_is_direct_action(true);
   }
+  // TODO(b/156882027): Add an integration test for accounts handling.
+  if (trigger_context.get_caller_account_hash().empty()) {
+    proto->set_accounts_matching_status(ClientContextProto::UNKNOWN);
+  } else {
+    if (trigger_context.get_caller_account_hash() == client_account_hash) {
+      proto->set_accounts_matching_status(
+          ClientContextProto::ACCOUNTS_MATCHING);
+    } else {
+      proto->set_accounts_matching_status(
+          ClientContextProto::ACCOUNTS_NOT_MATCHING);
+    }
+  }
 }
 
 }  // namespace
@@ -66,12 +81,13 @@ void FillClientContext(const ClientContextProto& client_context,
 std::string ProtocolUtils::CreateGetScriptsRequest(
     const GURL& url,
     const TriggerContext& trigger_context,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     script_proto.mutable_client_context());
   trigger_context.AddParameters(script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
@@ -123,7 +139,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
       request_proto.mutable_initial_request();
@@ -132,7 +149,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->add_script_path(script_path);
   query->set_url(url.spec());
   query->set_policy(PolicyType::SCRIPT);
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     request_proto.mutable_client_context());
   trigger_context.AddParameters(
       initial_request_proto->mutable_script_parameters());
@@ -156,7 +173,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
     const std::string& global_payload,
     const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   ScriptActionRequestProto request_proto;
   request_proto.set_global_payload(global_payload);
   request_proto.set_script_payload(script_payload);
@@ -165,7 +183,7 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     request_proto.mutable_client_context());
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
@@ -239,10 +257,6 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         client_action = std::make_unique<StopAction>(delegate, action);
         break;
       }
-      case ActionProto::ActionInfoCase::kReset: {
-        client_action = std::make_unique<ResetAction>(delegate, action);
-        break;
-      }
       case ActionProto::ActionInfoCase::kHighlightElement: {
         client_action =
             std::make_unique<HighlightElementAction>(delegate, action);
@@ -307,8 +321,22 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
             std::make_unique<WaitForDocumentAction>(delegate, action);
         break;
       }
+      case ActionProto::ActionInfoCase::kShowGenericUi: {
+        client_action = std::make_unique<ShowGenericUiAction>(delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kGeneratePasswordForFormField: {
+        client_action = std::make_unique<GeneratePasswordForFormFieldAction>(
+            delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kSaveGeneratedPassword: {
+        client_action =
+            std::make_unique<SaveGeneratedPasswordAction>(delegate, action);
+        break;
+      }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        DVLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
+        VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
         client_action = std::make_unique<UnsupportedAction>(delegate, action);
         break;
       }
@@ -316,9 +344,9 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         // cases added to the proto.
     }
     if (client_action == nullptr) {
-      DVLOG(1) << "Encountered action with Unknown or unsupported action with "
-                  "action_case="
-               << action.action_info_case();
+      VLOG(1) << "Encountered action with Unknown or unsupported action with "
+                 "action_case="
+              << action.action_info_case();
       client_action = std::make_unique<UnsupportedAction>(delegate, action);
     }
     actions->emplace_back(std::move(client_action));

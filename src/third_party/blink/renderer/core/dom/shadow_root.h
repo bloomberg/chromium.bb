@@ -42,12 +42,9 @@ class Document;
 class ExceptionState;
 class ShadowRootV0;
 class SlotAssignment;
-class StringOrTrustedHTML;
 class WhitespaceAttacher;
 
 enum class ShadowRootType { V0, kOpen, kClosed, kUserAgent };
-
-enum class ShadowRootSlotting { kManual, kAuto };
 
 class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   DEFINE_WRAPPERTYPEINFO();
@@ -113,7 +110,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   // For Internals, don't use this.
   unsigned ChildShadowRootCount() const { return child_shadow_root_count_; }
 
-  void RecalcStyle(const StyleRecalcChange);
   void RebuildLayoutTree(WhitespaceAttacher&);
 
   void RegisterScopedHTMLStyleChild();
@@ -139,24 +135,32 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
 
   Element* ActiveElement() const;
 
-  String InnerHTMLAsString() const;
-  void SetInnerHTMLFromString(const String&,
-                              ExceptionState& = ASSERT_NO_EXCEPTION);
-
-  // TrustedTypes variants of the above.
-  // TODO(mkwst): Write a spec for these bits. https://crbug.com/739170
-  void innerHTML(StringOrTrustedHTML&) const;
-  void setInnerHTML(const StringOrTrustedHTML&, ExceptionState&);
+  String innerHTML() const;
+  void setInnerHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
 
   Node* Clone(Document&, CloneChildrenFlag) const override;
 
   void SetDelegatesFocus(bool flag) { delegates_focus_ = flag; }
   bool delegatesFocus() const { return delegates_focus_; }
 
-  void SetSlotting(ShadowRootSlotting slotting);
-  bool IsManualSlotting() {
-    return slotting_ == static_cast<unsigned>(ShadowRootSlotting::kManual);
+  void SetSlotAssignmentMode(SlotAssignmentMode assignment);
+  bool IsManualSlotting() const {
+    return slot_assignment_mode_ ==
+           static_cast<unsigned>(SlotAssignmentMode::kManual);
   }
+  SlotAssignmentMode GetSlotAssignmentMode() const {
+    return static_cast<SlotAssignmentMode>(slot_assignment_mode_);
+  }
+  String slotAssignment() const {
+    return IsManualSlotting() ? "manual" : "auto";
+  }
+
+  void SetIsDeclarativeShadowRoot(bool flag) {
+    DCHECK(!flag || GetType() == ShadowRootType::kOpen ||
+           GetType() == ShadowRootType::kClosed);
+    is_declarative_shadow_root_ = flag;
+  }
+  bool IsDeclarativeShadowRoot() const { return is_declarative_shadow_root_; }
 
   bool ContainsShadowRoots() const { return child_shadow_root_count_; }
 
@@ -188,9 +192,10 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   unsigned type_ : 2;
   unsigned registered_with_parent_shadow_root_ : 1;
   unsigned delegates_focus_ : 1;
-  unsigned slotting_ : 1;
+  unsigned slot_assignment_mode_ : 1;
+  unsigned is_declarative_shadow_root_ : 1;
   unsigned needs_distribution_recalc_ : 1;
-  unsigned unused_ : 10;
+  unsigned unused_ : 9;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowRoot);
 };

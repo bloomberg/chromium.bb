@@ -4,22 +4,17 @@
 
 // https://w3c.github.io/web-nfc/#dom-ndefmessagesource
 
-// The bindings generator does not support "typedef in union".
-// Must be (DOMString or BufferSource or NDEFMessageInit).
-// TODO(http://crbug.com/1019126): Support nested typedef in Web IDLs.
-typedef (DOMString or ArrayBuffer or ArrayBufferView or NDEFMessageInit)
-  NDEFMessageSource;
+typedef (DOMString or BufferSource or NDEFMessageInit) NDEFMessageSource;
 
 // https://w3c.github.io/web-nfc/#dom-nfcwriter
 
 [
     RuntimeEnabled=WebNFC,
     SecureContext,
-    Constructor(),
-    ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface NDEFWriter {
-    [CallWith=ScriptState, RaisesException] Promise<void> push(
+    [CallWith=ExecutionContext] constructor();
+    [CallWith=ScriptState, RaisesException] Promise<void> write(
         NDEFMessageSource message,
-        optional NDEFPushOptions options={});
+        optional NDEFWriteOptions options={});
 };

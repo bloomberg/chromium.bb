@@ -25,7 +25,6 @@
 
 #include "third_party/blink/public/web/web_hit_test_result.h"
 
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -43,7 +42,7 @@ class WebHitTestResultPrivate final
   WebHitTestResultPrivate(const HitTestResult&);
   WebHitTestResultPrivate(const WebHitTestResultPrivate&);
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
+  void Trace(Visitor* visitor) { visitor->Trace(result_); }
   const HitTestResult& Result() const { return result_; }
 
  private:
@@ -62,16 +61,12 @@ WebNode WebHitTestResult::GetNode() const {
   return WebNode(private_->Result().InnerNode());
 }
 
-WebPoint WebHitTestResult::LocalPoint() const {
-  return RoundedIntPoint(private_->Result().LocalPoint());
-}
-
-WebPoint WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
-  IntPoint local_point = RoundedIntPoint(private_->Result().LocalPoint());
+gfx::PointF WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
+  FloatPoint local_point = FloatPoint(private_->Result().LocalPoint());
   LayoutObject* object = private_->Result().GetLayoutObject();
   if (object->IsBox()) {
     LayoutBox* box = ToLayoutBox(object);
-    local_point.MoveBy(-RoundedIntPoint(box->PhysicalContentBoxOffset()));
+    local_point.MoveBy(-FloatPoint(box->PhysicalContentBoxOffset()));
   }
   return local_point;
 }
@@ -100,6 +95,10 @@ WebURL WebHitTestResult::AbsoluteLinkURL() const {
 
 bool WebHitTestResult::IsContentEditable() const {
   return private_->Result().IsContentEditable();
+}
+
+uint64_t WebHitTestResult::GetScrollableContainerId() const {
+  return private_->Result().GetScrollableContainer().GetStableId();
 }
 
 WebHitTestResult::WebHitTestResult(const HitTestResult& result)

@@ -246,10 +246,10 @@ gfx::BufferFormat GpuMemoryBufferFormat(
       return plane == 0 ? gfx::BufferFormat::R_8 : gfx::BufferFormat::RG_88;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
       DCHECK_EQ(0u, plane);
-      return gfx::BufferFormat::BGRX_1010102;
+      return gfx::BufferFormat::BGRA_1010102;
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       DCHECK_EQ(0u, plane);
-      return gfx::BufferFormat::RGBX_1010102;
+      return gfx::BufferFormat::RGBA_1010102;
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
       DCHECK_EQ(0u, plane);
       return gfx::BufferFormat::RGBA_8888;
@@ -597,6 +597,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_BGRA:

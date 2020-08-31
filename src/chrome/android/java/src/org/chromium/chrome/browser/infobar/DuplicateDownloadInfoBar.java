@@ -16,7 +16,6 @@ import android.text.style.StyleSpan;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
@@ -24,6 +23,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.download.DownloadCollectionBridge;
 
 import java.io.File;
@@ -84,11 +86,8 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
                 new AsyncTask<String>() {
                     @Override
                     protected String doInBackground() {
-                        if (BuildInfo.isAtLeastQ()
-                                && DownloadCollectionBridge.getDownloadCollectionBridge()
-                                           .needToPublishDownload(mFilePath)) {
-                            Uri uri = DownloadCollectionBridge.getDownloadCollectionBridge()
-                                              .getDownloadUriForFileName(filename);
+                        if (DownloadCollectionBridge.shouldPublishDownload(mFilePath)) {
+                            Uri uri = DownloadCollectionBridge.getDownloadUriForFileName(filename);
                             return uri == null ? null : uri.toString();
                         } else {
                             if (file.exists()) return mFilePath;

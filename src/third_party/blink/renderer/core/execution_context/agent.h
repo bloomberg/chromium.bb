@@ -19,7 +19,7 @@ namespace scheduler {
 class EventLoop;
 }
 
-class ExecutionContext;
+class Document;
 
 // Corresponding spec concept is:
 // https://html.spec.whatwg.org/C#integration-with-the-javascript-agent-formalism
@@ -31,16 +31,8 @@ class ExecutionContext;
 // Agent is shared across a group of reachable and same-site frames.
 class CORE_EXPORT Agent : public GarbageCollected<Agent> {
  public:
-  static Agent* CreateForWorkerOrWorklet(
-      v8::Isolate* isolate,
-      const base::UnguessableToken& cluster_id,
-      std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr) {
-    return MakeGarbageCollected<Agent>(isolate, cluster_id,
-                                       std::move(microtask_queue));
-  }
-
   // Do not create the instance directly.
-  // Use Agent::CreateForWorkerOrWorklet() or
+  // Use MakeGarbageCollected<Agent>() or
   // WindowAgentFactory::GetAgentForOrigin().
   Agent(v8::Isolate* isolate,
         const base::UnguessableToken& cluster_id,
@@ -51,10 +43,10 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
     return event_loop_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
-  void AttachExecutionContext(ExecutionContext*);
-  void DetachExecutionContext(ExecutionContext*);
+  void AttachDocument(Document*);
+  void DetachDocument(Document*);
 
   const base::UnguessableToken& cluster_id() const { return cluster_id_; }
 

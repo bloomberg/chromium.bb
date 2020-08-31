@@ -455,8 +455,12 @@ void jsimd_idct_4x4_neon(void *dct_table,
   uint16x4x2_t output_01_23 = { output_0123.val[0], output_0123.val[1] };
 
   /* Store 4x4 block to memory. */
-  vst2_lane_u16((uint16_t *)(output_buf[0] + output_col), output_01_23, 0);
-  vst2_lane_u16((uint16_t *)(output_buf[1] + output_col), output_01_23, 1);
-  vst2_lane_u16((uint16_t *)(output_buf[2] + output_col), output_01_23, 2);
-  vst2_lane_u16((uint16_t *)(output_buf[3] + output_col), output_01_23, 3);
+  JSAMPROW outptr0 = output_buf[0] + output_col;
+  JSAMPROW outptr1 = output_buf[1] + output_col;
+  JSAMPROW outptr2 = output_buf[2] + output_col;
+  JSAMPROW outptr3 = output_buf[3] + output_col;
+  vst2_lane_u16((uint16_t *)outptr0, output_01_23, 0);
+  vst2_lane_u16((uint16_t *)outptr1, output_01_23, 1);
+  vst2_lane_u16((uint16_t *)outptr2, output_01_23, 2);
+  vst2_lane_u16((uint16_t *)outptr3, output_01_23, 3);
 }

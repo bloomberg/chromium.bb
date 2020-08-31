@@ -6,11 +6,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -36,8 +37,9 @@ class TabletModeTransitionTest : public UIPerformanceTest {
     int wait_ms = (base::SysInfo::IsRunningOnChromeOS() ? 5000 : 0) +
                   (additional_browsers + 1) * cost_per_browser;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromMilliseconds(wait_ms));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(wait_ms));
     run_loop.Run();
 
     // The uma stats we are interested in measure the animations directly so we
@@ -60,18 +62,24 @@ class TabletModeTransitionTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabletModeTransitionTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
+// Flaky possibly due to https://crbug.com/1054489
+// TODO(sammiequon, mukai): re-enable this. See also https://crbug.com/1057868
+IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, DISABLED_EnterExit) {
   // Activate the first window. The top window is the only window which animates
   // and is the one we should check to see if the tablet animation has finished.
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   aura::Window* browser_window = browser->window()->GetNativeWindow();
+  ash::ShellTestApi shell_test_api;
 
-  ash::ShellTestApi().SetTabletModeEnabledForTest(
-      true, /*wait_for_completion=*/false);
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
+  auto waiter =
+      shell_test_api.CreateWaiterForFinishingWindowAnimation(browser_window);
+  shell_test_api.SetTabletModeEnabledForTest(true,
+                                             /*wait_for_completion=*/false);
+  std::move(waiter).Run();
 
-  ash::ShellTestApi().SetTabletModeEnabledForTest(
-      false, /*wait_for_completion=*/false);
-  EXPECT_TRUE(browser_window->layer()->GetAnimator()->is_animating());
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
+  waiter =
+      shell_test_api.CreateWaiterForFinishingWindowAnimation(browser_window);
+  shell_test_api.SetTabletModeEnabledForTest(false,
+                                             /*wait_for_completion=*/false);
+  std::move(waiter).Run();
 }

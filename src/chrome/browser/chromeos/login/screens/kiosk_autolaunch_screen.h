@@ -22,6 +22,8 @@ class KioskAutolaunchScreen : public BaseScreen {
  public:
   enum class Result { COMPLETED, CANCELED };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   KioskAutolaunchScreen(KioskAutolaunchScreenView* view,
                         const ScreenExitCallback& exit_callback);
@@ -34,9 +36,10 @@ class KioskAutolaunchScreen : public BaseScreen {
   // is destroyed earlier then it has to call SetDelegate(nullptr).
   void OnViewDestroyed(KioskAutolaunchScreenView* view);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
 
  private:
   KioskAutolaunchScreenView* view_;

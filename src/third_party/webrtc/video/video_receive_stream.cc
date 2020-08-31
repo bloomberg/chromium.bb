@@ -101,7 +101,7 @@ class WebRtcRecordableEncodedFrame : public RecordableEncodedFrame {
   EncodedResolution resolution() const override { return resolution_; }
 
   Timestamp render_time() const override {
-    return Timestamp::ms(render_time_ms_);
+    return Timestamp::Millis(render_time_ms_);
   }
 
  private:
@@ -211,11 +211,13 @@ VideoReceiveStream::VideoReceiveStream(
                                  &config_,
                                  rtp_receive_statistics_.get(),
                                  &stats_proxy_,
+                                 &stats_proxy_,
                                  process_thread_,
                                  this,     // NackSender
                                  nullptr,  // Use default KeyFrameRequestSender
                                  this,     // OnCompleteFrameCallback
-                                 config_.frame_decryptor),
+                                 config_.frame_decryptor,
+                                 config_.frame_transformer),
       rtp_stream_sync_(this),
       max_wait_for_keyframe_ms_(KeyframeIntervalSettings::ParseFromFieldTrials()
                                     .MaxWaitForKeyframeMs()
@@ -534,6 +536,12 @@ void VideoReceiveStream::SetFrameDecryptor(
   rtp_video_stream_receiver_.SetFrameDecryptor(std::move(frame_decryptor));
 }
 
+void VideoReceiveStream::SetDepacketizerToDecoderFrameTransformer(
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer) {
+  rtp_video_stream_receiver_.SetDepacketizerToDecoderFrameTransformer(
+      std::move(frame_transformer));
+}
+
 void VideoReceiveStream::SendNack(const std::vector<uint16_t>& sequence_numbers,
                                   bool buffering_allowed) {
   RTC_DCHECK(buffering_allowed);
@@ -580,7 +588,7 @@ void VideoReceiveStream::OnRttUpdate(int64_t avg_rtt_ms, int64_t max_rtt_ms) {
   rtp_video_stream_receiver_.UpdateRtt(max_rtt_ms);
 }
 
-int VideoReceiveStream::id() const {
+uint32_t VideoReceiveStream::id() const {
   RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
   return config_.rtp.remote_ssrc;
 }

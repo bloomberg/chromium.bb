@@ -6,15 +6,19 @@
 
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
+
 #include <memory>
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
-#include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_popup.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
 namespace ui {
@@ -260,40 +264,55 @@ XDGPopupWrapperImpl::XDGPopupWrapperImpl(
     WaylandWindow* wayland_window)
     : wayland_window_(wayland_window), xdg_surface_(std::move(surface)) {
   DCHECK(xdg_surface_);
+  DCHECK(wayland_window_ && wayland_window_->parent_window());
 }
 
-XDGPopupWrapperImpl::~XDGPopupWrapperImpl() {}
+XDGPopupWrapperImpl::~XDGPopupWrapperImpl() = default;
 
-bool XDGPopupWrapperImpl::InitializeStable(WaylandConnection* connection,
-                                           wl_surface* surface,
-                                           WaylandWindow* parent_window,
-                                           const gfx::Rect& bounds) {
-  DCHECK(connection && surface && parent_window);
+bool XDGPopupWrapperImpl::Initialize(WaylandConnection* connection,
+                                     const gfx::Rect& bounds) {
+  if (!connection->shell() && !connection->shell_v6()) {
+    NOTREACHED() << "Wrong shell protocol";
+    return false;
+  }
+
+  XDGSurfaceWrapperImpl* parent_xdg_surface = nullptr;
+  // If the parent window is a popup, the surface of that popup must be used as
+  // a parent.
+  if (wl::IsMenuType(wayland_window_->parent_window()->type())) {
+    auto* wayland_popup =
+        static_cast<WaylandPopup*>(wayland_window_->parent_window());
+    XDGPopupWrapperImpl* popup =
+        static_cast<XDGPopupWrapperImpl*>(wayland_popup->shell_popup());
+    parent_xdg_surface = popup->xdg_surface();
+  } else {
+    WaylandSurface* wayland_surface =
+        static_cast<WaylandSurface*>(wayland_window_->parent_window());
+    parent_xdg_surface =
+        static_cast<XDGSurfaceWrapperImpl*>(wayland_surface->shell_surface());
+  }
+
+  if (!xdg_surface_ || !parent_xdg_surface)
+    return false;
+
+  if (connection->shell())
+    return InitializeStable(connection, bounds, parent_xdg_surface);
+  else if (connection->shell_v6())
+    return InitializeV6(connection, bounds, parent_xdg_surface);
+  return false;
+}
+
+bool XDGPopupWrapperImpl::InitializeStable(
+    WaylandConnection* connection,
+    const gfx::Rect& bounds,
+    XDGSurfaceWrapperImpl* parent_xdg_surface) {
   static const struct xdg_popup_listener xdg_popup_listener = {
       &XDGPopupWrapperImpl::ConfigureStable,
       &XDGPopupWrapperImpl::PopupDoneStable,
   };
 
-  if (!xdg_surface_)
-    return false;
-
-  XDGSurfaceWrapperImpl* parent_xdg_surface;
-  // If the parent window is a popup, the surface of that popup must be used as
-  // a parent.
-  if (parent_window->shell_popup()) {
-    XDGPopupWrapperImpl* popup =
-        reinterpret_cast<XDGPopupWrapperImpl*>(parent_window->shell_popup());
-    parent_xdg_surface = popup->xdg_surface();
-  } else {
-    parent_xdg_surface = reinterpret_cast<XDGSurfaceWrapperImpl*>(
-        parent_window->shell_surface());
-  }
-
-  if (!parent_xdg_surface)
-    return false;
-
-  struct xdg_positioner* positioner =
-      CreatePositionerStable(connection, parent_window, bounds);
+  struct xdg_positioner* positioner = CreatePositionerStable(
+      connection, wayland_window_->parent_window(), bounds);
   if (!positioner)
     return false;
 
@@ -333,11 +352,17 @@ bool XDGPopupWrapperImpl::InitializeStable(WaylandConnection* connection,
        base::nix::DESKTOP_ENVIRONMENT_GNOME) ||
       (wayland_window_->parent_window()->has_pointer_focus() ||
        wayland_window_->parent_window()->has_keyboard_focus())) {
-    xdg_popup_grab(xdg_popup_.get(), connection->seat(), connection->serial());
+    // When drag process starts, as described the protocol -
+    // https://goo.gl/1Mskq3, the client must have an active implicit grab. If
+    // we try to create a popup and grab it, it will be immediately dismissed.
+    // Thus, do not take explicit grab during drag process.
+    if (!connection->IsDragInProgress())
+      xdg_popup_grab(xdg_popup_.get(), connection->seat(),
+                     connection->serial());
   }
   xdg_popup_add_listener(xdg_popup_.get(), &xdg_popup_listener, this);
 
-  wl_surface_commit(surface);
+  wl_surface_commit(wayland_window_->surface());
   return true;
 }
 
@@ -350,18 +375,15 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
   if (!positioner)
     return nullptr;
 
-  auto* pointer = connection->pointer();
-  uint32_t flags = 0;
-  if (pointer)
-    flags = pointer->GetFlagsWithKeyboardModifiers();
-  bool is_right_click_menu = flags & EF_RIGHT_MOUSE_BUTTON;
+  bool is_right_click_menu =
+      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
 
   // Different types of menu require different anchors, constraint adjustments,
   // gravity and etc.
   MenuType menu_type = MenuType::TYPE_UNKNOWN;
   if (is_right_click_menu)
     menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (parent_window->shell_popup())
+  else if (wl::IsMenuType(parent_window->type()))
     menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
   else
     menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
@@ -382,36 +404,17 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
   return positioner;
 }
 
-bool XDGPopupWrapperImpl::InitializeV6(WaylandConnection* connection,
-                                       wl_surface* surface,
-                                       WaylandWindow* parent_window,
-                                       const gfx::Rect& bounds) {
-  DCHECK(connection && surface && parent_window);
+bool XDGPopupWrapperImpl::InitializeV6(
+    WaylandConnection* connection,
+    const gfx::Rect& bounds,
+    XDGSurfaceWrapperImpl* parent_xdg_surface) {
   static const struct zxdg_popup_v6_listener zxdg_popup_v6_listener = {
       &XDGPopupWrapperImpl::ConfigureV6,
       &XDGPopupWrapperImpl::PopupDoneV6,
   };
 
-  if (!xdg_surface_)
-    return false;
-
-  XDGSurfaceWrapperImpl* parent_xdg_surface;
-  // If the parent window is a popup, the surface of that popup must be used as
-  // a parent.
-  if (parent_window->shell_popup()) {
-    XDGPopupWrapperImpl* popup =
-        reinterpret_cast<XDGPopupWrapperImpl*>(parent_window->shell_popup());
-    parent_xdg_surface = popup->xdg_surface();
-  } else {
-    parent_xdg_surface = reinterpret_cast<XDGSurfaceWrapperImpl*>(
-        parent_window->shell_surface());
-  }
-
-  if (!parent_xdg_surface)
-    return false;
-
   zxdg_positioner_v6* positioner =
-      CreatePositionerV6(connection, parent_window, bounds);
+      CreatePositionerV6(connection, wayland_window_->parent_window(), bounds);
   if (!positioner)
     return false;
 
@@ -457,7 +460,7 @@ bool XDGPopupWrapperImpl::InitializeV6(WaylandConnection* connection,
   zxdg_popup_v6_add_listener(zxdg_popup_v6_.get(), &zxdg_popup_v6_listener,
                              this);
 
-  wl_surface_commit(surface);
+  wl_surface_commit(wayland_window_->surface());
   return true;
 }
 
@@ -470,18 +473,15 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   if (!positioner)
     return nullptr;
 
-  auto* pointer = connection->pointer();
-  uint32_t flags = 0;
-  if (pointer)
-    flags = pointer->GetFlagsWithKeyboardModifiers();
-  bool is_right_click_menu = flags & EF_RIGHT_MOUSE_BUTTON;
+  bool is_right_click_menu =
+      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
 
   // Different types of menu require different anchors, constraint adjustments,
   // gravity and etc.
   MenuType menu_type = MenuType::TYPE_UNKNOWN;
   if (is_right_click_menu)
     menu_type = MenuType::TYPE_RIGHT_CLICK;
-  else if (parent_window->shell_popup())
+  else if (wl::IsMenuType(parent_window->type()))
     menu_type = MenuType::TYPE_3DOT_CHILD_MENU;
   else
     menu_type = MenuType::TYPE_3DOT_PARENT_MENU;

@@ -10,6 +10,7 @@
 #include "src/execution/messages.h"
 #include "src/handles/maybe-handles.h"
 #include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
+#include "src/heap/memory-chunk.h"
 #include "src/init/bootstrapper.h"
 #include "src/logging/counters.h"
 #include "src/objects/hash-table-inl.h"
@@ -32,17 +33,28 @@ MaybeHandle<Object> Runtime::GetObjectProperty(Isolate* isolate,
   }
 
   bool success = false;
-  LookupIterator it =
-      LookupIterator::PropertyOrElement(isolate, object, key, &success);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) return MaybeHandle<Object>();
+  LookupIterator it(isolate, object, lookup_key);
 
   MaybeHandle<Object> result = Object::GetProperty(&it);
   if (is_found_out) *is_found_out = it.IsFound();
 
   if (!it.IsFound() && key->IsSymbol() &&
       Symbol::cast(*key).is_private_name()) {
-    Handle<Object> name_string(Symbol::cast(*key).description(), isolate);
-    DCHECK(name_string->IsString());
+    Handle<Symbol> sym = Handle<Symbol>::cast(key);
+    Handle<Object> name(sym->description(), isolate);
+    DCHECK(name->IsString());
+    Handle<String> name_string = Handle<String>::cast(name);
+    if (sym->IsPrivateBrand()) {
+      Handle<String> class_name = (name_string->length() == 0)
+                                      ? isolate->factory()->anonymous_string()
+                                      : name_string;
+      THROW_NEW_ERROR(isolate,
+                      NewTypeError(MessageTemplate::kInvalidPrivateBrand,
+                                   class_name, object),
+                      Object);
+    }
     THROW_NEW_ERROR(isolate,
                     NewTypeError(MessageTemplate::kInvalidPrivateMemberRead,
                                  name_string, object),
@@ -186,9 +198,9 @@ Maybe<bool> Runtime::DeleteObjectProperty(Isolate* isolate,
   if (DeleteObjectPropertyFast(isolate, receiver, key)) return Just(true);
 
   bool success = false;
-  LookupIterator it = LookupIterator::PropertyOrElement(
-      isolate, receiver, key, &success, LookupIterator::OWN);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) return Nothing<bool>();
+  LookupIterator it(isolate, receiver, lookup_key, LookupIterator::OWN);
 
   return JSReceiver::DeleteProperty(&it, language_mode);
 }
@@ -270,29 +282,22 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
   HandleScope scope(isolate);
   Handle<Object> property = args.at(1);
 
-  // The spec says we must look at the key first, which is why we can't
-  // use LookupIterator::PropertyOrElement here but have to duplicate its
-  // functionality instead.
-  Handle<Name> key;
-  size_t index;
-  bool key_is_index = property->ToIntegerIndex(&index);
-  if (!key_is_index) {
-    ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, key,
-                                       Object::ToName(isolate, property));
-    key_is_index = key->AsIntegerIndex(&index);
-  }
+  // TODO(ishell): To improve performance, consider performing the to-string
+  // conversion of {property} before calling into the runtime.
+  bool success;
+  LookupIterator::Key key(isolate, property, &success);
+  if (!success) return ReadOnlyRoots(isolate).exception();
 
   Handle<Object> object = args.at(0);
 
   if (object->IsJSModuleNamespace()) {
-    if (key.is_null()) {
-      DCHECK(key_is_index);
+    if (key.is_element()) {
       // Namespace objects can't have indexed properties.
       return ReadOnlyRoots(isolate).false_value();
     }
-
-    Maybe<bool> result =
-        JSReceiver::HasOwnProperty(Handle<JSReceiver>::cast(object), key);
+    LookupIterator it(isolate, object, key, LookupIterator::OWN);
+    PropertyDescriptor desc;
+    Maybe<bool> result = JSReceiver::GetOwnPropertyDescriptor(&it, &desc);
     if (!result.IsJust()) return ReadOnlyRoots(isolate).exception();
     return isolate->heap()->ToBoolean(result.FromJust());
 
@@ -305,9 +310,7 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
     // handle all cases directly (without this custom fast path).
     {
       LookupIterator::Configuration c = LookupIterator::OWN_SKIP_INTERCEPTOR;
-      LookupIterator it =
-          key_is_index ? LookupIterator(isolate, js_obj, index, js_obj, c)
-                       : LookupIterator(js_obj, key, js_obj, c);
+      LookupIterator it(isolate, js_obj, key, js_obj, c);
       Maybe<bool> maybe = JSReceiver::HasProperty(&it);
       if (maybe.IsNothing()) return ReadOnlyRoots(isolate).exception();
       DCHECK(!isolate->has_pending_exception());
@@ -316,38 +319,32 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
 
     Map map = js_obj->map();
     if (!map.IsJSGlobalProxyMap() &&
-        (key_is_index && index <= JSArray::kMaxArrayIndex
+        (key.is_element() && key.index() <= JSArray::kMaxArrayIndex
              ? !map.has_indexed_interceptor()
              : !map.has_named_interceptor())) {
       return ReadOnlyRoots(isolate).false_value();
     }
 
     // Slow case.
-    LookupIterator::Configuration c = LookupIterator::OWN;
-    LookupIterator it = key_is_index
-                            ? LookupIterator(isolate, js_obj, index, js_obj, c)
-                            : LookupIterator(js_obj, key, js_obj, c);
-
+    LookupIterator it(isolate, js_obj, key, js_obj, LookupIterator::OWN);
     Maybe<bool> maybe = JSReceiver::HasProperty(&it);
     if (maybe.IsNothing()) return ReadOnlyRoots(isolate).exception();
     DCHECK(!isolate->has_pending_exception());
     return isolate->heap()->ToBoolean(maybe.FromJust());
 
   } else if (object->IsJSProxy()) {
-    if (key.is_null()) {
-      DCHECK(key_is_index);
-      key = isolate->factory()->SizeToString(index);
-    }
-    Maybe<bool> result =
-        JSReceiver::HasOwnProperty(Handle<JSProxy>::cast(object), key);
-    if (result.IsNothing()) return ReadOnlyRoots(isolate).exception();
-    return isolate->heap()->ToBoolean(result.FromJust());
+    LookupIterator it(isolate, object, key, Handle<JSProxy>::cast(object),
+                      LookupIterator::OWN);
+    Maybe<PropertyAttributes> attributes =
+        JSReceiver::GetPropertyAttributes(&it);
+    if (attributes.IsNothing()) return ReadOnlyRoots(isolate).exception();
+    return isolate->heap()->ToBoolean(attributes.FromJust() != ABSENT);
 
   } else if (object->IsString()) {
     return isolate->heap()->ToBoolean(
-        key_is_index
-            ? index < static_cast<size_t>(String::cast(*object).length())
-            : key->Equals(ReadOnlyRoots(isolate).length_string()));
+        key.is_element()
+            ? key.index() < static_cast<size_t>(String::cast(*object).length())
+            : key.name()->Equals(ReadOnlyRoots(isolate).length_string()));
   } else if (object->IsNullOrUndefined(isolate)) {
     THROW_NEW_ERROR_RETURN_FAILURE(
         isolate, NewTypeError(MessageTemplate::kUndefinedOrNullToObject));
@@ -413,9 +410,9 @@ MaybeHandle<Object> Runtime::SetObjectProperty(
 
   // Check if the given key is an array index.
   bool success = false;
-  LookupIterator it =
-      LookupIterator::PropertyOrElement(isolate, object, key, &success);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) return MaybeHandle<Object>();
+  LookupIterator it(isolate, object, lookup_key);
 
   if (!it.IsFound() && key->IsSymbol() &&
       Symbol::cast(*key).is_private_name()) {
@@ -711,9 +708,8 @@ RUNTIME_FUNCTION(Runtime_StoreDataPropertyInLiteral) {
   CONVERT_ARG_HANDLE_CHECKED(Object, key, 1);
   CONVERT_ARG_HANDLE_CHECKED(Object, value, 2);
 
-  bool success;
-  LookupIterator it = LookupIterator::PropertyOrElement(
-      isolate, object, key, &success, LookupIterator::OWN);
+  LookupIterator::Key lookup_key(isolate, key);
+  LookupIterator it(isolate, object, lookup_key, LookupIterator::OWN);
 
   Maybe<bool> result = JSObject::DefineOwnPropertyIgnoreAttributes(
       &it, value, NONE, Just(kDontThrow));
@@ -901,7 +897,7 @@ RUNTIME_FUNCTION(Runtime_DefineDataPropertyInLiteral) {
   CONVERT_ARG_HANDLE_CHECKED(Object, value, 2);
   CONVERT_SMI_ARG_CHECKED(flag, 3);
   CONVERT_ARG_HANDLE_CHECKED(HeapObject, maybe_vector, 4);
-  CONVERT_SMI_ARG_CHECKED(index, 5);
+  CONVERT_TAGGED_INDEX_ARG_CHECKED(index, 5);
 
   if (!maybe_vector->IsUndefined()) {
     DCHECK(maybe_vector->IsFeedbackVector());
@@ -921,9 +917,7 @@ RUNTIME_FUNCTION(Runtime_DefineDataPropertyInLiteral) {
     }
   }
 
-  DataPropertyInLiteralFlags flags =
-      static_cast<DataPropertyInLiteralFlag>(flag);
-
+  DataPropertyInLiteralFlags flags(flag);
   PropertyAttributes attrs = (flags & DataPropertyInLiteralFlag::kDontEnum)
                                  ? PropertyAttributes::DONT_ENUM
                                  : PropertyAttributes::NONE;
@@ -942,8 +936,8 @@ RUNTIME_FUNCTION(Runtime_DefineDataPropertyInLiteral) {
                   *function_map == function->map());
   }
 
-  LookupIterator it = LookupIterator::PropertyOrElement(
-      isolate, object, name, object, LookupIterator::OWN);
+  LookupIterator::Key key(isolate, name);
+  LookupIterator it(isolate, object, key, object, LookupIterator::OWN);
   // Cannot fail since this should only be called when
   // creating an object literal.
   CHECK(JSObject::DefineOwnPropertyIgnoreAttributes(&it, value, attrs,
@@ -957,6 +951,11 @@ RUNTIME_FUNCTION(Runtime_CollectTypeProfile) {
   DCHECK_EQ(3, args.length());
   CONVERT_ARG_HANDLE_CHECKED(Smi, position, 0);
   CONVERT_ARG_HANDLE_CHECKED(Object, value, 1);
+  CONVERT_ARG_HANDLE_CHECKED(HeapObject, maybe_vector, 2);
+
+  if (maybe_vector->IsUndefined()) {
+    return ReadOnlyRoots(isolate).undefined_value();
+  }
   CONVERT_ARG_HANDLE_CHECKED(FeedbackVector, vector, 2);
 
   Handle<String> type = Object::TypeOf(isolate, value);
@@ -989,14 +988,6 @@ RUNTIME_FUNCTION(Runtime_IsJSReceiver) {
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_CHECKED(Object, obj, 0);
   return isolate->heap()->ToBoolean(obj.IsJSReceiver());
-}
-
-RUNTIME_FUNCTION(Runtime_ClassOf) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(1, args.length());
-  CONVERT_ARG_CHECKED(Object, obj, 0);
-  if (!obj.IsJSReceiver()) return ReadOnlyRoots(isolate).null_value();
-  return JSReceiver::cast(obj).class_name();
 }
 
 RUNTIME_FUNCTION(Runtime_GetFunctionName) {
@@ -1189,9 +1180,9 @@ RUNTIME_FUNCTION(Runtime_CreateDataProperty) {
   CONVERT_ARG_HANDLE_CHECKED(Object, key, 1);
   CONVERT_ARG_HANDLE_CHECKED(Object, value, 2);
   bool success;
-  LookupIterator it = LookupIterator::PropertyOrElement(
-      isolate, o, key, &success, LookupIterator::OWN);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) return ReadOnlyRoots(isolate).exception();
+  LookupIterator it(isolate, o, lookup_key, LookupIterator::OWN);
   MAYBE_RETURN(JSReceiver::CreateDataProperty(&it, value, Just(kThrowOnError)),
                ReadOnlyRoots(isolate).exception());
   return *value;
@@ -1241,13 +1232,13 @@ RUNTIME_FUNCTION(Runtime_CreatePrivateAccessors) {
 
 RUNTIME_FUNCTION(Runtime_AddPrivateBrand) {
   HandleScope scope(isolate);
-  DCHECK_EQ(args.length(), 2);
+  DCHECK_EQ(args.length(), 3);
   CONVERT_ARG_HANDLE_CHECKED(JSReceiver, receiver, 0);
   CONVERT_ARG_HANDLE_CHECKED(Symbol, brand, 1);
+  CONVERT_ARG_HANDLE_CHECKED(Context, context, 2);
   DCHECK(brand->is_private_name());
 
-  LookupIterator it = LookupIterator::PropertyOrElement(
-      isolate, receiver, brand, LookupIterator::OWN);
+  LookupIterator it(isolate, receiver, brand, LookupIterator::OWN);
 
   if (it.IsFound()) {
     THROW_NEW_ERROR_RETURN_FAILURE(
@@ -1256,9 +1247,7 @@ RUNTIME_FUNCTION(Runtime_AddPrivateBrand) {
 
   PropertyAttributes attributes =
       static_cast<PropertyAttributes>(DONT_ENUM | DONT_DELETE | READ_ONLY);
-  // TODO(joyee): we could use this slot to store something useful. For now,
-  // store the brand itself.
-  CHECK(Object::AddDataProperty(&it, brand, attributes, Just(kDontThrow),
+  CHECK(Object::AddDataProperty(&it, context, attributes, Just(kDontThrow),
                                 StoreOrigin::kMaybeKeyed)
             .FromJust());
   return *receiver;
@@ -1272,8 +1261,7 @@ RUNTIME_FUNCTION(Runtime_AddPrivateField) {
   CONVERT_ARG_HANDLE_CHECKED(Object, value, 2);
   DCHECK(key->is_private_name());
 
-  LookupIterator it =
-      LookupIterator::PropertyOrElement(isolate, o, key, LookupIterator::OWN);
+  LookupIterator it(isolate, o, key, LookupIterator::OWN);
 
   if (it.IsFound()) {
     THROW_NEW_ERROR_RETURN_FAILURE(

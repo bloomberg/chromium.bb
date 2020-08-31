@@ -47,12 +47,6 @@ namespace base {
 // template internal to the .cc file.
 namespace internal {
 
-BASE_EXPORT void CopyToString(const StringPiece& self, std::string* target);
-BASE_EXPORT void CopyToString(const StringPiece16& self, string16* target);
-
-BASE_EXPORT void AppendToString(const StringPiece& self, std::string* target);
-BASE_EXPORT void AppendToString(const StringPiece16& self, string16* target);
-
 BASE_EXPORT size_t copy(const StringPiece& self,
                         char* buf,
                         size_t n,
@@ -141,14 +135,6 @@ BASE_EXPORT StringPiece16 substr(const StringPiece16& self,
                                  size_t pos,
                                  size_t n);
 
-#if DCHECK_IS_ON()
-// Asserts that begin <= end to catch some errors with iterator usage.
-BASE_EXPORT void AssertIteratorsInOrder(std::string::const_iterator begin,
-                                        std::string::const_iterator end);
-BASE_EXPORT void AssertIteratorsInOrder(string16::const_iterator begin,
-                                        string16::const_iterator end);
-#endif
-
 }  // namespace internal
 
 // BasicStringPiece ------------------------------------------------------------
@@ -177,23 +163,32 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // in a "const char*" or a "string" wherever a "StringPiece" is
   // expected (likewise for char16, string16, StringPiece16).
   constexpr BasicStringPiece() : ptr_(NULL), length_(0) {}
-  // TODO(dcheng): Construction from nullptr is not allowed for
+  // TODO(crbug.com/1049498): Construction from nullptr is not allowed for
   // std::basic_string_view, so remove the special handling for it.
   // Note: This doesn't just use STRING_TYPE::traits_type::length(), since that
   // isn't constexpr until C++17.
   constexpr BasicStringPiece(const value_type* str)
       : ptr_(str), length_(!str ? 0 : CharTraits<value_type>::length(str)) {}
+  // Explicitly disallow construction from nullptr. Note that this does not
+  // catch construction from runtime strings that might be null.
+  // Note: The following is just a more elaborate way of spelling
+  // `BasicStringPiece(nullptr_t) = delete`, but unfortunately the terse form is
+  // not supported by the PNaCl toolchain.
+  // TODO(crbug.com/1049498): Remove once we CHECK(str) in the constructor
+  // above.
+  template <class T, class = std::enable_if_t<std::is_null_pointer<T>::value>>
+  BasicStringPiece(T) {
+    static_assert(sizeof(T) == 0,  // Always false.
+                  "StringPiece does not support construction from nullptr, use "
+                  "the default constructor instead.");
+  }
   BasicStringPiece(const STRING_TYPE& str)
       : ptr_(str.data()), length_(str.size()) {}
   constexpr BasicStringPiece(const value_type* offset, size_type len)
       : ptr_(offset), length_(len) {}
   BasicStringPiece(const typename STRING_TYPE::const_iterator& begin,
                    const typename STRING_TYPE::const_iterator& end) {
-#if DCHECK_IS_ON()
-    // This assertion is done out-of-line to avoid bringing in logging.h and
-    // instantiating logging macros for every instantiation.
-    internal::AssertIteratorsInOrder(begin, end);
-#endif
+    DCHECK(begin <= end) << "StringPiece iterators swapped or invalid.";
     length_ = static_cast<size_t>(std::distance(begin, end));
 
     // The length test before assignment is to avoid dereferencing an iterator
@@ -209,19 +204,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
   constexpr size_type size() const noexcept { return length_; }
   constexpr size_type length() const noexcept { return length_; }
   bool empty() const { return length_ == 0; }
-
-  void clear() {
-    ptr_ = NULL;
-    length_ = 0;
-  }
-  void set(const value_type* data, size_type len) {
-    ptr_ = data;
-    length_ = len;
-  }
-  void set(const value_type* str) {
-    ptr_ = str;
-    length_ = str ? STRING_TYPE::traits_type::length(str) : 0;
-  }
 
   constexpr value_type operator[](size_type i) const {
     CHECK(i < length_);
@@ -278,16 +260,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
 
   size_type max_size() const { return length_; }
   size_type capacity() const { return length_; }
-
-  // Sets the value of the given string target type to be the current string.
-  // This saves a temporary over doing |a = b.as_string()|
-  void CopyToString(STRING_TYPE* target) const {
-    internal::CopyToString(*this, target);
-  }
-
-  void AppendToString(STRING_TYPE* target) const {
-    internal::AppendToString(*this, target);
-  }
 
   size_type copy(value_type* buf, size_type n, size_type pos = 0) const {
     return internal::copy(*this, buf, n, pos);

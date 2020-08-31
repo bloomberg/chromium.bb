@@ -11,6 +11,8 @@
 #include "src/objects/js-proxy.h"
 #include "src/objects/objects-inl.h"
 
+#include "torque-generated/exported-macros-assembler-tq.h"
+
 namespace v8 {
 namespace internal {
 
@@ -58,64 +60,6 @@ TNode<JSProxy> ProxiesCodeStubAssembler::AllocateProxy(
   return CAST(proxy);
 }
 
-TNode<JSArray> ProxiesCodeStubAssembler::AllocateJSArrayForCodeStubArguments(
-    TNode<Context> context, const CodeStubArguments& args,
-    TNode<IntPtrT> argc) {
-  Comment("AllocateJSArrayForCodeStubArguments");
-  CSA_ASSERT(this, IsValidPositiveSmi(argc));
-
-  Label if_empty_array(this), allocate_js_array(this);
-  // Do not use AllocateJSArray since {elements} might end up in LOS.
-  TVARIABLE(FixedArrayBase, elements);
-
-  GotoIf(WordEqual(argc, IntPtrConstant(0)), &if_empty_array);
-  {
-    Label if_large_object(this, Label::kDeferred);
-    TNode<FixedArrayBase> allocated_elements = AllocateFixedArray(
-        PACKED_ELEMENTS, argc, INTPTR_PARAMETERS, kAllowLargeObjectAllocation);
-    elements = allocated_elements;
-
-    TVARIABLE(IntPtrT, offset,
-              IntPtrConstant(FixedArrayBase::kHeaderSize - kHeapObjectTag));
-    VariableList list({&offset}, zone());
-
-    GotoIf(
-        UintPtrGreaterThan(argc, IntPtrConstant(FixedArray::kMaxRegularLength)),
-        &if_large_object);
-    args.ForEach(list, [&](TNode<Object> arg) {
-      StoreNoWriteBarrier(MachineRepresentation::kTagged, allocated_elements,
-                          offset.value(), arg);
-      Increment(&offset, kTaggedSize);
-    });
-    Goto(&allocate_js_array);
-
-    BIND(&if_large_object);
-    {
-      args.ForEach(list, [&](TNode<Object> arg) {
-        Store(allocated_elements, offset.value(), arg);
-        Increment(&offset, kTaggedSize);
-      });
-      Goto(&allocate_js_array);
-    }
-  }
-
-  BIND(&if_empty_array);
-  {
-    elements = EmptyFixedArrayConstant();
-    Goto(&allocate_js_array);
-  }
-
-  BIND(&allocate_js_array);
-  // Allocate the result JSArray.
-  TNode<NativeContext> native_context = LoadNativeContext(context);
-  TNode<Map> array_map =
-      LoadJSArrayElementsMap(PACKED_ELEMENTS, native_context);
-  TNode<Smi> length = SmiTag(argc);
-  TNode<JSArray> array = AllocateJSArray(array_map, elements.value(), length);
-
-  return array;
-}
-
 TNode<Context> ProxiesCodeStubAssembler::CreateProxyRevokeFunctionContext(
     TNode<JSProxy> proxy, TNode<NativeContext> native_context) {
   const TNode<Context> context =
@@ -132,8 +76,7 @@ TNode<JSFunction> ProxiesCodeStubAssembler::AllocateProxyRevokeFunction(
       CreateProxyRevokeFunctionContext(proxy, native_context);
   const TNode<Map> revoke_map = CAST(LoadContextElement(
       native_context, Context::STRICT_FUNCTION_WITHOUT_PROTOTYPE_MAP_INDEX));
-  const TNode<SharedFunctionInfo> revoke_info = CAST(
-      LoadContextElement(native_context, Context::PROXY_REVOKE_SHARED_FUN));
+  const TNode<SharedFunctionInfo> revoke_info = ProxyRevokeSharedFunConstant();
 
   return AllocateFunctionWithMapAndContext(revoke_map, revoke_info,
                                            proxy_context);
@@ -177,11 +120,12 @@ TF_BUILTIN(CallProxy, ProxiesCodeStubAssembler) {
 
   // 7. Let argArray be CreateArrayFromList(argumentsList).
   TNode<JSArray> array =
-      AllocateJSArrayForCodeStubArguments(context, args, argc_ptr);
+      EmitFastNewAllArguments(UncheckedCast<Context>(context),
+                              UncheckedCast<RawPtrT>(LoadFramePointer()),
+                              UncheckedCast<IntPtrT>(argc_ptr));
 
   // 8. Return Call(trap, handler, «target, thisArgument, argArray»).
-  TNode<Object> result = CallJS(CodeFactory::Call(isolate()), context, trap,
-                                handler, target, receiver, array);
+  TNode<Object> result = Call(context, trap, handler, target, receiver, array);
   args.PopAndReturn(result);
 
   BIND(&trap_undefined);
@@ -230,11 +174,13 @@ TF_BUILTIN(ConstructProxy, ProxiesCodeStubAssembler) {
 
   // 7. Let argArray be CreateArrayFromList(argumentsList).
   TNode<JSArray> array =
-      AllocateJSArrayForCodeStubArguments(context, args, argc_ptr);
+      EmitFastNewAllArguments(UncheckedCast<Context>(context),
+                              UncheckedCast<RawPtrT>(LoadFramePointer()),
+                              UncheckedCast<IntPtrT>(argc_ptr));
 
   // 8. Let newObj be ? Call(trap, handler, « target, argArray, newTarget »).
-  TNode<Object> new_obj = CallJS(CodeFactory::Call(isolate()), context, trap,
-                                 handler, target, array, new_target);
+  TNode<Object> new_obj =
+      Call(context, trap, handler, target, array, new_target);
 
   // 9. If Type(newObj) is not Object, throw a TypeError exception.
   GotoIf(TaggedIsSmi(new_obj), &not_an_object);

@@ -30,13 +30,16 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -64,22 +67,30 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void LoadSynchronously(ExecutionContext&,
                          ResourceFetcher* fetch_client_settings_object_fetcher,
                          const KURL&,
-                         mojom::RequestContextType);
+                         mojom::RequestContextType,
+                         network::mojom::RequestDestination);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
   //
   // |fetch_client_settings_object_fetcher| is different from
   // ExecutionContext::Fetcher() in off-the-main-thread fetch.
+  // TODO(crbug.com/1064920): Remove |reject_coep_unsafe_none| and
+  // |blob_url_loader_factory| when PlzDedicatedWorker ships.
   void LoadTopLevelScriptAsynchronously(
       ExecutionContext&,
       ResourceFetcher* fetch_client_settings_object_fetcher,
       const KURL&,
       mojom::RequestContextType,
+      network::mojom::RequestDestination,
       network::mojom::RequestMode,
       network::mojom::CredentialsMode,
       base::OnceClosure response_callback,
-      base::OnceClosure finished_callback);
+      base::OnceClosure finished_callback,
+      RejectCoepUnsafeNone reject_coep_unsafe_none =
+          RejectCoepUnsafeNone(false),
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          blob_url_loader_factory = {});
 
   // This will immediately invoke |finishedCallback| if
   // LoadTopLevelScriptAsynchronously() is in progress.

@@ -180,7 +180,6 @@ class UploadDevInstallerPrebuiltsStageTest(
   def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(UploadDevInstallerPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self._run.options.chrome_rev = None
     self._run.options.prebuilts = True
     self._run.config['dev_installer_prebuilts'] = True
     self._run.config['binhost_bucket'] = 'gs://testbucket'
@@ -533,16 +532,17 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 
 class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
-                                  cbuildbot_unittest.SimpleBuilderTestCase):
+                                  cbuildbot_unittest.SimpleBuilderTestCase,
+                                  cros_test_lib.RunCommandTestCase):
   """Exercise CollectPGOProfilesStage functionality."""
 
   RELEASE_TAG = ''
 
-  _VALID_CLANG_VERSION_SHA = 'de7a0a152648d1a74cf4319920b1848aa00d1ca3'
+  _VALID_CLANG_VERSION_SHA = '4e8231b5cf0f5f62c7a51a857e29f5be5cb55734'
   _VALID_CLANG_VERSION_STRING = (
-      'Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 '
+      'Chromium OS 10.0_pre377782_p20200113-r1 clang version 10.0.0 '
       '(/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project '
-      'de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)\n'
+      '4e8231b5cf0f5f62c7a51a857e29f5be5cb55734)\n'
       'Target: x86_64-pc-linux-gnu\n'
       'Thread model: posix\n'
       'InstalledDir: /usr/bin\n'
@@ -552,8 +552,6 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
-    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
-    self.rc_mock.SetDefaultCmdResult()
     self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
@@ -566,93 +564,65 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     actual_sha = stage._ParseLLVMHeadSHA(self._VALID_CLANG_VERSION_STRING)
     self.assertEqual(actual_sha, self._VALID_CLANG_VERSION_SHA)
 
-  def _MetadataMultiDispatch(self, equery_uses_fn, clang_version_fn):
-    def result(command, enter_chroot, redirect_stdout):
-      self.assertTrue(enter_chroot)
-      self.assertTrue(redirect_stdout)
-
-      if command == ['equery', '-C', '-N', 'uses', 'sys-devel/llvm']:
-        stdout = equery_uses_fn()
-      elif command == ['clang', '--version']:
-        stdout = clang_version_fn()
-      else:
-        raise ValueError('Unexpected command: %s' % command)
-
-      return cros_build_lib.CommandResult(output=stdout)
-
-    return result
-
   def testCollectLLVMMetadataRaisesOnAnInvalidVersionString(self):
     stage = self.ConstructStage()
 
-    def equery_uses():
-      return ' - + llvm_pgo_generate :'
+    self.rc.AddCmdResult(partial_mock.In('equery'),
+                         stdout=' - + llvm_pgo_generate :\n')
 
-    def clang_version():
-      valid_version_lines = self._VALID_CLANG_VERSION_STRING.splitlines()
-      valid_version_lines[0] = 'clang version 8.0.1\n'
-      return ''.join(valid_version_lines)
+    valid_version_lines = self._VALID_CLANG_VERSION_STRING.splitlines()
+    valid_version_lines[0] = 'clang version 8.0.1'
+    self.rc.AddCmdResult(partial_mock.In('clang'),
+                         stdout='\n'.join(valid_version_lines))
 
-    with patch(cros_build_lib, 'run') as run_command:
-      run_command.side_effect = self._MetadataMultiDispatch(
-          equery_uses_fn=equery_uses,
-          clang_version_fn=clang_version)
+    with self.assertRaises(ValueError) as raised:
+      stage._CollectLLVMMetadata()
 
-      with self.assertRaises(ValueError) as raised:
-        stage._CollectLLVMMetadata()
+    self.assertIn('version string', str(raised.exception))
 
-      self.assertIn('version string', str(raised.exception))
+  def testCollectLLVMMetadataRaisesIfClangIsntPGOGeneratedEmpty(self):
+    stage = self.ConstructStage()
+
+    self.rc.AddCmdResult(partial_mock.In('equery'), stdout='\n')
+    self.rc.AddCmdResult(partial_mock.In('clang'),
+                         stdout=self._VALID_CLANG_VERSION_STRING)
+
+    with self.assertRaises(ValueError) as raised:
+      stage._CollectLLVMMetadata()
+
+    self.assertIn('pgo_generate flag', str(raised.exception))
 
   def testCollectLLVMMetadataRaisesIfClangIsntPGOGenerated(self):
     stage = self.ConstructStage()
 
-    def clang_version():
-      return self._VALID_CLANG_VERSION_STRING
+    self.rc.AddCmdResult(partial_mock.In('equery'),
+                         stdout=' - - llvm_pgo_generate :\n')
+    self.rc.AddCmdResult(partial_mock.In('clang'),
+                         stdout=self._VALID_CLANG_VERSION_STRING)
 
-    with patch(cros_build_lib, 'run') as run_command:
-      for uses in ['', ' - - llvm_pgo_generate :']:
-        def equery_uses():
-          # We're using a loop var on purpose; this function should die by the
-          # end of the current iteration.
-          # pylint: disable=cell-var-from-loop
-          return uses
+    with self.assertRaises(ValueError) as raised:
+      stage._CollectLLVMMetadata()
 
-        run_command.side_effect = self._MetadataMultiDispatch(
-            equery_uses_fn=equery_uses,
-            clang_version_fn=clang_version)
-
-        with self.assertRaises(ValueError) as raised:
-          stage._CollectLLVMMetadata()
-
-        self.assertIn('pgo_generate flag', str(raised.exception))
+    self.assertIn('pgo_generate flag', str(raised.exception))
 
   def testCollectLLVMMetadataFunctionsInASimpleCase(self):
-    def clang_version():
-      return self._VALID_CLANG_VERSION_STRING
-
-    def equery_uses():
-      return ' - + llvm_pgo_generate :'
-
     stage = self.ConstructStage()
 
-    run_command = self.PatchObject(cros_build_lib, 'run')
-    run_command.side_effect = self._MetadataMultiDispatch(equery_uses,
-                                                          clang_version)
-    write_file = self.PatchObject(osutils, 'WriteFile')
+    self.rc.AddCmdResult(partial_mock.In('equery'),
+                         stdout=' - + llvm_pgo_generate :\n')
+    self.rc.AddCmdResult(partial_mock.In('clang'),
+                         stdout=self._VALID_CLANG_VERSION_STRING)
+
     upload_queue_put = self.PatchObject(stage._upload_queue, 'put')
     stage._CollectLLVMMetadata()
 
-    write_file.assert_called_once()
     upload_queue_put.assert_called_once()
 
-    (written_file, metadata_json), kwargs = write_file.call_args
-    self.assertEqual(kwargs, {})
-
+    written_file = os.path.join(stage.archive_path, 'llvm_metadata.json')
+    given_metadata = json.loads(osutils.ReadFile(written_file))
     expected_metadata = {
         'head_sha': self._VALID_CLANG_VERSION_SHA,
     }
-
-    given_metadata = json.loads(metadata_json)
     self.assertEqual(given_metadata, expected_metadata)
 
     upload_queue_put.assert_called_with([written_file])

@@ -66,6 +66,7 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   bool IsAutofilled() const;
   void SetAutofillState(enum WebAutofillState);
   bool UserHasEditedTheField() const;
+  void SetUserHasEditedTheField(bool value);
   // This is only used for simulating the user's action in tests.
   void SetUserHasEditedTheFieldForTest();
 
@@ -84,6 +85,10 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   // Sets the autofilled value for input element, textarea element and select
   // element and sends a sequence of events to the element.
   void SetAutofillValue(const WebString&);
+  // Triggers the emission of a focus event.
+  void DispatchFocusEvent();
+  // Triggers the emission of a blur event.
+  void DispatchBlurEvent();
   // Returns value of element. For select element, it returns the value of
   // the selected option if present. If no selected option, an empty string
   // is returned. If element doesn't fall into input element, textarea element
@@ -150,4 +155,4 @@ DECLARE_WEB_NODE_TYPE_CASTS(WebFormControlElement);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FORM_CONTROL_ELEMENT_H_

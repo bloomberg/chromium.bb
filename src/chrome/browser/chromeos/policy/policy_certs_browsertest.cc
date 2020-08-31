@@ -5,13 +5,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -67,7 +67,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -579,7 +578,7 @@ class PolicyProvidedCertsPublicSessionTest
     chromeos::WizardController* const wizard_controller =
         chromeos::WizardController::default_controller();
     ASSERT_TRUE(wizard_controller);
-    wizard_controller->SkipToLoginForTesting(chromeos::LoginScreenContext());
+    wizard_controller->SkipToLoginForTesting();
 
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -728,9 +727,6 @@ class PolicyProvidedCertsForSigninExtensionTest
   ~PolicyProvidedCertsForSigninExtensionTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        net::features::kCertVerifierBuiltinFeature);
-
     // Apply |kRootCaCert| for |kSigninScreenExtension1| in Device ONC policy.
     base::FilePath test_certs_path = GetTestCertsPath();
     std::string x509_contents;
@@ -783,10 +779,8 @@ class PolicyProvidedCertsForSigninExtensionTest
 
   content::StoragePartition* GetStoragePartitionForSigninExtension(
       const std::string& extension_id) {
-    const GURL site =
-        extensions::util::GetSiteForExtensionId(extension_id, signin_profile_);
-    return content::BrowserContext::GetStoragePartitionForSite(
-        signin_profile_, site, /*can_create=*/false);
+    return extensions::util::GetStoragePartitionForExtensionId(
+        extension_id, signin_profile_, /*can_create=*/false);
   }
 
   Profile* signin_profile_ = nullptr;
@@ -827,8 +821,6 @@ class PolicyProvidedCertsForSigninExtensionTest
 
     return onc_dict;
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsForSigninExtensionTest);
 };  // namespace policy

@@ -5,15 +5,19 @@
 #ifndef CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 #define CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 
-class Browser;
-class SigninViewController;
+#include "base/callback_forward.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 
-namespace signin_metrics {
-enum class AccessPoint;
-}
+class Browser;
+struct CoreAccountId;
 
 namespace content {
 class WebContents;
+}
+
+namespace signin {
+enum class ReauthResult;
 }
 
 // Interface to the platform-specific managers of the Signin and Sync
@@ -24,19 +28,49 @@ class WebContents;
 // managing closes.
 class SigninViewControllerDelegate {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when a dialog controlled by this SigninViewControllerDelegate is
+    // closed.
+    virtual void OnModalSigninClosed() = 0;
+  };
+
+  SigninViewControllerDelegate(const SigninViewControllerDelegate&) = delete;
+  SigninViewControllerDelegate& operator=(const SigninViewControllerDelegate&) =
+      delete;
+
   // Returns a platform-specific SigninViewControllerDelegate instance that
   // displays the sync confirmation dialog. The returned object should delete
   // itself when the window it's managing is closed.
   static SigninViewControllerDelegate* CreateSyncConfirmationDelegate(
-      SigninViewController* signin_view_controller,
       Browser* browser);
 
   // Returns a platform-specific SigninViewControllerDelegate instance that
   // displays the modal sign in error dialog. The returned object should delete
   // itself when the window it's managing is closed.
   static SigninViewControllerDelegate* CreateSigninErrorDelegate(
-      SigninViewController* signin_view_controller,
       Browser* browser);
+
+  // Returns a platform-specific SigninViewContolllerDelegate instance that
+  // displays the reauth modal dialog. The returned object should delete itself
+  // when the window it's managing is closed.
+  static SigninViewControllerDelegate* CreateReauthDelegate(
+      Browser* browser,
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+
+  // Returns a platform-specific SigninViewContolllerDelegate instance that
+  // displays the fake reauth modal dialog. The returned object should delete
+  // itself when the window it's managing is closed.
+  // WARNING: This dialog is for development use only and should not be used in
+  // production.
+  static SigninViewControllerDelegate* CreateFakeReauthDelegate(
+      Browser* browser,
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Closes the sign-in dialog. Note that this method may destroy this object,
   // so the caller should no longer use this object after calling this method.
@@ -51,7 +85,13 @@ class SigninViewControllerDelegate {
   virtual content::WebContents* GetWebContents() = 0;
 
  protected:
-  virtual ~SigninViewControllerDelegate() = default;
+  SigninViewControllerDelegate();
+  virtual ~SigninViewControllerDelegate();
+
+  void NotifyModalSigninClosed();
+
+ private:
+  base::ObserverList<Observer, true> observer_list_;
 };
 
 #endif  // CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_

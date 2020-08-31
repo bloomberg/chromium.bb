@@ -4,11 +4,15 @@
 
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
 
+#include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -51,19 +55,16 @@ enum class FinishReason {
   kMaxValue = kAbandonNoInitiallyVisibleContent
 };
 
-// Per documentation in navigation_request.cc, a navigation id is guaranteed
-// nonzero.
-constexpr int64_t kInvalidNavigationId = 0;
-
 void RecordFinishReason(FinishReason finish_reason) {
   base::UmaHistogramEnumeration("Startup.FirstWebContents.FinishReason",
                                 finish_reason);
 }
 
+// Note: Instances of this class self destroy when the first non-empty paint
+// happens, or when an event prevents it from being recorded.
 class FirstWebContentsProfiler : public content::WebContentsObserver {
  public:
-  FirstWebContentsProfiler(content::WebContents* web_contents,
-                           startup_metric_utils::WebContentsWorkload workload);
+  explicit FirstWebContentsProfiler(content::WebContents* web_contents);
 
  private:
   ~FirstWebContentsProfiler() override = default;
@@ -80,21 +81,27 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Logs |finish_reason| to UMA and deletes this FirstWebContentsProfiler.
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
-  const startup_metric_utils::WebContentsWorkload workload_;
-
-  // The first NavigationHandle id observed by this.
-  int64_t first_navigation_id_ = kInvalidNavigationId;
-
   // Whether a main frame navigation finished since this was created.
   bool did_finish_first_navigation_ = false;
+
+  // Memory pressure listener that will be used to check if memory pressure has
+  // an impact on startup.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstWebContentsProfiler);
 };
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
-    content::WebContents* web_contents,
-    startup_metric_utils::WebContentsWorkload workload)
-    : content::WebContentsObserver(web_contents), workload_(workload) {}
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      memory_pressure_listener_(base::BindRepeating(
+          &startup_metric_utils::OnMemoryPressureBeforeFirstNonEmptyPaint)) {
+  // FirstWebContentsProfiler is created before the main MessageLoop starts
+  // running. At that time, any visible WebContents should have a pending
+  // NavigationEntry, i.e. should have dispatched DidStartNavigation() but not
+  // DidFinishNavigation().
+  DCHECK(web_contents->GetController().GetPendingEntry());
+}
 
 void FirstWebContentsProfiler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -104,17 +111,11 @@ void FirstWebContentsProfiler::DidStartNavigation(
     return;
   }
 
-  if (first_navigation_id_ != kInvalidNavigationId) {
-    // Abandon if this is not the first observed top-level navigation.
-    DCHECK_NE(first_navigation_id_, navigation_handle->GetNavigationId());
-    FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
-    return;
-  }
-
-  DCHECK(!did_finish_first_navigation_);
-
-  // Keep track of the first top-level navigation id observed by this.
-  first_navigation_id_ = navigation_handle->GetNavigationId();
+  // FirstWebContentsProfiler is created after DidStartNavigation() has been
+  // dispatched for the first top-level navigation. If another
+  // DidStartNavigation() is received, it means that a new navigation was
+  // initiated.
+  FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
 }
 
 void FirstWebContentsProfiler::DidFinishNavigation(
@@ -136,22 +137,14 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     return;
   }
 
-  if (first_navigation_id_ == kInvalidNavigationId) {
-    // Keep track of the first top-level navigation id observed by this.
-    //
-    // Note: FirstWebContentsProfiler may be created before or after
-    // DidStartNavigation() is dispatched for the first navigation, which is why
-    // |first_navigation_id_| may be set in DidStartNavigation() or
-    // DidFinishNavigation().
-    first_navigation_id_ = navigation_handle->GetNavigationId();
-  }
-
-  DCHECK_EQ(first_navigation_id_, navigation_handle->GetNavigationId());
+  // It is not possible to get a second top-level DidFinishNavigation() without
+  // first having a DidStartNavigation(), which would have deleted |this|.
   DCHECK(!did_finish_first_navigation_);
+
   did_finish_first_navigation_ = true;
 
   startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-      navigation_handle->NavigationStart(), workload_);
+      navigation_handle->NavigationStart());
   startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
       base::TimeTicks::Now());
 }
@@ -197,8 +190,6 @@ void FirstWebContentsProfiler::FinishedCollectingMetrics(
 namespace metrics {
 
 void BeginFirstWebContentsProfiling() {
-  using startup_metric_utils::WebContentsWorkload;
-
   const BrowserList* browser_list = BrowserList::GetInstance();
 
   content::WebContents* visible_contents = nullptr;
@@ -230,14 +221,9 @@ void BeginFirstWebContentsProfiling() {
     return;
   }
 
-  const bool single_tab = browser_list->size() == 1 &&
-                          browser_list->get(0)->tab_strip_model()->count() == 1;
-
   // FirstWebContentsProfiler owns itself and is also bound to
   // |visible_contents|'s lifetime by observing WebContentsDestroyed().
-  new FirstWebContentsProfiler(visible_contents,
-                               single_tab ? WebContentsWorkload::SINGLE_TAB
-                                          : WebContentsWorkload::MULTI_TABS);
+  new FirstWebContentsProfiler(visible_contents);
 }
 
 }  // namespace metrics

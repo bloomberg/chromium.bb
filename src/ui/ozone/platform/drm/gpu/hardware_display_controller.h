@@ -95,7 +95,7 @@ class HardwareDisplayController {
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
-  bool Modeset(const DrmOverlayPlane& primary, drmModeModeInfo mode);
+  bool Modeset(const DrmOverlayPlane& primary, const drmModeModeInfo& mode);
 
   // Performs a CRTC configuration re-using the modes from the CRTCs.
   bool Enable(const DrmOverlayPlane& primary);
@@ -169,6 +169,12 @@ class HardwareDisplayController {
       const gfx::PresentationFeedback& presentation_feedback);
 
  private:
+  // If multiple CRTC Controllers exist and they're enabled, each will be
+  // enabled with its own mode. Set |use_current_crtc_mode| to Modeset using
+  // controller's mode instead of |mode|.
+  bool ModesetCrtc(const DrmOverlayPlane& primary,
+                   bool use_current_crtc_mode,
+                   const drmModeModeInfo& mode);
   void OnModesetComplete(const DrmOverlayPlane& primary);
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
                               scoped_refptr<PageFlipRequest> page_flip_request,

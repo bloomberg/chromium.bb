@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 
 class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
@@ -83,9 +84,9 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, NoThemeColor) {
   if (!InstallAndLaunchWebApp())
     return;
 
-  EXPECT_EQ(
-      glass_frame_view_->GetTitlebarColor(),
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false));
+  EXPECT_EQ(glass_frame_view_->GetTitlebarColor(),
+            ThemeProperties::GetDefaultColor(
+                ThemeProperties::COLOR_FRAME_ACTIVE, false));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, MaximizedLayout) {

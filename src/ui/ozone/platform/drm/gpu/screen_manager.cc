@@ -16,8 +16,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -392,8 +392,8 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     return DrmOverlayPlane::Error();
   }
 
-  scoped_refptr<DrmFramebuffer> framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm, buffer.get(), modifiers);
+  scoped_refptr<DrmFramebuffer> framebuffer = DrmFramebuffer::AddFramebuffer(
+      drm, buffer.get(), buffer->GetSize(), modifiers);
   if (!framebuffer) {
     LOG(ERROR) << "Failed to add framebuffer for scanout buffer";
     return DrmOverlayPlane::Error();

@@ -9,17 +9,13 @@
 
 namespace performance_manager {
 
-WorkerNodeImpl::WorkerNodeImpl(GraphImpl* graph,
-                               const std::string& browser_context_id,
+WorkerNodeImpl::WorkerNodeImpl(const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
-                               const GURL& url,
                                const base::UnguessableToken& dev_tools_token)
-    : TypedNodeBase(graph),
-      browser_context_id_(browser_context_id),
+    : browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
-      url_(url),
       dev_tools_token_(dev_tools_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
@@ -95,6 +91,15 @@ void WorkerNodeImpl::RemoveClientWorker(WorkerNodeImpl* worker_node) {
   DCHECK_EQ(removed, 1u);
 }
 
+void WorkerNodeImpl::OnFinalResponseURLDetermined(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(url_.is_empty());
+  url_ = url;
+
+  for (auto* observer : GetObservers())
+    observer->OnFinalResponseURLDetermined(this);
+}
+
 const std::string& WorkerNodeImpl::browser_context_id() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return browser_context_id_;
@@ -135,17 +140,14 @@ const base::flat_set<WorkerNodeImpl*>& WorkerNodeImpl::child_workers() const {
   return child_workers_;
 }
 
-void WorkerNodeImpl::JoinGraph() {
+void WorkerNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   process_node_->AddWorker(this);
-
-  NodeBase::JoinGraph();
 }
 
-void WorkerNodeImpl::LeaveGraph() {
+void WorkerNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::LeaveGraph();
 
   process_node_->RemoveWorker(this);
 }

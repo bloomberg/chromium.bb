@@ -41,7 +41,7 @@
 #include "hevc_data.h"
 #include "hevc_parse.h"
 #include "hevcdec.h"
-#include "hwaccel.h"
+#include "hwconfig.h"
 #include "profiles.h"
 
 const uint8_t ff_hevc_pel_weight[65] = { [2] = 0, [4] = 1, [6] = 2, [8] = 3, [12] = 4, [16] = 5, [24] = 6, [32] = 7, [48] = 8, [64] = 9 };
@@ -425,6 +425,12 @@ static enum AVPixelFormat get_format(HEVCContext *s, const HEVCSPS *sps)
 #endif
 #if CONFIG_HEVC_NVDEC_HWACCEL
         *fmt++ = AV_PIX_FMT_CUDA;
+#endif
+        break;
+    case AV_PIX_FMT_YUV422P:
+    case AV_PIX_FMT_YUV422P10LE:
+#if CONFIG_HEVC_VAAPI_HWACCEL
+       *fmt++ = AV_PIX_FMT_VAAPI;
 #endif
         break;
     case AV_PIX_FMT_YUV420P12:
@@ -2778,14 +2784,14 @@ static int set_side_data(HEVCContext *s)
                metadata->MaxCLL, metadata->MaxFALL);
     }
 
-    if (s->sei.a53_caption.a53_caption) {
-        AVFrameSideData* sd = av_frame_new_side_data(out,
-                                                     AV_FRAME_DATA_A53_CC,
-                                                     s->sei.a53_caption.a53_caption_size);
-        if (sd)
-            memcpy(sd->data, s->sei.a53_caption.a53_caption, s->sei.a53_caption.a53_caption_size);
-        av_freep(&s->sei.a53_caption.a53_caption);
-        s->sei.a53_caption.a53_caption_size = 0;
+    if (s->sei.a53_caption.buf_ref) {
+        HEVCSEIA53Caption *a53 = &s->sei.a53_caption;
+
+        AVFrameSideData *sd = av_frame_new_side_data_from_buf(out, AV_FRAME_DATA_A53_CC, a53->buf_ref);
+        if (!sd)
+            av_buffer_unref(&a53->buf_ref);
+        a53->buf_ref = NULL;
+
         s->avctx->properties |= FF_CODEC_PROPERTY_CLOSED_CAPTIONS;
     }
 
@@ -3077,7 +3083,7 @@ static int decode_nal_units(HEVCContext *s, const uint8_t *buf, int length)
 
         if (s->avctx->skip_frame >= AVDISCARD_ALL ||
             (s->avctx->skip_frame >= AVDISCARD_NONREF
-            && ff_hevc_nal_is_nonref(nal->type)))
+            && ff_hevc_nal_is_nonref(nal->type)) || nal->nuh_layer_id > 0)
             continue;
 
         ret = decode_nal_unit(s, nal);
@@ -3463,6 +3469,13 @@ static int hevc_update_thread_context(AVCodecContext *dst,
         s->max_ra = INT_MAX;
     }
 
+    av_buffer_unref(&s->sei.a53_caption.buf_ref);
+    if (s0->sei.a53_caption.buf_ref) {
+        s->sei.a53_caption.buf_ref = av_buffer_ref(s0->sei.a53_caption.buf_ref);
+        if (!s->sei.a53_caption.buf_ref)
+            return AVERROR(ENOMEM);
+    }
+
     s->sei.frame_packing        = s0->sei.frame_packing;
     s->sei.display_orientation  = s0->sei.display_orientation;
     s->sei.mastering_display    = s0->sei.mastering_display;
@@ -3477,8 +3490,6 @@ static av_cold int hevc_decode_init(AVCodecContext *avctx)
 {
     HEVCContext *s = avctx->priv_data;
     int ret;
-
-    avctx->internal->allocate_progress = 1;
 
     ret = hevc_init_context(avctx);
     if (ret < 0)
@@ -3495,11 +3506,13 @@ static av_cold int hevc_decode_init(AVCodecContext *avctx)
     else
         s->threads_number = 1;
 
-    if (avctx->extradata_size > 0 && avctx->extradata) {
-        ret = hevc_decode_extradata(s, avctx->extradata, avctx->extradata_size, 1);
-        if (ret < 0) {
-            hevc_decode_free(avctx);
-            return ret;
+    if (!avctx->internal->is_copy) {
+        if (avctx->extradata_size > 0 && avctx->extradata) {
+            ret = hevc_decode_extradata(s, avctx->extradata, avctx->extradata_size, 1);
+            if (ret < 0) {
+                hevc_decode_free(avctx);
+                return ret;
+            }
         }
     }
 
@@ -3510,22 +3523,6 @@ static av_cold int hevc_decode_init(AVCodecContext *avctx)
 
     return 0;
 }
-
-#if HAVE_THREADS
-static av_cold int hevc_init_thread_copy(AVCodecContext *avctx)
-{
-    HEVCContext *s = avctx->priv_data;
-    int ret;
-
-    memset(s, 0, sizeof(*s));
-
-    ret = hevc_init_context(avctx);
-    if (ret < 0)
-        return ret;
-
-    return 0;
-}
-#endif
 
 static void hevc_decode_flush(AVCodecContext *avctx)
 {
@@ -3566,10 +3563,10 @@ AVCodec ff_hevc_decoder = {
     .decode                = hevc_decode_frame,
     .flush                 = hevc_decode_flush,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(hevc_update_thread_context),
-    .init_thread_copy      = ONLY_IF_THREADS_ENABLED(hevc_init_thread_copy),
     .capabilities          = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
                              AV_CODEC_CAP_SLICE_THREADS | AV_CODEC_CAP_FRAME_THREADS,
-    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING,
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING |
+                             FF_CODEC_CAP_ALLOCATE_PROGRESS,
     .profiles              = NULL_IF_CONFIG_SMALL(ff_hevc_profiles),
     .hw_configs            = (const AVCodecHWConfigInternal*[]) {
 #if CONFIG_HEVC_DXVA2_HWACCEL

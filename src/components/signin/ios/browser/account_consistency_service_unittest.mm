@@ -101,8 +101,18 @@ class TestWebState : public web::TestWebState {
     decider_ = nullptr;
   }
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame) {
-    return decider_ ? decider_->ShouldAllowResponse(response, for_main_frame)
-                    : true;
+    if (!decider_)
+      return true;
+
+    __block web::WebStatePolicyDecider::PolicyDecision policyDecision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::Bind(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policyDecision = decision;
+        });
+    decider_->ShouldAllowResponse(response, for_main_frame,
+                                  std::move(callback));
+    return policyDecision.ShouldAllowNavigation();
   }
   void WebStateDestroyed() {
     if (!decider_)
@@ -140,7 +150,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
         signin::AccountConsistencyMethod::kDisabled, signin_client_.get()));
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
-        false /* migrate_requesting_and_top_level_origin_settings */);
+        false /* migrate_requesting_and_top_level_origin_settings */,
+        false /* restore_session */);
     cookie_settings_ = new content_settings::CookieSettings(settings_map_.get(),
                                                             &prefs_, false, "");
     account_reconcilor_ =

@@ -5,6 +5,8 @@
 #include "ui/views/controls/native/native_view_host_aura.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"
@@ -13,6 +15,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/native/native_view_host_test_base.h"
@@ -76,7 +79,7 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
   }
 
   void OnWindowDestroyed(aura::Window* window) override {
-    EventDetails event = { EVENT_DESTROYED, window, gfx::Rect() };
+    EventDetails event = {EVENT_DESTROYED, window, gfx::Rect()};
     events_.push_back(event);
   }
 
@@ -95,9 +98,7 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
     return static_cast<NativeViewHostAura*>(GetNativeWrapper());
   }
 
-  Widget* child() {
-    return child_.get();
-  }
+  Widget* child() { return child_.get(); }
 
   aura::Window* clipping_window() {
     return native_host()->clipping_window_.get();
@@ -107,8 +108,7 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
     CreateTopLevel();
     CreateTestingHost();
     child_.reset(CreateChildForHost(toplevel()->GetNativeView(),
-                                    toplevel()->GetRootView(),
-                                    new View,
+                                    toplevel()->GetRootView(), new View,
                                     host()));
   }
 
@@ -165,12 +165,12 @@ TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
 TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
   CreateHost();
 
-  toplevel()->SetCursor(ui::CursorType::kHand);
-  child()->SetCursor(ui::CursorType::kWait);
+  toplevel()->SetCursor(ui::mojom::CursorType::kHand);
+  child()->SetCursor(ui::mojom::CursorType::kWait);
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                             gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
-  EXPECT_EQ(ui::CursorType::kWait, host()->GetCursor(move_event).native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kWait, host()->GetCursor(move_event).type());
 
   DestroyHost();
 }

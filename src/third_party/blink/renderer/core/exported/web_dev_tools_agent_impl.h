@@ -69,7 +69,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   WebDevToolsAgentImpl(WebLocalFrameImpl*, bool include_view_agents);
   ~WebDevToolsAgentImpl() override;
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
 
   void WillBeDestroyed();
@@ -90,6 +90,9 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool ScreencastEnabled();
   String NavigationInitiatorInfo(LocalFrame*);
   String EvaluateInOverlayForTesting(const String& script);
+  void DidShowNewWindow();
+
+  void WaitForDebuggerWhenShown();
 
  private:
   friend class ClientMessageLoopAdapter;
@@ -97,7 +100,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   // DevToolsAgent::Client implementation.
   void AttachSession(DevToolsSession*, bool restore) override;
   void DetachSession(DevToolsSession*) override;
-  void InspectElement(const WebPoint& point_in_local_root) override;
+  void InspectElement(const gfx::Point& point_in_local_root) override;
   void DebuggerTaskStarted() override;
   void DebuggerTaskFinished() override;
 
@@ -125,6 +128,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   Member<InspectorResourceContainer> resource_container_;
   Member<Node> node_to_inspect_;
   bool include_view_agents_;
+  bool wait_for_debugger_when_shown_ = false;
 };
 
 }  // namespace blink

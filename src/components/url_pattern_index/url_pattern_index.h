@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/url_pattern_index/closed_hash_map.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
@@ -83,7 +84,7 @@ int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain);
 // Increase this value when introducing an incompatible change to the
 // UrlPatternIndex schema (flat/url_pattern_index.fbs). url_pattern_index
 // clients can use this as a signal to rebuild rulesets.
-constexpr int kUrlPatternIndexFormatVersion = 5;
+constexpr int kUrlPatternIndexFormatVersion = 6;
 
 // The class used to construct an index over the URL patterns of a set of URL
 // rules. The rules themselves need to be converted to FlatBuffers format by the
@@ -162,7 +163,10 @@ class UrlPatternIndexMatcher {
 
     // If multiple rules match, any of the rules with the highest priority is
     // returned.
-    kHighestPriority
+    kHighestPriority,
+
+    // All matching rules are returned.
+    kAll,
   };
 
   // Creates an instance to access the given |flat_index|. If |flat_index| is
@@ -171,6 +175,10 @@ class UrlPatternIndexMatcher {
   ~UrlPatternIndexMatcher();
   UrlPatternIndexMatcher(UrlPatternIndexMatcher&&);
   UrlPatternIndexMatcher& operator=(UrlPatternIndexMatcher&&);
+
+  // Returns the number of rules in this index. Lazily computed, the first call
+  // to this method will scan the entire index.
+  size_t GetRulesCount() const;
 
   // If the index contains one or more UrlRules that match the request, returns
   // one of them, depending on the |strategy|. Otherwise, returns nullptr.
@@ -213,9 +221,33 @@ class UrlPatternIndexMatcher {
                                  bool disable_generic_rules,
                                  FindRuleStrategy strategy) const;
 
+  // Same as FindMatch, except this function returns all UrlRules that match the
+  // request for the index. If no UrlRules match, returns an empty vector.
+  std::vector<const flat::UrlRule*> FindAllMatches(
+      const GURL& url,
+      const url::Origin& first_party_origin,
+      proto::ElementType element_type,
+      proto::ActivationType activation_type,
+      bool is_third_party,
+      bool disable_generic_rules) const;
+
+  // Helper function to work with flat::*Type(s). Returns all UrlRules that
+  // match the request for the index. If no UrlRules match, returns an empty
+  // vector.
+  std::vector<const flat::UrlRule*> FindAllMatches(
+      const GURL& url,
+      const url::Origin& first_party_origin,
+      flat::ElementType element_type,
+      flat::ActivationType activation_type,
+      bool is_third_party,
+      bool disable_generic_rules) const;
+
  private:
   // Must outlive this instance.
   const flat::UrlPatternIndex* flat_index_;
+
+  // The number of rules in this index. Mutable since this is lazily computed.
+  mutable base::Optional<size_t> rules_count_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexMatcher);
 };

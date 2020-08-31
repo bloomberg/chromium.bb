@@ -4,7 +4,7 @@
 
 #include "ash/assistant/assistant_notification_controller.h"
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -117,7 +117,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   }
 
   void ForwardTimeInMs(int time_in_ms) {
-    task_environment_->FastForwardBy(
+    task_environment()->FastForwardBy(
         base::TimeDelta::FromMilliseconds(time_in_ms));
   }
 

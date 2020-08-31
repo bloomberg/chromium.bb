@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_CORE_UBER_QUIC_STREAM_ID_MANAGER_H_
 
 #include "net/third_party/quiche/src/quic/core/quic_stream_id_manager.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 
 namespace quic {
 
@@ -24,23 +25,29 @@ class QUIC_EXPORT_PRIVATE UberQuicStreamIdManager {
       Perspective perspective,
       ParsedQuicVersion version,
       QuicStreamIdManager::DelegateInterface* delegate,
-      QuicStreamCount num_expected_unidirectional_static_streams,
       QuicStreamCount max_open_outgoing_bidirectional_streams,
       QuicStreamCount max_open_outgoing_unidirectional_streams,
       QuicStreamCount max_open_incoming_bidirectional_streams,
       QuicStreamCount max_open_incoming_unidirectional_streams);
 
+  // Called on |max_open_streams| outgoing streams can be created because of 1)
+  // config negotiated or 2) MAX_STREAMS received. Returns true if new
+  // streams can be created.
+  bool MaybeAllowNewOutgoingBidirectionalStreams(
+      QuicStreamCount max_open_streams);
+  bool MaybeAllowNewOutgoingUnidirectionalStreams(
+      QuicStreamCount max_open_streams);
+
   // Sets the limits to max_open_streams.
-  void SetMaxOpenOutgoingBidirectionalStreams(size_t max_open_streams);
-  void SetMaxOpenOutgoingUnidirectionalStreams(size_t max_open_streams);
-  void SetMaxOpenIncomingBidirectionalStreams(size_t max_open_streams);
-  void SetMaxOpenIncomingUnidirectionalStreams(size_t max_open_streams);
+  void SetMaxOpenIncomingBidirectionalStreams(QuicStreamCount max_open_streams);
+  void SetMaxOpenIncomingUnidirectionalStreams(
+      QuicStreamCount max_open_streams);
 
   // Returns true if next outgoing bidirectional stream ID can be allocated.
-  bool CanOpenNextOutgoingBidirectionalStream();
+  bool CanOpenNextOutgoingBidirectionalStream() const;
 
   // Returns true if next outgoing unidirectional stream ID can be allocated.
-  bool CanOpenNextOutgoingUnidirectionalStream();
+  bool CanOpenNextOutgoingUnidirectionalStream() const;
 
   // Returns the next outgoing bidirectional stream id.
   QuicStreamId GetNextOutgoingBidirectionalStreamId();
@@ -49,48 +56,36 @@ class QUIC_EXPORT_PRIVATE UberQuicStreamIdManager {
   QuicStreamId GetNextOutgoingUnidirectionalStreamId();
 
   // Returns true if the incoming |id| is within the limit.
-  bool MaybeIncreaseLargestPeerStreamId(QuicStreamId id);
+  bool MaybeIncreaseLargestPeerStreamId(QuicStreamId id,
+                                        std::string* error_details);
 
   // Called when |id| is released.
   void OnStreamClosed(QuicStreamId id);
 
-  // Called when a MAX_STREAMS frame is received.
-  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame);
-
   // Called when a STREAMS_BLOCKED frame is received.
-  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame);
-
-  // Return true if |id| is peer initiated.
-  bool IsIncomingStream(QuicStreamId id) const;
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame,
+                             std::string* error_details);
 
   // Returns true if |id| is still available.
   bool IsAvailableStream(QuicStreamId id) const;
 
-  size_t GetMaxAllowdIncomingBidirectionalStreams() const;
+  QuicStreamCount GetMaxAllowdIncomingBidirectionalStreams() const;
 
-  size_t GetMaxAllowdIncomingUnidirectionalStreams() const;
-
-  void SetLargestPeerCreatedStreamId(
-      QuicStreamId largest_peer_created_stream_id);
+  QuicStreamCount GetMaxAllowdIncomingUnidirectionalStreams() const;
 
   QuicStreamId GetLargestPeerCreatedStreamId(bool unidirectional) const;
 
   QuicStreamId next_outgoing_bidirectional_stream_id() const;
   QuicStreamId next_outgoing_unidirectional_stream_id() const;
 
-  size_t max_outgoing_bidirectional_streams() const;
-  size_t max_outgoing_unidirectional_streams() const;
+  QuicStreamCount max_outgoing_bidirectional_streams() const;
+  QuicStreamCount max_outgoing_unidirectional_streams() const;
 
   QuicStreamCount max_incoming_bidirectional_streams() const;
   QuicStreamCount max_incoming_unidirectional_streams() const;
 
   QuicStreamCount advertised_max_incoming_bidirectional_streams() const;
   QuicStreamCount advertised_max_incoming_unidirectional_streams() const;
-
-  void OnConfigNegotiated() {
-    bidirectional_stream_id_manager_.OnConfigNegotiated();
-    unidirectional_stream_id_manager_.OnConfigNegotiated();
-  }
 
  private:
   friend class test::QuicSessionPeer;

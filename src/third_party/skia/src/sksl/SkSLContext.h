@@ -392,7 +392,7 @@ private:
         Defined(const Type& type)
         : INHERITED(-1, kDefined_Kind, type) {}
 
-        bool hasSideEffects() const override {
+        bool hasProperty(Property property) const override {
             return false;
         }
 

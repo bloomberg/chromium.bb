@@ -9,24 +9,24 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace discovery {
 
-class InstanceKey;
+class DomainName;
 class MdnsRecord;
 
 // This class is intended to be used as the key of a std::unordered_map or a
 // std::map when referencing data related to a service type
 class ServiceKey {
  public:
-  // NOTE: The record provided must have valid service, domain, and instance
-  // labels.
+  // NOTE: The record provided must have valid service domain labels.
   explicit ServiceKey(const MdnsRecord& record);
+  explicit ServiceKey(const DomainName& domain);
 
   // NOTE: The provided service and domain labels must be valid.
   ServiceKey(absl::string_view service, absl::string_view domain);
-  explicit ServiceKey(const InstanceKey& key);
   ServiceKey(const ServiceKey& other);
   ServiceKey(ServiceKey&& other);
 
@@ -37,6 +37,9 @@ class ServiceKey {
   const std::string& domain_id() const { return domain_id_; }
 
  private:
+  static ErrorOr<ServiceKey> TryCreate(const MdnsRecord& record);
+  static ErrorOr<ServiceKey> TryCreate(const DomainName& domain);
+
   std::string service_id_;
   std::string domain_id_;
 
@@ -44,6 +47,12 @@ class ServiceKey {
   friend H AbslHashValue(H h, const ServiceKey& key);
 
   friend bool operator<(const ServiceKey& lhs, const ServiceKey& rhs);
+
+  // Validation method which needs the same code as CreateFromRecord(). Use a
+  // friend declaration to avoid duplicating this code while still keeping the
+  // factory private.
+  friend bool HasValidDnsRecordAddress(const MdnsRecord& record);
+  friend bool HasValidDnsRecordAddress(const DomainName& domain);
 };
 
 // Hashing functions to allow for using with absl::Hash<...>.

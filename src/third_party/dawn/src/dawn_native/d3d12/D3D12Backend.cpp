@@ -20,6 +20,7 @@
 #include "common/SwapChainUtils.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/NativeSwapChainImplD3D12.h"
+#include "dawn_native/d3d12/ResidencyManagerD3D12.h"
 #include "dawn_native/d3d12/TextureD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
@@ -46,15 +47,26 @@ namespace dawn_native { namespace d3d12 {
         return static_cast<WGPUTextureFormat>(impl->GetPreferredFormat());
     }
 
-    WGPUTexture WrapSharedHandle(WGPUDevice device,
-                                 const WGPUTextureDescriptor* descriptor,
-                                 HANDLE sharedHandle,
-                                 uint64_t acquireMutexKey) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
-        const TextureDescriptor* backendDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor);
-        TextureBase* texture =
-            backendDevice->WrapSharedHandle(backendDescriptor, sharedHandle, acquireMutexKey);
-        return reinterpret_cast<WGPUTexture>(texture);
+    ExternalImageDescriptorDXGISharedHandle::ExternalImageDescriptorDXGISharedHandle()
+        : ExternalImageDescriptor(ExternalImageDescriptorType::DXGISharedHandle) {
     }
+
+    uint64_t SetExternalMemoryReservation(WGPUDevice device,
+                                          uint64_t requestedReservationSize,
+                                          MemorySegment memorySegment) {
+        Device* backendDevice = reinterpret_cast<Device*>(device);
+
+        return backendDevice->GetResidencyManager()->SetExternalMemoryReservation(
+            memorySegment, requestedReservationSize);
+    }
+
+    WGPUTexture WrapSharedHandle(WGPUDevice device,
+                                 const ExternalImageDescriptorDXGISharedHandle* descriptor) {
+        Device* backendDevice = reinterpret_cast<Device*>(device);
+        Ref<TextureBase> texture = backendDevice->WrapSharedHandle(
+            descriptor, descriptor->sharedHandle, descriptor->acquireMutexKey,
+            descriptor->isSwapChainTexture);
+        return reinterpret_cast<WGPUTexture>(texture.Detach());
+    }
+
 }}  // namespace dawn_native::d3d12

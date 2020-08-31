@@ -266,9 +266,9 @@ void NetworkingPrivateChromeOS::GetProperties(
 
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, service_path,
-      base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), guid, false /* managed */,
-                 success_callback),
+      base::BindOnce(&NetworkingPrivateChromeOS::GetPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr(), guid, false /* managed */,
+                     success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -290,9 +290,9 @@ void NetworkingPrivateChromeOS::GetManagedProperties(
 
   GetManagedConfigurationHandler()->GetManagedProperties(
       user_id_hash, service_path,
-      base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), guid, true /* managed */,
-                 success_callback),
+      base::BindOnce(&NetworkingPrivateChromeOS::GetPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr(), guid, true /* managed */,
+                     success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -354,7 +354,8 @@ void NetworkingPrivateChromeOS::SetProperties(
     }
   }
 
-  NET_LOG(USER) << "networkingPrivate.setProperties. GUID=" << guid;
+  NET_LOG(USER) << "networkingPrivate.setProperties for: "
+                << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
       network->path(), *properties, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));

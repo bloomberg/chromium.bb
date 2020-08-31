@@ -24,8 +24,6 @@ WHICH GENERATES THE GLSL ES LEXER (glslang_lex_autogen.cpp).
 // glslang.l:
 //   Lexer for the OpenGL shading language.
 
-// clang-format off
-
 // Ignore errors in auto-generated code.
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -107,7 +105,10 @@ static int ES3_1_keyword(TParseContext *context, int token);
 static int ES2_reserved_ES2_extension_ES3_keyword(TParseContext *context, TExtension extension, int token);
 static int ES3_extension(TParseContext *context, TExtension extension, int token);
 static int ES3_reserved_ES3_1_extension_ES3_2_keyword(TParseContext *context, TExtension extension, int token);
+static int ES3_reserved_ES3_extension(TParseContext *context, TExtension extension, int token);
 static int ES3_reserved_ES3_extension_ES3_1_keyword(TParseContext *context, TExtension extension, int token);
+static int ES3_1_reserved_ES3_1_extension_ES3_2_keyword(TParseContext *context, TExtension extension, int token);
+static int WEBGL_video_texture_extension(TParseContext *context, int token);
 static int uint_constant(TParseContext *context);
 static int int_constant(TParseContext *context);
 static int float_constant(yyscan_t yyscanner);
@@ -156,9 +157,10 @@ O           [0-7]
 "case"         { return ES3_keyword(context, CASE); }
 "default"      { return ES2_reserved_ES3_keyword(context, DEFAULT); }
 
-"centroid"     { return ES3_keyword(context, CENTROID); }
-"flat"         { return ES2_reserved_ES3_keyword(context, FLAT); }
-"smooth"       { return ES3_keyword(context, SMOOTH); }
+"centroid"      { return ES3_keyword(context, CENTROID); }
+"flat"          { return ES2_reserved_ES3_keyword(context, FLAT); }
+"smooth"        { return ES3_keyword(context, SMOOTH); }
+"noperspective" { return ES3_reserved_ES3_extension(context, TExtension::NV_shader_noperspective_interpolation, NOPERSPECTIVE); }
 
 "in"           { return IN_QUAL; }
 "out"          { return OUT_QUAL; }
@@ -229,7 +231,7 @@ O           [0-7]
 "sampler2DMSArray"     { return ES3_reserved_ES3_1_extension_ES3_2_keyword(context, TExtension::OES_texture_storage_multisample_2d_array, SAMPLER2DMSARRAY); }
 "isampler2DMSArray"    { return ES3_reserved_ES3_1_extension_ES3_2_keyword(context, TExtension::OES_texture_storage_multisample_2d_array, ISAMPLER2DMSARRAY); }
 "usampler2DMSArray"    { return ES3_reserved_ES3_1_extension_ES3_2_keyword(context, TExtension::OES_texture_storage_multisample_2d_array, USAMPLER2DMSARRAY); }
-
+"samplerVideoWEBGL"    { return WEBGL_video_texture_extension(context, SAMPLERVIDEOWEBGL); }
 "struct"       { return STRUCT; }
 
 "layout"  { return ES3_keyword(context, LAYOUT); }
@@ -250,7 +252,7 @@ O           [0-7]
 "iimage3D" { return ES3_reserved_ES3_1_keyword(context, IIMAGE3D); }
 "iimageCube" { return ES3_reserved_ES3_1_keyword(context, IIMAGECUBE); }
 "uimageCube" { return ES3_reserved_ES3_1_keyword(context, UIMAGECUBE); }
-"imageCube"	{ return ES3_reserved_ES3_1_keyword(context, IMAGECUBE); }
+"imageCube" { return ES3_reserved_ES3_1_keyword(context, IMAGECUBE); }
 "readonly" { return ES3_reserved_ES3_1_keyword(context, READONLY); }
 "writeonly" { return ES3_reserved_ES3_1_keyword(context, WRITEONLY); }
 "coherent" { return ES3_reserved_ES3_1_keyword(context, COHERENT); }
@@ -258,9 +260,10 @@ O           [0-7]
 "volatile" { return ES2_reserved_ES3_1_keyword(context, VOLATILE); }
 "atomic_uint" { return ES3_reserved_ES3_1_keyword(context, ATOMICUINT); }
 
+"precise" { return ES3_1_reserved_ES3_1_extension_ES3_2_keyword(context, TExtension::EXT_gpu_shader5, PRECISE); }
+
     /* Reserved keywords for GLSL ES 3.00 that are not reserved for GLSL ES 1.00 */
 "resource"          |
-"noperspective"     |
 "patch"             |
 "sample"            |
 "subroutine"        |
@@ -582,6 +585,22 @@ int ES3_1_keyword(TParseContext *context, int token)
     return check_type(yyscanner);
 }
 
+int WEBGL_video_texture_extension(TParseContext *context, int token)
+{
+    // Available with WEBGL_video_texture_extension
+    if (context->isExtensionEnabled(TExtension::WEBGL_video_texture))
+    {
+        return token;
+    }
+
+    // Otherwise can be used as an identifier/type name
+    struct yyguts_t* yyg = (struct yyguts_t*) context->getScanner();
+    yyscan_t yyscanner = (yyscan_t) context->getScanner();
+
+    yylval->lex.string = AllocatePoolCharArray(yytext, yyleng);
+    return check_type(yyscanner);
+}
+
 int ES2_reserved_ES2_extension_ES3_keyword(TParseContext *context, TExtension extension, int token)
 {
     yyscan_t yyscanner = (yyscan_t) context->getScanner();
@@ -633,6 +652,24 @@ int ES3_reserved_ES3_1_extension_ES3_2_keyword(TParseContext *context, TExtensio
     return check_type(yyscanner);
 }
 
+int ES3_reserved_ES3_extension(TParseContext *context, TExtension extension, int token)
+{
+    struct yyguts_t* yyg = (struct yyguts_t*) context->getScanner();
+    yyscan_t yyscanner = (yyscan_t) context->getScanner();
+
+    if(context->getShaderVersion() >= 300)
+    {
+        if (context->isExtensionEnabled(extension)) {
+            return token;
+        } else {
+            return reserved_word(yyscanner);
+        }
+    }
+
+    yylval->lex.string = AllocatePoolCharArray(yytext, yyleng);
+    return check_type(yyscanner);
+}
+
 int ES3_reserved_ES3_extension_ES3_1_keyword(TParseContext *context, TExtension extension, int token)
 {
     struct yyguts_t* yyg = (struct yyguts_t*) context->getScanner();
@@ -645,6 +682,27 @@ int ES3_reserved_ES3_extension_ES3_1_keyword(TParseContext *context, TExtension 
     }
 
     if(context->getShaderVersion() == 300)
+    {
+        return reserved_word(yyscanner);
+    }
+
+    yylval->lex.string = AllocatePoolCharArray(yytext, yyleng);
+    return check_type(yyscanner);
+}
+
+static int ES3_1_reserved_ES3_1_extension_ES3_2_keyword(TParseContext *context, TExtension extension, int token)
+{
+    struct yyguts_t* yyg = (struct yyguts_t*) context->getScanner();
+    yyscan_t yyscanner = (yyscan_t) context->getScanner();
+
+    // A keyword in GLSL ES 3.20 or GLSL ES 3.10 with enabled extension.
+    if (is_extension_enabled_or_is_core(context, 310, extension, 320))
+    {
+        return token;
+    }
+
+    // A reserved word in GLSL ES 3.10
+    if (context->getShaderVersion() == 310)
     {
         return reserved_word(yyscanner);
     }
@@ -765,6 +823,11 @@ int glslang_scan(size_t count, const char* const string[], const int length[],
     const TExtensionBehavior& extBehavior = context->extensionBehavior();
     for (TExtensionBehavior::const_iterator iter = extBehavior.begin();
          iter != extBehavior.end(); ++iter) {
+        // OVR_multiview should not be defined for WebGL spec'ed shaders.
+        if (sh::IsWebGLBasedSpec(context->getShaderSpec()) &&
+            iter->first == TExtension::OVR_multiview) {
+            continue;
+        }
         preprocessor->predefineMacro(GetExtensionNameString(iter->first), 1);
     }
     if (context->getFragmentPrecisionHigh())

@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Profile;
 
@@ -40,6 +40,7 @@ class TestAppShortcutManager : public AppShortcutManager {
   void CreateShortcuts(const AppId& app_id,
                        bool on_desktop,
                        CreateShortcutsCallback callback) override;
+  std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id) override;
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
 

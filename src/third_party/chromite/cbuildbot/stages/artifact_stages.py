@@ -484,16 +484,6 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   config_name = 'debug_symbols'
   category = constants.PRODUCT_OS_STAGE
 
-  def WaitUntilReady(self):
-    """Block until UnitTest completes.
-
-    The attribute 'unittest_completed' is set by UnitTestStage.
-
-    Returns:
-      Boolean that authorizes running of this stage.
-    """
-    return self.board_runattrs.GetParallel('unittest_completed', timeout=None)
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
@@ -524,6 +514,8 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     # Upload them to crash server.
     if self._run.config.upload_symbols:
       self.UploadSymbols(buildroot, board)
+
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
 
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
@@ -585,11 +577,13 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   def HandleSkip(self):
     """Tell other stages to not wait on us if we are skipped."""
     self._SymbolsNotGenerated()
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
     return super(DebugSymbolsStage, self).HandleSkip()
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self._SymbolsNotGenerated()
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
 
     # TODO(dgarrett): Get failures tracked in metrics (crbug.com/652463).
     exc_type, e, _ = exc_info
@@ -631,7 +625,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     if version is not None:
       generated_args.extend(['--set-version', version])
 
-    if self._run.config.git_sync:
+    if self._run.config.git_sync and self._run.options.publish:
       # Git sync should never be set for pfq type builds.
       assert not config_lib.IsPFQType(self._prebuilt_type)
       generated_args.extend(['--git-sync'])
@@ -669,7 +663,6 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     """Uploads prebuilts for master and slave builders."""
     prebuilt_type = self._prebuilt_type
     board = self._current_board
-    binhosts = []
 
     # Whether we publish public or private prebuilts.
     public = self._run.config.prebuilts == constants.PUBLIC
@@ -680,36 +673,9 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     # Public / private builders.
     public_builders, private_builders = [], []
 
-    # Distributed builders that use manifest-versions to sync with one another
-    # share prebuilt logic by passing around versions.
-    if config_lib.IsBinhostType(prebuilt_type):
-
-      # Deduplicate against previous binhosts.
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in (x for x in binhosts if x):
-        generated_args.extend(['--previous-binhost-url', binhost])
-
-      if self._run.config.master and board == self._boards[-1]:
-        # The master builder updates all the binhost conf files, and needs to do
-        # so only once so as to ensure it doesn't try to update the same file
-        # more than once. As multiple boards can be built on the same builder,
-        # we arbitrarily decided to update the binhost conf files when we run
-        # upload_prebuilts for the last board. The other boards are treated as
-        # slave boards.
-        generated_args.append('--sync-binhost-conf')
-        for c in self._GetSlaveConfigs():
-          if c['prebuilts'] == constants.PUBLIC:
-            public_builders.append(c['name'])
-            public_args.extend(self._AddOptionsForSlave(c, board))
-          elif c['prebuilts'] == constants.PRIVATE:
-            private_builders.append(c['name'])
-            private_args.extend(self._AddOptionsForSlave(c, board))
-
     common_kwargs = {
         'buildroot': self._build_root,
         'category': prebuilt_type,
-        'chrome_rev': self._chrome_rev,
         'version': self.prebuilts_version,
     }
 
@@ -740,7 +706,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    generated_args = self.GenerateCommonArgs()
+    generated_args = self.GenerateCommonArgs(inc_chrome_ver=False)
     prebuilts.UploadDevInstallerPrebuilts(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
@@ -764,7 +730,9 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
-        logging.info('Running commands.BuildAutotestTarballsForHWTest')
+        logging.debug(
+            'Running BuildAutotestTarballsForHWTest root %s cwd %s target %s',
+            self._build_root, cwd, tempdir)
         for tarball in commands.BuildAutotestTarballsForHWTest(
             self._build_root, cwd, tempdir):
           queue.put([tarball])
@@ -1007,13 +975,13 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
   @staticmethod
   def _ParseLLVMHeadSHA(version_string):
     # The first line of clang's version string looks something like:
-    # Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 \
+    # Chromium OS 10.0_pre377782_p20200113-r1 clang version 10.0.0 \
     # (/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project \
-    # de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)
+    # 4e8231b5cf0f5f62c7a51a857e29f5be5cb55734)
     #
     # The SHA after llvm-project is the SHA we're looking for.
-    # Note that len('de7a0a152648d1a74cf4319920b1848aa00d1ca3') == 40.
-    sha_re = re.compile(r'([A-Fa-f0-9]{40})\)\s+\(based on LLVM [\d+.]+svn\)$')
+    # Note that len('4e8231b5cf0f5f62c7a51a857e29f5be5cb55734') == 40.
+    sha_re = re.compile(r'llvm-project ([A-Fa-f0-9]{40})\)$')
     first_line = version_string.splitlines()[0].strip()
     match = sha_re.search(first_line)
     if not match:
@@ -1022,7 +990,8 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
   def _CollectLLVMMetadata(self):
     def check_chroot_output(command):
-      cmd = cros_build_lib.run(command, enter_chroot=True, redirect_stdout=True)
+      cmd = cros_build_lib.run(command, enter_chroot=True, stdout=True,
+                               encoding='utf-8')
       return cmd.output
 
     # The baked-in clang should be the one we're looking for. If not, yell.

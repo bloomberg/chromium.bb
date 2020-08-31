@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_tick_clock.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -38,7 +41,22 @@ constexpr const base::TimeDelta kDelayErrorMessage =
 constexpr const base::TimeDelta kShowDelay =
     base::TimeDelta::FromMicroseconds(400);
 
+void RecordDownloadingTime(base::TimeDelta duration) {
+  base::UmaHistogramLongTimes("OOBE.UpdateScreen.UpdateDownloadingTime",
+                              duration);
+}
+
 }  // anonymous namespace
+
+// static
+std::string UpdateScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::UPDATE_NOT_REQUIRED:
+      return "UpdateNotRequired";
+    case Result::UPDATE_ERROR:
+      return "UpdateError";
+  }
+}
 
 // static
 UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
@@ -48,13 +66,14 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 UpdateScreen::UpdateScreen(UpdateView* view,
                            ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
-    : BaseScreen(UpdateView::kScreenId),
+    : BaseScreen(UpdateView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
       histogram_helper_(
           std::make_unique<ErrorScreensHistogramHelper>("Update")),
-      version_updater_(std::make_unique<VersionUpdater>(this)) {
+      version_updater_(std::make_unique<VersionUpdater>(this)),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   if (view_)
     view_->Bind(this);
 }
@@ -69,8 +88,8 @@ void UpdateScreen::OnViewDestroyed(UpdateView* view) {
     view_ = nullptr;
 }
 
-void UpdateScreen::Show() {
-#if !defined(OFFICIAL_BUILD)
+void UpdateScreen::ShowImpl() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (view_) {
     view_->SetCancelUpdateShortcutEnabled(true);
   }
@@ -84,7 +103,7 @@ void UpdateScreen::Show() {
   version_updater_->StartNetworkCheck();
 }
 
-void UpdateScreen::Hide() {
+void UpdateScreen::HideImpl() {
   show_timer_.Stop();
   if (view_)
     view_->Hide();
@@ -92,12 +111,13 @@ void UpdateScreen::Hide() {
 }
 
 void UpdateScreen::OnUserAction(const std::string& action_id) {
-  bool is_official_build = false;
-#if defined(OFFICIAL_BUILD)
-  is_official_build = true;
+  bool is_chrome_branded_build = false;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  is_chrome_branded_build = true;
 #endif
 
-  if (!is_official_build && action_id == kUserActionCancelUpdateShortcut) {
+  if (!is_chrome_branded_build &&
+      action_id == kUserActionCancelUpdateShortcut) {
     // Skip update UI, usually used only in debug builds/tests.
     VLOG(1) << "Forced update cancel";
     ExitUpdate(Result::UPDATE_NOT_REQUIRED);
@@ -157,7 +177,7 @@ void UpdateScreen::ShowErrorMessage() {
           &UpdateScreen::OnConnectRequested, weak_factory_.GetWeakPtr()));
   error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
   error_screen_->SetParentScreen(UpdateView::kScreenId);
-  error_screen_->SetHideCallback(base::BindRepeating(
+  error_screen_->SetHideCallback(base::BindOnce(
       &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->Show();
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
@@ -211,6 +231,7 @@ void UpdateScreen::UpdateInfoChanged(
           hide_progress_on_exit_ = true;
           ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
+          start_update_downloading_ = tick_clock_->NowTicks();
           VLOG(1) << "Critical update available: " << status.new_version();
         }
       }
@@ -223,6 +244,8 @@ void UpdateScreen::UpdateInfoChanged(
     case update_engine::Operation::UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       if (HasCriticalUpdate()) {
+        RecordDownloadingTime(tick_clock_->NowTicks() -
+                              start_update_downloading_);
         version_updater_->RebootAfterUpdate();
       } else {
         hide_progress_on_exit_ = true;

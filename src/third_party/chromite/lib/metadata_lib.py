@@ -10,24 +10,11 @@ from __future__ import print_function
 import datetime
 import json
 import math
-import os
 
 from chromite.lib import results_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gs
-
-
-# Number of parallel processes used when uploading/downloading GS files.
-MAX_PARALLEL = 40
-
-ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
-# NOTE: gsutil 3.42 has a bug where '/' is ignored in this context unless it
-#       is listed twice. So we list it twice here for now.
-METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
-                                 'R%(milestone)s**//metadata.json')
-LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
 class _DummyLock(object):
@@ -424,82 +411,3 @@ class BuildData(object):
       return [name for name, slave in slaves.items() if _Failed(slave)]
 
     return []
-
-
-class MetadataException(Exception):
-  """Base exception class for exceptions in this module."""
-
-
-class GetMilestoneError(MetadataException):
-  """Base exception class for exceptions in this module."""
-
-
-def GetLatestMilestone():
-  """Get the latest milestone from CQ Master LATEST-master file."""
-  # Use CQ Master target to get latest milestone.
-  latest_url = LATEST_URL % {'target': constants.CQ_MASTER}
-  gs_ctx = gs.GSContext()
-
-  logging.info('Getting latest milestone from %s', latest_url)
-  try:
-    content = gs_ctx.Cat(latest_url).strip()
-
-    # Expected syntax is like the following: "R35-1234.5.6-rc7".
-    assert content.startswith('R')
-    milestone = content.split('-')[0][1:]
-    logging.info('Latest milestone determined to be: %s', milestone)
-    return int(milestone)
-
-  except gs.GSNoSuchKey:
-    raise GetMilestoneError('LATEST file missing: %s' % latest_url)
-
-
-def GetMetadataURLsSince(target, start_date, end_date):
-  """Get metadata.json URLs for |target| from |start_date| until |end_date|.
-
-  The modified time of the GS files is used to compare with start_date, so
-  the completion date of the builder run is what is important here.
-
-  Args:
-    target: Builder target name.
-    start_date: datetime.date object of starting date.
-    end_date: datetime.date object of ending date.
-
-  Returns:
-    Metadata urls for runs found.
-  """
-  ret = []
-  milestone = GetLatestMilestone()
-  gs_ctx = gs.GSContext()
-  while True:
-    base_url = METADATA_URL_GLOB % {'target': target, 'milestone': milestone}
-    logging.info('Getting %s builds for R%d from "%s"', target, milestone,
-                 base_url)
-
-    try:
-      # Get GS URLs.  We want the datetimes to quickly know when we are done
-      # collecting URLs.
-      urls = gs_ctx.List(base_url, details=True)
-    except gs.GSNoSuchKey:
-      # We ran out of metadata to collect.  Stop searching back in time.
-      logging.info('No %s builds found for $%d.  I will not continue search'
-                   ' to older milestones.', target, milestone)
-      break
-
-    # Sort by timestamp.
-    urls = sorted(urls, key=lambda x: x.creation_time, reverse=True)
-
-    # Add relevant URLs to our list.
-    ret.extend([x.url for x in urls
-                if (x.creation_time.date() >= start_date and
-                    x.creation_time.date() <= end_date)])
-
-    # See if we have gone far enough back by checking datetime of oldest URL
-    # in the current batch.
-    if urls[-1].creation_time.date() < start_date:
-      break
-    else:
-      milestone -= 1
-      logging.info('Continuing on to R%d.', milestone)
-
-  return ret

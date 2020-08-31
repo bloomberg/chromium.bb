@@ -3,18 +3,21 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -46,7 +49,9 @@ IN_PROC_BROWSER_TEST_F(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
       apps::mojom::AppLaunchSource::kSourceTest);
 
   content::WebContents* contents =
-      apps::LaunchService::Get(profile)->OpenApplication(params);
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          .LaunchAppWithParams(params);
   EXPECT_EQ(GURL(chrome::kChromeUIOSSettingsURL), contents->GetVisibleURL());
 }
 

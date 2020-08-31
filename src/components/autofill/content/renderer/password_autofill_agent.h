@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
@@ -24,6 +25,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -110,6 +112,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                               public FormTracker::Observer,
                               public mojom::PasswordAutofillAgent {
  public:
+  using UseFallbackData = util::StrongAlias<class UseFallbackDataTag, bool>;
+  using ShowAll = util::StrongAlias<class ShowAllTag, bool>;
+  using GenerationShowing = util::StrongAlias<class GenerationShowingTag, bool>;
+
   PasswordAutofillAgent(content::RenderFrame* render_frame,
                         blink::AssociatedInterfaceRegistry* registry);
   ~PasswordAutofillAgent() override;
@@ -197,8 +203,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // still be called in this situation so that UMA stats can be logged.
   // Returns true if any suggestions were shown, false otherwise.
   bool ShowSuggestions(const blink::WebInputElement& element,
-                       bool show_all,
-                       bool generation_popup_showing);
+                       ShowAll show_all,
+                       GenerationShowing generation_popup_showing);
 
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
@@ -212,22 +218,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // moves outside the frame.
   void FocusedNodeHasChanged(const blink::WebNode& node);
 
-  // Creates a |PasswordForm| from |web_form|.
-  std::unique_ptr<PasswordForm> GetPasswordFormFromWebForm(
+  std::unique_ptr<FormData> GetFormDataFromWebForm(
       const blink::WebFormElement& web_form);
 
-  // Creates a |PasswordForm| from |web_form|, that contains only the
-  // |form_data|, the origin and the gaia flags.
-  std::unique_ptr<PasswordForm> GetSimplifiedPasswordFormFromWebForm(
-      const blink::WebFormElement& web_form);
-
-  // Creates a |PasswordForm| of fields that are not enclosed in any <form> tag.
-  std::unique_ptr<PasswordForm> GetPasswordFormFromUnownedInputElements();
-
-  // Creates a |PasswordForm| containing only the |form_data|, origin and gaia
-  // flags, for fields that are not enclosed in any <form> tag.
-  std::unique_ptr<PasswordForm>
-  GetSimplifiedPasswordFormFromUnownedInputElements();
+  std::unique_ptr<FormData> GetFormDataFromUnownedInputElements();
 
   bool logging_state_active() const { return logging_state_active_; }
 
@@ -245,7 +239,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
 
+  const scoped_refptr<FieldDataManager> GetFieldDataManager() {
+    return field_data_manager_;
+  }
+
  private:
+  using OnPasswordField = util::StrongAlias<class OnPasswordFieldTag, bool>;
+
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
     RESTRICTION_NONE,
@@ -278,7 +278,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // Stores information about form field structure.
   struct FormFieldInfo {
-    uint32_t unique_renderer_id = FormFieldData::kNotSetFormControlRendererId;
+    FieldRendererId unique_renderer_id;
     std::string form_control_type;
     std::string autocomplete_attribute;
     bool is_focusable = false;
@@ -288,12 +288,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   struct FormStructureInfo {
     FormStructureInfo();
     FormStructureInfo(const FormStructureInfo& other);
+    FormStructureInfo& operator=(const FormStructureInfo& other);
     FormStructureInfo(FormStructureInfo&& other);
+    FormStructureInfo& operator=(FormStructureInfo&& other);
     ~FormStructureInfo();
 
-    FormStructureInfo& operator=(FormStructureInfo&& other);
-
-    uint32_t unique_renderer_id = FormData::kNotSetFormRendererId;
+    FormRendererId unique_renderer_id;
     std::vector<FormFieldInfo> fields;
   };
 
@@ -350,15 +350,15 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void SendPasswordForms(bool only_visible);
 
   // Instructs the browser to show a pop-up suggesting which credentials could
-  // be filled. |show_in_password_field| should indicate whether the pop-up is
+  // be filled. |show_on_password_field| should indicate whether the pop-up is
   // to be shown on the password field instead of on the username field. If the
   // username exists, it should be passed as |user_input|. If there is no
   // username, pass the password field in |user_input|. In the latter case, no
   // username value will be shown in the pop-up.
-  bool ShowSuggestionPopup(const PasswordInfo& password_info,
+  void ShowSuggestionPopup(const base::string16& typed_username,
                            const blink::WebInputElement& user_input,
-                           bool show_all,
-                           bool show_on_password_field);
+                           ShowAll show_all,
+                           OnPasswordField show_on_password_field);
 
   // Finds the PasswordInfo, username and password fields corresponding to the
   // passed in |element|, which can refer to either a username or a password
@@ -366,8 +366,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // corresponding username, password elements and PasswordInfo into
   // |username_element|, |password_element| and |pasword_info|, respectively.
   // Note, that |username_element->IsNull()| can be true if |element| is a
-  // password.
+  // password. Callers have the chance to restrict the usage of fallback data
+  // by setting |use_fallback_data| to false. In that case data provided via
+  // MaybeStoreFallbackData will be ignored and the function returns early.
   bool FindPasswordInfoForElement(const blink::WebInputElement& element,
+                                  UseFallbackData use_fallback_data,
                                   blink::WebInputElement* username_element,
                                   blink::WebInputElement* password_element,
                                   PasswordInfo** password_info);
@@ -418,7 +421,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
 
   void OnFrameDetached();
-  void OnWillSubmitForm(const blink::WebFormElement& form);
 
   void HidePopup();
 
@@ -478,7 +480,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // changes them.
   // 2) Field properties mask, i.e. whether the field was autofilled, modified
   // by user, etc. (see FieldPropertiesMask).
-  FieldDataManager field_data_manager_;
+  const scoped_refptr<FieldDataManager> field_data_manager_;
 
   PasswordValueGatekeeper gatekeeper_;
 
@@ -534,13 +536,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool prefilled_username_metrics_logged_ = false;
 
   // Keeps autofilled values for the form elements.
-  std::map<unsigned /*renderer id*/, blink::WebString>
-      autofilled_elements_cache_;
-  std::set<unsigned /*renderer id*/> all_autofilled_elements_;
+  std::map<FieldRendererId, blink::WebString> autofilled_elements_cache_;
+  std::set<FieldRendererId> all_autofilled_elements_;
   // Keeps forms structure (amount of elements, element types etc).
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.
-  std::map<unsigned /*renderer id*/, FormStructureInfo> forms_structure_cache_;
+  std::map<FormRendererId, FormStructureInfo> forms_structure_cache_;
 
   // Flag to prevent that multiple PasswordManager.FirstRendererFillingResult
   // UMA metrics are recorded per page load. This is reset on
@@ -548,9 +549,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool recorded_first_filling_result_ = false;
 
   // Contains renderer id of last updated input element.
-  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  FieldRendererId last_updated_field_renderer_id_;
   // Contains renderer id of the form of the last updated input element.
-  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
+  FormRendererId last_updated_form_renderer_id_;
 
   // Current state of Touch To Fill. This is reset during
   // CleanupOnDocumentShutdown.

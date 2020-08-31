@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace remoting {
@@ -67,10 +67,12 @@ std::unique_ptr<webrtc::DesktopFrame> PaddedDesktopFrame::CopyOf(
 }  // namespace
 
 DualBufferFrameConsumer::DualBufferFrameConsumer(
-    const RenderCallback& callback,
+    RenderCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     protocol::FrameConsumer::PixelFormat format)
-    : callback_(callback), task_runner_(task_runner), pixel_format_(format) {
+    : callback_(std::move(callback)),
+      task_runner_(task_runner),
+      pixel_format_(format) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
@@ -121,7 +123,7 @@ std::unique_ptr<webrtc::DesktopFrame> DualBufferFrameConsumer::AllocateFrame(
 
 void DualBufferFrameConsumer::DrawFrame(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::SharedDesktopFrame* shared_frame =
       reinterpret_cast<webrtc::SharedDesktopFrame*> (frame.get());
@@ -131,7 +133,7 @@ void DualBufferFrameConsumer::DrawFrame(
       buffers_[0]->GetUnderlyingFrame()) {
     buffer_1_mask_.Subtract(frame->updated_region());
   }
-  RunRenderCallback(std::move(frame), done);
+  RunRenderCallback(std::move(frame), std::move(done));
 }
 
 protocol::FrameConsumer::PixelFormat
@@ -145,9 +147,9 @@ base::WeakPtr<DualBufferFrameConsumer> DualBufferFrameConsumer::GetWeakPtr() {
 
 void DualBufferFrameConsumer::RunRenderCallback(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   if (!task_runner_) {
-    callback_.Run(std::move(frame), done);
+    callback_.Run(std::move(frame), std::move(done));
     return;
   }
 
@@ -155,8 +157,9 @@ void DualBufferFrameConsumer::RunRenderCallback(
       FROM_HERE,
       base::BindOnce(
           callback_, std::move(frame),
-          base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                     base::ThreadTaskRunnerHandle::Get(), FROM_HERE, done)));
+          base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                         base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                         std::move(done))));
 }
 
 }  // namespace remoting

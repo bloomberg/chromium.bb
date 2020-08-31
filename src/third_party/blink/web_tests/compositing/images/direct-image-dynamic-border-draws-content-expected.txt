@@ -9,7 +9,7 @@ layer tree before image style change
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "ContentsLayer for LayoutImage IMG class='composited'",
+      "name": "LayoutImage IMG class='composited'",
       "bounds": [256, 256],
       "transform": 1
     }

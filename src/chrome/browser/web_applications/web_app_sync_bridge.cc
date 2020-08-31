@@ -15,12 +15,14 @@
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/metadata_batch.h"
@@ -174,13 +176,35 @@ void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
     web_app->SetUserDisplayMode(user_display_mode);
 }
 
-void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(
-    const AppId& app_id,
-    bool is_locally_installed) {
+void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
+  if (!IsChromeOs())
+    return;
+
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
-  if (web_app)
-    web_app->SetIsLocallyInstalled(is_locally_installed);
+  if (!web_app)
+    return;
+
+  auto cros_data = web_app->chromeos_data();
+  DCHECK(cros_data.has_value());
+
+  if (cros_data->is_disabled != is_disabled) {
+    cros_data->is_disabled = is_disabled;
+    web_app->SetWebAppChromeOsData(cros_data);
+    registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
+  }
+}
+
+void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
+                                                bool is_locally_installed) {
+  {
+    ScopedRegistryUpdate update(this);
+    WebApp* web_app = update->UpdateApp(app_id);
+    if (web_app)
+      web_app->SetIsLocallyInstalled(is_locally_installed);
+  }
+  registrar_->NotifyWebAppLocallyInstalledStateChanged(app_id,
+                                                       is_locally_installed);
 }
 
 WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
@@ -390,6 +414,11 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     std::unique_ptr<RegistryUpdateData> update_local_data) {
   if (update_local_data->IsEmpty())
     return;
+
+  // Notify observers that web apps will be uninstalled. |apps_to_delete| are
+  // still registered at this stage.
+  for (const AppId& app_id : update_local_data->apps_to_delete)
+    registrar_->NotifyWebAppUninstalled(app_id);
 
   std::vector<WebApp*> apps_to_install;
   for (const auto& web_app : update_local_data->apps_to_create)

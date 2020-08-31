@@ -20,7 +20,7 @@ import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
@@ -38,7 +38,7 @@ import org.chromium.ui.base.EventOffsetHandler;
  * The containing view for {@link WebContents} that exists in the Android UI hierarchy and exposes
  * the various {@link View} functionality to it.
  */
-public class ContentView extends FrameLayout
+public class ContentView extends RelativeLayout
         implements ViewEventSink.InternalAccessDelegate, SmartClipProvider,
                    OnHierarchyChangeListener, OnSystemUiVisibilityChangeListener {
     private static final String TAG = "ContentView";
@@ -47,7 +47,9 @@ public class ContentView extends FrameLayout
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
+    private TabImpl mTab;
     private WebContents mWebContents;
+    private boolean mIsObscuredForAccessibility;
     private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
             new ObserverList<>();
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
@@ -110,17 +112,36 @@ public class ContentView extends FrameLayout
                 : null;
     }
 
-    public void setWebContents(WebContents webContents) {
+    protected TabImpl getTab() {
+        return mTab;
+    }
+
+    public void setTab(TabImpl tab) {
+        mTab = tab;
         boolean wasFocused = isFocused();
         boolean wasWindowFocused = hasWindowFocus();
         boolean wasAttached = isAttachedToWindow();
+        boolean wasObscured = mIsObscuredForAccessibility;
         if (wasFocused) onFocusChanged(false, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(false);
         if (wasAttached) onDetachedFromWindow();
-        mWebContents = webContents;
+        if (wasObscured) setIsObscuredForAccessibility(false);
+        mWebContents = mTab != null ? mTab.getWebContents() : null;
         if (wasFocused) onFocusChanged(true, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(true);
         if (wasAttached) onAttachedToWindow();
+        if (wasObscured) setIsObscuredForAccessibility(true);
+    }
+
+    /**
+     * Control whether WebContentsAccessibility will respond to accessibility requests.
+     */
+    public void setIsObscuredForAccessibility(boolean isObscured) {
+        if (mIsObscuredForAccessibility == isObscured) return;
+        mIsObscuredForAccessibility = isObscured;
+        WebContentsAccessibility wcax = getWebContentsAccessibility();
+        if (wcax == null) return;
+        wcax.setObscuredByAnotherView(mIsObscuredForAccessibility);
     }
 
     @Override
@@ -239,13 +260,13 @@ public class ContentView extends FrameLayout
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Calls may come while/after WebContents is destroyed. See https://crbug.com/821750#c8.
-        if (mWebContents != null && mWebContents.isDestroyed()) return null;
+        if (mWebContents == null || mWebContents.isDestroyed()) return null;
         return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (mWebContents != null && mWebContents.isDestroyed()) return false;
+        if (mWebContents == null || mWebContents.isDestroyed()) return false;
         return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 
@@ -273,18 +294,21 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return getEventForwarder().onKeyUp(keyCode, event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onKeyUp(keyCode, event) : false;
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        return isFocused() ? getEventForwarder().dispatchKeyEvent(event)
-                           : super.dispatchKeyEvent(event);
+        if (!isFocused()) return super.dispatchKeyEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.dispatchKeyEvent(event) : false;
     }
 
     @Override
     public boolean onDragEvent(DragEvent event) {
-        return getEventForwarder().onDragEvent(event, this);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onDragEvent(event, this) : false;
     }
 
     @Override
@@ -296,7 +320,8 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        boolean ret = getEventForwarder().onTouchEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        boolean ret = forwarder != null ? forwarder.onTouchEvent(event) : false;
         mEventOffsetHandler.onTouchEvent(event);
         return ret;
     }
@@ -322,7 +347,8 @@ public class ContentView extends FrameLayout
      */
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        boolean consumed = getEventForwarder().onHoverEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        boolean consumed = forwarder != null ? forwarder.onHoverEvent(event) : false;
         WebContentsAccessibility wcax = getWebContentsAccessibility();
         if (wcax != null && !wcax.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
@@ -330,7 +356,8 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return getEventForwarder().onGenericMotionEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onGenericMotionEvent(event) : false;
     }
 
     private EventForwarder getEventForwarder() {
@@ -362,12 +389,14 @@ public class ContentView extends FrameLayout
      */
     @Override
     public void scrollBy(int x, int y) {
-        getEventForwarder().scrollBy(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollBy(x, y);
     }
 
     @Override
     public void scrollTo(int x, int y) {
-        getEventForwarder().scrollTo(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollTo(x, y);
     }
 
     @Override
@@ -410,7 +439,7 @@ public class ContentView extends FrameLayout
         return mWebContents != null ? RenderCoordinates.fromWebContents(mWebContents) : null;
     }
 
-    // End FrameLayout overrides.
+    // End RelativeLayout overrides.
 
     @Override
     public boolean awakenScrollBars(int startDelay, boolean invalidate) {

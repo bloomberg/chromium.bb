@@ -28,18 +28,19 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
 
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t* data,
-                         size_t size,
-                         CacheType cache_type) override {
+                         size_t size) override {
     DCHECK(!parent_->cached_metadata_map_.Contains(key_));
     parent_->cached_metadata_map_.insert(
         key_, CachedMetadata::Create(data_type_id, data, size));
-    if (cache_type == CachedMetadataHandler::kSendToPlatform)
+    if (!disable_send_to_platform_for_testing_)
       parent_->SendToPlatform();
   }
 
-  void ClearCachedMetadata(CacheType cache_type) override {
+  void ClearCachedMetadata(ClearCacheType cache_type) override {
+    if (cache_type == kDiscardLocally)
+      return;
     parent_->cached_metadata_map_.erase(key_);
-    if (cache_type == CachedMetadataHandler::kSendToPlatform)
+    if (cache_type == CachedMetadataHandler::kClearPersistentStorage)
       parent_->SendToPlatform();
   }
 
@@ -104,9 +105,11 @@ SingleCachedMetadataHandler* SourceKeyedCachedMetadataHandler::HandlerForSource(
 }
 
 void SourceKeyedCachedMetadataHandler::ClearCachedMetadata(
-    CachedMetadataHandler::CacheType cache_type) {
+    CachedMetadataHandler::ClearCacheType cache_type) {
+  if (cache_type == kDiscardLocally)
+    return;
   cached_metadata_map_.clear();
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
+  if (cache_type == CachedMetadataHandler::kClearPersistentStorage)
     SendToPlatform();
 }
 

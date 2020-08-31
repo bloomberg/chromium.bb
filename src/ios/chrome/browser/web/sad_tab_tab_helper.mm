@@ -9,16 +9,18 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
@@ -73,7 +75,6 @@ void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
 void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
   delegate_ = delegate;
   if (delegate_ && showing_sad_tab_ && web_state_->IsVisible()) {
-    UpdateFullscreenDisabler();
     [delegate_ sadTabTabHelper:this
         didShowForRepeatedFailure:repeated_failure_];
   }
@@ -85,7 +86,6 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
     ReloadTab();
     requires_reload_on_becoming_visible_ = false;
   }
-  UpdateFullscreenDisabler();
   if (showing_sad_tab_) {
     DCHECK(delegate_);
     [delegate_ sadTabTabHelper:this
@@ -94,7 +94,6 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
 }
 
 void SadTabTabHelper::WasHidden(web::WebState* web_state) {
-  UpdateFullscreenDisabler();
   if (showing_sad_tab_) {
     DCHECK(delegate_);
     [delegate_ sadTabTabHelperDidHide:this];
@@ -120,10 +119,21 @@ void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
     return;
   }
 
-  // Only show Sad Tab if renderer has crashed in a tab currently visible to the
-  // user and only if application is active. Otherwise simpy reloading the page
-  // is a better user experience.
-  PresentSadTab(web_state->GetLastCommittedURL());
+  OnVisibleCrash(web_state->GetLastCommittedURL());
+
+  if (base::FeatureList::IsEnabled(web::kReloadSadTab)) {
+    if (repeated_failure_) {
+      // Only show Sad Tab if renderer has crashed in a tab currently visible to
+      // the user and only if application is active. Otherwise simpy reloading
+      // the page is a better user experience.
+      PresentSadTab();
+    } else {
+      web_state->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                                true /* check_for_repost */);
+    }
+  } else {
+    PresentSadTab();
+  }
 }
 
 void SadTabTabHelper::DidStartNavigation(
@@ -142,7 +152,8 @@ void SadTabTabHelper::DidFinishNavigation(
   DCHECK_EQ(web_state_, web_state);
   if (navigation_context->GetUrl().host() == kChromeUICrashHost &&
       navigation_context->GetUrl().scheme() == kChromeUIScheme) {
-    PresentSadTab(navigation_context->GetUrl());
+    OnVisibleCrash(navigation_context->GetUrl());
+    PresentSadTab();
   }
 }
 
@@ -153,7 +164,7 @@ void SadTabTabHelper::WebStateDestroyed(web::WebState* web_state) {
   RemoveApplicationDidBecomeActiveObserver();
 }
 
-void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
+void SadTabTabHelper::OnVisibleCrash(const GURL& url_causing_failure) {
   // Is this failure a repeat-failure requiring the presentation of the Feedback
   // UI rather than the Reload UI?
   double seconds_since_last_failure =
@@ -163,14 +174,16 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
       (url_causing_failure.EqualsIgnoringRef(last_failed_url_) &&
        seconds_since_last_failure < repeat_failure_interval_);
 
+  last_failed_url_ = url_causing_failure;
+  last_failed_timer_ = std::make_unique<base::ElapsedTimer>();
+}
+
+void SadTabTabHelper::PresentSadTab() {
   // NO-OP is fine if |delegate_| is nil since the |delegate_| will be updated
   // when it is set.
   [delegate_ sadTabTabHelper:this
       presentSadTabForWebState:web_state_
                repeatedFailure:repeated_failure_];
-
-  last_failed_url_ = url_causing_failure;
-  last_failed_timer_ = std::make_unique<base::ElapsedTimer>();
 
   SetIsShowingSadTab(true);
 }
@@ -178,7 +191,6 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
 void SadTabTabHelper::SetIsShowingSadTab(bool showing_sad_tab) {
   if (showing_sad_tab_ != showing_sad_tab) {
     showing_sad_tab_ = showing_sad_tab;
-    UpdateFullscreenDisabler();
   }
 }
 
@@ -215,23 +227,6 @@ void SadTabTabHelper::RemoveApplicationDidBecomeActiveObserver() {
     [[NSNotificationCenter defaultCenter]
         removeObserver:application_did_become_active_observer_];
     application_did_become_active_observer_ = nil;
-  }
-}
-
-void SadTabTabHelper::UpdateFullscreenDisabler() {
-  if (showing_sad_tab_ && web_state_->IsVisible()) {
-    ios::ChromeBrowserState* browser_state =
-        ios::ChromeBrowserState::FromBrowserState(
-            web_state_->GetBrowserState());
-    FullscreenController* fullscreen_controller =
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            browser_state);
-    if (fullscreen_controller) {
-      fullscreen_disabler_ =
-          std::make_unique<ScopedFullscreenDisabler>(fullscreen_controller);
-    }
-  } else {
-    fullscreen_disabler_ = nullptr;
   }
 }
 

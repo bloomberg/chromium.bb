@@ -25,7 +25,8 @@
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -53,7 +54,6 @@ class CheckClientDownloadRequestBase {
       base::FilePath target_file_path,
       base::FilePath full_path,
       TabUrls tab_urls,
-      size_t file_size,
       std::string mime_type,
       std::string hash,
       content::BrowserContext* browser_context,
@@ -102,7 +102,7 @@ class CheckClientDownloadRequestBase {
   virtual bool IsSupportedDownload(
       DownloadCheckResultReason* reason,
       ClientDownloadRequest::DownloadType* type) = 0;
-  virtual content::BrowserContext* GetBrowserContext() = 0;
+  virtual content::BrowserContext* GetBrowserContext() const = 0;
   virtual bool IsCancelled() = 0;
   virtual base::WeakPtr<CheckClientDownloadRequestBase> GetWeakPtr() = 0;
 
@@ -130,11 +130,6 @@ class CheckClientDownloadRequestBase {
                                           const std::string& request_data,
                                           const std::string& response_body) = 0;
 
-  // Called when finishing the request, to determine whether asynchronous
-  // scanning is pending. Returns whether an asynchronous verdict was provided.
-  virtual bool MaybeReturnAsynchronousVerdict(
-      DownloadCheckResultReason reason) = 0;
-
   // Called after receiving, or failing to receive a response from the server.
   // Returns whether or not the file should be uploaded to Safe Browsing for
   // deep scanning.
@@ -142,12 +137,24 @@ class CheckClientDownloadRequestBase {
 
   // If ShouldUploadBinary is true, actually performs the upload to Safe
   // Browsing for deep scanning.
-  virtual void UploadBinary(DownloadCheckResult result,
-                            DownloadCheckResultReason reason) = 0;
+  virtual void UploadBinary(DownloadCheckResultReason reason) = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,
                                      DownloadCheckResultReason reason) = 0;
+
+  // Called when finishing the download, to decide whether to prompt the user
+  // for deep scanning or not.
+  virtual bool ShouldPromptForDeepScanning(
+      DownloadCheckResultReason reason) const = 0;
+
+  // Called when |token_fetcher_| has finished fetching the access token.
+  void OnGotAccessToken(
+      base::Optional<signin::AccessTokenInfo> access_token_info);
+
+  // Called at the request start to determine if we should bailout due to the
+  // file being whitelisted by policy
+  virtual bool IsWhitelistedByPolicy() const = 0;
 
   // Source URL being downloaded from. This shuold always be set, but could be
   // for example an artificial blob: URL if there is no source URL.
@@ -159,9 +166,6 @@ class CheckClientDownloadRequestBase {
   const GURL tab_referrer_url_;
   // URL chain of redirects leading to (but not including) |tab_url|.
   std::vector<GURL> tab_redirects_;
-
-  // The size of the download.
-  const size_t file_size_;
 
   CheckDownloadCallback callback_;
 
@@ -206,14 +210,7 @@ class CheckClientDownloadRequestBase {
   bool is_extended_reporting_ = false;
   bool is_incognito_ = false;
   bool is_under_advanced_protection_ = false;
-  // Boolean indicating whether the user requests AP verdicts. Note that this is
-  // distinct from |is_under_advanced_protection_| while:
-  //  - The feature is still partially rolled out
-  //  - The feature has been force enabled from chrome://flags
-  bool requests_ap_verdicts_ = false;
-  bool password_protected_allowed_ = true;
-
-  bool is_password_protected_ = false;
+  bool is_enhanced_protection_ = false;
 
   int file_count_;
   int directory_count_;
@@ -223,6 +220,13 @@ class CheckClientDownloadRequestBase {
 
   // The hash of the download, if known.
   std::string hash_;
+
+  // The token fetcher used to attach OAuth access tokens to requests for
+  // appropriately consented users.
+  std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher_;
+
+  // The OAuth access token for the user profile, if needed in the request.
+  std::string access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequestBase);
 };  // namespace safe_browsing

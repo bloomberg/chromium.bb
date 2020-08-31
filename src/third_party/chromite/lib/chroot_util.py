@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import contextlib
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -22,6 +23,9 @@ if cros_build_lib.IsInsideChroot():
   # These import libraries outside chromite. See brbug.com/472.
   from chromite.scripts import cros_list_modified_packages as workon
   from chromite.scripts import cros_setup_toolchains as toolchain
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _HOST_PKGS = ('virtual/target-sdk', 'world',)
@@ -103,7 +107,8 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
   if debug_output:
     cmd.append('--show-output')
 
-  cros_build_lib.sudo_run(cmd + packages)
+  # We might build chrome, in which case we need to pass 'CHROME_ORIGIN'.
+  cros_build_lib.sudo_run(cmd + packages, preserve_env=True)
 
 
 def UpdateChroot(board=None, update_host_packages=True):
@@ -190,7 +195,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
 
   command += list(packages)
 
-  cros_build_lib.sudo_run(command, extra_env=env, mute_output=False)
+  cros_build_lib.sudo_run(command, extra_env=env)
 
 
 @contextlib.contextmanager

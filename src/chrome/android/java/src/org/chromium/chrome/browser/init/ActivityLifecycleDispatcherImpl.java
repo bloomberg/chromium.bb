@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.RecreateObserver;
 import org.chromium.chrome.browser.lifecycle.SaveInstanceStateObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.WindowFocusChangedObserver;
@@ -43,8 +44,10 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
             mActivityResultWithNativeObservers = new ObserverList<>();
     private final ObserverList<ConfigurationChangedObserver> mConfigurationChangedListeners =
             new ObserverList<>();
+    private final ObserverList<RecreateObserver> mRecreateObservers = new ObserverList<>();
 
     private @ActivityState int mActivityState = ActivityState.DESTROYED;
+    private boolean mIsNativeInitialized;
 
     @Override
     public void register(LifecycleObserver observer) {
@@ -75,6 +78,9 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         }
         if (observer instanceof ConfigurationChangedObserver) {
             mConfigurationChangedListeners.addObserver((ConfigurationChangedObserver) observer);
+        }
+        if (observer instanceof RecreateObserver) {
+            mRecreateObservers.addObserver((RecreateObserver) observer);
         }
     }
 
@@ -108,11 +114,19 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         if (observer instanceof ConfigurationChangedObserver) {
             mConfigurationChangedListeners.removeObserver((ConfigurationChangedObserver) observer);
         }
+        if (observer instanceof RecreateObserver) {
+            mRecreateObservers.removeObserver((RecreateObserver) observer);
+        }
     }
 
     @Override
     public int getCurrentActivityState() {
         return mActivityState;
+    }
+
+    @Override
+    public boolean isNativeInitializationFinished() {
+        return mIsNativeInitialized;
     }
 
     void dispatchPreInflationStartup() {
@@ -160,6 +174,7 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
     }
 
     void dispatchNativeInitializationFinished() {
+        mIsNativeInitialized = true;
         for (NativeInitObserver observer : mNativeInitObservers) {
             observer.onFinishNativeInitialization();
         }
@@ -184,6 +199,7 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         mActivityResultWithNativeObservers.clear();
         mConfigurationChangedListeners.clear();
         mDestroyables.clear();
+        mRecreateObservers.clear();
     }
 
     void dispatchOnSaveInstanceState(Bundle outBundle) {
@@ -207,6 +223,12 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
     void dispatchOnConfigurationChanged(Configuration newConfig) {
         for (ConfigurationChangedObserver observer : mConfigurationChangedListeners) {
             observer.onConfigurationChanged(newConfig);
+        }
+    }
+
+    void dispatchOnRecreate() {
+        for (RecreateObserver observer : mRecreateObservers) {
+            observer.onRecreate();
         }
     }
 }

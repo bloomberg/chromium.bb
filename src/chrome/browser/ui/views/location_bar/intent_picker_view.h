@@ -12,7 +12,9 @@ class Browser;
 // The entry point for the intent picker.
 class IntentPickerView : public PageActionIconView {
  public:
-  IntentPickerView(Browser* browser, PageActionIconView::Delegate* delegate);
+  IntentPickerView(Browser* browser,
+                   IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                   PageActionIconView::Delegate* page_action_icon_delegate);
   ~IntentPickerView() override;
 
   // PageActionIconView:
@@ -24,6 +26,7 @@ class IntentPickerView : public PageActionIconView {
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  const char* GetClassName() const override;
 
  private:
   bool IsIncognitoMode() const;

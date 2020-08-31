@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -114,10 +115,7 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath gallery_file =
         test_gallery_.GetPath().Append(FILE_PATH_LITERAL("test1.txt"));
-    std::string content("new content");
-    int write_size =
-        base::WriteFile(gallery_file, content.c_str(), content.length());
-    return (write_size == static_cast<int>(content.length()));
+    return base::WriteFile(gallery_file, "new content");
   }
 
   void SetupGalleryWatches() {

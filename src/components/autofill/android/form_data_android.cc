@@ -19,17 +19,14 @@ using base::android::ScopedJavaLocalRef;
 
 namespace autofill {
 
-FormDataAndroid::FormDataAndroid(const FormData& form)
-    : form_(form), index_(0) {}
-
-FormDataAndroid::~FormDataAndroid() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_FormData_onNativeDestroyed(env, obj);
+FormDataAndroid::FormDataAndroid(const FormData& form,
+                                 const TransformCallback& callback)
+    : form_(form), index_(0) {
+  for (FormFieldData& field : form_.fields)
+    field.bounds = callback.Run(field.bounds);
 }
+
+FormDataAndroid::~FormDataAndroid() = default;
 
 ScopedJavaLocalRef<jobject> FormDataAndroid::GetJavaPeer(
     const FormStructure* form_structure) {
@@ -61,9 +58,7 @@ const FormData& FormDataAndroid::GetAutofillValues() {
   return form_;
 }
 
-ScopedJavaLocalRef<jobject> FormDataAndroid::GetNextFormFieldData(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
+ScopedJavaLocalRef<jobject> FormDataAndroid::GetNextFormFieldData(JNIEnv* env) {
   DCHECK(index_ <= fields_.size());
   if (index_ == fields_.size())
     return ScopedJavaLocalRef<jobject>();

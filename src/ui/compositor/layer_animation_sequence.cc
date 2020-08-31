@@ -186,7 +186,7 @@ void LayerAnimationSequence::Abort(LayerAnimationDelegate* delegate) {
 void LayerAnimationSequence::AddElement(
     std::unique_ptr<LayerAnimationElement> element) {
   properties_ |= element->properties();
-  element->set_animation_metrics_reporter(animation_metrics_reporter_);
+  element->SetAnimationMetricsReporter(animation_metrics_reporter_);
   elements_.push_back(std::move(element));
 }
 
@@ -245,11 +245,22 @@ void LayerAnimationSequence::OnAnimatorDestroyed() {
   }
 }
 
+void LayerAnimationSequence::OnAnimatorAttached(
+    LayerAnimationDelegate* delegate) {
+  for (auto& element : elements_)
+    element->OnAnimatorAttached(delegate);
+}
+
+void LayerAnimationSequence::OnAnimatorDetached() {
+  for (auto& element : elements_)
+    element->OnAnimatorDetached();
+}
+
 void LayerAnimationSequence::SetAnimationMetricsReporter(
     AnimationMetricsReporter* reporter) {
   animation_metrics_reporter_ = reporter;
   for (auto& element : elements_)
-    element->set_animation_metrics_reporter(animation_metrics_reporter_);
+    element->SetAnimationMetricsReporter(animation_metrics_reporter_);
 }
 
 size_t LayerAnimationSequence::size() const {

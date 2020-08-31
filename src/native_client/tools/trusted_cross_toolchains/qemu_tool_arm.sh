@@ -14,9 +14,11 @@ set -o errexit
 #@     toolchain/linux_x86/arm_trusted/qemu_tool_arm.sh
 
 readonly SDK_ROOT=$(dirname $0)
+readonly GCLIENT_ROOT=$(dirname $(dirname $(dirname $(dirname ${SDK_ROOT}))))
+readonly CHROME_SYSROOT=${GCLIENT_ROOT}/build/linux/debian_sid_arm-sysroot
 readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_STOCK=/usr/bin/qemu-arm
-readonly QEMU_JAIL=${SDK_ROOT}
+readonly QEMU_JAIL=${CHROME_SYSROOT}
 
 # Hook for adding stuff like timeout wrappers
 readonly QEMU_PREFIX_HOOK=${QEMU_PREFIX_HOOK:-}

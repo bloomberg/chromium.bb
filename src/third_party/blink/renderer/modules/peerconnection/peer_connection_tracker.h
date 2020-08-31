@@ -5,18 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
 
-#include <map>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
@@ -25,13 +24,13 @@ class DataChannelInterface;
 }  // namespace webrtc
 
 namespace blink {
+class MediaConstraints;
 class RTCAnswerOptionsPlatform;
 class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
 class RTCPeerConnectionHandler;
+class UserMediaRequest;
 class WebLocalFrame;
-class WebMediaConstraints;
-class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
@@ -42,13 +41,6 @@ class MODULES_EXPORT PeerConnectionTracker
  public:
   static PeerConnectionTracker* GetInstance();
 
-  // TODO(crbug.com/787254): Make these ctors private, and accessible to
-  // tests only.
-  explicit PeerConnectionTracker(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
-  PeerConnectionTracker(
-      mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost> host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
   enum Source { SOURCE_LOCAL, SOURCE_REMOTE };
@@ -89,7 +81,7 @@ class MODULES_EXPORT PeerConnectionTracker
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-      const blink::WebMediaConstraints& constraints,
+      const MediaConstraints& constraints,
       const blink::WebLocalFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
@@ -102,11 +94,11 @@ class MODULES_EXPORT PeerConnectionTracker
                                 RTCOfferOptionsPlatform* options);
   // TODO(hta): Get rid of the version below.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
-                                const blink::WebMediaConstraints& options);
+                                const MediaConstraints& options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
                                  blink::RTCAnswerOptionsPlatform* options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
-                                 const blink::WebMediaConstraints& constraints);
+                                 const MediaConstraints& constraints);
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(RTCPeerConnectionHandler* pc_handler,
@@ -122,11 +114,18 @@ class MODULES_EXPORT PeerConnectionTracker
       const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 
   // Sends an update when an Ice candidate is added.
-  virtual void TrackAddIceCandidate(
-      RTCPeerConnectionHandler* pc_handler,
-      scoped_refptr<RTCIceCandidatePlatform> candidate,
-      Source source,
-      bool succeeded);
+  virtual void TrackAddIceCandidate(RTCPeerConnectionHandler* pc_handler,
+                                    RTCIceCandidatePlatform* candidate,
+                                    Source source,
+                                    bool succeeded);
+  // Sends an update when an Ice candidate error is receiver.
+  virtual void TrackIceCandidateError(RTCPeerConnectionHandler* pc_handler,
+                                      const String& address,
+                                      base::Optional<uint16_t> port,
+                                      const String& host_candidate,
+                                      const String& url,
+                                      int error_code,
+                                      const String& error_text);
 
   // Sends an update when a transceiver is added, modified or removed. This can
   // happen as a result of any of the methods indicated by |reason|.
@@ -213,15 +212,25 @@ class MODULES_EXPORT PeerConnectionTracker
   virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when getUserMedia is called.
-  virtual void TrackGetUserMedia(
-      const blink::WebUserMediaRequest& user_media_request);
+  virtual void TrackGetUserMedia(UserMediaRequest* user_media_request);
 
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
-                                     const std::string& output);
+                                     const WTF::Vector<uint8_t>& output);
 
  private:
+  // For tests.
+  friend class PeerConnectionTrackerTest;
+  friend class MockPeerConnectionTracker;
+
+  FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, CreatingObject);
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
+
+  explicit PeerConnectionTracker(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  PeerConnectionTracker(
+      mojo::Remote<mojom::blink::PeerConnectionTrackerHost> host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.
@@ -265,7 +274,7 @@ class MODULES_EXPORT PeerConnectionTracker
   void AddLegacyStats(int lid, base::Value value);
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
-  typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
+  typedef WTF::HashMap<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
   PeerConnectionLocalIdMap peer_connection_local_id_map_;
 
   // This keeps track of the next available local ID.

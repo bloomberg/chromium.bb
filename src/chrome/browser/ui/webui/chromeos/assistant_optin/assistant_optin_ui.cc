@@ -22,7 +22,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -66,11 +66,6 @@ GURL CreateAssistantOptInURL(ash::FlowType type) {
   return gurl;
 }
 
-void DisablePolymer2(content::URLDataSource* shared_source) {
-  if (shared_source)
-    shared_source->DisablePolymer2ForHost(chrome::kChromeUIAssistantOptInHost);
-}
-
 }  // namespace
 
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
@@ -112,10 +107,12 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   // TODO (https://crbug.com/739611): Remove this exception by migrating to
   // Polymer 2.
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
-    content::URLDataSource::GetSourceForURL(
+    auto* shared_source = content::URLDataSource::GetSourceForURL(
         Profile::FromWebUI(web_ui),
-        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
-        base::BindOnce(DisablePolymer2));
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"));
+    if (shared_source)
+      shared_source->DisablePolymer2ForHost(
+          chrome::kChromeUIAssistantOptInHost);
   }
 }
 
@@ -139,13 +136,11 @@ void AssistantOptInDialog::Show(
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
 #if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   std::move(callback).Run(false);
-  return;
-#endif
-
+#else
   // Check Assistant allowed state.
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     std::move(callback).Run(false);
     return;
   }
@@ -165,6 +160,7 @@ void AssistantOptInDialog::Show(
   g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
   g_dialog->ShowSystemDialog();
+#endif
 }
 
 // static

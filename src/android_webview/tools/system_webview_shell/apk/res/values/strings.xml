@@ -10,6 +10,7 @@
     <string name="title_activity_jank">WebView Jank Tester</string>
     <string name="title_activity_startup_time">WebView Startup Time Tester</string>
     <string name="title_activity_browser">WebView Browser Tester</string>
+    <string name="title_activity_browser_second_process">Second Process Browser Tester</string>
     <string name="title_activity_layout_test">WebView Layout Test</string>
     <string name="title_activity_thread_test">WebView Thread Test</string>
     <string name="title_activity_page_cycler">WebView Page Cycler Test</string>
@@ -31,6 +32,7 @@
     <string name="layer_button">Layer</string>
     <string name="rotate_button">Rotate</string>
     <string name="scale_button">Scale</string>
+    <string name="stencil_button">Rounded corner</string>
     <string name="translate_button">Translate</string>
 
     <!--  activity_web_platform_tests strings -->

@@ -25,25 +25,18 @@
 #include <memory>
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
-#include "third_party/blink/renderer/platform/graphics/gradient.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
-struct GradientData {
-  USING_FAST_MALLOC(GradientData);
-
- public:
-  scoped_refptr<Gradient> gradient;
-  AffineTransform userspace_transform;
-};
+struct GradientData;
 
 class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
  public:
   explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
-  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) final;
+  void RemoveAllClientsFromCache() final;
   bool RemoveClientFromCache(SVGResourceClient&) final;
 
   SVGPaintServer PreparePaintServer(const SVGResourceClient&,
@@ -54,13 +47,16 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
  protected:
   virtual SVGUnitTypes::SVGUnitType GradientUnits() const = 0;
   virtual AffineTransform CalculateGradientTransform() const = 0;
-  virtual bool CollectGradientAttributes() = 0;
+  virtual void CollectGradientAttributes() = 0;
   virtual scoped_refptr<Gradient> BuildGradient() const = 0;
 
   static GradientSpreadMethod PlatformSpreadMethodFromSVGType(
       SVGSpreadMethodType);
 
  private:
+  std::unique_ptr<GradientData> BuildGradientData(
+      const FloatRect& object_bounding_box);
+
   bool should_collect_gradient_attributes_ : 1;
   using GradientMap = HeapHashMap<Member<const SVGResourceClient>,
                                   std::unique_ptr<GradientData>>;

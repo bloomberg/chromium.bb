@@ -62,6 +62,13 @@ class Breakdown(diagnostic.Diagnostic):
       result.Set(name, value)
     return result
 
+  @staticmethod
+  def FromProto(d):
+    raise NotImplementedError()
+
+  def _AsProto(self):
+    raise NotImplementedError()
+
   def Serialize(self, serializer):
     keys = list(self._values.keys())
     keys.sort()

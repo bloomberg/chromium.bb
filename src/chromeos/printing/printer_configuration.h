@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/printing/cups_printer_status.h"
 #include "net/base/host_port_pair.h"
 
 namespace net {
@@ -46,7 +47,12 @@ class CHROMEOS_EXPORT Printer {
   // At resolution time, we look for a cached PPD that used the same
   // PpdReference before.
   //
-  struct PpdReference {
+  class PpdReference {
+   public:
+    // Returns true when this PPD reference is filled in; true whenever any of
+    // the members is non-empty.
+    bool IsFilled() const;
+
     // If non-empty, this is the url of a specific PPD the user has specified
     // for use with this printer.  The ppd can be gzipped or uncompressed.  This
     // url must use a file:// scheme.
@@ -136,6 +142,11 @@ class CHROMEOS_EXPORT Printer {
     supports_ippusb_ = supports_ippusb;
   }
 
+  const std::string& print_server_uri() const { return print_server_uri_; }
+  void set_print_server_uri(const std::string& print_server_uri) {
+    print_server_uri_ = print_server_uri;
+  }
+
   const std::string& uuid() const { return uuid_; }
   void set_uuid(const std::string& uuid) { uuid_ = uuid; }
 
@@ -164,6 +175,10 @@ class CHROMEOS_EXPORT Printer {
   // kIppUsb.
   bool IsUsbProtocol() const;
 
+  // Returns true if the current protocol is either local (kUsb or kIppUsb) or
+  // secure (kIpps or kHttps).
+  bool HasSecureProtocol() const;
+
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
 
@@ -171,6 +186,11 @@ class CHROMEOS_EXPORT Printer {
   // containing a UriComponents object depending on whether or not the uri was
   // successfully parsed.
   base::Optional<UriComponents> GetUriComponents() const;
+
+  const CupsPrinterStatus& printer_status() const { return printer_status_; }
+  void set_printer_status(const chromeos::CupsPrinterStatus& printer_status) {
+    printer_status_ = printer_status;
+  }
 
  private:
   // Globally unique identifier. Empty indicates a new printer.
@@ -214,11 +234,18 @@ class CHROMEOS_EXPORT Printer {
   // Represents whether or not the printer supports printing using ipp-over-usb.
   bool supports_ippusb_ = false;
 
+  // When non-empty, the uri of the print server the printer was added from. We
+  // use this to determine if a printer is a print server printer.
+  std::string print_server_uri_;
+
   // The UUID from an autoconf protocol for deduplication. Could be empty.
   std::string uuid_;
 
   // The datastore which holds this printer.
   Source source_;
+
+  // The current status of the printer
+  chromeos::CupsPrinterStatus printer_status_;
 };
 
 }  // namespace chromeos

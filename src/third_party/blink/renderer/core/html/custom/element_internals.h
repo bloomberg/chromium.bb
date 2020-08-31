@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -15,7 +16,6 @@ namespace blink {
 
 class DOMTokenList;
 class HTMLElement;
-class LabelsNodeList;
 class ValidityStateFlags;
 
 class CORE_EXPORT ElementInternals : public ScriptWrappable,
@@ -62,12 +62,11 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
   void SetElementAttribute(const QualifiedName& name, Element* element);
   Element* GetElementAttribute(const QualifiedName& name);
-  HeapVector<Member<Element>> GetElementArrayAttribute(
+  base::Optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
+      const QualifiedName& name) const;
+  void SetElementArrayAttribute(
       const QualifiedName& name,
-      bool is_null);
-  void SetElementArrayAttribute(const QualifiedName&,
-                                HeapVector<Member<Element>>,
-                                bool is_null);
+      const base::Optional<HeapVector<Member<Element>>>& elements);
   bool HasAttribute(const QualifiedName& attribute) const;
   const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 

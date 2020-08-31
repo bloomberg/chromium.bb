@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
@@ -171,7 +172,7 @@ class HttpRequest {
 
       result = socket_->Write(
           request_.get(), request_->BytesRemaining(),
-          base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)),
+          base::BindOnce(&HttpRequest::DoSendRequest, base::Unretained(this)),
           kAndroidDeviceManagerTrafficAnnotation);
     }
   }
@@ -211,9 +212,8 @@ class HttpRequest {
     response_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
     result = socket_->Read(
-        response_buffer_.get(),
-        kBufferSize,
-        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
+        response_buffer_.get(), kBufferSize,
+        base::BindOnce(&HttpRequest::OnResponseData, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnResponseData(result);
   }
@@ -274,7 +274,7 @@ class HttpRequest {
 
       result = socket_->Read(
           response_buffer_.get(), kBufferSize,
-          base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
+          base::BindOnce(&HttpRequest::OnResponseData, base::Unretained(this)));
     } while (result != net::ERR_IO_PENDING);
   }
 
@@ -541,10 +541,10 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
   if (!thread_)
     return;
   // Shut down thread on a thread other than UI so it can join a thread.
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-                  base::TaskPriority::BEST_EFFORT},
-                 base::BindOnce(&HandlerThread::StopThread, thread_));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&HandlerThread::StopThread, thread_));
 }
 
 // static

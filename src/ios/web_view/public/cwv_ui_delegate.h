@@ -68,7 +68,7 @@ CWV_EXPORT
                               defaultText:(NSString*)defaultText
                                   pageURL:(NSURL*)URL
                         completionHandler:
-                            (void (^)(NSString*))completionHandler;
+                            (void (^)(NSString* _Nullable))completionHandler;
 
 // Determines whether the given link with |linkURL| should show a preview on
 // force touch. Return value NO is assumed if the method is not implemented.
@@ -89,6 +89,45 @@ CWV_EXPORT
 // Called when favicons become available in the current page.
 - (void)webView:(CWVWebView*)webView
     didLoadFavicons:(NSArray<CWVFavicon*>*)favIcons;
+
+// Equivalent of -[WKUIDelegate
+// webView:contextMenuConfigurationForElement:completionHandler:].
+// Must set |CWVWebView.chromeLongPressAndForceTouchHandlingEnabled| to NO
+// before the |webView| is initialized to use this delegate method, otherwise it
+// won't be called.
+- (void)webView:(CWVWebView*)webView
+    contextMenuConfigurationForLinkWithURL:(NSURL*)linkURL
+                         completionHandler:
+                             (void (^)(UIContextMenuConfiguration* _Nullable))
+                                 completionHandler API_AVAILABLE(ios(13.0));
+
+// Equivalent of -[WKUIDelegate
+// webView:contextMenuWillPresentForElement:].
+// Must set |CWVWebView.chromeLongPressAndForceTouchHandlingEnabled| to NO
+// before the |webView| is initialized to use this delegate method, otherwise it
+// won't be called.
+- (void)webView:(CWVWebView*)webView
+    contextMenuWillPresentForLinkWithURL:(NSURL*)linkURL
+    API_AVAILABLE(ios(13.0));
+
+// Equivalent of -[WKUIDelegate
+// webView:contextMenuForElement:willCommitWithAnimator:].
+// Must set |CWVWebView.chromeLongPressAndForceTouchHandlingEnabled| to NO
+// before the |webView| is initialized to use this delegate method, otherwise it
+// won't be called.
+- (void)webView:(CWVWebView*)webView
+    contextMenuForLinkWithURL:(NSURL*)linkURL
+       willCommitWithAnimator:
+           (id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0));
+
+// Equivalent of -[WKUIDelegate
+// webView:contextMenuDidEndForElement:].
+// Must set |CWVWebView.chromeLongPressAndForceTouchHandlingEnabled| to NO
+// before the |webView| is initialized to use this delegate method, otherwise it
+// won't be called.
+- (void)webView:(CWVWebView*)webView
+    contextMenuDidEndForLinkWithURL:(NSURL*)linkURL API_AVAILABLE(ios(13.0));
 
 @end
 

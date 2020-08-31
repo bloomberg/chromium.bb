@@ -8,12 +8,13 @@
 
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -22,16 +23,8 @@ namespace blink {
 namespace {
 
 Settings* GetSettings(ExecutionContext* execution_context) {
-  if (!execution_context)
-    return nullptr;
-
-  auto* document = DynamicTo<Document>(execution_context);
-  if (!document)
-    return nullptr;
-
-  // |document| is guaranteed to be non-null since |execution_context| is
-  // non-null.
-  return document->GetSettings();
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context);
+  return window ? window->GetFrame()->GetSettings() : nullptr;
 }
 
 bool IsInDataSaverHoldbackWebApi(ExecutionContext* execution_context) {
@@ -221,7 +214,7 @@ const AtomicString& NetworkInformation::InterfaceName() const {
 }
 
 ExecutionContext* NetworkInformation::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void NetworkInformation::AddedEventListener(
@@ -255,7 +248,7 @@ bool NetworkInformation::HasPendingActivity() const {
   return IsObserving();
 }
 
-void NetworkInformation::ContextDestroyed(ExecutionContext*) {
+void NetworkInformation::ContextDestroyed() {
   context_stopped_ = true;
   StopObserving();
 }
@@ -278,7 +271,7 @@ void NetworkInformation::StopObserving() {
 }
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       web_holdback_console_message_shown_(false),
       context_stopped_(false) {
   base::Optional<base::TimeDelta> http_rtt;
@@ -297,9 +290,9 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
 }
 
-void NetworkInformation::Trace(blink::Visitor* visitor) {
+void NetworkInformation::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 const String NetworkInformation::Host() const {
@@ -312,7 +305,7 @@ void NetworkInformation::MaybeShowWebHoldbackConsoleMsg() {
   web_holdback_console_message_shown_ = true;
   if (!GetNetworkStateNotifier().GetWebHoldbackEffectiveType())
     return;
-  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       GetConsoleLogStringForWebHoldback()));
 }

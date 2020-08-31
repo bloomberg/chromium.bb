@@ -11,10 +11,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -35,22 +36,22 @@ void VmApplicationsServiceProvider::Start(
       vm_tools::apps::kVmApplicationsServiceUpdateApplicationListMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::UpdateApplicationList,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       vm_tools::apps::kVmApplicationsServiceInterface,
       vm_tools::apps::kVmApplicationsServiceLaunchTerminalMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::LaunchTerminal,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       vm_tools::apps::kVmApplicationsServiceInterface,
       vm_tools::apps::kVmApplicationsServiceUpdateMimeTypesMethod,
       base::BindRepeating(&VmApplicationsServiceProvider::UpdateMimeTypes,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&VmApplicationsServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VmApplicationsServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VmApplicationsServiceProvider::OnExported(
@@ -79,9 +80,10 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile)) {
-    crostini::CrostiniRegistryService* registry_service =
-        crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) ||
+      plugin_vm::IsPluginVmEnabled(profile)) {
+    auto* registry_service =
+        guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
     registry_service->UpdateApplicationList(request);
   }
 

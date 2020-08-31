@@ -22,7 +22,6 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
 
  private:
   void InstallSupplements(LocalFrame&) const override;
-  void ProvideLocalFileSystemToWorker(WorkerGlobalScope&) const override;
   MediaControls* CreateMediaControls(HTMLMediaElement&,
                                      ShadowRoot&) const override;
   PictureInPictureController* CreatePictureInPictureController(
@@ -49,8 +48,8 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) override;
 
-  void DidCommitLoad(LocalFrame&) override;
   void DidChangeManifest(LocalFrame&) override;
+  void NotifyOrientationChanged(LocalFrame&) override;
 };
 
 }  // namespace blink

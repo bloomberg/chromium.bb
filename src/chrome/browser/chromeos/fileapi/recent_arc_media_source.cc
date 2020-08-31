@@ -25,6 +25,7 @@
 #include "components/arc/mojom/file_system.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -36,16 +37,19 @@ const char kAndroidDownloadDirPrefix[] = "/storage/emulated/0/Download/";
 
 const char kMediaDocumentsProviderAuthority[] =
     "com.android.providers.media.documents";
+constexpr char kMediaDocumentsProviderImagesRoot[] = "images_root";
+constexpr char kMediaDocumentsProviderVideosRoot[] = "videos_root";
 const char* kMediaDocumentsProviderRootIds[] = {
-    "images_root", "videos_root",
+    kMediaDocumentsProviderImagesRoot,
+    kMediaDocumentsProviderVideosRoot,
 };
 
 base::FilePath GetRelativeMountPath(const std::string& root_id) {
-  base::FilePath mount_path = arc::GetDocumentsProviderMountPath(
-      kMediaDocumentsProviderAuthority,
-      // In MediaDocumentsProvider, |root_id| and |root_document_id| are
-      // the same.
-      root_id);
+  base::FilePath mount_path =
+      arc::GetDocumentsProviderMountPath(kMediaDocumentsProviderAuthority,
+                                         // In MediaDocumentsProvider, |root_id|
+                                         // and |root_document_id| are the same.
+                                         root_id);
   base::FilePath relative_mount_path;
   base::FilePath(arc::kDocumentsProviderMountPointPath)
       .AppendRelativePath(mount_path, &relative_mount_path);
@@ -89,6 +93,7 @@ class RecentArcMediaSource::MediaRoot {
 
   storage::FileSystemURL BuildDocumentsProviderUrl(
       const base::FilePath& path) const;
+  bool MatchesFileType(FileType file_type) const;
 
   // Set in the constructor.
   const std::string root_id_;
@@ -143,9 +148,16 @@ void RecentArcMediaSource::MediaRoot::GetRecentFiles(Params params) {
     return;
   }
 
+  if (!MatchesFileType(params_.value().file_type())) {
+    // Return immediately without results when this root's id does not match the
+    // requested file type.
+    OnComplete();
+    return;
+  }
+
   runner->GetRecentDocuments(kMediaDocumentsProviderAuthority, root_id_,
-                             base::Bind(&MediaRoot::OnGetRecentDocuments,
-                                        weak_ptr_factory_.GetWeakPtr()));
+                             base::BindOnce(&MediaRoot::OnGetRecentDocuments,
+                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
@@ -206,8 +218,8 @@ void RecentArcMediaSource::MediaRoot::ScanDirectory(
   }
 
   root->ReadDirectory(
-      path, base::Bind(&RecentArcMediaSource::MediaRoot::OnReadDirectory,
-                       weak_ptr_factory_.GetWeakPtr(), path));
+      path, base::BindOnce(&RecentArcMediaSource::MediaRoot::OnReadDirectory,
+                           weak_ptr_factory_.GetWeakPtr(), path));
 }
 
 void RecentArcMediaSource::MediaRoot::OnReadDirectory(
@@ -273,8 +285,22 @@ RecentArcMediaSource::MediaRoot::BuildDocumentsProviderUrl(
       storage::ExternalMountPoints::GetSystemInstance();
 
   return mount_points->CreateExternalFileSystemURL(
-      params_.value().origin(), arc::kDocumentsProviderMountPointName,
-      relative_mount_path_.Append(path));
+      url::Origin::Create(params_.value().origin()),
+      arc::kDocumentsProviderMountPointName, relative_mount_path_.Append(path));
+}
+
+bool RecentArcMediaSource::MediaRoot::MatchesFileType(
+    FileType file_type) const {
+  switch (file_type) {
+    case FileType::kAll:
+      return true;
+    case FileType::kImage:
+      return root_id_ == kMediaDocumentsProviderImagesRoot;
+    case FileType::kVideo:
+      return root_id_ == kMediaDocumentsProviderVideosRoot;
+    default:
+      return false;
+  }
 }
 
 RecentArcMediaSource::RecentArcMediaSource(Profile* profile)
@@ -322,6 +348,7 @@ void RecentArcMediaSource::GetRecentFiles(Params params) {
     root->GetRecentFiles(
         Params(params_.value().file_system_context(), params_.value().origin(),
                params_.value().max_files(), params_.value().cutoff_time(),
+               params_.value().file_type(),
                base::BindOnce(&RecentArcMediaSource::OnGetRecentFilesForRoot,
                               weak_ptr_factory_.GetWeakPtr())));
   }

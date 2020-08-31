@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/features/media_router/jni_headers/ChromeMediaRouterDialogController_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -137,7 +137,8 @@ MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
 
 MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {}
 
-void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
+void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog(
+    MediaRouterDialogOpenOrigin activation_location) {
   // TODO(crbug.com/736568): Re-enable dialog in VR.
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           initiator(),

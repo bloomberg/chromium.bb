@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -273,20 +272,20 @@ void Event::SetTarget(EventTarget* target) {
 }
 
 void Event::SetRelatedTargetIfExists(EventTarget* related_target) {
-  if (IsMouseEvent()) {
-    ToMouseEvent(this)->SetRelatedTarget(related_target);
-  } else if (IsPointerEvent()) {
-    ToPointerEvent(this)->SetRelatedTarget(related_target);
-  } else if (IsFocusEvent()) {
-    ToFocusEvent(this)->SetRelatedTarget(related_target);
+  if (auto* mouse_event = DynamicTo<MouseEvent>(this)) {
+    mouse_event->SetRelatedTarget(related_target);
+  } else if (auto* pointer_event = DynamicTo<PointerEvent>(this)) {
+    pointer_event->SetRelatedTarget(related_target);
+  } else if (auto* focus_event = DynamicTo<FocusEvent>(this)) {
+    focus_event->SetRelatedTarget(related_target);
   }
 }
 
 void Event::ReceivedTarget() {}
 
-void Event::SetUnderlyingEvent(Event* ue) {
+void Event::SetUnderlyingEvent(const Event* ue) {
   // Prohibit creation of a cycle -- just do nothing in that case.
-  for (Event* e = ue; e; e = e->UnderlyingEvent())
+  for (const Event* e = ue; e; e = e->UnderlyingEvent())
     if (e == this)
       return;
   underlying_event_ = ue;

@@ -34,7 +34,6 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
@@ -60,7 +59,7 @@ class StyledLabel;
 
 // Represents a single download item on the download shelf. Encompasses an icon,
 // text, malicious download warnings, etc.
-class DownloadItemView : public views::InkDropHostView,
+class DownloadItemView : public views::View,
                          public views::ButtonListener,
                          public views::ContextMenuController,
                          public DownloadUIModel::Observer,
@@ -103,10 +102,6 @@ class DownloadItemView : public views::InkDropHostView,
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // view::InkDropHostView:
-  void OnInkDropCreated() override;
-  SkColor GetInkDropBaseColor() const override;
-
   // views::ContextMenuController.
   void ShowContextMenuForViewImpl(View* source,
                                   const gfx::Point& point,
@@ -134,11 +129,13 @@ class DownloadItemView : public views::InkDropHostView,
   enum State { NORMAL = 0, HOT, PUSHED };
 
   enum Mode {
-    NORMAL_MODE = 0,    // Showing download item.
-    DANGEROUS_MODE,     // Displaying the dangerous download warning.
-    MALICIOUS_MODE,     // Displaying the malicious download warning.
-    DEEP_SCANNING_MODE  // Displaying information about in progress deep
-                        // scanning.
+    NORMAL_MODE = 0,      // Showing download item.
+    DANGEROUS_MODE,       // Displaying the dangerous download warning.
+    MALICIOUS_MODE,       // Displaying the malicious download warning.
+    DEEP_SCANNING_MODE,   // Displaying information about in progress deep
+                          // scanning.
+    MIX_DL_WARNING_MODE,  // Displaying the mixed-content download warning.
+    MIX_DL_BLOCK_MODE,    // Displaying the mixed-content download block error.
   };
 
   static constexpr int kTextWidth = 140;
@@ -201,9 +198,6 @@ class DownloadItemView : public views::InkDropHostView,
   // Sets the state and triggers a repaint.
   void SetDropdownState(State new_state);
 
-  // Configures the InkDrop. e.g. disables highlight when in dangerous mode.
-  void ConfigureInkDrop();
-
   void SetMode(Mode mode);
 
   // Whether we are in the dangerous mode.
@@ -211,11 +205,25 @@ class DownloadItemView : public views::InkDropHostView,
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
+  // Whether we are in the mixed content mode.
+  bool IsShowingMixedContentDialog() const {
+    return mode_ == MIX_DL_WARNING_MODE || mode_ == MIX_DL_BLOCK_MODE;
+  }
+
   // Whether we are in the deep scanning mode.
   bool IsShowingDeepScanning() const { return mode_ == DEEP_SCANNING_MODE; }
 
   // Starts showing the normal mode dialog, clearing the existing dialog.
   void TransitionToNormalMode();
+
+  // Starts showing the mixed content dialog, clearing the existing dialog.
+  void TransitionToMixedContentDialog();
+
+  // Reverts from mixed content modes to normal download mode.
+  void ClearMixedContentDialog();
+
+  // Starts displaying the mixed content download warning.
+  void ShowMixedContentDialog();
 
   // Starts showing the warning dialog, clearing the existing dialog.
   void TransitionToWarningDialog();
@@ -314,6 +322,12 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the height/width of the error icon, in dp.
   static int GetErrorIconSize();
 
+  // Starts deep scanning for this download item.
+  void ConfirmDeepScanning();
+
+  // Bypasses the prompt for deep scanning for this download item.
+  void BypassDeepScanning();
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 
@@ -364,7 +378,7 @@ class DownloadItemView : public views::InkDropHostView,
   // Progress animation
   base::RepeatingTimer progress_timer_;
 
-  // Dangerous mode buttons.
+  // Dangerous mode and mixed content mode buttons.
   views::MdTextButton* save_button_;
   views::MdTextButton* discard_button_;
 
@@ -385,7 +399,7 @@ class DownloadItemView : public views::InkDropHostView,
   // The drop down button.
   views::ImageButton* dropdown_button_ = nullptr;
 
-  // Dangerous mode label.
+  // Dangerous mode label. Also used by mixed content warning.
   views::StyledLabel* dangerous_download_label_;
 
   // Whether the dangerous mode label has been sized yet.
@@ -425,15 +439,14 @@ class DownloadItemView : public views::InkDropHostView,
   // Deep scanning open now button.
   views::MdTextButton* open_now_button_ = nullptr;
 
-  // Whether the user has selected "open now" on a download pending asynchronous
-  // scanning.
-  bool should_open_while_scanning_ = false;
-
   // Deep scanning modal dialog confirming choice to "open now".
   TabModalConfirmDialog* open_now_modal_dialog_;
 
   // Icon for the download.
   gfx::ImageSkia icon_;
+
+  // Button used to consent to deep scanning.
+  views::MdTextButton* scan_button_ = nullptr;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

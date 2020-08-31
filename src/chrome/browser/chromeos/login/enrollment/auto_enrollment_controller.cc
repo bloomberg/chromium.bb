@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
@@ -120,13 +121,13 @@ std::string FRERequirementToString(
   using FRERequirement = AutoEnrollmentController::FRERequirement;
   switch (requirement) {
     case FRERequirement::kRequired:
-      return "Auto-enrollment required.";
+      return "Forced Re-Enrollment required.";
     case FRERequirement::kNotRequired:
-      return "Auto-enrollment disabled: first setup.";
+      return "Forced Re-Enrollment disabled: first setup.";
     case FRERequirement::kExplicitlyRequired:
-      return "Auto-enrollment required: flag in VPD.";
+      return "Forced Re-Enrollment required: flag in VPD.";
     case FRERequirement::kExplicitlyNotRequired:
-      return "Auto-enrollment disabled: flag in VPD.";
+      return "Forced Re-Enrollment disabled: flag in VPD.";
   }
 
   NOTREACHED();
@@ -148,23 +149,23 @@ std::string AutoEnrollmentStateToString(policy::AutoEnrollmentState state) {
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return "No enrollment";
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
-      return "Zero-touch enrollment";
+      return "Zero-Touch enrollment";
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_DISABLED:
       return "Device disabled";
   }
 }
 
 // Returns true if this is an official build and the device has Chrome firmware.
-bool IsOfficialChrome() {
+bool IsGoogleBrandedChrome() {
   std::string firmware_type;
-  bool is_official =
+  bool is_chrome_branded =
       !system::StatisticsProvider::GetInstance()->GetMachineStatistic(
           system::kFirmwareTypeKey, &firmware_type) ||
       firmware_type != system::kFirmwareTypeValueNonchrome;
-#if !defined(OFFICIAL_BUILD)
-  is_official = false;
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  is_chrome_branded = false;
 #endif
-  return is_official;
+  return is_chrome_branded;
 }
 
 // Schedules immediate initialization of the |DeviceManagementService| and
@@ -210,8 +211,8 @@ class AutoEnrollmentController::SystemClockSyncWaiter
     state_ = SystemClockSyncState::kWaitingForSync;
 
     timeout_timer_.Start(FROM_HERE, kSystemClockSyncWaitTimeout,
-                         base::BindRepeating(&SystemClockSyncWaiter::OnTimeout,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&SystemClockSyncWaiter::OnTimeout,
+                                        weak_ptr_factory_.GetWeakPtr()));
 
     chromeos::SystemClockClient::Get()->WaitForServiceToBeAvailable(
         base::BindOnce(&SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
@@ -333,13 +334,13 @@ bool AutoEnrollmentController::IsFREEnabled() {
 
   if (command_line_mode.empty() ||
       command_line_mode == kForcedReEnrollmentOfficialBuild) {
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
   }
 
   if (command_line_mode == kForcedReEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for FRE: " << command_line_mode
+  LOG(FATAL) << "Unknown Forced Re-Enrollment mode: " << command_line_mode
              << ".";
   return false;
 }
@@ -349,7 +350,7 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (!command_line->HasSwitch(switches::kEnterpriseEnableInitialEnrollment))
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
 
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       switches::kEnterpriseEnableInitialEnrollment);
@@ -358,14 +359,13 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
 
   if (command_line_mode.empty() ||
       command_line_mode == kInitialEnrollmentOfficialBuild) {
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
   }
 
   if (command_line_mode == kInitialEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for initial enrollment: "
-             << command_line_mode << ".";
+  LOG(FATAL) << "Unknown Initial Enrollment mode: " << command_line_mode << ".";
   return false;
 }
 
@@ -434,8 +434,8 @@ void AutoEnrollmentController::Start() {
 
   // Arm the belts-and-suspenders timer to avoid hangs.
   safeguard_timer_.Start(FROM_HERE, kSafeguardTimeout,
-                         base::BindRepeating(&AutoEnrollmentController::Timeout,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&AutoEnrollmentController::Timeout,
+                                        weak_ptr_factory_.GetWeakPtr()));
   request_state_keys_tries_ = 0;
 
   // The system clock sync state is not known yet, and this
@@ -523,6 +523,7 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
       (embargo_state == system::FactoryPingEmbargoState::kInvalid ||
        embargo_state == system::FactoryPingEmbargoState::kNotPassed)) {
     // Wait for the system clock to become synchronized and check again.
+    LOG(WARNING) << "Skip Initial Enrollment Check due to out of sync clock.";
     system_clock_sync_wait_requested_ = true;
     return InitialEnrollmentRequirement::kNotRequired;
   }
@@ -554,6 +555,8 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
   RecordInitialEnrollmentRequirement(
       InitialEnrollmentRequirementHistogramValue::kRequired,
       system_clock_sync_state_);
+
+  VLOG(1) << "Initial Enrollment Check required.";
   return InitialEnrollmentRequirement::kRequired;
 }
 
@@ -626,14 +629,18 @@ bool AutoEnrollmentController::ShouldDoFRECheck(
 bool AutoEnrollmentController::ShouldDoInitialEnrollmentCheck() {
   // Skip Initial Enrollment check if it is not enabled according to
   // command-line flags.
-  if (!IsInitialEnrollmentEnabled())
+  if (!IsInitialEnrollmentEnabled()) {
+    VLOG(1) << "Initial Enrollment is disabled.";
     return false;
+  }
 
   // Skip Initial Enrollment check if it is not required according to the
   // device state.
   if (GetInitialEnrollmentRequirement() ==
-      InitialEnrollmentRequirement::kNotRequired)
+      InitialEnrollmentRequirement::kNotRequired) {
+    VLOG(1) << "Initial Enrollment Check is not required.";
     return false;
+  }
 
   return true;
 }

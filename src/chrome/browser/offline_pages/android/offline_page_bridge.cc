@@ -15,13 +15,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/OfflinePageBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
@@ -776,12 +778,11 @@ void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
   }
 
   ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
-      base::Bind(&OfflinePageBridge::GetSizeAndComputeDigestDone,
-                 weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
+      base::BindOnce(&OfflinePageBridge::GetSizeAndComputeDigestDone,
+                     weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
 }
 
 jboolean OfflinePageBridge::IsShowingTrustedOfflinePage(
@@ -812,14 +813,13 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ArchiveValidator::ValidateFile, offline_page->file_path,
-                 offline_page->file_size, offline_page->digest),
-      base::Bind(&ValidateFileCallback, launch_location, j_callback_obj,
-                 offline_page->offline_id, offline_page->url,
-                 offline_page->file_path));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&ArchiveValidator::ValidateFile, offline_page->file_path,
+                     offline_page->file_size, offline_page->digest),
+      base::BindOnce(&ValidateFileCallback, launch_location, j_callback_obj,
+                     offline_page->offline_id, offline_page->url,
+                     offline_page->file_path));
 }
 
 void OfflinePageBridge::GetSizeAndComputeDigestDone(

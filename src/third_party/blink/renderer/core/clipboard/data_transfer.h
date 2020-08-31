@@ -72,9 +72,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
                               DataTransferAccessPolicy,
                               DataObject*);
 
-  explicit DataTransfer(DataTransferType,
-                        DataTransferAccessPolicy,
-                        DataObject*);
+  DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
   ~DataTransfer() override;
 
   bool IsForCopyAndPaste() const { return transfer_type_ == kCopyAndPaste; }
@@ -158,7 +156,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
       const PropertyTreeState&);
   static std::unique_ptr<DragImage> NodeImage(LocalFrame&, Node&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void setDragImage(ImageResourceContent*, Node*, const IntPoint&);

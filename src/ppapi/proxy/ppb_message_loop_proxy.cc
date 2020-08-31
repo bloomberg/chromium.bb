@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_message_loop.h"
@@ -95,9 +95,8 @@ int32_t MessageLoopResource::AttachToCurrentThread() {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Post all pending work to the task executor.
-  for (size_t i = 0; i < pending_tasks_.size(); i++) {
-    const TaskInfo& info = pending_tasks_[i];
-    PostClosure(info.from_here, info.closure, info.delay_ms);
+  for (auto& info : pending_tasks_) {
+    PostClosure(info.from_here, std::move(info.closure), info.delay_ms);
   }
   pending_tasks_.clear();
 
@@ -116,7 +115,7 @@ int32_t MessageLoopResource::Run() {
 
   nested_invocations_++;
   CallWhileUnlocked(
-      base::Bind(&base::RunLoop::Run, base::Unretained(run_loop_)));
+      base::BindOnce(&base::RunLoop::Run, base::Unretained(run_loop_)));
   nested_invocations_--;
 
   run_loop_ = previous_run_loop;
@@ -136,8 +135,8 @@ int32_t MessageLoopResource::PostWork(PP_CompletionCallback callback,
   if (destroyed_)
     return PP_ERROR_FAILED;
   PostClosure(FROM_HERE,
-              base::Bind(callback.func, callback.user_data,
-                         static_cast<int32_t>(PP_OK)),
+              base::BindOnce(callback.func, callback.user_data,
+                             static_cast<int32_t>(PP_OK)),
               delay_ms);
   return PP_OK;
 }
@@ -152,8 +151,9 @@ int32_t MessageLoopResource::PostQuit(PP_Bool should_destroy) {
   if (IsCurrent() && nested_invocations_ > 0) {
     run_loop_->QuitWhenIdle();
   } else {
-    PostClosure(FROM_HERE, base::Bind(&MessageLoopResource::QuitRunLoopWhenIdle,
-                                      Unretained(this)),
+    PostClosure(FROM_HERE,
+                base::BindOnce(&MessageLoopResource::QuitRunLoopWhenIdle,
+                               Unretained(this)),
                 0);
   }
   return PP_OK;
@@ -188,17 +188,17 @@ bool MessageLoopResource::IsCurrent() const {
 }
 
 void MessageLoopResource::PostClosure(const base::Location& from_here,
-                                      const base::Closure& closure,
+                                      base::OnceClosure closure,
                                       int64_t delay_ms) {
   if (task_runner_.get()) {
-    task_runner_->PostDelayedTask(from_here, closure,
+    task_runner_->PostDelayedTask(from_here, std::move(closure),
                                   base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
     TaskInfo info;
     info.from_here = FROM_HERE;
-    info.closure = closure;
+    info.closure = std::move(closure);
     info.delay_ms = delay_ms;
-    pending_tasks_.push_back(info);
+    pending_tasks_.push_back(std::move(info));
   }
 }
 

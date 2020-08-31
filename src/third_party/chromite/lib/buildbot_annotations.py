@@ -97,6 +97,19 @@ class SetBuildProperty(_NamedAnnotation):
     super(SetBuildProperty, self).__init__(name, json.dumps(value))
 
 
+class SetEmailNotifyProperty(_NamedAnnotation):
+  """SET_BUILD_PROPERTY annotation for email_notify."""
+  ANNOTATION_NAME = 'SET_BUILD_PROPERTY'
+
+  def __init__(self, name, value):
+    super(SetEmailNotifyProperty, self).__init__(name, json.dumps(value))
+
+  def __str__(self):
+    inner_text = '@'.join(
+        text for text in itertools.chain([self.name], self.args))
+    return '@@@%s@@@' % (inner_text)
+
+
 def _EscapeArgText(text):
   """Escape annotation argument text.
 

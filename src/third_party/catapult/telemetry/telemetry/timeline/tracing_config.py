@@ -4,6 +4,7 @@
 
 from telemetry.timeline import atrace_config
 from telemetry.timeline import chrome_trace_config
+from telemetry.timeline import system_trace_config
 
 
 class TracingConfig(object):
@@ -39,9 +40,11 @@ class TracingConfig(object):
     self._enable_android_graphics_memtrack = False
     self._enable_cpu_trace = False
     self._enable_chrome_trace = False
+    self._enable_experimental_system_tracing = False
 
     self._atrace_config = atrace_config.AtraceConfig()
     self._chrome_trace_config = chrome_trace_config.ChromeTraceConfig()
+    self._system_trace_config = system_trace_config.SystemTraceConfig()
 
   @property
   def enable_atrace_trace(self):
@@ -84,9 +87,21 @@ class TracingConfig(object):
     self._enable_chrome_trace = value
 
   @property
+  def enable_experimental_system_tracing(self):
+    return self._enable_experimental_system_tracing
+
+  @enable_experimental_system_tracing.setter
+  def enable_experimental_system_tracing(self, value):
+    self._enable_experimental_system_tracing = value
+
+  @property
   def atrace_config(self):
     return self._atrace_config
 
   @property
   def chrome_trace_config(self):
     return self._chrome_trace_config
+
+  @property
+  def system_trace_config(self):
+    return self._system_trace_config

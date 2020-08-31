@@ -85,8 +85,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   void RequestRefreshFrame();
 
   // Similar to FrameSinkVideoCapturer::Start, but takes in a pointer directly
-  // to the FrameSinkVideoConsumer implemenation class (as opposed to a
-  // mojo::InterfacePtr or a proxy object).
+  // to the FrameSinkVideoConsumer implementation class (as opposed to a
+  // mojo::PendingRemote or a proxy object).
   void Start(mojom::FrameSinkVideoConsumer* consumer);
 
   // Similar to Stop() but also resets the consumer immediately so no further
@@ -123,7 +123,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
       mojo::PendingRemote<mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) final;
   void OnStopped() final;
-
+  void OnLog(const std::string& message) final;
   // Establishes connection to FrameSinkVideoCapturer and sends the existing
   // configuration.
   void EstablishConnection();

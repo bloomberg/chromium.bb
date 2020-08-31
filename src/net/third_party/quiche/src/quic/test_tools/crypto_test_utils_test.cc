@@ -9,8 +9,9 @@
 #include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -23,14 +24,16 @@ class ShloVerifier {
       QuicSocketAddress client_addr,
       const QuicClock* clock,
       QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
-      QuicCompressedCertsCache* compressed_certs_cache)
+      QuicCompressedCertsCache* compressed_certs_cache,
+      ParsedQuicVersion version)
       : crypto_config_(crypto_config),
         server_addr_(server_addr),
         client_addr_(client_addr),
         clock_(clock),
         signed_config_(signed_config),
         compressed_certs_cache_(compressed_certs_cache),
-        params_(new QuicCryptoNegotiatedParameters) {}
+        params_(new QuicCryptoNegotiatedParameters),
+        version_(version) {}
 
   class ValidateClientHelloCallback : public ValidateClientHelloResultCallback {
    public:
@@ -59,9 +62,9 @@ class ShloVerifier {
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false,
         /*connection_id=*/TestConnectionId(1), server_addr_, client_addr_,
-        AllSupportedVersions().front(), AllSupportedVersions(), clock_,
-        QuicRandom::GetInstance(), compressed_certs_cache_, params_,
-        signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
+        version_, AllSupportedVersions(), clock_, QuicRandom::GetInstance(),
+        compressed_certs_cache_, params_, signed_config_,
+        /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
         GetProcessClientHelloCallback());
   }
 
@@ -102,6 +105,8 @@ class ShloVerifier {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
   QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
       result_;
+
+  const ParsedQuicVersion version_;
 };
 
 class CryptoTestUtilsTest : public QuicTest {};
@@ -129,19 +134,29 @@ TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
   primary_config.set_primary_time(clock.WallNow().ToUNIXSeconds());
   std::unique_ptr<CryptoHandshakeMessage> msg =
       crypto_config.AddConfig(primary_config, clock.WallNow());
-  QuicStringPiece orbit;
+  quiche::QuicheStringPiece orbit;
   ASSERT_TRUE(msg->GetStringPiece(kORBT, &orbit));
   std::string nonce;
   CryptoUtils::GenerateNonce(clock.WallNow(), QuicRandom::GetInstance(), orbit,
                              &nonce);
-  std::string nonce_hex = "#" + QuicTextUtils::HexEncode(nonce);
+  std::string nonce_hex = "#" + quiche::QuicheTextUtils::HexEncode(nonce);
 
   char public_value[32];
   memset(public_value, 42, sizeof(public_value));
-  std::string pub_hex =
-      "#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value));
+  std::string pub_hex = "#" + quiche::QuicheTextUtils::HexEncode(
+                                  public_value, sizeof(public_value));
 
-  QuicTransportVersion version(AllSupportedTransportVersions().front());
+  // The methods below use a PROTOCOL_QUIC_CRYPTO version so we pick the
+  // first one from the list of supported versions.
+  QuicTransportVersion transport_version = QUIC_VERSION_UNSUPPORTED;
+  for (const ParsedQuicVersion& version : AllSupportedVersions()) {
+    if (version.handshake_protocol == PROTOCOL_QUIC_CRYPTO) {
+      transport_version = version.transport_version;
+      break;
+    }
+  }
+  ASSERT_NE(QUIC_VERSION_UNSUPPORTED, transport_version);
+
   CryptoHandshakeMessage inchoate_chlo = crypto_test_utils::CreateCHLO(
       {{"PDMD", "X509"},
        {"AEAD", "AESG"},
@@ -149,18 +164,21 @@ TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
        {"COPT", "SREJ"},
        {"PUBS", pub_hex},
        {"NONC", nonce_hex},
-       {"VER\0",
-        QuicVersionLabelToString(QuicVersionToQuicVersionLabel(version))}},
+       {"VER\0", QuicVersionLabelToString(
+                     QuicVersionToQuicVersionLabel(transport_version))}},
       kClientHelloMinimumSize);
 
-  crypto_test_utils::GenerateFullCHLO(
-      inchoate_chlo, &crypto_config, server_addr, client_addr, version, &clock,
-      signed_config, &compressed_certs_cache, &full_chlo);
+  crypto_test_utils::GenerateFullCHLO(inchoate_chlo, &crypto_config,
+                                      server_addr, client_addr,
+                                      transport_version, &clock, signed_config,
+                                      &compressed_certs_cache, &full_chlo);
   // Verify that full_chlo can pass crypto_config's verification.
-  ShloVerifier shlo_verifier(&crypto_config, server_addr, client_addr, &clock,
-                             signed_config, &compressed_certs_cache);
+  ShloVerifier shlo_verifier(
+      &crypto_config, server_addr, client_addr, &clock, signed_config,
+      &compressed_certs_cache,
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, transport_version));
   crypto_config.ValidateClientHello(
-      full_chlo, client_addr.host(), server_addr, version, &clock,
+      full_chlo, client_addr, server_addr, transport_version, &clock,
       signed_config, shlo_verifier.GetValidateClientHelloCallback());
 }
 

@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.support.v4.util.ArrayMap;
+import androidx.collection.ArrayMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.GooglePaymentMethodData;
@@ -20,7 +20,6 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentResponse;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,25 +75,11 @@ public class SkipToGPayHelper {
             return true;
         }
 
-        // This check for autofill instrument is duplicate work if skip-to-GPay ends up not being
+        // V1 experiment: only enable skip-to-GPay if no usable basic-card exists.
+        // This check for autofill card is duplicate work if skip-to-GPay ends up not being
         // enabled and adds a small delay (average ~3ms with first time ) to all hybrid request
         // flows. However, this is the cleanest way to implement SKIP_TO_GPAY_IF_NO_CARD.
-        AutofillPaymentApp app = new AutofillPaymentApp(webContents);
-        List<PaymentInstrument> instruments =
-                app.getInstruments(methodData, /*forceReturnServerCards=*/false);
-        boolean hasUsableBasicCard = false;
-        for (int i = 0; i < instruments.size(); i++) {
-            PaymentInstrument instrument = instruments.get(i);
-            instrument.setHaveRequestedAutofillData(true);
-            if (instrument.isAutofillInstrument()
-                    && ((AutofillPaymentInstrument) instrument).strictCanMakePayment()) {
-                hasUsableBasicCard = true;
-                break;
-            }
-        }
-
-        // V1 experiment: only enable skip-to-GPay if no usable basic-card exists.
-        return !hasUsableBasicCard
+        return !AutofillPaymentAppFactory.hasUsableAutofillCard(webContents, methodData)
                 && PaymentsExperimentalFeatures.isEnabled(
                         ChromeFeatureList.PAYMENT_REQUEST_SKIP_TO_GPAY_IF_NO_CARD);
     }

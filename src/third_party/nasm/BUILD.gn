@@ -6,6 +6,16 @@ import("//build/config/compiler/compiler.gni")
 import("nasm_sources.gni")
 
 configs_to_delete = [ "//build/config/compiler:chromium_code" ]
+
+# We'd like to disable sanitizers in all cases, but this is not possible with
+# MSAN due to its linkage with instrumented libraries. https://crbug.com/928357
+if (!is_msan) {
+  configs_to_delete += [
+    # Don't enable sanitizers for build tools. They slow down the overall build.
+    "//build/config/sanitizers:default_sanitizer_flags",
+  ]
+}
+
 configs_to_add = [ "//build/config/compiler:no_chromium_code" ]
 if (is_debug) {
   configs_to_delete += [

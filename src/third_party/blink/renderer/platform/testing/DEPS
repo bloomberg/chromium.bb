@@ -13,10 +13,12 @@ include_rules = [
     "+base/process",
     "+base/run_loop.h",
     "+base/metrics/statistics_recorder.h",
+    "+base/strings/string_number_conversions.h",
     "+base/task/single_thread_task_executor.h",
     "+base/test/test_io_thread.h",
     "+cc",
     "+mojo/core/embedder",
+    "+services/network/public",
     '+testing',
 
     "+third_party/blink/renderer/platform/exported",

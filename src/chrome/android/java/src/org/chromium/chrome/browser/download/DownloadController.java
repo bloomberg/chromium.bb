@@ -14,15 +14,14 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.permissions.AndroidPermissionRequester;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.download.DownloadCollectionBridge;
+import org.chromium.components.permissions.AndroidPermissionRequester;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.AndroidPermissionDelegate;
@@ -30,15 +29,13 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * Java counterpart of android DownloadController.
- *
- * Its a singleton class instantiated by the C++ DownloadController.
+ * Java counterpart of android DownloadController. Owned by native.
  */
 public class DownloadController {
     /**
-     * Class for notifying the application that download has completed.
+     * Class for notifying download events to other classes.
      */
-    public interface DownloadNotificationService {
+    public interface Observer {
         /**
          * Notify the host application that a download is finished.
          * @param downloadInfo Information about the completed download.
@@ -65,14 +62,14 @@ public class DownloadController {
         void onDownloadInterrupted(final DownloadInfo downloadInfo, boolean isAutoResumable);
     }
 
-    private static DownloadNotificationService sDownloadNotificationService;
+    private static Observer sObserver;
 
-    public static void setDownloadNotificationService(DownloadNotificationService service) {
+    public static void setDownloadNotificationService(Observer observer) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             return;
         }
 
-        sDownloadNotificationService = service;
+        sObserver = observer;
     }
 
     /**
@@ -85,8 +82,8 @@ public class DownloadController {
         MediaStoreHelper.addImageToGalleryOnSDCard(
                 downloadInfo.getFilePath(), downloadInfo.getMimeType());
 
-        if (sDownloadNotificationService == null) return;
-        sDownloadNotificationService.onDownloadCompleted(downloadInfo);
+        if (sObserver == null) return;
+        sObserver.onDownloadCompleted(downloadInfo);
     }
 
     /**
@@ -95,8 +92,8 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable) {
-        if (sDownloadNotificationService == null) return;
-        sDownloadNotificationService.onDownloadInterrupted(downloadInfo, isAutoResumable);
+        if (sObserver == null) return;
+        sObserver.onDownloadInterrupted(downloadInfo, isAutoResumable);
     }
 
     /**
@@ -104,8 +101,8 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadCancelled(DownloadInfo downloadInfo) {
-        if (sDownloadNotificationService == null) return;
-        sDownloadNotificationService.onDownloadCancelled(downloadInfo);
+        if (sObserver == null) return;
+        sObserver.onDownloadCancelled(downloadInfo);
     }
 
     /**
@@ -114,8 +111,8 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadUpdated(DownloadInfo downloadInfo) {
-        if (sDownloadNotificationService == null) return;
-        sDownloadNotificationService.onDownloadUpdated(downloadInfo);
+        if (sObserver == null) return;
+        sObserver.onDownloadUpdated(downloadInfo);
     }
 
 
@@ -252,12 +249,17 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadStarted() {
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
-            return;
-        }
-        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
+        if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) return;
         DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
+    }
+
+    private static TabModelSelector getTabModelSelector(Tab tab) {
+        Activity activity = TabUtils.getActivity(tab);
+        if (activity instanceof ChromeActivity) {
+            return ((ChromeActivity) activity).getTabModelSelector();
+        }
+        return null;
     }
 
     /**
@@ -273,7 +275,7 @@ public class DownloadController {
                 || contents.getNavigationController().isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
-            TabModelSelector selector = TabModelSelector.from(tab);
+            TabModelSelector selector = getTabModelSelector(tab);
             if (selector == null) return true;
             if (selector.getModel(tab.isIncognito()).getCount() == 1) return false;
             boolean closed = selector.closeTab(tab);

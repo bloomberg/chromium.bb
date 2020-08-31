@@ -28,7 +28,9 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
@@ -48,7 +50,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "v8/include/v8.h"
 
@@ -61,7 +62,7 @@ IDBObjectStore::IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata> metadata,
   DCHECK(metadata_.get());
 }
 
-void IDBObjectStore::Trace(blink::Visitor* visitor) {
+void IDBObjectStore::Trace(Visitor* visitor) {
   visitor->Trace(transaction_);
   visitor->Trace(index_map_);
   ScriptWrappable::Trace(visitor);
@@ -339,12 +340,28 @@ static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
 
 IDBRequest* IDBObjectStore::add(ScriptState* script_state,
                                 const ScriptValue& value,
+                                ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  return add(script_state, value, ScriptValue(isolate, v8::Undefined(isolate)),
+             exception_state);
+}
+
+IDBRequest* IDBObjectStore::add(ScriptState* script_state,
+                                const ScriptValue& value,
                                 const ScriptValue& key,
                                 ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::addRequestSetup", "store_name",
              metadata_->name.Utf8());
   return DoPut(script_state, mojom::IDBPutMode::AddOnly, value, key,
                exception_state);
+}
+
+IDBRequest* IDBObjectStore::put(ScriptState* script_state,
+                                const ScriptValue& value,
+                                ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  return put(script_state, value, ScriptValue(isolate, v8::Undefined(isolate)),
+             exception_state);
 }
 
 IDBRequest* IDBObjectStore::put(ScriptState* script_state,
@@ -568,11 +585,11 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
 
   value_wrapper.DoneCloning();
 
-  if (base::FeatureList::IsEnabled(kIndexedDBLargeValueWrapping))
-    value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
+  value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
-  auto idb_value = std::make_unique<IDBValue>(value_wrapper.TakeWireBytes(),
-                                              value_wrapper.TakeBlobInfo());
+  auto idb_value = std::make_unique<IDBValue>(
+      value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo(),
+      value_wrapper.TakeNativeFileSystemTransferTokens());
 
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   transaction_->transaction_backend()->Put(
@@ -708,7 +725,7 @@ class IndexPopulator final : public NativeEventListener {
     DCHECK(index_metadata_.get());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
     visitor->Trace(database_);
     NativeEventListener::Trace(visitor);

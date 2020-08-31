@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
@@ -51,7 +52,9 @@ class ScopedWindowClosingObserver : public aura::WindowObserver {
 };
 
 bool IsNonSysModalWindowConsideredActivatable(aura::Window* window) {
-  DCHECK(window);
+  if (window->GetProperty(ash::kExcludeInMruKey))
+    return false;
+
   ScopedWindowClosingObserver observer(window);
   AshFocusRules* focus_rules = Shell::Get()->focus_rules();
 
@@ -84,10 +87,15 @@ bool CanIncludeWindowInCycleList(aura::Window* window) {
 }
 
 // A predicate that determines whether |window| can be included in the list
-// built for alt-tab cycling, including Android PIP windows.
+// built for alt-tab cycling, including one of the windows for Android PIP apps.
+// For single-activity PIP, the PIP window is included in the list. (in the case
+// of single-activity PIP, the PIP window is the same as the original window.)
+// For multi-activity PIP, the non-PIP activity is included in the list.
+// See the comment for |kPipOriginalWindowKey| for more detail.
 bool CanIncludeWindowInCycleWithPipList(aura::Window* window) {
   return CanIncludeWindowInCycleList(window) ||
-         window_util::IsArcPipWindow(window);
+         (window_util::IsArcPipWindow(window) &&
+          window->GetProperty(ash::kPipOriginalWindowKey));
 }
 
 // Returns a list of windows ordered by their stacking order such that the most
@@ -184,7 +192,8 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }  // namespace
 
 bool CanIncludeWindowInMruList(aura::Window* window) {
-  return wm::CanActivateWindow(window) && !WindowState::Get(window)->IsPip();
+  return wm::CanActivateWindow(window) &&
+         !window->GetProperty(ash::kExcludeInMruKey);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -198,6 +207,15 @@ MruWindowTracker::~MruWindowTracker() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto* window : mru_windows_)
     window->RemoveObserver(this);
+}
+
+MruWindowTracker::WindowList MruWindowTracker::BuildAppWindowList(
+    DesksMruType desks_mru_type) const {
+  return BuildWindowListInternal(
+      &mru_windows_, desks_mru_type, [](aura::Window* w) {
+        return w->GetProperty(aura::client::kAppType) !=
+               static_cast<int>(ash::AppType::NON_APP);
+      });
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList(
@@ -231,6 +249,15 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
   // to front.
   if (!ignore)
     SetActiveWindow(window_util::GetActiveWindow());
+}
+
+void MruWindowTracker::OnWindowMovedOutFromRemovingDesk(aura::Window* window) {
+  DCHECK(window);
+
+  auto iter = std::find(mru_windows_.begin(), mru_windows_.end(), window);
+  DCHECK(iter != mru_windows_.end());
+  mru_windows_.erase(iter);
+  mru_windows_.insert(mru_windows_.begin(), window);
 }
 
 void MruWindowTracker::AddObserver(Observer* observer) {

@@ -27,10 +27,14 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsUA,
     WebFeature::kClientHintsUAArch,
     WebFeature::kClientHintsUAPlatform,
+    WebFeature::kClientHintsUAPlatformVersion,
     WebFeature::kClientHintsUAModel,
+    WebFeature::kClientHintsUAMobile,
+    WebFeature::kClientHintsUAFullVersion,
 };
 
-static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==
+static_assert(static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) +
+                      1 ==
                   base::size(kWebFeatureMapping),
               "unhandled client hint type");
 
@@ -41,7 +45,7 @@ FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
     : frame_(frame) {}
 
 void FrameClientHintsPreferencesContext::CountClientHints(
-    mojom::WebClientHintsType type) {
+    network::mojom::WebClientHintsType type) {
   UseCounter::Count(*frame_->GetDocument(),
                     kWebFeatureMapping[static_cast<int32_t>(type)]);
 }

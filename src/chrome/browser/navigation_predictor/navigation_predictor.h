@@ -29,7 +29,7 @@ namespace content {
 class BrowserContext;
 class NavigationHandle;
 class RenderFrameHost;
-}
+}  // namespace content
 
 namespace prerender {
 class PrerenderManager;
@@ -44,9 +44,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
                             public content::WebContentsObserver,
                             public prerender::PrerenderHandle::Observer {
  public:
-  // |render_frame_host| is the host associated with the render frame. It is
-  // used to retrieve metrics at the browser side.
-  explicit NavigationPredictor(content::RenderFrameHost* render_frame_host);
+  explicit NavigationPredictor(content::WebContents* web_contents);
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
@@ -288,10 +286,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // DidStartNavigation).
   bool next_navigation_started_ = false;
 
-  // Timing of document loaded and last click.
-  base::TimeTicks document_loaded_timing_;
-  base::TimeTicks last_click_timing_;
-
   // True if the source webpage (i.e., the page on which we are trying to
   // predict the next navigation) is a page from user's default search engine.
   bool source_is_default_search_engine_page_ = false;
@@ -327,8 +321,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // The URL of the current page.
   GURL document_url_;
 
-  // Render frame host of the current page.
-  const content::RenderFrameHost* render_frame_host_;
+  // WebContents of the current page.
+  const content::WebContents* web_contents_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

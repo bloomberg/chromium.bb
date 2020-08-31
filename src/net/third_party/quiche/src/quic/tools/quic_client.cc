@@ -26,12 +26,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/quic/platform/impl/quic_socket_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_client_session.h"
-
-#ifndef SO_RXQ_OVFL
-#define SO_RXQ_OVFL 40
-#endif
 
 namespace quic {
 
@@ -84,6 +79,23 @@ QuicClient::QuicClient(QuicSocketAddress server_address,
           server_id,
           supported_versions,
           QuicConfig(),
+          epoll_server,
+          QuicWrapUnique(new QuicClientEpollNetworkHelper(epoll_server, this)),
+          std::move(proof_verifier),
+          std::move(session_cache)) {}
+
+QuicClient::QuicClient(QuicSocketAddress server_address,
+                       const QuicServerId& server_id,
+                       const ParsedQuicVersionVector& supported_versions,
+                       const QuicConfig& config,
+                       QuicEpollServer* epoll_server,
+                       std::unique_ptr<ProofVerifier> proof_verifier,
+                       std::unique_ptr<SessionCache> session_cache)
+    : QuicClient(
+          server_address,
+          server_id,
+          supported_versions,
+          config,
           epoll_server,
           QuicWrapUnique(new QuicClientEpollNetworkHelper(epoll_server, this)),
           std::move(proof_verifier),

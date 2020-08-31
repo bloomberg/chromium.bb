@@ -16,10 +16,12 @@ from __future__ import print_function
 import errno
 import glob
 import json
+import math
 import multiprocessing
 import os
 import signal
 import stat
+import subprocess
 import sys
 import tempfile
 
@@ -34,6 +36,9 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import proctitle
 from chromite.lib import timeout_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # How long (in minutes) to let a test run before we kill it.
@@ -68,63 +73,16 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
-    'api/controller/dependency_unittest': INSIDE,
-    'cbuildbot/stages/sync_stages_unittest': INSIDE,
-    'cbuildbot/stages/test_stages_unittest': INSIDE,
-    'cli/cros/cros_build_unittest': INSIDE,
-    'cli/cros/cros_chroot_unittest': INSIDE,
-    'cli/cros/cros_debug_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
-    'cli/cros/lint_autotest_unittest': INSIDE,
-    'cli/deploy_unittest': INSIDE,
-    'lib/alerts_unittest': INSIDE,
-    'lib/androidbuild_unittest': INSIDE,
-    'lib/chroot_util_unittest': INSIDE,
-    'lib/cros_test_unittest': INSIDE,
-    'lib/filetype_unittest': INSIDE,
-    'lib/paygen/paygen_payload_lib_unittest': INSIDE,
-    'lib/paygen/signer_payloads_client_unittest': INSIDE,
-    'lib/upgrade_table_unittest': INSIDE,
-    'lib/vm_unittest': INSIDE,
-    'scripts/cros_extract_deps_unittest': INSIDE,
-    'scripts/cros_generate_update_payload_unittest': INSIDE,
-    'scripts/cros_mark_android_as_stable_unittest': INSIDE,
-    'scripts/cros_oobe_autoconfig_unittest': SKIP, # https://crbug.com/1000761
-    'scripts/cros_install_debug_syms_unittest': INSIDE,
-    'scripts/cros_list_modified_packages_unittest': INSIDE,
-    'scripts/cros_mark_as_stable_unittest': INSIDE,
-    'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
-    'scripts/cros_portage_upgrade_unittest': INSIDE,
-    'scripts/cros_run_unit_tests_unittest': INSIDE,
-    'scripts/dep_tracker_unittest': INSIDE,
-    'scripts/gconv_strip_unittest': INSIDE,
-    'scripts/merge_logs_unittest': INSIDE,
-    'scripts/test_image_unittest': INSIDE,
-    'service/dependency_unittest': INSIDE,
+    'lib/cros_test_lib_unittest': INSIDE,
+    'lib/operation_unittest': INSIDE,
 
     # These require 3rd party modules that are in the chroot.
-    'cli/cros/cros_bisect_unittest': INSIDE,
-    'cli/cros/cros_flash_unittest': INSIDE,
-    'cli/cros/cros_stage_unittest': INSIDE,
     'lib/dev_server_wrapper_unittest': INSIDE,
     'lib/xbuddy/build_artifact_unittest': INSIDE,
     'lib/xbuddy/common_util_unittest': INSIDE,
     'lib/xbuddy/downloader_unittest': INSIDE,
     'lib/xbuddy/xbuddy_unittest': INSIDE,
-
-    # Tests that need to run outside the chroot.
-    'lib/cgroups_unittest': OUTSIDE,
-
-    # The proto compile unittest requires network access to install protoc
-    # with CIPD. Since ebuilds have no network access and our tests are run
-    # through the chromite ebuild on builders, this is a problem. The test
-    # can be run manually, but it primarily exists to be a presubmit check
-    # anyway, so it not running for run_tests is fine.
-    'api/proto_compiled_unittest': SKIP,
-
-    # Tests that take >2 minutes to run.  All the slow tests are
-    # disabled atm though ...
-    # 'scripts/cros_portage_upgrade_unittest': SKIP,
 }
 
 SLOW_TESTS = {
@@ -133,13 +91,6 @@ SLOW_TESTS = {
     'lib/gce_unittest': SKIP,
     'lib/gerrit_unittest': SKIP,
     'lib/patch_unittest': SKIP,
-
-    # cgroups_unittest runs cros_sdk a lot, so is slow.
-    'lib/cgroups_unittest': SKIP,
-    # cros_sdk_unittest runs cros_sdk a lot, so is slow.
-    'scripts/cros_sdk_unittest': SKIP,
-    # This test involves lots of git operations, which are very slow.
-    'cli/cros/cros_branch_unittest': SKIP,
 }
 
 
@@ -161,8 +112,8 @@ def RunTest(test, interp, cmd, tmpfile, finished, total):
 
   with cros_build_lib.TimedSection() as timer:
     ret = cros_build_lib.run(
-        cmd, capture_output=True, error_code_ok=True,
-        combine_stdout_stderr=True, debug_level=logging.DEBUG,
+        cmd, capture_output=True, check=False,
+        stderr=subprocess.STDOUT, debug_level=logging.DEBUG,
         int_timeout=SIGINT_TIMEOUT)
 
   with finished.get_lock():
@@ -251,14 +202,14 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   # (2) If there is common code that is broken, we get quicker feedback if we
   #     churn through the fast tests.
   # Worse case, this interleaving doesn't slow things down overall.
-  fast = ret[:int(round(len(ret) / 2.0)) - 1:-1]
+  fast = ret[:int(math.ceil(len(ret) / 2.0)) - 1:-1]
   slow = ret[:-len(fast)]
   ret[::2] = slow
   ret[1::2] = fast
   return ret
 
 
-def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
+def BuildTestSets(tests, chroot_available, network, jobs=1,
                   pyver=None):
   """Build the tests to execute.
 
@@ -269,7 +220,6 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
     tests: List of tests to execute.
     chroot_available: Whether we can execute tests inside the sdk.
     network: Whether to execute network tests.
-    config_skew: Whether to execute config skew tests.
     jobs: How many jobs will we run in parallel.
     pyver: Which versions of Python to test against.
 
@@ -281,7 +231,9 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
   def PythonWrappers(tests):
     for test in tests:
       if pyver is None or pyver == 'py2':
-        yield (test, 'python2')
+        if (os.path.basename(os.path.realpath(test)) not in
+            {'virtualenv_wrapper.py', 'wrapper3.py'}):
+          yield (test, 'python2')
       if pyver is None or pyver == 'py3':
         yield (test, 'python3')
 
@@ -318,8 +270,6 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
     cmd.append('--verbose')
     if network:
       cmd.append('--network')
-    if config_skew:
-      cmd.append('--config_skew')
     cmd = ['timeout', '--preserve-status', '-k', '%sm' % TEST_SIG_TIMEOUT,
            '%sm' % TEST_TIMEOUT] + cmd
 
@@ -329,15 +279,14 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
 
 
 def RunTests(tests, jobs=1, chroot_available=True, network=False,
-             config_skew=False, dryrun=False, failfast=False, pyver=None):
-  """Execute |paths| with |jobs| in parallel (including |network| tests).
+             dryrun=False, failfast=False, pyver=None):
+  """Execute |tests| with |jobs| in parallel (including |network| tests).
 
   Args:
     tests: The tests to run.
     jobs: How many tests to run in parallel.
     chroot_available: Whether we can run tests inside the sdk.
     network: Whether to run network based tests.
-    config_skew: Whether to run config skew tests.
     dryrun: Do everything but execute the test.
     failfast: Stop on first failure
     pyver: Which versions of Python to test against.
@@ -359,7 +308,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
   try:
     # Build up the testsets.
     testsets = BuildTestSets(tests, chroot_available, network,
-                             config_skew, jobs=jobs, pyver=pyver)
+                             jobs=jobs, pyver=pyver)
 
     # Fork each test and add it to the list.
     for test, interp, cmd, tmpfile in testsets:
@@ -493,6 +442,32 @@ def FindTests(search_paths=('.',)):
           yield test
 
 
+def CheckStaleSettings():
+  """Check various things to make sure they don't get stale."""
+  die = False
+
+  for test in SPECIAL_TESTS:
+    if not os.path.exists(test):
+      die = True
+      logging.error('SPECIAL_TESTS is stale: delete old %s', test)
+
+  for test in SLOW_TESTS:
+    if not os.path.exists(test):
+      die = True
+      logging.error('SLOW_TESTS is stale: delete old %s', test)
+
+  # Sanity check wrapper scripts.
+  for path in glob.glob('bin/*'):
+    if os.path.islink(path):
+      src = os.path.join('scripts', os.path.basename(path) + '.py')
+      if not os.path.exists(src):
+        die = True
+        logging.error('Stale symlink should be removed: %s', path)
+
+  if die:
+    cros_build_lib.Die('Please fix the above problems first')
+
+
 def ClearPythonCacheFiles():
   """Clear cache files in the chromite repo.
 
@@ -505,8 +480,9 @@ def ClearPythonCacheFiles():
       capture_output=True)
   for subdir in set(os.path.dirname(x) for x in result.stdout.split('\0')):
     for path in glob.glob(os.path.join(subdir, '*.pyc')):
-      osutils.SafeUnlink(path)
-    osutils.RmDir(os.path.join(subdir, '__pycache__'), ignore_missing=True)
+      osutils.SafeUnlink(path, sudo=True)
+    osutils.RmDir(os.path.join(subdir, '__pycache__'), ignore_missing=True,
+                  sudo=True)
 
 
 def ChrootAvailable():
@@ -554,9 +530,6 @@ def GetParser():
                       help='Number of tests to run in parallel at a time')
   parser.add_argument('--network', default=False, action='store_true',
                       help='Run tests that depend on good network connectivity')
-  parser.add_argument('--config_skew', default=False, action='store_true',
-                      help='Run tests that check if new config matches legacy '
-                           'config')
   parser.add_argument('--py2', dest='pyver', action='store_const', const='py2',
                       help='Only run Python 2 unittests.')
   parser.add_argument('--py3', dest='pyver', action='store_const', const='py3',
@@ -613,6 +586,9 @@ def main(argv):
                        ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
                        (st.st_uid, st.st_gid))
 
+  # Sanity check the settings to avoid bitrot.
+  CheckStaleSettings()
+
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
 
@@ -635,8 +611,8 @@ def main(argv):
     with cros_build_lib.TimedSection() as timer:
       result = RunTests(
           tests, jobs=jobs, chroot_available=ChrootAvailable(),
-          network=opts.network, config_skew=opts.config_skew,
-          dryrun=opts.dryrun, failfast=opts.failfast, pyver=opts.pyver)
+          network=opts.network, dryrun=opts.dryrun,
+          failfast=opts.failfast, pyver=opts.pyver)
 
     if result:
       logging.info('All tests succeeded! (%s total)', timer.delta)
@@ -645,6 +621,3 @@ def main(argv):
 
   if not opts.network:
     logging.warning('Network tests skipped; use --network to run them')
-
-  if not opts.config_skew:
-    logging.warning('Config skew tests skipped; use --config_skew to run them')

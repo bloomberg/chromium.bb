@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-forward.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
@@ -24,7 +25,11 @@ enum IconType {
   ICON_TYPE_TRAY_REGULAR,  // light icons with VPN badges, used outside of OOBE
   ICON_TYPE_DEFAULT_VIEW,  // dark icons with VPN badges
   ICON_TYPE_LIST,          // dark icons without VPN badges; in-line status
-  ICON_TYPE_MENU_LIST,     // dark icons without VPN badges; separate status
+  ICON_TYPE_FEATURE_POD,   // icons in the network feature pod button in system
+                           // menu
+  ICON_TYPE_FEATURE_POD_TOGGLED,  // toggled icons in the network feature pod
+                                  // button in system menu
+  ICON_TYPE_MENU_LIST,  // dark icons without VPN badges; separate status
 };
 
 // Strength of a wireless signal.

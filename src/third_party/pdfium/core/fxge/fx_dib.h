@@ -51,7 +51,6 @@ struct FXDIB_ResampleOptions {
 
   bool HasAnyOptions() const;
 
-  bool bInterpolateDownsample = false;
   bool bInterpolateBilinear = false;
   bool bInterpolateBicubic = false;
   bool bHalftone = false;
@@ -114,6 +113,10 @@ inline int GetBppFromFormat(FXDIB_Format format) {
 // AKA bytes per pixel, assuming 8-bits per component.
 inline int GetCompsFromFormat(FXDIB_Format format) {
   return (format & 0xff) / 8;
+}
+
+inline uint32_t GetAlphaFlagFromFormat(FXDIB_Format format) {
+  return (format >> 8) & 0xff;
 }
 
 inline bool GetIsAlphaFromFormat(FXDIB_Format format) {

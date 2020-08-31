@@ -47,11 +47,71 @@ Each Android application has a manifest that contains information about the app
 contains the contents of the final merged manifest used when building
 MonochromePublic.aab.
 
+[trichrome_chrome_bundle__base_bundle_module.AndroidManifest.expected](trichrome_chrome_bundle__base_bundle_module.AndroidManifest.expected)
+contains the contents of the final merged manifest used when building
+TrichromeChrome.aab.
+
+[trichrome_library_apk.AndroidManifest.expected](trichrome_library_apk.AndroidManifest.expected)
+contains the contents of the final merged manifest used when building
+TrichromeLibrary.apk
+
+In addition, we have expectation files for Webviews.
+
+[trichrome_library_apk.AndroidManifest.expected](trichrome_library_apk.AndroidManifest.expected)
+contains the contents of the final merged manifest used when building
+TrichromeLibrary.apk
+
+[//android_webview/java/system_webview_apk.AndroidManifest.expected](../../../android_webview/java/system_webview_apk.AndroidManifest.expected)
+contains the contents of the final merged manifest used when building
+SystemWebView.apk
+
+[//android_webview/java/trichrome_webview_apk.AndroidManifest.expected](../../../android_webview/java/trichrome_webview_apk.AndroidManifest.expected)
+contains the contents of the final merged manifest used when building
+TrichromeWebView.apk
+
+### What are `*.AndroidManifest.diff.expected` files?
+For internal targets, we don't want to check that the generated manifest are
+identical to a specified expectation file. Instead, we want to ensure that the
+differences between the target's AndroidManifest and an expectation file are as
+expected. In this case, we specify a `*.AndroidManifest.diff.expected` file to
+store the expected differences.
+
+The contents of the `*.AndroidManifest.diff.expected` file are lines that start
+with '+'. We use ndiff diff format to diff the 2 manifests, which represents
+differences by prepending '+' before new lines,  '-' before deleted lines, and
+keeping all common lines. To create a `*.AndroidManifest.diff.expected`,
+we filter out all lines that don't start with '+' to avoid irrelevant upstream
+changes to break downstream checks.
+
+
 ### Why do we care about AndroidManifest discrepancies?
 
 While most manifest changes are reviewed when the manifest template file
 changes, manifest entries that are pulled in via. deps (through manifest
 merging) can cause real bugs (permissions issues, security vulnerabilities).
+
+## Native Libraries and Assets
+Some of our apk and aab files contain native library files (under lib/) and
+assets files (under assets/).
+
+### What are `*.native_libs_and_assets.expected` files?
+`*.native_libs_and_assets.expected` files store in a text format the list of
+native libraries & assets, and their related information (whether it's
+compressed, how it's aligned).
+We have
+1. [chrome_modern_public_bundle__base.native_libs_and_assets.expected](chrome_modern_public_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `chrome_modern_public_bundle`.
+2. [monochrome_public_bundle__base.native_libs_and_assets.expected](monochrome_public_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `monochrome_public_bundle`.
+3. [trichrome_chrome_bundle__base.native_libs_and_assets.expected](trichrome_chrome_bundle__base__create.native_libs_and_assets.expected),
+which is for the base module of `trichrome_chrome_bundle`.
+4. [trichrome_library_apk.native_libs_and_assets.expected](trichrome_library_apk__create.native_libs_and_assets.expected),
+which is for `trichrome_library_apk`
+
+### Why do we care about native libraries and assets discrepancies?
+When we change build gn files, the native libraries and assets can sometimes
+be changed in an unexpected way.
+
 
 ## Build failures caused by `*.expected` files
 
@@ -133,4 +193,4 @@ Updating the file doesn't fix the error
 * Make sure you're building `monochrome_public_bundle`
 
 Otherwise, please file a bug at [crbug.com/new](https://crbug.com/new) and/or
-message estevenson@.
+message clank-build@google.com.

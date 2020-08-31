@@ -10,7 +10,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -18,21 +17,10 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
-namespace {
-const char kInvalidBlobFilePath[] = "Blob file path is invalid";
-
-IndexedDBDatabaseError CreateBackendAbortError() {
-  return IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
-                                "Backend aborted error");
-}
-
-}  // namespace
 
 TransactionImpl::TransactionImpl(
     base::WeakPtr<IndexedDBTransaction> transaction,
@@ -111,19 +99,9 @@ void TransactionImpl::Put(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(dispatcher_host_);
 
-  std::vector<IndexedDBBlobInfo> blob_infos;
-  if (!input_value->blob_or_file_info.empty()) {
-    bool security_policy_failure = false;
-    CreateBlobInfos(input_value, &blob_infos, &security_policy_failure);
-    if (security_policy_failure) {
-      IndexedDBDatabaseError error = CreateBackendAbortError();
-      std::move(callback).Run(
-          blink::mojom::IDBTransactionPutResult::NewErrorResult(
-              blink::mojom::IDBError::New(error.code(), error.message())));
-      mojo::ReportBadMessage(kInvalidBlobFilePath);
-      return;
-    }
-  }
+  std::vector<IndexedDBExternalObject> external_objects;
+  if (!input_value->external_objects.empty())
+    CreateExternalObjects(input_value, &external_objects);
 
   if (!transaction_) {
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
@@ -155,7 +133,7 @@ void TransactionImpl::Put(
       std::string(input_value->bits.begin(), input_value->bits.end());
   // Release value->bits std::vector.
   input_value->bits.clear();
-  swap(output_value.blob_info, blob_infos);
+  swap(output_value.external_objects, external_objects);
 
   blink::mojom::IDBTransaction::PutCallback aborting_callback =
       CreateCallbackAbortOnDestruct<blink::mojom::IDBTransaction::PutCallback,
@@ -167,6 +145,9 @@ void TransactionImpl::Put(
   params->put_mode = mode;
   params->callback = std::move(aborting_callback);
   params->index_keys = index_keys;
+  // This is decremented in IndexedDBDatabase::PutOperation.
+  transaction_->set_in_flight_memory(transaction_->in_flight_memory() +
+                                     output_value.SizeEstimate());
   transaction_->ScheduleTask(BindWeakOperation(
       &IndexedDBDatabase::PutOperation, connection->database()->AsWeakPtr(),
       std::move(params)));
@@ -176,45 +157,39 @@ void TransactionImpl::Put(
   transaction_->set_size(transaction_->size() + commit_size);
 }
 
-void TransactionImpl::CreateBlobInfos(
+void TransactionImpl::CreateExternalObjects(
     blink::mojom::IDBValuePtr& value,
-    std::vector<IndexedDBBlobInfo>* blob_infos,
-    bool* security_policy_failure) {
+    std::vector<IndexedDBExternalObject>* external_objects) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  *security_policy_failure = false;
-
-  // Should only be called if there are blobs to process.
-  CHECK(!value->blob_or_file_info.empty());
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  int64_t ipc_process_id = dispatcher_host_->ipc_process_id();
+  // Should only be called if there are external objects to process.
+  CHECK(!value->external_objects.empty());
 
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
-  blob_infos->resize(value->blob_or_file_info.size());
-  for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
-    blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
-    uint64_t size = info->size;
-    total_blob_size += size;
+  external_objects->resize(value->external_objects.size());
+  for (size_t i = 0; i < value->external_objects.size(); ++i) {
+    auto& object = value->external_objects[i];
+    switch (object->which()) {
+      case blink::mojom::IDBExternalObject::Tag::BLOB_OR_FILE: {
+        blink::mojom::IDBBlobInfoPtr& info = object->get_blob_or_file();
+        uint64_t size = info->size;
+        total_blob_size += size;
 
-    if (info->file) {
-      if (!info->file->path.empty() &&
-          !policy->CanReadFile(ipc_process_id, info->file->path)) {
-        blob_infos->clear();
-        *security_policy_failure = true;
-        return;
+        if (info->file) {
+          DCHECK_NE(info->size, IndexedDBExternalObject::kUnknownSize);
+          (*external_objects)[i] = IndexedDBExternalObject(
+              std::move(info->blob), info->uuid, info->file->name,
+              info->mime_type, info->file->last_modified, info->size);
+        } else {
+          (*external_objects)[i] = IndexedDBExternalObject(
+              std::move(info->blob), info->uuid, info->mime_type, info->size);
+        }
+        break;
       }
-      (*blob_infos)[i] =
-          IndexedDBBlobInfo(std::move(info->blob), info->uuid, info->file->path,
-                            info->file->name, info->mime_type);
-      if (info->size != -1) {
-        (*blob_infos)[i].set_last_modified(info->file->last_modified);
-        (*blob_infos)[i].set_size(info->size);
-      }
-    } else {
-      (*blob_infos)[i] = IndexedDBBlobInfo(std::move(info->blob), info->uuid,
-                                           info->mime_type, info->size);
+      case blink::mojom::IDBExternalObject::Tag::NATIVE_FILE_SYSTEM_TOKEN:
+        (*external_objects)[i] = IndexedDBExternalObject(
+            std::move(object->get_native_file_system_token()));
+        break;
     }
   }
 }
@@ -237,7 +212,7 @@ void TransactionImpl::Commit(int64_t num_errors_handled) {
   }
 
   indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
-      indexed_db_context_->TaskRunner(), origin_,
+      indexed_db_context_->IDBTaskRunner(), origin_,
       blink::mojom::StorageType::kTemporary,
       base::BindOnce(&TransactionImpl::OnGotUsageAndQuotaForCommit,
                      weak_factory_.GetWeakPtr()));

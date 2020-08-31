@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -112,7 +113,7 @@ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   std::string header = info.GetHeaderValue("host");
   if (header.empty())
     return true;
-  GURL url = GURL("http://" + header);
+  GURL url = GURL("https://" + header);
   return url.HostIsIPAddress() || net::IsLocalHostname(url.host(), nullptr);
 }
 
@@ -131,7 +132,7 @@ class ServerWrapper : net::HttpServer::Delegate {
 
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
-  void SendOverWebSocket(int connection_id, const std::string& message);
+  void SendOverWebSocket(int connection_id, std::string message);
   void SendResponse(int connection_id,
                     const net::HttpServerResponseInfo& response);
   void Send200(int connection_id,
@@ -180,9 +181,8 @@ void ServerWrapper::AcceptWebSocket(int connection_id,
                            kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
-void ServerWrapper::SendOverWebSocket(int connection_id,
-                                      const std::string& message) {
-  server_->SendOverWebSocket(connection_id, message,
+void ServerWrapper::SendOverWebSocket(int connection_id, std::string message) {
+  server_->SendOverWebSocket(connection_id, std::move(message),
                              kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
@@ -224,10 +224,9 @@ void TerminateOnUI(std::unique_ptr<base::Thread> thread,
   if (socket_factory)
     thread->task_runner()->DeleteSoon(FROM_HERE, std::move(socket_factory));
   if (thread) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::BEST_EFFORT},
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
         BindOnce([](std::unique_ptr<base::Thread>) {}, std::move(thread)));
   }
 }
@@ -336,10 +335,11 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
 
-    std::string message =
-        "{ \"method\": \"Inspector.detached\", "
-        "\"params\": { \"reason\": \"target_closed\"} }";
-    DispatchProtocolMessage(agent_host, message);
+    constexpr char kMsg[] =
+        "{\"method\":\"Inspector.detached\","
+        "\"params\":{\"reason\":\"target_closed\"}}";
+    DispatchProtocolMessage(
+        agent_host, base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
 
     agent_host_ = nullptr;
     task_runner_->PostTask(
@@ -349,16 +349,17 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
+                               base::span<const uint8_t> message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&ServerWrapper::SendOverWebSocket,
-                                          base::Unretained(server_wrapper_),
-                                          connection_id_, message));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ServerWrapper::SendOverWebSocket,
+                       base::Unretained(server_wrapper_), connection_id_,
+                       std::string(message.begin(), message.end())));
   }
 
-  void OnMessage(const std::string& message) {
+  void OnMessage(base::span<const uint8_t> message) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (agent_host_)
       agent_host_->DispatchProtocolMessage(this, message);
@@ -507,7 +508,7 @@ std::string DevToolsHttpHandler::GetFrontendURLInternal(
     bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
                      type == DevToolsAgentHost::kTypeSharedWorker;
     frontend_url = base::StringPrintf(
-        "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/%s.html",
+        "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/%s.html",
         GetWebKitRevision().c_str(), is_worker ? "worker_app" : "inspector");
   }
   return base::StringPrintf("%s?ws=%s%s%s", frontend_url.c_str(), host.c_str(),
@@ -711,8 +712,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
             thread_->task_runner(),
-            base::Bind(&DevToolsSocketFactory::CreateForTethering,
-                       base::Unretained(socket_factory_.get())));
+            base::BindRepeating(&DevToolsSocketFactory::CreateForTethering,
+                                base::Unretained(socket_factory_.get())));
     connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
         thread_->task_runner(), server_wrapper_.get(), connection_id,
         browser_agent));
@@ -740,12 +741,12 @@ void DevToolsHttpHandler::OnWebSocketRequest(
   AcceptWebSocket(connection_id, request);
 }
 
-void DevToolsHttpHandler::OnWebSocketMessage(
-    int connection_id,
-    const std::string& data) {
+void DevToolsHttpHandler::OnWebSocketMessage(int connection_id,
+                                             std::string data) {
   auto it = connection_to_client_.find(connection_id);
-  if (it != connection_to_client_.end())
-    it->second->OnMessage(data);
+  if (it != connection_to_client_.end()) {
+    it->second->OnMessage(base::as_bytes(base::make_span(data)));
+  }
 }
 
 void DevToolsHttpHandler::OnClose(int connection_id) {

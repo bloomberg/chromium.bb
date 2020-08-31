@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "content/browser/service_worker/service_worker_version.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -26,9 +27,19 @@ namespace content {
 
 namespace service_worker_loader_helpers {
 
-// Creates net::HttpResponseInfo from |response_head|. If |response_head| is
-// invalid as a service worker script (e.g. bad mime type), returns nullptr and
-// sets error code and a message.
+// Check if |response_head| is a valid response for a service worker script
+// (e.g. bad mime type). Status codes and error message will be set when the
+// response is invalid.
+bool CheckResponseHead(
+    const network::mojom::URLResponseHead& response_head,
+    blink::ServiceWorkerStatusCode* out_service_worker_status,
+    network::URLLoaderCompletionStatus* out_completion_status,
+    std::string* out_error_message);
+
+// Creates net::HttpResponseInfo from |response_head|. Returns nullptr when the
+// response is invalid.
+// TODO(crbug.com/1060076): Remove this once HttpResponseInfo dependencies are
+// gone.
 std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
     const network::mojom::URLResponseHead& response_head,
     blink::ServiceWorkerStatusCode* out_service_worker_status,
@@ -44,6 +55,14 @@ bool ShouldValidateBrowserCacheForScript(
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
     base::TimeDelta time_since_last_check);
+
+#if DCHECK_IS_ON()
+// Checks the consistency between the status of the service worker version and
+// the script resource destination to be fetched by the loaders.
+void CheckVersionStatusBeforeWorkerScriptLoad(
+    ServiceWorkerVersion::Status status,
+    network::mojom::RequestDestination resource_destination);
+#endif  // DCHECK_IS_ON()
 
 }  // namespace service_worker_loader_helpers
 

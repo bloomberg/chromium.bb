@@ -4,10 +4,13 @@
 
 #include "ui/views/controls/button/menu_button_controller.h"
 
+#include <utility>
+
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
@@ -89,12 +92,22 @@ MenuButtonController::MenuButtonController(
 MenuButtonController::~MenuButtonController() = default;
 
 bool MenuButtonController::OnMousePressed(const ui::MouseEvent& event) {
+  // Sets true if the amount of time since the last |menu_closed_time_| is
+  // large enough for the current event to be considered an intentionally
+  // different event.
+  is_intentional_menu_trigger_ =
+      (TimeTicks::Now() - menu_closed_time_) >= kMinimumTimeBetweenButtonClicks;
+
   if (button()->request_focus_on_press())
     button()->RequestFocus();
   if (button()->state() != Button::STATE_DISABLED &&
       button()->HitTestPoint(event.location()) && IsTriggerableEvent(event)) {
     return Activate(&event);
   }
+
+  // If this is an unintentional trigger do not display the inkdrop.
+  if (!is_intentional_menu_trigger_)
+    button()->AnimateInkDrop(InkDropState::HIDDEN, &event);
   return true;
 }
 
@@ -184,7 +197,7 @@ void MenuButtonController::OnStateChanged(LabelButton::ButtonState old_state) {
 
 bool MenuButtonController::IsTriggerableEvent(const ui::Event& event) {
   return ButtonController::IsTriggerableEvent(event) &&
-         IsTriggerableEventType(event) && IsIntentionalMenuTrigger();
+         IsTriggerableEventType(event) && is_intentional_menu_trigger_;
 }
 
 void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
@@ -288,11 +301,6 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
     return event.type() == active_on;
   }
   return event.type() == ui::ET_GESTURE_TAP;
-}
-
-bool MenuButtonController::IsIntentionalMenuTrigger() const {
-  return (TimeTicks::Now() - menu_closed_time_) >=
-         kMinimumTimeBetweenButtonClicks;
 }
 
 void MenuButtonController::IncrementPressedLocked(

@@ -171,6 +171,7 @@ WebPreferences::WebPreferences()
       accelerated_video_decode_enabled(false),
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
       user_gesture_required_for_presentation(true),
+      text_tracks_enabled(false),
       text_track_margin_percentage(0.0f),
       immersive_mode_enabled(false),
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
@@ -201,7 +202,6 @@ WebPreferences::WebPreferences()
       spellcheck_enabled_by_default(true),
       video_fullscreen_orientation_lock_enabled(false),
       video_rotate_to_fullscreen_enabled(false),
-      video_fullscreen_detection_enabled(false),
       embedded_media_experience_enabled(false),
       css_hex_alpha_color_enabled(true),
       scroll_top_left_interop_enabled(true),
@@ -224,12 +224,14 @@ WebPreferences::WebPreferences()
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
+      preferred_color_scheme(blink::PreferredColorScheme::kNoPreference),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       picture_in_picture_enabled(true),
       translate_service_available(false),
       network_quality_estimator_web_holdback(
           net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      allow_mixed_content_upgrades(true) {
+      allow_mixed_content_upgrades(true),
+      always_show_focus(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.feed.library.common.concurrent;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;
@@ -111,11 +112,12 @@ public class TaskQueue implements Dumpable {
      * starvation checks are not running.
      */
     @GuardedBy("mLock")
-    /*@Nullable*/
+    @Nullable
     private CancelableTask mStarvationCheckTask;
 
     // Tracks the current task running on the executor
-    /*@Nullable*/ private TaskWrapper mCurrentTask;
+    @Nullable
+    private TaskWrapper mCurrentTask;
 
     /** Track the time the last task finished. Used for Starvation checks. */
     private final AtomicLong mLastTaskFinished = new AtomicLong();
@@ -208,7 +210,7 @@ public class TaskQueue implements Dumpable {
 
     /** Execute a task providing a timeout task. */
     public void execute(@Task int task, @TaskType int taskType, Runnable runnable,
-            /*@Nullable*/ Runnable timeOutRunnable, long timeoutMillis) {
+            @Nullable Runnable timeOutRunnable, long timeoutMillis) {
         countTask(taskType);
         TaskWrapper taskWrapper = getTaskWrapper(task, taskType, runnable);
         if (timeOutRunnable != null) {
@@ -529,7 +531,8 @@ public class TaskQueue implements Dumpable {
     private final class TimeoutTaskWrapper extends TaskWrapper {
         private final AtomicBoolean mStarted = new AtomicBoolean(false);
         private final Runnable mTimeoutRunnable;
-        /*@Nullable*/ private CancelableTask mTimeoutTask;
+        @Nullable
+        private CancelableTask mTimeoutTask;
 
         TimeoutTaskWrapper(@Task int task, @TaskType int taskType, Runnable taskRunnable,
                 Runnable timeoutRunnable) {

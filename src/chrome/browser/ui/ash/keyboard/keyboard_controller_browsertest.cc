@@ -17,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -210,7 +211,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
 IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
                        CanDragFloatingKeyboardWithMouse) {
   ChromeKeyboardControllerClient::Get()->SetContainerType(
-      keyboard::ContainerType::kFloating, base::nullopt, base::DoNothing());
+      keyboard::ContainerType::kFloating, gfx::Rect(0, 0, 400, 200),
+      base::DoNothing());
 
   auto* controller = keyboard::KeyboardUIController::Get();
   controller->ShowKeyboard(false);
@@ -244,29 +246,91 @@ class KeyboardControllerAppWindowTest
     command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }
 
+  scoped_refptr<const extensions::Extension> CreateDummyExtension() {
+    auto extension =
+        extensions::ExtensionBuilder()
+            .SetManifest(
+                extensions::DictionaryBuilder()
+                    .Set("name", "test extension")
+                    .Set("version", "1")
+                    .Set("manifest_version", 2)
+                    .Set("background",
+                         extensions::DictionaryBuilder()
+                             .Set("scripts", extensions::ListBuilder()
+                                                 .Append("background.js")
+                                                 .Build())
+                             .Build())
+                    .Build())
+            .Build();
+    extension_service()->AddExtension(extension.get());
+    return extension;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAppWindowTest);
 };
 
+IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
+                       ShowingKeyboardChangesViewport) {
+  auto* client = ChromeKeyboardControllerClient::Get();
+
+  auto extension = CreateDummyExtension();
+  extensions::AppWindow::CreateParams params;
+  params.frame = extensions::AppWindow::FRAME_NONE;
+  params.state = ui::SHOW_STATE_MAXIMIZED;
+  extensions::AppWindow* app_window =
+      CreateAppWindowFromParams(browser()->profile(), extension.get(), params);
+
+  // Wait until the keyboard is shown.
+  KeyboardLoadedWaiter().Wait();
+  client->ShowKeyboard();
+  KeyboardVisibleWaiter(true).Wait();
+
+  const int new_viewport_height = app_window->web_contents()
+                                      ->GetRenderWidgetHostView()
+                                      ->GetVisibleViewportSize()
+                                      .height();
+  const int screen_height = display::Screen::GetScreen()
+                                ->GetPrimaryDisplay()
+                                .GetSizeInPixel()
+                                .height();
+  EXPECT_EQ(new_viewport_height,
+            screen_height - client->GetKeyboardWindow()->bounds().height());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
+                       ShowingStickyKeyboardChangesViewport) {
+  auto extension = CreateDummyExtension();
+  extensions::AppWindow::CreateParams params;
+  params.frame = extensions::AppWindow::FRAME_NONE;
+  params.state = ui::SHOW_STATE_MAXIMIZED;
+  extensions::AppWindow* app_window =
+      CreateAppWindowFromParams(browser()->profile(), extension.get(), params);
+
+  // Wait until the keyboard is shown.
+  KeyboardLoadedWaiter().Wait();
+  keyboard::KeyboardUIController::Get()->ShowKeyboard(/*locked*/ true);
+  KeyboardVisibleWaiter(true).Wait();
+
+  const int new_viewport_height = app_window->web_contents()
+                                      ->GetRenderWidgetHostView()
+                                      ->GetVisibleViewportSize()
+                                      .height();
+  const int screen_height = display::Screen::GetScreen()
+                                ->GetPrimaryDisplay()
+                                .GetSizeInPixel()
+                                .height();
+  EXPECT_EQ(new_viewport_height,
+            screen_height - ChromeKeyboardControllerClient::Get()
+                                ->GetKeyboardWindow()
+                                ->bounds()
+                                .height());
+}
+
 // Tests that ime window won't overscroll. See crbug.com/529880.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerAppWindowTest,
                        DisableOverscrollForImeWindow) {
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
-                           .Set("name", "test extension")
-                           .Set("version", "1")
-                           .Set("manifest_version", 2)
-                           .Set("background",
-                                extensions::DictionaryBuilder()
-                                    .Set("scripts", extensions::ListBuilder()
-                                                        .Append("background.js")
-                                                        .Build())
-                                    .Build())
-                           .Build())
-          .Build();
-
-  extension_service()->AddExtension(extension.get());
+  auto extension = CreateDummyExtension();
   extensions::AppWindow::CreateParams non_ime_params;
   non_ime_params.frame = extensions::AppWindow::FRAME_NONE;
   extensions::AppWindow* non_ime_app_window = CreateAppWindowFromParams(

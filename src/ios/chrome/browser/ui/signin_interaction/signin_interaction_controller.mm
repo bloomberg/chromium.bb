@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -31,21 +31,23 @@
 @interface SigninInteractionController ()<
     ChromeIdentityInteractionManagerDelegate,
     ChromeSigninViewControllerDelegate> {
-  Browser* browser_;
-  signin_metrics::AccessPoint accessPoint_;
-  signin_metrics::PromoAction promoAction_;
-  BOOL isCancelling_;
-  BOOL isDismissing_;
-  BOOL interactionManagerDismissalIgnored_;
-  SigninInteractionControllerCompletionCallback completionCallback_;
-  ChromeSigninViewController* signinViewController_;
-  ChromeIdentityInteractionManager* identityInteractionManager_;
-  ChromeIdentity* signInIdentity_;
-  BOOL identityAdded_;
+  Browser* _browser;
+  signin_metrics::AccessPoint _accessPoint;
+  signin_metrics::PromoAction _promoAction;
+  BOOL _isCancelling;
+  BOOL _isDismissing;
+  BOOL _interactionManagerDismissalIgnored;
+  SigninInteractionControllerCompletionCallback _completionCallback;
+  ChromeSigninViewController* _signinViewController;
+  ChromeIdentityInteractionManager* _identityInteractionManager;
+  ChromeIdentity* _signInIdentity;
+  BOOL _identityAdded;
 }
 
 // The dispatcher for this class.
-@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak, readonly)
+    id<ApplicationCommands, BrowsingDataCommands>
+        dispatcher;
 
 // The object responsible for presenting the UI.
 @property(nonatomic, weak, readonly) id<SigninInteractionPresenting> presenter;
@@ -54,23 +56,24 @@
 
 @implementation SigninInteractionController
 
-@synthesize dispatcher = dispatcher_;
-@synthesize presenter = presenter_;
+@synthesize dispatcher = _dispatcher;
+@synthesize presenter = _presenter;
 
 - (instancetype)initWithBrowser:(Browser*)browser
            presentationProvider:(id<SigninInteractionPresenting>)presenter
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   self = [super init];
   if (self) {
     DCHECK(browser);
     DCHECK(presenter);
-    browser_ = browser;
-    presenter_ = presenter;
-    accessPoint_ = accessPoint;
-    promoAction_ = promoAction;
-    dispatcher_ = dispatcher;
+    _browser = browser;
+    _presenter = presenter;
+    _accessPoint = accessPoint;
+    _promoAction = promoAction;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -85,32 +88,32 @@
   // owner frees this object during the execution of the completion block.
   SigninInteractionController* strongSelf = self;
 #pragma clang diagnostic pop
-  isCancelling_ = YES;
+  _isCancelling = YES;
   [self.presenter dismissError];
-  [identityInteractionManager_ cancelAndDismissAnimated:NO];
-  [signinViewController_ cancel];
-  isCancelling_ = NO;
+  [_identityInteractionManager cancelAndDismissAnimated:NO];
+  [_signinViewController cancel];
+  _isCancelling = NO;
 }
 
 - (void)cancelAndDismiss {
-  isDismissing_ = YES;
+  _isDismissing = YES;
   [self cancel];
-  isDismissing_ = NO;
+  _isDismissing = NO;
 }
 
 - (void)signInWithIdentity:(ChromeIdentity*)identity
                 completion:
                     (SigninInteractionControllerCompletionCallback)completion {
-  signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
-  completionCallback_ = [completion copy];
+  signin_metrics::LogSigninAccessPointStarted(_accessPoint, _promoAction);
+  _completionCallback = [completion copy];
   [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
 }
 
 - (void)reAuthenticateWithCompletion:
     (SigninInteractionControllerCompletionCallback)completion {
-  signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
-  completionCallback_ = [completion copy];
-  ios::ChromeBrowserState* browserState = browser_->GetBrowserState();
+  signin_metrics::LogSigninAccessPointStarted(_accessPoint, _promoAction);
+  _completionCallback = [completion copy];
+  ChromeBrowserState* browserState = _browser->GetBrowserState();
   CoreAccountInfo accountInfo =
       IdentityManagerFactory::GetForBrowserState(browserState)
           ->GetPrimaryAccountInfo();
@@ -131,12 +134,12 @@
   }
   DCHECK(!emailToReauthenticate.empty());
   DCHECK(!idToReauthenticate.empty());
-  identityInteractionManager_ =
+  _identityInteractionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->CreateChromeIdentityInteractionManager(browserState, self);
   __weak SigninInteractionController* weakSelf = self;
-  [identityInteractionManager_
+  [_identityInteractionManager
       reauthenticateUserWithID:base::SysUTF8ToNSString(idToReauthenticate)
                          email:base::SysUTF8ToNSString(emailToReauthenticate)
                     completion:^(ChromeIdentity* identity, NSError* error) {
@@ -146,26 +149,12 @@
                     }];
 }
 
-- (void)addAccountWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion {
-  completionCallback_ = [completion copy];
-  identityInteractionManager_ = ios::GetChromeBrowserProvider()
-                                    ->GetChromeIdentityService()
-                                    ->CreateChromeIdentityInteractionManager(
-                                        browser_->GetBrowserState(), self);
-  __weak SigninInteractionController* weakSelf = self;
-  [identityInteractionManager_
-      addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
-        [weakSelf handleIdentityAdded:identity error:error shouldSignIn:NO];
-      }];
-}
-
 #pragma mark - ChromeIdentityInteractionManager operations
 
 - (void)handleIdentityAdded:(ChromeIdentity*)identity
                       error:(NSError*)error
                shouldSignIn:(BOOL)shouldSignIn {
-  if (!identityInteractionManager_)
+  if (!_identityInteractionManager)
     return;
 
   if (error) {
@@ -197,7 +186,7 @@
   } else if (completion) {
     completion();
   }
-  interactionManagerDismissalIgnored_ = NO;
+  _interactionManagerDismissalIgnored = NO;
 }
 
 #pragma mark - ChromeIdentityInteractionManagerDelegate
@@ -222,7 +211,7 @@
     [self dismissPresentedViewControllersAnimated:animated
                                        completion:completion];
   } else {
-    interactionManagerDismissalIgnored_ = YES;
+    _interactionManagerDismissalIgnored = YES;
     if (completion) {
       completion();
     }
@@ -233,35 +222,35 @@
 
 - (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity
                                identityAdded:(BOOL)identityAdded {
-  signinViewController_ =
-      [[ChromeSigninViewController alloc] initWithBrowser:browser_
-                                              accessPoint:accessPoint_
-                                              promoAction:promoAction_
+  _signinViewController =
+      [[ChromeSigninViewController alloc] initWithBrowser:_browser
+                                              accessPoint:_accessPoint
+                                              promoAction:_promoAction
                                            signInIdentity:signInIdentity
                                                dispatcher:self.dispatcher];
-  signinViewController_.delegate = self;
-  signInIdentity_ = signInIdentity;
-  identityAdded_ = identityAdded;
+  _signinViewController.delegate = self;
+  _signInIdentity = signInIdentity;
+  _identityAdded = identityAdded;
 
-  if (identityInteractionManager_) {
+  if (_identityInteractionManager) {
     // If |identityInteractionManager_| is currently displayed,
     // |signinViewController_| is presented on top of it (instead of on top of
     // |presentingViewController_|), to avoid an awkward transition (dismissing
     // |identityInteractionManager_|, followed by presenting
     // |signinViewController_|).
-    [self.presenter presentTopViewController:signinViewController_
+    [self.presenter presentTopViewController:_signinViewController
                                     animated:YES
                                   completion:nil];
   } else {
-    [self.presenter presentViewController:signinViewController_
+    [self.presenter presentViewController:_signinViewController
                                  animated:YES
                                completion:nil];
   }
 }
 
 - (void)dismissSigninViewControllerWithSigninResult:(SigninResult)signinResult {
-  DCHECK(signinViewController_);
-  if ((isCancelling_ && !isDismissing_) || !self.presenter.isPresenting) {
+  DCHECK(_signinViewController);
+  if ((_isCancelling && !_isDismissing) || !self.presenter.isPresenting) {
     [self runCompletionCallbackWithSigninResult:signinResult];
     return;
   }
@@ -274,28 +263,28 @@
 #pragma mark - ChromeSigninViewControllerDelegate
 
 - (void)willStartSignIn:(ChromeSigninViewController*)controller {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
 }
 
 - (void)willStartAddAccount:(ChromeSigninViewController*)controller {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
 }
 
 - (void)didSkipSignIn:(ChromeSigninViewController*)controller {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
   [self dismissSigninViewControllerWithSigninResult:SigninResultCanceled];
 }
 
 - (void)didSignIn:(ChromeSigninViewController*)controller {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
 }
 
 - (void)didUndoSignIn:(ChromeSigninViewController*)controller
              identity:(ChromeIdentity*)identity {
-  DCHECK_EQ(controller, signinViewController_);
-  if ([signInIdentity_ isEqual:identity]) {
-    signInIdentity_ = nil;
-    if (identityAdded_) {
+  DCHECK_EQ(controller, _signinViewController);
+  if ([_signInIdentity isEqual:identity]) {
+    _signInIdentity = nil;
+    if (_identityAdded) {
       // This is best effort. If the operation fails, the account will be left
       // on the device. The user will not be warned either as this call is
       // asynchronous (but undo is not), the application might be in an unknown
@@ -309,13 +298,13 @@
 }
 
 - (void)didFailSignIn:(ChromeSigninViewController*)controller {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
   [self dismissSigninViewControllerWithSigninResult:SigninResultCanceled];
 }
 
 - (void)didAcceptSignIn:(ChromeSigninViewController*)controller
     showAccountsSettings:(BOOL)showAccountsSettings {
-  DCHECK_EQ(controller, signinViewController_);
+  DCHECK_EQ(controller, _signinViewController);
   SigninResult signinResult = showAccountsSettings
                                   ? SigninResultSignedInnAndOpennSettings
                                   : SigninResultSuccess;
@@ -329,18 +318,18 @@
   // is not dismissed when requested (except when canceling). However, in case
   // of errors, |identityInteractionManager_| needs to be directly dismissed,
   // which is done here.
-  if (interactionManagerDismissalIgnored_) {
+  if (_interactionManagerDismissalIgnored) {
     [self dismissPresentedViewControllersAnimated:YES completion:nil];
   }
 
   // Cleaning up and calling the |completionCallback_| should be done last.
-  identityInteractionManager_ = nil;
-  signinViewController_ = nil;
+  _identityInteractionManager = nil;
+  _signinViewController = nil;
   // Ensure self is not destroyed in the callbacks.
   SigninInteractionController* strongSelf = self;
-  if (completionCallback_) {
-    completionCallback_(signinResult);
-    completionCallback_ = nil;
+  if (_completionCallback) {
+    _completionCallback(signinResult);
+    _completionCallback = nil;
   }
   strongSelf = nil;
 }

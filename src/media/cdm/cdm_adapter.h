@@ -63,7 +63,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
-      const CdmCreatedCB& cdm_created_cb);
+      CdmCreatedCB cdm_created_cb);
 
   // Returns the version of the CDM interface that the created CDM uses. Must
   // only be called after the CDM is successfully initialized.
@@ -97,16 +97,15 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   int GetCdmId() const final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) final;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const DecryptCB& decrypt_cb) final;
+               DecryptCB decrypt_cb) final;
   void CancelDecrypt(StreamType stream_type) final;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                              const DecoderInitCB& init_cb) final;
+                              DecoderInitCB init_cb) final;
   void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                              const DecoderInitCB& init_cb) final;
+                              DecoderInitCB init_cb) final;
   void DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                              const AudioDecodeCB& audio_decode_cb) final;
   void DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
@@ -155,9 +154,6 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                     cdm::Status decoder_status) override;
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
   void RequestStorageId(uint32_t version) override;
-
-  // cdm::Host_11 specific implementation.
-  cdm::CdmProxy* RequestCdmProxy(cdm::CdmProxyClient* client) override;
 
  private:
   CdmAdapter(const std::string& key_system,
@@ -259,8 +255,6 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // Tracks CDM file IO related states.
   int last_read_file_size_kb_ = 0;
   bool file_size_uma_reported_ = false;
-
-  bool cdm_proxy_created_ = false;
 
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;

@@ -5,46 +5,48 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
 <dom-module id="security-token-pin">
-  <link rel="stylesheet" href="oobe_dialog_host.css">
-  <link rel="stylesheet" href="oobe_flex_layout.css">
-  <link rel="stylesheet" href="security_token_pin.css">
-
   <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="security_token_pin.css">
 
     <oobe-dialog class="gaia-dialog" has-buttons role="dialog"
-        aria-labelledby="title" aria-describedby="description">
+        title-key="securityTokenPinDialogTitle" id="dialog"
+        aria-label$="[[i18nDynamic(locale, 'securityTokenPinDialogTitle')]]"
+        aria-describedby="description">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:lock"
           icon2x="oobe-64:lock">
       </hd-iron-icon>
-      <h1 slot="title" id="title">
-        [[i18nDynamic(locale, 'securityTokenPinDialogTitle')]]
-      </h1>
       <div slot="subtitle" id="subtitle">
-        <span id="description">
+        <span id="description" hidden="[[processingCompletion_]]">
           [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
         </span>
       </div>
+      <paper-progress slot="progress" id="progress"
+          hidden="[[!processingCompletion_]]"
+          indeterminate="[[processingCompletion_]]">
+      </paper-progress>
       <div slot="footer">
-        <div id="pinKeyboardContainer">
+        <div id="pinKeyboardContainer" hidden="[[processingCompletion_]]">
           <pin-keyboard id="pinKeyboard" enable-letters
               has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
-              aria-invalid$="[[isAriaInvalid_(parameters, userEdited_)]]"
+              aria-label="[[getLabel_(locale, parameters, errorLabelId_,
+                                      userEdited_)]]"
               on-pin-change="onPinChange_" on-submit="onSubmit_"
-              disabled="[[!canSubmit_]]">
+              disabled="[[!canEdit_]]">
             <div id="errorContainer" role="alert" problem
-                hidden$="[[!isLabelVisible_(parameters, userEdited_)]]">
+                invisible$="[[!isLabelVisible_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
-              [[getLabel_(locale, parameters, errorLabelId_, userEdited_)]]
+              <span id="error">[[getLabel_(locale, parameters, errorLabelId_,
+                                           userEdited_)]]</span>
             </div>
           </pin-keyboard>
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button on-tap="onBackClicked_"></oobe-back-button>
-        <oobe-next-button on-tap="onSubmit_"
+        <oobe-back-button id="back" on-tap="onBackClicked_"></oobe-back-button>
+        <oobe-next-button id="submit" on-tap="onSubmit_"
             disabled="[[!canSubmit_]]"></oobe-next-button>
       </div>
     </oobe-dialog>
-
   </template>
 </dom-module>

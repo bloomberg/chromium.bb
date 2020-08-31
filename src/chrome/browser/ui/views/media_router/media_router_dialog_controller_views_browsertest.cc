@@ -4,12 +4,14 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/views/widget/widget.h"
@@ -45,7 +47,7 @@ void MediaRouterDialogControllerViewsTest::OpenMediaRouterDialog() {
   ASSERT_TRUE(dialog_controller_);
 
   // Show the media router dialog for the initiator.
-  dialog_controller_->ShowMediaRouterDialog();
+  dialog_controller_->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   ASSERT_TRUE(dialog_controller_->IsShowingMediaRouterDialog());
 }
 

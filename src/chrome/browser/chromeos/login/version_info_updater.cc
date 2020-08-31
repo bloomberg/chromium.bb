@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -62,17 +63,16 @@ VersionInfoUpdater::~VersionInfoUpdater() {
     policy_manager->core()->store()->RemoveObserver(this);
 }
 
-void VersionInfoUpdater::StartUpdate(bool is_official_build) {
+void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
-        base::Bind(&version_loader::GetVersion,
-                   is_official_build ? version_loader::VERSION_SHORT_WITH_DATE
-                                     : version_loader::VERSION_FULL),
-        base::Bind(&VersionInfoUpdater::OnVersion,
-                   weak_pointer_factory_.GetWeakPtr()));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&version_loader::GetVersion,
+                       is_chrome_branded
+                           ? version_loader::VERSION_SHORT_WITH_DATE
+                           : version_loader::VERSION_FULL),
+        base::BindOnce(&VersionInfoUpdater::OnVersion,
+                       weak_pointer_factory_.GetWeakPtr()));
   } else {
     OnVersion("linux-chromeos");
   }
@@ -98,7 +98,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   }
 
   // Update device bluetooth info.
-  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
 
   // Get ADB sideloading status if supported on device. Otherwise, default is to
@@ -107,8 +107,9 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
       chromeos::features::kArcAdbSideloadingFeature)) {
     chromeos::SessionManagerClient* client =
         chromeos::SessionManagerClient::Get();
-    client->QueryAdbSideload(base::Bind(&VersionInfoUpdater::OnQueryAdbSideload,
-                                        weak_pointer_factory_.GetWeakPtr()));
+    client->QueryAdbSideload(
+        base::BindOnce(&VersionInfoUpdater::OnQueryAdbSideload,
+                       weak_pointer_factory_.GetWeakPtr()));
   }
 }
 
@@ -206,12 +207,8 @@ void VersionInfoUpdater::OnQueryAdbSideload(
       break;
   }
 
-  // M80: Never show login screen warning. The entry to turn on the feature is
-  // disabled, but there are some expected errors that triggers the warning
-  // message (since we conservatively show the security warning if something goes
-  // wrong).
-  //if (delegate_)
-  //  delegate_->OnAdbSideloadStatusUpdated(enabled);
+  if (delegate_)
+    delegate_->OnAdbSideloadStatusUpdated(enabled);
 }
 
 }  // namespace chromeos

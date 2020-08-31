@@ -33,8 +33,6 @@ const CAPTURE_DURATION_MS = 1000;
 Polymer({
   is: 'cr-camera',
 
-  behaviors: [CrPngBehavior],
-
   properties: {
     /** Strings provided by host */
     takePhotoLabel: String,
@@ -76,7 +74,7 @@ Polymer({
   cameraCaptureInProgress_: false,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.$.userImageStreamCrop.classList.add('preview');
       this.cameraOnline_ = true;
@@ -86,12 +84,12 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.stopCamera();
   },
 
   /** Only focuses the button if it's not disabled. */
-  focusTakePhotoButton: function() {
+  focusTakePhotoButton() {
     if (this.cameraOnline_) {
       this.$.takePhoto.focus();
     }
@@ -102,7 +100,7 @@ Polymer({
    * will be fired as soon as captured photo is available, with the
    * 'photoDataURL' property containing the photo encoded as a data URL.
    */
-  takePhoto: function() {
+  takePhoto() {
     if (!this.cameraOnline_ || this.cameraCaptureInProgress_) {
       return;
     }
@@ -145,7 +143,7 @@ Polymer({
   },
 
   /** Tries to start the camera stream capture. */
-  startCamera: function() {
+  startCamera() {
     this.stopCamera();
     this.cameraStartInProgress_ = true;
 
@@ -168,13 +166,14 @@ Polymer({
       facingMode: 'user',
       width: {ideal: CAPTURE_SIZE.width},
       height: {ideal: CAPTURE_SIZE.height},
+      resizeMode: 'none',
     };
     navigator.webkitGetUserMedia(
         {video: videoConstraints}, successCallback, errorCallback);
   },
 
   /** Stops the camera stream capture if it's currently active. */
-  stopCamera: function() {
+  stopCamera() {
     this.$.userImageStreamCrop.classList.remove('preview');
     this.cameraOnline_ = false;
     this.$.cameraVideo.srcObject = null;
@@ -191,7 +190,7 @@ Polymer({
    * @param {!MediaStream} stream
    * @private
    */
-  stopVideoTracks_: function(stream) {
+  stopVideoTracks_(stream) {
     const tracks = stream.getVideoTracks();
     for (let i = 0; i < tracks.length; i++) {
       tracks[i].stop();
@@ -202,7 +201,7 @@ Polymer({
    * Switch between photo and video mode.
    * @private
    */
-  onTapSwitchMode_: function() {
+  onTapSwitchMode_() {
     this.videomode = !this.videomode;
     this.fire('switch-mode', this.videomode);
   },
@@ -213,7 +212,7 @@ Polymer({
    * @return {!HTMLCanvasElement} The allocated canvas.
    * @private
    */
-  allocateFrame_: function(size) {
+  allocateFrame_(size) {
     const canvas =
         /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
     canvas.width = size.width;
@@ -234,7 +233,7 @@ Polymer({
    * @return {!HTMLCanvasElement} The canvas frame was saved in.
    * @private
    */
-  captureFrame_: function(video, canvas) {
+  captureFrame_(video, canvas) {
     const ctx =
         /** @type {!CanvasRenderingContext2D} */ (
             canvas.getContext('2d', {alpha: false}));
@@ -268,14 +267,14 @@ Polymer({
    * @return {!string} The data URL for image.
    * @private
    */
-  convertFramesToPng_: function(frames) {
+  convertFramesToPng_(frames) {
     /** Encode captured frames. */
     const encodedImages = frames.map(function(frame) {
       return frame.toDataURL('image/png');
     });
 
     /** No need for further processing if single frame. */
-    if (encodedImages.length == 1) {
+    if (encodedImages.length === 1) {
       return encodedImages[0];
     }
 
@@ -284,15 +283,14 @@ Polymer({
         encodedImages.concat(encodedImages.slice(1, -1).reverse());
 
     /** Convert image sequence to animated PNG. */
-    return CrPngBehavior.convertImageSequenceToPng(
-        forwardBackwardImageSequence);
+    return cr.png.convertImageSequenceToPng(forwardBackwardImageSequence);
   },
 
   /**
    * @return {string}
    * @private
    */
-  getTakePhotoIcon_: function() {
+  getTakePhotoIcon_() {
     return this.videomode ? 'cr-picture:videocam-shutter-icon' :
                             'cr-picture:camera-shutter-icon';
   },
@@ -302,7 +300,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTakePhotoLabel_: function(videomode, photoLabel, videoLabel) {
+  getTakePhotoLabel_(videomode, photoLabel, videoLabel) {
     return videomode ? videoLabel : photoLabel;
   },
 
@@ -310,7 +308,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSwitchModeIcon_: function() {
+  getSwitchModeIcon_() {
     return this.videomode ? 'cr-picture:camera-alt-icon' :
                             'cr-picture:videocam-icon';
   },
@@ -320,7 +318,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSwitchModeLabel_: function(videomode, cameraLabel, videoLabel) {
+  getSwitchModeLabel_(videomode, cameraLabel, videoLabel) {
     return videomode ? cameraLabel : videoLabel;
   },
 });

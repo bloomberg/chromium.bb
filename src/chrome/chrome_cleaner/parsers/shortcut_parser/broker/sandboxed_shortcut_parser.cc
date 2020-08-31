@@ -14,11 +14,11 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/parsers/parser_utils/parse_tasks_remaining_counter.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
 
@@ -33,11 +33,11 @@ void SandboxedShortcutParser::ParseShortcut(
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](mojo::Remote<mojom::Parser>* parser, mojo::ScopedHandle handle,
+          [](mojo::Remote<mojom::Parser>* parser, mojo::PlatformHandle handle,
              mojom::Parser::ParseShortcutCallback callback) {
             (*parser)->ParseShortcut(std::move(handle), std::move(callback));
           },
-          parser_, mojo::WrapPlatformFile(shortcut_handle.Take()),
+          parser_, mojo::PlatformHandle(std::move(shortcut_handle)),
           std::move(callback)));
 }
 
@@ -45,9 +45,8 @@ void SandboxedShortcutParser::FindAndParseChromeShortcutsInFoldersAsync(
     const std::vector<base::FilePath>& folders,
     const FilePathSet& chrome_exe_locations,
     ShortcutsParsingDoneCallback callback) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives()},
       base::BindOnce(
           &SandboxedShortcutParser::FindAndParseChromeShortcutsInFolders,
           base::Unretained(this), folders, chrome_exe_locations,

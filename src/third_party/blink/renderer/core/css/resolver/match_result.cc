@@ -43,9 +43,7 @@ MatchedProperties::MatchedProperties() {
   memset(&types_, 0, sizeof(types_));
 }
 
-MatchedProperties::~MatchedProperties() = default;
-
-void MatchedProperties::Trace(blink::Visitor* visitor) {
+void MatchedProperties::Trace(Visitor* visitor) {
   visitor->Trace(properties);
 }
 
@@ -60,17 +58,17 @@ void MatchResult::AddMatchedProperties(
   new_properties.types_.valid_property_filter =
       static_cast<std::underlying_type_t<ValidPropertyFilter>>(
           valid_property_filter);
-  // TODO(andruud): MatchedProperties are stored here in reverse order.
-  // Reevaluate this when cascade has shipped.
-  new_properties.types_.tree_order =
-      std::numeric_limits<uint16_t>::max() - current_tree_order_;
+  new_properties.types_.origin = current_origin_;
+  new_properties.types_.tree_order = current_tree_order_;
 }
 
 void MatchResult::FinishAddingUARules() {
+  current_origin_ = CascadeOrigin::kUser;
   ua_range_end_ = matched_properties_.size();
 }
 
 void MatchResult::FinishAddingUserRules() {
+  current_origin_ = CascadeOrigin::kAuthor;
   // Don't add empty ranges.
   if (user_range_ends_.IsEmpty() &&
       ua_range_end_ == matched_properties_.size())
@@ -95,6 +93,25 @@ void MatchResult::FinishAddingAuthorRulesForTreeScope() {
     return;
   author_range_ends_.push_back(matched_properties_.size());
   current_tree_order_ = clampTo<uint16_t>(author_range_ends_.size());
+}
+
+MatchedExpansionsRange MatchResult::Expansions(const Document& document,
+                                               CascadeFilter filter) const {
+  return MatchedExpansionsRange(
+      MatchedExpansionsIterator(matched_properties_.begin(), document, filter,
+                                0),
+      MatchedExpansionsIterator(matched_properties_.end(), document, filter,
+                                matched_properties_.size()));
+}
+
+void MatchResult::Reset() {
+  matched_properties_.clear();
+  user_range_ends_.clear();
+  author_range_ends_.clear();
+  ua_range_end_ = 0;
+  is_cacheable_ = true;
+  current_origin_ = CascadeOrigin::kUserAgent;
+  current_tree_order_ = 0;
 }
 
 }  // namespace blink

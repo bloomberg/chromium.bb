@@ -14,6 +14,7 @@ jumbo_source_set("filters") {
   visibility = [
     "//media",
     "//media/renderers",
+    "//media/webcodecs",
   ]
 
   sources = [
@@ -140,7 +141,7 @@ jumbo_source_set("filters") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (enable_libaom_decoder) {
+  if (enable_libaom) {
     sources += [
       "aom_video_decoder.cc",
       "aom_video_decoder.h",
@@ -154,6 +155,14 @@ jumbo_source_set("filters") {
       "dav1d_video_decoder.h",
     ]
     deps += [ "//third_party/dav1d" ]
+  }
+
+  if (enable_libgav1_decoder) {
+    sources += [
+      "gav1_video_decoder.cc",
+      "gav1_video_decoder.h",
+    ]
+    deps += [ "//third_party/libgav1" ]
   }
 
   if (media_use_ffmpeg) {
@@ -179,6 +188,13 @@ jumbo_source_set("filters") {
         "ffmpeg_video_decoder.h",
       ]
     }
+
+    if (is_android) {
+      sources += [
+        "android/video_frame_extractor.cc",
+        "android/video_frame_extractor.h",
+      ]
+    }
   }
 
   if (is_android) {
@@ -191,8 +207,6 @@ jumbo_source_set("filters") {
     sources += [
       "android/media_codec_audio_decoder.cc",
       "android/media_codec_audio_decoder.h",
-      "android/video_frame_extractor.cc",
-      "android/video_frame_extractor.h",
     ]
     deps += [ "//media/base/android" ]
   }
@@ -215,10 +229,10 @@ jumbo_source_set("filters") {
       "//gpu/ipc/common",
       "//media/fuchsia/cdm",
       "//media/fuchsia/common",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-media",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-mediacodec",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//ui/ozone",
     ]
   }
@@ -323,8 +337,8 @@ source_set("unit_tests") {
     deps += [
       "//components/viz/test:test_support",
       "//gpu/command_buffer/client",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
 
@@ -367,12 +381,16 @@ source_set("unit_tests") {
     sources += [ "vpx_video_decoder_unittest.cc" ]
   }
 
-  if (enable_libaom_decoder) {
+  if (enable_libaom) {
     sources += [ "aom_video_decoder_unittest.cc" ]
   }
 
   if (enable_dav1d_decoder) {
     sources += [ "dav1d_video_decoder_unittest.cc" ]
+  }
+
+  if (enable_libgav1_decoder) {
+    sources += [ "gav1_video_decoder_unittest.cc" ]
   }
 
   if (use_vaapi) {

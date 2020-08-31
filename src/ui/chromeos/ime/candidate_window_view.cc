@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
@@ -144,13 +146,12 @@ class InformationTextArea : public views::View {
   DISALLOW_COPY_AND_ASSIGN(InformationTextArea);
 };
 
-CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
-                                         int window_shell_id)
+CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
     : selected_candidate_index_in_page_(-1),
       should_show_at_composition_head_(false),
       should_show_upper_side_(false),
-      was_candidate_window_open_(false),
-      window_shell_id_(window_shell_id) {
+      was_candidate_window_open_(false) {
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
   set_parent_window(parent);
@@ -395,14 +396,22 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
 
   // Update the cursor indexes in the model.
   candidate_window_.set_cursor_position(cursor_absolute_index);
+  // Set position data.
+  int position_index = candidate_window_.current_candidate_index();
+  int total_candidates = candidate_window_.total_candidates();
+  if (position_index < 0 || total_candidates < 1 ||
+      position_index >= total_candidates) {
+    // Sometimes we don't get valid data from |candidate_window_|. In this case,
+    // make a best guess about the position and total candidates.
+    position_index = index_in_page;
+    total_candidates = candidate_window_.candidates().size();
+  }
+  candidate_views_[index_in_page]->SetPositionData(position_index,
+                                                   total_candidates);
 }
 
 const char* CandidateWindowView::GetClassName() const {
   return "CandidateWindowView";
-}
-
-int CandidateWindowView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void CandidateWindowView::ButtonPressed(views::Button* sender,

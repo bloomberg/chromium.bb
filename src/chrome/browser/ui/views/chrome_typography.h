@@ -34,6 +34,9 @@ enum ChromeTextContext {
   // Text of the page title in the tab hover card.
   CONTEXT_TAB_HOVER_CARD_TITLE,
 
+  // Text of the number of tabs in the webui tab counter.
+  CONTEXT_WEB_UI_TAB_COUNTER,
+
   // Text in the location bar entry, and primary text in the omnibox dropdown.
   CONTEXT_OMNIBOX_PRIMARY,
 
@@ -52,16 +55,17 @@ enum ChromeTextContext {
 };
 
 enum ChromeTextStyle {
+#if defined(OS_CHROMEOS)
+  CHROME_TEXT_STYLE_START = ash::ASH_TEXT_STYLE_END,
+#else
   CHROME_TEXT_STYLE_START = views::style::VIEWS_TEXT_STYLE_END,
+#endif
 
   // Similar to views::style::STYLE_PRIMARY but with a monospaced typeface.
   STYLE_PRIMARY_MONOSPACED = CHROME_TEXT_STYLE_START,
 
   // Similar to views::style::STYLE_SECONDARY but with a monospaced typeface.
   STYLE_SECONDARY_MONOSPACED,
-
-  // "Hint" text, usually a line that gives context to something more important.
-  STYLE_HINT,
 
   // A solid shade of red.
   STYLE_RED,
@@ -84,6 +88,11 @@ enum ChromeTextStyle {
 // |available_height|.
 int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
                                              int desired_font_size);
+
+// Takes a desired font size and returns the size delta to request from
+// ui::ResourceBundle that will result in exactly that font size, canceling
+// out any font size changes made to account for locale or user settings.
+int GetFontSizeDeltaIgnoringUserOrLocaleSettings(int desired_font_size);
 
 // Sets the |size_delta| and |font_weight| for text that should not be affected
 // by the Harmony spec.

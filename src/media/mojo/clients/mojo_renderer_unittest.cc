@@ -175,7 +175,7 @@ class MojoRendererTest : public ::testing::Test {
 
   void OnCdmCreated(mojom::CdmPromiseResultPtr result,
                     int cdm_id,
-                    mojom::DecryptorPtr decryptor) {
+                    mojo::PendingRemote<mojom::Decryptor> decryptor) {
     EXPECT_TRUE(result->success);
     EXPECT_NE(CdmContext::kInvalidCdmId, cdm_id);
     cdm_context_.set_cdm_id(cdm_id);
@@ -183,10 +183,11 @@ class MojoRendererTest : public ::testing::Test {
 
   void CreateCdm() {
     cdm_receiver_.Bind(cdm_remote_.BindNewPipeAndPassReceiver());
-    cdm_remote_->Initialize(
-        kClearKeyKeySystem, url::Origin::Create(GURL("https://www.test.com")),
-        CdmConfig(),
-        base::Bind(&MojoRendererTest::OnCdmCreated, base::Unretained(this)));
+    cdm_remote_->Initialize(kClearKeyKeySystem,
+                            url::Origin::Create(GURL("https://www.test.com")),
+                            CdmConfig(),
+                            base::BindOnce(&MojoRendererTest::OnCdmCreated,
+                                           base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

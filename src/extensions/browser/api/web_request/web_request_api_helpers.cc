@@ -156,7 +156,6 @@ constexpr RequestHeaderEntry kRequestHeaderEntries[] = {
     {"proxy-connection", RequestHeaderType::kProxyConnection},
     {"range", RequestHeaderType::kRange},
     {"referer", RequestHeaderType::kReferer},
-    {"sec-origin-policy", RequestHeaderType::kSecOriginPolicy},
     {"te", RequestHeaderType::kTe},
     {"transfer-encoding", RequestHeaderType::kTransferEncoding},
     {"upgrade", RequestHeaderType::kUpgrade},
@@ -189,7 +188,11 @@ constexpr bool ValidateHeaderEntries(const T& entries) {
 }
 
 // All entries other than kOther and kNone are mapped.
-static_assert(static_cast<size_t>(RequestHeaderType::kMaxValue) - 1 ==
+// sec-origin-policy was removed.
+// So -2 is -1 for the count of the enums, and -1 for the removed
+// sec-origin-policy which does not have a corresponding entry in
+// kRequestHeaderEntries but does contribute to RequestHeaderType::kMaxValue.
+static_assert(static_cast<size_t>(RequestHeaderType::kMaxValue) - 2 ==
                   base::size(kRequestHeaderEntries),
               "Invalid number of request header entries");
 
@@ -329,34 +332,16 @@ static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
 bool HasMatchingRemovedDNRRequestHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : *request.dnr_actions) {
-    if (std::find_if(action.request_headers_to_remove.begin(),
-                     action.request_headers_to_remove.end(),
-                     [&header](const char* header_to_remove) {
-                       return base::EqualsCaseInsensitiveASCII(header_to_remove,
-                                                               header);
-                     }) != action.request_headers_to_remove.end()) {
-      return true;
-    }
-  }
-
+  // TODO(crbug.com/947591): Reimplement this method with
+  // |action.request_headers_to_modify|.
   return false;
 }
 
 bool HasMatchingRemovedDNRResponseHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : *request.dnr_actions) {
-    if (std::find_if(action.response_headers_to_remove.begin(),
-                     action.response_headers_to_remove.end(),
-                     [&header](const char* header_to_remove) {
-                       return base::EqualsCaseInsensitiveASCII(
-                           header, header_to_remove);
-                     }) != action.response_headers_to_remove.end()) {
-      return true;
-    }
-  }
-
+  // TODO(crbug.com/947591): Reimplement this method with
+  // |action.response_headers_to_modify|.
   return false;
 }
 
@@ -522,19 +507,17 @@ ResponseCookieModification ResponseCookieModification::Clone() const {
   return clone;
 }
 
-EventResponseDelta::EventResponseDelta(
-    const std::string& extension_id, const base::Time& extension_install_time)
+EventResponseDelta::EventResponseDelta(const std::string& extension_id,
+                                       const base::Time& extension_install_time)
     : extension_id(extension_id),
       extension_install_time(extension_install_time),
-      cancel(false) {
-}
+      cancel(false) {}
 
 EventResponseDelta::EventResponseDelta(EventResponseDelta&& other) = default;
 EventResponseDelta& EventResponseDelta ::operator=(EventResponseDelta&& other) =
     default;
 
-EventResponseDelta::~EventResponseDelta() {
-}
+EventResponseDelta::~EventResponseDelta() = default;
 
 bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
                                                 const EventResponseDelta& b) {
@@ -1086,8 +1069,8 @@ static ParsedResponseCookies GetResponseCookies(
 
   size_t iter = 0;
   std::string value;
-  while (override_response_headers->EnumerateHeader(&iter, "Set-Cookie",
-                                                    &value)) {
+  while (
+      override_response_headers->EnumerateHeader(&iter, "Set-Cookie", &value)) {
     result.push_back(std::make_unique<net::ParsedCookie>(value));
   }
   return result;
@@ -1100,8 +1083,7 @@ static void StoreResponseCookies(
     scoped_refptr<net::HttpResponseHeaders> override_response_headers) {
   override_response_headers->RemoveHeader("Set-Cookie");
   for (const std::unique_ptr<net::ParsedCookie>& cookie : cookies) {
-    override_response_headers->AddHeader("Set-Cookie: " +
-                                         cookie->ToCookieLine());
+    override_response_headers->AddHeader("Set-Cookie", cookie->ToCookieLine());
   }
 }
 
@@ -1376,8 +1358,7 @@ void MergeOnHeadersReceivedResponses(
           if (added_headers.find(lowercase_header) != added_headers.end())
             continue;
           added_headers.insert(lowercase_header);
-          (*override_response_headers)
-              ->AddHeader(header.first + ": " + header.second);
+          (*override_response_headers)->AddHeader(header.first, header.second);
         }
       }
       *response_headers_modified = true;
@@ -1403,8 +1384,7 @@ void MergeOnHeadersReceivedResponses(
               original_response_headers->raw_headers());
     }
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
-    (*override_response_headers)->RemoveHeader("location");
-    (*override_response_headers)->AddHeader("Location: " + new_url.spec());
+    (*override_response_headers)->SetHeader("Location", new_url.spec());
     // Prevent the original URL's fragment from being added to the new URL.
     *preserve_fragment_on_redirect_url = new_url;
   }
@@ -1502,8 +1482,7 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
   if (base::IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
   } else {
-    header->Set(keys::kHeaderBinaryValueKey,
-                StringToCharList(value));
+    header->Set(keys::kHeaderBinaryValueKey, StringToCharList(value));
   }
   return header;
 }

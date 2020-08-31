@@ -11,6 +11,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/search/omnibox.mojom.h"
 #include "components/search/search.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -37,12 +38,12 @@ bool IsInInstantProcess(content::RenderFrameHost* render_frame) {
 
 class EmbeddedSearchClientFactoryImpl
     : public SearchIPCRouter::EmbeddedSearchClientFactory,
-      public chrome::mojom::EmbeddedSearchConnector {
+      public search::mojom::EmbeddedSearchConnector {
  public:
   // |web_contents| and |binding| must outlive this object.
   EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
-      mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* receiver)
+      mojo::AssociatedReceiver<search::mojom::EmbeddedSearch>* receiver)
       : client_receiver_(receiver), factory_receivers_(web_contents, this) {
     DCHECK(web_contents);
     DCHECK(receiver);
@@ -50,37 +51,37 @@ class EmbeddedSearchClientFactoryImpl
     embedded_search_client_.reset();
   }
 
-  chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
+  search::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
     return embedded_search_client_.is_bound() ? embedded_search_client_.get()
                                               : nullptr;
   }
 
  private:
   void Connect(
-      mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
-      mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client)
+      mojo::PendingAssociatedReceiver<search::mojom::EmbeddedSearch> receiver,
+      mojo::PendingAssociatedRemote<search::mojom::EmbeddedSearchClient> client)
       override;
 
   // An interface used to push updates to the frame that connected to us. Before
   // we've been connected to a frame, messages sent on this interface go into
   // the void.
-  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchClient>
+  mojo::AssociatedRemote<search::mojom::EmbeddedSearchClient>
       embedded_search_client_;
 
   // Used to bind incoming pending receivers to the implementation, which lives
   // in SearchIPCRouter.
-  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* client_receiver_;
+  mojo::AssociatedReceiver<search::mojom::EmbeddedSearch>* client_receiver_;
 
   // Receivers used to listen to connection requests.
-  content::WebContentsFrameReceiverSet<chrome::mojom::EmbeddedSearchConnector>
+  content::WebContentsFrameReceiverSet<search::mojom::EmbeddedSearchConnector>
       factory_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactoryImpl);
 };
 
 void EmbeddedSearchClientFactoryImpl::Connect(
-    mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
-    mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client) {
+    mojo::PendingAssociatedReceiver<search::mojom::EmbeddedSearch> receiver,
+    mojo::PendingAssociatedRemote<search::mojom::EmbeddedSearchClient> client) {
   content::RenderFrameHost* frame = factory_receivers_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
@@ -111,13 +112,26 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
 SearchIPCRouter::~SearchIPCRouter() = default;
 
 void SearchIPCRouter::AutocompleteResultChanged(
-    chrome::mojom::AutocompleteResultPtr result) {
+    search::mojom::AutocompleteResultPtr result) {
   if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_) ||
       !embedded_search_client()) {
     return;
   }
 
   embedded_search_client()->AutocompleteResultChanged(std::move(result));
+}
+
+void SearchIPCRouter::AutocompleteMatchImageAvailable(
+    uint32_t match_index,
+    const std::string& image_url,
+    const std::string& data_url) {
+  if (!policy_->ShouldProcessAutocompleteMatchImageAvailable(is_active_tab_) ||
+      !embedded_search_client()) {
+    return;
+  }
+
+  embedded_search_client()->AutocompleteMatchImageAvailable(
+      match_index, image_url, data_url);
 }
 
 void SearchIPCRouter::OnNavigationEntryCommitted() {
@@ -479,12 +493,32 @@ void SearchIPCRouter::StopAutocomplete(bool clear_result) {
   delegate_->StopAutocomplete(clear_result);
 }
 
+void SearchIPCRouter::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  if (!policy_->ShouldProcessLogCharTypedToRepaintLatency()) {
+    return;
+  }
+
+  delegate_->LogCharTypedToRepaintLatency(latency_ms);
+}
+
 void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   if (!policy_->ShouldProcessBlocklistPromo()) {
     return;
   }
 
   delegate_->BlocklistPromo(promo_id);
+}
+
+void SearchIPCRouter::OpenExtensionsPage(double button,
+                                         bool alt_key,
+                                         bool ctrl_key,
+                                         bool meta_key,
+                                         bool shift_key) {
+  if (!policy_->ShouldProcessOpenExtensionsPage()) {
+    return;
+  }
+
+  delegate_->OpenExtensionsPage(button, alt_key, ctrl_key, meta_key, shift_key);
 }
 
 void SearchIPCRouter::OpenAutocompleteMatch(
@@ -512,6 +546,15 @@ void SearchIPCRouter::DeleteAutocompleteMatch(uint8_t line) {
   }
 
   delegate_->DeleteAutocompleteMatch(line);
+}
+
+void SearchIPCRouter::ToggleSuggestionGroupIdVisibility(
+    int32_t suggestion_group_id) {
+  if (!policy_->ShouldProcessToggleSuggestionGroupIdVisibility()) {
+    return;
+  }
+
+  delegate_->ToggleSuggestionGroupIdVisibility(suggestion_group_id);
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {

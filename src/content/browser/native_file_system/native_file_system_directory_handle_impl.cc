@@ -173,9 +173,14 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
         pending_listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto listener = std::make_unique<
-      mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>>(
-      std::move(pending_listener));
+  std::unique_ptr<
+      mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>,
+      base::OnTaskRunnerDeleter>
+      listener(
+          new mojo::Remote<
+              blink::mojom::NativeFileSystemDirectoryEntriesListener>(
+              std::move(pending_listener)),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
   listener->reset_on_disconnect();
 
   DoFileSystemOperation(
@@ -208,6 +213,78 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
             NativeFileSystemStatus::kPermissionDenied));
       }),
       std::move(callback));
+}
+void NativeFileSystemDirectoryHandleImpl::Resolve(
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+        possible_child,
+    ResolveCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  manager()->ResolveTransferToken(
+      std::move(possible_child),
+      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::ResolveImpl,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void NativeFileSystemDirectoryHandleImpl::ResolveImpl(
+    ResolveCallback callback,
+    NativeFileSystemTransferTokenImpl* possible_child) {
+  if (!possible_child) {
+    std::move(callback).Run(
+        native_file_system_error::FromStatus(
+            blink::mojom::NativeFileSystemStatus::kOperationFailed),
+        base::nullopt);
+    return;
+  }
+
+  const storage::FileSystemURL& parent_url = url();
+  const storage::FileSystemURL& child_url = possible_child->url();
+
+  // If two URLs are of a different type they are definitely not related.
+  if (parent_url.type() != child_url.type()) {
+    std::move(callback).Run(native_file_system_error::Ok(), base::nullopt);
+    return;
+  }
+
+  // Otherwise compare path.
+  const base::FilePath& parent_path = parent_url.path();
+  const base::FilePath& child_path = child_url.path();
+
+  // Same path, so return empty array if child is also a directory.
+  if (parent_path == child_path) {
+    std::move(callback).Run(
+        native_file_system_error::Ok(),
+        possible_child->type() ==
+                NativeFileSystemTransferTokenImpl::HandleType::kDirectory
+            ? base::make_optional(std::vector<std::string>())
+            : base::nullopt);
+    return;
+  }
+
+  // Now figure out relative path, if any.
+  base::FilePath relative_path;
+  if (parent_path.empty()) {
+    // The root of a sandboxed file system will have an empty path. In that
+    // case the child path is already the relative path.
+    relative_path = child_path;
+  } else if (!parent_path.AppendRelativePath(child_path, &relative_path)) {
+    std::move(callback).Run(native_file_system_error::Ok(), base::nullopt);
+    return;
+  }
+
+  std::vector<base::FilePath::StringType> components;
+  relative_path.GetComponents(&components);
+#if defined(OS_WIN)
+  std::vector<std::string> result;
+  result.reserve(components.size());
+  for (const auto& component : components) {
+    result.push_back(base::UTF16ToUTF8(component));
+  }
+  std::move(callback).Run(native_file_system_error::Ok(), std::move(result));
+#else
+  std::move(callback).Run(native_file_system_error::Ok(),
+                          std::move(components));
+#endif
 }
 
 void NativeFileSystemDirectoryHandleImpl::Transfer(

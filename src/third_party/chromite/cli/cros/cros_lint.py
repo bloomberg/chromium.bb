@@ -26,6 +26,9 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Extract a script's shebang.
 SHEBANG_RE = re.compile(br'^#!\s*([^\s]+)(\s+([^\s]+))?')
 
@@ -42,20 +45,21 @@ def _GetProjectPath(path):
 
 
 def _GetPylintrc(path):
-  """Locate the pylintrc file that applies to |path|."""
+  """Locate pylintrc or .pylintrc file that applies to |path|.
+
+  If not found - use the default.
+  """
   path = os.path.realpath(path)
   project_path = _GetProjectPath(path)
   parent = os.path.dirname(path)
   while project_path and parent.startswith(project_path):
-    pylintrc = os.path.join(parent, 'pylintrc')
-    if os.path.isfile(pylintrc):
-      break
+    for rc_name in ('pylintrc', '.pylintrc'):
+      pylintrc = os.path.join(parent, rc_name)
+      if os.path.isfile(pylintrc):
+        return pylintrc
     parent = os.path.dirname(parent)
 
-  if project_path is None or not os.path.isfile(pylintrc):
-    pylintrc = os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
-
-  return pylintrc
+  return os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
 
 
 def _GetPylintGroups(paths):
@@ -112,7 +116,7 @@ SHLINT_OUTPUT_FORMAT_MAP = {
 
 def _LinterRunCommand(cmd, debug, **kwargs):
   """Run the linter with common run args set as higher levels expect."""
-  return cros_build_lib.run(cmd, error_code_ok=True, print_cmd=debug,
+  return cros_build_lib.run(cmd, check=False, print_cmd=debug,
                             debug_level=logging.NOTICE, **kwargs)
 
 
@@ -131,20 +135,20 @@ def _WhiteSpaceLintData(path, data):
   # Make sure files all have a trailing newline.
   if not data.endswith('\n'):
     ret = False
-    logging.warn('%s: file needs a trailing newline', path)
+    logging.warning('%s: file needs a trailing newline', path)
 
   # Disallow leading & trailing blank lines.
   if data.startswith('\n'):
     ret = False
-    logging.warn('%s: delete leading blank lines', path)
+    logging.warning('%s: delete leading blank lines', path)
   if data.endswith('\n\n'):
     ret = False
-    logging.warn('%s: delete trailing blank lines', path)
+    logging.warning('%s: delete trailing blank lines', path)
 
   for i, line in enumerate(data.splitlines(), start=1):
     if line.rstrip() != line:
       ret = False
-      logging.warn('%s:%i: trim trailing whitespace: %s', path, i, line)
+      logging.warning('%s:%i: trim trailing whitespace: %s', path, i, line)
 
   return ret
 
@@ -179,8 +183,7 @@ def _PylintFile(path, output_format, debug, interp):
       'EPYTHON': interp,
       'PYTHONPATH': ':'.join(_GetPythonPath([path])),
   }
-  return _LinterRunCommand(cmd, debug, extra_env=extra_env,
-                           redirect_stderr=True)
+  return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
 def _Pylint2File(path, output_format, debug):
@@ -347,9 +350,9 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
                 'Shellcheck output from file:\n%s\n\n<paste output here>\n\n'
                 "What is wrong with shellcheck's findings?\n" % path,
         }))
-    logging.warn('Shellcheck found problems. These will eventually become '
-                 'errors.  If the shellcheck findings are not useful, '
-                 'please file a bug at:\n%s', bug_url)
+    logging.warning('Shellcheck found problems. These will eventually become '
+                    'errors.  If the shellcheck findings are not useful, '
+                    'please file a bug at:\n%s', bug_url)
     lint_result.returncode = 0
   return lint_result
 

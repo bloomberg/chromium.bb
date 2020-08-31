@@ -28,13 +28,13 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXMenuListOption final : public AXMockObject {
+class AXMenuListOption final : public AXNodeObject {
  public:
   AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
   ~AXMenuListOption() override;
@@ -43,7 +43,7 @@ class AXMenuListOption final : public AXMockObject {
   int SetSize() const override;
 
  private:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool IsMenuListOption() const override { return true; }
 
@@ -59,6 +59,7 @@ class AXMenuListOption final : public AXMockObject {
   bool IsVisible() const override;
   bool IsOffScreen() const override;
   AccessibilitySelectedState IsSelected() const override;
+  bool OnNativeClickAction() override;
   bool OnNativeSetSelectedAction(bool) override;
 
   void GetRelativeBounds(AXObject** out_container,
@@ -79,7 +80,12 @@ class AXMenuListOption final : public AXMockObject {
   DISALLOW_COPY_AND_ASSIGN(AXMenuListOption);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, IsMenuListOption());
+template <>
+struct DowncastTraits<AXMenuListOption> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsMenuListOption();
+  }
+};
 
 }  // namespace blink
 

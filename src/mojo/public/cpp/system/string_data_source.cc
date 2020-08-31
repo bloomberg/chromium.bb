@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/notreached.h"
+
 namespace mojo {
 
 StringDataSource::StringDataSource(base::StringPiece data,

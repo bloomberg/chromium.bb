@@ -5,12 +5,8 @@
 package org.chromium.chrome.browser.payments;
 
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DECEMBER;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_YEAR;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NO_INSTRUMENTS;
 
 import android.support.test.filters.MediumTest;
 
@@ -25,15 +21,16 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -62,14 +59,14 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "jondoe@email.com", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
         // The user also has an incomplete address and an incomplete card saved.
         String mIncompleteAddressId = mHelper.setProfile(new AutofillProfile("",
                 "https://example.com", true, "In Complete", "Google", "344 Main St", "CA", "", "",
                 "90291", "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "",
                 "4111111111111111", "1111", "18", "2075", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mIncompleteAddressId, "" /* serverId */));
+                mIncompleteAddressId, "" /* serverId */));
     }
 
     /**
@@ -263,7 +260,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add a complete payment app.
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Complete a Payment Request with the payment app.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -302,7 +300,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add a complete payment app.
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -342,7 +341,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add an incomplete payment app.
-        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -613,7 +613,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -650,7 +650,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true,
                 /*cardholderName=*/"", "4111111111111111", "1111", "10", "2021", "visa",
-                R.drawable.visa_card, CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                R.drawable.visa_card, mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -686,7 +686,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "5187654321098765", "8765", "10", "2021", "mastercard", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -719,7 +719,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -745,14 +746,14 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
-    public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoInstruments()
-            throws TimeoutException {
-        // Add an address and a payment app without instruments on file.
+    public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoApps() throws TimeoutException {
+        // Add an address and a factory without apps.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -785,7 +786,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -821,7 +823,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -858,7 +860,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -893,7 +895,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -930,8 +933,9 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+                mBillingAddressId, "" /* serverId */));
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -1098,13 +1102,13 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testNoShow() throws TimeoutException {
-        // Android Pay is supported but no instruments are present.
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
+        // Android Pay has a factory but it does not return an app.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://android.com/pay", AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Payment method not supported"});
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that no journey metrics were logged.
         Assert.assertEquals(0,

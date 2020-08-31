@@ -2,120 +2,105 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the the People section to get the
- * status of the sync backend and user preferences on what data to sync. Used
- * for both Chrome browser and ChromeOS.
- */
-cr.exportPath('settings');
-
-/**
- * @typedef {{fullName: (string|undefined),
- *            givenName: (string|undefined),
- *            email: string,
- *            avatarImage: (string|undefined)}}
- * @see chrome/browser/ui/webui/settings/people_handler.cc
- */
-settings.StoredAccount;
-
-/**
- * @typedef {{childUser: (boolean|undefined),
- *            disabled: (boolean|undefined),
- *            domain: (string|undefined),
- *            hasError: (boolean|undefined),
- *            hasPasswordsOnlyError: (boolean|undefined),
- *            hasUnrecoverableError: (boolean|undefined),
- *            managed: (boolean|undefined),
- *            firstSetupInProgress: (boolean|undefined),
- *            signedIn: (boolean|undefined),
- *            signedInUsername: (string|undefined),
- *            signinAllowed: (boolean|undefined),
- *            statusAction: (!settings.StatusAction),
- *            statusActionText: (string|undefined),
- *            statusText: (string|undefined),
- *            supervisedUser: (boolean|undefined),
- *            syncSystemEnabled: (boolean|undefined)}}
- * @see chrome/browser/ui/webui/settings/people_handler.cc
- */
-settings.SyncStatus;
-
-
-/**
- * Must be kept in sync with the return values of getSyncErrorAction in
- * chrome/browser/ui/webui/settings/people_handler.cc
- * @enum {string}
- */
-settings.StatusAction = {
-  NO_ACTION: 'noAction',             // No action to take.
-  REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
-  SIGNOUT_AND_SIGNIN:
-      'signOutAndSignIn',               // User needs to sign out and sign in.
-  UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
-  ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
-  // User needs to go through key retrieval.
-  RETRIEVE_TRUSTED_VAULT_KEYS: 'retrieveTrustedVaultKeys',
-  CONFIRM_SYNC_SETTINGS:
-      'confirmSyncSettings',  // User needs to confirm sync settings.
-};
-
-/**
- * The state of sync. This is the data structure sent back and forth between
- * C++ and JS. Its naming and structure is not optimal, but changing it would
- * require changes to the C++ handler, which is already functional.
- * @typedef {{
- *   appsEnforced: boolean,
- *   appsRegistered: boolean,
- *   appsSynced: boolean,
- *   autofillEnforced: boolean,
- *   autofillRegistered: boolean,
- *   autofillSynced: boolean,
- *   bookmarksEnforced: boolean,
- *   bookmarksRegistered: boolean,
- *   bookmarksSynced: boolean,
- *   encryptAllData: boolean,
- *   encryptAllDataAllowed: boolean,
- *   enterPassphraseBody: (string|undefined),
- *   extensionsEnforced: boolean,
- *   extensionsRegistered: boolean,
- *   extensionsSynced: boolean,
- *   fullEncryptionBody: string,
- *   passphrase: (string|undefined),
- *   passphraseRequired: boolean,
- *   passwordsEnforced: boolean,
- *   passwordsRegistered: boolean,
- *   passwordsSynced: boolean,
- *   paymentsIntegrationEnabled: boolean,
- *   preferencesEnforced: boolean,
- *   preferencesRegistered: boolean,
- *   preferencesSynced: boolean,
- *   setNewPassphrase: (boolean|undefined),
- *   syncAllDataTypes: boolean,
- *   tabsEnforced: boolean,
- *   tabsRegistered: boolean,
- *   tabsSynced: boolean,
- *   themesEnforced: boolean,
- *   themesRegistered: boolean,
- *   themesSynced: boolean,
- *   trustedVaultKeysRequired: boolean,
- *   typedUrlsEnforced: boolean,
- *   typedUrlsRegistered: boolean,
- *   typedUrlsSynced: boolean,
- * }}
- */
-settings.SyncPrefs;
-
-/**
- * @enum {string}
- */
-settings.PageStatus = {
-  SPINNER: 'spinner',                     // Before the page has loaded.
-  CONFIGURE: 'configure',                 // Preferences ready to be configured.
-  TIMEOUT: 'timeout',                     // Preferences loading has timed out.
-  DONE: 'done',                           // Sync subpage can be closed now.
-  PASSPHRASE_FAILED: 'passphraseFailed',  // Error in the passphrase.
-};
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
 cr.define('settings', function() {
+  /**
+   * @typedef {{fullName: (string|undefined),
+   *            givenName: (string|undefined),
+   *            email: string,
+   *            avatarImage: (string|undefined)}}
+   * @see chrome/browser/ui/webui/settings/people_handler.cc
+   */
+  /* #export */ let StoredAccount;
+
+  /**
+   * @typedef {{childUser: (boolean|undefined),
+   *            disabled: (boolean|undefined),
+   *            domain: (string|undefined),
+   *            hasError: (boolean|undefined),
+   *            hasPasswordsOnlyError: (boolean|undefined),
+   *            hasUnrecoverableError: (boolean|undefined),
+   *            managed: (boolean|undefined),
+   *            firstSetupInProgress: (boolean|undefined),
+   *            signedIn: (boolean|undefined),
+   *            signedInUsername: (string|undefined),
+   *            statusAction: (!settings.StatusAction),
+   *            statusActionText: (string|undefined),
+   *            statusText: (string|undefined),
+   *            supervisedUser: (boolean|undefined),
+   *            syncSystemEnabled: (boolean|undefined)}}
+   * @see chrome/browser/ui/webui/settings/people_handler.cc
+   */
+  /* #export */ let SyncStatus;
+
+  /**
+   * Must be kept in sync with the return values of getSyncErrorAction in
+   * chrome/browser/ui/webui/settings/people_handler.cc
+   * @enum {string}
+   */
+  /* #export */ const StatusAction = {
+    NO_ACTION: 'noAction',             // No action to take.
+    REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
+    SIGNOUT_AND_SIGNIN:
+        'signOutAndSignIn',               // User needs to sign out and sign in.
+    UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
+    ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
+    // User needs to go through key retrieval.
+    RETRIEVE_TRUSTED_VAULT_KEYS: 'retrieveTrustedVaultKeys',
+    CONFIRM_SYNC_SETTINGS:
+        'confirmSyncSettings',  // User needs to confirm sync settings.
+  };
+
+  /**
+   * The state of sync. This is the data structure sent back and forth between
+   * C++ and JS. Its naming and structure is not optimal, but changing it would
+   * require changes to the C++ handler, which is already functional.
+   * @typedef {{
+   *   appsRegistered: boolean,
+   *   appsSynced: boolean,
+   *   autofillRegistered: boolean,
+   *   autofillSynced: boolean,
+   *   bookmarksRegistered: boolean,
+   *   bookmarksSynced: boolean,
+   *   encryptAllData: boolean,
+   *   encryptAllDataAllowed: boolean,
+   *   enterPassphraseBody: (string|undefined),
+   *   extensionsRegistered: boolean,
+   *   extensionsSynced: boolean,
+   *   fullEncryptionBody: string,
+   *   passphrase: (string|undefined),
+   *   passphraseRequired: boolean,
+   *   passwordsRegistered: boolean,
+   *   passwordsSynced: boolean,
+   *   paymentsIntegrationEnabled: boolean,
+   *   preferencesRegistered: boolean,
+   *   preferencesSynced: boolean,
+   *   setNewPassphrase: (boolean|undefined),
+   *   syncAllDataTypes: boolean,
+   *   tabsRegistered: boolean,
+   *   tabsSynced: boolean,
+   *   themesRegistered: boolean,
+   *   themesSynced: boolean,
+   *   trustedVaultKeysRequired: boolean,
+   *   typedUrlsRegistered: boolean,
+   *   typedUrlsSynced: boolean,
+   *   wifiConfigurationsRegistered: boolean,
+   *   wifiConfigurationsSynced: boolean,
+   * }}
+   */
+  /* #export */ let SyncPrefs;
+
+  /** @enum {string} */
+  /* #export */ const PageStatus = {
+    SPINNER: 'spinner',      // Before the page has loaded.
+    CONFIGURE: 'configure',  // Preferences ready to be configured.
+    DONE: 'done',            // Sync subpage can be closed now.
+    PASSPHRASE_FAILED: 'passphraseFailed',  // Error in the passphrase.
+  };
+
   /**
    * Key to be used with localStorage.
    * @type {string}
@@ -123,7 +108,7 @@ cr.define('settings', function() {
   const PROMO_IMPRESSION_COUNT_KEY = 'signin-promo-count';
 
   /** @interface */
-  class SyncBrowserProxy {
+  /* #export */ class SyncBrowserProxy {
     // <if expr="not chromeos">
     /**
      * Starts the signin process for the user. Does nothing if the user is
@@ -141,6 +126,7 @@ cr.define('settings', function() {
      * Invalidates the Sync token without signing the user out.
      */
     pauseSync() {}
+    // </if>
 
     /**
      * @return {number} the number of times the sync account promo was shown.
@@ -152,14 +138,22 @@ cr.define('settings', function() {
      */
     incrementPromoImpressionCount() {}
 
-    // </if>
-
     // <if expr="chromeos">
     /**
      * Signs the user out.
      */
     attemptUserExit() {}
 
+    /**
+     * Turns on sync for the currently logged in user. Chrome OS users are
+     * always signed in to Chrome.
+     */
+    turnOnSync() {}
+
+    /**
+     * Turns off sync. Does not sign out of Chrome.
+     */
+    turnOffSync() {}
     // </if>
 
     /**
@@ -232,7 +226,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.SyncBrowserProxy}
    */
-  class SyncBrowserProxyImpl {
+  /* #export */ class SyncBrowserProxyImpl {
     // <if expr="not chromeos">
     /** @override */
     startSignIn() {
@@ -248,6 +242,7 @@ cr.define('settings', function() {
     pauseSync() {
       chrome.send('SyncSetupPauseSync');
     }
+    // </if>
 
     /** @override */
     getPromoImpressionCount() {
@@ -263,11 +258,20 @@ cr.define('settings', function() {
           (this.getPromoImpressionCount() + 1).toString());
     }
 
-    // </if>
     // <if expr="chromeos">
     /** @override */
     attemptUserExit() {
       return chrome.send('AttemptUserExit');
+    }
+
+    /** @override */
+    turnOnSync() {
+      return chrome.send('TurnOnSync');
+    }
+
+    /** @override */
+    turnOffSync() {
+      return chrome.send('TurnOffSync');
     }
     // </if>
 
@@ -328,8 +332,14 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(SyncBrowserProxyImpl);
 
+  // #cr_define_end
   return {
-    SyncBrowserProxy: SyncBrowserProxy,
-    SyncBrowserProxyImpl: SyncBrowserProxyImpl,
+    PageStatus,
+    StatusAction,
+    StoredAccount,
+    SyncBrowserProxy,
+    SyncBrowserProxyImpl,
+    SyncPrefs,
+    SyncStatus,
   };
 });

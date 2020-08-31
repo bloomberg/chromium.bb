@@ -152,6 +152,10 @@ void WebSettingsImpl::SetAccessibilityFontScaleFactor(float font_scale_factor) {
   settings_->SetAccessibilityFontScaleFactor(font_scale_factor);
 }
 
+void WebSettingsImpl::SetAccessibilityAlwaysShowFocus(bool always_show_focus) {
+  settings_->SetAccessibilityAlwaysShowFocus(always_show_focus);
+}
+
 void WebSettingsImpl::SetAccessibilityPasswordValuesEnabled(bool enabled) {
   settings_->SetAccessibilityPasswordValuesEnabled(enabled);
 }
@@ -768,6 +772,11 @@ void WebSettingsImpl::SetLazyImageFirstKFullyLoad4G(int num_images) {
 
 void WebSettingsImpl::SetForceDarkModeEnabled(bool enabled) {
   settings_->SetForceDarkModeEnabled(enabled);
+}
+
+void WebSettingsImpl::SetPreferredColorScheme(
+    PreferredColorScheme color_scheme) {
+  settings_->SetPreferredColorScheme(color_scheme);
 }
 
 void WebSettingsImpl::SetNavigationControls(

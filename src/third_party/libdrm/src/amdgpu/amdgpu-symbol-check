@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/bin/sh
+
+set -u
 
 # The following symbols (past the first five) are taken from the public headers.
 # A list of the latter should be available Makefile.am/libdrm_amdgpuinclude_HEADERS
 
-FUNCS=$(nm -D --format=bsd --defined-only ${1-.libs/libdrm_amdgpu.so} | awk '{print $3}' | while read func; do
+FUNCS=$($NM -D --format=bsd --defined-only ${1-.libs/libdrm_amdgpu.so} | awk '{print $3}' | while read func; do
 ( grep -q "^$func$" || echo $func )  <<EOF
 __bss_start
 _edata
@@ -16,6 +18,9 @@ amdgpu_bo_cpu_unmap
 amdgpu_bo_export
 amdgpu_bo_free
 amdgpu_bo_import
+amdgpu_bo_inc_ref
+amdgpu_bo_list_create_raw
+amdgpu_bo_list_destroy_raw
 amdgpu_bo_list_create
 amdgpu_bo_list_destroy
 amdgpu_bo_list_update
@@ -33,6 +38,7 @@ amdgpu_cs_create_syncobj2
 amdgpu_cs_ctx_create
 amdgpu_cs_ctx_create2
 amdgpu_cs_ctx_free
+amdgpu_cs_ctx_override_priority
 amdgpu_cs_destroy_semaphore
 amdgpu_cs_destroy_syncobj
 amdgpu_cs_export_syncobj
@@ -40,18 +46,28 @@ amdgpu_cs_fence_to_handle
 amdgpu_cs_import_syncobj
 amdgpu_cs_query_fence_status
 amdgpu_cs_query_reset_state
+amdgpu_cs_query_reset_state2
+amdgpu_query_sw_info
 amdgpu_cs_signal_semaphore
 amdgpu_cs_submit
 amdgpu_cs_submit_raw
+amdgpu_cs_submit_raw2
 amdgpu_cs_syncobj_export_sync_file
+amdgpu_cs_syncobj_export_sync_file2
 amdgpu_cs_syncobj_import_sync_file
+amdgpu_cs_syncobj_import_sync_file2
+amdgpu_cs_syncobj_query
 amdgpu_cs_syncobj_reset
 amdgpu_cs_syncobj_signal
+amdgpu_cs_syncobj_timeline_signal
+amdgpu_cs_syncobj_timeline_wait
+amdgpu_cs_syncobj_transfer
 amdgpu_cs_syncobj_wait
 amdgpu_cs_wait_fences
 amdgpu_cs_wait_semaphore
 amdgpu_device_deinitialize
 amdgpu_device_initialize
+amdgpu_find_bo_by_cpu_mapping
 amdgpu_get_marketing_name
 amdgpu_query_buffer_size_alignment
 amdgpu_query_crtc_from_id

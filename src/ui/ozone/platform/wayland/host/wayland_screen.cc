@@ -4,11 +4,15 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
 
+#include <set>
+#include <vector>
+
+#include "base/stl_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -140,7 +144,6 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point WaylandScreen::GetCursorScreenPoint() const {
-  auto* wayland_window_manager = connection_->wayland_window_manager();
   // Wayland does not provide either location of surfaces in global space
   // coordinate system or location of a pointer. Instead, only locations of
   // mouse/touch events are known. Given that Chromium assumes top-level windows
@@ -151,10 +154,12 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // last known cursor position. Otherwise, return such a point, which is not
   // contained by any of the windows.
   auto* cursor_position = connection_->wayland_cursor_position();
-  if (wayland_window_manager->GetCurrentFocusedWindow() && cursor_position)
+  if (connection_->wayland_window_manager()->GetCurrentFocusedWindow() &&
+      cursor_position)
     return cursor_position->GetCursorSurfacePoint();
 
-  auto* window = wayland_window_manager->GetWindowWithLargestBounds();
+  auto* window =
+      connection_->wayland_window_manager()->GetWindowWithLargestBounds();
   DCHECK(window);
   const gfx::Rect bounds = window->GetBounds();
   return gfx::Point(bounds.width() + 10, bounds.height() + 10);
@@ -169,6 +174,14 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
   if (window && window->GetBounds().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
+}
+
+gfx::AcceleratedWidget WaylandScreen::GetLocalProcessWidgetAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::AcceleratedWidget>& ignore) const {
+  auto widget = GetAcceleratedWidgetAtScreenPoint(point);
+  return !widget || base::Contains(ignore, widget) ? gfx::kNullAcceleratedWidget
+                                                   : widget;
 }
 
 display::Display WaylandScreen::GetDisplayNearestPoint(

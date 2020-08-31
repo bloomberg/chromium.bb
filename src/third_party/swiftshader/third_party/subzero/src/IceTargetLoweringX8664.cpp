@@ -17,6 +17,10 @@
 #include "IceDefs.h"
 #include "IceTargetLoweringX8664Traits.h"
 
+#if defined(SUBZERO_USE_MICROSOFT_ABI)
+extern "C" void __chkstk();
+#endif
+
 namespace X8664 {
 std::unique_ptr<::Ice::TargetLowering> createTargetLowering(::Ice::Cfg *Func) {
   return ::Ice::X8664::TargetX8664::create(Func);
@@ -636,7 +640,8 @@ void TargetX8664::lowerIndirectJump(Variable *JumpTarget) {
   _jmp(JumpTarget);
 }
 
-Inst *TargetX8664::emitCallToTarget(Operand *CallTarget, Variable *ReturnReg) {
+Inst *TargetX8664::emitCallToTarget(Operand *CallTarget, Variable *ReturnReg,
+                                    size_t NumVariadicFpArgs) {
   Inst *NewCall = nullptr;
   auto *CallTargetR = llvm::dyn_cast<Variable>(CallTarget);
   if (NeedSandboxing) {
@@ -696,7 +701,6 @@ Inst *TargetX8664::emitCallToTarget(Operand *CallTarget, Variable *ReturnReg) {
         _add(T64, r15);
         CallTarget = T64;
       }
-
       NewCall = Context.insert<Traits::Insts::Jmp>(CallTarget);
     }
     if (ReturnReg != nullptr) {
@@ -711,14 +715,42 @@ Inst *TargetX8664::emitCallToTarget(Operand *CallTarget, Variable *ReturnReg) {
       Variable *T = makeReg(IceType_i64);
       _movzx(T, CallTargetR);
       CallTarget = T;
-    } else if (llvm::isa<Constant>(CallTarget) &&
-               CallTarget->getType() == IceType_i64) {
-      // x86-64 does not support 64-bit direct calls, so write the value
-      // to a register and make an indirect call.
-      Variable *T = makeReg(IceType_i64);
-      _mov(T, CallTarget);
-      CallTarget = T;
+
+    } else if (CallTarget->getType() == IceType_i64) {
+      // x86-64 does not support 64-bit direct calls, so write the value to a
+      // register and make an indirect call for Constant call targets.
+      RegNumT TargetReg = {};
+
+      // System V: force r11 when calling a variadic function so that rax isn't
+      // used, since rax stores the number of FP args (see NumVariadicFpArgs
+      // usage below).
+#if !defined(SUBZERO_USE_MICROSOFT_ABI)
+      if (NumVariadicFpArgs > 0)
+        TargetReg = Traits::RegisterSet::Reg_r11;
+#endif
+
+      if (llvm::isa<Constant>(CallTarget)) {
+        Variable *T = makeReg(IceType_i64, TargetReg);
+        _mov(T, CallTarget);
+        CallTarget = T;
+      } else if (llvm::isa<Variable>(CallTarget)) {
+        Operand *T = legalizeToReg(CallTarget, TargetReg);
+        CallTarget = T;
+      }
     }
+
+    // System V: store number of FP args in RAX for variadic calls
+#if !defined(SUBZERO_USE_MICROSOFT_ABI)
+    if (NumVariadicFpArgs > 0) {
+      // Store number of FP args (stored in XMM registers) in RAX for variadic
+      // calls
+      auto *NumFpArgs = Ctx->getConstantInt64(NumVariadicFpArgs);
+      Variable *NumFpArgsReg =
+          legalizeToReg(NumFpArgs, Traits::RegisterSet::Reg_rax);
+      Context.insert<InstFakeUse>(NumFpArgsReg);
+    }
+#endif
+
     NewCall = Context.insert<Traits::Insts::Call>(ReturnReg, CallTarget);
   }
   return NewCall;
@@ -756,6 +788,26 @@ void TargetX8664::emitSandboxedReturn() {
 
     _jmp(T_rcx);
   }
+}
+
+void TargetX8664::emitStackProbe(size_t StackSizeBytes) {
+#if defined(SUBZERO_USE_MICROSOFT_ABI)
+  // Mirroring the behavior of MSVC here, which emits a _chkstk when locals are
+  // >= 4KB, rather than the 8KB claimed by the docs.
+  if (StackSizeBytes >= 4096) {
+    // __chkstk on Win64 probes the stack up to RSP - EAX, but does not clobber
+    // RSP, so we don't need to save and restore it.
+
+    Variable *EAX = makeReg(IceType_i32, Traits::RegisterSet::Reg_eax);
+    _mov(EAX, Ctx->getConstantInt32(StackSizeBytes));
+
+    auto *CallTarget =
+        Ctx->getConstantInt64(reinterpret_cast<int64_t>(&__chkstk));
+    Operand *CallTargetReg =
+        legalizeToReg(CallTarget, Traits::RegisterSet::Reg_r11);
+    emitCallToTarget(CallTargetReg, nullptr);
+  }
+#endif
 }
 
 // In some cases, there are x-macros tables for both high-level and low-level

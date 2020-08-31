@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {NodeParamConnectionData, NodesConnectionData} from './GraphStyle.js';  // eslint-disable-line no-unused-vars
+import {generateInputPortId, generateOutputPortId, generateParamPortId} from './NodeView.js';
+
 // A class that represents an edge of a graph, including node-to-node connection,
 // and node-to-param connection.
 export class EdgeView {
   /**
-   * @param {!WebAudio.GraphVisualizer.NodesConnectionData | !WebAudio.GraphVisualizer.NodeParamConnectionData} data
-   * @param {!WebAudio.GraphVisualizer.EdgeTypes} type
+   * @param {!NodesConnectionData | !NodeParamConnectionData} data
+   * @param {!EdgeTypes} type
    */
   constructor(data, type) {
     const {edgeId, sourcePortId, destinationPortId} = generateEdgePortIdsByData(data, type);
@@ -23,8 +26,8 @@ export class EdgeView {
 
 /**
  * Generates the edge id and source/destination portId using edge data and type.
- * @param {!WebAudio.GraphVisualizer.NodesConnectionData | !WebAudio.GraphVisualizer.NodeParamConnectionData} data
- * @param {!WebAudio.GraphVisualizer.EdgeTypes} type
+ * @param {!NodesConnectionData | !NodeParamConnectionData} data
+ * @param {!EdgeTypes} type
  * @return {?{edgeId: string, sourcePortId: string, destinationPortId: string}}
  */
 export const generateEdgePortIdsByData = (data, type) => {
@@ -33,7 +36,7 @@ export const generateEdgePortIdsByData = (data, type) => {
     return null;
   }
 
-  const sourcePortId = WebAudio.GraphVisualizer.generateOutputPortId(data.sourceId, data.sourceOutputIndex);
+  const sourcePortId = generateOutputPortId(data.sourceId, data.sourceOutputIndex);
   const destinationPortId = getDestinationPortId(data, type);
 
   return {
@@ -44,19 +47,19 @@ export const generateEdgePortIdsByData = (data, type) => {
 
   /**
    * Get the destination portId based on connection type.
-   * @param {!WebAudio.GraphVisualizer.NodesConnectionData | !WebAudio.GraphVisualizer.NodeParamConnectionData} data
-   * @param {!WebAudio.GraphVisualizer.EdgeTypes} type
+   * @param {!NodesConnectionData | !NodeParamConnectionData} data
+   * @param {!EdgeTypes} type
    * @return {string}
    */
   function getDestinationPortId(data, type) {
     if (type === EdgeTypes.NodeToNode) {
-      return WebAudio.GraphVisualizer.generateInputPortId(data.destinationId, data.destinationInputIndex);
-    } else if (type === EdgeTypes.NodeToParam) {
-      return WebAudio.GraphVisualizer.generateParamPortId(data.destinationId, data.destinationParamId);
-    } else {
-      console.error(`Unknown edge type: ${type}`);
-      return '';
+      return generateInputPortId(data.destinationId, data.destinationInputIndex);
     }
+    if (type === EdgeTypes.NodeToParam) {
+      return generateParamPortId(data.destinationId, data.destinationParamId);
+    }
+    console.error(`Unknown edge type: ${type}`);
+    return '';
   }
 };
 
@@ -68,25 +71,3 @@ export const EdgeTypes = {
   NodeToNode: Symbol('NodeToNode'),
   NodeToParam: Symbol('NodeToParam'),
 };
-
-/* Legacy exported object */
-self.WebAudio = self.WebAudio || {};
-
-/* Legacy exported object */
-WebAudio = WebAudio || {};
-
-/* Legacy exported object */
-WebAudio.GraphVisualizer = WebAudio.GraphVisualizer || {};
-
-/**
- * @constructor
- */
-WebAudio.GraphVisualizer.EdgeView = EdgeView;
-
-WebAudio.GraphVisualizer.generateEdgePortIdsByData = generateEdgePortIdsByData;
-
-/**
- * Supported edge types.
- * @enum {symbol}
- */
-WebAudio.GraphVisualizer.EdgeTypes = EdgeTypes;

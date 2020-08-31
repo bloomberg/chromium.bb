@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.api import api_config
@@ -15,6 +17,9 @@ from chromite.api.gen.chromite.api import sdk_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import sdk as sdk_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
@@ -80,8 +85,12 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     request = self._GetRequest(no_replace=False, bootstrap=False,
                                no_use_image=False)
     sdk_controller.Create(request, self.response, self.api_config)
-    args_patch.assert_called_with(replace=True, bootstrap=False,
-                                  use_image=True, paths=mock.ANY)
+    args_patch.assert_called_with(
+        replace=True,
+        bootstrap=False,
+        use_image=True,
+        chroot_path=mock.ANY,
+        cache_dir=mock.ANY)
 
   def testTrueArguments(self):
     """Test True arguments handling."""
@@ -93,21 +102,12 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     request = self._GetRequest(no_replace=True, bootstrap=True,
                                no_use_image=True)
     sdk_controller.Create(request, self.response, self.api_config)
-    args_patch.assert_called_with(replace=False, bootstrap=True,
-                                  use_image=False, paths=mock.ANY)
-
-  def testPathArguments(self):
-    """Test the path arguments handling."""
-    # Create the patches.
-    self.PatchObject(sdk_service, 'Create', return_value=1)
-    paths_patch = self.PatchObject(sdk_service, 'ChrootPaths')
-
-    # Test the path arguments get passed through.
-    cache_dir = '/cache/dir'
-    chroot_path = '/chroot/path'
-    request = self._GetRequest(cache_path=cache_dir, chroot_path=chroot_path)
-    sdk_controller.Create(request, self.response, self.api_config)
-    paths_patch.assert_called_with(cache_dir=cache_dir, chroot_path=chroot_path)
+    args_patch.assert_called_with(
+        replace=False,
+        bootstrap=True,
+        use_image=False,
+        chroot_path=mock.ANY,
+        cache_dir=mock.ANY)
 
 
 class SdkUpdateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
@@ -169,10 +169,12 @@ class SdkUpdateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     # No boards and flags False.
     request = self._GetRequest(build_source=False)
     sdk_controller.Update(request, self.response, self.api_config)
-    args_patch.assert_called_with(build_source=False, toolchain_targets=[])
+    args_patch.assert_called_with(
+        build_source=False, toolchain_targets=[], toolchain_changed=False)
 
     # Multiple boards and flags True.
     targets = ['board1', 'board2']
     request = self._GetRequest(build_source=True, targets=targets)
     sdk_controller.Update(request, self.response, self.api_config)
-    args_patch.assert_called_with(build_source=True, toolchain_targets=targets)
+    args_patch.assert_called_with(
+        build_source=True, toolchain_targets=targets, toolchain_changed=False)

@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
@@ -121,15 +120,10 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
       Master()->GetSecurityOrigin();
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
-  if (base::FeatureList::IsEnabled(
-          features::kHtmlImportsRequestInitiatorLock) &&
-      parent->GetDocument()->ImportsController()) {
-    Document* context_document = parent->GetDocument()->ContextDocument();
-    if (!context_document)
-      return nullptr;
-
-    security_origin = context_document->GetSecurityOrigin();
-    fetcher = context_document->Fetcher();
+  if (parent->GetDocument()->ImportsController()) {
+    ExecutionContext* context = parent->GetDocument()->GetExecutionContext();
+    security_origin = context->GetSecurityOrigin();
+    fetcher = context->Fetcher();
   }
 
   params.SetCrossOriginAccessControl(security_origin.get(),

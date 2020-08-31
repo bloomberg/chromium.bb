@@ -8,8 +8,9 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
+import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 
-import {DestinationOrigin} from './destination.js';
+import {Destination, DestinationOrigin} from './destination.js';
 import {DestinationStore} from './destination_store.js';
 import {InvitationStore} from './invitation_store.js';
 
@@ -34,14 +35,7 @@ Polymer({
 
     cloudPrintDisabled: {
       type: Boolean,
-      value: true,
-      notify: true,
-    },
-
-    /** @type {?CloudPrintInterface} */
-    cloudPrintInterface: {
-      type: Object,
-      observer: 'onCloudPrintInterfaceSet_',
+      observer: 'onCloudPrintDisabledChanged_',
     },
 
     /** @type {?DestinationStore} */
@@ -56,11 +50,14 @@ Polymer({
     users: {
       type: Array,
       notify: true,
-      value: function() {
+      value() {
         return [];
       },
     },
   },
+
+  /** @private {?CloudPrintInterface} */
+  cloudPrintInterface_: null,
 
   /** @private {boolean} */
   initialized_: false,
@@ -69,7 +66,7 @@ Polymer({
   tracker_: new EventTracker(),
 
   /** @override */
-  detached: function() {
+  detached() {
     this.tracker_.removeAll();
     this.initialized_ = false;
   },
@@ -78,7 +75,7 @@ Polymer({
    * @param {?Array<string>} userAccounts
    * @param {boolean} syncAvailable
    */
-  initUserAccounts: function(userAccounts, syncAvailable) {
+  initUserAccounts(userAccounts, syncAvailable) {
     assert(!this.initialized_);
     this.initialized_ = true;
 
@@ -98,7 +95,8 @@ Polymer({
       // Request the Google Docs destination from the Google Cloud Print server
       // directly. We have to do this in incognito mode in order to get the
       // user's login state.
-      this.destinationStore.startLoadGoogleDrive();
+      this.destinationStore.startLoadCookieDestination(
+          Destination.GooglePromotedId.DOCS);
       this.addWebUIListener('check-for-account-update', () => {
         this.destinationStore.startLoadCloudDestinations(
             DestinationOrigin.COOKIES);
@@ -107,23 +105,26 @@ Polymer({
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_: function() {
+  onCloudPrintDisabledChanged_() {
+    if (this.cloudPrintDisabled) {
+      return;
+    }
+
+    this.cloudPrintInterface_ = CloudPrintInterfaceImpl.getInstance();
     this.tracker_.add(
-        this.cloudPrintInterface.getEventTarget(),
+        this.cloudPrintInterface_.getEventTarget(),
         CloudPrintInterfaceEventType.UPDATE_USERS,
         this.onCloudPrintUpdateUsers_.bind(this));
     [CloudPrintInterfaceEventType.SEARCH_FAILED,
      CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
-          this.cloudPrintInterface.getEventTarget(), eventType,
+          this.cloudPrintInterface_.getEventTarget(), eventType,
           this.checkCloudPrintStatus_.bind(this));
     });
     if (this.users.length > 0) {
-      this.cloudPrintInterface.setUsers(this.users);
+      this.cloudPrintInterface_.setUsers(this.users);
     }
-    assert(this.cloudPrintDisabled);
-    this.cloudPrintDisabled = false;
   },
 
   /**
@@ -133,9 +134,9 @@ Polymer({
    *     event Contains the error status
    * @private
    */
-  checkCloudPrintStatus_: function(event) {
-    if (event.detail.status != 403 ||
-        this.cloudPrintInterface.areCookieDestinationsDisabled()) {
+  checkCloudPrintStatus_(event) {
+    if (event.detail.status !== 403 ||
+        this.cloudPrintInterface_.areCookieDestinationsDisabled()) {
       return;
     }
 
@@ -151,7 +152,7 @@ Polymer({
    *     active user and users.
    * @private
    */
-  onCloudPrintUpdateUsers_: function(e) {
+  onCloudPrintUpdateUsers_(e) {
     this.updateActiveUser(e.detail.activeUser);
     if (e.detail.users) {
       this.updateUsers_(e.detail.users);
@@ -162,12 +163,12 @@ Polymer({
    * @param {!Array<string>} users The full list of signed in users.
    * @private
    */
-  updateUsers_: function(users) {
+  updateUsers_(users) {
     const updateActiveUser = (users.length > 0 && this.users.length === 0) ||
         !users.includes(this.activeUser);
     this.users = users;
-    if (this.cloudPrintInterface) {
-      this.cloudPrintInterface.setUsers(users);
+    if (this.cloudPrintInterface_) {
+      this.cloudPrintInterface_.setUsers(users);
     }
     if (updateActiveUser) {
       this.updateActiveUser(this.users[0] || '');
@@ -175,7 +176,7 @@ Polymer({
   },
 
   /** @param {string} user The new active user. */
-  updateActiveUser: function(user) {
+  updateActiveUser(user) {
     if (user === this.activeUser) {
       return;
     }

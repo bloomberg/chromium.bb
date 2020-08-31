@@ -19,6 +19,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
@@ -31,9 +32,9 @@
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -124,6 +125,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           shelf->GetStatusAreaWidget()->GetRootView())),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
+      privacy_screen_toast_controller_(
+          std::make_unique<PrivacyScreenToastController>(this)),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
@@ -141,15 +144,15 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(quiet_mode_view_);
 
   if (features::IsSeparateNetworkIconsEnabled()) {
-    tray_container()->AddChildView(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary));
+    network_tray_view_ =
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
     tray_container()->AddChildView(
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
   } else {
-    tray_container()->AddChildView(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle));
+    network_tray_view_ =
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
-
+  tray_container()->AddChildView(network_tray_view_);
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));
   tray_container()->AddChildView(time_view_);
 
@@ -192,6 +195,11 @@ void UnifiedSystemTray::ActivateBubble() {
     bubble_->ActivateBubble();
 }
 
+void UnifiedSystemTray::CloseSecondaryBubbles() {
+  slider_bubble_controller_->CloseBubble();
+  privacy_screen_toast_controller_->HideToast();
+}
+
 void UnifiedSystemTray::CollapseMessageCenter() {
   if (message_center_bubble_)
     message_center_bubble_->CollapseMessageCenter();
@@ -202,9 +210,14 @@ void UnifiedSystemTray::ExpandMessageCenter() {
     message_center_bubble_->ExpandMessageCenter();
 }
 
-void UnifiedSystemTray::EnsureQuickSettingsCollapsed() {
-  if (bubble_)
+void UnifiedSystemTray::EnsureQuickSettingsCollapsed(bool animate) {
+  if (!bubble_)
+    return;
+
+  if (animate)
     bubble_->EnsureCollapsed();
+  else
+    bubble_->CollapseWithoutAnimating();
 }
 
 void UnifiedSystemTray::EnsureBubbleExpanded() {
@@ -237,7 +250,11 @@ void UnifiedSystemTray::FocusFirstNotification() {
     return;
 
   FocusMessageCenter(false /*reverse*/);
-  message_center_bubble()->FocusFirstNotification();
+
+  // Do not focus an individual element in quick settings if chrome vox is
+  // enabled
+  if (!ShouldEnableExtraKeyboardAccessibility())
+    message_center_bubble()->FocusFirstNotification();
 }
 
 bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
@@ -249,8 +266,15 @@ bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
   message_center_widget->widget_delegate()->SetCanActivate(true);
 
   Shell::Get()->focus_cycler()->FocusWidget(message_center_widget);
-  message_center_bubble_->FocusEntered(reverse);
 
+  // Focus an individual element in the message center if chrome vox is
+  // disabled. Otherwise, ensure the message center is expanded.
+  if (!ShouldEnableExtraKeyboardAccessibility()) {
+    message_center_bubble_->FocusEntered(reverse);
+  } else if (message_center_bubble_->IsMessageCenterCollapsed()) {
+    ExpandMessageCenter();
+    EnsureQuickSettingsCollapsed(true /*animate*/);
+  }
   return true;
 }
 
@@ -259,45 +283,35 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
     return false;
 
   views::Widget* quick_settings_widget = bubble_->GetBubbleWidget();
+  quick_settings_widget->widget_delegate()->SetCanActivate(true);
+
   Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
-  bubble_->FocusEntered(reverse);
+
+  // Focus an individual element in quick settings if chrome vox is
+  // disabled. Otherwise, ensure quick settings is expanded.
+  if (!ShouldEnableExtraKeyboardAccessibility())
+    bubble_->FocusEntered(reverse);
+  else
+    EnsureBubbleExpanded();
 
   return true;
+}
+
+bool UnifiedSystemTray::IsQuickSettingsExplicitlyExpanded() const {
+  return model_->IsExplicitlyExpanded();
 }
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
 }
 
-void UnifiedSystemTray::UpdateAfterLoginStatusChange(LoginStatus status) {
+void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
   SetVisiblePreferred(true);
   PreferredSizeChanged();
 }
 
 bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
-}
-
-void UnifiedSystemTray::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  TrayBackgroundView::AddInkDropLayer(ink_drop_layer);
-  ink_drop_layer_ = ink_drop_layer;
-}
-
-void UnifiedSystemTray::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  DCHECK_EQ(ink_drop_layer, ink_drop_layer_);
-  TrayBackgroundView::RemoveInkDropLayer(ink_drop_layer);
-  ink_drop_layer_ = nullptr;
-}
-
-void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  TrayBackgroundView::OnBoundsChanged(previous_bounds);
-  // Workarounding an ui::Layer bug that layer mask is not properly updated.
-  // https://crbug.com/860367
-  // TODO(tetsui): Remove after the bug is fixed on ui::Layer side.
-  if (ink_drop_layer_) {
-    ResetInkDropMask();
-    InstallInkDropMask(ink_drop_layer_);
-  }
 }
 
 const char* UnifiedSystemTray::GetClassName() const {
@@ -353,7 +367,18 @@ void UnifiedSystemTray::CloseBubble() {
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
-  return GetAccessibleNameForTray();
+  if (IsBubbleShown())
+    return GetAccessibleNameForQuickSettingsBubble();
+  else
+    return GetAccessibleNameForTray();
+}
+
+base::string16 UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
+  if (bubble_->unified_view()->IsDetailedViewShown())
+    return bubble_->unified_view()->GetDetailedViewAccessibleName();
+
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION);
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
@@ -362,8 +387,24 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
       Shell::Get()->system_tray_model()->clock()->hour_clock_type(),
       base::kKeepAmPm);
   base::string16 battery = PowerStatus::Get()->GetAccessibleNameString(false);
+  std::vector<base::string16> status = {time, battery};
+
+  status.push_back(network_tray_view_->GetVisible()
+                       ? network_tray_view_->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(notification_counter_item_->GetVisible()
+                       ? notification_counter_item_->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(ime_mode_view_->GetVisible()
+                       ? ime_mode_view_->label()->GetAccessibleNameString()
+                       : base::EmptyString16());
+  status.push_back(
+      current_locale_view_->GetVisible()
+          ? current_locale_view_->label()->GetAccessibleNameString()
+          : base::EmptyString16());
+
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
-                                    time, battery);
+                                    status, nullptr);
 }
 
 void UnifiedSystemTray::HideBubble(const TrayBubbleView* bubble_view) {
@@ -376,8 +417,8 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
   CloseBubble();
 }
 
-void UnifiedSystemTray::UpdateAfterShelfChange() {
-  TrayBackgroundView::UpdateAfterShelfChange();
+void UnifiedSystemTray::UpdateLayout() {
+  TrayBackgroundView::UpdateLayout();
   time_view_->UpdateAlignmentForShelf(shelf());
 }
 
@@ -386,15 +427,13 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return;
 
-  // Hide volume/brightness slider popup.
-  slider_bubble_controller_->CloseBubble();
+  CloseSecondaryBubbles();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
 
   if (features::IsUnifiedMessageCenterRefactorEnabled()) {
     message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
     message_center_bubble_->ShowBubble();
-    FocusQuickSettings(false /*reverse*/);
   }
 
   SetIsActive(true);

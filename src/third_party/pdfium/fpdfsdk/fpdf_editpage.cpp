@@ -655,10 +655,10 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPage_TransformAnnots(FPDF_PAGE page,
     else
       pRectArray = pAnnotDict->SetNewFor<CPDF_Array>("Rect");
 
-    pRectArray->AddNew<CPDF_Number>(rect.left);
-    pRectArray->AddNew<CPDF_Number>(rect.bottom);
-    pRectArray->AddNew<CPDF_Number>(rect.right);
-    pRectArray->AddNew<CPDF_Number>(rect.top);
+    pRectArray->AppendNew<CPDF_Number>(rect.left);
+    pRectArray->AppendNew<CPDF_Number>(rect.bottom);
+    pRectArray->AppendNew<CPDF_Number>(rect.right);
+    pRectArray->AppendNew<CPDF_Number>(rect.top);
 
     // TODO(unknown): Transform AP's rectangle
   }
@@ -859,17 +859,11 @@ FPDFFormObj_GetObject(FPDF_PAGEOBJECT form_object, unsigned long index) {
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFFormObj_GetMatrix(FPDF_PAGEOBJECT form_object,
-                      double* a,
-                      double* b,
-                      double* c,
-                      double* d,
-                      double* e,
-                      double* f) {
+FPDFFormObj_GetMatrix(FPDF_PAGEOBJECT form_object, FS_MATRIX* matrix) {
   CPDF_FormObject* pFormObj = CPDFFormObjectFromFPDFPageObject(form_object);
-  if (!pFormObj || !a || !b || !c || !d || !e || !f)
+  if (!pFormObj || !matrix)
     return false;
 
-  std::tie(*a, *b, *c, *d, *e, *f) = pFormObj->form_matrix().AsTuple();
+  *matrix = FSMatrixFromCFXMatrix(pFormObj->form_matrix());
   return true;
 }

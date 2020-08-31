@@ -19,12 +19,11 @@ namespace web_app {
 
 class WebApp;
 class WebAppIconManager;
-class WebAppSyncBridge;
+class WebAppRegistrar;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
   WebAppInstallFinalizer(Profile* profile,
-                         WebAppSyncBridge* sync_bridge,
                          WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
@@ -39,7 +38,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                   UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(const GURL& app_url,
+  void UninstallExternalWebApp(const AppId& app_id,
                                ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
@@ -49,8 +48,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  bool CanRevealAppShim() const override;
-  void RevealAppShim(const AppId& app_id) override;
 
  private:
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
@@ -58,22 +55,31 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                      Source::Type source,
                                      UninstallWebAppCallback callback);
 
+  void SetWebAppManifestFieldsAndWriteData(
+      const WebApplicationInfo& web_app_info,
+      std::unique_ptr<WebApp> web_app,
+      bool is_new_install,
+      InstallFinalizedCallback callback);
+
   void OnIconsDataWritten(InstallFinalizedCallback callback,
                           std::unique_ptr<WebApp> web_app,
+                          bool is_new_install,
                           bool success);
   void OnIconsDataDeleted(const AppId& app_id,
                           UninstallWebAppCallback callback,
                           bool success);
   void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
                                  const AppId& app_id,
+                                 bool is_new_install,
                                  bool success);
   void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
                                   InstallFinalizedCallback callback,
                                   const AppId& installed_app_id,
                                   InstallResultCode code);
 
+  WebAppRegistrar& GetWebAppRegistrar() const;
+
   Profile* const profile_;
-  WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};

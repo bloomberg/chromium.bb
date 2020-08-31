@@ -20,6 +20,27 @@ NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
+// Enables DNS queries for HTTPSSVC or INTEGRITY records, depending on feature
+// parameters. These queries will only be made over DoH. HTTPSSVC responses may
+// cause us to upgrade the URL to HTTPS and/or to attempt QUIC.
+NET_EXPORT extern const base::Feature kDnsHttpssvc;
+
+// Determine which kind of record should be queried: HTTPSSVC or INTEGRITY. No
+// more than one of these feature parameters should be enabled at once. In the
+// event that both are enabled, |kDnsHttpssvcUseIntegrity| takes priority, and
+// |kDnsHttpssvcUseHttpssvc| will be ignored.
+NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc;
+NET_EXPORT extern const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity;
+
+// If we are still waiting for an HTTPSSVC or INTEGRITY query after all the
+// other queries in a DnsTask have completed, we will compute a timeout for the
+// remaining query. The timeout will be the min of:
+//   (a) |kDnsHttpssvcExtraTimeMs.Get()|
+//   (b) |kDnsHttpssvcExtraTimePercent.Get() / 100 * t|, where |t| is the
+//       number of milliseconds since the first query began.
+NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs;
+NET_EXPORT extern const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent;
+
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).
 NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
@@ -137,6 +158,12 @@ NET_EXPORT extern const base::Feature
 NET_EXPORT extern const base::FeatureParam<int>
     kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds;
 
+// When enabled, blocks external requests coming from non-secure contexts. An
+// external request is a request that crosses a network boundary from a more
+// public address space into a less public address space.
+NET_EXPORT extern const base::Feature
+    kBlockExternalRequestsFromNonSecureInitiators;
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
@@ -149,6 +176,21 @@ NET_EXPORT extern const base::Feature
 
 // Turns off streaming media caching to disk.
 NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCaching;
+
+// When enabled, sites that use TLS versions below the |version_min_warn|
+// threshold are marked with the LEGACY_TLS CertStatus and return an
+// ERR_SSL_OBSOLETE_VERSION error. This is used to trigger an interstitial
+// warning for these pages.
+NET_EXPORT extern const base::Feature kLegacyTLSEnforced;
+
+// When enabled this feature will cause same-site calculations to take into
+// account the scheme of the site-for-cookies and the request/response url.
+NET_EXPORT extern const base::Feature kSchemefulSameSite;
+
+// When enabled, TLS connections will initially not offer 3DES and SHA-1 but
+// enable them on fallback. This is used to improve metrics around usage of
+// those algorithms. If disabled, the algorithms will always be offered.
+NET_EXPORT extern const base::Feature kTLSLegacyCryptoFallbackForMetrics;
 
 }  // namespace features
 }  // namespace net

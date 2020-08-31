@@ -5,18 +5,20 @@
       "bounds": [785, 736],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "Scrolling background of LayoutView #document",
-          "rect": [0, 636, 785, 100],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [0, 636, 785, 100]
       ]
     },
     {
       "name": "VerticalScrollbar",
       "position": [785, 0],
       "bounds": [15, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='background'",
+      "position": [8, 428],
+      "bounds": [769, 300],
+      "drawsContent": false
     }
   ]
 }

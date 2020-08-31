@@ -4,21 +4,22 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
-#include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
-#include "third_party/blink/renderer/core/frame/scroll_to_options.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -588,12 +589,13 @@ TEST_F(ScrollIntoViewTest, StopAtLayoutViewportOption) {
   // stop_at_main_frame_layout_viewport.
   LayoutObject* target =
       GetDocument().getElementById("target")->GetLayoutObject();
-  WebScrollIntoViewParams params(
-      ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
-      kProgrammaticScroll, false, kScrollBehaviorInstant);
-  params.stop_at_main_frame_layout_viewport = true;
+  auto params = ScrollAlignment::CreateScrollIntoViewParams(
+      ScrollAlignment::LeftAlways(), ScrollAlignment::TopAlways(),
+      mojom::blink::ScrollType::kProgrammatic, false,
+      mojom::blink::ScrollBehavior::kInstant);
+  params->stop_at_main_frame_layout_viewport = true;
   target->ScrollRectToVisible(PhysicalRect(target->AbsoluteBoundingBoxRect()),
-                              params);
+                              std::move(params));
 
   ScrollableArea* root_scroller =
       ToLayoutBox(root->GetLayoutObject())->GetScrollableArea();
@@ -683,8 +685,10 @@ TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
   Element* content = GetDocument().getElementById("content");
   content->GetLayoutObject()->ScrollRectToVisible(
       content->BoundingBoxForScrollIntoView(),
-      {ScrollAlignment::kAlignToEdgeIfNeeded, ScrollAlignment::kAlignTopAlways,
-       kUserScroll, false, kScrollBehaviorSmooth, true});
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::TopAlways(),
+          mojom::blink::ScrollType::kUser, false,
+          mojom::blink::ScrollBehavior::kSmooth, true));
 
   // Animating the container
   Compositor().BeginFrame();  // update run_state_.
@@ -725,10 +729,10 @@ TEST_F(ScrollIntoViewTest, LongDistanceSmoothScrollFinishedInThreeSeconds) {
   Compositor().BeginFrame();  // update run_state_.
   Compositor().BeginFrame();  // Set start_time = now.
   Compositor().BeginFrame(0.2);
-  ASSERT_NEAR(Window().scrollY(), 864, 1);
+  ASSERT_NEAR(Window().scrollY(), 16971, 1);
 
   // Finish scrolling the container
-  Compositor().BeginFrame(2.8);
+  Compositor().BeginFrame(0.5);
   ASSERT_EQ(Window().scrollY(), target->OffsetTop());
 }
 

@@ -5,38 +5,25 @@
 import("//build/config/features.gni")
 
 component("device_features") {
-  public = [
-    "device_features.h",
-  ]
+  public = [ "device_features.h" ]
   sources = [
     "device_features.cc",
     "device_features_export.h",
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   defines = [ "DEVICE_FEATURES_IMPLEMENTATION" ]
 }
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/device/public/mojom",
-    "//services/device/public/mojom:generic_sensor",
-    "//services/device/public/mojom:usb",
-    "//services/device/public/mojom:usb_test",
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_chromeos && use_dbus) {
-    defines = [ "USE_DBUS=1" ]
+if (is_android) {
+  source_set("device_feature_list") {
+    sources = [ "device_feature_list.cc" ]
+    deps = [
+      ":device_features",
+      "//base",
+      "//services/device:device_service_jni_headers",
+    ]
   }
 }
 
@@ -75,6 +62,7 @@ source_set("test_support") {
   deps = [
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//services/device:lib",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

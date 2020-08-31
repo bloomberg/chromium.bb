@@ -71,21 +71,24 @@ static bool _checkFragmentSubgroupBarriersNoSSBO(std::vector<const void*> datas,
 	return true;
 }
 
-static bool checkFragmentSubgroupBarriersNoSSBO(std::vector<const void*> datas,
+static bool checkFragmentSubgroupBarriersNoSSBO(const void *internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32 height, deUint32)
 {
+	DE_UNREF(internalData);
 	return _checkFragmentSubgroupBarriersNoSSBO(datas, width, height, false);
 }
 
-static bool checkFragmentSubgroupBarriersWithImageNoSSBO(std::vector<const void*> datas,
+static bool checkFragmentSubgroupBarriersWithImageNoSSBO(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32 height, deUint32)
 {
+	DE_UNREF(internalData);
 	return _checkFragmentSubgroupBarriersNoSSBO(datas, width, height, true);
 }
 
-static bool checkVertexPipelineStagesSubgroupElectNoSSBO(std::vector<const void*> datas,
+static bool checkVertexPipelineStagesSubgroupElectNoSSBO(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32)
 {
+	DE_UNREF(internalData);
 	const float* const	resultData			= reinterpret_cast<const float*>(datas[0]);
 	float				poisonValuesFound	= 0.0f;
 	float				numSubgroupsUsed	= 0.0f;
@@ -110,9 +113,10 @@ static bool checkVertexPipelineStagesSubgroupElectNoSSBO(std::vector<const void*
 	return numSubgroupsUsed == poisonValuesFound;
 }
 
-static bool checkVertexPipelineStagesSubgroupElect(std::vector<const void*> datas,
-		deUint32 width, deUint32)
+static bool checkVertexPipelineStagesSubgroupElect(const void* internalData, std::vector<const void*> datas,
+		deUint32 width, deUint32, bool multipleCallsPossible)
 {
+	DE_UNREF(internalData);
 	const deUint32* const resultData =
 		reinterpret_cast<const deUint32*>(datas[0]);
 	deUint32 poisonValuesFound = 0;
@@ -138,12 +142,13 @@ static bool checkVertexPipelineStagesSubgroupElect(std::vector<const void*> data
 	const deUint32 numSubgroupsUsed =
 		*reinterpret_cast<const deUint32*>(datas[1]);
 
-	return numSubgroupsUsed == poisonValuesFound;
+	return (multipleCallsPossible ? (numSubgroupsUsed >= poisonValuesFound) : (numSubgroupsUsed == poisonValuesFound));
 }
 
-static bool checkVertexPipelineStagesSubgroupBarriers(std::vector<const void*> datas,
+static bool checkVertexPipelineStagesSubgroupBarriers(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32)
 {
+	DE_UNREF(internalData);
 	const deUint32* const resultData = reinterpret_cast<const deUint32*>(datas[0]);
 
 	// We used this SSBO to generate our unique value!
@@ -185,15 +190,17 @@ static bool _checkVertexPipelineStagesSubgroupBarriersNoSSBO(std::vector<const v
 	return true;
 }
 
-static bool checkVertexPipelineStagesSubgroupBarriersNoSSBO(std::vector<const void*> datas,
+static bool checkVertexPipelineStagesSubgroupBarriersNoSSBO(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32)
 {
+	DE_UNREF(internalData);
 	return _checkVertexPipelineStagesSubgroupBarriersNoSSBO(datas, width, false);
 }
 
-static bool checkVertexPipelineStagesSubgroupBarriersWithImageNoSSBO(std::vector<const void*> datas,
+static bool checkVertexPipelineStagesSubgroupBarriersWithImageNoSSBO(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32)
 {
+	DE_UNREF(internalData);
 	return _checkVertexPipelineStagesSubgroupBarriersNoSSBO(datas, width, true);
 }
 
@@ -217,29 +224,33 @@ static bool _checkTessellationEvaluationSubgroupBarriersNoSSBO(std::vector<const
 	return true;
 }
 
-static bool checkTessellationEvaluationSubgroupBarriersWithImageNoSSBO(std::vector<const void*> datas,
+static bool checkTessellationEvaluationSubgroupBarriersWithImageNoSSBO(const void* internalData, std::vector<const void*> datas,
 	deUint32 width, deUint32 height)
 {
+	DE_UNREF(internalData);
 	return _checkTessellationEvaluationSubgroupBarriersNoSSBO(datas, width, height, true);
 }
 
-static bool checkTessellationEvaluationSubgroupBarriersNoSSBO(std::vector<const void*> datas,
+static bool checkTessellationEvaluationSubgroupBarriersNoSSBO(const void* internalData, std::vector<const void*> datas,
 		deUint32 width, deUint32 height)
 {
+	DE_UNREF(internalData);
 	return _checkTessellationEvaluationSubgroupBarriersNoSSBO(datas, width, height, false);
 }
 
-static bool checkComputeSubgroupElect(std::vector<const void*> datas,
+static bool checkComputeSubgroupElect(const void* internalData, std::vector<const void*> datas,
 									  const deUint32 numWorkgroups[3], const deUint32 localSize[3],
 									  deUint32)
 {
+	DE_UNREF(internalData);
 	return vkt::subgroups::checkCompute(datas, numWorkgroups, localSize, 1);
 }
 
-static bool checkComputeSubgroupBarriers(std::vector<const void*> datas,
+static bool checkComputeSubgroupBarriers(const void* internalData, std::vector<const void*> datas,
 		const deUint32 numWorkgroups[3], const deUint32 localSize[3],
 		deUint32)
 {
+	DE_UNREF(internalData);
 	// We used this SSBO to generate our unique value!
 	const deUint32 ref = *reinterpret_cast<const deUint32*>(datas[2]);
 	return vkt::subgroups::checkCompute(datas, numWorkgroups, localSize, ref);
@@ -283,6 +294,7 @@ struct CaseDefinition
 	int					opType;
 	VkShaderStageFlags	shaderStage;
 	de::SharedPtr<bool>	geometryPointSizeSupported;
+	deBool				requiredSubgroupSize;
 };
 
 void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
@@ -1187,7 +1199,7 @@ void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinitio
 			programCollection.glslSources.add("vert")
 				<< glu::VertexSource(vertex.str()) << buildOptions;
 		}
-	else if (VK_SHADER_STAGE_GEOMETRY_BIT == caseDef.shaderStage)
+		else if (VK_SHADER_STAGE_GEOMETRY_BIT == caseDef.shaderStage)
 		{
 			std::ostringstream geometry;
 
@@ -1247,6 +1259,7 @@ void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinitio
 				<< "    gl_TessLevelOuter[1] = 1.0f;\n"
 				<< "  }\n"
 				<< "  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
+				<< (*caseDef.geometryPointSizeSupported ? "  gl_out[gl_InvocationID].gl_PointSize = gl_in[gl_InvocationID].gl_PointSize;\n" : "" )
 				<< "}\n";
 
 			evaluationSource << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450)<<"\n"
@@ -1281,6 +1294,7 @@ void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinitio
 				<< "  out_color.g = float(value);\n"
 				<< "  out_color.a = float(tempResult2);\n"
 				<< "  gl_Position = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);\n"
+				<< (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
 				<< "}\n";
 
 			programCollection.glslSources.add("tesc")
@@ -1330,6 +1344,7 @@ void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinitio
 				<< "  out_color[gl_InvocationID].g = float(value);\n"
 				<< "  out_color[gl_InvocationID].a = float(tempResult2);\n"
 				<< "  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
+				<< (*caseDef.geometryPointSizeSupported ? "  gl_out[gl_InvocationID].gl_PointSize = gl_in[gl_InvocationID].gl_PointSize;\n" : "" )
 				<< "}\n";
 
 			evaluationSource << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450)<<"\n"
@@ -1342,6 +1357,7 @@ void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinitio
 				<< "void main (void)\n"
 				<< "{\n"
 				<< "  gl_Position = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);\n"
+				<< (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
 				<< "  out_color = in_color[0];\n"
 				<< "}\n";
 
@@ -1457,6 +1473,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 						<< "    gl_TessLevelOuter[1] = 1.0f;\n"
 						<< "  }\n"
 						<< "  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
+						<< (*caseDef.geometryPointSizeSupported ? "  gl_out[gl_InvocationID].gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
 						<< "}\n";
 				programCollection.glslSources.add("tesc")
 					<< glu::TessellationControlSource(tesc.str()) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
@@ -1482,6 +1499,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 						<< "  result[gl_PrimitiveID * 2 + uint(gl_TessCoord.x + 0.5)] = tempRes;\n"
 						<< "  float pixelSize = 2.0f/1024.0f;\n"
 						<< "  gl_Position = gl_in[0].gl_Position + gl_TessCoord.x * pixelSize / 2.0f;\n"
+						<< (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
 						<< "}\n";
 				programCollection.glslSources.add("tese")
 					<< glu::TessellationEvaluationSource(tese.str()) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
@@ -1507,6 +1525,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 							<< testSrc.str()
 							<< "  result[gl_PrimitiveIDIn] = tempRes;\n"
 							<< "  gl_Position = gl_in[0].gl_Position;\n"
+							<< (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
 							<< "  EmitVertex();\n"
 							<< "  EndPrimitive();\n"
 							<< "}\n";
@@ -1699,7 +1718,8 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 					"    gl_TessLevelOuter[1] = 1.0f;\n"
 					"  }\n"
 					"  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
-					"}\n";
+					+ (*caseDef.geometryPointSizeSupported ? "  gl_out[gl_InvocationID].gl_PointSize = gl_in[gl_InvocationID].gl_PointSize;\n" : "" )
+					+ "}\n";
 				programCollection.glslSources.add("tesc")
 					<< glu::TessellationControlSource(tesc) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 			}
@@ -1739,8 +1759,10 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 					"  uint tempResult = 0;\n"
 					+ bdy.str() +
 					"  result[gl_PrimitiveID * 2 + uint(gl_TessCoord.x + 0.5)] = tempResult;\n"
-					"  float pixelSize = 2.0f/1024.0f;\n""  gl_Position = gl_in[0].gl_Position + gl_TessCoord.x * pixelSize / 2.0f;\n"
-					"}\n";
+					"  float pixelSize = 2.0f/1024.0f;\n"
+					"  gl_Position = gl_in[0].gl_Position + gl_TessCoord.x * pixelSize / 2.0f;\n"
+					+ (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" )
+					+ "}\n";
 				programCollection.glslSources.add("tese")
 					<< glu::TessellationEvaluationSource(tese) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 			}
@@ -1782,6 +1804,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 					 + bdy.str() +
 					"  result[gl_PrimitiveIDIn] = tempResult;\n"
 					"  gl_Position = gl_in[0].gl_Position;\n"
+					+ (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "" ) +
 					"  EmitVertex();\n"
 					"  EndPrimitive();\n"
 					"}\n";
@@ -1836,6 +1859,27 @@ void supportedCheck (Context& context, CaseDefinition caseDef)
 	DE_UNREF(caseDef);
 	if (!subgroups::isSubgroupSupported(context))
 		TCU_THROW(NotSupportedError, "Subgroup operations are not supported");
+
+	if (caseDef.requiredSubgroupSize)
+	{
+		if (!context.requireDeviceFunctionality("VK_EXT_subgroup_size_control"))
+			TCU_THROW(NotSupportedError, "Device does not support VK_EXT_subgroup_size_control extension");
+		VkPhysicalDeviceSubgroupSizeControlFeaturesEXT subgroupSizeControlFeatures;
+		subgroupSizeControlFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT;
+		subgroupSizeControlFeatures.pNext = DE_NULL;
+
+		VkPhysicalDeviceFeatures2 features;
+		features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		features.pNext = &subgroupSizeControlFeatures;
+
+		context.getInstanceInterface().getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &features);
+
+		if (subgroupSizeControlFeatures.subgroupSizeControl == DE_FALSE)
+			TCU_THROW(NotSupportedError, "Device does not support varying subgroup sizes nor required subgroup size");
+
+		if (subgroupSizeControlFeatures.computeFullSubgroups == DE_FALSE)
+			TCU_THROW(NotSupportedError, "Device does not support full subgroups in compute shaders");
+	}
 
 	*caseDef.geometryPointSizeSupported = subgroups::isTessellationAndGeometryPointSizeSupported(context);
 }
@@ -1900,9 +1944,9 @@ tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 	if (VK_SHADER_STAGE_VERTEX_BIT == caseDef.shaderStage)
 	{
 		if (OPTYPE_ELECT == caseDef.opType)
-			return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, checkVertexPipelineStagesSubgroupElectNoSSBO);
+			return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, DE_NULL, checkVertexPipelineStagesSubgroupElectNoSSBO);
 		else
-			return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount,
+			return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount, DE_NULL,
 				(OPTYPE_SUBGROUP_MEMORY_BARRIER_IMAGE == caseDef.opType) ?
 					checkVertexPipelineStagesSubgroupBarriersWithImageNoSSBO :
 					checkVertexPipelineStagesSubgroupBarriersNoSSBO
@@ -1910,7 +1954,7 @@ tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 	}
 	else if (VK_SHADER_STAGE_FRAGMENT_BIT == caseDef.shaderStage)
 	{
-		return subgroups::makeFragmentFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount,
+		return subgroups::makeFragmentFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount, DE_NULL,
 			(OPTYPE_SUBGROUP_MEMORY_BARRIER_IMAGE == caseDef.opType) ?
 				checkFragmentSubgroupBarriersWithImageNoSSBO :
 				checkFragmentSubgroupBarriersNoSSBO
@@ -1919,9 +1963,9 @@ tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 	else if (VK_SHADER_STAGE_GEOMETRY_BIT == caseDef.shaderStage)
 	{
 		if (OPTYPE_ELECT == caseDef.opType)
-			return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, checkVertexPipelineStagesSubgroupElectNoSSBO);
+			return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, DE_NULL, checkVertexPipelineStagesSubgroupElectNoSSBO);
 		else
-			return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount,
+			return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount, DE_NULL,
 				(OPTYPE_SUBGROUP_MEMORY_BARRIER_IMAGE == caseDef.opType) ?
 					checkVertexPipelineStagesSubgroupBarriersWithImageNoSSBO :
 					checkVertexPipelineStagesSubgroupBarriersNoSSBO
@@ -1929,9 +1973,9 @@ tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 	}
 
 	if (OPTYPE_ELECT == caseDef.opType)
-		return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, checkVertexPipelineStagesSubgroupElectNoSSBO, caseDef.shaderStage);
+		return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32G32_SFLOAT, DE_NULL, 0u, DE_NULL, checkVertexPipelineStagesSubgroupElectNoSSBO, caseDef.shaderStage);
 
-	return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount,
+	return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32G32B32A32_SFLOAT, &inputDatas[0], inputDatasCount, DE_NULL,
 		(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT == caseDef.shaderStage) ?
 			((OPTYPE_SUBGROUP_MEMORY_BARRIER_IMAGE == caseDef.opType) ?
 				checkVertexPipelineStagesSubgroupBarriersWithImageNoSSBO :
@@ -1971,7 +2015,35 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 
 		if (OPTYPE_ELECT == caseDef.opType)
 		{
-			return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, DE_NULL, 0, checkComputeSubgroupElect);
+			if (caseDef.requiredSubgroupSize == DE_FALSE)
+				return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, DE_NULL, 0, DE_NULL, checkComputeSubgroupElect);
+
+			tcu::TestLog& log	= context.getTestContext().getLog();
+			VkPhysicalDeviceSubgroupSizeControlPropertiesEXT subgroupSizeControlProperties;
+			subgroupSizeControlProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT;
+			subgroupSizeControlProperties.pNext = DE_NULL;
+			VkPhysicalDeviceProperties2 properties;
+			properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			properties.pNext = &subgroupSizeControlProperties;
+
+			context.getInstanceInterface().getPhysicalDeviceProperties2(context.getPhysicalDevice(), &properties);
+
+			log << tcu::TestLog::Message << "Testing required subgroup size range [" <<  subgroupSizeControlProperties.minSubgroupSize << ", "
+				<< subgroupSizeControlProperties.maxSubgroupSize << "]" << tcu::TestLog::EndMessage;
+
+			// According to the spec, requiredSubgroupSize must be a power-of-two integer.
+			for (deUint32 size = subgroupSizeControlProperties.minSubgroupSize; size <= subgroupSizeControlProperties.maxSubgroupSize; size *= 2)
+				{
+					tcu::TestStatus result = subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, DE_NULL, 0u, DE_NULL, checkComputeSubgroupElect,
+																		size, VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT);
+					if (result.getCode() != QP_TEST_RESULT_PASS)
+						{
+							log << tcu::TestLog::Message << "subgroupSize " << size << " failed" << tcu::TestLog::EndMessage;
+							return result;
+						}
+				}
+
+			return tcu::TestStatus::pass("OK");
 		}
 		else
 		{
@@ -1993,7 +2065,35 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 			inputDatas[2].initializeType = subgroups::SSBOData::InitializeNone;
 			inputDatas[2].isImage = true;
 
-			return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, inputDatas, inputDatasCount, checkComputeSubgroupBarriers);
+			if (caseDef.requiredSubgroupSize == DE_FALSE)
+				return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, inputDatas, inputDatasCount, DE_NULL, checkComputeSubgroupBarriers);
+
+			tcu::TestLog& log = context.getTestContext().getLog();
+			VkPhysicalDeviceSubgroupSizeControlPropertiesEXT subgroupSizeControlProperties;
+			subgroupSizeControlProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT;
+			subgroupSizeControlProperties.pNext = DE_NULL;
+			VkPhysicalDeviceProperties2 properties;
+			properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			properties.pNext = &subgroupSizeControlProperties;
+
+			context.getInstanceInterface().getPhysicalDeviceProperties2(context.getPhysicalDevice(), &properties);
+
+			log << tcu::TestLog::Message << "Testing required subgroup size range [" <<  subgroupSizeControlProperties.minSubgroupSize << ", "
+				<< subgroupSizeControlProperties.maxSubgroupSize << "]" << tcu::TestLog::EndMessage;
+
+			// According to the spec, requiredSubgroupSize must be a power-of-two integer.
+			for (deUint32 size = subgroupSizeControlProperties.minSubgroupSize; size <= subgroupSizeControlProperties.maxSubgroupSize; size *= 2)
+			{
+				tcu::TestStatus result = subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, inputDatas, inputDatasCount, DE_NULL, checkComputeSubgroupBarriers,
+																	size, VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT);
+				if (result.getCode() != QP_TEST_RESULT_PASS)
+				{
+					log << tcu::TestLog::Message << "subgroupSize " << size << " failed" << tcu::TestLog::EndMessage;
+					return result;
+				}
+			}
+
+			return tcu::TestStatus::pass("OK");
 		}
 	}
 	else
@@ -2032,14 +2132,14 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 			subgroups::SSBOData inputData[inputCount];
 
 			inputData[0].format			= VK_FORMAT_R32_UINT;
-			inputData[0].layout			 = subgroups::SSBOData::LayoutStd430;
+			inputData[0].layout			= subgroups::SSBOData::LayoutStd430;
 			inputData[0].numElements	= 1;
 			inputData[0].initializeType	= subgroups::SSBOData::InitializeZero;
 			inputData[0].binding		= 4u;
 			inputData[0].stages			= VK_SHADER_STAGE_VERTEX_BIT;
 
 			inputData[1].format			= VK_FORMAT_R32_UINT;
-			inputData[1].layout			 = subgroups::SSBOData::LayoutStd430;
+			inputData[1].layout			= subgroups::SSBOData::LayoutStd430;
 			inputData[1].numElements	= 1;
 			inputData[1].initializeType	= subgroups::SSBOData::InitializeZero;
 			inputData[1].binding		= 5u;
@@ -2066,7 +2166,7 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 			inputData[4].binding		= 8u;
 			inputData[4].stages			= VK_SHADER_STAGE_FRAGMENT_BIT;
 
-			return subgroups::allStages(context, VK_FORMAT_R32_UINT, inputData, inputCount, checkVertexPipelineStagesSubgroupElect, stages);
+			return subgroups::allStages(context, VK_FORMAT_R32_UINT, inputData, inputCount, DE_NULL, checkVertexPipelineStagesSubgroupElect, stages);
 		}
 		else
 		{
@@ -2115,7 +2215,7 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 				inputDatas[index + 3].stages			= stagesBits[ndx];
 			}
 
-			return subgroups::allStages(context, VK_FORMAT_R32_UINT, inputDatas, inputDatasCount, checkVertexPipelineStagesSubgroupBarriers, stages);
+			return subgroups::allStages(context, VK_FORMAT_R32_UINT, inputDatas, inputDatasCount, DE_NULL, checkVertexPipelineStagesSubgroupBarriers, stages);
 		}
 	}
 }
@@ -2149,8 +2249,11 @@ tcu::TestCaseGroup* createSubgroupsBasicTests(tcu::TestContext& testCtx)
 		const std::string op = de::toLower(getOpTypeName(opTypeIndex));
 
 		{
-			const CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_COMPUTE_BIT, de::SharedPtr<bool>(new bool)};
+			CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_COMPUTE_BIT, de::SharedPtr<bool>(new bool), DE_FALSE};
 			addFunctionCaseWithPrograms(computeGroup.get(), op, "",
+										supportedCheck, initPrograms, test, caseDef);
+			caseDef.requiredSubgroupSize = DE_TRUE;
+			addFunctionCaseWithPrograms(computeGroup.get(), op + "_requiredsubgroupsize", "",
 										supportedCheck, initPrograms, test, caseDef);
 		}
 
@@ -2161,33 +2264,22 @@ tcu::TestCaseGroup* createSubgroupsBasicTests(tcu::TestContext& testCtx)
 		}
 
 		{
-			const CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_ALL_GRAPHICS, de::SharedPtr<bool>(new bool)};
+			const CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_ALL_GRAPHICS, de::SharedPtr<bool>(new bool), DE_FALSE};
 			addFunctionCaseWithPrograms(graphicGroup.get(),
 										op, "",
 										supportedCheck, initPrograms, test, caseDef);
 		}
 
-		if (OPTYPE_ELECT == opTypeIndex)
+		for (int stageIndex = 0; stageIndex < DE_LENGTH_OF_ARRAY(stages); ++stageIndex)
 		{
-			for (int stageIndex = 1; stageIndex < DE_LENGTH_OF_ARRAY(stages); ++stageIndex)
-			{
-				const CaseDefinition caseDef = {opTypeIndex, stages[stageIndex], de::SharedPtr<bool>(new bool)};
-				addFunctionCaseWithPrograms(framebufferGroup.get(),
-							op + "_" + getShaderStageName(caseDef.shaderStage), "",
-							supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDef);
-			}
-		}
-		else
-		{
-			for (int stageIndex = 0; stageIndex < DE_LENGTH_OF_ARRAY(stages); ++stageIndex)
-			{
-				const CaseDefinition caseDefFrag = {opTypeIndex, stages[stageIndex], de::SharedPtr<bool>(new bool)};
-				addFunctionCaseWithPrograms(framebufferGroup.get(),
-							op + "_" + getShaderStageName(caseDefFrag.shaderStage), "",
-							supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDefFrag);
-			}
-		}
+			if (OPTYPE_ELECT == opTypeIndex && stageIndex == 0)
+				continue;		// This is not tested. I don't know why.
 
+			const CaseDefinition caseDefFrag = {opTypeIndex, stages[stageIndex], de::SharedPtr<bool>(new bool), DE_FALSE};
+			addFunctionCaseWithPrograms(framebufferGroup.get(),
+						op + "_" + getShaderStageName(caseDefFrag.shaderStage), "",
+						supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDefFrag);
+		}
 	}
 
 	de::MovePtr<tcu::TestCaseGroup> group(new tcu::TestCaseGroup(

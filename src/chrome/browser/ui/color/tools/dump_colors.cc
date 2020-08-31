@@ -19,19 +19,22 @@
 #define STRINGIZE_COLOR_IDS
 #include "ui/color/color_id_macros.inc"
 
+// clang-format off
 const char* enum_names[] = {
-  COLOR_IDS,
-  CHROME_COLOR_IDS,
+  COLOR_IDS
+  CHROME_COLOR_IDS
 };
+// clang-format on
 
 #include "ui/color/color_id_macros.inc"
 
 int main(int argc, const char* argv[]) {
   const auto add_mixers = [](ui::ColorProvider* provider, bool dark_window) {
     // TODO(pkasting): Use standard provider setup functions once those exist.
-    ui::AddCoreDefaultColorMixers(provider, dark_window);
-    ui::AddNativeColorMixers(provider);
-    ui::AddUiColorMixers(provider);
+    ui::AddCoreDefaultColorMixer(provider, dark_window);
+    ui::AddNativeCoreColorMixer(provider, dark_window);
+    ui::AddUiColorMixer(provider);
+    ui::AddNativeUiColorMixer(provider, dark_window);
     AddChromeColorMixers(provider);
     AddOmniboxColorMixers(provider, false);
   };

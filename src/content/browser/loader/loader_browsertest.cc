@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -29,6 +30,7 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -103,6 +105,12 @@ class LoaderBrowserTest : public ContentBrowserTest,
   bool got_downloads() const { return got_downloads_; }
 
  private:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "cors_exempt_header_list", "ExemptFoo");
+    ContentBrowserTest::SetUp();
+  }
+
   bool got_downloads_;
 };
 
@@ -686,18 +694,18 @@ namespace {
 
 struct RequestData {
   const GURL url;
-  const GURL first_party;
+  const net::SiteForCookies site_for_cookies;
   const base::Optional<url::Origin> initiator;
   const int load_flags;
   const std::string referrer;
 
   RequestData(const GURL& url,
-              const GURL& first_party,
+              const net::SiteForCookies& site_for_cookies,
               const base::Optional<url::Origin>& initiator,
               int load_flags,
               const std::string& referrer)
       : url(url),
-        first_party(first_party),
+        site_for_cookies(site_for_cookies),
         initiator(initiator),
         load_flags(load_flags),
         referrer(referrer) {}
@@ -777,11 +785,13 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, Basic) {
   // |first_party| and |initiator| that match the URL of the top-level document.
   // The top-level document itself doesn't have an |initiator|.
   const RequestData* first_request = &requests[0];
-  EXPECT_EQ(top_url, first_request->first_party);
+  EXPECT_TRUE(first_request->site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(top_url)));
   EXPECT_FALSE(first_request->initiator.has_value());
   for (size_t i = 1; i < requests.size(); i++) {
     const RequestData* request = &requests[i];
-    EXPECT_EQ(top_origin, url::Origin::Create(request->first_party));
+    EXPECT_TRUE(request->site_for_cookies.IsEquivalent(
+        net::SiteForCookies::FromOrigin(top_origin)));
     ASSERT_TRUE(request->initiator.has_value());
     EXPECT_EQ(top_origin, request->initiator);
   }
@@ -843,15 +853,17 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   EXPECT_EQ(9u, requests.size());
 
   // The first items loaded are the top-level and nested documents. These should
-  // both have a |first_party| that match the origin of the top-level document.
-  // The top-level document has no initiator and the nested frame is initiated
-  // by the top-level document.
+  // both have a |site_for_cookies| that matches the origin of the top-level
+  // document. The top-level document has no initiator and the nested frame is
+  // initiated by the top-level document.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(nested_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // The remaining items are loaded as subresources in the nested document, and
@@ -859,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   // document in which they're embedded.
   for (size_t i = 2; i < requests.size(); i++) {
     SCOPED_TRACE(requests[i].url);
-    EXPECT_EQ(GURL::EmptyGURL(), requests[i].first_party);
+    EXPECT_TRUE(requests[i].site_for_cookies.IsNull());
     EXPECT_EQ(nested_origin, requests[i].initiator);
   }
 }
@@ -879,19 +891,23 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginNested) {
   // URL to which they navigate. The navigation was initiated outside of a
   // document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Subresource requests have a first-party and initiator that matches the
   // document in which they're embedded.
   EXPECT_EQ(image_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Same-origin nested frames have a first-party and initiator that matches
-  // the document in which they're embedded.
+  // the document in which they're embedded (since the frame is same site with
+  // toplevel).
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
+  EXPECT_TRUE(requests[2].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[2].initiator);
 }
 
@@ -919,14 +935,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(url::Origin::Create(auxiliary_url),
-            url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(auxiliary_url)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -962,14 +979,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(url::Origin::Create(auxiliary_url),
-            url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(auxiliary_url)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -988,7 +1006,8 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, FailedNavigation) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 }
 
@@ -1012,23 +1031,26 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
   // User-initiated top-level navigations have a |first-party|. The navigation
   // was initiated outside of a document, so there are no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
+  EXPECT_TRUE(requests[0].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(top_js_url, requests[1].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
+  EXPECT_TRUE(requests[1].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Cross-origin frames have a first-party and initiator that matches the URL
-  // in which they're embedded.
+  // in which they're embedded (if they are the first cross-origin thing)
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
+  EXPECT_TRUE(requests[2].site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromOrigin(top_origin)));
   EXPECT_EQ(top_origin, requests[2].initiator);
 
   // Cross-origin subresource requests have a unique first-party, and an
   // initiator that matches the document in which they're embedded.
   EXPECT_EQ(nested_js_url, requests[3].url);
-  EXPECT_EQ(GURL::EmptyGURL(), requests[3].first_party);
+  EXPECT_TRUE(requests[3].site_for_cookies.IsNull());
   EXPECT_EQ(nested_origin, requests[3].initiator);
 }
 
@@ -1103,7 +1125,8 @@ class URLModifyingThrottle : public blink::URLLoaderThrottle {
     GURL::Replacements replacements;
     replacements.SetQueryStr("foo=bar");
     request->url = request->url.ReplaceComponents(replacements);
-    request->headers.SetHeader("Foo", "Bar");
+    request->headers.SetHeader("Foo", "BarRequest");
+    request->cors_exempt_headers.SetHeader("ExemptFoo", "ExemptBarRequest");
   }
 
   void WillRedirectRequest(
@@ -1111,11 +1134,14 @@ class URLModifyingThrottle : public blink::URLLoaderThrottle {
       const network::mojom::URLResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
-      net::HttpRequestHeaders* modified_request_headers) override {
+      net::HttpRequestHeaders* modified_request_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_request_headers) override {
     if (!modify_redirect_)
       return;
 
-    modified_request_headers->SetHeader("Foo", "Bar");
+    modified_request_headers->SetHeader("Foo", "BarRedirect");
+    modified_cors_exempt_request_headers->SetHeader("ExemptFoo",
+                                                    "ExemptBarRedirect");
 
     if (modified_redirect_url_)
       return;  // Only need to do this once.
@@ -1192,7 +1218,8 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleStartModify) {
   {
     base::AutoLock auto_lock(lock);
     ASSERT_TRUE(urls_requested.find(expected_url) != urls_requested.end());
-    ASSERT_TRUE(header_map[expected_url]["Foo"] == "Bar");
+    ASSERT_TRUE(header_map[expected_url]["Foo"] == "BarRequest");
+    ASSERT_TRUE(header_map[expected_url]["ExemptFoo"] == "ExemptBarRequest");
   }
 
   SetBrowserClientForTesting(old_content_browser_client);
@@ -1226,7 +1253,8 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleRedirectModify) {
 
   {
     base::AutoLock auto_lock(lock);
-    ASSERT_EQ(header_map[expected_url]["Foo"], "Bar");
+    ASSERT_EQ(header_map[expected_url]["Foo"], "BarRedirect");
+    ASSERT_EQ(header_map[expected_url]["ExemptFoo"], "ExemptBarRedirect");
     ASSERT_NE(urls_requested.find(expected_url), urls_requested.end());
   }
 

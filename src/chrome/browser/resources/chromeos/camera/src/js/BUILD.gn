@@ -18,12 +18,15 @@ group("closure_compile") {
 js_type_check("compile_resources") {
   deps = [
     ":background",
+    ":background_ops",
     ":chrome_util",
+    ":error",
     ":gallerybutton",
     ":intent",
     ":main",
     ":metrics",
     ":nav",
+    ":perf",
     ":sound",
     ":state",
     ":toast",
@@ -36,8 +39,15 @@ js_type_check("compile_resources") {
 js_library("chrome_util") {
 }
 
+js_library("error") {
+  deps = [ ":metrics" ]
+}
+
 js_library("intent") {
   deps = [
+    ":chrome_util",
+    ":metrics",
+    ":type",
     "mojo:chrome_helper",
   ]
 }
@@ -45,7 +55,9 @@ js_library("intent") {
 js_library("gallerybutton") {
   deps = [
     ":chrome_util",
-    "models:gallery",
+    "models:filesystem",
+    "models:result_saver",
+    "models:video_saver",
   ]
   externs_list = [
     "$externs_path/file_manager_private.js",
@@ -55,7 +67,8 @@ js_library("gallerybutton") {
 
 js_library("metrics") {
   deps = [
-    "externs:chrome_platform_analytics",
+    ":state",
+    "externs:universal_analytics_api",
   ]
 }
 
@@ -67,13 +80,14 @@ js_library("type") {
 
 js_library("main") {
   deps = [
+    ":background_ops",
     ":chrome_util",
     ":gallerybutton",
     ":intent",
     ":state",
+    ":type",
     "device:constraints_preferrer",
     "device:device_info_updater",
-    "models:gallery",
     "views:camera",
     "views:camera_intent",
     "views:dialog",
@@ -89,28 +103,47 @@ js_library("nav") {
   ]
 }
 
+js_library("perf") {
+}
+
 js_library("state") {
+  deps = [
+    ":perf",
+    ":type",
+  ]
 }
 
 js_library("background") {
   deps = [
+    ":background_ops",
     ":intent",
   ]
 }
 
-js_library("toast") {
+js_library("background_ops") {
   deps = [
-    ":util",
+    ":chrome_util",
+    ":error",
+    ":intent",
+    ":perf",
   ]
 }
 
+js_library("toast") {
+  deps = [ ":util" ]
+}
+
 js_library("tooltip") {
+  deps = [ ":chrome_util" ]
 }
 
 js_library("util") {
   deps = [
+    ":state",
     ":tooltip",
+    ":type",
     "browser_proxy:browser_proxy",
+    "externs:w3c_api",
     "mojo:chrome_helper",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]

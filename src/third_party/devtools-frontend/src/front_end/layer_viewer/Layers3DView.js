@@ -27,28 +27,35 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
+import {LayerSelection, LayerView, LayerViewHost, ScrollRectSelection, Selection, SnapshotSelection, Type,} from './LayerViewHost.js';  // eslint-disable-line no-unused-vars
+import {Events as TransformControllerEvents, TransformController} from './TransformController.js';
+
 /**
- * @implements {LayerViewer.LayerView}
+ * @implements {LayerView}
  * @unrestricted
  */
-export class Layers3DView extends UI.VBox {
+export class Layers3DView extends UI.Widget.VBox {
   /**
-   * @param {!LayerViewer.LayerViewHost} layerViewHost
+   * @param {!LayerViewHost} layerViewHost
    */
   constructor(layerViewHost) {
     super(true);
     this.registerRequiredCSS('layer_viewer/layers3DView.css');
     this.contentElement.classList.add('layers-3d-view');
-    this._failBanner = new UI.VBox();
+    this._failBanner = new UI.Widget.VBox();
     this._failBanner.element.classList.add('full-widget-dimmed-banner');
-    this._failBanner.element.createTextChild(Common.UIString('Layer information is not yet available.'));
+    this._failBanner.element.createTextChild(Common.UIString.UIString('Layer information is not yet available.'));
 
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
 
-    this._transformController = new LayerViewer.TransformController(this.contentElement);
-    this._transformController.addEventListener(
-        LayerViewer.TransformController.Events.TransformChanged, this._update, this);
+    this._transformController = new TransformController(this.contentElement);
+    this._transformController.addEventListener(TransformControllerEvents.TransformChanged, this._update, this);
     this._initToolbar();
 
     this._canvasElement = this.contentElement.createChild('canvas');
@@ -70,7 +77,7 @@ export class Layers3DView extends UI.VBox {
     this._chromeTextures = [];
     this._rects = [];
 
-    /** @type Map<SDK.Layer, LayerViewer.LayerView.SnapshotSelection> */
+    /** @type Map<SDK.LayerTreeBase.Layer, SnapshotSelection> */
     this._snapshotLayers = new Map();
     this._layerViewHost.setLayerSnapshotMap(this._snapshotLayers);
 
@@ -78,7 +85,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {?SDK.LayerTreeBase} layerTree
+   * @param {?SDK.LayerTreeBase.LayerTreeBase} layerTree
    * @override
    */
   setLayerTree(layerTree) {
@@ -92,7 +99,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @param {string=} imageURL
    */
   showImageForLayer(layer, imageURL) {
@@ -101,7 +108,7 @@ export class Layers3DView extends UI.VBox {
       this._update();
       return;
     }
-    UI.loadImage(imageURL).then(image => {
+    UI.UIUtils.loadImage(imageURL).then(image => {
       const texture = image && LayerTextureManager._createTextureForImage(this._gl, image);
       this._layerTexture = texture ? {layer: layer, texture: texture} : null;
       this._update();
@@ -136,15 +143,15 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   updateLayerSnapshot(layer) {
     this._textureManager.layerNeedsUpdate(layer);
   }
 
   /**
-   * @param {!LayerViewer.Layers3DView.OutlineType} type
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {!OutlineType} type
+   * @param {?Selection} selection
    */
   _setOutline(type, selection) {
     this._lastSelection[type] = selection;
@@ -152,7 +159,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    * @override
    */
   hoverObject(selection) {
@@ -160,7 +167,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    * @override
    */
   selectObject(selection) {
@@ -169,14 +176,14 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!LayerViewer.LayerView.Selection} selection
-   * @return {!Promise<?SDK.SnapshotWithRect>}
+   * @param {!Selection} selection
+   * @return {!Promise<?SDK.PaintProfiler.SnapshotWithRect>}
    */
   snapshotForSelection(selection) {
-    if (selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot) {
-      const snapshotWithRect = /** @type {!LayerViewer.LayerView.SnapshotSelection} */ (selection).snapshot();
+    if (selection.type() === Type.Snapshot) {
+      const snapshotWithRect = /** @type {!SnapshotSelection} */ (selection).snapshot();
       snapshotWithRect.snapshot.addReference();
-      return /** @type {!Promise<?SDK.SnapshotWithRect>} */ (Promise.resolve(snapshotWithRect));
+      return /** @type {!Promise<?SDK.PaintProfiler.SnapshotWithRect>} */ (Promise.resolve(snapshotWithRect));
     }
     if (selection.layer()) {
       const promise = selection.layer().snapshots()[0];
@@ -184,7 +191,7 @@ export class Layers3DView extends UI.VBox {
         return promise;
       }
     }
-    return /** @type {!Promise<?SDK.SnapshotWithRect>} */ (Promise.resolve(null));
+    return /** @type {!Promise<?SDK.PaintProfiler.SnapshotWithRect>} */ (Promise.resolve(null));
   }
 
   /**
@@ -259,7 +266,7 @@ export class Layers3DView extends UI.VBox {
     const rotateY = this._transformController.rotateY();
 
     this._scale = scale * viewScale;
-    const textureScale = Number.constrain(this._scale, 0.1, 1);
+    const textureScale = Platform.NumberUtilities.clamp(this._scale, 0.1, 1);
     if (textureScale !== this._oldTextureScale) {
       this._oldTextureScale = textureScale;
       this._textureManager.setScale(textureScale);
@@ -315,12 +322,12 @@ export class Layers3DView extends UI.VBox {
 
   _initChromeTextures() {
     /**
-     * @this {LayerViewer.Layers3DView}
-     * @param {!LayerViewer.Layers3DView.ChromeTexture} index
+     * @this {Layers3DView}
+     * @param {!ChromeTexture} index
      * @param {string} url
      */
     function loadChromeTexture(index, url) {
-      UI.loadImage(url).then(image => {
+      UI.UIUtils.loadImage(url).then(image => {
         this._chromeTextures[index] = image && LayerTextureManager._createTextureForImage(this._gl, image) || undefined;
       });
     }
@@ -355,7 +362,7 @@ export class Layers3DView extends UI.VBox {
         showInternalLayers ? this._layerTree.root() : (this._layerTree.contentRoot() || this._layerTree.root());
     const queue = [root];
     this._depthByLayerId[root.id()] = 0;
-    /** @type {!Set<!SDK.Layer>} */
+    /** @type {!Set<!SDK.LayerTreeBase.Layer>} */
     this._visibleLayers = new Set();
     while (queue.length > 0) {
       const layer = queue.shift();
@@ -372,7 +379,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @return {number}
    */
   _depthForLayer(layer) {
@@ -380,7 +387,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @param {number} index
    * @return {number}
    */
@@ -389,7 +396,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   _updateDimensionsForAutoscale(layer) {
     // We don't want to be precise, but rather pick something least affected by
@@ -401,13 +408,13 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   _calculateLayerRect(layer) {
     if (!this._visibleLayers.has(layer)) {
       return;
     }
-    const selection = new LayerViewer.LayerView.LayerSelection(layer);
+    const selection = new LayerSelection(layer);
     const rect = new Rectangle(selection);
     rect.setVertices(layer.quad(), this._depthForLayer(layer));
     this._appendRect(rect);
@@ -415,12 +422,12 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!LayerViewer.Layers3DView.Rectangle} rect
+   * @param {!Rectangle} rect
    */
   _appendRect(rect) {
     const selection = rect.relatedObject;
-    const isSelected = LayerViewer.LayerView.Selection.isEqual(this._lastSelection[OutlineType.Selected], selection);
-    const isHovered = LayerViewer.LayerView.Selection.isEqual(this._lastSelection[OutlineType.Hovered], selection);
+    const isSelected = Selection.isEqual(this._lastSelection[OutlineType.Selected], selection);
+    const isHovered = Selection.isEqual(this._lastSelection[OutlineType.Hovered], selection);
     if (isSelected) {
       rect.borderColor = SelectedBorderColor;
     } else if (isHovered) {
@@ -439,12 +446,12 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   _calculateLayerScrollRects(layer) {
     const scrollRects = layer.scrollRects();
     for (let i = 0; i < scrollRects.length; ++i) {
-      const selection = new LayerViewer.LayerView.ScrollRectSelection(layer, i);
+      const selection = new ScrollRectSelection(layer, i);
       const rect = new Rectangle(selection);
       rect.calculateVerticesFromRect(layer, scrollRects[i].rect, this._calculateScrollRectDepth(layer, i));
       rect.fillColor = ScrollRectBackgroundColor;
@@ -453,7 +460,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   _calculateLayerTileRects(layer) {
     const tiles = this._textureManager.tilesForLayer(layer);
@@ -462,7 +469,7 @@ export class Layers3DView extends UI.VBox {
       if (!tile.texture) {
         continue;
       }
-      const selection = new LayerViewer.LayerView.SnapshotSelection(layer, {rect: tile.rect, snapshot: tile.snapshot});
+      const selection = new SnapshotSelection(layer, {rect: tile.rect, snapshot: tile.snapshot});
       const rect = new Rectangle(selection);
       if (!this._snapshotLayers.has(layer)) {
         this._snapshotLayers.set(layer, selection);
@@ -486,7 +493,7 @@ export class Layers3DView extends UI.VBox {
 
     if (this._layerTexture && this._visibleLayers.has(this._layerTexture.layer)) {
       const layer = this._layerTexture.layer;
-      const selection = new LayerViewer.LayerView.LayerSelection(layer);
+      const selection = new LayerSelection(layer);
       const rect = new Rectangle(selection);
       rect.setVertices(layer.quad(), this._depthForLayer(layer));
       rect.texture = this._layerTexture.texture;
@@ -563,8 +570,8 @@ export class Layers3DView extends UI.VBox {
       return;
     }
 
-    const drawChrome = !Common.moduleSetting('frameViewerHideChromeWindow').get() && this._chromeTextures.length >= 3 &&
-        this._chromeTextures.indexOf(undefined) < 0;
+    const drawChrome = !Common.Settings.Settings.instance().moduleSetting('frameViewerHideChromeWindow').get() &&
+        this._chromeTextures.length >= 3 && this._chromeTextures.indexOf(undefined) < 0;
     const z = (this._maxDepth + 1) * LayerSpacing;
     const borderWidth = Math.ceil(ViewportBorderWidth * this._scale);
     let vertices = [viewport.width, 0, z, viewport.width, viewport.height, z, 0, viewport.height, z, 0, 0, z];
@@ -594,7 +601,7 @@ export class Layers3DView extends UI.VBox {
   }
 
   /**
-   * @param {!LayerViewer.Layers3DView.Rectangle} rect
+   * @param {!Rectangle} rect
    */
   _drawViewRect(rect) {
     const vertices = rect.vertices;
@@ -645,15 +652,16 @@ export class Layers3DView extends UI.VBox {
    */
   _webglDisabledBanner() {
     const fragment = this.contentElement.ownerDocument.createDocumentFragment();
-    fragment.createChild('div').textContent = Common.UIString('Can\'t display layers,');
-    fragment.createChild('div').textContent = Common.UIString('WebGL support is disabled in your browser.');
-    fragment.appendChild(UI.formatLocalized('Check %s for possible reasons.', [UI.XLink.create('about:gpu')]));
+    fragment.createChild('div').textContent = Common.UIString.UIString('Can\'t display layers,');
+    fragment.createChild('div').textContent = Common.UIString.UIString('WebGL support is disabled in your browser.');
+    fragment.appendChild(
+        UI.UIUtils.formatLocalized('Check %s for possible reasons.', [UI.XLink.XLink.create('about:gpu')]));
     return fragment;
   }
 
   /**
    * @param {!Event} event
-   * @return {?LayerViewer.LayerView.Selection}
+   * @return {?Selection}
    */
   _selectionFromEventPoint(event) {
     if (!this._layerTree) {
@@ -667,7 +675,7 @@ export class Layers3DView extends UI.VBox {
     const y0 = -(event.clientY - this._canvasElement.totalOffsetTop()) * window.devicePixelRatio;
 
     /**
-     * @param {!LayerViewer.Layers3DView.Rectangle} rect
+     * @param {!Rectangle} rect
      */
     function checkIntersection(rect) {
       if (!rect.relatedObject) {
@@ -688,14 +696,14 @@ export class Layers3DView extends UI.VBox {
    * @param {string} caption
    * @param {string} name
    * @param {boolean} value
-   * @param {!UI.Toolbar} toolbar
-   * @return {!Common.Setting}
+   * @param {!UI.Toolbar.Toolbar} toolbar
+   * @return {!Common.Settings.Setting}
    */
   _createVisibilitySetting(caption, name, value, toolbar) {
-    const setting = Common.settings.createSetting(name, value);
-    setting.setTitle(Common.UIString(caption));
+    const setting = Common.Settings.Settings.instance().createSetting(name, value);
+    setting.setTitle(Common.UIString.UIString(caption));
     setting.addChangeListener(this._update, this);
-    toolbar.appendToolbarItem(new UI.ToolbarSettingCheckbox(setting));
+    toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(setting));
     return setting;
   }
 
@@ -707,20 +715,23 @@ export class Layers3DView extends UI.VBox {
     this._showPaintsSetting =
         this._createVisibilitySetting(ls`Paints`, 'frameViewerShowPaints', true, this._panelToolbar);
     this._showPaintsSetting.addChangeListener(this._updatePaints, this);
-    Common.moduleSetting('frameViewerHideChromeWindow').addChangeListener(this._update, this);
+    Common.Settings.Settings.instance()
+        .moduleSetting('frameViewerHideChromeWindow')
+        .addChangeListener(this._update, this);
   }
 
   /**
    * @param {!Event} event
    */
   _onContextMenu(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(
-        Common.UIString('Reset View'), this._transformController.resetAndNotify.bind(this._transformController), false);
+        Common.UIString.UIString('Reset View'),
+        this._transformController.resetAndNotify.bind(this._transformController), false);
     const selection = this._selectionFromEventPoint(event);
-    if (selection && selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot) {
+    if (selection && selection.type() === Type.Snapshot) {
       contextMenu.defaultSection().appendItem(
-          Common.UIString('Show Paint Profiler'),
+          Common.UIString.UIString('Show Paint Profiler'),
           this.dispatchEventToListeners.bind(this, Events.PaintProfilerRequested, selection), false);
     }
     this._layerViewHost.showContextMenu(contextMenu, selection);
@@ -762,7 +773,7 @@ export class Layers3DView extends UI.VBox {
    */
   _onDoubleClick(event) {
     const selection = this._selectionFromEventPoint(event);
-    if (selection && (selection.type() === LayerViewer.LayerView.Selection.Type.Snapshot || selection.layer())) {
+    if (selection && (selection.type() === Type.Snapshot || selection.layer())) {
       this.dispatchEventToListeners(Events.PaintProfilerRequested, selection);
     }
     event.stopPropagation();
@@ -813,9 +824,9 @@ export const ChromeTexture = {
  * @enum {string}
  */
 export const ScrollRectTitles = {
-  RepaintsOnScroll: Common.UIString('repaints on scroll'),
-  TouchEventHandler: Common.UIString('touch event listener'),
-  WheelEventHandler: Common.UIString('mousewheel event listener')
+  RepaintsOnScroll: Common.UIString.UIString('repaints on scroll'),
+  TouchEventHandler: Common.UIString.UIString('touch event listener'),
+  WheelEventHandler: Common.UIString.UIString('mousewheel event listener')
 };
 
 export const FragmentShader = '' +
@@ -864,7 +875,7 @@ export class LayerTextureManager {
    */
   constructor(textureUpdatedCallback) {
     this._textureUpdatedCallback = textureUpdatedCallback;
-    this._throttler = new Common.Throttler(0);
+    this._throttler = new Common.Throttler.Throttler(0);
     this._scale = 0;
     this._active = false;
     this.reset();
@@ -894,9 +905,9 @@ export class LayerTextureManager {
       this.setLayerTree(null);
     }
 
-    /** @type {!Map<!SDK.Layer, !Array<!LayerViewer.LayerTextureManager.Tile>>} */
+    /** @type {!Map<!SDK.LayerTreeBase.Layer, !Array<!Tile>>} */
     this._tilesByLayer = new Map();
-    /** @type {!Array<!SDK.Layer>} */
+    /** @type {!Array<!SDK.LayerTreeBase.Layer>} */
     this._queue = [];
   }
 
@@ -922,7 +933,7 @@ export class LayerTextureManager {
   }
 
   /**
-   * @param {?SDK.LayerTreeBase} layerTree
+   * @param {?SDK.LayerTreeBase.LayerTreeBase} layerTree
    */
   setLayerTree(layerTree) {
     const newLayers = new Set();
@@ -952,8 +963,8 @@ export class LayerTextureManager {
   }
 
   /**
-   * @param {!SDK.Layer} layer
-   * @param {!Array<!SDK.SnapshotWithRect>} snapshots
+   * @param {!SDK.LayerTreeBase.Layer} layer
+   * @param {!Array<!SDK.PaintProfiler.SnapshotWithRect>} snapshots
    * @return {!Promise}
    */
   _setSnapshotsForLayer(layer, snapshots) {
@@ -991,15 +1002,15 @@ export class LayerTextureManager {
   }
 
   /**
-   * @param {!SDK.Layer} layer
-   * @return {!Array<!LayerViewer.LayerTextureManager.Tile>}
+   * @param {!SDK.LayerTreeBase.Layer} layer
+   * @return {!Array<!Tile>}
    */
   tilesForLayer(layer) {
     return this._tilesByLayer.get(layer) || [];
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   layerNeedsUpdate(layer) {
     if (this._queue.indexOf(layer) < 0) {
@@ -1031,7 +1042,7 @@ export class LayerTextureManager {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @return {!Promise}
    */
   _updateLayer(layer) {
@@ -1063,7 +1074,7 @@ export class LayerTextureManager {
  */
 export class Rectangle {
   /**
-   * @param {?LayerViewer.LayerView.Selection} relatedObject
+   * @param {?Selection} relatedObject
    */
   constructor(relatedObject) {
     this.relatedObject = relatedObject;
@@ -1114,7 +1125,7 @@ export class Rectangle {
   }
 
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @param {!Protocol.DOM.Rect} rect
    * @param {number} z
    */
@@ -1178,7 +1189,7 @@ export class Rectangle {
  */
 export class Tile {
   /**
-   * @param {!SDK.SnapshotWithRect} snapshotWithRect
+   * @param {!SDK.PaintProfiler.SnapshotWithRect} snapshotWithRect
    */
   constructor(snapshotWithRect) {
     this.snapshot = snapshotWithRect.snapshot;
@@ -1217,73 +1228,7 @@ export class Tile {
     this._gl = glContext;
     this.scale = scale;
     const imageURL = await this.snapshot.replay(scale);
-    const image = imageURL ? await UI.loadImage(imageURL) : null;
+    const image = imageURL ? await UI.UIUtils.loadImage(imageURL) : null;
     this.texture = image ? LayerTextureManager._createTextureForImage(glContext, image) : null;
   }
 }
-
-/* Legacy exported object */
-self.LayerViewer = self.LayerViewer || {};
-
-/* Legacy exported object */
-LayerViewer = LayerViewer || {};
-
-/**
- * @constructor
- */
-LayerViewer.Layers3DView = Layers3DView;
-
-/** @typedef {{borderColor: !Array<number>, borderWidth: number}} */
-LayerViewer.Layers3DView.LayerStyle;
-
-/**
- * @enum {string}
- */
-LayerViewer.Layers3DView.OutlineType = OutlineType;
-
-/**
- * @enum {symbol}
- */
-LayerViewer.Layers3DView.Events = Events;
-
-/**
- * @enum {number}
- */
-LayerViewer.Layers3DView.ChromeTexture = ChromeTexture;
-
-/**
- * @enum {string}
- */
-LayerViewer.Layers3DView.ScrollRectTitles = ScrollRectTitles;
-
-LayerViewer.Layers3DView.FragmentShader = FragmentShader;
-LayerViewer.Layers3DView.VertexShader = VertexShader;
-
-LayerViewer.Layers3DView.HoveredBorderColor = HoveredBorderColor;
-LayerViewer.Layers3DView.SelectedBorderColor = SelectedBorderColor;
-LayerViewer.Layers3DView.BorderColor = BorderColor;
-LayerViewer.Layers3DView.ViewportBorderColor = ViewportBorderColor;
-LayerViewer.Layers3DView.ScrollRectBackgroundColor = ScrollRectBackgroundColor;
-LayerViewer.Layers3DView.HoveredImageMaskColor = HoveredImageMaskColor;
-LayerViewer.Layers3DView.BorderWidth = BorderWidth;
-
-LayerViewer.Layers3DView.SelectedBorderWidth = SelectedBorderWidth;
-LayerViewer.Layers3DView.ViewportBorderWidth = ViewportBorderWidth;
-
-LayerViewer.Layers3DView.LayerSpacing = LayerSpacing;
-LayerViewer.Layers3DView.ScrollRectSpacing = ScrollRectSpacing;
-
-/**
- * @constructor
- */
-LayerViewer.Layers3DView.Rectangle = Rectangle;
-
-/**
- * @constructor
- */
-LayerViewer.LayerTextureManager = LayerTextureManager;
-
-/**
- * @constructor
- */
-LayerViewer.LayerTextureManager.Tile = Tile;

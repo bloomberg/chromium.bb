@@ -88,6 +88,8 @@ static bool isFeatureSupported(const vkt::Context& ctx, const std::string& featu
 		return ctx.getDeviceFeatures().geometryShader;
 	if (feature == "Features.vertexPipelineStoresAndAtomics")
 		return ctx.getDeviceFeatures().vertexPipelineStoresAndAtomics;
+	if (feature == "Features.fillModeNonSolid")
+		return ctx.getDeviceFeatures().fillModeNonSolid;
 	if (feature == "VariablePointerFeatures.variablePointersStorageBuffer")
 		return ctx.getVariablePointersFeatures().variablePointersStorageBuffer;
 	if (feature == "VariablePointerFeatures.variablePointers")
@@ -167,10 +169,12 @@ bool AmberTestCase::parse(const std::string& readFilename)
 		return false;
 
 	m_recipe = new amber::Recipe();
-	m_recipe->SetFenceTimeout(1000 * 60 * 10); // 10 minutes
 
 	amber::Amber am;
 	amber::Result r = am.Parse(script, m_recipe);
+
+	m_recipe->SetFenceTimeout(1000 * 60 * 10); // 10 minutes
+
 	if (!r.IsSuccess())
 	{
 		getTestContext().getLog()

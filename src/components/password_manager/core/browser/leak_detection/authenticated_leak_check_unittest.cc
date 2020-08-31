@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
+#include "components/password_manager/core/browser/leak_detection/mock_leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "crypto/sha2.h"
@@ -27,6 +28,7 @@ namespace {
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::ElementsAre;
+using ::testing::Field;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -38,38 +40,19 @@ constexpr char kExampleCom[] = "https://example.com";
 const int64_t kMockElapsedTime =
     base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
 
-class MockLeakDetectionRequest : public LeakDetectionRequestInterface {
- public:
-  // LeakDetectionRequestInterface:
-  MOCK_METHOD5(LookupSingleLeak,
-               void(network::mojom::URLLoaderFactory*,
-                    const std::string&,
-                    std::string,
-                    std::string,
-                    LookupSingleLeakCallback));
-};
-
 struct TestLeakDetectionRequest : public LeakDetectionRequestInterface {
   ~TestLeakDetectionRequest() override = default;
   // LeakDetectionRequestInterface:
   void LookupSingleLeak(network::mojom::URLLoaderFactory* url_loader_factory,
                         const std::string& access_token,
-                        std::string username_hash_prefix,
-                        std::string encrypted_payload,
+                        LookupSingleLeakPayload payload,
                         LookupSingleLeakCallback callback) override {
-    encrypted_payload_ = std::move(encrypted_payload);
+    encrypted_payload_ = std::move(payload.encrypted_payload);
     callback_ = std::move(callback);
   }
 
   std::string encrypted_payload_;
   LookupSingleLeakCallback callback_;
-};
-
-class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
- public:
-  // LeakDetectionRequestFactory:
-  MOCK_CONST_METHOD0(CreateNetworkRequest,
-                     std::unique_ptr<LeakDetectionRequestInterface>());
 };
 
 // Helper struct for making a fake network request.
@@ -191,8 +174,13 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
 
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
-              LookupSingleLeak(_, access_token, ElementsAre(-67, 116, -87),
-                               testing::Ne(""), _));
+              LookupSingleLeak(
+                  _, access_token,
+                  AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                              ElementsAre(-67, 116, -87)),
+                        Field(&LookupSingleLeakPayload::encrypted_payload,
+                              testing::Ne(""))),
+                  _));
   EXPECT_CALL(*request_factory(), CreateNetworkRequest)
       .WillOnce(Return(ByMove(std::move(network_request))));
   // Crypto stuff is done here.
@@ -220,8 +208,13 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   const std::string access_token = "access_token";
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
-              LookupSingleLeak(_, access_token, ElementsAre(-67, 116, -87),
-                               testing::Ne(""), _));
+              LookupSingleLeak(
+                  _, access_token,
+                  AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                              ElementsAre(-67, 116, -87)),
+                        Field(&LookupSingleLeakPayload::encrypted_payload,
+                              testing::Ne(""))),
+                  _));
   EXPECT_CALL(*request_factory(), CreateNetworkRequest)
       .WillOnce(Return(ByMove(std::move(network_request))));
 
@@ -280,7 +273,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_DecryptionError) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -312,7 +306,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_NoLeak) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -351,7 +346,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(true, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(

@@ -15,6 +15,7 @@ from __future__ import print_function
 import ast
 import socket
 from ssl import SSLError
+import sys
 
 from google.protobuf import field_mask_pb2
 from six.moves import http_client as httplib
@@ -27,6 +28,10 @@ from chromite.lib.luci.prpc.client import Client, ProtocolError
 
 from infra_libs.buildbucket.proto import build_pb2, common_pb2, rpc_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 BBV2_URL_ENDPOINT_PROD = (
     'cr-buildbucket.appspot.com'
@@ -57,14 +62,29 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
     key: name of the property.
     value: value of the property.
   """
-  logging.PrintKitchenSetBuildProperty(key, value)
+  if key == 'email_notify':
+    logging.PrintKitchenSetEmailNotifyProperty(key, value)
+  else:
+    logging.PrintKitchenSetBuildProperty(key, value)
 
-def UpdateSelfCommonBuildProperties(
-    critical=None, cidb_id=None, chrome_version=None, milestone_version=None,
-    platform_version=None, full_version=None, toolchain_url=None,
-    build_type=None, unibuild=None, suite_scheduling=None,
-    killed_child_builds=None, board=None, main_firmware_version=None,
-    ec_firmware_version=None, metadata_url=None):
+
+def UpdateSelfCommonBuildProperties(critical=None,
+                                    cidb_id=None,
+                                    chrome_version=None,
+                                    milestone_version=None,
+                                    platform_version=None,
+                                    full_version=None,
+                                    toolchain_url=None,
+                                    build_type=None,
+                                    unibuild=None,
+                                    suite_scheduling=None,
+                                    killed_child_builds=None,
+                                    board=None,
+                                    main_firmware_version=None,
+                                    ec_firmware_version=None,
+                                    metadata_url=None,
+                                    channels=None,
+                                    email_notify=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -79,7 +99,7 @@ def UpdateSelfCommonBuildProperties(
     full_version: (Optional) full version of the build.
         Eg "R74-11671.0.0-b3416654".
     toolchain_url: (Optional) toolchain_url of the build.
-    build_type: (Optional) One of ('paladin', 'full', 'canary', 'pre_cq',...).
+    build_type: (Optional) One of ('full', 'canary', ...).
     unibuild: (Optional) Boolean indicating whether build is unibuild.
     suite_scheduling: (Optional)
     killed_child_builds: (Optional) A list of Buildbucket IDs of child builds
@@ -88,6 +108,10 @@ def UpdateSelfCommonBuildProperties(
     main_firmware_version: (Optional) main firmware version of the build.
     ec_firmware_version: (Optional) ec_firmware version of the build.
     metadata_url: (Optional) google storage url to metadata.json of the build.
+    channels: (Optional) list of channels the build are configured for.
+        e.g. [beta,stable].
+    email_notify: (Optional) list of luci-notify email_notify values
+        representing the recipients of failure alerts to for this builder.
   """
   if critical is not None:
     critical = 1 if critical in [1, True] else 0
@@ -123,6 +147,11 @@ def UpdateSelfCommonBuildProperties(
                                          ec_firmware_version)
   if metadata_url is not None:
     UpdateSelfBuildPropertiesNonBlocking('metadata_url', metadata_url)
+  if channels is not None:
+    UpdateSelfBuildPropertiesNonBlocking('channels', channels)
+  if email_notify is not None:
+    UpdateSelfBuildPropertiesNonBlocking('email_notify', email_notify)
+
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.
@@ -144,7 +173,8 @@ def UpdateBuildMetadata(metadata):
       build_type=d.get('build_type'),
       critical=d.get('important'),
       unibuild=d.get('unibuild', False),
-      suite_scheduling=d.get('suite_scheduling', False))
+      suite_scheduling=d.get('suite_scheduling', False),
+      channels=d.get('channels', None))
 
 def BuildStepToDict(step, build_values=None):
   """Extract information from a Buildbucket Step instance.

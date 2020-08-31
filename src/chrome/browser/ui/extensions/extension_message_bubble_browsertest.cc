@@ -60,17 +60,18 @@ void ExtensionMessageBubbleBrowserTest::AddSettingsOverrideExtension(
     const std::string& settings_override_value) {
   DCHECK(!custom_extension_dir_);
   custom_extension_dir_ = std::make_unique<extensions::TestExtensionDir>();
-  std::string manifest = base::StringPrintf(
-    "{\n"
-    "  'name': 'settings override',\n"
-    "  'version': '0.1',\n"
-    "  'manifest_version': 2,\n"
-    "  'description': 'controls settings',\n"
-    "  'chrome_settings_overrides': {\n"
-    "    %s\n"
-    "  }\n"
-    "}", settings_override_value.c_str());
-  custom_extension_dir_->WriteManifestWithSingleQuotes(manifest);
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "settings override",
+           "version": "0.1",
+           "manifest_version": 2,
+           "description": "controls settings",
+           "chrome_settings_overrides": {
+             %s
+           }
+         })";
+  custom_extension_dir_->WriteManifest(
+      base::StringPrintf(kManifestTemplate, settings_override_value.c_str()));
   ASSERT_TRUE(LoadExtension(custom_extension_dir_->UnpackedPath()));
 }
 
@@ -80,7 +81,8 @@ void ExtensionMessageBubbleBrowserTest::CheckBubble(
     bool should_be_highlighting) {
   EXPECT_EQ(should_be_highlighting, toolbar_model()->is_highlighting());
   EXPECT_TRUE(toolbar_model()->has_active_bubble());
-  EXPECT_TRUE(browser->window()->GetToolbarActionsBar()->is_showing_bubble());
+  EXPECT_TRUE(ToolbarActionsBar::FromBrowserWindow(browser->window())
+                  ->is_showing_bubble());
   CheckBubbleNative(browser, position);
 }
 
@@ -92,7 +94,8 @@ void ExtensionMessageBubbleBrowserTest::CheckBubbleIsNotPresent(
   ASSERT_TRUE(!should_be_highlighting || should_profile_have_bubble);
   EXPECT_EQ(should_be_highlighting, toolbar_model()->is_highlighting());
   EXPECT_EQ(should_profile_have_bubble, toolbar_model()->has_active_bubble());
-  EXPECT_FALSE(browser->window()->GetToolbarActionsBar()->is_showing_bubble());
+  EXPECT_FALSE(ToolbarActionsBar::FromBrowserWindow(browser->window())
+                   ->is_showing_bubble());
   CheckBubbleIsNotPresentNative(browser);
 }
 
@@ -277,7 +280,7 @@ void ExtensionMessageBubbleBrowserTest::TestControlledNewTabPageBubbleShown(
 void ExtensionMessageBubbleBrowserTest::TestControlledHomeBubbleShown() {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kShowHomeButton, true);
 
-  const char kHomePage[] = "'homepage': 'https://www.google.com'\n";
+  const char kHomePage[] = R"("homepage": "https://www.google.com")";
   AddSettingsOverrideExtension(kHomePage);
 
   CheckBubbleIsNotPresent(browser(), false, false);
@@ -292,14 +295,14 @@ void ExtensionMessageBubbleBrowserTest::TestControlledHomeBubbleShown() {
 
 void ExtensionMessageBubbleBrowserTest::TestControlledSearchBubbleShown() {
   const char kSearchProvider[] =
-      "'search_provider': {\n"
-      "  'search_url': 'https://www.google.com/search?q={searchTerms}',\n"
-      "  'is_default': true,\n"
-      "  'favicon_url': 'https://www.google.com/favicon.icon',\n"
-      "  'keyword': 'TheGoogs',\n"
-      "  'name': 'Google',\n"
-      "  'encoding': 'UTF-8'\n"
-      "}\n";
+      R"("search_provider": {
+           "search_url": "https://www.google.com/search?q={searchTerms}",
+           "is_default": true,
+           "favicon_url": "https://www.google.com/favicon.icon",
+           "keyword": "TheGoogs",
+           "name": "Google",
+           "encoding": "UTF-8"
+         })";
   AddSettingsOverrideExtension(kSearchProvider);
 
   CheckBubbleIsNotPresent(browser(), false, false);

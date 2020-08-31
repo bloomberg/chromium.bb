@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;
@@ -134,14 +134,14 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
         rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
   }
   auto owner_type = rfh ? rfh->GetFrameOwnerElementType()
-                        : blink::FrameOwnerElementType::kNone;
+                        : blink::mojom::FrameOwnerElementType::kNone;
   // If the embedder frame is the ContentFrame() of a plugin element, then there
   // could be a MimeHandlerViewFrameContainer in the parent frame. Note that
   // the MHVFC is only created through HTMLPlugInElement::UpdatePlugin (manually
   // navigating a plugin element's window would create a MHVFC).
   maybe_has_frame_container_ =
-      owner_type == blink::FrameOwnerElementType::kEmbed ||
-      owner_type == blink::FrameOwnerElementType::kObject;
+      owner_type == blink::mojom::FrameOwnerElementType::kEmbed ||
+      owner_type == blink::mojom::FrameOwnerElementType::kObject;
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
   delegate_->RecordLoadMetric(
       /* in_main_frame */ !GetEmbedderFrame()->GetParent(), mime_type_);
@@ -401,6 +401,8 @@ content::WebContents* MimeHandlerViewGuest::CreateCustomWebContents(
                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                      ui::PAGE_TRANSITION_LINK, true);
   open_params.initiator_origin = opener->GetLastCommittedOrigin();
+  open_params.source_site_instance = source_site_instance;
+
   // Extensions are allowed to open popups under circumstances covered by
   // running as a mime handler.
   open_params.user_gesture = true;

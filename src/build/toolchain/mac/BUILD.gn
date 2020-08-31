@@ -209,9 +209,7 @@ template("mac_toolchain") {
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("cxx") {
@@ -220,9 +218,7 @@ template("mac_toolchain") {
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("asm") {
@@ -231,31 +227,25 @@ template("mac_toolchain") {
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("objc") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{framework_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("objcxx") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{framework_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("alink") {
@@ -275,18 +265,17 @@ template("mac_toolchain") {
 
       # Specify explicit path for libtool.
       libtool = mac_bin_path + "libtool"
-      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
+      command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static -D {{arflags}} -o {{output}} -filelist $rspfile"
       description = "LIBTOOL-STATIC {{output}}"
-      outputs = [
-        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
-      ]
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
       default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
       output_prefix = "lib"
     }
 
     tool("solink") {
-      dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
+      # E.g. "./libfoo.dylib":
+      dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = dylib + ".rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
@@ -315,10 +304,10 @@ template("mac_toolchain") {
         link_command += " -Wl,-install_name,@rpath/\"{{target_output_name}}{{output_extension}}\" "
       }
       link_command += dsym_switch
-      link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{libs}} {{solibs}}"
+      link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{solibs}} {{libs}}"
 
       replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
-      extract_toc_command = "{ $otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; $nm -gP \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
+      extract_toc_command = "{ $otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; $nm -gPp \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
 
       command = "if $does_reexport_command ; then $link_command && $extract_toc_command > \"$tocname\"; else $link_command && $extract_toc_command > \"$temporary_tocname\" && $replace_command ; fi; fi"
 
@@ -357,7 +346,8 @@ template("mac_toolchain") {
     }
 
     tool("solink_module") {
-      sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
+      # E.g. "./libfoo.so":
+      sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = sofile + ".rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
@@ -366,7 +356,7 @@ template("mac_toolchain") {
         link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
       }
       link_command += dsym_switch
-      link_command += " {{solibs}} {{libs}}"
+      link_command += " {{frameworks}} {{solibs}} {{libs}}"
       command = link_command
 
       rspfile_content = "{{inputs_newline}}"
@@ -379,9 +369,7 @@ template("mac_toolchain") {
       default_output_dir = "{{root_out_dir}}"
       default_output_extension = ".so"
 
-      outputs = [
-        sofile,
-      ]
+      outputs = [ sofile ]
 
       if (_enable_dsyms) {
         outputs += dsym_output
@@ -404,12 +392,10 @@ template("mac_toolchain") {
       # do for command-line arguments. Thus any source names with spaces, or
       # label names with spaces (which GN bases the output paths on) will be
       # corrupted by this process. Don't use spaces for source files or labels.
-      command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
+      command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"
-      outputs = [
-        outfile,
-      ]
+      outputs = [ outfile ]
 
       if (_enable_dsyms) {
         outputs += dsym_output
@@ -435,27 +421,16 @@ template("mac_toolchain") {
 
     tool("copy_bundle_data") {
       # copy_command use hardlink if possible but this does not work with
-      # directories. If source is a directory, instead use "pax" to create
-      # the same tree structure using hardlinks to individual files (this
-      # preserve symbolic links too) as recommended in the replies to the
-      # question at http://serverfault.com/q/209888/43689 ("cp -al" isn't
-      # available on macOS).
+      # directories. Also when running EG2 tests from Xcode, Xcode tries to
+      # copy some files into the application bundle which fails if source
+      # and destination are hardlinked together.
       #
-      # According to the man page for pax, the commands to use to clone
-      # olddir to newdir using pax are the following:
-      #
-      #   $ mkdir newdir
-      #   $ cd olddir
-      #   $ pax -rwl . ../newdir
-      #
-      # The _copydir command does exactly that but use an absolute path
-      # constructed using shell variable $OLDPWD (automatically set when
-      # cd is used) as computing the relative path is a bit complex and
-      # using pwd would requires a sub-shell to be created.
-      _copydir = "mkdir -p {{output}} && cd {{source}} && " +
-                 "pax -rwl . \"\$OLDPWD\"/{{output}}"
-      command = "rm -rf {{output}} && if [[ -d {{source}} ]]; then " +
-                _copydir + "; else " + copy_command + "; fi"
+      # Instead use clonefile to copy the files which is as efficient as
+      # hardlink but ensure the file have distinct metadata (thus avoid the
+      # error with ditto, see https://crbug.com/1042182).
+      command =
+          "rm -rf {{output}} && cp -fRc {{source}} {{output}} 2>/dev/null " +
+          "|| (rm -rf {{output}} && cp -fR {{source}} {{output}})"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"

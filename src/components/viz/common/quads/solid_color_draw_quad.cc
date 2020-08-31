@@ -4,9 +4,9 @@
 
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/traced_value.h"
-#include "base/values.h"
+#include "ui/gfx/color_utils.h"
 
 namespace viz {
 
@@ -45,7 +45,7 @@ const SolidColorDrawQuad* SolidColorDrawQuad::MaterialCast(
 
 void SolidColorDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  value->SetInteger("color", color);
+  value->SetString("color", color_utils::SkColorToRgbaString(color));
   value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
 }
 

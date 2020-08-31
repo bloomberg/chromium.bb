@@ -18,9 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrCoordTransform.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/effects/generated/GrMagnifierEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -122,10 +122,10 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilterImpl::onFilterImage(const Context& c
     if (ctx.gpuBacked()) {
         auto context = ctx.getContext();
 
-        sk_sp<GrTextureProxy> inputProxy(input->asTextureProxyRef(context));
-        SkASSERT(inputProxy);
+        GrSurfaceProxyView inputView = input->view(context);
+        SkASSERT(inputView.asTextureProxy());
 
-        const auto isProtected = inputProxy->isProtected();
+        const auto isProtected = inputView.proxy()->isProtected();
 
         offset->fX = bounds.left();
         offset->fY = bounds.top();
@@ -137,7 +137,8 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilterImpl::onFilterImage(const Context& c
         SkRect srcRect = fSrcRect.makeOffset((1.f - invXZoom) * input->subset().x(),
                                              (1.f - invYZoom) * input->subset().y());
 
-        auto fp = GrMagnifierEffect::Make(std::move(inputProxy),
+        // TODO: Update generated fp file Make functions to take views instead of proxies
+        auto fp = GrMagnifierEffect::Make(std::move(inputView),
                                           bounds,
                                           srcRect,
                                           invXZoom,
@@ -151,7 +152,7 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilterImpl::onFilterImage(const Context& c
         }
 
         return DrawWithFP(context, std::move(fp), bounds, ctx.colorType(), ctx.colorSpace(),
-                          isProtected ? GrProtected::kYes : GrProtected::kNo);
+                          isProtected);
     }
 #endif
 
@@ -182,8 +183,8 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilterImpl::onFilterImage(const Context& c
     int dstWidth = dst.width(), dstHeight = dst.height();
     for (int y = 0; y < dstHeight; ++y) {
         for (int x = 0; x < dstWidth; ++x) {
-            SkScalar x_dist = SkMin32(x, dstWidth - x - 1) * invInset;
-            SkScalar y_dist = SkMin32(y, dstHeight - y - 1) * invInset;
+            SkScalar x_dist = std::min(x, dstWidth - x - 1) * invInset;
+            SkScalar y_dist = std::min(y, dstHeight - y - 1) * invInset;
             SkScalar weight = 0;
 
             static const SkScalar kScalar2 = SkScalar(2);
@@ -196,12 +197,14 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilterImpl::onFilterImage(const Context& c
 
                 SkScalar dist = SkScalarSqrt(SkScalarSquare(x_dist) +
                                              SkScalarSquare(y_dist));
-                dist = SkMaxScalar(kScalar2 - dist, 0);
-                weight = SkMinScalar(SkScalarSquare(dist), SK_Scalar1);
+                dist = std::max(kScalar2 - dist, 0.0f);
+                // SkTPin rather than std::max to handle potential NaN
+                weight = SkTPin(SkScalarSquare(dist), 0.0f, SK_Scalar1);
             } else {
-                SkScalar sqDist = SkMinScalar(SkScalarSquare(x_dist),
-                                              SkScalarSquare(y_dist));
-                weight = SkMinScalar(sqDist, SK_Scalar1);
+                SkScalar sqDist = std::min(SkScalarSquare(x_dist),
+                                           SkScalarSquare(y_dist));
+                // SkTPin rather than std::max to handle potential NaN
+                weight = SkTPin(sqDist, 0.0f, SK_Scalar1);
             }
 
             SkScalar x_interp = weight * (fSrcRect.x() + x * invXZoom) + (1 - weight) * x;

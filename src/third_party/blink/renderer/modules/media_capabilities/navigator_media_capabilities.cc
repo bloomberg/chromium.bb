@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_capabilities/navigator_media_capabilities.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -17,12 +18,14 @@ MediaCapabilities* NavigatorMediaCapabilities::mediaCapabilities(
     Navigator& navigator) {
   NavigatorMediaCapabilities& self =
       NavigatorMediaCapabilities::From(navigator);
-  if (!self.capabilities_)
-    self.capabilities_ = MakeGarbageCollected<MediaCapabilities>();
+  if (!self.capabilities_) {
+    self.capabilities_ =
+        MakeGarbageCollected<MediaCapabilities>(navigator.DomWindow());
+  }
   return self.capabilities_.Get();
 }
 
-void NavigatorMediaCapabilities::Trace(blink::Visitor* visitor) {
+void NavigatorMediaCapabilities::Trace(Visitor* visitor) {
   visitor->Trace(capabilities_);
   Supplement<Navigator>::Trace(visitor);
 }

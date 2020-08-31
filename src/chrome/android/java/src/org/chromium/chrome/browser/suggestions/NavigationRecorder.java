@@ -11,9 +11,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -60,7 +59,7 @@ public class NavigationRecorder extends EmptyTabObserver {
                 @Override
                 public void navigationEntryCommitted() {
                     if (startStackIndex != navController.getLastCommittedEntryIndex()) return;
-                    endRecording(tab, tab.getUrl());
+                    endRecording(tab, tab.getUrlString());
                 }
             };
             webContents.addObserver(mWebContentsObserver);
@@ -68,7 +67,7 @@ public class NavigationRecorder extends EmptyTabObserver {
             mWebContentsObserver = null;
         }
 
-        if (!((TabImpl) tab).isHidden()) mStartTimeMs = SystemClock.elapsedRealtime();
+        if (!tab.isHidden()) mStartTimeMs = SystemClock.elapsedRealtime();
     }
 
     @Override

@@ -13,16 +13,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {Destination} from '../data/destination.js';
 import {Error, State} from '../data/state.js';
-
 import {SettingsBehavior} from './settings_behavior.js';
-
-/**
- * @typedef {{numPages: number,
- *            numSheets: number,
- *            pagesLabel: string,
- *            summaryLabel: string}}
- */
-let LabelInfo;
 
 Polymer({
   is: 'print-preview-header',
@@ -45,80 +36,41 @@ Polymer({
 
     managed: Boolean,
 
+    /** @private {number} */
+    sheetCount: Number,
+
     /** @private {?string} */
     summary_: {
       type: String,
-      value: null,
+      computed: 'computeSummary_(sheetCount, state, destination.id)',
     },
   },
-
-  observers: [
-    'update_(settings.copies.value, settings.duplex.value, ' +
-        'settings.pages.value, state, destination.id)',
-  ],
 
   /**
    * @return {boolean}
    * @private
    */
-  isPdfOrDrive_: function() {
+  isPdfOrDrive_() {
     return this.destination &&
-        (this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ||
-         this.destination.id == Destination.GooglePromotedId.DOCS);
+        (this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
+         this.destination.id === Destination.GooglePromotedId.DOCS);
   },
 
   /**
-   * @return {!LabelInfo}
+   * @return {?string}
    * @private
    */
-  computeLabelInfo_: function() {
-    const saveToPdfOrDrive = this.isPdfOrDrive_();
-    let numPages = this.getSettingValue('pages').length;
-    let numSheets = numPages;
-    if (!saveToPdfOrDrive && this.getSettingValue('duplex')) {
-      numSheets = Math.ceil(numPages / 2);
-    }
-
-    const copies = parseInt(this.getSettingValue('copies'), 10);
-    numSheets *= copies;
-    numPages *= copies;
-
-    const pagesLabel = loadTimeData.getString('printPreviewPageLabelPlural');
-    let summaryLabel;
-    if (numSheets > 1) {
-      summaryLabel = saveToPdfOrDrive ?
-          pagesLabel :
-          loadTimeData.getString('printPreviewSheetsLabelPlural');
-    } else {
-      summaryLabel = loadTimeData.getString(
-          saveToPdfOrDrive ? 'printPreviewPageLabelSingular' :
-                             'printPreviewSheetsLabelSingular');
-    }
-    return {
-      numPages: numPages,
-      numSheets: numSheets,
-      pagesLabel: pagesLabel,
-      summaryLabel: summaryLabel
-    };
-  },
-
-  /** @private */
-  update_: function() {
+  computeSummary_() {
     switch (this.state) {
       case (State.PRINTING):
-        this.summary_ = loadTimeData.getString(
+        return loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
-        break;
       case (State.READY):
-        const labelInfo = this.computeLabelInfo_();
-        this.summary_ = this.getSummary_(labelInfo);
-        break;
+        return this.getSheetsSummary_();
       case (State.FATAL_ERROR):
-        this.summary_ = this.getErrorMessage_();
-        break;
+        return this.getErrorMessage_();
       default:
-        this.summary_ = null;
-        break;
+        return null;
     }
   },
 
@@ -126,7 +78,7 @@ Polymer({
    * @return {string} The error message to display.
    * @private
    */
-  getErrorMessage_: function() {
+  getErrorMessage_() {
     switch (this.error) {
       case Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
@@ -138,15 +90,20 @@ Polymer({
   },
 
   /**
-   * @param {!LabelInfo} labelInfo
    * @return {string}
    * @private
    */
-  getSummary_: function(labelInfo) {
-    return labelInfo.numSheets === 0 ?
-        '' :
-        loadTimeData.getStringF(
-            'printPreviewNewSummaryFormatShort',
-            labelInfo.numSheets.toLocaleString(), labelInfo.summaryLabel);
+  getSheetsSummary_() {
+    if (this.sheetCount === 0) {
+      return '';
+    }
+
+    const pageOrSheets = this.isPdfOrDrive_() ? 'Page' : 'Sheets';
+    const singularOrPlural = this.sheetCount > 1 ? 'Plural' : 'Singular';
+    const label = loadTimeData.getString(
+        `printPreview${pageOrSheets}Label${singularOrPlural}`);
+    return loadTimeData.getStringF(
+        'printPreviewSummaryFormatShort', this.sheetCount.toLocaleString(),
+        label);
   },
 });

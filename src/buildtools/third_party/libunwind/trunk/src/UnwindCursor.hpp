@@ -1,9 +1,8 @@
 //===------------------------- UnwindCursor.hpp ---------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //
 // C++ interface to lower levels of libunwind
@@ -12,7 +11,6 @@
 #ifndef __UNWINDCURSOR_HPP__
 #define __UNWINDCURSOR_HPP__
 
-#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,7 +104,6 @@ private:
   static void dyldUnloadHook(const struct mach_header *mh, intptr_t slide);
   static bool _registeredForDyldUnloads;
 #endif
-  // Can't use std::vector<> here because this code is below libc++.
   static entry *_buffer;
   static entry *_bufferUsed;
   static entry *_bufferEnd;
@@ -485,6 +482,10 @@ public:
   DISPATCHER_CONTEXT *getDispatcherContext() { return &_dispContext; }
   void setDispatcherContext(DISPATCHER_CONTEXT *disp) { _dispContext = *disp; }
 
+  // libunwind does not and should not depend on C++ library which means that we
+  // need our own defition of inline placement new.
+  static void *operator new(size_t, UnwindCursor<A, R> *p) { return p; }
+
 private:
 
   pint_t getLastPC() const { return _dispContext.ControlPc; }
@@ -615,6 +616,13 @@ UnwindCursor<A, R>::UnwindCursor(unw_context_t *context, A &as)
     d.d = r.getFloatRegister(i);
     _msContext.D[i - UNW_ARM_D0] = d.w;
   }
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  for (int i = UNW_ARM64_X0; i <= UNW_ARM64_X30; ++i)
+    _msContext.X[i - UNW_ARM64_X0] = r.getRegister(i);
+  _msContext.Sp = r.getRegister(UNW_REG_SP);
+  _msContext.Pc = r.getRegister(UNW_REG_IP);
+  for (int i = UNW_ARM64_D0; i <= UNW_ARM64_D31; ++i)
+    _msContext.V[i - UNW_ARM64_D0].D[0] = r.getFloatRegister(i);
 #endif
 }
 
@@ -638,6 +646,8 @@ bool UnwindCursor<A, R>::validReg(int regNum) {
   if (regNum >= UNW_X86_64_RAX && regNum <= UNW_X86_64_R15) return true;
 #elif defined(_LIBUNWIND_TARGET_ARM)
   if (regNum >= UNW_ARM_R0 && regNum <= UNW_ARM_R15) return true;
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  if (regNum >= UNW_ARM64_X0 && regNum <= UNW_ARM64_X30) return true;
 #endif
   return false;
 }
@@ -683,6 +693,10 @@ unw_word_t UnwindCursor<A, R>::getReg(int regNum) {
   case UNW_ARM_LR: return _msContext.Lr;
   case UNW_REG_IP:
   case UNW_ARM_IP: return _msContext.Pc;
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  case UNW_REG_SP: return _msContext.Sp;
+  case UNW_REG_IP: return _msContext.Pc;
+  default: return _msContext.X[regNum - UNW_ARM64_X0];
 #endif
   }
   _LIBUNWIND_ABORT("unsupported register");
@@ -729,6 +743,40 @@ void UnwindCursor<A, R>::setReg(int regNum, unw_word_t value) {
   case UNW_ARM_LR: _msContext.Lr = value; break;
   case UNW_REG_IP:
   case UNW_ARM_IP: _msContext.Pc = value; break;
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  case UNW_REG_SP: _msContext.Sp = value; break;
+  case UNW_REG_IP: _msContext.Pc = value; break;
+  case UNW_ARM64_X0:
+  case UNW_ARM64_X1:
+  case UNW_ARM64_X2:
+  case UNW_ARM64_X3:
+  case UNW_ARM64_X4:
+  case UNW_ARM64_X5:
+  case UNW_ARM64_X6:
+  case UNW_ARM64_X7:
+  case UNW_ARM64_X8:
+  case UNW_ARM64_X9:
+  case UNW_ARM64_X10:
+  case UNW_ARM64_X11:
+  case UNW_ARM64_X12:
+  case UNW_ARM64_X13:
+  case UNW_ARM64_X14:
+  case UNW_ARM64_X15:
+  case UNW_ARM64_X16:
+  case UNW_ARM64_X17:
+  case UNW_ARM64_X18:
+  case UNW_ARM64_X19:
+  case UNW_ARM64_X20:
+  case UNW_ARM64_X21:
+  case UNW_ARM64_X22:
+  case UNW_ARM64_X23:
+  case UNW_ARM64_X24:
+  case UNW_ARM64_X25:
+  case UNW_ARM64_X26:
+  case UNW_ARM64_X27:
+  case UNW_ARM64_X28:
+  case UNW_ARM64_FP:
+  case UNW_ARM64_LR: _msContext.X[regNum - UNW_ARM64_X0] = value; break;
 #endif
   default:
     _LIBUNWIND_ABORT("unsupported register");
@@ -740,6 +788,10 @@ bool UnwindCursor<A, R>::validFloatReg(int regNum) {
 #if defined(_LIBUNWIND_TARGET_ARM)
   if (regNum >= UNW_ARM_S0 && regNum <= UNW_ARM_S31) return true;
   if (regNum >= UNW_ARM_D0 && regNum <= UNW_ARM_D31) return true;
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  if (regNum >= UNW_ARM64_D0 && regNum <= UNW_ARM64_D31) return true;
+#else
+  (void)regNum;
 #endif
   return false;
 }
@@ -764,7 +816,10 @@ unw_fpreg_t UnwindCursor<A, R>::getFloatReg(int regNum) {
     return d.d;
   }
   _LIBUNWIND_ABORT("unsupported float register");
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  return _msContext.V[regNum - UNW_ARM64_D0].D[0];
 #else
+  (void)regNum;
   _LIBUNWIND_ABORT("float registers unimplemented");
 #endif
 }
@@ -789,7 +844,11 @@ void UnwindCursor<A, R>::setFloatReg(int regNum, unw_fpreg_t value) {
     _msContext.D[regNum - UNW_ARM_D0] = d.w;
   }
   _LIBUNWIND_ABORT("unsupported float register");
+#elif defined(_LIBUNWIND_TARGET_AARCH64)
+  _msContext.V[regNum - UNW_ARM64_D0].D[0] = value;
 #else
+  (void)regNum;
+  (void)value;
   _LIBUNWIND_ABORT("float registers unimplemented");
 #endif
 }
@@ -839,6 +898,10 @@ public:
   virtual void        saveVFPAsX();
 #endif
 
+  // libunwind does not and should not depend on C++ library which means that we
+  // need our own defition of inline placement new.
+  static void *operator new(size_t, UnwindCursor<A, R> *p) { return p; }
+
 private:
 
 #if defined(_LIBUNWIND_ARM_EHABI)
@@ -866,7 +929,7 @@ private:
     return DwarfInstructions<A, R>::stepWithDwarf(_addressSpace,
                                               (pint_t)this->getReg(UNW_REG_IP),
                                               (pint_t)_info.unwind_info,
-                                              _registers);
+                                              _registers, _isSignalFrame);
   }
 #endif
 
@@ -924,6 +987,16 @@ private:
 
 #if defined(_LIBUNWIND_TARGET_MIPS_NEWABI)
   int stepWithCompactEncoding(Registers_mips_newabi &) {
+    return UNW_EINVAL;
+  }
+#endif
+
+#if defined(_LIBUNWIND_TARGET_SPARC)
+  int stepWithCompactEncoding(Registers_sparc &) { return UNW_EINVAL; }
+#endif
+
+#if defined (_LIBUNWIND_TARGET_RISCV)
+  int stepWithCompactEncoding(Registers_riscv &) {
     return UNW_EINVAL;
   }
 #endif
@@ -989,6 +1062,17 @@ private:
     return true;
   }
 #endif
+
+#if defined(_LIBUNWIND_TARGET_SPARC)
+  bool compactSaysUseDwarf(Registers_sparc &, uint32_t *) const { return true; }
+#endif
+
+#if defined (_LIBUNWIND_TARGET_RISCV)
+  bool compactSaysUseDwarf(Registers_riscv &, uint32_t *) const {
+    return true;
+  }
+#endif
+
 #endif // defined(_LIBUNWIND_SUPPORT_COMPACT_UNWIND)
 
 #if defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND)
@@ -1050,6 +1134,17 @@ private:
     return 0;
   }
 #endif
+
+#if defined(_LIBUNWIND_TARGET_SPARC)
+  compact_unwind_encoding_t dwarfEncoding(Registers_sparc &) const { return 0; }
+#endif
+
+#if defined (_LIBUNWIND_TARGET_RISCV)
+  compact_unwind_encoding_t dwarfEncoding(Registers_riscv &) const {
+    return 0;
+  }
+#endif
+
 #endif // defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND)
 
 #if defined(_LIBUNWIND_SUPPORT_SEH_UNWIND)
@@ -1145,16 +1240,10 @@ template <typename A, typename R> bool UnwindCursor<A, R>::isSignalFrame() {
 #endif // defined(_LIBUNWIND_SUPPORT_SEH_UNWIND)
 
 #if defined(_LIBUNWIND_ARM_EHABI)
-struct EHABIIndexEntry {
-  uint32_t functionOffset;
-  uint32_t data;
-};
-
 template<typename A>
 struct EHABISectionIterator {
   typedef EHABISectionIterator _Self;
 
-  typedef std::random_access_iterator_tag iterator_category;
   typedef typename A::pint_t value_type;
   typedef typename A::pint_t* pointer;
   typedef typename A::pint_t& reference;
@@ -1208,6 +1297,29 @@ struct EHABISectionIterator {
   const UnwindInfoSections* _sects;
 };
 
+namespace {
+
+template <typename A>
+EHABISectionIterator<A> EHABISectionUpperBound(
+    EHABISectionIterator<A> first,
+    EHABISectionIterator<A> last,
+    typename A::pint_t value) {
+  size_t len = last - first;
+  while (len > 0) {
+    size_t l2 = len / 2;
+    EHABISectionIterator<A> m = first + l2;
+    if (value < *m) {
+        len = l2;
+    } else {
+        first = ++m;
+        len -= l2 + 1;
+    }
+  }
+  return first;
+}
+
+}
+
 template <typename A, typename R>
 bool UnwindCursor<A, R>::getInfoFromEHABISection(
     pint_t pc,
@@ -1219,7 +1331,7 @@ bool UnwindCursor<A, R>::getInfoFromEHABISection(
   if (begin == end)
     return false;
 
-  EHABISectionIterator<A> itNextPC = std::upper_bound(begin, end, pc);
+  EHABISectionIterator<A> itNextPC = EHABISectionUpperBound(begin, end, pc);
   if (itNextPC == begin)
     return false;
   EHABISectionIterator<A> itThisPC = itNextPC - 1;
@@ -1229,8 +1341,7 @@ bool UnwindCursor<A, R>::getInfoFromEHABISection(
   // in the table, we don't really know the function extent and have to choose a
   // value for nextPC. Choosing max() will allow the range check during trace to
   // succeed.
-  pint_t nextPC = (itNextPC == end) ? std::numeric_limits<pint_t>::max()
-                                    : itNextPC.functionAddress();
+  pint_t nextPC = (itNextPC == end) ? UINTPTR_MAX : itNextPC.functionAddress();
   pint_t indexDataAddr = itThisPC.dataAddress();
 
   if (indexDataAddr == 0)
@@ -1242,7 +1353,8 @@ bool UnwindCursor<A, R>::getInfoFromEHABISection(
 
   // If the high bit is set, the exception handling table entry is inline inside
   // the index table entry on the second word (aka |indexDataAddr|). Otherwise,
-  // the table points at an offset in the exception handling table (section 5 EHABI).
+  // the table points at an offset in the exception handling table (section 5
+  // EHABI).
   pint_t exceptionTableAddr;
   uint32_t exceptionTableData;
   bool isSingleWordEHT;
@@ -1341,7 +1453,7 @@ bool UnwindCursor<A, R>::getInfoFromEHABISection(
   _info.unwind_info = exceptionTableAddr;
   _info.lsda = lsda;
   // flags is pr_cache.additional. See EHABI #7.2 for definition of bit 0.
-  _info.flags = isSingleWordEHT ? 1 : 0 | scope32 ? 0x2 : 0;  // Use enum?
+  _info.flags = (isSingleWordEHT ? 1 : 0) | (scope32 ? 0x2 : 0);  // Use enum?
 
   return true;
 }
@@ -1390,7 +1502,7 @@ bool UnwindCursor<A, R>::getInfoFromDwarfSection(pint_t pc,
   if (foundFDE) {
     typename CFI_Parser<A>::PrologInfo prolog;
     if (CFI_Parser<A>::parseFDEInstructions(_addressSpace, fdeInfo, cieInfo, pc,
-                                            &prolog)) {
+                                            R::getArch(), &prolog)) {
       // Save off parsed FDE info
       _info.start_ip          = fdeInfo.pcStart;
       _info.end_ip            = fdeInfo.pcEnd;
@@ -1642,7 +1754,7 @@ bool UnwindCursor<A, R>::getInfoFromCompactEncodingSection(pint_t pc,
     --personalityIndex; // change 1-based to zero-based index
     if (personalityIndex > sectionHeader.personalityArrayCount()) {
       _LIBUNWIND_DEBUG_LOG("found encoding 0x%08X with personality index %d,  "
-                            "but personality table has only %d entires",
+                            "but personality table has only %d entries",
                             encoding, personalityIndex,
                             sectionHeader.personalityArrayCount());
       return false;
@@ -1805,7 +1917,7 @@ void UnwindCursor<A, R>::setInfoBasedOnIPRegister(bool isReturnAddress) {
     if (msg == NULL) {
       typename CFI_Parser<A>::PrologInfo prolog;
       if (CFI_Parser<A>::parseFDEInstructions(_addressSpace, fdeInfo, cieInfo,
-                                                                pc, &prolog)) {
+                                              pc, R::getArch(), &prolog)) {
         // save off parsed FDE info
         _info.start_ip         = fdeInfo.pcStart;
         _info.end_ip           = fdeInfo.pcEnd;
@@ -1834,8 +1946,8 @@ void UnwindCursor<A, R>::setInfoBasedOnIPRegister(bool isReturnAddress) {
       // Double check this FDE is for a function that includes the pc.
       if ((fdeInfo.pcStart <= pc) && (pc < fdeInfo.pcEnd)) {
         typename CFI_Parser<A>::PrologInfo prolog;
-        if (CFI_Parser<A>::parseFDEInstructions(_addressSpace, fdeInfo,
-                                                cieInfo, pc, &prolog)) {
+        if (CFI_Parser<A>::parseFDEInstructions(_addressSpace, fdeInfo, cieInfo,
+                                                pc, R::getArch(), &prolog)) {
           // save off parsed FDE info
           _info.start_ip         = fdeInfo.pcStart;
           _info.end_ip           = fdeInfo.pcEnd;
@@ -1893,7 +2005,10 @@ int UnwindCursor<A, R>::step() {
 
 template <typename A, typename R>
 void UnwindCursor<A, R>::getInfo(unw_proc_info_t *info) {
-  *info = _info;
+  if (_unwindInfoMissing)
+    memset(info, 0, sizeof(*info));
+  else
+    *info = _info;
 }
 
 template <typename A, typename R>

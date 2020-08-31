@@ -10,13 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/grit/content_resources.h"
+#include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,26 +28,12 @@
 #include "content/public/common/url_constants.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/zlib/google/zip.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
 
 using url::Origin;
 
 namespace content {
-
-namespace {
-
-bool AllowWhitelistedPaths(const std::vector<base::FilePath>& allowed_paths,
-                           const base::FilePath& candidate_path) {
-  for (const base::FilePath& allowed_path : allowed_paths) {
-    if (candidate_path == allowed_path || allowed_path.IsParent(candidate_path))
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
 
 IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
@@ -63,11 +48,6 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
   web_ui->RegisterMessageCallback(
       "forceClose", base::BindRepeating(&IndexedDBInternalsUI::ForceCloseOrigin,
                                         base::Unretained(this)));
-  web_ui->RegisterMessageCallback(
-      "forceSchemaDowngrade",
-      base::BindRepeating(&IndexedDBInternalsUI::ForceSchemaDowngradeOrigin,
-                          base::Unretained(this)));
-
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIIndexedDBInternalsHost);
   source->OverrideContentSecurityPolicyScriptSrc(
@@ -86,62 +66,49 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
 
 IndexedDBInternalsUI::~IndexedDBInternalsUI() {}
 
-void IndexedDBInternalsUI::AddContextFromStoragePartition(
-    StoragePartition* partition) {
-  scoped_refptr<IndexedDBContext> context = partition->GetIndexedDBContext();
-  context->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread,
-                     base::Unretained(this), context, partition->GetPath()));
-}
-
 void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
-  BrowserContext::StoragePartitionCallback cb =
-      base::BindRepeating(&IndexedDBInternalsUI::AddContextFromStoragePartition,
-                          base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
+  BrowserContext::ForEachStoragePartition(
+      browser_context,
+      base::BindRepeating(
+          [](base::WeakPtr<IndexedDBInternalsUI> ui,
+             StoragePartition* partition) {
+            if (!ui)
+              return;
+            auto& control = partition->GetIndexedDBControl();
+            control.GetAllOriginsDetails(base::BindOnce(
+                [](base::WeakPtr<IndexedDBInternalsUI> ui,
+                   base::FilePath partition_path, bool incognito,
+                   base::Value info_list) {
+                  if (!ui)
+                    return;
+
+                  ui->OnOriginsReady(
+                      info_list, incognito ? base::FilePath() : partition_path);
+                },
+                ui, partition->GetPath()));
+          },
+          weak_factory_.GetWeakPtr()));
 }
 
-void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
-    scoped_refptr<IndexedDBContext> context,
-    const base::FilePath& context_path) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
-
-  IndexedDBContextImpl* context_impl =
-      static_cast<IndexedDBContextImpl*>(context.get());
-
-  std::unique_ptr<base::ListValue> info_list(
-      context_impl->GetAllOriginsDetails());
-  bool is_incognito = context_impl->is_incognito();
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&IndexedDBInternalsUI::OnOriginsReady,
-                     base::Unretained(this), std::move(info_list),
-                     is_incognito ? base::FilePath() : context_path));
-}
-
-void IndexedDBInternalsUI::OnOriginsReady(
-    std::unique_ptr<base::ListValue> origins,
-    const base::FilePath& path) {
+void IndexedDBInternalsUI::OnOriginsReady(const base::Value& origins,
+                                          const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_ui()->CallJavascriptFunctionUnsafe("indexeddb.onOriginsReady", *origins,
+  web_ui()->CallJavascriptFunctionUnsafe("indexeddb.onOriginsReady", origins,
                                          base::Value(path.value()));
 }
 
-static void FindContext(const base::FilePath& partition_path,
+static void FindControl(const base::FilePath& partition_path,
                         StoragePartition** result_partition,
-                        scoped_refptr<IndexedDBContextImpl>* result_context,
+                        storage::mojom::IndexedDBControl** result_control,
                         StoragePartition* storage_partition) {
   if (storage_partition->GetPath() == partition_path) {
     *result_partition = storage_partition;
-    *result_context = static_cast<IndexedDBContextImpl*>(
-        storage_partition->GetIndexedDBContext());
+    *result_control = &storage_partition->GetIndexedDBControl();
   }
 }
 
@@ -149,7 +116,7 @@ bool IndexedDBInternalsUI::GetOriginData(
     const base::ListValue* args,
     base::FilePath* partition_path,
     Origin* origin,
-    scoped_refptr<IndexedDBContextImpl>* context) {
+    storage::mojom::IndexedDBControl** control) {
   base::FilePath::StringType path_string;
   if (!args->GetString(0, &path_string))
     return false;
@@ -161,23 +128,24 @@ bool IndexedDBInternalsUI::GetOriginData(
 
   *origin = Origin::Create(GURL(url_string));
 
-  return GetOriginContext(*partition_path, *origin, context);
+  return GetOriginControl(*partition_path, *origin, control);
 }
 
-bool IndexedDBInternalsUI::GetOriginContext(
+bool IndexedDBInternalsUI::GetOriginControl(
     const base::FilePath& path,
     const Origin& origin,
-    scoped_refptr<IndexedDBContextImpl>* context) {
+    storage::mojom::IndexedDBControl** control) {
   // search the origins to find the right context
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
-  StoragePartition* result_partition;
-  BrowserContext::StoragePartitionCallback cb =
-      base::BindRepeating(&FindContext, path, &result_partition, context);
-  BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
+  StoragePartition* result_partition = nullptr;
+  *control = nullptr;
+  BrowserContext::ForEachStoragePartition(
+      browser_context,
+      base::BindRepeating(&FindControl, path, &result_partition, control));
 
-  if (!result_partition || !(context->get()))
+  if (!result_partition || !control)
     return false;
 
   return true;
@@ -188,15 +156,38 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
 
   base::FilePath partition_path;
   Origin origin;
-  scoped_refptr<IndexedDBContextImpl> context;
-  if (!GetOriginData(args, &partition_path, &origin, &context))
+  storage::mojom::IndexedDBControl* control;
+  if (!GetOriginData(args, &partition_path, &origin, &control))
     return;
 
-  DCHECK(context.get());
-  context->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,
-                     base::Unretained(this), partition_path, context, origin));
+  DCHECK(control);
+  control->ForceClose(
+      origin, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
+      base::BindOnce(
+          [](base::WeakPtr<IndexedDBInternalsUI> ui, Origin origin,
+             base::FilePath partition_path,
+             storage::mojom::IndexedDBControl* control) {
+            // Is the connection count always zero after closing,
+            // such that this can be simplified?
+            control->GetConnectionCount(
+                origin,
+                base::BindOnce(
+                    [](base::WeakPtr<IndexedDBInternalsUI> ui, Origin origin,
+                       base::FilePath partition_path,
+                       storage::mojom::IndexedDBControl* control,
+                       uint64_t connection_count) {
+                      if (!ui)
+                        return;
+
+                      control->DownloadOriginData(
+                          origin,
+                          base::BindOnce(
+                              &IndexedDBInternalsUI::OnDownloadDataReady, ui,
+                              partition_path, origin, connection_count));
+                    },
+                    ui, origin, partition_path, control));
+          },
+          weak_factory_.GetWeakPtr(), origin, partition_path, control));
 }
 
 void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
@@ -204,124 +195,30 @@ void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
 
   base::FilePath partition_path;
   Origin origin;
-  scoped_refptr<IndexedDBContextImpl> context;
-  if (!GetOriginData(args, &partition_path, &origin, &context))
+  storage::mojom::IndexedDBControl* control;
+  if (!GetOriginData(args, &partition_path, &origin, &control))
     return;
 
-  context->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread,
-                     base::Unretained(this), partition_path, context, origin));
-}
-
-void IndexedDBInternalsUI::ForceSchemaDowngradeOrigin(
-    const base::ListValue* args) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::FilePath partition_path;
-  Origin origin;
-  scoped_refptr<IndexedDBContextImpl> context;
-  if (!GetOriginData(args, &partition_path, &origin, &context))
-    return;
-
-  context->TaskRunner()->PostTask(
-      FROM_HERE,
+  control->ForceClose(
+      origin, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::BindOnce(
-          &IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread,
-          base::Unretained(this), partition_path, context, origin));
-}
-
-void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
-    const base::FilePath& partition_path,
-    const scoped_refptr<IndexedDBContextImpl> context,
-    const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
-  // This runs on the IndexedDB task runner to prevent script from reopening
-  // the origin while we are zipping.
-
-  // Make sure the database hasn't been deleted since the page was loaded.
-  if (!context->HasOrigin(origin))
-    return;
-
-  context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
-  size_t connection_count = context->GetConnectionCount(origin);
-
-  base::ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir())
-    return;
-
-  // This will get cleaned up after the download has completed.
-  base::FilePath temp_path = temp_dir.Take();
-
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
-  base::FilePath zip_path =
-      temp_path.AppendASCII(origin_id).AddExtension(FILE_PATH_LITERAL("zip"));
-
-  std::vector<base::FilePath> paths = context->GetStoragePaths(origin);
-  zip::ZipWithFilterCallback(context->data_path(), zip_path,
-                             base::BindRepeating(AllowWhitelistedPaths, paths));
-
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&IndexedDBInternalsUI::OnDownloadDataReady,
-                                base::Unretained(this), partition_path, origin,
-                                temp_path, zip_path, connection_count));
-}
-
-void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
-    const base::FilePath& partition_path,
-    const scoped_refptr<IndexedDBContextImpl> context,
-    const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
-
-  // Make sure the database hasn't been deleted since the page was loaded.
-  if (!context->HasOrigin(origin))
-    return;
-
-  context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
-  size_t connection_count = context->GetConnectionCount(origin);
-
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
-                                base::Unretained(this), partition_path, origin,
-                                connection_count));
-}
-
-void IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread(
-    const base::FilePath& partition_path,
-    const scoped_refptr<IndexedDBContextImpl> context,
-    const Origin& origin) {
-  DCHECK(context->TaskRunner()->RunsTasksInCurrentSequence());
-
-  // Make sure the database hasn't been deleted since the page was loaded.
-  if (!context->HasOrigin(origin))
-    return;
-
-  context->ForceSchemaDowngrade(origin);
-  context->ForceClose(
-      origin, IndexedDBContextImpl::FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE);
-  size_t connection_count = context->GetConnectionCount(origin);
-
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
-                                base::Unretained(this), partition_path, origin,
-                                connection_count));
+          [](base::WeakPtr<IndexedDBInternalsUI> ui,
+             base::FilePath partition_path, Origin origin,
+             storage::mojom::IndexedDBControl* control) {
+            if (!ui)
+              return;
+            control->GetConnectionCount(
+                origin, base::BindOnce(&IndexedDBInternalsUI::OnForcedClose, ui,
+                                       partition_path, origin));
+          },
+          weak_factory_.GetWeakPtr(), partition_path, origin, control));
 }
 
 void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
                                          const Origin& origin,
-                                         size_t connection_count) {
+                                         uint64_t connection_count) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "indexeddb.onForcedClose", base::Value(partition_path.value()),
-      base::Value(origin.Serialize()),
-      base::Value(static_cast<double>(connection_count)));
-}
-
-void IndexedDBInternalsUI::OnForcedSchemaDowngrade(
-    const base::FilePath& partition_path,
-    const Origin& origin,
-    size_t connection_count) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "indexeddb.onForcedSchemaDowngrade", base::Value(partition_path.value()),
       base::Value(origin.Serialize()),
       base::Value(static_cast<double>(connection_count)));
 }
@@ -329,10 +226,14 @@ void IndexedDBInternalsUI::OnForcedSchemaDowngrade(
 void IndexedDBInternalsUI::OnDownloadDataReady(
     const base::FilePath& partition_path,
     const Origin& origin,
-    const base::FilePath temp_path,
-    const base::FilePath zip_path,
-    size_t connection_count) {
+    uint64_t connection_count,
+    bool success,
+    const base::FilePath& temp_path,
+    const base::FilePath& zip_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!success)
+    return;
+
   const GURL url = GURL(FILE_PATH_LITERAL("file://") + zip_path.value());
   WebContents* web_contents = web_ui()->GetWebContents();
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -412,9 +313,9 @@ void FileDeleter::OnDownloadUpdated(download::DownloadItem* item) {
 }
 
 FileDeleter::~FileDeleter() {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                      std::move(temp_dir_), true));

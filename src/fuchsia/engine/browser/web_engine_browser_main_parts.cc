@@ -5,14 +5,18 @@
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/main_function_params.h"
+#include "fuchsia/base/legacymetrics_client.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
@@ -22,6 +26,27 @@
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+
+namespace {
+
+constexpr base::TimeDelta kMetricsReportingInterval =
+    base::TimeDelta::FromMinutes(1);
+
+constexpr base::TimeDelta kChildProcessHistogramFetchTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+// Merge child process' histogram deltas into the browser process' histograms.
+void FetchHistogramsFromChildProcesses(
+    base::OnceCallback<void(std::vector<fuchsia::legacymetrics::Event>)>
+        done_cb) {
+  content::FetchHistogramsAsynchronously(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindOnce(std::move(done_cb),
+                     std::vector<fuchsia::legacymetrics::Event>()),
+      kChildProcessHistogramFetchTimeout);
+}
+
+}  // namespace
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     const content::MainFunctionParams& parameters,
@@ -61,6 +86,19 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
                                                    devtools_controller_.get());
   context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
       context_service_.get(), std::move(request_));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseLegacyMetricsService)) {
+    legacy_metrics_client_ =
+        std::make_unique<cr_fuchsia::LegacyMetricsClient>();
+
+    // Add a hook to asynchronously pull metrics from child processes just prior
+    // to uploading.
+    legacy_metrics_client_->SetReportAdditionalMetricsCallback(
+        base::BindRepeating(&FetchHistogramsFromChildProcesses));
+
+    legacy_metrics_client_->Start(kMetricsReportingInterval);
+  }
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {
@@ -104,6 +142,7 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   // These resources must be freed while a MessageLoop is still available, so
   // that they may post cleanup tasks during teardown.
   // NOTE: Please destroy objects in the reverse order of their creation.
+  legacy_metrics_client_.reset();
   context_binding_.reset();
   browser_context_.reset();
   screen_.reset();

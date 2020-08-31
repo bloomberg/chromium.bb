@@ -34,12 +34,20 @@
 
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -71,10 +79,20 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "url/url_util.h"
 
 namespace blink {
 
+using network::mojom::ContentSecurityPolicySource;
+using network::mojom::ContentSecurityPolicyType;
+
 class DocumentTest : public PageTestBase {
+ public:
+  static void SimulateHasTrustTokensAnswererConnectionError(
+      Document* document) {
+    document->HasTrustTokensAnswererConnectionError();
+  }
+
  protected:
   void TearDown() override {
     ThreadState::Current()->CollectAllGarbageForTesting();
@@ -85,8 +103,7 @@ class DocumentTest : public PageTestBase {
 };
 
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      String::FromUTF8(html_content));
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -135,11 +152,11 @@ class TestSynchronousMutationObserver
     void Trace(Visitor* visitor) { visitor->Trace(node_); }
   };
 
-  TestSynchronousMutationObserver(Document&);
+  explicit TestSynchronousMutationObserver(Document&);
   virtual ~TestSynchronousMutationObserver() = default;
 
   int CountContextDestroyedCalled() const {
-    return context_destroyed_called_counter_;
+    return on_document_shutdown_called_counter_;
   }
 
   const HeapVector<Member<const ContainerNode>>& ChildrenChangedNodes() const {
@@ -176,7 +193,7 @@ class TestSynchronousMutationObserver
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
-  void ContextDestroyed(Document*) final;
+  void ContextDestroyed() final;
   void DidChangeChildren(const ContainerNode&) final;
   void DidMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void DidMoveTreeToNewDocument(const Node& root) final;
@@ -188,7 +205,7 @@ class TestSynchronousMutationObserver
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;
 
-  int context_destroyed_called_counter_ = 0;
+  int on_document_shutdown_called_counter_ = 0;
   HeapVector<Member<const ContainerNode>> children_changed_nodes_;
   HeapVector<Member<MergeTextNodesRecord>> merge_text_nodes_records_;
   HeapVector<Member<const Node>> move_tree_to_new_document_nodes_;
@@ -202,11 +219,11 @@ class TestSynchronousMutationObserver
 
 TestSynchronousMutationObserver::TestSynchronousMutationObserver(
     Document& document) {
-  SetContext(&document);
+  SetDocument(&document);
 }
 
-void TestSynchronousMutationObserver::ContextDestroyed(Document*) {
-  ++context_destroyed_called_counter_;
+void TestSynchronousMutationObserver::ContextDestroyed() {
+  ++on_document_shutdown_called_counter_;
 }
 
 void TestSynchronousMutationObserver::DidChangeChildren(
@@ -260,42 +277,6 @@ void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(split_text_nodes_);
   visitor->Trace(updated_character_data_records_);
   SynchronousMutationObserver::Trace(visitor);
-}
-
-class TestDocumentShutdownObserver
-    : public GarbageCollected<TestDocumentShutdownObserver>,
-      public DocumentShutdownObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TestDocumentShutdownObserver);
-
- public:
-  TestDocumentShutdownObserver(Document&);
-  virtual ~TestDocumentShutdownObserver() = default;
-
-  int CountContextDestroyedCalled() const {
-    return context_destroyed_called_counter_;
-  }
-
-  void Trace(Visitor*) override;
-
- private:
-  // Implement |DocumentShutdownObserver| member functions.
-  void ContextDestroyed(Document*) final;
-
-  int context_destroyed_called_counter_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDocumentShutdownObserver);
-};
-
-TestDocumentShutdownObserver::TestDocumentShutdownObserver(Document& document) {
-  SetContext(&document);
-}
-
-void TestDocumentShutdownObserver::ContextDestroyed(Document*) {
-  ++context_destroyed_called_counter_;
-}
-
-void TestDocumentShutdownObserver::Trace(Visitor* visitor) {
-  DocumentShutdownObserver::Trace(visitor);
 }
 
 class MockDocumentValidationMessageClient
@@ -359,11 +340,23 @@ class PrefersColorSchemeTestListener final : public MediaQueryListListener {
   bool notified_ = false;
 };
 
+bool IsDOMException(ScriptState* script_state,
+                    ScriptValue value,
+                    DOMExceptionCode code) {
+  auto* dom_exception = V8DOMException::ToImplWithTypeCheck(
+      script_state->GetIsolate(), value.V8Value());
+  if (!dom_exception)
+    return false;
+
+  // Unfortunately, it's not enough to check |dom_exception->code() == code|,
+  // as DOMException::code is only populated for the DOMExceptionCodes with
+  // "legacy code" numeric values.
+  return dom_exception->name() == DOMException(code).name();
+}
 }  // anonymous namespace
 
 TEST_F(DocumentTest, CreateRangeAdjustedToTreeScopeWithPositionInShadowTree) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div><select><option>012</option></div>");
+  GetDocument().body()->setInnerHTML("<div><select><option>012</option></div>");
   Element* const select_element = GetDocument().QuerySelector("select");
   const Position& position =
       Position(*select_element->UserAgentShadowRoot(),
@@ -550,9 +543,7 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
       {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
       {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
       {"strict-origin-when-cross-origin",
-       network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-       false},
+       network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin, false},
       {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
   };
 
@@ -561,12 +552,15 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
     if (test.is_legacy) {
       // Legacy keyword support must be explicitly enabled for the policy to
       // parse successfully.
-      GetDocument().ParseAndSetReferrerPolicy(test.policy);
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
+          test.policy);
       EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
                 GetDocument().GetReferrerPolicy());
-      GetDocument().ParseAndSetReferrerPolicy(test.policy, true);
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
+          test.policy, true);
     } else {
-      GetDocument().ParseAndSetReferrerPolicy(test.policy);
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
+          test.policy);
     }
     EXPECT_EQ(test.expected, GetDocument().GetReferrerPolicy()) << test.policy;
   }
@@ -578,8 +572,8 @@ TEST_F(DocumentTest, OutgoingReferrer) {
 }
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"), "",
-             "sandbox allow-scripts");
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"),
+             {{http_names::kContentSecurityPolicy, "sandbox allow-scripts"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
@@ -614,30 +608,35 @@ TEST_F(DocumentTest, StyleVersion) {
 }
 
 TEST_F(DocumentTest, EnforceSandboxFlags) {
-  NavigateTo(KURL("http://example.test/"), "", "sandbox allow-same-origin");
+  NavigateTo(KURL("http://example.test/"), {{http_names::kContentSecurityPolicy,
+                                             "sandbox allow-same-origin"}});
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  NavigateTo(KURL("http://example.test/"), "", "sandbox");
+  NavigateTo(KURL("http://example.test/"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   // A unique origin does not bypass secure context checks unless it
   // is also potentially trustworthy.
-  url::AddStandardScheme("very-special-scheme",
-                         url::SchemeType::SCHEME_WITH_HOST);
+  url::ScopedSchemeRegistryForTests scoped_registry;
+  url::AddStandardScheme("very-special-scheme", url::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
+  NavigateTo(KURL("very-special-scheme://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
+  NavigateTo(KURL("very-special-scheme://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  NavigateTo(KURL("https://example.test"), "", "sandbox");
+  NavigateTo(KURL("https://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
@@ -646,7 +645,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   auto& observer =
       *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
-  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
+  EXPECT_EQ(GetDocument(), observer.GetDocument());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
   Element* div_node = GetDocument().CreateRawElement(html_names::kDivTag);
@@ -673,7 +672,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(div_node, observer.RemovedChildrenNodes()[0]);
 
   GetDocument().Shutdown();
-  EXPECT_EQ(nullptr, observer.LifecycleContext());
+  EXPECT_EQ(nullptr, observer.GetDocument());
   EXPECT_EQ(1, observer.CountContextDestroyedCalled());
 }
 
@@ -817,18 +816,6 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
 }
 
-TEST_F(DocumentTest, DocumentShutdownNotifier) {
-  auto& observer =
-      *MakeGarbageCollected<TestDocumentShutdownObserver>(GetDocument());
-
-  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
-  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
-
-  GetDocument().Shutdown();
-  EXPECT_EQ(nullptr, observer.LifecycleContext());
-  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
-}
-
 TEST_F(DocumentTest, AttachExecutionContext) {
   EXPECT_TRUE(
       GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
@@ -880,7 +867,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
       "document.querySelector('input').reportValidity(); };");
   GetDocument().body()->AppendChild(script);
   auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
-  DVLOG(0) << GetDocument().body()->OuterHTMLAsString();
+  DVLOG(0) << GetDocument().body()->outerHTML();
 
   // Sanity check.
   input->reportValidity();
@@ -897,7 +884,8 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 }
 
 TEST_F(DocumentTest, SandboxDisablesAppCache) {
-  NavigateTo(KURL("https://test.com/foobar/document"), "", "sandbox");
+  NavigateTo(KURL("https://test.com/foobar/document"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
 
   GetDocument().Loader()->SetApplicationCacheHostForTesting(
       MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
@@ -914,7 +902,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 // as it is more expensive than just doing layout.
 TEST_F(DocumentTest,
        EnsurePaintLocationDataValidForNodeCompositingInputsOnlyWhenNecessary) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='ancestor'>
       <div id='sticky' style='position:sticky;'>
         <div id='stickyChild'></div>
@@ -929,19 +917,19 @@ TEST_F(DocumentTest,
   // Asking for any element that is not affected by a sticky element should only
   // advance the lifecycle to layout clean.
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("ancestor"));
+      GetDocument().getElementById("ancestor"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("nonSticky"));
+      GetDocument().getElementById("nonSticky"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 
   // However, asking for either the sticky element or it's descendents should
   // clean compositing inputs as well.
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("sticky"));
+      GetDocument().getElementById("sticky"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
 
@@ -951,7 +939,7 @@ TEST_F(DocumentTest,
             GetDocument().Lifecycle().GetState());
 
   GetDocument().EnsurePaintLocationDataValidForNode(
-      GetDocument().getElementById("stickyChild"));
+      GetDocument().getElementById("stickyChild"), DocumentUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
 }
@@ -996,8 +984,8 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
   // Set a CSP for the main world.
   const char* kMainWorldCSP = "connect-src https://google.com;";
   GetDocument().GetContentSecurityPolicy()->DidReceiveHeader(
-      kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceHTTP);
+      kMainWorldCSP, ContentSecurityPolicyType::kEnforce,
+      ContentSecurityPolicySource::kHTTP);
 
   LocalFrame* frame = GetDocument().GetFrame();
   ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
@@ -1031,7 +1019,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
     ScriptState::Scope scope(main_world_script_state);
     EXPECT_THAT(get_csp_headers(),
                 ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
   }
 
   {
@@ -1042,7 +1030,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
     // CSP.
     EXPECT_THAT(get_csp_headers(),
                 ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
   }
 
   {
@@ -1062,7 +1050,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
       EXPECT_THAT(
           get_csp_headers(),
           ElementsAre(CSPHeaderAndType(
-              {kIsolatedWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+              {kIsolatedWorldCSP, ContentSecurityPolicyType::kEnforce})));
     }
   }
 }
@@ -1072,7 +1060,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  NavigateTo(KURL("https://www.example.com/"), "", "sandbox");
+  NavigateTo(KURL("https://www.example.com/"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);
@@ -1178,6 +1167,8 @@ TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
 }
 
 TEST_F(DocumentTest, PrefersColorSchemeChanged) {
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhasesForTest();
 
   auto* list = GetDocument().GetMediaQueryMatcher().MatchMedia(
@@ -1187,9 +1178,7 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
 
   EXPECT_FALSE(listener->IsNotified());
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
 
   UpdateAllLifecyclePhasesForTest();
   GetDocument().ServiceScriptedAnimations(base::TimeTicks());
@@ -1197,43 +1186,232 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
   EXPECT_TRUE(listener->IsNotified());
 }
 
-TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
-  blink::ScopedDocumentPolicyForTest sdp(true);
-  const auto test_feature = blink::mojom::FeaturePolicyFeature::kFontDisplay;
-  const auto report_option = blink::ReportOptions::kReportOnFailure;
+TEST_F(DocumentTest, FindInPageUkm) {
+  GetDocument().ukm_recorder_ = std::make_unique<ukm::TestUkmRecorder>();
+  auto* recorder =
+      static_cast<ukm::TestUkmRecorder*>(GetDocument().UkmRecorder());
 
-  // When document_policy is not initialized, feature_policy should
-  // be sufficient to determine the result.
-  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap 'none'",
-             "");
-  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  EXPECT_EQ(recorder->entries_count(), 0u);
+  GetDocument().MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
+  GetDocument().MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
 
-  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap *", "");
-  EXPECT_TRUE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  auto entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 1u);
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
 
-  // When document_policy is specified, both feature_policy and
-  // document_policy need to return true for the feature to be
-  // enabled.
-  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap *", "");
-  GetDocument().SetDocumentPolicyForTesting(
-      DocumentPolicy::CreateWithRequiredPolicy(
-          {{test_feature, blink::PolicyValue(true)}}));
-  EXPECT_TRUE(GetDocument().IsFeatureEnabled(test_feature, report_option));
-  GetDocument().SetDocumentPolicyForTesting(
-      DocumentPolicy::CreateWithRequiredPolicy(
-          {{test_feature, blink::PolicyValue(false)}}));
-  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  GetDocument().MarkHasFindInPageContentVisibilityActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  GetDocument().MarkHasFindInPageContentVisibilityActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 2u);
 
-  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap 'none'",
-             "");
-  GetDocument().SetDocumentPolicyForTesting(
-      DocumentPolicy::CreateWithRequiredPolicy(
-          {{test_feature, blink::PolicyValue(true)}}));
-  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
-  GetDocument().SetDocumentPolicyForTesting(
-      DocumentPolicy::CreateWithRequiredPolicy(
-          {{test_feature, blink::PolicyValue(false)}}));
-  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
+
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[1], "DidHaveRenderSubtreeMatch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[1],
+                                                  "DidHaveRenderSubtreeMatch"),
+            1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(entries[1], "DidSearch"));
+}
+
+TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
+  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  SetBodyInnerHTML("<style>@page { margin: 50px; size: 400px 10in; }</style>");
+
+  constexpr FloatSize initial_page_size(800, 600);
+
+  GetDocument().GetFrame()->StartPrinting(initial_page_size, initial_page_size);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  WebPrintPageDescription description;
+  GetDocument().GetPageDescription(0, &description);
+
+  EXPECT_EQ(50, description.margin_top);
+  EXPECT_EQ(50, description.margin_right);
+  EXPECT_EQ(50, description.margin_bottom);
+  EXPECT_EQ(50, description.margin_left);
+  EXPECT_EQ(WebDoubleSize(400, 960), description.size);
+}
+
+TEST(Document, HandlesDisconnectDuringHasTrustToken) {
+  // Check that a Mojo handle disconnecting during hasTrustToken operation
+  // execution results in the promise getting rejected with the proper
+  // exception.
+  V8TestingScope scope(KURL("https://trusttoken.example"));
+
+  Document& document = scope.GetDocument();
+
+  auto promise =
+      document.hasTrustToken(scope.GetScriptState(), "https://issuer.example",
+                             scope.GetExceptionState());
+  DocumentTest::SimulateHasTrustTokensAnswererConnectionError(&document);
+
+  ASSERT_TRUE(promise.IsAssociatedWith(scope.GetScriptState()));
+
+  ScriptPromiseTester promise_tester(scope.GetScriptState(), promise);
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsRejected());
+  EXPECT_TRUE(IsDOMException(scope.GetScriptState(), promise_tester.Value(),
+                             DOMExceptionCode::kOperationError));
+}
+
+TEST(Document, RejectsHasTrustTokenCallFromNonHttpNonHttpsDocument) {
+  // Check that hasTrustToken getting called from a secure, but
+  // non-http/non-https, document results in an exception being thrown.
+  V8TestingScope scope(KURL("file:///trusttoken.txt"));
+
+  Document& document = scope.GetDocument();
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Document",
+                                 "hasTrustToken");
+
+  auto promise = document.hasTrustToken(script_state, "https://issuer.example",
+                                        exception_state);
+
+  ScriptPromiseTester promise_tester(script_state, promise);
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsRejected());
+  EXPECT_TRUE(IsDOMException(script_state, promise_tester.Value(),
+                             DOMExceptionCode::kNotAllowedError));
+}
+
+namespace {
+class MockHasTrustTokensAnswerer
+    : public network::mojom::blink::HasTrustTokensAnswerer {
+ public:
+  enum Outcome { kError, kTrue, kFalse };
+  explicit MockHasTrustTokensAnswerer(Outcome outcome) : outcome_(outcome) {}
+
+  void HasTrustTokens(
+      const ::scoped_refptr<const ::blink::SecurityOrigin>& issuer,
+      HasTrustTokensCallback callback) override {
+    auto result = network::mojom::blink::HasTrustTokensResult::New();
+    result->status = network::mojom::blink::TrustTokenOperationStatus::kOk;
+    switch (outcome_) {
+      case kTrue: {
+        result->has_trust_tokens = true;
+        std::move(callback).Run(std::move(result));
+        return;
+      }
+      case kFalse: {
+        result->has_trust_tokens = false;
+        std::move(callback).Run(std::move(result));
+        return;
+      }
+      case kError: {
+        result->status =
+            network::mojom::blink::TrustTokenOperationStatus::kUnknownError;
+        std::move(callback).Run(std::move(result));
+      }
+    }
+  }
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    receiver_.Bind(
+        mojo::PendingReceiver<network::mojom::blink::HasTrustTokensAnswerer>(
+            std::move(handle)));
+  }
+
+ private:
+  Outcome outcome_;
+  mojo::Receiver<network::mojom::blink::HasTrustTokensAnswerer> receiver_{this};
+};
+}  // namespace
+
+TEST(Document, HasTrustTokenSuccess) {
+  V8TestingScope scope(KURL("https://secure.example"));
+
+  MockHasTrustTokensAnswerer answerer(MockHasTrustTokensAnswerer::kTrue);
+
+  Document& document = scope.GetDocument();
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_,
+      WTF::BindRepeating(&MockHasTrustTokensAnswerer::Bind,
+                         WTF::Unretained(&answerer)));
+
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Document",
+                                 "hasTrustToken");
+
+  auto promise = document.hasTrustToken(script_state, "https://issuer.example",
+                                        exception_state);
+
+  ScriptPromiseTester promise_tester(script_state, promise);
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsFulfilled());
+  EXPECT_TRUE(promise_tester.Value().V8Value()->IsTrue());
+
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_, {});
+}
+
+TEST(Document, HasTrustTokenSuccessWithFalseValue) {
+  V8TestingScope scope(KURL("https://secure.example"));
+
+  MockHasTrustTokensAnswerer answerer(MockHasTrustTokensAnswerer::kFalse);
+
+  Document& document = scope.GetDocument();
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_,
+      WTF::BindRepeating(&MockHasTrustTokensAnswerer::Bind,
+                         WTF::Unretained(&answerer)));
+
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Document",
+                                 "hasTrustToken");
+
+  auto promise = document.hasTrustToken(script_state, "https://issuer.example",
+                                        exception_state);
+
+  ScriptPromiseTester promise_tester(script_state, promise);
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsFulfilled());
+  EXPECT_TRUE(promise_tester.Value().V8Value()->IsFalse());
+
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_, {});
+}
+
+TEST(Document, HasTrustTokenOperationError) {
+  V8TestingScope scope(KURL("https://secure.example"));
+
+  MockHasTrustTokensAnswerer answerer(MockHasTrustTokensAnswerer::kError);
+
+  Document& document = scope.GetDocument();
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_,
+      WTF::BindRepeating(&MockHasTrustTokensAnswerer::Bind,
+                         WTF::Unretained(&answerer)));
+
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Document",
+                                 "hasTrustToken");
+
+  auto promise = document.hasTrustToken(script_state, "https://issuer.example",
+                                        exception_state);
+
+  ScriptPromiseTester promise_tester(script_state, promise);
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsRejected());
+  EXPECT_TRUE(IsDOMException(script_state, promise_tester.Value(),
+                             DOMExceptionCode::kOperationError));
+
+  document.GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      network::mojom::blink::HasTrustTokensAnswerer::Name_, {});
 }
 
 /**
@@ -1253,22 +1431,6 @@ class ViewportFitDocumentTest : public DocumentTest,
     return GetDocument().GetViewportData().GetCurrentViewportFitForTests();
   }
 };
-
-// Test both meta and @viewport present but no viewport-fit.
-TEST_F(ViewportFitDocumentTest, MetaCSSViewportButNoFit) {
-  SetHtmlInnerHTML(
-      "<style>@viewport { min-width: 100px; }</style>"
-      "<meta name='viewport' content='initial-scale=1'>");
-
-  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
-}
-
-// Test @viewport present but no viewport-fit.
-TEST_F(ViewportFitDocumentTest, CSSViewportButNoFit) {
-  SetHtmlInnerHTML("<style>@viewport { min-width: 100px; }</style>");
-
-  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
-}
 
 // Test meta viewport present but no viewport-fit.
 TEST_F(ViewportFitDocumentTest, MetaViewportButNoFit) {
@@ -1297,8 +1459,7 @@ TEST_F(ViewportFitDocumentTest, ForceExpandIntoCutout) {
 
 // This is a test case for testing a combination of viewport-fit meta value,
 // viewport CSS value and the expected outcome.
-using ViewportTestCase =
-    std::tuple<const char*, const char*, mojom::ViewportFit>;
+using ViewportTestCase = std::tuple<const char*, mojom::ViewportFit>;
 
 class ParameterizedViewportFitDocumentTest
     : public ViewportFitDocumentTest,
@@ -1306,14 +1467,7 @@ class ParameterizedViewportFitDocumentTest
  protected:
   void LoadTestHTML() {
     const char* kMetaValue = std::get<0>(GetParam());
-    const char* kCSSValue = std::get<1>(GetParam());
     StringBuilder html;
-
-    if (kCSSValue) {
-      html.Append("<style>@viewport { viewport-fit: ");
-      html.Append(kCSSValue);
-      html.Append("; }</style>");
-    }
 
     if (kMetaValue) {
       html.Append("<meta name='viewport' content='viewport-fit=");
@@ -1321,14 +1475,14 @@ class ParameterizedViewportFitDocumentTest
       html.Append("'>");
     }
 
-    GetDocument().documentElement()->SetInnerHTMLFromString(html.ToString());
+    GetDocument().documentElement()->setInnerHTML(html.ToString());
     UpdateAllLifecyclePhasesForTest();
   }
 };
 
 TEST_P(ParameterizedViewportFitDocumentTest, EffectiveViewportFit) {
   LoadTestHTML();
-  EXPECT_EQ(std::get<2>(GetParam()), GetViewportFit());
+  EXPECT_EQ(std::get<1>(GetParam()), GetViewportFit());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1336,19 +1490,11 @@ INSTANTIATE_TEST_SUITE_P(
     ParameterizedViewportFitDocumentTest,
     testing::Values(
         // Test the default case.
-        ViewportTestCase(nullptr, nullptr, mojom::ViewportFit::kAuto),
-        // Test the different values set through CSS.
-        ViewportTestCase(nullptr, "auto", mojom::ViewportFit::kAuto),
-        ViewportTestCase(nullptr, "contain", mojom::ViewportFit::kContain),
-        ViewportTestCase(nullptr, "cover", mojom::ViewportFit::kCover),
-        ViewportTestCase(nullptr, "invalid", mojom::ViewportFit::kAuto),
+        ViewportTestCase(nullptr, mojom::ViewportFit::kAuto),
         // Test the different values set through the meta tag.
-        ViewportTestCase("auto", nullptr, mojom::ViewportFit::kAuto),
-        ViewportTestCase("contain", nullptr, mojom::ViewportFit::kContain),
-        ViewportTestCase("cover", nullptr, mojom::ViewportFit::kCover),
-        ViewportTestCase("invalid", nullptr, mojom::ViewportFit::kAuto),
-        // Test that the CSS should override the meta tag.
-        ViewportTestCase("cover", "auto", mojom::ViewportFit::kAuto),
-        ViewportTestCase("cover", "contain", mojom::ViewportFit::kContain)));
+        ViewportTestCase("auto", mojom::ViewportFit::kAuto),
+        ViewportTestCase("contain", mojom::ViewportFit::kContain),
+        ViewportTestCase("cover", mojom::ViewportFit::kCover),
+        ViewportTestCase("invalid", mojom::ViewportFit::kAuto)));
 
 }  // namespace blink

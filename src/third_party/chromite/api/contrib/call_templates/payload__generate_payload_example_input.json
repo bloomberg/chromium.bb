@@ -27,5 +27,6 @@
 
     "bucket": "chromeos-releases-test",
     "verify": true,
-    "keyset": "update_signer"
+    "keyset": "update_signer",
+    "dryrun": false
 }

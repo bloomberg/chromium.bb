@@ -23,7 +23,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -37,10 +36,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/app_modal/javascript_dialog_manager.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/page_zoom.h"
@@ -63,8 +63,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -221,8 +221,6 @@ GURL DecorateFrontendURL(const GURL& base_url) {
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&") +
       "dockSide=undocked");  // TODO(dgozman): remove this support in M38.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDevToolsExperiments))
-    url_string += "&experiments=true";
 
   if (command_line->HasSwitch(switches::kDevToolsFlags)) {
     url_string += "&" + command_line->GetSwitchValueASCII(
@@ -288,11 +286,11 @@ bool DevToolsEventForwarder::ForwardEvent(
     const content::NativeWebKeyboardEvent& event) {
   std::string event_type;
   switch (event.GetType()) {
-    case WebInputEvent::kKeyDown:
-    case WebInputEvent::kRawKeyDown:
+    case WebInputEvent::Type::kKeyDown:
+    case WebInputEvent::Type::kRawKeyDown:
       event_type = kKeyDownEventName;
       break;
-    case WebInputEvent::kKeyUp:
+    case WebInputEvent::Type::kKeyUp:
       event_type = kKeyUpEventName;
       break;
     default:
@@ -317,8 +315,8 @@ bool DevToolsEventForwarder::ForwardEvent(
                               static_cast<ui::DomCode>(event.dom_code)));
   event_data.SetIntKey("keyCode", key_code);
   event_data.SetIntKey("modifiers", modifiers);
-  devtools_window_->bindings_->CallClientFunction(
-      "DevToolsAPI.keyEventUnhandled", &event_data, NULL, NULL);
+  devtools_window_->bindings_->CallClientMethod(
+      "DevToolsAPI", "keyEventUnhandled", event_data);
   return true;
 }
 
@@ -687,7 +685,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_web_contents->GetBrowserContext());
     base::RecordAction(base::UserMetricsAction("DevTools_InspectRenderer"));
-    std::string panel = "";
+    std::string panel;
     switch (action.type()) {
       case DevToolsToggleAction::kInspect:
       case DevToolsToggleAction::kShowElementsPanel:
@@ -775,8 +773,7 @@ void DevToolsWindow::UpdateInspectedWebContents(
       std::make_unique<ObserverWithAccessor>(new_web_contents);
   bindings_->AttachTo(
       content::DevToolsAgentHost::GetOrCreateFor(new_web_contents));
-  bindings_->CallClientFunction("DevToolsAPI.reattachMainTarget", nullptr,
-                                nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "reattachMainTarget");
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
@@ -962,8 +959,8 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
   zoom::ZoomController::CreateForWebContents(main_web_contents_);
   zoom::ZoomController::FromWebContents(main_web_contents_)
       ->SetShowsNotificationBubble(false);
-  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-      main_web_contents_);
+  performance_manager::PerformanceManagerRegistry::GetInstance()
+      ->CreatePageNodeForWebContents(main_web_contents_);
 
   g_devtools_window_instances.Get().push_back(this);
 
@@ -1155,6 +1152,7 @@ void DevToolsWindow::ActivateContents(WebContents* contents) {
 
 void DevToolsWindow::AddNewContents(WebContents* source,
                                     std::unique_ptr<WebContents> new_contents,
+                                    const GURL& target_url,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_rect,
                                     bool user_gesture,
@@ -1178,7 +1176,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (inspected_web_contents) {
     inspected_web_contents->GetDelegate()->AddNewContents(
-        source, std::move(new_contents), disposition, initial_rect,
+        source, std::move(new_contents), target_url, disposition, initial_rect,
         user_gesture, was_blocked);
   }
 }
@@ -1276,7 +1274,7 @@ bool DevToolsWindow::HandleKeyboardEvent(
 
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(
     WebContents* source) {
-  return app_modal::JavaScriptDialogManager::GetInstance();
+  return javascript_dialogs::AppModalDialogManager::GetInstance();
 }
 
 content::ColorChooser* DevToolsWindow::OpenColorChooser(
@@ -1429,8 +1427,7 @@ void DevToolsWindow::ColorPickedInEyeDropper(int r, int g, int b, int a) {
   color.SetInteger("g", g);
   color.SetInteger("b", b);
   color.SetInteger("a", a);
-  bindings_->CallClientFunction("DevToolsAPI.eyeDropperPickedColor", &color,
-                                nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "eyeDropperPickedColor", color);
 }
 
 void DevToolsWindow::InspectedContentsClosing() {
@@ -1490,12 +1487,12 @@ void DevToolsWindow::OnLoadCompleted() {
   // First seed inspected tab id for extension APIs.
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (inspected_web_contents) {
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(inspected_web_contents);
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(inspected_web_contents);
     if (session_tab_helper) {
-      base::Value tabId(session_tab_helper->session_id().id());
-      bindings_->CallClientFunction("DevToolsAPI.setInspectedTabId",
-                                    &tabId, NULL, NULL);
+      bindings_->CallClientMethod(
+          "DevToolsAPI", "setInspectedTabId",
+          base::Value(session_tab_helper->session_id().id()));
     }
   }
 
@@ -1562,8 +1559,7 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
 void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
   switch (action.type()) {
     case DevToolsToggleAction::kInspect:
-      bindings_->CallClientFunction("DevToolsAPI.enterInspectElementMode", NULL,
-                                    NULL, NULL);
+      bindings_->CallClientMethod("DevToolsAPI", "enterInspectElementMode");
       break;
 
     case DevToolsToggleAction::kShowElementsPanel:
@@ -1578,11 +1574,10 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
       const DevToolsToggleAction::RevealParams* params =
           action.params();
       CHECK(params);
-      base::Value url_value(params->url);
-      base::Value line_value(static_cast<int>(params->line_number));
-      base::Value column_value(static_cast<int>(params->column_number));
-      bindings_->CallClientFunction("DevToolsAPI.revealSourceLine",
-                                    &url_value, &line_value, &column_value);
+      bindings_->CallClientMethod(
+          "DevToolsAPI", "revealSourceLine", base::Value(params->url),
+          base::Value(static_cast<int>(params->line_number)),
+          base::Value(static_cast<int>(params->column_number)));
       break;
     }
     default:
@@ -1613,18 +1608,17 @@ void DevToolsWindow::LoadCompleted() {
   Show(action_on_load_);
   action_on_load_ = DevToolsToggleAction::NoOp();
   if (!load_completed_callback_.is_null()) {
-    load_completed_callback_.Run();
-    load_completed_callback_ = base::Closure();
+    std::move(load_completed_callback_).Run();
   }
 }
 
-void DevToolsWindow::SetLoadCompletedCallback(const base::Closure& closure) {
+void DevToolsWindow::SetLoadCompletedCallback(base::OnceClosure closure) {
   if (life_stage_ == kLoadCompleted || life_stage_ == kClosing) {
     if (!closure.is_null())
-      closure.Run();
+      std::move(closure).Run();
     return;
   }
-  load_completed_callback_ = closure;
+  load_completed_callback_ = std::move(closure);
 }
 
 bool DevToolsWindow::ForwardKeyboardEvent(
@@ -1637,9 +1631,8 @@ bool DevToolsWindow::ReloadInspectedWebContents(bool bypass_cache) {
   WebContents* wc = GetInspectedWebContents();
   if (!wc || wc->GetCrashedStatus() != base::TERMINATION_STATUS_STILL_RUNNING)
     return false;
-  base::Value bypass_cache_value(bypass_cache);
-  bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
-                                &bypass_cache_value, nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "reloadInspectedPage",
+                              base::Value(bypass_cache));
   return true;
 }
 

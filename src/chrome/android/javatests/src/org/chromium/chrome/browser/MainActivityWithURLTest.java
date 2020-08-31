@@ -15,11 +15,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -63,7 +64,7 @@ public class MainActivityWithURLTest {
     public void testLaunchActivity() {
         // Launch chrome
         mActivityTestRule.startMainActivityFromLauncher();
-        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();
+        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
     }
@@ -78,14 +79,14 @@ public class MainActivityWithURLTest {
     public void testNewTabPageLaunch() {
         // Launch chrome with NTP.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
-        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();
+        String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
 
         // Open NTP.
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();
+        currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrlString();
         Assert.assertNotNull(currentUrl);
         Assert.assertEquals(false, currentUrl.isEmpty());
     }

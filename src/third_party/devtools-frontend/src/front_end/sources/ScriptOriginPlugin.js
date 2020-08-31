@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Sources.ScriptOriginPlugin = class extends Sources.UISourceCodeFrame.Plugin {
+import * as Bindings from '../bindings/bindings.js';
+import * as Components from '../components/components.js';
+import * as SDK from '../sdk/sdk.js';                            // eslint-disable-line no-unused-vars
+import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {Plugin} from './Plugin.js';
+
+export class ScriptOriginPlugin extends Plugin {
   /**
-   * @param {!SourceFrame.SourcesTextEditor} textEditor
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   constructor(textEditor, uiSourceCode) {
     super();
@@ -15,40 +24,42 @@ Sources.ScriptOriginPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   static accepts(uiSourceCode) {
-    return uiSourceCode.contentType().hasScripts() || !!Sources.ScriptOriginPlugin._script(uiSourceCode);
+    return uiSourceCode.contentType().hasScripts() || !!ScriptOriginPlugin._script(uiSourceCode);
   }
 
   /**
    * @override
-   * @return {!Array<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
-  rightToolbarItems() {
-    const originURL = Bindings.CompilerScriptMapping.uiSourceCodeOrigin(this._uiSourceCode);
+  async rightToolbarItems() {
+    const originURL = Bindings.CompilerScriptMapping.CompilerScriptMapping.uiSourceCodeOrigin(this._uiSourceCode);
     if (originURL) {
-      const item = UI.formatLocalized('(source mapped from %s)', [Components.Linkifier.linkifyURL(originURL)]);
-      return [new UI.ToolbarItem(item)];
+      const item =
+          UI.UIUtils.formatLocalized('(source mapped from %s)', [Components.Linkifier.Linkifier.linkifyURL(originURL)]);
+      return [new UI.Toolbar.ToolbarItem(item)];
     }
 
     // Handle anonymous scripts with an originStackTrace.
-    const script = Sources.ScriptOriginPlugin._script(this._uiSourceCode);
+    const script = await ScriptOriginPlugin._script(this._uiSourceCode);
     if (!script || !script.originStackTrace) {
       return [];
     }
-    const link = Sources.ScriptOriginPlugin._linkifier.linkifyStackTraceTopFrame(
-        script.debuggerModel.target(), script.originStackTrace);
-    return [new UI.ToolbarItem(link)];
+    const link = linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
+    return [new UI.Toolbar.ToolbarItem(link)];
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {?SDK.Script}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {!Promise<?SDK.Script.Script>}
    */
-  static _script(uiSourceCode) {
-    const locations = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0);
+  static async _script(uiSourceCode) {
+    const locations =
+        await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
+            uiSourceCode, 0, 0);
     for (const location of locations) {
       const script = location.script();
       if (script && script.originStackTrace) {
@@ -57,6 +68,6 @@ Sources.ScriptOriginPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     }
     return null;
   }
-};
+}
 
-Sources.ScriptOriginPlugin._linkifier = new Components.Linkifier();
+export const linkifier = new Components.Linkifier.Linkifier();

@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -151,6 +152,10 @@ ConnectionAttempts TransportConnectJob::GetConnectionAttempts() const {
   return attempts;
 }
 
+ResolveErrorInfo TransportConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 // static
 void TransportConnectJob::MakeAddressListStartWithIPv4(AddressList* list) {
   for (auto i = list->begin(); i != list->end(); ++i) {
@@ -281,6 +286,7 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
   // through proxies, |connect_start| should not include dns lookup time.
   connect_timing_.connect_start = connect_timing_.dns_end;
   resolve_result_ = result;
+  resolve_error_info_ = request_->GetResolveErrorInfo();
 
   if (result != OK)
     return result;

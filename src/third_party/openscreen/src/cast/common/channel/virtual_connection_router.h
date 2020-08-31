@@ -10,10 +10,11 @@
 #include <memory>
 #include <string>
 
-#include "cast/common/channel/cast_socket.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/public/cast_socket.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 class CastMessageHandler;
 struct VirtualConnection;
@@ -35,9 +36,9 @@ class VirtualConnectionManager;
 //    VCRouter::TakeSocket.
 //
 // 4. Anything Foo wants to send (launch, app availability, etc.) goes through
-//    VCRouter::SendMessage via an appropriate VC.  The virtual connection is
-//    not created automatically, so Foo should either ensure its existence via
-//    logic or check with the VirtualConnectionManager first.
+//    VCRouter::Send via an appropriate VC.  The virtual connection is not
+//    created automatically, so Foo should either ensure its existence via logic
+//    or check with the VirtualConnectionManager first.
 class VirtualConnectionRouter final : public CastSocket::Client {
  public:
   class SocketErrorHandler {
@@ -56,13 +57,15 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   // |error_handler| must live until either its OnError or OnClose is called.
   void TakeSocket(SocketErrorHandler* error_handler,
                   std::unique_ptr<CastSocket> socket);
-  void CloseSocket(uint32_t id);
+  void CloseSocket(int id);
 
-  Error SendMessage(VirtualConnection vconn, CastMessage&& message);
+  Error Send(VirtualConnection virtual_conn,
+             ::cast::channel::CastMessage message);
 
   // CastSocket::Client overrides.
   void OnError(CastSocket* socket, Error error) override;
-  void OnMessage(CastSocket* socket, CastMessage message) override;
+  void OnMessage(CastSocket* socket,
+                 ::cast::channel::CastMessage message) override;
 
  private:
   struct SocketWithHandler {
@@ -71,11 +74,11 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   };
 
   VirtualConnectionManager* const vc_manager_;
-  std::map<uint32_t, SocketWithHandler> sockets_;
+  std::map<int, SocketWithHandler> sockets_;
   std::map<std::string /* local_id */, CastMessageHandler*> endpoints_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_VIRTUAL_CONNECTION_ROUTER_H_

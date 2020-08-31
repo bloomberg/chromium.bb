@@ -34,16 +34,24 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   base::Optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
-  base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
+  base::Optional<GURL> GetAppScopeInternal(
+      const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const web_app::AppId& app_id) const override;
+  std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+      const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
+  web_app::WebAppRegistrar* AsWebAppRegistrar() override;
+  BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
 
   // ExtensionRegistryObserver:
+  // OnExtensionInstalled is not handled here.
+  // AppRegistrar::NotifyWebAppInstalled is triggered by
+  // BookmarkAppInstallFinalizer::OnExtensionInstalled().
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
@@ -52,12 +60,28 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
                            UnloadedExtensionReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
+  // Finds the extension object in ExtensionRegistry and in the being
+  // uninstalled slot.
+  //
+  // When AppRegistrarObserver::OnWebAppUninstalled(app_id) happens for
+  // bookmark apps, the bookmark app backing that app_id is already removed
+  // from ExtensionRegistry. If some abstract observer needs the extension
+  // pointer for |app_id| being uninstalled, that observer should use this
+  // getter. This is a short-term workaround which helps to unify
+  // ExtensionsRegistry and WebAppRegistrar observation.
+  const Extension* FindExtension(const web_app::AppId& app_id) const;
+
  private:
-  const Extension* GetBookmarkApp(const web_app::AppId& app_id) const;
-  const Extension* GetExtension(const web_app::AppId& app_id) const;
+  // DCHECKs that app_id isn't for a Chrome app to catch places where Chrome app
+  // UI accidentally starts using web_app::AppRegistrar when it shouldn't.
+  const Extension* GetBookmarkAppDchecked(const web_app::AppId& app_id) const;
+  const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_observer_{this};
+
+  // Observers may find this pointer via FindExtension method.
+  const Extension* bookmark_app_being_observed_ = nullptr;
 };
 
 }  // namespace extensions

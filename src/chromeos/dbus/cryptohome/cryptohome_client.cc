@@ -762,10 +762,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmAttestationDeleteKeys(attestation::AttestationKeyType key_type,
-                                const cryptohome::AccountIdentifier& id,
-                                const std::string& key_prefix,
-                                DBusMethodCallback<bool> callback) override {
+  void TpmAttestationDeleteKeysByPrefix(
+      attestation::AttestationKeyType key_type,
+      const cryptohome::AccountIdentifier& id,
+      const std::string& key_prefix,
+      DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationDeleteKeys);
@@ -774,6 +775,22 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(id.account_id());
     writer.AppendString(key_prefix);
+    CallBoolMethod(&method_call, std::move(callback));
+  }
+
+  // CryptohomeClient override.
+  void TpmAttestationDeleteKey(attestation::AttestationKeyType key_type,
+                               const cryptohome::AccountIdentifier& id,
+                               const std::string& key_name,
+                               DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationDeleteKey);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == attestation::KEY_USER);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(id.account_id());
+    writer.AppendString(key_name);
     CallBoolMethod(&method_call, std::move(callback));
   }
 
@@ -1051,6 +1068,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
       DBusMethodCallback<cryptohome::BaseReply> callback) override {
     cryptohome::GetRsuDeviceIdRequest request;
     CallCryptohomeMethod(cryptohome::kCryptohomeGetRsuDeviceId, request,
+                         std::move(callback));
+  }
+
+  void CheckHealth(
+      const cryptohome::CheckHealthRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    CallCryptohomeMethod(cryptohome::kCryptohomeCheckHealth, request,
                          std::move(callback));
   }
 

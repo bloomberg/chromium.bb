@@ -93,6 +93,7 @@ FakeMediaSource::FakeMediaSource(
       video_stream_index_(-1),
       video_frame_rate_numerator_(video_config.max_frame_rate),
       video_frame_rate_denominator_(1),
+      audio_algo_(&media_log_),
       video_first_pts_(0),
       video_first_pts_set_(false) {
   CHECK(output_audio_params_.IsValid());
@@ -460,7 +461,7 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
 
   const int frames_needed_to_scale =
       playback_rate_ * av_audio_context_->sample_rate / kAudioPacketsPerSecond;
-  while (frames_needed_to_scale <= audio_algo_.frames_buffered()) {
+  while (frames_needed_to_scale <= audio_algo_.BufferedFrames()) {
     if (!audio_algo_.FillBuffer(audio_fifo_input_bus_.get(), 0,
                                 audio_fifo_input_bus_->frames(),
                                 playback_rate_)) {
@@ -556,7 +557,7 @@ bool FakeMediaSource::OnNewVideoFrame(AVFrame* frame) {
     return false;
   video_frame_queue_.push(video_frame);
   video_frame_queue_.back()->AddDestructionObserver(
-      base::Bind(&AVFreeFrame, shallow_copy));
+      base::BindOnce(&AVFreeFrame, shallow_copy));
   last_video_frame_timestamp_ = timestamp;
   return true;
 }

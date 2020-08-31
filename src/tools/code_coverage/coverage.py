@@ -157,7 +157,11 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    update.UpdatePackage('coverage_tools')
+    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
+
+  if coverage_utils.GetHostPlatform() == 'win':
+    LLVM_COV_PATH += '.exe'
+    LLVM_PROFDATA_PATH += '.exe'
 
   coverage_tools_exist = (
       os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
@@ -190,18 +194,23 @@ def _IsIOS():
   return _GetTargetOS() == 'ios'
 
 
-def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
-                                             filters, ignore_filename_regex):
-  """Generates per file line-by-line coverage in html using 'llvm-cov show'.
+def _GeneratePerFileLineByLineCoverageInFormat(binary_paths, profdata_file_path,
+                                               filters, ignore_filename_regex,
+                                               output_format):
+  """Generates per file line-by-line coverage in html or text using
+  'llvm-cov show'.
 
-  For a file with absolute path /a/b/x.cc, a html report is generated as:
-  OUTPUT_DIR/coverage/a/b/x.cc.html. An index html file is also generated as:
-  OUTPUT_DIR/index.html.
+  For a file with absolute path /a/b/x.cc, a html/txt report is generated as:
+  OUTPUT_DIR/coverage/a/b/x.cc.[html|txt]. For html format, an index html file
+  is also generated as: OUTPUT_DIR/index.html.
 
   Args:
     binary_paths: A list of paths to the instrumented binaries.
     profdata_file_path: A path to the profdata file.
     filters: A list of directories and files to get coverage for.
+    ignore_filename_regex: A regular expression for skipping source code files
+                           with certain file paths.
+    output_format: The output format of generated report files.
   """
   # llvm-cov show [options] -instr-profile PROFILE BIN [-object BIN,...]
   # [[-object BIN]] [SOURCES]
@@ -209,8 +218,9 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   # and the rest are specified as keyword argument.
   logging.debug('Generating per file line by line coverage reports using '
                 '"llvm-cov show" command.')
+
   subprocess_cmd = [
-      LLVM_COV_PATH, 'show', '-format=html',
+      LLVM_COV_PATH, 'show', '-format={}'.format(output_format),
       '-output-dir={}'.format(OUTPUT_DIR),
       '-instr-profile={}'.format(profdata_file_path), binary_paths[0]
   ]
@@ -284,8 +294,11 @@ def _BuildTargets(targets, jobs_count):
                 default value is derived based on CPUs availability.
   """
   logging.info('Building %s.', str(targets))
+  autoninja = 'autoninja'
+  if coverage_utils.GetHostPlatform() == 'win':
+    autoninja += '.bat'
 
-  subprocess_cmd = ['autoninja', '-C', BUILD_DIR]
+  subprocess_cmd = [autoninja, '-C', BUILD_DIR]
   if jobs_count is not None:
     subprocess_cmd.append('-j' + str(jobs_count))
 
@@ -684,8 +697,8 @@ def _ValidateCurrentPlatformIsSupported():
     current_platform = coverage_utils.GetHostPlatform()
 
   assert current_platform in [
-      'linux', 'mac', 'chromeos', 'ios'
-  ], ('Coverage is only supported on linux, mac, chromeos and ios.')
+      'linux', 'mac', 'chromeos', 'ios', 'win'
+  ], ('Coverage is only supported on linux, mac, chromeos, ios and win.')
 
 
 def _GetBuildArgs():
@@ -907,6 +920,13 @@ def _ParseCommandArguments():
       '\'autoninja -h\' for more details.')
 
   arg_parser.add_argument(
+      '--format',
+      type=str,
+      default='html',
+      help='Output format of the "llvm-cov show" command. The supported '
+      'formats are "text" and "html".')
+
+  arg_parser.add_argument(
       '-v',
       '--verbose',
       action='store_true',
@@ -931,7 +951,7 @@ def Main():
   # Setup coverage binaries even when script is called with empty params. This
   # is used by coverage bot for initial setup.
   if len(sys.argv) == 1:
-    update.UpdatePackage('coverage_tools')
+    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
     print(__doc__)
     return
 
@@ -1006,17 +1026,21 @@ def Main():
         'otool')
     if os.path.exists(hermetic_otool_path):
       otool_path = hermetic_otool_path
-  binary_paths.extend(
-      coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR, otool_path))
+  if sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
+    binary_paths.extend(
+        coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR, otool_path))
 
-  logging.info('Generating code coverage report in html (this can take a while '
-               'depending on size of target!).')
+  assert args.format == 'html' or args.format == 'text', (
+      '%s is not a valid output format for "llvm-cov show". Only "text" and '
+      '"html" formats are supported.' % (args.format))
+  logging.info('Generating code coverage report in %s (this can take a while '
+               'depending on size of target!).' % (args.format))
   per_file_summary_data = _GeneratePerFileCoverageSummary(
       binary_paths, profdata_file_path, absolute_filter_paths,
       args.ignore_filename_regex)
-  _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
-                                           absolute_filter_paths,
-                                           args.ignore_filename_regex)
+  _GeneratePerFileLineByLineCoverageInFormat(
+      binary_paths, profdata_file_path, absolute_filter_paths,
+      args.ignore_filename_regex, args.format)
   component_mappings = None
   if not args.no_component_view:
     component_mappings = json.load(urllib2.urlopen(COMPONENT_MAPPING_URL))
@@ -1030,7 +1054,8 @@ def Main():
       no_file_view=args.no_file_view,
       component_mappings=component_mappings)
 
-  processor.PrepareHtmlReport()
+  if args.format == 'html':
+    processor.PrepareHtmlReport()
 
 
 if __name__ == '__main__':

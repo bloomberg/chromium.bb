@@ -35,13 +35,14 @@ void FullscreenCallbackProxy::EnterFullscreen(base::OnceClosure exit_closure) {
 
 void FullscreenCallbackProxy::ExitFullscreen() {
   TRACE_EVENT0("weblayer", "Java_FullscreenCallbackProxy_exitFullscreen");
+  // If the web contents initiated the fullscreen exit, the closure will still
+  // be valid, so clean it up now.
+  exit_fullscreen_closure_.Reset();
   Java_FullscreenCallbackProxy_exitFullscreen(AttachCurrentThread(),
                                               java_delegate_);
 }
 
-void FullscreenCallbackProxy::DoExitFullscreen(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+void FullscreenCallbackProxy::DoExitFullscreen(JNIEnv* env) {
   if (exit_fullscreen_closure_)
     std::move(exit_fullscreen_closure_).Run();
 }

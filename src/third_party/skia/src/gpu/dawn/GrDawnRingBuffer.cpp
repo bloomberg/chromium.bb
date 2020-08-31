@@ -8,10 +8,11 @@
 #include "src/gpu/dawn/GrDawnRingBuffer.h"
 
 #include "src/gpu/dawn/GrDawnGpu.h"
+#include "src/gpu/dawn/GrDawnStagingBuffer.h"
 #include "src/gpu/dawn/GrDawnUtil.h"
 
 namespace {
-    const int kDefaultSize = 512 * 1024;
+    const int kDefaultSize = 32 * 1024;
 }
 
 GrDawnRingBuffer::GrDawnRingBuffer(GrDawnGpu* gpu, wgpu::BufferUsage usage)
@@ -29,8 +30,13 @@ GrDawnRingBuffer::Slice GrDawnRingBuffer::allocate(int size) {
         fBuffer = fGpu->device().CreateBuffer(&desc);
         fOffset = 0;
     }
-    int offset = fOffset;
+
+    GrStagingBuffer::Slice staging = fGpu->allocateStagingBufferSlice(size);
+    size_t offset = fOffset;
     fOffset += size;
     fOffset = GrDawnRoundRowBytes(fOffset);
-    return Slice(fBuffer, offset);
+    wgpu::Buffer srcBuffer = static_cast<GrDawnStagingBuffer*>(staging.fBuffer)->buffer();
+    fGpu->getCopyEncoder().CopyBufferToBuffer(srcBuffer, staging.fOffset,
+                                              fBuffer, offset, size);
+    return Slice(fBuffer, offset, staging.fData);
 }

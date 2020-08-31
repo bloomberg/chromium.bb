@@ -42,8 +42,10 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
  public:
   virtual Element* ParentElement() const { return nullptr; }
   StyleSheetContents* ContextStyleSheet() const;
+  AbstractPropertySetCSSStyleDeclaration(ExecutionContext* context)
+      : CSSStyleDeclaration(context) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule* parentRule() const override { return nullptr; }

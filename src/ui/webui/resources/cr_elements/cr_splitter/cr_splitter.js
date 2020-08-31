@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 // TODO(arv): Currently this only supports horizontal layout.
 // TODO(arv): This ignores min-width and max-width of the elements to the
@@ -40,6 +40,8 @@ function getZoomFactor(doc) {
 Polymer({
   is: 'cr-splitter',
 
+  _template: null,
+
   properties: {
     resizeNextElement: {
       type: Boolean,
@@ -59,12 +61,12 @@ Polymer({
   startX_: 0,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.handlers_ = new Map();
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.removeAllHandlers_();
     this.handlers_ = null;
   },
@@ -76,7 +78,7 @@ Polymer({
    *                         started the drag.
    * @param {boolean} isTouchEvent True if the drag started by touch event.
    */
-  startDrag: function(clientX, isTouchEvent) {
+  startDrag(clientX, isTouchEvent) {
     if (this.handlers_) {
       // Concurrent drags
       this.endDrag_();
@@ -108,7 +110,7 @@ Polymer({
   },
 
   /** @private */
-  removeAllHandlers_: function() {
+  removeAllHandlers_() {
     const doc = this.ownerDocument;
     const handlers = /** @type {!Map<string, !Function>} */ (this.handlers_);
     for (const [eventType, handler] of handlers) {
@@ -124,7 +126,7 @@ Polymer({
    * and calls splitter drag end handler.
    * @private
    */
-  endDrag_: function() {
+  endDrag_() {
     this.removeAllHandlers_();
     this.handleSplitterDragEnd_();
   },
@@ -133,7 +135,7 @@ Polymer({
    * @return {Element}
    * @private
    */
-  getResizeTarget_: function() {
+  getResizeTarget_() {
     return this.resizeNextElement ? this.nextElementSibling :
                                     this.previousElementSibling;
   },
@@ -144,7 +146,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  calcDeltaX_: function(deltaX) {
+  calcDeltaX_(deltaX) {
     return this.resizeNextElement ? -deltaX : deltaX;
   },
 
@@ -153,7 +155,7 @@ Polymer({
    * @param {!Event} e The mouse event.
    * @private
    */
-  onMouseDown_: function(e) {
+  onMouseDown_(e) {
     e = /** @type {!MouseEvent} */ (e);
     if (e.button) {
       return;
@@ -168,9 +170,9 @@ Polymer({
    * @param {!Event} e The touch event.
    * @private
    */
-  onTouchStart_: function(e) {
+  onTouchStart_(e) {
     e = /** @type {!TouchEvent} */ (e);
-    if (e.touches.length == 1) {
+    if (e.touches.length === 1) {
       this.startDrag(e.touches[0].clientX, true);
       e.preventDefault();
     }
@@ -182,7 +184,7 @@ Polymer({
    * @param {!MouseEvent} e The mouse event.
    * @private
    */
-  handleMouseMove_: function(e) {
+  handleMouseMove_(e) {
     this.handleMove_(e.clientX);
   },
 
@@ -190,8 +192,8 @@ Polymer({
    * Handles the touch move event.
    * @param {!TouchEvent} e The touch event.
    */
-  handleTouchMove_: function(e) {
-    if (e.touches.length == 1) {
+  handleTouchMove_(e) {
+    if (e.touches.length === 1) {
       this.handleMove_(e.touches[0].clientX);
     }
   },
@@ -202,7 +204,7 @@ Polymer({
    * @param {number} clientX X position of the mouse or touch event.
    * @private
    */
-  handleMove_: function(clientX) {
+  handleMove_(clientX) {
     const deltaX = this.matches(':host-context([dir=rtl]) cr-splitter') ?
         this.startX_ - clientX :
         clientX - this.startX_;
@@ -214,7 +216,7 @@ Polymer({
    * @param {!MouseEvent} e The mouse event.
    * @private
    */
-  handleMouseUp_: function(e) {
+  handleMouseUp_(e) {
     this.endDrag_();
   },
 
@@ -223,7 +225,7 @@ Polymer({
    * element being resized.
    * @private
    */
-  handleSplitterDragStart_: function() {
+  handleSplitterDragStart_() {
     // Use the computed width style as the base so that we can ignore what
     // box sizing the element has. Add the difference between offset and
     // client widths to account for any scrollbars.
@@ -241,7 +243,7 @@ Polymer({
    * @param {number} deltaX The change of splitter horizontal position.
    * @private
    */
-  handleSplitterDragMove_: function(deltaX) {
+  handleSplitterDragMove_(deltaX) {
     const targetElement = this.getResizeTarget_();
     const newWidth = this.startWidth_ + this.calcDeltaX_(deltaX);
     targetElement.style.width = newWidth + 'px';
@@ -253,17 +255,16 @@ Polymer({
    * size changed.
    * @private
    */
-  handleSplitterDragEnd_: function() {
+  handleSplitterDragEnd_() {
     // Check if the size changed.
     const targetElement = this.getResizeTarget_();
     const doc = targetElement.ownerDocument;
     const computedWidth =
         parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
-    if (this.startWidth_ != computedWidth) {
+    if (this.startWidth_ !== computedWidth) {
       this.dispatchEvent(new CustomEvent('resize'));
     }
 
     this.classList.remove('splitter-active');
   },
 });
-})();

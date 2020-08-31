@@ -188,6 +188,7 @@ class CollectVariablesTraverser : public TIntermTraverser
 
     // Vertex Shader and Geometry Shader builtins
     bool mPositionAdded;
+    bool mClipDistanceAdded;
 
     // Fragment Shader builtins
     bool mPointCoordAdded;
@@ -257,6 +258,7 @@ CollectVariablesTraverser::CollectVariablesTraverser(
       mBaseVertexAdded(false),
       mBaseInstanceAdded(false),
       mPositionAdded(false),
+      mClipDistanceAdded(false),
       mPointCoordAdded(false),
       mFrontFacingAdded(false),
       mHelperInvocationAdded(false),
@@ -361,8 +363,8 @@ bool CollectVariablesTraverser::visitGlobalQualifierDeclaration(
     Visit visit,
     TIntermGlobalQualifierDeclaration *node)
 {
-    // We should not mark variables as active just based on an invariant declaration, so we don't
-    // traverse the symbols declared invariant.
+    // We should not mark variables as active just based on an invariant/precise declaration, so we
+    // don't traverse the symbols declared invariant.
     return false;
 }
 
@@ -609,6 +611,9 @@ void CollectVariablesTraverser::visitSymbol(TIntermSymbol *symbol)
                                              mSharedVariables);
                 }
                 break;
+            case EvqClipDistance:
+                recordBuiltInVaryingUsed(symbol->variable(), &mClipDistanceAdded, mOutputVaryings);
+                return;
             default:
                 break;
         }
@@ -653,9 +658,10 @@ void CollectVariablesTraverser::setFieldOrVariableProperties(const TType &type,
             variableOut->fields.push_back(fieldVariable);
         }
     }
-    if (auto *arraySizes = type.getArraySizes())
+    const TSpan<const unsigned int> &arraySizes = type.getArraySizes();
+    if (!arraySizes.empty())
     {
-        variableOut->arraySizes.assign(arraySizes->begin(), arraySizes->end());
+        variableOut->arraySizes.assign(arraySizes.begin(), arraySizes.end());
     }
 }
 
@@ -723,6 +729,7 @@ ShaderVariable CollectVariablesTraverser::recordVarying(const TIntermSymbol &var
         case EvqVertexOut:
         case EvqSmoothOut:
         case EvqFlatOut:
+        case EvqNoPerspectiveOut:
         case EvqCentroidOut:
         case EvqGeometryOut:
             if (mSymbolTable->isVaryingInvariant(variable.variable()) || type.isInvariant())
@@ -952,11 +959,11 @@ bool CollectVariablesTraverser::visitBinary(Visit, TIntermBinary *binaryNode)
             {
                 namedBlock = recordGLInUsed(interfaceType);
                 ASSERT(namedBlock);
-
-                // We need to continue traversing to collect useful variables in the index
-                // expression of gl_in.
-                traverseIndexExpression = true;
             }
+
+            // We need to continue traversing to collect useful variables in the index expression
+            // of the interface block array or gl_in in the case of the if above.
+            traverseIndexExpression = true;
         }
 
         const TInterfaceBlock *interfaceBlock = blockNode->getType().getInterfaceBlock();

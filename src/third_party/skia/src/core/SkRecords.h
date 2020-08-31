@@ -13,6 +13,7 @@
 #include "include/core/SkDrawable.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageFilter.h"
+#include "include/core/SkM44.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPath.h"
 #include "include/core/SkPicture.h"
@@ -44,13 +45,17 @@ namespace SkRecords {
     M(Save)                                                         \
     M(SaveLayer)                                                    \
     M(SaveBehind)                                                   \
+    M(MarkCTM)                                                      \
     M(SetMatrix)                                                    \
     M(Translate)                                                    \
+    M(Scale)                                                        \
     M(Concat)                                                       \
+    M(Concat44)                                                     \
     M(ClipPath)                                                     \
     M(ClipRRect)                                                    \
     M(ClipRect)                                                     \
     M(ClipRegion)                                                   \
+    M(ClipShader)                                                   \
     M(DrawArc)                                                      \
     M(DrawDrawable)                                                 \
     M(DrawImage)                                                    \
@@ -187,14 +192,22 @@ RECORD(SaveLayer, kHasPaint_Tag,
 RECORD(SaveBehind, 0,
        Optional<SkRect> subset);
 
+RECORD(MarkCTM, 0,
+       SkString name);
 RECORD(SetMatrix, 0,
         TypedMatrix matrix);
 RECORD(Concat, 0,
         TypedMatrix matrix);
+RECORD(Concat44, 0,
+       SkM44 matrix);
 
 RECORD(Translate, 0,
         SkScalar dx;
         SkScalar dy);
+
+RECORD(Scale, 0,
+       SkScalar sx;
+       SkScalar sy);
 
 struct ClipOpAndAA {
     ClipOpAndAA() {}
@@ -220,6 +233,9 @@ RECORD(ClipRect, 0,
         ClipOpAndAA opAA);
 RECORD(ClipRegion, 0,
         SkRegion region;
+        SkClipOp op);
+RECORD(ClipShader, 0,
+        sk_sp<SkShader> shader;
         SkClipOp op);
 
 // While not strictly required, if you have an SkPaint, it's fastest to put it first.
@@ -316,8 +332,6 @@ RECORD(DrawAtlas, kDraw_Tag|kHasImage_Tag|kHasPaint_Tag,
 RECORD(DrawVertices, kDraw_Tag|kHasPaint_Tag,
         SkPaint paint;
         sk_sp<SkVertices> vertices;
-        PODArray<SkVertices::Bone> bones;
-        int boneCount;
         SkBlendMode bmode);
 RECORD(DrawShadowRec, kDraw_Tag,
        PreCachedPath path;

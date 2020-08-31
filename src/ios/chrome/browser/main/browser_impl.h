@@ -11,14 +11,11 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
+class ChromeBrowserState;
 @class SceneState;
 @class TabModel;
 class WebStateList;
 class WebStateListDelegate;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Browser is the model for a window containing multiple tabs. Instances
 // are owned by a BrowserList to allow multiple windows for a single user
@@ -28,11 +25,15 @@ class ChromeBrowserState;
 class BrowserImpl : public Browser {
  public:
   // Constructs a BrowserImpl attached to |browser_state|.
-  BrowserImpl(ios::ChromeBrowserState* browser_state);
+  BrowserImpl(ChromeBrowserState* browser_state);
+  // Creates a The tab Model, this method has to be called for the tabmodel to
+  // exist. Tab Model can't be created on the constructor as it depends on
+  // browser agents.
+  void CreateTabModel();
   ~BrowserImpl() override;
 
   // Browser.
-  ios::ChromeBrowserState* GetBrowserState() const override;
+  ChromeBrowserState* GetBrowserState() const override;
   TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
   CommandDispatcher* GetCommandDispatcher() const override;
@@ -42,12 +43,12 @@ class BrowserImpl : public Browser {
  private:
   // Exposed to allow unittests to inject a TabModel and WebStateList
   FRIEND_TEST_ALL_PREFIXES(BrowserImplTest, TestAccessors);
-  BrowserImpl(ios::ChromeBrowserState* browser_state,
+  BrowserImpl(ChromeBrowserState* browser_state,
               TabModel* tab_model,
               std::unique_ptr<WebStateList> web_state_list);
 
-  ios::ChromeBrowserState* browser_state_;
-  __strong TabModel* tab_model_;
+  ChromeBrowserState* browser_state_;
+  __strong TabModel* tab_model_ = nil;
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   __strong CommandDispatcher* command_dispatcher_;

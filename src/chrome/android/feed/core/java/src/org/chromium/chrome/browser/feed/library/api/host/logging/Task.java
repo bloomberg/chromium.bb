@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.logging;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /**
  * IntDef representing the different tasks that can be queued on the {@link
@@ -21,6 +21,7 @@ import android.support.annotation.IntDef;
         Task.CLEAR_ALL_WITH_REFRESH,
         Task.CLEAR_PERSISTENT_STORE_TASK,
         Task.COMMIT_TASK,
+        Task.CREATE_AND_STORE,
         Task.CREATE_AND_UPLOAD,
         Task.DETACH_SESSION,
         Task.DISMISS_LOCAL,
@@ -45,7 +46,9 @@ import android.support.annotation.IntDef;
         Task.SEND_REQUEST,
         Task.SESSION_MANAGER_TRIGGER_REFRESH,
         Task.SESSION_MUTATION,
+        Task.STORE_VIEW_ACTIONS,
         Task.TASK_QUEUE_INITIALIZE,
+        Task.UPLOAD_ALL_ACTIONS,
         Task.UPLOAD_ALL_ACTIONS_FOR_URL,
         Task.NEXT_VALUE,
 })
@@ -84,7 +87,10 @@ public @interface Task {
     int SESSION_MUTATION = 29;
     int TASK_QUEUE_INITIALIZE = 30;
     int UPLOAD_ALL_ACTIONS_FOR_URL = 32;
+    int CREATE_AND_STORE = 33;
+    int STORE_VIEW_ACTIONS = 34;
+    int UPLOAD_ALL_ACTIONS = 35;
 
     // The next value that should be used when adding additional values to the IntDef.
-    int NEXT_VALUE = 33;
+    int NEXT_VALUE = 36;
 }

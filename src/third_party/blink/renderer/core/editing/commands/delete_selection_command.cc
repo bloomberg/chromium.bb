@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/delete_selection_command.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -61,7 +62,7 @@ static bool IsTableRowEmpty(Node* row) {
   if (!IsA<HTMLTableRowElement>(row))
     return false;
 
-  row->GetDocument().UpdateStyleAndLayout();
+  row->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   for (Node* child = row->firstChild(); child; child = child->nextSibling()) {
     if (IsTableCell(child) && !IsTableCellEmpty(child))
       return false;
@@ -89,10 +90,10 @@ DeleteSelectionCommand::DeleteSelectionCommand(
       reference_move_position_(reference_move_position) {}
 
 DeleteSelectionCommand::DeleteSelectionCommand(
-    const VisibleSelection& selection,
+    const SelectionForUndoStep& selection,
     const DeleteSelectionOptions& options,
     InputEvent::InputType input_type)
-    : CompositeEditCommand(*selection.Start().GetDocument()),
+    : CompositeEditCommand(*selection.Base().GetDocument()),
       options_(options),
       has_selection_to_delete_(true),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
@@ -137,9 +138,10 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
       break;
 
     if (CreateVisiblePosition(start).DeepEquivalent() !=
-            selection_to_delete_.VisibleStart().DeepEquivalent() ||
+            CreateVisiblePosition(selection_to_delete_.Start())
+                .DeepEquivalent() ||
         CreateVisiblePosition(end).DeepEquivalent() !=
-            selection_to_delete_.VisibleEnd().DeepEquivalent())
+            CreateVisiblePosition(selection_to_delete_.End()).DeepEquivalent())
       break;
 
     // If we're going to expand to include the startSpecialContainer, it must be
@@ -224,6 +226,15 @@ static Position TrailingWhitespacePosition(const Position& position,
   return Position();
 }
 
+// Workaround: GCC fails to resolve overloaded template functions, passed as
+// parameters of EnclosingNodeType. But it works wrapping that in a utility
+// function.
+#if defined(COMPILER_GCC)
+static bool IsHTMLTableRowElement(const blink::Node* node) {
+  return IsA<HTMLTableRowElement>(node);
+}
+#endif
+
 void DeleteSelectionCommand::InitializePositionData(
     EditingState* editing_state) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
@@ -252,10 +263,18 @@ void DeleteSelectionCommand::InitializePositionData(
   start_root_ = RootEditableElementOf(start);
   end_root_ = RootEditableElementOf(end);
 
+#if defined(COMPILER_GCC)
+  // Workaround. See declaration of IsHTMLTableRowElement
+  start_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(start, &IsHTMLTableRowElement));
+  end_table_row_ =
+      To<HTMLTableRowElement>(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
+#else
   start_table_row_ = To<HTMLTableRowElement>(
       EnclosingNodeOfType(start, &IsA<HTMLTableRowElement>));
   end_table_row_ = To<HTMLTableRowElement>(
       EnclosingNodeOfType(end, &IsA<HTMLTableRowElement>));
+#endif
 
   // Don't move content out of a table cell.
   // If the cell is non-editable, enclosingNodeOfType won't return it by
@@ -442,7 +461,7 @@ bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
   // We detect the case where the start is an empty line consisting of BR not
   // wrapped in a block element.
   if (upstream_start_is_br && downstream_start_is_br) {
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     if (!(IsStartOfBlock(
               VisiblePosition::BeforeNode(*node_after_upstream_start)) &&
           IsEndOfBlock(
@@ -497,7 +516,7 @@ void DeleteSelectionCommand::RemoveNode(
       return;
 
     // Make sure empty cell has some height, if a placeholder can be inserted.
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     LayoutObject* r = node->GetLayoutObject();
     if (r && r->IsTableCell() && ToLayoutBox(r)->ContentHeight() <= 0) {
       Position first_editable_position = FirstEditablePositionInNode(node);
@@ -507,7 +526,7 @@ void DeleteSelectionCommand::RemoveNode(
     return;
   }
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   if (node == start_block_) {
     VisiblePosition previous = PreviousPositionOf(
         VisiblePosition::FirstPositionInNode(*start_block_.Get()));
@@ -561,7 +580,8 @@ void DeleteSelectionCommand::DeleteTextFromNode(Text* node,
 void DeleteSelectionCommand::
     MakeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(
         EditingState* editing_state) {
-  Range* range = CreateRange(selection_to_delete_.ToNormalizedEphemeralRange());
+  Range* range = CreateRange(CreateVisibleSelection(selection_to_delete_)
+                                 .ToNormalizedEphemeralRange());
   Node* node = range->FirstNode();
   while (node && node != range->PastLastNode()) {
     Node* next_node = NodeTraversal::Next(*node);
@@ -605,12 +625,13 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
       return;
   }
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   auto* text = DynamicTo<Text>(start_node);
   if (start_offset >= CaretMaxOffset(start_node) && text) {
-    if (text->length() > (unsigned)CaretMaxOffset(start_node))
+    if (text->length() > static_cast<unsigned>(CaretMaxOffset(start_node))) {
       DeleteTextFromNode(text, CaretMaxOffset(start_node),
                          text->length() - CaretMaxOffset(start_node));
+    }
   }
 
   if (start_offset >= EditingStrategy::LastOffsetForEditing(start_node)) {
@@ -638,7 +659,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
         ending_position_ = upstream_start_;
       }
       // We should update layout to associate |start_node| to layout object.
-      GetDocument().UpdateStyleAndLayout();
+      GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     }
 
     // The selection to delete is all in one node.
@@ -686,7 +707,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
           return;
         node = next_node;
       } else {
-        GetDocument().UpdateStyleAndLayout();
+        GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
         Node& n = NodeTraversal::LastWithinOrSelf(*node);
         if (downstream_end_.AnchorNode() == n &&
             downstream_end_.ComputeEditingOffset() >= CaretMaxOffset(&n)) {
@@ -702,7 +723,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 
     // TODO(editing-dev): Hoist UpdateStyleAndLayout
     // to caller. See http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
     if (downstream_end_.AnchorNode() != start_node &&
         !upstream_start_.AnchorNode()->IsDescendantOf(
@@ -752,7 +773,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 }
 
 void DeleteSelectionCommand::FixupWhitespace() {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   if (leading_whitespace_.IsNotNull() &&
       !IsRenderedCharacter(leading_whitespace_)) {
     if (auto* text_node = DynamicTo<Text>(leading_whitespace_.AnchorNode())) {
@@ -812,7 +833,7 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
   if (upstream_start_ == downstream_end_)
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   VisiblePosition start_of_paragraph_to_move =
       CreateVisiblePosition(downstream_end_);
@@ -846,7 +867,7 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
                  upstream_start_, editing_state);
     if (editing_state->IsAborted())
       return;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     merge_destination = CreateVisiblePosition(upstream_start_);
     start_of_paragraph_to_move =
         CreateVisiblePosition(relocatable_start.GetPosition());
@@ -973,7 +994,8 @@ void DeleteSelectionCommand::RemovePreviouslySelectedEmptyTableRows(
     if (IsTableRowEmpty(end_table_row_.Get())) {
       // Don't remove end_table_row_ if it's where we're putting the ending
       // selection.
-      if (!ending_position_.AnchorNode()->IsDescendantOf(
+      if (ending_position_.IsNull() ||
+          !ending_position_.AnchorNode()->IsDescendantOf(
               end_table_row_.Get())) {
         // FIXME: We probably shouldn't remove end_table_row_ unless it's
         // fully selected, even if it is empty. We'll need to start
@@ -1020,7 +1042,7 @@ void DeleteSelectionCommand::CalculateTypingStyleAfterDelete() {
 }
 
 void DeleteSelectionCommand::ClearTransientState() {
-  selection_to_delete_ = VisibleSelection();
+  selection_to_delete_ = SelectionForUndoStep();
   upstream_start_ = Position();
   downstream_start_ = Position();
   upstream_end_ = Position();
@@ -1059,12 +1081,14 @@ void DeleteSelectionCommand::RemoveRedundantBlocks(
 void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   // If selection has not been set to a custom selection when the command was
   // created, use the current ending selection.
-  if (!has_selection_to_delete_)
-    selection_to_delete_ = EndingVisibleSelection();
+  if (!has_selection_to_delete_) {
+    selection_to_delete_ =
+        SelectionForUndoStep::From(EndingVisibleSelection().AsSelection());
+  }
 
   if (!selection_to_delete_.IsValidFor(GetDocument()) ||
       !selection_to_delete_.IsRange() ||
-      !selection_to_delete_.IsContentEditable()) {
+      !IsEditablePosition(selection_to_delete_.Base())) {
     // editing/execCommand/delete-non-editable-range-crash.html reaches here.
     return;
   }
@@ -1074,7 +1098,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   // save this to later make the selection with
   TextAffinity affinity = selection_to_delete_.Affinity();
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   Position downstream_end =
       MostForwardCaretPosition(selection_to_delete_.End());
@@ -1084,20 +1108,26 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
       (downstream_end.ComputeContainerNode()->IsTextNode() &&
        downstream_end.ComputeContainerNode()->parentNode() ==
            RootEditableElement(*downstream_end.ComputeContainerNode()));
+  VisiblePosition visible_start = CreateVisiblePosition(
+      selection_to_delete_.Start(),
+      selection_to_delete_.IsRange() ? TextAffinity::kDownstream : affinity);
+  VisiblePosition visible_end = CreateVisiblePosition(
+      selection_to_delete_.End(),
+      selection_to_delete_.IsRange() ? TextAffinity::kUpstream : affinity);
+
   bool line_break_at_end_of_selection_to_delete =
-      LineBreakExistsAtVisiblePosition(selection_to_delete_.VisibleEnd());
-  need_placeholder_ = !root_will_stay_open_without_placeholder &&
-                      IsStartOfParagraph(selection_to_delete_.VisibleStart(),
-                                         kCanCrossEditingBoundary) &&
-                      IsEndOfParagraph(selection_to_delete_.VisibleEnd(),
-                                       kCanCrossEditingBoundary) &&
-                      !line_break_at_end_of_selection_to_delete;
+      LineBreakExistsAtVisiblePosition(visible_end);
+
+  need_placeholder_ =
+      !root_will_stay_open_without_placeholder &&
+      IsStartOfParagraph(visible_start, kCanCrossEditingBoundary) &&
+      IsEndOfParagraph(visible_end, kCanCrossEditingBoundary) &&
+      !line_break_at_end_of_selection_to_delete;
   if (need_placeholder_) {
     // Don't need a placeholder when deleting a selection that starts just
     // before a table and ends inside it (we do need placeholders to hold
     // open empty cells, but that's handled elsewhere).
-    if (Element* table =
-            TableElementJustAfter(selection_to_delete_.VisibleStart())) {
+    if (Element* table = TableElementJustAfter(visible_start)) {
       if (selection_to_delete_.End().AnchorNode()->IsDescendantOf(table))
         need_placeholder_ = false;
     }
@@ -1124,7 +1154,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     return;
   if (br_result) {
     CalculateTypingStyleAfterDelete();
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     SelectionInDOMTree::Builder builder;
     builder.SetAffinity(affinity);
     if (ending_position_.IsNotNull())
@@ -1138,7 +1168,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     return;
   }
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   HandleGeneralDelete(editing_state);
   if (editing_state->IsAborted())
@@ -1155,7 +1185,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     return;
 
   if (!need_placeholder_ && root_will_stay_open_without_placeholder) {
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
     VisiblePosition visual_ending = CreateVisiblePosition(ending_position_);
     bool has_placeholder =
         LineBreakExistsAtVisiblePosition(visual_ending) &&
@@ -1187,7 +1217,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
 
   CalculateTypingStyleAfterDelete();
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   SelectionInDOMTree::Builder builder;
   builder.SetAffinity(affinity);

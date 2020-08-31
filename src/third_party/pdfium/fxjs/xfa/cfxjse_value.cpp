@@ -8,6 +8,8 @@
 
 #include <math.h>
 
+#include "fxjs/cfx_v8.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_context.h"
 #include "fxjs/xfa/cfxjse_isolatetracker.h"
@@ -58,28 +60,24 @@ void FXJSE_ThrowMessage(ByteStringView utf8Message) {
   ASSERT(pIsolate);
 
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(pIsolate);
-  v8::Local<v8::String> hMessage =
-      v8::String::NewFromUtf8(pIsolate, utf8Message.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              utf8Message.GetLength())
-          .ToLocalChecked();
+  v8::Local<v8::String> hMessage = fxv8::NewStringHelper(pIsolate, utf8Message);
   v8::Local<v8::Value> hError = v8::Exception::Error(hMessage);
   pIsolate->ThrowException(hError);
 }
 
 CFXJSE_Value::CFXJSE_Value(v8::Isolate* pIsolate) : m_pIsolate(pIsolate) {}
 
+CFXJSE_Value::CFXJSE_Value(v8::Isolate* pIsolate, v8::Local<v8::Value> value)
+    : m_pIsolate(pIsolate) {
+  ForceSetValue(value);
+}
+
 CFXJSE_Value::~CFXJSE_Value() {}
 
 CFXJSE_HostObject* CFXJSE_Value::ToHostObject() const {
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> pValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  ASSERT(!pValue.IsEmpty());
-  if (!pValue->IsObject())
-    return nullptr;
-
-  return FXJSE_RetrieveObjectBinding(pValue.As<v8::Object>());
+  return CFXJSE_HostObject::FromV8(
+      v8::Local<v8::Value>::New(GetIsolate(), m_hValue));
 }
 
 void CFXJSE_Value::SetHostObject(CFXJSE_HostObject* lpObject,
@@ -107,85 +105,58 @@ void CFXJSE_Value::SetArray(
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::Array> hArrayObject =
       v8::Array::New(GetIsolate(), values.size());
-  v8::Local<v8::Context> context = GetIsolate()->GetCurrentContext();
   uint32_t count = 0;
   for (auto& v : values) {
     if (v->IsEmpty())
       v->SetUndefined();
-    hArrayObject
-        ->Set(
-            context, count++,
-            v8::Local<v8::Value>::New(GetIsolate(), v.get()->DirectGetValue()))
-        .FromJust();
+    fxv8::ReentrantPutArrayElementHelper(GetIsolate(), hArrayObject, count++,
+                                         v->GetValue());
   }
   m_hValue.Reset(GetIsolate(), hArrayObject);
 }
 
 void CFXJSE_Value::SetFloat(float fFloat) {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> pValue = v8::Number::New(GetIsolate(), ftod(fFloat));
-  m_hValue.Reset(GetIsolate(), pValue);
+  m_hValue.Reset(GetIsolate(),
+                 fxv8::NewNumberHelper(GetIsolate(), ftod(fFloat)));
 }
 
 bool CFXJSE_Value::SetObjectProperty(ByteStringView szPropName,
                                      CFXJSE_Value* lpPropValue) {
-  ASSERT(lpPropValue);
   if (lpPropValue->IsEmpty())
     return false;
 
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hObject =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
+  v8::Local<v8::Value> hObject = GetValue();
   if (!hObject->IsObject())
     return false;
 
-  v8::Local<v8::String> hPropName =
-      v8::String::NewFromUtf8(GetIsolate(), szPropName.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              szPropName.GetLength())
-          .ToLocalChecked();
-  v8::Local<v8::Value> hPropValue =
-      v8::Local<v8::Value>::New(GetIsolate(), lpPropValue->DirectGetValue());
-  v8::Maybe<bool> result = hObject.As<v8::Object>()->Set(
-      GetIsolate()->GetCurrentContext(), hPropName, hPropValue);
-  return result.IsJust() && result.FromJust();
+  return fxv8::ReentrantPutObjectPropertyHelper(
+      GetIsolate(), hObject.As<v8::Object>(), szPropName,
+      lpPropValue->GetValue());
 }
 
 bool CFXJSE_Value::GetObjectProperty(ByteStringView szPropName,
                                      CFXJSE_Value* lpPropValue) {
-  ASSERT(lpPropValue);
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hObject =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
+  v8::Local<v8::Value> hObject = GetValue();
   if (!hObject->IsObject())
     return false;
 
-  v8::Local<v8::String> hPropName =
-      v8::String::NewFromUtf8(GetIsolate(), szPropName.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              szPropName.GetLength())
-          .ToLocalChecked();
-  v8::Local<v8::Value> hPropValue =
-      hObject.As<v8::Object>()
-          ->Get(GetIsolate()->GetCurrentContext(), hPropName)
-          .ToLocalChecked();
-  lpPropValue->ForceSetValue(hPropValue);
+  lpPropValue->ForceSetValue(fxv8::ReentrantGetObjectPropertyHelper(
+      GetIsolate(), hObject.As<v8::Object>(), szPropName));
   return true;
 }
 
 bool CFXJSE_Value::GetObjectPropertyByIdx(uint32_t uPropIdx,
                                           CFXJSE_Value* lpPropValue) {
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hObject =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  if (!hObject->IsObject())
+  v8::Local<v8::Value> hObject = GetValue();
+  if (!hObject->IsArray())
     return false;
 
-  v8::Local<v8::Value> hPropValue =
-      hObject.As<v8::Object>()
-          ->Get(GetIsolate()->GetCurrentContext(), uPropIdx)
-          .ToLocalChecked();
-  lpPropValue->ForceSetValue(hPropValue);
+  lpPropValue->ForceSetValue(fxv8::ReentrantGetArrayElementHelper(
+      GetIsolate(), hObject.As<v8::Array>(), uPropIdx));
   return true;
 }
 
@@ -193,17 +164,11 @@ bool CFXJSE_Value::DeleteObjectProperty(ByteStringView szPropName) {
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::Value> hObject =
       v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  if (!hObject->IsObject())
-    return false;
-
-  v8::Local<v8::String> hPropName =
-      v8::String::NewFromUtf8(GetIsolate(), szPropName.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              szPropName.GetLength())
-          .ToLocalChecked();
-  return hObject.As<v8::Object>()
-      ->Delete(GetIsolate()->GetCurrentContext(), hPropName)
-      .FromJust();
+  return hObject->IsObject() &&
+         hObject.As<v8::Object>()
+             ->Delete(GetIsolate()->GetCurrentContext(),
+                      fxv8::NewStringHelper(GetIsolate(), szPropName))
+             .FromJust();
 }
 
 bool CFXJSE_Value::HasObjectOwnProperty(ByteStringView szPropName,
@@ -214,11 +179,7 @@ bool CFXJSE_Value::HasObjectOwnProperty(ByteStringView szPropName,
   if (!hObject->IsObject())
     return false;
 
-  v8::Local<v8::String> hKey =
-      v8::String::NewFromUtf8(GetIsolate(), szPropName.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              szPropName.GetLength())
-          .ToLocalChecked();
+  v8::Local<v8::String> hKey = fxv8::NewStringHelper(GetIsolate(), szPropName);
   return hObject.As<v8::Object>()
              ->HasRealNamedProperty(GetIsolate()->GetCurrentContext(), hKey)
              .FromJust() ||
@@ -238,10 +199,7 @@ bool CFXJSE_Value::SetObjectOwnProperty(ByteStringView szPropName,
     return false;
 
   v8::Local<v8::String> hPropName =
-      v8::String::NewFromUtf8(GetIsolate(), szPropName.unterminated_c_str(),
-                              v8::NewStringType::kNormal,
-                              szPropName.GetLength())
-          .ToLocalChecked();
+      fxv8::NewStringHelper(GetIsolate(), szPropName);
   v8::Local<v8::Value> pValue =
       v8::Local<v8::Value>::New(GetIsolate(), lpPropValue->m_hValue);
   return hObject.As<v8::Object>()
@@ -269,11 +227,9 @@ bool CFXJSE_Value::SetFunctionBind(CFXJSE_Value* lpOldFunction,
 
   rgArgs[1] = hNewThis;
   v8::Local<v8::String> hBinderFuncSource =
-      v8::String::NewFromUtf8(GetIsolate(),
-                              "(function (oldfunction, newthis) { return "
-                              "oldfunction.bind(newthis); })",
-                              v8::NewStringType::kNormal)
-          .ToLocalChecked();
+      fxv8::NewStringHelper(GetIsolate(),
+                            "(function (oldfunction, newthis) { return "
+                            "oldfunction.bind(newthis); })");
   v8::Local<v8::Context> hContext = GetIsolate()->GetCurrentContext();
   v8::Local<v8::Function> hBinderFunc =
       v8::Script::Compile(hContext, hBinderFuncSource)
@@ -289,6 +245,10 @@ bool CFXJSE_Value::SetFunctionBind(CFXJSE_Value* lpOldFunction,
 
   m_hValue.Reset(GetIsolate(), hBoundFunction);
   return true;
+}
+
+v8::Local<v8::Value> CFXJSE_Value::GetValue() const {
+  return v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
 }
 
 bool CFXJSE_Value::IsEmpty() const {
@@ -388,83 +348,61 @@ bool CFXJSE_Value::IsFunction() const {
 bool CFXJSE_Value::ToBoolean() const {
   ASSERT(!IsEmpty());
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  return hValue->BooleanValue(GetIsolate());
+  return fxv8::ReentrantToBooleanHelper(
+      GetIsolate(), v8::Local<v8::Value>::New(GetIsolate(), m_hValue));
 }
 
 float CFXJSE_Value::ToFloat() const {
-  ASSERT(!IsEmpty());
-  CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  return static_cast<float>(
-      hValue->NumberValue(GetIsolate()->GetCurrentContext()).FromMaybe(0.0));
+  return static_cast<float>(ToDouble());
 }
 
 double CFXJSE_Value::ToDouble() const {
   ASSERT(!IsEmpty());
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  return hValue->NumberValue(GetIsolate()->GetCurrentContext()).FromMaybe(0.0);
+  return fxv8::ReentrantToDoubleHelper(
+      GetIsolate(), v8::Local<v8::Value>::New(GetIsolate(), m_hValue));
 }
 
 int32_t CFXJSE_Value::ToInteger() const {
   ASSERT(!IsEmpty());
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  return static_cast<int32_t>(
-      hValue->NumberValue(GetIsolate()->GetCurrentContext()).FromMaybe(0.0));
+  return fxv8::ReentrantToInt32Helper(
+      GetIsolate(), v8::Local<v8::Value>::New(GetIsolate(), m_hValue));
 }
 
 ByteString CFXJSE_Value::ToString() const {
   ASSERT(!IsEmpty());
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  v8::Local<v8::String> hString =
-      hValue->ToString(GetIsolate()->GetCurrentContext()).ToLocalChecked();
-  v8::String::Utf8Value hStringVal(GetIsolate(), hString);
-  return ByteString(*hStringVal);
+  return fxv8::ReentrantToByteStringHelper(
+      GetIsolate(), v8::Local<v8::Value>::New(GetIsolate(), m_hValue));
 }
 
 void CFXJSE_Value::SetUndefined() {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue = v8::Undefined(GetIsolate());
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewUndefinedHelper(GetIsolate()));
 }
 
 void CFXJSE_Value::SetNull() {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue = v8::Null(GetIsolate());
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewNullHelper(GetIsolate()));
 }
 
 void CFXJSE_Value::SetBoolean(bool bBoolean) {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue = v8::Boolean::New(GetIsolate(), !!bBoolean);
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewBooleanHelper(GetIsolate(), bBoolean));
 }
 
 void CFXJSE_Value::SetInteger(int32_t nInteger) {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue = v8::Integer::New(GetIsolate(), nInteger);
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewNumberHelper(GetIsolate(), nInteger));
 }
 
 void CFXJSE_Value::SetDouble(double dDouble) {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue = v8::Number::New(GetIsolate(), dDouble);
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewNumberHelper(GetIsolate(), dDouble));
 }
 
 void CFXJSE_Value::SetString(ByteStringView szString) {
   CFXJSE_ScopeUtil_IsolateHandle scope(GetIsolate());
-  v8::Local<v8::Value> hValue =
-      v8::String::NewFromUtf8(GetIsolate(), szString.unterminated_c_str(),
-                              v8::NewStringType::kNormal, szString.GetLength())
-          .ToLocalChecked();
-  m_hValue.Reset(GetIsolate(), hValue);
+  m_hValue.Reset(GetIsolate(), fxv8::NewStringHelper(GetIsolate(), szString));
 }

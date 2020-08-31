@@ -208,6 +208,9 @@ StackFrameARM64* StackwalkerARM64::GetCallerByStackScan(
 StackFrameARM64* StackwalkerARM64::GetCallerByFramePointer(
     const vector<StackFrame*> &frames) {
   StackFrameARM64* last_frame = static_cast<StackFrameARM64*>(frames.back());
+  if (!(last_frame->context_validity & StackFrameARM64::CONTEXT_VALID_LR)) {
+    CorrectRegLRByFramePointer(frames, last_frame);
+  }
 
   uint64_t last_fp = last_frame->context.iregs[MD_CONTEXT_ARM64_REG_FP];
 
@@ -246,6 +249,42 @@ StackFrameARM64* StackwalkerARM64::GetCallerByFramePointer(
                             StackFrameARM64::CONTEXT_VALID_FP |
                             StackFrameARM64::CONTEXT_VALID_SP;
   return frame;
+}
+
+void StackwalkerARM64::CorrectRegLRByFramePointer(
+    const vector<StackFrame*>& frames,
+    StackFrameARM64* last_frame) {
+  // Need at least two frames to correct and
+  // register $FP should always be greater than register $SP.
+  if (frames.size() < 2 || !last_frame ||
+      last_frame->context.iregs[MD_CONTEXT_ARM64_REG_FP] <=
+          last_frame->context.iregs[MD_CONTEXT_ARM64_REG_SP])
+    return;
+
+  StackFrameARM64* last_last_frame =
+      static_cast<StackFrameARM64*>(*(frames.end() - 2));
+  uint64_t last_last_fp =
+      last_last_frame->context.iregs[MD_CONTEXT_ARM64_REG_FP];
+
+  uint64_t last_fp = 0;
+  if (last_last_fp && !memory_->GetMemoryAtAddress(last_last_fp, &last_fp)) {
+    BPLOG(ERROR) << "Unable to read last_fp from last_last_fp: 0x"
+                 << std::hex << last_last_fp;
+    return;
+  }
+  // Give up if STACK CFI doesn't agree with frame pointer.
+  if (last_frame->context.iregs[MD_CONTEXT_ARM64_REG_FP] != last_fp)
+    return;
+
+  uint64_t last_lr = 0;
+  if (last_last_fp && !memory_->GetMemoryAtAddress(last_last_fp + 8, &last_lr)) {
+    BPLOG(ERROR) << "Unable to read last_lr from (last_last_fp + 8): 0x"
+                 << std::hex << (last_last_fp + 8);
+    return;
+  }
+  last_lr = PtrauthStrip(last_lr);
+
+  last_frame->context.iregs[MD_CONTEXT_ARM64_REG_LR] = last_lr;
 }
 
 StackFrame* StackwalkerARM64::GetCallerFrame(const CallStack* stack,

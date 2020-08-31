@@ -11,10 +11,10 @@
 #include "libANGLE/renderer/vulkan/DisplayVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 
-#include <vulkan/vulkan.h>
 #include <windows.h>
 
 #include "libANGLE/renderer/vulkan/vk_caps_utils.h"
+#include "libANGLE/renderer/vulkan/vk_headers.h"
 #include "libANGLE/renderer/vulkan/win32/WindowSurfaceVkWin32.h"
 
 namespace rx
@@ -134,7 +134,8 @@ egl::Error DisplayVkWin32::initialize(egl::Display *display)
 
 egl::ConfigSet DisplayVkWin32::generateConfigs()
 {
-    constexpr GLenum kColorFormats[] = {GL_RGB565, GL_BGRA8_EXT, GL_BGRX8_ANGLEX};
+    constexpr GLenum kColorFormats[] = {GL_RGB565, GL_BGRA8_EXT, GL_BGRX8_ANGLEX, GL_RGB10_A2_EXT,
+                                        GL_RGBA16F_EXT};
     return egl_vk::GenerateConfigs(kColorFormats, egl_vk::kConfigDepthStencilFormats, this);
 }
 

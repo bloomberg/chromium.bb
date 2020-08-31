@@ -17,6 +17,7 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/task_queue/task_queue_base.h"
+#include "api/test/create_frame_generator.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video_codecs/video_encoder_config.h"
 #include "call/fake_network_pipe.h"
@@ -42,7 +43,7 @@ CallTest::CallTest()
       fake_encoder_factory_([this]() {
         std::unique_ptr<FakeEncoder> fake_encoder;
         if (video_encoder_configs_[0].codec_type == kVideoCodecVP8) {
-          fake_encoder = std::make_unique<FakeVP8Encoder>(clock_);
+          fake_encoder = std::make_unique<FakeVp8Encoder>(clock_);
         } else {
           fake_encoder = std::make_unique<FakeEncoder>(clock_);
         }
@@ -78,8 +79,8 @@ void CallTest::RegisterRtpExtension(const RtpExtension& extension) {
           << "URI " << extension.uri
           << (extension.encrypt ? " with " : " without ")
           << "encryption already registered with a different "
-          << "ID (" << extension.id << " vs. " << registered_extension.id
-          << ").";
+             "ID ("
+          << extension.id << " vs. " << registered_extension.id << ").";
     }
   }
   rtp_extensions_.push_back(extension);
@@ -256,7 +257,7 @@ void CallTest::CreateVideoSendConfig(VideoSendStream::Config* video_config,
                        &video_config->rtp.extensions);
   AddRtpExtensionByUri(RtpExtension::kGenericFrameDescriptorUri00,
                        &video_config->rtp.extensions);
-  AddRtpExtensionByUri(RtpExtension::kGenericFrameDescriptorUri01,
+  AddRtpExtensionByUri(RtpExtension::kDependencyDescriptorUri,
                        &video_config->rtp.extensions);
   if (video_encoder_configs_.empty()) {
     video_encoder_configs_.emplace_back();
@@ -468,8 +469,8 @@ void CallTest::CreateFrameGeneratorCapturerWithDrift(Clock* clock,
   auto frame_generator_capturer =
       std::make_unique<test::FrameGeneratorCapturer>(
           clock,
-          test::FrameGenerator::CreateSquareGenerator(
-              width, height, absl::nullopt, absl::nullopt),
+          test::CreateSquareFrameGenerator(width, height, absl::nullopt,
+                                           absl::nullopt),
           framerate * speed, *task_queue_factory_);
   frame_generator_capturer_ = frame_generator_capturer.get();
   frame_generator_capturer->Init();
@@ -484,8 +485,8 @@ void CallTest::CreateFrameGeneratorCapturer(int framerate,
   auto frame_generator_capturer =
       std::make_unique<test::FrameGeneratorCapturer>(
           clock_,
-          test::FrameGenerator::CreateSquareGenerator(
-              width, height, absl::nullopt, absl::nullopt),
+          test::CreateSquareFrameGenerator(width, height, absl::nullopt,
+                                           absl::nullopt),
           framerate, *task_queue_factory_);
   frame_generator_capturer_ = frame_generator_capturer.get();
   frame_generator_capturer->Init();

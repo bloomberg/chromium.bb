@@ -12,17 +12,20 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
+
+class RTCEncodedAudioStreamTransformer;
+class RTCEncodedVideoStreamTransformer;
 
 // This class represents the state of a receiver; a snapshot of what a
 // webrtc-layer receiver looked like when it was inspected on the signaling
@@ -113,7 +116,9 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
 
   RTCRtpReceiverImpl(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      RtpReceiverState state);
+      RtpReceiverState state,
+      bool force_encoded_audio_insertable_streams,
+      bool force_encoded_video_insertable_streams);
   RTCRtpReceiverImpl(const RTCRtpReceiverImpl& other);
   ~RTCRtpReceiverImpl() override;
 
@@ -128,13 +133,17 @@ class MODULES_EXPORT RTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
 
   const blink::WebMediaStreamTrack& Track() const override;
-  blink::WebVector<blink::WebString> StreamIds() const override;
-  blink::WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override;
-  void GetStats(blink::WebRTCStatsReportCallback,
-                const blink::WebVector<webrtc::NonStandardGroupId>&) override;
+  Vector<String> StreamIds() const override;
+  Vector<std::unique_ptr<RTCRtpSource>> GetSources() override;
+  void GetStats(RTCStatsReportCallback,
+                const Vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetJitterBufferMinimumDelay(
       base::Optional<double> delay_seconds) override;
+  RTCEncodedAudioStreamTransformer* GetEncodedAudioStreamTransformer()
+      const override;
+  RTCEncodedVideoStreamTransformer* GetEncodedVideoStreamTransformer()
+      const override;
 
  private:
   class RTCRtpReceiverInternal;
@@ -153,7 +162,7 @@ class MODULES_EXPORT RTCRtpReceiverOnlyTransceiver
   RTCRtpTransceiverPlatformImplementationType ImplementationType()
       const override;
   uintptr_t Id() const override;
-  blink::WebString Mid() const override;
+  String Mid() const override;
   std::unique_ptr<blink::RTCRtpSenderPlatform> Sender() const override;
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override;
   bool Stopped() const override;
@@ -164,7 +173,7 @@ class MODULES_EXPORT RTCRtpReceiverOnlyTransceiver
   base::Optional<webrtc::RtpTransceiverDirection> FiredDirection()
       const override;
   webrtc::RTCError SetCodecPreferences(
-      blink::WebVector<webrtc::RtpCodecCapability>) override;
+      Vector<webrtc::RtpCodecCapability>) override;
 
  private:
   std::unique_ptr<RTCRtpReceiverPlatform> receiver_;

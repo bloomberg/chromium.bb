@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="../login/hd-iron-icon.js">
-// <include src="../login/oobe_types.js">
-// <include src="../login/oobe_buttons.js">
-// <include src="../login/oobe_dialog_host_behavior.js">
-// <include src="../login/oobe_dialog.js">
+// <include src="../login/components/hd-iron-icon.js">
+// <include src="../login/components/oobe_types.js">
+// <include src="../login/components/oobe_i18n_behavior.js">
+// <include src="../login/components/oobe_buttons.js">
+// <include src="../login/components/oobe_dialog_host_behavior.js">
+// <include src="../login/components/oobe_dialog.js">
 // <include src="assistant_optin_flow.js">
 
 cr.define('login.AssistantOptInFlowScreen', function() {
@@ -15,7 +16,7 @@ cr.define('login.AssistantOptInFlowScreen', function() {
     /**
      * Starts the assistant opt-in flow.
      */
-    show: function() {
+    show() {
       var url = new URL(document.URL);
       $('assistant-optin-flow-card')
           .onShow(
@@ -27,7 +28,7 @@ cr.define('login.AssistantOptInFlowScreen', function() {
      * Reloads localized strings.
      * @param {!Object} data New dictionary with i18n values.
      */
-    reloadContent: function(data) {
+    reloadContent(data) {
       $('assistant-optin-flow-card').reloadContent(data);
     },
 
@@ -36,14 +37,14 @@ cr.define('login.AssistantOptInFlowScreen', function() {
      * @param {string} type type of the setting zippy.
      * @param {!Object} data String and url for the setting zippy.
      */
-    addSettingZippy: function(type, data) {
+    addSettingZippy(type, data) {
       $('assistant-optin-flow-card').addSettingZippy(type, data);
     },
 
     /**
      * Show the next screen in the flow.
      */
-    showNextScreen: function() {
+    showNextScreen() {
       $('assistant-optin-flow-card').showNextScreen();
     },
 
@@ -51,11 +52,11 @@ cr.define('login.AssistantOptInFlowScreen', function() {
      * Called when the Voice match state is updated.
      * @param {string} state the voice match state.
      */
-    onVoiceMatchUpdate: function(state) {
+    onVoiceMatchUpdate(state) {
       $('assistant-optin-flow-card').onVoiceMatchUpdate(state);
     },
 
-    closeDialog: function() {
+    closeDialog() {
       chrome.send('dialogClose');
     },
   };

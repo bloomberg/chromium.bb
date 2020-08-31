@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
+#include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
 #include "content/public/common/previews_state.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -42,6 +43,8 @@ class PageTimingMetricsSender {
   PageTimingMetricsSender(std::unique_ptr<PageTimingSender> sender,
                           std::unique_ptr<base::OneShotTimer> timer,
                           mojom::PageLoadTimingPtr initial_timing,
+                          const PageTimingMetadataRecorder::MonotonicTiming&
+                              initial_monotonic_timing,
                           std::unique_ptr<PageResourceDataUse> initial_request);
   ~PageTimingMetricsSender();
 
@@ -50,14 +53,17 @@ class PageTimingMetricsSender {
   void DidObserveNewCssPropertyUsage(blink::mojom::CSSSampleId css_property,
                                      bool is_animated);
   void DidObserveLayoutShift(double score, bool after_input_or_scroll);
+  void DidObserveLayoutNg(uint32_t all_block_count,
+                          uint32_t ng_block_count,
+                          uint32_t all_call_count,
+                          uint32_t ng_call_count);
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
 
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        content::ResourceType resource_type,
-                        content::PreviewsState previews_state);
+                        network::mojom::RequestDestination request_destination);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);
   void DidCompleteResponse(int resource_id,
                            const network::URLLoaderCompletionStatus& status);
@@ -66,9 +72,15 @@ class PageTimingMetricsSender {
                                       int request_id,
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
+  void OnMainFrameDocumentIntersectionChanged(
+      const blink::WebRect& intersect_rect);
 
-  // Queues the send by starting the send timer.
-  void SendSoon(mojom::PageLoadTimingPtr timing);
+  void DidObserveInputDelay(base::TimeDelta input_delay);
+  // Updates the timing information. Buffers |timing| to be sent over mojo
+  // sometime 'soon'.
+  void Update(
+      mojom::PageLoadTimingPtr timing,
+      const PageTimingMetadataRecorder::MonotonicTiming& monotonic_timing);
 
   // Sends any queued timing data immediately and stops the send timer.
   void SendLatest();
@@ -93,10 +105,11 @@ class PageTimingMetricsSender {
   std::unique_ptr<base::OneShotTimer> timer_;
   mojom::PageLoadTimingPtr last_timing_;
   mojom::CpuTimingPtr last_cpu_timing_;
+  mojom::InputTimingPtr input_timing_delta_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.
-  mojom::PageLoadMetadataPtr metadata_;
+  mojom::FrameMetadataPtr metadata_;
   // A list of newly observed features during page load, to be sent to the
   // browser.
   mojom::PageLoadFeaturesPtr new_features_;
@@ -124,6 +137,10 @@ class PageTimingMetricsSender {
   // Field trial for alternating page timing metrics sender buffer timer delay.
   // https://crbug.com/847269.
   int buffer_timer_delay_ms_;
+
+  // Responsible for recording sampling profiler metadata corresponding to page
+  // timing.
+  PageTimingMetadataRecorder metadata_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTimingMetricsSender);
 };

@@ -55,8 +55,8 @@ void SKPBench::onPerCanvasPreDraw(SkCanvas* canvas) {
     int tileW = gpu ? FLAGS_GPUbenchTileW : FLAGS_CPUbenchTileW,
         tileH = gpu ? FLAGS_GPUbenchTileH : FLAGS_CPUbenchTileH;
 
-    tileW = SkTMin(tileW, bounds.width());
-    tileH = SkTMin(tileH, bounds.height());
+    tileW = std::min(tileW, bounds.width());
+    tileH = std::min(tileH, bounds.height());
 
     int xTiles = SkScalarCeilToInt(bounds.width()  / SkIntToScalar(tileW));
     int yTiles = SkScalarCeilToInt(bounds.height() / SkIntToScalar(tileH));
@@ -143,11 +143,13 @@ void SKPBench::drawPicture() {
 static void draw_pic_for_stats(SkCanvas* canvas, GrContext* context, const SkPicture* picture,
                                SkTArray<SkString>* keys, SkTArray<double>* values) {
     context->priv().resetGpuStats();
+    context->priv().resetContextStats();
     canvas->drawPicture(picture);
     canvas->flush();
 
     context->priv().dumpGpuStatsKeyValuePairs(keys, values);
     context->priv().dumpCacheStatsKeyValuePairs(keys, values);
+    context->priv().dumpContextStatsKeyValuePairs(keys, values);
 }
 
 void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<double>* values) {

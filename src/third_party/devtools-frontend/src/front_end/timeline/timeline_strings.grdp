@@ -196,6 +196,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_2b66d07a14b9e6da66cde6baab473e92" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="SELFCATEGORY_TITLE">$1s<ex>blink.console</ex></ph> (children)
   </message>
+  <message name="IDS_DEVTOOLS_2b912aa1a87361a536122b08c7d08829" desc="Label for Cumulative Layout records, indicating where they moved to">
+    Moved to
+  </message>
   <message name="IDS_DEVTOOLS_2d2af0b530003b552681f91e29c509d1" desc="Stack label in Timeline UIUtils of the Performance panel">
     Recalculation Forced
   </message>
@@ -210,6 +213,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_2f9e914aab76c16d0bf5f8cc86a3465f" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="INVALIDATIONNODES___">$1s<ex>node1</ex></ph>, <ph name="INVALIDATIONNODES___">$2s<ex>node2</ex></ph>, and <ph name="_INVALIDATIONNODES_LENGTH______TOSTRING__">$3s<ex>2</ex></ph> others
+  </message>
+  <message name="IDS_DEVTOOLS_2fb58f884eaec6b04e002210b81b4d7f" desc="Title in Timeline for Cumulative Layout Shifts">
+    Cumulative Layout Shifts
   </message>
   <message name="IDS_DEVTOOLS_2fc3f5e968c02091e3ba9863088f0651" desc="Text in Timeline UIUtils of the Performance panel">
     Callback Function
@@ -244,6 +250,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_359783360b8522c55aa7a9c7d5593d5d" desc="Text in Timeline UIUtils of the Performance panel">
     Pinch End
   </message>
+  <message name="IDS_DEVTOOLS_35de4e967da8f1ddc42d34180785880a" desc="Text when TBT values are unavailable in the Performance panel">
+    Total blocking time: Unavailable
+  </message>
   <message name="IDS_DEVTOOLS_361beede47de122bfb91fe1da6e3f1a7" desc="Text in Timeline Loader of the Performance panel">
     Legacy Timeline format is not supported.
   </message>
@@ -255,9 +264,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_3b419ceb25fddb807ea9483f65fded06" desc="Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in timeline panel of the performance panel">
     Capture settings
-  </message>
-  <message name="IDS_DEVTOOLS_3d1f92a565d3b1a61880236e33c49bf3" desc="A title of the 'Timeline' action category">
-    Timeline
   </message>
   <message name="IDS_DEVTOOLS_3de9387fc230ce74214446e58c4fefde" desc="Text in Timeline UIUtils of the Performance panel">
     Compile
@@ -274,8 +280,14 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_3eec15d0ba9a93d3176bab9218bb2570" desc="Text in Timeline Panel of the Performance panel">
     Failed to save timeline: <ph name="ERROR_MESSAGE">$1s<ex>wrong format</ex></ph> (<ph name="ERROR_NAME">$2s<ex>ERROR_FILE_NOT_FOUND</ex></ph>, <ph name="ERROR_CODE">$3s<ex>2</ex></ph>)
   </message>
+  <message name="IDS_DEVTOOLS_3f94e3fa9719c8974d91cb0c389140aa" desc="Text in Timeline for Layout Shift records">
+    Layout Shift
+  </message>
   <message name="IDS_DEVTOOLS_3f978efb26e66c6c9af5db34268ccf41" desc="Text in Timeline UIUtils of the Performance panel">
     Compiled Wasm Module
+  </message>
+  <message name="IDS_DEVTOOLS_4038d5a85906029f46137a4164c51073" desc="Text in Timeline for the Experience title">
+    Experience
   </message>
   <message name="IDS_DEVTOOLS_40a15f22bd3574304d7843344006e0b6" desc="Text in Timeline UIUtils of the Performance panel">
     First Contentful Paint
@@ -306,6 +318,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_498f79c4c5bbde77f1bceb6c86fd0f6d" desc="Text in Timeline UIUtils of the Performance panel">
     Show
+  </message>
+  <message name="IDS_DEVTOOLS_49f3aa1af7c5ccba16f4ba1ec7b0a322" desc="Title of an action that opens the next recording in the performance panel">
+    Next recording
   </message>
   <message name="IDS_DEVTOOLS_4a6f828a0efc23b056b73d24ab01a468" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="FORCEDREFLOWLINK">$1s<ex>Forced reflow</ex></ph> is a likely performance bottleneck.
@@ -390,6 +405,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_5c593b83b0fca15af4b50ca95c9d3e87" desc="Text in Timeline UIUtils of the Performance panel">
     Sign Reply
+  </message>
+  <message name="IDS_DEVTOOLS_5dd135d1bcfa7f63c3b7f25425c2a4a1" desc="Title for the Timeline CLS Score">
+    Score
   </message>
   <message name="IDS_DEVTOOLS_5e1f827f43b25804948ad57149ad369e" desc="Screen reader label for a select box that filters the Performance panel Event Log by duration.">
     Duration filter
@@ -478,9 +496,6 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   <message name="IDS_DEVTOOLS_70bac6f11765f731510b0ac659fd26a1" desc="Text in Timeline Loader of the Performance panel">
     Malformed timeline data: <ph name="E_TOSTRING__">$1s<ex>Unknown JSON format</ex></ph>
   </message>
-  <message name="IDS_DEVTOOLS_70d68501018d9d6496e55cad8a2c3ba1" desc="Tooltip text that appears when hovering over the largeicon load button in the Timeline Panel of the Performance panel">
-    Load profile...
-  </message>
   <message name="IDS_DEVTOOLS_7125f394de382b13a7e7a5a4b6d23364" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Raster
   </message>
@@ -522,6 +537,9 @@ Click the reload button <ph name="RELOADBUTTON">$3s<ex>reload</ex></ph> or hit <
   </message>
   <message name="IDS_DEVTOOLS_7b8c1a72c279c468ba1729548e05181c" desc="Screen reader label for the Timeline History dropdown button">
     Current Session: <ph name="THIS__TITLE_PERFORMANCEMODEL_">$1s<ex>example.com #3</ex></ph>. <ph name="THIS__BUTTON_GETTITLE__">$2s<ex>Show recent timeline sessions</ex></ph>
+  </message>
+  <message name="IDS_DEVTOOLS_7c880e07f865ea4661fc6317f9b9de60" desc="Title of an action that opens the previous recording in the performance panel">
+    Previous recording
   </message>
   <message name="IDS_DEVTOOLS_80a4b8755d836d50c19e6eefb976bc2e" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="SELFCATEGORY_TITLE">$1s<ex>blink.console</ex></ph> (self)
@@ -621,17 +639,20 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_93c8e71d1b0e18d58736d3e255a14533" desc="Text in Timeline Panel of the Performance panel">
     Buffer usage
   </message>
+  <message name="IDS_DEVTOOLS_93cba07454f06a4a960172bbd6e2a435" desc="Text in Timeline indicating that input has happened recently">
+    Yes
+  </message>
   <message name="IDS_DEVTOOLS_9467817bf2985168e61e3f2b23f87a81" desc="Text in Timeline UIUtils of the Performance panel">
     <ph name="TITLE">$1s<ex>StyleInvalidator for element</ex></ph>. <ph name="STACK">$2s<ex>Stack trace: function @ line</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_956f8281d37fdceec7698094b6236870" desc="Text in Timeline UIUtils of the Performance panel">
     ''' (from cache)
   </message>
+  <message name="IDS_DEVTOOLS_959b4cf9228d142eef8ca6e735b0150e" desc="Label for Cumulative Layout records, indicating where they moved from">
+    Moved from
+  </message>
   <message name="IDS_DEVTOOLS_9669f96ca9d2e20feda07d349d3cac86" desc="Text in Timeline UIUtils of the Performance panel">
     Key Up
-  </message>
-  <message name="IDS_DEVTOOLS_976e665bbff13a2a2a2eb4a83b8bb602" desc="Tooltip text that appears when hovering over the largeicon download button in the Timeline Panel of the Performance panel">
-    Save profile...
   </message>
   <message name="IDS_DEVTOOLS_97c091732895087b8900d81105e54446" desc="Text in Timeline UIUtils of the Performance panel">
     Frame Start (main thread)
@@ -644,9 +665,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_9bedd08947719ccd339c3493e6701d4b" desc="Text in Timeline UIUtils of the Performance panel">
     Request Main Thread Frame
-  </message>
-  <message name="IDS_DEVTOOLS_9c80c1f042e925ffbb94db9a17eb03df" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
-    Dedicated Worker
   </message>
   <message name="IDS_DEVTOOLS_9d07f3bb674a88ea26f10e6b7589e000" desc="Text in Timeline UIUtils of the Performance panel">
     Aggregated Time
@@ -680,9 +698,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_aa40d845ecb78d5bd01ff8b0cc9e213e" desc="Text in Timeline UIUtils of the Performance panel">
     Receive Data
-  </message>
-  <message name="IDS_DEVTOOLS_aa49e59ec25c5938e9629495e54b913a" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
-    Worker — <ph name="TRACK_URL">$1s<ex>https://example.com</ex></ph>
   </message>
   <message name="IDS_DEVTOOLS_ab0b54125d50a09e75f3829e7e90b8ea" desc="Text in Timeline UIUtils of the Performance panel">
     WebSocket Protocol
@@ -744,6 +759,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_b8a4d4c7e6bb7b5534b856ce7a9ccde0" desc="Text in Timeline UIUtils of the Performance panel">
     Drag
   </message>
+  <message name="IDS_DEVTOOLS_b8ab0a0f9c2125aa0207ab83ef2da142" desc="Text in Timeline for whether input happened recently">
+    Had recent input
+  </message>
   <message name="IDS_DEVTOOLS_b94c9f4242a696995ec1a85feeb138e2" desc="Related node label in Timeline UIUtils of the Performance panel">
     Layer Root
   </message>
@@ -752,6 +770,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_b9f3a3a888d3796e0248b3f65b14349e" desc="Text in Timeline Details View of the Performance panel">
     Bottom-Up
+  </message>
+  <message name="IDS_DEVTOOLS_bafd7322c6e97d25b6299b5d6fe8920b" desc="Text in Timeline indicating that input has not happened recently">
+    No
   </message>
   <message name="IDS_DEVTOOLS_bd03acccca092608aac93f5fadb091d5" desc="Text in Timeline UIUtils of the Performance panel">
     Streamed
@@ -819,9 +840,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_cdfb064314e94077caa817714d943c6f" desc="Text in Timeline UIUtils of the Performance panel">
     Elements Affected
   </message>
-  <message name="IDS_DEVTOOLS_ce5bf551379459c1c61d2a204061c455" desc="Text in Timeline UIUtils of the Performance panel">
-    Location
-  </message>
   <message name="IDS_DEVTOOLS_cf56f8ebb3727b1d4d5a17fb18d4df74" desc="Text in Timeline UIUtils of the Performance panel">
     Paint Setup
   </message>
@@ -836,6 +854,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_d0c91aff68287a1a0003af56b91cadde" desc="Range text content in Counters Graph of the Performance panel">
     [<ph name="MIN">$1s<ex>2</ex></ph> – <ph name="MAX">$2s<ex>10</ex></ph>]
+  </message>
+  <message name="IDS_DEVTOOLS_d0ccf5c5711a6c11aae337a193143037" desc="Text when TBT values are available in the Performance panel">
+    Total blocking time: <ph name="MODEL_TIMELINEMODEL___TOTALBLOCKINGTIME___TOFIXED___">$1s<ex>18.67</ex></ph>ms
   </message>
   <message name="IDS_DEVTOOLS_d147f3c372833715f5bcff727b0665aa" desc="Text in UIDevtools Utils of the Performance panel">
     RasterizerTaskImpl::RunOnWorkerThread
@@ -882,6 +903,9 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_d97db6efa26ba3b28be1f0d597f1d759" desc="Text in Timeline UIUtils of the Performance panel">
     load from cache
   </message>
+  <message name="IDS_DEVTOOLS_d9e0ceabc809a2dd83a4f8961fe1fe9d" desc="Tooltip text for the number of CLS occurences in Timeline">
+    Occurrences: <ph name="OCCURRENCES"><ex>4</ex>$1s</ph>
+  </message>
   <message name="IDS_DEVTOOLS_da3c710f68f0c891ecad19dcbf2ab349" desc="Text in Timeline UIUtils of the Performance panel">
     Console Time
   </message>
@@ -902,9 +926,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_dd810137d5737309d18208a7be75773f" desc="Text in Timeline Loader of the Performance panel">
     Malformed timeline data: Unknown JSON format
-  </message>
-  <message name="IDS_DEVTOOLS_dde38f333e095c2293593f504fd701a2" desc="Title of the 'JavaScript Profiler' tool">
-    JavaScript Profiler
   </message>
   <message name="IDS_DEVTOOLS_de1ec1ac3add3d69ffedffd437af7056" desc="Text in Timeline UIUtils of the Performance panel">
     Pinch Update
@@ -975,8 +996,8 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_f17085a56d199cb15adf7c101d611bcc" desc="Text of a DOM element in Timeline UIUtils of the Performance panel">
     (changed class to &quot;<ph name="INVALIDATION_CHANGEDCLASS">$1s<ex>class-name2</ex></ph>&quot;<ph name="EXTRADATA">$2s<ex>a, b</ex></ph>)
   </message>
-  <message name="IDS_DEVTOOLS_f34ebd9ed4156c54fbd77bb3a5b3107a" desc="Title of an action in the timeline tool to save to file">
-    Save profile…
+  <message name="IDS_DEVTOOLS_f1fef3f490158560a580633887faf5d3" desc="Data grid name for Timeline Stack data grids">
+    Timeline Stack
   </message>
   <message name="IDS_DEVTOOLS_f466ef0697891303497dfbf951a14b1d" desc="Text in Timeline Flame Chart Data Provider of the Performance panel">
     Idle Frame
@@ -993,9 +1014,6 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   <message name="IDS_DEVTOOLS_f8dd1d7ea0aea500de367999ebba5c47" desc="Text in UIDevtools Utils of the Performance panel">
     Layer::PaintContentsToDisplayList
   </message>
-  <message name="IDS_DEVTOOLS_fa7c73b6eb5f3c3b77e47d8a4557af3e" desc="Title of an action in the timeline tool to load from file">
-    Load profile…
-  </message>
   <message name="IDS_DEVTOOLS_faa313428f0d69de3acffbd44c3df1ec" desc="Title of capture layers and pictures setting in timeline panel of the performance panel">
     Enable advanced paint instrumentation (slow)
   </message>
@@ -1004,6 +1022,12 @@ Then, zoom and pan the timeline with the mousewheel or <ph name="NAVIGATENODE">$
   </message>
   <message name="IDS_DEVTOOLS_fc763cb31e9938f37737394681228f83" desc="Text of a DOM element in Timeline UIUtils of the Performance panel">
     , '''
+  </message>
+  <message name="IDS_DEVTOOLS_fd2b0bfaca5162891687c12882df0854" desc="Text in Timeline for the cumulative CLS score">
+    Cumulative Score
+  </message>
+  <message name="IDS_DEVTOOLS_fd3685701ecc682973dfdc2a3763d080" desc="Warning in Timeline that CLS can cause a poor user experience">
+    <ph name="CLSLINK">$1s<ex>Link to web.dev/metrics</ex></ph> can result in poor user experiences.
   </message>
   <message name="IDS_DEVTOOLS_fd87735db5aee919b6f95f0413a5f542" desc="Text in Timeline UIUtils of the Performance panel">
     Forced reflow

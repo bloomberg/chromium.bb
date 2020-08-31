@@ -29,8 +29,10 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/open_file_system_mode.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -118,13 +120,8 @@ FileDefinitionListConverter::FileDefinitionListConverter(
       result_(new EntryDefinitionList) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // File browser APIs are meant to be used only from extension context, so
-  // the extension's site is the one in whose file system context the virtual
-  // path should be found.
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id_, profile);
   file_system_context_ =
-      content::BrowserContext::GetStoragePartitionForSite(
-          profile, site)->GetFileSystemContext();
+      GetFileSystemContextForExtensionId(profile, extension_id_);
 
   // Deletes the converter, once the scoped pointer gets out of scope. It is
   // either, if the conversion is finished, or ResolveURL() is terminated, and
@@ -151,9 +148,9 @@ void FileDefinitionListConverter::ConvertNextIterator(
   }
 
   storage::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id_),
-      storage::kFileSystemTypeExternal,
-      iterator->virtual_path);
+      url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id_)),
+      storage::kFileSystemTypeExternal, iterator->virtual_path);
 
   if (!url.is_valid()) {
     OnIteratorConverted(
@@ -245,7 +242,7 @@ bool IsUnderNonNativeLocalPath(const storage::FileSystemContext& context,
     return false;
 
   const storage::FileSystemURL url = context.CreateCrackedFileSystemURL(
-      GURL(), storage::kFileSystemTypeExternal, virtual_path);
+      url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
   if (!url.is_valid())
     return false;
 
@@ -456,17 +453,15 @@ EntryDefinition::~EntryDefinition() = default;
 storage::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,
     const std::string& extension_id) {
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
-  return content::BrowserContext::GetStoragePartitionForSite(profile, site)->
-      GetFileSystemContext();
+  return extensions::util::GetStoragePartitionForExtensionId(extension_id,
+                                                             profile)
+      ->GetFileSystemContext();
 }
 
 storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
     Profile* profile,
     content::RenderFrameHost* render_frame_host) {
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  return content::BrowserContext::GetStoragePartition(profile, site_instance)->
-      GetFileSystemContext();
+  return render_frame_host->GetStoragePartition()->GetFileSystemContext();
 }
 
 bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,
@@ -489,13 +484,8 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     const std::string& extension_id,
     const base::FilePath& absolute_path,
     base::FilePath* virtual_path) {
-  // File browser APIs are meant to be used only from extension context, so the
-  // extension's site is the one in whose file system context the virtual path
-  // should be found.
-  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
   storage::ExternalFileSystemBackend* backend =
-      content::BrowserContext::GetStoragePartitionForSite(profile, site)
-          ->GetFileSystemContext()
+      GetFileSystemContextForExtensionId(profile, extension_id)
           ->external_backend();
   if (!backend)
     return false;
@@ -609,8 +599,9 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
     const GURL& origin,
     const base::FilePath& virtual_path) {
   const storage::FileSystemURL original_url =
-      context.CreateCrackedFileSystemURL(
-          origin, storage::kFileSystemTypeExternal, virtual_path);
+      context.CreateCrackedFileSystemURL(url::Origin::Create(origin),
+                                         storage::kFileSystemTypeExternal,
+                                         virtual_path);
 
   std::string register_name;
   storage::IsolatedContext::ScopedFSHandle file_system =
@@ -618,7 +609,7 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
           original_url.type(), original_url.filesystem_id(),
           original_url.path(), &register_name);
   storage::FileSystemURL isolated_url = context.CreateCrackedFileSystemURL(
-      origin, storage::kFileSystemTypeIsolated,
+      url::Origin::Create(origin), storage::kFileSystemTypeIsolated,
       base::FilePath(file_system.id()).Append(register_name));
   return {isolated_url, file_system};
 }

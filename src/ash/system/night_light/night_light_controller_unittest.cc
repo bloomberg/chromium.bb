@@ -17,6 +17,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
+#include "ash/system/night_light/time_of_day.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
@@ -28,6 +29,7 @@
 #include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
@@ -44,6 +46,25 @@ namespace {
 
 constexpr char kUser1Email[] = "user1@nightlight";
 constexpr char kUser2Email[] = "user2@nightlight";
+
+enum AmPm { kAM, kPM };
+
+// Convenience function for constructing a TimeOfDay object for exact hours
+// during the day. |hour| is between 1 and 12.
+TimeOfDay MakeTimeOfDay(int hour, AmPm am_pm) {
+  DCHECK_GE(hour, 1);
+  DCHECK_LE(hour, 12);
+
+  if (am_pm == kAM) {
+    hour %= 12;
+  } else {
+    if (hour != 12)
+      hour += 12;
+    hour %= 24;
+  }
+
+  return TimeOfDay(hour * 60);
+}
 
 NightLightControllerImpl* GetController() {
   return Shell::Get()->night_light_controller();
@@ -131,6 +152,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
   TestDelegate() = default;
   ~TestDelegate() override = default;
 
+  void SetFakeNow(base::Time time) { fake_now_ = time; }
   void SetFakeNow(TimeOfDay time) { fake_now_ = time.ToTimeToday(); }
   void SetFakeSunset(TimeOfDay time) { fake_sunset_ = time.ToTimeToday(); }
   void SetFakeSunrise(TimeOfDay time) { fake_sunrise_ = time.ToTimeToday(); }
@@ -139,7 +161,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
   base::Time GetNow() const override { return fake_now_; }
   base::Time GetSunsetTime() const override { return fake_sunset_; }
   base::Time GetSunriseTime() const override { return fake_sunrise_; }
-  void SetGeoposition(
+  bool SetGeoposition(
       const NightLightController::SimpleGeoposition& position) override {
     has_geoposition_ = true;
     if (position == NightLightController::SimpleGeoposition{
@@ -154,6 +176,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
       SetFakeSunset(TimeOfDay(kFakePosition2_SunsetOffset));
       SetFakeSunrise(TimeOfDay(kFakePosition2_SunriseOffset));
     }
+    return true;
   }
   bool HasGeoposition() const override { return has_geoposition_; }
 
@@ -698,7 +721,9 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
 // schedule setting. Current time is simulated to be updated accordingly. The
 // current time change should bring the controller into or take it out of the
 // night light mode accordingly if necessary, based on the settings.
-TEST_F(NightLightTest, TestCustomScheduleGeopositionChanges) {
+
+// Failed on 5 linux chromeos builds. http://crbug.com/1059626
+TEST_F(NightLightTest, DISABLED_TestCustomScheduleGeopositionChanges) {
   constexpr int kCustom_Start = 19 * 60;
   constexpr int kCustom_End = 2 * 60;
 
@@ -1111,6 +1136,157 @@ TEST_F(NightLightTest, TestNightLightAndAmbientColorInteraction) {
   EXPECT_LT(night_light_and_ambient_rgb.z(), night_light_rgb.z());
 }
 
+// Tests that manual changes to NightLight status while a schedule is being used
+// will be remembered and reapplied across user switches.
+TEST_F(NightLightTest, MultiUserManualStatusToggleWithSchedules) {
+  // Setup user 1 to use a custom schedule from 3pm till 8pm, and user 2 to use
+  // a sunset-to-sunrise schedule from 5pm till 4am.
+  //
+  //
+  //          |<--- User 1 NL on --->|
+  //          |                      |
+  // <--------+--------+-------------+----------------------------+----------->
+  //         3pm      5pm           8pm                          4am
+  //                   |                                          |
+  //                   |<-------------- User 2 NL on ------------>|
+  //
+  // Test cases at:
+  //
+  // <---+---------+------------+------------+----------------------------+--->
+  //    2pm       4pm         7pm           10pm                         9am
+  //
+
+  delegate()->SetFakeNow(MakeTimeOfDay(2, kPM));
+  delegate()->SetFakeSunset(MakeTimeOfDay(5, kPM));
+  delegate()->SetFakeSunrise(MakeTimeOfDay(4, kAM));
+
+  constexpr float kUser1Temperature = 0.6f;
+  constexpr float kUser2Temperature = 0.8f;
+
+  NightLightControllerImpl* controller = GetController();
+  controller->SetCustomStartTime(MakeTimeOfDay(3, kPM));
+  controller->SetCustomEndTime(MakeTimeOfDay(8, kPM));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  controller->SetColorTemperature(kUser1Temperature);
+  SwitchActiveUser(kUser2Email);
+  controller->SetScheduleType(
+      NightLightController::ScheduleType::kSunsetToSunrise);
+  controller->SetColorTemperature(kUser2Temperature);
+  SwitchActiveUser(kUser1Email);
+
+  struct {
+    base::Time fake_now;
+    bool user_1_expected_status;
+    bool user_2_expected_status;
+  } kTestCases[] = {
+      {MakeTimeOfDay(2, kPM).ToTimeToday(), false, false},
+      {MakeTimeOfDay(4, kPM).ToTimeToday(), true, false},
+      {MakeTimeOfDay(7, kPM).ToTimeToday(), true, true},
+      {MakeTimeOfDay(10, kPM).ToTimeToday(), false, true},
+      {MakeTimeOfDay(9, kAM).ToTimeToday() +
+           base::TimeDelta::FromDays(1),  // 9:00 AM tomorrow.
+       false, false},
+  };
+
+  // Verifies that NightLight status is |expected_status| and the given
+  // |user_temperature| is applied only when NightLight is expected to be
+  // enabled.
+  auto verify_night_light_state = [controller](bool expected_status,
+                                               float user_temperature) {
+    EXPECT_EQ(expected_status, controller->GetEnabled());
+    TestCompositorsTemperature(expected_status ? user_temperature : 0.0f);
+  };
+
+  bool user_1_previous_status = false;
+  for (const auto& test_case : kTestCases) {
+    // Each test case begins when user_1 is active.
+    SCOPED_TRACE(TimeOfDay::FromTime(test_case.fake_now).ToString());
+
+    const bool user_1_toggled_status = !test_case.user_1_expected_status;
+    const bool user_2_toggled_status = !test_case.user_2_expected_status;
+
+    // Apply the test's case fake time, and fire the timer if there's a change
+    // expected in NightLight's status.
+    delegate()->SetFakeNow(test_case.fake_now);
+    if (user_1_previous_status != test_case.user_1_expected_status)
+      controller->timer()->FireNow();
+    user_1_previous_status = test_case.user_1_expected_status;
+
+    // The untoggled states for both users should match the expected ones
+    // according to their schedules.
+    verify_night_light_state(test_case.user_1_expected_status,
+                             kUser1Temperature);
+    SwitchActiveUser(kUser2Email);
+    verify_night_light_state(test_case.user_2_expected_status,
+                             kUser2Temperature);
+
+    // Manually toggle NightLight for user_2 and expect that it will be
+    // remembered when we switch to user_1 and back.
+    controller->Toggle();
+    verify_night_light_state(user_2_toggled_status, kUser2Temperature);
+    SwitchActiveUser(kUser1Email);
+    verify_night_light_state(test_case.user_1_expected_status,
+                             kUser1Temperature);
+    SwitchActiveUser(kUser2Email);
+    verify_night_light_state(user_2_toggled_status, kUser2Temperature);
+
+    // Toggle it for user_1 as well, and expect it will be remembered and won't
+    // affect the already toggled state for user_2.
+    SwitchActiveUser(kUser1Email);
+    verify_night_light_state(test_case.user_1_expected_status,
+                             kUser1Temperature);
+    controller->Toggle();
+    verify_night_light_state(user_1_toggled_status, kUser1Temperature);
+    SwitchActiveUser(kUser2Email);
+    verify_night_light_state(user_2_toggled_status, kUser2Temperature);
+
+    // Toggle both users back to their original states in preparation for the
+    // next test case.
+    controller->Toggle();
+    verify_night_light_state(test_case.user_2_expected_status,
+                             kUser2Temperature);
+    SwitchActiveUser(kUser1Email);
+    verify_night_light_state(user_1_toggled_status, kUser1Temperature);
+    controller->Toggle();
+    verify_night_light_state(test_case.user_1_expected_status,
+                             kUser1Temperature);
+  }
+}
+
+TEST_F(NightLightTest, ManualStatusToggleCanPersistAfterResumeFromSuspend) {
+  delegate()->SetFakeNow(MakeTimeOfDay(11, kAM));
+  NightLightControllerImpl* controller = GetController();
+  controller->SetCustomStartTime(MakeTimeOfDay(3, kPM));
+  controller->SetCustomEndTime(MakeTimeOfDay(8, kPM));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_FALSE(controller->GetEnabled());
+
+  // Toggle the status manually and expect that NightLight is scheduled to
+  // turn back off at 8:00 PM.
+  controller->Toggle();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(9),
+            controller->timer()->GetCurrentDelay());
+
+  // Simulate suspend and then resume at 2:00 PM (which is outside the user's
+  // custom schedule). However, the manual toggle to on should be kept.
+  delegate()->SetFakeNow(MakeTimeOfDay(2, kPM));
+  controller->SuspendDone(base::TimeDelta{});
+  EXPECT_TRUE(controller->GetEnabled());
+
+  // Suspend again and resume at 5:00 PM (which is within the user's custom
+  // schedule). The schedule should be applied normally.
+  delegate()->SetFakeNow(MakeTimeOfDay(5, kPM));
+  controller->SuspendDone(base::TimeDelta{});
+  EXPECT_TRUE(controller->GetEnabled());
+
+  // Suspend and resume at 9:00 PM and expect NightLight to be off.
+  delegate()->SetFakeNow(MakeTimeOfDay(9, kPM));
+  controller->SuspendDone(base::TimeDelta{});
+  EXPECT_FALSE(controller->GetEnabled());
+}
+
 // Fixture for testing behavior of Night Light when displays support hardware
 // CRTC matrices.
 class NightLightCrtcTest : public NightLightTest {
@@ -1487,8 +1663,8 @@ TEST(AmbientTemperature, AmbientTemperatureToRGBScaleFactors) {
             allowed_difference);
   // Warm
   vec =
-      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(5800);
-  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.968f, 0.924f)).Length(),
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(4500);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.8816f, 0.7313f)).Length(),
             allowed_difference);
   // Daylight
   vec =
@@ -1550,9 +1726,12 @@ TEST_F(AutoNightLightTest, Notification) {
   ASSERT_TRUE(notification);
   ASSERT_TRUE(notification->delegate());
 
-  // Simulate the user clicking the notification button, Night Light should now
-  // be disabled, and the notification should be dismissed.
-  notification->delegate()->Click(base::make_optional<int>(0), base::nullopt);
+  // Simulate the user clicking the notification body to go to settings, and
+  // turning off Night Light manually for tonight. The notification should be
+  // dismissed.
+  notification->delegate()->Click(base::nullopt, base::nullopt);
+  controller->SetEnabled(false,
+                         NightLightControllerImpl::AnimationDuration::kShort);
   EXPECT_FALSE(controller->GetEnabled());
   EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
 

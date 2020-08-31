@@ -53,6 +53,7 @@
 
 interface CoreProbes {
 
+  class InspectorIssue;
   class ConsoleMessage;
   class FontCustomPlatformData;
   class FontFace;
@@ -87,6 +88,7 @@ interface CoreProbes {
   void DidResizeMainFrame(LocalFrame*);
   void ApplyAcceptLanguageOverride(ExecutionContext*, String* accept_language);
   void ApplyUserAgentOverride(CoreProbeSink*, String* user_agent);
+  void ApplyUserAgentMetadataOverride(CoreProbeSink*, base::Optional<blink::UserAgentMetadata>* ua_metadata_override);
   void DidBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
   void DidChangeResourcePriority(LocalFrame*, DocumentLoader*, uint64_t identifier, ResourceLoadPriority load_priority);
   void PrepareRequest(CoreProbeSink*, DocumentLoader*, ResourceRequest&, const FetchInitiatorInfo&, ResourceType);
@@ -102,7 +104,7 @@ interface CoreProbes {
   void DidFailLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&);
   void WillSendEventSourceRequest(ExecutionContext*);
   void WillDispatchEventSourceEvent(ExecutionContext*, uint64_t identifier, const AtomicString& event_name, const AtomicString& event_id, const String& data);
-  void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, EncodedFormData* form_data, const HTTPHeaderMap& headers, bool include_credentials);
+  void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool include_credentials);
   void DidFinishXHR(ExecutionContext*, XMLHttpRequest* xhr);
   void ScriptImported(ExecutionContext*, uint64_t identifier, const String& source_string);
   void ScriptExecutionBlockedByCSP(ExecutionContext*, const String& directive_text);
@@ -120,7 +122,7 @@ interface CoreProbes {
   void FrameOwnerContentUpdated([Keep] LocalFrame*, HTMLFrameOwnerElement*);
   void FrameStartedLoading([Keep] LocalFrame*);
   void FrameStoppedLoading([Keep] LocalFrame*);
-  void FrameRequestedNavigation(LocalFrame*, Frame* target_frame, const KURL& url, ClientNavigationReason reason);
+  void FrameRequestedNavigation(LocalFrame*, Frame* target_frame, const KURL& url, ClientNavigationReason reason, NavigationPolicy policy);
   void FrameScheduledNavigation([Keep] LocalFrame*, const KURL& url, base::TimeDelta delay, ClientNavigationReason reason);
   void FrameClearedScheduledNavigation([Keep] LocalFrame*);
   void DidCreateWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, const String& protocol);
@@ -142,6 +144,7 @@ interface CoreProbes {
   void AnimationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState old_play_state, Animation::AnimationPlayState new_play_state);
   void WindowOpen([Keep] Document*, const String& url, const AtomicString& window_name, const WebWindowFeatures& window_features, bool user_gestrue);
   void ConsoleMessageAdded(ExecutionContext*, ConsoleMessage*);
+  void InspectorIssueAdded(ExecutionContext*, InspectorIssue*);
   void WillRunJavaScriptDialog(LocalFrame* frame);
   void DidRunJavaScriptDialog(LocalFrame* frame);
   void DocumentWriteFetchScript([Keep] Document*);
@@ -159,6 +162,8 @@ interface CoreProbes {
   void ShouldBlockRequest(CoreProbeSink*, const KURL&, bool* result);
   void ShouldBypassServiceWorker(ExecutionContext* context, bool* result);
   void ConsoleTimeStamp(ExecutionContext*, const String& title);
+  void WillStartDebuggerTask(CoreProbeSink*);
+  void DidFinishDebuggerTask(CoreProbeSink*);
   void LifecycleEvent([Keep] LocalFrame*, DocumentLoader*, const char* name, double timestamp);
   void PaintTiming([Keep] Document*, const char* name, double timestamp);
   void DidCreateAudioContext(Document*);
@@ -170,7 +175,10 @@ interface CoreProbes {
   void NodeCreated([Keep] Node* node);
   void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
   void FileChooserOpened([Keep] LocalFrame* frame, HTMLInputElement* element, bool* intercepted);
-  void PlayerEventsAdded(LocalFrame* frame, String player_id, const Vector<InspectorPlayerEvent>& events);
-  void PlayerPropertiesChanged(LocalFrame* frame, String player_id, const Vector<InspectorPlayerProperty>& properties);
-  void PlayersCreated(LocalFrame* frame, const Vector<WebString>& players);
+  void PlayerErrorsRaised(ExecutionContext* context, String player_id, const Vector<InspectorPlayerError>& errors);
+  void PlayerEventsAdded(ExecutionContext* context, String player_id, const Vector<InspectorPlayerEvent>& events);
+  void PlayerMessagesLogged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerMessage>& messages);
+  void PlayerPropertiesChanged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerProperty>& properties);
+  void PlayersCreated(ExecutionContext* context, const Vector<WebString>& players);
+  void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request);
 }

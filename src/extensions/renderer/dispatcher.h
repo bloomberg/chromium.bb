@@ -21,7 +21,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "extensions/common/event_filter.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -60,6 +60,7 @@ class RenderThread;
 namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
+class Extension;
 class NativeExtensionBindingsSystem;
 class IPCMessageSender;
 class ScriptContext;
@@ -295,6 +296,8 @@ class Dispatcher : public content::RenderThreadObserver,
   // mutated in Dispatcher.
   std::unique_ptr<NativeExtensionBindingsSystem> CreateBindingsSystem(
       std::unique_ptr<IPCMessageSender> ipc_sender);
+
+  void ResumeEvaluationOnWorkerThread(const ExtensionId& extension_id);
 
   // The delegate for this dispatcher to handle embedder-specific logic.
   std::unique_ptr<DispatcherDelegate> delegate_;

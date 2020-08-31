@@ -20,8 +20,10 @@ class QUIC_EXPORT_PRIVATE Bbr2ProbeBwMode final : public Bbr2ModeBase {
  public:
   using Bbr2ModeBase::Bbr2ModeBase;
 
-  void Enter(const Bbr2CongestionEvent& congestion_event) override;
-  void Leave(const Bbr2CongestionEvent& /*congestion_event*/) override {}
+  void Enter(QuicTime now,
+             const Bbr2CongestionEvent* congestion_event) override;
+  void Leave(QuicTime /*now*/,
+             const Bbr2CongestionEvent* /*congestion_event*/) override {}
 
   Bbr2Mode OnCongestionEvent(
       QuicByteCount prior_in_flight,
@@ -33,6 +35,9 @@ class QUIC_EXPORT_PRIVATE Bbr2ProbeBwMode final : public Bbr2ModeBase {
   Limits<QuicByteCount> GetCwndLimits() const override;
 
   bool IsProbingForBandwidth() const override;
+
+  Bbr2Mode OnExitQuiescence(QuicTime now,
+                            QuicTime quiescence_start_time) override;
 
   enum class CyclePhase : uint8_t {
     PROBE_NOT_STARTED,
@@ -77,14 +82,13 @@ class QUIC_EXPORT_PRIVATE Bbr2ProbeBwMode final : public Bbr2ModeBase {
 
   void EnterProbeDown(bool probed_too_high,
                       bool stopped_risky_probe,
-                      const Bbr2CongestionEvent& congestion_event);
-  void EnterProbeCruise(const Bbr2CongestionEvent& congestion_event);
-  void EnterProbeRefill(uint64_t probe_up_rounds,
-                        const Bbr2CongestionEvent& congestion_event);
-  void EnterProbeUp(const Bbr2CongestionEvent& congestion_event);
+                      QuicTime now);
+  void EnterProbeCruise(QuicTime now);
+  void EnterProbeRefill(uint64_t probe_up_rounds, QuicTime now);
+  void EnterProbeUp(QuicTime now);
 
   // Call right before the exit of PROBE_DOWN.
-  void ExitProbeDown(const Bbr2CongestionEvent& congestion_event);
+  void ExitProbeDown();
 
   float PercentTimeElapsedToProbeBandwidth(
       const Bbr2CongestionEvent& congestion_event) const;
@@ -122,10 +126,6 @@ class QUIC_EXPORT_PRIVATE Bbr2ProbeBwMode final : public Bbr2ModeBase {
 
   bool last_cycle_probed_too_high_;
   bool last_cycle_stopped_risky_probe_;
-
-  // Latched value of --quic_bbr2_exit_probe_bw_down_after_one_rtt.
-  const bool exit_probe_down_after_one_rtt_ =
-      GetQuicReloadableFlag(quic_bbr2_exit_probe_bw_down_after_one_rtt);
 };
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(

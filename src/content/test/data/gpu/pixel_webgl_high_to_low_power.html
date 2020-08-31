@@ -16,16 +16,20 @@ function ready() {
   sendResult("READY", "Ready for second tab to be launched");
 }
 
-function initialize() {
+function initialize(runningOnDualGPUMacBookPro) {
+  if (runningOnDualGPUMacBookPro)
+    setRunningOnDualGpuSystem();
   if (setup())
     drawSomeFrames(notifyHarness);
 }
 
 function notifyHarness() {
+  assertRunningOnHighPerformanceGpu();
   sendResult("READY", "Ready for second tab to be closed");
 }
 
 function runToCompletion() {
+  assertRunningOnLowPowerGpu();
   drawSomeFrames(waitForFinish);
 }
 
@@ -47,6 +51,5 @@ function waitForFinish()
 </head>
 <body onload="ready()">
 <canvas id="c" width="300" height="300" class="nomargin" style="position:absolute; top:0px; left:0px;"></canvas>
-</div>
 </body>
 </html>

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
 #include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -72,24 +73,25 @@ void CSSFontSelector::UnregisterForInvalidationCallbacks(
   clients_.erase(client);
 }
 
-void CSSFontSelector::DispatchInvalidationCallbacks() {
+void CSSFontSelector::DispatchInvalidationCallbacks(
+    FontInvalidationReason reason) {
   font_face_cache_.IncrementVersion();
 
   HeapVector<Member<FontSelectorClient>> clients;
   CopyToVector(clients_, clients);
   for (auto& client : clients) {
     if (client) {
-      client->FontsNeedUpdate(this);
+      client->FontsNeedUpdate(this, reason);
     }
   }
 }
 
-void CSSFontSelector::FontFaceInvalidated() {
-  DispatchInvalidationCallbacks();
+void CSSFontSelector::FontFaceInvalidated(FontInvalidationReason reason) {
+  DispatchInvalidationCallbacks(reason);
 }
 
 void CSSFontSelector::FontCacheInvalidated() {
-  DispatchInvalidationCallbacks();
+  DispatchInvalidationCallbacks(FontInvalidationReason::kGeneralInvalidation);
 }
 
 scoped_refptr<FontData> CSSFontSelector::GetFontData(
@@ -168,7 +170,20 @@ void CSSFontSelector::ReportFailedFontFamilyMatch(
       font_family_name);
 }
 
-void CSSFontSelector::Trace(blink::Visitor* visitor) {
+void CSSFontSelector::ReportSuccessfulLocalFontMatch(
+    const AtomicString& font_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportSuccessfulLocalFontMatch(
+      font_name);
+}
+
+void CSSFontSelector::ReportFailedLocalFontMatch(
+    const AtomicString& font_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportFailedLocalFontMatch(font_name);
+}
+
+void CSSFontSelector::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(font_face_cache_);
   visitor->Trace(clients_);

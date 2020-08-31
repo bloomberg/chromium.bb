@@ -5,6 +5,9 @@
 #include "chrome/browser/web_applications/web_app_database.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -12,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
@@ -20,6 +24,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -34,6 +39,34 @@ class WebAppDatabaseTest : public WebAppTest {
     test_registry_controller_ =
         std::make_unique<TestWebAppRegistryController>();
     test_registry_controller_->SetUp(profile());
+  }
+
+  static apps::FileHandlers CreateFileHandlers(int suffix) {
+    apps::FileHandlers file_handlers;
+
+    for (unsigned int i = 0; i < 5; ++i) {
+      std::string suffix_str =
+          base::NumberToString(suffix) + base::NumberToString(i);
+
+      apps::FileHandler::AcceptEntry accept_entry1;
+      accept_entry1.mime_type = "application/" + suffix_str + "+foo";
+      accept_entry1.file_extensions.insert("." + suffix_str + "a");
+      accept_entry1.file_extensions.insert("." + suffix_str + "b");
+
+      apps::FileHandler::AcceptEntry accept_entry2;
+      accept_entry2.mime_type = "application/" + suffix_str + "+bar";
+      accept_entry2.file_extensions.insert("." + suffix_str + "a");
+      accept_entry2.file_extensions.insert("." + suffix_str + "b");
+
+      apps::FileHandler file_handler;
+      file_handler.action = GURL("https://example.com/open-" + suffix_str);
+      file_handler.accept.push_back(std::move(accept_entry1));
+      file_handler.accept.push_back(std::move(accept_entry2));
+
+      file_handlers.push_back(std::move(file_handler));
+    }
+
+    return file_handlers;
   }
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
@@ -85,6 +118,26 @@ class WebAppDatabaseTest : public WebAppTest {
     icon.square_size_px = size;
     app->SetIconInfos({std::move(icon)});
     app->SetDownloadedIconSizes({size});
+
+    app->SetFileHandlers(CreateFileHandlers(suffix));
+
+    const int num_additional_search_terms = suffix & 7;
+    std::vector<std::string> additional_search_terms(
+        num_additional_search_terms);
+    for (int i = 0; i < num_additional_search_terms; ++i) {
+      additional_search_terms[i] =
+          "Foo_" + base::NumberToString(suffix) + "_" + base::NumberToString(i);
+    }
+    app->SetAdditionalSearchTerms(std::move(additional_search_terms));
+
+    if (IsChromeOs()) {
+      auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+      chromeos_data->show_in_launcher = suffix & 0b0001;
+      chromeos_data->show_in_search = suffix & 0b0010;
+      chromeos_data->show_in_management = suffix & 0b0100;
+      chromeos_data->is_disabled = suffix & 0b1000;
+      app->SetWebAppChromeOsData(std::move(chromeos_data));
+    }
 
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
@@ -261,6 +314,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetName(name);
   app->SetUserDisplayMode(user_display_mode);
   app->SetIsLocallyInstalled(false);
+  // chromeos_data should always be set on ChromeOS.
+  if (IsChromeOs())
+    app->SetWebAppChromeOsData(base::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
   for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
@@ -278,6 +334,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->is_in_sync_install());
   EXPECT_TRUE(app->sync_data().name.empty());
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
+  EXPECT_TRUE(app->file_handlers().empty());
+  EXPECT_TRUE(app->additional_search_terms().empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -291,6 +349,16 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(name, app_copy->name());
   EXPECT_EQ(user_display_mode, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
+
+  auto& chromeos_data = app_copy->chromeos_data();
+  if (IsChromeOs()) {
+    EXPECT_TRUE(chromeos_data->show_in_launcher);
+    EXPECT_TRUE(chromeos_data->show_in_search);
+    EXPECT_TRUE(chromeos_data->show_in_management);
+    EXPECT_FALSE(chromeos_data->is_disabled);
+  } else {
+    EXPECT_FALSE(chromeos_data.has_value());
+  }
 
   for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
     EXPECT_TRUE(app_copy->HasAnySources());
@@ -308,6 +376,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->is_in_sync_install());
   EXPECT_TRUE(app_copy->sync_data().name.empty());
   EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
+  EXPECT_TRUE(app_copy->file_handlers().empty());
+  EXPECT_TRUE(app_copy->additional_search_terms().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -343,6 +413,44 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
     const int icon_size_in_px = i * i;
     EXPECT_EQ(icon_size_in_px, app_copy->icon_infos()[i - 1].square_size_px);
   }
+}
+
+TEST_F(WebAppDatabaseTest, WebAppWithFileHandlersRoundTrip) {
+  controller().Init();
+
+  const std::string base_url = "https://example.com/path";
+  auto app = CreateWebApp(base_url, 0);
+  auto app_id = app->app_id();
+
+  apps::FileHandlers file_handlers;
+
+  apps::FileHandler file_handler1;
+  file_handler1.action = GURL("https://example.com/path/csv");
+  apps::FileHandler::AcceptEntry accept_csv;
+  accept_csv.mime_type = "text/csv";
+  accept_csv.file_extensions.insert(".csv");
+  accept_csv.file_extensions.insert(".txt");
+  file_handler1.accept.push_back(std::move(accept_csv));
+  file_handlers.push_back(std::move(file_handler1));
+
+  apps::FileHandler file_handler2;
+  file_handler2.action = GURL("https://example.com/path/svg");
+  apps::FileHandler::AcceptEntry accept_xml;
+  accept_xml.mime_type = "text/xml";
+  accept_xml.file_extensions.insert(".xml");
+  file_handler2.accept.push_back(std::move(accept_xml));
+  apps::FileHandler::AcceptEntry accept_svg;
+  accept_svg.mime_type = "text/xml+svg";
+  accept_svg.file_extensions.insert(".svg");
+  file_handler2.accept.push_back(std::move(accept_svg));
+  file_handlers.push_back(std::move(file_handler2));
+
+  app->SetFileHandlers(std::move(file_handlers));
+
+  controller().RegisterApp(std::move(app));
+
+  Registry registry = database_factory().ReadRegistry();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
 }
 
 }  // namespace web_app

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -18,6 +19,10 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
+
+#if defined(OS_ANDROID)
+#include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
+#endif
 
 #if DCHECK_IS_ON()
 #define CALLED_ON_VALID_THREAD()                      \
@@ -46,23 +51,40 @@ bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
   return lhs->mailbox() < rhs;
 }
 
-class SharedImageManager::AutoLock {
+class SCOPED_LOCKABLE SharedImageManager::AutoLock {
  public:
   explicit AutoLock(SharedImageManager* manager)
-      : auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
-                                             : nullptr) {}
+      EXCLUSIVE_LOCK_FUNCTION(manager->lock_)
+      : start_time_(base::TimeTicks::Now()),
+        auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
+                                             : nullptr) {
+    if (manager->is_thread_safe()) {
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "GPU.SharedImageManager.TimeToAcquireLock",
+          base::TimeTicks::Now() - start_time_,
+          base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(1),
+          50);
+    }
+  }
 
-  ~AutoLock() = default;
+  ~AutoLock() UNLOCK_FUNCTION() = default;
 
  private:
+  base::TimeTicks start_time_;
   base::AutoLockMaybe auto_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
 
-SharedImageManager::SharedImageManager(bool thread_safe) {
+SharedImageManager::SharedImageManager(bool thread_safe,
+                                       bool display_context_on_another_thread)
+    : display_context_on_another_thread_(display_context_on_another_thread) {
+  DCHECK(!display_context_on_another_thread || thread_safe);
   if (thread_safe)
     lock_.emplace();
+#if defined(OS_ANDROID)
+  batch_access_manager_ = std::make_unique<SharedImageBatchAccessManager>();
+#endif
   CALLED_ON_VALID_THREAD();
 }
 
@@ -86,7 +108,6 @@ SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
       (*lower_bound)->mailbox() == backing->mailbox()) {
     LOG(ERROR) << "SharedImageManager::Register: Trying to register an "
                   "already registered mailbox.";
-    backing->Destroy();
     return nullptr;
   }
 
@@ -250,6 +271,30 @@ SharedImageManager::ProduceOverlay(const gpu::Mailbox& mailbox,
   return representation;
 }
 
+std::unique_ptr<SharedImageRepresentationVaapi>
+SharedImageManager::ProduceVASurface(const Mailbox& mailbox,
+                                     MemoryTypeTracker* tracker,
+                                     VaapiDependenciesFactory* dep_factory) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceVASurface: Trying to produce a "
+                  "VA-API representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = (*found)->ProduceVASurface(this, tracker, dep_factory);
+
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceVASurface: Trying to produce a "
+                  "VA-API representation from an incompatible mailbox.";
+    return nullptr;
+  }
+  return representation;
+}
+
 void SharedImageManager::OnRepresentationDestroyed(
     const Mailbox& mailbox,
     SharedImageRepresentation* representation) {
@@ -312,6 +357,31 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
   // Allow the SharedImageBacking to attach additional data to the dump
   // or dump additional sub-paths.
   backing->OnMemoryDump(dump_name, dump, pmd, client_tracing_id);
+}
+
+scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
+    const gpu::Mailbox& mailbox) {
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end())
+    return nullptr;
+  return (*found)->GetNativePixmap();
+}
+
+bool SharedImageManager::BeginBatchReadAccess() {
+#if defined(OS_ANDROID)
+  return batch_access_manager_->BeginBatchReadAccess();
+#else
+  return true;
+#endif
+}
+
+bool SharedImageManager::EndBatchReadAccess() {
+#if defined(OS_ANDROID)
+  return batch_access_manager_->EndBatchReadAccess();
+#else
+  return true;
+#endif
 }
 
 }  // namespace gpu

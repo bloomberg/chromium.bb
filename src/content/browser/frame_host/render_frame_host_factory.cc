@@ -4,10 +4,9 @@
 
 #include "content/browser/frame_host/render_frame_host_factory.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
 namespace content {
@@ -23,18 +22,18 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
-    int32_t widget_routing_id,
-    bool renderer_initiated_creation) {
+    const base::UnguessableToken& frame_token,
+    bool renderer_initiated_creation,
+    RenderFrameHostImpl::LifecycleState lifecycle_state) {
   if (factory_) {
     return factory_->CreateRenderFrameHost(
         site_instance, std::move(render_view_host), delegate, frame_tree,
-        frame_tree_node, routing_id, widget_routing_id,
-        renderer_initiated_creation);
+        frame_tree_node, routing_id, frame_token, renderer_initiated_creation);
   }
-  return base::WrapUnique(
-      new RenderFrameHostImpl(site_instance, std::move(render_view_host),
-                              delegate, frame_tree, frame_tree_node, routing_id,
-                              widget_routing_id, renderer_initiated_creation));
+  return base::WrapUnique(new RenderFrameHostImpl(
+      site_instance, std::move(render_view_host), delegate, frame_tree,
+      frame_tree_node, routing_id, frame_token, renderer_initiated_creation,
+      lifecycle_state));
 }
 
 // static

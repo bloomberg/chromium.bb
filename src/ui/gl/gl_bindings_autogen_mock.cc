@@ -961,6 +961,13 @@ MockGLInterface::Mock_glDeleteFramebuffersEXT(GLsizei n,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glDeleteMemoryObjectsEXT(GLsizei n,
+                                               const GLuint* memoryObjects) {
+  MakeGlMockFunctionUnique("glDeleteMemoryObjectsEXT");
+  interface_->DeleteMemoryObjectsEXT(n, memoryObjects);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glDeletePathsCHROMIUM(GLuint path, GLsizei range) {
   MakeGlMockFunctionUnique("glDeletePathsCHROMIUM");
   interface_->DeletePathsNV(path, range);
@@ -2922,11 +2929,45 @@ MockGLInterface::Mock_glImportMemoryFdEXT(GLuint memory,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glImportMemoryWin32HandleEXT(GLuint memory,
+                                                   GLuint64 size,
+                                                   GLenum handleType,
+                                                   void* handle) {
+  MakeGlMockFunctionUnique("glImportMemoryWin32HandleEXT");
+  interface_->ImportMemoryWin32HandleEXT(memory, size, handleType, handle);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
+                                                      GLuint64 size,
+                                                      GLenum handleType,
+                                                      GLuint handle) {
+  MakeGlMockFunctionUnique("glImportMemoryZirconHandleANGLE");
+  interface_->ImportMemoryZirconHandleANGLE(memory, size, handleType, handle);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glImportSemaphoreFdEXT(GLuint semaphore,
                                              GLenum handleType,
                                              GLint fd) {
   MakeGlMockFunctionUnique("glImportSemaphoreFdEXT");
   interface_->ImportSemaphoreFdEXT(semaphore, handleType, fd);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glImportSemaphoreWin32HandleEXT(GLuint semaphore,
+                                                      GLenum handleType,
+                                                      void* handle) {
+  MakeGlMockFunctionUnique("glImportSemaphoreWin32HandleEXT");
+  interface_->ImportSemaphoreWin32HandleEXT(semaphore, handleType, handle);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glImportSemaphoreZirconHandleANGLE(GLuint semaphore,
+                                                         GLenum handleType,
+                                                         GLuint handle) {
+  MakeGlMockFunctionUnique("glImportSemaphoreZirconHandleANGLE");
+  interface_->ImportSemaphoreZirconHandleANGLE(semaphore, handleType, handle);
 }
 
 void GL_BINDING_CALL
@@ -3178,6 +3219,14 @@ void GL_BINDING_CALL
 MockGLInterface::Mock_glMemoryBarrierEXT(GLbitfield barriers) {
   MakeGlMockFunctionUnique("glMemoryBarrierEXT");
   interface_->MemoryBarrierEXT(barriers);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMemoryObjectParameterivEXT(GLuint memoryObject,
+                                                   GLenum pname,
+                                                   const GLint* param) {
+  MakeGlMockFunctionUnique("glMemoryObjectParameterivEXT");
+  interface_->MemoryObjectParameterivEXT(memoryObject, pname, param);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glMinSampleShading(GLfloat value) {
@@ -5406,6 +5455,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glDeleteFramebuffersEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDeleteFramebuffersEXT);
+  if (strcmp(name, "glDeleteMemoryObjectsEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteMemoryObjectsEXT);
   if (strcmp(name, "glDeletePathsCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glDeletePathsCHROMIUM);
   if (strcmp(name, "glDeletePathsNV") == 0)
@@ -5994,8 +6046,20 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glHint);
   if (strcmp(name, "glImportMemoryFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportMemoryFdEXT);
+  if (strcmp(name, "glImportMemoryWin32HandleEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportMemoryWin32HandleEXT);
+  if (strcmp(name, "glImportMemoryZirconHandleANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportMemoryZirconHandleANGLE);
   if (strcmp(name, "glImportSemaphoreFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportSemaphoreFdEXT);
+  if (strcmp(name, "glImportSemaphoreWin32HandleEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportSemaphoreWin32HandleEXT);
+  if (strcmp(name, "glImportSemaphoreZirconHandleANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportSemaphoreZirconHandleANGLE);
   if (strcmp(name, "glInsertEventMarkerEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glInsertEventMarkerEXT);
   if (strcmp(name, "glInvalidateFramebuffer") == 0)
@@ -6087,6 +6151,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
         Mock_glMemoryBarrierByRegion);
   if (strcmp(name, "glMemoryBarrierEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrierEXT);
+  if (strcmp(name, "glMemoryObjectParameterivEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMemoryObjectParameterivEXT);
   if (strcmp(name, "glMinSampleShading") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMinSampleShading);
   if (strcmp(name, "glMultiDrawArraysANGLE") == 0)

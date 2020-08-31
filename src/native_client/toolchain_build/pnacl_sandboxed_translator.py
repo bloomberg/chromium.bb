@@ -41,6 +41,13 @@ def SandboxedTranslators(arches):
           # Copy the le32 bitcode libs
           command.CopyRecursive('%(' + p + ')s', '%(output)s')
            for p in ['target_lib_compiler'] + le32_packages] + [
+               # Also copy the le32 libcxx headers to the root of the
+               # translator_compiler package.
+               # TODO: This works around a bug in le32-nacl-clang's include
+               # path logic (it should use le32-nacl/include but instead it
+               # uses /include, which probably should just be a host path.
+               command.CopyRecursive('%(libcxx_le32)s/le32-nacl/include',
+                                     '%(output)s/include')] + [
           # Copy the native translator libs
           command.CopyRecursive(
             '%(' + GSDJoin('libs_support_translator', arch) + ')s',

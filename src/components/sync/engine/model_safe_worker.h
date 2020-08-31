@@ -27,13 +27,11 @@ namespace syncer {
 using WorkCallback = base::OnceCallback<SyncerError(void)>;
 
 enum ModelSafeGroup {
+  // TODO(crbug.com/1010397): Remove once the pre-USS Nigori codepath is cleaned
+  // up.
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.
                        // changes to these models don't need to be pushed to a
                        // native model.
-  GROUP_UI,            // Models that live on UI thread and are being synced.
-  GROUP_PASSWORD,      // Models that live on the password thread and are
-                       // being synced.  On windows and linux, this runs on the
-                       // DB thread.
   GROUP_NON_BLOCKING,  // Models that correspond to non-blocking types. These
                        // models always stay in GROUP_NON_BLOCKING; changes are
                        // forwarded to these models without ModelSafeWorker/

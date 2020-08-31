@@ -123,9 +123,8 @@ class TestAuthenticatorFactory final
  public:
   TestAuthenticatorFactory() : last_instance_(nullptr) {}
 
-  std::unique_ptr<Authenticator> BuildInstance(
+  std::unique_ptr<Authenticator> CreateInstance(
       Connection* connection,
-      const std::string& account_id,
       std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate) override {
     last_instance_ = new FakeAuthenticator();
@@ -152,12 +151,12 @@ class SecureChannelConnectionTest : public testing::Test {
 
   void SetUp() override {
     test_authenticator_factory_ = std::make_unique<TestAuthenticatorFactory>();
-    DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
+    DeviceToDeviceAuthenticator::Factory::SetFactoryForTesting(
         test_authenticator_factory_.get());
 
     fake_secure_message_delegate_factory_ =
         std::make_unique<multidevice::FakeSecureMessageDelegateFactory>();
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
 
     fake_secure_context_ = nullptr;
@@ -187,7 +186,7 @@ class SecureChannelConnectionTest : public testing::Test {
     if (secure_channel_)
       VerifyNoMessageBeingSent();
 
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         nullptr);
   }
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -17,6 +18,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,6 +34,9 @@ class LocalNtpUiTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNtpUiTest, FakeboxRedirectsToOmnibox) {
+  if (ntp_features::IsRealboxEnabled())
+    return;
+
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(), 1000);

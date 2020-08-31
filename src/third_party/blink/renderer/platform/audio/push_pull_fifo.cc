@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -40,20 +40,16 @@ PushPullFIFO::~PushPullFIFO() {
   // Capture the percentage of underflow happened based on the total pull count.
   // (100 buckets of size 1) This is equivalent of
   // "Media.AudioRendererMissedDeadline" metric for WebAudio.
-  DEFINE_STATIC_LOCAL(
-      LinearHistogram,
-      fifo_underflow_percentage_histogram,
-      ("WebAudio.PushPullFIFO.UnderflowPercentage", 1, 100, 101));
-  fifo_underflow_percentage_histogram.Count(
+  base::UmaHistogramPercentage(
+      "WebAudio.PushPullFIFO.UnderflowPercentage",
       static_cast<int32_t>(100.0 * underflow_count_ / pull_count_));
 
   // We only collect the underflow count because no overflow can happen in the
   // current implementation. This is similar to
   // "Media.AudioRendererAudioGlitches" metric for WebAudio, which is a simple
   // flag indicates any instance of glitches during FIFO's lifetime.
-  DEFINE_STATIC_LOCAL(BooleanHistogram, fifo_underflow_glitches_histogram,
-                      ("WebAudio.PushPullFIFO.UnderflowGlitches"));
-  fifo_underflow_glitches_histogram.Count(underflow_count_ > 0);
+  base::UmaHistogramBoolean("WebAudio.PushPullFIFO.UnderflowGlitches",
+                            underflow_count_ > 0);
 }
 
 // Push the data from |input_bus| to FIFO. The size of push is determined by
@@ -63,6 +59,7 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
                "input_bus length", input_bus->length());
 
   MutexLocker locker(lock_);
+  TRACE_EVENT0("webaudio", "PushPullFIFO::Push under lock");
 
   CHECK(input_bus);
   CHECK_EQ(input_bus->length(), audio_utilities::kRenderQuantumFrames);
@@ -91,7 +88,7 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
   // Update the write index; wrap it around if necessary.
   index_write_ = (index_write_ + input_bus_length) % fifo_length_;
 
-  // In case of overflow, move the |index_read_| to the updated |index_write_|
+  // In case of overflow, move the |index_read_| to the ipdated |index_write_|
   // to avoid reading overwritten frames by the next pull.
   if (input_bus_length > fifo_length_ - frames_available_) {
     index_read_ = index_write_;
@@ -118,6 +115,7 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
                "frames_requested", frames_requested);
 
   MutexLocker locker(lock_);
+  TRACE_EVENT0("webaudio", "PushPullFIFO::Pull under lock");
 
 #if defined(OS_ANDROID)
   if (!output_bus) {
@@ -176,6 +174,8 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
     // The frames available was not enough to fulfill the requested frames. Fill
     // the rest of the channel with silence.
     if (frames_requested > frames_to_fill) {
+      TRACE_EVENT1("webaudio", "PushPullFIFO::Pull underrun", "missing frames",
+                   frames_requested - frames_to_fill);
       memset(output_bus_channel + frames_to_fill, 0,
              (frames_requested - frames_to_fill) * sizeof(*output_bus_channel));
     }

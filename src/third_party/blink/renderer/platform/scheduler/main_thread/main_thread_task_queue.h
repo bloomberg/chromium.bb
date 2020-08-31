@@ -76,10 +76,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // 22 : kWebSchedulingBestEffort, obsolete.
 
     kWebScheduling = 24,
+    kNonWaking = 25,
 
     // Used to group multiple types when calculating Expected Queueing Time.
     kOther = 23,
-    kCount = 25
+    kCount = 26
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -123,13 +124,14 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // Separate enum class for handling prioritisation decisions in task queues.
     enum class PrioritisationType {
       kVeryHigh = 0,
-      kHigh = 1,
-      kBestEffort = 2,
-      kRegular = 3,
-      kLoading = 4,
-      kLoadingControl = 5,
+      kBestEffort = 1,
+      kRegular = 2,
+      kLoading = 3,
+      kLoadingControl = 4,
+      kFindInPage = 5,
+      kExperimentalDatabase = 6,
 
-      kCount = 6
+      kCount = 7
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required

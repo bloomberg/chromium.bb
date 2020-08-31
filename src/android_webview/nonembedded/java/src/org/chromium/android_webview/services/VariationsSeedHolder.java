@@ -78,6 +78,7 @@ public class VariationsSeedHolder {
                 if (VariationsSeedHolder.this.mSeed == null) return;
 
                 if (mDestinationDate < VariationsSeedHolder.this.mSeed.date) {
+                    VariationsUtils.debugLog("Writing new seed to app's data directory");
                     writeSeedWithoutClosing(VariationsSeedHolder.this.mSeed, mDestination);
                 }
             } finally {

@@ -3,14 +3,28 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'password-edit-dialog' is the dialog that allows showing a
- * saved password.
+ * @fileoverview 'address-edit-dialog' is the dialog that allows editing a saved
+ * address.
  */
-(function() {
-'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+import '../controls/settings_textarea.m.js';
+
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({
   is: 'settings-address-edit-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     I18nBehavior,
@@ -35,7 +49,7 @@ Polymer({
       observer: 'onUpdateCountryCode_',
     },
 
-    /** @private {!Array<!Array<!settings.address.AddressComponentUI>>} */
+    /** @private {!Array<!Array<!AddressComponentUI>>} */
     addressWrapper_: Object,
 
     /** @private */
@@ -49,8 +63,8 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
-    this.countryInfo = settings.address.CountryDetailManagerImpl.getInstance();
+  attached() {
+    this.countryInfo = CountryDetailManagerImpl.getInstance();
     this.countryInfo.getCountryList().then(countryList => {
       this.countries_ = countryList;
 
@@ -73,15 +87,16 @@ Polymer({
       });
     });
 
-    // Open is called on the dialog after the address wrapper has been updated.
+    // Open is called on the dialog after the address wrapper has been
+    // updated.
   },
 
   /**
    * Returns a class to denote how long this entry is.
-   * @param {settings.address.AddressComponentUI} setting
+   * @param {AddressComponentUI} setting
    * @return {string}
    */
-  long_: function(setting) {
+  long_(setting) {
     return setting.component.isLongField ? 'long' : '';
   },
 
@@ -89,16 +104,16 @@ Polymer({
    * Updates the wrapper that represents this address in the country's format.
    * @private
    */
-  updateAddressWrapper_: function() {
+  updateAddressWrapper_() {
     // Default to the last country used if no country code is provided.
     const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo.getAddressFormat(countryCode).then(format => {
       this.addressWrapper_ = format.components.map(
-          component => component.row.map(
-              c => new settings.address.AddressComponentUI(this.address, c)));
+          component =>
+              component.row.map(c => new AddressComponentUI(this.address, c)));
 
       // Flush dom before resize and savability updates.
-      Polymer.dom.flush();
+      flush();
 
       this.updateCanSave_();
 
@@ -111,7 +126,7 @@ Polymer({
     });
   },
 
-  updateCanSave_: function() {
+  updateCanSave_() {
     const inputs = this.$.dialog.querySelectorAll('.address-column, select');
 
     for (let i = 0; i < inputs.length; ++i) {
@@ -131,7 +146,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCode_: function(country) {
+  getCode_(country) {
     return country.countryCode || 'SPACER';
   },
 
@@ -140,7 +155,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getName_: function(country) {
+  getName_(country) {
     return country.name || '------';
   },
 
@@ -149,12 +164,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDivision_: function(country) {
+  isDivision_(country) {
     return !country.countryCode;
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
@@ -162,7 +177,7 @@ Polymer({
    * Handler for tapping the save button.
    * @private
    */
-  onSaveButtonTap_: function() {
+  onSaveButtonTap_() {
     // The Enter key can call this function even if the button is disabled.
     if (!this.canSave_) {
       return;
@@ -181,165 +196,157 @@ Polymer({
   },
 
   /**
-   * Syncs the country code back to the address and rebuilds the address wrapper
-   * for the new location.
+   * Syncs the country code back to the address and rebuilds the address
+   * wrapper for the new location.
    * @param {string|undefined} countryCode
    * @private
    */
-  onUpdateCountryCode_: function(countryCode) {
+  onUpdateCountryCode_(countryCode) {
     this.address.countryCode = countryCode;
     this.updateAddressWrapper_();
   },
 
   /** @private */
-  onCountryChange_: function() {
-    const countrySelect = /** @type {!HTMLSelectElement} */ (this.$$('select'));
+  onCountryChange_() {
+    const countrySelect =
+        /** @type {!HTMLSelectElement} */ (this.$$('select'));
     this.countryCode_ = countrySelect.value;
   },
 });
-})();
 
-cr.define('settings.address', function() {
+/**
+ * Creates a wrapper against a single data member for an address.
+ */
+class AddressComponentUI {
   /**
-   * Creates a wrapper against a single data member for an address.
+   * @param {!chrome.autofillPrivate.AddressEntry} address
+   * @param {!chrome.autofillPrivate.AddressComponent} component
    */
-  class AddressComponentUI {
-    /**
-     * @param {!chrome.autofillPrivate.AddressEntry} address
-     * @param {!chrome.autofillPrivate.AddressComponent} component
-     */
-    constructor(address, component) {
-      Object.defineProperty(this, 'value', {
-        get: function() {
-          return this.getValue_();
-        },
-        set: function(newValue) {
-          this.setValue_(newValue);
-        },
-      });
-      this.address_ = address;
-      this.component = component;
-      this.isTextArea =
-          component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
-    }
-
-    /**
-     * Gets the value from the address that's associated with this component.
-     * @return {string|undefined}
-     * @private
-     */
-    getValue_() {
-      const address = this.address_;
-      switch (this.component.field) {
-        case chrome.autofillPrivate.AddressField.FULL_NAME:
-          // |fullNames| is a single item array. See crbug.com/497934 for
-          // details.
-          return address.fullNames ? address.fullNames[0] : undefined;
-        case chrome.autofillPrivate.AddressField.COMPANY_NAME:
-          return address.companyName;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LINES:
-          return address.addressLines;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_1:
-          return address.addressLevel1;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_2:
-          return address.addressLevel2;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_3:
-          return address.addressLevel3;
-        case chrome.autofillPrivate.AddressField.POSTAL_CODE:
-          return address.postalCode;
-        case chrome.autofillPrivate.AddressField.SORTING_CODE:
-          return address.sortingCode;
-        case chrome.autofillPrivate.AddressField.COUNTRY_CODE:
-          return address.countryCode;
-        default:
-          assertNotReached();
-      }
-    }
-
-    /**
-     * Sets the value in the address that's associated with this component.
-     * @param {string} value
-     * @private
-     */
-    setValue_(value) {
-      const address = this.address_;
-      switch (this.component.field) {
-        case chrome.autofillPrivate.AddressField.FULL_NAME:
-          address.fullNames = [value];
-          break;
-        case chrome.autofillPrivate.AddressField.COMPANY_NAME:
-          address.companyName = value;
-          break;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LINES:
-          address.addressLines = value;
-          break;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_1:
-          address.addressLevel1 = value;
-          break;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_2:
-          address.addressLevel2 = value;
-          break;
-        case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_3:
-          address.addressLevel3 = value;
-          break;
-        case chrome.autofillPrivate.AddressField.POSTAL_CODE:
-          address.postalCode = value;
-          break;
-        case chrome.autofillPrivate.AddressField.SORTING_CODE:
-          address.sortingCode = value;
-          break;
-        case chrome.autofillPrivate.AddressField.COUNTRY_CODE:
-          address.countryCode = value;
-          break;
-        default:
-          assertNotReached();
-      }
-    }
-  }
-
-  /** @interface */
-  class CountryDetailManager {
-    /**
-     * Gets the list of available countries.
-     * The default country will be first, followed by a separator, followed by
-     * an alphabetized list of countries available.
-     * @return {!Promise<!Array<!chrome.autofillPrivate.CountryEntry>>}
-     */
-    getCountryList() {}
-
-    /**
-     * Gets the address format for a given country code.
-     * @param {string} countryCode
-     * @return {!Promise<!chrome.autofillPrivate.AddressComponents>}
-     */
-    getAddressFormat(countryCode) {}
+  constructor(address, component) {
+    Object.defineProperty(this, 'value', {
+      get() {
+        return this.getValue_();
+      },
+      set(newValue) {
+        this.setValue_(newValue);
+      },
+    });
+    this.address_ = address;
+    this.component = component;
+    this.isTextArea =
+        component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
   }
 
   /**
-   * Default implementation. Override for testing.
-   * @implements {settings.address.CountryDetailManager}
+   * Gets the value from the address that's associated with this component.
+   * @return {string|undefined}
+   * @private
    */
-  class CountryDetailManagerImpl {
-    /** @override */
-    getCountryList() {
-      return new Promise(function(callback) {
-        chrome.autofillPrivate.getCountryList(callback);
-      });
-    }
-
-    /** @override */
-    getAddressFormat(countryCode) {
-      return new Promise(function(callback) {
-        chrome.autofillPrivate.getAddressComponents(countryCode, callback);
-      });
+  getValue_() {
+    const address = this.address_;
+    switch (this.component.field) {
+      case chrome.autofillPrivate.AddressField.FULL_NAME:
+        // |fullNames| is a single item array. See crbug.com/497934 for
+        // details.
+        return address.fullNames ? address.fullNames[0] : undefined;
+      case chrome.autofillPrivate.AddressField.COMPANY_NAME:
+        return address.companyName;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LINES:
+        return address.addressLines;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_1:
+        return address.addressLevel1;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_2:
+        return address.addressLevel2;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_3:
+        return address.addressLevel3;
+      case chrome.autofillPrivate.AddressField.POSTAL_CODE:
+        return address.postalCode;
+      case chrome.autofillPrivate.AddressField.SORTING_CODE:
+        return address.sortingCode;
+      case chrome.autofillPrivate.AddressField.COUNTRY_CODE:
+        return address.countryCode;
+      default:
+        assertNotReached();
     }
   }
 
-  cr.addSingletonGetter(CountryDetailManagerImpl);
+  /**
+   * Sets the value in the address that's associated with this component.
+   * @param {string} value
+   * @private
+   */
+  setValue_(value) {
+    const address = this.address_;
+    switch (this.component.field) {
+      case chrome.autofillPrivate.AddressField.FULL_NAME:
+        address.fullNames = [value];
+        break;
+      case chrome.autofillPrivate.AddressField.COMPANY_NAME:
+        address.companyName = value;
+        break;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LINES:
+        address.addressLines = value;
+        break;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_1:
+        address.addressLevel1 = value;
+        break;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_2:
+        address.addressLevel2 = value;
+        break;
+      case chrome.autofillPrivate.AddressField.ADDRESS_LEVEL_3:
+        address.addressLevel3 = value;
+        break;
+      case chrome.autofillPrivate.AddressField.POSTAL_CODE:
+        address.postalCode = value;
+        break;
+      case chrome.autofillPrivate.AddressField.SORTING_CODE:
+        address.sortingCode = value;
+        break;
+      case chrome.autofillPrivate.AddressField.COUNTRY_CODE:
+        address.countryCode = value;
+        break;
+      default:
+        assertNotReached();
+    }
+  }
+}
 
-  return {
-    AddressComponentUI: AddressComponentUI,
-    CountryDetailManager: CountryDetailManager,
-    CountryDetailManagerImpl: CountryDetailManagerImpl,
-  };
-});
+/** @interface */
+class CountryDetailManager {
+  /**
+   * Gets the list of available countries.
+   * The default country will be first, followed by a separator, followed by
+   * an alphabetized list of countries available.
+   * @return {!Promise<!Array<!chrome.autofillPrivate.CountryEntry>>}
+   */
+  getCountryList() {}
+
+  /**
+   * Gets the address format for a given country code.
+   * @param {string} countryCode
+   * @return {!Promise<!chrome.autofillPrivate.AddressComponents>}
+   */
+  getAddressFormat(countryCode) {}
+}
+
+/**
+ * Default implementation. Override for testing.
+ * @implements {CountryDetailManager}
+ */
+export class CountryDetailManagerImpl {
+  /** @override */
+  getCountryList() {
+    return new Promise(function(callback) {
+      chrome.autofillPrivate.getCountryList(callback);
+    });
+  }
+
+  /** @override */
+  getAddressFormat(countryCode) {
+    return new Promise(function(callback) {
+      chrome.autofillPrivate.getAddressComponents(countryCode, callback);
+    });
+  }
+}
+
+addSingletonGetter(CountryDetailManagerImpl);

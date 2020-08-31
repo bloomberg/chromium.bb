@@ -18,8 +18,8 @@ using testing::Mock;
 using testing::SaveArg;
 using testing::StrictMock;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 constexpr Ssrc kSenderSsrc{1};
@@ -32,8 +32,7 @@ class CompoundRtcpParserTest : public testing::Test {
   CompoundRtcpParser* parser() { return &parser_; }
 
  private:
-  RtcpSession session_{kSenderSsrc, kReceiverSsrc,
-                       openscreen::platform::Clock::now()};
+  RtcpSession session_{kSenderSsrc, kReceiverSsrc, Clock::now()};
   StrictMock<MockCompoundRtcpParserClient> client_;
   CompoundRtcpParser parser_{&session_, &client_};
 };
@@ -404,5 +403,5 @@ TEST_F(CompoundRtcpParserTest, ParsesFeedbackWithAcks) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

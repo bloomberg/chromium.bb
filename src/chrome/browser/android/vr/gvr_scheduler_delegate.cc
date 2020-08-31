@@ -545,11 +545,11 @@ void GvrSchedulerDelegate::SubmitDrawnFrame(FrameType frame_type,
   }
   if (fence) {
     webxr_delayed_gvr_submit_.Reset(
-        base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
-                            base::Unretained(this)));
+        base::BindOnce(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
+                       base::Unretained(this)));
     task_runner()->PostTask(
         FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
-                                  frame_type, head_pose, base::Passed(&fence)));
+                                  frame_type, head_pose, std::move(fence)));
   } else {
     // Continue with submit immediately.
     DrawFrameSubmitNow(frame_type, head_pose);
@@ -574,8 +574,8 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
     }
     if (!fence->HasCompleted()) {
       webxr_delayed_gvr_submit_.Reset(
-          base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
-                              base::Unretained(this)));
+          base::BindOnce(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
+                         base::Unretained(this)));
       if (use_polling) {
         // Poll the fence status at a short interval. This burns some CPU, but
         // avoids excessive waiting on devices which don't handle timeouts
@@ -584,13 +584,12 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
         task_runner()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
-                           head_pose, base::Passed(&fence)),
+                           head_pose, std::move(fence)),
             kWebVRFenceCheckPollInterval);
       } else {
         task_runner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
-                           head_pose, base::Passed(&fence)));
+            FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
+                                      frame_type, head_pose, std::move(fence)));
       }
       return;
     }
@@ -675,7 +674,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
-  DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
+  DVLOG(2) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
 
   if (frame_type == kWebXrFrame) {
@@ -1121,7 +1120,7 @@ void GvrSchedulerDelegate::SubmitFrame(int16_t frame_index,
 
 void GvrSchedulerDelegate::SubmitFrameWithTextureHandle(
     int16_t frame_index,
-    mojo::ScopedHandle texture_handle) {
+    mojo::PlatformHandle texture_handle) {
   NOTREACHED();
 }
 

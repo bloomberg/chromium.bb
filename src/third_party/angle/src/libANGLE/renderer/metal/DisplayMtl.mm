@@ -37,7 +37,9 @@ DisplayImpl *CreateMetalDisplay(const egl::DisplayState &state)
     return new DisplayMtl(state);
 }
 
-DisplayMtl::DisplayMtl(const egl::DisplayState &state) : DisplayImpl(state), mUtils(this) {}
+DisplayMtl::DisplayMtl(const egl::DisplayState &state)
+    : DisplayImpl(state), mUtils(this), mGlslangInitialized(false)
+{}
 
 DisplayMtl::~DisplayMtl() {}
 
@@ -67,7 +69,11 @@ angle::Result DisplayMtl::initializeImpl(egl::Display *display)
 
         mCapsInitialized = false;
 
-        GlslangInitialize();
+        if (!mGlslangInitialized)
+        {
+            GlslangInitialize();
+            mGlslangInitialized = true;
+        }
 
         if (!mState.featuresAllDisabled)
         {
@@ -91,7 +97,11 @@ void DisplayMtl::terminate()
     mMetalDevice     = nil;
     mCapsInitialized = false;
 
-    GlslangRelease();
+    if (mGlslangInitialized)
+    {
+        GlslangRelease();
+        mGlslangInitialized = false;
+    }
 }
 
 bool DisplayMtl::testDeviceLost()
@@ -534,6 +544,9 @@ void DisplayMtl::ensureCapsInitialized() const
 
     // NOTE(hqle): support MSAA.
     mNativeCaps.maxSamples = 1;
+
+    // GL_APPLE_clip_distance
+    mNativeCaps.maxClipDistances = 8;
 }
 
 void DisplayMtl::initializeExtensions() const
@@ -543,7 +556,7 @@ void DisplayMtl::initializeExtensions() const
 
     // Enable this for simple buffer readback testing, but some functionality is missing.
     // NOTE(hqle): Support full mapBufferRange extension.
-    mNativeExtensions.mapBuffer              = true;
+    mNativeExtensions.mapBufferOES           = true;
     mNativeExtensions.mapBufferRange         = false;
     mNativeExtensions.textureStorage         = true;
     mNativeExtensions.drawBuffers            = false;
@@ -554,17 +567,17 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.copyCompressedTexture  = false;
     mNativeExtensions.debugMarker            = false;
     mNativeExtensions.robustness             = true;
-    mNativeExtensions.textureBorderClamp     = false;  // not implemented yet
+    mNativeExtensions.textureBorderClampOES  = false;  // not implemented yet
     mNativeExtensions.translatedShaderSource = true;
     mNativeExtensions.discardFramebuffer     = true;
 
     // Enable EXT_blend_minmax
     mNativeExtensions.blendMinMax = true;
 
-    mNativeExtensions.eglImage         = false;
-    mNativeExtensions.eglImageExternal = false;
+    mNativeExtensions.eglImageOES         = false;
+    mNativeExtensions.eglImageExternalOES = false;
     // NOTE(hqle): Support GL_OES_EGL_image_external_essl3.
-    mNativeExtensions.eglImageExternalEssl3 = false;
+    mNativeExtensions.eglImageExternalEssl3OES = false;
 
     mNativeExtensions.memoryObject   = false;
     mNativeExtensions.memoryObjectFd = false;
@@ -577,7 +590,7 @@ void DisplayMtl::initializeExtensions() const
 
     mNativeExtensions.robustBufferAccessBehavior = false;
 
-    mNativeExtensions.eglSync = false;
+    mNativeExtensions.eglSyncOES = false;
 
     // NOTE(hqle): support occlusion query
     mNativeExtensions.occlusionQueryBoolean = false;
@@ -590,13 +603,16 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.maxTextureAnisotropy     = 16;
 
     // NOTE(hqle): Support true NPOT textures.
-    mNativeExtensions.textureNPOT = false;
+    mNativeExtensions.textureNPOTOES = false;
 
     mNativeExtensions.texture3DOES = false;
 
-    mNativeExtensions.standardDerivatives = true;
+    mNativeExtensions.standardDerivativesOES = true;
 
-    mNativeExtensions.elementIndexUint = true;
+    mNativeExtensions.elementIndexUintOES = true;
+
+    // GL_APPLE_clip_distance
+    mNativeExtensions.clipDistanceAPPLE = true;
 }
 
 void DisplayMtl::initializeTextureCaps() const
@@ -608,17 +624,25 @@ void DisplayMtl::initializeTextureCaps() const
 
     // Re-verify texture extensions.
     mNativeExtensions.setTextureExtensionSupport(mNativeTextureCaps);
+
+    // Disable all depth buffer and stencil buffer readback extensions until we need them
+    mNativeExtensions.readDepthNV         = false;
+    mNativeExtensions.readStencilNV       = false;
+    mNativeExtensions.depthBufferFloat2NV = false;
 }
 
 void DisplayMtl::initializeFeatures()
 {
     // default values:
     mFeatures.hasBaseVertexInstancedDraw.enabled        = true;
+    mFeatures.hasDepthTextureFiltering.enabled          = false;
     mFeatures.hasNonUniformDispatch.enabled             = true;
     mFeatures.hasTextureSwizzle.enabled                 = false;
     mFeatures.allowSeparatedDepthStencilBuffers.enabled = false;
 
 #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    mFeatures.hasDepthTextureFiltering.enabled = true;
+
     // Texture swizzle is only supported if macos sdk 10.15 is present
 #    if defined(__MAC_10_15)
     if (ANGLE_APPLE_AVAILABLE_XC(10.15, 13.0))

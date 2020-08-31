@@ -96,13 +96,13 @@ class MockCastSocketService : public CastSocketService {
 
   MOCK_METHOD2(OpenSocketInternal,
                void(const net::IPEndPoint& ip_endpoint,
-                    const base::Callback<void(CastSocket*)>& open_cb));
+                    const base::RepeatingCallback<void(CastSocket*)>& open_cb));
   MOCK_CONST_METHOD1(GetSocket, CastSocket*(int channel_id));
 };
 
 class MockCastSocket : public CastSocket {
  public:
-  using MockOnOpenCallback = base::Callback<void(CastSocket* socket)>;
+  using MockOnOpenCallback = base::RepeatingCallback<void(CastSocket* socket)>;
 
   MockCastSocket();
   ~MockCastSocket() override;
@@ -167,6 +167,8 @@ class MockCastMessageHandler : public CastMessageHandler {
 
   MOCK_METHOD3(EnsureConnection,
                void(int, const std::string&, const std::string&));
+  MOCK_METHOD3(CloseConnection,
+               void(int, const std::string&, const std::string&));
   MOCK_METHOD3(RequestAppAvailability,
                void(CastSocket* socket,
                     const std::string& app_id,
@@ -176,10 +178,12 @@ class MockCastMessageHandler : public CastMessageHandler {
                void(int,
                     const std::vector<std::string>&,
                     const BroadcastRequest&));
-  MOCK_METHOD4(LaunchSession,
+  MOCK_METHOD6(LaunchSession,
                void(int,
                     const std::string&,
                     base::TimeDelta,
+                    const std::vector<std::string>&,
+                    const std::string&,
                     LaunchSessionCallback callback));
   MOCK_METHOD4(StopSession,
                void(int channel_id,

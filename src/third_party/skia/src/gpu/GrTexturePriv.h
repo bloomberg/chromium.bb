@@ -8,8 +8,8 @@
 #ifndef GrTexturePriv_DEFINED
 #define GrTexturePriv_DEFINED
 
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrSamplerState.h"
+#include "src/gpu/GrTexture.h"
 
 /** Class that adds methods to GrTexture that are only intended for use internal to Skia.
     This class is purely a privileged window into GrTexture. It should never have additional data
@@ -47,13 +47,9 @@ public:
     bool hasRestrictedSampling() const {
         return GrTextureTypeHasRestrictedSampling(this->textureType());
     }
-    /** Filtering is clamped to this value. */
-    GrSamplerState::Filter highestFilterMode() const {
-        return this->hasRestrictedSampling() ? GrSamplerState::Filter::kBilerp
-                                             : GrSamplerState::Filter::kMipMap;
-    }
 
-    static void ComputeScratchKey(GrPixelConfig config,
+    static void ComputeScratchKey(const GrCaps& caps,
+                                  const GrBackendFormat& format,
                                   SkISize dimensions,
                                   GrRenderable,
                                   int sampleCnt,

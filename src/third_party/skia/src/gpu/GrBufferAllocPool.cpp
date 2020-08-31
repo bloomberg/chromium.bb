@@ -178,6 +178,14 @@ void GrBufferAllocPool::validate(bool unusedBlockAllowed) const {
 }
 #endif
 
+static inline size_t align_up_pad(size_t x, size_t alignment) {
+    return (alignment - x % alignment) % alignment;
+}
+
+static inline size_t align_down(size_t x, uint32_t alignment) {
+    return (x / alignment) * alignment;
+}
+
 void* GrBufferAllocPool::makeSpace(size_t size,
                                    size_t alignment,
                                    sk_sp<const GrBuffer>* buffer,
@@ -190,7 +198,7 @@ void* GrBufferAllocPool::makeSpace(size_t size,
     if (fBufferPtr) {
         BufferBlock& back = fBlocks.back();
         size_t usedBytes = back.fBuffer->size() - back.fBytesFree;
-        size_t pad = GrSizeAlignUpPad(usedBytes, alignment);
+        size_t pad = align_up_pad(usedBytes, alignment);
         SkSafeMath safeMath;
         size_t alignedSize = safeMath.add(pad, size);
         if (!safeMath.ok()) {
@@ -245,7 +253,7 @@ void* GrBufferAllocPool::makeSpaceAtLeast(size_t minSize,
     if (fBufferPtr) {
         BufferBlock& back = fBlocks.back();
         size_t usedBytes = back.fBuffer->size() - back.fBytesFree;
-        size_t pad = GrSizeAlignUpPad(usedBytes, alignment);
+        size_t pad = align_up_pad(usedBytes, alignment);
         if ((minSize + pad) <= back.fBytesFree) {
             // Consume padding first, to make subsequent alignment math easier
             memset((void*)(reinterpret_cast<intptr_t>(fBufferPtr) + usedBytes), 0, pad);
@@ -257,10 +265,10 @@ void* GrBufferAllocPool::makeSpaceAtLeast(size_t minSize,
             // correctly)
             size_t size;
             if (back.fBytesFree >= fallbackSize) {
-                SkASSERT(GrSizeAlignDown(fallbackSize, alignment) == fallbackSize);
+                SkASSERT(align_down(fallbackSize, alignment) == fallbackSize);
                 size = fallbackSize;
             } else {
-                size = GrSizeAlignDown(back.fBytesFree, alignment);
+                size = align_down(back.fBytesFree, alignment);
             }
             *offset = usedBytes;
             *buffer = back.fBuffer;
@@ -325,7 +333,7 @@ void GrBufferAllocPool::putBack(size_t bytes) {
 }
 
 bool GrBufferAllocPool::createBlock(size_t requestSize) {
-    size_t size = SkTMax(requestSize, kDefaultBufferSize);
+    size_t size = std::max(requestSize, kDefaultBufferSize);
 
     VALIDATE();
 
@@ -422,13 +430,20 @@ void GrBufferAllocPool::flushCpuData(const BufferBlock& block, size_t flushSize)
 
 sk_sp<GrBuffer> GrBufferAllocPool::getBuffer(size_t size) {
     auto resourceProvider = fGpu->getContext()->priv().resourceProvider();
-
-    if (fGpu->caps()->preferClientSideDynamicBuffers()) {
-        bool mustInitialize = fGpu->caps()->mustClearUploadedBufferData();
-        return fCpuBufferCache ? fCpuBufferCache->makeBuffer(size, mustInitialize)
-                               : GrCpuBuffer::Make(size);
+    if (!fGpu->caps()->preferClientSideDynamicBuffers()) {
+        // Indirect draw commands for a polyfill must reside in a CPU buffer.
+        bool mayNeedIndirectDrawPolyfill = (fBufferType == GrGpuBufferType::kDrawIndirect) &&
+                                           (!fGpu->caps()->nativeDrawIndirectSupport() ||
+                                            fGpu->caps()->nativeDrawIndexedIndirectIsBroken());
+        if (!mayNeedIndirectDrawPolyfill) {
+            // We can create an actual GPU buffer.
+            return resourceProvider->createBuffer(size, fBufferType, kDynamic_GrAccessPattern);
+        }
     }
-    return resourceProvider->createBuffer(size, fBufferType, kDynamic_GrAccessPattern);
+    // Create a CPU buffer.
+    bool mustInitialize = fGpu->caps()->mustClearUploadedBufferData();
+    return fCpuBufferCache ? fCpuBufferCache->makeBuffer(size, mustInitialize)
+                           : GrCpuBuffer::Make(size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

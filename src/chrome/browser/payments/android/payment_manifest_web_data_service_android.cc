@@ -8,9 +8,10 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "chrome/android/chrome_jni_headers/PaymentManifestWebDataService_jni.h"
+#include "chrome/browser/payments/android/jni_headers/PaymentManifestWebDataService_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"

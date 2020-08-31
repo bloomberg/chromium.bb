@@ -25,7 +25,8 @@ namespace internal {
 
 class DisplayNamesInternal;
 
-class JSDisplayNames : public JSObject {
+class JSDisplayNames
+    : public TorqueGeneratedJSDisplayNames<JSDisplayNames, JSObject> {
  public:
   // Creates display names object with properties derived from input
   // locales and options.
@@ -65,34 +66,20 @@ class JSDisplayNames : public JSObject {
   inline void set_fallback(Fallback fallback);
   inline Fallback fallback() const;
 
-  DECL_CAST(JSDisplayNames)
-
-// Bit positions in |flags|.
-#define FLAGS_BIT_FIELDS(V, _) \
-  V(StyleBits, Style, 2, _)    \
-  V(FallbackBits, Fallback, 1, _)
-  DEFINE_BIT_FIELDS(FLAGS_BIT_FIELDS)
-#undef FLAGS_BIT_FIELDS
+  // Bit positions in |flags|.
+  DEFINE_TORQUE_GENERATED_JS_DISPLAY_NAMES_FLAGS()
 
   STATIC_ASSERT(Style::kLong <= StyleBits::kMax);
   STATIC_ASSERT(Style::kShort <= StyleBits::kMax);
   STATIC_ASSERT(Style::kNarrow <= StyleBits::kMax);
-  STATIC_ASSERT(Fallback::kCode <= FallbackBits::kMax);
-  STATIC_ASSERT(Fallback::kNone <= FallbackBits::kMax);
-
-  // [flags] Bit field containing various flags about the function.
-  DECL_INT_ACCESSORS(flags)
+  STATIC_ASSERT(Fallback::kCode <= FallbackBit::kMax);
+  STATIC_ASSERT(Fallback::kNone <= FallbackBit::kMax);
 
   DECL_ACCESSORS(internal, Managed<DisplayNamesInternal>)
 
   DECL_PRINTER(JSDisplayNames)
-  DECL_VERIFIER(JSDisplayNames)
 
-  // Layout description.
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JS_DISPLAY_NAMES_FIELDS)
-
-  OBJECT_CONSTRUCTORS(JSDisplayNames, JSObject);
+  TQ_OBJECT_CONSTRUCTORS(JSDisplayNames)
 };
 
 }  // namespace internal

@@ -7,12 +7,13 @@ package org.chromium.chrome.browser.signin;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -28,10 +29,10 @@ public class SignOutDialogFragment extends DialogFragment implements
     /**
      * The extra key used to specify the GAIA service that triggered this dialog.
      */
-    public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
+    private static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
     /**
-     * Receives updates when the user clicks "Sign out" or dismisses the dialog.
+     * Receives updates when the user clicks "Sign out".
      */
     public interface SignOutDialogListener {
         /**
@@ -40,17 +41,8 @@ public class SignOutDialogFragment extends DialogFragment implements
          * @param forceWipeUserData Whether the user selected to wipe local device data.
          */
         void onSignOutClicked(boolean forceWipeUserData);
-
-        /**
-         * Called when the dialog is dismissed.
-         *
-         * @param signOutClicked Whether the user clicked the "sign out" button before the dialog
-         *                       was dismissed.
-         */
-        void onSignOutDialogDismissed(boolean signOutClicked);
     }
 
-    private boolean mSignOutClicked;
     private CheckBox mWipeUserData;
 
     /**
@@ -58,13 +50,21 @@ public class SignOutDialogFragment extends DialogFragment implements
      */
     private @GAIAServiceType int mGaiaServiceType = GAIAServiceType.GAIA_SERVICE_TYPE_NONE;
 
+    public static SignOutDialogFragment create(@GAIAServiceType int gaiaServiceType) {
+        SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, gaiaServiceType);
+        signOutFragment.setArguments(args);
+        return signOutFragment;
+    }
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments() != null) {
             mGaiaServiceType = getArguments().getInt(
                     SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
-        String domain = IdentityServicesProvider.getSigninManager().getManagementDomain();
+        String domain = IdentityServicesProvider.get().getSigninManager().getManagementDomain();
         if (domain != null) {
             return createDialogForManagedAccount(domain);
         }
@@ -100,9 +100,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
-
-            mSignOutClicked = true;
-            if (IdentityServicesProvider.getSigninManager().getManagementDomain() == null) {
+            if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() == null) {
                 RecordHistogram.recordBooleanHistogram(
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
             }
@@ -115,8 +113,5 @@ public class SignOutDialogFragment extends DialogFragment implements
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
         SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
-
-        SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
-        targetFragment.onSignOutDialogDismissed(mSignOutClicked);
     }
 }

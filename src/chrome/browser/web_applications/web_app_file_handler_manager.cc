@@ -4,8 +4,11 @@
 
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 
 namespace web_app {
 
@@ -14,10 +17,12 @@ WebAppFileHandlerManager::WebAppFileHandlerManager(Profile* profile)
 
 WebAppFileHandlerManager::~WebAppFileHandlerManager() = default;
 
-const std::vector<apps::FileHandlerInfo>*
-WebAppFileHandlerManager::GetFileHandlers(const AppId& app_id) {
-  NOTIMPLEMENTED();
-  return nullptr;
+const apps::FileHandlers* WebAppFileHandlerManager::GetAllFileHandlers(
+    const AppId& app_id) {
+  WebAppRegistrar* web_app_registrar = registrar()->AsWebAppRegistrar();
+  DCHECK(web_app_registrar);
+
+  return &web_app_registrar->GetAppById(app_id)->file_handlers();
 }
 
 }  // namespace web_app

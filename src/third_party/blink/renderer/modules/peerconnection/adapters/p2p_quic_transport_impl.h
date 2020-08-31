@@ -12,7 +12,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
@@ -100,7 +100,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   bool CanSendDatagram();
 
   // quic::QuicSession override.
-  void OnMessageReceived(quic::QuicStringPiece message) override;
+  void OnMessageReceived(quiche::QuicheStringPiece message) override;
   void OnMessageLost(quic::QuicMessageId message_id) override;
   void OnCanWrite() override;
 
@@ -139,8 +139,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // quic::QuicSession.
   P2PQuicStreamImpl* CreateOutgoingBidirectionalStream();
 
-  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
+  void OnOneRttKeysAvailable() override;
 
  private:
   // This is for testing connection failures and handshake failures.
@@ -180,7 +180,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   std::unique_ptr<quic::QuicCryptoClientConfig> crypto_client_config_;
   // Used by server |crypto_stream_| to track most recently compressed certs.
   std::unique_ptr<quic::QuicCompressedCertsCache> compressed_certs_cache_;
-  std::unique_ptr<quic::QuicCryptoServerStream::Helper> server_stream_helper_;
+  std::unique_ptr<quic::QuicCryptoServerStreamBase::Helper>
+      server_stream_helper_;
   // Owned by the P2PQuicTransportImpl. |helper_| is placed before
   // |connection_| to ensure it outlives it.
   std::unique_ptr<quic::QuicConnectionHelperInterface> helper_;

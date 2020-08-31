@@ -38,25 +38,25 @@ void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* cross_axis_values[4] = {"Stretch", "Start", "Center",
                                              "End"};
 
-  orientation_ = CreateCombobox(base::ASCIIToUTF16("Orientation"),
-                                orientation_values, 2, &vertical_pos);
-  main_axis_alignment_ = CreateCombobox(base::ASCIIToUTF16("Main axis"),
-                                        main_axis_values, 3, &vertical_pos);
-  cross_axis_alignment_ = CreateCombobox(base::ASCIIToUTF16("Cross axis"),
-                                         cross_axis_values, 4, &vertical_pos);
+  orientation_ = CreateAndAddCombobox(base::ASCIIToUTF16("Orientation"),
+                                      orientation_values, 2, &vertical_pos);
+  main_axis_alignment_ = CreateAndAddCombobox(
+      base::ASCIIToUTF16("Main axis"), main_axis_values, 3, &vertical_pos);
+  cross_axis_alignment_ = CreateAndAddCombobox(
+      base::ASCIIToUTF16("Cross axis"), cross_axis_values, 4, &vertical_pos);
 
   between_child_spacing_ =
-      CreateTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
+      CreateAndAddTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
   default_flex_ =
-      CreateTextfield(base::ASCIIToUTF16("Default flex"), &vertical_pos);
-  min_cross_axis_size_ =
-      CreateTextfield(base::ASCIIToUTF16("Min cross axis"), &vertical_pos);
+      CreateAndAddTextfield(base::ASCIIToUTF16("Default flex"), &vertical_pos);
+  min_cross_axis_size_ = CreateAndAddTextfield(
+      base::ASCIIToUTF16("Min cross axis"), &vertical_pos);
 
   CreateMarginsTextFields(base::ASCIIToUTF16("Insets"), &border_insets_,
                           &vertical_pos);
 
-  collapse_margins_ =
-      CreateCheckbox(base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
+  collapse_margins_ = CreateAndAddCheckbox(
+      base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
 
   UpdateLayoutManager();
 }

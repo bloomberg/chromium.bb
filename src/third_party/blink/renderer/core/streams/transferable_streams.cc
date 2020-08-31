@@ -10,11 +10,11 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
@@ -812,21 +812,25 @@ void CrossRealmTransformReadable::HandleMessage(MessageType type,
                                                 v8::Local<v8::Value> value) {
   switch (type) {
     case MessageType::kChunk: {
-      // This can't throw because we always use the default strategy size
-      // algorithm, which doesn't throw, and always returns a valid value of
-      // 1.0.
-      ReadableStreamDefaultController::Enqueue(script_state_, controller_,
-                                               value, ASSERT_NO_EXCEPTION);
+      if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+        // This can't throw because we always use the default strategy size
+        // algorithm, which doesn't throw, and always returns a valid value of
+        // 1.0.
+        ReadableStreamDefaultController::Enqueue(script_state_, controller_,
+                                                 value, ASSERT_NO_EXCEPTION);
 
-      backpressure_promise_->ResolveWithUndefined(script_state_);
-      backpressure_promise_ =
-          MakeGarbageCollected<StreamPromiseResolver>(script_state_);
+        backpressure_promise_->ResolveWithUndefined(script_state_);
+        backpressure_promise_ =
+            MakeGarbageCollected<StreamPromiseResolver>(script_state_);
+      }
       return;
     }
 
     case MessageType::kClose:
       finished_ = true;
-      ReadableStreamDefaultController::Close(script_state_, controller_);
+      if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+        ReadableStreamDefaultController::Close(script_state_, controller_);
+      }
       message_port_->close();
       return;
 

@@ -11,7 +11,8 @@ import androidx.annotation.StringRes;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.textbubble.ImageTextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.ImageTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -29,7 +30,11 @@ class KeyboardAccessoryIPHUtils {
      * @param feature The feature to emit a filling event for. Fails if no event to emit.
      */
     static void emitFillingEvent(String feature) {
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed not to cause data leakage from incognito to regular profile.
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         if (!tracker.isInitialized()) return;
         switch (feature) {
             case FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE:
@@ -55,13 +60,18 @@ class KeyboardAccessoryIPHUtils {
      * @param rootView The {@link View} used to determine the maximal dimensions for the bubble.
      */
     static void showHelpBubble(String feature, ChipView view, View rootView) {
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed not to cause data leakage from incognito to regular profile.
+        final Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         if (!tracker.isInitialized()) return;
         if (!tracker.shouldTriggerHelpUI(feature)) return; // This call records the IPH intent.
         @StringRes
         int helpText = getHelpTextForFeature(feature);
         ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), rootView, helpText,
-                helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome);
+                helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome,
+                AccessibilityUtil.isAccessibilityEnabled());
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();
         // To emphasize which chip is pointed to, set selected to true for the built-in highlight.

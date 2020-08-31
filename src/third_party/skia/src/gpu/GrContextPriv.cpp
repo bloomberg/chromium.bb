@@ -8,19 +8,20 @@
 #include "src/gpu/GrContextPriv.h"
 
 #include "include/gpu/GrContextThreadSafeProxy.h"
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrContextThreadSafeProxyPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrSkSLFPFactoryCache.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/GrSurfaceContextPriv.h"
 #include "src/gpu/GrSurfacePriv.h"
-#include "src/gpu/GrTextureContext.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/effects/generated/GrConfigConversionEffect.h"
+#include "src/gpu/text/GrAtlasManager.h"
 #include "src/gpu/text/GrTextBlobCache.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
@@ -36,166 +37,8 @@ sk_sp<const GrCaps> GrContextPriv::refCaps() const {
     return fContext->refCaps();
 }
 
-sk_sp<GrSkSLFPFactoryCache> GrContextPriv::fpFactoryCache() {
-    return fContext->fpFactoryCache();
-}
-
-sk_sp<GrOpMemoryPool> GrContextPriv::refOpMemoryPool() {
-    return fContext->refOpMemoryPool();
-}
-
 void GrContextPriv::addOnFlushCallbackObject(GrOnFlushCallbackObject* onFlushCBObject) {
     fContext->addOnFlushCallbackObject(onFlushCBObject);
-}
-
-std::unique_ptr<GrSurfaceContext> GrContextPriv::makeWrappedSurfaceContext(
-        sk_sp<GrSurfaceProxy> proxy,
-        GrColorType colorType,
-        SkAlphaType alphaType,
-        sk_sp<SkColorSpace> colorSpace,
-        const SkSurfaceProps* props) {
-    return fContext->makeWrappedSurfaceContext(std::move(proxy), colorType, alphaType,
-                                               std::move(colorSpace), props);
-}
-
-std::unique_ptr<GrTextureContext> GrContextPriv::makeDeferredTextureContext(
-        SkBackingFit fit,
-        int width,
-        int height,
-        GrColorType colorType,
-        SkAlphaType alphaType,
-        sk_sp<SkColorSpace> colorSpace,
-        GrMipMapped mipMapped,
-        GrSurfaceOrigin origin,
-        SkBudgeted budgeted,
-        GrProtected isProtected) {
-    return fContext->makeDeferredTextureContext(fit, width, height, colorType, alphaType,
-                                                std::move(colorSpace), mipMapped, origin, budgeted,
-                                                isProtected);
-}
-
-std::unique_ptr<GrRenderTargetContext> GrContextPriv::makeDeferredRenderTargetContext(
-        SkBackingFit fit,
-        int width,
-        int height,
-        GrColorType colorType,
-        sk_sp<SkColorSpace> colorSpace,
-        int sampleCnt,
-        GrMipMapped mipMapped,
-        GrSurfaceOrigin origin,
-        const SkSurfaceProps* surfaceProps,
-        SkBudgeted budgeted,
-        GrProtected isProtected) {
-    return fContext->makeDeferredRenderTargetContext(fit, width, height, colorType,
-                                                     std::move(colorSpace), sampleCnt, mipMapped,
-                                                     origin, surfaceProps, budgeted, isProtected);
-}
-
-std::unique_ptr<GrRenderTargetContext> GrContextPriv::makeDeferredRenderTargetContextWithFallback(
-        SkBackingFit fit, int width, int height, GrColorType colorType,
-        sk_sp<SkColorSpace> colorSpace, int sampleCnt, GrMipMapped mipMapped,
-        GrSurfaceOrigin origin, const SkSurfaceProps* surfaceProps, SkBudgeted budgeted,
-        GrProtected isProtected) {
-    return fContext->makeDeferredRenderTargetContextWithFallback(
-            fit, width, height, colorType, std::move(colorSpace), sampleCnt, mipMapped, origin,
-            surfaceProps, budgeted, isProtected);
-}
-
-std::unique_ptr<GrTextureContext> GrContextPriv::makeBackendTextureContext(
-        const GrBackendTexture& tex,
-        GrSurfaceOrigin origin,
-        GrColorType colorType,
-        SkAlphaType alphaType,
-        sk_sp<SkColorSpace> colorSpace) {
-    ASSERT_SINGLE_OWNER
-
-    sk_sp<GrSurfaceProxy> proxy = this->proxyProvider()->wrapBackendTexture(
-            tex, colorType, origin, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return this->drawingManager()->makeTextureContext(std::move(proxy), colorType, alphaType,
-                                                      std::move(colorSpace));
-}
-
-std::unique_ptr<GrRenderTargetContext> GrContextPriv::makeBackendTextureRenderTargetContext(
-        const GrBackendTexture& tex,
-        GrSurfaceOrigin origin,
-        int sampleCnt,
-        GrColorType colorType,
-        sk_sp<SkColorSpace> colorSpace,
-        const SkSurfaceProps* props,
-        ReleaseProc releaseProc,
-        ReleaseContext releaseCtx) {
-    ASSERT_SINGLE_OWNER
-    SkASSERT(sampleCnt > 0);
-
-    sk_sp<GrTextureProxy> proxy(this->proxyProvider()->wrapRenderableBackendTexture(
-            tex, origin, sampleCnt, colorType, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo,
-            releaseProc, releaseCtx));
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return this->drawingManager()->makeRenderTargetContext(std::move(proxy), colorType,
-                                                           std::move(colorSpace), props);
-}
-
-std::unique_ptr<GrRenderTargetContext> GrContextPriv::makeBackendRenderTargetRenderTargetContext(
-        const GrBackendRenderTarget& backendRT,
-        GrSurfaceOrigin origin,
-        GrColorType colorType,
-        sk_sp<SkColorSpace> colorSpace,
-        const SkSurfaceProps* surfaceProps,
-        ReleaseProc releaseProc,
-        ReleaseContext releaseCtx) {
-    ASSERT_SINGLE_OWNER
-
-    sk_sp<GrSurfaceProxy> proxy = this->proxyProvider()->wrapBackendRenderTarget(
-            backendRT, colorType, origin, releaseProc, releaseCtx);
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return this->drawingManager()->makeRenderTargetContext(std::move(proxy), colorType,
-                                                           std::move(colorSpace), surfaceProps);
-}
-
-std::unique_ptr<GrRenderTargetContext>
-GrContextPriv::makeBackendTextureAsRenderTargetRenderTargetContext(const GrBackendTexture& tex,
-                                                                   GrSurfaceOrigin origin,
-                                                                   int sampleCnt,
-                                                                   GrColorType colorType,
-                                                                   sk_sp<SkColorSpace> colorSpace,
-                                                                   const SkSurfaceProps* props) {
-    ASSERT_SINGLE_OWNER
-    SkASSERT(sampleCnt > 0);
-    sk_sp<GrSurfaceProxy> proxy(
-            this->proxyProvider()->wrapBackendTextureAsRenderTarget(tex, colorType,
-                                                                    origin, sampleCnt));
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return this->drawingManager()->makeRenderTargetContext(std::move(proxy), colorType,
-                                                           std::move(colorSpace), props);
-}
-
-std::unique_ptr<GrRenderTargetContext> GrContextPriv::makeVulkanSecondaryCBRenderTargetContext(
-        const SkImageInfo& imageInfo, const GrVkDrawableInfo& vkInfo, const SkSurfaceProps* props) {
-    ASSERT_SINGLE_OWNER
-    sk_sp<GrSurfaceProxy> proxy(
-            this->proxyProvider()->wrapVulkanSecondaryCBAsRenderTarget(imageInfo, vkInfo));
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return this->drawingManager()->makeRenderTargetContext(
-            std::move(proxy),
-            SkColorTypeToGrColorType(imageInfo.colorType()),
-            imageInfo.refColorSpace(),
-            props);
 }
 
 GrSemaphoresSubmitted GrContextPriv::flushSurfaces(GrSurfaceProxy* proxies[], int numProxies,
@@ -226,14 +69,18 @@ void GrContextPriv::copyRenderTasksFromDDL(const SkDeferredDisplayList* ddl,
     fContext->drawingManager()->copyRenderTasksFromDDL(ddl, newDest);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+bool GrContextPriv::compile(const GrProgramDesc& desc, const GrProgramInfo& info) {
+    GrGpu* gpu = this->getGpu();
+    if (!gpu) {
+        return false;
+    }
 
-#if GR_TEST_UTILS
-void GrContextPriv::resetGpuStats() const {
-#if GR_GPU_STATS
-    fContext->fGpu->stats()->reset();
-#endif
+    return gpu->compile(desc, info);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+#if GR_TEST_UTILS
 
 void GrContextPriv::dumpCacheStats(SkString* out) const {
 #if GR_CACHE_STATS
@@ -252,6 +99,13 @@ void GrContextPriv::printCacheStats() const {
     SkString out;
     this->dumpCacheStats(&out);
     SkDebugf("%s", out.c_str());
+}
+
+/////////////////////////////////////////////////
+void GrContextPriv::resetGpuStats() const {
+#if GR_GPU_STATS
+    fContext->fGpu->stats()->reset();
+#endif
 }
 
 void GrContextPriv::dumpGpuStats(SkString* out) const {
@@ -273,6 +127,33 @@ void GrContextPriv::printGpuStats() const {
     SkDebugf("%s", out.c_str());
 }
 
+/////////////////////////////////////////////////
+void GrContextPriv::resetContextStats() const {
+#if GR_GPU_STATS
+    fContext->stats()->reset();
+#endif
+}
+
+void GrContextPriv::dumpContextStats(SkString* out) const {
+#if GR_GPU_STATS
+    return fContext->stats()->dump(out);
+#endif
+}
+
+void GrContextPriv::dumpContextStatsKeyValuePairs(SkTArray<SkString>* keys,
+                                                  SkTArray<double>* values) const {
+#if GR_GPU_STATS
+    return fContext->stats()->dumpKeyValuePairs(keys, values);
+#endif
+}
+
+void GrContextPriv::printContextStats() const {
+    SkString out;
+    this->dumpContextStats(&out);
+    SkDebugf("%s", out.c_str());
+}
+
+/////////////////////////////////////////////////
 void GrContextPriv::testingOnly_setTextBlobCacheLimit(size_t bytes) {
     fContext->priv().getTextBlobCache()->setBudget(bytes);
 }
@@ -284,14 +165,15 @@ sk_sp<SkImage> GrContextPriv::testingOnly_getFontAtlasImage(GrMaskFormat format,
     }
 
     unsigned int numActiveProxies;
-    const sk_sp<GrTextureProxy>* proxies = atlasManager->getProxies(format, &numActiveProxies);
-    if (index >= numActiveProxies || !proxies || !proxies[index]) {
+    const GrSurfaceProxyView* views = atlasManager->getViews(format, &numActiveProxies);
+    if (index >= numActiveProxies || !views || !views[index].proxy()) {
         return nullptr;
     }
 
-    SkASSERT(proxies[index]->priv().isExact());
+    SkColorType colorType = GrColorTypeToSkColorType(GrMaskFormatToColorType(format));
+    SkASSERT(views[index].proxy()->priv().isExact());
     sk_sp<SkImage> image(new SkImage_Gpu(sk_ref_sp(fContext), kNeedNewImageUniqueID,
-                                         kPremul_SkAlphaType, proxies[index], nullptr));
+                                         views[index], colorType, kPremul_SkAlphaType, nullptr));
     return image;
 }
 

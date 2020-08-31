@@ -44,6 +44,21 @@ class DownloadItemFactory;
 class DownloadItemImpl;
 }
 
+// These values are persisted to logs (Download.InitiatedByWindowOpener).
+// Entries should not be renumbered and numeric values should never be reused.
+// Openee is the tab over which the download is initiated.
+// Opener is the tab that opened the openee tab and initiated a download on it.
+enum class InitiatedByWindowOpenerType {
+  kSameOrigin = 0,
+  // Openee and opener are cross origin.
+  kCrossOrigin = 1,
+  // Openee and opener are cross origin but same site (i.e. same eTLD+1).
+  kSameSite = 2,
+  // Either the openee or the opener is not HTTP or HTTPS, e.g. about:blank.
+  kNonHTTPOrHTTPS = 3,
+  kMaxValue = kNonHTTPOrHTTPS
+};
+
 namespace content {
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
@@ -153,7 +168,8 @@ class CONTENT_EXPORT DownloadManagerImpl
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       net::CertStatus cert_status,
-      int frame_tree_node_id);
+      int frame_tree_node_id,
+      bool from_download_cross_origin_redirect);
 
  private:
   using DownloadSet = std::set<download::DownloadItem*>;
@@ -212,12 +228,15 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Overridden from DownloadItemImplDelegate
   void DetermineDownloadTarget(download::DownloadItemImpl* item,
-                               const DownloadTargetCallback& callback) override;
+                               DownloadTargetCallback callback) override;
   bool ShouldCompleteDownload(download::DownloadItemImpl* item,
-                              const base::Closure& complete_callback) override;
-  bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
+                              base::OnceClosure complete_callback) override;
+  bool ShouldAutomaticallyOpenFile(const GURL& url,
+                                   const base::FilePath& path) override;
+  bool ShouldAutomaticallyOpenFileByPolicy(const GURL& url,
+                                           const base::FilePath& path) override;
   bool ShouldOpenDownload(download::DownloadItemImpl* item,
-                          const ShouldOpenDownloadCallback& callback) override;
+                          ShouldOpenDownloadCallback callback) override;
   void CheckForFileRemoval(download::DownloadItemImpl* download_item) override;
   std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
@@ -229,7 +248,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   void DownloadInterrupted(download::DownloadItemImpl* download) override;
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
-  service_manager::Connector* GetServiceManagerConnector() override;
+  void BindWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
   download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
       override;
 
@@ -340,8 +360,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // The download GUIDs that are cleared up on startup.
   std::set<std::string> cleared_download_guids_on_startup_;
-  int cancelled_download_cleared_from_history_;
-  int interrupted_download_cleared_from_history_;
 
   // In progress downloads returned by |in_progress_manager_| that are not yet
   // added to |downloads_|. If a download was started without launching full

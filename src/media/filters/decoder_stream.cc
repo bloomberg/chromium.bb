@@ -79,7 +79,8 @@ const char* GetPrepareTraceString<DemuxerStream::AUDIO>() {
 }
 
 template <DemuxerStream::Type StreamType>
-const char* GetStatusString(typename DecoderStream<StreamType>::Status status) {
+const char* GetStatusString(
+    typename DecoderStream<StreamType>::ReadStatus status) {
   switch (status) {
     case DecoderStream<StreamType>::OK:
       return "okay";
@@ -90,6 +91,9 @@ const char* GetStatusString(typename DecoderStream<StreamType>::Status status) {
     case DecoderStream<StreamType>::DECODE_ERROR:
       return "decode_error";
   }
+
+  NOTREACHED();
+  return "";
 }
 
 template <DemuxerStream::Type StreamType>
@@ -245,7 +249,7 @@ void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   // it resets. |reset_cb_| will be fired in OnDecoderReset(), after the
   // decrypting demuxer stream finishes its reset.
   if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Reset(base::BindRepeating(
+    decrypting_demuxer_stream_->Reset(base::BindOnce(
         &DecoderStream<StreamType>::ResetDecoder, weak_factory_.GetWeakPtr()));
     return;
   }
@@ -318,8 +322,8 @@ void DecoderStream<StreamType>::SkipPrepareUntil(
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder() {
   decoder_selector_.SelectDecoder(
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecoderSelected,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DecoderStream<StreamType>::OnDecoderSelected,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
                           fallback_weak_factory_.GetWeakPtr()));
 }
@@ -420,7 +424,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::SatisfyRead(Status status,
+void DecoderStream<StreamType>::SatisfyRead(ReadStatus status,
                                             scoped_refptr<Output> output) {
   DCHECK(read_cb_);
   TRACE_EVENT_ASYNC_END1("media", GetReadTraceString<StreamType>(), this,
@@ -827,16 +831,16 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   traits_->InitializeDecoder(
       decoder_.get(), traits_->GetDecoderConfig(stream_),
       stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecoderReinitialized,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DecoderStream<StreamType>::OnDecoderReinitialized,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
                           fallback_weak_factory_.GetWeakPtr()),
       waiting_cb_);
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
-  FUNCTION_DVLOG(2) << ": success = " << success;
+void DecoderStream<StreamType>::OnDecoderReinitialized(Status status) {
+  FUNCTION_DVLOG(2) << ": success = " << status.is_ok();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
 
@@ -846,7 +850,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
   // Also, Reset() can be called during pending ReinitializeDecoder().
   // This function needs to handle them all!
 
-  if (!success) {
+  if (!status.is_ok()) {
     // Reinitialization failed. Try to fall back to one of the remaining
     // decoders. This will consume at least one decoder so doing it more than
     // once is safe.
@@ -903,8 +907,8 @@ void DecoderStream<StreamType>::ResetDecoder() {
       << state_;
   DCHECK(reset_cb_);
 
-  decoder_->Reset(base::BindRepeating(
-      &DecoderStream<StreamType>::OnDecoderReset, weak_factory_.GetWeakPtr()));
+  decoder_->Reset(base::BindOnce(&DecoderStream<StreamType>::OnDecoderReset,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 template <DemuxerStream::Type StreamType>

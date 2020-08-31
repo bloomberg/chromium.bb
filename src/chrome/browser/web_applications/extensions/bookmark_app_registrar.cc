@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -35,19 +36,20 @@ BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
-  const Extension* extension = GetExtension(app_id);
+  const Extension* extension = GetEnabledExtension(app_id);
   return extension && extension->from_bookmark();
 }
 
 bool BookmarkAppRegistrar::IsLocallyInstalled(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
-  return extension && BookmarkAppIsLocallyInstalled(profile(), extension);
+  const Extension* extension = GetEnabledExtension(app_id);
+  return extension && extension->from_bookmark() &&
+         BookmarkAppIsLocallyInstalled(profile(), extension);
 }
 
 bool BookmarkAppRegistrar::WasInstalledByUser(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   return extension && !extension->was_installed_by_default();
 }
 
@@ -60,8 +62,14 @@ void BookmarkAppRegistrar::OnExtensionUninstalled(
     const Extension* extension,
     UninstallReason reason) {
   DCHECK_EQ(browser_context, profile());
-  if (extension->from_bookmark())
+  if (extension->from_bookmark()) {
+    DCHECK(!bookmark_app_being_observed_);
+    bookmark_app_being_observed_ = extension;
+
     NotifyWebAppUninstalled(extension->id());
+
+    bookmark_app_being_observed_ = nullptr;
+  }
 }
 
 void BookmarkAppRegistrar::OnExtensionUnloaded(
@@ -71,10 +79,16 @@ void BookmarkAppRegistrar::OnExtensionUnloaded(
   DCHECK_EQ(browser_context, profile());
   if (!extension->from_bookmark())
     return;
+
+  DCHECK(!bookmark_app_being_observed_);
+  bookmark_app_being_observed_ = extension;
+
   // If a profile is removed, notify the web app that it is uninstalled, so it
   // can cleanup any state outside the profile dir (e.g., registry settings).
   if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN)
     NotifyWebAppProfileWillBeDeleted(extension->id());
+
+  bookmark_app_being_observed_ = nullptr;
 }
 
 void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
@@ -84,19 +98,19 @@ void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
 
 std::string BookmarkAppRegistrar::GetAppShortName(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   return extension ? extension->short_name() : std::string();
 }
 
 std::string BookmarkAppRegistrar::GetAppDescription(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   return extension ? extension->description() : std::string();
 }
 
 base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
     return base::nullopt;
 
@@ -110,18 +124,18 @@ base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
 
 const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   return extension ? AppLaunchInfo::GetLaunchWebURL(extension)
                    : GURL::EmptyGURL();
 }
 
-base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
+base::Optional<GURL> BookmarkAppRegistrar::GetAppScopeInternal(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
     return base::nullopt;
 
-  GURL scope_url = GetScopeURLFromBookmarkApp(GetBookmarkApp(app_id));
+  GURL scope_url = GetScopeURLFromBookmarkApp(GetBookmarkAppDchecked(app_id));
   if (scope_url.is_valid())
     return scope_url;
 
@@ -130,7 +144,7 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
 
 DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
     return DisplayMode::kUndefined;
 
@@ -139,7 +153,7 @@ DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
 
 DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
     return DisplayMode::kStandalone;
 
@@ -159,7 +173,7 @@ DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
 std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
     const web_app::AppId& app_id) const {
   std::vector<WebApplicationIconInfo> result;
-  const Extension* extension = GetBookmarkApp(app_id);
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
   if (!extension)
     return result;
   for (const LinkedAppIcons::IconInfo& icon_info :
@@ -170,6 +184,13 @@ std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
     result.push_back(std::move(web_app_icon_info));
   }
   return result;
+}
+
+std::vector<SquareSizePx> BookmarkAppRegistrar::GetAppDownloadedIconSizes(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
+  return extension ? GetBookmarkAppDownloadedIconSizes(extension)
+                   : std::vector<SquareSizePx>();
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
@@ -183,14 +204,32 @@ std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
   return app_ids;
 }
 
-const Extension* BookmarkAppRegistrar::GetBookmarkApp(
+web_app::WebAppRegistrar* BookmarkAppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
+}
+
+BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
+  return this;
+}
+
+const Extension* BookmarkAppRegistrar::FindExtension(
     const web_app::AppId& app_id) const {
-  const Extension* extension = GetExtension(app_id);
+  if (bookmark_app_being_observed_ &&
+      bookmark_app_being_observed_->id() == app_id) {
+    return bookmark_app_being_observed_;
+  }
+
+  return ExtensionRegistry::Get(profile())->GetInstalledExtension(app_id);
+}
+
+const Extension* BookmarkAppRegistrar::GetBookmarkAppDchecked(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetEnabledExtension(app_id);
   DCHECK(!extension || extension->from_bookmark());
   return extension;
 }
 
-const Extension* BookmarkAppRegistrar::GetExtension(
+const Extension* BookmarkAppRegistrar::GetEnabledExtension(
     const web_app::AppId& app_id) const {
   return ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
       app_id);

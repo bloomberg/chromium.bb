@@ -6,12 +6,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -23,9 +26,11 @@ namespace {
 class RenderDocumentHostBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    feature_list_.InitWithFeatures({features::kRenderDocumentForMainFrame,
-                                    features::kRenderDocumentForSubframe},
-                                   {});
+    // RenderDocumentHost only works when RenderDocument is enabled at at least
+    // the sub-frame level.
+    InitAndEnableRenderDocumentFeature(
+        &feature_list_,
+        GetRenderDocumentLevelName(RenderDocumentLevel::kSubframe));
   }
 
   void SetUpOnMainThread() override {
@@ -73,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, DISABLED_BasicMainFrame) {
 
 // A new RenderFrameHost must be used after a same process subframe navigation.
 // This test two cases, when the RenderFrame is not a local root and when it is.
-// TODO(arthursonzogni): Implement RenderDocument and enable this test.
-IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, DISABLED_BasicSubframe) {
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, BasicSubframe) {
   GURL url(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
   GURL url_subframe_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
   GURL url_subframe_3(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -152,9 +156,8 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, PopupScriptableNavigate) {
 
 // Two frames are scriptable with each other. Test it works appropriately after
 // one of them doing a same-origin navigation.
-// TODO(arthursonzogni): Implement RenderDocument and enable this test.
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest,
-                       DISABLED_SubframeScriptableNavigate) {
+                       SubframeScriptableNavigate) {
   GURL url_1(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
   GURL url_3(embedded_test_server()->GetURL("/title3.html"));

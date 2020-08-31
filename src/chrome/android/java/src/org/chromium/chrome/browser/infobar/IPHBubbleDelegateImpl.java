@@ -17,7 +17,9 @@ import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
 import org.chromium.chrome.browser.permissions.PermissionSettingsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
@@ -29,11 +31,13 @@ import org.chromium.components.feature_engagement.Tracker;
 class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
     private final Context mContext;
     private final Tracker mTracker;
+    private final Tab mTab;
 
-    IPHBubbleDelegateImpl(Context context) {
+    IPHBubbleDelegateImpl(Context context, Tab tab) {
         mContext = context;
-        Profile profile = Profile.getLastUsedProfile();
-        mTracker = TrackerFactory.getTrackerForProfile(profile);
+        mTracker =
+                TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()));
+        mTab = tab;
     }
 
     // IPHInfoBarSupport.IPHBubbleDelegate implementation.
@@ -45,8 +49,8 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
         PopupState state = new PopupState();
         state.view = anchorView;
         state.feature = params.feature;
-        state.bubble = new TextBubble(
-                mContext, anchorView, params.textId, params.accessibilityTextId, anchorView);
+        state.bubble = new TextBubble(mContext, anchorView, params.textId,
+                params.accessibilityTextId, anchorView, AccessibilityUtil.isAccessibilityEnabled());
         state.bubble.setDismissOnTouchInteraction(true);
 
         return state;
@@ -61,11 +65,11 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
         switch (infoBarId) {
             case InfoBarIdentifier.DOWNLOAD_PROGRESS_INFOBAR_ANDROID:
                 DownloadInfoBarController controller =
-                        DownloadManagerService.getDownloadManagerService()
-                        .getInfoBarController(Profile.getLastUsedProfile().isOffTheRecord());
+                        DownloadManagerService.getDownloadManagerService().getInfoBarController(
+                                mTab.isIncognito());
                 return controller != null ? controller.getTrackerParameters() : null;
             case InfoBarIdentifier.GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID:
-                if (PermissionSettingsBridge.shouldShowNotificationsPromo()) {
+                if (PermissionSettingsBridge.shouldShowNotificationsPromo(mTab.getWebContents())) {
                     PermissionSettingsBridge.didShowNotificationsPromo();
                     return new IPHInfoBarSupport.TrackerParameters(
                             FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,

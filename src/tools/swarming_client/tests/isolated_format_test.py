@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2014 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -9,6 +9,8 @@ import os
 import sys
 import tempfile
 import unittest
+
+import six
 
 # Mutates sys.path.
 import test_env
@@ -30,7 +32,7 @@ ALGO = hashlib.sha1
 class SymlinkTest(unittest.TestCase):
   def setUp(self):
     super(SymlinkTest, self).setUp()
-    self.old_cwd = unicode(os.getcwd())
+    self.old_cwd = six.text_type(os.getcwd())
     self.cwd = tempfile.mkdtemp(prefix=u'isolate_')
     # Everything should work even from another directory.
     fs.chdir(self.cwd)
@@ -230,14 +232,14 @@ class TestIsolated(auto_stub.TestCase):
     calls = []
     self.mock(tools, 'write_json', lambda *x: calls.append(x))
     data = {
-      u'algo': 'sha-1',
-      u'files': {
-        u'b': {
-          u'm': 123,
-          u'h': u'0123456789abcdef0123456789abcdef01234567',
-          u's': 2181582786L,
-        }
-      },
+        u'algo': 'sha-1',
+        u'files': {
+            u'b': {
+                u'm': 123,
+                u'h': u'0123456789abcdef0123456789abcdef01234567',
+                u's': 2181582786,
+            }
+        },
     }
     isolated_format.save_isolated('foo', data)
     self.assertEqual([('foo', data, True)], calls)

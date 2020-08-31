@@ -16,16 +16,15 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -52,8 +51,7 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
                 "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
         helper.addServerCreditCard(new CreditCard("", "https://example.com", false /* isLocal */,
                 true /* isCached */, "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa",
-                R.drawable.visa_card, CardType.UNKNOWN, "" /* billing address */,
-                "" /* serverId */));
+                R.drawable.visa_card, "" /* billing address */, "" /* serverId */));
     }
 
     /** Click [PAY] and dismiss the card unmask dialog. */

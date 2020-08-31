@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "ui/aura/client/aura_constants.h"
@@ -118,7 +119,7 @@ class ImmersiveModeControllerAshWebAppBrowserTest
     WebAppFrameToolbarView* container =
         frame_view->web_app_frame_toolbar_for_testing();
     views::test::InkDropHostViewTestApi ink_drop_api(
-        container->web_app_menu_button_);
+        container->GetAppMenuButton());
     EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
     EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
               ink_drop_api.ink_drop_mode());
@@ -328,7 +329,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ImmersiveModeControllerAshWebAppBrowserTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,

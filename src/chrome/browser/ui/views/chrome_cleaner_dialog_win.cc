@@ -58,13 +58,22 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
-  details_button_ =
-      DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(
-                    IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
+  details_button_ = SetExtraView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(
+                IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
+
+  SetAcceptCallback(
+      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                     base::Unretained(this), DialogInteractionResult::kAccept));
+  SetCancelCallback(
+      base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                     base::Unretained(this), DialogInteractionResult::kCancel));
+  SetCloseCallback(base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
+                                  base::Unretained(this),
+                                  DialogInteractionResult::kClose));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(
@@ -140,23 +149,6 @@ views::View* ChromeCleanerDialog::GetInitiallyFocusedView() {
 
 bool ChromeCleanerDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-// DialogDelegate overrides.
-
-bool ChromeCleanerDialog::Accept() {
-  HandleDialogInteraction(DialogInteractionResult::kAccept);
-  return true;
-}
-
-bool ChromeCleanerDialog::Cancel() {
-  HandleDialogInteraction(DialogInteractionResult::kCancel);
-  return true;
-}
-
-bool ChromeCleanerDialog::Close() {
-  HandleDialogInteraction(DialogInteractionResult::kClose);
-  return true;
 }
 
 // View overrides.

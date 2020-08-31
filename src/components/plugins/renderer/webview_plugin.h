@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -20,6 +20,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -91,8 +92,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   bool IsErrorPlaceholder() override;
 
-  void UpdateAllLifecyclePhases(
-      blink::WebWidget::LifecycleUpdateReason reason) override;
+  void UpdateAllLifecyclePhases(blink::DocumentUpdateReason reason) override;
   void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override;
 
   // Coordinates are relative to the containing window.
@@ -101,12 +101,12 @@ class WebViewPlugin : public blink::WebPlugin,
                       const blink::WebRect& unobscured_rect,
                       bool is_visible) override;
 
-  void UpdateFocus(bool foucsed, blink::WebFocusType focus_type) override;
+  void UpdateFocus(bool foucsed, blink::mojom::FocusType focus_type) override;
   void UpdateVisibility(bool) override {}
 
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,
-      blink::WebCursorInfo& cursor_info) override;
+      ui::Cursor* cursor) override;
 
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidReceiveData(const char* data, size_t data_length) override;
@@ -135,7 +135,7 @@ class WebViewPlugin : public blink::WebPlugin,
   // Manages its own lifetime.
   Delegate* delegate_;
 
-  blink::WebCursorInfo current_cursor_;
+  ui::Cursor current_cursor_;
 
   // Owns us.
   blink::WebPluginContainer* container_;
@@ -172,13 +172,13 @@ class WebViewPlugin : public blink::WebPlugin,
 
     // WebWidgetClient methods:
     void SetToolTipText(const blink::WebString&,
-                        blink::WebTextDirection) override;
+                        base::i18n::TextDirection) override;
     void StartDragging(network::mojom::ReferrerPolicy,
                        const blink::WebDragData&,
                        blink::WebDragOperationsMask,
                        const SkBitmap&,
                        const gfx::Point&) override;
-    void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
+    void DidChangeCursor(const ui::Cursor& cursor) override;
     void ScheduleAnimation() override;
 
     // WebLocalFrameClient methods:

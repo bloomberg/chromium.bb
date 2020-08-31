@@ -78,6 +78,7 @@ DEF_TEST(Skottie_Properties, reporter) {
                                              { "v": { "a": 0, "k": 1 }}
                                            ],
                                            "nm": "fill_effect_0",
+                                           "mn": "ADBE Fill",
                                            "ty": 21
                                          }],
                                          "shapes": [
@@ -153,6 +154,7 @@ DEF_TEST(Skottie_Properties, reporter) {
         void onColorProperty(const char node_name[],
                 const PropertyObserver::LazyHandle<ColorPropertyHandle>& lh) override {
             fColors.push_back({SkString(node_name), lh()});
+            fColorsWithFullKeypath.push_back({SkString(fCurrentNode.c_str()), lh()});
         }
 
         void onOpacityProperty(const char node_name[],
@@ -170,16 +172,33 @@ DEF_TEST(Skottie_Properties, reporter) {
             fTransforms.push_back({SkString(node_name), lh()});
         }
 
+        void onEnterNode(const char node_name[]) override {
+            fCurrentNode = fCurrentNode.empty() ? node_name : fCurrentNode + "." + node_name;
+        }
+
+        void onLeavingNode(const char node_name[]) override {
+            auto length = strlen(node_name);
+            fCurrentNode =
+                    fCurrentNode.length() > length
+                            ? fCurrentNode.substr(0, fCurrentNode.length() - strlen(node_name) - 1)
+                            : "";
+        }
+
         const std::vector<ColorInfo>& colors() const { return fColors; }
         const std::vector<OpacityInfo>& opacities() const { return fOpacities; }
         const std::vector<TextInfo>& texts() const { return fTexts; }
         const std::vector<TransformInfo>& transforms() const { return fTransforms; }
+        const std::vector<ColorInfo>& colorsWithFullKeypath() const {
+            return fColorsWithFullKeypath;
+        }
 
     private:
         std::vector<ColorInfo>     fColors;
         std::vector<OpacityInfo>   fOpacities;
         std::vector<TextInfo>      fTexts;
         std::vector<TransformInfo> fTransforms;
+        std::string                fCurrentNode;
+        std::vector<ColorInfo>     fColorsWithFullKeypath;
     };
 
     // Returns a single specified typeface for all requests.
@@ -245,6 +264,13 @@ DEF_TEST(Skottie_Properties, reporter) {
     REPORTER_ASSERT(reporter, colors[1].node_name.equals("fill_effect_0"));
     REPORTER_ASSERT(reporter, colors[1].handle->get() == 0xff00ff00);
 
+    const auto& colorsWithFullKeypath = observer->colorsWithFullKeypath();
+    REPORTER_ASSERT(reporter, colorsWithFullKeypath.size() == 2);
+    REPORTER_ASSERT(reporter, colorsWithFullKeypath[0].node_name.equals("layer_0.fill_0"));
+    REPORTER_ASSERT(reporter, colorsWithFullKeypath[0].handle->get() == 0xffff0000);
+    REPORTER_ASSERT(reporter, colorsWithFullKeypath[1].node_name.equals("layer_0.fill_effect_0"));
+    REPORTER_ASSERT(reporter, colorsWithFullKeypath[1].handle->get() == 0xff00ff00);
+
     const auto& opacities = observer->opacities();
     REPORTER_ASSERT(reporter, opacities.size() == 3);
     REPORTER_ASSERT(reporter, opacities[0].node_name.equals("shape_transform_0"));
@@ -294,6 +320,7 @@ DEF_TEST(Skottie_Properties, reporter) {
       0,
       SkTextUtils::kLeft_Align,
       Shaper::VAlign::kTopBaseline,
+      Shaper::ResizePolicy::kNone,
       SkRect::MakeEmpty(),
       SK_ColorTRANSPARENT,
       SK_ColorTRANSPARENT,
@@ -439,6 +466,7 @@ DEF_TEST(Skottie_Shaper_HAlign, reporter) {
                 0,
                 talign.align,
                 skottie::Shaper::VAlign::kTopBaseline,
+                skottie::Shaper::ResizePolicy::kNone,
                 Shaper::Flags::kNone
             };
 
@@ -504,6 +532,7 @@ DEF_TEST(Skottie_Shaper_VAlign, reporter) {
                 0,
                 SkTextUtils::Align::kCenter_Align,
                 talign.align,
+                skottie::Shaper::ResizePolicy::kNone,
                 Shaper::Flags::kNone
             };
 
@@ -540,6 +569,7 @@ DEF_TEST(Skottie_Shaper_FragmentGlyphs, reporter) {
          0,
         SkTextUtils::Align::kCenter_Align,
         Shaper::VAlign::kTop,
+        skottie::Shaper::ResizePolicy::kNone,
         Shaper::Flags::kNone
     };
 
@@ -634,6 +664,7 @@ DEF_TEST(Skottie_Shaper_ExplicitFontMgr, reporter) {
          0,
         SkTextUtils::Align::kCenter_Align,
         Shaper::VAlign::kTop,
+        Shaper::ResizePolicy::kNone,
         Shaper::Flags::kNone
     };
 
@@ -662,3 +693,152 @@ DEF_TEST(Skottie_Shaper_ExplicitFontMgr, reporter) {
 }
 
 #endif
+
+DEF_TEST(Skottie_Image_Loading, reporter) {
+    class TestResourceProvider final : public skresources::ResourceProvider {
+    public:
+        TestResourceProvider(sk_sp<skresources::ImageAsset> single_asset,
+                             sk_sp<skresources::ImageAsset>  multi_asset)
+            : fSingleFrameAsset(std::move(single_asset))
+            , fMultiFrameAsset (std::move( multi_asset)) {}
+
+    private:
+        sk_sp<ImageAsset> loadImageAsset(const char path[],
+                                         const char name[],
+                                         const char id[]) const {
+            return strcmp(id, "single_frame")
+                    ? fMultiFrameAsset
+                    : fSingleFrameAsset;
+        }
+
+        const sk_sp<skresources::ImageAsset> fSingleFrameAsset,
+                                             fMultiFrameAsset;
+    };
+
+    auto make_animation = [&reporter] (sk_sp<skresources::ImageAsset> single_asset,
+                                       sk_sp<skresources::ImageAsset>  multi_asset,
+                                       bool deferred_image_loading) {
+        static constexpr char json[] = R"({
+                                         "v": "5.2.1",
+                                         "w": 100,
+                                         "h": 100,
+                                         "fr": 10,
+                                         "ip": 0,
+                                         "op": 100,
+                                         "assets": [
+                                           {
+                                             "id": "single_frame",
+                                             "p" : "single_frame.png",
+                                             "u" : "images/",
+                                             "w" : 500,
+                                             "h" : 500
+                                           },
+                                           {
+                                             "id": "multi_frame",
+                                             "p" : "multi_frame.png",
+                                             "u" : "images/",
+                                             "w" : 500,
+                                             "h" : 500
+                                           }
+                                         ],
+                                         "layers": [
+                                           {
+                                             "ty": 2,
+                                             "refId": "single_frame",
+                                             "ind": 0,
+                                             "ip": 0,
+                                             "op": 100,
+                                             "ks": {}
+                                           },
+                                           {
+                                             "ty": 2,
+                                             "refId": "multi_frame",
+                                             "ind": 1,
+                                             "ip": 0,
+                                             "op": 100,
+                                             "ks": {}
+                                           }
+                                         ]
+                                       })";
+
+        SkMemoryStream stream(json, strlen(json));
+
+        const auto flags = deferred_image_loading
+            ? static_cast<uint32_t>(skottie::Animation::Builder::kDeferImageLoading)
+            : 0;
+        auto animation =
+            skottie::Animation::Builder(flags)
+                .setResourceProvider(sk_make_sp<TestResourceProvider>(std::move(single_asset),
+                                                                      std::move( multi_asset)))
+                .make(&stream);
+
+        REPORTER_ASSERT(reporter, animation);
+
+        return  animation;
+    };
+
+    class TestAsset final : public skresources::ImageAsset {
+    public:
+        explicit TestAsset(bool multi_frame) : fMultiFrame(multi_frame) {}
+
+        const std::vector<float>& requestedFrames() const { return fRequestedFrames; }
+
+    private:
+        bool isMultiFrame() override { return fMultiFrame; }
+
+        sk_sp<SkImage> getFrame(float t) override {
+            fRequestedFrames.push_back(t);
+
+            return SkSurface::MakeRasterN32Premul(10, 10)->makeImageSnapshot();
+        }
+
+        const bool fMultiFrame;
+
+        std::vector<float> fRequestedFrames;
+    };
+
+    {
+        auto single_asset = sk_make_sp<TestAsset>(false),
+              multi_asset = sk_make_sp<TestAsset>(true);
+
+        // Default image loading: single-frame images are loaded upfront, multi-frame images are
+        // loaded on-demand.
+        auto animation = make_animation(single_asset, multi_asset, false);
+
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 0);
+        REPORTER_ASSERT(reporter, SkScalarNearlyZero(single_asset->requestedFrames()[0]));
+
+        animation->seekFrameTime(1);
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(multi_asset->requestedFrames()[0], 1));
+
+        animation->seekFrameTime(2);
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 2);
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(multi_asset->requestedFrames()[1], 2));
+    }
+
+    {
+        auto single_asset = sk_make_sp<TestAsset>(false),
+              multi_asset = sk_make_sp<TestAsset>(true);
+
+        // Deferred image loading: both single-frame and multi-frame images are loaded on-demand.
+        auto animation = make_animation(single_asset, multi_asset, true);
+
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 0);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 0);
+
+        animation->seekFrameTime(1);
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(single_asset->requestedFrames()[0], 1));
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual (multi_asset->requestedFrames()[0], 1));
+
+        animation->seekFrameTime(2);
+        REPORTER_ASSERT(reporter, single_asset->requestedFrames().size() == 1);
+        REPORTER_ASSERT(reporter,  multi_asset->requestedFrames().size() == 2);
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(multi_asset->requestedFrames()[1], 2));
+    }
+}

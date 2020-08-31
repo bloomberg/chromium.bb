@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -22,6 +23,7 @@
 
 namespace views {
 
+class NormalizedSize;
 class NormalizedSizeBounds;
 class View;
 
@@ -86,7 +88,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   FlexLayout& SetIncludeHostInsetsInLayout(bool include_host_insets_in_layout);
   FlexLayout& SetIgnoreDefaultMainAxisMargins(
       bool ignore_default_main_axis_margins);
-  FlexLayout& SetBetweenChildSpacing(int between_child_spacing);
+  FlexLayout& SetFlexAllocationOrder(FlexAllocationOrder flex_allocation_order);
 
   LayoutOrientation orientation() const { return orientation_; }
   bool collapse_margins() const { return collapse_margins_; }
@@ -100,7 +102,13 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   bool ignore_default_main_axis_margins() const {
     return ignore_default_main_axis_margins_;
   }
-  int between_child_spacing() const { return between_child_spacing_; }
+  FlexAllocationOrder flex_allocation_order() const {
+    return flex_allocation_order_;
+  }
+
+  // Returns a flex rule that allows flex layouts to be nested with expected
+  // behavior.
+  FlexRule GetDefaultFlexRule() const;
 
   // Moves and uses |value| as the default value for layout property |key|.
   template <class T, class U>
@@ -143,6 +151,40 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // See FlexSpecification::order().
   using FlexOrderToViewIndexMap = std::map<int, std::vector<size_t>>;
 
+  // Returns the preferred size for a given |rule| and |child| given unbounded
+  // space, with the caveat that for vertical layouts the horizontal axis is
+  // bounded to |available_cross| to factor in height-for-width considerations.
+  // This corresponds to the FlexSpecification "preferred size".
+  NormalizedSize GetPreferredSizeForRule(
+      const FlexRule& rule,
+      const View* child,
+      const base::Optional<int>& available_cross) const;
+
+  // Returns the size for a given |rule| and |child| with |available| space.
+  NormalizedSize GetCurrentSizeForRule(
+      const FlexRule& rule,
+      const View* child,
+      const NormalizedSizeBounds& available) const;
+
+  // Fills out the child entries for |data| and generates some initial size
+  // and visibility data, and stores off information about which views can
+  // expand in |flex_order_to_index|.
+  void InitializeChildData(const NormalizedSizeBounds& bounds,
+                           FlexLayoutData* data,
+                           FlexOrderToViewIndexMap* flex_order_to_index) const;
+
+  // Caclulates the child bounds (in screen coordinates) for each visible child
+  // in the layout.
+  void CalculateChildBounds(const SizeBounds& size_bounds,
+                            FlexLayoutData* data) const;
+
+  // Calculates available space for non-flex views.
+  void CalculateNonFlexAvailableSpace(
+      FlexLayoutData* data,
+      int available_space,
+      const ChildViewSpacing& child_spacing,
+      const FlexOrderToViewIndexMap& flex_views) const;
+
   // Returns the combined margins across the cross axis of the host view, for a
   // particular child view.
   Inset1D GetCrossAxisMargins(const FlexLayoutData& layout,
@@ -152,10 +194,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // inter-child spacing, and any internal padding present in one or both
   // elements. Uses properties of the layout, like whether adjacent margins
   // should be collapsed.
-  int CalculateMargin(int margin1,
-                      int margin2,
-                      int internal_padding,
-                      int spacing = 0) const;
+  int CalculateMargin(int margin1, int margin2, int internal_padding) const;
 
   // Calculates the cross-layout space available to a view based on the
   // available space and margins.
@@ -186,24 +225,11 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   //
   // Typically, this method will be called once with |expandable_views| set and
   // then again with it null to allocate the remaining space.
-  void AllocateFlexSpace(
-      const NormalizedSizeBounds& bounds,
-      const FlexOrderToViewIndexMap& order_to_index,
-      FlexLayoutData* data,
-      ChildViewSpacing* child_spacing,
-      FlexOrderToViewIndexMap* expandable_views = nullptr) const;
-
-  // Fills out the child entries for |data| and generates some initial size
-  // and visibility data, and stores off information about which views can
-  // expand in |flex_order_to_index|.
-  void InitializeChildData(const NormalizedSizeBounds& bounds,
-                           FlexLayoutData* data,
-                           FlexOrderToViewIndexMap* flex_order_to_index) const;
-
-  // Caclulates the child bounds (in screen coordinates) for each visible child
-  // in the layout.
-  void CalculateChildBounds(const SizeBounds& size_bounds,
-                            FlexLayoutData* data) const;
+  void AllocateFlexSpace(const NormalizedSizeBounds& bounds,
+                         const FlexOrderToViewIndexMap& order_to_index,
+                         FlexLayoutData* data,
+                         ChildViewSpacing* child_spacing,
+                         FlexOrderToViewIndexMap* expandable_views) const;
 
   // Gets the default value for a particular layout property, which will be used
   // if the property is not set on a child view being laid out (e.g.
@@ -221,6 +247,10 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
     layout_defaults_.ClearProperty(key);
     return *this;
   }
+
+  static gfx::Size DefaultFlexRuleImpl(const FlexLayout* flex_layout,
+                                       const View* view,
+                                       const SizeBounds& size_bounds);
 
   LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
 
@@ -266,10 +296,11 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // trailing edge of the host view.
   bool ignore_default_main_axis_margins_ = false;
 
-  // The spacing between the children along the main axis. This is irrespective
-  // of any margins which are set. If |collapse_margins_| is true, then the max
-  // between this value and the margins is used.
-  int between_child_spacing_ = 0;
+  // Order in which the host's child views receive their flex allocation.
+  // Setting to reverse is useful when, for example, you want views to drop out
+  // left-to-right when there's insufficient space to display them all instead
+  // of right-to-left.
+  FlexAllocationOrder flex_allocation_order_ = FlexAllocationOrder::kNormal;
 
   // Default properties for any views that don't have them explicitly set for
   // this layout.

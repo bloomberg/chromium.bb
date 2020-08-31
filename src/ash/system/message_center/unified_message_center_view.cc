@@ -21,6 +21,7 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
+#include "base/optional.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -93,7 +94,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   // set the default opaque background color.
   scroller_->SetContents(
       std::make_unique<ScrollerContentsView>(message_list_view_));
-  scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller_->SetBackgroundColor(base::nullopt);
   scroller_->SetVerticalScrollBar(base::WrapUnique(scroll_bar_));
   scroller_->SetDrawOverflowIndicator(false);
   AddChildView(scroller_);
@@ -122,7 +123,7 @@ void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
 }
 
 void UnifiedMessageCenterView::SetExpanded() {
-  if (!GetVisible() || !collapsed_)
+  if (!collapsed_)
     return;
 
   collapsed_ = false;
@@ -133,6 +134,11 @@ void UnifiedMessageCenterView::SetExpanded() {
 
 void UnifiedMessageCenterView::SetCollapsed(bool animate) {
   if (!GetVisible() || collapsed_)
+    return;
+
+  // Do not collapse the message center if notification bar is not visible.
+  // i.e. there is only one notification.
+  if (!notification_bar_->GetVisible())
     return;
 
   collapsed_ = true;
@@ -157,7 +163,17 @@ void UnifiedMessageCenterView::ExpandMessageCenter() {
   message_center_bubble_->ExpandMessageCenter();
 }
 
+bool UnifiedMessageCenterView::IsNotificationBarVisible() {
+  return notification_bar_->GetVisible();
+}
+
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
+  if (collapsed_) {
+    if (!message_list_view_->GetTotalNotificationCount())
+      StartHideStackingBarAnimation();
+    return;
+  }
+
   if (notification_bar_->GetVisible() &&
       message_list_view_->GetTotalNotificationCount() <= 1) {
     StartHideStackingBarAnimation();
@@ -286,7 +302,7 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
 
   OnMessageCenterScrolled();
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled() && !collapsed()) {
     views::View* first_view = GetFirstFocusableChild();
     views::View* last_view = GetLastFocusableChild();
 
@@ -385,12 +401,17 @@ void UnifiedMessageCenterView::UpdateVisibility() {
       (!session_controller->IsScreenLocked() ||
        AshMessageCenterLockScreenController::IsEnabled()));
 
-  // When notification list went invisible, the last notification should be
-  // targeted next time.
   if (!GetVisible()) {
+    // When notification list went invisible, the last notification should be
+    // targeted next time.
     model_->set_notification_target_mode(
         UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
     NotifyRectBelowScroll();
+
+    // Transfer focus to quick settings when going invisible.
+    auto* widget = GetWidget();
+    if (widget && widget->IsActive())
+      message_center_bubble_->ActivateQuickSettingsBubble();
   }
 }
 
@@ -498,12 +519,16 @@ void UnifiedMessageCenterView::NotifyRectBelowScroll() {
 }
 
 void UnifiedMessageCenterView::FocusOut(bool reverse) {
-  message_center_bubble_->FocusOut(reverse);
+  if (message_center_bubble_ && message_center_bubble_->FocusOut(reverse)) {
+    GetFocusManager()->ClearFocus();
+    GetFocusManager()->SetStoredFocusView(nullptr);
+  }
 }
 
 void UnifiedMessageCenterView::FocusEntered(bool reverse) {
   views::View* focus_view =
       reverse ? GetLastFocusableChild() : GetFirstFocusableChild();
+  GetFocusManager()->ClearFocus();
   GetFocusManager()->SetFocusedView(focus_view);
 }
 
@@ -519,14 +544,24 @@ views::View* UnifiedMessageCenterView::GetFirstFocusableChild() {
 }
 
 views::View* UnifiedMessageCenterView::GetLastFocusableChild() {
-  views::FocusTraversable* dummy_focus_traversable;
-  views::View* dummy_focus_traversable_view;
-  return focus_search_->FindNextFocusableView(
+  views::FocusTraversable* focus_traversable = nullptr;
+  views::View* dummy_focus_traversable_view = nullptr;
+  views::View* last_view = focus_search_->FindNextFocusableView(
       nullptr, views::FocusSearch::SearchDirection::kBackwards,
       views::FocusSearch::TraversalDirection::kDown,
       views::FocusSearch::StartingViewPolicy::kSkipStartingView,
       views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
-      &dummy_focus_traversable, &dummy_focus_traversable_view);
+      &focus_traversable, &dummy_focus_traversable_view);
+
+  if (last_view || !focus_traversable)
+    return last_view;
+
+  return focus_traversable->GetFocusSearch()->FindNextFocusableView(
+      nullptr, views::FocusSearch::SearchDirection::kBackwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &focus_traversable, &dummy_focus_traversable_view);
 }
 
 }  // namespace ash

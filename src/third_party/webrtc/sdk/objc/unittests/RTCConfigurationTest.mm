@@ -17,7 +17,6 @@
 #import "api/peerconnection/RTCConfiguration+Private.h"
 #import "api/peerconnection/RTCConfiguration.h"
 #import "api/peerconnection/RTCIceServer.h"
-#import "api/peerconnection/RTCIntervalRange.h"
 #import "helpers/NSString+StdString.h"
 
 @interface RTCConfigurationTest : NSObject
@@ -29,10 +28,10 @@
 
 - (void)testConversionToNativeConfiguration {
   NSArray *urlStrings = @[ @"stun:stun1.example.net" ];
-  RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:urlStrings];
-  RTCIntervalRange *range = [[RTCIntervalRange alloc] initWithMin:0 max:100];
+  RTC_OBJC_TYPE(RTCIceServer) *server =
+      [[RTC_OBJC_TYPE(RTCIceServer) alloc] initWithURLStrings:urlStrings];
 
-  RTCConfiguration *config = [[RTCConfiguration alloc] init];
+  RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
   config.iceServers = @[ server ];
   config.iceTransportPolicy = RTCIceTransportPolicyRelay;
   config.bundlePolicy = RTCBundlePolicyMaxBundle;
@@ -49,11 +48,11 @@
   config.continualGatheringPolicy =
       RTCContinualGatheringPolicyGatherContinually;
   config.shouldPruneTurnPorts = YES;
-  config.iceRegatherIntervalRange = range;
-  config.cryptoOptions = [[RTCCryptoOptions alloc] initWithSrtpEnableGcmCryptoSuites:YES
-                                                 srtpEnableAes128Sha1_32CryptoCipher:YES
-                                              srtpEnableEncryptedRtpHeaderExtensions:YES
-                                                        sframeRequireFrameEncryption:YES];
+  config.cryptoOptions =
+      [[RTC_OBJC_TYPE(RTCCryptoOptions) alloc] initWithSrtpEnableGcmCryptoSuites:YES
+                                             srtpEnableAes128Sha1_32CryptoCipher:YES
+                                          srtpEnableEncryptedRtpHeaderExtensions:YES
+                                                    sframeRequireFrameEncryption:YES];
   config.rtcpAudioReportIntervalMs = 2500;
   config.rtcpVideoReportIntervalMs = 3750;
 
@@ -82,8 +81,6 @@
   EXPECT_EQ(webrtc::PeerConnectionInterface::GATHER_CONTINUALLY,
             nativeConfig->continual_gathering_policy);
   EXPECT_EQ(true, nativeConfig->prune_turn_ports);
-  EXPECT_EQ(range.min, nativeConfig->ice_regather_interval_range->min());
-  EXPECT_EQ(range.max, nativeConfig->ice_regather_interval_range->max());
   EXPECT_EQ(true, nativeConfig->crypto_options->srtp.enable_gcm_crypto_suites);
   EXPECT_EQ(true, nativeConfig->crypto_options->srtp.enable_aes128_sha1_32_crypto_cipher);
   EXPECT_EQ(true, nativeConfig->crypto_options->srtp.enable_encrypted_rtp_header_extensions);
@@ -94,10 +91,10 @@
 
 - (void)testNativeConversionToConfiguration {
   NSArray *urlStrings = @[ @"stun:stun1.example.net" ];
-  RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:urlStrings];
-  RTCIntervalRange *range = [[RTCIntervalRange alloc] initWithMin:0 max:100];
+  RTC_OBJC_TYPE(RTCIceServer) *server =
+      [[RTC_OBJC_TYPE(RTCIceServer) alloc] initWithURLStrings:urlStrings];
 
-  RTCConfiguration *config = [[RTCConfiguration alloc] init];
+  RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
   config.iceServers = @[ server ];
   config.iceTransportPolicy = RTCIceTransportPolicyRelay;
   config.bundlePolicy = RTCBundlePolicyMaxBundle;
@@ -114,21 +111,21 @@
   config.continualGatheringPolicy =
       RTCContinualGatheringPolicyGatherContinually;
   config.shouldPruneTurnPorts = YES;
-  config.iceRegatherIntervalRange = range;
-  config.cryptoOptions = [[RTCCryptoOptions alloc] initWithSrtpEnableGcmCryptoSuites:YES
-                                                 srtpEnableAes128Sha1_32CryptoCipher:NO
-                                              srtpEnableEncryptedRtpHeaderExtensions:NO
-                                                        sframeRequireFrameEncryption:NO];
+  config.cryptoOptions =
+      [[RTC_OBJC_TYPE(RTCCryptoOptions) alloc] initWithSrtpEnableGcmCryptoSuites:YES
+                                             srtpEnableAes128Sha1_32CryptoCipher:NO
+                                          srtpEnableEncryptedRtpHeaderExtensions:NO
+                                                    sframeRequireFrameEncryption:NO];
   config.rtcpAudioReportIntervalMs = 1500;
   config.rtcpVideoReportIntervalMs = 2150;
 
   webrtc::PeerConnectionInterface::RTCConfiguration *nativeConfig =
       [config createNativeConfiguration];
-  RTCConfiguration *newConfig = [[RTCConfiguration alloc]
-      initWithNativeConfiguration:*nativeConfig];
+  RTC_OBJC_TYPE(RTCConfiguration) *newConfig =
+      [[RTC_OBJC_TYPE(RTCConfiguration) alloc] initWithNativeConfiguration:*nativeConfig];
   EXPECT_EQ([config.iceServers count], newConfig.iceServers.count);
-  RTCIceServer *newServer = newConfig.iceServers[0];
-  RTCIceServer *origServer = config.iceServers[0];
+  RTC_OBJC_TYPE(RTCIceServer) *newServer = newConfig.iceServers[0];
+  RTC_OBJC_TYPE(RTCIceServer) *origServer = config.iceServers[0];
   EXPECT_EQ(origServer.urlStrings.count, server.urlStrings.count);
   std::string origUrl = origServer.urlStrings.firstObject.UTF8String;
   std::string url = newServer.urlStrings.firstObject.UTF8String;
@@ -146,8 +143,6 @@
             newConfig.iceBackupCandidatePairPingInterval);
   EXPECT_EQ(config.continualGatheringPolicy, newConfig.continualGatheringPolicy);
   EXPECT_EQ(config.shouldPruneTurnPorts, newConfig.shouldPruneTurnPorts);
-  EXPECT_EQ(config.iceRegatherIntervalRange.min, newConfig.iceRegatherIntervalRange.min);
-  EXPECT_EQ(config.iceRegatherIntervalRange.max, newConfig.iceRegatherIntervalRange.max);
   EXPECT_EQ(config.cryptoOptions.srtpEnableGcmCryptoSuites,
             newConfig.cryptoOptions.srtpEnableGcmCryptoSuites);
   EXPECT_EQ(config.cryptoOptions.srtpEnableAes128Sha1_32CryptoCipher,
@@ -161,7 +156,7 @@
 }
 
 - (void)testDefaultValues {
-  RTCConfiguration *config = [[RTCConfiguration alloc] init];
+  RTC_OBJC_TYPE(RTCConfiguration) *config = [[RTC_OBJC_TYPE(RTCConfiguration) alloc] init];
   EXPECT_EQ(config.cryptoOptions, nil);
 }
 

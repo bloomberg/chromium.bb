@@ -22,15 +22,16 @@ class USBIsochronousInTransferResult final : public ScriptWrappable {
       DOMArrayBuffer* data,
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
     DOMDataView* data_view =
-        DOMDataView::Create(data, 0, data->DeprecatedByteLengthAsUnsigned());
+        DOMDataView::Create(data, 0, data->ByteLengthAsSizeT());
     return MakeGarbageCollected<USBIsochronousInTransferResult>(data_view,
                                                                 packets);
   }
 
   static USBIsochronousInTransferResult* Create(
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets,
-      DOMDataView* data) {
-    return MakeGarbageCollected<USBIsochronousInTransferResult>(data, packets);
+      NotShared<DOMDataView> data) {
+    return MakeGarbageCollected<USBIsochronousInTransferResult>(data.View(),
+                                                                packets);
   }
 
   static USBIsochronousInTransferResult* Create(
@@ -51,7 +52,7 @@ class USBIsochronousInTransferResult final : public ScriptWrappable {
     return packets_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(data_);
     visitor->Trace(packets_);
     ScriptWrappable::Trace(visitor);

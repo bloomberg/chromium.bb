@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
@@ -21,19 +23,16 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
-#include "chromeos/services/assistant/assistant_state_proxy.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "components/account_id/account_id.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
-class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -47,11 +46,17 @@ namespace power_manager {
 class PowerSupplyProperties;
 }  // namespace power_manager
 
+namespace signin {
+class AccessTokenFetcher;
+struct AccessTokenInfo;
+class IdentityManager;
+}  // namespace signin
+
 namespace chromeos {
 namespace assistant {
 
-class AssistantSettingsManager;
 class ServiceContext;
+class ScopedAshSessionObserver;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -59,40 +64,41 @@ class ServiceContext;
 constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
-    : public mojom::AssistantService,
+    : public AssistantService,
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
       public ash::AssistantStateObserver,
       public AssistantManagerService::CommunicationErrorObserver,
-      public AssistantManagerService::StateObserver {
+      public AssistantManagerService::StateObserver,
+      public ash::AmbientModeStateObserver {
  public:
-  Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-          std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
-          PrefService* profile_prefs);
+          signin::IdentityManager* identity_manager);
   ~Service() override;
 
-  // Allows tests to override the AssistantSettingsManager bound by the service.
-  static void OverrideSettingsManagerForTesting(
-      AssistantSettingsManager* manager);
+  // Allows tests to override the S3 server URI used by the service.
+  // The caller must ensure the memory passed in remains valid.
+  // This override can be removed by passing in a nullptr.
+  // Note: This would look nicer if it was a class method and not static,
+  // but unfortunately this must be called before |Service| tries to create the
+  // |AssistantManagerService|, which happens really soon after the service
+  // itself is created, so we do not have time in our tests to grab a handle
+  // to |Service| and set this before it is too late.
+  static void OverrideS3ServerUriForTesting(const char* uri);
 
-  void SetIdentityAccessorForTesting(
-      mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
+  void SetAssistantManagerServiceForTesting(
+      std::unique_ptr<AssistantManagerService> assistant_manager_service);
 
-  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
+  // AssistantService overrides:
+  void Init() override;
+  void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
+  void Shutdown() override;
 
  private:
   friend class AssistantServiceTest;
 
   class Context;
-
-  // mojom::AssistantService overrides
-  void Init(mojo::PendingRemote<mojom::Client> client,
-            mojo::PendingRemote<mojom::DeviceActions> device_actions,
-            bool is_test) override;
-  void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
-  void BindSettingsManager(
-      mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
@@ -104,6 +110,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // ash::AssistantStateObserver overrides:
   void OnAssistantConsentStatusChanged(int consent_status) override;
+  void OnAssistantContextEnabled(bool enabled) override;
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;
@@ -118,21 +125,15 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // AssistantManagerService::StateObserver overrides:
   void OnStateChanged(AssistantManagerService::State new_state) override;
 
+  // ash::AmbientModeStateObserver overrides:
+  void OnAmbientModeEnabled(bool enabled) override;
+
   void UpdateAssistantManagerState();
 
-  identity::mojom::IdentityAccessor* GetIdentityAccessor();
-
+  CoreAccountInfo RetrievePrimaryAccountInfo() const;
   void RequestAccessToken();
-
-  void GetPrimaryAccountInfoCallback(
-      const base::Optional<CoreAccountId>& account_id,
-      const base::Optional<std::string>& gaia,
-      const base::Optional<std::string>& email,
-      const identity::AccountState& account_state);
-
-  void GetAccessTokenCallback(const base::Optional<std::string>& token,
-                              base::Time expiration_time,
-                              const GoogleServiceAuthError& error);
+  void GetAccessTokenCallback(GoogleServiceAuthError error,
+                              signin::AccessTokenInfo access_token_info);
   void RetryRefreshToken();
 
   void CreateAssistantManagerService();
@@ -147,6 +148,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateListeningState();
 
+  base::Optional<AssistantManagerService::UserInfo> GetUserInfo() const;
+
   ServiceContext* context() { return context_.get(); }
 
   // Returns the "actual" hotword status. In addition to the hotword pref, this
@@ -154,16 +157,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // for the device.
   bool ShouldEnableHotword();
 
-  mojo::Receiver<mojom::AssistantService> receiver_;
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
-  bool observing_ash_session_ = false;
-  mojo::Remote<mojom::Client> client_;
-  mojo::Remote<mojom::DeviceActions> device_actions_;
-
-  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
-
-  AccountId account_id_;
+  signin::IdentityManager* const identity_manager_;
+  std::unique_ptr<ScopedAshSessionObserver> scoped_ash_session_observer_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;
@@ -172,21 +169,22 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_{this};
 
-  // Whether running inside a test environment.
-  bool is_test_ = false;
+  // Flag to guard the one-time mojom initialization.
+  bool is_assistant_manager_service_finalized_ = false;
   // Whether the current user session is active.
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
   // Whether the power source is connected.
   bool power_source_connected_ = false;
-  // In the signed-out mode, we are going to run Assistant service without
-  // using user's signed in account information.
-  bool is_signed_out_mode_ = false;
+
+  // The value passed into |SetAssistantManagerServiceForTesting|.
+  // Will be moved into |assistant_manager_service_| when the service is
+  // supposed to be created.
+  std::unique_ptr<AssistantManagerService>
+      assistant_manager_service_for_testing_ = nullptr;
 
   base::Optional<std::string> access_token_;
-
-  mojo::Remote<mojom::AssistantController> assistant_controller_;
 
   mojo::Remote<ash::mojom::AssistantAlarmTimerController>
       assistant_alarm_timer_controller_;
@@ -194,7 +192,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_notification_controller_;
   mojo::Remote<ash::mojom::AssistantScreenContextController>
       assistant_screen_context_controller_;
-  AssistantStateProxy assistant_state_;
 
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.
@@ -204,10 +201,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
       pending_url_loader_factory_;
 
-  // User profile preferences.
-  PrefService* const profile_prefs_;
-
   base::CancelableOnceClosure update_assistant_manager_callback_;
+
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

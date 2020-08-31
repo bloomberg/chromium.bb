@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_pcb.h 325370 2017-11-03 20:46:12Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_pcb.h 354018 2019-10-24 09:22:23Z tuexen $");
 #endif
 
 #ifndef _NETINET_SCTP_PCB_H_
@@ -305,6 +305,9 @@ struct sctp_base_info {
 	int packet_log_end;
 	uint8_t packet_log_buffer[SCTP_PACKET_LOG_SIZE];
 #endif
+#if defined(__FreeBSD__)
+	eventhandler_tag eh_tag;
+#endif
 #if defined(__APPLE__)
 	int sctp_main_timer_ticks;
 #endif
@@ -320,7 +323,7 @@ struct sctp_base_info {
 #endif
 #endif
 #ifdef INET
-#if defined(__Userspace_os_Windows)
+#if defined(__Userspace_os_Windows) && !defined(__MINGW32__)
 	SOCKET userspace_rawsctp;
 	SOCKET userspace_udpsctp;
 #else
@@ -331,7 +334,7 @@ struct sctp_base_info {
 	userland_thread_t recvthreadudp;
 #endif
 #ifdef INET6
-#if defined(__Userspace_os_Windows)
+#if defined(__Userspace_os_Windows) && !defined(__MINGW32__)
 	SOCKET userspace_rawsctp6;
 	SOCKET userspace_udpsctp6;
 #else
@@ -448,7 +451,7 @@ struct sctp_inpcb {
 	 */
 	union {
 		struct inpcb inp;
-		char align[(sizeof(struct in6pcb) + SCTP_ALIGNM1) &
+		char align[(sizeof(struct inpcb) + SCTP_ALIGNM1) &
 		        ~SCTP_ALIGNM1];
 	}     ip_inp;
 
@@ -803,19 +806,24 @@ int sctp_is_address_on_local_host(struct sockaddr *addr, uint32_t vrf_id);
 
 void sctp_inpcb_free(struct sctp_inpcb *, int, int);
 
+#define SCTP_DONT_INITIALIZE_AUTH_PARAMS	0
+#define SCTP_INITIALIZE_AUTH_PARAMS		1
+
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 struct sctp_tcb *
 sctp_aloc_assoc(struct sctp_inpcb *, struct sockaddr *,
-                int *, uint32_t, uint32_t, uint16_t, uint16_t, struct thread *);
+                int *, uint32_t, uint32_t, uint16_t, uint16_t, struct thread *,
+                int);
 #elif defined(__Windows__)
 struct sctp_tcb *
 sctp_aloc_assoc(struct sctp_inpcb *, struct sockaddr *,
-                int *, uint32_t, uint32_t, uint16_t, uint16_t, PKTHREAD);
+                int *, uint32_t, uint32_t, uint16_t, uint16_t, PKTHREAD, int);
 #else
 /* proc will be NULL for __Userspace__ */
 struct sctp_tcb *
 sctp_aloc_assoc(struct sctp_inpcb *, struct sockaddr *,
-                int *, uint32_t, uint32_t, uint16_t, uint16_t, struct proc *);
+                int *, uint32_t, uint32_t, uint16_t, uint16_t, struct proc *,
+                int);
 #endif
 
 int sctp_free_assoc(struct sctp_inpcb *, struct sctp_tcb *, int, int);
@@ -838,7 +846,11 @@ void sctp_remove_net(struct sctp_tcb *, struct sctp_nets *);
 
 int sctp_del_remote_addr(struct sctp_tcb *, struct sockaddr *);
 
+#if defined(__Userspace__)
+void sctp_pcb_init(int);
+#else
 void sctp_pcb_init(void);
+#endif
 
 void sctp_pcb_finish(void);
 

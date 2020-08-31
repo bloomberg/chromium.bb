@@ -13,11 +13,9 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/plugins/plugin_data_remover_helper.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -26,7 +24,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,9 +36,14 @@
 #include "extensions/common/extension.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-using content::BrowserThread;
-using browsing_data::ClearBrowsingDataTab;
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugin_data_remover_helper.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
+#endif
+
 using browsing_data::BrowsingDataType;
+using browsing_data::ClearBrowsingDataTab;
+using content::BrowserThread;
 
 namespace extension_browsing_data_api_constants {
 // Parameter name keys.
@@ -283,13 +288,14 @@ void BrowsingDataRemoverFunction::OnTaskFinished() {
     return;
   synced_data_deletion_.reset();
   observer_.RemoveAll();
-  this->SendResponse(true);
+  Respond(NoArguments());
   Release();  // Balanced in StartRemoving.
 }
 
-bool BrowsingDataRemoverFunction::RunAsync() {
+ExtensionFunction::ResponseAction BrowsingDataRemoverFunction::Run() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   // If we don't have a profile, something's pretty wrong.
-  DCHECK(GetProfile());
+  DCHECK(profile);
 
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
@@ -321,49 +327,56 @@ bool BrowsingDataRemoverFunction::RunAsync() {
 
   // Check that only |origins| or |excludeOrigins| can be set.
   if (origins && exclude_origins) {
-    error_ = extension_browsing_data_api_constants::kIncompatibleFilterError;
-    return false;
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kIncompatibleFilterError));
   }
 
   if (origins) {
-    if (!ParseOrigins(*origins, &origins_))
-      return false;
+    ResponseValue error_response;
+    if (!ParseOrigins(*origins, &origins_, &error_response))
+      return RespondNow(std::move(error_response));
     mode_ = content::BrowsingDataFilterBuilder::WHITELIST;
   } else {
-    if (exclude_origins && !ParseOrigins(*exclude_origins, &origins_))
-      return false;
+    if (exclude_origins) {
+      ResponseValue error_response;
+      if (!ParseOrigins(*exclude_origins, &origins_, &error_response))
+        return RespondNow(std::move(error_response));
+    }
     mode_ = content::BrowsingDataFilterBuilder::BLACKLIST;
   }
 
   // Check if a filter is set but non-filterable types are selected.
   if ((!origins_.empty() && (removal_mask_ & ~kFilterableDataTypes) != 0)) {
-    error_ = extension_browsing_data_api_constants::kNonFilterableError;
-    return false;
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kNonFilterableError));
   }
 
   // Check for prohibited data types.
-  if (!IsRemovalPermitted(removal_mask_, GetProfile()->GetPrefs())) {
-    error_ = extension_browsing_data_api_constants::kDeleteProhibitedError;
-    return false;
+  if (!IsRemovalPermitted(removal_mask_, profile->GetPrefs())) {
+    return RespondNow(
+        Error(extension_browsing_data_api_constants::kDeleteProhibitedError));
   }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (removal_mask_ &
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA) {
     // If we're being asked to remove plugin data, check whether it's actually
     // supported.
-    PostTask(FROM_HERE,
-             {base::ThreadPool(), base::MayBlock(),
-              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-              base::TaskPriority::USER_VISIBLE},
-             base::BindOnce(
-                 &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
-                 this, PluginPrefs::GetForProfile(GetProfile())));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+         base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(
+            &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
+            this, PluginPrefs::GetForProfile(profile)));
   } else {
     StartRemoving();
   }
+#else
+  StartRemoving();
+#endif
 
-  // Will finish asynchronously.
-  return true;
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 BrowsingDataRemoverFunction::~BrowsingDataRemoverFunction() {}
@@ -372,6 +385,7 @@ bool BrowsingDataRemoverFunction::IsPauseSyncAllowed() {
   return true;
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
     scoped_refptr<PluginPrefs> plugin_prefs) {
   if (!PluginDataRemoverHelper::IsSupported(plugin_prefs.get()))
@@ -381,9 +395,10 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowsingDataRemoverFunction::StartRemoving, this));
 }
+#endif
 
 void BrowsingDataRemoverFunction::StartRemoving() {
-  Profile* profile = GetProfile();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile);
 
@@ -416,8 +431,7 @@ void BrowsingDataRemoverFunction::StartRemoving() {
     auto filter_builder = content::BrowsingDataFilterBuilder::Create(mode_);
     for (const auto& origin : origins_) {
       std::string domain = GetDomainAndRegistry(
-          origin.host(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       if (domain.empty())
         domain = origin.host();  // IP address or internal hostname.
       filter_builder->AddRegisterableDomain(domain);
@@ -494,18 +508,21 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
   return true;
 }
 
-bool BrowsingDataRemoverFunction::ParseOrigins(
-    const base::Value& list_value,
-    std::vector<url::Origin>* result) {
+bool BrowsingDataRemoverFunction::ParseOrigins(const base::Value& list_value,
+                                               std::vector<url::Origin>* result,
+                                               ResponseValue* error_response) {
   DCHECK(list_value.is_list());
   result->reserve(list_value.GetList().size());
   for (const auto& value : list_value.GetList()) {
-    EXTENSION_FUNCTION_VALIDATE(value.is_string());
+    if (!value.is_string()) {
+      *error_response = BadMessage();
+      return false;
+    }
     url::Origin origin = url::Origin::Create(GURL(value.GetString()));
     if (origin.opaque()) {
-      error_ = base::StringPrintf(
+      *error_response = Error(base::StringPrintf(
           extension_browsing_data_api_constants::kInvalidOriginError,
-          value.GetString().c_str());
+          value.GetString().c_str()));
       return false;
     }
     result->push_back(std::move(origin));

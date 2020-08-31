@@ -10,10 +10,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -465,7 +466,7 @@ void PushMessagingManager::Core::RegisterOnUI(
                   base::BindOnce(&PushMessagingManager::Core::
                                      DidRequestPermissionInIncognito,
                                  weak_factory_ui_to_ui_.GetWeakPtr(),
-                                 base::Passed(&data)));
+                                 std::move(data)));
         }
       }
     }
@@ -481,12 +482,12 @@ void PushMessagingManager::Core::RegisterOnUI(
         requesting_origin, registration_id, render_process_id_,
         render_frame_id_, std::move(options), data.user_gesture,
         base::BindOnce(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
-                       base::Passed(&data)));
+                       std::move(data)));
   } else {
     push_service->SubscribeFromWorker(
         requesting_origin, registration_id, std::move(options),
         base::BindOnce(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
-                       base::Passed(&data)));
+                       std::move(data)));
   }
 }
 
@@ -682,8 +683,8 @@ void PushMessagingManager::Core::UnregisterFromService(
       blink::mojom::PushUnregistrationReason::JAVASCRIPT_API, requesting_origin,
       service_worker_registration_id, sender_id,
       base::BindOnce(&Core::DidUnregisterFromService,
-                     weak_factory_ui_to_ui_.GetWeakPtr(),
-                     base::Passed(&callback), service_worker_registration_id));
+                     weak_factory_ui_to_ui_.GetWeakPtr(), std::move(callback),
+                     service_worker_registration_id));
 }
 
 void PushMessagingManager::Core::DidUnregisterFromService(
@@ -787,14 +788,14 @@ void PushMessagingManager::DidGetSubscription(
 
       RunOrPostTaskOnThread(
           FROM_HERE, BrowserThread::UI,
-          base::BindOnce(
-              &Core::GetSubscriptionInfoOnUI, base::Unretained(ui_core_.get()),
-              origin, service_worker_registration_id, application_server_key,
-              push_subscription_id,
-              base::BindOnce(&Core::GetSubscriptionDidGetInfoOnUI,
-                             ui_core_weak_ptr_, base::Passed(&callback), origin,
-                             service_worker_registration_id,
-                             application_server_key)));
+          base::BindOnce(&Core::GetSubscriptionInfoOnUI,
+                         base::Unretained(ui_core_.get()), origin,
+                         service_worker_registration_id, application_server_key,
+                         push_subscription_id,
+                         base::BindOnce(&Core::GetSubscriptionDidGetInfoOnUI,
+                                        ui_core_weak_ptr_, std::move(callback),
+                                        origin, service_worker_registration_id,
+                                        application_server_key)));
 
       return;
     }
@@ -893,8 +894,8 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
             GET_SUBSCRIPTION_STORAGE_CORRUPT,
         origin, service_worker_registration_id, application_server_key,
         base::BindOnce(&Core::GetSubscriptionDidUnsubscribe,
-                       weak_factory_ui_to_ui_.GetWeakPtr(),
-                       base::Passed(&callback), status));
+                       weak_factory_ui_to_ui_.GetWeakPtr(), std::move(callback),
+                       status));
 
     RecordGetRegistrationStatus(status);
   }

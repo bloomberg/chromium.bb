@@ -226,8 +226,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
                                    view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(
           result()->id(), event_flags,
-          ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
+          AppListLaunchedFrom::kLaunchedFromSearchBox,
+          AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
           !by_button_press && is_default_result() /* launch_as_default */);
     }
   }
@@ -345,7 +345,7 @@ int SearchResultAnswerCardView::GetYSize() {
 int SearchResultAnswerCardView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kCard, /*excludes=*/{}, 1);
+          results(), SearchResultDisplayType::kCard, /*excludes=*/{}, 1);
   SearchResult* top_result =
       display_results.empty() ? nullptr : display_results.front();
 
@@ -355,7 +355,7 @@ int SearchResultAnswerCardView::DoUpdate() {
   parent()->SetVisible(has_valid_answer_card);
 
   set_container_score(
-      has_valid_answer_card && top_result ? top_result->display_score() : 0);
+      has_valid_answer_card && top_result ? top_result->display_score() : -1);
   if (top_result)
     top_result->set_is_visible(has_valid_answer_card);
 
@@ -391,10 +391,9 @@ SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
     const std::string& title) {
   auto headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  headers->AddHeader(base::StrCat({kSearchAnswerHasResult, ": true"}));
-  headers->AddHeader(base::StrCat({kSearchAnswerTitle, ": ", title.c_str()}));
-  headers->AddHeader(
-      base::StrCat({kSearchAnswerIssuedQuery, ": ", query.c_str()}));
+  headers->SetHeader(kSearchAnswerHasResult, "true");
+  headers->SetHeader(kSearchAnswerTitle, title);
+  headers->SetHeader(kSearchAnswerIssuedQuery, query);
   return headers;
 }
 

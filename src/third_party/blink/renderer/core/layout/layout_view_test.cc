@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
+#include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -57,11 +59,64 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
   EXPECT_FALSE(view->CanHaveChildren());
   EXPECT_FALSE(frame_doc->documentElement()->GetComputedStyle());
 
-  frame_doc->body()->SetInnerHTMLFromString(R"HTML(
+  frame_doc->body()->setInnerHTML(R"HTML(
     <div id="div"></div>
   )HTML");
 
   EXPECT_FALSE(frame_doc->NeedsLayoutTreeUpdate());
+}
+
+TEST_F(LayoutViewTest, NamedPages) {
+  ScopedNamedPagesForTest named_pages_enabler(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      div:empty { height:10px; }
+    </style>
+    <!-- First page: -->
+    <div></div>
+    <!-- Second page: -->
+    <div style="break-before:page;"></div>
+    <!-- Third page: -->
+    <div style="page:yksi;"></div>
+    <!-- Fourth page: -->
+    <div style="page:yksi;">
+      <div style="page:yksi; break-before:page;"></div>
+      <!-- Fifth page: -->
+      <div style="page:yksi; break-before:page;"></div>
+    </div>
+    <!-- Sixth page: -->
+    <div style="page:kaksi;"></div>
+    <!-- Seventh page: -->
+    <div style="page:maksitaksi;"></div>
+    <!-- Eighth page: -->
+    <div></div>
+    <!-- Ninth page: -->
+    <div style="page:yksi;"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+  const LayoutView* view = GetDocument().GetLayoutView();
+  ASSERT_TRUE(view);
+
+  ScopedPrintContext print_context(&GetDocument().View()->GetFrame());
+  print_context->BeginPrintMode(500, 500);
+  const NamedPagesMapper* mapper = view->GetNamedPagesMapper();
+  ASSERT_TRUE(mapper);
+
+  EXPECT_EQ(mapper->NamedPageAtIndex(0), AtomicString());
+  EXPECT_EQ(mapper->NamedPageAtIndex(1), AtomicString());
+  EXPECT_EQ(mapper->NamedPageAtIndex(2), "yksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(3), "yksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(4), "yksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(5), "kaksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(6), "maksitaksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(7), AtomicString());
+  EXPECT_EQ(mapper->NamedPageAtIndex(8), "yksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(9), "yksi");
+  EXPECT_EQ(mapper->NamedPageAtIndex(100), "yksi");
+  EXPECT_EQ(mapper->LastPageName(), "yksi");
 }
 
 struct HitTestConfig {
@@ -74,11 +129,11 @@ class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
                               public RenderingTest {
  public:
   LayoutViewHitTestTest()
-      : ScopedLayoutNGForTest(LayoutNG()),
+      : ScopedLayoutNGForTest(GetParam().layout_ng),
         RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
-  bool LayoutNG() { return GetParam().layout_ng; }
+  bool LayoutNG() { return RuntimeEnabledFeatures::LayoutNGEnabled(); }
   bool IsAndroidOrWindowsEditingBehavior() {
     // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
     // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().

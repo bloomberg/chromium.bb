@@ -94,11 +94,11 @@ Polymer({
     /**
      * writeUma is a function that handles writing uma stats.
      *
-     * @type {function(LockScreenProgress)}
+     * @type {function(settings.LockScreenProgress)}
      */
     writeUma: {
       type: Object,
-      value: function() {
+      value() {
         return function() {};
       }
     },
@@ -135,14 +135,21 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {boolean} */
+    isSetModesCallPending_: {
+      notify: true,
+      type: Boolean,
+      value: false,
+    },
   },
 
-  focus: function() {
+  focus() {
     this.$.pinKeyboard.focusInput();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.resetState();
 
     // Show the pin is too short error when first displaying the PIN dialog.
@@ -155,7 +162,7 @@ Polymer({
   /**
    * Resets the element to the initial state.
    */
-  resetState: function() {
+  resetState() {
     this.initialPin_ = '';
     this.pinKeyboardValue_ = '';
     this.enableSubmit = false;
@@ -171,8 +178,8 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  canSubmit_: function() {
-    return this.initialPin_ == this.pinKeyboardValue_;
+  canSubmit_() {
+    return this.initialPin_ === this.pinKeyboardValue_;
   },
 
   /**
@@ -183,7 +190,7 @@ Polymer({
    * @param {chrome.quickUnlockPrivate.CredentialRequirements} requirements
    *     The requirements received from getCredentialRequirements.
    */
-  processPinRequirements_: function(messageId, requirements) {
+  processPinRequirements_(messageId, requirements) {
     let additionalInformation = '';
     switch (messageId) {
       case MessageType.TOO_SHORT:
@@ -209,18 +216,18 @@ Polymer({
    * @param {string} messageId
    * @param {string} problemClass
    */
-  showProblem_: function(messageId, problemClass) {
+  showProblem_(messageId, problemClass) {
     this.quickUnlockPrivate.getCredentialRequirements(
         chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
         this.processPinRequirements_.bind(this, messageId));
     this.problemClass_ = problemClass;
     this.updateStyles();
-    this.enableSubmit =
-        problemClass != ProblemType.ERROR && messageId != MessageType.TOO_SHORT;
+    this.enableSubmit = problemClass !== ProblemType.ERROR &&
+        messageId !== MessageType.TOO_SHORT;
   },
 
   /** @private */
-  hideProblem_: function() {
+  hideProblem_() {
     this.problemMessageId_ = '';
     this.problemClass_ = '';
   },
@@ -232,7 +239,7 @@ Polymer({
    * @param {chrome.quickUnlockPrivate.CredentialCheck} message The message
    *     received from checkCredential.
    */
-  processPinProblems_: function(message) {
+  processPinProblems_(message) {
     if (!message.errors.length && !message.warnings.length) {
       this.hideProblem_();
       this.enableSubmit = true;
@@ -241,14 +248,14 @@ Polymer({
     }
 
     if (!message.errors.length ||
-        message.errors[0] !=
+        message.errors[0] !==
             chrome.quickUnlockPrivate.CredentialProblem.TOO_SHORT) {
       this.pinHasPassedMinimumLength_ = true;
     }
 
     if (message.warnings.length) {
       assert(
-          message.warnings[0] ==
+          message.warnings[0] ===
           chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK);
       this.showProblem_(MessageType.TOO_WEAK, ProblemType.WARNING);
     }
@@ -278,7 +285,7 @@ Polymer({
    * @param {!CustomEvent<{pin: string}>} e Custom event containing the new pin.
    * @private
    */
-  onPinChange_: function(e) {
+  onPinChange_(e) {
     const newPin = e.detail.pin;
     if (!this.isConfirmStep) {
       if (newPin) {
@@ -296,7 +303,7 @@ Polymer({
   },
 
   /** @private */
-  onPinSubmit_: function() {
+  onPinSubmit_() {
     // Notify container object.
     this.fire('pin-submit');
   },
@@ -307,9 +314,11 @@ Polymer({
    * @private
    * @param {boolean} didSet
    */
-  onSetModesCompleted_: function(didSet) {
+  onSetModesCompleted_(didSet) {
+    this.isSetModesCallPending_ = false;
     if (!didSet) {
       console.error('Failed to update pin');
+      this.enableSubmit = true;
       return;
     }
 
@@ -318,7 +327,7 @@ Polymer({
   },
 
   /** This is called by container object when user initiated submit. */
-  doSubmit: function() {
+  doSubmit() {
     if (!this.isConfirmStep) {
       if (!this.enableSubmit) {
         return;
@@ -329,7 +338,7 @@ Polymer({
       this.onPinChange_(new CustomEvent(
           'pin-change', {detail: {pin: this.pinKeyboardValue_}}));
       this.$.pinKeyboard.focusInput();
-      this.writeUma(LockScreenProgress.ENTER_PIN);
+      this.writeUma(settings.LockScreenProgress.ENTER_PIN);
       return;
     }
     // onPinSubmit gets called if the user hits enter on the PIN keyboard.
@@ -343,10 +352,12 @@ Polymer({
     }
 
     assert(this.setModes);
+    this.isSetModesCallPending_ = true;
+    this.enableSubmit = false;
     this.setModes.call(
         null, [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
         [this.pinKeyboardValue_], this.onSetModesCompleted_.bind(this));
-    this.writeUma(LockScreenProgress.CONFIRM_PIN);
+    this.writeUma(settings.LockScreenProgress.CONFIRM_PIN);
   },
 
   /**
@@ -355,8 +366,8 @@ Polymer({
    * @param {string} problemClass
    * @return {boolean}
    */
-  hasError_: function(problemMessageId, problemClass) {
-    return !!problemMessageId && problemClass == ProblemType.ERROR;
+  hasError_(problemMessageId, problemClass) {
+    return !!problemMessageId && problemClass === ProblemType.ERROR;
   },
 
   /**
@@ -367,7 +378,7 @@ Polymer({
    * @param {string} messageParameters
    * @return {string}
    */
-  formatProblemMessage_: function(locale, messageId, messageParameters) {
+  formatProblemMessage_(locale, messageId, messageParameters) {
     return messageId ? this.i18nDynamic(locale, messageId, messageParameters) :
                        '';
   },

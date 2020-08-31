@@ -46,6 +46,11 @@ COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'pynacl', f)
                                  'hashing_tools.py', 'local_storage_cache.py',
                                  'log_tools.py', 'repo_tools.py',)]
 
+# DEPS is not a command code file per se, but it describes the toolchains
+# and sysroots used to build all of the host binaries, which are not all
+# otherwise modeled.
+COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'DEPS')]
+
 
 def HashBuildSystemSources():
   """Read the build source files to use in hashes for Callbacks."""
@@ -55,7 +60,6 @@ def HashBuildSystemSources():
     with open(filename) as f:
       h.update(f.read())
   FILE_CONTENTS_HASH = h.hexdigest()
-
 
 HashBuildSystemSources()
 

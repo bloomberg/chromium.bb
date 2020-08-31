@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/volume_control.h"
 
@@ -54,8 +54,9 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
            {AudioContentType::kAlarm, 0},
            {AudioContentType::kCommunication, 0},
            {AudioContentType::kOther, 0}}),
-      allow_volume_feedback_observers_(
-          new base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>()),
+      active_audio_stream_observers_(
+          base::MakeRefCounted<
+              base::ObserverListThreadSafe<ActiveAudioStreamObserver>>()),
       backend_wrapper_using_video_decoder_(nullptr),
       buffer_delegate_(nullptr),
       weak_factory_(this) {
@@ -75,7 +76,7 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 }
 
-std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
+std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   return std::make_unique<MediaPipelineBackendWrapper>(params, this,
@@ -153,18 +154,19 @@ void MediaPipelineBackendManager::OnMixerStreamCountChange(int primary_streams,
                                                            int sfx_streams) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
-  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+  bool had_playing_primary_streams =
+      (TotalPlayingNoneffectsAudioStreamsCount() > 0);
 
   mixer_primary_stream_count_ = primary_streams;
   mixer_sfx_stream_count_ = sfx_streams;
 
   HandlePlayingAudioStreamsChange(had_playing_audio_streams,
-                                  prev_allow_feedback);
+                                  had_playing_primary_streams);
 }
 
 void MediaPipelineBackendManager::HandlePlayingAudioStreamsChange(
     bool had_playing_audio_streams,
-    bool prev_allow_feedback) {
+    bool had_playing_primary_streams) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
   if (new_playing_audio_streams == 0) {
@@ -179,11 +181,12 @@ void MediaPipelineBackendManager::HandlePlayingAudioStreamsChange(
     }
   }
 
-  bool new_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
-  if (new_allow_feedback != prev_allow_feedback) {
-    allow_volume_feedback_observers_->Notify(
-        FROM_HERE, &AllowVolumeFeedbackObserver::AllowVolumeFeedbackSounds,
-        new_allow_feedback);
+  bool new_playing_primary_streams =
+      (TotalPlayingNoneffectsAudioStreamsCount() > 0);
+  if (new_playing_primary_streams != had_playing_primary_streams) {
+    active_audio_stream_observers_->Notify(
+        FROM_HERE, &ActiveAudioStreamObserver::OnActiveAudioStreamChange,
+        new_playing_primary_streams);
   }
 }
 
@@ -213,14 +216,14 @@ void MediaPipelineBackendManager::EnterPowerSaveMode() {
   VolumeControl::SetPowerSaveMode(true);
 }
 
-void MediaPipelineBackendManager::AddAllowVolumeFeedbackObserver(
-    AllowVolumeFeedbackObserver* observer) {
-  allow_volume_feedback_observers_->AddObserver(observer);
+void MediaPipelineBackendManager::AddActiveAudioStreamObserver(
+    ActiveAudioStreamObserver* observer) {
+  active_audio_stream_observers_->AddObserver(observer);
 }
 
-void MediaPipelineBackendManager::RemoveAllowVolumeFeedbackObserver(
-    AllowVolumeFeedbackObserver* observer) {
-  allow_volume_feedback_observers_->RemoveObserver(observer);
+void MediaPipelineBackendManager::RemoveActiveAudioStreamObserver(
+    ActiveAudioStreamObserver* observer) {
+  active_audio_stream_observers_->RemoveObserver(observer);
 }
 
 void MediaPipelineBackendManager::AddExtraPlayingStream(

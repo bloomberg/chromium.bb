@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_receiver_set.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -36,19 +37,19 @@ class WebContentsReceiverSetBrowserTest : public ContentBrowserTest {
 class TestInterfaceBinder : public WebContentsReceiverSetTestBinder<
                                 mojom::BrowserAssociatedInterfaceTestDriver> {
  public:
-  explicit TestInterfaceBinder(const base::Closure& bind_callback)
-      : bind_callback_(bind_callback) {}
+  explicit TestInterfaceBinder(base::OnceClosure bind_callback)
+      : bind_callback_(std::move(bind_callback)) {}
   ~TestInterfaceBinder() override {}
 
   void BindReceiver(
       RenderFrameHost* frame_host,
       mojo::PendingAssociatedReceiver<
           mojom::BrowserAssociatedInterfaceTestDriver> receiver) override {
-    bind_callback_.Run();
+    std::move(bind_callback_).Run();
   }
 
  private:
-  const base::Closure bind_callback_;
+  base::OnceClosure bind_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaceBinder);
 };

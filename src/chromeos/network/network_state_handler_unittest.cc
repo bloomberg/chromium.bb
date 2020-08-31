@@ -109,7 +109,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   }
 
   void DefaultNetworkChanged(const NetworkState* network) override {
-    EXPECT_TRUE(!network || network->IsConnectedState());
+    EXPECT_TRUE(!network || network->IsActive());
     ++default_network_change_count_;
     default_network_ = network ? network->path() : "";
     default_network_connection_state_ =
@@ -323,9 +323,9 @@ class NetworkStateHandlerTest : public testing::Test {
   void SetServiceProperty(const std::string& service_path,
                           const std::string& key,
                           const base::Value& value) {
-    ShillServiceClient::Get()->SetProperty(dbus::ObjectPath(service_path), key,
-                                           value, base::DoNothing(),
-                                           base::Bind(&ErrorCallbackFunction));
+    ShillServiceClient::Get()->SetProperty(
+        dbus::ObjectPath(service_path), key, value, base::DoNothing(),
+        base::BindOnce(&ErrorCallbackFunction));
   }
 
   void SetProperties(NetworkState* network, const base::Value& properties) {
@@ -1636,6 +1636,25 @@ TEST_F(NetworkStateHandlerTest, NetworkActiveNetworksStateChanged) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->active_network_change_count());
 
+  // Activate cellular network so that it's part of active network list.
+  service_test_->SetServiceProperty(
+      kShillManagerClientStubCellular, shill::kActivationStateProperty,
+      base::Value(shill::kActivationStateActivating));
+  base::RunLoop().RunUntilIdle();
+  expected_active_network_paths = {kShillManagerClientStubCellular};
+  EXPECT_EQ(expected_active_network_paths,
+            test_observer_->active_network_paths());
+  // Test that network technology change signals the observer.
+  test_observer_->reset_change_counts();
+  service_test_->SetServiceProperty(kShillManagerClientStubCellular,
+                                    shill::kNetworkTechnologyProperty,
+                                    base::Value(shill::kNetworkTechnologyUmts));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->active_network_change_count());
+  // Remove cellular service.
+  service_test_->RemoveService(kShillManagerClientStubCellular);
+  base::RunLoop().RunUntilIdle();
+
   // Add two Tether networks.
   test_observer_->reset_change_counts();
   network_state_handler_->SetTetherTechnologyState(
@@ -1979,11 +1998,12 @@ TEST_F(NetworkStateHandlerTest, UpdateGuid) {
   // No service matching kShillManagerClientStubCellular.
   EXPECT_FALSE(
       network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
-  // The default cellular network should have the same guid as before.
+  // The default cellular network will have a unique assigned guid.
   cellular = network_state_handler_->FirstNetworkByType(
       NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  EXPECT_EQ("cellular1_guid", cellular->guid());
+  EXPECT_FALSE(cellular->guid().empty());
+  EXPECT_NE("cellular1_guid", cellular->guid());
 }
 
 TEST_F(NetworkStateHandlerTest, DefaultCellularNetwork) {

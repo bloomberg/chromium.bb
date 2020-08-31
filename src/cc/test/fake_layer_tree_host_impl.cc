@@ -78,7 +78,8 @@ void FakeLayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
   notify_tile_state_changed_called_ = true;
 }
 
-viz::BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {
+const viz::BeginFrameArgs& FakeLayerTreeHostImpl::CurrentBeginFrameArgs()
+    const {
   return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
 }
 
@@ -86,7 +87,7 @@ void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
   viz::BeginFrameArgs next_begin_frame_args =
       current_begin_frame_tracker_.Current();
   next_begin_frame_args.frame_time += advance_by;
-  DidFinishImplFrame();
+  DidFinishImplFrame(current_begin_frame_tracker_.Current());
   WillBeginImplFrame(next_begin_frame_args);
 }
 

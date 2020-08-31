@@ -25,6 +25,7 @@
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
 <translation id="1249250836236328755">ಪ್ರಕಾರ</translation>
 <translation id="1278813325885878377">ಹಂಗೇರಿಯನ್ QWERTY ಕೀಬೋರ್ಡ್</translation>
+<translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google ಡ್ರೈವ್‌ ಇದೀಗ ಲಭ್ಯವಿಲ್ಲ. Google ಡ್ರೈವ್‌ ಒಮ್ಮೆ ಹಿಂತಿರುಗಿದರೆ ಅಪ್‌ಲೋಡ್‌ ಆಗುವುದು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ.</translation>
 <translation id="1307931752636661898">Linux ಫೈಲ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="1310751437842832374">ಲಿಪ್ಯಂತರಣ (mausam → ନମସ୍ତେ)</translation>
@@ -36,7 +37,7 @@
 <translation id="1358735829858566124">ಫೈಲ್ ಅಥವಾ ಡೈರೆಕ್ಟರಿ ಬಳಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1363028406613469049">ಟ್ರ್ಯಾಕ್</translation>
 <translation id="1378727793141957596">Google ಡ್ರೈವ್‌ಗೆ ಸುಸ್ವಾಗತ!</translation>
-<translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1395262318152388157">ಸೀಕ್ ಸ್ಲೈಡರ್</translation>
 <translation id="1399648040768741453">ತೆಲುಗು ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
@@ -76,6 +77,7 @@
 <translation id="1847880352285315359">ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1864756863218646478">ಫೈಲ್ ಅನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="1921986354447415460">ಟರ್ಕಿಶ್-F ಕೀಬೋರ್ಡ್</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1931134289871235022">ಸ್ಲೋವೇಕ್</translation>
 <translation id="1933345018156373194">ಸರಿಸಲು ವಿಫಲವಾಗಿದೆ, ಅನಿರೀಕ್ಷಿತ ದೋಷ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ಫಿನ್ನಿಷ್</translation>
@@ -84,6 +86,7 @@
 <translation id="1947424002851288782">ಜರ್ಮನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="1972984168337863910">ಫೈಲ್‌ಗಳ ಪ್ರತಿಕ್ರಿಯೆ ಫಲಕಗಳನ್ನು ವಿಸ್ತರಿಸಿ</translation>
 <translation id="1984603991036629094">ಅರ್ಮೇನಿಯನ್ ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="1995337122023280937">ಫೈಲ್ ಸ್ಥಳಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="2001796770603320721">ಡ್ರೈವ್‌ನಲ್ಲಿ ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2009067268969781306">ಡ್ರೈವ್ ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡುವುದರಿಂದ, ಅದರಲ್ಲಿ ಸಂಗ್ರಣೆಯಾಗಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2028997212275086731">RAR ಆರ್ಕೈವ್</translation>
@@ -128,13 +131,14 @@
 <translation id="2542049655219295786">Google ಕೋಷ್ಟಕ</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> ಗೆ ಸೇರಿಸಿ</translation>
 <translation id="255937426064304553">US ಇಂಟರ್‌ನ್ಯಾಷನಲ್</translation>
-<translation id="2562685439590298522">ಡಾಕ್ಸ್</translation>
+<translation id="2562685439590298522">Docs</translation>
 <translation id="2563185590376525700">ಕಪ್ಪೆ</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> ವೀಡಿಯೊ</translation>
 <translation id="2620090360073999360">ಈ ಸಮಯದಲ್ಲಿ Google ಡ್ರೈವ್‌ ಅನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="2638942478653899953">Google ಡ್ರೈವ್ ಅನ್ನು ತಲುಪಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು <ph name="BEGIN_LINK" />ಲಾಗ್ ಔಟ್<ph name="END_LINK" /> ಮಾಡಿ ಹಾಗೂ ಮತ್ತೆ ಹಿಂತಿರುಗಿ ಲಾಗ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2649120831653069427">ರೈನ್‌ಬೋಫಿಶ್</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ಫೈಲ್ ಸ್ಥಳ</translation>
 <translation id="2672394958563893062">ದೋಷವೊಂದು ಸಂಭವಿಸಿದೆ. ಮೊದಲಿನಿಂದ ಮರುಪ್ರಾರಂಭಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="2676946222714718093">ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="2735698359135166290">ರೊಮೇನಿಯನ್ ಪ್ರಮಾಣಿತ ಕೀಬೋರ್ಡ್</translation>
@@ -154,11 +158,12 @@
 <translation id="2902734494705624966">US ವಿಸ್ತೃತ</translation>
 <translation id="2923240520113693977">ಎಸ್ಟೋನಿಯನ್</translation>
 <translation id="2924296707677495905">ಲಿಪ್ಯಂತರಣ (namaskaram → ನಮಸ್ಕಾರ)</translation>
-<translation id="2925966894897775835">ಶೀಟ್‌ಗಳು</translation>
+<translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">ಮಂಗೋಲಿಯನ್</translation>
 <translation id="2942290791863759244">ಜರ್ಮನ್ ನಿಯೊ 2 ಕೀಬೋರ್ಡ್</translation>
-<translation id="2943400156390503548">ಸ್ಲೈಡ್‌ಗಳು</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ಹೊಂದಿರುವ ಹೆಸರನ್ನು ಬಳಸಿ</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2951236788251446349">ಜೆಲ್ಲಿಫಿಶ್</translation>
 <translation id="2963783323012015985">ಟರ್ಕಿಶ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="2966459079597787514">ಸ್ವೀಡಿಶ್ ಕೀಬೋರ್ಡ್</translation>
@@ -204,6 +209,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> ದೋಷಗಳು.</translation>
 <translation id="3519867315646775981">ಲಿಪ್ಯಂತರಣ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">ಪೋರ್ಚುಗೀಸ್</translation>
+<translation id="3524311639100184459">ಎಚ್ಚರಿಕೆ: ಈ ಫೈಲ್‌ಗಳು ತಾತ್ಕಾಲಿಕವಾಗಿರುತ್ತವೆ ಹಾಗೂ ಡಿಸ್ಕ್ ಸ್ಥಳವನ್ನು ಮುಕ್ತಗೊಳಿಸಲು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅವುಗಳನ್ನು ಅಳಿಸಬಹುದು.  <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ಫೋಲ್ಡರ್</translation>
 <translation id="3549797760399244642">drive.google.com ಗೆ ಹೋಗಿ...</translation>
 <translation id="357479282490346887">ಲಿಥುವಾನಿಯನ್</translation>
@@ -250,6 +256,7 @@
 <translation id="3958548648197196644">ಕಿವಿ</translation>
 <translation id="3966388904776714213">ಆಡಿಯೊ ಪ್ಲೇಯರ್</translation>
 <translation id="4002066346123236978">ಶೀರ್ಷಿಕೆ</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> ಆ್ಯಪ್‌ಗಳೊಂದಿಗೆ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲು, ಮೊದಲು ಅವುಗಳನ್ನು <ph name="SHARED_DIRECTORY_LABEL" /> ಫೋಲ್ಡರ್‌ಗೆ ಸರಿಸಿ.</translation>
 <translation id="4070370845051020638">ಕ್ಯಾಂಟೋನೀಸ್ ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>
 <translation id="4072248638558688893">ತಮಿಳು ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="4124935795427217608">ಯುನಿಕಾರ್ನ್</translation>
@@ -271,6 +278,7 @@
 <translation id="4336032328163998280">ನಕಲು ಕಾರ್ಯಾಚರಣೆ ವಿಫಲವಾಗಿದೆ. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">ಕರಬೂಜ ಹಣ್ಣು</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">ಬಾಹ್ಯ ಲಿಂಕ್</translation>
 <translation id="4425149324548788773">ನನ್ನ ಡ್ರೈವ್</translation>
 <translation id="4465830120256509958">ಬ್ರೆಜಿಲಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="4470564870223067757">ಹಂಗುಲ್ 2 ಸೆಟ್</translation>
@@ -318,6 +326,7 @@
 <translation id="4880520557730313061">ಸ್ವಯಂ-ಹೊಂದಿಸು</translation>
 <translation id="4881695831933465202">ತೆರೆ</translation>
 <translation id="4886021172213954916">ತಮಿಳು ಕೀಬೋರ್ಡ್ (ಟೈಪ್‌ರೈಟರ್)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" /> ಬಳಸಿ ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ಅನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಲು ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="4924638091161556692">ಸ್ಥಿರವಾದ</translation>
 <translation id="4935975195727477204">ಗಜಾನಿಯಾ ಹೂ</translation>
@@ -492,6 +501,7 @@
 <translation id="6806699711453372963">Linux ಹಂಚಿಕೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="6808193438228982088">ನರಿ</translation>
 <translation id="6820687829547641339">Gzip ಸಂಕ್ಷೇಪಿಸಿದ tar ಆರ್ಕೈವ್</translation>
+<translation id="6823166707458800069">ಈ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಉಳಿಸಲಾದ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳನ್ನು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="6825883775269213504">ರಷ್ಯನ್</translation>
 <translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸಂಜೆಯವರೆಗೆ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
 <translation id="6847101934483209767">ಆಯ್ಕೆಯಿಂದ <ph name="ENTRY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
@@ -501,6 +511,7 @@
 <translation id="6878261347041253038">ದೇವನಾಗರಿ ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="6885780034956018177">ಬಸವನ ಹುಳು</translation>
 <translation id="6896758677409633944">ನಕಲಿಸು</translation>
+<translation id="6898028766943174120">ಇನ್ನಷ್ಟು ಸಬ್-ಫೋಲ್ಡರ್‌ಗಳು...</translation>
 <translation id="691516599546977041"><ph name="FOLDER_NAME" /> ನಲ್ಲಿ ಉಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಎಡಿಟ್ ಮಾಡಿದ ಚಿತ್ರಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US ವರ್ಕ್‌ಮ್ಯಾನ್</translation>
@@ -511,6 +522,7 @@
 <translation id="696203921837389374">ಮೊಬೈಲ್ ಡೇಟಾ ಮೂಲಕ ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="6970230597523682626">ಬಲ್ಗೇರಿಯನ್</translation>
+<translation id="6973630695168034713">ಫೋಲ್ಡರ್‌ಗಳು</translation>
 <translation id="6978611942794658017">ಈ ಫೈಲ್ ಅನ್ನು Windows ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸಿಕೊಂಡು ಒಂದು ಪಿಸಿಗಾಗಿ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. Chrome OS ನಲ್ಲಿ ರನ್ ಆಗುವ ನಿಮ್ಮ ಸಾಧನದ ಜೊತೆಗೆ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ Chrome ವೆಬ್‌ ಸ್ಟೋರ್‌ನಲ್ಲಿ ಹುಡುಕಿ.</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="6990081529015358884">ನಿಮ್ಮ ಬಳಿ ಇದ್ದ ಸ್ಥಳ ಖಾಲಿಯಾಗಿದೆ</translation>
@@ -544,6 +556,7 @@
 <translation id="7417705661718309329">Google ನಕ್ಷೆ</translation>
 <translation id="7419631653042041064">ಕೆಟಲಾನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7434823369735508263">ಯುಕೆ ಡಿವೊರಾಕ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="7447678886297481665">ಈ ಫೋಲ್ಡರ್‌ನಲ್ಲಿರುವ ಫೈಲ್‌ಗಳು ಓದಲು ಮಾತ್ರ. ಕೆಲವು ಚಟುವಟಿಕೆಗಳು ಬೆಂಬಲಿತವಾಗಿರುವುದಿಲ್ಲ.</translation>
 <translation id="7460898608667578234">ಉಕ್ರೇನಿಯನ್</translation>
 <translation id="7474889694310679759">ಕೆನಡಿಯನ್ ಇಂಗ್ಲಿಷ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> ಕಂಡುಬಂದಿವೆ <ph name="LINE_BREAK1" /> <ph name="BEGIN_LINK" />Google ಡ್ರೈವ್<ph name="END_LINK" /> ಗೆ ಬ್ಯಾಕಪ್ ಮಾಡಲು ಸಿದ್ಧವಾಗಿದೆ</translation>
@@ -560,6 +573,7 @@
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳನ್ನು ಸರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="770015031906360009">ಗ್ರೀಕ್</translation>
 <translation id="7706319470528945664">ಪೋರ್ಚುಗೀಸ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7711920809702896782">ಚಿತ್ರ ಮಾಹಿತಿ</translation>

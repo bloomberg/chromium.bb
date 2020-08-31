@@ -156,6 +156,7 @@ void V8TestIntegerIndexedGlobal::LengthAttributeSetterCallback(
 }
 
 void V8TestIntegerIndexedGlobal::VoidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestIntegerIndexedGlobal.voidMethodDocument");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedGlobal_voidMethodDocument");
 
   test_integer_indexed_global_v8_internal::VoidMethodDocumentMethod(info);
@@ -283,7 +284,7 @@ static void InstallV8TestIntegerIndexedGlobalTemplate(
   // Register IDL constants, attributes and operations.
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "length", V8TestIntegerIndexedGlobal::LengthAttributeGetterCallback, V8TestIntegerIndexedGlobal::LengthAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "length", V8TestIntegerIndexedGlobal::LengthAttributeGetterCallback, V8TestIntegerIndexedGlobal::LengthAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
@@ -377,16 +378,6 @@ v8::Local<v8::Object> V8TestIntegerIndexedGlobal::FindInstanceInPrototypeChain(
 TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestIntegerIndexedGlobal* NativeValueTraits<TestIntegerIndexedGlobal>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestIntegerIndexedGlobal* native_value = V8TestIntegerIndexedGlobal::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestIntegerIndexedGlobal"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

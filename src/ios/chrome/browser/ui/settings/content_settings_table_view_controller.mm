@@ -4,21 +4,17 @@
 
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#import "components/prefs/ios/pref_observer_bridge.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ui/settings/block_popups_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -40,25 +36,17 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsBlockPopups = kItemTypeEnumZero,
-  ItemTypeSettingsTranslate,
   ItemTypeSettingsComposeEmail,
 };
 
 }  // namespace
 
-@interface ContentSettingsTableViewController ()<PrefObserverDelegate,
-                                                 BooleanObserver> {
-  // Pref observer to track changes to prefs.
-  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
-  // Registrar for pref changes notifications.
-  PrefChangeRegistrar _prefChangeRegistrar;
-
+@interface ContentSettingsTableViewController () <BooleanObserver> {
   // The observable boolean that binds to the "Disable Popups" setting state.
   ContentSettingBackedBoolean* _disablePopupsSetting;
 
   // Updatable Items
   TableViewDetailIconItem* _blockPopupsDetailItem;
-  TableViewDetailIconItem* _translateDetailItem;
   TableViewDetailIconItem* _composeEmailDetailItem;
 }
 
@@ -67,32 +55,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Helpers to create collection view items.
 - (id)blockPopupsItem;
-- (id)translateItem;
 - (id)composeEmailItem;
 
 @end
 
 @implementation ContentSettingsTableViewController {
-  ios::ChromeBrowserState* browserState_;  // weak
+  ChromeBrowserState* _browserState;  // weak
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
-    browserState_ = browserState;
+    _browserState = browserState;
     self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE);
-
-    _prefChangeRegistrar.Init(browserState->GetPrefs());
-    _prefObserverBridge.reset(new PrefObserverBridge(self));
-    // Register to observe any changes on Perf backed values displayed by the
-    // screen.
-    _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kOfferTranslateEnabled, &_prefChangeRegistrar);
 
     HostContentSettingsMap* settingsMap =
         ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
@@ -123,10 +102,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self blockPopupsItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  if (!base::FeatureList::IsEnabled(kLanguageSettings)) {
-    [model addItem:[self translateItem]
-        toSectionWithIdentifier:SectionIdentifierSettings];
-  }
   MailtoHandlerProvider* provider =
       ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
   NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
@@ -149,22 +124,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _blockPopupsDetailItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   _blockPopupsDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  _blockPopupsDetailItem.accessibilityIdentifier = kSettingsBlockPopupsCellId;
   return _blockPopupsDetailItem;
-}
-
-- (TableViewItem*)translateItem {
-  _translateDetailItem =
-      [[TableViewDetailIconItem alloc] initWithType:ItemTypeSettingsTranslate];
-  BOOL enabled =
-      browserState_->GetPrefs()->GetBoolean(prefs::kOfferTranslateEnabled);
-  NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                               : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _translateDetailItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
-  _translateDetailItem.detailText = subtitle;
-  _translateDetailItem.accessoryType =
-      UITableViewCellAccessoryDisclosureIndicator;
-  _translateDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  return _translateDetailItem;
 }
 
 - (TableViewItem*)composeEmailItem {
@@ -181,11 +142,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _composeEmailDetailItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  _composeEmailDetailItem.accessibilityIdentifier = kSettingsDefaultAppsCellId;
   return _composeEmailDetailItem;
 }
 
 - (ContentSetting)getContentSetting:(ContentSettingsType)settingID {
-  return ios::HostContentSettingsMapFactory::GetForBrowserState(browserState_)
+  return ios::HostContentSettingsMapFactory::GetForBrowserState(_browserState)
       ->GetDefaultContentSetting(settingID, NULL);
 }
 
@@ -199,15 +161,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
       UIViewController* controller = [[BlockPopupsTableViewController alloc]
-          initWithBrowserState:browserState_];
-      [self.navigationController pushViewController:controller animated:YES];
-      break;
-    }
-    case ItemTypeSettingsTranslate: {
-      TranslateTableViewController* controller =
-          [[TranslateTableViewController alloc]
-              initWithPrefs:browserState_->GetPrefs()];
-      controller.dispatcher = self.dispatcher;
+          initWithBrowserState:_browserState];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
@@ -222,23 +176,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-#pragma mark - PrefObserverDelegate
-
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  // _translateDetailItem is lazily initialized when -translateItem is called.
-  // TODO(crbug.com/1008433): If kLanguageSettings feature is enabled,
-  // -translateItem is not called, leaving _translateDetailItem uninitialized.
-  // This logic can be simplified when kLanguageSettings feature flag is
-  // removed (when feature is fully enabled).
-  if (_translateDetailItem && preferenceName == prefs::kOfferTranslateEnabled) {
-    BOOL enabled = browserState_->GetPrefs()->GetBoolean(preferenceName);
-    NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _translateDetailItem.detailText = subtitle;
-    [self reconfigureCellsForItems:@[ _translateDetailItem ]];
-  }
 }
 
 #pragma mark - BooleanObserver

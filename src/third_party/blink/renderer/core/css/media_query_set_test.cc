@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -184,7 +185,34 @@ TEST(MediaQuerySetTest, Basic) {
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
     scoped_refptr<MediaQuerySet> query_set =
-        MediaQuerySet::Create(test_cases[i].input);
+        MediaQuerySet::Create(test_cases[i].input, nullptr);
+    TestMediaQuery(test_cases[i], *query_set);
+  }
+}
+
+TEST(MediaQuerySetTest, BehindRuntimeFlag) {
+  ScopedMediaQueryShapeForTest shape_flag(false);
+  ScopedForcedColorsForTest forced_colors_flag(false);
+  ScopedMediaQueryNavigationControlsForTest navigation_controls_flag(false);
+  ScopedCSSFoldablesForTest foldables_flag(false);
+
+  // The first string represents the input string, the second string represents
+  // the output string.
+  MediaQuerySetTestCase test_cases[] = {
+      {"(shape)", "not all"},
+      {"(forced-colors)", "not all"},
+      {"(navigation-controls)", "not all"},
+      {"(screen-spanning)", "not all"},
+      {"(shape: rect)", "not all"},
+      {"(forced-colors: none)", "not all"},
+      {"(navigation-controls: none)", "not all"},
+      {"(screen-spanning:none)", "not all"},
+      {nullptr, nullptr}  // Do not remove the terminator line.
+  };
+
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    scoped_refptr<MediaQuerySet> query_set =
+        MediaQuerySet::Create(test_cases[i].input, nullptr);
     TestMediaQuery(test_cases[i], *query_set);
   }
 }

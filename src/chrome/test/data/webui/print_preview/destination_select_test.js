@@ -10,6 +10,7 @@ window.destination_select_test = {};
 destination_select_test.suiteName = 'DestinationSelectTest';
 /** @enum {string} */
 destination_select_test.TestNames = {
+  UpdateStatus: 'update status',
   ChangeIcon: 'change icon',
 };
 
@@ -18,6 +19,8 @@ suite(destination_select_test.suiteName, function() {
   let destinationSelect = null;
 
   const account = 'foo@chromium.org';
+
+  let recentDestinationList = [];
 
   /** @override */
   setup(function() {
@@ -28,40 +31,21 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.activeUser = account;
     destinationSelect.appKioskMode = false;
     destinationSelect.disabled = false;
+    destinationSelect.loaded = false;
     destinationSelect.noDestinations = false;
-    destinationSelect.recentDestinationList = [
-      // Local printer without stickied icon
-      {
-        id: 'ID1',
-        origin: DestinationOrigin.LOCAL,
-        account: '',
-        capabilities: null,
-        displayName: 'One',
-        extensionId: '',
-        extensionName: ''
-      },
-      // Shared cloud printer with stickied icon
-      {
-        id: 'ID2',
-        origin: DestinationOrigin.COOKIES,
-        account: account,
-        capabilities: null,
-        displayName: 'Two',
-        extensionId: '',
-        extensionName: '',
-        icon: 'print-preview:printer-shared'
-      },
-      // Shared cloud printer without stickied icon
-      {
-        id: 'ID3',
-        origin: DestinationOrigin.COOKIES,
-        account: account,
-        capabilities: null,
-        displayName: 'Three',
-        extensionId: '',
-        extensionName: ''
-      },
+    recentDestinationList = [
+      new Destination(
+          'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
+          DestinationConnectionStatus.ONLINE),
+      new Destination(
+          'ID2', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Two',
+          DestinationConnectionStatus.OFFLINE, {account: account}),
+      new Destination(
+          'ID3', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Three',
+          DestinationConnectionStatus.ONLINE,
+          {account: account, isOwned: true}),
     ];
+    destinationSelect.recentDestinationList = recentDestinationList;
 
     document.body.appendChild(destinationSelect);
   });
@@ -74,19 +58,36 @@ suite(destination_select_test.suiteName, function() {
     assertEquals(expected, icon);
   }
 
+  test(assert(destination_select_test.TestNames.UpdateStatus), function() {
+    assertFalse(destinationSelect.$$('.throbber-container').hidden);
+    assertTrue(destinationSelect.$$('.md-select').hidden);
+
+    destinationSelect.loaded = true;
+    assertTrue(destinationSelect.$$('.throbber-container').hidden);
+    assertFalse(destinationSelect.$$('.md-select').hidden);
+
+    destinationSelect.destination = recentDestinationList[0];
+    destinationSelect.updateDestination();
+    assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+
+    destinationSelect.destination = recentDestinationList[1];
+    destinationSelect.updateDestination();
+    assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+  });
+
   test(assert(destination_select_test.TestNames.ChangeIcon), function() {
-    const destination = new Destination(
-        'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
-        DestinationConnectionStatus.ONLINE);
+    const destination = recentDestinationList[0];
     destinationSelect.destination = destination;
     destinationSelect.updateDestination();
+    destinationSelect.loaded = true;
     const selectEl = destinationSelect.$$('.md-select');
     compareIcon(selectEl, 'print');
-    const driveId = Destination.GooglePromotedId.DOCS;
     const cookieOrigin = DestinationOrigin.COOKIES;
+    const driveKey =
+        `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
+    destinationSelect.driveDestinationKey = driveKey;
 
-    return selectOption(
-               destinationSelect, `${driveId}/${cookieOrigin}/${account}`)
+    return selectOption(destinationSelect, driveKey)
         .then(() => {
           // Icon updates early based on the ID.
           compareIcon(selectEl, 'save-to-drive');
@@ -97,7 +98,7 @@ suite(destination_select_test.suiteName, function() {
           // Still Save to Drive icon.
           compareIcon(selectEl, 'save-to-drive');
 
-          // Select a destination that has a sticky icon value.
+          // Select a destination with the shared printer icon.
           return selectOption(
               destinationSelect, `ID2/${cookieOrigin}/${account}`);
         })
@@ -106,26 +107,15 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'printer-shared');
 
           // Update destination.
-          destinationSelect.destination = new Destination(
-              'ID2', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Two',
-              DestinationConnectionStatus.ONLINE, {account: account});
+          destinationSelect.destination = recentDestinationList[1];
           compareIcon(selectEl, 'printer-shared');
 
-          // Select a destination that doesn't have a sticky icon value.
+          // Select a destination with a standard printer icon.
           return selectOption(
               destinationSelect, `ID3/${cookieOrigin}/${account}`);
         })
         .then(() => {
-          // Falls back to normal printer icon.
           compareIcon(selectEl, 'print');
-
-          // Update destination.
-          destinationSelect.destination = new Destination(
-              'ID3', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Three',
-              DestinationConnectionStatus.ONLINE, {account: account});
-
-          // Icon updates based on full destination information.
-          compareIcon(selectEl, 'printer-shared');
         });
   });
 });

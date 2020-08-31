@@ -104,14 +104,12 @@ void CastSessionClientImpl::OnMessage(
 
   GetDataDecoder().ParseJson(
       message->get_message(),
-      base::BindRepeating(&CastSessionClientImpl::HandleParsedClientMessage,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CastSessionClientImpl::HandleParsedClientMessage,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastSessionClientImpl::DidClose(PresentationConnectionCloseReason reason) {
-  // TODO(https://crbug.com/809249): Implement close connection with this
-  // method once we make sure Blink calls this on navigation and on
-  // PresentationConnection::close().
+  activity_->CloseConnectionOnReceiver(client_id());
 }
 
 void CastSessionClientImpl::SendErrorCodeToClient(
@@ -184,9 +182,13 @@ void CastSessionClientImpl::HandleParsedClientMessage(
       break;
 
     default:
-      // TODO(jrw): Log string value of type instead of int value.
-      DLOG(ERROR) << "Unhandled message type: "
-                  << static_cast<int>(cast_message->type());
+      auto opt_string = cast_util::EnumToString(cast_message->type());
+      if (opt_string) {
+        DLOG(ERROR) << "Unhandled message type: " << *opt_string;
+      } else {
+        DLOG(ERROR) << "Invalid message type: "
+                    << static_cast<int>(cast_message->type());
+      }
   }
 }
 
@@ -216,13 +218,11 @@ void CastSessionClientImpl::HandleV2ProtocolMessage(
   } else if (type == cast_channel::V2MessageType::kSetVolume) {
     DVLOG(2) << "Got volume command from client";
     DCHECK(cast_message.sequence_number());
-    activity_->SendSetVolumeRequestToReceiver(
-        cast_message, base::BindOnce(&CastSessionClientImpl::SendResultResponse,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     *cast_message.sequence_number()));
+    activity_->SendSetVolumeRequestToReceiver(cast_message,
+                                              MakeResultCallback(cast_message));
   } else if (type == cast_channel::V2MessageType::kStop) {
-    // TODO(jrw): implement STOP_SESSION.
-    DVLOG(2) << "Ignoring stop-session (" << type_str << ") message";
+    activity_->StopSessionOnReceiver(cast_message.client_id(),
+                                     MakeResultCallback(cast_message));
   } else {
     DLOG(ERROR) << "Unknown v2 message type: " << type_str;
   }
@@ -248,8 +248,8 @@ void CastSessionClientImpl::CloseConnection(
     PresentationConnectionCloseReason close_reason) {
   if (connection_remote_)
     connection_remote_->DidClose(close_reason);
-
   TearDownPresentationConnection();
+  activity_->CloseConnectionOnReceiver(client_id());
 }
 
 void CastSessionClientImpl::TerminateConnection() {
@@ -262,6 +262,14 @@ void CastSessionClientImpl::TerminateConnection() {
 void CastSessionClientImpl::TearDownPresentationConnection() {
   connection_remote_.reset();
   connection_receiver_.reset();
+}
+
+cast_channel::ResultCallback CastSessionClientImpl::MakeResultCallback(
+    const CastInternalMessage& cast_message) {
+  DCHECK(cast_message.sequence_number());
+  return base::BindOnce(&CastSessionClientImpl::SendResultResponse,
+                        weak_ptr_factory_.GetWeakPtr(),
+                        *cast_message.sequence_number());
 }
 
 }  // namespace media_router

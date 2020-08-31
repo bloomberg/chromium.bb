@@ -38,6 +38,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -99,6 +100,20 @@ FormVector GetEntryList(const std::map<std::string, FormVector>& map) {
 
   return result;
 }
+
+#if !defined(OS_ANDROID)
+password_manager::metrics_util::AccessPasswordInSettingsEvent
+ConvertPlaintextReason(password_manager::PlaintextReason reason) {
+  switch (reason) {
+    case password_manager::PlaintextReason::kCopy:
+      return password_manager::metrics_util::ACCESS_PASSWORD_COPIED;
+    case password_manager::PlaintextReason::kView:
+      return password_manager::metrics_util::ACCESS_PASSWORD_VIEWED;
+    case password_manager::PlaintextReason::kEdit:
+      return password_manager::metrics_util::ACCESS_PASSWORD_EDITED;
+  }
+}
+#endif
 
 class RemovePasswordOperation : public UndoOperation {
  public:
@@ -183,7 +198,8 @@ PasswordManagerPresenter::PasswordManagerPresenter(
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->RemoveObserver(this);
     }
@@ -192,7 +208,8 @@ PasswordManagerPresenter::~PasswordManagerPresenter() {
 
 void PasswordManagerPresenter::Initialize() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->AddObserver(this);
     }
@@ -215,7 +232,8 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   // Request an update from both stores (if they exist). This will send out two
   // updates to |password_view_| as the two result sets come in.
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store = GetPasswordStore(use_account_store);
+    PasswordStore* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
     if (store) {
       store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
     }
@@ -320,6 +338,15 @@ void PasswordManagerPresenter::RemoveSavedPassword(
   }
 }
 
+void PasswordManagerPresenter::RemoveSavedPasswords(
+    const std::vector<std::string>& sort_keys) {
+  undo_manager_.StartGroupingActions();
+  for (const std::string& sort_key : sort_keys) {
+    RemoveSavedPassword(sort_key);
+  }
+  undo_manager_.EndGroupingActions();
+}
+
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   if (TryRemovePasswordEntries(&exception_map_, index)) {
     base::RecordAction(
@@ -335,13 +362,23 @@ void PasswordManagerPresenter::RemovePasswordException(
   }
 }
 
+void PasswordManagerPresenter::RemovePasswordExceptions(
+    const std::vector<std::string>& sort_keys) {
+  undo_manager_.StartGroupingActions();
+  for (const std::string& sort_key : sort_keys) {
+    RemovePasswordException(sort_key);
+  }
+  undo_manager_.EndGroupingActions();
+}
+
 void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
   undo_manager_.Undo();
 }
 
 #if !defined(OS_ANDROID)  // This is never called on Android.
-void PasswordManagerPresenter::RequestShowPassword(
+void PasswordManagerPresenter::RequestPlaintextPassword(
     const std::string& sort_key,
+    password_manager::PlaintextReason reason,
     base::OnceCallback<void(base::Optional<base::string16>)> callback) const {
   auto it = password_map_.find(sort_key);
   if (it == password_map_.end()) {
@@ -368,13 +405,15 @@ void PasswordManagerPresenter::RequestShowPassword(
   std::move(callback).Run(form.password_value);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.AccessPasswordInSettings",
-      password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      ConvertPlaintextReason(reason),
       password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
 }
 #endif
 
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
+          .get();
   if (!store)
     return;
 
@@ -384,7 +423,9 @@ void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
 }
 
 void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
-  PasswordStore* store = GetPasswordStore(form.IsUsingAccountStore());
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
+          .get();
   if (!store)
     return;
 
@@ -423,7 +464,8 @@ bool PasswordManagerPresenter::TryRemovePasswordEntries(
   DCHECK(!forms.empty());
 
   bool use_account_store = forms[0]->IsUsingAccountStore();
-  PasswordStore* store = GetPasswordStore(use_account_store);
+  PasswordStore* store =
+      GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
   if (!store)
     return false;
 
@@ -471,16 +513,4 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
   // wasteful. Consider updating PasswordUIView to take a PasswordFormMap
   // instead.
   password_view_->SetPasswordExceptionList(GetEntryList(exception_map_));
-}
-
-PasswordStore* PasswordManagerPresenter::GetPasswordStore(
-    bool use_account_store) {
-  if (use_account_store) {
-    return AccountPasswordStoreFactory::GetForProfile(
-               password_view_->GetProfile(), ServiceAccessType::EXPLICIT_ACCESS)
-        .get();
-  }
-  return PasswordStoreFactory::GetForProfile(password_view_->GetProfile(),
-                                             ServiceAccessType::EXPLICIT_ACCESS)
-      .get();
 }

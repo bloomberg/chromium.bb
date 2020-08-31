@@ -62,14 +62,14 @@
 
   async function step2(callFrames) {
     await TestRunner.addSnifferPromise(Sources.CallStackSidebarPane.prototype, '_updatedForTest');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('\n=== Evaluating on iframe ===');
     evaluateInConsoleAndDump(step3);
   }
 
   function step3() {
     var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-    pane._list.selectItem(pane._list._model.at(1));
+    pane._selectNextCallFrameOnStack();
     TestRunner.deprecatedRunAfterPendingDispatches(step4);
   }
 

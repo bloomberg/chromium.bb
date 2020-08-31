@@ -29,13 +29,21 @@ class RenderTextTestApi {
 
   // Callers must ensure that the associated RenderText object is a
   // RenderTextHarfBuzz instance.
-  const internal::TextRunList* GetHarfBuzzRunList() const {
+  internal::TextRunList* GetHarfBuzzRunList() {
     return render_text_->GetRunList();
   }
 
-  void DrawVisualText(internal::SkiaTextRenderer* renderer, Range selection) {
-    render_text_->EnsureLayout();
+  void DrawVisualText(internal::SkiaTextRenderer* renderer,
+                      const std::vector<Range> selection) {
     render_text_->DrawVisualText(renderer, selection);
+  }
+
+  void Draw(Canvas* canvas, bool select_all = false) {
+    render_text_->Draw(canvas, select_all);
+  }
+
+  const base::string16& GetLayoutText() {
+    return render_text_->GetLayoutText();
   }
 
   const BreakList<SkColor>& colors() const { return render_text_->colors(); }
@@ -57,7 +65,7 @@ class RenderTextTestApi {
   }
 
   const std::vector<internal::Line>& lines() const {
-    return render_text_->lines();
+    return render_text_->GetShapedText()->lines();
   }
 
   SelectionModel EdgeSelectionModel(VisualCursorDirection direction) {

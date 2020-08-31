@@ -49,7 +49,7 @@ constexpr net::NetworkTrafficAnnotationTag kAppCacheTrafficAnnotation =
 const char kAppCacheAllowed[] = "X-AppCache-Allowed";
 }
 
-AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() {}
+AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() = default;
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   // If we are in tests mode, we don't need to issue network requests.
@@ -90,7 +90,7 @@ std::string AppCacheUpdateJob::UpdateURLLoaderRequest::GetMimeType() const {
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetSiteForCookies(
     const GURL& site_for_cookies) {
-  request_.site_for_cookies = site_for_cookies;
+  request_.site_for_cookies = net::SiteForCookies::FromUrl(site_for_cookies);
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(
@@ -100,6 +100,8 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(
 
 net::HttpResponseHeaders*
 AppCacheUpdateJob::UpdateURLLoaderRequest::GetResponseHeaders() const {
+  if (!response_)
+    return nullptr;
   return response_->headers.get();
 }
 

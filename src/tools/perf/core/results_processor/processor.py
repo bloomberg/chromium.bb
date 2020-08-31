@@ -19,6 +19,7 @@ import posixpath
 import random
 import re
 import shutil
+import time
 
 from py_utils import cloud_storage
 from core.results_processor import command_line
@@ -64,26 +65,31 @@ def ProcessResults(options):
     # and make this an error.
     logging.warning('No test results to process.')
 
-  upload_bucket = options.upload_bucket
-  results_label = options.results_label
-  max_num_values = options.max_values_per_test_case
-  test_path_format = options.test_path_format
-  trace_processor_path = options.trace_processor_path
   test_suite_start = (test_results[0]['startTime']
       if test_results and 'startTime' in test_results[0]
       else datetime.datetime.utcnow().isoformat() + 'Z')
-  run_identifier = RunIdentifier(results_label, test_suite_start)
+  run_identifier = RunIdentifier(options.results_label, test_suite_start)
   should_compute_metrics = any(
       fmt in FORMATS_WITH_METRICS for fmt in options.output_formats)
 
+  begin_time = time.time()
   util.ApplyInParallel(
       lambda result: ProcessTestResult(
-          result, upload_bucket, results_label, run_identifier,
-          test_suite_start, should_compute_metrics, max_num_values,
-          test_path_format, trace_processor_path),
+          test_result=result,
+          upload_bucket=options.upload_bucket,
+          results_label=options.results_label,
+          run_identifier=run_identifier,
+          test_suite_start=test_suite_start,
+          should_compute_metrics=should_compute_metrics,
+          max_num_values=options.max_values_per_test_case,
+          test_path_format=options.test_path_format,
+          trace_processor_path=options.trace_processor_path,
+          enable_tbmv3=options.experimental_tbmv3_metrics),
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
+  processing_duration = time.time() - begin_time
+  _AmortizeProcessingDuration(processing_duration, test_results)
 
   if should_compute_metrics:
     histogram_dicts = ExtractHistograms(test_results)
@@ -100,19 +106,36 @@ def ProcessResults(options):
   return GenerateExitCode(test_results)
 
 
+def _AmortizeProcessingDuration(processing_duration, test_results):
+  test_results_count = len(test_results)
+  if test_results_count:
+    per_story_cost = processing_duration / len(test_results)
+    logging.info(
+        'Amortizing processing cost to story runtimes: %.2fs per story.',
+        per_story_cost)
+    for result in test_results:
+      if 'runDuration' in result and result['runDuration']:
+        current_duration = float(result['runDuration'].rstrip('s'))
+        new_story_cost = current_duration + per_story_cost
+        result['runDuration'] = unicode(str(new_story_cost) + 's', 'utf-8')
+
+
 def ProcessTestResult(test_result, upload_bucket, results_label,
                       run_identifier, test_suite_start, should_compute_metrics,
-                      max_num_values, test_path_format, trace_processor_path):
+                      max_num_values, test_path_format, trace_processor_path,
+                      enable_tbmv3):
   ConvertProtoTraces(test_result, trace_processor_path)
   AggregateTBMv2Traces(test_result)
-  AggregateTBMv3Traces(test_result)
+  if enable_tbmv3:
+    AggregateTBMv3Traces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
 
   if should_compute_metrics:
     test_result['_histograms'] = histogram_set.HistogramSet()
     compute_metrics.ComputeTBMv2Metrics(test_result)
-    compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
+    if enable_tbmv3:
+      compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
     ExtractMeasurements(test_result)
     num_values = len(test_result['_histograms'])
     if max_num_values is not None and num_values > max_num_values:
@@ -194,8 +217,6 @@ def ConvertProtoTraces(test_result, trace_processor_path):
   # individual ones.
   for proto_trace_name in proto_traces:
     proto_file_path = artifacts[proto_trace_name]['filePath']
-    logging.info('%s: Converting proto trace %s.',
-                 test_result['testPath'], proto_file_path)
     json_file_path = (os.path.splitext(proto_file_path)[0] +
                       CONVERTED_JSON_SUFFIX)
     json_trace_name = (posixpath.splitext(proto_trace_name)[0] +
@@ -206,6 +227,8 @@ def ConvertProtoTraces(test_result, trace_processor_path):
         'filePath': json_file_path,
         'contentType': 'application/json',
     }
+    logging.info('%s: Proto trace converted. Source: %s. Destination: %s.',
+                 test_result['testPath'], proto_file_path, json_file_path)
 
 
 def AggregateTBMv2Traces(test_result):
@@ -220,13 +243,13 @@ def AggregateTBMv2Traces(test_result):
   if traces:
     trace_files = [artifacts[name]['filePath'] for name in traces]
     html_path = _BuildOutputPath(trace_files, compute_metrics.HTML_TRACE_NAME)
-    logging.info('%s: Aggregating traces %s.',
-                 test_result['testPath'], trace_files)
     trace_data.SerializeAsHtml(trace_files, html_path)
     artifacts[compute_metrics.HTML_TRACE_NAME] = {
       'filePath': html_path,
       'contentType': 'text/html',
     }
+    logging.info('%s: TBMv2 traces aggregated. Sources: %s. Destination: %s.',
+                 test_result['testPath'], trace_files, html_path)
   for name in traces:
     del artifacts[name]
 
@@ -256,6 +279,8 @@ def AggregateTBMv3Traces(test_result):
       'filePath': concatenated_path,
       'contentType': 'application/x-protobuf',
     }
+    logging.info('%s: Proto traces aggregated. Sources: %s. Destination: %s.',
+                 test_result['testPath'], proto_files, concatenated_path)
   for name in traces:
     del artifacts[name]
 
@@ -276,30 +301,33 @@ def RunIdentifier(results_label, test_suite_start):
 def UploadArtifacts(test_result, upload_bucket, run_identifier):
   """Upload all artifacts to cloud.
 
-  For a test run, uploads all its artifacts to cloud and sets remoteUrl
-  fields in intermediate_results.
+  For a test run, uploads all its artifacts to cloud and sets fetchUrl and
+  viewUrl fields in intermediate_results.
   """
   artifacts = test_result.get('outputArtifacts', {})
   for name, artifact in artifacts.iteritems():
-    if 'remoteUrl' in artifact:
-      continue
     # TODO(crbug.com/981349): Think of a more general way to
     # specify which artifacts deserve uploading.
     if name in [DIAGNOSTICS_NAME, MEASUREMENTS_NAME]:
       continue
-    remote_name = '/'.join([run_identifier, test_result['testPath'], name])
+    retry_identifier = 'retry_%s' % test_result.get('resultId', '0')
+    remote_name = '/'.join(
+        [run_identifier, test_result['testPath'], retry_identifier, name])
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
-    artifact['remoteUrl'] = cloud_storage.Insert(
+    cloud_filepath = cloud_storage.Upload(
         upload_bucket, urlsafe_remote_name, artifact['filePath'])
-    logging.info('Uploaded %s of %s to %s', name, test_result['testPath'],
-                 artifact['remoteUrl'])
+    # Per crbug.com/1033755 some services require fetchUrl.
+    artifact['fetchUrl'] = cloud_filepath.fetch_url
+    artifact['viewUrl'] = cloud_filepath.view_url
+    logging.info('%s: Uploaded %s to %s', test_result['testPath'], name,
+                 artifact['viewUrl'])
 
 
 def GetTraceUrl(test_result):
   artifacts = test_result.get('outputArtifacts', {})
   trace_artifact = artifacts.get(compute_metrics.HTML_TRACE_NAME, {})
-  if 'remoteUrl' in trace_artifact:
-    return trace_artifact['remoteUrl']
+  if 'viewUrl' in trace_artifact:
+    return trace_artifact['viewUrl']
   elif 'filePath' in trace_artifact:
     return 'file://' + trace_artifact['filePath']
   else:
@@ -325,6 +353,7 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
       assert isinstance(diag, list)
       test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
           name, generic_set.GenericSet(diag))
+    del artifacts[DIAGNOSTICS_NAME]
 
   test_suite, test_case = util.SplitTestPath(test_result, test_path_format)
   if 'startTime' in test_result:
@@ -394,6 +423,7 @@ def ExtractMeasurements(test_result):
     for name, measurement in measurements.iteritems():
       test_result['_histograms'].AddHistogram(
           MeasurementToHistogram(name, measurement))
+    del artifacts[MEASUREMENTS_NAME]
 
 
 def main(args=None):

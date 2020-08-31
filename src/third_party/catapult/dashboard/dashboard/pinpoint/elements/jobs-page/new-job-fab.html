@@ -133,13 +133,13 @@ found in the LICENSE file.
 
             <input type="hidden" name="comparison_mode" value="[[comparisonMode]]">
             <input type="hidden" name="target" value="[[telemetryIsolate(configuration, benchmark)]]">
-            <input type="hidden" name="start_git_hash" value="[[start_git_hash]]">
-            <input type="hidden" name="end_git_hash" value="[[end_git_hash]]">
+            <!--Prevent uploading unused git_hash because raw request will be displayed on job page.
+              It won't change the result, but display unused (and wrong) parameters are confusing-->
+            <input type="hidden" disabled="[[isBisectJob(comparisonMode)]]" name="base_git_hash" value="[[base_git_hash]]">
+            <input type="hidden" disabled="[[!isBisectJob(comparisonMode)]]" name="start_git_hash" value="[[start_git_hash]]">
+            <input type="hidden" disabled="[[!isBisectJob(comparisonMode)]]" name="end_git_hash" value="[[end_git_hash]]">
 
             <template is="dom-if" if="[[hasJob(job)]]">
-              <input type="hidden" name="comparison_magnitude" disabled$="[[!job.arguments.comparison_magnitude]]" value="[[job.arguments.comparison_magnitude]]">
-              <!-- TODO(crbug.com/974237): Stop filling in 'tir_label' when no longer in use. -->
-              <input type="hidden" name="tir_label" disabled$="[[!job.arguments.tir_label]]" value="[[job.arguments.tir_label]]">
               <input type="hidden" name="grouping_label" disabled$="[[!job.arguments.grouping_label]]" value="[[job.arguments.grouping_label]]">
               <input type="hidden" name="trace" disabled$="[[!job.arguments.trace]]" value="[[job.arguments.trace]]">
               <input type="hidden" name="tags" disabled$="[[!job.arguments.tags]]" value="[[job.arguments.tags]]">
@@ -157,19 +157,20 @@ found in the LICENSE file.
               </paper-radio-group>
             </template>
 
-            <autocomplete-box id="botDropdown"
-                              name="configuration"
-                              items="{{arrayToAutocompleteList(config.configurations)}}"
-                              disabled="[[!validConfig(config)]]"
-                              placeholder="Bot"
-                              selected-name="{{configuration}}"
-                              required></autocomplete-box>
-            <template is="dom-if" if="[[configLoading]]">
-              <paper-progress indeterminate></paper-progress>
-            </template>
-
             <div class="horizontal">
               <div class="column rightPad">
+                <autocomplete-box id="botDropdown"
+                                  name="configuration"
+                                  items="{{arrayToAutocompleteList(config.configurations)}}"
+                                  disabled="[[!validConfig(config)]]"
+                                  placeholder="Bot"
+                                  selected-name="{{configuration}}"
+                                  required></autocomplete-box>
+                <template is="dom-if" if="[[configLoading]]">
+                  <paper-progress indeterminate></paper-progress>
+                </template>
+              </div>
+              <div class="column">
                 <autocomplete-box id="benchmarkDropdown"
                                   name="benchmark"
                                   items="{{arrayToAutocompleteList(testSuites)}}"
@@ -181,38 +182,16 @@ found in the LICENSE file.
                   <paper-progress indeterminate></paper-progress>
                 </template>
               </div>
-              <div class="column">
+            </div>
+
+            <div class="horizontal">
+              <div class="column rightPad">
                 <autocomplete-box id="storyCasesDropdown"
                                   name="story"
                                   items="{{storyCases(benchmarkConfig)}}"
                                   placeholder="Story"
                                   selected-name="{{story}}"
                                   required$="[[!isStoryOrTagsSet(story, storyTags)]]"></autocomplete-box>
-                <template is="dom-if" if="[[benchmarkConfigLoading]]">
-                  <paper-progress indeterminate></paper-progress>
-                </template>
-              </div>
-            </div>
-
-            <div class="horizontal">
-              <div class="column rightPad">
-                <div class="horizontal">
-                  <autocomplete-box id="chartDropdown"
-                                    name="chart"
-                                    items="{{measurements(benchmarkConfig)}}"
-                                    disabled="{{!validCases(benchmark, benchmarkConfig)}}"
-                                    hidden$="[[!isBisectJob(comparisonMode)]]"
-                                    required$="[[isBisectJob(comparisonMode)]]"
-                                    placeholder="Measurement"
-                                    selected-name="{{chart}}"></autocomplete-box>
-                  <autocomplete-box id="statisticDropdown"
-                                    name="statistic"
-                                    items="{{statistics(benchmarkConfig)}}"
-                                    disabled="{{!validCases(benchmark, benchmarkConfig)}}"
-                                    hidden$="[[!isBisectJob(comparisonMode)]]"
-                                    selected-name="{{statistic}}"
-                                    placeholder="Statistic"></autocomplete-box>
-                </div>
                 <template is="dom-if" if="[[benchmarkConfigLoading]]">
                   <paper-progress indeterminate></paper-progress>
                 </template>
@@ -230,6 +209,32 @@ found in the LICENSE file.
               </div>
             </div>
 
+            <div class="horizontal" hidden="[[!isBisectJob(comparisonMode)]]">
+              <div class="column rightPad">
+                <div class="horizontal">
+                  <autocomplete-box id="chartDropdown"
+                                    name="chart"
+                                    items="{{measurements(benchmarkConfig)}}"
+                                    required$="[[isBisectJob(comparisonMode)]]"
+                                    placeholder="Measurement"
+                                    selected-name="{{chart}}"></autocomplete-box>
+                  <autocomplete-box id="statisticDropdown"
+                                    name="statistic"
+                                    items="{{statistics(benchmarkConfig)}}"
+                                    selected-name="{{statistic}}"
+                                    placeholder="Statistic"></autocomplete-box>
+                </div>
+                <template is="dom-if" if="[[benchmarkConfigLoading]]">
+                  <paper-progress indeterminate></paper-progress>
+                </template>
+              </div>
+              <div class="column">
+                <paper-input name="comparison_magnitude"
+                             value="{{comparison_magnitude}}"
+                             label="Comparison Magnitude"></paper-input>
+              </div>
+            </div>
+
             <paper-input name="extra_test_args" value="{{extra_test_args}}" label="Extra Test Arguments (optional)"></paper-input>
 
             <div class="divider">
@@ -237,17 +242,18 @@ found in the LICENSE file.
             </div>
 
             <template is="dom-if" if="[[!isBisectJob(comparisonMode)]]">
-              <paper-input name="patch" value="{{patch}}" label="Gerrit URL" required disabled="[[isBisectJob(comparisonMode)]]"></paper-input>
+              <div class="horizontal">
+                <commit-details class="column rightPad" value="{{base_git_hash}}" label="Base Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[isBisectJob(comparisonMode)]]"></commit-details>
+                <paper-input class="column" name="patch" value="{{patch}}" label="Gerrit URL" required disabled="[[isBisectJob(comparisonMode)]]"></paper-input>
+              </div>
             </template>
 
-            <div class="horizontal">
-              <template is="dom-if" if="[[isBisectJob(comparisonMode)]]">
-                <commit-details class="column rightPad" value="{{start_git_hash}}" label="Start Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
-              </template>
-              <template is="dom-if" if="[[isBisectJob(comparisonMode)]]">
-                <commit-details class="column" value="{{end_git_hash}}" label="End Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
-              </template>
-            </div>
+            <template is="dom-if" if="[[isBisectJob(comparisonMode)]]">
+              <div class="horizontal">
+                  <commit-details class="column rightPad" value="{{start_git_hash}}" label="Start Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
+                  <commit-details class="column" value="{{end_git_hash}}" label="End Git Hash" items="[[commitsListItems(commitsList)]]" headers="[[authHeaders]]" required disabled="[[!isBisectJob(comparisonMode)]]"></commit-details>
+              </div>
+            </template>
 
             <paper-input name="bug_id" value="{{bug_id}}" label="Bug ID"></paper-input>
 
@@ -300,9 +306,14 @@ found in the LICENSE file.
           type: Boolean,
           value: false
         },
+        comparison_magnitude: Number,
         extra_test_args: String,
         patch: String,
         statistic: String,
+        base_git_hash: {
+          type: String,
+          value: 'HEAD'
+        },
         start_git_hash: {
           type: String,
           value: 'HEAD'
@@ -411,9 +422,13 @@ found in the LICENSE file.
         }
         this.bug_id = job.bug_id;
         this.patch = job.arguments.patch;
+        // Legacy try job doesn't have base_git_hash, use end_git_hash instead
+        this.base_git_hash = job.arguments.base_git_hash ||
+                             job.arguments.end_git_hash;
         this.start_git_hash = job.arguments.start_git_hash;
         this.end_git_hash = job.arguments.end_git_hash;
         this.comparisonMode = job.arguments.comparison_mode;
+        this.comparison_magnitude = job.arguments.comparison_magnitude;
         this.extra_test_args = job.arguments.extra_test_args;
         this.$.botDropdown.query = job.arguments.configuration;
         this.$.benchmarkDropdown.query = job.arguments.benchmark;

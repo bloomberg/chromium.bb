@@ -50,7 +50,7 @@ class GroupNode extends SAChildNode {
   asRootNode() {
     const root = new SARootNode();
 
-    let children = [];
+    const children = [];
     for (const child of this.children_) {
       children.push(child);
     }
@@ -72,7 +72,7 @@ class GroupNode extends SAChildNode {
       return false;
     }
     for (let i = 0; i < this.children_.length; i++) {
-      if (other.children_[i].equals(this.children_[i])) {
+      if (!other.children_[i].equals(this.children_[i])) {
         return false;
       }
     }
@@ -81,6 +81,16 @@ class GroupNode extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
+    if (node instanceof GroupNode) {
+      return this.equals(node);
+    }
+
+    for (const child of this.children_) {
+      if (child.isEquivalentTo(node)) {
+        return true;
+      }
+    }
+
     return false;
   }
 
@@ -90,8 +100,22 @@ class GroupNode extends SAChildNode {
   }
 
   /** @override */
+  isValidAndVisible() {
+    for (const child of this.children_) {
+      if (child.isValidAndVisible()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** @override */
   performAction(action) {
-    return true;
+    if (action === SAConstants.MenuAction.SELECT) {
+      NavigationManager.enterGroup();
+      return SAConstants.ActionResponse.CLOSE_MENU;
+    }
+    return SAConstants.ActionResponse.NO_ACTION_TAKEN;
   }
 
   // ================= Static methods =================
@@ -102,10 +126,10 @@ class GroupNode extends SAChildNode {
    * @return {!Array<!GroupNode>}
    */
   static separateByRow(nodes) {
-    let result = [];
+    const result = [];
 
     for (let i = 0; i < nodes.length;) {
-      let children = [];
+      const children = [];
       children.push(nodes[i]);
       i++;
 

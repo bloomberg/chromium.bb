@@ -75,21 +75,21 @@ RetainPtr<CPDF_Stream> CreateType0FunctionStream() {
   func_dict->SetNewFor<CPDF_Number>("FunctionType", 0);
 
   CPDF_Array* domain_array = func_dict->SetNewFor<CPDF_Array>("Domain");
-  domain_array->AddNew<CPDF_Number>(0);
-  domain_array->AddNew<CPDF_Number>(1);
+  domain_array->AppendNew<CPDF_Number>(0);
+  domain_array->AppendNew<CPDF_Number>(1);
 
   CPDF_Array* range_array = func_dict->SetNewFor<CPDF_Array>("Range");
-  range_array->AddNew<CPDF_Number>(0);
-  range_array->AddNew<CPDF_Number>(0.5f);
+  range_array->AppendNew<CPDF_Number>(0);
+  range_array->AppendNew<CPDF_Number>(0.5f);
 
   CPDF_Array* size_array = func_dict->SetNewFor<CPDF_Array>("Size");
-  size_array->AddNew<CPDF_Number>(4);
+  size_array->AppendNew<CPDF_Number>(4);
 
   func_dict->SetNewFor<CPDF_Number>("BitsPerSample", 8);
 
   static const char content[] = "1234";
   size_t len = FX_ArraySize(content);
-  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_Alloc(uint8_t, len));
+  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_AllocUninit(uint8_t, len));
   memcpy(buf.get(), content, len);
   return pdfium::MakeRetain<CPDF_Stream>(std::move(buf), len,
                                          std::move(func_dict));
@@ -101,18 +101,18 @@ RetainPtr<CPDF_Dictionary> CreateType2FunctionDict() {
   func_dict->SetNewFor<CPDF_Number>("N", 1);
 
   CPDF_Array* domain_array = func_dict->SetNewFor<CPDF_Array>("Domain");
-  domain_array->AddNew<CPDF_Number>(0);
-  domain_array->AddNew<CPDF_Number>(1);
+  domain_array->AppendNew<CPDF_Number>(0);
+  domain_array->AppendNew<CPDF_Number>(1);
 
   CPDF_Array* c0_array = func_dict->SetNewFor<CPDF_Array>("C0");
-  c0_array->AddNew<CPDF_Number>(0.1f);
-  c0_array->AddNew<CPDF_Number>(0.2f);
-  c0_array->AddNew<CPDF_Number>(0.8f);
+  c0_array->AppendNew<CPDF_Number>(0.1f);
+  c0_array->AppendNew<CPDF_Number>(0.2f);
+  c0_array->AppendNew<CPDF_Number>(0.8f);
 
   CPDF_Array* c1_array = func_dict->SetNewFor<CPDF_Array>("C1");
-  c1_array->AddNew<CPDF_Number>(0.05f);
-  c1_array->AddNew<CPDF_Number>(0.01f);
-  c1_array->AddNew<CPDF_Number>(0.4f);
+  c1_array->AppendNew<CPDF_Number>(0.05f);
+  c1_array->AppendNew<CPDF_Number>(0.01f);
+  c1_array->AppendNew<CPDF_Number>(0.4f);
 
   return func_dict;
 }
@@ -122,16 +122,16 @@ RetainPtr<CPDF_Stream> CreateType4FunctionStream() {
   func_dict->SetNewFor<CPDF_Number>("FunctionType", 4);
 
   CPDF_Array* domain_array = func_dict->SetNewFor<CPDF_Array>("Domain");
-  domain_array->AddNew<CPDF_Number>(0);
-  domain_array->AddNew<CPDF_Number>(1);
+  domain_array->AppendNew<CPDF_Number>(0);
+  domain_array->AppendNew<CPDF_Number>(1);
 
   CPDF_Array* range_array = func_dict->SetNewFor<CPDF_Array>("Range");
-  range_array->AddNew<CPDF_Number>(-1);
-  range_array->AddNew<CPDF_Number>(1);
+  range_array->AppendNew<CPDF_Number>(-1);
+  range_array->AppendNew<CPDF_Number>(1);
 
   static const char content[] = "{ 360 mul sin 2 div }";
   size_t len = FX_ArraySize(content);
-  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_Alloc(uint8_t, len));
+  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_AllocUninit(uint8_t, len));
   memcpy(buf.get(), content, len);
   return pdfium::MakeRetain<CPDF_Stream>(std::move(buf), len,
                                          std::move(func_dict));
@@ -142,16 +142,16 @@ RetainPtr<CPDF_Stream> CreateBadType4FunctionStream() {
   func_dict->SetNewFor<CPDF_Number>("FunctionType", 4);
 
   CPDF_Array* domain_array = func_dict->SetNewFor<CPDF_Array>("Domain");
-  domain_array->AddNew<CPDF_Number>(0);
-  domain_array->AddNew<CPDF_Number>(1);
+  domain_array->AppendNew<CPDF_Number>(0);
+  domain_array->AppendNew<CPDF_Number>(1);
 
   CPDF_Array* range_array = func_dict->SetNewFor<CPDF_Array>("Range");
-  range_array->AddNew<CPDF_Number>(-1);
-  range_array->AddNew<CPDF_Number>(1);
+  range_array->AppendNew<CPDF_Number>(-1);
+  range_array->AppendNew<CPDF_Number>(1);
 
   static const char content[] = "garbage";
   size_t len = FX_ArraySize(content);
-  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_Alloc(uint8_t, len));
+  std::unique_ptr<uint8_t, FxFreeDeleter> buf(FX_AllocUninit(uint8_t, len));
   memcpy(buf.get(), content, len);
   return pdfium::MakeRetain<CPDF_Stream>(std::move(buf), len,
                                          std::move(func_dict));
@@ -202,9 +202,9 @@ TEST(CPDF_DocRenderDataTest, TransferFunctionOne) {
 
 TEST(CPDF_DocRenderDataTest, TransferFunctionArray) {
   auto func_array = pdfium::MakeRetain<CPDF_Array>();
-  func_array->Add(CreateType0FunctionStream());
-  func_array->Add(CreateType2FunctionDict());
-  func_array->Add(CreateType4FunctionStream());
+  func_array->Append(CreateType0FunctionStream());
+  func_array->Append(CreateType2FunctionDict());
+  func_array->Append(CreateType4FunctionStream());
 
   TestDocRenderData render_data;
   auto func = render_data.CreateTransferFuncForTesting(func_array.Get());
@@ -255,9 +255,9 @@ TEST(CPDF_DocRenderDataTest, BadTransferFunctions) {
 
   {
     auto func_array = pdfium::MakeRetain<CPDF_Array>();
-    func_array->Add(CreateType0FunctionStream());
-    func_array->Add(CreateType2FunctionDict());
-    func_array->Add(CreateBadType4FunctionStream());
+    func_array->Append(CreateType0FunctionStream());
+    func_array->Append(CreateType2FunctionDict());
+    func_array->Append(CreateBadType4FunctionStream());
 
     TestDocRenderData render_data;
     auto func = render_data.CreateTransferFuncForTesting(func_array.Get());

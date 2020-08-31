@@ -10,13 +10,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-namespace service_manager {
-class InterfaceProvider;
-}
 
 namespace blink {
 
@@ -32,7 +28,7 @@ class ExecutionContext;
 class MojoInterfaceInterceptor final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MojoInterfaceInterceptor>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MojoInterfaceInterceptor);
 
@@ -40,16 +36,11 @@ class MojoInterfaceInterceptor final
   static MojoInterfaceInterceptor* Create(ExecutionContext*,
                                           const String& interface_name,
                                           const String& scope,
-                                          bool use_browser_interface_broker,
                                           ExceptionState&);
 
-  using UseBrowserInterfaceBroker =
-      util::StrongAlias<class UseBrowserInterfaceBrokerTag, bool>;
-  MojoInterfaceInterceptor(
-      ExecutionContext*,
-      const String& interface_name,
-      bool process_scope,
-      UseBrowserInterfaceBroker use_browser_interface_broker);
+  MojoInterfaceInterceptor(ExecutionContext*,
+                           const String& interface_name,
+                           bool process_scope);
   ~MojoInterfaceInterceptor() override;
 
   void start(ExceptionState&);
@@ -57,7 +48,7 @@ class MojoInterfaceInterceptor final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest, kInterfacerequest)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // EventTargetWithInlineData
   const AtomicString& InterfaceName() const override;
@@ -66,18 +57,16 @@ class MojoInterfaceInterceptor final
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() final;
 
  private:
-  service_manager::InterfaceProvider* GetInterfaceProvider() const;
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);
   void DispatchInterfaceRequestEvent(mojo::ScopedMessagePipeHandle);
 
   const String interface_name_;
   bool started_ = false;
   bool process_scope_ = false;
-  bool use_browser_interface_broker_ = false;
 };
 
 }  // namespace blink

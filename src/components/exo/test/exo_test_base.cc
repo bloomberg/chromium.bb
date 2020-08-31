@@ -5,7 +5,9 @@
 #include "components/exo/test/exo_test_base.h"
 
 #include "ash/shell.h"
-#include "components/exo/test/exo_test_helper.h"
+#include "components/exo/buffer.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -21,11 +23,19 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // ExoTestBase, public:
 
-ExoTestBase::ExoTestBase()
-    : exo_test_helper_(new ExoTestHelper),
-      scale_mode_(ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {}
+ExoTestBase::ShellSurfaceHolder::ShellSurfaceHolder(
+    std::unique_ptr<Buffer> buffer,
+    std::unique_ptr<Surface> surface,
+    std::unique_ptr<ShellSurface> shell_surface)
+    : buffer_(std::move(buffer)),
+      surface_(std::move(surface)),
+      shell_surface_(std::move(shell_surface)) {}
 
-ExoTestBase::~ExoTestBase() {}
+ExoTestBase::ShellSurfaceHolder::~ShellSurfaceHolder() = default;
+
+ExoTestBase::ExoTestBase() = default;
+
+ExoTestBase::~ExoTestBase() = default;
 
 void ExoTestBase::SetUp() {
   AshTestBase::SetUp();
@@ -41,9 +51,24 @@ void ExoTestBase::TearDown() {
 
 viz::SurfaceManager* ExoTestBase::GetSurfaceManager() {
   return static_cast<ui::InProcessContextFactory*>(
-             aura::Env::GetInstance()->context_factory_private())
+             aura::Env::GetInstance()->context_factory())
       ->GetFrameSinkManager()
       ->surface_manager();
+}
+
+std::unique_ptr<ExoTestBase::ShellSurfaceHolder>
+ExoTestBase::CreateShellSurfaceHolder(const gfx::Size& buffer_size,
+                                      ShellSurface* parent) {
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  if (parent)
+    shell_surface->SetParent(parent);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  return std::make_unique<ShellSurfaceHolder>(
+      std::move(buffer), std::move(surface), std::move(shell_surface));
 }
 
 }  // namespace test

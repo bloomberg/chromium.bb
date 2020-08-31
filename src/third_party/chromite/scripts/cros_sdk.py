@@ -41,7 +41,8 @@ from chromite.lib import toolchain
 from chromite.utils import key_value_store
 
 
-cros_build_lib.STRICT_SUDO = True
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
@@ -200,9 +201,9 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
 
   logging.notice('Creating chroot. This may take a few minutes...')
   try:
-    cros_build_lib.run(cmd, print_cmd=False)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+    cros_build_lib.dbg_run(cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Creating chroot failed!\n%s', e)
 
 
 def DeleteChroot(chroot_path):
@@ -210,9 +211,9 @@ def DeleteChroot(chroot_path):
   cmd = MAKE_CHROOT + ['--chroot', chroot_path, '--delete']
   try:
     logging.notice('Deleting chroot.')
-    cros_build_lib.run(cmd, print_cmd=False)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+    cros_build_lib.dbg_run(cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Deleting chroot failed!\n%s', e)
 
 
 def CleanupChroot(chroot_path):
@@ -246,8 +247,7 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
 
   # ThinLTO opens lots of files at the same time.
   resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
-  ret = cros_build_lib.run(
-      cmd, print_cmd=False, error_code_ok=True, mute_output=False)
+  ret = cros_build_lib.dbg_run(cmd, check=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
   # they last ran w/in the chroot and won't matter to us one way or another.
   # Note this does allow chroot entrance to fail and be ignored during
@@ -300,10 +300,10 @@ def CreateChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   try:
     logging.notice('Creating snapshot %s from %s in VG %s.', snapshot_name,
                    chroot_lv, chroot_vg)
-    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.dbg_run(cmd, capture_output=True)
     return True
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Creating snapshot failed!\n%s', e)
 
 
 def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
@@ -333,9 +333,9 @@ def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   cmd = ['lvremove', '-f', '%s/%s' % (chroot_vg, snapshot_name)]
   try:
     logging.notice('Deleting snapshot %s in VG %s.', snapshot_name, chroot_vg)
-    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+    cros_build_lib.dbg_run(cmd, capture_output=True)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Deleting snapshot failed!\n%s', e)
 
 
 def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
@@ -373,24 +373,24 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   backup_chroot_name = 'chroot-bak-%d' % random.randint(0, 1000)
   cmd = ['lvrename', chroot_vg, chroot_lv, backup_chroot_name]
   try:
-    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+    cros_build_lib.dbg_run(cmd, capture_output=True)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Restoring snapshot failed!\n%s', e)
 
   cmd = ['lvrename', chroot_vg, snapshot_name, chroot_lv]
   try:
-    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
-  except cros_build_lib.RunCommandError:
+    cros_build_lib.dbg_run(cmd, capture_output=True)
+  except cros_build_lib.RunCommandError as e:
     cmd = ['lvrename', chroot_vg, backup_chroot_name, chroot_lv]
     try:
-      cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
-    except cros_build_lib.RunCommandError:
-      raise SystemExit('Failed to rename %s to chroot and failed to restore '
-                       '%s back to chroot.  Failed command: %r' %
-                       (snapshot_name, backup_chroot_name, cmd))
-    raise SystemExit(
-        'Failed to rename %s to chroot.  Original chroot LV has '
-        'been restored.  Failed command: %r' % (snapshot_name, cmd))
+      cros_build_lib.dbg_run(cmd, capture_output=True)
+    except cros_build_lib.RunCommandError as e:
+      cros_build_lib.Die(
+          'Failed to rename %s to chroot and failed to restore %s back to '
+          'chroot!\n%s', snapshot_name, backup_chroot_name, e)
+    cros_build_lib.Die(
+        'Failed to rename %s to chroot!  Original chroot LV has '
+        'been restored.\n%s', snapshot_name, e)
 
   # Some versions of LVM set snapshots to be skipped at auto-activate time.
   # Other versions don't have this flag at all.  We run lvchange to try
@@ -399,20 +399,20 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   chroot_lv_path = '%s/%s' % (chroot_vg, chroot_lv)
   cmd = ['lvchange', '-kn', chroot_lv_path]
   cros_build_lib.run(
-      cmd, print_cmd=False, capture_output=True, error_code_ok=True)
+      cmd, print_cmd=False, capture_output=True, check=False)
 
   # Activate the LV in case the lvchange above was needed.  Activating an LV
   # that is already active shouldn't do anything, so this is safe to run even if
   # the -kn wasn't needed.
   cmd = ['lvchange', '-ay', chroot_lv_path]
-  cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
+  cros_build_lib.dbg_run(cmd, capture_output=True)
 
   cmd = ['lvremove', '-f', '%s/%s' % (chroot_vg, backup_chroot_name)]
   try:
-    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Failed to remove backup LV %s/%s.  Failed command: %r' %
-                     (chroot_vg, backup_chroot_name, cmd))
+    cros_build_lib.dbg_run(cmd, capture_output=True)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Failed to remove backup LV %s/%s!\n%s',
+                       chroot_vg, backup_chroot_name, e)
 
   return True
 
@@ -439,7 +439,7 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   ]
   try:
     result = cros_build_lib.run(
-        cmd, print_cmd=False, redirect_stdout=True)
+        cmd, print_cmd=False, stdout=True, encoding='utf-8')
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
@@ -463,9 +463,13 @@ def _SudoCommand():
   """Get the 'sudo' command, along with all needed environment variables."""
 
   # Pass in the ENVIRONMENT_WHITELIST and ENV_PASSTHRU variables so that
-  # scripts in the chroot know what variables to pass through.
+  # scripts in the chroot know what variables to pass through.  We keep PATH
+  # not for the chroot but for the re-exec & for programs we might run before
+  # we chroot into the SDK.  The process that enters the SDK itself will take
+  # care of initializing PATH to the right value then.
   cmd = ['sudo']
-  for key in constants.CHROOT_ENVIRONMENT_WHITELIST + constants.ENV_PASSTHRU:
+  for key in (constants.CHROOT_ENVIRONMENT_WHITELIST + constants.ENV_PASSTHRU +
+              ('PATH',)):
     value = os.environ.get(key)
     if value is not None:
       cmd += ['%s=%s' % (key, value)]
@@ -523,7 +527,7 @@ def _ProxySimSetup(options):
   # Find the apache module directory, and make sure it has the modules we need.
   module_dirs = {}
   for g in PROXY_APACHE_MODULE_GLOBS:
-    for mod, so in apache_modules:
+    for _, so in apache_modules:
       for f in glob.glob(os.path.join(g, so)):
         module_dirs.setdefault(os.path.dirname(f), []).append(so)
   for apache_module_path, modules_found in module_dirs.items():
@@ -583,9 +587,9 @@ def _ProxySimSetup(options):
     )
     try:
       for cmd in commands:
-        cros_build_lib.run(cmd, print_cmd=False)
-    except cros_build_lib.RunCommandError:
-      raise SystemExit('Running %r failed!' % (cmd,))
+        cros_build_lib.dbg_run(cmd)
+    except cros_build_lib.RunCommandError as e:
+      cros_build_lib.Die('Proxy setup failed!\n%s', e)
 
     proxy_url = 'http://%s:%u' % (PROXY_HOST_IP, PROXY_PORT)
     for proto in ('http', 'https', 'ftp'):
@@ -642,15 +646,15 @@ def _ProxySimSetup(options):
   cmd = None  # Make cros lint happy.
   try:
     for cmd in commands:
-      cros_build_lib.run(cmd, print_cmd=False)
-  except cros_build_lib.RunCommandError:
+      cros_build_lib.dbg_run(cmd)
+  except cros_build_lib.RunCommandError as e:
     # Clean up existing interfaces, if any.
     cmd_cleanup = ('ip', 'link', 'del', veth_host)
     try:
       cros_build_lib.run(cmd_cleanup, print_cmd=False)
     except cros_build_lib.RunCommandError:
       logging.error('running %r failed', cmd_cleanup)
-    raise SystemExit('Running %r failed!' % (cmd,))
+    cros_build_lib.Die('Proxy network setup failed!\n%s', e)
 
   # Signal the child that the net ns/proxy is fully configured now.
   ns_setup_lock.Post()
@@ -667,6 +671,7 @@ def _ReExecuteIfNeeded(argv):
   """
   if os.geteuid() != 0:
     cmd = _SudoCommand() + ['--'] + argv
+    logging.debug('Reexecing self via sudo:\n%s', cros_build_lib.CmdToStr(cmd))
     os.execvp(cmd[0], cmd)
   else:
     # We must set up the cgroups mounts before we enter our own namespace.
@@ -846,6 +851,8 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
 
 
 def main(argv):
+  # Turn on strict sudo checks.
+  cros_build_lib.STRICT_SUDO = True
   conf = key_value_store.LoadFile(
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
@@ -1067,11 +1074,11 @@ snapshots will be unavailable).""" % ', '.join(missing_image_tools))
                      'fstrim.', img_path, extra_gbs)
       cmd = ['fstrim', options.chroot]
       try:
-        cros_build_lib.run(cmd, print_cmd=False)
+        cros_build_lib.dbg_run(cmd)
       except cros_build_lib.RunCommandError as e:
         logging.warning(
             'Running fstrim failed. Consider running fstrim on '
-            'your chroot manually.\nError: %s', e)
+            'your chroot manually.\n%s', e)
 
   # Enter a new set of namespaces.  Everything after here cannot directly affect
   # the hosts's mounts or alter LVM volumes.

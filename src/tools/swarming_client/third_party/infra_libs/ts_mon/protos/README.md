@@ -5,5 +5,4 @@ To generate the `*_pb2.py` files from the `*proto` files:
     cd infra_libs/ts_mon/protos/new
     protoc --python_out=. *.proto
 
-protoc version tested: libprotoc 3.0.0
-
+protoc version tested: libprotoc 3.6.1

@@ -48,7 +48,7 @@ ContentData* ContentData::Clone() const {
   return result;
 }
 
-void ContentData::Trace(blink::Visitor* visitor) {
+void ContentData::Trace(Visitor* visitor) {
   visitor->Trace(next_);
 }
 
@@ -67,7 +67,7 @@ LayoutObject* ImageContentData::CreateLayoutObject(
   return image;
 }
 
-void ImageContentData::Trace(blink::Visitor* visitor) {
+void ImageContentData::Trace(Visitor* visitor) {
   visitor->Trace(image_);
   ContentData::Trace(visitor);
 }
@@ -108,6 +108,14 @@ LayoutObject* QuoteContentData::CreateLayoutObject(
   LayoutObject* layout_object = new LayoutQuote(pseudo, quote_);
   layout_object->SetPseudoElementStyle(&pseudo_style);
   return layout_object;
+}
+
+LayoutObject* NoneContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    const ComputedStyle& pseudo_style,
+    LegacyLayout) const {
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

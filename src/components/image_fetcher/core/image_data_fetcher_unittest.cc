@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -106,6 +107,24 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester().ExpectBucketCount(std::string(kHistogramName), 200, 1);
+}
+
+TEST_F(ImageDataFetcherTest, FetchImageDataWithDataUrl) {
+  std::string data =
+      "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVQYlWNk+M/"
+      "wn4GBgYGJAQoAHhgCAh6X4CYAAAAASUVORK5CYII=";
+  std::string data_url = "data:image/png;base64," + data;
+
+  RequestMetadata expected_metadata;
+  std::string expected;
+  base::Base64Decode(data, &expected);
+  EXPECT_CALL(*this, OnImageDataFetched(expected, expected_metadata));
+
+  image_data_fetcher_.FetchImageData(
+      GURL(data_url),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 }
 
 TEST_F(ImageDataFetcherTest, FetchImageDataTrafficAnnotationOnly) {

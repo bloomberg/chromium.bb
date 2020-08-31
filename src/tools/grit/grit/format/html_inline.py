@@ -129,7 +129,7 @@ def ConvertFileToDataURL(filename, base_path, distribution, inlined_files,
     raise Exception('%s is of an an unknown type and '
                     'cannot be stored in a data url.' % filename)
   inline_data = base64.standard_b64encode(util.ReadFile(filepath, util.BINARY))
-  return 'data:%s;base64,%s' % (mimetype, inline_data)
+  return 'data:%s;base64,%s' % (mimetype, inline_data.decode('utf-8'))
 
 
 def SrcInlineAsDataURL(
@@ -383,6 +383,7 @@ def DoInline(
     # by DoInline.
     inlined_data_inst=DoInline(filepath, grd_node,
         allow_external_script=allow_external_script,
+        preprocess_only=preprocess_only,
         strip_whitespace=strip_whitespace,
         filename_expansion_function=filename_expansion_function)
 
@@ -434,8 +435,7 @@ def DoInline(
     inlined_files.add(filepath)
 
     # Inline stylesheets included in this css file.
-    text = _INCLUDE_RE.sub(InlineIncludeFiles,
-                           util.ReadFile(filepath, util.BINARY))
+    text = _INCLUDE_RE.sub(InlineIncludeFiles, util.ReadFile(filepath, 'utf-8'))
     # When resolving CSS files we need to pass in the path so that relative URLs
     # can be resolved.
 
@@ -477,7 +477,7 @@ def DoInline(
                   text)
 
 
-  flat_text = util.ReadFile(input_filename, util.BINARY)
+  flat_text = util.ReadFile(input_filename, 'utf-8')
 
   # Check conditional elements, remove unsatisfied ones from the file. We do
   # this twice. The first pass is so that we don't even bother calling
@@ -489,7 +489,8 @@ def DoInline(
 
   if not preprocess_only:
     if strip_whitespace:
-      flat_text = minifier.Minify(flat_text, input_filename)
+      flat_text = minifier.Minify(flat_text.encode('utf-8'),
+                                  input_filename).decode('utf-8')
 
     if not allow_external_script:
       # We need to inline css and js before we inline images so that image

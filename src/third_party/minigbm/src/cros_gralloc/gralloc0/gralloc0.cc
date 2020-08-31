@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "../../util.h"
 #include "../cros_gralloc_driver.h"
 
 #include <cassert>
@@ -32,6 +33,11 @@ enum {
 	GRALLOC_DRM_GET_BACKING_STORE,
 };
 // clang-format on
+
+// Gralloc0 doesn't define a video decoder flag. However, the IAllocator gralloc0
+// passthrough gives the low 32-bits of the BufferUsage flags to gralloc0 in their
+// entirety, so we can detect the video decoder flag passed by IAllocator clients.
+#define BUFFER_USAGE_VIDEO_DECODER (1 << 22)
 
 static uint64_t gralloc0_convert_usage(int usage)
 {
@@ -66,15 +72,19 @@ static uint64_t gralloc0_convert_usage(int usage)
 		use_flags |= BO_USE_NONE;
 	if (usage & GRALLOC_USAGE_PROTECTED)
 		use_flags |= BO_USE_PROTECTED;
-	if (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER)
+	if (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) {
+		use_flags |= BO_USE_HW_VIDEO_ENCODER;
 		/*HACK: See b/30054495 */
 		use_flags |= BO_USE_SW_READ_OFTEN;
+	}
 	if (usage & GRALLOC_USAGE_HW_CAMERA_WRITE)
 		use_flags |= BO_USE_CAMERA_WRITE;
 	if (usage & GRALLOC_USAGE_HW_CAMERA_READ)
 		use_flags |= BO_USE_CAMERA_READ;
 	if (usage & GRALLOC_USAGE_RENDERSCRIPT)
 		use_flags |= BO_USE_RENDERSCRIPT;
+	if (usage & BUFFER_USAGE_VIDEO_DECODER)
+		use_flags |= BO_USE_HW_VIDEO_DECODER;
 
 	return use_flags;
 }
@@ -89,6 +99,13 @@ static uint32_t gralloc0_convert_map_usage(int map_usage)
 		map_flags |= BO_MAP_WRITE;
 
 	return map_flags;
+}
+
+static int gralloc0_droid_yuv_format(int droid_format)
+{
+
+	return (droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888 ||
+		droid_format == HAL_PIXEL_FORMAT_YV12);
 }
 
 static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usage,
@@ -109,6 +126,14 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 	supported = mod->driver->is_supported(&descriptor);
 	if (!supported && (usage & GRALLOC_USAGE_HW_COMPOSER)) {
 		descriptor.use_flags &= ~BO_USE_SCANOUT;
+		supported = mod->driver->is_supported(&descriptor);
+	}
+	if (!supported && (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) &&
+	    !gralloc0_droid_yuv_format(format)) {
+		// Unmask BO_USE_HW_VIDEO_ENCODER in the case of non-yuv formats
+		// because they are not input to a hw encoder but used as an
+		// intermediate format (e.g. camera).
+		descriptor.use_flags &= ~BO_USE_HW_VIDEO_ENCODER;
 		supported = mod->driver->is_supported(&descriptor);
 	}
 
@@ -237,6 +262,8 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	uint64_t *out_store;
 	buffer_handle_t handle;
 	uint32_t *out_width, *out_height, *out_stride;
+	uint32_t strides[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
+	uint32_t offsets[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
 	auto mod = (struct gralloc0_module const *)module;
 
 	switch (op) {
@@ -262,7 +289,17 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	switch (op) {
 	case GRALLOC_DRM_GET_STRIDE:
 		out_stride = va_arg(args, uint32_t *);
-		*out_stride = hnd->pixel_stride;
+		ret = mod->driver->resource_info(handle, strides, offsets);
+		if (ret)
+			break;
+
+		if (strides[0] != hnd->strides[0]) {
+			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(hnd->format, 0);
+			*out_stride = DIV_ROUND_UP(strides[0], bytes_per_pixel);
+		} else {
+			*out_stride = hnd->pixel_stride;
+		}
+
 		break;
 	case GRALLOC_DRM_GET_FORMAT:
 		out_format = va_arg(args, int32_t *);
@@ -340,6 +377,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 {
 	int32_t ret;
 	uint32_t map_flags;
+	uint32_t strides[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
+	uint32_t offsets[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module const *)module;
 	struct rectangle rect = { .x = static_cast<uint32_t>(l),
@@ -353,9 +392,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 		return -EINVAL;
 	}
 
-	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
-	    (hnd->droid_format != HAL_PIXEL_FORMAT_YV12) &&
-	    (hnd->droid_format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED)) {
+	if (!gralloc0_droid_yuv_format(hnd->droid_format) &&
+	    hnd->droid_format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) {
 		drv_log("Non-YUV format not compatible.\n");
 		return -EINVAL;
 	}
@@ -370,13 +408,22 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	if (ret)
 		return ret;
 
+	if (!map_flags) {
+		ret = mod->driver->resource_info(handle, strides, offsets);
+		if (ret)
+			return ret;
+
+		for (uint32_t plane = 0; plane < DRV_MAX_PLANES; plane++)
+			addr[plane] = static_cast<uint8_t *>(nullptr) + offsets[plane];
+	}
+
 	switch (hnd->format) {
 	case DRM_FORMAT_NV12:
 		ycbcr->y = addr[0];
 		ycbcr->cb = addr[1];
 		ycbcr->cr = addr[1] + 1;
-		ycbcr->ystride = hnd->strides[0];
-		ycbcr->cstride = hnd->strides[1];
+		ycbcr->ystride = (!map_flags) ? strides[0] : hnd->strides[0];
+		ycbcr->cstride = (!map_flags) ? strides[1] : hnd->strides[1];
 		ycbcr->chroma_step = 2;
 		break;
 	case DRM_FORMAT_YVU420:
@@ -384,8 +431,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 		ycbcr->y = addr[0];
 		ycbcr->cb = addr[2];
 		ycbcr->cr = addr[1];
-		ycbcr->ystride = hnd->strides[0];
-		ycbcr->cstride = hnd->strides[1];
+		ycbcr->ystride = (!map_flags) ? strides[0] : hnd->strides[0];
+		ycbcr->cstride = (!map_flags) ? strides[1] : hnd->strides[1];
 		ycbcr->chroma_step = 1;
 		break;
 	default:

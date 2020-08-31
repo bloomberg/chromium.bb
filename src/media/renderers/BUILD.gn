@@ -32,6 +32,8 @@ source_set("renderers") {
     "video_renderer_impl.h",
     "video_resource_updater.cc",
     "video_resource_updater.h",
+    "yuv_util.cc",
+    "yuv_util.h",
   ]
 
   deps = [
@@ -41,6 +43,7 @@ source_set("renderers") {
     "//components/viz/client",
     "//components/viz/common",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/client:raster_interface",
     "//gpu/command_buffer/common",
     "//media:media_buildflags",
     "//media/audio",
@@ -58,7 +61,6 @@ source_set("renderers") {
   if (is_fuchsia) {
     deps += [ "//fuchsia/engine:switches" ]
   }
-
   configs += [
     "//media:subcomponent_config",
 
@@ -95,4 +97,49 @@ source_set("unit_tests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
+  if (is_win) {
+    sources += [
+      "win/media_foundation_renderer_integration_test.cc",
+      "win/media_foundation_renderer_unittest.cc",
+    ]
+    deps += [
+      "//media/renderers:media_foundation_renderer",
+      "//media/test:pipeline_integration_test_base",
+    ]
+  }
+}
+
+if (is_win) {
+  source_set("media_foundation_renderer") {
+    sources = [
+      "win/media_engine_extension.cc",
+      "win/media_engine_extension.h",
+      "win/media_engine_notify_impl.cc",
+      "win/media_engine_notify_impl.h",
+      "win/media_foundation_audio_stream.cc",
+      "win/media_foundation_audio_stream.h",
+      "win/media_foundation_protection_manager.cc",
+      "win/media_foundation_protection_manager.h",
+      "win/media_foundation_renderer.cc",
+      "win/media_foundation_renderer.h",
+      "win/media_foundation_renderer_extension.h",
+      "win/media_foundation_source_wrapper.cc",
+      "win/media_foundation_source_wrapper.h",
+      "win/media_foundation_stream_wrapper.cc",
+      "win/media_foundation_stream_wrapper.h",
+      "win/media_foundation_video_stream.cc",
+      "win/media_foundation_video_stream.h",
+      "win/mf_cdm_proxy.h",
+    ]
+    deps = [
+      "//media",
+      "//media/base/win:media_foundation_util",
+    ]
+
+    # media_foundation_renderer uses Windows D3D and Media Foundation APIs.
+    libs = [
+      "d3d11.lib",
+      "mfplat.lib",
+    ]
+  }
 }

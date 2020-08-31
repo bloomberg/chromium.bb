@@ -4,10 +4,10 @@
 
 #include "cast/common/certificate/types.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 
 bool operator<(const DateTime& a, const DateTime& b) {
   if (a.year < b.year) {
@@ -52,9 +52,17 @@ bool DateTimeFromSeconds(uint64_t seconds, DateTime* time) {
   time_t sec = static_cast<time_t>(seconds);
   OSP_DCHECK_GE(sec, 0);
   OSP_DCHECK_EQ(static_cast<uint64_t>(sec), seconds);
+#if defined(_WIN32)
+  // NOTE: This is for compiling in Chromium and is not validated in any direct
+  // libcast Windows build.
+  if (!gmtime_s(&tm, &sec)) {
+    return false;
+  }
+#else
   if (!gmtime_r(&sec, &tm)) {
     return false;
   }
+#endif
 
   time->second = tm.tm_sec;
   time->minute = tm.tm_min;
@@ -66,5 +74,22 @@ bool DateTimeFromSeconds(uint64_t seconds, DateTime* time) {
   return true;
 }
 
-}  // namespace certificate
+static_assert(sizeof(time_t) >= 4, "Can't avoid overflow with < 32-bits");
+
+std::chrono::seconds DateTimeToSeconds(const DateTime& time) {
+  OSP_DCHECK_GE(time.month, 1);
+  OSP_DCHECK_GE(time.year, 1900);
+  // NOTE: Guard against overflow if time_t is 32-bit.
+  OSP_DCHECK(sizeof(time_t) >= 8 || time.year < 2038) << time.year;
+  struct tm tm = {};
+  tm.tm_sec = time.second;
+  tm.tm_min = time.minute;
+  tm.tm_hour = time.hour;
+  tm.tm_mday = time.day;
+  tm.tm_mon = time.month - 1;
+  tm.tm_year = time.year - 1900;
+  return std::chrono::seconds(mktime(&tm));
+}
+
 }  // namespace cast
+}  // namespace openscreen

@@ -18,7 +18,7 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_server_session_base.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
@@ -56,7 +56,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
                           const ParsedQuicVersionVector& supported_versions,
                           QuicConnection* connection,
                           QuicSession::Visitor* visitor,
-                          QuicCryptoServerStream::Helper* helper,
+                          QuicCryptoServerStreamBase::Helper* helper,
                           const QuicCryptoServerConfig* crypto_config,
                           QuicCompressedCertsCache* compressed_certs_cache,
                           QuicSimpleServerBackend* quic_simple_server_backend);
@@ -94,7 +94,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
       const QuicRstStreamFrame& frame) override;
 
   // QuicServerSessionBaseMethod:
-  QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+  std::unique_ptr<QuicCryptoServerStreamBase> CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
 
@@ -147,7 +147,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // the queue also increases by 2 from previous one's. The front element's
   // stream_id is always next_outgoing_stream_id_, and the last one is always
   // highest_promised_stream_id_.
-  QuicDeque<PromisedStreamInfo> promised_streams_;
+  QuicCircularDeque<PromisedStreamInfo> promised_streams_;
 
   QuicSimpleServerBackend* quic_simple_server_backend_;  // Not owned.
 };

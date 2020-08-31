@@ -5,10 +5,11 @@
 #ifndef PLATFORM_BASE_TRACE_LOGGING_TYPES_H_
 #define PLATFORM_BASE_TRACE_LOGGING_TYPES_H_
 
-#include "absl/types/optional.h"
+#include <stdint.h>
+
+#include <limits>
 
 namespace openscreen {
-namespace platform {
 
 // Define TraceId type here since other TraceLogging files import it.
 using TraceId = uint64_t;
@@ -51,18 +52,18 @@ inline bool operator!=(const TraceIdHierarchy& lhs,
 // BitFlags to represent the supported tracing categories.
 // NOTE: These are currently placeholder values and later changes should feel
 // free to edit them.
-// TODO(rwkeane): Rename SSL to either Ssl or kSsl
 struct TraceCategory {
   enum Value : uint64_t {
-    Any = std::numeric_limits<uint64_t>::max(),
-    mDNS = 0x01 << 0,
-    Quic = 0x01 << 1,
-    SSL = 0x01 << 2,
-    Presentation = 0x01 << 3,
+    kAny = std::numeric_limits<uint64_t>::max(),
+    kMdns = 0x01 << 0,
+    kQuic = 0x01 << 1,
+    kSsl = 0x01 << 2,
+    kPresentation = 0x01 << 3,
+    kStandaloneReceiver = 0x01 << 4,
+    kDiscovery = 0x01 << 5
   };
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TRACE_LOGGING_TYPES_H_

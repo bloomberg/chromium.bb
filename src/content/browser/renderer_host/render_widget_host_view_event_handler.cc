@@ -35,7 +35,6 @@
 
 #if defined(OS_WIN)
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/public/common/context_menu_params.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #endif  // defined(OS_WIN)
@@ -85,11 +84,11 @@ bool ShouldGenerateAppCommand(const ui::MouseEvent* event) {
 // touchcancel.
 void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
                                           int changed_touch_id) {
-  if (event->GetType() == blink::WebInputEvent::kTouchMove ||
-      event->GetType() == blink::WebInputEvent::kTouchCancel) {
+  if (event->GetType() == blink::WebInputEvent::Type::kTouchMove ||
+      event->GetType() == blink::WebInputEvent::Type::kTouchCancel) {
     for (size_t i = 0; i < event->touches_length; ++i) {
       if (event->touches[i].id != changed_touch_id)
-        event->touches[i].state = blink::WebTouchPoint::kStateStationary;
+        event->touches[i].state = blink::WebTouchPoint::State::kStateStationary;
     }
   }
 }
@@ -153,22 +152,21 @@ void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
 }
 #endif
 
-bool RenderWidgetHostViewEventHandler::LockMouse(
+blink::mojom::PointerLockResult RenderWidgetHostViewEventHandler::LockMouse(
     bool request_unadjusted_movement) {
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
-    return false;
+    return blink::mojom::PointerLockResult::kWrongDocument;
 
   if (mouse_locked_)
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
 
   if (request_unadjusted_movement && window_->GetHost()) {
     mouse_locked_unadjusted_movement_ =
         window_->GetHost()->RequestUnadjustedMovement();
     if (!mouse_locked_unadjusted_movement_)
-      return false;
+      return blink::mojom::PointerLockResult::kUnsupportedOptions;
   }
-
   mouse_locked_ = true;
 
 #if !defined(OS_WIN)
@@ -187,7 +185,39 @@ bool RenderWidgetHostViewEventHandler::LockMouse(
     MoveCursorToCenter(nullptr);
 
   delegate_->SetTooltipsEnabled(false);
-  return true;
+  return blink::mojom::PointerLockResult::kSuccess;
+}
+
+blink::mojom::PointerLockResult
+RenderWidgetHostViewEventHandler::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  aura::Window* root_window = window_->GetRootWindow();
+  if (!root_window || !window_->GetHost())
+    return blink::mojom::PointerLockResult::kWrongDocument;
+
+  // If lock was lost before completing this change request
+  // it was because the user hit escape or navigated away
+  // from the page.
+  if (!mouse_locked_)
+    return blink::mojom::PointerLockResult::kUserRejected;
+
+  if (!request_unadjusted_movement) {
+    mouse_locked_unadjusted_movement_.reset();
+    return blink::mojom::PointerLockResult::kSuccess;
+  }
+
+  if (mouse_locked_unadjusted_movement_) {
+    // Desired state already acquired.
+    return blink::mojom::PointerLockResult::kSuccess;
+  }
+
+  mouse_locked_unadjusted_movement_ =
+      window_->GetHost()->RequestUnadjustedMovement();
+
+  if (!mouse_locked_unadjusted_movement_)
+    return blink::mojom::PointerLockResult::kUnsupportedOptions;
+
+  return blink::mojom::PointerLockResult::kSuccess;
 }
 
 void RenderWidgetHostViewEventHandler::UnlockMouse() {
@@ -549,7 +579,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
-    fling_cancel.SetType(blink::WebInputEvent::kGestureFlingCancel);
+    fling_cancel.SetType(blink::WebInputEvent::Type::kGestureFlingCancel);
     fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     if (ShouldRouteEvents()) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
@@ -560,7 +590,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  if (gesture.GetType() != blink::WebInputEvent::kUndefined) {
+  if (gesture.GetType() != blink::WebInputEvent::Type::kUndefined) {
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       // If there is a current scroll going on and a new scroll that isn't
       // wheel based send a synthetic wheel event with kPhaseEnded to cancel
@@ -597,7 +627,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
 void RenderWidgetHostViewEventHandler::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 }
 
@@ -785,8 +815,7 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     // reset any global_mouse_position set previously.
     if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
         ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
-      global_mouse_position_.SetPoint(event->PositionInScreen().x,
-                                      event->PositionInScreen().y);
+      global_mouse_position_ = event->PositionInScreen();
     }
 
     // Movement is computed by taking the difference of the new cursor position
@@ -800,14 +829,13 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
     // Remove the floor here when movement_x/y is changed to double.
     if (!(ui_mouse_event.flags() & ui::EF_UNADJUSTED_MOUSE)) {
-      event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
+      event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x()) -
                           gfx::ToFlooredInt(global_mouse_position_.x());
-      event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
+      event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y()) -
                           gfx::ToFlooredInt(global_mouse_position_.y());
     }
 
-    global_mouse_position_.SetPoint(event->PositionInScreen().x,
-                                    event->PositionInScreen().y);
+    global_mouse_position_ = event->PositionInScreen();
   }
 
   // This logic is similar to |is_move_to_center_event| check when
@@ -832,10 +860,8 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
                                  unlocked_global_mouse_position_.y());
     }
   } else {
-    unlocked_mouse_position_.SetPoint(event->PositionInWidget().x,
-                                      event->PositionInWidget().y);
-    unlocked_global_mouse_position_.SetPoint(event->PositionInScreen().x,
-                                             event->PositionInScreen().y);
+    unlocked_mouse_position_ = event->PositionInWidget();
+    unlocked_global_mouse_position_ = event->PositionInScreen();
   }
 }
 
@@ -870,7 +896,7 @@ void RenderWidgetHostViewEventHandler::MoveCursorToCenter(
 
 bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
     const blink::WebMouseEvent& event) {
-  if (event.GetType() == blink::WebInputEvent::kMouseMove &&
+  if (event.GetType() == blink::WebInputEvent::Type::kMouseMove &&
       synthetic_move_position_.has_value()) {
     if (IsFractionalScaleFactor(host_view_->current_device_scale_factor())) {
       // For fractional scale factors, the conversion from pixels to dip and
@@ -880,9 +906,9 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
       // correctly. Workaround is to treat a mouse move or drag event off by
       // atmost 2 px from the center as a move to center event.
       // TODO(crbug.com/991236): figure out a way to avoid the conversion error.
-      return ((std::abs(event.PositionInScreen().x -
+      return ((std::abs(event.PositionInScreen().x() -
                         synthetic_move_position_->x()) <= 2) &&
-              (std::abs(event.PositionInScreen().y -
+              (std::abs(event.PositionInScreen().y() -
                         synthetic_move_position_->y()) <= 2));
     } else {
       return synthetic_move_position_.value() ==

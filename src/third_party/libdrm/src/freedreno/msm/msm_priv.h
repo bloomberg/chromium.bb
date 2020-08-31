@@ -57,6 +57,17 @@ struct msm_pipe {
 	uint32_t gmem;
 	uint32_t chip_id;
 	uint32_t queue_id;
+
+	/* Allow for sub-allocation of stateobj ring buffers (ie. sharing
+	 * the same underlying bo)..
+	 *
+	 * This takes advantage of each context having it's own fd_pipe,
+	 * so we don't have to worry about access from multiple threads.
+	 *
+	 * We also rely on previous stateobj having been fully constructed
+	 * so we can reclaim extra space at it's end.
+	 */
+	struct fd_ringbuffer *suballoc_ring;
 };
 
 static inline struct msm_pipe * to_msm_pipe(struct fd_pipe *x)
@@ -68,7 +79,7 @@ drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
 		enum fd_pipe_id id, uint32_t prio);
 
 drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size);
+		uint32_t size, enum fd_ringbuffer_flags flags);
 
 struct msm_bo {
 	struct fd_bo base;
@@ -100,5 +111,31 @@ static inline void get_abs_timeout(struct drm_msm_timespec *tv, uint64_t ns)
 	tv->tv_sec = t.tv_sec + s;
 	tv->tv_nsec = t.tv_nsec + ns - (s * 1000000000);
 }
+
+/*
+ * Stupid/simple growable array implementation:
+ */
+
+static inline void *
+grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
+{
+	if ((nr + 1) > *max) {
+		if ((*max * 2) < (nr + 1))
+			*max = nr + 5;
+		else
+			*max = *max * 2;
+		ptr = realloc(ptr, *max * sz);
+	}
+	return ptr;
+}
+
+#define DECLARE_ARRAY(type, name) \
+	unsigned nr_ ## name, max_ ## name; \
+	type * name;
+
+#define APPEND(x, name) ({ \
+	(x)->name = grow((x)->name, (x)->nr_ ## name, &(x)->max_ ## name, sizeof((x)->name[0])); \
+	(x)->nr_ ## name ++; \
+})
 
 #endif /* MSM_PRIV_H_ */

@@ -16,6 +16,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -26,8 +27,8 @@
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/tab_groups/tab_group_id.h"
 #endif
 
 class Browser;
@@ -86,6 +87,12 @@ struct NavigateParams {
   // The URL/referrer to be loaded. Ignored if |contents_to_insert| is non-NULL.
   GURL url;
   content::Referrer referrer;
+
+  // The routing id of the initiator of the navigation. This is best effort: it
+  // is only defined for some renderer-initiated navigations (e.g., not drag and
+  // drop), and the frame with the corresponding routing ID may have been
+  // deleted before the navigation begins.
+  content::GlobalFrameRoutingId initiator_routing_id;
 
   // The origin of the initiator of the navigation.
   base::Optional<url::Origin> initiator_origin;
@@ -199,6 +206,10 @@ struct NavigateParams {
   // NO_ACTION, |window_action| will be set to SHOW_WINDOW.
   WindowAction window_action = NO_ACTION;
 
+  // Whether the browser is being created for captive portal resolution. If
+  // true, |disposition| should be NEW_POPUP.
+  bool is_captive_portal_popup = false;
+
   // If false then the navigation was not initiated by a user gesture.
   bool user_gesture = true;
 
@@ -227,7 +238,7 @@ struct NavigateParams {
   Browser* browser = nullptr;
 
   // The group the caller would like the tab to be added to.
-  base::Optional<TabGroupId> group;
+  base::Optional<tab_groups::TabGroupId> group;
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be
@@ -284,6 +295,11 @@ struct NavigateParams {
 
   // Indicates the reload type of this navigation.
   content::ReloadType reload_type = content::ReloadType::NONE;
+
+  // Optional impression associated with this navigation. Only set on
+  // navigations that originate from links with impression attributes. Used for
+  // conversion measurement.
+  base::Optional<content::Impression> impression;
 
  private:
   NavigateParams();

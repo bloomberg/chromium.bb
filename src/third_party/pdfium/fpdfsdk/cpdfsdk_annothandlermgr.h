@@ -36,7 +36,8 @@ class CPDFSDK_AnnotHandlerMgr {
 
   void SetFormFillEnv(CPDFSDK_FormFillEnvironment* pFormFillEnv);
 
-  CPDFSDK_Annot* NewAnnot(CPDF_Annot* pAnnot, CPDFSDK_PageView* pPageView);
+  std::unique_ptr<CPDFSDK_Annot> NewAnnot(CPDF_Annot* pAnnot,
+                                          CPDFSDK_PageView* pPageView);
 #ifdef PDF_ENABLE_XFA
   std::unique_ptr<CPDFSDK_Annot> NewXFAAnnot(CXFA_FFWidget* pAnnot,
                                              CPDFSDK_PageView* pPageView);
@@ -85,8 +86,8 @@ class CPDFSDK_AnnotHandlerMgr {
   bool Annot_OnMouseWheel(CPDFSDK_PageView* pPageView,
                           ObservedPtr<CPDFSDK_Annot>* pAnnot,
                           uint32_t nFlags,
-                          short zDelta,
-                          const CFX_PointF& point);
+                          const CFX_PointF& point,
+                          const CFX_Vector& delta);
   bool Annot_OnRButtonDown(CPDFSDK_PageView* pPageView,
                            ObservedPtr<CPDFSDK_Annot>* pAnnot,
                            uint32_t nFlags,
@@ -96,7 +97,10 @@ class CPDFSDK_AnnotHandlerMgr {
                          uint32_t nFlags,
                          const CFX_PointF& point);
   bool Annot_OnChar(CPDFSDK_Annot* pAnnot, uint32_t nChar, uint32_t nFlags);
-  bool Annot_OnKeyDown(CPDFSDK_Annot* pAnnot, int nKeyCode, int nFlag);
+  bool Annot_OnKeyDown(CPDFSDK_PageView* pPageView,
+                       CPDFSDK_Annot* pAnnot,
+                       int nKeyCode,
+                       int nFlag);
   bool Annot_OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot, uint32_t nFlag);
   bool Annot_OnKillFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot, uint32_t nFlag);
   bool Annot_SetIndexSelected(ObservedPtr<CPDFSDK_Annot>* pAnnot,
@@ -116,10 +120,14 @@ class CPDFSDK_AnnotHandlerMgr {
                        const CFX_PointF& point);
 
  private:
+  friend class CPDFSDK_BAAnnotHandlerTest;
+
   IPDFSDK_AnnotHandler* GetAnnotHandler(CPDFSDK_Annot* pAnnot) const;
   IPDFSDK_AnnotHandler* GetAnnotHandlerOfType(
       CPDF_Annot::Subtype nAnnotSubtype) const;
   CPDFSDK_Annot* GetNextAnnot(CPDFSDK_Annot* pSDKAnnot, bool bNext);
+  CPDFSDK_Annot* GetFirstOrLastFocusableAnnot(CPDFSDK_PageView* page_view,
+                                              bool last) const;
 
   // |m_pBAAnnotHandler| and |m_pWidgetHandler| are always present, but
   // |m_pXFAWidgetHandler| is only present in XFA mode.

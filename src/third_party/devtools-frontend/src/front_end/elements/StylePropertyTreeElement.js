@@ -2,11 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class StylePropertyTreeElement extends UI.TreeElement {
+import * as Bindings from '../bindings/bindings.js';
+import * as ColorPicker from '../color_picker/color_picker.js';
+import * as Common from '../common/common.js';
+import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
+import {BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper} from './ColorSwatchPopoverIcon.js';
+import {CSSPropertyPrompt, StylePropertiesSection, StylesSidebarPane, StylesSidebarPropertyRenderer,} from './StylesSidebarPane.js';  // eslint-disable-line no-unused-vars
+
+export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!Elements.StylesSidebarPane} stylesPane
-   * @param {!SDK.CSSMatchedStyles} matchedStyles
-   * @param {!SDK.CSSProperty} property
+   * @param {!StylesSidebarPane} stylesPane
+   * @param {!SDK.CSSMatchedStyles.CSSMatchedStyles} matchedStyles
+   * @param {!SDK.CSSProperty.CSSProperty} property
    * @param {boolean} isShorthand
    * @param {boolean} inherited
    * @param {boolean} overloaded
@@ -23,7 +35,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     this.selectable = false;
     this._parentPane = stylesPane;
     this.isShorthand = isShorthand;
-    this._applyStyleThrottler = new Common.Throttler(0);
+    this._applyStyleThrottler = new Common.Throttler.Throttler(0);
     this._newProperty = newProperty;
     if (this._newProperty) {
       this.listItemElement.textContent = '';
@@ -36,12 +48,12 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     this._hasBeenEditedIncrementally = false;
     this._prompt = null;
     this._lastComputedValue = null;
-    /** @type {(!Elements.StylePropertyTreeElement.Context|undefined)} */
+    /** @type {(!Context|undefined)} */
     this._contextForTest;
   }
 
   /**
-   * @return {!SDK.CSSMatchedStyles}
+   * @return {!SDK.CSSMatchedStyles.CSSMatchedStyles}
    */
   matchedStyles() {
     return this._matchedStyles;
@@ -122,20 +134,20 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
    */
   _processColor(text) {
     // We can be called with valid non-color values of |text| (like 'none' from border style)
-    const color = Common.Color.parse(text);
+    const color = Common.Color.Color.parse(text);
     if (!color) {
       return createTextNode(text);
     }
 
     if (!this._editable()) {
-      const swatch = InlineEditor.ColorSwatch.create();
+      const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
       swatch.setColor(color);
       return swatch;
     }
 
-    const swatch = InlineEditor.ColorSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
     swatch.setColor(color);
-    swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
+    swatch.setFormat(Common.Settings.detectColorFormat(swatch.color()));
     this._addColorContrastInfo(swatch);
 
     return swatch;
@@ -150,7 +162,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     if (!computedValue) {
       return createTextNode(text);
     }
-    const color = Common.Color.parse(computedValue);
+    const color = Common.Color.Color.parse(computedValue);
     if (!color) {
       const node = createElement('span');
       node.textContent = text;
@@ -158,31 +170,32 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return node;
     }
     if (!this._editable()) {
-      const swatch = InlineEditor.ColorSwatch.create();
+      const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
       swatch.setText(text, computedValue);
       swatch.setColor(color);
       return swatch;
     }
 
-    const swatch = InlineEditor.ColorSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
     swatch.setColor(color);
-    swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
+    swatch.setFormat(Common.Settings.detectColorFormat(swatch.color()));
     swatch.setText(text, computedValue);
     this._addColorContrastInfo(swatch);
     return swatch;
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
    */
   async _addColorContrastInfo(swatch) {
     const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
-    const swatchIcon = new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch);
+    const swatchIcon = new ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch);
     if (this.property.name !== 'color' || !this._parentPane.cssModel() || !this.node()) {
       return;
     }
     const cssModel = this._parentPane.cssModel();
-    const contrastInfo = new ColorPicker.ContrastInfo(await cssModel.backgroundColorsPromise(this.node().id));
+    const contrastInfo =
+        new ColorPicker.ContrastInfo.ContrastInfo(await cssModel.backgroundColorsPromise(this.node().id));
     swatchIcon.setContrastInfo(contrastInfo);
   }
 
@@ -202,9 +215,9 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return createTextNode(text);
     }
     const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
-    const swatch = InlineEditor.BezierSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.BezierSwatch.create();
     swatch.setBezierText(text);
-    new Elements.BezierPopoverIcon(this, swatchPopoverHelper, swatch);
+    new BezierPopoverIcon(this, swatchPopoverHelper, swatch);
     return swatch;
   }
 
@@ -219,9 +232,9 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     }
     let shadows;
     if (propertyName === 'text-shadow') {
-      shadows = InlineEditor.CSSShadowModel.parseTextShadow(propertyValue);
+      shadows = InlineEditor.CSSShadowModel.CSSShadowModel.parseTextShadow(propertyValue);
     } else {
-      shadows = InlineEditor.CSSShadowModel.parseBoxShadow(propertyValue);
+      shadows = InlineEditor.CSSShadowModel.CSSShadowModel.parseBoxShadow(propertyValue);
     }
     if (!shadows.length) {
       return createTextNode(propertyValue);
@@ -233,12 +246,12 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
         container.appendChild(createTextNode(', '));
       }  // Add back commas and spaces between each shadow.
       // TODO(flandy): editing the property value should use the original value with all spaces.
-      const cssShadowSwatch = InlineEditor.CSSShadowSwatch.create();
+      const cssShadowSwatch = InlineEditor.ColorSwatch.CSSShadowSwatch.create();
       cssShadowSwatch.setCSSShadow(shadows[i]);
-      new Elements.ShadowSwatchPopoverHelper(this, swatchPopoverHelper, cssShadowSwatch);
+      new ShadowSwatchPopoverHelper(this, swatchPopoverHelper, cssShadowSwatch);
       const colorSwatch = cssShadowSwatch.colorSwatch();
       if (colorSwatch) {
-        new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, colorSwatch);
+        new ColorSwatchPopoverIcon(this, swatchPopoverHelper, colorSwatch);
       }
       container.appendChild(cssShadowSwatch);
     }
@@ -251,16 +264,17 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
    * @return {!Node}
    */
   _processGrid(propertyValue, propertyName) {
-    const splitResult = TextUtils.TextUtils.splitStringByRegexes(propertyValue, [SDK.CSSMetadata.GridAreaRowRegex]);
+    const splitResult =
+        TextUtils.TextUtils.Utils.splitStringByRegexes(propertyValue, [SDK.CSSMetadata.GridAreaRowRegex]);
     if (splitResult.length <= 1) {
       return createTextNode(propertyValue);
     }
 
-    const indent = Common.moduleSetting('textEditorIndent').get();
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
     const container = createDocumentFragment();
     for (const result of splitResult) {
       const value = result.value.trim();
-      const content = UI.html`<br /><span class='styles-clipboard-only'>${indent.repeat(2)}</span>${value}`;
+      const content = UI.Fragment.html`<br /><span class='styles-clipboard-only'>${indent.repeat(2)}</span>${value}`;
       container.appendChild(content);
     }
     return container;
@@ -277,8 +291,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       this.listItemElement.classList.remove('implicit');
     }
 
-    const hasIgnorableError =
-        !this.property.parsedOk && Elements.StylesSidebarPane.ignoreErrorsForProperty(this.property);
+    const hasIgnorableError = !this.property.parsedOk && StylesSidebarPane.ignoreErrorsForProperty(this.property);
     if (hasIgnorableError) {
       this.listItemElement.classList.add('has-ignorable-error');
     } else {
@@ -305,21 +318,21 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @return {?SDK.DOMNode}
+   * @return {?SDK.DOMModel.DOMNode}
    */
   node() {
     return this._parentPane.node();
   }
 
   /**
-   * @return {!Elements.StylesSidebarPane}
+   * @return {!StylesSidebarPane}
    */
   parentPane() {
     return this._parentPane;
   }
 
   /**
-   * @return {?Elements.StylePropertiesSection}
+   * @return {?StylePropertiesSection}
    */
   section() {
     return this.treeOutline && this.treeOutline.section;
@@ -443,13 +456,13 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   _innerUpdateTitle() {
     this._updateState();
     if (this.isExpandable()) {
-      this._expandElement = UI.Icon.create('smallicon-triangle-right', 'expand-icon');
+      this._expandElement = UI.Icon.Icon.create('smallicon-triangle-right', 'expand-icon');
     } else {
       this._expandElement = null;
     }
 
     const propertyRenderer =
-        new Elements.StylesSidebarPropertyRenderer(this._style.parentRule, this.node(), this.name, this.value);
+        new StylesSidebarPropertyRenderer(this._style.parentRule, this.node(), this.name, this.value);
     if (this.property.parsedOk) {
       propertyRenderer.setVarHandler(this._processVar.bind(this));
       propertyRenderer.setColorHandler(this._processColor.bind(this));
@@ -468,7 +481,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return;
     }
 
-    const indent = Common.moduleSetting('textEditorIndent').get();
+    const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
     this.listItemElement.createChild('span', 'styles-clipboard-only')
         .createTextChild(indent + (this.property.disabled ? '/* ' : ''));
     this.listItemElement.appendChild(this.nameElement);
@@ -490,7 +503,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
       // Add a separate exclamation mark IMG element with a tooltip.
       this.listItemElement.insertBefore(
-          Elements.StylesSidebarPane.createExclamationMark(this.property), this.listItemElement.firstChild);
+          StylesSidebarPane.createExclamationMark(this.property), this.listItemElement.firstChild);
     }
     if (!this.property.activeInStyle()) {
       this.listItemElement.classList.add('inactive');
@@ -525,7 +538,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     if (this.listItemElement.hasSelection()) {
       return;
     }
-    if (UI.isBeingEdited(/** @type {!Node} */ (event.target))) {
+    if (UI.UIUtils.isBeingEdited(/** @type {!Node} */ (event.target))) {
       return;
     }
 
@@ -535,7 +548,8 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return;
     }
 
-    if (UI.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */ (event)) && this.section().navigable) {
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!MouseEvent} */ (event)) &&
+        this.section().navigable) {
       this._navigateToSource(/** @type {!Element} */ (event.target));
       return;
     }
@@ -544,11 +558,11 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    * @param {!Event} event
    */
   _handleContextMenuEvent(context, event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     if (this.property.parsedOk && this.section() && this.parent.root) {
       contextMenu.defaultSection().appendCheckboxItem(ls`Toggle property and continue editing`, async () => {
         this.editingCancelled(null, context);
@@ -572,7 +586,8 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return;
     }
     const propertyNameClicked = element === this.nameElement;
-    const uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(this.property, propertyNameClicked);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(
+        this.property, propertyNameClicked);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, omitFocus);
     }
@@ -604,13 +619,13 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       selectElement = this.nameElement;
     }
 
-    if (UI.isBeingEdited(selectElement)) {
+    if (UI.UIUtils.isBeingEdited(selectElement)) {
       return;
     }
 
     const isEditingName = selectElement === this.nameElement;
     if (!isEditingName) {
-      if (SDK.cssMetadata().isGridAreaDefiningProperty(this.name)) {
+      if (SDK.CSSMetadata.cssMetadata().isGridAreaDefiningProperty(this.name)) {
         this.valueElement.textContent = restoreGridIndents(this.value);
       }
       this.valueElement.textContent = restoreURLs(this.valueElement.textContent, this.value);
@@ -620,7 +635,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
      * @param {string} value
      */
     function restoreGridIndents(value) {
-      const splitResult = TextUtils.TextUtils.splitStringByRegexes(value, [SDK.CSSMetadata.GridAreaRowRegex]);
+      const splitResult = TextUtils.TextUtils.Utils.splitStringByRegexes(value, [SDK.CSSMetadata.GridAreaRowRegex]);
       return splitResult.map(result => result.value.trim()).join('\n');
     }
 
@@ -630,12 +645,11 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
      * @return {string}
      */
     function restoreURLs(fieldValue, modelValue) {
-      const urlRegex = /\b(url\([^)]*\))/g;
-      const splitFieldValue = fieldValue.split(urlRegex);
+      const splitFieldValue = fieldValue.split(SDK.CSSMetadata.URLRegex);
       if (splitFieldValue.length === 1) {
         return fieldValue;
       }
-      const modelUrlRegex = new RegExp(urlRegex);
+      const modelUrlRegex = new RegExp(SDK.CSSMetadata.URLRegex);
       for (let i = 1; i < splitFieldValue.length; i += 2) {
         const match = modelUrlRegex.exec(modelValue);
         if (match) {
@@ -645,7 +659,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       return splitFieldValue.join('');
     }
 
-    /** @type {!Elements.StylePropertyTreeElement.Context} */
+    /** @type {!Context} */
     const context = {
       expanded: this.expanded,
       hasChildren: this.isExpandable(),
@@ -664,7 +678,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     selectElement.textContent = selectElement.textContent;  // remove color swatch and the like
 
     /**
-     * @param {!Elements.StylePropertyTreeElement.Context} context
+     * @param {!Context} context
      * @param {!Event} event
      * @this {StylePropertyTreeElement}
      */
@@ -697,7 +711,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     }
 
     /**
-     * @param {!Elements.StylePropertyTreeElement.Context} context
+     * @param {!Context} context
      * @param {!Event} event
      * @this {StylePropertyTreeElement}
      */
@@ -716,11 +730,12 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
       selectElement.parentElement.scrollIntoViewIfNeeded(false);
     }
 
-    this._prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(this, isEditingName);
+    this._prompt = new CSSPropertyPrompt(this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);
 
-    this._prompt.addEventListener(
-        UI.TextPrompt.Events.TextChanged, this._applyFreeFlowStyleTextEdit.bind(this, context));
+    this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, event => {
+      this._applyFreeFlowStyleTextEdit(context);
+    });
 
     const proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
     this._navigateToSource(selectElement, true);
@@ -735,7 +750,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    * @param {!Event} event
    */
   _editingNameValueKeyDown(context, event) {
@@ -779,7 +794,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    * @param {!Event} event
    */
   _editingNameValueKeyPress(context, event) {
@@ -819,7 +834,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    * @return {!Promise}
    */
   async _applyFreeFlowStyleTextEdit(context) {
@@ -865,11 +880,11 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
    */
   kickFreeFlowStyleEditForTest() {
     const context = this._contextForTest;
-    return this._applyFreeFlowStyleTextEdit(/** @type {!Elements.StylePropertyTreeElement.Context} */ (context));
+    return this._applyFreeFlowStyleTextEdit(/** @type {!Context} */ (context));
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    */
   editingEnded(context) {
     this.setExpandable(context.hasChildren);
@@ -887,7 +902,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
   /**
    * @param {?Element} element
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    */
   editingCancelled(element, context) {
     this._removePrompt();
@@ -904,7 +919,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    */
   async _applyOriginalStyle(context) {
     await this.applyStyleText(this._originalPropertyText, false, context.originalProperty);
@@ -925,14 +940,16 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
   /**
    * @param {string} userInput
-   * @param {!Elements.StylePropertyTreeElement.Context} context
+   * @param {!Context} context
    * @param {string} moveDirection
    */
   async _editingCommitted(userInput, context, moveDirection) {
     this._removePrompt();
     this.editingEnded(context);
     const isEditingName = context.isEditingName;
-    const nameValueEntered = isEditingName && this.nameElement.textContent.includes(':');
+    // If the underlying property has been ripped out, always assume that the value having been entered was
+    // a name-value pair and attempt to process it via the SDK.
+    const nameValueEntered = (isEditingName && this.nameElement.textContent.includes(':')) || !this.property;
 
     // Determine where to move to before making changes
     let createNewProperty, moveToSelector;
@@ -959,16 +976,17 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
     // Make the Changes and trigger the moveToNextCallback after updating.
     let moveToIndex = moveTo && this.treeOutline ? this.treeOutline.rootElement().indexOfChild(moveTo) : -1;
-    const blankInput = userInput.isWhitespace();
+    const blankInput = Platform.StringUtilities.isWhitespace(userInput);
     const shouldCommitNewProperty = this._newProperty &&
         (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput) ||
          nameValueEntered);
-    const section = /** @type {!Elements.StylePropertiesSection} */ (this.section());
+    const section = /** @type {!StylePropertiesSection} */ (this.section());
     if (((userInput !== context.previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
       let propertyText;
       if (nameValueEntered) {
         propertyText = this.nameElement.textContent;
-      } else if (blankInput || (this._newProperty && this.valueElement.textContent.isWhitespace())) {
+      } else if (
+          blankInput || (this._newProperty && Platform.StringUtilities.isWhitespace(this.valueElement.textContent))) {
         propertyText = '';
       } else {
         if (isEditingName) {
@@ -995,7 +1013,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
      * The Callback to start editing the next/previous property/selector.
      * @param {boolean} alreadyNew
      * @param {boolean} valueChanged
-     * @param {!Elements.StylePropertiesSection} section
+     * @param {!StylePropertiesSection} section
      * @this {StylePropertyTreeElement}
      */
     function moveToNextCallback(alreadyNew, valueChanged, section) {
@@ -1029,7 +1047,8 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
             }
             treeElement.startEditing(elementToEdit);
             return;
-          } else if (!alreadyNew) {
+          }
+          if (!alreadyNew) {
             moveToSelector = true;
           }
         }
@@ -1082,7 +1101,7 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   /**
    * @param {string} styleText
    * @param {boolean} majorChange
-   * @param {?SDK.CSSProperty=} property
+   * @param {?SDK.CSSProperty.CSSProperty=} property
    * @return {!Promise}
    */
   applyStyleText(styleText, majorChange, property) {
@@ -1092,11 +1111,12 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
   /**
    * @param {string} styleText
    * @param {boolean} majorChange
-   * @param {?SDK.CSSProperty=} property
+   * @param {?SDK.CSSProperty.CSSProperty=} property
    * @return {!Promise}
    */
   async _innerApplyStyleText(styleText, majorChange, property) {
-    if (!this.treeOutline) {
+    // this.property might have been nulled at the end of the last _innerApplyStyleText
+    if (!this.treeOutline || !this.property) {
       return;
     }
 
@@ -1130,7 +1150,12 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
     }
     this._parentPane.setUserOperation(false);
 
-    if (!success) {
+    // TODO: using this.property.index to access its containing StyleDeclaration's property will result in
+    // off-by-1 errors when the containing StyleDeclaration's respective property has already been deleted.
+    // These referencing logic needs to be updated to be more robust.
+    const updatedProperty = property || this._style.propertyAt(this.property.index);
+    const isPropertyWithinBounds = this.property.index < this._style.allProperties().length;
+    if (!success || (!updatedProperty && isPropertyWithinBounds)) {
       if (majorChange) {
         // It did not apply, cancel editing.
         if (this._newProperty) {
@@ -1145,7 +1170,14 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
     this._matchedStyles.resetActiveProperties();
     this._hasBeenEditedIncrementally = true;
-    this.property = property || this._style.propertyAt(this.property.index);
+
+    // null check for updatedProperty before setting this.property as the code never expects this.property to be undefined or null.
+    // This occurs when deleting the last index of a StylePropertiesSection as this._style._allProperties array gets updated
+    // before we index it when setting the value for updatedProperty
+    const deleteProperty = majorChange && !styleText.length;
+    if (!deleteProperty && updatedProperty) {
+      this.property = updatedProperty;
+    }
 
     if (currentNode === this.node()) {
       this._updatePane();
@@ -1174,25 +1206,14 @@ export default class StylePropertyTreeElement extends UI.TreeElement {
 
 export const ActiveSymbol = Symbol('ActiveSymbol');
 
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.StylePropertyTreeElement = StylePropertyTreeElement;
-
-Elements.StylePropertyTreeElement.ActiveSymbol = ActiveSymbol;
-
 /** @typedef {{
  *    expanded: boolean,
  *    hasChildren: boolean,
  *    isEditingName: boolean,
- *    originalProperty: (!SDK.CSSProperty|undefined),
+ *    originalProperty: (!SDK.CSSProperty.CSSProperty|undefined),
  *    originalName: (string|undefined),
  *    originalValue: (string|undefined),
  *    previousContent: string
  *  }}
  */
-Elements.StylePropertyTreeElement.Context;
+export let Context;

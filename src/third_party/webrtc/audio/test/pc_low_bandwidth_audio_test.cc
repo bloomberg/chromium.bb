@@ -105,12 +105,12 @@ std::string AudioOutputFile() {
 
 std::string PerfResultsOutputFile() {
   return webrtc::test::OutputPath() + "PCLowBandwidth_perf_" +
-         FileSampleRateSuffix() + ".json";
+         FileSampleRateSuffix() + ".pb";
 }
 
 void LogTestResults() {
   std::string perf_results_output_file = PerfResultsOutputFile();
-  webrtc::test::WritePerfResults(perf_results_output_file);
+  EXPECT_TRUE(webrtc::test::WritePerfResults(perf_results_output_file));
 
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
@@ -140,7 +140,7 @@ TEST(PCLowBandwidthAudioTest, PCGoodNetworkHighBitrate) {
         alice->SetAudioConfig(std::move(audio));
       },
       [](PeerConfigurer* bob) {});
-  fixture->Run(RunParams(TimeDelta::ms(
+  fixture->Run(RunParams(TimeDelta::Millis(
       absl::GetFlag(FLAGS_quick) ? kQuickTestDurationMs : kTestDurationMs)));
   LogTestResults();
 }
@@ -166,7 +166,7 @@ TEST(PCLowBandwidthAudioTest, PC40kbpsNetwork) {
         alice->SetAudioConfig(std::move(audio));
       },
       [](PeerConfigurer* bob) {});
-  fixture->Run(RunParams(TimeDelta::ms(
+  fixture->Run(RunParams(TimeDelta::Millis(
       absl::GetFlag(FLAGS_quick) ? kQuickTestDurationMs : kTestDurationMs)));
   LogTestResults();
 }

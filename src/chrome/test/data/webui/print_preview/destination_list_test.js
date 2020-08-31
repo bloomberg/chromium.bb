@@ -62,61 +62,70 @@ suite(destination_list_test.suiteName, function() {
     const items =
         list.shadowRoot.querySelectorAll('print-preview-destination-list-item');
     const noMatchHint = list.$$('.no-destinations-message');
+    const ironList = list.$.list;
 
     // Query is initialized to null. All items are shown and the hint is
     // hidden.
-    items.forEach(item => assertFalse(item.hidden));
+    assertFalse(ironList.hidden);
+    items.forEach(item => assertFalse(item.parentNode.hidden));
     assertTrue(noMatchHint.hidden);
 
     // Searching for "e" should show "One", "Three", and "Five".
-    list.searchQuery = /(e)/i;
+    list.searchQuery = /(e)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden &&
-          (item.destination.displayName == 'Two' ||
-           item.destination.displayName == 'Four');
+      return !item.parentNode.hidden &&
+          (item.destination.displayName === 'Two' ||
+           item.destination.displayName === 'Four');
     }));
     assertTrue(noMatchHint.hidden);
 
     // Searching for "ABC" should show "One" and "Three".
-    list.searchQuery = /(ABC)/i;
+    list.searchQuery = /(ABC)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden && item.destination.displayName != 'One' &&
-          item.destination.displayName != 'Three';
+      return !item.parentNode.hidden &&
+          item.destination.displayName !== 'One' &&
+          item.destination.displayName !== 'Three';
     }));
     assertTrue(noMatchHint.hidden);
 
     // Searching for "F" should show "Four" and "Five"
-    list.searchQuery = /(F)/i;
+    list.searchQuery = /(F)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden && item.destination.displayName != 'Four' &&
-          item.destination.displayName != 'Five';
+      return !item.parentNode.hidden &&
+          item.destination.displayName !== 'Four' &&
+          item.destination.displayName !== 'Five';
     }));
     assertTrue(noMatchHint.hidden);
 
     // Searching for UVW should show no destinations and display the "no
     // match" hint.
-    list.searchQuery = /(UVW)/i;
+    list.searchQuery = /(UVW)/ig;
     flush();
-    items.forEach(item => assertTrue(item.hidden));
+    assertTrue(ironList.hidden);
     assertFalse(noMatchHint.hidden);
 
     // Searching for 123 should show destinations "Three", "Four", and "Five".
-    list.searchQuery = /(123)/i;
+    list.searchQuery = /(123)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden &&
-          (item.destination.displayName == 'One' ||
-           item.destination.displayName == 'Two');
+      return !item.parentNode.hidden &&
+          (item.destination.displayName === 'One' ||
+           item.destination.displayName === 'Two');
     }));
     assertTrue(noMatchHint.hidden);
 
     // Clearing the query restores the original state.
-    list.searchQuery = /()/i;
+    list.searchQuery = null;
     flush();
-    items.forEach(item => assertFalse(item.hidden));
+    assertFalse(ironList.hidden);
+    items.forEach(item => assertFalse(item.parentNode.hidden));
     assertTrue(noMatchHint.hidden);
   });
 

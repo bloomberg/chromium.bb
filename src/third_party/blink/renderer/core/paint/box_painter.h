@@ -38,21 +38,19 @@ class BoxPainter {
       const PhysicalRect&,
       const DisplayItemClient& background_client);
 
-  // Paint a hit test display item and record hit test data. This should be
-  // called in the background paint phase even if there is no other painted
-  // content.
+  // Expands the bounds of the current paint chunk for hit test, and records
+  // special touch action if any. This should be called in the background paint
+  // phase even if there is no other painted content.
   void RecordHitTestData(const PaintInfo&,
                          const PhysicalRect& paint_rect,
                          const DisplayItemClient& background_client);
 
-  // Paint a scroll hit test display item and record scroll hit test data. This
-  // should be called in the background paint phase even if there is no other
-  // painted content.
+  // This should be called in the background paint phase even if there is no
+  // other painted content.
   void RecordScrollHitTestData(const PaintInfo&,
                                const DisplayItemClient& background_client);
 
  private:
-  bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
                        const PhysicalRect&,
                        const Color& background_color,

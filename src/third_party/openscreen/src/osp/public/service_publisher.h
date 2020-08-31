@@ -5,7 +5,6 @@
 #ifndef OSP_PUBLIC_SERVICE_PUBLISHER_H_
 #define OSP_PUBLIC_SERVICE_PUBLISHER_H_
 
-#include <atomic>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -108,7 +107,7 @@ class ServicePublisher {
     // By default, all enabled Ethernet and WiFi interfaces are used.
     // This configuration must be identical to the interfaces configured
     // in the ScreenConnectionServer.
-    std::vector<platform::NetworkInterfaceIndex> network_interface_indices;
+    std::vector<NetworkInterfaceIndex> network_interface_indices;
   };
 
   virtual ~ServicePublisher();
@@ -145,7 +144,7 @@ class ServicePublisher {
  protected:
   explicit ServicePublisher(Observer* observer);
 
-  std::atomic<State> state_;
+  State state_;
   ServicePublisherError last_error_;
   Observer* observer_;
 

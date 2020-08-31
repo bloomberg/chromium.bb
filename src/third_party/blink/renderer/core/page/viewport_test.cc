@@ -29,6 +29,7 @@
  */
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -2794,20 +2795,6 @@ TEST_F(ViewportTest, viewportLegacyOrdering8) {
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
-TEST_F(ViewportTest, viewportLegacyEmptyAtViewportDoesntOverrideViewportMeta) {
-  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-10.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport/viewport-legacy-ordering-10.html", nullptr, nullptr,
-      nullptr, SetViewportSettings);
-
-  Page* page = web_view_helper.GetWebView()->GetPage();
-  PageScaleConstraints constraints = RunViewportTest(page, 800, 600);
-
-  EXPECT_EQ(5000, constraints.layout_size.Width());
-}
-
 TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMP) {
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
 
@@ -2921,7 +2908,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale) {
       nullptr, nullptr, nullptr, SetViewportSettings);
 
   web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
@@ -2939,7 +2926,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
       base_url_ + "viewport/viewport-limits-adjusted-for-user-scale.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
   web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-      WebWidget::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 

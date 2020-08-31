@@ -4,39 +4,28 @@
 
 #include "discovery/mdns/mdns_sender.h"
 
+#include <iostream>
+
 #include "discovery/mdns/mdns_writer.h"
+#include "platform/api/udp_socket.h"
 
 namespace openscreen {
 namespace discovery {
-
-namespace {
-
-const IPEndpoint& GetIPv6MdnsMulticastEndpoint() {
-  static IPEndpoint endpoint{.address = IPAddress(kDefaultMulticastGroupIPv6),
-                             .port = kDefaultMulticastPort};
-  return endpoint;
-}
-
-const IPEndpoint& GetIPv4MdnsMulticastEndpoint() {
-  static IPEndpoint endpoint{.address = IPAddress(kDefaultMulticastGroupIPv4),
-                             .port = kDefaultMulticastPort};
-  return endpoint;
-}
-
-}  // namespace
 
 MdnsSender::MdnsSender(UdpSocket* socket) : socket_(socket) {
   OSP_DCHECK(socket_ != nullptr);
 }
 
+MdnsSender::~MdnsSender() = default;
+
 Error MdnsSender::SendMulticast(const MdnsMessage& message) {
   const IPEndpoint& endpoint = socket_->IsIPv6()
-                                   ? GetIPv6MdnsMulticastEndpoint()
-                                   : GetIPv4MdnsMulticastEndpoint();
-  return SendUnicast(message, endpoint);
+                                   ? kDefaultMulticastGroupIPv6Endpoint
+                                   : kDefaultMulticastGroupIPv4Endpoint;
+  return SendMessage(message, endpoint);
 }
 
-Error MdnsSender::SendUnicast(const MdnsMessage& message,
+Error MdnsSender::SendMessage(const MdnsMessage& message,
                               const IPEndpoint& endpoint) {
   // Always try to write the message into the buffer even if MaxWireSize is
   // greater than maximum message size. Domain name compression might reduce the
@@ -50,6 +39,10 @@ Error MdnsSender::SendUnicast(const MdnsMessage& message,
 
   socket_->SendMessage(buffer.data(), writer.offset(), endpoint);
   return Error::Code::kNone;
+}
+
+void MdnsSender::OnSendError(UdpSocket* socket, Error error) {
+  OSP_LOG_ERROR << "Error sending packet";
 }
 
 }  // namespace discovery

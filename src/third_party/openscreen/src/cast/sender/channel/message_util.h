@@ -7,15 +7,23 @@
 
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
+#include "platform/base/error.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 class AuthContext;
 
-CastMessage CreateAuthChallengeMessage(const AuthContext& auth_context);
+::cast::channel::CastMessage CreateAuthChallengeMessage(
+    const AuthContext& auth_context);
 
-}  // namespace channel
+// |request_id| must be unique for |sender_id|.
+ErrorOr<::cast::channel::CastMessage> CreateAppAvailabilityRequest(
+    const std::string& sender_id,
+    int request_id,
+    const std::string& app_id);
+
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_SENDER_CHANNEL_MESSAGE_UTIL_H_

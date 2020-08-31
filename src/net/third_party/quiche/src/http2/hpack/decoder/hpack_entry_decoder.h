@@ -14,16 +14,17 @@
 
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
+#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoding_error.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_entry_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_entry_type_decoder.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_string_decoder.h"
 #include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 namespace http2 {
 
-class HTTP2_EXPORT_PRIVATE HpackEntryDecoder {
+class QUICHE_EXPORT_PRIVATE HpackEntryDecoder {
  public:
   enum class EntryDecoderState {
     // Have started decoding the type/varint, but didn't finish on the previous
@@ -63,6 +64,9 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoder {
   // in decoding the entry type and its varint.
   DecodeStatus Resume(DecodeBuffer* db, HpackEntryDecoderListener* listener);
 
+  // Return error code after decoding error occurred.
+  HpackDecodingError error() const { return error_; }
+
   std::string DebugString() const;
   void OutputDebugString(std::ostream& out) const;
 
@@ -73,11 +77,12 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoder {
   HpackEntryTypeDecoder entry_type_decoder_;
   HpackStringDecoder string_decoder_;
   EntryDecoderState state_ = EntryDecoderState();
+  HpackDecodingError error_ = HpackDecodingError::kOk;
 };
 
-HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
-                                              const HpackEntryDecoder& v);
-HTTP2_EXPORT_PRIVATE std::ostream& operator<<(
+QUICHE_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
+                                               const HpackEntryDecoder& v);
+QUICHE_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& out,
     HpackEntryDecoder::EntryDecoderState state);
 

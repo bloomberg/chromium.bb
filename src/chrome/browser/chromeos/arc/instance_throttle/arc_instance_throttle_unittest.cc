@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
@@ -29,8 +30,8 @@ class ArcInstanceThrottleTest : public testing::Test {
  public:
   ArcInstanceThrottleTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
-        arc_session_manager_(std::make_unique<ArcSessionManager>(
-            std::make_unique<ArcSessionRunner>(
+        arc_session_manager_(
+            CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
                 base::BindRepeating(FakeArcSession::Create)))),
         testing_profile_(std::make_unique<TestingProfile>()),
         disable_cpu_restriction_counter_(0),
@@ -70,11 +71,15 @@ class ArcInstanceThrottleTest : public testing::Test {
     explicit TestDelegateImpl(ArcInstanceThrottleTest* test) : test_(test) {}
     ~TestDelegateImpl() override = default;
 
-    void SetCpuRestriction(bool restrict) override {
-      if (!restrict)
-        ++(test_->disable_cpu_restriction_counter_);
-      else
-        ++(test_->enable_cpu_restriction_counter_);
+    void SetCpuRestriction(CpuRestrictionState cpu_restriction_state) override {
+      switch (cpu_restriction_state) {
+        case CpuRestrictionState::CPU_RESTRICTION_FOREGROUND:
+          ++(test_->disable_cpu_restriction_counter_);
+          break;
+        case CpuRestrictionState::CPU_RESTRICTION_BACKGROUND:
+          ++(test_->enable_cpu_restriction_counter_);
+          break;
+      }
     }
 
     void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,

@@ -12,6 +12,7 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/core/SkTypes.h"
+#include "include/private/GrRecordingContext.h"
 #include "include/private/SkColorData.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTDArray.h"
@@ -30,18 +31,37 @@ class GrAuditTrail;
 class GrCaps;
 class GrClearOp;
 class GrGpuBuffer;
-class GrOpMemoryPool;
 class GrRenderTargetProxy;
+
+/** Observer is notified when a GrOpsTask is closed. */
+class GrOpsTaskClosedObserver {
+public:
+    virtual ~GrOpsTaskClosedObserver() = 0;
+    /**
+     * Called when the GrOpsTask is closed. Must not add/remove observers to 'task'.
+     * The GrOpsTask will remove all its observers after it finishes calling wasClosed().
+     */
+    virtual void wasClosed(const GrOpsTask& task) = 0;
+};
 
 class GrOpsTask : public GrRenderTask {
 private:
     using DstProxyView = GrXferProcessor::DstProxyView;
 
 public:
-    GrOpsTask(sk_sp<GrOpMemoryPool>, GrSurfaceProxyView, GrAuditTrail*);
+    // The Arenas must outlive the GrOpsTask, either by preserving the context that owns
+    // the pool, or by moving the pool to the DDL that takes over the GrOpsTask.
+    GrOpsTask(GrRecordingContext::Arenas, GrSurfaceProxyView, GrAuditTrail*);
     ~GrOpsTask() override;
 
     GrOpsTask* asOpsTask() override { return this; }
+
+    void addClosedObserver(GrOpsTaskClosedObserver* observer) {
+        SkASSERT(observer);
+        fClosedObservers.push_back(observer);
+    }
+
+    void removeClosedObserver(GrOpsTaskClosedObserver* observer);
 
     bool isEmpty() const { return fOpChains.empty(); }
 
@@ -108,9 +128,12 @@ public:
 
     void discard();
 
-    SkDEBUGCODE(void dump(bool printDependencies) const override;)
-    SkDEBUGCODE(int numClips() const override { return fNumClips; })
-    SkDEBUGCODE(void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const override;)
+#ifdef SK_DEBUG
+    void dump(bool printDependencies) const override;
+    const char* name() const final { return "Ops"; }
+    int numClips() const override { return fNumClips; }
+    void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const override;
+#endif
 
 #if GR_TEST_UTILS
     int numOpChains() const { return fOpChains.count(); }
@@ -197,14 +220,14 @@ private:
         // Attempts to move the ops from the passed chain to this chain at the head. Also attempts
         // to merge ops between the chains. Upon success the passed chain is empty.
         // Fails when the chains aren't of the same op type, have different clips or dst proxies.
-        bool prependChain(OpChain*, const GrCaps&, GrOpMemoryPool*, GrAuditTrail*);
+        bool prependChain(OpChain*, const GrCaps&, GrRecordingContext::Arenas*, GrAuditTrail*);
 
         // Attempts to add 'op' to this chain either by merging or adding to the tail. Returns
         // 'op' to the caller upon failure, otherwise null. Fails when the op and chain aren't of
         // the same op type, have different clips or dst proxies.
         std::unique_ptr<GrOp> appendOp(std::unique_ptr<GrOp> op, GrProcessorSet::Analysis,
                                        const DstProxyView*, const GrAppliedClip*, const GrCaps&,
-                                       GrOpMemoryPool*, GrAuditTrail*);
+                                       GrRecordingContext::Arenas*, GrAuditTrail*);
 
         void setSkipExecuteFlag() { fSkipExecute = true; }
         bool shouldExecute() const {
@@ -238,8 +261,9 @@ private:
         void validate() const;
 
         bool tryConcat(List*, GrProcessorSet::Analysis, const DstProxyView&, const GrAppliedClip*,
-                       const SkRect& bounds, const GrCaps&, GrOpMemoryPool*, GrAuditTrail*);
-        static List DoConcat(List, List, const GrCaps&, GrOpMemoryPool*, GrAuditTrail*);
+                       const SkRect& bounds, const GrCaps&, GrRecordingContext::Arenas*,
+                       GrAuditTrail*);
+        static List DoConcat(List, List, const GrCaps&, GrRecordingContext::Arenas*, GrAuditTrail*);
 
         List fList;
         GrProcessorSet::Analysis fProcessorAnalysis;
@@ -274,23 +298,25 @@ private:
     // however, requires that the RTC be able to coordinate with the op list to achieve similar ends
     friend class GrRenderTargetContext;
 
-    // This is a backpointer to the GrOpMemoryPool that holds the memory for this GrOpsTask's ops.
-    // In the DDL case, these back pointers keep the DDL's GrOpMemoryPool alive as long as its
-    // constituent GrOpsTask survives.
-    sk_sp<GrOpMemoryPool> fOpMemoryPool;
-    GrAuditTrail* fAuditTrail;
+    // This is a backpointer to the Arenas that holds the memory for this GrOpsTask's ops. In the
+    // DDL case, the Arenas must have been detached from the original recording context and moved
+    // into the owning DDL.
+    GrRecordingContext::Arenas fArenas;
+    GrAuditTrail*              fAuditTrail;
+
+    SkSTArray<2, GrOpsTaskClosedObserver*, true> fClosedObservers;
 
     GrLoadOp fColorLoadOp = GrLoadOp::kLoad;
     SkPMColor4f fLoadClearColor = SK_PMColor4fTRANSPARENT;
     StencilContent fInitialStencilContent = StencilContent::kDontCare;
     bool fMustPreserveStencil = false;
 
-    uint32_t fLastClipStackGenID;
+    uint32_t fLastClipStackGenID = SK_InvalidUniqueID;
     SkIRect fLastDevClipBounds;
     int fLastClipNumAnalyticFPs;
 
     // We must track if we have a wait op so that we don't delete the op when we have a full clear.
-    bool fHasWaitOp = false;;
+    bool fHasWaitOp = false;
 
     // For ops/opsTask we have mean: 5 stdDev: 28
     SkSTArray<25, OpChain, true> fOpChains;

@@ -121,6 +121,7 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   LayoutWidgetDelegateView(OobeUIDialogDelegate* dialog_delegate,
                            OobeWebDialogView* oobe_view)
       : dialog_delegate_(dialog_delegate), oobe_view_(oobe_view) {
+    SetFocusTraversesOut(true);
     AddChildView(oobe_view_);
   }
 
@@ -142,8 +143,6 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
-
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
   void Layout() override {
     if (fullscreen_) {
@@ -372,7 +371,11 @@ void OobeUIDialogDelegate::SetShouldDisplayCaptivePortal(bool should_display) {
 
 void OobeUIDialogDelegate::Show() {
   widget_->Show();
-  SetState(ash::OobeDialogState::GAIA_SIGNIN);
+  if (state_ == ash::OobeDialogState::HIDDEN) {
+    SetState(ash::OobeDialogState::GAIA_SIGNIN);
+  } else {
+    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state_);
+  }
 
   if (should_display_captive_portal_)
     GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
@@ -403,12 +406,13 @@ void OobeUIDialogDelegate::SetState(ash::OobeDialogState state) {
   if (!widget_ || state_ == state)
     return;
 
+  state_ = state;
+
   // Gaia WebUI is preloaded, so it's possible for WebUI to send state updates
   // while the widget is not visible. Defer the state update until Show().
-  if (!widget_->IsVisible() && state != ash::OobeDialogState::HIDDEN)
+  if (!widget_->IsVisible() && state_ != ash::OobeDialogState::HIDDEN)
     return;
 
-  state_ = state;
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state_);
 }
 

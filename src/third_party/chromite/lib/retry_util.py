@@ -420,7 +420,7 @@ def RunCurl(curl_args, *args, **kwargs):
     return RunCommandWithRetries(
         10, cmd, retry_on=retriable_exits, error_check=_CheckExit,
         sleep=3, backoff_factor=1.6,
-        redirect_stderr=True, extra_env={'LC_MESSAGES': 'C'}, *args, **kwargs)
+        stderr=True, extra_env={'LC_MESSAGES': 'C'}, *args, **kwargs)
   except cros_build_lib.RunCommandError as e:
     if e.result.returncode in (51, 58, 60):
       # These are the return codes of failing certs as per 'man curl'.

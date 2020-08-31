@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Ngarko</translation>
 <translation id="1249250836236328755">Zhanri</translation>
 <translation id="1278813325885878377">Tastiera QWERTY në hungarisht</translation>
+<translation id="1293556467332435079">Skedarët</translation>
 <translation id="1297922636971898492">"Disku i Google" nuk ofrohet tani. Ngarkimi do të rifillojë automatikisht pasi të kthehet "Disku i Google".</translation>
 <translation id="1307931752636661898">Nuk mund të shihen skedarët e Linux</translation>
 <translation id="1310751437842832374">Transliterim (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">U ruajt</translation>
 <translation id="1864756863218646478">Ky skedar nuk mund të gjendej.</translation>
 <translation id="1921986354447415460">Tastiera turke me F</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> u formatua</translation>
 <translation id="1931134289871235022">Sllovakisht</translation>
 <translation id="1933345018156373194">Zhvendosja dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finlandisht</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Tastierë në gjermanisht</translation>
 <translation id="1972984168337863910">Zgjero panelet e komenteve të skedarëve</translation>
 <translation id="1984603991036629094">Tastierë fonetike armeniane</translation>
+<translation id="1995337122023280937">Shko te vendndodhja e skedarit</translation>
 <translation id="2001796770603320721">Menaxhoje te "Disku"</translation>
 <translation id="2009067268969781306">Formatimi i një disku do të fshijë të gjitha të dhënat e ruajtura në të. Ky veprim nuk mund të zhbëhet.</translation>
 <translation id="2028997212275086731">Arkiv RAR</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">"Disku i Google" është i paarritshëm. <ph name="BEGIN_LINK" />Dil<ph name="END_LINK" /> dhe identifikohu përsëri.</translation>
 <translation id="2649120831653069427">Peshku</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Vendndodhja e skedarit</translation>
 <translation id="2672394958563893062">Ndodhi një gabim. Kliko për të rinisur nga fillimi.</translation>
 <translation id="2676946222714718093">Po luan</translation>
 <translation id="2735698359135166290">Tastierë standarde në rumanisht</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Tastiera në gjermanisht NEO 2</translation>
 <translation id="2943400156390503548">Diapozitivat</translation>
 <translation id="2943503720238418293">Përdor një emër më të shkurtër</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> po formatohet...</translation>
 <translation id="2951236788251446349">Kandili i detit</translation>
 <translation id="2963783323012015985">Tastierë në turqisht</translation>
 <translation id="2966459079597787514">Tastierë suedeze</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> gabime.</translation>
 <translation id="3519867315646775981">Transliterim (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalisht</translation>
+<translation id="3524311639100184459">Kujdes! Këta skedarë janë të përkohshëm dhe mund të fshihen automatikisht për të liruar hapësirën në disk.  <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosje</translation>
 <translation id="3549797760399244642">Shko te drive.google.com...</translation>
 <translation id="357479282490346887">Lituanisht</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Lexuesi i audios</translation>
 <translation id="4002066346123236978">Titulli</translation>
+<translation id="4065397611279318371">Për të hapur skedarët me aplikacionet <ph name="APP_NAME" />, në fillim zhvendosi ato te dosja <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Metoda e hyrjes kantoneze</translation>
 <translation id="4072248638558688893">Tastierë në tamilisht (fonetike)</translation>
 <translation id="4124935795427217608">Njëbrirësh</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Veprimi i kopjimit dështoi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Pjepër</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">Lidhje e jashtme</translation>
 <translation id="4425149324548788773">Disku im</translation>
 <translation id="4465830120256509958">Tastiera në brazilisht</translation>
 <translation id="4470564870223067757">Paketa hangul 2</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Rregullo automatikisht</translation>
 <translation id="4881695831933465202">Hap</translation>
 <translation id="4886021172213954916">Tastierë në tamilisht (Makinë shkrimi)</translation>
+<translation id="4892969127351273348">Nuk mund të hapet me <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Gati për të rezervuar <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Rregulluar</translation>
 <translation id="4935975195727477204">Lule Gazania</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">Menaxho ndarjen në Linux</translation>
 <translation id="6808193438228982088">Dhelpër</translation>
 <translation id="6820687829547641339">Arkivi i ngjeshur Gzip</translation>
+<translation id="6823166707458800069">Të gjithë skedarët e ruajtur në këtë dosje rezervohen automatikisht në linjë.</translation>
 <translation id="6825883775269213504">Rusisht</translation>
 <translation id="6827236167376090743">Kjo video do të vazhdojë të luhet për një kohë shumë të gjatë.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> u hoq nga zgjedhja.</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">Tastierë Devanagari (fonetike)</translation>
 <translation id="6885780034956018177">Kërmill</translation>
 <translation id="6896758677409633944">Kopjo</translation>
+<translation id="6898028766943174120">Më shumë nëndosje...</translation>
 <translation id="691516599546977041">Nuk mund të ruajë në <ph name="FOLDER_NAME" />. Imazhet e redaktuara do të ruhen në dosjen e "Shkarkimeve".</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Tastiera amerikane Workman</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">Aktivizo sinkronizimin nëpërmjet të dhënave celulare</translation>
 <translation id="6965382102122355670">Në rregull</translation>
 <translation id="6970230597523682626">Bullgarisht</translation>
+<translation id="6973630695168034713">Dosjet</translation>
 <translation id="6978611942794658017">Ky skedar është i projektuar për kompjuterë që përdorin softuer të Windows. Ai nuk pajtohet me pajisjen tënde e cila funksionon me sistemin operativ Chrome. Kërko Dyqanin në Ueb të Chrome për një aplikacion të përshtatshëm zëvendësimi.</translation>
 <translation id="6979158407327259162">Disku i Google</translation>
 <translation id="6990081529015358884">Nuk ke më hapësirë të lirë</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">Hartë e Google</translation>
 <translation id="7419631653042041064">Tastierë në katalanisht</translation>
 <translation id="7434823369735508263">Tastierë britanike Dvorak</translation>
+<translation id="7447678886297481665">Skedarët në këtë dosje janë vetëm për lexim. Disa aktivitete nuk mbështeten.</translation>
 <translation id="7460898608667578234">Ukrainisht</translation>
 <translation id="7474889694310679759">Tastierë në anglishte kanadeze</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> të gjetura
@@ -567,6 +580,7 @@
 <translation id="7649070708921625228">Ndihma</translation>
 <translation id="7654209398114106148">Po lëviz <ph name="NUMBER_OF_ITEMS" /> artikuj...</translation>
 <translation id="7658239707568436148">Anulo</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> nuk mund të formatohej</translation>
 <translation id="770015031906360009">Greqisht</translation>
 <translation id="7706319470528945664">Tastierë portugeze</translation>
 <translation id="7711920809702896782">Informacionet e imazhit</translation>

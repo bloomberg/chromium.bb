@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/track/track_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -50,20 +51,13 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 
  public:
-  static TextTrack* Create(const AtomicString& kind,
-                           const AtomicString& label,
-                           const AtomicString& language) {
-    return MakeGarbageCollected<TextTrack>(kind, label, language, g_empty_atom,
-                                           kAddTrack);
-  }
-
   enum TextTrackType { kTrackElement, kAddTrack, kInBand };
 
   TextTrack(const AtomicString& kind,
             const AtomicString& label,
             const AtomicString& language,
-            const AtomicString& id,
-            TextTrackType);
+            const AtomicString& id = g_empty_atom,
+            TextTrackType = kAddTrack);
   ~TextTrack() override;
 
   virtual void SetTrackList(TextTrackList*);
@@ -161,7 +155,12 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   bool has_been_configured_;
 };
 
-DEFINE_TRACK_TYPE_CASTS(TextTrack, WebMediaPlayer::kTextTrack);
+template <>
+struct DowncastTraits<TextTrack> {
+  static bool AllowFrom(const TrackBase& track) {
+    return track.GetType() == WebMediaPlayer::kTextTrack;
+  }
+};
 
 }  // namespace blink
 

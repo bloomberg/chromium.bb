@@ -42,13 +42,12 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
@@ -361,9 +360,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   base::HistogramTester histograms;
 
@@ -377,7 +374,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   EXPECT_TRUE(is_google);
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 
   // Make sure load time metrics were recorded.
   histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
@@ -411,8 +409,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
   // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   base::HistogramTester histograms;
 
@@ -426,7 +423,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   EXPECT_FALSE(is_google);
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 
   // Make sure load time metrics were recorded.
   histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
@@ -460,16 +458,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   // Navigate to the NTP and make sure it's actually in French.
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   ASSERT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
@@ -1043,97 +1040,23 @@ INSTANTIATE_TEST_SUITE_P(All, LocalNTPDarkModeStartupTest, testing::Bool());
 
 #endif
 
-// A minimal implementation of an interstitial page.
-class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
- public:
-  static void Show(content::WebContents* web_contents, const GURL& url) {
-    // The InterstitialPage takes ownership of this object, and will delete it
-    // when it gets destroyed itself.
-    new TestInterstitialPageDelegate(web_contents, url);
-  }
-
-  ~TestInterstitialPageDelegate() override {}
-
- private:
-  TestInterstitialPageDelegate(content::WebContents* web_contents,
-                               const GURL& url) {
-    // |page| takes ownership of |this|.
-    content::InterstitialPage* page =
-        content::InterstitialPage::Create(web_contents, true, url, this);
-    page->Show();
-  }
-
-  std::string GetHTMLContents() override { return "<html></html>"; }
-
-  DISALLOW_COPY_AND_ASSIGN(TestInterstitialPageDelegate);
-};
-
-// A navigation throttle that will create an interstitial for all pages except
-// chrome-search:// ones (i.e. the local NTP).
-class TestNavigationThrottle : public content::NavigationThrottle {
- public:
-  explicit TestNavigationThrottle(content::NavigationHandle* handle)
-      : content::NavigationThrottle(handle) {}
-
-  static std::unique_ptr<NavigationThrottle> Create(
-      content::NavigationHandle* handle) {
-    return std::make_unique<TestNavigationThrottle>(handle);
-  }
-
- private:
-  ThrottleCheckResult WillStartRequest() override {
-    const GURL& url = navigation_handle()->GetURL();
-    if (url.SchemeIs(chrome::kChromeSearchScheme)) {
-      return NavigationThrottle::PROCEED;
-    }
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindRepeating(&TestNavigationThrottle::ShowInterstitial,
-                            weak_ptr_factory_.GetWeakPtr()));
-    return NavigationThrottle::DEFER;
-  }
-
-  const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
-
-  void ShowInterstitial() {
-    TestInterstitialPageDelegate::Show(navigation_handle()->GetWebContents(),
-                                       navigation_handle()->GetURL());
-  }
-
-  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestNavigationThrottle);
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
-  // Set up a test server, so we have some non-NTP URL to navigate to.
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-  ASSERT_TRUE(test_server.Start());
-
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ErrorPagesAreNotNTPs) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-
-  content::TestNavigationThrottleInserter throttle_inserter(
-      active_tab, base::BindRepeating(&TestNavigationThrottle::Create));
-
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
-  // Navigate to some non-NTP URL, which will result in an interstitial.
-  const GURL blocked_url = test_server.GetURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), blocked_url);
-  content::WaitForInterstitialAttach(active_tab);
-  ASSERT_TRUE(active_tab->ShowingInterstitialPage());
-  ASSERT_EQ(blocked_url, active_tab->GetVisibleURL());
-  // The interstitial is not an NTP (even though the committed URL may still
-  // point to an NTP, see crbug.com/448486).
+  // Trigger an error page by navigating to an invalid url.
+  const GURL invalid_url = GURL("https://invalid.test");
+  ui_test_utils::NavigateToURL(browser(), invalid_url);
+  ASSERT_EQ(invalid_url, active_tab->GetVisibleURL());
+  // The error page is not an NTP.
   EXPECT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Go back to the NTP.
+  // Navigate back to the NTP.
+  content::TestNavigationObserver back_observer(active_tab);
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForInterstitialDetach(active_tab);
+  back_observer.Wait();
   // Now the page should be an NTP again.
   EXPECT_TRUE(search::IsInstantNTP(active_tab));
 }
@@ -1295,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite_Incognito) {
   GURL ntp_url("chrome://newtab");
   Browser* incognito_browser = new Browser(Browser::CreateParams(
-      browser()->profile()->GetOffTheRecordProfile(), true));
+      browser()->profile()->GetPrimaryOTRProfile(), true));
 
   // Open NTP in |tab1|.
   content::WebContents* tab1;

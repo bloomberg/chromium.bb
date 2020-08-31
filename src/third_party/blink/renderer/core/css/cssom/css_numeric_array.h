@@ -15,10 +15,6 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // blink internal
-  static CSSNumericArray* Create(CSSNumericValueVector values) {
-    return MakeGarbageCollected<CSSNumericArray>(std::move(values));
-  }
   static CSSNumericArray* FromNumberishes(
       const HeapVector<CSSNumberish>& values) {
     return MakeGarbageCollected<CSSNumericArray>(
@@ -28,7 +24,7 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
   explicit CSSNumericArray(CSSNumericValueVector values)
       : values_(std::move(values)) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(values_);
     ScriptWrappable::Trace(visitor);
   }

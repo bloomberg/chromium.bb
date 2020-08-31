@@ -13,8 +13,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequence_local_storage_slot.h"

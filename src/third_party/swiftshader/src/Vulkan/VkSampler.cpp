@@ -12,12 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "VkSampler.hpp"
 
-namespace vk
+namespace vk {
+
+SamplerState::SamplerState(const VkSamplerCreateInfo *pCreateInfo, const vk::SamplerYcbcrConversion *ycbcrConversion, VkSamplerFilteringPrecisionModeGOOGLE filteringPrecision)
+    : Memset(this, 0)
+    , magFilter(pCreateInfo->magFilter)
+    , minFilter(pCreateInfo->minFilter)
+    , mipmapMode(pCreateInfo->mipmapMode)
+    , addressModeU(pCreateInfo->addressModeU)
+    , addressModeV(pCreateInfo->addressModeV)
+    , addressModeW(pCreateInfo->addressModeW)
+    , mipLodBias(pCreateInfo->mipLodBias)
+    , anisotropyEnable(pCreateInfo->anisotropyEnable)
+    , maxAnisotropy(pCreateInfo->maxAnisotropy)
+    , compareEnable(pCreateInfo->compareEnable)
+    , compareOp(pCreateInfo->compareOp)
+    , minLod(ClampLod(pCreateInfo->minLod))
+    , maxLod(ClampLod(pCreateInfo->maxLod))
+    , borderColor(pCreateInfo->borderColor)
+    , unnormalizedCoordinates(pCreateInfo->unnormalizedCoordinates)
+    , filteringPrecision(filteringPrecision)
 {
+	if(ycbcrConversion)
+	{
+		ycbcrModel = ycbcrConversion->ycbcrModel;
+		studioSwing = (ycbcrConversion->ycbcrRange == VK_SAMPLER_YCBCR_RANGE_ITU_NARROW);
+		swappedChroma = (ycbcrConversion->components.r != VK_COMPONENT_SWIZZLE_R);
+	}
+}
 
-std::atomic<uint32_t> Sampler::nextID(1);
+Sampler::Sampler(const VkSamplerCreateInfo *pCreateInfo, void *mem, const SamplerState &samplerState, uint32_t samplerID)
+    : SamplerState(samplerState)
+    , id(samplerID)
+{
+}
 
-} // namespace vk
+}  // namespace vk

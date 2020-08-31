@@ -13,14 +13,14 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_sequencer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -31,23 +31,16 @@ namespace test {
 
 class MockStream : public QuicStreamSequencer::StreamInterface {
  public:
-  MOCK_METHOD0(OnFinRead, void());
-  MOCK_METHOD0(OnDataAvailable, void());
-  MOCK_METHOD2(CloseConnectionWithDetails,
-               void(QuicErrorCode error, const std::string& details));
-  MOCK_METHOD1(Reset, void(QuicRstStreamErrorCode error));
-  MOCK_METHOD0(OnCanWrite, void());
-  MOCK_METHOD1(AddBytesConsumed, void(QuicByteCount bytes));
+  MOCK_METHOD(void, OnFinRead, (), (override));
+  MOCK_METHOD(void, OnDataAvailable, (), (override));
+  MOCK_METHOD(void,
+              OnUnrecoverableError,
+              (QuicErrorCode error, const std::string& details),
+              (override));
+  MOCK_METHOD(void, Reset, (QuicRstStreamErrorCode error), (override));
+  MOCK_METHOD(void, AddBytesConsumed, (QuicByteCount bytes), (override));
 
   QuicStreamId id() const override { return 1; }
-
-  const QuicSocketAddress& PeerAddressOfLatestPacket() const override {
-    return peer_address_;
-  }
-
- protected:
-  QuicSocketAddress peer_address_ =
-      QuicSocketAddress(QuicIpAddress::Any4(), 65535);
 };
 
 namespace {
@@ -59,11 +52,11 @@ class QuicStreamSequencerTest : public QuicTest {
  public:
   void ConsumeData(size_t num_bytes) {
     char buffer[1024];
-    ASSERT_GT(QUIC_ARRAYSIZE(buffer), num_bytes);
+    ASSERT_GT(QUICHE_ARRAYSIZE(buffer), num_bytes);
     struct iovec iov;
     iov.iov_base = buffer;
     iov.iov_len = num_bytes;
-    ASSERT_EQ(static_cast<int>(num_bytes), sequencer_->Readv(&iov, 1));
+    ASSERT_EQ(num_bytes, sequencer_->Readv(&iov, 1));
   }
 
  protected:
@@ -103,7 +96,7 @@ class QuicStreamSequencerTest : public QuicTest {
                              const std::vector<std::string>& expected) {
     iovec iovecs[5];
     size_t num_iovecs =
-        sequencer.GetReadableRegions(iovecs, QUIC_ARRAYSIZE(iovecs));
+        sequencer.GetReadableRegions(iovecs, QUICHE_ARRAYSIZE(iovecs));
     return VerifyReadableRegion(sequencer, expected) &&
            VerifyIovecs(sequencer, iovecs, num_iovecs, expected);
   }
@@ -123,7 +116,7 @@ class QuicStreamSequencerTest : public QuicTest {
     return true;
   }
 
-  bool VerifyIovec(const iovec& iovec, QuicStringPiece expected) {
+  bool VerifyIovec(const iovec& iovec, quiche::QuicheStringPiece expected) {
     if (iovec.iov_len != expected.length()) {
       QUIC_LOG(ERROR) << "Invalid length: " << iovec.iov_len << " vs "
                       << expected.length();
@@ -250,8 +243,7 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
-  EXPECT_CALL(stream_,
-              CloseConnectionWithDetails(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _));
+  EXPECT_CALL(stream_, OnUnrecoverableError(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _));
   OnFrame(0, "");
   EXPECT_EQ(0u, NumBufferedBytes());
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
@@ -375,15 +367,10 @@ TEST_F(QuicStreamSequencerTest, MultipleOffsets) {
   OnFinFrame(3, "");
   EXPECT_EQ(3u, QuicStreamSequencerPeer::GetCloseOffset(sequencer_.get()));
 
-  if (!GetQuicReloadableFlag(
-          quic_close_connection_and_discard_data_on_wrong_offset)) {
-    EXPECT_CALL(stream_, Reset(QUIC_MULTIPLE_TERMINATION_OFFSETS));
-  } else {
-    EXPECT_CALL(stream_, CloseConnectionWithDetails(
-                             QUIC_STREAM_SEQUENCER_INVALID_STATE,
-                             "Stream 1 received new final offset: 1, which is "
-                             "different from close offset: 3"));
-  }
+  EXPECT_CALL(stream_, OnUnrecoverableError(
+                           QUIC_STREAM_SEQUENCER_INVALID_STATE,
+                           "Stream 1 received new final offset: 1, which is "
+                           "different from close offset: 3"));
   OnFinFrame(1, "");
 }
 
@@ -393,7 +380,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
   typedef std::vector<Frame> FrameList;
 
   void CreateFrames() {
-    int payload_size = QUIC_ARRAYSIZE(kPayload) - 1;
+    int payload_size = QUICHE_ARRAYSIZE(kPayload) - 1;
     int remaining_payload = payload_size;
     while (remaining_payload != 0) {
       int size = std::min(OneToN(6), remaining_payload);
@@ -416,10 +403,10 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
 
   void ReadAvailableData() {
     // Read all available data
-    char output[QUIC_ARRAYSIZE(kPayload) + 1];
+    char output[QUICHE_ARRAYSIZE(kPayload) + 1];
     iovec iov;
     iov.iov_base = output;
-    iov.iov_len = QUIC_ARRAYSIZE(output);
+    iov.iov_len = QUICHE_ARRAYSIZE(output);
     int bytes_read = sequencer_->Readv(&iov, 1);
     EXPECT_NE(0, bytes_read);
     output_.append(output, bytes_read);
@@ -455,9 +442,9 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
     list_.erase(list_.begin() + index);
   }
 
-  ASSERT_EQ(QUIC_ARRAYSIZE(kPayload) - 1, output_.size());
+  ASSERT_EQ(QUICHE_ARRAYSIZE(kPayload) - 1, output_.size());
   EXPECT_EQ(kPayload, output_);
-  EXPECT_EQ(QUIC_ARRAYSIZE(kPayload) - 1, total_bytes_consumed);
+  EXPECT_EQ(QUICHE_ARRAYSIZE(kPayload) - 1, total_bytes_consumed);
 }
 
 TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
@@ -477,7 +464,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
             total_bytes_consumed += bytes;
           }));
 
-  while (output_.size() != QUIC_ARRAYSIZE(kPayload) - 1) {
+  while (output_.size() != QUICHE_ARRAYSIZE(kPayload) - 1) {
     if (!list_.empty() && OneToN(2) == 1) {  // Send data
       int index = OneToN(list_.size()) - 1;
       OnFrame(list_[index].first, list_[index].second.data());
@@ -493,7 +480,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
         ASSERT_EQ(0, iovs_peeked);
         ASSERT_FALSE(sequencer_->GetReadableRegion(peek_iov));
       }
-      int total_bytes_to_peek = QUIC_ARRAYSIZE(buffer);
+      int total_bytes_to_peek = QUICHE_ARRAYSIZE(buffer);
       for (int i = 0; i < iovs_peeked; ++i) {
         int bytes_to_peek =
             std::min<int>(peek_iov[i].iov_len, total_bytes_to_peek);
@@ -510,7 +497,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
   }
   EXPECT_EQ(std::string(kPayload), output_);
   EXPECT_EQ(std::string(kPayload), peeked_);
-  EXPECT_EQ(QUIC_ARRAYSIZE(kPayload) - 1, total_bytes_consumed);
+  EXPECT_EQ(QUICHE_ARRAYSIZE(kPayload) - 1, total_bytes_consumed);
 }
 
 // Same as above, just using a different method for reading.
@@ -613,12 +600,11 @@ TEST_F(QuicStreamSequencerTest, OverlappingFramesReceived) {
   // overlapping byte ranges - if they do, we close the connection.
   QuicStreamId id = 1;
 
-  QuicStreamFrame frame1(id, false, 1, QuicStringPiece("hello"));
+  QuicStreamFrame frame1(id, false, 1, quiche::QuicheStringPiece("hello"));
   sequencer_->OnStreamFrame(frame1);
 
-  QuicStreamFrame frame2(id, false, 2, QuicStringPiece("hello"));
-  EXPECT_CALL(stream_,
-              CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
+  QuicStreamFrame frame2(id, false, 2, quiche::QuicheStringPiece("hello"));
+  EXPECT_CALL(stream_, OnUnrecoverableError(QUIC_OVERLAPPING_STREAM_DATA, _))
       .Times(0);
   sequencer_->OnStreamFrame(frame2);
 }
@@ -649,7 +635,7 @@ TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
   EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
 
   // Received [1498, 1503).
-  QuicStreamFrame frame3(id, false, 1498, QuicStringPiece("hello"));
+  QuicStreamFrame frame3(id, false, 1498, quiche::QuicheStringPiece("hello"));
   EXPECT_CALL(stream_, OnDataAvailable());
   sequencer_->OnStreamFrame(frame3);
   EXPECT_CALL(stream_, AddBytesConsumed(3));
@@ -658,7 +644,7 @@ TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
   EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
 
   // Received [1000, 1005).
-  QuicStreamFrame frame4(id, false, 1000, QuicStringPiece("hello"));
+  QuicStreamFrame frame4(id, false, 1000, quiche::QuicheStringPiece("hello"));
   EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
   sequencer_->OnStreamFrame(frame4);
   EXPECT_EQ(1503u, sequencer_->NumBytesConsumed());
@@ -741,15 +727,10 @@ TEST_F(QuicStreamSequencerTest, StopReading) {
 }
 
 TEST_F(QuicStreamSequencerTest, StopReadingWithLevelTriggered) {
-  if (GetQuicReloadableFlag(quic_stop_reading_when_level_triggered)) {
-    EXPECT_CALL(stream_, AddBytesConsumed(0));
-    EXPECT_CALL(stream_, AddBytesConsumed(3)).Times(3);
-    EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
-    EXPECT_CALL(stream_, OnFinRead());
-  } else {
-    EXPECT_CALL(stream_, AddBytesConsumed(0));
-    EXPECT_CALL(stream_, OnDataAvailable()).Times(3);
-  }
+  EXPECT_CALL(stream_, AddBytesConsumed(0));
+  EXPECT_CALL(stream_, AddBytesConsumed(3)).Times(3);
+  EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+  EXPECT_CALL(stream_, OnFinRead());
 
   sequencer_->set_level_triggered(true);
   sequencer_->StopReading();
@@ -761,11 +742,7 @@ TEST_F(QuicStreamSequencerTest, StopReadingWithLevelTriggered) {
 
 // Regression test for https://crbug.com/992486.
 TEST_F(QuicStreamSequencerTest, CorruptFinFrames) {
-  if (!GetQuicReloadableFlag(
-          quic_close_connection_and_discard_data_on_wrong_offset)) {
-    return;
-  }
-  EXPECT_CALL(stream_, CloseConnectionWithDetails(
+  EXPECT_CALL(stream_, OnUnrecoverableError(
                            QUIC_STREAM_SEQUENCER_INVALID_STATE,
                            "Stream 1 received new final offset: 1, which is "
                            "different from close offset: 2"));
@@ -777,12 +754,8 @@ TEST_F(QuicStreamSequencerTest, CorruptFinFrames) {
 
 // Regression test for crbug.com/1015693
 TEST_F(QuicStreamSequencerTest, ReceiveFinLessThanHighestOffset) {
-  if (!GetQuicReloadableFlag(
-          quic_close_connection_and_discard_data_on_wrong_offset)) {
-    return;
-  }
   EXPECT_CALL(stream_, OnDataAvailable()).Times(1);
-  EXPECT_CALL(stream_, CloseConnectionWithDetails(
+  EXPECT_CALL(stream_, OnUnrecoverableError(
                            QUIC_STREAM_SEQUENCER_INVALID_STATE,
                            "Stream 1 received fin with offset: 0, which "
                            "reduces current highest offset: 3"));

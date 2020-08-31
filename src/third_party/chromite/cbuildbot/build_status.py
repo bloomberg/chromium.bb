@@ -9,14 +9,17 @@ from __future__ import print_function
 
 import collections
 import datetime
+import sys
 
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import build_requests
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # TODO(nxia): Rename this module to slave_status, since this module is for
@@ -58,7 +61,6 @@ class SlaveStatus(object):
     self.master_build_identifier = master_build_identifier
     self.master_build_id = master_build_identifier.cidb_id
     self.buildstore = buildstore
-    self.db = buildstore.GetCIDBHandle()
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
@@ -257,25 +259,6 @@ class SlaveStatus(object):
         logging.info('Not retriable build %s reached the build retry limit %d.',
                      build, constants.BUILDBUCKET_BUILD_RETRY_LIMIT)
         continue
-
-      # If build is in self.status, it means a build tuple has been
-      # inserted into CIDB buildTable.
-      if build in self.new_cidb_status_dict:
-        if not config_lib.RetryAlreadyStartedSlaves(self.config):
-          logging.info('Not retriable build %s started already.', build)
-          continue
-
-        assert self.buildstore.AreClientsReady()
-
-        build_stages = self.buildstore.GetBuildsStages(buildbucket_ids=[
-            self.new_cidb_status_dict[build].buildbucket_id])
-        accepted_stages = {stage['name'] for stage in build_stages
-                           if stage['status'] in self.ACCEPTED_STATUSES}
-
-        # A failed build is not retriable if it passed the critical stage.
-        if config_lib.GetCriticalStageForRetry(self.config).intersection(
-            accepted_stages):
-          continue
 
       builds_to_retry.add(build)
 
@@ -479,9 +462,6 @@ class SlaveStatus(object):
       except buildbucket_lib.BuildbucketResponseException as e:
         logging.error('Failed to retry build %s buildbucket_id %s: %s',
                       build, buildbucket_id, e)
-
-    if config_lib.IsMasterCQ(self.config) and new_scheduled_build_reqs:
-      self.db.InsertBuildRequests(new_scheduled_build_reqs)
 
     if new_scheduled_important_slaves:
       self.metadata.ExtendKeyListWithList(

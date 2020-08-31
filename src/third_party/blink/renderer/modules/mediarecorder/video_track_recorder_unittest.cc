@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
@@ -112,14 +113,19 @@ class VideoTrackRecorderTest
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
-    video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorderImpl>(
+    video_track_recorder_ = std::make_unique<VideoTrackRecorderImpl>(
         codec, blink_track_,
         ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
                                      CrossThreadUnretained(this))),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            &VideoTrackRecorderTest::OnSourceReadyStateEnded,
+            CrossThreadUnretained(this))),
         0 /* bits_per_second */,
         scheduler::GetSingleThreadTaskRunnerForTesting());
   }
+
+  MOCK_METHOD0(OnSourceReadyStateEnded, void());
 
   MOCK_METHOD5(OnEncodedVideo,
                void(const media::WebmMuxer::VideoParameters& params,
@@ -156,7 +162,7 @@ class VideoTrackRecorderTest
   MediaStreamVideoTrack* track_;
   WebMediaStreamTrack blink_track_;
 
-  Persistent<VideoTrackRecorderImpl> video_track_recorder_;
+  std::unique_ptr<VideoTrackRecorderImpl> video_track_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderTest);
@@ -166,6 +172,12 @@ class VideoTrackRecorderTest
 // its inner object(s). This is a non trivial sequence.
 TEST_P(VideoTrackRecorderTest, ConstructAndDestruct) {
   InitializeRecorder(testing::get<0>(GetParam()));
+}
+
+TEST_F(VideoTrackRecorderTest, RelaysReadyStateEnded) {
+  InitializeRecorder(VideoTrackRecorder::CodecId::VP8);
+  EXPECT_CALL(*this, OnSourceReadyStateEnded);
+  mock_source_->StopSource();
 }
 
 // Creates the encoder and encodes 2 frames of the same size; the encoder
@@ -316,7 +328,6 @@ TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
   }
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
       .Times(1)
       .WillOnce(RunClosure(run_loop.QuitClosure()));
@@ -384,7 +395,6 @@ TEST_F(VideoTrackRecorderTest, HandlesOnError) {
   EXPECT_FALSE(HasEncoderInstance());
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, OnEncodedVideo(_, _, _, _, true))
       .Times(1)
       .WillOnce(RunClosure(run_loop.QuitClosure()));
@@ -454,16 +464,17 @@ class VideoTrackRecorderPassthroughTest
   ~VideoTrackRecorderPassthroughTest() {
     blink_track_.Reset();
     blink_source_.Reset();
-    video_track_recorder_ = nullptr;
+    video_track_recorder_.reset();
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder() {
-    video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorderPassthrough>(
+    video_track_recorder_ = std::make_unique<VideoTrackRecorderPassthrough>(
         blink_track_,
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoTrackRecorderPassthroughTest::OnEncodedVideo,
             CrossThreadUnretained(this))),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})),
         scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -483,7 +494,7 @@ class VideoTrackRecorderPassthroughTest
   MediaStreamVideoTrack* track_;
   WebMediaStreamTrack blink_track_;
 
-  Persistent<VideoTrackRecorderPassthrough> video_track_recorder_;
+  std::unique_ptr<VideoTrackRecorderPassthrough> video_track_recorder_;
 };
 
 scoped_refptr<FakeEncodedVideoFrame> CreateFrame(
@@ -557,9 +568,9 @@ TEST_F(VideoTrackRecorderPassthroughTest, DoesntForwardDeltaFrameFirst) {
 
   // Frame 3 (deltaframe) - forwarded
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
   frame = CreateFrame(/*is_key_frame=*/false, VideoTrackRecorder::CodecId::VP9);
-  EXPECT_CALL(*this, OnEncodedVideo).WillOnce(RunClosure(quit_closure));
+  EXPECT_CALL(*this, OnEncodedVideo)
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
   video_track_recorder_->OnEncodedVideoFrameForTesting(frame,
                                                        base::TimeTicks::Now());
   run_loop.Run();
@@ -604,7 +615,7 @@ TEST_F(VideoTrackRecorderPassthroughTest, PausesAndResumes) {
                                                        base::TimeTicks::Now());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoTrackRecorderPassthroughTest,
                          ValuesIn(kTrackRecorderTestCodec));
 

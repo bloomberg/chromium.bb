@@ -6,14 +6,17 @@
 
 #include "base/logging.h"
 #include "chromecast/media/audio/capture_service/capture_service_receiver.h"
+#include "chromecast/media/audio/capture_service/constants.h"
+#include "media/audio/audio_manager_base.h"
 
 namespace chromecast {
 namespace media {
 
 CastAudioInputStream::CastAudioInputStream(
+    ::media::AudioManagerBase* audio_manager,
     const ::media::AudioParameters& audio_params,
     const std::string& device_id)
-    : audio_params_(audio_params) {
+    : audio_manager_(audio_manager), audio_params_(audio_params) {
   DETACH_FROM_THREAD(audio_thread_checker_);
   LOG(INFO) << __func__ << " " << this
             << " created from device_id = " << device_id
@@ -43,8 +46,10 @@ bool CastAudioInputStream::Open() {
   DCHECK_GE(audio_params_.channels(), 1);
   DCHECK_LE(audio_params_.channels(), 2);
 
-  capture_service_receiver_ =
-      std::make_unique<CaptureServiceReceiver>(audio_params_);
+  capture_service_receiver_ = std::make_unique<CaptureServiceReceiver>(
+      capture_service::StreamType::kSoftwareEchoCancelled,
+      audio_params_.sample_rate(), audio_params_.channels(),
+      audio_params_.frames_per_buffer());
   return true;
 }
 
@@ -67,6 +72,9 @@ void CastAudioInputStream::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   LOG(INFO) << __func__ << " " << this << ".";
   capture_service_receiver_.reset();
+  if (audio_manager_) {
+    audio_manager_->ReleaseInputStream(this);
+  }
 }
 
 double CastAudioInputStream::GetMaxVolume() {

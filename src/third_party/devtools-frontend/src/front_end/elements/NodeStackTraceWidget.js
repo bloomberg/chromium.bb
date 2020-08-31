@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Components from '../components/components.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export default class NodeStackTraceWidget extends UI.ThrottledWidget {
+export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super(true /* isWebComponent */);
     this.registerRequiredCSS('elements/nodeStackTraceWidget.css');
@@ -14,14 +18,14 @@ export default class NodeStackTraceWidget extends UI.ThrottledWidget {
     this._noStackTraceElement.textContent = ls`No stack trace available`;
     this._creationStackTraceElement = this.contentElement.createChild('div', 'stack-trace');
 
-    this._linkifier = new Components.Linkifier(MaxLengthForLinks);
+    this._linkifier = new Components.Linkifier.Linkifier(MaxLengthForLinks);
   }
 
   /**
    * @override
    */
   wasShown() {
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this.update, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
     this.update();
   }
 
@@ -29,7 +33,7 @@ export default class NodeStackTraceWidget extends UI.ThrottledWidget {
    * @override
    */
   willHide() {
-    UI.context.removeFlavorChangeListener(SDK.DOMNode, this.update, this);
+    self.UI.context.removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
   }
 
   /**
@@ -38,7 +42,7 @@ export default class NodeStackTraceWidget extends UI.ThrottledWidget {
    * @return {!Promise<undefined>}
    */
   async doUpdate() {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
 
     if (!node) {
       this._noStackTraceElement.classList.remove('hidden');
@@ -52,7 +56,7 @@ export default class NodeStackTraceWidget extends UI.ThrottledWidget {
       this._creationStackTraceElement.classList.remove('hidden');
 
       const stackTracePreview = Components.JSPresentationUtils.buildStackTracePreviewContents(
-          node.domModel().target(), this._linkifier, creationStackTrace);
+          node.domModel().target(), this._linkifier, {stackTrace: creationStackTrace});
       this._creationStackTraceElement.removeChildren();
       this._creationStackTraceElement.appendChild(stackTracePreview.element);
     } else {
@@ -67,14 +71,3 @@ export default class NodeStackTraceWidget extends UI.ThrottledWidget {
  * @type {number}
  */
 export const MaxLengthForLinks = 40;
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.NodeStackTraceWidget = NodeStackTraceWidget;
-
-Elements.NodeStackTraceWidget.MaxLengthForLinks = MaxLengthForLinks;

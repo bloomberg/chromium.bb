@@ -10,7 +10,7 @@
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_http_header_set.h"
+#include "third_party/blink/renderer/platform/network/http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -35,7 +35,6 @@ namespace cors {
 // be removed.
 PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckAccess(
     const KURL&,
-    const int response_status_code,
     const HTTPHeaderMap&,
     network::mojom::CredentialsMode,
     const SecurityOrigin&);
@@ -52,9 +51,6 @@ PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckRedirectLocation(
     network::mojom::RequestMode,
     const SecurityOrigin*,
     CorsFlag);
-
-PLATFORM_EXPORT base::Optional<network::mojom::CorsError> CheckPreflight(
-    const int preflight_response_status_code);
 
 PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckExternalPreflight(
     const HTTPHeaderMap&);
@@ -124,7 +120,7 @@ PLATFORM_EXPORT bool CalculateCorsFlag(
     const SecurityOrigin* isolated_world_origin,
     network::mojom::RequestMode request_mode);
 
-PLATFORM_EXPORT WebHTTPHeaderSet
+PLATFORM_EXPORT HTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::CredentialsMode,
                                   const ResourceResponse&);
 

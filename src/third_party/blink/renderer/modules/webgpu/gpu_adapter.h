@@ -16,31 +16,34 @@
 namespace blink {
 
 class GPUDeviceDescriptor;
+class ScriptPromiseResolver;
 
 class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUAdapter* Create(
-      const String& name,
-      uint32_t adapter_service_id,
-      const WGPUDeviceProperties& properties,
-      scoped_refptr<DawnControlClientHolder> dawn_control_client);
   GPUAdapter(const String& name,
              uint32_t adapter_service_id,
              const WGPUDeviceProperties& properties,
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
   const String& name() const;
-  ScriptValue extensions(ScriptState* script_state) const;
+  Vector<String> extensions(ScriptState* script_state) const;
 
   ScriptPromise requestDevice(ScriptState* script_state,
                               const GPUDeviceDescriptor* descriptor);
 
  private:
+  void OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
+                               const GPUDeviceDescriptor* descriptor,
+                               bool is_request_device_success,
+                               uint64_t device_client_id);
+  void InitializeExtensionNameList();
+
   String name_;
   uint32_t adapter_service_id_;
   WGPUDeviceProperties adapter_properties_;
+  Vector<String> extension_name_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUAdapter);
 };

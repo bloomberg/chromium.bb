@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
@@ -95,12 +96,12 @@ void RemoveCookieTester::AddCookie(const std::string& host,
   waiting_callback_ = true;
   net::CookieOptions options;
   options.set_include_httponly();
+  net::CanonicalCookie cookie(
+      name, value, host, "/", base::Time(), base::Time(), base::Time(),
+      true /* secure*/, false /* http only*/,
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM);
   cookie_manager_->SetCanonicalCookie(
-      net::CanonicalCookie(name, value, host, "/", base::Time(), base::Time(),
-                           base::Time(), true /* secure*/, false /* http only*/,
-                           net::CookieSameSite::NO_RESTRICTION,
-                           net::COOKIE_PRIORITY_MEDIUM),
-      "https", options,
+      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"), options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();

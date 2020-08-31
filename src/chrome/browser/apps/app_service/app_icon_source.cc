@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
@@ -52,6 +53,14 @@ AppIconSource::AppIconSource(Profile* profile) : profile_(profile) {}
 
 AppIconSource::~AppIconSource() = default;
 
+// static
+GURL AppIconSource::GetIconURL(const std::string& app_id, int icon_size) {
+  GURL icon_url(base::StringPrintf("%s%s/%d", chrome::kChromeUIAppIconURL,
+                                   app_id.c_str(), icon_size));
+  CHECK(icon_url.is_valid());
+  return icon_url;
+}
+
 std::string AppIconSource::GetSource() {
   return chrome::kChromeUIAppIconHost;
 }
@@ -74,14 +83,15 @@ void AppIconSource::StartDataRequest(
   // Check data is correct type, load default image if not.
   const std::string app_id = path_parts[0];
   std::string size_param = path_parts[1];
-  int size = 0;
-  if (!base::StringToInt(size_param, &size)) {
+  size_t query_position = size_param.find("?");
+  if (query_position != std::string::npos)
+    size_param = size_param.substr(0, query_position);
+
+  int size_in_dip = 0;
+  if (!base::StringToInt(size_param, &size_in_dip)) {
     LoadDefaultImage(std::move(callback));
     return;
   }
-  constexpr bool quantize_to_supported_scale_factor = true;
-  int size_in_dip =
-      apps_util::ConvertPxToDip(size, quantize_to_supported_scale_factor);
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);

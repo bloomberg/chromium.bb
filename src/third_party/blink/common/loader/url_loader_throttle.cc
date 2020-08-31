@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -53,7 +53,8 @@ void URLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
-    net::HttpRequestHeaders* modified_request_headers) {}
+    net::HttpRequestHeaders* modified_request_headers,
+    net::HttpRequestHeaders* modified_cors_exempt_request_headers) {}
 
 void URLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,

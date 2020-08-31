@@ -40,8 +40,12 @@ class PayloadServiceTest(cros_test_lib.MockTestCase):
         build=self.tgt_build, image_type='BASE', milestone='R80')
 
     payload_config = payload.PayloadConfig(
-        tgt_image=tgt_image, src_image=src_image, dest_bucket='test',
-        verify=True, keyset=None)
+        tgt_image=tgt_image,
+        src_image=src_image,
+        dest_bucket='test',
+        verify=True,
+        keyset=None,
+        upload=True)
 
     payload_config.GeneratePayload()
 
@@ -55,8 +59,12 @@ class PayloadServiceTest(cros_test_lib.MockTestCase):
         build=self.tgt_build, image_type='BASE', key='cave-mp-v4')
 
     payload_config = payload.PayloadConfig(
-        tgt_image=tgt_image, src_image=src_image, dest_bucket='test',
-        verify=True, keyset=None)
+        tgt_image=tgt_image,
+        src_image=src_image,
+        dest_bucket='test',
+        verify=True,
+        keyset=None,
+        upload=True)
 
     payload_config.GeneratePayload()
 
@@ -68,8 +76,12 @@ class PayloadServiceTest(cros_test_lib.MockTestCase):
         build=self.tgt_build, image_type='BASE', milestone='R80')
 
     payload_config = payload.PayloadConfig(
-        tgt_image=tgt_image, src_image=None, dest_bucket='test',
-        verify=True, keyset=None)
+        tgt_image=tgt_image,
+        src_image=None,
+        dest_bucket='test',
+        verify=True,
+        keyset=None,
+        upload=True)
 
     payload_config.GeneratePayload()
 

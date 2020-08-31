@@ -105,22 +105,38 @@ void SelectLastTab(
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
 bool CanDuplicateKeyboardFocusedTab(const Browser* browser);
+bool CanMoveActiveTabToNewWindow(Browser* browser);
+void MoveActiveTabToNewWindow(Browser* browser);
+bool CanMoveTabsToNewWindow(Browser* browser,
+                            const std::vector<int>& tab_indices);
+// Moves the specified |tab_indices| to a newly-created window. If |group| is
+// specified, adds all the moved tabs to a new group. This group will have the
+// appearance as |group| but a different ID, since IDs can't be shared across
+// windows.
+void MoveTabsToNewWindow(
+    Browser* browser,
+    const std::vector<int>& tab_indices,
+    base::Optional<tab_groups::TabGroupId> group = base::nullopt);
 bool CanCloseTabsToRight(const Browser* browser);
 bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);
 bool CanDuplicateTabAt(const Browser* browser, int index);
+void MoveTabsToExistingWindow(Browser* source,
+                              Browser* target,
+                              const std::vector<int>& tab_indices);
 void MuteSite(Browser* browser);
 void PinTab(Browser* browser);
+void GroupTab(Browser* browser);
 void MuteSiteForKeyboardFocusedTab(Browser* browser);
 bool HasKeyboardFocusedTab(const Browser* browser);
 void PinKeyboardFocusedTab(Browser* browser);
+void GroupKeyboardFocusedTab(Browser* browser);
 void DuplicateKeyboardFocusedTab(Browser* browser);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void CloseTabsToRight(Browser* browser);
 void CloseOtherTabs(Browser* browser);
 void Exit();
-void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser);
-void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser);
+void BookmarkCurrentTab(Browser* browser);
 bool CanBookmarkCurrentTab(const Browser* browser);
 void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
@@ -131,6 +147,7 @@ void CloseSaveLocalCardSignInPromo(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 void SendTabToSelfFromPageAction(Browser* browser);
+void GenerateQRCodeFromPageAction(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void Print(Browser* browser);
@@ -140,7 +157,10 @@ void BasicPrint(Browser* browser);
 bool CanBasicPrint(Browser* browser);
 #endif  // ENABLE_PRINTING
 bool CanRouteMedia(Browser* browser);
-void RouteMedia(Browser* browser);
+// NOTE: For metrics collection purposes, this method is assumed to be invoked
+// from the app menu. That will need to be changed if this is to be invoked from
+// elsewhere.
+void RouteMediaInvokedFromAppMenu(Browser* browser);
 void EmailPageLocation(Browser* browser);
 bool CanEmailPageLocation(const Browser* browser);
 void CutCopyPaste(Browser* browser, int command_id);
@@ -164,6 +184,7 @@ bool CanOpenTaskManager();
 void OpenTaskManager(Browser* browser);
 void OpenFeedbackDialog(Browser* browser, FeedbackSource source);
 void ToggleBookmarkBar(Browser* browser);
+void ToggleShowFullURLs(Browser* browser);
 void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
@@ -183,14 +204,6 @@ void CopyURL(Browser* browser);
 // the tabbed Browser.
 Browser* OpenInChrome(Browser* hosted_app_browser);
 bool CanViewSource(const Browser* browser);
-
-// Initiates user flow for creating a bookmark app for the current page.
-// Will install a PWA hosted app if the site meets installability requirements
-// (see |AppBannerManager::PerformInstallableCheck|) unless |force_shortcut_app|
-// is true.
-void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
-                                             bool force_shortcut_app);
-bool CanCreateBookmarkApp(const Browser* browser);
 
 base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser);
 

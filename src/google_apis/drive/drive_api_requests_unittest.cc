@@ -88,8 +88,8 @@ class TestBatchableDelegate : public BatchableDelegate {
   std::vector<std::string> GetExtraRequestHeaders() const override {
     return std::vector<std::string>();
   }
-  void Prepare(const PrepareCallback& callback) override {
-    callback.Run(HTTP_SUCCESS);
+  void Prepare(PrepareCallback callback) override {
+    std::move(callback).Run(HTTP_SUCCESS);
   }
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override {
@@ -100,9 +100,9 @@ class TestBatchableDelegate : public BatchableDelegate {
   void NotifyError(DriveApiErrorCode code) override { callback_.Run(); }
   void NotifyResult(DriveApiErrorCode code,
                     const std::string& body,
-                    const base::Closure& closure) override {
+                    base::OnceClosure closure) override {
     callback_.Run();
-    closure.Run();
+    std::move(closure).Run();
   }
   void NotifyUploadProgress(int64_t current, int64_t total) override {
     progress_values_.push_back(current);
@@ -2095,16 +2095,16 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
   std::unique_ptr<FileResource> file_resources[2];
   base::RunLoop run_loop[2];
   for (int i = 0; i < 2; ++i) {
-    const FileResourceCallback callback = test_util::CreateQuitCallback(
+    FileResourceCallback callback = test_util::CreateQuitCallback(
         &run_loop[i],
         test_util::CreateCopyResultCallback(&errors[i], &file_resources[i]));
     drive::MultipartUploadNewFileDelegate* const child_request =
         new drive::MultipartUploadNewFileDelegate(
             request_sender_->blocking_task_runner(),
-            base::StringPrintf("new file title %d", i),
-            "parent_resource_id", kTestContentType, kTestContent.size(),
-            base::Time(), base::Time(), kTestFilePath, drive::Properties(),
-            *url_generator_, callback, ProgressCallback());
+            base::StringPrintf("new file title %d", i), "parent_resource_id",
+            kTestContentType, kTestContent.size(), base::Time(), base::Time(),
+            kTestFilePath, drive::Properties(), *url_generator_,
+            std::move(callback), ProgressCallback());
     child_request->SetBoundaryForTesting("INNERBOUNDARY");
     request_ptr->AddRequest(child_request);
   }

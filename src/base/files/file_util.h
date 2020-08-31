@@ -23,8 +23,10 @@
 #endif
 
 #include "base/base_export.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
@@ -194,6 +196,16 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
                                              std::string* contents,
                                              size_t max_size);
 
+// As ReadFileToString, but reading from an open stream after seeking to its
+// start (if supported by the stream).
+BASE_EXPORT bool ReadStreamToString(FILE* stream, std::string* contents);
+
+// As ReadFileToStringWithMaxSize, but reading from an open stream after seeking
+// to its start (if supported by the stream).
+BASE_EXPORT bool ReadStreamToStringWithMaxSize(FILE* stream,
+                                               size_t max_size,
+                                               std::string* contents);
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result
@@ -201,8 +213,9 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
 // Returns true iff |bytes| bytes have been successfully read from |fd|.
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
-// Performs the same function as CreateAndOpenTemporaryFileInDir(), but returns
-// the file-descriptor wrapped in a ScopedFD, rather than wrapped in a FILE.
+// Performs the same function as CreateAndOpenTemporaryStreamInDir(), but
+// returns the file-descriptor wrapped in a ScopedFD, rather than the stream
+// wrapped in a ScopedFILE.
 BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
                                                           FilePath* path);
 
@@ -280,6 +293,13 @@ BASE_EXPORT bool GetTempDir(FilePath* path);
 // Path service may also override DIR_HOME.
 BASE_EXPORT FilePath GetHomeDir();
 
+// Returns a new temporary file in |dir| with a unique name. The file is opened
+// for exclusive read, write, and delete access (note: exclusivity is unique to
+// Windows). On Windows, the returned file supports File::DeleteOnClose.
+// On success, |temp_file| is populated with the full path to the created file.
+BASE_EXPORT File CreateAndOpenTemporaryFileInDir(const FilePath& dir,
+                                                 FilePath* temp_file);
+
 // Creates a temporary file. The full path is placed in |path|, and the
 // function returns true if was successful in creating the file. The file will
 // be empty and all handles closed after this function returns.
@@ -289,14 +309,14 @@ BASE_EXPORT bool CreateTemporaryFile(FilePath* path);
 BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
                                           FilePath* temp_file);
 
-// Create and open a temporary file.  File is opened for read/write.
-// The full path is placed in |path|.
-// Returns a handle to the opened file or NULL if an error occurred.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFile(FilePath* path);
+// Create and open a temporary file stream for exclusive read, write, and delete
+// access (note: exclusivity is unique to Windows). The full path is placed in
+// |path|. Returns the opened file stream, or null in case of error.
+BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStream(FilePath* path);
 
-// Similar to CreateAndOpenTemporaryFile, but the file is created in |dir|.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir,
-                                                  FilePath* path);
+// Similar to CreateAndOpenTemporaryStream, but the file is created in |dir|.
+BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                                         FilePath* path);
 
 // Create a new directory. If prefix is provided, the new directory name is in
 // the format of prefixyyyy.
@@ -349,6 +369,12 @@ BASE_EXPORT bool DevicePathToDriveLetterPath(const FilePath& device_path,
 // base::GetTempDir) just uses the value specified by TMP or TEMP, and so can
 // return a short path. Returns an empty path on error.
 BASE_EXPORT FilePath MakeLongFilePath(const FilePath& input);
+
+// Creates a hard link named |to_file| to the file |from_file|. Both paths
+// must be on the same volume, and |from_file| may not name a directory.
+// Returns true if the hard link is created, false if it fails.
+BASE_EXPORT bool CreateWinHardLink(const FilePath& to_file,
+                                   const FilePath& from_file);
 #endif
 
 // This function will return if the given file is a symlink or not.
@@ -374,6 +400,9 @@ BASE_EXPORT bool CloseFile(FILE* file);
 // functions take ownership of the existing File.
 BASE_EXPORT FILE* FileToFILE(File file, const char* mode);
 
+// Returns a new handle to the file underlying |file_stream|.
+BASE_EXPORT File FILEToFile(FILE* file_stream);
+
 // Truncates an open file to end at the location of the current file pointer.
 // This is a cross-platform analog to Windows' SetEndOfFile() function.
 BASE_EXPORT bool TruncateFile(FILE* file);
@@ -384,8 +413,19 @@ BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.
+// If file doesn't exist, it gets created with read/write permissions for all.
+// Note that the other variants of WriteFile() below may be easier to use.
 BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
+
+// Writes |data| into the file, overwriting any data that was previously there.
+// Returns true if and only if all of |data| was written. If the file does not
+// exist, it gets created with read/write permissions for all.
+BASE_EXPORT bool WriteFile(const FilePath& filename, span<const uint8_t> data);
+
+// Another WriteFile() variant that takes a StringPiece so callers don't have to
+// do manual conversions from a char span to a uint8_t span.
+BASE_EXPORT bool WriteFile(const FilePath& filename, StringPiece data);
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 
 #include <memory>
+
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -152,10 +154,10 @@ static bool CheckShapeImageOrigin(Document& document,
 
   const KURL& url = image_resource.Url();
   String url_string = url.IsNull() ? "''" : url.ElidedString();
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                             mojom::ConsoleMessageLevel::kError,
-                             "Unsafe attempt to load URL " + url_string + "."));
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError,
+      "Unsafe attempt to load URL " + url_string + "."));
 
   return false;
 }
@@ -186,7 +188,8 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
   DCHECK(!style_image->IsPendingImage());
   const LayoutSize& image_size = RoundedLayoutSize(style_image->ImageSize(
       layout_box_.GetDocument(), layout_box_.StyleRef().EffectiveZoom(),
-      reference_box_logical_size_));
+      reference_box_logical_size_,
+      LayoutObject::ShouldRespectImageOrientation(&layout_box_)));
 
   const LayoutRect& margin_rect =
       GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);
@@ -199,9 +202,9 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
       style_image->GetImage(layout_box_, layout_box_.GetDocument(),
                             layout_box_.StyleRef(), FloatSize(image_size));
 
-  return Shape::CreateRasterShape(image.get(), shape_image_threshold,
-                                  image_rect, margin_rect, writing_mode,
-                                  margin);
+  return Shape::CreateRasterShape(
+      image.get(), shape_image_threshold, image_rect, margin_rect, writing_mode,
+      margin, LayoutObject::ShouldRespectImageOrientation(&layout_box_));
 }
 
 const Shape& ShapeOutsideInfo::ComputedShape() const {

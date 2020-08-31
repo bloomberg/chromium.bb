@@ -28,7 +28,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
  public:
   virtual ~CallbackFunctionBase() = default;
 
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
 
   v8::Local<v8::Object> CallbackObject() {
     return callback_function_.NewLocal(GetIsolate());
@@ -52,15 +52,16 @@ class PLATFORM_EXPORT CallbackFunctionBase
   // Returns the ScriptState of the relevant realm of the callback object iff
   // the callback is the same origin-domain. Otherwise, reports an error and
   // returns nullptr.
-  ScriptState* CallbackRelevantScriptStateOrReportError(const char* interface,
-                                                        const char* operation);
+  ScriptState* CallbackRelevantScriptStateOrReportError(
+      const char* interface_name,
+      const char* operation_name);
 
   // Returns the ScriptState of the relevant realm of the callback object iff
   // the callback is the same origin-domain. Otherwise, throws an exception and
   // returns nullptr.
   ScriptState* CallbackRelevantScriptStateOrThrowException(
-      const char* interface,
-      const char* operation);
+      const char* interface_name,
+      const char* operation_name);
 
   DOMWrapperWorld& GetWorld() const { return incumbent_script_state_->World(); }
 

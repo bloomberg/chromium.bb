@@ -6,8 +6,8 @@
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 
+#include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
@@ -16,11 +16,12 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/highlight_button.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/highlight_button.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,17 +38,16 @@
 namespace {
 
 // Tab close button insets.
-const CGFloat kTabCloseTopInset = -1.0;
+const CGFloat kTabCloseTopInset = 1.0;
 const CGFloat kTabCloseLeftInset = 0.0;
 const CGFloat kTabCloseBottomInset = 0.0;
 const CGFloat kTabCloseRightInset = 0.0;
 const CGFloat kTabBackgroundLeftCapInset = 34.0;
-const CGFloat kFaviconLeftInset = 23.5;
-const CGFloat kFaviconVerticalOffset = 2.0;
+const CGFloat kFaviconLeftInset = 28;
+const CGFloat kFaviconVerticalOffset = 1.0;
 const CGFloat kTabStripLineMargin = 2.5;
 const CGFloat kTabStripLineHeight = 0.5;
-const CGFloat kCloseButtonHorizontalShift = 19;
-const CGFloat kCloseButtonVerticalShift = 4.0;
+const CGFloat kCloseButtonHorizontalShift = 22;
 const CGFloat kTitleLeftMargin = 8.0;
 const CGFloat kTitleRightMargin = 0.0;
 
@@ -62,6 +62,11 @@ UIImage* DefaultFaviconImage() {
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 }
+
+#if defined(__IPHONE_13_4)
+@interface TabView (PointerInteraction) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
 
 @interface TabView ()<DropAndNavigateDelegate> {
   __weak id<TabViewDelegate> _delegate;
@@ -88,6 +93,11 @@ UIImage* DefaultFaviconImage() {
   MDCActivityIndicator* _activityIndicator;
 
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
+
+#if defined(__IPHONE_13_4)
+  // Adds hover interaction to background tabs.
+  API_AVAILABLE(ios(13.4)) UIPointerInteraction* _pointerInteraction;
+#endif  // defined(__IPHONE_13_4)
 }
 @end
 
@@ -298,6 +308,14 @@ UIImage* DefaultFaviconImage() {
                    action:@selector(closeButtonPressed)
          forControlEvents:UIControlEventTouchUpInside];
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      _closeButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   [self addSubview:_closeButton];
 
   // Add fade truncating label.
@@ -333,22 +351,19 @@ UIImage* DefaultFaviconImage() {
     @"H:|-faviconLeftInset-[favicon(faviconSize)]",
     @"V:|-faviconVerticalOffset-[favicon]-0-|",
     @"H:[close(==closeButtonSize)]-closeButtonHorizontalShift-|",
-    @"V:|-closeButtonVerticalShift-[close]-0-|",
+    @"V:|-0-[close]-0-|",
     @"H:[favicon]-titleLeftMargin-[title]-titleRightMargin-[close]",
     @"V:[title(==titleHeight)]",
   ];
 
-  CGFloat faviconLeftInset = kFaviconLeftInset;
-  CGFloat faviconVerticalOffset = kFaviconVerticalOffset;
   NSDictionary* metrics = @{
     @"closeButtonSize" : @(kCloseButtonSize),
     @"closeButtonHorizontalShift" : @(kCloseButtonHorizontalShift),
-    @"closeButtonVerticalShift" : @(kCloseButtonVerticalShift),
     @"titleLeftMargin" : @(kTitleLeftMargin),
     @"titleRightMargin" : @(kTitleRightMargin),
     @"titleHeight" : @(kFaviconSize),
-    @"faviconLeftInset" : @(AlignValueToPixel(faviconLeftInset)),
-    @"faviconVerticalOffset" : @(faviconVerticalOffset),
+    @"faviconLeftInset" : @(kFaviconLeftInset),
+    @"faviconVerticalOffset" : @(kFaviconVerticalOffset),
     @"faviconSize" : @(kFaviconSize),
   };
   ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
@@ -380,31 +395,54 @@ UIImage* DefaultFaviconImage() {
       StretchableImageFromUIImage(resolvedImage, leftInset, 0);
   _backgroundImageView.image = backgroundImage;
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (!base::FeatureList::IsEnabled(kPointerSupport))
+      return;
+    if (selected) {
+      if (_pointerInteraction)
+        [self removeInteraction:_pointerInteraction];
+    } else {
+      if (!_pointerInteraction)
+        _pointerInteraction =
+            [[UIPointerInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_pointerInteraction];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   // Style the close button tint color.
   NSString* closeButtonColorName;
   if (selected) {
-    closeButtonColorName = useIncognitoFallback ? @"close_button_dark_color"
-                                                : @"close_button_color";
+    closeButtonColorName =
+        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
   } else {
-    closeButtonColorName = @"tabstrip_inactive_tab_close_button_color";
+    closeButtonColorName = kGrey500Color;
   }
   _closeButton.tintColor = [UIColor colorNamed:closeButtonColorName];
 
-  // Style the favicon tint color and the title label.
+  // Style the favicon tint color.
   NSString* faviconColorName;
   if (selected) {
     faviconColorName =
-        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
+        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
   } else {
-    faviconColorName = @"tabstrip_inactive_tab_text_color";
+    faviconColorName = kGrey500Color;
   }
   _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
-  _titleLabel.textColor = _faviconView.tintColor;
 
-  // Update font weight and accessibility label.
-  UIFontWeight fontWeight =
-      selected ? UIFontWeightSemibold : UIFontWeightMedium;
-  _titleLabel.font = [UIFont systemFontOfSize:kFontSize weight:fontWeight];
+  // Style the title tint color.
+  NSString* titleColorName = nil;
+  if (selected) {
+    titleColorName =
+        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
+  } else {
+    titleColorName = kGrey600Color;
+  }
+  _titleLabel.textColor = [UIColor colorNamed:titleColorName];
+
+  _titleLabel.font = [UIFont systemFontOfSize:kFontSize
+                                       weight:UIFontWeightMedium];
   // It would make more sense to set active/inactive on tab_view itself, but
   // tab_view is not an an accessible element, and making it one would add
   // several complicated layers to UIA.  Instead, simply set active/inactive
@@ -412,11 +450,85 @@ UIImage* DefaultFaviconImage() {
   [_titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
 }
 
+// Bezier path for the border shape of the tab. While the shape of the tab is an
+// illusion achieved with a background image, the actual border path is required
+// for the hover pointer interaction.
+- (UIBezierPath*)borderPath {
+  CGFloat margin = 15;
+  CGFloat width = self.frame.size.width - margin * 2;
+  CGFloat height = self.frame.size.height;
+  CGFloat cornerRadius = 12;
+  UIBezierPath* path = [UIBezierPath bezierPath];
+  [path moveToPoint:CGPointMake(margin - cornerRadius, height)];
+  // Lower left arc.
+  [path
+      addArcWithCenter:CGPointMake(margin - cornerRadius, height - cornerRadius)
+                radius:cornerRadius
+            startAngle:M_PI / 2
+              endAngle:0
+             clockwise:NO];
+  // Left vertical line.
+  [path addLineToPoint:CGPointMake(margin, cornerRadius)];
+  // Upper left arc.
+  [path addArcWithCenter:CGPointMake(margin + cornerRadius, cornerRadius)
+                  radius:cornerRadius
+              startAngle:M_PI
+                endAngle:3 * M_PI / 2
+               clockwise:YES];
+  // Top horizontal line.
+  [path addLineToPoint:CGPointMake(width + margin - cornerRadius, 0)];
+  // Upper right arc.
+  [path
+      addArcWithCenter:CGPointMake(width + margin - cornerRadius, cornerRadius)
+                radius:cornerRadius
+            startAngle:3 * M_PI / 2
+              endAngle:0
+             clockwise:YES];
+  // Right vertical line.
+  [path addLineToPoint:CGPointMake(width + margin, height - cornerRadius)];
+  // Lower right arc.
+  [path addArcWithCenter:CGPointMake(width + margin + cornerRadius,
+                                     height - cornerRadius)
+                  radius:cornerRadius
+              startAngle:M_PI
+                endAngle:M_PI / 2
+               clockwise:NO];
+  [path closePath];
+  return path;
+}
+
 #pragma mark - DropAndNavigateDelegate
 
 - (void)URLWasDropped:(GURL const&)url {
   [_delegate tabView:self receivedDroppedURL:url];
 }
+
+#pragma mark UIPointerInteractionDelegate
+#if defined(__IPHONE_13_4)
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
+  parameters.visiblePath = [self borderPath];
+
+  // Use the background view for the preview so that z-order of overlapping tabs
+  // is respected.
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:_backgroundImageView
+                              parameters:parameters]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - Touch events
 

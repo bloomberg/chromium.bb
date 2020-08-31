@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -43,6 +44,27 @@ bool gDisableTriggeringForTesting = false;
 
 namespace banners {
 
+AppBannerManagerDesktop::CreateAppBannerManagerForTesting
+    AppBannerManagerDesktop::override_app_banner_manager_desktop_for_testing_ =
+        nullptr;
+
+// static
+void AppBannerManagerDesktop::CreateForWebContents(
+    content::WebContents* web_contents) {
+  if (FromWebContents(web_contents))
+    return;
+
+  if (override_app_banner_manager_desktop_for_testing_) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        override_app_banner_manager_desktop_for_testing_(web_contents));
+    return;
+  }
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new AppBannerManagerDesktop(web_contents)));
+}
+
 // static
 AppBannerManager* AppBannerManager::FromWebContents(
     content::WebContents* web_contents) {
@@ -51,6 +73,11 @@ AppBannerManager* AppBannerManager::FromWebContents(
 
 void AppBannerManagerDesktop::DisableTriggeringForTesting() {
   gDisableTriggeringForTesting = true;
+}
+
+TestAppBannerManagerDesktop*
+AppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
+  return nullptr;
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
@@ -122,14 +149,34 @@ web_app::AppRegistrar& AppBannerManagerDesktop::registrar() {
   return provider->registrar();
 }
 
-bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() {
-  DCHECK(!manifest_.IsEmpty());
-  return registrar().IsLocallyInstalled(manifest_.start_url);
+// TODO(https://crbug.com/930612): Move out into a more general purpose
+// installability check class.
+bool AppBannerManagerDesktop::IsExternallyInstalledWebApp() {
+  // Public method, so ensure processing is finished before using manifest.
+  if (manifest_.start_url.is_valid()) {
+    // Use manifest as source of truth if available.
+    web_app::AppId manifest_app_id =
+        web_app::GenerateAppIdFromURL(manifest_.start_url);
+    // TODO(crbug.com/1090182): Make HasExternalApp imply IsLocallyInstalled.
+    return registrar().IsLocallyInstalled(manifest_app_id) &&
+           registrar().HasExternalApp(manifest_app_id);
+  }
+  // Check an app created for this page wouldn't collide with any external app.
+  web_app::AppId possible_app_id =
+      web_app::GenerateAppIdFromURL(web_contents()->GetLastCommittedURL());
+  // TODO(crbug.com/1090182): Make HasExternalApp imply IsLocallyInstalled.
+  return registrar().IsLocallyInstalled(possible_app_id) &&
+         registrar().HasExternalApp(possible_app_id);
 }
 
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
+  // Only allow replacement install if this specific app is already installed.
   web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
-  DCHECK(registrar().IsLocallyInstalled(app_id));
+  if (!registrar().IsLocallyInstalled(app_id))
+    return false;
+
+  if (IsExternallyInstalledWebApp())
+    return false;
   auto display_mode = registrar().GetAppUserDisplayMode(app_id);
   return display_mode == blink::mojom::DisplayMode::kBrowser;
 }
@@ -169,6 +216,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
       registrar().GetAppUserDisplayMode(*app_id) ==
           blink::mojom::DisplayMode::kStandalone) {
     OnInstall(registrar().GetAppDisplayMode(*app_id));
+    SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
   }
 }
 

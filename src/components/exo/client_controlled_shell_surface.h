@@ -183,10 +183,10 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Sends the window drag events to client.
   void OnDragStarted(int component);
-  void OnDragFinished(bool cancel, const gfx::Point& location);
+  void OnDragFinished(bool cancel, const gfx::PointF& location);
 
   // Starts the drag operation.
-  void StartDrag(int component, const gfx::Point& location);
+  void StartDrag(int component, const gfx::PointF& location);
 
   // Set if the surface can be maximzied.
   void SetCanMaximize(bool can_maximize);
@@ -208,6 +208,13 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // behavior defined by |orientation_lock|. See more details in
   // //ash/display/screen_orientation_controller.h.
   void SetOrientationLock(ash::OrientationLockType orientation_lock);
+
+  // Set the accessibility ID provided by client for the surface. If
+  // |accessibility_id| is negative value, it will unset the ID.
+  void SetClientAccessibilityId(int32_t accessibility_id);
+
+  // Overridden from SurfaceTreeHost:
+  void DidReceiveCompositorFrameAck() override;
 
   // Overridden from SurfaceDelegate:
   bool IsInputEnabled(Surface* surface) const override;
@@ -278,7 +285,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   void UpdateFrameWidth();
 
-  void AttemptToStartDrag(int component, const gfx::Point& location);
+  void AttemptToStartDrag(int component, const gfx::PointF& location);
 
   // Lock the compositor if it's not already locked, or extends the
   // lock timeout if it's already locked.
@@ -351,11 +358,16 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   bool ignore_bounds_change_request_ = false;
 
+  bool display_rotating_with_pip_ = false;
+
   // True if the window state has changed during the commit.
   bool state_changed_ = false;
 
   // Client controlled specific accelerator target.
   std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;
+
+  // Accessibility ID provided by client.
+  base::Optional<int32_t> client_accessibility_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

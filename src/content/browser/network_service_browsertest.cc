@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -165,8 +166,10 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     request->url = url;
     url::Origin origin = url::Origin::Create(url);
     request->trusted_params = network::ResourceRequest::TrustedParams();
-    request->trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(origin, origin);
+    request->trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
+    request->site_for_cookies =
+        request->trusted_params->isolation_info.site_for_cookies();
 
     SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -190,7 +193,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  RenderProcessHostKillWaiter kill_waiter(
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
   EXPECT_EQ(bad_message::WEBUI_BAD_SCHEME_ACCESS, kill_waiter.Wait());
@@ -259,6 +262,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
+  params->automatically_assign_isolation_info = true;
   params->is_corb_enabled = false;
   params->is_trusted = true;
   mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
@@ -461,7 +465,6 @@ class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceInvalidLogBrowserTest);
 };
 
@@ -516,17 +519,17 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceWithCorsBrowserTest, FactoryOverride) {
         auto response = network::mojom::URLResponseHead::New();
         response->headers =
             base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-        response->headers->AddHeader(
-            "access-control-allow-origin: https://www2.example.com");
-        response->headers->AddHeader("access-control-allow-methods: *");
+        response->headers->SetHeader("access-control-allow-origin",
+                                     "https://www2.example.com");
+        response->headers->SetHeader("access-control-allow-methods", "*");
         client->OnReceiveResponse(std::move(response));
       } else if (resource_request.method == "custom-method") {
         has_received_request_ = true;
         auto response = network::mojom::URLResponseHead::New();
         response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
             "HTTP/1.1 202 Accepted");
-        response->headers->AddHeader(
-            "access-control-allow-origin: https://www2.example.com");
+        response->headers->SetHeader("access-control-allow-origin",
+                                     "https://www2.example.com");
         client->OnReceiveResponse(std::move(response));
         client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
       } else {

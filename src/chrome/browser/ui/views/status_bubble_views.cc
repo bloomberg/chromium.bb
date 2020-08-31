@@ -316,6 +316,7 @@ bool StatusBubbleViews::StatusView::IsDestroyPopupTimerRunning() const {
 }
 
 void StatusBubbleViews::StatusView::OnThemeChanged() {
+  views::View::OnThemeChanged();
   SetTextLabelColors(text_);
 }
 
@@ -407,10 +408,9 @@ void StatusBubbleViews::StatusView::SetTextLabelColors(views::Label* text) {
   SkColor bubble_color =
       theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
   text->SetBackgroundColor(bubble_color);
-  // Text color is the foreground tab text color at 60% alpha.
-  text->SetEnabledColor(color_utils::AlphaBlend(
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0.6f));
+  // Text color is the background tab text color, adjusted if required.
+  text->SetEnabledColor(theme_provider->GetColor(
+      ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE));
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {
@@ -786,11 +786,6 @@ void StatusBubbleViews::SetURL(const GURL& url) {
       size_.width() - (kShadowThickness + kTextHorizPadding) * 2 - 1);
   url_text_ = url_formatter::ElideUrl(url, GetFont(), text_width);
 
-  // An URL is always treated as a left-to-right string. On right-to-left UIs
-  // we need to explicitly mark the URL as LTR to make sure it is displayed
-  // correctly.
-  url_text_ = base::i18n::GetDisplayStringInLTRDirectionality(url_text_);
-
   // Get the width of the URL if the bubble width is the maximum size.
   base::string16 full_size_elided_url =
       url_formatter::ElideUrl(url, GetFont(), GetMaxStatusBubbleWidth());
@@ -828,7 +823,11 @@ void StatusBubbleViews::SetURL(const GURL& url) {
                          expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
-    view_->SetText(url_text_, true);
+    // An URL is always treated as a left-to-right string. On right-to-left UIs
+    // we need to explicitly mark the URL as LTR to make sure it is displayed
+    // correctly.
+    view_->SetText(base::i18n::GetDisplayStringInLTRDirectionality(url_text_),
+                   true);
   }
 }
 

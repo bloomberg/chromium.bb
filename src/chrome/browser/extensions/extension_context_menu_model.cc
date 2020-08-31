@@ -11,7 +11,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -33,10 +31,12 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -45,6 +45,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -56,9 +57,9 @@ namespace extensions {
 namespace {
 
 // Returns true if the given |item| is of the given |type|.
-bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
+bool MenuItemMatchesAction(const base::Optional<ActionInfo::Type> action_type,
                            const MenuItem* item) {
-  if (type == ExtensionContextMenuModel::NO_ACTION)
+  if (!action_type)
     return false;
 
   const MenuItem::ContextList& contexts = item->contexts();
@@ -66,11 +67,15 @@ bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
   if (contexts.Contains(MenuItem::ALL))
     return true;
   if (contexts.Contains(MenuItem::PAGE_ACTION) &&
-      (type == ExtensionContextMenuModel::PAGE_ACTION))
+      (*action_type == ActionInfo::TYPE_PAGE)) {
     return true;
+  }
   if (contexts.Contains(MenuItem::BROWSER_ACTION) &&
-      (type == ExtensionContextMenuModel::BROWSER_ACTION))
+      (*action_type == ActionInfo::TYPE_BROWSER)) {
     return true;
+  }
+
+  // TODO(devlin): Add support for ActionInfo::TYPE_ACTION here.
 
   return false;
 }
@@ -200,7 +205,6 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
-      action_type_(NO_ACTION),
       button_visibility_(button_visibility),
       can_show_icon_in_toolbar_(can_show_icon_in_toolbar) {
   InitMenu(extension, button_visibility);
@@ -264,7 +268,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       content::WebContents* web_contents = GetActiveWebContents();
       return web_contents && extension_action_ &&
              extension_action_->HasPopup(
-                 SessionTabHelper::IdForTab(web_contents).id());
+                 sessions::SessionTabHelper::IdForTab(web_contents).id());
     }
     case UNINSTALL:
       return !IsExtensionRequiredByPolicy(extension, profile_);
@@ -285,8 +289,13 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       const GURL& url = web_contents->GetLastCommittedURL();
       return IsPageAccessCommandEnabled(*extension, url, command_id);
     }
-    // The following, if they are present, are always enabled.
+    // Extension pinning/unpinning is not available for Incognito as this leaves
+    // a trace of user activity.
     case TOGGLE_VISIBILITY:
+      if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+        return !browser_->profile()->IsOffTheRecord();
+      return true;
+    // Manage extensions is always enabled.
     case MANAGE_EXTENSIONS:
       return true;
     default:
@@ -372,16 +381,15 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
+  base::Optional<ActionInfo::Type> action_type;
   extension_action_ =
       ExtensionActionManager::Get(profile_)->GetExtensionAction(*extension);
-  if (extension_action_) {
-    action_type_ = extension_action_->action_type() == ActionInfo::TYPE_PAGE
-                       ? PAGE_ACTION
-                       : BROWSER_ACTION;
-  }
+  if (extension_action_)
+    action_type = extension_action_->action_type();
 
   extension_items_.reset(new ContextMenuMatcher(
-      profile_, this, this, base::Bind(MenuItemMatchesAction, action_type_)));
+      profile_, this, this,
+      base::BindRepeating(MenuItemMatchesAction, action_type)));
 
   std::string extension_name = extension->name();
   // Ampersands need to be escaped to avoid being treated like
@@ -404,9 +412,10 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItem(UNINSTALL, l10n_util::GetStringUTF16(message_id));
     if (is_required_by_policy) {
       int uninstall_index = GetIndexOfCommandId(UNINSTALL);
+      // TODO (kylixrd): Investigate the usage of the hard-coded color.
       SetIcon(uninstall_index,
-              gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
-                                               gfx::kChromeIconGrey)));
+              ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                             gfx::kChromeIconGrey, 16));
     }
   }
 
@@ -422,7 +431,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItemWithStringId(MANAGE_EXTENSIONS, IDS_MANAGE_EXTENSION);
   }
 
-  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(extension);
+  const ActionInfo* action_info = ActionInfo::GetExtensionActionInfo(extension);
   if (delegate_ && !is_component_ && action_info && !action_info->synthesized &&
       profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
     AddSeparator(ui::NORMAL_SEPARATOR);

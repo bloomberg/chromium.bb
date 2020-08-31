@@ -104,6 +104,7 @@ RotationViewportAnchor::RotationViewportAnchor(
     PageScaleConstraintsSet& page_scale_constraints_set)
     : root_frame_view_(&root_frame_view),
       visual_viewport_(&visual_viewport),
+      anchor_node_(nullptr),
       anchor_in_inner_view_coords_(anchor_in_inner_view_coords),
       page_scale_constraints_set_(&page_scale_constraints_set) {
   SetAnchor();
@@ -127,7 +128,7 @@ void RotationViewportAnchor::SetAnchor() {
   visual_viewport_in_document_ =
       FloatPoint(root_frame_viewport->VisibleContentRect().Location());
 
-  anchor_node_.Clear();
+  anchor_node_ = nullptr;
   anchor_node_bounds_ = PhysicalRect();
   anchor_in_node_coords_ = FloatSize();
   normalized_visual_viewport_offset_ = FloatSize();
@@ -194,7 +195,8 @@ void RotationViewportAnchor::RestoreToAnchor() {
                  visual_viewport_origin);
 
   LayoutViewport().SetScrollOffset(
-      ToScrollOffset(FloatPoint(main_frame_origin)), kProgrammaticScroll);
+      ToScrollOffset(FloatPoint(main_frame_origin)),
+      mojom::blink::ScrollType::kProgrammatic);
 
   // Set scale before location, since location can be clamped on setting scale.
   visual_viewport_->SetScale(new_page_scale_factor);
@@ -251,7 +253,7 @@ FloatPoint RotationViewportAnchor::GetInnerOrigin(
       root_frame_view_->GetRootFrameViewport();
   const PhysicalRect current_node_bounds_in_layout_viewport =
       root_frame_viewport->RootContentsToLayoutViewportContents(
-          *root_frame_view_.Get(), current_node_bounds);
+          *root_frame_view_, current_node_bounds);
 
   // Compute the new anchor point relative to the node position
   FloatSize anchor_offset_from_node(

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/tests/results/core/test_interface_2_or_uint8_array.h"
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_2.h"
 
@@ -42,7 +43,7 @@ NotShared<DOMUint8Array> TestInterface2OrUint8Array::GetAsUint8Array() const {
 
 void TestInterface2OrUint8Array::SetUint8Array(NotShared<DOMUint8Array> value) {
   DCHECK(IsNull());
-  uint8_array_ = Member<DOMUint8Array>(value.View());
+  uint8_array_ = value;
   type_ = SpecificType::kUint8Array;
 }
 
@@ -56,7 +57,7 @@ TestInterface2OrUint8Array::TestInterface2OrUint8Array(const TestInterface2OrUin
 TestInterface2OrUint8Array::~TestInterface2OrUint8Array() = default;
 TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInterface2OrUint8Array&) = default;
 
-void TestInterface2OrUint8Array::Trace(blink::Visitor* visitor) {
+void TestInterface2OrUint8Array::Trace(Visitor* visitor) {
   visitor->Trace(test_interface_2_);
   visitor->Trace(uint8_array_);
 }

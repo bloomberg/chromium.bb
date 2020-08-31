@@ -31,7 +31,7 @@ namespace blink {
 
 FilterOperations::FilterOperations() = default;
 
-void FilterOperations::Trace(blink::Visitor* visitor) {
+void FilterOperations::Trace(Visitor* visitor) {
   visitor->Trace(operations_);
 }
 
@@ -68,16 +68,6 @@ bool FilterOperations::CanInterpolateWith(const FilterOperations& other) const {
       return false;
   }
   return true;
-}
-
-bool FilterOperations::HasBlurOrReferenceFilter() const {
-  for (const auto& operation : operations_) {
-    FilterOperation::OperationType type = operation->GetType();
-    if (type == FilterOperation::BLUR || type == FilterOperation::REFERENCE) {
-      return true;
-    }
-  }
-  return false;
 }
 
 FloatRect FilterOperations::MapRect(const FloatRect& rect) const {

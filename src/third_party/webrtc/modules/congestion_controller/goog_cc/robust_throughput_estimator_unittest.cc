@@ -45,11 +45,11 @@ TEST(RobustThroughputEstimatorTest, SteadyRate) {
   FieldTrialBasedConfig field_trial_config;
   RobustThroughputEstimatorSettings settings(&field_trial_config);
   RobustThroughputEstimator throughput_estimator(settings);
-  DataSize packet_size(DataSize::bytes(1000));
-  Timestamp send_clock(Timestamp::ms(100000));
-  Timestamp recv_clock(Timestamp::ms(10000));
-  TimeDelta send_increment(TimeDelta::ms(10));
-  TimeDelta recv_increment(TimeDelta::ms(10));
+  DataSize packet_size(DataSize::Bytes(1000));
+  Timestamp send_clock(Timestamp::Millis(100000));
+  Timestamp recv_clock(Timestamp::Millis(10000));
+  TimeDelta send_increment(TimeDelta::Millis(10));
+  TimeDelta recv_increment(TimeDelta::Millis(10));
   uint16_t sequence_number = 100;
   std::vector<PacketResult> packet_feedback =
       CreateFeedbackVector(9, packet_size, send_increment, recv_increment,
@@ -75,11 +75,11 @@ TEST(RobustThroughputEstimatorTest, DelaySpike) {
   FieldTrialBasedConfig field_trial_config;
   RobustThroughputEstimatorSettings settings(&field_trial_config);
   RobustThroughputEstimator throughput_estimator(settings);
-  DataSize packet_size(DataSize::bytes(1000));
-  Timestamp send_clock(Timestamp::ms(100000));
-  Timestamp recv_clock(Timestamp::ms(10000));
-  TimeDelta send_increment(TimeDelta::ms(10));
-  TimeDelta recv_increment(TimeDelta::ms(10));
+  DataSize packet_size(DataSize::Bytes(1000));
+  Timestamp send_clock(Timestamp::Millis(100000));
+  Timestamp recv_clock(Timestamp::Millis(10000));
+  TimeDelta send_increment(TimeDelta::Millis(10));
+  TimeDelta recv_increment(TimeDelta::Millis(10));
   uint16_t sequence_number = 100;
   std::vector<PacketResult> packet_feedback =
       CreateFeedbackVector(20, packet_size, send_increment, recv_increment,
@@ -91,10 +91,10 @@ TEST(RobustThroughputEstimatorTest, DelaySpike) {
               0.05 * 100 * 1000.0);  // Allow 5% error
 
   // Delay spike
-  recv_clock += TimeDelta::ms(40);
+  recv_clock += TimeDelta::Millis(40);
 
   // Faster delivery after the gap
-  recv_increment = TimeDelta::ms(2);
+  recv_increment = TimeDelta::Millis(2);
   packet_feedback =
       CreateFeedbackVector(5, packet_size, send_increment, recv_increment,
                            &send_clock, &recv_clock, &sequence_number);
@@ -105,7 +105,7 @@ TEST(RobustThroughputEstimatorTest, DelaySpike) {
               0.05 * 100 * 1000.0);  // Allow 5% error
 
   // Delivery at normal rate. This will be capped by the send rate.
-  recv_increment = TimeDelta::ms(10);
+  recv_increment = TimeDelta::Millis(10);
   packet_feedback =
       CreateFeedbackVector(5, packet_size, send_increment, recv_increment,
                            &send_clock, &recv_clock, &sequence_number);
@@ -124,11 +124,11 @@ TEST(RobustThroughputEstimatorTest, CappedByReceiveRate) {
   FieldTrialBasedConfig field_trial_config;
   RobustThroughputEstimatorSettings settings(&field_trial_config);
   RobustThroughputEstimator throughput_estimator(settings);
-  DataSize packet_size(DataSize::bytes(1000));
-  Timestamp send_clock(Timestamp::ms(100000));
-  Timestamp recv_clock(Timestamp::ms(10000));
-  TimeDelta send_increment(TimeDelta::ms(10));
-  TimeDelta recv_increment(TimeDelta::ms(40));
+  DataSize packet_size(DataSize::Bytes(1000));
+  Timestamp send_clock(Timestamp::Millis(100000));
+  Timestamp recv_clock(Timestamp::Millis(10000));
+  TimeDelta send_increment(TimeDelta::Millis(10));
+  TimeDelta recv_increment(TimeDelta::Millis(40));
   uint16_t sequence_number = 100;
   std::vector<PacketResult> packet_feedback =
       CreateFeedbackVector(20, packet_size, send_increment, recv_increment,
@@ -148,11 +148,11 @@ TEST(RobustThroughputEstimatorTest, CappedBySendRate) {
   FieldTrialBasedConfig field_trial_config;
   RobustThroughputEstimatorSettings settings(&field_trial_config);
   RobustThroughputEstimator throughput_estimator(settings);
-  DataSize packet_size(DataSize::bytes(1000));
-  Timestamp send_clock(Timestamp::ms(100000));
-  Timestamp recv_clock(Timestamp::ms(10000));
-  TimeDelta send_increment(TimeDelta::ms(20));
-  TimeDelta recv_increment(TimeDelta::ms(10));
+  DataSize packet_size(DataSize::Bytes(1000));
+  Timestamp send_clock(Timestamp::Millis(100000));
+  Timestamp recv_clock(Timestamp::Millis(10000));
+  TimeDelta send_increment(TimeDelta::Millis(20));
+  TimeDelta recv_increment(TimeDelta::Millis(10));
   uint16_t sequence_number = 100;
   std::vector<PacketResult> packet_feedback =
       CreateFeedbackVector(20, packet_size, send_increment, recv_increment,

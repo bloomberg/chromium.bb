@@ -23,7 +23,9 @@ See //docs/workflow/debugging-with-swarming.md for more details.
 from __future__ import print_function
 
 import argparse
-import multiprocessing
+import hashlib
+import json
+import multiprocessing.dummy
 import os
 import shutil
 import subprocess
@@ -31,6 +33,27 @@ import sys
 
 
 INTERNAL_ERROR_EXIT_CODE = -1000
+
+DEFAULT_ANDROID_DEVICE_TYPE = "walleye"
+
+
+def _ReadVpythonPin():
+  """Reads the vpython CIPD package name and version from
+  //third_party/depot_tools.
+
+  Returns them as a (pkgname, version) tuple.
+  """
+  chromium_src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  manifest_path = os.path.join(chromium_src_dir, 'third_party', 'depot_tools',
+                               'cipd_manifest.txt')
+  with open(manifest_path, 'r') as manifest:
+    for line in manifest.readlines():
+      # lines look like:
+      # name/of/package version
+      if 'vpython' in line and 'git_revision' in line:
+        vpython_pkg, vpython_version = line.split()
+        return vpython_pkg, vpython_version
+  raise ValueError('unable to read vpython pin from %s' % (manifest_path, ))
 
 
 def _Spawn(args):
@@ -46,51 +69,74 @@ def _Spawn(args):
   """
   index, args, isolated_hash = args
   json_file = os.path.join(args.results, '%d.json' % index)
-  trigger_args = [sys.executable,
-      'tools/swarming_client/swarming.py', 'trigger',
-      '-S', 'https://chromium-swarm.appspot.com',
-      '-I', 'https://isolateserver.appspot.com',
-      '-d', 'pool', args.pool,
-      '-s', isolated_hash,
-      '--dump-json', json_file,
-      '-d', 'os', args.swarming_os,
-      '--tags=purpose:user-debug-run-swarmed',
+  trigger_args = [
+      'tools/luci-go/swarming',
+      'trigger',
+      '-S',
+      'https://chromium-swarm.appspot.com',
+      '-I',
+      'https://isolateserver.appspot.com',
+      '-d',
+      'pool=' + args.pool,
+      '-s',
+      isolated_hash,
+      '-dump-json',
+      json_file,
+      '-d',
+      'os=' + args.swarming_os,
+      '-tag=purpose:user-debug-run-swarmed',
   ]
   if args.target_os == 'fuchsia':
     trigger_args += [
-      '-d', 'kvm', '1',
-      '-d', 'gpu', 'none',
-      '-d', 'cpu', args.arch,
+        '-d',
+        'kvm=1',
+        '-d',
+        'gpu=none',
+        '-d',
+        'cpu=' + args.arch,
     ]
-  elif args.target_os == 'android' or args.target_os == 'win':
-    if args.target_os == 'android':
-      trigger_args += ['-d', 'device_os', args.device_os]
-    # The canonical version numbers are stored in the infra repository here:
-    # build/scripts/slave/recipe_modules/swarming/api.py
-    cpython_version = 'version:2.7.15.chromium14'
-    vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
-    cpython_pkg = (
-        '.swarming_module:infra/python/cpython/${platform}:' +
-        cpython_version)
-    vpython_native_pkg = (
-        '.swarming_module:infra/tools/luci/vpython-native/${platform}:' +
-        vpython_version)
-    vpython_pkg = (
-        '.swarming_module:infra/tools/luci/vpython/${platform}:' +
-        vpython_version)
-    trigger_args += [
-        '--cipd-package', cpython_pkg,
-        '--cipd-package', vpython_native_pkg,
-        '--cipd-package', vpython_pkg,
-        '--env-prefix', 'PATH', '.swarming_module',
-        '--env-prefix', 'PATH', '.swarming_module/bin',
-        '--env-prefix', 'VPYTHON_VIRTUALENV_ROOT',
-        '.swarming_module_cache/vpython',
-    ]
+
+  # The aliases for device type are stored here:
+  # luci/appengine/swarming/ui2/modules/alias.js
+  # for example 'blueline' = 'Pixel 3'
+  if args.target_os == 'android':
+    if args.device_type is None and args.device_os is None:
+      trigger_args += ['-d', 'device_type=' + DEFAULT_ANDROID_DEVICE_TYPE]
+  if args.device_type:
+    trigger_args += ['-d', 'device_type=' + args.device_type]
+
+  if args.device_os:
+    trigger_args += ['-d', 'device_os=' + args.device_os]
+
+  # The canonical version numbers are stored in the infra repository here:
+  # build/scripts/slave/recipe_modules/swarming/api.py
+  #
+  # HACK(iannucci): These packages SHOULD NOT BE HERE.
+  # Remove method once Swarming Pool Task Templates are implemented.
+  # crbug.com/812428
+  cpython_version = 'version:2.7.15.chromium14'
+  cpython_pkg = (
+      '.swarming_module:infra/python/cpython/${platform}=' + cpython_version)
+
+  vpython_pkg = '.swarming_module:%s=%s' % _ReadVpythonPin()
+  vpython_native_pkg = vpython_pkg.replace('vpython', 'vpython-native')
+
   trigger_args += [
+      '--cipd-package',
+      cpython_pkg,
+      '--cipd-package',
+      vpython_native_pkg,
+      '--cipd-package',
+      vpython_pkg,
       '--',
-      '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
-      '--system-log-file=${ISOLATED_OUTDIR}/system_log']
+  ]
+  if not args.no_test_flags:
+    # These flags are recognized by our test runners, but do not work
+    # when running custom scripts.
+    trigger_args += [
+        '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
+        '--system-log-file=${ISOLATED_OUTDIR}/system_log'
+    ]
   if args.gtest_filter:
     trigger_args.append('--gtest_filter=' + args.gtest_filter)
   elif args.target_os == 'fuchsia':
@@ -105,12 +151,23 @@ def _Spawn(args):
 
 def _Collect(spawn_result):
   index, json_file, args = spawn_result
-  p = subprocess.Popen([sys.executable,
-    'tools/swarming_client/swarming.py', 'collect',
-    '-S', 'https://chromium-swarm.appspot.com',
-    '--json', json_file,
-    '--task-output-stdout=console'],
-    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  with open(json_file) as f:
+    task_json = json.load(f)
+  task_ids = [task['task_id'] for task in task_json['tasks']]
+
+  for t in task_ids:
+    print('Task {}: https://chromium-swarm.appspot.com/task?id={}'.format(
+        index, t))
+  p = subprocess.Popen(
+      [
+          'tools/luci-go/swarming',
+          'collect',
+          '-S',
+          'https://chromium-swarm.appspot.com',
+          '--task-output-stdout=console',
+      ] + task_ids,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT)
   stdout = p.communicate()[0]
   if p.returncode != 0 and len(stdout) < 2**10 and 'Internal error!' in stdout:
     exit_code = INTERNAL_ERROR_EXIT_CODE
@@ -130,17 +187,34 @@ def main():
   parser.add_argument('--target-os', default='detect', help='gn target_os')
   parser.add_argument('--arch', '-a', default='detect',
                       help='CPU architecture of the test binary.')
+  parser.add_argument('--build', dest='build', action='store_true',
+                      help='Build before isolating (default).')
+  parser.add_argument( '--no-build', dest='build', action='store_false',
+                      help='Do not build, just isolate.')
+  parser.add_argument('--isolate-map-file', '-i',
+                      help='path to isolate map file if not using default')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
-  parser.add_argument('--device-os', default='M',
-                      help='Run tests on the given version of Android.')
-  parser.add_argument('--pool', default='chromium.tests',
-                      help='Use the given swarming pool.')
+  parser.add_argument(
+      '--device-os', help='Run tests on the given version of Android.')
+  parser.add_argument(
+      '--device-type',
+      help='device_type specifier for Swarming'
+      ' from https://chromium-swarm.appspot.com/botlist .')
+  # TODO(crbug.com/812428): Switch this back to chromium.tests once
+  # that pool runs with task templates.
+  parser.add_argument(
+      '--pool',
+      default='chromium.tests.template',
+      help='Use the given swarming pool.')
   parser.add_argument('--results', '-r', default='results',
                       help='Directory in which to store results.')
   parser.add_argument('--gtest_filter',
                       help='Use the given gtest_filter, rather than the '
                            'default filter file, if any.')
+  parser.add_argument('--no-test-flags', action='store_true',
+                      help='Do not add --test-launcher-summary-output and '
+                           '--system-log-file flags to the comment.')
   parser.add_argument('out_dir', type=str, help='Build directory.')
   parser.add_argument('target_name', type=str, help='Name of target to run.')
 
@@ -169,6 +243,10 @@ def main():
       'fuchsia': 'Linux'
     }[args.target_os]
 
+  if args.target_os == 'win' and args.target_name.endswith('.exe'):
+    # The machinery expects not to have a '.exe' suffix.
+    args.target_name = os.path.splitext(args.target_name)[0]
+
   # Determine the CPU architecture of the test binary, if not specified.
   if args.arch == 'detect' and args.target_os == 'fuchsia':
     executable_info = subprocess.check_output(
@@ -178,8 +256,13 @@ def main():
     else:
       args.arch = 'x86-64'
 
-  subprocess.check_call([sys.executable, 'tools/mb/mb.py',
-      'isolate', '//' + args.out_dir, args.target_name])
+  mb_cmd = [sys.executable, 'tools/mb/mb.py', 'isolate']
+  if not args.build:
+    mb_cmd.append('--no-build')
+  if args.isolate_map_file:
+    mb_cmd += ['--isolate-map-file', args.isolate_map_file]
+  mb_cmd += ['//' + args.out_dir, args.target_name]
+  subprocess.check_call(mb_cmd)
 
   print('If you get authentication errors, follow:')
   print(
@@ -187,12 +270,14 @@ def main():
   )
 
   print('Uploading to isolate server, this can take a while...')
-  archive_output = subprocess.check_output(
-      [sys.executable,'tools/swarming_client/isolate.py', 'archive',
-       '-I', 'https://isolateserver.appspot.com',
-       '-i', os.path.join(args.out_dir, args.target_name + '.isolate'),
-       '-s', os.path.join(args.out_dir, args.target_name + '.isolated')])
-  isolated_hash = archive_output.split()[0]
+  isolated = os.path.join(args.out_dir, args.target_name + '.isolated')
+  subprocess.check_output([
+      'tools/luci-go/isolate', 'archive', '-I',
+      'https://isolateserver.appspot.com', '-i',
+      os.path.join(args.out_dir, args.target_name + '.isolate'), '-s', isolated
+  ])
+  with open(isolated) as f:
+    isolated_hash = hashlib.sha1(f.read()).hexdigest()
 
   if os.path.isdir(args.results):
     shutil.rmtree(args.results)
@@ -200,7 +285,9 @@ def main():
 
   try:
     print('Triggering %d tasks...' % args.copies)
-    pool = multiprocessing.Pool()
+    # Use dummy since threadpools give better exception messages
+    # than process pools do, and threads work fine for what we're doing.
+    pool = multiprocessing.dummy.Pool()
     spawn_args = map(lambda i: (i, args, isolated_hash), range(args.copies))
     spawn_results = pool.imap_unordered(_Spawn, spawn_args)
 

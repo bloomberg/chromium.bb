@@ -16,6 +16,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -305,10 +306,10 @@ ScrollableUsersListView::ScrollableUsersListView(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   for (std::size_t i = 1u; i < users.size(); ++i) {
-    auto* view = new LoginUserView(
-        display_style, false /*show_dropdown*/, false /*show_domain*/,
-        base::BindRepeating(on_tap_user, i - 1), base::RepeatingClosure(),
-        base::RepeatingClosure());
+    auto* view =
+        new LoginUserView(display_style, false /*show_dropdown*/,
+                          base::BindRepeating(on_tap_user, i - 1),
+                          base::RepeatingClosure(), base::RepeatingClosure());
     user_views_.push_back(view);
     view->UpdateForUser(users[i], false /*animate*/);
     user_view_host_->AddChildView(view);
@@ -331,7 +332,7 @@ ScrollableUsersListView::ScrollableUsersListView(
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));
-  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetBackgroundColor(base::nullopt);
   SetDrawOverflowIndicator(false);
 
   SetVerticalScrollBar(std::make_unique<UsersListScrollBar>(false));
@@ -387,7 +388,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Only draw a gradient if the wallpaper is blurred. Otherwise, draw a rounded
   // rectangle.
-  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
+  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurredForLockState()) {
     cc::PaintFlags flags;
 
     // Only draw a gradient if the content can be scrolled.

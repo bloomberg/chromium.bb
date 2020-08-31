@@ -25,7 +25,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -39,9 +38,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,8 +58,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
  public:
   MAYBE_RenderFrameAudioInputStreamFactoryTest()
       : RenderViewHostTestHarness(),
-        test_service_manager_context_(
-            std::make_unique<TestServiceManagerContext>()),
         audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
@@ -77,13 +72,7 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     RenderFrameHostTester::For(main_rfh())->InitializeRenderFrameIfNeeded();
 
     // Set up the ForwardingAudioStreamFactory.
-    service_manager::Connector* connector =
-        ForwardingAudioStreamFactory::ForFrame(main_rfh())
-            ->core()
-            ->get_connector_for_testing();
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
-        audio::mojom::StreamFactory::Name_,
+    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
         base::BindRepeating(
             &MAYBE_RenderFrameAudioInputStreamFactoryTest::BindFactory,
             base::Unretained(this)));
@@ -92,15 +81,15 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
   }
 
   void TearDown() override {
+    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
+        base::NullCallback());
     audio_manager_.Shutdown();
-    test_service_manager_context_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
-  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
-    audio_service_stream_factory_.receiver_.Bind(
-        mojo::PendingReceiver<audio::mojom::StreamFactory>(
-            std::move(factory_receiver)));
+  void BindFactory(
+      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+    audio_service_stream_factory_.receiver_.Bind(std::move(receiver));
   }
 
   class MockStreamFactory : public audio::FakeStreamFactory {
@@ -117,8 +106,7 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
         const media::AudioParameters& params,
         uint32_t shared_memory_count,
         bool enable_agc,
-        mojo::ScopedSharedBufferHandle key_press_count_buffer,
-        audio::mojom::AudioProcessingConfigPtr processing_config,
+        base::ReadOnlySharedMemoryRegion key_press_count_buffer,
         CreateInputStreamCallback created_callback) override {
       last_created_callback = std::move(created_callback);
     }
@@ -194,7 +182,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
   const bool kAGC = false;
   const uint32_t kSharedMemoryCount = 123;
   MockStreamFactory audio_service_stream_factory_;
-  std::unique_ptr<TestServiceManagerContext> test_service_manager_context_;
   media::FakeAudioLogFactory log_factory_;
   media::FakeAudioManager audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
@@ -224,7 +211,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -251,7 +238,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -279,7 +266,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -297,7 +284,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 

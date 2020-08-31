@@ -18,6 +18,7 @@
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
@@ -46,8 +47,13 @@
 
 #if defined(WAYLAND_GBM)
 #include "ui/base/ui_base_features.h"
-#include "ui/ozone/common/linux/gbm_wrapper.h"
+#include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
+#endif
+
+#if BUILDFLAG(USE_GTK)
+#include "ui/gtk/gtk_ui_delegate.h"  // nogncheck
+#include "ui/ozone/platform/wayland/host/gtk_ui_delegate_wayland.h"  //nogncheck
 #endif
 
 namespace ui {
@@ -66,12 +72,17 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     /*custom_frame_pref_default=*/true,
     /*use_system_title_bar=*/false,
 
-    // Ozone/Wayland relies on the mojo communication when running in
-    // !single_process.
-    // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
-    /*requires_mojo=*/true,
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT,
 
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT};
+    /*supports_vulkan_swap_chain=*/false,
+
+    // Wayland doesn't provide clients with global screen coordinates. Instead,
+    // it forces clients to position windows relative to their top level windows
+    // if the have child-parent relationship. In case of toplevel windows,
+    // clients simply don't know their position on screens and always assume
+    // they are located at some arbitrary position.
+    /*ignore_screen_bounds_for_menus=*/true,
+};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:
@@ -107,10 +118,8 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());
-    if (!window->Initialize(std::move(properties)))
-      return nullptr;
-    return std::move(window);
+    return WaylandWindow::Create(delegate, connection_.get(),
+                                 std::move(properties));
   }
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
@@ -132,7 +141,18 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) override {
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget widget) override {
+    // Instantiate and set LinuxInputMethodContextFactory unless it is already
+    // set (e.g: tests may have already set it).
+    if (!LinuxInputMethodContextFactory::instance() &&
+        !input_method_context_factory_) {
+      input_method_context_factory_ =
+          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
+      LinuxInputMethodContextFactory::SetInstance(
+          input_method_context_factory_.get());
+    }
+
     return std::make_unique<InputMethodAuraLinux>(delegate);
   }
 
@@ -174,16 +194,12 @@ class OzonePlatformWayland : public OzonePlatform {
 
     supported_buffer_formats_ =
         connection_->buffer_manager_host()->GetSupportedBufferFormats();
-
-    // Instantiate and set LinuxInputMethodContextFactory unless it is already
-    // set (e.g: tests may have already set it).
-    if (!LinuxInputMethodContextFactory::instance() &&
-        !input_method_context_factory_) {
-      input_method_context_factory_ =
-          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
-      LinuxInputMethodContextFactory::SetInstance(
-          input_method_context_factory_.get());
-    }
+#if BUILDFLAG(USE_GTK)
+    DCHECK(!GtkUiDelegate::instance());
+    gtk_ui_delegate_ =
+        std::make_unique<GtkUiDelegateWayland>(connection_.get());
+    GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+#endif
   }
 
   void InitializeGPU(const InitParams& args) override {
@@ -251,6 +267,10 @@ class OzonePlatformWayland : public OzonePlatform {
   // This is used both in the gpu and browser processes to find out if a drm
   // render node is available.
   DrmRenderNodePathFinder path_finder_;
+
+#if BUILDFLAG(USE_GTK)
+  std::unique_ptr<GtkUiDelegateWayland> gtk_ui_delegate_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);
 };

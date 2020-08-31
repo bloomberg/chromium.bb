@@ -214,7 +214,7 @@ TEST_P(ArfFreqTestLarge, MinArfFreqTest) {
 // BWDREF_FRAME is also a non-show frame, and the minimum run between two
 // consecutive BWDREF_FRAME's may vary between 1 and any arbitrary positive
 // number as long as it does not exceed the gf_group interval.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DISABLED_AV1, ArfFreqTestLarge,
     ::testing::Combine(
         ::testing::Values(

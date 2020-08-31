@@ -12,55 +12,14 @@ class FocusRingManager {
      * @private {!Map<SAConstants.Focus.ID,
      *     chrome.accessibilityPrivate.FocusRingInfo>}
      */
-    this.rings_ = new Map();
+    this.rings_ = this.createMap_();
 
     /**
      * Regex pattern to verify valid colors. Checks that the first character
-     * is '#', followed by between 3 and 8 valid hex characters, and no other
+     * is '#', followed by 3, 4, 6, or 8 valid hex characters, and no other
      * characters (ignoring case).
      */
-    this.colorPattern_ = /^#[0-9A-F]{3,8}$/i;
-
-    /**
-     * Reference to the menu panel object.
-     * @private {PanelInterface}
-     */
-    this.menuPanel_;
-  }
-
-  /** @param {!PanelInterface} panel */
-  setMenuPanel(panel) {
-    this.menuPanel_ = panel;
-  }
-
-  /** Finishes setup of focus rings once the preferences are loaded. */
-  onPrefsReady() {
-    // Currently all focus rings share the same color.
-    // TODO(crbug/996852): Make the primary focus color a preference.
-    const color = SAConstants.Focus.PRIMARY_COLOR;
-
-    // Create each focus ring.
-    this.rings_.set(SAConstants.Focus.ID.PRIMARY, {
-      id: SAConstants.Focus.ID.PRIMARY,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.NEXT, {
-      id: SAConstants.Focus.ID.NEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.TEXT, {
-      id: SAConstants.Focus.ID.TEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
+    this.colorPattern_ = /^#([0-9A-F]{3,4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
   }
 
   /**
@@ -71,7 +30,7 @@ class FocusRingManager {
     if (this.colorPattern_.test(color) !== true) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.INVALID_COLOR,
-          'Problem setting focus ring color: color is not' +
+          'Problem setting focus ring color: ' + color + ' is not' +
               'a valid CSS color string.');
     }
     this.rings_.forEach((ring) => ring.color = color);
@@ -84,20 +43,15 @@ class FocusRingManager {
    * @param {!SARootNode} group
    */
   setFocusNodes(primary, group) {
-    if (this.rings_.size === 0) {
-      return;
-    }
-    if (!primary.location || !group.location) {
+    if (!primary.location) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_LOCATION,
           'Cannot set focus rings if node location is undefined');
     }
 
     if (primary instanceof BackButtonNode) {
-      // TODO(anastasi): Use standard focus rings.
-      if (this.menuPanel_) {
-        this.menuPanel_.setFocusRing(SAConstants.BACK_ID, true);
-      }
+      MenuManager.requestBackButtonFocusChange(true);
+
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
@@ -107,8 +61,8 @@ class FocusRingManager {
       this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
       this.updateFocusRings_();
       return;
-    } else if (this.menuPanel_) {
-      this.menuPanel_.setFocusRing(SAConstants.BACK_ID, false);
+    } else {
+      MenuManager.requestBackButtonFocusChange(false);
     }
 
     // If the primary node is a group, show its first child as the "next" focus.
@@ -121,7 +75,7 @@ class FocusRingManager {
       this.updateFocusRings_();
 
       let focusRect = primary.location;
-      let childRect = firstChild ? firstChild.location : null;
+      const childRect = firstChild ? firstChild.location : null;
       if (childRect) {
         // If the current element is not the back button, the focus rect should
         // expand to contain the child rect.
@@ -148,11 +102,40 @@ class FocusRingManager {
   }
 
   /**
+   * Creates the map of focus rings.
+   * @return {!Map<SAConstants.Focus.ID,
+   * chrome.accessibilityPrivate.FocusRingInfo>}
+   */
+  createMap_() {
+    const primaryRing = {
+      id: SAConstants.Focus.ID.PRIMARY,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.SOLID,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    };
+
+    const nextRing = {
+      id: SAConstants.Focus.ID.NEXT,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    };
+
+    return new Map([
+      [SAConstants.Focus.ID.PRIMARY, primaryRing],
+      [SAConstants.Focus.ID.NEXT, nextRing]
+    ]);
+  }
+
+
+  /**
    * Updates all focus rings to reflect new location, color, style, or other
    * changes.
    */
   updateFocusRings_() {
-    let focusRings = [];
+    const focusRings = [];
     this.rings_.forEach((ring) => focusRings.push(ring));
     chrome.accessibilityPrivate.setFocusRings(focusRings);
   }

@@ -12,11 +12,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "base/values.h"
+#include "extensions/browser/api/declarative_net_request/index_helper.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -51,6 +53,14 @@ class SandboxedUnpackerClient
   // the constructor call must also happen on the UI thread.
   SandboxedUnpackerClient();
 
+  // Determines whether |extension| requires computing and storing
+  // computed_hashes.json and returns the result through |callback|.
+  // Currently we do this only for force-installed extensions outside of Chrome
+  // Web Store, and that is reflected in method's name.
+  virtual void ShouldComputeHashesForOffWebstoreExtension(
+      scoped_refptr<const Extension> extension,
+      base::OnceCallback<void(bool)> callback);
+
   // temp_dir - A temporary directory containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
   //
@@ -64,9 +74,8 @@ class SandboxedUnpackerClient
   //
   // install_icon - The icon we will display in the installation UI, if any.
   //
-  // dnr_ruleset_checksum - Checksum for the indexed ruleset corresponding to
-  // the Declarative Net Request API. Optional since it's only valid for
-  // extensions which provide a declarative ruleset.
+  // ruleset_checksums - Checksums for the indexed rulesets corresponding to
+  // the Declarative Net Request API.
   //
   // Note: OnUnpackSuccess/Failure may be called either synchronously or
   // asynchronously from SandboxedUnpacker::StartWithCrx/Directory.
@@ -76,7 +85,7 @@ class SandboxedUnpackerClient
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) = 0;
+      declarative_net_request::RulesetChecksums ruleset_checksums) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
@@ -176,30 +185,25 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void Unpack(const base::FilePath& directory);
   void ReadManifestDone(base::Optional<base::Value> manifest,
                         const base::Optional<std::string>& error);
-  void UnpackExtensionSucceeded(
-      std::unique_ptr<base::DictionaryValue> manifest);
+  void UnpackExtensionSucceeded(base::Value manifest);
 
   // Helper which calls ReportFailure.
   void ReportUnpackExtensionFailed(base::StringPiece error);
 
-  void ImageSanitizationDone(std::unique_ptr<base::DictionaryValue> manifest,
-                             ImageSanitizer::Status status,
+  void ImageSanitizationDone(ImageSanitizer::Status status,
                              const base::FilePath& path);
   void ImageSanitizerDecodedImage(const base::FilePath& path, SkBitmap image);
 
-  void ReadMessageCatalogs(std::unique_ptr<base::DictionaryValue> manifest);
+  void ReadMessageCatalogs();
 
   void SanitizeMessageCatalogs(
-      std::unique_ptr<base::DictionaryValue> manifest,
       const std::set<base::FilePath>& message_catalog_paths);
 
-  void MessageCatalogsSanitized(std::unique_ptr<base::DictionaryValue> manifest,
-                                JsonFileSanitizer::Status status,
+  void MessageCatalogsSanitized(JsonFileSanitizer::Status status,
                                 const std::string& error_msg);
 
   // Reports unpack success or failure, or unzip failure.
-  void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
-                     const base::Optional<int>& dnr_ruleset_checksum);
+  void ReportSuccess();
 
   // Puts a sanboxed unpacker failure in histogram
   // Extensions.SandboxUnpackFailureReason.
@@ -207,22 +211,27 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                      const base::string16& error);
 
   // Overwrites original manifest with safe result from utility process.
-  // Returns NULL on error. Caller owns the returned object.
-  base::DictionaryValue* RewriteManifestFile(
-      const base::DictionaryValue& manifest);
+  // Returns nullopt on error.
+  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest);
 
   // Cleans up temp directory artifacts.
   void Cleanup();
 
   // If a Declarative Net Request JSON ruleset is present, parses the JSON
-  // ruleset for the Declarative Net Request API and persists the indexed
-  // ruleset.
-  void IndexAndPersistJSONRulesetIfNeeded(
-      std::unique_ptr<base::DictionaryValue> manifest);
+  // rulesets for the Declarative Net Request API and persists the indexed
+  // rulesets.
+  void IndexAndPersistJSONRulesetsIfNeeded();
 
-  void OnJSONRulesetIndexed(
-      std::unique_ptr<base::DictionaryValue> manifest,
-      declarative_net_request::IndexAndPersistJSONRulesetResult result);
+  void OnJSONRulesetsIndexed(
+      declarative_net_request::IndexHelper::Result result);
+
+  // Computed hashes: if requested (via ShouldComputeHashes callback in
+  // SandbloxedUnpackerClient), calculate hashes of all extensions' resources
+  // and writes them in _metadata/computed_hashes.json. This is used by content
+  // verification system for extensions outside of Chrome Web Store.
+  void CheckComputeHashes();
+
+  void MaybeComputeHashes(bool should_compute_hashes);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();
@@ -249,6 +258,15 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Root directory of the unpacked extension (a child of temp_dir_).
   base::FilePath extension_root_;
 
+  // Parsed original manifest of the extension. Set after unpacking the
+  // extension and working with its manifest, so after UnpackExtensionSucceeded
+  // is called.
+  base::Optional<base::Value> manifest_;
+
+  // Checksums for the indexed rulesets, see more in
+  // SandboxedUnpackerClient::OnUnpackSuccess description.
+  declarative_net_request::RulesetChecksums ruleset_checksums_;
+
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;
 
@@ -258,10 +276,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // The extension's ID. This will be calculated from the public key
   // in the CRX header.
   std::string extension_id_;
-
-  // If we unpacked a CRX file, the time at which unpacking started.
-  // Used to compute the time unpacking takes.
-  base::TimeTicks crx_unpack_start_time_;
 
   // Location to use for the unpacked extension.
   Manifest::Location location_;

@@ -7,7 +7,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_AURA)
+#if defined(USE_X11)
 #include "ui/events/platform/platform_event_source.h"
 #endif
 
@@ -20,7 +20,7 @@ base::test::TaskEnvironment* g_task_environment = nullptr;
 }  // namespace
 
 struct PlatformClipboardTraits {
-#if defined(USE_AURA)
+#if defined(USE_X11)
   static std::unique_ptr<PlatformEventSource> GetEventSource() {
     return PlatformEventSource::CreateDefault();
   }
@@ -41,16 +41,16 @@ struct PlatformClipboardTraits {
   }
 };
 
-class BaseClipboardTestName {
+class PlatformClipboardTestName {
  public:
   template <typename T>
   static std::string GetName(int index) {
-    return "BaseClipboardTest";
+    return "PlatformClipboardTest";
   }
 };
 
 using TypesToTest = PlatformClipboardTraits;
-using NamesOfTypesToTest = BaseClipboardTestName;
+using NamesOfTypesToTest = PlatformClipboardTestName;
 
 }  // namespace ui
 

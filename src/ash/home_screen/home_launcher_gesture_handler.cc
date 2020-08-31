@@ -61,17 +61,13 @@ constexpr int kScrollVelocityThreshold = 6;
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
 
-bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 // Checks if |window| can be hidden or shown with a gesture.
 bool CanProcessWindow(aura::Window* window,
                       HomeLauncherGestureHandler::Mode mode) {
   if (!window)
     return false;
 
-  if (!IsTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     return false;
 
   if (!window->IsVisible() &&
@@ -455,7 +451,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
       // end splitview if it is active as SplitViewController observes
       // overview mode ends.
       Shell::Get()->overview_controller()->EndOverview(
-          OverviewSession::EnterExitOverviewType::kSwipeFromShelf);
+          OverviewEnterExitType::kSwipeFromShelf);
     } else {
       home_launcher_opacity = 0.f;
     }
@@ -485,20 +481,19 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   }
 
   if (is_final_state_show) {
-    std::vector<aura::Window*> windows_to_hide_minimize;
-    windows_to_hide_minimize.push_back(GetActiveWindow());
+    std::vector<aura::Window*> windows_to_minimize;
+    windows_to_minimize.push_back(GetActiveWindow());
 
     if (secondary_window_)
-      windows_to_hide_minimize.push_back(GetSecondaryWindow());
+      windows_to_minimize.push_back(GetSecondaryWindow());
 
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview. Minimize in reverse order to preserve mru ordering.
-    windows_to_hide_minimize.resize(windows_to_hide_minimize.size() +
-                                    hidden_windows_.size());
+    windows_to_minimize.resize(windows_to_minimize.size() +
+                               hidden_windows_.size());
     std::copy(hidden_windows_.rbegin(), hidden_windows_.rend(),
-              windows_to_hide_minimize.end() - hidden_windows_.size());
-    window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
-                                                      /*minimize=*/true);
+              windows_to_minimize.end() - hidden_windows_.size());
+    window_util::MinimizeAndHideWithoutAnimation(windows_to_minimize);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
@@ -770,7 +765,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     return false;
   }
 
-  if (IsTabletMode() && overview_active_on_gesture_start_ &&
+  if (Shell::Get()->IsInTabletMode() && overview_active_on_gesture_start_ &&
       !split_view_active && mode == Mode::kSlideUpToShow) {
     active_window_.reset();
     return true;
@@ -790,10 +785,11 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
 
   DCHECK(base::Contains(windows, first_window));
   DCHECK_NE(Mode::kNone, mode);
-  base::RecordAction(base::UserMetricsAction(
+  base::RecordAction(
       mode == Mode::kSlideDownToHide
-          ? "AppList_HomeLauncherToMRUWindowAttempt"
-          : "AppList_CurrentWindowToHomeLauncherAttempt"));
+          ? base::UserMetricsAction("AppList_HomeLauncherToMRUWindowAttempt")
+          : base::UserMetricsAction(
+                "AppList_CurrentWindowToHomeLauncherAttempt"));
   active_window_ = std::make_unique<ScopedWindowModifier>(first_window);
   GetActiveWindow()->AddObserver(this);
   base::EraseIf(windows, [this](aura::Window* elem) {
@@ -828,10 +824,11 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
       if (window->IsVisible()) {
         hidden_windows_.push_back(window);
         window->AddObserver(this);
+
+        ScopedAnimationDisabler disable(window);
+        window->Hide();
       }
     }
-    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
-                                                      /*minimize=*/false);
   }
 
   // Show |active_window_| if we are swiping down to hide.
@@ -936,7 +933,7 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::PointF& location,
   } else {
     // In clamshell mode, AppListView::SetIsInDrag is called explicitly so it
     // does not need the notification from HomeLauncherGestureHandler.
-    if (IsTabletMode()) {
+    if (Shell::Get()->IsInTabletMode()) {
       HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
       DCHECK(home_screen_delegate);
       home_screen_delegate->OnHomeLauncherDragEnd();

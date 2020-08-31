@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/test/mock_printer.h"
 #include "components/printing/test/print_mock_render_thread.h"
@@ -26,10 +27,11 @@
 #include "content/public/test/render_view_test.h"
 #include "ipc/ipc_listener.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -118,8 +120,9 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);
   dict->SetBoolean(kSettingCollate, false);
   dict->SetInteger(kSettingColor, GRAY);
-  dict->SetInteger(kSettingPrinterType, kPdfPrinter);
-  dict->SetInteger(kSettingDuplexMode, SIMPLEX);
+  dict->SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kPdf));
+  dict->SetInteger(kSettingDuplexMode,
+                   static_cast<int>(mojom::DuplexMode::kSimplex));
   dict->SetInteger(kSettingCopies, 1);
   dict->SetString(kSettingDeviceName, "dummy");
   dict->SetInteger(kPreviewUIID, 4);
@@ -144,7 +147,6 @@ class DidPreviewPageListener : public IPC::Listener {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID ||
-        message.type() == PrintHostMsg_PrintPreviewFailed::ID ||
         message.type() == PrintHostMsg_PrintPreviewCancelled::ID ||
         message.type() == PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID)
       run_loop_->Quit();
@@ -154,6 +156,30 @@ class DidPreviewPageListener : public IPC::Listener {
  private:
   base::RunLoop* const run_loop_;
   DISALLOW_COPY_AND_ASSIGN(DidPreviewPageListener);
+};
+
+class FakePrintPreviewUI : public mojom::PrintPreviewUI {
+ public:
+  FakePrintPreviewUI() = default;
+  ~FakePrintPreviewUI() override = default;
+
+  mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindReceiver() {
+    return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
+  }
+
+  bool preview_failed() const { return preview_failed_; }
+
+  // mojom::PrintPreviewUI:
+  void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
+                              int32_t request_id) override {}
+  void PrintPreviewFailed(int32_t document_cookie,
+                          int32_t request_id) override {
+    preview_failed_ = true;
+  }
+
+ private:
+  bool preview_failed_ = false;
+  mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -214,6 +240,11 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void BindToFakePrintPreviewUI() {
+    PrintRenderFrameHelper* frame_helper = GetPrintRenderFrameHelper();
+    frame_helper->SetPrintPreviewUI(preview_ui_.BindReceiver());
+  }
+
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
@@ -267,7 +298,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);
-    print_render_frame_helper->OnPrintPreview(dict);
+    print_render_frame_helper->PrintPreview(dict.Clone());
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
@@ -296,14 +327,15 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     EXPECT_FALSE(bounds.IsEmpty());
 
     blink::WebMouseEvent mouse_event(
-        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseDown,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
     mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                     bounds.CenterPoint().y());
     mouse_event.click_count = 1;
     SendWebMouseEvent(mouse_event);
-    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
     SendWebMouseEvent(mouse_event);
   }
 
@@ -338,8 +370,14 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  FakePrintPreviewUI* preview_ui() { return &preview_ui_; }
+#endif
 
  private:
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  FakePrintPreviewUI preview_ui_;
+#endif
   // Naked pointer as ownership is with
   // |content::RenderViewTest::render_thread_|.
   PrintMockRenderThread* print_render_thread_ = nullptr;
@@ -649,6 +687,11 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   MAYBE_PrintRenderFrameHelperPreviewTest() = default;
   ~MAYBE_PrintRenderFrameHelperPreviewTest() override = default;
 
+  void SetUp() override {
+    PrintRenderFrameHelperTestBase::SetUp();
+    BindToFakePrintPreviewUI();
+  }
+
  protected:
   void VerifyPrintPreviewCancelled(bool expect_cancel) {
     bool print_preview_cancelled =
@@ -658,10 +701,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   }
 
   void VerifyPrintPreviewFailed(bool expect_fail) {
-    bool print_preview_failed =
-        !!render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewFailed::ID);
-    EXPECT_EQ(expect_fail, print_preview_failed);
+    EXPECT_EQ(expect_fail, preview_ui()->preview_failed());
   }
 
   void VerifyPrintPreviewGenerated(bool expect_generated) {
@@ -801,7 +841,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -823,7 +863,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
@@ -970,7 +1010,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1026,7 +1066,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1058,7 +1098,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1080,7 +1120,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, kLocalPrinter);
+  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 

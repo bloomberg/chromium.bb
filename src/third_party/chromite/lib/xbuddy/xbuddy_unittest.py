@@ -17,7 +17,10 @@ from six.moves import configparser
 
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
+from chromite.lib import path_util
 from chromite.lib.xbuddy import xbuddy
+
+pytestmark = cros_test_lib.pytestmark_inside_only
 
 
 # pylint: disable=protected-access
@@ -83,7 +86,7 @@ class xBuddyTest(cros_test_lib.TestCase):
     with mock.patch.object(gs.GSContext, 'Cat', return_value='v') as cat_mock:
       self.assertEqual(self.mock_xb._LookupOfficial('b', suffix='-s'), 'b-s/v')
       cat_mock.assert_called_with(
-          'gs://chromeos-image-archive/b-s/LATEST-master')
+          'gs://chromeos-image-archive/b-s/LATEST-master', encoding='utf-8')
 
   @mock.patch.object(xbuddy.XBuddy, '_GetLatestVersionFromGsDir',
                      side_effect=['4100.68.0', 'R28-4100.68.0'])
@@ -261,6 +264,19 @@ class xBuddyTest(cros_test_lib.TestCase):
     expected = ('ANY', 'parrot', '1.2.3', True)
     self.assertEqual(expected, self.mock_xb._InterpretPath(
         path=path, default_version='1.2.3'))
+
+    path = 'parrot'
+    expected = ('ANY', 'parrot', '1.2.3', True)
+    self.assertEqual(expected, self.mock_xb._InterpretPath(
+        path=path, default_board='parrot', default_version='1.2.3'))
+
+    with mock.patch.object(
+        path_util, 'DetermineCheckout', return_value=path_util.CheckoutInfo(
+            path_util.CHECKOUT_TYPE_GCLIENT, None, None)):
+      path = ''
+      expected = ('test', 'parrot', '1.2.3', False)
+      self.assertEqual(expected, self.mock_xb._InterpretPath(
+          path=path, default_board='parrot', default_version='1.2.3'))
 
   def testTimestampsAndList(self):
     """Creation and listing of builds according to their timestamps."""

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // Custom bindings for the automation API.
-var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
 var automationInternal = getInternalApi('automationInternal');
 var exceptionHandler = require('uncaught_exception_handler');
@@ -11,13 +10,14 @@ var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
 var DestroyAccessibilityTree =
     nativeAutomationInternal.DestroyAccessibilityTree;
-var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
 var StartCachingAccessibilityTrees =
     nativeAutomationInternal.StartCachingAccessibilityTrees;
 var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
+var GetAccessibilityFocusNative =
+    nativeAutomationInternal.GetAccessibilityFocus;
 
 /**
  * A namespace to export utility functions to other files in automation.
@@ -133,6 +133,17 @@ automationUtil.tabIDToAutomationNode = {};
     }
   });
 
+  apiFunctions.setHandleRequest('getAccessibilityFocus', function(callback) {
+    var focusedNodeInfo = GetAccessibilityFocusNative();
+    if (!focusedNodeInfo) {
+      callback(null);
+      return;
+    }
+    var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
+    if (tree)
+      callback(privates(tree).impl.get(focusedNodeInfo.nodeId));
+  });
+
   function removeTreeChangeObserver(observer) {
     for (var id in automationUtil.treeChangeObserverMap) {
       if (automationUtil.treeChangeObserverMap[id] == observer) {
@@ -190,10 +201,14 @@ automationInternal.onChildTreeID.addListener(function(childTreeId) {
   // browser process and set up a callback when it loads to attach that
   // tree as a child of this node and fire appropriate events.
   automationUtil.storeTreeCallback(childTreeId, function(root) {
-    privates(root).impl.dispatchEvent('loadComplete', 'page');
+    const rootImpl = privates(root).impl;
+    rootImpl.dispatchEvent('loadComplete', 'page');
+    if (rootImpl.parent) {
+      privates(rootImpl.parent).impl.dispatchEvent('childrenChanged');
+    }
   }, true);
 
-  automationInternal.enableFrame(childTreeId);
+  automationInternal.enableTree(childTreeId);
 });
 
 automationInternal.onTreeChange.addListener(function(observerID,
@@ -288,7 +303,7 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
 
 automationInternal.onAccessibilityTreeSerializationError.addListener(
     function(id) {
-  automationInternal.enableFrame(id);
+  automationInternal.enableTree(id);
 });
 
 automationInternal.onActionResult.addListener(function(

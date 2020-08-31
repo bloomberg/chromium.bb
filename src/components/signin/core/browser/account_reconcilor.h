@@ -30,7 +30,6 @@
 
 namespace signin {
 class AccountReconcilorDelegate;
-class ConsistencyCookieManagerBase;
 enum class SetAccountsInCookieResult;
 }
 
@@ -98,10 +97,6 @@ class AccountReconcilor : public KeyedService,
   // Initializes the account reconcilor. Should be called once after
   // construction.
   void Initialize(bool start_reconcile_if_tokens_available);
-
-  void SetConsistencyCookieManager(
-      std::unique_ptr<signin::ConsistencyCookieManagerBase>
-          consistency_cookie_manager);
 
   // Enables and disables the reconciliation.
   void EnableReconcile();
@@ -177,6 +172,8 @@ class AccountReconcilor : public KeyedService,
                            StartReconcileContentSettingsInvalidPattern);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            GetAccountsFromCookieSuccess);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
+                           EnableReconcileWhileAlreadyRunning);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            GetAccountsFromCookieFailure);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
@@ -287,6 +284,7 @@ class AccountReconcilor : public KeyedService,
   void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
                                      const GoogleServiceAuthError& error);
   void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
+  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
 
   // Lock related methods.
   void IncrementLockCount();
@@ -346,6 +344,7 @@ class AccountReconcilor : public KeyedService,
   // Used during reconcile action.
   std::vector<CoreAccountId> add_to_cookie_;  // Progress of AddAccount calls.
   bool set_accounts_in_progress_;             // Progress of SetAccounts calls.
+  bool log_out_in_progress_;                  // Progress of LogOut calls.
   bool chrome_accounts_changed_;
 
   // Used for the Lock.
@@ -372,9 +371,6 @@ class AccountReconcilor : public KeyedService,
   int synced_data_deletion_in_progress_count_ = 0;
 
   signin_metrics::AccountReconcilorState state_;
-
-  std::unique_ptr<signin::ConsistencyCookieManagerBase>
-      consistency_cookie_manager_;
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_{this};
 

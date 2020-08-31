@@ -28,23 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';
+import {LiveLocation, LiveLocationPool} from './LiveLocation.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {SDK.SDKModelObserver<!SDK.DebuggerModel>}
+ * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DebuggerModel.DebuggerModel>}
  */
 export class PresentationConsoleMessageManager {
   constructor() {
-    SDK.targetManager.observeModels(SDK.DebuggerModel, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
 
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    SDK.consoleModel.addEventListener(
+    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
+        SDK.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
         SDK.ConsoleModel.Events.MessageAdded,
-        event => this._consoleMessageAdded(/** @type {!SDK.ConsoleMessage} */ (event.data)));
-    SDK.consoleModel.messages().forEach(this._consoleMessageAdded, this);
+        event => this._consoleMessageAdded(/** @type {!SDK.ConsoleModel.ConsoleMessage} */ (event.data)));
+    SDK.ConsoleModel.ConsoleModel.instance().messages().forEach(this._consoleMessageAdded, this);
   }
 
   /**
    * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelAdded(debuggerModel) {
     debuggerModel[PresentationConsoleMessageManager._symbol] = new PresentationConsoleMessageHelper(debuggerModel);
@@ -52,18 +60,18 @@ export class PresentationConsoleMessageManager {
 
   /**
    * @override
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   modelRemoved(debuggerModel) {
     debuggerModel[PresentationConsoleMessageManager._symbol]._consoleCleared();
   }
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    */
   _consoleMessageAdded(message) {
     if (!message.isErrorOrWarning() || !message.runtimeModel() ||
-        message.source === SDK.ConsoleMessage.MessageSource.Violation) {
+        message.source === SDK.ConsoleModel.MessageSource.Violation) {
       return;
     }
     const debuggerModel = message.runtimeModel().debuggerModel();
@@ -71,7 +79,7 @@ export class PresentationConsoleMessageManager {
   }
 
   _consoleCleared() {
-    for (const debuggerModel of SDK.targetManager.models(SDK.DebuggerModel)) {
+    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       debuggerModel[PresentationConsoleMessageManager._symbol]._consoleCleared();
     }
   }
@@ -79,29 +87,30 @@ export class PresentationConsoleMessageManager {
 
 PresentationConsoleMessageManager._symbol = Symbol('PresentationConsoleMessageHelper');
 
-export default class PresentationConsoleMessageHelper {
+export class PresentationConsoleMessageHelper {
   /**
-   * @param {!SDK.DebuggerModel} debuggerModel
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
    */
   constructor(debuggerModel) {
     this._debuggerModel = debuggerModel;
 
-    /** @type {!Object.<string, !Array.<!SDK.ConsoleMessage>>} */
+    /** @type {!Object.<string, !Array.<!SDK.ConsoleModel.ConsoleMessage>>} */
     this._pendingConsoleMessages = {};
 
     /** @type {!Array.<!PresentationConsoleMessage>} */
     this._presentationConsoleMessages = [];
 
     // TODO(dgozman): setImmediate because we race with DebuggerWorkspaceBinding on ParsedScriptSource event delivery.
-    debuggerModel.addEventListener(
-        SDK.DebuggerModel.Events.ParsedScriptSource, event => setImmediate(this._parsedScriptSource.bind(this, event)));
+    debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, event => {
+      setImmediate(this._parsedScriptSource.bind(this, event));
+    });
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 
-    this._locationPool = new Bindings.LiveLocationPool();
+    this._locationPool = new LiveLocationPool();
   }
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    */
   _consoleMessageAdded(message) {
     const rawLocation = this._rawLocation(message);
@@ -113,7 +122,7 @@ export default class PresentationConsoleMessageHelper {
   }
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    * @return {?SDK.DebuggerModel.Location}
    */
   _rawLocation(message) {
@@ -132,7 +141,7 @@ export default class PresentationConsoleMessageHelper {
   }
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    * @param {!SDK.DebuggerModel.Location} rawLocation
    */
   _addConsoleMessageToScript(message, rawLocation) {
@@ -140,7 +149,7 @@ export default class PresentationConsoleMessageHelper {
   }
 
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    */
   _addPendingConsoleMessage(message) {
     if (!message.url) {
@@ -153,10 +162,10 @@ export default class PresentationConsoleMessageHelper {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _parsedScriptSource(event) {
-    const script = /** @type {!SDK.Script} */ (event.data);
+    const script = /** @type {!SDK.Script.Script} */ (event.data);
 
     const messages = this._pendingConsoleMessages[script.sourceURL];
     if (!messages) {
@@ -203,26 +212,25 @@ export default class PresentationConsoleMessageHelper {
  */
 export class PresentationConsoleMessage {
   /**
-   * @param {!SDK.ConsoleMessage} message
+   * @param {!SDK.ConsoleModel.ConsoleMessage} message
    * @param {!SDK.DebuggerModel.Location} rawLocation
-   * @param {!Bindings.LiveLocationPool} locationPool
+   * @param {!LiveLocationPool} locationPool
    */
   constructor(message, rawLocation, locationPool) {
     this._text = message.messageText;
-    this._level = message.level === SDK.ConsoleMessage.MessageLevel.Error ?
-        Workspace.UISourceCode.Message.Level.Error :
-        Workspace.UISourceCode.Message.Level.Warning;
-    Bindings.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this._updateLocation.bind(this), locationPool);
+    this._level = message.level === SDK.ConsoleModel.MessageLevel.Error ? Workspace.UISourceCode.Message.Level.Error :
+                                                                          Workspace.UISourceCode.Message.Level.Warning;
+    DebuggerWorkspaceBinding.instance().createLiveLocation(rawLocation, this._updateLocation.bind(this), locationPool);
   }
 
   /**
-   * @param {!Bindings.LiveLocation} liveLocation
+   * @param {!LiveLocation} liveLocation
    */
-  _updateLocation(liveLocation) {
+  async _updateLocation(liveLocation) {
     if (this._uiMessage) {
       this._uiMessage.remove();
     }
-    const uiLocation = liveLocation.uiLocation();
+    const uiLocation = await liveLocation.uiLocation();
     if (!uiLocation) {
       return;
     }
@@ -236,15 +244,3 @@ export class PresentationConsoleMessage {
     }
   }
 }
-
-/* Legacy exported object */
-self.Bindings = self.Bindings || {};
-
-/* Legacy exported object */
-Bindings = Bindings || {};
-
-/** @constructor */
-Bindings.PresentationConsoleMessageManager = PresentationConsoleMessageManager;
-
-/** @constructor */
-Bindings.PresentationConsoleMessage = PresentationConsoleMessage;

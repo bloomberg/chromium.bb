@@ -100,6 +100,11 @@
         "specifiers": ["Retina", "Release"],
         "is_try_builder": true
     },
+    "mac10.14-blink-rel": {
+        "port_name": "mac-mac10.14",
+        "specifiers": ["Mac10.14", "Release"],
+        "is_try_builder": true
+    },
     "win7-blink-rel": {
         "port_name": "win-win7",
         "specifiers": ["Win7", "Release"],
@@ -108,6 +113,16 @@
     "win10-blink-rel": {
         "port_name": "win-win10",
         "specifiers": ["Win10", "Release"],
+        "is_try_builder": true
+    },
+    "android-weblayer-pie-arm64-fyi-rel": {
+        "port_name": "android-android-pie",
+        "specifiers": ["Android", "android_weblayer", "Release"],
+        "is_try_builder": true
+    },
+    "android-webview-pie-arm64-fyi-rel": {
+        "port_name": "android-android-pie",
+        "specifiers": ["Android", "android_webview", "chrome_android", "Release"],
         "is_try_builder": true
     }
 }

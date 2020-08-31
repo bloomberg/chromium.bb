@@ -29,8 +29,8 @@
  */
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -66,7 +66,7 @@ class TouchActionTrackingWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
   TouchActionTrackingWebWidgetClient()
-      : action_set_count_(0), action_(TouchAction::kTouchActionAuto) {}
+      : action_set_count_(0), action_(TouchAction::kAuto) {}
 
   // WebWidgetClient methods
   void SetTouchAction(TouchAction touch_action) override {
@@ -77,7 +77,7 @@ class TouchActionTrackingWebWidgetClient
   // Local methods
   void Reset() {
     action_set_count_ = 0;
-    action_ = TouchAction::kTouchActionAuto;
+    action_ = TouchAction::kAuto;
   }
 
   int TouchActionSetCount() { return action_set_count_; }
@@ -217,7 +217,7 @@ WebViewImpl* TouchActionTest::SetupTest(
   Document* document =
       static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
   document->GetFrame()->View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, kScrollOffset), kProgrammaticScroll);
+      ScrollOffset(0, kScrollOffset), mojom::blink::ScrollType::kProgrammatic);
 
   return web_view;
 }
@@ -270,6 +270,8 @@ void TouchActionTest::RunTestOnTree(
     // debugging).
     Persistent<DOMRectList> rects = element->getClientRects();
     ASSERT_GE(rects->length(), 0u) << failure_context.ToString();
+    if (!rects->length())
+      continue;
     Persistent<DOMRect> r = rects->item(0);
     FloatRect client_float_rect =
         FloatRect(r->left(), r->top(), r->width(), r->height());
@@ -325,7 +327,7 @@ void TouchActionTest::RunTestOnTree(
           << "Unexpected hit test result " << failure_context_pos
           << "  Got element: \""
           << result.InnerElement()
-                 ->OuterHTMLAsString()
+                 ->outerHTML()
                  .StripWhiteSpace()
                  .Left(80)
                  .Ascii()
@@ -335,30 +337,29 @@ void TouchActionTest::RunTestOnTree(
           << ExternalRepresentation(root->GetDocument().GetFrame()).Utf8();
 
       // Now send the touch event and check any touch action result.
-      SendTouchEvent(web_view, WebInputEvent::kPointerDown, window_point);
+      SendTouchEvent(web_view, WebInputEvent::Type::kPointerDown, window_point);
 
       AtomicString expected_action = element->getAttribute("expected-action");
       // Should have received exactly one touch action, even for auto.
       EXPECT_EQ(1, client.TouchActionSetCount()) << failure_context_pos;
       if (client.TouchActionSetCount()) {
         if (expected_action == "auto") {
-          EXPECT_EQ(TouchAction::kTouchActionAuto, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kAuto, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "none") {
-          EXPECT_EQ(TouchAction::kTouchActionNone, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kNone, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-x") {
-          EXPECT_EQ(TouchAction::kTouchActionPanX, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kPanX, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-y") {
-          EXPECT_EQ(TouchAction::kTouchActionPanY, client.LastTouchAction())
+          EXPECT_EQ(TouchAction::kPanY, client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "pan-x-y") {
-          EXPECT_EQ((TouchAction::kTouchActionPan), client.LastTouchAction())
+          EXPECT_EQ((TouchAction::kPan), client.LastTouchAction())
               << failure_context_pos;
         } else if (expected_action == "manipulation") {
-          EXPECT_EQ((TouchAction::kTouchActionManipulation),
-                    client.LastTouchAction())
+          EXPECT_EQ((TouchAction::kManipulation), client.LastTouchAction())
               << failure_context_pos;
         } else {
           FAIL() << "Unrecognized expected-action " << expected_action << " "
@@ -368,7 +369,8 @@ void TouchActionTest::RunTestOnTree(
 
       // Reset webview touch state.
       client.Reset();
-      SendTouchEvent(web_view, WebInputEvent::kPointerCancel, window_point);
+      SendTouchEvent(web_view, WebInputEvent::Type::kPointerCancel,
+                     window_point);
       EXPECT_EQ(0, client.TouchActionSetCount());
     }
   }
@@ -376,20 +378,21 @@ void TouchActionTest::RunTestOnTree(
 void TouchActionTest::SendTouchEvent(WebView* web_view,
                                      WebInputEvent::Type type,
                                      IntPoint client_point) {
-  ASSERT_TRUE(type == WebInputEvent::kPointerDown ||
-              type == WebInputEvent::kPointerCancel);
+  ASSERT_TRUE(type == WebInputEvent::Type::kPointerDown ||
+              type == WebInputEvent::Type::kPointerCancel);
 
   WebPointerEvent event(
       type,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                            WebPointerProperties::Button::kLeft,
-                           WebFloatPoint(client_point.X(), client_point.Y()),
-                           WebFloatPoint(client_point.X(), client_point.Y())),
+                           gfx::PointF(client_point.X(), client_point.Y()),
+                           gfx::PointF(client_point.X(), client_point.Y())),
       10.0f, 10.0f);
-  if (type == WebInputEvent::kPointerCancel)
-    event.dispatch_type = WebInputEvent::kEventNonBlocking;
+  if (type == WebInputEvent::Type::kPointerCancel)
+    event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event, ui::LatencyInfo()));
   web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   RunPendingTasks();
 }

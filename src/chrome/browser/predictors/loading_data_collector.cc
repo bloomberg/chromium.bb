@@ -16,11 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 using content::BrowserThread;
 
@@ -44,19 +46,19 @@ const char* const kFontMimeTypes[] = {"font/woff2",
                                       "application/font-sfnt",
                                       "application/font-ttf"};
 
-// Determines the ResourceType from the mime type, defaulting to the
-// |fallback| if the ResourceType could not be determined.
-content::ResourceType GetResourceTypeFromMimeType(
+// Determines the request destination from the mime type, defaulting to the
+// |fallback| if the destination could not be determined.
+network::mojom::RequestDestination GetRequestDestinationFromMimeType(
     const std::string& mime_type,
-    content::ResourceType fallback) {
+    network::mojom::RequestDestination fallback) {
   if (mime_type.empty()) {
     return fallback;
   } else if (blink::IsSupportedImageMimeType(mime_type)) {
-    return content::ResourceType::kImage;
+    return network::mojom::RequestDestination::kImage;
   } else if (blink::IsSupportedJavascriptMimeType(mime_type)) {
-    return content::ResourceType::kScript;
+    return network::mojom::RequestDestination::kScript;
   } else if (net::MatchesMimeType("text/css", mime_type)) {
-    return content::ResourceType::kStylesheet;
+    return network::mojom::RequestDestination::kStyle;
   } else {
     bool found =
         std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
@@ -64,25 +66,24 @@ content::ResourceType GetResourceTypeFromMimeType(
                       return net::MatchesMimeType(mime, mime_type);
                     });
     if (found)
-      return content::ResourceType::kFontResource;
+      return network::mojom::RequestDestination::kFont;
   }
   return fallback;
 }
 
 // Determines the resource type from the declared one, falling back to MIME
 // type detection when it is not explicit.
-content::ResourceType GetResourceType(content::ResourceType resource_type,
-                                      const std::string& mime_type) {
-  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
-  // of mime types, because these resource types don't communicate how the
-  // resources will be used.
-  if (resource_type == content::ResourceType::kPrefetch ||
-      resource_type == content::ResourceType::kSubResource ||
-      resource_type == content::ResourceType::kXhr) {
-    return GetResourceTypeFromMimeType(mime_type,
-                                       content::ResourceType::kSubResource);
+network::mojom::RequestDestination GetRequestDestination(
+    network::mojom::RequestDestination destination,
+    const std::string& mime_type) {
+  // Restricts empty request destination (e.g. prefetch, prerender, fetch,
+  // xhr etc) to a small set of mime types, because these destination types
+  // don't communicate how the resources will be used.
+  if (destination == network::mojom::RequestDestination::kEmpty) {
+    return GetRequestDestinationFromMimeType(
+        mime_type, network::mojom::RequestDestination::kEmpty);
   }
-  return resource_type;
+  return destination;
 }
 
 }  // namespace
@@ -92,27 +93,29 @@ OriginRequestSummary::OriginRequestSummary(const OriginRequestSummary& other) =
     default;
 OriginRequestSummary::~OriginRequestSummary() = default;
 
-PageRequestSummary::PageRequestSummary(const GURL& i_main_frame_url)
-    : main_frame_url(i_main_frame_url),
-      initial_url(i_main_frame_url),
+PageRequestSummary::PageRequestSummary(const NavigationID& navigation_id)
+    : ukm_source_id(navigation_id.ukm_source_id),
+      main_frame_url(navigation_id.main_frame_url),
+      initial_url(navigation_id.main_frame_url),
       first_contentful_paint(base::TimeTicks::Max()) {}
 
 PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
     default;
 
-void PageRequestSummary::UpdateOrAddToOrigins(
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+void PageRequestSummary::UpdateOrAddResource(
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   for (const auto& redirect_info : resource_load_info.redirect_info_chain) {
-    UpdateOrAddToOrigins(url::Origin::Create(redirect_info->url),
+    UpdateOrAddToOrigins(redirect_info->origin_of_new_url,
                          redirect_info->network_info);
   }
-  UpdateOrAddToOrigins(url::Origin::Create(resource_load_info.url),
+  UpdateOrAddToOrigins(url::Origin::Create(resource_load_info.final_url),
                        resource_load_info.network_info);
+  subresource_urls.insert(resource_load_info.final_url);
 }
 
 void PageRequestSummary::UpdateOrAddToOrigins(
     const url::Origin& origin,
-    const content::mojom::CommonNetworkInfoPtr& network_info) {
+    const blink::mojom::CommonNetworkInfoPtr& network_info) {
   if (origin.opaque())
     return;
 
@@ -151,8 +154,7 @@ void LoadingDataCollector::RecordStartNavigation(
 
   // New empty navigation entry.
   inflight_navigations_.emplace(
-      navigation_id,
-      std::make_unique<PageRequestSummary>(navigation_id.main_frame_url));
+      navigation_id, std::make_unique<PageRequestSummary>(navigation_id));
 }
 
 void LoadingDataCollector::RecordFinishNavigation(
@@ -175,8 +177,7 @@ void LoadingDataCollector::RecordFinishNavigation(
     summary->main_frame_url = new_navigation_id.main_frame_url;
     inflight_navigations_.erase(nav_it);
   } else {
-    summary =
-        std::make_unique<PageRequestSummary>(new_navigation_id.main_frame_url);
+    summary = std::make_unique<PageRequestSummary>(new_navigation_id);
     summary->initial_url = old_navigation_id.main_frame_url;
   }
 
@@ -185,7 +186,7 @@ void LoadingDataCollector::RecordFinishNavigation(
 
 void LoadingDataCollector::RecordResourceLoadComplete(
     const NavigationID& navigation_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
   auto nav_it = inflight_navigations_.find(navigation_id);
   if (nav_it == inflight_navigations_.end())
     return;
@@ -194,11 +195,13 @@ void LoadingDataCollector::RecordResourceLoadComplete(
     return;
 
   auto& page_request_summary = *nav_it->second;
-  page_request_summary.UpdateOrAddToOrigins(resource_load_info);
+  page_request_summary.UpdateOrAddResource(resource_load_info);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(
-    const NavigationID& navigation_id) {
+    const NavigationID& navigation_id,
+    const base::Optional<OptimizationGuidePrediction>&
+        optimization_guide_prediction) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Initialize |predictor_| no matter whether the |navigation_id| is present in
@@ -215,8 +218,10 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
 
-  if (stats_collector_)
-    stats_collector_->RecordPageRequestSummary(*summary);
+  if (stats_collector_) {
+    stats_collector_->RecordPageRequestSummary(*summary,
+                                               optimization_guide_prediction);
+  }
 
   if (predictor_)
     predictor_->RecordPageRequestSummary(std::move(summary));
@@ -234,8 +239,8 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
 
 bool LoadingDataCollector::ShouldRecordResourceLoad(
     const NavigationID& navigation_id,
-    const content::mojom::ResourceLoadInfo& resource_load_info) const {
-  const GURL& url = resource_load_info.url;
+    const blink::mojom::ResourceLoadInfo& resource_load_info) const {
+  const GURL& url = resource_load_info.final_url;
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 
@@ -249,7 +254,7 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
     return false;
   }
 
-  if (!IsHandledResourceType(resource_load_info.resource_type,
+  if (!IsHandledResourceType(resource_load_info.request_destination,
                              resource_load_info.mime_type)) {
     return false;
   }
@@ -261,15 +266,15 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
 
 // static
 bool LoadingDataCollector::IsHandledResourceType(
-    content::ResourceType resource_type,
+    network::mojom::RequestDestination destination,
     const std::string& mime_type) {
-  content::ResourceType actual_resource_type =
-      GetResourceType(resource_type, mime_type);
-  return actual_resource_type == content::ResourceType::kMainFrame ||
-         actual_resource_type == content::ResourceType::kStylesheet ||
-         actual_resource_type == content::ResourceType::kScript ||
-         actual_resource_type == content::ResourceType::kImage ||
-         actual_resource_type == content::ResourceType::kFontResource;
+  network::mojom::RequestDestination actual_destination =
+      GetRequestDestination(destination, mime_type);
+  return actual_destination == network::mojom::RequestDestination::kDocument ||
+         actual_destination == network::mojom::RequestDestination::kStyle ||
+         actual_destination == network::mojom::RequestDestination::kScript ||
+         actual_destination == network::mojom::RequestDestination::kImage ||
+         actual_destination == network::mojom::RequestDestination::kFont;
 }
 
 void LoadingDataCollector::CleanupAbandonedNavigations(

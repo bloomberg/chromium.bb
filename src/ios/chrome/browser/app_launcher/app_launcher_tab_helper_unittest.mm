@@ -8,17 +8,24 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
+#include "components/policy/policy_constants.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#import "ios/chrome/browser/app_launcher/fake_app_launcher_abuse_detector.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,56 +37,43 @@
 #error "This file requires ARC support."
 #endif
 
-// An object that conforms to AppLauncherTabHelperDelegate for testing.
-@interface FakeAppLauncherTabHelperDelegate
-    : NSObject<AppLauncherTabHelperDelegate>
-// URL of the last launched application.
-@property(nonatomic, assign) GURL lastLaunchedAppURL;
-// Number of times an app was launched.
-@property(nonatomic, assign) NSUInteger countOfAppsLaunched;
-// Number of times the repeated launches alert has been shown.
-@property(nonatomic, assign) NSUInteger countOfAlertsShown;
-// Simulates the user tapping the accept button when prompted via
-// |-appLauncherTabHelper:showAlertOfRepeatedLaunchesWithCompletionHandler|.
-@property(nonatomic, assign) BOOL simulateUserAcceptingPrompt;
-@end
-
-@implementation FakeAppLauncherTabHelperDelegate
-@synthesize lastLaunchedAppURL = _lastLaunchedAppURL;
-@synthesize countOfAppsLaunched = _countOfAppsLaunched;
-@synthesize countOfAlertsShown = _countOfAlertsShown;
-@synthesize simulateUserAcceptingPrompt = _simulateUserAcceptingPrompt;
-
-- (BOOL)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
-            launchAppWithURL:(const GURL&)URL
-              linkTransition:(BOOL)linkTransition {
-  self.countOfAppsLaunched++;
-  self.lastLaunchedAppURL = URL;
-  return YES;
-}
-
-- (void)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
-    showAlertOfRepeatedLaunchesWithCompletionHandler:
-        (ProceduralBlockWithBool)completionHandler {
-  self.countOfAlertsShown++;
-  completionHandler(self.simulateUserAcceptingPrompt);
-}
-@end
-
-// An AppLauncherAbuseDetector for testing.
-@interface FakeAppLauncherAbuseDetector : AppLauncherAbuseDetector
-@property(nonatomic, assign) ExternalAppLaunchPolicy policy;
-@end
-
-@implementation FakeAppLauncherAbuseDetector
-@synthesize policy = _policy;
-- (ExternalAppLaunchPolicy)launchPolicyForURL:(const GURL&)URL
-                            fromSourcePageURL:(const GURL&)sourcePageURL {
-  return self.policy;
-}
-@end
-
 namespace {
+// An fake AppLauncherTabHelperDelegate for tests.
+class FakeAppLauncherTabHelperDelegate : public AppLauncherTabHelperDelegate {
+ public:
+  GURL last_launched_app_url() { return last_launched_app_url_; }
+  size_t app_launch_count() { return app_launch_count_; }
+  size_t alert_shown_count() { return alert_shown_count_; }
+  void set_should_accept_prompt(bool should_accept_prompt) {
+    should_accept_prompt_ = should_accept_prompt;
+  }
+  bool should_accept_prompt() { return should_accept_prompt_; }
+
+  // AppLauncherTabHelperDelegate:
+  void LaunchAppForTabHelper(AppLauncherTabHelper* tab_helper,
+                             const GURL& url,
+                             bool link_transition) override {
+    ++app_launch_count_;
+    last_launched_app_url_ = url;
+  }
+  void ShowRepeatedAppLaunchAlert(
+      AppLauncherTabHelper* tab_helper,
+      base::OnceCallback<void(bool)> completion) override {
+    ++alert_shown_count_;
+    std::move(completion).Run(should_accept_prompt_);
+  }
+
+ private:
+  // URL of the last launched application.
+  GURL last_launched_app_url_;
+  // Number of times an app was launched.
+  size_t app_launch_count_ = 0;
+  // Number of times the repeated launches alert has been shown.
+  size_t alert_shown_count_ = 0;
+  // Simulates the user tapping the accept button when prompted via
+  // |-appLauncherTabHelper:showAlertOfRepeatedLaunchesWithCompletionHandler|.
+  bool should_accept_prompt_ = false;
+};
 // A fake NavigationManager to be used by the WebState object for the
 // AppLauncher.
 class FakeNavigationManager : public web::TestNavigationManager {
@@ -94,22 +88,21 @@ class FakeNavigationManager : public web::TestNavigationManager {
 
 std::unique_ptr<KeyedService> BuildReadingListModel(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<ReadingListModelImpl> reading_list_model(
       new ReadingListModelImpl(nullptr, browser_state->GetPrefs(),
                                base::DefaultClock::GetInstance()));
   return reading_list_model;
 }
+}  // namespace
 
 // Test fixture for AppLauncherTabHelper class.
 class AppLauncherTabHelperTest : public PlatformTest {
  protected:
   AppLauncherTabHelperTest()
-      : abuse_detector_([[FakeAppLauncherAbuseDetector alloc] init]),
-        delegate_([[FakeAppLauncherTabHelperDelegate alloc] init]) {
-    AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_,
-                                            delegate_);
+      : abuse_detector_([[FakeAppLauncherAbuseDetector alloc] init]) {
+    AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_);
     U2FTabHelper::CreateForWebState(&web_state_);
     // Allow is the default policy for this test.
     abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
@@ -118,17 +111,21 @@ class AppLauncherTabHelperTest : public PlatformTest {
     web_state_.SetNavigationManager(std::move(navigation_manager));
     web_state_.SetCurrentURL(GURL("https://chromium.org"));
     tab_helper_ = AppLauncherTabHelper::FromWebState(&web_state_);
+    tab_helper_->SetDelegate(&delegate_);
   }
 
   bool TestShouldAllowRequest(NSString* url_string,
                               bool target_frame_is_main,
-                              bool has_user_gesture) WARN_UNUSED_RESULT {
+                              bool has_user_gesture,
+                              ui::PageTransition transition_type =
+                                  ui::PageTransition::PAGE_TRANSITION_LINK)
+      WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
-        has_user_gesture);
-    return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
-                                           request_info);
+        transition_type, target_frame_is_main, has_user_gesture);
+    return tab_helper_
+        ->ShouldAllowRequest([NSURLRequest requestWithURL:url], request_info)
+        .ShouldAllowNavigation();
   }
 
   // Initialize reading list model and its required tab helpers.
@@ -166,17 +163,18 @@ class AppLauncherTabHelperTest : public PlatformTest {
     abuse_detector_.policy = is_app_blocked ? ExternalAppLaunchPolicyBlock
                                             : ExternalAppLaunchPolicyAllow;
     ui::PageTransition transition_type =
-        is_link_transition
-            ? ui::PageTransition::PAGE_TRANSITION_LINK
-            : ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
+        is_link_transition ? ui::PageTransition::PAGE_TRANSITION_LINK
+                           : ui::PageTransition::PAGE_TRANSITION_TYPED;
 
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
     web::WebStatePolicyDecider::RequestInfo request_info(
         transition_type,
         /*target_frame_is_main=*/true, /*has_user_gesture=*/true);
-    EXPECT_FALSE(tab_helper_->ShouldAllowRequest(
-        [NSURLRequest requestWithURL:url], request_info));
+    EXPECT_TRUE(tab_helper_
+                    ->ShouldAllowRequest([NSURLRequest requestWithURL:url],
+                                         request_info)
+                    .ShouldCancelNavigation());
 
     const ReadingListEntry* entry = model->GetEntryByURL(pending_url);
     return entry->IsRead() == expected_read_status;
@@ -188,9 +186,9 @@ class AppLauncherTabHelperTest : public PlatformTest {
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_ = nil;
   FakeAppLauncherAbuseDetector* abuse_detector_ = nil;
-  FakeAppLauncherTabHelperDelegate* delegate_ = nil;
+  FakeAppLauncherTabHelperDelegate delegate_;
   bool is_reading_list_initialized_ = false;
-  AppLauncherTabHelper* tab_helper_;
+  AppLauncherTabHelper* tab_helper_ = nullptr;
 };
 
 // Tests that a valid URL launches app.
@@ -199,8 +197,8 @@ TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyAllowedForValidUrl) {
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
-  EXPECT_EQ(GURL("valid://1234"), delegate_.lastLaunchedAppURL);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
+  EXPECT_EQ(GURL("valid://1234"), delegate_.last_launched_app_url());
 }
 
 // Tests that a valid URL does not launch app when launch policy is to block.
@@ -209,33 +207,32 @@ TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyBlockedForValidUrl) {
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAlertsShown);
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.alert_shown_count());
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 }
 
 // Tests that a valid URL shows an alert and launches app when launch policy is
 // to prompt and user accepts.
 TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
-  delegate_.simulateUserAcceptingPrompt = YES;
+  delegate_.set_should_accept_prompt(true);
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
 
-  EXPECT_EQ(1U, delegate_.countOfAlertsShown);
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
-  EXPECT_EQ(GURL("valid://1234"), delegate_.lastLaunchedAppURL);
+  EXPECT_EQ(1U, delegate_.alert_shown_count());
+  EXPECT_EQ(1U, delegate_.app_launch_count());
+  EXPECT_EQ(GURL("valid://1234"), delegate_.last_launched_app_url());
 }
 
 // Tests that a valid URL does not launch app when launch policy is to prompt
 // and user rejects.
 TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
-  delegate_.simulateUserAcceptingPrompt = NO;
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 }
 
 // Tests that ShouldAllowRequest only launches apps for App Urls in main frame,
@@ -244,21 +241,21 @@ TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
   NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
   EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
 
   EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/true));
-  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(2U, delegate_.app_launch_count());
 
   EXPECT_FALSE(TestShouldAllowRequest(url_string,
                                       /*target_frame_is_main=*/false,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(2U, delegate_.app_launch_count());
 
   EXPECT_FALSE(TestShouldAllowRequest(url_string,
                                       /*target_frame_is_main=*/false,
                                       /*has_user_gesture=*/true));
-  EXPECT_EQ(3U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(3U, delegate_.app_launch_count());
 }
 
 // Tests that ShouldAllowRequest always allows requests and does not launch
@@ -279,7 +276,7 @@ TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
   EXPECT_TRUE(TestShouldAllowRequest(@"blob://test",
                                      /*target_frame_is_main=*/false,
                                      /*has_user_gesture=*/true));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 }
 
 // Tests that invalid Urls are completely blocked.
@@ -290,7 +287,7 @@ TEST_F(AppLauncherTabHelperTest, InvalidUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"invalid",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 }
 
 // Tests that when the last committed URL is invalid, the URL is only opened
@@ -306,13 +303,13 @@ TEST_F(AppLauncherTabHelperTest, ValidUrlInvalidCommittedURL) {
   EXPECT_FALSE(TestShouldAllowRequest(url_string,
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   navigation_manager_->SetLastCommittedItem(nullptr);
   EXPECT_FALSE(TestShouldAllowRequest(url_string,
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
 }
 
 // Tests that URLs with schemes that might be a security risk are blocked.
@@ -320,7 +317,7 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"app-settings://",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 }
 
 // Tests that URLs with U2F schemes are handled correctly.
@@ -340,7 +337,7 @@ TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"u2f-x-callback://chromium.test",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   // Source URL is not trusted, so u2f scheme should not be allowed.
   item->SetURL(GURL("https://chromium.test"));
@@ -348,7 +345,7 @@ TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   // Source URL is trusted, so u2f scheme should be allowed and an external app
   // is launched via URL with u2f-x-callback scheme.
@@ -357,8 +354,8 @@ TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
-  EXPECT_TRUE(delegate_.lastLaunchedAppURL.SchemeIs("u2f-x-callback"));
+  EXPECT_EQ(1U, delegate_.app_launch_count());
+  EXPECT_TRUE(delegate_.last_launched_app_url().SchemeIs("u2f-x-callback"));
 }
 
 // Tests that URLs with Chrome Bundle schemes are blocked on iframes.
@@ -369,18 +366,18 @@ TEST_F(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
   EXPECT_FALSE(TestShouldAllowRequest(url,
                                       /*target_frame_is_main=*/false,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   EXPECT_FALSE(TestShouldAllowRequest(url,
                                       /*target_frame_is_main=*/false,
                                       /*has_user_gesture=*/true));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   // Chrome Bundle URL scheme is only allowed from main frames.
   EXPECT_FALSE(TestShouldAllowRequest(url,
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
 }
 
 // Tests that ShouldAllowRequest updates the reading list correctly for non-link
@@ -391,23 +388,34 @@ TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
                                     /*is_link_transition*/ false,
                                     /*expected_read_status*/ true));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(0U, delegate_.app_launch_count());
 
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
                                     /*is_link_transition*/ false,
                                     /*expected_read_status*/ true));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
 
   // Don't update reading list if the transition is a link transition.
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
                                     /*is_link_transition*/ true,
                                     /*expected_read_status*/ false));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(1U, delegate_.app_launch_count());
 
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
                                     /*is_link_transition*/ true,
                                     /*expected_read_status*/ false));
-  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+  EXPECT_EQ(2U, delegate_.app_launch_count());
 }
 
-}  // namespace
+// Tests that launching a SMS URL via a JavaScript redirect in the main frame
+// is allowed. Covers the scenario for crbug.com/1058388
+TEST_F(AppLauncherTabHelperTest, LaunchSmsApp_JavaScriptRedirect) {
+  NSString* sms_url_string = @"sms:?&body=Hello%20World";
+  ui::PageTransition page_transition = ui::PageTransitionFromInt(
+      ui::PageTransition::PAGE_TRANSITION_LINK |
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT);
+  EXPECT_FALSE(
+      TestShouldAllowRequest(sms_url_string, /*target_frame_is_main=*/true,
+                             /*has_user_gesture=*/false, page_transition));
+  EXPECT_EQ(1U, delegate_.app_launch_count());
+}

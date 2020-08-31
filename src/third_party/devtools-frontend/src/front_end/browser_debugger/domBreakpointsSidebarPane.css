@@ -21,6 +21,10 @@
     padding: 2px 0;
 }
 
+.breakpoint-entry[data-keyboard-focus="true"] {
+    background-color: var(--focus-bg-color);
+}
+
 .breakpoint-list .breakpoint-entry:hover {
     background-color: #eee;
 }
@@ -33,4 +37,16 @@
 :host-context(.-theme-with-dark-background) .breakpoint-hit {
     background-color: hsl(46, 98%, 22%);
     color: #ccc;
+}
+
+@media (forced-colors: active) {
+    .breakpoint-list .breakpoint-entry:hover,
+    .breakpoint-entry[data-keyboard-focus="true"] {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .breakpoint-list .breakpoint-entry:hover *,
+    .breakpoint-entry[data-keyboard-focus="true"] * {
+        color: HighlightText;
+    }
 }

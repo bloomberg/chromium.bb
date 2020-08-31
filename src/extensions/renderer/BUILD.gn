@@ -18,6 +18,8 @@ jumbo_source_set("renderer") {
     "api/automation/automation_ax_tree_wrapper.h",
     "api/automation/automation_internal_custom_bindings.cc",
     "api/automation/automation_internal_custom_bindings.h",
+    "api/automation/automation_position.cc",
+    "api/automation/automation_position.h",
     "api/display_source/display_source_session.cc",
     "api/display_source/display_source_session.h",
     "api_activity_logger.cc",
@@ -133,8 +135,6 @@ jumbo_source_set("renderer") {
     "guest_view/guest_view_internal_custom_bindings.h",
     "guest_view/mime_handler_view/mime_handler_view_container.cc",
     "guest_view/mime_handler_view/mime_handler_view_container.h",
-    "guest_view/mime_handler_view/mime_handler_view_container_base.cc",
-    "guest_view/mime_handler_view/mime_handler_view_container_base.h",
     "guest_view/mime_handler_view/mime_handler_view_container_manager.cc",
     "guest_view/mime_handler_view/mime_handler_view_container_manager.h",
     "guest_view/mime_handler_view/mime_handler_view_frame_container.cc",
@@ -255,7 +255,8 @@ jumbo_source_set("renderer") {
     "//components/guest_view/common",
     "//components/guest_view/renderer",
     "//components/version_info",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/public/renderer",
     "//extensions:extensions_resources",
     "//extensions/common",
@@ -269,6 +270,9 @@ jumbo_source_set("renderer") {
     "//third_party/cld_3/src/src:cld_3",
     "//third_party/zlib/google:compression_utils",
   ]
+
+  # Temporarily allow crash_key; see https://crbug.com/1034755
+  deps += [ "//components/crash/core/common:crash_key" ]
 
   if (proprietary_codecs && enable_wifi_display) {
     sources += [

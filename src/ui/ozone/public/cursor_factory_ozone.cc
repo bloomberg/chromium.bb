@@ -4,7 +4,8 @@
 
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace ui {
 
@@ -30,7 +31,7 @@ CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
   return g_instance;
 }
 
-PlatformCursor CursorFactoryOzone::GetDefaultCursor(CursorType type) {
+PlatformCursor CursorFactoryOzone::GetDefaultCursor(mojom::CursorType type) {
   NOTIMPLEMENTED();
   return NULL;
 }

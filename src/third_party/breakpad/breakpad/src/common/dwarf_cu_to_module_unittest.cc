@@ -67,24 +67,24 @@ using ::testing::ValuesIn;
 class MockLineToModuleHandler: public DwarfCUToModule::LineToModuleHandler {
  public:
   MOCK_METHOD1(StartCompilationUnit, void(const string& compilation_dir));
-  MOCK_METHOD4(ReadProgram, void(const uint8_t *program, uint64 length,
+  MOCK_METHOD4(ReadProgram, void(const uint8_t *program, uint64_t length,
                                  Module *module, vector<Module::Line> *lines));
 };
 
 class MockWarningReporter: public DwarfCUToModule::WarningReporter {
  public:
-  MockWarningReporter(const string &filename, uint64 cu_offset)
+  MockWarningReporter(const string &filename, uint64_t cu_offset)
       : DwarfCUToModule::WarningReporter(filename, cu_offset) { }
   MOCK_METHOD1(SetCUName, void(const string &name));
-  MOCK_METHOD2(UnknownSpecification, void(uint64 offset, uint64 target));
-  MOCK_METHOD2(UnknownAbstractOrigin, void(uint64 offset, uint64 target));
+  MOCK_METHOD2(UnknownSpecification, void(uint64_t offset, uint64_t target));
+  MOCK_METHOD2(UnknownAbstractOrigin, void(uint64_t offset, uint64_t target));
   MOCK_METHOD1(MissingSection, void(const string &section_name));
-  MOCK_METHOD1(BadLineInfoOffset, void(uint64 offset));
+  MOCK_METHOD1(BadLineInfoOffset, void(uint64_t offset));
   MOCK_METHOD1(UncoveredFunction, void(const Module::Function &function));
   MOCK_METHOD1(UncoveredLine, void(const Module::Line &line));
-  MOCK_METHOD1(UnnamedFunction, void(uint64 offset));
+  MOCK_METHOD1(UnnamedFunction, void(uint64_t offset));
   MOCK_METHOD1(DemangleError, void(const string &input));
-  MOCK_METHOD2(UnhandledInterCUReference, void(uint64 offset, uint64 target));
+  MOCK_METHOD2(UnhandledInterCUReference, void(uint64_t offset, uint64_t target));
 };
 
 // A fixture class including all the objects needed to handle a
@@ -113,7 +113,7 @@ class CUFixtureBase {
    public:
     explicit AppendLinesFunctor(
         const vector<Module::Line> *lines) : lines_(lines) { }
-    void operator()(const uint8_t *program, uint64 length,
+    void operator()(const uint8_t *program, uint64_t length,
                     Module *module, vector<Module::Line> *lines) {
       lines->insert(lines->end(), lines_->begin(), lines_->end());
     }
@@ -196,7 +196,7 @@ class CUFixtureBase {
   // not Finish. If NAME is non-zero, use it as the DW_AT_name
   // attribute.
   DIEHandler *StartSpecifiedDIE(DIEHandler *parent, DwarfTag tag,
-                                uint64 specification, const char *name = NULL);
+                                uint64_t specification, const char *name = NULL);
 
   // Define a function as a child of PARENT with the given name, address, and
   // size. If high_pc_form is DW_FORM_addr then the DW_AT_high_pc attribute
@@ -211,7 +211,7 @@ class CUFixtureBase {
   // Create a declaration DIE as a child of PARENT with the given
   // offset, tag and name. If NAME is the empty string, don't provide
   // a DW_AT_name attribute. Call EndAttributes and Finish.
-  void DeclarationDIE(DIEHandler *parent, uint64 offset,
+  void DeclarationDIE(DIEHandler *parent, uint64_t offset,
                       DwarfTag tag, const string &name,
                       const string &mangled_name);
 
@@ -221,15 +221,15 @@ class CUFixtureBase {
   // attribute. If SIZE is non-zero, record ADDRESS and SIZE as
   // low_pc/high_pc attributes.
   void DefinitionDIE(DIEHandler *parent, DwarfTag tag,
-                     uint64 specification, const string &name,
+                     uint64_t specification, const string &name,
                      Module::Address address = 0, Module::Address size = 0);
 
   // Create an inline DW_TAG_subprogram DIE as a child of PARENT.  If
   // SPECIFICATION is non-zero, then the DIE refers to the declaration DIE at
   // offset SPECIFICATION as its specification.  If Name is non-empty, pass it
   // as the DW_AT_name attribute.
-  void AbstractInstanceDIE(DIEHandler *parent, uint64 offset,
-                           DwarfInline type, uint64 specification,
+  void AbstractInstanceDIE(DIEHandler *parent, uint64_t offset,
+                           DwarfInline type, uint64_t specification,
                            const string &name,
                            DwarfForm form = dwarf2reader::DW_FORM_data1);
 
@@ -237,7 +237,7 @@ class CUFixtureBase {
   // ORIGIN in its DW_AT_abstract_origin attribute.  If NAME is the empty
   // string, don't provide a DW_AT_name attribute.
   void DefineInlineInstanceDIE(DIEHandler *parent, const string &name,
-                               uint64 origin, Module::Address address,
+                               uint64_t origin, Module::Address address,
                                Module::Address size);
 
   // The following Test* functions should be called after calling
@@ -409,7 +409,7 @@ DIEHandler *CUFixtureBase::StartNamedDIE(DIEHandler *parent,
 
 DIEHandler *CUFixtureBase::StartSpecifiedDIE(DIEHandler *parent,
                                              DwarfTag tag,
-                                             uint64 specification,
+                                             uint64_t specification,
                                              const char *name) {
   dwarf2reader::DIEHandler *handler
     = parent->FindChildHandler(0x8f4c783c0467c989ULL, tag);
@@ -466,7 +466,7 @@ void CUFixtureBase::DefineFunction(dwarf2reader::DIEHandler *parent,
   delete func;
 }
 
-void CUFixtureBase::DeclarationDIE(DIEHandler *parent, uint64 offset,
+void CUFixtureBase::DeclarationDIE(DIEHandler *parent, uint64_t offset,
                                    DwarfTag tag,
                                    const string &name,
                                    const string &mangled_name) {
@@ -491,7 +491,7 @@ void CUFixtureBase::DeclarationDIE(DIEHandler *parent, uint64 offset,
 
 void CUFixtureBase::DefinitionDIE(DIEHandler *parent,
                                   DwarfTag tag,
-                                  uint64 specification,
+                                  uint64_t specification,
                                   const string &name,
                                   Module::Address address,
                                   Module::Address size) {
@@ -519,9 +519,9 @@ void CUFixtureBase::DefinitionDIE(DIEHandler *parent,
 }
 
 void CUFixtureBase::AbstractInstanceDIE(DIEHandler *parent,
-                                        uint64 offset,
+                                        uint64_t offset,
                                         DwarfInline type,
-                                        uint64 specification,
+                                        uint64_t specification,
                                         const string &name,
                                         DwarfForm form) {
   dwarf2reader::DIEHandler *die
@@ -548,7 +548,7 @@ void CUFixtureBase::AbstractInstanceDIE(DIEHandler *parent,
 
 void CUFixtureBase::DefineInlineInstanceDIE(DIEHandler *parent,
                                             const string &name,
-                                            uint64 origin,
+                                            uint64_t origin,
                                             Module::Address address,
                                             Module::Address size) {
   dwarf2reader::DIEHandler *func

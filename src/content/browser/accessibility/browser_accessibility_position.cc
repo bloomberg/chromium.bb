@@ -92,6 +92,13 @@ int BrowserAccessibilityPosition::AnchorChildCount() const {
   }
 }
 
+int BrowserAccessibilityPosition::AnchorUnignoredChildCount() const {
+  if (!GetAnchor())
+    return 0;
+
+  return static_cast<int>(GetAnchor()->InternalChildCount());
+}
+
 int BrowserAccessibilityPosition::AnchorIndexInParent() const {
   return GetAnchor() ? GetAnchor()->GetIndexInParent()
                      : AXPosition::INVALID_INDEX;
@@ -106,6 +113,14 @@ BrowserAccessibilityPosition::GetAncestorAnchors() const {
     current_anchor = current_anchor->PlatformGetParent();
   }
   return anchors;
+}
+
+BrowserAccessibility* BrowserAccessibilityPosition::GetLowestUnignoredAncestor()
+    const {
+  if (!GetAnchor())
+    return nullptr;
+
+  return GetAnchor()->PlatformGetParent();
 }
 
 void BrowserAccessibilityPosition::AnchorParent(
@@ -138,6 +153,16 @@ BrowserAccessibility* BrowserAccessibilityPosition::GetNodeInTree(
   return manager->GetFromID(node_id);
 }
 
+int32_t BrowserAccessibilityPosition::GetAnchorID(
+    BrowserAccessibility* node) const {
+  return node->GetId();
+}
+
+AXTreeID BrowserAccessibilityPosition::GetTreeID(
+    BrowserAccessibility* node) const {
+  return node->manager()->ax_tree_id();
+}
+
 bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
   // On some platforms, most objects are represented in the text of their
   // parents with a special (embedded object) character and not with their
@@ -146,7 +171,7 @@ bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
   // Not all objects in the internal accessibility tree are exposed to platform
   // APIs.
   return !IsNullPosition() && !GetAnchor()->IsTextOnlyObject() &&
-         !GetAnchor()->PlatformIsChildOfLeaf();
+         !GetAnchor()->IsChildOfLeaf();
 #else
   return false;
 #endif

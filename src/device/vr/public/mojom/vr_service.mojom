@@ -17,6 +17,9 @@ import "ui/gfx/mojom/transform.mojom";
 // WebXR interfaces
 //
 
+// Note on terminology: unless otherwise noted, all poses passed across mojo are
+// expressed in device space, aka mojo space, aka world space.
+
 // TODO(https://crbug.com/966099): Use EnableIf to only define values on
 // platforms that have implementations.
 // XRDeviceId is used in metrics, so don't reorder.
@@ -53,8 +56,10 @@ enum XRSessionFeature {
   REF_SPACE_BOUNDED_FLOOR = 4,
   REF_SPACE_UNBOUNDED = 5,
 
-  // Experimental or not-yet-standardized feature names.
-  DOM_OVERLAY_FOR_HANDHELD_AR = 6,
+  DOM_OVERLAY = 6,
+  HIT_TEST = 7,
+  LIGHT_ESTIMATION = 8, // Experimental feature.
+  ANCHORS = 9,  // Experimental feature.
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -68,9 +73,19 @@ enum XRSessionFeatureRequestStatus {
   kOptionalRejected = 3,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// These enum names come from the WebXR spec:
+// https://immersive-web.github.io/webxr/#xrsessionmode-enum
+enum XRSessionMode {
+  kInline = 1,
+  kImmersiveVr = 2,
+  kImmersiveAr = 3,
+};
+
 struct XRSessionOptions {
-  bool immersive;
-  bool environment_integration;
+  // Represents the type of session that is being requested.
+  XRSessionMode mode;
 
   // Represents the set of requested features that have been marked "required",
   // if any of these features are missing, a session will not be created.
@@ -143,6 +158,11 @@ struct XRInputSourceDescription {
 };
 
 struct XRInputSourceState {
+  // Uniquely identifies input source. The IDs are *not* guaranteed to be unique
+  // within a session - they can potentially be reused by the device. The IDs
+  // will be unique per frame data delivered, and the device must not reuse an
+  // ID for at least one frame after the corresponding source is no longer
+  // present.
   uint32 source_id;
 
   // Description of this input source's behavior. Should be mostly static, only
@@ -157,6 +177,16 @@ struct XRInputSourceState {
   // False when position is based on sensors tracking a 6DoF pose.
   bool emulated_position;
 
+  // True if the input source should be considered auxiliary, as opposed to
+  // primary. See https://immersive-web.github.io/webxr/#auxiliary-input-source.
+  // Auxiliary input sources do not cause the select events to fire.
+  // Note: some of subsequent fields are named "primary_*" - this does not imply
+  // that the input source needs to have is_auxiliary set to false for those
+  // fields to be present / valid. Input sources (even auxiliary) can have
+  // multiple buttons - those fields are used to signify the state of those of
+  // them that are considered primary for the specified input source.
+  bool is_auxiliary;
+
   // Describes the current state of the primary input.
   bool primary_input_pressed;
 
@@ -166,12 +196,30 @@ struct XRInputSourceState {
   // primary_input_pressed = true;
   bool primary_input_clicked;
 
+  // Describes the current state of the primary squeeze.
+  bool primary_squeeze_pressed;
+
+  // Indicates if the input's primary sequeeze has been released (clicked) since
+  // the last report. May indicate that the button was pressed and released in
+  // the space of a single frame, so it may not have been preceeded by a
+  // primary_squeeze_pressed = true;
+  bool primary_squeeze_clicked;
+
   // Contains information about advanced input state such as additional buttons,
   // triggers, touch sensors, joysticks, touchpads, and vibration actuators. If
   // the controller has none of these capabilities, then this field will be
   // null. The information is a snapshot of the controller state that was taken
   // at the time corresponding to the timestamp field's value.
   Gamepad? gamepad;
+
+  // If DOM Overlay is enabled and active, and if this input source's pointer
+  // ray intersects the DOM overlay element, this contains the 2D screen space
+  // coordinates of that intersection point within the DOM overlay content
+  // element, with origin at the top left. Null if there is no intersection
+  // point, or if DOM Overlay is not active or not supported. (Currently, only
+  // the ARCore device's immersive-ar mode supports it when requested via
+  // XRSessionFeature.DOM_OVERLAY aka "dom-overlay".)
+  gfx.mojom.PointF? overlay_pointer_position;
 };
 
 //
@@ -214,6 +262,10 @@ struct XRRay {
 
 struct XRHitResult {
   gfx.mojom.Transform hit_matrix;
+  uint64 plane_id;  // If the hit test result was computed based off of a plane,
+                    // the plane ID will be stored here. 0 signifies no plane.
+                    // TODO(https://crbug.com/657632) - make it optional once
+                    // mojo supports optional numeric types.
 };
 
 // Information about the optical properties for an eye in a VRDisplay.
@@ -325,7 +377,9 @@ struct XRPlaneData {
   // Pose of the plane's center. Defines new coordinate space.
   // Y axis of the coordinate space describes plane's normal, the rotation of
   // X and Z around the Y axis is arbitrary.
-  Pose pose;
+  // Null if the device does not know where the plane is located in the world
+  // space (tracking loss), but the tracking can still be recovered.
+  Pose? mojo_from_plane;
 
   // Vertices of 2D convex polygon approximating the plane.
   array<XRPlanePointData> polygon;
@@ -354,8 +408,10 @@ struct XRAnchorData {
   // Unique (within a session) identifier of the anchor.
   uint64 id;
 
-  // Pose of the anchor.
-  Pose pose;
+  // Pose of the anchor. Null if the device does not know where the anchor is
+  // located in the world space (tracking loss), but the tracking can still be
+  // recovered.
+  Pose? mojo_from_anchor;
 };
 
 // Struct containing information about all tracked & updated anchors in a given
@@ -399,6 +455,82 @@ struct XRHitTestSubscriptionResultsData {
   array<XRHitTestSubscriptionResultData> results;
   // Results for transient input sources.
   array<XRHitTestTransientInputSubscriptionResultData> transient_input_results;
+};
+
+// Tuple of single-precision floating point RGB data.
+// This is the format used by ArCore for spherical harmonics coefficients
+// and main light intensity.
+struct RgbTupleF32 {
+  float red;
+  float green;
+  float blue;
+};
+
+// Contains the coefficient data for L2 spherical harmonics generated by ArCore.
+struct XRSphericalHarmonics {
+  // L2 (3rd order) spherical harmonics coefficients.
+  // This array has 9 RGB vector elements, representing the 27 coefficients
+  // given by ArCore.
+  // Units are expressed in nits:
+  // https://github.com/immersive-web/lighting-estimation/blob/master/lighting-estimation-explainer.md#physically-based-units
+  array<RgbTupleF32, 9> coefficients;
+};
+
+// Tuple of half-precision floating point RGBA data.
+// Since there isn't a native way to represent half-precision floats, they are
+// stored a uint16s.
+// This is the pixel format used by ArCore for cubemap textures.
+struct RgbaTupleF16 {
+  uint16 red;
+  uint16 green;
+  uint16 blue;
+  uint16 alpha;
+};
+
+// Contains the pixel data for all six faces of an HDR cubemap generated by
+// ArCore. Pixel data is stored in RGBA16F format.
+struct XRCubeMap {
+  // Each pixel has four components (RGBA)
+  const uint64 kNumComponentsPerPixel = 4;
+
+  // The width and height (in pixels) of each cube map face.
+  // Since each face is equal and square, this is only given as a single value.
+  // Additionally, the dimensions of each face will be a power of two.
+  // Note that each pixel is a contiguous RGBA16F vector, so the length of each
+  // array will be this times |kNumComponentsPerPixel|.
+  uint32 width_and_height;
+
+  // Each cube map face, stored in RGBA row-major order. Units are in nits.
+  // Each array will be |width_and_height ** 2| in length.
+  // https://github.com/immersive-web/lighting-estimation/blob/master/lighting-estimation-explainer.md#physically-based-units
+  array<RgbaTupleF16> positive_x;
+  array<RgbaTupleF16> negative_x;
+  array<RgbaTupleF16> positive_y;
+  array<RgbaTupleF16> negative_y;
+  array<RgbaTupleF16> positive_z;
+  array<RgbaTupleF16> negative_z;
+};
+
+// Contains lighting information generated from ArCore for use in diffuse
+// lighting calculations.
+struct XRLightProbe {
+  XRSphericalHarmonics spherical_harmonics;
+  gfx.mojom.Vector3dF main_light_direction;
+
+  // RGB vector, units in nits.
+  RgbTupleF32 main_light_intensity;
+};
+
+// Contains lighting information generated from ArCore for use in specular
+// lighting calculations.
+struct XRReflectionProbe {
+  XRCubeMap cube_map;
+};
+
+// Contains all lighting information generated from ArCore.
+struct XRLightEstimationData {
+  XRLightProbe? light_probe;
+  XRReflectionProbe? reflection_probe;
 };
 
 // The data needed for each animation frame of an XRSession.
@@ -468,18 +600,46 @@ struct XRFrameData {
   // Tracked anchors information.
   XRAnchorsData? anchors_data;
 
+  // Lighting estimation data. Only present if lighting estimation is enabled.
+  XRLightEstimationData? light_estimation_data;
+
   // Hit test subscription results. Only present if the session supports
   // environment integration.
   XRHitTestSubscriptionResultsData? hit_test_subscription_results;
 };
 
+// Used primarily in logging to indicate why a session was rejecting to aid
+// developer debuggability. To this end, rather than re-using an existing enum
+// value, if it doesn't match your error case, a new value should be added.
+// Note that this is converted to a console log, and thus the numbers can still
+// be re-arranged as needed (e.g. if a value should be removed).
 enum RequestSessionError {
-  ORIGIN_NOT_SECURE = 1,
-  EXISTING_IMMERSIVE_SESSION = 2,
-  INVALID_CLIENT = 3,
-  USER_DENIED_CONSENT = 4,
-  NO_RUNTIME_FOUND = 5,
-  UNKNOWN_RUNTIME_ERROR = 6
+  // Indicates that another session is already using the hardware that a new
+  // session would need exclusive control over.
+  EXISTING_IMMERSIVE_SESSION = 1,
+  // Used to indicate that something happened to the connection between either
+  // renderer and browser or browser and device processes, and thus a session
+  // could not be brokered.
+  INVALID_CLIENT = 2,
+  // The user denied consent for one or more required features in the session
+  // configuration (or the mode).
+  USER_DENIED_CONSENT = 3,
+  // No runtime was present which supported both the requested mode and all
+  // required features.
+  NO_RUNTIME_FOUND = 4,
+  // The runtime could not successfully create a session.
+  UNKNOWN_RUNTIME_ERROR = 5,
+  // The runtime requires additional installation which could not be completed.
+  RUNTIME_INSTALL_FAILURE = 6,
+  // While processing/creating a session the "best fit" runtime changed (either
+  // a better runtime was added or the only supported runtime was removed).
+  RUNTIMES_CHANGED = 7,
+  // Something prevented the session from entering fullscreen, which was
+  // required by part of the session configuration.
+  FULLSCREEN_ERROR = 8,
+  // We are unable to determine why the request failed. This should be used very
+  // sparingly, (e.g. Crashes, destructors, etc.)
+  UNKNOWN_FAILURE = 9,
 };
 
 struct RequestSessionSuccess {
@@ -561,14 +721,6 @@ enum EntityTypeForHitTest {
 // all outstanding JavaScript promises at that time. The XRsession might end for
 // example due to a call to XRSession::end() method (exposed to JavaScript).
 interface XREnvironmentIntegrationProvider {
-  // Performs a raycast into the scene and returns a list of XRHitResults sorted
-  // from closest to furthest hit from the ray. Each hit result contains a
-  // hit_matrix containing the transform of the hit where the rotation
-  // represents the normal of the surface hit.
-  // An empty result list means there were no hits. If a nullopt is returned,
-  // there was an error.
-  RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
-
   // Establishes a hit test subscription on the device. The subscription results
   // will be computed taking into account latest state of the native origin
   // identified by passed in |native_origin_information|. I.e., in each frame,
@@ -621,8 +773,10 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a session.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreateAnchor(Pose anchor_pose) => (CreateAnchorResult result,
-                                     uint64 anchor_id);
+  CreateAnchor(
+    XRNativeOriginInformation native_origin_information,
+    Pose native_origin_from_anchor)
+      => (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
   // that's available. This will allow us to remove CreateAnchorResult if we're
   // not interested in obtaining detailed error information from the device.
@@ -630,7 +784,7 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a plane.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(Pose anchor_pose, uint64 plane_id) =>
+  CreatePlaneAnchor(Pose plane_from_anchor, uint64 plane_id) =>
     (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
 
@@ -648,9 +802,13 @@ interface XRInputSourceButtonListener {
 };
 
 struct XRFrameDataRequestOptions {
-  // Controls whether XRFrameData.detected_planes should be populated by the
-  // request to XRFrameDataProvider.GetFrameData().
+  // Controls whether |XRFrameData.detected_planes| should be populated by the
+  // request to |XRFrameDataProvider.GetFrameData()|.
   bool include_plane_data;
+
+  // Controls whether |XRFrameData.light_estimation_data| should be populated
+  // by the request to |XRFrameDataProvider.GetFrameData()|.
+  bool include_lighting_estimation_data;
 };
 
 // Provides the necessary functionality for a WebXR session to get data for
@@ -695,7 +853,7 @@ interface XRPresentationProvider {
   // XRPresentationTransportMethod SUBMIT_AS_TEXTURE_HANDLE
   // TODO(https://crbug.com/676224): Support preprocessing of mojom files, since
   // this is Windows only.
-  SubmitFrameWithTextureHandle(int16 frameId, handle texture);
+  SubmitFrameWithTextureHandle(int16 frameId, handle<platform> texture);
 
   // XRPresentationTransportMethod DRAW_INTO_TEXTURE_MAILBOX
   SubmitFrameDrawnIntoTexture(int16 frameId, gpu.mojom.SyncToken sync_token,

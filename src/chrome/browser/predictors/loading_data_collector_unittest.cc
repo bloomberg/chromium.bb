@@ -53,29 +53,29 @@ class LoadingDataCollectorTest : public testing::Test {
 
 TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kStylesheet, "bogus/mime-type"));
+      network::mojom::RequestDestination::kStyle, "bogus/mime-type"));
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kStylesheet, ""));
+      network::mojom::RequestDestination::kStyle, ""));
   EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kWorker, "text/css"));
+      network::mojom::RequestDestination::kWorker, "text/css"));
   EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kWorker, ""));
+      network::mojom::RequestDestination::kWorker, ""));
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kPrefetch, "text/css"));
+      network::mojom::RequestDestination::kEmpty, "text/css"));
   EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kPrefetch, "bogus/mime-type"));
+      network::mojom::RequestDestination::kEmpty, "bogus/mime-type"));
   EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kPrefetch, ""));
+      network::mojom::RequestDestination::kEmpty, ""));
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kPrefetch, "application/font-woff"));
+      network::mojom::RequestDestination::kEmpty, "application/font-woff"));
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kPrefetch, "font/woff2"));
-  EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kXhr, ""));
-  EXPECT_FALSE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kXhr, "bogus/mime-type"));
+      network::mojom::RequestDestination::kEmpty, "font/woff2"));
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
-      content::ResourceType::kXhr, "application/javascript"));
+      network::mojom::RequestDestination::kEmpty, "application/javascript"));
+  EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
+      network::mojom::RequestDestination::kDocument, "text/html"));
+  EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
+      network::mojom::RequestDestination::kDocument, ""));
 }
 
 TEST_F(LoadingDataCollectorTest, ShouldRecordMainFrameLoad) {
@@ -108,8 +108,9 @@ TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoadAfterFCP) {
   collector_->RecordFirstContentfulPaint(navigation_id, base::TimeTicks::Now());
 
   // Protocol.
-  auto http_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::ResourceType::kImage);
+  auto http_image_request =
+      CreateResourceLoadInfo("http://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kImage);
   EXPECT_TRUE(
       collector_->ShouldRecordResourceLoad(navigation_id, *http_image_request));
 }
@@ -123,65 +124,73 @@ TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoad) {
 
   // Protocol.
   auto low_priority_http_image_request = CreateLowPriorityResourceLoadInfo(
-      "http://www.google.com/cat.png", content::ResourceType::kImage);
+      "http://www.google.com/cat.png",
+      network::mojom::RequestDestination::kImage);
   EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
       navigation_id, *low_priority_http_image_request));
 
-  auto http_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::ResourceType::kImage);
+  auto http_image_request =
+      CreateResourceLoadInfo("http://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kImage);
   EXPECT_TRUE(
       collector_->ShouldRecordResourceLoad(navigation_id, *http_image_request));
 
-  auto https_image_request = CreateResourceLoadInfo(
-      "https://www.google.com/cat.png", content::ResourceType::kImage);
+  auto https_image_request =
+      CreateResourceLoadInfo("https://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kImage);
   EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
                                                    *https_image_request));
 
-  auto https_image_request_with_port = CreateResourceLoadInfo(
-      "https://www.google.com:666/cat.png", content::ResourceType::kImage);
+  auto https_image_request_with_port =
+      CreateResourceLoadInfo("https://www.google.com:666/cat.png",
+                             network::mojom::RequestDestination::kImage);
   EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
       navigation_id, *https_image_request_with_port));
 
-  auto file_image_request = CreateResourceLoadInfo(
-      "file://www.google.com/cat.png", content::ResourceType::kImage);
+  auto file_image_request =
+      CreateResourceLoadInfo("file://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kImage);
   EXPECT_FALSE(
       collector_->ShouldRecordResourceLoad(navigation_id, *file_image_request));
 
-  // ResourceType.
-  auto sub_frame_request = CreateResourceLoadInfo(
-      "http://www.google.com/frame.html", content::ResourceType::kSubFrame);
+  // Request destination.
+  auto sub_frame_request =
+      CreateResourceLoadInfo("http://www.google.com/frame.html",
+                             network::mojom::RequestDestination::kIframe);
   EXPECT_FALSE(
       collector_->ShouldRecordResourceLoad(navigation_id, *sub_frame_request));
 
   auto font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::ResourceType::kFontResource);
+                             network::mojom::RequestDestination::kFont);
   EXPECT_TRUE(
       collector_->ShouldRecordResourceLoad(navigation_id, *font_request));
 
   // From MIME Type.
-  auto prefetch_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::ResourceType::kPrefetch);
+  auto prefetch_image_request =
+      CreateResourceLoadInfo("http://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kEmpty);
   prefetch_image_request->mime_type = "image/png";
   EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
                                                    *prefetch_image_request));
 
-  auto prefetch_unknown_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::ResourceType::kPrefetch);
+  auto prefetch_unknown_image_request =
+      CreateResourceLoadInfo("http://www.google.com/cat.png",
+                             network::mojom::RequestDestination::kEmpty);
   prefetch_unknown_image_request->mime_type = "image/my-wonderful-format";
   EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
       navigation_id, *prefetch_unknown_image_request));
 
   auto prefetch_font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::ResourceType::kPrefetch);
+                             network::mojom::RequestDestination::kEmpty);
   prefetch_font_request->mime_type = "font/woff";
   EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
                                                    *prefetch_font_request));
 
   auto prefetch_unknown_font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::ResourceType::kPrefetch);
+                             network::mojom::RequestDestination::kEmpty);
   prefetch_unknown_font_request->mime_type = "font/woff-woff";
   EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
       navigation_id, *prefetch_unknown_font_request));
@@ -197,39 +206,46 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style1.css", content::ResourceType::kStylesheet));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/style1.css",
+                             network::mojom::RequestDestination::kStyle));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/script1.js",
+                             network::mojom::RequestDestination::kScript));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
-                                             content::ResourceType::kScript));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/script2.js",
+                             network::mojom::RequestDestination::kScript));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::ResourceType::kScript));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/script1.js",
+                             network::mojom::RequestDestination::kScript));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
-                                             content::ResourceType::kImage));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/image1.png",
+                             network::mojom::RequestDestination::kImage));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
-                                             content::ResourceType::kImage));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/image2.png",
+                             network::mojom::RequestDestination::kImage));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style2.css", content::ResourceType::kStylesheet));
+  resources.push_back(
+      CreateResourceLoadInfo("http://google.com/style2.css",
+                             network::mojom::RequestDestination::kStyle));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
   resources.push_back(
       CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
-                             content::ResourceType::kStylesheet,
-                             /* always_access_network */ true));
+                             network::mojom::RequestDestination::kStyle,
+                             /*always_access_network=*/true));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
   resources.push_back(CreateResourceLoadInfoWithRedirects(
       {"http://reader.google.com/style.css",
        "http://dev.null.google.com/style.css"},
-      content::ResourceType::kStylesheet));
+      network::mojom::RequestDestination::kStyle));
   collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
 
   auto summary = CreatePageRequestSummary("http://www.google.com",
@@ -239,7 +255,7 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   EXPECT_CALL(*mock_predictor_,
               RecordPageRequestSummaryProxy(testing::Pointee(summary)));
 
-  collector_->RecordMainFrameLoadComplete(navigation_id);
+  collector_->RecordMainFrameLoadComplete(navigation_id, base::nullopt);
 }
 
 TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
@@ -261,14 +277,14 @@ TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
             collector_->inflight_navigations_[new_navigation_id]->initial_url);
   collector_->RecordResourceLoadComplete(new_navigation_id, *main_frame);
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(std::move(main_frame));
   EXPECT_CALL(
       *mock_predictor_,
       RecordPageRequestSummaryProxy(testing::Pointee(CreatePageRequestSummary(
           "https://facebook.com/google", "http://fb.com/google", resources))));
 
-  collector_->RecordMainFrameLoadComplete(new_navigation_id);
+  collector_->RecordMainFrameLoadComplete(new_navigation_id, base::nullopt);
 }
 
 // Tests that RecordNavigationFinish without the corresponding
@@ -342,8 +358,9 @@ TEST_F(LoadingDataCollectorTest, RecordResourceLoadComplete) {
   const SessionID kTabId = SessionID::FromSerializedValue(1);
   // If there is no inflight navigation, nothing happens.
   auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
-  auto resource1 = CreateResourceLoadInfo("http://google.com/style1.css",
-                                          content::ResourceType::kStylesheet);
+  auto resource1 =
+      CreateResourceLoadInfo("http://google.com/style1.css",
+                             network::mojom::RequestDestination::kStyle);
   collector_->RecordResourceLoadComplete(navigation_id, *resource1);
   EXPECT_TRUE(collector_->inflight_navigations_.empty());
 
@@ -352,10 +369,12 @@ TEST_F(LoadingDataCollectorTest, RecordResourceLoadComplete) {
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
   // Now add a few subresources.
-  auto resource2 = CreateResourceLoadInfo("http://google.com/script1.js",
-                                          content::ResourceType::kScript);
-  auto resource3 = CreateResourceLoadInfo("http://google.com/script2.js",
-                                          content::ResourceType::kScript);
+  auto resource2 =
+      CreateResourceLoadInfo("http://google.com/script1.js",
+                             network::mojom::RequestDestination::kScript);
+  auto resource3 =
+      CreateResourceLoadInfo("http://google.com/script2.js",
+                             network::mojom::RequestDestination::kScript);
   collector_->RecordResourceLoadComplete(navigation_id, *resource1);
   collector_->RecordResourceLoadComplete(navigation_id, *resource2);
   collector_->RecordResourceLoadComplete(navigation_id, *resource3);

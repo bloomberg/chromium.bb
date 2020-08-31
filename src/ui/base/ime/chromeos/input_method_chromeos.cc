@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/i18n/char_iterator.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -209,7 +209,9 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
-  if (!candidate_window)
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (!candidate_window && !assistive_window)
     return;
 
   const gfx::Rect caret_rect = client->GetCaretBounds();
@@ -222,8 +224,10 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // avoid a bad user experience (the IME window moved to upper left corner).
   if (composition_head.IsEmpty())
     composition_head = caret_rect;
-  candidate_window->SetCursorBounds(caret_rect, composition_head);
-
+  if (candidate_window)
+    candidate_window->SetCursorBounds(caret_rect, composition_head);
+  if (assistive_window)
+    assistive_window->SetBounds(caret_rect);
   gfx::Range text_range;
   gfx::Range selection_range;
   base::string16 surrounding_text;
@@ -254,8 +258,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // |surrounding_text| coordinates.
   if (GetEngine()) {
     GetEngine()->SetSurroundingText(
-        base::UTF16ToUTF8(surrounding_text),
-        selection_range.start() - text_range.start(),
+        surrounding_text, selection_range.start() - text_range.start(),
         selection_range.end() - text_range.start(), text_range.start());
   }
 }
@@ -384,6 +387,12 @@ void InputMethodChromeOS::UpdateContextFocusState() {
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
     candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
+
+  // Propagate focus event to assistive window handler.
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (assistive_window)
+    assistive_window->FocusStateChanged();
 
   ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
@@ -698,6 +707,7 @@ void InputMethodChromeOS::ExtractCompositionText(
       ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
                                 char16_offsets[start], char16_offsets[end],
                                 text_ime_text_span.thickness,
+                                ui::ImeTextSpan::UnderlineStyle::kSolid,
                                 text_ime_text_span.background_color);
       ime_text_span.underline_color = text_ime_text_span.underline_color;
       out_composition->ime_text_spans.push_back(ime_text_span);
@@ -708,10 +718,10 @@ void InputMethodChromeOS::ExtractCompositionText(
   if (text.selection.start() < text.selection.end()) {
     const uint32_t start = text.selection.start();
     const uint32_t end = text.selection.end();
-    ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
-                              char16_offsets[start], char16_offsets[end],
-                              ui::ImeTextSpan::Thickness::kThick,
-                              SK_ColorTRANSPARENT);
+    ImeTextSpan ime_text_span(
+        ui::ImeTextSpan::Type::kComposition, char16_offsets[start],
+        char16_offsets[end], ui::ImeTextSpan::Thickness::kThick,
+        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT);
     out_composition->ime_text_spans.push_back(ime_text_span);
 
     // If the cursor is at start or end of this ime_text_span, then we treat
@@ -728,9 +738,10 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   // Use a thin underline with text color by default.
   if (out_composition->ime_text_spans.empty()) {
-    out_composition->ime_text_spans.push_back(
-        ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, length,
-                    ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+    out_composition->ime_text_spans.push_back(ImeTextSpan(
+        ui::ImeTextSpan::Type::kComposition, 0, length,
+        ui::ImeTextSpan::Thickness::kThin,
+        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   }
 }
 

@@ -6,6 +6,9 @@
 
 #include "ui/accessibility/ax_enums.mojom.h"
 
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
+
 namespace ui {
 
 const char* ToString(ax::mojom::Event event) {
@@ -40,6 +43,8 @@ const char* ToString(ax::mojom::Event event) {
       return "expandedChanged";
     case ax::mojom::Event::kFocus:
       return "focus";
+    case ax::mojom::Event::kFocusAfterMenuClose:
+      return "focusAfterMenuClose";
     case ax::mojom::Event::kFocusContext:
       return "focusContext";
     case ax::mojom::Event::kHide:
@@ -168,6 +173,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kExpandedChanged;
   if (0 == strcmp(event, "focus"))
     return ax::mojom::Event::kFocus;
+  if (0 == strcmp(event, "focusAfterMenuClose"))
+    return ax::mojom::Event::kFocusAfterMenuClose;
   if (0 == strcmp(event, "focusContext"))
     return ax::mojom::Event::kFocusContext;
   if (0 == strcmp(event, "hide"))
@@ -313,8 +320,6 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxMenuButton";
     case ax::mojom::Role::kComment:
       return "comment";
-    case ax::mojom::Role::kCommentSection:
-      return "commentSection";
     case ax::mojom::Role::kComplementary:
       return "complementary";
     case ax::mojom::Role::kContentDeletion:
@@ -469,6 +474,8 @@ const char* ToString(ax::mojom::Role role) {
       return "imageMap";
     case ax::mojom::Role::kImage:
       return "image";
+    case ax::mojom::Role::kImeCandidate:
+      return "imeCandidate";
     case ax::mojom::Role::kInlineTextBox:
       return "inlineTextBox";
     case ax::mojom::Role::kInputTime:
@@ -481,8 +488,6 @@ const char* ToString(ax::mojom::Role role) {
       return "layoutTable";
     case ax::mojom::Role::kLayoutTableCell:
       return "layoutTableCell";
-    case ax::mojom::Role::kLayoutTableColumn:
-      return "layoutTableColumn";
     case ax::mojom::Role::kLayoutTableRow:
       return "layoutTableRow";
     case ax::mojom::Role::kLegend:
@@ -539,8 +544,14 @@ const char* ToString(ax::mojom::Role role) {
       return "pane";
     case ax::mojom::Role::kParagraph:
       return "paragraph";
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return "pdfActionableHighlight";
+    case ax::mojom::Role::kPluginObject:
+      return "pluginObject";
     case ax::mojom::Role::kPopUpButton:
       return "popUpButton";
+    case ax::mojom::Role::kPortal:
+      return "portal";
     case ax::mojom::Role::kPre:
       return "pre";
     case ax::mojom::Role::kPresentational:
@@ -553,8 +564,6 @@ const char* ToString(ax::mojom::Role role) {
       return "radioGroup";
     case ax::mojom::Role::kRegion:
       return "region";
-    case ax::mojom::Role::kRevision:
-      return "revision";
     case ax::mojom::Role::kRootWebArea:
       return "rootWebArea";
     case ax::mojom::Role::kRow:
@@ -695,8 +704,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kComboBoxMenuButton;
   if (0 == strcmp(role, "comment"))
     return ax::mojom::Role::kComment;
-  if (0 == strcmp(role, "commentSection"))
-    return ax::mojom::Role::kCommentSection;
   if (0 == strcmp(role, "complementary"))
     return ax::mojom::Role::kComplementary;
   if (0 == strcmp(role, "contentDeletion"))
@@ -841,6 +848,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kHeader;
   if (0 == strcmp(role, "headerAsNonLandmark"))
     return ax::mojom::Role::kHeaderAsNonLandmark;
+  if (0 == strcmp(role, "pdfActionableHighlight"))
+    return ax::mojom::Role::kPdfActionableHighlight;
   if (0 == strcmp(role, "iframe"))
     return ax::mojom::Role::kIframe;
   if (0 == strcmp(role, "iframePresentational"))
@@ -851,6 +860,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kImageMap;
   if (0 == strcmp(role, "image"))
     return ax::mojom::Role::kImage;
+  if (0 == strcmp(role, "imeCandidate"))
+    return ax::mojom::Role::kImeCandidate;
   if (0 == strcmp(role, "inlineTextBox"))
     return ax::mojom::Role::kInlineTextBox;
   if (0 == strcmp(role, "inputTime"))
@@ -863,8 +874,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kLayoutTable;
   if (0 == strcmp(role, "layoutTableCell"))
     return ax::mojom::Role::kLayoutTableCell;
-  if (0 == strcmp(role, "layoutTableColumn"))
-    return ax::mojom::Role::kLayoutTableColumn;
   if (0 == strcmp(role, "layoutTableRow"))
     return ax::mojom::Role::kLayoutTableRow;
   if (0 == strcmp(role, "legend"))
@@ -921,8 +930,12 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kPane;
   if (0 == strcmp(role, "paragraph"))
     return ax::mojom::Role::kParagraph;
+  if (0 == strcmp(role, "pluginObject"))
+    return ax::mojom::Role::kPluginObject;
   if (0 == strcmp(role, "popUpButton"))
     return ax::mojom::Role::kPopUpButton;
+  if (0 == strcmp(role, "portal"))
+    return ax::mojom::Role::kPortal;
   if (0 == strcmp(role, "pre"))
     return ax::mojom::Role::kPre;
   if (0 == strcmp(role, "presentational"))
@@ -935,8 +948,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRadioGroup;
   if (0 == strcmp(role, "region"))
     return ax::mojom::Role::kRegion;
-  if (0 == strcmp(role, "revision"))
-    return ax::mojom::Role::kRevision;
   if (0 == strcmp(role, "rootWebArea"))
     return ax::mojom::Role::kRootWebArea;
   if (0 == strcmp(role, "row"))
@@ -1121,12 +1132,16 @@ const char* ToString(ax::mojom::Action action) {
       return "blur";
     case ax::mojom::Action::kClearAccessibilityFocus:
       return "clearAccessibilityFocus";
+    case ax::mojom::Action::kCollapse:
+      return "collapse";
     case ax::mojom::Action::kCustomAction:
       return "customAction";
     case ax::mojom::Action::kDecrement:
       return "decrement";
     case ax::mojom::Action::kDoDefault:
       return "doDefault";
+    case ax::mojom::Action::kExpand:
+      return "expand";
     case ax::mojom::Action::kFocus:
       return "focus";
     case ax::mojom::Action::kGetImageData:
@@ -1193,12 +1208,16 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kBlur;
   if (0 == strcmp(action, "clearAccessibilityFocus"))
     return ax::mojom::Action::kClearAccessibilityFocus;
+  if (0 == strcmp(action, "collapse"))
+    return ax::mojom::Action::kCollapse;
   if (0 == strcmp(action, "customAction"))
     return ax::mojom::Action::kCustomAction;
   if (0 == strcmp(action, "decrement"))
     return ax::mojom::Action::kDecrement;
   if (0 == strcmp(action, "doDefault"))
     return ax::mojom::Action::kDoDefault;
+  if (0 == strcmp(action, "expand"))
+    return ax::mojom::Action::kExpand;
   if (0 == strcmp(action, "focus"))
     return ax::mojom::Action::kFocus;
   if (0 == strcmp(action, "getImageData"))
@@ -1292,9 +1311,6 @@ const char* ToString(ax::mojom::ScrollAlignment scroll_alignment) {
     case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
       return "scrollAlignmentClosestEdge";
   }
-
-  NOTREACHED() << scroll_alignment;
-  return "";
 }
 
 ax::mojom::ScrollAlignment ParseScrollAlignment(const char* scroll_alignment) {
@@ -1326,7 +1342,9 @@ const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
     case ax::mojom::DefaultActionVerb::kClick:
       return "click";
     case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return "clickAncestor";
+      // Some screen readers, such as Jaws, expect the following spelling of
+      // this verb.
+      return "click-ancestor";
     case ax::mojom::DefaultActionVerb::kJump:
       return "jump";
     case ax::mojom::DefaultActionVerb::kOpen:
@@ -1342,6 +1360,33 @@ const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
   return "";
 }
 
+std::string ToLocalizedString(ax::mojom::DefaultActionVerb action_verb) {
+  switch (action_verb) {
+    case ax::mojom::DefaultActionVerb::kNone:
+      return "";
+    case ax::mojom::DefaultActionVerb::kActivate:
+      return l10n_util::GetStringUTF8(IDS_AX_ACTIVATE_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kCheck:
+      return l10n_util::GetStringUTF8(IDS_AX_CHECK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClick:
+      return l10n_util::GetStringUTF8(IDS_AX_CLICK_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kClickAncestor:
+      return l10n_util::GetStringUTF8(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kJump:
+      return l10n_util::GetStringUTF8(IDS_AX_JUMP_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kOpen:
+      return l10n_util::GetStringUTF8(IDS_AX_OPEN_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kPress:
+      return l10n_util::GetStringUTF8(IDS_AX_PRESS_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kSelect:
+      return l10n_util::GetStringUTF8(IDS_AX_SELECT_ACTION_VERB);
+    case ax::mojom::DefaultActionVerb::kUncheck:
+      return l10n_util::GetStringUTF8(IDS_AX_UNCHECK_ACTION_VERB);
+  }
+
+  return "";
+}
+
 ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
     const char* default_action_verb) {
   if (0 == strcmp(default_action_verb, "none"))
@@ -1352,7 +1397,9 @@ ax::mojom::DefaultActionVerb ParseDefaultActionVerb(
     return ax::mojom::DefaultActionVerb::kCheck;
   if (0 == strcmp(default_action_verb, "click"))
     return ax::mojom::DefaultActionVerb::kClick;
-  if (0 == strcmp(default_action_verb, "clickAncestor"))
+  // Some screen readers, such as Jaws, expect the following spelling of this
+  // verb.
+  if (0 == strcmp(default_action_verb, "click-ancestor"))
     return ax::mojom::DefaultActionVerb::kClickAncestor;
   if (0 == strcmp(default_action_verb, "jump"))
     return ax::mojom::DefaultActionVerb::kJump;
@@ -1585,8 +1632,6 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "descriptionFrom";
     case ax::mojom::IntAttribute::kActivedescendantId:
       return "activedescendantId";
-    case ax::mojom::IntAttribute::kDetailsId:
-      return "detailsId";
     case ax::mojom::IntAttribute::kErrormessageId:
       return "errormessageId";
     case ax::mojom::IntAttribute::kInPageLinkTargetId:
@@ -1639,6 +1684,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "nextFocusId";
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       return "imageAnnotationStatus";
+    case ax::mojom::IntAttribute::kDOMNodeId:
+      return "domNodeId";
   }
 
   return "";
@@ -1711,8 +1758,6 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kDescriptionFrom;
   if (0 == strcmp(int_attribute, "activedescendantId"))
     return ax::mojom::IntAttribute::kActivedescendantId;
-  if (0 == strcmp(int_attribute, "detailsId"))
-    return ax::mojom::IntAttribute::kDetailsId;
   if (0 == strcmp(int_attribute, "errormessageId"))
     return ax::mojom::IntAttribute::kErrormessageId;
   if (0 == strcmp(int_attribute, "inPageLinkTargetId"))
@@ -1765,6 +1810,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kNextFocusId;
   if (0 == strcmp(int_attribute, "imageAnnotationStatus"))
     return ax::mojom::IntAttribute::kImageAnnotationStatus;
+  if (0 == strcmp(int_attribute, "domNodeId"))
+    return ax::mojom::IntAttribute::kDOMNodeId;
   return ax::mojom::IntAttribute::kNone;
 }
 
@@ -1843,6 +1890,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "isLineBreakingObject";
     case ax::mojom::BoolAttribute::kIsPageBreakingObject:
       return "isPageBreakingObject";
+    case ax::mojom::BoolAttribute::kHasAriaAttribute:
+      return "hasAriaAttribute";
   }
 
   return "";
@@ -1883,6 +1932,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kIsLineBreakingObject;
   if (0 == strcmp(bool_attribute, "isPageBreakingObject"))
     return ax::mojom::BoolAttribute::kIsPageBreakingObject;
+  if (0 == strcmp(bool_attribute, "hasAriaAttribute"))
+    return ax::mojom::BoolAttribute::kHasAriaAttribute;
   return ax::mojom::BoolAttribute::kNone;
 }
 
@@ -1894,6 +1945,8 @@ const char* ToString(ax::mojom::IntListAttribute int_list_attribute) {
       return "indirectChildIds";
     case ax::mojom::IntListAttribute::kControlsIds:
       return "controlsIds";
+    case ax::mojom::IntListAttribute::kDetailsIds:
+      return "detailsIds";
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       return "describedbyIds";
     case ax::mojom::IntListAttribute::kFlowtoIds:
@@ -1931,6 +1984,8 @@ ax::mojom::IntListAttribute ParseIntListAttribute(
     return ax::mojom::IntListAttribute::kIndirectChildIds;
   if (0 == strcmp(int_list_attribute, "controlsIds"))
     return ax::mojom::IntListAttribute::kControlsIds;
+  if (0 == strcmp(int_list_attribute, "detailsIds"))
+    return ax::mojom::IntListAttribute::kDetailsIds;
   if (0 == strcmp(int_list_attribute, "describedbyIds"))
     return ax::mojom::IntListAttribute::kDescribedbyIds;
   if (0 == strcmp(int_list_attribute, "flowtoIds"))
@@ -2052,6 +2107,177 @@ ax::mojom::MarkerType ParseMarkerType(const char* marker_type) {
   return ax::mojom::MarkerType::kNone;
 }
 
+const char* ToString(ax::mojom::MoveDirection move_direction) {
+  switch (move_direction) {
+    case ax::mojom::MoveDirection::kForward:
+      return "forward";
+    case ax::mojom::MoveDirection::kBackward:
+      return "backward";
+  }
+
+  return "";
+}
+
+ax::mojom::MoveDirection ParseMoveDirection(const char* move_direction) {
+  if (0 == strcmp(move_direction, "forward"))
+    return ax::mojom::MoveDirection::kForward;
+  if (0 == strcmp(move_direction, "backward"))
+    return ax::mojom::MoveDirection::kBackward;
+  return ax::mojom::MoveDirection::kForward;
+}
+
+const char* ToString(ax::mojom::Command command) {
+  switch (command) {
+    case ax::mojom::Command::kClearSelection:
+      return "clearSelection";
+    case ax::mojom::Command::kCut:
+      return "cut";
+    case ax::mojom::Command::kDelete:
+      return "delete";
+    case ax::mojom::Command::kDictate:
+      return "dictate";
+    case ax::mojom::Command::kExtendSelection:
+      return "extendSelection";
+    case ax::mojom::Command::kFormat:
+      return "format";
+    case ax::mojom::Command::kInsert:
+      return "insert";
+    case ax::mojom::Command::kMarker:
+      return "marker";
+    case ax::mojom::Command::kMoveSelection:
+      return "moveSelection";
+    case ax::mojom::Command::kPaste:
+      return "paste";
+    case ax::mojom::Command::kReplace:
+      return "replace";
+    case ax::mojom::Command::kSetSelection:
+      return "setSelection";
+    case ax::mojom::Command::kType:
+      return "type";
+  }
+
+  return "";
+}
+
+ax::mojom::Command ParseCommand(const char* command) {
+  if (0 == strcmp(command, "clearSelection"))
+    return ax::mojom::Command::kClearSelection;
+  if (0 == strcmp(command, "cut"))
+    return ax::mojom::Command::kCut;
+  if (0 == strcmp(command, "delete"))
+    return ax::mojom::Command::kDelete;
+  if (0 == strcmp(command, "dictate"))
+    return ax::mojom::Command::kDictate;
+  if (0 == strcmp(command, "extendSelection"))
+    return ax::mojom::Command::kExtendSelection;
+  if (0 == strcmp(command, "format"))
+    return ax::mojom::Command::kFormat;
+  if (0 == strcmp(command, "insert"))
+    return ax::mojom::Command::kInsert;
+  if (0 == strcmp(command, "marker"))
+    return ax::mojom::Command::kMarker;
+  if (0 == strcmp(command, "moveSelection"))
+    return ax::mojom::Command::kMoveSelection;
+  if (0 == strcmp(command, "paste"))
+    return ax::mojom::Command::kPaste;
+  if (0 == strcmp(command, "replace"))
+    return ax::mojom::Command::kReplace;
+  if (0 == strcmp(command, "setSelection"))
+    return ax::mojom::Command::kSetSelection;
+  if (0 == strcmp(command, "type"))
+    return ax::mojom::Command::kType;
+
+  // Return the default command.
+  return ax::mojom::Command::kType;
+}
+
+const char* ToString(ax::mojom::TextBoundary text_boundary) {
+  switch (text_boundary) {
+    case ax::mojom::TextBoundary::kCharacter:
+      return "character";
+    case ax::mojom::TextBoundary::kFormat:
+      return "format";
+    case ax::mojom::TextBoundary::kLineEnd:
+      return "lineEnd";
+    case ax::mojom::TextBoundary::kLineStart:
+      return "lineStart";
+    case ax::mojom::TextBoundary::kLineStartOrEnd:
+      return "lineStartOrEnd";
+    case ax::mojom::TextBoundary::kObject:
+      return "object";
+    case ax::mojom::TextBoundary::kPageEnd:
+      return "pageEnd";
+    case ax::mojom::TextBoundary::kPageStart:
+      return "pageStart";
+    case ax::mojom::TextBoundary::kPageStartOrEnd:
+      return "pageStartOrEnd";
+    case ax::mojom::TextBoundary::kParagraphEnd:
+      return "paragraphEnd";
+    case ax::mojom::TextBoundary::kParagraphStart:
+      return "paragraphStart";
+    case ax::mojom::TextBoundary::kParagraphStartOrEnd:
+      return "paragraphStartOrEnd";
+    case ax::mojom::TextBoundary::kSentenceEnd:
+      return "sentenceEnd";
+    case ax::mojom::TextBoundary::kSentenceStart:
+      return "sentenceStart";
+    case ax::mojom::TextBoundary::kSentenceStartOrEnd:
+      return "sentenceStartOrEnd";
+    case ax::mojom::TextBoundary::kWebPage:
+      return "webPage";
+    case ax::mojom::TextBoundary::kWordEnd:
+      return "wordEnd";
+    case ax::mojom::TextBoundary::kWordStart:
+      return "wordStart";
+    case ax::mojom::TextBoundary::kWordStartOrEnd:
+      return "wordStartOrEnd";
+  }
+
+  return "";
+}
+
+ax::mojom::TextBoundary ParseTextBoundary(const char* text_boundary) {
+  if (0 == strcmp(text_boundary, "object"))
+    return ax::mojom::TextBoundary::kObject;
+  if (0 == strcmp(text_boundary, "character"))
+    return ax::mojom::TextBoundary::kCharacter;
+  if (0 == strcmp(text_boundary, "format"))
+    return ax::mojom::TextBoundary::kFormat;
+  if (0 == strcmp(text_boundary, "lineEnd"))
+    return ax::mojom::TextBoundary::kLineEnd;
+  if (0 == strcmp(text_boundary, "lineStart"))
+    return ax::mojom::TextBoundary::kLineStart;
+  if (0 == strcmp(text_boundary, "lineStartOrEnd"))
+    return ax::mojom::TextBoundary::kLineStartOrEnd;
+  if (0 == strcmp(text_boundary, "pageEnd"))
+    return ax::mojom::TextBoundary::kPageEnd;
+  if (0 == strcmp(text_boundary, "pageStart"))
+    return ax::mojom::TextBoundary::kPageStart;
+  if (0 == strcmp(text_boundary, "pageStartOrEnd"))
+    return ax::mojom::TextBoundary::kPageStartOrEnd;
+  if (0 == strcmp(text_boundary, "paragraphEnd"))
+    return ax::mojom::TextBoundary::kParagraphEnd;
+  if (0 == strcmp(text_boundary, "paragraphStart"))
+    return ax::mojom::TextBoundary::kParagraphStart;
+  if (0 == strcmp(text_boundary, "paragraphStartOrEnd"))
+    return ax::mojom::TextBoundary::kParagraphStartOrEnd;
+  if (0 == strcmp(text_boundary, "sentenceEnd"))
+    return ax::mojom::TextBoundary::kSentenceEnd;
+  if (0 == strcmp(text_boundary, "sentenceStart"))
+    return ax::mojom::TextBoundary::kSentenceStart;
+  if (0 == strcmp(text_boundary, "sentenceStartOrEnd"))
+    return ax::mojom::TextBoundary::kSentenceStartOrEnd;
+  if (0 == strcmp(text_boundary, "webPage"))
+    return ax::mojom::TextBoundary::kWebPage;
+  if (0 == strcmp(text_boundary, "wordEnd"))
+    return ax::mojom::TextBoundary::kWordEnd;
+  if (0 == strcmp(text_boundary, "wordStart"))
+    return ax::mojom::TextBoundary::kWordStart;
+  if (0 == strcmp(text_boundary, "wordStartOrEnd"))
+    return ax::mojom::TextBoundary::kWordStartOrEnd;
+  return ax::mojom::TextBoundary::kObject;
+}
+
 const char* ToString(ax::mojom::TextDecorationStyle text_decoration_style) {
   switch (text_decoration_style) {
     case ax::mojom::TextDecorationStyle::kNone:
@@ -2144,6 +2370,8 @@ ax::mojom::TextPosition ParseTextPosition(const char* text_position) {
 
 const char* ToString(ax::mojom::TextStyle text_style) {
   switch (text_style) {
+    case ax::mojom::TextStyle::kNone:
+      return "none";
     case ax::mojom::TextStyle::kBold:
       return "bold";
     case ax::mojom::TextStyle::kItalic:
@@ -2154,14 +2382,14 @@ const char* ToString(ax::mojom::TextStyle text_style) {
       return "lineThrough";
     case ax::mojom::TextStyle::kOverline:
       return "overline";
-    case ax::mojom::TextStyle::kNone:
-      return "none";
   }
 
   return "";
 }
 
 ax::mojom::TextStyle ParseTextStyle(const char* text_style) {
+  if (0 == strcmp(text_style, "none"))
+    return ax::mojom::TextStyle::kNone;
   if (0 == strcmp(text_style, "bold"))
     return ax::mojom::TextStyle::kBold;
   if (0 == strcmp(text_style, "italic"))
@@ -2684,20 +2912,6 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
   return ax::mojom::ImageAnnotationStatus::kNone;
 }
 
-ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect) {
-  if (0 == strcmp(dropeffect, "copy"))
-    return ax::mojom::Dropeffect::kCopy;
-  if (0 == strcmp(dropeffect, "execute"))
-    return ax::mojom::Dropeffect::kExecute;
-  if (0 == strcmp(dropeffect, "link"))
-    return ax::mojom::Dropeffect::kLink;
-  if (0 == strcmp(dropeffect, "move"))
-    return ax::mojom::Dropeffect::kMove;
-  if (0 == strcmp(dropeffect, "popup"))
-    return ax::mojom::Dropeffect::kPopup;
-  return ax::mojom::Dropeffect::kNone;
-}
-
 const char* ToString(ax::mojom::Dropeffect dropeffect) {
   switch (dropeffect) {
     case ax::mojom::Dropeffect::kCopy:
@@ -2715,6 +2929,20 @@ const char* ToString(ax::mojom::Dropeffect dropeffect) {
   }
 
   return "";
+}
+
+ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect) {
+  if (0 == strcmp(dropeffect, "copy"))
+    return ax::mojom::Dropeffect::kCopy;
+  if (0 == strcmp(dropeffect, "execute"))
+    return ax::mojom::Dropeffect::kExecute;
+  if (0 == strcmp(dropeffect, "link"))
+    return ax::mojom::Dropeffect::kLink;
+  if (0 == strcmp(dropeffect, "move"))
+    return ax::mojom::Dropeffect::kMove;
+  if (0 == strcmp(dropeffect, "popup"))
+    return ax::mojom::Dropeffect::kPopup;
+  return ax::mojom::Dropeffect::kNone;
 }
 
 }  // namespace ui

@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -26,7 +25,7 @@ class XRWorldTrackingState : public ScriptWrappable {
     return plane_detection_state_;
   }
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<XRPlaneDetectionState> plane_detection_state_;

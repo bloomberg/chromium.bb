@@ -8,12 +8,16 @@
 from __future__ import print_function
 
 import contextlib
+import sys
 import threading
 
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import export_to_cloud_trace
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _SPAN = """{

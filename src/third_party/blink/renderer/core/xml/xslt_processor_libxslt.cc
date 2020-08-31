@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
 #include "third_party/blink/renderer/core/xml/xslt_extensions.h"
 #include "third_party/blink/renderer/core/xml/xslt_unicode_sort.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -79,7 +80,7 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
       break;
   }
 
-  console->AddMessage(ConsoleMessage::Create(
+  console->AddMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kXml, level, error->message,
       std::make_unique<SourceLocation>(error->file, error->line, 0, nullptr)));
 }
@@ -274,14 +275,14 @@ static xsltStylesheetPtr XsltStylesheetPointer(
   if (!cached_stylesheet && stylesheet_root_node) {
     // When using importStylesheet, we will use the given document as the
     // imported stylesheet's owner.
-    cached_stylesheet = XSLStyleSheet::CreateForXSLTProcessor(
+    cached_stylesheet = MakeGarbageCollected<XSLStyleSheet>(
         stylesheet_root_node->parentNode()
             ? &stylesheet_root_node->parentNode()->GetDocument()
             : document,
         stylesheet_root_node,
         stylesheet_root_node->GetDocument().Url().GetString(),
-        stylesheet_root_node->GetDocument()
-            .Url());  // FIXME: Should we use baseURL here?
+        stylesheet_root_node->GetDocument().Url(),
+        false);  // FIXME: Should we use baseURL here?
 
     // According to Mozilla documentation, the node must be a Document node,
     // an xsl:stylesheet or xsl:transform element. But we just use text

@@ -249,7 +249,7 @@ def PinpointParamsFromPerfTryParams(params):
       'comparison_mode': 'try',
       'configuration': bot_name,
       'benchmark': suite,
-      'start_git_hash': start_git_hash,
+      'base_git_hash': start_git_hash,
       'end_git_hash': end_git_hash,
       'extra_test_args': extra_test_args,
       'target': target,
@@ -361,9 +361,6 @@ def PinpointParamsFromBisectParams(params):
   if story_filter:
     pinpoint_params['story'] = story_filter
   if grouping_label:
-    # TODO(crbug.com/974237): Stop filling in the 'tir_label' when pinpoint
-    # jobs have switched to rely on the 'grouping_label' instead.
-    pinpoint_params['tir_label'] = grouping_label
     pinpoint_params['grouping_label'] = grouping_label
   if trace_name:
     pinpoint_params['trace'] = trace_name

@@ -26,8 +26,22 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETSYNCVALUESCHROMIUMPROC)
     (EGLDisplay dpy, EGLSurface surface, EGLuint64CHROMIUM *ust,
      EGLuint64CHROMIUM *msc, EGLuint64CHROMIUM *sbc);
-#endif
-#endif
+#endif /* EGL_CHROMIUM_sync_control */
+
+#ifndef EGL_ANGLE_sync_control_rate
+#define EGL_ANGLE_sync_control_rate 1
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglGetMscRateANGLE(EGLDisplay dpy,
+                                                 EGLSurface surface,
+                                                 EGLint* numerator,
+                                                 EGLint* denominator);
+#endif /* EGL_EGLEXT_PROTOTYPES */
+typedef EGLBoolean(EGLAPIENTRYP PFNEGLGETMSCRATEANGLEPROC)(EGLDisplay dpy,
+                                                           EGLSurface surface,
+                                                           EGLint* numerator,
+                                                           EGLint* denominator);
+#endif /* EGL_ANGLE_sync_control_rate */
+#endif /* KHRONOS_SUPPORT_INT64 */
 
 #ifdef __cplusplus
 }

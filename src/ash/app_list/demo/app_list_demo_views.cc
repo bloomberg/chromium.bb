@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -52,11 +51,8 @@ AppListView* DemoAppListViewDelegate::InitView(
   gfx::NativeView container = window_context;
 
   view_ = new AppListView(this);
-  view_->InitView(
-      /*is_tablet_mode=*/false, container,
-      base::BindRepeating(&UpdateActivationForAppListView, view_,
-                          /*is_tablet_mode=*/false));
-  view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
+  view_->InitView(container);
+  view_->Show(false /*is_side_shelf*/);
 
   // Populate some apps.
   GetTestModel()->PopulateApps(kInitialItems);
@@ -66,7 +62,7 @@ AppListView* DemoAppListViewDelegate::InitView(
   for (size_t i = 0; i < item_list->item_count(); ++i) {
     AppListItem* item = item_list->item_at(i);
     // Alternate images with shadows and images without.
-    item->SetIcon(ash::AppListConfigType::kShared, *test_image.ToImageSkia());
+    item->SetIcon(AppListConfigType::kShared, *test_image.ToImageSkia());
   }
   return view_;
 }

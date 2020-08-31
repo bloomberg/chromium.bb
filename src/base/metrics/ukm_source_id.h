@@ -18,7 +18,7 @@ class BASE_EXPORT UkmSourceId {
  public:
   enum class Type : int64_t {
     // Source ids of this type are created via ukm::AssignNewSourceId, to denote
-    // 'custom' source other than the 3 types below. Source of this type has
+    // 'custom' source other than the types below. Source of this type has
     // additional restrictions with logging, as determined by
     // IsWhitelistedSourceId.
     UKM = 0,
@@ -36,6 +36,20 @@ class BASE_EXPORT UkmSourceId {
     // same report interval; it will not be kept in memory between different
     // reports.
     HISTORY_ID = 3,
+    // Source ID used by WebApkUkmRecorder. A new source of this type and
+    // associated events are expected to be recorded within the same report
+    // interval; it will not be kept in memory between different reports.
+    WEBAPK_ID = 4,
+    // Source ID for service worker based payment handlers. A new source of this
+    // type and associated events are expected to be recorded within the same
+    // report interval; it will not be kept in memory between different reports.
+    PAYMENT_APP_ID = 5,
+    // Source ID for desktop web apps, based on the start_url in the web app
+    // manifest. A new source of this type and associated events are expected to
+    // be recorded within the same report interval; it will not be kept in
+    // memory between different reports.
+    DESKTOP_WEB_APP_ID = 6,
+    kMaxValue = DESKTOP_WEB_APP_ID,
   };
 
   // Default constructor has the invalid value.

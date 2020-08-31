@@ -20,6 +20,10 @@ from chromite.lib import metrics
 from chromite.lib import timeout_util
 from chromite.lib import ts_mon_config
 
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 def main(argv):
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('swarming_server', action='store',

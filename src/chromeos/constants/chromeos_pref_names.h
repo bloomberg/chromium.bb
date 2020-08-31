@@ -17,6 +17,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioMute[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioOutputAllowed[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioVolumePercent[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesState[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEduCoexistenceId[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEduCoexistenceSecondaryAccountsInvalidationVersion[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kQuirksClientLastServerCheck[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -29,6 +32,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kSamlPasswordExpirationTime[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kSamlPasswordChangeUrl[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kLoginDisplayPasswordButtonEnabled[];
 
 }  // namespace prefs
 }  // namespace chromeos

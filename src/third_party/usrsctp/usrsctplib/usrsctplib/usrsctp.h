@@ -72,7 +72,16 @@ extern "C" {
 #define int32_t   __int32
 #endif
 
-#define ssize_t   __int64
+#ifndef ssize_t
+#ifdef _WIN64
+#define ssize_t __int64
+#elif defined _WIN32
+#define ssize_t int
+#else
+#error "Unknown platform!"
+#endif
+#endif
+
 #define MSG_EOR   0x8
 #ifndef EWOULDBLOCK
 #define EWOULDBLOCK  WSAEWOULDBLOCK
@@ -127,12 +136,8 @@ struct sockaddr_conn {
 #endif
 
 union sctp_sockstore {
-#if defined(INET)
 	struct sockaddr_in sin;
-#endif
-#if defined(INET6)
 	struct sockaddr_in6 sin6;
-#endif
 	struct sockaddr_conn sconn;
 	struct sockaddr sa;
 };
@@ -140,6 +145,10 @@ union sctp_sockstore {
 #define SCTP_FUTURE_ASSOC  0
 #define SCTP_CURRENT_ASSOC 1
 #define SCTP_ALL_ASSOC     2
+
+#define SCTP_EVENT_READ    0x0001
+#define SCTP_EVENT_WRITE   0x0002
+#define SCTP_EVENT_ERROR   0x0004
 
 /***  Structures and definitions to use the socket API  ***/
 
@@ -306,7 +315,7 @@ struct sctp_remote_error {
 	uint32_t sre_length;
 	uint16_t sre_error;
 	sctp_assoc_t sre_assoc_id;
-	uint8_t sre_data[4];
+	uint8_t sre_data[];
 };
 
 /* shutdown event */
@@ -471,6 +480,8 @@ struct sctp_event_subscribe {
 
 
 /* Flags that go into the sinfo->sinfo_flags field */
+#define SCTP_DATA_LAST_FRAG   0x0001 /* tail part of the message could not be sent */
+#define SCTP_DATA_NOT_FRAG    0x0003 /* complete message could not be sent */
 #define SCTP_NOTIFICATION     0x0010 /* next message is a notification */
 #define SCTP_COMPLETE         0x0020 /* next message is complete */
 #define SCTP_EOF              0x0100 /* Start shutdown procedures */
@@ -540,6 +551,14 @@ struct sctp_event_subscribe {
 #define SCTP_DEFAULT_SNDINFO            0x00000021
 #define SCTP_DEFAULT_PRINFO             0x00000022
 #define SCTP_REMOTE_UDP_ENCAPS_PORT     0x00000024
+#define SCTP_ECN_SUPPORTED              0x00000025
+#define SCTP_PR_SUPPORTED               0x00000026
+#define SCTP_AUTH_SUPPORTED             0x00000027
+#define SCTP_ASCONF_SUPPORTED           0x00000028
+#define SCTP_RECONFIG_SUPPORTED         0x00000029
+#define SCTP_NRSACK_SUPPORTED           0x00000030
+#define SCTP_PKTDROP_SUPPORTED          0x00000031
+#define SCTP_MAX_CWND                   0x00000032
 
 #define SCTP_ENABLE_STREAM_RESET        0x00000900 /* struct sctp_assoc_value */
 
@@ -875,6 +894,11 @@ usrsctp_init(uint16_t,
              int (*)(void *addr, void *buffer, size_t length, uint8_t tos, uint8_t set_df),
              void (*)(const char *format, ...));
 
+void
+usrsctp_init_nothreads(uint16_t,
+		       int (*)(void *addr, void *buffer, size_t length, uint8_t tos, uint8_t set_df),
+		       void (*)(const char *format, ...));
+
 struct socket *
 usrsctp_socket(int domain, int type, int protocol,
                int (*receive_cb)(struct socket *sock, union sctp_sockstore addr, void *data,
@@ -1008,6 +1032,18 @@ usrsctp_deregister_address(void *);
 int
 usrsctp_set_ulpinfo(struct socket *, void *);
 
+int
+usrsctp_set_upcall(struct socket *so,
+                   void (*upcall)(struct socket *, void *, int),
+                   void *arg);
+
+int
+usrsctp_get_events(struct socket *so);
+
+
+void
+usrsctp_handle_timers(uint32_t delta);
+
 #define SCTP_DUMP_OUTBOUND 1
 #define SCTP_DUMP_INBOUND  0
 
@@ -1094,6 +1130,7 @@ USRSCTP_SYSCTL_DECL(sctp_udp_tunneling_port)
 USRSCTP_SYSCTL_DECL(sctp_enable_sack_immediately)
 USRSCTP_SYSCTL_DECL(sctp_vtag_time_wait)
 USRSCTP_SYSCTL_DECL(sctp_blackhole)
+USRSCTP_SYSCTL_DECL(sctp_sendall_limit)
 USRSCTP_SYSCTL_DECL(sctp_diag_info_code)
 USRSCTP_SYSCTL_DECL(sctp_fr_max_burst_default)
 USRSCTP_SYSCTL_DECL(sctp_path_pf_threshold)

@@ -15,17 +15,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -90,7 +89,7 @@ const net::BackoffEntry::Policy
         -1,          // Don't discard entry even if unused.
         false        // Don't use initial delay unless the last was an error.
 };
-const int ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch = 7;
+const int ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch = 2;
 
 // static
 std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(

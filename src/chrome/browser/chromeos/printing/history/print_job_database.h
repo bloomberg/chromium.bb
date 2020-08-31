@@ -27,7 +27,10 @@ class PrintJobDatabase {
 
   using DeletePrintJobsCallback = base::OnceCallback<void(bool success)>;
 
-  using GetPrintJobsCallback = base::OnceCallback<void(
+  using GetPrintJobsCallback = base::OnceCallback<
+      void(bool success, std::vector<printing::proto::PrintJobInfo> entries)>;
+
+  using GetPrintJobsFromProtoDatabaseCallback = base::OnceCallback<void(
       bool success,
       std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries)>;
 
@@ -46,6 +49,9 @@ class PrintJobDatabase {
   // Removes the print jobs associated with given |ids| from the storage.
   virtual void DeletePrintJobs(const std::vector<std::string>& ids,
                                DeletePrintJobsCallback callback) = 0;
+
+  // Removes all the print jobs from the storage.
+  virtual void Clear(DeletePrintJobsCallback callback) = 0;
 
   // Retrieves all print jobs from the storage.
   virtual void GetPrintJobs(GetPrintJobsCallback callback) = 0;

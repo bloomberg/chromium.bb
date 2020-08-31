@@ -87,9 +87,12 @@ class MediaContentDescription {
 
   virtual bool has_codecs() const = 0;
 
-  virtual MediaContentDescription* Copy() const = 0;
-  virtual std::unique_ptr<MediaContentDescription> Clone() const {
-    return absl::WrapUnique(Copy());
+  // Copy operator that returns an unique_ptr.
+  // Not a virtual function.
+  // If a type-specific variant of Clone() is desired, override it, or
+  // simply use std::make_unique<typename>(*this) instead of Clone().
+  std::unique_ptr<MediaContentDescription> Clone() const {
+    return absl::WrapUnique(CloneInternal());
   }
 
   // |protocol| is the expected media transport protocol, such as RTP/AVPF,
@@ -280,11 +283,13 @@ class MediaContentDescription {
   std::vector<RidDescription> receive_rids_;
 
   absl::optional<std::string> alt_protocol_;
-};
 
-// TODO(bugs.webrtc.org/8620): Remove this alias once downstream projects have
-// updated.
-using ContentDescription = MediaContentDescription;
+ private:
+  // Copy function that returns a raw pointer. Caller will assert ownership.
+  // Should only be called by the Clone() function. Must be implemented
+  // by each final subclass.
+  virtual MediaContentDescription* CloneInternal() const = 0;
+};
 
 template <class C>
 class MediaContentDescriptionImpl : public MediaContentDescription {
@@ -337,34 +342,40 @@ class AudioContentDescription : public MediaContentDescriptionImpl<AudioCodec> {
  public:
   AudioContentDescription() {}
 
-  virtual AudioContentDescription* Copy() const {
-    return new AudioContentDescription(*this);
-  }
   virtual MediaType type() const { return MEDIA_TYPE_AUDIO; }
   virtual AudioContentDescription* as_audio() { return this; }
   virtual const AudioContentDescription* as_audio() const { return this; }
+
+ private:
+  virtual AudioContentDescription* CloneInternal() const {
+    return new AudioContentDescription(*this);
+  }
 };
 
 class VideoContentDescription : public MediaContentDescriptionImpl<VideoCodec> {
  public:
-  virtual VideoContentDescription* Copy() const {
-    return new VideoContentDescription(*this);
-  }
   virtual MediaType type() const { return MEDIA_TYPE_VIDEO; }
   virtual VideoContentDescription* as_video() { return this; }
   virtual const VideoContentDescription* as_video() const { return this; }
+
+ private:
+  virtual VideoContentDescription* CloneInternal() const {
+    return new VideoContentDescription(*this);
+  }
 };
 
 class RtpDataContentDescription
     : public MediaContentDescriptionImpl<RtpDataCodec> {
  public:
   RtpDataContentDescription() {}
-  RtpDataContentDescription* Copy() const override {
-    return new RtpDataContentDescription(*this);
-  }
   MediaType type() const override { return MEDIA_TYPE_DATA; }
   RtpDataContentDescription* as_rtp_data() override { return this; }
   const RtpDataContentDescription* as_rtp_data() const override { return this; }
+
+ private:
+  RtpDataContentDescription* CloneInternal() const override {
+    return new RtpDataContentDescription(*this);
+  }
 };
 
 class SctpDataContentDescription : public MediaContentDescription {
@@ -375,9 +386,6 @@ class SctpDataContentDescription : public MediaContentDescription {
         use_sctpmap_(o.use_sctpmap_),
         port_(o.port_),
         max_message_size_(o.max_message_size_) {}
-  SctpDataContentDescription* Copy() const override {
-    return new SctpDataContentDescription(*this);
-  }
   MediaType type() const override { return MEDIA_TYPE_DATA; }
   SctpDataContentDescription* as_sctp() override { return this; }
   const SctpDataContentDescription* as_sctp() const override { return this; }
@@ -398,6 +406,9 @@ class SctpDataContentDescription : public MediaContentDescription {
   }
 
  private:
+  SctpDataContentDescription* CloneInternal() const override {
+    return new SctpDataContentDescription(*this);
+  }
   bool use_sctpmap_ = true;  // Note: "true" is no longer conformant.
   // Defaults should be constants imported from SCTP. Quick hack.
   int port_ = 5000;
@@ -413,10 +424,6 @@ enum class MediaProtocolType {
   kSctp  // Section will use the SCTP protocol (e.g., for a data channel).
          // https://tools.ietf.org/html/rfc4960
 };
-
-// TODO(bugs.webrtc.org/8620): Remove once downstream projects have updated.
-constexpr MediaProtocolType NS_JINGLE_RTP = MediaProtocolType::kRtp;
-constexpr MediaProtocolType NS_JINGLE_DRAFT_SCTP = MediaProtocolType::kSctp;
 
 // Represents a session description section. Most information about the section
 // is stored in the description, which is a subclass of MediaContentDescription.
@@ -441,8 +448,6 @@ class RTC_EXPORT ContentInfo {
 
   void set_media_description(std::unique_ptr<MediaContentDescription> desc) {
     description_ = std::move(desc);
-    // For backwards compatibility only.
-    description = description_.get();
   }
 
   // TODO(bugs.webrtc.org/8620): Rename this to mid.
@@ -454,10 +459,6 @@ class RTC_EXPORT ContentInfo {
  private:
   friend class SessionDescription;
   std::unique_ptr<MediaContentDescription> description_;
-
- public:
-  // Kept for backwards compatibility only.
-  MediaContentDescription* description = nullptr;
 };
 
 typedef std::vector<std::string> ContentNames;
@@ -541,29 +542,6 @@ class SessionDescription {
                   bool bundle_only,
                   std::unique_ptr<MediaContentDescription> description);
   void AddContent(ContentInfo&& content);
-  RTC_DEPRECATED void AddContent(const std::string& name,
-                                 MediaProtocolType type,
-                                 MediaContentDescription* description) {
-    AddContent(name, type, absl::WrapUnique(description));
-  }
-  RTC_DEPRECATED void AddContent(const std::string& name,
-                                 MediaProtocolType type,
-                                 bool rejected,
-                                 MediaContentDescription* description) {
-    AddContent(name, type, rejected, absl::WrapUnique(description));
-  }
-  RTC_DEPRECATED void AddContent(const std::string& name,
-                                 MediaProtocolType type,
-                                 bool rejected,
-                                 bool bundle_only,
-                                 MediaContentDescription* description) {
-    AddContent(name, type, rejected, bundle_only,
-               absl::WrapUnique(description));
-  }
-
-  RTC_DEPRECATED void AddContent(ContentInfo* content) {
-    AddContent(std::move(*content));
-  }
 
   bool RemoveContentByName(const std::string& name);
 

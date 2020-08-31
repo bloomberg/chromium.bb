@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+
+import {TimelineJSProfileProcessor} from './TimelineJSProfile.js';
+import {RecordType, TimelineData, TimelineModelImpl} from './TimelineModel.js';
+import {TimelineModelFilter} from './TimelineModelFilter.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
@@ -42,7 +48,7 @@ export class Node {
   }
 
   /**
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     throw 'Not implemented';
@@ -90,14 +96,14 @@ export class TopDownNode extends Node {
 
   /**
    * @override
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     return this._children || this._buildChildren();
   }
 
   /**
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   _buildChildren() {
     /** @type {!Array<!TopDownNode>} */
@@ -106,7 +112,7 @@ export class TopDownNode extends Node {
       path.push(/** @type {!TopDownNode} */ (node));
     }
     path.reverse();
-    /** @type {!TimelineModel.TimelineProfileTree.ChildrenCache} */
+    /** @type {!ChildrenCache} */
     const children = new Map();
     const self = this;
     const root = this._root;
@@ -118,7 +124,7 @@ export class TopDownNode extends Node {
     let depth = 0;
     let matchedDepth = 0;
     let currentDirectChild = null;
-    TimelineModel.TimelineModel.forEachEvent(
+    TimelineModelImpl.forEachEvent(
         root._events, onStartEvent, onEndEvent, instantEventCallback, startTime, endTime, root._filter);
 
     /**
@@ -231,7 +237,7 @@ export class TopDownNode extends Node {
 export class TopDownRootNode extends TopDownNode {
   /**
    * @param {!Array<!SDK.TracingModel.Event>} events
-   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
+   * @param {!Array<!TimelineModelFilter>} filters
    * @param {number} startTime
    * @param {number} endTime
    * @param {boolean=} doNotAggregate
@@ -252,14 +258,14 @@ export class TopDownRootNode extends TopDownNode {
 
   /**
    * @override
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     return this._children || this._grouppedTopNodes();
   }
 
   /**
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   _grouppedTopNodes() {
     const flatNodes = super.children();
@@ -287,7 +293,7 @@ export class TopDownRootNode extends TopDownNode {
 export class BottomUpRootNode extends Node {
   /**
    * @param {!Array<!SDK.TracingModel.Event>} events
-   * @param {!TimelineModel.TimelineModelFilter} textFilter
+   * @param {!TimelineModelFilter} textFilter
    * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
    * @param {number} startTime
    * @param {number} endTime
@@ -295,7 +301,7 @@ export class BottomUpRootNode extends Node {
    */
   constructor(events, textFilter, filters, startTime, endTime, eventGroupIdCallback) {
     super('', null);
-    /** @type {?TimelineModel.TimelineProfileTree.ChildrenCache} */
+    /** @type {?ChildrenCache} */
     this._children = null;
     this._events = events;
     this._textFilter = textFilter;
@@ -315,8 +321,8 @@ export class BottomUpRootNode extends Node {
   }
 
   /**
-   * @param {!TimelineModel.TimelineProfileTree.ChildrenCache} children
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @param {!ChildrenCache} children
+   * @return {!ChildrenCache}
    */
   _filterChildren(children) {
     for (const [id, child] of children) {
@@ -329,7 +335,7 @@ export class BottomUpRootNode extends Node {
 
   /**
    * @override
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     if (!this._children) {
@@ -339,13 +345,13 @@ export class BottomUpRootNode extends Node {
   }
 
   /**
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   _ungrouppedTopNodes() {
     const root = this;
     const startTime = this._startTime;
     const endTime = this._endTime;
-    /** @type {!TimelineModel.TimelineProfileTree.ChildrenCache} */
+    /** @type {!ChildrenCache} */
     const nodeById = new Map();
     /** @type {!Array<number>} */
     const selfTimeStack = [endTime - startTime];
@@ -353,8 +359,7 @@ export class BottomUpRootNode extends Node {
     const firstNodeStack = [];
     /** @type {!Map<string, number>} */
     const totalTimeById = new Map();
-    TimelineModel.TimelineModel.forEachEvent(
-        this._events, onStartEvent, onEndEvent, undefined, startTime, endTime, this._filter);
+    TimelineModelImpl.forEachEvent(this._events, onStartEvent, onEndEvent, undefined, startTime, endTime, this._filter);
 
     /**
      * @param {!SDK.TracingModel.Event} e
@@ -401,7 +406,7 @@ export class BottomUpRootNode extends Node {
   }
 
   /**
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   _grouppedTopNodes() {
     const flatNodes = this._ungrouppedTopNodes();
@@ -457,7 +462,7 @@ export class GroupNode extends Node {
 
   /**
    * @override
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     return this._children;
@@ -477,7 +482,7 @@ export class BottomUpNode extends Node {
     this.parent = parent;
     this._root = root;
     this._depth = (parent._depth || 0) + 1;
-    /** @type {?TimelineModel.TimelineProfileTree.ChildrenCache} */
+    /** @type {?ChildrenCache} */
     this._cachedChildren = null;
     this._hasChildren = hasChildren;
   }
@@ -496,7 +501,7 @@ export class BottomUpNode extends Node {
 
   /**
    * @override
-   * @return {!TimelineModel.TimelineProfileTree.ChildrenCache}
+   * @return {!ChildrenCache}
    */
   children() {
     if (this._cachedChildren) {
@@ -508,13 +513,13 @@ export class BottomUpNode extends Node {
     const eventIdStack = [];
     /** @type {!Array<!SDK.TracingModel.Event>} */
     const eventStack = [];
-    /** @type {!TimelineModel.TimelineProfileTree.ChildrenCache} */
+    /** @type {!ChildrenCache} */
     const nodeById = new Map();
     const startTime = this._root._startTime;
     const endTime = this._root._endTime;
     let lastTimeMarker = startTime;
     const self = this;
-    TimelineModel.TimelineModel.forEachEvent(
+    TimelineModelImpl.forEachEvent(
         this._root._events, onStartEvent, onEndEvent, undefined, startTime, endTime, this._root._filter);
 
     /**
@@ -606,10 +611,10 @@ export function eventURL(event) {
  * @return {?Protocol.Runtime.CallFrame}
  */
 export function eventStackFrame(event) {
-  if (event.name === TimelineModel.TimelineModel.RecordType.JSFrame) {
+  if (event.name === RecordType.JSFrame) {
     return /** @type {?Protocol.Runtime.CallFrame} */ (event.args['data'] || null);
   }
-  return TimelineModel.TimelineData.forEvent(event).topFrame();
+  return TimelineData.forEvent(event).topFrame();
 }
 
 /**
@@ -617,52 +622,22 @@ export function eventStackFrame(event) {
  * @return {string}
  */
 export function _eventId(event) {
-  if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp) {
+  if (event.name === RecordType.TimeStamp) {
     return `${event.name}:${event.args.data.message}`;
   }
-  if (event.name !== TimelineModel.TimelineModel.RecordType.JSFrame) {
+  if (event.name !== RecordType.JSFrame) {
     return event.name;
   }
   const frame = event.args['data'];
   const location = frame['scriptId'] || frame['url'] || '';
   const functionName = frame['functionName'];
-  const name = TimelineModel.TimelineJSProfileProcessor.isNativeRuntimeFrame(frame) ?
-      TimelineModel.TimelineJSProfileProcessor.nativeGroup(functionName) || functionName :
+  const name = TimelineJSProfileProcessor.isNativeRuntimeFrame(frame) ?
+      TimelineJSProfileProcessor.nativeGroup(functionName) || functionName :
       `${functionName}:${frame['lineNumber']}:${frame['columnNumber']}`;
   return `f:${name}@${location}`;
 }
 
-/* Legacy exported object */
-self.TimelineModel = self.TimelineModel || {};
-
-/* Legacy exported object */
-TimelineModel = TimelineModel || {};
-
-TimelineModel.TimelineProfileTree = {};
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.Node = Node;
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.TopDownNode = TopDownNode;
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.TopDownRootNode = TopDownRootNode;
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.BottomUpRootNode = BottomUpRootNode;
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.GroupNode = GroupNode;
-
-/** @constructor */
-TimelineModel.TimelineProfileTree.BottomUpNode = BottomUpNode;
-
-TimelineModel.TimelineProfileTree.eventURL = eventURL;
-TimelineModel.TimelineProfileTree.eventStackFrame = eventStackFrame;
-TimelineModel.TimelineProfileTree._eventId = _eventId;
-
 /**
  * @typedef {Map<string|symbol, !Node>}
  */
-TimelineModel.TimelineProfileTree.ChildrenCache;
+export let ChildrenCache;

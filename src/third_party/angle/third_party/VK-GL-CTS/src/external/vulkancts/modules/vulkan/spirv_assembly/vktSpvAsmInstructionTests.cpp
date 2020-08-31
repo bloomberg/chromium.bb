@@ -23,6 +23,7 @@
  *//*--------------------------------------------------------------------*/
 
 #include "vktSpvAsmInstructionTests.hpp"
+#include "vktAmberTestCase.hpp"
 
 #include "tcuCommandLine.hpp"
 #include "tcuFormatUtil.hpp"
@@ -76,7 +77,10 @@
 #include "vktSpvAsmWorkgroupMemoryTests.hpp"
 #include "vktSpvAsmSignedIntCompareTests.hpp"
 #include "vktSpvAsmPtrAccessChainTests.hpp"
+#include "vktSpvAsmFloatControlsExtensionlessTests.hpp"
+#include "vktSpvAsmNonSemanticInfoTests.hpp"
 #include "vktSpvAsm64bitCompareTests.hpp"
+#include "vktSpvAsmTrinaryMinMaxTests.hpp"
 
 #include <cmath>
 #include <limits>
@@ -1435,6 +1439,8 @@ tcu::TestCaseGroup* createOpAtomicGroup (tcu::TestContext& testCtx, bool useStor
 		if (volatileAtomic)
 		{
 			spec.extensions.push_back("VK_KHR_vulkan_memory_model");
+			spec.requestedVulkanFeatures.extVulkanMemoryModel = EXTVULKANMEMORYMODELFEATURES_ENABLE;
+
 			// volatile, queuefamily scope
 			specializations["SEMANTICS"] = "%volbit";
 			specializations["SCOPE"] = "%five";
@@ -3131,6 +3137,28 @@ tcu::TestCaseGroup* createOpCopyObjectGroup (tcu::TestContext& testCtx)
 //   }
 // }
 
+void addOpUnreachableAmberTests(tcu::TestCaseGroup& group, tcu::TestContext& testCtx)
+{
+	static const char dataDir[] = "spirv_assembly/instruction/compute/unreachable";
+
+	struct Case
+	{
+		string	name;
+		string	desc;
+	};
+
+	static const Case cases[] =
+	{
+		{ "unreachable-switch-merge-in-loop",	"Test containing an unreachable switch merge block inside an infinite loop"	},
+	};
+
+	for (int i = 0; i < DE_LENGTH_OF_ARRAY(cases); ++i)
+	{
+		const string fileName = cases[i].name + ".amber";
+		group.addChild(cts_amber::createAmberTestCase(testCtx, cases[i].name.c_str(), cases[i].desc.c_str(), dataDir, fileName));
+	}
+}
+
 tcu::TestCaseGroup* createOpUnreachableGroup (tcu::TestContext& testCtx)
 {
 	de::MovePtr<tcu::TestCaseGroup>	group			(new tcu::TestCaseGroup(testCtx, "opunreachable", "Test the OpUnreachable instruction"));
@@ -3239,6 +3267,8 @@ tcu::TestCaseGroup* createOpUnreachableGroup (tcu::TestContext& testCtx)
 	spec.numWorkGroups = IVec3(numElements, 1, 1);
 
 	group->addChild(new SpvAsmComputeShaderCase(testCtx, "all", "OpUnreachable appearing at different places", spec));
+
+	addOpUnreachableAmberTests(*group, testCtx);
 
 	return group.release();
 }
@@ -3411,54 +3441,218 @@ tcu::TestCaseGroup* createDecorationGroupGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-struct SpecConstantTwoIntCase
+enum SpecConstantType
 {
-	const char*		caseName;
-	const char*		scDefinition0;
-	const char*		scDefinition1;
-	const char*		scResultType;
-	const char*		scOperation;
-	deInt32			scActualValue0;
-	deInt32			scActualValue1;
-	const char*		resultOperation;
-	vector<deInt32>	expectedOutput;
-	deInt32			scActualValueLength;
-
-					SpecConstantTwoIntCase (const char* name,
-											const char* definition0,
-											const char* definition1,
-											const char* resultType,
-											const char* operation,
-											deInt32 value0,
-											deInt32 value1,
-											const char* resultOp,
-											const vector<deInt32>& output,
-											const deInt32	valueLength = sizeof(deInt32))
-						: caseName				(name)
-						, scDefinition0			(definition0)
-						, scDefinition1			(definition1)
-						, scResultType			(resultType)
-						, scOperation			(operation)
-						, scActualValue0		(value0)
-						, scActualValue1		(value1)
-						, resultOperation		(resultOp)
-						, expectedOutput		(output)
-						, scActualValueLength	(valueLength)
-						{}
+	SC_INT8,
+	SC_UINT8,
+	SC_INT16,
+	SC_UINT16,
+	SC_INT32,
+	SC_UINT32,
+	SC_INT64,
+	SC_UINT64,
+	SC_FLOAT16,
+	SC_FLOAT32,
+	SC_FLOAT64,
 };
+
+struct SpecConstantValue
+{
+	SpecConstantType type;
+	union ValueUnion {
+		deInt8			i8;
+		deUint8			u8;
+		deInt16			i16;
+		deUint16		u16;
+		deInt32			i32;
+		deUint32		u32;
+		deInt64			i64;
+		deUint64		u64;
+		tcu::Float16	f16;
+		tcu::Float32	f32;
+		tcu::Float64	f64;
+
+		ValueUnion (deInt8			v) : i8(v)	{}
+		ValueUnion (deUint8			v) : u8(v)	{}
+		ValueUnion (deInt16			v) : i16(v)	{}
+		ValueUnion (deUint16		v) : u16(v)	{}
+		ValueUnion (deInt32			v) : i32(v)	{}
+		ValueUnion (deUint32		v) : u32(v)	{}
+		ValueUnion (deInt64			v) : i64(v)	{}
+		ValueUnion (deUint64		v) : u64(v)	{}
+		ValueUnion (tcu::Float16	v) : f16(v)	{}
+		ValueUnion (tcu::Float32	v) : f32(v)	{}
+		ValueUnion (tcu::Float64	v) : f64(v)	{}
+	} value;
+
+	SpecConstantValue (deInt8			v) : type(SC_INT8)		, value(v) {}
+	SpecConstantValue (deUint8			v) : type(SC_UINT8)		, value(v) {}
+	SpecConstantValue (deInt16			v) : type(SC_INT16)		, value(v) {}
+	SpecConstantValue (deUint16			v) : type(SC_UINT16)	, value(v) {}
+	SpecConstantValue (deInt32			v) : type(SC_INT32)		, value(v) {}
+	SpecConstantValue (deUint32			v) : type(SC_UINT32)	, value(v) {}
+	SpecConstantValue (deInt64			v) : type(SC_INT64)		, value(v) {}
+	SpecConstantValue (deUint64			v) : type(SC_UINT64)	, value(v) {}
+	SpecConstantValue (tcu::Float16		v) : type(SC_FLOAT16)	, value(v) {}
+	SpecConstantValue (tcu::Float32		v) : type(SC_FLOAT32)	, value(v) {}
+	SpecConstantValue (tcu::Float64		v) : type(SC_FLOAT64)	, value(v) {}
+
+	void appendTo(vkt::SpirVAssembly::SpecConstants& specConstants)
+	{
+		switch (type)
+		{
+		case SC_INT8:		specConstants.append(value.i8);		break;
+		case SC_UINT8:		specConstants.append(value.u8);		break;
+		case SC_INT16:		specConstants.append(value.i16);	break;
+		case SC_UINT16:		specConstants.append(value.u16);	break;
+		case SC_INT32:		specConstants.append(value.i32);	break;
+		case SC_UINT32:		specConstants.append(value.u32);	break;
+		case SC_INT64:		specConstants.append(value.i64);	break;
+		case SC_UINT64:		specConstants.append(value.u64);	break;
+		case SC_FLOAT16:	specConstants.append(value.f16);	break;
+		case SC_FLOAT32:	specConstants.append(value.f32);	break;
+		case SC_FLOAT64:	specConstants.append(value.f64);	break;
+		default:
+			DE_ASSERT(false);
+		}
+	}
+};
+
+enum CaseFlagBits
+{
+	FLAG_NONE		= 0,
+	FLAG_CONVERT	= 1,
+	FLAG_I8			= (1<<1),
+	FLAG_I16		= (1<<2),
+	FLAG_I64		= (1<<3),
+	FLAG_F16		= (1<<4),
+	FLAG_F64		= (1<<5),
+};
+using CaseFlags = deUint32;
+
+struct SpecConstantTwoValCase
+{
+	const std::string	caseName;
+	const std::string	scDefinition0;
+	const std::string	scDefinition1;
+	const std::string	scResultType;
+	const std::string	scOperation;
+	SpecConstantValue	scActualValue0;
+	SpecConstantValue	scActualValue1;
+	const std::string	resultOperation;
+	vector<deInt32>		expectedOutput;
+	CaseFlags			caseFlags;
+
+						SpecConstantTwoValCase (const std::string& name,
+												const std::string& definition0,
+												const std::string& definition1,
+												const std::string& resultType,
+												const std::string& operation,
+												SpecConstantValue value0,
+												SpecConstantValue value1,
+												const std::string& resultOp,
+												const vector<deInt32>& output,
+												CaseFlags flags = FLAG_NONE)
+							: caseName				(name)
+							, scDefinition0			(definition0)
+							, scDefinition1			(definition1)
+							, scResultType			(resultType)
+							, scOperation			(operation)
+							, scActualValue0		(value0)
+							, scActualValue1		(value1)
+							, resultOperation		(resultOp)
+							, expectedOutput		(output)
+							, caseFlags				(flags)
+							{}
+};
+
+std::string getSpecConstantOpStructConstantsAndTypes ()
+{
+	return
+		"%zero        = OpConstant %i32 0\n"
+		"%one         = OpConstant %i32 1\n"
+		"%two         = OpConstant %i32 2\n"
+		"%three       = OpConstant %i32 3\n"
+		"%iarr3       = OpTypeArray %i32 %three\n"
+		"%imat3       = OpTypeArray %iarr3 %three\n"
+		"%struct      = OpTypeStruct %imat3\n"
+		;
+}
+
+std::string getSpecConstantOpStructComposites ()
+{
+	return
+		"%iarr3_0     = OpConstantComposite %iarr3 %zero %zero %zero\n"
+		"%imat3_0     = OpConstantComposite %imat3 %iarr3_0 %iarr3_0 %iarr3_0\n"
+		"%struct_0    = OpConstantComposite %struct %imat3_0\n"
+		;
+}
+
+std::string getSpecConstantOpStructConstBlock ()
+{
+	return
+		"%iarr3_a     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_0        %iarr3_0     0\n"                        // Compose (sc_0, sc_1, sc_2)
+		"%iarr3_b     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_1        %iarr3_a     1\n"
+		"%iarr3_c     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_2        %iarr3_b     2\n"
+
+		"%iarr3_d     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_1        %iarr3_0     0\n"                        // Compose (sc_1, sc_2, sc_0)
+		"%iarr3_e     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_2        %iarr3_d     1\n"
+		"%iarr3_f     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_0        %iarr3_e     2\n"
+
+		"%iarr3_g     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_2        %iarr3_0     0\n"                        // Compose (sc_2, sc_0, sc_1)
+		"%iarr3_h     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_0        %iarr3_g     1\n"
+		"%iarr3_i     = OpSpecConstantOp %iarr3  CompositeInsert  %sc_1        %iarr3_h     2\n"
+
+		"%imat3_a     = OpSpecConstantOp %imat3  CompositeInsert  %iarr3_c     %imat3_0     0\n"						// Matrix with the 3 previous arrays.
+		"%imat3_b     = OpSpecConstantOp %imat3  CompositeInsert  %iarr3_f     %imat3_a     1\n"
+		"%imat3_c     = OpSpecConstantOp %imat3  CompositeInsert  %iarr3_i     %imat3_b     2\n"
+
+		"%struct_a    = OpSpecConstantOp %struct CompositeInsert  %imat3_c     %struct_0    0\n"						// Save it in the struct.
+
+		"%comp_0_0    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 0 0\n"									// Extract some component pairs to compare them.
+		"%comp_1_0    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 1 0\n"
+
+		"%comp_0_1    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 0 1\n"
+		"%comp_2_2    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 2 2\n"
+
+		"%comp_2_0    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 2 0\n"
+		"%comp_1_1    = OpSpecConstantOp %i32    CompositeExtract %struct_a    0 1 1\n"
+
+		"%cmpres_0    = OpSpecConstantOp %bool   IEqual %comp_0_0 %comp_1_0\n"											// Must be false.
+		"%cmpres_1    = OpSpecConstantOp %bool   IEqual %comp_0_1 %comp_2_2\n"											// Must be true.
+		"%cmpres_2    = OpSpecConstantOp %bool   IEqual %comp_2_0 %comp_1_1\n"											// Must be true.
+
+		"%mustbe_0    = OpSpecConstantOp %i32    Select %cmpres_0 %one %zero\n"											// Must select 0
+		"%mustbe_1    = OpSpecConstantOp %i32    Select %cmpres_1 %one %zero\n"											// Must select 1
+		"%mustbe_2    = OpSpecConstantOp %i32    Select %cmpres_2 %two %one\n"											// Must select 2
+		;
+}
+
+std::string getSpecConstantOpStructInstructions ()
+{
+	return
+		// Multiply final result with (1-mustbezero)*(mustbeone)*(mustbetwo-1). If everything goes right, the factor should be 1 and
+		// the final result should not be altered.
+		"%subf_a      = OpISub %i32 %one %mustbe_0\n"
+		"%subf_b      = OpIMul %i32 %subf_a %mustbe_1\n"
+		"%subf_c      = OpISub %i32 %mustbe_2 %one\n"
+		"%factor      = OpIMul %i32 %subf_b %subf_c\n"
+		"%sc_final    = OpIMul %i32 %factor %sc_factor\n"
+		;
+}
 
 tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 {
 	de::MovePtr<tcu::TestCaseGroup>	group			(new tcu::TestCaseGroup(testCtx, "opspecconstantop", "Test the OpSpecConstantOp instruction"));
-	vector<SpecConstantTwoIntCase>	cases;
+	vector<SpecConstantTwoValCase>	cases;
 	de::Random						rnd				(deStringHash(group->getName()));
 	const int						numElements		= 100;
-	const deInt32					p1AsFloat16		= 0x3c00; // +1(fp16) == 0 01111 0000000000 == 0011 1100 0000 0000
 	vector<deInt32>					inputInts		(numElements, 0);
 	vector<deInt32>					outputInts1		(numElements, 0);
 	vector<deInt32>					outputInts2		(numElements, 0);
 	vector<deInt32>					outputInts3		(numElements, 0);
 	vector<deInt32>					outputInts4		(numElements, 0);
+	vector<deInt32>					outputInts5		(numElements, 0);
 	const StringTemplate			shaderTemplate	(
 		"${CAPABILITIES:opt}"
 		+ string(getComputeAsmShaderPreamble()) +
@@ -3507,6 +3701,7 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 		outputInts2[ndx] = inputInts[ndx];
 		outputInts3[ndx] = inputInts[ndx] - 11200;
 		outputInts4[ndx] = inputInts[ndx] + 1;
+		outputInts5[ndx] = inputInts[ndx] - 42;
 	}
 
 	const char addScToInput[]		= "OpIAdd %i32 %inval %sc_final";
@@ -3514,42 +3709,64 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 	const char selectTrueUsingSc[]	= "OpSelect %i32 %sc_final %inval %zero";
 	const char selectFalseUsingSc[]	= "OpSelect %i32 %sc_final %zero %inval";
 
-	cases.push_back(SpecConstantTwoIntCase("iadd",					" %i32 0",		" %i32 0",		"%i32",		"IAdd                 %sc_0 %sc_1",			62,		-20,	addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("isub",					" %i32 0",		" %i32 0",		"%i32",		"ISub                 %sc_0 %sc_1",			100,	58,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("imul",					" %i32 0",		" %i32 0",		"%i32",		"IMul                 %sc_0 %sc_1",			-2,		-21,	addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("sdiv",					" %i32 0",		" %i32 0",		"%i32",		"SDiv                 %sc_0 %sc_1",			-126,	-3,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("udiv",					" %i32 0",		" %i32 0",		"%i32",		"UDiv                 %sc_0 %sc_1",			126,	3,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("srem",					" %i32 0",		" %i32 0",		"%i32",		"SRem                 %sc_0 %sc_1",			7,		3,		addScToInput,		outputInts4));
-	cases.push_back(SpecConstantTwoIntCase("smod",					" %i32 0",		" %i32 0",		"%i32",		"SMod                 %sc_0 %sc_1",			7,		3,		addScToInput,		outputInts4));
-	cases.push_back(SpecConstantTwoIntCase("umod",					" %i32 0",		" %i32 0",		"%i32",		"UMod                 %sc_0 %sc_1",			342,	50,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("bitwiseand",			" %i32 0",		" %i32 0",		"%i32",		"BitwiseAnd           %sc_0 %sc_1",			42,		63,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("bitwiseor",				" %i32 0",		" %i32 0",		"%i32",		"BitwiseOr            %sc_0 %sc_1",			34,		8,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("bitwisexor",			" %i32 0",		" %i32 0",		"%i32",		"BitwiseXor           %sc_0 %sc_1",			18,		56,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("shiftrightlogical",		" %i32 0",		" %i32 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",			168,	2,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("shiftrightarithmetic",	" %i32 0",		" %i32 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",			168,	2,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("shiftleftlogical",		" %i32 0",		" %i32 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",			21,		1,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("slessthan",				" %i32 0",		" %i32 0",		"%bool",	"SLessThan            %sc_0 %sc_1",			-20,	-10,	selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("ulessthan",				" %i32 0",		" %i32 0",		"%bool",	"ULessThan            %sc_0 %sc_1",			10,		20,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("sgreaterthan",			" %i32 0",		" %i32 0",		"%bool",	"SGreaterThan         %sc_0 %sc_1",			-1000,	50,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("ugreaterthan",			" %i32 0",		" %i32 0",		"%bool",	"UGreaterThan         %sc_0 %sc_1",			10,		5,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("slessthanequal",		" %i32 0",		" %i32 0",		"%bool",	"SLessThanEqual       %sc_0 %sc_1",			-10,	-10,	selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("ulessthanequal",		" %i32 0",		" %i32 0",		"%bool",	"ULessThanEqual       %sc_0 %sc_1",			50,		100,	selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("sgreaterthanequal",		" %i32 0",		" %i32 0",		"%bool",	"SGreaterThanEqual    %sc_0 %sc_1",			-1000,	50,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("ugreaterthanequal",		" %i32 0",		" %i32 0",		"%bool",	"UGreaterThanEqual    %sc_0 %sc_1",			10,		10,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("iequal",				" %i32 0",		" %i32 0",		"%bool",	"IEqual               %sc_0 %sc_1",			42,		24,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("inotequal",				" %i32 0",		" %i32 0",		"%bool",	"INotEqual            %sc_0 %sc_1",			42,		24,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("logicaland",			"True %bool",	"True %bool",	"%bool",	"LogicalAnd           %sc_0 %sc_1",			0,		1,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("logicalor",				"False %bool",	"False %bool",	"%bool",	"LogicalOr            %sc_0 %sc_1",			1,		0,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("logicalequal",			"True %bool",	"True %bool",	"%bool",	"LogicalEqual         %sc_0 %sc_1",			0,		1,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("logicalnotequal",		"False %bool",	"False %bool",	"%bool",	"LogicalNotEqual      %sc_0 %sc_1",			1,		0,		selectTrueUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("snegate",				" %i32 0",		" %i32 0",		"%i32",		"SNegate              %sc_0",				-42,	0,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("not",					" %i32 0",		" %i32 0",		"%i32",		"Not                  %sc_0",				-43,	0,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("logicalnot",			"False %bool",	"False %bool",	"%bool",	"LogicalNot           %sc_0",				1,		0,		selectFalseUsingSc,	outputInts2));
-	cases.push_back(SpecConstantTwoIntCase("select",				"False %bool",	" %i32 0",		"%i32",		"Select               %sc_0 %sc_1 %zero",	1,		42,		addScToInput,		outputInts1));
-	cases.push_back(SpecConstantTwoIntCase("sconvert",				" %i32 0",		" %i32 0",		"%i16",		"SConvert             %sc_0",				-11200,	0,		addSc32ToInput,		outputInts3));
-	// -969998336 stored as 32-bit two's complement is the binary representation of -11200 as IEEE-754 Float
-	cases.push_back(SpecConstantTwoIntCase("fconvert",				" %f32 0",		" %f32 0",		"%f64",		"FConvert             %sc_0",				-969998336, 0,	addSc32ToInput,		outputInts3));
-	cases.push_back(SpecConstantTwoIntCase("fconvert16",			" %f16 0",		" %f16 0",		"%f32",		"FConvert             %sc_0",				p1AsFloat16, 0,	addSc32ToInput,		outputInts4, sizeof(deFloat16)));
+	cases.push_back(SpecConstantTwoValCase("iadd",						" %i32 0",		" %i32 0",		"%i32",		"IAdd                 %sc_0 %sc_1",			62,						-20,				addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("isub",						" %i32 0",		" %i32 0",		"%i32",		"ISub                 %sc_0 %sc_1",			100,					58,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("imul",						" %i32 0",		" %i32 0",		"%i32",		"IMul                 %sc_0 %sc_1",			-2,						-21,				addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("sdiv",						" %i32 0",		" %i32 0",		"%i32",		"SDiv                 %sc_0 %sc_1",			-126,					-3,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("udiv",						" %i32 0",		" %i32 0",		"%i32",		"UDiv                 %sc_0 %sc_1",			126,					3,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("srem",						" %i32 0",		" %i32 0",		"%i32",		"SRem                 %sc_0 %sc_1",			7,						3,					addScToInput,		outputInts4));
+	cases.push_back(SpecConstantTwoValCase("smod",						" %i32 0",		" %i32 0",		"%i32",		"SMod                 %sc_0 %sc_1",			7,						3,					addScToInput,		outputInts4));
+	cases.push_back(SpecConstantTwoValCase("umod",						" %i32 0",		" %i32 0",		"%i32",		"UMod                 %sc_0 %sc_1",			342,					50,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("bitwiseand",				" %i32 0",		" %i32 0",		"%i32",		"BitwiseAnd           %sc_0 %sc_1",			42,						63,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("bitwiseor",					" %i32 0",		" %i32 0",		"%i32",		"BitwiseOr            %sc_0 %sc_1",			34,						8,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("bitwisexor",				" %i32 0",		" %i32 0",		"%i32",		"BitwiseXor           %sc_0 %sc_1",			18,						56,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical",			" %i32 0",		" %i32 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",			168,					2,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic",		" %i32 0",		" %i32 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",			-168,					2,					addScToInput,		outputInts5));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical",			" %i32 0",		" %i32 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",			21,						1,					addScToInput,		outputInts1));
+
+	// Shifts for other integer sizes.
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_i64",		" %i64 0",		" %i64 0",		"%i64",		"ShiftRightLogical    %sc_0 %sc_1",			deInt64{168},			deInt64{2},			addSc32ToInput,		outputInts1, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_i64",	" %i64 0",		" %i64 0",		"%i64",		"ShiftRightArithmetic %sc_0 %sc_1",			deInt64{-168},			deInt64{2},			addSc32ToInput,		outputInts5, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_i64",		" %i64 0",		" %i64 0",		"%i64",		"ShiftLeftLogical     %sc_0 %sc_1",			deInt64{21},			deInt64{1},			addSc32ToInput,		outputInts1, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_i16",		" %i16 0",		" %i16 0",		"%i16",		"ShiftRightLogical    %sc_0 %sc_1",			deInt16{168},			deInt16{2},			addSc32ToInput,		outputInts1, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_i16",	" %i16 0",		" %i16 0",		"%i16",		"ShiftRightArithmetic %sc_0 %sc_1",			deInt16{-168},			deInt16{2},			addSc32ToInput,		outputInts5, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_i16",		" %i16 0",		" %i16 0",		"%i16",		"ShiftLeftLogical     %sc_0 %sc_1",			deInt16{21},			deInt16{1},			addSc32ToInput,		outputInts1, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_i8",		" %i8 0",		" %i8 0",		"%i8",		"ShiftRightLogical    %sc_0 %sc_1",			deInt8{84},				deInt8{1},			addSc32ToInput,		outputInts1, (FLAG_I8 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_i8",	" %i8 0",		" %i8 0",		"%i8",		"ShiftRightArithmetic %sc_0 %sc_1",			deInt8{-84},			deInt8{1},			addSc32ToInput,		outputInts5, (FLAG_I8 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_i8",		" %i8 0",		" %i8 0",		"%i8",		"ShiftLeftLogical     %sc_0 %sc_1",			deInt8{21},				deInt8{1},			addSc32ToInput,		outputInts1, (FLAG_I8 | FLAG_CONVERT)));
+
+	// Shifts for other integer sizes but only in the shift amount.
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_s_i64",	" %i32 0",		" %i64 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",			168,					deInt64{2},			addScToInput,		outputInts1, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_s_i64"," %i32 0",		" %i64 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",			-168,					deInt64{2},			addScToInput,		outputInts5, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_s_i64",	" %i32 0",		" %i64 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",			21,						deInt64{1},			addScToInput,		outputInts1, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_s_i16",	" %i32 0",		" %i16 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",			168,					deInt16{2},			addScToInput,		outputInts1, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_s_i16"," %i32 0",		" %i16 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",			-168,					deInt16{2},			addScToInput,		outputInts5, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_s_i16",	" %i32 0",		" %i16 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",			21,						deInt16{1},			addScToInput,		outputInts1, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightlogical_s_i8",	" %i32 0",		" %i8 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",			84,						deInt8{1},			addScToInput,		outputInts1, (FLAG_I8)));
+	cases.push_back(SpecConstantTwoValCase("shiftrightarithmetic_s_i8",	" %i32 0",		" %i8 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",			-84,					deInt8{1},			addScToInput,		outputInts5, (FLAG_I8)));
+	cases.push_back(SpecConstantTwoValCase("shiftleftlogical_s_i8",		" %i32 0",		" %i8 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",			21,						deInt8{1},			addScToInput,		outputInts1, (FLAG_I8)));
+
+	cases.push_back(SpecConstantTwoValCase("slessthan",					" %i32 0",		" %i32 0",		"%bool",	"SLessThan            %sc_0 %sc_1",			-20,					-10,				selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("ulessthan",					" %i32 0",		" %i32 0",		"%bool",	"ULessThan            %sc_0 %sc_1",			10,						20,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("sgreaterthan",				" %i32 0",		" %i32 0",		"%bool",	"SGreaterThan         %sc_0 %sc_1",			-1000,					50,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("ugreaterthan",				" %i32 0",		" %i32 0",		"%bool",	"UGreaterThan         %sc_0 %sc_1",			10,						5,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("slessthanequal",			" %i32 0",		" %i32 0",		"%bool",	"SLessThanEqual       %sc_0 %sc_1",			-10,					-10,				selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("ulessthanequal",			" %i32 0",		" %i32 0",		"%bool",	"ULessThanEqual       %sc_0 %sc_1",			50,						100,				selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("sgreaterthanequal",			" %i32 0",		" %i32 0",		"%bool",	"SGreaterThanEqual    %sc_0 %sc_1",			-1000,					50,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("ugreaterthanequal",			" %i32 0",		" %i32 0",		"%bool",	"UGreaterThanEqual    %sc_0 %sc_1",			10,						10,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("iequal",					" %i32 0",		" %i32 0",		"%bool",	"IEqual               %sc_0 %sc_1",			42,						24,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("inotequal",					" %i32 0",		" %i32 0",		"%bool",	"INotEqual            %sc_0 %sc_1",			42,						24,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("logicaland",				"True %bool",	"True %bool",	"%bool",	"LogicalAnd           %sc_0 %sc_1",			0,						1,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("logicalor",					"False %bool",	"False %bool",	"%bool",	"LogicalOr            %sc_0 %sc_1",			1,						0,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("logicalequal",				"True %bool",	"True %bool",	"%bool",	"LogicalEqual         %sc_0 %sc_1",			0,						1,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("logicalnotequal",			"False %bool",	"False %bool",	"%bool",	"LogicalNotEqual      %sc_0 %sc_1",			1,						0,					selectTrueUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("snegate",					" %i32 0",		" %i32 0",		"%i32",		"SNegate              %sc_0",				-42,					0,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("not",						" %i32 0",		" %i32 0",		"%i32",		"Not                  %sc_0",				-43,					0,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("logicalnot",				"False %bool",	"False %bool",	"%bool",	"LogicalNot           %sc_0",				1,						0,					selectFalseUsingSc,	outputInts2));
+	cases.push_back(SpecConstantTwoValCase("select",					"False %bool",	" %i32 0",		"%i32",		"Select               %sc_0 %sc_1 %zero",	1,						42,					addScToInput,		outputInts1));
+	cases.push_back(SpecConstantTwoValCase("sconvert",					" %i32 0",		" %i32 0",		"%i16",		"SConvert             %sc_0",				-11200,					0,					addSc32ToInput,		outputInts3, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("fconvert",					" %f32 0",		" %f32 0",		"%f64",		"FConvert             %sc_0",				tcu::Float32{-11200.0},	tcu::Float32{0.0},	addSc32ToInput,		outputInts3, (FLAG_F64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValCase("fconvert16",				" %f16 0",		" %f16 0",		"%f32",		"FConvert             %sc_0",				tcu::Float16{1.0},		tcu::Float16{0.0},	addSc32ToInput,		outputInts4, (FLAG_F16 | FLAG_CONVERT)));
 
 	for (size_t caseNdx = 0; caseNdx < cases.size(); ++caseNdx)
 	{
@@ -3562,42 +3779,68 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 		specializations["SC_OP"]			= cases[caseNdx].scOperation;
 		specializations["GEN_RESULT"]		= cases[caseNdx].resultOperation;
 
-		// Special SPIR-V code for SConvert-case
-		if (strcmp(cases[caseNdx].caseName, "sconvert") == 0)
+		// Special SPIR-V code when using 16-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I16)
 		{
 			spec.requestedVulkanFeatures.coreFeatures.shaderInt16	= VK_TRUE;
-			specializations["CAPABILITIES"]							= "OpCapability Int16\n";							// Adds 16-bit integer capability
-			specializations["OPTYPE_DEFINITIONS"]					= "%i16 = OpTypeInt 16 1\n";						// Adds 16-bit integer type
-			specializations["TYPE_CONVERT"]							= "%sc_final32 = OpSConvert %i32 %sc_final\n";		// Converts 16-bit integer to 32-bit integer
+			specializations["CAPABILITIES"]							+= "OpCapability Int16\n";							// Adds 16-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]					+= "%i16 = OpTypeInt 16 1\n";						// Adds 16-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]						+= "%sc_final32 = OpSConvert %i32 %sc_final\n";		// Converts 16-bit integer to 32-bit integer
 		}
 
-		// Special SPIR-V code for FConvert-case
-		if (strcmp(cases[caseNdx].caseName, "fconvert") == 0)
+		// Special SPIR-V code when using 64-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I64)
+		{
+			spec.requestedVulkanFeatures.coreFeatures.shaderInt64	= VK_TRUE;
+			specializations["CAPABILITIES"]							+= "OpCapability Int64\n";							// Adds 64-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]					+= "%i64 = OpTypeInt 64 1\n";						// Adds 64-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]						+= "%sc_final32 = OpSConvert %i32 %sc_final\n";		// Converts 64-bit integer to 32-bit integer
+		}
+
+		// Special SPIR-V code when using 64-bit floats.
+		if (cases[caseNdx].caseFlags & FLAG_F64)
 		{
 			spec.requestedVulkanFeatures.coreFeatures.shaderFloat64	= VK_TRUE;
-			specializations["CAPABILITIES"]							= "OpCapability Float64\n";							// Adds 64-bit float capability
-			specializations["OPTYPE_DEFINITIONS"]					= "%f64 = OpTypeFloat 64\n";						// Adds 64-bit float type
-			specializations["TYPE_CONVERT"]							= "%sc_final32 = OpConvertFToS %i32 %sc_final\n";	// Converts 64-bit float to 32-bit integer
+			specializations["CAPABILITIES"]							+= "OpCapability Float64\n";						// Adds 64-bit float capability
+			specializations["OPTYPE_DEFINITIONS"]					+= "%f64 = OpTypeFloat 64\n";						// Adds 64-bit float type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]						+= "%sc_final32 = OpConvertFToS %i32 %sc_final\n";	// Converts 64-bit float to 32-bit integer
 		}
 
-		// Special SPIR-V code for FConvert-case for 16-bit floats
-		if (strcmp(cases[caseNdx].caseName, "fconvert16") == 0)
-		{
+		// Extension needed for float16 and int8.
+		if (cases[caseNdx].caseFlags & (FLAG_F16 | FLAG_I8))
 			spec.extensions.push_back("VK_KHR_shader_float16_int8");
-			spec.requestedVulkanFeatures.extFloat16Int8 = EXTFLOAT16INT8FEATURES_FLOAT16;
-			specializations["CAPABILITIES"]			= "OpCapability Float16\n";							// Adds 16-bit float capability
-			specializations["OPTYPE_DEFINITIONS"]	= "%f16 = OpTypeFloat 16\n";						// Adds 16-bit float type
-			specializations["TYPE_CONVERT"]			= "%sc_final32 = OpConvertFToS %i32 %sc_final\n";	// Converts 16-bit float to 32-bit integer
+
+		// Special SPIR-V code when using 16-bit floats.
+		if (cases[caseNdx].caseFlags & FLAG_F16)
+		{
+			spec.requestedVulkanFeatures.extFloat16Int8	|= EXTFLOAT16INT8FEATURES_FLOAT16;
+			specializations["CAPABILITIES"]				+= "OpCapability Float16\n";						// Adds 16-bit float capability
+			specializations["OPTYPE_DEFINITIONS"]		+= "%f16 = OpTypeFloat 16\n";						// Adds 16-bit float type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]			+= "%sc_final32 = OpConvertFToS %i32 %sc_final\n";	// Converts 16-bit float to 32-bit integer
+		}
+
+		// Special SPIR-V code when using 8-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I8)
+		{
+			spec.requestedVulkanFeatures.extFloat16Int8	|= EXTFLOAT16INT8FEATURES_INT8;
+			specializations["CAPABILITIES"]				+= "OpCapability Int8\n";						// Adds 8-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]		+= "%i8 = OpTypeInt 8 1\n";						// Adds 8-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]			+= "%sc_final32 = OpSConvert %i32 %sc_final\n";	// Converts 8-bit integer to 32-bit integer
 		}
 
 		spec.assembly = shaderTemplate.specialize(specializations);
 		spec.inputs.push_back(BufferSp(new Int32Buffer(inputInts)));
 		spec.outputs.push_back(BufferSp(new Int32Buffer(cases[caseNdx].expectedOutput)));
 		spec.numWorkGroups = IVec3(numElements, 1, 1);
-		spec.specConstants.append(&cases[caseNdx].scActualValue0, cases[caseNdx].scActualValueLength);
-		spec.specConstants.append(&cases[caseNdx].scActualValue1, cases[caseNdx].scActualValueLength);
+		cases[caseNdx].scActualValue0.appendTo(spec.specConstants);
+		cases[caseNdx].scActualValue1.appendTo(spec.specConstants);
 
-		group->addChild(new SpvAsmComputeShaderCase(testCtx, cases[caseNdx].caseName, cases[caseNdx].caseName, spec));
+		group->addChild(new SpvAsmComputeShaderCase(testCtx, cases[caseNdx].caseName.c_str(), cases[caseNdx].caseName.c_str(), spec));
 	}
 
 	ComputeShaderSpec				spec;
@@ -3617,19 +3860,26 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 		+ string(getComputeAsmInputOutputBufferTraits()) + string(getComputeAsmCommonTypes()) +
 
 		"%ivec3       = OpTypeVector %i32 3\n"
+
+		+ getSpecConstantOpStructConstantsAndTypes() +
+
 		"%buf         = OpTypeStruct %i32arr\n"
 		"%bufptr      = OpTypePointer Uniform %buf\n"
 		"%indata      = OpVariable %bufptr Uniform\n"
 		"%outdata     = OpVariable %bufptr Uniform\n"
 
 		"%id          = OpVariable %uvec3ptr Input\n"
-		"%zero        = OpConstant %i32 0\n"
 		"%ivec3_0     = OpConstantComposite %ivec3 %zero %zero %zero\n"
 		"%vec3_undef  = OpUndef %ivec3\n"
+
+		+ getSpecConstantOpStructComposites () +
 
 		"%sc_0        = OpSpecConstant %i32 0\n"
 		"%sc_1        = OpSpecConstant %i32 0\n"
 		"%sc_2        = OpSpecConstant %i32 0\n"
+
+		+ getSpecConstantOpStructConstBlock () +
+
 		"%sc_vec3_0   = OpSpecConstantOp %ivec3 CompositeInsert  %sc_0        %ivec3_0     0\n"							// (sc_0, 0, 0)
 		"%sc_vec3_1   = OpSpecConstantOp %ivec3 CompositeInsert  %sc_1        %ivec3_0     1\n"							// (0, sc_1, 0)
 		"%sc_vec3_2   = OpSpecConstantOp %ivec3 CompositeInsert  %sc_2        %ivec3_0     2\n"							// (0, 0, sc_2)
@@ -3642,10 +3892,13 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 		"%sc_ext_1    = OpSpecConstantOp %i32   CompositeExtract %sc_vec3_012              1\n"							// sc_0
 		"%sc_ext_2    = OpSpecConstantOp %i32   CompositeExtract %sc_vec3_012              2\n"							// sc_1
 		"%sc_sub      = OpSpecConstantOp %i32   ISub             %sc_ext_0    %sc_ext_1\n"								// (sc_2 - sc_0)
-		"%sc_final    = OpSpecConstantOp %i32   IMul             %sc_sub      %sc_ext_2\n"								// (sc_2 - sc_0) * sc_1
+		"%sc_factor   = OpSpecConstantOp %i32   IMul             %sc_sub      %sc_ext_2\n"								// (sc_2 - sc_0) * sc_1
 
 		"%main      = OpFunction %void None %voidf\n"
 		"%label     = OpLabel\n"
+
+		+ getSpecConstantOpStructInstructions() +
+
 		"%idval     = OpLoad %uvec3 %id\n"
 		"%x         = OpCompositeExtract %u32 %idval 0\n"
 		"%inloc     = OpAccessChain %i32ptr %indata %zero %x\n"
@@ -3680,8 +3933,8 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 	const int			numElements		= 100;
 	vector<float>		inputFloats		(numElements, 0);
 	vector<float>		outputFloats	(numElements, 0);
-	vector<deFloat16>	inputFloats16	(numElements, 0);
-	vector<deFloat16>	outputFloats16	(numElements, 0);
+	vector<deUint32>	inputUints		(numElements, 0);
+	vector<deUint32>	outputUints		(numElements, 0);
 
 	fillRandomScalars(rnd, -300.f, 300.f, &inputFloats[0], numElements);
 
@@ -3696,8 +3949,8 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 
 	for (size_t ndx = 0; ndx < numElements; ++ndx)
 	{
-		inputFloats16[ndx] = tcu::Float16(inputFloats[ndx]).bits();
-		outputFloats16[ndx] = tcu::Float16(outputFloats[ndx]).bits();
+		inputUints[ndx] = tcu::Float16(inputFloats[ndx]).bits();
+		outputUints[ndx] = tcu::Float16(outputFloats[ndx]).bits();
 	}
 
 	// All of the tests are of the form:
@@ -3756,9 +4009,7 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 
 	specFloat16.assembly =
 		"OpCapability Shader\n"
-		"OpCapability StorageUniformBufferBlock16\n"
 		"OpCapability Float16\n"
-		"OpExtension \"SPV_KHR_16bit_storage\"\n"
 		"OpMemoryModel Logical GLSL450\n"
 		"OpEntryPoint GLCompute %main \"main\" %id\n"
 		"OpExecutionMode %main LocalSize 1 1 1\n"
@@ -3774,16 +4025,20 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 		"OpDecorate %indata Binding 0\n"
 		"OpDecorate %outdata DescriptorSet 0\n"
 		"OpDecorate %outdata Binding 1\n"
-		"OpDecorate %f16arr ArrayStride 2\n"
+		"OpDecorate %u32arr ArrayStride 4\n"
 		"OpMemberDecorate %buf 0 Offset 0\n"
-
-		"%f16      = OpTypeFloat 16\n"
-		"%f16ptr   = OpTypePointer Uniform %f16\n"
-		"%f16arr   = OpTypeRuntimeArray %f16\n"
 
 		+ string(getComputeAsmCommonTypes()) +
 
-		"%buf      = OpTypeStruct %f16arr\n"
+		"%f16      = OpTypeFloat 16\n"
+		"%f16vec2  = OpTypeVector %f16 2\n"
+		"%fvec2    = OpTypeVector %f32 2\n"
+		"%u32ptr   = OpTypePointer Uniform %u32\n"
+		"%u32arr   = OpTypeRuntimeArray %u32\n"
+		"%f16_0    = OpConstant %f16 0.0\n"
+
+
+		"%buf      = OpTypeStruct %u32arr\n"
 		"%bufptr   = OpTypePointer Uniform %buf\n"
 		"%indata   = OpVariable %bufptr Uniform\n"
 		"%outdata  = OpVariable %bufptr Uniform\n"
@@ -3798,9 +4053,11 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 		"%entry    = OpLabel\n"
 		"%idval    = OpLoad %uvec3 %id\n"
 		"%x        = OpCompositeExtract %u32 %idval 0\n"
-		"%inloc    = OpAccessChain %f16ptr %indata %zero %x\n"
-		"%inval    = OpLoad %f16 %inloc\n"
-		"%f32_inval = OpFConvert %f32 %inval\n"
+		"%inloc    = OpAccessChain %u32ptr %indata %zero %x\n"
+		"%inval    = OpLoad %u32 %inloc\n"
+		"%f16_vec2_inval = OpBitcast %f16vec2 %inval\n"
+		"%f16_inval = OpCompositeExtract %f16 %f16_vec2_inval 0\n"
+		"%f32_inval = OpFConvert %f32 %f16_inval\n"
 
 		"%comp     = OpFOrdGreaterThan %bool %f32_inval %float_0\n"
 		"            OpSelectionMerge %cm None\n"
@@ -3813,15 +4070,18 @@ void createOpPhiVartypeTests (de::MovePtr<tcu::TestCaseGroup>& group, tcu::TestC
 		"%res      = OpPhi %f32 %float_1 %tb %float_n1 %fb\n"
 		"%f16_res  = OpFConvert %f16 %res\n"
 
-		"%outloc   = OpAccessChain %f16ptr %outdata %zero %x\n"
-		"            OpStore %outloc %f16_res\n"
+		"%f16vec2_res = OpCompositeConstruct %f16vec2 %f16_res %f16_0\n"
+		"%u32_res  = OpBitcast %u32 %f16vec2_res\n"
+
+		"%outloc   = OpAccessChain %u32ptr %outdata %zero %x\n"
+		"            OpStore %outloc %u32_res\n"
 		"            OpReturn\n"
 
 		"            OpFunctionEnd\n";
-	specFloat16.inputs.push_back(BufferSp(new Float16Buffer(inputFloats16)));
-	specFloat16.outputs.push_back(BufferSp(new Float16Buffer(outputFloats16)));
+
+	specFloat16.inputs.push_back(BufferSp(new Uint32Buffer(inputUints)));
+	specFloat16.outputs.push_back(BufferSp(new Uint32Buffer(outputUints)));
 	specFloat16.numWorkGroups = IVec3(numElements, 1, 1);
-	specFloat16.requestedVulkanFeatures.ext16BitStorage = EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 	specFloat16.requestedVulkanFeatures.extFloat16Int8 = EXTFLOAT16INT8FEATURES_FLOAT16;
 
 	specMat4.assembly =
@@ -6687,7 +6947,32 @@ tcu::TestCaseGroup* createOpUndefGroup (tcu::TestContext& testCtx)
 		group->addChild(new SpvAsmComputeShaderCase(testCtx, cases[caseNdx].name, cases[caseNdx].name, spec));
 	}
 
-		return group.release();
+	// OpUndef with constants.
+	{
+		static const char data_dir[] = "spirv_assembly/instruction/compute/undef";
+
+		static const struct
+		{
+			const std::string name;
+			const std::string desc;
+		} amberCases[] =
+		{
+			{ "undefined_constant_composite",		"OpUndef value in OpConstantComposite"		},
+			{ "undefined_spec_constant_composite",	"OpUndef value in OpSpecConstantComposite"	},
+		};
+
+		for (int i = 0; i < DE_LENGTH_OF_ARRAY(amberCases); ++i)
+		{
+			cts_amber::AmberTestCase *testCase = cts_amber::createAmberTestCase(testCtx,
+																				amberCases[i].name.c_str(),
+																				amberCases[i].desc.c_str(),
+																				data_dir,
+																				amberCases[i].name + ".amber");
+			group->addChild(testCase);
+		}
+	}
+
+	return group.release();
 }
 
 // Checks that a compute shader can generate a constant composite value of various types, without exercising a computation on it.
@@ -7560,7 +7845,7 @@ tcu::TestCaseGroup* createSwitchBlockOrderTests(tcu::TestContext& testCtx)
 		"%loop      = OpLabel\n"
 		"%ival      = OpLoad %i32 %iptr\n"
 		"%lt_4      = OpSLessThan %bool %ival %c_i32_4\n"
-		"             OpLoopMerge %exit %switch_exit None\n"
+		"             OpLoopMerge %exit %cont None\n"
 		"             OpBranchConditional %lt_4 %switch_entry %exit\n"
 
 		// Merge block for loop.
@@ -7597,6 +7882,8 @@ tcu::TestCaseGroup* createSwitchBlockOrderTests(tcu::TestContext& testCtx)
 		"%switch_exit    = OpLabel\n"
 		"%ival_next      = OpIAdd %i32 %ival %c_i32_1\n"
 		"                  OpStore %iptr %ival_next\n"
+		"                  OpBranch %cont\n"
+		"%cont           = OpLabel\n"
 		"                  OpBranch %loop\n"
 
 		"%case1          = OpLabel\n"
@@ -7737,38 +8024,38 @@ tcu::TestCaseGroup* createDecorationGroupTests(tcu::TestContext& testCtx)
 	return group.release();
 }
 
-struct SpecConstantTwoIntGraphicsCase
+struct SpecConstantTwoValGraphicsCase
 {
-	const char*		caseName;
-	const char*		scDefinition0;
-	const char*		scDefinition1;
-	const char*		scResultType;
-	const char*		scOperation;
-	deInt32			scActualValue0;
-	deInt32			scActualValue1;
-	const char*		resultOperation;
-	RGBA			expectedColors[4];
-	deInt32			scActualValueLength;
+	const std::string	caseName;
+	const std::string	scDefinition0;
+	const std::string	scDefinition1;
+	const std::string	scResultType;
+	const std::string	scOperation;
+	SpecConstantValue	scActualValue0;
+	SpecConstantValue	scActualValue1;
+	const std::string	resultOperation;
+	RGBA				expectedColors[4];
+	CaseFlags			caseFlags;
 
-					SpecConstantTwoIntGraphicsCase (const char*		name,
-													const char*		definition0,
-													const char*		definition1,
-													const char*		resultType,
-													const char*		operation,
-													const deInt32	value0,
-													const deInt32	value1,
-													const char*		resultOp,
-													const RGBA		(&output)[4],
-													const deInt32	valueLength = sizeof(deInt32))
-						: caseName				(name)
-						, scDefinition0			(definition0)
-						, scDefinition1			(definition1)
-						, scResultType			(resultType)
-						, scOperation			(operation)
-						, scActualValue0		(value0)
-						, scActualValue1		(value1)
-						, resultOperation		(resultOp)
-						, scActualValueLength	(valueLength)
+						SpecConstantTwoValGraphicsCase (const std::string&			name,
+														const std::string&			definition0,
+														const std::string&			definition1,
+														const std::string&			resultType,
+														const std::string&			operation,
+														const SpecConstantValue&	value0,
+														const SpecConstantValue&	value1,
+														const std::string&			resultOp,
+														const RGBA					(&output)[4],
+														CaseFlags					flags = FLAG_NONE)
+							: caseName				(name)
+							, scDefinition0			(definition0)
+							, scDefinition1			(definition1)
+							, scResultType			(resultType)
+							, scOperation			(operation)
+							, scActualValue0		(value0)
+							, scActualValue1		(value1)
+							, resultOperation		(resultOp)
+							, caseFlags				(flags)
 	{
 		expectedColors[0] = output[0];
 		expectedColors[1] = output[1];
@@ -7779,14 +8066,12 @@ struct SpecConstantTwoIntGraphicsCase
 
 tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 {
-	de::MovePtr<tcu::TestCaseGroup> group				(new tcu::TestCaseGroup(testCtx, "opspecconstantop", "Test the OpSpecConstantOp instruction"));
-	vector<SpecConstantTwoIntGraphicsCase>	cases;
-	RGBA							inputColors[4];
-	RGBA							outputColors0[4];
-	RGBA							outputColors1[4];
-	RGBA							outputColors2[4];
-
-	const deInt32					m1AsFloat16			= 0xbc00; // -1(fp16) == 1 01111 0000000000 == 1011 1100 0000 0000
+	de::MovePtr<tcu::TestCaseGroup>			group (new tcu::TestCaseGroup(testCtx, "opspecconstantop", "Test the OpSpecConstantOp instruction"));
+	vector<SpecConstantTwoValGraphicsCase>	cases;
+	RGBA									inputColors[4];
+	RGBA									outputColors0[4];
+	RGBA									outputColors1[4];
+	RGBA									outputColors2[4];
 
 	const char	decorations1[]			=
 		"OpDecorate %sc_0  SpecId 0\n"
@@ -7843,42 +8128,64 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 	const char selectTrueUsingSc[]	= "OpSelect %i32 %sc_op %c_i32_1 %c_i32_0";
 	const char selectFalseUsingSc[]	= "OpSelect %i32 %sc_op %c_i32_0 %c_i32_1";
 
-	cases.push_back(SpecConstantTwoIntGraphicsCase("iadd",					" %i32 0",		" %i32 0",		"%i32",		"IAdd                 %sc_0 %sc_1",				19,		-20,	addZeroToSc,		outputColors0));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("isub",					" %i32 0",		" %i32 0",		"%i32",		"ISub                 %sc_0 %sc_1",				19,		20,		addZeroToSc,		outputColors0));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("imul",					" %i32 0",		" %i32 0",		"%i32",		"IMul                 %sc_0 %sc_1",				-1,		-1,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("sdiv",					" %i32 0",		" %i32 0",		"%i32",		"SDiv                 %sc_0 %sc_1",				-126,	126,	addZeroToSc,		outputColors0));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("udiv",					" %i32 0",		" %i32 0",		"%i32",		"UDiv                 %sc_0 %sc_1",				126,	126,	addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("srem",					" %i32 0",		" %i32 0",		"%i32",		"SRem                 %sc_0 %sc_1",				3,		2,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("smod",					" %i32 0",		" %i32 0",		"%i32",		"SMod                 %sc_0 %sc_1",				3,		2,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("umod",					" %i32 0",		" %i32 0",		"%i32",		"UMod                 %sc_0 %sc_1",				1001,	500,	addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("bitwiseand",			" %i32 0",		" %i32 0",		"%i32",		"BitwiseAnd           %sc_0 %sc_1",				0x33,	0x0d,	addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("bitwiseor",				" %i32 0",		" %i32 0",		"%i32",		"BitwiseOr            %sc_0 %sc_1",				0,		1,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("bitwisexor",			" %i32 0",		" %i32 0",		"%i32",		"BitwiseXor           %sc_0 %sc_1",				0x2e,	0x2f,	addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("shiftrightlogical",		" %i32 0",		" %i32 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",				2,		1,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("shiftrightarithmetic",	" %i32 0",		" %i32 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",				-4,		2,		addZeroToSc,		outputColors0));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("shiftleftlogical",		" %i32 0",		" %i32 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",				1,		0,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("slessthan",				" %i32 0",		" %i32 0",		"%bool",	"SLessThan            %sc_0 %sc_1",				-20,	-10,	selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("ulessthan",				" %i32 0",		" %i32 0",		"%bool",	"ULessThan            %sc_0 %sc_1",				10,		20,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("sgreaterthan",			" %i32 0",		" %i32 0",		"%bool",	"SGreaterThan         %sc_0 %sc_1",				-1000,	50,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("ugreaterthan",			" %i32 0",		" %i32 0",		"%bool",	"UGreaterThan         %sc_0 %sc_1",				10,		5,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("slessthanequal",		" %i32 0",		" %i32 0",		"%bool",	"SLessThanEqual       %sc_0 %sc_1",				-10,	-10,	selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("ulessthanequal",		" %i32 0",		" %i32 0",		"%bool",	"ULessThanEqual       %sc_0 %sc_1",				50,		100,	selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("sgreaterthanequal",		" %i32 0",		" %i32 0",		"%bool",	"SGreaterThanEqual    %sc_0 %sc_1",				-1000,	50,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("ugreaterthanequal",		" %i32 0",		" %i32 0",		"%bool",	"UGreaterThanEqual    %sc_0 %sc_1",				10,		10,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("iequal",				" %i32 0",		" %i32 0",		"%bool",	"IEqual               %sc_0 %sc_1",				42,		24,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("inotequal",				" %i32 0",		" %i32 0",		"%bool",	"INotEqual            %sc_0 %sc_1",				42,		24,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("logicaland",			"True %bool",	"True %bool",	"%bool",	"LogicalAnd           %sc_0 %sc_1",				0,		1,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("logicalor",				"False %bool",	"False %bool",	"%bool",	"LogicalOr            %sc_0 %sc_1",				1,		0,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("logicalequal",			"True %bool",	"True %bool",	"%bool",	"LogicalEqual         %sc_0 %sc_1",				0,		1,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("logicalnotequal",		"False %bool",	"False %bool",	"%bool",	"LogicalNotEqual      %sc_0 %sc_1",				1,		0,		selectTrueUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("snegate",				" %i32 0",		" %i32 0",		"%i32",		"SNegate              %sc_0",					-1,		0,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("not",					" %i32 0",		" %i32 0",		"%i32",		"Not                  %sc_0",					-2,		0,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("logicalnot",			"False %bool",	"False %bool",	"%bool",	"LogicalNot           %sc_0",					1,		0,		selectFalseUsingSc,	outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("select",				"False %bool",	" %i32 0",		"%i32",		"Select               %sc_0 %sc_1 %c_i32_0",	1,		1,		addZeroToSc,		outputColors2));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("sconvert",				" %i32 0",		" %i32 0",		"%i16",		"SConvert             %sc_0",					-1,		0,		addZeroToSc32,		outputColors0));
-	// -1082130432 stored as 32-bit two's complement is the binary representation of -1 as IEEE-754 Float
-	cases.push_back(SpecConstantTwoIntGraphicsCase("fconvert",				" %f32 0",		" %f32 0",		"%f64",		"FConvert             %sc_0",					-1082130432, 0,	addZeroToSc32,		outputColors0));
-	cases.push_back(SpecConstantTwoIntGraphicsCase("fconvert16",			" %f16 0",		" %f16 0",		"%f32",		"FConvert             %sc_0",					m1AsFloat16, 0,	addZeroToSc32,		outputColors0, sizeof(deFloat16)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("iadd",							" %i32 0",		" %i32 0",		"%i32",		"IAdd                 %sc_0 %sc_1",				19,					-20,				addZeroToSc,		outputColors0));
+	cases.push_back(SpecConstantTwoValGraphicsCase("isub",							" %i32 0",		" %i32 0",		"%i32",		"ISub                 %sc_0 %sc_1",				19,					20,					addZeroToSc,		outputColors0));
+	cases.push_back(SpecConstantTwoValGraphicsCase("imul",							" %i32 0",		" %i32 0",		"%i32",		"IMul                 %sc_0 %sc_1",				-1,					-1,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("sdiv",							" %i32 0",		" %i32 0",		"%i32",		"SDiv                 %sc_0 %sc_1",				-126,				126,				addZeroToSc,		outputColors0));
+	cases.push_back(SpecConstantTwoValGraphicsCase("udiv",							" %i32 0",		" %i32 0",		"%i32",		"UDiv                 %sc_0 %sc_1",				126,				126,				addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("srem",							" %i32 0",		" %i32 0",		"%i32",		"SRem                 %sc_0 %sc_1",				3,					2,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("smod",							" %i32 0",		" %i32 0",		"%i32",		"SMod                 %sc_0 %sc_1",				3,					2,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("umod",							" %i32 0",		" %i32 0",		"%i32",		"UMod                 %sc_0 %sc_1",				1001,				500,				addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("bitwiseand",					" %i32 0",		" %i32 0",		"%i32",		"BitwiseAnd           %sc_0 %sc_1",				0x33,				0x0d,				addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("bitwiseor",						" %i32 0",		" %i32 0",		"%i32",		"BitwiseOr            %sc_0 %sc_1",				0,					1,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("bitwisexor",					" %i32 0",		" %i32 0",		"%i32",		"BitwiseXor           %sc_0 %sc_1",				0x2e,				0x2f,				addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical",				" %i32 0",		" %i32 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",				2,					1,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic",			" %i32 0",		" %i32 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",				-4,					2,					addZeroToSc,		outputColors0));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical",				" %i32 0",		" %i32 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",				1,					0,					addZeroToSc,		outputColors2));
+
+	// Shifts for other integer sizes.
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_i64",			" %i64 0",		" %i64 0",		"%i64",		"ShiftRightLogical    %sc_0 %sc_1",				deInt64{2},			deInt64{1},			addZeroToSc32,		outputColors2, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_i64",		" %i64 0",		" %i64 0",		"%i64",		"ShiftRightArithmetic %sc_0 %sc_1",				deInt64{-4},		deInt64{2},			addZeroToSc32,		outputColors0, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_i64",			" %i64 0",		" %i64 0",		"%i64",		"ShiftLeftLogical     %sc_0 %sc_1",				deInt64{1},			deInt64{0},			addZeroToSc32,		outputColors2, (FLAG_I64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_i16",			" %i16 0",		" %i16 0",		"%i16",		"ShiftRightLogical    %sc_0 %sc_1",				deInt16{2},			deInt16{1},			addZeroToSc32,		outputColors2, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_i16",		" %i16 0",		" %i16 0",		"%i16",		"ShiftRightArithmetic %sc_0 %sc_1",				deInt16{-4},		deInt16{2},			addZeroToSc32,		outputColors0, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_i16",			" %i16 0",		" %i16 0",		"%i16",		"ShiftLeftLogical     %sc_0 %sc_1",				deInt16{1},			deInt16{0},			addZeroToSc32,		outputColors2, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_i8",			" %i8 0",		" %i8 0",		"%i8",		"ShiftRightLogical    %sc_0 %sc_1",				deInt8{2},			deInt8{1},			addZeroToSc32,		outputColors2, (FLAG_I8 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_i8",		" %i8 0",		" %i8 0",		"%i8",		"ShiftRightArithmetic %sc_0 %sc_1",				deInt8{-4},			deInt8{2},			addZeroToSc32,		outputColors0, (FLAG_I8 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_i8",			" %i8 0",		" %i8 0",		"%i8",		"ShiftLeftLogical     %sc_0 %sc_1",				deInt8{1},			deInt8{0},			addZeroToSc32,		outputColors2, (FLAG_I8 | FLAG_CONVERT)));
+
+	// Shifts for other integer sizes but only in the shift amount.
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_s_i64",		" %i32 0",		" %i64 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",				2,					deInt64{1},			addZeroToSc,		outputColors2, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_s_i64",	" %i32 0",		" %i64 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",				-4,					deInt64{2},			addZeroToSc,		outputColors0, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_s_i64",		" %i32 0",		" %i64 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",				1,					deInt64{0},			addZeroToSc,		outputColors2, (FLAG_I64)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_s_i16",		" %i32 0",		" %i16 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",				2,					deInt16{1},			addZeroToSc,		outputColors2, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_s_i16",	" %i32 0",		" %i16 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",				-4,					deInt16{2},			addZeroToSc,		outputColors0, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_s_i16",		" %i32 0",		" %i16 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",				1,					deInt16{0},			addZeroToSc,		outputColors2, (FLAG_I16)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightlogical_s_i8",		" %i32 0",		" %i8 0",		"%i32",		"ShiftRightLogical    %sc_0 %sc_1",				2,					deInt8{1},			addZeroToSc,		outputColors2, (FLAG_I8)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftrightarithmetic_s_i8",		" %i32 0",		" %i8 0",		"%i32",		"ShiftRightArithmetic %sc_0 %sc_1",				-4,					deInt8{2},			addZeroToSc,		outputColors0, (FLAG_I8)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("shiftleftlogical_s_i8",			" %i32 0",		" %i8 0",		"%i32",		"ShiftLeftLogical     %sc_0 %sc_1",				1,					deInt8{0},			addZeroToSc,		outputColors2, (FLAG_I8)));
+
+	cases.push_back(SpecConstantTwoValGraphicsCase("slessthan",						" %i32 0",		" %i32 0",		"%bool",	"SLessThan            %sc_0 %sc_1",				-20,				-10,				selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("ulessthan",						" %i32 0",		" %i32 0",		"%bool",	"ULessThan            %sc_0 %sc_1",				10,					20,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("sgreaterthan",					" %i32 0",		" %i32 0",		"%bool",	"SGreaterThan         %sc_0 %sc_1",				-1000,				50,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("ugreaterthan",					" %i32 0",		" %i32 0",		"%bool",	"UGreaterThan         %sc_0 %sc_1",				10,					5,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("slessthanequal",				" %i32 0",		" %i32 0",		"%bool",	"SLessThanEqual       %sc_0 %sc_1",				-10,				-10,				selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("ulessthanequal",				" %i32 0",		" %i32 0",		"%bool",	"ULessThanEqual       %sc_0 %sc_1",				50,					100,				selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("sgreaterthanequal",				" %i32 0",		" %i32 0",		"%bool",	"SGreaterThanEqual    %sc_0 %sc_1",				-1000,				50,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("ugreaterthanequal",				" %i32 0",		" %i32 0",		"%bool",	"UGreaterThanEqual    %sc_0 %sc_1",				10,					10,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("iequal",						" %i32 0",		" %i32 0",		"%bool",	"IEqual               %sc_0 %sc_1",				42,					24,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("inotequal",						" %i32 0",		" %i32 0",		"%bool",	"INotEqual            %sc_0 %sc_1",				42,					24,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("logicaland",					"True %bool",	"True %bool",	"%bool",	"LogicalAnd           %sc_0 %sc_1",				0,					1,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("logicalor",						"False %bool",	"False %bool",	"%bool",	"LogicalOr            %sc_0 %sc_1",				1,					0,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("logicalequal",					"True %bool",	"True %bool",	"%bool",	"LogicalEqual         %sc_0 %sc_1",				0,					1,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("logicalnotequal",				"False %bool",	"False %bool",	"%bool",	"LogicalNotEqual      %sc_0 %sc_1",				1,					0,					selectTrueUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("snegate",						" %i32 0",		" %i32 0",		"%i32",		"SNegate              %sc_0",					-1,					0,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("not",							" %i32 0",		" %i32 0",		"%i32",		"Not                  %sc_0",					-2,					0,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("logicalnot",					"False %bool",	"False %bool",	"%bool",	"LogicalNot           %sc_0",					1,					0,					selectFalseUsingSc,	outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("select",						"False %bool",	" %i32 0",		"%i32",		"Select               %sc_0 %sc_1 %c_i32_0",	1,					1,					addZeroToSc,		outputColors2));
+	cases.push_back(SpecConstantTwoValGraphicsCase("sconvert",						" %i32 0",		" %i32 0",		"%i16",		"SConvert             %sc_0",					-1,					0,					addZeroToSc32,		outputColors0, (FLAG_I16 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("fconvert",						" %f32 0",		" %f32 0",		"%f64",		"FConvert             %sc_0",					tcu::Float32(-1.0),	tcu::Float32(0.0),	addZeroToSc32,		outputColors0, (FLAG_F64 | FLAG_CONVERT)));
+	cases.push_back(SpecConstantTwoValGraphicsCase("fconvert16",					" %f16 0",		" %f16 0",		"%f32",		"FConvert             %sc_0",					tcu::Float16(-1.0),	tcu::Float16(0.0),	addZeroToSc32,		outputColors0, (FLAG_F16 | FLAG_CONVERT)));
 	// \todo[2015-12-1 antiagainst] OpQuantizeToF16
 
 	for (size_t caseNdx = 0; caseNdx < cases.size(); ++caseNdx)
@@ -7892,32 +8199,58 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 		vector<string>				extensions;
 		VulkanFeatures				requiredFeatures;
 
-		// Special SPIR-V code for SConvert-case
-		if (strcmp(cases[caseNdx].caseName, "sconvert") == 0)
+		// Special SPIR-V code when using 16-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I16)
 		{
-			requiredFeatures.coreFeatures.shaderInt16 = VK_TRUE;
-			fragments["capability"]					= "OpCapability Int16\n";					// Adds 16-bit integer capability
-			specializations["OPTYPE_DEFINITIONS"]	= "%i16 = OpTypeInt 16 1\n";				// Adds 16-bit integer type
-			specializations["TYPE_CONVERT"]			= "%sc_op32 = OpSConvert %i32 %sc_op\n";	// Converts 16-bit integer to 32-bit integer
+			requiredFeatures.coreFeatures.shaderInt16		= VK_TRUE;
+			fragments["capability"]							+= "OpCapability Int16\n";							// Adds 16-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]			+= "%i16 = OpTypeInt 16 1\n";						// Adds 16-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]				+= "%sc_op32 = OpSConvert %i32 %sc_op\n";			// Converts 16-bit integer to 32-bit integer
 		}
 
-		// Special SPIR-V code for FConvert-case
-		if (strcmp(cases[caseNdx].caseName, "fconvert") == 0)
+		// Special SPIR-V code when using 64-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I64)
 		{
-			requiredFeatures.coreFeatures.shaderFloat64 = VK_TRUE;
-			fragments["capability"]					= "OpCapability Float64\n";					// Adds 64-bit float capability
-			specializations["OPTYPE_DEFINITIONS"]	= "%f64 = OpTypeFloat 64\n";				// Adds 64-bit float type
-			specializations["TYPE_CONVERT"]			= "%sc_op32 = OpConvertFToS %i32 %sc_op\n";	// Converts 64-bit float to 32-bit integer
+			requiredFeatures.coreFeatures.shaderInt64		= VK_TRUE;
+			fragments["capability"]							+= "OpCapability Int64\n";							// Adds 64-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]			+= "%i64 = OpTypeInt 64 1\n";						// Adds 64-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]				+= "%sc_op32 = OpSConvert %i32 %sc_op\n";			// Converts 64-bit integer to 32-bit integer
 		}
 
-		// Special SPIR-V code for FConvert-case for 16-bit floats
-		if (strcmp(cases[caseNdx].caseName, "fconvert16") == 0)
+		// Special SPIR-V code when using 64-bit floats.
+		if (cases[caseNdx].caseFlags & FLAG_F64)
 		{
+			requiredFeatures.coreFeatures.shaderFloat64		= VK_TRUE;
+			fragments["capability"]							+= "OpCapability Float64\n";						// Adds 64-bit float capability
+			specializations["OPTYPE_DEFINITIONS"]			+= "%f64 = OpTypeFloat 64\n";						// Adds 64-bit float type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]				+= "%sc_op32 = OpConvertFToS %i32 %sc_op\n";		// Converts 64-bit float to 32-bit integer
+		}
+
+		// Extension needed for float16 and int8.
+		if (cases[caseNdx].caseFlags & (FLAG_F16 | FLAG_I8))
 			extensions.push_back("VK_KHR_shader_float16_int8");
-			requiredFeatures.extFloat16Int8 = EXTFLOAT16INT8FEATURES_FLOAT16;
-			fragments["capability"]					= "OpCapability Float16\n";					// Adds 16-bit float capability
-			specializations["OPTYPE_DEFINITIONS"]	= "%f16 = OpTypeFloat 16\n";				// Adds 16-bit float type
-			specializations["TYPE_CONVERT"]			= "%sc_op32 = OpConvertFToS %i32 %sc_op\n";	// Converts 16-bit float to 32-bit integer
+
+		// Special SPIR-V code when using 16-bit floats.
+		if (cases[caseNdx].caseFlags & FLAG_F16)
+		{
+			requiredFeatures.extFloat16Int8				|= EXTFLOAT16INT8FEATURES_FLOAT16;
+			fragments["capability"]						+= "OpCapability Float16\n";						// Adds 16-bit float capability
+			specializations["OPTYPE_DEFINITIONS"]		+= "%f16 = OpTypeFloat 16\n";						// Adds 16-bit float type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]			+= "%sc_op32 = OpConvertFToS %i32 %sc_op\n";		// Converts 16-bit float to 32-bit integer
+		}
+
+		// Special SPIR-V code when using 8-bit integers.
+		if (cases[caseNdx].caseFlags & FLAG_I8)
+		{
+			requiredFeatures.extFloat16Int8				|= EXTFLOAT16INT8FEATURES_INT8;
+			fragments["capability"]						+= "OpCapability Int8\n";						// Adds 8-bit integer capability
+			specializations["OPTYPE_DEFINITIONS"]		+= "%i8 = OpTypeInt 8 1\n";						// Adds 8-bit integer type
+			if (cases[caseNdx].caseFlags & FLAG_CONVERT)
+				specializations["TYPE_CONVERT"]			+= "%sc_op32 = OpSConvert %i32 %sc_op\n";		// Converts 8-bit integer to 32-bit integer
 		}
 
 		specializations["SC_DEF0"]			= cases[caseNdx].scDefinition0;
@@ -7930,26 +8263,31 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 		fragments["pre_main"]				= tcu::StringTemplate(typesAndConstants1).specialize(specializations);
 		fragments["testfun"]				= tcu::StringTemplate(function1).specialize(specializations);
 
-		specConstants.append(&cases[caseNdx].scActualValue0, cases[caseNdx].scActualValueLength);
-		specConstants.append(&cases[caseNdx].scActualValue1, cases[caseNdx].scActualValueLength);
+		cases[caseNdx].scActualValue0.appendTo(specConstants);
+		cases[caseNdx].scActualValue1.appendTo(specConstants);
 
 		createTestsForAllStages(
 			cases[caseNdx].caseName, inputColors, cases[caseNdx].expectedColors, fragments, specConstants,
 			noPushConstants, noResources, noInterfaces, extensions, requiredFeatures, group.get());
 	}
 
-	const char	decorations2[]			=
+	const char			decorations2[]		=
 		"OpDecorate %sc_0  SpecId 0\n"
 		"OpDecorate %sc_1  SpecId 1\n"
 		"OpDecorate %sc_2  SpecId 2\n";
 
-	const char	typesAndConstants2[]	=
+	const std::string	typesAndConstants2	=
 		"%vec3_0      = OpConstantComposite %v3i32 %c_i32_0 %c_i32_0 %c_i32_0\n"
 		"%vec3_undef  = OpUndef %v3i32\n"
+
+		+ getSpecConstantOpStructConstantsAndTypes() + getSpecConstantOpStructComposites() +
 
 		"%sc_0        = OpSpecConstant %i32 0\n"
 		"%sc_1        = OpSpecConstant %i32 0\n"
 		"%sc_2        = OpSpecConstant %i32 0\n"
+
+		+ getSpecConstantOpStructConstBlock() +
+
 		"%sc_vec3_0   = OpSpecConstantOp %v3i32 CompositeInsert  %sc_0        %vec3_0      0\n"							// (sc_0, 0,    0)
 		"%sc_vec3_1   = OpSpecConstantOp %v3i32 CompositeInsert  %sc_1        %vec3_0      1\n"							// (0,    sc_1, 0)
 		"%sc_vec3_2   = OpSpecConstantOp %v3i32 CompositeInsert  %sc_2        %vec3_0      2\n"							// (0,    0,    sc_2)
@@ -7962,13 +8300,16 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 		"%sc_ext_1    = OpSpecConstantOp %i32   CompositeExtract %sc_vec3_012              1\n"							// sc_0
 		"%sc_ext_2    = OpSpecConstantOp %i32   CompositeExtract %sc_vec3_012              2\n"							// sc_1
 		"%sc_sub      = OpSpecConstantOp %i32   ISub             %sc_ext_0    %sc_ext_1\n"								// (sc_2 - sc_0)
-		"%sc_final    = OpSpecConstantOp %i32   IMul             %sc_sub      %sc_ext_2\n";								// (sc_2 - sc_0) * sc_1
+		"%sc_factor   = OpSpecConstantOp %i32   IMul             %sc_sub      %sc_ext_2\n";								// (sc_2 - sc_0) * sc_1
 
-	const char	function2[]				=
+	const std::string	function2			=
 		"%test_code = OpFunction %v4f32 None %v4f32_v4f32_function\n"
 		"%param     = OpFunctionParameter %v4f32\n"
 		"%label     = OpLabel\n"
 		"%result    = OpVariable %fp_v4f32 Function\n"
+
+		+ getSpecConstantOpStructInstructions() +
+
 		"             OpStore %result %param\n"
 		"%loc       = OpAccessChain %fp_f32 %result %sc_final\n"
 		"%val       = OpLoad %f32 %loc\n"
@@ -8044,7 +8385,7 @@ tcu::TestCaseGroup* createOpPhiTests(tcu::TestContext& testCtx)
 		"%loop      = OpLabel\n"
 		"%ival      = OpLoad %i32 %iptr\n"
 		"%lt_4      = OpSLessThan %bool %ival %c_i32_4\n"
-		"             OpLoopMerge %exit %phi None\n"
+		"             OpLoopMerge %exit %cont None\n"
 		"             OpBranchConditional %lt_4 %entry %exit\n"
 
 		"%entry     = OpLabel\n"
@@ -8067,6 +8408,8 @@ tcu::TestCaseGroup* createOpPhiTests(tcu::TestContext& testCtx)
 
 		"%phi       = OpLabel\n"
 		"%operand   = OpPhi %f32 %c_f32_p4 %case2 %c_f32_p5 %case1 %c_f32_p2 %case0 %c_f32_0 %case3\n" // not in the order of blocks
+		"             OpBranch %cont\n"
+		"%cont      = OpLabel\n"
 		"%add       = OpFAdd %f32 %val %operand\n"
 		"             OpStore %loc %add\n"
 		"%ival_next = OpIAdd %i32 %ival %c_i32_1\n"
@@ -8215,13 +8558,10 @@ tcu::TestCaseGroup* createOpPhiTests(tcu::TestContext& testCtx)
 
 	fragments4["pre_main"]		= typesAndConstants4;
 	fragments4["testfun"]		= function4;
-	fragments4["capability"]	= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
-	fragments4["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
+	fragments4["capability"]	= "OpCapability Float16\n";
 
-	extensions4.push_back("VK_KHR_16bit_storage");
 	extensions4.push_back("VK_KHR_shader_float16_int8");
 
-	vulkanFeatures4.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 	vulkanFeatures4.extFloat16Int8	= EXTFLOAT16INT8FEATURES_FLOAT16;
 
 	outputColors4[0]			= RGBA(127, 127, 127, 255);
@@ -9107,9 +9447,9 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 
 		";adds and subtracts 1.0 to %val in alternate iterations\n"
 		"%loop = OpLabel\n"
-		"%count = OpPhi %i32 %c_i32_4 %entry %count__ %gather\n"
-		"%delta = OpPhi %f32 %c_f32_1 %entry %delta_next %gather\n"
-		"%val1 = OpPhi %f32 %val0 %entry %val %gather\n"
+		"%count = OpPhi %i32 %c_i32_4 %entry %count__ %cont\n"
+		"%delta = OpPhi %f32 %c_f32_1 %entry %delta_next %cont\n"
+		"%val1 = OpPhi %f32 %val0 %entry %val %cont\n"
 		// There are several possibilities for the Continue Target below.  Each
 		// will be specialized into a separate test case.
 		"OpLoopMerge %exit ${continue_target} None\n"
@@ -9131,6 +9471,9 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 		"%delta_next = OpPhi %f32 %c_f32_n1 %even %c_f32_1 %odd\n"
 		"%val = OpFAdd %f32 %val1 %delta\n"
 		"%count__ = OpISub %i32 %count %c_i32_1\n"
+		"OpBranch %cont\n"
+
+		"%cont = OpLabel\n"
 		"%again = OpSGreaterThan %bool %count__ %c_i32_0\n"
 		"OpBranchConditional %again %loop %exit\n"
 
@@ -9148,7 +9491,7 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 	createTestsForAllStages("multi_block_continue_construct", defaultColors, defaultColors, fragments, testGroup.get());
 
 	// The Continue Target is at the end of the loop.
-	continue_target["continue_target"] = "%gather";
+	continue_target["continue_target"] = "%cont";
 	fragments["testfun"] = multiBlock.specialize(continue_target);
 	createTestsForAllStages("multi_block_loop_construct", defaultColors, defaultColors, fragments, testGroup.get());
 
@@ -9171,7 +9514,6 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 		"%if = OpLabel\n"
 		";skip if %count==2\n"
 		"%eq2 = OpIEqual %bool %count %c_i32_2\n"
-		"OpSelectionMerge %continue DontFlatten\n"
 		"OpBranchConditional %eq2 %continue %body\n"
 
 		"%body = OpLabel\n"
@@ -9216,7 +9558,6 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 		"%if = OpLabel\n"
 		";end loop if %count==%two\n"
 		"%above2 = OpSGreaterThan %bool %count %two\n"
-		"OpSelectionMerge %continue DontFlatten\n"
 		"OpBranchConditional %above2 %body %exit\n"
 
 		"%body = OpLabel\n"
@@ -9261,7 +9602,7 @@ tcu::TestCaseGroup* createLoopTests(tcu::TestContext& testCtx)
 		"%if = OpLabel\n"
 		";return if %count==%two\n"
 		"%above2 = OpSGreaterThan %bool %count %two\n"
-		"OpSelectionMerge %continue DontFlatten\n"
+		"OpSelectionMerge %body DontFlatten\n"
 		"OpBranchConditional %above2 %body %early_exit\n"
 
 		"%early_exit = OpLabel\n"
@@ -10360,6 +10701,9 @@ void createConvertCases (vector<ConvertCase>& testCases, const string& instructi
 
 		testCases.push_back(ConvertCase(instruction,	DATA_TYPE_FLOAT_16,			DATA_TYPE_FLOAT_64,			0x64D2,								true,	0x4093480000000000));
 		testCases.push_back(ConvertCase(instruction,	DATA_TYPE_FLOAT_64,			DATA_TYPE_FLOAT_16,			0x4093480000000000,					true,	0x64D2));
+		testCases.push_back(ConvertCase(instruction,	DATA_TYPE_FLOAT_16,			DATA_TYPE_FLOAT_64,			0x64D2,								true,	0x4093480000000000,		"no_storage",	false));
+	    testCases.push_back(ConvertCase(instruction,	DATA_TYPE_FLOAT_64,			DATA_TYPE_FLOAT_16,			0x4093480000000000,					true,	0x64D2,					"no_storage",	false));
+
 	}
 	else if (instruction == "OpConvertFToU")
 	{
@@ -10563,26 +10907,28 @@ const map<string, string> getConvertCaseFragments (string instruction, const Con
 
 	const StringTemplate pre_main (
 		"${datatype_additional_decl:opt}"
-		"    %ptr_in = OpTypePointer StorageBuffer %${inputType}\n"
-		"   %ptr_out = OpTypePointer StorageBuffer %${outputType}\n"
-		"   %s_SSBOi = OpTypeStruct %${inputType}\n"
-		"   %s_SSBOo = OpTypeStruct %${outputType}\n"
+		"    %ptr_in = OpTypePointer StorageBuffer %${inStorageType}\n"
+		"   %ptr_out = OpTypePointer StorageBuffer %${outStorageType}\n"
+		"   %s_SSBOi = OpTypeStruct %${inStorageType}\n"
+		"   %s_SSBOo = OpTypeStruct %${outStorageType}\n"
 		" %ptr_SSBOi = OpTypePointer StorageBuffer %s_SSBOi\n"
 		" %ptr_SSBOo = OpTypePointer StorageBuffer %s_SSBOo\n"
 		"     %SSBOi = OpVariable %ptr_SSBOi StorageBuffer\n"
 		"     %SSBOo = OpVariable %ptr_SSBOo StorageBuffer\n");
 
 	const StringTemplate testfun (
-		"%test_code = OpFunction %v4f32 None %v4f32_v4f32_function\n"
-		"%param     = OpFunctionParameter %v4f32\n"
-		"%label     = OpLabel\n"
-		"%iLoc      = OpAccessChain %ptr_in %SSBOi %c_u32_0\n"
-		"%oLoc      = OpAccessChain %ptr_out %SSBOo %c_u32_0\n"
-		"%valIn     = OpLoad %${inputType} %iLoc\n"
-		"%valOut    = ${instruction} %${outputType} %valIn\n"
-		"             OpStore %oLoc %valOut\n"
-		"             OpReturnValue %param\n"
-		"             OpFunctionEnd\n");
+		"%test_code  = OpFunction %v4f32 None %v4f32_v4f32_function\n"
+		"%param      = OpFunctionParameter %v4f32\n"
+		"%label      = OpLabel\n"
+		"%iLoc       = OpAccessChain %ptr_in %SSBOi %c_u32_0\n"
+		"%oLoc       = OpAccessChain %ptr_out %SSBOo %c_u32_0\n"
+		"%valIn      = OpLoad %${inStorageType} %iLoc\n"
+		"%valInCast  = ${inCast} %${inputType} %valIn\n"
+		"%conv       = ${instruction} %${outputType} %valInCast\n"
+		"%valOutCast = ${outCast} %${outStorageType} %conv\n"
+		"              OpStore %oLoc %valOutCast\n"
+		"              OpReturnValue %param\n"
+		"              OpFunctionEnd\n");
 
 	params["datatype_extensions"] =
 		params["datatype_extensions"] +
@@ -10594,6 +10940,61 @@ const map<string, string> getConvertCaseFragments (string instruction, const Con
 	fragments["pre_main"]	= pre_main.specialize(params);
 	fragments["testfun"]	= testfun.specialize(params);
 
+	return fragments;
+}
+
+const map<string, string> getConvertCaseFragmentsNoStorage(string instruction, const ConvertCase& convertCase)
+{
+	map<string, string> params = convertCase.m_asmTypes;
+	map<string, string> fragments;
+
+	params["instruction"] = instruction;
+	params["inDecorator"] = getByteWidthStr(convertCase.m_fromType);
+
+	const StringTemplate decoration(
+		"      OpDecorate %SSBOi DescriptorSet 0\n"
+		"      OpDecorate %SSBOo DescriptorSet 0\n"
+		"      OpDecorate %SSBOi Binding 0\n"
+		"      OpDecorate %SSBOo Binding 1\n"
+		"      OpDecorate %s_SSBOi Block\n"
+		"      OpDecorate %s_SSBOo Block\n"
+		"OpMemberDecorate %s_SSBOi 0 Offset 0\n"
+		"OpMemberDecorate %s_SSBOo 0 Offset 0\n");
+
+	const StringTemplate pre_main(
+		"${datatype_additional_decl:opt}"
+		"    %ptr_in = OpTypePointer StorageBuffer %${inStorageType}\n"
+		"   %ptr_out = OpTypePointer StorageBuffer %${outStorageType}\n"
+		"   %s_SSBOi = OpTypeStruct %${inStorageType}\n"
+		"   %s_SSBOo = OpTypeStruct %${outStorageType}\n"
+		" %ptr_SSBOi = OpTypePointer StorageBuffer %s_SSBOi\n"
+		" %ptr_SSBOo = OpTypePointer StorageBuffer %s_SSBOo\n"
+		"     %SSBOi = OpVariable %ptr_SSBOi StorageBuffer\n"
+		"     %SSBOo = OpVariable %ptr_SSBOo StorageBuffer\n");
+
+	const StringTemplate testfun(
+		"%test_code = OpFunction %v4f32 None %v4f32_v4f32_function\n"
+		"%param     = OpFunctionParameter %v4f32\n"
+		"%label     = OpLabel\n"
+		"%iLoc      = OpAccessChain %ptr_in %SSBOi %c_u32_0\n"
+		"%oLoc      = OpAccessChain %ptr_out %SSBOo %c_u32_0\n"
+		"%inval      = OpLoad %${inStorageType} %iLoc\n"
+		"%in_cast    = ${inCast} %${inputType} %inval\n"
+		"%conv       = ${instruction} %${outputType} %in_cast\n"
+		"%out_cast   = ${outCast} %${outStorageType} %conv\n"
+		"              OpStore %oLoc %out_cast\n"
+		"              OpReturnValue %param\n"
+		"              OpFunctionEnd\n");
+
+	params["datatype_extensions"] =
+		params["datatype_extensions"] +
+		"OpExtension \"SPV_KHR_storage_buffer_storage_class\"\n";
+
+	fragments["capability"] = params["datatype_capabilities"];
+	fragments["extension"] = params["datatype_extensions"];
+	fragments["decoration"] = decoration.specialize(params);
+	fragments["pre_main"] = pre_main.specialize(params);
+	fragments["testfun"] = testfun.specialize(params);
 	return fragments;
 }
 
@@ -10628,7 +11029,7 @@ tcu::TestCaseGroup* createConvertGraphicsTests (tcu::TestContext& testCtx, const
 
 	for (vector<ConvertCase>::const_iterator test = testCases.begin(); test != testCases.end(); ++test)
 	{
-		map<string, string>	fragments		= getConvertCaseFragments(instruction, *test);
+		map<string, string>	fragments		= (test->m_useStorageExt) ? getConvertCaseFragments(instruction, *test) : getConvertCaseFragmentsNoStorage(instruction,*test);
 		VulkanFeatures		vulkanFeatures;
 		GraphicsResources	resources;
 		vector<string>		extensions;
@@ -11447,6 +11848,9 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 		const size_t	typeStride;
 		const char*		typeName;
 		const char*		typeDecls;
+		const char*		typeStorage;
+		const string		loadFunction;
+		const string		storeFunction;
 	};
 
 	const TestType	testTypes[]	=
@@ -11456,41 +11860,65 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 			2 * sizeof(deFloat16),
 			"v2f16",
 			"      %v2f16 = OpTypeVector %f16 2\n"
+			"%v2f16_i32_fn = OpTypeFunction %v2f16 %i32\n"
+			"%void_f16_i32_fn = OpTypeFunction %void %f16 %i32\n"
+			"%c_u32_high_ones = OpConstant %u32 0xffff0000\n"
+			" %c_u32_low_ones = OpConstant %u32 0x0000ffff\n",
+			"u32",
+			loadV2F16FromUint,
+			storeScalarF16AsUint
 		},
 		{
 			3,
 			4 * sizeof(deFloat16),
 			"v3f16",
+			"      %v2f16 = OpTypeVector %f16 2\n"
 			"      %v3f16 = OpTypeVector %f16 3\n"
+			"%v3f16_i32_fn = OpTypeFunction %v3f16 %i32\n"
+			"%void_f16_i32_fn = OpTypeFunction %void %f16 %i32\n"
+			"%c_u32_high_ones = OpConstant %u32 0xffff0000\n"
+			" %c_u32_low_ones = OpConstant %u32 0x0000ffff\n",
+			"ra_u32_2",
+			loadV3F16FromUints,
+			storeScalarF16AsUint
 		},
 		{
 			4,
 			4 * sizeof(deFloat16),
 			"v4f16",
+			"      %v2f16 = OpTypeVector %f16 2\n"
 			"      %v4f16 = OpTypeVector %f16 4\n"
+			"%v4f16_i32_fn = OpTypeFunction %v4f16 %i32\n"
+			"%void_f16_i32_fn = OpTypeFunction %void %f16 %i32\n"
+			"%c_u32_high_ones = OpConstant %u32 0xffff0000\n"
+			" %c_u32_low_ones = OpConstant %u32 0x0000ffff\n",
+			"ra_u32_2",
+			loadV4F16FromUints,
+			storeScalarF16AsUint
 		},
 	};
 
 	const StringTemplate preMain
 	(
 		"  %c_i32_ndp = OpConstant %i32 ${num_data_points}\n"
+		" %c_i32_hndp = OpSpecConstantOp %i32 SDiv %c_i32_ndp %c_i32_2\n"
 		"        %f16 = OpTypeFloat 16\n"
 
 		"${type_decl}"
-
-		"   %up_${tt} = OpTypePointer Uniform %${tt}\n"
-		"   %ra_${tt} = OpTypeArray %${tt} %c_i32_ndp\n"
-		"   %SSBO_SRC = OpTypeStruct %ra_${tt}\n"
-		"%up_SSBO_SRC = OpTypePointer Uniform %SSBO_SRC\n"
 
 		"     %up_u32 = OpTypePointer Uniform %u32\n"
 		"     %ra_u32 = OpTypeArray %u32 %c_i32_ndp\n"
 		"   %SSBO_IDX = OpTypeStruct %ra_u32\n"
 		"%up_SSBO_IDX = OpTypePointer Uniform %SSBO_IDX\n"
 
-		"     %up_f16 = OpTypePointer Uniform %f16\n"
-		"     %ra_f16 = OpTypeArray %f16 %c_i32_ndp\n"
-		"   %SSBO_DST = OpTypeStruct %ra_f16\n"
+		"   %ra_u32_2 = OpTypeArray %u32 %c_u32_2\n"
+		" %ra_u32_ndp = OpTypeArray %u32 %c_i32_ndp\n"
+		"%ra_ra_u32_2 = OpTypeArray %ra_u32_2 %c_i32_ndp\n"
+		"   %SSBO_SRC = OpTypeStruct %ra_${ts}\n"
+		"%up_SSBO_SRC = OpTypePointer Uniform %SSBO_SRC\n"
+
+		" %ra_u32_hndp = OpTypeArray %u32 %c_i32_hndp\n"
+		"   %SSBO_DST = OpTypeStruct %ra_u32_hndp\n"
 		"%up_SSBO_DST = OpTypePointer Uniform %SSBO_DST\n"
 
 		"   %ssbo_src = OpVariable %up_SSBO_SRC Uniform\n"
@@ -11500,7 +11928,9 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 
 	const StringTemplate decoration
 	(
-		"OpDecorate %ra_${tt} ArrayStride ${tt_stride}\n"
+		"OpDecorate %ra_u32_2 ArrayStride 4\n"
+		"OpDecorate %ra_u32_hndp ArrayStride 4\n"
+		"OpDecorate %ra_ra_u32_2 ArrayStride 8\n"
 		"OpMemberDecorate %SSBO_SRC 0 Offset 0\n"
 		"OpDecorate %SSBO_SRC BufferBlock\n"
 		"OpDecorate %ssbo_src DescriptorSet 0\n"
@@ -11512,7 +11942,6 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 		"OpDecorate %ssbo_idx DescriptorSet 0\n"
 		"OpDecorate %ssbo_idx Binding 1\n"
 
-		"OpDecorate %ra_f16 ArrayStride 2\n"
 		"OpMemberDecorate %SSBO_DST 0 Offset 0\n"
 		"OpDecorate %SSBO_DST BufferBlock\n"
 		"OpDecorate %ssbo_dst DescriptorSet 0\n"
@@ -11544,16 +11973,14 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 		"    %write = OpLabel\n"
 		"      %ndx = OpLoad %i32 %i\n"
 
-		"      %src = OpAccessChain %up_${tt} %ssbo_src %c_i32_0 %ndx\n"
-		"  %val_src = OpLoad %${tt} %src\n"
+		"  %val_src = OpFunctionCall %${tt} %ld_arg_ssbo_src %ndx\n"
 
 		"  %src_idx = OpAccessChain %up_u32 %ssbo_idx %c_i32_0 %ndx\n"
 		"  %val_idx = OpLoad %u32 %src_idx\n"
 
 		"  %val_dst = OpVectorExtractDynamic %f16 %val_src %val_idx\n"
-		"      %dst = OpAccessChain %up_f16 %ssbo_dst %c_i32_0 %ndx\n"
+		"      %dst = OpFunctionCall %void %st_fn_ssbo_dst %val_dst %ndx\n"
 
-		"             OpStore %dst %val_dst\n"
 		"             OpBranch %next\n"
 
 		"     %next = OpLabel\n"
@@ -11588,25 +12015,25 @@ tcu::TestCaseGroup* createFloat16VectorExtractSet (tcu::TestContext& testCtx)
 
 		specs["num_data_points"]	= de::toString(iterations);
 		specs["tt"]					= testType.typeName;
+		specs["ts"]					= testType.typeStorage;
 		specs["tt_stride"]			= de::toString(testType.typeStride);
 		specs["type_decl"]			= testType.typeDecls;
 
-		fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
-		fragments["capability"]		= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
+		fragments["capability"]		= "OpCapability Float16\n";
 		fragments["decoration"]		= decoration.specialize(specs);
 		fragments["pre_main"]		= preMain.specialize(specs);
 		fragments["testfun"]		= testFun.specialize(specs);
+		fragments["testfun"]		+= StringTemplate(testType.loadFunction).specialize({{"var", "ssbo_src"}});
+		fragments["testfun"]		+= StringTemplate(testType.storeFunction).specialize({{"var", "ssbo_dst"}});
 
 		specResource.inputs.push_back(Resource(BufferSp(new Float16Buffer(float16InputData)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.inputs.push_back(Resource(BufferSp(new Uint32Buffer(inputDataNdx)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.outputs.push_back(Resource(BufferSp(new Float16Buffer(float16OutputDummy)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.verifyIO = compareFP16VectorExtractFunc;
 
-		extensions.push_back("VK_KHR_16bit_storage");
 		extensions.push_back("VK_KHR_shader_float16_int8");
 
 		features.extFloat16Int8		= EXTFLOAT16INT8FEATURES_FLOAT16;
-		features.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 
 		finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
 	}
@@ -11683,6 +12110,9 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 		const char*		typeName;
 		const char*		typeDecls;
 		VerifyIOFunc	verifyIOFunc;
+		const char*		typeStorage;
+		const string		loadFunction;
+		const string		storeFunction;
 	};
 
 	const TestType	testTypes[]	=
@@ -11691,22 +12121,39 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 			2,
 			2 * sizeof(deFloat16),
 			"v2f16",
-			"      %v2f16 = OpTypeVector %f16 2\n",
-			compareFP16VectorInsertFunc<2, replacement>
+			"      %v2f16 = OpTypeVector %f16 2\n"
+			"%v2f16_i32_fn = OpTypeFunction %v2f16 %i32\n"
+			"%void_v2f16_i32_fn = OpTypeFunction %void %v2f16 %i32\n",
+			compareFP16VectorInsertFunc<2, replacement>,
+			"u32",
+			loadV2F16FromUint,
+			storeV2F16AsUint
 		},
 		{
 			3,
 			4 * sizeof(deFloat16),
 			"v3f16",
-			"      %v3f16 = OpTypeVector %f16 3\n",
-			compareFP16VectorInsertFunc<3, replacement>
+			"      %v2f16 = OpTypeVector %f16 2\n"
+			"      %v3f16 = OpTypeVector %f16 3\n"
+			"%v3f16_i32_fn = OpTypeFunction %v3f16 %i32\n"
+			"%void_v3f16_i32_fn = OpTypeFunction %void %v3f16 %i32\n",
+			compareFP16VectorInsertFunc<3, replacement>,
+			"ra_u32_2",
+			loadV3F16FromUints,
+			storeV3F16AsUints
 		},
 		{
 			4,
 			4 * sizeof(deFloat16),
 			"v4f16",
-			"      %v4f16 = OpTypeVector %f16 4\n",
-			compareFP16VectorInsertFunc<4, replacement>
+			"      %v2f16 = OpTypeVector %f16 2\n"
+			"      %v4f16 = OpTypeVector %f16 4\n"
+			"%v4f16_i32_fn = OpTypeFunction %v4f16 %i32\n"
+			"%void_v4f16_i32_fn = OpTypeFunction %void %v4f16 %i32\n",
+			compareFP16VectorInsertFunc<4, replacement>,
+			"ra_u32_2",
+			loadV4F16FromUints,
+			storeV4F16AsUints
 		},
 	};
 
@@ -11718,17 +12165,17 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 
 		"${type_decl}"
 
-		"   %up_${tt} = OpTypePointer Uniform %${tt}\n"
-		"   %ra_${tt} = OpTypeArray %${tt} %c_i32_ndp\n"
-		"   %SSBO_SRC = OpTypeStruct %ra_${tt}\n"
-		"%up_SSBO_SRC = OpTypePointer Uniform %SSBO_SRC\n"
-
-		"     %up_u32 = OpTypePointer Uniform %u32\n"
 		"     %ra_u32 = OpTypeArray %u32 %c_i32_ndp\n"
+		"	  %up_u32 = OpTypePointer Uniform %u32\n"
 		"   %SSBO_IDX = OpTypeStruct %ra_u32\n"
 		"%up_SSBO_IDX = OpTypePointer Uniform %SSBO_IDX\n"
 
-		"   %SSBO_DST = OpTypeStruct %ra_${tt}\n"
+		"   %ra_u32_2 = OpTypeArray %u32 %c_u32_2\n"
+		"%ra_ra_u32_2 = OpTypeArray %ra_u32_2 %c_i32_ndp\n"
+		"   %SSBO_SRC = OpTypeStruct %ra_${ts}\n"
+		"%up_SSBO_SRC = OpTypePointer Uniform %SSBO_SRC\n"
+
+		"   %SSBO_DST = OpTypeStruct %ra_${ts}\n"
 		"%up_SSBO_DST = OpTypePointer Uniform %SSBO_DST\n"
 
 		"   %ssbo_src = OpVariable %up_SSBO_SRC Uniform\n"
@@ -11738,7 +12185,8 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 
 	const StringTemplate decoration
 	(
-		"OpDecorate %ra_${tt} ArrayStride ${tt_stride}\n"
+		"OpDecorate %ra_u32_2 ArrayStride 4\n"
+		"OpDecorate %ra_ra_u32_2 ArrayStride 8\n"
 		"OpMemberDecorate %SSBO_SRC 0 Offset 0\n"
 		"OpDecorate %SSBO_SRC BufferBlock\n"
 		"OpDecorate %ssbo_src DescriptorSet 0\n"
@@ -11781,16 +12229,14 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 		"    %write = OpLabel\n"
 		"      %ndx = OpLoad %i32 %i\n"
 
-		"      %src = OpAccessChain %up_${tt} %ssbo_src %c_i32_0 %ndx\n"
-		"  %val_src = OpLoad %${tt} %src\n"
+		"  %val_src = OpFunctionCall %${tt} %ld_arg_ssbo_src %ndx\n"
 
 		"  %src_idx = OpAccessChain %up_u32 %ssbo_idx %c_i32_0 %ndx\n"
 		"  %val_idx = OpLoad %u32 %src_idx\n"
 
 		"  %val_dst = OpVectorInsertDynamic %${tt} %val_src %c_f16_ins %val_idx\n"
-		"      %dst = OpAccessChain %up_${tt} %ssbo_dst %c_i32_0 %ndx\n"
+		"      %dst = OpFunctionCall %void %st_fn_ssbo_dst %val_dst %ndx\n"
 
-		"             OpStore %dst %val_dst\n"
 		"             OpBranch %next\n"
 
 		"     %next = OpLabel\n"
@@ -11825,26 +12271,26 @@ tcu::TestCaseGroup* createFloat16VectorInsertSet (tcu::TestContext& testCtx)
 
 		specs["num_data_points"]	= de::toString(iterations);
 		specs["tt"]					= testType.typeName;
+		specs["ts"]					= testType.typeStorage;
 		specs["tt_stride"]			= de::toString(testType.typeStride);
 		specs["type_decl"]			= testType.typeDecls;
 		specs["replacement"]		= de::toString(replacement);
 
-		fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
-		fragments["capability"]		= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
+		fragments["capability"]		= "OpCapability Float16\n";
 		fragments["decoration"]		= decoration.specialize(specs);
 		fragments["pre_main"]		= preMain.specialize(specs);
 		fragments["testfun"]		= testFun.specialize(specs);
+		fragments["testfun"]		+= StringTemplate(testType.loadFunction).specialize({{"var", "ssbo_src"}});
+		fragments["testfun"]		+= StringTemplate(testType.storeFunction).specialize({{"var", "ssbo_dst"}});
 
 		specResource.inputs.push_back(Resource(BufferSp(new Float16Buffer(float16InputData)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.inputs.push_back(Resource(BufferSp(new Uint32Buffer(inputDataNdx)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.outputs.push_back(Resource(BufferSp(new Float16Buffer(float16OutputDummy)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.verifyIO = testType.verifyIOFunc;
 
-		extensions.push_back("VK_KHR_16bit_storage");
 		extensions.push_back("VK_KHR_shader_float16_int8");
 
 		features.extFloat16Int8		= EXTFLOAT16INT8FEATURES_FLOAT16;
-		features.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 
 		finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
 	}
@@ -11988,6 +12434,8 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 	{
 		const deUint32	typeComponents;
 		const char*		typeName;
+		const string	loadFunction;
+		const string	storeFunction;
 	};
 
 	const TestType	testTypes[]	=
@@ -11995,14 +12443,20 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 		{
 			2,
 			"v2f16",
+			loadV2F16FromUint,
+			storeV2F16AsUint
 		},
 		{
 			3,
 			"v3f16",
+			loadV3F16FromUints,
+			storeV3F16AsUints
 		},
 		{
 			4,
 			"v4f16",
+			loadV4F16FromUints,
+			storeV4F16AsUints
 		},
 	};
 
@@ -12015,19 +12469,23 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 		"        %v3f16 = OpTypeVector %f16 3\n"
 		"        %v4f16 = OpTypeVector %f16 4\n"
 
-		"     %up_v2f16 = OpTypePointer Uniform %v2f16\n"
-		"     %ra_v2f16 = OpTypeArray %v2f16 %c_i32_ndp\n"
-		"   %SSBO_v2f16 = OpTypeStruct %ra_v2f16\n"
+		"     %v2f16_i32_fn = OpTypeFunction %v2f16 %i32\n"
+		"     %v3f16_i32_fn = OpTypeFunction %v3f16 %i32\n"
+		"     %v4f16_i32_fn = OpTypeFunction %v4f16 %i32\n"
+		"%void_v2f16_i32_fn = OpTypeFunction %void %v2f16 %i32\n"
+		"%void_v3f16_i32_fn = OpTypeFunction %void %v3f16 %i32\n"
+		"%void_v4f16_i32_fn = OpTypeFunction %void %v4f16 %i32\n"
+
+		"     %ra_u32_2 = OpTypeArray %u32 %c_u32_2\n"
+		"   %ra_u32_ndp = OpTypeArray %u32 %c_i32_ndp\n"
+		"  %ra_ra_u32_2 = OpTypeArray %ra_u32_2 %c_i32_ndp\n"
+		"       %up_u32 = OpTypePointer Uniform %u32\n"
+		"   %SSBO_v2f16 = OpTypeStruct %ra_u32_ndp\n"
+		"   %SSBO_v3f16 = OpTypeStruct %ra_ra_u32_2\n"
+		"   %SSBO_v4f16 = OpTypeStruct %ra_ra_u32_2\n"
+
 		"%up_SSBO_v2f16 = OpTypePointer Uniform %SSBO_v2f16\n"
-
-		"     %up_v3f16 = OpTypePointer Uniform %v3f16\n"
-		"     %ra_v3f16 = OpTypeArray %v3f16 %c_i32_ndp\n"
-		"   %SSBO_v3f16 = OpTypeStruct %ra_v3f16\n"
 		"%up_SSBO_v3f16 = OpTypePointer Uniform %SSBO_v3f16\n"
-
-		"     %up_v4f16 = OpTypePointer Uniform %v4f16\n"
-		"     %ra_v4f16 = OpTypeArray %v4f16 %c_i32_ndp\n"
-		"   %SSBO_v4f16 = OpTypeStruct %ra_v4f16\n"
 		"%up_SSBO_v4f16 = OpTypePointer Uniform %SSBO_v4f16\n"
 
 		"        %fun_t = OpTypeFunction %${tt_dst} %${tt_src0} %${tt_src1} %i32\n"
@@ -12039,9 +12497,9 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 
 	const StringTemplate decoration
 	(
-		"OpDecorate %ra_v2f16 ArrayStride 4\n"
-		"OpDecorate %ra_v3f16 ArrayStride 8\n"
-		"OpDecorate %ra_v4f16 ArrayStride 8\n"
+		"OpDecorate %ra_u32_2 ArrayStride 4\n"
+		"OpDecorate %ra_u32_ndp ArrayStride 4\n"
+		"OpDecorate %ra_ra_u32_2 ArrayStride 8\n"
 
 		"OpMemberDecorate %SSBO_v2f16 0 Offset 0\n"
 		"OpDecorate %SSBO_v2f16 BufferBlock\n"
@@ -12084,13 +12542,10 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 
 		"    %write = OpLabel\n"
 		"      %ndx = OpLoad %i32 %i\n"
-		"     %src0 = OpAccessChain %up_${tt_src0} %ssbo_src0 %c_i32_0 %ndx\n"
-		" %val_src0 = OpLoad %${tt_src0} %src0\n"
-		"     %src1 = OpAccessChain %up_${tt_src1} %ssbo_src1 %c_i32_0 %ndx\n"
-		" %val_src1 = OpLoad %${tt_src1} %src1\n"
+		" %val_src0 = OpFunctionCall %${tt_src0} %ld_arg_ssbo_src0 %ndx\n"
+		" %val_src1 = OpFunctionCall %${tt_src1} %ld_arg_ssbo_src1 %ndx\n"
 		"  %val_dst = OpFunctionCall %${tt_dst} %sw_fun %val_src0 %val_src1 %ndx\n"
-		"      %dst = OpAccessChain %up_${tt_dst} %ssbo_dst %c_i32_0 %ndx\n"
-		"             OpStore %dst %val_dst\n"
+		"      %dst = OpFunctionCall %void %st_fn_ssbo_dst %val_dst %ndx\n"
 		"             OpBranch %next\n"
 
 		"     %next = OpLabel\n"
@@ -12200,22 +12655,22 @@ tcu::TestCaseGroup* createFloat16VectorShuffleSet (tcu::TestContext& testCtx)
 				specs["case_list"]			= caseList;
 				specs["case_count"]			= de::toString(caseCount);
 
-				fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
-				fragments["capability"]		= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
+				fragments["capability"]		= "OpCapability Float16\n";
 				fragments["decoration"]		= decoration.specialize(specs);
 				fragments["pre_main"]		= preMain.specialize(specs);
 				fragments["testfun"]		= testFun.specialize(specs);
+				fragments["testfun"]		+= StringTemplate(src0Type.loadFunction).specialize({{"var", "ssbo_src0"}});
+				fragments["testfun"]		+= StringTemplate(src1Type.loadFunction).specialize({{"var", "ssbo_src1"}});
+				fragments["testfun"]		+= StringTemplate(dstType.storeFunction).specialize({{"var", "ssbo_dst"}});
 
 				specResource.inputs.push_back(Resource(BufferSp(new Float16Buffer(float16Input0Data)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 				specResource.inputs.push_back(Resource(BufferSp(new Float16Buffer(float16Input1Data)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 				specResource.outputs.push_back(Resource(BufferSp(new Float16Buffer(float16OutputDummy)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 				specResource.verifyIO = getFloat16VectorShuffleVerifyIOFunc(dstType.typeComponents, src0Type.typeComponents, src1Type.typeComponents);
 
-				extensions.push_back("VK_KHR_16bit_storage");
 				extensions.push_back("VK_KHR_shader_float16_int8");
 
 				features.extFloat16Int8		= EXTFLOAT16INT8FEATURES_FLOAT16;
-				features.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 
 				finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
 			}
@@ -12283,7 +12738,45 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 
 		"${consts}"
 
+		"     %c_f16_n1 = OpConstant %f16 -1.0\n"
+		"   %c_v2f16_n1 = OpConstantComposite %v2f16 %c_f16_n1 %c_f16_n1\n"
 		"      %c_u32_5 = OpConstant %u32 5\n"
+		"      %c_u32_6 = OpConstant %u32 6\n"
+		"      %c_u32_7 = OpConstant %u32 7\n"
+		"      %c_u32_8 = OpConstant %u32 8\n"
+		"      %c_u32_9 = OpConstant %u32 9\n"
+		"     %c_u32_10 = OpConstant %u32 10\n"
+		"     %c_u32_11 = OpConstant %u32 11\n"
+		"     %c_u32_12 = OpConstant %u32 12\n"
+		"     %c_u32_13 = OpConstant %u32 13\n"
+		"     %c_u32_14 = OpConstant %u32 14\n"
+		"     %c_u32_15 = OpConstant %u32 15\n"
+		"     %c_u32_16 = OpConstant %u32 16\n"
+		"     %c_u32_17 = OpConstant %u32 17\n"
+		"     %c_u32_18 = OpConstant %u32 18\n"
+		"     %c_u32_19 = OpConstant %u32 19\n"
+		"     %c_u32_20 = OpConstant %u32 20\n"
+		"     %c_u32_21 = OpConstant %u32 21\n"
+		"     %c_u32_22 = OpConstant %u32 22\n"
+		"     %c_u32_23 = OpConstant %u32 23\n"
+		"     %c_u32_24 = OpConstant %u32 24\n"
+		"     %c_u32_25 = OpConstant %u32 25\n"
+		"     %c_u32_26 = OpConstant %u32 26\n"
+		"     %c_u32_27 = OpConstant %u32 27\n"
+		"     %c_u32_28 = OpConstant %u32 28\n"
+		"     %c_u32_29 = OpConstant %u32 29\n"
+		"     %c_u32_30 = OpConstant %u32 30\n"
+		"     %c_u32_31 = OpConstant %u32 31\n"
+		"     %c_u32_33 = OpConstant %u32 33\n"
+		"     %c_u32_34 = OpConstant %u32 34\n"
+		"     %c_u32_35 = OpConstant %u32 35\n"
+		"     %c_u32_36 = OpConstant %u32 36\n"
+		"     %c_u32_37 = OpConstant %u32 37\n"
+		"     %c_u32_38 = OpConstant %u32 38\n"
+		"     %c_u32_39 = OpConstant %u32 39\n"
+		"     %c_u32_40 = OpConstant %u32 40\n"
+		"     %c_u32_41 = OpConstant %u32 41\n"
+		"     %c_u32_44 = OpConstant %u32 44\n"
 
 		" %f16arr3      = OpTypeArray %f16 %c_u32_3\n"
 		" %v2f16arr3    = OpTypeArray %v2f16 %c_u32_3\n"
@@ -12294,9 +12787,10 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 		" %struct16arr3 = OpTypeArray %struct16 %c_u32_3\n"
 		" %st_test      = OpTypeStruct %f16 %v2f16 %v3f16 %v4f16 %f16arr3 %struct16arr3 %v2f16arr5 %f16 %v3f16arr5 %v4f16arr3\n"
 
-		"        %up_st = OpTypePointer Uniform %st_test\n"
-		"        %ra_st = OpTypeArray %st_test %c_i32_ndp\n"
-		"      %SSBO_st = OpTypeStruct %ra_st\n"
+		"       %up_u32 = OpTypePointer Uniform %u32\n"
+		"    %ra_u32_44 = OpTypeArray %u32 %c_u32_44\n"
+		"    %ra_ra_u32 = OpTypeArray %ra_u32_44 %c_i32_ndp\n"
+		"      %SSBO_st = OpTypeStruct %ra_ra_u32\n"
 		"   %up_SSBO_st = OpTypePointer Uniform %SSBO_st\n"
 
 		"     %ssbo_dst = OpVariable %up_SSBO_st Uniform\n"
@@ -12305,7 +12799,8 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 	const StringTemplate decoration
 	(
 		"OpDecorate %SSBO_st BufferBlock\n"
-		"OpDecorate %ra_st ArrayStride ${struct_item_size}\n"
+		"OpDecorate %ra_u32_44 ArrayStride 4\n"
+		"OpDecorate %ra_ra_u32 ArrayStride ${struct_item_size}\n"
 		"OpDecorate %ssbo_dst DescriptorSet 0\n"
 		"OpDecorate %ssbo_dst Binding 1\n"
 
@@ -12409,8 +12904,218 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 		"      %fld9 = OpCompositeConstruct %v4f16arr3 %fld9_0 %fld9_1 %fld9_2\n"
 
 		"    %st_val = OpCompositeConstruct %st_test %c_f16_0 %fld1 %fld2 %fld3 %fld4 %fld5 %fld6 %c_f16_50 %fld8 %fld9\n"
-		"       %dst = OpAccessChain %up_st %ssbo_dst %c_i32_0 %ndx\n"
-		"              OpStore %dst %st_val\n"
+
+		// Storage section: all elements that are not directly accessed should
+		// have the value of -1.0. This means for f16 and v3f16 stores the v2f16
+		// is constructed with one element from a constant -1.0.
+		// half offset 0
+		"      %ex_0 = OpCompositeExtract %f16 %st_val 0\n"
+		"     %vec_0 = OpCompositeConstruct %v2f16 %ex_0 %c_f16_n1\n"
+		"      %bc_0 = OpBitcast %u32 %vec_0\n"
+		"     %gep_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_0\n"
+		"              OpStore %gep_0 %bc_0\n"
+
+		// <2 x half> offset 4
+		"      %ex_1 = OpCompositeExtract %v2f16 %st_val 1\n"
+		"      %bc_1 = OpBitcast %u32 %ex_1\n"
+		"     %gep_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_1\n"
+		"              OpStore %gep_1 %bc_1\n"
+
+		// <3 x half> offset 8
+		"      %ex_2 = OpCompositeExtract %v3f16 %st_val 2\n"
+		"    %ex_2_0 = OpVectorShuffle %v2f16 %ex_2 %c_v2f16_n1 0 1\n"
+		"    %ex_2_1 = OpVectorShuffle %v2f16 %ex_2 %c_v2f16_n1 2 3\n"
+		"    %bc_2_0 = OpBitcast %u32 %ex_2_0\n"
+		"    %bc_2_1 = OpBitcast %u32 %ex_2_1\n"
+		"   %gep_2_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_2\n"
+		"   %gep_2_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_3\n"
+		"              OpStore %gep_2_0 %bc_2_0\n"
+		"              OpStore %gep_2_1 %bc_2_1\n"
+
+		// <4 x half> offset 16
+		"      %ex_3 = OpCompositeExtract %v4f16 %st_val 3\n"
+		"    %ex_3_0 = OpVectorShuffle %v2f16 %ex_3 %ex_3 0 1\n"
+		"    %ex_3_1 = OpVectorShuffle %v2f16 %ex_3 %ex_3 2 3\n"
+		"    %bc_3_0 = OpBitcast %u32 %ex_3_0\n"
+		"    %bc_3_1 = OpBitcast %u32 %ex_3_1\n"
+		"   %gep_3_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_4\n"
+		"   %gep_3_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_5\n"
+		"              OpStore %gep_3_0 %bc_3_0\n"
+		"              OpStore %gep_3_1 %bc_3_1\n"
+
+		// [3 x half] offset 24
+		"    %ex_4_0 = OpCompositeExtract %f16 %st_val 4 0\n"
+		"    %ex_4_1 = OpCompositeExtract %f16 %st_val 4 1\n"
+		"    %ex_4_2 = OpCompositeExtract %f16 %st_val 4 2\n"
+		"   %vec_4_0 = OpCompositeConstruct %v2f16 %ex_4_0 %ex_4_1\n"
+		"   %vec_4_1 = OpCompositeConstruct %v2f16 %ex_4_2 %c_f16_n1\n"
+		"    %bc_4_0 = OpBitcast %u32 %vec_4_0\n"
+		"    %bc_4_1 = OpBitcast %u32 %vec_4_1\n"
+		"   %gep_4_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_6\n"
+		"   %gep_4_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_7\n"
+		"              OpStore %gep_4_0 %bc_4_0\n"
+		"              OpStore %gep_4_1 %bc_4_1\n"
+
+		// [3 x {half, [3 x <2 x half>]}] offset 32
+		"    %ex_5_0 = OpCompositeExtract %struct16 %st_val 5 0\n"
+		"    %ex_5_1 = OpCompositeExtract %struct16 %st_val 5 1\n"
+		"    %ex_5_2 = OpCompositeExtract %struct16 %st_val 5 2\n"
+		"  %ex_5_0_0 = OpCompositeExtract %f16 %ex_5_0 0\n"
+		"  %ex_5_1_0 = OpCompositeExtract %f16 %ex_5_1 0\n"
+		"  %ex_5_2_0 = OpCompositeExtract %f16 %ex_5_2 0\n"
+		"%ex_5_0_1_0 = OpCompositeExtract %v2f16 %ex_5_0 1 0\n"
+		"%ex_5_0_1_1 = OpCompositeExtract %v2f16 %ex_5_0 1 1\n"
+		"%ex_5_0_1_2 = OpCompositeExtract %v2f16 %ex_5_0 1 2\n"
+		"%ex_5_1_1_0 = OpCompositeExtract %v2f16 %ex_5_1 1 0\n"
+		"%ex_5_1_1_1 = OpCompositeExtract %v2f16 %ex_5_1 1 1\n"
+		"%ex_5_1_1_2 = OpCompositeExtract %v2f16 %ex_5_1 1 2\n"
+		"%ex_5_2_1_0 = OpCompositeExtract %v2f16 %ex_5_2 1 0\n"
+		"%ex_5_2_1_1 = OpCompositeExtract %v2f16 %ex_5_2 1 1\n"
+		"%ex_5_2_1_2 = OpCompositeExtract %v2f16 %ex_5_2 1 2\n"
+		" %vec_5_0_0 = OpCompositeConstruct %v2f16 %ex_5_0_0 %c_f16_n1\n"
+		" %vec_5_1_0 = OpCompositeConstruct %v2f16 %ex_5_1_0 %c_f16_n1\n"
+		" %vec_5_2_0 = OpCompositeConstruct %v2f16 %ex_5_2_0 %c_f16_n1\n"
+		"  %bc_5_0_0 = OpBitcast %u32 %vec_5_0_0\n"
+		"  %bc_5_1_0 = OpBitcast %u32 %vec_5_1_0\n"
+		"  %bc_5_2_0 = OpBitcast %u32 %vec_5_2_0\n"
+		"%bc_5_0_1_0 = OpBitcast %u32 %ex_5_0_1_0\n"
+		"%bc_5_0_1_1 = OpBitcast %u32 %ex_5_0_1_1\n"
+		"%bc_5_0_1_2 = OpBitcast %u32 %ex_5_0_1_2\n"
+		"%bc_5_1_1_0 = OpBitcast %u32 %ex_5_1_1_0\n"
+		"%bc_5_1_1_1 = OpBitcast %u32 %ex_5_1_1_1\n"
+		"%bc_5_1_1_2 = OpBitcast %u32 %ex_5_1_1_2\n"
+		"%bc_5_2_1_0 = OpBitcast %u32 %ex_5_2_1_0\n"
+		"%bc_5_2_1_1 = OpBitcast %u32 %ex_5_2_1_1\n"
+		"%bc_5_2_1_2 = OpBitcast %u32 %ex_5_2_1_2\n"
+		"  %gep_5_0_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_8\n"
+		"%gep_5_0_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_9\n"
+		"%gep_5_0_1_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_10\n"
+		"%gep_5_0_1_2 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_11\n"
+		"  %gep_5_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_12\n"
+		"%gep_5_1_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_13\n"
+		"%gep_5_1_1_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_14\n"
+		"%gep_5_1_1_2 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_15\n"
+		"  %gep_5_2_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_16\n"
+		"%gep_5_2_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_17\n"
+		"%gep_5_2_1_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_18\n"
+		"%gep_5_2_1_2 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_19\n"
+		"              OpStore %gep_5_0_0 %bc_5_0_0\n"
+		"              OpStore %gep_5_0_1_0 %bc_5_0_1_0\n"
+		"              OpStore %gep_5_0_1_1 %bc_5_0_1_1\n"
+		"              OpStore %gep_5_0_1_2 %bc_5_0_1_2\n"
+		"              OpStore %gep_5_1_0 %bc_5_1_0\n"
+		"              OpStore %gep_5_1_1_0 %bc_5_1_1_0\n"
+		"              OpStore %gep_5_1_1_1 %bc_5_1_1_1\n"
+		"              OpStore %gep_5_1_1_2 %bc_5_1_1_2\n"
+		"              OpStore %gep_5_2_0 %bc_5_2_0\n"
+		"              OpStore %gep_5_2_1_0 %bc_5_2_1_0\n"
+		"              OpStore %gep_5_2_1_1 %bc_5_2_1_1\n"
+		"              OpStore %gep_5_2_1_2 %bc_5_2_1_2\n"
+
+		// [5 x <2 x half>] offset 80
+		"    %ex_6_0 = OpCompositeExtract %v2f16 %st_val 6 0\n"
+		"    %ex_6_1 = OpCompositeExtract %v2f16 %st_val 6 1\n"
+		"    %ex_6_2 = OpCompositeExtract %v2f16 %st_val 6 2\n"
+		"    %ex_6_3 = OpCompositeExtract %v2f16 %st_val 6 3\n"
+		"    %ex_6_4 = OpCompositeExtract %v2f16 %st_val 6 4\n"
+		"    %bc_6_0 = OpBitcast %u32 %ex_6_0\n"
+		"    %bc_6_1 = OpBitcast %u32 %ex_6_1\n"
+		"    %bc_6_2 = OpBitcast %u32 %ex_6_2\n"
+		"    %bc_6_3 = OpBitcast %u32 %ex_6_3\n"
+		"    %bc_6_4 = OpBitcast %u32 %ex_6_4\n"
+		"   %gep_6_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_20\n"
+		"   %gep_6_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_21\n"
+		"   %gep_6_2 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_22\n"
+		"   %gep_6_3 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_23\n"
+		"   %gep_6_4 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_24\n"
+		"              OpStore %gep_6_0 %bc_6_0\n"
+		"              OpStore %gep_6_1 %bc_6_1\n"
+		"              OpStore %gep_6_2 %bc_6_2\n"
+		"              OpStore %gep_6_3 %bc_6_3\n"
+		"              OpStore %gep_6_4 %bc_6_4\n"
+
+		// half offset 100
+		"      %ex_7 = OpCompositeExtract %f16 %st_val 7\n"
+		"     %vec_7 = OpCompositeConstruct %v2f16 %ex_7 %c_f16_n1\n"
+		"      %bc_7 = OpBitcast %u32 %vec_7\n"
+		"     %gep_7 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_25\n"
+		"              OpStore %gep_7 %bc_7\n"
+
+		// [5 x <3 x half>] offset 104
+		"    %ex_8_0 = OpCompositeExtract %v3f16 %st_val 8 0\n"
+		"    %ex_8_1 = OpCompositeExtract %v3f16 %st_val 8 1\n"
+		"    %ex_8_2 = OpCompositeExtract %v3f16 %st_val 8 2\n"
+		"    %ex_8_3 = OpCompositeExtract %v3f16 %st_val 8 3\n"
+		"    %ex_8_4 = OpCompositeExtract %v3f16 %st_val 8 4\n"
+		" %vec_8_0_0 = OpVectorShuffle %v2f16 %ex_8_0 %c_v2f16_n1 0 1\n"
+		" %vec_8_0_1 = OpVectorShuffle %v2f16 %ex_8_0 %c_v2f16_n1 2 3\n"
+		" %vec_8_1_0 = OpVectorShuffle %v2f16 %ex_8_1 %c_v2f16_n1 0 1\n"
+		" %vec_8_1_1 = OpVectorShuffle %v2f16 %ex_8_1 %c_v2f16_n1 2 3\n"
+		" %vec_8_2_0 = OpVectorShuffle %v2f16 %ex_8_2 %c_v2f16_n1 0 1\n"
+		" %vec_8_2_1 = OpVectorShuffle %v2f16 %ex_8_2 %c_v2f16_n1 2 3\n"
+		" %vec_8_3_0 = OpVectorShuffle %v2f16 %ex_8_3 %c_v2f16_n1 0 1\n"
+		" %vec_8_3_1 = OpVectorShuffle %v2f16 %ex_8_3 %c_v2f16_n1 2 3\n"
+		" %vec_8_4_0 = OpVectorShuffle %v2f16 %ex_8_4 %c_v2f16_n1 0 1\n"
+		" %vec_8_4_1 = OpVectorShuffle %v2f16 %ex_8_4 %c_v2f16_n1 2 3\n"
+		"  %bc_8_0_0 = OpBitcast %u32 %vec_8_0_0\n"
+		"  %bc_8_0_1 = OpBitcast %u32 %vec_8_0_1\n"
+		"  %bc_8_1_0 = OpBitcast %u32 %vec_8_1_0\n"
+		"  %bc_8_1_1 = OpBitcast %u32 %vec_8_1_1\n"
+		"  %bc_8_2_0 = OpBitcast %u32 %vec_8_2_0\n"
+		"  %bc_8_2_1 = OpBitcast %u32 %vec_8_2_1\n"
+		"  %bc_8_3_0 = OpBitcast %u32 %vec_8_3_0\n"
+		"  %bc_8_3_1 = OpBitcast %u32 %vec_8_3_1\n"
+		"  %bc_8_4_0 = OpBitcast %u32 %vec_8_4_0\n"
+		"  %bc_8_4_1 = OpBitcast %u32 %vec_8_4_1\n"
+		" %gep_8_0_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_26\n"
+		" %gep_8_0_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_27\n"
+		" %gep_8_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_28\n"
+		" %gep_8_1_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_29\n"
+		" %gep_8_2_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_30\n"
+		" %gep_8_2_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_31\n"
+		" %gep_8_3_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_32\n"
+		" %gep_8_3_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_33\n"
+		" %gep_8_4_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_34\n"
+		" %gep_8_4_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_35\n"
+		"              OpStore %gep_8_0_0 %bc_8_0_0\n"
+		"              OpStore %gep_8_0_1 %bc_8_0_1\n"
+		"              OpStore %gep_8_1_0 %bc_8_1_0\n"
+		"              OpStore %gep_8_1_1 %bc_8_1_1\n"
+		"              OpStore %gep_8_2_0 %bc_8_2_0\n"
+		"              OpStore %gep_8_2_1 %bc_8_2_1\n"
+		"              OpStore %gep_8_3_0 %bc_8_3_0\n"
+		"              OpStore %gep_8_3_1 %bc_8_3_1\n"
+		"              OpStore %gep_8_4_0 %bc_8_4_0\n"
+		"              OpStore %gep_8_4_1 %bc_8_4_1\n"
+
+		// [3 x <4 x half>] offset 144
+		"    %ex_9_0 = OpCompositeExtract %v4f16 %st_val 9 0\n"
+		"    %ex_9_1 = OpCompositeExtract %v4f16 %st_val 9 1\n"
+		"    %ex_9_2 = OpCompositeExtract %v4f16 %st_val 9 2\n"
+		" %vec_9_0_0 = OpVectorShuffle %v2f16 %ex_9_0 %ex_9_0 0 1\n"
+		" %vec_9_0_1 = OpVectorShuffle %v2f16 %ex_9_0 %ex_9_0 2 3\n"
+		" %vec_9_1_0 = OpVectorShuffle %v2f16 %ex_9_1 %ex_9_1 0 1\n"
+		" %vec_9_1_1 = OpVectorShuffle %v2f16 %ex_9_1 %ex_9_1 2 3\n"
+		" %vec_9_2_0 = OpVectorShuffle %v2f16 %ex_9_2 %ex_9_2 0 1\n"
+		" %vec_9_2_1 = OpVectorShuffle %v2f16 %ex_9_2 %ex_9_2 2 3\n"
+		"  %bc_9_0_0 = OpBitcast %u32 %vec_9_0_0\n"
+		"  %bc_9_0_1 = OpBitcast %u32 %vec_9_0_1\n"
+		"  %bc_9_1_0 = OpBitcast %u32 %vec_9_1_0\n"
+		"  %bc_9_1_1 = OpBitcast %u32 %vec_9_1_1\n"
+		"  %bc_9_2_0 = OpBitcast %u32 %vec_9_2_0\n"
+		"  %bc_9_2_1 = OpBitcast %u32 %vec_9_2_1\n"
+		" %gep_9_0_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_36\n"
+		" %gep_9_0_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_37\n"
+		" %gep_9_1_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_38\n"
+		" %gep_9_1_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_39\n"
+		" %gep_9_2_0 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_40\n"
+		" %gep_9_2_1 = OpAccessChain %up_u32 %ssbo_dst %c_u32_0 %ndx %c_u32_41\n"
+		"              OpStore %gep_9_0_0 %bc_9_0_0\n"
+		"              OpStore %gep_9_0_1 %bc_9_0_1\n"
+		"              OpStore %gep_9_1_0 %bc_9_1_0\n"
+		"              OpStore %gep_9_1_1 %bc_9_1_1\n"
+		"              OpStore %gep_9_2_0 %bc_9_2_0\n"
+		"              OpStore %gep_9_2_1 %bc_9_2_1\n"
 
 		"              OpBranch %next\n"
 
@@ -12460,8 +13165,7 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 		specs["field_modifier"]		= de::toString(fieldModifier);
 		specs["consts"]				= consts;
 
-		fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
-		fragments["capability"]		= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
+		fragments["capability"]		= "OpCapability Float16\n";
 		fragments["decoration"]		= decoration.specialize(specs);
 		fragments["pre_main"]		= preMain.specialize(specs);
 		fragments["testfun"]		= testFun.specialize(specs);
@@ -12470,11 +13174,9 @@ tcu::TestCaseGroup* createFloat16CompositeConstructSet (tcu::TestContext& testCt
 		specResource.outputs.push_back(Resource(BufferSp(new Float16Buffer(expectedOutput)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.verifyIO = compareFP16CompositeFunc;
 
-		extensions.push_back("VK_KHR_16bit_storage");
 		extensions.push_back("VK_KHR_shader_float16_int8");
 
 		features.extFloat16Int8		= EXTFLOAT16INT8FEATURES_FLOAT16;
-		features.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 
 		finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
 	}
@@ -12495,12 +13197,24 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 	const StringTemplate preMain
 	(
 		"   %c_i32_ndp = OpConstant %i32 ${num_elements}\n"
+		"  %c_i32_hndp = OpSpecConstantOp %i32 SDiv %c_i32_ndp %c_i32_2\n"
+		"  %c_i32_size = OpConstant %i32 ${struct_u32s}\n"
+		"%c_u32_high_ones = OpConstant %u32 0xffff0000\n"
+		" %c_u32_low_ones = OpConstant %u32 0x0000ffff\n"
 		"         %f16 = OpTypeFloat 16\n"
 		"       %v2f16 = OpTypeVector %f16 2\n"
 		"       %v3f16 = OpTypeVector %f16 3\n"
 		"       %v4f16 = OpTypeVector %f16 4\n"
 		"    %c_f16_na = OpConstant %f16 -1.0\n"
+		"  %c_v2f16_n1 = OpConstantComposite %v2f16 %c_f16_na %c_f16_na\n"
 		"     %c_u32_5 = OpConstant %u32 5\n"
+		"     %c_i32_5 = OpConstant %i32 5\n"
+		"     %c_i32_6 = OpConstant %i32 6\n"
+		"     %c_i32_7 = OpConstant %i32 7\n"
+		"     %c_i32_8 = OpConstant %i32 8\n"
+		"     %c_i32_9 = OpConstant %i32 9\n"
+		"    %c_i32_10 = OpConstant %i32 10\n"
+		"    %c_i32_11 = OpConstant %i32 11\n"
 
 		"%f16arr3      = OpTypeArray %f16 %c_u32_3\n"
 		"%v2f16arr3    = OpTypeArray %v2f16 %c_u32_3\n"
@@ -12511,10 +13225,15 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 		"%struct16arr3 = OpTypeArray %struct16 %c_u32_3\n"
 		"%st_test      = OpTypeStruct %${field_type}\n"
 
-		"      %up_f16 = OpTypePointer Uniform %f16\n"
-		"       %up_st = OpTypePointer Uniform %st_test\n"
-		"      %ra_f16 = OpTypeArray %f16 %c_i32_ndp\n"
-		"       %ra_st = OpTypeArray %st_test %c_i32_1\n"
+		"      %ra_f16 = OpTypeArray %u32 %c_i32_hndp\n"
+		"       %ra_st = OpTypeArray %u32 %c_i32_size\n"
+		"      %up_u32 = OpTypePointer Uniform %u32\n"
+		"     %st_test_i32_fn = OpTypeFunction %st_test %i32\n"
+		"%void_st_test_i32_fn = OpTypeFunction %void %st_test %i32\n"
+		"         %f16_i32_fn = OpTypeFunction %f16 %i32\n"
+		"    %void_f16_i32_fn = OpTypeFunction %void %f16 %i32\n"
+		"       %v2f16_i32_fn = OpTypeFunction %v2f16 %i32\n"
+		"  %void_v2f16_i32_fn = OpTypeFunction %void %v2f16 %i32\n"
 
 		"${op_premain_decls}"
 
@@ -12529,8 +13248,8 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 	(
 		"OpDecorate %SSBO_src BufferBlock\n"
 		"OpDecorate %SSBO_dst BufferBlock\n"
-		"OpDecorate %ra_f16 ArrayStride 2\n"
-		"OpDecorate %ra_st ArrayStride ${struct_item_size}\n"
+		"OpDecorate %ra_f16 ArrayStride 4\n"
+		"OpDecorate %ra_st ArrayStride 4\n"
 		"OpDecorate %ssbo_src DescriptorSet 0\n"
 		"OpDecorate %ssbo_src Binding 0\n"
 		"OpDecorate %ssbo_dst DescriptorSet 0\n"
@@ -12578,7 +13297,7 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 
 		"${op_sw_fun_call}"
 
-		"              OpStore %dst %val_dst\n"
+		"    %dst_st = OpFunctionCall %void %${st_call} %val_dst %${st_ndx}\n"
 		"              OpBranch %next\n"
 
 		"      %next = OpLabel\n"
@@ -12616,6 +13335,515 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 		"             OpReturnValue %val_ret_${case_ndx}\n"
 	);
 
+	const string loadF16
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"   %ld_${var}_call = OpFunctionCall %f16 %ld_arg_${var} %ld_${var}_param\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_call\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n" +
+		loadScalarF16FromUint
+	);
+
+	const string loadV2F16
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"   %ld_${var}_call = OpFunctionCall %v2f16 %ld_arg_${var} %ld_${var}_param\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_call\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n" +
+		loadV2F16FromUint
+	);
+
+	const string loadV3F16
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"  %ld_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"  %ld_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"   %ld_${var}_ld_0 = OpLoad %u32 %ld_${var}_gep_0\n"
+		"   %ld_${var}_ld_1 = OpLoad %u32 %ld_${var}_gep_1\n"
+		"   %ld_${var}_bc_0 = OpBitcast %v2f16 %ld_${var}_ld_0\n"
+		"   %ld_${var}_bc_1 = OpBitcast %v2f16 %ld_${var}_ld_1\n"
+		"    %ld_${var}_vec = OpVectorShuffle %v3f16 %ld_${var}_bc_0 %ld_${var}_bc_1 0 1 2\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_vec\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadV4F16
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"  %ld_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"  %ld_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"   %ld_${var}_ld_0 = OpLoad %u32 %ld_${var}_gep_0\n"
+		"   %ld_${var}_ld_1 = OpLoad %u32 %ld_${var}_gep_1\n"
+		"   %ld_${var}_bc_0 = OpBitcast %v2f16 %ld_${var}_ld_0\n"
+		"   %ld_${var}_bc_1 = OpBitcast %v2f16 %ld_${var}_ld_1\n"
+		"    %ld_${var}_vec = OpVectorShuffle %v4f16 %ld_${var}_bc_0 %ld_${var}_bc_1 0 1 2 3\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_vec\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadF16Arr3
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"  %ld_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_u32_0 %c_u32_0\n"
+		"  %ld_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_u32_0 %c_u32_1\n"
+		"   %ld_${var}_ld_0 = OpLoad %u32 %ld_${var}_gep_0\n"
+		"   %ld_${var}_ld_1 = OpLoad %u32 %ld_${var}_gep_1\n"
+		"   %ld_${var}_bc_0 = OpBitcast %v2f16 %ld_${var}_ld_0\n"
+		"   %ld_${var}_bc_1 = OpBitcast %v2f16 %ld_${var}_ld_1\n"
+		"   %ld_${var}_ex_0 = OpCompositeExtract %f16 %ld_${var}_bc_0 0\n"
+		"   %ld_${var}_ex_1 = OpCompositeExtract %f16 %ld_${var}_bc_0 1\n"
+		"   %ld_${var}_ex_2 = OpCompositeExtract %f16 %ld_${var}_bc_1 0\n"
+		"   %ld_${var}_cons = OpCompositeConstruct %f16arr3 %ld_${var}_ex_0 %ld_${var}_ex_1 %ld_${var}_ex_2\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_cons\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadV2F16Arr5
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_label = OpLabel\n"
+		"  %ld_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"  %ld_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"  %ld_${var}_gep_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"  %ld_${var}_gep_3 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"  %ld_${var}_gep_4 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"   %ld_${var}_ld_0 = OpLoad %u32 %ld_${var}_gep_0\n"
+		"   %ld_${var}_ld_1 = OpLoad %u32 %ld_${var}_gep_1\n"
+		"   %ld_${var}_ld_2 = OpLoad %u32 %ld_${var}_gep_2\n"
+		"   %ld_${var}_ld_3 = OpLoad %u32 %ld_${var}_gep_3\n"
+		"   %ld_${var}_ld_4 = OpLoad %u32 %ld_${var}_gep_4\n"
+		"   %ld_${var}_bc_0 = OpBitcast %v2f16 %ld_${var}_ld_0\n"
+		"   %ld_${var}_bc_1 = OpBitcast %v2f16 %ld_${var}_ld_1\n"
+		"   %ld_${var}_bc_2 = OpBitcast %v2f16 %ld_${var}_ld_2\n"
+		"   %ld_${var}_bc_3 = OpBitcast %v2f16 %ld_${var}_ld_3\n"
+		"   %ld_${var}_bc_4 = OpBitcast %v2f16 %ld_${var}_ld_4\n"
+		"   %ld_${var}_cons = OpCompositeConstruct %v2f16arr5 %ld_${var}_bc_0 %ld_${var}_bc_1 %ld_${var}_bc_2 %ld_${var}_bc_3 %ld_${var}_bc_4\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_cons\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadV3F16Arr5
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"%ld_${var}_gep_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"%ld_${var}_gep_0_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"%ld_${var}_gep_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"%ld_${var}_gep_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"%ld_${var}_gep_2_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"%ld_${var}_gep_2_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		"%ld_${var}_gep_3_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_6\n"
+		"%ld_${var}_gep_3_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_7\n"
+		"%ld_${var}_gep_4_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_8\n"
+		"%ld_${var}_gep_4_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_9\n"
+		" %ld_${var}_ld_0_0 = OpLoad %u32 %ld_${var}_gep_0_0\n"
+		" %ld_${var}_ld_0_1 = OpLoad %u32 %ld_${var}_gep_0_1\n"
+		" %ld_${var}_ld_1_0 = OpLoad %u32 %ld_${var}_gep_1_0\n"
+		" %ld_${var}_ld_1_1 = OpLoad %u32 %ld_${var}_gep_1_1\n"
+		" %ld_${var}_ld_2_0 = OpLoad %u32 %ld_${var}_gep_2_0\n"
+		" %ld_${var}_ld_2_1 = OpLoad %u32 %ld_${var}_gep_2_1\n"
+		" %ld_${var}_ld_3_0 = OpLoad %u32 %ld_${var}_gep_3_0\n"
+		" %ld_${var}_ld_3_1 = OpLoad %u32 %ld_${var}_gep_3_1\n"
+		" %ld_${var}_ld_4_0 = OpLoad %u32 %ld_${var}_gep_4_0\n"
+		" %ld_${var}_ld_4_1 = OpLoad %u32 %ld_${var}_gep_4_1\n"
+		" %ld_${var}_bc_0_0 = OpBitcast %v2f16 %ld_${var}_ld_0_0\n"
+		" %ld_${var}_bc_0_1 = OpBitcast %v2f16 %ld_${var}_ld_0_1\n"
+		" %ld_${var}_bc_1_0 = OpBitcast %v2f16 %ld_${var}_ld_1_0\n"
+		" %ld_${var}_bc_1_1 = OpBitcast %v2f16 %ld_${var}_ld_1_1\n"
+		" %ld_${var}_bc_2_0 = OpBitcast %v2f16 %ld_${var}_ld_2_0\n"
+		" %ld_${var}_bc_2_1 = OpBitcast %v2f16 %ld_${var}_ld_2_1\n"
+		" %ld_${var}_bc_3_0 = OpBitcast %v2f16 %ld_${var}_ld_3_0\n"
+		" %ld_${var}_bc_3_1 = OpBitcast %v2f16 %ld_${var}_ld_3_1\n"
+		" %ld_${var}_bc_4_0 = OpBitcast %v2f16 %ld_${var}_ld_4_0\n"
+		" %ld_${var}_bc_4_1 = OpBitcast %v2f16 %ld_${var}_ld_4_1\n"
+		"  %ld_${var}_vec_0 = OpVectorShuffle %v3f16 %ld_${var}_bc_0_0 %ld_${var}_bc_0_1 0 1 2\n"
+		"  %ld_${var}_vec_1 = OpVectorShuffle %v3f16 %ld_${var}_bc_1_0 %ld_${var}_bc_1_1 0 1 2\n"
+		"  %ld_${var}_vec_2 = OpVectorShuffle %v3f16 %ld_${var}_bc_2_0 %ld_${var}_bc_2_1 0 1 2\n"
+		"  %ld_${var}_vec_3 = OpVectorShuffle %v3f16 %ld_${var}_bc_3_0 %ld_${var}_bc_3_1 0 1 2\n"
+		"  %ld_${var}_vec_4 = OpVectorShuffle %v3f16 %ld_${var}_bc_4_0 %ld_${var}_bc_4_1 0 1 2\n"
+		"   %ld_${var}_cons = OpCompositeConstruct %v3f16arr5 %ld_${var}_vec_0 %ld_${var}_vec_1 %ld_${var}_vec_2 %ld_${var}_vec_3 %ld_${var}_vec_4\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_cons\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadV4F16Arr3
+	(
+		"        %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"  %ld_${var}_param = OpFunctionParameter %i32\n"
+		"  %ld_${var}_entry = OpLabel\n"
+		"%ld_${var}_gep_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"%ld_${var}_gep_0_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"%ld_${var}_gep_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"%ld_${var}_gep_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"%ld_${var}_gep_2_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"%ld_${var}_gep_2_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		" %ld_${var}_ld_0_0 = OpLoad %u32 %ld_${var}_gep_0_0\n"
+		" %ld_${var}_ld_0_1 = OpLoad %u32 %ld_${var}_gep_0_1\n"
+		" %ld_${var}_ld_1_0 = OpLoad %u32 %ld_${var}_gep_1_0\n"
+		" %ld_${var}_ld_1_1 = OpLoad %u32 %ld_${var}_gep_1_1\n"
+		" %ld_${var}_ld_2_0 = OpLoad %u32 %ld_${var}_gep_2_0\n"
+		" %ld_${var}_ld_2_1 = OpLoad %u32 %ld_${var}_gep_2_1\n"
+		" %ld_${var}_bc_0_0 = OpBitcast %v2f16 %ld_${var}_ld_0_0\n"
+		" %ld_${var}_bc_0_1 = OpBitcast %v2f16 %ld_${var}_ld_0_1\n"
+		" %ld_${var}_bc_1_0 = OpBitcast %v2f16 %ld_${var}_ld_1_0\n"
+		" %ld_${var}_bc_1_1 = OpBitcast %v2f16 %ld_${var}_ld_1_1\n"
+		" %ld_${var}_bc_2_0 = OpBitcast %v2f16 %ld_${var}_ld_2_0\n"
+		" %ld_${var}_bc_2_1 = OpBitcast %v2f16 %ld_${var}_ld_2_1\n"
+		"  %ld_${var}_vec_0 = OpVectorShuffle %v4f16 %ld_${var}_bc_0_0 %ld_${var}_bc_0_1 0 1 2 3\n"
+		"  %ld_${var}_vec_1 = OpVectorShuffle %v4f16 %ld_${var}_bc_1_0 %ld_${var}_bc_1_1 0 1 2 3\n"
+		"  %ld_${var}_vec_2 = OpVectorShuffle %v4f16 %ld_${var}_bc_2_0 %ld_${var}_bc_2_1 0 1 2 3\n"
+		"   %ld_${var}_cons = OpCompositeConstruct %v4f16arr3 %ld_${var}_vec_0 %ld_${var}_vec_1 %ld_${var}_vec_2\n"
+		"%ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_cons\n"
+		"                     OpReturnValue %ld_${var}_st_test\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string loadStruct16Arr3
+	(
+		"          %ld_${var} = OpFunction %st_test None %st_test_i32_fn\n"
+		"    %ld_${var}_param = OpFunctionParameter %i32\n"
+		"    %ld_${var}_entry = OpLabel\n"
+		"%ld_${var}_gep_0_0   = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"%ld_${var}_gep_0_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"%ld_${var}_gep_0_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"%ld_${var}_gep_0_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"%ld_${var}_gep_1_0   = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"%ld_${var}_gep_1_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		"%ld_${var}_gep_1_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_6\n"
+		"%ld_${var}_gep_1_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_7\n"
+		"%ld_${var}_gep_2_0   = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_8\n"
+		"%ld_${var}_gep_2_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_9\n"
+		"%ld_${var}_gep_2_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_10\n"
+		"%ld_${var}_gep_2_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_11\n"
+		" %ld_${var}_ld_0_0   = OpLoad %u32 %ld_${var}_gep_0_0\n"
+		" %ld_${var}_ld_0_1_0 = OpLoad %u32 %ld_${var}_gep_0_1_0\n"
+		" %ld_${var}_ld_0_1_1 = OpLoad %u32 %ld_${var}_gep_0_1_1\n"
+		" %ld_${var}_ld_0_1_2 = OpLoad %u32 %ld_${var}_gep_0_1_2\n"
+		" %ld_${var}_ld_1_0   = OpLoad %u32 %ld_${var}_gep_1_0\n"
+		" %ld_${var}_ld_1_1_0 = OpLoad %u32 %ld_${var}_gep_1_1_0\n"
+		" %ld_${var}_ld_1_1_1 = OpLoad %u32 %ld_${var}_gep_1_1_1\n"
+		" %ld_${var}_ld_1_1_2 = OpLoad %u32 %ld_${var}_gep_1_1_2\n"
+		" %ld_${var}_ld_2_0   = OpLoad %u32 %ld_${var}_gep_2_0\n"
+		" %ld_${var}_ld_2_1_0 = OpLoad %u32 %ld_${var}_gep_2_1_0\n"
+		" %ld_${var}_ld_2_1_1 = OpLoad %u32 %ld_${var}_gep_2_1_1\n"
+		" %ld_${var}_ld_2_1_2 = OpLoad %u32 %ld_${var}_gep_2_1_2\n"
+		" %ld_${var}_bc_0_0   = OpBitcast %v2f16 %ld_${var}_ld_0_0\n"
+		" %ld_${var}_bc_0_1_0 = OpBitcast %v2f16 %ld_${var}_ld_0_1_0\n"
+		" %ld_${var}_bc_0_1_1 = OpBitcast %v2f16 %ld_${var}_ld_0_1_1\n"
+		" %ld_${var}_bc_0_1_2 = OpBitcast %v2f16 %ld_${var}_ld_0_1_2\n"
+		" %ld_${var}_bc_1_0   = OpBitcast %v2f16 %ld_${var}_ld_1_0\n"
+		" %ld_${var}_bc_1_1_0 = OpBitcast %v2f16 %ld_${var}_ld_1_1_0\n"
+		" %ld_${var}_bc_1_1_1 = OpBitcast %v2f16 %ld_${var}_ld_1_1_1\n"
+		" %ld_${var}_bc_1_1_2 = OpBitcast %v2f16 %ld_${var}_ld_1_1_2\n"
+		" %ld_${var}_bc_2_0   = OpBitcast %v2f16 %ld_${var}_ld_2_0\n"
+		" %ld_${var}_bc_2_1_0 = OpBitcast %v2f16 %ld_${var}_ld_2_1_0\n"
+		" %ld_${var}_bc_2_1_1 = OpBitcast %v2f16 %ld_${var}_ld_2_1_1\n"
+		" %ld_${var}_bc_2_1_2 = OpBitcast %v2f16 %ld_${var}_ld_2_1_2\n"
+		"    %ld_${var}_arr_0 = OpCompositeConstruct %v2f16arr3 %ld_${var}_bc_0_1_0 %ld_${var}_bc_0_1_1 %ld_${var}_bc_0_1_2\n"
+		"    %ld_${var}_arr_1 = OpCompositeConstruct %v2f16arr3 %ld_${var}_bc_1_1_0 %ld_${var}_bc_1_1_1 %ld_${var}_bc_1_1_2\n"
+		"    %ld_${var}_arr_2 = OpCompositeConstruct %v2f16arr3 %ld_${var}_bc_2_1_0 %ld_${var}_bc_2_1_1 %ld_${var}_bc_2_1_2\n"
+		"     %ld_${var}_ex_0 = OpCompositeExtract %f16 %ld_${var}_bc_0_0 0\n"
+		"     %ld_${var}_ex_1 = OpCompositeExtract %f16 %ld_${var}_bc_1_0 0\n"
+		"     %ld_${var}_ex_2 = OpCompositeExtract %f16 %ld_${var}_bc_2_0 0\n"
+		"     %ld_${var}_st_0 = OpCompositeConstruct %struct16 %ld_${var}_ex_0 %ld_${var}_arr_0\n"
+		"     %ld_${var}_st_1 = OpCompositeConstruct %struct16 %ld_${var}_ex_1 %ld_${var}_arr_1\n"
+		"     %ld_${var}_st_2 = OpCompositeConstruct %struct16 %ld_${var}_ex_2 %ld_${var}_arr_2\n"
+		"     %ld_${var}_cons = OpCompositeConstruct %struct16arr3 %ld_${var}_st_0 %ld_${var}_st_1 %ld_${var}_st_2\n"
+		"  %ld_${var}_st_test = OpCompositeConstruct %st_test %ld_${var}_cons\n"
+		"                       OpReturnValue %ld_${var}_st_test\n"
+		"                      OpFunctionEnd\n"
+	);
+
+	const string storeF16
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"    %st_${var}_ex = OpCompositeExtract %f16 %st_${var}_param1 0\n"
+		"  %st_${var}_call = OpFunctionCall %void %st_fn_${var} %st_${var}_ex %st_${var}_param2\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n" +
+		storeScalarF16AsUint
+	);
+
+	const string storeV2F16
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"    %st_${var}_ex = OpCompositeExtract %v2f16 %st_${var}_param1 0\n"
+		"  %st_${var}_call = OpFunctionCall %void %st_fn_${var} %st_${var}_ex %st_${var}_param2\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n" +
+		storeV2F16AsUint
+	);
+
+	const string storeV3F16
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"    %st_${var}_ex = OpCompositeExtract %v3f16 %st_${var}_param1 0\n"
+		" %st_${var}_vec_0 = OpVectorShuffle %v2f16 %st_${var}_ex %c_v2f16_n1 0 1\n"
+		" %st_${var}_vec_1 = OpVectorShuffle %v2f16 %st_${var}_ex %c_v2f16_n1 2 3\n"
+		"  %st_${var}_bc_0 = OpBitcast %u32 %st_${var}_vec_0\n"
+		"  %st_${var}_bc_1 = OpBitcast %u32 %st_${var}_vec_1\n"
+		" %st_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		" %st_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"                    OpStore %st_${var}_gep_0 %st_${var}_bc_0\n"
+		"                    OpStore %st_${var}_gep_1 %st_${var}_bc_1\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n"
+	);
+
+	const string storeV4F16
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"    %st_${var}_ex = OpCompositeExtract %v4f16 %st_${var}_param1 0\n"
+		" %st_${var}_vec_0 = OpVectorShuffle %v2f16 %st_${var}_ex %c_v2f16_n1 0 1\n"
+		" %st_${var}_vec_1 = OpVectorShuffle %v2f16 %st_${var}_ex %c_v2f16_n1 2 3\n"
+		"  %st_${var}_bc_0 = OpBitcast %u32 %st_${var}_vec_0\n"
+		"  %st_${var}_bc_1 = OpBitcast %u32 %st_${var}_vec_1\n"
+		" %st_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		" %st_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"                    OpStore %st_${var}_gep_0 %st_${var}_bc_0\n"
+		"                    OpStore %st_${var}_gep_1 %st_${var}_bc_1\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n"
+	);
+
+	const string storeF16Arr3
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"  %st_${var}_ex_0 = OpCompositeExtract %f16 %st_${var}_param1 0 0\n"
+		"  %st_${var}_ex_1 = OpCompositeExtract %f16 %st_${var}_param1 0 1\n"
+		"  %st_${var}_ex_2 = OpCompositeExtract %f16 %st_${var}_param1 0 2\n"
+		" %st_${var}_vec_0 = OpCompositeConstruct %v2f16 %st_${var}_ex_0 %st_${var}_ex_1\n"
+		" %st_${var}_vec_1 = OpCompositeConstruct %v2f16 %st_${var}_ex_2 %c_f16_na\n"
+		"  %st_${var}_bc_0 = OpBitcast %u32 %st_${var}_vec_0\n"
+		"  %st_${var}_bc_1 = OpBitcast %u32 %st_${var}_vec_1\n"
+		" %st_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		" %st_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"                    OpStore %st_${var}_gep_0 %st_${var}_bc_0\n"
+		"                    OpStore %st_${var}_gep_1 %st_${var}_bc_1\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n"
+	);
+
+	const string storeV2F16Arr5
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"  %st_${var}_ex_0 = OpCompositeExtract %v2f16 %st_${var}_param1 0 0\n"
+		"  %st_${var}_ex_1 = OpCompositeExtract %v2f16 %st_${var}_param1 0 1\n"
+		"  %st_${var}_ex_2 = OpCompositeExtract %v2f16 %st_${var}_param1 0 2\n"
+		"  %st_${var}_ex_3 = OpCompositeExtract %v2f16 %st_${var}_param1 0 3\n"
+		"  %st_${var}_ex_4 = OpCompositeExtract %v2f16 %st_${var}_param1 0 4\n"
+		"  %st_${var}_bc_0 = OpBitcast %u32 %st_${var}_ex_0\n"
+		"  %st_${var}_bc_1 = OpBitcast %u32 %st_${var}_ex_1\n"
+		"  %st_${var}_bc_2 = OpBitcast %u32 %st_${var}_ex_2\n"
+		"  %st_${var}_bc_3 = OpBitcast %u32 %st_${var}_ex_3\n"
+		"  %st_${var}_bc_4 = OpBitcast %u32 %st_${var}_ex_4\n"
+		" %st_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		" %st_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		" %st_${var}_gep_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		" %st_${var}_gep_3 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		" %st_${var}_gep_4 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"                    OpStore %st_${var}_gep_0 %st_${var}_bc_0\n"
+		"                    OpStore %st_${var}_gep_1 %st_${var}_bc_1\n"
+		"                    OpStore %st_${var}_gep_2 %st_${var}_bc_2\n"
+		"                    OpStore %st_${var}_gep_3 %st_${var}_bc_3\n"
+		"                    OpStore %st_${var}_gep_4 %st_${var}_bc_4\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n"
+	);
+
+	const string storeV3F16Arr5
+	(
+		"       %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"%st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"%st_${var}_param2 = OpFunctionParameter %i32\n"
+		" %st_${var}_entry = OpLabel\n"
+		"  %st_${var}_ex_0 = OpCompositeExtract %v3f16 %st_${var}_param1 0 0\n"
+		"  %st_${var}_ex_1 = OpCompositeExtract %v3f16 %st_${var}_param1 0 1\n"
+		"  %st_${var}_ex_2 = OpCompositeExtract %v3f16 %st_${var}_param1 0 2\n"
+		"  %st_${var}_ex_3 = OpCompositeExtract %v3f16 %st_${var}_param1 0 3\n"
+		"  %st_${var}_ex_4 = OpCompositeExtract %v3f16 %st_${var}_param1 0 4\n"
+		"%st_${var}_v2_0_0 = OpVectorShuffle %v2f16 %st_${var}_ex_0 %c_v2f16_n1 0 1\n"
+		"%st_${var}_v2_0_1 = OpVectorShuffle %v2f16 %st_${var}_ex_0 %c_v2f16_n1 2 3\n"
+		"%st_${var}_v2_1_0 = OpVectorShuffle %v2f16 %st_${var}_ex_1 %c_v2f16_n1 0 1\n"
+		"%st_${var}_v2_1_1 = OpVectorShuffle %v2f16 %st_${var}_ex_1 %c_v2f16_n1 2 3\n"
+		"%st_${var}_v2_2_0 = OpVectorShuffle %v2f16 %st_${var}_ex_2 %c_v2f16_n1 0 1\n"
+		"%st_${var}_v2_2_1 = OpVectorShuffle %v2f16 %st_${var}_ex_2 %c_v2f16_n1 2 3\n"
+		"%st_${var}_v2_3_0 = OpVectorShuffle %v2f16 %st_${var}_ex_3 %c_v2f16_n1 0 1\n"
+		"%st_${var}_v2_3_1 = OpVectorShuffle %v2f16 %st_${var}_ex_3 %c_v2f16_n1 2 3\n"
+		"%st_${var}_v2_4_0 = OpVectorShuffle %v2f16 %st_${var}_ex_4 %c_v2f16_n1 0 1\n"
+		"%st_${var}_v2_4_1 = OpVectorShuffle %v2f16 %st_${var}_ex_4 %c_v2f16_n1 2 3\n"
+		"%st_${var}_bc_0_0 = OpBitcast %u32 %st_${var}_v2_0_0\n"
+		"%st_${var}_bc_0_1 = OpBitcast %u32 %st_${var}_v2_0_1\n"
+		"%st_${var}_bc_1_0 = OpBitcast %u32 %st_${var}_v2_1_0\n"
+		"%st_${var}_bc_1_1 = OpBitcast %u32 %st_${var}_v2_1_1\n"
+		"%st_${var}_bc_2_0 = OpBitcast %u32 %st_${var}_v2_2_0\n"
+		"%st_${var}_bc_2_1 = OpBitcast %u32 %st_${var}_v2_2_1\n"
+		"%st_${var}_bc_3_0 = OpBitcast %u32 %st_${var}_v2_3_0\n"
+		"%st_${var}_bc_3_1 = OpBitcast %u32 %st_${var}_v2_3_1\n"
+		"%st_${var}_bc_4_0 = OpBitcast %u32 %st_${var}_v2_4_0\n"
+		"%st_${var}_bc_4_1 = OpBitcast %u32 %st_${var}_v2_4_1\n"
+		" %st_${var}_gep_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		" %st_${var}_gep_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		" %st_${var}_gep_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		" %st_${var}_gep_3 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		" %st_${var}_gep_4 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		" %st_${var}_gep_5 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		" %st_${var}_gep_6 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_6\n"
+		" %st_${var}_gep_7 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_7\n"
+		" %st_${var}_gep_8 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_8\n"
+		" %st_${var}_gep_9 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_9\n"
+		"                    OpStore %st_${var}_gep_0 %st_${var}_bc_0_0\n"
+		"                    OpStore %st_${var}_gep_1 %st_${var}_bc_0_1\n"
+		"                    OpStore %st_${var}_gep_2 %st_${var}_bc_1_0\n"
+		"                    OpStore %st_${var}_gep_3 %st_${var}_bc_1_1\n"
+		"                    OpStore %st_${var}_gep_4 %st_${var}_bc_2_0\n"
+		"                    OpStore %st_${var}_gep_5 %st_${var}_bc_2_1\n"
+		"                    OpStore %st_${var}_gep_6 %st_${var}_bc_3_0\n"
+		"                    OpStore %st_${var}_gep_7 %st_${var}_bc_3_1\n"
+		"                    OpStore %st_${var}_gep_8 %st_${var}_bc_4_0\n"
+		"                    OpStore %st_${var}_gep_9 %st_${var}_bc_4_1\n"
+		"                    OpReturn\n"
+		"                    OpFunctionEnd\n"
+	);
+
+	const string storeV4F16Arr3
+	(
+		"        %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		" %st_${var}_param1 = OpFunctionParameter %st_test\n"
+		" %st_${var}_param2 = OpFunctionParameter %i32\n"
+		"  %st_${var}_entry = OpLabel\n"
+		"   %st_${var}_ex_0 = OpCompositeExtract %v4f16 %st_${var}_param1 0 0\n"
+		"   %st_${var}_ex_1 = OpCompositeExtract %v4f16 %st_${var}_param1 0 1\n"
+		"   %st_${var}_ex_2 = OpCompositeExtract %v4f16 %st_${var}_param1 0 2\n"
+		"%st_${var}_vec_0_0 = OpVectorShuffle %v2f16 %st_${var}_ex_0 %st_${var}_ex_0 0 1\n"
+		"%st_${var}_vec_0_1 = OpVectorShuffle %v2f16 %st_${var}_ex_0 %st_${var}_ex_0 2 3\n"
+		"%st_${var}_vec_1_0 = OpVectorShuffle %v2f16 %st_${var}_ex_1 %st_${var}_ex_1 0 1\n"
+		"%st_${var}_vec_1_1 = OpVectorShuffle %v2f16 %st_${var}_ex_1 %st_${var}_ex_1 2 3\n"
+		"%st_${var}_vec_2_0 = OpVectorShuffle %v2f16 %st_${var}_ex_2 %st_${var}_ex_2 0 1\n"
+		"%st_${var}_vec_2_1 = OpVectorShuffle %v2f16 %st_${var}_ex_2 %st_${var}_ex_2 2 3\n"
+		" %st_${var}_bc_0_0 = OpBitcast %u32 %st_${var}_vec_0_0\n"
+		" %st_${var}_bc_0_1 = OpBitcast %u32 %st_${var}_vec_0_1\n"
+		" %st_${var}_bc_1_0 = OpBitcast %u32 %st_${var}_vec_1_0\n"
+		" %st_${var}_bc_1_1 = OpBitcast %u32 %st_${var}_vec_1_1\n"
+		" %st_${var}_bc_2_0 = OpBitcast %u32 %st_${var}_vec_2_0\n"
+		" %st_${var}_bc_2_1 = OpBitcast %u32 %st_${var}_vec_2_1\n"
+		"%st_${var}_gep_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"%st_${var}_gep_0_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"%st_${var}_gep_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"%st_${var}_gep_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"%st_${var}_gep_2_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"%st_${var}_gep_2_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		"                     OpStore %st_${var}_gep_0_0 %st_${var}_bc_0_0\n"
+		"                     OpStore %st_${var}_gep_0_1 %st_${var}_bc_0_1\n"
+		"                     OpStore %st_${var}_gep_1_0 %st_${var}_bc_1_0\n"
+		"                     OpStore %st_${var}_gep_1_1 %st_${var}_bc_1_1\n"
+		"                     OpStore %st_${var}_gep_2_0 %st_${var}_bc_2_0\n"
+		"                     OpStore %st_${var}_gep_2_1 %st_${var}_bc_2_1\n"
+		"                     OpReturn\n"
+		"                     OpFunctionEnd\n"
+	);
+
+	const string storeStruct16Arr3
+	(
+		"          %st_${var} = OpFunction %void None %void_st_test_i32_fn\n"
+		"   %st_${var}_param1 = OpFunctionParameter %st_test\n"
+		"   %st_${var}_param2 = OpFunctionParameter %i32\n"
+		"    %st_${var}_entry = OpLabel\n"
+		"     %st_${var}_st_0 = OpCompositeExtract %struct16 %st_${var}_param1 0 0\n"
+		"     %st_${var}_st_1 = OpCompositeExtract %struct16 %st_${var}_param1 0 1\n"
+		"     %st_${var}_st_2 = OpCompositeExtract %struct16 %st_${var}_param1 0 2\n"
+		"   %st_${var}_el_0   = OpCompositeExtract   %f16 %st_${var}_st_0 0\n"
+		"   %st_${var}_v2_0_0 = OpCompositeExtract %v2f16 %st_${var}_st_0 1 0\n"
+		"   %st_${var}_v2_0_1 = OpCompositeExtract %v2f16 %st_${var}_st_0 1 1\n"
+		"   %st_${var}_v2_0_2 = OpCompositeExtract %v2f16 %st_${var}_st_0 1 2\n"
+		"   %st_${var}_el_1   = OpCompositeExtract   %f16 %st_${var}_st_1 0\n"
+		"   %st_${var}_v2_1_0 = OpCompositeExtract %v2f16 %st_${var}_st_1 1 0\n"
+		"   %st_${var}_v2_1_1 = OpCompositeExtract %v2f16 %st_${var}_st_1 1 1\n"
+		"   %st_${var}_v2_1_2 = OpCompositeExtract %v2f16 %st_${var}_st_1 1 2\n"
+		"   %st_${var}_el_2   = OpCompositeExtract   %f16 %st_${var}_st_2 0\n"
+		"   %st_${var}_v2_2_0 = OpCompositeExtract %v2f16 %st_${var}_st_2 1 0\n"
+		"   %st_${var}_v2_2_1 = OpCompositeExtract %v2f16 %st_${var}_st_2 1 1\n"
+		"   %st_${var}_v2_2_2 = OpCompositeExtract %v2f16 %st_${var}_st_2 1 2\n"
+		"     %st_${var}_v2_0 = OpCompositeConstruct %v2f16 %st_${var}_el_0 %c_f16_na\n"
+		"     %st_${var}_v2_1 = OpCompositeConstruct %v2f16 %st_${var}_el_1 %c_f16_na\n"
+		"     %st_${var}_v2_2 = OpCompositeConstruct %v2f16 %st_${var}_el_2 %c_f16_na\n"
+		"   %st_${var}_bc_0   = OpBitcast %u32 %st_${var}_v2_0\n"
+		"   %st_${var}_bc_0_0 = OpBitcast %u32 %st_${var}_v2_0_0\n"
+		"   %st_${var}_bc_0_1 = OpBitcast %u32 %st_${var}_v2_0_1\n"
+		"   %st_${var}_bc_0_2 = OpBitcast %u32 %st_${var}_v2_0_2\n"
+		"   %st_${var}_bc_1   = OpBitcast %u32 %st_${var}_v2_1\n"
+		"   %st_${var}_bc_1_0 = OpBitcast %u32 %st_${var}_v2_1_0\n"
+		"   %st_${var}_bc_1_1 = OpBitcast %u32 %st_${var}_v2_1_1\n"
+		"   %st_${var}_bc_1_2 = OpBitcast %u32 %st_${var}_v2_1_2\n"
+		"   %st_${var}_bc_2   = OpBitcast %u32 %st_${var}_v2_2\n"
+		"   %st_${var}_bc_2_0 = OpBitcast %u32 %st_${var}_v2_2_0\n"
+		"   %st_${var}_bc_2_1 = OpBitcast %u32 %st_${var}_v2_2_1\n"
+		"   %st_${var}_bc_2_2 = OpBitcast %u32 %st_${var}_v2_2_2\n"
+		"%st_${var}_gep_0_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_0\n"
+		"%st_${var}_gep_0_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_1\n"
+		"%st_${var}_gep_0_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_2\n"
+		"%st_${var}_gep_0_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_3\n"
+		"%st_${var}_gep_1_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_4\n"
+		"%st_${var}_gep_1_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_5\n"
+		"%st_${var}_gep_1_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_6\n"
+		"%st_${var}_gep_1_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_7\n"
+		"%st_${var}_gep_2_0_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_8\n"
+		"%st_${var}_gep_2_1_0 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_9\n"
+		"%st_${var}_gep_2_1_1 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_10\n"
+		"%st_${var}_gep_2_1_2 = OpAccessChain %up_u32 %${var} %c_i32_0 %c_i32_11\n"
+		"                       OpStore %st_${var}_gep_0_0_0 %st_${var}_bc_0\n"
+		"                       OpStore %st_${var}_gep_0_1_0 %st_${var}_bc_0_0\n"
+		"                       OpStore %st_${var}_gep_0_1_1 %st_${var}_bc_0_1\n"
+		"                       OpStore %st_${var}_gep_0_1_2 %st_${var}_bc_0_2\n"
+		"                       OpStore %st_${var}_gep_1_0_0 %st_${var}_bc_1\n"
+		"                       OpStore %st_${var}_gep_1_1_0 %st_${var}_bc_1_0\n"
+		"                       OpStore %st_${var}_gep_1_1_1 %st_${var}_bc_1_1\n"
+		"                       OpStore %st_${var}_gep_1_1_2 %st_${var}_bc_1_2\n"
+		"                       OpStore %st_${var}_gep_2_0_0 %st_${var}_bc_2\n"
+		"                       OpStore %st_${var}_gep_2_1_0 %st_${var}_bc_2_0\n"
+		"                       OpStore %st_${var}_gep_2_1_1 %st_${var}_bc_2_1\n"
+		"                       OpStore %st_${var}_gep_2_1_2 %st_${var}_bc_2_2\n"
+		"                       OpReturn\n"
+		"                       OpFunctionEnd\n"
+	);
+
 	struct OpParts
 	{
 		const char*	premainDecls;
@@ -12633,10 +13861,8 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 			"    %SSBO_src = OpTypeStruct %ra_f16\n"
 			"    %SSBO_dst = OpTypeStruct %ra_st\n",
 
-			"       %src = OpAccessChain %up_f16 %ssbo_src %c_i32_0 %ndx\n"
-			"       %dst = OpAccessChain %up_st %ssbo_dst %c_i32_0 %c_i32_0\n"
-			"   %val_new = OpLoad %f16 %src\n"
-			"   %val_old = OpLoad %st_test %dst\n"
+			"   %val_new = OpFunctionCall %f16 %ld_arg_ssbo_src %ndx\n"
+			"   %val_old = OpFunctionCall %st_test %ld_ssbo_dst %c_i32_0\n"
 			"   %val_dst = OpFunctionCall %st_test %sw_fun %val_new %val_old %ndx\n",
 
 			"   %sw_fun = OpFunction %st_test None %fun_t\n"
@@ -12652,9 +13878,7 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 			"    %SSBO_src = OpTypeStruct %ra_st\n"
 			"    %SSBO_dst = OpTypeStruct %ra_f16\n",
 
-			"       %src = OpAccessChain %up_st %ssbo_src %c_i32_0 %c_i32_0\n"
-			"       %dst = OpAccessChain %up_f16 %ssbo_dst %c_i32_0 %ndx\n"
-			"   %val_src = OpLoad %st_test %src\n"
+			"   %val_src = OpFunctionCall %st_test %ld_ssbo_src %c_i32_0\n"
 			"   %val_dst = OpFunctionCall %f16 %sw_fun %val_src %ndx\n",
 
 			"   %sw_fun = OpFunction %f16 None %fun_t\n",
@@ -12786,19 +14010,21 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 		const char*		name;
 		size_t			accessPathLength;
 		const char**	accessPath;
+		const string	loadFunction;
+		const string	storeFunction;
 	};
 
 	const TypeTestParameters typeTestParameters[] =
 	{
-		{	"f16",			DE_LENGTH_OF_ARRAY(accessPathF16),			accessPathF16			},
-		{	"v2f16",		DE_LENGTH_OF_ARRAY(accessPathV2F16),		accessPathV2F16			},
-		{	"v3f16",		DE_LENGTH_OF_ARRAY(accessPathV3F16),		accessPathV3F16			},
-		{	"v4f16",		DE_LENGTH_OF_ARRAY(accessPathV4F16),		accessPathV4F16			},
-		{	"f16arr3",		DE_LENGTH_OF_ARRAY(accessPathF16Arr3),		accessPathF16Arr3		},
-		{	"v2f16arr5",	DE_LENGTH_OF_ARRAY(accessPathV2F16Arr5),	accessPathV2F16Arr5		},
-		{	"v3f16arr5",	DE_LENGTH_OF_ARRAY(accessPathV3F16Arr5),	accessPathV3F16Arr5		},
-		{	"v4f16arr3",	DE_LENGTH_OF_ARRAY(accessPathV4F16Arr3),	accessPathV4F16Arr3		},
-		{	"struct16arr3",	DE_LENGTH_OF_ARRAY(accessPathStruct16Arr3),	accessPathStruct16Arr3	},
+		{	"f16",			DE_LENGTH_OF_ARRAY(accessPathF16),			accessPathF16,			loadF16,			storeF16		 },
+		{	"v2f16",		DE_LENGTH_OF_ARRAY(accessPathV2F16),		accessPathV2F16,		loadV2F16,			storeV2F16		 },
+		{	"v3f16",		DE_LENGTH_OF_ARRAY(accessPathV3F16),		accessPathV3F16,		loadV3F16,			storeV3F16		 },
+		{	"v4f16",		DE_LENGTH_OF_ARRAY(accessPathV4F16),		accessPathV4F16,		loadV4F16,			storeV4F16		  },
+		{	"f16arr3",		DE_LENGTH_OF_ARRAY(accessPathF16Arr3),		accessPathF16Arr3,		loadF16Arr3,		storeF16Arr3	  },
+		{	"v2f16arr5",	DE_LENGTH_OF_ARRAY(accessPathV2F16Arr5),	accessPathV2F16Arr5,	loadV2F16Arr5,		storeV2F16Arr5	  },
+		{	"v3f16arr5",	DE_LENGTH_OF_ARRAY(accessPathV3F16Arr5),	accessPathV3F16Arr5,	loadV3F16Arr5,		storeV3F16Arr5	  },
+		{	"v4f16arr3",	DE_LENGTH_OF_ARRAY(accessPathV4F16Arr3),	accessPathV4F16Arr3,	loadV4F16Arr3,		storeV4F16Arr3	  },
+		{	"struct16arr3",	DE_LENGTH_OF_ARRAY(accessPathStruct16Arr3),	accessPathStruct16Arr3,	loadStruct16Arr3,	storeStruct16Arr3},
 	};
 
 	for (size_t typeTestNdx = 0; typeTestNdx < DE_LENGTH_OF_ARRAY(typeTestParameters); ++typeTestNdx)
@@ -12848,26 +14074,39 @@ tcu::TestCaseGroup* createFloat16CompositeInsertExtractSet (tcu::TestContext& te
 		specs["num_elements"]			= de::toString(structItemsCount);
 		specs["field_type"]				= typeTestParameters[typeTestNdx].name;
 		specs["struct_item_size"]		= de::toString(structItemsCount * sizeof(deFloat16));
+		specs["struct_u32s"]			= de::toString(structItemsCount / 2);
 		specs["op_premain_decls"]		= opParts.premainDecls;
 		specs["op_sw_fun_call"]			= opParts.swFunCall;
 		specs["op_sw_fun_header"]		= opParts.swFunHeader;
 		specs["op_case_default_value"]	= opParts.caseDefaultValue;
+		if (opIndex == 0) {
+			specs["st_call"]			= "st_ssbo_dst";
+			specs["st_ndx"]				= "c_i32_0";
+		} else {
+			specs["st_call"]			= "st_fn_ssbo_dst";
+			specs["st_ndx"]				= "ndx";
+		}
 
-		fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"";
-		fragments["capability"]		= "OpCapability StorageUniformBufferBlock16\nOpCapability Float16\n";
+		fragments["capability"]		= "OpCapability Float16\n";
 		fragments["decoration"]		= decoration.specialize(specs);
 		fragments["pre_main"]		= preMain.specialize(specs);
 		fragments["testfun"]		= testFun.specialize(specs);
+		if (opIndex == 0) {
+			fragments["testfun"]		+= StringTemplate(loadScalarF16FromUint).specialize({{"var", "ssbo_src"}});
+			fragments["testfun"]		+= StringTemplate(typeTestParameters[typeTestNdx].loadFunction).specialize({{"var", "ssbo_dst"}});
+			fragments["testfun"]		+= StringTemplate(typeTestParameters[typeTestNdx].storeFunction).specialize({{"var", "ssbo_dst"}});
+		} else {
+			fragments["testfun"]		+= StringTemplate(typeTestParameters[typeTestNdx].loadFunction).specialize({{"var", "ssbo_src"}});
+			fragments["testfun"]		+= StringTemplate(storeScalarF16AsUint).specialize({{"var", "ssbo_dst"}});
+		}
 
 		specResource.inputs.push_back(Resource(BufferSp(new Float16Buffer(inputFP16)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.outputs.push_back(Resource(BufferSp(new Float16Buffer(dummyFP16Output)), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		specResource.verifyIO = compareFP16CompositeFunc;
 
-		extensions.push_back("VK_KHR_16bit_storage");
 		extensions.push_back("VK_KHR_shader_float16_int8");
 
 		features.extFloat16Int8		= EXTFLOAT16INT8FEATURES_FLOAT16;
-		features.ext16BitStorage	= EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 
 		finalizeTestsCreation(specResource, fragments, testCtx, *testGroup.get(), testName, features, extensions, IVec3(1, 1, 1));
 	}
@@ -16183,6 +17422,8 @@ bool compareFP16ArithmeticFunc (const std::vector<Resource>& inputs, const vecto
 					{
 						tcu::Float16 expected	(iterationCalculatedFP16[componentNdx]);
 						tcu::Float16 outputted	(iterationOutputFP16[componentNdx]);
+						tcu::Float64 edgeMin    (iterationEdgeMin[componentNdx]);
+						tcu::Float64 edgeMax    (iterationEdgeMax[componentNdx]);
 
 						if (reportError && expected.isNaN())
 							reportError = false;
@@ -16199,9 +17440,9 @@ bool compareFP16ArithmeticFunc (const std::vector<Resource>& inputs, const vecto
 							if (reportError && expected.isInf())
 							{
 								// RTZ rounding mode returns +/-65504 instead of Inf on overflow
-								if (expected.sign() == 1 && outputted.bits() == 0x7bff && iterationEdgeMin[componentNdx] <= std::numeric_limits<double>::max())
+								if (expected.sign() == 1 && outputted.bits() == 0x7bff && edgeMin.asDouble() <= std::numeric_limits<double>::max())
 									reportError = false;
-								else if (expected.sign() == -1 && outputted.bits() == 0xfbff && iterationEdgeMax[componentNdx] >= -std::numeric_limits<double>::max())
+								else if (expected.sign() == -1 && outputted.bits() == 0xfbff && edgeMax.asDouble() >= -std::numeric_limits<double>::max())
 									reportError = false;
 							}
 
@@ -16209,9 +17450,9 @@ bool compareFP16ArithmeticFunc (const std::vector<Resource>& inputs, const vecto
 							{
 								const double	outputtedDouble	= outputted.asDouble();
 
-								DE_ASSERT(iterationEdgeMin[componentNdx] <= iterationEdgeMax[componentNdx]);
+							    DE_ASSERT(edgeMin.isNaN() || edgeMax.isNaN() || (edgeMin.asDouble() <= edgeMax.asDouble()));
 
-								if (de::inRange(outputtedDouble, iterationEdgeMin[componentNdx], iterationEdgeMax[componentNdx]))
+								if (de::inRange(outputtedDouble, edgeMin.asDouble(), edgeMax.asDouble()))
 									reportError = false;
 							}
 						}
@@ -16281,7 +17522,7 @@ bool compareFP16ArithmeticFunc (const std::vector<Resource>& inputs, const vecto
 	}
 
 	if (validatedCount < 16)
-		TCU_THROW(InternalError, "Too few samples has been validated.");
+		TCU_THROW(InternalError, "Too few samples have been validated.");
 
 	return success;
 }
@@ -18973,6 +20214,34 @@ tcu::TestCaseGroup* createSpirvIdsAbuseGroup (tcu::TestContext& testCtx)
 	return testGroup.release();
 }
 
+tcu::TestCaseGroup* createFunctionParamsGroup (tcu::TestContext& testCtx)
+{
+	de::MovePtr<tcu::TestCaseGroup>	testGroup (new tcu::TestCaseGroup(testCtx, "function_params", "Function parameter tests"));
+
+	static const char data_dir[] = "spirv_assembly/instruction/function_params";
+
+	static const struct
+	{
+		const std::string name;
+		const std::string desc;
+	} cases[] =
+	{
+		{ "sampler_param", "Test combined image sampler as function parameter" },
+	};
+
+	for (int i = 0; i < DE_LENGTH_OF_ARRAY(cases); ++i)
+	{
+		cts_amber::AmberTestCase *testCase = cts_amber::createAmberTestCase(testCtx,
+																			cases[i].name.c_str(),
+																			cases[i].desc.c_str(),
+																			data_dir,
+																			cases[i].name + ".amber");
+		testGroup->addChild(testCase);
+	}
+
+	return testGroup.release();
+}
+
 tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 {
 	const bool testComputePipeline = true;
@@ -18983,6 +20252,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 
 	computeTests->addChild(createSpivVersionCheckTests(testCtx, testComputePipeline));
 	computeTests->addChild(createLocalSizeGroup(testCtx));
+	computeTests->addChild(createNonSemanticInfoGroup(testCtx));
 	computeTests->addChild(createOpNopGroup(testCtx));
 	computeTests->addChild(createOpFUnordGroup(testCtx, TEST_WITHOUT_NAN));
 	computeTests->addChild(createOpFUnordGroup(testCtx, TEST_WITH_NAN));
@@ -19031,6 +20301,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createOpNMinGroup(testCtx));
 	computeTests->addChild(createOpNMaxGroup(testCtx));
 	computeTests->addChild(createOpNClampGroup(testCtx));
+	computeTests->addChild(createFloatControlsExtensionlessGroup(testCtx));
 	{
 		de::MovePtr<tcu::TestCaseGroup>	computeAndroidTests	(new tcu::TestCaseGroup(testCtx, "android", "Android CTS Tests"));
 
@@ -19130,6 +20401,8 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	instructionTests->addChild(computeTests.release());
 	instructionTests->addChild(graphicsTests.release());
 	instructionTests->addChild(createSpirvVersion1p4Group(testCtx));
+	instructionTests->addChild(createFunctionParamsGroup(testCtx));
+	instructionTests->addChild(createTrinaryMinMaxGroup(testCtx));
 
 	return instructionTests.release();
 }

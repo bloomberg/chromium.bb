@@ -8,7 +8,7 @@ import("//testing/test.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -87,16 +87,12 @@ jumbo_component("snapshot") {
 }
 
 jumbo_source_set("snapshot_export") {
-  sources = [
-    "snapshot_export.h",
-  ]
+  sources = [ "snapshot_export.h" ]
   visibility = [ ":*" ]
 }
 
 test("snapshot_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
 
   if (is_mac) {
     sources += [ "snapshot_mac_unittest.mm" ]

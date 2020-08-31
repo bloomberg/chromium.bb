@@ -34,7 +34,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -201,6 +200,8 @@ class ArcPolicyBridgeTestBase {
     Mock::VerifyAndClearExpectations(&observer_);
     EXPECT_CALL(observer_, OnPolicySent(expected_policy_json));
     policy_bridge()->GetPolicies(PolicyStringCallback(expected_policy_json));
+    EXPECT_EQ(expected_policy_json,
+              policy_bridge()->get_arc_policy_for_reporting());
     Mock::VerifyAndClearExpectations(&observer_);
   }
 
@@ -220,6 +221,17 @@ class ArcPolicyBridgeTestBase {
                                                     kPolicyCompliantResponse));
     run_loop().Run();
     Mock::VerifyAndClearExpectations(&observer_);
+
+    if (compliance_report_value) {
+      std::unique_ptr<base::Value> saved_compliance_report_value =
+          base::JSONReader::ReadDeprecated(
+              policy_bridge()->get_arc_policy_compliance_report());
+      ASSERT_TRUE(saved_compliance_report_value);
+      EXPECT_TRUE(
+          compliance_report_value->Equals(saved_compliance_report_value.get()));
+    } else {
+      EXPECT_TRUE(policy_bridge()->get_arc_policy_compliance_report().empty());
+    }
   }
 
   // Specifies a testing factory for ArcSmartCardManagerBridge and returns
@@ -249,7 +261,6 @@ class ArcPolicyBridgeTestBase {
  private:
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::RunLoop run_loop_;
@@ -621,10 +632,11 @@ TEST_F(ArcPolicyBridgeRequiredKeyPairTest, RequiredKeyPairsBasicTest) {
   // One certificate is required to be installed.
   smart_card_manager()->set_required_cert_names_for_testing(
       std::vector<std::string>({kFakeCertName}));
-  GetPoliciesAndVerifyResult(
-      "{\"guid\":\"" + instance_guid() + "\"," +
-      base::StringPrintf(kRequiredKeyPairFormat, "\"", kFakeCertName, "\"") +
-      "}");
+  GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"," +
+                             base::StringPrintf(kRequiredKeyPairFormat,
+                                                "{\"alias\":\"", kFakeCertName,
+                                                "\"}") +
+                             "}");
 
   // An empty list is required to be installed.
   smart_card_manager()->set_required_cert_names_for_testing(

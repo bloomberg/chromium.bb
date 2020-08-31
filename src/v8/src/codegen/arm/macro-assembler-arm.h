@@ -156,6 +156,12 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     }
   }
 
+  enum class PushArrayOrder { kNormal, kReverse };
+  // `array` points to the first element (the lowest address).
+  // `array` and `size` are not modified.
+  void PushArray(Register array, Register size, Register scratch,
+                 PushArrayOrder order = PushArrayOrder::kNormal);
+
   void Pop(Register dst) { pop(dst); }
 
   // Pop two registers. Pops rightmost register first (from lower address).
@@ -254,6 +260,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void MovFromFloatResult(DwVfpRegister dst);
 
   void Trap() override;
+  void DebugBreak() override;
 
   // Calls Abort(msg) if the condition cond is not satisfied.
   // Use --debug-code to enable.
@@ -315,7 +322,8 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   // This should only be used when assembling a deoptimizer call because of
   // the CheckConstPool invocation, which is only needed for deoptimization.
-  void CallForDeoptimization(Address target, int deopt_id);
+  void CallForDeoptimization(Address target, int deopt_id, Label* exit,
+                             DeoptimizeKind kind);
 
   // Emit code to discard a non-negative number of pointer-sized elements
   // from the stack, clobbering only the sp register.
@@ -531,6 +539,16 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   void ResetSpeculationPoisonRegister();
 
+  // Control-flow integrity:
+
+  // Define a function entrypoint. This doesn't emit any code for this
+  // architecture, as control-flow integrity is not supported for it.
+  void CodeEntry() {}
+  // Define an exception handler.
+  void ExceptionHandler() {}
+  // Define an exception handler and bind a label.
+  void BindExceptionHandler(Label* label) { bind(label); }
+
  private:
   // Compare single values and then load the fpscr flags to a register.
   void VFPCompareAndLoadFlags(const SwVfpRegister src1,
@@ -708,6 +726,18 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   void JumpIfIsInRange(Register value, unsigned lower_limit,
                        unsigned higher_limit, Label* on_in_range);
 
+  // It assumes that the arguments are located below the stack pointer.
+  // argc is the number of arguments not including the receiver.
+  // TODO(victorgomes): Remove this function once we stick with the reversed
+  // arguments order.
+  MemOperand ReceiverOperand(Register argc) {
+#ifdef V8_REVERSE_JSARGS
+    return MemOperand(sp, 0);
+#else
+    return MemOperand(sp, argc, LSL, kSystemPointerSizeLog2);
+#endif
+  }
+
   // ---------------------------------------------------------------------------
   // Runtime calls
 
@@ -798,13 +828,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   void InvokePrologue(Register expected_parameter_count,
                       Register actual_parameter_count, Label* done,
                       InvokeFlag flag);
-
-  // Compute memory operands for safepoint stack slots.
-  static int SafepointRegisterStackIndex(int reg_code);
-
-  // Needs access to SafepointRegisterStackIndex for compiled frame
-  // traversal.
-  friend class StandardFrame;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MacroAssembler);
 };

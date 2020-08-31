@@ -28,21 +28,24 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
   return new TabModalConfirmDialogViews(std::move(delegate), web_contents);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, constructor & destructor:
-
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
     : delegate_(std::move(delegate)) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   delegate_->GetAcceptButtonTitle());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   delegate_->GetCancelButtonTitle());
+  SetButtons(delegate_->GetDialogButtons());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, delegate_->GetAcceptButtonTitle());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, delegate_->GetCancelButtonTitle());
+
+  SetAcceptCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Accept,
+                                   base::Unretained(delegate_.get())));
+  SetCancelCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Cancel,
+                                   base::Unretained(delegate_.get())));
+  SetCloseCallback(base::BindOnce(&TabModalConfirmDialogDelegate::Close,
+                                  base::Unretained(delegate_.get())));
 
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
-    DialogDelegate::set_default_button(*default_button);
+    SetDefaultButton(*default_button);
 
   views::MessageBoxView::InitParams init_params(delegate_->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
@@ -51,61 +54,19 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   message_box_view_ = new views::MessageBoxView(init_params);
 
   base::string16 link_text(delegate_->GetLinkText());
-  if (!link_text.empty())
-    message_box_view_->SetLink(link_text, this);
+  if (!link_text.empty()) {
+    message_box_view_->SetLink(
+        link_text, base::BindRepeating(&TabModalConfirmDialogViews::LinkClicked,
+                                       base::Unretained(this)));
+  }
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   delegate_->set_close_delegate(this);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TAB_MODAL_CONFIRM);
 }
 
-TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {
-}
-
-void TabModalConfirmDialogViews::AcceptTabModalDialog() {
-  AcceptDialog();
-}
-
-void TabModalConfirmDialogViews::CancelTabModalDialog() {
-  CancelDialog();
-}
-
-void TabModalConfirmDialogViews::CloseDialog() {
-  GetWidget()->Close();
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::LinkListener implementation:
-
-void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
-                                             int event_flags) {
-  delegate_->LinkClicked(ui::DispositionFromEventFlags(event_flags));
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::DialogDelegate implementation:
-
-int TabModalConfirmDialogViews::GetDialogButtons() const {
-  return delegate_->GetDialogButtons();
-}
-
 base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {
   return delegate_->GetTitle();
-}
-
-bool TabModalConfirmDialogViews::Cancel() {
-  delegate_->Cancel();
-  return true;
-}
-
-bool TabModalConfirmDialogViews::Accept() {
-  delegate_->Accept();
-  return true;
-}
-
-bool TabModalConfirmDialogViews::Close() {
-  delegate_->Close();
-  return true;
 }
 
 // Tab-modal confirmation dialogs should not show an "X" close button in the top
@@ -113,22 +74,6 @@ bool TabModalConfirmDialogViews::Close() {
 bool TabModalConfirmDialogViews::ShouldShowCloseButton() const {
   return false;
 }
-
-views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
-  base::Optional<int> focused_button = delegate_->GetInitiallyFocusedButton();
-  if (!focused_button) {
-    return DialogDelegate::GetInitiallyFocusedView();
-  }
-
-  if (*focused_button == ui::DIALOG_BUTTON_OK)
-    return GetOkButton();
-  if (*focused_button == ui::DIALOG_BUTTON_CANCEL)
-    return GetCancelButton();
-  return nullptr;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::WidgetDelegate implementation:
 
 views::View* TabModalConfirmDialogViews::GetContentsView() {
   return message_box_view_;
@@ -148,4 +93,36 @@ void TabModalConfirmDialogViews::DeleteDelegate() {
 
 ui::ModalType TabModalConfirmDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+TabModalConfirmDialogViews::~TabModalConfirmDialogViews() = default;
+
+void TabModalConfirmDialogViews::AcceptTabModalDialog() {
+  AcceptDialog();
+}
+
+void TabModalConfirmDialogViews::CancelTabModalDialog() {
+  CancelDialog();
+}
+
+void TabModalConfirmDialogViews::CloseDialog() {
+  GetWidget()->Close();
+}
+
+void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
+                                             int event_flags) {
+  delegate_->LinkClicked(ui::DispositionFromEventFlags(event_flags));
+}
+
+views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
+  base::Optional<int> focused_button = delegate_->GetInitiallyFocusedButton();
+  if (!focused_button) {
+    return DialogDelegate::GetInitiallyFocusedView();
+  }
+
+  if (*focused_button == ui::DIALOG_BUTTON_OK)
+    return GetOkButton();
+  if (*focused_button == ui::DIALOG_BUTTON_CANCEL)
+    return GetCancelButton();
+  return nullptr;
 }

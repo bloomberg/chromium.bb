@@ -74,8 +74,6 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   bool CheckIfScriptRequestIsValid(
       const network::ResourceRequest& resource_request);
 
-  // Used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  //
   // The callback is called once the copy is done. It normally runs
   // asynchronously, and would be synchronous if the operation completes
   // synchronously. The first parameter of the callback is the new resource id
@@ -83,7 +81,8 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   // success.
   void CopyScript(const GURL& url,
                   int64_t resource_id,
-                  base::OnceCallback<void(int64_t, net::Error)> callback);
+                  base::OnceCallback<void(int64_t, net::Error)> callback,
+                  int64_t new_resource_id);
 
   // This method is called to notify that the operation triggered by
   // CopyScript() completed.
@@ -97,6 +96,16 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       int64_t new_resource_id,
       net::Error error);
+
+  void OnResourceIdAssignedForNewScriptLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& resource_request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t resource_id);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;

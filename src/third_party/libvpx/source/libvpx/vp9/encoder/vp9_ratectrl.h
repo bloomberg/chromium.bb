@@ -83,7 +83,7 @@ static const double rate_thresh_mult[FRAME_SCALE_STEPS] = { 1.0, 2.0 };
 static const double rcf_mult[FRAME_SCALE_STEPS] = { 1.0, 2.0 };
 
 typedef struct {
-  // Rate targetting variables
+  // Rate targeting variables
   int base_frame_target;  // A baseline frame target before adjustment
                           // for previous under or over shoot.
   int this_frame_target;  // Actual frame target after rc adjustment.
@@ -252,6 +252,9 @@ int vp9_rc_get_default_max_gf_interval(double framerate, int min_gf_interval);
 // encode_frame_to_data_rate() function.
 void vp9_rc_get_one_pass_vbr_params(struct VP9_COMP *cpi);
 void vp9_rc_get_one_pass_cbr_params(struct VP9_COMP *cpi);
+int vp9_calc_pframe_target_size_one_pass_cbr(const struct VP9_COMP *cpi);
+int vp9_calc_iframe_target_size_one_pass_cbr(const struct VP9_COMP *cpi);
+void vp9_update_buffer_level_preencode(struct VP9_COMP *cpi);
 void vp9_rc_get_svc_params(struct VP9_COMP *cpi);
 
 // Post encode update of the rate control parameters based
@@ -329,6 +332,8 @@ int vp9_encodedframe_overshoot(struct VP9_COMP *cpi, int frame_size, int *q);
 void vp9_configure_buffer_updates(struct VP9_COMP *cpi, int gf_group_index);
 
 void vp9_estimate_qp_gop(struct VP9_COMP *cpi);
+
+void vp9_compute_frame_low_motion(struct VP9_COMP *const cpi);
 
 #ifdef __cplusplus
 }  // extern "C"

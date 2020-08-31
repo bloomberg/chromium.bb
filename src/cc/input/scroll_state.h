@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/scroll_state_data.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace cc {
@@ -58,14 +59,6 @@ class CC_EXPORT ScrollState {
     data_.is_direct_manipulation = is_direct_manipulation;
   }
 
-  void set_current_native_scrolling_node(ScrollNode* scroll_node) {
-    data_.set_current_native_scrolling_node(scroll_node);
-  }
-
-  ScrollNode* current_native_scrolling_node() const {
-    return data_.current_native_scrolling_node();
-  }
-
   bool delta_consumed_for_scroll_sequence() const {
     return data_.delta_consumed_for_scroll_sequence;
   }
@@ -85,7 +78,13 @@ class CC_EXPORT ScrollState {
 
   bool is_scroll_chain_cut() const { return data_.is_scroll_chain_cut; }
 
-  double delta_granularity() const { return data_.delta_granularity; }
+  ui::ScrollGranularity delta_granularity() const {
+    return data_.delta_granularity;
+  }
+
+  // Returns a the delta hints if this is a scroll begin or the real delta if
+  // it's a scroll update
+  gfx::ScrollOffset DeltaOrHint() const;
 
   ScrollStateData* data() { return &data_; }
 

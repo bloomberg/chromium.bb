@@ -9,19 +9,23 @@
 #include "ash/app_list/views/app_list_page.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 
 namespace ash {
 
 class AssistantMainView;
 class AssistantViewDelegate;
-class AssistantWebView;
 class ContentsView;
 class ViewShadow;
 
 // The Assistant page for the app list.
 class APP_LIST_EXPORT AssistantPageView : public AppListPage,
+                                          public AssistantControllerObserver,
                                           public AssistantUiModelObserver {
  public:
   AssistantPageView(AssistantViewDelegate* assistant_view_delegate,
@@ -51,16 +55,23 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
                           AppListState to_state) override;
   base::Optional<int> GetSearchBoxTop(
       AppListViewState view_state) const override;
+  void UpdatePageOpacityForState(AppListState state,
+                                 float search_box_opacity,
+                                 bool restore_opacity) override;
   gfx::Rect GetPageBoundsForState(
       AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
+  void AnimateYPosition(AppListViewState target_view_state,
+                        const TransformAnimator& animator,
+                        float default_offset) override;
+
+  // AssistantControllerObserver:
+  void OnAssistantControllerDestroying() override;
 
   // AssistantUiModelObserver:
-  void OnUiModeChanged(AssistantUiMode ui_mode,
-                       bool due_to_interaction) override;
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,
@@ -73,15 +84,23 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 
   AssistantViewDelegate* const assistant_view_delegate_;
-  ContentsView* contents_view_;
+  ContentsView* const contents_view_;
 
-  // Owned by the views hierarchy.
+  // Owned by the view hierarchy.
   AssistantMainView* assistant_main_view_ = nullptr;
-  AssistantWebView* assistant_web_view_ = nullptr;
 
   int min_height_dip_;
 
   std::unique_ptr<ViewShadow> view_shadow_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
+
+  ScopedObserver<AssistantUiController,
+                 AssistantUiModelObserver,
+                 &AssistantUiController::AddModelObserver,
+                 &AssistantUiController::RemoveModelObserver>
+      assistant_ui_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPageView);
 };

@@ -9,6 +9,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import './print_preview_shared_css.js';
 
 import {CrSearchFieldBehavior} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.m.js';
+import {stripDiacritics} from 'chrome://resources/js/search_highlight_utils.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /** @type {!RegExp} */
@@ -39,14 +40,14 @@ Polymer({
    * The last search query.
    * @private {string}
    */
-  lastString_: '',
+  lastQuery_: '',
 
   /** @return {!CrInputElement} */
-  getSearchInput: function() {
+  getSearchInput() {
     return /** @type {!CrInputElement} */ (this.$.searchInput);
   },
 
-  focus: function() {
+  focus() {
     this.$.searchInput.focus();
   },
 
@@ -54,20 +55,20 @@ Polymer({
    * @param {!CustomEvent<string>} e Event containing the new search.
    * @private
    */
-  onSearchChanged_: function(e) {
-    const safeQueryString = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
-    if (safeQueryString === this.lastString_) {
+  onSearchChanged_(e) {
+    const strippedQuery = stripDiacritics(e.detail.trim());
+    const safeQuery = strippedQuery.replace(SANITIZE_REGEX, '\\$&');
+    if (safeQuery === this.lastQuery_) {
       return;
     }
 
-    this.lastString_ = safeQueryString;
-    this.searchQuery = safeQueryString.length > 0 ?
-        new RegExp(`(${safeQueryString})`, 'i') :
-        null;
+    this.lastQuery_ = safeQuery;
+    this.searchQuery =
+        safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'ig') : null;
   },
 
   /** @private */
-  onClearClick_: function() {
+  onClearClick_() {
     this.setValue('');
     this.$.searchInput.focus();
   },

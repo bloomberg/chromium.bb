@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
 
+#include "android_webview/browser/gfx/aw_gl_surface_external_stencil.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
@@ -14,8 +15,10 @@
 #include "android_webview/common/aw_switches.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/init/gl_factory.h"
@@ -43,7 +46,7 @@ OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   enable_vulkan_ = command_line->HasSwitch(switches::kWebViewEnableVulkan);
   enable_shared_image_ =
-      command_line->HasSwitch(switches::kWebViewEnableSharedImage);
+      base::FeatureList::IsEnabled(features::kEnableSharedImageForWebview);
   LOG_IF(FATAL, enable_vulkan_ && !enable_shared_image_)
       << "--webview-enable-vulkan only works with shared image "
          "(--webview-enable-shared-image).";
@@ -53,11 +56,22 @@ OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
 
   InitializeContext();
 }
-OutputSurfaceProviderWebview::~OutputSurfaceProviderWebview() = default;
+OutputSurfaceProviderWebview::~OutputSurfaceProviderWebview() {
+  // We must to destroy |gl_surface_| before |shared_context_state_|, so we will
+  // still have context. NOTE: |shared_context_state_| holds ref to surface, but
+  // it loses it before context.
+  gl_surface_.reset();
+}
 
 void OutputSurfaceProviderWebview::InitializeContext() {
   DCHECK(!gl_surface_) << "InitializeContext() called twice";
-  gl_surface_ = base::MakeRefCounted<AwGLSurface>();
+
+  if (renderer_settings_.use_skia_renderer && !enable_vulkan_) {
+    // We need to draw to FBO for External Stencil support with SkiaRenderer
+    gl_surface_ = base::MakeRefCounted<AwGLSurfaceExternalStencil>();
+  } else {
+    gl_surface_ = base::MakeRefCounted<AwGLSurface>();
+  }
 
   if (renderer_settings_.use_skia_renderer) {
     auto share_group = base::MakeRefCounted<gl::GLShareGroup>();
@@ -85,8 +99,19 @@ void OutputSurfaceProviderWebview::InitializeContext() {
           GpuServiceWebView::GetInstance()->gpu_preferences(),
           std::move(feature_info));
     }
-    shared_context_state_->InitializeGrContext(workarounds,
-                                               nullptr /* gr_shader_cache */);
+
+    // As most of the GPU resources used for compositing are created on Chrome
+    // side this affects only validation inside Skia. The workaround effectively
+    // clamps max frame buffer size that comes from Android. As we don't control
+    // frame buffer size using this workaround leads to not drawing anything on
+    // screen.
+    // TODO(vasilyt): Remove this once it handles on Skia side.
+    gpu::GpuDriverBugWorkarounds workarounds_for_skia = workarounds;
+    workarounds_for_skia.max_texture_size_limit_4096 = false;
+
+    shared_context_state_->InitializeGrContext(
+        GpuServiceWebView::GetInstance()->gpu_preferences(),
+        workarounds_for_skia, nullptr /* gr_shader_cache */);
   }
 }
 

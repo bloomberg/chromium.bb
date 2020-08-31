@@ -5,6 +5,8 @@
 // Include test fixture.
 GEN_INCLUDE(['net_internals_test.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 // Anonymous namespace
 (function() {
 
@@ -50,7 +52,7 @@ CheckQueryResultTask.prototype = {
 
     // Each case has its own validation function because of the design of the
     // test reporting infrastructure.
-    if (result.error != undefined) {
+    if (result.error !== undefined) {
       this.checkError_(result);
     } else if (!result.result) {
       this.checkNotFound_(result);

@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrOverrideInputFragmentProcessor.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -31,7 +31,7 @@ public:
         auto literalColor = _outer.literalColor;
         (void)literalColor;
         if (useUniform) {
-            uniformColorVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag,
+            uniformColorVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
                                                                kHalf4_GrSLType, "uniformColor");
         }
         fragBuilder->codeAppendf(
@@ -43,8 +43,8 @@ public:
                 _outer.literalColor.fR, _outer.literalColor.fG, _outer.literalColor.fB,
                 _outer.literalColor.fA);
         SkString _input1992("constColor");
-        SkString _sample1992("_sample1992");
-        this->invokeChild(_outer.fp_index, _input1992.c_str(), &_sample1992, args);
+        SkString _sample1992;
+        _sample1992 = this->invokeChild(_outer.fp_index, _input1992.c_str(), args);
         fragBuilder->codeAppendf("\n%s = %s;\n", args.fOutputColor, _sample1992.c_str());
     }
 
@@ -91,7 +91,13 @@ GrOverrideInputFragmentProcessor::GrOverrideInputFragmentProcessor(
         , useUniform(src.useUniform)
         , uniformColor(src.uniformColor)
         , literalColor(src.literalColor) {
-    this->registerChildProcessor(src.childProcessor(fp_index).clone());
+    {
+        auto clone = src.childProcessor(fp_index).clone();
+        if (src.childProcessor(fp_index).isSampledWithExplicitCoords()) {
+            clone->setSampledWithExplicitCoords();
+        }
+        this->registerChildProcessor(std::move(clone));
+    }
 }
 std::unique_ptr<GrFragmentProcessor> GrOverrideInputFragmentProcessor::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new GrOverrideInputFragmentProcessor(*this));

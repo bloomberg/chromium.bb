@@ -7,7 +7,7 @@
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
-#include "base/logging.h"
+#include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
@@ -27,6 +27,12 @@ TestShellDelegate::CreateScreenshotDelegate() {
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
+}
+
+std::unique_ptr<BackGestureContextualNudgeDelegate>
+TestShellDelegate::CreateBackGestureContextualNudgeDelegate(
+    BackGestureContextualNudgeController* controller) {
+  return std::make_unique<TestBackGestureContextualNudgeDelegate>(controller);
 }
 
 bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {

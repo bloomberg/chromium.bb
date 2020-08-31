@@ -102,8 +102,8 @@ OptimizationGuideTopHostProvider::CreateIfAllowed(
     content::BrowserContext* browser_context) {
   if (IsUserPermittedToFetchFromRemoteOptimizationGuide(
           Profile::FromBrowserContext(browser_context))) {
-    return std::make_unique<OptimizationGuideTopHostProvider>(
-        browser_context, base::DefaultClock::GetInstance());
+    return base::WrapUnique(new OptimizationGuideTopHostProvider(
+        browser_context, base::DefaultClock::GetInstance()));
   }
   return nullptr;
 }
@@ -322,7 +322,7 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
       (time_clock_->Now() - blacklist_initialized_time);
 
   for (const auto& detail : engagement_details) {
-    if (!detail.origin.SchemeIs(url::kHttpsScheme))
+    if (!detail.origin.SchemeIsHTTPOrHTTPS())
       continue;
     // Once the engagement score is less than the initial engagement score for a
     // newly navigated host, return the current set of top hosts. This threshold

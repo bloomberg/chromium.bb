@@ -13,12 +13,16 @@ as the clients of the data.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import buildbucket_v2
 from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import failure_message_lib
 from chromite.lib import fake_cidb
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BuildStoreException(Exception):
@@ -306,6 +310,18 @@ class BuildStore(object):
     if self._write_to_bb:
       buildbucket_v2.UpdateSelfCommonBuildProperties(
           killed_child_builds=message_value)
+
+  def UpdateLuciNotifyProperties(self, email_notify=None):
+    """Update the buildbucket build with luci-notify specific properties.
+
+    Args:
+      email_notify: List of luci-notify email_notify values representing the
+                    recipients of failure alerts to for this builder.
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if self._write_to_bb:
+      buildbucket_v2.UpdateSelfCommonBuildProperties(email_notify=email_notify)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
@@ -601,6 +617,9 @@ class FakeBuildStore(object):
           build_id, message_type=message_type,
           message_subtype=message_subtype, message_value=str(buildbucket_id),
           board=board)
+
+  def UpdateLuciNotifyProperties(self, email_notify=None):
+    return
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):

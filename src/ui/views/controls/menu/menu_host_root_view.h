@@ -21,6 +21,8 @@ class SubmenuView;
 // such that when MenuHostRootView is deleted it doesn't delete the menu items.
 class MenuHostRootView : public internal::RootView {
  public:
+  METADATA_HEADER(MenuHostRootView);
+
   MenuHostRootView(Widget* widget, SubmenuView* submenu);
 
   void ClearSubmenu() { submenu_ = nullptr; }
@@ -32,8 +34,8 @@ class MenuHostRootView : public internal::RootView {
   void OnMouseMoved(const ui::MouseEvent& event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   bool ProcessMousePressed(const ui::MouseEvent& event);
   bool ProcessMouseDragged(const ui::MouseEvent& event);

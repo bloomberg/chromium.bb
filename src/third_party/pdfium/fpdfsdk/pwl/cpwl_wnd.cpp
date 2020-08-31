@@ -89,9 +89,7 @@ class CPWL_MsgControl final : public Observable {
     }
   }
 
-  void ReleaseCapture() {
-    m_aMousePath.clear();
-  }
+  void ReleaseCapture() { m_aMousePath.clear(); }
 
   CPWL_Wnd* GetFocusedWindow() const { return m_pMainKeyboardWnd.Get(); }
 
@@ -290,14 +288,14 @@ PWL_IMPLEMENT_KEY_METHOD(OnChar)
 #undef PWL_IMPLEMENT_KEY_METHOD
 
 #define PWL_IMPLEMENT_MOUSE_METHOD(mouse_method_name)                          \
-  bool CPWL_Wnd::mouse_method_name(const CFX_PointF& point, uint32_t nFlag) {  \
+  bool CPWL_Wnd::mouse_method_name(uint32_t nFlag, const CFX_PointF& point) {  \
     if (!IsValid() || !IsVisible() || !IsEnabled())                            \
       return false;                                                            \
     if (IsWndCaptureMouse(this)) {                                             \
       for (const auto& pChild : m_Children) {                                  \
         if (IsWndCaptureMouse(pChild.get())) {                                 \
-          return pChild->mouse_method_name(pChild->ParentToChild(point),       \
-                                           nFlag);                             \
+          return pChild->mouse_method_name(nFlag,                              \
+                                           pChild->ParentToChild(point));      \
         }                                                                      \
       }                                                                        \
       SetCursor();                                                             \
@@ -305,7 +303,7 @@ PWL_IMPLEMENT_KEY_METHOD(OnChar)
     }                                                                          \
     for (const auto& pChild : m_Children) {                                    \
       if (pChild->WndHitTest(pChild->ParentToChild(point))) {                  \
-        return pChild->mouse_method_name(pChild->ParentToChild(point), nFlag); \
+        return pChild->mouse_method_name(nFlag, pChild->ParentToChild(point)); \
       }                                                                        \
     }                                                                          \
     if (WndHitTest(point))                                                     \
@@ -316,10 +314,17 @@ PWL_IMPLEMENT_KEY_METHOD(OnChar)
 PWL_IMPLEMENT_MOUSE_METHOD(OnLButtonDblClk)
 PWL_IMPLEMENT_MOUSE_METHOD(OnLButtonDown)
 PWL_IMPLEMENT_MOUSE_METHOD(OnLButtonUp)
-PWL_IMPLEMENT_MOUSE_METHOD(OnRButtonDown)
-PWL_IMPLEMENT_MOUSE_METHOD(OnRButtonUp)
 PWL_IMPLEMENT_MOUSE_METHOD(OnMouseMove)
 #undef PWL_IMPLEMENT_MOUSE_METHOD
+
+// Unlike their FWL counterparts, PWL windows don't handle right clicks.
+bool CPWL_Wnd::OnRButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+  return false;
+}
+
+bool CPWL_Wnd::OnRButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+  return false;
+}
 
 WideString CPWL_Wnd::GetText() {
   return WideString();
@@ -347,9 +352,9 @@ bool CPWL_Wnd::Redo() {
   return false;
 }
 
-bool CPWL_Wnd::OnMouseWheel(short zDelta,
+bool CPWL_Wnd::OnMouseWheel(uint32_t nFlag,
                             const CFX_PointF& point,
-                            uint32_t nFlag) {
+                            const CFX_Vector& delta) {
   if (!IsValid() || !IsVisible() || !IsEnabled())
     return false;
 
@@ -359,7 +364,7 @@ bool CPWL_Wnd::OnMouseWheel(short zDelta,
 
   for (const auto& pChild : m_Children) {
     if (IsWndCaptureKeyboard(pChild.get()))
-      return pChild->OnMouseWheel(zDelta, pChild->ParentToChild(point), nFlag);
+      return pChild->OnMouseWheel(nFlag, pChild->ParentToChild(point), delta);
   }
   return false;
 }
@@ -622,17 +627,17 @@ bool CPWL_Wnd::IsCaptureMouse() const {
 
 bool CPWL_Wnd::IsWndCaptureMouse(const CPWL_Wnd* pWnd) const {
   CPWL_MsgControl* pCtrl = GetMsgControl();
-  return pCtrl ? pCtrl->IsWndCaptureMouse(pWnd) : false;
+  return pCtrl && pCtrl->IsWndCaptureMouse(pWnd);
 }
 
 bool CPWL_Wnd::IsWndCaptureKeyboard(const CPWL_Wnd* pWnd) const {
   CPWL_MsgControl* pCtrl = GetMsgControl();
-  return pCtrl ? pCtrl->IsWndCaptureKeyboard(pWnd) : false;
+  return pCtrl && pCtrl->IsWndCaptureKeyboard(pWnd);
 }
 
 bool CPWL_Wnd::IsFocused() const {
   CPWL_MsgControl* pCtrl = GetMsgControl();
-  return pCtrl ? pCtrl->IsMainCaptureKeyboard(this) : false;
+  return pCtrl && pCtrl->IsMainCaptureKeyboard(this);
 }
 
 CFX_FloatRect CPWL_Wnd::GetFocusRect() const {

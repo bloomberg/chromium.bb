@@ -30,6 +30,10 @@ class NativeFileSystemPermissionContext {
     // "save" dialog, and as such it could make sense to return a grant that
     // immediately allows write access without needing to request it.
     kSave,
+    // The path for which a permission grant is requested was the result of
+    // loading a handle from storage. As such the grant should not start out
+    // as granted, even for read access.
+    kLoadFromStorage,
   };
 
   // Returns the read permission grant to use for a particular path.
@@ -43,7 +47,8 @@ class NativeFileSystemPermissionContext {
       const base::FilePath& path,
       bool is_directory,
       int process_id,
-      int frame_id) = 0;
+      int frame_id,
+      UserAction user_action) = 0;
 
   // Returns the permission grant to use for a particular path. This could be a
   // grant that applies to more than just the path passed in, for example if a
@@ -103,10 +108,10 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) = 0;
 
-  // Returns whether the given |origin| is allowed to ask for write access.
-  // This is used to block save file dialogs from being shown
-  // if an origin isn't allowed to ask for write access.
-  virtual bool CanRequestWritePermission(const url::Origin& origin) = 0;
+  // Returns whether the give |origin| already allows write permission, or it is
+  // possible to request one. This is used to block save file dialogs from being
+  // shown if there is no need to ask for it.
+  virtual bool CanObtainWritePermission(const url::Origin& origin) = 0;
 
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;

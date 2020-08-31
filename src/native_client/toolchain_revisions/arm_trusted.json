@@ -5,16 +5,16 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f8fddd4f2f26facffca24ed80e7ef0715c733621",
+          "hash": "39346ea25150194590d623dbec041ff5c107a4f8",
           "log_url": null,
-          "name": "sysroot_arm_trusted_precise.tgz",
+          "name": "emulator_arm_trusted_precise.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/9f62c3ead52424e10ebd520213a8f36e02b84377/sysroot_arm_trusted_precise.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/2/emulator_arm_trusted_precise.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": "9f62c3ead52424e10ebd520213a8f36e02b84377",
-  "revision_hash": "f7b85bf16413d3aa1b999e746331e99408df0887"
+  "revision": "2",
+  "revision_hash": "95fcb04604c8dd17d11eecc972dcd1ca2d7294a6"
 }

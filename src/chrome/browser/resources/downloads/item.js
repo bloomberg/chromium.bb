@@ -116,6 +116,13 @@ Polymer({
         value: false,
       },
 
+      /** @private */
+      showOpenNow_: {
+        computed: 'computeShowOpenNow_(data.state)',
+        type: Boolean,
+        value: false,
+      },
+
       useFileIcon_: Boolean,
     },
 
@@ -138,35 +145,35 @@ Polymer({
     restoreFocusAfterCancel_: false,
 
     /** @override */
-    attached: function() {
+    attached() {
       afterNextRender(this, function() {
         IronA11yAnnouncer.requestAvailability();
       });
     },
 
     /** @override */
-    ready: function() {
+    ready() {
       this.mojoHandler_ = BrowserProxy.getInstance().handler;
       this.content = this.$.content;
     },
 
-    focusOnRemoveButton: function() {
+    focusOnRemoveButton() {
       focusWithoutInk(this.$.remove);
     },
 
     /** Overrides FocusRowBehavior. */
-    getCustomEquivalent: function(sampleElement) {
-      if (sampleElement.getAttribute('focus-type') == 'cancel') {
+    getCustomEquivalent(sampleElement) {
+      if (sampleElement.getAttribute('focus-type') === 'cancel') {
         return this.$$('[focus-type="retry"]');
       }
-      if (sampleElement.getAttribute('focus-type') == 'retry') {
+      if (sampleElement.getAttribute('focus-type') === 'retry') {
         return this.$$('[focus-type="pauseOrResume"]');
       }
       return null;
     },
 
     /** @return {!HTMLElement} */
-    getFileIcon: function() {
+    getFileIcon() {
       return /** @type {!HTMLElement} */ (this.$['file-icon']);
     },
 
@@ -175,12 +182,12 @@ Polymer({
      * @return {string} A reasonably long URL.
      * @private
      */
-    chopUrl_: function(url) {
+    chopUrl_(url) {
       return url.slice(0, 300);
     },
 
     /** @private */
-    computeClass_: function() {
+    computeClass_() {
       const classes = [];
 
       if (this.isActive_) {
@@ -202,8 +209,8 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeCompletelyOnDisk_: function() {
-      return this.data.state == States.COMPLETE &&
+    computeCompletelyOnDisk_() {
+      return this.data.state === States.COMPLETE &&
           !this.data.fileExternallyRemoved;
     },
 
@@ -211,7 +218,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeControlledBy_: function() {
+    computeControlledBy_() {
       if (!this.data.byExtId || !this.data.byExtName) {
         return '';
       }
@@ -225,7 +232,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeControlRemoveFromListAriaLabel_: function() {
+    computeControlRemoveFromListAriaLabel_() {
       return loadTimeData.getStringF(
           'controlRemoveFromListAriaLabel', this.data.fileName);
     },
@@ -234,8 +241,8 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeDate_: function() {
-      assert(typeof this.data.hideDate == 'boolean');
+    computeDate_() {
+      assert(typeof this.data.hideDate === 'boolean');
       if (this.data.hideDate) {
         return '';
       }
@@ -243,15 +250,15 @@ Polymer({
     },
 
     /** @private @return {boolean} */
-    computeDescriptionVisible_: function() {
-      return this.computeDescription_() != '';
+    computeDescriptionVisible_() {
+      return this.computeDescription_() !== '';
     },
 
     /**
      * @return {string}
      * @private
      */
-    computeDescription_: function() {
+    computeDescription_() {
       const data = this.data;
 
       switch (data.state) {
@@ -263,6 +270,9 @@ Polymer({
               return loadTimeData.getString('deepScannedOpenedDangerousDesc');
           }
           break;
+
+        case States.MIXED_CONTENT:
+          return loadTimeData.getString('mixedContentDownloadDesc');
 
         case States.DANGEROUS:
           const fileName = data.fileName;
@@ -286,6 +296,9 @@ Polymer({
           }
           break;
 
+        case States.ASYNC_SCANNING:
+          return loadTimeData.getString('asyncScanningDownloadDesc');
+
         case States.IN_PROGRESS:
         case States.PAUSED:  // Fallthrough.
           return data.progressStatusText;
@@ -308,13 +321,12 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeIcon_: function() {
+    computeIcon_() {
       if (this.data) {
         const dangerType = this.data.dangerType;
-
         if ((loadTimeData.getBoolean('requestsApVerdicts') &&
-             dangerType == DangerType.UNCOMMON_CONTENT) ||
-            dangerType == DangerType.SENSITIVE_CONTENT_WARNING) {
+             dangerType === DangerType.UNCOMMON_CONTENT) ||
+            dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
           return 'cr:error';
         }
 
@@ -325,6 +337,10 @@ Polymer({
         ];
         if (WARNING_TYPES.includes(dangerType)) {
           return 'cr:warning';
+        }
+
+        if (this.data.state === States.ASYNC_SCANNING) {
+          return 'cr:error';
         }
       }
       if (this.isDangerous_) {
@@ -337,12 +353,47 @@ Polymer({
     },
 
     /**
+     * @return {string}
+     * @private
+     */
+    computeIconColor_() {
+      if (this.data) {
+        const dangerType = this.data.dangerType;
+        if ((loadTimeData.getBoolean('requestsApVerdicts') &&
+             dangerType === DangerType.UNCOMMON_CONTENT) ||
+            dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
+          return 'yellow';
+        }
+
+        const WARNING_TYPES = [
+          DangerType.SENSITIVE_CONTENT_BLOCK,
+          DangerType.BLOCKED_TOO_LARGE,
+          DangerType.BLOCKED_PASSWORD_PROTECTED,
+        ];
+        if (WARNING_TYPES.includes(dangerType)) {
+          return 'red';
+        }
+
+        if (this.data.state === States.ASYNC_SCANNING) {
+          return 'grey';
+        }
+      }
+      if (this.isDangerous_) {
+        return 'red';
+      }
+      if (!this.useFileIcon_) {
+        return 'paper-grey';
+      }
+      return '';
+    },
+
+    /**
      * @return {boolean}
      * @private
      */
-    computeIsActive_: function() {
-      return this.data.state != States.CANCELLED &&
-          this.data.state != States.INTERRUPTED &&
+    computeIsActive_() {
+      return this.data.state !== States.CANCELLED &&
+          this.data.state !== States.INTERRUPTED &&
           !this.data.fileExternallyRemoved;
     },
 
@@ -350,32 +401,33 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeIsDangerous_: function() {
-      return this.data.state == States.DANGEROUS;
+    computeIsDangerous_() {
+      return this.data.state === States.DANGEROUS ||
+             this.data.state === States.MIXED_CONTENT;
     },
 
     /**
      * @return {boolean}
      * @private
      */
-    computeIsInProgress_: function() {
-      return this.data.state == States.IN_PROGRESS;
+    computeIsInProgress_() {
+      return this.data.state === States.IN_PROGRESS;
     },
 
     /**
      * @return {boolean}
      * @private
      */
-    computeIsMalware_: function() {
+    computeIsMalware_() {
       return this.isDangerous_ &&
-          (this.data.dangerType == DangerType.DANGEROUS_CONTENT ||
-           this.data.dangerType == DangerType.DANGEROUS_HOST ||
-           this.data.dangerType == DangerType.DANGEROUS_URL ||
-           this.data.dangerType == DangerType.POTENTIALLY_UNWANTED);
+          (this.data.dangerType === DangerType.DANGEROUS_CONTENT ||
+           this.data.dangerType === DangerType.DANGEROUS_HOST ||
+           this.data.dangerType === DangerType.DANGEROUS_URL ||
+           this.data.dangerType === DangerType.POTENTIALLY_UNWANTED);
     },
 
     /** @private */
-    toggleButtonClass_: function() {
+    toggleButtonClass_() {
       this.$$('#pauseOrResume')
           .classList.toggle(
               'action-button',
@@ -384,7 +436,7 @@ Polymer({
     },
 
     /** @private */
-    updatePauseOrResumeClass_: function() {
+    updatePauseOrResumeClass_() {
       if (!this.pauseOrResumeText_) {
         return;
       }
@@ -398,7 +450,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computePauseOrResumeText_: function() {
+    computePauseOrResumeText_() {
       if (this.data === undefined) {
         return '';
       }
@@ -416,7 +468,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeRemoveStyle_: function() {
+    computeRemoveStyle_() {
       const canDelete = loadTimeData.getBoolean('allowDeletingHistory');
       const hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
       return hideRemove ? 'visibility: hidden' : '';
@@ -426,24 +478,34 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeShowCancel_: function() {
-      return this.data.state == States.IN_PROGRESS ||
-          this.data.state == States.PAUSED;
+    computeShowCancel_() {
+      return this.data.state === States.IN_PROGRESS ||
+          this.data.state === States.PAUSED ||
+          this.data.state === States.ASYNC_SCANNING;
     },
 
     /**
      * @return {boolean}
      * @private
      */
-    computeShowProgress_: function() {
-      return this.showCancel_ && this.data.percent >= -1;
+    computeShowProgress_() {
+      return this.showCancel_ && this.data.percent >= -1 &&
+          this.data.state !== States.ASYNC_SCANNING;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    computeShowOpenNow_() {
+      return this.data.state === States.ASYNC_SCANNING;
     },
 
     /**
      * @return {string}
      * @private
      */
-    computeTag_: function() {
+    computeTag_() {
       switch (this.data.state) {
         case States.CANCELLED:
           return loadTimeData.getString('statusCancelled');
@@ -464,12 +526,12 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    isIndeterminate_: function() {
-      return this.data.percent == -1;
+    isIndeterminate_() {
+      return this.data.percent === -1;
     },
 
     /** @private */
-    observeControlledBy_: function() {
+    observeControlledBy_() {
       this.$['controlled-by'].innerHTML = this.controlledBy_;
       if (this.controlledBy_) {
         const link = this.$$('#controlled-by a');
@@ -479,7 +541,7 @@ Polymer({
     },
 
     /** @private */
-    observeIsDangerous_: function() {
+    observeIsDangerous_() {
       if (!this.data) {
         return;
       }
@@ -495,13 +557,16 @@ Polymer({
         this.useFileIcon_ = false;
       } else if (OVERRIDDEN_ICON_TYPES.includes(this.data.dangerType)) {
         this.useFileIcon_ = false;
+      } else if (this.data.state === States.ASYNC_SCANNING) {
+        this.useFileIcon_ = false;
       } else {
         this.$.url.href = assert(this.data.url);
         const path = this.data.filePath;
         IconLoader.getInstance()
             .loadIcon(this.$['file-icon'], path)
             .then(success => {
-              if (path == this.data.filePath) {
+              if (path === this.data.filePath && this.data.state !==
+                  States.ASYNC_SCANNING) {
                 this.useFileIcon_ = success;
               }
             });
@@ -509,21 +574,26 @@ Polymer({
     },
 
     /** @private */
-    onCancelTap_: function() {
+    onCancelTap_() {
       this.restoreFocusAfterCancel_ = true;
       this.mojoHandler_.cancel(this.data.id);
     },
 
     /** @private */
-    onDiscardDangerousTap_: function() {
+    onDiscardDangerousTap_() {
       this.mojoHandler_.discardDangerous(this.data.id);
+    },
+
+    /** @private */
+    onOpenNowTap_() {
+      this.mojoHandler_.openDuringScanningRequiringGesture(this.data.id);
     },
 
     /**
      * @private
      * @param {Event} e
      */
-    onDragStart_: function(e) {
+    onDragStart_(e) {
       e.preventDefault();
       this.mojoHandler_.drag(this.data.id);
     },
@@ -532,19 +602,19 @@ Polymer({
      * @param {Event} e
      * @private
      */
-    onFileLinkTap_: function(e) {
+    onFileLinkTap_(e) {
       e.preventDefault();
       this.mojoHandler_.openFileRequiringGesture(this.data.id);
     },
 
     /** @private */
-    onUrlTap_: function() {
+    onUrlTap_() {
       chrome.send('metricsHandler:recordAction',
         ['Downloads_OpenUrlOfDownloadedItem']);
     },
 
     /** @private */
-    onPauseOrResumeTap_: function() {
+    onPauseOrResumeTap_() {
       if (this.isInProgress_) {
         this.mojoHandler_.pause(this.data.id);
       } else {
@@ -553,7 +623,7 @@ Polymer({
     },
 
     /** @private */
-    onRemoveTap_: function() {
+    onRemoveTap_() {
       const pieces = loadTimeData.getSubstitutedStringPieces(
           loadTimeData.getString('toastRemovedFromList'), this.data.fileName);
       pieces.forEach(p => {
@@ -574,22 +644,22 @@ Polymer({
     },
 
     /** @private */
-    onRetryTap_: function() {
+    onRetryTap_() {
       this.mojoHandler_.retryDownload(this.data.id);
     },
 
     /** @private */
-    onSaveDangerousTap_: function() {
+    onSaveDangerousTap_() {
       this.mojoHandler_.saveDangerousRequiringGesture(this.data.id);
     },
 
     /** @private */
-    onShowTap_: function() {
+    onShowTap_() {
       this.mojoHandler_.show(this.data.id);
     },
 
     /** @private */
-    restoreFocusAfterCancelIfNeeded_: function() {
+    restoreFocusAfterCancelIfNeeded_() {
       if (!this.restoreFocusAfterCancel_) {
         return;
       }

@@ -32,70 +32,144 @@
 
 #include "cc/animation/animation_host.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
-#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/animation_timeline.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 
 namespace blink {
 
 namespace {
 
-void UpdateAnimationTiming(Document& document, TimingUpdateReason reason) {
-  document.Timeline().ServiceAnimations(reason);
+void UpdateAnimationTiming(
+    Document& document,
+    HeapHashSet<WeakMember<AnimationTimeline>>& timelines,
+    TimingUpdateReason reason) {
+  for (auto& timeline : timelines)
+    timeline->ServiceAnimations(reason);
   document.GetWorkletAnimationController().UpdateAnimationTimings(reason);
 }
 
+bool CompareAnimations(const Member<Animation>& left,
+                       const Member<Animation>& right) {
+  return Animation::HasLowerCompositeOrdering(
+      left.Get(), right.Get(),
+      Animation::CompareAnimationsOrdering::kTreeOrder);
+}
 }  // namespace
 
-void DocumentAnimations::UpdateAnimationTimingForAnimationFrame(
-    Document& document) {
-  UpdateAnimationTiming(document, kTimingUpdateForAnimationFrame);
+DocumentAnimations::DocumentAnimations(Document* document)
+    : document_(document) {}
+
+void DocumentAnimations::AddTimeline(AnimationTimeline& timeline) {
+  timelines_.insert(&timeline);
 }
 
-bool DocumentAnimations::NeedsAnimationTimingUpdate(const Document& document) {
-  return document.Timeline().HasOutdatedAnimation() ||
-         document.Timeline().NeedsAnimationTimingUpdate();
+void DocumentAnimations::UpdateAnimationTimingForAnimationFrame() {
+  UpdateAnimationTiming(*document_, timelines_, kTimingUpdateForAnimationFrame);
 }
 
-void DocumentAnimations::UpdateAnimationTimingIfNeeded(Document& document) {
-  if (NeedsAnimationTimingUpdate(document))
-    UpdateAnimationTiming(document, kTimingUpdateOnDemand);
+bool DocumentAnimations::NeedsAnimationTimingUpdate() {
+  for (auto& timeline : timelines_) {
+    if (timeline->HasOutdatedAnimation() ||
+        timeline->NeedsAnimationTimingUpdate())
+      return true;
+  }
+  return false;
+}
+
+void DocumentAnimations::UpdateAnimationTimingIfNeeded() {
+  if (NeedsAnimationTimingUpdate())
+    UpdateAnimationTiming(*document_, timelines_, kTimingUpdateOnDemand);
 }
 
 void DocumentAnimations::UpdateAnimations(
-    Document& document,
     DocumentLifecycle::LifecycleState required_lifecycle_state,
     const PaintArtifactCompositor* paint_artifact_compositor) {
-  DCHECK(document.Lifecycle().GetState() >= required_lifecycle_state);
+  DCHECK(document_->Lifecycle().GetState() >= required_lifecycle_state);
 
-  if (document.GetPendingAnimations().Update(paint_artifact_compositor)) {
-    DCHECK(document.View());
-    document.View()->ScheduleAnimation();
+  if (document_->GetPendingAnimations().Update(paint_artifact_compositor)) {
+    DCHECK(document_->View());
+    document_->View()->ScheduleAnimation();
   }
-  if (document.View()) {
+  if (document_->View()) {
     if (cc::AnimationHost* host =
-            document.View()->GetCompositorAnimationHost()) {
+            document_->View()->GetCompositorAnimationHost()) {
       wtf_size_t total_animations_count = 0;
-      if (document.Timeline().HasAnimations()) {
-        total_animations_count = document.Timeline().PendingAnimationsCount();
+      for (auto& timeline : timelines_) {
+        if (timeline->HasAnimations())
+          total_animations_count += timeline->AnimationsNeedingUpdateCount();
       }
+
       // In the CompositorTimingHistory::DidDraw where we know that there is
       // visual update, we will use document.CurrentFrameHadRAF as a signal to
       // record UMA or not.
       host->SetAnimationCounts(total_animations_count,
-                               document.CurrentFrameHadRAF(),
-                               document.NextFrameHasPendingRAF());
+                               document_->CurrentFrameHadRAF(),
+                               document_->NextFrameHasPendingRAF());
     }
   }
 
-  document.GetWorkletAnimationController().UpdateAnimationStates();
-
-  document.Timeline().ScheduleNextService();
+  document_->GetWorkletAnimationController().UpdateAnimationStates();
+  for (auto& timeline : timelines_)
+    timeline->ScheduleNextService();
 }
 
+void DocumentAnimations::MarkAnimationsCompositorPending() {
+  for (auto& timeline : timelines_)
+    timeline->MarkAnimationsCompositorPending();
+}
+
+HeapVector<Member<Animation>> DocumentAnimations::getAnimations(
+    const TreeScope& tree_scope) {
+  // This method implements the Document::getAnimations method defined in the
+  // web-animations-1 spec.
+  // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
+  // TODO(crbug.com/1046916): refactoring work to create a shared implementation
+  // of getAnimations for Documents and ShadowRoots.
+  document_->UpdateStyleAndLayoutTree();
+  HeapVector<Member<Animation>> animations;
+  if (document_->GetPage())
+    animations = document_->GetPage()->Animator().GetAnimations(tree_scope);
+  else
+    GetAnimationsTargetingTreeScope(animations, tree_scope);
+
+  std::sort(animations.begin(), animations.end(), CompareAnimations);
+  return animations;
+}
+
+void DocumentAnimations::Trace(Visitor* visitor) {
+  visitor->Trace(document_);
+  visitor->Trace(timelines_);
+}
+
+void DocumentAnimations::GetAnimationsTargetingTreeScope(
+    HeapVector<Member<Animation>>& animations,
+    const TreeScope& tree_scope) {
+  // This method follows the timelines in a given docmuent and append all the
+  // animations to the reference animations.
+  for (auto& timeline : timelines_) {
+    for (const auto& animation : timeline->GetAnimations()) {
+      if (animation->ReplaceStateRemoved())
+        continue;
+      if (!animation->effect() || (!animation->effect()->IsCurrent() &&
+                                   !animation->effect()->IsInEffect())) {
+        continue;
+      }
+      auto* effect = DynamicTo<KeyframeEffect>(animation->effect());
+      Element* target = effect->target();
+      if (!target || !target->isConnected())
+        continue;
+      if (&tree_scope != &target->GetTreeScope())
+        continue;
+      animations.push_back(animation);
+    }
+  }
+}
 }  // namespace blink

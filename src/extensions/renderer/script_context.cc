@@ -49,6 +49,8 @@ std::string GetContextTypeDescriptionString(Feature::Context context_type) {
       return "BLESSED_WEB_PAGE";
     case Feature::WEBUI_CONTEXT:
       return "WEBUI";
+    case Feature::WEBUI_UNTRUSTED_CONTEXT:
+      return "WEBUI_UNTRUSTED";
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       return "LOCK_SCREEN_EXTENSION";
   }
@@ -341,7 +343,7 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
 
   // There is no valid tuple origin (which can happen in the case of e.g. a
   // browser-initiated navigation to an opaque URL). Bail.
-  if (tuple_or_precursor_tuple_origin.IsInvalid())
+  if (!tuple_or_precursor_tuple_origin.IsValid())
     return document_url;
 
   url::Origin precursor_origin =
@@ -380,7 +382,7 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
     url::SchemeHostPort parent_tuple_origin =
         url::Origin(parent->GetSecurityOrigin())
             .GetTupleOrPrecursorTupleIfOpaque();
-    if (parent_tuple_origin.IsInvalid() ||
+    if (!parent_tuple_origin.IsValid() ||
         parent_tuple_origin != tuple_or_precursor_tuple_origin) {
       // The parent has a different tuple origin than frame; this could happen
       // in edge cases where a parent navigates an iframe or popup of a child

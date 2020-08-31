@@ -5,9 +5,18 @@
 #include <limits>
 
 #include "core/fpdfapi/page/cpdf_psengine.h"
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+float DoOperator0(CPDF_PSEngine* engine, PDF_PSOP op) {
+  EXPECT_EQ(0u, engine->GetStackSize());
+  engine->DoOperator(op);
+  float ret = engine->Pop();
+  EXPECT_EQ(0u, engine->GetStackSize());
+  return ret;
+}
 
 float DoOperator1(CPDF_PSEngine* engine, float v1, PDF_PSOP op) {
   EXPECT_EQ(0u, engine->GetStackSize());
@@ -91,6 +100,14 @@ TEST(CPDF_PSEngine, Basic) {
   EXPECT_FLOAT_EQ(5.0f, DoOperator2(&engine, 15, 10, PSOP_MOD));
   EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, -5, PSOP_NEG));
   EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, -5, PSOP_ABS));
+}
+
+TEST(CPDF_PSEngine, IDivByZero) {
+  CPDF_PSEngine engine;
+
+  // Integer divide by zero is defined as resulting in 0.
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 100, 0.0, PSOP_IDIV));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 100, 0.0, PSOP_MOD));
 }
 
 TEST(CPDF_PSEngine, Ceiling) {
@@ -184,10 +201,79 @@ TEST(CPDF_PSEngine, Truncate) {
 
   // Truncate does not behave according to the PostScript Language Reference for
   // values beyond the range of integers. This seems to match Acrobat's
-  // behavior. See https://crbug.com/1314.
+  // behavior. See https://crbug.com/pdfium/1314.
   float max_int = std::numeric_limits<int>::max();
   EXPECT_FLOAT_EQ(-max_int,
-                  DoOperator1(&engine, max_int * 2.0f, PSOP_TRUNCATE));
-  EXPECT_FLOAT_EQ(-max_int,
                   DoOperator1(&engine, max_int * -1.5f, PSOP_TRUNCATE));
+}
+
+TEST(CPDF_PSEngine, Comparisons) {
+  CPDF_PSEngine engine;
+
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_EQ));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_EQ));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_EQ));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_EQ));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_NE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_NE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_NE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_NE));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_GT));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_GT));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_GT));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_GT));
+
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_GE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_GE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_GE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_GE));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_LT));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_LT));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_LT));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_LT));
+
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_LE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_LE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 255.0f, 1.0f, PSOP_LE));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, -1.0f, 0.0f, PSOP_LE));
+}
+
+TEST(CPDF_PSEngine, Logic) {
+  CPDF_PSEngine engine;
+
+  EXPECT_FLOAT_EQ(1.0f, DoOperator0(&engine, PSOP_TRUE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator0(&engine, PSOP_FALSE));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_AND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_AND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 1.0f, 0.0f, PSOP_AND));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 1.0f, 1.0f, PSOP_AND));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_OR));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_OR));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 1.0f, 0.0f, PSOP_OR));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 1.0f, 1.0f, PSOP_OR));
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 0.0f, 0.0f, PSOP_XOR));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 0.0f, 1.0f, PSOP_XOR));
+  EXPECT_FLOAT_EQ(1.0f, DoOperator2(&engine, 1.0f, 0.0f, PSOP_XOR));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 1.0f, 1.0f, PSOP_XOR));
+
+  EXPECT_FLOAT_EQ(1.0f, DoOperator1(&engine, 0.0f, PSOP_NOT));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 1.0f, PSOP_NOT));
+}
+
+TEST(CPDF_PSEngine, MathFunctions) {
+  CPDF_PSEngine engine;
+
+  EXPECT_FLOAT_EQ(1.4142135f, DoOperator1(&engine, 2.0f, PSOP_SQRT));
+  EXPECT_FLOAT_EQ(0.8660254f, DoOperator1(&engine, 60.0f, PSOP_SIN));
+  EXPECT_FLOAT_EQ(0.5f, DoOperator1(&engine, 60.0f, PSOP_COS));
+  EXPECT_FLOAT_EQ(45.0f, DoOperator2(&engine, 1.0f, 1.0f, PSOP_ATAN));
+  EXPECT_FLOAT_EQ(1000.0f, DoOperator2(&engine, 10.0f, 3.0f, PSOP_EXP));
+  EXPECT_FLOAT_EQ(3.0f, DoOperator1(&engine, 1000.0f, PSOP_LOG));
+  EXPECT_FLOAT_EQ(2.302585f, DoOperator1(&engine, 10.0f, PSOP_LN));
 }

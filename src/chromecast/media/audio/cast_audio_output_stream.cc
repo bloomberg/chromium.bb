@@ -20,11 +20,11 @@
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/common/mojom/constants.mojom.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cma_audio_output_stream.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/output_stream_connection.h"
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -165,7 +165,8 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   mixer_service::OutputStreamParams params;
-  params.set_content_type(ConvertContentType(GetContentType(device_id_)));
+  params.set_content_type(mixer_service::CONTENT_TYPE_MEDIA);
+  params.set_focus_type(ConvertContentType(GetContentType(device_id_)));
   params.set_device_id(device_id_);
   params.set_stream_type(
       mixer_service::OutputStreamParams::STREAM_TYPE_DEFAULT);
@@ -177,7 +178,6 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   params.set_start_threshold_frames(start_threshold_frames);
 
   params.set_fill_size_frames(audio_params_.frames_per_buffer());
-  params.set_use_fader(true);
   params.set_fade_frames(::media::AudioTimestampHelper::TimeToFrames(
       kFadeTime, audio_params_.sample_rate()));
   params.set_use_start_timestamp(false);
@@ -265,7 +265,7 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
 
 CastAudioOutputStream::CastAudioOutputStream(
     CastAudioManager* audio_manager,
-    service_manager::Connector* connector,
+    chromecast::mojom::ServiceConnector* connector,
     const ::media::AudioParameters& audio_params,
     const std::string& device_id_or_group_id,
     bool use_mixer_service)

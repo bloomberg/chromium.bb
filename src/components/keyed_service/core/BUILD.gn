@@ -42,14 +42,13 @@ component("core") {
     "//base",
     "//components/pref_registry",
     "//components/prefs",
+    "//services/tracing/public/cpp:cpp",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "dependency_graph_unittest.cc",
-  ]
+  sources = [ "dependency_graph_unittest.cc" ]
   deps = [
     ":core",
     "//base",

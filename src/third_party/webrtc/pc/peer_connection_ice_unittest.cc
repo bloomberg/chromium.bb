@@ -457,8 +457,9 @@ TEST_P(PeerConnectionIceTest, CannotAddCandidateWhenRemoteDescriptionNotSet) {
   caller->CreateOfferAndSetAsLocal();
 
   EXPECT_FALSE(caller->pc()->AddIceCandidate(jsep_candidate.get()));
-  EXPECT_THAT(webrtc::metrics::Samples("WebRTC.PeerConnection.AddIceCandidate"),
-              ElementsAre(Pair(kAddIceCandidateFailNoRemoteDescription, 2)));
+  EXPECT_METRIC_THAT(
+      webrtc::metrics::Samples("WebRTC.PeerConnection.AddIceCandidate"),
+      ElementsAre(Pair(kAddIceCandidateFailNoRemoteDescription, 2)));
 }
 
 TEST_P(PeerConnectionIceTest, CannotAddCandidateWhenPeerConnectionClosed) {
@@ -1201,10 +1202,10 @@ TEST_P(PeerConnectionIceUfragPwdAnswerTest, TestIncludedInAnswer) {
   auto offer = caller->CreateOffer();
   auto* offer_transport_desc = GetFirstTransportDescription(offer.get());
   if (offer_new_ufrag_) {
-    offer_transport_desc->ice_ufrag += "_new";
+    offer_transport_desc->ice_ufrag += "+new";
   }
   if (offer_new_pwd_) {
-    offer_transport_desc->ice_pwd += "_new";
+    offer_transport_desc->ice_pwd += "+new";
   }
 
   ASSERT_TRUE(callee->SetRemoteDescription(std::move(offer)));
@@ -1247,8 +1248,8 @@ TEST_P(PeerConnectionIceTest,
 
   // Signal ICE restart on the first media section.
   auto* offer_transport_desc = GetFirstTransportDescription(offer.get());
-  offer_transport_desc->ice_ufrag += "_new";
-  offer_transport_desc->ice_pwd += "_new";
+  offer_transport_desc->ice_ufrag += "+new";
+  offer_transport_desc->ice_pwd += "+new";
 
   ASSERT_TRUE(callee->SetRemoteDescription(std::move(offer)));
 
@@ -1401,6 +1402,15 @@ TEST_P(PeerConnectionIceTest, IceCredentialsCreateAnswer) {
     EXPECT_EQ(transport_info->description.ice_ufrag, credentials[0].ufrag);
     EXPECT_EQ(transport_info->description.ice_pwd, credentials[0].pwd);
   }
+}
+
+// Regression test for https://bugs.chromium.org/p/webrtc/issues/detail?id=4728
+TEST_P(PeerConnectionIceTest, CloseDoesNotTransitionGatheringStateToComplete) {
+  auto pc = CreatePeerConnectionWithAudioVideo();
+  pc->pc()->Close();
+  EXPECT_FALSE(pc->IsIceGatheringDone());
+  EXPECT_EQ(PeerConnectionInterface::kIceGatheringNew,
+            pc->pc()->ice_gathering_state());
 }
 
 }  // namespace webrtc

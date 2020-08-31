@@ -15,6 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_builder.h"
@@ -43,6 +45,13 @@ constexpr char kExtensionSettingsWithIdBlocked[] = R"({
 constexpr char kExtensionSettingsWithIdAllowed[] = R"({
   "abcdefghijklmnopabcdefghijklmnop": {
     "installation_mode": "allowed"
+  }
+})";
+
+constexpr char kExtensionSettingsWithIdForced[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode": "force_installed",
+    "update_url":"https://clients2.google.com/service/update2/crx"
   }
 })";
 
@@ -126,6 +135,13 @@ TEST_F(ExtensionInstallStatusTest, ExtensionBlacklisted) {
 
 TEST_F(ExtensionInstallStatusTest, ExtensionAllowed) {
   EXPECT_EQ(ExtensionInstallStatus::kInstallable,
+            GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
+}
+
+TEST_F(ExtensionInstallStatusTest, ExtensionForceInstalledByPolicy) {
+  SetExtensionSettings(kExtensionSettingsWithIdForced);
+  ExtensionRegistry::Get(profile())->AddEnabled(CreateExtension(kExtensionId));
+  EXPECT_EQ(ExtensionInstallStatus::kForceInstalled,
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 
@@ -214,6 +230,17 @@ TEST_F(ExtensionInstallStatusTest, PendingExtenisonIsRejected) {
   std::vector<ExtensionId> ids = {kExtensionId};
   SetExtensionSettings(kExtensionSettingsWithIdBlocked);
   EXPECT_EQ(ExtensionInstallStatus::kBlockedByPolicy,
+            GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
+}
+
+// If an extension is disabled due to reason
+// DISABLE_CUSTODIAN_APPROVAL_REQUIRED, then GetWebstoreExtensionInstallStatus()
+// should return kCustodianApprovalRequired.
+TEST_F(ExtensionInstallStatusTest, ExtensionCustodianApprovalRequired) {
+  ExtensionPrefs::Get(profile())->AddDisableReason(
+      kExtensionId,
+      extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+  EXPECT_EQ(ExtensionInstallStatus::kCustodianApprovalRequired,
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 

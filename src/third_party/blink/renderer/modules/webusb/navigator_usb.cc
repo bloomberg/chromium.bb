@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webusb/navigator_usb.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/webusb/usb.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -29,16 +29,14 @@ USB* NavigatorUSB::usb() {
   return usb_;
 }
 
-void NavigatorUSB::Trace(blink::Visitor* visitor) {
+void NavigatorUSB::Trace(Visitor* visitor) {
   visitor->Trace(usb_);
   Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorUSB::NavigatorUSB(Navigator& navigator) {
-  if (navigator.GetFrame()) {
-    DCHECK(navigator.GetFrame()->GetDocument());
-    usb_ = USB::Create(*navigator.GetFrame()->GetDocument());
-  }
+  if (navigator.DomWindow())
+    usb_ = MakeGarbageCollected<USB>(*navigator.DomWindow());
 }
 
 const char NavigatorUSB::kSupplementName[] = "NavigatorUSB";

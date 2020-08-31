@@ -27,10 +27,10 @@ class StubCupsPrintersManager : public CupsPrintersManager {
   void RemoveSavedPrinter(const std::string& printer_id) override {}
   void AddObserver(CupsPrintersManager::Observer* observer) override {}
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {}
-  void PrinterInstalled(const Printer& printer,
-                        bool is_automatic,
-                        PrinterSetupSource source) override {}
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override {}
   void RecordSetupAbandoned(const Printer& printer) override {}
+  void FetchPrinterStatus(const std::string& printer_id,
+                          PrinterStatusCallback cb) override {}
 };
 
 class StubPrinterConfigurer : public PrinterConfigurer {

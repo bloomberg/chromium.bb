@@ -15,10 +15,16 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerLegacy(DrmDevice* device);
+  explicit HardwareDisplayPlaneManagerLegacy(DrmDevice* device);
   ~HardwareDisplayPlaneManagerLegacy() override;
 
   // HardwareDisplayPlaneManager:
+  bool Modeset(uint32_t crtc_id,
+               uint32_t framebuffer_id,
+               uint32_t connector_id,
+               const drmModeModeInfo& mode,
+               const HardwareDisplayPlaneList& plane_list) override;
+  bool DisableModeset(uint32_t crtc_id, uint32_t connector) override;
   bool Commit(HardwareDisplayPlaneList* plane_list,
               scoped_refptr<PageFlipRequest> page_flip_request,
               std::unique_ptr<gfx::GpuFence>* out_fence) override;
@@ -41,8 +47,7 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,
                     uint32_t crtc_id,
-                    const gfx::Rect& src_rect,
-                    CrtcController* crtc) override;
+                    const gfx::Rect& src_rect) override;
   bool IsCompatible(HardwareDisplayPlane* plane,
                     const DrmOverlayPlane& overlay,
                     uint32_t crtc_index) const override;

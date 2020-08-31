@@ -23,13 +23,17 @@ struct FunctionCall : public Expression {
     , fFunction(std::move(function))
     , fArguments(std::move(arguments)) {}
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
+        if (property == Property::kSideEffects && (fFunction.fModifiers.fFlags &
+                                                   Modifiers::kHasSideEffects_Flag)) {
+            return true;
+        }
         for (const auto& arg : fArguments) {
-            if (arg->hasSideEffects()) {
+            if (arg->hasProperty(property)) {
                 return true;
             }
         }
-        return fFunction.fModifiers.fFlags & Modifiers::kHasSideEffects_Flag;
+        return false;
     }
 
     std::unique_ptr<Expression> clone() const override {

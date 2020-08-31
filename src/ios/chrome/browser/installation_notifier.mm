@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/backoff_entry.h"
@@ -69,10 +69,10 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
   __weak NSNotificationCenter* _notificationCenter;
 
   // This object can be a fake application in unittests.
-  __weak UIApplication* sharedApplication_;
+  __weak UIApplication* _sharedApplication;
 }
 
-@synthesize lastCreatedBlockId = lastCreatedBlockId_;
+@synthesize lastCreatedBlockId = _lastCreatedBlockId;
 
 + (InstallationNotifier*)sharedInstance {
   static InstallationNotifier* instance = [[InstallationNotifier alloc] init];
@@ -82,7 +82,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 - (instancetype)init {
   self = [super init];
   if (self) {
-    lastCreatedBlockId_ = 0;
+    _lastCreatedBlockId = 0;
     _dispatcher = [[DefaultDispatcher alloc] init];
     _installedAppObservers = [[NSMutableDictionary alloc] init];
     _notificationCenter = [NSNotificationCenter defaultCenter];
@@ -154,14 +154,13 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 
 - (void)dispatchInstallationNotifierBlock {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  int blockId = ++lastCreatedBlockId_;
+  int blockId = ++_lastCreatedBlockId;
   _backoffEntry->InformOfRequest(false);
   int64_t delayInNSec =
       _backoffEntry->GetTimeUntilRelease().InMicroseconds() * NSEC_PER_USEC;
   __weak InstallationNotifier* weakSelf = self;
   [_dispatcher dispatchAfter:delayInNSec
                    withBlock:^{
-                     DCHECK_CURRENTLY_ON(web::WebThread::UI);
                      InstallationNotifier* strongSelf = weakSelf;
                      if (blockId == [strongSelf lastCreatedBlockId]) {
                        [strongSelf pollForTheInstallationOfApps];

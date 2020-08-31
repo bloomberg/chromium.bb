@@ -17,7 +17,10 @@
 class BrowserView;
 class FindBarController;
 class FindInPageTest;
+
+namespace find_in_page {
 class FindNotificationDetails;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -52,15 +55,17 @@ class FindBarHost : public DropdownBarHost,
   void Show(bool animate) override;
   void Hide(bool animate) override;
   void SetFocusAndSelection() override;
-  void ClearResults(const FindNotificationDetails& results) override;
+  void ClearResults(
+      const find_in_page::FindNotificationDetails& results) override;
   void StopAnimation() override;
   void MoveWindowIfNecessary() override;
   void SetFindTextAndSelectedRange(const base::string16& find_text,
                                    const gfx::Range& selected_range) override;
   base::string16 GetFindText() const override;
   gfx::Range GetSelectedRange() const override;
-  void UpdateUIForFindResult(const FindNotificationDetails& result,
-                             const base::string16& find_text) override;
+  void UpdateUIForFindResult(
+      const find_in_page::FindNotificationDetails& result,
+      const base::string16& find_text) override;
   void AudibleAlert() override;
   bool IsFindBarVisible() const override;
   void RestoreSavedFocus() override;
@@ -145,10 +150,10 @@ class FindBarHost : public DropdownBarHost,
   }
 
   // A pointer back to the owning controller.
-  FindBarController* find_bar_controller_;
+  FindBarController* find_bar_controller_ = nullptr;
 
   // The number of audible alerts issued.
-  size_t audible_alerts_;
+  size_t audible_alerts_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarHost);
 };

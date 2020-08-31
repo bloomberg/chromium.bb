@@ -27,8 +27,13 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace payments {
 
@@ -51,6 +56,10 @@ class ServiceWorkerPaymentAppFinder {
   // |requested_method_data|, verifies these apps are allowed to handle these
   // payment methods, and filters them by their capabilities.
   //
+  // |merchant_origin| should be the origin of the iframe that created the
+  // PaymentRequest object. It is used by security features like
+  // 'Sec-Fetch-Site' and 'Cross-Origin-Resource-Policy'.
+  //
   // The payment apps will be returned through |callback|. After |callback| has
   // been invoked, it's safe to show the apps in UI for user to select one of
   // these apps for payment.
@@ -61,9 +70,11 @@ class ServiceWorkerPaymentAppFinder {
   //
   // The method should be called on the UI thread.
   void GetAllPaymentApps(
+      const url::Origin& merchant_origin,
+      content::RenderFrameHost* initiator_render_frame_host,
       content::WebContents* web_contents,
       scoped_refptr<PaymentManifestWebDataService> cache,
-      const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+      std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
       bool may_crawl_for_installable_payment_apps,
       GetAllPaymentAppsCallback callback,
       base::OnceClosure finished_writing_cache_callback_for_testing);
@@ -74,13 +85,17 @@ class ServiceWorkerPaymentAppFinder {
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
       content::PaymentAppProvider::PaymentApps* apps);
 
+  // Ignore the given |method|, so that no installed or installable service
+  // workers would ever be looked up in GetAllPaymentApps(). Calling this
+  // multiple times will union the new payment methods with the existing set.
+  void IgnorePaymentMethodForTest(const std::string& method);
+
  private:
   friend struct base::DefaultSingletonTraits<ServiceWorkerPaymentAppFinder>;
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
-  friend class HybridRequestSkipUITest;
-  friend class JourneyLoggerTest;
-  friend class PaymentHandlerJustInTimeInstallationTest;
+  friend class PaymentRequestPlatformBrowserTestBase;
+  friend class PaymentMethodViewControllerTest;
 
   ServiceWorkerPaymentAppFinder();
   ~ServiceWorkerPaymentAppFinder();
@@ -91,6 +106,7 @@ class ServiceWorkerPaymentAppFinder {
   void SetDownloaderAndIgnorePortInOriginComparisonForTesting(
       std::unique_ptr<PaymentManifestDownloader> downloader);
 
+  std::set<std::string> ignored_methods_;
   std::unique_ptr<PaymentManifestDownloader> test_downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFinder);

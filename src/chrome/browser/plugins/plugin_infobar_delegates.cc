@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -26,6 +25,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -102,12 +102,20 @@ OutdatedPluginInfoBarDelegate::GetIdentifier() const {
   return OUTDATED_PLUGIN_INFOBAR_DELEGATE;
 }
 
-void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
+const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
+  return vector_icons::kExtensionIcon;
 }
 
-const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
-  return kExtensionIcon;
+base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+GURL OutdatedPluginInfoBarDelegate::GetLinkURL() const {
+  return GURL(chrome::kOutdatedPluginLearnMoreURL);
+}
+
+void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
+  base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
@@ -153,14 +161,6 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
   }
 
   return true;
-}
-
-base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-GURL OutdatedPluginInfoBarDelegate::GetLinkURL() const {
-  return GURL(chrome::kOutdatedPluginLearnMoreURL);
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadFinished() {

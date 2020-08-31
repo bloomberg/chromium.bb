@@ -24,7 +24,7 @@ namespace blink {
 TransformStreamDefaultController::TransformStreamDefaultController() = default;
 TransformStreamDefaultController::~TransformStreamDefaultController() = default;
 
-double TransformStreamDefaultController::desiredSize(bool& is_null) const {
+base::Optional<double> TransformStreamDefaultController::desiredSize() const {
   // https://streams.spec.whatwg.org/#ts-default-controller-desired-size
   // 2. Let readableController be
   //    this.[[controlledTransformStream]].[[readable]].
@@ -36,7 +36,7 @@ double TransformStreamDefaultController::desiredSize(bool& is_null) const {
   //    ReadableStreamDefaultControllerGetDesiredSize(readableController).
   // Use the accessor instead as it already has the semantics we need and can't
   // be interfered with from JavaScript.
-  return readable_controller->desiredSize(is_null);
+  return readable_controller->desiredSize();
 }
 
 // The handling of undefined arguments is implicit in the standard, but needs to

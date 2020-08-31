@@ -22,7 +22,7 @@ namespace dawn_native { namespace opengl {
     MaybeError OpenGLFunctions::Initialize(GetProcAddress getProc) {
         PFNGLGETSTRINGPROC getString = reinterpret_cast<PFNGLGETSTRINGPROC>(getProc("glGetString"));
         if (getString == nullptr) {
-            return DAWN_DEVICE_LOST_ERROR("Couldn't load glGetString");
+            return DAWN_INTERNAL_ERROR("Couldn't load glGetString");
         }
 
         std::string version = reinterpret_cast<const char*>(getString(GL_VERSION));
@@ -74,12 +74,12 @@ namespace dawn_native { namespace opengl {
         return mSupportedGLExtensionsSet.count(extension) != 0;
     }
 
-    bool OpenGLFunctions::IsAtLeastGL(uint32_t majorVersion, uint32_t minorVersion) {
+    bool OpenGLFunctions::IsAtLeastGL(uint32_t majorVersion, uint32_t minorVersion) const {
         return mStandard == Standard::Desktop &&
                std::tie(mMajorVersion, mMinorVersion) >= std::tie(majorVersion, minorVersion);
     }
 
-    bool OpenGLFunctions::IsAtLeastGLES(uint32_t majorVersion, uint32_t minorVersion) {
+    bool OpenGLFunctions::IsAtLeastGLES(uint32_t majorVersion, uint32_t minorVersion) const {
         return mStandard == Standard::ES &&
                std::tie(mMajorVersion, mMinorVersion) >= std::tie(majorVersion, minorVersion);
     }

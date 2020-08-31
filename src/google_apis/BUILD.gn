@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 declare_args() {
   # You can set the variable 'use_official_google_api_keys' to true
@@ -64,7 +66,7 @@ if (use_official_google_api_keys == "") {
 
 config("key_defines") {
   defines = []
-  if (use_official_google_api_keys) {
+  if (is_chrome_branded || use_official_google_api_keys) {
     defines += [ "USE_OFFICIAL_GOOGLE_API_KEYS=1" ]
   }
   if (google_api_key != "") {
@@ -132,6 +134,7 @@ template("google_apis_tmpl") {
     ]
 
     deps = [
+      ":oauth2_mint_token_consent_result_proto",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//build:branding_buildflags",
@@ -140,7 +143,7 @@ template("google_apis_tmpl") {
       "//services/network/public/cpp",
     ]
 
-    if (use_official_google_api_keys) {
+    if (is_chrome_branded || use_official_google_api_keys) {
       deps += [ "internal:generate_metrics_key_header" ]
     }
 
@@ -168,6 +171,10 @@ google_apis_tmpl("google_apis") {
   ]
 }
 
+proto_library("oauth2_mint_token_consent_result_proto") {
+  sources = [ "gaia/oauth2_mint_token_consent_result.proto" ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -193,9 +200,7 @@ static_library("test_support") {
 
 source_set("run_all_unittests") {
   testonly = true
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
 
   deps = [
     "//base/test:test_support",
@@ -220,14 +225,13 @@ test("google_apis_unittests") {
     "google_api_keys_unittest.h",
   ]
 
-  data = [
-    "test/",
-  ]
+  data = [ "test/" ]
 
   configs += [ ":key_defines" ]
 
   deps = [
     ":google_apis",
+    ":oauth2_mint_token_consent_result_proto",
     ":run_all_unittests",
     ":test_support",
     "//base",

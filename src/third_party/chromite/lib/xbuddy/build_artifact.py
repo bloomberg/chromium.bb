@@ -10,7 +10,6 @@ from __future__ import print_function
 import itertools
 import os
 import pickle
-import re
 import shutil
 import traceback
 
@@ -26,9 +25,7 @@ from chromite.lib.xbuddy import cherrypy_log_util
 # We do a number of things with args/kwargs arguments that confuse pylint.
 # pylint: disable=docstring-misnamed-args
 
-_AU_BASE = 'au'
-_NTON_DIR_SUFFIX = '_nton'
-_MTON_DIR_SUFFIX = '_mton'
+AU_NTON_DIR = 'au_nton'
 
 ############ Actual filenames of artifacts in Google Storage ############
 
@@ -142,7 +139,7 @@ class Artifact(cherrypy_log_util.Loggable):
   """
 
   def __init__(self, name, install_dir, build, install_subdir='',
-               is_regex_name=False, optional_name=None):
+               is_regex_name=False, optional_name=None, alt_name=None):
     """Constructor.
 
     Args:
@@ -156,6 +153,7 @@ class Artifact(cherrypy_log_util.Loggable):
         to faster download. Unlike |name|, there is no guarantee that an
         artifact named |optional_name| is/will be on Google Storage. If it
         exists, we download it. Otherwise, we fall back to wait for |name|.
+      alt_name: Name to use for anonymous callers to download artifacts.
     """
     super(Artifact, self).__init__()
 
@@ -164,8 +162,9 @@ class Artifact(cherrypy_log_util.Loggable):
     self._process_lock = None
 
     self.name = name
-    self.optional_name = optional_name
     self.is_regex_name = is_regex_name
+    self.optional_name = optional_name
+    self.alt_name = alt_name
     self.build = build
 
     self.marker_name = '.' + self._SanitizeName(name)
@@ -323,7 +322,7 @@ class Artifact(cherrypy_log_util.Loggable):
             # Because this artifact may not always exist, don't bother
             # to wait for it (set timeout=1).
             new_names = downloader.Wait(
-                self.optional_name, self.is_regex_name, timeout=1)
+                self.optional_name, self.is_regex_name, None, timeout=1)
             self._UpdateName(new_names)
 
           except ArtifactDownloadError:
@@ -338,7 +337,7 @@ class Artifact(cherrypy_log_util.Loggable):
           if not found_artifact:
             timeout = 1 if no_wait else 10
             new_names = downloader.Wait(
-                self.name, self.is_regex_name, timeout)
+                self.name, self.is_regex_name, self.alt_name, timeout)
             self._UpdateName(new_names)
 
           files = self.name if isinstance(self.name, list) else [self.name]
@@ -411,31 +410,6 @@ class AUTestPayload(MultiArtifact):
       # Reflect the rename in the list of installed files.
       self.installed_files.remove(install_path)
       self.installed_files.append(new_install_path)
-
-
-class DeltaPayloadBase(AUTestPayload):
-  """Delta payloads from the archive_url.
-
-  These artifacts are super strange. They custom handle directories and
-  pull in all delta payloads. We can't specify exactly what we want
-  because unlike other artifacts, this one does not conform to something a
-  client might know. The client doesn't know the version of n-1 or whether it
-  was even generated.
-
-  IMPORTANT! Note that this artifact simply ignores the `name' argument because
-  that name is derived internally.
-  """
-
-  def _Setup(self):
-    super(DeltaPayloadBase, self)._Setup()
-    # Setup symlink so that AU will work for this payload.
-    stateful_update_symlink = os.path.join(
-        self.install_dir, self.install_subdir,
-        devserver_constants.STATEFUL_FILE)
-    os.symlink(os.path.join(os.pardir, os.pardir,
-                            devserver_constants.STATEFUL_FILE),
-               stateful_update_symlink)
-    self.installed_files.append(stateful_update_symlink)
 
 
 class BundledArtifact(Artifact):
@@ -620,39 +594,12 @@ def _AddCrOSArtifact(tag, base, name, *fixed_args, **fixed_kwargs):
 
 
 _AddCrOSArtifact(artifact_info.FULL_PAYLOAD, AUTestPayload,
-                 r'.*full.*bin(\.json)?\Z', is_regex_name=True)
-
-
-class DeltaPayloadNtoN(DeltaPayloadBase):
-  """ChromeOS Delta payload artifact for updating from version N to N."""
-  ARTIFACT_TAG = artifact_info.DELTA_PAYLOADS
-  ARTIFACT_NAME = 'NOT_APPLICABLE'
-
-  def __init__(self, install_dir, build, *args, **kwargs):
-    name = 'chromeos_%s*_delta_*' % build
-    install_subdir = os.path.join(_AU_BASE, build + _NTON_DIR_SUFFIX)
-    super(DeltaPayloadNtoN, self).__init__(name, install_dir, build, *args,
-                                           install_subdir=install_subdir,
-                                           **kwargs)
-
-
-class DeltaPayloadMtoN(DeltaPayloadBase):
-  """ChromeOS Delta payload artifact for updating from version M to N."""
-  ARTIFACT_TAG = artifact_info.DELTA_PAYLOADS
-  ARTIFACT_NAME = 'NOT_APPLICABLE'
-
-  def __init__(self, install_dir, build, *args, **kwargs):
-    name = ('chromeos_(?!%s).*_delta_.*' % re.escape(build))
-    install_subdir = os.path.join(_AU_BASE, build + _MTON_DIR_SUFFIX)
-    super(DeltaPayloadMtoN, self).__init__(name, install_dir, build, *args,
-                                           install_subdir=install_subdir,
-                                           is_regex_name=True, **kwargs)
-
-
-chromeos_artifact_map[artifact_info.DELTA_PAYLOADS] = [DeltaPayloadNtoN,
-                                                       DeltaPayloadMtoN]
-
-
+                 r'chromeos_.*_full_dev.*bin(\.json)?\Z', is_regex_name=True,
+                 alt_name=[u'chromeos_{build}_{board}_dev.bin',
+                           u'chromeos_{build}_{board}_dev.bin.json'])
+_AddCrOSArtifact(artifact_info.DELTA_PAYLOAD, AUTestPayload,
+                 r'chromeos_.*_delta_dev.*bin(\.json)?\Z', is_regex_name=True,
+                 install_subdir=AU_NTON_DIR)
 _AddCrOSArtifact(artifact_info.STATEFUL_PAYLOAD, Artifact,
                  devserver_constants.STATEFUL_FILE)
 _AddCrOSArtifact(artifact_info.BASE_IMAGE, BundledArtifact, IMAGE_FILE,

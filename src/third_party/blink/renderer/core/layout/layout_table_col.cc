@@ -72,15 +72,14 @@ void LayoutTableCol::StyleDidChange(StyleDifference diff,
 
 void LayoutTableCol::UpdateFromElement() {
   unsigned old_span = span_;
-  Node* n = GetNode();
-  if (IsHTMLTableColElement(n)) {
-    HTMLTableColElement& tc = ToHTMLTableColElement(*n);
-    span_ = tc.span();
+
+  if (auto* tc = DynamicTo<HTMLTableColElement>(GetNode())) {
+    span_ = tc->span();
   } else {
     span_ = 1;
   }
   if (span_ != old_span && Style() && Parent()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kAttributeChanged);
   }
 }
@@ -107,17 +106,11 @@ bool LayoutTableCol::CanHaveChildren() const {
   return IsTableColumnGroup();
 }
 
-bool LayoutTableCol::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // LayoutTableCol paints nothing by itself. Its background is painted by
-  // LayoutTableSection.
-  return true;
-}
-
-void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {
-  ClearPreferredLogicalWidthsDirty();
+void LayoutTableCol::ClearIntrinsicLogicalWidthsDirtyBits() {
+  ClearIntrinsicLogicalWidthsDirty();
 
   for (LayoutObject* child = FirstChild(); child; child = child->NextSibling())
-    child->ClearPreferredLogicalWidthsDirty();
+    child->ClearIntrinsicLogicalWidthsDirty();
 }
 
 LayoutTable* LayoutTableCol::Table() const {

@@ -177,7 +177,6 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
   explicit SharedFont(float scale_factor)
       : font_(CreatePlaceholderFontDescription(scale_factor)),
         scale_factor_(scale_factor) {
-    font_.Update(nullptr);
   }
 
   ~SharedFont() {
@@ -191,7 +190,6 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
 
     scale_factor_ = scale_factor;
     font_ = Font(CreatePlaceholderFontDescription(scale_factor_));
-    font_.Update(nullptr);
   }
 
   const Font& font() const { return font_; }
@@ -209,14 +207,12 @@ PlaceholderImage::SharedFont* PlaceholderImage::SharedFont::g_instance_ =
 
 PlaceholderImage::PlaceholderImage(ImageObserver* observer,
                                    const IntSize& size,
-                                   int64_t original_resource_size,
-                                   bool is_lazy_image)
+                                   int64_t original_resource_size)
     : Image(observer),
       size_(size),
       text_(original_resource_size <= 0
                 ? String()
                 : FormatOriginalResourceSizeBytes(original_resource_size)),
-      is_lazy_image_(is_lazy_image),
       paint_record_content_id_(-1) {}
 
 PlaceholderImage::~PlaceholderImage() = default;
@@ -252,8 +248,8 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
 
   PaintRecorder paint_recorder;
   Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
-       FloatRect(dest_rect), FloatRect(dest_rect),
-       kDoNotRespectImageOrientation, kClampImageToSourceRect, kSyncDecode);
+       FloatRect(dest_rect), FloatRect(dest_rect), kRespectImageOrientation,
+       kClampImageToSourceRect, kSyncDecode);
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   paint_record_content_id_ = PaintImage::GetNextContentId();
@@ -282,10 +278,6 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
   if (!src_rect.Intersects(FloatRect(0.0f, 0.0f,
                                      static_cast<float>(size_.Width()),
                                      static_cast<float>(size_.Height())))) {
-    return;
-  }
-  if (is_lazy_image_) {
-    // Keep the image without any color and text decorations.
     return;
   }
 
@@ -359,13 +351,15 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
       Font::kUseFallbackIfFontNotReady, 1.0f, flags);
 }
 
-void PlaceholderImage::DrawPattern(GraphicsContext& context,
-                                   const FloatRect& src_rect,
-                                   const FloatSize& scale,
-                                   const FloatPoint& phase,
-                                   SkBlendMode mode,
-                                   const FloatRect& dest_rect,
-                                   const FloatSize& repeat_spacing) {
+void PlaceholderImage::DrawPattern(
+    GraphicsContext& context,
+    const FloatRect& src_rect,
+    const FloatSize& scale,
+    const FloatPoint& phase,
+    SkBlendMode mode,
+    const FloatRect& dest_rect,
+    const FloatSize& repeat_spacing,
+    RespectImageOrientationEnum respect_orientation) {
   DCHECK(context.Canvas());
 
   PaintFlags flags = context.FillFlags();
@@ -374,9 +368,8 @@ void PlaceholderImage::DrawPattern(GraphicsContext& context,
   // Ignore the pattern specifications and just draw a single placeholder image
   // over the whole |dest_rect|. This is done in order to prevent repeated icons
   // from cluttering tiled background images.
-  Draw(context.Canvas(), flags, dest_rect, src_rect,
-       kDoNotRespectImageOrientation, kClampImageToSourceRect,
-       kUnspecifiedDecode);
+  Draw(context.Canvas(), flags, dest_rect, src_rect, respect_orientation,
+       kClampImageToSourceRect, kUnspecifiedDecode);
 }
 
 void PlaceholderImage::DestroyDecodedData() {

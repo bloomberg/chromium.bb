@@ -218,6 +218,12 @@ int32_t H264DecoderImpl::InitDecode(const VideoCodec* codec_settings,
   }
 
   av_frame_.reset(av_frame_alloc());
+
+  if (codec_settings && codec_settings->buffer_pool_size) {
+    if (!pool_.Resize(*codec_settings->buffer_pool_size)) {
+      return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+    }
+  }
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -254,7 +260,9 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
 
   AVPacket packet;
   av_init_packet(&packet);
-  packet.data = input_image.mutable_data();
+  // packet.data has a non-const type, but isn't modified by
+  // avcodec_send_packet.
+  packet.data = const_cast<uint8_t*>(input_image.data());
   if (input_image.size() >
       static_cast<size_t>(std::numeric_limits<int>::max())) {
     ReportError();

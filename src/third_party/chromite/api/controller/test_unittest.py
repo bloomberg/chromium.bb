@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import os
-
 import contextlib
+import os
+import sys
+
 import mock
 
 from chromite.api import api_config
@@ -26,6 +27,9 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test as test_service
 from chromite.utils import key_value_store
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class DebugInfoTestTest(cros_test_lib.MockTempDirTestCase,
@@ -60,6 +64,26 @@ class DebugInfoTestTest(cros_test_lib.MockTempDirTestCase,
     test_controller.DebugInfoTest(input_msg, self._GetOutput(),
                                   self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockError(self):
+    """Test mock error call does not execute any logic, returns error."""
+    patch = self.PatchObject(test_service, 'DebugInfoTest')
+
+    input_msg = self._GetInput(sysroot_path=self.full_sysroot_path)
+    rc = test_controller.DebugInfoTest(input_msg, self._GetOutput(),
+                                       self.mock_error_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.PatchObject(test_service, 'DebugInfoTest')
+
+    input_msg = self._GetInput(sysroot_path=self.full_sysroot_path)
+    rc = test_controller.DebugInfoTest(input_msg, self._GetOutput(),
+                                       self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
 
   def testNoBuildTargetNoSysrootFails(self):
     """Test missing build target name and sysroot path fails."""
@@ -120,7 +144,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase,
                      os.path.join(input_msg.result_path, 'unit_tests.tar'))
 
   def testMockError(self):
-    """Test that a mock error does not execute logic, returns mocked value."""
+    """Test that a mock error does not execute logic, returns error."""
     patch = self.PatchObject(test_service, 'BuildTargetUnitTest')
 
     input_msg = self._GetInput(board='board', result_path=self.tempdir)
@@ -306,6 +330,12 @@ class CrosSigningTestTest(cros_test_lib.RunCommandTestCase,
     test_controller.CrosSigningTest(None, None, self.validate_only_config)
     self.assertFalse(self.rc.call_count)
 
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    rc = test_controller.CrosSigningTest(None, None, self.mock_call_config)
+    self.assertFalse(self.rc.call_count)
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
   def testCrosSigningTest(self):
     """Call CrosSigningTest with mocked cros_build_lib.run."""
     request = self._GetInput(chroot_path=self.chroot_path)
@@ -386,6 +416,18 @@ class SimpleChromeWorkflowTestTest(cros_test_lib.MockTestCase,
                                              self.validate_only_config)
     self.mock_simple_chrome_workflow_test.assert_not_called()
 
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.mock_simple_chrome_workflow_test = self.PatchObject(
+        test_service, 'SimpleChromeWorkflowTest')
+
+    request = self._Input(sysroot_path='sysroot_path', build_target='board',
+                          chrome_root='/path/to/chrome')
+    rc = test_controller.SimpleChromeWorkflowTest(request, self._Output(),
+                                                  self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
 
 class VmTestTest(cros_test_lib.RunCommandTestCase, api_config.ApiConfigMixin):
   """Test the VmTest endpoint."""
@@ -411,6 +453,16 @@ class VmTestTest(cros_test_lib.RunCommandTestCase, api_config.ApiConfigMixin):
     """Sanity check that a validate only call does not execute any logic."""
     test_controller.VmTest(self._GetInput(), None, self.validate_only_config)
     self.assertEqual(0, self.rc.call_count)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic."""
+    patch = self.PatchObject(cros_build_lib, 'run')
+
+    request = self._GetInput()
+    response = self._Output()
+    # VmTest does not return a value, checking mocked value is flagged by lint.
+    test_controller.VmTest(request, response, self.mock_call_config)
+    patch.assert_not_called()
 
   def testTastAllOptions(self):
     """Test VmTest for Tast with all options set."""
@@ -527,6 +579,16 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     test_controller.MoblabVmTest(self._Input(), self._Output(),
                                  self.validate_only_config)
     self.mock_create_moblab_vms.assert_not_called()
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic."""
+    patch = self.PatchObject(key_value_store, 'LoadFile')
+
+    # MoblabVmTest does not return a value, checking mocked value is flagged by
+    # lint.
+    test_controller.MoblabVmTest(self._Input(), self._Output(),
+                                 self.mock_call_config)
+    patch.assert_not_called()
 
   def testImageContainsBuilder(self):
     """MoblabVmTest calls service with correct args."""

@@ -43,7 +43,7 @@ cr.define('appcache', function() {
   function getItemByProperties(list, properties, values) {
     return list.find(function(candidate) {
       return properties.every(function(key, i) {
-        return candidate[key] == values[i];
+        return candidate[key] === values[i];
       });
     }) ||
         null;
@@ -54,7 +54,7 @@ cr.define('appcache', function() {
     while (pos < list.length) {
       const candidate = list[pos];
       if (properties.every(function(key) {
-            return candidate[key] == item[key];
+            return candidate[key] === item[key];
           })) {
         list.splice(pos, 1);
       } else {
@@ -173,7 +173,7 @@ cr.define('appcache', function() {
         totalSize: details.totalSize,
         properties: properties,
         fileUrl: details.url,
-        responseId: details.responseId
+        responseId: details.responseId,
       });
     }
     return simpleVector;

@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as Formatter from '../formatter/formatter.js';
+import * as QuickOpen from '../quick_open/quick_open.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {SourcesView} from './SourcesView.js';
+
 /**
  * @unrestricted
  */
-Sources.OutlineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
+export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
     super();
     this._items = [];
@@ -21,7 +28,7 @@ Sources.OutlineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
 
     const uiSourceCode = this._currentUISourceCode();
     if (uiSourceCode) {
-      this._active = Formatter.formatterWorkerPool().outlineForMimetype(
+      this._active = Formatter.FormatterWorkerPool.formatterWorkerPool().outlineForMimetype(
           uiSourceCode.workingCopy(), uiSourceCode.contentType().canonicalMimeType(),
           this._didBuildOutlineChunk.bind(this));
     }
@@ -79,7 +86,7 @@ Sources.OutlineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
   renderItem(itemIndex, query, titleElement, subtitleElement) {
     const item = this._items[itemIndex];
     titleElement.textContent = item.title + (item.subtitle ? item.subtitle : '');
-    QuickOpen.FilteredListWidget.highlightRanges(titleElement, query);
+    QuickOpen.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query);
     subtitleElement.textContent = ':' + (item.line + 1);
   }
 
@@ -104,10 +111,10 @@ Sources.OutlineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
 
 
   /**
-   * @return {?Workspace.UISourceCode}
+   * @return {?Workspace.UISourceCode.UISourceCode}
    */
   _currentUISourceCode() {
-    const sourcesView = UI.context.flavor(Sources.SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }
@@ -120,11 +127,11 @@ Sources.OutlineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
    */
   notFoundText() {
     if (!this._currentUISourceCode()) {
-      return Common.UIString('No file selected.');
+      return Common.UIString.UIString('No file selected.');
     }
     if (!this._active) {
-      return Common.UIString('Open a JavaScript or CSS file to see symbols');
+      return Common.UIString.UIString('Open a JavaScript or CSS file to see symbols');
     }
-    return Common.UIString('No results found');
+    return Common.UIString.UIString('No results found');
   }
-};
+}

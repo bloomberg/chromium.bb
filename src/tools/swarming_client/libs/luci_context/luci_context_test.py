@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2016 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -8,9 +8,11 @@ import os
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.abspath(os.path.join(
-    __file__.decode(sys.getfilesystemencoding()),
-    os.pardir, os.pardir)))
+import six
+
+ROOT_DIR = os.path.dirname(
+    os.path.abspath(
+        os.path.join(six.text_type(__file__), os.pardir, os.pardir)))
 sys.path.insert(0, ROOT_DIR)
 
 from libs.luci_context import luci_context
@@ -117,6 +119,24 @@ class TestLuciContext(unittest.TestCase):
         self.assertEqual('{"something": {"data": true}}', f.read())
     # The file is gone outside 'with' block.
     self.assertFalse(os.path.exists(path))
+
+  def test_to_utf8_bytes(self):
+    input_dict = {b'key1': b'value1', b'key2': b'value2'}
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual(input_dict, output_dict)
+
+  def test_to_utf8_str(self):
+    input_dict = {'key1': 'value1', 'key2': 'value2'}
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual(input_dict, output_dict)
+
+  def test_to_utf8_unicode(self):
+    input_dict = {
+        six.u('key1'): six.u('value1'),
+        six.u('key2'): six.u('value2')
+    }
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual({'key1': 'value1', 'key2': 'value2'}, output_dict)
 
 
 if __name__ == '__main__':

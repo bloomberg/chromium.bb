@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 
@@ -37,7 +37,6 @@ class WebAppInstallManager final : public InstallManager,
   ~WebAppInstallManager() override;
 
   // InstallManager:
-  bool CanInstallWebApp(content::WebContents* web_contents) override;
   void LoadWebAppAndCheckInstallability(
       const GURL& web_app_url,
       WebappInstallSource install_source,
@@ -61,9 +60,8 @@ class WebAppInstallManager final : public InstallManager,
                                const InstallParams& install_params,
                                WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
-  // For the old ExtensionSyncService-based system only:
-  void InstallWebAppFromSync(
-      const AppId& app_id,
+  void InstallBookmarkAppFromSync(
+      const AppId& bookmark_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
   void UpdateWebAppFromInfo(
@@ -87,6 +85,14 @@ class WebAppInstallManager final : public InstallManager,
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
 
  private:
+  // On failure will attempt a fallback install only loading icon URLs.
+  void LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForBookmarkAppSync(
+      const AppId& bookmark_app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback,
+      const AppId& web_app_id,
+      InstallResultCode code);
+
   void EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
                    base::OnceClosure start_task);
   void MaybeStartQueuedTask();

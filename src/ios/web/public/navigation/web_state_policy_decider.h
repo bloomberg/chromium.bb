@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -19,6 +20,65 @@ class TestWebState;
 // Decides the navigation policy for a web state.
 class WebStatePolicyDecider {
  public:
+  // Specifies a navigation decision. Used as a return value by
+  // WebStatePolicyDecider::ShouldAllowRequest(), and used by
+  // WebStatePolicyDecider::ShouldAllowResponse() when sending its decision to
+  // its callback.
+  struct PolicyDecision {
+    // A policy decision which allows the navigation.
+    static PolicyDecision Allow();
+
+    // A policy decision which cancels the navigation.
+    static PolicyDecision Cancel();
+
+    // A policy decision which cancels the navigation and displays |error|.
+    // NOTE: The |error| will only be displayed if the associated navigation is
+    // being loaded in the main frame.
+    static PolicyDecision CancelAndDisplayError(NSError* error);
+
+    // Whether or not the navigation will continue.
+    bool ShouldAllowNavigation() const;
+
+    // Whether or not the navigation will be cancelled.
+    bool ShouldCancelNavigation() const;
+
+    // Whether or not an error should be displayed. Always returns false if
+    // |ShouldAllowNavigation| is true.
+    // NOTE: Will return true when the receiver is created with
+    // |CancelAndDisplayError| even though an error will only end up being
+    // displayed if the associated navigation is occurring in the main frame.
+    bool ShouldDisplayError() const;
+
+    // The error to display when |ShouldDisplayError| is true.
+    NSError* GetDisplayError() const;
+
+   private:
+    // The decisions which can be taken for a given navigation.
+    enum class Decision {
+      // Allow the navigation to proceed.
+      kAllow,
+
+      // Cancel the navigation.
+      kCancel,
+
+      // Cancel the navigation and display an error.
+      kCancelAndDisplayError,
+    };
+
+    PolicyDecision(Decision decision, NSError* error)
+        : decision(decision), error(error) {}
+
+    // The decision to be taken for a given navigation.
+    Decision decision = Decision::kAllow;
+
+    // An error associated with the navigation. This error will be displayed if
+    // |decision| is |kCancelAndDisplayError|.
+    NSError* error = nil;
+  };
+
+  // Callback used to provide asynchronous policy decisions.
+  typedef base::OnceCallback<void(PolicyDecision)> PolicyDecisionCallback;
+
   // Data Transfer Object for the additional information about navigation
   // request passed to WebStatePolicyDecider::ShouldAllowRequest().
   struct RequestInfo {
@@ -41,25 +101,31 @@ class WebStatePolicyDecider {
   virtual ~WebStatePolicyDecider();
 
   // Asks the decider whether the navigation corresponding to |request| should
-  // be allowed to continue. Defaults to true if not overriden.
+  // be allowed to continue. The first policy decider returning a PolicyDecision
+  // where ShouldCancelNavigation() is true will be the PolicyDecision used for
+  // the navigation. This means that a policy decider may not be called and have
+  // its expected decision performed for a given navigation. As such, the
+  // highest priority policy deciders should be added first to ensure those
+  // decisions are prioritized.
   // Called before WebStateObserver::DidStartNavigation.
+  // Defaults to PolicyDecision::Allow() if not overridden.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
-  //  - CRWNativeContent navigations
-  virtual bool ShouldAllowRequest(NSURLRequest* request,
-                                  const RequestInfo& request_info);
+  virtual PolicyDecision ShouldAllowRequest(NSURLRequest* request,
+                                            const RequestInfo& request_info);
 
   // Asks the decider whether the navigation corresponding to |response| should
-  // be allowed to continue. Defaults to true if not overriden.
-  // |for_main_frame| indicates whether the frame being navigated is the main
-  // frame. Called before WebStateObserver::DidFinishNavigation.
+  // be allowed to continue. Defaults to PolicyDecision::Allow() if not
+  // overridden. |for_main_frame| indicates whether the frame being navigated is
+  // the main frame. Called before WebStateObserver::DidFinishNavigation. Calls
+  // |callback| with the decision.
   // Never called in the following cases:
   //  - same-document navigations (unless ititiated via LoadURLWithParams)
-  //  - CRWNativeContent navigations
   //  - going back after form submission navigation
   //  - user-initiated POST navigation on iOS 10
-  virtual bool ShouldAllowResponse(NSURLResponse* response,
-                                   bool for_main_frame);
+  virtual void ShouldAllowResponse(NSURLResponse* response,
+                                   bool for_main_frame,
+                                   PolicyDecisionCallback callback);
 
   // Notifies the policy decider that the web state is being destroyed.
   // Gives subclasses a chance to cleanup.

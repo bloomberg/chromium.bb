@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/optimization_guide/memory_hint.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
 
@@ -27,7 +28,6 @@ class SequencedTaskRunner;
 
 namespace optimization_guide {
 namespace proto {
-class Hint;
 class StoreEntry;
 }  // namespace proto
 
@@ -38,8 +38,7 @@ class StoreEntry;
 class OptimizationGuideStore {
  public:
   using HintLoadedCallback =
-      base::OnceCallback<void(const std::string&,
-                              std::unique_ptr<proto::Hint>)>;
+      base::OnceCallback<void(const std::string&, std::unique_ptr<MemoryHint>)>;
   using PredictionModelLoadedCallback =
       base::OnceCallback<void(std::unique_ptr<proto::PredictionModel>)>;
   using HostModelFeaturesLoadedCallback =
@@ -127,8 +126,7 @@ class OptimizationGuideStore {
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
   std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
-      base::Time update_time,
-      base::Time expiry_time) const;
+      base::Time update_time) const;
 
   // Updates the component hints and version contained within the store. When
   // this is called, all pre-existing component hints within the store is purged
@@ -453,10 +451,6 @@ class OptimizationGuideStore {
   // |component_version_|, it is retaind separately as an optimization, as it
   // is needed often.
   EntryKeyPrefix component_hint_entry_key_prefix_;
-
-  // If a component data update is in the middle of being processed; when this
-  // is true, keys and hints will not be returned by the store.
-  bool data_update_in_flight_ = false;
 
   // The next update time for the fetched hints that are currently in the
   // store.

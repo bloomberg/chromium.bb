@@ -19,12 +19,14 @@ source_set("flags") {
     "//components/feature_engagement/public",
     "//components/flags_ui",
     "//components/flags_ui:switches",
+    "//components/infobars/core:feature_flags",
     "//components/invalidation/impl:feature_list",
     "//components/ntp_tiles",
     "//components/omnibox/browser",
     "//components/omnibox/common",
     "//components/password_manager/core/common",
     "//components/payments/core",
+    "//components/safe_browsing/core:features",
     "//components/search_provider_logos",
     "//components/security_state/core",
     "//components/send_tab_to_self",
@@ -40,16 +42,15 @@ source_set("flags") {
     "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browsing_data:feature_flags",
-    "//ios/chrome/browser/crash_report:flags",
     "//ios/chrome/browser/crash_report/breadcrumbs:feature_flags",
     "//ios/chrome/browser/drag_and_drop",
-    "//ios/chrome/browser/find_in_page:feature_flags",
     "//ios/chrome/browser/passwords:feature_flags",
-    "//ios/chrome/browser/reading_list:features",
+    "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/dialogs:feature_flags",
+    "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/page_info:features",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",
     "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
@@ -61,4 +62,26 @@ source_set("flags") {
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public",
   ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "about_flags_unittest.mm" ]
+  deps = [
+    ":flags",
+    ":test_data",
+    "//base",
+    "//components/flags_ui",
+    "//components/flags_ui:test_support",
+    "//testing/gtest",
+  ]
+}
+
+bundle_data("test_data") {
+  sources = [
+    "//chrome/browser/flag-metadata.json",
+    "//chrome/browser/flag-never-expire-list.json",
+  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_root_relative_dir}}/{{source_file_part}}" ]
 }

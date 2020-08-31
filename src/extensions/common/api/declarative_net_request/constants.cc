@@ -23,7 +23,6 @@ const char kResourceTypesKey[] = "resourceTypes";
 const char kExcludedResourceTypesKey[] = "excludedResourceTypes";
 const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
-const char kRemoveHeadersListKey[] = "removeHeadersList";
 const char kRedirectPath[] = "action.redirect";
 const char kExtensionPathPath[] = "action.redirect.extensionPath";
 const char kTransformSchemePath[] = "action.redirect.transform.scheme";
@@ -52,6 +51,12 @@ const char kQueryKeyKey[] = "key";
 const char kQueryValueKey[] = "value";
 const char kRegexSubstitutionKey[] = "regexSubstitution";
 const char kRegexSubstitutionPath[] = "action.redirect.regexSubstitution";
+const char kRequestHeadersKey[] = "requestHeaders";
+const char kResponseHeadersKey[] = "responseHeaders";
+const char kRequestHeadersPath[] = "action.requestHeaders";
+const char kResponseHeadersPath[] = "action.responseHeaders";
+const char kHeaderNameKey[] = "header";
+const char kHeaderOperationKey[] = "operation";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

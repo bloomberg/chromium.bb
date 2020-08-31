@@ -26,18 +26,21 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/svg_filter_painter.h"
+#include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
+class FilterData;
+class GraphicsContext;
 class LayoutObject;
-class LayoutSVGResourceFilter;
-class LayoutSVGResourceMasker;
+class PaintController;
 class SVGResources;
 
 // Hooks up the correct paint property transform node.
@@ -76,33 +79,53 @@ class ScopedSVGTransformState {
   base::Optional<ScopedPaintChunkProperties> transform_property_scope_;
 };
 
+class SVGFilterRecordingContext {
+  USING_FAST_MALLOC(SVGFilterRecordingContext);
+
+ public:
+  explicit SVGFilterRecordingContext(const PaintInfo&);
+  ~SVGFilterRecordingContext();
+
+  const PaintInfo& GetPaintInfo() const { return paint_info_; }
+  sk_sp<PaintRecord> GetPaintRecord(const PaintInfo&);
+
+ private:
+  std::unique_ptr<PaintController> paint_controller_;
+  std::unique_ptr<GraphicsContext> context_;
+  PaintInfo paint_info_;
+  DISALLOW_COPY_AND_ASSIGN(SVGFilterRecordingContext);
+};
+
 class ScopedSVGPaintState {
   STACK_ALLOCATED();
 
  public:
   ScopedSVGPaintState(const LayoutObject& object, const PaintInfo& paint_info)
+      : ScopedSVGPaintState(object, paint_info, object) {}
+
+  ScopedSVGPaintState(const LayoutObject& object,
+                      const PaintInfo& paint_info,
+                      const DisplayItemClient& display_item_client)
       : object_(object),
         paint_info_(paint_info),
-        filter_(nullptr),
-        masker_(nullptr) {}
+        display_item_client_(display_item_client),
+        filter_data_(nullptr) {}
 
   ~ScopedSVGPaintState();
 
-  PaintInfo& GetPaintInfo() {
-    return filter_paint_info_ ? *filter_paint_info_ : paint_info_;
+  const PaintInfo& GetPaintInfo() const {
+    return filter_recording_context_ ? filter_recording_context_->GetPaintInfo()
+                                     : paint_info_;
   }
 
   // Return true if these operations aren't necessary or if they are
   // successfully applied.
-  bool ApplyClipMaskAndFilterIfNecessary();
+  bool ApplyEffects();
 
  private:
   void ApplyPaintPropertyState();
   void ApplyClipIfNecessary();
-
-  // Return true if no masking is necessary or if the mask is successfully
-  // applied.
-  bool ApplyMaskIfNecessary(SVGResources*);
+  void ApplyMaskIfNecessary(SVGResources*);
 
   // Return true if no filtering is necessary or if the filter is successfully
   // applied.
@@ -110,12 +133,12 @@ class ScopedSVGPaintState {
 
   const LayoutObject& object_;
   PaintInfo paint_info_;
-  std::unique_ptr<PaintInfo> filter_paint_info_;
-  LayoutSVGResourceFilter* filter_;
-  LayoutSVGResourceMasker* masker_;
+  const DisplayItemClient& display_item_client_;
+  FilterData* filter_data_;
   base::Optional<ClipPathClipper> clip_path_clipper_;
   std::unique_ptr<SVGFilterRecordingContext> filter_recording_context_;
   base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties_;
+  base::Optional<SVGMaskPainter> mask_painter_;
 #if DCHECK_IS_ON()
   bool apply_clip_mask_and_filter_if_necessary_called_ = false;
 #endif

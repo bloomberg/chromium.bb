@@ -55,7 +55,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
                   const OutputCB& output_cb) override;
   void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
-  void OnPipelineFlushed() override;
+  void ApplyResolutionChange() override;
 
   // V4L2VideoDecoderBackend::Client implementation
   void OnBackendError() override;
@@ -110,10 +110,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // Setup format for input queue.
   bool SetupInputFormat(uint32_t input_format_fourcc);
 
-  // Set the coded size on the input queue.
-  // Return true if the successful, false otherwise.
-  bool SetCodedSizeOnInputQueue(const gfx::Size& size);
-
   // Setup format for output queue. This function sets output format on output
   // queue that is supported by a v4l2 driver, can be allocatable by
   // VideoFramePool and can be composited by chrome. This also updates format
@@ -153,7 +149,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
 
   // Number of output frames requested to |frame_pool_|.
   // The default value is only used at the first time of
-  // DmabufVideoFramePool::RequestFrames() during Initialize().
+  // DmabufVideoFramePool::Initialize() during Initialize().
   size_t num_output_frames_ = 1;
   // Ratio of natural_size to visible_rect of the output frame.
   double pixel_aspect_ratio_ = 0.0;

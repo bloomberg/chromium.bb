@@ -8,11 +8,11 @@
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_buffer_descriptor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_buffer_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -121,7 +121,7 @@ GPUBuffer::~GPUBuffer() {
   GetProcs().bufferRelease(GetHandle());
 }
 
-void GPUBuffer::Trace(blink::Visitor* visitor) {
+void GPUBuffer::Trace(Visitor* visitor) {
   visitor->Trace(mapped_buffer_);
   DawnObject<WGPUBuffer>::Trace(visitor);
 }
@@ -131,9 +131,13 @@ void GPUBuffer::setSubData(uint64_t dst_byte_offset,
                            uint64_t src_byte_offset,
                            uint64_t byte_length,
                            ExceptionState& exception_state) {
+  device_->AddConsoleWarning(
+      "GPUBuffer.setSubData is deprecated: use createBufferMapped "
+      "(with copyBufferToBuffer if needed) "
+      "(but note the design/spec of this API is still in flux)");
   const uint8_t* src_base =
       reinterpret_cast<const uint8_t*>(src.BaseAddressMaybeOnStack());
-  size_t src_byte_length = src.ByteLength();
+  size_t src_byte_length = src.ByteLengthAsSizeT();
 
   if (src_byte_offset > src_byte_length) {
     exception_state.ThrowRangeError("srcOffset is too large");
@@ -256,7 +260,11 @@ void GPUBuffer::DetachArrayBufferForCurrentMapping(ScriptState* script_state) {
 
   // Detach the array buffer by transferring the contents out and dropping them.
   ArrayBufferContents contents;
-  DCHECK(mapped_buffer->Transfer(isolate, contents));
+  bool did_detach = mapped_buffer->Transfer(isolate, contents);
+
+  // |did_detach| would be false if the buffer were already detached.
+  DCHECK(did_detach);
+  DCHECK(mapped_buffer->IsDetached());
 }
 
 }  // namespace blink

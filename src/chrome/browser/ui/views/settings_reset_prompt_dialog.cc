@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/settings_reset_prompt_dialog.h"
 
+#include <utility>
+
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -39,9 +41,27 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
     : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL));
+
+  // There is at most one of {Accept(), Cancel(), Close()} will be run for
+  // |controller_|. Each of them causes |controller_| deletion.
+  SetAcceptCallback(base::BindOnce(
+      [](SettingsResetPromptDialog* dialog) {
+        std::exchange(dialog->controller_, nullptr)->Accept();
+      },
+      base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(
+      [](SettingsResetPromptDialog* dialog) {
+        std::exchange(dialog->controller_, nullptr)->Cancel();
+      },
+      base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(
+      [](SettingsResetPromptDialog* dialog) {
+        std::exchange(dialog->controller_, nullptr)->Close();
+      },
+      base::Unretained(this)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -91,34 +111,7 @@ bool SettingsResetPromptDialog::ShouldShowCloseButton() const {
 }
 
 base::string16 SettingsResetPromptDialog::GetWindowTitle() const {
-  DCHECK(controller_);
-  return controller_->GetWindowTitle();
-}
-
-// DialogDelegate overrides.
-
-bool SettingsResetPromptDialog::Accept() {
-  if (controller_) {
-    controller_->Accept();
-    controller_ = nullptr;
-  }
-  return true;
-}
-
-bool SettingsResetPromptDialog::Cancel() {
-  if (controller_) {
-    controller_->Cancel();
-    controller_ = nullptr;
-  }
-  return true;
-}
-
-bool SettingsResetPromptDialog::Close() {
-  if (controller_) {
-    controller_->Close();
-    controller_ = nullptr;
-  }
-  return true;
+  return controller_ ? controller_->GetWindowTitle() : base::string16();
 }
 
 // View overrides.

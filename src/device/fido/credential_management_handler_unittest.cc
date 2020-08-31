@@ -35,7 +35,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
  protected:
   std::unique_ptr<CredentialManagementHandler> MakeHandler() {
     auto handler = std::make_unique<CredentialManagementHandler>(
-        /*connector=*/nullptr, &virtual_device_factory_,
+        &virtual_device_factory_,
         base::flat_set<FidoTransportProtocol>{
             FidoTransportProtocol::kUsbHumanInterfaceDevice},
         ready_callback_.callback(),
@@ -72,7 +72,7 @@ TEST_F(CredentialManagementHandlerTest, Test) {
   virtual_device_factory_.SetCtap2Config(ctap_config);
   virtual_device_factory_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device_factory_.mutable_state()->pin = kPIN;
-  virtual_device_factory_.mutable_state()->retries = 8;
+  virtual_device_factory_.mutable_state()->pin_retries = device::kMaxPinRetries;
 
   PublicKeyCredentialRpEntity rp(kRPID, kRPName,
                                  /*icon_url=*/base::nullopt);
@@ -130,7 +130,7 @@ TEST_F(CredentialManagementHandlerTest,
   virtual_device_factory_.SetCtap2Config(ctap_config);
   virtual_device_factory_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device_factory_.mutable_state()->pin = kPIN;
-  virtual_device_factory_.mutable_state()->retries = 8;
+  virtual_device_factory_.mutable_state()->pin_retries = device::kMaxPinRetries;
 
   const std::string rp_name = base::StrCat({std::string(57, 'a'), "💣"});
   const std::string user_name = base::StrCat({std::string(57, 'b'), "💣"});

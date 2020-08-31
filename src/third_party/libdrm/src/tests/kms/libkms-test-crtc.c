@@ -21,10 +21,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "libkms-test.h"
 
 struct kms_crtc *kms_crtc_create(struct kms_device *device, uint32_t id)

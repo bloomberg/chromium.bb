@@ -23,7 +23,7 @@ GLSurfaceEglReadback::GLSurfaceEglReadback()
 
 bool GLSurfaceEglReadback::Resize(const gfx::Size& size,
                                   float scale_factor,
-                                  ColorSpace color_space,
+                                  const gfx::ColorSpace& color_space,
                                   bool has_alpha) {
   pixels_.reset();
 
@@ -43,9 +43,7 @@ bool GLSurfaceEglReadback::IsOffscreen() {
 
 gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(
     PresentationCallback callback) {
-  const gfx::Size size = GetSize();
-  glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE,
-               pixels_.get());
+  ReadPixels(pixels_.get());
 
   gfx::SwapResult swap_result = gfx::SwapResult::SWAP_FAILED;
   gfx::PresentationFeedback feedback;
@@ -62,8 +60,8 @@ gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(
   return swap_result;
 }
 
-bool GLSurfaceEglReadback::FlipsVertically() const {
-  return true;
+gfx::SurfaceOrigin GLSurfaceEglReadback::GetOrigin() const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 GLSurfaceEglReadback::~GLSurfaceEglReadback() {
@@ -72,6 +70,32 @@ GLSurfaceEglReadback::~GLSurfaceEglReadback() {
 
 bool GLSurfaceEglReadback::HandlePixels(uint8_t* pixels) {
   return true;
+}
+
+void GLSurfaceEglReadback::ReadPixels(void* buffer) {
+  const gfx::Size size = GetSize();
+
+  GLint read_fbo = 0;
+  GLint pixel_pack_buffer = 0;
+  glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read_fbo);
+  glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pixel_pack_buffer);
+
+  // Make sure pixels are read from fbo 0.
+  if (read_fbo)
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER, 0);
+
+  // Make sure pixels are stored into |pixels_| instead of buffer binding to
+  // GL_PIXEL_PACK_BUFFER.
+  if (pixel_pack_buffer)
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+  glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE,
+               buffer);
+
+  if (read_fbo)
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER, read_fbo);
+  if (pixel_pack_buffer)
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_pack_buffer);
 }
 
 }  // namespace ui

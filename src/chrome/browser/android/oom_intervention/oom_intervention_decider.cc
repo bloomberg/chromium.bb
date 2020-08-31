@@ -5,6 +5,7 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/metrics_service.h"
@@ -161,10 +162,9 @@ void OomInterventionDecider::AddToList(const char* list_name,
   if (IsInList(list_name, host))
     return;
   ListPrefUpdate update(prefs_, list_name);
-  base::Value::ListStorage& list = update.Get()->GetList();
-  list.push_back(base::Value(host));
-  if (list.size() > kMaxListSize)
-    list.erase(list.begin());
+  update->Append(host);
+  if (update->GetList().size() > kMaxListSize)
+    update->EraseListIter(update->GetList().begin());
 
   // Save the list immediately because we typically modify lists under high
   // memory pressure, in which the browser process can be killed by the OS

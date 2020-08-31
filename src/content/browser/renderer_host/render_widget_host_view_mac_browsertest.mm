@@ -10,8 +10,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -21,15 +23,15 @@
 @end
 
 @implementation TextInputFlagChangeWaiter {
-  RenderWidgetHostViewCocoa* rwhv_cocoa_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  RenderWidgetHostViewCocoa* _rwhv_cocoa;
+  std::unique_ptr<base::RunLoop> _run_loop;
 }
 
 - (instancetype)initWithRenderWidgetHostViewCocoa:
     (RenderWidgetHostViewCocoa*)rwhv_cocoa {
   if ((self = [super init])) {
-    rwhv_cocoa_ = rwhv_cocoa;
-    [rwhv_cocoa_ addObserver:self
+    _rwhv_cocoa = rwhv_cocoa;
+    [_rwhv_cocoa addObserver:self
                   forKeyPath:@"textInputFlags"
                      options:NSKeyValueObservingOptionNew
                      context:nullptr];
@@ -39,18 +41,16 @@
 }
 
 - (void)dealloc {
-  [rwhv_cocoa_ removeObserver:self forKeyPath:@"textInputFlags"];
+  [_rwhv_cocoa removeObserver:self forKeyPath:@"textInputFlags"];
   [super dealloc];
 }
 
 - (void)reset {
-  run_loop_ = std::make_unique<base::RunLoop>();
+  _run_loop = std::make_unique<base::RunLoop>();
 }
 
-- (void)waitWithTimeout:(NSTimeInterval)timeout {
-  base::RunLoop::ScopedRunTimeoutForTest run_timeout(
-      base::TimeDelta::FromSecondsD(timeout), run_loop_->QuitClosure());
-  run_loop_->Run();
+- (void)wait {
+  _run_loop->Run();
 
   [self reset];
 }
@@ -59,7 +59,7 @@
                       ofObject:(id)object
                         change:(NSDictionary<NSKeyValueChangeKey, id>*)change
                        context:(void*)context {
-  run_loop_->Quit();
+  _run_loop->Quit();
 }
 @end
 
@@ -118,6 +118,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest,
   GURL url("data:text/html,Hello");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
+  auto* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents_impl->GetFrameTree()->root();
+  web_contents_impl->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
   RenderWidgetHostView* rwhv =
       shell()->web_contents()->GetMainFrame()->GetView();
   RenderWidgetHostViewMac* rwhv_mac =
@@ -147,14 +153,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest, UpdateInputFlags) {
           initWithRenderWidgetHostViewCocoa:rwhv_cocoa]);
 
   EXPECT_TRUE(ExecJs(shell(), "ta.focus();"));
-  [flag_change_waiter waitWithTimeout:5];
+  [flag_change_waiter wait];
   EXPECT_FALSE(rwhv_cocoa.textInputFlags &
                blink::kWebTextInputFlagAutocorrectOff);
 
   EXPECT_TRUE(ExecJs(
       shell(),
       "ta.setAttribute('autocorrect', 'off'); console.log(ta.outerHTML);"));
-  [flag_change_waiter waitWithTimeout:5];
+  [flag_change_waiter wait];
   EXPECT_TRUE(rwhv_cocoa.textInputFlags &
               blink::kWebTextInputFlagAutocorrectOff);
 }

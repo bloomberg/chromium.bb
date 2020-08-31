@@ -9,7 +9,7 @@
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
@@ -47,9 +47,7 @@ void DeviceMotionEventPump::SetController(PlatformEventController* controller) {
   DCHECK(!controller_);
 
   controller_ = controller;
-  StartListening(controller_->GetDocument()
-                     ? controller_->GetDocument()->GetFrame()
-                     : nullptr);
+  StartListening(controller_->GetWindow().GetFrame());
 }
 
 void DeviceMotionEventPump::RemoveController() {
@@ -61,7 +59,7 @@ DeviceMotionData* DeviceMotionEventPump::LatestDeviceMotionData() {
   return data_.Get();
 }
 
-void DeviceMotionEventPump::Trace(blink::Visitor* visitor) {
+void DeviceMotionEventPump::Trace(Visitor* visitor) {
   visitor->Trace(accelerometer_);
   visitor->Trace(linear_acceleration_sensor_);
   visitor->Trace(gyroscope_);

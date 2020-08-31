@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -72,8 +72,7 @@ class SpatialNavigationTest : public RenderingTest {
   }
 
   void UpdateAllLifecyclePhases(LocalFrameView* frame_view) {
-    frame_view->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 
@@ -449,7 +448,8 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
 
   // Do some scrolling.
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
-  root_scroller->SetScrollOffset(ScrollOffset(0, 600), kProgrammaticScroll);
+  root_scroller->SetScrollOffset(ScrollOffset(0, 600),
+                                 mojom::blink::ScrollType::kProgrammatic);
   PhysicalRect button_after_scroll = NodeRectInRootFrame(b);
   ASSERT_NE(button_in_root_frame,
             button_after_scroll);  // As we scrolled, the
@@ -772,19 +772,19 @@ TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
   Element* b = GetDocument().getElementById("b");
 
   // Move interest to button.
-  WebKeyboardEvent arrow_down{WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent arrow_down{WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests()};
   arrow_down.dom_key = ui::DomKey::ARROW_DOWN;
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
 
-  arrow_down.SetType(WebInputEvent::kKeyUp);
+  arrow_down.SetType(WebInputEvent::Type::kKeyUp);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
 
   EXPECT_FALSE(b->IsActive());
 
   // Enter key down add :active state to element.
-  WebKeyboardEvent enter{WebInputEvent::kRawKeyDown,
+  WebKeyboardEvent enter{WebInputEvent::Type::kRawKeyDown,
                          WebInputEvent::kNoModifiers,
                          WebInputEvent::GetStaticTimeStampForTests()};
   enter.dom_key = ui::DomKey::ENTER;
@@ -792,7 +792,7 @@ TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
   EXPECT_TRUE(b->IsActive());
 
   // Enter key up remove :active state to element.
-  enter.SetType(WebInputEvent::kKeyUp);
+  enter.SetType(WebInputEvent::Type::kKeyUp);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
   EXPECT_FALSE(b->IsActive());
 }
@@ -807,22 +807,22 @@ class FocuslessSpatialNavigationSimTest : public SimTest {
   }
 
   void SimulateKeyPress(int dom_key) {
-    WebKeyboardEvent event{WebInputEvent::kRawKeyDown,
+    WebKeyboardEvent event{WebInputEvent::Type::kRawKeyDown,
                            WebInputEvent::kNoModifiers,
                            WebInputEvent::GetStaticTimeStampForTests()};
     event.dom_key = dom_key;
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(event));
+        WebCoalescedInputEvent(event, ui::LatencyInfo()));
 
     if (dom_key == ui::DomKey::ENTER) {
-      event.SetType(WebInputEvent::kChar);
+      event.SetType(WebInputEvent::Type::kChar);
       WebView().MainFrameWidget()->HandleInputEvent(
-          WebCoalescedInputEvent(event));
+          WebCoalescedInputEvent(event, ui::LatencyInfo()));
     }
 
-    event.SetType(WebInputEvent::kKeyUp);
+    event.SetType(WebInputEvent::Type::kKeyUp);
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(event));
+        WebCoalescedInputEvent(event, ui::LatencyInfo()));
   }
 
   ScopedFocuslessSpatialNavigationForTest use_focusless_mode_;

@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
@@ -96,8 +96,9 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
           network_service_test.BindNewPipeAndPassReceiver());
       base::RunLoop run_loop;
       network_service_test->SimulateNetworkChange(
-          type, base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); },
-                           base::Unretained(&run_loop)));
+          type,
+          base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },
+                         base::Unretained(&run_loop)));
       run_loop.Run();
       return;
     }
@@ -111,12 +112,10 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
 // Basic test to make sure NetworkConnectionTracker is set up.
 IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
                        NetworkConnectionTracker) {
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
   // browser test fixture doesn't have NetworkServiceTest mojo code.
-  return;
-#endif
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   network::NetworkConnectionTracker* tracker =
       content::GetNetworkConnectionTracker();
   EXPECT_NE(nullptr, tracker);
@@ -141,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
             network_connection_observer.connection_type());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, network_connection_observer.num_notifications());
+#endif
 }
 
 // Simulates a network service crash, and ensures that network change manager

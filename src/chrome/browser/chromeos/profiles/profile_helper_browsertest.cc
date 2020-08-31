@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -35,9 +36,10 @@ class ProfileHelperTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
-  ProfileHelper profile_helper;
-  ActiveUserChanged(&profile_helper, kActiveUserHash);
-  base::FilePath profile_dir = profile_helper.GetActiveUserProfileDir();
+  std::unique_ptr<ProfileHelper> profile_helper(
+      ProfileHelper::CreateInstance());
+  ActiveUserChanged(profile_helper.get(), kActiveUserHash);
+  base::FilePath profile_dir = profile_helper->GetActiveUserProfileDir();
   std::string expected_dir;
   expected_dir.append(chrome::kProfileDirPrefix);
   expected_dir.append(kActiveUserHash);
@@ -45,9 +47,10 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileHelperTest, GetProfilePathByUserIdHash) {
-  ProfileHelper profile_helper;
+  std::unique_ptr<ProfileHelper> profile_helper(
+      ProfileHelper::CreateInstance());
   base::FilePath profile_path =
-      profile_helper.GetProfilePathByUserIdHash(kActiveUserHash);
+      profile_helper->GetProfilePathByUserIdHash(kActiveUserHash);
   base::FilePath expected_path = g_browser_process->profile_manager()->
       user_data_dir().Append(
           std::string(chrome::kProfileDirPrefix) + kActiveUserHash);

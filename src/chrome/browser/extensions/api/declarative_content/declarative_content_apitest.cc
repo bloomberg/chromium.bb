@@ -10,19 +10,20 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -508,7 +509,7 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
       browser()->tab_strip_model()->GetWebContentsAt(0);
   NavigateInRenderer(tab, GURL("http://test/"));
 
-  const int tab_id = SessionTabHelper::IdForTab(tab).id();
+  const int tab_id = sessions::SessionTabHelper::IdForTab(tab).id();
   EXPECT_TRUE(action->GetIsVisible(tab_id));
 
   // If an extension had no action specified in the manifest, it will get a

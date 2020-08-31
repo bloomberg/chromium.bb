@@ -171,6 +171,25 @@ class InputMethodPrivateShowInputViewFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);
 };
 
+// Implements the inputMethodPrivate.hideInputView method.
+class InputMethodPrivateHideInputViewFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateHideInputViewFunction() = default;
+  InputMethodPrivateHideInputViewFunction(
+      const InputMethodPrivateHideInputViewFunction&) = delete;
+  InputMethodPrivateHideInputViewFunction& operator=(
+      const InputMethodPrivateHideInputViewFunction&) = delete;
+
+ protected:
+  ~InputMethodPrivateHideInputViewFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.hideInputView",
+                             INPUTMETHODPRIVATE_HIDEINPUTVIEW)
+};
+
 // Implements the inputMethodPrivate.openOptionsPage method.
 class InputMethodPrivateOpenOptionsPageFunction : public ExtensionFunction {
  public:
@@ -202,36 +221,36 @@ class InputMethodPrivateGetSurroundingTextFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSurroundingTextFunction);
 };
 
-class InputMethodPrivateGetSettingFunction : public ExtensionFunction {
+class InputMethodPrivateGetSettingsFunction : public ExtensionFunction {
  public:
-  InputMethodPrivateGetSettingFunction() = default;
+  InputMethodPrivateGetSettingsFunction() = default;
 
  protected:
-  ~InputMethodPrivateGetSettingFunction() override = default;
+  ~InputMethodPrivateGetSettingsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
-  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getSetting",
-                             INPUTMETHODPRIVATE_GETSETTING)
-  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSettingFunction);
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getSettings",
+                             INPUTMETHODPRIVATE_GETSETTINGS)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSettingsFunction);
 };
 
-class InputMethodPrivateSetSettingFunction : public ExtensionFunction {
+class InputMethodPrivateSetSettingsFunction : public ExtensionFunction {
  public:
-  InputMethodPrivateSetSettingFunction() = default;
+  InputMethodPrivateSetSettingsFunction() = default;
 
  protected:
-  ~InputMethodPrivateSetSettingFunction() override = default;
+  ~InputMethodPrivateSetSettingsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
-  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setSetting",
-                             INPUTMETHODPRIVATE_SETSETTING)
-  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetSettingFunction);
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setSettings",
+                             INPUTMETHODPRIVATE_SETSETTINGS)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetSettingsFunction);
 };
 
 class InputMethodPrivateSetCompositionRangeFunction : public ExtensionFunction {
@@ -262,6 +281,25 @@ class InputMethodPrivateSetSelectionRangeFunction : public ExtensionFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setSelectionRange",
                              INPUTMETHODPRIVATE_SETSELECTIONRANGE)
+};
+
+class InputMethodPrivateResetFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateResetFunction() = default;
+  InputMethodPrivateResetFunction(const InputMethodPrivateResetFunction&) =
+      delete;
+  InputMethodPrivateResetFunction& operator=(
+      const InputMethodPrivateResetFunction&) = delete;
+
+ protected:
+  ~InputMethodPrivateResetFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.reset",
+                             INPUTMETHODPRIVATE_RESET)
 };
 
 class InputMethodAPI : public BrowserContextKeyedAPI,

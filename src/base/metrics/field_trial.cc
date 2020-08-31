@@ -22,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
@@ -972,7 +971,6 @@ void FieldTrialList::OnGroupFinalized(bool is_locked, FieldTrial* field_trial) {
 
 // static
 void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
-  TRACE_EVENT0("base", "FieldTrialList::NotifyFieldTrialGroupSelection");
   if (!global_)
     return;
 
@@ -986,14 +984,6 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
       return;
 
     ActivateFieldTrialEntryWhileLocked(field_trial);
-  }
-
-  // Recording for stability debugging has to be done inline as a task posted
-  // to an observer may not get executed before a crash.
-  debug::GlobalActivityTracker* tracker = debug::GlobalActivityTracker::Get();
-  if (tracker) {
-    tracker->RecordFieldTrial(field_trial->trial_name(),
-                              field_trial->group_name_internal());
   }
 
   if (global_->synchronous_observer_) {

@@ -7,8 +7,10 @@
 #include <map>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -90,8 +92,17 @@ void WebKioskAppManager::UpdateAppByAccountId(
 void WebKioskAppManager::AddAppForTesting(const AccountId& account_id,
                                           const GURL& install_url) {
   const std::string app_id = web_app::GenerateAppIdFromURL(install_url);
-  apps_.push_back(
-      std::make_unique<WebKioskAppData>(this, app_id, account_id, install_url));
+  apps_.push_back(std::make_unique<WebKioskAppData>(
+      this, app_id, account_id, install_url, /*title*/ std::string(),
+      /*icon_url*/ GURL()));
+}
+
+void WebKioskAppManager::InitSession(Browser* browser) {
+  LOG_IF(FATAL, app_session_) << "Kiosk session is already initialized.";
+
+  app_session_ = std::make_unique<AppSession>();
+  app_session_->InitForWebKiosk(browser);
+  NotifySessionInitialized();
 }
 
 void WebKioskAppManager::UpdateAppsFromPolicy() {
@@ -122,7 +133,11 @@ void WebKioskAppManager::UpdateAppsFromPolicy() {
           kAccountsPrefDeviceLocalAccountAutoLoginDelay, &auto_launch_delay);
       auto_launched_with_zero_delay_ = auto_launch_delay == 0;
     }
+
     GURL url(account.web_kiosk_app_info.url());
+    std::string title = account.web_kiosk_app_info.title();
+    GURL icon_url = GURL(account.web_kiosk_app_info.icon_url());
+
     std::string app_id = web_app::GenerateAppIdFromURL(url);
 
     auto old_it = old_apps.find(app_id);
@@ -133,7 +148,8 @@ void WebKioskAppManager::UpdateAppsFromPolicy() {
       old_apps.erase(old_it);
     } else {
       apps_.push_back(std::make_unique<WebKioskAppData>(
-          this, app_id, account_id, std::move(url)));
+          this, app_id, account_id, std::move(url), title,
+          std::move(icon_url)));
       apps_.back()->LoadFromCache();
     }
 

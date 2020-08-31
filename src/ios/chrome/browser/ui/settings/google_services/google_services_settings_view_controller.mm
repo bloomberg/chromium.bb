@@ -5,8 +5,11 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -15,10 +18,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// Accessibility identifier for the Google services settings table view.
-NSString* const kGoogleServicesSettingsViewIdentifier =
-    @"google_services_settings_view_controller";
 
 @implementation GoogleServicesSettingsViewController
 
@@ -55,6 +54,13 @@ NSString* const kGoogleServicesSettingsViewIdentifier =
     switchCell.switchView.tag = item.type;
   }
   return cell;
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(
+      base::UserMetricsAction("MobileGoogleServicesSettingsClose"));
 }
 
 #pragma mark - GoogleServicesSettingsConsumer
@@ -126,6 +132,14 @@ NSString* const kGoogleServicesSettingsViewIdentifier =
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   [self.serviceDelegate didSelectItem:item];
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSGoogleServicesSettingsCloseWithSwipe"));
 }
 
 @end

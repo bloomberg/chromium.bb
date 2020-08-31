@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -26,6 +27,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/verifier_formats.h"
 
 namespace extensions {
@@ -69,7 +71,7 @@ void InstallUpdateCallback(content::BrowserContext* context,
 UpdateDataProvider::UpdateDataProvider(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-UpdateDataProvider::~UpdateDataProvider() {}
+UpdateDataProvider::~UpdateDataProvider() = default;
 
 void UpdateDataProvider::Shutdown() {
   browser_context_ = nullptr;
@@ -108,13 +110,15 @@ UpdateDataProvider::GetData(bool install_immediately,
       crx_component->fingerprint = extension->DifferentialFingerprint();
     }
     crx_component->allows_background_download = false;
-    crx_component->requires_network_encryption = true;
+    bool allow_dev = extension_urls::GetWebstoreUpdateUrl() !=
+                     extension_urls::GetDefaultWebstoreUpdateUrl();
+    crx_component->requires_network_encryption = !allow_dev;
     crx_component->crx_format_requirement =
-        extension->from_webstore() ? GetWebstoreVerifierFormat(false)
+        extension->from_webstore() ? GetWebstoreVerifierFormat(allow_dev)
                                    : GetPolicyVerifierFormat();
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(), install_immediately,
-        base::BindOnce(&UpdateDataProvider::RunInstallCallback, this));
+        base::BindRepeating(&UpdateDataProvider::RunInstallCallback, this));
     if (!ExtensionsBrowserClient::Get()->IsExtensionEnabled(id,
                                                             browser_context_)) {
       int disabled_reasons = extension_prefs->GetDisableReasons(id);
@@ -148,11 +152,16 @@ void UpdateDataProvider::RunInstallCallback(
           << public_key;
 
   if (!browser_context_) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), unpacked_dir,
                        true));
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(update_client_callback),
+                           update_client::CrxInstaller::Result(
+                               update_client::InstallError::GENERIC_ERROR)));
     return;
   }
 

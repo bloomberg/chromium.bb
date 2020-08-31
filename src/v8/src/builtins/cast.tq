@@ -2,44 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-extern macro IsCallable(HeapObject): bool;
+extern macro IsAllocationSite(HeapObject): bool;
+extern macro IsBigInt(HeapObject): bool;
 extern macro IsConstructor(HeapObject): bool;
+extern macro IsContext(HeapObject): bool;
+extern macro IsCustomElementsReceiverInstanceType(int32): bool;
+extern macro IsExtensibleMap(Map): bool;
+extern macro IsFeedbackCell(HeapObject): bool;
 extern macro IsFeedbackVector(HeapObject): bool;
+extern macro IsFixedArray(HeapObject): bool;
+extern macro IsHeapNumber(HeapObject): bool;
+extern macro IsJSAggregateError(HeapObject): bool;
 extern macro IsJSArray(HeapObject): bool;
+extern macro IsJSArrayMap(Map): bool;
+extern macro IsJSBoundFunction(HeapObject): bool;
+extern macro IsJSFinalizationRegistry(HeapObject): bool;
+extern macro IsJSFunction(HeapObject): bool;
+extern macro IsJSObject(HeapObject): bool;
+extern macro IsJSPrimitiveWrapper(HeapObject): bool;
+extern macro IsJSPromise(HeapObject): bool;
 extern macro IsJSProxy(HeapObject): bool;
+extern macro IsJSReceiver(HeapObject): bool;
 extern macro IsJSRegExp(HeapObject): bool;
 extern macro IsJSRegExpStringIterator(HeapObject): bool;
-extern macro IsMap(HeapObject): bool;
-extern macro IsJSFunction(HeapObject): bool;
-extern macro IsJSBoundFunction(HeapObject): bool;
-extern macro IsJSObject(HeapObject): bool;
-extern macro IsJSPromise(HeapObject): bool;
 extern macro IsJSTypedArray(HeapObject): bool;
-extern macro IsNumberDictionary(HeapObject): bool;
-extern macro IsContext(HeapObject): bool;
-extern macro IsNativeContext(HeapObject): bool;
-extern macro IsJSReceiver(HeapObject): bool;
-extern macro TaggedIsCallable(Object): bool;
-extern macro IsDetachedBuffer(JSArrayBuffer): bool;
-extern macro IsHeapNumber(HeapObject): bool;
-extern macro IsBigInt(HeapObject): bool;
-extern macro IsFixedArray(HeapObject): bool;
+extern macro IsMap(HeapObject): bool;
 extern macro IsName(HeapObject): bool;
-extern macro IsPrivateSymbol(HeapObject): bool;
-extern macro IsNumber(Object): bool;
+extern macro IsNativeContext(HeapObject): bool;
+extern macro IsNumberDictionary(HeapObject): bool;
 extern macro IsNumberNormalized(Number): bool;
-extern macro IsSafeInteger(Object): bool;
+extern macro IsNumber(Object): bool;
 extern macro IsOddball(HeapObject): bool;
-extern macro IsSymbol(HeapObject): bool;
-extern macro IsJSArrayMap(Map): bool;
-extern macro IsExtensibleMap(Map): bool;
-extern macro IsJSPrimitiveWrapper(HeapObject): bool;
+extern macro IsPrivateSymbol(HeapObject): bool;
 extern macro IsPromiseCapability(HeapObject): bool;
-extern macro IsPromiseReaction(HeapObject): bool;
-extern macro IsPromiseRejectReactionJobTask(HeapObject): bool;
 extern macro IsPromiseFulfillReactionJobTask(HeapObject): bool;
+extern macro IsPromiseReaction(HeapObject): bool;
+extern macro IsPromiseReactionJobTask(HeapObject): bool;
+extern macro IsPromiseRejectReactionJobTask(HeapObject): bool;
+extern macro IsSafeInteger(Object): bool;
 extern macro IsSharedFunctionInfo(HeapObject): bool;
-extern macro IsCustomElementsReceiverInstanceType(int32): bool;
+extern macro IsSymbol(HeapObject): bool;
+extern macro IsTuple2(HeapObject): bool;
 
 extern macro HeapObjectToJSDataView(HeapObject): JSDataView
     labels CastError;
@@ -56,6 +59,8 @@ extern macro TaggedToSmi(Object): Smi
 extern macro TaggedToPositiveSmi(Object): PositiveSmi
     labels CastError;
 extern macro TaggedToDirectString(Object): DirectString
+    labels CastError;
+extern macro HeapObjectToJSAggregateError(HeapObject): JSAggregateError
     labels CastError;
 extern macro HeapObjectToJSArray(HeapObject): JSArray
     labels CastError;
@@ -278,6 +283,12 @@ Cast<Undefined>(o: HeapObject): Undefined
   return Cast<Undefined>(o) otherwise CastError;
 }
 
+Cast<AllocationSite>(o: HeapObject): AllocationSite
+    labels CastError {
+  if (IsAllocationSite(o)) return %RawDownCast<AllocationSite>(o);
+  goto CastError;
+}
+
 Cast<FixedArray>(o: HeapObject): FixedArray
     labels CastError {
   return HeapObjectToFixedArray(o) otherwise CastError;
@@ -286,6 +297,32 @@ Cast<FixedArray>(o: HeapObject): FixedArray
 Cast<FixedDoubleArray>(o: HeapObject): FixedDoubleArray
     labels CastError {
   return HeapObjectToFixedDoubleArray(o) otherwise CastError;
+}
+
+Cast<EmptyFixedArray>(o: Object): EmptyFixedArray
+    labels CastError {
+  if (o != kEmptyFixedArray) goto CastError;
+  return %RawDownCast<EmptyFixedArray>(o);
+}
+Cast<EmptyFixedArray>(o: HeapObject): EmptyFixedArray
+    labels CastError {
+  const o: Object = o;
+  return Cast<EmptyFixedArray>(o) otherwise CastError;
+}
+
+Cast<(FixedDoubleArray | EmptyFixedArray)>(o: HeapObject): FixedDoubleArray|
+    EmptyFixedArray labels CastError {
+  typeswitch (o) {
+    case (o: EmptyFixedArray): {
+      return o;
+    }
+    case (o: FixedDoubleArray): {
+      return o;
+    }
+    case (HeapObject): {
+      goto CastError;
+    }
+  }
 }
 
 Cast<SloppyArgumentsElements>(o: HeapObject): SloppyArgumentsElements
@@ -337,6 +374,11 @@ Cast<Undefined|Callable>(o: HeapObject): Undefined|Callable
     labels CastError {
   if (o == Undefined) return Undefined;
   return HeapObjectToCallable(o) otherwise CastError;
+}
+
+Cast<JSAggregateError>(o: HeapObject): JSAggregateError
+    labels CastError {
+  return HeapObjectToJSAggregateError(o) otherwise CastError;
 }
 
 Cast<JSArray>(o: HeapObject): JSArray
@@ -455,6 +497,12 @@ Cast<Map>(implicit context: Context)(o: HeapObject): Map
   goto CastError;
 }
 
+Cast<FeedbackCell>(implicit context: Context)(o: HeapObject): FeedbackCell
+    labels CastError {
+  if (IsFeedbackCell(o)) return %RawDownCast<FeedbackCell>(o);
+  goto CastError;
+}
+
 Cast<FeedbackVector>(implicit context: Context)(o: HeapObject): FeedbackVector
     labels CastError {
   if (IsFeedbackVector(o)) return %RawDownCast<FeedbackVector>(o);
@@ -541,7 +589,7 @@ Cast<FastJSArrayForRead>(implicit context: Context)(o: HeapObject):
   // Bailout if receiver has slow elements.
   const elementsKind: ElementsKind = LoadMapElementsKind(map);
   if (!IsElementsKindLessThanOrEqual(
-          elementsKind, LAST_ANY_NONEXTENSIBLE_ELEMENTS_KIND))
+          elementsKind, ElementsKind::LAST_ANY_NONEXTENSIBLE_ELEMENTS_KIND))
     goto CastError;
 
   // Verify that our prototype is the initial array prototype.
@@ -597,8 +645,7 @@ Cast<DebugInfo>(implicit context: Context)(o: HeapObject): DebugInfo
 extern macro IsCoverageInfo(HeapObject): bool;
 Cast<CoverageInfo>(implicit context: Context)(o: HeapObject): CoverageInfo
     labels CastError {
-  // TODO(jgruber): Assign an instance type.
-  if (IsFixedArray(o)) return %RawDownCast<CoverageInfo>(o);
+  if (IsCoverageInfo(o)) return %RawDownCast<CoverageInfo>(o);
   goto CastError;
 }
 
@@ -615,6 +662,14 @@ Cast<JSReceiver|Null>(o: HeapObject): JSReceiver|Null
       goto CastError;
     }
   }
+}
+
+Cast<PromiseReactionJobTask>(o: HeapObject):
+    PromiseReactionJobTask labels CastError {
+  if (IsPromiseReactionJobTask(o)) {
+    return %RawDownCast<PromiseReactionJobTask>(o);
+  }
+  goto CastError;
 }
 
 Cast<PromiseFulfillReactionJobTask>(o: HeapObject):
@@ -702,8 +757,21 @@ Cast<JSPromise>(o: HeapObject): JSPromise labels CastError {
   goto CastError;
 }
 
+Cast<JSFinalizationRegistry>(o: HeapObject):
+    JSFinalizationRegistry labels CastError {
+  if (IsJSFinalizationRegistry(o)) {
+    return %RawDownCast<JSFinalizationRegistry>(o);
+  }
+  goto CastError;
+}
+
 UnsafeCast<RegExpMatchInfo>(implicit context: Context)(o: Object):
     RegExpMatchInfo {
   assert(Is<FixedArray>(o));
   return %RawDownCast<RegExpMatchInfo>(o);
+}
+
+macro CastOrDefault<T: type, Arg: type, Default: type>(
+    implicit context: Context)(x: Arg, default: Default): T|Default {
+  return Cast<T>(x) otherwise return default;
 }

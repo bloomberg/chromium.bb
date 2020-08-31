@@ -89,9 +89,9 @@ void AudioContextManagerImpl::RecordAudibleTime(base::TimeDelta audible_time) {
   DCHECK(ukm_recorder);
 
   ukm::builders::Media_WebAudio_AudioContext_AudibleTime(
-      static_cast<WebContentsImpl*>(web_contents())
-          ->GetUkmSourceIdForLastCommittedSource())
-      .SetIsMainFrame(web_contents()->GetMainFrame() == render_frame_host_impl_)
+      render_frame_host_impl_->GetPageUkmSourceId())
+      .SetIsMainFrame(WebContents::FromRenderFrameHost(render_frame_host())
+                          ->GetMainFrame() == render_frame_host_impl_)
       .SetAudibleTime(GetBucketedTimeInMilliseconds(audible_time))
       .Record(ukm_recorder);
 }

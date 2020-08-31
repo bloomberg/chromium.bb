@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view.h"
 
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view_layout.h"
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #include "ui/views/controls/button/image_button.h"
 
 bool DesktopLinuxBrowserFrameView::DrawFrameButtonParams::operator==(
@@ -22,13 +21,13 @@ DesktopLinuxBrowserFrameView::DesktopLinuxBrowserFrameView(
     : OpaqueBrowserFrameView(frame, browser_view, layout),
       nav_button_provider_(std::move(nav_button_provider)) {}
 
-DesktopLinuxBrowserFrameView::~DesktopLinuxBrowserFrameView() {}
+DesktopLinuxBrowserFrameView::~DesktopLinuxBrowserFrameView() = default;
 
 void DesktopLinuxBrowserFrameView::Layout() {
   // Calling MaybeUpdateCachedFrameButtonImages() from Layout() is sufficient to
   // catch all cases that could update the appearance, since
-  // DesktopWindowTreeHostPlatform::OnWindowStateChanged() does a layout any
-  // time any properties change.
+  // DesktopWindowTreeHostPlatform::On{Window,Activation}StateChanged() does a
+  // layout any time the maximized and activation state changes, respectively.
   MaybeUpdateCachedFrameButtonImages();
   OpaqueBrowserFrameView::Layout();
 }
@@ -48,10 +47,11 @@ void DesktopLinuxBrowserFrameView::MaybeUpdateCachedFrameButtonImages() {
   nav_button_provider_->RedrawImages(params.top_area_height, params.maximized,
                                      params.active);
   for (auto type : {
-           chrome::FrameButtonDisplayType::kMinimize,
-           IsMaximized() ? chrome::FrameButtonDisplayType::kRestore
-                         : chrome::FrameButtonDisplayType::kMaximize,
-           chrome::FrameButtonDisplayType::kClose,
+           views::NavButtonProvider::FrameButtonDisplayType::kMinimize,
+           IsMaximized()
+               ? views::NavButtonProvider::FrameButtonDisplayType::kRestore
+               : views::NavButtonProvider::FrameButtonDisplayType::kMaximize,
+           views::NavButtonProvider::FrameButtonDisplayType::kClose,
        }) {
     for (size_t state = 0; state < views::Button::STATE_COUNT; state++) {
       views::Button::ButtonState button_state =
@@ -66,15 +66,15 @@ void DesktopLinuxBrowserFrameView::MaybeUpdateCachedFrameButtonImages() {
 }
 
 views::Button* DesktopLinuxBrowserFrameView::GetButtonFromDisplayType(
-    chrome::FrameButtonDisplayType type) {
+    views::NavButtonProvider::FrameButtonDisplayType type) {
   switch (type) {
-    case chrome::FrameButtonDisplayType::kMinimize:
+    case views::NavButtonProvider::FrameButtonDisplayType::kMinimize:
       return minimize_button();
-    case chrome::FrameButtonDisplayType::kMaximize:
+    case views::NavButtonProvider::FrameButtonDisplayType::kMaximize:
       return maximize_button();
-    case chrome::FrameButtonDisplayType::kRestore:
+    case views::NavButtonProvider::FrameButtonDisplayType::kRestore:
       return restore_button();
-    case chrome::FrameButtonDisplayType::kClose:
+    case views::NavButtonProvider::FrameButtonDisplayType::kClose:
       return close_button();
     default:
       NOTREACHED();

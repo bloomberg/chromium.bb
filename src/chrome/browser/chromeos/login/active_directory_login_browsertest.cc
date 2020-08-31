@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -14,12 +13,14 @@
 #include "chrome/browser/chromeos/login/test/active_directory_login_mixin.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -107,6 +108,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
+  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 
@@ -117,6 +119,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
+  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 
   base::FilePath dir;
@@ -183,6 +186,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
   fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_NONE);
   ad_login_.SubmitActiveDirectoryPasswordChangeCredentials(
       kPassword, kNewPassword, kNewPassword);
+  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 
@@ -220,23 +224,8 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
   ad_login_.TestPasswordChangeOldPasswordError();
 }
 
-class ActiveDirectoryWebUILoginTest : public ActiveDirectoryLoginTest {
- public:
-  ActiveDirectoryWebUILoginTest() = default;
-  ~ActiveDirectoryWebUILoginTest() override = default;
-
-  // chromeos::ActiveDirectoryLoginTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-    chromeos::ActiveDirectoryLoginTest::SetUpCommandLine(command_line);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryWebUILoginTest);
-};
-
 // Test reopening Active Directory password change screen clears errors.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryWebUILoginTest,
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
                        PasswordChange_ReopenClearErrors) {
   OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
@@ -264,6 +253,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, LoginSuccess) {
 
   ad_login_.SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser,
                                              kPassword);
+  test::WaitForLastScreenAndTapGetStarted();
   test::WaitForPrimaryUserSessionStart();
 }
 

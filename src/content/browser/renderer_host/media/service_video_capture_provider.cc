@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
@@ -124,9 +125,10 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
   } else if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     // Connect immediately and permanently when the service runs in-process.
     base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-        ->PostTask(FROM_HERE,
-                   base::Bind(&ServiceVideoCaptureProvider::OnServiceStarted,
-                              weak_ptr_factory_.GetWeakPtr()));
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ServiceVideoCaptureProvider::OnServiceStarted,
+                           weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

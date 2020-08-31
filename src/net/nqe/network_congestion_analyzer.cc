@@ -348,22 +348,6 @@ void NetworkCongestionAnalyzer::FinalizeCurrentMeasurementPeriod() {
         count_inflight_requests_for_peak_queueing_delay_;
   }
 
-  size_t peak_queueing_delay_level =
-      ComputePeakQueueingDelayLevel(peak_queueing_delay_);
-  DCHECK_GE(kQueueingDelayLevelMaxVal, peak_queueing_delay_level);
-
-  if (peak_queueing_delay_level >= kQueueingDelayLevelMinVal &&
-      peak_queueing_delay_level <= kQueueingDelayLevelMaxVal) {
-    // Records the count of in-flight requests causing the peak queueing delay
-    // within the current measurement period. These samples are bucketized
-    // into 10 peak queueing delay levels.
-    base::UmaHistogramCounts100(
-        "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
-        "Level" +
-            base::NumberToString(peak_queueing_delay_level),
-        count_inflight_requests_for_peak_queueing_delay_);
-  }
-
   UpdateRequestsCountAndPeakQueueingDelayMapping();
 }
 
@@ -381,18 +365,6 @@ void NetworkCongestionAnalyzer::
 
   base::Optional<size_t> mapping_score =
       ComputePeakDelayMappingSampleScore(truncated_count, peak_queueing_delay_);
-  // Records the score that evaluates the mapping between the count of requests
-  // to the peak observed queueing delay. Only records when there are at least
-  // 10 samples in the cache. The goal is to eliminate low-score samples because
-  // only few requests are in cache. For example, when there are only 5 samples
-  // in the cache, a mapping score can be 40 if the new mapping sample violates
-  // 3 of them.
-  if (count_peak_queueing_delay_mapping_sample_ >= 10 &&
-      mapping_score.has_value()) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "NQE.CongestionAnalyzer.PeakQueueingDelayMappingScore",
-        mapping_score.value());
-  }
 
   // Discards the mapping sample if there are at least 10 samples in the cache
   // and its score is less than the threshold. The purpose is to make the

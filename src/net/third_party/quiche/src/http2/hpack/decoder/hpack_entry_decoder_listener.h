@@ -12,11 +12,11 @@
 #include <stddef.h>
 
 #include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 namespace http2 {
 
-class HTTP2_EXPORT_PRIVATE HpackEntryDecoderListener {
+class QUICHE_EXPORT_PRIVATE HpackEntryDecoderListener {
  public:
   virtual ~HpackEntryDecoderListener() {}
 
@@ -64,7 +64,7 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoderListener {
   virtual void OnDynamicTableSizeUpdate(size_t size) = 0;
 };
 
-class HTTP2_EXPORT_PRIVATE HpackEntryDecoderVLoggingListener
+class QUICHE_EXPORT_PRIVATE HpackEntryDecoderVLoggingListener
     : public HpackEntryDecoderListener {
  public:
   HpackEntryDecoderVLoggingListener() : wrapped_(nullptr) {}
@@ -88,21 +88,21 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoderVLoggingListener
 };
 
 // A no-op implementation of HpackEntryDecoderListener.
-class HTTP2_EXPORT_PRIVATE HpackEntryDecoderNoOpListener
+class QUICHE_EXPORT_PRIVATE HpackEntryDecoderNoOpListener
     : public HpackEntryDecoderListener {
  public:
   ~HpackEntryDecoderNoOpListener() override {}
 
-  void OnIndexedHeader(size_t index) override {}
-  void OnStartLiteralHeader(HpackEntryType entry_type,
-                            size_t maybe_name_index) override {}
-  void OnNameStart(bool huffman_encoded, size_t len) override {}
-  void OnNameData(const char* data, size_t len) override {}
+  void OnIndexedHeader(size_t /*index*/) override {}
+  void OnStartLiteralHeader(HpackEntryType /*entry_type*/,
+                            size_t /*maybe_name_index*/) override {}
+  void OnNameStart(bool /*huffman_encoded*/, size_t /*len*/) override {}
+  void OnNameData(const char* /*data*/, size_t /*len*/) override {}
   void OnNameEnd() override {}
-  void OnValueStart(bool huffman_encoded, size_t len) override {}
-  void OnValueData(const char* data, size_t len) override {}
+  void OnValueStart(bool /*huffman_encoded*/, size_t /*len*/) override {}
+  void OnValueData(const char* /*data*/, size_t /*len*/) override {}
   void OnValueEnd() override {}
-  void OnDynamicTableSizeUpdate(size_t size) override {}
+  void OnDynamicTableSizeUpdate(size_t /*size*/) override {}
 };
 
 }  // namespace http2

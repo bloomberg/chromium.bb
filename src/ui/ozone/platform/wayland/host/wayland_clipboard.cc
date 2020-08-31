@@ -4,12 +4,14 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 
+#include <string>
+
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_source.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_source_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 
 namespace ui {
 
@@ -32,13 +34,13 @@ void WaylandClipboard::OfferClipboardData(
     ClipboardBuffer buffer,
     const PlatformClipboard::DataMap& data_map,
     PlatformClipboard::OfferDataClosure callback) {
-  internal::WaylandDataSourceBase* data_source = nullptr;
+  WaylandDataSourceBase* data_source = nullptr;
   if (buffer == ClipboardBuffer::kCopyPaste) {
     if (!clipboard_data_source_)
       clipboard_data_source_ = data_device_manager_->CreateSource();
     data_source = clipboard_data_source_.get();
   } else {
-    if (!primary_selection_device_manager_) {
+    if (!IsPrimarySelectionSupported()) {
       std::move(callback).Run();
       return;
     }
@@ -66,8 +68,10 @@ void WaylandClipboard::RequestClipboardData(
     if (!data_device_->RequestSelectionData(mime_type))
       SetData({}, mime_type);
   } else {
-    if (!primary_selection_device_->RequestSelectionData(mime_type))
+    if (!IsPrimarySelectionSupported() ||
+        !primary_selection_device_->RequestSelectionData(mime_type)) {
       SetData({}, mime_type);
+    }
   }
 }
 
@@ -91,8 +95,10 @@ void WaylandClipboard::GetAvailableMimeTypes(
   if (buffer == ClipboardBuffer::kCopyPaste) {
     std::move(callback).Run(data_device_->GetAvailableMimeTypes());
   } else {
-    DCHECK(primary_selection_device_);
-    std::move(callback).Run(primary_selection_device_->GetAvailableMimeTypes());
+    std::move(callback).Run(
+        IsPrimarySelectionSupported()
+            ? primary_selection_device_->GetAvailableMimeTypes()
+            : std::vector<std::string>{});
   }
 }
 
@@ -126,6 +132,10 @@ void WaylandClipboard::SetData(const std::vector<uint8_t>& contents,
 void WaylandClipboard::UpdateSequenceNumber(ClipboardBuffer buffer) {
   if (!update_sequence_cb_.is_null())
     update_sequence_cb_.Run(buffer);
+}
+
+bool WaylandClipboard::IsPrimarySelectionSupported() const {
+  return primary_selection_device_manager_ && primary_selection_device_;
 }
 
 }  // namespace ui

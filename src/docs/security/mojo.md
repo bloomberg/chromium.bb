@@ -22,7 +22,7 @@ that needs to be maintained in sync.
 
 ```c++
 interface TeleporterFactory {
-  Create(Location start, Location end) => (Teleporter);
+  Create(Location start, Location end) => (pending_remote<Teleporter>);
 };
 
 interface Teleporter {
@@ -164,7 +164,7 @@ callee to trust the caller.
 
 ### Do not send unnecessary or privilege-presuming data
 
-> Each `InterfaceProvider` for frames and workers is strongly associated with an
+> Each `BrowserInterfaceBroker` for frames and workers is strongly associated with an
 > origin. Where possible, prefer to use this associated origin rather than
 > sending it over IPC. (See <https://crbug.com/734210> and
 > <https://crbug.com/775792/>).

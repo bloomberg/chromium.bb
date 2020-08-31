@@ -4,10 +4,9 @@
 
 #include "chrome/browser/payments/payment_handler_permission_context.h"
 
-#include "base/logging.h"
-#include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/profiles/profile.h"
+#include "base/notreached.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
@@ -15,8 +14,8 @@
 namespace payments {
 
 PaymentHandlerPermissionContext::PaymentHandlerPermissionContext(
-    Profile* profile)
-    : PermissionContextBase(profile,
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::PAYMENT_HANDLER,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -24,11 +23,11 @@ PaymentHandlerPermissionContext::~PaymentHandlerPermissionContext() {}
 
 void PaymentHandlerPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   // The user should never be prompted to authorize payment handler.
   NOTREACHED();
 }

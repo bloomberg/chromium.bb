@@ -15,6 +15,7 @@
 #include "vpx/vpx_encoder.h"
 #include "vpx_dsp/psnr.h"
 #include "vpx_ports/vpx_once.h"
+#include "vpx_ports/static_assert.h"
 #include "vpx_ports/system_state.h"
 #include "vpx_util/vpx_timestamp.h"
 #include "vpx/internal/vpx_codec_internal.h"
@@ -60,6 +61,7 @@ typedef struct vp9_extracfg {
   int render_height;
   unsigned int row_mt;
   unsigned int motion_vector_unit_test;
+  int delta_q_uv;
 } vp9_extracfg;
 
 static struct vp9_extracfg default_extra_cfg = {
@@ -94,6 +96,7 @@ static struct vp9_extracfg default_extra_cfg = {
   0,                     // render height
   0,                     // row_mt
   0,                     // motion_vector_unit_test
+  0,                     // delta_q_uv
 };
 
 struct vpx_codec_alg_priv {
@@ -159,22 +162,6 @@ static vpx_codec_err_t update_error_state(
   do {                                                                \
     if (!!((p)->memb) != (p)->memb) ERROR(#memb " expected boolean"); \
   } while (0)
-
-#if defined(_MSC_VER)
-#define COMPILE_TIME_ASSERT(boolexp)              \
-  do {                                            \
-    char compile_time_assert[(boolexp) ? 1 : -1]; \
-    (void)compile_time_assert;                    \
-  } while (0)
-#else  // !_MSC_VER
-#define COMPILE_TIME_ASSERT(boolexp)                         \
-  do {                                                       \
-    struct {                                                 \
-      unsigned int compile_time_assert : (boolexp) ? 1 : -1; \
-    } compile_time_assert;                                   \
-    (void)compile_time_assert;                               \
-  } while (0)
-#endif  // _MSC_VER
 
 static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
                                        const vpx_codec_enc_cfg_t *cfg,
@@ -616,6 +603,8 @@ static vpx_codec_err_t set_encoder_config(
   oxcf->row_mt = extra_cfg->row_mt;
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
 
+  oxcf->delta_q_uv = extra_cfg->delta_q_uv;
+
   for (sl = 0; sl < oxcf->ss_number_layers; ++sl) {
     for (tl = 0; tl < oxcf->ts_number_layers; ++tl) {
       oxcf->layer_target_bitrate[sl * oxcf->ts_number_layers + tl] =
@@ -709,6 +698,10 @@ static vpx_codec_err_t ctrl_set_cpuused(vpx_codec_alg_priv_t *ctx,
   extra_cfg.cpu_used = CAST(VP8E_SET_CPUUSED, args);
   extra_cfg.cpu_used = VPXMIN(9, extra_cfg.cpu_used);
   extra_cfg.cpu_used = VPXMAX(-9, extra_cfg.cpu_used);
+#if CONFIG_REALTIME_ONLY
+  if (extra_cfg.cpu_used > -5 && extra_cfg.cpu_used < 5)
+    extra_cfg.cpu_used = (extra_cfg.cpu_used > 0) ? 5 : -5;
+#endif
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -966,8 +959,8 @@ static void pick_quickcompress_mode(vpx_codec_alg_priv_t *ctx,
         // Convert duration parameter from stream timebase to microseconds.
         uint64_t duration_us;
 
-        COMPILE_TIME_ASSERT(TICKS_PER_SEC > 1000000 &&
-                            (TICKS_PER_SEC % 1000000) == 0);
+        VPX_STATIC_ASSERT(TICKS_PER_SEC > 1000000 &&
+                          (TICKS_PER_SEC % 1000000) == 0);
 
         duration_us = duration * (uint64_t)ctx->timestamp_ratio.num /
                       (ctx->timestamp_ratio.den * (TICKS_PER_SEC / 1000000));
@@ -1216,8 +1209,9 @@ static vpx_codec_err_t encoder_encode(vpx_codec_alg_priv_t *ctx,
       // compute first pass stats
       if (img) {
         int ret;
-        ENCODE_FRAME_RESULT encode_frame_result;
         vpx_codec_cx_pkt_t fps_pkt;
+        ENCODE_FRAME_RESULT encode_frame_result;
+        vp9_init_encode_frame_result(&encode_frame_result);
         // TODO(angiebird): Call vp9_first_pass directly
         ret = vp9_get_compressed_data(cpi, &lib_flags, &size, cx_data,
                                       &dst_time_stamp, &dst_end_time_stamp,
@@ -1240,6 +1234,7 @@ static vpx_codec_err_t encoder_encode(vpx_codec_alg_priv_t *ctx,
 #endif  // !CONFIG_REALTIME_ONLY
     } else {
       ENCODE_FRAME_RESULT encode_frame_result;
+      vp9_init_encode_frame_result(&encode_frame_result);
       while (cx_data_sz >= ctx->cx_data_sz / 2 &&
              -1 != vp9_get_compressed_data(cpi, &lib_flags, &size, cx_data,
                                            &dst_time_stamp, &dst_end_time_stamp,
@@ -1655,6 +1650,15 @@ static vpx_codec_err_t ctrl_set_svc_spatial_layer_sync(
   return VPX_CODEC_OK;
 }
 
+static vpx_codec_err_t ctrl_set_delta_q_uv(vpx_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  struct vp9_extracfg extra_cfg = ctx->extra_cfg;
+  int data = va_arg(args, int);
+  data = VPXMIN(VPXMAX(data, -15), 15);
+  extra_cfg.delta_q_uv = data;
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
 static vpx_codec_err_t ctrl_register_cx_callback(vpx_codec_alg_priv_t *ctx,
                                                  va_list args) {
   vpx_codec_priv_output_cx_pkt_cb_pair_t *cbp =
@@ -1752,6 +1756,7 @@ static vpx_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { VP9E_SET_SVC_FRAME_DROP_LAYER, ctrl_set_svc_frame_drop_layer },
   { VP9E_SET_SVC_GF_TEMPORAL_REF, ctrl_set_svc_gf_temporal_ref },
   { VP9E_SET_SVC_SPATIAL_LAYER_SYNC, ctrl_set_svc_spatial_layer_sync },
+  { VP9E_SET_DELTA_Q_UV, ctrl_set_delta_q_uv },
 
   // Getters
   { VP8E_GET_LAST_QUANTIZER, ctrl_get_quantizer },

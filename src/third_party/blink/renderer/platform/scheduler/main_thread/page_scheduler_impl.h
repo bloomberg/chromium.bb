@@ -96,7 +96,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   bool IsLoading() const;
 
-  // An "ordinary" PageScheduler is responsible for is a fully-featured page
+  // An "ordinary" PageScheduler is responsible for a fully-featured page
   // owned by a web view.
   bool IsOrdinary() const;
 
@@ -110,6 +110,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void OnAggressiveThrottlingStatusUpdated();
 
   void OnTraceLogEnabled();
+
+  // Virtual for testing.
+  virtual bool IsWaitingForMainFrameContentfulPaint() const;
+  virtual bool IsWaitingForMainFrameMeaningfulPaint() const;
 
   // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;

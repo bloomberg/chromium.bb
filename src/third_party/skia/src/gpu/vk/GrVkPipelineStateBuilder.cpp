@@ -6,6 +6,7 @@
 */
 
 #include "include/gpu/GrContext.h"
+#include "src/core/SkTraceEvent.h"
 #include "src/gpu/GrAutoLocaleSetter.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrPersistentCacheUtils.h"
@@ -23,28 +24,31 @@ typedef size_t shader_size;
 GrVkPipelineState* GrVkPipelineStateBuilder::CreatePipelineState(
         GrVkGpu* gpu,
         GrRenderTarget* renderTarget,
+        const GrProgramDesc& desc,
         const GrProgramInfo& programInfo,
-        GrProgramDesc* desc,
         VkRenderPass compatibleRenderPass) {
+
+    gpu->stats()->incShaderCompilations();
+
     // ensure that we use "." as a decimal separator when creating SkSL code
     GrAutoLocaleSetter als("C");
 
     // create a builder.  This will be handed off to effects so they can use it to add
     // uniforms, varyings, textures, etc
-    GrVkPipelineStateBuilder builder(gpu, renderTarget, programInfo, desc);
+    GrVkPipelineStateBuilder builder(gpu, renderTarget, desc, programInfo);
 
     if (!builder.emitAndInstallProcs()) {
         return nullptr;
     }
 
-    return builder.finalize(compatibleRenderPass, desc);
+    return builder.finalize(desc, compatibleRenderPass);
 }
 
 GrVkPipelineStateBuilder::GrVkPipelineStateBuilder(GrVkGpu* gpu,
                                                    GrRenderTarget* renderTarget,
-                                                   const GrProgramInfo& programInfo,
-                                                   GrProgramDesc* desc)
-        : INHERITED(renderTarget, programInfo, desc)
+                                                   const GrProgramDesc& desc,
+                                                   const GrProgramInfo& programInfo)
+        : INHERITED(renderTarget, desc, programInfo)
         , fGpu(gpu)
         , fVaryingHandler(this)
         , fUniformHandler(this) {}
@@ -66,7 +70,6 @@ bool GrVkPipelineStateBuilder::createVkShaderModule(VkShaderStageFlagBits stage,
                                                     VkShaderModule* shaderModule,
                                                     VkPipelineShaderStageCreateInfo* stageInfo,
                                                     const SkSL::Program::Settings& settings,
-                                                    GrProgramDesc* desc,
                                                     SkSL::String* outSPIRV,
                                                     SkSL::Program::Inputs* outInputs) {
     if (!GrCompileVkShaderModule(fGpu, sksl, stage, shaderModule,
@@ -140,8 +143,8 @@ void GrVkPipelineStateBuilder::storeShadersInCache(const SkSL::String shaders[],
     // program, and that only depends on the base GrProgramDesc data.
     // The +4 is to include the kShader_PersistentCacheKeyType code the Vulkan backend adds
     // to the key right after the base key.
-    sk_sp<SkData> key = SkData::MakeWithoutCopy(this->desc()->asKey(),
-                                                this->desc()->initialKeyLength()+4);
+    sk_sp<SkData> key = SkData::MakeWithoutCopy(this->desc().asKey(),
+                                                this->desc().initialKeyLength()+4);
 
     sk_sp<SkData> data = GrPersistentCacheUtils::PackCachedShaders(isSkSL ? kSKSL_Tag : kSPIRV_Tag,
                                                                    shaders,
@@ -149,8 +152,10 @@ void GrVkPipelineStateBuilder::storeShadersInCache(const SkSL::String shaders[],
     this->gpu()->getContext()->priv().getPersistentCache()->store(*key, *data);
 }
 
-GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRenderPass,
-                                                      GrProgramDesc* desc) {
+GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
+                                                      VkRenderPass compatibleRenderPass) {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+
     VkDescriptorSetLayout dsLayout[2];
     VkPipelineLayout pipelineLayout;
     VkShaderModule shaderModules[kGrShaderTypeCount] = { VK_NULL_HANDLE,
@@ -197,7 +202,8 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRen
     VkPipelineShaderStageCreateInfo shaderStageInfo[3];
     SkSL::Program::Settings settings;
     settings.fCaps = this->caps()->shaderCaps();
-    settings.fVkCaps = &this->gpu()->vkCaps();
+    settings.fRTHeightBinding = this->gpu()->vkCaps().getFragmentUniformBinding();
+    settings.fRTHeightSet = this->gpu()->vkCaps().getFragmentUniformSet();
     settings.fFlipY = this->origin() != kTopLeft_GrSurfaceOrigin;
     settings.fSharpenTextures =
                         this->gpu()->getContext()->priv().options().fSharpenMipmappedTextures;
@@ -214,11 +220,11 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRen
         // program, and that only depends on the base GrProgramDesc data.
         // The +4 is to include the kShader_PersistentCacheKeyType code the Vulkan backend adds
         // to the key right after the base key.
-        sk_sp<SkData> key = SkData::MakeWithoutCopy(desc->asKey(), desc->initialKeyLength()+4);
+        sk_sp<SkData> key = SkData::MakeWithoutCopy(desc.asKey(), desc.initialKeyLength()+4);
         cached = persistentCache->load(*key);
         if (cached) {
             reader.setMemory(cached->data(), cached->size());
-            shaderType = reader.readU32();
+            shaderType = GrPersistentCacheUtils::GetType(&reader);
         }
     }
 
@@ -249,7 +255,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRen
                                                   &shaderModules[kVertex_GrShaderType],
                                                   &shaderStageInfo[0],
                                                   settings,
-                                                  desc,
                                                   &shaders[kVertex_GrShaderType],
                                                   &inputs[kVertex_GrShaderType]);
 
@@ -258,7 +263,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRen
                                                         &shaderModules[kFragment_GrShaderType],
                                                         &shaderStageInfo[1],
                                                         settings,
-                                                        desc,
                                                         &shaders[kFragment_GrShaderType],
                                                         &inputs[kFragment_GrShaderType]);
 
@@ -268,7 +272,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(VkRenderPass compatibleRen
                                                             &shaderModules[kGeometry_GrShaderType],
                                                             &shaderStageInfo[2],
                                                             settings,
-                                                            desc,
                                                             &shaders[kGeometry_GrShaderType],
                                                             &inputs[kGeometry_GrShaderType]);
             ++numShaderStages;

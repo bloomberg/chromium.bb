@@ -6,7 +6,7 @@
 #define QUICHE_QUIC_QBONE_PLATFORM_IP_RANGE_H_
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 
 namespace quic {
 
@@ -24,12 +24,12 @@ class IpRange {
 
   // Parses range that looks like "10.0.0.1/8". Tailing bits will be set to zero
   // after prefix_length. Return false if the parsing failed.
-  bool FromString(const string& range);
+  bool FromString(const std::string& range);
 
   // Returns the string representation of this object.
-  string ToString() const {
+  std::string ToString() const {
     if (IsInitialized()) {
-      return absl::StrCat(prefix_.ToString(), "/", prefix_length_);
+      return quiche::QuicheStrCat(prefix_.ToString(), "/", prefix_length_);
     }
     return "(uninitialized)";
   }

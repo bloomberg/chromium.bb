@@ -8,13 +8,16 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -27,13 +30,19 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
+#include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -60,6 +69,12 @@ constexpr float kReturnToMaximizedStandardThreshold = 164.f;
 // The scroll update threshold to restart the show overview timer.
 constexpr float kScrollUpdateOverviewThreshold = 2.f;
 
+// Presentation time histogram names.
+constexpr char kDragWindowFromShelfHistogram[] =
+    "Ash.DragWindowFromShelf.PresentationTime";
+constexpr char kDragWindowFromShelfMaxLatencyHistogram[] =
+    "Ash.DragWindowFromShelf.PresentationTime.MaxLatency";
+
 }  // namespace
 
 // Hide all visible windows expect the dragged windows or the window showing in
@@ -74,20 +89,17 @@ class DragWindowFromShelfController::WindowsHider
     for (auto* window : windows) {
       if (window == dragged_window_)
         continue;
+      if (::wm::HasTransientAncestor(window, dragged_window_))
+        continue;
       if (!window->IsVisible())
         continue;
       if (SplitViewController::Get(window)->IsWindowInSplitView(window))
         continue;
 
       hidden_windows_.push_back(window);
-      {
-        ScopedAnimationDisabler disabler(window);
-        // Minimize so that they can show up correctly in overview.
-        WindowState::Get(window)->Minimize();
-        window->Hide();
-      }
       window->AddObserver(this);
     }
+    window_util::MinimizeAndHideWithoutAnimation(hidden_windows_);
   }
 
   ~WindowsHider() override {
@@ -103,6 +115,16 @@ class DragWindowFromShelfController::WindowsHider
       window->Show();
     }
     hidden_windows_.clear();
+  }
+
+  // Even though we explicitly minimize the windows, some (i.e. ARC apps)
+  // minimize asynchronously so they may not be truly minimized after |this| is
+  // constructed.
+  bool WindowsMinimized() {
+    return std::all_of(hidden_windows_.begin(), hidden_windows_.end(),
+                       [](const aura::Window* w) {
+                         return WindowState::Get(w)->IsMinimized();
+                       });
   }
 
   // aura::WindowObserver:
@@ -127,12 +149,16 @@ float DragWindowFromShelfController::GetReturnToMaximizedThreshold() {
 
 DragWindowFromShelfController::DragWindowFromShelfController(
     aura::Window* window,
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     HotseatState hotseat_state)
     : window_(window), hotseat_state_(hotseat_state) {
-  DCHECK_NE(hotseat_state, HotseatState::kShown);
+  DCHECK_NE(hotseat_state, HotseatState::kShownHomeLauncher);
   window_->AddObserver(this);
   OnDragStarted(location_in_screen);
+
+  presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+      window_->GetHost()->compositor(), kDragWindowFromShelfHistogram,
+      kDragWindowFromShelfMaxLatencyHistogram);
 }
 
 DragWindowFromShelfController::~DragWindowFromShelfController() {
@@ -141,7 +167,7 @@ DragWindowFromShelfController::~DragWindowFromShelfController() {
     window_->RemoveObserver(this);
 }
 
-void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
+void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
                                          float scroll_x,
                                          float scroll_y) {
   // |window_| might have been destroyed during dragging.
@@ -151,15 +177,18 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   if (!drag_started_)
     return;
 
+  presentation_time_recorder_->RequestNext();
   UpdateDraggedWindow(location_in_screen);
 
   // Open overview if the window has been dragged far enough and the scroll
-  // delta has decreased to kOpenOverviewThreshold or less.
+  // delta has decreased to kOpenOverviewThreshold. Wait until all windows are
+  // minimized or they will not show up in overview.
+  DCHECK(windows_hider_);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (std::abs(scroll_y) <= kOpenOverviewThreshold &&
-      !overview_controller->InOverviewSession()) {
-    overview_controller->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+      !overview_controller->InOverviewSession() &&
+      windows_hider_->WindowsMinimized()) {
+    overview_controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
     OnWindowDragStartedInOverview();
   }
 
@@ -168,17 +197,16 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   if (overview_controller->InOverviewSession()) {
     const SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
-    OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        Shell::GetPrimaryRootWindow(), /*is_dragging=*/true,
-        SplitViewDragIndicators::WindowDraggingState::kFromShelf,
-        snap_position);
-    overview_session->OnWindowDragContinued(
-        window_, gfx::PointF(location_in_screen),
+    const SplitViewDragIndicators::WindowDraggingState window_dragging_state =
         SplitViewDragIndicators::ComputeWindowDraggingState(
             /*is_dragging=*/true,
             SplitViewDragIndicators::WindowDraggingState::kFromShelf,
-            snap_position));
+            snap_position);
+    OverviewSession* overview_session = overview_controller->overview_session();
+    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        Shell::GetPrimaryRootWindow(), window_dragging_state);
+    overview_session->OnWindowDragContinued(window_, location_in_screen,
+                                            window_dragging_state);
 
     if (snap_position != SplitViewController::NONE) {
       // If the dragged window is in snap preview area, make sure overview is
@@ -205,62 +233,72 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   previous_location_in_screen_ = location_in_screen;
 }
 
-base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
-                                       base::Optional<float> velocity_y) {
+base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
+    const gfx::PointF& location_in_screen,
+    base::Optional<float> velocity_y) {
   if (!drag_started_)
     return base::nullopt;
 
   drag_started_ = false;
+  presentation_time_recorder_.reset();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool in_overview = overview_controller->InOverviewSession();
   const bool in_splitview = split_view_controller->InSplitViewMode();
-  base::Optional<ShelfWindowDragResult> window_drag_result;
+  const bool drop_window_in_overview =
+      ShouldDropWindowInOverview(location_in_screen, velocity_y);
+  SplitViewController::SnapPosition snap_position =
+      GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
 
+  window_drag_result_ = base::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
-    if (in_overview) {
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kFadeOutExit);
-    }
-    ScaleDownWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
+    if (in_overview)
+      overview_controller->EndOverview(OverviewEnterExitType::kFadeOutExit);
+    window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
-    ScaleUpToRestoreWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kRestoreToOriginalBounds;
+    window_drag_result_ = ShelfWindowDragResult::kRestoreToOriginalBounds;
   } else if (!in_overview) {
     // if overview is not active during the entire drag process, scale down the
     // dragged window to go to home screen.
-    ScaleDownWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
+    window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else {
-    window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
+    if (drop_window_in_overview)
+      window_drag_result_ = ShelfWindowDragResult::kGoToOverviewMode;
+    else if (snap_position != SplitViewController::NONE)
+      window_drag_result_ = ShelfWindowDragResult::kGoToSplitviewMode;
+    // For window that may drop in overview or snap in split screen, restore its
+    // original backdrop mode.
+    WindowBackdrop::Get(window_)->RestoreBackdrop();
   }
 
-  OnDragEnded(location_in_screen,
-              ShouldDropWindowInOverview(location_in_screen, velocity_y),
-              GetSnapPositionOnDragEnd(location_in_screen, velocity_y));
+  if (window_drag_result_.has_value()) {
+    UMA_HISTOGRAM_ENUMERATION(kHandleDragWindowFromShelfHistogramName,
+                              *window_drag_result_);
+  }
 
-  return window_drag_result;
+  OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
+  return window_drag_result_;
 }
 
 void DragWindowFromShelfController::CancelDrag() {
   if (!drag_started_)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION(kHandleDragWindowFromShelfHistogramName,
+                            ShelfWindowDragResult::kDragCanceled);
+
   drag_started_ = false;
+  presentation_time_recorder_.reset();
   // Reset the window's transform to identity transform.
   window_->SetTransform(gfx::Transform());
-  window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
+  WindowBackdrop::Get(window_)->RestoreBackdrop();
 
   // End overview if it was opened during dragging.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession()) {
-    overview_controller->EndOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateExit);
-  }
+  if (overview_controller->InOverviewSession())
+    overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
   ReshowHiddenWindowsOnDragEnd();
 
   OnDragEnded(previous_location_in_screen_,
@@ -270,6 +308,30 @@ void DragWindowFromShelfController::CancelDrag() {
 
 bool DragWindowFromShelfController::IsDraggedWindowAnimating() const {
   return window_ && window_->layer()->GetAnimator()->is_animating();
+}
+
+void DragWindowFromShelfController::FinalizeDraggedWindow() {
+  if (!window_drag_result_.has_value())
+    return;
+
+  DCHECK(!drag_started_);
+  DCHECK(window_);
+
+  switch (*window_drag_result_) {
+    case ShelfWindowDragResult::kGoToHomeScreen:
+      ScaleDownWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kRestoreToOriginalBounds:
+      ScaleUpToRestoreWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kGoToOverviewMode:
+    case ShelfWindowDragResult::kGoToSplitviewMode:
+    case ShelfWindowDragResult::kDragCanceled:
+      // No action is needed.
+      break;
+  }
+
+  window_drag_result_.reset();
 }
 
 void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
@@ -291,7 +353,7 @@ void DragWindowFromShelfController::RemoveObserver(
 }
 
 void DragWindowFromShelfController::OnDragStarted(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   drag_started_ = true;
   initial_location_in_screen_ = location_in_screen;
   previous_location_in_screen_ = location_in_screen;
@@ -299,8 +361,7 @@ void DragWindowFromShelfController::OnDragStarted(
       initial_location_in_screen_, HTCLIENT, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
 
   // Disable the backdrop on the dragged window during dragging.
-  original_backdrop_mode_ = window_->GetProperty(kBackdropWindowMode);
-  window_->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
+  WindowBackdrop::Get(window_)->DisableBackdrop();
 
   // Hide all visible windows behind the dragged window during dragging.
   windows_hider_ = std::make_unique<WindowsHider>(window_);
@@ -309,13 +370,9 @@ void DragWindowFromShelfController::OnDragStarted(
   Shell::Get()->home_screen_controller()->OnWindowDragStarted();
 
   // Use the same dim and blur as in overview during dragging.
-  auto* wallpaper_view =
-      RootWindowController::ForWindow(window_->GetRootWindow())
-          ->wallpaper_widget_controller()
-          ->wallpaper_view();
-  if (wallpaper_view) {
-    wallpaper_view->RepaintBlurAndOpacity(kWallpaperBlurSigma, kShieldOpacity);
-  }
+  RootWindowController::ForWindow(window_->GetRootWindow())
+      ->wallpaper_widget_controller()
+      ->SetWallpaperProperty(wallpaper_constants::kOverviewInTabletState);
 
   // If the dragged window is one of the snapped window in splitview, it needs
   // to be detached from splitview before start dragging.
@@ -328,7 +385,7 @@ void DragWindowFromShelfController::OnDragStarted(
 }
 
 void DragWindowFromShelfController::OnDragEnded(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     bool should_drop_window_in_overview,
     SplitViewController::SnapPosition snap_position) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -337,13 +394,9 @@ void DragWindowFromShelfController::OnDragEnded(
     ShowOverviewDuringOrAfterDrag();
 
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
-        Shell::GetPrimaryRootWindow(), /*is_dragging=*/false,
-        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-        SplitViewController::NONE);
+    overview_session->ResetSplitViewDragIndicatorsWindowDraggingStates();
     overview_session->OnWindowDragEnded(
-        window_, gfx::PointF(location_in_screen),
-        should_drop_window_in_overview,
+        window_, location_in_screen, should_drop_window_in_overview,
         /*snap=*/snap_position != SplitViewController::NONE);
   }
 
@@ -351,8 +404,8 @@ void DragWindowFromShelfController::OnDragEnded(
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   if (split_view_controller->InSplitViewMode() ||
       snap_position != SplitViewController::NONE) {
-    split_view_controller->OnWindowDragEnded(window_, snap_position,
-                                             location_in_screen);
+    split_view_controller->OnWindowDragEnded(
+        window_, snap_position, gfx::ToRoundedPoint(location_in_screen));
   }
 
   // Scale-in-to-show home screen if home screen should be shown after drag
@@ -362,19 +415,16 @@ void DragWindowFromShelfController::OnDragEnded(
   // Clear the wallpaper dim and blur if not in overview after drag ends.
   // If in overview, the dim and blur will be cleared after overview ends.
   if (!overview_controller->InOverviewSession()) {
-    auto* wallpaper_view =
-        RootWindowController::ForWindow(window_->GetRootWindow())
-            ->wallpaper_widget_controller()
-            ->wallpaper_view();
-    if (wallpaper_view)
-      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
+    RootWindowController::ForWindow(window_->GetRootWindow())
+        ->wallpaper_widget_controller()
+        ->SetWallpaperProperty(wallpaper_constants::kClear);
   }
 
   WindowState::Get(window_)->DeleteDragDetails();
 }
 
 void DragWindowFromShelfController::UpdateDraggedWindow(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   gfx::Rect bounds = window_->bounds();
   ::wm::ConvertRectToScreen(window_->parent(), &bounds);
 
@@ -385,14 +435,14 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
   // position.
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()
-          ->GetDisplayNearestPoint(location_in_screen)
+          ->GetDisplayNearestPoint(gfx::ToRoundedPoint(location_in_screen))
           .bounds();
   const float min_y = display_bounds.y() +
                       display_bounds.height() * kMinYDisplayHeightRatio +
                       kMinimumWindowScaleDuringDragging * bounds.height();
-  int y_full =
-      std::min(initial_location_in_screen_.y(), bounds.bottom()) - min_y;
-  int y_diff = location_in_screen.y() - min_y;
+  float y_full =
+      std::min(initial_location_in_screen_.y(), (float)bounds.bottom()) - min_y;
+  float y_diff = location_in_screen.y() - min_y;
   float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
                 kMinimumWindowScaleDuringDragging;
   scale = base::ClampToRange(scale, /*min=*/kMinimumWindowScaleDuringDragging,
@@ -425,7 +475,7 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
 
 SplitViewController::SnapPosition
 DragWindowFromShelfController::GetSnapPosition(
-    const gfx::Point& location_in_screen) const {
+    const gfx::PointF& location_in_screen) const {
   // if |location_in_screen| is close to the bottom of the screen and is
   // inside of GetReturnToMaximizedThreshold() threshold, we should not try to
   // snap the window.
@@ -433,8 +483,13 @@ DragWindowFromShelfController::GetSnapPosition(
     return SplitViewController::NONE;
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  SplitViewController::SnapPosition snap_position =
-      ::ash::GetSnapPosition(root_window, window_, location_in_screen);
+  SplitViewController::SnapPosition snap_position = ::ash::GetSnapPosition(
+      root_window, window_, gfx::ToRoundedPoint(location_in_screen),
+      gfx::ToRoundedPoint(initial_location_in_screen_),
+      /*snap_distance_from_edge=*/kDistanceFromEdge,
+      /*minimum_drag_distance=*/kMinDragDistance,
+      /*horizontal_edge_inset=*/kScreenEdgeInsetForSnap,
+      /*vertical_edge_inset=*/kScreenEdgeInsetForSnap);
 
   // For portrait mode, since the drag starts from the bottom of the screen,
   // we should only allow the window to snap to the top of the screen.
@@ -446,59 +501,21 @@ DragWindowFromShelfController::GetSnapPosition(
     snap_position = SplitViewController::NONE;
   }
 
-  // If the drag does not start in the screen edge, the window has to be dragged
-  // toward the snap position by |min_drag_distance| to allow to be snapped.
-  if (snap_position != SplitViewController::NONE) {
-    // Check if the drag starts within 16dp from screen edge. Only need to
-    // consider about landscape case as in portrait mode, the drag always starts
-    // from bottom and we don't allow to snap in bottom.
-    bool started_in_screen_edge = false;
-    const int initial_x = initial_location_in_screen_.x();
-    const int initial_y = initial_location_in_screen_.y();
-    if (is_landscape) {
-      const gfx::Rect work_area =
-          screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-              root_window);
-      started_in_screen_edge =
-          initial_x <= work_area.x() + kDistanceFromEdge ||
-          initial_x > work_area.right() - kDistanceFromEdge;
-    }
-
-    if (!started_in_screen_edge) {
-      // Check if the drag starts in the snap region.
-      const bool started_in_snap_region =
-          ::ash::GetSnapPosition(root_window, window_,
-                                 initial_location_in_screen_) !=
-          SplitViewController::NONE;
-      const int distance = is_landscape ? location_in_screen.x() - initial_x
-                                        : location_in_screen.y() - initial_y;
-      const int min_drag_distance = started_in_snap_region
-                                        ? kMinDragDistanceInSnapRegion
-                                        : kMinDragDistanceOutsideSnapRegion;
-      if ((IsPhysicalLeftOrTop(snap_position) &&
-           distance > -min_drag_distance) ||
-          (!IsPhysicalLeftOrTop(snap_position) &&
-           distance < min_drag_distance)) {
-        snap_position = SplitViewController::NONE;
-      }
-    }
-  }
-
   return snap_position;
 }
 
 bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(
-    const gfx::Point& location_in_screen) const {
+    const gfx::PointF& location_in_screen) const {
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()
-          ->GetDisplayNearestPoint(location_in_screen)
+          ->GetDisplayNearestPoint(gfx::ToRoundedPoint(location_in_screen))
           .bounds();
   return location_in_screen.y() >
          display_bounds.bottom() - GetReturnToMaximizedThreshold();
 }
 
 bool DragWindowFromShelfController::ShouldGoToHomeScreen(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) const {
   // If the drag ends below the shelf, do not go to home screen (theoratically
   // it may happen in kExtended hotseat case when drag can start and end below
@@ -536,9 +553,10 @@ bool DragWindowFromShelfController::ShouldGoToHomeScreen(
 
 SplitViewController::SnapPosition
 DragWindowFromShelfController::GetSnapPositionOnDragEnd(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) const {
-  if (ShouldRestoreToOriginalBounds(location_in_screen) ||
+  if (!Shell::Get()->overview_controller()->InOverviewSession() ||
+      ShouldRestoreToOriginalBounds(location_in_screen) ||
       ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     return SplitViewController::NONE;
   }
@@ -547,7 +565,7 @@ DragWindowFromShelfController::GetSnapPositionOnDragEnd(
 }
 
 bool DragWindowFromShelfController::ShouldDropWindowInOverview(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) const {
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return false;
@@ -621,8 +639,6 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
     // self-destructed when window transform animation is done.
     new WindowScaleAnimation(
         window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
-        window == window_ ? base::make_optional(original_backdrop_mode_)
-                          : base::nullopt,
         window == window_
             ? base::BindOnce(
                   &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
@@ -650,8 +666,6 @@ void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
   for (auto* window : GetTransientTreeIterator(window_)) {
     new WindowScaleAnimation(
         window, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
-        window == window_ ? base::make_optional(original_backdrop_mode_)
-                          : base::nullopt,
         base::BindOnce(
             &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
             weak_ptr_factory_.GetWeakPtr(), should_end_overview));
@@ -660,9 +674,10 @@ void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
 
 void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
     bool end_overview) {
+  base::AutoReset<bool> auto_reset(&during_window_restoration_callback_, true);
   if (end_overview) {
     Shell::Get()->overview_controller()->EndOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateExit);
+        OverviewEnterExitType::kImmediateExit);
   }
   ReshowHiddenWindowsOnDragEnd();
 }

@@ -73,14 +73,15 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
 CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   String url =
-      css_property_parser_helpers::ConsumeUrlAsStringView(range, &context)
+      css_property_parser_helpers::ConsumeUrlAsStringView(range, context)
           .ToString();
   if (url.IsNull())
     return nullptr;
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
       url, context.CompleteURL(url), context.GetReferrer(),
       context.ShouldCheckContentSecurityPolicy(),
-      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse));
+      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+      context.IsAdRelated()));
 
   if (range.Peek().FunctionId() != CSSValueID::kFormat)
     return uri_value;
@@ -101,7 +102,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
                                   const CSSParserContext& context) {
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range);
-  ContentSecurityPolicyDisposition should_check_content_security_policy =
+  network::mojom::CSPDisposition should_check_content_security_policy =
       context.ShouldCheckContentSecurityPolicy();
   if (args.Peek().GetType() == kStringToken) {
     const CSSParserToken& arg = args.ConsumeIncludingWhitespace();
@@ -109,7 +110,8 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
         arg.Value().ToString(), should_check_content_security_policy,
-        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+        context.IsAdRelated());
   }
   if (args.Peek().GetType() == kIdentToken) {
     String family_name = css_parsing_utils::ConcatenateFamilyName(args);
@@ -117,7 +119,8 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
         family_name, should_check_content_security_policy,
-        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
+        context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+        context.IsAdRelated());
   }
   return nullptr;
 }
@@ -165,23 +168,30 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
     case AtRuleDescriptorID::FontDisplay:
       parsed_value = ConsumeFontDisplay(range);
       break;
-    case AtRuleDescriptorID::FontStretch:
-      parsed_value =
-          css_parsing_utils::ConsumeFontStretch(range, kCSSFontFaceRuleMode);
+    case AtRuleDescriptorID::FontStretch: {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kCSSFontFaceRuleMode);
+      parsed_value = css_parsing_utils::ConsumeFontStretch(range, context);
       break;
-    case AtRuleDescriptorID::FontStyle:
-      parsed_value =
-          css_parsing_utils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
+    }
+    case AtRuleDescriptorID::FontStyle: {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kCSSFontFaceRuleMode);
+      parsed_value = css_parsing_utils::ConsumeFontStyle(range, context);
       break;
+    }
     case AtRuleDescriptorID::FontVariant:
       parsed_value = ConsumeFontVariantList(range);
       break;
-    case AtRuleDescriptorID::FontWeight:
-      parsed_value =
-          css_parsing_utils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
+    case AtRuleDescriptorID::FontWeight: {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kCSSFontFaceRuleMode);
+      parsed_value = css_parsing_utils::ConsumeFontWeight(range, context);
       break;
+    }
     case AtRuleDescriptorID::FontFeatureSettings:
-      parsed_value = css_parsing_utils::ConsumeFontFeatureSettings(range);
+      parsed_value =
+          css_parsing_utils::ConsumeFontFeatureSettings(range, context);
       break;
     default:
       break;

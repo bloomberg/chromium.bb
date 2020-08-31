@@ -20,12 +20,16 @@ blink_core_sources("loader") {
     "base_fetch_context.h",
     "cookie_jar.cc",
     "cookie_jar.h",
+    "cross_thread_resource_timing_info_copier.cc",
+    "cross_thread_resource_timing_info_copier.h",
     "document_load_timing.cc",
     "document_load_timing.h",
     "document_loader.cc",
     "document_loader.h",
     "empty_clients.cc",
     "empty_clients.h",
+    "font_preload_manager.cc",
+    "font_preload_manager.h",
     "form_submission.cc",
     "form_submission.h",
     "frame_fetch_context.cc",
@@ -37,8 +41,6 @@ blink_core_sources("loader") {
     "frame_loader_state_machine.cc",
     "frame_loader_state_machine.h",
     "frame_loader_types.h",
-    "frame_or_imported_document.cc",
-    "frame_or_imported_document.h",
     "frame_resource_fetcher_properties.cc",
     "frame_resource_fetcher_properties.h",
     "history_item.cc",
@@ -105,14 +107,13 @@ blink_core_sources("loader") {
     "previews_resource_loading_hints.h",
     "private/frame_client_hints_preferences_context.cc",
     "private/frame_client_hints_preferences_context.h",
+    "private/prerender_client.h",
     "private/prerender_handle.cc",
     "private/prerender_handle.h",
     "progress_tracker.cc",
     "progress_tracker.h",
     "resource/css_style_sheet_resource.cc",
     "resource/css_style_sheet_resource.h",
-    "resource/document_resource.cc",
-    "resource/document_resource.h",
     "resource/font_resource.cc",
     "resource/font_resource.h",
     "resource/image_resource.cc",
@@ -158,7 +159,5 @@ blink_core_sources("loader") {
     "worker_resource_timing_notifier_impl.h",
   ]
 
-  public_deps = [
-    "//third_party/blink/renderer/platform",
-  ]
+  public_deps = [ "//third_party/blink/renderer/platform" ]
 }

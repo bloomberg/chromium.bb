@@ -86,21 +86,21 @@ class PacedSenderTest
   }
 
  protected:
-  std::unique_ptr<RtpPacketToSend> BuildRtpPacket(RtpPacketToSend::Type type) {
+  std::unique_ptr<RtpPacketToSend> BuildRtpPacket(RtpPacketMediaType type) {
     auto packet = std::make_unique<RtpPacketToSend>(nullptr);
     packet->set_packet_type(type);
     switch (type) {
-      case RtpPacketToSend::Type::kAudio:
+      case RtpPacketMediaType::kAudio:
         packet->SetSsrc(kAudioSsrc);
         break;
-      case RtpPacketToSend::Type::kVideo:
+      case RtpPacketMediaType::kVideo:
         packet->SetSsrc(kVideoSsrc);
         break;
-      case RtpPacketToSend::Type::kRetransmission:
-      case RtpPacketToSend::Type::kPadding:
+      case RtpPacketMediaType::kRetransmission:
+      case RtpPacketMediaType::kPadding:
         packet->SetSsrc(kVideoRtxSsrc);
         break;
-      case RtpPacketToSend::Type::kForwardErrorCorrection:
+      case RtpPacketMediaType::kForwardErrorCorrection:
         packet->SetSsrc(kFlexFecSsrc);
         break;
     }
@@ -120,11 +120,12 @@ class PacedSenderTest
 TEST_P(PacedSenderTest, PacesPackets) {
   // Insert a number of packets, covering one second.
   static constexpr size_t kPacketsToSend = 42;
-  pacer_->SetPacingRates(DataRate::bps(kDefaultPacketSize * 8 * kPacketsToSend),
-                         DataRate::Zero());
+  pacer_->SetPacingRates(
+      DataRate::BitsPerSec(kDefaultPacketSize * 8 * kPacketsToSend),
+      DataRate::Zero());
   std::vector<std::unique_ptr<RtpPacketToSend>> packets;
   for (size_t i = 0; i < kPacketsToSend; ++i) {
-    packets.emplace_back(BuildRtpPacket(RtpPacketToSend::Type::kVideo));
+    packets.emplace_back(BuildRtpPacket(RtpPacketMediaType::kVideo));
   }
   pacer_->EnqueuePackets(std::move(packets));
 
@@ -145,7 +146,7 @@ TEST_P(PacedSenderTest, PacesPackets) {
   // Packets should be sent over a period of close to 1s. Expect a little lower
   // than this since initial probing is a bit quicker.
   TimeDelta duration = clock_.CurrentTime() - start_time;
-  EXPECT_GT(duration, TimeDelta::ms(900));
+  EXPECT_GT(duration, TimeDelta::Millis(900));
 }
 
 INSTANTIATE_TEST_SUITE_P(

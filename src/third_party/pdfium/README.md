@@ -117,6 +117,10 @@ back to building in C++11 mode, then set `use_cxx11 = true`. This fallback is
 temporary and will go away in the future when PDFium fully transitions to C++14.
 See [this bug](https://crbug.com/pdfium/1407) for details.
 
+When building with the experimental Skia backend, Skia itself it built with
+C++17. There is no configuration for this. One just has to use a build toolchain
+that supports C++17.
+
 When complete the arguments will be stored in `<directory>/args.gn`, and
 GN will automatically use the new arguments to generate build files.
 Should your files fail to generate, please double-check that you have set
@@ -218,13 +222,6 @@ Chromium provides code coverage reports for PDFium
 [here](https://chromium-coverage.appspot.com/). PDFium is located in
 `third_party/pdfium` in Chromium's source code.
 This includes code coverage from PDFium's fuzzers.
-
-## Profiling
-
-Valgrind and other profiling tools do not work correctly with the standard build
-setup that PDFium uses. You will need to add
-`ro_segment_workaround_for_valgrind=true` to `args.gn` to get symbols to
-correctly appear.
 
 ## Waterfall
 

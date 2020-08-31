@@ -10,12 +10,12 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /** Base class for First Run Experience. */
 public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
@@ -32,8 +32,6 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     // received by ChromeLauncherActivity.)
     public static final String EXTRA_CHROME_LAUNCH_INTENT_EXTRAS =
             "Extra.FreChromeLaunchIntentExtras";
-
-    static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
     static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";

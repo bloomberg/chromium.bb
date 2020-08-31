@@ -47,10 +47,6 @@ using ::testing::Mock;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
-// The raw keystore key the server sends.
-static const char kRawKeystoreKey[] = "keystore_key";
-// Base64 encoded version of |kRawKeystoreKey|.
-static const char kKeystoreKey[] = "a2V5c3RvcmVfa2V5";
 static const char kCustomPassphrase[] = "custom_passphrase";
 // Denotes a value of custom_passphrase_key_derivation_method in NigoriSpecifics
 // that is not a valid value from NigoriSpecifics::KeyDerivationMethod.
@@ -106,6 +102,11 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     PumpLoop();
     test_user_share_.TearDown();
   }
+
+  // The raw keystore key the server sends.
+  const std::vector<uint8_t> kRawKeystoreKey = {0, 1, 2, 3, 4};
+  // Base64 encoded version of |kRawKeystoreKey|.
+  const std::string kKeystoreKey = "AAECAwQ=";
 
  protected:
   void SetScryptFeaturesState(bool force_disabled,
@@ -379,7 +380,8 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
 
   // Calls SyncEncryptionHandlerImpl::SetKeystoreKeys().
-  void SetupKeystoreKeys(const std::vector<std::string>& keystore_keys) {
+  void SetupKeystoreKeys(
+      const std::vector<std::vector<uint8_t>>& keystore_keys) {
     EXPECT_CALL(*observer(),
                 OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
     encryption_handler()->SetKeystoreKeys(keystore_keys);
@@ -764,11 +766,13 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
   DirectoryCryptographer other_cryptographer;
   other_cryptographer.AddKey(old_key);
   sync_pb::EntitySpecifics other_encrypted_specifics;
-  other_encrypted_specifics.mutable_bookmark()->set_title("title");
+  other_encrypted_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title");
   other_cryptographer.Encrypt(other_encrypted_specifics,
                               other_encrypted_specifics.mutable_encrypted());
   sync_pb::EntitySpecifics our_encrypted_specifics;
-  our_encrypted_specifics.mutable_bookmark()->set_title("title2");
+  our_encrypted_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title2");
 
   // Set up the current encryption state (containing both keys and encrypt
   // everything).
@@ -840,14 +844,13 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
   EXPECT_FALSE(GetCryptographer()->is_initialized());
   EXPECT_TRUE(encryption_handler()->NeedKeystoreKey());
-  EXPECT_FALSE(encryption_handler()->SetKeystoreKeys({""}));
+  EXPECT_FALSE(encryption_handler()->SetKeystoreKeys({{}}));
   EXPECT_TRUE(encryption_handler()->NeedKeystoreKey());
   Mock::VerifyAndClearExpectations(observer());
 
   // Build a set of keystore keys.
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
-  std::string old_keystore_key;
-  base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
+  const std::string old_keystore_key = base::Base64Encode(kRawOldKeystoreKey);
 
   // Pass them to the encryption handler, triggering a migration and bootstrap
   // token update.
@@ -2117,9 +2120,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefault) {
   SetUpEncryption();
 
   const char kOldGaiaKey[] = "old_gaia_key";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
-  std::string old_keystore_key;
-  base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
+  const std::string old_keystore_key = base::Base64Encode(kRawOldKeystoreKey);
   SetupKeystoreKeys({kRawOldKeystoreKey});
 
   // Then init the nigori node with a backwards compatible set of keys.
@@ -2150,9 +2152,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysKeystoreDefault) {
   test_user_share_.SetUp();
   SetUpEncryption();
 
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
-  std::string old_keystore_key;
-  base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
+  const std::string old_keystore_key = base::Base64Encode(kRawOldKeystoreKey);
   SetupKeystoreKeys({kRawOldKeystoreKey});
 
   // Then init the nigori node with a non-backwards compatible set of keys.
@@ -2181,7 +2182,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysKeystoreDefault) {
 // Trigger a key rotation upon when a pending gaia passphrase is resolved.
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysAfterPendingGaiaResolved) {
   const char kOldGaiaKey[] = "old_gaia_key";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
@@ -2221,9 +2222,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefaultOnInit) {
   SetUpEncryption();
 
   const char kOldGaiaKey[] = "old_gaia_key";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
-  std::string old_keystore_key;
-  base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
+  const std::string old_keystore_key = base::Base64Encode(kRawOldKeystoreKey);
   // Set two keys, signaling that a rotation has been performed. No Nigori
   // node is present yet, so we can't rotate.
   SetupKeystoreKeys({kRawOldKeystoreKey, kRawKeystoreKey});
@@ -2245,9 +2245,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefaultOnInit) {
 // applied.
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
   const char kOldGaiaKey[] = "old_gaia_key";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
-  std::string old_keystore_key;
-  base::Base64Encode(kRawOldKeystoreKey, &old_keystore_key);
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
+  const std::string old_keystore_key = base::Base64Encode(kRawOldKeystoreKey);
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
@@ -2293,7 +2292,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
 // preserves a custom passphrase.
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   const char kCustomPass[] = "custom_passphrase";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kCustomPass, PassphraseType::kCustomPassphrase);
@@ -2338,7 +2337,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
 // nigori node preserves the custom passphrase.
 TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
   const char kCustomPass[] = "custom_passphrase";
-  const char kRawOldKeystoreKey[] = "old_keystore_key";
+  const std::vector<uint8_t> kRawOldKeystoreKey = {5, 6, 7, 8};
 
   KeyParams custom_key = {KeyDerivationParams::CreateForPbkdf2(), kCustomPass};
   GetCryptographer()->AddKey(custom_key);
@@ -2519,7 +2518,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   SetupKeystoreKeys({kRawKeystoreKey});
 
   base::HistogramTester histogram_tester;
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   histogram_tester.ExpectTotalCount(
@@ -2535,7 +2534,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   IgnoreAllObserverCalls();
@@ -2556,7 +2555,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   IgnoreAllObserverCalls();
@@ -2580,7 +2579,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   IgnoreAllObserverCalls();
@@ -2603,7 +2602,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   IgnoreAllObserverCalls();
@@ -2628,7 +2627,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kRawKeystoreKey,
+  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
                                       kKeystoreKey);
 
   IgnoreAllObserverCalls();
@@ -2794,7 +2793,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       0, sync_pb::NigoriSpecifics::UNSPECIFIED, kCustomPassphrase,
       /*key_derivation_salt=*/base::nullopt);
@@ -2817,7 +2816,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       0, sync_pb::NigoriSpecifics::PBKDF2_HMAC_SHA1_1003, kCustomPassphrase,
       /*key_derivation_salt=*/base::nullopt);
@@ -2843,7 +2842,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       /*migration_time=*/1, sync_pb::NigoriSpecifics::SCRYPT_8192_8_11,
       kCustomPassphrase, {kScryptSalt});
@@ -2870,7 +2869,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       /*migration_time=*/1, sync_pb::NigoriSpecifics::SCRYPT_8192_8_11,
       kCustomPassphrase, {kScryptSalt});
@@ -2893,7 +2892,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       0, kUnsupportedKeyDerivationMethod, kCustomPassphrase,
       /*key_derivation_salt=*/base::nullopt);
@@ -2917,7 +2916,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   test_user_share_.SetUp();
   SetUpEncryption();
   SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori = BuildCustomPassMigratedNigori(
       0, sync_pb::NigoriSpecifics::UNSPECIFIED, kCustomPassphrase,
       /*key_derivation_salt=*/base::nullopt);
@@ -2939,18 +2938,17 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
 TEST_F(SyncEncryptionHandlerImplTest,
        ApplyNigoriUpdateShouldNotSetKeyMethodWithKeystorePassphrase) {
-  const char kRawNewKeystoreKey[] = "new_keystore_key";
-  std::string new_keystore_key;
-  base::Base64Encode(kRawNewKeystoreKey, &new_keystore_key);
+  const std::vector<uint8_t> kRawNewKeystoreKey = {9, 10, 11};
+  const std::string new_keystore_key = base::Base64Encode(kRawNewKeystoreKey);
 
   TearDown();
   test_user_share_.SetUp();
   SetUpEncryption();
   // Set up both keys right away so that the new keystore can be decrypted.
   SetupKeystoreKeys({kRawKeystoreKey, kRawNewKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(1, kRawKeystoreKey, kKeystoreKey);
+  InitAndVerifyKeystoreMigratedNigori(1, kKeystoreKey, kKeystoreKey);
   sync_pb::NigoriSpecifics new_nigori =
-      BuildKeystoreMigratedNigori(0, kRawNewKeystoreKey, new_keystore_key);
+      BuildKeystoreMigratedNigori(0, new_keystore_key, new_keystore_key);
   WriteNigori(new_nigori);
 
   IgnoreAllObserverCalls();

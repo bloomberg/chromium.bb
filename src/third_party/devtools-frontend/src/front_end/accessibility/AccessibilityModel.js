@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
 export class AccessibilityNode {
   /**
-   * @param {!Accessibility.AccessibilityModel} accessibilityModel
+   * @param {!AccessibilityModel} accessibilityModel
    * @param {!Protocol.Accessibility.AXNode} payload
    */
   constructor(accessibilityModel, payload) {
@@ -19,7 +21,7 @@ export class AccessibilityNode {
     if (payload.backendDOMNodeId) {
       accessibilityModel._setAXNodeForBackendDOMNodeId(payload.backendDOMNodeId, this);
       this._backendDOMNodeId = payload.backendDOMNodeId;
-      this._deferredDOMNode = new SDK.DeferredDOMNode(accessibilityModel.target(), payload.backendDOMNodeId);
+      this._deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(accessibilityModel.target(), payload.backendDOMNodeId);
     } else {
       this._backendDOMNodeId = null;
       this._deferredDOMNode = null;
@@ -39,7 +41,7 @@ export class AccessibilityNode {
   }
 
   /**
-   * @return {!Accessibility.AccessibilityModel}
+   * @return {!AccessibilityModel}
    */
   accessibilityModel() {
     return this._accessibilityModel;
@@ -115,14 +117,14 @@ export class AccessibilityNode {
   }
 
   /**
-   * @return {?Accessibility.AccessibilityNode}
+   * @return {?AccessibilityNode}
    */
   parentNode() {
     return this._parentNode;
   }
 
   /**
-   * @param {?Accessibility.AccessibilityNode} parentNode
+   * @param {?AccessibilityNode} parentNode
    */
   _setParentNode(parentNode) {
     this._parentNode = parentNode;
@@ -143,7 +145,7 @@ export class AccessibilityNode {
   }
 
   /**
-   * @return {?SDK.DeferredDOMNode}
+   * @return {?SDK.DOMModel.DeferredDOMNode}
    */
   deferredDOMNode() {
     return this._deferredDOMNode;
@@ -159,7 +161,7 @@ export class AccessibilityNode {
   }
 
   /**
-   * @return {!Array<!Accessibility.AccessibilityNode>}
+   * @return {!Array<!AccessibilityNode>}
    */
   children() {
     const children = [];
@@ -197,47 +199,20 @@ export class AccessibilityNode {
 
     return !this._childIds.some(id => this._accessibilityModel.axNodeForId(id) !== undefined);
   }
-
-  /**
-   * TODO(aboxhall): Remove once protocol is stable.
-   * @param {!Accessibility.AccessibilityNode} inspectedNode
-   * @param {string=} leadingSpace
-   * @return {string}
-   */
-  printSelfAndChildren(inspectedNode, leadingSpace) {
-    let string = leadingSpace || '';
-    if (this._role) {
-      string += this._role.value;
-    } else {
-      string += '<no role>';
-    }
-    string += (this._name ? ' ' + this._name.value : '');
-    string += ' ' + this._id;
-    if (this._domNode) {
-      string += ' (' + this._domNode.nodeName() + ')';
-    }
-    if (this === inspectedNode) {
-      string += ' *';
-    }
-    for (const child of this.children()) {
-      string += '\n' + child.printSelfAndChildren(inspectedNode, (leadingSpace || '') + '  ');
-    }
-    return string;
-  }
 }
 
 /**
  * @unrestricted
  */
-export default class AccessibilityModel extends SDK.SDKModel {
+export class AccessibilityModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
     this._agent = target.accessibilityAgent();
 
-    /** @type {!Map<string, !Accessibility.AccessibilityNode>} */
+    /** @type {!Map<string, !AccessibilityNode>} */
     this._axIdToAXNode = new Map();
     this._backendDOMNodeIdToAXNode = new Map();
   }
@@ -247,7 +222,7 @@ export default class AccessibilityModel extends SDK.SDKModel {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    * @return {!Promise}
    */
   async requestPartialAXTree(node) {
@@ -257,7 +232,7 @@ export default class AccessibilityModel extends SDK.SDKModel {
     }
 
     for (const payload of payloads) {
-      new Accessibility.AccessibilityNode(this, payload);
+      new AccessibilityNode(this, payload);
     }
 
     for (const axNode of this._axIdToAXNode.values()) {
@@ -269,7 +244,7 @@ export default class AccessibilityModel extends SDK.SDKModel {
 
   /**
    * @param {string} axId
-   * @return {?Accessibility.AccessibilityNode}
+   * @return {?AccessibilityNode}
    */
   axNodeForId(axId) {
     return this._axIdToAXNode.get(axId);
@@ -277,15 +252,15 @@ export default class AccessibilityModel extends SDK.SDKModel {
 
   /**
    * @param {string} axId
-   * @param {!Accessibility.AccessibilityNode} axNode
+   * @param {!AccessibilityNode} axNode
    */
   _setAXNodeForAXId(axId, axNode) {
     this._axIdToAXNode.set(axId, axNode);
   }
 
   /**
-   * @param {?SDK.DOMNode} domNode
-   * @return {?Accessibility.AccessibilityNode}
+   * @param {?SDK.DOMModel.DOMNode} domNode
+   * @return {?AccessibilityNode}
    */
   axNodeForDOMNode(domNode) {
     if (!domNode) {
@@ -296,39 +271,11 @@ export default class AccessibilityModel extends SDK.SDKModel {
 
   /**
    * @param {number} backendDOMNodeId
-   * @param {!Accessibility.AccessibilityNode} axNode
+   * @param {!AccessibilityNode} axNode
    */
   _setAXNodeForBackendDOMNodeId(backendDOMNodeId, axNode) {
     this._backendDOMNodeIdToAXNode.set(backendDOMNodeId, axNode);
   }
-
-  // TODO(aboxhall): Remove once protocol is stable.
-  /**
-   * @param {!SDK.DOMNode} inspectedNode
-   */
-  logTree(inspectedNode) {
-    let rootNode = inspectedNode;
-    while (rootNode.parentNode()) {
-      rootNode = rootNode.parentNode();
-    }
-    console.log(rootNode.printSelfAndChildren(inspectedNode));  // eslint-disable-line no-console
-  }
 }
 
-/* Legacy exported object */
-self.Accessibility = self.Accessibility || {};
-
-/* Legacy exported object */
-Accessibility = Accessibility || {};
-
-/**
- * @constructor
- */
-Accessibility.AccessibilityNode = AccessibilityNode;
-
-/**
- * @constructor
- */
-Accessibility.AccessibilityModel = AccessibilityModel;
-
-SDK.SDKModel.register(Accessibility.AccessibilityModel, SDK.Target.Capability.DOM, false);
+SDK.SDKModel.SDKModel.register(AccessibilityModel, SDK.SDKModel.Capability.DOM, false);

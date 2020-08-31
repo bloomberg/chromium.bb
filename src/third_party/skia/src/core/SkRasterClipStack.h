@@ -9,7 +9,7 @@
 #define SkRasterClipStack_DEFINED
 
 #include "include/core/SkClipOp.h"
-#include "include/core/SkDeque.h"
+#include "include/private/SkDeque.h"
 #include "src/core/SkRasterClip.h"
 #include <new>
 
@@ -114,6 +114,11 @@ public:
     void clipPath(const SkMatrix& ctm, const SkPath& path, SkClipOp op, bool aa) {
         this->writable_rc().op(path, ctm, fRootBounds, (SkRegion::Op)op, aa);
         this->trimIfExpanding(op);
+        this->validate();
+    }
+
+    void clipShader(sk_sp<SkShader> sh) {
+        this->writable_rc().op(std::move(sh));
         this->validate();
     }
 

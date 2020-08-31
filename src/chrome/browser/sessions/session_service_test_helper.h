@@ -24,6 +24,7 @@ class Location;
 
 namespace sessions {
 class SerializedNavigationEntry;
+struct SerializedUserAgentOverride;
 struct SessionTab;
 struct SessionWindow;
 }
@@ -45,9 +46,10 @@ class SessionServiceTestHelper {
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
 
-  void SetTabUserAgentOverride(const SessionID& window_id,
-                               const SessionID& tab_id,
-                               const std::string& user_agent_override);
+  void SetTabUserAgentOverride(
+      const SessionID& window_id,
+      const SessionID& tab_id,
+      const sessions::SerializedUserAgentOverride& user_agent_override);
 
   void SetForceBrowserNotAliveWithNoWindows(
       bool force_browser_not_alive_with_no_windows);
@@ -82,11 +84,16 @@ class SessionServiceTestHelper {
   SessionService* service() { return service_.get(); }
 
   void RunTaskOnBackendThread(const base::Location& from_here,
-                              const base::Closure& task);
+                              base::OnceClosure task);
 
   void SetAvailableRange(const SessionID& tab_id,
                          const std::pair<int, int>& range);
   bool GetAvailableRange(const SessionID& tab_id, std::pair<int, int>* range);
+
+  void SetHasOpenTrackableBrowsers(bool has_open_trackable_browsers);
+  bool GetHasOpenTrackableBrowsers();
+
+  void SetIsOnlyOneTabLeft(bool is_only_one_tab_left);
 
  private:
   std::unique_ptr<SessionService> service_;

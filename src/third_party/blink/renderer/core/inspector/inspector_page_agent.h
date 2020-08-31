@@ -181,7 +181,8 @@ class CORE_EXPORT InspectorPageAgent final
   void FrameStoppedLoading(LocalFrame*);
   void FrameRequestedNavigation(Frame* target_frame,
                                 const KURL&,
-                                ClientNavigationReason);
+                                ClientNavigationReason,
+                                NavigationPolicy);
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
                                 base::TimeDelta delay,
@@ -217,7 +218,7 @@ class CORE_EXPORT InspectorPageAgent final
   void Restore() override;
   bool ScreencastEnabled();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void GetResourceContentAfterResourcesContentLoaded(

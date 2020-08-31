@@ -6,14 +6,18 @@
 #define COMPONENTS_INVALIDATION_IMPL_INVALIDATION_SWITCHES_H
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace invalidation {
 namespace switches {
 
-extern const base::Feature kFCMInvalidationsConservativeEnabling;
 extern const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable;
 extern const base::Feature kFCMInvalidationsForSyncDontCheckVersion;
 extern const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler;
+extern const base::Feature kSyncInstanceIDTokenTTL;
+extern const base::FeatureParam<int> kSyncInstanceIDTokenTTLSeconds;
+extern const base::Feature kPolicyInstanceIDTokenTTL;
+extern const base::FeatureParam<int> kPolicyInstanceIDTokenTTLSeconds;
 
 }  // namespace switches
 }  // namespace invalidation

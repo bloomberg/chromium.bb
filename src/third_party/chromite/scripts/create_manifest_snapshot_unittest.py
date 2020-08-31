@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -20,6 +21,9 @@ from chromite.lib import repo_util
 from chromite.lib import repo_manifest
 from chromite.lib import repo_manifest_unittest
 from chromite.scripts import create_manifest_snapshot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MANIFEST_XML = """<?xml version="1.0" encoding="UTF-8"?>

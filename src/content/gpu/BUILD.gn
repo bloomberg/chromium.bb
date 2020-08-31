@@ -13,13 +13,9 @@ group("gpu") {
   visibility = [ "//content/*" ]  # This is an internal content API.
 
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":gpu_sources",
-    ]
+    public_deps = [ ":gpu_sources" ]
   }
 }
 
@@ -56,7 +52,6 @@ target(link_target_type, "gpu_sources") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/tracing",
     "//components/viz/service",
     "//content:export",
     "//content/child",
@@ -78,7 +73,6 @@ target(link_target_type, "gpu_sources") {
     "//components/viz/service/main",
     "//media/gpu/ipc/service",
     "//media/mojo/clients:clients",
-    "//media/mojo/mojom:constants",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -96,7 +90,10 @@ target(link_target_type, "gpu_sources") {
   ]
 
   if (is_android) {
-    deps += [ "//media" ]
+    deps += [
+      "//components/tracing:graphics_provider",
+      "//media",
+    ]
   }
 
   if (is_linux) {
@@ -118,6 +115,7 @@ target(link_target_type, "gpu_sources") {
   if (use_x11) {
     deps += [
       "//ui/events/platform/x11",
+      "//ui/gfx/linux:gpu_memory_buffer_support_x11",
       "//ui/gfx/x",
     ]
   }

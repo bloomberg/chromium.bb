@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -28,7 +29,7 @@ public class BookmarkFolderRow extends BookmarkRow {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setIconDrawable(BookmarkUtils.getFolderIcon(getContext()));
+        setStartIconDrawable(BookmarkUtils.getFolderIcon(getContext()));
     }
 
     // BookmarkRow implementation.
@@ -39,8 +40,8 @@ public class BookmarkFolderRow extends BookmarkRow {
     }
 
     @Override
-    BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
-        BookmarkItem item = super.setBookmarkId(bookmarkId);
+    BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
+        BookmarkItem item = super.setBookmarkId(bookmarkId, location);
         mTitleView.setText(item.getTitle());
         int childCount = mDelegate.getModel().getTotalBookmarkCount(bookmarkId);
         mDescriptionView.setText((childCount > 0)
@@ -51,7 +52,7 @@ public class BookmarkFolderRow extends BookmarkRow {
     }
 
     @Override
-    protected ColorStateList getDefaultIconTint() {
+    protected ColorStateList getDefaultStartIconTint() {
         return AppCompatResources.getColorStateList(
                 getContext(), BookmarkUtils.getFolderIconTint());
     }

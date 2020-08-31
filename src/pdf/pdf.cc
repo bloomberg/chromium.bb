@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "pdf/out_of_process_instance.h"
 #include "pdf/pdf_ppapi.h"
@@ -95,6 +94,13 @@ base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer) {
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   return engine_exports->IsPDFDocTagged(pdf_buffer);
+}
+
+base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
+                                    int page_index) {
+  ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  return engine_exports->GetPDFStructTreeForPage(pdf_buffer, page_index);
 }
 
 bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,

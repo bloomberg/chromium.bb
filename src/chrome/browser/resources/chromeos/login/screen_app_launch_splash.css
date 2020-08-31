@@ -3,29 +3,49 @@
  * found in the LICENSE file. */
 
 #app-launch-splash {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
   background: white;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
 }
 
+
 #splash-content {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 100%;
   position: relative;
 }
 
-#splash-header {
+#splash-title {
   background: left center no-repeat;
   background-size: 96px;
-  color: #666;
-  display: -webkit-box;
-  font-size: 48px;
+  display: flex;
+  flex-direction: column;
   height: 96px;
-  line-height: 96px;
+  justify-content: center;
+  max-width: 100%;
   padding-inline-start: 108px;
+}
+
+#splash-header {
+  color: #666;
+  font-size: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+#splash-subheader {
+  color: #666;
+  font-size: 18px;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
 }
 
 #splash-launch-text {
@@ -64,7 +84,7 @@
 
 #splash-shortcut-info {
   bottom: 50px;
-  color: gray;
+  color: rgb(102, 102, 102);  /* #666 */
   left: 0;
   position: absolute;
   right: 0;

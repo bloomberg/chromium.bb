@@ -14,20 +14,33 @@ source_set("public") {
   ]
 
   sources = [
+    "dns_over_https_server_config.cc",
+    "dns_over_https_server_config.h",
     "dns_protocol.h",
     "dns_query_type.cc",
     "dns_query_type.h",
+    "doh_provider_list.cc",
+    "doh_provider_list.h",
     "resolve_error_info.cc",
     "resolve_error_info.h",
     "util.cc",
     "util.h",
   ]
 
-  deps = [
-    "//net:net_deps",
+  deps = [ "//net:net_deps" ]
+
+  public_deps = [ "//net:net_public_deps" ]
+}
+
+source_set("tests") {
+  testonly = true
+  sources = [
+    "doh_provider_list_unittest.cc",
+    "util_unittest.cc",
   ]
 
-  public_deps = [
-    "//net:net_public_deps",
+  deps = [
+    "//net",
+    "//testing/gtest",
   ]
 }

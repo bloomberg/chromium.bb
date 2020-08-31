@@ -43,7 +43,7 @@ class CORE_EXPORT SVGImageElement final
  public:
   explicit SVGImageElement(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
 
@@ -53,10 +53,6 @@ class CORE_EXPORT SVGImageElement final
   SVGAnimatedLength* height() const { return height_.Get(); }
   SVGAnimatedPreserveAspectRatio* preserveAspectRatio() {
     return preserve_aspect_ratio_.Get();
-  }
-
-  IntSize GetOverriddenIntrinsicSize() const {
-    return overridden_intrinsic_size_;
   }
 
   bool HasPendingActivity() const final {
@@ -104,7 +100,6 @@ class CORE_EXPORT SVGImageElement final
   void DidMoveToNewDocument(Document& old_document) override;
   SVGImageLoader& GetImageLoader() const override { return *image_loader_; }
 
-  IntSize overridden_intrinsic_size_;
   bool is_default_overridden_intrinsic_size_;
 
   Member<SVGAnimatedLength> x_;

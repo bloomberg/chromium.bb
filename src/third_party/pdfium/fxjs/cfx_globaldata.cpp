@@ -122,16 +122,6 @@ CFX_GlobalData::iterator CFX_GlobalData::FindGlobalVariable(
   return m_arrayGlobalData.end();
 }
 
-CFX_GlobalData::const_iterator CFX_GlobalData::FindGlobalVariable(
-    const ByteString& propname) const {
-  for (auto it = m_arrayGlobalData.begin(); it != m_arrayGlobalData.end();
-       ++it) {
-    if ((*it)->data.sKey == propname)
-      return it;
-  }
-  return m_arrayGlobalData.end();
-}
-
 CFX_GlobalData::Element* CFX_GlobalData::GetGlobalVariable(
     const ByteString& propname) {
   auto iter = FindGlobalVariable(propname);
@@ -192,8 +182,9 @@ void CFX_GlobalData::SetGlobalVariableString(ByteString sPropName,
   m_arrayGlobalData.push_back(std::move(pNewData));
 }
 
-void CFX_GlobalData::SetGlobalVariableObject(ByteString sPropName,
-                                             CFX_GlobalArray array) {
+void CFX_GlobalData::SetGlobalVariableObject(
+    ByteString sPropName,
+    std::vector<std::unique_ptr<CFX_KeyValue>> array) {
   if (!TrimPropName(&sPropName))
     return;
 
@@ -282,8 +273,7 @@ bool CFX_GlobalData::LoadGlobalPersistentVariablesFromBuffer(
   if (buffer.size() < kMinGlobalDataBytes)
     return false;
 
-  CRYPT_ArcFourCryptBlock(buffer.data(), buffer.size(), kRC4KEY,
-                          sizeof(kRC4KEY));
+  CRYPT_ArcFourCryptBlock(buffer, kRC4KEY);
 
   uint8_t* p = buffer.data();
   uint16_t wType = *((uint16_t*)p);
@@ -384,7 +374,7 @@ bool CFX_GlobalData::SaveGlobalPersisitentVariables() {
     if (sData.GetSize() + sElement.GetSize() > kMaxGlobalDataBytes)
       break;
 
-    sData.AppendBlock(sElement.GetBuffer(), sElement.GetSize());
+    sData.AppendSpan(sElement.GetSpan());
     nCount++;
   }
 
@@ -397,10 +387,9 @@ bool CFX_GlobalData::SaveGlobalPersisitentVariables() {
 
   uint32_t dwSize = sData.GetSize();
   sFile.AppendBlock(&dwSize, sizeof(uint32_t));
-  sFile.AppendBlock(sData.GetBuffer(), sData.GetSize());
+  sFile.AppendSpan(sData.GetSpan());
 
-  CRYPT_ArcFourCryptBlock(sFile.GetBuffer(), sFile.GetSize(), kRC4KEY,
-                          sizeof(kRC4KEY));
+  CRYPT_ArcFourCryptBlock(sFile.GetSpan(), kRC4KEY);
 
   return m_pDelegate->StoreBuffer({sFile.GetBuffer(), sFile.GetSize()});
 }

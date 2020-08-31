@@ -93,19 +93,26 @@ class GerritHelper(object):
     else:
       gob_util.AddAssignee(self.host, change, assignee)
 
-  def SetPrivate(self, change, private):
+  def SetPrivate(self, change, private, dryrun=False):
     """Sets the private bit on the given CL.
 
     Args:
       change: CL number.
       private: bool to indicate what value to set for the private bit.
+      dryrun: If True, only print what would have been done.
     """
     if private:
-      gob_util.MarkPrivate(self.host, change)
+      if dryrun:
+        logging.info('Would have made "%s" private', change)
+      else:
+        gob_util.MarkPrivate(self.host, change)
     else:
-      gob_util.MarkNotPrivate(self.host, change)
+      if dryrun:
+        logging.info('Would have made "%s" public', change)
+      else:
+        gob_util.MarkNotPrivate(self.host, change)
 
-  def SetReviewers(self, change, add=(), remove=(), dryrun=False):
+  def SetReviewers(self, change, add=(), remove=(), dryrun=False, notify='ALL'):
     """Modify the list of reviewers on a gerrit change.
 
     Args:
@@ -113,17 +120,18 @@ class GerritHelper(object):
       add: Sequence of email addresses of reviewers to add.
       remove: Sequence of email addresses of reviewers to remove.
       dryrun: If True, only print what would have been done.
+      notify: A string, parameter controlling gerrit's email generation.
     """
     if add:
       if dryrun:
         logging.info('Would have added %s to "%s"', add, change)
       else:
-        gob_util.AddReviewers(self.host, change, add)
+        gob_util.AddReviewers(self.host, change, add, notify=notify)
     if remove:
       if dryrun:
         logging.info('Would have removed %s to "%s"', remove, change)
       else:
-        gob_util.RemoveReviewers(self.host, change, remove)
+        gob_util.RemoveReviewers(self.host, change, remove, notify=notify)
 
   def GetChangeDetail(self, change_num, verbose=False):
     """Return detailed information about a gerrit change.
@@ -440,12 +448,40 @@ class GerritHelper(object):
       rev = None
     gob_util.SubmitChange(self.host, self._to_changenum(change), revision=rev)
 
-  def AbandonChange(self, change, dryrun=False):
+  def ReviewedChange(self, change, dryrun=False):
+    """Mark a gerrit change as reviewed."""
+    if dryrun:
+      logging.info('Would have reviewed change %s', change)
+      return
+    gob_util.ReviewedChange(self.host, self._to_changenum(change))
+
+  def UnreviewedChange(self, change, dryrun=False):
+    """Unmark a gerrit change as reviewed."""
+    if dryrun:
+      logging.info('Would have unreviewed change %s', change)
+      return
+    gob_util.UnreviewedChange(self.host, self._to_changenum(change))
+
+  def IgnoreChange(self, change, dryrun=False):
+    """Ignore a gerrit change."""
+    if dryrun:
+      logging.info('Would have ignored change %s', change)
+      return
+    gob_util.IgnoreChange(self.host, self._to_changenum(change))
+
+  def UnignoreChange(self, change, dryrun=False):
+    """Unignore a gerrit change."""
+    if dryrun:
+      logging.info('Would have unignored change %s', change)
+      return
+    gob_util.UnignoreChange(self.host, self._to_changenum(change))
+
+  def AbandonChange(self, change, msg='', dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
     if dryrun:
       logging.info('Would have abandoned change %s', change)
       return
-    gob_util.AbandonChange(self.host, self._to_changenum(change))
+    gob_util.AbandonChange(self.host, self._to_changenum(change), msg=msg)
 
   def RestoreChange(self, change, dryrun=False):
     """Re-activate a previously abandoned gerrit change."""

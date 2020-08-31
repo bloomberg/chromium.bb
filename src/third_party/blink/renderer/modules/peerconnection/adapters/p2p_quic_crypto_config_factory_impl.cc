@@ -36,7 +36,7 @@ class InsecureProofVerifier : public quic::ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       quic::QuicTransportVersion transport_version,
-      quic::QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -49,6 +49,7 @@ class InsecureProofVerifier : public quic::ProofVerifier {
 
   quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
+      const uint16_t port,
       const std::vector<std::string>& certs,
       const std::string& ocsp_response,
       const std::string& cert_sct,
@@ -75,20 +76,22 @@ class DummyProofSource : public quic::ProofSource {
 
   // ProofSource override.
   void GetProof(const quic::QuicSocketAddress& server_addr,
+                const quic::QuicSocketAddress& client_addr,
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
-                quic::QuicStringPiece chlo_hash,
+                quiche::QuicheStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
     quic::QuicCryptoProof proof;
     proof.signature = "Dummy signature";
     proof.leaf_cert_scts = "Dummy timestamp";
-    callback->Run(true, GetCertChain(server_addr, hostname), proof,
+    callback->Run(true, GetCertChain(server_addr, client_addr, hostname), proof,
                   nullptr /* details */);
   }
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname) override {
     std::vector<std::string> certs;
     certs.push_back("Dummy cert");
@@ -97,12 +100,15 @@ class DummyProofSource : public quic::ProofSource {
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      quic::QuicStringPiece in,
+      quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
-    callback->Run(true, "Dummy signature");
+    callback->Run(true, "Dummy signature", nullptr);
   }
+
+  TicketCrypter* GetTicketCrypter() override { return nullptr; }
 };
 
 P2PQuicCryptoConfigFactoryImpl::P2PQuicCryptoConfigFactoryImpl(

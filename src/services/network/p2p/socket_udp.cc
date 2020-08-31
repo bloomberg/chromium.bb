@@ -271,8 +271,8 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
     }
   }
 
-  TRACE_EVENT_ASYNC_STEP_INTO1("p2p", "Send", packet.id, "UdpAsyncSendTo",
-                               "size", packet.size);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("p2p", "UdpAsyncSendTo", packet.id, "size",
+                                    packet.size);
   // Don't try to set DSCP in following conditions,
   // 1. If the outgoing packet is set to DSCP_NO_CHANGE
   // 2. If no change in DSCP value from last packet
@@ -295,14 +295,14 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
   cricket::ApplyPacketOptions(
       reinterpret_cast<uint8_t*>(packet.data->data()), packet.size,
       packet.packet_options.packet_time_params, send_time_us);
-  auto callback_binding =
-      base::Bind(&P2PSocketUdp::OnSend, base::Unretained(this), packet.id,
-                 packet.packet_options.packet_id, send_time_us / 1000);
+  auto callback_binding = base::BindRepeating(
+      &P2PSocketUdp::OnSend, base::Unretained(this), packet.id,
+      packet.packet_options.packet_id, send_time_us / 1000);
 
   // TODO(crbug.com/656607): Pass traffic annotation after DatagramSocketServer
   // is updated.
   int result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
-                               callback_binding);
+                               base::BindOnce(callback_binding));
 
   // sendto() may return an error, e.g. if we've received an ICMP Destination
   // Unreachable message. When this happens try sending the same packet again,
@@ -357,7 +357,8 @@ bool P2PSocketUdp::HandleSendResult(uint64_t packet_id,
                                     int32_t transport_sequence_number,
                                     int64_t send_time_ms,
                                     int result) {
-  TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id, "result", result);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("p2p", "UdpAsyncSendTo", packet_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("p2p", "Send", packet_id, "result", result);
   if (result < 0) {
     ReportSocketError(result, "WebRTC.ICE.UdpSocketWriteErrorCode");
 

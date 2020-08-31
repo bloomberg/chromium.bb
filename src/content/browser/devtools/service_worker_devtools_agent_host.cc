@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
@@ -70,6 +71,10 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     const GURL& url,
     const GURL& scope,
     bool is_installed_version,
+    base::Optional<network::CrossOriginEmbedderPolicy>
+        cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     const base::UnguessableToken& devtools_worker_token)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       state_(WORKER_NOT_READY),
@@ -82,7 +87,9 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
       url_(url),
       scope_(scope),
       version_installed_time_(is_installed_version ? base::Time::Now()
-                                                   : base::Time()) {
+                                                   : base::Time()),
+      cross_origin_embedder_policy_(std::move(cross_origin_embedder_policy)),
+      coep_reporter_(std::move(coep_reporter)) {
   NotifyCreated();
 }
 
@@ -172,6 +179,14 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
     UpdateIsAttached(true);
 }
 
+void ServiceWorkerDevToolsAgentHost::UpdateCrossOriginEmbedderPolicy(
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
+  cross_origin_embedder_policy_ = std::move(cross_origin_embedder_policy);
+  coep_reporter_.Bind(std::move(coep_reporter));
+}
+
 void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
                                                      int worker_route_id) {
   DCHECK_EQ(WORKER_TERMINATED, state_);
@@ -205,11 +220,32 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
     return;
   }
   const url::Origin origin = url::Origin::Create(url_);
+
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_for_script_loader;
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_for_subresource_loader;
+  if (coep_reporter_) {
+    coep_reporter_->Clone(
+        coep_reporter_for_script_loader.InitWithNewPipeAndPassReceiver());
+    coep_reporter_->Clone(
+        coep_reporter_for_subresource_loader.InitWithNewPipeAndPassReceiver());
+  }
+  // Use the default CrossOriginEmbedderPolicy if
+  // |cross_origin_embedder_policy_| is nullopt. It's acceptable because the
+  // factory bundles are updated with correct COEP value before any subresource
+  // requests in that case.
   auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin,
+      cross_origin_embedder_policy_ ? cross_origin_embedder_policy_.value()
+                                    : network::CrossOriginEmbedderPolicy(),
+      std::move(coep_reporter_for_script_loader),
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin,
+      cross_origin_embedder_policy_ ? cross_origin_embedder_policy_.value()
+                                    : network::CrossOriginEmbedderPolicy(),
+      std::move(coep_reporter_for_subresource_loader),
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {

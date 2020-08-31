@@ -10,13 +10,11 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
-namespace platform {
 
 struct TlsListenOptions {
   uint32_t backlog_size;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TLS_LISTEN_OPTIONS_H_

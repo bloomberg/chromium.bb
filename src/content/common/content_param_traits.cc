@@ -13,8 +13,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "content/common/frame_message_structs.h"
-#include "content/common/tab_switch_time_recorder.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -22,39 +21,51 @@
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
 
 void ParamTraits<content::WebCursor>::Write(base::Pickle* m,
                                             const param_type& p) {
-  WriteParam(m, p.info().type);
-  if (p.info().type == ui::CursorType::kCustom) {
-    WriteParam(m, p.info().hotspot);
-    WriteParam(m, p.info().image_scale_factor);
-    WriteParam(m, p.info().custom_image);
+  WriteParam(m, p.cursor().type());
+  if (p.cursor().type() == ui::mojom::CursorType::kCustom) {
+    WriteParam(m, p.cursor().custom_hotspot());
+    WriteParam(m, p.cursor().image_scale_factor());
+    WriteParam(m, p.cursor().custom_bitmap());
   }
 }
 
 bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
                                            param_type* r) {
-  content::CursorInfo info;
-  if (!ReadParam(m, iter, &info.type))
+  ui::mojom::CursorType type;
+  if (!ReadParam(m, iter, &type))
     return false;
 
-  if (info.type == ui::CursorType::kCustom &&
-      (!ReadParam(m, iter, &info.hotspot) ||
-       !ReadParam(m, iter, &info.image_scale_factor) ||
-       !ReadParam(m, iter, &info.custom_image))) {
-    return false;
+  ui::Cursor cursor(type);
+  if (cursor.type() == ui::mojom::CursorType::kCustom) {
+    gfx::Point hotspot;
+    float image_scale_factor;
+    SkBitmap bitmap;
+    if (!ReadParam(m, iter, &hotspot) ||
+        !ReadParam(m, iter, &image_scale_factor) ||
+        !ReadParam(m, iter, &bitmap)) {
+      return false;
+    }
+
+    cursor.set_custom_hotspot(hotspot);
+    cursor.set_image_scale_factor(image_scale_factor);
+    cursor.set_custom_bitmap(bitmap);
   }
 
-  return r->SetInfo(info);
+  return r->SetCursor(cursor);
 }
 
 void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
@@ -63,16 +74,16 @@ void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
 
 void ParamTraits<blink::MessagePortChannel>::Write(base::Pickle* m,
                                                    const param_type& p) {
-  ParamTraits<mojo::MessagePipeHandle>::Write(m, p.ReleaseHandle().release());
+  ParamTraits<blink::MessagePortDescriptor>::Write(m, p.ReleaseHandle());
 }
 
 bool ParamTraits<blink::MessagePortChannel>::Read(const base::Pickle* m,
                                                   base::PickleIterator* iter,
                                                   param_type* r) {
-  mojo::MessagePipeHandle handle;
-  if (!ParamTraits<mojo::MessagePipeHandle>::Read(m, iter, &handle))
+  blink::MessagePortDescriptor port;
+  if (!ParamTraits<blink::MessagePortDescriptor>::Read(m, iter, &port))
     return false;
-  *r = blink::MessagePortChannel(mojo::ScopedMessagePipeHandle(handle));
+  *r = blink::MessagePortChannel(std::move(port));
   return true;
 }
 
@@ -94,6 +105,37 @@ void ParamTraits<blink::PolicyValue>::Write(base::Pickle* m,
       break;
   }
 }
+
+void ParamTraits<blink::MessagePortDescriptor>::Write(
+    base::Pickle* m,
+    const param_type& pconst) {
+  // Serializing this object is a move of the object contents, thus we need a
+  // mutable reference to it.
+  param_type& p = const_cast<param_type&>(pconst);
+  ParamTraits<mojo::MessagePipeHandle>::Write(
+      m, p.TakeHandleForSerialization().release());
+  ParamTraits<base::UnguessableToken>::Write(m, p.TakeIdForSerialization());
+  ParamTraits<uint64_t>::Write(m, p.TakeSequenceNumberForSerialization());
+}
+
+bool ParamTraits<blink::MessagePortDescriptor>::Read(const base::Pickle* m,
+                                                     base::PickleIterator* iter,
+                                                     param_type* r) {
+  mojo::MessagePipeHandle port;
+  base::UnguessableToken id;
+  uint64_t sequence_number = 0;
+  if (!ParamTraits<mojo::MessagePipeHandle>::Read(m, iter, &port) ||
+      !ParamTraits<base::UnguessableToken>::Read(m, iter, &id) ||
+      !ParamTraits<uint64_t>::Read(m, iter, &sequence_number)) {
+    return false;
+  }
+  r->InitializeFromSerializedValues(mojo::ScopedMessagePipeHandle(port), id,
+                                    sequence_number);
+  return true;
+}
+
+void ParamTraits<blink::MessagePortDescriptor>::Log(const param_type& p,
+                                                    std::string* l) {}
 
 bool ParamTraits<blink::PolicyValue>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
@@ -143,35 +185,6 @@ bool ParamTraits<ui::AXMode>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<ui::AXMode>::Log(const param_type& p, std::string* l) {}
-
-// static
-void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  DCHECK(p.frame_sink_id.is_valid());
-  WriteParam(m, p.frame_sink_id);
-}
-
-bool ParamTraits<content::FrameMsg_ViewChanged_Params>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  if (!ReadParam(m, iter, &(r->frame_sink_id)))
-    return false;
-  if (!r->frame_sink_id.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
-// static
-void ParamTraits<content::FrameMsg_ViewChanged_Params>::Log(const param_type& p,
-                                                            std::string* l) {
-  l->append("(");
-  LogParam(p.frame_sink_id, l);
-  l->append(")");
-}
 
 template <>
 struct ParamTraits<blink::mojom::SerializedBlobPtr> {
@@ -233,6 +246,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_first);
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.stack_trace_should_pause);
+  WriteParam(m, p->data.locked_agent_cluster_id);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.stream_channels);
   WriteParam(m, !!p->data.user_activation);
@@ -268,6 +282,7 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_should_pause) ||
+      !ReadParam(m, iter, &(*r)->data.locked_agent_cluster_id) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &has_activation) ||
@@ -489,30 +504,37 @@ void ParamTraits<net::SHA256HashValue>::Log(const param_type& p,
   l->append("<SHA256HashValue>");
 }
 
-void ParamTraits<content::RecordTabSwitchTimeRequest>::Write(
+void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.tab_switch_start_time);
+  WriteParam(m, p.event_start_time);
   WriteParam(m, p.destination_is_loaded);
   WriteParam(m, p.destination_is_frozen);
+  WriteParam(m, p.show_reason_tab_switching);
+  WriteParam(m, p.show_reason_unoccluded);
+  WriteParam(m, p.show_reason_bfcache_restore);
 }
 
-bool ParamTraits<content::RecordTabSwitchTimeRequest>::Read(
+bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
-  if (!ReadParam(m, iter, &r->tab_switch_start_time) ||
+  if (!ReadParam(m, iter, &r->event_start_time) ||
       !ReadParam(m, iter, &r->destination_is_loaded) ||
-      !ReadParam(m, iter, &r->destination_is_frozen)) {
+      !ReadParam(m, iter, &r->destination_is_frozen) ||
+      !ReadParam(m, iter, &r->show_reason_tab_switching) ||
+      !ReadParam(m, iter, &r->show_reason_unoccluded) ||
+      !ReadParam(m, iter, &r->show_reason_bfcache_restore)) {
     return false;
   }
 
   return true;
 }
 
-void ParamTraits<content::RecordTabSwitchTimeRequest>::Log(const param_type& p,
-                                                           std::string* l) {
-  l->append("<content::RecordTabSwitchTimeRequest>");
+void ParamTraits<content::RecordContentToVisibleTimeRequest>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<content::RecordContentToVisibleTimeRequest>");
 }
 
 }  // namespace IPC

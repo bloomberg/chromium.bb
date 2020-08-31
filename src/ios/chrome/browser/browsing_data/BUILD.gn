@@ -7,16 +7,12 @@ source_set("feature_flags") {
     "browsing_data_features.cc",
     "browsing_data_features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("browsing_data_remove_mask") {
-  sources = [
-    "browsing_data_remove_mask.h",
-  ]
+  sources = [ "browsing_data_remove_mask.h" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -64,10 +60,12 @@ source_set("browsing_data") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
+    "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/browser/web",
     "//ios/chrome/browser/webdata_services",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
@@ -122,6 +120,7 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/sessions:serialisation",
+    "//ios/chrome/browser/sessions:session_service",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

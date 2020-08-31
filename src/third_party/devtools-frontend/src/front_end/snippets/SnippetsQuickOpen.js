@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
+import * as Common from '../common/common.js';
+import * as QuickOpen from '../quick_open/quick_open.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {evaluateScriptSnippet} from './ScriptSnippetFileSystem.js';
+
+export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   constructor() {
     super();
-    /** @type {!Array<!Workspace.UISourceCode>} */
+    /** @type {!Array<!Workspace.UISourceCode.UISourceCode>} */
     this._snippets = [];
   }
   /**
@@ -17,7 +23,7 @@ export default class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Prov
     if (itemIndex === null) {
       return;
     }
-    Snippets.evaluateScriptSnippet(this._snippets[itemIndex]);
+    evaluateScriptSnippet(this._snippets[itemIndex]);
   }
 
   /**
@@ -26,7 +32,7 @@ export default class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Prov
    * @return {string}
    */
   notFoundText(query) {
-    return Common.UIString('No snippets found.');
+    return Common.UIString.UIString('No snippets found.');
   }
 
   /**
@@ -71,17 +77,6 @@ export default class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Prov
   renderItem(itemIndex, query, titleElement, subtitleElement) {
     titleElement.textContent = unescape(this._snippets[itemIndex].name());
     titleElement.classList.add('monospace');
-    QuickOpen.FilteredListWidget.highlightRanges(titleElement, query, true);
+    QuickOpen.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query, true);
   }
 }
-
-/* Legacy exported object */
-self.Snippets = self.Snippets || {};
-
-/* Legacy exported object */
-Snippets = Snippets || {};
-
-/**
- * @constructor
- */
-Snippets.SnippetsQuickOpen = SnippetsQuickOpen;

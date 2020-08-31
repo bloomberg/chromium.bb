@@ -18,7 +18,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareSheetDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -103,7 +103,7 @@ public class ShareDelegateImplIntegrationTest {
         HistogramDelta urlResultDelta = new HistogramDelta(
                 ShareDelegateImpl.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
         ShareParams params = triggerShare();
-        Assert.assertEquals(expectedShareUrl, params.getUrl());
+        Assert.assertTrue(params.getText().contains(expectedShareUrl));
         Assert.assertEquals(1, urlResultDelta.getDelta());
     }
 
@@ -114,7 +114,7 @@ public class ShareDelegateImplIntegrationTest {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
                 void share(ShareParams params, BottomSheetController controller,
-                        ActivityTabProvider tabProvider) {
+                        ActivityTabProvider tabProvider, long shareStartTime) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }

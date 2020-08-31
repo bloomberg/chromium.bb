@@ -61,7 +61,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
@@ -80,7 +79,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -95,16 +93,20 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/csd.pb.h"
-#include "components/safe_browsing/safe_browsing_service_interface.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/download_file_types.pb.h"
+#include "components/safe_browsing/core/safe_browsing_service_interface.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/quarantine/test_support.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/notification_source.h"
@@ -112,12 +114,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -138,10 +139,8 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -229,36 +228,35 @@ class OnCanDownloadDecidedObserver {
  public:
   OnCanDownloadDecidedObserver() = default;
 
-  void Wait(const std::vector<bool>& expected_decisions) {
-    if (expected_decisions.size() <= decisions_.size()) {
-      EXPECT_TRUE(std::equal(expected_decisions.begin(),
-                             expected_decisions.end(), decisions_.begin()));
-    } else {
-      expected_decisions_ = expected_decisions;
-      base::RunLoop run_loop;
-      completion_closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
+  void WaitForNumberOfDecisions(size_t expected_num_of_decisions) {
+    if (expected_num_of_decisions <= decisions_.size())
+      return;
+
+    expected_num_of_decisions_ = expected_num_of_decisions;
+    base::RunLoop run_loop;
+    completion_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   void OnCanDownloadDecided(bool allow) {
     decisions_.push_back(allow);
-    if (decisions_.size() == expected_decisions_.size()) {
+    if (decisions_.size() == expected_num_of_decisions_) {
       DCHECK(!completion_closure_.is_null());
-      EXPECT_EQ(decisions_, expected_decisions_);
       std::move(completion_closure_).Run();
     }
   }
 
+  const std::vector<bool>& GetDecisions() { return decisions_; }
+
   void Reset() {
+    expected_num_of_decisions_ = 0;
     decisions_.clear();
-    expected_decisions_.clear();
     completion_closure_.Reset();
   }
 
  private:
   std::vector<bool> decisions_;
-  std::vector<bool> expected_decisions_;
+  size_t expected_num_of_decisions_ = 0;
   base::Closure completion_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
@@ -616,7 +614,7 @@ class DownloadTest : public InProcessBrowserTest {
         prefs::kPromptForDownload, false);
 
     DownloadManager* manager = DownloadManagerForBrowser(browser());
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 
     file_activity_observer_.reset(
         new DownloadTestFileActivityObserver(browser()->profile()));
@@ -744,7 +742,7 @@ class DownloadTest : public InProcessBrowserTest {
                        const GURL& url) {
     DownloadAndWaitWithDisposition(
         browser, url, WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
   // Should only be called when the download is known to have finished
@@ -884,7 +882,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     ui_test_utils::NavigateToURLWithDisposition(
         browser, finish_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
     CheckDownloadStatesForBrowser(browser, 1, DownloadItem::COMPLETE);
@@ -1238,18 +1236,18 @@ class DownloadReferrerPolicyTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     DownloadReferrerPolicyTest,
-    ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
-                      network::mojom::ReferrerPolicy::kDefault,
-                      network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-                      network::mojom::ReferrerPolicy::kNever,
-                      network::mojom::ReferrerPolicy::kOrigin,
-                      network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::
-                          kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::kSameOrigin,
-                      network::mojom::ReferrerPolicy::kStrictOrigin));
+    ::testing::Values(
+        network::mojom::ReferrerPolicy::kAlways,
+        network::mojom::ReferrerPolicy::kDefault,
+        network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+        network::mojom::ReferrerPolicy::kNever,
+        network::mojom::ReferrerPolicy::kOrigin,
+        network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kSameOrigin,
+        network::mojom::ReferrerPolicy::kStrictOrigin));
 
 namespace {
 
@@ -1331,9 +1329,8 @@ class DownloadWakeLockTest : public DownloadTest {
   DownloadWakeLockTest() = default;
 
   void Initialize() {
-    connector_ = content::GetSystemConnector()->Clone();
-    connector_->Connect(device::mojom::kServiceName,
-                        wake_lock_provider_.BindNewPipeAndPassReceiver());
+    content::GetDeviceService().BindWakeLockProvider(
+        wake_lock_provider_.BindNewPipeAndPassReceiver());
   }
 
   // Returns the number of active wake locks of type |type|.
@@ -1354,7 +1351,6 @@ class DownloadWakeLockTest : public DownloadTest {
 
  protected:
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
-  std::unique_ptr<service_manager::Connector> connector_;
   DISALLOW_COPY_AND_ASSIGN(DownloadWakeLockTest);
 };
 
@@ -1638,7 +1634,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload1());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait({false});
+  can_download_observer.WaitForNumberOfDecisions(1);
+  EXPECT_FALSE(can_download_observer.GetDecisions().front());
   can_download_observer.Reset();
 
   // Let the 2nd download to succeed.
@@ -1651,7 +1648,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload2());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait({true});
+  can_download_observer.WaitForNumberOfDecisions(1);
+  EXPECT_TRUE(can_download_observer.GetDecisions().front());
+
   // Waits for the 2nd download to complete.
   observer->WaitForFinished();
 
@@ -1815,7 +1814,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
   // Open a web page and wait.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // We should have two tabs now.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -2297,14 +2296,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, UserScriptDownload) {
 }
 
 // Test to make sure auto-open works.
-IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenByUser) {
   base::FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/download-autoopen.txt");
 
   ASSERT_TRUE(
-      GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
+      GetDownloadPrefs(browser())->EnableAutoOpenByUserBasedOnExtension(file));
 
   DownloadAndWait(browser(), url);
 
@@ -2634,15 +2633,8 @@ class DownloadTestWithHistogramTester : public DownloadTest {
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-// Flaky on Linux and Windows. https://crbug.com/1028371
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_SavePageNonHTMLViaGet DISABLED_SavePageNonHTMLViaGet
-#else
-#define MAYBE_SavePageNonHTMLViaGet SavePageNonHTMLViaGet
-#endif
-
 IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester,
-                       MAYBE_SavePageNonHTMLViaGet) {
+                       DISABLED_SavePageNonHTMLViaGet) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);
@@ -3131,13 +3123,13 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // target.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kAltKey,
+      blink::WebInputEvent::Type::kMouseDown, blink::WebInputEvent::kAltKey,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   waiter->WaitForFinished();
@@ -3158,8 +3150,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3207,13 +3198,14 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest, SaveLinkAsReferrerPolicy) {
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   waiter->WaitForFinished();
@@ -3234,8 +3226,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest, SaveLinkAsReferrerPolicy) {
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3290,13 +3281,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsVsCrossOriginResourcePolicy) {
       IDC_CONTENT_CONTEXT_SAVELINKAS);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   download_waiter->WaitForFinished();
@@ -3382,8 +3374,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
       break;
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kStrictOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
     case network::mojom::ReferrerPolicy::kNever:
@@ -3428,13 +3419,13 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // target.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kAltKey,
+      blink::WebInputEvent::Type::kMouseDown, blink::WebInputEvent::kAltKey,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(15, 15);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   waiter->WaitForFinished();
@@ -3450,12 +3441,21 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // Check that the file contains the expected referrer. The referrer is
   // expected to be sent for policies kAlways, kDefault, and
   // kNoReferrerWhenDowngrade. The referrer should not be sent for policies
-  // kNever, kSameOrigin, and kNoReferrerWhenDowngradeOriginWhenCrossOrigin.
+  // kNever, kSameOrigin, and kStrictOriginWhenCrossOrigin.
   base::FilePath file(download_items[0]->GetTargetFilePath());
   GURL origin = url::Origin::Create(url).GetURL();
-  switch (referrer_policy()) {
+
+  // Since the default referrer policy can change based on configuration,
+  // resolve referrer_policy() into a concrete policy.
+  auto policy_for_comparison = referrer_policy();
+  if (policy_for_comparison == network::mojom::ReferrerPolicy::kDefault) {
+    policy_for_comparison =
+        content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+            content::Referrer::GetDefaultReferrerPolicy());
+  }
+
+  switch (policy_for_comparison) {
     case network::mojom::ReferrerPolicy::kAlways:
-    case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3464,12 +3464,13 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
       EXPECT_TRUE(VerifyFile(file, "", 0));
       break;
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kOrigin:
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       EXPECT_TRUE(VerifyFile(file, origin.spec(), origin.spec().length()));
       break;
+    default:
+      NOTREACHED() << "Unexpected policy.";
   }
 }
 
@@ -3478,11 +3479,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
       CreateWaiter(browser(), 2));
 
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
   permission_request_manager->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -3520,7 +3521,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultipleDownloadsFromIframeSrcdoc) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 
   // Only the 1st download should succeed. The following should fail.
-  can_download_observer.Wait({true, false, false});
+  can_download_observer.WaitForNumberOfDecisions(3);
+  std::vector<bool> expected_decisions{true, false, false};
+  EXPECT_EQ(can_download_observer.GetDecisions(), expected_decisions);
 
   downloads_observer->WaitForFinished();
 
@@ -3528,14 +3531,53 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultipleDownloadsFromIframeSrcdoc) {
       1u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 }
 
-// Test the scenario for 3 consecutive <a download> download attempts that all
-// trigger a x-origin redirect to another download. No download is expected to
-// happen.
-IN_PROC_BROWSER_TEST_F(
-    DownloadTest,
-    MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload) {
+// Test <a download> download that triggers a x-origin redirect to another
+// download. The download should succeed.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       CrossOriginRedirectDownloadFromAnchorDownload) {
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
-      CreateWaiter(browser(), 0u));
+      CreateWaiter(browser(), 1u));
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/multiple_a_download_x_origin_redirect_to_download.html");
+
+  base::StringPairs port_replacement;
+  port_replacement.push_back(std::make_pair(
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
+  std::string download_url = net::test_server::GetFilePathWithReplacements(
+      "redirect_x_origin_download.html", port_replacement);
+
+  url = GURL(url.spec() + "?download_url=" + download_url + "&num_downloads=1");
+
+  // Navigate to a page that triggers a <a download> download attempt that
+  // triggers a x-origin redirect to another download.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+
+  // The <a download> attempt and well as the redirected download should both
+  // pass the download limiter check.
+  can_download_observer.WaitForNumberOfDecisions(2);
+  std::vector<bool> expected_decisions{true, true};
+  EXPECT_EQ(can_download_observer.GetDecisions(), expected_decisions);
+
+  // Wait for the redirected download resulted from the download attempt to
+  // finish.
+  downloads_observer->WaitForFinished();
+}
+
+// Test the scenario for 3 consecutive <a download> download attempts that all
+// trigger a x-origin redirect to another download. Only the redirected download
+// resulted from the 1st <a download> attempt should succeed.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       MultipleCrossOriginRedirectDownloadsFromAnchorDownload) {
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
+      CreateWaiter(browser(), 1u));
 
   OnCanDownloadDecidedObserver can_download_observer;
   g_browser_process->download_request_limiter()
@@ -3554,24 +3596,26 @@ IN_PROC_BROWSER_TEST_F(
   std::string download_url = net::test_server::GetFilePathWithReplacements(
       "redirect_x_origin_download.html", port_replacement);
 
-  url = GURL(url.spec() + "?download_url=" + download_url);
+  url = GURL(url.spec() + "?download_url=" + download_url + "&num_downloads=3");
 
   // Navigate to a page that triggers 3 consecutive <a download> download
   // attempts that all trigger a x-origin redirect to another download.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 
   // The 1st <a download> attempt should pass the download limiter check,
-  // and prevent further download attempts from passing. The subsequent 2nd/3rd
-  // <a download> attempts as well as the |download as a result of the x-origin
-  // redirect from the 1st download attempt| should all fail the download
-  // limiter check.
-  can_download_observer.Wait({true, false, false, false});
+  // and prevent subsequent 2nd/3rd download attempts from passing the check.
+  // The download resulted from the x-origin redirect from the 1st download
+  // attempt will still pass the check, which could happen at any point
+  // before/between/after the 2nd and 3rd <a download> attempts.
+  can_download_observer.WaitForNumberOfDecisions(4);
+  const std::vector<bool>& decisions = can_download_observer.GetDecisions();
+  EXPECT_EQ(decisions.size(), 4u);
+  EXPECT_TRUE(decisions.front());
+  EXPECT_EQ(1, std::count(decisions.begin() + 1, decisions.end(), true));
 
-  // Only the 1st <a download> attempt passed the download limiter check, but it
-  // was still aborted by a x-origin redirect, therefore we expect no download
-  // to happen.
-  EXPECT_EQ(
-      0u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  // Wait for the redirected download resulted from the 1st download attempt to
+  // finish.
+  downloads_observer->WaitForFinished();
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
@@ -3660,8 +3704,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
         ));
 
     // Create the file.
-    EXPECT_EQ(static_cast<int>(crazy8.size()),
-              base::WriteFile(file_path, crazy8.c_str(), crazy8.size()));
+    EXPECT_TRUE(base::WriteFile(file_path, crazy8));
     GURL file_url(net::FilePathToFileURL(file_path));
 
     // Download the file and check that the filename is correct.
@@ -3728,9 +3771,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux: http://crbug.com/238459
-#define MAYBE_DownloadTest_PercentComplete DISABLED_DownloadTest_PercentComplete
-#elif defined(OS_MACOSX)
-// Disable on mac: http://crbug.com/238831
 #define MAYBE_DownloadTest_PercentComplete DISABLED_DownloadTest_PercentComplete
 #else
 #define MAYBE_DownloadTest_PercentComplete DownloadTest_PercentComplete
@@ -4043,7 +4083,7 @@ IN_PROC_BROWSER_TEST_P(DownloadTestWithOptionalSafetyTipsFeature, SafetyTips) {
       security_state::SafetyTipStatus::kBadReputation, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          DownloadTestWithOptionalSafetyTipsFeature,
                          ::testing::Bool());
 
@@ -4263,8 +4303,8 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   download->Resume(true);
   // Now simulate that history DB is loaded.
   manager->OnHistoryQueryComplete(
-      base::Bind(CreateCompletedDownload, base::Unretained(manager), guid,
-                 target_path, std::move(url_chain), origin_file_size));
+      base::BindOnce(CreateCompletedDownload, base::Unretained(manager), guid,
+                     target_path, std::move(url_chain), origin_file_size));
   // Download should continue and complete.
   ASSERT_TRUE(waiter.WaitForFinished());
   download::DownloadItem* history_download = manager->GetDownloadByGuid(guid);
@@ -4303,14 +4343,14 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   url_chain.emplace_back(url);
   // Kick off 2 download with the same GUID
   auto params = std::make_unique<DownloadUrlParameters>(
-      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      url, TRAFFIC_ANNOTATION_FOR_TESTS);
   params->set_guid(guid);
   params->set_file_path(target_path);
   params->set_transient(true);
   params->set_require_safety_checks(false);
   in_progress_manager->DownloadUrl(std::move(params));
   auto params2 = std::make_unique<DownloadUrlParameters>(
-      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      url, TRAFFIC_ANNOTATION_FOR_TESTS);
   params2->set_guid(guid);
   params2->set_file_path(target_path);
   params2->set_transient(true);
@@ -4817,7 +4857,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   observer.WaitForStored();
   HistoryServiceFactory::GetForProfile(browser()->profile(),
                                        ServiceAccessType::IMPLICIT_ACCESS)
-      ->FlushForTest(base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
+      ->FlushForTest(
+          base::BindOnce(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
   content::RunMessageLoop();
 }
 
@@ -4877,7 +4918,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   std::unique_ptr<DownloadUrlParameters> params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
-  params->set_callback(base::Bind(&SetHiddenDownloadCallback));
+  params->set_callback(base::BindOnce(&SetHiddenDownloadCallback));
   download_manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 
@@ -4892,7 +4933,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenClosesShelf) {
   GURL url = embedded_test_server()->GetURL("/download-autoopen.txt");
 
   ASSERT_TRUE(
-      GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
+      GetDownloadPrefs(browser())->EnableAutoOpenByUserBasedOnExtension(file));
 
   DownloadAndWait(browser(), url);
 

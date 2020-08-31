@@ -20,7 +20,7 @@ class ListValue;
 
 namespace syncer {
 
-// Holds a list of invalidations that all share the same Object ID.
+// Holds a list of invalidations that all share the same Topic.
 //
 // The list is kept sorted by version to make it easier to perform common
 // operations, like checking for an unknown version invalidation or fetching the
@@ -56,7 +56,6 @@ class INVALIDATION_EXPORT SingleObjectInvalidationSet {
   const Invalidation& back() const;
 
   std::unique_ptr<base::ListValue> ToValue() const;
-  bool ResetFromValue(const base::ListValue& list);
 
  private:
   InvalidationsSet invalidations_;

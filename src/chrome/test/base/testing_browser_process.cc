@@ -18,6 +18,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/permissions/chrome_permissions_client.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/permissions/permissions_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -120,6 +122,9 @@ void TestingBrowserProcess::Init() {
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
+
+  // Make sure permissions client has been set.
+  ChromePermissionsClient::GetInstance();
 
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
@@ -259,11 +264,6 @@ TestingBrowserProcess::safe_browsing_service() {
   return sb_service_.get();
 }
 
-safe_browsing::ClientSideDetectionService*
-TestingBrowserProcess::safe_browsing_detection_service() {
-  return nullptr;
-}
-
 subresource_filter::RulesetService*
 TestingBrowserProcess::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
@@ -398,7 +398,9 @@ WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
 network_time::NetworkTimeTracker*
 TestingBrowserProcess::network_time_tracker() {
   if (!network_time_tracker_) {
-    DCHECK(local_state_);
+    if (!local_state_)
+      return nullptr;
+
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         std::unique_ptr<base::Clock>(new base::DefaultClock()),
         std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
@@ -418,6 +420,14 @@ TestingBrowserProcess::resource_coordinator_parts() {
         std::make_unique<resource_coordinator::ResourceCoordinatorParts>();
   }
   return resource_coordinator_parts_.get();
+}
+
+BuildState* TestingBrowserProcess::GetBuildState() {
+#if !defined(OS_ANDROID)
+  return &build_state_;
+#else
+  return nullptr;
+#endif
 }
 
 resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {

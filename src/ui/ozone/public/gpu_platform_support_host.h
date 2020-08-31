@@ -10,9 +10,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace ui {
 
@@ -36,21 +34,9 @@ class COMPONENT_EXPORT(OZONE_BASE) GpuPlatformSupportHost {
   GpuPlatformSupportHost();
   virtual ~GpuPlatformSupportHost();
 
-  // Called when the GPU process is spun up.
-  // This is called from browser IO thread.
-  virtual void OnGpuProcessLaunched(
-      int host_id,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      base::RepeatingCallback<void(IPC::Message*)> sender) = 0;
-
   // Called when the GPU process is destroyed.
   // This is called from browser UI thread.
   virtual void OnChannelDestroyed(int host_id) = 0;
-
-  // Called to handle an IPC message. Note that this can be called from any
-  // thread.
-  virtual void OnMessageReceived(const IPC::Message& message) = 0;
 
   // Called when the GPU service is launched.
   // Called from the browser IO thread.

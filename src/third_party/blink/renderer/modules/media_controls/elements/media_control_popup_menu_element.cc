@@ -55,16 +55,15 @@ class MediaControlPopupMenuElement::EventListener final
     }
   }
 
-  void Trace(blink::Visitor* visitor) final {
+  void Trace(Visitor* visitor) final {
     NativeEventListener::Trace(visitor);
     visitor->Trace(popup_menu_);
   }
 
  private:
   void Invoke(ExecutionContext*, Event* event) final {
-    if (event->type() == event_type_names::kKeydown &&
-        event->IsKeyboardEvent()) {
-      KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
+    auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+    if (event->type() == event_type_names::kKeydown && keyboard_event) {
       bool handled = true;
 
       switch (keyboard_event->keyCode()) {
@@ -166,7 +165,7 @@ void MediaControlPopupMenuElement::RemovedFrom(ContainerNode& container) {
   MediaControlDivElement::RemovedFrom(container);
 }
 
-void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
+void MediaControlPopupMenuElement::Trace(Visitor* visitor) {
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
   visitor->Trace(last_focused_element_);
@@ -199,9 +198,9 @@ void MediaControlPopupMenuElement::SetPosition() {
                           bounding_client_rect->right() + kPopupMenuMarginPx) +
       kPx;
 
-  style()->setProperty(&GetDocument(), "bottom", bottom_str_value, kImportant,
+  style()->setProperty(dom_window, "bottom", bottom_str_value, kImportant,
                        ASSERT_NO_EXCEPTION);
-  style()->setProperty(&GetDocument(), "right", right_str_value, kImportant,
+  style()->setProperty(dom_window, "right", right_str_value, kImportant,
                        ASSERT_NO_EXCEPTION);
 }
 

@@ -20,7 +20,7 @@ import sys
 import textwrap
 import threading
 import time
-import urllib
+import uuid
 
 from utils import tools
 tools.force_local_third_party()
@@ -30,6 +30,8 @@ import colorama
 from chromium import natsort
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
+from six.moves import urllib
 
 # pylint: disable=ungrouped-imports
 import auth
@@ -169,7 +171,10 @@ def namedtuple_to_dict(value):
   if isinstance(value, (list, tuple)):
     return [namedtuple_to_dict(v) for v in value]
   if isinstance(value, dict):
-    return {k: namedtuple_to_dict(v) for k, v in value.iteritems()}
+    return {k: namedtuple_to_dict(v) for k, v in value.items()}
+  # json.dumps in Python3 doesn't support bytes.
+  if isinstance(value, bytes):
+    return six.ensure_str(value)
   return value
 
 
@@ -187,9 +192,10 @@ def task_request_to_raw_request(task_request):
   for task_slice in out['task_slices']:
     task_slice['properties']['env'] = [
       {'key': k, 'value': v}
-      for k, v in task_slice['properties']['env'].iteritems()
+      for k, v in task_slice['properties']['env'].items()
     ]
     task_slice['properties']['env'].sort(key=lambda x: x['key'])
+  out['request_uuid'] = str(uuid.uuid4())
   return out
 
 
@@ -269,7 +275,7 @@ def trigger_task_shards(swarming, task_request, shards):
     else:
       task_slices = req['task_slices']
 
-      total_shards = None
+      total_shards = 1
       # Multiple tasks slices might exist if there are optional "slices", e.g.
       # multiple ways of dispatching the task that should be equivalent. These
       # should be functionally equivalent but we have cannot guarantee that. If
@@ -286,7 +292,7 @@ def trigger_task_shards(swarming, task_request, shards):
 
     return req, shard_index
 
-  requests = [convert(index) for index in xrange(shards)]
+  requests = [convert(index) for index in range(shards)]
   tasks = {}
   priority_warning = False
   for request, shard_index in requests:
@@ -310,7 +316,7 @@ def trigger_task_shards(swarming, task_request, shards):
     if tasks:
       print('Only %d shard(s) out of %d were triggered' % (
           len(tasks), len(requests)), file=sys.stderr)
-      for task_dict in tasks.itervalues():
+      for task_dict in tasks.values():
         abort_task(swarming, task_dict['task_id'])
     return None
 
@@ -384,7 +390,7 @@ class TaskOutputCollector(object):
       shard_count: expected number of task shards.
     """
     self.task_output_dir = (
-        unicode(os.path.abspath(task_output_dir))
+        six.text_type(os.path.abspath(task_output_dir))
         if task_output_dir else task_output_dir)
     self.task_output_stdout = task_output_stdout
     self.shard_count = shard_count
@@ -418,8 +424,8 @@ class TaskOutputCollector(object):
       ref = result['outputs_ref']
       result['outputs_ref']['view_url'] = '%s/browse?%s' % (
           ref['isolatedserver'],
-          urllib.urlencode(
-              [('namespace', ref['namespace']), ('hash', ref['isolated'])]))
+          urllib.parse.urlencode([('namespace', ref['namespace']),
+                                  ('hash', ref['isolated'])]))
 
     # Store result dict of that shard, ignore results we've already seen.
     with self._lock:
@@ -450,9 +456,9 @@ class TaskOutputCollector(object):
     with self._lock:
       # Write an array of shard results with None for missing shards.
       summary = {
-        'shards': [
-          self._per_shard_results.get(i) for i in xrange(self.shard_count)
-        ],
+          'shards': [
+              self._per_shard_results.get(i) for i in range(self.shard_count)
+          ],
       }
 
       # Don't store stdout in the summary if not requested too.
@@ -639,7 +645,8 @@ def yield_results(
         enqueue_retrieve_results(shard_index, task_id)
 
       # Wait for all of them to finish.
-      shards_remaining = range(len(task_ids))
+      # Convert to list, since range in Python3 doesn't have remove.
+      shards_remaining = list(range(len(task_ids)))
       active_task_count = len(task_ids)
       while active_task_count:
         shard_index, result = None, None
@@ -782,10 +789,12 @@ def collect(
       total_duration += metadata.get('duration', 0)
 
       if decorate:
-        s = decorate_shard_output(
-            swarming, index, metadata,
-            "console" in task_output_stdout).encode(
-                'utf-8', 'replace')
+        # s is bytes in Python3, print could not print
+        # s with nice format, so decode s to str.
+        s = six.ensure_str(
+            decorate_shard_output(swarming, index, metadata,
+                                  "console" in task_output_stdout).encode(
+                                      'utf-8', 'replace'))
         print(s)
         if len(seen_shards) < len(task_ids):
           print('')
@@ -872,7 +881,7 @@ def get_yielder(base_url, limit):
     # by looking at the 'cursor' items.
     while cursor and (not limit or total < limit):
       merge_char = '&' if '?' in base_url else '?'
-      url = base_url + '%scursor=%s' % (merge_char, urllib.quote(cursor))
+      url = base_url + '%scursor=%s' % (merge_char, urllib.parse.quote(cursor))
       if limit:
         url += '&limit=%d' % min(CHUNK_SIZE, limit - total)
       new = net.url_read_json(url)
@@ -1137,10 +1146,10 @@ def process_trigger_options(parser, options, args):
       secret_bytes = f.read().encode('base64')
 
   # Named caches
-  caches = [
-    {u'name': unicode(i[0]), u'path': unicode(i[1])}
-    for i in options.named_cache
-  ]
+  caches = [{
+      u'name': six.text_type(i[0]),
+      u'path': six.text_type(i[1])
+  } for i in options.named_cache]
 
   env_prefixes = {}
   for k, v in options.env_prefix:
@@ -1164,7 +1173,7 @@ def process_trigger_options(parser, options, args):
       relative_cwd=options.relative_cwd,
       dimensions=orig_dims,
       env=options.env,
-      env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.iteritems()],
+      env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.items()],
       execution_timeout_secs=options.hard_timeout,
       extra_args=extra_args,
       grace_period_secs=30,
@@ -1206,7 +1215,7 @@ def process_trigger_options(parser, options, args):
   # we append it).  Currently the only dimension we can repeat is "caches"; the
   # rest (os, cpu, etc) shouldn't be repeated.
   extra_dims = []
-  for i, (_, kvs) in enumerate(sorted(dims_by_exp.iteritems(), reverse=True)):
+  for i, (_, kvs) in enumerate(sorted(dims_by_exp.items(), reverse=True)):
     dims = list(orig_dims)
     # Replace or append the key/value pairs for this expiration in extra_dims;
     # we keep extra_dims around because we are iterating backwards and filling
@@ -1398,7 +1407,7 @@ def CMDbots(parser, args):
 
   for key, value in options.dimensions:
     values.append(('dimensions', '%s:%s' % (key, value)))
-  url += urllib.urlencode(values)
+  url += urllib.parse.urlencode(values)
   try:
     data, yielder = get_yielder(url, 0)
     bots = data.get('items') or []
@@ -1457,7 +1466,7 @@ def CMDcollect(parser, args):
     parser.error('Only use one of task id or --json.')
 
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     try:
       with fs.open(options.json, 'rb') as f:
         data = json.load(f)
@@ -1465,7 +1474,7 @@ def CMDcollect(parser, args):
       parser.error('Failed to open %s' % options.json)
     try:
       tasks = sorted(
-          data['tasks'].itervalues(), key=lambda x: x['shard_index'])
+          data['tasks'].values(), key=lambda x: x['shard_index'])
       args = [t['task_id'] for t in tasks]
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
@@ -1577,7 +1586,7 @@ def CMDquery(parser, args):
     sys.stderr.write('\n')
     sys.stderr.flush()
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     tools.write_json(options.json, data, True)
   else:
     try:
@@ -1603,14 +1612,14 @@ def CMDquery_list(parser, args):
   except APIError as e:
     parser.error(str(e))
   if options.json:
-    options.json = unicode(os.path.abspath(options.json))
+    options.json = six.text_type(os.path.abspath(options.json))
     with fs.open(options.json, 'wb') as f:
       json.dump(apis, f)
   else:
     help_url = (
       'https://apis-explorer.appspot.com/apis-explorer/?base=%s/_ah/api#p/' %
       options.swarming)
-    for i, (api_id, api) in enumerate(sorted(apis.iteritems())):
+    for i, (api_id, api) in enumerate(sorted(apis.items())):
       if i:
         print('')
       print(api_id)
@@ -1620,10 +1629,10 @@ def CMDquery_list(parser, args):
         # TODO(maruel): Remove.
         # pylint: disable=too-many-nested-blocks
         for j, (resource_name, resource) in enumerate(
-            sorted(api['resources'].iteritems())):
+            sorted(api['resources'].items())):
           if j:
             print('')
-          for method_name, method in sorted(resource['methods'].iteritems()):
+          for method_name, method in sorted(resource['methods'].items()):
             # Only list the GET ones.
             if method['httpMethod'] != 'GET':
               continue
@@ -1635,7 +1644,7 @@ def CMDquery_list(parser, args):
             print('  %s%s%s' % (help_url, api['servicePath'], method['id']))
       else:
         # New.
-        for method_name, method in sorted(api['methods'].iteritems()):
+        for method_name, method in sorted(api['methods'].items()):
           # Only list the GET ones.
           if method['httpMethod'] != 'GET':
             continue
@@ -1672,7 +1681,7 @@ def CMDrun(parser, args):
   print('Triggered task: %s' % task_request.name)
   task_ids = [
     t['task_id']
-    for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
+    for t in sorted(tasks.values(), key=lambda x: x['shard_index'])
   ]
   for task_id in task_ids:
     print('Task: {server}/task?id={task}'.format(
@@ -1743,11 +1752,11 @@ def CMDreproduce(parser, args):
     print('Failed to retrieve request data for the task', file=sys.stderr)
     return 1
 
-  workdir = unicode(os.path.abspath(options.work))
+  workdir = six.text_type(os.path.abspath(options.work))
   if fs.isdir(workdir):
     parser.error('Please delete the directory %r first' % options.work)
   fs.mkdir(workdir)
-  cachedir = unicode(os.path.abspath('cipd_cache'))
+  cachedir = six.text_type(os.path.abspath('cipd_cache'))
   if not fs.exists(cachedir):
     fs.mkdir(cachedir)
 
@@ -1787,7 +1796,7 @@ def CMDreproduce(parser, args):
       # leak.
       policies = local_caching.CachePolicies(0, 0, 0, 0)
       cache = local_caching.DiskContentAddressedCache(
-          unicode(os.path.abspath(options.cache)), policies, False)
+          six.text_type(os.path.abspath(options.cache)), policies, False)
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command
@@ -1897,7 +1906,7 @@ def CMDtrigger(parser, args):
     if tasks:
       print('Triggered task: %s' % task_request.name)
       tasks_sorted = sorted(
-          tasks.itervalues(), key=lambda x: x['shard_index'])
+          tasks.values(), key=lambda x: x['shard_index'])
       if options.dump_json:
         data = {
           'base_task_name': task_request.name,
@@ -1971,4 +1980,5 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
+  net.set_user_agent('swarming.py/' + __version__)
   sys.exit(main(sys.argv[1:]))

@@ -17,6 +17,7 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
 
 NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
     : url(input.url),
+      initiator_routing_id(input.initiator_routing_id),
       initiator_origin(input.initiator_origin),
       source_site_instance(input.source_site_instance),
       load_type(input.post_data ? LOAD_TYPE_HTTP_POST : LOAD_TYPE_DEFAULT),
@@ -32,7 +33,11 @@ NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
       started_from_context_menu(input.started_from_context_menu),
       blob_url_loader_factory(input.blob_url_loader_factory),
       href_translate(input.href_translate),
-      reload_type(input.reload_type) {
+      reload_type(input.reload_type),
+      impression(input.impression) {
+#if DCHECK_IS_ON()
+  DCHECK(input.Valid());
+#endif
   // A non-null |source_site_instance| is important for picking the right
   // renderer process for hosting about:blank and/or data: URLs (their origin's
   // precursor is based on |initiator_origin|).

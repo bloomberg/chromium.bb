@@ -4,6 +4,7 @@
 
 #include "services/network/crash_keys.h"
 
+#include "base/stl_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
@@ -12,7 +13,7 @@ namespace debug {
 
 namespace {
 
-base::debug::CrashKeyString* GetUrlCrashKey() {
+base::debug::CrashKeyString* GetRequestUrlCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "request_url", base::debug::CrashKeySize::Size256);
   return crash_key;
@@ -26,20 +27,17 @@ base::debug::CrashKeyString* GetRequestInitiatorCrashKey() {
 
 }  // namespace
 
-ScopedOriginCrashKey::ScopedOriginCrashKey(
-    base::debug::CrashKeyString* crash_key,
-    const base::Optional<url::Origin>& value)
-    : base::debug::ScopedCrashKeyString(
-          crash_key,
-          value ? value->GetDebugString() : "base::nullopt") {}
-
-ScopedOriginCrashKey::~ScopedOriginCrashKey() = default;
+base::debug::CrashKeyString* GetRequestInitiatorSiteLockCrashKey() {
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "request_initiator_site_lock", base::debug::CrashKeySize::Size64);
+  return crash_key;
+}
 
 ScopedRequestCrashKeys::ScopedRequestCrashKeys(
     const network::ResourceRequest& request)
-    : url_(GetUrlCrashKey(), request.url.possibly_invalid_spec()),
+    : url_(GetRequestUrlCrashKey(), request.url.possibly_invalid_spec()),
       request_initiator_(GetRequestInitiatorCrashKey(),
-                         request.request_initiator) {}
+                         base::OptionalOrNullptr(request.request_initiator)) {}
 
 ScopedRequestCrashKeys::~ScopedRequestCrashKeys() = default;
 

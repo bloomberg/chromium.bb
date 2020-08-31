@@ -13,7 +13,7 @@
 Polymer({
   is: 'assistant-get-more',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -51,7 +51,7 @@ Polymer({
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -71,7 +71,7 @@ Polymer({
   /**
    * Reloads the page.
    */
-  reloadPage: function() {
+  reloadPage() {
     this.fire('loading');
     this.buttonsDisabled = true;
   },
@@ -79,7 +79,7 @@ Polymer({
   /**
    * Reload the page with the given consent string text data.
    */
-  reloadContent: function(data) {
+  reloadContent(data) {
     this.consentStringLoaded_ = true;
     if (this.settingZippyLoaded_) {
       this.onPageLoaded();
@@ -89,7 +89,7 @@ Polymer({
   /**
    * Add a setting zippy with the provided data.
    */
-  addSettingZippy: function(zippy_data) {
+  addSettingZippy(zippy_data) {
     assert(zippy_data.length <= 3);
 
     if (this.settingZippyLoaded_) {
@@ -111,12 +111,12 @@ Polymer({
       zippy.setAttribute('toggle-style', true);
       zippy.id = 'zippy-' + data['id'];
       var title = document.createElement('div');
-      title.className = 'zippy-title';
+      title.slot = 'title';
       title.textContent = data['title'];
       zippy.appendChild(title);
 
       var toggle = document.createElement('cr-toggle');
-      toggle.className = 'zippy-toggle';
+      toggle.slot = 'toggle';
       toggle.id = 'toggle-' + data['id'];
       if (data['defaultEnabled']) {
         toggle.setAttribute('checked', '');
@@ -127,7 +127,7 @@ Polymer({
       zippy.appendChild(toggle);
 
       var description = document.createElement('div');
-      description.className = 'zippy-description';
+      description.slot = 'content';
       description.textContent = data['description'];
       if (data['legalText']) {
         var legalText = document.createElement('p');
@@ -148,7 +148,7 @@ Polymer({
   /**
    * Handles event when all the page content has been loaded.
    */
-  onPageLoaded: function() {
+  onPageLoaded() {
     this.fire('loaded');
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
@@ -161,7 +161,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     if (!this.settingZippyLoaded_ || !this.consentStringLoaded_) {
       this.reloadPage();
     } else {

@@ -29,6 +29,7 @@ class ShellAppDelegate : public AppDelegate {
       const content::OpenURLParams& params) override;
   void AddNewContents(content::BrowserContext* context,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture) override;
@@ -49,7 +50,7 @@ class ShellAppDelegate : public AppDelegate {
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
-  void SetTerminatingCallback(const base::Closure& callback) override;
+  void SetTerminatingCallback(base::OnceClosure callback) override;
   void OnHide() override {}
   void OnShow() override {}
   bool TakeFocus(content::WebContents* web_contents, bool reverse) override;

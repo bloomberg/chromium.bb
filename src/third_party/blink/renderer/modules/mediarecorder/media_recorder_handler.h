@@ -77,7 +77,7 @@ class MODULES_EXPORT MediaRecorderHandler final
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class MediaRecorderHandlerTest;
@@ -109,6 +109,9 @@ class MODULES_EXPORT MediaRecorderHandler final
   // Updates |video_tracks_|,|audio_tracks_| and returns true if any changed.
   bool UpdateTracksAndCheckIfChanged();
 
+  // Stops recording if all sources are ended
+  void OnSourceReadyStateChanged();
+
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               const base::TimeTicks& timestamp);
   void OnEncodedVideoFrameForTesting(scoped_refptr<EncodedVideoFrame> frame,
@@ -138,6 +141,10 @@ class MODULES_EXPORT MediaRecorderHandler final
   base::TimeDelta timeslice_;
   base::TimeTicks slice_origin_timestamp_;
 
+  // The last seen video codec of the last received encoded video frame.
+  base::Optional<media::VideoCodec> last_seen_codec_;
+
+  bool invalidated_ = false;
   bool recording_;
   // The MediaStream being recorded.
   Member<MediaStreamDescriptor> media_stream_;
@@ -146,8 +153,8 @@ class MODULES_EXPORT MediaRecorderHandler final
 
   Member<MediaRecorder> recorder_;
 
-  HeapVector<Member<VideoTrackRecorder>> video_recorders_;
-  HeapVector<Member<AudioTrackRecorder>> audio_recorders_;
+  Vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
+  Vector<std::unique_ptr<AudioTrackRecorder>> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.
   std::unique_ptr<media::WebmMuxer> webm_muxer_;

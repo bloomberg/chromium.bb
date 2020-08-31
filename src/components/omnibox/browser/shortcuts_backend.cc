@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -75,9 +76,8 @@ ShortcutsBackend::ShortcutsBackend(
       search_terms_data_(std::move(search_terms_data)),
       current_state_(NOT_INITIALIZED),
       main_runner_(base::ThreadTaskRunnerHandle::Get()),
-      db_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      db_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       no_db_access_(suppress_db) {
   if (!suppress_db)
@@ -168,14 +168,21 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
     normalized_match = &temp;
   }
 
+  auto description = normalized_match->description_for_shortcuts.empty()
+                         ? normalized_match->description
+                         : normalized_match->description_for_shortcuts;
+  auto description_class =
+      normalized_match->description_class_for_shortcuts.empty()
+          ? normalized_match->description_class
+          : normalized_match->description_class_for_shortcuts;
+
   return ShortcutsDatabase::Shortcut::MatchCore(
       normalized_match->fill_into_edit, normalized_match->destination_url,
       static_cast<int>(normalized_match->document_type),
       normalized_match->contents,
-      StripMatchMarkers(normalized_match->contents_class),
-      normalized_match->description,
-      StripMatchMarkers(normalized_match->description_class),
-      normalized_match->transition, match_type, normalized_match->keyword);
+      StripMatchMarkers(normalized_match->contents_class), description,
+      StripMatchMarkers(description_class), normalized_match->transition,
+      match_type, normalized_match->keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {

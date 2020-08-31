@@ -81,14 +81,19 @@ TEST(ExtensionMessageTypesTest, TestLoadedParams) {
   extension->permissions_data()->SetPolicyHostRestrictions(
       runtime_blocked_hosts, runtime_allowed_hosts);
 
-  ExtensionMsg_Loaded_Params params_in(extension.get(), true);
+  ExtensionMsg_Loaded_Params params_in(extension.get(), true, base::nullopt);
   EXPECT_EQ(extension->id(), params_in.id);
 
   {
     // First, test just converting back to an extension.
     std::string error;
+    // TODO(devlin): Move this to a renderer-specific location in order to
+    // better enforce this restriction.
+
+    // The logic is only called in the render context that's why it's
+    // safe to pass 0 as context_id.
     scoped_refptr<const Extension> extension_out =
-        params_in.ConvertToExtension(&error);
+        params_in.ConvertToExtension(0, &error);
     EXPECT_TRUE(error.empty());
     ASSERT_TRUE(extension_out);
     CompareExtension(*extension, *extension_out);
@@ -113,7 +118,7 @@ TEST(ExtensionMessageTypesTest, TestLoadedParams) {
 
     std::string error;
     scoped_refptr<const Extension> extension_out =
-        params_out.ConvertToExtension(&error);
+        params_out.ConvertToExtension(0, &error);
     EXPECT_TRUE(error.empty());
     ASSERT_TRUE(extension_out);
     CompareExtension(*extension, *extension_out);

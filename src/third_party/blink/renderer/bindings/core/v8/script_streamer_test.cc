@@ -79,18 +79,30 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
   class NoopWebURLLoader final : public WebURLLoader {
    public:
     ~NoopWebURLLoader() override = default;
-    void LoadSynchronously(const WebURLRequest&,
-                           WebURLLoaderClient*,
-                           WebURLResponse&,
-                           base::Optional<WebURLError>&,
-                           WebData&,
-                           int64_t& encoded_data_length,
-                           int64_t& encoded_body_length,
-                           WebBlobInfo& downloaded_blob) override {
+    void LoadSynchronously(
+        std::unique_ptr<network::ResourceRequest> request,
+        scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+        int requestor_id,
+        bool download_to_network_cache_only,
+        bool pass_response_pipe_to_client,
+        bool no_mime_sniffing,
+        base::TimeDelta timeout_interval,
+        WebURLLoaderClient*,
+        WebURLResponse&,
+        base::Optional<WebURLError>&,
+        WebData&,
+        int64_t& encoded_data_length,
+        int64_t& encoded_body_length,
+        WebBlobInfo& downloaded_blob) override {
       NOTREACHED();
     }
-    void LoadAsynchronously(const WebURLRequest&,
-                            WebURLLoaderClient*) override {}
+    void LoadAsynchronously(
+        std::unique_ptr<network::ResourceRequest> request,
+        scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+        int requestor_id,
+        bool download_to_network_cache_only,
+        bool no_mime_sniffing,
+        WebURLLoaderClient*) override {}
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
@@ -116,7 +128,7 @@ class ScriptStreamingTest : public testing::Test {
     request.SetRequestContext(mojom::RequestContextType::SCRIPT);
 
     resource_client_ = MakeGarbageCollected<TestResourceClient>();
-    FetchParameters params(request);
+    FetchParameters params(std::move(request));
     resource_ = ScriptResource::Fetch(params, fetcher, resource_client_,
                                       ScriptResource::kAllowStreaming);
     resource_->AddClient(resource_client_, loading_task_runner_.get());
@@ -196,8 +208,6 @@ class ScriptStreamingTest : public testing::Test {
 // TODO(crbug.com/939054): Tests are disabled due to flakiness caused by being
 // currently unable to block and wait for the script streaming thread.
 TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScript) {
-  return;
-
   // Test that we can successfully compile a streamed script.
   V8TestingScope scope;
   resource_->StartStreaming(loading_task_runner_);
@@ -341,9 +351,9 @@ TEST_F(ScriptStreamingTest, DISABLED_SuppressingStreaming) {
 
   SingleCachedMetadataHandler* cache_handler = resource_->CacheHandler();
   EXPECT_TRUE(cache_handler);
+  cache_handler->DisableSendToPlatformForTesting();
   cache_handler->SetCachedMetadata(V8CodeCache::TagForCodeCache(cache_handler),
-                                   reinterpret_cast<const uint8_t*>("X"), 1,
-                                   CachedMetadataHandler::kCacheLocally);
+                                   reinterpret_cast<const uint8_t*>("X"), 1);
 
   AppendData("function foo() {");
   AppendPadding();

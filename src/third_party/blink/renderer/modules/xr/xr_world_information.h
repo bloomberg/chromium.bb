@@ -23,13 +23,13 @@ class XRWorldInformation : public ScriptWrappable {
   // disabled.
   XRPlaneSet* detectedPlanes() const;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // Applies changes to the stored plane information based on the contents of
   // the received frame data. This will update the contents of
   // plane_ids_to_planes_.
   void ProcessPlaneInformation(
-      const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+      const device::mojom::blink::XRPlaneDetectionData* detected_planes_data,
       double timestamp);
 
  private:

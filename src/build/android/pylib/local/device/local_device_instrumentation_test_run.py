@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import contextlib
 import copy
 import hashlib
@@ -10,7 +11,9 @@ import logging
 import os
 import posixpath
 import re
+import shutil
 import sys
+import tempfile
 import time
 
 from devil import base_error
@@ -33,6 +36,7 @@ from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 from pylib.output import remote_output_manager
+from pylib.utils import gold_utils
 from pylib.utils import instrumentation_tracing
 from pylib.utils import shared_preference_utils
 
@@ -91,6 +95,13 @@ RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<description>[-\w]+)\.'
       r'(?P<device_model_sdk>[-\w]+)\.png')
 
+_DEVICE_GOLD_DIR = 'skia_gold'
+# A map of Android product models to SDK ints.
+RENDER_TEST_MODEL_SDK_CONFIGS = {
+    'Nexus 5X': [23],
+}
+
+
 @contextlib.contextmanager
 def _LogTestEndpoints(device, test_name):
   device.RunShellCommand(
@@ -130,10 +141,11 @@ class LocalDeviceInstrumentationTestRun(
   def __init__(self, env, test_instance):
     super(LocalDeviceInstrumentationTestRun, self).__init__(
         env, test_instance)
+    self._context_managers = collections.defaultdict(list)
     self._flag_changers = {}
-    self._replace_package_contextmanager = None
     self._shared_prefs_to_restore = []
-    self._use_webview_contextmanager = None
+    self._skia_gold_work_dir = None
+    self._skia_gold_session_manager = None
 
   #override
   def TestPackage(self):
@@ -158,14 +170,15 @@ class LocalDeviceInstrumentationTestRun(
           # applying the context manager up in test_runner. Instead, we
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
-          self._replace_package_contextmanager = system_app.ReplaceSystemApp(
+          system_app_context = system_app.ReplaceSystemApp(
               dev, self._test_instance.replace_system_package.package,
               self._test_instance.replace_system_package.replacement_apk)
           # Pylint is not smart enough to realize that this field has
           # an __enter__ method, and will complain loudly.
           # pylint: disable=no-member
-          self._replace_package_contextmanager.__enter__()
+          system_app_context.__enter__()
           # pylint: enable=no-member
+          self._context_managers[str(dev)].append(system_app_context)
 
         steps.append(replace_package)
 
@@ -180,30 +193,32 @@ class LocalDeviceInstrumentationTestRun(
           # applying the context manager up in test_runner. Instead, we
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
-          self._use_webview_contextmanager = webview_app.UseWebViewProvider(
+          webview_context = webview_app.UseWebViewProvider(
               dev, self._test_instance.use_webview_provider)
           # Pylint is not smart enough to realize that this field has
           # an __enter__ method, and will complain loudly.
           # pylint: disable=no-member
-          self._use_webview_contextmanager.__enter__()
+          webview_context.__enter__()
           # pylint: enable=no-member
+          self._context_managers[str(dev)].append(webview_context)
 
         steps.append(use_webview_provider)
 
-      def install_helper(apk, modules=None, fake_modules=None,
-                         permissions=None):
+      def install_helper(apk,
+                         modules=None,
+                         fake_modules=None,
+                         permissions=None,
+                         additional_locales=None):
 
         @instrumentation_tracing.no_tracing
         @trace_event.traced
         def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          logging.info('Start Installing %s', apk.path)
-          d.Install(
-              apk,
-              modules=modules,
-              fake_modules=fake_modules,
-              permissions=permissions)
-          logging.info('Finished Installing %s', apk.path)
+          d.Install(apk,
+                    modules=modules,
+                    fake_modules=fake_modules,
+                    permissions=permissions,
+                    additional_locales=additional_locales)
 
         return install_helper_internal
 
@@ -212,10 +227,7 @@ class LocalDeviceInstrumentationTestRun(
         @trace_event.traced
         def incremental_install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          logging.info('Start Incremental Installing %s', apk.path)
           installer.Install(d, json_path, apk=apk, permissions=permissions)
-          logging.info('Finished Incremental Installing %s', apk.path)
-
         return incremental_install_helper_internal
 
       permissions = self._test_instance.test_apk.GetPermissions()
@@ -248,7 +260,8 @@ class LocalDeviceInstrumentationTestRun(
           steps.append(
               install_helper(self._test_instance.apk_under_test,
                              self._test_instance.modules,
-                             self._test_instance.fake_modules, permissions))
+                             self._test_instance.fake_modules, permissions,
+                             self._test_instance.additional_locales))
 
       @trace_event.traced
       def set_debug_app(dev):
@@ -341,6 +354,9 @@ class LocalDeviceInstrumentationTestRun(
         if self._test_instance.store_tombstones:
           tombstones.ClearAllTombstones(device)
       except device_errors.CommandFailedError:
+        if not device.IsOnline():
+          raise
+
         # A bugreport can be large and take a while to generate, so only capture
         # one if we're using a remote manager.
         if isinstance(
@@ -359,6 +375,12 @@ class LocalDeviceInstrumentationTestRun(
     self._env.parallel_devices.pMap(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
+    # Created here instead of on a per-test basis so that the downloaded
+    # expectations can be re-used between tests, saving a significant amount
+    # of time.
+    self._skia_gold_work_dir = tempfile.mkdtemp()
+    self._skia_gold_session_manager = gold_utils.SkiaGoldSessionManager(
+        self._skia_gold_work_dir, self._test_instance.skia_gold_properties)
     if self._test_instance.wait_for_java_debugger:
       apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
@@ -368,6 +390,9 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def TearDown(self):
+    shutil.rmtree(self._skia_gold_work_dir)
+    self._skia_gold_work_dir = None
+    self._skia_gold_session_manager = None
     # By default, teardown will invoke ADB. When receiving SIGTERM due to a
     # timeout, there's a high probability that ADB is non-responsive. In these
     # cases, sending an ADB command will potentially take a long time to time
@@ -396,17 +421,11 @@ class LocalDeviceInstrumentationTestRun(
         pref_to_restore.Commit(force_commit=True)
 
       # Context manager exit handlers are applied in reverse order
-      # of the enter handlers
-      if self._use_webview_contextmanager:
+      # of the enter handlers.
+      for context in reversed(self._context_managers[str(dev)]):
         # See pylint-related comment above with __enter__()
         # pylint: disable=no-member
-        self._use_webview_contextmanager.__exit__(*sys.exc_info())
-        # pylint: enable=no-member
-
-      if self._replace_package_contextmanager:
-        # See pylint-related comment above with __enter__()
-        # pylint: disable=no-member
-        self._replace_package_contextmanager.__exit__(*sys.exc_info())
+        context.__exit__(*sys.exc_info())
         # pylint: enable=no-member
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
@@ -553,34 +572,10 @@ class LocalDeviceInstrumentationTestRun(
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
 
-    stream_name = 'logcat_%s_%s_%s' % (
-        test_name.replace('#', '.'),
-        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-        device.serial)
-
     with ui_capture_dir:
-      with self._env.output_manager.ArchivedTempfile(
-          stream_name, 'logcat') as logcat_file:
-        logmon = None
-        try:
-          with logcat_monitor.LogcatMonitor(
-              device.adb,
-              filter_specs=local_device_environment.LOGCAT_FILTERS,
-              output_file=logcat_file.name,
-              transform_func=self._test_instance.MaybeDeobfuscateLines,
-              check_error=False) as logmon:
-            with _LogTestEndpoints(device, test_name):
-              with contextlib_ext.Optional(
-                  trace_event.trace(test_name),
-                  self._env.trace_output):
-                output = device.StartInstrumentation(
-                    target, raw=True, extras=extras, timeout=timeout, retries=0)
-        finally:
-          if logmon:
-            logmon.Close()
-
-      if logcat_file.Link():
-        logging.info('Logcat saved to %s', logcat_file.Link())
+      with self._ArchiveLogcat(device, test_name) as logcat_file:
+        output = device.StartInstrumentation(
+            target, raw=True, extras=extras, timeout=timeout, retries=0)
 
       duration_ms = time_ms() - start_ms
 
@@ -644,8 +639,7 @@ class LocalDeviceInstrumentationTestRun(
               json_archive_name, 'ui_capture', output_manager.Datatype.JSON
               ) as json_archive:
             json.dump(screenshots, json_archive)
-          for result in results:
-            result.SetLink('ui screenshot', json_archive.Link())
+          _SetLinkOnResults(results, 'ui screenshot', json_archive.Link())
 
       def pull_ui_screenshot(filename):
         source_dir = ui_capture_dir.name
@@ -663,20 +657,18 @@ class LocalDeviceInstrumentationTestRun(
       # steps that involve ADB. These steps should NOT depend on any info in
       # the results! Things such as whether the test CRASHED have not yet been
       # determined.
-      post_test_steps = [restore_flags, restore_timeout_scale,
-                         handle_coverage_data, handle_render_test_data,
-                         pull_ui_screen_captures]
+      post_test_steps = [
+          restore_flags, restore_timeout_scale, handle_coverage_data,
+          handle_render_test_data, pull_ui_screen_captures
+      ]
       if self._env.concurrent_adb:
-        post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
-            reraiser_thread.ReraiserThread(f) for f in post_test_steps)
-        post_test_step_thread_group.StartAll(will_block=True)
+        reraiser_thread.RunAsync(post_test_steps)
       else:
         for step in post_test_steps:
           step()
 
-    for result in results:
-      if logcat_file:
-        result.SetLink('logcat', logcat_file.Link())
+    if logcat_file:
+      _SetLinkOnResults(results, 'logcat', logcat_file.Link())
 
     # Update the result name if the test used flags.
     if flags_to_add:
@@ -703,6 +695,15 @@ class LocalDeviceInstrumentationTestRun(
       # Attach screenshot to the test to help with debugging the dialog boxes.
       self._SaveScreenshot(device, screenshot_device_file, test_display_name,
                            results, 'dialog_box_screenshot')
+
+    # The crash result can be set above or in
+    # InstrumentationTestRun.GenerateTestResults. If a test crashes,
+    # subprocesses such as the one used by EmbeddedTestServerRule can be left
+    # alive in a bad state, so kill them now.
+    for r in results:
+      if r.GetType() == base_test_result.ResultType.CRASH:
+        for apk in self._test_instance.additional_apks:
+          device.ForceStop(apk.GetPackageName())
 
     # Handle failures by:
     #   - optionally taking a screenshot
@@ -747,8 +748,6 @@ class LocalDeviceInstrumentationTestRun(
                 tombstone_filename, 'tombstones') as tombstone_file:
               tombstone_file.write('\n'.join(resolved_tombstones))
             result.SetLink('tombstones', tombstone_file.Link())
-    if self._env.concurrent_adb:
-      post_test_step_thread_group.JoinAll()
     return results, None
 
   def _GetTestsFromRunner(self):
@@ -786,11 +785,12 @@ class LocalDeviceInstrumentationTestRun(
           }
           extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
           target = '%s/%s' % (test_package, junit4_runner_class)
-          timeout = 120
+          timeout = 240
           if self._test_instance.wait_for_java_debugger:
             timeout = None
-          test_list_run_output = dev.StartInstrumentation(
-              target, extras=extras, retries=0, timeout=timeout)
+          with self._ArchiveLogcat(dev, 'list_tests'):
+            test_list_run_output = dev.StartInstrumentation(
+                target, extras=extras, retries=0, timeout=timeout)
           if any(test_list_run_output):
             logging.error('Unexpected output while listing tests:')
             for line in test_list_run_output:
@@ -816,6 +816,35 @@ class LocalDeviceInstrumentationTestRun(
 
     instrumentation_test_instance.SaveTestsToPickle(pickle_path, raw_tests)
     return raw_tests
+
+  @contextlib.contextmanager
+  def _ArchiveLogcat(self, device, test_name):
+    stream_name = 'logcat_%s_%s_%s' % (
+        test_name.replace('#', '.'),
+        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
+        device.serial)
+
+    logcat_file = None
+    logmon = None
+    try:
+      with self._env.output_manager.ArchivedTempfile(
+          stream_name, 'logcat') as logcat_file:
+        with logcat_monitor.LogcatMonitor(
+            device.adb,
+            filter_specs=local_device_environment.LOGCAT_FILTERS,
+            output_file=logcat_file.name,
+            transform_func=self._test_instance.MaybeDeobfuscateLines,
+            check_error=False) as logmon:
+          with _LogTestEndpoints(device, test_name):
+            with contextlib_ext.Optional(
+                trace_event.trace(test_name),
+                self._env.trace_output):
+              yield logcat_file
+    finally:
+      if logmon:
+        logmon.Close()
+      if logcat_file and logcat_file.Link():
+        logging.info('Logcat saved to %s', logcat_file.Link())
 
   def _SaveTraceData(self, trace_device_file, device, test_class):
     trace_host_file = self._env.trace_output
@@ -889,12 +918,143 @@ class LocalDeviceInstrumentationTestRun(
                           screenshot_host_file.name)
         finally:
           screenshot_device_file.close()
-      for result in results:
-        result.SetLink(link_name, screenshot_host_file.Link())
+      _SetLinkOnResults(results, link_name, screenshot_host_file.Link())
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):
+    self._ProcessSkiaGoldRenderTestResults(
+        device, render_tests_device_output_dir, results)
+    self._ProcessLocalRenderTestResults(device, render_tests_device_output_dir,
+                                        results)
 
+  def _ProcessSkiaGoldRenderTestResults(
+      self, device, render_tests_device_output_dir, results):
+    gold_dir = posixpath.join(render_tests_device_output_dir, _DEVICE_GOLD_DIR)
+    if not device.FileExists(gold_dir):
+      return
+
+    gold_properties = self._test_instance.skia_gold_properties
+    with tempfile_ext.NamedTemporaryDirectory() as host_dir:
+      use_luci = not (gold_properties.local_pixel_tests
+                      or gold_properties.no_luci_auth)
+
+      # Pull everything at once instead of pulling individually, as it's
+      # slightly faster since each command over adb has some overhead compared
+      # to doing the same thing locally.
+      device.PullFile(gold_dir, host_dir)
+      host_dir = os.path.join(host_dir, _DEVICE_GOLD_DIR)
+      for image_name in os.listdir(host_dir):
+        if not image_name.endswith('.png'):
+          continue
+
+        render_name = image_name[:-4]
+        json_name = render_name + '.json'
+        json_path = os.path.join(host_dir, json_name)
+        image_path = os.path.join(host_dir, image_name)
+        if not os.path.exists(json_path):
+          _FailTestIfNecessary(results)
+          _AppendToLog(
+              results, 'Unable to find corresponding JSON file for image %s '
+              'when doing Skia Gold comparison.' % image_name)
+          continue
+
+        gold_session = self._skia_gold_session_manager.GetSkiaGoldSession(
+            keys_file=json_path)
+
+        try:
+          status, error = gold_session.RunComparison(
+              name=render_name,
+              png_file=image_path,
+              output_manager=self._env.output_manager,
+              use_luci=use_luci)
+        except Exception as e:  # pylint: disable=broad-except
+          _FailTestIfNecessary(results)
+          _AppendToLog(results, 'Skia Gold comparison raised exception: %s' % e)
+          continue
+
+        if not status:
+          continue
+
+        # Don't fail the test if we ran on an unsupported configuration unless
+        # the test has explicitly opted in, as it's likely that baselines
+        # aren't maintained for that configuration.
+        with open(json_path) as infile:
+          # All the key/value pairs in the JSON file are strings, so convert
+          # to a bool.
+          fail_on_unsupported = json.load(infile).get(
+              'fail_on_unsupported_configs', 'false')
+          fail_on_unsupported = fail_on_unsupported.lower() == 'true'
+        if device.build_version_sdk not in RENDER_TEST_MODEL_SDK_CONFIGS.get(
+            device.product_model, []) and not fail_on_unsupported:
+          if self._test_instance.skia_gold_properties.local_pixel_tests:
+            _AppendToLog(
+                results, 'Gold comparison for %s failed, but model %s with SDK '
+                '%d is not a supported configuration. This failure would be '
+                'ignored on the bots, but failing since tests are being run '
+                'locally.' % (render_name, device.product_model,
+                              device.build_version_sdk))
+          else:
+            _AppendToLog(
+                results, 'Gold comparison for %s failed, but model %s with SDK '
+                '%d is not a supported configuration, so ignoring failure.' %
+                (render_name, device.product_model, device.build_version_sdk))
+            continue
+
+        _FailTestIfNecessary(results)
+        failure_log = (
+            'Skia Gold reported failure for RenderTest %s. See '
+            'RENDER_TESTS.md for how to fix this failure.' % render_name)
+        status_codes = gold_utils.SkiaGoldSession.StatusCodes
+        if status == status_codes.AUTH_FAILURE:
+          _AppendToLog(results,
+                       'Gold authentication failed with output %s' % error)
+        elif status == status_codes.INIT_FAILURE:
+          _AppendToLog(results,
+                       'Gold initialization failed with output %s' % error)
+        elif status == status_codes.COMPARISON_FAILURE_REMOTE:
+          triage_link = gold_session.GetTriageLink(render_name)
+          if not triage_link:
+            _AppendToLog(
+                results, 'Failed to get triage link for %s, raw output: %s' %
+                (render_name, error))
+            _AppendToLog(
+                results, 'Reason for no triage link: %s' %
+                gold_session.GetTriageLinkOmissionReason(render_name))
+            continue
+          if gold_properties.IsTryjobRun():
+            _SetLinkOnResults(results, 'Skia Gold triage link for entire CL',
+                              triage_link)
+          else:
+            _SetLinkOnResults(results,
+                              'Skia Gold triage link for %s' % render_name,
+                              triage_link)
+          _AppendToLog(results, failure_log)
+
+        elif status == status_codes.COMPARISON_FAILURE_LOCAL:
+          given_link = gold_session.GetGivenImageLink(render_name)
+          closest_link = gold_session.GetClosestImageLink(render_name)
+          diff_link = gold_session.GetDiffImageLink(render_name)
+
+          processed_template_output = _GenerateRenderTestHtml(
+              render_name, given_link, closest_link, diff_link)
+          with self._env.output_manager.ArchivedTempfile(
+              '%s.html' % render_name, 'gold_local_diffs',
+              output_manager.Datatype.HTML) as html_results:
+            html_results.write(processed_template_output)
+          _SetLinkOnResults(results, render_name, html_results.Link())
+          _AppendToLog(
+              results,
+              'See %s link for diff image with closest positive.' % render_name)
+        elif status == status_codes.LOCAL_DIFF_FAILURE:
+          _AppendToLog(results,
+                       'Failed to generate diffs from Gold: %s' % error)
+        else:
+          logging.error(
+              'Given unhandled SkiaGoldSession StatusCode %s with error %s',
+              status, error)
+
+  def _ProcessLocalRenderTestResults(self, device,
+                                     render_tests_device_output_dir, results):
     failure_images_device_dir = posixpath.join(
         render_tests_device_output_dir, 'failures')
     if not device.FileExists(failure_images_device_dir):
@@ -940,24 +1100,15 @@ class LocalDeviceInstrumentationTestRun(
       else:
         diff_link = ''
 
-      jinja2_env = jinja2.Environment(
-          loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR),
-          trim_blocks=True)
-      template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
-      # pylint: disable=no-member
-      processed_template_output = template.render(
-          test_name=failure_filename,
-          failure_link=failure_link,
-          golden_link=golden_link,
-          diff_link=diff_link)
+      processed_template_output = _GenerateRenderTestHtml(
+          failure_filename, failure_link, golden_link, diff_link)
 
       with self._env.output_manager.ArchivedTempfile(
           '%s.html' % failure_filename, 'render_tests',
           output_manager.Datatype.HTML) as html_results:
         html_results.write(processed_template_output)
         html_results.flush()
-      for result in results:
-        result.SetLink(failure_filename, html_results.Link())
+      _SetLinkOnResults(results, failure_filename, html_results.Link())
 
   #override
   def _ShouldRetry(self, test, result):
@@ -1000,3 +1151,69 @@ def _IsRenderTest(test):
     test = [test]
   return any([RENDER_TEST_FEATURE_ANNOTATION in t['annotations'].get(
               FEATURE_ANNOTATION, {}).get('value', ()) for t in test])
+
+
+def _GenerateRenderTestHtml(image_name, failure_link, golden_link, diff_link):
+  """Generates a RenderTest results page.
+
+  Displays the generated (failure) image, the golden image, and the diff
+  between them.
+
+  Args:
+    image_name: The name of the image whose comparison failed.
+    failure_link: The URL to the generated/failure image.
+    golden_link: The URL to the golden image.
+    diff_link: The URL to the diff image between the failure and golden images.
+
+  Returns:
+    A string containing the generated HTML.
+  """
+  jinja2_env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR), trim_blocks=True)
+  template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
+  # pylint: disable=no-member
+  return template.render(
+      test_name=image_name,
+      failure_link=failure_link,
+      golden_link=golden_link,
+      diff_link=diff_link)
+
+
+def _FailTestIfNecessary(results):
+  """Marks the given results as failed if it wasn't already.
+
+  Marks the result types as ResultType.FAIL unless they were already some sort
+  of failure type, e.g. ResultType.CRASH.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+  """
+  for result in results:
+    if result.GetType() not in [
+        base_test_result.ResultType.FAIL, base_test_result.ResultType.CRASH,
+        base_test_result.ResultType.TIMEOUT, base_test_result.ResultType.UNKNOWN
+    ]:
+      result.SetType(base_test_result.ResultType.FAIL)
+
+
+def _AppendToLog(results, line):
+  """Appends the given line to the end of the logs of the given results.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+    line: A string to be appended as a neww line to the log of |result|.
+  """
+  for result in results:
+    result.SetLog(result.GetLog() + '\n' + line)
+
+
+def _SetLinkOnResults(results, link_name, link):
+  """Sets the given link on the given results.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+    link_name: A string containing the name of the link being set.
+    link: A string containing the lkink being set.
+  """
+  for result in results:
+    result.SetLink(link_name, link)

@@ -14,10 +14,6 @@
 // navigations.
 
 namespace content {
-
-CONTENT_EXPORT bool IsBackForwardCacheEnabled();
-CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
-
 // Navigation type that affects the download decision and relevant metrics to be
 // reported at download-discovery time.
 //
@@ -43,7 +39,7 @@ enum class NavigationDownloadType {
   kAdFrame = 10,
 
   // The navigation was initiated from or occurred in an iframe with
-  // |WebSandboxFlags::kDownloads| flag set.
+  // |network::mojom::WebSandboxFlags::kDownloads| flag set.
   kSandbox = 11,
 
   // The navigation was initiated without user activation.
@@ -88,6 +84,8 @@ struct CONTENT_EXPORT NavigationDownloadPolicy {
   // a download, the download should be dropped.
   std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
       disallowed_types;
+
+  bool blocking_downloads_in_sandbox_enabled = false;
 };
 
 }  // namespace content

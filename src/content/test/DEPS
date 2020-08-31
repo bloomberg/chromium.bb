@@ -26,6 +26,7 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network/test",
+  "+services/network/trust_tokens/test",
   "+services/network/mock_mojo_dhcp_wpad_url_client.h",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
@@ -45,11 +46,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "web_test_support.cc": [
-    "+content/shell/test_runner",
-    "+content/shell/common/shell_switches.h",
-    "+services/viz/public/cpp/gpu",
-  ],
   "gpu_browsertest_helpers.cc": [
     "+services/viz/public/cpp/gpu/command_buffer_metrics.h",
     "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",

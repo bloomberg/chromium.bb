@@ -46,12 +46,11 @@ std::string GetDomainReliabilityProtocol(
 int GetNetErrorFromURLRequestStatus(const net::URLRequestStatus& status);
 
 // Based on the network error code, HTTP response code, and Retry-After value,
-// fills |status| with the result of a report upload.
-void GetUploadResultFromResponseDetails(
+// returns the result of a report upload.
+DomainReliabilityUploader::UploadResult GetUploadResultFromResponseDetails(
     int net_error,
     int http_response_code,
-    base::TimeDelta retry_after,
-    DomainReliabilityUploader::UploadResult* result);
+    base::TimeDelta retry_after);
 
 GURL SanitizeURLForReport(
     const GURL& beacon_url,
@@ -71,7 +70,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
 
     virtual void Start(const base::Location& posted_from,
                        base::TimeDelta delay,
-                       const base::Closure& user_task) = 0;
+                       base::OnceClosure user_task) = 0;
     virtual void Stop() = 0;
     virtual bool IsRunning() = 0;
 

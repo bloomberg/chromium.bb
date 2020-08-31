@@ -4,6 +4,9 @@
 
 #include "ui/views/bubble/footnote_container_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -54,7 +57,6 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, margins, 0));
   SetCornerRadius(corner_radius);
-  ResetBorder();
   auto* child_view_ptr = AddChildView(std::move(child_view));
   SetVisible(child_view_ptr->GetVisible());
 }
@@ -85,10 +87,9 @@ void FootnoteContainerView::ResetBackground() {
 }
 
 void FootnoteContainerView::ResetBorder() {
-  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
-                                   GetNativeTheme()->ShouldUseDarkColors()
-                                       ? gfx::kGoogleGrey900
-                                       : gfx::kGoogleGrey200));
+  SetBorder(CreateSolidSidedBorder(
+      1, 0, 0, 0, GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_FootnoteContainerBorder)));
 }
 
 BEGIN_METADATA(FootnoteContainerView)

@@ -4,158 +4,200 @@
 
 /** @fileoverview Runs tests for the settings menu. */
 
-cr.define('settings_menu', function() {
+// clang-format off
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {pageVisibility, Router, routes} from 'chrome://settings/settings.js';
+
+// clang-format on
+
+suite('SettingsMenu', function() {
   let settingsMenu = null;
 
-  suite('SettingsMenu', function() {
-    setup(function() {
-      PolymerTest.clearBody();
-      settingsMenu = document.createElement('settings-menu');
-      settingsMenu.pageVisibility = settings.pageVisibility;
-      document.body.appendChild(settingsMenu);
-    });
+  setup(function() {
+    PolymerTest.clearBody();
+    settingsMenu = document.createElement('settings-menu');
+    settingsMenu.pageVisibility = pageVisibility;
+    document.body.appendChild(settingsMenu);
+  });
 
-    teardown(function() {
-      settingsMenu.remove();
-    });
+  teardown(function() {
+    settingsMenu.remove();
+  });
 
-    test('advancedOpenedBinding', function() {
-      assertFalse(settingsMenu.advancedOpened);
-      settingsMenu.advancedOpened = true;
-      Polymer.dom.flush();
-      assertTrue(settingsMenu.$.advancedSubmenu.opened);
+  test('advancedOpenedBinding', function() {
+    assertFalse(settingsMenu.advancedOpened);
+    settingsMenu.advancedOpened = true;
+    flush();
+    assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
-      settingsMenu.advancedOpened = false;
-      Polymer.dom.flush();
-      assertFalse(settingsMenu.$.advancedSubmenu.opened);
-    });
+    settingsMenu.advancedOpened = false;
+    flush();
+    assertFalse(settingsMenu.$.advancedSubmenu.opened);
+  });
 
-    test('tapAdvanced', function() {
-      assertFalse(settingsMenu.advancedOpened);
+  test('tapAdvanced', function() {
+    assertFalse(settingsMenu.advancedOpened);
 
-      const advancedToggle = settingsMenu.$$('#advancedButton');
-      assertTrue(!!advancedToggle);
+    const advancedToggle = settingsMenu.$$('#advancedButton');
+    assertTrue(!!advancedToggle);
 
-      advancedToggle.click();
-      Polymer.dom.flush();
-      assertTrue(settingsMenu.$.advancedSubmenu.opened);
+    advancedToggle.click();
+    flush();
+    assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
-      advancedToggle.click();
-      Polymer.dom.flush();
-      assertFalse(settingsMenu.$.advancedSubmenu.opened);
-    });
+    advancedToggle.click();
+    flush();
+    assertFalse(settingsMenu.$.advancedSubmenu.opened);
+  });
 
-    test('upAndDownIcons', function() {
-      // There should be different icons for a top level menu being open
-      // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
-      const ironIconElement = settingsMenu.$$('#advancedButton iron-icon');
-      assertTrue(!!ironIconElement);
+  test('upAndDownIcons', function() {
+    // There should be different icons for a top level menu being open
+    // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
+    const ironIconElement = settingsMenu.$$('#advancedButton iron-icon');
+    assertTrue(!!ironIconElement);
 
-      settingsMenu.advancedOpened = true;
-      Polymer.dom.flush();
-      const openIcon = ironIconElement.icon;
-      assertTrue(!!openIcon);
+    settingsMenu.advancedOpened = true;
+    flush();
+    const openIcon = ironIconElement.icon;
+    assertTrue(!!openIcon);
 
-      settingsMenu.advancedOpened = false;
-      Polymer.dom.flush();
-      assertNotEquals(openIcon, ironIconElement.icon);
-    });
+    settingsMenu.advancedOpened = false;
+    flush();
+    assertNotEquals(openIcon, ironIconElement.icon);
+  });
 
-    // Test that navigating via the paper menu always clears the current
-    // search URL parameter.
-    test('clearsUrlSearchParam', function() {
-      // As of iron-selector 2.x, need to force iron-selector to update before
-      // clicking items on it, or wait for 'iron-items-changed'
-      const ironSelector = settingsMenu.$$('iron-selector');
-      ironSelector.forceSynchronousItemUpdate();
+  // Test that navigating via the paper menu always clears the current
+  // search URL parameter.
+  test('clearsUrlSearchParam', function() {
+    // As of iron-selector 2.x, need to force iron-selector to update before
+    // clicking items on it, or wait for 'iron-items-changed'
+    const ironSelector = settingsMenu.$$('iron-selector');
+    ironSelector.forceSynchronousItemUpdate();
 
-      const urlParams = new URLSearchParams('search=foo');
-      settings.navigateTo(settings.routes.BASIC, urlParams);
-      assertEquals(
-          urlParams.toString(), settings.getQueryParameters().toString());
-      settingsMenu.$.people.click();
-      assertEquals('', settings.getQueryParameters().toString());
+    const urlParams = new URLSearchParams('search=foo');
+    Router.getInstance().navigateTo(routes.BASIC, urlParams);
+    assertEquals(
+        urlParams.toString(),
+        Router.getInstance().getQueryParameters().toString());
+    settingsMenu.$.people.click();
+    assertEquals('', Router.getInstance().getQueryParameters().toString());
+  });
+});
+
+suite('SettingsMenuReset', function() {
+  let settingsMenu = null;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: true,
     });
   });
 
-  suite('SettingsMenuReset', function() {
-    setup(function() {
-      PolymerTest.clearBody();
-      settings.navigateTo(settings.routes.RESET, '');
-      settingsMenu = document.createElement('settings-menu');
-      document.body.appendChild(settingsMenu);
-    });
+  setup(function() {
+    PolymerTest.clearBody();
+    Router.getInstance().navigateTo(routes.RESET, '');
+    settingsMenu = document.createElement('settings-menu');
+    document.body.appendChild(settingsMenu);
+    flush();
+  });
 
-    teardown(function() {
-      settingsMenu.remove();
-    });
+  teardown(function() {
+    settingsMenu.remove();
+  });
 
-    test('openResetSection', function() {
-      const selector = settingsMenu.$.subMenu;
-      const path = new window.URL(selector.selected).pathname;
-      assertEquals('/reset', path);
-    });
+  test('openResetSection', function() {
+    const selector = settingsMenu.$.subMenu;
+    const path = new window.URL(selector.selected).pathname;
+    assertEquals('/reset', path);
+  });
 
-    test('navigateToAnotherSection', function() {
-      const selector = settingsMenu.$.subMenu;
-      let path = new window.URL(selector.selected).pathname;
-      assertEquals('/reset', path);
+  test('navigateToAnotherSection', function() {
+    const selector = settingsMenu.$.subMenu;
+    let path = new window.URL(selector.selected).pathname;
+    assertEquals('/reset', path);
 
-      settings.navigateTo(settings.routes.PEOPLE, '');
-      Polymer.dom.flush();
+    Router.getInstance().navigateTo(routes.PEOPLE, '');
+    flush();
 
-      path = new window.URL(selector.selected).pathname;
-      assertEquals('/people', path);
-    });
+    path = new window.URL(selector.selected).pathname;
+    assertEquals('/people', path);
+  });
 
-    test('navigateToBasic', function() {
-      const selector = settingsMenu.$.subMenu;
-      const path = new window.URL(selector.selected).pathname;
-      assertEquals('/reset', path);
+  test('navigateToBasic', function() {
+    const selector = settingsMenu.$.subMenu;
+    const path = new window.URL(selector.selected).pathname;
+    assertEquals('/reset', path);
 
-      settings.navigateTo(settings.routes.BASIC, '');
-      Polymer.dom.flush();
+    Router.getInstance().navigateTo(routes.BASIC, '');
+    flush();
 
-      // BASIC has no sub page selected.
-      assertFalse(!!selector.selected);
-    });
+    // BASIC has no sub page selected.
+    assertFalse(!!selector.selected);
+  });
 
-    test('pageVisibility', function() {
-      function assertPageVisibility(expectedHidden) {
-        assertEquals(expectedHidden, settingsMenu.$$('#people').hidden);
-        assertEquals(expectedHidden, settingsMenu.$$('#appearance').hidden);
-        assertEquals(expectedHidden, settingsMenu.$$('#onStartup').hidden);
-        assertEquals(expectedHidden, settingsMenu.$$('#advancedButton').hidden);
-        assertEquals(
-            expectedHidden, settingsMenu.$$('#advancedSubmenu').hidden);
-        assertEquals(expectedHidden, settingsMenu.$$('#reset').hidden);
+  test('pageVisibility', function() {
+    function assertPagesHidden(expectedHidden) {
+      assertEquals(expectedHidden, settingsMenu.$$('#people').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#appearance').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#onStartup').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#advancedButton').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#advancedSubmenu').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#reset').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#safetyCheck').hidden);
 
-        if (cr.isChromeOS) {
-          assertEquals(expectedHidden, settingsMenu.$$('#multidevice').hidden);
-        } else {
-          assertEquals(
-              expectedHidden, settingsMenu.$$('#defaultBrowser').hidden);
-        }
+      if (!isChromeOS) {
+        assertEquals(expectedHidden, settingsMenu.$$('#defaultBrowser').hidden);
       }
+    }
 
-      // The default pageVisibility should not cause menu items to be hidden.
-      assertPageVisibility(false);
+    // The default pageVisibility should not cause menu items to be hidden.
+    assertPagesHidden(false);
 
-      // Set the visibility of the pages under test to "false".
-      settingsMenu.pageVisibility =
-          Object.assign(settings.pageVisibility || {}, {
-            advancedSettings: false,
-            appearance: false,
-            defaultBrowser: false,
-            multidevice: false,
-            onStartup: false,
-            people: false,
-            reset: false
-          });
-      Polymer.dom.flush();
-
-      // Now, the menu items should be hidden.
-      assertPageVisibility(true);
+    // Set the visibility of the pages under test to "false".
+    settingsMenu.pageVisibility = Object.assign(pageVisibility || {}, {
+      advancedSettings: false,
+      appearance: false,
+      defaultBrowser: false,
+      multidevice: false,
+      onStartup: false,
+      people: false,
+      reset: false,
+      safetyCheck: false,
     });
+    flush();
+
+    // Now, the menu items should be hidden.
+    assertPagesHidden(true);
+  });
+
+  test('safetyCheckInMenu', function() {
+    assertTrue(!!settingsMenu.$$('#safetyCheck'));
+  });
+});
+
+suite('SettingsMenuPrivacyRedesignFlagOff', function() {
+  let settingsMenu = null;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: false,
+    });
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+    settingsMenu = document.createElement('settings-menu');
+    settingsMenu.pageVisibility = pageVisibility;
+    document.body.appendChild(settingsMenu);
+    flush();
+  });
+
+  teardown(function() {
+    settingsMenu.remove();
+  });
+
+  test('safetyCheckNotInMenu', function() {
+    assertFalse(!!settingsMenu.$$('#safetyCheck'));
   });
 });

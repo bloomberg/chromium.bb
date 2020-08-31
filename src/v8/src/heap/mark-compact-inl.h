@@ -5,14 +5,13 @@
 #ifndef V8_HEAP_MARK_COMPACT_INL_H_
 #define V8_HEAP_MARK_COMPACT_INL_H_
 
-#include "src/heap/mark-compact.h"
-
 #include "src/base/bits.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/heap/heap-inl.h"
 #include "src/heap/incremental-marking.h"
+#include "src/heap/mark-compact.h"
 #include "src/heap/objects-visiting-inl.h"
-#include "src/heap/remembered-set.h"
+#include "src/heap/remembered-set-inl.h"
 #include "src/objects/js-collection-inl.h"
 #include "src/objects/js-weak-refs-inl.h"
 #include "src/objects/slots-inl.h"
@@ -23,7 +22,7 @@ namespace internal {
 
 void MarkCompactCollector::MarkObject(HeapObject host, HeapObject obj) {
   if (marking_state()->WhiteToGrey(obj)) {
-    marking_worklist()->Push(obj);
+    marking_worklists()->Push(obj);
     if (V8_UNLIKELY(FLAG_track_retaining_path)) {
       heap_->AddRetainer(host, obj);
     }
@@ -32,7 +31,7 @@ void MarkCompactCollector::MarkObject(HeapObject host, HeapObject obj) {
 
 void MarkCompactCollector::MarkRootObject(Root root, HeapObject obj) {
   if (marking_state()->WhiteToGrey(obj)) {
-    marking_worklist()->Push(obj);
+    marking_worklists()->Push(obj);
     if (V8_UNLIKELY(FLAG_track_retaining_path)) {
       heap_->AddRetainingRoot(root, obj);
     }
@@ -52,7 +51,7 @@ void MinorMarkCompactCollector::MarkRootObject(HeapObject obj) {
 
 void MarkCompactCollector::MarkExternallyReferencedObject(HeapObject obj) {
   if (marking_state()->WhiteToGrey(obj)) {
-    marking_worklist()->Push(obj);
+    marking_worklists()->Push(obj);
     if (V8_UNLIKELY(FLAG_track_retaining_path)) {
       heap_->AddRetainingRoot(Root::kWrapperTracing, obj);
     }
@@ -205,8 +204,11 @@ void LiveObjectRange<mode>::iterator::AdvanceToNextValidObject() {
         // make sure that we skip all set bits in the black area until the
         // object ends.
         HeapObject black_object = HeapObject::FromAddress(addr);
-        map = Map::cast(ObjectSlot(addr).Acquire_Load());
+        Object map_object = ObjectSlot(addr).Acquire_Load();
+        CHECK(map_object.IsMap());
+        map = Map::cast(map_object);
         size = black_object.SizeFromMap(map);
+        CHECK_LE(addr + size, chunk_->area_end());
         Address end = addr + size - kTaggedSize;
         // One word filler objects do not borrow the second mark bit. We have
         // to jump over the advancing and clearing part.
@@ -232,9 +234,12 @@ void LiveObjectRange<mode>::iterator::AdvanceToNextValidObject() {
           object = black_object;
         }
       } else if ((mode == kGreyObjects || mode == kAllLiveObjects)) {
-        map = Map::cast(ObjectSlot(addr).Acquire_Load());
+        Object map_object = ObjectSlot(addr).Acquire_Load();
+        CHECK(map_object.IsMap());
+        map = Map::cast(map_object);
         object = HeapObject::FromAddress(addr);
         size = object.SizeFromMap(map);
+        CHECK_LE(addr + size, chunk_->area_end());
       }
 
       // We found a live object.

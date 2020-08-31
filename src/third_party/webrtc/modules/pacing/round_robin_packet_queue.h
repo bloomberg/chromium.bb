@@ -46,12 +46,18 @@ class RoundRobinPacketQueue {
   bool Empty() const;
   size_t SizeInPackets() const;
   DataSize Size() const;
-  bool NextPacketIsAudio() const;
+  // If the next packet, that would be returned by Pop() if called
+  // now, is an audio packet this method returns the enqueue time
+  // of that packet. If queue is empty or top packet is not audio,
+  // returns nullopt.
+  absl::optional<Timestamp> LeadingAudioPacketEnqueueTime() const;
 
   Timestamp OldestEnqueueTime() const;
   TimeDelta AverageQueueTime() const;
   void UpdateQueueTime(Timestamp now);
   void SetPauseState(bool paused, Timestamp now);
+  void SetIncludeOverhead();
+  void SetTransportOverhead(DataSize overhead_per_packet);
 
  private:
   struct QueuedPacket {
@@ -67,15 +73,15 @@ class RoundRobinPacketQueue {
     bool operator<(const QueuedPacket& other) const;
 
     int Priority() const;
-    RtpPacketToSend::Type Type() const;
+    RtpPacketMediaType Type() const;
     uint32_t Ssrc() const;
     Timestamp EnqueueTime() const;
     bool IsRetransmission() const;
     uint64_t EnqueueOrder() const;
-    DataSize Size(bool count_overhead) const;
     RtpPacketToSend* RtpPacket() const;
 
     std::multiset<Timestamp>::iterator EnqueueTimeIterator() const;
+    void UpdateEnqueueTimeIterator(std::multiset<Timestamp>::iterator it);
     void SubtractPauseTime(TimeDelta pause_time_sum);
 
    private:
@@ -87,6 +93,13 @@ class RoundRobinPacketQueue {
     // Raw pointer since priority_queue doesn't allow for moving
     // out of the container.
     RtpPacketToSend* owned_packet_;
+  };
+
+  class PriorityPacketQueue : public std::priority_queue<QueuedPacket> {
+   public:
+    using const_iterator = container_type::const_iterator;
+    const_iterator begin() const;
+    const_iterator end() const;
   };
 
   struct StreamPrioKey {
@@ -111,7 +124,8 @@ class RoundRobinPacketQueue {
 
     DataSize size;
     uint32_t ssrc;
-    std::priority_queue<QueuedPacket> packet_queue;
+
+    PriorityPacketQueue packet_queue;
 
     // Whenever a packet is inserted for this stream we check if |priority_it|
     // points to an element in |stream_priorities_|, and if it does it means
@@ -123,10 +137,15 @@ class RoundRobinPacketQueue {
 
   void Push(QueuedPacket packet);
 
+  DataSize PacketSize(const QueuedPacket& packet) const;
+  void MaybePromoteSinglePacketToNormalQueue();
+
   Stream* GetHighestPriorityStream();
 
   // Just used to verify correctness.
   bool IsSsrcScheduled(uint32_t ssrc) const;
+
+  DataSize transport_overhead_per_packet_;
 
   Timestamp time_last_updated_;
 
@@ -150,7 +169,9 @@ class RoundRobinPacketQueue {
   // the age of the oldest packet in the queue.
   std::multiset<Timestamp> enqueue_times_;
 
-  const bool send_side_bwe_with_overhead_;
+  absl::optional<QueuedPacket> single_packet_queue_;
+
+  bool include_overhead_;
 };
 }  // namespace webrtc
 

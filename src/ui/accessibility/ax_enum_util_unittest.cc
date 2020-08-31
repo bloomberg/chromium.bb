@@ -4,6 +4,9 @@
 
 #include "ui/accessibility/ax_enum_util.h"
 
+#include <string>
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -33,7 +36,8 @@ void TestEnumStringConversion(
   EXPECT_EQ(T::kNone, ParseFunction("bogus"));
 
   // Convert a bogus value to a string.
-  EXPECT_STREQ("", ToString(static_cast<T>(999999)));
+  int out_of_range_value = static_cast<int>(T::kMaxValue) + 1;
+  EXPECT_STREQ("", ToString(static_cast<T>(out_of_range_value)));
 }
 
 // Templatized function that tries calling a setter on AXNodeData
@@ -150,6 +154,18 @@ TEST(AXEnumUtilTest, Text_Decoration_Style) {
 
 TEST(AXEnumUtilTest, ListStyle) {
   TestEnumStringConversion<ax::mojom::ListStyle>(ParseListStyle);
+}
+
+TEST(AXEnumUtilTest, MoveDirection) {
+  TestEnumStringConversion<ax::mojom::MoveDirection>(ParseMoveDirection);
+}
+
+TEST(AXEnumUtilTest, Command) {
+  TestEnumStringConversion<ax::mojom::Command>(ParseCommand);
+}
+
+TEST(AXEnumUtilTest, TextBoundary) {
+  TestEnumStringConversion<ax::mojom::TextBoundary>(ParseTextBoundary);
 }
 
 TEST(AXEnumUtilTest, TextDirection) {

@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "components/vector_icons/vector_icons.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -81,7 +81,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color) {
   const gfx::VectorIcon* icon = nullptr;
   int image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_ICON_WIDTH);
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:
       icon = touch_ui ? &kTabAudioRoundedIcon : &kTabAudioIcon;
@@ -118,7 +118,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
       icon = &kPictureInPictureAltIcon;
       break;
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
-      icon = &kVrHeadsetIcon;
+      icon = &vector_icons::kVrHeadsetIcon;
       break;
   }
   DCHECK(icon);

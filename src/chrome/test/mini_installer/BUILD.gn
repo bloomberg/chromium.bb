@@ -19,8 +19,6 @@ if (is_win) {
                           "config/chrome_dev_no_pv.prop",
                           "config/chrome_dev_not_installed.prop",
                           "config/chrome_dev_not_inuse.prop",
-                          "config/chrome_multi_system_installed.prop",
-                          "config/chrome_multi_user_installed.prop",
                           "config/chrome_system_installed.prop",
                           "config/chrome_system_inuse.prop",
                           "config/chrome_system_no_pv.prop",
@@ -37,20 +35,18 @@ if (is_win) {
                           "config/previous_chrome_canary_installed.prop",
                           "config/previous_chrome_system_installed.prop",
                           "config/previous_chrome_user_installed.prop",
-                          "file_verifier.py",
+                          "file_operations.py",
                           "launch_chrome.py",
-                          "make_chrome_multi.py",
-                          "process_verifier.py",
+                          "process_operations.py",
+                          "property_walker.py",
                           "quit_chrome.py",
-                          "registry_verifier.py",
+                          "registry_operations.py",
                           "test_chrome_with_chromedriver.py",
                           "test_installer.py",
                           "test_page.html",
                           "uninstall_chrome.py",
                           "update_lastrun.py",
                           "variable_expander.py",
-                          "verifier.py",
-                          "verifier_runner.py",
                           "ZIP_README.txt",
                           "zip_test_runner.bat",
                         ],
@@ -60,9 +56,9 @@ if (is_win) {
     testonly = true
 
     data_deps = [
-      "//chrome/test/chromedriver:chromedriver",
       "//chrome/installer/mini_installer:mini_installer",
       "//chrome/installer/mini_installer:previous_version_mini_installer",
+      "//chrome/test/chromedriver:chromedriver",
     ]
     data = [
              "//third_party/webdriver/pylib/",
@@ -77,9 +73,7 @@ if (is_win) {
     testonly = true
     output_zip_file = "$root_out_dir/mini_installer_tests.zip"
     script = "create_zip.py"
-    outputs = [
-      output_zip_file,
-    ]
+    outputs = [ output_zip_file ]
     data = files
     args = [
       "--o",
@@ -87,8 +81,6 @@ if (is_win) {
       "--chromedriver-path",
       rebase_path("$root_out_dir/chromedriver.exe", root_build_dir),
     ]
-    deps = [
-      "//chrome/test/chromedriver:chromedriver",
-    ]
+    deps = [ "//chrome/test/chromedriver:chromedriver" ]
   }
 }

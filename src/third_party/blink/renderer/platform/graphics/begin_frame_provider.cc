@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "ui/gfx/mojom/presentation_feedback.mojom-blink.h"
@@ -18,11 +18,15 @@ namespace blink {
 
 BeginFrameProvider::BeginFrameProvider(
     const BeginFrameProviderParams& begin_frame_provider_params,
-    BeginFrameProviderClient* client)
+    BeginFrameProviderClient* client,
+    ContextLifecycleNotifier* context)
     : needs_begin_frame_(false),
       requested_needs_begin_frame_(false),
+      cfs_receiver_(this, context),
+      efs_receiver_(this, context),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
+      compositor_frame_sink_(context),
       begin_frame_client_(client) {}
 
 void BeginFrameProvider::ResetCompositorFrameSink() {
@@ -64,7 +68,7 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -74,10 +78,10 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
       parent_frame_sink_id_, frame_sink_id_,
       efs_receiver_.BindNewPipeAndPassRemote(task_runner),
       cfs_receiver_.BindNewPipeAndPassRemote(task_runner),
-      compositor_frame_sink_.BindNewPipeAndPassReceiver());
+      compositor_frame_sink_.BindNewPipeAndPassReceiver(task_runner));
 
-  compositor_frame_sink_.set_disconnect_with_reason_handler(base::BindOnce(
-      &BeginFrameProvider::OnMojoConnectionError, weak_factory_.GetWeakPtr()));
+  compositor_frame_sink_.set_disconnect_with_reason_handler(WTF::Bind(
+      &BeginFrameProvider::OnMojoConnectionError, WrapWeakPersistent(this)));
 }
 
 void BeginFrameProvider::RequestBeginFrame() {
@@ -118,6 +122,13 @@ void BeginFrameProvider::OnBeginFrame(
 
 void BeginFrameProvider::FinishBeginFrame(const viz::BeginFrameArgs& args) {
   compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
+}
+
+void BeginFrameProvider::Trace(Visitor* visitor) {
+  visitor->Trace(cfs_receiver_);
+  visitor->Trace(efs_receiver_);
+  visitor->Trace(compositor_frame_sink_);
+  visitor->Trace(begin_frame_client_);
 }
 
 }  // namespace blink

@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -41,7 +42,7 @@ class IsolatedWorldCSPDelegate final
     DCHECK(security_origin_);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(document_);
     ContentSecurityPolicyDelegate::Trace(visitor);
   }
@@ -65,9 +66,9 @@ class IsolatedWorldCSPDelegate final
   // These directives depend on ExecutionContext for their implementation and
   // since isolated worlds don't have their own ExecutionContext, these are not
   // supported.
-  void SetSandboxFlags(SandboxFlags) override {}
+  void SetSandboxFlags(network::mojom::blink::WebSandboxFlags) override {}
   void SetRequireTrustedTypes() override {}
-  void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
+  void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override {}
 
   // TODO(crbug.com/916885): Figure out if we want to support violation
   // reporting for isolated world CSPs.
@@ -109,11 +110,12 @@ class IsolatedWorldCSPDelegate final
       const String& directive_text) override {
     // This allows users to set breakpoints in the Devtools for the case when
     // script execution is blocked by CSP.
-    probe::ScriptExecutionBlockedByCSP(document_, directive_text);
+    probe::ScriptExecutionBlockedByCSP(document_->GetExecutionContext(),
+                                       directive_text);
   }
 
   void DidAddContentSecurityPolicies(
-      const blink::WebVector<WebContentSecurityPolicy>&) override {}
+      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) override {}
 
  private:
   const Member<Document> document_;
@@ -184,9 +186,9 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
   csp->BindToDelegate(*delegate);
 
   if (apply_policy) {
-    csp->AddPolicyFromHeaderValue(policy,
-                                  kContentSecurityPolicyHeaderTypeEnforce,
-                                  kContentSecurityPolicyHeaderSourceHTTP);
+    csp->AddPolicyFromHeaderValue(
+        policy, network::mojom::ContentSecurityPolicyType::kEnforce,
+        network::mojom::ContentSecurityPolicySource::kHTTP);
   }
 
   return csp;

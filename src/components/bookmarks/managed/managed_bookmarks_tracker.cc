@@ -10,9 +10,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -33,11 +34,11 @@ const char ManagedBookmarksTracker::kFolderName[] = "toplevel_name";
 ManagedBookmarksTracker::ManagedBookmarksTracker(
     BookmarkModel* model,
     PrefService* prefs,
-    const GetManagementDomainCallback& callback)
+    GetManagementDomainCallback callback)
     : model_(model),
       managed_node_(nullptr),
       prefs_(prefs),
-      get_management_domain_callback_(callback) {}
+      get_management_domain_callback_(std::move(callback)) {}
 
 ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
@@ -76,9 +77,10 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
 void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
   managed_node_ = managed_node;
   registrar_.Init(prefs_);
-  registrar_.Add(prefs::kManagedBookmarks,
-                 base::Bind(&ManagedBookmarksTracker::ReloadManagedBookmarks,
-                            base::Unretained(this)));
+  registrar_.Add(
+      prefs::kManagedBookmarks,
+      base::BindRepeating(&ManagedBookmarksTracker::ReloadManagedBookmarks,
+                          base::Unretained(this)));
   // Reload now just in case something changed since the initial load started.
   // Note that  we must not load managed bookmarks until the cloud policy system
   // has been fully initialized (which will make our preference a managed
@@ -108,9 +110,6 @@ void ManagedBookmarksTracker::ReloadManagedBookmarks() {
   // Recursively update all the managed bookmarks and folders.
   const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
   UpdateBookmarks(managed_node_, list);
-
-  // The managed bookmarks folder isn't visible when that pref isn't present.
-  managed_node_->set_visible(!managed_node_->children().empty());
 }
 
 void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,

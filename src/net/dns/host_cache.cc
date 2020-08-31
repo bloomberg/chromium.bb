@@ -140,17 +140,6 @@ void MergeLists(base::Optional<T>* target, const base::Optional<T>& source) {
   }
 }
 
-class InvalidatorImpl : public HostCache::Invalidator {
- public:
-  explicit InvalidatorImpl(HostCache* cache) : cache_(cache) {}
-  void Invalidate() override { cache_->Invalidate(); }
-
- private:
-  HostCache* cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(InvalidatorImpl);
-};
-
 }  // namespace
 
 // Used in histograms; do not modify existing values.
@@ -462,9 +451,7 @@ HostCache::HostCache(size_t max_entries)
       network_changes_(0),
       restore_size_(0),
       delegate_(nullptr),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      owned_invalidator_(std::make_unique<InvalidatorImpl>(this)),
-      invalidator_(owned_invalidator_.get()) {}
+      tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 HostCache::~HostCache() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -682,7 +669,7 @@ void HostCache::clear() {
 }
 
 void HostCache::ClearForHosts(
-    const base::Callback<bool(const std::string&)>& host_filter) {
+    const base::RepeatingCallback<bool(const std::string&)>& host_filter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (host_filter.is_null()) {
@@ -707,7 +694,8 @@ void HostCache::ClearForHosts(
 }
 
 void HostCache::GetAsListValue(base::ListValue* entry_list,
-                               bool include_staleness) const {
+                               bool include_staleness,
+                               SerializationType serialization_type) const {
   DCHECK(entry_list);
   entry_list->Clear();
 
@@ -716,9 +704,17 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     const Entry& entry = pair.second;
 
     base::Value network_isolation_key_value;
-    // Don't save entries associated with ephemeral NetworkIsolationKeys.
-    if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
-      continue;
+    if (serialization_type == SerializationType::kRestorable) {
+      // Don't save entries associated with ephemeral NetworkIsolationKeys.
+      if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
+        continue;
+    } else {
+      // ToValue() fails for transient NIKs, since they should never be
+      // serialized to disk in a restorable format, so use ToDebugString() when
+      // serializing for debugging instead of for restoring from disk.
+      network_isolation_key_value =
+          base::Value(key.network_isolation_key.ToDebugString());
+    }
 
     auto entry_dict = std::make_unique<base::DictionaryValue>(
         entry.GetAsValue(include_staleness));
@@ -789,6 +785,7 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
         entry_dict->FindKey(kNetworkIsolationKeyKey);
     NetworkIsolationKey network_isolation_key;
     if (!network_isolation_key_value ||
+        network_isolation_key_value->type() == base::Value::Type::STRING ||
         !NetworkIsolationKey::FromValue(*network_isolation_key_value,
                                         &network_isolation_key)) {
       return false;
@@ -934,7 +931,7 @@ const HostCache::Key* HostCache::GetMatchingKey(
     HostCache::Entry::Source* source_out,
     HostCache::EntryStaleness* stale_out) {
   net::HostCache::Key cache_key;
-  hostname.CopyToString(&cache_key.hostname);
+  cache_key.hostname = std::string(hostname);
 
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       LookupStale(cache_key, tick_clock_->NowTicks(), stale_out,

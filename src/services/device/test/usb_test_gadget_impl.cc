@@ -29,7 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/escape.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -57,6 +57,21 @@ class UsbTestGadgetImpl : public UsbTestGadget {
   bool Reconnect() override;
   bool SetType(Type type) override;
   UsbDevice* GetDevice() const override;
+
+  // Member of UsbTestGadgetImpl so that the deprecated net::URLFetcher test
+  // class can friend it.
+  static std::unique_ptr<net::URLFetcher> CreateURLFetcher(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* delegate) {
+    std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+        url, request_type, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    url_fetcher->SetRequestContext(request_context_getter.get());
+
+    return url_fetcher;
+  }
 
  private:
   std::string device_address_;
@@ -126,19 +141,6 @@ bool ReadLocalPackage(std::string* package) {
   return ReadFile(file_path, package);
 }
 
-std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* delegate) {
-  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
-      url, request_type, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  url_fetcher->SetRequestContext(request_context_getter.get());
-
-  return url_fetcher;
-}
-
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   URLRequestContextGetter(
@@ -153,7 +155,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
     if (!context_) {
       net::URLRequestContextBuilder context_builder;
       context_builder.set_proxy_resolution_service(
-          net::ProxyResolutionService::CreateDirect());
+          net::ConfiguredProxyResolutionService::CreateDirect());
       context_ = context_builder.Build();
     }
     return context_.get();
@@ -190,8 +192,9 @@ int SimplePOSTRequest(
     const GURL& url,
     const std::string& form_data) {
   URLFetcherDelegate delegate;
-  std::unique_ptr<net::URLFetcher> url_fetcher = CreateURLFetcher(
-      request_context_getter, url, net::URLFetcher::POST, &delegate);
+  std::unique_ptr<net::URLFetcher> url_fetcher =
+      UsbTestGadgetImpl::CreateURLFetcher(request_context_getter, url,
+                                          net::URLFetcher::POST, &delegate);
 
   url_fetcher->SetUploadData("application/x-www-form-urlencoded", form_data);
   url_fetcher->Start();
@@ -231,7 +234,7 @@ class UsbGadgetFactory : public UsbService::Observer,
  private:
   void EnumerateDevices() {
     if (!device_) {
-      usb_service_->GetDevices(base::Bind(
+      usb_service_->GetDevices(base::BindOnce(
           &UsbGadgetFactory::OnDevicesEnumerated, weak_factory_.GetWeakPtr()));
     }
   }
@@ -283,16 +286,16 @@ class UsbGadgetFactory : public UsbService::Observer,
     GURL url("http://" + serial_number_ + "/claim");
     std::string form_data = base::StringPrintf(
         "session_id=%s", net::EscapeUrlEncodedData(session_id_, true).c_str());
-    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
-                                    net::URLFetcher::POST, this);
+    url_fetcher_ = UsbTestGadgetImpl::CreateURLFetcher(
+        request_context_getter_, url, net::URLFetcher::POST, this);
     url_fetcher_->SetUploadData("application/x-www-form-urlencoded", form_data);
     url_fetcher_->Start();
   }
 
   void GetVersion() {
     GURL url("http://" + serial_number_ + "/version");
-    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
-                                    net::URLFetcher::GET, this);
+    url_fetcher_ = UsbTestGadgetImpl::CreateURLFetcher(
+        request_context_getter_, url, net::URLFetcher::GET, this);
     url_fetcher_->Start();
   }
 
@@ -300,8 +303,8 @@ class UsbGadgetFactory : public UsbService::Observer,
     LOG(INFO) << "Updating " << serial_number_ << " to " << version << "...";
 
     GURL url("http://" + serial_number_ + "/update");
-    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
-                                    net::URLFetcher::POST, this);
+    url_fetcher_ = UsbTestGadgetImpl::CreateURLFetcher(
+        request_context_getter_, url, net::URLFetcher::POST, this);
     std::string mime_header = base::StringPrintf(
         "--foo\r\n"
         "Content-Disposition: form-data; name=\"file\"; "
@@ -420,8 +423,8 @@ class DeviceAddListener : public UsbService::Observer {
   ~DeviceAddListener() override = default;
 
   scoped_refptr<UsbDevice> WaitForAdd() {
-    usb_service_->GetDevices(base::Bind(&DeviceAddListener::OnDevicesEnumerated,
-                                        weak_factory_.GetWeakPtr()));
+    usb_service_->GetDevices(base::BindOnce(
+        &DeviceAddListener::OnDevicesEnumerated, weak_factory_.GetWeakPtr()));
     run_loop_.Run();
     return device_;
   }
@@ -484,8 +487,8 @@ class DeviceRemoveListener : public UsbService::Observer {
 
   void WaitForRemove() {
     usb_service_->GetDevices(
-        base::Bind(&DeviceRemoveListener::OnDevicesEnumerated,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DeviceRemoveListener::OnDevicesEnumerated,
+                       weak_factory_.GetWeakPtr()));
     run_loop_.Run();
   }
 

@@ -8,13 +8,16 @@ import os
 import sys
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import metrics
 import metrics_utils
-
-from third_party import mock
 
 
 class TimeMock(object):
@@ -39,10 +42,11 @@ class MetricsCollectorTest(unittest.TestCase):
     self.FileWrite = mock.Mock()
     self.FileRead = mock.Mock()
 
-    # So that we don't have to update the tests everytime we change the version.
+    # So that we don't have to update the tests every time we change the
+    # version.
     mock.patch('metrics.metrics_utils.CURRENT_VERSION', 0).start()
     mock.patch('metrics.urllib', self.urllib).start()
-    mock.patch('metrics.subprocess.Popen', self.Popen).start()
+    mock.patch('metrics.subprocess2.Popen', self.Popen).start()
     mock.patch('metrics.gclient_utils.FileWrite', self.FileWrite).start()
     mock.patch('metrics.gclient_utils.FileRead', self.FileRead).start()
     mock.patch('metrics.metrics_utils.print_notice', self.print_notice).start()
@@ -134,7 +138,7 @@ class MetricsCollectorTest(unittest.TestCase):
     self.default_metrics.update(update_metrics or {})
     # Assert we invoked the script to upload them.
     self.Popen.assert_called_with(
-        [sys.executable, metrics.UPLOAD_SCRIPT], stdin=metrics.subprocess.PIPE)
+        ['vpython3', metrics.UPLOAD_SCRIPT], stdin=metrics.subprocess2.PIPE)
     # Assert we collected the right metrics.
     write_call = self.Popen.return_value.stdin.write.call_args
     collected_metrics = json.loads(write_call[0][0])

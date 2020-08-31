@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/browser/cast_web_view.h"
-#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
 namespace content {
@@ -35,6 +34,8 @@ class CastBrowserTest : public content::BrowserTestBase,
   CastBrowserTest();
   ~CastBrowserTest() override;
 
+  CastWebView* cast_web_view() const { return cast_web_view_.get(); }
+
   // content::BrowserTestBase implementation:
   void SetUp() final;
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -49,7 +50,8 @@ class CastBrowserTest : public content::BrowserTestBase,
   void OnWindowDestroyed() override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
   bool CanHandleGesture(GestureType gesture_type) override;
-  bool ConsumeGesture(GestureType gesture_type) override;
+  void ConsumeGesture(GestureType gesture_type,
+                      GestureHandledCallback handled_callback) override;
   std::string GetId() override;
 
   std::unique_ptr<CastWebViewFactory> web_view_factory_;

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/local_font_face_source.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -38,8 +38,16 @@ bool LocalFontFaceSource::IsLocalNonBlocking() const {
 
 bool LocalFontFaceSource::IsLocalFontAvailable(
     const FontDescription& font_description) const {
-  return FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
-      font_description, font_name_);
+  // TODO(crbug.com/1027158): Remove metrics code after metrics collected.
+  // TODO(crbug.com/1025945): Properly handle Windows prior to 10 and Android.
+  bool font_available =
+      FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
+          font_description, font_name_);
+  if (font_available)
+    font_selector_->ReportSuccessfulLocalFontMatch(font_name_);
+  else
+    font_selector_->ReportFailedLocalFontMatch(font_name_);
+  return font_available;
 }
 
 scoped_refptr<SimpleFontData>
@@ -110,7 +118,8 @@ void LocalFontFaceSource::NotifyFontUniqueNameLookupReady() {
   PruneTable();
 
   if (face_->FontLoaded(this)) {
-    font_selector_->FontFaceInvalidated();
+    font_selector_->FontFaceInvalidated(
+        FontInvalidationReason::kGeneralInvalidation);
   }
 }
 
@@ -130,12 +139,10 @@ void LocalFontFaceSource::LocalFontHistograms::Record(bool load_success) {
   if (reported_)
     return;
   reported_ = true;
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, local_font_used_histogram,
-                      ("WebFont.LocalFontUsed", 2));
-  local_font_used_histogram.Count(load_success ? 1 : 0);
+  base::UmaHistogramBoolean("WebFont.LocalFontUsed", load_success);
 }
 
-void LocalFontFaceSource::Trace(blink::Visitor* visitor) {
+void LocalFontFaceSource::Trace(Visitor* visitor) {
   visitor->Trace(face_);
   visitor->Trace(font_selector_);
   CSSFontFaceSource::Trace(visitor);

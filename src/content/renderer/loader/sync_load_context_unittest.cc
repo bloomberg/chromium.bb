@@ -4,6 +4,7 @@
 
 #include "content/renderer/loader/sync_load_context.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -106,7 +107,8 @@ class SyncLoadContextTest : public testing::Test {
         base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                        std::move(request), MSG_ROUTING_NONE,
                        loading_thread_.task_runner(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, std::move(pending_factory),
+                       TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* loader_options */,
+                       std::move(pending_factory),
                        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
                        out_response, redirect_or_response_event,
                        nullptr /* terminate_sync_load_event */,

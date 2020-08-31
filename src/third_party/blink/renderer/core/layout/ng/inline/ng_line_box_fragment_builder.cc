@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -38,6 +40,26 @@ void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {
   line_box_type_ = NGPhysicalLineBoxFragment::kEmptyLineBox;
 }
 
+void NGLineBoxFragmentBuilder::ChildList::CreateTextFragments(
+    WritingMode writing_mode,
+    const String& text_content) {
+  NGTextFragmentBuilder text_builder(writing_mode);
+  for (auto& child : *this) {
+    if (NGInlineItemResult* item_result = child.item_result) {
+      DCHECK(item_result->item);
+      const NGInlineItem& item = *item_result->item;
+      DCHECK(item.Type() == NGInlineItem::kText ||
+             item.Type() == NGInlineItem::kControl);
+      DCHECK(item.TextType() == NGTextType::kNormal ||
+             item.TextType() == NGTextType::kSymbolMarker);
+      text_builder.SetItem(text_content, item_result,
+                           child.rect.size.block_size);
+      DCHECK(!child.fragment);
+      child.fragment = text_builder.ToTextFragment();
+    }
+  }
+}
+
 NGLineBoxFragmentBuilder::Child*
 NGLineBoxFragmentBuilder::ChildList::FirstInFlowChild() {
   for (auto& child : *this) {
@@ -57,14 +79,27 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
   return nullptr;
 }
 
+void NGLineBoxFragmentBuilder::ChildList::WillInsertChild(
+    unsigned insert_before) {
+  unsigned index = 0;
+  for (Child& child : children_) {
+    if (index >= insert_before)
+      break;
+    if (child.children_count && index + child.children_count > insert_before)
+      ++child.children_count;
+    ++index;
+  }
+}
+
 void NGLineBoxFragmentBuilder::ChildList::InsertChild(unsigned index) {
+  WillInsertChild(index);
   children_.insert(index, Child());
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     LayoutUnit delta) {
   for (auto& child : children_)
-    child.offset.inline_offset += delta;
+    child.rect.offset.inline_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
@@ -72,20 +107,20 @@ void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     unsigned start,
     unsigned end) {
   for (unsigned index = start; index < end; index++)
-    children_[index].offset.inline_offset += delta;
+    children_[index].rect.offset.inline_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(
     LayoutUnit delta) {
   for (auto& child : children_)
-    child.offset.block_offset += delta;
+    child.rect.offset.block_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
                                                                unsigned start,
                                                                unsigned end) {
   for (unsigned index = start; index < end; index++)
-    children_[index].offset.block_offset += delta;
+    children_[index].rect.offset.block_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
@@ -94,42 +129,39 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   for (auto& child : children) {
     if (child.layout_result) {
       DCHECK(!child.fragment);
-      AddChild(child.layout_result->PhysicalFragment(), child.offset);
+      AddChild(child.layout_result->PhysicalFragment(), child.Offset());
       child.layout_result.reset();
     } else if (child.fragment) {
-      AddChild(std::move(child.fragment), child.offset);
+      AddChild(std::move(child.fragment), child.Offset());
       DCHECK(!child.fragment);
     } else if (child.out_of_flow_positioned_box) {
       AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
-          child.offset, child.container_direction);
+          child.Offset(), child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }
   }
 }
 
 void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
-  for (auto& child : children) {
+  for (unsigned index = 0; index < children.size(); ++index) {
+    auto& child = children[index];
     if (child.layout_result) {
       DCHECK(!child.fragment);
-      const NGPhysicalContainerFragment& fragment =
-          child.layout_result->PhysicalFragment();
-      if (fragment.IsFloating()) {
-        // Add positioned floating objects to the fragment tree, not to the
-        // fragment item list. Because they are not necessary for inline
-        // traversals, and leading floating objects are still in the fragment
-        // tree, this helps simplifying painting floats.
-        AddChild(fragment, child.offset);
-        child.layout_result.reset();
-        continue;
-      }
-      PropagateChildData(child.layout_result->PhysicalFragment(), child.offset);
+      PropagateChildData(child.layout_result->PhysicalFragment(),
+                         child.Offset());
+
+      // Skip over any children, the information should have already been
+      // propagated into this layout result.
+      if (child.children_count)
+        index += child.children_count - 1;
+
       continue;
     }
     if (child.out_of_flow_positioned_box) {
       AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
-          child.offset, child.container_direction);
+          child.Offset(), child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }
   }
@@ -148,7 +180,9 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       NGPhysicalLineBoxFragment::Create(this);
 
-  return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
+  return base::AdoptRef(
+      new NGLayoutResult(NGLayoutResult::NGLineBoxFragmentBuilderPassKey(),
+                         std::move(fragment), this));
 }
 
 }  // namespace blink

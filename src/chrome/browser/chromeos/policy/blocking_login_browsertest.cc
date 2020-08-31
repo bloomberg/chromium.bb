@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -137,7 +138,7 @@ class BlockingLoginTest
     InstallAttributes::LockResult result;
     InstallAttributes::Get()->LockDevice(
         policy::DEVICE_MODE_ENTERPRISE, domain, std::string(), "100200300",
-        base::Bind(&CopyLockResult, &loop, &result));
+        base::BindOnce(&CopyLockResult, &loop, &result));
     loop.Run();
     EXPECT_EQ(InstallAttributes::LOCK_SUCCESS, result);
     RunUntilIdle();

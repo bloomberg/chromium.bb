@@ -45,16 +45,6 @@ int NetworkDelegate::NotifyBeforeStartTransaction(
   return OnBeforeStartTransaction(request, std::move(callback), headers);
 }
 
-void NetworkDelegate::NotifyBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(headers);
-  OnBeforeSendHeaders(request, proxy_info, proxy_retry_info, headers);
-}
-
 int NetworkDelegate::NotifyHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
@@ -129,7 +119,7 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
 
 bool NetworkDelegate::ForcePrivacyMode(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const SiteForCookies& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) const {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

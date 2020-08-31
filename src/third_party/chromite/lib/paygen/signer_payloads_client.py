@@ -11,6 +11,7 @@ import binascii
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import time
 import threading
@@ -196,7 +197,7 @@ class SignerPayloadsClientGoogleStorage(object):
 
       cmd = ['tar', '-cjf', archive_file] + hash_names
       cros_build_lib.run(
-          cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
+          cmd, stdout=True, stderr=True, cwd=tmp_dir)
     finally:
       # Cleanup.
       shutil.rmtree(tmp_dir)
@@ -424,7 +425,7 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
     """
     cmd = ['openssl', 'rsa', '-in', self._private_key, '-pubout', '-out',
            public_key]
-    cros_build_lib.run(cmd, redirect_stdout=True, combine_stdout_stderr=True)
+    cros_build_lib.run(cmd, stdout=True, stderr=subprocess.STDOUT)
 
   def GetHashSignatures(self, hashes, keysets=('update_signer',)):
     """See SignerPayloadsClientGoogleStorage._GetHashsignatures().

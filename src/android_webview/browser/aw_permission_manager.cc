@@ -329,13 +329,18 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::BACKGROUND_SYNC:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
-      case PermissionType::CLIPBOARD_READ:
-      case PermissionType::CLIPBOARD_WRITE:
+      case PermissionType::CLIPBOARD_READ_WRITE:
+      case PermissionType::CLIPBOARD_SANITIZED_WRITE:
       case PermissionType::PAYMENT_HANDLER:
       case PermissionType::BACKGROUND_FETCH:
       case PermissionType::IDLE_DETECTION:
       case PermissionType::PERIODIC_BACKGROUND_SYNC:
       case PermissionType::NFC:
+      case PermissionType::VR:
+      case PermissionType::AR:
+      case PermissionType::STORAGE_ACCESS_GRANT:
+      case PermissionType::CAMERA_PAN_TILT_ZOOM:
+      case PermissionType::WINDOW_PLACEMENT:
         NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
                          << static_cast<int>(permissions[i]);
         pending_request_raw->SetPermissionStatus(permissions[i],
@@ -531,13 +536,18 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::BACKGROUND_SYNC:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
-      case PermissionType::CLIPBOARD_READ:
-      case PermissionType::CLIPBOARD_WRITE:
+      case PermissionType::CLIPBOARD_READ_WRITE:
+      case PermissionType::CLIPBOARD_SANITIZED_WRITE:
       case PermissionType::PAYMENT_HANDLER:
       case PermissionType::BACKGROUND_FETCH:
       case PermissionType::IDLE_DETECTION:
       case PermissionType::PERIODIC_BACKGROUND_SYNC:
       case PermissionType::NFC:
+      case PermissionType::VR:
+      case PermissionType::AR:
+      case PermissionType::STORAGE_ACCESS_GRANT:
+      case PermissionType::CAMERA_PAN_TILT_ZOOM:
+      case PermissionType::WINDOW_PLACEMENT:
         NOTIMPLEMENTED() << "CancelPermission not implemented for "
                          << static_cast<int>(permission);
         break;

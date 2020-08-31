@@ -102,7 +102,12 @@ class CrashingDelegate : public ExceptionHandlerServer::Delegate {
     // Verify the exception happened at the expected location with a bit of
     // slop space to allow for reading the current PC before the exception
     // happens. See TestCrashingChild().
+#if !defined(NDEBUG)
+    // Debug build is likely not optimized and contains more instructions.
+    constexpr uint64_t kAllowedOffset = 200;
+#else
     constexpr uint64_t kAllowedOffset = 100;
+#endif
     EXPECT_GT(snapshot.Exception()->ExceptionAddress(), break_near_);
     EXPECT_LT(snapshot.Exception()->ExceptionAddress(),
               break_near_ + kAllowedOffset);
@@ -213,6 +218,9 @@ class SimulateDelegate : public ExceptionHandlerServer::Delegate {
     // ASan instrumentation inserts more instructions between the expected
     // location and what's reported. https://crbug.com/845011.
     constexpr uint64_t kAllowedOffset = 500;
+#elif !defined(NDEBUG)
+    // Debug build is likely not optimized and contains more instructions.
+    constexpr uint64_t kAllowedOffset = 200;
 #else
     constexpr uint64_t kAllowedOffset = 100;
 #endif

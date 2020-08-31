@@ -85,14 +85,18 @@
  * @param {Node} node The node to check.
  * @param {function(Node):boolean} predicate The function that tests the
  *     nodes.
+ * @param {boolean=} includeShadowHosts
  * @return {Node} The found ancestor or null if not found.
  */
-/* #export */ function findAncestor(node, predicate) {
-  let last = false;
-  while (node != null && !(last = predicate(node))) {
-    node = node.parentNode;
+/* #export */ function findAncestor(node, predicate, includeShadowHosts) {
+  while (node !== null) {
+    if (predicate(node)) {
+      break;
+    }
+    node = includeShadowHosts && node instanceof ShadowRoot ? node.host :
+                                                              node.parentNode;
   }
-  return last ? node : null;
+  return node;
 }
 
 /**
@@ -125,7 +129,7 @@
  * @return {boolean} True if Chrome is running an RTL UI.
  */
 /* #export */ function isRTL() {
-  return document.documentElement.dir == 'rtl';
+  return document.documentElement.dir === 'rtl';
 }
 
 /**
@@ -166,7 +170,7 @@
 /* #export */ function appendParam(url, key, value) {
   const param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
 
-  if (url.indexOf('?') == -1) {
+  if (url.indexOf('?') === -1) {
     return url + '?' + param;
   }
   return url + '&' + param;
@@ -326,7 +330,7 @@
 if (!('key' in KeyboardEvent.prototype)) {
   Object.defineProperty(KeyboardEvent.prototype, 'key', {
     /** @this {KeyboardEvent} */
-    get: function() {
+    get() {
       // 0-9
       if (this.keyCode >= 0x30 && this.keyCode <= 0x39) {
         return String.fromCharCode(this.keyCode);
@@ -435,5 +439,5 @@ if (!('key' in KeyboardEvent.prototype)) {
  * @return {boolean} Whether the element is interactive via text input.
  */
 /* #export */ function isTextInputElement(el) {
-  return el.tagName == 'INPUT' || el.tagName == 'TEXTAREA';
+  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA';
 }

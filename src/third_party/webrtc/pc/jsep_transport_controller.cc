@@ -436,19 +436,19 @@ void JsepTransportController::SetMediaTransportSettings(
       use_datagram_transport_for_data_channels_receive_only;
 }
 
-void JsepTransportController::RollbackTransportForMids(
-    const std::vector<std::string>& mids) {
+void JsepTransportController::RollbackTransports() {
   if (!network_thread_->IsCurrent()) {
-    network_thread_->Invoke<void>(RTC_FROM_HERE,
-                                  [=] { RollbackTransportForMids(mids); });
+    network_thread_->Invoke<void>(RTC_FROM_HERE, [=] { RollbackTransports(); });
     return;
   }
-  for (auto&& mid : mids) {
+  RTC_DCHECK_RUN_ON(network_thread_);
+  for (auto&& mid : pending_mids_) {
     RemoveTransportForMid(mid);
   }
-  for (auto&& mid : mids) {
+  for (auto&& mid : pending_mids_) {
     MaybeDestroyJsepTransport(mid);
   }
+  pending_mids_.clear();
 }
 
 rtc::scoped_refptr<webrtc::IceTransportInterface>
@@ -598,7 +598,7 @@ RTCError JsepTransportController::ApplyDescription_n(
     bool local,
     SdpType type,
     const cricket::SessionDescription* description) {
-  RTC_DCHECK(network_thread_->IsCurrent());
+  RTC_DCHECK_RUN_ON(network_thread_);
   RTC_DCHECK(description);
 
   if (local) {
@@ -710,6 +710,9 @@ RTCError JsepTransportController::ApplyDescription_n(
                            "Failed to apply the description for " +
                                content_info.name + ": " + error.message());
     }
+  }
+  if (type == SdpType::kAnswer) {
+    pending_mids_.clear();
   }
   return RTCError::OK();
 }
@@ -867,7 +870,8 @@ bool JsepTransportController::SetTransportForMid(
   if (mid_to_transport_[mid] == jsep_transport) {
     return true;
   }
-
+  RTC_DCHECK_RUN_ON(network_thread_);
+  pending_mids_.push_back(mid);
   mid_to_transport_[mid] = jsep_transport;
   return config_.transport_observer->OnTransportChanged(
       mid, jsep_transport->rtp_transport(), jsep_transport->RtpDtlsTransport(),
@@ -1116,8 +1120,19 @@ JsepTransportController::MaybeCreateDatagramTransport(
       config_.media_transport_factory->CreateDatagramTransport(network_thread_,
                                                                settings);
 
-  // TODO(sukhanov): Proper error handling.
-  RTC_CHECK(datagram_transport_result.ok());
+  if (!datagram_transport_result.ok()) {
+    // Datagram transport negotiation will fail and we'll fall back to RTP.
+    return nullptr;
+  }
+
+  if (!datagram_transport_result.value()
+           ->SetRemoteTransportParameters(
+               transport_description->opaque_parameters->parameters)
+           .ok()) {
+    // Datagram transport negotiation failed (parameters are incompatible).
+    // Fall back to RTP.
+    return nullptr;
+  }
 
   return datagram_transport_result.MoveValue();
 }
@@ -1297,28 +1312,6 @@ cricket::IceRole JsepTransportController::DetermineIceRole(
         tdesc.ice_mode == cricket::ICEMODE_FULL) {
       ice_role = cricket::ICEROLE_CONTROLLING;
     }
-
-    // Older versions of Chrome expect the ICE role to be re-determined when an
-    // ICE restart occurs, and also don't perform conflict resolution correctly,
-    // so for now we can't safely stop doing this, unless the application opts
-    // in by setting |config_.redetermine_role_on_ice_restart_| to false. See:
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=628676
-    // TODO(deadbeef): Remove this when these old versions of Chrome reach a low
-    // enough population.
-    if (config_.redetermine_role_on_ice_restart &&
-        jsep_transport->local_description() &&
-        cricket::IceCredentialsChanged(
-            jsep_transport->local_description()->transport_desc.ice_ufrag,
-            jsep_transport->local_description()->transport_desc.ice_pwd,
-            tdesc.ice_ufrag, tdesc.ice_pwd) &&
-        // Don't change the ICE role if the remote endpoint is ICE lite; we
-        // should always be controlling in that case.
-        (!jsep_transport->remote_description() ||
-         jsep_transport->remote_description()->transport_desc.ice_mode !=
-             cricket::ICEMODE_LITE)) {
-      ice_role = (type == SdpType::kOffer) ? cricket::ICEROLE_CONTROLLING
-                                           : cricket::ICEROLE_CONTROLLED;
-    }
   } else {
     // If our role is cricket::ICEROLE_CONTROLLED and the remote endpoint
     // supports only ice_lite, this local endpoint should take the CONTROLLING
@@ -1434,7 +1427,7 @@ void JsepTransportController::OnTransportStateChanged_n(
 void JsepTransportController::OnDataChannelTransportNegotiated_n(
     cricket::JsepTransport* transport,
     DataChannelTransportInterface* data_channel_transport) {
-  for (auto it : mid_to_transport_) {
+  for (const auto& it : mid_to_transport_) {
     if (it.second == transport) {
       config_.transport_observer->OnTransportChanged(
           it.first, transport->rtp_transport(), transport->RtpDtlsTransport(),

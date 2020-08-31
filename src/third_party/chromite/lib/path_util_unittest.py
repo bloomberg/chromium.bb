@@ -158,8 +158,14 @@ class TestPathResolver(cros_test_lib.MockTestCase):
   def setUp(self):
     self.PatchObject(constants, 'SOURCE_ROOT', new=FAKE_SOURCE_PATH)
     self.PatchObject(path_util, 'GetCacheDir', return_value='/path/to/cache')
-    self.PatchObject(git, 'FindRepoDir',
-                     return_value=os.path.join(FAKE_REPO_PATH, '.fake_repo'))
+    self.PatchObject(
+        path_util.ChrootPathResolver,
+        '_GetCachePath',
+        return_value='/path/to/cache')
+    self.PatchObject(
+        git,
+        'FindRepoDir',
+        return_value=os.path.join(FAKE_REPO_PATH, '.fake_repo'))
     self.chroot_path = None
 
   def FakeCwd(self, base_path):

@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import datetime
 import tempfile
 
 import mock
@@ -358,12 +357,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
   """Tests the behaviour of RuntimeBreakdownTimer."""
 
   def setUp(self):
-    # Only patch metrics.datetime because we don't want to affect calls to
+    # Only patch metrics.time because we don't want to affect calls to
     # functions from the unittest running framework itself.
-    self.datetime_mock = self.PatchObject(metrics, 'datetime')
-    self.datetime_mock.datetime.now.side_effect = self._GetFakeTime
+    self.time_mock = self.PatchObject(metrics, 'time')
+    self.time_mock.time.side_effect = self._GetFakeTime
     # An arbitrary, but fixed, seed time.
-    self._fake_time = datetime.datetime(1, 2, 3)
+    self._fake_time = 1234
 
     metric_mock = self.PatchObject(metrics, 'CumulativeSecondsDistribution',
                                    autospec=True)
@@ -508,4 +507,4 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     return self._fake_time
 
   def _IncrementFakeTime(self, seconds):
-    self._fake_time = self._fake_time + datetime.timedelta(seconds=seconds)
+    self._fake_time = self._fake_time + seconds

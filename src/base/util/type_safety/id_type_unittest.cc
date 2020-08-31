@@ -26,6 +26,54 @@ TEST(IdType, NormalValueIsValid) {
   EXPECT_FALSE(foo_id.is_null());
 }
 
+TEST(IdType, Generator) {
+  FooId::Generator foo_id_generator;
+  for (int i = 1; i < 10; i++)
+    EXPECT_EQ(foo_id_generator.GenerateNextId(), FooId::FromUnsafeValue(i));
+}
+
+TEST(IdType, GeneratorWithNonZeroInvalidValue) {
+  using TestId = IdType<class TestIdTag, int, -1>;
+
+  TestId::Generator test_id_generator;
+  for (int i = 0; i < 10; i++)
+    EXPECT_EQ(test_id_generator.GenerateNextId(), TestId::FromUnsafeValue(i));
+}
+
+TEST(IdType, GeneratorWithBigUnsignedInvalidValue) {
+  using TestId =
+      IdType<class TestIdTag, uint32_t, std::numeric_limits<uint32_t>::max()>;
+
+  TestId::Generator test_id_generator;
+  for (int i = 0; i < 10; i++) {
+    TestId id = test_id_generator.GenerateNextId();
+    EXPECT_FALSE(id.is_null());
+    EXPECT_EQ(id, TestId::FromUnsafeValue(i));
+  }
+}
+
+TEST(IdType, EnsureConstexpr) {
+  using TestId = IdType32<class TestTag>;
+
+  // Test constructors.
+  static constexpr TestId kZero;
+  static constexpr auto kOne = TestId::FromUnsafeValue(1);
+
+  // Test getting the underlying value.
+  static_assert(kZero.value() == 0, "");
+  static_assert(kOne.value() == 1, "");
+  static_assert(kZero.GetUnsafeValue() == 0, "");
+  static_assert(kOne.GetUnsafeValue() == 1, "");
+
+  // Test is_null().
+  static_assert(kZero.is_null(), "");
+  static_assert(!kOne.is_null(), "");
+
+  // Test operator bool.
+  static_assert(!kZero, "");
+  static_assert(kOne, "");
+}
+
 class IdTypeSpecificValueTest : public ::testing::TestWithParam<int> {
  protected:
   FooId test_id() { return FooId::FromUnsafeValue(GetParam()); }

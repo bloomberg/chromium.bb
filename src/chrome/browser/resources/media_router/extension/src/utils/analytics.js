@@ -218,10 +218,6 @@ mr.LongTiming.logger_ = mr.Logger.getInstance('mr.LongTiming');
 mr.LongTiming.ONE_HOUR_ = 60 * 60 * 1000;
 
 
-/** @const {*} */
-mr.Analytics = {};
-
-
 /**
  * @const {mr.Logger}
  * @private

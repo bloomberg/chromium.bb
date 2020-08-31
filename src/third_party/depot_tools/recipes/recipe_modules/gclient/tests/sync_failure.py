@@ -14,9 +14,7 @@ def GenTests(api):
   yield api.test(
       'no-json',
       api.override_step_data('gclient sync', retcode=1),
-      api.post_check(
-          lambda check, steps:
-          check(not steps['$result']['failure']['humanReason']
-                .startswith('Uncaught Exception'))),
+      # Should not fail with uncaught exception
+      api.post_process(post_process.ResultReasonRE, r'^(?!Uncaught Exception)'),
       api.post_process(post_process.DropExpectation)
   )

@@ -3,20 +3,26 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/html_to_js.gni")
+import("../settings.gni")
 
-js_type_check("closure_compile") {
-  deps = [
-    ":search_page",
-  ]
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  closure_flags = settings_closure_flags
+  deps = [ ":search_page" ]
 }
 
 js_library("search_page") {
   deps = [
     "..:route",
-    "../prefs",
-    "../search_engines_page:search_engines_browser_proxy",
-    "../settings_page:settings_animated_pages",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
+    "..:router.m",
+    "../search_engines_page:search_engines_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+html_to_js("web_components") {
+  js_files = [ "search_page.js" ]
 }

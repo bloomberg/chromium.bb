@@ -27,6 +27,7 @@
     endOfTest,
     expandedChanged,
     focus,
+    focusAfterMenuClose,
     focusContext,
     hide,
     hitTestResult,
@@ -100,7 +101,6 @@
     comboBoxGrouping,
     comboBoxMenuButton,
     comment,
-    commentSection,
     complementary,
     contentDeletion,
     contentInsertion,
@@ -188,13 +188,13 @@
     ignored,
     image,
     imageMap,
+    imeCandidate,
     inlineTextBox,
     inputTime,
     keyboard,
     labelText,
     layoutTable,
     layoutTableCell,
-    layoutTableColumn,
     layoutTableRow,
     legend,
     lineBreak,
@@ -223,14 +223,16 @@
     note,
     pane,
     paragraph,
+    pdfActionableHighlight, // PDF specific highlight role.
+    pluginObject,
     popUpButton,
+    portal,
     pre,
     presentational,
     progressIndicator,
     radioButton,
     radioGroup,
     region,
-    revision,
     rootWebArea,
     row,
     rowGroup,
@@ -305,9 +307,11 @@
     annotatePageImages,
     blur,
     clearAccessibilityFocus,
+    collapse,
     customAction,
     decrement,
     doDefault,
+    expand,
     focus,
     getImageData,
     getTextLocation,
@@ -435,6 +439,54 @@ enum MarkerType {
   suggestion
 };
 
+// The following three enums are associated with an AutomationEvent.
+
+// A command associated with an AutomationEvent.
+enum EventCommandType {
+  clearSelection,
+  cut,
+  delete,
+  dictate,
+  extendSelection,
+  format,
+  insert,
+  marker,
+  moveSelection,
+  paste,
+  replace,
+  setSelection,
+  type
+};
+
+// A text boundary associated with an AutomationEvent.
+enum EventTextBoundaryType {
+  character,
+  format,
+  lineEnd,
+  lineStart,
+  lineStartOrEnd,
+  object,
+  pageEnd,
+  pageStart,
+  pageStartOrEnd,
+  paragraphEnd,
+  paragraphStart,
+  paragraphStartOrEnd,
+  sentenceEnd,
+  sentenceStart,
+  sentenceStartOrEnd,
+  webPage,
+  wordEnd,
+  wordStart,
+  wordStartOrEnd
+};
+
+// A move direction associated with an AutomationEvent.
+enum EventMoveDirectionType {
+  forward,
+  backward
+};
+
   dictionary Rect {
     long left;
     long top;
@@ -484,6 +536,17 @@ enum MarkerType {
   // Called when the result for a <code>query</code> is available.
   callback QueryCallback = void(AutomationNode node);
 
+  [nocompile, noinline_doc] dictionary AutomationIntent {
+    // A command associated with this AutomationEvent.
+    EventCommandType command;
+
+    // A text boundary associated with this AutomationEvent.
+    EventTextBoundaryType textBoundary;
+
+    // A move direction associated with this AutomationEvent.
+    EventMoveDirectionType moveDirection;
+  };
+
   // An event in the Automation tree.
   [nocompile, noinline_doc] dictionary AutomationEvent {
     // The $(ref:automation.AutomationNode) to which the event was targeted.
@@ -497,6 +560,9 @@ enum MarkerType {
 
     long mouseX;
     long mouseY;
+
+    // Intents associated with this event.
+    AutomationIntent[] intents;
 
     // Stops this event from further processing except for any remaining
     // listeners on $(ref:AutomationEvent.target).
@@ -676,7 +742,7 @@ enum MarkerType {
     AutomationNode? inPageLinkTarget;
 
     // A node that provides more details about the current node.
-    AutomationNode? details;
+    AutomationNode[]? details;
 
     // A node that provides an error message for a current node.
     AutomationNode? errorMessage;
@@ -1002,6 +1068,9 @@ enum MarkerType {
     // Indicates the font family.
     DOMString fontFamily;
 
+    // Indicates whether this is a root of an editable subtree.
+    boolean editableRoot;
+
     //
     // Walking the tree.
     //
@@ -1066,6 +1135,12 @@ enum MarkerType {
 
     // Replaces the selected text within a text field.
     static void replaceSelectedText(DOMString value);
+
+    // Sets accessibility focus. Accessibility focus is the node on which an
+    // extension tracks a user's focus. This may be conveyed through a focus
+    // ring or or speech output by the extension. Automation will dispatch more
+    // events to the accessibility focus such as location changes.
+    static void setAccessibilityFocus();
 
     // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);
@@ -1166,6 +1241,10 @@ enum MarkerType {
   // Called with the <code>AutomationNode</code> that currently has focus.
   callback FocusCallback = void(AutomationNode focusedNode);
 
+  // Called with the <code>AutomationNode</code> that currently has
+  // accessibility focus.
+  callback AccessibilityFocusCallback = void(AutomationNode focusedNode);
+
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current
     // tab if no tabID is given, enabling automation if necessary. Returns a
@@ -1182,6 +1261,12 @@ enum MarkerType {
     // Get the automation node that currently has focus, globally. Will return
     // null if none of the nodes in any loaded trees have focus.
     [nocompile] static void getFocus(FocusCallback callback);
+
+    // Get the automation node that currently has accessibility focus, globally.
+    // Will return null if none of the nodes in any loaded trees have
+    // accessibility focus.
+    [nocompile] static void getAccessibilityFocus(
+        AccessibilityFocusCallback callback);
 
     // Add a tree change observer. Tree change observers are static/global, they
     // listen to changes across all trees. Pass a filter to determine what

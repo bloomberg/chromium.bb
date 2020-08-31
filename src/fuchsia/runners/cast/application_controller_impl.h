@@ -5,8 +5,10 @@
 #ifndef FUCHSIA_RUNNERS_CAST_APPLICATION_CONTROLLER_IMPL_H_
 #define FUCHSIA_RUNNERS_CAST_APPLICATION_CONTROLLER_IMPL_H_
 
+#include <fuchsia/media/sessions2/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/fidl/cpp/interface_request.h>
 
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -15,12 +17,17 @@ class ApplicationControllerImpl : public chromium::cast::ApplicationController {
  public:
   ApplicationControllerImpl(
       fuchsia::web::Frame* frame,
-      fidl::InterfaceHandle<chromium::cast::ApplicationControllerReceiver>
-          receiver);
+      fidl::InterfaceHandle<chromium::cast::ApplicationContext> context);
   ~ApplicationControllerImpl() final;
 
  protected:
-  void SetTouchInputEnabled(bool enable) override;
+  // chromium::cast::ApplicationController implementation.
+  void SetTouchInputEnabled(bool enable) final;
+  void GetMediaPlayer(
+      ::fidl::InterfaceRequest<fuchsia::media::sessions2::Player> request)
+      final;
+  void SetBlockMediaLoading(bool blocked) override;
+  void GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) override;
 
  private:
   fidl::Binding<chromium::cast::ApplicationController> binding_;

@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Build;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -17,6 +18,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -28,7 +30,11 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
+import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.widget.Toast;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Provides a fullscreen overlay for immersive AR mode.
@@ -45,11 +51,19 @@ public class ArImmersiveOverlay
     private boolean mCleanupInProgress;
     private SurfaceUiWrapper mSurfaceUi;
 
+    // Set containing all currently touching pointers.
+    private HashMap<Integer, PointerData> mPointerIdToData;
+    // ID of primary pointer (if present).
+    private Integer mPrimaryPointerId;
+
     public void show(
             @NonNull ChromeActivity activity, @NonNull ArCoreJavaUtils caller, boolean useOverlay) {
         if (DEBUG_LOGS) Log.i(TAG, "constructor");
         mArCoreJavaUtils = caller;
         mActivity = activity;
+
+        mPointerIdToData = new HashMap<Integer, PointerData>();
+        mPrimaryPointerId = null;
 
         // Choose a concrete implementation to create a drawable Surface and make it fullscreen.
         // It forwards SurfaceHolder callbacks and touch events to this ArImmersiveOverlay object.
@@ -62,6 +76,7 @@ public class ArImmersiveOverlay
 
     private interface SurfaceUiWrapper {
         public void onSurfaceVisible();
+        public void forwardMotionEvent(MotionEvent ev);
         public void destroy();
     }
 
@@ -81,9 +96,20 @@ public class ArImmersiveOverlay
             mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
             mDialog.getWindow().setBackgroundDrawable(null);
             mDialog.getWindow().takeSurface(ArImmersiveOverlay.this);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // Use maximum fullscreen, ignoring a notch if present. This code path is used
+                // for non-DOM-Overlay mode where the browser compositor view isn't visible.
+                // In DOM Overlay mode (SurfaceUiCompositor), Blink configures this separately
+                // via ViewportData::SetExpandIntoDisplayCutout.
+                mDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                mDialog.getWindow().getAttributes().layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
             View view = mDialog.getWindow().getDecorView();
             view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
             view.setOnTouchListener(ArImmersiveOverlay.this);
+            view.setKeepScreenOn(true);
             mDialog.setOnCancelListener(this);
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -92,18 +118,23 @@ public class ArImmersiveOverlay
 
         @Override // SurfaceUiWrapper
         public void onSurfaceVisible() {
-            if (mNotificationToast == null) {
-                int resId = R.string.immersive_fullscreen_api_notification;
-                mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
-                mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
+            if (mNotificationToast != null) {
+                mNotificationToast.cancel();
             }
+            int resId = R.string.immersive_fullscreen_api_notification;
+            mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
+            mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
             mNotificationToast.show();
         }
+
+        @Override // SurfaceUiWrapper
+        public void forwardMotionEvent(MotionEvent ev) {}
 
         @Override // SurfaceUiWrapper
         public void destroy() {
             if (mNotificationToast != null) {
                 mNotificationToast.cancel();
+                mNotificationToast = null;
             }
             mDialog.dismiss();
         }
@@ -112,6 +143,18 @@ public class ArImmersiveOverlay
         public void onCancel(DialogInterface dialog) {
             if (DEBUG_LOGS) Log.i(TAG, "onCancel");
             cleanupAndExit();
+        }
+    }
+
+    private class PointerData {
+        public float x;
+        public float y;
+        public boolean touching;
+
+        public PointerData(float x, float y, boolean touching) {
+            this.x = x;
+            this.y = y;
+            this.touching = touching;
         }
     }
 
@@ -126,6 +169,11 @@ public class ArImmersiveOverlay
             // OverlayVideoMode, putting it in front of that, but behind other non-SurfaceView UI.
             mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
+            mSurfaceView.setKeepScreenOn(true);
+
+            // Process touch input events for XR input. This consumes them, they'll be resent to
+            // the compositor view via forwardMotionEvent.
+            mSurfaceView.setOnTouchListener(ArImmersiveOverlay.this);
 
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();
@@ -154,6 +202,12 @@ public class ArImmersiveOverlay
         public void onSurfaceVisible() {}
 
         @Override // SurfaceUiWrapper
+        public void forwardMotionEvent(MotionEvent ev) {
+            View contentView = mActivity.getCompositorViewHolder();
+            contentView.dispatchTouchEvent(ev);
+        }
+
+        @Override // SurfaceUiWrapper
         public void destroy() {
             mActivity.getFullscreenManager().removeListener(mFullscreenListener);
             View content = mActivity.getWindow().findViewById(android.R.id.content);
@@ -168,13 +222,170 @@ public class ArImmersiveOverlay
     public boolean onTouch(View v, MotionEvent ev) {
         // Only forward primary actions, ignore more complex events such as secondary pointer
         // touches. Ignore batching since we're only sending one ray pose per frame.
-        if (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_MOVE
-                || ev.getAction() == MotionEvent.ACTION_UP) {
-            boolean touching = ev.getAction() != MotionEvent.ACTION_UP;
-            if (DEBUG_LOGS) Log.i(TAG, "onTouch touching=" + touching);
-            mArCoreJavaUtils.onDrawingSurfaceTouch(touching, ev.getX(0), ev.getY(0));
+
+        if (DEBUG_LOGS) {
+            Log.i(TAG,
+                    "Received motion event, action: " + MotionEvent.actionToString(ev.getAction())
+                            + ", pointer count: " + ev.getPointerCount()
+                            + ", action index: " + ev.getActionIndex());
+            for (int i = 0; i < ev.getPointerCount(); i++) {
+                Log.i(TAG,
+                        "Pointer index: " + i + ", id: " + ev.getPointerId(i) + ", coordinates: ("
+                                + ev.getX(i) + ", " + ev.getY(i) + ")");
+            }
         }
+
+        final int action = ev.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP
+                || action == MotionEvent.ACTION_POINTER_DOWN
+                || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL
+                || action == MotionEvent.ACTION_MOVE) {
+            // ACTION_DOWN - gesture starts. Pointer with index 0 will be considered as a primary
+            // pointer until it's raised. Then, there will be no primary pointer until the
+            // gesture ends (ACTION_UP / ACTION_CANCEL).
+            if (action == MotionEvent.ACTION_DOWN) {
+                int pointerId = ev.getPointerId(0);
+
+                // Remember primary pointer's ID. The start of the gesture is the only time when the
+                // primary pointer is set.
+                mPrimaryPointerId = pointerId;
+                PointerData previousData = mPointerIdToData.put(
+                        mPrimaryPointerId, new PointerData(ev.getX(0), ev.getY(0), true));
+
+                if (previousData != null) {
+                    // Not much we can do here, just log and continue.
+                    Log.w(TAG,
+                            "New pointer with ID " + pointerId
+                                    + " introduced by ACTION_DOWN when old pointer with the same ID already exists.");
+                }
+
+                // Send the events to the device.
+                // This needs to happen after we have updated the state.
+                sendMotionEvents(false);
+            }
+
+            // ACTION_UP - gesture ends.
+            // ACTION_CANCEL - gesture was canceled - there will be no more points in it.
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                // Send the events to the device - all pointers are no longer `touching`:
+                sendMotionEvents(true);
+
+                // Clear the state - the gesture has ended.
+                mPrimaryPointerId = null;
+                mPointerIdToData.clear();
+            }
+
+            // ACTION_POINTER_DOWN - new pointer joined the gesture. Its index is passed
+            // through MotionEvent.getActionIndex().
+            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                int pointerIndex = ev.getActionIndex();
+                int pointerId = ev.getPointerId(pointerIndex);
+
+                if (DEBUG_LOGS) Log.i(TAG, "New pointer, ID=" + pointerId);
+
+                PointerData previousData = mPointerIdToData.put(pointerId,
+                        new PointerData(ev.getX(pointerIndex), ev.getY(pointerIndex), true));
+
+                if (previousData != null) {
+                    // Not much we can do here, just log and continue.
+                    Log.w(TAG,
+                            "New pointer with ID " + pointerId
+                                    + " introduced by ACTION_POINTER_DOWN when old pointer with the same ID already exists.");
+                }
+
+                if (DEBUG_LOGS) {
+                    Log.i(TAG, "Known pointer IDs after ACTION_POINTER_DOWN:");
+                    for (Map.Entry<Integer, PointerData> entry : mPointerIdToData.entrySet()) {
+                        Log.i(TAG, "ID=" + entry.getKey());
+                    }
+                }
+
+                // Send the events to the device.
+                sendMotionEvents(false);
+            }
+
+            // ACTION_POINTER_UP - pointer left the gesture. Its index is passed though
+            // MotionEvent.getActionIndex().
+            if (action == MotionEvent.ACTION_POINTER_UP) {
+                int pointerIndex = ev.getActionIndex();
+                int pointerId = ev.getPointerId(pointerIndex);
+
+                if (!mPointerIdToData.containsKey(pointerId)) {
+                    // The pointer with ID that was not previously known has been somehow introduced
+                    // outside of ACTION_DOWN / ACTION_POINTER_DOWN - this should never happen!
+                    // Nevertheless, it happens in the wild, so ignore the pointer to prevent crash.
+                    Log.w(TAG,
+                            "Pointer with ID " + pointerId
+                                    + " not found in mPointerIdToData, ignoring ACTION_POINTER_UP for it.");
+                } else {
+                    // Send the events to the device.
+                    // The pointer that was raised needs to no longer be `touching`.
+                    mPointerIdToData.get(pointerId).touching = false;
+                    sendMotionEvents(false);
+
+                    // If it so happened that it was a primary pointer, we need to remember that
+                    // there is no primary pointer anymore.
+                    if (mPrimaryPointerId != null && mPrimaryPointerId == pointerId) {
+                        mPrimaryPointerId = null;
+                    }
+                    mPointerIdToData.remove(pointerId);
+                }
+            }
+
+            if (action == MotionEvent.ACTION_MOVE) {
+                for (int i = 0; i < ev.getPointerCount(); i++) {
+                    int pointerId = ev.getPointerId(i);
+                    PointerData pd = mPointerIdToData.get(pointerId);
+
+                    // If pointer data is null for the given pointer id, then something is wrong
+                    // with the code's assumption - new pointers can only appear due to ACTION_DOWN
+                    // and ACTION_POINTER_DOWN, but it did not seem to happen in this case. In case
+                    // logs are enabled, log this information.
+                    if (DEBUG_LOGS && pd == null) {
+                        Log.i(TAG,
+                                "Pointer with ID " + pointerId + " (index " + i
+                                        + ") not found in mPointerIdToData. Known pointer IDs:");
+                        for (Map.Entry<Integer, PointerData> entry : mPointerIdToData.entrySet()) {
+                            Log.i(TAG, "ID=" + entry.getKey());
+                        }
+                    }
+
+                    if (pd == null) {
+                        // The pointer with ID that was not previously known has been somehow
+                        // introduced outside of ACTION_DOWN / ACTION_POINTER_DOWN - this should
+                        // never happen! Nevertheless, it happens in the wild, so ignore the pointer
+                        // to prevent crash.
+                        Log.w(TAG,
+                                "Pointer with ID " + pointerId + "(index " + i
+                                        + ") not found in mPointerIdToData, ignoring ACTION_MOVE for it.");
+                        continue;
+                    }
+
+                    pd.x = ev.getX(i);
+                    pd.y = ev.getY(i);
+                }
+
+                sendMotionEvents(false);
+            }
+        }
+
+        // We need to consume the touch (returning true) to ensure that we get
+        // followup events such as MOVE and UP. DOM Overlay mode needs to forward
+        // the touch to the content view so that its UI elements keep working.
+        mSurfaceUi.forwardMotionEvent(ev);
         return true;
+    }
+
+    // If the gestureEnded is set to true, the touching state present on the
+    // PointerData entries will be ignored - none of them will be touching and
+    // the entire collection will be cleared anyway.
+    private void sendMotionEvents(boolean gestureEnded) {
+        for (Map.Entry<Integer, PointerData> entry : mPointerIdToData.entrySet()) {
+            mArCoreJavaUtils.onDrawingSurfaceTouch(
+                    mPrimaryPointerId != null && mPrimaryPointerId.equals(entry.getKey()),
+                    gestureEnded ? false : entry.getValue().touching, entry.getKey().intValue(),
+                    entry.getValue().x, entry.getValue().y);
+        }
     }
 
     @Override // ScreenOrientationDelegate
@@ -211,8 +422,9 @@ public class ArImmersiveOverlay
         // transport even if the currently-visible part in the surface view is smaller than this. We
         // shouldn't get resize events since we're using FLAG_LAYOUT_STABLE and are locking screen
         // orientation.
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(mActivity);
         if (mSurfaceReportedReady) {
-            int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+            int rotation = display.getRotation();
             if (DEBUG_LOGS) {
                 Log.i(TAG,
                         "surfaceChanged ignoring change to width=" + width + " height=" + height
@@ -245,7 +457,6 @@ public class ArImmersiveOverlay
         // after the session starts, but the session doesn't start until we report the drawing
         // surface being ready (including a configured size), so we use this reported size assuming
         // that's what the fullscreen mode will use.
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getRealSize(size);
 
@@ -259,7 +470,7 @@ public class ArImmersiveOverlay
             height = size.y;
         }
 
-        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = display.getRotation();
         if (DEBUG_LOGS) {
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
         }
@@ -290,7 +501,7 @@ public class ArImmersiveOverlay
         // The JS app may have put an element into fullscreen mode during the immersive session,
         // even if this wasn't visible to the user. Ensure that we fully exit out of any active
         // fullscreen state on session end to avoid being left in a confusing state.
-        if (mActivity.getActivityTab() != null) {
+        if (mActivity.getActivityTab() != null && !mActivity.isActivityFinishingOrDestroyed()) {
             mActivity.getFullscreenManager().onExitFullscreen(mActivity.getActivityTab());
         }
 

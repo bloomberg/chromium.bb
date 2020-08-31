@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -53,8 +53,9 @@ PresentAddPassesDialogResult GetUmaResult(
 @synthesize pass = _pass;
 @synthesize webState = _webState;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  self = [super initWithBaseViewController:viewController];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   }
@@ -99,9 +100,9 @@ PresentAddPassesDialogResult GetUmaResult(
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kUmaPresentAddPassesDialogResult,
-                            GetUmaResult(self.baseViewController),
-                            PresentAddPassesDialogResult::kCount);
+  base::UmaHistogramEnumeration(kUmaPresentAddPassesDialogResult,
+                                GetUmaResult(self.baseViewController),
+                                PresentAddPassesDialogResult::kCount);
   if (_viewController)
     return;
 

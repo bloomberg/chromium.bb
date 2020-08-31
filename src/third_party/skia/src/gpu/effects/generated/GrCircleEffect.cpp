@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrCircleEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -30,8 +30,8 @@ public:
         auto radius = _outer.radius;
         (void)radius;
         prevRadius = -1.0;
-        circleVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kFloat4_GrSLType,
-                                                     "circle");
+        circleVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                     kFloat4_GrSLType, "circle");
         fragBuilder->codeAppendf(
                 "float2 prevCenter;\nfloat prevRadius = %f;\nhalf d;\n@if (%d == 2 || %d == 3) {\n "
                 "   d = half((length((%s.xy - sk_FragCoord.xy) * %s.w) - 1.0) * %s.z);\n} else {\n "
@@ -68,7 +68,7 @@ private:
                 effectiveRadius -= 0.5f;
                 // When the radius is 0.5 effectiveRadius is 0 which causes an inf * 0 in the
                 // shader.
-                effectiveRadius = SkTMax(0.001f, effectiveRadius);
+                effectiveRadius = std::max(0.001f, effectiveRadius);
             } else {
                 effectiveRadius += 0.5f;
             }

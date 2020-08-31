@@ -8,7 +8,9 @@
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/logging.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
+#include "base/check.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -152,11 +154,12 @@ void BrowserFrameHeaderAsh::DoPaintHeader(gfx::Canvas* canvas) {
 
 views::CaptionButtonLayoutSize BrowserFrameHeaderAsh::GetButtonLayoutSize()
     const {
-  return target_widget()->IsMaximized() || target_widget()->IsFullscreen() ||
-                 (ash::TabletMode::Get() &&
-                  ash::TabletMode::Get()->InTabletMode())
-             ? views::CaptionButtonLayoutSize::kBrowserCaptionMaximized
-             : views::CaptionButtonLayoutSize::kBrowserCaptionRestored;
+  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
+    return views::CaptionButtonLayoutSize::kBrowserCaptionMaximized;
+
+  return ash::ShouldUseRestoreFrame(target_widget())
+             ? views::CaptionButtonLayoutSize::kBrowserCaptionRestored
+             : views::CaptionButtonLayoutSize::kBrowserCaptionMaximized;
 }
 
 SkColor BrowserFrameHeaderAsh::GetTitleColor() const {
@@ -188,9 +191,11 @@ void BrowserFrameHeaderAsh::PaintFrameImages(gfx::Canvas* canvas, bool active) {
   gfx::ImageSkia frame_overlay_image =
       appearance_provider_->GetFrameHeaderOverlayImage(active);
 
-  int corner_radius = 0;
-  if (!target_widget()->IsMaximized() && !target_widget()->IsFullscreen())
-    corner_radius = ash::kTopCornerRadiusWhenRestored;
+  ash::WindowStateType state_type =
+      target_widget()->GetNativeWindow()->GetProperty(ash::kWindowStateTypeKey);
+  int corner_radius = ash::IsNormalWindowStateType(state_type)
+                          ? ash::kTopCornerRadiusWhenRestored
+                          : 0;
 
   PaintFrameImagesInRoundRect(canvas, frame_image, frame_overlay_image,
                               appearance_provider_->GetFrameHeaderColor(active),

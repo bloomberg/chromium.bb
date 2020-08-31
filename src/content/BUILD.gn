@@ -82,7 +82,7 @@ if (!is_nacl_nonsfi) {
 if (is_component_build) {
   component("content") {
     public_deps =
-        content_shared_components + [ "//content/public/app:both_sources" ]
+        content_shared_components + [ "//content/public/app:app_sources" ]
   }
 } else if (is_nacl_nonsfi) {
   source_set("content") {
@@ -108,11 +108,8 @@ if (is_component_build) {
   }
 }
 
-grit("resources") {
+grit("content_resources") {
   source = "content_resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   outputs = [
     "grit/content_resources.h",
@@ -125,9 +122,25 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//content/browser/process_internals:mojo_bindings_js",
     "//gpu/ipc/common:vulkan_interface_js",
     "//url/mojom:url_mojom_origin_js",
+  ]
+}
+
+grit("dev_ui_content_resources") {
+  source = "dev_ui_content_resources.grd"
+
+  outputs = [
+    "grit/dev_ui_content_resources.h",
+    "dev_ui_content_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    "//content/browser/conversions:mojo_bindings_js",
+    "//content/browser/process_internals:mojo_bindings_js",
   ]
 }
 
@@ -136,9 +149,7 @@ grit("resources") {
 source_set("export") {
   # Must only be used inside of content.
   visibility = [ "//content/*" ]
-  sources = [
-    "common/content_export.h",
-  ]
+  sources = [ "common/content_export.h" ]
 }
 
 # In the GYP build, this file is listed in several targets. In GN just have
@@ -151,8 +162,6 @@ source_set("sandbox_helper_win") {
       "public/app/sandbox_helper_win.h",
     ]
 
-    deps = [
-      "//sandbox",
-    ]
+    deps = [ "//sandbox" ]
   }
 }

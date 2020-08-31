@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
@@ -332,7 +333,6 @@ int WebSocketHttp2HandshakeStream::ValidateResponse() {
   const int response_code = headers->response_code();
   switch (response_code) {
     case HTTP_OK:
-      OnFinishOpeningHandshake();
       return ValidateUpgradeResponse(headers);
 
     // We need to pass these through for authentication to work.
@@ -346,7 +346,6 @@ int WebSocketHttp2HandshakeStream::ValidateResponse() {
       OnFailure(base::StringPrintf(
           "Error during WebSocket handshake: Unexpected response code: %d",
           headers->response_code()));
-      OnFinishOpeningHandshake();
       result_ = HandshakeResult::HTTP2_INVALID_STATUS;
       return ERR_INVALID_RESPONSE;
   }
@@ -370,13 +369,6 @@ int WebSocketHttp2HandshakeStream::ValidateUpgradeResponse(
   }
   OnFailure("Error during WebSocket handshake: " + failure_message);
   return ERR_INVALID_RESPONSE;
-}
-
-void WebSocketHttp2HandshakeStream::OnFinishOpeningHandshake() {
-  DCHECK(http_response_info_);
-  WebSocketDispatchOnFinishOpeningHandshake(
-      connect_delegate_, request_info_->url, http_response_info_->headers,
-      http_response_info_->remote_endpoint, http_response_info_->response_time);
 }
 
 void WebSocketHttp2HandshakeStream::OnFailure(const std::string& message) {

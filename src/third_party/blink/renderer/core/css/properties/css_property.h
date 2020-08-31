@@ -19,11 +19,14 @@ namespace blink {
 
 class ComputedStyle;
 class CrossThreadStyleValue;
+class ExecutionContext;
 class LayoutObject;
 class SVGComputedStyle;
 
 class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
  public:
+  using Flags = uint32_t;
+
   static const CSSProperty& Get(CSSPropertyID);
 
   // For backwards compatibility when passing around CSSUnresolvedProperty
@@ -37,6 +40,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IDEquals(CSSPropertyID id) const { return PropertyID() == id; }
   bool IsResolvedProperty() const override { return true; }
 
+  Flags GetFlags() const { return flags_; }
   bool IsInterpolable() const { return flags_ & kInterpolable; }
   bool IsCompositableProperty() const { return flags_ & kCompositableProperty; }
   bool IsDescriptor() const { return flags_ & kDescriptor; }
@@ -49,6 +53,16 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsAffectedByForcedColors() const {
     return flags_ & kIsAffectedByForcedColors;
   }
+  bool IsValidForFirstLetter() const { return flags_ & kValidForFirstLetter; }
+  bool IsValidForCue() const { return flags_ & kValidForCue; }
+  bool IsValidForMarker() const { return flags_ & kValidForMarker; }
+  bool IsSurrogate() const { return flags_ & kSurrogate; }
+  bool AffectsFont() const { return flags_ & kAffectsFont; }
+  bool IsBackground() const { return flags_ & kBackground; }
+  bool IsBorder() const { return flags_ & kBorder; }
+  bool IsComputedValueComparable() const {
+    return flags_ & kComputedValueComparable;
+  }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -59,6 +73,13 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   virtual bool IsLayoutDependentProperty() const { return false; }
   virtual bool IsLayoutDependent(const ComputedStyle* style,
                                  LayoutObject* layout_object) const {
+    return false;
+  }
+
+  virtual bool ComputedValuesEqual(const ComputedStyle&,
+                                   const ComputedStyle&) const {
+    // May only be called if IsComputedValueComparable() is true.
+    NOTREACHED();
     return false;
   }
 
@@ -82,13 +103,18 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   }
   virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }
   virtual const CSSProperty* GetUnvisitedProperty() const { return nullptr; }
+
+  virtual const CSSProperty* SurrogateFor(TextDirection, WritingMode) const {
+    return nullptr;
+  }
+
   static void FilterWebExposedCSSPropertiesIntoVector(
+      const ExecutionContext*,
       const CSSPropertyID*,
       size_t length,
       Vector<const CSSProperty*>&);
 
- protected:
-  enum Flag : uint16_t {
+  enum Flag : Flags {
     kInterpolable = 1 << 0,
     kCompositableProperty = 1 << 1,
     kDescriptor = 1 << 2,
@@ -102,11 +128,31 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // seen by CSSOM, which is represented by the unvisited property).
     kVisited = 1 << 7,
     kInternal = 1 << 8,
-    kIsAffectedByForcedColors = 1 << 9
+    kIsAffectedByForcedColors = 1 << 9,
+    // Animation properties have this flag set. (I.e. longhands of the
+    // 'animation' and 'transition' shorthands).
+    kAnimation = 1 << 10,
+    // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling
+    kValidForFirstLetter = 1 << 11,
+    // https://w3c.github.io/webvtt/#the-cue-pseudo-element
+    kValidForCue = 1 << 12,
+    // https://drafts.csswg.org/css-pseudo-4/#marker-pseudo
+    kValidForMarker = 1 << 13,
+    // A surrogate is a (non-alias) property which acts like another property,
+    // for example -webkit-writing-mode is a surrogate for writing-mode, and
+    // inline-size is a surrogate for either width or height.
+    kSurrogate = 1 << 14,
+    kAffectsFont = 1 << 15,
+    // If the author specifies any background or border property on an UI
+    // element, the native appearance must be disabled.
+    kBackground = 1 << 16,
+    kBorder = 1 << 17,
+    // Set if ComputedValuesEqual is implemented for the given CSSProperty.
+    kComputedValueComparable = 1 << 18,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,
-                        uint16_t flags,
+                        Flags flags,
                         char repetition_separator)
       : CSSUnresolvedProperty(),
         property_id_(property_id),
@@ -115,7 +161,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
 
  private:
   CSSPropertyID property_id_;
-  uint16_t flags_;
+  Flags flags_;
   char repetition_separator_;
 };
 

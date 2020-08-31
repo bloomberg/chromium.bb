@@ -9,7 +9,7 @@ cd $DIR
 
 TARGET_DIR=$DIR/wpt
 REMOTE_REPO="https://github.com/web-platform-tests/wpt.git"
-WPT_HEAD=3ee67ef03aeee31247ee1b5aca3e91ddef4fdfd8
+WPT_HEAD=622c9625dddfdef0c6dfafa8fa00d5119db50201
 
 function clone {
   # Remove existing repo if already exists.
@@ -19,11 +19,6 @@ function clone {
   git clone $REMOTE_REPO $TARGET_DIR
   cd $TARGET_DIR && git checkout $WPT_HEAD
   echo "WPTHead: " `git rev-parse HEAD`
-
-  # Apply local changes.
-  git apply $DIR/chromium.patch
-  # Chromium presubmit requires scripts with shebang to be executable.
-  chmod 755 tools/manifest/update.py
 }
 
 function reduce {
@@ -32,7 +27,7 @@ function reduce {
   # xargs on some platforms, so we remove those directories first.
   rm -fr html css
   # Remove all except white-listed.
-  comm -23 <(find . -type f | sort) <(cat ../WPTWhiteList | sort) | xargs -n 1 rm
+  comm -23 <(find . -type f | sort) <(cat ../WPTWhiteList | sort) | xargs -d '\n' -n 1 rm
   find . -empty -type d -delete
 }
 

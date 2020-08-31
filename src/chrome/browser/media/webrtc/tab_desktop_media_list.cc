@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/hash/hash.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -65,8 +66,8 @@ TabDesktopMediaList::TabDesktopMediaList()
     : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
           kDefaultTabDesktopMediaListUpdatePeriod)) {
   type_ = DesktopMediaID::TYPE_WEB_CONTENTS;
-  thumbnail_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  thumbnail_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
 TabDesktopMediaList::~TabDesktopMediaList() {}
@@ -148,9 +149,9 @@ void TabDesktopMediaList::Refresh(bool update_thumnails) {
     // current thread.
     base::PostTaskAndReplyWithResult(
         thumbnail_task_runner_.get(), FROM_HERE,
-        base::Bind(&CreateEnclosedFaviconImage, thumbnail_size_, it.second),
-        base::Bind(&TabDesktopMediaList::UpdateSourceThumbnail,
-                   weak_factory_.GetWeakPtr(), it.first));
+        base::BindOnce(&CreateEnclosedFaviconImage, thumbnail_size_, it.second),
+        base::BindOnce(&TabDesktopMediaList::UpdateSourceThumbnail,
+                       weak_factory_.GetWeakPtr(), it.first));
   }
 
   // OnRefreshComplete() needs to be called after all calls for

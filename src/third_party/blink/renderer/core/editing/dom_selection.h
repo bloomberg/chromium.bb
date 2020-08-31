@@ -31,7 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DOM_SELECTION_H_
 
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -46,7 +46,7 @@ class SetSelectionOptions;
 class TreeScope;
 
 class CORE_EXPORT DOMSelection final : public ScriptWrappable,
-                                       public ContextClient {
+                                       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 

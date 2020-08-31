@@ -3,9 +3,10 @@
     "Runs tests on 64-bit iOS 12 and 13 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-noncq."
   ],
-  "xcode build version": "11a1027",
+  "xcode build version": "11e146",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
+    "ios_use_goma_rbe=true",
     "is_component_build=false",
     "is_debug=true",
     "symbol_level=1",
@@ -21,74 +22,96 @@
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
-      "device type": "iPhone X",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "device type": "iPhone 6s",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
-      "device type": "iPhone 7",
-      "os": "13.1",
-      "xcode build version": "11a1027",
+      "device type": "iPhone 6s",
+      "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
-    },
-    {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPad (6th generation)",
-      "os": "13.1",
-      "xcode build version": "11a1027",
-      "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
-    },
-    {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPad Air 2",
-      "os": "13.1",
-      "xcode build version": "11a1027",
-      "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",
-      "os": "12.2",
-      "xcode build version": "11a1027",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone 7",
-      "os": "12.2",
-      "xcode build version": "11a1027",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
-      "os": "12.2",
-      "xcode build version": "11a1027",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.2",
-      "xcode build version": "11a1027",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
+    },
+    {
+      "app": "crashpad_tests",
+      "device type": "iPhone X",
+      "os": "13.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPhone X",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPhone 7",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPad (6th generation)",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPad Air 2",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
+    },
+    {
+      "app": "crashpad_tests",
+      "device type": "iPhone X",
+      "os": "12.4",
+      "pool":"chromium.tests.template",
+      "host os": "Mac-10.15"
     }
   ]
 }

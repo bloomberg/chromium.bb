@@ -27,6 +27,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/test_data_util.h"
@@ -207,7 +208,7 @@ void MediaRouterIntegrationBrowserTest::OpenTestPageInNewTab(
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestPageUrl(full_path),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   // Opening a new tab creates new WebContents, so we must re-configure the
   // test UI for it.
   test_ui_ =

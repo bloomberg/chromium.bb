@@ -9,5 +9,6 @@ message InputProperties {
   // Whether gclient hooks should be run when setting up the checkout.
   bool runhooks = 1;
   // Timeout for presubmit execution, in seconds.
+  // Defaults to 480s (8 minutes).
   int32 timeout_s = 2;
 }

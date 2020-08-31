@@ -24,20 +24,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import {Constraints, Size} from './Geometry.js';
+import {appendStyle} from './utils/append-style.js';
+import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
+import {XWidget} from './XWidget.js';
+
 /**
  * @unrestricted
  */
-export default class Widget extends Common.Object {
+export class Widget extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {boolean=} isWebComponent
    * @param {boolean=} delegatesFocus
    */
   constructor(isWebComponent, delegatesFocus) {
     super();
-    this.contentElement = createElementWithClass('div', 'widget');
+    this.contentElement = document.createElement('div');
+    this.contentElement.classList.add('widget');
     if (isWebComponent) {
-      this.element = createElementWithClass('div', 'vbox flex-auto');
-      this._shadowRoot = UI.createShadowRootWithCoreStyles(this.element, undefined, delegatesFocus);
+      this.element = document.createElement('div');
+      this.element.classList.add('vbox');
+      this.element.classList.add('flex-auto');
+      this._shadowRoot = createShadowRootWithCoreStyles(this.element, undefined, delegatesFocus);
       this._shadowRoot.appendChild(this.contentElement);
     } else {
       this.element = this.contentElement;
@@ -81,27 +93,6 @@ export default class Widget extends Common.Object {
   static __assert(condition, message) {
     if (!condition) {
       throw new Error(message);
-    }
-  }
-
-  /**
-   * @param {?Node} node
-   */
-  static focusWidgetForNode(node) {
-    while (node) {
-      if (node.__widget) {
-        break;
-      }
-      node = node.parentNodeOrShadowHost();
-    }
-    if (!node) {
-      return;
-    }
-
-    let widget = node.__widget;
-    while (widget._parentWidget) {
-      widget._parentWidget._defaultFocusedChild = widget;
-      widget = widget._parentWidget;
     }
   }
 
@@ -175,7 +166,7 @@ export default class Widget extends Common.Object {
   }
 
   /**
-   * @param {function(this:Widget)} method
+   * @param {function(this:Widget):void} method
    */
   _callOnVisibleChildren(method) {
     const copy = this._children.slice();
@@ -227,7 +218,7 @@ export default class Widget extends Common.Object {
   }
 
   /**
-   * @param {function(this:Widget)} notification
+   * @param {function(this:Widget):void} notification
    */
   _notify(notification) {
     ++this._notificationDepth;
@@ -480,7 +471,7 @@ export default class Widget extends Common.Object {
    * @param {string} cssFile
    */
   registerRequiredCSS(cssFile) {
-    UI.appendStyle(this._isWebComponent ? this._shadowRoot : this.element, cssFile);
+    appendStyle(this._isWebComponent ? this._shadowRoot : this.element, cssFile);
   }
 
   printWidgetHierarchy() {
@@ -540,7 +531,7 @@ export default class Widget extends Common.Object {
       }
       let child = this.contentElement.traverseNextNode(this.contentElement);
       while (child) {
-        if (child instanceof UI.XWidget) {
+        if (child instanceof XWidget) {
           child.focus();
           return;
         }
@@ -557,14 +548,14 @@ export default class Widget extends Common.Object {
   }
 
   /**
-   * @return {!UI.Constraints}
+   * @return {!Constraints}
    */
   calculateConstraints() {
-    return new UI.Constraints();
+    return new Constraints();
   }
 
   /**
-   * @return {!UI.Constraints}
+   * @return {!Constraints}
    */
   constraints() {
     if (typeof this._constraints !== 'undefined') {
@@ -583,7 +574,7 @@ export default class Widget extends Common.Object {
    * @param {number} preferredHeight
    */
   setMinimumAndPreferredSizes(width, height, preferredWidth, preferredHeight) {
-    this._constraints = new UI.Constraints(new UI.Size(width, height), new UI.Size(preferredWidth, preferredHeight));
+    this._constraints = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
     this.invalidateConstraints();
   }
 
@@ -592,7 +583,7 @@ export default class Widget extends Common.Object {
    * @param {number} height
    */
   setMinimumSize(width, height) {
-    this._constraints = new UI.Constraints(new UI.Size(width, height));
+    this._constraints = new Constraints(new Size(width, height));
     this.invalidateConstraints();
   }
 
@@ -668,10 +659,10 @@ export class VBox extends Widget {
 
   /**
    * @override
-   * @return {!UI.Constraints}
+   * @return {!Constraints}
    */
   calculateConstraints() {
-    let constraints = new UI.Constraints();
+    let constraints = new Constraints();
 
     /**
      * @this {!Widget}
@@ -702,10 +693,10 @@ export class HBox extends Widget {
 
   /**
    * @override
-   * @return {!UI.Constraints}
+   * @return {!Constraints}
    */
   calculateConstraints() {
-    let constraints = new UI.Constraints();
+    let constraints = new Constraints();
 
     /**
      * @this {!Widget}
@@ -727,7 +718,7 @@ export class HBox extends Widget {
  */
 export class VBoxWithResizeCallback extends VBox {
   /**
-   * @param {function()} resizeCallback
+   * @param {function():void} resizeCallback
    */
   constructor(resizeCallback) {
     super();
@@ -808,28 +799,7 @@ Element.prototype.removeChildren = function() {
   Widget._originalRemoveChildren.call(this);
 };
 
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.Widget = Widget;
-
 Widget._originalAppendChild = _originalAppendChild;
 Widget._originalInsertBefore = _originalInsertBefore;
 Widget._originalRemoveChild = _originalRemoveChild;
 Widget._originalRemoveChildren = _originalRemoveChildren;
-
-/** @constructor */
-UI.HBox = HBox;
-
-/** @constructor */
-UI.VBox = VBox;
-
-/** @constructor */
-UI.WidgetFocusRestorer = WidgetFocusRestorer;
-
-/** @constructor */
-UI.VBoxWithResizeCallback = VBoxWithResizeCallback;

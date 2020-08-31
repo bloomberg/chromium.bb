@@ -11,19 +11,22 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
+#include "components/spellcheck/renderer/spellcheck_renderer_metrics.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
@@ -119,19 +122,25 @@ class SpellCheck::SpellcheckRequest {
   SpellcheckRequest(
       const base::string16& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion)
-      : text_(text), completion_(std::move(completion)) {
+      : text_(text),
+        completion_(std::move(completion)),
+        start_ticks_(base::TimeTicks::Now()) {
     DCHECK(completion_);
   }
   ~SpellcheckRequest() {}
 
   base::string16 text() { return text_; }
   blink::WebTextCheckingCompletion* completion() { return completion_.get(); }
+  base::TimeTicks start_ticks() { return start_ticks_; }
 
  private:
   base::string16 text_;  // Text to be checked in this task.
 
   // The interface to send the misspelled ranges to WebKit.
   std::unique_ptr<blink::WebTextCheckingCompletion> completion_;
+
+  // The time ticks at which this request was created
+  base::TimeTicks start_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
@@ -353,38 +362,24 @@ bool SpellCheck::SpellCheckWord(
       }
       return false;
     }
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    // If we're performing a hybrid spell check, we're only interested in
+    // knowing whether some Hunspell languages considered this text range as
+    // correctly spelled. If no misspellings were found, but the entire text was
+    // skipped, it means that no Hunspell language considered this text
+    // correct, so we should return false here.
+    if (spellcheck::UseWinHybridSpellChecker() &&
+        EnabledLanguageCount() != LanguageCount() &&
+        agreed_skippable_len == text_length) {
+      return false;
+    }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   }
 
   NOTREACHED();
   return true;
 }
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void SpellCheck::HybridSpellCheckParagraph(
-    const base::string16& text,
-    SpellCheck::RendererTextCheckCallback callback) {
-  // Count how many languages need to be checked on the renderer side, and
-  // skip the Hunspell check if the result is 0.
-  size_t renderer_languages_count = EnabledLanguageCount();
-  std::vector<SpellCheckResult> renderer_results;
-
-  if (renderer_languages_count > 0) {
-    WebVector<blink::WebTextCheckingResult> web_results;
-    SpellCheckParagraph(text, &web_results);
-
-    // Convert the results to non-blink format.
-    renderer_results.resize(web_results.size());
-    std::transform(web_results.begin(), web_results.end(),
-                   renderer_results.begin(),
-                   [](const WebTextCheckingResult& result) {
-                     return SpellCheckResult(SpellCheckResult::SPELLING,
-                                             result.location, result.length);
-                   });
-  }
-
-  std::move(callback).Run(std::move(renderer_results));
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 bool SpellCheck::SpellCheckParagraph(
@@ -475,6 +470,11 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
     WebVector<blink::WebTextCheckingResult> results;
     SpellCheckParagraph(param->text(), &results);
     param->completion()->DidFinishCheckingText(results);
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    spellcheck_renderer_metrics::RecordSpellcheckDuration(
+        base::TimeTicks::Now() - param->start_ticks(),
+        /*used_hunspell=*/true, /*used_native=*/false);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   }
 }
 #endif
@@ -516,10 +516,10 @@ void SpellCheck::CreateTextCheckingResults(
     if (replacements_filtered.empty() && !replacements.empty())
       continue;
 
-    if (filter == USE_NATIVE_CHECKER) {
-      // Double-check misspelled words with out spellchecker and attach grammar
-      // markers to them if our spellchecker tells us they are correct words,
-      // i.e. they are probably contextually-misspelled words.
+    if (filter == USE_HUNSPELL_FOR_GRAMMAR) {
+      // Double-check misspelled words with Hunspell and attach grammar markers
+      // to them if Hunspell tells us they are correct words, i.e. they are
+      // probably contextually-misspelled words.
       size_t unused_misspelling_start = 0;
       size_t unused_misspelling_length = 0;
       if (decoration == SpellCheckResult::SPELLING &&
@@ -530,6 +530,39 @@ void SpellCheck::CreateTextCheckingResults(
         decoration = SpellCheckResult::GRAMMAR;
       }
     }
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    else if (filter == USE_HUNSPELL_FOR_HYBRID_CHECK &&
+             spellcheck::UseWinHybridSpellChecker() &&
+             EnabledLanguageCount() > 0) {
+      // Remove the suggestions that were generated by the native spell checker,
+      // otherwise Blink will cache them without asking for the suggestions
+      // from Hunspell.
+      replacements_filtered.clear();
+
+      // The native spell checker was not able to check all locales. Double-
+      // check misspelled words with Hunspell for the unchecked locales
+      // and remove the results if Hunspell tells us the words are correctly
+      // spelled in those locales.
+      size_t unused_misspelling_start = 0;
+      size_t unused_misspelling_length = 0;
+
+      if (SpellCheckWord(misspelled_word.c_str(), kNoOffset,
+                         misspelled_word.length(), kNoTag,
+                         &unused_misspelling_start, &unused_misspelling_length,
+                         nullptr)) {
+        // Correctly spelled in a Hunspell locale. If enhanced spell check was
+        // used, turn the spelling mistake into a grammar mistake (local and
+        // remote checks disagree, so the word is probably only contextually
+        // misspelled). If enhanced spell check wasn't used, remove this
+        // misspelling.
+        if (spellcheck_result.spelling_service_used) {
+          decoration = SpellCheckResult::GRAMMAR;
+        } else {
+          continue;
+        }
+      }
+    }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
     results.push_back(
         WebTextCheckingResult(static_cast<WebTextDecorationType>(decoration),

@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_export.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -96,7 +96,6 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() override;
-  bool ShouldAdvanceFocusToTopLevelWidget() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

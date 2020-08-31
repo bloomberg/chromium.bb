@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "ui/events/keycodes/dom/dom_code.h"

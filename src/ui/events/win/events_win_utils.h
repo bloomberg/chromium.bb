@@ -6,6 +6,7 @@
 #define UI_EVENTS_WIN_EVENTS_WIN_UTILS_H_
 
 #include <stdint.h>
+#include <windows.h>
 
 #include <memory>
 
@@ -17,9 +18,8 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/native_widget_types.h"
-
-#include <windows.h>
 
 namespace gfx {
 class Point;
@@ -84,9 +84,6 @@ void ReleaseCopiedMSGEvent(const MSG& native_event);
 
 // Returns the detailed pointer information for touch events.
 PointerDetails GetTouchPointerDetailsFromMSG(const MSG& native_event);
-
-// Gets the touch id from a native event.
-int GetTouchId(const MSG& native_event);
 
 // Clear the touch id from bookkeeping if it is a release/cancel event.
 void ClearTouchIdIfReleased(const MSG& native_event);

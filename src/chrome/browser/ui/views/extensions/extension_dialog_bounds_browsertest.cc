@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace {
@@ -54,16 +55,13 @@ class ExtensionDialogBoundsTest
 
     // Dimensions of a dialog that would be bigger than the remaining display
     // work area when the docked magnifier is enabled.
-    constexpr int kDialogWidth = 1000;
-    constexpr int kDialogHeight = 1000;
-    constexpr int kDialogMinimumWidth = 640;
-    constexpr int kDialogMinimumHeight = 240;
+    ExtensionDialog::InitParams params(gfx::Size(1000, 1000));
+    params.is_modal = true;
+    params.min_size = {640, 240};
     auto* dialog = ExtensionDialog::Show(
         extension->url().Resolve("main.html"),
         browser()->window()->GetNativeWindow(), browser()->profile(),
-        nullptr /* web_contents */, true /* is_modal */, kDialogWidth,
-        kDialogHeight, kDialogMinimumWidth, kDialogMinimumHeight,
-        base::string16() /* title */, nullptr /* observer */);
+        nullptr /* web_contents */, nullptr /* observer */, params);
     ASSERT_TRUE(dialog);
     ASSERT_TRUE(init_listener.WaitUntilSatisfied());
   }

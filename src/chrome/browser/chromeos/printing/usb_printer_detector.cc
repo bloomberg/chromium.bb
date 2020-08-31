@@ -30,25 +30,18 @@
 #include "chromeos/printing/usb_printer_id.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace {
 
 // Given a usb device, guesses the make and model for a driver lookup.
-//
-// TODO(https://crbug.com/895037): Possibly go deeper and query the IEEE1284
-// fields for make and model if we determine those are more likely to contain
-// what we want.  Strings currently come from udev.
-// TODO(https://crbug.com/895037): When above is added, parse out document
-// formats and add to DetectedPrinter
 std::string GuessEffectiveMakeAndModel(
     const device::mojom::UsbDeviceInfo& device) {
   return base::UTF16ToUTF8(GetManufacturerName(device)) + " " +
@@ -194,8 +187,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
   // Bind to the DeviceService for USB device manager.
   mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindUsbDeviceManager(
       usb_manager.InitWithNewPipeAndPassReceiver());
   return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager));
 }

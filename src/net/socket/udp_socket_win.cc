@@ -8,13 +8,15 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -1333,8 +1335,8 @@ void DscpManager::RequestHandle() {
   }
 
   handle_is_initializing_ = true;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&DscpManager::DoCreateHandle, api_),
       base::BindOnce(&DscpManager::OnHandleCreated, api_,
                      weak_ptr_factory_.GetWeakPtr()));

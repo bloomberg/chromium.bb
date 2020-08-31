@@ -67,7 +67,7 @@ void FakeSkiaOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
 void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,
-                                    bool has_alpha,
+                                    gfx::BufferFormat format,
                                     bool use_stencil) {
   auto& sk_surface = sk_surfaces_[0];
   SkColorType color_type = kRGBA_8888_SkColorType;
@@ -81,11 +81,14 @@ void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
 }
 
 void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeSkiaOutputSurface::SwapBuffersAck,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeSkiaOutputSurface::ScheduleOutputSurfaceAsOverlay(
-    OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) {
+    OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
@@ -102,11 +105,6 @@ bool FakeSkiaOutputSurface::IsDisplayedAsOverlayPlane() const {
 unsigned FakeSkiaOutputSurface::GetOverlayTextureId() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return 0;
-}
-
-gfx::BufferFormat FakeSkiaOutputSurface::GetOverlayBufferFormat() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return gfx::BufferFormat::RGBX_8888;
 }
 
 bool FakeSkiaOutputSurface::HasExternalStencilTest() const {
@@ -166,16 +164,17 @@ void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
     const std::vector<ImageContext*>& contexts,
-    SkYUVColorSpace yuv_color_space,
-    sk_sp<SkColorSpace> dst_color_space,
+    sk_sp<SkColorSpace> image_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-void FakeSkiaOutputSurface::ReleaseImageContexts(
-    std::vector<std::unique_ptr<ImageContext>> image_contexts) {}
+gpu::SyncToken FakeSkiaOutputSurface::ReleaseImageContexts(
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {
+  return gpu::SyncToken();
+}
 
 std::unique_ptr<ExternalUseClient::ImageContext>
 FakeSkiaOutputSurface::CreateImageContext(
@@ -186,13 +185,6 @@ FakeSkiaOutputSurface::CreateImageContext(
     sk_sp<SkColorSpace> color_space) {
   return std::make_unique<ExternalUseClient::ImageContext>(
       holder, size, format, ycbcr_info, std::move(color_space));
-}
-
-void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeSkiaOutputSurface::SwapBuffersAck,
-                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
@@ -363,11 +355,14 @@ void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
   NOTIMPLEMENTED();
 }
 
-void FakeSkiaOutputSurface::SendOverlayPromotionNotification(
-    std::vector<gpu::SyncToken> sync_tokens,
-    base::flat_set<gpu::Mailbox> promotion_denied,
-    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+FakeSkiaOutputSurface::GetGpuTaskSchedulerHelper() {
   NOTIMPLEMENTED();
+  return nullptr;
 }
 
+gpu::MemoryTracker* FakeSkiaOutputSurface::GetMemoryTracker() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 }  // namespace viz

@@ -179,9 +179,8 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
         rtcp1 = fake_rtcp_dtls_transport1_.get();
       }
       if (flags1 & DTLS) {
-        auto cert1 =
-            rtc::RTCCertificate::Create(std::unique_ptr<rtc::SSLIdentity>(
-                rtc::SSLIdentity::Generate("session1", rtc::KT_DEFAULT)));
+        auto cert1 = rtc::RTCCertificate::Create(
+            rtc::SSLIdentity::Create("session1", rtc::KT_DEFAULT));
         fake_rtp_dtls_transport1_->SetLocalCertificate(cert1);
         if (fake_rtcp_dtls_transport1_) {
           fake_rtcp_dtls_transport1_->SetLocalCertificate(cert1);
@@ -209,9 +208,8 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
         rtcp2 = fake_rtcp_dtls_transport2_.get();
       }
       if (flags2 & DTLS) {
-        auto cert2 =
-            rtc::RTCCertificate::Create(std::unique_ptr<rtc::SSLIdentity>(
-                rtc::SSLIdentity::Generate("session2", rtc::KT_DEFAULT)));
+        auto cert2 = rtc::RTCCertificate::Create(
+            rtc::SSLIdentity::Create("session2", rtc::KT_DEFAULT));
         fake_rtp_dtls_transport2_->SetLocalCertificate(cert2);
         if (fake_rtcp_dtls_transport2_) {
           fake_rtcp_dtls_transport2_->SetLocalCertificate(cert2);
@@ -843,7 +841,6 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
       rtc::NetworkRoute network_route;
       // The transport channel becomes disconnected.
       fake_rtp_dtls_transport1_->ice_transport()->SignalNetworkRouteChanged(
-
           absl::optional<rtc::NetworkRoute>(network_route));
     });
     WaitForThreads();
@@ -854,8 +851,10 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     network_thread_->Invoke<void>(RTC_FROM_HERE, [this] {
       rtc::NetworkRoute network_route;
       network_route.connected = true;
-      network_route.local_network_id = kLocalNetId;
-      network_route.remote_network_id = kRemoteNetId;
+      network_route.local =
+          rtc::RouteEndpoint::CreateWithNetworkId(kLocalNetId);
+      network_route.remote =
+          rtc::RouteEndpoint::CreateWithNetworkId(kRemoteNetId);
       network_route.last_sent_packet_id = kLastPacketId;
       network_route.packet_overhead = kTransportOverheadPerPacket;
       // The transport channel becomes connected.
@@ -867,9 +866,9 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     EXPECT_EQ(1, media_channel1->num_network_route_changes());
     EXPECT_TRUE(media_channel1->last_network_route().connected);
     EXPECT_EQ(kLocalNetId,
-              media_channel1->last_network_route().local_network_id);
+              media_channel1->last_network_route().local.network_id());
     EXPECT_EQ(kRemoteNetId,
-              media_channel1->last_network_route().remote_network_id);
+              media_channel1->last_network_route().remote.network_id());
     EXPECT_EQ(kLastPacketId,
               media_channel1->last_network_route().last_sent_packet_id);
     EXPECT_EQ(kTransportOverheadPerPacket + kSrtpOverheadPerPacket,
@@ -1312,7 +1311,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
   void CreateSimulcastContent(const std::vector<std::string>& rids,
                               typename T::Content* content) {
     std::vector<RidDescription> rid_descriptions;
-    for (const std::string name : rids) {
+    for (const std::string& name : rids) {
       rid_descriptions.push_back(RidDescription(name, RidDirection::kSend));
     }
 

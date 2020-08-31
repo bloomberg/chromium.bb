@@ -26,6 +26,7 @@ from __future__ import print_function
 import errno
 import multiprocessing
 import os
+import sys
 
 from six.moves import queue as Queue
 
@@ -39,6 +40,9 @@ from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import workon_helper
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ModificationTimeMonitor(object):
@@ -121,9 +125,6 @@ def ListWorkonPackagesInfo(sysroot):
   Returns:
     A list of WorkonPackageInfo objects for unique packages being worked on.
   """
-  # Import portage late so that this script can be imported outside the chroot.
-  # pylint: disable=import-error
-  import portage.const
   packages = ListWorkonPackages(sysroot)
   if not packages:
     return []
@@ -134,7 +135,7 @@ def ListWorkonPackagesInfo(sysroot):
   else:
     overlays = sysroot.GetStandardField('PORTDIR_OVERLAY').splitlines()
 
-  vdb_path = os.path.join(sysroot.path, portage.const.VDB_PATH)
+  vdb_path = os.path.join(sysroot.path, portage_util.VDB_PATH)
 
   for overlay in overlays:
     for filename, projects, srcpaths in portage_util.GetWorkonProjectMap(

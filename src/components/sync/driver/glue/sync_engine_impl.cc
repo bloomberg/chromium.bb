@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
@@ -120,7 +120,7 @@ void SyncEngineImpl::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 void SyncEngineImpl::AddTrustedVaultDecryptionKeys(
-    const std::vector<std::string>& keys,
+    const std::vector<std::vector<uint8_t>>& keys,
     base::OnceClosure done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTaskAndReply(
@@ -150,8 +150,7 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
 
   if (invalidation_handler_registered_) {
     if (reason != BROWSER_SHUTDOWN) {
-      bool success =
-          invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
+      bool success = invalidator_->UpdateInterestedTopics(this, /*topics=*/{});
       DCHECK(success);
     }
     invalidator_->UnregisterInvalidationHandler(this);
@@ -186,30 +185,10 @@ void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
                                 std::move(params)));
 }
 
-void SyncEngineImpl::RegisterDirectoryDataType(ModelType type,
-                                               ModelSafeGroup group) {
-  model_type_connector_->RegisterDirectoryType(type, group);
-}
-
-void SyncEngineImpl::UnregisterDirectoryDataType(ModelType type) {
-  model_type_connector_->UnregisterDirectoryType(type);
-}
-
 void SyncEngineImpl::EnableEncryptEverything() {
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoEnableEncryptEverything, backend_));
-}
-
-void SyncEngineImpl::ActivateDirectoryDataType(
-    ModelType type,
-    ModelSafeGroup group,
-    ChangeProcessor* change_processor) {
-  registrar_->ActivateDataType(type, group, change_processor, GetUserShare());
-}
-
-void SyncEngineImpl::DeactivateDirectoryDataType(ModelType type) {
-  registrar_->DeactivateDataType(type);
 }
 
 void SyncEngineImpl::ActivateNonBlockingDataType(
@@ -226,13 +205,22 @@ void SyncEngineImpl::DeactivateNonBlockingDataType(ModelType type) {
   model_type_connector_->DisconnectNonBlockingType(type);
 }
 
+void SyncEngineImpl::ActivateProxyDataType(ModelType type) {
+  model_type_connector_->ConnectProxyType(type);
+}
+
+void SyncEngineImpl::DeactivateProxyDataType(ModelType type) {
+  model_type_connector_->DisconnectProxyType(type);
+}
+
 UserShare* SyncEngineImpl::GetUserShare() const {
   return backend_->sync_manager()->GetUserShare();
 }
 
-SyncEngineImpl::Status SyncEngineImpl::GetDetailedStatus() {
+const SyncEngineImpl::Status& SyncEngineImpl::GetDetailedStatus() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized());
-  return backend_->sync_manager()->GetDetailedStatus();
+  return cached_status_;
 }
 
 void SyncEngineImpl::HasUnsyncedItemsForTest(
@@ -294,24 +282,26 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet enabled_types,
     const ModelTypeSet succeeded_configuration_types,
     const ModelTypeSet failed_configuration_types,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
+    base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task) {
   last_enabled_types_ = enabled_types;
   if (invalidator_) {
-    ModelTypeSet invalidation_enabled_types(enabled_types);
+    // No need to register invalidations for CommitOnlyTypes().
+    ModelTypeSet invalidation_enabled_types(
+        Difference(enabled_types, CommitOnlyTypes()));
 #if defined(OS_ANDROID)
     if (!sessions_invalidation_enabled_) {
       invalidation_enabled_types.Remove(syncer::SESSIONS);
-      invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
-      invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
     }
 #endif
-    bool success = invalidator_->UpdateRegisteredInvalidationIds(
-        this, ModelTypeSetToObjectIdSet(invalidation_enabled_types));
+    bool success = invalidator_->UpdateInterestedTopics(
+        this, ModelTypeSetToTopicSet(invalidation_enabled_types));
     DCHECK(success);
   }
 
-  if (!ready_task.is_null())
-    ready_task.Run(succeeded_configuration_types, failed_configuration_types);
+  if (!ready_task.is_null()) {
+    std::move(ready_task)
+        .Run(succeeded_configuration_types, failed_configuration_types);
+  }
 }
 
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
@@ -319,10 +309,8 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
-    const std::string& cache_guid,
     const std::string& birthday,
-    const std::string& bag_of_chips,
-    const std::string& last_keystore_key) {
+    const std::string& bag_of_chips) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   model_type_connector_ = std::move(model_type_connector);
@@ -339,29 +327,25 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
   }
 
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             cache_guid, birthday, bag_of_chips,
-                             last_keystore_key, /*success=*/true);
+                             birthday, bag_of_chips, /*success=*/true);
 }
 
 void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                              WeakHandle<DataTypeDebugInfoListener>(),
-                             /*cache_guid=*/"",
                              /*birthday=*/"", /*bag_of_chips=*/"",
-                             /*last_keystore_key=*/"",
                              /*success=*/false);
 }
 
 void SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop(
-    const SyncCycleSnapshot& snapshot,
-    const std::string& last_keystore_key) {
+    const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
   if (IsInitialized()) {
-    host_->OnSyncCycleCompleted(snapshot, last_keystore_key);
+    host_->OnSyncCycleCompleted(snapshot);
   }
 }
 
@@ -384,7 +368,7 @@ void SyncEngineImpl::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncEngineImpl::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const TopicInvalidationMap& invalidation_map) {
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnIncomingInvalidation,
                                 backend_, invalidation_map));
@@ -434,29 +418,40 @@ void SyncEngineImpl::UpdateInvalidationVersions(
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 
+void SyncEngineImpl::HandleSyncStatusChanged(const SyncStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool backed_off_types_changed =
+      (status.backed_off_types != cached_status_.backed_off_types);
+  cached_status_ = status;
+  if (backed_off_types_changed) {
+    host_->OnBackedOffTypesChanged();
+  }
+}
+
 void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,
                                         bool empty_jar,
-                                        const base::Closure& callback) {
+                                        base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoOnCookieJarChanged, backend_,
-                     account_mismatch, empty_jar, callback));
+                     account_mismatch, empty_jar, std::move(callback)));
 }
 
 void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   sessions_invalidation_enabled_ = enabled;
+  // TODO(crbug.com/1050970): unify logic here and in
+  // FinishConfigureDataTypesOnFrontedLoop() and factor it out.
   // |last_enabled_types_| contains all datatypes, for which user
-  // has enabled Sync. So by construction, it cointains also noisy datatypes
-  // if nessesary.
-  ModelTypeSet enabled_for_invalidation(last_enabled_types_);
+  // has enabled Sync. There is no need to register invalidations for
+  // CommitOnlyTypes(), so they are filtered out.
+  ModelTypeSet enabled_for_invalidation(
+      Difference(last_enabled_types_, CommitOnlyTypes()));
   if (!enabled) {
     enabled_for_invalidation.Remove(syncer::SESSIONS);
-    enabled_for_invalidation.Remove(syncer::FAVICON_IMAGES);
-    enabled_for_invalidation.Remove(syncer::FAVICON_TRACKING);
   }
-  bool success = invalidator_->UpdateRegisteredInvalidationIds(
-      this, ModelTypeSetToObjectIdSet(enabled_for_invalidation));
+  bool success = invalidator_->UpdateInterestedTopics(
+      this, ModelTypeSetToTopicSet(enabled_for_invalidation));
   DCHECK(success);
 }
 
@@ -476,9 +471,9 @@ void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
 }
 
 void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace syncer

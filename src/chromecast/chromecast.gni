@@ -104,9 +104,6 @@ declare_args() {
   # cast CMA media backend and supporting Widevine or Playready.
   disable_secure_flac_and_opus_decoding = false
 
-  # Set to true to enable wayland server
-  enable_cast_wayland_server = false
-
   # Set to true to enable mixing in CastAudioManager. Only needed on devices
   # that do not have a mixer in the CMA backend.
   enable_cast_audio_manager_mixer =
@@ -159,7 +156,16 @@ if (chromecast_branding == "public") {
 # in //build/config/locales.gni.
 cast_locales = locales
 
-enable_chromecast_extensions = enable_extensions
+# Android currently supports more locales than Desktop and ChromeOS.
+# If Cast will also the android files update this and the Cast grd files.
+if (is_android) {
+  # Subtract out additional Android locales
+  cast_locales -= android_bundle_only_locales
+}
+
+declare_args() {
+  enable_chromecast_extensions = enable_extensions
+}
 
 # Use Chromecast CDMs for protected content. Some Android platforms use
 # MediaDrm for CDM support.

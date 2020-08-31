@@ -59,13 +59,12 @@ class MockStream : public media::mojom::AudioInputStream {
 
 class MockDelegate : public media::AudioInputIPCDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
   void OnStreamCreated(base::ReadOnlySharedMemoryRegion mem_handle,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool initially_muted) override {
-    base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated(initially_muted);
   }
 
@@ -86,8 +85,6 @@ class FakeStreamCreator {
   void Create(const media::AudioSourceParameters& source_params,
               mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
                   factory_client,
-              mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-                  controls_receiver,
               const media::AudioParameters& params,
               bool automatic_gain_control,
               uint32_t total_segments) {
@@ -104,7 +101,7 @@ class FakeStreamCreator {
         stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place,
          base::ReadOnlySharedMemoryRegion::Create(kMemoryLength).region,
-         mojo::WrapPlatformFile(foreign_socket.Release())},
+         mojo::PlatformHandle(foreign_socket.Take())},
         initially_muted_, base::UnguessableToken::Create());
   }
 
@@ -174,8 +171,6 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
           [](const media::AudioSourceParameters&,
              mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
                  factory_client,
-             mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-                 controls_receiver,
              const media::AudioParameters& params, bool automatic_gain_control,
              uint32_t total_segments) {}),
       base::BindRepeating(&AssociateOutputForAec));

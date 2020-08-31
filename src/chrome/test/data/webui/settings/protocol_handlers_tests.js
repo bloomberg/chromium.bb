@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for protocol_handlers. */
 suite('ProtocolHandlers', function() {
   /**
@@ -65,9 +71,8 @@ suite('ProtocolHandlers', function() {
   let browserProxy = null;
 
   setup(async function() {
-    await settings.forceLazyLoaded();
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
   });
 
   teardown(function() {
@@ -82,7 +87,7 @@ suite('ProtocolHandlers', function() {
     testElement = document.createElement('protocol-handlers');
     document.body.appendChild(testElement);
     return browserProxy.whenCalled('observeProtocolHandlers').then(function() {
-      Polymer.dom.flush();
+      flush();
     });
   }
 

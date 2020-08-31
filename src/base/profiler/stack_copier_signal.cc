@@ -11,9 +11,7 @@
 
 #include <atomic>
 
-#include "base/profiler/metadata_recorder.h"
 #include "base/profiler/register_context.h"
-#include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/trace_event/trace_event.h"
@@ -82,13 +80,22 @@ struct HandlerParams {
   AsyncSafeWaitableEvent* event;
 
   // Return values:
+
   // Successfully copied the stack segment.
   bool* success;
+
   // The thread context of the leaf function.
   mcontext_t* context;
+
   // Buffer to copy the stack segment.
   StackBuffer* stack_buffer;
   const uint8_t** stack_copy_bottom;
+
+  // The timestamp when the stack was copied.
+  TimeTicks* timestamp;
+
+  // The delegate provided to the StackCopier.
+  StackCopier::Delegate* stack_copier_delegate;
 };
 
 // Pointer to the parameters to be "passed" to the CopyStackSignalHandler() from
@@ -101,6 +108,11 @@ std::atomic<HandlerParams*> g_handler_params;
 // function may only call reentrant code.
 void CopyStackSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
   HandlerParams* params = g_handler_params.load(std::memory_order_acquire);
+
+  // TimeTicks::Now() is implemented in terms of clock_gettime on Linux, which
+  // is signal safe per the signal-safety(7) man page.
+  *params->timestamp = TimeTicks::Now();
+
   ScopedEventSignaller e(params->event);
   *params->success = false;
 
@@ -116,13 +128,13 @@ void CopyStackSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
     return;
   }
 
+  params->stack_copier_delegate->OnStackCopy();
+
   *params->stack_copy_bottom =
       StackCopierSignal::CopyStackContentsAndRewritePointers(
           reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
           StackBuffer::kPlatformStackAlignment, params->stack_buffer->buffer());
 
-  // TODO(https://crbug.com/988579): Record metadata while the thread is
-  // suspended.
   *params->success = true;
 }
 
@@ -175,14 +187,16 @@ StackCopierSignal::~StackCopierSignal() = default;
 
 bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
                                   uintptr_t* stack_top,
-                                  ProfileBuilder* profile_builder,
-                                  RegisterContext* thread_context) {
+                                  TimeTicks* timestamp,
+                                  RegisterContext* thread_context,
+                                  Delegate* delegate) {
   AsyncSafeWaitableEvent wait_event;
   bool copied = false;
   const uint8_t* stack_copy_bottom = nullptr;
   const uintptr_t stack_base_address = thread_delegate_->GetStackBaseAddress();
   HandlerParams params = {stack_base_address, &wait_event,  &copied,
-                          thread_context,     stack_buffer, &stack_copy_bottom};
+                          thread_context,     stack_buffer, &stack_copy_bottom,
+                          timestamp,          delegate};
   {
     ScopedSetSignalHandlerParams scoped_handler_params(&params);
 

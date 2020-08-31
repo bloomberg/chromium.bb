@@ -21,13 +21,10 @@ class SyncEngineHostStub : public SyncEngineHost {
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const std::string& cache_guid,
       const std::string& birthday,
       const std::string& bag_of_chips,
-      const std::string& last_keystore_key,
       bool success) override;
-  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot,
-                            const std::string& last_keystore_key) override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnDirectoryTypeCommitCounterUpdated(
       ModelType type,
@@ -40,6 +37,7 @@ class SyncEngineHostStub : public SyncEngineHost {
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
   void OnActionableError(const SyncProtocolError& error) override;
+  void OnBackedOffTypesChanged() override;
 };
 
 }  // namespace syncer

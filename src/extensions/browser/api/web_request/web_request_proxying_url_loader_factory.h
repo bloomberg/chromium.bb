@@ -67,9 +67,11 @@ class WebRequestProxyingURLLoaderFactory
     void Restart();
 
     // network::mojom::URLLoader:
-    void FollowRedirect(const std::vector<std::string>& removed_headers,
-                        const net::HttpRequestHeaders& modified_headers,
-                        const base::Optional<GURL>& new_url) override;
+    void FollowRedirect(
+        const std::vector<std::string>& removed_headers,
+        const net::HttpRequestHeaders& modified_headers,
+        const net::HttpRequestHeaders& modified_cors_exempt_headers,
+        const base::Optional<GURL>& new_url) override;
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override;
     void PauseReadingBodyFromNet() override;
@@ -126,6 +128,8 @@ class WebRequestProxyingURLLoaderFactory
     void HandleResponseOrRedirectHeaders(
         net::CompletionOnceCallback continuation);
     void OnRequestError(const network::URLLoaderCompletionStatus& status);
+    void OnLoaderDisconnected(uint32_t custom_reason,
+                              const std::string& description);
     bool IsRedirectSafe(const GURL& from_url,
                         const GURL& to_url,
                         bool is_navigation_request);
@@ -162,7 +166,6 @@ class WebRequestProxyingURLLoaderFactory
     base::Optional<net::AuthCredentials> auth_credentials_;
 
     const bool for_cors_preflight_ = false;
-    bool request_completed_ = false;
 
     // If |has_any_extra_headers_listeners_| is set to true, the request will be
     // sent with the network::mojom::kURLLoadOptionUseHeaderClient option, and
@@ -186,6 +189,7 @@ class WebRequestProxyingURLLoaderFactory
       ~FollowRedirectParams();
       std::vector<std::string> removed_headers;
       net::HttpRequestHeaders modified_headers;
+      net::HttpRequestHeaders modified_cors_exempt_headers;
       base::Optional<GURL> new_url;
 
       DISALLOW_COPY_AND_ASSIGN(FollowRedirectParams);
@@ -200,7 +204,7 @@ class WebRequestProxyingURLLoaderFactory
   WebRequestProxyingURLLoaderFactory(
       content::BrowserContext* browser_context,
       int render_process_id,
-      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+      WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       base::Optional<int64_t> navigation_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -216,7 +220,7 @@ class WebRequestProxyingURLLoaderFactory
   static void StartProxying(
       content::BrowserContext* browser_context,
       int render_process_id,
-      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+      WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       base::Optional<int64_t> navigation_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -273,7 +277,7 @@ class WebRequestProxyingURLLoaderFactory
 
   content::BrowserContext* const browser_context_;
   const int render_process_id_;
-  scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
+  WebRequestAPI::RequestIDGenerator* const request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   base::Optional<int64_t> navigation_id_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;

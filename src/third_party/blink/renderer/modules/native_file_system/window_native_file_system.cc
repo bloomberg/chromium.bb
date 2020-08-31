@@ -7,19 +7,21 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_choose_file_system_entries_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options.h"
-#include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -29,14 +31,14 @@ namespace {
 
 mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
                                                            bool multiple) {
-  if (input == "openFile") {
+  if (input == "open-file" || input == "openFile") {
     return multiple
                ? mojom::blink::ChooseFileSystemEntryType::kOpenMultipleFiles
                : mojom::blink::ChooseFileSystemEntryType::kOpenFile;
   }
-  if (input == "saveFile")
+  if (input == "save-file" || input == "saveFile")
     return mojom::blink::ChooseFileSystemEntryType::kSaveFile;
-  if (input == "openDirectory")
+  if (input == "open-directory" || input == "openDirectory")
     return mojom::blink::ChooseFileSystemEntryType::kOpenDirectory;
   NOTREACHED();
   return mojom::blink::ChooseFileSystemEntryType::kOpenFile;
@@ -62,51 +64,43 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
 ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
     LocalDOMWindow& window,
-    const ChooseFileSystemEntriesOptions* options) {
+    const ChooseFileSystemEntriesOptions* options,
+    ExceptionState& exception_state) {
   if (!window.IsCurrentlyDisplayedInFrame()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError, "");
+    return ScriptPromise();
   }
 
   Document* document = window.document();
   if (!document) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError, "");
+    return ScriptPromise();
   }
 
   if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kSecurityError,
-              "Sandboxed documents aren't allowed to show a file picker."));
+    if (document->IsSandboxed(
+            network::mojom::blink::WebSandboxFlags::kOrigin)) {
+      exception_state.ThrowSecurityError(
+          "Sandboxed documents aren't allowed to show a file picker.");
+      return ScriptPromise();
     } else {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kSecurityError,
-              "This document isn't allowed to show a file picker."));
+      exception_state.ThrowSecurityError(
+          "This document isn't allowed to show a file picker.");
+      return ScriptPromise();
     }
   }
 
   LocalFrame* local_frame = window.GetFrame();
-  if (!local_frame || local_frame->IsCrossOriginSubframe()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "Cross origin sub frames aren't allowed to show a file picker."));
+  if (!local_frame || local_frame->IsCrossOriginToMainFrame()) {
+    exception_state.ThrowSecurityError(
+        "Cross origin sub frames aren't allowed to show a file picker.");
+    return ScriptPromise();
   }
 
   if (!LocalFrame::HasTransientUserActivation(local_frame)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "Must be handling a user gesture to show a file picker."));
+    exception_state.ThrowSecurityError(
+        "Must be handling a user gesture to show a file picker.");
+    return ScriptPromise();
   }
 
   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;

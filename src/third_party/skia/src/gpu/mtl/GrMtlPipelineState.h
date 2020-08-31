@@ -48,11 +48,11 @@ public:
 
     void setData(const GrRenderTarget*, const GrProgramInfo&);
 
-    void setTextures(const GrProgramInfo& programInfo,
-                     const GrSurfaceProxy* const primProcTextures[]);
+    void setTextures(const GrPrimitiveProcessor&, const GrPipeline&, const GrSurfaceProxy* const[]);
     void bindTextures(id<MTLRenderCommandEncoder> renderCmdEncoder);
 
-    void setDrawState(id<MTLRenderCommandEncoder>, const GrSwizzle& outputSwizzle,
+    void setDrawState(id<MTLRenderCommandEncoder>,
+                      const GrSwizzle& writeSwizzle,
                       const GrXferProcessor&);
 
     static void SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
@@ -111,7 +111,7 @@ private:
         GrMtlSampler*  fSampler;
         id<MTLTexture> fTexture;
 
-        SamplerBindings(const GrSamplerState& state, GrTexture* texture, GrMtlGpu*);
+        SamplerBindings(GrSamplerState state, GrTexture* texture, GrMtlGpu*);
     };
 
     GrMtlGpu* fGpu;

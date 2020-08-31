@@ -24,8 +24,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.IntegrationTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.sync.SyncTestRule;
@@ -71,7 +71,7 @@ public class OnboardingDialogIntegrationTest {
 
     @Before
     public void setUp() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
                     PASSWORD_MANAGER_ONBOARDING_STATE, SHOULD_SHOW);

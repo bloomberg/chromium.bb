@@ -10,10 +10,13 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/exo/buffer.h"
 #include "components/exo/data_source.h"
 #include "components/exo/data_source_delegate.h"
+#include "components/exo/pointer_constraint_delegate.h"
 #include "components/exo/pointer_delegate.h"
+#include "components/exo/relative_pointer_delegate.h"
 #include "components/exo/seat.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -25,9 +28,15 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace exo {
 namespace {
@@ -49,6 +58,27 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_METHOD0(OnPointerFrame, void());
 };
 
+class MockRelativePointerDelegate : public RelativePointerDelegate {
+ public:
+  MockRelativePointerDelegate() = default;
+  ~MockRelativePointerDelegate() = default;
+
+  // Overridden from RelativePointerDelegate:
+  MOCK_METHOD1(OnPointerDestroying, void(Pointer*));
+  MOCK_METHOD2(OnPointerRelativeMotion,
+               void(base::TimeTicks, const gfx::PointF&));
+};
+
+class MockPointerConstraintDelegate : public PointerConstraintDelegate {
+ public:
+  MockPointerConstraintDelegate() = default;
+  ~MockPointerConstraintDelegate() = default;
+
+  // Overridden from PointerConstraintDelegate:
+  MOCK_METHOD0(OnConstraintBroken, void());
+  MOCK_METHOD0(GetConstrainedSurface, Surface*());
+};
+
 class TestDataSourceDelegate : public DataSourceDelegate {
  public:
   TestDataSourceDelegate() {}
@@ -61,6 +91,9 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   void OnDndDropPerformed() override {}
   void OnDndFinished() override {}
   void OnAction(DndAction dnd_action) override {}
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
+    return true;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TestDataSourceDelegate);
 };
@@ -170,7 +203,7 @@ TEST_F(PointerTest, SetCursorNull) {
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone, cursor_client->GetCursor().type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -196,13 +229,13 @@ TEST_F(PointerTest, SetCursorType) {
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
 
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kIBeam, cursor_client->GetCursor().type());
 
   // Set the pointer with surface after setting pointer type.
   std::unique_ptr<Surface> pointer_surface(new Surface);
@@ -225,11 +258,11 @@ TEST_F(PointerTest, SetCursorType) {
   }
 
   // Set the pointer type after the pointer surface is specified.
-  pointer->SetCursorType(ui::CursorType::kCross);
+  pointer->SetCursorType(ui::mojom::CursorType::kCross);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kCross, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCross, cursor_client->GetCursor().type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -254,7 +287,7 @@ TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin() -
                         gfx::Vector2d(1, 1));
 
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
@@ -262,7 +295,7 @@ TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
   // The cursor type shouldn't be the specified one, since the pointer is
   // located outside of the surface.
-  EXPECT_NE(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_NE(ui::mojom::CursorType::kIBeam, cursor_client->GetCursor().type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -310,7 +343,7 @@ TEST_F(PointerTest, SetCursorAndSetCursorType) {
   }
 
   // Set the cursor type to the kNone through SetCursorType.
-  pointer->SetCursorType(ui::CursorType::kNone);
+  pointer->SetCursorType(ui::mojom::CursorType::kNone);
   EXPECT_TRUE(pointer->GetActivePresentationCallbacksForTesting().empty());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
@@ -322,7 +355,7 @@ TEST_F(PointerTest, SetCursorAndSetCursorType) {
       pointer->GetActivePresentationCallbacksForTesting().begin()->second;
   base::RunLoop runloop;
   list.push_back(base::BindRepeating(
-      [](base::Closure callback, const gfx::PresentationFeedback&) {
+      [](base::RepeatingClosure callback, const gfx::PresentationFeedback&) {
         callback.Run();
       },
       runloop.QuitClosure()));
@@ -369,19 +402,19 @@ TEST_F(PointerTest, SetCursorNullAndSetCursorType) {
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone, cursor_client->GetCursor().type());
 
   // Set the cursor type.
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kIBeam, cursor_client->GetCursor().type());
 
   // Set nullptr surface again.
   pointer->SetCursor(nullptr, gfx::Point());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone, cursor_client->GetCursor().type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -917,6 +950,322 @@ TEST_F(PointerTest, DragDropAbort) {
   EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
 }
+
+TEST_F(PointerTest, OnPointerRelativeMotion) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  MockRelativePointerDelegate relative_delegate;
+  Seat seat;
+  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  pointer->RegisterRelativePointerDelegate(&relative_delegate);
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(9);
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)));
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(1, 1)));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(1, 1));
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(2, 2)));
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(1, 1)));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(2, 2));
+
+  auto sub_surface = std::make_unique<Surface>();
+  auto sub = std::make_unique<SubSurface>(sub_surface.get(), surface.get());
+  surface->SetSubSurfacePosition(sub_surface.get(), gfx::Point(5, 5));
+  gfx::Size sub_buffer_size(5, 5);
+  auto sub_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(sub_buffer_size));
+  sub_surface->Attach(sub_buffer.get());
+  sub_surface->Commit();
+  surface->Commit();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(sub_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+  EXPECT_CALL(delegate, OnPointerEnter(sub_surface.get(), gfx::PointF(), 0));
+  // OnPointerMotion will not be called, because the pointer location is already
+  // sent with OnPointerEnter, but we should still receive
+  // OnPointerRelativeMotion.
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(3, 3)));
+  generator.MoveMouseTo(sub_surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)));
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(1, 1)));
+  generator.MoveMouseTo(sub_surface->window()->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(1, 1));
+
+  const gfx::Point child_surface_origin =
+      sub_surface->window()->GetBoundsInScreen().origin() +
+      gfx::Vector2d(10, 10);
+  auto child_surface = std::make_unique<Surface>();
+  auto child_shell_surface = std::make_unique<ShellSurface>(
+      child_surface.get(), child_surface_origin, true, false,
+      ash::desks_util::GetActiveDeskContainerId());
+  child_shell_surface->DisableMovement();
+  child_shell_surface->SetParent(shell_surface.get());
+  gfx::Size child_buffer_size(15, 15);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(child_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(delegate, OnPointerLeave(sub_surface.get()));
+  EXPECT_CALL(delegate, OnPointerEnter(child_surface.get(), gfx::PointF(), 0));
+  // OnPointerMotion will not be called, because the pointer location is already
+  // sent with OnPointerEnter, but we should still receive
+  // OnPointerRelativeMotion.
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(9, 9)));
+  generator.MoveMouseTo(child_surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(10, 10)));
+  EXPECT_CALL(relative_delegate,
+              OnPointerRelativeMotion(testing::_, gfx::PointF(10, 10)));
+  generator.MoveMouseTo(child_surface->window()->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(10, 10));
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  EXPECT_CALL(relative_delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(PointerTest, ConstrainPointer) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      chromeos::features::kExoPointerLock);
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  MockPointerConstraintDelegate constraint_delegate;
+  Seat seat;
+  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
+  aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
+      ->FocusWindow(surface->window());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(constraint_delegate, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface.get()));
+  EXPECT_TRUE(pointer->ConstrainPointer(&constraint_delegate));
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerMotion(testing::_, testing::_)).Times(0);
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin() +
+                        gfx::Vector2d(-1, -1));
+
+  auto child_surface = std::make_unique<Surface>();
+  auto child_shell_surface = std::make_unique<ShellSurface>(
+      child_surface.get(), gfx::Point(), true, false,
+      ash::desks_util::GetActiveDeskContainerId());
+  child_shell_surface->DisableMovement();
+  child_shell_surface->SetParent(shell_surface.get());
+  gfx::Size child_buffer_size(15, 15);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(child_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  generator.MoveMouseTo(child_surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+  EXPECT_CALL(delegate, OnPointerEnter(child_surface.get(), gfx::PointF(), 0));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  // Moving the cursor to a different surface should change the focus when
+  // the pointer is unconstrained.
+  pointer->UnconstrainPointer();
+  generator.MoveMouseTo(child_surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+TEST_F(PointerTest, ConstrainPointerFailsWhenSurfaceIsNotFocused) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      chromeos::features::kExoPointerLock);
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  MockPointerConstraintDelegate constraint_delegate;
+  Seat seat;
+  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(constraint_delegate, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface.get()));
+  EXPECT_FALSE(pointer->ConstrainPointer(&constraint_delegate));
+
+  auto child_surface = std::make_unique<Surface>();
+  auto child_shell_surface = std::make_unique<ShellSurface>(
+      child_surface.get(), gfx::Point(), true, false,
+      ash::desks_util::GetActiveDeskContainerId());
+  child_shell_surface->DisableMovement();
+  child_shell_surface->SetParent(shell_surface.get());
+  gfx::Size child_buffer_size(15, 15);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(child_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  focus_client->FocusWindow(child_surface->window());
+  EXPECT_FALSE(pointer->ConstrainPointer(&constraint_delegate));
+
+  focus_client->FocusWindow(surface->window());
+  EXPECT_TRUE(pointer->ConstrainPointer(&constraint_delegate));
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  pointer->UnconstrainPointer();
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+TEST_F(PointerTest, UnconstrainPointerWhenSurfaceIsDestroyed) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      chromeos::features::kExoPointerLock);
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  MockPointerConstraintDelegate constraint_delegate;
+  Seat seat;
+  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
+  aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
+      ->FocusWindow(surface->window());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(constraint_delegate, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface.get()));
+  EXPECT_TRUE(pointer->ConstrainPointer(&constraint_delegate));
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  // Constraint should be broken if surface is destroyed.
+  EXPECT_CALL(constraint_delegate, OnConstraintBroken());
+  EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  pointer->OnSurfaceDestroying(surface.get());
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+TEST_F(PointerTest, UnconstrainPointerWhenWindowLosesFocus) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      chromeos::features::kExoPointerLock);
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  MockPointerConstraintDelegate constraint_delegate;
+  Seat seat;
+  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(surface->window());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(constraint_delegate, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface.get()));
+  EXPECT_TRUE(pointer->ConstrainPointer(&constraint_delegate));
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  EXPECT_CALL(delegate, OnPointerFrame());
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(constraint_delegate, OnConstraintBroken());
+  focus_client->FocusWindow(nullptr);
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+#endif
 
 }  // namespace
 }  // namespace exo

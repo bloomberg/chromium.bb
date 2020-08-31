@@ -69,19 +69,20 @@ class EnrollmentScreenHandler
   // Implements EnrollmentScreenView:
   void SetEnrollmentConfig(Controller* controller,
                            const policy::EnrollmentConfig& config) override;
+
+  void SetEnterpriseDomainAndDeviceType(
+      const std::string& domain,
+      const base::string16& device_type) override;
   void Show() override;
   void Hide() override;
   void ShowSigninScreen() override;
-  void ShowLicenseTypeSelectionScreen(
-      const base::DictionaryValue& license_types) override;
   void ShowActiveDirectoryScreen(const std::string& domain_join_config,
                                  const std::string& machine_name,
                                  const std::string& username,
                                  authpolicy::ErrorType error) override;
   void ShowAttributePromptScreen(const std::string& asset_id,
                                  const std::string& location) override;
-  void ShowAttestationBasedEnrollmentSuccessScreen(
-      const std::string& enterprise_domain) override;
+  void ShowEnrollmentSuccessScreen() override;
   void ShowEnrollmentSpinnerScreen() override;
   void ShowAuthError(const GoogleServiceAuthError& error) override;
   void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
@@ -117,8 +118,6 @@ class EnrollmentScreenHandler
   void HandleDeviceAttributesProvided(const std::string& asset_id,
                                       const std::string& location);
   void HandleOnLearnMore();
-  void HandleLicenseTypeSelected(const std::string& licenseType);
-
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
                                   NetworkError::ErrorReason reason);

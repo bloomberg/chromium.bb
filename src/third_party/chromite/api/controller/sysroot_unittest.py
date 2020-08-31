@@ -7,19 +7,24 @@
 
 from __future__ import print_function
 
+import datetime
 import os
+import sys
 
 from chromite.api import api_config
 from chromite.api import controller
 from chromite.api.controller import sysroot as sysroot_controller
 from chromite.api.gen.chromite.api import sysroot_pb2
-from chromite.lib import build_target_util
+from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot as sysroot_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
@@ -103,7 +108,6 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     sysroot = sysroot_lib.Sysroot(sysroot_path)
     create_patch = self.PatchObject(sysroot_service, 'Create',
                                     return_value=sysroot)
-    target_patch = self.PatchObject(build_target_util, 'BuildTarget')
     rc_patch = self.PatchObject(sysroot_service, 'SetupBoardRunConfig')
 
     # Default values.
@@ -117,7 +121,6 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     sysroot_controller.Create(in_proto, out_proto, self.api_config)
 
     # Default value checks.
-    target_patch.assert_called_with(name=board, profile=profile)
     rc_patch.assert_called_with(force=force, upgrade_chroot=upgrade_chroot)
     self.assertEqual(board, out_proto.sysroot.build_target.name)
     self.assertEqual(sysroot_path, out_proto.sysroot.path)
@@ -134,7 +137,6 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     sysroot_controller.Create(in_proto, out_proto, self.api_config)
 
     # Not default value checks.
-    target_patch.assert_called_with(name=board, profile=profile)
     rc_patch.assert_called_with(force=force, upgrade_chroot=upgrade_chroot)
     self.assertEqual(board, out_proto.sysroot.build_target.name)
     self.assertEqual(sysroot_path, out_proto.sysroot.path)
@@ -167,6 +169,18 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase,
                                                  self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'CreateSimpleChromeSysroot')
+
+    board = 'board'
+    in_proto = self._InputProto(build_target=board, use_flags=[])
+    rc = sysroot_controller.CreateSimpleChromeSysroot(in_proto,
+                                                      self._OutputProto(),
+                                                      self.mock_call_config)
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+    patch.assert_not_called()
+
   def testArgumentValidation(self):
     """Test the input argument validation."""
     # Error when no build target provided.
@@ -183,6 +197,86 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase,
     out_proto = self._OutputProto()
     sysroot_controller.CreateSimpleChromeSysroot(in_proto, out_proto,
                                                  self.api_config)
+    patch.assert_called_once()
+
+
+class GenerateArchiveTest(cros_test_lib.MockTempDirTestCase,
+                          api_config.ApiConfigMixin):
+  """GenerateArchive function tests."""
+
+  def setUp(self):
+    self.chroot_path = '/path/to/chroot'
+    self.board = 'board'
+
+  def _InputProto(self, build_target=None, chroot_path=None, pkg_list=None):
+    """Helper to build and input proto instance."""
+    # pkg_list will be a list of category/package strings such as
+    # ['virtual/target-fuzzers'].
+    if pkg_list:
+      package_list = []
+      for pkg in pkg_list:
+        pkg_string_parts = pkg.split('/')
+        package_info = common_pb2.PackageInfo(
+            category=pkg_string_parts[0],
+            package_name=pkg_string_parts[1])
+        package_list.append(package_info)
+    else:
+      package_list = []
+
+    return sysroot_pb2.SysrootGenerateArchiveRequest(
+        build_target={'name': build_target},
+        chroot={'path': chroot_path},
+        packages=package_list)
+
+  def _OutputProto(self):
+    """Helper to build output proto instance."""
+    return sysroot_pb2.SysrootGenerateArchiveResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'GenerateArchive')
+
+    in_proto = self._InputProto(build_target=self.board,
+                                chroot_path=self.chroot_path,
+                                pkg_list=['virtual/target-fuzzers'])
+    sysroot_controller.GenerateArchive(in_proto, self._OutputProto(),
+                                       self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'GenerateArchive')
+
+    in_proto = self._InputProto(build_target=self.board,
+                                chroot_path=self.chroot_path,
+                                pkg_list=['virtual/target-fuzzers'])
+    sysroot_controller.GenerateArchive(in_proto,
+                                       self._OutputProto(),
+                                       self.mock_call_config)
+    patch.assert_not_called()
+
+  def testArgumentValidation(self):
+    """Test the input argument validation."""
+    # Error when no build target provided.
+    in_proto = self._InputProto()
+    out_proto = self._OutputProto()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.GenerateArchive(in_proto, out_proto, self.api_config)
+
+    # Error when packages is not specified.
+    in_proto = self._InputProto(build_target='board',
+                                chroot_path=self.chroot_path)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.GenerateArchive(in_proto, out_proto, self.api_config)
+
+    # Valid when board, chroot path, and package are specified.
+    patch = self.PatchObject(sysroot_service, 'GenerateArchive',
+                             return_value='/path/to/sysroot/tar.bz')
+    in_proto = self._InputProto(build_target='board',
+                                chroot_path=self.chroot_path,
+                                pkg_list=['virtual/target-fuzzers'])
+    out_proto = self._OutputProto()
+    sysroot_controller.GenerateArchive(in_proto, out_proto, self.api_config)
     patch.assert_called_once()
 
 
@@ -323,9 +417,16 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
     self.build_target = 'board'
     self.sysroot = os.path.join(self.tempdir, 'build', 'board')
     osutils.SafeMakedirs(self.sysroot)
+    # Set up goma directories.
+    self.goma_dir = os.path.join(self.tempdir, 'goma_dir')
+    osutils.SafeMakedirs(self.goma_dir)
+    self.goma_out_dir = os.path.join(self.tempdir, 'goma_out_dir')
+    osutils.SafeMakedirs(self.goma_out_dir)
+    os.environ['GLOG_log_dir'] = self.goma_dir
 
   def _InputProto(self, build_target=None, sysroot_path=None,
-                  build_source=False):
+                  build_source=False, goma_dir=None, goma_log_dir=None,
+                  goma_stats_file=None, goma_counterz_file=None):
     """Helper to build an input proto instance."""
     instance = sysroot_pb2.InstallPackagesRequest()
 
@@ -335,12 +436,35 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
       instance.sysroot.path = sysroot_path
     if build_source:
       instance.flags.build_source = build_source
+    if goma_dir:
+      instance.goma_config.goma_dir = goma_dir
+    if goma_log_dir:
+      instance.goma_config.log_dir.dir = goma_log_dir
+    if goma_stats_file:
+      instance.goma_config.stats_file = goma_stats_file
+    if goma_counterz_file:
+      instance.goma_config.counterz_file = goma_counterz_file
 
     return instance
 
   def _OutputProto(self):
     """Helper to build an empty output proto instance."""
     return sysroot_pb2.InstallPackagesResponse()
+
+  def _CreateGomaLogFile(self, goma_log_dir, name, timestamp):
+    """Creates a log file for testing.
+
+    Args:
+      goma_log_dir (str): Directory where the file will be created.
+      name (str): Log file 'base' name that is combined with the timestamp.
+      timestamp (datetime): timestamp that is written to the file.
+    """
+    path = os.path.join(
+        goma_log_dir,
+        '%s.host.log.INFO.%s' % (name, timestamp.strftime('%Y%m%d-%H%M%S.%f')))
+    osutils.WriteFile(
+        path,
+        timestamp.strftime('Goma log file created at: %Y/%m/%d %H:%M:%S'))
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
@@ -423,6 +547,122 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
                                             self.api_config)
     self.assertFalse(rc)
     self.assertFalse(out_proto.failed_packages)
+
+  def testSuccessWithGomaLogs(self):
+    """Test successful call with goma."""
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy',
+                            datetime.datetime(2018, 9, 21, 12, 0, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy-subproc',
+                            datetime.datetime(2018, 9, 21, 12, 1, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'gomacc',
+                            datetime.datetime(2018, 9, 21, 12, 2, 0))
+
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot,
+                                goma_dir=self.goma_dir,
+                                goma_log_dir=self.goma_out_dir)
+
+    out_proto = self._OutputProto()
+    self.PatchObject(sysroot_service, 'BuildPackages')
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
+    self.assertFalse(rc)
+    self.assertFalse(out_proto.failed_packages)
+    self.assertCountEqual(out_proto.goma_artifacts.log_files, [
+        'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
+        'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
+        'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+
+  def testSuccessWithGomaLogsAndStatsCounterzFiles(self):
+    """Test successful call with goma including stats and counterz files."""
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy',
+                            datetime.datetime(2018, 9, 21, 12, 0, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy-subproc',
+                            datetime.datetime(2018, 9, 21, 12, 1, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'gomacc',
+                            datetime.datetime(2018, 9, 21, 12, 2, 0))
+    # Create stats and counterz files.
+    osutils.WriteFile(os.path.join(self.goma_dir, 'stats.binaryproto'),
+                      'File: stats.binaryproto')
+    osutils.WriteFile(os.path.join(self.goma_dir, 'counterz.binaryproto'),
+                      'File: counterz.binaryproto')
+
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot,
+                                goma_dir=self.goma_dir,
+                                goma_log_dir=self.goma_out_dir,
+                                goma_stats_file='stats.binaryproto',
+                                goma_counterz_file='counterz.binaryproto')
+
+    out_proto = self._OutputProto()
+    self.PatchObject(sysroot_service, 'BuildPackages')
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
+    self.assertFalse(rc)
+    self.assertFalse(out_proto.failed_packages)
+    self.assertCountEqual(out_proto.goma_artifacts.log_files, [
+        'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
+        'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
+        'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+    # Verify that the output dir has 5 files -- since there should be 3 log
+    # files, the stats file, and the counterz file.
+    output_files = os.listdir(self.goma_out_dir)
+    self.assertCountEqual(output_files, [
+        'stats.binaryproto',
+        'counterz.binaryproto',
+        'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
+        'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
+        'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+    self.assertEqual(out_proto.goma_artifacts.counterz_file,
+                     'counterz.binaryproto')
+    self.assertEqual(out_proto.goma_artifacts.stats_file,
+                     'stats.binaryproto')
+
+  def testFailureMissingGomaStatsCounterzFiles(self):
+    """Test successful call with goma including stats and counterz files."""
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy',
+                            datetime.datetime(2018, 9, 21, 12, 0, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'compiler_proxy-subproc',
+                            datetime.datetime(2018, 9, 21, 12, 1, 0))
+    self._CreateGomaLogFile(self.goma_dir, 'gomacc',
+                            datetime.datetime(2018, 9, 21, 12, 2, 0))
+    # Note that stats and counterz files are not created, but are specified in
+    # the proto below.
+
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot,
+                                goma_dir=self.goma_dir,
+                                goma_log_dir=self.goma_out_dir,
+                                goma_stats_file='stats.binaryproto',
+                                goma_counterz_file='counterz.binaryproto')
+
+    out_proto = self._OutputProto()
+    self.PatchObject(sysroot_service, 'BuildPackages')
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
+    self.assertFalse(rc)
+    self.assertFalse(out_proto.failed_packages)
+    self.assertCountEqual(out_proto.goma_artifacts.log_files, [
+        'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
+        'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
+        'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+    self.assertFalse(out_proto.goma_artifacts.counterz_file)
+    self.assertFalse(out_proto.goma_artifacts.stats_file)
 
   def testFailureOutputHandling(self):
     """Test failed package handling."""

@@ -5,9 +5,10 @@
 #include "third_party/blink/public/web/web_frame.h"
 
 #include <algorithm>
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
@@ -128,7 +129,7 @@ bool WebFrame::Swap(WebFrame* frame) {
                            ToTraceValue(&local_frame));
     }
   } else {
-    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(
+    To<WebRemoteFrameImpl>(frame)->InitializeCoreFrame(
         *page, owner, name, &old_frame->window_agent_factory());
   }
 
@@ -158,14 +159,7 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-void WebFrame::SetFrameOwnerPolicy(const FramePolicy& frame_policy) {
-  // At the moment, this is only used to replicate sandbox flags and container
-  // policy for frames with a remote owner.
-  To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner())
-      ->SetFramePolicy(frame_policy);
-}
-
-WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
+mojom::blink::InsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
   return ToCoreFrame(*this)->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
@@ -173,32 +167,6 @@ WebVector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
   const SecurityContext::InsecureNavigationsSet& set =
       ToCoreFrame(*this)->GetSecurityContext()->InsecureNavigationsToUpgrade();
   return SecurityContext::SerializeInsecureNavigationSet(set);
-}
-
-void WebFrame::SetFrameOwnerProperties(
-    const WebFrameOwnerProperties& properties) {
-  // At the moment, this is only used to replicate frame owner properties
-  // for frames with a remote owner.
-  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
-
-  Frame* frame = ToCoreFrame(*this);
-  DCHECK(frame);
-
-  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    local_frame->GetDocument()->WillChangeFrameOwnerProperties(
-        properties.margin_width, properties.margin_height,
-        static_cast<ScrollbarMode>(properties.scrolling_mode),
-        properties.is_display_none);
-  }
-
-  owner->SetBrowsingContextContainerName(properties.name);
-  owner->SetScrollingMode(properties.scrolling_mode);
-  owner->SetMarginWidth(properties.margin_width);
-  owner->SetMarginHeight(properties.margin_height);
-  owner->SetAllowFullscreen(properties.allow_fullscreen);
-  owner->SetAllowPaymentRequest(properties.allow_payment_request);
-  owner->SetIsDisplayNone(properties.is_display_none);
-  owner->SetRequiredCsp(properties.required_csp);
 }
 
 WebFrame* WebFrame::Opener() const {
@@ -320,34 +288,39 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
   return WebRemoteFrameImpl::FromFrame(To<RemoteFrame>(*frame));
 }
 
-WebFrame::WebFrame(WebTreeScopeType scope)
+WebFrame::WebFrame(mojom::blink::TreeScopeType scope,
+                   const base::UnguessableToken& frame_token)
     : scope_(scope),
+      frame_token_(frame_token),
       parent_(nullptr),
       previous_sibling_(nullptr),
       next_sibling_(nullptr),
       first_child_(nullptr),
       last_child_(nullptr),
       opener_(nullptr),
-      opened_frame_tracker_(new OpenedFrameTracker) {}
+      opened_frame_tracker_(new OpenedFrameTracker) {
+  DCHECK(frame_token_);
+}
 
 WebFrame::~WebFrame() {
   opened_frame_tracker_.reset(nullptr);
 }
 
-void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
+void WebFrame::TraceFrame(Visitor* visitor, const WebFrame* frame) {
   if (!frame)
     return;
 
-  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame))
-    visitor->Trace(web_local_frame);
-  else
-    visitor->Trace(ToWebRemoteFrameImpl(frame));
+  if (frame->IsWebLocalFrame()) {
+    visitor->Trace(To<WebLocalFrameImpl>(frame));
+  } else {
+    visitor->Trace(To<WebRemoteFrameImpl>(frame));
+  }
 }
 
-void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {
+void WebFrame::TraceFrames(Visitor* visitor, const WebFrame* frame) {
   DCHECK(frame);
   TraceFrame(visitor, frame->parent_);
-  for (WebFrame* child = frame->FirstChild(); child;
+  for (const WebFrame* child = frame->FirstChild(); child;
        child = child->NextSibling())
     TraceFrame(visitor, child);
 }
@@ -373,16 +346,9 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(&frame))
     return web_local_frame->GetFrame();
   if (frame.IsWebRemoteFrame())
-    return ToWebRemoteFrameImpl(frame).GetFrame();
+    return To<WebRemoteFrameImpl>(frame).GetFrame();
   NOTREACHED();
   return nullptr;
 }
-
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
-                   ScrollbarMode::kAuto);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
-                   ScrollbarMode::kAlwaysOff);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
-                   ScrollbarMode::kAlwaysOn);
 
 }  // namespace blink

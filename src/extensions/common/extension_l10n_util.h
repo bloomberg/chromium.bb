@@ -11,7 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/strings/string_piece.h"
+#include "extensions/common/manifest.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,6 +21,7 @@ class FilePath;
 }
 
 namespace extensions {
+class Extension;
 class MessageBundle;
 }
 
@@ -31,6 +34,20 @@ enum class GzippedMessagesPermission {
   // e.g. component extensions from the Chrome OS rootfs.
   kAllowForTrustedSource,
 };
+
+// Returns GzippedMessagesPermission::kAllowForTrustedSource for component
+// extensions, otherwise returns kDisallow.
+GzippedMessagesPermission GetGzippedMessagesPermissionForExtension(
+    const extensions::Extension* extension);
+
+// Returns GzippedMessagesPermission::kAllowForTrustedSource for trusted
+// manifest locations, otherwise returns kDisallow.
+GzippedMessagesPermission GetGzippedMessagesPermissionForLocation(
+    extensions::Manifest::Location location);
+
+// Called from tests to temporarily allow loading gzipped messages for non
+// component test extensions.
+base::AutoReset<bool> AllowGzippedMessagesAllowedForTest();
 
 // Set the locale for this process to a fixed value, rather than using the
 // normal file-based lookup mechanisms. This is used to set the locale inside

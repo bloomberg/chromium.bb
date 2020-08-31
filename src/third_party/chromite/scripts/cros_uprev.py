@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -19,6 +20,10 @@ from chromite.lib import parallel
 from chromite.lib import portage_util
 
 from chromite.cbuildbot import manifest_version
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Commit message subject for uprevving Portage packages.
 GIT_COMMIT_SUBJECT = 'Marking set of ebuilds as stable'
@@ -126,13 +131,13 @@ def CleanStalePackages(boards, package_atoms, chroot):
         result = runcmd([emerge, '-q', '--unmerge'] + list(package_atoms),
                         enter_chroot=True, chroot_args=chroot_args,
                         extra_env={'CLEAN_DELAY': '0'},
-                        error_code_ok=True, cwd=constants.SOURCE_ROOT)
+                        check=False, cwd=constants.SOURCE_ROOT)
         if result.returncode not in (0, 1):
           raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],
              cwd=constants.SOURCE_ROOT, enter_chroot=True,
-             chroot_args=chroot_args, redirect_stdout=True,
-             redirect_stderr=True)
+             chroot_args=chroot_args, stdout=True,
+             stderr=True)
 
   tasks = []
   for board in boards:
@@ -257,6 +262,10 @@ def _WorkOnEbuild(overlay, ebuild, manifest, new_ebuild_files,
   try:
     result = ebuild.RevWorkOnEBuild(os.path.join(constants.SOURCE_ROOT, 'src'),
                                     manifest)
+  except portage_util.InvalidUprevSourceError as e:
+    logging.error('An error occurred while uprevving %s: %s',
+                  ebuild.package, e)
+    raise
   except (OSError, IOError):
     logging.warning(
         'Cannot rev %s\n'

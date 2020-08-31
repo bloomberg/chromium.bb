@@ -15,7 +15,6 @@
 #include "include/core/SkTypes.h"
 #include "include/private/SkMutex.h"
 #include "src/core/SkEndian.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkTypefaceCache.h"
 #include "src/ports/SkTypeface_win_dw.h"
 #include "src/utils/SkUTF.h"
@@ -361,6 +360,16 @@ struct ProtoDWriteTypeface {
 static bool FindByDWriteFont(SkTypeface* cached, void* ctx) {
     DWriteFontTypeface* cshFace = reinterpret_cast<DWriteFontTypeface*>(cached);
     ProtoDWriteTypeface* ctxFace = reinterpret_cast<ProtoDWriteTypeface*>(ctx);
+
+    // IDWriteFontFace5 introduced both Equals and HasVariations
+    SkTScopedComPtr<IDWriteFontFace5> cshFontFace5;
+    SkTScopedComPtr<IDWriteFontFace5> ctxFontFace5;
+    cshFace->fDWriteFontFace->QueryInterface(&cshFontFace5);
+    ctxFace->fDWriteFontFace->QueryInterface(&ctxFontFace5);
+    if (cshFontFace5 && ctxFontFace5) {
+        return cshFontFace5->Equals(ctxFontFace5.get());
+    }
+
     bool same;
 
     //Check to see if the two fonts are identical.
@@ -460,7 +469,7 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::makeTypefaceFromDWriteFont(
     ProtoDWriteTypeface spec = { fontFace, font, fontFamily };
     sk_sp<SkTypeface> face = fTFCache.findByProcAndRef(FindByDWriteFont, &spec);
     if (nullptr == face) {
-        face = DWriteFontTypeface::Make(fFactory.get(), fontFace, font, fontFamily);
+        face = DWriteFontTypeface::Make(fFactory.get(), fontFace, font, fontFamily, nullptr);
         if (face) {
             fTFCache.add(face);
         }
@@ -876,6 +885,10 @@ public:
     SkAutoIDWriteUnregister(IDWriteFactory* factory, T* unregister)
         : fFactory(factory), fUnregister(unregister)
     { }
+    SkAutoIDWriteUnregister(const SkAutoIDWriteUnregister&) = delete;
+    SkAutoIDWriteUnregister& operator=(const SkAutoIDWriteUnregister&) = delete;
+    SkAutoIDWriteUnregister(SkAutoIDWriteUnregister&&) = delete;
+    SkAutoIDWriteUnregister& operator=(SkAutoIDWriteUnregister&&) = delete;
 
     ~SkAutoIDWriteUnregister() {
         if (fUnregister) {
@@ -905,7 +918,6 @@ private:
 sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamIndex(std::unique_ptr<SkStreamAsset> stream,
                                                                int ttcIndex) const {
     SkTScopedComPtr<StreamFontFileLoader> fontFileLoader;
-    // This transfers ownership of stream to the new object.
     HRN(StreamFontFileLoader::Create(std::move(stream), &fontFileLoader));
     HRN(fFactory->RegisterFontFileLoader(fontFileLoader.get()));
     SkAutoIDWriteUnregister<StreamFontFileLoader> autoUnregisterFontFileLoader(
@@ -941,8 +953,10 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamIndex(std::unique_ptr<S
             if (faceIndex == ttcIndex) {
                 return DWriteFontTypeface::Make(fFactory.get(),
                                                 fontFace.get(), font.get(), fontFamily.get(),
-                                                autoUnregisterFontFileLoader.detatch(),
-                                                autoUnregisterFontCollectionLoader.detatch());
+                                                sk_make_sp<DWriteFontTypeface::Loaders>(
+                                                    fFactory.get(),
+                                                    autoUnregisterFontFileLoader.detatch(),
+                                                    autoUnregisterFontCollectionLoader.detatch()));
             }
         }
     }
@@ -953,7 +967,6 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamIndex(std::unique_ptr<S
 sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamArgs(std::unique_ptr<SkStreamAsset> stream,
                                                               const SkFontArguments& args) const {
     SkTScopedComPtr<StreamFontFileLoader> fontFileLoader;
-    // This transfers ownership of stream to the new object.
     HRN(StreamFontFileLoader::Create(std::move(stream), &fontFileLoader));
     HRN(fFactory->RegisterFontFileLoader(fontFileLoader.get()));
     SkAutoIDWriteUnregister<StreamFontFileLoader> autoUnregisterFontFileLoader(
@@ -1029,8 +1042,10 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamArgs(std::unique_ptr<Sk
 
             return DWriteFontTypeface::Make(
                     fFactory.get(), fontFace.get(), font.get(), fontFamily.get(),
-                    autoUnregisterFontFileLoader.detatch(),
-                    autoUnregisterFontCollectionLoader.detatch());
+                    sk_make_sp<DWriteFontTypeface::Loaders>(
+                        fFactory.get(),
+                        autoUnregisterFontFileLoader.detatch(),
+                        autoUnregisterFontCollectionLoader.detatch()));
         }
     }
 
@@ -1038,7 +1053,7 @@ sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromStreamArgs(std::unique_ptr<Sk
 }
 
 sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromData(sk_sp<SkData> data, int ttcIndex) const {
-    return this->makeFromStream(skstd::make_unique<SkMemoryStream>(std::move(data)), ttcIndex);
+    return this->makeFromStream(std::make_unique<SkMemoryStream>(std::move(data)), ttcIndex);
 }
 
 sk_sp<SkTypeface> SkFontMgr_DirectWrite::onMakeFromFile(const char path[], int ttcIndex) const {

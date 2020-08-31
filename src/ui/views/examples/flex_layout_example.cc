@@ -38,15 +38,12 @@ void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* const cross_axis_values[4] = {"Stretch", "Start", "Center",
                                                    "End"};
 
-  orientation_ = CreateCombobox(base::ASCIIToUTF16("Orientation"),
-                                orientation_values, 2, &vertical_pos);
-  main_axis_alignment_ = CreateCombobox(base::ASCIIToUTF16("Main axis"),
-                                        main_axis_values, 3, &vertical_pos);
-  cross_axis_alignment_ = CreateCombobox(base::ASCIIToUTF16("Cross axis"),
-                                         cross_axis_values, 4, &vertical_pos);
-
-  between_child_spacing_ =
-      CreateTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
+  orientation_ = CreateAndAddCombobox(base::ASCIIToUTF16("Orientation"),
+                                      orientation_values, 2, &vertical_pos);
+  main_axis_alignment_ = CreateAndAddCombobox(
+      base::ASCIIToUTF16("Main axis"), main_axis_values, 3, &vertical_pos);
+  cross_axis_alignment_ = CreateAndAddCombobox(
+      base::ASCIIToUTF16("Cross axis"), cross_axis_values, 4, &vertical_pos);
 
   CreateMarginsTextFields(base::ASCIIToUTF16("Interior margin"),
                           &interior_margin_, &vertical_pos);
@@ -54,10 +51,10 @@ void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   CreateMarginsTextFields(base::ASCIIToUTF16("Default margins"),
                           &default_child_margins_, &vertical_pos);
 
-  collapse_margins_ =
-      CreateCheckbox(base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
+  collapse_margins_ = CreateAndAddCheckbox(
+      base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
 
-  ignore_default_main_axis_margins_ = CreateCheckbox(
+  ignore_default_main_axis_margins_ = CreateAndAddCheckbox(
       base::ASCIIToUTF16("Ignore main axis margins"), &vertical_pos);
 
   layout_ = layout_panel()->SetLayoutManager(std::make_unique<FlexLayout>());
@@ -90,11 +87,6 @@ void FlexLayoutExample::ContentsChanged(Textfield* sender,
       LayoutExampleBase::TextfieldsToInsets(interior_margin_));
   layout_->SetDefault(views::kMarginsKey, LayoutExampleBase::TextfieldsToInsets(
                                               default_child_margins_));
-  if (sender == between_child_spacing_) {
-    int spacing;
-    if (base::StringToInt(between_child_spacing_->GetText(), &spacing))
-      layout_->SetBetweenChildSpacing(spacing);
-  }
   RefreshLayoutPanel(false);
 }
 
@@ -121,12 +113,11 @@ void FlexLayoutExample::UpdateLayoutManager() {
 
 FlexSpecification FlexLayoutExample::GetFlexSpecification(int weight) const {
   return weight > 0
-             ? FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
-                                              MaximumFlexSizeRule::kUnbounded)
+             ? FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                 MaximumFlexSizeRule::kUnbounded)
                    .WithWeight(weight)
-             : FlexSpecification::ForSizeRule(
-                   MinimumFlexSizeRule::kPreferredSnapToZero,
-                   MaximumFlexSizeRule::kPreferred)
+             : FlexSpecification(MinimumFlexSizeRule::kPreferredSnapToZero,
+                                 MaximumFlexSizeRule::kPreferred)
                    .WithWeight(0);
 }
 

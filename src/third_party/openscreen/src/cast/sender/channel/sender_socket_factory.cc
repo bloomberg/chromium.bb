@@ -2,37 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/sender/channel/sender_socket_factory.h"
+#include "cast/sender/public/sender_socket_factory.h"
 
-#include "cast/common/channel/cast_socket.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/sender/channel/cast_auth_util.h"
 #include "cast/sender/channel/message_util.h"
 #include "platform/base/tls_connect_options.h"
 #include "util/crypto/certificate_utils.h"
+#include "util/osp_logging.h"
 
+using ::cast::channel::CastMessage;
+
+namespace openscreen {
 namespace cast {
-namespace channel {
-
-using openscreen::platform::TlsConnectOptions;
 
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
-               uint32_t b) {
+               int b) {
   return a && a->socket->socket_id() < b;
 }
 
-bool operator<(uint32_t a,
+bool operator<(int a,
                const std::unique_ptr<SenderSocketFactory::PendingAuth>& b) {
   return b && a < b->socket->socket_id();
 }
 
-SenderSocketFactory::SenderSocketFactory(Client* client) : client_(client) {
+SenderSocketFactory::SenderSocketFactory(Client* client,
+                                         TaskRunner* task_runner)
+    : client_(client), task_runner_(task_runner) {
   OSP_DCHECK(client);
+  OSP_DCHECK(task_runner);
 }
 
-SenderSocketFactory::~SenderSocketFactory() = default;
+SenderSocketFactory::~SenderSocketFactory() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+}
+
+void SenderSocketFactory::set_factory(TlsConnectionFactory* factory) {
+  OSP_DCHECK(factory);
+  factory_ = factory;
+}
 
 void SenderSocketFactory::Connect(const IPEndpoint& endpoint,
                                   DeviceMediaPolicy media_policy,
                                   CastSocket::Client* client) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(client);
   auto it = FindPendingConnection(endpoint);
   if (it == pending_connections_.end()) {
@@ -64,22 +77,24 @@ void SenderSocketFactory::OnConnected(
   CastSocket::Client* client = it->client;
   pending_connections_.erase(it);
 
-  ErrorOr<bssl::UniquePtr<X509>> peer_cert = openscreen::ImportCertificate(
-      der_x509_peer_cert.data(), der_x509_peer_cert.size());
+  ErrorOr<bssl::UniquePtr<X509>> peer_cert =
+      ImportCertificate(der_x509_peer_cert.data(), der_x509_peer_cert.size());
   if (!peer_cert) {
     client_->OnError(this, endpoint, peer_cert.error());
     return;
   }
 
-  auto socket = std::make_unique<CastSocket>(std::move(connection), this,
-                                             GetNextSocketId());
+  auto socket =
+      MakeSerialDelete<CastSocket>(task_runner_, std::move(connection), this);
   pending_auth_.emplace_back(
       new PendingAuth{endpoint, media_policy, std::move(socket), client,
-                      AuthContext::Create(), std::move(peer_cert.value())});
+                      std::make_unique<AuthContext>(AuthContext::Create()),
+                      std::move(peer_cert.value())});
   PendingAuth& pending = *pending_auth_.back();
 
-  CastMessage auth_challenge = CreateAuthChallengeMessage(pending.auth_context);
-  Error error = pending.socket->SendMessage(auth_challenge);
+  CastMessage auth_challenge =
+      CreateAuthChallengeMessage(*pending.auth_context);
+  Error error = pending.socket->Send(auth_challenge);
   if (!error.ok()) {
     pending_auth_.pop_back();
     client_->OnError(this, endpoint, error);
@@ -149,22 +164,27 @@ void SenderSocketFactory::OnMessage(CastSocket* socket, CastMessage message) {
   }
 
   ErrorOr<CastDeviceCertPolicy> policy_or_error = AuthenticateChallengeReply(
-      message, (*it)->peer_cert.get(), (*it)->auth_context);
+      message, pending->peer_cert.get(), *pending->auth_context);
   if (policy_or_error.is_error()) {
+    OSP_DLOG_WARN << "Authentication failed for " << pending->endpoint
+                  << " with error: " << policy_or_error.error();
     client_->OnError(this, pending->endpoint, policy_or_error.error());
     return;
   }
 
   if (policy_or_error.value() == CastDeviceCertPolicy::kAudioOnly &&
-      pending->media_policy != DeviceMediaPolicy::kAudioOnly) {
+      pending->media_policy == DeviceMediaPolicy::kIncludesVideo) {
     client_->OnError(this, pending->endpoint,
                      Error::Code::kCastV2ChannelPolicyMismatch);
     return;
   }
+  pending->socket->set_audio_only(policy_or_error.value() ==
+                                  CastDeviceCertPolicy::kAudioOnly);
 
   pending->socket->SetClient(pending->client);
-  client_->OnConnected(this, pending->endpoint, std::move(pending->socket));
+  client_->OnConnected(this, pending->endpoint,
+                       std::unique_ptr<CastSocket>(pending->socket.release()));
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

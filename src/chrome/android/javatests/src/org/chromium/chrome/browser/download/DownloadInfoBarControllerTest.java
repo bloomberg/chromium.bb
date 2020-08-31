@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,10 +13,9 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -60,14 +58,8 @@ public class DownloadInfoBarControllerTest {
 
     @Before
     public void before() {
-        RecordHistogram.setDisabledForTests(true);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestController = new TestDownloadInfoBarController(); });
-    }
-
-    @After
-    public void after() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     static class TestDownloadInfoBarController extends DownloadInfoBarController {

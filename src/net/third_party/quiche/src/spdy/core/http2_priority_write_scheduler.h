@@ -17,13 +17,14 @@
 #include <utility>
 #include <vector>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_map_util.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_intrusive_list.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/third_party/quiche/src/spdy/core/write_scheduler.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_map_util.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
@@ -210,7 +211,7 @@ Http2PriorityWriteScheduler<StreamIdType>::Http2PriorityWriteScheduler() {
 template <typename StreamIdType>
 bool Http2PriorityWriteScheduler<StreamIdType>::StreamRegistered(
     StreamIdType stream_id) const {
-  return SpdyContainsKey(all_stream_infos_, stream_id);
+  return quiche::QuicheContainsKey(all_stream_infos_, stream_id);
 }
 
 template <typename StreamIdType>
@@ -713,9 +714,9 @@ size_t Http2PriorityWriteScheduler<StreamIdType>::NumRegisteredStreams() const {
 
 template <typename StreamIdType>
 std::string Http2PriorityWriteScheduler<StreamIdType>::DebugString() const {
-  return SpdyStrCat("Http2PriorityWriteScheduler {num_registered_streams=",
-                    NumRegisteredStreams(),
-                    " num_ready_streams=", NumReadyStreams(), "}");
+  return quiche::QuicheStrCat(
+      "Http2PriorityWriteScheduler {num_registered_streams=",
+      NumRegisteredStreams(), " num_ready_streams=", NumReadyStreams(), "}");
 }
 
 template <typename StreamIdType>

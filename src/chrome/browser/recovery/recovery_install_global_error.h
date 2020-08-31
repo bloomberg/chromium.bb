@@ -31,13 +31,12 @@ class RecoveryInstallGlobalError : public GlobalErrorWithStandardBubble,
   bool HasMenuItem() override;
   int MenuItemCommandID() override;
   base::string16 MenuItemLabel() override;
-  gfx::Image MenuItemIcon() override;
+  ui::ImageModel MenuItemIcon() override;
   void ExecuteMenuItem(Browser* browser) override;
   bool HasBubbleView() override;
   bool HasShownBubbleView() override;
   void ShowBubbleView(Browser* browser) override;
   bool ShouldCloseOnDeactivate() const override;
-  gfx::Image GetBubbleViewIcon() override;
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
   base::string16 GetBubbleViewAcceptButtonLabel() override;

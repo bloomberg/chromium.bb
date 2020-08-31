@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
@@ -23,11 +23,14 @@ class MachineLearningInternalsUI : public ui::MojoWebUIController {
   explicit MachineLearningInternalsUI(content::WebUI* web_ui);
   ~MachineLearningInternalsUI() override;
 
- private:
-  void BindMachineLearningInternalsPageHandler(
-      mojo::PendingReceiver<mojom::PageHandler> receiver);
+  // Instantiates the implementor of the mojom::PageHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::PageHandler> receiver);
 
+ private:
   std::unique_ptr<MachineLearningInternalsPageHandler> page_handler_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MachineLearningInternalsUI);
 };

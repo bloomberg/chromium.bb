@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -224,8 +225,8 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
   std::string* data = new std::string();
 
   // Post task to a background sequence to read file.
-  auto task_runner = base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   return tracker->PostTaskAndReply(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&FileAccessProvider::DoRead, this, path, saved_errno,
@@ -243,8 +244,8 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
   int* bytes_written = new int(0);
 
   // This task blocks shutdown because it saves critical user data.
-  auto task_runner = base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  auto task_runner = base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   return tracker->PostTaskAndReply(
       task_runner.get(), FROM_HERE,
@@ -277,7 +278,11 @@ CertificatesHandler::CertificatesHandler()
       use_hardware_backed_(false),
       file_access_provider_(base::MakeRefCounted<FileAccessProvider>()) {}
 
-CertificatesHandler::~CertificatesHandler() {}
+CertificatesHandler::~CertificatesHandler() {
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+  select_file_dialog_ = nullptr;
+}
 
 void CertificatesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -990,8 +995,8 @@ void CertificatesHandler::HandleRefreshCertificates(
     // Request that a model be created.
     CertificateManagerModel::Create(
         Profile::FromWebUI(web_ui()), this,
-        base::Bind(&CertificatesHandler::OnCertificateManagerModelCreated,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CertificatesHandler::OnCertificateManagerModelCreated,
+                       weak_ptr_factory_.GetWeakPtr()));
     requested_certificate_manager_model_ = true;
     return;
   }

@@ -28,7 +28,7 @@ applied to every BUILD.gn file in the project. This has multiple drawbacks:
 
 ## Conversion pattern
 
-To convert a BUILD.gn file it is neccessary to change the following:
+To convert a BUILD.gn file it is necessary to change the following:
 
 ```
   source_set("foo") {
@@ -79,7 +79,7 @@ the top of every BUILD.gn file after it has been converted:
 ```
   # Reset sources_assignment_filter for the BUILD.gn file to prevent
   # regression during the migration of Chromium away from the feature.
-  # See build/no_sources_assignment_filter.md for more information.
+  # See docs/no_sources_assignment_filter.md for more information.
   # TODO(crbug.com/1018739): remove this when migration is done.
   set_sources_assignment_filter([])
 ```

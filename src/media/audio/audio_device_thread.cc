@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/system/sys_info.h"
 
 namespace media {
@@ -39,10 +39,12 @@ void AudioDeviceThread::Callback::InitializeOnAudioThread() {
 // AudioDeviceThread implementation
 
 AudioDeviceThread::AudioDeviceThread(Callback* callback,
-                                     base::SyncSocket::Handle socket,
+                                     base::SyncSocket::ScopedHandle socket,
                                      const char* thread_name,
                                      base::ThreadPriority thread_priority)
-    : callback_(callback), thread_name_(thread_name), socket_(socket) {
+    : callback_(callback),
+      thread_name_(thread_name),
+      socket_(std::move(socket)) {
   CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_handle_,
                                                  thread_priority));
 

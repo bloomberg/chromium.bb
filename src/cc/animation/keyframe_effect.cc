@@ -46,9 +46,8 @@ std::vector<size_t> FindAnimationsWithSameGroupId(
 
 }  // namespace
 
-KeyframeEffect::KeyframeEffect(KeyframeEffectId id)
-    : animation_(),
-      id_(id),
+KeyframeEffect::KeyframeEffect(Animation* animation)
+    : animation_(animation),
       element_animations_(),
       needs_to_start_keyframe_models_(false),
       scroll_offset_animation_was_interrupted_(false),
@@ -57,14 +56,6 @@ KeyframeEffect::KeyframeEffect(KeyframeEffectId id)
 
 KeyframeEffect::~KeyframeEffect() {
   DCHECK(!has_bound_element_animations());
-}
-
-std::unique_ptr<KeyframeEffect> KeyframeEffect::Create(KeyframeEffectId id) {
-  return std::make_unique<KeyframeEffect>(id);
-}
-
-std::unique_ptr<KeyframeEffect> KeyframeEffect::CreateImplInstance() const {
-  return KeyframeEffect::Create(id());
 }
 
 void KeyframeEffect::SetNeedsPushProperties() {
@@ -177,7 +168,7 @@ void KeyframeEffect::RemoveFromTicking() {
   is_ticking_ = false;
   // Resetting last_tick_time_ here ensures that calling ::UpdateState
   // before ::Animate doesn't start a keyframe model.
-  last_tick_time_ = base::TimeTicks();
+  last_tick_time_ = base::nullopt;
   animation_->RemoveFromTicking();
 }
 
@@ -187,19 +178,20 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
 
   // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
-  if (last_tick_time_ == base::TimeTicks())
+  if (last_tick_time_ == base::nullopt)
     start_ready_keyframe_models = false;
 
   if (start_ready_keyframe_models)
     PromoteStartedKeyframeModels(events);
 
-  MarkFinishedKeyframeModels(last_tick_time_);
-  MarkKeyframeModelsForDeletion(last_tick_time_, events);
+  auto last_tick_time = last_tick_time_.value_or(base::TimeTicks());
+  MarkFinishedKeyframeModels(last_tick_time);
+  MarkKeyframeModelsForDeletion(last_tick_time, events);
   PurgeKeyframeModelsMarkedForDeletion(/* impl_only */ true);
 
   if (start_ready_keyframe_models) {
     if (needs_to_start_keyframe_models_) {
-      StartKeyframeModels(last_tick_time_);
+      StartKeyframeModels(last_tick_time);
       PromoteStartedKeyframeModels(events);
     }
   }
@@ -273,12 +265,10 @@ void KeyframeEffect::AddKeyframeModel(
 }
 
 void KeyframeEffect::PauseKeyframeModel(int keyframe_model_id,
-                                        double time_offset) {
-  const base::TimeDelta pause_offset =
-      base::TimeDelta::FromSecondsD(time_offset);
+                                        base::TimeDelta time_offset) {
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->id() == keyframe_model_id) {
-      keyframe_model->Pause(pause_offset);
+      keyframe_model->Pause(time_offset);
     }
   }
 
@@ -324,7 +314,8 @@ void KeyframeEffect::RemoveKeyframeModel(int keyframe_model_id) {
 void KeyframeEffect::AbortKeyframeModel(int keyframe_model_id) {
   if (KeyframeModel* keyframe_model = GetKeyframeModelById(keyframe_model_id)) {
     if (!keyframe_model->is_finished()) {
-      keyframe_model->SetRunState(KeyframeModel::ABORTED, last_tick_time_);
+      keyframe_model->SetRunState(KeyframeModel::ABORTED,
+                                  last_tick_time_.value_or(base::TimeTicks()));
       if (has_bound_element_animations())
         element_animations_->UpdateClientAnimationState();
     }
@@ -349,10 +340,13 @@ void KeyframeEffect::AbortKeyframeModelsWithProperty(
       // Currently only impl-only scroll offset KeyframeModels can be completed
       // on the main thread.
       if (needs_completion && keyframe_model->is_impl_only()) {
-        keyframe_model->SetRunState(KeyframeModel::ABORTED_BUT_NEEDS_COMPLETION,
-                                    last_tick_time_);
+        keyframe_model->SetRunState(
+            KeyframeModel::ABORTED_BUT_NEEDS_COMPLETION,
+            last_tick_time_.value_or(base::TimeTicks()));
       } else {
-        keyframe_model->SetRunState(KeyframeModel::ABORTED, last_tick_time_);
+        keyframe_model->SetRunState(
+            KeyframeModel::ABORTED,
+            last_tick_time_.value_or(base::TimeTicks()));
       }
       aborted_keyframe_model = true;
     }
@@ -366,7 +360,7 @@ void KeyframeEffect::AbortKeyframeModelsWithProperty(
   }
 }
 
-void KeyframeEffect::ActivateKeyframeEffects() {
+void KeyframeEffect::ActivateKeyframeModels() {
   DCHECK(has_bound_element_animations());
 
   bool keyframe_model_activated = false;
@@ -586,7 +580,7 @@ bool KeyframeEffect::IsCurrentlyAnimatingProperty(
     ElementListType list_type) const {
   for (const auto& keyframe_model : keyframe_models_) {
     if (!keyframe_model->is_finished() &&
-        keyframe_model->InEffect(last_tick_time_) &&
+        keyframe_model->InEffect(last_tick_time_.value_or(base::TimeTicks())) &&
         keyframe_model->target_property_id() == target_property) {
       if ((list_type == ElementListType::ACTIVE &&
            keyframe_model->affects_active_elements()) ||
@@ -624,7 +618,8 @@ void KeyframeEffect::GetPropertyAnimationState(
 
   for (const auto& keyframe_model : keyframe_models_) {
     if (!keyframe_model->is_finished()) {
-      bool in_effect = keyframe_model->InEffect(last_tick_time_);
+      bool in_effect =
+          keyframe_model->InEffect(last_tick_time_.value_or(base::TimeTicks()));
       bool active = keyframe_model->affects_active_elements();
       bool pending = keyframe_model->affects_pending_elements();
       int property = keyframe_model->target_property_id();
@@ -653,10 +648,12 @@ void KeyframeEffect::MarkAbortedKeyframeModelsForDeletion(
     if (KeyframeModel* keyframe_model =
             GetKeyframeModelById(keyframe_model_impl->id())) {
       if (keyframe_model->run_state() == KeyframeModel::ABORTED) {
-        keyframe_model_impl->SetRunState(KeyframeModel::WAITING_FOR_DELETION,
-                                         keyframe_effect_impl->last_tick_time_);
-        keyframe_model->SetRunState(KeyframeModel::WAITING_FOR_DELETION,
-                                    last_tick_time_);
+        keyframe_model_impl->SetRunState(
+            KeyframeModel::WAITING_FOR_DELETION,
+            keyframe_effect_impl->last_tick_time_.value_or(base::TimeTicks()));
+        keyframe_model->SetRunState(
+            KeyframeModel::WAITING_FOR_DELETION,
+            last_tick_time_.value_or(base::TimeTicks()));
         keyframe_model_aborted = true;
       }
     }
@@ -772,14 +769,10 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   if (element_id_ != keyframe_effect_impl->element_id_) {
     // We have to detach/attach via the Animation as it may need to inform
     // the host as well.
-    if (keyframe_effect_impl->has_attached_element()) {
-      keyframe_effect_impl->animation_->DetachElementForKeyframeEffect(
-          keyframe_effect_impl->element_id_, keyframe_effect_impl->id_);
-    }
-    if (element_id_) {
-      keyframe_effect_impl->animation_->AttachElementForKeyframeEffect(
-          element_id_, id_);
-    }
+    if (keyframe_effect_impl->has_attached_element())
+      keyframe_effect_impl->animation_->DetachElement();
+    if (element_id_)
+      keyframe_effect_impl->animation_->AttachElement(element_id_);
   }
 
   keyframe_effect_impl->scroll_offset_animation_was_interrupted_ =
@@ -809,10 +802,6 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   }
 
   keyframe_effect_impl->UpdateTickingState();
-}
-
-void KeyframeEffect::SetAnimation(Animation* animation) {
-  animation_ = animation;
 }
 
 std::string KeyframeEffect::KeyframeModelsToString() const {
@@ -930,16 +919,18 @@ void KeyframeEffect::PromoteStartedKeyframeModels(AnimationEvents* events) {
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->run_state() == KeyframeModel::STARTING &&
         keyframe_model->affects_active_elements()) {
-      keyframe_model->SetRunState(KeyframeModel::RUNNING, last_tick_time_);
+      keyframe_model->SetRunState(KeyframeModel::RUNNING,
+                                  last_tick_time_.value_or(base::TimeTicks()));
       if (!keyframe_model->has_set_start_time() &&
           !keyframe_model->needs_synchronized_start_time())
-        keyframe_model->set_start_time(last_tick_time_);
+        keyframe_model->set_start_time(
+            last_tick_time_.value_or(base::TimeTicks()));
 
       base::TimeTicks start_time;
       if (keyframe_model->has_set_start_time())
         start_time = keyframe_model->start_time();
       else
-        start_time = last_tick_time_;
+        start_time = last_tick_time_.value_or(base::TimeTicks());
 
       GenerateEvent(events, *keyframe_model, AnimationEvent::STARTED,
                     start_time);
@@ -1089,7 +1080,7 @@ void KeyframeEffect::GenerateEvent(AnimationEvents* events,
 
   AnimationEvent event(type,
                        {animation_->animation_timeline()->id(),
-                        animation_->id(), id(), keyframe_model.id()},
+                        animation_->id(), keyframe_model.id()},
                        keyframe_model.group(),
                        keyframe_model.target_property_id(), monotonic_time);
   event.is_impl_only = keyframe_model.is_impl_only();
@@ -1111,7 +1102,7 @@ void KeyframeEffect::GenerateTakeoverEventForScrollAnimation(
 
   AnimationEvent takeover_event(AnimationEvent::TAKEOVER,
                                 {animation_->animation_timeline()->id(),
-                                 animation_->id(), id(), keyframe_model.id()},
+                                 animation_->id(), keyframe_model.id()},
                                 keyframe_model.group(),
                                 keyframe_model.target_property_id(),
                                 monotonic_time);
@@ -1124,7 +1115,7 @@ void KeyframeEffect::GenerateTakeoverEventForScrollAnimation(
 
   AnimationEvent finished_event(AnimationEvent::FINISHED,
                                 {animation_->animation_timeline()->id(),
-                                 animation_->id(), id(), keyframe_model.id()},
+                                 animation_->id(), keyframe_model.id()},
                                 keyframe_model.group(),
                                 keyframe_model.target_property_id(),
                                 monotonic_time);

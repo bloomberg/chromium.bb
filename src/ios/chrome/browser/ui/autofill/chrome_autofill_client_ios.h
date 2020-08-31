@@ -39,7 +39,7 @@ namespace autofill {
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
  public:
-  ChromeAutofillClientIOS(ios::ChromeBrowserState* browser_state,
+  ChromeAutofillClientIOS(ChromeBrowserState* browser_state,
                           web::WebState* web_state,
                           infobars::InfoBarManager* infobar_manager,
                           id<AutofillClientIOSBridge> bridge,
@@ -64,36 +64,23 @@ class ChromeAutofillClientIOS : public AutofillClient {
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
+  std::string GetVariationConfigCountryCode() const override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  void ShowLocalCardMigrationDialog(
-      base::OnceClosure show_migration_dialog_closure) override;
-  void ConfirmMigrateLocalCardToCloud(
-      const LegalMessageLines& legal_message_lines,
-      const std::string& user_email,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      LocalCardMigrationCallback start_migrating_cards_callback) override;
-  void ShowLocalCardMigrationResults(
-      const bool has_server_error,
-      const base::string16& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
-  void ConfirmSaveCreditCardLocally(
-      const CreditCard& card,
-      SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) override;
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmExpirationDateFixFlow(
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
+  void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      SaveCreditCardOptions options,
+      LocalSaveCardPromptCallback callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -103,7 +90,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
-  void ScanCreditCard(const CreditCardScanCallback& callback) override;
+  void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -114,7 +101,11 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
-  void HideAutofillPopup() override;
+  base::span<const Suggestion> GetPopupSuggestions() const override;
+  void PinPopupView() override;
+  void UpdatePopup(const std::vector<Suggestion>& suggestions,
+                   PopupType popup_type) override;
+  void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
@@ -137,7 +128,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   syncer::SyncService* sync_service_;
   PersonalDataManager* personal_data_manager_;
   AutocompleteHistoryManager* autocomplete_history_manager_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   signin::IdentityManager* identity_manager_;

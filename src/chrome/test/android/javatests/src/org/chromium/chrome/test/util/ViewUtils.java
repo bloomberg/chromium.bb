@@ -6,6 +6,11 @@ package org.chromium.chrome.test.util;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.ViewAssertion;
+import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -95,8 +100,7 @@ public class ViewUtils {
     /**
      * Waits until a view matching the given matches any of the given {@link ExpectedViewState}s.
      * Fails if the matcher applies to multiple views. Times out if no view was found while waiting
-     * up to
-     * {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
+     * up to {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
      * @param root The view group to search in.
      * @param viewMatcher The matcher matching the view that should be waited for.
      * @param viewState State that the matching view should be in. If multiple states are passed,
@@ -108,6 +112,28 @@ public class ViewUtils {
     }
 
     /**
+     * Waits until a view matching the given matches any of the given {@link ExpectedViewState}s.
+     * Fails if the matcher applies to multiple views. Times out if no view was found while waiting
+     * up to {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
+     * This should be used on {@link ViewInteraction#check} with a {@link ViewGroup}. For example,
+     * the following usage assumes the root view is a {@link ViewGroup}.
+     * <pre>
+     *   onView(isRoot()).check(waitForView(withId(R.id.example_id), VIEW_GONE));
+     * </pre>
+     * @param viewMatcher The matcher matching the view that should be waited for.
+     * @param viewState State that the matching view should be in. If multiple states are passed,
+     *                  the waiting will stop if at least one applies.
+     */
+    public static ViewAssertion waitForView(
+            Matcher<View> viewMatcher, @ExpectedViewState int viewState) {
+        return (View view, NoMatchingViewException noMatchException) -> {
+            if (noMatchException != null) throw noMatchException;
+            CriteriaHelper.pollUiThread(
+                    new ExpectedViewCriteria(viewMatcher, viewState, (ViewGroup) view));
+        };
+    }
+
+    /**
      * Waits until a visible view matching the given matcher appears. Fails if the matcher applies
      * to multiple views.  Times out if no view was found while waiting up to
      * {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
@@ -116,6 +142,33 @@ public class ViewUtils {
      */
     public static void waitForView(ViewGroup root, Matcher<View> viewMatcher) {
         waitForView(root, viewMatcher, VIEW_VISIBLE);
+    }
+
+    /**
+     * Waits until a visible view matching the given matcher appears. Fails if the matcher applies
+     * to multiple views.  Times out if no view was found while waiting up to
+     * {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
+     * @param viewMatcher The matcher matching the view that should be waited for.
+     */
+    public static ViewAssertion waitForView(Matcher<View> viewMatcher) {
+        return waitForView(viewMatcher, VIEW_VISIBLE);
+    }
+
+    /**
+     * Waits until a visible view matching the given matcher appears. Fails if the matcher applies
+     * to multiple views.  Times out if no view was found while waiting up to
+     * {@link CriteriaHelper#DEFAULT_MAX_TIME_TO_POLL} milliseconds.
+     * @param viewMatcher The matcher matching the view that should be waited for.
+     * @return An interaction on the matching view.
+     */
+    public static ViewInteraction onViewWaiting(Matcher<View> viewMatcher) {
+        Espresso.onView(ViewMatchers.isRoot())
+                .check((View view, NoMatchingViewException noMatchException) -> {
+                    if (noMatchException != null) throw noMatchException;
+                    CriteriaHelper.pollUiThread(
+                            new ExpectedViewCriteria(viewMatcher, VIEW_VISIBLE, (ViewGroup) view));
+                });
+        return Espresso.onView(viewMatcher);
     }
 
     /**

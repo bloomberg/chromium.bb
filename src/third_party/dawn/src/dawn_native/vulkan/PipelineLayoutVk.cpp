@@ -26,10 +26,9 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<PipelineLayout*> PipelineLayout::Create(
         Device* device,
         const PipelineLayoutDescriptor* descriptor) {
-        std::unique_ptr<PipelineLayout> layout =
-            std::make_unique<PipelineLayout>(device, descriptor);
+        Ref<PipelineLayout> layout = AcquireRef(new PipelineLayout(device, descriptor));
         DAWN_TRY(layout->Initialize());
-        return layout.release();
+        return layout.Detach();
     }
 
     MaybeError PipelineLayout::Initialize() {
@@ -48,13 +47,13 @@ namespace dawn_native { namespace vulkan {
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.setLayoutCount = numSetLayouts;
-        createInfo.pSetLayouts = setLayouts.data();
+        createInfo.pSetLayouts = AsVkArray(setLayouts.data());
         createInfo.pushConstantRangeCount = 0;
         createInfo.pPushConstantRanges = nullptr;
 
         Device* device = ToBackend(GetDevice());
         return CheckVkSuccess(
-            device->fn.CreatePipelineLayout(device->GetVkDevice(), &createInfo, nullptr, &mHandle),
+            device->fn.CreatePipelineLayout(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
             "CreatePipelineLayout");
     }
 

@@ -28,12 +28,11 @@ GURL GetStartupURL() {
   if (command_line->HasSwitch(switches::kNoInitialNavigation))
     return GURL();
 
-  const base::CommandLine::StringVector& args = command_line->GetArgs();
-
 #if defined(OS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
   return GURL();
-#endif
+#else
+  const base::CommandLine::StringVector& args = command_line->GetArgs();
 
   if (args.empty())
     return GURL("https://www.google.com/");
@@ -44,28 +43,33 @@ GURL GetStartupURL() {
 
   return net::FilePathToFileURL(
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
+#endif
 }
 
 class MainDelegateImpl : public MainDelegate {
  public:
   void PreMainMessageLoopRun() override {
-    InitializeProfiles();
+    InitializeProfile();
 
     Shell::Initialize();
 
     Shell::CreateNewWindow(profile_.get(), GetStartupURL(), gfx::Size());
   }
 
+  void PostMainMessageLoopRun() override { DestroyProfile(); }
+
   void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) override {
     Shell::SetMainMessageLoopQuitClosure(std::move(quit_closure));
   }
 
  private:
-  void InitializeProfiles() {
+  void InitializeProfile() {
     profile_ = Profile::Create("web_shell");
 
     // TODO: create an incognito profile as well.
   }
+
+  void DestroyProfile() { profile_.reset(); }
 
   std::unique_ptr<Profile> profile_;
 };

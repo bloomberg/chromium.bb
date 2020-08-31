@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/time/time_to_iso8601.h"
+#include "base/time/time.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 namespace {
@@ -28,7 +28,11 @@ base::Time EventBucket(const base::Time& time) {
 
 }  // namespace
 
-std::list<std::string> BreadcrumbManager::GetEvents(size_t event_count_limit) {
+BreadcrumbManager::BreadcrumbManager() = default;
+BreadcrumbManager::~BreadcrumbManager() = default;
+
+const std::list<std::string> BreadcrumbManager::GetEvents(
+    size_t event_count_limit) {
   DropOldEvents();
 
   std::list<std::string> events;
@@ -57,7 +61,10 @@ void BreadcrumbManager::AddEvent(const std::string& event) {
     event_buckets_.push_back(bucket);
   }
 
-  std::string timestamp = base::TimeToISO8601(time);
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  std::string timestamp =
+      base::StringPrintf("%02d:%02d", exploded.minute, exploded.second);
   std::string event_log =
       base::StringPrintf("%s %s", timestamp.c_str(), event.c_str());
   event_buckets_.back().second.push_back(event_log);
@@ -82,10 +89,6 @@ void BreadcrumbManager::DropOldEvents() {
     event_buckets_.pop_front();
   }
 }
-
-BreadcrumbManager::BreadcrumbManager() = default;
-
-BreadcrumbManager::~BreadcrumbManager() = default;
 
 void BreadcrumbManager::AddObserver(BreadcrumbManagerObserver* observer) {
   observers_.AddObserver(observer);

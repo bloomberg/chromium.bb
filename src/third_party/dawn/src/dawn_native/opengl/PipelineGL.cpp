@@ -15,13 +15,13 @@
 #include "dawn_native/opengl/PipelineGL.h"
 
 #include "common/BitSetIterator.h"
+#include "common/Log.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/opengl/Forward.h"
 #include "dawn_native/opengl/OpenGLFunctions.h"
 #include "dawn_native/opengl/PipelineLayoutGL.h"
 #include "dawn_native/opengl/ShaderModuleGL.h"
 
-#include <iostream>
 #include <set>
 
 namespace dawn_native { namespace opengl {
@@ -64,9 +64,8 @@ namespace dawn_native { namespace opengl {
                 if (infoLogLength > 1) {
                     std::vector<char> buffer(infoLogLength);
                     gl.GetShaderInfoLog(shader, infoLogLength, nullptr, &buffer[0]);
-                    std::cout << source << std::endl;
-                    std::cout << "Program compilation failed:\n";
-                    std::cout << buffer.data() << std::endl;
+                    dawn::ErrorLog() << source << "\nProgram compilation failed:\n"
+                                     << buffer.data();
                 }
             }
             return shader;
@@ -97,8 +96,7 @@ namespace dawn_native { namespace opengl {
             if (infoLogLength > 1) {
                 std::vector<char> buffer(infoLogLength);
                 gl.GetProgramInfoLog(mProgram, infoLogLength, nullptr, &buffer[0]);
-                std::cout << "Program link failed:\n";
-                std::cout << buffer.data() << std::endl;
+                dawn::ErrorLog() << "Program link failed:\n" << buffer.data();
             }
         }
 
@@ -109,39 +107,44 @@ namespace dawn_native { namespace opengl {
         const auto& indices = layout->GetBindingIndexInfo();
 
         for (uint32_t group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
-            const auto& groupInfo = layout->GetBindGroupLayout(group)->GetBindingInfo();
+            const BindGroupLayoutBase* bgl = layout->GetBindGroupLayout(group);
 
-            for (uint32_t binding = 0; binding < kMaxBindingsPerGroup; ++binding) {
-                if (!groupInfo.mask[binding]) {
-                    continue;
-                }
+            for (const auto& it : bgl->GetBindingMap()) {
+                BindingNumber bindingNumber = it.first;
+                BindingIndex bindingIndex = it.second;
 
-                std::string name = GetBindingName(group, binding);
-                switch (groupInfo.types[binding]) {
+                std::string name = GetBindingName(group, bindingNumber);
+                switch (bgl->GetBindingInfo(bindingIndex).type) {
                     case wgpu::BindingType::UniformBuffer: {
                         GLint location = gl.GetUniformBlockIndex(mProgram, name.c_str());
                         if (location != -1) {
-                            gl.UniformBlockBinding(mProgram, location, indices[group][binding]);
+                            gl.UniformBlockBinding(mProgram, location,
+                                                   indices[group][bindingIndex]);
                         }
-                    } break;
+                        break;
+                    }
 
-                    case wgpu::BindingType::StorageBuffer: {
+                    case wgpu::BindingType::StorageBuffer:
+                    case wgpu::BindingType::ReadonlyStorageBuffer: {
                         GLuint location = gl.GetProgramResourceIndex(
                             mProgram, GL_SHADER_STORAGE_BLOCK, name.c_str());
                         if (location != GL_INVALID_INDEX) {
                             gl.ShaderStorageBlockBinding(mProgram, location,
-                                                         indices[group][binding]);
+                                                         indices[group][bindingIndex]);
                         }
-                    } break;
+                        break;
+                    }
 
                     case wgpu::BindingType::Sampler:
+                    case wgpu::BindingType::ComparisonSampler:
                     case wgpu::BindingType::SampledTexture:
                         // These binding types are handled in the separate sampler and texture
                         // emulation
                         break;
 
                     case wgpu::BindingType::StorageTexture:
-                    case wgpu::BindingType::ReadonlyStorageBuffer:
+                    case wgpu::BindingType::ReadonlyStorageTexture:
+                    case wgpu::BindingType::WriteonlyStorageTexture:
                         UNREACHABLE();
                         break;
 
@@ -177,11 +180,12 @@ namespace dawn_native { namespace opengl {
                     indices[combined.textureLocation.group][combined.textureLocation.binding];
                 mUnitsForTextures[textureIndex].push_back(textureUnit);
 
-                wgpu::TextureComponentType componentType =
-                    layout->GetBindGroupLayout(combined.textureLocation.group)
-                        ->GetBindingInfo()
-                        .textureComponentTypes[combined.textureLocation.binding];
-                bool shouldUseFiltering = componentType == wgpu::TextureComponentType::Float;
+                const BindGroupLayoutBase* bgl =
+                    layout->GetBindGroupLayout(combined.textureLocation.group);
+                Format::Type componentType =
+                    bgl->GetBindingInfo(bgl->GetBindingIndex(combined.textureLocation.binding))
+                        .textureComponentType;
+                bool shouldUseFiltering = componentType == Format::Type::Float;
 
                 GLuint samplerIndex =
                     indices[combined.samplerLocation.group][combined.samplerLocation.binding];

@@ -20,6 +20,8 @@ constexpr gfx::Rect kDefaultBounds(0, 0, 100, 100);
 class WaylandWindowManagerTest : public WaylandTest {
  public:
   WaylandWindowManagerTest() {}
+  WaylandWindowManagerTest(const WaylandWindowManagerTest&) = delete;
+  WaylandWindowManagerTest& operator=(const WaylandWindowManagerTest&) = delete;
 
   void SetUp() override {
     WaylandTest::SetUp();
@@ -36,18 +38,14 @@ class WaylandWindowManagerTest : public WaylandTest {
     PlatformWindowInitProperties properties;
     properties.bounds = bounds;
     properties.type = type;
-
-    std::unique_ptr<WaylandWindow> window =
-        std::make_unique<WaylandWindow>(delegate, connection_.get());
-
-    EXPECT_TRUE(window->Initialize(std::move(properties)));
+    auto window = WaylandWindow::Create(delegate, connection_.get(),
+                                        std::move(properties));
+    if (window)
+      window->Show(false);
     return window;
   }
 
   WaylandWindowManager* manager_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandWindowManagerTest);
 };
 
 TEST_P(WaylandWindowManagerTest, GetWindow) {
@@ -91,6 +89,9 @@ TEST_P(WaylandWindowManagerTest, GetCurrentFocusedWindow) {
 
   auto window1 = CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
                                                kDefaultBounds, &delegate);
+  // When window is shown, it automatically gets keyboard focus. Reset it.
+  window_->set_keyboard_focus(false);
+  window1->set_keyboard_focus(false);
 
   Sync();
 
@@ -125,6 +126,9 @@ TEST_P(WaylandWindowManagerTest, GetCurrentKeyboardFocusedWindow) {
 
   auto window1 = CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
                                                kDefaultBounds, &delegate);
+  // When window is shown, it automatically gets keyboard focus. Reset it.
+  window_->set_keyboard_focus(false);
+  window1->set_keyboard_focus(false);
 
   Sync();
 

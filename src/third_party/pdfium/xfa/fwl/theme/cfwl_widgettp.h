@@ -26,9 +26,6 @@ class CFWL_WidgetTP {
  public:
   virtual ~CFWL_WidgetTP();
 
-  virtual void Initialize();
-  virtual void Finalize();
-
   virtual void DrawBackground(const CFWL_ThemeBackground& pParams);
   virtual void DrawText(const CFWL_ThemeText& pParams);
 
@@ -45,8 +42,7 @@ class CFWL_WidgetTP {
   CFWL_WidgetTP();
 
   void InitializeArrowColorData();
-  void InitTTO();
-  void FinalizeTTO();
+  void EnsureTTOInitialized();
 
   void DrawBorder(CXFA_Graphics* pGraphics,
                   const CFX_RectF& rect,

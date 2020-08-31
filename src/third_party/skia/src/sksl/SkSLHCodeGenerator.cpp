@@ -64,9 +64,9 @@ Layout::CType HCodeGenerator::ParameterCType(const Context& context, const Type&
     } else if (type == *context.fFloat3x3_Type || type == *context.fHalf3x3_Type) {
         return Layout::CType::kSkMatrix;
     } else if (type == *context.fFloat4x4_Type || type == *context.fHalf4x4_Type) {
-        return Layout::CType::kSkMatrix44;
+        return Layout::CType::kSkM44;
     } else if (type.kind() == Type::kSampler_Kind) {
-        return Layout::CType::kGrSurfaceProxy;
+        return Layout::CType::kGrSurfaceProxyView;
     } else if (type == *context.fFragmentProcessor_Type) {
         return Layout::CType::kGrFragmentProcessor;
     }
@@ -191,7 +191,8 @@ void HCodeGenerator::writeMake() {
                      fFullName.c_str());
         separator = "";
         for (const auto& param : fSectionAndParameterHelper.getParameters()) {
-            if (param->fType.nonnullable() == *fContext.fFragmentProcessor_Type) {
+            if (param->fType.nonnullable() == *fContext.fFragmentProcessor_Type ||
+                param->fType.nonnullable().kind() == Type::kSampler_Kind) {
                 this->writef("%sstd::move(%s)", separator, String(param->fName).c_str());
             } else {
                 this->writef("%s%s", separator, String(param->fName).c_str());
@@ -241,7 +242,8 @@ void HCodeGenerator::writeConstructor() {
         const Section& s = *transforms[i];
         String field = CoordTransformName(s.fArgument.c_str(), i);
         if (s.fArgument.size()) {
-            this->writef("\n    , %s(%s, %s.get())", field.c_str(), s.fText.c_str(),
+            this->writef("\n    , %s(%s, %s.proxy(), %s.origin())", field.c_str(), s.fText.c_str(),
+                         FieldName(s.fArgument.c_str()).c_str(),
                          FieldName(s.fArgument.c_str()).c_str());
         }
         else {
@@ -282,8 +284,30 @@ void HCodeGenerator::writeConstructor() {
             this->writef("            %s_index = this->numChildProcessors();",
                          FieldName(String(param->fName).c_str()).c_str());
             if (fSectionAndParameterHelper.hasCoordOverrides(*param)) {
-                this->writef("            %s->setSampledWithExplicitCoords(true);",
+                this->writef("            %s->setSampledWithExplicitCoords();",
                              String(param->fName).c_str());
+            }
+            SampleMatrix matrix = fSectionAndParameterHelper.getMatrix(*param);
+            switch (matrix.fKind) {
+                case SampleMatrix::Kind::kVariable:
+                    this->writef("            %s->setSampleMatrix(this, "
+                                                            "SkSL::SampleMatrix::Kind::kVariable);",
+                                 String(param->fName).c_str());
+                    break;
+                case SampleMatrix::Kind::kConstantOrUniform:
+                    this->writef("            %s->setSampleMatrix(SkSL::SampleMatrix("
+                                 "SkSL::SampleMatrix::Kind::kConstantOrUniform, this, \"%s\"));",
+                                 String(param->fName).c_str(),
+                                 matrix.fExpression.c_str());
+                    break;
+                case SampleMatrix::Kind::kMixed:
+                    this->writef("            %s->setSampleMatrix(SkSL::SampleMatrix("
+                                 "SkSL::SampleMatrix::Kind::kMixed, this, \"%s\"));",
+                                 String(param->fName).c_str(),
+                                 matrix.fExpression.c_str());
+                    break;
+                case SampleMatrix::Kind::kNone:
+                    break;
             }
             this->writef("            this->registerChildProcessor(std::move(%s));",
                          String(param->fName).c_str());
@@ -329,9 +353,9 @@ String HCodeGenerator::GetHeader(const Program& program, ErrorReporter& errors) 
     for (;;) {
         Token header = parser.nextRawToken();
         switch (header.fKind) {
-            case Token::WHITESPACE:
+            case Token::Kind::TK_WHITESPACE:
                 break;
-            case Token::BLOCK_COMMENT:
+            case Token::Kind::TK_BLOCK_COMMENT:
                 return String(program.fSource->c_str() + header.fOffset, header.fLength);
             default:
                 return "";
@@ -347,6 +371,7 @@ bool HCodeGenerator::generateCode() {
                  fFullName.c_str(),
                  fFullName.c_str());
     this->writef("#include \"include/core/SkTypes.h\"\n");
+    this->writef("#include \"include/core/SkM44.h\"\n");
     this->writeSection(HEADER_SECTION);
     this->writef("\n"
                  "#include \"src/gpu/GrCoordTransform.h\"\n"
@@ -356,7 +381,7 @@ bool HCodeGenerator::generateCode() {
                  fFullName.c_str());
     for (const auto& p : fProgram) {
         if (ProgramElement::kEnum_Kind == p.fKind && !((Enum&) p).fBuiltin) {
-            this->writef("%s\n", p.description().c_str());
+            this->writef("%s\n", ((Enum&) p).code().c_str());
         }
     }
     this->writeSection(CLASS_SECTION);

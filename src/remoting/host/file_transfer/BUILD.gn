@@ -18,13 +18,12 @@ source_set("file_transfer") {
     "get_desktop_directory_win.cc",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
 
   deps = [
     "//base",
     "//remoting/protocol",
+    "//remoting/resources",
   ]
 
   if (is_mac) {

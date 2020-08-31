@@ -353,7 +353,7 @@ public:
 		std::vector<VkCommandBuffer>							cmdBuffers;
 		const VkPipelineStageFlags								stageBits[]				= { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 		std::vector<deUint64>									timelineValues;
-		std::vector<VkTimelineSemaphoreSubmitInfoKHR>			timelineSubmitInfos;
+		std::vector<VkTimelineSemaphoreSubmitInfo>				timelineSubmitInfos;
 		std::vector<VkSubmitInfo>								submitInfos;
 
 		for (deUint32 opNdx = 0; opNdx < m_ops.size(); opNdx++)
@@ -371,9 +371,9 @@ public:
 
 		for (deUint32 opNdx = 0; opNdx < m_ops.size(); opNdx++)
 		{
-			const VkTimelineSemaphoreSubmitInfoKHR	timelineSubmitInfo	=
+			const VkTimelineSemaphoreSubmitInfo		timelineSubmitInfo	=
 			{
-				VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR,	// VkStructureType	sType;
+				VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,		// VkStructureType	sType;
 				DE_NULL,												// const void*		pNext;
 				opNdx == 0 ? 0u : 1u,									// deUint32			waitSemaphoreValueCount
 				opNdx == 0 ? DE_NULL : &timelineValues[opNdx - 1],		// const deUint64*	pWaitSemaphoreValues
@@ -435,8 +435,19 @@ public:
 			const Data	expected = m_ops.front()->getData();
 			const Data	actual	 = m_ops.back()->getData();
 
-			if (0 != deMemCmp(expected.data, actual.data, expected.size))
-				return tcu::TestStatus::fail("Memory contents don't match");
+			if (isIndirectBuffer(m_resources[0]->getType()))
+			{
+				const deUint32 expectedValue = reinterpret_cast<const deUint32*>(expected.data)[0];
+				const deUint32 actualValue   = reinterpret_cast<const deUint32*>(actual.data)[0];
+
+				if (actualValue < expectedValue)
+					return tcu::TestStatus::fail("Counter value is smaller than expected");
+			}
+			else
+			{
+				if (0 != deMemCmp(expected.data, actual.data, expected.size))
+					return tcu::TestStatus::fail("Memory contents don't match");
+			}
 		}
 
 		return tcu::TestStatus::pass("OK");

@@ -5,13 +5,14 @@
 #ifndef V8_HEAP_SPACES_INL_H_
 #define V8_HEAP_SPACES_INL_H_
 
-#include "src/heap/spaces.h"
-
 #include "src/base/atomic-utils.h"
 #include "src/base/bounded-page-allocator.h"
 #include "src/base/v8-fallthrough.h"
+#include "src/common/globals.h"
 #include "src/heap/heap-inl.h"
 #include "src/heap/incremental-marking.h"
+#include "src/heap/memory-chunk-inl.h"
+#include "src/heap/spaces.h"
 #include "src/objects/code-inl.h"
 #include "src/sanitizer/msan.h"
 
@@ -86,8 +87,8 @@ HeapObject PagedSpaceObjectIterator::FromCurrentPage() {
     if (!obj.IsFreeSpaceOrFiller()) {
       if (obj.IsCode()) {
         DCHECK_IMPLIES(
-            space_ != heap_->code_space(),
-            space_ == heap_->read_only_space() && Code::cast(obj).is_builtin());
+            space_->identity() != CODE_SPACE,
+            space_->identity() == RO_SPACE && Code::cast(obj).is_builtin());
         DCHECK_CODEOBJECT_SIZE(obj_size, space_);
       } else {
         DCHECK_OBJECT_SIZE(obj_size);
@@ -206,39 +207,6 @@ bool PagedSpace::TryFreeLast(HeapObject object, int object_size) {
   return false;
 }
 
-void MemoryChunk::IncrementExternalBackingStoreBytes(
-    ExternalBackingStoreType type, size_t amount) {
-#ifndef V8_ENABLE_THIRD_PARTY_HEAP
-  base::CheckedIncrement(&external_backing_store_bytes_[type], amount);
-  owner()->IncrementExternalBackingStoreBytes(type, amount);
-#endif
-}
-
-void MemoryChunk::DecrementExternalBackingStoreBytes(
-    ExternalBackingStoreType type, size_t amount) {
-#ifndef V8_ENABLE_THIRD_PARTY_HEAP
-  base::CheckedDecrement(&external_backing_store_bytes_[type], amount);
-  owner()->DecrementExternalBackingStoreBytes(type, amount);
-#endif
-}
-
-void MemoryChunk::MoveExternalBackingStoreBytes(ExternalBackingStoreType type,
-                                                MemoryChunk* from,
-                                                MemoryChunk* to,
-                                                size_t amount) {
-  DCHECK_NOT_NULL(from->owner());
-  DCHECK_NOT_NULL(to->owner());
-  base::CheckedDecrement(&(from->external_backing_store_bytes_[type]), amount);
-  base::CheckedIncrement(&(to->external_backing_store_bytes_[type]), amount);
-  Space::MoveExternalBackingStoreBytes(type, from->owner(), to->owner(),
-                                       amount);
-}
-
-AllocationSpace MemoryChunk::owner_identity() const {
-  if (InReadOnlySpace()) return RO_SPACE;
-  return owner()->identity();
-}
-
 void Page::MarkNeverAllocateForTesting() {
   DCHECK(this->owner_identity() != NEW_SPACE);
   DCHECK(!IsFlagSet(NEVER_ALLOCATE_ON_PAGE));
@@ -262,10 +230,6 @@ void Page::ClearEvacuationCandidate() {
   }
   ClearFlag(EVACUATION_CANDIDATE);
   InitializeFreeListCategories();
-}
-
-HeapObject LargePage::GetObject() {
-  return HeapObject::FromAddress(area_start());
 }
 
 OldGenerationMemoryChunkIterator::OldGenerationMemoryChunkIterator(Heap* heap)
@@ -371,8 +335,9 @@ AllocationResult LocalAllocationBuffer::AllocateRawAligned(
 
   allocation_info_.set_top(new_top);
   if (filler_size > 0) {
-    return heap_->PrecedeWithFiller(HeapObject::FromAddress(current_top),
-                                    filler_size);
+    return Heap::PrecedeWithFiller(ReadOnlyRoots(heap_),
+                                   HeapObject::FromAddress(current_top),
+                                   filler_size);
   }
 
   return AllocationResult(HeapObject::FromAddress(current_top));
@@ -405,8 +370,9 @@ HeapObject PagedSpace::TryAllocateLinearlyAligned(
   allocation_info_.set_top(new_top);
   if (filler_size > 0) {
     *size_in_bytes += filler_size;
-    return heap()->PrecedeWithFiller(HeapObject::FromAddress(current_top),
-                                     filler_size);
+    return Heap::PrecedeWithFiller(ReadOnlyRoots(heap()),
+                                   HeapObject::FromAddress(current_top),
+                                   filler_size);
   }
 
   return HeapObject::FromAddress(current_top);
@@ -520,7 +486,7 @@ AllocationResult NewSpace::AllocateRawAligned(int size_in_bytes,
   DCHECK_SEMISPACE_ALLOCATION_INFO(allocation_info_, to_space_);
 
   if (filler_size > 0) {
-    obj = heap()->PrecedeWithFiller(obj, filler_size);
+    obj = Heap::PrecedeWithFiller(ReadOnlyRoots(heap()), obj, filler_size);
   }
 
   MSAN_ALLOCATED_UNINITIALIZED_MEMORY(obj.address(), size_in_bytes);

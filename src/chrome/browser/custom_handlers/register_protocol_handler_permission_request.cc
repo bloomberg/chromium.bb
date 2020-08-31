@@ -12,21 +12,23 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-RegisterProtocolHandlerPermissionRequest
-::RegisterProtocolHandlerPermissionRequest(
-      ProtocolHandlerRegistry* registry,
-      const ProtocolHandler& handler,
-      GURL url,
-      bool user_gesture)
+RegisterProtocolHandlerPermissionRequest::
+    RegisterProtocolHandlerPermissionRequest(
+        ProtocolHandlerRegistry* registry,
+        const ProtocolHandler& handler,
+        GURL url,
+        bool user_gesture,
+        base::ScopedClosureRunner fullscreen_block)
     : registry_(registry),
       handler_(handler),
-      origin_(url.GetOrigin()) {}
+      origin_(url.GetOrigin()),
+      fullscreen_block_(std::move(fullscreen_block)) {}
 
 RegisterProtocolHandlerPermissionRequest::
-~RegisterProtocolHandlerPermissionRequest() {}
+    ~RegisterProtocolHandlerPermissionRequest() = default;
 
-PermissionRequest::IconId RegisterProtocolHandlerPermissionRequest::GetIconId()
-    const {
+permissions::PermissionRequest::IconId
+RegisterProtocolHandlerPermissionRequest::GetIconId() const {
   return vector_icons::kProtocolHandlerIcon;
 }
 
@@ -69,7 +71,7 @@ void RegisterProtocolHandlerPermissionRequest::RequestFinished() {
   delete this;
 }
 
-PermissionRequestType
+permissions::PermissionRequestType
 RegisterProtocolHandlerPermissionRequest::GetPermissionRequestType() const {
-  return PermissionRequestType::REGISTER_PROTOCOL_HANDLER;
+  return permissions::PermissionRequestType::REGISTER_PROTOCOL_HANDLER;
 }

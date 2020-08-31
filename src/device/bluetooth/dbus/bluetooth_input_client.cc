@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "dbus/bus.h"
@@ -56,11 +56,10 @@ class BluetoothInputClientImpl : public BluetoothInputClient,
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties =
-        new Properties(object_proxy, interface_name,
-                       base::Bind(&BluetoothInputClientImpl::OnPropertyChanged,
-                                  weak_ptr_factory_.GetWeakPtr(), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+    return new Properties(
+        object_proxy, interface_name,
+        base::BindRepeating(&BluetoothInputClientImpl::OnPropertyChanged,
+                            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   // BluetoothInputClient override.

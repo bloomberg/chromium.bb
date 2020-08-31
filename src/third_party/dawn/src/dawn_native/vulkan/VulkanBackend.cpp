@@ -42,7 +42,7 @@ namespace dawn_native { namespace vulkan {
     // Explicitly export this function because it uses the "native" type for surfaces while the
     // header as seen in this file uses the wrapped type.
     DAWN_NATIVE_EXPORT DawnSwapChainImplementation
-    CreateNativeSwapChainImpl(WGPUDevice device, VkSurfaceKHRNative surfaceNative) {
+    CreateNativeSwapChainImpl(WGPUDevice device, ::VkSurfaceKHR surfaceNative) {
         Device* backendDevice = reinterpret_cast<Device*>(device);
         VkSurfaceKHR surface = VkSurfaceKHR::CreateFromHandle(surfaceNative);
 
@@ -60,12 +60,8 @@ namespace dawn_native { namespace vulkan {
     }
 
 #ifdef DAWN_PLATFORM_LINUX
-    ExternalImageDescriptor::ExternalImageDescriptor(ExternalImageDescriptorType type)
-        : type(type) {
-    }
-
-    ExternalImageDescriptorFD::ExternalImageDescriptorFD(ExternalImageDescriptorType type)
-        : ExternalImageDescriptor(type) {
+    ExternalImageDescriptorFD::ExternalImageDescriptorFD(ExternalImageDescriptorType descType)
+        : ExternalImageDescriptor(descType) {
     }
 
     ExternalImageDescriptorOpaqueFD::ExternalImageDescriptorOpaqueFD()

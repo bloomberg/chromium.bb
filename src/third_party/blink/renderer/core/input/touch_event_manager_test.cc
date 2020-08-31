@@ -28,7 +28,7 @@ class TouchEventManagerTest : public SimTest {
         type,
         WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
                              WebPointerProperties::Button::kLeft,
-                             WebFloatPoint(100, 100), WebFloatPoint(100, 100)),
+                             gfx::PointF(100, 100), gfx::PointF(100, 100)),
         1, 1);
     event.SetFrameScale(1);
     return event;
@@ -61,19 +61,19 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
                                          callback);
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetDocument().getElementById("target")->remove();
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerUp),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerUp),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
@@ -94,7 +94,7 @@ TEST_F(TouchEventManagerTest, AbosolutePosWithScrollAndZoom) {
   Window().scrollTo(100, 100);
 
   GetEventHandler().HandlePointerEvent(
-      CreateTouchPointerEvent(WebInputEvent::kPointerDown),
+      CreateTouchPointerEvent(WebInputEvent::Type::kPointerDown),
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 

@@ -32,7 +32,7 @@ const char kCookieValue1[] = "Eats";
 const char kCookieValue2[] = "Cookies";
 const char kCookieValue3[] = "Nyom nyom nyom";
 
-// Creates a CanonicalCookie with |name| and |value|, for kTestCookieUrlHost.
+// Creates a CanonicalCookie with |name| and |value|, for kTestCookieUrl.
 std::unique_ptr<net::CanonicalCookie> CreateCookie(base::StringPiece name,
                                                    base::StringPiece value) {
   return net::CanonicalCookie::CreateSanitizedCookie(
@@ -66,20 +66,20 @@ class CookieManagerImplTest : public testing::Test {
     return network_context_.get();
   }
 
-  // Adds the specified cookie under kTestCookieUrlHost.
+  // Adds the specified cookie under kTestCookieUrl.
   void CreateAndSetCookieAsync(base::StringPiece name,
                                base::StringPiece value) {
     EnsureMojoCookieManager();
 
     net::CookieOptions options;
     mojo_cookie_manager_->SetCanonicalCookie(
-        *CreateCookie(name, value), "https", options,
+        *CreateCookie(name, value), GURL(kTestCookieUrl), options,
         base::BindOnce([](net::CanonicalCookie::CookieInclusionStatus status) {
           EXPECT_TRUE(status.IsInclude());
         }));
   }
 
-  // Removes the specified cookie from under kTestCookieUrlHost.
+  // Removes the specified cookie from under kTestCookieUrl.
   void DeleteCookieAsync(base::StringPiece name, base::StringPiece value) {
     EnsureMojoCookieManager();
 
@@ -328,8 +328,19 @@ TEST_F(CookieManagerImplTest, UpdateBatching) {
     CreateAndSetCookieAsync(kCookieName1, kCookieValue1);
     CreateAndSetCookieAsync(kCookieName2, kCookieValue2);
     CreateAndSetCookieAsync(kCookieName1, kCookieValue3);
+
+    // Flush the Cookie Manager so that all cookie changes are processed.
     mojo_cookie_manager_.FlushForTesting();
 
+    // Run all pending tasks so that CookiesIteratorImpl receives all cookie
+    // changes through network::mojom::CookieChangeListener::OnCookieChange().
+    // This is important because fuchsia::web::CookiesIterator::GetNext() only
+    // returns cookie updates that have already been received by the iterator
+    // implementation.
+    base::RunLoop().RunUntilIdle();
+
+    // Request cookie updates through fuchsia::web::CookiesIterator::GetNext().
+    // Multiple updates to the same cookie should be coalesced.
     GetNextCookiesIteratorResult global_updates(global_changes.get());
     global_updates.ExpectCookieUpdates(
         {{kCookieName1, kCookieValue3}, {kCookieName2, kCookieValue2}});

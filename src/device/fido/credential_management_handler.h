@@ -20,10 +20,6 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/pin.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class FidoAuthenticator;
@@ -59,7 +55,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   using ReadyCallback = base::OnceClosure;
 
   CredentialManagementHandler(
-      service_manager::Connector* connector,
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       ReadyCallback ready_callback,
@@ -95,7 +90,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
     kWaitingForTouch,
     kGettingRetries,
     kWaitingForPIN,
-    kGettingEphemeralKey,
     kGettingPINToken,
     kReady,
     kGettingMetadata,
@@ -113,9 +107,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   void OnRetriesResponse(CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
   void OnHavePIN(std::string pin);
-  void OnHaveEphemeralKey(std::string pin,
-                          CtapDeviceResponseCode status,
-                          base::Optional<pin::KeyAgreementResponse> response);
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
   void OnCredentialsMetadata(

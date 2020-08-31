@@ -33,10 +33,9 @@
 
 
 static void
-test_face (hb_face_t *face,
-	   hb_codepoint_t cp)
+test_font (hb_font_t *font, hb_codepoint_t cp)
 {
-  hb_font_t *font = hb_font_create (face);
+  hb_face_t *face = hb_font_get_face (font);
   hb_set_t *set;
   hb_codepoint_t g;
   hb_position_t x, y;
@@ -74,6 +73,22 @@ test_face (hb_face_t *face,
   hb_ot_color_has_png (face);
   hb_blob_destroy (hb_ot_color_glyph_reference_png (font, cp));
 
+  hb_set_t *lookup_indexes = hb_set_create ();
+  hb_set_add (lookup_indexes, 0);
+#ifdef HB_EXPERIMENTAL_API
+  hb_ot_layout_closure_lookups (face, HB_OT_TAG_GSUB, set, lookup_indexes);
+#endif
+
+  hb_map_t *lookup_mapping = hb_map_create ();
+  hb_map_set (lookup_mapping, 0, 0);
+  hb_set_t *feature_indices = hb_set_create ();
+#ifdef HB_EXPERIMENTAL_API
+  hb_ot_layout_closure_features (face, HB_OT_TAG_GSUB, lookup_mapping, feature_indices);
+#endif
+  hb_set_destroy (lookup_indexes);
+  hb_set_destroy (feature_indices);
+  hb_map_destroy (lookup_mapping);
+
   hb_ot_layout_get_baseline (font, HB_OT_LAYOUT_BASELINE_TAG_HANGING, HB_DIRECTION_RTL, HB_SCRIPT_HANGUL, HB_TAG_NONE, NULL);
 
   hb_ot_layout_has_glyph_classes (face);
@@ -109,15 +124,20 @@ test_face (hb_face_t *face,
   hb_ot_var_normalize_variations (face, NULL, 0, NULL, 0);
   hb_ot_var_normalize_coords (face, 0, NULL, NULL);
 
+#ifdef HB_EXPERIMENTAL_API
+  hb_draw_funcs_t *funcs = hb_draw_funcs_create ();
+  hb_font_draw_glyph (font, cp, funcs, NULL);
+  hb_draw_funcs_destroy (funcs);
+#endif
+
   hb_set_destroy (set);
-  hb_font_destroy (font);
 }
 
 #ifndef TEST_OT_FACE_NO_MAIN
 static void
 test_ot_face_empty (void)
 {
-  test_face (hb_face_get_empty (), 0);
+  test_font (hb_font_get_empty (), 0);
 }
 
 static void

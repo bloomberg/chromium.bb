@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "components/sync/base/model_type.h"
@@ -46,7 +45,6 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetSelectedTypes(bool sync_everything,
                         UserSelectableTypeSet types) override;
   UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
-  UserSelectableTypeSet GetForcedTypes() const override;
 
 #if defined(OS_CHROMEOS)
   bool IsSyncAllOsTypesEnabled() const override;
@@ -55,7 +53,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
                           UserSelectableOsTypeSet types) override;
   UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const override;
 
-  bool GetOsSyncFeatureEnabled() const override;
+  bool IsOsSyncFeatureEnabled() const override;
   void SetOsSyncFeatureEnabled(bool enabled) override;
 #endif
 
@@ -66,6 +64,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForPreferredDataTypes() const override;
+  bool IsTrustedVaultKeyRequired() const override;
   bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const override;
   bool IsUsingSecondaryPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
@@ -73,9 +72,6 @@ class SyncUserSettingsImpl : public SyncUserSettings {
 
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
-  void AddTrustedVaultDecryptionKeys(
-      const std::string& gaia_id,
-      const std::vector<std::string>& keys) override;
 
   void SetSyncRequestedIfNotSetExplicitly();
 

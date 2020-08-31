@@ -43,6 +43,11 @@ class CustomThemeSupplier
     return theme_type_;
   }
 
+  const std::string& extension_id() const {
+    DCHECK_EQ(theme_type_, EXTENSION);
+    return extension_id_;
+  }
+
   // Called when the theme starts being used.
   virtual void StartUsingTheme();
 
@@ -59,8 +64,7 @@ class CustomThemeSupplier
 
   // Returns the theme image for |id|. Returns an empty image if no image is
   // found for |id|.
-  // TODO(estade): Remove this function; it's not used in Material Design.
-  virtual gfx::Image GetImageNamed(int id);
+  virtual gfx::Image GetImageNamed(int id) const;
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method only
   // works for the NTP attribution and background resources.
@@ -78,11 +82,17 @@ class CustomThemeSupplier
  protected:
   virtual ~CustomThemeSupplier();
 
+  void set_extension_id(base::StringPiece id) {
+    DCHECK_EQ(theme_type_, EXTENSION);
+    extension_id_.assign(id.data(), id.size());
+  }
+
  private:
   friend class base::RefCountedDeleteOnSequence<CustomThemeSupplier>;
   friend class base::DeleteHelper<CustomThemeSupplier>;
 
   ThemeType theme_type_;
+  std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomThemeSupplier);
 };

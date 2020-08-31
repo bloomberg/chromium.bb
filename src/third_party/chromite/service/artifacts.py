@@ -22,6 +22,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import toolchain_util
 from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import paygen_payload_lib
@@ -114,6 +115,8 @@ def BundleAutotestFiles(chroot, sysroot, output_directory):
   assert sysroot.Exists(chroot=chroot)
   assert output_directory
 
+  logging.debug('Inside artifacts_service BundleAutotestFiles (%s %s %s)',
+                chroot.path, sysroot.path, output_directory)
   # archive_basedir is the base directory where the archive commands are run.
   # We want the folder containing the board's autotest folder.
   archive_basedir = chroot.full_path(sysroot.path,
@@ -194,7 +197,7 @@ def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   Args:
     chroot (chroot_lib.Chroot): The chroot to be used.
     sysroot (sysroot_lib.Sysroot): The sysroot.
-    build_target (build_target_util.BuildTarget): The sysroot's build target.
+    build_target (build_target_lib.BuildTarget): The sysroot's build target.
     output_dir (str): Where all result files should be stored.
   """
   files = []
@@ -273,7 +276,7 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
   Raises:
     NoFilesException: When the package cannot be found.
   """
-  pkg_dir = os.path.join(sysroot.path, 'var', 'db', 'pkg')
+  pkg_dir = os.path.join(sysroot.path, portage_util.VDB_PATH)
   files = glob.glob(os.path.join(pkg_dir, constants.CHROME_CP) + '-*')
   if not files:
     raise NoFilesError('Failed to find package %s' % constants.CHROME_CP)
@@ -290,7 +293,7 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
     tempdir_tar_path = os.path.join(tempdir, constants.CHROME_ENV_FILE)
     cros_build_lib.run([bzip2, '-d', env_bzip, '-c'],
-                       log_stdout_to_file=tempdir_tar_path)
+                       stdout=tempdir_tar_path)
 
     cros_build_lib.CreateTarball(result_path, tempdir)
 
@@ -342,7 +345,7 @@ def CreateChromeRoot(chroot, build_target, output_dir):
 
   Args:
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
 
@@ -483,7 +486,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot, chrome_root,
     for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
     chrome_root (str): Path to Chrome root.
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
 
@@ -592,10 +595,18 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
     CpeResult: The CPE result instance with the full paths to the report and
       warnings files.
   """
+  # Call cros_extract_deps to create the report that the export produced.
+  # We'll assume the basename for the board name to match how these were built
+  # out in the old system.
+  # TODO(saklein): Can we remove the board name from the report file names?
+  build_target = os.path.basename(sysroot.path)
+  report_path = os.path.join(output_dir,
+                             CPE_RESULT_FILE_TEMPLATE % build_target)
+
   # Build the command and its args.
   cmd = [
       'cros_extract_deps', '--sysroot', sysroot.path, '--format', 'cpe',
-      'virtual/target-os'
+      'virtual/target-os', '--output-path', report_path
   ]
 
   logging.info('Beginning CPE Export.')
@@ -606,17 +617,10 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
       chroot_args=chroot.get_enter_args())
   logging.info('CPE Export Complete.')
 
-  # Write out the report and warnings the export produced.
-  # We'll assume the basename for the board name to match how these were built
-  # out in the old system.
-  # TODO(saklein): Can we remove the board name from the report file names?
-  build_target = os.path.basename(sysroot.path)
-  report_path = os.path.join(output_dir,
-                             CPE_RESULT_FILE_TEMPLATE % build_target)
+  # Write out the warnings the export produced.
   warnings_path = os.path.join(output_dir,
                                CPE_WARNINGS_FILE_TEMPLATE % build_target)
 
-  osutils.WriteFile(report_path, result.stdout, mode='wb')
   osutils.WriteFile(warnings_path, result.stderr, mode='wb')
 
   return CpeResult(report=report_path, warnings=warnings_path)

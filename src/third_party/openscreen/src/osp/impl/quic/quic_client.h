@@ -43,8 +43,8 @@ class QuicClient final : public ProtocolConnectionClient,
   QuicClient(MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
              ProtocolConnectionServiceObserver* observer,
-             platform::ClockNowFunctionPtr now_function,
-             platform::TaskRunner* task_runner);
+             ClockNowFunctionPtr now_function,
+             TaskRunner* task_runner);
   ~QuicClient() override;
 
   // ProtocolConnectionClient overrides.
@@ -103,7 +103,7 @@ class QuicClient final : public ProtocolConnectionClient,
 
   // Maps an IPEndpoint to a generated endpoint ID.  This is used to insulate
   // callers from post-handshake changes to a connections actual peer endpoint.
-  std::map<IPEndpoint, uint64_t, IPEndpointComparator> endpoint_map_;
+  std::map<IPEndpoint, uint64_t> endpoint_map_;
 
   // Value that will be used for the next new endpoint in a Connect call.
   uint64_t next_endpoint_id_ = 0;
@@ -119,8 +119,7 @@ class QuicClient final : public ProtocolConnectionClient,
 
   // Maps endpoint addresses to data about connections that haven't successfully
   // completed the QUIC handshake.
-  std::map<IPEndpoint, PendingConnectionData, IPEndpointComparator>
-      pending_connections_;
+  std::map<IPEndpoint, PendingConnectionData> pending_connections_;
 
   // Maps endpoint IDs to data about connections that have successfully
   // completed the QUIC handshake.

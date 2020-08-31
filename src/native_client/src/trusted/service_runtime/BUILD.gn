@@ -10,9 +10,7 @@ if (is_mac) {
 }
 
 source_set("sel_main") {
-  sources = [
-    "sel_main.c",
-  ]
+  sources = [ "sel_main.c" ]
   deps = [
     ":sel",
     "//build/config/nacl:nacl_base",
@@ -21,9 +19,7 @@ source_set("sel_main") {
 }
 
 source_set("sel_main_chrome") {
-  sources = [
-    "sel_main_chrome.c",
-  ]
+  sources = [ "sel_main_chrome.c" ]
   deps = [
     ":sel",
     "//build/config/nacl:nacl_base",
@@ -32,21 +28,13 @@ source_set("sel_main_chrome") {
 }
 
 source_set("env_cleanser") {
-  sources = [
-    "env_cleanser.c",
-  ]
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
+  sources = [ "env_cleanser.c" ]
+  deps = [ "//build/config/nacl:nacl_base" ]
 }
 
 source_set("nacl_error_code") {
-  sources = [
-    "nacl_error_code.c",
-  ]
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
+  sources = [ "nacl_error_code.c" ]
+  deps = [ "//build/config/nacl:nacl_base" ]
 }
 
 if (current_toolchain == nacl_asm_toolchain) {
@@ -86,9 +74,7 @@ if (current_toolchain == nacl_asm_toolchain) {
         "arch/mips/tramp_mips.S",
       ]
     }
-    deps = [
-      "//build/config/nacl:nacl_base",
-    ]
+    deps = [ "//build/config/nacl:nacl_base" ]
   }
 }
 
@@ -320,9 +306,7 @@ if (current_os == "mac") {
 
   action("nacl_exc") {
     script = "osx/run_mig.py"
-    sources = [
-      mac_sdk_path + "/usr/include/mach/exc.defs",
-    ]
+    sources = [ mac_sdk_path + "/usr/include/mach/exc.defs" ]
     outputs = [
       "$target_gen_dir/nacl_exc.h",
       "$target_gen_dir/nacl_exc_server.c",
@@ -347,23 +331,19 @@ if (current_os == "mac") {
     }
     args += [
       "--sdk",
-      mac_sdk_path,
+      rebase_path(mac_sdk_path, root_build_dir),
     ]
   }
 }
 
 executable("sel_ldr") {
-  sources = [
-    "nacl_test_injection_main.c",
-  ]
+  sources = [ "nacl_test_injection_main.c" ]
   deps = [
     ":sel_main",
     "//build/win:default_exe_manifest",
   ]
   if (is_linux) {
     ldflags = [ "-pie" ]
-    data_deps = [
-      "linux:bootstrap",
-    ]
+    data_deps = [ "linux:bootstrap" ]
   }
 }

@@ -14,6 +14,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+
+#include "device/vr/openxr/openxr_util.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
@@ -42,13 +44,14 @@ class OpenXrApiWrapper {
 
   static VRTestHook* GetTestHook();
 
-  bool session_ended() const { return session_ended_; }
+  bool UpdateAndGetSessionEnded();
 
   XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
                        std::unique_ptr<OpenXRInputHelper>* input_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
+  bool HasPendingFrame() const;
 
   XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
                        base::Optional<gfx::Point3F>* position,
@@ -77,6 +80,7 @@ class OpenXrApiWrapper {
   XrResult InitializeSystem();
   XrResult PickEnvironmentBlendMode(XrSystemId system);
   XrResult ProcessEvents();
+  void EnsureEventPolling();
 
   XrResult CreateSession(
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
@@ -102,6 +106,8 @@ class OpenXrApiWrapper {
   XrResult UpdateStageBounds();
 
   bool session_ended_;
+  bool pending_frame_;
+  base::TimeTicks last_process_events_time_;
 
   base::RepeatingCallback<void(XrResult*)>
       interaction_profile_changed_callback_;
@@ -116,6 +122,7 @@ class OpenXrApiWrapper {
 
   // These objects are valid on successful initialization.
   XrInstance instance_;
+  OpenXRInstanceMetadata instance_metadata_;
   XrSystemId system_;
   std::vector<XrViewConfigurationView> view_configs_;
   XrEnvironmentBlendMode blend_mode_;
@@ -129,6 +136,7 @@ class OpenXrApiWrapper {
   XrSpace local_space_;
   XrSpace stage_space_;
   XrSpace view_space_;
+  XrSpace unbounded_space_;
 
   // These objects store information about the current frame. They're
   // valid only while a session is active, and they are updated each frame.
@@ -136,6 +144,8 @@ class OpenXrApiWrapper {
   std::vector<XrView> origin_from_eye_views_;
   std::vector<XrView> head_from_eye_views_;
   std::vector<XrCompositionLayerProjectionView> layer_projection_views_;
+
+  base::WeakPtrFactory<OpenXrApiWrapper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrApiWrapper);
 };

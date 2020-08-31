@@ -61,8 +61,7 @@ class UseCounterHelperTest : public testing::Test {
   HistogramTester histogram_tester_;
 
   void UpdateAllLifecyclePhases(Document& document) {
-    document.View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 
@@ -120,7 +119,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorPseudoWhere) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoWhere;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>.a+:where(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(WebFeature::kCSSSelectorPseudoIs));
@@ -143,7 +142,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorPseudoAnyLink) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoAnyLink;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>:any-link { color: red; }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -154,7 +153,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorPseudoWebkitAnyLink) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>:-webkit-any-link { color: red; }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -173,7 +172,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorPseudoIs) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorPseudoIs;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(WebFeature::kCSSSelectorPseudoWhere));
@@ -185,7 +184,7 @@ TEST_F(UseCounterHelperTest, CSSContainLayoutNonPositionedDescendants) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='contain: layout;'>"
       "</div>");
   UpdateAllLifecyclePhases(document);
@@ -198,7 +197,7 @@ TEST_F(UseCounterHelperTest, CSSContainLayoutAbsolutelyPositionedDescendants) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
@@ -213,7 +212,7 @@ TEST_F(UseCounterHelperTest,
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='position: relative; contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
@@ -227,7 +226,7 @@ TEST_F(UseCounterHelperTest, CSSContainLayoutFixedPositionedDescendants) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
@@ -242,7 +241,7 @@ TEST_F(UseCounterHelperTest,
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='transform: translateX(100px); contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
@@ -256,7 +255,7 @@ TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='display: inline-grid; grid-template-columns: 50%;'>"
       "</div>");
   UpdateAllLifecyclePhases(document);
@@ -269,7 +268,7 @@ TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='display: inline-grid; grid-template-rows: 50%;'>"
       "</div>");
   UpdateAllLifecyclePhases(document);
@@ -282,7 +281,7 @@ TEST_F(UseCounterHelperTest, CSSFlexibleBox) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSFlexibleBox;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='display: flex;'>flexbox</div>");
   UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -294,7 +293,7 @@ TEST_F(UseCounterHelperTest, CSSFlexibleBoxInline) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSFlexibleBox;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style='display: inline-flex;'>flexbox</div>");
   UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -308,7 +307,7 @@ TEST_F(UseCounterHelperTest, CSSFlexibleBoxButton) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSFlexibleBox;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString("<button>button</button>");
+  document.documentElement()->setInnerHTML("<button>button</button>");
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
 }
@@ -370,7 +369,7 @@ TEST_F(UseCounterHelperTest, CSSUnknownNamespacePrefixInSelector) {
   WebFeature feature = WebFeature::kCSSUnknownNamespacePrefixInSelector;
   EXPECT_FALSE(document.IsUseCounted(feature));
 
-  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+  document.documentElement()->setInnerHTML(R"HTML(
     <style>
       @namespace svg url(http://www.w3.org/2000/svg);
       svg|a {}
@@ -380,7 +379,7 @@ TEST_F(UseCounterHelperTest, CSSUnknownNamespacePrefixInSelector) {
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
 
-  document.documentElement()->SetInnerHTMLFromString("<style>foo|a {}</style>");
+  document.documentElement()->setInnerHTML("<style>foo|a {}</style>");
   UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -391,7 +390,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorHostContextInLiveProfile) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorHostContextInLiveProfile;
 
-  document.body()->SetInnerHTMLFromString(R"HTML(
+  document.body()->setInnerHTML(R"HTML(
     <div id="parent">
       <div id="host"></div>
     </div>
@@ -404,7 +403,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorHostContextInLiveProfile) {
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
 
-  shadow_root.SetInnerHTMLFromString(R"HTML(
+  shadow_root.setInnerHTML(R"HTML(
       <style>
         :host-context(#parent) span {
           color: green
@@ -423,7 +422,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorHostContextInSnapshotProfile) {
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSSelectorHostContextInSnapshotProfile;
 
-  document.body()->SetInnerHTMLFromString(R"HTML(
+  document.body()->setInnerHTML(R"HTML(
     <div id="parent">
       <div id="host"></div>
     </div>
@@ -436,7 +435,7 @@ TEST_F(UseCounterHelperTest, CSSSelectorHostContextInSnapshotProfile) {
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
 
-  shadow_root.SetInnerHTMLFromString("<span></span>");
+  shadow_root.setInnerHTML("<span></span>");
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
 

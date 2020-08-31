@@ -13,7 +13,6 @@
 #include <iostream>
 #include <memory>
 
-#include "modules/audio_processing/echo_cancellation_impl.h"
 #include "modules/audio_processing/echo_control_mobile_impl.h"
 #include "modules/audio_processing/test/protobuf_utils.h"
 #include "rtc_base/checks.h"
@@ -28,14 +27,12 @@ namespace {
 // TODO(peah): Check whether it would make sense to add a threshold
 // to use for checking the bitexactness in a soft manner.
 bool VerifyFixedBitExactness(const webrtc::audioproc::Stream& msg,
-                             const AudioFrame& frame) {
-  if ((sizeof(int16_t) * frame.samples_per_channel_ * frame.num_channels_) !=
-      msg.output_data().size()) {
+                             const Int16Frame& frame) {
+  if (sizeof(frame.data[0]) * frame.data.size() != msg.output_data().size()) {
     return false;
   } else {
-    const int16_t* frame_data = frame.data();
-    for (size_t k = 0; k < frame.num_channels_ * frame.samples_per_channel_;
-         ++k) {
+    const int16_t* frame_data = frame.data.data();
+    for (int k = 0; k < frame.num_channels * frame.samples_per_channel; ++k) {
       if (msg.output_data().data()[k] != frame_data[k]) {
         return false;
       }
@@ -86,10 +83,9 @@ void AecDumpBasedSimulator::PrepareProcessStreamCall(
     interface_used_ = InterfaceType::kFixedInterface;
 
     // Populate input buffer.
-    RTC_CHECK_EQ(sizeof(*fwd_frame_.data()) * fwd_frame_.samples_per_channel_ *
-                     fwd_frame_.num_channels_,
+    RTC_CHECK_EQ(sizeof(fwd_frame_.data[0]) * fwd_frame_.data.size(),
                  msg.input_data().size());
-    memcpy(fwd_frame_.mutable_data(), msg.input_data().data(),
+    memcpy(fwd_frame_.data.data(), msg.input_data().data(),
            msg.input_data().size());
   } else {
     // Float interface processing.
@@ -114,7 +110,7 @@ void AecDumpBasedSimulator::PrepareProcessStreamCall(
     if (artificial_nearend_buffer_reader_->Read(
             artificial_nearend_buf_.get())) {
       if (msg.has_input_data()) {
-        int16_t* fwd_frame_data = fwd_frame_.mutable_data();
+        int16_t* fwd_frame_data = fwd_frame_.data.data();
         for (size_t k = 0; k < in_buf_->num_frames(); ++k) {
           fwd_frame_data[k] = rtc::saturated_cast<int16_t>(
               fwd_frame_data[k] +
@@ -185,10 +181,9 @@ void AecDumpBasedSimulator::PrepareReverseProcessStreamCall(
     interface_used_ = InterfaceType::kFixedInterface;
 
     // Populate input buffer.
-    RTC_CHECK_EQ(sizeof(int16_t) * rev_frame_.samples_per_channel_ *
-                     rev_frame_.num_channels_,
+    RTC_CHECK_EQ(sizeof(rev_frame_.data[0]) * rev_frame_.data.size(),
                  msg.data().size());
-    memcpy(rev_frame_.mutable_data(), msg.data().data(), msg.data().size());
+    memcpy(rev_frame_.data.data(), msg.data().data(), msg.data().size());
   } else {
     // Float interface processing.
     // Verify interface invariance.
@@ -300,57 +295,6 @@ void AecDumpBasedSimulator::HandleMessage(
       }
     }
 
-    if (msg.has_aec_delay_agnostic_enabled() || settings_.use_delay_agnostic) {
-      bool enable = settings_.use_delay_agnostic
-                        ? *settings_.use_delay_agnostic
-                        : msg.aec_delay_agnostic_enabled();
-      config.Set<DelayAgnostic>(new DelayAgnostic(enable));
-      if (settings_.use_verbose_logging) {
-        std::cout << " aec_delay_agnostic_enabled: "
-                  << (enable ? "true" : "false") << std::endl;
-      }
-    }
-
-    if (msg.has_aec_drift_compensation_enabled() ||
-        settings_.use_drift_compensation) {
-      if (settings_.use_drift_compensation
-              ? *settings_.use_drift_compensation
-              : msg.aec_drift_compensation_enabled()) {
-        RTC_LOG(LS_ERROR)
-            << "Ignoring deprecated setting: AEC2 drift compensation";
-      }
-    }
-
-    if (msg.has_aec_extended_filter_enabled() ||
-        settings_.use_extended_filter) {
-      bool enable = settings_.use_extended_filter
-                        ? *settings_.use_extended_filter
-                        : msg.aec_extended_filter_enabled();
-      config.Set<ExtendedFilter>(new ExtendedFilter(enable));
-      if (settings_.use_verbose_logging) {
-        std::cout << " aec_extended_filter_enabled: "
-                  << (enable ? "true" : "false") << std::endl;
-      }
-    }
-
-    if (msg.has_aec_suppression_level() || settings_.aec_suppression_level) {
-      auto level = static_cast<webrtc::EchoCancellationImpl::SuppressionLevel>(
-          settings_.aec_suppression_level ? *settings_.aec_suppression_level
-                                          : msg.aec_suppression_level());
-      if (level ==
-          webrtc::EchoCancellationImpl::SuppressionLevel::kLowSuppression) {
-        RTC_LOG(LS_ERROR)
-            << "Ignoring deprecated setting: AEC2 low suppression";
-      } else {
-        apm_config.echo_canceller.legacy_moderate_suppression_level =
-            (level == webrtc::EchoCancellationImpl::SuppressionLevel::
-                          kModerateSuppression);
-        if (settings_.use_verbose_logging) {
-          std::cout << " aec_suppression_level: " << level << std::endl;
-        }
-      }
-    }
-
     if (msg.has_aecm_enabled() || settings_.use_aecm) {
       bool enable =
           settings_.use_aecm ? *settings_.use_aecm : msg.aecm_enabled();
@@ -416,11 +360,10 @@ void AecDumpBasedSimulator::HandleMessage(
       }
     }
 
-    // TODO(peah): Add support for controlling the Experimental AGC from the
-    // command line.
     if (msg.has_noise_robust_agc_enabled()) {
-      config.Set<ExperimentalAgc>(
-          new ExperimentalAgc(msg.noise_robust_agc_enabled()));
+      apm_config.gain_controller1.analog_gain_controller.enabled =
+          settings_.use_analog_agc ? *settings_.use_analog_agc
+                                   : msg.noise_robust_agc_enabled();
       if (settings_.use_verbose_logging) {
         std::cout << " noise_robust_agc_enabled: "
                   << (msg.noise_robust_agc_enabled() ? "true" : "false")
@@ -431,7 +374,7 @@ void AecDumpBasedSimulator::HandleMessage(
     if (msg.has_transient_suppression_enabled() || settings_.use_ts) {
       bool enable = settings_.use_ts ? *settings_.use_ts
                                      : msg.transient_suppression_enabled();
-      config.Set<ExperimentalNs>(new ExperimentalNs(enable));
+      apm_config.transient_suppression.enabled = enable;
       if (settings_.use_verbose_logging) {
         std::cout << " transient_suppression_enabled: "
                   << (enable ? "true" : "false") << std::endl;
@@ -484,11 +427,6 @@ void AecDumpBasedSimulator::HandleMessage(
         !msg.experiments_description().empty()) {
       std::cout << " experiments not included by default in the simulation: "
                 << msg.experiments_description() << std::endl;
-    }
-
-    if (settings_.use_refined_adaptive_filter) {
-      config.Set<RefinedAdaptiveFilter>(
-          new RefinedAdaptiveFilter(*settings_.use_refined_adaptive_filter));
     }
 
     if (settings_.use_ed) {

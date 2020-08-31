@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/check_op.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +19,7 @@
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
+#include "net/http/http_util.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -212,14 +216,15 @@ uint16_t GetResourceTypesMask(
   return mask;
 }
 
-// Computes the bitmask of flat_rule::ElementType taking into consideration
-// the included and excluded resource types for |condition|.
-ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
+// Computes the bitmask of flat_rule::ElementType taking into consideration the
+// included and excluded resource types for |rule| and its associated action
+// type.
+ParseResult ComputeElementTypes(const dnr_api::Rule& rule,
                                 uint16_t* element_types) {
   uint16_t include_element_type_mask =
-      GetResourceTypesMask(condition.resource_types.get());
+      GetResourceTypesMask(rule.condition.resource_types.get());
   uint16_t exclude_element_type_mask =
-      GetResourceTypesMask(condition.excluded_resource_types.get());
+      GetResourceTypesMask(rule.condition.excluded_resource_types.get());
 
   // OBJECT_SUBREQUEST is not used by Extensions.
   if (exclude_element_type_mask ==
@@ -230,6 +235,17 @@ ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
 
   if (include_element_type_mask & exclude_element_type_mask)
     return ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED;
+
+  if (rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS) {
+    // For allowAllRequests rule, the resourceTypes key must always be specified
+    // and may only include main_frame and sub_frame types.
+    const uint16_t frame_element_type_mask =
+        flat_rule::ElementType_MAIN_FRAME | flat_rule::ElementType_SUBDOCUMENT;
+    if (include_element_type_mask == flat_rule::ElementType_NONE ||
+        !IsSubset(include_element_type_mask, frame_element_type_mask)) {
+      return ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE;
+    }
+  }
 
   if (include_element_type_mask != flat_rule::ElementType_NONE)
     *element_types = include_element_type_mask;
@@ -368,6 +384,63 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
   return ParseResult::ERROR_INVALID_REDIRECT;
 }
 
+bool DoesActionSupportPriority(dnr_api::RuleActionType type) {
+  switch (type) {
+    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
+    case dnr_api::RULE_ACTION_TYPE_ALLOW:
+    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
+      return true;
+    case dnr_api::RULE_ACTION_TYPE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
+uint8_t GetActionTypePriority(dnr_api::RuleActionType action_type) {
+  switch (action_type) {
+    case dnr_api::RULE_ACTION_TYPE_ALLOW:
+      return 5;
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+      return 4;
+    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+      return 3;
+    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+      return 2;
+    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
+      return 1;
+    case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
+      return 0;
+    case dnr_api::RULE_ACTION_TYPE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+void RecordLargeRegexUMA(bool is_large_regex) {
+  UMA_HISTOGRAM_BOOLEAN(kIsLargeRegexHistogram, is_large_regex);
+}
+
+ParseResult ValidateHeaders(
+    const std::vector<dnr_api::ModifyHeaderInfo>& headers,
+    bool are_request_headers) {
+  if (headers.empty()) {
+    return are_request_headers ? ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST
+                               : ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST;
+  }
+
+  for (const auto& header_info : headers) {
+    if (!net::HttpUtil::IsValidHeaderName(header_info.header))
+      return ParseResult::ERROR_INVALID_HEADER_NAME;
+  }
+
+  return ParseResult::SUCCESS;
+}
+
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -384,20 +457,17 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.id < kMinValidID)
     return ParseResult::ERROR_INVALID_RULE_ID;
 
+  const bool is_priority_supported =
+      DoesActionSupportPriority(parsed_rule.action.type);
+  if (is_priority_supported) {
+    if (!parsed_rule.priority)
+      return ParseResult::ERROR_EMPTY_RULE_PRIORITY;
+    if (*parsed_rule.priority < kMinValidPriority)
+      return ParseResult::ERROR_INVALID_RULE_PRIORITY;
+  }
+
   const bool is_redirect_rule =
       parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REDIRECT;
-  const bool is_upgrade_rule =
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
-
-  if (is_redirect_rule || is_upgrade_rule) {
-    if (!parsed_rule.priority)
-      return is_redirect_rule ? ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY
-                              : ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY;
-    if (*parsed_rule.priority < kMinValidPriority)
-      return is_redirect_rule
-                 ? ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY
-                 : ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY;
-  }
 
   if (is_redirect_rule) {
     if (!parsed_rule.action.redirect)
@@ -420,8 +490,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.condition.url_filter && parsed_rule.condition.regex_filter)
     return ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED;
 
-  // TODO(crbug.com/974391): Implement limits on the number of regex rules an
-  // extension can specify.
   const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
 
   if (!is_regex_rule && indexed_rule->regex_substitution)
@@ -443,6 +511,11 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         *parsed_rule.condition.regex_filter,
         CreateRE2Options(IsCaseSensitive(parsed_rule), require_capturing));
 
+    if (regex.error_code() == re2::RE2::ErrorPatternTooLarge) {
+      RecordLargeRegexUMA(true);
+      return ParseResult::ERROR_REGEX_TOO_LARGE;
+    }
+
     if (!regex.ok())
       return ParseResult::ERROR_INVALID_REGEX_FILTER;
 
@@ -451,6 +524,8 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         !regex.CheckRewriteString(*indexed_rule->regex_substitution, &error)) {
       return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
     }
+
+    RecordLargeRegexUMA(false);
   }
 
   if (parsed_rule.condition.url_filter) {
@@ -463,15 +538,16 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
 
   indexed_rule->action_type = parsed_rule.action.type;
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule.id);
-  indexed_rule->priority = base::checked_cast<uint32_t>(
-      (is_redirect_rule || is_upgrade_rule) ? *parsed_rule.priority
-                                            : kDefaultPriority);
+  indexed_rule->priority = parsed_rule.priority ? ComputeIndexedRulePriority(
+                                                      *parsed_rule.priority,
+                                                      indexed_rule->action_type)
+                                                : kDefaultPriority;
   indexed_rule->options = GetOptionsMask(parsed_rule);
   indexed_rule->activation_types = GetActivationTypes(parsed_rule);
 
   {
-    ParseResult result = ComputeElementTypes(parsed_rule.condition,
-                                             &indexed_rule->element_types);
+    ParseResult result =
+        ComputeElementTypes(parsed_rule, &indexed_rule->element_types);
     if (result != ParseResult::SUCCESS)
       return result;
   }
@@ -509,15 +585,30 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (indexed_rule->options & flat_rule::OptionFlag_IS_CASE_INSENSITIVE)
     indexed_rule->url_pattern = base::ToLowerASCII(indexed_rule->url_pattern);
 
-  if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS) {
-    if (!parsed_rule.action.remove_headers_list ||
-        parsed_rule.action.remove_headers_list->empty()) {
-      return ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST;
+  if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS) {
+    if (!parsed_rule.action.request_headers &&
+        !parsed_rule.action.response_headers)
+      return ParseResult::ERROR_NO_HEADERS_SPECIFIED;
+
+    if (parsed_rule.action.request_headers) {
+      indexed_rule->request_headers =
+          std::move(*parsed_rule.action.request_headers);
+
+      ParseResult result = ValidateHeaders(indexed_rule->request_headers,
+                                           true /* are_request_headers */);
+      if (result != ParseResult::SUCCESS)
+        return result;
     }
 
-    indexed_rule->remove_headers_set.insert(
-        parsed_rule.action.remove_headers_list->begin(),
-        parsed_rule.action.remove_headers_list->end());
+    if (parsed_rule.action.response_headers) {
+      indexed_rule->response_headers =
+          std::move(*parsed_rule.action.response_headers);
+
+      ParseResult result = ValidateHeaders(indexed_rule->response_headers,
+                                           false /* are_request_headers */);
+      if (result != ParseResult::SUCCESS)
+        return result;
+    }
   }
 
   // Some sanity checks to ensure we return a valid IndexedRule.
@@ -529,6 +620,17 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   DCHECK_NE(flat_rule::AnchorType_SUBDOMAIN, indexed_rule->anchor_right);
 
   return ParseResult::SUCCESS;
+}
+
+uint64_t ComputeIndexedRulePriority(int parsed_rule_priority,
+                                    dnr_api::RuleActionType action_type) {
+  if (!DoesActionSupportPriority(action_type))
+    return kDefaultPriority;
+  // Incorporate the action's priority into the rule priority, so e.g. allow
+  // rules will be given a higher priority than block rules with the same
+  // priority specified in the rule JSON.
+  return (base::checked_cast<uint32_t>(parsed_rule_priority) << 8) |
+         GetActionTypePriority(action_type);
 }
 
 }  // namespace declarative_net_request

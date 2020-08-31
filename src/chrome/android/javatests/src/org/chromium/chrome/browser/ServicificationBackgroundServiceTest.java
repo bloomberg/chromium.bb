@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -56,12 +56,10 @@ public final class ServicificationBackgroundServiceTest {
     public void setUp() {
         mServicificationBackgroundService =
                 new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
-        RecordHistogram.setDisabledForTests(true);
     }
 
     @After
     public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
         closeBrowserMetricsSpareFile();
     }
 
@@ -127,6 +125,16 @@ public final class ServicificationBackgroundServiceTest {
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();
 
         mServicificationBackgroundService.assertPersistentHistogramsOnDiskSystemProfile();
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ServicificationStartup"})
+    public void testBackgroundSessionStart() {
+        startServiceAndWaitForNative(mServicificationBackgroundService);
+
+        mServicificationBackgroundService.assertBackgroundSessionStart();
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();
     }
 

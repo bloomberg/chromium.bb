@@ -41,7 +41,6 @@ SelectToSpeakTray::SelectToSpeakTray(Shelf* shelf)
   icon_->set_tooltip_text(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK));
   tray_container()->AddChildView(icon_);
-  CheckStatusAndUpdateIcon();
 
   // Observe the accessibility controller state changes to know when Select to
   // Speak state is updated or when it is disabled/enabled.
@@ -50,6 +49,11 @@ SelectToSpeakTray::SelectToSpeakTray(Shelf* shelf)
 
 SelectToSpeakTray::~SelectToSpeakTray() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
+}
+
+void SelectToSpeakTray::Initialize() {
+  TrayBackgroundView::Initialize();
+  CheckStatusAndUpdateIcon();
 }
 
 base::string16 SelectToSpeakTray::GetAccessibleNameForTray() {
@@ -94,19 +98,19 @@ void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
     return;
   }
 
-  ash::SelectToSpeakState state =
+  SelectToSpeakState state =
       Shell::Get()->accessibility_controller()->GetSelectToSpeakState();
   switch (state) {
-    case ash::SelectToSpeakState::kSelectToSpeakStateInactive:
+    case SelectToSpeakState::kSelectToSpeakStateInactive:
       icon_->SetImage(inactive_image_);
       SetIsActive(false);
       break;
-    case ash::SelectToSpeakState::kSelectToSpeakStateSelecting:
+    case SelectToSpeakState::kSelectToSpeakStateSelecting:
       // Activate the start selection button during selection.
       icon_->SetImage(selecting_image_);
       SetIsActive(true);
       break;
-    case ash::SelectToSpeakState::kSelectToSpeakStateSpeaking:
+    case SelectToSpeakState::kSelectToSpeakStateSpeaking:
       icon_->SetImage(speaking_image_);
       SetIsActive(true);
       break;

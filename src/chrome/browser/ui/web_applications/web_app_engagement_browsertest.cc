@@ -5,12 +5,21 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 
 #include <bitset>
+#include <vector>
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
@@ -19,25 +28,19 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace {
-
-void NavigateToURLAndWait(Browser* browser, const GURL& url) {
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  content::TestNavigationObserver observer(
-      web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-  NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
-  ui_test_utils::NavigateToURL(&params);
-  observer.WaitForNavigationFinished();
-}
 
 GURL GetUrlForSuffix(const std::string& prefix, int suffix) {
   return GURL(prefix + base::NumberToString(suffix) + ".com/");
@@ -51,10 +54,6 @@ enum HistogramIndex {
   kHistogramDefaultInstalled_InWindow,
   kHistogramUserInstalled_InTab,
   kHistogramUserInstalled_InWindow,
-  kHistogramUserInstalled_FromInstallButton_InTab,
-  kHistogramUserInstalled_FromInstallButton_InWindow,
-  kHistogramUserInstalled_FromCreateShortcutButton_InTab,
-  kHistogramUserInstalled_FromCreateShortcutButton_InWindow,
   kHistogramMoreThanThreeUserInstalledApps,
   kHistogramUpToThreeUserInstalledApps,
   kHistogramNoUserInstalledApps,
@@ -69,10 +68,6 @@ const char* kHistogramNames[] = {
     "WebApp.Engagement.DefaultInstalled.InWindow",
     "WebApp.Engagement.UserInstalled.InTab",
     "WebApp.Engagement.UserInstalled.InWindow",
-    "WebApp.Engagement.UserInstalled.FromInstallButton.InTab",
-    "WebApp.Engagement.UserInstalled.FromInstallButton.InWindow",
-    "WebApp.Engagement.UserInstalled.FromCreateShortcutButton.InTab",
-    "WebApp.Engagement.UserInstalled.FromCreateShortcutButton.InWindow",
     "WebApp.Engagement.MoreThanThreeUserInstalledApps",
     "WebApp.Engagement.UpToThreeUserInstalledApps",
     "WebApp.Engagement.NoUserInstalledApps"};
@@ -217,7 +212,8 @@ class WebAppEngagementBrowserTest : public WebAppControllerBrowserTestBase {
   }
 
   void InstallDefaultAppAndCountApps(ExternalInstallOptions install_options) {
-    result_code_ = InstallApp(browser()->profile(), std::move(install_options));
+    result_code_ = PendingAppManagerInstall(browser()->profile(),
+                                            std::move(install_options));
     CountUserInstalledApps();
   }
 
@@ -253,7 +249,6 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInWindow) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -279,7 +274,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppInTab) {
   Histograms histograms;
   histograms[kHistogramInTab] = true;
   histograms[kHistogramUserInstalled_InTab] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InTab] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -309,7 +303,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppWithoutScope) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromCreateShortcutButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -353,7 +346,6 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   ExpectUniqueSamples(tester, histograms,
@@ -369,6 +361,9 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
   // More than 3 user-installed apps:
   const int num_user_apps = 4;
 
+  // A small number of launches, to avoid timeouts.
+  const int num_launches = 2;
+
   std::vector<AppId> app_ids;
 
   // Install apps.
@@ -383,8 +378,9 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
     app_ids.push_back(app_id);
   }
 
-  // Launch apps in windows.
-  for (int i = 0; i < num_user_apps; ++i) {
+  // Launch an app in a window.
+  DCHECK_LE(num_launches, num_user_apps);
+  for (int i = 0; i < num_launches; ++i) {
     Browser* browser = LaunchWebAppBrowser(app_ids[i]);
 
     const GURL url = GetUrlForSuffix(base_url, i);
@@ -394,14 +390,14 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramMoreThanThreeUserInstalledApps] = true;
 
   ExpectUniqueSamples(tester, histograms,
                       SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
-                      4);
+                      num_launches);
   ExpectTotalCounts(tester, ~histograms, 0);
-  ExpectLaunchCounts(tester, /*windowLaunches=*/4, /*tabLaunches=*/0);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/num_launches,
+                     /*tabLaunches=*/0);
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, DefaultApp) {
@@ -449,7 +445,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, NavigateAwayFromAppTab) {
     Histograms histograms;
     histograms[kHistogramInTab] = true;
     histograms[kHistogramUserInstalled_InTab] = true;
-    histograms[kHistogramUserInstalled_FromInstallButton_InTab] = true;
     histograms[kHistogramUpToThreeUserInstalledApps] = true;
     TestEngagementEventsAfterLaunch(histograms, browser);
   }
@@ -483,8 +478,115 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, RecordedForNonApps) {
   TestEngagementEventsAfterLaunch(histograms, browser());
 }
 
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, CommandLineWindow) {
+  base::HistogramTester tester;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // There should be one browser to start with.
+  unsigned int expected_browsers = 1;
+  const int expected_tabs = 1;
+  EXPECT_EQ(expected_browsers, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
+
+  const GURL example_url(
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+
+  auto result_code = PendingAppManagerInstall(
+      browser()->profile(), CreateInstallOptions(example_url));
+  ASSERT_EQ(InstallResultCode::kSuccessNewInstall, result_code);
+  base::Optional<AppId> app_id = FindAppWithUrlInScope(example_url);
+  ASSERT_TRUE(app_id);
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kAppId, *app_id);
+
+  chrome::startup::IsFirstRun first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                    : chrome::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
+
+  // The app should open as a window.
+  EXPECT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(),
+                            /*process_startup=*/false));
+  app_loaded_observer.Wait();
+
+  Browser* const app_browser = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_EQ(app_browser->type(), Browser::TYPE_APP);
+  EXPECT_TRUE(app_browser->app_controller());
+
+  {
+    // From startup_browser_creator_impl.cc:
+    constexpr char kLaunchModesHistogram[] = "Launch.Modes";
+    const base::HistogramBase::Sample LM_AS_WEBAPP_IN_WINDOW = 1;
+
+    tester.ExpectUniqueSample(kLaunchModesHistogram, LM_AS_WEBAPP_IN_WINDOW, 1);
+  }
+
+  // Check that the number of browsers and tabs is correct.
+  expected_browsers++;
+
+  EXPECT_EQ(expected_browsers, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
+  EXPECT_EQ(expected_tabs, app_browser->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, CommandLineTab) {
+  base::HistogramTester tester;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // There should be one browser to start with.
+  const unsigned int expected_browsers = 1;
+  int expected_tabs = 1;
+  EXPECT_EQ(expected_browsers, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
+
+  const GURL example_url(
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+
+  ExternalInstallOptions install_options = CreateInstallOptions(example_url);
+  install_options.user_display_mode = DisplayMode::kBrowser;
+  auto result_code =
+      PendingAppManagerInstall(browser()->profile(), install_options);
+  ASSERT_EQ(InstallResultCode::kSuccessNewInstall, result_code);
+  base::Optional<AppId> app_id = FindAppWithUrlInScope(example_url);
+  ASSERT_TRUE(app_id);
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kAppId, *app_id);
+
+  chrome::startup::IsFirstRun first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                    : chrome::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
+
+  // The app should open as a tab.
+  EXPECT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(),
+                            /*process_startup=*/false));
+  app_loaded_observer.Wait();
+
+  {
+    // From startup_browser_creator_impl.cc:
+    constexpr char kLaunchModesHistogram[] = "Launch.Modes";
+    const base::HistogramBase::Sample LM_AS_WEBAPP_IN_TAB = 21;
+
+    tester.ExpectUniqueSample(kLaunchModesHistogram, LM_AS_WEBAPP_IN_TAB, 1);
+  }
+
+  // Check that the number of browsers and tabs is correct.
+  expected_tabs++;
+
+  EXPECT_EQ(expected_browsers, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
+}
+
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
@@ -492,7 +594,7 @@ INSTANTIATE_TEST_SUITE_P(
     ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     HostedAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp),

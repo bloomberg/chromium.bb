@@ -29,7 +29,7 @@ namespace cc {
 static HomogeneousCoordinate ProjectHomogeneousPoint(
     const gfx::Transform& transform,
     const gfx::PointF& p) {
-  SkMScalar z =
+  SkScalar z =
       -(transform.matrix().get(2, 0) * p.x() +
         transform.matrix().get(2, 1) * p.y() + transform.matrix().get(2, 3)) /
       transform.matrix().get(2, 2);
@@ -43,7 +43,7 @@ static HomogeneousCoordinate ProjectHomogeneousPoint(
     return HomogeneousCoordinate(0.0, 0.0, 0.0, 1.0);
 
   HomogeneousCoordinate result(p.x(), p.y(), z, 1.0);
-  transform.matrix().mapMScalars(result.vec, result.vec);
+  transform.matrix().mapScalars(result.vec, result.vec);
   return result;
 }
 
@@ -60,29 +60,26 @@ static HomogeneousCoordinate MapHomogeneousPoint(
     const gfx::Transform& transform,
     const gfx::Point3F& p) {
   HomogeneousCoordinate result(p.x(), p.y(), p.z(), 1.0);
-  transform.matrix().mapMScalars(result.vec, result.vec);
+  transform.matrix().mapScalars(result.vec, result.vec);
   return result;
 }
 
-static void homogenousLimitAtZero(SkMScalar a1,
-                                  SkMScalar w1,
-                                  SkMScalar a2,
-                                  SkMScalar w2,
+static void homogenousLimitAtZero(SkScalar a1,
+                                  SkScalar w1,
+                                  SkScalar a2,
+                                  SkScalar w2,
                                   float t,
                                   float* limit) {
   // This is the tolerance for detecting an eyepoint-aligned edge.
   static const float kStationaryPointEplison = 0.00001f;
-  // This needs to be big enough to not be the limit of clipping, but not so
-  // big that using it as a size destroys the offset in a rect.
-  static const float kInfiniteCoordinate = 1000000.0f;
 
   if (std::abs(a1 * w2 / w1 / a2 - 1.0f) > kStationaryPointEplison) {
     // We are going to explode towards an infity, but we choose the one that
     // corresponds to the one on the positive side of w.
     if (((1.0f - t) * a1 + t * a2) > 0) {
-      *limit = kInfiniteCoordinate;
+      *limit = HomogeneousCoordinate::kInfiniteCoordinate;
     } else {
-      *limit = -kInfiniteCoordinate;
+      *limit = -HomogeneousCoordinate::kInfiniteCoordinate;
     }
   } else {
     *limit = a1 / w1;  // (== a2 / w2) && == (1.0f - t) * a1 / w1 + t * a2 / w2
@@ -190,6 +187,13 @@ static inline void AddVertexToClippedQuad3d(const gfx::Point3F& new_vertex,
 
 gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
                                             const gfx::Rect& src_rect) {
+  return MapEnclosingClippedRectIgnoringError(transform, src_rect, 0.f);
+}
+
+gfx::Rect MathUtil::MapEnclosingClippedRectIgnoringError(
+    const gfx::Transform& transform,
+    const gfx::Rect& src_rect,
+    float ignore_error) {
   if (transform.IsIdentityOrIntegerTranslation()) {
     gfx::Vector2d offset(static_cast<int>(transform.matrix().getFloat(0, 3)),
                          static_cast<int>(transform.matrix().getFloat(1, 3)));
@@ -202,7 +206,7 @@ gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
       std::isnan(mapped_rect.right()) || std::isnan(mapped_rect.bottom()))
     return gfx::Rect();
 
-  return gfx::ToEnclosingRect(mapped_rect);
+  return gfx::ToEnclosingRectIgnoringError(mapped_rect, ignore_error);
 }
 
 gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
@@ -215,7 +219,7 @@ gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
 
   // Apply the transform, but retain the result in homogeneous coordinates.
 
-  SkMScalar quad[4 * 2];  // input: 4 x 2D points
+  SkScalar quad[4 * 2];  // input: 4 x 2D points
   quad[0] = src_rect.x();
   quad[1] = src_rect.y();
   quad[2] = src_rect.right();
@@ -225,7 +229,7 @@ gfx::RectF MathUtil::MapClippedRect(const gfx::Transform& transform,
   quad[6] = src_rect.x();
   quad[7] = src_rect.bottom();
 
-  SkMScalar result[4 * 4];  // output: 4 x 4D homogeneous points
+  SkScalar result[4 * 4];  // output: 4 x 4D homogeneous points
   transform.matrix().map2(quad, 4, result);
 
   HomogeneousCoordinate hc0(result[0], result[1], result[2], result[3]);
@@ -303,13 +307,13 @@ gfx::Rect MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
     return gfx::ToEnclosedRect(gfx::RectF(rect) + offset);
   }
 
-  SkMScalar quad[2 * 2];  // input: 2 x 2D points
+  SkScalar quad[2 * 2];  // input: 2 x 2D points
   quad[0] = rect.x();
   quad[1] = rect.y();
   quad[2] = rect.right();
   quad[3] = rect.bottom();
 
-  SkMScalar result[4 * 2];  // output: 2 x 4D homogeneous points
+  SkScalar result[4 * 2];  // output: 2 x 4D homogeneous points
   transform.matrix().map2(quad, 2, result);
 
   HomogeneousCoordinate hc0(result[0], result[1], result[2], result[3]);
@@ -625,22 +629,6 @@ gfx::Vector2dF MathUtil::ProjectVector(const gfx::Vector2dF& source,
                         projected_length * destination.y());
 }
 
-std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::Size& s) {
-  std::unique_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->SetDouble("width", s.width());
-  res->SetDouble("height", s.height());
-  return std::move(res);
-}
-
-std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
-  std::unique_ptr<base::ListValue> res(new base::ListValue());
-  res->AppendInteger(r.x());
-  res->AppendInteger(r.y());
-  res->AppendInteger(r.width());
-  res->AppendInteger(r.height());
-  return std::move(res);
-}
-
 bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
   const base::ListValue* value = nullptr;
   if (!raw_value->GetAsList(&value))
@@ -660,13 +648,6 @@ bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
 
   *out_rect = gfx::Rect(x, y, w, h);
   return true;
-}
-
-std::unique_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
-  std::unique_ptr<base::ListValue> res(new base::ListValue());
-  res->AppendDouble(pt.x());
-  res->AppendDouble(pt.y());
-  return std::move(res);
 }
 
 void MathUtil::AddToTracedValue(const char* name,

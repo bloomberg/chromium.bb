@@ -4,9 +4,12 @@
 
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 
 #if defined(OS_MACOSX)
 #include "gpu/ipc/common/gpu_memory_buffer_impl_io_surface.h"
@@ -79,7 +82,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::BGRX_8888 ||
              format == gfx::BufferFormat::R_8 ||
              format == gfx::BufferFormat::RGBA_F16 ||
-             format == gfx::BufferFormat::BGRX_1010102 ||
+             format == gfx::BufferFormat::BGRA_1010102 ||
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
@@ -112,8 +115,13 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
 #elif defined(USE_OZONE)
   return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(format,
                                                                          usage);
-#elif defined(OS_LINUX)
-  return false;  // TODO(julian.isorce): Add linux support.
+#elif defined(USE_X11)
+  // On X11, GPU memory buffer support can only be determined after GPU
+  // initialization.
+  // viz::HostGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration()
+  // should be used instead.
+  NOTREACHED();
+  return false;
 #elif defined(OS_WIN)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
@@ -136,12 +144,18 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
 #endif
 }
 
-bool GpuMemoryBufferSupport::IsConfigurationSupported(
+bool GpuMemoryBufferSupport::IsConfigurationSupportedForTest(
     gfx::GpuMemoryBufferType type,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  if (type == GetNativeGpuMemoryBufferType())
+  if (type == GetNativeGpuMemoryBufferType()) {
+#if defined(USE_X11)
+    // On X11, we require GPUInfo to determine configuration support.
+    return false;
+#else
     return IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+  }
 
   if (type == gfx::SHARED_MEMORY_BUFFER) {
     return GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(format,
@@ -186,7 +200,8 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
 #endif
     default:
       // TODO(dcheng): Remove default case (https://crbug.com/676224).
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format) << ", "
+                   << gfx::BufferUsageToString(usage);
       return nullptr;
   }
 }

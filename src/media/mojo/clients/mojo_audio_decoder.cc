@@ -41,6 +41,11 @@ bool MojoAudioDecoder::IsPlatformDecoder() const {
   return true;
 }
 
+void MojoAudioDecoder::FailInit(InitCB init_cb, Status err) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(init_cb), std::move(err)));
+}
+
 void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   InitCB init_cb,
@@ -55,8 +60,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // This could happen during reinitialization.
   if (!remote_decoder_.is_connected()) {
     DVLOG(1) << __func__ << ": Connection error happened.";
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(init_cb), false));
+    FailInit(std::move(init_cb), StatusCode::kMojoDecoderNoConnection);
     return;
   }
 
@@ -67,8 +71,8 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(init_cb), false));
+    FailInit(std::move(init_cb),
+             StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -80,7 +84,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
   remote_decoder_->Initialize(
       config, cdm_id,
-      base::Bind(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
+      base::BindOnce(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
 }
 
 void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
@@ -105,9 +109,9 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
   DCHECK(!decode_cb_);
   decode_cb_ = decode_cb;
 
-  remote_decoder_->Decode(
-      std::move(buffer),
-      base::Bind(&MojoAudioDecoder::OnDecodeStatus, base::Unretained(this)));
+  remote_decoder_->Decode(std::move(buffer),
+                          base::BindOnce(&MojoAudioDecoder::OnDecodeStatus,
+                                         base::Unretained(this)));
 }
 
 void MojoAudioDecoder::Reset(base::OnceClosure closure) {
@@ -128,7 +132,7 @@ void MojoAudioDecoder::Reset(base::OnceClosure closure) {
   DCHECK(!reset_cb_);
   reset_cb_ = std::move(closure);
   remote_decoder_->Reset(
-      base::Bind(&MojoAudioDecoder::OnResetDone, base::Unretained(this)));
+      base::BindOnce(&MojoAudioDecoder::OnResetDone, base::Unretained(this)));
 }
 
 bool MojoAudioDecoder::NeedsBitstreamConversion() const {
@@ -146,8 +150,8 @@ void MojoAudioDecoder::BindRemoteDecoder() {
 
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the error handler can't be invoked once |remote_decoder_| is destroyed.
-  remote_decoder_.set_disconnect_handler(
-      base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
+  remote_decoder_.set_disconnect_handler(base::BindOnce(
+      &MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
 
   remote_decoder_->Construct(client_receiver_.BindNewEndpointAndPassRemote());
 }
@@ -172,7 +176,7 @@ void MojoAudioDecoder::OnConnectionError() {
   DCHECK(!remote_decoder_.is_connected());
 
   if (init_cb_) {
-    std::move(init_cb_).Run(false);
+    FailInit(std::move(init_cb_), StatusCode::kMojoDecoderNoConnection);
     return;
   }
 
@@ -182,14 +186,14 @@ void MojoAudioDecoder::OnConnectionError() {
     std::move(reset_cb_).Run();
 }
 
-void MojoAudioDecoder::OnInitialized(bool success,
+void MojoAudioDecoder::OnInitialized(const Status& status,
                                      bool needs_bitstream_conversion) {
-  DVLOG(1) << __func__ << ": success:" << success;
+  DVLOG(1) << __func__ << ": success:" << status.is_ok();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   needs_bitstream_conversion_ = needs_bitstream_conversion;
 
-  if (success && !mojo_decoder_buffer_writer_) {
+  if (status.is_ok() && !mojo_decoder_buffer_writer_) {
     mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
     mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
         writer_capacity_, &remote_consumer_handle);
@@ -198,7 +202,7 @@ void MojoAudioDecoder::OnInitialized(bool success,
     remote_decoder_->SetDataSource(std::move(remote_consumer_handle));
   }
 
-  std::move(init_cb_).Run(success);
+  std::move(init_cb_).Run(std::move(status));
 }
 
 void MojoAudioDecoder::OnDecodeStatus(DecodeStatus status) {

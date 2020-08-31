@@ -31,11 +31,10 @@ namespace blink {
 
 class LayoutListItem;
 
-// Used to layout the list item's marker.
-// The LayoutListMarker always has to be a child of a LayoutListItem.
-class CORE_EXPORT LayoutListMarker final : public LayoutBox {
+// This class holds code shared among legacy classes for list markers.
+class CORE_EXPORT LayoutListMarker : public LayoutBox {
  public:
-  static LayoutListMarker* CreateAnonymous(LayoutListItem*);
+  explicit LayoutListMarker(Element*);
   ~LayoutListMarker() override;
 
   // Marker text without suffix, e.g. "1".
@@ -52,8 +51,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   // styles.
   ListStyleCategory GetListStyleCategory() const;
   static ListStyleCategory GetListStyleCategory(EListStyleType);
-
-  bool IsInside() const;
 
   void UpdateMarginsAndContent();
 
@@ -72,12 +69,8 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   bool IsImage() const override;
   const StyleImage* GetImage() const { return image_.Get(); }
-  const LayoutListItem* ListItem() const { return list_item_; }
+  const LayoutListItem* ListItem() const;
   LayoutSize ImageBulletSize() const;
-
-  void ListItemStyleDidChange();
-
-  const char* GetName() const override { return "LayoutListMarker"; }
 
   LayoutUnit LineOffset() const { return line_offset_; }
 
@@ -85,13 +78,8 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   void WillBeDestroyed() override;
 
  private:
-  LayoutListMarker(LayoutListItem*);
-
-  void ComputePreferredLogicalWidths() override;
-
-  bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectListMarker || LayoutBox::IsOfType(type);
-  }
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   void Paint(const PaintInfo&) const override;
 
@@ -114,21 +102,15 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   bool IsText() const { return !IsImage(); }
 
   LayoutUnit GetWidthOfText(ListStyleCategory) const;
-  void UpdateMargins();
+  void UpdateMargins(LayoutUnit marker_inline_size);
   void UpdateContent();
 
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  bool AnonymousHasStylePropagationOverride() override { return true; }
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
-    return false;
-  }
 
   String text_;
   Persistent<StyleImage> image_;
-  LayoutListItem* list_item_;
   LayoutUnit line_offset_;
 };
 

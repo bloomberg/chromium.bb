@@ -65,7 +65,8 @@ bool CBC_OnedEAN8Writer::SetTextLocation(BC_TEXT_LOC location) {
 }
 
 bool CBC_OnedEAN8Writer::CheckContentValidity(WideStringView contents) {
-  return std::all_of(contents.begin(), contents.end(),
+  return HasValidContentSize(contents) &&
+         std::all_of(contents.begin(), contents.end(),
                      [](wchar_t c) { return FXSYS_IsDecimalDigit(c); });
 }
 
@@ -138,7 +139,7 @@ bool CBC_OnedEAN8Writer::ShowChars(WideStringView contents,
   ByteString str = FX_UTF8Encode(contents);
   size_t iLength = str.GetLength();
   std::vector<TextCharPos> charpos(iLength);
-  ByteString tempStr = str.Left(4);
+  ByteString tempStr = str.First(4);
   size_t iLen = tempStr.GetLength();
   int32_t strWidth = 7 * multiple * 4;
   float blank = 0.0;
@@ -172,7 +173,7 @@ bool CBC_OnedEAN8Writer::ShowChars(WideStringView contents,
                            static_cast<float>(iFontSize), affine_matrix1,
                            m_fontColor, FXTEXT_CLEARTYPE);
   }
-  tempStr = str.Mid(4, 4);
+  tempStr = str.Substr(4, 4);
   iLen = tempStr.GetLength();
   CalcTextInfo(tempStr, &charpos[4], m_pFont.Get(), (float)strWidth, iFontSize,
                blank);

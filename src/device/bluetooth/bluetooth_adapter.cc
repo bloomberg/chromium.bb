@@ -30,11 +30,10 @@ BluetoothAdapter::ServiceOptions::~ServiceOptions() = default;
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX) && \
     !defined(OS_WIN) && !defined(OS_LINUX)
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return base::WeakPtr<BluetoothAdapter>();
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return nullptr;
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
+#endif  // Not supported platforms.
 
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
   return GetWeakPtr();
@@ -54,6 +53,11 @@ void BluetoothAdapter::AddObserver(BluetoothAdapter::Observer* observer) {
 void BluetoothAdapter::RemoveObserver(BluetoothAdapter::Observer* observer) {
   DCHECK(observer);
   observers_.RemoveObserver(observer);
+}
+
+std::string BluetoothAdapter::GetSystemName() const {
+  NOTIMPLEMENTED();
+  return std::string();
 }
 
 bool BluetoothAdapter::HasObserver(BluetoothAdapter::Observer* observer) {
@@ -89,6 +93,11 @@ void BluetoothAdapter::SetPowered(bool powered,
   set_powered_callbacks_->powered = powered;
   set_powered_callbacks_->callback = callback;
   set_powered_callbacks_->error_callback = error_callback;
+}
+
+bool BluetoothAdapter::IsPeripheralRoleSupported() const {
+  // TODO(crbug/1071595): Implement this for more platforms.
+  return true;
 }
 
 std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
@@ -189,12 +198,12 @@ BluetoothAdapter::GetMergedDiscoveryFilter() const {
 
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
   ConstDeviceList const_devices =
-    const_cast<const BluetoothAdapter *>(this)->GetDevices();
+      const_cast<const BluetoothAdapter*>(this)->GetDevices();
 
   DeviceList devices;
   for (ConstDeviceList::const_iterator i = const_devices.begin();
        i != const_devices.end(); ++i)
-    devices.push_back(const_cast<BluetoothDevice *>(*i));
+    devices.push_back(const_cast<BluetoothDevice*>(*i));
 
   return devices;
 }
@@ -208,8 +217,8 @@ BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
 }
 
 BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
-  return const_cast<BluetoothDevice *>(
-      const_cast<const BluetoothAdapter *>(this)->GetDevice(address));
+  return const_cast<BluetoothDevice*>(
+      const_cast<const BluetoothAdapter*>(this)->GetDevice(address));
 }
 
 const BluetoothDevice* BluetoothAdapter::GetDevice(
@@ -281,6 +290,11 @@ void BluetoothAdapter::NotifyDeviceChanged(BluetoothDevice* device) {
 
   for (auto& observer : observers_)
     observer.DeviceChanged(this, device);
+}
+
+void BluetoothAdapter::NotifyAdapterDiscoveryChangeCompletedForTesting() {
+  for (auto& observer : observers_)
+    observer.DiscoveryChangeCompletedForTesting();
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -468,7 +482,9 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
       return;
 
     discovery_request_pending_ = false;
+    NotifyAdapterDiscoveryChangeCompletedForTesting();
     ProcessDiscoveryQueue();
+
     return;
   }
 
@@ -494,6 +510,7 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
     return;
 
   discovery_request_pending_ = false;
+  NotifyAdapterDiscoveryChangeCompletedForTesting();
   ProcessDiscoveryQueue();
 }
 
@@ -600,16 +617,16 @@ void BluetoothAdapter::RemoveTimedOutDevices() {
 
     bool device_expired =
         (base::Time::NowFromSystemTime() - last_update_time) > timeoutSec;
-    VLOG(3) << "device: " << device->GetAddress()
-            << ", last_update: " << last_update_time
-            << ", exp: " << device_expired;
+    DVLOG(3) << "device: " << device->GetAddress()
+             << ", last_update: " << last_update_time
+             << ", exp: " << device_expired;
 
     if (!device_expired) {
       ++it;
       continue;
     }
 
-    VLOG(1) << "Removing device: " << device->GetAddress();
+    DVLOG(1) << "Removing device: " << device->GetAddress();
     auto next = it;
     next++;
     std::unique_ptr<BluetoothDevice> removed_device = std::move(it->second);

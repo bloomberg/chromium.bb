@@ -11,10 +11,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,11 +26,14 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/content/cookie_helper.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -42,6 +43,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -62,11 +64,12 @@
 #endif
 
 using content::BrowserThread;
+using content_settings::TabSpecificContentSettings;
 using net::URLRequestMockHTTPJob;
 
 namespace {
 
-CannedBrowsingDataCookieHelper* GetSiteSettingsCookieContainer(
+browsing_data::CannedCookieHelper* GetSiteSettingsCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
@@ -74,7 +77,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsCookieContainer(
   return settings->allowed_local_shared_objects().cookies();
 }
 
-CannedBrowsingDataCookieHelper* GetSiteSettingsBlockedCookieContainer(
+browsing_data::CannedCookieHelper* GetSiteSettingsBlockedCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
@@ -82,7 +85,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsBlockedCookieContainer(
   return settings->blocked_local_shared_objects().cookies();
 }
 
-net::CookieList ExtractCookies(CannedBrowsingDataCookieHelper* container) {
+net::CookieList ExtractCookies(browsing_data::CannedCookieHelper* container) {
   bool got_result = false;
   net::CookieList result;
   container->StartFetching(
@@ -102,10 +105,13 @@ class CookieChangeObserver : public content::WebContentsObserver {
 
   void Wait() { run_loop_.Run(); }
 
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
+  void OnCookiesAccessed(content::RenderFrameHost* render_frame_host,
+                         const content::CookieAccessDetails& details) override {
+    run_loop_.Quit();
+  }
+
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override {
     run_loop_.Quit();
   }
 
@@ -311,7 +317,7 @@ class CookieSettingsTest
         "  await window.cookieStore.set("
         "      'name', 'Good', "
         "       { expires: Date.now() + 3600*1000,"
-        "         sameSite: 'unrestricted' });"
+        "         sameSite: 'none' });"
         "  window.domAutomationController.send(true);"
         "}"
         "doSet()");
@@ -394,9 +400,9 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, AllowCookiesUsingExceptions) {
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  CannedBrowsingDataCookieHelper* accepted =
+  browsing_data::CannedCookieHelper* accepted =
       GetSiteSettingsCookieContainer(browser());
-  CannedBrowsingDataCookieHelper* blocked =
+  browsing_data::CannedCookieHelper* blocked =
       GetSiteSettingsBlockedCookieContainer(browser());
   EXPECT_TRUE(accepted->empty());
   ASSERT_EQ(1u, blocked->GetCookieCount());
@@ -427,9 +433,9 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
 
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
-  CannedBrowsingDataCookieHelper* accepted =
+  browsing_data::CannedCookieHelper* accepted =
       GetSiteSettingsCookieContainer(browser());
-  CannedBrowsingDataCookieHelper* blocked =
+  browsing_data::CannedCookieHelper* blocked =
       GetSiteSettingsBlockedCookieContainer(browser());
   EXPECT_TRUE(accepted->empty());
   ASSERT_EQ(1u, blocked->GetCookieCount());
@@ -553,7 +559,7 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksIndexedDB) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     CookieSettingsTest,
     ::testing::Values(
         std::make_pair(CookieMode::kDocumentCookieJS,
@@ -848,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
           await cookieStore.set(
               e.data, 'value',
               { expires: Date.now() + 3600*1000,
-                sameSite: 'unrestricted' });
+                sameSite: 'none' });
         } finally {
           e.source.postMessage('set executed for ' + e.data);
         }
@@ -904,9 +910,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_EQ("set executed for first", result3);
     observer.Wait();
 
-    CannedBrowsingDataCookieHelper* accepted =
+    browsing_data::CannedCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
+    browsing_data::CannedCookieHelper* blocked =
         GetSiteSettingsBlockedCookieContainer(browser());
     EXPECT_EQ(1u, accepted->GetCookieCount());
     EXPECT_TRUE(blocked->empty());
@@ -927,9 +933,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_EQ("set executed for second", result4);
     observer.Wait();
 
-    CannedBrowsingDataCookieHelper* accepted =
+    browsing_data::CannedCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
+    browsing_data::CannedCookieHelper* blocked =
         GetSiteSettingsBlockedCookieContainer(browser());
     EXPECT_EQ(1u, accepted->GetCookieCount());
     EXPECT_EQ(1u, blocked->GetCookieCount());

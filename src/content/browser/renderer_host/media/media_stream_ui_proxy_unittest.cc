@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/gmock_move_support.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -115,7 +117,8 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -147,7 +150,8 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -188,7 +192,8 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -216,7 +221,8 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -231,14 +237,14 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(callback.is_null());
 
-  base::Closure stop_callback;
+  base::OnceClosure stop_callback;
 
   blink::MediaStreamDevices devices;
   devices.push_back(blink::MediaStreamDevice(
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
   auto ui = std::make_unique<MockMediaStreamUI>();
   EXPECT_CALL(*ui, MockOnStarted(_, _))
-      .WillOnce(testing::DoAll(SaveArg<0>(&stop_callback), Return(0)));
+      .WillOnce(testing::DoAll(MoveArg<0>(&stop_callback), Return(0)));
   std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK,
                           std::move(ui));
 
@@ -256,9 +262,9 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
                     MediaStreamUIProxy::WindowIdCallback());
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_FALSE(stop_callback.is_null());
+  ASSERT_TRUE(stop_callback);
   EXPECT_CALL(stop_handler, OnStop());
-  stop_callback.Run();
+  std::move(stop_callback).Run();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -266,7 +272,8 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   auto request = std::make_unique<MediaStreamRequest>(
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
-      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
 
   proxy_->RequestAccess(
@@ -306,7 +313,8 @@ TEST_F(MediaStreamUIProxyTest, ChangeSourceFromUI) {
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(),
       blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
-      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -402,7 +410,9 @@ class MediaStreamUIProxyFeaturePolicyTest
     return std::make_unique<MediaStreamRequest>(
         rfh->GetProcess()->GetID(), rfh->GetRoutingID(), 0,
         rfh->GetLastCommittedURL(), false, blink::MEDIA_GENERATE_STREAM,
-        std::string(), std::string(), mic_type, cam_type, false);
+        std::string(), std::string(), mic_type, cam_type,
+        /*disable_local_echo=*/false,
+        /*request_pan_tilt_zoom_permission=*/false);
   }
 
  private:
@@ -454,13 +464,13 @@ class MediaStreamUIProxyFeaturePolicyTest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     devices_ = devices;
     result_ = result;
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   }
 
   // These should only be accessed on the UI thread.
   blink::MediaStreamDevices devices_;
   blink::mojom::MediaStreamRequestResult result_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // These should only be accessed on the IO thread.
   TestRFHDelegate delegate_;

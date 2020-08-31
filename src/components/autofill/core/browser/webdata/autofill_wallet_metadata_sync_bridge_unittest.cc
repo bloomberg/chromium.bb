@@ -86,6 +86,8 @@ const char kLocalAddr2ServerId[] = "fa232b9a-f248-4e5a-8d76-d46f821c0c5f";
 
 const char kLocaleString[] = "en-US";
 
+const char kDefaultCacheGuid[] = "CacheGuid";
+
 base::Time UseDateFromProtoValue(int64_t use_date_proto_value) {
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(use_date_proto_value));
@@ -288,6 +290,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     model_type_state.set_initial_sync_done(initial_sync_done);
     model_type_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_METADATA));
+    model_type_state.set_cache_guid(kDefaultCacheGuid);
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_METADATA,
                                               model_type_state));
     bridge_.reset(new AutofillWalletMetadataSyncBridge(
@@ -305,6 +308,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     base::RunLoop loop;
     syncer::DataTypeActivationRequest request;
     request.error_handler = base::DoNothing();
+    request.cache_guid = kDefaultCacheGuid;
     real_processor_->OnSyncStarting(
         request,
         base::BindLambdaForTesting(
@@ -348,28 +352,27 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
     real_processor_->OnUpdateReceived(state, std::move(updates));
   }
 
-  std::unique_ptr<EntityData> SpecificsToEntity(
-      const WalletMetadataSpecifics& specifics,
-      bool is_deleted = false) {
-    auto data = std::make_unique<EntityData>();
-    *data->specifics.mutable_wallet_metadata() = specifics;
-    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
-        syncer::AUTOFILL_WALLET_METADATA, bridge()->GetClientTag(*data));
+  EntityData SpecificsToEntity(const WalletMetadataSpecifics& specifics,
+                               bool is_deleted = false) {
+    EntityData data;
+    *data.specifics.mutable_wallet_metadata() = specifics;
+    data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+        syncer::AUTOFILL_WALLET_METADATA, bridge()->GetClientTag(data));
     if (is_deleted) {
       // Specifics had to be set in order to generate the client tag. Since
       // deleted entity is defined by specifics being empty, we need to clear
       // them now.
-      data->specifics = sync_pb::EntitySpecifics();
+      data.specifics = sync_pb::EntitySpecifics();
     }
     return data;
   }
 
-  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
+  syncer::UpdateResponseData SpecificsToUpdateResponse(
       const WalletMetadataSpecifics& specifics,
       bool is_deleted = false) {
-    auto data = std::make_unique<syncer::UpdateResponseData>();
-    data->entity = SpecificsToEntity(specifics, is_deleted);
-    data->response_version = response_version;
+    syncer::UpdateResponseData data;
+    data.entity = SpecificsToEntity(specifics, is_deleted);
+    data.response_version = response_version;
     return data;
   }
 
@@ -467,7 +470,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForAddress) {
   ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
-  EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
             kAddr1SyncTag);
 }
 
@@ -475,7 +478,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetClientTagForCard) {
   ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
-  EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetClientTag(SpecificsToEntity(specifics)),
             kCard1SyncTag);
 }
 
@@ -484,7 +487,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForAddress) {
   ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForAddress(kAddr1SpecificsId);
-  EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
             GetAddressStorageKey(kAddr1SpecificsId));
 }
 
@@ -492,7 +495,7 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, GetStorageKeyForCard) {
   ResetBridge();
   WalletMetadataSpecifics specifics =
       CreateWalletMetadataSpecificsForCard(kCard1SpecificsId);
-  EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics)),
+  EXPECT_EQ(bridge()->GetStorageKey(SpecificsToEntity(specifics)),
             GetCardStorageKey(kCard1SpecificsId));
 }
 

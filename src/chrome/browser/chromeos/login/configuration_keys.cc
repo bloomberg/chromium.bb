@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace configuration {
@@ -10,7 +11,8 @@ namespace configuration {
 // Configuration keys that are used to automate OOBE screens go here.
 // Please keep keys grouped by screens and ordered according to OOBE flow.
 // All keys should be listed here, even if they are used in JS code only.
-// These keys are used in chrome/browser/resources/chromeos/login/oobe_types.js
+// These keys are used in
+// chrome/browser/resources/chromeos/login/components/oobe_types.js
 
 // == HID Detection screen:
 
@@ -94,10 +96,6 @@ const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
 // enrollment to identify organization device is enrolled into.
 const char kEnrollmentToken[] = "enrollmentToken";
 
-// String value indicating which license type should automatically be used if
-// license selection is done on a client side.
-const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
-
 // String value indicating what value would be propagated to Asset ID field
 // on Device Attributes step.
 const char kEnrollmentAssetId[] = "enrollmentAssetId";
@@ -138,8 +136,6 @@ constexpr struct {
     {kDeviceRequisition, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentToken, ValueType::STRING,
-     ConfigurationHandlerSide::HANDLER_CPP},
-    {kEnrollmentLicenseType, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLocation, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},

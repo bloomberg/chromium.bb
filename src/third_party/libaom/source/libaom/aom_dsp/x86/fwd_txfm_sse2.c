@@ -18,12 +18,22 @@
 #include "aom_dsp/x86/fwd_txfm_sse2.h"
 
 #define DCT_HIGH_BIT_DEPTH 0
+#define FDCT4x4_2D_HELPER fdct4x4_helper
+#define FDCT4x4_2D aom_fdct4x4_sse2
+#define FDCT4x4_2D_LP aom_fdct4x4_lp_sse2
 #define FDCT8x8_2D aom_fdct8x8_sse2
 #include "aom_dsp/x86/fwd_txfm_impl_sse2.h"
+#undef FDCT4x4_2D_HELPER
+#undef FDCT4x4_2D
+#undef FDCT4x4_2D_LP
 #undef FDCT8x8_2D
+
+#if CONFIG_AV1_HIGHBITDEPTH
 
 #undef DCT_HIGH_BIT_DEPTH
 #define DCT_HIGH_BIT_DEPTH 1
 #define FDCT8x8_2D aom_highbd_fdct8x8_sse2
 #include "aom_dsp/x86/fwd_txfm_impl_sse2.h"  // NOLINT
 #undef FDCT8x8_2D
+
+#endif

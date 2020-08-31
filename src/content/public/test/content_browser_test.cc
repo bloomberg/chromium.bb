@@ -4,8 +4,8 @@
 
 #include "content/public/test/content_browser_test.h"
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -18,7 +18,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/test/test_content_client.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -107,11 +106,9 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
   network_change_simulator.InitializeChromeosConnectionType();
 #endif
 
-  if (!switches::IsRunWebTestsSwitchPresent()) {
-    CHECK_EQ(Shell::windows().size(), 1u);
-    shell_ = Shell::windows()[0];
-    SetInitialWebContents(shell_->web_contents());
-  }
+  CHECK_EQ(Shell::windows().size(), 1u);
+  shell_ = Shell::windows()[0];
+  SetInitialWebContents(shell_->web_contents());
 
 #if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly

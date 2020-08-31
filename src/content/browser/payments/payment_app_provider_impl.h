@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_PROVIDER_IMPL_H_
 #define CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_PROVIDER_IMPL_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -16,6 +15,11 @@ namespace content {
 class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
  public:
   static PaymentAppProviderImpl* GetInstance();
+
+  // Disallow copy and assign.
+  PaymentAppProviderImpl(const PaymentAppProviderImpl& other) = delete;
+  PaymentAppProviderImpl& operator=(const PaymentAppProviderImpl& other) =
+      delete;
 
   // PaymentAppProvider implementation:
   // Should be accessed only on the UI thread.
@@ -31,8 +35,8 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       payments::mojom::PaymentRequestEventDataPtr event_data,
       const std::string& app_name,
       const SkBitmap& app_icon,
-      const std::string& sw_js_url,
-      const std::string& sw_scope,
+      const GURL& sw_js_url,
+      const GURL& sw_scope,
       bool sw_use_cache,
       const std::string& method,
       const SupportedDelegations& supported_delegations,
@@ -43,12 +47,12 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
                       const url::Origin& sw_origin,
                       const std::string& payment_request_id,
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
-                      PaymentEventResultCallback callback) override;
+                      CanMakePaymentCallback callback) override;
   void AbortPayment(BrowserContext* browser_context,
                     int64_t registration_id,
                     const url::Origin& sw_origin,
                     const std::string& payment_request_id,
-                    PaymentEventResultCallback callback) override;
+                    AbortCallback callback) override;
   void SetOpenedWindow(WebContents* web_contents) override;
   void CloseOpenedWindow(BrowserContext* browser_context) override;
   void OnClosingOpenedWindow(
@@ -58,6 +62,8 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
                                     const GURL& sw_js_url,
                                     const GURL& sw_scope,
                                     std::string* error_message) override;
+  ukm::SourceId GetSourceIdForPaymentAppFromScope(
+      const GURL& sw_scope) override;
 
  private:
   PaymentAppProviderImpl();
@@ -75,8 +81,6 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
   // Map to maintain at most one opened window per browser context.
   std::map<BrowserContext*, std::unique_ptr<PaymentHandlerWindowObserver>>
       payment_handler_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderImpl);
 };
 
 }  // namespace content

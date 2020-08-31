@@ -69,7 +69,7 @@ class SyncEngine : public ModelTypeConfigurer {
     std::string restored_keystore_key_for_bootstrapping;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    base::Closure report_unrecoverable_error_function;
+    base::RepeatingClosure report_unrecoverable_error_function;
     std::map<ModelType, int64_t> invalidation_versions;
 
     // Initial authoritative values (usually read from prefs).
@@ -136,7 +136,7 @@ class SyncEngine : public ModelTypeConfigurer {
   // the operation via OnTrustedVaultKeyAccepted if the provided keys
   // successfully decrypted pending keys. |done_cb| is invoked at the very end.
   virtual void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys,
+      const std::vector<std::vector<uint8_t>>& keys,
       base::OnceClosure done_cb) = 0;
 
   // Kick off shutdown procedure. Attempts to cut short any long-lived or
@@ -156,8 +156,8 @@ class SyncEngine : public ModelTypeConfigurer {
   // OnBackendInitialized().
   virtual UserShare* GetUserShare() const = 0;
 
-  // Called from any thread to obtain current detailed status information.
-  virtual SyncStatus GetDetailedStatus() = 0;
+  // Returns current detailed status information.
+  virtual const SyncStatus& GetDetailedStatus() const = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -192,7 +192,7 @@ class SyncEngine : public ModelTypeConfigurer {
   // See SyncManager::OnCookieJarChanged.
   virtual void OnCookieJarChanged(bool account_mismatch,
                                   bool empty_jar,
-                                  const base::Closure& callback) = 0;
+                                  base::OnceClosure callback) = 0;
 
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;

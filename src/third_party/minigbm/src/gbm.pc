@@ -5,6 +5,6 @@ libdir=${exec_prefix}/lib
 
 Name: libgbm
 Description: A small gbm implementation
-Version: 0
+Version: 18.0.0
 Cflags: -I${includedir}
 Libs: -L${libdir} -lgbm

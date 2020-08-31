@@ -9,12 +9,10 @@
 #include <algorithm>
 #include <list>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
@@ -25,6 +23,7 @@
 #include "third_party/blink/renderer/platform/p2p/socket_client_delegate.h"
 #include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
@@ -226,7 +225,7 @@ class AsyncAddressResolverImpl : public rtc::AsyncResolverInterface {
 
   scoped_refptr<P2PAsyncAddressResolver> resolver_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   rtc::SocketAddress addr_;                // Address to resolve.
   std::vector<rtc::IPAddress> addresses_;  // Resolved addresses.
@@ -252,8 +251,6 @@ IpcPacketSocket::~IpcPacketSocket() {
     Close();
   }
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.ApplicationMaxConsecutiveBytesDiscard.v2",
-                              max_discard_bytes_sequence_, 1, 1000000, 200);
   if (total_packets_ > 0) {
     UMA_HISTOGRAM_PERCENTAGE("WebRTC.ApplicationPercentPacketsDiscarded",
                              (packets_discarded_ * 100) / total_packets_);
@@ -423,9 +420,8 @@ int IpcPacketSocket::SendTo(const void* data,
 
   send_bytes_available_ -= data_size;
 
-  const int8_t* data_char = reinterpret_cast<const int8_t*>(data);
   Vector<int8_t> data_vector;
-  data_vector.AppendRange(data_char, data_char + data_size);
+  data_vector.Append(reinterpret_cast<const int8_t*>(data), data_size);
   uint64_t packet_id = client_->Send(address_chrome, data_vector, options);
 
   // Ensure packet_id is not 0. It can't be the case according to
@@ -651,27 +647,26 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
 
 AsyncAddressResolverImpl::AsyncAddressResolverImpl(
     P2PSocketDispatcher* dispatcher)
-    : resolver_(new P2PAsyncAddressResolver(dispatcher)) {}
+    : resolver_(base::MakeRefCounted<P2PAsyncAddressResolver>(dispatcher)) {}
 
 AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Port and hostname must be copied to the resolved address returned from
   // GetResolvedAddress.
   addr_ = addr;
 
-  resolver_->Start(addr,
-                   base::BindOnce(&AsyncAddressResolverImpl::OnAddressResolved,
-                                  base::Unretained(this)));
+  resolver_->Start(addr, WTF::Bind(&AsyncAddressResolverImpl::OnAddressResolved,
+                                   WTF::Unretained(this)));
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(
     int family,
     rtc::SocketAddress* addr) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (addresses_.empty())
     return false;
@@ -687,12 +682,12 @@ bool AsyncAddressResolverImpl::GetResolvedAddress(
 }
 
 int AsyncAddressResolverImpl::GetError() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return addresses_.empty() ? -1 : 0;
 }
 
 void AsyncAddressResolverImpl::Destroy(bool wait) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   resolver_->Cancel();
   // Libjingle doesn't need this object any more and it's not going to delete
   // it explicitly.
@@ -701,7 +696,7 @@ void AsyncAddressResolverImpl::Destroy(bool wait) {
 
 void AsyncAddressResolverImpl::OnAddressResolved(
     const Vector<net::IPAddress>& addresses) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (size_t i = 0; i < addresses.size(); ++i) {
     rtc::SocketAddress socket_address;
     if (!jingle_glue::IPEndPointToSocketAddress(

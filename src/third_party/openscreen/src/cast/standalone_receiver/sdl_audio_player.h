@@ -5,27 +5,31 @@
 #ifndef CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 #define CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 
+#include <string>
+#include <vector>
+
 #include "cast/standalone_receiver/sdl_player_base.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Consumes frames from a Receiver, decodes them, and renders them to an
 // internally-owned SDL audio device.
-class SDLAudioPlayer : public SDLPlayerBase {
+class SDLAudioPlayer final : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.
-  SDLAudioPlayer(openscreen::platform::ClockNowFunctionPtr now_function,
-                 openscreen::platform::TaskRunner* task_runner,
+  SDLAudioPlayer(ClockNowFunctionPtr now_function,
+                 TaskRunner* task_runner,
                  Receiver* receiver,
+                 const std::string& codec_name,
                  std::function<void()> error_callback);
 
   ~SDLAudioPlayer() final;
 
  private:
   // SDLPlayerBase implementation.
-  openscreen::ErrorOr<openscreen::platform::Clock::time_point> RenderNextFrame(
+  ErrorOr<Clock::time_point> RenderNextFrame(
       const SDLPlayerBase::PresentableFrame& frame) final;
   bool RenderWhileIdle(const SDLPlayerBase::PresentableFrame* frame) final;
   void Present() final;
@@ -38,7 +42,7 @@ class SDLAudioPlayer : public SDLPlayerBase {
 
   // The amount of time before a target presentation time to call Present(), to
   // account for audio buffering (the latency until samples reach the hardware).
-  openscreen::platform::Clock::duration approximate_lead_time_{};
+  Clock::duration approximate_lead_time_{};
 
   // When the decoder provides planar data, this buffer is used for storing the
   // interleaved conversion.
@@ -54,7 +58,7 @@ class SDLAudioPlayer : public SDLPlayerBase {
   SDL_AudioSpec device_spec_{};
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_

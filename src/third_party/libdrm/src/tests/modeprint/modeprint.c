@@ -42,6 +42,7 @@
 #include "xf86drmMode.h"
 
 #include "util/common.h"
+#include "util/kms.h"
 
 int current;
 int connectors;
@@ -53,20 +54,6 @@ int encoders;
 int crtcs;
 int fbs;
 char *module_name;
-
-static const char* getConnectionText(drmModeConnection conn)
-{
-	switch (conn) {
-	case DRM_MODE_CONNECTED:
-		return "connected";
-	case DRM_MODE_DISCONNECTED:
-		return "disconnected";
-	case DRM_MODE_UNKNOWNCONNECTION:
-	default:
-		return "unknown";
-	}
-
-}
 
 static int printMode(struct drm_mode_modeinfo *mode)
 {
@@ -141,40 +128,24 @@ static int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, ui
 	return 0;
 }
 
-static const char * const output_names[] = { "None",
-					     "VGA",
-					     "DVI-I",
-					     "DVI-D",
-					     "DVI-A",
-					     "Composite",
-					     "SVIDEO",
-					     "LVDS",
-					     "Component",
-					     "DIN",
-					     "DP",
-					     "HDMI-A",
-					     "HDMI-B",
-					     "TV",
-					     "eDP",
-					     "Virtual",
-					     "DSI",
-};
-
 static int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
 {
 	int i = 0;
 	struct drm_mode_modeinfo *mode = NULL;
 	drmModePropertyPtr props;
+	const char *connector_type_name = NULL;
 
-	if (connector->connector_type < ARRAY_SIZE(output_names))
-		printf("Connector: %s-%d\n", output_names[connector->connector_type],
+	connector_type_name = util_lookup_connector_type_name(connector->connector_type);
+
+	if (connector_type_name)
+		printf("Connector: %s-%d\n", connector_type_name,
 			connector->connector_type_id);
 	else
 		printf("Connector: %d-%d\n", connector->connector_type,
 			connector->connector_type_id);
 	printf("\tid             : %i\n", id);
 	printf("\tencoder id     : %i\n", connector->encoder_id);
-	printf("\tconn           : %s\n", getConnectionText(connector->connection));
+	printf("\tconn           : %s\n", util_lookup_connector_status_name(connector->connection));
 	printf("\tsize           : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
 	printf("\tcount_modes    : %i\n", connector->count_modes);
 	printf("\tcount_props    : %i\n", connector->count_props);
@@ -215,7 +186,13 @@ static int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connect
 
 static int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
 {
-	printf("Encoder\n");
+	const char *encoder_name;
+
+	encoder_name = util_lookup_encoder_type_name(encoder->encoder_type);
+	if (encoder_name)
+		printf("Encoder: %s\n", encoder_name);
+	else
+		printf("Encoder\n");
 	printf("\tid     :%i\n", id);
 	printf("\tcrtc_id   :%d\n", encoder->crtc_id);
 	printf("\ttype   :%d\n", encoder->encoder_type);
@@ -244,7 +221,7 @@ static int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
 	printf("\thandle    : %i\n", fb->handle);
 	printf("\twidth     : %i\n", fb->width);
 	printf("\theight    : %i\n", fb->height);
-	printf("\tpitch     : %i\n", fb->pitch);;
+	printf("\tpitch     : %i\n", fb->pitch);
 	printf("\tbpp       : %i\n", fb->bpp);
 	printf("\tdepth     : %i\n", fb->depth);
 	printf("\tbuffer_id : %i\n", fb->handle);

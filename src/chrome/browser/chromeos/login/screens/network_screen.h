@@ -31,6 +31,8 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  public:
   enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   NetworkScreen(NetworkScreenView* view,
                 const ScreenExitCallback& exit_callback);
@@ -61,8 +63,8 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen:
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
   // NetworkStateHandlerObserver:

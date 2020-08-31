@@ -88,11 +88,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     // Create an anchor for the dialog.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(params));
+    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();
   }
 
@@ -109,7 +105,8 @@ class CastDialogViewTest : public ChromeViewsTestBase {
             })));
     CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
                                views::BubbleBorder::TOP_RIGHT, &controller_,
-                               &profile_, base::Time::Now());
+                               &profile_, base::Time::Now(),
+                               MediaRouterDialogOpenOrigin::PAGE);
 
     dialog_->OnModelUpdated(model);
   }
@@ -154,7 +151,8 @@ TEST_F(CastDialogViewTest, ShowAndHideDialog) {
   EXPECT_CALL(controller_, AddObserver(_));
   CastDialogView::ShowDialog(anchor_widget_->GetContentsView(),
                              views::BubbleBorder::TOP_RIGHT, &controller_,
-                             &profile_, base::Time::Now());
+                             &profile_, base::Time::Now(),
+                             MediaRouterDialogOpenOrigin::PAGE);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CastDialogView::IsShowing());
   EXPECT_NE(nullptr, CastDialogView::GetCurrentDialogWidget());

@@ -366,6 +366,7 @@ experimental domain Animation
       Animation animation
 
 experimental domain ApplicationCache
+  depends on Page
 
   # Detailed application cache resource information.
   type ApplicationCacheResource extends object
@@ -447,6 +448,138 @@ experimental domain ApplicationCache
 experimental domain Audits
   depends on Network
 
+  # Information about a cookie that is affected by an inspector issue.
+  type AffectedCookie extends object
+    properties
+      # The following three properties uniquely identify a cookie
+      string name
+      string path
+      string domain
+
+  # Information about a request that is affected by an inspector issue.
+  type AffectedRequest extends object
+    properties
+      # The unique request id.
+      Network.RequestId requestId
+      optional string url
+
+  # Information about the frame affected by an inspector issue.
+  type AffectedFrame extends object
+    properties
+      Page.FrameId frameId
+
+  type SameSiteCookieExclusionReason extends string
+    enum
+      ExcludeSameSiteUnspecifiedTreatedAsLax
+      ExcludeSameSiteNoneInsecure
+
+  type SameSiteCookieWarningReason extends string
+    enum
+      WarnSameSiteUnspecifiedCrossSiteContext
+      WarnSameSiteNoneInsecure
+      WarnSameSiteUnspecifiedLaxAllowUnsafe
+      WarnSameSiteStrictLaxDowngradeStrict
+      WarnSameSiteStrictCrossDowngradeStrict
+      WarnSameSiteStrictCrossDowngradeLax
+      WarnSameSiteLaxCrossDowngradeStrict
+      WarnSameSiteLaxCrossDowngradeLax
+
+  type SameSiteCookieOperation extends string
+    enum
+      SetCookie
+      ReadCookie
+
+  # This information is currently necessary, as the front-end has a difficult
+  # time finding a specific cookie. With this, we can convey specific error
+  # information without the cookie.
+  type SameSiteCookieIssueDetails extends object
+    properties
+      AffectedCookie cookie
+      array of SameSiteCookieWarningReason cookieWarningReasons
+      array of SameSiteCookieExclusionReason cookieExclusionReasons
+      # Optionally identifies the site-for-cookies and the cookie url, which
+      # may be used by the front-end as additional context.
+      SameSiteCookieOperation operation
+      optional string siteForCookies
+      optional string cookieUrl
+      optional AffectedRequest request
+
+  type MixedContentResolutionStatus extends string
+    enum
+      MixedContentBlocked
+      MixedContentAutomaticallyUpgraded
+      MixedContentWarning
+
+  type MixedContentResourceType extends string
+    enum
+      Audio
+      Beacon
+      CSPReport
+      Download
+      EventSource
+      Favicon
+      Font
+      Form
+      Frame
+      Image
+      Import
+      Manifest
+      Ping
+      PluginData
+      PluginResource
+      Prefetch
+      Resource
+      Script
+      ServiceWorker
+      SharedWorker
+      Stylesheet
+      Track
+      Video
+      Worker
+      XMLHttpRequest
+      XSLT
+
+  type MixedContentIssueDetails extends object
+    properties
+      # The type of resource causing the mixed content issue (css, js, iframe,
+      # form,...). Marked as optional because it is mapped to from
+      # blink::mojom::RequestContextType, which will be replaced
+      # by network::mojom::RequestDestination
+      optional MixedContentResourceType resourceType
+      # The way the mixed content issue is being resolved.
+      MixedContentResolutionStatus resolutionStatus
+      # The unsafe http url causing the mixed content issue.
+      string insecureURL
+      # The url responsible for the call to an unsafe url.
+      string mainResourceURL
+      # The mixed content request.
+      # Does not always exist (e.g. for unsafe form submission urls).
+      optional AffectedRequest request
+      # Optional because not every mixed content issue is necessarily linked to a frame.
+      optional AffectedFrame frame
+
+  # A unique identifier for the type of issue. Each type may use one of the
+  # optional fields in InspectorIssueDetails to convey more specific
+  # information about the kind of issue.
+  type InspectorIssueCode extends string
+    enum
+      SameSiteCookieIssue
+      MixedContentIssue
+
+  # This struct holds a list of optional fields with additional information
+  # specific to the kind of issue. When adding a new issue code, please also
+  # add a new optional field to this type.
+  type InspectorIssueDetails extends object
+    properties
+      optional SameSiteCookieIssueDetails sameSiteCookieIssueDetails
+      optional MixedContentIssueDetails mixedContentIssueDetails
+
+  # An inspector issue reported from the back-end.
+  type InspectorIssue extends object
+    properties
+      InspectorIssueCode code
+      InspectorIssueDetails details
+
   # Returns the response body and size if it were re-encoded with the specified settings. Only
   # applies to images.
   command getEncodedResponse
@@ -469,6 +602,17 @@ experimental domain Audits
       integer originalSize
       # Size after re-encoding.
       integer encodedSize
+
+  # Disables issues domain, prevents further issues from being reported to the client.
+  command disable
+
+  # Enables issues domain, sends the issues collected so far to the client by means of the
+  # `issueAdded` event.
+  command enable
+
+  event issueAdded
+    parameters
+      InspectorIssue issue
 
 # Defines events for background web platform features.
 experimental domain BackgroundService
@@ -573,8 +717,8 @@ domain Browser
       audioCapture
       backgroundSync
       backgroundFetch
-      clipboardRead
-      clipboardWrite
+      clipboardReadWrite
+      clipboardSanitizedWrite
       durableStorage
       flash
       geolocation
@@ -611,24 +755,27 @@ domain Browser
       optional boolean userVisibleOnly
       # For "wake-lock" permission, must specify type as either "screen" or "system".
       optional string type
+      # For "clipboard" permission, may specify allowWithoutSanitization.
+      optional boolean allowWithoutSanitization
 
   # Set permission settings for given origin.
   experimental command setPermission
     parameters
-      # Origin the permission applies to.
-      string origin
       # Descriptor of permission to override.
       PermissionDescriptor permission
       # Setting of the permission.
       PermissionSetting setting
+      # Origin the permission applies to, all origins if not specified.
+      optional string origin
       # Context to override. When omitted, default browser context is used.
       optional BrowserContextID browserContextId
 
   # Grant specific permissions to the given origin and reject all others.
   experimental command grantPermissions
     parameters
-      string origin
       array of PermissionType permissions
+      # Origin the permission applies to, all origins if not specified.
+      optional string origin
       # BrowserContext to override permissions. When omitted, default browser context is used.
       optional BrowserContextID browserContextId
 
@@ -638,6 +785,22 @@ domain Browser
       # BrowserContext to reset permissions. When omitted, default browser context is used.
       optional BrowserContextID browserContextId
 
+  # Set the behavior when downloading a file.
+  experimental command setDownloadBehavior
+    parameters
+      # Whether to allow all or deny all download requests, or use default Chrome behavior if
+      # available (otherwise deny). |allowAndName| allows download and names files according to
+      # their dowmload guids.
+      enum behavior
+        deny
+        allow
+        allowAndName
+        default
+      # BrowserContext to set download behavior. When omitted, default browser context is used.
+      optional BrowserContextID browserContextId
+      # The default path to save downloaded files to. This is requred if behavior is set to 'allow'
+      # or 'allowAndName'.
+      optional string downloadPath
 
   # Close browser gracefully.
   command close
@@ -762,6 +925,7 @@ domain Browser
 # subsequently load the required stylesheet contents using the `getStyleSheet[Text]()` methods.
 experimental domain CSS
   depends on DOM
+  depends on Page
 
   type StyleSheetId extends string
 
@@ -1242,6 +1406,8 @@ experimental domain CSS
   command takeCoverageDelta
     returns
       array of RuleUsage coverage
+      # Monotonically increasing time, in seconds.
+      number timestamp
 
   # Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
   # web font
@@ -1467,6 +1633,7 @@ domain DOM
       first-letter
       before
       after
+      marker
       backdrop
       selection
       first-line-inherited
@@ -1647,6 +1814,21 @@ domain DOM
     returns
       # Node description.
       Node node
+
+  # Scrolls the specified rect of the given node into view if not already visible.
+  # Note: exactly one between nodeId, backendNodeId and objectId should be passed
+  # to identify the node.
+  experimental command scrollIntoViewIfNeeded
+    parameters
+      # Identifier of the node.
+      optional NodeId nodeId
+      # Identifier of the backend node.
+      optional BackendNodeId backendNodeId
+      # JavaScript object id of the node wrapper.
+      optional Runtime.RemoteObjectId objectId
+      # The rect to be scrolled into view, relative to the node's border box, in CSS pixels.
+      # When omitted, center of the node will be used, similar to Element.scrollIntoView.
+      optional Rect rect
 
   # Disables DOM agent for the given page.
   command disable
@@ -2716,6 +2898,23 @@ domain Emulation
       pause
       pauseIfNetworkFetchesPending
 
+  # Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+  experimental type UserAgentBrandVersion extends object
+    properties
+      string brand
+      string version
+
+  # Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+  experimental type UserAgentMetadata extends object
+    properties
+      array of UserAgentBrandVersion brands
+      string fullVersion
+      string platform
+      string platformVersion
+      string architecture
+      string model
+      boolean mobile
+
   # Tells whether emulation is supported.
   command canEmulate
     returns
@@ -2810,6 +3009,18 @@ domain Emulation
       # Media features to emulate.
       optional array of MediaFeature features
 
+  # Emulates the given vision deficiency.
+  experimental command setEmulatedVisionDeficiency
+    parameters
+      # Vision deficiency to emulate.
+      enum type
+        none
+        achromatopsia
+        blurredVision
+        deuteranopia
+        protanopia
+        tritanopia
+
   # Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
   # unavailable.
   command setGeolocationOverride
@@ -2867,6 +3078,13 @@ domain Emulation
       # Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
       number virtualTimeTicksBase
 
+  # Overrides default host system locale with the specified one.
+  experimental command setLocaleOverride
+    parameters
+      # ICU style C locale (e.g. "en_US"). If not specified or empty, disables the override and
+      # restores default host system locale.
+      optional string locale
+
   # Overrides default host system timezone with the specified one.
   experimental command setTimezoneOverride
     parameters
@@ -2896,6 +3114,8 @@ domain Emulation
       optional string acceptLanguage
       # The platform navigator.platform should return.
       optional string platform
+      # To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+      experimental optional UserAgentMetadata userAgentMetadata
 
 # This domain provides experimental commands only supported in headless mode.
 experimental domain HeadlessExperimental
@@ -3203,6 +3423,15 @@ domain Input
       touch
       mouse
 
+  type MouseButton extends string
+    enum
+        none
+        left
+        middle
+        right
+        back
+        forward
+
   # UTC time in seconds, counted from January 1, 1970.
   type TimeSinceEpoch extends number
 
@@ -3274,13 +3503,7 @@ domain Input
       # Time at which the event occurred.
       optional TimeSinceEpoch timestamp
       # Mouse button (default: "none").
-      optional enum button
-        none
-        left
-        middle
-        right
-        back
-        forward
+      optional MouseButton button
       # A number indicating which buttons are pressed on the mouse when a mouse event is triggered.
       # Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
       optional integer buttons
@@ -3328,12 +3551,8 @@ domain Input
       integer x
       # Y coordinate of the mouse pointer in DIP.
       integer y
-      # Mouse button.
-      enum button
-        none
-        left
-        middle
-        right
+      # Mouse button. Only "none", "left", "right" are supported.
+      MouseButton button
       # Time at which the event occurred (default: current time).
       optional TimeSinceEpoch timestamp
       # X delta in DIP for mouse wheel event (default: 0).
@@ -3522,7 +3741,9 @@ experimental domain LayerTree
       LayerId layerId
     returns
       # A list of strings specifying reasons for the given layer to become composited.
-      array of string compositingReasons
+      deprecated array of string compositingReasons
+      # A list of strings specifying reason IDs for the given layer to become composited.
+      array of string compositingReasonIds
 
   # Disables compositing tree inspection.
   command disable
@@ -3863,6 +4084,14 @@ domain Network
       Lax
       None
 
+  # Represents the cookie's 'Priority' status:
+  # https://tools.ietf.org/html/draft-west-cookie-priority-00
+  experimental type CookiePriority extends string
+    enum
+      Low
+      Medium
+      High
+
   # Timing information for the request.
   type ResourceTiming extends object
     properties
@@ -4009,6 +4238,11 @@ domain Network
       subresource-filter
       content-type
       collapsed-by-client
+      coep-frame-resource-needs-coep-header
+      coop-sandboxed-iframe-cannot-navigate-to-coop-page
+      corp-not-same-origin
+      corp-not-same-origin-after-defaulted-to-same-origin-by-coep
+      corp-not-same-site
 
   # HTTP response data.
   type Response extends object
@@ -4141,6 +4375,8 @@ domain Network
       boolean session
       # Cookie SameSite type.
       optional CookieSameSite sameSite
+      # Cookie Priority
+      experimental CookiePriority priority
 
   # Types of reasons why a cookie may not be stored from a response.
   experimental type SetCookieBlockedReason extends string
@@ -4247,6 +4483,8 @@ domain Network
       optional CookieSameSite sameSite
       # Cookie expiration date, session cookie if not set
       optional TimeSinceEpoch expires
+      # Cookie Priority.
+      experimental optional CookiePriority priority
 
   # Authorization challenge for HTTP status code 401 or 407.
   experimental type AuthChallenge extends object
@@ -4589,6 +4827,8 @@ domain Network
       optional CookieSameSite sameSite
       # Cookie expiration date, session cookie if not set
       optional TimeSinceEpoch expires
+      # Cookie Priority type.
+      experimental optional CookiePriority priority
     returns
       # True if successfully set cookie.
       boolean success
@@ -4631,6 +4871,9 @@ domain Network
       optional string acceptLanguage
       # The platform navigator.platform should return.
       optional string platform
+      # To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
+      experimental optional Emulation.UserAgentMetadata userAgentMetadata
+
 
   # Fired when data chunk was received over the network.
   event dataReceived
@@ -4868,9 +5111,9 @@ domain Network
     parameters
       # Request identifier. Used to match this information to an existing requestWillBeSent event.
       RequestId requestId
-      # A list of cookies which will not be sent with this request along with corresponding reasons
-      # for blocking.
-      array of BlockedCookieWithReason blockedCookies
+      # A list of cookies potentially associated to the requested URL. This includes both cookies sent with
+      # the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+      array of BlockedCookieWithReason associatedCookies
       # Raw request headers as they will be sent over the wire.
       Headers headers
 
@@ -4924,6 +5167,24 @@ experimental domain Overlay
       optional DOM.RGBA shapeMarginColor
       # The grid layout color (default: transparent).
       optional DOM.RGBA cssGridColor
+      # The color format used to format color styles (default: hex).
+      optional ColorFormat colorFormat
+
+  type ColorFormat extends string
+    enum
+      rgb
+      hsl
+      hex
+
+  # Configuration for dual screen hinge
+  type HingeConfig extends object
+    properties
+      # A rectangle represent hinge
+      DOM.Rect rect
+      # The content box highlight fill color (default: a dark color).
+      optional DOM.RGBA contentColor
+      # The content box highlight outline color (default: transparent).
+      optional DOM.RGBA outlineColor
 
   type InspectMode extends string
     enum
@@ -4948,6 +5209,8 @@ experimental domain Overlay
       optional boolean includeDistance
       # Whether to include style info.
       optional boolean includeStyle
+      # The color format to get config with (default: hex)
+      optional ColorFormat colorFormat
     returns
       # Highlight data for the node.
       object highlight
@@ -5068,6 +5331,12 @@ experimental domain Overlay
     parameters
       # Whether to paint size or not.
       boolean show
+
+  # Add a dual screen device hinge
+  command setShowHinge
+    parameters
+      # hinge data, null means hideHinge
+      optional HingeConfig hingeConfig
 
   # Fired when the node should be inspected. This happens after call to `setInspectMode` or when
   # user manually inspects an element.
@@ -5231,6 +5500,12 @@ domain Page
       # Error column.
       integer column
 
+  # Parsed app manifest properties.
+  experimental type AppManifestParsedProperties extends object
+    properties
+      # Computed scope value
+      string scope
+
   # Layout viewport position and dimensions.
   type LayoutViewport extends object
     properties
@@ -5312,6 +5587,41 @@ domain Page
       metaTagRefresh
       pageBlockInterstitial
       reload
+      anchorClick
+
+  experimental type ClientNavigationDisposition extends string
+    enum
+      currentTab
+      newTab
+      newWindow
+      download
+
+  experimental type InstallabilityErrorArgument extends object
+    properties
+      # Argument name (e.g. name:'minimum-icon-size-in-pixels').
+      string name
+      # Argument value (e.g. value:'64').
+      string value
+
+  # The installability error
+  experimental type InstallabilityError extends object
+    properties
+      # The error id (e.g. 'manifest-missing-suitable-icon').
+      string errorId
+      # The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
+      array of InstallabilityErrorArgument errorArguments
+
+  # The referring-policy used for the navigation.
+  experimental type ReferrerPolicy extends string
+    enum
+      noReferrer
+      noReferrerWhenDowngrade
+      origin
+      originWhenCrossOrigin
+      sameOrigin
+      strictOrigin
+      strictOriginWhenCrossOrigin
+      unsafeUrl
 
   # Deprecated, please use addScriptToEvaluateOnNewDocument instead.
   experimental deprecated command addScriptToEvaluateOnLoad
@@ -5416,10 +5726,16 @@ domain Page
       array of AppManifestError errors
       # Manifest content.
       optional string data
+      # Parsed manifest properties
+      experimental optional AppManifestParsedProperties parsed
 
   experimental command getInstallabilityErrors
     returns
-      array of string errors
+      array of InstallabilityError installabilityErrors
+
+  experimental command getManifestIcons
+    returns
+      optional binary primaryIcon
 
   # Returns all browser cookies. Depending on the backend support, will return detailed cookie
   # information in the `cookies` field.
@@ -5496,6 +5812,8 @@ domain Page
       optional TransitionType transitionType
       # Frame id to navigate, if not specified navigates the top frame.
       optional FrameId frameId
+      # Referrer-policy used for the navigation.
+      experimental optional ReferrerPolicy referrerPolicy
     returns
       # Frame id that has navigated (or failed to navigate)
       FrameId frameId
@@ -5684,7 +6002,7 @@ domain Page
       string html
 
   # Set the behavior when downloading a file.
-  experimental command setDownloadBehavior
+  experimental deprecated command setDownloadBehavior
     parameters
       # Whether to allow all or deny all download requests, or use default Chrome behavior if
       # available (otherwise deny).
@@ -5854,6 +6172,8 @@ domain Page
       ClientNavigationReason reason
       # The destination URL for the requested navigation.
       string url
+      # The disposition for the navigation.
+      ClientNavigationDisposition disposition
 
   # Fired when frame schedules a potential navigation.
   deprecated event frameScheduledNavigation
@@ -5864,14 +6184,7 @@ domain Page
       # guaranteed to start.
       number delay
       # The reason for the navigation.
-      enum reason
-        formSubmissionGet
-        formSubmissionPost
-        httpHeaderRefresh
-        scriptInitiated
-        metaTagRefresh
-        pageBlockInterstitial
-        reload
+      ClientNavigationReason reason
       # The destination URL for the scheduled navigation.
       string url
 
@@ -5892,8 +6205,25 @@ domain Page
     parameters
       # Id of the frame that caused download to begin.
       FrameId frameId
+      # Global unique identifier of the download.
+      string guid
       # URL of the resource being downloaded.
       string url
+
+  # Fired when download makes progress. Last call has |done| == true.
+  experimental event downloadProgress
+    parameters
+      # Global unique identifier of the download.
+      string guid
+      # Total expected bytes to download.
+      number totalBytes
+      # Total bytes received.
+      number receivedBytes
+      # Download status.
+      enum state
+        inProgress
+        completed
+        canceled
 
   # Fired when interstitial page was hidden
   event interstitialHidden
@@ -6001,11 +6331,18 @@ domain Performance
 
   # Enable collecting and reporting metrics.
   command enable
+    parameters
+      # Time domain to use for collecting and reporting duration metrics.
+      optional enum timeDomain
+        # Use monotonically increasing abstract time (default).
+        timeTicks
+        # Use thread running time.
+        threadTicks
 
   # Sets time domain to use for collecting and reporting duration metrics.
   # Note that this must be called before enabling metrics collection. Calling
   # this method while metrics collection is enabled returns an error.
-  experimental command setTimeDomain
+  experimental deprecated command setTimeDomain
     parameters
       # Time domain
       enum timeDomain
@@ -6221,6 +6558,8 @@ domain Security
       optional string summary
 
 experimental domain ServiceWorker
+  depends on Target
+
   type RegistrationID extends string
 
   # ServiceWorker registration.
@@ -6667,6 +7006,9 @@ domain Target
   # Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
   # one.
   experimental command createBrowserContext
+    parameters
+      # If specified, disposes this context when debugging session disconnects.
+      optional boolean disposeOnDetach
     returns
       # The id of the context created.
       Browser.BrowserContextID browserContextId
@@ -6752,8 +7094,6 @@ domain Target
       # We plan to make this the default, deprecate non-flattened mode,
       # and eventually retire it. See crbug.com/991325.
       optional boolean flatten
-      # Auto-attach to the targets created via window.open from current target.
-      experimental optional boolean windowOpen
 
   # Controls whether to discover available targets and notify via
   # `targetCreated/targetInfoChanged/targetDestroyed` events.
@@ -7083,7 +7423,7 @@ experimental domain Fetch
       optional string method
       # If set, overrides the post data in the request.
       optional string postData
-      # If set, overrides the request headrts.
+      # If set, overrides the request headers.
       optional array of HeaderEntry headers
 
   # Continues a request supplying authChallengeResponse following authRequired event.
@@ -7489,27 +7829,51 @@ experimental domain Media
 
   type Timestamp extends number
 
-  # Player Property type
+  # Have one type per entry in MediaLogRecord::Type
+  # Corresponds to kMessage
+  type PlayerMessage extends object
+    properties
+      # Keep in sync with MediaLogMessageLevel
+      # We are currently keeping the message level 'error' separate from the
+      # PlayerError type because right now they represent different things,
+      # this one being a DVLOG(ERROR) style log message that gets printed
+      # based on what log level is selected in the UI, and the other is a
+      # representation of a media::PipelineStatus object. Soon however we're
+      # going to be moving away from using PipelineStatus for errors and
+      # introducing a new error type which should hopefully let us integrate
+      # the error log level into the PlayerError type.
+      enum level
+        error
+        warning
+        info
+        debug
+      string message
+
+  # Corresponds to kMediaPropertyChange
   type PlayerProperty extends object
     properties
       string name
-      optional string value
+      string value
 
-  # Break out events into different types
-  type PlayerEventType extends string
-    enum
-      playbackEvent
-      systemEvent
-      messageEvent
-
+  # Corresponds to kMediaEventTriggered
   type PlayerEvent extends object
     properties
-      PlayerEventType type
-      # Events are timestamped relative to the start of the player creation
-      # not relative to the start of playback.
       Timestamp timestamp
-      string name
       string value
+
+  # Corresponds to kMediaError
+  type PlayerError extends object
+    properties
+      enum type
+        # Compatability until we switch to media_error
+        pipeline_error
+        media_error
+      # When this switches to using media::Status instead of PipelineStatus
+      # we can remove "errorCode" and replace it with the fields from
+      # a Status instance. This also seems like a duplicate of the error
+      # level enum - there is a todo bug to have that level removed and
+      # use this instead. (crbug.com/1068454)
+      string errorCode
 
   # This can be called multiple times, and can be used to set / override /
   # remove player properties. A null propValue indicates removal.
@@ -7524,6 +7888,18 @@ experimental domain Media
     parameters
       PlayerId playerId
       array of PlayerEvent events
+
+  # Send a list of any messages that need to be delivered.
+  event playerMessagesLogged
+    parameters
+      PlayerId playerId
+      array of PlayerMessage messages
+
+  # Send a list of any errors that need to be delivered.
+  event playerErrorsRaised
+    parameters
+      PlayerId playerId
+      array of PlayerError errors
 
   # Called whenever a player is created, or when a new agent joins and recieves
   # a list of active players. If an agent is restored, it will recieve the full

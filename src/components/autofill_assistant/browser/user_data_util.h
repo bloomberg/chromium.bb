@@ -16,7 +16,27 @@ namespace autofill_assistant {
 // vector of profile indices in sorted order. Full profiles will be ordered
 // before empty ones, and for equally complete profiles, this falls back to
 // sorting based on the profile names.
-std::vector<int> SortByCompleteness(
+std::vector<int> SortContactsByCompleteness(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+
+// Get the default selection for the current list of profiles. Returns -1 if no
+// default selection is possible.
+int GetDefaultContactProfile(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+
+// Sorts the given autofill profiles based on completeness, and returns a
+// vector of profile indices in sorted order. Full profiles will be ordered
+// before empty ones, and for equally complete profiles, this falls back to
+// sorting based on the profile names.
+std::vector<int> SortAddressesByCompleteness(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+
+// Get the default selection for the current list of profiles. Returns -1 if no
+// default selection is possible.
+int GetDefaultAddressProfile(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
 
@@ -24,9 +44,23 @@ std::vector<int> SortByCompleteness(
 // of payment instrument indices in sorted order. Full payment instruments will
 // be ordered before empty ones, and for equally complete payment instruments,
 // this falls back to sorting based on the full name on the credit card.
-std::vector<int> SortByCompleteness(
+std::vector<int> SortPaymentInstrumentsByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<PaymentInstrument>>& payment_instruments);
+
+// Get the default selection for the current list of payment instruments.
+// Returns -1 if no default selection is possible.
+int GetDefaultPaymentInstrument(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<PaymentInstrument>>& payment_instruments);
+
+// Compare contact fields only. This comparison checks a subset of
+// AutofillProfile::Compare. Falls back to comparing the GUIDs if nothing else
+// is to be compared.
+bool CompareContactDetails(
+    const CollectUserDataOptions& collect_user_data_options,
+    const autofill::AutofillProfile* a,
+    const autofill::AutofillProfile* b);
 
 }  // namespace autofill_assistant
 

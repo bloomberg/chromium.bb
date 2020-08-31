@@ -5,18 +5,19 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_ui_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_image_resource.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_ui_options.h"
 #include "third_party/blink/renderer/modules/event_interface_modules_names.h"
-#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -37,7 +38,7 @@ BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
 
 BackgroundFetchUpdateUIEvent::~BackgroundFetchUpdateUIEvent() = default;
 
-void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
+void BackgroundFetchUpdateUIEvent::Trace(Visitor* visitor) {
   visitor->Trace(service_worker_registration_);
   visitor->Trace(loader_);
   BackgroundFetchEvent::Trace(visitor);
@@ -45,20 +46,19 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
-    const BackgroundFetchUIOptions* ui_options) {
+    const BackgroundFetchUIOptions* ui_options,
+    ExceptionState& exception_state) {
   if (observer_ && !observer_->IsEventActive()) {
     // Return a rejected promise as the event is no longer active.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "ExtendableEvent is no longer active."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "ExtendableEvent is no longer active.");
+    return ScriptPromise();
   }
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "updateUI may only be called once."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "updateUI may only be called once.");
+    return ScriptPromise();
   }
 
   update_ui_called_ = true;

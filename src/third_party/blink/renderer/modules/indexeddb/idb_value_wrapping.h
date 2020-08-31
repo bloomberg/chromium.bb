@@ -27,9 +27,6 @@ class ScriptState;
 class ScriptValue;
 class SerializedScriptValue;
 
-const base::Feature kIndexedDBLargeValueWrapping{
-    "IndexedDBLargeValueWrapping", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Logic for serializing V8 values for storage in IndexedDB.
 //
 // An IDBValueWrapper instance drives the serialization of a single V8 value to
@@ -157,6 +154,16 @@ class MODULES_EXPORT IDBValueWrapper {
     return std::move(blob_info_);
   }
 
+  Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>
+  TakeNativeFileSystemTransferTokens() {
+#if DCHECK_IS_ON()
+    DCHECK(done_cloning_) << __func__ << " called before DoneCloning()";
+    DCHECK(owns_file_system_handles_) << __func__ << " called twice";
+    owns_file_system_handles_ = false;
+#endif  // DCHECK_IS_ON()
+    return std::move(serialized_value_->NativeFileSystemTokens());
+  }
+
   size_t DataLengthBeforeWrapInBytes() { return original_data_length_; }
 
   // Default threshold for WrapIfBiggerThan().
@@ -199,6 +206,7 @@ class MODULES_EXPORT IDBValueWrapper {
   bool owns_blob_handles_ = true;
   bool owns_blob_info_ = true;
   bool owns_wire_bytes_ = true;
+  bool owns_file_system_handles_ = true;
 #endif  // DCHECK_IS_ON()
 };
 

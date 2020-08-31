@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,6 +33,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -698,8 +699,16 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   ASSERT_TRUE(items[0].is_off_the_record);
 }
 
+// Flaky on Windows 7 (https://crbug.com/1039250)
+#if defined(OS_WIN)
+#define MAYBE_FetchesRunToCompletionAndUpdateTitle_Fetched \
+  DISABLED_FetchesRunToCompletionAndUpdateTitle_Fetched
+#else
+#define MAYBE_FetchesRunToCompletionAndUpdateTitle_Fetched \
+  FetchesRunToCompletionAndUpdateTitle_Fetched
+#endif
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       FetchesRunToCompletionAndUpdateTitle_Fetched) {
+                       MAYBE_FetchesRunToCompletionAndUpdateTitle_Fetched) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletion()", "backgroundfetchsuccess"));
   EXPECT_EQ(offline_content_provider_observer_->latest_item().state,
@@ -711,8 +720,16 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        "New Fetched Title!", base::CompareCase::SENSITIVE));
 }
 
+// Flaky on Windows 7 (https://crbug.com/1039250)
+#if defined(OS_WIN)
+#define MAYBE_FetchesRunToCompletionAndUpdateTitle_Failed \
+  DISABLED_FetchesRunToCompletionAndUpdateTitle_Failed
+#else
+#define MAYBE_FetchesRunToCompletionAndUpdateTitle_Failed \
+  FetchesRunToCompletionAndUpdateTitle_Failed
+#endif
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       FetchesRunToCompletionAndUpdateTitle_Failed) {
+                       MAYBE_FetchesRunToCompletionAndUpdateTitle_Failed) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletionWithMissingResource()", "backgroundfetchfail"));
   EXPECT_EQ(offline_content_provider_observer_->latest_item().state,
@@ -746,8 +763,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
             BackgroundFetchDelegateImpl::JobDetails::State::kJobComplete);
 
   // Simulate notification click.
-  delegate_->OpenItem(offline_items_collection::LaunchLocation::NOTIFICATION,
-                      job_details.offline_item.id);
+  delegate_->OpenItem(
+      offline_items_collection::OpenParams(
+          offline_items_collection::LaunchLocation::NOTIFICATION),
+      job_details.offline_item.id);
 
   // Job Details should be deleted at this point.
   EXPECT_TRUE(delegate_->job_details_map_.empty());
@@ -760,7 +779,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, AbortFromUI) {
+// TODO(crbug.com/1056096): Re-enable this test.
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DISABLED_AbortFromUI) {
   std::vector<OfflineItem> items;
   // Creates a registration with more than one request.
   ASSERT_NO_FATAL_FAILURE(
@@ -794,7 +814,14 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
       "This origin does not have permission to start a fetch."));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
+// Flaky on Windows 7 (https://crbug.com/1039250)
+#if defined(OS_WIN)
+#define MAYBE_FetchFromServiceWorker DISABLED_FetchFromServiceWorker
+#else
+#define MAYBE_FetchFromServiceWorker FetchFromServiceWorker
+#endif
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       MAYBE_FetchFromServiceWorker) {
   auto* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   DCHECK(settings_map);

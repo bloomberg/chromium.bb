@@ -9,11 +9,15 @@ from __future__ import print_function
 
 import glob
 import os
+import sys
 
 from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _POSTSUBMIT_BINHOST = 'POSTSUBMIT_BINHOST'
@@ -120,14 +124,13 @@ def GetToolchainSdkUploadFormat(version, tarball, is_overlay=False):
   return os.path.join(subdir_prefix, template + suffix)
 
 
-def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
-                    version=None, **kwargs):
+def UploadPrebuilts(category, private_bucket, buildroot, version=None,
+                    **kwargs):
   """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
     category: Build type.
       Can be [binary|full|chrome|chroot|paladin|postsubmit].
-    chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     private_bucket: True if we are uploading to a private bucket.
     buildroot: The root directory where the build occurs.
     version: Specific version to set.
@@ -179,21 +182,9 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
       for entry in toolchain_paths:
         extra_args.extend(['--toolchain-tarball', '%s:%s' % entry])
 
-  if category == constants.CHROME_PFQ_TYPE:
-    assert chrome_rev
-    key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    extra_args.extend(['--key', key.upper()])
-  elif category == constants.POSTSUBMIT_TYPE:
-    extra_args.extend(['--key', _POSTSUBMIT_BINHOST])
-  else:
-    assert category in (constants.FULL_TYPE,
-                        constants.CHROOT_BUILDER_TYPE)
-    extra_args.extend(['--key', _FULL_BINHOST])
-
-  if category == constants.CHROME_PFQ_TYPE:
-    extra_args += ['--packages=%s' % x
-                   for x in ([constants.CHROME_PN] +
-                             constants.OTHER_CHROME_PACKAGES)]
+  assert category in (constants.FULL_TYPE,
+                      constants.CHROOT_BUILDER_TYPE)
+  extra_args.extend(['--key', _FULL_BINHOST])
 
   kwargs.setdefault('extra_args', []).extend(extra_args)
   return _UploadPrebuilts(buildroot=buildroot, **kwargs)
@@ -268,8 +259,6 @@ class BinhostConfWriter(object):
     """
     self._run = builder_run
     self._prebuilt_type = self._run.config.build_type
-    self._chrome_rev = (self._run.options.chrome_rev or
-                        self._run.config.chrome_rev)
     self._build_root = os.path.abspath(self._run.buildroot)
 
   def _GenerateCommonArgs(self):
@@ -342,17 +331,13 @@ class BinhostConfWriter(object):
     # Upload the public prebuilts, if any.
     if public_builders:
       UploadPrebuilts(
-          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          category=self._prebuilt_type,
           private_bucket=False, buildroot=self._build_root, board=None,
           extra_args=generated_args + public_args)
 
     # Upload the private prebuilts, if any.
     if private_builders:
       UploadPrebuilts(
-          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          category=self._prebuilt_type,
           private_bucket=True, buildroot=self._build_root, board=None,
           extra_args=generated_args + private_args)
-
-    # If we're the Chrome PFQ master, update our binhost JSON file.
-    if self._run.config.build_type == constants.CHROME_PFQ_TYPE:
-      commands.UpdateBinhostJson(self._build_root)

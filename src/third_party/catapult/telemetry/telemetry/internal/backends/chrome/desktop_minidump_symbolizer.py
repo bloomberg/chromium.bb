@@ -12,7 +12,8 @@ from telemetry.internal.util import binary_manager
 from telemetry.internal.util import path
 
 class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
-  def __init__(self, os_name, arch_name, dump_finder, build_dir):
+  def __init__(self, os_name, arch_name, dump_finder, build_dir,
+               symbols_dir=None):
     """Class for handling all minidump symbolizing code on Desktop platforms.
 
     Args:
@@ -22,9 +23,13 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
           used to find minidumps for the test.
       build_dir: The directory containing Chromium build artifacts to generate
           symbols from.
+      symbols_dir: An optional path to a directory to store symbols for re-use.
+          Re-using symbols will result in faster symbolization times, but the
+          provided directory *must* be unique per browser binary, e.g. by
+          including the hash of the binary in the directory name.
     """
     super(DesktopMinidumpSymbolizer, self).__init__(
-        os_name, arch_name, dump_finder, build_dir)
+        os_name, arch_name, dump_finder, build_dir, symbols_dir=symbols_dir)
 
   def SymbolizeMinidump(self, minidump):
     """Gets the stack trace from the given minidump.
@@ -69,8 +74,14 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
     Args:
       minidump: The path to the minidump being symbolized.
     """
-    minidump_dump = binary_manager.FetchPath(
-        'minidump_dump', self._arch_name, self._os_name)
+    # TODO(https://crbug.com/1054583): Remove this once Telemetry searches
+    # locally for all dependencies automatically.
+    minidump_dump = os.path.join(self._build_dir, 'minidump_dump')
+    if not os.path.exists(minidump_dump):
+      logging.warning(
+          'Unable to find locally built minidump_dump, using Catapult version.')
+      minidump_dump = binary_manager.FetchPath(
+          'minidump_dump', self._os_name, self._arch_name)
     assert minidump_dump
 
     symbol_binaries = []
@@ -105,6 +116,27 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
           continue
 
         symbol_binaries.append(binary_path)
+    return self._FilterSymbolBinaries(symbol_binaries)
+
+  def _FilterSymbolBinaries(self, symbol_binaries):
+    """Filters out unnecessary symbol binaries to save symbolization time.
+
+    Args:
+      symbol_binaries: A list of paths to binaries that will have their
+          symbols dumped.
+
+    Returns:
+      A copy of |symbol_binaries| with any unnecessary paths removed.
+    """
+    if self._os_name == 'mac':
+      # The vast majority of the symbol binaries for component builds on Mac
+      # are .dylib, and none of them appear to contribute any additional
+      # information. So, remove them to save a *lot* of time.
+      filtered_binaries = []
+      for binary in symbol_binaries:
+        if not binary.endswith('.dylib'):
+          filtered_binaries.append(binary)
+      symbol_binaries = filtered_binaries
     return symbol_binaries
 
   def _GetCdbPath(self):

@@ -34,7 +34,7 @@ class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
   MOCK_METHOD1(OnUpdatePaymentDetailsFailure, void(const String& error));
   bool IsInteractive() const override { return true; }
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPaymentRequest);
@@ -147,7 +147,7 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
   String error_message;
-  request->show(scope.GetScriptState())
+  request->show(scope.GetScriptState(), scope.GetExceptionState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -184,7 +184,7 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
   String error_message;
-  request->show(scope.GetScriptState())
+  request->show(scope.GetScriptState(), scope.GetExceptionState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -221,7 +221,7 @@ TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
   event->SetPaymentRequest(request);
   event->SetEventPhase(Event::kCapturingPhase);
   String error_message;
-  request->show(scope.GetScriptState())
+  request->show(scope.GetScriptState(), scope.GetExceptionState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnShippingAddressChange(BuildPaymentAddressForTest());
@@ -255,7 +255,7 @@ TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
   event->SetPaymentRequest(request);
   event->SetEventPhase(Event::kCapturingPhase);
   String error_message;
-  request->show(scope.GetScriptState())
+  request->show(scope.GetScriptState(), scope.GetExceptionState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnShippingAddressChange(BuildPaymentAddressForTest());

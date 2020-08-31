@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/page_info/page_info.h"
+#include "components/page_info/page_info.h"
 
 #include <memory>
 #include <set>
@@ -18,11 +18,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -32,7 +33,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
+#include "components/page_info/page_info_ui.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -122,8 +125,8 @@ class MockPageInfoUI : public PageInfoUI {
   }
 #endif
 
-  base::Callback<void(const PermissionInfoList& permission_info_list,
-                      ChosenObjectInfoList chosen_object_info_list)>
+  base::RepeatingCallback<void(const PermissionInfoList& permission_info_list,
+                               ChosenObjectInfoList chosen_object_info_list)>
       set_permission_info_callback_;
 };
 
@@ -144,8 +147,11 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ASSERT_TRUE(cert_);
 
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
     MockInfoBarService::CreateForWebContents(web_contents());
+    content_settings::TabSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
+            web_contents()));
 
     // Setup mock ui.
     ResetMockUI();
@@ -198,10 +204,6 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const url::Origin& origin() const { return origin_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockPageInfoUI* mock_ui() { return mock_ui_.get(); }
-  security_state::SecurityLevel security_level() { return security_level_; }
-  const security_state::VisibleSecurityState& visible_security_state() {
-    return visible_security_state_;
-  }
   const std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
@@ -209,18 +211,18 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const PermissionInfoList& last_permission_info_list() {
     return last_permission_info_list_;
   }
-  TabSpecificContentSettings* tab_specific_content_settings() {
-    return TabSpecificContentSettings::FromWebContents(web_contents());
-  }
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
 
   PageInfo* page_info() {
     if (!page_info_.get()) {
-      page_info_ = std::make_unique<PageInfo>(
-          mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
-          url(), security_level(), visible_security_state());
+      auto delegate = std::make_unique<ChromePageInfoDelegate>(web_contents());
+      delegate->SetSecurityStateForTests(security_level_,
+                                         visible_security_state_);
+      page_info_ = std::make_unique<PageInfo>(std::move(delegate),
+                                              web_contents(), url());
+      page_info_->InitializeUiState(mock_ui());
     }
     return page_info_.get();
   }
@@ -305,7 +307,7 @@ TEST_F(PageInfoTest, NonFactoryDefaultAndRecentlyChangedPermissionsShown) {
             last_permission_info_list().size());
 
   // Change the default setting for Javascript away from the factory default.
-  page_info()->content_settings_->SetDefaultContentSetting(
+  page_info()->GetContentSettings()->SetDefaultContentSetting(
       ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   page_info()->PresentSitePermissions();
   EXPECT_EQ(expected_visible_permissions.size(),
@@ -984,8 +986,8 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
       "interstitial.ssl.did_user_revoke_decisions2";
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
-    ChromeSSLHostStateDelegate* ssl_state =
-        ChromeSSLHostStateDelegateFactory::GetForProfile(profile());
+    StatefulSSLHostStateDelegate* ssl_state =
+        StatefulSSLHostStateDelegateFactory::GetForProfile(profile());
     const std::string host = GURL(test.url).host();
 
     ssl_state->RevokeUserAllowExceptionsHard(host);
@@ -995,11 +997,12 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
       // In the case where the button should be visible, add an exception to
       // the profile settings for the site (since the exception is what
       // will make the button visible).
-      ssl_state->AllowCert(host, *cert(), net::ERR_CERT_DATE_INVALID);
+      ssl_state->AllowCert(host, *cert(), net::ERR_CERT_DATE_INVALID,
+                           web_contents());
       page_info();
       if (test.button_clicked) {
         page_info()->OnRevokeSSLErrorBypassButtonPressed();
-        EXPECT_FALSE(ssl_state->HasAllowException(host));
+        EXPECT_FALSE(ssl_state->HasAllowException(host, web_contents()));
         ClearPageInfo();
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
@@ -1009,7 +1012,7 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
             1);
       } else {  // Case where button is visible but not clicked.
         ClearPageInfo();
-        EXPECT_TRUE(ssl_state->HasAllowException(host));
+        EXPECT_TRUE(ssl_state->HasAllowException(host, web_contents()));
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
             kGenericHistogram,
@@ -1020,7 +1023,7 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
     } else {
       page_info();
       ClearPageInfo();
-      EXPECT_FALSE(ssl_state->HasAllowException(host));
+      EXPECT_FALSE(ssl_state->HasAllowException(host, web_contents()));
       // Button is not visible, so check histogram is empty after opening and
       // closing page info.
       histograms.ExpectTotalCount(kGenericHistogram, 0);
@@ -1068,19 +1071,18 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 0);
     histograms.ExpectTotalCount(test.histogram_name, 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo
     // creation in addition to the explicit RecordPageInfoAction()
     // call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(test.histogram_name, 2);
     histograms.ExpectBucketCount(test.histogram_name,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1181,19 +1183,18 @@ TEST_F(PageInfoTest, SafetyTipMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 0);
     histograms.ExpectTotalCount(test.histogram_name, 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo
     // creation in addition to the explicit RecordPageInfoAction()
     // call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(test.histogram_name, 2);
     histograms.ExpectBucketCount(test.histogram_name,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1296,19 +1297,18 @@ TEST_F(PageInfoTest, LegacyTLSMetrics) {
     histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
                                 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo creation in addition to
     // the explicit RecordPageInfoAction() call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
                                 2);
     histograms.ExpectBucketCount(kHistogramPrefix + "." + test.histogram_suffix,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1434,14 +1434,16 @@ class UnifiedAutoplaySoundSettingsPageInfoTest
   }
 
   base::string16 GetDefaultSoundSettingString() {
+    auto delegate = ChromePageInfoUiDelegate(profile());
     return PageInfoUI::PermissionActionToUIString(
-        profile(), ContentSettingsType::SOUND, CONTENT_SETTING_DEFAULT,
+        &delegate, ContentSettingsType::SOUND, CONTENT_SETTING_DEFAULT,
         default_setting_, content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
   base::string16 GetSoundSettingString(ContentSetting setting) {
+    auto delegate = ChromePageInfoUiDelegate(profile());
     return PageInfoUI::PermissionActionToUIString(
-        profile(), ContentSettingsType::SOUND, setting, default_setting_,
+        &delegate, ContentSettingsType::SOUND, setting, default_setting_,
         content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
@@ -1529,10 +1531,11 @@ TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock_PrefOff) {
 // This test checks that the string for a permission dropdown that is not the
 // sound setting is unaffected.
 TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, NotSoundSetting_Noop) {
+  auto delegate = ChromePageInfoUiDelegate(profile());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT),
       PageInfoUI::PermissionActionToUIString(
-          profile(), ContentSettingsType::ADS, CONTENT_SETTING_DEFAULT,
+          &delegate, ContentSettingsType::ADS, CONTENT_SETTING_DEFAULT,
           CONTENT_SETTING_ALLOW,
           content_settings::SettingSource::SETTING_SOURCE_USER));
 }

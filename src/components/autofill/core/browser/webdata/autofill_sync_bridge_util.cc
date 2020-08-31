@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -86,47 +87,21 @@ const char* CardNetworkFromWalletCardType(
   }
 }
 
-sync_pb::WalletMaskedCreditCard::WalletCardClass WalletCardClassFromCardType(
-    CreditCard::CardType card_type) {
-  switch (card_type) {
-    case CreditCard::CARD_TYPE_CREDIT:
-      return sync_pb::WalletMaskedCreditCard::CREDIT;
-    case CreditCard::CARD_TYPE_DEBIT:
-      return sync_pb::WalletMaskedCreditCard::DEBIT;
-    case CreditCard::CARD_TYPE_PREPAID:
-      return sync_pb::WalletMaskedCreditCard::PREPAID;
-    case CreditCard::CARD_TYPE_UNKNOWN:
-      return sync_pb::WalletMaskedCreditCard::UNKNOWN_CARD_CLASS;
-  }
-}
-
-CreditCard::CardType CardTypeFromWalletCardClass(
-    sync_pb::WalletMaskedCreditCard::WalletCardClass card_class) {
-  switch (card_class) {
-    case sync_pb::WalletMaskedCreditCard::CREDIT:
-      return CreditCard::CARD_TYPE_CREDIT;
-    case sync_pb::WalletMaskedCreditCard::DEBIT:
-      return CreditCard::CARD_TYPE_DEBIT;
-    case sync_pb::WalletMaskedCreditCard::PREPAID:
-      return CreditCard::CARD_TYPE_PREPAID;
-    case sync_pb::WalletMaskedCreditCard::UNKNOWN_CARD_CLASS:
-      return CreditCard::CARD_TYPE_UNKNOWN;
-  }
-}
-
 // Creates an AutofillProfile from the specified |card| specifics.
 CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetServerStatus(ServerToLocalStatus(card.status()));
   result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
-  result.set_card_type(CardTypeFromWalletCardClass(card.card_class()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
                     base::UTF8ToUTF16(card.name_on_card()));
   result.SetExpirationMonth(card.exp_month());
   result.SetExpirationYear(card.exp_year());
   result.set_billing_address_id(card.billing_address_id());
-  result.set_bank_name(card.bank_name());
+  result.set_card_issuer(
+      static_cast<CreditCard::Issuer>(card.card_issuer().issuer()));
+  if (!card.nickname().empty())
+    result.SetNickname(base::UTF8ToUTF16(card.nickname()));
   return result;
 }
 
@@ -135,6 +110,20 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
 PaymentsCustomerData CustomerDataFromSpecifics(
     const sync_pb::PaymentsCustomerData& customer_data) {
   return PaymentsCustomerData{/*customer_id=*/customer_data.id()};
+}
+
+// Creates a CreditCardCloudTokenData object corresponding to the sync datatype
+// |cloud_token_data|.
+CreditCardCloudTokenData CloudTokenDataFromSpecifics(
+    const sync_pb::WalletCreditCardCloudTokenData& cloud_token_data) {
+  CreditCardCloudTokenData result;
+  result.masked_card_id = cloud_token_data.masked_card_id();
+  result.suffix = base::UTF8ToUTF16(cloud_token_data.suffix());
+  result.exp_month = cloud_token_data.exp_month();
+  result.exp_year = cloud_token_data.exp_year();
+  result.card_art_url = cloud_token_data.art_fife_url();
+  result.instrument_token = cloud_token_data.instrument_token();
+  return result;
 }
 
 }  // namespace
@@ -253,8 +242,10 @@ void SetAutofillWalletSpecificsFromServerCard(
   wallet_card->set_last_four(base::UTF16ToUTF8(card.LastFourDigits()));
   wallet_card->set_exp_month(card.expiration_month());
   wallet_card->set_exp_year(card.expiration_year());
-  wallet_card->set_card_class(WalletCardClassFromCardType(card.card_type()));
-  wallet_card->set_bank_name(card.bank_name());
+  if (!card.nickname().empty())
+    wallet_card->set_nickname(base::UTF16ToUTF8(card.nickname()));
+  wallet_card->mutable_card_issuer()->set_issuer(
+      static_cast<sync_pb::CardIssuer::Issuer>(card.card_issuer()));
 }
 
 void SetAutofillWalletSpecificsFromPaymentsCustomerData(
@@ -265,6 +256,33 @@ void SetAutofillWalletSpecificsFromPaymentsCustomerData(
   sync_pb::PaymentsCustomerData* mutable_customer_data =
       wallet_specifics->mutable_customer_data();
   mutable_customer_data->set_id(customer_data.customer_id);
+}
+
+void SetAutofillWalletSpecificsFromCreditCardCloudTokenData(
+    const CreditCardCloudTokenData& cloud_token_data,
+    sync_pb::AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8) {
+  wallet_specifics->set_type(
+      AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA);
+
+  sync_pb::WalletCreditCardCloudTokenData* mutable_cloud_token_data =
+      wallet_specifics->mutable_cloud_token_data();
+
+  if (enforce_utf8) {
+    mutable_cloud_token_data->set_masked_card_id(
+        GetBase64EncodedId(cloud_token_data.masked_card_id));
+  } else {
+    mutable_cloud_token_data->set_masked_card_id(
+        cloud_token_data.masked_card_id);
+  }
+
+  mutable_cloud_token_data->set_suffix(
+      base::UTF16ToUTF8(cloud_token_data.suffix));
+  mutable_cloud_token_data->set_exp_month(cloud_token_data.exp_month);
+  mutable_cloud_token_data->set_exp_year(cloud_token_data.exp_year);
+  mutable_cloud_token_data->set_art_fife_url(cloud_token_data.card_art_url);
+  mutable_cloud_token_data->set_instrument_token(
+      cloud_token_data.instrument_token);
 }
 
 AutofillProfile ProfileFromSpecifics(
@@ -336,7 +354,8 @@ void PopulateWalletTypesFromSyncData(
     const syncer::EntityChangeList& entity_data,
     std::vector<CreditCard>* wallet_cards,
     std::vector<AutofillProfile>* wallet_addresses,
-    std::vector<PaymentsCustomerData>* customer_data) {
+    std::vector<PaymentsCustomerData>* customer_data,
+    std::vector<CreditCardCloudTokenData>* cloud_token_data) {
   std::map<std::string, std::string> ids;
 
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_data) {
@@ -368,7 +387,8 @@ void PopulateWalletTypesFromSyncData(
             CustomerDataFromSpecifics(autofill_specifics.customer_data()));
         break;
       case sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
-        // TODO(crbug.com/1020740): Implement this type.
+        cloud_token_data->push_back(
+            CloudTokenDataFromSpecifics(autofill_specifics.cloud_token_data()));
         break;
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.

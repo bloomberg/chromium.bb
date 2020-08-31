@@ -13,6 +13,7 @@
 
 #include "base/location.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
@@ -2880,6 +2881,66 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 11.f);
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       AnimationTilingChangesWithWillChangeTransformHint) {
+  gfx::Size viewport_size(1000, 1000);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
+
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
+  bool animating_transform = false;
+
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  active_layer()->SetHasWillChangeTransformHint(true);
+  pending_layer()->SetHasWillChangeTransformHint(true);
+
+  // Starting an animation should cause tiling resolution to get set to the
+  // maximum animation scale factor.
+  animating_transform = true;
+  maximum_animation_scale = 2.f;
+  contents_scale = 1.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Once we stop animating, because we have a will-change: transform hint
+  // we should not reset the scale factor.
+  animating_transform = false;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Starting an animation with a different maximum animation scale should
+  // not cause a change either.
+  animating_transform = true;
+  maximum_animation_scale = 1.5f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Again, stop animating, because we have a will-change: transform hint
+  // we should not reset the scale factor.
+  animating_transform = false;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+}
+
 TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimationAspectRatio) {
   gfx::Size viewport_size(2000, 1000);
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
@@ -3441,6 +3502,9 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 3.f);
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       AnimationChangeRespectsWillChangeTransformHint) {}
+
 TEST_F(LegacySWPictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
@@ -3834,8 +3898,8 @@ TEST_F(LegacySWPictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
   EXPECT_EQ(2.5f, max_contents_scale);
 
   gfx::Transform scaled_draw_transform = active_layer()->DrawTransform();
-  scaled_draw_transform.Scale(SK_MScalar1 / max_contents_scale,
-                              SK_MScalar1 / max_contents_scale);
+  scaled_draw_transform.Scale(SK_Scalar1 / max_contents_scale,
+                              SK_Scalar1 / max_contents_scale);
 
   AppendQuadsData data;
   active_layer()->AppendQuads(render_pass.get(), &data);
@@ -4882,7 +4946,7 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
                                .ToString());
   // Scroll offset in property trees is not propagated from the active tree to
   // the pending tree.
-  SetScrollOffset(pending_layer(), active_layer()->CurrentScrollOffset());
+  SetScrollOffset(pending_layer(), CurrentScrollOffset(active_layer()));
   UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_EQ("0,50 100x100", pending_layer()
                                 ->HighResTiling()
@@ -5194,7 +5258,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageCalculateContentsScale) {
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::Create(pending_tree, root_id(),
                                    pending_raster_source);
-  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDirectlyCompositedImageSize(layer_bounds);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
@@ -5219,7 +5283,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::Create(pending_tree, root_id(),
                                    pending_raster_source);
-  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDirectlyCompositedImageSize(layer_bounds);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
@@ -5277,7 +5341,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
       FakeRasterSource::CreateFilled(layer_bounds);
 
   SetupPendingTree(pending_raster_source);
-  pending_layer()->set_is_directly_composited_image(true);
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
 
   float expected_contents_scale = 0.25f;
   for (int i = 1; i < 30; ++i) {
@@ -5324,6 +5388,328 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
                         ->contents_scale_key())
         << "ideal_contents_scale: " << ideal_contents_scale;
   }
+}
+
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOnChange) {
+  gfx::Size layer_bounds(400, 400);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Set an image size that is smaller than the layer bounds.
+  gfx::Size image_size(200, 200);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.5f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Change the bounds and ensure we recalculated raster scale.
+  pending_layer()->SetBounds(gfx::Size(320, 320));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.625f, pending_layer()
+                              ->picture_layer_tiling_set()
+                              ->FindTilingWithResolution(HIGH_RESOLUTION)
+                              ->contents_scale_key());
+
+  // Set an image size much larger than the layer bounds (5x). Verify that the
+  // scaling down code is triggered (we should halve the raster scale until it
+  // is less than 4x the ideal source scale).
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->SetDirectlyCompositedImageSize(gfx::Size(2000, 2000));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(2.5f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Update the bounds to no longer match the aspect ratio, but still compute
+  // the same raster scale.
+  pending_layer()->SetBounds(gfx::Size(600, 500));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(4.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Update the bounds and and bump up the ideal scale so that the scale down
+  // restriction is lifted.
+  pending_layer()->SetBounds(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 4.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(5.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Lower the ideal scale to see that the clamping still applied as it is
+  // lowered.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.5f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.25f, pending_layer()
+                             ->picture_layer_tiling_set()
+                             ->FindTilingWithResolution(HIGH_RESOLUTION)
+                             ->contents_scale_key());
+
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.25f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.625f, pending_layer()
+                              ->picture_layer_tiling_set()
+                              ->FindTilingWithResolution(HIGH_RESOLUTION)
+                              ->contents_scale_key());
+}
+
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
+  gfx::Size layer_bounds(5, 5);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Start with image and bounds matching to have this layer initially opted
+  // in to directly composited images.
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.3f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Change the image and bounds to values that make the layer not eligible for
+  // direct compositing. This must be reflected by a |contents_scale_key()| of
+  // 0.1f (matching the ideal source scale).
+  gfx::Size image_size(300, 300);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.2f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Ensure we get back to a directly composited image if the input values
+  // change such that the optimization should apply.
+  pending_layer()->SetBounds(ScaleToFlooredSize(layer_bounds, 2));
+  pending_layer()->SetDirectlyCompositedImageSize(
+      ScaleToFlooredSize(image_size, 2));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.46875, pending_layer()
+                               ->picture_layer_tiling_set()
+                               ->FindTilingWithResolution(HIGH_RESOLUTION)
+                               ->contents_scale_key());
+}
+
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageHistograms) {
+  base::HistogramTester histogram_tester;
+
+  gfx::Size layer_bounds(5, 5);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Set the image and bounds to values that make the layer not eligible for
+  // direct compositing. This must be reflected by a |contents_scale_key()| of
+  // 0.2f (matching the ideal source scale).
+  gfx::Size image_size(300, 300);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.2f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      true, 0);
+
+  // At ideal scale of 1, we save 270000 pixels for a 600x600 layer directly
+  // compositing a 300x300 image.
+  pending_layer()->SetBounds(gfx::Size(600, 600));
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaSaved",
+      270000, 1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaSaved",
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaAdded",
+      0);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      true, 0);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      true, 1);
+
+  // Matching bounds should log TileAreaMatches.
+  pending_layer()->SetDirectlyCompositedImageSize(gfx::Size(600, 600));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      false, 1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaSaved",
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaAdded",
+      0);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      true, 2);
+
+  // Changing the bounds to be smaller than the image should add a TileAreaAdded
+  // histogram bucket count.
+  pending_layer()->SetBounds(gfx::Size(300, 300));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaAdded",
+      270000, 1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaSaved",
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaAdded",
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      false, 2);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      true, 3);
+
+  // So far we haven't avoided any re-raster (as sizes have been updated at
+  // every stage of the test). Similarly, just updating tiles with no scale
+  // changes should not result in those histograms being logged.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      false, 0);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      true, 0);
+
+  // Reduce the ideal scale - directly composited image should not re-raster.
+  // Neither will-change:transform or active transformation so the 'false'
+  // bucket should get an entry.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.5f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      true, 0);
+
+  // Set will-change:transform and update tiles with a different ideal scale.
+  pending_layer()->SetHasWillChangeTransformHint(true);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.6f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "AvoidRasterAdjustmentWithTransformTrigger",
+      true, 1);
+
+  // None of the operations past the first one should have incremented this
+  // histogram.
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      false, 1);
+}
+
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageHistogramsOverflow) {
+  base::HistogramTester histogram_tester;
+
+  constexpr int kLargeDimension = std::numeric_limits<int>::max() / 2;
+  gfx::Size layer_bounds(kLargeDimension, kLargeDimension);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  // Overflow the area calculation for the histograms - we should still get
+  // the correct high res scale key, but no histograms should be logged.
+  SetupPendingTree(pending_raster_source);
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaSaved",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaAdded",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "TileAreaMatches",
+      0);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Compositing.Renderer.DirectlyCompositedImage."
+      "RasterScaleDirectlyComposited",
+      false, 0);
 }
 
 TEST_F(LegacySWPictureLayerImplTest,

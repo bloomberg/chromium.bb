@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -41,7 +42,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
+        net::ConfiguredProxyResolutionService::CreateDirect());
     url_request_context_ = context_builder.Build();
   }
 

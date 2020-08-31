@@ -18,19 +18,6 @@ class FilePath;
 
 namespace mac {
 
-// Full screen modes, in increasing order of priority.  More permissive modes
-// take precedence.
-enum FullScreenMode {
-  kFullScreenModeHideAll = 0,
-  kFullScreenModeHideDock = 1,
-  kFullScreenModeAutoHideAll = 2,
-  kNumFullScreenModes = 3,
-
-  // kFullScreenModeNormal is not a valid FullScreenMode, but it is useful to
-  // other classes, so we include it here.
-  kFullScreenModeNormal = 10,
-};
-
 // Returns an sRGB color space.  The return value is a static value; do not
 // release it!
 BASE_EXPORT CGColorSpaceRef GetSRGBColorSpace();
@@ -42,26 +29,6 @@ BASE_EXPORT CGColorSpaceRef GetGenericRGBColorSpace();
 // Returns the color space being used by the main display.  The return value
 // is a static value; do not release it!
 BASE_EXPORT CGColorSpaceRef GetSystemColorSpace();
-
-// Add a full screen request for the given |mode|.  Must be paired with a
-// ReleaseFullScreen() call for the same |mode|.  This does not by itself create
-// a fullscreen window; rather, it manages per-application state related to
-// hiding the dock and menubar.  Must be called on the main thread.
-BASE_EXPORT void RequestFullScreen(FullScreenMode mode);
-
-// Release a request for full screen mode.  Must be matched with a
-// RequestFullScreen() call for the same |mode|.  As with RequestFullScreen(),
-// this does not affect windows directly, but rather manages per-application
-// state.  For example, if there are no other outstanding
-// |kFullScreenModeAutoHideAll| requests, this will reshow the menu bar.  Must
-// be called on main thread.
-BASE_EXPORT void ReleaseFullScreen(FullScreenMode mode);
-
-// Convenience method to switch the current fullscreen mode.  This has the same
-// net effect as a ReleaseFullScreen(from_mode) call followed immediately by a
-// RequestFullScreen(to_mode).  Must be called on the main thread.
-BASE_EXPORT void SwitchFullScreenModes(FullScreenMode from_mode,
-                                       FullScreenMode to_mode);
 
 // Returns true if the file at |file_path| is excluded from Time Machine
 // backups.
@@ -149,17 +116,16 @@ BASE_EXPORT int MacOSXMinorVersion();
 //   Chromium, remove the #ifdef that switches between TEST_DEPLOYMENT_TARGET
 //   and IGNORE_DEPLOYMENT_TARGET.
 
+// Versions of macOS supported at runtime but whose SDK is not supported for
+// building.
 DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(10, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(11, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(12, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(13, TEST_DEPLOYMENT_TARGET)
-
-#ifdef MAC_OS_X_VERSION_10_14
 DEFINE_IS_OS_FUNCS(14, TEST_DEPLOYMENT_TARGET)
-#else
-DEFINE_IS_OS_FUNCS(14, IGNORE_DEPLOYMENT_TARGET)
-#endif
 
+// Versions of macOS supported at runtime and whose SDK is supported for
+// building.
 #ifdef MAC_OS_X_VERSION_10_15
 DEFINE_IS_OS_FUNCS(15, TEST_DEPLOYMENT_TARGET)
 #else
@@ -197,6 +163,9 @@ BASE_EXPORT bool ParseModelIdentifier(const std::string& ident,
 // Parts of this string change based on OS locale, so it's only useful for
 // displaying to the user.
 BASE_EXPORT std::string GetOSDisplayName();
+
+// Returns the serial number of the macOS device.
+BASE_EXPORT std::string GetPlatformSerialNumber();
 
 }  // namespace mac
 }  // namespace base

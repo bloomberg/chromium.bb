@@ -6,13 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_STORAGE_NOTIFICATION_SERVICE_H_
 
 #include "base/bind.h"
+#include "url/origin.h"
 
 namespace content {
 
 // This interface is used to create a connection between the storage layer and
 // the embedder layer, where calls to UI code can be made. Embedders should
-// implement this interface as well as a GetStorageNotificationService()
-// function in it's implementation of BrowserContext.
+// vend an instance of this interface in an override of
+// BrowserContext::GetStorageNotificationService().
 class StorageNotificationService {
  public:
   StorageNotificationService() = default;
@@ -23,7 +24,7 @@ class StorageNotificationService {
   // is passed to QuotaManager in StoragePartitionImpl, where it is called
   // when QuotaManager determines appropriate to alert the user that the device
   // is in a state of storage pressure.
-  virtual base::RepeatingClosure GetStoragePressureNotificationClosure() = 0;
+  virtual void MaybeShowStoragePressureNotification(const url::Origin) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StorageNotificationService);

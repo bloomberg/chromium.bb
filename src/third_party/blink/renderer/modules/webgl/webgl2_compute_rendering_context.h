@@ -60,7 +60,7 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
@@ -79,16 +79,6 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
-
-DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL2ComputeContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL2ComputeContextType);
 
 }  // namespace blink
 

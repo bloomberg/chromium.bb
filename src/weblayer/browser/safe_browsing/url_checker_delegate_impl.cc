@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/db/database_manager.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
@@ -16,9 +16,11 @@ namespace weblayer {
 
 UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    bool disabled)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
+      safe_browsing_disabled_(disabled),
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
           {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
@@ -28,7 +30,7 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
-    const base::Callback<content::WebContents*()>& web_contents_getter) {}
+    content::WebContents::OnceGetter web_contents_getter) {}
 
 void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const security_interstitials::UnsafeResource& resource,
@@ -43,6 +45,13 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
           base::Unretained(this), resource));
 }
 
+void UrlCheckerDelegateImpl::
+    StartObservingInteractionsForDelayedBlockingPageHelper(
+        const security_interstitials::UnsafeResource& resource,
+        bool is_main_frame) {
+  NOTREACHED() << "Delayed warnings aren't implemented for WebLayer";
+}
+
 void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
@@ -53,7 +62,8 @@ void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
 
   // Report back that it is not ok to proceed with loading the URL.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false));
+                 base::BindOnce(resource.callback, false /* proceed */,
+                                false /* showed_interstitial */));
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
@@ -61,17 +71,17 @@ bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return false;
 }
 
+void UrlCheckerDelegateImpl::SetSafeBrowsingDisabled(bool disabled) {
+  safe_browsing_disabled_ = disabled;
+}
+
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
-    content::ResourceContext* resource_context,
     const GURL& original_url,
     int frame_tree_node_id,
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  // TODO(timvolodine): this is needed when safebrowsing is not enabled.
-  // For now in the context of weblayer we consider safebrowsing as always
-  // enabled. This may change in the future.
-  return false;
+  return safe_browsing_disabled_ ? true : false;
 }
 
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

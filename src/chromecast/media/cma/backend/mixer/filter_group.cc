@@ -7,9 +7,11 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
+#include "chromecast/media/audio/interleaved_channel_mixer.h"
+#include "chromecast/media/cma/backend/mixer/channel_layout.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
@@ -18,6 +20,32 @@
 
 namespace chromecast {
 namespace media {
+
+namespace {
+
+bool ParseVolumeLimit(const base::Value* dict, float* min, float* max) {
+  if (!dict->is_dict()) {
+    return false;
+  }
+  auto min_value = dict->FindDoubleKey("min");
+  auto max_value = dict->FindDoubleKey("max");
+  if (!min_value && !max_value) {
+    return false;
+  }
+  *min = 0.0f;
+  *max = 1.0f;
+  if (min_value) {
+    *min =
+        base::ClampToRange(static_cast<float>(min_value.value()), 0.0f, 1.0f);
+  }
+  if (max_value) {
+    *max =
+        base::ClampToRange(static_cast<float>(max_value.value()), *min, 1.0f);
+  }
+  return true;
+}
+
+}  // namespace
 
 FilterGroup::GroupInput::GroupInput(
     FilterGroup* group,
@@ -29,10 +57,13 @@ FilterGroup::GroupInput::~GroupInput() = default;
 
 FilterGroup::FilterGroup(int num_channels,
                          const std::string& name,
-                         std::unique_ptr<PostProcessingPipeline> pipeline)
+                         std::unique_ptr<PostProcessingPipeline> pipeline,
+                         const base::Value* volume_limits)
     : num_channels_(num_channels),
       name_(name),
-      post_processing_pipeline_(std::move(pipeline)) {}
+      post_processing_pipeline_(std::move(pipeline)) {
+  ParseVolumeLimits(volume_limits);
+}
 
 FilterGroup::~FilterGroup() = default;
 
@@ -67,8 +98,10 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
   for (auto& input : mixed_inputs_) {
     input.group->Initialize(input_config);
     input.channel_mixer = std::make_unique<InterleavedChannelMixer>(
-        ::media::GuessChannelLayout(input.group->GetOutputChannelCount()),
-        ::media::GuessChannelLayout(num_channels_), input_frames_per_write_);
+        mixer::GuessChannelLayout(input.group->GetOutputChannelCount()),
+        input.group->GetOutputChannelCount(),
+        mixer::GuessChannelLayout(num_channels_), num_channels_,
+        input_frames_per_write_);
   }
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();
@@ -81,8 +114,39 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
       true /* is_silence */);
 }
 
+void FilterGroup::ParseVolumeLimits(const base::Value* volume_limits) {
+  if (!volume_limits) {
+    return;
+  }
+
+  DCHECK(volume_limits->is_dict());
+  // Get default limits.
+  if (ParseVolumeLimit(volume_limits, &default_volume_min_,
+                       &default_volume_max_)) {
+    LOG(INFO) << "Default volume limits for '" << name_ << "' group: ["
+              << default_volume_min_ << ", " << default_volume_max_ << "]";
+  }
+
+  float min, max;
+  for (const auto& item : volume_limits->DictItems()) {
+    if (ParseVolumeLimit(&item.second, &min, &max)) {
+      LOG(INFO) << "Volume limits for device ID '" << item.first << "' = ["
+                << min << ", " << max << "]";
+      volume_limits_.insert({item.first, {min, max}});
+    }
+  }
+}
+
 void FilterGroup::AddInput(MixerInput* input) {
   active_inputs_.insert(input);
+
+  auto it = volume_limits_.find(input->device_id());
+  if (it != volume_limits_.end()) {
+    input->SetVolumeLimits(it->second.first, it->second.second);
+    return;
+  }
+
+  input->SetVolumeLimits(default_volume_min_, default_volume_max_);
 }
 
 void FilterGroup::RemoveInput(MixerInput* input) {
@@ -129,11 +193,13 @@ float FilterGroup::MixAndFilter(
 
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, input_frames_per_write_);
+  bool filled_some = false;
   for (MixerInput* input : active_inputs_) {
     ::media::AudioBus* temp = temp_buffer_.get();
     int filled =
         input->FillAudioData(input_frames_per_write_, rendering_delay, temp);
     if (filled > 0) {
+      filled_some = true;
       for (int c = 0; c < num_channels_; ++c) {
         input->VolumeScaleAccumulate(temp->channel(c), filled,
                                      mixed_->channel(c));
@@ -142,6 +208,10 @@ float FilterGroup::MixAndFilter(
       volume = std::max(volume, input->InstantaneousVolume());
       content_type = std::max(content_type, input->content_type());
     }
+  }
+  if (!filled_some && volume == 0.0f &&
+      !post_processing_pipeline_->IsRinging()) {
+    return 0.0f;  // Output will be silence, no need to process.
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraitsNoClip<float>>(

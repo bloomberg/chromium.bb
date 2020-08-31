@@ -6,6 +6,9 @@ toolchain("clang") {
   c_command = "clang"
   cpp_command = "clang++"
 
+  lib_switch = "-l"
+  lib_dir_switch = "-L"
+
   tool("cc") {
     depfile = "{{output}}.d"
     command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"

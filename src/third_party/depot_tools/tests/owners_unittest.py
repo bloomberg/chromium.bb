@@ -370,7 +370,7 @@ class OwnersDatabaseTest(_BaseTestCase):
         '',
         darin,
         '',
-        '# comment preceeded by empty line',
+        '# comment preceded by empty line',
         'per-file bar.*=%s' % jochen,
         john,
         '',
@@ -385,8 +385,8 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assertEqual(db.comments, {
         ben: {'': 'first comment'},
         brett: {'': 'first comment inline comment'},
-        jochen: {'bar.*': 'comment preceeded by empty line'},
-        john: {'': 'comment preceeded by empty line'},
+        jochen: {'bar.*': 'comment preceded by empty line'},
+        john: {'': 'comment preceded by empty line'},
         peter: {'': 'comment in the middle'}})
 
   def test_owners_rooted_at_file(self):
@@ -500,7 +500,7 @@ class ReviewersForTest(_BaseTestCase):
   def test_reviewers_for__ignores_unowned_files(self):
     # Clear the root OWNERS file.
     self.files['/OWNERS'] = ''
-    self.assert_reviewers_for(['base/vlog.h', 'chrome/browser/deafults/h'],
+    self.assert_reviewers_for(['base/vlog.h', 'chrome/browser/defaults/h'],
                               [[brett]])
 
   def test_reviewers_file_includes__absolute(self):

@@ -33,6 +33,8 @@ class LayoutDetailsMarker final : public LayoutBlockFlow {
 
   Orientation GetOrientation() const;
 
+  bool CreatesNewFormattingContext() const override { return true; }
+
   const char* GetName() const override { return "LayoutDetailsMarker"; }
 
  private:
@@ -41,9 +43,6 @@ class LayoutDetailsMarker final : public LayoutBlockFlow {
            LayoutBlockFlow::IsOfType(type);
   }
   void Paint(const PaintInfo&) const override;
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
-    return false;
-  }
 
   bool IsOpen() const;
 };

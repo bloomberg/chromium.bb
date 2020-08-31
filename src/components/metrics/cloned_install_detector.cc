@@ -14,6 +14,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -54,13 +55,16 @@ ClonedInstallDetector::~ClonedInstallDetector() {
 }
 
 void ClonedInstallDetector::CheckForClonedInstall(PrefService* local_state) {
-  base::PostTaskAndReplyWithResult(
+  if (!MachineIdProvider::HasId())
+    return;
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&MachineIdProvider::GetMachineId),
-      base::Bind(&ClonedInstallDetector::SaveMachineId,
-                 weak_ptr_factory_.GetWeakPtr(), local_state));
+      base::BindOnce(&MachineIdProvider::GetMachineId),
+      base::BindOnce(&ClonedInstallDetector::SaveMachineId,
+                     weak_ptr_factory_.GetWeakPtr(), local_state));
 }
 
 void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
@@ -77,8 +81,7 @@ void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
   if (local_state->HasPrefPath(prefs::kMetricsMachineId)) {
     if (local_state->GetInteger(prefs::kMetricsMachineId) != hashed_id) {
       id_state = ID_CHANGED;
-      // TODO(jwd): Use a callback to set the reset pref. That way
-      // ClonedInstallDetector doesn't need to know about this pref.
+      detected_this_session_ = true;
       local_state->SetBoolean(prefs::kMetricsResetIds, true);
     } else {
       id_state = ID_UNCHANGED;
@@ -90,8 +93,27 @@ void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
   local_state->SetInteger(prefs::kMetricsMachineId, hashed_id);
 }
 
+bool ClonedInstallDetector::ShouldResetClientIds(PrefService* local_state) {
+  // The existence of the pref indicates that it has been set when we saved the
+  // MachineId and thus we need to update the member variable for this session
+  // and clear the pref for future runs. We shouldn't clear the pref multiple
+  // times because it may have been cloned again.
+  if (!should_reset_client_ids_ &&
+      local_state->HasPrefPath(prefs::kMetricsResetIds)) {
+    should_reset_client_ids_ = local_state->GetBoolean(prefs::kMetricsResetIds);
+    local_state->ClearPref(prefs::kMetricsResetIds);
+  }
+
+  return should_reset_client_ids_;
+}
+
+bool ClonedInstallDetector::ClonedInstallDetectedInCurrentSession() const {
+  return detected_this_session_;
+}
+
 // static
 void ClonedInstallDetector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
   registry->RegisterIntegerPref(prefs::kMetricsMachineId, 0);
 }
 

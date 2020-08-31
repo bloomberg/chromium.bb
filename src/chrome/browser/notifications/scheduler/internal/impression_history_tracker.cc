@@ -9,12 +9,33 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/internal/stats.h"
 
 namespace notifications {
 namespace {
+
+size_t GetDismissCount(const ThrottleConfig* custom_throttle_config,
+                       const SchedulerConfig& config) {
+  if (custom_throttle_config &&
+      custom_throttle_config->negative_action_count_threshold.has_value()) {
+    return custom_throttle_config->negative_action_count_threshold.value();
+  }
+  return config.dismiss_count;
+}
+
+base::TimeDelta GetSuppressionDuration(
+    const ThrottleConfig* custom_throttle_config,
+    const SchedulerConfig& config) {
+  if (custom_throttle_config &&
+      custom_throttle_config->suppression_duration.has_value()) {
+    return custom_throttle_config->suppression_duration.value();
+  }
+  return config.suppression_duration;
+}
 
 std::string ToDatabaseKey(SchedulerClientType type) {
   switch (type) {
@@ -31,6 +52,8 @@ std::string ToDatabaseKey(SchedulerClientType type) {
       return "WebUI";
     case SchedulerClientType::kChromeUpdate:
       return "ChromeUpdate";
+    case SchedulerClientType::kPrefetch:
+      return "Prefetch";
   }
 }
 
@@ -45,11 +68,15 @@ ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
       config_(config),
       registered_clients_(std::move(registered_clients)),
       initialized_(false),
-      clock_(clock) {}
+      clock_(clock),
+      delegate_(nullptr) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
 
-void ImpressionHistoryTrackerImpl::Init(InitCallback callback) {
+void ImpressionHistoryTrackerImpl::Init(Delegate* delegate,
+                                        InitCallback callback) {
+  DCHECK(delegate && !delegate_);
+  delegate_ = delegate;
   store_->InitAndLoad(
       base::BindOnce(&ImpressionHistoryTrackerImpl::OnStoreInitialized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -59,8 +86,7 @@ void ImpressionHistoryTrackerImpl::AddImpression(
     SchedulerClientType type,
     const std::string& guid,
     const Impression::ImpressionResultMap& impression_mapping,
-    const Impression::CustomData& custom_data,
-    const base::Optional<base::TimeDelta>& custom_suppression_duration) {
+    const Impression::CustomData& custom_data) {
   DCHECK(initialized_);
   auto it = client_states_.find(type);
   if (it == client_states_.end())
@@ -69,9 +95,8 @@ void ImpressionHistoryTrackerImpl::AddImpression(
   Impression impression(type, guid, clock_->Now());
   impression.impression_mapping = impression_mapping;
   impression.custom_data = custom_data;
-  impression.custom_suppression_duration = custom_suppression_duration;
   it->second->impressions.emplace_back(std::move(impression));
-
+  it->second->last_shown_ts = clock_->Now();
   impression_map_.emplace(guid, &it->second->impressions.back());
   SetNeedsUpdate(type, true /*needs_update*/);
   MaybeUpdateDb(type);
@@ -112,7 +137,9 @@ void ImpressionHistoryTrackerImpl::GetImpressionDetail(
   int num_notification_shown_today =
       notifications::NotificationsShownToday(state);
   ImpressionDetail detail(state->current_max_daily_show,
-                          num_notification_shown_today);
+                          num_notification_shown_today,
+                          state->negative_events_count,
+                          state->last_negative_event_ts, state->last_shown_ts);
   std::move(callback).Run(std::move(detail));
 }
 
@@ -217,10 +244,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
         dismisses.emplace_back(impression);
         PruneImpressionByCreateTime(
             &dismisses, impression->create_time - config_.dismiss_duration);
-
-        // Three consecutive dismisses will result in suppression.
-        CheckConsecutiveDismiss(client_state, &dismisses,
-                                config_.dismiss_count);
+        CheckConsecutiveDismiss(client_state, &dismisses);
         break;
       case UserFeedback::kClick:
         OnClickInternal(impression->guid, false /*update_db*/);
@@ -314,8 +338,23 @@ void ImpressionHistoryTrackerImpl::UpdateThrottling(ClientState* client_state,
 
 void ImpressionHistoryTrackerImpl::CheckConsecutiveDismiss(
     ClientState* client_state,
+    base::circular_deque<Impression*>* impressions) {
+  delegate_->GetThrottleConfig(
+      client_state->type,
+      base::BindOnce(
+          &ImpressionHistoryTrackerImpl::OnCustomNegativeActionCountQueried,
+          weak_ptr_factory_.GetWeakPtr(), client_state->type, impressions));
+}
+
+void ImpressionHistoryTrackerImpl::OnCustomNegativeActionCountQueried(
+    SchedulerClientType type,
     base::circular_deque<Impression*>* impressions,
-    size_t num_actions) {
+    std::unique_ptr<ThrottleConfig> custom_throttle_config) {
+  auto it = client_states_.find(type);
+  if (it == client_states_.end())
+    return;
+  ClientState* client_state = it->second.get();
+  size_t num_actions = GetDismissCount(custom_throttle_config.get(), config_);
   if (impressions->size() < num_actions)
     return;
 
@@ -369,14 +408,29 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
   SetNeedsUpdate(client_state->type, true);
   impression->integrated = true;
 
+  delegate_->GetThrottleConfig(
+      client_state->type,
+      base::BindOnce(
+          &ImpressionHistoryTrackerImpl::OnCustomSuppressionDurationQueried,
+          weak_ptr_factory_.GetWeakPtr(), client_state->type));
+}
+
+void ImpressionHistoryTrackerImpl::OnCustomSuppressionDurationQueried(
+    SchedulerClientType type,
+    std::unique_ptr<ThrottleConfig> custom_throttle_config) {
+  auto it = client_states_.find(type);
+  if (it == client_states_.end())
+    return;
+  ClientState* client_state = it->second.get();
+  auto now = clock_->Now();
   // Suppress the notification, the user will not see this type of notification
   // for a while.
   SuppressionInfo supression_info(
-      clock_->Now(), impression->custom_suppression_duration.has_value()
-                         ? impression->custom_suppression_duration.value()
-                         : config_.suppression_duration);
+      now, GetSuppressionDuration(custom_throttle_config.get(), config_));
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
+  client_state->last_negative_event_ts = now;
+  client_state->negative_events_count++;
   stats::LogImpressionEvent(stats::ImpressionEvent::kNewSuppression);
 }
 

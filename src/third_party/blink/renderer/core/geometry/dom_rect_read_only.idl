@@ -5,12 +5,12 @@
 // https://drafts.fxtf.org/geometry/#DOMRect
 
 [
-    Constructor(optional unrestricted double x = 0, optional unrestricted double y = 0,
-                optional unrestricted double width = 0, optional unrestricted double height = 0),
     Exposed=(Window,Worker),
     Serializable
 ] interface DOMRectReadOnly {
-    [NewObject] static DOMRectReadOnly fromRect(optional DOMRectInit other);
+    constructor(optional unrestricted double x = 0, optional unrestricted double y = 0,
+                optional unrestricted double width = 0, optional unrestricted double height = 0);
+    [NewObject] static DOMRectReadOnly fromRect(optional DOMRectInit other = {});
 
     readonly attribute unrestricted double x;
     readonly attribute unrestricted double y;

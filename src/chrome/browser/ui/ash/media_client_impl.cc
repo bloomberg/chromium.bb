@@ -8,8 +8,8 @@
 
 #include "ash/public/cpp/media_controller.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +33,6 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using ash::MediaCaptureState;
 
@@ -181,8 +180,28 @@ void MediaClientImpl::HandleMediaPlayPause() {
   HandleMediaAction(ui::VKEY_MEDIA_PLAY_PAUSE);
 }
 
+void MediaClientImpl::HandleMediaPlay() {
+  HandleMediaAction(ui::VKEY_MEDIA_PLAY);
+}
+
+void MediaClientImpl::HandleMediaPause() {
+  HandleMediaAction(ui::VKEY_MEDIA_PAUSE);
+}
+
+void MediaClientImpl::HandleMediaStop() {
+  HandleMediaAction(ui::VKEY_MEDIA_STOP);
+}
+
 void MediaClientImpl::HandleMediaPrevTrack() {
   HandleMediaAction(ui::VKEY_MEDIA_PREV_TRACK);
+}
+
+void MediaClientImpl::HandleMediaSeekBackward() {
+  HandleMediaAction(ui::VKEY_OEM_103);
+}
+
+void MediaClientImpl::HandleMediaSeekForward() {
+  HandleMediaAction(ui::VKEY_OEM_104);
 }
 
 void MediaClientImpl::RequestCaptureState() {
@@ -294,6 +313,14 @@ void MediaClientImpl::HandleMediaAction(ui::KeyboardCode keycode) {
       break;
     case ui::VKEY_MEDIA_PLAY_PAUSE:
       router->NotifyTogglePlayState();
+      break;
+    // TODO(https://crbug.com/1053777): Handle media action for VKEY_MEDIA_PLAY,
+    // VKEY_MEDIA_PAUSE, VKEY_MEDIA_STOP, VKEY_OEM_103, and VKEY_OEM_104.
+    case ui::VKEY_MEDIA_PLAY:
+    case ui::VKEY_MEDIA_PAUSE:
+    case ui::VKEY_MEDIA_STOP:
+    case ui::VKEY_OEM_103:  // KEYCODE_MEDIA_REWIND
+    case ui::VKEY_OEM_104:  // KEYCODE_MEDIA_FAST_FORWARD
       break;
     default:
       break;

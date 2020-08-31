@@ -75,7 +75,8 @@ TEST(RtpPacketizerVideoGeneric, WritesExtendedHeaderWhenPictureIdIsSet) {
   const uint8_t kPayload[kPayloadSize] = {};
 
   RTPVideoHeader rtp_video_header;
-  rtp_video_header.generic.emplace().frame_id = 37;
+  rtp_video_header.video_type_header.emplace<RTPVideoHeaderLegacyGeneric>()
+      .picture_id = 37;
   rtp_video_header.frame_type = VideoFrameType::kVideoFrameKey;
   RtpPacketizerGeneric packetizer(kPayload, kNoSizeLimits, rtp_video_header);
 
@@ -97,7 +98,8 @@ TEST(RtpPacketizerVideoGeneric, RespectsMaxPayloadSizeWithExtendedHeader) {
   RtpPacketizer::PayloadSizeLimits limits;
   limits.max_payload_len = 6;
   RTPVideoHeader rtp_video_header;
-  rtp_video_header.generic.emplace().frame_id = 37;
+  rtp_video_header.video_type_header.emplace<RTPVideoHeaderLegacyGeneric>()
+      .picture_id = 37;
   RtpPacketizerGeneric packetizer(kPayload, limits, rtp_video_header);
 
   std::vector<int> payload_sizes = NextPacketFillPayloadSizes(&packetizer);
@@ -112,7 +114,8 @@ TEST(RtpPacketizerVideoGeneric, UsesMaxPayloadSizeWithExtendedHeader) {
   RtpPacketizer::PayloadSizeLimits limits;
   limits.max_payload_len = 6;
   RTPVideoHeader rtp_video_header;
-  rtp_video_header.generic.emplace().frame_id = 37;
+  rtp_video_header.video_type_header.emplace<RTPVideoHeaderLegacyGeneric>()
+      .picture_id = 37;
   RtpPacketizerGeneric packetizer(kPayload, limits, rtp_video_header);
   std::vector<int> payload_sizes = NextPacketFillPayloadSizes(&packetizer);
 
@@ -126,7 +129,8 @@ TEST(RtpPacketizerVideoGeneric, FrameIdOver15bitsWrapsAround) {
   const uint8_t kPayload[kPayloadSize] = {};
 
   RTPVideoHeader rtp_video_header;
-  rtp_video_header.generic.emplace().frame_id = 0x8137;
+  rtp_video_header.video_type_header.emplace<RTPVideoHeaderLegacyGeneric>()
+      .picture_id = 0x8137;
   rtp_video_header.frame_type = VideoFrameType::kVideoFrameKey;
   RtpPacketizerGeneric packetizer(kPayload, kNoSizeLimits, rtp_video_header);
 
@@ -163,43 +167,6 @@ TEST(RtpPacketizerVideoGeneric, DoesNotWriteHeaderForRawPayload) {
 
   rtc::ArrayView<const uint8_t> payload = packet.payload();
   EXPECT_THAT(payload, ElementsAreArray(kPayload));
-}
-
-TEST(RtpDepacketizerVideoGeneric, NonExtendedHeaderNoFrameId) {
-  const size_t kPayloadLen = 1;
-  uint8_t payload[kPayloadLen] = {0x01};
-
-  RtpDepacketizerGeneric depacketizer(/*generic_header_enabled=*/true);
-  RtpDepacketizer::ParsedPayload parsed_payload;
-  depacketizer.Parse(&parsed_payload, payload, kPayloadLen);
-
-  EXPECT_FALSE(parsed_payload.video_header().generic);
-}
-
-TEST(RtpDepacketizerVideoGeneric, ExtendedHeaderParsesFrameId) {
-  const size_t kPayloadLen = 3;
-  uint8_t payload[kPayloadLen] = {0x05, 0x13, 0x37};
-
-  RtpDepacketizerGeneric depacketizer(/*generic_header_enabled=*/true);
-  RtpDepacketizer::ParsedPayload parsed_payload;
-  depacketizer.Parse(&parsed_payload, payload, kPayloadLen);
-
-  ASSERT_TRUE(parsed_payload.video_header().generic);
-  EXPECT_EQ(0x1337, parsed_payload.video_header().generic->frame_id);
-}
-
-TEST(RtpDepacketizerVideoGeneric, DoesNotParseHeaderForRawPayload) {
-  const uint8_t kPayload[] = {0x05, 0x25, 0x52};
-  const size_t kPayloadLen = sizeof(kPayload);
-
-  RtpDepacketizerGeneric depacketizer(/*generic_header_enabled=*/false);
-  RtpDepacketizer::ParsedPayload parsed_payload;
-  depacketizer.Parse(&parsed_payload, kPayload, kPayloadLen);
-
-  EXPECT_FALSE(parsed_payload.video_header().generic);
-  EXPECT_THAT(rtc::MakeArrayView<const uint8_t>(parsed_payload.payload,
-                                                parsed_payload.payload_length),
-              ElementsAreArray(kPayload));
 }
 
 }  // namespace

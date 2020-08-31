@@ -76,6 +76,8 @@ build directories under `out` for Release and Debug device and simulator
 builds, and generates an appropriate Xcode workspace
 (`out/build/all.xcworkspace`) as well.
 
+More information about [developing with Xcode](xcode_tips.md).
+
 You can customize the build by editing the file `$HOME/.setup-gn` (create it if
 it does not exist).  Look at `src/ios/build/tools/setup-gn.config` for
 available configuration options.
@@ -91,9 +93,11 @@ $ autoninja -C out/Debug-iphonesimulator gn_all
 (`autoninja` is a wrapper that automatically provides optimal values for the
 arguments passed to `ninja`.)
 
-Note: you need to run `setup-gn.py` script every time one of the `BUILD.gn`
-file is updated (either by you or after rebasing). If you forget to run it,
-the list of targets and files in the Xcode solution may be stale.
+Note: The `setup-gn.py` script needs to run every time one of the `BUILD.gn`
+files is updated (either by you or after rebasing). If you forget to run it,
+the list of targets and files in the Xcode solution may be stale. You can run
+the script directly or use either `gclient sync` or `gclient runhooks` which
+will run `setup-gn.py` for you as part of the update hooks.
 
 You can also follow the manual instructions on the
 [Mac page](../mac_build_instructions.md), but make sure you set the
@@ -206,7 +210,7 @@ then it will be impossible to install the application on a device (Xcode will
 display an error stating that "The application was signed with invalid
 entitlements").
 
-## Running apps from the commandline
+## Running apps from the command line
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
 should run successfully in a local build. To run in the simulator from the
@@ -284,6 +288,11 @@ The second command syncs dependencies to the appropriate versions and re-runs
 hooks as needed.
 
 ## Tips, tricks, and troubleshooting
+
+Remember that the XCode project you interact with while working on Chromium is a
+build artifact, generated from the `BUILD.gn` files. Do not use it to add new
+files; instead see the procedures for [working with
+files](working_with_files.md).
 
 If you have problems building, join us in `#chromium` on `irc.freenode.net` and
 ask there. As mentioned above, be sure that the

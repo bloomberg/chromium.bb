@@ -10,9 +10,8 @@ import android.os.Bundle;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -76,8 +75,9 @@ public class NotificationTriggerBackgroundTask extends NativeBackgroundTask {
     public static void schedule(long timestamp, long delay) {
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_TIMESTAMP, timestamp);
-        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.NOTIFICATION_TRIGGER_JOB_ID,
-                                            NotificationTriggerBackgroundTask.class, delay, delay)
+        TaskInfo.TimingInfo exactInfo =
+                TaskInfo.ExactInfo.create().setTriggerAtMs(timestamp).build();
+        TaskInfo taskInfo = TaskInfo.createTask(TaskIds.NOTIFICATION_TRIGGER_JOB_ID, exactInfo)
                                     .setUpdateCurrent(true)
                                     .setIsPersisted(true)
                                     .setExtras(bundle)

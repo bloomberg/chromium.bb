@@ -4,7 +4,6 @@
 
 #include "services/network/test/test_url_loader_factory.h"
 
-#include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -234,7 +233,7 @@ TEST_F(TestURLLoaderFactoryTest, SimulateResponse) {
   network::URLLoaderCompletionStatus ok_status(net::OK);
   mojom::URLResponseHeadPtr response_head =
       CreateURLResponseHead(net::HTTP_NOT_FOUND);
-  response_head->headers->AddHeader("Foo: Bar");
+  response_head->headers->SetHeader("Foo", "Bar");
 
   // By default no request is pending.
   EXPECT_FALSE(factory()->SimulateResponseForPendingRequest(

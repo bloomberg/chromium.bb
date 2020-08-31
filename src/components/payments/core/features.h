@@ -60,8 +60,13 @@ extern const base::Feature kPaymentRequestSkipToGPay;
 // eligible credit card.
 extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 
-// Controls whether the microtransaction features are enabled.
-extern const base::Feature kWebPaymentMicrotransaction;
+// If enabled, just-in-time installable payment handlers are ranked lower than
+// complete autofill instruments in payment sheet's method selection section.
+extern const base::Feature kDownRankJustInTimePaymentApp;
+
+// Desktop only, if enabled payment handler window size matches the pop up
+// window size.
+extern const base::Feature kPaymentHandlerPopUpSizeWindow;
 
 }  // namespace features
 }  // namespace payments

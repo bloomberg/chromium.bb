@@ -21,6 +21,7 @@
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -198,7 +199,7 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
     HandleAuthNeededResponse();
   } else {
     LogFtpStartResult(FTPStartResult::kFailed);
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
   }
 }
 

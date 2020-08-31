@@ -11,10 +11,8 @@
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 
-using openscreen::platform::Clock;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 template <typename T>
@@ -308,5 +306,5 @@ TEST(RtcpCommonTest, ComputesDelayForReportBlocks) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

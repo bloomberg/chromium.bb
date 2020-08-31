@@ -8,6 +8,9 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+
+#include <tuple>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/aom_config.h"
@@ -59,7 +62,9 @@ typedef void (*Z1_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z1_Lbd fn>
 void z1_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                 const uint8_t *above, const uint8_t *left, int upsample_above,
-                int /*upsample_left*/, int dx, int dy, int /*bd*/) {
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, dx, dy);
 }
 
@@ -69,7 +74,9 @@ typedef void (*Z2_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z2_Lbd fn>
 void z2_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                 const uint8_t *above, const uint8_t *left, int upsample_above,
-                int upsample_left, int dx, int dy, int /*bd*/) {
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, upsample_left, dx, dy);
 }
 
@@ -78,9 +85,10 @@ typedef void (*Z3_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                        int upsample_left, int dx, int dy);
 template <Z3_Lbd fn>
 void z3_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
-                const uint8_t *above, const uint8_t *left,
-                int /*upsample_above*/, int upsample_left, int dx, int dy,
-                int /*bd*/) {
+                const uint8_t *above, const uint8_t *left, int upsample_above,
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_above;
   fn(dst, stride, bw, bh, above, left, upsample_left, dx, dy);
 }
 
@@ -90,8 +98,10 @@ typedef void (*Z1_Hbd)(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z1_Hbd fn>
 void z1_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
-                    int upsample_above, int /*upsample_left*/, int dx, int dy,
+                    int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, dx, dy, bd);
 }
 
@@ -104,6 +114,7 @@ void z2_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
                     int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
   fn(dst, stride, bw, bh, above, left, upsample_above, upsample_left, dx, dy,
      bd);
 }
@@ -114,8 +125,10 @@ typedef void (*Z3_Hbd)(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z3_Hbd fn>
 void z3_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
-                    int /*upsample_above*/, int upsample_left, int dx, int dy,
+                    int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
+  (void)upsample_above;
   fn(dst, stride, bw, bh, above, left, upsample_left, dx, dy, bd);
 }
 
@@ -172,6 +185,9 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
     const int kNumTests = speedtest ? kMaxNumTests : 1;
     aom_usec_timer timer;
     int tst_time = 0;
+
+    bd_ = params_.bit_depth;
+
     aom_usec_timer_start(&timer);
     for (int k = 0; k < kNumTests; ++k) {
       params_.ref_fn(dst_ref_, dst_stride_, bw_, bh_, above_, left_,
@@ -199,6 +215,8 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
   }
 
   void RunTest(bool speedtest, bool needsaturation, int p_angle) {
+    bd_ = params_.bit_depth;
+
     if (needsaturation) {
       for (int i = 0; i < kBufSize; ++i) {
         above_data_[i] = left_data_[i] = (1 << bd_) - 1;
@@ -299,9 +317,9 @@ TEST_P(LowbdDrPredTest, SaturatedValues) {
   }
 }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, LowbdDrPredTest,
     ::testing::Values(DrPredFunc<DrPred>(&z1_wrapper<av1_dr_prediction_z1_c>,
                                          NULL, AOM_BITS_8, kZ1Start),
@@ -310,6 +328,7 @@ INSTANTIATE_TEST_CASE_P(
                       DrPredFunc<DrPred>(&z3_wrapper<av1_dr_prediction_z3_c>,
                                          NULL, AOM_BITS_8, kZ3Start)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 class HighbdDrPredTest : public DrPredTest<uint16_t, DrPred_Hbd> {};
 
 TEST_P(HighbdDrPredTest, SaturatedValues) {
@@ -322,7 +341,7 @@ TEST_P(HighbdDrPredTest, SaturatedValues) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, HighbdDrPredTest,
     ::testing::Values(
         DrPredFunc<DrPred_Hbd>(&z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
@@ -343,9 +362,10 @@ INSTANTIATE_TEST_CASE_P(
                                NULL, AOM_BITS_10, kZ3Start),
         DrPredFunc<DrPred_Hbd>(&z3_wrapper_hbd<av1_highbd_dr_prediction_z3_c>,
                                NULL, AOM_BITS_12, kZ3Start)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, LowbdDrPredTest,
     ::testing::Values(DrPredFunc<DrPred>(&z1_wrapper<av1_dr_prediction_z1_c>,
                                          &z1_wrapper<av1_dr_prediction_z1_avx2>,
@@ -383,7 +403,8 @@ TEST_P(LowbdDrPredTest, OperationCheck) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+#if CONFIG_AV1_HIGHBITDEPTH
+INSTANTIATE_TEST_SUITE_P(
     AVX2, HighbdDrPredTest,
     ::testing::Values(DrPredFunc<DrPred_Hbd>(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
@@ -397,8 +418,7 @@ INSTANTIATE_TEST_CASE_P(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_avx2>,
                           AOM_BITS_12, kZ1Start),
-                      /* TODO(https://crbug.com/aomedia/2288)
-                      DrPredFunc<DrPred_Hbd>(
+                      /*DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
                           AOM_BITS_8, kZ2Start),
@@ -409,8 +429,7 @@ INSTANTIATE_TEST_CASE_P(
                       DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
-                          AOM_BITS_12, kZ2Start),
-                          */
+                          AOM_BITS_12, kZ2Start),*/
                       DrPredFunc<DrPred_Hbd>(
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_c>,
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_avx2>,
@@ -449,7 +468,47 @@ TEST_P(HighbdDrPredTest, OperationCheck) {
     }
   }
 }
-
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif  // HAVE_AVX2
+
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(
+    NEON, LowbdDrPredTest,
+    ::testing::Values(DrPredFunc<DrPred>(&z1_wrapper<av1_dr_prediction_z1_c>,
+                                         &z1_wrapper<av1_dr_prediction_z1_neon>,
+                                         AOM_BITS_8, kZ1Start),
+                      DrPredFunc<DrPred>(&z2_wrapper<av1_dr_prediction_z2_c>,
+                                         &z2_wrapper<av1_dr_prediction_z2_neon>,
+                                         AOM_BITS_8, kZ2Start),
+                      DrPredFunc<DrPred>(&z3_wrapper<av1_dr_prediction_z3_c>,
+                                         &z3_wrapper<av1_dr_prediction_z3_neon>,
+                                         AOM_BITS_8, kZ3Start)));
+
+TEST_P(LowbdDrPredTest, DISABLED_Speed) {
+  const int angles[] = { 3, 45, 87 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int i = 0; i < 3; ++i) {
+      const int angle = angles[i] + start_angle_;
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      printf("enable_upsample: %d angle: %d ~~~~~~~~~~~~~~~\n",
+             enable_upsample_, angle);
+      if (dx_ && dy_) RunTest(true, false, angle);
+    }
+  }
+}
+
+TEST_P(LowbdDrPredTest, OperationCheck) {
+  if (params_.tst_fn == NULL) return;
+  // const int angles[] = { 3, 45, 81, 87, 93, 100, 145, 187, 199, 260 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int angle = start_angle_; angle < stop_angle_; ++angle) {
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      if (dx_ && dy_) RunTest(false, false, angle);
+    }
+  }
+}
+#endif  // HAVE_NEON
 
 }  // namespace

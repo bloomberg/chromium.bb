@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -19,15 +20,12 @@
 namespace device {
 
 CredentialManagementHandler::CredentialManagementHandler(
-    service_manager::Connector* connector,
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     ReadyCallback ready_callback,
     GetPINCallback get_pin_callback,
     FinishedCallback finished_callback)
-    : FidoRequestHandlerBase(connector,
-                             fido_discovery_factory,
-                             supported_transports),
+    : FidoRequestHandlerBase(fido_discovery_factory, supported_transports),
       ready_callback_(std::move(ready_callback)),
       get_pin_callback_(std::move(get_pin_callback)),
       finished_callback_(std::move(finished_callback)) {
@@ -80,7 +78,7 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
   }
 
   authenticator_ = authenticator;
-  authenticator_->GetRetries(
+  authenticator_->GetPinRetries(
       base::BindOnce(&CredentialManagementHandler::OnRetriesResponse,
                      weak_factory_.GetWeakPtr()));
 }
@@ -118,29 +116,9 @@ void CredentialManagementHandler::OnHavePIN(std::string pin) {
     return;
   }
 
-  state_ = State::kGettingEphemeralKey;
-  authenticator_->GetEphemeralKey(
-      base::BindOnce(&CredentialManagementHandler::OnHaveEphemeralKey,
-                     weak_factory_.GetWeakPtr(), std::move(pin)));
-}
-
-void CredentialManagementHandler::OnHaveEphemeralKey(
-    std::string pin,
-    CtapDeviceResponseCode status,
-    base::Optional<pin::KeyAgreementResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(State::kGettingEphemeralKey, state_);
-
-  if (status != CtapDeviceResponseCode::kSuccess) {
-    state_ = State::kFinished;
-    std::move(finished_callback_)
-        .Run(CredentialManagementStatus::kAuthenticatorResponseInvalid);
-    return;
-  }
-
   state_ = State::kGettingPINToken;
   authenticator_->GetPINToken(
-      std::move(pin), *response,
+      std::move(pin),
       base::BindOnce(&CredentialManagementHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }
@@ -153,7 +131,7 @@ void CredentialManagementHandler::OnHavePINToken(
 
   if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
     state_ = State::kGettingRetries;
-    authenticator_->GetRetries(
+    authenticator_->GetPinRetries(
         base::BindOnce(&CredentialManagementHandler::OnRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;

@@ -5,22 +5,20 @@
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/android/chrome_jni_headers/BackgroundSyncPwaDetector_jni.h"
+#include "chrome/browser/android/shortcut_helper.h"
 #endif
 
 PeriodicBackgroundSyncPermissionContext::
-    PeriodicBackgroundSyncPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+    PeriodicBackgroundSyncPermissionContext(
+        content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::PERIODIC_BACKGROUND_SYNC,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -28,24 +26,22 @@ PeriodicBackgroundSyncPermissionContext::
     ~PeriodicBackgroundSyncPermissionContext() = default;
 
 bool PeriodicBackgroundSyncPermissionContext::IsPwaInstalled(
-    const GURL& url) const {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_BackgroundSyncPwaDetector_isPwaInstalled(env, java_url);
-#else
-  return extensions::util::GetInstalledPwaForUrl(profile(), url);
-#endif
+    const GURL& origin) const {
+  // Because we're only passed the requesting origin from the permissions
+  // infrastructure, we can't match the scope of installed PWAs to the exact URL
+  // of the permission request. We instead look for any installed PWA for the
+  // requesting origin. With this logic, if there's already a PWA installed for
+  // google.com/travel, and a request to register Periodic Background Sync comes
+  // in from google.com/maps, this method will return true and registration will
+  // succeed, provided other required conditions are met.
+  return DoesOriginContainAnyInstalledWebApp(browser_context(), origin);
 }
 
 #if defined(OS_ANDROID)
 bool PeriodicBackgroundSyncPermissionContext::IsTwaInstalled(
-    const GURL& url) const {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_BackgroundSyncPwaDetector_isTwaInstalled(env, java_url);
+    const GURL& origin) const {
+  return ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
+      origin);
 }
 #endif
 
@@ -72,7 +68,7 @@ PeriodicBackgroundSyncPermissionContext::GetPermissionStatusInternal(
   // PWA installed. Check for one-shot Background Sync content setting.
   // Expected values are CONTENT_SETTING_BLOCK or CONTENT_SETTING_ALLOW.
   auto* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(host_content_settings_map);
 
   auto content_setting = host_content_settings_map->GetContentSetting(
@@ -85,25 +81,25 @@ PeriodicBackgroundSyncPermissionContext::GetPermissionStatusInternal(
 
 void PeriodicBackgroundSyncPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   // The user should never be prompted to authorize Periodic Background Sync
   // from PeriodicBackgroundSyncPermissionContext.
   NOTREACHED();
 }
 
 void PeriodicBackgroundSyncPermissionContext::NotifyPermissionSet(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    BrowserPermissionCallback callback,
+    permissions::BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting) {
   DCHECK(!persist);
-  PermissionContextBase::NotifyPermissionSet(
+  permissions::PermissionContextBase::NotifyPermissionSet(
       id, requesting_origin, embedding_origin, std::move(callback), persist,
       content_setting);
 }

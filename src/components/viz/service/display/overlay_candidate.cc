@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -26,7 +25,7 @@ namespace viz {
 
 namespace {
 // Tolerance for considering axis vector elements to be zero.
-const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
+const SkScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
 const gfx::BufferFormat kOverlayFormats[] = {
     gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
@@ -130,9 +129,6 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     case DrawQuad::Material::kTextureContent:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad), candidate);
-    case DrawQuad::Material::kTiledContent:
-      return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
-                          candidate);
     case DrawQuad::Material::kVideoHole:
       return FromVideoHoleQuad(
           resource_provider, VideoHoleDrawQuad::MaterialCast(quad), candidate);
@@ -164,13 +160,18 @@ bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
 bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
                                   QuadList::ConstIterator quad_list_begin,
                                   QuadList::ConstIterator quad_list_end) {
+  // The rects are rounded as they're snapped by the compositor to pixel unless
+  // it is AA'ed, in which case, it won't be overlaid.
+  gfx::Rect display_rect = gfx::ToRoundedRect(candidate.display_rect);
+
   // Check that no visible quad overlaps the candidate.
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
-    gfx::RectF overlap_rect = cc::MathUtil::MapClippedRect(
+    gfx::Rect overlap_rect = gfx::ToRoundedRect(cc::MathUtil::MapClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(overlap_iter->rect));
-    if (candidate.display_rect.Intersects(overlap_rect) &&
+        gfx::RectF(overlap_iter->rect)));
+
+    if (display_rect.Intersects(overlap_rect) &&
         !OverlayCandidate::IsInvisibleQuad(*overlap_iter)) {
       return true;
     }
@@ -253,6 +254,7 @@ bool OverlayCandidate::FromDrawQuadResource(
 
   candidate->resource_id = resource_id;
   candidate->transform = overlay_transform;
+  candidate->mailbox = resource_provider->GetMailbox(resource_id);
 
   return true;
 }
@@ -296,19 +298,6 @@ bool OverlayCandidate::FromTextureQuad(
   }
   candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
   candidate->uv_rect = BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
-  return true;
-}
-
-// static
-bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
-                                    const TileDrawQuad* quad,
-                                    OverlayCandidate* candidate) {
-  if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
-                            candidate)) {
-    return false;
-  }
-  candidate->resource_size_in_pixels = quad->texture_size;
-  candidate->uv_rect = quad->tex_coord_rect;
   return true;
 }
 

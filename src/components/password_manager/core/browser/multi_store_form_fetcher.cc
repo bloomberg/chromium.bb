@@ -4,9 +4,10 @@
 
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
@@ -20,9 +21,7 @@ MultiStoreFormFetcher::MultiStoreFormFetcher(
     PasswordStore::FormDigest form_digest,
     const PasswordManagerClient* client,
     bool should_migrate_http_passwords)
-    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {
-  sort_matches_by_date_last_used_ = true;
-}
+    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {}
 
 MultiStoreFormFetcher::~MultiStoreFormFetcher() = default;
 
@@ -56,6 +55,47 @@ void MultiStoreFormFetcher::Fetch() {
   }
 }
 
+bool MultiStoreFormFetcher::IsBlacklisted() const {
+  if (client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage() &&
+      client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+          PasswordForm::Store::kAccountStore) {
+    return is_blacklisted_in_account_store_;
+  }
+  return is_blacklisted_in_profile_store_;
+}
+
+bool MultiStoreFormFetcher::IsMovingBlocked(
+    const autofill::GaiaIdHash& destination,
+    const base::string16& username) const {
+  for (const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+           matches_vector : {&federated_, &non_federated_}) {
+    for (const auto& form : *matches_vector) {
+      // Only local entries can be moved to the account store (though
+      // account store matches should never have |moving_blocked_for_list|
+      // entries anyway).
+      if (form->IsUsingAccountStore())
+        continue;
+      // Ignore PSL matches for blocking moving.
+      if (form->is_public_suffix_match)
+        continue;
+      if (form->username_value != username)
+        continue;
+      if (base::Contains(form->moving_blocked_for_list, destination))
+        return true;
+    }
+  }
+  return false;
+}
+
+std::unique_ptr<FormFetcher> MultiStoreFormFetcher::Clone() {
+  std::unique_ptr<FormFetcher> fetcher_ptr = FormFetcherImpl::Clone();
+  MultiStoreFormFetcher& fetcher =
+      *static_cast<MultiStoreFormFetcher*>(fetcher_ptr.get());
+  fetcher.is_blacklisted_in_account_store_ = is_blacklisted_in_account_store_;
+  fetcher.is_blacklisted_in_profile_store_ = is_blacklisted_in_profile_store_;
+  return fetcher_ptr;
+}
+
 void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
@@ -82,10 +122,28 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
     BrowserSavePasswordProgressLogger(client_->GetLogManager())
         .LogNumber(Logger::STRING_ON_GET_STORE_RESULTS_METHOD, results.size());
   }
-
-  // TODO(crbug.com/1002000): implement password store migration.
-
   ProcessPasswordStoreResults(std::move(partial_results_));
+}
+
+void MultiStoreFormFetcher::SplitResults(
+    std::vector<std::unique_ptr<PasswordForm>> results) {
+  // Compute the |is_blacklisted_in_profile_store_| and
+  // |is_blacklisted_in_account_store_| and then delegate the rest to splitting
+  // to FormFetcherImpl::SplitResults().
+  is_blacklisted_in_profile_store_ = false;
+  is_blacklisted_in_account_store_ = false;
+  for (auto& result : results) {
+    if (!result->blacklisted_by_user)
+      continue;
+    // Ignore PSL matches for blacklisted entries.
+    if (result->is_public_suffix_match)
+      continue;
+    if (result->IsUsingAccountStore())
+      is_blacklisted_in_account_store_ = true;
+    else
+      is_blacklisted_in_profile_store_ = true;
+  }
+  FormFetcherImpl::SplitResults(std::move(results));
 }
 
 }  // namespace password_manager

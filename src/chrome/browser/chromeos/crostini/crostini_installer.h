@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -29,6 +29,7 @@ class CrostiniInstaller : public KeyedService,
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  // When you add entries to this enum don't forget to update enums.xml
   enum class SetupResult {
     kNotStarted = 0,
     // kUserCancelled = 1,
@@ -59,7 +60,10 @@ class CrostiniInstaller : public KeyedService,
     kErrorConfiguringContainer = 23,
     kUserCancelledConfiguringContainer = 24,
 
-    kMaxValue = kUserCancelledConfiguringContainer,
+    kErrorCreateContainer = 25,
+    kErrorUnknown = 26,
+
+    kMaxValue = kErrorUnknown,
   };
 
   static CrostiniInstaller* GetForProfile(Profile* profile);
@@ -67,6 +71,8 @@ class CrostiniInstaller : public KeyedService,
   explicit CrostiniInstaller(Profile* profile);
   ~CrostiniInstaller() override;
   void Shutdown() override;
+
+  void ShowDialog(CrostiniUISurface ui_surface);
 
   // CrostiniInstallerUIDelegate:
   void Install(CrostiniManager::RestartOptions options,

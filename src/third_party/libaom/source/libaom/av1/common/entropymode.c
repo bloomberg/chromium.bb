@@ -11,9 +11,9 @@
 
 #include "aom_mem/aom_mem.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/scan.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/txb_common.h"
 
@@ -435,16 +435,16 @@ static const aom_cdf_prob
       { AOM_CDF3(601, 943) },     { AOM_CDF3(14969, 21398) }
     };
 
-static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
-    { { AOM_CDF2(24035) }, { AOM_CDF2(16630) }, { AOM_CDF2(15339) },
-      { AOM_CDF2(8386) },  { AOM_CDF2(12222) }, { AOM_CDF2(4676) } };
+static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(
+    2)] = { { AOM_CDF2(24035) }, { AOM_CDF2(16630) }, { AOM_CDF2(15339) },
+            { AOM_CDF2(8386) },  { AOM_CDF2(12222) }, { AOM_CDF2(4676) } };
 
 static const aom_cdf_prob default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(2175) }, { AOM_CDF2(1054) } };
 
-static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)] =
-    { { AOM_CDF2(23974) }, { AOM_CDF2(24188) }, { AOM_CDF2(17848) },
-      { AOM_CDF2(28622) }, { AOM_CDF2(24312) }, { AOM_CDF2(19923) } };
+static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(
+    2)] = { { AOM_CDF2(23974) }, { AOM_CDF2(24188) }, { AOM_CDF2(17848) },
+            { AOM_CDF2(28622) }, { AOM_CDF2(24312) }, { AOM_CDF2(19923) } };
 
 static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(13104) }, { AOM_CDF2(24560) }, { AOM_CDF2(18945) }
@@ -470,11 +470,11 @@ static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
             { AOM_CDF2(30237) } };
 
 static const aom_cdf_prob
-    default_interintra_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTERINTRA_MODES)] =
-        { { AOM_CDF4(8192, 16384, 24576) },
-          { AOM_CDF4(1875, 11082, 27332) },
-          { AOM_CDF4(2473, 9996, 26388) },
-          { AOM_CDF4(4238, 11537, 25926) } };
+    default_interintra_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
+        INTERINTRA_MODES)] = { { AOM_CDF4(8192, 16384, 24576) },
+                               { AOM_CDF4(1875, 11082, 27332) },
+                               { AOM_CDF4(2473, 9996, 26388) },
+                               { AOM_CDF4(4238, 11537, 25926) } };
 
 static const aom_cdf_prob
     default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
@@ -488,63 +488,63 @@ static const aom_cdf_prob
       { AOM_CDF2(16384) }
     };
 
-static const aom_cdf_prob
-    default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)] = {
-      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
-      { AOM_CDF2(23431) }, { AOM_CDF2(13171) }, { AOM_CDF2(11470) },
-      { AOM_CDF2(9770) },  { AOM_CDF2(9100) },  { AOM_CDF2(8233) },
-      { AOM_CDF2(6172) },  { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
-      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
-      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
-      { AOM_CDF2(11820) }, { AOM_CDF2(7701) },  { AOM_CDF2(16384) },
-      { AOM_CDF2(16384) }
-    };
+static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(
+    MASKED_COMPOUND_TYPES)] = {
+  { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+  { AOM_CDF2(23431) }, { AOM_CDF2(13171) }, { AOM_CDF2(11470) },
+  { AOM_CDF2(9770) },  { AOM_CDF2(9100) },  { AOM_CDF2(8233) },
+  { AOM_CDF2(6172) },  { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+  { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+  { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+  { AOM_CDF2(11820) }, { AOM_CDF2(7701) },  { AOM_CDF2(16384) },
+  { AOM_CDF2(16384) }
+};
 
-static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)] =
-    { { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2438, 4440, 6599, 8663, 11005, 12874, 15751, 18094, 20359,
-                  22362, 24127, 25702, 27752, 29450, 31171) },
-      { AOM_CDF16(806, 3266, 6005, 6738, 7218, 7367, 7771, 14588, 16323, 17367,
-                  18452, 19422, 22839, 26127, 29629) },
-      { AOM_CDF16(2779, 3738, 4683, 7213, 7775, 8017, 8655, 14357, 17939, 21332,
-                  24520, 27470, 29456, 30529, 31656) },
-      { AOM_CDF16(1684, 3625, 5675, 7108, 9302, 11274, 14429, 17144, 19163,
-                  20961, 22884, 24471, 26719, 28714, 30877) },
-      { AOM_CDF16(1142, 3491, 6277, 7314, 8089, 8355, 9023, 13624, 15369, 16730,
-                  18114, 19313, 22521, 26012, 29550) },
-      { AOM_CDF16(2742, 4195, 5727, 8035, 8980, 9336, 10146, 14124, 17270,
-                  20533, 23434, 25972, 27944, 29570, 31416) },
-      { AOM_CDF16(1727, 3948, 6101, 7796, 9841, 12344, 15766, 18944, 20638,
-                  22038, 23963, 25311, 26988, 28766, 31012) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(154, 987, 1925, 2051, 2088, 2111, 2151, 23033, 23703, 24284,
-                  24985, 25684, 27259, 28883, 30911) },
-      { AOM_CDF16(1135, 1322, 1493, 2635, 2696, 2737, 2770, 21016, 22935, 25057,
-                  27251, 29173, 30089, 30960, 31933) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) } };
+static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(
+    16)] = { { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2438, 4440, 6599, 8663, 11005, 12874, 15751, 18094,
+                         20359, 22362, 24127, 25702, 27752, 29450, 31171) },
+             { AOM_CDF16(806, 3266, 6005, 6738, 7218, 7367, 7771, 14588, 16323,
+                         17367, 18452, 19422, 22839, 26127, 29629) },
+             { AOM_CDF16(2779, 3738, 4683, 7213, 7775, 8017, 8655, 14357, 17939,
+                         21332, 24520, 27470, 29456, 30529, 31656) },
+             { AOM_CDF16(1684, 3625, 5675, 7108, 9302, 11274, 14429, 17144,
+                         19163, 20961, 22884, 24471, 26719, 28714, 30877) },
+             { AOM_CDF16(1142, 3491, 6277, 7314, 8089, 8355, 9023, 13624, 15369,
+                         16730, 18114, 19313, 22521, 26012, 29550) },
+             { AOM_CDF16(2742, 4195, 5727, 8035, 8980, 9336, 10146, 14124,
+                         17270, 20533, 23434, 25972, 27944, 29570, 31416) },
+             { AOM_CDF16(1727, 3948, 6101, 7796, 9841, 12344, 15766, 18944,
+                         20638, 22038, 23963, 25311, 26988, 28766, 31012) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(154, 987, 1925, 2051, 2088, 2111, 2151, 23033, 23703,
+                         24284, 24985, 25684, 27259, 28883, 30911) },
+             { AOM_CDF16(1135, 1322, 1493, 2635, 2696, 2737, 2770, 21016, 22935,
+                         25057, 27251, 29173, 30089, 30960, 31933) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) },
+             { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,
+                         18432, 20480, 22528, 24576, 26624, 28672, 30720) } };
 
 static const aom_cdf_prob default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(
     MOTION_MODES)] = { { AOM_CDF3(10923, 21845) }, { AOM_CDF3(10923, 21845) },
@@ -793,7 +793,7 @@ static const aom_cdf_prob
       { AOM_CDF2(28165) }, { AOM_CDF2(22401) }, { AOM_CDF2(16088) }
     };
 
-static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
+static const aom_cdf_prob default_skip_txfm_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(31671) }, { AOM_CDF2(16515) }, { AOM_CDF2(4576) }
 };
 
@@ -973,6 +973,113 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
   assert(color_index_ctx < PALETTE_COLOR_INDEX_CONTEXTS);
   return color_index_ctx;
 }
+
+int av1_fast_palette_color_index_context(const uint8_t *color_map, int stride,
+                                         int r, int c, int *color_idx) {
+  assert(r > 0 || c > 0);
+
+  // This goes in the order of left, top, and top-left. This has the advantage
+  // that unless anything here are not distinct or invalid, this will already
+  // be in sorted order. Furthermore, if either of the first two are not
+  // invalid, we know the last one is also invalid.
+  int color_neighbors[NUM_PALETTE_NEIGHBORS];
+  color_neighbors[0] = (c - 1 >= 0) ? color_map[r * stride + c - 1] : -1;
+  color_neighbors[1] = (r - 1 >= 0) ? color_map[(r - 1) * stride + c] : -1;
+  color_neighbors[2] =
+      (c - 1 >= 0 && r - 1 >= 0) ? color_map[(r - 1) * stride + c - 1] : -1;
+
+  // Since our array is so small, using a couple if statements is faster
+  int scores[NUM_PALETTE_NEIGHBORS] = { 2, 2, 1 };
+  if (color_neighbors[0] == color_neighbors[1]) {
+    scores[0] += scores[1];
+    color_neighbors[1] = -1;
+
+    if (color_neighbors[0] == color_neighbors[2]) {
+      scores[0] += scores[2];
+      color_neighbors[2] = -1;
+    }
+  } else if (color_neighbors[0] == color_neighbors[2]) {
+    scores[0] += scores[2];
+    color_neighbors[2] = -1;
+  } else if (color_neighbors[1] == color_neighbors[2]) {
+    scores[1] += scores[2];
+    color_neighbors[2] = -1;
+  }
+
+  int color_rank[NUM_PALETTE_NEIGHBORS] = { -1, -1, -1 };
+  int score_rank[NUM_PALETTE_NEIGHBORS] = { 0, 0, 0 };
+  int num_valid_colors = 0;
+  for (int idx = 0; idx < NUM_PALETTE_NEIGHBORS; idx++) {
+    if (color_neighbors[idx] != -1) {
+      score_rank[num_valid_colors] = scores[idx];
+      color_rank[num_valid_colors] = color_neighbors[idx];
+      num_valid_colors++;
+    }
+  }
+
+  // Sort everything
+  // We need to swap the first two elements if they have the same score but
+  // the color indices are not in the right order
+  if (score_rank[0] < score_rank[1] ||
+      (score_rank[0] == score_rank[1] && color_rank[0] > color_rank[1])) {
+    const int tmp_score = score_rank[0];
+    const int tmp_color = color_rank[0];
+    score_rank[0] = score_rank[1];
+    color_rank[0] = color_rank[1];
+    score_rank[1] = tmp_score;
+    color_rank[1] = tmp_color;
+  }
+  if (score_rank[0] < score_rank[2]) {
+    const int tmp_score = score_rank[0];
+    const int tmp_color = color_rank[0];
+    score_rank[0] = score_rank[2];
+    color_rank[0] = color_rank[2];
+    score_rank[2] = tmp_score;
+    color_rank[2] = tmp_color;
+  }
+  if (score_rank[1] < score_rank[2]) {
+    const int tmp_score = score_rank[1];
+    const int tmp_color = color_rank[1];
+    score_rank[1] = score_rank[2];
+    color_rank[1] = color_rank[2];
+    score_rank[2] = tmp_score;
+    color_rank[2] = tmp_color;
+  }
+
+  if (color_idx != NULL) {
+    // If any of the neighbor color has higher index than current color index,
+    // then we move up by 1 unless the current color is the same as one of the
+    // neighbor
+    const int current_color = *color_idx = color_map[r * stride + c];
+    int same_neighbor = -1;
+    for (int idx = 0; idx < NUM_PALETTE_NEIGHBORS; idx++) {
+      if (color_rank[idx] > current_color) {
+        (*color_idx)++;
+      } else if (color_rank[idx] == current_color) {
+        same_neighbor = idx;
+      }
+    }
+    if (same_neighbor != -1) {
+      *color_idx = same_neighbor;
+    }
+  }
+
+  // Get hash value of context.
+  int color_index_ctx_hash = 0;
+  static const int hash_multipliers[NUM_PALETTE_NEIGHBORS] = { 1, 2, 2 };
+  for (int idx = 0; idx < NUM_PALETTE_NEIGHBORS; ++idx) {
+    color_index_ctx_hash += score_rank[idx] * hash_multipliers[idx];
+  }
+  assert(color_index_ctx_hash > 0);
+  assert(color_index_ctx_hash <= MAX_COLOR_CONTEXT_HASH);
+
+  // Lookup context from hash.
+  const int color_index_ctx =
+      palette_color_index_context_lookup[color_index_ctx_hash];
+  assert(color_index_ctx >= 0);
+  assert(color_index_ctx < PALETTE_COLOR_INDEX_CONTEXTS);
+  return color_index_ctx;
+}
 #undef NUM_PALETTE_NEIGHBORS
 #undef MAX_COLOR_CONTEXT_HASH
 
@@ -1020,7 +1127,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
   av1_copy(fc->skip_mode_cdfs, default_skip_mode_cdfs);
-  av1_copy(fc->skip_cdfs, default_skip_cdfs);
+  av1_copy(fc->skip_txfm_cdfs, default_skip_txfm_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
   for (int i = 0; i < SPATIAL_PREDICTION_PROBS; i++)
     av1_copy(fc->seg.spatial_pred_seg_cdf[i],
@@ -1071,7 +1178,7 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   *cm->default_frame_context = *cm->fc;
   // TODO(jack.haughton@argondesign.com): don't think this should be necessary,
   // but could do with fuller testing
-  if (cm->large_scale_tile) {
+  if (cm->tiles.large_scale) {
     for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
       RefCntBuffer *const buf = get_ref_frame_buf(cm, i);
       if (buf != NULL) buf->frame_context = *cm->fc;
@@ -1087,7 +1194,8 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_clearall_segfeatures(&cm->seg);
 
   if (cm->cur_frame->seg_map)
-    memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
+    memset(cm->cur_frame->seg_map, 0,
+           (cm->mi_params.mi_rows * cm->mi_params.mi_cols));
 
   // reset mode ref deltas
   av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
@@ -1099,9 +1207,4 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_init_mv_probs(cm);
   cm->fc->initialized = 1;
   av1_setup_frame_contexts(cm);
-
-  // prev_mip will only be allocated in encoder.
-  if (frame_is_intra_only(cm) && cm->prev_mip)
-    memset(cm->prev_mip, 0,
-           cm->mi_stride * cm->mi_rows * sizeof(*cm->prev_mip));
 }

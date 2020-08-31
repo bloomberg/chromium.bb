@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
@@ -64,7 +64,7 @@ std::unique_ptr<UsbService> UsbService::Create() {
 // static
 scoped_refptr<base::SequencedTaskRunner>
 UsbService::CreateBlockingTaskRunner() {
-  return base::CreateSequencedTaskRunner(kBlockingTaskTraits);
+  return base::ThreadPool::CreateSequencedTaskRunner(kBlockingTaskTraits);
 }
 
 UsbService::~UsbService() {
@@ -81,13 +81,13 @@ scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
   return it->second;
 }
 
-void UsbService::GetDevices(const GetDevicesCallback& callback) {
+void UsbService::GetDevices(GetDevicesCallback callback) {
   std::vector<scoped_refptr<UsbDevice>> devices;
   devices.reserve(devices_.size());
   for (const auto& map_entry : devices_)
     devices.push_back(map_entry.second);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, devices));
+      FROM_HERE, base::BindOnce(std::move(callback), devices));
 }
 
 void UsbService::AddObserver(Observer* observer) {

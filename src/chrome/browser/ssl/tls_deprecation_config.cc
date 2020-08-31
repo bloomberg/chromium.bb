@@ -5,15 +5,17 @@
 #include "chrome/browser/ssl/tls_deprecation_config.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/ssl/tls_deprecation_config.pb.h"
 #include "crypto/sha2.h"
+#include "services/network/public/proto/tls_deprecation_config.pb.h"
 #include "url/gurl.h"
 
 namespace {
@@ -22,12 +24,17 @@ class TLSDeprecationConfigSingleton {
  public:
   void SetProto(
       std::unique_ptr<chrome_browser_ssl::LegacyTLSExperimentConfig> proto) {
+    // Check that the version id is set (otherwise tests can fail in confusing
+    // ways).
+    DCHECK(proto->has_version_id());
     proto_ = std::move(proto);
   }
 
   chrome_browser_ssl::LegacyTLSExperimentConfig* GetProto() const {
     return proto_.get();
   }
+
+  void Reset() { proto_.reset(); }
 
   static TLSDeprecationConfigSingleton& GetInstance() {
     static base::NoDestructor<TLSDeprecationConfigSingleton> instance;
@@ -40,8 +47,13 @@ class TLSDeprecationConfigSingleton {
 
 }  // namespace
 
-void SetRemoteTLSDeprecationConfigProto(
-    std::unique_ptr<chrome_browser_ssl::LegacyTLSExperimentConfig> proto) {
+void SetRemoteTLSDeprecationConfig(const std::string& binary_config) {
+  auto proto =
+      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
+  if (binary_config.empty() || !proto->ParseFromString(binary_config)) {
+    DVLOG(1) << "Failed parsing legacy TLS config proto";
+    return;
+  }
   TLSDeprecationConfigSingleton::GetInstance().SetProto(std::move(proto));
 }
 
@@ -67,4 +79,8 @@ bool ShouldSuppressLegacyTLSWarning(const GURL& url) {
                                 control_site_hashes.end(), host_hash);
 
   return lower != control_site_hashes.end() && *lower == host_hash;
+}
+
+void ResetTLSDeprecationConfigForTesting() {
+  TLSDeprecationConfigSingleton::GetInstance().Reset();
 }

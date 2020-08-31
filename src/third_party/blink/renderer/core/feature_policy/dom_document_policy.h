@@ -19,14 +19,14 @@ class CORE_EXPORT DOMDocumentPolicy final : public DOMFeaturePolicy {
   // Create a new DOMDocumentPolicy, which is associated with |document|.
   explicit DOMDocumentPolicy(Document* document) : document_(document) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(document_);
     ScriptWrappable::Trace(visitor);
   }
 
  protected:
   const FeaturePolicy* GetPolicy() const override {
-    return document_->GetFeaturePolicy();
+    return document_->GetSecurityContext().GetFeaturePolicy();
   }
   Document* GetDocument() const override { return document_; }
 

@@ -25,8 +25,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -289,8 +289,7 @@ void MultiProfileSupportTest::SetUp() {
   chromeos::DeviceSettingsService::Initialize();
   chromeos::CrosSettings::Initialize(
       TestingBrowserProcess::GetGlobal()->local_state());
-  ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  ChromeAshTestBase::SetUp();
+  ChromeAshTestBase::SetUp(std::make_unique<TestShellDelegateChromeOS>());
   ash_test_helper()
       ->test_session_controller_client()
       ->set_use_lower_case_user_id(false);

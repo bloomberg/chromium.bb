@@ -7,12 +7,11 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-class ContentSecurityPolicy;
 
 class CORE_EXPORT CSPDirective : public GarbageCollected<CSPDirective> {
  public:
@@ -21,7 +20,7 @@ class CORE_EXPORT CSPDirective : public GarbageCollected<CSPDirective> {
                ContentSecurityPolicy* policy)
       : name_(name), text_(name + ' ' + value), policy_(policy) {}
   virtual ~CSPDirective() = default;
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(policy_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(policy_); }
 
   const String& GetName() const { return name_; }
   const String& GetText() const { return text_; }

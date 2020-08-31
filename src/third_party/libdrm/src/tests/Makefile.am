@@ -32,6 +32,7 @@ endif
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS)\
+	-fvisibility=hidden \
 	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)
 
@@ -43,5 +44,10 @@ TESTS = \
 	random
 
 check_PROGRAMS = \
-	$(TESTS) \
-	drmdevice
+	$(TESTS)
+
+if HAVE_INSTALL_TESTS
+bin_PROGRAMS = drmdevice
+else
+check_PROGRAMS += drmdevice
+endif

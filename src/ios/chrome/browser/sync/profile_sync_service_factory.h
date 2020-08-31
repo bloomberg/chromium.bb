@@ -11,31 +11,29 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace syncer {
 class ProfileSyncService;
 class SyncService;
 }  // namespace syncer
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
-
 // Singleton that owns all SyncServices and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class ProfileSyncServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static syncer::SyncService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static syncer::SyncService* GetForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static syncer::ProfileSyncService* GetAsProfileSyncServiceForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static syncer::ProfileSyncService*
   GetAsProfileSyncServiceForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static ProfileSyncServiceFactory* GetInstance();
 

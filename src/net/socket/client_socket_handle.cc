@@ -8,8 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
@@ -25,6 +26,7 @@ ClientSocketHandle::ClientSocketHandle()
       higher_pool_(nullptr),
       reuse_type_(ClientSocketHandle::UNUSED),
       group_generation_(-1),
+      resolve_error_info_(ResolveErrorInfo(OK)),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {
@@ -124,9 +126,10 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
   }
 }
 
-void ClientSocketHandle::CloseIdleSocketsInGroup() {
+void ClientSocketHandle::CloseIdleSocketsInGroup(
+    const char* net_log_reason_utf8) {
   if (pool_)
-    pool_->CloseIdleSocketsInGroup(group_id_);
+    pool_->CloseIdleSocketsInGroup(group_id_, net_log_reason_utf8);
 }
 
 bool ClientSocketHandle::GetLoadTimingInfo(
@@ -163,6 +166,7 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
   connection_attempts_ = connect_job->GetConnectionAttempts();
 
+  resolve_error_info_ = connect_job->GetResolveErrorInfo();
   is_ssl_error_ = connect_job->IsSSLError();
   ssl_cert_request_info_ = connect_job->GetCertRequestInfo();
 }
@@ -241,6 +245,7 @@ void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {
 }
 
 void ClientSocketHandle::ResetErrorState() {
+  resolve_error_info_ = ResolveErrorInfo(OK);
   is_ssl_error_ = false;
   ssl_cert_request_info_ = nullptr;
 }

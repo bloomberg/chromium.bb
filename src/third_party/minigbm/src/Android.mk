@@ -23,6 +23,7 @@ MINIGBM_SRC := \
 	nouveau.c \
 	radeon.c \
 	rockchip.c \
+	synaptics.c \
 	tegra.c \
 	udl.c \
 	vc4.c \

@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/file_info.h"
+#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
@@ -37,8 +37,7 @@ namespace ui {
 
 namespace {
 
-constexpr OSExchangeData::FilenameToURLPolicy kFilenameToURLPolicy =
-    OSExchangeData::FilenameToURLPolicy::CONVERT_FILENAMES;
+constexpr FilenameToURLPolicy kFilenameToURLPolicy = CONVERT_FILENAMES;
 
 template <typename StringType>
 ui::PlatformClipboard::Data ToClipboardData(const StringType& data_string) {

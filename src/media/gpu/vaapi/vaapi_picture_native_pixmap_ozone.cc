@@ -17,19 +17,21 @@
 namespace media {
 
 VaapiPictureNativePixmapOzone::VaapiPictureNativePixmapOzone(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
     const gfx::Size& size,
+    const gfx::Size& visible_size,
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
-    : VaapiPictureNativePixmap(vaapi_wrapper,
+    : VaapiPictureNativePixmap(std::move(vaapi_wrapper),
                                make_context_current_cb,
                                bind_image_cb,
                                picture_buffer_id,
                                size,
+                               visible_size,
                                texture_id,
                                client_texture_id,
                                texture_target) {
@@ -71,11 +73,13 @@ bool VaapiPictureNativePixmapOzone::Initialize(
 
   const gfx::BufferFormat format = pixmap->GetBufferFormat();
 
-  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size_, format);
+  auto image =
+      base::MakeRefCounted<gl::GLImageNativePixmap>(visible_size_, format);
   if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
+
   gl_image_ = image;
   if (!gl_image_->BindTexImage(texture_target_)) {
     LOG(ERROR) << "Failed to bind texture to GLImage";
@@ -99,7 +103,7 @@ bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   auto pixmap = factory->CreateNativePixmap(
       gfx::kNullAcceleratedWidget, VK_NULL_HANDLE, size_, format,
-      gfx::BufferUsage::SCANOUT_VDA_WRITE);
+      gfx::BufferUsage::SCANOUT_VDA_WRITE, /*framebuffer_size=*/visible_size_);
   if (!pixmap) {
     LOG(ERROR) << "Failed allocating a pixmap";
     return false;
@@ -112,6 +116,15 @@ bool VaapiPictureNativePixmapOzone::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
     gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const auto& plane = gpu_memory_buffer_handle.native_pixmap_handle.planes[0];
+  if (size_.width() > static_cast<int>(plane.stride) ||
+      size_.GetArea() > static_cast<int>(plane.size)) {
+    DLOG(ERROR) << "GpuMemoryBufferHandle (stride=" << plane.stride
+                << ", size=" << plane.size
+                << "is smaller than size_=" << size_.ToString();
+    return false;
+  }
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();

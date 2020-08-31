@@ -38,8 +38,8 @@
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
-#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -56,7 +56,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   static const int kMaximumCacheableIntegerValue = 255;
   using CSSColorValue = cssvalue::CSSColorValue;
   using CSSUnsetValue = cssvalue::CSSUnsetValue;
-  using CSSPendingInterpolationValue = cssvalue::CSSPendingInterpolationValue;
+  using CSSRevertValue = cssvalue::CSSRevertValue;
   using ColorValueCache = HeapHashMap<unsigned, Member<CSSColorValue>>;
   static const unsigned kMaximumColorCacheSize = 512;
   using FontFaceValueCache =
@@ -73,14 +73,9 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   CSSInheritedValue* InheritedValue() { return inherited_value_; }
   CSSInitialValue* InitialValue() { return initial_value_; }
   CSSUnsetValue* UnsetValue() { return unset_value_; }
+  CSSRevertValue* RevertValue() { return revert_value_; }
   CSSInvalidVariableValue* InvalidVariableValue() {
     return invalid_variable_value_;
-  }
-  CSSPendingInterpolationValue* PendingInterpolationValue(
-      CSSPendingInterpolationValue::Type type) {
-    DCHECK_GE(static_cast<size_t>(type), 0u);
-    DCHECK_LE(static_cast<size_t>(type), 1u);
-    return pending_interpolation_values_[static_cast<size_t>(type)];
   }
 
   // Vector caches.
@@ -135,15 +130,15 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
     return font_face_value_cache_.insert(string, nullptr);
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Cached individual values.
   Member<CSSInheritedValue> inherited_value_;
   Member<CSSInitialValue> initial_value_;
   Member<CSSUnsetValue> unset_value_;
+  Member<CSSRevertValue> revert_value_;
   Member<CSSInvalidVariableValue> invalid_variable_value_;
-  Member<CSSPendingInterpolationValue> pending_interpolation_values_[2];
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;
   Member<CSSColorValue> color_black_;

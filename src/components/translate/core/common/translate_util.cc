@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -20,6 +20,9 @@ namespace translate {
 
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
 
+const base::Feature kTranslateSubFrames{"TranslateSubFrames",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 GURL GetTranslateSecurityOrigin() {
   std::string security_origin(kSecurityOrigin);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -28,6 +31,10 @@ GURL GetTranslateSecurityOrigin() {
         command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);
   }
   return GURL(security_origin);
+}
+
+bool IsSubFrameTranslationEnabled() {
+  return base::FeatureList::IsEnabled(kTranslateSubFrames);
 }
 
 }  // namespace translate

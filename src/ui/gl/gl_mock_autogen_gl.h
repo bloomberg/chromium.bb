@@ -270,6 +270,8 @@ MOCK_METHOD2(DeleteFencesAPPLE, void(GLsizei n, const GLuint* fences));
 MOCK_METHOD2(DeleteFencesNV, void(GLsizei n, const GLuint* fences));
 MOCK_METHOD2(DeleteFramebuffersEXT,
              void(GLsizei n, const GLuint* framebuffers));
+MOCK_METHOD2(DeleteMemoryObjectsEXT,
+             void(GLsizei n, const GLuint* memoryObjects));
 MOCK_METHOD2(DeletePathsNV, void(GLuint path, GLsizei range));
 MOCK_METHOD1(DeleteProgram, void(GLuint program));
 MOCK_METHOD2(DeleteProgramPipelines, void(GLsizei n, const GLuint* pipelines));
@@ -870,8 +872,18 @@ MOCK_METHOD5(GetVertexAttribPointervRobustANGLE,
 MOCK_METHOD2(Hint, void(GLenum target, GLenum mode));
 MOCK_METHOD4(ImportMemoryFdEXT,
              void(GLuint memory, GLuint64 size, GLenum handleType, GLint fd));
+MOCK_METHOD4(
+    ImportMemoryWin32HandleEXT,
+    void(GLuint memory, GLuint64 size, GLenum handleType, void* handle));
+MOCK_METHOD4(
+    ImportMemoryZirconHandleANGLE,
+    void(GLuint memory, GLuint64 size, GLenum handleType, GLuint handle));
 MOCK_METHOD3(ImportSemaphoreFdEXT,
              void(GLuint semaphore, GLenum handleType, GLint fd));
+MOCK_METHOD3(ImportSemaphoreWin32HandleEXT,
+             void(GLuint semaphore, GLenum handleType, void* handle));
+MOCK_METHOD3(ImportSemaphoreZirconHandleANGLE,
+             void(GLuint semaphore, GLenum handleType, GLuint handle));
 MOCK_METHOD2(InsertEventMarkerEXT, void(GLsizei length, const char* marker));
 MOCK_METHOD3(InvalidateFramebuffer,
              void(GLenum target,
@@ -916,6 +928,8 @@ MOCK_METHOD1(MatrixLoadIdentityEXT, void(GLenum matrixMode));
 MOCK_METHOD1(MaxShaderCompilerThreadsKHR, void(GLuint count));
 MOCK_METHOD1(MemoryBarrierByRegion, void(GLbitfield barriers));
 MOCK_METHOD1(MemoryBarrierEXT, void(GLbitfield barriers));
+MOCK_METHOD3(MemoryObjectParameterivEXT,
+             void(GLuint memoryObject, GLenum pname, const GLint* param));
 MOCK_METHOD1(MinSampleShading, void(GLfloat value));
 MOCK_METHOD4(MultiDrawArraysANGLE,
              void(GLenum mode,

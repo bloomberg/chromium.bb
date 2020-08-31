@@ -22,16 +22,16 @@
 #include "marl/event.h"
 #include "marl/waitgroup.h"
 
-namespace vk
-{
+namespace vk {
 
 class Fence : public Object<Fence, VkFence>, public sw::TaskEvents
 {
 public:
-	Fence(const VkFenceCreateInfo* pCreateInfo, void* mem) :
-		event(marl::Event::Mode::Manual, (pCreateInfo->flags & VK_FENCE_CREATE_SIGNALED_BIT) != 0) {}
+	Fence(const VkFenceCreateInfo *pCreateInfo, void *mem)
+	    : event(marl::Event::Mode::Manual, (pCreateInfo->flags & VK_FENCE_CREATE_SIGNALED_BIT) != 0)
+	{}
 
-	static size_t ComputeRequiredAllocationSize(const VkFenceCreateInfo* pCreateInfo)
+	static size_t ComputeRequiredAllocationSize(const VkFenceCreateInfo *pCreateInfo)
 	{
 		return 0;
 	}
@@ -52,13 +52,13 @@ public:
 		return VK_SUCCESS;
 	}
 
-    template <class CLOCK, class DURATION>
-	VkResult wait(const std::chrono::time_point<CLOCK, DURATION>& timeout)
+	template<class CLOCK, class DURATION>
+	VkResult wait(const std::chrono::time_point<CLOCK, DURATION> &timeout)
 	{
 		return event.wait_until(timeout) ? VK_SUCCESS : VK_TIMEOUT;
 	}
 
-	const marl::Event& getEvent() const { return event; }
+	const marl::Event &getEvent() const { return event; }
 
 	// TaskEvents compliance
 	void start() override
@@ -70,24 +70,24 @@ public:
 	void finish() override
 	{
 		ASSERT(!event.isSignalled());
-		if (wg.done())
+		if(wg.done())
 		{
 			event.signal();
 		}
 	}
 
 private:
-	Fence(const Fence&) = delete;
+	Fence(const Fence &) = delete;
 
 	marl::WaitGroup wg;
 	const marl::Event event;
 };
 
-static inline Fence* Cast(VkFence object)
+static inline Fence *Cast(VkFence object)
 {
 	return Fence::Cast(object);
 }
 
-} // namespace vk
+}  // namespace vk
 
-#endif // VK_FENCE_HPP_
+#endif  // VK_FENCE_HPP_

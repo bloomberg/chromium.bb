@@ -24,10 +24,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -139,6 +135,7 @@ bo_create(int fd, unsigned int format,
 	int ret;
 
 	switch (format) {
+	case DRM_FORMAT_C8:
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
 	case DRM_FORMAT_NV16:
@@ -195,6 +192,13 @@ bo_create(int fd, unsigned int format,
 	case DRM_FORMAT_BGRA1010102:
 	case DRM_FORMAT_BGRX1010102:
 		bpp = 32;
+		break;
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		bpp = 64;
 		break;
 
 	default:
@@ -279,6 +283,7 @@ bo_create(int fd, unsigned int format,
 		planes[2] = virtual + offsets[2];
 		break;
 
+	case DRM_FORMAT_C8:
 	case DRM_FORMAT_ARGB4444:
 	case DRM_FORMAT_XRGB4444:
 	case DRM_FORMAT_ABGR4444:
@@ -315,6 +320,10 @@ bo_create(int fd, unsigned int format,
 	case DRM_FORMAT_RGBX1010102:
 	case DRM_FORMAT_BGRA1010102:
 	case DRM_FORMAT_BGRX1010102:
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
 		offsets[0] = 0;
 		handles[0] = bo->handle;
 		pitches[0] = bo->pitch;

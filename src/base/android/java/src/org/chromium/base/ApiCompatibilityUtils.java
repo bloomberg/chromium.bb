@@ -19,19 +19,21 @@ import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.ImageDecoder;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.StrictMode;
 import android.os.UserManager;
+import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.v4.widget.ImageViewCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -48,6 +50,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.annotations.VerifiesOnLollipop;
 import org.chromium.base.annotations.VerifiesOnLollipopMR1;
@@ -55,7 +58,10 @@ import org.chromium.base.annotations.VerifiesOnM;
 import org.chromium.base.annotations.VerifiesOnN;
 import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.annotations.VerifiesOnP;
+import org.chromium.base.annotations.VerifiesOnQ;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -68,11 +74,24 @@ public class ApiCompatibilityUtils {
     private ApiCompatibilityUtils() {
     }
 
+    @VerifiesOnQ
+    @TargetApi(Build.VERSION_CODES.Q)
+    private static class ApisQ {
+        static boolean isRunningInUserTestHarness() {
+            return ActivityManager.isRunningInUserTestHarness();
+        }
+    }
+
     @VerifiesOnP
     @TargetApi(Build.VERSION_CODES.P)
     private static class ApisP {
         static String getProcessName() {
             return Application.getProcessName();
+        }
+
+        static Bitmap getBitmapByUri(ContentResolver cr, Uri uri) throws IOException {
+            ImageDecoder.Source imageSource = ImageDecoder.createSource(cr, uri);
+            return ImageDecoder.decodeBitmap(imageSource);
         }
     }
 
@@ -679,6 +698,13 @@ public class ApiCompatibilityUtils {
         }
     }
 
+    public static boolean isRunningInUserTestHarness() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return ApisQ.isRunningInUserTestHarness();
+        }
+        return false;
+    }
+
     private static class LayerDrawableCompat extends LayerDrawable {
         private boolean mMutated;
 
@@ -751,5 +777,16 @@ public class ApiCompatibilityUtils {
         for (int i = 0; i < layerDrawable.getNumberOfLayers(); i++) {
             layerDrawable.getDrawable(i).setBounds(oldBounds[i]);
         }
+    }
+
+    /**
+     * Retrieves an image for the given url as a Bitmap.
+     */
+    public static Bitmap getBitmapByUri(ContentResolver cr, Uri uri)
+            throws FileNotFoundException, IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return ApisP.getBitmapByUri(cr, uri);
+        }
+        return MediaStore.Images.Media.getBitmap(cr, uri);
     }
 }

@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
-import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
+import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
@@ -28,17 +28,18 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -59,13 +60,16 @@ import java.util.List;
 
 /** Tests for the {@link StartSurfaceLayout}, mainly for animation performance. */
 @RunWith(ChromeJUnit4ClassRunner.class)
+// clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study,"
                 + ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
         "force-fieldtrials=Study/Group"})
+@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 public class StartSurfaceLayoutPerfTest {
+    // clang-format on
     private static final String TAG = "SSLayoutPerfTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
             + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
@@ -80,6 +84,7 @@ public class StartSurfaceLayoutPerfTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
+    @SuppressWarnings("FieldCanBeLocal")
     private EmbeddedTestServer mTestServer;
     private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;
@@ -89,7 +94,6 @@ public class StartSurfaceLayoutPerfTest {
 
     @Before
     public void setUp() {
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityFromLauncher();
 
@@ -107,7 +111,7 @@ public class StartSurfaceLayoutPerfTest {
             mWaitingTime = 1000;
             mTabNumCap = 0;
         }
-        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()
@@ -166,6 +170,7 @@ public class StartSurfaceLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @FlakyTest(message = "https://crbug.com/1045938")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.
@@ -176,6 +181,7 @@ public class StartSurfaceLayoutPerfTest {
     @Test
     @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1048268")
     public void testTabToGridFromLiveTabWith100Tabs() throws InterruptedException {
         // Skip waiting for loading. Otherwise it would take too long.
         // Note that most of the tabs won't have thumbnails.
@@ -400,7 +406,7 @@ public class StartSurfaceLayoutPerfTest {
                 "The thumbnail " + etc1File.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
 
-        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
+        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab.getId());
         CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
                 "The thumbnail " + jpegFile.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);

@@ -41,8 +41,8 @@ const int kCMarkerPaddingPx = 7;
 // Recommended UA margin for list markers.
 const int kCUAMarkerMarginEm = 1;
 
-LayoutListMarker::LayoutListMarker(LayoutListItem* item)
-    : LayoutBox(nullptr), list_item_(item), line_offset_() {
+LayoutListMarker::LayoutListMarker(Element* element) : LayoutBox(element) {
+  DCHECK(ListItem());
   SetInline(true);
   SetIsAtomicInlineLevel(true);
 }
@@ -55,11 +55,11 @@ void LayoutListMarker::WillBeDestroyed() {
   LayoutBox::WillBeDestroyed();
 }
 
-LayoutListMarker* LayoutListMarker::CreateAnonymous(LayoutListItem* item) {
-  Document& document = item->GetDocument();
-  LayoutListMarker* layout_object = new LayoutListMarker(item);
-  layout_object->SetDocumentForAnonymous(&document);
-  return layout_object;
+const LayoutListItem* LayoutListMarker::ListItem() const {
+  LayoutObject* list_item = GetNode()->parentNode()->GetLayoutObject();
+  DCHECK(list_item);
+  DCHECK(list_item->IsListItem());
+  return ToLayoutListItem(list_item);
 }
 
 LayoutSize LayoutListMarker::ImageBulletSize() const {
@@ -77,7 +77,8 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
   return RoundedLayoutSize(
       image_->ImageSize(GetDocument(), StyleRef().EffectiveZoom(),
-                        LayoutSize(bullet_width, bullet_width)));
+                        LayoutSize(bullet_width, bullet_width),
+                        LayoutObject::ShouldRespectImageOrientation(this)));
 }
 
 void LayoutListMarker::StyleWillChange(StyleDifference diff,
@@ -88,7 +89,7 @@ void LayoutListMarker::StyleWillChange(StyleDifference diff,
        (new_style.ListStyleType() == EListStyleType::kString &&
         new_style.ListStyleStringValue() !=
             StyleRef().ListStyleStringValue()))) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kStyleChange);
   }
 
@@ -127,14 +128,15 @@ void LayoutListMarker::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutUnit block_offset = LogicalTop();
-  for (LayoutBox* o = ParentBox(); o && o != ListItem(); o = o->ParentBox()) {
+  const LayoutListItem* list_item = ListItem();
+  for (LayoutBox* o = ParentBox(); o && o != list_item; o = o->ParentBox()) {
     block_offset += o->LogicalTop();
   }
-  if (ListItem()->StyleRef().IsLeftToRightDirection()) {
-    line_offset_ = ListItem()->LogicalLeftOffsetForLine(
+  if (list_item->StyleRef().IsLeftToRightDirection()) {
+    line_offset_ = list_item->LogicalLeftOffsetForLine(
         block_offset, kDoNotIndentText, LayoutUnit());
   } else {
-    line_offset_ = ListItem()->LogicalRightOffsetForLine(
+    line_offset_ = list_item->LogicalRightOffsetForLine(
         block_offset, kDoNotIndentText, LayoutUnit());
   }
   if (IsImage()) {
@@ -145,20 +147,10 @@ void LayoutListMarker::UpdateLayout() {
   } else {
     const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
     DCHECK(font_data);
-    SetLogicalWidth(MinPreferredLogicalWidth());
+    SetLogicalWidth(PreferredLogicalWidths().min_size);
     SetLogicalHeight(
         LayoutUnit(font_data ? font_data->GetFontMetrics().Height() : 0));
   }
-
-  SetMarginStart(LayoutUnit());
-  SetMarginEnd(LayoutUnit());
-
-  const Length& start_margin = StyleRef().MarginStart();
-  const Length& end_margin = StyleRef().MarginEnd();
-  if (start_margin.IsFixed())
-    SetMarginStart(LayoutUnit(start_margin.Value()));
-  if (end_margin.IsFixed())
-    SetMarginEnd(LayoutUnit(end_margin.Value()));
 
   ClearNeedsLayout();
 }
@@ -171,7 +163,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
 
   LayoutSize image_size = IsImage() ? ImageBulletSize() : LayoutSize();
   if (Size() != image_size || image_->ErrorOccurred()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kImageChanged);
   } else {
     SetShouldDoFullPaintInvalidation();
@@ -179,14 +171,11 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
 }
 
 void LayoutListMarker::UpdateMarginsAndContent() {
-  if (PreferredLogicalWidthsDirty())
-    ComputePreferredLogicalWidths();
-  else
-    UpdateMargins();
+  UpdateMargins(PreferredLogicalWidths().min_size);
 }
 
 void LayoutListMarker::UpdateContent() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
 
   text_ = "";
 
@@ -202,7 +191,7 @@ void LayoutListMarker::UpdateContent() {
       break;
     case ListStyleCategory::kLanguage:
       text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
-                                        list_item_->Value());
+                                        ListItem()->Value());
       break;
     case ListStyleCategory::kStaticString:
       text_ = StyleRef().ListStyleStringValue();
@@ -214,7 +203,7 @@ String LayoutListMarker::TextAlternative() const {
   if (GetListStyleCategory() == ListStyleCategory::kStaticString)
     return text_;
   UChar suffix =
-      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value());
+      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value());
   // Return suffix after the marker text, even in RTL, reflecting speech order.
   return text_ + suffix + ' ';
 }
@@ -232,7 +221,7 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
   // TODO(wkorman): Look into constructing a text run for both text and suffix
   // and painting them together.
   UChar suffix[2] = {
-      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value()),
+      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value()),
       ' '};
   TextRun run =
       ConstructTextRun(font, suffix, 2, StyleRef(), StyleRef().Direction());
@@ -240,40 +229,36 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
   return item_width + suffix_space_width;
 }
 
-void LayoutListMarker::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
-  UpdateContent();
+MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
+  DCHECK(IntrinsicLogicalWidthsDirty());
+  const_cast<LayoutListMarker*>(this)->UpdateContent();
 
+  MinMaxSizes sizes;
   if (IsImage()) {
     LayoutSize image_size(ImageBulletSize());
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        StyleRef().IsHorizontalWritingMode() ? image_size.Width()
-                                             : image_size.Height();
-    ClearPreferredLogicalWidthsDirty();
-    UpdateMargins();
-    return;
+    sizes = StyleRef().IsHorizontalWritingMode() ? image_size.Width()
+                                                 : image_size.Height();
+  } else {
+    ListStyleCategory category = GetListStyleCategory();
+    switch (category) {
+      case ListStyleCategory::kNone:
+        break;
+      case ListStyleCategory::kSymbol:
+        sizes = WidthOfSymbol(StyleRef());
+        break;
+      case ListStyleCategory::kLanguage:
+      case ListStyleCategory::kStaticString:
+        sizes = GetWidthOfText(category);
+        break;
+    }
   }
 
-  LayoutUnit logical_width;
-  ListStyleCategory category = GetListStyleCategory();
-  switch (category) {
-    case ListStyleCategory::kNone:
-      break;
-    case ListStyleCategory::kSymbol:
-      logical_width = WidthOfSymbol(StyleRef());
-      break;
-    case ListStyleCategory::kLanguage:
-    case ListStyleCategory::kStaticString:
-      logical_width = GetWidthOfText(category);
-      break;
-  }
+  const_cast<LayoutListMarker*>(this)->UpdateMargins(sizes.min_size);
+  return sizes;
+}
 
-  min_preferred_logical_width_ = logical_width;
-  max_preferred_logical_width_ = logical_width;
-
-  ClearPreferredLogicalWidthsDirty();
-
-  UpdateMargins();
+MinMaxSizes LayoutListMarker::PreferredLogicalWidths() const {
+  return IntrinsicLogicalWidths();
 }
 
 LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
@@ -285,32 +270,27 @@ LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
   return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
 }
 
-void LayoutListMarker::UpdateMargins() {
+void LayoutListMarker::UpdateMargins(LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
-  if (IsInside()) {
+  if (IsInsideListMarker()) {
     std::tie(margin_start, margin_end) =
         InlineMarginsForInside(style, IsImage());
   } else {
     std::tie(margin_start, margin_end) =
-        InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
+        InlineMarginsForOutside(style, IsImage(), marker_inline_size);
   }
 
-  Length start_length = Length::Fixed(margin_start);
-  Length end_length = Length::Fixed(margin_end);
-
-  if (start_length != style.MarginStart() || end_length != style.MarginEnd()) {
-    scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(style);
-    new_style->SetMarginStart(start_length);
-    new_style->SetMarginEnd(end_length);
-    SetStyleInternal(std::move(new_style));
-  }
+  SetMarginStart(margin_start);
+  SetMarginEnd(margin_end);
 }
 
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
     const ComputedStyle& style,
     bool is_image) {
+  if (!style.ContentBehavesAsNormal())
+    return {};
   if (is_image)
     return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
   switch (GetListStyleCategory(style.ListStyleType())) {
@@ -329,51 +309,31 @@ std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForOutside(
     LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
-  if (style.IsLeftToRightDirection()) {
-    if (is_image) {
-      margin_start = -marker_inline_size - kCMarkerPaddingPx;
-    } else {
-      switch (GetListStyleCategory(style.ListStyleType())) {
-        case ListStyleCategory::kNone:
-          break;
-        case ListStyleCategory::kSymbol: {
-          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-          DCHECK(font_data);
-          if (!font_data)
-            return {};
-          const FontMetrics& font_metrics = font_data->GetFontMetrics();
-          int offset = font_metrics.Ascent() * 2 / 3;
-          margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
-          break;
-        }
-        default:
-          margin_start = -marker_inline_size;
-      }
-    }
-    margin_end = -margin_start - marker_inline_size;
+  if (!style.ContentBehavesAsNormal()) {
+    margin_start = -marker_inline_size;
+  } else if (is_image) {
+    margin_start = -marker_inline_size - kCMarkerPaddingPx;
+    margin_end = LayoutUnit(kCMarkerPaddingPx);
   } else {
-    if (is_image) {
-      margin_end = LayoutUnit(kCMarkerPaddingPx);
-    } else {
-      switch (GetListStyleCategory(style.ListStyleType())) {
-        case ListStyleCategory::kNone:
-          break;
-        case ListStyleCategory::kSymbol: {
-          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-          DCHECK(font_data);
-          if (!font_data)
-            return {};
-          const FontMetrics& font_metrics = font_data->GetFontMetrics();
-          int offset = font_metrics.Ascent() * 2 / 3;
-          margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
-          break;
-        }
-        default:
-          margin_end = LayoutUnit();
+    switch (GetListStyleCategory(style.ListStyleType())) {
+      case ListStyleCategory::kNone:
+        break;
+      case ListStyleCategory::kSymbol: {
+        const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+        DCHECK(font_data);
+        if (!font_data)
+          return {};
+        const FontMetrics& font_metrics = font_data->GetFontMetrics();
+        int offset = font_metrics.Ascent() * 2 / 3;
+        margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
+        margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
+        break;
       }
+      default:
+        margin_start = -marker_inline_size;
     }
-    margin_start = -margin_end - marker_inline_size;
   }
+  DCHECK_EQ(margin_start + margin_end, -marker_inline_size);
   return {margin_start, margin_end};
 }
 
@@ -382,7 +342,7 @@ LayoutUnit LayoutListMarker::LineHeight(
     LineDirectionMode direction,
     LinePositionMode line_position_mode) const {
   if (!IsImage())
-    return list_item_->LineHeight(first_line, direction,
+    return ListItem()->LineHeight(first_line, direction,
                                   kPositionOfInteriorLineBoxes);
   return LayoutBox::LineHeight(first_line, direction, line_position_mode);
 }
@@ -394,7 +354,7 @@ LayoutUnit LayoutListMarker::BaselinePosition(
     LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   if (!IsImage())
-    return list_item_->BaselinePosition(baseline_type, first_line, direction,
+    return ListItem()->BaselinePosition(baseline_type, first_line, direction,
                                         kPositionOfInteriorLineBoxes);
   return LayoutBox::BaselinePosition(baseline_type, first_line, direction,
                                      line_position_mode);
@@ -475,11 +435,6 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
   }
 }
 
-bool LayoutListMarker::IsInside() const {
-  return list_item_->Ordinal().NotInList() ||
-         StyleRef().ListStylePosition() == EListStylePosition::kInside;
-}
-
 LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
   if (IsImage())
     return LayoutRect(LayoutPoint(), ImageBulletSize());
@@ -533,33 +488,6 @@ LayoutRect LayoutListMarker::RelativeSymbolMarkerRect(
     relative_rect.SetX(width - relative_rect.X() - relative_rect.Width());
   }
   return relative_rect;
-}
-
-void LayoutListMarker::ListItemStyleDidChange() {
-  Node* list_item = list_item_->GetNode();
-  const ComputedStyle* cached_marker_style =
-      list_item->IsPseudoElement()
-          ? nullptr
-          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
-  scoped_refptr<ComputedStyle> new_style;
-  if (cached_marker_style) {
-    new_style = ComputedStyle::Clone(*cached_marker_style);
-  } else {
-    // The marker always inherits from the list item, regardless of where it
-    // might end up (e.g., in some deeply nested line box). See CSS3 spec.
-    new_style = ComputedStyle::Create();
-    new_style->InheritFrom(list_item_->StyleRef());
-    new_style->SetStyleType(kPseudoIdMarker);
-    new_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
-    new_style->SetFontVariantNumericSpacing(FontVariantNumeric::kTabularNums);
-  }
-  if (Style()) {
-    // Reuse the current margins. Otherwise resetting the margins to initial
-    // values would trigger unnecessary layout.
-    new_style->SetMarginStart(StyleRef().MarginStart());
-    new_style->SetMarginEnd(StyleRef().MarginRight());
-  }
-  SetStyle(std::move(new_style));
 }
 
 }  // namespace blink

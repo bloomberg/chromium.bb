@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/fling_scheduler.h"
 
+#include "build/build_config.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -11,6 +12,10 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "ui/display/win/test/scoped_screen_win.h"
+#endif
 
 namespace content {
 
@@ -80,9 +85,9 @@ class FlingSchedulerTest : public testing::Test,
   }
 
   void SimulateFlingStart(const gfx::Vector2dF& velocity) {
-    blink::WebGestureEvent fling_start(blink::WebInputEvent::kGestureFlingStart,
-                                       0, base::TimeTicks::Now(),
-                                       blink::WebGestureDevice::kTouchscreen);
+    blink::WebGestureEvent fling_start(
+        blink::WebInputEvent::Type::kGestureFlingStart, 0,
+        base::TimeTicks::Now(), blink::WebGestureDevice::kTouchscreen);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
@@ -92,8 +97,8 @@ class FlingSchedulerTest : public testing::Test,
 
   void SimulateFlingCancel() {
     blink::WebGestureEvent fling_cancel(
-        blink::WebInputEvent::kGestureFlingCancel, 0, base::TimeTicks::Now(),
-        blink::WebGestureDevice::kTouchscreen);
+        blink::WebInputEvent::Type::kGestureFlingCancel, 0,
+        base::TimeTicks::Now(), blink::WebGestureDevice::kTouchscreen);
     fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
     fling_controller_->ObserveAndMaybeConsumeGestureEvent(
@@ -119,6 +124,9 @@ class FlingSchedulerTest : public testing::Test,
   MockRenderProcessHost* process_host_;
   TestRenderWidgetHostView* view_;
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
+#if defined(OS_WIN)
+  display::win::test::ScopedScreenWin scoped_screen_win_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FlingSchedulerTest);
 };

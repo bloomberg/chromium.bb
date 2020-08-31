@@ -14,6 +14,8 @@
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
 
@@ -46,6 +48,15 @@ namespace {
 constexpr wchar_t kAccountPicturesRootRegKey[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AccountPicture\\Users";
 constexpr wchar_t kImageRegKey[] = L"Image";
+
+// Registry entry that controls whether GCPW is the default
+// Credential Provider or not.
+constexpr wchar_t kMakeGcpwDefaultCredProvider[] = L"set_gcpw_as_default_cp";
+// Windows OS defined registry entry used to configure the
+// default credential provider CLSID.
+constexpr wchar_t kDefaultCredProviderPath[] =
+    L"Software\\Policies\\Microsoft\\Windows\\System";
+constexpr wchar_t kDefaultCredProviderKey[] = L"DefaultCredentialProvider";
 
 HRESULT SetMachineRegDWORD(const base::string16& key_name,
                            const base::string16& name,
@@ -94,6 +105,15 @@ base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
 }
 
 }  // namespace
+
+HRESULT MakeGcpwDefaultCP() {
+  if (GetGlobalFlagOrDefault(kMakeGcpwDefaultCredProvider, 1))
+    return SetMachineRegString(
+        kDefaultCredProviderPath, kDefaultCredProviderKey,
+        base::win::String16FromGUID(CLSID_GaiaCredentialProvider));
+
+  return S_OK;
+}
 
 HRESULT GetMachineRegDWORD(const base::string16& key_name,
                            const base::string16& name,
@@ -192,6 +212,10 @@ DWORD GetGlobalFlagOrDefault(const base::string16& reg_key,
   return SUCCEEDED(hr) ? value : default_value;
 }
 
+HRESULT SetGlobalFlag(const base::string16& name, DWORD value) {
+  return SetMachineRegDWORD(kGcpRootKeyName, name, value);
+}
+
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value) {
   return SetMachineRegString(kGcpRootKeyName, name, value);
@@ -263,26 +287,32 @@ HRESULT GetUserTokenHandles(
     length = base::size(token_handle);
     HRESULT token_handle_hr =
         GetUserProperty(sid, kUserTokenHandle, token_handle, &length);
+    wchar_t email_address[256];
+    length = base::size(email_address);
+    HRESULT email_address_hr =
+        GetUserProperty(sid, kUserEmail, email_address, &length);
     sid_to_handle_info->emplace(
         sid,
         UserTokenHandleInfo{SUCCEEDED(gaia_id_hr) ? gaia_id : L"",
+                            SUCCEEDED(email_address_hr) ? email_address : L"",
                             SUCCEEDED(token_handle_hr) ? token_handle : L""});
   }
   return S_OK;
 }
 
-HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
+HRESULT GetSidFromKey(const wchar_t* key,
+                      const base::string16& value,
+                      wchar_t* sid,
+                      ULONG length) {
   DCHECK(sid);
-
-
   bool result_found = false;
   base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, kGcpUsersRootKeyName);
   for (; iter.Valid(); ++iter) {
     const wchar_t* user_sid = iter.Name();
-    wchar_t user_id[256];
-    ULONG user_length = base::size(user_id);
-    HRESULT hr = GetUserProperty(user_sid, kUserId, user_id, &user_length);
-    if (SUCCEEDED(hr) && id == user_id) {
+    wchar_t result[256];
+    ULONG result_length = base::size(result);
+    HRESULT hr = GetUserProperty(user_sid, key, result, &result_length);
+    if (SUCCEEDED(hr) && value == result) {
       // Make sure there are not 2 users with the same SID.
       if (result_found)
         return HRESULT_FROM_WIN32(ERROR_USER_EXISTS);
@@ -293,6 +323,16 @@ HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
   }
 
   return result_found ? S_OK : HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
+HRESULT GetSidFromEmail(const base::string16& email,
+                        wchar_t* sid,
+                        ULONG length) {
+  return GetSidFromKey(kUserEmail, email, sid, length);
+}
+
+HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
+  return GetSidFromKey(kUserId, id, sid, length);
 }
 
 HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {

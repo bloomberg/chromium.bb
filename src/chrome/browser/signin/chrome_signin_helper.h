@@ -13,7 +13,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -42,7 +42,7 @@ class ChromeRequestAdapter : public RequestAdapter {
 
   virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
 
-  virtual content::ResourceType GetResourceType() const = 0;
+  virtual blink::mojom::ResourceType GetResourceType() const = 0;
 
   virtual GURL GetReferrerOrigin() const = 0;
 
@@ -81,7 +81,6 @@ void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms);
 
 // Adds an account consistency header to Gaia requests from a connected profile,
 // with the exception of requests from gaia webview.
-// Returns true if the account consistency header was added to the request.
 // Removes the header if it is already in the headers but should not be there.
 void FixAccountConsistencyRequestHeader(
     ChromeRequestAdapter* request,
@@ -91,7 +90,7 @@ void FixAccountConsistencyRequestHeader(
     AccountConsistencyMethod account_consistency,
     std::string gaia_id,
 #if defined(OS_CHROMEOS)
-    bool account_consistency_mirror_required,
+    bool is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     bool is_sync_enabled,

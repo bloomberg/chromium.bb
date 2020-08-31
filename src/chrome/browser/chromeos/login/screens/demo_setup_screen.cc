@@ -19,9 +19,19 @@ constexpr char kUserActionPowerwash[] = "powerwash";
 
 namespace chromeos {
 
+// static
+std::string DemoSetupScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(DemoSetupScreenView::kScreenId),
+    : BaseScreen(DemoSetupScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -33,12 +43,12 @@ DemoSetupScreen::~DemoSetupScreen() {
     view_->Bind(nullptr);
 }
 
-void DemoSetupScreen::Show() {
+void DemoSetupScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void DemoSetupScreen::Hide() {
+void DemoSetupScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }
@@ -61,10 +71,23 @@ void DemoSetupScreen::StartEnrollment() {
   DCHECK(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   DemoSetupController* demo_controller =
       WizardController::default_controller()->demo_setup_controller();
-  demo_controller->Enroll(base::BindOnce(&DemoSetupScreen::OnSetupSuccess,
-                                         weak_ptr_factory_.GetWeakPtr()),
-                          base::BindOnce(&DemoSetupScreen::OnSetupError,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  demo_controller->Enroll(
+      base::BindOnce(&DemoSetupScreen::OnSetupSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DemoSetupScreen::OnSetupError,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&DemoSetupScreen::SetCurrentSetupStep,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoSetupScreen::SetCurrentSetupStep(
+    const DemoSetupController::DemoSetupStep current_step) {
+  view_->SetCurrentSetupStep(current_step);
+}
+
+void DemoSetupScreen::SetCurrentSetupStepForTest(
+    const DemoSetupController::DemoSetupStep current_step) {
+  SetCurrentSetupStep(current_step);
 }
 
 void DemoSetupScreen::OnSetupError(

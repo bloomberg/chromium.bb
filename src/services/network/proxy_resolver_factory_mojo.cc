@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -155,9 +156,8 @@ class ClientMixin : public ClientInterface {
     //
     // However the better place to focus on is de-duplication and caching on the
     // proxy service side (which currently caches but doesn't de-duplicate).
-    return base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
          base::TaskPriority::USER_VISIBLE});
   }
 
@@ -270,7 +270,7 @@ ProxyResolverMojo::Job::Job(
       callback_(std::move(callback)) {
   resolver->mojo_proxy_resolver_remote_->GetProxyForUrl(
       url_, network_isolation_key, receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::Bind(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &ProxyResolverMojo::Job::OnMojoDisconnect, base::Unretained(this)));
 }
 
@@ -316,8 +316,8 @@ ProxyResolverMojo::ProxyResolverMojo(
       host_resolver_(host_resolver),
       error_observer_(std::move(error_observer)),
       net_log_(net_log) {
-  mojo_proxy_resolver_remote_.set_disconnect_handler(
-      base::Bind(&ProxyResolverMojo::OnMojoDisconnect, base::Unretained(this)));
+  mojo_proxy_resolver_remote_.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverMojo::OnMojoDisconnect, base::Unretained(this)));
 }
 
 ProxyResolverMojo::~ProxyResolverMojo() {
@@ -381,8 +381,8 @@ class ProxyResolverFactoryMojo::Job
         resolver_remote_.InitWithNewPipeAndPassReceiver(),
         receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
-        base::Bind(&ProxyResolverFactoryMojo::Job::OnMojoDisconnect,
-                   base::Unretained(this)));
+        base::BindOnce(&ProxyResolverFactoryMojo::Job::OnMojoDisconnect,
+                       base::Unretained(this)));
   }
 
   void OnMojoDisconnect() { ReportResult(net::ERR_PAC_SCRIPT_TERMINATED); }
@@ -414,7 +414,8 @@ ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
     mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_factory,
     net::HostResolver* host_resolver,
-    const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>&
+    const base::RepeatingCallback<
+        std::unique_ptr<net::ProxyResolverErrorObserver>()>&
         error_observer_factory,
     net::NetLog* net_log)
     : ProxyResolverFactory(true),

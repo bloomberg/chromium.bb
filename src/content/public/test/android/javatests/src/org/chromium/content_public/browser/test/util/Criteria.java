@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser.test.util;
 
+import org.hamcrest.Matchers;
+
 import java.util.concurrent.Callable;
 
 /**
@@ -61,12 +63,7 @@ public abstract class Criteria {
      * Sample Usage:
      * <code>
      * public void waitForTabTitle(final Tab tab, String title) {
-     *     CriteriaHelper.pollUiThread(Criteria.equals(title, new Callable<String>() {
-     *         {@literal @}Override
-     *         public String call() {
-     *             return tab.getTitle();
-     *         }
-     *     }));
+     *     CriteriaHelper.pollUiThread(Criteria.equals(title, () -> tab.getTitle()));
      * }
      * </code>
      * </pre>
@@ -78,6 +75,6 @@ public abstract class Criteria {
      * @return A Criteria that will check the equality of the passed in data.
      */
     public static <T> Criteria equals(T expectedValue, Callable<T> actualValueCallable) {
-        return new EqualityCriteria<T>(expectedValue, actualValueCallable);
+        return new MatcherCriteria<>(actualValueCallable, Matchers.equalTo(expectedValue));
     }
 }

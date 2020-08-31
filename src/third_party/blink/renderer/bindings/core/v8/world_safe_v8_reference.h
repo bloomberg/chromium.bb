@@ -57,9 +57,11 @@ class WorldSafeV8Reference final {
  public:
   WorldSafeV8Reference() = default;
 
-  explicit WorldSafeV8Reference(v8::Isolate* isolate, v8::Local<V8Type> value)
-      : v8_reference_(isolate, value) {
-    DCHECK(!value.IsEmpty());
+  WorldSafeV8Reference(v8::Isolate* isolate, v8::Local<V8Type> value) {
+    if (value.IsEmpty())
+      return;
+
+    v8_reference_.Set(isolate, value);
     // Basically, |world_| is a world when this V8 reference is created.
     // However, when this V8 reference isn't created in context and value is
     // object, we set |world_| to a value's creation cotext's world.
@@ -124,7 +126,7 @@ class WorldSafeV8Reference final {
 
   bool IsEmpty() const { return v8_reference_.IsEmpty(); }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(v8_reference_); }
+  void Trace(Visitor* visitor) { visitor->Trace(v8_reference_); }
 
   WorldSafeV8Reference& operator=(const WorldSafeV8Reference<V8Type>& other) =
       default;

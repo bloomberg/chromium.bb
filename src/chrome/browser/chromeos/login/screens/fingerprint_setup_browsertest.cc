@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 
@@ -33,6 +34,7 @@ class FingerprintSetupTest : public OobeBaseTest {
     // Override the screen exit callback with our own method.
     FingerprintSetupScreen* fingerprint_screen = FingerprintSetupScreen::Get(
         WizardController::default_controller()->screen_manager());
+    original_callback_ = fingerprint_screen->get_exit_callback_for_testing();
     fingerprint_screen->set_exit_callback_for_testing(
         base::BindRepeating(&FingerprintSetupTest::OnFingerprintSetupScreenExit,
                             base::Unretained(this)));
@@ -55,8 +57,10 @@ class FingerprintSetupTest : public OobeBaseTest {
     run_loop.Run();
   }
 
-  void OnFingerprintSetupScreenExit() {
+  void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result) {
     screen_exit_ = true;
+    screen_result_ = result;
+    original_callback_.Run(result);
     if (screen_exit_callback_) {
       std::move(screen_exit_callback_).Run();
     }
@@ -84,8 +88,12 @@ class FingerprintSetupTest : public OobeBaseTest {
         {"fingerprint-setup-impl", "fingerprintAddAnother"});
   }
 
+  base::Optional<FingerprintSetupScreen::Result> screen_result_;
+  base::HistogramTester histogram_tester_;
+
  private:
   bool screen_exit_ = false;
+  FingerprintSetupScreen::ScreenExitCallback original_callback_;
   base::RepeatingClosure screen_exit_callback_;
 };
 
@@ -104,6 +112,11 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollHalf) {
   test::OobeJS().TapOnPath({"fingerprint-setup-impl", "skipFingerprintEnroll"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FingerprintSetupScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollFull) {
@@ -115,6 +128,11 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollFull) {
   test::OobeJS().TapOnPath({"fingerprint-setup-impl", "fingerprintEnrollDone"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FingerprintSetupScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollLimit) {
@@ -133,6 +151,11 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollLimit) {
   test::OobeJS().TapOnPath({"fingerprint-setup-impl", "fingerprintEnrollDone"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FingerprintSetupScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintDisabled) {
@@ -143,6 +166,12 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintDisabled) {
       FingerprintSetupScreenView::kScreenId);
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            FingerprintSetupScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupScreenElements) {
@@ -161,6 +190,11 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupCancel) {
   test::OobeJS().TapOnPath({"fingerprint-setup-impl", "skipFingerprintSetup"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FingerprintSetupScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupNext) {
@@ -192,6 +226,11 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupLater) {
   test::OobeJS().TapOnPath({"fingerprint-setup-impl", "setupFingerprintLater"});
 
   WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), FingerprintSetupScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Fingerprint-setup.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Fingerprint-setup", 1);
 }
 
 }  // namespace chromeos

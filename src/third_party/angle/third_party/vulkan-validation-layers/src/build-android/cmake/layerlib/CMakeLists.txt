@@ -9,6 +9,9 @@ if (CMAKE_CURRENT_SOURCE_DIR MATCHES "sources/third_party/vulkan/src")
     set(BUILD_IN_NDK ON)
 endif()
 
+# Enable beta Vulkan extensions
+add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror \
         -Wno-unused-function -Wno-unused-const-variable \
         -Wno-c++98-compat-pedantic -DVK_PROTOTYPES \
@@ -67,7 +70,9 @@ add_library(VkLayer_khronos_validation SHARED
         ${SRC_DIR}/layers/buffer_validation.cpp
         ${SRC_DIR}/layers/shader_validation.cpp
         ${SRC_DIR}/layers/gpu_validation.cpp
-        ${SRC_DIR}/layers/best_practices.cpp
+        ${SRC_DIR}/layers/gpu_utils.cpp
+        ${SRC_DIR}/layers/debug_printf.cpp
+        ${SRC_DIR}/layers/best_practices_utils.cpp
         ${COMMON_DIR}/include/layer_chassis_dispatch.cpp
         ${COMMON_DIR}/include/chassis.cpp
         ${COMMON_DIR}/include/parameter_validation.cpp
@@ -75,6 +80,8 @@ add_library(VkLayer_khronos_validation SHARED
         ${COMMON_DIR}/include/object_tracker.cpp
         ${SRC_DIR}/layers/object_tracker_utils.cpp
         ${COMMON_DIR}/include/thread_safety.cpp
+        ${SRC_DIR}/layers/image_layout_map.cpp
+        ${SRC_DIR}/layers/subresource_adapter.cpp
         ${SRC_DIR}/layers/xxhash.c)
 target_include_directories(VkLayer_khronos_validation PRIVATE
         ${SRC_DIR}/include

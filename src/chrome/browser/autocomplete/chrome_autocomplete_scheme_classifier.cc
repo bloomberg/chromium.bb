@@ -5,11 +5,38 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
+#if defined(OS_ANDROID)
+#include "chrome/android/chrome_jni_headers/ChromeAutocompleteSchemeClassifier_jni.h"
+#endif
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/profiles/profile_android.h"
+#endif
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/common/url_constants.h"
 #include "url/url_util.h"
+
+#if defined(OS_ANDROID)
+static jlong
+JNI_ChromeAutocompleteSchemeClassifier_CreateAutocompleteClassifier(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  DCHECK(profile);
+
+  return reinterpret_cast<intptr_t>(
+      new ChromeAutocompleteSchemeClassifier(profile));
+}
+
+static void JNI_ChromeAutocompleteSchemeClassifier_DeleteAutocompleteClassifier(
+    JNIEnv* env,
+    jlong chrome_autocomplete_scheme_classifier) {
+  delete reinterpret_cast<ChromeAutocompleteSchemeClassifier*>(
+      chrome_autocomplete_scheme_classifier);
+}
+#endif
 
 ChromeAutocompleteSchemeClassifier::ChromeAutocompleteSchemeClassifier(
     Profile* profile)
@@ -48,7 +75,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
   // external protocol handler because we don't want pages to open them, but
   // users still can.
   const ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState(scheme, profile_);
+      ExternalProtocolHandler::GetBlockState(scheme, nullptr, profile_);
   switch (block_state) {
     case ExternalProtocolHandler::DONT_BLOCK:
       return metrics::OmniboxInputType::URL;
@@ -64,7 +91,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
       // between URL schemes with handers and those without. This will
       // make the default behaviour be search on Linux.
       return metrics::OmniboxInputType::EMPTY;
-#endif // defined(OS_LINUX)
+#else
       // If block state is unknown, check if there is an application registered
       // for the url scheme.
       GURL url(scheme + "://");
@@ -72,6 +99,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
           shell_integration::GetApplicationNameForProtocol(url);
       return application_name.empty() ? metrics::OmniboxInputType::EMPTY
                                       : metrics::OmniboxInputType::URL;
+#endif  // defined(OS_LINUX)
     }
   }
   NOTREACHED();

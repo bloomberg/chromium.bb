@@ -7,7 +7,14 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/time/time.h"
+#include "ui/compositor/animation_metrics_recorder.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/events/event.h"
+
+namespace ui {
+class Compositor;
+}
 
 namespace ash {
 
@@ -68,10 +75,10 @@ constexpr char kAppListToggleMethodHistogram[] = "Apps.AppListShowSource";
 constexpr char kAppListResultLaunchIndexAndQueryLength[] =
     "Apps.AppListResultLaunchIndexAndQueryLength";
 
-// The UMA histogram that logs the index launched item in the app tile list and
-// the query length.
-constexpr char kAppListTileLaunchIndexAndQueryLength[] =
-    "Apps.AppListTileLaunchIndexAndQueryLength";
+// The UMA histogram that logs if the query that introduces a launch of an item
+// in the results list is empty or not.
+constexpr char kAppListResultLaunchIsEmptyQuery[] =
+    "Apps.AppListResultLaunchIsEmptyQuery";
 
 // The UMA histogram that logs the presence or absence of Drive QuickAccess
 // search results in the zero-state results list. Differentiates between results
@@ -292,29 +299,18 @@ enum TabletModeAnimationTransition {
 // Parameters to call RecordAppListAppLaunched. Passed to code that does not
 // directly have access to them, such ash AppListMenuModelAdapter.
 struct AppLaunchedMetricParams {
-  ash::AppListLaunchedFrom launched_from =
-      ash::AppListLaunchedFrom::kLaunchedFromGrid;
-  ash::AppListLaunchType search_launch_type =
-      ash::AppListLaunchType::kSearchResult;
-  ash::AppListViewState app_list_view_state = ash::AppListViewState::kClosed;
+  AppListLaunchedFrom launched_from = AppListLaunchedFrom::kLaunchedFromGrid;
+  AppListLaunchType search_launch_type = AppListLaunchType::kSearchResult;
+  AppListViewState app_list_view_state = AppListViewState::kClosed;
   bool is_tablet_mode = false;
   bool home_launcher_shown = false;
 };
-
-void RecordFolderShowHideAnimationSmoothness(int actual_frames,
-                                             base::TimeDelta ideal_duration,
-                                             float refresh_rate);
 
 void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
                                                 bool is_tablet_mode);
 
 void RecordPageSwitcherSource(AppListPageSwitcherSource source,
                               bool is_tablet_mode);
-
-void RecordPaginationAnimationSmoothness(int actual_frames,
-                                         base::TimeDelta ideal_duration,
-                                         float refresh_rate,
-                                         bool is_tablet_mode);
 
 void RecordZeroStateSearchResultUserActionHistogram(
     ZeroStateSearchResultUserActionType action);
@@ -335,13 +331,62 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
     int query_length,
     int suggestion_index);
 
-APP_LIST_EXPORT void RecordAppListAppLaunched(
-    ash::AppListLaunchedFrom launched_from,
-    ash::AppListViewState app_list_state,
-    bool is_tablet_mode,
-    bool home_launcher_shown);
+APP_LIST_EXPORT void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
+                                              AppListViewState app_list_state,
+                                              bool is_tablet_mode,
+                                              bool home_launcher_shown);
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
+
+class FolderShowHideAnimationReporter : public ui::AnimationMetricsReporter {
+ public:
+  FolderShowHideAnimationReporter();
+  FolderShowHideAnimationReporter(FolderShowHideAnimationReporter&) = delete;
+  FolderShowHideAnimationReporter& operator=(FolderShowHideAnimationReporter&) =
+      delete;
+  ~FolderShowHideAnimationReporter() override;
+
+  // ui:AnimationMetricsReporter:
+  void Report(int value) override;
+};
+
+class PaginationTransitionAnimationReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  PaginationTransitionAnimationReporter();
+  PaginationTransitionAnimationReporter(
+      PaginationTransitionAnimationReporter&) = delete;
+  PaginationTransitionAnimationReporter& operator=(
+      PaginationTransitionAnimationReporter&) = delete;
+  ~PaginationTransitionAnimationReporter() override;
+
+  // ui:AnimationMetricsReporter:
+  void Report(int value) override;
+
+  void set_is_tablet_mode(bool val) { is_tablet_mode_ = val; }
+
+ private:
+  bool is_tablet_mode_ = false;
+};
+
+// App list specific animation metrics recorder which has a pointer to the
+// compositor the app list to simplify things for callsites.
+class AppListAnimationMetricsRecorder : public ui::AnimationMetricsRecorder {
+ public:
+  explicit AppListAnimationMetricsRecorder(
+      ui::AnimationMetricsReporter* reporter);
+  AppListAnimationMetricsRecorder(AppListAnimationMetricsRecorder&) = delete;
+  AppListAnimationMetricsRecorder& operator=(AppListAnimationMetricsRecorder&) =
+      delete;
+  ~AppListAnimationMetricsRecorder();
+
+  void OnAnimationStart(base::TimeDelta expected_duration,
+                        ui::Compositor* compositor);
+  void OnAnimationEnd(ui::Compositor* compositor);
+
+ private:
+  bool animation_started_ = false;
+};
 
 }  // namespace ash
 

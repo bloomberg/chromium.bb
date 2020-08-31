@@ -21,6 +21,23 @@ Polymer({
       reflectToAttribute: true,
       observer: 'disabledChanged_',
     },
+
+    /**
+     * Use this property in order to configure the "tabindex" attribute.
+     */
+    customTabIndex: {
+      type: Number,
+      observer: 'applyTabIndex_',
+    },
+
+    /**
+     * Flag used for formatting ripples on circle shaped cr-buttons.
+     * @private
+     */
+    circleRipple: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   hostAttributes: {
@@ -30,6 +47,7 @@ Polymer({
   },
 
   listeners: {
+    blur: 'onBlur_',
     click: 'onClick_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
@@ -37,17 +55,28 @@ Polymer({
     tap: 'onTap_',
   },
 
+  /**
+   * It is possible to activate a tab when the space key is pressed down. When
+   * this element has focus, the keyup event for the space key should not
+   * perform a 'click'. |spaceKeyDown_| tracks when a space pressed and handled
+   * by this element. Space keyup will only result in a 'click' when
+   * |spaceKeyDown_| is true. |spaceKeyDown_| is set to false when element loses
+   * focus.
+   * @private {boolean}
+   */
+  spaceKeyDown_: false,
+
   /** @private {Set<number>} */
   timeoutIds_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     cr.ui.FocusOutlineManager.forDocument(document);
     this.timeoutIds_ = new Set();
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.timeoutIds_.forEach(clearTimeout);
     this.timeoutIds_.clear();
   },
@@ -57,7 +86,7 @@ Polymer({
    * @param {number=} delay
    * @private
    */
-  setTimeout_: function(fn, delay) {
+  setTimeout_(fn, delay) {
     if (!this.isConnected) {
       return;
     }
@@ -70,25 +99,42 @@ Polymer({
 
   /**
    * @param {boolean} newValue
-   * @param {boolean} oldValue
+   * @param {boolean|undefined} oldValue
    * @private
    */
-  disabledChanged_: function(newValue, oldValue) {
-    if (!newValue && oldValue == undefined) {
+  disabledChanged_(newValue, oldValue) {
+    if (!newValue && oldValue === undefined) {
       return;
     }
     if (this.disabled) {
       this.blur();
     }
     this.setAttribute('aria-disabled', Boolean(this.disabled));
-    this.setAttribute('tabindex', this.disabled ? -1 : 0);
+    this.applyTabIndex_();
+  },
+
+  /**
+   * Updates the tabindex HTML attribute to the actual value.
+   * @private
+   */
+  applyTabIndex_() {
+    let value = this.customTabIndex;
+    if (value === undefined) {
+      value = this.disabled ? -1 : 0;
+    }
+    this.setAttribute('tabindex', value);
+  },
+
+  /** @private */
+  onBlur_() {
+    this.spaceKeyDown_ = false;
   },
 
   /**
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopImmediatePropagation();
     }
@@ -98,8 +144,8 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+  onKeyDown_(e) {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
@@ -107,15 +153,18 @@ Polymer({
     e.stopPropagation();
 
     if (e.repeat) {
+      this.lastKeyDownKey_ = null;
       return;
     }
 
     this.getRipple().uiDownAction();
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.click();
       // Delay was chosen manually as a good time period for the ripple to be
       // visible.
       this.setTimeout_(() => this.getRipple().uiUpAction(), 100);
+    } else if (e.key === ' ') {
+      this.spaceKeyDown_ = true;
     }
   },
 
@@ -123,22 +172,23 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyUp_: function(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+  onKeyUp_(e) {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
     e.preventDefault();
     e.stopPropagation();
 
-    if (e.key == ' ') {
+    if (this.spaceKeyDown_ && e.key === ' ') {
+      this.spaceKeyDown_ = false;
       this.click();
       this.getRipple().uiUpAction();
     }
   },
 
   /** @private */
-  onPointerDown_: function() {
+  onPointerDown_() {
     this.ensureRipple();
   },
 
@@ -149,5 +199,21 @@ Polymer({
    *     longer uses tap event at least with addEventListener().
    * @private
    */
-  onTap_: function() {}
+  onTap_() {},
+
+  /**
+   * Customize the element's ripple. Overriding the '_createRipple' function
+   * from PaperRippleBehavior.
+   * @return {PaperRippleElement}
+   */
+  _createRipple() {
+    const ripple = Polymer.PaperRippleBehavior._createRipple();
+
+    if (this.circleRipple) {
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+    }
+
+    return ripple;
+  },
 });

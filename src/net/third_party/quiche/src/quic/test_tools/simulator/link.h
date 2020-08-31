@@ -9,6 +9,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
+#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/actor.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/port.h"
 
@@ -60,7 +61,7 @@ class OneWayLink : public Actor, public ConstrainedPortInterface {
   void ScheduleNextPacketDeparture();
 
   UnconstrainedPortInterface* sink_;
-  QuicDeque<QueuedPacket> packets_in_transit_;
+  QuicCircularDeque<QueuedPacket> packets_in_transit_;
 
   QuicBandwidth bandwidth_;
   const QuicTime::Delta propagation_delay_;

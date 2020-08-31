@@ -32,8 +32,7 @@ LOCAL_MODULE := libdrm_intel
 LOCAL_SRC_FILES := $(LIBDRM_INTEL_FILES)
 
 LOCAL_SHARED_LIBRARIES := \
-	libdrm \
-	libpciaccess
+	libdrm
 
 include $(LIBDRM_COMMON_MK)
 include $(BUILD_SHARED_LIBRARY)

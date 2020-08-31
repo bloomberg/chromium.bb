@@ -15,14 +15,18 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -37,6 +41,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,13 +49,30 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 
+#if defined(USE_X11) || defined(USE_OZONE)
+#include <sys/utsname.h>
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#else
+#include "base/system/sys_info.h"
 #endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#endif  // defined(OS_CHROMEOS)
 
 using content::BrowsingDataFilterBuilder;
 using testing::_;
@@ -90,9 +112,113 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   std::string product_str = pieces[0];
   std::string safari_version_str = pieces[1];
 
-  // Not sure what can be done to better check the OS string, since it's highly
-  // platform-dependent.
   EXPECT_FALSE(os_str.empty());
+
+  pieces = base::SplitStringUsingSubstr(os_str, "; ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+#if defined(OS_WIN)
+  // Windows NT 10.0; Win64; x64
+  // Windows NT 10.0; WOW64
+  // Windows NT 10.0
+  std::string os_and_version = pieces[0];
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    bool equals = ((pieces[i] == "WOW64") || (pieces[i] == "Win64") ||
+                   pieces[i] == "x64");
+    ASSERT_TRUE(equals);
+  }
+  pieces = base::SplitStringUsingSubstr(pieces[0], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(3u, pieces.size());
+  ASSERT_EQ("Windows", pieces[0]);
+  ASSERT_EQ("NT", pieces[1]);
+  double version;
+  ASSERT_TRUE(base::StringToDouble(pieces[2], &version));
+  ASSERT_LE(4.0, version);
+  ASSERT_GT(11.0, version);
+#elif defined(OS_MACOSX)
+  // Macintosh; Intel Mac OS X 10_15_4
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("Macintosh", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(5u, pieces.size());
+  ASSERT_EQ("Intel", pieces[0]);
+  ASSERT_EQ("Mac", pieces[1]);
+  ASSERT_EQ("OS", pieces[2]);
+  ASSERT_EQ("X", pieces[3]);
+  pieces = base::SplitStringUsingSubstr(pieces[4], "_", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ("10", pieces[0]);
+  int value;
+  ASSERT_TRUE(base::StringToInt(pieces[1], &value));
+  ASSERT_LE(0, value);
+  ASSERT_TRUE(base::StringToInt(pieces[2], &value));
+  ASSERT_LE(0, value);
+#elif defined(USE_X11) || defined(USE_OZONE)
+  // X11; Linux x86_64
+  // X11; CrOS armv7l 4537.56.0
+  struct utsname unixinfo;
+  uname(&unixinfo);
+  std::string machine = unixinfo.machine;
+  if (strcmp(unixinfo.machine, "x86_64") == 0 &&
+      sizeof(void*) == sizeof(int32_t)) {
+    machine = "i686 (x86_64)";
+  }
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("X11", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+#if defined(OS_CHROMEOS)
+  // X11; CrOS armv7l 4537.56.0
+  //      ^^
+  ASSERT_EQ(3u, pieces.size());
+  ASSERT_EQ("CrOS", pieces[0]);
+  ASSERT_EQ(machine, pieces[1]);
+  pieces = base::SplitStringUsingSubstr(pieces[2], ".", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    int value;
+    ASSERT_TRUE(base::StringToInt(pieces[i], &value));
+  }
+#else
+  // X11; Linux x86_64
+  //      ^^
+  ASSERT_EQ(2u, pieces.size());
+  // This may not be Linux in all cases in the wild, but it is on the bots.
+  ASSERT_EQ("Linux", pieces[0]);
+  ASSERT_EQ(machine, pieces[1]);
+#endif
+#elif defined(OS_ANDROID)
+  // Linux; Android 7.1.1; Samsung Chromebook 3
+  ASSERT_GE(3u, pieces.size());
+  ASSERT_EQ("Linux", pieces[0]);
+  std::string model;
+  if (pieces.size() > 2)
+    model = pieces[2];
+
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("Android", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], ".", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    int value;
+    ASSERT_TRUE(base::StringToInt(pieces[i], &value));
+  }
+
+  if (!model.empty()) {
+    if (base::SysInfo::GetAndroidBuildCodename() == "REL")
+      ASSERT_EQ(base::SysInfo::HardwareModelName(), model);
+    else
+      ASSERT_EQ("", model);
+  }
+#elif defined(OS_FUCHSIA)
+  // X11; Fuchsia
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("X11", pieces[0]);
+  ASSERT_EQ("Fuchsia", pieces[1]);
+#endif
 
   // Check that the version numbers match.
   EXPECT_FALSE(webkit_version_str.empty());
@@ -152,7 +278,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
     scoped_refptr<content::SiteInstance> site_instance =
         content::SiteInstance::Create(browser()->profile());
     client.OpenURL(site_instance.get(), params,
-                   base::Bind(&DidOpenURLForWindowTest, &web_contents));
+                   base::BindOnce(&DidOpenURLForWindowTest, &web_contents));
 
     EXPECT_TRUE(web_contents);
 
@@ -436,7 +562,9 @@ TEST(ChromeContentBrowserClientTest, UserAgentStringFrozen) {
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroid);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kAndroid,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 
   // Verify the mobile user agent string is returned when using a mobile user
@@ -446,13 +574,17 @@ TEST(ChromeContentBrowserClientTest, UserAgentStringFrozen) {
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroidMobile);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kAndroidMobile,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 #else
   {
     ChromeContentBrowserClient content_browser_client;
     std::string buffer = content_browser_client.GetUserAgent();
-    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kDesktop);
+    EXPECT_EQ(buffer, base::StringPrintf(
+                          content::frozen_user_agent_strings::kDesktop,
+                          version_info::GetMajorVersionNumber().c_str()));
   }
 #endif
 }
@@ -481,10 +613,216 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   ChromeContentBrowserClient content_browser_client;
   auto metadata = content_browser_client.GetUserAgentMetadata();
 
-  EXPECT_EQ(metadata.brand, version_info::GetProductName());
+  std::string major_version = version_info::GetMajorVersionNumber();
+
+  // According to spec, Sec-CH-UA should contain what project the browser is
+  // based on (i.e. Chromium in this case) as well as the actual product.
+  // In CHROMIUM_BRANDING builds this will check chromium twice. That should be
+  // ok though.
+
+  const blink::UserAgentBrandVersion chromium_brand_version = {"Chromium",
+                                                               major_version};
+  const blink::UserAgentBrandVersion product_brand_version = {
+      version_info::GetProductName(), version_info::GetMajorVersionNumber()};
+  bool contains_chromium_brand_version = false;
+  bool contains_product_brand_version = false;
+
+  for (const auto& brand_version : metadata.brand_version_list) {
+    if (brand_version == chromium_brand_version) {
+      contains_chromium_brand_version = true;
+    }
+    if (brand_version == product_brand_version) {
+      contains_product_brand_version = true;
+    }
+  }
+
+  EXPECT_TRUE(contains_chromium_brand_version);
+  EXPECT_TRUE(contains_product_brand_version);
+
   EXPECT_EQ(metadata.full_version, version_info::GetVersionNumber());
-  EXPECT_EQ(metadata.major_version, version_info::GetMajorVersionNumber());
+  EXPECT_EQ(metadata.platform_version,
+            content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,
+                                  content::IncludeAndroidModel::Exclude));
+  // This makes sure no extra information is added to the platform version.
+  EXPECT_EQ(metadata.platform_version.find(";"), std::string::npos);
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
-  EXPECT_EQ(metadata.architecture, "");
-  EXPECT_EQ(metadata.model, "");
+  EXPECT_EQ(metadata.architecture, content::GetLowEntropyCpuArchitecture());
+  EXPECT_EQ(metadata.model, content::BuildModelInfo());
 }
+
+TEST(ChromeContentBrowserClientTest, GenerateBrandVersionList) {
+  blink::UserAgentMetadata metadata;
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(84, base::nullopt, "84");
+  std::string brand_list = metadata.SerializeBrandVersionList();
+  EXPECT_EQ(R"("\\Not\"A;Brand";v="99", "Chromium";v="84")", brand_list);
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(85, base::nullopt, "85");
+  std::string brand_list_diff = metadata.SerializeBrandVersionList();
+  // Make sure the lists are different for different seeds
+  EXPECT_EQ(R"("Chromium";v="85", "\\Not;A\"Brand";v="99")", brand_list_diff);
+  EXPECT_NE(brand_list, brand_list_diff);
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(84, "Totally A Brand", "84");
+  std::string brand_list_w_brand = metadata.SerializeBrandVersionList();
+  EXPECT_EQ(
+      R"("\\Not\"A;Brand";v="99", "Chromium";v="84", "Totally A Brand";v="84")",
+      brand_list_w_brand);
+
+  // Should DCHECK on negative numbers
+  EXPECT_DCHECK_DEATH(GenerateBrandVersionList(-1, base::nullopt, "99"));
+}
+
+TEST(ChromeContentBrowserClientTest, LowEntropyCpuArchitecture) {
+  std::string arch = content::GetLowEntropyCpuArchitecture();
+
+#if (!defined(OS_POSIX) && !defined(OS_WIN)) || defined(OS_MACOSX) || \
+    defined(OS_ANDROID)
+  EXPECT_EQ("", arch);
+#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_WIN)
+  EXPECT_TRUE("arm" == arch || "x86" == arch);
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+class ChromeContentSettingsRedirectTest
+    : public ChromeContentBrowserClientTest {
+ public:
+  ChromeContentSettingsRedirectTest()
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+ protected:
+  content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState testing_local_state_;
+  TestingProfile profile_;
+};
+
+TEST_F(ChromeContentSettingsRedirectTest, RedirectOSSettingsURL) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  const GURL os_settings_url(chrome::kChromeUIOSSettingsURL);
+  GURL dest_url = os_settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(os_settings_url, dest_url);
+
+  base::Value list(base::Value::Type::LIST);
+  list.Append(policy::SystemFeature::OS_SETTINGS);
+  testing_local_state_.Get()->Set(
+      policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
+
+  dest_url = os_settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(GURL(chrome::kChromeUIAppDisabledURL), dest_url);
+
+  GURL os_settings_pwa_url =
+      GURL(chrome::kChromeUIOSSettingsURL).Resolve("pwa.html");
+  dest_url = os_settings_pwa_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(os_settings_pwa_url, dest_url);
+}
+
+TEST_F(ChromeContentSettingsRedirectTest, RedirectSettingsURL) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  const GURL settings_url(chrome::kChromeUISettingsURL);
+  GURL dest_url = settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(settings_url, dest_url);
+
+  base::Value list(base::Value::Type::LIST);
+  list.Append(policy::SystemFeature::BROWSER_SETTINGS);
+  testing_local_state_.Get()->Set(
+      policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
+
+  dest_url = settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(GURL(chrome::kChromeUIAppDisabledURL), dest_url);
+}
+#endif  // defined(OS_CHROMEOS)
+
+class CaptivePortalCheckProcessHost : public content::MockRenderProcessHost {
+ public:
+  explicit CaptivePortalCheckProcessHost(
+      content::BrowserContext* browser_context)
+      : MockRenderProcessHost(browser_context) {}
+
+  void CreateURLLoaderFactory(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryParamsPtr params) override {
+    *invoked_url_factory_ = true;
+    DCHECK_EQ(expected_disable_secure_dns_, params->disable_secure_dns);
+  }
+
+  void SetupForTracking(bool* invoked_url_factory,
+                        bool expected_disable_secure_dns) {
+    invoked_url_factory_ = invoked_url_factory;
+    expected_disable_secure_dns_ = expected_disable_secure_dns;
+  }
+
+ private:
+  bool* invoked_url_factory_ = nullptr;
+  bool expected_disable_secure_dns_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckProcessHost);
+};
+
+class CaptivePortalCheckRenderProcessHostFactory
+    : public content::RenderProcessHostFactory {
+ public:
+  CaptivePortalCheckRenderProcessHostFactory() = default;
+
+  content::RenderProcessHost* CreateRenderProcessHost(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) override {
+    rph_ = new CaptivePortalCheckProcessHost(browser_context);
+    return rph_;
+  }
+
+  void SetupForTracking(bool* invoked_url_factory,
+                        bool expected_disable_secure_dns) {
+    rph_->SetupForTracking(invoked_url_factory, expected_disable_secure_dns);
+  }
+
+ private:
+  CaptivePortalCheckProcessHost* rph_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckRenderProcessHostFactory);
+};
+
+class ChromeContentBrowserClientCaptivePortalBrowserTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+ protected:
+  void SetUp() override {
+    SetRenderProcessHostFactory(&cp_rph_factory_);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  CaptivePortalCheckRenderProcessHostFactory cp_rph_factory_;
+};
+
+TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
+       NotCaptivePortalWindow) {
+  bool invoked_url_factory = false;
+  cp_rph_factory_.SetupForTracking(&invoked_url_factory,
+                                   false /* expected_disable_secure_dns */);
+  NavigateAndCommit(GURL("https://www.google.com"), ui::PAGE_TRANSITION_LINK);
+  EXPECT_TRUE(invoked_url_factory);
+}
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
+       CaptivePortalWindow) {
+  bool invoked_url_factory = false;
+  cp_rph_factory_.SetupForTracking(&invoked_url_factory,
+                                   true /* expected_disable_secure_dns */);
+  captive_portal::CaptivePortalTabHelper::CreateForWebContents(
+      web_contents(), CaptivePortalServiceFactory::GetForProfile(profile()),
+      base::Callback<void(void)>());
+  captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents())
+      ->set_is_captive_portal_window();
+  NavigateAndCommit(GURL("https://www.google.com"), ui::PAGE_TRANSITION_LINK);
+  EXPECT_TRUE(invoked_url_factory);
+}
+#endif

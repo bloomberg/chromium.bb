@@ -42,6 +42,10 @@ base::string16 UiaIdentifierToCondensedString16(int32_t id) {
     // remove leading 'UIA_' and trailing 'PropertyId'
     return identifier.substr(4, identifier.size() - 14);
   }
+  if (id >= UIA_ButtonControlTypeId && id <= UIA_AppBarControlTypeId) {
+    // remove leading 'UIA_' and trailing 'ControlTypeId'
+    return identifier.substr(4, identifier.size() - 17);
+  }
   return identifier;
 }
 
@@ -391,14 +395,35 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
                                 &condition);
   CHECK(condition);
   Microsoft::WRL::ComPtr<IUIAutomationElement> start_element;
-  root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
-  CHECK(start_element.Get());
 
-  // Build an accessibility tree starting from that element.
+  root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
   std::unique_ptr<base::DictionaryValue> tree =
       std::make_unique<base::DictionaryValue>();
-  RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
-                                  root_bounds.top, tree.get());
+
+  if (start_element.Get()) {
+    // Build an accessibility tree starting from that element.
+    RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
+                                    root_bounds.top, tree.get());
+  } else {
+    // If the search failed, start dumping with the first thing that isn't a
+    // Pane.
+    // TODO(http://crbug.com/1071188): Figure out why the original FindFirst
+    // fails and remove this fallback codepath.
+    Microsoft::WRL::ComPtr<IUIAutomationElement> non_pane_descendant;
+    Microsoft::WRL::ComPtr<IUIAutomationCondition> is_pane_condition;
+    base::win::ScopedVariant pane_control_type_variant(UIA_PaneControlTypeId);
+    uia_->CreatePropertyCondition(UIA_ControlTypePropertyId,
+                                  pane_control_type_variant,
+                                  &is_pane_condition);
+    Microsoft::WRL::ComPtr<IUIAutomationCondition> not_is_pane_condition;
+    uia_->CreateNotCondition(is_pane_condition.Get(), &not_is_pane_condition);
+    root->FindFirst(TreeScope_Subtree, not_is_pane_condition.Get(),
+                    &non_pane_descendant);
+
+    DCHECK(non_pane_descendant.Get());
+    RecursiveBuildAccessibilityTree(non_pane_descendant.Get(), root_bounds.left,
+                                    root_bounds.top, tree.get());
+  }
   return tree;
 }
 
@@ -766,7 +791,7 @@ void AccessibilityTreeFormatterUia::AddValueProperties(
 
     base::win::ScopedBstr value;
     if (SUCCEEDED(value_pattern->get_CachedValue(value.Receive())))
-      dict->SetString("Value.Value", BstrToUTF8(value));
+      dict->SetString("Value.Value", BstrToUTF8(value.Get()));
   }
 }
 
@@ -925,7 +950,7 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
     base::DictionaryValue* dict) {
   int count;
   array->get_Length(&count);
-  base::string16 element_list = L"";
+  base::string16 element_list;
   for (int i = 0; i < count; i++) {
     Microsoft::WRL::ComPtr<IUIAutomationElement> element;
     if (SUCCEEDED(array->GetElement(i, &element))) {
@@ -936,7 +961,7 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
       if (name.empty()) {
         base::win::ScopedBstr role;
         element->get_CurrentAriaRole(role.Receive());
-        name = L"{" + base::string16(role) + L"}";
+        name = L"{" + base::string16(role.Get()) + L"}";
       }
       element_list += name;
     }
@@ -1005,14 +1030,15 @@ base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
   std::unique_ptr<base::DictionaryValue> tree;
   base::string16 line;
 
-  // Always show role, and show it first.
-  base::string16 role_value;
-  dict.GetString(UiaIdentifierToCondensedString(UIA_AriaRolePropertyId),
-                 &role_value);
-  WriteAttribute(true, role_value, &line);
+  // Always show control type, and show it first.
+  base::string16 control_type_value;
+  dict.GetString(UiaIdentifierToCondensedString(UIA_ControlTypePropertyId),
+                 &control_type_value);
+  WriteAttribute(true, control_type_value, &line);
   if (filtered_result) {
     filtered_result->SetString(
-        UiaIdentifierToStringUTF8(UIA_AriaRolePropertyId), role_value);
+        UiaIdentifierToStringUTF8(UIA_ControlTypePropertyId),
+        control_type_value);
   }
 
   // properties

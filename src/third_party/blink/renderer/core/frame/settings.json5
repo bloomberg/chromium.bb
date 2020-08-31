@@ -229,6 +229,7 @@
       invalidate: "MediaControls",
     },
 
+    // Only affects main thread scrolling
     {
       name: "scrollAnimatorEnabled",
       initial: true,
@@ -549,6 +550,12 @@
     {
       name: "scriptEnabled",
       initial: false,
+    },
+
+    {
+      name: "parserScriptingFlagPolicy",
+      initial: "ParserScriptingFlagPolicy::kOnlyIfScriptIsEnabled",
+      type: "ParserScriptingFlagPolicy"
     },
 
     // Forces Android Overlay Scrollbar for mobile emulator.
@@ -876,62 +883,62 @@
     // Dark mode
     //
     {
-      name: "darkModeEnabled",
+      name: "forceDarkModeEnabled",
       initial: false,
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeInversionAlgorithm",
+      name: "forceDarkModeInversionAlgorithm",
       initial: "DarkModeInversionAlgorithm::kInvertLightnessLAB",
       type: "DarkModeInversionAlgorithm",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeGrayscale",
+      name: "forceDarkModeGrayscale",
       initial: false,
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeContrast",
+      name: "forceDarkModeContrast",
       initial: 0,
       type: "double",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeClassifierType",
+      name: "forceDarkModeClassifierType",
       initial: "DarkModeClassifierType::kGeneric",
       type: "DarkModeClassifierType",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeImagePolicy",
+      name: "forceDarkModeImagePolicy",
       initial: "DarkModeImagePolicy::kFilterNone",
       type: "DarkModeImagePolicy",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModePagePolicy",
+      name: "forceDarkModePagePolicy",
       initial: "DarkModePagePolicy::kFilterByBackground",
       type: "DarkModePagePolicy",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeTextBrightnessThreshold",
+      name: "forceDarkModeTextBrightnessThreshold",
       initial: "150",
       type: "int",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeBackgroundBrightnessThreshold",
+      name: "forceDarkModeBackgroundBrightnessThreshold",
       initial: "205",
       type: "int",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
-      name: "darkModeImageGrayscale",
+      name: "forceDarkModeImageGrayscale",
       initial: "0.0",
       type: "float",
-      invalidate: "Paint",
+      invalidate: "ForceDark",
     },
     {
       name: "navigatorPlatformOverride",
@@ -1028,23 +1035,32 @@
     },
     {
       name: "lazyImageFirstKFullyLoadSlow2G",
-      initial: 12,
+      initial: 0,
       type: "int",
     },
     {
       name: "lazyImageFirstKFullyLoad2G",
-      initial: 10,
+      initial: 0,
       type: "int",
     },
     {
       name: "lazyImageFirstKFullyLoad3G",
-      initial: 8,
+      initial: 0,
       type: "int",
     },
     {
       name: "lazyImageFirstKFullyLoad4G",
-      initial: 6,
+      initial: 0,
       type: "int",
+    },
+
+    // Preferred color scheme from the OS/application passed to the renderer for
+    // evaluating the prefers-color-scheme media query.
+    {
+      name: "preferredColorScheme",
+      initial: "PreferredColorScheme::kNoPreference",
+      invalidate: "ColorScheme",
+      type: "PreferredColorScheme",
     },
 
     // Preferred motion-reduction setting from the OS/application passed to the
@@ -1066,5 +1082,12 @@
       invalidate: "MediaQuery",
       type: "NavigationControls",
     },
+
+    {
+      name: "accessibilityAlwaysShowFocus",
+      initial: false,
+      invalidate: "Style",
+      type: "bool"
+    }
   ],
 }

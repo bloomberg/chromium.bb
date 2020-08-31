@@ -298,13 +298,6 @@ void LocalSessionEventHandlerImpl::AssociateTab(
 
   // Write to the sync model itself.
   batch->Put(std::move(specifics));
-
-  int current_index = tab_delegate->GetCurrentEntryIndex();
-  const GURL new_url = tab_delegate->GetVirtualURLAtIndex(current_index);
-  if (current_index >= 0 && new_url != old_url) {
-    delegate_->OnFaviconVisited(
-        new_url, tab_delegate->GetFaviconURLAtIndex(current_index));
-  }
 }
 
 void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
@@ -351,16 +344,6 @@ void LocalSessionEventHandlerImpl::OnLocalTabModified(
   // "uninteresting", we remove it from the window's tab information.
   AssociateWindows(DONT_RELOAD_TABS, batch.get());
   batch->Commit();
-}
-
-void LocalSessionEventHandlerImpl::OnFaviconsChanged(
-    const std::set<GURL>& page_urls,
-    const GURL& /* icon_url */) {
-  for (const GURL& page_url : page_urls) {
-    if (page_url.is_valid()) {
-      delegate_->OnPageFaviconUpdated(page_url);
-    }
-  }
 }
 
 sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
@@ -414,11 +397,12 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
   }
 
   if (is_supervised) {
-    const std::vector<std::unique_ptr<const SerializedNavigationEntry>>&
-        blocked_navigations = *tab_delegate.GetBlockedNavigations();
-    for (size_t i = 0; i < blocked_navigations.size(); ++i) {
+    const std::vector<std::unique_ptr<const SerializedNavigationEntry>>*
+        blocked_navigations = tab_delegate.GetBlockedNavigations();
+    DCHECK(blocked_navigations);
+    for (const auto& entry_unique_ptr : *blocked_navigations) {
       sync_pb::TabNavigation* navigation = specifics.add_navigation();
-      SessionNavigationToSyncData(*blocked_navigations[i]).Swap(navigation);
+      SessionNavigationToSyncData(*entry_unique_ptr).Swap(navigation);
       navigation->set_blocked_state(
           sync_pb::TabNavigation_BlockedState_STATE_BLOCKED);
       // TODO(bauerb): Add categories

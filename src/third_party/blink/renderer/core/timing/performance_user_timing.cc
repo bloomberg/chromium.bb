@@ -25,53 +25,15 @@
 
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_performance_mark_options.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
-#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
-
-namespace {
-
-typedef uint64_t (PerformanceTiming::*NavigationTimingFunction)() const;
-using RestrictedKeyMap = HashMap<AtomicString, NavigationTimingFunction>;
-
-const RestrictedKeyMap& GetRestrictedKeyMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<RestrictedKeyMap>, map, ());
-  if (!map.IsSet()) {
-    *map = {
-        {"navigationStart", &PerformanceTiming::navigationStart},
-        {"unloadEventStart", &PerformanceTiming::unloadEventStart},
-        {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
-        {"redirectStart", &PerformanceTiming::redirectStart},
-        {"redirectEnd", &PerformanceTiming::redirectEnd},
-        {"fetchStart", &PerformanceTiming::fetchStart},
-        {"domainLookupStart", &PerformanceTiming::domainLookupStart},
-        {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
-        {"connectStart", &PerformanceTiming::connectStart},
-        {"connectEnd", &PerformanceTiming::connectEnd},
-        {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
-        {"requestStart", &PerformanceTiming::requestStart},
-        {"responseStart", &PerformanceTiming::responseStart},
-        {"responseEnd", &PerformanceTiming::responseEnd},
-        {"domLoading", &PerformanceTiming::domLoading},
-        {"domInteractive", &PerformanceTiming::domInteractive},
-        {"domContentLoadedEventStart",
-         &PerformanceTiming::domContentLoadedEventStart},
-        {"domContentLoadedEventEnd",
-         &PerformanceTiming::domContentLoadedEventEnd},
-        {"domComplete", &PerformanceTiming::domComplete},
-        {"loadEventStart", &PerformanceTiming::loadEventStart},
-        {"loadEventEnd", &PerformanceTiming::loadEventEnd},
-    };
-  }
-  return *map;
-}
-
-}  // namespace
 
 UserTiming::UserTiming(Performance& performance) : performance_(&performance) {}
 
@@ -98,43 +60,6 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::CreatePerformanceMark(
-    ScriptState* script_state,
-    const AtomicString& mark_name,
-    PerformanceMarkOptions* mark_options,
-    ExceptionState& exception_state) {
-  DOMHighResTimeStamp start = 0.0;
-  if (mark_options && mark_options->hasStartTime()) {
-    start = mark_options->startTime();
-    if (start < 0.0) {
-      exception_state.ThrowTypeError("'" + mark_name +
-                                     "' cannot have a negative start time.");
-      return nullptr;
-    }
-  } else {
-    start = performance_->now();
-  }
-
-  ScriptValue detail = ScriptValue::CreateNull(script_state->GetIsolate());
-  if (mark_options)
-    detail = mark_options->detail();
-
-  bool is_worker_global_scope =
-      performance_->GetExecutionContext() &&
-      performance_->GetExecutionContext()->IsWorkerGlobalScope();
-  if (!is_worker_global_scope && GetRestrictedKeyMap().Contains(mark_name)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "'" + mark_name +
-            "' is part of the PerformanceTiming interface, and "
-            "cannot be used as a mark name.");
-    return nullptr;
-  }
-
-  return PerformanceMark::Create(script_state, mark_name, start, detail,
-                                 exception_state);
-}
-
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
     TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().c_str(),
@@ -152,11 +77,14 @@ void UserTiming::ClearMarks(const AtomicString& mark_name) {
 
 double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
                                              ExceptionState& exception_state) {
-  if (marks_map_.Contains(mark_name))
-    return marks_map_.at(mark_name).back()->startTime();
+  PerformanceEntryMap::const_iterator existing_marks =
+      marks_map_.find(mark_name);
+  if (existing_marks != marks_map_.end()) {
+    return existing_marks->value.back()->startTime();
+  }
 
-  NavigationTimingFunction timing_function =
-      GetRestrictedKeyMap().at(mark_name);
+  PerformanceTiming::PerformanceTimingGetter timing_function =
+      PerformanceTiming::GetAttributeMapping().at(mark_name);
   if (!timing_function) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -306,7 +234,7 @@ PerformanceEntryVector UserTiming::GetMeasures(const AtomicString& name) const {
   return GetEntrySequenceByName(measures_map_, name);
 }
 
-void UserTiming::Trace(blink::Visitor* visitor) {
+void UserTiming::Trace(Visitor* visitor) {
   visitor->Trace(performance_);
   visitor->Trace(marks_map_);
   visitor->Trace(measures_map_);

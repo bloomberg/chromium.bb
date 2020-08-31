@@ -54,6 +54,7 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+    <uses-permission-sdk-23 android:name="android.permission.USE_BIOMETRIC"/>
     <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
@@ -131,9 +132,7 @@ by a child template that "extends" this file.
         android:largeHeap="false"
         android:manageSpaceActivity="@string/manage_space_activity"
         android:supportsRtl="true"
-        {% if (use_zygote|default(false) == 'true') %}
         android:zygotePreloadName="org.chromium.content.app.ZygotePreload"
-        {% endif %}
         {% if backup_key is defined %}
         android:allowBackup="true"
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
@@ -177,21 +176,6 @@ by a child template that "extends" this file.
         <!-- ARCore APK integration -->
         <!-- This tag indicates that this application optionally uses ARCore. -->
         <meta-data android:name="com.google.ar.core" android:value="optional" />
-        <!-- This value must match value present in ARCore SDK's .aar -->
-        <!-- TODO(https://crbug.com/917406): modify build scripts to
-             automatically pull this value in - the problem exists because in
-             bundle mode, the ARCore SDK is packaged into AR module and
-             the module installation will not automatically bring in DFM's
-             manifest entries. -->
-        <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="190531000"/>
-        <activity
-            android:name="com.google.ar.core.InstallActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:theme="@android:style/Theme.Material.Light.Dialog.Alert" />
         {% endif %}
 
         <!-- Cast support -->
@@ -412,6 +396,12 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        <activity android:name="org.chromium.chrome.browser.app.reengagement.ReengagementActivity"
+            android:theme="@android:style/Theme.Translucent"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:exported="false" />
+
         <receiver android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$PhoneUnlockedReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.USER_PRESENT" />
@@ -462,41 +452,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        <!-- SeparateTaskCustomTabActivity is a wrapper of CustomTabActivity. It provides the
-             general feeling of supporting multi tasks, even for versions that did not fully support
-             it.
-             TODO(arthursonzogni, tedchoc): Enabled this only on Android < 21 after M74.
-        -->
-        <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:exported="false"
-            android:taskAffinity=""
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}
-            {{ self.supports_video_persistence() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% if min_sdk_version|int < 21 %}
-          {% for i in range(10) %}
-            <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
-                android:theme="@style/Theme.Chromium.Activity"
-                android:icon="@mipmap/app_single_page_icon"
-                android:exported="false"
-                android:launchMode="singleTask"
-                android:persistableMode="persistNever"
-                android:taskAffinity=""
-                {{ self.chrome_activity_common() }}
-                {{ self.supports_video_persistence() }}
-            >
-                {{ self.supports_vr() }}
-                {{ self.extra_web_rendering_activity_definitions() }}
-            </activity>
-          {% endfor %}
-        {% endif %}
-
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"
@@ -573,6 +528,15 @@ by a child template that "extends" this file.
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
 
+        <!--
+            TODO(crbug.com/1093292): investigate why
+            @android:style/Theme.NoDisplay can't be used here.
+        -->
+        <activity android:name="org.chromium.chrome.browser.sync.ui.TrustedVaultKeyRetrievalProxyActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:excludeFromRecents="true"
+            android:exported="false">
+        </activity>
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/Theme.Chromium.Activity"
             android:autoRemoveFromRecents="true">
@@ -613,13 +577,13 @@ by a child template that "extends" this file.
             android:exported="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.settings.SettingsActivity"
-            android:theme="@style/Theme.Chromium.Preferences"
+            android:theme="@style/Theme.Chromium.Settings"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:label="@string/preferences"
+            android:label="@string/settings"
             android:exported="false">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
-            android:theme="@style/Theme.Chromium.Preferences.ManageSpace"
+        <activity android:name="org.chromium.chrome.browser.site_settings.ManageSpaceActivity"
+            android:theme="@style/Theme.Chromium.Settings.ManageSpace"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/storage_management_activity_label"
             android:exported="false">
@@ -726,27 +690,6 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             {{ self.supports_video_persistence() }} >
         </activity-alias>
-        {% for i in range(10) %}
-        <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTask"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-           {{ self.supports_vr() }}
-           {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity{{ i }}"
-            android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title">
-        </activity-alias>
-        {% endfor %}
         <!-- Activities for WebAPKs. -->
         <activity android:name="org.chromium.chrome.browser.webapps.SameTaskWebApkActivity"
             android:theme="@style/Theme.Chromium.Webapp.Translucent"
@@ -759,35 +702,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTop"
-            android:documentLaunchMode="intoExisting"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% for i in range(10) %}
-        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity{{ i }}"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTask"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% endfor %}
 
         <activity android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity"
             android:theme="@android:style/Theme.NoDisplay"
@@ -944,6 +858,10 @@ by a child template that "extends" this file.
                 <data android:scheme="https"/>
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name="org.chromium.chrome.browser.browserservices.trustedwebactivityui.DisclosureAcceptanceBroadcastReceiver"
+            android:exported="false" />
 
         <!-- Service for decoding images in a sandboxed process. -->
         <service
@@ -1122,18 +1040,22 @@ by a child template that "extends" this file.
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Background Task Scheduler job service -->
-        <service android:name="org.chromium.components.background_task_scheduler.BackgroundTaskJobService"
+        <service android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskJobService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Background Task Scheduler GCM task service -->
-        <service android:name="org.chromium.components.background_task_scheduler.BackgroundTaskGcmTaskService"
+        <service android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskGcmTaskService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
             </intent-filter>
         </service>
+
+        <!-- Background Task Scheduler alarm receiver -->
+        <receiver android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskBroadcastReceiver"
+            android:exported="false" />
 
         <!-- GcmTaskService implementation to wake Chrome on scheduled events -->
         <service android:name="org.chromium.chrome.browser.ChromeBackgroundService"
@@ -1189,7 +1111,7 @@ by a child template that "extends" this file.
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
             android:isolatedProcess="true"
             android:exported="{{sandboxed_service_exported|default(false)}}"
-            {% if (use_zygote|default(false) == 'true') and (i == 0) %}
+            {% if (i == 0) %}
             android:useAppZygote="true"
             {% endif %}
             {% if (sandboxed_service_exported|default(false)) == 'true' %}
@@ -1205,9 +1127,6 @@ by a child template that "extends" this file.
 
         {% for i in range(num_privileged_services) %}
         {% set privileged_process_name = ':privileged_process%d' % i %}
-        <!-- TODO(tedchoc): Omit this for release builds as MultiDex is debug only. -->
-        <meta-data android:name="{{ manifest_package }}{{ privileged_process_name }}.ignore_multidex"
-android:value="true" />
         <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
             android:process="{{ privileged_process_name }}"
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
@@ -1224,11 +1143,11 @@ android:value="true" />
         <receiver android:name="org.chromium.chrome.browser.notifications.scheduler.DisplayAgent$Receiver"
             android:exported="false"/>
 
-        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TapReceiver"
+        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$SendTabToSelfNotificationReceiver"
             android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$DeleteReceiver"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"
+
+        <!-- Save image notification receiver -->
+        <receiver android:name="org.chromium.chrome.browser.share.SaveImageNotificationManager$TapReceiver"
             android:exported="false"/>
 
         <receiver android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"
@@ -1298,7 +1217,7 @@ android:value="true" />
 
         {% if min_sdk_version|int >= 21 %}
         <activity
-            android:name="org.chromium.chrome.features.test_dummy.TestDummyActivity"
+            android:name="org.chromium.chrome.browser.test_dummy.TestDummyActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:noHistory="true"

@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -25,6 +24,7 @@ class CanvasRenderingContext;
 class CanvasResource;
 class CanvasResourceDispatcher;
 class FontSelector;
+class ImageEncodeOptions;
 class KURL;
 class StaticBitmapImage;
 
@@ -79,6 +79,12 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void Commit(scoped_refptr<CanvasResource> canvas_resource,
                       const SkIRect& damage_rect);
 
+  // For deferred canvases this will have the side effect of drawing recorded
+  // commands in order to finalize the frame.
+  virtual ScriptPromise convertToBlob(ScriptState*,
+                                      const ImageEncodeOptions*,
+                                      ExceptionState&);
+
   bool IsPaintable() const;
 
   // Required by template functions in WebGLRenderingContextBase
@@ -96,12 +102,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   bool Is2d() const;
   CanvasColorParams ColorParams() const;
 
-  // For deferred canvases this will have the side effect of drawing recorded
-  // commands in order to finalize the frame.
-  ScriptPromise convertToBlob(ScriptState*,
-                              const ImageEncodeOptions*,
-                              ExceptionState&);
-
   // blink::CanvasImageSource
   bool IsOffscreenCanvas() const override;
 
@@ -109,6 +109,9 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   ~CanvasRenderingContextHost() override {}
 
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
+
+  void CreateCanvasResourceProvider2D(AccelerationHint hint);
+  void CreateCanvasResourceProvider3D(AccelerationHint hint);
 
   bool did_fail_to_create_resource_provider_ = false;
   bool did_record_canvas_size_to_uma_ = false;

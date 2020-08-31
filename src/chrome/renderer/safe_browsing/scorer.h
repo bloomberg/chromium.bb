@@ -22,7 +22,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
+#include "components/safe_browsing/core/proto/client_model.pb.h"
 
 namespace safe_browsing {
 class FeatureMap;
@@ -65,6 +65,9 @@ class Scorer {
 
   // Return the number of words in a shingle.
   size_t shingle_size() const;
+
+  // Returns the threshold probability above which we send a CSD ping.
+  float threshold_probability() const;
 
  protected:
   // Most clients should use the factory method.  This constructor is public

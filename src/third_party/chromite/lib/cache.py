@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import datetime
 import errno
 import os
 import shutil
@@ -82,7 +83,7 @@ class CacheReference(object):
   @property
   def path(self):
     """Returns on-disk path to the cached item."""
-    return self._cache._GetKeyPath(self.key)
+    return self._cache.GetKeyPath(self.key)
 
   def Acquire(self):
     """Prepare the cache reference for operation.
@@ -106,6 +107,7 @@ class CacheReference(object):
 
     self.acquired = False
     self._lock.__exit__(None, None, None)
+    self.read_locked = False
 
   def __enter__(self):
     self.Acquire()
@@ -129,6 +131,8 @@ class CacheReference(object):
   @WriteLock
   def _Remove(self):
     self._cache._Remove(self.key)
+    osutils.SafeUnlink(self._lock.path)
+    osutils.SafeUnlink(self._entry_lock.path)
 
   def _Exists(self):
     return self._cache._KeyExists(self.key)
@@ -186,28 +190,28 @@ class DiskCache(object):
   through CacheReferences, which are retrieved by using the cache Lookup()
   method.
   """
-  # TODO(rcui): Add LRU cleanup functionality.
-
   _STAGING_DIR = 'staging'
 
-  def __init__(self, cache_dir, cache_user=None):
+  def __init__(self, cache_dir, cache_user=None, lock_suffix='.lock'):
     self._cache_dir = cache_dir
     self._cache_user = cache_user
+    self._lock_suffix = lock_suffix
     self.staging_dir = os.path.join(cache_dir, self._STAGING_DIR)
 
     osutils.SafeMakedirsNonRoot(self._cache_dir, user=self._cache_user)
     osutils.SafeMakedirsNonRoot(self.staging_dir, user=self._cache_user)
 
   def _KeyExists(self, key):
-    return os.path.exists(self._GetKeyPath(key))
+    return os.path.lexists(self.GetKeyPath(key))
 
-  def _GetKeyPath(self, key):
+  def GetKeyPath(self, key):
     """Get the on-disk path of a key."""
     return os.path.join(self._cache_dir, '+'.join(key))
 
-  def _LockForKey(self, key, suffix='.lock'):
+  def _LockForKey(self, key, suffix=None):
     """Returns an unacquired lock associated with a key."""
-    key_path = self._GetKeyPath(key)
+    suffix = suffix or self._lock_suffix
+    key_path = self.GetKeyPath(key)
     osutils.SafeMakedirsNonRoot(os.path.dirname(key_path),
                                 user=self._cache_user)
     lock_path = os.path.join(self._cache_dir, os.path.dirname(key_path),
@@ -220,7 +224,7 @@ class DiskCache(object):
   def _Insert(self, key, path):
     """Insert a file or a directory into the cache at a given key."""
     self._Remove(key)
-    key_path = self._GetKeyPath(key)
+    key_path = self.GetKeyPath(key)
     osutils.SafeMakedirsNonRoot(os.path.dirname(key_path),
                                 user=self._cache_user)
     shutil.move(path, key_path)
@@ -236,11 +240,52 @@ class DiskCache(object):
     """Remove a key from the cache."""
     if self._KeyExists(key):
       with self._TempDirContext() as tempdir:
-        shutil.move(self._GetKeyPath(key), tempdir)
+        shutil.move(self.GetKeyPath(key), tempdir)
+
+  def GetKey(self, path):
+    """Returns the key for an item's path in the cache."""
+    if self._cache_dir in path:
+      path = os.path.relpath(path, self._cache_dir)
+    return tuple(path.split('+'))
+
+  def ListKeys(self):
+    """Returns a list of keys for every item present in the cache."""
+    keys = []
+    for root, dirs, files in os.walk(self._cache_dir):
+      for f in dirs + files:
+        key_path = os.path.join(root, f)
+        if os.path.exists(key_path + self._lock_suffix):
+          # Test for the presence of the key's lock file to determine if this
+          # is the root key path, or some file nested within a key's dir.
+          keys.append(self.GetKey(key_path))
+    return keys
 
   def Lookup(self, key):
     """Get a reference to a given key."""
     return CacheReference(self, key)
+
+  def DeleteStale(self, max_age):
+    """Removes any item from the cache that was modified after a given lifetime.
+
+    Args:
+      max_age: An instance of datetime.timedelta. Any item not modified within
+          this amount of time will be removed.
+
+    Returns:
+      List of keys removed.
+    """
+    if not isinstance(max_age, datetime.timedelta):
+      raise TypeError('max_age must be an instance of datetime.timedelta.')
+    keys_removed = []
+    for key in self.ListKeys():
+      path = self.GetKeyPath(key)
+      mtime = max(os.path.getmtime(path), os.path.getctime(path))
+      time_since_last_modify = (
+          datetime.datetime.now() - datetime.datetime.fromtimestamp(mtime))
+      if time_since_last_modify > max_age:
+        self.Lookup(key).Remove()
+        keys_removed.append(key)
+    return keys_removed
 
 
 class RemoteCache(DiskCache):
@@ -315,7 +360,7 @@ class TarballCache(RemoteCache):
     See crbug.com/468838
     """
     # Wipe out empty directories before testing for existence.
-    key_path = self._GetKeyPath(key)
+    key_path = self.GetKeyPath(key)
 
     try:
       os.rmdir(key_path)

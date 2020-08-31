@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
-#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -72,10 +71,8 @@ class AndroidSmsAppManagerImplTest : public testing::Test {
     }
 
     // AndroidSmsAppManagerImpl::PwaDelegate:
-    content::WebContents* OpenApp(Profile*, const apps::AppLaunchParams& params)
-        override {
-      opened_app_ids_.push_back(params.app_id);
-      return nullptr;
+    void OpenApp(Profile*, const std::string& app_id) override {
+      opened_app_ids_.push_back(app_id);
     }
 
     bool TransferItemAttributes(
@@ -195,7 +192,7 @@ TEST_F(AndroidSmsAppManagerImplTest,
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
                            ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
                                true /* use_install_url */))
-                           ->pwa->id());
+                           ->pwa);
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
                   ->GetAppMetadataAtUrl(install_url)
                   ->is_cookie_present);
@@ -232,7 +229,7 @@ TEST_F(AndroidSmsAppManagerImplTest, TestSetUpMessagesAndLaunch_NoPreviousApp) {
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
                            ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
                                true /* use_install_url */))
-                           ->pwa->id());
+                           ->pwa);
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
                   ->GetAppMetadataAtUrl(install_url)
                   ->is_cookie_present);
@@ -275,7 +272,7 @@ TEST_F(AndroidSmsAppManagerImplTest,
   EXPECT_EQ(kOldAppId, fake_android_sms_app_setup_controller()
                            ->GetAppMetadataAtUrl(GetAndroidMessagesURLOld(
                                true /* use_install_url */))
-                           ->pwa->id());
+                           ->pwa);
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
                   ->GetAppMetadataAtUrl(
                       GetAndroidMessagesURLOld(true /* use_install_url */))
@@ -301,7 +298,7 @@ TEST_F(AndroidSmsAppManagerImplTest,
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
                            ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
                                true /* use_install_url */))
-                           ->pwa->id());
+                           ->pwa);
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
                   ->GetAppMetadataAtUrl(
                       GetAndroidMessagesURL(true /* use_install_url */))
@@ -340,7 +337,7 @@ TEST_F(AndroidSmsAppManagerImplTest, TestManualUninstall) {
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
                            ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
                                true /* use_install_url */))
-                           ->pwa->id());
+                           ->pwa);
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
                   ->GetAppMetadataAtUrl(install_url)
                   ->is_cookie_present);

@@ -33,7 +33,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="end"
             android:gravity="center_vertical"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
     </LinearLayout>
 
@@ -41,7 +41,7 @@
         android:id="@+id/menu_item_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/divider_bg_color"
+        android:background="@color/divider_line_bg_color"
         android:visibility="gone" />
 
 </LinearLayout>

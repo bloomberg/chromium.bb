@@ -22,9 +22,25 @@ FolderUploadConfirmationView::FolderUploadConfirmationView(
     std::vector<ui::SelectedFileInfo> selected_files)
     : callback_(std::move(callback)),
       selected_files_(std::move(selected_files)) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON));
+
+  SetAcceptCallback(base::BindOnce(
+      [](FolderUploadConfirmationView* dialog) {
+        std::move(dialog->callback_).Run(dialog->selected_files_);
+      },
+      base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(
+      [](FolderUploadConfirmationView* dialog) {
+        std::move(dialog->callback_).Run({});
+      },
+      base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(
+      [](FolderUploadConfirmationView* dialog) {
+        std::move(dialog->callback_).Run({});
+      },
+      base::Unretained(this)));
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(IDS_CONFIRM_FILE_UPLOAD_TEXT,
@@ -67,16 +83,6 @@ views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
 
 bool FolderUploadConfirmationView::ShouldShowCloseButton() const {
   return false;
-}
-
-bool FolderUploadConfirmationView::Accept() {
-  std::move(callback_).Run(selected_files_);
-  return true;
-}
-
-bool FolderUploadConfirmationView::Cancel() {
-  std::move(callback_).Run(std::vector<ui::SelectedFileInfo>());
-  return true;
 }
 
 gfx::Size FolderUploadConfirmationView::CalculatePreferredSize() const {

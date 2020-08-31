@@ -1,9 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Pre-generates the expected output subset files (via fonttools) for
 # specified subset test suite(s).
-
-from __future__ import print_function, division, absolute_import
 
 import io
 import os
@@ -20,10 +18,9 @@ def usage():
 def generate_expected_output(input_file, unicodes, profile_flags, output_path):
 	args = ["fonttools", "subset", input_file]
 	args.extend(["--notdef-outline",
-		     "--name-languages=*",
-		     "--name-legacy",
-                     "--layout-features=*",
-		     "--drop-tables+=DSIG,GPOS,GSUB,GDEF,gvar,avar,MVAR,HVAR",
+		     "--layout-features=*",
+		     "--drop-tables+=DSIG,GPOS,GSUB,GDEF",
+		     "--drop-tables-=sbix",
 		     "--unicodes=%s" % unicodes,
 		     "--output-file=%s" % output_path])
 	args.extend(profile_flags)

@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "shaderc/shaderc.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <thread>
 #include <unordered_map>
 
-#include "SPIRV/spirv.hpp"
-
 #include "common_shaders_for_test.h"
-#include "shaderc/shaderc.h"
+#include "spirv/unified1/spirv.hpp"
 
 namespace {
 
@@ -1216,7 +1217,6 @@ TEST_F(CompileStringWithOptionsTest,
                                  shaderc_glsl_compute_shader, options_.get()));
 }
 
-#ifdef NV_EXTENSIONS
 // task shader
 TEST_F(CompileStringWithOptionsTest,
        TargetEnvRespectedWhenCompilingVulkan1_0TaskShaderToVulkan1_0Succeeds) {
@@ -1290,7 +1290,6 @@ TEST_F(CompileStringWithOptionsTest,
   EXPECT_TRUE(CompilesToValidSpv(compiler_, kGlslShaderMeshSubgroupBarrier,
                                  shaderc_glsl_mesh_shader, options_.get()));
 }
-#endif
 
 TEST_F(CompileStringWithOptionsTest,
        DISABLED_TargetEnvIgnoredWhenPreprocessing) {

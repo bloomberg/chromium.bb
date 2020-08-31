@@ -43,8 +43,6 @@ namespace {
 using VariationParameters = std::map<std::string, std::string>;
 
 const char kQuicFieldTrialName[] = "QUIC";
-const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
-const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 
 const char kHttp2FieldTrialName[] = "HTTP2";
 
@@ -174,19 +172,14 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
                                                 http2_trial_params);
 }
 
-bool ShouldEnableQuic(base::StringPiece quic_trial_group,
-                      const VariationParameters& quic_trial_params,
-                      bool is_quic_force_disabled,
-                      bool is_quic_force_enabled) {
+bool ShouldDisableQuic(base::StringPiece quic_trial_group,
+                       const VariationParameters& quic_trial_params,
+                       bool is_quic_force_disabled) {
   if (is_quic_force_disabled)
-    return false;
-  if (is_quic_force_enabled)
     return true;
 
-  return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
-         quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName) ||
-         base::LowerCaseEqualsASCII(
-             GetVariationParam(quic_trial_params, "enable_quic"), "true");
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "enable_quic"), "false");
 }
 
 bool ShouldEnableQuicProxiesForHttpsUrls(
@@ -283,12 +276,6 @@ int GetQuicMaxIdleTimeBeforeCryptoHandshakeSeconds(
     return value;
   }
   return 0;
-}
-
-bool ShouldQuicRaceCertVerification(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "race_cert_verification"), "true");
 }
 
 bool ShouldQuicEstimateInitialRtt(
@@ -454,7 +441,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
 
 quic::ParsedQuicVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
-  return network_session_configurator::ParseQuicVersions(
+  return quic::ParseQuicVersionVectorString(
       GetVariationParam(quic_trial_params, "quic_version"));
 }
 
@@ -468,13 +455,13 @@ bool ShouldEnableServerPushCancelation(
 void ConfigureQuicParams(base::StringPiece quic_trial_group,
                          const VariationParameters& quic_trial_params,
                          bool is_quic_force_disabled,
-                         bool is_quic_force_enabled,
                          const std::string& quic_user_agent_id,
                          net::HttpNetworkSession::Params* params,
                          net::QuicParams* quic_params) {
-  params->enable_quic =
-      ShouldEnableQuic(quic_trial_group, quic_trial_params,
-                       is_quic_force_disabled, is_quic_force_enabled);
+  if (ShouldDisableQuic(quic_trial_group, quic_trial_params,
+                        is_quic_force_disabled)) {
+    params->enable_quic = false;
+  }
 
   params->enable_server_push_cancellation =
       ShouldEnableServerPushCancelation(quic_trial_params);
@@ -520,8 +507,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
           base::TimeDelta::FromSeconds(
               max_idle_time_before_crypto_handshake_seconds);
     }
-    quic_params->race_cert_verification =
-        ShouldQuicRaceCertVerification(quic_trial_params);
     quic_params->estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
     quic_params->headers_include_h2_stream_dependency =
@@ -600,43 +585,12 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
 namespace network_session_configurator {
 
-quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector supported_versions;
-  quic::QuicTransportVersionVector all_supported_versions =
-      quic::AllSupportedTransportVersions();
-
-  for (const base::StringPiece& version : base::SplitStringPiece(
-           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    auto it = all_supported_versions.begin();
-    while (it != all_supported_versions.end()) {
-      if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
-        // Remove the supported version to deduplicate versions extracted from
-        // |quic_versions|.
-        all_supported_versions.erase(it);
-        break;
-      }
-      it++;
-    }
-    for (const auto& supported_version : quic::AllSupportedVersions()) {
-      if (quic::AlpnForVersion(supported_version) == version) {
-        supported_versions.push_back(supported_version);
-        break;
-      }
-    }
-  }
-  return supported_versions;
-}
-
 void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
                                     bool is_quic_force_disabled,
                                     const std::string& quic_user_agent_id,
                                     net::HttpNetworkSession::Params* params,
                                     net::QuicParams* quic_params) {
   is_quic_force_disabled |= command_line.HasSwitch(switches::kDisableQuic);
-  bool is_quic_force_enabled = command_line.HasSwitch(switches::kEnableQuic);
 
   std::string quic_trial_group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);
@@ -644,8 +598,8 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
   if (!variations::GetVariationParams(kQuicFieldTrialName, &quic_trial_params))
     quic_trial_params.clear();
   ConfigureQuicParams(quic_trial_group, quic_trial_params,
-                      is_quic_force_disabled, is_quic_force_enabled,
-                      quic_user_agent_id, params, quic_params);
+                      is_quic_force_disabled, quic_user_agent_id, params,
+                      quic_params);
 
   std::string http2_trial_group =
       base::FieldTrialList::FindFullName(kHttp2FieldTrialName);
@@ -677,7 +631,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
       quic::ParsedQuicVersionVector supported_versions =
-          network_session_configurator::ParseQuicVersions(
+          quic::ParseQuicVersionVectorString(
               command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())
         quic_params->supported_versions = supported_versions;

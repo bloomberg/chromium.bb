@@ -5,140 +5,67 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_CRYPTO_SERVER_STREAM_H_
 #define QUICHE_QUIC_CORE_QUIC_CRYPTO_SERVER_STREAM_H_
 
-#include <cstdint>
-#include <memory>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
+#include "net/third_party/quiche/src/quic/core/proto/source_address_token_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
 
-class CachedNetworkParameters;
-class CryptoHandshakeMessage;
-class QuicCryptoServerConfig;
-class QuicCryptoServerStreamBase;
-
-// TODO(alyssar) see what can be moved out of QuicCryptoServerStream with
-// various code and test refactoring.
-class QUIC_EXPORT_PRIVATE QuicCryptoServerStreamBase : public QuicCryptoStream {
- public:
-  explicit QuicCryptoServerStreamBase(QuicSession* session);
-
-  ~QuicCryptoServerStreamBase() override {}
-
-  // Cancel any outstanding callbacks, such as asynchronous validation of client
-  // hello.
-  virtual void CancelOutstandingCallbacks() = 0;
-
-  // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
-  // SHA-256 hash of the client's ChannelID key and returns true, if the client
-  // presented a ChannelID. Otherwise it returns false.
-  virtual bool GetBase64SHA256ClientChannelID(std::string* output) const = 0;
-
-  virtual int NumServerConfigUpdateMessagesSent() const = 0;
-
-  // Sends the latest server config and source-address token to the client.
-  virtual void SendServerConfigUpdate(
-      const CachedNetworkParameters* cached_network_params) = 0;
-
-  // These are all accessors and setters to their respective counters.
-  virtual uint8_t NumHandshakeMessages() const = 0;
-  virtual uint8_t NumHandshakeMessagesWithServerNonces() const = 0;
-  virtual bool ZeroRttAttempted() const = 0;
-  virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
-      const = 0;
-  virtual void SetPreviousCachedNetworkParams(
-      CachedNetworkParameters cached_network_params) = 0;
-};
+namespace test {
+class QuicCryptoServerStreamPeer;
+}  // namespace test
 
 class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
-    : public QuicCryptoServerStreamBase {
+    : public QuicCryptoServerStreamBase,
+      public QuicCryptoHandshaker {
  public:
-  // QuicCryptoServerStream creates a HandshakerDelegate at construction time
-  // based on the QuicTransportVersion of the connection. Different
-  // HandshakerDelegates provide implementations of different crypto handshake
-  // protocols. Currently QUIC crypto is the only protocol implemented; a future
-  // HandshakerDelegate will use TLS as the handshake protocol.
-  // QuicCryptoServerStream delegates all of its public methods to its
-  // HandshakerDelegate.
-  //
-  // This setup of the crypto stream delegating its implementation to the
-  // handshaker results in the handshaker reading and writing bytes on the
-  // crypto stream, instead of the handshake rpassing the stream bytes to send.
-  class QUIC_EXPORT_PRIVATE HandshakerDelegate {
-   public:
-    virtual ~HandshakerDelegate() {}
+  QuicCryptoServerStream(const QuicCryptoServerStream&) = delete;
+  QuicCryptoServerStream& operator=(const QuicCryptoServerStream&) = delete;
 
-    // Cancel any outstanding callbacks, such as asynchronous validation of
-    // client hello.
-    virtual void CancelOutstandingCallbacks() = 0;
+  ~QuicCryptoServerStream() override;
 
-    // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
-    // SHA-256 hash of the client's ChannelID key and returns true, if the
-    // client presented a ChannelID. Otherwise it returns false.
-    virtual bool GetBase64SHA256ClientChannelID(std::string* output) const = 0;
+  // From HandshakerInterface
+  void CancelOutstandingCallbacks() override;
+  bool GetBase64SHA256ClientChannelID(std::string* output) const override;
+  void SendServerConfigUpdate(
+      const CachedNetworkParameters* cached_network_params) override;
+  bool IsZeroRtt() const override;
+  int NumServerConfigUpdateMessagesSent() const override;
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
+  bool ZeroRttAttempted() const override;
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters cached_network_params) override;
+  void OnPacketDecrypted(EncryptionLevel level) override;
+  void OnOneRttPacketAcknowledged() override {}
+  void OnHandshakePacketSent() override {}
+  void OnConnectionClosed(QuicErrorCode /*error*/,
+                          ConnectionCloseSource /*source*/) override {}
+  void OnHandshakeDoneReceived() override;
+  bool ShouldSendExpectCTHeader() const override;
 
-    // Sends the latest server config and source-address token to the client.
-    virtual void SendServerConfigUpdate(
-        const CachedNetworkParameters* cached_network_params) = 0;
+  // From QuicCryptoStream
+  bool encryption_established() const override;
+  bool one_rtt_keys_available() const override;
+  const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
+      const override;
+  CryptoMessageParser* crypto_message_parser() override;
+  HandshakeState GetHandshakeState() const override;
+  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
 
-    // These are all accessors and setters to their respective counters.
-    virtual uint8_t NumHandshakeMessages() const = 0;
-    virtual uint8_t NumHandshakeMessagesWithServerNonces() const = 0;
-    virtual int NumServerConfigUpdateMessagesSent() const = 0;
-    virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
-        const = 0;
-    virtual bool ZeroRttAttempted() const = 0;
-    virtual void SetPreviousCachedNetworkParams(
-        CachedNetworkParameters cached_network_params) = 0;
-    virtual void OnPacketDecrypted(EncryptionLevel level) = 0;
+  // From QuicCryptoHandshaker
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
-    // NOTE: Indicating that the Expect-CT header should be sent here presents a
-    // layering violation to some extent. The Expect-CT header only applies to
-    // HTTP connections, while this class can be used for non-HTTP applications.
-    // However, it is exposed here because that is the only place where the
-    // configuration for the certificate used in the connection is accessible.
-    virtual bool ShouldSendExpectCTHeader() const = 0;
-
-    // Returns true once any encrypter (initial/0RTT or final/1RTT) has been set
-    // for the connection.
-    virtual bool encryption_established() const = 0;
-
-    // Returns true once the crypto handshake has completed.
-    virtual bool handshake_confirmed() const = 0;
-
-    // Returns the parameters negotiated in the crypto handshake.
-    virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
-        const = 0;
-
-    // Used by QuicCryptoStream to parse data received on this stream.
-    virtual CryptoMessageParser* crypto_message_parser() = 0;
-
-    // Used by QuicCryptoStream to know how much unprocessed data can be
-    // buffered at each encryption level.
-    virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const = 0;
-  };
-
-  class QUIC_EXPORT_PRIVATE Helper {
-   public:
-    virtual ~Helper() {}
-
-    // Returns true if |message|, which was received on |self_address| is
-    // acceptable according to the visitor's policy. Otherwise, returns false
-    // and populates |error_details|.
-    virtual bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
-                                      const QuicSocketAddress& client_address,
-                                      const QuicSocketAddress& peer_address,
-                                      const QuicSocketAddress& self_address,
-                                      std::string* error_details) const = 0;
-  };
+ protected:
+  QUIC_EXPORT_PRIVATE friend std::unique_ptr<QuicCryptoServerStreamBase>
+  CreateCryptoServerStream(const QuicCryptoServerConfig* crypto_config,
+                           QuicCompressedCertsCache* compressed_certs_cache,
+                           QuicSession* session,
+                           QuicCryptoServerStreamBase::Helper* helper);
 
   // |crypto_config| must outlive the stream.
   // |session| must outlive the stream.
@@ -146,54 +73,172 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   QuicCryptoServerStream(const QuicCryptoServerConfig* crypto_config,
                          QuicCompressedCertsCache* compressed_certs_cache,
                          QuicSession* session,
-                         Helper* helper);
-  QuicCryptoServerStream(const QuicCryptoServerStream&) = delete;
-  QuicCryptoServerStream& operator=(const QuicCryptoServerStream&) = delete;
+                         QuicCryptoServerStreamBase::Helper* helper);
 
-  ~QuicCryptoServerStream() override;
+  virtual void ProcessClientHello(
+      QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+          result,
+      std::unique_ptr<ProofSource::Details> proof_source_details,
+      std::unique_ptr<ProcessClientHelloResultCallback> done_cb);
 
-  // From QuicCryptoServerStreamBase
-  void CancelOutstandingCallbacks() override;
-  bool GetBase64SHA256ClientChannelID(std::string* output) const override;
-  void SendServerConfigUpdate(
-      const CachedNetworkParameters* cached_network_params) override;
-  uint8_t NumHandshakeMessages() const override;
-  uint8_t NumHandshakeMessagesWithServerNonces() const override;
-  int NumServerConfigUpdateMessagesSent() const override;
-  const CachedNetworkParameters* PreviousCachedNetworkParams() const override;
-  bool ZeroRttAttempted() const override;
-  void SetPreviousCachedNetworkParams(
-      CachedNetworkParameters cached_network_params) override;
+  // Hook that allows the server to set QuicConfig defaults just
+  // before going through the parameter negotiation step.
+  virtual void OverrideQuicConfigDefaults(QuicConfig* config);
 
-  // NOTE: Indicating that the Expect-CT header should be sent here presents
-  // a layering violation to some extent. The Expect-CT header only applies to
-  // HTTP connections, while this class can be used for non-HTTP applications.
-  // However, it is exposed here because that is the only place where the
-  // configuration for the certificate used in the connection is accessible.
-  bool ShouldSendExpectCTHeader() const;
+  // Returns client address used to generate and validate source address token.
+  virtual const QuicSocketAddress GetClientAddress();
 
-  bool encryption_established() const override;
-  bool handshake_confirmed() const override;
-  const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
-      const override;
-  CryptoMessageParser* crypto_message_parser() override;
-  void OnPacketDecrypted(EncryptionLevel level) override;
-  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
-  void OnSuccessfulVersionNegotiation(
-      const ParsedQuicVersion& version) override;
+  // Returns the QuicSession that this stream belongs to.
+  QuicSession* session() const { return session_; }
 
- protected:
-  // Provided so that subclasses can provide their own handshaker.
-  virtual HandshakerDelegate* handshaker() const;
+  void set_encryption_established(bool encryption_established) {
+    encryption_established_ = encryption_established;
+  }
+
+  void set_one_rtt_keys_available(bool one_rtt_keys_available) {
+    one_rtt_keys_available_ = one_rtt_keys_available;
+  }
 
  private:
-  std::unique_ptr<HandshakerDelegate> handshaker_;
+  friend class test::QuicCryptoServerStreamPeer;
 
-  // Arguments from QuicCryptoServerStream constructor that might need to be
-  // passed to the HandshakerDelegate constructor in its late construction.
+  class QUIC_EXPORT_PRIVATE ValidateCallback
+      : public ValidateClientHelloResultCallback {
+   public:
+    explicit ValidateCallback(QuicCryptoServerStream* parent);
+    ValidateCallback(const ValidateCallback&) = delete;
+    ValidateCallback& operator=(const ValidateCallback&) = delete;
+    // To allow the parent to detach itself from the callback before deletion.
+    void Cancel();
+
+    // From ValidateClientHelloResultCallback
+    void Run(QuicReferenceCountedPointer<Result> result,
+             std::unique_ptr<ProofSource::Details> details) override;
+
+   private:
+    QuicCryptoServerStream* parent_;
+  };
+
+  class SendServerConfigUpdateCallback
+      : public BuildServerConfigUpdateMessageResultCallback {
+   public:
+    explicit SendServerConfigUpdateCallback(QuicCryptoServerStream* parent);
+    SendServerConfigUpdateCallback(const SendServerConfigUpdateCallback&) =
+        delete;
+    void operator=(const SendServerConfigUpdateCallback&) = delete;
+
+    // To allow the parent to detach itself from the callback before deletion.
+    void Cancel();
+
+    // From BuildServerConfigUpdateMessageResultCallback
+    void Run(bool ok, const CryptoHandshakeMessage& message) override;
+
+   private:
+    QuicCryptoServerStream* parent_;
+  };
+
+  // Invoked by ValidateCallback::RunImpl once initial validation of
+  // the client hello is complete.  Finishes processing of the client
+  // hello message and handles handshake success/failure.
+  void FinishProcessingHandshakeMessage(
+      QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+          result,
+      std::unique_ptr<ProofSource::Details> details);
+
+  class ProcessClientHelloCallback;
+  friend class ProcessClientHelloCallback;
+
+  // Portion of FinishProcessingHandshakeMessage which executes after
+  // ProcessClientHello has been called.
+  void FinishProcessingHandshakeMessageAfterProcessClientHello(
+      const ValidateClientHelloResultCallback::Result& result,
+      QuicErrorCode error,
+      const std::string& error_details,
+      std::unique_ptr<CryptoHandshakeMessage> reply,
+      std::unique_ptr<DiversificationNonce> diversification_nonce,
+      std::unique_ptr<ProofSource::Details> proof_source_details);
+
+  // Invoked by SendServerConfigUpdateCallback::RunImpl once the proof has been
+  // received.  |ok| indicates whether or not the proof was successfully
+  // acquired, and |message| holds the partially-constructed message from
+  // SendServerConfigUpdate.
+  void FinishSendServerConfigUpdate(bool ok,
+                                    const CryptoHandshakeMessage& message);
+
+  // Returns the QuicTransportVersion of the connection.
+  QuicTransportVersion transport_version() const {
+    return session_->transport_version();
+  }
+
+  QuicSession* session_;
+  HandshakerDelegateInterface* delegate_;
+
+  // crypto_config_ contains crypto parameters for the handshake.
   const QuicCryptoServerConfig* crypto_config_;
+
+  // compressed_certs_cache_ contains a set of most recently compressed certs.
+  // Owned by QuicDispatcher.
   QuicCompressedCertsCache* compressed_certs_cache_;
-  Helper* helper_;
+
+  // Server's certificate chain and signature of the server config, as provided
+  // by ProofSource::GetProof.
+  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
+
+  // Hash of the last received CHLO message which can be used for generating
+  // server config update messages.
+  std::string chlo_hash_;
+
+  // Pointer to the helper for this crypto stream. Must outlive this stream.
+  QuicCryptoServerStreamBase::Helper* helper_;
+
+  // Number of handshake messages received by this stream.
+  uint8_t num_handshake_messages_;
+
+  // Number of handshake messages received by this stream that contain
+  // server nonces (indicating that this is a non-zero-RTT handshake
+  // attempt).
+  uint8_t num_handshake_messages_with_server_nonces_;
+
+  // Pointer to the active callback that will receive the result of
+  // BuildServerConfigUpdateMessage and forward it to
+  // FinishSendServerConfigUpdate.  nullptr if no update message is currently
+  // being built.
+  SendServerConfigUpdateCallback* send_server_config_update_cb_;
+
+  // Number of server config update (SCUP) messages sent by this stream.
+  int num_server_config_update_messages_sent_;
+
+  // If the client provides CachedNetworkParameters in the STK in the CHLO, then
+  // store here, and send back in future STKs if we have no better bandwidth
+  // estimate to send.
+  std::unique_ptr<CachedNetworkParameters> previous_cached_network_params_;
+
+  // Contains any source address tokens which were present in the CHLO.
+  SourceAddressTokens previous_source_address_tokens_;
+
+  // True if client attempts 0-rtt handshake (which can succeed or fail).
+  bool zero_rtt_attempted_;
+
+  // Size of the packet containing the most recently received CHLO.
+  QuicByteCount chlo_packet_size_;
+
+  // Pointer to the active callback that will receive the result of the client
+  // hello validation request and forward it to FinishProcessingHandshakeMessage
+  // for processing.  nullptr if no handshake message is being validated.  Note
+  // that this field is mutually exclusive with process_client_hello_cb_.
+  ValidateCallback* validate_client_hello_cb_;
+
+  // Pointer to the active callback which will receive the results of
+  // ProcessClientHello and forward it to
+  // FinishProcessingHandshakeMessageAfterProcessClientHello.  Note that this
+  // field is mutually exclusive with validate_client_hello_cb_.
+  ProcessClientHelloCallback* process_client_hello_cb_;
+
+  bool encryption_established_;
+  bool one_rtt_keys_available_;
+  bool one_rtt_packet_decrypted_;
+  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
+      crypto_negotiated_params_;
 };
 
 }  // namespace quic

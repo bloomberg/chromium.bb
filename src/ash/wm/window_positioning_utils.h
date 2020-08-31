@@ -45,14 +45,26 @@ ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
     const gfx::Rect& visible_area,
     gfx::Rect* bounds);
 
-// Returns the bounds of a left snapped window with default width in parent
-// coordinates.
+// Returns the bounds of a left snapped window in clamshell mode, with default
+// width, in parent coordinates.
 ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
     aura::Window* window);
 
-// Returns the bounds of a right snapped window with default width in parent
-// coordinates.
+// Returns the bounds of a right snapped window in clamshell mode, with default
+// width, in parent coordinates.
 ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
+    aura::Window* window);
+
+// Returns the bounds of a left snapped window in clamshell mode, with default
+// width, in whatever coordinates are used for |work_area|.
+ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBounds(
+    const gfx::Rect& work_area,
+    aura::Window* window);
+
+// Returns the bounds of a right snapped window in clamshell mode, with default
+// width, in whatever coordinates are used for |work_area|.
+ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBounds(
+    const gfx::Rect& work_area,
     aura::Window* window);
 
 // Moves the window to the center of the display.

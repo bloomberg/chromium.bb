@@ -137,23 +137,9 @@ const DisplayItem::Type kNonScrollingBackgroundChunkType =
     DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfBlockBackgroundOnly);
 const DisplayItem::Type kScrollingBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(PaintPhase::kSelfBlockBackgroundOnly);
-const DisplayItem::Type kNonScrollingContentsBackgroundChunkType =
-    DisplayItem::PaintPhaseToDrawingType(
-        PaintPhase::kDescendantBlockBackgroundsOnly);
-const DisplayItem::Type kScrollingContentsBackgroundChunkType =
+const DisplayItem::Type kClippedContentsBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(
         PaintPhase::kDescendantBlockBackgroundsOnly);
-
-#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end)        \
-  do {                                                                  \
-    auto* subsequence = GetSubsequenceMarkers(client);                  \
-    ASSERT_NE(nullptr, subsequence);                                    \
-    EXPECT_EQ(static_cast<size_t>(expected_start), subsequence->start); \
-    EXPECT_EQ(static_cast<size_t>(expected_end), subsequence->end);     \
-  } while (false)
-
-#define EXPECT_NO_SUBSEQUENCE(client) \
-  EXPECT_EQ(nullptr, GetSubsequenceMarkers(client)
 
 }  // namespace blink
 

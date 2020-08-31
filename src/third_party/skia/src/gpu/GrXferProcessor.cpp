@@ -123,10 +123,6 @@ static const char* coeff_string(GrBlendCoeff coeff) {
             return "const_color";
         case kIConstC_GrBlendCoeff:
             return "inv_const_color";
-        case kConstA_GrBlendCoeff:
-            return "const_alpha";
-        case kIConstA_GrBlendCoeff:
-            return "inv_const_alpha";
         case kS2C_GrBlendCoeff:
             return "src2_color";
         case kIS2C_GrBlendCoeff:
@@ -166,6 +162,9 @@ GrXPFactory::AnalysisProperties GrXPFactory::GetAnalysisProperties(
         result = GrPorterDuffXPFactory::SrcOverAnalysisProperties(color, coverage, caps,
                                                                   clampType);
     }
+    if (coverage == GrProcessorAnalysisCoverage::kNone) {
+        result |= AnalysisProperties::kCompatibleWithCoverageAsAlpha;
+    }
     SkASSERT(!(result & AnalysisProperties::kRequiresDstTexture));
     if ((result & AnalysisProperties::kReadsDstInShader) &&
         !caps.shaderCaps()->dstReadInShaderSupport()) {
@@ -182,6 +181,7 @@ sk_sp<const GrXferProcessor> GrXPFactory::MakeXferProcessor(const GrXPFactory* f
                                                             const GrCaps& caps,
                                                             GrClampType clampType) {
     SkASSERT(!hasMixedSamples || caps.shaderCaps()->dualSourceBlendingSupport());
+
     if (factory) {
         return factory->makeXferProcessor(color, coverage, hasMixedSamples, caps, clampType);
     } else {

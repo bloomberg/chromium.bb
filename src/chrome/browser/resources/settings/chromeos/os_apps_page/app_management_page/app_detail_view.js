@@ -38,14 +38,14 @@ Polymer({
     },
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.watch('apps_', state => state.apps);
     this.watch('selectedAppId_', state => state.selectedAppId);
     this.updateFromStore();
   },
 
-  detached: function() {
+  detached() {
     this.dispatch(app_management.actions.updateSelectedAppId(null));
   },
 
@@ -56,7 +56,7 @@ Polymer({
    * @param {!settings.Route} currentRoute
    * @protected
    */
-  currentRouteChanged: function(currentRoute) {
+  currentRouteChanged(currentRoute) {
     if (currentRoute !== settings.routes.APP_MANAGEMENT_DETAIL) {
       return;
     }
@@ -68,7 +68,7 @@ Polymer({
       return;
     }
 
-    const appId = settings.getQueryParameters().get('id');
+    const appId = settings.Router.getInstance().getQueryParameters().get('id');
 
     this.dispatch(app_management.actions.updateSelectedAppId(appId));
   },
@@ -78,7 +78,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getSelectedRouteId_: function(app) {
+  getSelectedRouteId_(app) {
     if (!app) {
       return null;
     }
@@ -91,12 +91,14 @@ Polymer({
         return 'chrome-app-detail-view';
       case (AppType.kArc):
         return 'arc-detail-view';
+      case (AppType.kPluginVm):
+        return 'plugin-vm-detail-view';
       default:
         assertNotReached();
     }
   },
 
-  selectedAppIdChanged_: function(appId) {
+  selectedAppIdChanged_(appId) {
     if (appId && this.app_) {
       app_management.util.recordAppManagementUserAction(
           this.app_.type, AppManagementUserAction.ViewOpened);
@@ -106,7 +108,7 @@ Polymer({
   /**
    * @private
    */
-  appsChanged_: function() {
+  appsChanged_() {
     if (this.selectedAppNotFound_()) {
       this.async(() => {
         app_management.util.openMainPage();
@@ -118,8 +120,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  selectedAppNotFound_: function() {
-    const appId = settings.getQueryParameters().get('id');
+  selectedAppNotFound_() {
+    const appId = /** @type {string} */ (
+        settings.Router.getInstance().getQueryParameters().get('id'));
     return this.apps_ && !this.apps_[appId];
   },
 });

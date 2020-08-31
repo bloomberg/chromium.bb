@@ -12,14 +12,6 @@
 
 class GURL;
 
-namespace favicon {
-class FaviconService;
-}
-
-namespace history {
-class HistoryService;
-}
-
 namespace sync_sessions {
 
 class LocalSessionEventRouter;
@@ -34,10 +26,11 @@ class SyncSessionsClient {
   virtual ~SyncSessionsClient();
 
   // Getters for services that sessions depends on.
-  virtual favicon::FaviconService* GetFaviconService() = 0;
-  virtual history::HistoryService* GetHistoryService() = 0;
   virtual SessionSyncPrefs* GetSessionSyncPrefs() = 0;
   virtual syncer::RepeatingModelTypeStoreFactory GetStoreFactory() = 0;
+
+  // Clears all on demand favicons (downloaded based on synced history data).
+  virtual void ClearAllOnDemandFavicons() = 0;
 
   // Checks if the given url is considered interesting enough to sync. Most urls
   // are considered interesting. Examples of ones that are not are invalid urls,

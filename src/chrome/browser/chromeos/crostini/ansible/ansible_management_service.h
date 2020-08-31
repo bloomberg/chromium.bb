@@ -45,13 +45,15 @@ class AnsibleManagementService : public KeyedService,
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
-                                     int progress_percent) override;
+                                     int progress_percent,
+                                     const std::string& error_message) override;
   void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
 
   void OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status,
+      const std::string& failure_details);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

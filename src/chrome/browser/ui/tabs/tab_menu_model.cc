@@ -12,6 +12,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
+#include "chrome/browser/ui/tabs/existing_window_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -40,16 +41,19 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandNewTabToRight,
                       IDS_TAB_CXMENU_NEWTABTORIGHT);
   if (base::FeatureList::IsEnabled(features::kTabGroups)) {
-    AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
-                        IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
-
-    // Create submenu with existing groups
     if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
+      // Create submenu with existing groups
       add_to_existing_group_submenu_ =
-          std::make_unique<ExistingTabGroupSubMenuModel>(tab_strip, index);
-      AddSubMenuWithStringId(TabStripModel::CommandAddToExistingGroup,
-                             IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP,
-                             add_to_existing_group_submenu_.get());
+          std::make_unique<ExistingTabGroupSubMenuModel>(delegate(), tab_strip,
+                                                         index);
+      AddSubMenu(TabStripModel::CommandAddToExistingGroup,
+                 l10n_util::GetPluralStringFUTF16(
+                     IDS_TAB_CXMENU_ADD_TAB_TO_GROUP, num_affected_tabs),
+                 add_to_existing_group_submenu_.get());
+    } else {
+      AddItem(TabStripModel::CommandAddToNewGroup,
+              l10n_util::GetPluralStringFUTF16(
+                  IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_affected_tabs));
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {
@@ -60,6 +64,22 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       }
     }
   }
+
+  if (ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
+    // Create submenu with existing windows
+    add_to_existing_window_submenu_ =
+        std::make_unique<ExistingWindowSubMenuModel>(delegate(), tab_strip,
+                                                     index);
+    AddSubMenu(TabStripModel::CommandMoveToExistingWindow,
+               l10n_util::GetPluralStringFUTF16(
+                   IDS_TAB_CXMENU_MOVETOANOTHERWINDOW, num_affected_tabs),
+               add_to_existing_window_submenu_.get());
+  } else {
+    AddItem(TabStripModel::CommandMoveTabsToNewWindow,
+            l10n_util::GetPluralStringFUTF16(
+                IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_affected_tabs));
+  }
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
@@ -101,7 +121,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
                           (send_tab_to_self::GetSingleTargetDeviceName(
                               tab_strip->profile()))),
-                      kSendTabToSelfIcon);
+                      ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu,
@@ -118,10 +138,11 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                              send_tab_to_self_sub_menu_model_.get());
 #else
-      AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
-                                    IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                                    send_tab_to_self_sub_menu_model_.get(),
-                                    kSendTabToSelfIcon);
+      AddSubMenuWithStringIdAndIcon(
+          TabStripModel::CommandSendTabToSelf,
+          IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get(),
+          ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
     }
   }

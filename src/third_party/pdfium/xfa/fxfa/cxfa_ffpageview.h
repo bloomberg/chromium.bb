@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "core/fxcrt/observed_ptr.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_traversestrategy_layoutitem.h"
 #include "xfa/fxfa/layout/cxfa_viewlayoutitem.h"
@@ -29,8 +30,11 @@ class CXFA_FFPageView : public Observable {
   CXFA_FFDocView* GetDocView() const;
   CFX_RectF GetPageViewRect() const;
   CFX_Matrix GetDisplayMatrix(const FX_RECT& rtDisp, int32_t iRotate) const;
-  std::unique_ptr<IXFA_WidgetIterator> CreateWidgetIterator(
-      uint32_t dwTraverseWay,
+
+  // These always return a non-null iterator.
+  std::unique_ptr<IXFA_WidgetIterator> CreateFormWidgetIterator(
+      uint32_t dwWidgetFilter);
+  std::unique_ptr<IXFA_WidgetIterator> CreateTraverseWidgetIterator(
       uint32_t dwWidgetFilter);
 
  private:
@@ -55,11 +59,11 @@ class CXFA_FFPageWidgetIterator final : public IXFA_WidgetIterator {
  private:
   CXFA_FFWidget* GetWidget(CXFA_LayoutItem* pLayoutItem);
 
-  UnownedPtr<CXFA_FFPageView> m_pPageView;
+  CXFA_LayoutItemIterator m_sIterator;  // Must outlive |m_pPageView|.
+  UnownedPtr<CXFA_FFPageView> const m_pPageView;
   UnownedPtr<CXFA_FFWidget> m_hCurWidget;
-  uint32_t m_dwFilter;
-  bool m_bIgnoreRelevant;
-  CXFA_LayoutItemIterator m_sIterator;
+  const uint32_t m_dwFilter;
+  const bool m_bIgnoreRelevant;
 };
 
 class CXFA_TabParam {
@@ -105,11 +109,11 @@ class CXFA_FFTabOrderPageWidgetIterator final : public IXFA_WidgetIterator {
                       bool* bContentArea,
                       bool bMasterPage);
 
-  std::vector<UnownedPtr<CXFA_FFWidget>> m_TabOrderWidgetArray;
-  UnownedPtr<CXFA_FFPageView> m_pPageView;
-  uint32_t m_dwFilter;
-  int32_t m_iCurWidget;
-  bool m_bIgnoreRelevant;
+  std::vector<RetainPtr<CXFA_ContentLayoutItem>> m_TabOrderWidgetArray;
+  UnownedPtr<CXFA_FFPageView> const m_pPageView;
+  const uint32_t m_dwFilter;
+  int32_t m_iCurWidget = -1;
+  const bool m_bIgnoreRelevant;
 };
 
 #endif  // XFA_FXFA_CXFA_FFPAGEVIEW_H_

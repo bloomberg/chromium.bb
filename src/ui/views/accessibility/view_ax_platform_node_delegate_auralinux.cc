@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -86,7 +87,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
       return;
 
     widgets_.push_back(widget);
-    widget->AddObserver(this);
+    observer_.Add(widget);
 
     aura::Window* window = widget->GetNativeWindow();
     if (!window)
@@ -103,6 +104,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   // WidgetObserver:
 
   void OnWidgetDestroying(Widget* widget) override {
+    observer_.Remove(widget);
     auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
     if (iter != widgets_.end())
       widgets_.erase(iter);
@@ -126,7 +128,9 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
 
   const ui::AXNodeData& GetData() const override { return data_; }
 
-  int GetChildCount() override { return static_cast<int>(widgets_.size()); }
+  int GetChildCount() const override {
+    return static_cast<int>(widgets_.size());
+  }
 
   gfx::NativeViewAccessible ChildAtIndex(int index) override {
     if (index < 0 || index >= GetChildCount())
@@ -159,6 +163,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   ui::AXNodeData data_;
   ui::AXUniqueId unique_id_;
   std::vector<Widget*> widgets_;
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 };
 
 }  // namespace
@@ -174,9 +179,6 @@ ViewAXPlatformNodeDelegateAuraLinux::ViewAXPlatformNodeDelegateAuraLinux(
     : ViewAXPlatformNodeDelegate(view) {
   view->AddObserver(this);
 }
-
-ViewAXPlatformNodeDelegateAuraLinux::~ViewAXPlatformNodeDelegateAuraLinux() =
-    default;
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegateAuraLinux::GetParent() {
   if (gfx::NativeViewAccessible parent =

@@ -47,7 +47,7 @@ DiceSigninButtonView::DiceSigninButtonView(
 
   // Add a stretching column for the account card.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   DCHECK(!account_icon.IsEmpty());
   auto account_icon_view = std::make_unique<BadgedProfilePhoto>(
@@ -68,11 +68,12 @@ DiceSigninButtonView::DiceSigninButtonView(
   grid_layout->StartRow(views::GridLayout::kFixedSize, 1);
   // Add a stretching column for the sign in button.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::TRAILING, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  signin_button_ =
-      grid_layout->AddView(views::MdTextButton::CreateSecondaryUiBlueButton(
-          button_listener,
-          l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON)));
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  auto signin_button = views::MdTextButton::Create(
+      button_listener,
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
+  signin_button->SetProminent(true);
+  signin_button_ = grid_layout->AddView(std::move(signin_button));
 }
 
 DiceSigninButtonView::~DiceSigninButtonView() = default;

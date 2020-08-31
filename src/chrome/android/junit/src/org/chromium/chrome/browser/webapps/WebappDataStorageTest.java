@@ -26,7 +26,8 @@ import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -94,11 +95,7 @@ public class WebappDataStorageTest {
                     @Override
                     public void onDataRetrieved(Bitmap actual) {
                         mCallbackCalled = true;
-
-                        // TODO(lalitm) - once the Robolectric bug is fixed change to
-                        // assertTrue(expected.sameAs(actual)).
-                        // See bitmapEquals(Bitmap, Bitmap) for more information.
-                        assertTrue(bitmapEquals(expected, actual));
+                        assertTrue(expected.sameAs(actual));
                     }
                 });
         BackgroundShadowAsyncTask.runBackgroundTasks();
@@ -199,11 +196,12 @@ public class WebappDataStorageTest {
         Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, url, scope, name,
                 shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
                 orientation, themeColor, backgroundColor, isIconGenerated, isIconAdaptive);
-        WebappInfo info = WebappInfo.create(shortcutIntent);
-        assertNotNull(info);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                WebappIntentDataProviderFactory.create(shortcutIntent);
+        assertNotNull(intentDataProvider);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
-        storage.updateFromWebappInfo(info);
+        storage.updateFromWebappIntentDataProvider(intentDataProvider);
 
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
@@ -252,7 +250,7 @@ public class WebappDataStorageTest {
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_ADAPTIVE, true));
 
         // Update again from the WebappInfo and ensure that the data is restored.
-        storage.updateFromWebappInfo(info);
+        storage.updateFromWebappIntentDataProvider(intentDataProvider);
 
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
@@ -274,8 +272,8 @@ public class WebappDataStorageTest {
 
     /**
      * Test that the WebAPK's shared preferences are populated as result of calling
-     * {@link WebappDataStorage#updateFromWebappInfo()} when the shared preferences are initiially
-     * unset.
+     * {@link WebappDataStorage#updateFromWebappIntentDataProvider()} when the shared preferences
+     * are initiially unset.
      */
     @Test
     @Feature({"Webapp"})
@@ -286,13 +284,14 @@ public class WebappDataStorageTest {
         String manifestUrl = "manifest_url";
         int webApkVersionCode = 5;
 
-        WebApkInfoBuilder webApkInfoBuilder = new WebApkInfoBuilder(webApkPackageName, url);
-        webApkInfoBuilder.setScope(scopeUrl);
-        webApkInfoBuilder.setManifestUrl(manifestUrl);
-        webApkInfoBuilder.setWebApkVersionCode(webApkVersionCode);
+        WebApkIntentDataProviderBuilder intentDataProviderBuilder =
+                new WebApkIntentDataProviderBuilder(webApkPackageName, url);
+        intentDataProviderBuilder.setScope(scopeUrl);
+        intentDataProviderBuilder.setManifestUrl(manifestUrl);
+        intentDataProviderBuilder.setWebApkVersionCode(webApkVersionCode);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
-        storage.updateFromWebappInfo(webApkInfoBuilder.build());
+        storage.updateFromWebappIntentDataProvider(intentDataProviderBuilder.build());
 
         assertEquals(webApkPackageName, storage.getWebApkPackageName());
         assertEquals(scopeUrl, storage.getScope());
@@ -326,43 +325,17 @@ public class WebappDataStorageTest {
     }
 
     /**
-     * Test that if there was no previous WebAPK update attempt that the is-update-needed check is
-     * done after the usual delay (instead of the longer relaxed-update delay).
+     * Test that the is-update-needed check is done the first time that the user launches the WebAPK
+     * after clearing Chrome's storage.
      */
     @Test
-    public void testRegularCheckIntervalIfNoPriorWebApkUpdate() {
-        assertTrue(WebappDataStorage.RELAXED_UPDATE_INTERVAL > WebappDataStorage.UPDATE_INTERVAL);
-
+    public void testCheckUpdateAfterClearChromeStorage() {
         WebappDataStorage storage = getStorage();
-
-        assertFalse(storage.shouldCheckForUpdate());
-        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
         assertTrue(storage.shouldCheckForUpdate());
     }
 
     private WebappDataStorage getStorage() {
-        WebappDataStorage storage = WebappDataStorage.open("test");
-
-        // Done when WebAPK is registered in {@link WebApkActivity}.
-        storage.updateTimeOfLastCheckForUpdatedWebManifest();
-        return storage;
-    }
-
-    // TODO(lalitm) - There seems to be a bug in Robolectric where a Bitmap
-    // produced from a byte stream is hardcoded to be a 100x100 bitmap with
-    // ARGB_8888 pixel format. Because of this, we need to work around the
-    // equality check of bitmaps. Remove this once the bug is fixed.
-    private static boolean bitmapEquals(Bitmap expected, Bitmap actual) {
-        if (actual.getWidth() != 100) return false;
-        if (actual.getHeight() != 100) return false;
-        if (!actual.getConfig().equals(Bitmap.Config.ARGB_8888)) return false;
-
-        for (int i = 0; i < actual.getWidth(); i++) {
-            for (int j = 0; j < actual.getHeight(); j++) {
-                if (actual.getPixel(i, j) != 0) return false;
-            }
-        }
-        return true;
+        return WebappDataStorage.open("test");
     }
 
     private static Bitmap createBitmap() {

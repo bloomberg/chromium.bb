@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -82,11 +81,10 @@ class EsAdapterVideoTest : public testing::Test {
 };
 
 EsAdapterVideoTest::EsAdapterVideoTest()
-    : es_adapter_(base::Bind(&EsAdapterVideoTest::OnNewConfig,
-                             base::Unretained(this)),
-                  base::Bind(&EsAdapterVideoTest::OnNewBuffer,
-                             base::Unretained(this))) {
-}
+    : es_adapter_(base::BindRepeating(&EsAdapterVideoTest::OnNewConfig,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&EsAdapterVideoTest::OnNewBuffer,
+                                      base::Unretained(this))) {}
 
 void EsAdapterVideoTest::OnNewConfig(const VideoDecoderConfig& video_config) {
 }

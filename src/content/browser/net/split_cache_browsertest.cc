@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -290,21 +291,18 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
         shell()->web_contents()->GetMainFrame());
 
-    GURL main_url = main_frame->frame_tree_node()->current_url();
-    observer.WaitForResourceCompletion(main_url);
+    observer.WaitForResourceCompletion(url);
 
     if (sub_frame.is_valid()) {
       EXPECT_EQ(1U, main_frame->frame_tree_node()->child_count());
       NavigateFrameToURL(main_frame->frame_tree_node()->child_at(0), sub_frame);
       EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-      GURL sub_frame_url =
-          main_frame->frame_tree_node()->child_at(0)->current_url();
-      observer.WaitForResourceCompletion(sub_frame_url);
+      observer.WaitForResourceCompletion(sub_frame);
       EXPECT_EQ(subframe_navigation_resource_cached,
-                (*observer.FindResource(sub_frame_url))->was_cached);
+                (*observer.FindResource(sub_frame))->was_cached);
     }
 
-    return (*observer.FindResource(main_url))->was_cached;
+    return (*observer.FindResource(url))->was_cached;
   }
 
   // Loads a dedicated worker script and checks to see whether or not the
@@ -842,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(SplitCacheContentBrowserTestDisabled,
       GenURL("e.com", "/worker.js")));
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SplitCacheContentBrowserTestEnabled,
                          ::testing::Values(true, false));
 

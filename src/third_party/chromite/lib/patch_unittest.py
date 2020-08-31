@@ -12,6 +12,7 @@ import functools
 import itertools
 import os
 import shutil
+import tempfile
 import time
 
 import mock
@@ -212,33 +213,43 @@ I am the first commit.
   DEFAULT_TRACKING = (
       'refs/remotes/%s/master' % config_lib.GetSiteParams().EXTERNAL_REMOTE)
 
-  def _CreateSourceRepo(self, path):
+  @staticmethod
+  def _CreateSourceRepo(tmp_path):
     """Generate a new repo with a single commit."""
-    tmp_path = '%s-tmp' % path
-    os.mkdir(path)
-    os.mkdir(tmp_path)
-    self._run(['git', 'init', '--separate-git-dir', path], cwd=tmp_path)
+    bare_path = os.path.join(tmp_path, 'bare.git')
+    checkout_path = os.path.join(tmp_path, 'checkout')
+    cros_build_lib.run(
+        ['git', 'init', '--separate-git-dir', bare_path, checkout_path],
+        cwd=tmp_path, print_cmd=False, capture_output=True)
+
+    # Nerf any hooks the OS might have installed on us as they aren't going to
+    # be useful to us, just slow things down.
+    shutil.rmtree(os.path.join(bare_path, 'hooks'))
 
     # Add an initial commit then wipe the working tree.
-    self._run(['git', 'commit', '--allow-empty', '-m', 'initial commit'],
-              cwd=tmp_path)
-    shutil.rmtree(tmp_path)
+    cros_build_lib.run(
+        ['git', 'commit', '--allow-empty', '-m', 'initial commit'],
+        cwd=checkout_path, print_cmd=False, capture_output=True)
+
+    return bare_path
+
+  @classmethod
+  def setUpClass(cls):
+    # Generate the same git tree once as it's a bit expensive.
+    cls._cache_root = tempfile.mkdtemp(prefix='chromite-patch-unittest')
+    cls._cache_bare = cls._CreateSourceRepo(cls._cache_root)
+
+  @classmethod
+  def tearDownClass(cls):
+    shutil.rmtree(cls._cache_root)
 
   def setUp(self):
     # Create an empty repo to work from.
-    self.source = os.path.join(self.tempdir, 'source.git')
-    self._CreateSourceRepo(self.source)
+    self.source = self._cache_bare
     self.default_cwd = os.path.join(self.tempdir, 'unwritable')
-    self.original_cwd = os.getcwd()
-    os.mkdir(self.default_cwd)
+    # Disallow write so as to smoke out any invalid writes to cwd.
+    os.mkdir(self.default_cwd, 0o500)
     os.chdir(self.default_cwd)
-    # Disallow write so as to smoke out any invalid writes to
-    # cwd.
-    os.chmod(self.default_cwd, 0o500)
-
-  def tearDown(self):
-    if hasattr(self, 'original_cwd'):
-      os.chdir(self.original_cwd)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     # This arg is used by inherited versions of _MkPatch. Pop it to make this
@@ -277,6 +288,9 @@ I am the first commit.
       remote = config_lib.GetSiteParams().EXTERNAL_REMOTE
     cmd += ['--origin', remote]
     self._run(cmd)
+    # Nerf any hooks the OS might have installed on us as they aren't going to
+    # be useful to us, just slow things down.
+    shutil.rmtree(os.path.join(path, '.git', 'hooks'))
     return path
 
   def _MakeCommit(self, repo, commit=None):
@@ -297,7 +311,9 @@ I am the first commit.
 
   def _CommonGitSetup(self):
     git1 = self._MakeRepo('git1', self.source)
-    git2 = self._MakeRepo('git2', self.source)
+    git2 = os.path.join(self.tempdir, 'git2')
+    # Avoid another git clone as it's a bit expensive.
+    shutil.copytree(git1, git2)
     patch = self.CommitFile(git1, 'monkeys', 'foon')
     return git1, git2, patch
 

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -26,7 +26,7 @@ class WaitUntilObserver;
 // overriding onResponseFulfilled, onResponseRejected and onNoResponse.
 class MODULES_EXPORT RespondWithObserver
     : public GarbageCollected<RespondWithObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 
  public:
@@ -54,7 +54,7 @@ class MODULES_EXPORT RespondWithObserver
   // Called when the event handler finished without calling respondWith().
   virtual void OnNoResponse() = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   RespondWithObserver(ExecutionContext*, int event_id, WaitUntilObserver*);

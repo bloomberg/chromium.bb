@@ -43,6 +43,7 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
     // set to true if the popup gets blocked, and left unchanged otherwise.
     virtual void AddWebContents(
         std::unique_ptr<content::WebContents> new_contents,
+        const GURL& target_url,
         WindowOpenDisposition disposition,
         const gfx::Rect& initial_rect,
         bool* was_blocked) = 0;
@@ -79,11 +80,12 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   void DidNavigateMainFramePostCommit(content::WebContents* tab) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
-  bool IsNeverVisible(content::WebContents* web_contents) override;
+  bool IsNeverComposited(content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;

@@ -20,6 +20,9 @@ namespace blink {
 class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
  public:
   static TestPermissiveDictionary* Create() { return MakeGarbageCollected<TestPermissiveDictionary>(); }
+  static TestPermissiveDictionary* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestPermissiveDictionary>();
+  }
 
   TestPermissiveDictionary();
   virtual ~TestPermissiveDictionary();
@@ -32,7 +35,7 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
   inline void setBooleanMember(bool);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool has_boolean_member_ = false;

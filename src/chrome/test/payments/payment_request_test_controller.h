@@ -15,6 +15,10 @@ class TestingPrefServiceSyncable;
 }
 #endif
 
+namespace content {
+class WebContents;
+}
+
 namespace payments {
 
 // Observe states or actions taken by the PaymentRequest in tests, supporting
@@ -30,9 +34,10 @@ class PaymentRequestTestObserver {
   virtual void OnConnectionTerminated() {}
   virtual void OnAbortCalled() {}
   virtual void OnCompleteCalled() {}
+  virtual void OnMinimalUIReady() {}
 
  protected:
-  virtual ~PaymentRequestTestObserver() {}
+  virtual ~PaymentRequestTestObserver() = default;
 };
 
 // A class to control creation and behaviour of PaymentRequests in a
@@ -53,6 +58,29 @@ class PaymentRequestTestController {
   void SetValidSsl(bool valid_ssl);
   void SetCanMakePaymentEnabledPref(bool can_make_payment_enabled);
 
+  // Get the WebContents of the Payment Handler for testing purpose, or null if
+  // nonexistent. To guarantee a non-null return, this function should be called
+  // only if: 1) PaymentRequest UI is opening. 2) ScrollToExpandPaymentHandler
+  // feature is enabled (on Android). 3) PaymentHandler is opening.
+  content::WebContents* GetPaymentHandlerWebContents();
+
+#if defined(OS_ANDROID)
+  // Click the security icon on the Expandable Payment Handler toolbar for
+  // testing purpose. return whether it's succeeded.
+  bool ClickPaymentHandlerSecurityIcon();
+#endif
+
+  // Confirms payment in minimal UI. Returns true on success or if the minimal
+  // UI is not implemented on the current platform.
+  bool ConfirmMinimalUI();
+
+  // Dismisses payment in minimal UI. Returns true on success or if the minimal
+  // UI is not implemented on the current platform.
+  bool DismissMinimalUI();
+
+  // Returns true when running on Android M or L.
+  bool IsAndroidMarshmallowOrLollipop();
+
  private:
   // Observers that forward through to the PaymentRequestTestObserver.
   void OnCanMakePaymentCalled();
@@ -64,6 +92,7 @@ class PaymentRequestTestController {
   void OnConnectionTerminated();
   void OnAbortCalled();
   void OnCompleteCalled();
+  void OnMinimalUIReady();
 
   PaymentRequestTestObserver* observer_ = nullptr;
 

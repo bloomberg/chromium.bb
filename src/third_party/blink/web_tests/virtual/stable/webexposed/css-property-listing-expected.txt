@@ -3,7 +3,6 @@ All changes to this list should go through Blink's feature review process: http:
 
 [LONGHANDS]
     -webkit-app-region
-    -webkit-appearance
     -webkit-border-horizontal-spacing
     -webkit-border-image
     -webkit-border-vertical-spacing
@@ -22,10 +21,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-line-break
     -webkit-line-clamp
     -webkit-locale
-    -webkit-margin-after-collapse
-    -webkit-margin-before-collapse
-    -webkit-margin-bottom-collapse
-    -webkit-margin-top-collapse
     -webkit-mask-box-image-outset
     -webkit-mask-box-image-repeat
     -webkit-mask-box-image-slice
@@ -75,6 +70,7 @@ All changes to this list should go through Blink's feature review process: http:
     animation-name
     animation-play-state
     animation-timing-function
+    appearance
     backdrop-filter
     backface-visibility
     background-attachment
@@ -141,6 +137,7 @@ All changes to this list should go through Blink's feature review process: http:
     color-interpolation
     color-interpolation-filters
     color-rendering
+    color-scheme
     column-count
     column-fill
     column-gap
@@ -150,6 +147,7 @@ All changes to this list should go through Blink's feature review process: http:
     column-span
     column-width
     contain
+    contain-intrinsic-size
     content
     counter-increment
     counter-reset
@@ -198,6 +196,7 @@ All changes to this list should go through Blink's feature review process: http:
     grid-template-rows
     height
     hyphens
+    image-orientation
     image-rendering
     inline-size
     isolation
@@ -262,7 +261,6 @@ All changes to this list should go through Blink's feature review process: http:
     padding-left
     padding-right
     padding-top
-    page
     paint-order
     perspective
     perspective-origin
@@ -273,6 +271,7 @@ All changes to this list should go through Blink's feature review process: http:
     resize
     right
     row-gap
+    ruby-position
     rx
     ry
     scroll-behavior
@@ -363,9 +362,6 @@ All changes to this list should go through Blink's feature review process: http:
         break-before
     -webkit-column-break-inside
         break-inside
-    -webkit-margin-collapse
-        -webkit-margin-after-collapse
-        -webkit-margin-before-collapse
     -webkit-mask
         -webkit-mask-clip
         -webkit-mask-image
@@ -682,6 +678,8 @@ All changes to this list should go through Blink's feature review process: http:
         animation-play-state
     -webkit-animation-timing-function
         animation-timing-function
+    -webkit-appearance
+        appearance
     -webkit-backface-visibility
         backface-visibility
     -webkit-background-clip

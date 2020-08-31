@@ -34,29 +34,35 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.page_info.PageInfoController;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
+import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.toolbar.NewTabButton;
+import org.chromium.chrome.browser.util.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
+import org.chromium.components.external_intents.RedirectHandler;
+import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -66,6 +72,7 @@ import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.display.VirtualDisplayAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -88,7 +95,7 @@ public class VrShell extends GvrLayout
     private final VrCompositorSurfaceManager mVrCompositorSurfaceManager;
     private final VrShellDelegate mDelegate;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
-    private final TabRedirectHandler mTabRedirectHandler;
+    private final RedirectHandler mRedirectHandler;
     private final TabObserver mTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final View.OnTouchListener mTouchListener;
@@ -110,7 +117,7 @@ public class VrShell extends GvrLayout
 
     private boolean mReprojectedRendering;
 
-    private TabRedirectHandler mNonVrTabRedirectHandler;
+    private RedirectHandler mNonVrRedirectHandler;
     private UiWidgetFactory mNonVrUiWidgetFactory;
 
     private TabModelSelector mTabModelSelector;
@@ -228,9 +235,9 @@ public class VrShell extends GvrLayout
         mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
         UiWidgetFactory.setInstance(new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
 
-        mTabRedirectHandler = new TabRedirectHandler() {
+        mRedirectHandler = new RedirectHandler() {
             @Override
-            public boolean shouldStayInChrome(boolean hasExternalProtocol) {
+            public boolean shouldStayInApp(boolean hasExternalProtocol) {
                 return !hasExternalProtocol;
             }
         };
@@ -300,7 +307,7 @@ public class VrShell extends GvrLayout
             }
 
             @Override
-            public void onNewTabCreated(Tab tab) {
+            public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                 if (mNativeVrShell == 0) return;
                 VrShellJni.get().onTabUpdated(mNativeVrShell, VrShell.this, tab.isIncognito(),
                         tab.getId(), tab.getTitle());
@@ -348,7 +355,7 @@ public class VrShell extends GvrLayout
         mVrModalPresenter = new VrModalPresenter(mActivity, this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
-        mActivity.overrideModalDialogManager(mVrModalDialogManager);
+        setModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -357,6 +364,11 @@ public class VrShell extends GvrLayout
         decor.addView(mUiView, params);
         mVrUiViewContainer = new VrViewContainer(mActivity);
         mUiView.addView(mVrUiViewContainer);
+    }
+
+    private void setModalDialogManager(ModalDialogManager modalDialogManager) {
+        ((ObservableSupplierImpl) mActivity.getModalDialogManagerSupplier())
+                .set(mVrModalDialogManager);
     }
 
     private void removeVrRootView() {
@@ -383,7 +395,7 @@ public class VrShell extends GvrLayout
     public void initializeNative(boolean forWebVr, boolean isStandaloneVrDevice) {
         Tab tab = mActivity.getActivityTab();
         if (mActivity.isInOverviewMode() || tab == null) {
-            launchNTP();
+            openNewTab(false /*incognito*/);
             tab = mActivity.getActivityTab();
         }
 
@@ -394,7 +406,7 @@ public class VrShell extends GvrLayout
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        DisplayAndroidManager.getDefaultDisplayForContext(mActivity).getRealMetrics(dm);
         // We're supposed to be in landscape at this point, but it's possible for us to get here
         // before the change has fully propagated. In this case, the width and height are swapped,
         // which causes an incorrect display size to be used, and the page to appear zoomed in.
@@ -420,7 +432,7 @@ public class VrShell extends GvrLayout
 
         boolean hasOrCanRequestRecordAudioPermission =
                 hasRecordAudioPermission() || canRequestRecordAudioPermission();
-        boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(false);
+        boolean supportsRecognition = VoiceRecognitionUtil.isRecognitionIntentPresent(false);
         mNativeVrShell = VrShellJni.get().init(VrShell.this, mDelegate, forWebVr,
                 !mVrBrowsingEnabled, hasOrCanRequestRecordAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
@@ -500,22 +512,22 @@ public class VrShell extends GvrLayout
 
         // Use application context here to avoid leaking the activity context.
         imeAdapter.setInputMethodManagerWrapper(ImeAdapter.createDefaultInputMethodManagerWrapper(
-                mActivity.getApplicationContext()));
+                mActivity.getApplicationContext(), mContentVrWindowAndroid, null));
         mInputMethodManagerWrapper = null;
     }
 
     private void initializeTabForVR() {
         if (mTab == null) return;
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
-        mNonVrTabRedirectHandler = TabRedirectHandler.swapFor(mTab, mTabRedirectHandler);
+        mNonVrRedirectHandler = RedirectHandlerTabHelper.swapHandlerFor(mTab, mRedirectHandler);
         assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
         configWebContentsImeForVr(mTab.getWebContents());
     }
 
     private void restoreTabFromVR() {
         if (mTab == null) return;
-        TabRedirectHandler.swapFor(mTab, mNonVrTabRedirectHandler);
-        mNonVrTabRedirectHandler = null;
+        RedirectHandlerTabHelper.swapHandlerFor(mTab, mNonVrRedirectHandler);
+        mNonVrRedirectHandler = null;
         restoreWebContentsImeFromVr(mTab.getWebContents());
     }
 
@@ -532,7 +544,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                model.getTabAt(i).updateAttachment(window, null);
+                ((TabImpl) model.getTabAt(i)).updateAttachment(window, null);
             }
         }
     }
@@ -560,8 +572,14 @@ public class VrShell extends GvrLayout
     public void showPageInfo() {
         Tab tab = mActivity.getActivityTab();
         if (tab == null) return;
-
-        PageInfoController.show(mActivity, tab, null, PageInfoController.OpenedFromSource.VR);
+        WebContents webContents = tab.getWebContents();
+        PageInfoController.show(mActivity, webContents, null,
+                PageInfoController.OpenedFromSource.VR,
+                new ChromePageInfoControllerDelegate(mActivity, webContents,
+                        mActivity::getModalDialogManager,
+                        /*offlinePageLoadUrlDelegate=*/
+                        new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)),
+                new ChromePermissionParamsListBuilderDelegate());
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when
@@ -772,7 +790,7 @@ public class VrShell extends GvrLayout
         if (mVrBrowsingEnabled) {
             if (mVrModalDialogManager != null) {
                 mVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-                mActivity.overrideModalDialogManager(mNonVrModalDialogManager);
+                setModalDialogManager(mNonVrModalDialogManager);
                 mVrModalDialogManager = null;
             }
             mNonVrViews.destroy();
@@ -1158,11 +1176,6 @@ public class VrShell extends GvrLayout
     private int getTouchSlop() {
         ViewConfiguration vc = ViewConfiguration.get(mActivity);
         return vc.getScaledTouchSlop();
-    }
-
-    private void launchNTP() {
-        NewTabButton button = (NewTabButton) mActivity.findViewById(R.id.new_tab_button);
-        button.callOnClick();
     }
 
     @Override

@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/queue.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
@@ -32,14 +32,10 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
-using content::AsyncFileTestHelper;
-using storage::FileSystemContext;
-using storage::FileSystemOperationContext;
-using storage::FileSystemType;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -72,7 +68,7 @@ FileSystemURL GetEntryURL(FileSystemContext* file_system_context,
                           const FileSystemURL& dir,
                           const base::FilePath::StringType& name) {
   return file_system_context->CreateCrackedFileSystemURL(
-      dir.origin().GetURL(), dir.mount_type(), dir.virtual_path().Append(name));
+      dir.origin(), dir.mount_type(), dir.virtual_path().Append(name));
 }
 
 base::FilePath GetRelativeVirtualPath(const FileSystemURL& root,
@@ -91,7 +87,7 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
                           const FileSystemURL& other_root,
                           const FileSystemURL& url) {
   return file_system_context->CreateCrackedFileSystemURL(
-      other_root.origin().GetURL(), other_root.mount_type(),
+      other_root.origin(), other_root.mount_type(),
       other_root.virtual_path().Append(GetRelativeVirtualPath(root, url)));
 }
 
@@ -104,7 +100,7 @@ class DraggedFileUtilTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
-    file_util_.reset(new storage::DraggedFileUtil());
+    file_util_ = std::make_unique<DraggedFileUtil>();
 
     // Register the files/directories of RegularTestCases (with random
     // root paths) as dropped files.
@@ -121,14 +117,14 @@ class DraggedFileUtilTest : public testing::Test {
   }
 
  protected:
-  storage::IsolatedContext* isolated_context() const {
-    return storage::IsolatedContext::GetInstance();
+  IsolatedContext* isolated_context() const {
+    return IsolatedContext::GetInstance();
   }
   const base::FilePath& root_path() const { return data_dir_.GetPath(); }
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
-  storage::FileSystemFileUtil* file_util() const { return file_util_.get(); }
+  FileSystemFileUtil* file_util() const { return file_util_.get(); }
   std::string filesystem_id() const { return filesystem_id_; }
 
   base::FilePath GetTestCasePlatformPath(
@@ -149,13 +145,14 @@ class DraggedFileUtilTest : public testing::Test {
     base::FilePath virtual_path =
         isolated_context()->CreateVirtualRootPath(filesystem_id()).Append(path);
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeIsolated,
-        virtual_path);
+        url::Origin::Create(GURL("http://example.com")),
+        kFileSystemTypeIsolated, virtual_path);
   }
 
   FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) const {
     return file_system_context()->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("dest").Append(path));
   }
 
@@ -243,16 +240,15 @@ class DraggedFileUtilTest : public testing::Test {
     }
   }
 
-  std::unique_ptr<storage::FileSystemOperationContext> GetOperationContext() {
-    return std::make_unique<storage::FileSystemOperationContext>(
-        file_system_context());
+  std::unique_ptr<FileSystemOperationContext> GetOperationContext() {
+    return std::make_unique<FileSystemOperationContext>(file_system_context());
   }
 
  private:
   void SimulateDropFiles() {
     size_t root_path_index = 0;
 
-    storage::IsolatedContext::FileInfoSet toplevels;
+    IsolatedContext::FileInfoSet toplevels;
     for (size_t i = 0; i < kRegularFileSystemTestCaseSize; ++i) {
       const FileSystemTestCaseRecord& test_case =
           kRegularFileSystemTestCases[i];
@@ -282,7 +278,7 @@ class DraggedFileUtilTest : public testing::Test {
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
-  std::unique_ptr<storage::DraggedFileUtil> file_util_;
+  std::unique_ptr<DraggedFileUtil> file_util_;
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtilTest);
 };
 
@@ -600,4 +596,4 @@ TEST_F(DraggedFileUtilTest, EnumerateRecursivelyTest) {
               .NormalizePathSeparators()));
 }
 
-}  // namespace content
+}  // namespace storage

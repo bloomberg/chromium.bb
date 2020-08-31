@@ -190,7 +190,7 @@ TYPED_TEST(CommonStringPieceTest, CheckSTL) {
   ASSERT_TRUE(e.empty());
   ASSERT_EQ(e.begin(), e.end());
 
-  d.clear();
+  d = BasicStringPiece<TypeParam>();
   ASSERT_EQ(d.size(), 0U);
   ASSERT_TRUE(d.empty());
   ASSERT_EQ(d.data(), nullptr);
@@ -213,7 +213,7 @@ TYPED_TEST(CommonStringPieceTest, CheckFind) {
   BasicStringPiece<TypeParam> c(xyz);
   BasicStringPiece<TypeParam> d(foobar);
 
-  d.clear();
+  d = Piece();
   Piece e;
   TypeParam temp(TestFixture::as_string("123"));
   temp.push_back('\0');
@@ -511,14 +511,14 @@ TYPED_TEST(CommonStringPieceTest, CheckCustom) {
   c.remove_suffix(c.size());
   ASSERT_EQ(c, e);
 
-  // set
-  c.set(foobar.c_str());
+  // assignment
+  c = foobar.c_str();
   ASSERT_EQ(c, a);
-  c.set(foobar.c_str(), 6);
+  c = {foobar.c_str(), 6};
   ASSERT_EQ(c, a);
-  c.set(foobar.c_str(), 0);
+  c = {foobar.c_str(), 0};
   ASSERT_EQ(c, e);
-  c.set(foobar.c_str(), 7);  // Note, has an embedded NULL
+  c = {foobar.c_str(), 7};  // Note, has an embedded NULL
   ASSERT_NE(c, a);
 
   // as_string
@@ -542,25 +542,6 @@ TEST(StringPieceTest, CheckCustom) {
   StringPiece b(s1);
   StringPiece e;
   std::string s2;
-
-  // CopyToString
-  a.CopyToString(&s2);
-  ASSERT_EQ(s2.size(), 6U);
-  ASSERT_EQ(s2, "foobar");
-  b.CopyToString(&s2);
-  ASSERT_EQ(s2.size(), 7U);
-  ASSERT_EQ(s1, s2);
-  e.CopyToString(&s2);
-  ASSERT_TRUE(s2.empty());
-
-  // AppendToString
-  s2.erase();
-  a.AppendToString(&s2);
-  ASSERT_EQ(s2.size(), 6U);
-  ASSERT_EQ(s2, "foobar");
-  a.AppendToString(&s2);
-  ASSERT_EQ(s2.size(), 12U);
-  ASSERT_EQ(s2, "foobarfoobar");
 
   // starts_with
   ASSERT_TRUE(a.starts_with(a));
@@ -587,21 +568,16 @@ TEST(StringPieceTest, CheckCustom) {
   ASSERT_TRUE(!e.ends_with(a));
 
   StringPiece c;
-  c.set("foobar", 6);
+  c = {"foobar", 6};
   ASSERT_EQ(c, a);
-  c.set("foobar", 0);
+  c = {"foobar", 0};
   ASSERT_EQ(c, e);
-  c.set("foobar", 7);
+  c = {"foobar", 7};
   ASSERT_NE(c, a);
 }
 
 TYPED_TEST(CommonStringPieceTest, CheckNULL) {
-  // we used to crash here, but now we don't.
-  BasicStringPiece<TypeParam> s(nullptr);
-  ASSERT_EQ(s.data(), nullptr);
-  ASSERT_EQ(s.size(), 0U);
-
-  s.set(nullptr);
+  BasicStringPiece<TypeParam> s;
   ASSERT_EQ(s.data(), nullptr);
   ASSERT_EQ(s.size(), 0U);
 
@@ -699,7 +675,7 @@ TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
       BasicStringPiece<TypeParam>(
           str.c_str(),
           static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
-  ASSERT_EQ(empty, BasicStringPiece<TypeParam>(nullptr));
+  ASSERT_EQ(empty, BasicStringPiece<TypeParam>());
   ASSERT_TRUE(
       empty ==
       BasicStringPiece<TypeParam>(

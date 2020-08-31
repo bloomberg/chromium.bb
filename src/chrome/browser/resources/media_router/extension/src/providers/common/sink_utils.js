@@ -55,12 +55,6 @@ class SinkUtils {
      */
     this.castControlPort = 0;
 
-    /**
-     * The last time cloud sinks were checked.
-     * @type {number}
-     */
-    this.lastCloudSinkCheckTimeMillis = 0;
-
     PersistentDataManager.register(this);
   }
 
@@ -78,7 +72,7 @@ class SinkUtils {
    * Generates ID from the receiver UUID and a per-profile token saved in
    * localStorage.
    *
-   * Both DIAL and mDNS use this to generate receiver ID so that it is
+   * Cast uses this to generate a receiver ID that is
    * consistent and can be used to deduplicate receivers. For a given token, the
    * ID is the same for the same device no matter when it is discovered.
    *
@@ -125,7 +119,6 @@ class SinkUtils {
         'receiverIdToken': this.receiverIdToken_,
         'fixedIpList': this.fixedIpList.join(','),
         'castControlPort': this.castControlPort,
-        'lastCloudSinkCheckTimeMillis': this.lastCloudSinkCheckTimeMillis
       }
     ];
   }
@@ -150,8 +143,6 @@ class SinkUtils {
                           persistentData['fixedIpList'].split(',')) ||
           [];
       this.castControlPort = persistentData['castControlPort'] || 0;
-      this.lastCloudSinkCheckTimeMillis =
-          persistentData['lastCloudSinkCheckTimeMillis'] || 0;
     }
   }
 }

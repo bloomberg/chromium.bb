@@ -26,7 +26,6 @@
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-test-utils.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace device {
@@ -392,35 +391,29 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
 
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,
-                    const base::Closure& callback,
+                    base::OnceClosure callback,
                     ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
                           const DiscoveryFilter& discovery_filter,
-                          const base::Closure& callback,
+                          base::OnceClosure callback,
                           ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void CreateServiceRecord(const dbus::ObjectPath& object_path,
                            const bluez::BluetoothServiceRecordBlueZ& record,
-                           const ServiceRecordCallback& callback,
+                           ServiceRecordCallback callback,
                            ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void RemoveServiceRecord(const dbus::ObjectPath& object_path,
                            uint32_t handle,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            ErrorCallback error_callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void SetLongTermKeys(const dbus::ObjectPath& object_path,
-                       const std::vector<std::vector<uint8_t>>& long_term_keys,
-                       ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
@@ -650,8 +643,8 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
 
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
-    connector()->Connect(mojom::kServiceName,
-                         system_factory_.BindNewPipeAndPassReceiver());
+    device_service()->BindBluetoothSystemFactory(
+        system_factory_.BindNewPipeAndPassReceiver());
 
     auto test_bluetooth_adapter_client =
         std::make_unique<TestBluetoothAdapterClient>();

@@ -32,6 +32,9 @@
 #include "vktRenderPassUnusedAttachmentTests.hpp"
 #include "vktRenderPassUnusedClearAttachmentTests.hpp"
 #include "vktRenderPassDepthStencilResolveTests.hpp"
+#include "vktRenderPassUnusedAttachmentSparseFillingTests.hpp"
+#include "vktRenderPassFragmentDensityMapTests.hpp"
+#include "vktRenderPassMultipleSubpassesMultipleCommandBuffersTests.hpp"
 
 #include "vktTestCaseUtil.hpp"
 #include "vktTestGroupUtil.hpp"
@@ -68,6 +71,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <memory>
 
 using namespace vk;
 
@@ -1576,8 +1580,8 @@ void uploadBufferData (const DeviceInterface&	vk,
 					   VkDeviceSize				nonCoherentAtomSize)
 {
 	// Expand the range to flush to account for the nonCoherentAtomSize
-	VkDeviceSize roundedOffset = (VkDeviceSize)deAlignSize(deUint32(memory.getOffset()), deUint32(nonCoherentAtomSize));
-	VkDeviceSize roundedSize = (VkDeviceSize)deAlignSize(deUint32(memory.getOffset() + size - roundedOffset), deUint32(nonCoherentAtomSize));
+	const VkDeviceSize roundedOffset	= de::roundDown(memory.getOffset(), nonCoherentAtomSize);
+	const VkDeviceSize roundedSize		= de::roundUp(memory.getOffset() - roundedOffset + static_cast<VkDeviceSize>(size), nonCoherentAtomSize);
 
 	const VkMappedMemoryRange range =
 	{
@@ -2108,13 +2112,16 @@ public:
 			m_pipelineLayout		= createPipelineLayout(vk, device, &pipelineLayoutParams);
 			m_pipeline				= createSubpassPipeline(vk, device, renderPass, *m_vertexShaderModule, *m_fragmentShaderModule, *m_pipelineLayout, m_renderInfo);
 
-			m_vertexBuffer			= createBuffer(vk, device, 0u, (VkDeviceSize)renderQuad.getVertexDataSize(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, 1u, &queueFamilyIndex);
+			// Round up the vertex buffer size to honor nonCoherentAtomSize.
+			const auto	properties			= vk::getPhysicalDeviceProperties(context.getInstanceInterface(), context.getPhysicalDevice());
+			const auto	vertexBufferSize	= de::roundUp(static_cast<VkDeviceSize>(renderQuad.getVertexDataSize()), properties.limits.nonCoherentAtomSize);
+
+			m_vertexBuffer			= createBuffer(vk, device, 0u, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, 1u, &queueFamilyIndex);
 			m_vertexBufferMemory	= allocateBuffer(vki, vk, physDevice, device, *m_vertexBuffer, MemoryRequirement::HostVisible, allocator, allocationKind);
 
 			bindBufferMemory(vk, device, *m_vertexBuffer, m_vertexBufferMemory->getMemory(), m_vertexBufferMemory->getOffset());
 
-			const vk::VkPhysicalDeviceProperties properties = vk::getPhysicalDeviceProperties(context.getInstanceInterface(), context.getPhysicalDevice());
-			uploadBufferData(vk, device, *m_vertexBufferMemory, renderQuad.getVertexDataSize(), renderQuad.getVertexPointer(), properties.limits.nonCoherentAtomSize);
+			uploadBufferData(vk, device, *m_vertexBufferMemory, static_cast<size_t>(vertexBufferSize), renderQuad.getVertexPointer(), properties.limits.nonCoherentAtomSize);
 
 			if (renderInfo.getInputAttachmentCount() > 0)
 			{
@@ -3576,6 +3583,70 @@ bool verifyColorAttachment (const vector<PixelValue>&		reference,
 	return ok;
 }
 
+// Setting the alpha value to 1.0f by default helps visualization when the alpha channel is not used.
+const tcu::Vec4	kDefaultColorForLog	{0.0f, 0.0f, 0.0f, 1.0f};
+const float		kTrueComponent		= 1.0f;
+const float		kFalseComponent		= 0.5f;
+const float		kUnsetComponentLow	= 0.0f;
+const float		kUnsetComponentHigh	= 0.25f;
+
+std::unique_ptr<tcu::TextureLevel> renderColorImageForLog (const ConstPixelBufferAccess& image, int numChannels)
+{
+	// Same channel order, but using UNORM_INT8 for the color format.
+	const auto							order			= image.getFormat().order;
+	const tcu::TextureFormat			loggableFormat	{order, tcu::TextureFormat::UNORM_INT8};
+	const int							width			= image.getWidth();
+	const int							height			= image.getHeight();
+	std::unique_ptr<tcu::TextureLevel>	result			{new tcu::TextureLevel{loggableFormat, width, height}};
+	auto								access			= result->getAccess();
+	tcu::Vec4							outColor		= kDefaultColorForLog;
+
+	for (int x = 0; x < width; ++x)
+	for (int y = 0; y < height; ++y)
+	{
+		const auto value = image.getPixel(x, y);
+		for (int c = 0; c < numChannels; ++c)
+		{
+			if (value[c] == 0.0f)
+				outColor[c] = kFalseComponent;
+			else if (value[c] == 1.0f)
+				outColor[c] = kTrueComponent;
+			else
+				DE_ASSERT(false);
+		}
+		access.setPixel(outColor, x, y);
+	}
+
+	return result;
+}
+
+std::unique_ptr<tcu::TextureLevel> renderColorImageForLog (const vector<PixelValue>& reference, const UVec2& targetSize, int numChannels)
+{
+	const tcu::TextureFormat			loggableFormat	{tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8};
+	const int							width			= static_cast<int>(targetSize.x());
+	const int							height			= static_cast<int>(targetSize.y());
+	std::unique_ptr<tcu::TextureLevel>	result			{new tcu::TextureLevel{loggableFormat, width, height}};
+	auto								access			= result->getAccess();
+	tcu::Vec4							outColor		= kDefaultColorForLog;
+
+	for (int x = 0; x < width; ++x)
+	for (int y = 0; y < height; ++y)
+	{
+		const int index = x + y * width;
+		for (int c = 0; c < numChannels; ++c)
+		{
+			const auto maybeValue = reference[index].getValue(c);
+			if (maybeValue)
+				outColor[c] = ((*maybeValue) ? kTrueComponent : kFalseComponent);
+			else
+				outColor[c] = ((((x / 3) % 2) == ((y / 3) % 2)) ? kUnsetComponentLow : kUnsetComponentHigh);
+		}
+		access.setPixel(outColor, x, y);
+	}
+
+	return result;
+}
+
 bool verifyDepthAttachment (const vector<PixelValue>&		reference,
 							const ConstPixelBufferAccess&	result,
 							const PixelBufferAccess&		errorImage,
@@ -3687,6 +3758,7 @@ bool logAndVerifyImages (TestLog&											log,
 	{
 		if (!attachmentIsLazy[attachmentNdx])
 		{
+			bool						attachmentOK	= true;
 			const Attachment			attachment		= renderPassInfo.getAttachments()[attachmentNdx];
 			const tcu::TextureFormat	format			= mapVkFormat(attachment.getFormat());
 
@@ -3702,28 +3774,41 @@ bool logAndVerifyImages (TestLog&											log,
 				invalidateAlloc(vk, device, attachmentResources[attachmentNdx]->getSecondaryResultMemory());
 
 				{
+					bool							depthOK				= true;
+					bool							stencilOK			= true;
 					const ConstPixelBufferAccess	depthAccess			(depthFormat, targetSize.x(), targetSize.y(), 1, depthPtr);
 					const ConstPixelBufferAccess	stencilAccess		(stencilFormat, targetSize.x(), targetSize.y(), 1, stencilPtr);
 					tcu::TextureLevel				depthErrorImage		(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), targetSize.x(), targetSize.y());
 					tcu::TextureLevel				stencilErrorImage	(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), targetSize.x(), targetSize.y());
 
-					log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Depth", "Attachment " + de::toString(attachmentNdx) + " Depth", depthAccess);
-					log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Stencil", "Attachment " + de::toString(attachmentNdx) + " Stencil", stencilAccess);
-
-					log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceAttachments[attachmentNdx].getAccess());
-
 					if (renderPassInfo.getAttachments()[attachmentNdx].getStoreOp() == VK_ATTACHMENT_STORE_OP_STORE
 						&& !verifyDepthAttachment(referenceValues[attachmentNdx], depthAccess, depthErrorImage.getAccess(), config.depthValues, requiredDepthEpsilon(attachment.getFormat())))
 					{
-						log << TestLog::Image("DepthAttachmentError" + de::toString(attachmentNdx), "Depth Attachment Error " + de::toString(attachmentNdx), depthErrorImage.getAccess());
-						isOk = false;
+						depthOK = false;
 					}
 
 					if (renderPassInfo.getAttachments()[attachmentNdx].getStencilStoreOp() == VK_ATTACHMENT_STORE_OP_STORE
 						&& !verifyStencilAttachment(referenceValues[attachmentNdx], stencilAccess, stencilErrorImage.getAccess()))
 					{
-						log << TestLog::Image("StencilAttachmentError" + de::toString(attachmentNdx), "Stencil Attachment Error " + de::toString(attachmentNdx), stencilErrorImage.getAccess());
-						isOk = false;
+						stencilOK = false;
+					}
+
+					if (!depthOK || !stencilOK)
+					{
+						log << TestLog::ImageSet("TestImages", "Output depth and stencil attachments, reference images and error masks");
+						log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Depth", "Attachment " + de::toString(attachmentNdx) + " Depth", depthAccess);
+						log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Stencil", "Attachment " + de::toString(attachmentNdx) + " Stencil", stencilAccess);
+						log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceAttachments[attachmentNdx].getAccess());
+
+						if (!depthOK)
+							log << TestLog::Image("DepthAttachmentError" + de::toString(attachmentNdx), "Depth Attachment Error " + de::toString(attachmentNdx), depthErrorImage.getAccess());
+
+						if (!stencilOK)
+							log << TestLog::Image("StencilAttachmentError" + de::toString(attachmentNdx), "Stencil Attachment Error " + de::toString(attachmentNdx), stencilErrorImage.getAccess());
+
+						log << TestLog::EndImageSet;
+
+						attachmentOK = false;
 					}
 				}
 			}
@@ -3733,19 +3818,18 @@ bool logAndVerifyImages (TestLog&											log,
 
 				invalidateAlloc(vk, device, attachmentResources[attachmentNdx]->getResultMemory());
 
+				bool							depthOK		= true;
+				bool							stencilOK	= true;
+				bool							colorOK		= true;
 				const ConstPixelBufferAccess	access		(format, targetSize.x(), targetSize.y(), 1, ptr);
-				tcu::TextureLevel errorImage	(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), targetSize.x(), targetSize.y());
-
-				log << TestLog::Image("Attachment" + de::toString(attachmentNdx), "Attachment " + de::toString(attachmentNdx), access);
-				log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceAttachments[attachmentNdx].getAccess());
+				tcu::TextureLevel				errorImage	(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), targetSize.x(), targetSize.y());
 
 				if (tcu::hasDepthComponent(format.order))
 				{
 					if ((renderPassInfo.getAttachments()[attachmentNdx].getStoreOp() == VK_ATTACHMENT_STORE_OP_STORE || renderPassInfo.getAttachments()[attachmentNdx].getStencilStoreOp() == VK_ATTACHMENT_STORE_OP_STORE)
 						&& !verifyDepthAttachment(referenceValues[attachmentNdx], access, errorImage.getAccess(), config.depthValues, requiredDepthEpsilon(attachment.getFormat())))
 					{
-						log << TestLog::Image("AttachmentError" + de::toString(attachmentNdx), "Attachment Error " + de::toString(attachmentNdx), errorImage.getAccess());
-						isOk = false;
+						depthOK = false;
 					}
 				}
 				else if (tcu::hasStencilComponent(format.order))
@@ -3753,8 +3837,7 @@ bool logAndVerifyImages (TestLog&											log,
 					if ((renderPassInfo.getAttachments()[attachmentNdx].getStoreOp() == VK_ATTACHMENT_STORE_OP_STORE || renderPassInfo.getAttachments()[attachmentNdx].getStencilStoreOp() == VK_ATTACHMENT_STORE_OP_STORE)
 						&& !verifyStencilAttachment(referenceValues[attachmentNdx], access, errorImage.getAccess()))
 					{
-						log << TestLog::Image("AttachmentError" + de::toString(attachmentNdx), "Attachment Error " + de::toString(attachmentNdx), errorImage.getAccess());
-						isOk = false;
+						stencilOK = false;
 					}
 				}
 				else
@@ -3762,11 +3845,42 @@ bool logAndVerifyImages (TestLog&											log,
 					if ((renderPassInfo.getAttachments()[attachmentNdx].getStoreOp() == VK_ATTACHMENT_STORE_OP_STORE || renderPassInfo.getAttachments()[attachmentNdx].getStencilStoreOp() == VK_ATTACHMENT_STORE_OP_STORE)
 						&& !verifyColorAttachment(referenceValues[attachmentNdx], access, errorImage.getAccess(), config.useFormatCompCount))
 					{
-						log << TestLog::Image("AttachmentError" + de::toString(attachmentNdx), "Attachment Error " + de::toString(attachmentNdx), errorImage.getAccess());
-						isOk = false;
+						colorOK = false;
 					}
 				}
+
+				if (!depthOK || !stencilOK || !colorOK)
+				{
+					log << TestLog::ImageSet("TestImages", "Output attachment, reference image and error mask");
+					if (!depthOK || !stencilOK)
+					{
+						// Log without conversions.
+						log << TestLog::Image("Attachment" + de::toString(attachmentNdx), "Attachment " + de::toString(attachmentNdx), access);
+						log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceAttachments[attachmentNdx].getAccess());
+					}
+					else
+					{
+						// Convert color images to better reflect test status and output in any format.
+						const auto numChannels		= tcu::getNumUsedChannels(access.getFormat().order);
+						const auto attachmentForLog	= renderColorImageForLog(access, numChannels);
+						const auto referenceForLog	= renderColorImageForLog(referenceValues[attachmentNdx], targetSize, numChannels);
+
+						log << TestLog::Message << "Check the attachment formats and test data to verify which components affect the test result." << TestLog::EndMessage;
+						log << TestLog::Message << "In the reference image, unset pixel components are marked with a 3x3 grid storing values 0.0 and 0.25, pixel components set to false are stored as 0.5 and pixel components set to true are stored as 1.0." << TestLog::EndMessage;
+						log << TestLog::Message << "Output attachment pixel components are always set to 0.5 or 1.0 but may not be taken into account if not set in the reference image." << TestLog::EndMessage;
+
+						log << TestLog::Image("Attachment" + de::toString(attachmentNdx), "Attachment " + de::toString(attachmentNdx), attachmentForLog->getAccess());
+						log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceForLog->getAccess());
+					}
+					log << TestLog::Image("AttachmentError" + de::toString(attachmentNdx), "Attachment Error " + de::toString(attachmentNdx), errorImage.getAccess());
+					log << TestLog::EndImageSet;
+
+					attachmentOK = false;
+				}
 			}
+
+			if (!attachmentOK)
+				isOk = false;
 		}
 	}
 
@@ -4519,17 +4633,17 @@ tcu::TestStatus renderPassTest (Context& context, TestConfig config)
 	vector<SubpassRenderInfo>			subpassRenderInfo;
 
 	if (config.renderPassType == RENDERPASS_TYPE_RENDERPASS2)
-		context.requireDeviceExtension("VK_KHR_create_renderpass2");
+		context.requireDeviceFunctionality("VK_KHR_create_renderpass2");
 
 	if (config.allocationKind == ALLOCATION_KIND_DEDICATED)
 	{
-		if (!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_dedicated_allocation"))
+		if (!context.isDeviceFunctionalitySupported("VK_KHR_dedicated_allocation"))
 			TCU_THROW(NotSupportedError, "VK_KHR_dedicated_allocation is not supported");
 	}
 
 	if (!renderPassInfo.getInputAspects().empty())
 	{
-		if (!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_maintenance2"))
+		if (!context.isDeviceFunctionalitySupported("VK_KHR_maintenance2"))
 			TCU_THROW(NotSupportedError, "Extension VK_KHR_maintenance2 not supported.");
 	}
 
@@ -4590,7 +4704,7 @@ tcu::TestStatus renderPassTest (Context& context, TestConfig config)
 			}
 		}
 
-		if (requireDepthStencilLayout && !isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_maintenance2"))
+		if (requireDepthStencilLayout && !context.isDeviceFunctionalitySupported("VK_KHR_maintenance2"))
 			TCU_THROW(NotSupportedError, "VK_KHR_maintenance2 is not supported");
 	}
 
@@ -6989,13 +7103,16 @@ tcu::TestCaseGroup* createRenderPassTestsInternal (tcu::TestContext& testCtx, Re
 	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSparseRenderTargetTests(testCtx)	: createRenderPass2SparseRenderTargetTests(testCtx));
 	suballocationTestGroup->addChild(createRenderPassUnusedAttachmentTests(testCtx, renderPassType));
 	suballocationTestGroup->addChild(createRenderPassUnusedClearAttachmentTests(testCtx, renderPassType));
+	suballocationTestGroup->addChild(createRenderPassUnusedAttachmentSparseFillingTests(testCtx, renderPassType));
 
 	renderpassTests->addChild(suballocationTestGroup.release());
 	renderpassTests->addChild(dedicatedAllocationTestGroup.release());
+	renderpassTests->addChild(createRenderPassMultipleSubpassesMultipleCommandBuffersTests(testCtx));
 
 	if (renderPassType != RENDERPASS_TYPE_LEGACY)
 	{
 		renderpassTests->addChild(createRenderPass2DepthStencilResolveTests(testCtx));
+		renderpassTests->addChild(createFragmentDensityMapTests(testCtx));
 	}
 
 	return renderpassTests.release();

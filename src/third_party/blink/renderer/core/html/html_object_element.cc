@@ -66,8 +66,8 @@ void HTMLObjectElement::Trace(Visitor* visitor) {
 const AttrNameToTrustedType& HTMLObjectElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"data", SpecificTrustedType::kTrustedScriptURL},
-                        {"codebase", SpecificTrustedType::kTrustedScriptURL}}));
+                      ({{"data", SpecificTrustedType::kScriptURL},
+                        {"codebase", SpecificTrustedType::kScriptURL}}));
   return attribute_map;
 }
 
@@ -126,18 +126,6 @@ void HTMLObjectElement::ParseAttribute(
   }
 }
 
-static void MapDataParamToSrc(PluginParameters& plugin_params) {
-  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e.
-  // Real and WMP require "src" attribute).
-  int src_index = plugin_params.FindStringInNames("src");
-  int data_index = plugin_params.FindStringInNames("data");
-
-  if (src_index == -1 && data_index != -1) {
-    plugin_params.AppendNameWithValue("src",
-                                      plugin_params.Values()[data_index]);
-  }
-}
-
 // TODO(schenney): crbug.com/572908 This function should not deal with url or
 // serviceType!
 void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
@@ -161,13 +149,13 @@ void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
     // for compatibility, allow the resource's URL to be given by a param
     // element with one of the common names if we know that resource points
     // to a plugin.
-    if (url_.IsEmpty() && !DeprecatedEqualIgnoringCase(name, "data") &&
+    if (url_.IsEmpty() && !EqualIgnoringASCIICase(name, "data") &&
         HTMLParamElement::IsURLParameter(name)) {
       SetUrl(StripLeadingAndTrailingHTMLSpaces(p->Value()));
     }
     // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
     // in this function.
-    if (service_type_.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
+    if (service_type_.IsEmpty() && EqualIgnoringASCIICase(name, "type")) {
       wtf_size_t pos = p->Value().Find(";");
       if (pos != kNotFound)
         SetServiceType(p->Value().GetString().Left(pos));
@@ -183,7 +171,9 @@ void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
       plugin_params.AppendAttribute(attribute);
   }
 
-  MapDataParamToSrc(plugin_params);
+  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e.
+  // Real and WMP require "src" attribute).
+  plugin_params.MapDataParamToSrc();
 }
 
 bool HTMLObjectElement::HasFallbackContent() const {
@@ -395,7 +385,7 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
 
   for (HTMLElement& child : Traversal<HTMLElement>::ChildrenOf(*this)) {
     if (IsA<HTMLParamElement>(child) &&
-        DeprecatedEqualIgnoringCase(child.GetNameAttribute(), "type") &&
+        EqualIgnoringASCIICase(child.GetNameAttribute(), "type") &&
         MIMETypeRegistry::IsJavaAppletMIMEType(
             child.FastGetAttribute(html_names::kValueAttr).GetString()))
       return true;

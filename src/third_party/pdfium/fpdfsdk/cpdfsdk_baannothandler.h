@@ -29,7 +29,8 @@ class CPDFSDK_BAAnnotHandler final : public IPDFSDK_AnnotHandler {
   void SetFormFillEnvironment(
       CPDFSDK_FormFillEnvironment* pFormFillEnv) override;
   bool CanAnswer(CPDFSDK_Annot* pAnnot) override;
-  CPDFSDK_Annot* NewAnnot(CPDF_Annot* pAnnot, CPDFSDK_PageView* pPage) override;
+  std::unique_ptr<CPDFSDK_Annot> NewAnnot(CPDF_Annot* pAnnot,
+                                          CPDFSDK_PageView* pPageView) override;
   void ReleaseAnnot(std::unique_ptr<CPDFSDK_Annot> pAnnot) override;
   CFX_FloatRect GetViewBBox(CPDFSDK_PageView* pPageView,
                             CPDFSDK_Annot* pAnnot) override;
@@ -75,8 +76,8 @@ class CPDFSDK_BAAnnotHandler final : public IPDFSDK_AnnotHandler {
   bool OnMouseWheel(CPDFSDK_PageView* pPageView,
                     ObservedPtr<CPDFSDK_Annot>* pAnnot,
                     uint32_t nFlags,
-                    short zDelta,
-                    const CFX_PointF& point) override;
+                    const CFX_PointF& point,
+                    const CFX_Vector& delta) override;
   bool OnRButtonDown(CPDFSDK_PageView* pPageView,
                      ObservedPtr<CPDFSDK_Annot>* pAnnot,
                      uint32_t nFlags,
@@ -98,6 +99,13 @@ class CPDFSDK_BAAnnotHandler final : public IPDFSDK_AnnotHandler {
                         int index,
                         bool selected) override;
   bool IsIndexSelected(ObservedPtr<CPDFSDK_Annot>* pAnnot, int index) override;
+
+ private:
+  void InvalidateRect(CPDFSDK_Annot* annot);
+  bool IsFocusableAnnot(const CPDF_Annot::Subtype& annot_type) const;
+
+  UnownedPtr<CPDFSDK_FormFillEnvironment> form_fill_environment_;
+  bool is_annotation_focused_ = false;
 };
 
 #endif  // FPDFSDK_CPDFSDK_BAANNOTHANDLER_H_

@@ -89,6 +89,7 @@ class CONTENT_EXPORT CompositorImpl
  private:
   class AndroidHostDisplayClient;
   class ScopedCachedBackBuffer;
+  class ReadbackRefImpl;
 
   // Compositor implementation.
   void SetRootWindow(gfx::NativeWindow root_window) override;
@@ -104,13 +105,15 @@ class CONTENT_EXPORT CompositorImpl
   ui::ResourceManager& GetResourceManager() override;
   void CacheBackBufferForCurrentSurface() override;
   void EvictCachedBackBuffer() override;
+  void RequestPresentationTimeForNextFrame(
+      PresentationTimeCallback callback) override;
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void WillUpdateLayers() override {}
   void DidUpdateLayers() override;
-  void BeginMainFrame(const viz::BeginFrameArgs& args) override {}
+  void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void OnDeferMainFrameUpdatesChanged(bool) override {}
   void OnDeferCommitsChanged(bool) override {}
   void BeginMainFrameNotExpectedSoon() override {}
@@ -128,7 +131,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override {}
-  void DidCommit() override;
+  void DidCommit(base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override {}
@@ -136,16 +139,20 @@ class CONTENT_EXPORT CompositorImpl
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
   void RecordStartOfFrameMetrics() override {}
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
+  void NotifyThroughputTrackerResults(
+      cc::CustomTrackerResults results) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
 
   // WindowAndroidCompositor implementation.
-  void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
+  std::unique_ptr<ReadbackRef> TakeReadbackRef() override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
@@ -178,8 +185,6 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers(const gfx::Size& swap_size);
 
-  bool HavePendingReadbacks();
-
   void DetachRootWindow();
 
   // Helper functions to perform delayed cleanup after the compositor is no
@@ -207,21 +212,20 @@ class CONTENT_EXPORT CompositorImpl
   void InitializeVizLayerTreeFrameSink(
       scoped_refptr<viz::ContextProviderCommandBuffer> context_provider);
 
+  void DecrementPendingReadbacks();
+
   viz::FrameSinkId frame_sink_id_;
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> subroot_layer_;
 
-  // Subtree for hidden layers with CopyOutputRequests on them.
-  scoped_refptr<cc::Layer> readback_layer_tree_;
-
   // Destruction order matters here:
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  gfx::ColorSpace display_color_space_;
+  gfx::DisplayColorSpaces display_color_spaces_;
   gfx::Size size_;
   bool requires_alpha_channel_ = false;
 
@@ -247,7 +251,6 @@ class CONTENT_EXPORT CompositorImpl
   bool layer_tree_frame_sink_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
-  bool has_layer_tree_frame_sink_ = false;
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
   bool has_submitted_frame_since_became_visible_ = false;
@@ -264,6 +267,10 @@ class CONTENT_EXPORT CompositorImpl
       swap_completed_with_size_for_testing_;
 
   size_t num_of_consecutive_surface_failures_ = 0u;
+
+  base::TimeTicks latest_frame_time_;
+
+  uint32_t pending_readbacks_ = 0u;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 

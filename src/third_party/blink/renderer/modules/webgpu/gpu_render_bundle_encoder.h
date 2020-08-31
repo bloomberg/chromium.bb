@@ -37,7 +37,7 @@ class GPURenderBundleEncoder : public DawnObject<WGPURenderBundleEncoder>,
                     const Vector<uint32_t>& dynamicOffsets);
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bind_group,
-                    const FlexibleUint32ArrayView& dynamic_offsets_data,
+                    const FlexibleUint32Array& dynamic_offsets_data,
                     uint64_t dynamic_offsets_data_start,
                     uint32_t dynamic_offsets_data_length,
                     ExceptionState& exception_state);
@@ -46,8 +46,11 @@ class GPURenderBundleEncoder : public DawnObject<WGPURenderBundleEncoder>,
   void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
-  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
-  void setVertexBuffer(uint32_t slot, const GPUBuffer* buffer, uint64_t offset);
+  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset, uint64_t size);
+  void setVertexBuffer(uint32_t slot,
+                       const GPUBuffer* buffer,
+                       uint64_t offset,
+                       uint64_t size);
   void draw(uint32_t vertexCount,
             uint32_t instanceCount,
             uint32_t firstVertex,

@@ -124,6 +124,12 @@ bool SourceListDirective::IsNone() const {
          !allow_dynamic_ && !nonces_.size() && !hashes_.size();
 }
 
+bool SourceListDirective::IsSelf() const {
+  return allow_self_ && !list_.size() && !allow_star_ && !allow_inline_ &&
+         !allow_unsafe_hashes_ && !allow_eval_ && !allow_wasm_eval_ &&
+         !allow_dynamic_ && !nonces_.size() && !hashes_.size();
+}
+
 uint8_t SourceListDirective::HashAlgorithmsUsed() const {
   return hash_algorithms_used_;
 }
@@ -131,6 +137,10 @@ uint8_t SourceListDirective::HashAlgorithmsUsed() const {
 bool SourceListDirective::IsHashOrNoncePresent() const {
   return !nonces_.IsEmpty() ||
          hash_algorithms_used_ != kContentSecurityPolicyHashAlgorithmNone;
+}
+
+bool SourceListDirective::AllowsURLBasedMatching() const {
+  return !allow_dynamic_ && (list_.size() || allow_star_ || allow_self_);
 }
 
 // source-list       = *WSP [ source *( 1*WSP source ) *WSP ]
@@ -786,17 +796,14 @@ bool SourceListDirective::Subsumes(
   return CSPSource::FirstSubsumesSecond(normalized_a, normalized_b);
 }
 
-WebContentSecurityPolicySourceList
+network::mojom::blink::CSPSourceListPtr
 SourceListDirective::ExposeForNavigationalChecks() const {
-  WebContentSecurityPolicySourceList source_list;
-  source_list.allow_self = allow_self_;
-  source_list.allow_star = allow_star_;
-  source_list.allow_redirects = allow_redirects_;
-  WebVector<WebContentSecurityPolicySourceExpression> list(list_.size());
-  for (wtf_size_t i = 0; i < list_.size(); ++i)
-    list[i] = list_[i]->ExposeForNavigationalChecks();
-  source_list.sources.Swap(list);
-  return source_list;
+  WTF::Vector<network::mojom::blink::CSPSourcePtr> sources;
+  for (const auto& source : list_)
+    sources.push_back(source->ExposeForNavigationalChecks());
+
+  return network::mojom::blink::CSPSourceList::New(
+      std::move(sources), allow_self_, allow_star_, allow_redirects_);
 }
 
 bool SourceListDirective::SubsumesNoncesAndHashes(
@@ -911,7 +918,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetIntersectCSPSources(
   return normalized;
 }
 
-void SourceListDirective::Trace(blink::Visitor* visitor) {
+void SourceListDirective::Trace(Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(list_);
   CSPDirective::Trace(visitor);

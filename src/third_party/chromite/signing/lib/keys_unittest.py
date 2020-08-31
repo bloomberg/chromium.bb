@@ -303,7 +303,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     k1sum = k1.GetSHA1sum()
     self.assertEqual(k1sum, MOCK_SHA1SUM)
     self.assertCommandCalled(['vbutil_key', '--unpack', k1.public],
-                             check=False, encoding='utf-8')
+                             check=False, encoding='utf-8', stdout=True)
 
 
 class TestKeyVersions(cros_test_lib.TempDirTestCase):

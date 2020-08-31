@@ -57,6 +57,8 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
  public:
   using Result = VersionUpdater::Result;
 
+  static std::string GetResultString(Result result);
+
   static UpdateScreen* Get(ScreenManager* manager);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
@@ -68,11 +70,6 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   // Called when the being destroyed. This should call Unbind() on the
   // associated View if this class is destroyed before it.
   void OnViewDestroyed(UpdateView* view);
-
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   base::OneShotTimer* GetShowTimerForTesting();
   base::OneShotTimer* GetErrorMessageTimerForTesting();
@@ -95,7 +92,20 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
       const VersionUpdater::UpdateInfo& update_info) override;
   void FinishExitUpdate(VersionUpdater::Result result) override;
 
+  void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   void ExitUpdate(Result result);
 
  private:
@@ -161,6 +171,10 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   // If redirect did not happen during this delay, error message is shown
   // instead.
   base::OneShotTimer error_message_timer_;
+
+  const base::TickClock* tick_clock_;
+
+  base::TimeTicks start_update_downloading_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -19,7 +19,7 @@
 @interface AnimatedScopedFullscreenDisablerObserverListContainer : NSObject {
   // The AnimatedScopedFullscreenDisablerObservers.
   base::ObserverList<AnimatedScopedFullscreenDisablerObserver>::Unchecked
-      observers_;
+      _observers;
 }
 
 // The disabler passed on initialization.
@@ -54,31 +54,31 @@
 
 - (const base::ObserverList<
     AnimatedScopedFullscreenDisablerObserver>::Unchecked&)observers {
-  return observers_;
+  return _observers;
 }
 
 - (void)addObserver:(AnimatedScopedFullscreenDisablerObserver*)observer {
-  observers_.AddObserver(observer);
+  _observers.AddObserver(observer);
 }
 
 - (void)removeObserver:(AnimatedScopedFullscreenDisablerObserver*)observer {
-  observers_.RemoveObserver(observer);
+  _observers.RemoveObserver(observer);
 }
 
 - (void)onAnimationStarted {
-  for (auto& observer : observers_) {
+  for (auto& observer : _observers) {
     observer.FullscreenDisablingAnimationDidStart(_disabler);
   }
 }
 
 - (void)onAnimationFinished {
-  for (auto& observer : observers_) {
+  for (auto& observer : _observers) {
     observer.FullscreenDisablingAnimationDidFinish(_disabler);
   }
 }
 
 - (void)onDisablerDestroyed {
-  for (auto& observer : observers_) {
+  for (auto& observer : _observers) {
     observer.AnimatedFullscreenDisablerDestroyed(_disabler);
   }
 }

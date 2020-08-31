@@ -13,12 +13,13 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/test/storage_partition_test_utils.h"
+#include "content/test/io_thread_shared_url_loader_factory_owner.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/ssl/client_cert_identity.h"
@@ -163,6 +164,7 @@ IN_PROC_BROWSER_TEST_F(StoragePartitionImplBrowsertest, NetworkContext) {
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
+  params->automatically_assign_isolation_info = true;
   params->is_corb_enabled = false;
   mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
   BrowserContext::GetDefaultStoragePartition(

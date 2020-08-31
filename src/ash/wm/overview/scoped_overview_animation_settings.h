@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -36,6 +36,7 @@ class ScopedOverviewAnimationSettings {
   void CacheRenderSurface();
   void DeferPaint();
   void TrilinearFiltering();
+  ui::LayerAnimator* GetAnimator();
 
  private:
   // The managed animation settings.

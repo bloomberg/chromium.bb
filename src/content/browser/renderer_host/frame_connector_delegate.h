@@ -12,14 +12,15 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/public/common/input_event_ack_state.h"
+#include "content/common/input/input_handler.mojom.h"
 #include "content/public/common/screen_info.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 class WebGestureEvent;
-struct WebIntrinsicSizingInfo;
 }
 
 namespace cc {
@@ -75,7 +76,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Sends the given intrinsic sizing information from a sub-frame to
   // its corresponding remote frame in the parent frame's renderer.
   virtual void SendIntrinsicSizingInfoToParent(
-      const blink::WebIntrinsicSizingInfo&) {}
+      blink::mojom::IntrinsicSizingInfoPtr) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
   void SynchronizeVisualProperties(
@@ -133,7 +134,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // for processing.
   virtual void ForwardAckedTouchpadZoomEvent(
       const blink::WebGestureEvent& event,
-      InputEventAckState ack_result) {}
+      blink::mojom::InputEventResultState ack_result) {}
 
   // A gesture scroll sequence that is not consumed by a child must be bubbled
   // to ancestors who may consume it.
@@ -152,7 +153,13 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   // Locks the mouse, if |request_unadjusted_movement_| is true, try setting the
   // unadjusted movement mode. Returns true if mouse is locked.
-  virtual bool LockMouse(bool request_unadjusted_movement);
+  virtual blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement);
+
+  // Change the current mouse lock to match the unadjusted movement option
+  // given.
+  virtual blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement);
 
   // Unlocks the mouse if the mouse is locked.
   virtual void UnlockMouse() {}
@@ -223,6 +230,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const cc::RenderFrameMetadata& metadata) {}
 
   bool has_size() const { return has_size_; }
+
+  virtual void DidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) {}
 
  protected:
   explicit FrameConnectorDelegate(bool use_zoom_for_device_scale_factor);

@@ -1,10 +1,17 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
+import {AccessibilitySubPane} from './AccessibilitySubPane.js';
+import {ariaMetadata} from './ARIAMetadata.js';
+
 /**
  * @unrestricted
  */
-export default class ARIAAttributesPane extends Accessibility.AccessibilitySubPane {
+export class ARIAAttributesPane extends AccessibilitySubPane {
   constructor() {
     super(ls`ARIA Attributes`);
 
@@ -14,7 +21,7 @@ export default class ARIAAttributesPane extends Accessibility.AccessibilitySubPa
 
   /**
    * @override
-   * @param {?SDK.DOMNode} node
+   * @param {?SDK.DOMModel.DOMNode} node
    */
   setNode(node) {
     super.setNode(node);
@@ -26,26 +33,35 @@ export default class ARIAAttributesPane extends Accessibility.AccessibilitySubPa
     const attributes = node.attributes();
     for (let i = 0; i < attributes.length; ++i) {
       const attribute = attributes[i];
-      if (Accessibility.ARIAAttributesPane._attributes.indexOf(attribute.name) < 0) {
+      if (!this._isARIAAttribute(attribute)) {
         continue;
       }
-      this._treeOutline.appendChild(new Accessibility.ARIAAttributesTreeElement(this, attribute, target));
+
+      this._treeOutline.appendChild(new ARIAAttributesTreeElement(this, attribute, target));
     }
 
     const foundAttributes = (this._treeOutline.rootElement().childCount() !== 0);
     this._noPropertiesInfo.classList.toggle('hidden', foundAttributes);
     this._treeOutline.element.classList.toggle('hidden', !foundAttributes);
   }
+
+  /**
+   * @param {!SDK.DOMModel.Attribute} attribute
+   * @return {boolean}
+   */
+  _isARIAAttribute(attribute) {
+    return _attributes.has(attribute.name);
+  }
 }
 
 /**
  * @unrestricted
  */
-export class ARIAAttributesTreeElement extends UI.TreeElement {
+export class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!Accessibility.ARIAAttributesPane} parentPane
-   * @param {!SDK.DOMNode.Attribute} attribute
-   * @param {!SDK.Target} target
+   * @param {!ARIAAttributesPane} parentPane
+   * @param {!SDK.DOMModel.Attribute} attribute
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(parentPane, attribute, target) {
     super('');
@@ -61,7 +77,8 @@ export class ARIAAttributesTreeElement extends UI.TreeElement {
    * @return {!Element}
    */
   static createARIAValueElement(value) {
-    const valueElement = createElementWithClass('span', 'monospace');
+    const valueElement = document.createElement('span');
+    valueElement.classList.add('monospace');
     // TODO(aboxhall): quotation marks?
     valueElement.setTextContentTruncatedIfNeeded(value || '');
     return valueElement;
@@ -97,7 +114,7 @@ export class ARIAAttributesTreeElement extends UI.TreeElement {
    * @param {string} value
    */
   appendAttributeValueElement(value) {
-    this._valueElement = Accessibility.ARIAAttributesTreeElement.createARIAValueElement(value);
+    this._valueElement = ARIAAttributesTreeElement.createARIAValueElement(value);
     this.listItemElement.appendChild(this._valueElement);
   }
 
@@ -117,7 +134,7 @@ export class ARIAAttributesTreeElement extends UI.TreeElement {
   _startEditing() {
     const valueElement = this._valueElement;
 
-    if (UI.isBeingEdited(valueElement)) {
+    if (UI.UIUtils.isBeingEdited(valueElement)) {
       return;
     }
 
@@ -126,15 +143,14 @@ export class ARIAAttributesTreeElement extends UI.TreeElement {
     /**
      * @param {string} previousContent
      * @param {!Event} event
-     * @this {Accessibility.ARIAAttributesTreeElement}
+     * @this {ARIAAttributesTreeElement}
      */
     function blurListener(previousContent, event) {
       const text = event.target.textContent;
       this._editingCommitted(text, previousContent);
     }
 
-    this._prompt = new Accessibility.ARIAAttributesPane.ARIAAttributePrompt(
-        Accessibility.ariaMetadata().valuesForProperty(this._nameElement.textContent), this);
+    this._prompt = new ARIAAttributePrompt(ariaMetadata().valuesForProperty(this._nameElement.textContent), this);
     this._prompt.setAutocompletionTimeout(0);
     const proxyElement = this._prompt.attachAndStartEditing(valueElement, blurListener.bind(this, previousContent));
 
@@ -192,14 +208,13 @@ export class ARIAAttributesTreeElement extends UI.TreeElement {
   }
 }
 
-
 /**
  * @unrestricted
  */
-export class ARIAAttributePrompt extends UI.TextPrompt {
+export class ARIAAttributePrompt extends UI.TextPrompt.TextPrompt {
   /**
    * @param {!Array<string>} ariaCompletions
-   * @param {!Accessibility.ARIAAttributesTreeElement} treeElement
+   * @param {!ARIAAttributesTreeElement} treeElement
    */
   constructor(ariaCompletions, treeElement) {
     super();
@@ -224,65 +239,58 @@ export class ARIAAttributePrompt extends UI.TextPrompt {
   }
 }
 
-const _attributes = [
+// Keep this list in sync with https://w3c.github.io/aria/#state_prop_def
+const _attributes = new Set([
   'role',
-  'aria-busy',
-  'aria-checked',
-  'aria-disabled',
-  'aria-expanded',
-  'aria-grabbed',
-  'aria-hidden',
-  'aria-invalid',
-  'aria-pressed',
-  'aria-selected',
   'aria-activedescendant',
   'aria-atomic',
   'aria-autocomplete',
+  'aria-brailleroledescription',
+  'aria-busy',
+  'aria-checked',
+  'aria-colcount',
+  'aria-colindex',
+  'aria-colindextext',
+  'aria-colspan',
   'aria-controls',
+  'aria-current',
   'aria-describedby',
+  'aria-details',
+  'aria-disabled',
   'aria-dropeffect',
+  'aria-errormessage',
+  'aria-expanded',
   'aria-flowto',
+  'aria-grabbed',
   'aria-haspopup',
+  'aria-hidden',
+  'aria-invalid',
+  'aria-keyshortcuts',
   'aria-label',
   'aria-labelledby',
   'aria-level',
   'aria-live',
+  'aria-modal',
   'aria-multiline',
   'aria-multiselectable',
   'aria-orientation',
   'aria-owns',
+  'aria-placeholder',
   'aria-posinset',
+  'aria-pressed',
   'aria-readonly',
   'aria-relevant',
   'aria-required',
+  'aria-roledescription',
+  'aria-rowcount',
+  'aria-rowindex',
+  'aria-rowindextext',
+  'aria-rowspan',
+  'aria-selected',
   'aria-setsize',
   'aria-sort',
   'aria-valuemax',
   'aria-valuemin',
   'aria-valuenow',
   'aria-valuetext',
-];
-
-/* Legacy exported object */
-self.Accessibility = self.Accessibility || {};
-
-/* Legacy exported object */
-Accessibility = Accessibility || {};
-
-/**
- * @constructor
- */
-Accessibility.ARIAAttributesPane = ARIAAttributesPane;
-
-/**
- * @constructor
- */
-Accessibility.ARIAAttributesTreeElement = ARIAAttributesTreeElement;
-
-/**
- * @constructor
- */
-Accessibility.ARIAAttributesPane.ARIAAttributePrompt = ARIAAttributePrompt;
-
-/** @type {!Array<string>} */
-Accessibility.ARIAAttributesPane._attributes = _attributes;
+]);

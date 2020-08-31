@@ -11,13 +11,14 @@
 #include "include/gpu/vk/GrVkTypes.h"
 #include "src/gpu/vk/GrVkBuffer.h"
 
+class GrVkDescriptorSet;
 class GrVkGpu;
 
 class GrVkUniformBuffer : public GrVkBuffer {
 
 public:
     static GrVkUniformBuffer* Create(GrVkGpu* gpu, size_t size);
-    static const GrVkResource* CreateResource(GrVkGpu* gpu, size_t size);
+    static const GrManagedResource* CreateResource(GrVkGpu* gpu, size_t size);
     static const size_t kStandardSize = 256;
 
     void* map(GrVkGpu* gpu) {
@@ -32,18 +33,30 @@ public:
                     bool* createdNewBuffer) {
         return this->vkUpdateData(gpu, src, srcSizeInBytes, createdNewBuffer);
     }
-    void release(const GrVkGpu* gpu) { this->vkRelease(gpu); }
-    void abandon() { this->vkAbandon(); }
+    void release() { this->vkRelease(); }
+
+    const VkDescriptorSet* descriptorSet() const {
+        const Resource* resource = static_cast<const Resource*>(this->resource());
+        return resource->descriptorSet();
+    }
 
 private:
     class Resource : public GrVkBuffer::Resource {
     public:
-        Resource(VkBuffer buf, const GrVkAlloc& alloc)
-            : INHERITED(buf, alloc, kUniform_Type) {}
+        Resource(GrVkGpu* gpu, VkBuffer buf, const GrVkAlloc& alloc,
+                 const GrVkDescriptorSet* descSet)
+            : INHERITED(gpu, buf, alloc, kUniform_Type)
+            , fDescriptorSet(descSet) {}
 
-        void onRecycle(GrVkGpu* gpu) const override;
+        void freeGPUData() const override;
+        void onRecycle() const override;
+
+        const VkDescriptorSet* descriptorSet() const;
 
         typedef GrVkBuffer::Resource INHERITED;
+
+    private:
+        const GrVkDescriptorSet* fDescriptorSet;
     };
 
     const GrVkBuffer::Resource* createResource(GrVkGpu* gpu,

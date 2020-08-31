@@ -7,7 +7,8 @@
 
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -15,21 +16,22 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
-class LocalFrame;
+class LocalDOMWindow;
 class ScriptPromise;
 class ScriptState;
-class ScreenOrientationControllerImpl;
+class ScreenOrientationController;
 
-class ScreenOrientation final : public EventTargetWithInlineData,
-                                public ContextClient {
+class MODULES_EXPORT ScreenOrientation final : public EventTargetWithInlineData,
+                                               public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 
  public:
-  static ScreenOrientation* Create(LocalFrame*);
+  static ScreenOrientation* Create(LocalDOMWindow*);
 
-  explicit ScreenOrientation(LocalFrame*);
+  explicit ScreenOrientation(LocalDOMWindow*);
   ~ScreenOrientation() override;
 
   // EventTarget implementation.
@@ -42,7 +44,9 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   void SetType(WebScreenOrientationType);
   void SetAngle(uint16_t);
 
-  ScriptPromise lock(ScriptState*, const AtomicString& orientation);
+  ScriptPromise lock(ScriptState*,
+                     const AtomicString& orientation,
+                     ExceptionState&);
   void unlock();
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
@@ -50,10 +54,10 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   // Helper being used by this class and LockOrientationCallback.
   static const AtomicString& OrientationTypeToString(WebScreenOrientationType);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  ScreenOrientationControllerImpl* Controller();
+  ScreenOrientationController* Controller();
 
   WebScreenOrientationType type_;
   uint16_t angle_;

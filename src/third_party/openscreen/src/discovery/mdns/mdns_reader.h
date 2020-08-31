@@ -13,9 +13,12 @@
 namespace openscreen {
 namespace discovery {
 
+struct Config;
+
 class MdnsReader : public BigEndianReader {
  public:
-  using BigEndianReader::BigEndianReader;
+  MdnsReader(const Config& config, const uint8_t* buffer, size_t length);
+
   using BigEndianReader::Read;
 
   // The following methods return true if the method was able to successfully
@@ -30,6 +33,7 @@ class MdnsReader : public BigEndianReader {
   bool Read(AAAARecordRdata* out);
   bool Read(PtrRecordRdata* out);
   bool Read(TxtRecordRdata* out);
+  bool Read(NsecRecordRdata* out);
   // Reads a DNS resource record with its RDATA.
   // The correct type of RDATA to be read is determined by the type
   // specified in the record.
@@ -40,9 +44,17 @@ class MdnsReader : public BigEndianReader {
   bool Read(MdnsMessage* out);
 
  private:
+  struct NsecBitMapField {
+    uint8_t window_block;
+    uint8_t bitmap_length;
+    const uint8_t* bitmap;
+  };
+
   bool Read(IPAddress::Version version, IPAddress* out);
   bool Read(DnsType type, Rdata* out);
   bool Read(Header* out);
+  bool Read(std::vector<DnsType>* types, int remaining_length);
+  bool Read(NsecBitMapField* out);
 
   template <class ItemType>
   bool Read(uint16_t count, std::vector<ItemType>* out) {
@@ -68,6 +80,9 @@ class MdnsReader : public BigEndianReader {
     }
     return false;
   }
+
+  // Maximum allowed size for the rdata in any received record.
+  const size_t kMaximumAllowedRdataSize;
 };
 
 }  // namespace discovery

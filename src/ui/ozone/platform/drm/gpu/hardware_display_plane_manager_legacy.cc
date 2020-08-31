@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
@@ -42,7 +43,22 @@ HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy(
     DrmDevice* drm)
     : HardwareDisplayPlaneManager(drm) {}
 
-HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
+HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() =
+    default;
+
+bool HardwareDisplayPlaneManagerLegacy::Modeset(
+    uint32_t crtc_id,
+    uint32_t framebuffer_id,
+    uint32_t connector_id,
+    const drmModeModeInfo& mode,
+    const HardwareDisplayPlaneList&) {
+  return drm_->SetCrtc(crtc_id, framebuffer_id,
+                       std::vector<uint32_t>(1, connector_id), mode);
+}
+
+bool HardwareDisplayPlaneManagerLegacy::DisableModeset(uint32_t crtc_id,
+                                                       uint32_t connector) {
+  return drm_->DisableCrtc(crtc_id);
 }
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
@@ -121,10 +137,9 @@ bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
 void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
     DrmOverlayPlaneList planes,
     base::OnceCallback<void(DrmOverlayPlaneList planes)> callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WaitForPlaneFences, std::move(planes)),
       std::move(callback));
 }
@@ -178,8 +193,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     HardwareDisplayPlane* hw_plane,
     const DrmOverlayPlane& overlay,
     uint32_t crtc_id,
-    const gfx::Rect& src_rect,
-    CrtcController* crtc) {
+    const gfx::Rect& src_rect) {
   // Legacy modesetting rejects transforms.
   if (overlay.plane_transform != gfx::OVERLAY_TRANSFORM_NONE)
     return false;
@@ -188,7 +202,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
         HardwareDisplayPlaneList::PageFlipInfo(
-            crtc_id, overlay.buffer->opaque_framebuffer_id(), crtc));
+            crtc_id, overlay.buffer->opaque_framebuffer_id()));
   } else {
     return false;
   }

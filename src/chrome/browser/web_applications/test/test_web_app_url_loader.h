@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_WEB_APP_URL_LOADER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_WEB_APP_URL_LOADER_H_
 
+#include <map>
 #include <queue>
 
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
@@ -34,6 +35,9 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
                content::WebContents* web_contents,
                UrlComparison url_comparison,
                ResultCallback callback) override;
+
+  // Sets the result for the next about:blank load to be ok.
+  void SetAboutBlankResultLoaded();
 
  private:
   bool should_save_requests_ = false;

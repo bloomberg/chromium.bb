@@ -12,10 +12,21 @@ functionality that can eventually be centralized here.
 from __future__ import print_function
 
 import os
-
-from chromite.lib import osutils
+import sys
 
 from chromite.lib import constants
+from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
+class Error(Exception):
+  """Base chroot_lib error class."""
+
+
+class ChrootError(Error):
+  """An exception raised when something went wrong with a chroot object."""
 
 
 class Chroot(object):
@@ -31,17 +42,11 @@ class Chroot(object):
     self._path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
     self._is_default_path = not bool(path)
     self._env = env
-    self._goma = goma
+    self.goma = goma
     # String in proto are '' when not set, but testing and comparing is much
     # easier when the "unset" value is consistent, so do an explicit "or None".
     self.cache_dir = cache_dir or None
     self.chrome_root = chrome_root or None
-
-    if self._goma:
-      if not self._env:
-        self._env = {}
-      self._env.update(self._goma.GetChrootExtraEnv())
-      self._env['USE_GOMA'] = 'true'
 
   def __eq__(self, other):
     if self.__class__ is other.__class__:
@@ -71,6 +76,12 @@ class Chroot(object):
     """Get a TempDir in the chroot's tmp dir."""
     return osutils.TempDir(base_dir=self.tmp)
 
+  def chroot_path(self, path):
+    """Turn an absolute path into a chroot relative path."""
+    if not path.startswith(self.path + os.path.sep):
+      raise ChrootError('Path not in chroot: %s' % path)
+    return path[len(self.path):]
+
   def full_path(self, *args):
     """Turn a chroot-relative path into an absolute path."""
     return os.path.join(self.path, *[part.lstrip(os.sep) for part in args])
@@ -91,14 +102,18 @@ class Chroot(object):
       args.extend(['--cache-dir', self.cache_dir])
     if self.chrome_root:
       args.extend(['--chrome-root', self.chrome_root])
-    if self._goma:
+    if self.goma:
       args.extend([
-          '--goma_dir', self._goma.linux_goma_dir,
-          '--goma_client_json', self._goma.goma_client_json,
+          '--goma_dir', self.goma.linux_goma_dir,
+          '--goma_client_json', self.goma.goma_client_json,
       ])
 
     return args
 
   @property
   def env(self):
-    return self._env.copy() if self._env else {}
+    env = self._env.copy() if self._env else {}
+    if self.goma:
+      env.update(self.goma.GetChrootExtraEnv())
+
+    return env

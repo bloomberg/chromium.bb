@@ -25,8 +25,9 @@ class IPDFSDK_AnnotHandler {
   virtual void SetFormFillEnvironment(
       CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
   virtual bool CanAnswer(CPDFSDK_Annot* pAnnot) = 0;
-  virtual CPDFSDK_Annot* NewAnnot(CPDF_Annot* pAnnot,
-                                  CPDFSDK_PageView* pPage) = 0;
+  virtual std::unique_ptr<CPDFSDK_Annot> NewAnnot(
+      CPDF_Annot* pAnnot,
+      CPDFSDK_PageView* pPageView) = 0;
   virtual void ReleaseAnnot(std::unique_ptr<CPDFSDK_Annot> pAnnot) = 0;
   virtual CFX_FloatRect GetViewBBox(CPDFSDK_PageView* pPageView,
                                     CPDFSDK_Annot* pAnnot) = 0;
@@ -72,8 +73,8 @@ class IPDFSDK_AnnotHandler {
   virtual bool OnMouseWheel(CPDFSDK_PageView* pPageView,
                             ObservedPtr<CPDFSDK_Annot>* pAnnot,
                             uint32_t nFlags,
-                            short zDelta,
-                            const CFX_PointF& point) = 0;
+                            const CFX_PointF& point,
+                            const CFX_Vector& delta) = 0;
   virtual bool OnRButtonDown(CPDFSDK_PageView* pPageView,
                              ObservedPtr<CPDFSDK_Annot>* pAnnot,
                              uint32_t nFlags,

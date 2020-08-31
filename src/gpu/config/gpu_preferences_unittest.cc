@@ -46,7 +46,10 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.enable_gpu_driver_debug_logging);
   EXPECT_EQ(left.disable_gpu_program_cache, right.disable_gpu_program_cache);
   EXPECT_EQ(left.enforce_gl_minimums, right.enforce_gl_minimums);
-  EXPECT_EQ(left.force_gpu_mem_available, right.force_gpu_mem_available);
+  EXPECT_EQ(left.force_gpu_mem_available_bytes,
+            right.force_gpu_mem_available_bytes);
+  EXPECT_EQ(left.force_gpu_mem_discardable_limit_bytes,
+            right.force_gpu_mem_discardable_limit_bytes);
   EXPECT_EQ(left.gpu_program_cache_size, right.gpu_program_cache_size);
   EXPECT_EQ(left.disable_gpu_shader_disk_cache,
             right.disable_gpu_shader_disk_cache);
@@ -72,11 +75,19 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.enable_gpu_benchmarking_extension,
             right.enable_gpu_benchmarking_extension);
   EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
+  EXPECT_EQ(left.enable_dawn_backend_validation,
+            right.enable_dawn_backend_validation);
   EXPECT_EQ(left.enable_gpu_blocked_time_metric,
             right.enable_gpu_blocked_time_metric);
+  EXPECT_EQ(left.enable_perf_data_collection,
+            right.enable_perf_data_collection);
 #if defined(USE_OZONE)
   EXPECT_EQ(left.message_pump_type, right.message_pump_type);
 #endif
+  EXPECT_EQ(left.enable_native_gpu_memory_buffers,
+            right.enable_native_gpu_memory_buffers);
+  EXPECT_EQ(left.force_disable_new_accelerated_video_decoder,
+            right.force_disable_new_accelerated_video_decoder);
 }
 
 }  // namespace
@@ -138,7 +149,8 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_gpu_driver_debug_logging, true)
     GPU_PREFERENCES_FIELD(disable_gpu_program_cache, true)
     GPU_PREFERENCES_FIELD(enforce_gl_minimums, true)
-    GPU_PREFERENCES_FIELD(force_gpu_mem_available, 4096)
+    GPU_PREFERENCES_FIELD(force_gpu_mem_available_bytes, 4096)
+    GPU_PREFERENCES_FIELD(force_gpu_mem_discardable_limit_bytes, 8092)
     GPU_PREFERENCES_FIELD(gpu_program_cache_size,
                           kDefaultMaxProgramCacheMemoryBytes - 1)
     GPU_PREFERENCES_FIELD(disable_gpu_shader_disk_cache, true)
@@ -161,11 +173,15 @@ TEST(GpuPreferencesTest, EncodeDecode) {
                                mojom::VulkanImplementationName::kNative)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
     GPU_PREFERENCES_FIELD(enable_webgpu, true)
+    GPU_PREFERENCES_FIELD(enable_dawn_backend_validation, true)
     GPU_PREFERENCES_FIELD(enable_gpu_blocked_time_metric, true)
+    GPU_PREFERENCES_FIELD(enable_perf_data_collection, true)
 #if defined(USE_OZONE)
     GPU_PREFERENCES_FIELD_ENUM(message_pump_type, base::MessagePumpType::UI,
                                base::MessagePumpType::UI)
 #endif
+    GPU_PREFERENCES_FIELD(enable_native_gpu_memory_buffers, true);
+    GPU_PREFERENCES_FIELD(force_disable_new_accelerated_video_decoder, true);
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

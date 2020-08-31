@@ -58,9 +58,9 @@ class CipdBootstrapTest(unittest.TestCase):
       cipd_version: if not None, a value to put into cipd_client_version file.
     """
     names = (
+      '.cipd_impl.ps1',
       'cipd',
       'cipd.bat',
-      'cipd.ps1',
       'cipd_client_version',
       'cipd_client_version.digests',
     )

@@ -77,7 +77,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
@@ -308,6 +308,14 @@ void SincResampler::Flush() {
   memset(input_buffer_.get(), 0,
          sizeof(*input_buffer_.get()) * input_buffer_size_);
   UpdateRegions(false);
+}
+
+int SincResampler::GetMaxInputFramesRequested(
+    int output_frames_requested) const {
+  const int num_chunks = static_cast<int>(
+      std::ceil(static_cast<float>(output_frames_requested) / chunk_size_));
+
+  return num_chunks * request_frames_;
 }
 
 double SincResampler::BufferedFrames() const {

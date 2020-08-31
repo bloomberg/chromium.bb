@@ -5,7 +5,6 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_
 
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -84,9 +83,12 @@ class WebView {
   // the result. |frame| is a frame ID or an empty string for the main frame.
   // If the expression evaluates to a element, it will be bound to a unique ID
   // (per frame) and the ID will be returned.
+  // |awaitPromise| controls awaitPromise parameter for Command
+  // send to devtools backend
   // |result| will never be NULL on success.
   virtual Status EvaluateScript(const std::string& frame,
                                 const std::string& expression,
+                                const bool awaitPromise,
                                 std::unique_ptr<base::Value>* result) = 0;
 
   // Calls a JavaScript function in a specified frame with the given args and
@@ -141,7 +143,7 @@ class WebView {
                                     std::string* out_frame) = 0;
 
   // Dispatch a sequence of mouse events.
-  virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events,
+  virtual Status DispatchMouseEvents(const std::vector<MouseEvent>& events,
                                      const std::string& frame,
                                      bool async_dispatch_events) = 0;
 
@@ -150,15 +152,15 @@ class WebView {
                                     bool async_dispatch_events) = 0;
 
   // Dispatch a sequence of touch events.
-  virtual Status DispatchTouchEvents(const std::list<TouchEvent>& events,
+  virtual Status DispatchTouchEvents(const std::vector<TouchEvent>& events,
                                      bool async_dispatch_events) = 0;
 
   // Dispatch a single touch event with more than one touch point.
   virtual Status DispatchTouchEventWithMultiPoints(
-      const std::list<TouchEvent>& events,
+      const std::vector<TouchEvent>& events,
       bool async_dispatch_events) = 0;
   // Dispatch a sequence of key events.
-  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events,
+  virtual Status DispatchKeyEvents(const std::vector<KeyEvent>& events,
                                    bool async_dispatch_events) = 0;
 
   // Return all the cookies visible to the current page.

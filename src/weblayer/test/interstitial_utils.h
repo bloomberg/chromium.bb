@@ -20,6 +20,13 @@ bool IsShowingSecurityInterstitial(Tab* tab);
 // |tab|.
 bool IsShowingSSLInterstitial(Tab* tab);
 
+// Returns true iff a captive portal interstitial is currently displaying in
+// |tab|.
+bool IsShowingCaptivePortalInterstitial(Tab* tab);
+
+// Returns true iff a bad clock interstitial is currently displaying in |tab|.
+bool IsShowingBadClockInterstitial(Tab* tab);
+
 }  // namespace weblayer
 
 #endif  // WEBLAYER_TEST_INTERSTITIAL_UTILS_H_

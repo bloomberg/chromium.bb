@@ -11,6 +11,7 @@ from telemetry.core import platform as platform_module
 from telemetry.internal.backends.chrome import gpu_compositing_checker
 from telemetry.internal.browser import browser_info as browser_info_module
 from telemetry.internal.browser import browser_interval_profiling_controller
+from telemetry.internal.platform.tracing_agent import perfetto_tracing_agent
 from telemetry.page import cache_temperature
 from telemetry.page import legacy_page_test
 from telemetry.page import traffic_setting
@@ -73,6 +74,11 @@ class SharedPageState(story_module.SharedState):
         finder_options.full_performance_mode)
     self.platform.network_controller.Open(self.wpr_mode)
     self.platform.Initialize()
+    self._video_recording_enabled = (self._finder_options.capture_screen_video
+                                     and self.platform.CanRecordVideo())
+    if finder_options.experimental_system_tracing:
+      perfetto_tracing_agent.PerfettoTracingAgent.SetUpAgent(
+          self.platform._platform_backend)
 
   @property
   def interval_profiling_controller(self):
@@ -120,6 +126,9 @@ class SharedPageState(story_module.SharedState):
     finally:
       self._current_page = None
       self._current_tab = None
+      if self._video_recording_enabled:
+        with results.CaptureArtifact('recording.mp4') as video_path:
+          self.platform.StopVideoRecording(video_path)
 
   def ShouldReuseBrowserForAllStoryRuns(self):
     """Whether a single browser instance should be reused to run all stories.
@@ -193,6 +202,8 @@ class SharedPageState(story_module.SharedState):
         archive_path, page.make_javascript_deterministic, self._extra_wpr_args)
 
     reusing_browser = self.browser is not None
+    if self._video_recording_enabled:
+      self.platform.StartVideoRecording()
     if not reusing_browser:
       self._StartBrowser(page)
 
@@ -261,8 +272,9 @@ class SharedPageState(story_module.SharedState):
     self._current_tab = self._GetCurrentTab()
     if self._current_page.is_file:
       self.platform.SetHTTPServerDirectories(
-          self._current_page.story_set.serving_dirs |
-          set([self._current_page.serving_dir]))
+          self._current_page.story_set.serving_dirs
+          | set([self._current_page.serving_dir]),
+          self._current_page.story_set.request_handler_class)
 
   @property
   def current_page(self):

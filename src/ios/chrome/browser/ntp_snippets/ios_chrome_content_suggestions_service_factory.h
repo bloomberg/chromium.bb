@@ -11,21 +11,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace ios {
 class ChromeBrowserState;
-}  // namespace ios
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
 }  // namespace ntp_snippets
 
 // A factory to create a ContentSuggestionsService and associate it to
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class IOSChromeContentSuggestionsServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static ntp_snippets::ContentSuggestionsService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSChromeContentSuggestionsServiceFactory* GetInstance();
 

@@ -108,7 +108,11 @@ class TextPaintTimingDetectorTest : public testing::Test {
   }
 
   void SimulateScroll() {
-    GetPaintTimingDetector().NotifyScroll(ScrollType::kUserScroll);
+    GetPaintTimingDetector().NotifyScroll(mojom::blink::ScrollType::kUser);
+  }
+
+  void SimulateKeyUp() {
+    GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kKeyUp);
   }
 
   void InvokeCallback() {
@@ -145,8 +149,7 @@ class TextPaintTimingDetectorTest : public testing::Test {
 
   void SetChildBodyInnerHTML(const String& content) {
     GetChildDocument()->SetBaseURLOverride(KURL("http://test.com"));
-    GetChildDocument()->body()->SetInnerHTMLFromString(content,
-                                                       ASSERT_NO_EXCEPTION);
+    GetChildDocument()->body()->setInnerHTML(content, ASSERT_NO_EXCEPTION);
     child_frame_mock_callback_manager_ =
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
     GetChildFrameTextPaintTimingDetector()->ResetCallbackManager(
@@ -155,8 +158,7 @@ class TextPaintTimingDetectorTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
   // This only triggers ReportSwapTime in main frame.
@@ -235,6 +237,25 @@ class TextPaintTimingDetectorTest : public testing::Test {
   Persistent<MockPaintTimingCallbackManager> mock_callback_manager_;
   Persistent<MockPaintTimingCallbackManager> child_frame_mock_callback_manager_;
 };
+
+// Helper class to run the same test code with and without LayoutNG
+class ParameterizedTextPaintTimingDetectorTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      public TextPaintTimingDetectorTest {
+ public:
+  ParameterizedTextPaintTimingDetectorTest()
+      : ScopedLayoutNGForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedTextPaintTimingDetectorTest,
+                         testing::Bool());
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_NoText) {
   SetBodyInnerHTML(R"HTML(
@@ -422,8 +443,7 @@ TEST_F(TextPaintTimingDetectorTest, PendingTextIsLargest) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
   AppendDivElementToBody("text");
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   // We do not call swap-time callback here in order to not set the paint time.
   EXPECT_FALSE(TextRecordOfLargestTextPaint());
 }
@@ -434,12 +454,10 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
   Element* text = AppendDivElementToBody("text");
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   // Change a property of the text to trigger repaint.
   text->setAttribute(html_names::kStyleAttr, AtomicString("color:red;"));
-  GetFrameView().UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   InvokeCallback();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::ExistingIdForNode(text));
@@ -544,6 +562,17 @@ TEST_F(TextPaintTimingDetectorTest,
   EXPECT_FALSE(GetLargestTextPaintManager());
 }
 
+TEST_F(TextPaintTimingDetectorTest, KeepLargestTextPaintMangerAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateKeyUp();
+  EXPECT_TRUE(GetLargestTextPaintManager());
+}
+
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
@@ -607,7 +636,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureFileUploadController) {
             DOMNodeIds::ExistingIdForNode(element));
 }
 
-TEST_F(TextPaintTimingDetectorTest, CapturingListMarkers) {
+TEST_P(ParameterizedTextPaintTimingDetectorTest, CapturingListMarkers) {
   SetBodyInnerHTML(R"HTML(
     <ul>
       <li>List item</li>
@@ -618,7 +647,7 @@ TEST_F(TextPaintTimingDetectorTest, CapturingListMarkers) {
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(CountVisibleTexts(), 2u);
+  EXPECT_EQ(CountVisibleTexts(), LayoutNGEnabled() ? 3u : 2u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {

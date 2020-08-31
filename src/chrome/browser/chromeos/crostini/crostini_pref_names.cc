@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -19,7 +20,6 @@ namespace prefs {
 // Crostini (Called "Linux Apps" in UI).
 const char kCrostiniEnabled[] = "crostini.enabled";
 const char kCrostiniMimeTypes[] = "crostini.mime_types";
-const char kCrostiniRegistry[] = "crostini.registry";
 // List of USB devices with their system guid, a name/description and their
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
@@ -28,6 +28,7 @@ const char kCrostiniContainers[] = "crostini.containers";
 const char kCrostiniTerminalSettings[] = "crostini.terminal_settings";
 const char kVmKey[] = "vm_name";
 const char kContainerKey[] = "container_name";
+const char kContainerOsVersionKey[] = "container_os_version";
 
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.
@@ -48,9 +49,13 @@ const char kUserCrostiniRootAccessAllowedByPolicy[] =
 // A file path preference representing a user level enterprise policy that
 // specifies Ansible playbook to be applied to the default Crostini container.
 // Value is empty when there is no playbook to be applied specified though
-// policy or playbook specified has already been applied successfully.
+// policy.
 const char kCrostiniAnsiblePlaybookFilePath[] =
     "crostini.ansible_playbook_file_path";
+// A boolean preference representing whether default Crostini container is
+// successfully configured by kCrostiniAnsiblePlaybook user policy.
+const char kCrostiniDefaultContainerConfigured[] =
+    "crostini.default_container_configured";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -67,11 +72,19 @@ const char kCrostiniLastLaunchTimeWindowStart[] =
     "crostini.last_launch.time_window_start";
 // The value of the last sample of the disk space used by Crostini.
 const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
+// A dictionary preference representing a user's settings of forwarded ports
+// to Crostini.
+const char kCrostiniPortForwarding[] = "crostini.port_forwarding.ports";
+
+// An integer preference indicating the allowance policy for ADB sideloading,
+// with 0 meaning disallowed and 1 meaning allowed
+const char kCrostiniArcAdbSideloadingUserPref[] =
+    "crostini.arc_adb_sideloading.user_pref";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
-  registry->RegisterDictionaryPref(kCrostiniRegistry);
+  registry->RegisterListPref(kCrostiniPortForwarding);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
 
   // Set a default value for crostini.containers to ensure that we track the
@@ -103,9 +116,14 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
   registry->RegisterFilePathPref(kCrostiniAnsiblePlaybookFilePath,
                                  base::FilePath());
+  registry->RegisterBooleanPref(kCrostiniDefaultContainerConfigured, false);
   registry->RegisterDictionaryPref(
       kCrostiniTerminalSettings, base::DictionaryValue(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // TODO(https://crbug.com/1067577, janagrill): Replace hardcoded 0 with a
+  // constant
+  registry->RegisterIntegerPref(kCrostiniArcAdbSideloadingUserPref, 0);
 }
 
 }  // namespace prefs

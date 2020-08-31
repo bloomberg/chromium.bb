@@ -4,12 +4,17 @@
 
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 
+#include <string>
+
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/assistant/assistant_web_view_factory.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "base/base64.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
+#include "ui/views/background.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -17,13 +22,24 @@
 
 namespace ash {
 
+namespace {
+
+using chromeos::assistant::features::
+    GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius;
+using chromeos::assistant::features::
+    GetProactiveSuggestionsRichEntryPointCornerRadius;
+
+}  // namespace
+
+// ProactiveSuggestionsRichView ------------------------------------------------
+
 ProactiveSuggestionsRichView::ProactiveSuggestionsRichView(
     AssistantViewDelegate* delegate)
     : ProactiveSuggestionsView(delegate) {}
 
 ProactiveSuggestionsRichView::~ProactiveSuggestionsRichView() {
-  if (contents_)
-    contents_->RemoveObserver(this);
+  if (ContentsView())
+    ContentsView()->RemoveObserver(this);
 }
 
 const char* ProactiveSuggestionsRichView::GetClassName() const {
@@ -37,24 +53,21 @@ void ProactiveSuggestionsRichView::InitLayout() {
   view_shadow_ =
       std::make_unique<ViewShadow>(this, wm::kShadowElevationActiveWindow);
   view_shadow_->SetRoundedCornerRadius(
-      chromeos::assistant::features::
-          GetProactiveSuggestionsRichEntryPointCornerRadius());
+      GetProactiveSuggestionsRichEntryPointCornerRadius());
 
-  // Initialize NavigableContentsFactory.
-  delegate()->GetNavigableContentsFactoryForView(
-      contents_factory_.BindNewPipeAndPassReceiver());
+  // Initialize |contents_view_| params.
+  AssistantWebView::InitParams params;
+  params.enable_auto_resize = true;
+  params.min_size = gfx::Size(1, 1);
+  params.max_size = gfx::Size(INT_MAX, INT_MAX);
+  params.suppress_navigation = true;
 
-  // Initialize NavigableContentsParams.
-  auto params = content::mojom::NavigableContentsParams::New();
-  params->enable_view_auto_resize = true;
-  params->auto_resize_min_size = gfx::Size(1, 1);
-  params->auto_resize_max_size = gfx::Size(INT_MAX, INT_MAX);
-  params->suppress_navigations = true;
-
-  // Initialize NavigableContents.
-  contents_ = std::make_unique<content::NavigableContents>(
-      contents_factory_.get(), std::move(params));
-  contents_->AddObserver(this);
+  // Initialize |contents_view_|.
+  // Note that we retain ownership of the underlying pointer until it is
+  // inserted into the view hierarchy so that it is cleaned up in the event that
+  // the view isn't inserted.
+  contents_view_ = AssistantWebViewFactory::Get()->Create(params);
+  ContentsView()->AddObserver(this);
 
   // Encode the html for the entry point to be URL safe.
   std::string encoded_html;
@@ -63,7 +76,7 @@ void ProactiveSuggestionsRichView::InitLayout() {
 
   // Navigate to the data URL representing our encoded HTML.
   constexpr char kDataUriPrefix[] = "data:text/html;base64,";
-  contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
+  ContentsView()->Navigate(GURL(kDataUriPrefix + encoded_html));
 }
 
 void ProactiveSuggestionsRichView::AddedToWidget() {
@@ -72,7 +85,12 @@ void ProactiveSuggestionsRichView::AddedToWidget() {
   event_monitor_ = views::EventMonitor::CreateWindowMonitor(
       this, GetWidget()->GetNativeWindow(),
       {ui::ET_GESTURE_TAP, ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_TAP_DOWN,
-       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED});
+       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED});
+}
+
+void ProactiveSuggestionsRichView::ChildPreferredSizeChanged(
+    views::View* child) {
+  PreferredSizeChanged();
 }
 
 void ProactiveSuggestionsRichView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -133,22 +151,25 @@ void ProactiveSuggestionsRichView::Close() {
   ProactiveSuggestionsView::Close();
 }
 
-void ProactiveSuggestionsRichView::DidAutoResizeView(
-    const gfx::Size& new_size) {
-  contents_->GetView()->view()->SetPreferredSize(new_size);
-  PreferredSizeChanged();
-}
-
 void ProactiveSuggestionsRichView::DidStopLoading() {
-  AddChildView(contents_->GetView()->view());
+  contents_view_ptr_ = AddChildView(std::move(contents_view_));
   PreferredSizeChanged();
 
   // Once the view for the embedded web contents has been fully initialized,
   // it's safe to set our desired corner radius.
-  contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
+  ContentsView()->GetNativeView()->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(
-          chromeos::assistant::features::
-              GetProactiveSuggestionsRichEntryPointCornerRadius()));
+          GetProactiveSuggestionsRichEntryPointCornerRadius()));
+
+  // If specified, we also blur background to increase readability of this view
+  // which semi-transparently sits atop other content. This also serves to help
+  // us blend more with other system UI (e.g. quick settings).
+  const int background_blur_radius =
+      GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius();
+  if (background_blur_radius > 0) {
+    ContentsView()->GetNativeView()->layer()->SetBackgroundBlur(
+        background_blur_radius);
+  }
 
   // This view should now be fully initialized, so it's safe to show without
   // risk of introducing UI jank if we so desire.
@@ -161,7 +182,11 @@ void ProactiveSuggestionsRichView::DidSuppressNavigation(
     WindowOpenDisposition disposition,
     bool from_user_gesture) {
   if (from_user_gesture)
-    delegate()->OpenUrlFromView(url);
+    AssistantController::Get()->OpenUrl(url);
+}
+
+AssistantWebView* ProactiveSuggestionsRichView::ContentsView() {
+  return contents_view_ptr_ ? contents_view_ptr_ : contents_view_.get();
 }
 
 }  // namespace ash

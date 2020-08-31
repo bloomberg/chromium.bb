@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
-#define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_
+#define STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_
 
 #include <stdint.h>
 
@@ -13,21 +13,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_task.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::StorageType;
-using storage::GetOriginsCallback;
-using storage::QuotaClient;
-using storage::QuotaManager;
-using storage::SpecialStoragePolicy;
-using storage::StatusCallback;
 
-namespace content {
+namespace storage {
 
 // Mocks the pieces of QuotaManager's interface.
 //
@@ -52,38 +49,41 @@ class MockQuotaManager : public QuotaManager {
   // called.  The internal quota value can be updated by calling
   // a helper method MockQuotaManagerProxy::SetQuota().
   void GetUsageAndQuota(const url::Origin& origin,
-                        StorageType type,
+                        blink::mojom::StorageType type,
                         UsageAndQuotaCallback callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
-  void GetOriginsModifiedSince(StorageType type,
+  void GetOriginsModifiedSince(blink::mojom::StorageType type,
                                base::Time modified_since,
                                GetOriginsCallback callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
-  // anything on disk. The caller must provide |quota_client_mask| which
+  // anything on disk. The caller must provide |quota_client_types| which
   // specifies the types of QuotaClients which should be removed from this
-  // origin as a bitmask built from QuotaClient::IDs. Setting the mask to
-  // QuotaClient::kAllClientsMask will remove all clients from the origin,
-  // regardless of type.
+  // origin. Setting the mask to AllQuotaClientTypes() will remove all clients
+  // from the origin, regardless of type.
   void DeleteOriginData(const url::Origin& origin,
-                        StorageType type,
-                        int quota_client_mask,
+                        blink::mojom::StorageType type,
+                        QuotaClientTypes quota_client_types,
                         StatusCallback callback) override;
+
+  // Overrides QuotaManager's implementation so that tests can observe
+  // calls to this function.
+  void NotifyWriteFailed(const url::Origin& origin) override;
 
   // Helper method for updating internal quota info.
   void SetQuota(const url::Origin& origin, StorageType type, int64_t quota);
 
   // Helper methods for timed-deletion testing:
   // Adds an origin to the canned list that will be searched through via
-  // GetOriginsModifiedSince. The caller must provide |quota_client_mask|
-  // which specifies the types of QuotaClients this canned origin contains
-  // as a bitmask built from QuotaClient::IDs.
+  // GetOriginsModifiedSince.
+  // |quota_clients| specified the types of QuotaClients this canned origin
+  // contains.
   bool AddOrigin(const url::Origin& origin,
                  StorageType type,
-                 int quota_client_mask,
+                 QuotaClientTypes quota_client_types,
                  base::Time modified);
 
   // Helper methods for timed-deletion testing:
@@ -92,7 +92,11 @@ class MockQuotaManager : public QuotaManager {
   // canned list with the proper StorageType and client, returns true.
   bool OriginHasData(const url::Origin& origin,
                      StorageType type,
-                     QuotaClient::ID quota_client) const;
+                     QuotaClientType quota_client_type) const;
+
+  std::map<const url::Origin, int> write_error_tracker() const {
+    return write_error_tracker_;
+  }
 
  protected:
   ~MockQuotaManager() override;
@@ -106,13 +110,19 @@ class MockQuotaManager : public QuotaManager {
   struct OriginInfo {
     OriginInfo(const url::Origin& origin,
                StorageType type,
-               int quota_client_mask,
+               QuotaClientTypes quota_clients,
                base::Time modified);
     ~OriginInfo();
 
+    OriginInfo(const OriginInfo&) = delete;
+    OriginInfo& operator=(const OriginInfo&) = delete;
+
+    OriginInfo(OriginInfo&&);
+    OriginInfo& operator=(OriginInfo&&);
+
     url::Origin origin;
     StorageType type;
-    int quota_client_mask;
+    QuotaClientTypes quota_client_types;
     base::Time modified;
   };
 
@@ -140,11 +150,15 @@ class MockQuotaManager : public QuotaManager {
   std::vector<OriginInfo> origins_;
   std::map<std::pair<url::Origin, StorageType>, StorageInfo>
       usage_and_quota_map_;
+
+  // Tracks number of times NotifyFailedWrite has been called per origin.
+  std::map<const url::Origin, int> write_error_tracker_;
+
   base::WeakPtrFactory<MockQuotaManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
 };
 
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_

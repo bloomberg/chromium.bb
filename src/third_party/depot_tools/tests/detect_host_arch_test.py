@@ -8,10 +8,14 @@ import platform
 import sys
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import detect_host_arch
-from third_party import mock
 
 
 class DetectHostArchTest(unittest.TestCase):

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -19,6 +20,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
 #include "base/lazy_instance.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -547,7 +549,8 @@ bool IsLocaleNameTranslated(const char* locale,
 
 base::string16 GetDisplayNameForLocale(const std::string& locale,
                                        const std::string& display_locale,
-                                       bool is_for_ui) {
+                                       bool is_for_ui,
+                                       bool disallow_default) {
   std::string locale_code = locale;
   // Internally, we use the language code of zh-CN and zh-TW, but we want the
   // display names to be Chinese (Simplified) and Chinese (Traditional) instead
@@ -594,6 +597,8 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
           locale_code.c_str(), display_locale.c_str(),
           base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
     }
+    if (disallow_default && U_USING_DEFAULT_WARNING == error)
+      return base::string16();
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }
@@ -881,6 +886,12 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
       // enclosed by brackets instead of skipping.
       continue;
     }
+    locale_codes->push_back(accept_language);
+  }
+}
+
+void GetAcceptLanguages(std::vector<std::string>* locale_codes) {
+  for (const char* accept_language : kAcceptLanguageList) {
     locale_codes->push_back(accept_language);
   }
 }

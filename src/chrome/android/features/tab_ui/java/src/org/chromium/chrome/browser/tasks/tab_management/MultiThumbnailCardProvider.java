@@ -21,11 +21,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -54,14 +54,14 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final List<Rect> mFaviconRects = new ArrayList<>(4);
     private final List<RectF> mThumbnailRects = new ArrayList<>(4);
     private final List<RectF> mFaviconBackgroundRects = new ArrayList<>(4);
-    private final TabListFaviconProvider mTabListFaviconProvider;
+    private TabListFaviconProvider mTabListFaviconProvider;
 
     private class MultiThumbnailFetcher {
-        private final Tab mInitialTab;
+        private final PseudoTab mInitialTab;
         private final Callback<Bitmap> mFinalCallback;
         private final boolean mForceUpdate;
         private final boolean mWriteToCache;
-        private final List<Tab> mTabs = new ArrayList<>(4);
+        private final List<PseudoTab> mTabs = new ArrayList<>(4);
         private final AtomicInteger mThumbnailsToFetch = new AtomicInteger();
 
         private Canvas mCanvas;
@@ -71,15 +71,15 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         /**
          * @see TabContentManager#getTabThumbnailWithCallback
          */
-        MultiThumbnailFetcher(Tab initialTab, Callback<Bitmap> finalCallback, boolean forceUpdate,
-                boolean writeToCache) {
+        MultiThumbnailFetcher(PseudoTab initialTab, Callback<Bitmap> finalCallback,
+                boolean forceUpdate, boolean writeToCache) {
             mFinalCallback = finalCallback;
             mInitialTab = initialTab;
             mForceUpdate = forceUpdate;
             mWriteToCache = writeToCache;
         }
 
-        private void initializeAndStartFetching(Tab tab) {
+        private void initializeAndStartFetching(PseudoTab tab) {
             // Initialize mMultiThumbnailBitmap.
             int width = mSize;
             int height = mSize;
@@ -88,10 +88,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             mCanvas.drawColor(Color.TRANSPARENT);
 
             // Initialize Tabs.
-            List<Tab> relatedTabList = new ArrayList<>();
-            relatedTabList.addAll(mTabModelSelector.getTabModelFilterProvider()
-                                          .getCurrentTabModelFilter()
-                                          .getRelatedTabList(tab.getId()));
+            List<PseudoTab> relatedTabList =
+                    PseudoTab.getRelatedTabs(tab, mTabModelSelector.getTabModelFilterProvider());
             if (relatedTabList.size() <= 4) {
                 mThumbnailsToFetch.set(relatedTabList.size());
 
@@ -124,18 +122,19 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                     // Fetching the favicon after getting the live thumbnail would lead to
                     // visible flicker.
                     final AtomicReference<Drawable> lastFavicon = new AtomicReference<>();
-                    mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), thumbnail -> {
-                        drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
-                        if (lastFavicon.get() != null) {
-                            drawFaviconThenMaybeSendBack(lastFavicon.get(), index);
-                        } else {
-                            mTabListFaviconProvider.getFaviconForUrlAsync(
-                                    url, isIncognito, (Drawable favicon) -> {
-                                        lastFavicon.set(favicon);
-                                        drawFaviconThenMaybeSendBack(favicon, index);
-                                    });
-                        }
-                    }, mForceUpdate && i == 0, mWriteToCache && i == 0);
+                    mTabContentManager.getTabThumbnailWithCallback(
+                            mTabs.get(i).getId(), thumbnail -> {
+                                drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
+                                if (lastFavicon.get() != null) {
+                                    drawFaviconThenMaybeSendBack(lastFavicon.get(), index);
+                                } else {
+                                    mTabListFaviconProvider.getFaviconForUrlAsync(
+                                            url, isIncognito, (Drawable favicon) -> {
+                                                lastFavicon.set(favicon);
+                                                drawFaviconThenMaybeSendBack(favicon, index);
+                                            });
+                                }
+                            }, mForceUpdate && i == 0, mWriteToCache && i == 0);
                 } else {
                     drawThumbnailBitmapOnCanvasWithFrame(null, i);
                     if (mText != null && i == 3) {
@@ -204,7 +203,10 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mSize = (int) resource.getDimension(R.dimen.tab_grid_thumbnail_card_default_size);
         mFaviconCirclePadding =
                 resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_padding);
-        mTabListFaviconProvider = new TabListFaviconProvider(context, Profile.getLastUsedProfile());
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        mTabListFaviconProvider = new TabListFaviconProvider(context, false);
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
@@ -218,7 +220,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mThumbnailFramePaint.setStrokeWidth(
                 resource.getDimension(R.dimen.tab_list_mini_card_frame_size));
         mThumbnailFramePaint.setColor(
-                ApiCompatibilityUtils.getColor(resource, R.color.divider_bg_color));
+                ApiCompatibilityUtils.getColor(resource, R.color.divider_line_bg_color));
         mThumbnailFramePaint.setAntiAlias(true);
 
         // TODO(996048): Use pre-defined styles to avoid style out of sync if any text/color styles
@@ -289,6 +291,10 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
     }
 
+    public void initWithNative() {
+        mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+    }
+
     /**
      * Destroy any member that needs clean up.
      */
@@ -298,14 +304,14 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
     @Override
     public void getTabThumbnailWithCallback(
-            Tab tab, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
-        if (mTabModelSelector.getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()
-                        .getRelatedTabList(tab.getId())
-                        .size()
-                == 1) {
+            int tabId, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
+        PseudoTab tab = PseudoTab.fromTabId(tabId);
+        if (tab == null
+                || PseudoTab.getRelatedTabs(tab, mTabModelSelector.getTabModelFilterProvider())
+                                .size()
+                        == 1) {
             mTabContentManager.getTabThumbnailWithCallback(
-                    tab, finalCallback, forceUpdate, writeToCache);
+                    tabId, finalCallback, forceUpdate, writeToCache);
             return;
         }
 

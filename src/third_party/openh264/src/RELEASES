@@ -1,6 +1,24 @@
 
 Releases
 -----------
+v2.1.0
+------
+- Experimentally support for multi-thread decoding(default disabled,and may result in random problems if enabled)
+- Assembly optimization for loongson platform
+- Update meson version to 5
+- Some minor bug fixes
+
+v2.0.0
+------
+- B-frame decoding support for Main and High Profile with two test cases
+- Add support for loongson(https://en.wikipedia.org/wiki/Loongson) platform
+- Add clang support for arm/arm64/x86 for NDK version over 17
+- Enable stack protector
+- Add some test cases
+- Avoid using C++/CX code for threads for Windows Phone/Windows Store/UWP
+- Remove extra visual studio projects for the decoder
+- Remove check for working compiler in NDK
+- Bug fixes
 
 v1.8.0
 ------
@@ -179,6 +197,37 @@ Binaries
 -----------
 These binary releases are distributed under this license:
 http://www.openh264.org/BINARY_LICENSE.txt
+
+v2.1.0
+http://ciscobinary.openh264.org/libopenh264-2.1.0-android-arm.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-android-arm.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-android-arm64.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-android-arm64.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-ios.a.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-ios.a.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-linux32.5.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-linux32.5.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-linux64.5.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-linux64.5.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-osx32.5.dylib.bz2
+http://ciscobinary.openh264.org/libopenh264-2.1.0-osx64.5.dylib.bz2
+http://ciscobinary.openh264.org/openh264-2.1.0-win32.dll.bz2
+http://ciscobinary.openh264.org/openh264-2.1.0-win64.dll.bz2
+
+v2.0.0
+------
+http://ciscobinary.openh264.org/libopenh264-2.0.0-android.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-android.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-ios.a.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-ios.a.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-linux32.5.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-linux32.5.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-linux64.5.so.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-linux64.5.so.sig.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-osx32.5.dylib.bz2
+http://ciscobinary.openh264.org/libopenh264-2.0.0-osx64.5.dylib.bz2
+http://ciscobinary.openh264.org/openh264-2.0.0-win32.dll.bz2
+http://ciscobinary.openh264.org/openh264-2.0.0-win64.dll.bz2
 
 v1.8.0
 ------

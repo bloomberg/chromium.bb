@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
-#include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -34,15 +33,16 @@ namespace blink {
 void ModuleTreeLinker::Fetch(
     const KURL& url,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType destination,
+    mojom::RequestContextType context_type,
+    network::mojom::RequestDestination destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object_fetcher, destination, modulator,
-      custom_fetch_type, registry, client);
+      fetch_client_settings_object_fetcher, context_type, destination,
+      modulator, custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
@@ -51,15 +51,16 @@ void ModuleTreeLinker::Fetch(
 void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType destination,
+    mojom::RequestContextType context_type,
+    network::mojom::RequestDestination destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   DCHECK(module_script);
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object_fetcher, destination, modulator,
-      custom_fetch_type, registry, client);
+      fetch_client_settings_object_fetcher, context_type, destination,
+      modulator, custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRootInline(module_script);
   DCHECK(fetcher->IsFetching());
@@ -67,13 +68,15 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
 
 ModuleTreeLinker::ModuleTreeLinker(
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::RequestContextType destination,
+    mojom::RequestContextType context_type,
+    network::mojom::RequestDestination destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client)
     : fetch_client_settings_object_fetcher_(
           fetch_client_settings_object_fetcher),
+      context_type_(context_type),
       destination_(destination),
       modulator_(modulator),
       custom_fetch_type_(custom_fetch_type),
@@ -84,7 +87,7 @@ ModuleTreeLinker::ModuleTreeLinker(
   CHECK(client);
 }
 
-void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
+void ModuleTreeLinker::Trace(Visitor* visitor) {
   visitor->Trace(fetch_client_settings_object_fetcher_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
@@ -177,12 +180,6 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   AdvanceState(State::kFetchingSelf);
 
   KURL url = original_url;
-  // <spec
-  // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
-  // step="1">Set url to the layered API fetching URL given url and the current
-  // settings object's API base URL.</spec>
-  if (modulator_->BuiltInModuleInfraEnabled())
-    url = blink::layered_api::ResolveFetchingURL(*modulator_, url);
 
 #if DCHECK_IS_ON()
   url_ = url;
@@ -229,7 +226,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // module script given url, fetch client settings object, destination,
   // options, module map settings object, "client", and with the top-level
   // module fetch flag set. ...</spec>
-  ModuleScriptFetchRequest request(url, destination_, options,
+  ModuleScriptFetchRequest request(url, context_type_, destination_, options,
                                    Referrer::ClientReferrerString(),
                                    TextPosition::MinimumPosition());
   ++num_incomplete_fetches_;
@@ -448,9 +445,9 @@ void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
     // procedure given url, fetch client settings object, destination, options,
     // module script's settings object, visited set, and module script's base
     // URL. ...</spec>
-    ModuleScriptFetchRequest request(urls[i], destination_, options,
-                                     module_script->BaseURL().GetString(),
-                                     positions[i]);
+    ModuleScriptFetchRequest request(
+        urls[i], context_type_, destination_, options,
+        module_script->BaseURL().GetString(), positions[i]);
 
     // <spec label="IMSGF" step="1">Assert: visited set contains url.</spec>
     DCHECK(visited_set_.Contains(request.Url()));

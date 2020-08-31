@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,30 +41,16 @@ namespace {
 const char kUmaSelectDefaultSearchEngine[] =
     "Search.iOS.SelectDefaultSearchEngine";
 
-// Prepopulated search engines.
-const std::string kEngineP1Name = "prepopulated-1";
-const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
-const std::string kEngineP2Name = "prepopulated-2";
-const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
-const std::string kEngineP3Name = "prepopulated-3";
-const GURL kEngineP3Url = GURL("https://p3.com?q={searchTerms}");
-
-// Custom search engines.
-const std::string kEngineC1Name = "custom-1";
-const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
-const std::string kEngineC2Name = "custom-2";
-const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
-const std::string kEngineC3Name = "custom-3";
-const GURL kEngineC3Url = GURL("https://c3.com?q={searchTerms}");
-const std::string kEngineC4Name = "custom-4";
-const GURL kEngineC4Url = GURL("https://c4.com?q={searchTerms}");
-
 class SearchEngineTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
@@ -223,6 +210,11 @@ class SearchEngineTableViewControllerTest
         base::test::ios::kWaitForUIElementTimeout, condition);
   }
 
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
+
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::HistogramTester histogram_tester_;
@@ -240,6 +232,21 @@ TEST_F(SearchEngineTableViewControllerTest, TestNoUrl) {
 // and a prepopulated search engine is selected as default.
 TEST_F(SearchEngineTableViewControllerTest,
        TestUrlsLoadedWithPrepopulatedSearchEngineAsDefault) {
+  const std::string kEngineP1Name = "prepopulated-1";
+  const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
+  const std::string kEngineP2Name = "prepopulated-2";
+  const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
+  const std::string kEngineP3Name = "prepopulated-3";
+  const GURL kEngineP3Url = GURL("https://p3.com?q={searchTerms}");
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+  const std::string kEngineC3Name = "custom-3";
+  const GURL kEngineC3Url = GURL("https://c3.com?q={searchTerms}");
+  const std::string kEngineC4Name = "custom-4";
+  const GURL kEngineC4Url = GURL("https://c4.com?q={searchTerms}");
+
   AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
   AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
   AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, true);
@@ -262,9 +269,10 @@ TEST_F(SearchEngineTableViewControllerTest,
 
   ASSERT_EQ(2, NumberOfSections());
   ASSERT_EQ(3, NumberOfItemsInSection(0));
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  // Assert order of prepopulated hasn't changed.
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 2);
 
   ASSERT_EQ(3, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
@@ -276,6 +284,21 @@ TEST_F(SearchEngineTableViewControllerTest,
 // and a custom search engine is selected as default.
 TEST_F(SearchEngineTableViewControllerTest,
        TestUrlsLoadedWithCustomSearchEngineAsDefault) {
+  const std::string kEngineP1Name = "prepopulated-1";
+  const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
+  const std::string kEngineP2Name = "prepopulated-2";
+  const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
+  const std::string kEngineP3Name = "prepopulated-3";
+  const GURL kEngineP3Url = GURL("https://p3.com?q={searchTerms}");
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+  const std::string kEngineC3Name = "custom-3";
+  const GURL kEngineC3Url = GURL("https://c3.com?q={searchTerms}");
+  const std::string kEngineC4Name = "custom-4";
+  const GURL kEngineC4Url = GURL("https://c4.com?q={searchTerms}");
+
   AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
   AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
   AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, false);
@@ -298,9 +321,9 @@ TEST_F(SearchEngineTableViewControllerTest,
 
   ASSERT_EQ(2, NumberOfSections());
   ASSERT_EQ(4, NumberOfItemsInSection(0));
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, true, 0, 3);
 
   ASSERT_EQ(2, NumberOfItemsInSection(1));
@@ -311,6 +334,11 @@ TEST_F(SearchEngineTableViewControllerTest,
 // Tests that when TemplateURLService add or remove TemplateURLs, or update
 // default search engine, the controller will update the displayed items.
 TEST_F(SearchEngineTableViewControllerTest, TestUrlModifiedByService) {
+  const std::string kEngineP1Name = "prepopulated-1";
+  const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
+  const std::string kEngineP2Name = "prepopulated-2";
+  const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
+
   TemplateURL* url_p1 =
       AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, true);
 
@@ -346,12 +374,12 @@ TEST_F(SearchEngineTableViewControllerTest, TestUrlModifiedByService) {
 
 // Tests that when user change default search engine, all items can be displayed
 // correctly and the change can be synced to the prefs.
-// TODO(crbug.com/1036445): When selecting prepopulated search engines the test
-// relies on the assumption that setting search engine as default will leave it
-// intact. The actual behavior is that if search engine's prepopulated id
-// matches the one from the record in search engines table then the later one
-// will be used.
-TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
+TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+
   // This test also needs to test the UMA, so load some real prepopulated search
   // engines to ensure the SearchEngineType is logged correctly. Don't use any
   // literal symbol(e.g. "google" or "AOL") from
@@ -370,12 +398,6 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
           *TemplateURLDataFromPrepopulatedEngine(*prepopulated_engines[1])));
   ASSERT_TRUE(url_p2);
 
-  // Expected indexes of prepopulated engines in the list.
-  int url_p1_index = 0;
-  int url_p2_index = 1;
-  if (url_p1->prepopulate_id() > url_p2->prepopulate_id())
-    std::swap(url_p1_index, url_p2_index);
-
   // Also add some custom search engines.
   TemplateURL* url_c1 = AddCustomSearchEngine(kEngineC1Name, kEngineC1Url,
                                               base::Time::Now(), false);
@@ -388,14 +410,13 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
 
   // Choose url_p1 as default.
   [controller() tableView:[controller() tableView]
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:url_p1_index
-                                                 inSection:0]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
 
   ASSERT_EQ(2, NumberOfSections());
   // Check first list.
   ASSERT_EQ(2, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, true, 0, url_p1_index);
-  CheckRealItem(url_p2, false, 0, url_p2_index);
+  CheckRealItem(url_p1, true, 0, 0);
+  CheckRealItem(url_p2, false, 0, 1);
   // Check second list.
   ASSERT_EQ(2, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
@@ -409,14 +430,13 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
 
   // Choose url_p2 as default.
   [controller() tableView:[controller() tableView]
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:url_p2_index
-                                                 inSection:0]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
 
   ASSERT_EQ(2, NumberOfSections());
   // Check first list.
   ASSERT_EQ(2, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, false, 0, url_p1_index);
-  CheckRealItem(url_p2, true, 0, url_p2_index);
+  CheckRealItem(url_p1, false, 0, 0);
+  CheckRealItem(url_p2, true, 0, 1);
   // Check second list.
   ASSERT_EQ(2, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
@@ -437,14 +457,15 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
       didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
 
   ASSERT_EQ(2, NumberOfSections());
+  // The selected Custom search engine is moved to the first section.
   // Check first list.
-  ASSERT_EQ(2, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, false, 0, url_p1_index);
-  CheckRealItem(url_p2, false, 0, url_p2_index);
+  ASSERT_EQ(3, NumberOfItemsInSection(0));
+  CheckRealItem(url_p1, false, 0, 0);
+  CheckRealItem(url_p2, false, 0, 1);
   // Check second list.
-  ASSERT_EQ(2, NumberOfItemsInSection(1));
-  CheckCustomItem(kEngineC1Name, kEngineC1Url, true, 1, 0);
-  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
+  ASSERT_EQ(1, NumberOfItemsInSection(1));
+  CheckCustomItem(kEngineC1Name, kEngineC1Url, true, 0, 2);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 0);
   // Check default search engine.
   EXPECT_EQ(url_c1, template_url_service_->GetDefaultSearchProvider());
   // Check UMA.
@@ -472,6 +493,17 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
 // Tests that prepopulated engines are disabled with checkmark removed in
 // editing mode, and that toolbar is displayed as expected.
 TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
+  const std::string kEngineP1Name = "prepopulated-1";
+  const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
+  const std::string kEngineP2Name = "prepopulated-2";
+  const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
+  const std::string kEngineP3Name = "prepopulated-3";
+  const GURL kEngineP3Url = GURL("https://p3.com?q={searchTerms}");
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+
   AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
   AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
   AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, true);
@@ -492,9 +524,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
 
   EXPECT_TRUE([searchEngineController editButtonEnabled]);
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 2);
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
 
@@ -505,9 +537,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
 
   // Prepopulated engines should be disabled with checkmark removed.
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0, false);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1, false);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2, false);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0, false);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1, false);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2, false);
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
 
@@ -529,9 +561,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
 
   EXPECT_TRUE([searchEngineController editButtonEnabled]);
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 2);
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
 }
@@ -539,6 +571,21 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
 // Tests that custom search engines can be deleted, and if default engine is
 // deleted it will be reset to the first prepopulated engine.
 TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
+  const std::string kEngineP1Name = "prepopulated-1";
+  const GURL kEngineP1Url = GURL("https://p1.com?q={searchTerms}");
+  const std::string kEngineP2Name = "prepopulated-2";
+  const GURL kEngineP2Url = GURL("https://p2.com?q={searchTerms}");
+  const std::string kEngineP3Name = "prepopulated-3";
+  const GURL kEngineP3Url = GURL("https://p3.com?q={searchTerms}");
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+  const std::string kEngineC3Name = "custom-3";
+  const GURL kEngineC3Url = GURL("https://c3.com?q={searchTerms}");
+  const std::string kEngineC4Name = "custom-4";
+  const GURL kEngineC4Url = GURL("https://c4.com?q={searchTerms}");
+
   AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
   AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
   AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, false);
@@ -573,9 +620,9 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
         return NumberOfItemsInSection(0) == 3;
       }));
   ASSERT_TRUE(NumberOfItemsInSection(1) == 2);
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, true, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, true, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 0);
   CheckCustomItem(kEngineC4Name, kEngineC4Url, false, 1, 1);
 
@@ -588,11 +635,11 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
 
   ASSERT_EQ(4, NumberOfItemsInSection(0));
   ASSERT_EQ(1, NumberOfItemsInSection(1));
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
-  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 0, 3);
-  CheckCustomItem(kEngineC4Name, kEngineC4Url, true, 1, 0);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 0);
+  CheckCustomItem(kEngineC4Name, kEngineC4Url, true, 0, 3);
 
   // Remove all custom search engines.
   ASSERT_TRUE(DeleteItemsAndWait(
@@ -604,9 +651,9 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
         return NumberOfSections() == 1;
       }));
   ASSERT_TRUE(NumberOfItemsInSection(0) == 3);
-  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, true, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, true, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2);
 }
 
 }  // namespace

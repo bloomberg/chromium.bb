@@ -21,6 +21,19 @@ class ExternalBeginFrameSource;
 }  // namespace viz
 
 namespace android_webview {
+class ChildFrame;
+
+class RootFrameSinkClient {
+ public:
+  virtual ~RootFrameSinkClient() = default;
+
+  virtual void SetNeedsBeginFrames(bool needs_begin_frame) = 0;
+  virtual void Invalidate() = 0;
+  virtual void ReturnResources(
+      viz::FrameSinkId frame_sink_id,
+      uint32_t layer_tree_frame_sink_id,
+      std::vector<viz::ReturnedResource> resources) = 0;
+};
 
 // This class holds per-AwContents classes on the viz thread that do not need
 // access to the GPU. It is single-threaded and refcounted on the viz thread.
@@ -31,7 +44,7 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
                       public viz::ExternalBeginFrameSourceClient {
  public:
   using SetNeedsBeginFrameCallback = base::RepeatingCallback<void(bool)>;
-  explicit RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame);
+  RootFrameSink(RootFrameSinkClient* client);
 
   viz::CompositorFrameSinkSupport* support() const { return support_.get(); }
   const viz::FrameSinkId& root_frame_sink_id() const {
@@ -39,7 +52,15 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   }
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
-  bool BeginFrame(const viz::BeginFrameArgs& args);
+  bool BeginFrame(const viz::BeginFrameArgs& args, bool had_input_event);
+  void SetBeginFrameSourcePaused(bool paused);
+  void SetNeedsDraw(bool needs_draw);
+  bool IsChildSurface(const viz::FrameSinkId& frame_sink_id);
+  void DettachClient();
+
+  void SubmitChildCompositorFrame(ChildFrame* child_frame);
+  viz::FrameTimingDetailsMap TakeChildFrameTimingDetailsMap();
+  gfx::Size GetChildFrameSize();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -55,15 +76,24 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
 
  private:
   friend class base::RefCounted<RootFrameSink>;
+  class ChildCompositorFrameSink;
+
   ~RootFrameSink() override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
+  void ReturnResources(viz::FrameSinkId frame_sink_id,
+                       uint32_t layer_tree_frame_sink_id,
+                       std::vector<viz::ReturnedResource> resources);
 
   const viz::FrameSinkId root_frame_sink_id_;
+  base::flat_set<viz::FrameSinkId> child_frame_sink_ids_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
 
+  std::unique_ptr<ChildCompositorFrameSink> child_sink_support_;
+
   bool needs_begin_frames_ = false;
-  SetNeedsBeginFrameCallback set_needs_begin_frame_;
+  bool needs_draw_ = false;
+  RootFrameSinkClient* client_;
 
   THREAD_CHECKER(thread_checker_);
 

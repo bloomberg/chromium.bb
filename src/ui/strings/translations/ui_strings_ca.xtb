@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplicació instal·lada</translation>
 <translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> s'ha intercanviat amb <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
-<translation id="1938451708255335766">Per ajustar la densitat de visualització de la finestra, reinicia l'aplicació.</translation>
 <translation id="2006524834898217237">Comprova que el dispositiu estigui connectat a Internet.</translation>
 <translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2090963878406559571">Per enviar un número des del lloc web <ph name="ORIGIN" /> al telèfon Android, <ph name="TROUBLESHOOT_LINK" /> a la configuració dels dos dispositius.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Fletxa avall</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dia}other{# dies}}</translation>
 <translation id="3295886253693811851">Fes una trucada amb</translation>
+<translation id="3306688585798492231">Pantalla integrada</translation>
 <translation id="335581015389089642">Veu</translation>
 <translation id="3389286852084373014">El text és massa llarg</translation>
-<translation id="3479552764303398839">Ara no</translation>
 <translation id="348799646910989694">El prestatge s'amaga automàticament</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> s'ha fixat</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dia restant}other{# dies restants}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Continua la lectura des del dispositiu mòbil <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3889424535448813030">Fletxa dreta</translation>
-<translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3909791450649380159">Re&amp;talla</translation>
 <translation id="3990502903496589789">Extrem dret</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Actiu avui}=1{Actiu fa 1 dia}other{Actiu fa # dies}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dia i }other{# dies i }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{d'aquí a 1 a}other{d'aquí a # a}}</translation>
-<translation id="5895138241574237353">Reinicia</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segon restant}other{# segons restants}}</translation>
 <translation id="5941711191222866238">Minimitza</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}other{# hores}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">De dreta a esquerra</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">LES MÉS PROBABLES</translation>
+<translation id="7170202025028120564">La configuració de la pantalla de l'aplicació s'aplicarà la propera vegada que es reiniciï.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restant}other{# min restants}}</translation>
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>

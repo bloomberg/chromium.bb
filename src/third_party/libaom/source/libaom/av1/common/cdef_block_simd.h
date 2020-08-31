@@ -238,7 +238,7 @@ void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
-  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps;
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -405,7 +405,7 @@ void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
-  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps;
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -551,7 +551,7 @@ void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
-  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps;
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -708,7 +708,7 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
-  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps;
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -882,9 +882,9 @@ void SIMD_FUNC(cdef_filter_block)(uint8_t *dst8, uint16_t *dst16, int dstride,
   }
 }
 
-void SIMD_FUNC(copy_rect8_8bit_to_16bit)(uint16_t *dst, int dstride,
-                                         const uint8_t *src, int sstride, int v,
-                                         int h) {
+void SIMD_FUNC(cdef_copy_rect8_8bit_to_16bit)(uint16_t *dst, int dstride,
+                                              const uint8_t *src, int sstride,
+                                              int v, int h) {
   int i, j;
   for (i = 0; i < v; i++) {
     for (j = 0; j < (h & ~0x7); j += 8) {
@@ -897,9 +897,9 @@ void SIMD_FUNC(copy_rect8_8bit_to_16bit)(uint16_t *dst, int dstride,
   }
 }
 
-void SIMD_FUNC(copy_rect8_16bit_to_16bit)(uint16_t *dst, int dstride,
-                                          const uint16_t *src, int sstride,
-                                          int v, int h) {
+void SIMD_FUNC(cdef_copy_rect8_16bit_to_16bit)(uint16_t *dst, int dstride,
+                                               const uint16_t *src, int sstride,
+                                               int v, int h) {
   int i, j;
   for (i = 0; i < v; i++) {
     for (j = 0; j < (h & ~0x7); j += 8) {

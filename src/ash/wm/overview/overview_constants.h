@@ -27,14 +27,21 @@ ASH_EXPORT constexpr int kOverviewMargin = kWindowMargin * 2;
 // Height of an item header.
 constexpr int kHeaderHeightDp = WindowMiniView::kHeaderHeightDp;
 
-// The opacity of the shield widget that is used to darken the background of
-// the grid.
-constexpr float kShieldOpacity = 0.4f;
+// Windows whose aspect ratio surpass this (width twice as large as height or
+// vice versa) will be classified as too wide or too tall and will be handled
+// slightly differently in overview mode.
+constexpr float kExtremeWindowRatioThreshold = 2.f;
+
+namespace overview_constants {
+
+// The opacity of the wallpaper in overview mode.
+constexpr float kOpacity = 0.4f;
 
 // Amount of blur to apply on the wallpaper when we enter or exit overview
 // mode.
-constexpr float kWallpaperBlurSigma = 10.f;
-constexpr float kWallpaperClearBlurSigma = 0.f;
+constexpr float kBlurSigma = 10.f;
+
+}  // namespace overview_constants
 
 }  // namespace ash
 

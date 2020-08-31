@@ -15,8 +15,6 @@
 #include "components/infobars/core/infobar.h"
 #include "ui/gfx/image/image.h"
 
-// InfoBarDelegateProxy -------------------------------------------------------
-
 class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
  public:
   explicit DelegateProxy(base::WeakPtr<GlobalConfirmInfoBar> global_info_bar);
@@ -26,20 +24,20 @@ class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
  private:
   friend class GlobalConfirmInfoBar;
 
-  // ConfirmInfoBarDelegate overrides
+  // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   gfx::ElideBehavior GetMessageElideBehavior() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  base::string16 GetLinkText() const override;
-  GURL GetLinkURL() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-  void InfoBarDismissed() override;
 
-  infobars::InfoBar* info_bar_;
+  infobars::InfoBar* info_bar_ = nullptr;
   base::WeakPtr<GlobalConfirmInfoBar> global_info_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateProxy);
@@ -47,17 +45,53 @@ class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
 
 GlobalConfirmInfoBar::DelegateProxy::DelegateProxy(
     base::WeakPtr<GlobalConfirmInfoBar> global_info_bar)
-    : info_bar_(nullptr),
-      global_info_bar_(global_info_bar) {
-}
+    : global_info_bar_(global_info_bar) {}
 
-GlobalConfirmInfoBar::DelegateProxy::~DelegateProxy() {
-}
+GlobalConfirmInfoBar::DelegateProxy::~DelegateProxy() = default;
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 GlobalConfirmInfoBar::DelegateProxy::GetIdentifier() const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetIdentifier()
                           : INVALID;
+}
+
+base::string16 GlobalConfirmInfoBar::DelegateProxy::GetLinkText() const {
+  return global_info_bar_ ? global_info_bar_->delegate_->GetLinkText()
+                          : ConfirmInfoBarDelegate::GetLinkText();
+}
+
+GURL GlobalConfirmInfoBar::DelegateProxy::GetLinkURL() const {
+  return global_info_bar_ ? global_info_bar_->delegate_->GetLinkURL()
+                          : ConfirmInfoBarDelegate::GetLinkURL();
+}
+
+bool GlobalConfirmInfoBar::DelegateProxy::LinkClicked(
+    WindowOpenDisposition disposition) {
+  return global_info_bar_
+             ? global_info_bar_->delegate_->LinkClicked(disposition)
+             : ConfirmInfoBarDelegate::LinkClicked(disposition);
+}
+
+void GlobalConfirmInfoBar::DelegateProxy::InfoBarDismissed() {
+  base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
+  // Remove the current InfoBar (the one whose close button is being clicked)
+  // from the control of GlobalConfirmInfoBar. This InfoBar will be closed by
+  // caller of this method, and we don't need GlobalConfirmInfoBar to close it.
+  // Furthermore, letting GlobalConfirmInfoBar close the current InfoBar can
+  // cause memory corruption when InfoBar animation is disabled.
+  if (info_bar) {
+    info_bar->OnInfoBarRemoved(info_bar_, false);
+    info_bar->delegate_->InfoBarDismissed();
+    // Check the pointer again in case it's now destroyed.
+    // TODO(pkasting): We should audit callees for these sorts of methods
+    // (InfoBarDismissed(), Accept(), Cancel()) to determine if they can close
+    // the global infobar, then establish better contracts/APIs around the
+    // lifetimes here, ideally removing WeakPtrs entirely.
+    if (info_bar)
+      info_bar->Close();
+  } else {
+    ConfirmInfoBarDelegate::InfoBarDismissed();
+  }
 }
 
 base::string16 GlobalConfirmInfoBar::DelegateProxy::GetMessageText() const {
@@ -73,86 +107,59 @@ GlobalConfirmInfoBar::DelegateProxy::GetMessageElideBehavior() const {
 }
 
 int GlobalConfirmInfoBar::DelegateProxy::GetButtons() const {
+  // ConfirmInfoBarDelegate default behavior here is not very good for a no-op
+  // case, so return BUTTON_NONE when there is no underlying delegate.
   return global_info_bar_ ? global_info_bar_->delegate_->GetButtons()
-                          : 0;
+                          : BUTTON_NONE;
 }
 
 base::string16 GlobalConfirmInfoBar::DelegateProxy::GetButtonLabel(
     InfoBarButton button) const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetButtonLabel(button)
-                          : base::string16();
+                          : ConfirmInfoBarDelegate::GetButtonLabel(button);
 }
 
 bool GlobalConfirmInfoBar::DelegateProxy::Accept() {
   base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  // Remove the current InfoBar (the one whose Accept button is being clicked)
-  // from the control of GlobalConfirmInfoBar. This InfoBar will be closed by
-  // caller of this method, and we don't need GlobalConfirmInfoBar to close it.
-  // Furthermore, letting GlobalConfirmInfoBar close the current InfoBar can
-  // cause memory corruption when InfoBar animation is disabled.
+  // See comments in InfoBarDismissed().
   if (info_bar) {
+    // TODO(pkasting): This implementation assumes the global delegate's
+    // Accept() always returns true.  Ideally, we'd check the return value and
+    // handle it appropriately.  We also need to worry about side effects like
+    // navigating the current tab and whether that can corrupt state or result
+    // in double-frees.
     info_bar->OnInfoBarRemoved(info_bar_, false);
     info_bar->delegate_->Accept();
-  }
-  // Could be destroyed after this point.
-  if (info_bar)
+    if (info_bar)
       info_bar->Close();
-  return true;
+    return true;
+  }
+  return ConfirmInfoBarDelegate::Accept();
 }
 
 bool GlobalConfirmInfoBar::DelegateProxy::Cancel() {
   base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  // See comments in GlobalConfirmInfoBar::DelegateProxy::Accept().
+  // See comments in InfoBarDismissed().
   if (info_bar) {
+    // See comments in Accept().
     info_bar->OnInfoBarRemoved(info_bar_, false);
     info_bar->delegate_->Cancel();
-  }
-  // Could be destroyed after this point.
-  if (info_bar)
+    if (info_bar)
       info_bar->Close();
-  return true;
-}
-
-base::string16 GlobalConfirmInfoBar::DelegateProxy::GetLinkText() const {
-  return global_info_bar_ ? global_info_bar_->delegate_->GetLinkText()
-                          : base::string16();
-}
-
-GURL GlobalConfirmInfoBar::DelegateProxy::GetLinkURL() const {
-  return global_info_bar_ ? global_info_bar_->delegate_->GetLinkURL()
-                          : GURL();
-}
-
-bool GlobalConfirmInfoBar::DelegateProxy::LinkClicked(
-    WindowOpenDisposition disposition) {
-  return global_info_bar_ ?
-      global_info_bar_->delegate_->LinkClicked(disposition) : false;
-}
-
-void GlobalConfirmInfoBar::DelegateProxy::InfoBarDismissed() {
-  base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  // See comments in GlobalConfirmInfoBar::DelegateProxy::Accept().
-  if (info_bar) {
-    info_bar->OnInfoBarRemoved(info_bar_, false);
-    info_bar->delegate_->InfoBarDismissed();
+    return true;
   }
-  // Could be destroyed after this point.
-  if (info_bar)
-      info_bar->Close();
+  return ConfirmInfoBarDelegate::Cancel();
 }
 
 void GlobalConfirmInfoBar::DelegateProxy::Detach() {
   global_info_bar_.reset();
 }
 
-// GlobalConfirmInfoBar -------------------------------------------------------
-
 // static
-base::WeakPtr<GlobalConfirmInfoBar> GlobalConfirmInfoBar::Show(
+void GlobalConfirmInfoBar::Show(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  GlobalConfirmInfoBar* info_bar =
-      new GlobalConfirmInfoBar(std::move(delegate));
-  return info_bar->weak_factory_.GetWeakPtr();
+  // Owns itself, deleted by Close().
+  new GlobalConfirmInfoBar(std::move(delegate));
 }
 
 void GlobalConfirmInfoBar::Close() {
@@ -161,9 +168,7 @@ void GlobalConfirmInfoBar::Close() {
 
 GlobalConfirmInfoBar::GlobalConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : delegate_(std::move(delegate)),
-      browser_tab_strip_tracker_(this, nullptr, nullptr),
-      is_closing_(false) {
+    : delegate_(std::move(delegate)) {
   browser_tab_strip_tracker_.Init();
 }
 
@@ -196,7 +201,7 @@ void GlobalConfirmInfoBar::TabChangedAt(content::WebContents* web_contents,
 void GlobalConfirmInfoBar::OnInfoBarRemoved(infobars::InfoBar* info_bar,
                                             bool animate) {
   // Do not process alien infobars.
-  for (auto it : proxies_) {
+  for (const auto& it : proxies_) {
     if (it.second->info_bar_ == info_bar) {
       OnManagerShuttingDown(info_bar->owner());
       break;
@@ -211,6 +216,9 @@ void GlobalConfirmInfoBar::OnManagerShuttingDown(
 }
 
 void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
+  if (is_closing_)
+    return;
+
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   // WebContents from the tab strip must have the infobar service.
@@ -218,8 +226,8 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
   if (base::Contains(proxies_, infobar_service))
     return;
 
-  std::unique_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(
-      new GlobalConfirmInfoBar::DelegateProxy(weak_factory_.GetWeakPtr()));
+  auto proxy = std::make_unique<GlobalConfirmInfoBar::DelegateProxy>(
+      weak_factory_.GetWeakPtr());
   GlobalConfirmInfoBar::DelegateProxy* proxy_ptr = proxy.get();
   infobars::InfoBar* added_bar = infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(std::move(proxy)));
@@ -233,13 +241,11 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
   // Asynchronously delete the global object because the BrowserTabStripTracker
   // doesn't support being deleted while iterating over the existing tabs.
   if (!added_bar) {
-    if (!is_closing_) {
-      is_closing_ = true;
+    is_closing_ = true;
 
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&GlobalConfirmInfoBar::Close,
-                                    weak_factory_.GetWeakPtr()));
-    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&GlobalConfirmInfoBar::Close,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 

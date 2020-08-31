@@ -35,7 +35,9 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
+#include "third_party/blink/renderer/core/events/drag_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -64,6 +66,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
                                    LegacyLayout) override {
+    UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByDetailsMarker);
     return new LayoutDetailsMarker(this);
   }
 
@@ -134,7 +137,10 @@ bool TextFieldInputType::IsTextField() const {
 }
 
 bool TextFieldInputType::ValueMissing(const String& value) const {
-  return GetElement().IsRequired() && value.IsEmpty();
+  // For text-mode input elements, the value is missing only if it is mutable.
+  // https://html.spec.whatwg.org/multipage/input.html#the-required-attribute
+  return GetElement().IsRequired() && value.IsEmpty() &&
+         !GetElement().IsDisabledOrReadOnly();
 }
 
 bool TextFieldInputType::CanSetSuggestedValue() {
@@ -177,11 +183,14 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
         GetElement().DispatchFormControlChangeEvent();
       break;
 
-    case TextFieldEventBehavior::kDispatchInputAndChangeEvent: {
+    case TextFieldEventBehavior::kDispatchInputEvent:
+      GetElement().DispatchInputEvent();
+      break;
+
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();
       break;
-    }
 
     case TextFieldEventBehavior::kDispatchNoEvent:
       break;
@@ -226,12 +235,12 @@ void TextFieldInputType::ForwardEvent(Event& event) {
   // input element.
   if (GetElement().GetLayoutObject() &&
       !GetElement().GetForceReattachLayoutTree() &&
-      (event.IsMouseEvent() || event.IsDragEvent() ||
+      (IsA<MouseEvent>(event) || IsA<DragEvent>(event) ||
        event.HasInterface(event_interface_names::kWheelEvent) ||
        event.type() == event_type_names::kBlur ||
        event.type() == event_type_names::kFocus)) {
-    LayoutTextControlSingleLine* layout_text_control =
-        ToLayoutTextControlSingleLine(GetElement().GetLayoutObject());
+    auto* layout_text_control =
+        To<LayoutTextControlSingleLine>(GetElement().GetLayoutObject());
     if (event.type() == event_type_names::kBlur) {
       if (LayoutBox* inner_editor_layout_object =
               GetElement().InnerEditorElement()->GetLayoutBox()) {
@@ -239,8 +248,8 @@ void TextFieldInputType::ForwardEvent(Event& event) {
         if (PaintLayer* inner_layer = inner_editor_layout_object->Layer()) {
           if (PaintLayerScrollableArea* inner_scrollable_area =
                   inner_layer->GetScrollableArea()) {
-            inner_scrollable_area->SetScrollOffset(ScrollOffset(0, 0),
-                                                   kProgrammaticScroll);
+            inner_scrollable_area->SetScrollOffset(
+                ScrollOffset(0, 0), mojom::blink::ScrollType::kProgrammatic);
           }
         }
       }
@@ -268,8 +277,20 @@ bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
+void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
+  // The flag is necessary in order that a text field <input> with non-'visible'
+  // overflow property doesn't change its baseline.
+  style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
+}
+
+bool TextFieldInputType::TypeShouldForceLegacyLayout() const {
+  return true;
+}
+
 LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
                                                      LegacyLayout) const {
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByTextControl);
   return new LayoutTextControlSingleLine(&GetElement());
 }
 
@@ -294,7 +315,8 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
-  auto* container = MakeGarbageCollected<TextControlInnerContainer>(document);
+  auto* container = MakeGarbageCollected<HTMLDivElement>(document);
+  container->SetIdAttribute(shadow_element_names::TextFieldContainer());
   container->SetShadowPseudoId(
       AtomicString("-webkit-textfield-decoration-container"));
   shadow_root->AppendChild(container);
@@ -352,8 +374,8 @@ void TextFieldInputType::ListAttributeTargetChanged() {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
-      auto* rp_container =
-          MakeGarbageCollected<TextControlInnerContainer>(document);
+      auto* rp_container = MakeGarbageCollected<HTMLDivElement>(document);
+      rp_container->SetIdAttribute(shadow_element_names::TextFieldContainer());
       rp_container->SetShadowPseudoId(
           AtomicString("-webkit-textfield-decoration-container"));
       Element* inner_editor = GetElement().InnerEditorElement();
@@ -429,7 +451,8 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   if (GetElement().IsFocused()) {
     // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    GetElement().GetDocument().UpdateStyleAndLayout();
+    GetElement().GetDocument().UpdateStyleAndLayout(
+        DocumentUpdateReason::kEditing);
 
     selection_length = GetElement()
                            .GetDocument()
@@ -571,6 +594,10 @@ void TextFieldInputType::SpinButtonDidReleaseMouseCapture(
     SpinButtonElement::EventDispatch event_dispatch) {
   if (event_dispatch == SpinButtonElement::kEventDispatchAllowed)
     GetElement().DispatchFormControlChangeEvent();
+}
+
+String TextFieldInputType::RawValue() const {
+  return GetElement().InnerEditorElement()->innerText();
 }
 
 }  // namespace blink

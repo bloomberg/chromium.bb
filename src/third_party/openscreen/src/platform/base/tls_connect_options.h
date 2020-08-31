@@ -8,7 +8,6 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
-namespace platform {
 
 struct TlsConnectOptions {
   // This option allows TLS connections to devices without
@@ -17,7 +16,6 @@ struct TlsConnectOptions {
   bool unsafely_skip_certificate_validation;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TLS_CONNECT_OPTIONS_H_

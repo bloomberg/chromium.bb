@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -28,6 +29,7 @@ class PersonalDataManager;
 namespace payments {
 
 // Retrieves the full card details, including the pan and the cvc.
+// TODO(crbug/1061638): Refactor to use base::WaitableEvent where possible.
 class FullCardRequest final : public CardUnmaskDelegate {
  public:
   // The interface for receiving the full card details.
@@ -51,6 +53,22 @@ class FullCardRequest final : public CardUnmaskDelegate {
         base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
     virtual void OnUnmaskVerificationResult(
         AutofillClient::PaymentsRpcResult result) = 0;
+
+#if defined(OS_ANDROID)
+    // Returns whether or not the user, while on the CVC prompt, should be
+    // offered to switch to FIDO authentication for card unmasking. This will
+    // always be false for Desktop since FIDO authentication is offered as a
+    // separate prompt after the CVC prompt. On Android, however, this may be
+    // offered through a checkbox on the CVC prompt. This feature does not yet
+    // exist on iOS.
+    virtual bool ShouldOfferFidoAuth() const = 0;
+
+    // This returns true only on Android when the user previously opted-in for
+    // FIDO authentication through the settings page and this is the first card
+    // downstream since. In this case, the opt-in checkbox is not shown and the
+    // opt-in request is sent.
+    virtual bool UserOptedInToFidoFromSettingsPageOnMobile() const = 0;
+#endif
   };
 
   // The parameters should outlive the FullCardRequest.
@@ -128,12 +146,13 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    AutofillClient::UnmaskCardReason reason,
                    base::WeakPtr<ResultDelegate> result_delegate,
                    base::WeakPtr<UIDelegate> ui_delegate,
-                   base::Value fido_assertion_info);
+                   base::Optional<base::Value> fido_assertion_info);
 
   // CardUnmaskDelegate:
   void OnUnmaskPromptAccepted(
       const UserProvidedUnmaskDetails& user_response) override;
   void OnUnmaskPromptClosed() override;
+  bool ShouldOfferFidoAuth() const override;
 
   // Called by autofill client when the risk data has been loaded.
   void OnDidGetUnmaskRiskData(const std::string& risk_data);

@@ -9,15 +9,18 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol OmniboxFocuser;
+@protocol FindInPageCommands;
+@protocol OmniboxCommands;
 
 // Handler for the actions associated with the different toolbar buttons.
 @interface ToolbarButtonActionsHandler : NSObject
 
 // Dispatcher for the actions.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
-        dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands,
+                              BrowserCommands,
+                              FindInPageCommands,
+                              OmniboxCommands>
+    dispatcher;
 
 // Whether this handler is created in incognito.
 @property(nonatomic, assign) BOOL incognito;

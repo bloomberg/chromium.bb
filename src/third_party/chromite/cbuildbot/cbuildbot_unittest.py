@@ -11,6 +11,9 @@ import argparse
 import glob
 import optparse  # pylint: disable=deprecated-module
 import os
+import sys
+
+import pytest  # pylint: disable=import-error
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cgroups
@@ -25,8 +28,12 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib import sudo
 from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access
@@ -346,6 +353,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     self.assertNotEqual(options.chrome_root, None)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
   """Tests that run the cbuildbot.main() function directly.
 
@@ -383,11 +391,15 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(cgroups.Cgroup, 'IsSupported',
                      return_value=True)
     self.PatchObject(cgroups, 'SimpleContainChildren')
+    self.PatchObject(sudo.SudoKeepAlive, '_IdentifyTTY', return_value='unknown')
 
   def assertMain(self, args, common_options=True):
     if common_options:
       args.extend(['--sourceroot', self.sourceroot, '--notee'])
-    return cbuildbot.main(args)
+    try:
+      return cbuildbot.main(args)
+    finally:
+      cros_build_lib.STRICT_SUDO = False
 
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""

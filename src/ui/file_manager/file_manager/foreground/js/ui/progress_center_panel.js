@@ -302,10 +302,24 @@ class ProgressCenterPanel {
   static getToggleAnimation_(document) {
     for (let i = 0; i < document.styleSheets.length; i++) {
       const styleSheet = document.styleSheets[i];
-      for (let j = 0; j < styleSheet.cssRules.length; j++) {
+      let rules = null;
+      // External stylesheets may not be accessible due to CORS restrictions.
+      // This try/catch is the only way avoid an exception when iterating over
+      // stylesheets that include chrome://resources.
+      // See https://crbug.com/775525/ for details.
+      try {
+        rules = styleSheet.cssRules;
+      } catch (err) {
+        if (err.name == 'SecurityError') {
+          continue;
+        }
+        throw err;
+      }
+
+      for (let j = 0; j < rules.length; j++) {
         // HACK: closure does not define experimental CSSRules.
         const keyFramesRule = CSSRule.KEYFRAMES_RULE || 7;
-        const rule = styleSheet.cssRules[j];
+        const rule = rules[j];
         if (rule.type === keyFramesRule &&
             rule.name === 'progress-center-toggle') {
           return rule;
@@ -358,6 +372,8 @@ class ProgressCenterPanel {
         return info['source'] || item.message;
       case 'error':
         return item.message;
+      case 'canceled':
+        return '';
       default:
         assertNotReached();
         break;
@@ -383,6 +399,7 @@ class ProgressCenterPanel {
         }
         break;
       case 'error':
+      case 'canceled':
         break;
       default:
         assertNotReached();
@@ -407,24 +424,29 @@ class ProgressCenterPanel {
         setTimeout(() => {
           this.feedbackHost_.attachPanelItem(panelItem);
         }, this.PENDING_TIME_MS_);
-        panelItem.panelType = panelItem.panelTypeProgress;
+        if (item.type === 'format') {
+          panelItem.panelType = panelItem.panelTypeFormatProgress;
+        } else if (item.type === 'sync') {
+          panelItem.panelType = panelItem.panelTypeSyncProgress;
+        } else {
+          panelItem.panelType = panelItem.panelTypeProgress;
+        }
         panelItem.userData = {
           'source': item.sourceMessage,
           'destination': item.destinationMessage,
           'count': item.itemCount,
         };
-        const primaryText =
-            this.generateSourceString_(item, panelItem.userData);
-        panelItem.primaryText = primaryText;
-        panelItem.setAttribute('data-progress-id', item.id);
-        if (item.destinationMessage) {
-          panelItem.secondaryText =
-              strf('TO_FOLDER_NAME', item.destinationMessage);
-        }
-        // On progress panels, make the cancel button aria-lable more useful.
-        const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
-        panelItem.closeButtonAriaLabel = cancelLabel;
       }
+      const primaryText = this.generateSourceString_(item, panelItem.userData);
+      panelItem.primaryText = primaryText;
+      panelItem.setAttribute('data-progress-id', item.id);
+      if (item.destinationMessage) {
+        panelItem.secondaryText =
+            strf('TO_FOLDER_NAME', item.destinationMessage);
+      }
+      // On progress panels, make the cancel button aria-lable more useful.
+      const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
+      panelItem.closeButtonAriaLabel = cancelLabel;
       panelItem.signalCallback = (signal) => {
         if (signal === 'cancel' && item.cancelCallback) {
           item.cancelCallback();
@@ -437,9 +459,10 @@ class ProgressCenterPanel {
       panelItem.progress = item.progressRateInPercent.toString();
       switch (item.state) {
         case 'completed':
-          // Create a completed panel for copies and moves.
+          // Create a completed panel for copies, moves and formats.
           // TODO(crbug.com/947388) decide if we want these for delete, etc.
-          if (item.type === 'copy' || item.type === 'move') {
+          if (item.type === 'copy' || item.type === 'move' ||
+              item.type === 'format') {
             const donePanelItem = this.feedbackHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
             donePanelItem.primaryText =
@@ -486,28 +509,7 @@ class ProgressCenterPanel {
 
     // Update an open view item.
     const newItem = targetGroup.getItem(item.id);
-    if (util.isFeedbackPanelEnabled()) {
-      this.updateFeedbackPanelItem(item, newItem);
-    } else {
-      let itemElement = this.getItemElement_(item.id);
-      if (newItem) {
-        if (!itemElement) {
-          itemElement =
-              new ProgressCenterItemElement(this.element_.ownerDocument);
-          // Find quiet node and insert the item before the quiet node.
-          this.openView_.insertBefore(
-              itemElement, this.openView_.querySelector('.quiet'));
-        }
-        itemElement.update(newItem, targetGroup.isAnimated(item.id));
-      } else {
-        if (itemElement) {
-          itemElement.parentNode.removeChild(itemElement);
-        }
-      }
-
-      // Update the close view.
-      this.updateCloseView_();
-    }
+    this.updateFeedbackPanelItem(item, newItem);
   }
 
   /**
@@ -526,17 +528,9 @@ class ProgressCenterPanel {
     } else {
       const itemId = event.target.getAttribute('data-progress-id');
       targetGroup.completeItemAnimation(itemId);
-      if (util.isFeedbackPanelEnabled()) {
-        const panelItem = this.feedbackHost_.findPanelItemById(itemId);
-        if (panelItem) {
-          this.feedbackHost_.removePanelItem(panelItem);
-        }
-      } else {
-        const newItem = targetGroup.getItem(itemId);
-        const itemElement = this.getItemElement_(itemId);
-        if (!newItem && itemElement) {
-          itemElement.parentNode.removeChild(itemElement);
-        }
+      const panelItem = this.feedbackHost_.findPanelItemById(itemId);
+      if (panelItem) {
+        this.feedbackHost_.removePanelItem(panelItem);
       }
     }
     this.updateCloseView_();

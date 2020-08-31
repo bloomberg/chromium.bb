@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -23,7 +26,6 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   // Overrides from BrowserAccessibility.
   void OnDataChanged() override;
-  bool IsNative() const override;
   void OnLocationChanged() override;
   base::string16 GetValue() const override;
 
@@ -39,16 +41,15 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsCollectionItem() const;
   bool IsContentInvalid() const;
   bool IsDismissable() const;
-  bool IsEditableText() const;
   bool IsEnabled() const;
   bool IsExpanded() const;
   bool IsFocusable() const;
   bool IsFocused() const;
+  bool IsFormDescendant() const;
   bool IsHeading() const;
   bool IsHierarchical() const;
   bool IsLink() const;
   bool IsMultiLine() const;
-  bool IsPassword() const;
   bool IsRangeType() const;
   bool IsScrollable() const;
   bool IsSelected() const;
@@ -107,7 +108,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   int GetMinScrollY() const;
   int GetMaxScrollX() const;
   int GetMaxScrollY() const;
-  bool Scroll(int direction) const;
+  bool Scroll(int direction, bool is_page_scroll) const;
 
   int GetTextChangeFromIndex() const;
   int GetTextChangeAddedCount() const;

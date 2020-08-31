@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -65,22 +65,23 @@ HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
 }
 
 // Escape quotes and backslashes ('"\).
-std::string PolymerParameterEscape(const std::string& in_string) {
+std::string PolymerParameterEscape(const std::string& in_string,
+                                   bool is_javascript) {
   std::string out;
   out.reserve(in_string.size() * 2);
   for (const char c : in_string) {
     switch (c) {
       case '\\':
-        out.append("\\\\");
+        out.append(is_javascript ? R"(\\\\)" : R"(\\)");
         break;
       case '\'':
-        out.append("\\'");
+        out.append(is_javascript ? R"(\\')" : R"(\')");
         break;
       case '"':
         out.append("&quot;");
         break;
       case ',':
-        out.append("\\\\,");
+        out.append(is_javascript ? R"(\\,)" : R"(\,)");
         break;
       default:
         out += c;
@@ -130,7 +131,8 @@ bool ReplaceTemplateExpressionsInternal(
     base::StringPiece source,
     const ui::TemplateReplacements& replacements,
     bool is_javascript,
-    std::string* formatted) {
+    std::string* formatted,
+    bool skip_unexpected_placeholder_check = false) {
   const size_t kValueLengthGuess = 16;
   formatted->reserve(source.length() + replacements.size() * kValueLengthGuess);
   // Two position markers are used as cursors through the |source|.
@@ -140,19 +142,16 @@ bool ReplaceTemplateExpressionsInternal(
     size_t next_pos = source.find(kLeader, current_pos);
 
     if (next_pos == std::string::npos) {
-      source.substr(current_pos).AppendToString(formatted);
+      formatted->append(source.begin() + current_pos, source.end());
       break;
     }
 
-    source.substr(current_pos, next_pos - current_pos)
-        .AppendToString(formatted);
+    formatted->append(source.data() + current_pos, next_pos - current_pos);
     current_pos = next_pos + kLeaderSize;
 
     size_t context_end = source.find(kKeyOpen, current_pos);
     CHECK_NE(context_end, std::string::npos);
-    std::string context;
-    source.substr(current_pos, context_end - current_pos)
-        .AppendToString(&context);
+    std::string context(source.substr(current_pos, context_end - current_pos));
     current_pos = context_end + sizeof(kKeyOpen);
 
     size_t key_end = source.find(kKeyClose, current_pos);
@@ -185,7 +184,7 @@ bool ReplaceTemplateExpressionsInternal(
       // Pass the replacement through unchanged.
     } else if (context == "Polymer") {
       // Escape quotes and backslash for '$i18nPolymer{}' use (i.e. quoted).
-      replacement = PolymerParameterEscape(replacement);
+      replacement = PolymerParameterEscape(replacement, is_javascript);
     } else {
       CHECK(false) << "Unknown context " << context;
     }
@@ -193,7 +192,7 @@ bool ReplaceTemplateExpressionsInternal(
 #if DCHECK_IS_ON()
     // Replacements in Polymer WebUI may invoke JavaScript to replace string
     // placeholders. In other contexts, placeholders should already be replaced.
-    if (context != "Polymer") {
+    if (!skip_unexpected_placeholder_check && context != "Polymer") {
       DCHECK(!HasUnexpectedPlaceholder(key, replacement))
           << "Dangling placeholder found in " << key;
     }
@@ -266,11 +265,12 @@ bool ReplaceTemplateExpressionsInJS(base::StringPiece source,
   return true;
 }
 
-std::string ReplaceTemplateExpressions(
-    base::StringPiece source,
-    const TemplateReplacements& replacements) {
+std::string ReplaceTemplateExpressions(base::StringPiece source,
+                                       const TemplateReplacements& replacements,
+                                       bool skip_unexpected_placeholder_check) {
   std::string formatted;
-  ReplaceTemplateExpressionsInternal(source, replacements, false, &formatted);
+  ReplaceTemplateExpressionsInternal(source, replacements, false, &formatted,
+                                     skip_unexpected_placeholder_check);
   return formatted;
 }
 }  // namespace ui

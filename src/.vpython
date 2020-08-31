@@ -21,6 +21,9 @@
 #
 # Read more about `vpython` and how to modify this file here:
 #   https://chromium.googlesource.com/infra/infra/+/master/doc/users/vpython.md
+#
+# For the definition of this spec, see:
+#   https://chromium.googlesource.com/infra/luci/luci-go/+/master/vpython/api/vpython/spec.proto
 
 python_version: "2.7"
 
@@ -29,6 +32,19 @@ python_version: "2.7"
 wheel: <
   name: "infra/python/wheels/jsonlines-py2_py3"
   version: "version:1.2.0"
+>
+wheel: <
+  name: "infra/python/wheels/subprocess32/${vpython_platform}"
+  version: "version:3.5.0rc1"
+  # Only download for linux since we shouldn't be running CrOS tests on mac/win.
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_i686"
+  >
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_x86_64"
+  >
 >
 
 # Used by:
@@ -75,7 +91,6 @@ wheel: <
 
 # Used by:
 #   third_party/catapult
-#   chrome/test/vr/perf/latency/run_latency_test.py
 #
 # This version must be compatible with the version range specified by
 # //third_party/catapult/telemetry/telemetry/internal/util/external_modules.py
@@ -172,37 +187,6 @@ wheel: <
 wheel: <
   name: "infra/python/wheels/python-dateutil-py2_py3"
   version: "version:2.7.3"
->
-
-# Used by:
-#   chrome/test/vr/perf/latency/run_latency_test.py
-wheel: <
-  name: "infra/python/wheels/peakutils-py2_py3"
-  version: "version:1.0.3"
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_i686"
-  >
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_x86_64"
-  >
->
-wheel: <
-  name: "infra/python/wheels/pyserial-py2_py3"
-  version: "version:3.4"
->
-wheel: <
-  name: "infra/python/wheels/scipy/${vpython_platform}"
-  version: "version:0.19.0"
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_i686"
-  >
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_x86_64"
-  >
 >
 
 # Used by:
@@ -323,7 +307,7 @@ wheel: <
 >
 wheel: <
   name: "infra/python/wheels/mozlog-py2_py3"
-  version: "version:4.2.0"
+  version: "version:5.0"
 >
 wheel: <
   name: "infra/python/wheels/mozprocess-py2_py3"
@@ -387,7 +371,7 @@ wheel: <
 #   //third_party/blink/tools/blinkpy/web_tests/port/server_process.py
 wheel: <
   name: "infra/python/wheels/pywin32/${vpython_platform}"
-  version: "version:224"
+  version: "version:227"
   match_tag: <
     platform: "win32"
   >

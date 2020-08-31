@@ -65,9 +65,7 @@ void ScrollableView::Layout() {
 std::unique_ptr<views::LabelButton> CreateAuxiliaryButton(
     views::ButtonListener* listener,
     const base::string16& label) {
-  return label.empty()
-             ? nullptr
-             : views::MdTextButton::CreateSecondaryUiButton(listener, label);
+  return label.empty() ? nullptr : views::MdTextButton::Create(listener, label);
 }
 
 }  // namespace
@@ -79,9 +77,12 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   controller_->GetAcceptButtonText());
-  auxiliary_button_ = DialogDelegate::SetExtraView(
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetAcceptButtonText());
+  SetAcceptCallback(base::BindOnce(
+      [](MediaGalleriesDialogViews* dialog) { dialog->accepted_ = true; },
+      base::Unretained(this)));
+
+  auxiliary_button_ = SetExtraView(
       CreateAuxiliaryButton(this, controller_->GetAuxiliaryButtonText()));
 
   InitChildViews();
@@ -124,7 +125,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     1.0, views::GridLayout::FIXED, dialog_content_width, 0);
+                     1.0, views::GridLayout::ColumnSize::kFixed,
+                     dialog_content_width, 0);
 
   // Message text.
   const int vertical_padding =
@@ -256,15 +258,6 @@ bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
 
 ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-bool MediaGalleriesDialogViews::Cancel() {
-  return true;
-}
-
-bool MediaGalleriesDialogViews::Accept() {
-  accepted_ = true;
-  return true;
 }
 
 void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,

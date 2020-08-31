@@ -5,28 +5,36 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
+import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.v7.preference.TwoStatePreference;
+
+import androidx.annotation.Nullable;
+import androidx.preference.TwoStatePreference;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.Promise;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -41,9 +49,11 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -61,22 +71,68 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     ModelType.PREFERENCES, ModelType.PROXY_TABS, ModelType.TYPED_URLS,
             }));
 
-    public abstract static class DataCriteria<T> extends Criteria {
-        public DataCriteria() {
-            super("Sync data criteria not met.");
+    /**
+     * Simple activity that mimics a trusted vault key retrieval flow that succeeds immediately.
+     */
+    public static class DummyKeyRetrievalActivity extends Activity {
+        @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setResult(RESULT_OK);
+            FakeTrustedVaultClientBackend.get().startPopulateKeys();
+            finish();
+        }
+    };
+
+    /**
+     * A fake implementation of TrustedVaultClient.Backend. Allows to specify keys to be fetched.
+     * Keys aren't populated through fetchKeys() unless startPopulateKeys() is called.
+     * startPopulateKeys() is called by DummyKeyRetrievalActivity before its completion to mimic
+     * real TrustedVaultClient.Backend implementation.
+     */
+    public static class FakeTrustedVaultClientBackend implements TrustedVaultClient.Backend {
+        private static FakeTrustedVaultClientBackend sInstance;
+        private boolean mPopulateKeys;
+        private @Nullable List<byte[]> mKeys;
+
+        public FakeTrustedVaultClientBackend() {
+            mPopulateKeys = false;
         }
 
-        public abstract boolean isSatisfied(List<T> data);
-
-        public abstract List<T> getData() throws Exception;
+        public static FakeTrustedVaultClientBackend get() {
+            if (sInstance == null) {
+                sInstance = new FakeTrustedVaultClientBackend();
+            }
+            return sInstance;
+        }
 
         @Override
-        public boolean isSatisfied() {
-            try {
-                return isSatisfied(getData());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        public Promise<List<byte[]>> fetchKeys(CoreAccountInfo accountInfo) {
+            if (mKeys == null || !mPopulateKeys) {
+                return Promise.rejected();
             }
+            return Promise.fulfilled(mKeys);
+        }
+
+        @Override
+        public Promise<PendingIntent> createKeyRetrievalIntent(CoreAccountInfo accountInfo) {
+            Context context = InstrumentationRegistry.getContext();
+            Intent intent = new Intent(context, DummyKeyRetrievalActivity.class);
+            return Promise.fulfilled(
+                    PendingIntent.getActivity(context, 0 /* requestCode */, intent, 0 /* flags */));
+        }
+
+        @Override
+        public Promise<Boolean> markKeysAsStale(CoreAccountInfo accountInfo) {
+            return Promise.rejected();
+        }
+
+        public void setKeys(List<byte[]> keys) {
+            mKeys = Collections.unmodifiableList(keys);
+        }
+
+        public void startPopulateKeys() {
+            mPopulateKeys = true;
         }
     }
 
@@ -87,7 +143,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private void ruleSetUp() {
         // This must be called before super.setUp() in order for test authentication to work.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
     }
 
     private void ruleTearDown() {
@@ -95,7 +151,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             mProfileSyncService.requestStop();
             FakeServerHelper.deleteFakeServer();
         });
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     public SyncTestRule() {
@@ -125,12 +181,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         startMainActivityOnBlankPage();
     }
 
-    private void setUpMockAndroidSyncSettings() {
-        mSyncContentResolver = new MockSyncContentResolverDelegate();
-        mSyncContentResolver.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mSyncContentResolver, null);
-    }
-
     public Account setUpTestAccount() {
         Account account = SigninTestUtil.addTestAccount();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
@@ -142,7 +192,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * this. For most purposes this function should be used as this emulates the basic sign in flow.
      * @return the test account that is signed in.
      */
-    public Account setUpTestAccountAndSignIn() {
+    public Account setUpAccountAndSignInForTesting() {
         Account account = setUpTestAccount();
         signinAndEnableSync(account);
         return account;
@@ -179,7 +229,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void signOut() throws InterruptedException {
         final Semaphore s = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().signOut(
+            IdentityServicesProvider.get().getSigninManager().signOut(
                     SignoutReason.SIGNOUT_TEST, s::release, false);
         });
         Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -190,12 +240,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void clearServerData() {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
-        CriteriaHelper.pollUiThread(new Criteria("Timed out waiting for sync to stop.") {
-            @Override
-            public boolean isSatisfied() {
-                return !ProfileSyncService.get().isSyncRequested();
-            }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> ProfileSyncService.get().isSyncRequested()),
+                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     /*
@@ -236,9 +283,20 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         });
     }
 
+    @Deprecated // TODO(tedchoc): Remove this method once Criteria.equals returns a Runnable.
     public void pollInstrumentationThread(Criteria criteria) {
         CriteriaHelper.pollInstrumentationThread(
                 criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    }
+
+    public void pollInstrumentationThread(Runnable criteria) {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    }
+
+    public void pollInstrumentationThread(Callable<Boolean> criteria, String reason) {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, reason, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     @Override
@@ -246,19 +304,29 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         final Statement base = super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                setUpMockAndroidSyncSettings();
+                mSyncContentResolver = new MockSyncContentResolverDelegate();
+                AndroidSyncSettingsTestUtils.setUpAndroidSyncSettingsForTesting(
+                        mSyncContentResolver);
+
+                TrustedVaultClient.setInstanceForTesting(
+                        new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));
 
                 startMainActivityForSyncTest();
                 mContext = InstrumentationRegistry.getTargetContext();
 
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     // Ensure SyncController is registered with the new AndroidSyncSettings.
-                    AndroidSyncSettings.get().registerObserver(SyncController.get(mContext));
+                    AndroidSyncSettings.get().registerObserver(SyncController.get());
                     mFakeServerHelper = FakeServerHelper.get();
                 });
                 FakeServerHelper.useFakeServer(mContext);
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> { mProfileSyncService = ProfileSyncService.get(); });
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    ProfileSyncService profileSyncService = createProfileSyncService();
+                    if (profileSyncService != null) {
+                        ProfileSyncService.overrideForTests(profileSyncService);
+                    }
+                    mProfileSyncService = ProfileSyncService.get();
+                });
 
                 UniqueIdentificationGeneratorFactory.registerGenerator(
                         UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
@@ -336,15 +404,20 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
+    /**
+     * Returns an instance of ProfileSyncService that can be overridden by subclasses.
+     */
+    protected ProfileSyncService createProfileSyncService() {
+        return null;
+    }
+
     private void signinAndEnableSyncInternal(final Account account, boolean setFirstSetupComplete) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().signIn(
+            IdentityServicesProvider.get().getSigninManager().signIn(
                     SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
-                            if (ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                                    && setFirstSetupComplete) {
+                            if (setFirstSetupComplete) {
                                 mProfileSyncService.setFirstSetupComplete(
                                         SyncFirstSetupCompleteSource.BASIC_FLOW);
                             }
@@ -356,7 +429,8 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                         }
                     });
             // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
-            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                    Profile.getLastUsedRegularProfile(), true);
         });
         if (setFirstSetupComplete) {
             SyncTestUtil.waitForSyncActive();

@@ -5,29 +5,13 @@
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk appeared"
-        }
-      ],
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
       "bounds": [100, 100],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 100, 100]
       ],
       "transform": 2
     },

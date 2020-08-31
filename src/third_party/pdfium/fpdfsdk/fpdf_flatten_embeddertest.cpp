@@ -46,11 +46,11 @@ TEST_F(FPDFFlattenEmbedderTest, FlatPrint) {
 #endif
 TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_861842) {
 #if defined(OS_WIN)
-  static const char kCheckboxHash[] = "95fba3cb7bce7e0d3c94279f60984e17";
+  constexpr char kCheckboxHash[] = "95fba3cb7bce7e0d3c94279f60984e17";
 #elif defined(OS_MACOSX)
-  static const char kCheckboxHash[] = "0a1d1d63d4452bc26a1c5c547d309655";
+  constexpr char kCheckboxHash[] = "6aafcb2d98da222964bcdbf5aa1f4f1f";
 #else
-  static const char kCheckboxHash[] = "594265790b81df2d93120d33b72a6ada";
+  constexpr char kCheckboxHash[] = "594265790b81df2d93120d33b72a6ada";
 #endif
 
   EXPECT_TRUE(OpenDocument("bug_861842.pdf"));
@@ -66,8 +66,36 @@ TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_861842) {
   UnloadPage(page);
 
   // TODO(crbug.com/861842): This should not render blank.
-  static const char kBlankPageHash[] = "48400809c3862dae64b0cd00d51057a4";
+  constexpr char kBlankPageHash[] = "48400809c3862dae64b0cd00d51057a4";
   VerifySavedDocument(100, 120, kBlankPageHash);
+}
+
+TEST_F(FPDFFlattenEmbedderTest, BUG_889099) {
+#if defined(OS_WIN)
+  constexpr char kPageHash[] = "8c6e1dab0a15072f2c9c0ca240fdc739";
+  constexpr char kFlattenedPageHash[] = "9fb932ce7f370c0e68eec0a5d4d76271";
+#elif defined(OS_MACOSX)
+  constexpr char kPageHash[] = "d43f54c60b325726392a558f861402a9";
+  constexpr char kFlattenedPageHash[] = "627f143efb920a5e7ddd311e963b9c66";
+#else
+  constexpr char kPageHash[] = "51f35e80dbc8a69a024b5a02aa64d463";
+  constexpr char kFlattenedPageHash[] = "ef01f57507662ec9aef7cc7cff92f96c";
+#endif
+
+  EXPECT_TRUE(OpenDocument("bug_889099.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  // The original document has a malformed media box; the height is -400.
+  ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
+  CompareBitmap(bitmap.get(), 300, 400, kPageHash);
+
+  EXPECT_EQ(FLATTEN_SUCCESS, FPDFPage_Flatten(page, FLAT_PRINT));
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+  UnloadPage(page);
+
+  VerifySavedDocument(300, 400, kFlattenedPageHash);
 }
 
 // TODO(crbug.com/pdfium/11): Fix this test and enable.
@@ -77,7 +105,7 @@ TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_861842) {
 #define MAYBE_BUG_890322 BUG_890322
 #endif
 TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_890322) {
-  static const char md5_hash[] = "6c674642154408e877d88c6c082d67e9";
+  constexpr char md5_hash[] = "6c674642154408e877d88c6c082d67e9";
   EXPECT_TRUE(OpenDocument("bug_890322.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -100,7 +128,7 @@ TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_890322) {
 #define MAYBE_BUG_896366 BUG_896366
 #endif
 TEST_F(FPDFFlattenEmbedderTest, MAYBE_BUG_896366) {
-  static const char md5_hash[] = "f71ab085c52c8445ae785eca3ec858b1";
+  constexpr char md5_hash[] = "f71ab085c52c8445ae785eca3ec858b1";
   EXPECT_TRUE(OpenDocument("bug_896366.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);

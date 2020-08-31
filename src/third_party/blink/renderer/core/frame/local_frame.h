@@ -34,19 +34,24 @@
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
+#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
+#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -60,14 +65,23 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#if defined(OS_MACOSX)
+#include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
+#endif
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace service_manager {
-class InterfaceProvider;
+namespace gfx {
+class Point;
 }
+
+#if defined(OS_MACOSX)
+namespace gfx {
+class Range;
+}
+#endif
 
 namespace blink {
 
@@ -86,6 +100,7 @@ class FrameConsole;
 class FrameOverlay;
 // class FrameScheduler;
 class FrameSelection;
+class FrameWidget;
 class InputMethodController;
 class InspectorTraceEvents;
 class CoreProbeSink;
@@ -115,7 +130,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 class CORE_EXPORT LocalFrame final : public Frame,
                                      public FrameScheduler::Delegate,
                                      public Supplementable<LocalFrame>,
-                                     public mojom::blink::LocalFrame {
+                                     public mojom::blink::LocalFrame,
+                                     public mojom::blink::LocalMainFrame {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
@@ -125,6 +141,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       LocalFrameClient*,
       Page&,
       FrameOwner*,
+      const base::UnguessableToken& frame_token,
       WindowAgentFactory* inheriting_agent_factory,
       InterfaceRegistry*,
       const base::TickClock* clock = base::DefaultTickClock::GetInstance());
@@ -135,10 +152,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Frame overrides:
   ~LocalFrame() override;
-  void Trace(blink::Visitor*) override;
-  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
+  void Trace(Visitor*) override;
+  void Navigate(FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
-  SecurityContext* GetSecurityContext() const override;
+  const SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);
   void PrintNavigationWarning(const String&);
   bool DetachDocument() override;
@@ -150,9 +167,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // subtree, updating the inert bit on all descendant frames.
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
-  bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
-                                         ScrollGranularity granularity,
-                                         Frame* child) override;
+  bool BubbleLogicalScrollFromChildFrame(
+      mojom::blink::ScrollDirection direction,
+      ScrollGranularity granularity,
+      Frame* child) override;
   void DidFocus() override;
 
   void DidChangeThemeColor();
@@ -254,6 +272,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DeviceScaleFactorChanged();
   double DevicePixelRatio() const;
 
+  // Informs the local root's document and its local descendant subtree that a
+  // media query value changed.
+  void MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange);
+
   String SelectedText() const;
   String SelectedTextForClipboard() const;
 
@@ -280,8 +302,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
-  service_manager::InterfaceProvider& GetInterfaceProvider();
-
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
 
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
@@ -300,6 +320,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
   LocalFrameClient* Client() const;
+
+  // Returns the widget for this frame, or from the nearest ancestor which is a
+  // local root. It is never null for frames in ordinary Pages (which means the
+  // Page is inside a WebView), except very early in initialization. For frames
+  // in a non-ordinary Page (without a WebView, such as in unit tests, popups,
+  // devtools), it will always be null.
+  FrameWidget* GetWidgetForLocalRoot();
 
   WebContentSettingsClient* GetContentSettingsClient();
 
@@ -340,14 +367,26 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // remote ancestor frames and their respective scroll positions, clips, etc.
   void SetViewportIntersectionFromParent(const ViewportIntersectionState&);
 
+  IntSize GetMainFrameViewportSize() const override;
+  IntPoint GetMainFrameScrollOffset() const override;
+
   // See viewport_intersection_state.h for more info on these methods.
-  IntPoint RemoteViewportOffset() const {
+  gfx::Point RemoteViewportOffset() const {
     return intersection_state_.viewport_offset;
   }
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;
   }
+  IntRect RemoteMainFrameDocumentIntersection() const {
+    return intersection_state_.main_frame_document_intersection;
+  }
+
+  bool CanSkipStickyFrameTracking() const {
+    return intersection_state_.can_skip_sticky_frame_tracking;
+  }
+
   FrameOcclusionState GetOcclusionState() const;
+
   bool NeedsOcclusionTracking() const;
 
   // Replaces the initial empty document with a Document suitable for
@@ -367,12 +406,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // be removed.
   bool IsProvisional() const;
 
-  // True if AdTracker heuristics have determined that this frame is an ad.
-  // Calculated in the constructor but LocalFrames created on behalf of OOPIF
-  // aren't set until just before commit (ReadyToCommitNavigation time) by the
-  // embedder.
-  bool IsAdSubframe() const;
-  bool IsAdRoot() const;
+  // Called in the constructor if AdTracker heuristics have determined that this
+  // frame is an ad; LocalFrames created on behalf of OOPIF aren't set until
+  // just before commit (ReadyToCommitNavigation time) by the embedder.
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
   // Updates the frame color overlay to match the highlight ad setting.
@@ -397,7 +433,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
       const;
 
-  // Returns the frame host ptr.
+  // Returns the frame host ptr. The interface returned is backed by an
+  // associated interface with the legacy Chrome IPC channel.
   mojom::blink::LocalFrameHost& GetLocalFrameHostRemote();
 
   // Overlays a color on top of this LocalFrameView if it is associated with
@@ -444,6 +481,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void FinishedLoading(FrameLoader::NavigationFinishState);
 
+  void UpdateFaviconURL();
+
   using IsCapturingMediaCallback = base::RepeatingCallback<bool()>;
   void SetIsCapturingMediaCallback(IsCapturingMediaCallback callback);
   bool IsCapturingMedia() const;
@@ -454,21 +493,106 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetPrescientNetworkingForTesting(
       std::unique_ptr<WebPrescientNetworking> prescient_networking);
 
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
+
+  void CopyImageAtViewportPoint(const IntPoint& viewport_point);
+  void MediaPlayerActionAtViewportPoint(
+      const IntPoint& viewport_position,
+      const blink::mojom::blink::MediaPlayerActionType type,
+      bool enable);
+
+  // Handle the request as a download. If the request is for a blob: URL,
+  // a BlobURLToken should be provided as |blob_url_token| to ensure the
+  // correct blob gets downloaded.
+  void DownloadURL(
+      const ResourceRequest& request,
+      network::mojom::blink::RedirectMode cross_origin_redirect_behavior);
+  void DownloadURL(
+      const ResourceRequest& request,
+      network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
+      mojo::ScopedMessagePipeHandle blob_url_token);
+
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
       uint32_t max_length,
       GetTextSurroundingSelectionCallback callback) final;
   void SendInterventionReport(const String& id, const String& message) final;
+  void SetFrameOwnerProperties(
+      mojom::blink::FrameOwnerPropertiesPtr properties) final;
   void NotifyUserActivation() final;
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                            const WTF::String& message,
                            bool discard_duplicates) final;
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
+  void StopLoading() final;
   void Collapse(bool collapsed) final;
   void EnableViewSourceMode() final;
   void Focus() final;
+  void ClearFocusedElement() final;
+  void GetResourceSnapshotForWebBundle(
+      mojo::PendingReceiver<
+          data_decoder::mojom::blink::ResourceSnapshotForWebBundle> receiver)
+      final;
+  void CopyImageAt(const gfx::Point& window_point) final;
+  void SaveImageAt(const gfx::Point& window_point) final;
+  void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
+  void RenderFallbackContent() final;
+  void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
+  void MediaPlayerActionAt(
+      const gfx::Point& window_point,
+      blink::mojom::blink::MediaPlayerActionPtr action) final;
+  void AdvanceFocusInFrame(
+      mojom::blink::FocusType focus_type,
+      const base::Optional<base::UnguessableToken>& source_frame_token) final;
+  void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
+  void ReportContentSecurityPolicyViolation(
+      network::mojom::blink::CSPViolationPtr csp_violation) final;
+  // Updates the snapshotted policy attributes (sandbox flags and feature policy
+  // container policy) in the frame's FrameOwner. This is used when this frame's
+  // parent is in another process and it dynamically updates this frame's
+  // sandbox flags or container policy. The new policy won't take effect until
+  // the next navigation.
+  void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
+  void OnScreensChange() final;
+  void PostMessageEvent(
+      const base::Optional<base::UnguessableToken>& source_frame_token,
+      const String& source_origin,
+      const String& target_origin,
+      BlinkTransferableMessage message) final;
+  void BindReportingObserver(
+      mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
+
+  // blink::mojom::LocalMainFrame overrides:
+  void AnimateDoubleTapZoom(const gfx::Point& point,
+                            const gfx::Rect& rect) override;
+  void SetScaleFactor(float scale) override;
+  void ClosePage(
+      mojom::blink::LocalMainFrame::ClosePageCallback callback) override;
+  // Performs the specified plugin action on the node at the given location.
+  void PluginActionAt(const gfx::Point& location,
+                      mojom::blink::PluginActionType action) override;
+  void SetInitialFocus(bool reverse) override;
+  void EnablePreferredSizeChangedMode() override;
+  void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
+#if defined(OS_MACOSX)
+  void GetCharacterIndexAtPoint(const gfx::Point& point) final;
+  void GetFirstRectForRange(const gfx::Range& range) final;
+#endif
+
+  SystemClipboard* GetSystemClipboard();
+  RawSystemClipboard* GetRawSystemClipboard();
+
+  // Indicate that this frame was attached as a MainFrame.
+  void WasAttachedAsLocalMainFrame();
+
+  // Returns the first URL loaded in this frame that is cross-origin to the
+  // parent frame.
+  base::Optional<String> FirstUrlCrossOriginToParent() const;
 
  private:
   friend class FrameNavigationDisabler;
+  FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
 
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -504,9 +628,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Activates the user activation states of this frame and all its ancestors.
   void NotifyUserActivation(bool need_browser_verification);
 
-  // Returns the transient user activation state of this frame
-  bool HasTransientUserActivation();
-
   // Consumes and returns the transient user activation state this frame, after
   // updating all other frames in the frame tree.
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
@@ -520,9 +641,21 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void EvictFromBackForwardCache();
 
+  HitTestResult HitTestResultForVisualViewportPos(
+      const IntPoint& pos_in_viewport);
+
+  bool ShouldThrottleDownload();
+
+#if defined(OS_MACOSX)
+  mojom::blink::TextInputHost& GetTextInputHost();
+#endif
+
   static void BindToReceiver(
       blink::LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver);
+  static void BindToMainFrameReceiver(
+      blink::LocalFrame* frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::LocalMainFrame> receiver);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -541,12 +674,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   const Member<ScriptController> script_controller_;
   const Member<Editor> editor_;
-  const Member<SpellChecker> spell_checker_;
   const Member<FrameSelection> selection_;
   const Member<EventHandler> event_handler_;
   const Member<FrameConsole> console_;
-  const Member<InputMethodController> input_method_controller_;
-  const Member<TextSuggestionController> text_suggestion_controller_;
 
   int navigation_disable_count_;
   // TODO(dcheng): In theory, this could be replaced by checking the
@@ -559,12 +689,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   float text_zoom_factor_;
 
   bool in_view_source_mode_;
-
-  // Type of frame detected by heuristics checking if the frame was created
-  // for advertising purposes. It's per-frame (as opposed to per-document)
-  // because when an iframe is created on behalf of ad script that same frame is
-  // not typically reused for non-ad purposes.
-  mojom::AdFrameType ad_frame_type_;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
@@ -581,6 +705,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
   mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
+
+#if defined(OS_MACOSX)
+  mojo::Remote<mojom::blink::TextInputHost> text_input_host_;
+#endif
 
   ViewportIntersectionState intersection_state_;
 
@@ -603,6 +731,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
+  base::Optional<base::UnguessableToken> embedding_token_;
+
   mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 
@@ -610,6 +740,25 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
+  mojo::AssociatedReceiver<mojom::blink::LocalMainFrame> main_frame_receiver_{
+      this};
+
+  // Variable to control burst of download requests.
+  int num_burst_download_requests_ = 0;
+  base::TimeTicks burst_download_start_time_;
+
+  // Access to the global sanitized system clipboard.
+  Member<SystemClipboard> system_clipboard_;
+  // Access to the global raw/unsanitized system clipboard
+  Member<RawSystemClipboard> raw_system_clipboard_;
+
+  // Stores the first URL that was loaded in this frame that is cross-origin
+  // to the parent frame. For this URL we know that the parent origin provided
+  // it by either setting the |src| attribute or by navigating the iframe.
+  // Thus we can safely reveal it to the parent origin in Web APIs.
+  // TODO(ulan): Move this to the browser process once performance.measureMemory
+  // starts using Performance Manager to support cross-site iframes.
+  base::Optional<String> first_url_cross_origin_to_parent_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
@@ -632,21 +781,8 @@ inline Editor& LocalFrame::GetEditor() const {
   return *editor_;
 }
 
-inline SpellChecker& LocalFrame::GetSpellChecker() const {
-  return *spell_checker_;
-}
-
 inline FrameConsole& LocalFrame::Console() const {
   return *console_;
-}
-
-inline InputMethodController& LocalFrame::GetInputMethodController() const {
-  return *input_method_controller_;
-}
-
-inline TextSuggestionController& LocalFrame::GetTextSuggestionController()
-    const {
-  return *text_suggestion_controller_;
 }
 
 inline bool LocalFrame::InViewSourceMode() const {
@@ -677,7 +813,7 @@ class FrameNavigationDisabler {
   ~FrameNavigationDisabler();
 
  private:
-  Member<LocalFrame> frame_;
+  LocalFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationDisabler);
 };
@@ -713,7 +849,7 @@ class ScopedFrameBlamer {
  private:
   void LeaveContext();
 
-  Member<LocalFrame> frame_;
+  LocalFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFrameBlamer);
 };

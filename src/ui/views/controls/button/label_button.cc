@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -93,10 +94,16 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
-void LabelButton::SetEnabledTextColors(SkColor color) {
+void LabelButton::SetEnabledTextColors(base::Optional<SkColor> color) {
   ButtonState states[] = {STATE_NORMAL, STATE_HOVERED, STATE_PRESSED};
+  if (color.has_value()) {
+    for (auto state : states)
+      SetTextColor(state, color.value());
+    return;
+  }
   for (auto state : states)
-    SetTextColor(state, color);
+    explicitly_set_colors_[state] = false;
+  ResetColorsFromNativeTheme();
 }
 
 void LabelButton::SetTextShadows(const gfx::ShadowValues& shadows) {
@@ -174,6 +181,17 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   image_label_spacing_ = spacing;
   ResetCachedPreferredSize();
   OnPropertyChanged(&image_label_spacing_, kPropertyEffectsLayout);
+}
+
+bool LabelButton::GetImageCentered() const {
+  return image_centered_;
+}
+
+void LabelButton::SetImageCentered(bool image_centered) {
+  if (GetImageCentered() == image_centered)
+    return;
+  image_centered_ = image_centered;
+  OnPropertyChanged(&image_centered_, kPropertyEffectsLayout);
 }
 
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
@@ -292,9 +310,7 @@ void LabelButton::Layout() {
       label_area.height());
 
   gfx::Point image_origin = child_area.origin();
-  if (label_->GetMultiLine()) {
-    // Right now this code currently only works for CheckBox and RadioButton
-    // descendants that have multi-line enabled for their label.
+  if (label_->GetMultiLine() && !image_centered_) {
     image_origin.Offset(
         0, std::max(
                0, (label_->font_list().GetHeight() - image_size.height()) / 2));
@@ -305,8 +321,7 @@ void LabelButton::Layout() {
     const int spacing = (image_size.width() > 0 && label_size.width() > 0)
                             ? GetImageLabelSpacing()
                             : 0;
-    const int total_width = image_size.width() + label_size.width() +
-        spacing;
+    const int total_width = image_size.width() + label_size.width() + spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
   } else if (horizontal_alignment == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
@@ -383,6 +398,7 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 
 void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(GetVisualState()));
+  ResetCachedPreferredSize();
 }
 
 void LabelButton::UpdateThemedBorder() {
@@ -415,27 +431,6 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.has_border = false;
   params->button.classic_state = 0;
   params->button.background_color = label_->GetBackgroundColor();
-}
-
-void LabelButton::ResetColorsFromNativeTheme() {
-  const ui::NativeTheme* theme = GetNativeTheme();
-  // Since this is a LabelButton, use the label colors.
-  SkColor colors[STATE_COUNT] = {
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
-  };
-
-  label_->SetBackground(nullptr);
-  label_->SetAutoColorReadabilityEnabled(false);
-
-  for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
-    if (!explicitly_set_colors_[state]) {
-      SetTextColor(static_cast<ButtonState>(state), colors[state]);
-      explicitly_set_colors_[state] = false;
-    }
-  }
 }
 
 PropertyEffects LabelButton::UpdateStyleToIndicateDefaultStatus() {
@@ -474,6 +469,7 @@ void LabelButton::OnBlur() {
 }
 
 void LabelButton::OnThemeChanged() {
+  Button::OnThemeChanged();
   ResetColorsFromNativeTheme();
   UpdateThemedBorder();
   ResetLabelEnabledColor();
@@ -517,7 +513,7 @@ void LabelButton::ClearTextIfShrunkDown() {
     // Once the button shrinks down to its preferred size (that disregards the
     // current text), we finish the operation by clearing the text.
     shrinking_down_label_ = false;
-    SetTextInternal(base::string16());
+    SetText(base::string16());
   }
 }
 
@@ -542,6 +538,27 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
   return size;
 }
 
+void LabelButton::ResetColorsFromNativeTheme() {
+  const ui::NativeTheme* theme = GetNativeTheme();
+  // Since this is a LabelButton, use the label colors.
+  SkColor colors[STATE_COUNT] = {
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
+  };
+
+  label_->SetBackground(nullptr);
+  label_->SetAutoColorReadabilityEnabled(false);
+
+  for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
+    if (!explicitly_set_colors_[state]) {
+      SetTextColor(static_cast<ButtonState>(state), colors[state]);
+      explicitly_set_colors_[state] = false;
+    }
+  }
+}
+
 void LabelButton::ResetLabelEnabledColor() {
   const SkColor color = button_state_colors_[state()];
   if (state() != STATE_DISABLED && label_->GetEnabledColor() != color)
@@ -558,6 +575,7 @@ ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MinSize)
 ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MaxSize)
 ADD_PROPERTY_METADATA(LabelButton, bool, IsDefault)
 ADD_PROPERTY_METADATA(LabelButton, int, ImageLabelSpacing)
+ADD_PROPERTY_METADATA(LabelButton, bool, ImageCentered)
 END_METADATA()
 
 }  // namespace views

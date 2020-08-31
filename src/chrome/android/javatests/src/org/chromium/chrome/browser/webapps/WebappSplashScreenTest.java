@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -29,8 +28,8 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -81,12 +80,10 @@ public class WebappSplashScreenTest {
 
     @Test
     @SmallTest
-    @Feature({"Webapps"})
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Feature({"StatusBar", "Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testThemeColorWhenNotSpecified() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Status bar color should be white on M+ to match CCTs and WebAPK shell.
         int expectedColor = Color.WHITE;
@@ -169,35 +166,6 @@ public class WebappSplashScreenTest {
         });
 
         mActivityTestRule.waitUntilSplashscreenHides();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testUmaOnNativeLoad() {
-        mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-
-        // Tests UMA values.
-        Assert.assertEquals(0,
-                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        SplashController.SplashHidesReason.NUM_ENTRIES));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testUmaWhenSplashHides() {
-        mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
-                                mActivityTestRule.getActivity().getActivityTab()));
-
-        mActivityTestRule.waitUntilSplashscreenHides();
-
-        // HIDES should now have a value.
-        Assert.assertEquals(1,
-                getHistogramTotalCountFor(WebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        SplashController.SplashHidesReason.NUM_ENTRIES));
     }
 
     @Test

@@ -18,10 +18,6 @@ namespace arc {
 struct ArcFeatures;
 }
 
-namespace device {
-class BluetoothAdapter;
-}
-
 namespace features {
 extern const base::Feature kUmaShortHWClass;
 }
@@ -60,19 +56,15 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Loads hardware class information. When this task is complete, |callback|
   // is run.
-  void InitTaskGetFullHardwareClass(const base::Closure& callback);
-
-  // Creates the Bluetooth adapter. When this task is complete, |callback| is
-  // run.
-  void InitTaskGetBluetoothAdapter(const base::Closure& callback);
+  void InitTaskGetFullHardwareClass(base::OnceClosure callback);
 
   // Retrieves ARC features using ArcFeaturesParser. When this task is complete,
   // |callback| is run.
-  void InitTaskGetArcFeatures(const base::RepeatingClosure& callback);
+  void InitTaskGetArcFeatures(base::OnceClosure callback);
 
   // metrics::MetricsProvider:
   void Init() override;
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void OnDidCreateMetricsLog() override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
@@ -90,21 +82,13 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void UpdateMultiProfileUserCount(
       metrics::SystemProfileProto* system_profile_proto);
 
-  // Sets the Bluetooth Adapter instance used for the WriteBluetoothProto()
-  // call and calls callback.
-  void SetBluetoothAdapter(base::Closure callback,
-                           scoped_refptr<device::BluetoothAdapter> adapter);
-
   // Sets the full hardware class, then calls the callback.
-  void SetFullHardwareClass(base::Closure callback,
+  void SetFullHardwareClass(base::OnceClosure callback,
                             std::string full_hardware_class);
 
   // Updates ARC-related system profile fields, then calls the callback.
-  void OnArcFeaturesParsed(base::RepeatingClosure callback,
+  void OnArcFeaturesParsed(base::OnceClosure callback,
                            base::Optional<arc::ArcFeatures> features);
-
-  // Writes info about paired Bluetooth devices on this system.
-  void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
 
   // Called from the ProvideCurrentSessionData(...) to record UserType.
   void UpdateUserTypeUMA();
@@ -118,9 +102,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Use the first signed-in profile for profile-dependent metrics.
   std::unique_ptr<metrics::CachedMetricsProfile> cached_profile_;
-
-  // Bluetooth Adapter instance for collecting information about paired devices.
-  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Whether the user count was registered at the last log initialization.
   bool registered_user_count_at_log_initialization_;

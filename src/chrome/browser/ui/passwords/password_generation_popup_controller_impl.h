@@ -6,18 +6,20 @@
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
 
 #include <stddef.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
-#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -37,8 +39,7 @@ class PasswordManagerDriver;
 }  // namespace password_manager
 
 namespace autofill {
-struct PasswordForm;
-struct Suggestion;
+struct FormData;
 namespace password_generation {
 struct PasswordGenerationUIData;
 }  // namespace password_generation
@@ -103,6 +104,8 @@ class PasswordGenerationPopupControllerImpl
   // content::WebContentsObserver overrides
   void DidAttachInterstitialPage() override;
   void WebContentsDestroyed() override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
 #if !defined(OS_ANDROID)
   // ZoomObserver implementation.
@@ -125,22 +128,14 @@ class PasswordGenerationPopupControllerImpl
  private:
   class KeyPressRegistrator;
   // PasswordGenerationPopupController implementation:
-  void Hide() override;
+  void Hide(autofill::PopupHidingReason reason) override;
   void ViewDestroyed() override;
-  void SetSelectionAtPoint(const gfx::Point& point) override;
-  bool AcceptSelectedLine() override;
   void SelectionCleared() override;
-  bool HasSelection() const override;
+  void SetSelected() override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
-  gfx::Rect popup_bounds() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
-  const std::vector<autofill::Suggestion> GetSuggestions() override;
-#if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(int row) override;
-  int GetElidedLabelWidthForRow(int row) override;
-#endif
 
   GenerationUIState state() const override;
   bool password_selected() const override;
@@ -158,7 +153,7 @@ class PasswordGenerationPopupControllerImpl
   // Accept password if it's selected.
   bool PossiblyAcceptPassword();
 
-  const autofill::PasswordForm form_;
+  const autofill::FormData form_data_;
 
   base::WeakPtr<password_manager::PasswordManagerDriver> const driver_;
 
@@ -172,7 +167,7 @@ class PasswordGenerationPopupControllerImpl
   const autofill::FieldSignature field_signature_;
 
   // Renderer ID of the generation element.
-  const uint32_t generation_element_id_;
+  const autofill::FieldRendererId generation_element_id_;
 
   // Maximum length of the password to be generated. 0 represents an unbound
   // maximum length.
@@ -191,8 +186,6 @@ class PasswordGenerationPopupControllerImpl
 
   // The state of the generation popup.
   GenerationUIState state_;
-
-  autofill::PopupViewCommon view_common_;
 
   std::unique_ptr<KeyPressRegistrator> key_press_handler_manager_;
 

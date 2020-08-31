@@ -8,10 +8,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/notreached.h"
 #include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -164,6 +165,9 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
+constexpr int RuntimeAPI::kFastReloadCount;
+constexpr int RuntimeAPI::kUnpackedFastReloadCount;
+
 // static
 void RuntimeAPI::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPrefLastRestartWasDueToDelayedRestartApi,
@@ -188,8 +192,8 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
   DCHECK(!browser_context_->IsOffTheRecord());
 
   ExtensionSystem::Get(context)->ready().Post(
-      FROM_HERE, base::Bind(&RuntimeAPI::OnExtensionsReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&RuntimeAPI::OnExtensionsReady,
+                                weak_ptr_factory_.GetWeakPtr()));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   process_manager_observer_.Add(ProcessManager::Get(browser_context_));
 
@@ -379,8 +383,8 @@ RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::ScheduleDelayedRestart(
 
   restart_after_delay_timer_.Start(
       FROM_HERE, delay_till_restart,
-      base::Bind(&RuntimeAPI::OnDelayedRestartTimerTimeout,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&RuntimeAPI::OnDelayedRestartTimerTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   return was_throttled ? RestartAfterDelayStatus::FAILED_THROTTLED
                        : RestartAfterDelayStatus::SUCCESS_RESTART_SCHEDULED;

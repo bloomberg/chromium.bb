@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -23,8 +24,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -67,7 +69,7 @@ ExtensionShelfContextMenu::ExtensionShelfContextMenu(
 ExtensionShelfContextMenu::~ExtensionShelfContextMenu() = default;
 
 void ExtensionShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  auto menu_model = GetBaseMenuModel();
   Profile* profile = controller()->profile();
   const std::string app_id = item().id.app_id;
 
@@ -200,10 +202,10 @@ void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
       SetLaunchType(extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case ash::MENU_NEW_WINDOW:
-      chrome::NewEmptyWindow(controller()->profile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
       break;
     case ash::MENU_NEW_INCOGNITO_WINDOW:
-      chrome::NewEmptyWindow(controller()->profile()->GetOffTheRecordProfile());
+      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
       break;
     default:
       if (extension_items_) {
@@ -227,7 +229,8 @@ void ExtensionShelfContextMenu::CreateOpenNewSubmenu(
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::MENU_OPEN_NEW, GetLaunchTypeStringId(),
       open_new_submenu_model_.get(),
-      GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()));
+      ui::ImageModel::FromVectorIcon(
+          GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId())));
 }
 
 extensions::LaunchType ExtensionShelfContextMenu::GetLaunchType() const {

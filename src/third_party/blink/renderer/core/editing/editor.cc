@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/editing/editor.h"
 
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
@@ -69,6 +68,7 @@
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -175,7 +175,7 @@ bool Editor::HandleTextEvent(TextEvent* event) {
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (event->IsPaste()) {
     if (event->PastingFragment()) {
@@ -236,7 +236,7 @@ bool Editor::CanCopy() const {
   FrameSelection& selection = GetFrameSelection();
   if (!selection.IsAvailable())
     return false;
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   const VisibleSelectionInFlatTree& visible_selection =
       selection.ComputeVisibleSelectionInFlatTree();
   return visible_selection.IsRange() &&
@@ -502,7 +502,7 @@ bool Editor::InsertTextWithoutSendingTextEvent(
       LocalFrame* focused_or_main_frame =
           To<LocalFrame>(page->GetFocusController().FocusedOrMainFrame());
       focused_or_main_frame->Selection().RevealSelection(
-          ScrollAlignment::kAlignToEdgeIfNeeded);
+          ScrollAlignment::ToEdgeIfNeeded());
     }
   }
 
@@ -518,7 +518,7 @@ bool Editor::InsertLineBreak() {
   DCHECK(GetFrame().GetDocument());
   if (!TypingCommand::InsertLineBreak(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::ToEdgeIfNeeded());
 
   return true;
 }
@@ -536,7 +536,7 @@ bool Editor::InsertParagraphSeparator() {
   EditingState editing_state;
   if (!TypingCommand::InsertParagraphSeparator(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::ToEdgeIfNeeded());
 
   return true;
 }
@@ -612,7 +612,8 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 }
 
 void Editor::CopyImage(const HitTestResult& result) {
-  WriteImageNodeToClipboard(*result.InnerNodeOrImageMapImage(),
+  WriteImageNodeToClipboard(*frame_->GetSystemClipboard(),
+                            *result.InnerNodeOrImageMapImage(),
                             result.AltDisplayString());
 }
 
@@ -634,13 +635,13 @@ void Editor::Redo() {
 
 void Editor::SetBaseWritingDirection(WritingDirection direction) {
   Element* focused_element = GetFrame().GetDocument()->FocusedElement();
-  if (IsTextControl(focused_element)) {
+  if (auto* text_control = ToTextControlOrNull(focused_element)) {
     if (direction == WritingDirection::kNatural)
       return;
-    focused_element->setAttribute(
+    text_control->setAttribute(
         html_names::kDirAttr,
         direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
-    focused_element->DispatchInputEvent();
+    text_control->DispatchInputEvent();
     return;
   }
 
@@ -657,7 +658,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
 }
 
 void Editor::RevealSelectionAfterEditingOperation(
-    const ScrollAlignment& alignment) {
+    const mojom::blink::ScrollAlignment& alignment) {
   if (prevent_reveal_selection_)
     return;
   if (!GetFrameSelection().IsAvailable())
@@ -725,7 +726,8 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
       EditingStyle::kPreserveWritingDirection);
 
   // Handle block styles, substracting these from the typing style.
-  EditingStyle* block_style = typing_style_->ExtractAndRemoveBlockProperties();
+  EditingStyle* block_style =
+      typing_style_->ExtractAndRemoveBlockProperties(GetFrame().DomWindow());
   if (!block_style->IsEmpty()) {
     DCHECK(GetFrame().GetDocument());
     MakeGarbageCollected<ApplyStyleCommand>(*GetFrame().GetDocument(),

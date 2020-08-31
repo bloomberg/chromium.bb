@@ -23,6 +23,7 @@ import collections
 import ctypes
 import multiprocessing
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -30,6 +31,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import signals
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 SymbolHeader = collections.namedtuple('SymbolHeader',
@@ -94,8 +98,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     else:
       run_command = cros_build_lib.run
     return run_command(
-        cmd_base + cmd_args, redirect_stderr=True, log_stdout_to_file=temp.name,
-        error_code_ok=True, debug_level=logging.DEBUG)
+        cmd_base + cmd_args, stderr=True, stdout=temp.name,
+        check=False, debug_level=logging.DEBUG)
 
   def _CrashCheck(ret, msg):
     if ret < 0:

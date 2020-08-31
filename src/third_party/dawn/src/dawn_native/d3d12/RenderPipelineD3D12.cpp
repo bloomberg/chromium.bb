@@ -15,6 +15,7 @@
 #include "dawn_native/d3d12/RenderPipelineD3D12.h"
 
 #include "common/Assert.h"
+#include "common/Log.h"
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
@@ -292,10 +293,9 @@ namespace dawn_native { namespace d3d12 {
     ResultOrError<RenderPipeline*> RenderPipeline::Create(
         Device* device,
         const RenderPipelineDescriptor* descriptor) {
-        std::unique_ptr<RenderPipeline> pipeline =
-            std::make_unique<RenderPipeline>(device, descriptor);
+        Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.release();
+        return pipeline.Detach();
     }
 
     MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
@@ -337,14 +337,18 @@ namespace dawn_native { namespace d3d12 {
                     break;
             }
 
-            const std::string hlslSource = module->GetHLSLSource(ToBackend(GetLayout()));
+            std::string hlslSource;
+            DAWN_TRY_ASSIGN(hlslSource, module->GetHLSLSource(ToBackend(GetLayout())));
 
             const PlatformFunctions* functions = device->GetFunctions();
-            if (FAILED(functions->d3dCompile(hlslSource.c_str(), hlslSource.length(), nullptr,
-                                             nullptr, nullptr, entryPoint, compileTarget,
-                                             compileFlags, 0, &compiledShader[stage], &errors))) {
-                printf("%s\n", reinterpret_cast<char*>(errors->GetBufferPointer()));
-                ASSERT(false);
+            MaybeError error = CheckHRESULT(
+                functions->d3dCompile(hlslSource.c_str(), hlslSource.length(), nullptr, nullptr,
+                                      nullptr, entryPoint, compileTarget, compileFlags, 0,
+                                      &compiledShader[stage], &errors),
+                "D3DCompile");
+            if (error.IsError()) {
+                dawn::WarningLog() << reinterpret_cast<char*>(errors->GetBufferPointer());
+                DAWN_TRY(std::move(error));
             }
 
             if (shader != nullptr) {
@@ -355,7 +359,7 @@ namespace dawn_native { namespace d3d12 {
 
         PipelineLayout* layout = ToBackend(GetLayout());
 
-        descriptorD3D12.pRootSignature = layout->GetRootSignature().Get();
+        descriptorD3D12.pRootSignature = layout->GetRootSignature();
 
         // D3D12 logs warnings if any empty input state is used
         std::array<D3D12_INPUT_ELEMENT_DESC, kMaxVertexAttributes> inputElementDescriptors;
@@ -416,8 +420,8 @@ namespace dawn_native { namespace d3d12 {
         return mD3d12PrimitiveTopology;
     }
 
-    ComPtr<ID3D12PipelineState> RenderPipeline::GetPipelineState() {
-        return mPipelineState;
+    ID3D12PipelineState* RenderPipeline::GetPipelineState() const {
+        return mPipelineState.Get();
     }
 
     D3D12_INPUT_LAYOUT_DESC RenderPipeline::ComputeInputLayout(

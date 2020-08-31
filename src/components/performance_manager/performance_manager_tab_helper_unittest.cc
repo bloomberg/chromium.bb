@@ -5,6 +5,7 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 
 #include <set>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -12,8 +13,9 @@
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/page_node_impl.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/render_process_user_data.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
@@ -37,11 +39,6 @@ class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
     // Clean up the web contents, which should dispose of the page and frame
     // nodes involved.
     DeleteContents();
-
-    // The RenderProcessHosts seem to get leaked, or at least be still alive
-    // here, so explicitly detach from them in order to clean up the graph
-    // nodes.
-    RenderProcessUserData::DetachAndDestroyAll();
 
     PerformanceManagerTestHarness::TearDown();
   }
@@ -68,7 +65,7 @@ class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
 void CallOnGraphSync(PerformanceManagerImpl::GraphImplCallback callback) {
   base::RunLoop run_loop;
 
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindLambdaForTesting([&run_loop, &callback](GraphImpl* graph) {
         std::move(callback).Run(graph);
@@ -196,7 +193,7 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
 
   size_t num_hosts = CountAllRenderProcessHosts();
 
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
         EXPECT_GE(num_hosts, graph->GetAllProcessNodeImpls().size());
         EXPECT_EQ(0u, graph->GetAllFrameNodeImpls().size());
@@ -226,6 +223,30 @@ TEST_F(PerformanceManagerTabHelperTest, PageIsAudible) {
   ExpectPageIsAudible(true);
   content::WebContentsTester::For(web_contents())->SetIsCurrentlyAudible(false);
   ExpectPageIsAudible(false);
+}
+
+TEST_F(PerformanceManagerTabHelperTest, GetFrameNode) {
+  SetContents(CreateTestWebContents());
+
+  auto* tab_helper =
+      PerformanceManagerTabHelper::FromWebContents(web_contents());
+  ASSERT_TRUE(tab_helper);
+
+  // GetFrameNode() can return nullptr. In this test, it is achieved by using an
+  // empty RenderFrameHost.
+  auto* empty_frame = web_contents()->GetMainFrame();
+  DCHECK(empty_frame);
+
+  auto* empty_frame_node = tab_helper->GetFrameNode(empty_frame);
+  EXPECT_FALSE(empty_frame_node);
+
+  // This navigation will create a frame node.
+  auto* new_frame = content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kParentUrl));
+  DCHECK(new_frame);
+
+  auto* new_frame_node = tab_helper->GetFrameNode(new_frame);
+  EXPECT_TRUE(new_frame_node);
 }
 
 }  // namespace performance_manager

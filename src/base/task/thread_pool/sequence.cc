@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/critical_closure.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
 #include "base/time/time.h"
@@ -45,7 +45,8 @@ void Sequence::Transaction::PushTask(Task task) {
 
   task.task = sequence()->traits_.shutdown_behavior() ==
                       TaskShutdownBehavior::BLOCK_SHUTDOWN
-                  ? MakeCriticalClosure(std::move(task.task))
+                  ? MakeCriticalClosure(task.posted_from.ToString(),
+                                        std::move(task.task))
                   : std::move(task.task);
 
   sequence()->queue_.push(std::move(task));

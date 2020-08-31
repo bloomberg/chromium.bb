@@ -35,7 +35,6 @@ class CPDFSDK_BAAnnot : public CPDFSDK_Annot {
 
   virtual CPDF_Action GetAAction(CPDF_AAction::AActionType eAAT);
   virtual bool IsAppearanceValid();
-  virtual bool IsAppearanceValid(CPDF_Annot::AppearanceMode mode);
   virtual void DrawAppearance(CFX_RenderDevice* pDevice,
                               const CFX_Matrix& mtUser2Device,
                               CPDF_Annot::AppearanceMode mode,
@@ -66,6 +65,8 @@ class CPDFSDK_BAAnnot : public CPDFSDK_Annot {
   CPDF_AAction GetAAction() const;
 
   void SetOpenState(bool bOpenState);
+
+  CPDF_Dest GetDestination() const;
 
  protected:
   CPDF_Dictionary* GetAPDict() const;

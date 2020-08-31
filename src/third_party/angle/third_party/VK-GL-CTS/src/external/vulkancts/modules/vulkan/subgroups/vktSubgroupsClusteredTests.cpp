@@ -24,6 +24,7 @@
  */ /*--------------------------------------------------------------------*/
 
 #include "vktSubgroupsClusteredTests.hpp"
+#include "vktSubgroupsScanHelpers.hpp"
 #include "vktSubgroupsTestsUtils.hpp"
 
 #include <string>
@@ -48,337 +49,64 @@ enum OpType
 	OPTYPE_CLUSTERED_LAST
 };
 
-static bool checkVertexPipelineStages(std::vector<const void*> datas,
+static Operator getOperator(OpType t)
+{
+	switch (t)
+	{
+		case OPTYPE_CLUSTERED_ADD:	return OPERATOR_ADD;
+		case OPTYPE_CLUSTERED_MUL:	return OPERATOR_MUL;
+		case OPTYPE_CLUSTERED_MIN:	return OPERATOR_MIN;
+		case OPTYPE_CLUSTERED_MAX:	return OPERATOR_MAX;
+		case OPTYPE_CLUSTERED_AND:	return OPERATOR_AND;
+		case OPTYPE_CLUSTERED_OR:	return OPERATOR_OR;
+		case OPTYPE_CLUSTERED_XOR:	return OPERATOR_XOR;
+		default:
+			DE_FATAL("Unsupported op type");
+			return OPERATOR_ADD;
+	}
+}
+
+static bool checkVertexPipelineStages(const void* internalData, std::vector<const void*> datas,
 									  deUint32 width, deUint32)
 {
+	DE_UNREF(internalData);
 	return vkt::subgroups::check(datas, width, 1);
 }
 
-static bool checkCompute(std::vector<const void*> datas,
+static bool checkCompute(const void* internalData, std::vector<const void*> datas,
 						 const deUint32 numWorkgroups[3], const deUint32 localSize[3],
 						 deUint32)
 {
+	DE_UNREF(internalData);
 	return vkt::subgroups::checkCompute(datas, numWorkgroups, localSize, 1);
 }
 
-std::string getOpTypeName(int opType)
+std::string getOpTypeName(Operator op)
 {
-	switch (opType)
-	{
-		default:
-			DE_FATAL("Unsupported op type");
-			return "";
-		case OPTYPE_CLUSTERED_ADD:
-			return "subgroupClusteredAdd";
-		case OPTYPE_CLUSTERED_MUL:
-			return "subgroupClusteredMul";
-		case OPTYPE_CLUSTERED_MIN:
-			return "subgroupClusteredMin";
-		case OPTYPE_CLUSTERED_MAX:
-			return "subgroupClusteredMax";
-		case OPTYPE_CLUSTERED_AND:
-			return "subgroupClusteredAnd";
-		case OPTYPE_CLUSTERED_OR:
-			return "subgroupClusteredOr";
-		case OPTYPE_CLUSTERED_XOR:
-			return "subgroupClusteredXor";
-	}
-}
-
-std::string getOpTypeOperation(int opType, vk::VkFormat format, std::string lhs, std::string rhs)
-{
-	switch (opType)
-	{
-		default:
-			DE_FATAL("Unsupported op type");
-			return "";
-		case OPTYPE_CLUSTERED_ADD:
-			return lhs + " + " + rhs;
-		case OPTYPE_CLUSTERED_MUL:
-			return lhs + " * " + rhs;
-		case OPTYPE_CLUSTERED_MIN:
-			switch (format)
-			{
-				default:
-					return "min(" + lhs + ", " + rhs + ")";
-				case VK_FORMAT_R16_SFLOAT:
-				case VK_FORMAT_R32_SFLOAT:
-				case VK_FORMAT_R64_SFLOAT:
-					return "(isnan(" + lhs + ") ? " + rhs + " : (isnan(" + rhs + ") ? " + lhs + " : min(" + lhs + ", " + rhs + ")))";
-				case VK_FORMAT_R16G16_SFLOAT:
-				case VK_FORMAT_R16G16B16_SFLOAT:
-				case VK_FORMAT_R16G16B16A16_SFLOAT:
-				case VK_FORMAT_R32G32_SFLOAT:
-				case VK_FORMAT_R32G32B32_SFLOAT:
-				case VK_FORMAT_R32G32B32A32_SFLOAT:
-				case VK_FORMAT_R64G64_SFLOAT:
-				case VK_FORMAT_R64G64B64_SFLOAT:
-				case VK_FORMAT_R64G64B64A64_SFLOAT:
-					return "mix(mix(min(" + lhs + ", " + rhs + "), " + lhs + ", isnan(" + rhs + ")), " + rhs + ", isnan(" + lhs + "))";
-			}
-		case OPTYPE_CLUSTERED_MAX:
-			switch (format)
-			{
-				default:
-					return "max(" + lhs + ", " + rhs + ")";
-				case VK_FORMAT_R16_SFLOAT:
-				case VK_FORMAT_R32_SFLOAT:
-				case VK_FORMAT_R64_SFLOAT:
-					return "(isnan(" + lhs + ") ? " + rhs + " : (isnan(" + rhs + ") ? " + lhs + " : max(" + lhs + ", " + rhs + ")))";
-				case VK_FORMAT_R16G16_SFLOAT:
-				case VK_FORMAT_R16G16B16_SFLOAT:
-				case VK_FORMAT_R16G16B16A16_SFLOAT:
-				case VK_FORMAT_R32G32_SFLOAT:
-				case VK_FORMAT_R32G32B32_SFLOAT:
-				case VK_FORMAT_R32G32B32A32_SFLOAT:
-				case VK_FORMAT_R64G64_SFLOAT:
-				case VK_FORMAT_R64G64B64_SFLOAT:
-				case VK_FORMAT_R64G64B64A64_SFLOAT:
-					return "mix(mix(max(" + lhs + ", " + rhs + "), " + lhs + ", isnan(" + rhs + ")), " + rhs + ", isnan(" + lhs + "))";
-			}
-		case OPTYPE_CLUSTERED_AND:
-			switch (format)
-			{
-				default:
-					return lhs + " & " + rhs;
-				case VK_FORMAT_R8_USCALED:
-					return lhs + " && " + rhs;
-				case VK_FORMAT_R8G8_USCALED:
-					return "bvec2(" + lhs + ".x && " + rhs + ".x, " + lhs + ".y && " + rhs + ".y)";
-				case VK_FORMAT_R8G8B8_USCALED:
-					return "bvec3(" + lhs + ".x && " + rhs + ".x, " + lhs + ".y && " + rhs + ".y, " + lhs + ".z && " + rhs + ".z)";
-				case VK_FORMAT_R8G8B8A8_USCALED:
-					return "bvec4(" + lhs + ".x && " + rhs + ".x, " + lhs + ".y && " + rhs + ".y, " + lhs + ".z && " + rhs + ".z, " + lhs + ".w && " + rhs + ".w)";
-			}
-		case OPTYPE_CLUSTERED_OR:
-			switch (format)
-			{
-				default:
-					return lhs + " | " + rhs;
-				case VK_FORMAT_R8_USCALED:
-					return lhs + " || " + rhs;
-				case VK_FORMAT_R8G8_USCALED:
-					return "bvec2(" + lhs + ".x || " + rhs + ".x, " + lhs + ".y || " + rhs + ".y)";
-				case VK_FORMAT_R8G8B8_USCALED:
-					return "bvec3(" + lhs + ".x || " + rhs + ".x, " + lhs + ".y || " + rhs + ".y, " + lhs + ".z || " + rhs + ".z)";
-				case VK_FORMAT_R8G8B8A8_USCALED:
-					return "bvec4(" + lhs + ".x || " + rhs + ".x, " + lhs + ".y || " + rhs + ".y, " + lhs + ".z || " + rhs + ".z, " + lhs + ".w || " + rhs + ".w)";
-			}
-		case OPTYPE_CLUSTERED_XOR:
-			switch (format)
-			{
-				default:
-					return lhs + " ^ " + rhs;
-				case VK_FORMAT_R8_USCALED:
-					return lhs + " ^^ " + rhs;
-				case VK_FORMAT_R8G8_USCALED:
-					return "bvec2(" + lhs + ".x ^^ " + rhs + ".x, " + lhs + ".y ^^ " + rhs + ".y)";
-				case VK_FORMAT_R8G8B8_USCALED:
-					return "bvec3(" + lhs + ".x ^^ " + rhs + ".x, " + lhs + ".y ^^ " + rhs + ".y, " + lhs + ".z ^^ " + rhs + ".z)";
-				case VK_FORMAT_R8G8B8A8_USCALED:
-					return "bvec4(" + lhs + ".x ^^ " + rhs + ".x, " + lhs + ".y ^^ " + rhs + ".y, " + lhs + ".z ^^ " + rhs + ".z, " + lhs + ".w ^^ " + rhs + ".w)";
-			}
-	}
-}
-
-std::string getIdentity(int opType, vk::VkFormat format)
-{
-	const bool isFloat = subgroups::isFormatFloat(format);
-	const bool isInt = subgroups::isFormatSigned(format);
-	const bool isUnsigned = subgroups::isFormatUnsigned(format);
-
-	switch (opType)
-	{
-		default:
-			DE_FATAL("Unsupported op type");
-			return "";
-		case OPTYPE_CLUSTERED_ADD:
-			return subgroups::getFormatNameForGLSL(format) + "(0)";
-		case OPTYPE_CLUSTERED_MUL:
-			return subgroups::getFormatNameForGLSL(format) + "(1)";
-		case OPTYPE_CLUSTERED_MIN:
-			if (isFloat)
-			{
-				return subgroups::getFormatNameForGLSL(format) + "(intBitsToFloat(0x7f800000))";
-			}
-			else if (isInt)
-			{
-				switch (format)
-				{
-					default:
-						return subgroups::getFormatNameForGLSL(format) + "(0x7fffffff)";
-					case VK_FORMAT_R8_SINT:
-					case VK_FORMAT_R8G8_SINT:
-					case VK_FORMAT_R8G8B8_SINT:
-					case VK_FORMAT_R8G8B8A8_SINT:
-					case VK_FORMAT_R8_UINT:
-					case VK_FORMAT_R8G8_UINT:
-					case VK_FORMAT_R8G8B8_UINT:
-					case VK_FORMAT_R8G8B8A8_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x7f)";
-					case VK_FORMAT_R16_SINT:
-					case VK_FORMAT_R16G16_SINT:
-					case VK_FORMAT_R16G16B16_SINT:
-					case VK_FORMAT_R16G16B16A16_SINT:
-					case VK_FORMAT_R16_UINT:
-					case VK_FORMAT_R16G16_UINT:
-					case VK_FORMAT_R16G16B16_UINT:
-					case VK_FORMAT_R16G16B16A16_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x7fff)";
-			        case VK_FORMAT_R64_SINT:
-			        case VK_FORMAT_R64G64_SINT:
-			        case VK_FORMAT_R64G64B64_SINT:
-			        case VK_FORMAT_R64G64B64A64_SINT:
-			        case VK_FORMAT_R64_UINT:
-			        case VK_FORMAT_R64G64_UINT:
-			        case VK_FORMAT_R64G64B64_UINT:
-			        case VK_FORMAT_R64G64B64A64_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x7fffffffffffffffUL)";
-				}
-			}
-			else if (isUnsigned)
-			{
-				return subgroups::getFormatNameForGLSL(format) + "(-1)";
-			}
-			else
-			{
-				DE_FATAL("Unhandled case");
-				return "";
-			}
-		case OPTYPE_CLUSTERED_MAX:
-			if (isFloat)
-			{
-				return subgroups::getFormatNameForGLSL(format) + "(intBitsToFloat(0xff800000))";
-			}
-			else if (isInt)
-			{
-				switch (format)
-				{
-					default:
-						return subgroups::getFormatNameForGLSL(format) + "(0x80000000)";
-					case VK_FORMAT_R8_SINT:
-					case VK_FORMAT_R8G8_SINT:
-					case VK_FORMAT_R8G8B8_SINT:
-					case VK_FORMAT_R8G8B8A8_SINT:
-					case VK_FORMAT_R8_UINT:
-					case VK_FORMAT_R8G8_UINT:
-					case VK_FORMAT_R8G8B8_UINT:
-					case VK_FORMAT_R8G8B8A8_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x80)";
-					case VK_FORMAT_R16_SINT:
-					case VK_FORMAT_R16G16_SINT:
-					case VK_FORMAT_R16G16B16_SINT:
-					case VK_FORMAT_R16G16B16A16_SINT:
-					case VK_FORMAT_R16_UINT:
-					case VK_FORMAT_R16G16_UINT:
-					case VK_FORMAT_R16G16B16_UINT:
-					case VK_FORMAT_R16G16B16A16_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x8000)";
-			        case VK_FORMAT_R64_SINT:
-			        case VK_FORMAT_R64G64_SINT:
-			        case VK_FORMAT_R64G64B64_SINT:
-			        case VK_FORMAT_R64G64B64A64_SINT:
-			        case VK_FORMAT_R64_UINT:
-			        case VK_FORMAT_R64G64_UINT:
-			        case VK_FORMAT_R64G64B64_UINT:
-			        case VK_FORMAT_R64G64B64A64_UINT:
-						return subgroups::getFormatNameForGLSL(format) + "(0x8000000000000000UL)";
-				}
-			}
-			else if (isUnsigned)
-			{
-				return subgroups::getFormatNameForGLSL(format) + "(0)";
-			}
-			else
-			{
-				DE_FATAL("Unhandled case");
-				return "";
-			}
-		case OPTYPE_CLUSTERED_AND:
-			return subgroups::getFormatNameForGLSL(format) + "(~0)";
-		case OPTYPE_CLUSTERED_OR:
-			return subgroups::getFormatNameForGLSL(format) + "(0)";
-		case OPTYPE_CLUSTERED_XOR:
-			return subgroups::getFormatNameForGLSL(format) + "(0)";
-	}
-}
-
-std::string getCompare(int opType, vk::VkFormat format, std::string lhs, std::string rhs)
-{
-	std::string formatName = subgroups::getFormatNameForGLSL(format);
-	switch (format)
-	{
-		default:
-			return "all(equal(" + lhs + ", " + rhs + "))";
-		case VK_FORMAT_R8_USCALED:
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R64_UINT:
-		case VK_FORMAT_R64_SINT:
-			return "(" + lhs + " == " + rhs + ")";
-		case VK_FORMAT_R16_SFLOAT:
-			switch (opType)
-			{
-				default:
-					return "(abs(" + lhs + " - " + rhs + ") < 0.1)";
-				case OPTYPE_CLUSTERED_MIN:
-				case OPTYPE_CLUSTERED_MAX:
-					return "(" + lhs + " == " + rhs + ")";
-			}
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R64_SFLOAT:
-			switch (opType)
-			{
-				default:
-					return "(abs(" + lhs + " - " + rhs + ") < 0.00001)";
-				case OPTYPE_CLUSTERED_MIN:
-				case OPTYPE_CLUSTERED_MAX:
-					return "(" + lhs + " == " + rhs + ")";
-			}
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16G16B16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-			switch (opType)
-			{
-				default:
-					return "all(lessThan(abs(" + lhs + " - " + rhs + "), " + formatName + "(0.1)))";
-				case OPTYPE_CLUSTERED_MIN:
-				case OPTYPE_CLUSTERED_MAX:
-					return "all(equal(" + lhs + ", " + rhs + "))";
-			}
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		case VK_FORMAT_R64G64_SFLOAT:
-		case VK_FORMAT_R64G64B64_SFLOAT:
-		case VK_FORMAT_R64G64B64A64_SFLOAT:
-			switch (opType)
-			{
-				default:
-					return "all(lessThan(abs(" + lhs + " - " + rhs + "), " + formatName + "(0.00001)))";
-				case OPTYPE_CLUSTERED_MIN:
-				case OPTYPE_CLUSTERED_MAX:
-					return "all(equal(" + lhs + ", " + rhs + "))";
-			}
-	}
+	return getScanOpName("subgroupClustered", "", op, SCAN_REDUCE);
 }
 
 struct CaseDefinition
 {
-	int					opType;
+	Operator			op;
 	VkShaderStageFlags	shaderStage;
 	VkFormat			format;
 	de::SharedPtr<bool>	geometryPointSizeSupported;
+	deBool				requiredSubgroupSize;
 };
 
-std::string getBodySource(CaseDefinition caseDef)
+std::string getExtHeader(CaseDefinition caseDef)
+{
+	return	"#extension GL_KHR_shader_subgroup_clustered: enable\n"
+			"#extension GL_KHR_shader_subgroup_ballot: enable\n" +
+			subgroups::getAdditionalExtensionForFormat(caseDef.format);
+}
+
+std::string getTestSrc(CaseDefinition caseDef)
 {
 	std::ostringstream bdy;
-	bdy << "  bool tempResult = true;\n";
+	bdy << "  bool tempResult = true;\n"
+		<< "  uvec4 mask = subgroupBallot(true);\n";
 
 	for (deUint32 i = 1; i <= subgroups::maxSupportedSubgroupSize(); i *= 2)
 	{
@@ -387,345 +115,51 @@ std::string getBodySource(CaseDefinition caseDef)
 			<< "    if (clusterSize <= gl_SubgroupSize)\n"
 			<< "    {\n"
 			<< "      " << subgroups::getFormatNameForGLSL(caseDef.format) << " op = "
-			<< getOpTypeName(caseDef.opType) + "(data[gl_SubgroupInvocationID], clusterSize);\n"
+			<< getOpTypeName(caseDef.op) + "(data[gl_SubgroupInvocationID], clusterSize);\n"
 			<< "      for (uint clusterOffset = 0; clusterOffset < gl_SubgroupSize; clusterOffset += clusterSize)\n"
 			<< "      {\n"
 			<< "        " << subgroups::getFormatNameForGLSL(caseDef.format) << " ref = "
-			<< getIdentity(caseDef.opType, caseDef.format) << ";\n"
+			<< getIdentity(caseDef.op, caseDef.format) << ";\n"
 			<< "        for (uint index = clusterOffset; index < (clusterOffset + clusterSize); index++)\n"
 			<< "        {\n"
 			<< "          if (subgroupBallotBitExtract(mask, index))\n"
 			<< "          {\n"
-			<< "            ref = " << getOpTypeOperation(caseDef.opType, caseDef.format, "ref", "data[index]") << ";\n"
+			<< "            ref = " << getOpOperation(caseDef.op, caseDef.format, "ref", "data[index]") << ";\n"
 			<< "          }\n"
 			<< "        }\n"
 			<< "        if ((clusterOffset <= gl_SubgroupInvocationID) && (gl_SubgroupInvocationID < (clusterOffset + clusterSize)))\n"
 			<< "        {\n"
-			<< "          if (!" << getCompare(caseDef.opType, caseDef.format, "ref", "op") << ")\n"
+			<< "          if (!" << getCompare(caseDef.op, caseDef.format, "ref", "op") << ")\n"
 			<< "          {\n"
 			<< "            tempResult = false;\n"
 			<< "          }\n"
 			<< "        }\n"
 			<< "      }\n"
 			<< "    }\n"
-			<< "  }\n";
+			<< "  }\n"
+			<< "  tempRes = tempResult ? 1 : 0;\n";
 	}
 	return bdy.str();
 }
 
-void initFrameBufferPrograms (SourceCollections& programCollection, CaseDefinition caseDef)
+void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 {
 	const vk::ShaderBuildOptions	buildOptions	(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 
-	subgroups::setFragmentShaderFrameBuffer(programCollection);
+	std::string extHeader	= getExtHeader(caseDef);
+	std::string testSrc		= getTestSrc(caseDef);
 
-	if (VK_SHADER_STAGE_VERTEX_BIT != caseDef.shaderStage)
-		subgroups::setVertexShaderFrameBuffer(programCollection);
-
-	std::string bdy = getBodySource(caseDef);
-
-	if (VK_SHADER_STAGE_VERTEX_BIT == caseDef.shaderStage)
-	{
-		std::ostringstream				vertexSrc;
-		vertexSrc << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450 )<< "\n"
-			<< "#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			<< "#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			<< subgroups::getAdditionalExtensionForFormat(caseDef.format)
-			<< "layout(location = 0) in highp vec4 in_position;\n"
-			<< "layout(location = 0) out float out_color;\n"
-			<< "layout(set = 0, binding = 0) uniform Buffer1\n"
-			<< "{\n"
-			<< "  " << subgroups::getFormatNameForGLSL(caseDef.format) << " data[" << subgroups::maxSupportedSubgroupSize() << "];\n"
-			<< "};\n"
-			<< "\n"
-			<< "void main (void)\n"
-			<< "{\n"
-			<< "  uvec4 mask = subgroupBallot(true);\n"
-			<< bdy
-			<< "  out_color = float(tempResult ? 1 : 0);\n"
-			<< "  gl_Position = in_position;\n"
-			<< "  gl_PointSize = 1.0f;\n"
-			<< "}\n";
-		programCollection.glslSources.add("vert")
-			<< glu::VertexSource(vertexSrc.str()) <<buildOptions;
-	}
-	else if (VK_SHADER_STAGE_GEOMETRY_BIT == caseDef.shaderStage)
-	{
-		std::ostringstream geometry;
-
-		geometry  << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450)<<"\n"
-			<< "#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			<< "#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			<< subgroups::getAdditionalExtensionForFormat(caseDef.format)
-			<< "layout(points) in;\n"
-			<< "layout(points, max_vertices = 1) out;\n"
-			<< "layout(location = 0) out float out_color;\n"
-			<< "layout(set = 0, binding = 0) uniform Buffer1\n"
-			<< "{\n"
-			<< "  " << subgroups::getFormatNameForGLSL(caseDef.format) << " data[" << subgroups::maxSupportedSubgroupSize() << "];\n"
-			<< "};\n"
-			<< "\n"
-			<< "void main (void)\n"
-			<< "{\n"
-			<< "  uvec4 mask = subgroupBallot(true);\n"
-			<< bdy
-			<< "  out_color = tempResult ? 1.0 : 0.0;\n"
-			<< "  gl_Position = gl_in[0].gl_Position;\n"
-			<< (*caseDef.geometryPointSizeSupported ? "  gl_PointSize = gl_in[0].gl_PointSize;\n" : "")
-			<< "  EmitVertex();\n"
-			<< "  EndPrimitive();\n"
-			<< "}\n";
-
-		programCollection.glslSources.add("geometry")
-			<< glu::GeometrySource(geometry.str()) << buildOptions;
-	}
-	else if (VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT == caseDef.shaderStage)
-	{
-		std::ostringstream controlSource;
-
-		controlSource << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450)<<"\n"
-			<< "#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			<< "#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			<< subgroups::getAdditionalExtensionForFormat(caseDef.format)
-			<< "layout(vertices = 2) out;\n"
-			<< "layout(location = 0) out float out_color[];\n"
-			<< "layout(set = 0, binding = 0) uniform Buffer1\n"
-			<< "{\n"
-			<< "  " << subgroups::getFormatNameForGLSL(caseDef.format) << " data[" << subgroups::maxSupportedSubgroupSize() << "];\n"
-			<< "};\n"
-			<< "\n"
-			<< "void main (void)\n"
-			<< "{\n"
-			<< "  if (gl_InvocationID == 0)\n"
-			<<"  {\n"
-			<< "    gl_TessLevelOuter[0] = 1.0f;\n"
-			<< "    gl_TessLevelOuter[1] = 1.0f;\n"
-			<< "  }\n"
-			<< "  uvec4 mask = subgroupBallot(true);\n"
-			<< bdy
-			<< "  out_color[gl_InvocationID] = tempResult ? 1.0 : 0.0;\n"
-			<< "  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
-			<< "}\n";
-
-		programCollection.glslSources.add("tesc")
-			<< glu::TessellationControlSource(controlSource.str()) << buildOptions;
-		subgroups::setTesEvalShaderFrameBuffer(programCollection);
-	}
-	else if (VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT == caseDef.shaderStage)
-	{
-		std::ostringstream evaluationSource;
-
-		evaluationSource << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450)<<"\n"
-			<< "#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			<< "#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			<< subgroups::getAdditionalExtensionForFormat(caseDef.format)
-			<< "layout(isolines, equal_spacing, ccw ) in;\n"
-			<< "layout(location = 0) out float out_color;\n"
-			<< "layout(set = 0, binding = 0) uniform Buffer1\n"
-			<< "{\n"
-			<< "  " << subgroups::getFormatNameForGLSL(caseDef.format) << " data[" << subgroups::maxSupportedSubgroupSize() << "];\n"
-			<< "};\n"
-			<< "\n"
-			<< "void main (void)\n"
-			<< "{\n"
-			<< "  uvec4 mask = subgroupBallot(true);\n"
-			<< bdy
-			<< "  out_color = tempResult ? 1.0 : 0.0;\n"
-			<< "  gl_Position = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);\n"
-			<< "}\n";
-
-		subgroups::setTesCtrlShaderFrameBuffer(programCollection);
-		programCollection.glslSources.add("tese")
-			<< glu::TessellationEvaluationSource(evaluationSource.str()) << buildOptions;
-	}
-	else
-	{
-		DE_FATAL("Unsupported shader stage");
-	}
+	subgroups::initStdFrameBufferPrograms(programCollection, buildOptions, caseDef.shaderStage, caseDef.format, *caseDef.geometryPointSizeSupported, extHeader, testSrc, "");
 }
 
 void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 {
-	std::string bdy = getBodySource(caseDef);
+	const vk::ShaderBuildOptions	buildOptions	(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 
-	if (VK_SHADER_STAGE_COMPUTE_BIT == caseDef.shaderStage)
-	{
-		std::ostringstream src;
+	std::string extHeader	= getExtHeader(caseDef);
+	std::string testSrc		= getTestSrc(caseDef);
 
-		src << "#version 450\n"
-			<< "#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			<< "#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			<< subgroups::getAdditionalExtensionForFormat(caseDef.format)
-			<< "layout (local_size_x_id = 0, local_size_y_id = 1, "
-			"local_size_z_id = 2) in;\n"
-			<< "layout(set = 0, binding = 0, std430) buffer Buffer1\n"
-			<< "{\n"
-			<< "  uint result[];\n"
-			<< "};\n"
-			<< "layout(set = 0, binding = 1, std430) buffer Buffer2\n"
-			<< "{\n"
-			<< "  " << subgroups::getFormatNameForGLSL(caseDef.format) << " data[];\n"
-			<< "};\n"
-			<< "\n"
-			<< "void main (void)\n"
-			<< "{\n"
-			<< "  uvec3 globalSize = gl_NumWorkGroups * gl_WorkGroupSize;\n"
-			<< "  highp uint offset = globalSize.x * ((globalSize.y * "
-			"gl_GlobalInvocationID.z) + gl_GlobalInvocationID.y) + "
-			"gl_GlobalInvocationID.x;\n"
-			<< "  uvec4 mask = subgroupBallot(true);\n"
-			<< bdy
-			<< "  result[offset] = tempResult ? 1 : 0;\n"
-			<< "}\n";
-
-		programCollection.glslSources.add("comp")
-				<< glu::ComputeSource(src.str()) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
-	}
-	else
-	{
-		{
-			const string vertex =
-				"#version 450\n"
-				"#extension GL_KHR_shader_subgroup_clustered: enable\n"
-				"#extension GL_KHR_shader_subgroup_ballot: enable\n"
-				+ subgroups::getAdditionalExtensionForFormat(caseDef.format) +
-				"layout(set = 0, binding = 0, std430) buffer Buffer1\n"
-				"{\n"
-				"  uint result[];\n"
-				"};\n"
-				"layout(set = 0, binding = 4, std430) readonly buffer Buffer2\n"
-				"{\n"
-				"  " + subgroups::getFormatNameForGLSL(caseDef.format) + " data[];\n"
-				"};\n"
-				"\n"
-				"void main (void)\n"
-				"{\n"
-				"  uvec4 mask = subgroupBallot(true);\n"
-				+ bdy +
-				"  result[gl_VertexIndex] = tempResult ? 1 : 0;\n"
-				"  float pixelSize = 2.0f/1024.0f;\n"
-				"  float pixelPosition = pixelSize/2.0f - 1.0f;\n"
-				"  gl_Position = vec4(float(gl_VertexIndex) * pixelSize + pixelPosition, 0.0f, 0.0f, 1.0f);\n"
-				"  gl_PointSize = 1.0f;\n"
-				"}\n";
-
-			programCollection.glslSources.add("vert")
-				<< glu::VertexSource(vertex) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
-		}
-
-		{
-			const string tesc =
-			"#version 450\n"
-			"#extension GL_KHR_shader_subgroup_clustered: enable\n"
-			"#extension GL_KHR_shader_subgroup_ballot: enable\n"
-			+ subgroups::getAdditionalExtensionForFormat(caseDef.format) +
-			"layout(vertices=1) out;\n"
-			"layout(set = 0, binding = 1, std430) buffer Buffer1\n"
-			"{\n"
-			"  uint result[];\n"
-			"};\n"
-			"layout(set = 0, binding = 4, std430) readonly buffer Buffer2\n"
-			"{\n"
-			"  " + subgroups::getFormatNameForGLSL(caseDef.format) + " data[];\n"
-			"};\n"
-			"\n"
-			"void main (void)\n"
-			"{\n"
-			"  uvec4 mask = subgroupBallot(true);\n"
-			+ bdy +
-			"  result[gl_PrimitiveID] = tempResult ? 1 : 0;\n"
-			"  if (gl_InvocationID == 0)\n"
-			"  {\n"
-			"    gl_TessLevelOuter[0] = 1.0f;\n"
-			"    gl_TessLevelOuter[1] = 1.0f;\n"
-			"  }\n"
-			"  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
-			"}\n";
-
-			programCollection.glslSources.add("tesc")
-					<< glu::TessellationControlSource(tesc) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
-		}
-
-		{
-			const string tese =
-				"#version 450\n"
-				"#extension GL_KHR_shader_subgroup_clustered: enable\n"
-				"#extension GL_KHR_shader_subgroup_ballot: enable\n"
-				+ subgroups::getAdditionalExtensionForFormat(caseDef.format) +
-				"layout(isolines) in;\n"
-				"layout(set = 0, binding = 2, std430) buffer Buffer1\n"
-				"{\n"
-				"  uint result[];\n"
-				"};\n"
-				"layout(set = 0, binding = 4, std430) readonly buffer Buffer2\n"
-				"{\n"
-				"  " + subgroups::getFormatNameForGLSL(caseDef.format) + " data[];\n"
-				"};\n"
-				"\n"
-				"void main (void)\n"
-				"{\n"
-				"  uvec4 mask = subgroupBallot(true);\n"
-				+ bdy +
-				"  result[gl_PrimitiveID * 2 + uint(gl_TessCoord.x + 0.5)] = tempResult ? 1 : 0;\n"
-				"  float pixelSize = 2.0f/1024.0f;\n"
-				"  gl_Position = gl_in[0].gl_Position + gl_TessCoord.x * pixelSize / 2.0f;\n"
-				"}\n";
-			programCollection.glslSources.add("tese")
-					<< glu::TessellationEvaluationSource(tese) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
-		}
-
-		{
-			const string geometry =
-				"#version 450\n"
-				"#extension GL_KHR_shader_subgroup_clustered: enable\n"
-				"#extension GL_KHR_shader_subgroup_ballot: enable\n"
-				+ subgroups::getAdditionalExtensionForFormat(caseDef.format) +
-				"layout(${TOPOLOGY}) in;\n"
-				"layout(points, max_vertices = 1) out;\n"
-				"layout(set = 0, binding = 3, std430) buffer Buffer1\n"
-				"{\n"
-				"  uint result[];\n"
-				"};\n"
-				"layout(set = 0, binding = 4, std430) readonly buffer Buffer2\n"
-				"{\n"
-				"  " + subgroups::getFormatNameForGLSL(caseDef.format) + " data[];\n"
-				"};\n"
-				"\n"
-				"void main (void)\n"
-				"{\n"
-				"  uvec4 mask = subgroupBallot(true);\n"
-				+ bdy +
-				"  result[gl_PrimitiveIDIn] = tempResult ? 1 : 0;\n"
-				"  gl_Position = gl_in[0].gl_Position;\n"
-				"  EmitVertex();\n"
-				"  EndPrimitive();\n"
-				"}\n";
-			subgroups::addGeometryShadersFromTemplate(geometry, vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u), programCollection.glslSources);
-		}
-
-		{
-			const string fragment =
-				"#version 450\n"
-				"#extension GL_KHR_shader_subgroup_clustered: enable\n"
-				"#extension GL_KHR_shader_subgroup_ballot: enable\n"
-				+ subgroups::getAdditionalExtensionForFormat(caseDef.format) +
-				"layout(location = 0) out uint result;\n"
-				"layout(set = 0, binding = 4, std430) readonly buffer Buffer2\n"
-				"{\n"
-				"  " + subgroups::getFormatNameForGLSL(caseDef.format) + " data[];\n"
-				"};\n"
-				"void main (void)\n"
-				"{\n"
-				"  uvec4 mask = subgroupBallot(true);\n"
-				+ bdy +
-				"  result = tempResult ? 1 : 0;\n"
-				"}\n";
-			programCollection.glslSources.add("fragment")
-				<< glu::FragmentSource(fragment)<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
-		}
-
-		subgroups::addNoSubgroupShader(programCollection);
-	}
+	subgroups::initStdPrograms(programCollection, buildOptions, caseDef.shaderStage, caseDef.format, extHeader, testSrc, "");
 }
 
 void supportedCheck (Context& context, CaseDefinition caseDef)
@@ -739,16 +173,35 @@ void supportedCheck (Context& context, CaseDefinition caseDef)
 	if (!subgroups::isFormatSupportedForDevice(context, caseDef.format))
 		TCU_THROW(NotSupportedError, "Device does not support the specified format in subgroup operations");
 
+	if (caseDef.requiredSubgroupSize)
+	{
+		if (!context.requireDeviceFunctionality("VK_EXT_subgroup_size_control"))
+			TCU_THROW(NotSupportedError, "Device does not support VK_EXT_subgroup_size_control extension");
+		VkPhysicalDeviceSubgroupSizeControlFeaturesEXT subgroupSizeControlFeatures;
+		subgroupSizeControlFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT;
+		subgroupSizeControlFeatures.pNext = DE_NULL;
+
+		VkPhysicalDeviceFeatures2 features;
+		features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		features.pNext = &subgroupSizeControlFeatures;
+
+		context.getInstanceInterface().getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &features);
+
+		if (subgroupSizeControlFeatures.subgroupSizeControl == DE_FALSE)
+			TCU_THROW(NotSupportedError, "Device does not support varying subgroup sizes nor required subgroup size");
+
+		if (subgroupSizeControlFeatures.computeFullSubgroups == DE_FALSE)
+			TCU_THROW(NotSupportedError, "Device does not support full subgroups in compute shaders");
+	}
+
 	*caseDef.geometryPointSizeSupported = subgroups::isTessellationAndGeometryPointSizeSupported(context);
 }
 
 tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 {
-	if (!subgroups::areSubgroupOperationsSupportedForStage(
-				context, caseDef.shaderStage))
+	if (!subgroups::areSubgroupOperationsSupportedForStage(context, caseDef.shaderStage))
 	{
-		if (subgroups::areSubgroupOperationsRequiredForStage(
-					caseDef.shaderStage))
+		if (subgroups::areSubgroupOperationsRequiredForStage(caseDef.shaderStage))
 		{
 			return tcu::TestStatus::fail(
 					   "Shader stage " +
@@ -768,16 +221,17 @@ tcu::TestStatus noSSBOtest (Context& context, const CaseDefinition caseDef)
 	inputData.initializeType = subgroups::SSBOData::InitializeNonZero;
 
 	if (VK_SHADER_STAGE_VERTEX_BIT == caseDef.shaderStage)
-		return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, checkVertexPipelineStages);
+		return subgroups::makeVertexFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkVertexPipelineStages);
 	else if (VK_SHADER_STAGE_GEOMETRY_BIT == caseDef.shaderStage)
-		return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, checkVertexPipelineStages);
+		return subgroups::makeGeometryFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkVertexPipelineStages);
 	else if (VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT == caseDef.shaderStage)
-		return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, checkVertexPipelineStages, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+		return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkVertexPipelineStages, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
 	else if (VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT == caseDef.shaderStage)
-		return subgroups::makeTessellationEvaluationFrameBufferTest(context,  VK_FORMAT_R32_UINT, &inputData, 1, checkVertexPipelineStages, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+		return subgroups::makeTessellationEvaluationFrameBufferTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkVertexPipelineStages, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
 	else
 		TCU_THROW(InternalError, "Unhandled shader stage");
 }
+
 
 tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 {
@@ -785,10 +239,10 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 	{
 		if (!subgroups::areSubgroupOperationsSupportedForStage(context, caseDef.shaderStage))
 		{
-				return tcu::TestStatus::fail(
-						   "Shader stage " +
-						   subgroups::getShaderStageName(caseDef.shaderStage) +
-						   " is required to support subgroup operations!");
+			return tcu::TestStatus::fail(
+					"Shader stage " +
+					subgroups::getShaderStageName(caseDef.shaderStage) +
+					" is required to support subgroup operations!");
 		}
 		subgroups::SSBOData inputData;
 		inputData.format = caseDef.format;
@@ -796,7 +250,35 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 		inputData.numElements = subgroups::maxSupportedSubgroupSize();
 		inputData.initializeType = subgroups::SSBOData::InitializeNonZero;
 
-		return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, &inputData, 1, checkCompute);
+		if (caseDef.requiredSubgroupSize == DE_FALSE)
+			return subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkCompute);
+
+		tcu::TestLog& log = context.getTestContext().getLog();
+		VkPhysicalDeviceSubgroupSizeControlPropertiesEXT subgroupSizeControlProperties;
+		subgroupSizeControlProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT;
+		subgroupSizeControlProperties.pNext = DE_NULL;
+		VkPhysicalDeviceProperties2 properties;
+		properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		properties.pNext = &subgroupSizeControlProperties;
+
+		context.getInstanceInterface().getPhysicalDeviceProperties2(context.getPhysicalDevice(), &properties);
+
+		log << tcu::TestLog::Message << "Testing required subgroup size range [" <<  subgroupSizeControlProperties.minSubgroupSize << ", "
+			<< subgroupSizeControlProperties.maxSubgroupSize << "]" << tcu::TestLog::EndMessage;
+
+		// According to the spec, requiredSubgroupSize must be a power-of-two integer.
+		for (deUint32 size = subgroupSizeControlProperties.minSubgroupSize; size <= subgroupSizeControlProperties.maxSubgroupSize; size *= 2)
+		{
+			tcu::TestStatus result = subgroups::makeComputeTest(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkCompute,
+																size, VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT);
+			if (result.getCode() != QP_TEST_RESULT_PASS)
+			{
+				log << tcu::TestLog::Message << "subgroupSize " << size << " failed" << tcu::TestLog::EndMessage;
+				return result;
+			}
+		}
+
+		return tcu::TestStatus::pass("OK");
 	}
 	else
 	{
@@ -831,7 +313,7 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 		inputData.binding			= 4u;
 		inputData.stages			= stages;
 
-		return subgroups::allStages(context, VK_FORMAT_R32_UINT, &inputData, 1, checkVertexPipelineStages, stages);
+		return subgroups::allStages(context, VK_FORMAT_R32_UINT, &inputData, 1, DE_NULL, checkVertexPipelineStages, stages);
 	}
 }
 }
@@ -854,7 +336,7 @@ tcu::TestCaseGroup* createSubgroupsClusteredTests(tcu::TestContext& testCtx)
 		VK_SHADER_STAGE_VERTEX_BIT,
 		VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 		VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-		VK_SHADER_STAGE_GEOMETRY_BIT
+		VK_SHADER_STAGE_GEOMETRY_BIT,
 	};
 
 	const std::vector<VkFormat> formats = subgroups::getAllFormats();
@@ -865,79 +347,43 @@ tcu::TestCaseGroup* createSubgroupsClusteredTests(tcu::TestContext& testCtx)
 
 		for (int opTypeIndex = 0; opTypeIndex < OPTYPE_CLUSTERED_LAST; ++opTypeIndex)
 		{
-			bool isBool = false;
-			bool isFloat = false;
+			bool isBool = subgroups::isFormatBool(format);
+			bool isFloat = subgroups::isFormatFloat(format);
 
-			switch (format)
-			{
-				default:
-					break;
-				case VK_FORMAT_R16_SFLOAT:
-				case VK_FORMAT_R16G16_SFLOAT:
-				case VK_FORMAT_R16G16B16_SFLOAT:
-				case VK_FORMAT_R16G16B16A16_SFLOAT:
-				case VK_FORMAT_R32_SFLOAT:
-				case VK_FORMAT_R32G32_SFLOAT:
-				case VK_FORMAT_R32G32B32_SFLOAT:
-				case VK_FORMAT_R32G32B32A32_SFLOAT:
-				case VK_FORMAT_R64_SFLOAT:
-				case VK_FORMAT_R64G64_SFLOAT:
-				case VK_FORMAT_R64G64B64_SFLOAT:
-				case VK_FORMAT_R64G64B64A64_SFLOAT:
-					isFloat = true;
-					break;
-				case VK_FORMAT_R8_USCALED:
-				case VK_FORMAT_R8G8_USCALED:
-				case VK_FORMAT_R8G8B8_USCALED:
-				case VK_FORMAT_R8G8B8A8_USCALED:
-					isBool = true;
-					break;
-			}
+			OpType opType = static_cast<OpType>(opTypeIndex);
+			Operator op = getOperator(opType);
 
-			bool isBitwiseOp = false;
+			bool isBitwiseOp = (op == OPERATOR_AND || op == OPERATOR_OR || op == OPERATOR_XOR);
 
-			switch (opTypeIndex)
-			{
-				default:
-					break;
-				case OPTYPE_CLUSTERED_AND:
-				case OPTYPE_CLUSTERED_OR:
-				case OPTYPE_CLUSTERED_XOR:
-					isBitwiseOp = true;
-					break;
-			}
-
+			// Skip float with bitwise category.
 			if (isFloat && isBitwiseOp)
-			{
-				// Skip float with bitwise category.
 				continue;
-			}
 
+			// Skip bool when its not the bitwise category.
 			if (isBool && !isBitwiseOp)
-			{
-				// Skip bool when its not the bitwise category.
 				continue;
-			}
 
-			const std::string name = de::toLower(getOpTypeName(opTypeIndex))
+			const std::string name = de::toLower(getOpTypeName(op))
 				+"_" + subgroups::getFormatNameForGLSL(format);
 
 			{
-				const CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_COMPUTE_BIT, format, de::SharedPtr<bool>(new bool)};
+				CaseDefinition caseDef = {op, VK_SHADER_STAGE_COMPUTE_BIT, format, de::SharedPtr<bool>(new bool), DE_FALSE};
 				addFunctionCaseWithPrograms(computeGroup.get(), name, "", supportedCheck, initPrograms, test, caseDef);
+				caseDef.requiredSubgroupSize = DE_TRUE;
+				addFunctionCaseWithPrograms(computeGroup.get(), name + "_requiredsubgroupsize", "", supportedCheck, initPrograms, test, caseDef);
 			}
 
 			{
-				const CaseDefinition caseDef = {opTypeIndex, VK_SHADER_STAGE_ALL_GRAPHICS, format, de::SharedPtr<bool>(new bool)};
+				const CaseDefinition caseDef = {op, VK_SHADER_STAGE_ALL_GRAPHICS, format, de::SharedPtr<bool>(new bool), DE_FALSE};
 				addFunctionCaseWithPrograms(graphicGroup.get(), name,
-										"", supportedCheck, initPrograms, test, caseDef);
+											"", supportedCheck, initPrograms, test, caseDef);
 			}
 
 			for (int stageIndex = 0; stageIndex < DE_LENGTH_OF_ARRAY(stages); ++stageIndex)
 			{
-				const CaseDefinition caseDef = {opTypeIndex, stages[stageIndex], format, de::SharedPtr<bool>(new bool)};
+				const CaseDefinition caseDef = {op, stages[stageIndex], format, de::SharedPtr<bool>(new bool), DE_FALSE};
 				addFunctionCaseWithPrograms(framebufferGroup.get(), name +"_" + getShaderStageName(caseDef.shaderStage), "",
-											supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDef);
+							supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDef);
 			}
 		}
 	}
@@ -950,6 +396,5 @@ tcu::TestCaseGroup* createSubgroupsClusteredTests(tcu::TestContext& testCtx)
 
 	return group.release();
 }
-
 } // subgroups
 } // vkt

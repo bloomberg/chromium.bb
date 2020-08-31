@@ -15,8 +15,10 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
+#include "components/ukm/ukm_entry_filter.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -24,13 +26,13 @@
 
 namespace metrics {
 class UkmBrowserTestBase;
-class UkmEGTestHelper;
 }
 
 namespace ukm {
 class Report;
 class UkmRecorderImplTest;
 class UkmSource;
+class UkmTestHelper;
 class UkmUtilsForTest;
 
 namespace debug {
@@ -80,6 +82,13 @@ class UkmRecorderImpl : public UkmRecorder {
   void SetIsWebstoreExtensionCallback(
       const IsWebstoreExtensionCallback& callback);
 
+  // Sets the UkmEntryFilter that will be applied to all subsequent entries
+  // reported via AddEntry(). Does not apply the filter to any entries that are
+  // already recorded.
+  //
+  // Currently only accommodates one entry filter.
+  void SetEntryFilter(std::unique_ptr<UkmEntryFilter> entry_filter);
+
   // Sets the sampling seed for testing purposes.
   void SetSamplingSeedForTesting(uint32_t seed) {
     // Normally the seed is set during object construction and remains
@@ -90,9 +99,12 @@ class UkmRecorderImpl : public UkmRecorder {
   }
 
  protected:
-  // Calculates sampled in/out for a specific source/event based on a given
-  // |sampling_rate|. This function is guaranteed to always return the same
-  // result over the life of this object for the same input parameters.
+  // Calculates sampled in/out for a specific source/event based on internal
+  // configuration. This function is guaranteed to always return the same
+  // result over the life of this object for the same config & input parameters.
+  bool IsSampledIn(int64_t source_id, uint64_t event_id);
+
+  // Like above but uses a passed |sampling_rate| instead of internal config.
   bool IsSampledIn(int64_t source_id, uint64_t event_id, int sampling_rate);
 
   // Cache the list of whitelisted entries from the field trial parameter.
@@ -117,7 +129,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // UkmRecorder:
   void AddEntry(mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
-  void UpdateAppURL(SourceId source_id, const GURL& url) override;
+  void UpdateAppURL(SourceId source_id,
+                    const GURL& url,
+                    const AppType app_type) override;
   void RecordNavigation(
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) override;
@@ -129,12 +143,14 @@ class UkmRecorderImpl : public UkmRecorder {
 
  private:
   friend ::metrics::UkmBrowserTestBase;
-  friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmRecorderImplTest;
+  friend ::ukm::UkmTestHelper;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PurgeExtensionRecordings);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, WebApkSourceUrl);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PaymentAppScopeUrl);
 
   struct MetricAggregate {
     uint64_t total_count = 0;
@@ -143,6 +159,7 @@ class UkmRecorderImpl : public UkmRecorder {
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
     uint64_t dropped_due_to_whitelist = 0;
+    uint64_t dropped_due_to_filter = 0;
   };
 
   struct EventAggregate {
@@ -154,6 +171,7 @@ class UkmRecorderImpl : public UkmRecorder {
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
     uint64_t dropped_due_to_whitelist = 0;
+    uint64_t dropped_due_to_filter = 0;
   };
 
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
@@ -163,8 +181,16 @@ class UkmRecorderImpl : public UkmRecorder {
 
   void RecordSource(std::unique_ptr<UkmSource> source);
 
-  // Load sampling configurations from field-trial information.
+  // Applies UkmEntryFilter if there is one registered.
+  bool ApplyEntryFilter(mojom::UkmEntry* entry);
+
+  // Loads sampling configurations from field-trial information.
   void LoadExperimentSamplingInfo();
+
+  // Loads sampling configuration from the key/value "params" of a field-trial.
+  // This is separated from the above to ease testing.
+  void LoadExperimentSamplingParams(
+      const std::map<std::string, std::string>& params);
 
   // Whether recording new data is currently allowed.
   bool recording_enabled_ = false;
@@ -186,6 +212,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Callback for checking extension IDs.
   IsWebstoreExtensionCallback is_webstore_extension_callback_;
 
+  // Filter applied to AddEntry().
+  std::unique_ptr<UkmEntryFilter> entry_filter_;
+
   // Map from hashes to entry and metric names.
   ukm::builders::DecodeMap decode_map_;
 
@@ -195,6 +224,10 @@ class UkmRecorderImpl : public UkmRecorder {
   // Sampling configurations, loaded from a field-trial.
   int default_sampling_rate_ = -1;  // -1 == not yet loaded
   base::flat_map<uint64_t, int> event_sampling_rates_;
+
+  // If an event's sampling is "slaved" to another, the hashes of the slave
+  // and the master are recorded here.
+  base::flat_map<uint64_t, uint64_t> event_sampling_master_;
 
   // Contains data from various recordings which periodically get serialized
   // and cleared by StoreRecordingsInReport() and may be Purged().

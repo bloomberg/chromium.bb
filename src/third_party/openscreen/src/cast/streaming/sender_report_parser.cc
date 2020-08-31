@@ -5,10 +5,10 @@
 #include "cast/streaming/sender_report_parser.h"
 
 #include "cast/streaming/packet_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 SenderReportParser::SenderReportWithId::SenderReportWithId() = default;
 SenderReportParser::SenderReportWithId::~SenderReportWithId() = default;
@@ -71,5 +71,5 @@ SenderReportParser::Parse(absl::Span<const uint8_t> buffer) {
   return sender_report;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

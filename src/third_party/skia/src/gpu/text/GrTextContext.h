@@ -10,7 +10,6 @@
 
 #include "src/core/SkGlyphRun.h"
 #include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/text/GrDistanceFieldAdjustTable.h"
 #include "src/gpu/text/GrTextTarget.h"
 
 #if GR_TEST_UTILS
@@ -19,6 +18,7 @@
 
 class GrDrawOp;
 class GrRecordingContext;
+class GrRenderTargetContext;
 class GrTextBlobCache;
 class SkGlyph;
 class GrTextBlob;
@@ -45,17 +45,24 @@ public:
 
     static std::unique_ptr<GrTextContext> Make(const Options& options);
 
-    void drawGlyphRunList(GrRecordingContext*, GrTextTarget*, const GrClip&,
-                          const SkMatrix& viewMatrix, const SkSurfaceProps&, const SkGlyphRunList&);
+    void drawGlyphRunList(GrRecordingContext*,
+                          GrTextTarget*,
+                          const GrClip&,
+                          const SkMatrixProvider&,
+                          const SkSurfaceProps&,
+                          const SkGlyphRunList&) const;
 
+#if GR_TEST_UTILS
     std::unique_ptr<GrDrawOp> createOp_TestingOnly(GrRecordingContext*,
                                                    GrTextContext*,
                                                    GrRenderTargetContext*,
-                                                   const SkPaint&, const SkFont&,
-                                                   const SkMatrix& viewMatrix,
+                                                   const SkPaint&,
+                                                   const SkFont&,
+                                                   const SkMatrixProvider&,
                                                    const char* text,
                                                    int x,
                                                    int y);
+#endif
 
     static void SanitizeOptions(Options* options);
     static bool CanDrawAsDistanceFields(const SkPaint&, const SkFont&, const SkMatrix& viewMatrix,
@@ -81,10 +88,6 @@ private:
     static SkColor ComputeCanonicalColor(const SkPaint&, bool lcd);
     // Determines if we need to use fake gamma (and contrast boost):
     static SkScalerContextFlags ComputeScalerContextFlags(const GrColorInfo&);
-
-    const GrDistanceFieldAdjustTable* dfAdjustTable() const { return fDistanceAdjustTable.get(); }
-
-    sk_sp<const GrDistanceFieldAdjustTable> fDistanceAdjustTable;
 
     Options fOptions;
 

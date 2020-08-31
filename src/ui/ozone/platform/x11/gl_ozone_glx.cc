@@ -9,7 +9,7 @@
 #include "ui/gl/gl_context_glx.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
-#include "ui/ozone/platform/x11/gl_surface_glx_ozone.h"
+#include "ui/gl/gl_surface_glx_x11.h"
 
 namespace ui {
 
@@ -67,11 +67,6 @@ bool GLOzoneGLX::InitializeStaticGLBindings(
   return true;
 }
 
-void GLOzoneGLX::InitializeLogGLBindings() {
-  gl::InitializeLogGLBindingsGL();
-  gl::InitializeLogGLBindingsGLX();
-}
-
 void GLOzoneGLX::SetDisabledExtensionsPlatform(
     const std::string& disabled_extensions) {
   gl::SetDisabledExtensionsGLX(disabled_extensions);
@@ -102,7 +97,7 @@ scoped_refptr<gl::GLContext> GLOzoneGLX::CreateGLContext(
 
 scoped_refptr<gl::GLSurface> GLOzoneGLX::CreateViewGLSurface(
     gfx::AcceleratedWidget window) {
-  return gl::InitializeGLSurface(new GLSurfaceGLXOzone(window));
+  return gl::InitializeGLSurface(new gl::GLSurfaceGLXX11(window));
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLX::CreateSurfacelessViewGLSurface(

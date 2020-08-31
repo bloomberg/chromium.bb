@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "components/embedder_support/switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -34,14 +35,13 @@
 #include "net/ssl/client_cert_identity.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 
 #if defined(HEADLESS_USE_BREAKPAD)
 #include "base/debug/leak_annotations.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 
@@ -149,15 +149,6 @@ HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
   return new HeadlessQuotaPermissionContext();
 }
 
-void HeadlessContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    ::storage::OptionalQuotaSettingsCallback callback) {
-  ::storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      ::storage::GetDefaultDeviceInfoHelper(), std::move(callback));
-}
-
 content::GeneratedCodeCacheSettings
 HeadlessContentBrowserClient::GetGeneratedCodeCacheSettings(
     content::BrowserContext* context) {
@@ -200,6 +191,9 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(::switches::kEnableCrashReporter);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 
+  if (old_command_line.HasSwitch(switches::kExportTaggedPDF))
+    command_line->AppendSwitch(switches::kExportTaggedPDF);
+
   // If we're spawning a renderer, then override the language switch.
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
@@ -220,6 +214,15 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
                                         languages[0].as_string());
       }
     }
+
+    // Please keep this in alphabetical order.
+    static const char* const kSwitchNames[] = {
+        embedder_support::kOriginTrialDisabledFeatures,
+        embedder_support::kOriginTrialDisabledTokens,
+        embedder_support::kOriginTrialPublicKey,
+    };
+    command_line->CopySwitchesFrom(old_command_line, kSwitchNames,
+                                   base::size(kSwitchNames));
   }
 
   if (append_command_line_flags_callback_) {
@@ -297,13 +300,16 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return browser_->options()->site_per_process;
 }
 
-mojo::Remote<::network::mojom::NetworkContext>
-HeadlessContentBrowserClient::CreateNetworkContext(
+void HeadlessContentBrowserClient::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  return HeadlessBrowserContextImpl::From(context)->CreateNetworkContext(
-      in_memory, relative_partition_path);
+    const base::FilePath& relative_partition_path,
+    ::network::mojom::NetworkContextParams* network_context_params,
+    ::network::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
+  HeadlessBrowserContextImpl::From(context)->ConfigureNetworkContextParams(
+      in_memory, relative_partition_path, network_context_params,
+      cert_verifier_creation_params);
 }
 
 std::string HeadlessContentBrowserClient::GetProduct() {

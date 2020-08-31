@@ -15,8 +15,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_quota_client.h"
@@ -25,11 +26,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::DatabaseQuotaClient;
-using storage::DatabaseTracker;
-using storage::OriginInfo;
-
-namespace content {
+namespace storage {
 
 // Declared to shorten the line lengths.
 static const blink::mojom::StorageType kTemp =
@@ -45,13 +42,12 @@ class MockDatabaseTracker : public DatabaseTracker {
       : DatabaseTracker(base::FilePath(), false, nullptr, nullptr),
         delete_called_count_(0),
         async_delete_(false) {
-    set_task_runner_for_testing(base::ThreadTaskRunnerHandle::Get());
   }
 
   bool GetOriginInfo(const std::string& origin_identifier,
                      OriginInfo* info) override {
-    auto found = mock_origin_infos_.find(
-        storage::GetOriginFromIdentifier(origin_identifier));
+    auto found =
+        mock_origin_infos_.find(GetOriginFromIdentifier(origin_identifier));
     if (found == mock_origin_infos_.end())
       return false;
     *info = OriginInfo(found->second);
@@ -75,7 +71,7 @@ class MockDatabaseTracker : public DatabaseTracker {
                           net::CompletionOnceCallback callback) override {
     ++delete_called_count_;
     if (async_delete()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
                          std::move(callback)));
@@ -90,7 +86,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   void AddMockDatabase(const url::Origin& origin, const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
-    info.set_origin(storage::GetIdentifierFromOrigin(origin));
+    info.set_origin(GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(base::ASCIIToUTF16(name), size);
   }
 
@@ -134,55 +130,51 @@ class DatabaseQuotaClientTest : public testing::Test {
         usage_(0),
         mock_tracker_(new MockDatabaseTracker) {}
 
-  int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
+  int64_t GetOriginUsage(scoped_refptr<QuotaClient> client,
                          const url::Origin& origin,
                          blink::mojom::StorageType type) {
     usage_ = 0;
     client->GetOriginUsage(
         origin, type,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return usage_;
   }
 
   const std::set<url::Origin>& GetOriginsForType(
-      scoped_refptr<storage::QuotaClient> client,
+      scoped_refptr<QuotaClient> client,
       blink::mojom::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
-        type, base::AdaptCallbackForRepeating(
-                  base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
-                                 weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        type, base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                             weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return origins_;
   }
 
   const std::set<url::Origin>& GetOriginsForHost(
-      scoped_refptr<storage::QuotaClient> client,
+      scoped_refptr<QuotaClient> client,
       blink::mojom::StorageType type,
       const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
         type, host,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return origins_;
   }
 
-  bool DeleteOriginData(scoped_refptr<storage::QuotaClient> client,
+  bool DeleteOriginData(scoped_refptr<QuotaClient> client,
                         blink::mojom::StorageType type,
                         const url::Origin& origin) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
         origin, type,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return delete_status_ == blink::mojom::QuotaStatusCode::kOk;
   }
 
@@ -277,4 +269,4 @@ TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
   EXPECT_EQ(2, mock_tracker()->delete_called_count());
 }
 
-}  // namespace content
+}  // namespace storage

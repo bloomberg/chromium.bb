@@ -31,7 +31,7 @@ struct IntLiteral : public Expression {
         return to_string(fValue);
     }
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

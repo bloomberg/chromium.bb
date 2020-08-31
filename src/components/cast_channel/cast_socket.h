@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/cast_channel_enum.h"
-#include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
@@ -374,7 +373,7 @@ class CastSocketImpl : public CastSocket {
   std::vector<OnOpenCallback> connect_callbacks_;
 
   // Callback invoked by |connect_timeout_timer_| to cancel the connection.
-  base::CancelableClosure connect_timeout_callback_;
+  base::CancelableOnceClosure connect_timeout_callback_;
 
   // Timer invoked when the connection has timed out.
   std::unique_ptr<base::OneShotTimer> connect_timeout_timer_;

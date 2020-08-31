@@ -146,7 +146,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
     NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
         service_path,
-        base::Bind(
+        base::BindOnce(
             &NetworkConfigMessageHandler::GetShillNetworkPropertiesSuccess,
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
@@ -190,7 +190,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
     NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
         device->path(),
-        base::Bind(
+        base::BindOnce(
             &NetworkConfigMessageHandler::GetShillDevicePropertiesSuccess,
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
@@ -400,15 +400,15 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html);
-  AddHandlerToRegistry(base::BindRepeating(&NetworkUI::BindCrosNetworkConfig,
-                                           base::Unretained(this)));
 }
 
 NetworkUI::~NetworkUI() {}
 
-void NetworkUI::BindCrosNetworkConfig(
+void NetworkUI::BindInterface(
     mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(NetworkUI)
 
 }  // namespace chromeos

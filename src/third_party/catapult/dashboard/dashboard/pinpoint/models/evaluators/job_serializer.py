@@ -6,6 +6,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import itertools
+
 from dashboard.pinpoint.models import change as change_module
 from dashboard.pinpoint.models import evaluators
 from dashboard.pinpoint.models.tasks import find_isolate
@@ -125,8 +127,10 @@ class Serializer(evaluators.DispatchByTaskType):
     #
     #      # If we see the 'order_changes' key in the local context, then
     #      # that means we can sort the states according to the changes as they
-    #      # appear in this list.
-    #      'order_changes': [...]
+    #      # appear in the embedded 'changes' list.
+    #      'order_changes': {
+    #        'changes': [..]
+    #      }
     #
     #      # If we see the 'set_parameters' key in the local context, then
     #      # we can set the overall parameters we're looking to compare and
@@ -167,7 +171,6 @@ class Serializer(evaluators.DispatchByTaskType):
       add_execution = modification.get('add_execution')
       append_result_values = modification.get('append_result_values')
       attempt_index = modification.get('index', 0)
-      set_comparison = modification.get('set_comparison')
       state = states[state_index]
       if add_execution:
         attempts = state['attempts']
@@ -181,24 +184,52 @@ class Serializer(evaluators.DispatchByTaskType):
       if append_result_values:
         state.setdefault('result_values', []).extend(append_result_values)
 
-      if set_comparison:
-        state.setdefault('comparisons', {}).update(set_comparison)
-
     if 'order_changes' in local_context:
       # Here, we'll sort the states according to their order of appearance in
       # the 'order_changes' list.
-      order_changes = local_context.get('order_changes')
-      change_index = {
-          change: index for index, change in enumerate(order_changes)
-      }
-      states = context.get('state')
-      assert len(order_changes) == len(states)
+      states = context.get('state', [])
       if states:
+        state_changes = {
+            change_module.ReconstituteChange(state.get('change'))
+            for state in states
+        }
+        order_changes = local_context.get('order_changes', {})
+        all_changes = order_changes.get('changes', [])
+        comparisons = order_changes.get('comparisons', [])
+        result_values = order_changes.get('result_values', [])
+        change_index = {
+            change: index for index, change in enumerate(
+                known_change for known_change in all_changes
+                if known_change in state_changes)
+        }
         ordered_states = [None] * len(states)
         for state in states:
-          ordered_states[change_index[change_module.Change.FromDict(
-              state.get('change'))]] = state
+          index = change_index.get(
+              change_module.ReconstituteChange(state.get('change')))
+          if index is not None:
+            ordered_states[index] = state
+
+        # Merge in the comparisons as they appear for the ordered_states.
+        for state, comparison, result in itertools.izip_longest(
+            ordered_states, comparisons or [], result_values or []):
+          if state is None:
+            continue
+          if comparison is not None:
+            state['comparisons'] = comparison
+          state['result_values'] = result or []
         context['state'] = ordered_states
+        context['difference_count'] = len(order_changes.get('culprits', []))
+
+        # At this point set the default comparisons between two adjacent states
+        # which don't have an associated comparison yet to 'pending'.
+        states = context.get('state', [])
+        for index, state in enumerate(states):
+          comparisons = state.get('comparisons')
+          if comparisons is None:
+            state['comparisons'] = {
+                'prev': None if index == 0 else 'pending',
+                'next': None if index + 1 == len(states) else 'pending',
+            }
 
     if 'set_parameters' in local_context:
       modification = local_context.get('set_parameters')
@@ -235,6 +266,9 @@ def TaskTransformer(task, _, context):
     }
   }
   """
+  if not context:
+    return None
+
   input_data = context.get(task.id)
   if not input_data:
     return None
@@ -272,13 +306,22 @@ def AnalysisTransformer(task, _, context):
     ]
   }
   """
+  if not context:
+    return None
   task_data = context.get(task.id)
+  if not task_data:
+    return None
   result = {
       'set_parameters': {
           'comparison_mode': task_data.get('comparison_mode'),
           'metric': task_data.get('metric'),
       },
-      'order_changes': task_data.get('changes')
+      'order_changes': {
+          'changes': task_data.get('changes', []),
+          'comparisons': task_data.get('comparisons', []),
+          'culprits': task_data.get('culprits', []),
+          'result_values': task_data.get('result_values', []),
+      }
   }
   context.clear()
   context.update(result)

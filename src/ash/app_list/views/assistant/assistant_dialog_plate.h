@@ -13,8 +13,13 @@
 #include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/base/assistant_button_listener.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -42,11 +47,12 @@ class MicView;
 class APP_LIST_EXPORT AssistantDialogPlate
     : public views::View,
       public views::TextfieldController,
+      public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
       public AssistantButtonListener {
  public:
-  explicit AssistantDialogPlate(ash::AssistantViewDelegate* delegate);
+  explicit AssistantDialogPlate(AssistantViewDelegate* delegate);
   ~AssistantDialogPlate() override;
 
   // views::View:
@@ -61,17 +67,19 @@ class APP_LIST_EXPORT AssistantDialogPlate
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
+  // ash::AssistantControllerObserver:
+  void OnAssistantControllerDestroying() override;
+
   // ash::AssistantInteractionModelObserver:
-  void OnInputModalityChanged(ash::InputModality input_modality) override;
-  void OnCommittedQueryChanged(
-      const ash::AssistantQuery& committed_query) override;
+  void OnInputModalityChanged(InputModality input_modality) override;
+  void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
 
   // ash::AssistantUiModelObserver:
   void OnUiVisibilityChanged(
-      ash::AssistantVisibility new_visibility,
-      ash::AssistantVisibility old_visibility,
-      base::Optional<ash::AssistantEntryPoint> entry_point,
-      base::Optional<ash::AssistantExitPoint> exit_point) override;
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();
@@ -81,24 +89,43 @@ class APP_LIST_EXPORT AssistantDialogPlate
   void InitKeyboardLayoutContainer();
   void InitVoiceLayoutContainer();
 
+  void UpdateModalityVisibility();
+  void UpdateKeyboardVisibility();
+
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
-  void SetFocus(ash::InputModality modality);
+  InputModality input_modality() const;
 
-  ash::AssistantViewDelegate* const delegate_;
+  AssistantViewDelegate* const delegate_;
 
-  ash::LogoView* molecule_icon_;                  // Owned by view hierarchy.
-  views::View* input_modality_layout_container_;  // Owned by view hierarchy.
-  views::View* keyboard_layout_container_;        // Owned by view hierarchy.
-  views::View* voice_layout_container_;           // Owned by view hierarchy.
-  views::ImageButton* keyboard_input_toggle_;     // Owned by view hierarchy.
-  views::ImageButton* voice_input_toggle_;        // Owned by view hierarchy.
-  ash::MicView* animated_voice_input_toggle_;     // Owned by view hierarchy.
-  views::Textfield* textfield_;                   // Owned by view hierarchy.
+  // The following views are all owned by the view hierarchy
+  LogoView* molecule_icon_ = nullptr;
+  views::View* input_modality_layout_container_ = nullptr;
+  views::View* keyboard_layout_container_ = nullptr;
+  views::View* voice_layout_container_ = nullptr;
+  views::ImageButton* keyboard_input_toggle_ = nullptr;
+  views::ImageButton* voice_input_toggle_ = nullptr;
+  MicView* animated_voice_input_toggle_ = nullptr;
+  views::Textfield* textfield_ = nullptr;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
-  std::unique_ptr<ash::AssistantQueryHistory::Iterator> query_history_iterator_;
+  std::unique_ptr<AssistantQueryHistory::Iterator> query_history_iterator_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
+
+  ScopedObserver<AssistantInteractionController,
+                 AssistantInteractionModelObserver,
+                 &AssistantInteractionController::AddModelObserver,
+                 &AssistantInteractionController::RemoveModelObserver>
+      assistant_interaction_model_observer_{this};
+
+  ScopedObserver<AssistantUiController,
+                 AssistantUiModelObserver,
+                 &AssistantUiController::AddModelObserver,
+                 &AssistantUiController::RemoveModelObserver>
+      assistant_ui_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantDialogPlate);
 };

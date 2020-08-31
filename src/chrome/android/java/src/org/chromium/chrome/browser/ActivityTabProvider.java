@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -16,10 +17,10 @@ import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
 /**
  * A class that provides the current {@link Tab} for various states of the browser's activity.
@@ -41,7 +42,7 @@ public class ActivityTabProvider implements Supplier<Tab> {
     }
 
     /** An {@link ActivityTabObserver} that can be used to explicitly watch non-hint events. */
-    public static abstract class HintlessActivityTabObserver implements ActivityTabObserver {
+    public abstract static class HintlessActivityTabObserver implements ActivityTabObserver {
         @Override
         public final void onActivityTabChanged(Tab tab, boolean hint) {
             // Only pass the event through if it isn't a hint.
@@ -237,8 +238,12 @@ public class ActivityTabProvider implements Supplier<Tab> {
      * extremely specific cases where the observer would trigger an event from the constructor of
      * the implementing class (see {@link ActivityTabTabObserver}).
      * @param observer The observer to be added.
+     *
+     * TODO(fgorski): Find a different way to mock this in tests for {@link LoadProgressMediator}.
      */
-    private void addObserver(ActivityTabObserver observer) {
+    @VisibleForTesting
+    @Deprecated
+    public void addObserver(ActivityTabObserver observer) {
         mObservers.addObserver(observer);
     }
 

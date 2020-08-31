@@ -32,7 +32,7 @@ class CPDF_Object;
 class CPDF_Font;
 class CPDF_LinkExtract;
 class CPDF_PageObject;
-class CPDF_PageRenderContext;
+class CPDF_RenderOptions;
 class CPDF_Stream;
 class CPDF_StructElement;
 class CPDF_StructTree;
@@ -40,7 +40,6 @@ class CPDF_TextPage;
 class CPDF_TextPageFind;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_InteractiveForm;
-class CPDFSDK_PauseAdapter;
 class FX_PATHPOINT;
 struct CPDF_JavaScript;
 
@@ -232,10 +231,17 @@ bool GetQuadPointsAtIndex(const CPDF_Array* array,
                           size_t quad_index,
                           FS_QUADPOINTSF* quad_points);
 
-CFX_FloatRect CFXFloatRectFromFSRECTF(const FS_RECTF& rect);
-FS_RECTF FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect);
+CFX_PointF CFXPointFFromFSPointF(const FS_POINTF& point);
+
+CFX_FloatRect CFXFloatRectFromFSRectF(const FS_RECTF& rect);
+FS_RECTF FSRectFFromCFXFloatRect(const CFX_FloatRect& rect);
 
 CFX_Matrix CFXMatrixFromFSMatrix(const FS_MATRIX& matrix);
+FS_MATRIX FSMatrixFromCFXMatrix(const CFX_Matrix& matrix);
+
+unsigned long NulTerminateMaybeCopyAndReturnLength(const ByteString& text,
+                                                   void* buffer,
+                                                   unsigned long buflen);
 
 unsigned long Utf16EncodeMaybeCopyAndReturnLength(const WideString& text,
                                                   void* buffer,
@@ -260,22 +266,12 @@ unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
 void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable);
 FPDF_BOOL IsPDFSandboxPolicyEnabled(FPDF_DWORD policy);
 
-// TODO(dsinclair): Where should this live?
-void RenderPageWithContext(CPDF_Page* pPage,
-                           CPDF_PageRenderContext* pContext,
-                           int start_x,
-                           int start_y,
-                           int size_x,
-                           int size_y,
-                           int rotate,
-                           int flags,
-                           bool bNeedToRestore,
-                           CPDFSDK_PauseAdapter* pause);
-
 void SetPDFUnsupportInfo(UNSUPPORT_INFO* unsp_info);
-UNSUPPORT_INFO* GetPDFUnssuportInto();
-void ReportUnsupportedFeatures(CPDF_Document* pDoc);
+void ReportUnsupportedFeatures(const CPDF_Document* pDoc);
+void ReportUnsupportedXFA(const CPDF_Document* pDoc);
 void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot);
 void ProcessParseError(CPDF_Parser::Error err);
+void SetColorFromScheme(const FPDF_COLORSCHEME* pColorScheme,
+                        CPDF_RenderOptions* pRenderOptions);
 
 #endif  // FPDFSDK_CPDFSDK_HELPERS_H_

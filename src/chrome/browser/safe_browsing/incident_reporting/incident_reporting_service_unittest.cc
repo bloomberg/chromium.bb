@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
@@ -33,8 +34,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/quota_service.h"
@@ -212,6 +213,10 @@ class IncidentReportingServiceTest : public testing::Test {
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 #endif
     ASSERT_TRUE(profile_manager_.SetUp());
+    // Disable profile metrics reporting, otherwise the calls to
+    // FastForwardUntilNoTasksRemain() never return.
+    profile_manager_.profile_attributes_storage()
+        ->DisableProfileMetricsForTesting();
   }
 
   void CreateIncidentReportingService() {

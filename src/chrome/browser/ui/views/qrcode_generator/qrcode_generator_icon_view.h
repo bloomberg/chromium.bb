@@ -16,22 +16,29 @@ namespace qrcode_generator {
 // can generate a QR code for the current page or a selected image.
 class QRCodeGeneratorIconView : public PageActionIconView {
  public:
-  QRCodeGeneratorIconView(CommandUpdater* command_updater,
-                          PageActionIconView::Delegate* delegate);
+  QRCodeGeneratorIconView(
+      CommandUpdater* command_updater,
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~QRCodeGeneratorIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   void UpdateImpl() override;
-  SkColor GetTextColor() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  bool ShouldShowLabel() const override;
 
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const char* GetClassName() const override;
 
  private:
+  // Flag set when OnExecuting() is called and cleared after bubble is created.
+  // Avoids losing ink drop on, or flickering, the PageActionIconView.
+  bool bubble_requested_;
+
   DISALLOW_COPY_AND_ASSIGN(QRCodeGeneratorIconView);
 };
 

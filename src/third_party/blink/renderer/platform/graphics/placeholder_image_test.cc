@@ -75,9 +75,8 @@ void DrawImageExpectingGrayBoxOnly(PlaceholderImage& image,
   EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
 
   image.Draw(&canvas, PaintFlags(), dest_rect,
-             FloatRect(0.0f, 0.0f, 100.0f, 100.0f),
-             kDoNotRespectImageOrientation, Image::kClampImageToSourceRect,
-             Image::kUnspecifiedDecode);
+             FloatRect(0.0f, 0.0f, 100.0f, 100.0f), kRespectImageOrientation,
+             Image::kClampImageToSourceRect, Image::kUnspecifiedDecode);
 }
 
 void DrawImageExpectingIconOnly(PlaceholderImage& image,
@@ -134,7 +133,6 @@ float GetExpectedPlaceholderTextWidth(const StringView& text,
   description.SetWeight(FontSelectionValue(500));
 
   Font font(description);
-  font.Update(nullptr);
   return font.Width(TextRun(text));
 }
 
@@ -281,19 +279,6 @@ TEST_F(PlaceholderImageTest, FormatPlaceholderText) {
               PlaceholderImage::Create(nullptr, IntSize(400, 300), test.bytes)
                   ->GetTextForTesting());
   }
-}
-
-TEST_F(PlaceholderImageTest, DrawLazyImage) {
-  MockPaintCanvas canvas;
-  EXPECT_CALL(canvas, drawRect(_, _)).Times(0);
-  EXPECT_CALL(canvas, drawImageRect(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(canvas, drawTextBlob(_, _, _, _)).Times(0);
-
-  PlaceholderImage::CreateForLazyImages(nullptr, IntSize(800, 600))
-      ->Draw(&canvas, PaintFlags(), FloatRect(0.0f, 0.0f, 800.0f, 600.0f),
-             FloatRect(0.0f, 0.0f, 800.0f, 600.0f),
-             kDoNotRespectImageOrientation, Image::kClampImageToSourceRect,
-             Image::kUnspecifiedDecode);
 }
 
 TEST_F(PlaceholderImageTest, DrawNonIntersectingSrcRect) {

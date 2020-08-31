@@ -14,14 +14,14 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninPromoController;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -29,7 +29,7 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
  * in state changes control its visibility.
  */
-public class SignInPromo extends OptionalLeaf {
+public abstract class SignInPromo extends OptionalLeaf {
     /**
      * Period for which promos are suppressed if signin is refused in FRE.
      */
@@ -71,7 +71,7 @@ public class SignInPromo extends OptionalLeaf {
         // TODO(bsazonov): Signin manager should check for native status in isSignInAllowed
         mCanSignIn = signinManager.isSignInAllowed()
                 && !signinManager.getIdentityManager().hasPrimaryAccount();
-        mAccountsReady = AccountManagerFacade.get().isCachePopulated();
+        mAccountsReady = AccountManagerFacadeProvider.getInstance().isCachePopulated();
         updateVisibility();
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
@@ -102,7 +102,7 @@ public class SignInPromo extends OptionalLeaf {
      * will not affect promos that were created before this call.
      */
     public static void temporarilySuppressPromos() {
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
+        SigninPreferencesManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
                 System.currentTimeMillis());
     }
 
@@ -110,12 +110,12 @@ public class SignInPromo extends OptionalLeaf {
     public static boolean shouldCreatePromo() {
         return !sDisablePromoForTests
                 && !SharedPreferencesManager.getInstance().readBoolean(
-                        ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false)
+                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false)
                 && !getSuppressionStatus();
     }
 
     private static boolean getSuppressionStatus() {
-        long suppressedFrom = ChromePreferenceManager.getInstance()
+        long suppressedFrom = SigninPreferencesManager.getInstance()
                                       .getNewTabPageSigninPromoSuppressionPeriodStart();
         if (suppressedFrom == 0) return false;
         long currentTime = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class SignInPromo extends OptionalLeaf {
         if (suppressedFrom <= currentTime && currentTime < suppressedTo) {
             return true;
         }
-        ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
+        SigninPreferencesManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         return false;
     }
 
@@ -135,8 +135,7 @@ public class SignInPromo extends OptionalLeaf {
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        ((PersonalizedPromoViewHolder) holder)
-                .onBindViewHolder(mSigninPromoController, mProfileDataCache);
+        // TODO(https://crbug.com/1069183): Dead code, remove in future refactor.
     }
 
     @Override
@@ -145,9 +144,7 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     /** Notify that the content for this {@link SignInPromo} has changed. */
-    protected void notifyDataChanged() {
-        if (isVisible()) notifyItemChanged(0, PersonalizedPromoViewHolder::update);
-    }
+    protected abstract void notifyDataChanged();
 
     private void updateVisibility() {
         setVisibilityInternal(
@@ -166,7 +163,7 @@ public class SignInPromo extends OptionalLeaf {
         updateVisibility();
 
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, true);
+                ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, true);
 
         final @StringRes int promoHeader = mSigninPromoController.getDescriptionStringId();
 
@@ -201,7 +198,7 @@ public class SignInPromo extends OptionalLeaf {
             mSigninManager.addSignInStateObserver(this);
 
             mProfileDataCache.addObserver(this);
-            AccountManagerFacade.get().addObserver(this);
+            AccountManagerFacadeProvider.getInstance().addObserver(this);
         }
 
         private void unregister() {
@@ -211,7 +208,7 @@ public class SignInPromo extends OptionalLeaf {
             mSigninManager.removeSignInAllowedObserver(this);
             mSigninManager.removeSignInStateObserver(this);
             mProfileDataCache.removeObserver(this);
-            AccountManagerFacade.get().removeObserver(this);
+            AccountManagerFacadeProvider.getInstance().removeObserver(this);
         }
 
         // SignInAllowedObserver implementation.
@@ -240,7 +237,7 @@ public class SignInPromo extends OptionalLeaf {
         // AccountsChangeObserver implementation.
         @Override
         public void onAccountsChanged() {
-            mAccountsReady = AccountManagerFacade.get().isCachePopulated();
+            mAccountsReady = AccountManagerFacadeProvider.getInstance().isCachePopulated();
             // We don't change the visibility here to avoid the promo popping up in the feed
             // unexpectedly. If accounts are ready, the promo will be shown up on the next reload.
             notifyDataChanged();

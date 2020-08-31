@@ -276,7 +276,7 @@ if (custom_toolchain != "") {
 # - is_android, is_chromeos, is_ios, and is_win should be obvious.
 # - is_mac is set only for desktop Mac. It is not set on iOS.
 # - is_posix is true for mac and any Unix-like system (basically everything
-#   except Windows).
+#   except Fuchsia and Windows).
 # - is_linux is true for desktop Linux and ChromeOS, but not Android (which is
 #   generally too different despite being based on the Linux kernel).
 #
@@ -436,6 +436,7 @@ default_compiler_configs = [
   "//build/config/compiler:runtime_library",
   "//build/config/compiler:thin_archive",
   "//build/config/compiler:default_init_stack_vars",
+  "//build/config/compiler/pgo:default_pgo_flags",
   "//build/config/coverage:default_coverage",
   "//build/config/sanitizers:default_sanitizer_flags",
 ]

@@ -8,8 +8,8 @@
 
 #include "platform/api/time.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -28,7 +28,7 @@ Ssrc GenerateSsrc(bool higher_priority) {
   // it is light-weight and does not need to produce unguessable (nor
   // crypto-secure) values.
   static std::minstd_rand generator(static_cast<std::minstd_rand::result_type>(
-      openscreen::platform::Clock::now().time_since_epoch().count()));
+      Clock::now().time_since_epoch().count()));
 
   std::uniform_int_distribution<int> distribution(
       higher_priority ? kHigherPriorityMin : kNormalPriorityMin,
@@ -40,5 +40,5 @@ int ComparePriority(Ssrc ssrc_a, Ssrc ssrc_b) {
   return static_cast<int>(ssrc_a) - static_cast<int>(ssrc_b);
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

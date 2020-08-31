@@ -1,6 +1,4 @@
-estevenson@chromium.org
-mgiuca@chromium.org
-harrisjay@chromium.org
+file://chrome/browser/badging/OWNERS
 
-# TEAM: apps-dev@chromium.org
-# COMPONENT: Platform>Apps
+# COMPONENT: UI>Browser>WebAppInstalls
+# TEAM: web-apps-platform-team@chromium.org

@@ -11,7 +11,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
@@ -48,6 +48,8 @@ class MockNavigationHandle : public NavigationHandle {
   WebContents* GetWebContents() override { return web_contents_; }
   MOCK_METHOD0(NavigationStart, base::TimeTicks());
   MOCK_METHOD0(NavigationInputStart, base::TimeTicks());
+  MOCK_METHOD0(FirstRequestStart, base::TimeTicks());
+  MOCK_METHOD0(FirstResponseStart, base::TimeTicks());
   MOCK_METHOD0(WasStartedFromContextMenu, bool());
   MOCK_METHOD0(GetSearchableFormURL, const GURL&());
   MOCK_METHOD0(GetSearchableFormEncoding, const std::string&());
@@ -79,6 +81,8 @@ class MockNavigationHandle : public NavigationHandle {
   }
   MOCK_METHOD1(RemoveRequestHeader, void(const std::string&));
   MOCK_METHOD2(SetRequestHeader, void(const std::string&, const std::string&));
+  MOCK_METHOD2(SetCorsExemptRequestHeader,
+               void(const std::string&, const std::string&));
   const net::HttpResponseHeaders* GetResponseHeaders() override {
     return response_headers_.get();
   }
@@ -90,8 +94,14 @@ class MockNavigationHandle : public NavigationHandle {
       override {
     return auth_challenge_info_;
   }
-  MOCK_METHOD0(GetNetworkIsolationKey, net::NetworkIsolationKey());
-  MOCK_METHOD0(GetGlobalRequestID, const GlobalRequestID&());
+  void SetAuthChallengeInfo(const net::AuthChallengeInfo& challenge);
+  net::ResolveErrorInfo GetResolveErrorInfo() override {
+    return resolve_error_info_;
+  }
+  MOCK_METHOD0(GetIsolationInfo, net::IsolationInfo());
+  const GlobalRequestID& GetGlobalRequestID() override {
+    return global_request_id_;
+  }
   MOCK_METHOD0(IsDownload, bool());
   bool IsFormSubmission() override { return is_form_submission_; }
   MOCK_METHOD0(WasInitiatedByLinkClick, bool());
@@ -100,6 +110,12 @@ class MockNavigationHandle : public NavigationHandle {
   bool WasResponseCached() override { return was_response_cached_; }
   const net::ProxyServer& GetProxyServer() override { return proxy_server_; }
   const std::string& GetHrefTranslate() override { return href_translate_; }
+  const base::Optional<Impression>& GetImpression() override {
+    return impression_;
+  }
+  const GlobalFrameRoutingId& GetInitiatorRoutingId() override {
+    return initiator_routing_id_;
+  }
   const base::Optional<url::Origin>& GetInitiatorOrigin() override {
     return initiator_origin_;
   }
@@ -111,6 +127,10 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(FromDownloadCrossOriginRedirect, bool());
   MOCK_METHOD0(IsSameProcess, bool());
   MOCK_METHOD0(GetNavigationEntryOffset, int());
+  MOCK_METHOD1(ForceEnableOriginTrials,
+               void(const std::vector<std::string>& trials));
+  MOCK_METHOD1(SetIsOverridingUserAgent, void(bool));
+  MOCK_METHOD0(GetIsOverridingUserAgent, bool());
 
   void set_url(const GURL& url) { url_ = url; }
   void set_starting_site_instance(SiteInstance* site_instance) {
@@ -141,6 +161,9 @@ class MockNavigationHandle : public NavigationHandle {
     response_headers_ = response_headers;
   }
   void set_ssl_info(const net::SSLInfo& ssl_info) { ssl_info_ = ssl_info; }
+  void set_global_request_id(const GlobalRequestID& global_request_id) {
+    global_request_id_ = global_request_id;
+  }
   void set_is_form_submission(bool is_form_submission) {
     is_form_submission_ = is_form_submission;
   }
@@ -149,6 +172,13 @@ class MockNavigationHandle : public NavigationHandle {
   }
   void set_proxy_server(const net::ProxyServer& proxy_server) {
     proxy_server_ = proxy_server;
+  }
+  void set_impression(const Impression& impression) {
+    impression_ = impression;
+  }
+  void set_initiator_routing_id(
+      const GlobalFrameRoutingId& initiator_routing_id) {
+    initiator_routing_id_ = initiator_routing_id;
   }
   void set_initiator_origin(const url::Origin& initiator_origin) {
     initiator_origin_ = initiator_origin;
@@ -173,12 +203,16 @@ class MockNavigationHandle : public NavigationHandle {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
+  net::ResolveErrorInfo resolve_error_info_;
+  content::GlobalRequestID global_request_id_;
   bool is_form_submission_ = false;
   bool was_response_cached_ = false;
   net::ProxyServer proxy_server_;
   base::Optional<url::Origin> initiator_origin_;
   ReloadType reload_type_ = content::ReloadType::NONE;
   std::string href_translate_;
+  base::Optional<Impression> impression_;
+  GlobalFrameRoutingId initiator_routing_id_;
 };
 
 }  // namespace content

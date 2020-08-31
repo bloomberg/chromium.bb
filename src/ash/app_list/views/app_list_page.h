@@ -33,13 +33,13 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   virtual void OnHidden();
 
   // Triggered when the page transition animation started.
-  virtual void OnAnimationStarted(ash::AppListState from_state,
-                                  ash::AppListState to_state) = 0;
+  virtual void OnAnimationStarted(AppListState from_state,
+                                  AppListState to_state) = 0;
 
   // Triggered after the page transition animation has updated.
   virtual void OnAnimationUpdated(double progress,
-                                  ash::AppListState from_state,
-                                  ash::AppListState to_state);
+                                  AppListState from_state,
+                                  AppListState to_state);
 
   // Returns the search box size that is preferred by the page. Used by
   // ContentsView to calculate the search box widget bounds that
@@ -63,32 +63,39 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // bounds, if a different behavior is required, this method should be changed
   // to return an origin point instead of just Y coordinate.
   virtual base::Optional<int> GetSearchBoxTop(
-      ash::AppListViewState view_state) const;
-
-  // Returns the intended page bounds when the app list is in the provided
-  // state.
-  // |contents_bounds| - The current app list contents bounds.
-  // |search_box_bounds| - The expected search box bounds when the app list is
-  //                       in state |state|.
-  virtual gfx::Rect GetPageBoundsForState(
-      ash::AppListState state,
-      const gfx::Rect& contents_bounds,
-      const gfx::Rect& search_box_bounds) const = 0;
+      AppListViewState view_state) const;
 
   // Should update the app list page opacity for the current state. Called when
   // the selected page changes without animation - if the page implements this,
   // it should make sure the page transition animation updates the opacity as
   // well.
-  // Default implementation is no-op.
-  virtual void UpdateOpacityForState(ash::AppListState state);
+  // |state| - The current app list state.
+  // |search_box_opacity| - The current search box opacity.
+  // |restore_opacity| - Whether the page opacity should be restored, e.g. when
+  //     the app list drag ends. Note that |search_box_opacity| will be 1.0f if
+  //     |restore_opacity| is true.
+  virtual void UpdatePageOpacityForState(AppListState state,
+                                         float search_box_opacity,
+                                         bool restore_opacity) = 0;
 
-  // Convenience method that sets the page bounds to the bounds returned by
+  // Updates the page bounds to match the provided app list state.
+  // The default implementation sets the bounds returned by
   // GetPageBoundsForState().
-  void UpdatePageBoundsForState(ash::AppListState state,
-                                const gfx::Rect& contents_bounds,
-                                const gfx::Rect& search_box_bounds);
+  // The arguments match the GetPageBoundsForState() arguments.
+  virtual void UpdatePageBoundsForState(AppListState state,
+                                        const gfx::Rect& contents_bounds,
+                                        const gfx::Rect& search_box_bounds);
 
-  const ContentsView* contents_view() const { return contents_view_; }
+  // Returns the bounds the app list page should have for the app list state.
+  // |state| - The current app list state.
+  // |contents_bounds| - The current app list contents bounds.
+  // |search_box_bounds| - The current search box bounds.
+  virtual gfx::Rect GetPageBoundsForState(
+      AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const = 0;
+
+  ContentsView* contents_view() { return contents_view_; }
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
   }
@@ -102,8 +109,30 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Returns the last focusable view in this page.
   virtual views::View* GetLastFocusableView();
 
-  // Returns true if the search box should be shown in this page.
-  virtual bool ShouldShowSearchBox() const;
+  // Called when the app list view state changes to |target_view_state| to
+  // animate the app list page opacity.
+  // |current_progress| - the current app list transition progress.
+  // |animator| - callback that when run starts the opacity animation.
+  using OpacityAnimator =
+      base::RepeatingCallback<void(views::View* view, bool target_visibility)>;
+  virtual void AnimateOpacity(float current_progress,
+                              AppListViewState target_view_state,
+                              const OpacityAnimator& animator);
+
+  // Called when the app list view state changes to |target_view_state| to
+  // animate the app list page vertical offset from the app list view top.
+  // |animator| - The callback that runs the transform animation to update the
+  // page's vertical position. (The layer is required argument, while view is
+  // optional, and should be used with layers associated with views - the
+  // animator will send out a11y position change notification for the view when
+  // the animation finishes).
+  // |default_offset| - the default transform offset that can be passed to
+  //     |animator| to follow the search box position animation.
+  using TransformAnimator = base::RepeatingCallback<
+      void(float offset, ui::Layer* layer, views::View* view)>;
+  virtual void AnimateYPosition(AppListViewState target_view_state,
+                                const TransformAnimator& animator,
+                                float default_offset);
 
   // Returns the area above the contents view, given the desired size of this
   // page, in the contents view's coordinate space.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/property_registration.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_property_definition.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
-#include "third_party/blink/renderer/core/css/property_definition.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -24,16 +24,17 @@
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 
 namespace blink {
 
 const PropertyRegistration* PropertyRegistration::From(
     const ExecutionContext* execution_context,
     const AtomicString& property_name) {
-  const auto* document = DynamicTo<Document>(execution_context);
-  if (!document)
+  const auto* window = DynamicTo<LocalDOMWindow>(execution_context);
+  if (!window)
     return nullptr;
-  const PropertyRegistry* registry = document->GetPropertyRegistry();
+  const PropertyRegistry* registry = window->document()->GetPropertyRegistry();
   return registry ? registry->Registration(property_name) : nullptr;
 }
 
@@ -53,7 +54,6 @@ PropertyRegistration::PropertyRegistration(
               syntax,
               *this)),
       referenced_(false) {
-  DCHECK(RuntimeEnabledFeatures::CSSVariables2Enabled());
 }
 
 static bool ComputationallyIndependent(const CSSValue& value) {
@@ -99,31 +99,25 @@ static scoped_refptr<CSSVariableData> ConvertInitialVariableData(
   return To<CSSCustomPropertyDeclaration>(*value).Value();
 }
 
-PropertyRegistration* PropertyRegistration::MaybeCreate(
-    Document& document,
-    const AtomicString& name,
-    StyleRuleProperty& rule) {
-  const auto& properties = rule.Properties();
-
-  // syntax
-  const CSSValue* syntax_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kSyntax);
+void PropertyRegistration::DeclareProperty(Document& document,
+                                           const AtomicString& name,
+                                           StyleRuleProperty& rule) {
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#the-syntax-descriptor
+  const CSSValue* syntax_value = rule.GetSyntax();
   if (!syntax_value)
-    return nullptr;
+    return;
   base::Optional<CSSSyntaxDefinition> syntax = ConvertSyntax(*syntax_value);
   if (!syntax)
-    return nullptr;
+    return;
 
-  // inherits
-  const CSSValue* inherits_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kInherits);
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#inherits-descriptor
+  const CSSValue* inherits_value = rule.Inherits();
   if (!inherits_value)
-    return nullptr;
+    return;
   bool inherits = ConvertInherts(*inherits_value);
 
-  // initial-value (optional)
-  const CSSValue* initial_value =
-      properties.GetPropertyCSSValue(CSSPropertyID::kInitialValue);
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#initial-value-descriptor
+  const CSSValue* initial_value = rule.GetInitialValue();
   scoped_refptr<CSSVariableData> initial_variable_data =
       ConvertInitialVariableData(initial_value);
 
@@ -133,12 +127,12 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
     const CSSParserContext* parser_context =
         document.ElementSheet().Contents()->ParserContext();
     const bool is_animation_tainted = false;
-    initial = syntax->Parse(initial_variable_data->TokenRange(), parser_context,
-                            is_animation_tainted);
+    initial = syntax->Parse(initial_variable_data->TokenRange(),
+                            *parser_context, is_animation_tainted);
     if (!initial)
-      return nullptr;
+      return;
     if (!ComputationallyIndependent(*initial))
-      return nullptr;
+      return;
     initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
         document, *initial);
     initial_variable_data =
@@ -146,8 +140,16 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
             *initial, is_animation_tainted);
   }
 
-  return MakeGarbageCollected<PropertyRegistration>(
-      name, *syntax, inherits, initial, initial_variable_data);
+  // For non-universal @property rules, the initial value is required for the
+  // the rule to be valid.
+  if (!initial && !syntax->IsUniversal())
+    return;
+
+  document.EnsurePropertyRegistry().DeclareProperty(
+      name, *MakeGarbageCollected<PropertyRegistration>(
+                name, *syntax, inherits, initial, initial_variable_data));
+
+  document.GetStyleEngine().PropertyRegistryChanged();
 }
 
 void PropertyRegistration::registerProperty(
@@ -167,9 +169,9 @@ void PropertyRegistration::registerProperty(
     return;
   }
   AtomicString atomic_name(name);
-  Document* document = To<Document>(execution_context);
-  PropertyRegistry& registry = *document->GetPropertyRegistry();
-  if (registry.Registration(atomic_name)) {
+  Document* document = To<LocalDOMWindow>(execution_context)->document();
+  PropertyRegistry& registry = document->EnsurePropertyRegistry();
+  if (registry.IsInRegisteredPropertySet(atomic_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError,
         "The name provided has already been registered.");
@@ -195,7 +197,7 @@ void PropertyRegistration::registerProperty(
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
     initial = syntax_definition->Parse(CSSParserTokenRange(tokens),
-                                       parser_context, is_animation_tainted);
+                                       *parser_context, is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -214,7 +216,7 @@ void PropertyRegistration::registerProperty(
         StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
             *initial, is_animation_tainted);
   } else {
-    if (!syntax_definition->IsTokenStream()) {
+    if (!syntax_definition->IsUniversal()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "An initial value must be provided if the syntax is not '*'");
@@ -227,7 +229,12 @@ void PropertyRegistration::registerProperty(
           atomic_name, *syntax_definition, property_definition->inherits(),
           initial, std::move(initial_variable_data)));
 
-  document->GetStyleEngine().CustomPropertyRegistered();
+  document->GetStyleEngine().PropertyRegistryChanged();
+}
+
+void PropertyRegistration::RemoveDeclaredProperties(Document& document) {
+  document.EnsurePropertyRegistry().RemoveDeclaredProperties();
+  document.GetStyleEngine().PropertyRegistryChanged();
 }
 
 }  // namespace blink

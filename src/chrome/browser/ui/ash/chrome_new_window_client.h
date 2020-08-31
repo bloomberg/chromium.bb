@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 
 namespace arc {
@@ -61,7 +60,7 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
 
   // arc::ControlCameraAppDelegate:
-  void LaunchCameraApp(const std::string& queries) override;
+  void LaunchCameraApp(const std::string& queries, int32_t task_id) override;
   void CloseCameraApp() override;
   bool IsCameraAppEnabled() override;
 

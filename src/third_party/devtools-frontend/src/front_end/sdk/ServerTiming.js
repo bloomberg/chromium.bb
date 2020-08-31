@@ -1,10 +1,16 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import {ls} from '../common/common.js';  // eslint-disable-line rulesdir/es_modules_import
+
+import {NameValue} from './NetworkRequest.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class ServerTiming {
+export class ServerTiming {
   /**
    * @param {string} metric
    * @param {?number} value
@@ -17,7 +23,7 @@ export default class ServerTiming {
   }
 
   /**
-   * @param {!Array<!SDK.NetworkRequest.NameValue>} headers
+   * @param {!Array<!NameValue>} headers
    * @return {?Array<!ServerTiming>}
    */
   static parseHeaders(headers) {
@@ -28,24 +34,27 @@ export default class ServerTiming {
 
     const serverTimings = rawServerTimingHeaders.reduce((memo, header) => {
       const timing = this.createFromHeaderValue(header.value);
-      memo.pushAll(timing.map(function(entry) {
+      memo.push(...timing.map(function(entry) {
         return new ServerTiming(
             entry.name, entry.hasOwnProperty('dur') ? entry.dur : null, entry.hasOwnProperty('desc') ? entry.desc : '');
       }));
       return memo;
-    }, []);
+    }, /** @type {!Array<!ServerTiming>} */ ([]));
     serverTimings.sort((a, b) => a.metric.toLowerCase().compareTo(b.metric.toLowerCase()));
     return serverTimings;
   }
 
   /**
+   * TODO(crbug.com/1011811): Instead of using !Object<string, *> we should have a proper type
+   *                          with name, desc and dur properties.
    * @param {string} valueString
-   * @return {?Array<!Object>}
+   * @return {!Array<!Object<string, *>>}
    */
   static createFromHeaderValue(valueString) {
     function trimLeadingWhiteSpace() {
       valueString = valueString.replace(/^\s*/, '');
     }
+    /** @param {string} char */
     function consumeDelimiter(char) {
       console.assert(char.length === 1);
       trimLeadingWhiteSpace();
@@ -84,6 +93,9 @@ export default class ServerTiming {
         //  -everything before the first " or \
         //  -everything else
         const result = /^([^"\\]*)(.*)/.exec(valueString);
+        if (!result) {
+          return null;  // not a valid quoted-string
+        }
         value += result[1];
         if (result[2].charAt(0) === '"') {
           // we have found our closing "
@@ -133,18 +145,18 @@ export default class ServerTiming {
         if (parseParameter) {
           // paramName is valid
           if (entry.hasOwnProperty(paramName)) {
-            this.showWarning(ls`Duplicate parameter \"${paramName}\" ignored.`);
+            this.showWarning(ls`Duplicate parameter "${paramName}" ignored.`);
             continue;
           }
 
           if (paramValue === null) {
-            this.showWarning(ls`No value found for parameter \"${paramName}\".`);
+            this.showWarning(ls`No value found for parameter "${paramName}".`);
           }
 
           parseParameter.call(this, entry, paramValue);
         } else {
           // paramName is not valid
-          this.showWarning(ls`Unrecognized parameter \"${paramName}\".`);
+          this.showWarning(ls`Unrecognized parameter "${paramName}".`);
         }
       }
 
@@ -162,30 +174,43 @@ export default class ServerTiming {
 
   /**
    * @param {string} paramName
-   * @return {?function(!Object, string)}
+   * @return {?function(!Object<string, *>, ?string):void}
    */
   static getParserForParameter(paramName) {
     switch (paramName) {
-      case 'dur':
-        return function(entry, paramValue) {
+      case 'dur': {
+        /**
+         * @param {!Object<string, *>} entry
+         * @param {*} paramValue
+         */
+        function durParser(entry, paramValue) {
           entry.dur = 0;
           if (paramValue !== null) {
             const duration = parseFloat(paramValue);
             if (isNaN(duration)) {
-              this.showWarning(ls`Unable to parse \"${paramName}\" value \"${paramValue}\".`);
+              ServerTiming.showWarning(ls`Unable to parse "${paramName}" value "${paramValue}".`);
               return;
             }
             entry.dur = duration;
           }
-        };
+        }
+        return durParser;
+      }
 
-      case 'desc':
-        return function(entry, paramValue) {
+      case 'desc': {
+        /**
+         * @param {!Object<string, *>} entry
+         * @param {?string} paramValue
+         */
+        function descParser(entry, paramValue) {
           entry.desc = paramValue || '';
-        };
+        }
+        return descParser;
+      }
 
-      default:
+      default: {
         return null;
+      }
     }
   }
 
@@ -193,15 +218,6 @@ export default class ServerTiming {
    * @param {string} msg
    */
   static showWarning(msg) {
-    Common.console.warn(Common.UIString(`ServerTiming: ${msg}`));
+    Common.Console.Console.instance().warn(Common.UIString.UIString(`ServerTiming: ${msg}`));
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.ServerTiming = ServerTiming;

@@ -85,6 +85,13 @@
 // large amounts. See UMA_HISTOGRAM_SCALED_EXACT_LINEAR for more information.
 // Only the new format utilizing an internal kMaxValue is supported.
 // It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+//   name: Full constant name of the histogram (must not change between calls).
+//   sample: Bucket to be incremented.
+//   count: Amount by which to increment.
+//   scale: Amount by which |count| is divided.
+
+// Sample usage:
+//    UMA_HISTOGRAM_SCALED_ENUMERATION("FooKiB", kEnumValue, byte_count, 1024)
 #define UMA_HISTOGRAM_SCALED_ENUMERATION(name, sample, count, scale) \
   INTERNAL_HISTOGRAM_SCALED_ENUMERATION_WITH_FLAG(                   \
       name, sample, count, scale,                                    \
@@ -131,11 +138,19 @@
 // reported, but the remainder is tracked between calls, so that multiple calls
 // will accumulate correctly. Only "exact linear" is supported.
 // It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+//   name: Full constant name of the histogram (must not change between calls).
+//   sample: Bucket to be incremented.
+//   count: Amount by which to increment.
+//   sample_max: Maximum (exclusive) allowed sample value.
+//   scale: Amount by which |count| is divided.
 
-#define UMA_HISTOGRAM_SCALED_EXACT_LINEAR(name, sample, count, value_max, \
-                                          scale)                          \
-  INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                       \
-      name, sample, count, value_max, scale,                              \
+// Sample usage:
+//    UMA_HISTOGRAM_SCALED_EXACT_LINER("FooKiB", bucket_no, byte_count,
+//                                     kBucketsMax+1, 1024)
+#define UMA_HISTOGRAM_SCALED_EXACT_LINEAR(name, sample, count, sample_max, \
+                                          scale)                           \
+  INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                        \
+      name, sample, count, sample_max, scale,                              \
       base::HistogramBase::kUmaTargetedHistogramFlag)
 
 //------------------------------------------------------------------------------
@@ -363,17 +378,16 @@
 // instance will be used only for DCHECK builds and the second will
 // execute only during the first access to the given index, after which
 // the pointer is cached and the name never needed again.
-#define STATIC_HISTOGRAM_POINTER_GROUP(constant_histogram_name, index,        \
-                                       constant_maximum,                      \
-                                       histogram_add_method_invocation,       \
-                                       histogram_factory_get_invocation)      \
-  do {                                                                        \
-    static base::subtle::AtomicWord atomic_histograms[constant_maximum];      \
-    DCHECK_LE(0, index);                                                      \
-    DCHECK_LT(index, constant_maximum);                                       \
-    HISTOGRAM_POINTER_USE(&atomic_histograms[index], constant_histogram_name, \
-                          histogram_add_method_invocation,                    \
-                          histogram_factory_get_invocation);                  \
+#define STATIC_HISTOGRAM_POINTER_GROUP(                                     \
+    constant_histogram_name, index, constant_maximum,                       \
+    histogram_add_method_invocation, histogram_factory_get_invocation)      \
+  do {                                                                      \
+    static std::atomic_uintptr_t atomic_histograms[constant_maximum];       \
+    DCHECK_LE(0, index);                                                    \
+    DCHECK_LT(index, constant_maximum);                                     \
+    HISTOGRAM_POINTER_USE(                                                  \
+        std::addressof(atomic_histograms[index]), constant_histogram_name,  \
+        histogram_add_method_invocation, histogram_factory_get_invocation); \
   } while (0)
 
 //------------------------------------------------------------------------------

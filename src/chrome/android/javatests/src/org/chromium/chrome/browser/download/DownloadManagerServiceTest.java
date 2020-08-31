@@ -15,21 +15,20 @@ import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
@@ -54,7 +53,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DownloadManagerServiceTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
-
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
     private static final int UPDATE_DELAY_FOR_TEST = 1;
     private static final int DELAY_BETWEEN_CALLS = 10;
     private static final int LONG_UPDATE_DELAY_FOR_TEST = 500;
@@ -242,15 +242,9 @@ public class DownloadManagerServiceTest {
 
     private DownloadManagerServiceForTest mService;
 
-    @Before
-    public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
-    }
-
     @After
     public void tearDown() {
         mService = null;
-        RecordHistogram.setDisabledForTests(false);
     }
 
     private static boolean useDownloadOfflineContentProvider() {
@@ -438,9 +432,8 @@ public class DownloadManagerServiceTest {
     @MediumTest
     @Feature({"Download"})
     @RetryOnFailure
+    @Features.DisableFeatures({ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE})
     public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
-        FeatureUtilities.setDownloadAutoResumptionEnabledInNativeForTesting(false);
-
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();

@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_function.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -68,12 +68,8 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void RemoveObserver(Observer* observer);
 
   // Opens the popup for the given |extension| in the given |browser|'s window.
-  // If |grant_active_tab_permissions| is true, this grants the extension
-  // activeTab (so this should only be done if this is through a direct user
-  // action).
-  bool ShowExtensionActionPopup(const Extension* extension,
-                                Browser* browser,
-                                bool grant_active_tab_permissions);
+  bool ShowExtensionActionPopupForAPICall(const Extension* extension,
+                                          Browser* browser);
 
   // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,

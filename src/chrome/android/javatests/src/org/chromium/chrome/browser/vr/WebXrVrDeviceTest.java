@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -26,10 +27,11 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -74,9 +76,8 @@ public class WebXrVrDeviceTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testWebXrCapabilities() {
-        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
+                "test_webxr_capabilities", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.executeStepAndWait("stepCheckCapabilities('Daydream')");
         mWebXrVrTestFramework.endTest();
     }
@@ -84,6 +85,7 @@ public class WebXrVrDeviceTest {
     /**
      * Tests that WebXR returns null poses while in VR browsing mode, and valid ones otherwise.
      * Specific steps:
+     *   * Enter VR Browser
      *   * Enter immersive mode by clicking on 'Enter VR' button displayed on a VR content page
      *   * Check for non-null poses
      *   * Enter inline VR mode by clicking the 'app' button on the controller
@@ -95,9 +97,9 @@ public class WebXrVrDeviceTest {
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testForNullPosesInInlineVrPostImmersive() {
-        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
-                PAGE_LOAD_TIMEOUT_S);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
+                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
 
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
@@ -131,9 +133,8 @@ public class WebXrVrDeviceTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
     public void testForNullPosesInInlineVrFromNfc() {
-        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
+                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
 
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
@@ -165,9 +166,8 @@ public class WebXrVrDeviceTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
     public void testForNullPosesInInlineVrOnNavigation() {
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
-        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
+                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
         mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");

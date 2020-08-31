@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/audio_bus.h"
 
 namespace media {
@@ -75,8 +75,11 @@ int AudioBufferQueue::InternalRead(int frames,
     int taken = buffer->frame_count();
 
     // if |dest| is NULL, there's no need to copy.
-    if (dest)
+    if (dest) {
+      // We always copy a whole bitstream buffer. Make sure we have space.
+      CHECK_GE(frames, buffer->frame_count());
       buffer->ReadFrames(buffer->frame_count(), 0, dest_frame_offset, dest);
+    }
 
     if (advance_position) {
       // Update the appropriate values since |taken| frames have been copied

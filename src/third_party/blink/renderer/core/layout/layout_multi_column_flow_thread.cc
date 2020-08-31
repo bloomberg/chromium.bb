@@ -39,8 +39,9 @@ const LayoutBox* LayoutMultiColumnFlowThread::style_changed_box_;
 bool LayoutMultiColumnFlowThread::could_contain_spanners_;
 bool LayoutMultiColumnFlowThread::toggle_spanners_if_needed_;
 
-LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
-    : last_set_worked_on_(nullptr),
+LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread(bool needs_paint_layer)
+    : LayoutFlowThread(needs_paint_layer),
+      last_set_worked_on_(nullptr),
       column_count_(1),
       column_heights_changed_(false),
       is_being_evacuated_(false) {
@@ -51,9 +52,10 @@ LayoutMultiColumnFlowThread::~LayoutMultiColumnFlowThread() = default;
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::CreateAnonymous(
     Document& document,
-    const ComputedStyle& parent_style) {
+    const ComputedStyle& parent_style,
+    bool needs_paint_layer) {
   LayoutMultiColumnFlowThread* layout_object =
-      new LayoutMultiColumnFlowThread();
+      new LayoutMultiColumnFlowThread(needs_paint_layer);
   layout_object->SetDocumentForAnonymous(&document);
   layout_object->SetStyle(ComputedStyle::CreateAnonymousStyleWithDisplay(
       parent_style, EDisplay::kBlock));
@@ -332,7 +334,7 @@ LayoutUnit LayoutMultiColumnFlowThread::MaxColumnLogicalHeight() const {
   const LayoutBlockFlow* multicol_block = MultiColumnBlockFlow();
   const Length& logical_max_height =
       multicol_block->StyleRef().LogicalMaxHeight();
-  if (!logical_max_height.IsMaxSizeNone()) {
+  if (!logical_max_height.IsNone()) {
     LayoutUnit resolved_logical_max_height =
         multicol_block->ComputeContentLogicalHeight(
             kMaxSize, logical_max_height, LayoutUnit(-1));
@@ -611,7 +613,7 @@ bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(
   // We may have a new containing block, since we're no longer a spanner. Mark
   // it for relayout.
   spanner_object_in_flow_thread->ContainingBlock()
-      ->SetNeedsLayoutAndPrefWidthsRecalc(
+      ->SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kColumnsChanged);
 
   // Now generate a column set for this ex-spanner, if needed and none is there
@@ -729,7 +731,7 @@ void LayoutMultiColumnFlowThread::CalculateColumnHeightAvailable() {
   // have a definite height when they in fact don't.
   LayoutBlockFlow* container = MultiColumnBlockFlow();
   LayoutUnit column_height;
-  if (container->HasDefiniteLogicalHeight() || container->IsLayoutView()) {
+  if (container->HasDefiniteLogicalHeight() || IsA<LayoutView>(container)) {
     LogicalExtentComputedValues computed_values;
     container->ComputeLogicalHeight(LayoutUnit(), container->LogicalTop(),
                                     computed_values);
@@ -1173,10 +1175,7 @@ static inline bool NeedsToReinsertIntoFlowThread(
   if (old_style.CanContainFixedPositionObjects(false) !=
       new_style.CanContainFixedPositionObjects(false))
     return true;
-  return (old_style.HasInFlowPosition() &&
-          new_style.GetPosition() == EPosition::kStatic) ||
-         (new_style.HasInFlowPosition() &&
-          old_style.GetPosition() == EPosition::kStatic);
+  return old_style.GetPosition() != new_style.GetPosition();
 }
 
 static inline bool NeedsToRemoveFromFlowThread(const ComputedStyle& old_style,
@@ -1332,7 +1331,7 @@ void LayoutMultiColumnFlowThread::ToggleSpannersInSubtree(
   }
 }
 
-void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
+MinMaxSizes LayoutMultiColumnFlowThread::PreferredLogicalWidths() const {
   // The min/max intrinsic widths calculated really tell how much space elements
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
@@ -1343,28 +1342,22 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
+  MinMaxSizes sizes;
 
   if (flow->HasOverrideIntrinsicContentLogicalWidth()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        flow->OverrideIntrinsicContentLogicalWidth();
-    ClearPreferredLogicalWidthsDirty();
+    sizes = flow->OverrideIntrinsicContentLogicalWidth();
   } else if (flow->ShouldApplySizeContainment()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
-    ClearPreferredLogicalWidthsDirty();
+    sizes = LayoutUnit();
   } else {
-    // Calculate and set new min_preferred_logical_width_ and
-    // max_preferred_logical_width_.
-    LayoutFlowThread::ComputePreferredLogicalWidths();
+    sizes = LayoutFlowThread::PreferredLogicalWidths();
   }
 
   LayoutUnit column_width;
   if (multicol_style->HasAutoColumnWidth()) {
-    min_preferred_logical_width_ =
-        min_preferred_logical_width_ * column_count + gap_extra;
+    sizes.min_size = sizes.min_size * column_count + gap_extra;
   } else {
     column_width = LayoutUnit(multicol_style->ColumnWidth());
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_, column_width);
+    sizes.min_size = std::min(sizes.min_size, column_width);
   }
   // Note that if column-count is auto here, we should resolve it to calculate
   // the maximum intrinsic width, instead of pretending that it's 1. The only
@@ -1372,9 +1365,9 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   // appropriate time or place for layout. The good news is that if height is
   // unconstrained and there are no explicit breaks, the resolved column-count
   // really should be 1.
-  max_preferred_logical_width_ =
-      std::max(max_preferred_logical_width_, column_width) * column_count +
-      gap_extra;
+  sizes.max_size =
+      std::max(sizes.max_size, column_width) * column_count + gap_extra;
+  return sizes;
 }
 
 void LayoutMultiColumnFlowThread::ComputeLogicalHeight(

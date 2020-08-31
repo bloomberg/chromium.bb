@@ -26,17 +26,20 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
  private:
-  // Lay out as many children as we can. If false is returned, it means that we
-  // ran out of space at an unappealing location, and need to relayout and break
-  // earlier (because we have a better breakpoint there).
-  bool LayoutChildren();
+  // Lay out as many children as we can. If |kNeedsEarlierBreak| is returned, it
+  // means that we ran out of space at an unappealing location, and need to
+  // relayout and break earlier (because we have a better breakpoint there). If
+  // |kBrokeBefore| is returned, it means that we need to break before the
+  // multicol container, and retry in the next fragmentainer.
+  NGBreakStatus LayoutChildren();
 
   // Lay out one row of columns. The layout result returned is for the last
-  // column that was laid out. The rows themselves don't create fragments.
+  // column that was laid out. The rows themselves don't create fragments. If
+  // we're in a nested fragmentation context and completely out of outer
+  // fragmentainer space, nullptr will be returned.
   scoped_refptr<const NGLayoutResult> LayoutRow(
       const NGBlockBreakToken* next_column_token,
       NGMarginStrut*);
@@ -66,6 +69,10 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
     return intrinsic_block_size_ - border_scrollbar_padding_.block_start;
   }
 
+  // Finalize layout after breaking before column contents.
+  void FinishAfterBreakBeforeRow(
+      scoped_refptr<const NGBlockBreakToken> next_column_token);
+
   // Finalize layout after breaking before a spanner.
   void FinishAfterBreakBeforeSpanner(
       scoped_refptr<const NGBlockBreakToken> next_column_token);
@@ -83,6 +90,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   NGConstraintSpace CreateConstraintSpaceForBalancing(
       const LogicalSize& column_size) const;
   NGConstraintSpace CreateConstraintSpaceForSpanner(
+      const NGBlockNode& spanner,
       LayoutUnit block_offset) const;
   NGConstraintSpace CreateConstraintSpaceForMinMax() const;
 

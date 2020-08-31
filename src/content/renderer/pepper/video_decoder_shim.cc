@@ -12,11 +12,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +29,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_util.h"
+#include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/vpx_video_decoder.h"
@@ -381,11 +383,15 @@ void VideoDecoderShim::YUVConverter::Convert(const media::VideoFrame* frame,
     //   U - 128  : Turns unsigned U into signed U [-128,127]
     //   V - 128  : Turns unsigned V into signed V [-128,127]
     static const float yuv_adjust_constrained[3] = {
-        -0.0625f, -0.5f, -0.5f,
+        -0.0625f,
+        -0.5f,
+        -0.5f,
     };
     // Same as above, but without the head and footroom.
     static const float yuv_adjust_full[3] = {
-        0.0f, -0.5f, -0.5f,
+        0.0f,
+        -0.5f,
+        -0.5f,
     };
 
     yuv_adjust = yuv_adjust_constrained;
@@ -647,7 +653,7 @@ class VideoDecoderShim::DecoderImpl {
   void Stop();
 
  private:
-  void OnInitDone(bool success);
+  void OnInitDone(media::Status status);
   void DoDecode();
   void OnDecodeComplete(media::DecodeStatus status);
   void OnOutputComplete(scoped_refptr<media::VideoFrame> frame);
@@ -710,7 +716,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
                           weak_ptr_factory_.GetWeakPtr()),
       base::NullCallback());
 #else
-  OnInitDone(false);
+  OnInitDone(media::StatusCode::kDecoderFailedInitialization);
 #endif  // BUILDFLAG(ENABLE_LIBVPX) || BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 }
 
@@ -755,8 +761,8 @@ void VideoDecoderShim::DecoderImpl::Stop() {
   // This instance is deleted once we exit this scope.
 }
 
-void VideoDecoderShim::DecoderImpl::OnInitDone(bool success) {
-  if (!success) {
+void VideoDecoderShim::DecoderImpl::OnInitDone(media::Status status) {
+  if (!status.is_ok()) {
     main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&VideoDecoderShim::OnInitializeFailed, shim_));
@@ -1019,8 +1025,7 @@ void VideoDecoderShim::OnOutputComplete(std::unique_ptr<PendingFrame> frame) {
       // all textures to |textures_to_dismiss_| and dismiss any that aren't in
       // use by the plugin. We will dismiss the rest as they are recycled.
       for (TextureIdMap::const_iterator it = texture_id_map_.begin();
-           it != texture_id_map_.end();
-           ++it) {
+           it != texture_id_map_.end(); ++it) {
         textures_to_dismiss_.insert(it->first);
       }
       for (auto it = available_textures_.begin();

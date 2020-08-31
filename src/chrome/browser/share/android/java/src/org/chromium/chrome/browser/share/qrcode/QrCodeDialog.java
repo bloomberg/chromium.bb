@@ -4,16 +4,20 @@
 
 package org.chromium.chrome.browser.share.qrcode;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.share.qrcode.scan_tab.QrCodeScanCoordinator;
+import org.chromium.chrome.browser.share.qrcode.share_tab.QrCodeShareCoordinator;
 import org.chromium.ui.widget.ChromeImageButton;
 
 import java.util.ArrayList;
@@ -23,21 +27,26 @@ import java.util.ArrayList;
  */
 public class QrCodeDialog extends DialogFragment {
     private ArrayList<QrCodeDialogTab> mTabs;
-
-    /** The QrCodeDialog constructor. */
-    public QrCodeDialog() {}
+    private Context mContext;
+    private TabLayoutPageListener mTabLayoutPageListener;
 
     /**
      * The QrCodeDialog constructor.
-     * @param tabs The array of tabs for the tab layout.
      */
-    /**
-     * TODO(gayane): Resolve lint warning. Per warning, tabs should be passed through Bundle, but I
-     * don't want to make all the classes parcelable.
-     */
-    @SuppressLint("ValidFragment")
-    public QrCodeDialog(ArrayList<QrCodeDialogTab> tabs) {
-        mTabs = tabs;
+    public QrCodeDialog() {
+        mTabs = new ArrayList<QrCodeDialogTab>();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
+
+        QrCodeShareCoordinator shareCoordinator = new QrCodeShareCoordinator(context);
+        QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context, this::dismiss);
+
+        mTabs.add(shareCoordinator);
+        mTabs.add(scanCoordinator);
     }
 
     @Override
@@ -51,21 +60,27 @@ public class QrCodeDialog extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        for (QrCodeDialogTab tab : mTabs) {
-            tab.onResume();
-        }
+        mTabLayoutPageListener.resumeSelectedTab();
     }
     @Override
     public void onPause() {
         super.onPause();
+        mTabLayoutPageListener.pauseAllTabs();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mContext = null;
         for (QrCodeDialogTab tab : mTabs) {
-            tab.onPause();
+            tab.onDestroy();
         }
+        mTabs.clear();
     }
 
     private View getDialogView() {
         View dialogView = (View) getActivity().getLayoutInflater().inflate(
-                org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_dialog, null);
+                org.chromium.chrome.browser.share.R.layout.qrcode_dialog, null);
         ChromeImageButton closeButton =
                 (ChromeImageButton) dialogView.findViewById(R.id.close_button);
         closeButton.setOnClickListener(v -> dismiss());
@@ -78,11 +93,13 @@ public class QrCodeDialog extends DialogFragment {
         QrCodePageAdapter pageAdapter = new QrCodePageAdapter(pages);
 
         TabLayout tabLayout =
-                dialogView.findViewById(org.chromium.chrome.browser.share.qrcode.R.id.tab_layout);
-        ViewPager viewPager = dialogView.findViewById(
-                org.chromium.chrome.browser.share.qrcode.R.id.qrcode_view_pager);
+                dialogView.findViewById(org.chromium.chrome.browser.share.R.id.tab_layout);
+        ViewPager viewPager =
+                dialogView.findViewById(org.chromium.chrome.browser.share.R.id.qrcode_view_pager);
         viewPager.setAdapter(pageAdapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+        mTabLayoutPageListener = new TabLayoutPageListener(tabLayout, mTabs);
+        viewPager.addOnPageChangeListener(mTabLayoutPageListener);
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
         return dialogView;
     }

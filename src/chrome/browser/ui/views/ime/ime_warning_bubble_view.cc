@@ -11,8 +11,10 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -51,23 +53,6 @@ void ImeWarningBubbleView::ShowBubble(
       new ImeWarningBubbleView(extension, browser_view, callback);
 }
 
-bool ImeWarningBubbleView::Accept() {
-  if (never_show_checkbox_->GetChecked()) {
-    std::move(response_callback_)
-        .Run(ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW);
-  } else {
-    std::move(response_callback_)
-        .Run(ImeWarningBubblePermissionStatus::GRANTED);
-  }
-  return true;
-}
-
-bool ImeWarningBubbleView::Cancel() {
-  if (!response_callback_.is_null())
-    std::move(response_callback_).Run(ImeWarningBubblePermissionStatus::DENIED);
-  return true;
-}
-
 void ImeWarningBubbleView::OnToolbarActionsBarAnimationEnded() {
   if (!bubble_has_shown_) {
     views::BubbleDialogDelegateView::CreateBubble(this)->Show();
@@ -93,9 +78,23 @@ ImeWarningBubbleView::ImeWarningBubbleView(
       browser_view_(browser_view),
       browser_(browser_view->browser()),
       response_callback_(callback) {
-  container_ = browser_view_->toolbar()->browser_actions();
-  toolbar_actions_bar_ = container_->toolbar_actions_bar();
   BrowserList::AddObserver(this);
+
+  SetAcceptCallback(base::BindOnce(
+      [](ImeWarningBubbleView* bubble) {
+        const bool never_show = bubble->never_show_checkbox_->GetChecked();
+        std::move(bubble->response_callback_)
+            .Run(never_show
+                     ? ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW
+                     : ImeWarningBubblePermissionStatus::GRANTED);
+      },
+      base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(
+      [](ImeWarningBubbleView* bubble) {
+        std::move(bubble->response_callback_)
+            .Run(ImeWarningBubblePermissionStatus::DENIED);
+      },
+      base::Unretained(this)));
 
   // The lifetime of this bubble is tied to the lifetime of the browser.
   set_parent_window(
@@ -103,10 +102,32 @@ ImeWarningBubbleView::ImeWarningBubbleView(
   InitAnchorView();
   InitLayout();
 
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // TODO(pbos): During cleanup (default-enabling this), remove
+    // OnBrowserRemoved and stop observing the browser. The widget will now
+    // always be created and always have ownership.
+    // TODO(pbos): Move widget creation outside this class when this is being
+    // cleaned up. ::ShowBubble should create the Widget and queue showing it.
+    bubble_has_shown_ = true;
+    ExtensionsToolbarContainer* const container =
+        browser_view_->toolbar_button_provider()
+            ->GetExtensionsToolbarContainer();
+    views::Widget* const widget =
+        views::BubbleDialogDelegateView::CreateBubble(this);
+    if (container) {
+      container->ShowWidgetForExtension(widget, extension_->id());
+    } else {
+      widget->Show();
+    }
+    chrome::RecordDialogCreation(chrome::DialogIdentifier::IME_WARNING);
+    return;
+  }
+
   // If the toolbar is not animating, shows the warning bubble directly.
   // Otherwise, shows the bubble in method OnToolbarActionsBarAnimationEnded().
   if (IsToolbarAnimating()) {
-    toolbar_actions_bar_observer_.Add(toolbar_actions_bar_);
+    toolbar_actions_bar_observer_.Add(
+        browser_view_->toolbar()->browser_actions()->toolbar_actions_bar());
     return;
   }
   views::BubbleDialogDelegateView::CreateBubble(this)->Show();
@@ -124,20 +145,29 @@ ImeWarningBubbleView::~ImeWarningBubbleView() {
 }
 
 void ImeWarningBubbleView::InitAnchorView() {
-  views::View* reference_view = nullptr;
-
-  anchor_to_action_ =
-      extensions::ActionInfo::GetAnyActionInfo(extension_) != nullptr;
+  views::View* anchor_view = nullptr;
   if (anchor_to_action_) {
-    // Anchors the bubble to the browser action of the extension.
-    reference_view = container_->GetViewForId(extension_->id());
+    ExtensionsToolbarContainer* const container =
+        browser_view_->toolbar_button_provider()
+            ->GetExtensionsToolbarContainer();
+    if (container) {
+      anchor_view = container->GetViewForId(extension_->id());
+    } else if (!base::FeatureList::IsEnabled(
+                   features::kExtensionsToolbarMenu)) {
+      BrowserActionsContainer* const browser_actions_container =
+          browser_view_->toolbar_button_provider()
+              ->GetBrowserActionsContainer();
+      ToolbarActionView* const reference_view =
+          browser_actions_container->GetViewForId(extension_->id());
+      if (reference_view && reference_view->GetVisible())
+        anchor_view = reference_view;
+    }
   }
-  if (!reference_view || !reference_view->GetVisible()) {
-    // Anchors the bubble to the app menu.
-    reference_view =
-        browser_view_->toolbar_button_provider()->GetAppMenuButton();
+  if (!anchor_view) {
+    anchor_view = browser_view_->toolbar_button_provider()
+                      ->GetDefaultExtensionDialogAnchorView();
   }
-  SetAnchorView(reference_view);
+  SetAnchorView(anchor_view);
   SetArrow(views::BubbleBorder::TOP_RIGHT);
 }
 
@@ -163,8 +193,8 @@ void ImeWarningBubbleView::InitLayout() {
   views::ColumnSet* main_cs = layout->AddColumnSet(cs_id);
   // The first row which shows the warning info.
   main_cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     kColumnWidth, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, kColumnWidth, 0);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing =
@@ -185,5 +215,7 @@ void ImeWarningBubbleView::InitLayout() {
 }
 
 bool ImeWarningBubbleView::IsToolbarAnimating() {
-  return anchor_to_action_ && container_->animating();
+  DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  return anchor_to_action_ &&
+         browser_view_->toolbar()->browser_actions()->animating();
 }

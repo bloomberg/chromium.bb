@@ -16,6 +16,7 @@
 
 #include "base/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace media {
@@ -43,23 +44,22 @@ class TegraV4L2Device : public V4L2Device {
       int index,
       size_t num_planes,
       enum v4l2_buf_type buf_type) override;
-  bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
-  EGLImageKHR CreateEGLImage(
-      EGLDisplay egl_display,
-      EGLContext egl_context,
-      GLuint texture_id,
-      const gfx::Size& size,
-      unsigned int buffer_index,
-      uint32_t v4l2_pixfmt,
-      const std::vector<base::ScopedFD>& dmabuf_fds) override;
+  bool CanCreateEGLImageFrom(const Fourcc fourcc) const override;
+  EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                             EGLContext egl_context,
+                             GLuint texture_id,
+                             const gfx::Size& size,
+                             unsigned int buffer_index,
+                             const Fourcc fourcc,
+                             gfx::NativePixmapHandle handle) const override;
   scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
-      uint32_t fourcc,
-      const std::vector<base::ScopedFD>& dmabuf_fds) override;
+      const Fourcc fourcc,
+      gfx::NativePixmapHandle handle) const override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                             EGLImageKHR egl_image) override;
-  GLenum GetTextureTarget() override;
-  std::vector<uint32_t> PreferredInputFormat(Type type) override;
+                             EGLImageKHR egl_image) const override;
+  GLenum GetTextureTarget() const override;
+  std::vector<uint32_t> PreferredInputFormat(Type type) const override;
 
   std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
       v4l2_buf_type buf_type) override;
@@ -86,6 +86,12 @@ class TegraV4L2Device : public V4L2Device {
 
   // The actual device fd.
   int device_fd_ = -1;
+
+  // Dummy FD returned as fake DMABuf FD by GetDmabufsForV4L2Buffer(). Tegra
+  // is the only platform that does not support DMABufs, but upper layers still
+  // expect valid FDs that can be duplicated, passed around, and closed. So
+  // we just return fake DMAbuf FDs that are duplicates of this one.
+  base::ScopedFD dummy_fd_;
 
   // The v4l2_format cache passed to the driver via VIDIOC_S_FMT. The key is
   // v4l2_buf_type.

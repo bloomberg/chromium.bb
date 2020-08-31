@@ -93,7 +93,7 @@ class BiquadFilterNode final : public AudioNode {
 
   BiquadFilterNode(BaseAudioContext&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   String type() const;
   void setType(const String&);
@@ -116,7 +116,7 @@ class BiquadFilterNode final : public AudioNode {
 
  private:
   BiquadProcessor* GetBiquadProcessor() const;
-  bool setType(unsigned);  // Returns true on success.
+  bool SetType(BiquadProcessor::FilterType);  // Returns true on success.
 
   Member<AudioParam> frequency_;
   Member<AudioParam> q_;

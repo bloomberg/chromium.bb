@@ -28,6 +28,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHChromeDuetTabSwitcherFeature,
     &kIPHChromeHomeExpandFeature,
     &kIPHChromeHomePullToRefreshFeature,
+    &kIPHChromeReengagementNotification1Feature,
+    &kIPHChromeReengagementNotification2Feature,
+    &kIPHChromeReengagementNotification3Feature,
     &kIPHContextualSearchWebSearchFeature,
     &kIPHContextualSearchPromoteTapFeature,
     &kIPHContextualSearchPromotePanelOpenFeature,
@@ -35,7 +38,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,
+    &kIPHEphemeralTabFeature,
     &kIPHFeedCardMenuFeature,
+    &kIPHHomepagePromoCardFeature,
     &kIPHIdentityDiscFeature,
     &kIPHKeyboardAccessoryAddressFillingFeature,
     &kIPHKeyboardAccessoryPasswordFillingFeature,
@@ -48,6 +53,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHTabGroupsDragAndDropFeature,
     &kIPHTranslateMenuButtonFeature,
     &kIPHExploreSitesTileFeature,
+    &kIPHFeedHeaderMenuFeature,
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
     &kIPHBottomToolbarTipFeature,

@@ -9,9 +9,12 @@
 #import "base/mac/foundation_util.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_container.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
@@ -27,9 +30,8 @@
 #endif
 
 @interface InfobarContainerCoordinator () <InfobarContainer,
-                                           InfobarContainerConsumer>
-
-@property(nonatomic, assign) WebStateList* webStateList;
+                                           InfobarContainerConsumer,
+                                           InfobarBannerContainer>
 
 // ViewController of the Infobar currently being presented, can be nil.
 @property(nonatomic, weak) UIViewController* infobarViewController;
@@ -38,8 +40,6 @@
     LegacyInfobarContainerViewController* legacyContainerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 // If YES the legacyContainer Fullscreen support will be disabled.
 // TODO(crbug.com/927064): Remove this once the legacy container is no longer
 // needed.
@@ -53,19 +53,21 @@
 // empty then it means there are no banners queued to be presented.
 @property(nonatomic, strong)
     NSMutableArray<InfobarCoordinator*>* infobarCoordinatorsToPresent;
+// If YES, the banner is not shown, but the badge and subsequent modals will be.
+@property(nonatomic, assign) BOOL skipBanner;
+// YES if this container baseViewController is currently visible and part of
+// the view hierarchy.
+@property(nonatomic, assign, getter=isBaseViewControllerVisible)
+    BOOL baseViewControllerVisible;
 
 @end
 
 @implementation InfobarContainerCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
-    _webStateList = webStateList;
     _infobarCoordinators = [NSMutableArray array];
     _infobarCoordinatorsToPresent = [NSMutableArray array];
   }
@@ -74,14 +76,18 @@
 
 - (void)start {
   DCHECK(self.positioner);
-  DCHECK(self.dispatcher);
 
   // Creates the LegacyInfobarContainerVC.
+  FullscreenController* controller;
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    controller = FullscreenController::FromBrowser(self.browser);
+  } else {
+    controller =
+        FullscreenController::FromBrowserState(self.browser->GetBrowserState());
+  }
   LegacyInfobarContainerViewController* legacyContainer =
       [[LegacyInfobarContainerViewController alloc]
-          initWithFullscreenController:
-              FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-                  self.browserState)];
+          initWithFullscreenController:controller];
   [self.baseViewController addChildViewController:legacyContainer];
   // TODO(crbug.com/892376): Shouldn't modify the BaseVC hierarchy, BVC
   // needs to handle this.
@@ -97,12 +103,20 @@
   self.mediator = [[InfobarContainerMediator alloc]
       initWithConsumer:self
         legacyConsumer:self.legacyContainerViewController
-          webStateList:self.webStateList];
+          webStateList:self.browser->GetWebStateList()];
 
   self.mediator.syncPresenter = self.syncPresenter;
 
-  [[UpgradeCenter sharedInstance] registerClient:self.mediator
-                                  withDispatcher:self.dispatcher];
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(displayModalInfobar:)];
+
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  [[UpgradeCenter sharedInstance]
+      registerClient:self.mediator
+      withDispatcher:static_cast<id<ApplicationCommands>>(
+                         self.browser->GetCommandDispatcher())];
 }
 
 - (void)stop {
@@ -115,6 +129,8 @@
   [self.legacyContainerViewController.view removeFromSuperview];
   [self.legacyContainerViewController removeFromParentViewController];
   self.legacyContainerViewController = nil;
+
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
 }
 
 #pragma mark - Public Interface
@@ -162,10 +178,15 @@
 }
 
 - (void)baseViewDidAppear {
+  self.baseViewControllerVisible = YES;
   InfobarCoordinator* coordinator =
       [self.infobarCoordinatorsToPresent firstObject];
   if (coordinator)
     [self presentBannerForInfobarCoordinator:coordinator];
+}
+
+- (void)baseViewWillDisappear {
+  self.baseViewControllerVisible = NO;
 }
 
 #pragma mark - ChromeCoordinator
@@ -175,21 +196,6 @@
 }
 
 #pragma mark - Accessors
-
-- (void)setCommandDispatcher:(CommandDispatcher*)commandDispatcher {
-  if (commandDispatcher == self.commandDispatcher) {
-    return;
-  }
-
-  if (self.commandDispatcher) {
-    [self.commandDispatcher stopDispatchingToTarget:self];
-  }
-
-  [commandDispatcher startDispatchingToTarget:self
-                                  forSelector:@selector(displayModalInfobar:)];
-  _commandDispatcher = commandDispatcher;
-  self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
-}
 
 - (InfobarBannerPresentationState)infobarBannerState {
   DCHECK(IsInfobarUIRebootEnabled());
@@ -207,12 +213,15 @@
 
 #pragma mark InfobarContainerConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                    skipBanner:(BOOL)skipBanner {
   DCHECK(IsInfobarUIRebootEnabled());
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(infoBarDelegate);
 
   [self.infobarCoordinators addObject:infobarCoordinator];
+
+  self.skipBanner = skipBanner;
 
   // Configure the Coordinator and try to present the Banner afterwards.
   [infobarCoordinator start];
@@ -220,15 +229,23 @@
   // doing so might cause undefined behavior since no badge was added.
   if (infobarCoordinator.hasBadge)
     infobarCoordinator.badgeDelegate = self.mediator;
-  infobarCoordinator.browserState = self.browserState;
-  infobarCoordinator.webState = self.webStateList->GetActiveWebState();
+  infobarCoordinator.browser = self.browser;
+  infobarCoordinator.webState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;
-  infobarCoordinator.dispatcher = self.dispatcher;
+  infobarCoordinator.bannerViewController.infobarBannerContainer = self;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  infobarCoordinator.dispatcher = static_cast<id<ApplicationCommands>>(
+      self.browser->GetCommandDispatcher());
   infobarCoordinator.infobarContainer = self;
   [self presentBannerForInfobarCoordinator:infobarCoordinator];
 }
 
 - (void)infobarManagerWillChange {
+  if (IsInfobarUIRebootEnabled()) {
+    [self dismissInfobarBannerAnimated:NO completion:nil];
+  }
   self.infobarCoordinators = [NSMutableArray array];
   self.infobarCoordinatorsToPresent = [NSMutableArray array];
 }
@@ -247,10 +264,7 @@
 
 - (void)childCoordinatorBannerFinishedPresented:
     (InfobarCoordinator*)infobarCoordinator {
-  InfobarCoordinator* coordinator =
-      [self.infobarCoordinatorsToPresent firstObject];
-  if (coordinator)
-    [self presentBannerForInfobarCoordinator:coordinator];
+  [self presentNextBannerInQueue];
 }
 
 - (void)childCoordinatorStopped:(InfobarCoordinator*)infobarCoordinator {
@@ -258,6 +272,16 @@
   // Also remove it from |infobarCoordinatorsToPresent| in case it was queued
   // for a presentation.
   [self.infobarCoordinatorsToPresent removeObject:infobarCoordinator];
+}
+
+#pragma mark InfobarBannerContainerDelegate
+
+- (void)infobarBannerFinishedPresenting {
+  [self presentNextBannerInQueue];
+}
+
+- (BOOL)shouldDismissBanner {
+  return !self.baseViewControllerVisible;
 }
 
 #pragma mark InfobarCommands
@@ -272,20 +296,29 @@
 
 #pragma mark - Private
 
+// Presents the Banner for the next InfobarCoordinator in queue, if any.
+- (void)presentNextBannerInQueue {
+  InfobarCoordinator* coordinator =
+      [self.infobarCoordinatorsToPresent firstObject];
+  if (coordinator)
+    [self presentBannerForInfobarCoordinator:coordinator];
+}
+
 // Presents the infobarBanner for |infobarCoordinator| if possible, if not it
 // queues the banner in self.infobarCoordinatorsToPresent for future
 // presentation.
 - (void)presentBannerForInfobarCoordinator:
     (InfobarCoordinator*)infobarCoordinator {
   // Each banner can only be presented once.
-  if (infobarCoordinator.bannerWasPresented)
+  if (infobarCoordinator.bannerWasPresented || self.skipBanner)
     return;
 
   // If a banner is being presented or base VC is not in window, queue it then
   // return.
   if (!(self.infobarBannerState ==
         InfobarBannerPresentationState::NotPresented) ||
-      (!self.baseViewController.view.window)) {
+      (!self.baseViewController.view.window) ||
+      (!self.baseViewControllerVisible)) {
     [self queueInfobarCoordinatorForPresentation:infobarCoordinator];
     return;
   }

@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_set.h"
@@ -64,11 +65,12 @@ enum ManifestReloadReason {
   NUM_MANIFEST_RELOAD_REASONS
 };
 
-// Used in histogram Extension.BackgroundPageType.
+// Used in histogram Extensions.BackgroundPageType.
 enum BackgroundPageType {
   NO_BACKGROUND_PAGE = 0,
   BACKGROUND_PAGE_PERSISTENT,
   EVENT_PAGE,
+  SERVICE_WORKER,
 
   // New enum values must go above here.
   NUM_BACKGROUND_PAGE_TYPES
@@ -126,6 +128,8 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
     return NO_BACKGROUND_PAGE;
   if (BackgroundInfo::HasPersistentBackgroundPage(extension))
     return BACKGROUND_PAGE_PERSISTENT;
+  if (BackgroundInfo::IsServiceWorkerBased(extension))
+    return SERVICE_WORKER;
   return EVENT_PAGE;
 }
 
@@ -235,7 +239,9 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
       // external updates.
       PendingExtensionManager* pending_manager =
           extension_service_->pending_extension_manager();
-      pending_manager->ExpectPolicyReinstallForCorruption(extension->id());
+      pending_manager->ExpectPolicyReinstallForCorruption(
+          extension->id(), PendingExtensionManager::PolicyReinstallReason::
+                               CORRUPTION_DETECTED_IN_PRIOR_SESSION);
     }
   } else {
     // Extension is enabled. Check management policy to verify if it should
@@ -541,7 +547,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
     // For incognito and file access, skip anything that doesn't appear in
     // settings. Also, policy-installed (and unpacked of course, checked above)
     // extensions are boring.
-    if (extension->ShouldDisplayInExtensionSettings() &&
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension) &&
         !Manifest::IsPolicyLocation(extension->location())) {
       if (util::CanBeIncognitoEnabled(extension)) {
         if (util::IsIncognitoEnabled(extension->id(), profile))
@@ -612,25 +618,6 @@ void InstalledLoader::RecordExtensionsMetrics() {
       } else {
         UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
                                   EXTERNAL_ITEM_NONWEBSTORE_DISABLED,
-                                  EXTERNAL_ITEM_MAX_ITEMS);
-      }
-    }
-  }
-
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> uninstalled_extensions_info(
-      extension_prefs_->GetUninstalledExtensionsInfo());
-  for (size_t i = 0; i < uninstalled_extensions_info->size(); ++i) {
-    ExtensionInfo* info = uninstalled_extensions_info->at(i).get();
-    if (Manifest::IsExternalLocation(info->extension_location)) {
-      std::string update_url;
-      if (info->extension_manifest->GetString("update_url", &update_url) &&
-          extension_urls::IsWebstoreUpdateUrl(GURL(update_url))) {
-        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
-                                  EXTERNAL_ITEM_WEBSTORE_UNINSTALLED,
-                                  EXTERNAL_ITEM_MAX_ITEMS);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
-                                  EXTERNAL_ITEM_NONWEBSTORE_UNINSTALLED,
                                   EXTERNAL_ITEM_MAX_ITEMS);
       }
     }

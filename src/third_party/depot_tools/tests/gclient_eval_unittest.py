@@ -20,6 +20,7 @@ metrics.DISABLE_METRICS_COLLECTION = True
 
 import gclient
 import gclient_eval
+import gclient_utils
 
 
 class GClientEvalTest(unittest.TestCase):
@@ -103,7 +104,7 @@ class ExecTest(unittest.TestCase):
         'invalid assignment: overrides var \'a\'', str(cm.exception))
 
   def test_schema_wrong_type(self):
-    with self.assertRaises(schema.SchemaError):
+    with self.assertRaises(gclient_utils.Error):
       gclient_eval.Exec('include_rules = {}')
 
   def test_recursedeps_list(self):
@@ -171,6 +172,22 @@ class ExecTest(unittest.TestCase):
       ]), vars_override={'baz': 'lalala'})
     self.assertIn('baz was used as a variable, but was not declared',
                   str(cm.exception))
+
+  def test_doesnt_allow_duplicate_deps(self):
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": {',
+        '    "url": "a_url@a_rev",',
+        '    "condition": "foo",',
+        '  },',
+        '  "a_dep": {',
+        '    "url": "a_url@another_rev",',
+        '    "condition": "not foo",',
+        '  }',
+        '}',
+      ]), '<unknown>')
+    self.assertIn('duplicate key in dictionary: a_dep', str(cm.exception))
 
 
 class UpdateConditionTest(unittest.TestCase):
@@ -646,6 +663,50 @@ class RevisionTest(unittest.TestCase):
     ]
     self.assert_gets_and_sets_revision(before, after)
 
+  def test_revision_windows_local_path(self):
+    before = [
+        'deps = {',
+        '  "src/dep": "file:///C:\\\\path.git@deadbeef",',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": "file:///C:\\\\path.git@deadfeed",',
+        '}',
+    ]
+    self.assert_gets_and_sets_revision(before, after)
+
+  def test_revision_multiline_strings(self):
+    deps = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@"',
+        '             "deadbeef",',
+        '}',
+    ]
+    with self.assertRaises(ValueError) as e:
+      local_scope = gclient_eval.Exec('\n'.join(deps))
+      gclient_eval.SetRevision(local_scope, 'src/dep', 'deadfeed')
+    self.assertEqual(
+        'Can\'t update value for src/dep. Multiline strings and implicitly '
+        'concatenated strings are not supported.\n'
+        'Consider reformatting the DEPS file.',
+        str(e.exception))
+
+  def test_revision_implicitly_concatenated_strings(self):
+    deps = [
+        'deps = {',
+        '  "src/dep": "https://example.com" + "/dep.git@" "deadbeef",',
+        '}',
+    ]
+    with self.assertRaises(ValueError) as e:
+      local_scope = gclient_eval.Exec('\n'.join(deps))
+      gclient_eval.SetRevision(local_scope, 'src/dep', 'deadfeed')
+    self.assertEqual(
+        'Can\'t update value for src/dep. Multiline strings and implicitly '
+        'concatenated strings are not supported.\n'
+        'Consider reformatting the DEPS file.',
+        str(e.exception))
+
   def test_revision_inside_dict(self):
     before = [
         'deps = {',
@@ -759,7 +820,7 @@ class RevisionTest(unittest.TestCase):
   def test_preserves_formatting(self):
     before = [
         'vars = {',
-        ' # Some coment on deadbeef ',
+        ' # Some comment on deadbeef ',
         '  "dep_revision": "deadbeef",',
         '}',
         'deps = {',
@@ -772,7 +833,7 @@ class RevisionTest(unittest.TestCase):
     ]
     after = [
         'vars = {',
-        ' # Some coment on deadbeef ',
+        ' # Some comment on deadbeef ',
         '  "dep_revision": "deadfeed",',
         '}',
         'deps = {',
@@ -787,7 +848,7 @@ class RevisionTest(unittest.TestCase):
 
 
 class ParseTest(unittest.TestCase):
-  def callParse(self, validate_syntax=True, vars_override=None):
+  def callParse(self, vars_override=None):
     return gclient_eval.Parse('\n'.join([
         'vars = {',
         '  "foo": "bar",',
@@ -795,7 +856,7 @@ class ParseTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a{foo}b",',
         '}',
-    ]), validate_syntax, '<unknown>', vars_override)
+    ]), '<unknown>', vars_override)
 
   def test_supports_vars_inside_vars(self):
     deps_file = '\n'.join([
@@ -810,16 +871,14 @@ class ParseTest(unittest.TestCase):
         '  },',
         '}',
     ])
-    for validate_syntax in False, True:
-      local_scope = gclient_eval.Parse(
-          deps_file, validate_syntax, '<unknown>', None)
-      self.assertEqual({
-          'vars': {'foo': 'bar',
-                   'baz': '"bar" == "bar"'},
-          'deps': {'src/baz': {'url': 'baz_url',
-                               'dep_type': 'git',
-                               'condition': 'baz'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse(deps_file, '<unknown>', None)
+    self.assertEqual({
+        'vars': {'foo': 'bar',
+                 'baz': '"bar" == "bar"'},
+        'deps': {'src/baz': {'url': 'baz_url',
+                             'dep_type': 'git',
+                             'condition': 'baz'}},
+    }, local_scope)
 
   def test_has_builtin_vars(self):
     builtin_vars = {'builtin_var': 'foo'}
@@ -828,13 +887,11 @@ class ParseTest(unittest.TestCase):
       '  "a_dep": "a{builtin_var}b",',
       '}',
     ])
-    for validate_syntax in False, True:
-      local_scope = gclient_eval.Parse(
-          deps_file, validate_syntax, '<unknown>', None, builtin_vars)
-      self.assertEqual({
-        'deps': {'a_dep': {'url': 'afoob',
-                           'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse(deps_file, '<unknown>', None, builtin_vars)
+    self.assertEqual({
+      'deps': {'a_dep': {'url': 'afoob',
+                         'dep_type': 'git'}},
+    }, local_scope)
 
   def test_declaring_builtin_var_has_no_effect(self):
     builtin_vars = {'builtin_var': 'foo'}
@@ -846,14 +903,12 @@ class ParseTest(unittest.TestCase):
         '  "a_dep": "a{builtin_var}b",',
         '}',
     ])
-    for validate_syntax in False, True:
-      local_scope = gclient_eval.Parse(
-          deps_file, validate_syntax, '<unknown>', None, builtin_vars)
-      self.assertEqual({
-        'vars': {'builtin_var': 'bar'},
-        'deps': {'a_dep': {'url': 'afoob',
-                           'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse(deps_file, '<unknown>', None, builtin_vars)
+    self.assertEqual({
+      'vars': {'builtin_var': 'bar'},
+      'deps': {'a_dep': {'url': 'afoob',
+                         'dep_type': 'git'}},
+    }, local_scope)
 
   def test_override_builtin_var(self):
     builtin_vars = {'builtin_var': 'foo'}
@@ -863,32 +918,28 @@ class ParseTest(unittest.TestCase):
       '  "a_dep": "a{builtin_var}b",',
       '}',
     ])
-    for validate_syntax in False, True:
-      local_scope = gclient_eval.Parse(
-          deps_file, validate_syntax, '<unknown>', vars_override, builtin_vars)
-      self.assertEqual({
-        'deps': {'a_dep': {'url': 'aoverrideb',
-                           'dep_type': 'git'}},
-      }, local_scope, str(local_scope))
+    local_scope = gclient_eval.Parse(
+        deps_file, '<unknown>', vars_override, builtin_vars)
+    self.assertEqual({
+      'deps': {'a_dep': {'url': 'aoverrideb',
+                         'dep_type': 'git'}},
+    }, local_scope, str(local_scope))
 
   def test_expands_vars(self):
-    for validate_syntax in True, False:
-      local_scope = self.callParse(validate_syntax=validate_syntax)
-      self.assertEqual({
-          'vars': {'foo': 'bar'},
-          'deps': {'a_dep': {'url': 'abarb',
-                             'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = self.callParse()
+    self.assertEqual({
+        'vars': {'foo': 'bar'},
+        'deps': {'a_dep': {'url': 'abarb',
+                           'dep_type': 'git'}},
+    }, local_scope)
 
   def test_overrides_vars(self):
-    for validate_syntax in True, False:
-      local_scope = self.callParse(validate_syntax=validate_syntax,
-                                   vars_override={'foo': 'baz'})
-      self.assertEqual({
-          'vars': {'foo': 'bar'},
-          'deps': {'a_dep': {'url': 'abazb',
-                             'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = self.callParse(vars_override={'foo': 'baz'})
+    self.assertEqual({
+        'vars': {'foo': 'bar'},
+        'deps': {'a_dep': {'url': 'abazb',
+                           'dep_type': 'git'}},
+    }, local_scope)
 
   def test_no_extra_vars(self):
     deps_file = '\n'.join([
@@ -901,101 +952,131 @@ class ParseTest(unittest.TestCase):
     ])
 
     with self.assertRaises(KeyError) as cm:
-      gclient_eval.Parse(
-          deps_file, True, '<unknown>', {'baz': 'lalala'})
+      gclient_eval.Parse(deps_file, '<unknown>', {'baz': 'lalala'})
     self.assertIn('baz was used as a variable, but was not declared',
                   str(cm.exception))
 
-    with self.assertRaises(KeyError) as cm:
-      gclient_eval.Parse(
-          deps_file, False, '<unknown>', {'baz': 'lalala'})
-    self.assertIn('baz', str(cm.exception))
-
   def test_standardizes_deps_string_dep(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps = {',
-        '  "a_dep": "a_url@a_rev",',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {'a_dep': {'url': 'a_url@a_rev',
-                             'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": "a_url@a_rev",',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {'a_dep': {'url': 'a_url@a_rev',
+                           'dep_type': 'git'}},
+    }, local_scope)
 
   def test_standardizes_deps_dict_dep(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps = {',
-        '  "a_dep": {',
-        '     "url": "a_url@a_rev",',
-        '     "condition": "checkout_android",',
-        '  },',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {'a_dep': {'url': 'a_url@a_rev',
-                             'dep_type': 'git',
-                             'condition': 'checkout_android'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": {',
+      '     "url": "a_url@a_rev",',
+      '     "condition": "checkout_android",',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {'a_dep': {'url': 'a_url@a_rev',
+                           'dep_type': 'git',
+                           'condition': 'checkout_android'}},
+    }, local_scope)
 
   def test_ignores_none_in_deps_os(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps = {',
-        '  "a_dep": "a_url@a_rev",',
-        '}',
-        'deps_os = {',
-        '  "mac": {',
-        '     "a_dep": None,',
-        '  },',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {'a_dep': {'url': 'a_url@a_rev',
-                             'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": "a_url@a_rev",',
+      '}',
+      'deps_os = {',
+      '  "mac": {',
+      '     "a_dep": None,',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {'a_dep': {'url': 'a_url@a_rev',
+                           'dep_type': 'git'}},
+    }, local_scope)
 
   def test_merges_deps_os_extra_dep(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps = {',
-        '  "a_dep": "a_url@a_rev",',
-        '}',
-        'deps_os = {',
-        '  "mac": {',
-        '     "b_dep": "b_url@b_rev"',
-        '  },',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {'a_dep': {'url': 'a_url@a_rev',
-                             'dep_type': 'git'},
-                   'b_dep': {'url': 'b_url@b_rev',
-                             'dep_type': 'git',
-                             'condition': 'checkout_mac'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": "a_url@a_rev",',
+      '}',
+      'deps_os = {',
+      '  "mac": {',
+      '     "b_dep": "b_url@b_rev"',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {'a_dep': {'url': 'a_url@a_rev',
+                           'dep_type': 'git'},
+                 'b_dep': {'url': 'b_url@b_rev',
+                           'dep_type': 'git',
+                           'condition': 'checkout_mac'}},
+    }, local_scope)
 
   def test_merges_deps_os_existing_dep_with_no_condition(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps = {',
-        '  "a_dep": "a_url@a_rev",',
-        '}',
-        'deps_os = {',
-        '  "mac": {',
-        '     "a_dep": "a_url@a_rev"',
-        '  },',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {'a_dep': {'url': 'a_url@a_rev',
-                             'dep_type': 'git'}},
-      }, local_scope)
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": "a_url@a_rev",',
+      '}',
+      'deps_os = {',
+      '  "mac": {',
+      '     "a_dep": "a_url@a_rev"',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {'a_dep': {'url': 'a_url@a_rev',
+                           'dep_type': 'git'}},
+    }, local_scope)
 
   def test_merges_deps_os_existing_dep_with_condition(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps = {',
+      '  "a_dep": {',
+      '    "url": "a_url@a_rev",',
+      '    "condition": "some_condition",',
+      '  },',
+      '}',
+      'deps_os = {',
+      '  "mac": {',
+      '     "a_dep": "a_url@a_rev"',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {
+            'a_dep': {'url': 'a_url@a_rev',
+                      'dep_type': 'git',
+                      'condition': '(checkout_mac) or (some_condition)'},
+        },
+    }, local_scope)
+
+  def test_merges_deps_os_multiple_os(self):
+    local_scope = gclient_eval.Parse('\n'.join([
+      'deps_os = {',
+      '  "win": {'
+      '     "a_dep": "a_url@a_rev"',
+      '  },',
+      '  "mac": {',
+      '     "a_dep": "a_url@a_rev"',
+      '  },',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        'deps': {
+            'a_dep': {'url': 'a_url@a_rev',
+                      'dep_type': 'git',
+                      'condition': '(checkout_mac) or (checkout_win)'},
+        },
+    }, local_scope)
+
+  def test_fails_to_merge_same_dep_with_different_revisions(self):
+    with self.assertRaises(gclient_eval.gclient_utils.Error) as cm:
+      gclient_eval.Parse('\n'.join([
         'deps = {',
         '  "a_dep": {',
         '    "url": "a_url@a_rev",',
@@ -1004,77 +1085,31 @@ class ParseTest(unittest.TestCase):
         '}',
         'deps_os = {',
         '  "mac": {',
-        '     "a_dep": "a_url@a_rev"',
+        '     "a_dep": "a_url@b_rev"',
         '  },',
         '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {
-              'a_dep': {'url': 'a_url@a_rev',
-                        'dep_type': 'git',
-                        'condition': '(checkout_mac) or (some_condition)'},
-          },
-      }, local_scope)
-
-  def test_merges_deps_os_multiple_os(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'deps_os = {',
-        '  "win": {'
-        '     "a_dep": "a_url@a_rev"',
-        '  },',
-        '  "mac": {',
-        '     "a_dep": "a_url@a_rev"',
-        '  },',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          'deps': {
-              'a_dep': {'url': 'a_url@a_rev',
-                        'dep_type': 'git',
-                        'condition': '(checkout_mac) or (checkout_win)'},
-          },
-      }, local_scope)
-
-  def test_fails_to_merge_same_dep_with_different_revisions(self):
-    for validate_syntax in True, False:
-      with self.assertRaises(gclient_eval.gclient_utils.Error) as cm:
-        gclient_eval.Parse('\n'.join([
-          'deps = {',
-          '  "a_dep": {',
-          '    "url": "a_url@a_rev",',
-          '    "condition": "some_condition",',
-          '  },',
-          '}',
-          'deps_os = {',
-          '  "mac": {',
-          '     "a_dep": "a_url@b_rev"',
-          '  },',
-          '}',
-        ]), validate_syntax, '<unknown>')
-      self.assertIn('conflicts with existing deps', str(cm.exception))
+      ]), '<unknown>')
+    self.assertIn('conflicts with existing deps', str(cm.exception))
 
   def test_merges_hooks_os(self):
-    for validate_syntax in True, False:
-      local_scope = gclient_eval.Parse('\n'.join([
-        'hooks = [',
-        '  {',
-        '    "action": ["a", "action"],',
-        '  },',
-        ']',
-        'hooks_os = {',
-        '  "mac": [',
-        '    {',
-        '       "action": ["b", "action"]',
-        '    },',
-        '  ]',
-        '}',
-      ]), validate_syntax, '<unknown>')
-      self.assertEqual({
-          "hooks": [{"action": ["a", "action"]},
-                    {"action": ["b", "action"], "condition": "checkout_mac"}],
-      }, local_scope)
-
+    local_scope = gclient_eval.Parse('\n'.join([
+      'hooks = [',
+      '  {',
+      '    "action": ["a", "action"],',
+      '  },',
+      ']',
+      'hooks_os = {',
+      '  "mac": [',
+      '    {',
+      '       "action": ["b", "action"]',
+      '    },',
+      '  ]',
+      '}',
+    ]), '<unknown>')
+    self.assertEqual({
+        "hooks": [{"action": ["a", "action"]},
+                  {"action": ["b", "action"], "condition": "checkout_mac"}],
+    }, local_scope)
 
 
 if __name__ == '__main__':

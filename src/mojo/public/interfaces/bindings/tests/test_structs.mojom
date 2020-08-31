@@ -58,6 +58,8 @@ struct NoDefaultFieldValues {
   array<string?>? f26;
   EmptyStruct f27;
   EmptyStruct? f28;
+  handle<platform> f29;
+  handle<platform>? f30;
 };
 
 // Used to verify that struct fields with an explicit default value
@@ -411,4 +413,13 @@ struct ContainsHashable {
 
 struct SimpleNestedStruct {
   ContainsOther nested;
+};
+
+struct EnumNestedStruct {
+  enum StructEnum {
+    FIRST,
+    SECOND
+  };
+
+  [MinVersion=1] StructEnum local_enum_state_;
 };

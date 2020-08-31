@@ -37,7 +37,8 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
             "chromium window"),
       node_(&scenic_session_),
       input_node_(&scenic_session_),
-      render_node_(&scenic_session_) {
+      render_node_(&scenic_session_),
+      background_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
@@ -51,8 +52,27 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   // Add input shape.
   node_.AddChild(input_node_);
 
-  // Add rendering subtree.
+  // Add rendering subtree, rooted at Z=-2 to make room for background layers in
+  // the Z-order (lesser values are higher in the visual ordering).
+  constexpr float kRenderNodeZPosition = -2.;
+  constexpr float kBackgroundNodeZPosition = kRenderNodeZPosition + 1.;
+  render_node_.SetTranslation(0., 0., kRenderNodeZPosition);
   node_.AddChild(render_node_);
+
+  // Initialize a black background to be just behind |render_node_|.
+  scenic::Material background_color(&scenic_session_);
+  background_color.SetColor(0, 0, 0, 255);  // RGBA (0,0,0,255) = opaque black.
+  background_node_.SetMaterial(background_color);
+  scenic::Rectangle background_shape(&scenic_session_, 1., 1.);
+  background_node_.SetShape(background_shape);
+  background_node_.SetTranslation(0., 0., kBackgroundNodeZPosition);
+  node_.AddChild(background_node_);
+
+  // Render the background immediately.
+  scenic_session_.Present2(
+      /*requested_presentation_time=*/0,
+      /*requested_prediction_span=*/0,
+      [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
 }
@@ -223,8 +243,12 @@ void ScenicWindow::UpdateSize() {
   render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
 
   // Resize input node to cover the whole surface.
-  input_node_.SetShape(scenic::Rectangle(&scenic_session_, size_dips_.width(),
-                                         size_dips_.height()));
+  scenic::Rectangle window_rect(&scenic_session_, size_dips_.width(),
+                                size_dips_.height());
+  input_node_.SetShape(window_rect);
+
+  // Resize the input and background nodes to cover the whole surface.
+  background_node_.SetShape(window_rect);
 
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.
@@ -245,14 +269,30 @@ void ScenicWindow::OnScenicEvents(
     std::vector<fuchsia::ui::scenic::Event> events) {
   for (const auto& event : events) {
     if (event.is_gfx()) {
-      if (event.gfx().is_metrics()) {
-        if (event.gfx().metrics().node_id != node_.id())
-          continue;
-        OnViewMetrics(event.gfx().metrics().metrics);
-      } else if (event.gfx().is_view_properties_changed()) {
-        if (event.gfx().view_properties_changed().view_id != view_.id())
-          continue;
-        OnViewProperties(event.gfx().view_properties_changed().properties);
+      switch (event.gfx().Which()) {
+        case fuchsia::ui::gfx::Event::kMetrics: {
+          if (event.gfx().metrics().node_id != node_.id())
+            continue;
+          OnViewMetrics(event.gfx().metrics().metrics);
+          break;
+        }
+        case fuchsia::ui::gfx::Event::kViewPropertiesChanged: {
+          DCHECK(event.gfx().view_properties_changed().view_id == view_.id());
+          OnViewProperties(event.gfx().view_properties_changed().properties);
+          break;
+        }
+        case fuchsia::ui::gfx::Event::kViewAttachedToScene: {
+          DCHECK(event.gfx().view_attached_to_scene().view_id == view_.id());
+          OnViewAttachedChanged(true);
+          break;
+        }
+        case fuchsia::ui::gfx::Event::kViewDetachedFromScene: {
+          DCHECK(event.gfx().view_detached_from_scene().view_id == view_.id());
+          OnViewAttachedChanged(false);
+          break;
+        }
+        default:
+          break;
       }
     } else if (event.is_input()) {
       OnInputEvent(event.input());
@@ -281,6 +321,12 @@ void ScenicWindow::OnViewProperties(
   size_dips_.SetSize(width, height);
   if (device_pixel_ratio_ > 0.0)
     UpdateSize();
+}
+
+void ScenicWindow::OnViewAttachedChanged(bool is_view_attached) {
+  delegate_->OnWindowStateChanged(is_view_attached
+                                      ? PlatformWindowState::kNormal
+                                      : PlatformWindowState::kMinimized);
 }
 
 void ScenicWindow::OnInputEvent(const fuchsia::ui::input::InputEvent& event) {

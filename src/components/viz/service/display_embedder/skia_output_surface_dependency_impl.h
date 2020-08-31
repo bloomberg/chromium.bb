@@ -25,8 +25,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   ~SkiaOutputSurfaceDependencyImpl() override;
 
   std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
-  bool IsUsingVulkan() override;
-  bool IsUsingDawn() override;
   gpu::SharedImageManager* GetSharedImageManager() override;
   gpu::SyncPointManager* GetSyncPointManager() override;
   const gpu::GpuDriverBugWorkarounds& GetGpuDriverBugWorkarounds() override;
@@ -34,17 +32,19 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   gpu::raster::GrShaderCache* GetGrShaderCache() override;
   VulkanContextProvider* GetVulkanContextProvider() override;
   DawnContextProvider* GetDawnContextProvider() override;
-  const gpu::GpuPreferences& GetGpuPreferences() override;
+  const gpu::GpuPreferences& GetGpuPreferences() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;
   gpu::ImageFactory* GetGpuImageFactory() override;
   bool IsOffscreen() override;
   gpu::SurfaceHandle GetSurfaceHandle() override;
   scoped_refptr<gl::GLSurface> CreateGLSurface(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
+      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
+      gl::GLSurfaceFormat format) override;
   base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   void ScheduleGrContextCleanup() override;
+  void ScheduleDelayedGPUTaskFromGPUThread(base::OnceClosure task) override;
 
 #if defined(OS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(
@@ -54,11 +54,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
 
   void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
   void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
-  void DidLoseContext(bool offscreen,
-                      gpu::error::ContextLostReason reason,
+  void DidLoseContext(gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
 
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
+  bool NeedsSupportForExternalStencil() override;
 
  private:
   GpuServiceImpl* const gpu_service_impl_;

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {EdgeTypes, EdgeView, generateEdgePortIdsByData} from './EdgeView.js';
+import {NodeCreationData, NodeParamConnectionData, NodeParamDisconnectionData, NodesConnectionData, NodesDisconnectionData, NodesDisconnectionDataWithDestination, ParamCreationData} from './GraphStyle.js';  // eslint-disable-line no-unused-vars
+import {NodeLabelGenerator, NodeView} from './NodeView.js';
+
 // A class that tracks all the nodes and edges of an audio graph.
 export class GraphView extends Common.Object {
   /**
@@ -12,9 +16,9 @@ export class GraphView extends Common.Object {
 
     this.contextId = contextId;
 
-    /** @type {!Map<!Protocol.WebAudio.GraphObjectId, !WebAudio.GraphVisualizer.NodeView>} */
+    /** @type {!Map<!Protocol.WebAudio.GraphObjectId, !NodeView>} */
     this._nodes = new Map();
-    /** @type {!Map<!Protocol.WebAudio.GraphObjectId, !WebAudio.GraphVisualizer.EdgeView>} */
+    /** @type {!Map<!Protocol.WebAudio.GraphObjectId, !EdgeView>} */
     this._edges = new Map();
 
     /**
@@ -31,7 +35,7 @@ export class GraphView extends Common.Object {
 
     // Use concise node label to replace the long UUID.
     // Each graph has its own label generator so that the label starts from 0.
-    this._nodeLabelGenerator = new WebAudio.GraphVisualizer.NodeLabelGenerator();
+    this._nodeLabelGenerator = new NodeLabelGenerator();
 
     /**
      * For each param ID, save its corresponding node Id.
@@ -42,11 +46,11 @@ export class GraphView extends Common.Object {
 
   /**
    * Add a node to the graph.
-   * @param {!WebAudio.GraphVisualizer.NodeCreationData} data
+   * @param {!NodeCreationData} data
    */
   addNode(data) {
     const label = this._nodeLabelGenerator.generateLabel(data.nodeType);
-    const node = new WebAudio.GraphVisualizer.NodeView(data, label);
+    const node = new NodeView(data, label);
     this._nodes.set(data.nodeId, node);
     this._notifyShouldRedraw();
   }
@@ -64,12 +68,12 @@ export class GraphView extends Common.Object {
 
   /**
    * Add a param to the node.
-   * @param {!WebAudio.GraphVisualizer.ParamCreationData} data
+   * @param {!ParamCreationData} data
    */
   addParam(data) {
     const node = this.getNodeById(data.nodeId);
     if (!node) {
-      console.error(`AudioNode should be added before AudioParam`);
+      console.error('AudioNode should be added before AudioParam');
       return;
     }
     node.addParamPort(data.paramId, data.paramType);
@@ -90,23 +94,22 @@ export class GraphView extends Common.Object {
 
   /**
    * Add a Node-to-Node connection to the graph.
-   * @param {!WebAudio.GraphVisualizer.NodesConnectionData} edgeData
+   * @param {!NodesConnectionData} edgeData
    */
   addNodeToNodeConnection(edgeData) {
-    const edge = new WebAudio.GraphVisualizer.EdgeView(edgeData, WebAudio.GraphVisualizer.EdgeTypes.NodeToNode);
+    const edge = new EdgeView(edgeData, EdgeTypes.NodeToNode);
     this._addEdge(edge);
   }
 
   /**
    * Remove a Node-to-Node connection from the graph.
-   * @param {!WebAudio.GraphVisualizer.NodesDisconnectionData} edgeData
+   * @param {!NodesDisconnectionData} edgeData
    */
   removeNodeToNodeConnection(edgeData) {
     if (edgeData.destinationId) {
       // Remove a single edge if destinationId is specified.
-      const {edgeId} = WebAudio.GraphVisualizer.generateEdgePortIdsByData(
-          /** @type {!WebAudio.GraphVisualizer.NodesDisconnectionDataWithDestination} */ (edgeData),
-          WebAudio.GraphVisualizer.EdgeTypes.NodeToNode);
+      const {edgeId} = generateEdgePortIdsByData(
+          /** @type {!NodesDisconnectionDataWithDestination} */ (edgeData), EdgeTypes.NodeToNode);
       this._removeEdge(edgeId);
     } else {
       // Otherwise, remove all outgoing edges from source node.
@@ -116,37 +119,36 @@ export class GraphView extends Common.Object {
 
   /**
    * Add a Node-to-Param connection to the graph.
-   * @param {!WebAudio.GraphVisualizer.NodeParamConnectionData} edgeData
+   * @param {!NodeParamConnectionData} edgeData
    */
   addNodeToParamConnection(edgeData) {
-    const edge = new WebAudio.GraphVisualizer.EdgeView(edgeData, WebAudio.GraphVisualizer.EdgeTypes.NodeToParam);
+    const edge = new EdgeView(edgeData, EdgeTypes.NodeToParam);
     this._addEdge(edge);
   }
 
   /**
    * Remove a Node-to-Param connection from the graph.
-   * @param {!WebAudio.GraphVisualizer.NodeParamDisconnectionData} edgeData
+   * @param {!NodeParamDisconnectionData} edgeData
    */
   removeNodeToParamConnection(edgeData) {
-    const {edgeId} =
-        WebAudio.GraphVisualizer.generateEdgePortIdsByData(edgeData, WebAudio.GraphVisualizer.EdgeTypes.NodeToParam);
+    const {edgeId} = generateEdgePortIdsByData(edgeData, EdgeTypes.NodeToParam);
     this._removeEdge(edgeId);
   }
 
   /**
    * @param {!Protocol.WebAudio.GraphObjectId} nodeId
-   * @return {?WebAudio.GraphVisualizer.NodeView}
+   * @return {?NodeView}
    */
   getNodeById(nodeId) {
     return this._nodes.get(nodeId);
   }
 
-  /** @return {!Map<!Protocol.WebAudio.GraphObjectId, !WebAudio.GraphVisualizer.NodeView>} */
+  /** @return {!Map<!Protocol.WebAudio.GraphObjectId, !NodeView>} */
   getNodes() {
     return this._nodes;
   }
 
-  /** @return {!Map<!Protocol.WebAudio.GraphObjectId, !WebAudio.GraphVisualizer.EdgeView>} */
+  /** @return {!Map<!Protocol.WebAudio.GraphObjectId, !EdgeView>} */
   getEdges() {
     return this._edges;
   }
@@ -161,7 +163,7 @@ export class GraphView extends Common.Object {
 
   /**
    * Add an edge to the graph.
-   * @param {!WebAudio.GraphVisualizer.EdgeView} edge
+   * @param {!EdgeView} edge
    */
   _addEdge(edge) {
     const sourceId = edge.sourceId;
@@ -204,20 +206,3 @@ export class GraphView extends Common.Object {
 export const Events = {
   ShouldRedraw: Symbol('ShouldRedraw')
 };
-
-/* Legacy exported object */
-self.WebAudio = self.WebAudio || {};
-
-/* Legacy exported object */
-WebAudio = WebAudio || {};
-
-/* Legacy exported object */
-WebAudio.GraphVisualizer = WebAudio.GraphVisualizer || {};
-
-/**
- * @constructor
- */
-WebAudio.GraphVisualizer.GraphView = GraphView;
-
-/** @enum {symbol} */
-WebAudio.GraphVisualizer.GraphView.Events = Events;

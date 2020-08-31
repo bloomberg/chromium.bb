@@ -7,18 +7,26 @@
 
 from __future__ import print_function
 
+import os
+import sys
+
 from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.metrics import deserialize_metrics_log
-from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import goma_lib
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
 from chromite.utils import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _ACCEPTED_LICENSES = '@CHROMEOS'
 
@@ -31,11 +39,8 @@ def Create(input_proto, output_proto, _config):
   update_chroot = not input_proto.flags.chroot_current
   replace_sysroot = input_proto.flags.replace
 
-  build_target_name = input_proto.build_target.name
-  profile = input_proto.profile.name or None
-
-  build_target = build_target_util.BuildTarget(name=build_target_name,
-                                               profile=profile)
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target,
+                                                  input_proto.profile)
   run_configs = sysroot.SetupBoardRunConfig(
       force=replace_sysroot, upgrade_chroot=update_chroot)
 
@@ -46,7 +51,7 @@ def Create(input_proto, output_proto, _config):
     cros_build_lib.Die(e)
 
   output_proto.sysroot.path = created.path
-  output_proto.sysroot.build_target.name = build_target_name
+  output_proto.sysroot.build_target.name = build_target.name
 
   return controller.RETURN_CODE_SUCCESS
 
@@ -66,6 +71,26 @@ def CreateSimpleChromeSysroot(input_proto, output_proto, _config):
   output_proto.sysroot_archive.path = sysroot_tar_path
 
   return controller.RETURN_CODE_SUCCESS
+
+
+@faux.all_empty
+@validate.require('build_target.name', 'packages')
+@validate.validation_complete
+def GenerateArchive(input_proto, output_proto, _config):
+  """Generate a sysroot. Typically used by informational builders."""
+  build_target_name = input_proto.build_target.name
+  pkg_list = []
+  for package in input_proto.packages:
+    pkg_list.append('%s/%s' % (package.category, package.package_name))
+
+  with osutils.TempDir(delete=False) as temp_output_dir:
+    sysroot_tar_path = sysroot.GenerateArchive(temp_output_dir,
+                                               build_target_name,
+                                               pkg_list)
+
+  # By assigning this Path variable to the tar path, the tar file will be
+  # copied out to the input_proto's ResultPath location.
+  output_proto.sysroot_archive.path = sysroot_tar_path
 
 
 def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
@@ -88,12 +113,13 @@ def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
 @validate.validation_complete
 def InstallToolchain(input_proto, output_proto, _config):
   """Install the toolchain into a sysroot."""
-  compile_source = input_proto.flags.compile_source
+  compile_source = (
+      input_proto.flags.compile_source or input_proto.flags.toolchain_changed)
 
   sysroot_path = input_proto.sysroot.path
-  build_target_name = input_proto.sysroot.build_target.name
 
-  build_target = build_target_util.BuildTarget(name=build_target_name)
+  build_target = controller_util.ParseBuildTarget(
+      input_proto.sysroot.build_target)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
   run_configs = sysroot.SetupBoardRunConfig(usepkg=not compile_source)
 
@@ -120,9 +146,12 @@ def InstallToolchain(input_proto, output_proto, _config):
 @metrics.collect_metrics
 def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
-  compile_source = input_proto.flags.compile_source
-  event_file = input_proto.flags.event_file
-  use_goma = input_proto.flags.use_goma
+  compile_source = (
+      input_proto.flags.compile_source or input_proto.flags.toolchain_changed)
+  # A new toolchain version will not yet have goma support, so goma must be
+  # disabled when we are testing toolchain changes.
+  use_goma = (
+      input_proto.flags.use_goma and not input_proto.flags.toolchain_changed)
 
   target_sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
   build_target = controller_util.ParseBuildTarget(
@@ -137,12 +166,12 @@ def InstallPackages(input_proto, output_proto, _config):
 
   use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
-      event_file=event_file,
       usepkg=not compile_source,
       install_debug_symbols=True,
       packages=packages,
       use_flags=use_flags,
-      use_goma=use_goma)
+      use_goma=use_goma,
+      incremental_build=False)
 
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
@@ -157,6 +186,27 @@ def InstallPackages(input_proto, output_proto, _config):
       controller_util.CPVToPackageInfo(package, package_info)
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+
+  # Copy goma logs to specified directory if there is a goma_config and
+  # it contains a log_dir to store artifacts.
+  if input_proto.goma_config.log_dir.dir:
+    # Get the goma log directory based on the GLOG_log_dir env variable.
+    # TODO(crbug.com/1045001): Replace environment variable with query to
+    # goma object after goma refactoring allows this.
+    log_source_dir = os.getenv('GLOG_log_dir')
+    if not log_source_dir:
+      cros_build_lib.Die('GLOG_log_dir must be defined.')
+    archiver = goma_lib.LogsArchiver(
+        log_source_dir,
+        dest_dir=input_proto.goma_config.log_dir.dir,
+        stats_file=input_proto.goma_config.stats_file,
+        counterz_file=input_proto.goma_config.counterz_file)
+    archiver_tuple = archiver.Archive()
+    if archiver_tuple.stats_file:
+      output_proto.goma_artifacts.stats_file = archiver_tuple.stats_file
+    if archiver_tuple.counterz_file:
+      output_proto.goma_artifacts.counterz_file = archiver_tuple.counterz_file
+    output_proto.goma_artifacts.log_files[:] = archiver_tuple.log_files
 
   # Read metric events log and pipe them into output_proto.events.
   deserialize_metrics_log(output_proto.events, prefix=build_target.name)

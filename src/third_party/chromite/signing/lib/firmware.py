@@ -120,7 +120,7 @@ class ECSigner(signer.BaseSigner):
                            cwd=temp_dir)
 
         cros_build_lib.run(['openssl', 'dgst', '-sha256', '-binary', ec_rw_bin],
-                           log_stdout_to_file=ec_rw_hash, cwd=temp_dir)
+                           stdout=ec_rw_hash, cwd=temp_dir)
 
         cros_build_lib.run(['store_file_in_cbfs', bios_path, ec_rw_bin, 'ecrw'])
 

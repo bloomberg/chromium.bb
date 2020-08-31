@@ -6,8 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <dom-module id="assistant-value-prop">
   <template>
-    <link rel="stylesheet" href="../login/oobe_dialog_host.css">
-    <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <link rel="stylesheet" href="assistant_value_prop.css">
     <oobe-dialog id="value-prop-dialog" class="value-prop-loading"
@@ -15,14 +14,14 @@
       <div slot="footer">
         <div class="container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
           <div class="title" id="title-text"></div>
           <div class="content" id="intro-text"></div>
-          <div class="flex layout horizontal center">
+          <div id="column-container" class="flex layout horizontal">
             <div id="value-prop-container">
               <div class="flex layout horizontal center">
                 <img id="user-image"
-                    i18n-values="aria-label:assistantUserImage">
+                    aria-label$="[[i18nDynamic(locale, 'assistantUserImage')]]">
                 <div class="content" id="user-name"></div>
               </div>
               <webview id="value-prop-view" tabindex="-1"></webview>
@@ -36,11 +35,11 @@
         <div class="flex"></div>
         <oobe-text-button id="skip-button" on-tap="onSkipTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="skip-button-text"></div>
+          <div id="skip-button-text" slot="text"></div>
         </oobe-text-button>
         <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="next-button-text"></div>
+          <div id="next-button-text" slot="text"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -53,9 +52,8 @@
         </div>
       </div>
       <div slot="button-container">
-        <oobe-text-button inverse id="overlay-close-button">
-          <div i18n-content="assistantOptinOKButton" id="close-button-text">
-          </div>
+        <oobe-text-button inverse id="overlay-close-button"
+            text-key="assistantOptinOKButton">
         </oobe-text-button>
       </div>
     </cr-dialog>

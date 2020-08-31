@@ -268,6 +268,63 @@ TEST(UrlUtilTest, GetHostOrSpecFromURL) {
             GetHostOrSpecFromURL(GURL("file:///tmp/test.html")));
 }
 
+TEST(UrlUtilTest, GetSuperdomain) {
+  struct {
+    const char* const domain;
+    const char* const expected_superdomain;
+  } tests[] = {
+      // Basic cases
+      {"foo.bar.example", "bar.example"},
+      {"bar.example", "example"},
+      {"example", ""},
+
+      // Returned value may be an eTLD.
+      {"google.com", "com"},
+      {"google.co.uk", "co.uk"},
+
+      // Weird cases.
+      {"", ""},
+      {"has.trailing.dot.", "trailing.dot."},
+      {"dot.", ""},
+      {".has.leading.dot", "has.leading.dot"},
+      {".", ""},
+      {"..", "."},
+      {"127.0.0.1", "0.0.1"},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(test.expected_superdomain, GetSuperdomain(test.domain));
+  }
+}
+
+TEST(UrlUtilTest, IsSubdomainOf) {
+  struct {
+    const char* subdomain;
+    const char* superdomain;
+    bool is_subdomain;
+  } tests[] = {
+      {"bar.foo.com", "foo.com", true},
+      {"barfoo.com", "foo.com", false},
+      {"bar.foo.com", "com", true},
+      {"bar.foo.com", "other.com", false},
+      {"bar.foo.com", "bar.foo.com", true},
+      {"bar.foo.com", "baz.foo.com", false},
+      {"bar.foo.com", "baz.bar.foo.com", false},
+      {"bar.foo.com", "ar.foo.com", false},
+      {"foo.com", "foo.com.", false},
+      {"bar.foo.com", "foo.com.", false},
+      {"", "", true},
+      {"a", "", false},
+      {"", "a", false},
+      {"127.0.0.1", "0.0.1", true},  // Don't do this...
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(test.is_subdomain,
+              IsSubdomainOf(test.subdomain, test.superdomain));
+  }
+}
+
 TEST(UrlUtilTest, CompliantHost) {
   struct {
     const char* const host;

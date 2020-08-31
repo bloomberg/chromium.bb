@@ -18,6 +18,7 @@ source_set("identity_manager") {
     "accounts_in_cookie_jar_info.cc",
     "accounts_in_cookie_jar_info.h",
     "accounts_mutator.h",
+    "consent_level.h",
     "device_accounts_synchronizer.h",
     "diagnostics_provider.h",
     "identity_manager.cc",
@@ -32,6 +33,7 @@ source_set("identity_manager") {
     "primary_account_access_token_fetcher.cc",
     "primary_account_access_token_fetcher.h",
     "primary_account_mutator.h",
+    "scope_set.h",
     "set_accounts_in_cookie_result.h",
     "ubertoken_fetcher.cc",
     "ubertoken_fetcher.h",
@@ -45,7 +47,6 @@ source_set("identity_manager") {
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",
     "//google_apis",
-    "//services/identity/public/cpp:cpp_types",
     "//ui/gfx",
   ]
 
@@ -66,8 +67,7 @@ source_set("identity_manager") {
   }
 
   if (is_android) {
-    deps +=
-        [ "//components/signin/internal/identity_manager/android:jni_headers" ]
+    deps += [ "//components/signin/public/android:jni_headers" ]
   }
 
   allow_circular_includes_from = [
@@ -80,6 +80,7 @@ source_set("identity_manager") {
 if (is_android) {
   java_cpp_enum("identity_manager_enum_javagen") {
     sources = [
+      "consent_level.h",
       "primary_account_mutator.h",
     ]
   }

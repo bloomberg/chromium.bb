@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -20,6 +19,7 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -72,10 +72,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     views::test::WidgetTest::SetUp();
 
     app_list_view_ = new AppListView(&view_delegate_);
-    app_list_view_->InitView(
-        /*is_tablet_mode=*/false, GetContext(),
-        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
-                            /*is_tablet_mode=*/false));
+    app_list_view_->InitView(GetContext());
 
     widget_ = CreateTopLevelPlatformWidget();
     view_ =
@@ -371,6 +368,7 @@ TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreChanging) {
 TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreBeingRemoved) {
   SetSearchBoxActive(true, ui::ET_UNKNOWN);
   view()->search_box()->SetText(base::ASCIIToUTF16("test"));
+  view()->set_search_box_has_query_for_test(true);
   CreateSearchResult(ash::SearchResultDisplayType::kList, 0.7,
                      base::ASCIIToUTF16("tester"), base::string16());
   CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
@@ -415,6 +413,23 @@ TEST_F(SearchBoxViewTest, ChangeSelectionWhileResultsAreBeingRemoved) {
   KeyPress(ui::VKEY_DOWN);
   EXPECT_FALSE(
       result_page_view->result_selection_controller()->selected_result());
+}
+
+TEST_F(SearchBoxViewTest, NewSearchQueryActionRecordedWhenUserType) {
+  base::UserActionTester user_action_tester;
+  // User starts to type a character in search box.
+  KeyPress(ui::VKEY_A);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("AppList_SearchQueryStarted"));
+
+  // User continues to type another character.
+  KeyPress(ui::VKEY_B);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("AppList_SearchQueryStarted"));
+
+  // User erases the query in the search box and types a new one.
+  KeyPress(ui::VKEY_BACK);
+  KeyPress(ui::VKEY_BACK);
+  KeyPress(ui::VKEY_C);
+  EXPECT_EQ(2, user_action_tester.GetActionCount("AppList_SearchQueryStarted"));
 }
 
 class SearchBoxViewAssistantButtonTest : public SearchBoxViewTest {
@@ -740,6 +755,7 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
 
   // Simulate uncomposited text. The autocomplete should be handled.
   view()->search_box()->SetText(base::ASCIIToUTF16("he"));
+  view()->set_search_box_has_query_for_test(true);
   view()->set_highlight_range_for_test(gfx::Range(2, 2));
   view()->ProcessAutocomplete();
 

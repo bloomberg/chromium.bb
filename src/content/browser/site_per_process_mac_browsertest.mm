@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -33,16 +34,18 @@ class TextInputClientMacHelper {
 
   void WaitForStringFromRange(RenderWidgetHost* rwh, const gfx::Range& range) {
     GetStringFromRangeForRenderWidget(
-        rwh, range, base::Bind(&TextInputClientMacHelper::OnResult,
-                               base::Unretained(this)));
+        rwh, range,
+        base::BindOnce(&TextInputClientMacHelper::OnResult,
+                       base::Unretained(this)));
     loop_runner_ = new MessageLoopRunner();
     loop_runner_->Run();
   }
 
   void WaitForStringAtPoint(RenderWidgetHost* rwh, const gfx::Point& point) {
     GetStringAtPointForRenderWidget(
-        rwh, point, base::Bind(&TextInputClientMacHelper::OnResult,
-                               base::Unretained(this)));
+        rwh, point,
+        base::BindOnce(&TextInputClientMacHelper::OnResult,
+                       base::Unretained(this)));
     loop_runner_ = new MessageLoopRunner();
     loop_runner_->Run();
   }
@@ -152,16 +155,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
 
   InputEventAckWaiter gesture_scroll_begin_ack_observer(
-      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+      child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
+                                        blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+        return event.GetType() ==
+                   blink::WebInputEvent::Type::kGestureScrollBegin &&
                !static_cast<const blink::WebGestureEvent&>(event)
                     .data.scroll_begin.synthetic;
       }));
   InputEventAckWaiter gesture_scroll_end_ack_observer(
-      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+      child_rwh, base::BindRepeating([](blink::mojom::InputEventResultSource,
+                                        blink::mojom::InputEventResultState,
                                         const blink::WebInputEvent& event) {
-        return event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+        return event.GetType() ==
+                   blink::WebInputEvent::Type::kGestureScrollEnd &&
                !static_cast<const blink::WebGestureEvent&>(event)
                     .data.scroll_end.synthetic;
       }));
@@ -170,11 +177,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
 
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseWheel,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
-  scroll_event.delta_units =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
 
   // Have the RWHVCF process a sequence of touchpad scroll events that contain
@@ -267,7 +274,7 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
   // isn't sent until the first PinchUpdate.
 
   InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
-                             blink::WebInputEvent::kGesturePinchBegin);
+                             blink::WebInputEvent::Type::kGesturePinchBegin);
   NSEvent* pinchUpdateEvent =
       MockGestureEvent(NSEventTypeMagnify, 0.25, gesture_point.x(),
                        gesture_point.y(), NSEventPhaseChanged);

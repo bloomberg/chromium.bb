@@ -33,7 +33,6 @@ namespace {
 constexpr size_t kTimestampCacheSize = 128;
 // Number of requests to allocate for submitting input buffers, if requests
 // are used.
-constexpr size_t kNumRequests = 16;
 
 }  // namespace
 
@@ -118,59 +117,23 @@ V4L2StatelessVideoDecoderBackend::~V4L2StatelessVideoDecoderBackend() {
       !decode_request_queue_.empty()) {
     VLOGF(1) << "Should not destroy backend during pending decode!";
   }
-
-  if (avd_) {
-    avd_->Reset();
-    avd_ = nullptr;
-  }
 }
 
 bool V4L2StatelessVideoDecoderBackend::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!CheckRequestAPISupport()) {
-    VPLOGF(1) << "Failed to check request api support.";
-    return false;
-  }
 
   if (!IsSupportedProfile(profile_)) {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
     return false;
   }
 
-  // Create codec-specific AcceleratedVideoDecoder.
-  // TODO(akahuang): Check the profile is supported.
-  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
-    if (supports_requests_) {
-      avd_.reset(new H264Decoder(
-          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
-          profile_));
-    } else {
-      avd_.reset(new H264Decoder(
-          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
-          profile_));
-    }
-  } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
-    if (supports_requests_) {
-      avd_.reset(new VP8Decoder(
-          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
-    } else {
-      avd_.reset(new VP8Decoder(
-          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
-    }
-  } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
-    avd_.reset(new VP9Decoder(
-        std::make_unique<V4L2VP9Accelerator>(this, device_.get()), profile_));
-  } else {
-    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+  if (!CreateAvd())
     return false;
-  }
 
-  if (supports_requests_) {
+  if (input_queue_->SupportsRequests()) {
     requests_queue_ = device_->GetRequestsQueue();
     if (requests_queue_ == nullptr)
       return false;
-    return requests_queue_->AllocateRequests(kNumRequests);
   }
 
   return true;
@@ -260,9 +223,9 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
   DVLOGF(4);
 
   // Request V4L2 input and output buffers.
-  V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
-  V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
-  if (!input_buf.IsValid() || !output_buf.IsValid()) {
+  auto input_buf = input_queue_->GetFreeBuffer();
+  auto output_buf = output_queue_->GetFreeBuffer();
+  if (!input_buf || !output_buf) {
     DVLOGF(3) << "There is no free V4L2 buffer.";
     return nullptr;
   }
@@ -274,7 +237,7 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
     // driver via MMAP. The VideoFrame received from V4L2 buffer will remain
     // until deallocating V4L2Queue. But we need to know when the buffer is not
     // used by the client. So we wrap the frame here.
-    scoped_refptr<VideoFrame> origin_frame = output_buf.GetVideoFrame();
+    scoped_refptr<VideoFrame> origin_frame = output_buf->GetVideoFrame();
     frame = VideoFrame::WrapVideoFrame(origin_frame, origin_frame->format(),
                                        origin_frame->visible_rect(),
                                        origin_frame->natural_size());
@@ -297,27 +260,27 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
   }
 
   scoped_refptr<V4L2DecodeSurface> dec_surface;
-  if (supports_requests_) {
-    V4L2RequestRef request_ref = requests_queue_->GetFreeRequest();
-    if (!request_ref.IsValid()) {
-      DVLOGF(3) << "Could not get free request.";
+  if (input_queue_->SupportsRequests()) {
+    base::Optional<V4L2RequestRef> request_ref =
+        requests_queue_->GetFreeRequest();
+    if (!request_ref) {
+      DVLOGF(1) << "Could not get free request.";
       return nullptr;
     }
 
-    dec_surface = new V4L2RequestDecodeSurface(std::move(input_buf),
-                                      std::move(output_buf),
-                                      std::move(frame),
-                                      std::move(request_ref));
+    dec_surface = new V4L2RequestDecodeSurface(
+        std::move(*input_buf), std::move(*output_buf), std::move(frame),
+        std::move(*request_ref));
   } else {
     dec_surface = new V4L2ConfigStoreDecodeSurface(
-        std::move(input_buf), std::move(output_buf), std::move(frame));
+        std::move(*input_buf), std::move(*output_buf), std::move(frame));
   }
 
   return dec_surface;
 }
 
 bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    V4L2DecodeSurface* dec_surface,
     const uint8_t* data,
     size_t size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -340,34 +303,9 @@ bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
 }
 
 void V4L2StatelessVideoDecoderBackend::DecodeSurface(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
-
-  // Enqueue input_buf and output_buf
-  dec_surface->input_buffer().PrepareQueueBuffer(*dec_surface);
-
-  if (!std::move(dec_surface->input_buffer()).QueueMMap()) {
-    client_->OnBackendError();
-    return;
-  }
-
-  bool result = false;
-  switch (output_queue_->GetMemoryType()) {
-    case V4L2_MEMORY_MMAP:
-      result = std::move(dec_surface->output_buffer()).QueueMMap();
-      break;
-    case V4L2_MEMORY_DMABUF:
-      result = std::move(dec_surface->output_buffer())
-                   .QueueDMABuf(dec_surface->video_frame()->DmabufFds());
-      break;
-    default:
-      NOTREACHED() << "We should only use MMAP or DMABUF.";
-  }
-  if (!result) {
-    client_->OnBackendError();
-    return;
-  }
 
   if (!dec_surface->Submit()) {
     VLOGF(1) << "Error while submitting frame for decoding!";
@@ -379,7 +317,7 @@ void V4L2StatelessVideoDecoderBackend::DecodeSurface(
 }
 
 void V4L2StatelessVideoDecoderBackend::SurfaceReady(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    scoped_refptr<V4L2DecodeSurface> dec_surface,
     int32_t bitstream_id,
     const gfx::Rect& visible_rect,
     const VideoColorSpace& /* color_space */) {
@@ -456,7 +394,6 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
           DVLOGF(3) << "Only profile is changed. No need to do anything.";
           continue;
         }
-        pic_size_ = avd_->GetPicSize();
 
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
         client_->InitiateFlush();
@@ -575,13 +512,38 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   // be no V4L2DecodeSurface left.
   DCHECK(surfaces_at_device_.empty());
   DCHECK(output_request_queue_.empty());
-  // Set output format with the new resolution.
-  DCHECK(!pic_size_.IsEmpty());
-  DVLOGF(3) << "Change resolution to " << pic_size_.ToString();
 
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   gfx::Rect visible_rect = avd_->GetVisibleRect();
-  client_->ChangeResolution(pic_size_, visible_rect, num_output_frames);
+  gfx::Size pic_size = avd_->GetPicSize();
+  // Set output format with the new resolution.
+  DCHECK(!pic_size.IsEmpty());
+  DVLOGF(3) << "Change resolution to " << pic_size.ToString();
+  client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
+}
+
+bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
+    const gfx::Size& pic_size,
+    const gfx::Rect& visible_rect,
+    const size_t num_output_frames) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
+
+  auto ret = input_queue_->GetFormat().first;
+  if (!ret) {
+    VPLOGF(1) << "Failed getting OUTPUT format";
+    return false;
+  }
+  struct v4l2_format format = std::move(*ret);
+
+  format.fmt.pix_mp.width = pic_size.width();
+  format.fmt.pix_mp.height = pic_size.height();
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed setting OUTPUT format";
+    return false;
+  }
+
+  return true;
 }
 
 void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
@@ -590,6 +552,7 @@ void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
     return;
   }
 
+  pic_size_ = avd_->GetPicSize();
   client_->CompleteFlush();
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,
@@ -610,8 +573,15 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
-  if (avd_)
-    avd_->Reset();
+  if (avd_) {
+    // If we reset during resolution change, re-create AVD. Then the new AVD
+    // will trigger resolution change again after reset.
+    if (pic_size_ != avd_->GetPicSize()) {
+      CreateAvd();
+    } else {
+      avd_->Reset();
+    }
+  }
 
   // Clear output_request_queue_.
   while (!output_request_queue_.empty())
@@ -633,29 +603,6 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
   }
 }
 
-bool V4L2StatelessVideoDecoderBackend::CheckRequestAPISupport() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOGF(3);
-
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
-    VPLOGF(1) << "VIDIOC_REQBUFS ioctl failed.";
-    return false;
-  }
-  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
-    supports_requests_ = true;
-    VLOGF(1) << "Using request API.";
-  } else {
-    VLOGF(1) << "Using config store.";
-  }
-
-  return true;
-}
-
 bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
     VideoCodecProfile profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -675,6 +622,40 @@ bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
   }
   return std::find(supported_profiles_.begin(), supported_profiles_.end(),
                    profile) != supported_profiles_.end();
+}
+
+bool V4L2StatelessVideoDecoderBackend::CreateAvd() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(3);
+
+  pic_size_ = gfx::Size();
+
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
+    if (input_queue_->SupportsRequests()) {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
+          profile_));
+    } else {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
+          profile_));
+    }
+  } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
+    if (input_queue_->SupportsRequests()) {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    }
+  } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
+    avd_.reset(new VP9Decoder(
+        std::make_unique<V4L2VP9Accelerator>(this, device_.get()), profile_));
+  } else {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace media

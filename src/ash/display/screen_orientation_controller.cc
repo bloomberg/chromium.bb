@@ -13,6 +13,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -20,6 +21,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -225,9 +227,13 @@ ScreenOrientationController::ScreenOrientationController()
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
@@ -262,17 +268,19 @@ void ScreenOrientationController::LockOrientationForWindow(
       iter->second.lock_completion_behavior = LockCompletionBehavior::None;
     }
   } else {
-    lock_info_map_.emplace(requesting_window, LockInfo(orientation_lock));
+    lock_info_map_.emplace(
+        requesting_window,
+        LockInfo(orientation_lock, requesting_window->GetRootWindow()));
   }
 
-  ApplyLockForActiveWindow();
+  ApplyLockForTopMostWindowOnInternalDisplay();
 }
 
 void ScreenOrientationController::UnlockOrientationForWindow(
     aura::Window* window) {
   lock_info_map_.erase(window);
   window->RemoveObserver(this);
-  ApplyLockForActiveWindow();
+  ApplyLockForTopMostWindowOnInternalDisplay();
 }
 
 void ScreenOrientationController::UnlockAll() {
@@ -334,7 +342,34 @@ void ScreenOrientationController::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  ApplyLockForActiveWindow();
+  ApplyLockForTopMostWindowOnInternalDisplay();
+}
+
+void ScreenOrientationController::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  // Window may move to an external display or back to internal (e.g. via
+  // shortcut). In this case, we need to undo/redo any orientation lock it
+  // applies on the internal display.
+  if (!display::Display::HasInternalDisplay())
+    return;
+
+  aura::Window* window = params.receiver;
+  aura::Window* target = params.target;
+  // The target window of the hierarchy change event must be the receiving
+  // window itself, or one of its ancestors; we don't care about events
+  // happening to descendant windows, since that doesn't indicate a change of
+  // |window|'s root.
+  for (auto* curr = window; curr != target; curr = curr->parent()) {
+    if (!curr)
+      return;
+  }
+
+  auto iter = lock_info_map_.find(window);
+  if (iter != lock_info_map_.end() &&
+      iter->second.root_window != window->GetRootWindow()) {
+    iter->second.root_window = window->GetRootWindow();
+    ApplyLockForTopMostWindowOnInternalDisplay();
+  }
 }
 
 void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
@@ -352,7 +387,7 @@ void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
   if (base::Contains(lock_info_map_, window))
-    ApplyLockForActiveWindow();
+    ApplyLockForTopMostWindowOnInternalDisplay();
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
@@ -392,7 +427,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
 
   if (!display::Display::HasInternalDisplay())
     return;
-  ApplyLockForActiveWindow();
+  ApplyLockForTopMostWindowOnInternalDisplay();
 }
 
 void ScreenOrientationController::OnTabletModeEnded() {
@@ -410,9 +445,9 @@ void ScreenOrientationController::OnTabletModeEnded() {
 
   // Auto-rotation is still allowed (since device is still in a physical tablet
   // state). We no-longer apply app's requested orientation locks, so we'll
-  // call `ApplyLockForActiveWindow()` to apply the `user_locked_orientation_`
-  // if any.
-  ApplyLockForActiveWindow();
+  // call `ApplyLockForTopMostWindowOnInternalDisplay()` to apply the
+  // `user_locked_orientation_` if any.
+  ApplyLockForTopMostWindowOnInternalDisplay();
 }
 
 void ScreenOrientationController::OnTabletPhysicalStateChanged() {
@@ -420,7 +455,6 @@ void ScreenOrientationController::OnTabletPhysicalStateChanged() {
 
   if (IsAutoRotationAllowed()) {
     AccelerometerReader::GetInstance()->AddObserver(this);
-    shell->window_tree_host_manager()->AddObserver(this);
 
     // Do not exit early, as the internal display can be determined after
     // Maximize Mode has started. (chrome-os-partner:38796) Always start
@@ -435,10 +469,9 @@ void ScreenOrientationController::OnTabletPhysicalStateChanged() {
 
     if (!display::Display::HasInternalDisplay())
       return;
-    ApplyLockForActiveWindow();
+    ApplyLockForTopMostWindowOnInternalDisplay();
   } else {
     AccelerometerReader::GetInstance()->RemoveObserver(this);
-    shell->window_tree_host_manager()->RemoveObserver(this);
 
     if (!display::Display::HasInternalDisplay())
       return;
@@ -455,7 +488,24 @@ void ScreenOrientationController::OnSplitViewStateChanged(
     SplitViewController::State state) {
   if (previous_state == SplitViewController::State::kNoSnap ||
       state == SplitViewController::State::kNoSnap) {
-    ApplyLockForActiveWindow();
+    ApplyLockForTopMostWindowOnInternalDisplay();
+  }
+}
+
+void ScreenOrientationController::OnWillProcessDisplayChanges() {
+  suspend_orientation_lock_refreshes_ = true;
+}
+
+void ScreenOrientationController::OnDidProcessDisplayChanges() {
+  suspend_orientation_lock_refreshes_ = false;
+  if (is_orientation_lock_refresh_pending_) {
+    // Note: We must set |is_orientation_lock_refresh_pending_| to false first
+    // before calling `ApplyLockForTopMostWindowOnInternalDisplay()`, since
+    // changing the display's rotation triggers an
+    // `OnWillProcessDisplayChanges()` and `OnDidProcessDisplayChanges()` pair,
+    // and we don't want to end up here again.
+    is_orientation_lock_refresh_pending_ = false;
+    ApplyLockForTopMostWindowOnInternalDisplay();
   }
 }
 
@@ -491,7 +541,7 @@ void ScreenOrientationController::SetLockToOrientation(
       user_rotation_locked(),
       OrientationToRotation(natural_orientation_, user_locked_orientation_));
 
-  ApplyLockForActiveWindow();
+  ApplyLockForTopMostWindowOnInternalDisplay();
   for (auto& observer : observers_)
     observer.OnUserRotationLockChanged();
 }
@@ -628,7 +678,12 @@ void ScreenOrientationController::LoadDisplayRotationProperties() {
       display_manager->registered_internal_display_rotation());
 }
 
-void ScreenOrientationController::ApplyLockForActiveWindow() {
+void ScreenOrientationController::ApplyLockForTopMostWindowOnInternalDisplay() {
+  if (suspend_orientation_lock_refreshes_) {
+    is_orientation_lock_refresh_pending_ = true;
+    return;
+  }
+
   current_app_requested_orientation_lock_ = base::nullopt;
   if (!display::Display::HasInternalDisplay())
     return;
@@ -669,12 +724,8 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
           kActiveDesk));
 
   for (auto* window : mru_windows) {
-    if (window->GetRootWindow() != internal_display_root) {
-      // TODO(afakhry): Window may move to an external display (e.g. via
-      // shortcut) and remain active. In this case, we need to undo any
-      // orientation lock it applied on the internal display.
+    if (window->GetRootWindow() != internal_display_root)
       continue;
-    }
 
     if (!window->TargetVisibility())
       continue;

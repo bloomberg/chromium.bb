@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "base/threading/platform_thread.h"
@@ -30,7 +31,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/memory_dump_scheduler.h"
-#include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_infra_background_allowlist.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -163,7 +164,7 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
   ~TestSequencedTaskRunner() override = default;
 
   const scoped_refptr<SequencedTaskRunner> task_runner_ =
-      CreateSequencedTaskRunner({ThreadPool()});
+      ThreadPool::CreateSequencedTaskRunner({});
   bool enabled_ = true;
   unsigned num_of_post_tasks_ = 0;
 };
@@ -752,7 +753,7 @@ TEST_F(MemoryDumpManagerTest, TriggerDumpWithoutTracing) {
 }
 
 TEST_F(MemoryDumpManagerTest, BackgroundWhitelisting) {
-  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderAllowlistForTesting(kTestMDPWhitelist);
 
   // Standard provider with default options (create dump for current process).
   MockMemoryDumpProvider backgroundMdp;
@@ -857,7 +858,7 @@ class SimpleMockMemoryDumpProvider : public MemoryDumpProvider {
 };
 
 TEST_F(MemoryDumpManagerTest, NoStackOverflowWithTooManyMDPs) {
-  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderAllowlistForTesting(kTestMDPWhitelist);
 
   int kMDPCount = 1000;
   std::vector<std::unique_ptr<SimpleMockMemoryDumpProvider>> mdps;

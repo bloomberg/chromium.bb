@@ -62,7 +62,7 @@ SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
   AddToPropertyMap(y2_);
 }
 
-void SVGLinearGradientElement::Trace(blink::Visitor* visitor) {
+void SVGLinearGradientElement::Trace(Visitor* visitor) {
   visitor->Trace(x1_);
   visitor->Trace(y1_);
   visitor->Trace(x2_);
@@ -91,7 +91,6 @@ LayoutObject* SVGLinearGradientElement::CreateLayoutObject(const ComputedStyle&,
 static void SetGradientAttributes(const SVGGradientElement& element,
                                   LinearGradientAttributes& attributes,
                                   bool is_linear) {
-  element.SynchronizeAnimatedSVGAttribute(AnyQName());
   element.CollectCommonAttributes(attributes);
 
   if (!is_linear)
@@ -111,8 +110,8 @@ static void SetGradientAttributes(const SVGGradientElement& element,
     attributes.SetY2(linear.y2()->CurrentValue());
 }
 
-bool SVGLinearGradientElement::CollectGradientAttributes(
-    LinearGradientAttributes& attributes) {
+void SVGLinearGradientElement::CollectGradientAttributes(
+    LinearGradientAttributes& attributes) const {
   DCHECK(GetLayoutObject());
 
   VisitedSet visited;
@@ -124,12 +123,14 @@ bool SVGLinearGradientElement::CollectGradientAttributes(
     visited.insert(current);
 
     current = current->ReferencedElement();
-    if (!current || visited.Contains(current))
+
+    // Ignore the referenced gradient element if it is not attached.
+    if (!current || !current->GetLayoutObject())
       break;
-    if (!current->GetLayoutObject())
-      return false;
+    // Cycle detection.
+    if (visited.Contains(current))
+      break;
   }
-  return true;
 }
 
 bool SVGLinearGradientElement::SelfHasRelativeLengths() const {

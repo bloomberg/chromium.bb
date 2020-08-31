@@ -4,8 +4,9 @@
 
 from __future__ import print_function
 
-import os
 import collections
+import os
+import re
 
 from core import path_util
 from core import perf_benchmark
@@ -14,6 +15,7 @@ from page_sets import webgl_supported_shared_state
 
 from telemetry import benchmark
 from telemetry import page as page_module
+from telemetry.core import memory_cache_http_server
 from telemetry.page import legacy_page_test
 from telemetry.page import shared_page_state
 from telemetry import story
@@ -320,6 +322,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if self._is_tracing:
       trace_data = tab.browser.platform.tracing_controller.StopTracing()
       results.AddTraces(trace_data)
+      self._is_tracing = False
 
       trace_events_to_measure = tab.EvaluateJavaScript(
           'window.testRunner.traceEventsToMeasure')
@@ -369,6 +372,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfAccessibility(_BlinkPerfBenchmark):
   SUBDIR = 'accessibility'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -387,10 +391,52 @@ class BlinkPerfAccessibility(_BlinkPerfBenchmark):
     documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfBindings(_BlinkPerfBenchmark):
   SUBDIR = 'bindings'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
     return 'blink_perf.bindings'
+
+
+class ServiceWorkerRequestHandler(
+    memory_cache_http_server.MemoryCacheDynamicHTTPRequestHandler):
+  """This handler returns dynamic responses for service worker perf tests.
+  """
+  _SIZE_1K = 1024
+  _SIZE_10K = 10240
+  _SIZE_1M = 1048576
+  _FILE_NAME_PATTERN_1K =\
+      re.compile('.*/service_worker/resources/data/1K_[0-9]+\\.txt')
+
+  def ResponseFromHandler(self, path):
+    # normalize the path by replacing backslashes with slashes.
+    normpath = path.replace('\\', '/')
+    if normpath.endswith('/service_worker/resources/data/10K.txt'):
+      return self.MakeResponse('c' * self._SIZE_10K, 'text/plain', False)
+    elif normpath.endswith('/service_worker/resources/data/1M.txt'):
+      return self.MakeResponse('c' * self._SIZE_1M, 'text/plain', False)
+    elif self._FILE_NAME_PATTERN_1K.match(normpath):
+      return self.MakeResponse('c' * self._SIZE_1K, 'text/plain', False)
+    return None
+
+
+@benchmark.Info(
+    component='Blink>ServiceWorker',
+    emails=[
+        'shimazu@chromium.org', 'falken@chromium.org', 'ting.shao@intel.com'
+    ],
+    documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfServiceWorker(_BlinkPerfBenchmark):
+  SUBDIR = 'service_worker'
+
+  @classmethod
+  def Name(cls):
+    return 'UNSCHEDULED_blink_perf.service_worker'
+
+  def CreateStorySet(self, options):
+    story_set = super(BlinkPerfServiceWorker, self).CreateStorySet(options)
+    story_set.SetRequestHandlerClass(ServiceWorkerRequestHandler)
+    return story_set
 
 
 @benchmark.Info(emails=['futhark@chromium.org', 'andruud@chromium.org'],
@@ -398,6 +444,7 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
                 component='Blink>CSS')
 class BlinkPerfCSS(_BlinkPerfBenchmark):
   SUBDIR = 'css'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -408,6 +455,7 @@ class BlinkPerfCSS(_BlinkPerfBenchmark):
                 component='Blink>Canvas')
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
   SUBDIR = 'canvas'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -437,6 +485,7 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
   SUBDIR = 'dom'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -448,6 +497,7 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfEvents(_BlinkPerfBenchmark):
   SUBDIR = 'events'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -464,6 +514,7 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
   SUBDIR = 'image_decoder'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -475,9 +526,10 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Info(emails=['eae@chromium.org'],
-                component='Blink>Layout',
-                documentation_url='https://bit.ly/blink-perf-benchmarks')
+@benchmark.Info(
+    emails=['ikilpatrick@chromium.org', 'kojii@chromium.org'],
+    component='Blink>Layout',
+    documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
   TAGS = _BlinkPerfBenchmark.TAGS + ['all']
@@ -492,6 +544,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   SUBDIR = 'owp_storage'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -526,6 +579,7 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfParser(_BlinkPerfBenchmark):
   SUBDIR = 'parser'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -537,6 +591,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfSVG(_BlinkPerfBenchmark):
   SUBDIR = 'svg'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -548,6 +603,7 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   SUBDIR = 'shadow_dom'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -563,6 +619,7 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
   SUBDIR = 'display_locking'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -571,3 +628,14 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       ['--enable-blink-features=DisplayLocking,CSSContentSize'])
+
+@benchmark.Info(emails=['hongchan@chromium.org', 'rtoy@chromium.org'],
+                component='Blink>WebAudio',
+                documentation_url='https://bit.ly/blink-perf-benchmarks')
+class BlinkPerfWebAudio(_BlinkPerfBenchmark):
+  SUBDIR = 'webaudio'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
+
+  @classmethod
+  def Name(cls):
+    return 'blink_perf.webaudio'

@@ -37,7 +37,7 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
   java_obj_.Reset(env, obj);
 }
 
-ContentViewRenderView::~ContentViewRenderView() {}
+ContentViewRenderView::~ContentViewRenderView() = default;
 
 // static
 static jlong JNI_ContentViewRenderView_Init(
@@ -75,6 +75,7 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
+  height_ = height;
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   gfx::Size size(width, height);

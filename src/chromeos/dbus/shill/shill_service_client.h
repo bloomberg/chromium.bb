@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ListValueCallback ListValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
+  typedef ShillClientHelper::StringCallback StringCallback;
 
   // Interface for setting up services for testing. Accessed through
   // GetTestInterface(), only implemented in the stub implementation.
@@ -80,8 +81,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     // referenced by |service_path| is visible, keeps only its "intrinsic"
     // properties and removes all other properties. Intrinsic properties are
     // properties that describe the identity or the state of  the service and
-    // are not configurable, such as SSID (for wifi), signal strength (for wifi)
-    // or provider (for VPN). All other properties are removed.
+    // are not configurable, such as SSID (for wifi), signal strength (for
+    // wifi). All other properties are removed.
     virtual bool ClearConfiguredServiceProperties(
         const std::string& service_path) = 0;
 
@@ -202,6 +203,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
   // |callback| is called after the method call succeeds.
   virtual void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
                                          DictionaryValueCallback callback) = 0;
+
+  // Retrieves the saved passphrase for the given network.
+  virtual void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
+                                 StringCallback callback,
+                                 ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

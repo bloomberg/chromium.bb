@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 #
 # Copyright 2019 The Dawn Authors
 #
@@ -115,9 +115,9 @@ def get_results(metric, extra_args=[]):
         print(output)
         sys.exit(3)
 
-    pattern = metric + r'= ([0-9.]+)'
+    pattern = metric + r'.*= ([0-9.]+)'
     m = re.findall(pattern, output)
-    if m is None:
+    if not m:
         print("Did not find the metric '%s' in the test output:" % metric)
         print(output)
         sys.exit(1)

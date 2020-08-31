@@ -19,11 +19,11 @@
         'skip-pauses-until-reload.html', didShowScriptSource);
   }
 
-  function didShowScriptSource(sourceFrame) {
+  async function didShowScriptSource(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
     TestRunner.addResult('Set up breakpoints.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
     TestRunner.addResult('Set up to pause on all exceptions.');
     // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
     TestRunner.DebuggerAgent.setPauseOnExceptions(
@@ -36,11 +36,11 @@
     testRunner.logToStderr('didResolveNode');
     TestRunner.addResult('Set up DOM breakpoints.');
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+        node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+        node, Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+        node, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
     setUpEventBreakpoints();
   }
 
@@ -57,9 +57,9 @@
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
   }
 
-  function didPause(callFrames) {
+  async function didPause(callFrames) {
     testRunner.logToStderr('didPause');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.DebuggerAgent.setSkipAllPauses(true).then(didSetSkipAllPauses);
   }
 
@@ -82,10 +82,10 @@
     completeTest();
   }
 
-  function didPauseAfterReload(callFrames) {
+  async function didPauseAfterReload(callFrames) {
     testRunner.logToStderr('didPauseAfterReload');
     TestRunner.addResult('FAIL: Should not pause while reloading the page!');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.waitUntilPausedNextTime(didPauseAfterReload);
     SourcesTestRunner.resumeExecution();
   }

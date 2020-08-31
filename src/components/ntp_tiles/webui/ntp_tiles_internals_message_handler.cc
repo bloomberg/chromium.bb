@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/favicon/core/favicon_service.h"
@@ -310,8 +310,8 @@ void NTPTilesInternalsMessageHandler::OnURLsAvailable(
     for (const auto& entry : kIconTypesAndNames) {
       favicon_service_->GetLargestRawFaviconForPageURL(
           tile.url, std::vector<favicon_base::IconTypeSet>({{entry.type_enum}}),
-          /*minimum_size_in_pixels=*/0, base::Bind(on_lookup_done, tile.url),
-          &cancelable_task_tracker_);
+          /*minimum_size_in_pixels=*/0,
+          base::BindOnce(on_lookup_done, tile.url), &cancelable_task_tracker_);
     }
   }
 }

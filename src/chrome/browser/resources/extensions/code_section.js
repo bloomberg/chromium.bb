@@ -86,7 +86,7 @@ Polymer({
   /**
    * @private
    */
-  onCodeChanged_: function() {
+  onCodeChanged_() {
     if (!this.code ||
         (!this.code.beforeHighlight && !this.code.highlight &&
          !this.code.afterHighlight)) {
@@ -114,7 +114,7 @@ Polymer({
             .join('\n');
     let visibleAfter = linesAfter.slice(0, visibleLineCountAfter).join('\n');
     // If the last character is a \n, force it to be rendered.
-    if (visibleAfter.charAt(visibleAfter.length - 1) == '\n') {
+    if (visibleAfter.charAt(visibleAfter.length - 1) === '\n') {
       visibleAfter += ' ';
     }
 
@@ -142,7 +142,7 @@ Polymer({
    * @private
    */
   getLinesNotShownLabel_(lineCount, stringSingular, stringPluralTemplate) {
-    return lineCount == 1 ?
+    return lineCount === 1 ?
         stringSingular :
         loadTimeData.substituteString(stringPluralTemplate, lineCount);
   },
@@ -152,7 +152,7 @@ Polymer({
    * @param {number} end
    * @private
    */
-  setLineNumbers_: function(start, end) {
+  setLineNumbers_(start, end) {
     let lineNumbers = '';
     for (let i = start; i <= end; ++i) {
       lineNumbers += i + '\n';
@@ -165,7 +165,7 @@ Polymer({
    * @param {number} linesBeforeHighlight
    * @private
    */
-  scrollToHighlight_: function(linesBeforeHighlight) {
+  scrollToHighlight_(linesBeforeHighlight) {
     const CSS_LINE_HEIGHT = 20;
 
     // Count how many pixels is above the highlighted code.
@@ -183,7 +183,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAccessibilityHighlightDescription_: function(lineStart, numLines) {
+  getAccessibilityHighlightDescription_(lineStart, numLines) {
     if (numLines > 1) {
       return this.i18n(
           'accessibilityErrorMultiLine', lineStart.toString(),
@@ -197,7 +197,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  computeShowNoCode_: function() {
+  computeShowNoCode_() {
     return this.isActive && !this.highlighted_;
   },
 });

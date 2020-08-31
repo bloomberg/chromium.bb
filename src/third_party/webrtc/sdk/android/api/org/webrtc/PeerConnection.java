@@ -382,7 +382,11 @@ public class PeerConnection {
     CELLULAR(1 << 2),
     VPN(1 << 3),
     LOOPBACK(1 << 4),
-    ADAPTER_TYPE_ANY(1 << 5);
+    ADAPTER_TYPE_ANY(1 << 5),
+    CELLULAR_2G(1 << 6),
+    CELLULAR_3G(1 << 7),
+    CELLULAR_4G(1 << 8),
+    CELLULAR_5G(1 << 9);
 
     public final Integer bitMask;
     private AdapterType(Integer bitMask) {
@@ -413,27 +417,6 @@ public class PeerConnection {
     NO_PRUNE, // Do not prune turn port.
     PRUNE_BASED_ON_PRIORITY, // Prune turn port based the priority on the same network
     KEEP_FIRST_READY // Keep the first ready port and prune the rest on the same network.
-  }
-
-  /** Java version of rtc::IntervalRange */
-  public static class IntervalRange {
-    private final int min;
-    private final int max;
-
-    public IntervalRange(int min, int max) {
-      this.min = min;
-      this.max = max;
-    }
-
-    @CalledByNative("IntervalRange")
-    public int getMin() {
-      return min;
-    }
-
-    @CalledByNative("IntervalRange")
-    public int getMax() {
-      return max;
-    }
   }
 
   /**
@@ -525,7 +508,6 @@ public class PeerConnection {
     //
     // Can be set to Integer.MAX_VALUE to effectively disable the limit.
     public int maxIPv6Networks;
-    @Nullable public IntervalRange iceRegatherIntervalRange;
 
     // These values will be overridden by MediaStream constraints if deprecated constraints-based
     // create peerconnection interface is used.
@@ -609,7 +591,6 @@ public class PeerConnection {
       stunCandidateKeepaliveIntervalMs = null;
       disableIPv6OnWifi = false;
       maxIPv6Networks = 5;
-      iceRegatherIntervalRange = null;
       disableIpv6 = false;
       enableDscp = false;
       enableCpuOveruseDetection = true;
@@ -763,12 +744,6 @@ public class PeerConnection {
     @CalledByNative("RTCConfiguration")
     int getMaxIPv6Networks() {
       return maxIPv6Networks;
-    }
-
-    @Nullable
-    @CalledByNative("RTCConfiguration")
-    IntervalRange getIceRegatherIntervalRange() {
-      return iceRegatherIntervalRange;
     }
 
     @Nullable

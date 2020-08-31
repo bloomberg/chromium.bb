@@ -13,13 +13,13 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
+#include "net/third_party/quiche/src/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_unacked_packet_map.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -45,24 +45,30 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
           quic_fix_bbr_cwnd_in_bandwidth_resumption(
               GetQuicReloadableFlag(quic_fix_bbr_cwnd_in_bandwidth_resumption)),
           quic_bbr_fix_pacing_rate(
-              GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)) {}
+              GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)),
+          quic_bbr_donot_inject_bandwidth(
+              GetQuicReloadableFlag(quic_bbr_donot_inject_bandwidth)) {}
 
     bool operator==(const NetworkParams& other) const {
       return bandwidth == other.bandwidth && rtt == other.rtt &&
              allow_cwnd_to_decrease == other.allow_cwnd_to_decrease &&
              quic_fix_bbr_cwnd_in_bandwidth_resumption ==
                  other.quic_fix_bbr_cwnd_in_bandwidth_resumption &&
-             quic_bbr_fix_pacing_rate == other.quic_bbr_fix_pacing_rate;
+             quic_bbr_fix_pacing_rate == other.quic_bbr_fix_pacing_rate &&
+             quic_bbr_donot_inject_bandwidth ==
+                 other.quic_bbr_donot_inject_bandwidth;
     }
 
     QuicBandwidth bandwidth;
     QuicTime::Delta rtt;
     bool allow_cwnd_to_decrease;
     // Code changes that are controlled by flags.
-    // TODO(b/131899599): Remove when impact of fix is measured.
+    // TODO(b/131899599): Remove after impact of fix is measured.
     bool quic_fix_bbr_cwnd_in_bandwidth_resumption;
-    // TODO(b/143540157): Remove when impact of fix is measured.
+    // TODO(b/143540157): Remove after impact of fix is measured.
     bool quic_bbr_fix_pacing_rate;
+    // TODO(b/72089315, b/143891040): Remove after impact of fix is measured.
+    bool quic_bbr_donot_inject_bandwidth;
   };
 
   static SendAlgorithmInterface* Create(
@@ -72,12 +78,16 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
       CongestionControlType type,
       QuicRandom* random,
       QuicConnectionStats* stats,
-      QuicPacketCount initial_congestion_window);
+      QuicPacketCount initial_congestion_window,
+      SendAlgorithmInterface* old_send_algorithm);
 
   virtual ~SendAlgorithmInterface() {}
 
   virtual void SetFromConfig(const QuicConfig& config,
                              Perspective perspective) = 0;
+
+  virtual void ApplyConnectionOptions(
+      const QuicTagVector& connection_options) = 0;
 
   // Sets the initial congestion window in number of packets.  May be ignored
   // if called after the initial congestion window is no longer relevant.
@@ -103,6 +113,9 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
                             QuicPacketNumber packet_number,
                             QuicByteCount bytes,
                             HasRetransmittableData is_retransmittable) = 0;
+
+  // Inform that |packet_number| has been neutered.
+  virtual void OnPacketNeutered(QuicPacketNumber packet_number) = 0;
 
   // Called when the retransmission timeout fires.  Neither OnPacketAbandoned
   // nor OnPacketLost will be called for these packets.

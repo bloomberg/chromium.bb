@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -138,7 +137,7 @@ class SocketDataPumpTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(SocketDataPumpTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SocketDataPumpTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 

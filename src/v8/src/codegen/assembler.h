@@ -143,7 +143,7 @@ enum class CodeObjectRequired { kNo, kYes };
 
 struct V8_EXPORT_PRIVATE AssemblerOptions {
   // Recording reloc info for external references and off-heap targets is
-  // needed whenever code is serialized, e.g. into the snapshot or as a WASM
+  // needed whenever code is serialized, e.g. into the snapshot or as a Wasm
   // module. This flag allows this reloc info to be disabled for code that
   // will not survive process destruction.
   bool record_reloc_info_for_serialization = true;
@@ -175,8 +175,7 @@ struct V8_EXPORT_PRIVATE AssemblerOptions {
   // on a function prologue/epilogue.
   bool collect_win64_unwind_info = false;
 
-  static AssemblerOptions Default(
-      Isolate* isolate, bool explicitly_support_serialization = false);
+  static AssemblerOptions Default(Isolate* isolate);
 };
 
 class AssemblerBuffer {

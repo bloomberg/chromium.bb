@@ -209,9 +209,9 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           // We should not return the window until that window is properly
           // initialized. Hence, adding a callback for window first navigation
           // completion.
-          if (existing_window->DidFinishFirstNavigation()) 
+          if (existing_window->DidFinishFirstNavigation())
             return RespondNow(OneArgument(std::move(result)));
-          
+
           existing_window->AddOnDidFinishFirstNavigationCallback(
             base::BindOnce(&AppWindowCreateFunction::
                            OnAppWindowFinishedFirstNavigationOrClosed,
@@ -223,7 +223,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
 
     std::string error;
     if (!GetBoundsSpec(*options, &create_params, &error))
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
 
     if (options->type == app_window::WINDOW_TYPE_PANEL) {
       WriteToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
@@ -231,7 +231,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     }
 
     if (!GetFrameOptions(*options, &create_params, &error))
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
 
     if (extension()->GetType() == Manifest::TYPE_EXTENSION) {
       // Whitelisted IME extensions are allowed to use this API to create IME
@@ -424,15 +424,15 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           ->HadDevToolsAttached(app_window->web_contents())) {
     AppWindowClient::Get()->OpenDevToolsWindow(
         app_window->web_contents(),
-        base::Bind(&AppWindowCreateFunction::Respond, this,
-                   base::Passed(&result_arg)));
+        base::BindOnce(&AppWindowCreateFunction::Respond, this,
+                       std::move(result_arg)));
     // OpenDevToolsWindow might have already responded.
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   // Delay sending the response until the newly created window has finished its
   // navigation or was closed during that process.
-  // AddOnDidFinishFirstNavigationCallback() will respond asynchrously.
+  // AddOnDidFinishFirstNavigationCallback() will respond asynchronously.
   app_window->AddOnDidFinishFirstNavigationCallback(base::BindOnce(
       &AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed,
       this, std::move(result_arg)));

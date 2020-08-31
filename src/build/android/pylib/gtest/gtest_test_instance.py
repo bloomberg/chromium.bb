@@ -79,8 +79,20 @@ _EXTRA_SHARD_SIZE_LIMIT = (
 # TODO(jbudorick): Remove these once we're no longer parsing stdout to generate
 # results.
 _RE_TEST_STATUS = re.compile(
-    r'\[ +((?:RUN)|(?:FAILED)|(?:OK)|(?:CRASHED)) +\]'
-    r' ?([^ ]+)?(?: \((\d+) ms\))?$')
+    # Test state.
+    r'\[ +((?:RUN)|(?:FAILED)|(?:OK)|(?:CRASHED)) +\] ?'
+    # Test name.
+    r'([^ ]+)?'
+    # Optional parameters.
+    r'(?:, where'
+    #   Type parameter
+    r'(?: TypeParam = [^()]*(?: and)?)?'
+    #   Value parameter
+    r'(?: GetParam\(\) = [^()]*)?'
+    # End of optional parameters.
+    ')?'
+    # Optional test execution time.
+    r'(?: \((\d+) ms\))?$')
 # Crash detection constants.
 _RE_TEST_ERROR = re.compile(r'FAILURES!!! Tests run: \d+,'
                                     r' Failures: \d+, Errors: 1')

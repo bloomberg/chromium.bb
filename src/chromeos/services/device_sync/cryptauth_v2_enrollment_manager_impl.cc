@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -19,6 +18,7 @@
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/public/cpp/client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -148,13 +148,25 @@ CryptAuthV2EnrollmentManagerImpl::Factory*
     CryptAuthV2EnrollmentManagerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthV2EnrollmentManagerImpl::Factory*
-CryptAuthV2EnrollmentManagerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthEnrollmentManager>
+CryptAuthV2EnrollmentManagerImpl::Factory::Create(
+    ClientAppMetadataProvider* client_app_metadata_provider,
+    CryptAuthKeyRegistry* key_registry,
+    CryptAuthClientFactory* client_factory,
+    CryptAuthGCMManager* gcm_manager,
+    CryptAuthScheduler* scheduler,
+    PrefService* pref_service,
+    base::Clock* clock,
+    std::unique_ptr<base::OneShotTimer> timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(
+        client_app_metadata_provider, key_registry, client_factory, gcm_manager,
+        scheduler, pref_service, clock, std::move(timer));
+  }
 
-  static base::NoDestructor<CryptAuthV2EnrollmentManagerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthV2EnrollmentManagerImpl(
+      client_app_metadata_provider, key_registry, client_factory, gcm_manager,
+      scheduler, pref_service, clock, std::move(timer)));
 }
 
 // static
@@ -162,6 +174,8 @@ void CryptAuthV2EnrollmentManagerImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
+
+CryptAuthV2EnrollmentManagerImpl::Factory::~Factory() = default;
 
 // static
 void CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
@@ -171,23 +185,6 @@ void CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
                                std::string());
-}
-
-CryptAuthV2EnrollmentManagerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthEnrollmentManager>
-CryptAuthV2EnrollmentManagerImpl::Factory::BuildInstance(
-    ClientAppMetadataProvider* client_app_metadata_provider,
-    CryptAuthKeyRegistry* key_registry,
-    CryptAuthClientFactory* client_factory,
-    CryptAuthGCMManager* gcm_manager,
-    CryptAuthScheduler* scheduler,
-    PrefService* pref_service,
-    base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthV2EnrollmentManagerImpl(
-      client_app_metadata_provider, key_registry, client_factory, gcm_manager,
-      scheduler, pref_service, clock, std::move(timer)));
 }
 
 CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
@@ -411,8 +408,8 @@ void CryptAuthV2EnrollmentManagerImpl::Enroll() {
   DCHECK(current_client_metadata_);
   DCHECK(client_app_metadata_);
 
-  enroller_ = CryptAuthV2EnrollerImpl::Factory::Get()->BuildInstance(
-      key_registry_, client_factory_);
+  enroller_ =
+      CryptAuthV2EnrollerImpl::Factory::Create(key_registry_, client_factory_);
 
   SetState(State::kWaitingForEnrollment);
 
@@ -475,8 +472,6 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
   if (state_ != State::kWaitingForClientAppMetadata)
     return;
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
   timer_->Start(FROM_HERE, kWaitingForClientAppMetadataTimeout,
                 base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnTimeout,
                                callback_weak_ptr_factory_.GetWeakPtr()));

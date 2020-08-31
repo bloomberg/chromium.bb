@@ -9,9 +9,11 @@ import android.content.Context;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 
 /**
  * An infobar to disclose to the user that the default search engine has geolocation access by
@@ -22,11 +24,10 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     private final int mInlineLinkRangeEnd;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, String messageText, int inlineLinkRangeStart,
-            int inlineLinkRangeEnd) {
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
+    private static InfoBar show(
+            int iconId, String messageText, int inlineLinkRangeStart, int inlineLinkRangeEnd) {
         return new SearchGeolocationDisclosureInfoBar(
-                drawableId, messageText, inlineLinkRangeStart, inlineLinkRangeEnd);
+                iconId, messageText, inlineLinkRangeStart, inlineLinkRangeEnd);
     }
 
     /**
@@ -57,7 +58,8 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     @CalledByNative
     private static void showSettingsPage(String searchUrl) {
         Context context = ContextUtils.getApplicationContext();
-        PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class,
-                SingleWebsitePreferences.createFragmentArgsForSite(searchUrl));
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(context, SingleWebsiteSettings.class,
+                SingleWebsiteSettings.createFragmentArgsForSite(searchUrl));
     }
 }

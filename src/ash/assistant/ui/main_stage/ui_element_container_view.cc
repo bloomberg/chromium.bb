@@ -6,26 +6,23 @@
 
 #include <string>
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_response.h"
-#include "ash/assistant/model/ui/assistant_card_element.h"
-#include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
-#include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
-#include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view_factory.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
-#include "ash/assistant/util/animation_util.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/callback_layer_animation_observer.h"
-#include "ui/compositor/layer_animation_element.h"
-#include "ui/compositor/layer_animator.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -33,210 +30,17 @@ namespace ash {
 
 namespace {
 
-using assistant::util::CreateLayerAnimationSequence;
-using assistant::util::CreateOpacityElement;
-using assistant::util::CreateTransformElement;
-using assistant::util::StartLayerAnimationSequence;
-
 // Appearance.
-constexpr int kEmbeddedUiFirstCardMarginTopDip = 8;
-constexpr int kEmbeddedUiPaddingBottomDip = 8;
-constexpr int kMainUiFirstCardMarginTopDip = 40;
-constexpr int kMainUiPaddingBottomDip = 24;
-
-// Main UI element animation.
-constexpr base::TimeDelta kMainUiElementAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(83);
-constexpr base::TimeDelta kMainUiElementAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kMainUiElementAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(167);
-// Text elements must fade out to 0 as the thinking dots will appear in the
-// location of the first text element.
-constexpr float kMainUiTextElementAnimationFadeOutOpacity = 0.f;
-
-// Embedded UI element animation.
-constexpr base::TimeDelta kEmbeddedUiElementAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kEmbeddedUiElementAnimationMoveUpDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kEmbeddedUiElementAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
-constexpr int kEmbeddedUiElementAnimationMoveUpDistanceDip = 32;
-
-// Helpers ---------------------------------------------------------------------
-
-int GetFirstCardMarginTopDip() {
-  return app_list_features::IsAssistantLauncherUIEnabled()
-             ? kEmbeddedUiFirstCardMarginTopDip
-             : kMainUiFirstCardMarginTopDip;
-}
-
-int GetPaddingBottomDip() {
-  return app_list_features::IsAssistantLauncherUIEnabled()
-             ? kEmbeddedUiPaddingBottomDip
-             : kMainUiPaddingBottomDip;
-}
-
-// Animator for elements in the main (non-embedded) UI.
-class MainUiAnimator : public ElementAnimator {
- public:
-  using ElementAnimator::ElementAnimator;
-  ~MainUiAnimator() override = default;
-
-  // ElementAnimator:
-  void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
-    StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(CreateOpacityElement(
-            kMinimumAnimateOutOpacity, kMainUiElementAnimationFadeOutDuration,
-            gfx::Tween::Type::FAST_OUT_SLOW_IN)),
-        observer);
-  }
-
-  void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // We fade in the views to full opacity after a slight delay.
-    assistant::util::StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(
-            ui::LayerAnimationElement::CreatePauseElement(
-                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                kMainUiElementAnimationFadeInDelay),
-            CreateOpacityElement(1.f, kMainUiElementAnimationFadeInDuration)),
-        observer);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MainUiAnimator);
-};
-
-// Animator used for card elements in the main (non-embedded) UI.
-class MainUiCardAnimator : public MainUiAnimator {
- public:
-  // Constructor used for card elements.
-  explicit MainUiCardAnimator(AssistantCardElementView* element)
-      : MainUiAnimator(element), element_(element) {}
-
-  ui::Layer* layer() const override { return element_->native_view()->layer(); }
-
- private:
-  AssistantCardElementView* const element_;
-
-  DISALLOW_COPY_AND_ASSIGN(MainUiCardAnimator);
-};
-
-// Animator used for text elements in the main (non-embedded) UI.
-class MainUiTextAnimator : public MainUiAnimator {
- public:
-  // Constructor used for text elements.
-  explicit MainUiTextAnimator(AssistantTextElementView* element)
-      : MainUiAnimator(element) {}
-
-  void FadeOut(ui::CallbackLayerAnimationObserver* observer) override {
-    assistant::util::StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        assistant::util::CreateLayerAnimationSequence(
-            assistant::util::CreateOpacityElement(
-                kMainUiTextElementAnimationFadeOutOpacity, kFadeOutDuration)),
-        observer);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MainUiTextAnimator);
-};
-
-// Animator for elements in the embedded UI.
-class EmbeddedUiAnimator : public ElementAnimator {
- public:
-  using ElementAnimator::ElementAnimator;
-  ~EmbeddedUiAnimator() override = default;
-
-  // ElementAnimator:
-  void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
-    StartLayerAnimationSequence(
-        layer()->GetAnimator(),
-        CreateLayerAnimationSequence(
-            CreateOpacityElement(kMinimumAnimateOutOpacity,
-                                 kEmbeddedUiElementAnimationFadeOutDuration)),
-        observer);
-  }
-
-  void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // As part of the animation we will move up the element from the bottom
-    // so we need to start by moving it down.
-    MoveElementDown();
-
-    assistant::util::StartLayerAnimationSequencesTogether(
-        layer()->GetAnimator(),
-        {
-            CreateFadeInAnimation(),
-            CreateMoveUpAnimation(),
-        },
-        observer);
-  }
-
- private:
-  void MoveElementDown() const {
-    gfx::Transform transform;
-    transform.Translate(0, kEmbeddedUiElementAnimationMoveUpDistanceDip);
-    layer()->SetTransform(transform);
-  }
-
-  ui::LayerAnimationSequence* CreateFadeInAnimation() const {
-    return CreateLayerAnimationSequence(
-        CreateOpacityElement(1.f, kEmbeddedUiElementAnimationFadeInDuration,
-                             gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  ui::LayerAnimationSequence* CreateMoveUpAnimation() const {
-    return CreateLayerAnimationSequence(CreateTransformElement(
-        gfx::Transform(), kEmbeddedUiElementAnimationMoveUpDuration,
-        gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedUiAnimator);
-};
-
-// Animator for card elements in the embedded UI.
-class EmbeddedUiCardAnimator : public EmbeddedUiAnimator {
- public:
-  // Constructor used for card elements.
-  explicit EmbeddedUiCardAnimator(AssistantCardElementView* element)
-      : EmbeddedUiAnimator(element), element_(element) {}
-
-  ui::Layer* layer() const override { return element_->native_view()->layer(); }
-
- private:
-  AssistantCardElementView* const element_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedUiCardAnimator);
-};
-
-// Animator for text elements in the embedded UI.
-using EmbeddedUiTextAnimator = EmbeddedUiAnimator;
-
-std::unique_ptr<ElementAnimator> CreateCardAnimator(
-    AssistantCardElementView* card_element) {
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    return std::make_unique<EmbeddedUiCardAnimator>(card_element);
-  else
-    return std::make_unique<MainUiCardAnimator>(card_element);
-}
-
-std::unique_ptr<ElementAnimator> CreateTextAnimator(
-    AssistantTextElementView* text_element) {
-  if (app_list_features::IsAssistantLauncherUIEnabled())
-    return std::make_unique<EmbeddedUiTextAnimator>(text_element);
-  else
-    return std::make_unique<MainUiTextAnimator>(text_element);
-}
+constexpr int kPaddingBottomDip = 8;
+constexpr int kScrollIndicatorHeightDip = 1;
 
 }  // namespace
 
 // UiElementContainerView ------------------------------------------------------
 
 UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
-    : AnimatedContainerView(delegate) {
+    : AnimatedContainerView(delegate),
+      view_factory_(std::make_unique<AssistantUiElementViewFactory>(delegate)) {
   SetID(AssistantViewID::kUiElementContainer);
   InitLayout();
 }
@@ -268,6 +72,14 @@ gfx::Size UiElementContainerView::GetMinimumSize() const {
   return gfx::Size(INT_MAX, 1);
 }
 
+void UiElementContainerView::Layout() {
+  AnimatedContainerView::Layout();
+
+  // Scroll indicator.
+  scroll_indicator_->SetBounds(0, height() - kScrollIndicatorHeightDip, width(),
+                               kScrollIndicatorHeightDip);
+}
+
 void UiElementContainerView::OnContentsPreferredSizeChanged(
     views::View* content_view) {
   const int preferred_height = content_view->GetHeightForWidth(width());
@@ -275,98 +87,103 @@ void UiElementContainerView::OnContentsPreferredSizeChanged(
 }
 
 void UiElementContainerView::InitLayout() {
+  // Content.
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, kUiElementHorizontalMarginDip, GetPaddingBottomDip(),
+      gfx::Insets(0, kUiElementHorizontalMarginDip, kPaddingBottomDip,
                   kUiElementHorizontalMarginDip),
       kSpacingDip));
+
+  // Scroll indicator.
+  scroll_indicator_ = AddChildView(std::make_unique<views::View>());
+  scroll_indicator_->SetBackground(
+      views::CreateSolidBackground(gfx::kGoogleGrey300));
+
+  // The scroll indicator paints to its own layer which is animated in/out using
+  // implicit animation settings.
+  scroll_indicator_->SetPaintToLayer();
+  scroll_indicator_->layer()->SetAnimator(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  scroll_indicator_->layer()->SetFillsBoundsOpaquely(false);
+  scroll_indicator_->layer()->SetOpacity(0.f);
+
+  // We cannot draw |scroll_indicator_| over Assistant cards due to issues w/
+  // layer ordering. Because |kScrollIndicatorHeightDip| is sufficiently small,
+  // we'll use an empty bottom border to reserve space for |scroll_indicator_|.
+  // When |scroll_indicator_| is not visible, this just adds a negligible amount
+  // of margin to the bottom of the content. Otherwise, |scroll_indicator_| will
+  // occupy this space.
+  SetBorder(views::CreateEmptyBorder(0, 0, kScrollIndicatorHeightDip, 0));
 }
 
 void UiElementContainerView::OnCommittedQueryChanged(
     const AssistantQuery& query) {
   // Scroll to the top to play nice with the transition animation.
   ScrollToPosition(vertical_scroll_bar(), 0);
-
   AnimatedContainerView::OnCommittedQueryChanged(query);
 }
 
-void UiElementContainerView::HandleResponse(const AssistantResponse& response) {
-  for (const auto& ui_element : response.GetUiElements()) {
-    switch (ui_element->type()) {
-      case AssistantUiElementType::kCard:
-        OnCardElementAdded(
-            static_cast<const AssistantCardElement*>(ui_element.get()));
-        break;
-      case AssistantUiElementType::kText:
-        OnTextElementAdded(
-            static_cast<const AssistantTextElement*>(ui_element.get()));
-        break;
-    }
-  }
-}
+std::unique_ptr<ElementAnimator> UiElementContainerView::HandleUiElement(
+    const AssistantUiElement* ui_element) {
+  // Create a new view for the |ui_element|.
+  auto view = view_factory_->Create(ui_element);
 
-void UiElementContainerView::OnCardElementAdded(
-    const AssistantCardElement* card_element) {
-  // The card, for some reason, is not embeddable so we'll have to ignore it.
-  if (!card_element->contents())
-    return;
-
-  auto* card_element_view =
-      new AssistantCardElementView(delegate(), card_element);
-  if (is_first_card_) {
-    is_first_card_ = false;
-
-    // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
-    // we need to account for child spacing because the first card is not
-    // necessarily the first UI element.
-    const int top_margin_dip =
-        GetFirstCardMarginTopDip() - (children().empty() ? 0 : kSpacingDip);
-
-    // We effectively create a top margin by applying an empty border.
-    card_element_view->SetBorder(
-        views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
+  // If the first UI element is a card, it has a unique margin requirement.
+  const bool is_card = ui_element->type() == AssistantUiElementType::kCard;
+  const bool is_first_ui_element = content_view()->children().empty();
+  if (is_card && is_first_ui_element) {
+    constexpr int kMarginTopDip = 24;
+    view->SetBorder(views::CreateEmptyBorder(kMarginTopDip, 0, 0, 0));
   }
 
-  content_view()->AddChildView(card_element_view);
+  // Add the view to the hierarchy and prepare its animation layer for entry.
+  auto* view_ptr = content_view()->AddChildView(std::move(view));
+  view_ptr->GetLayerForAnimating()->SetOpacity(0.f);
 
-  // The view will be animated on its own layer, so we need to do some initial
-  // layer setup. We're going to fade the view in, so hide it.
-  card_element_view->native_view()->layer()->SetFillsBoundsOpaquely(false);
-  card_element_view->native_view()->layer()->SetOpacity(0.f);
-
-  // We set the animator to handle all animations for this view.
-  AddElementAnimator(CreateCardAnimator(card_element_view));
-}
-
-void UiElementContainerView::OnTextElementAdded(
-    const AssistantTextElement* text_element) {
-  auto* text_element_view = new AssistantTextElementView(text_element);
-
-  // The view will be animated on its own layer, so we need to do some initial
-  // layer setup. We're going to fade the view in, so hide it.
-  text_element_view->SetPaintToLayer();
-  text_element_view->layer()->SetFillsBoundsOpaquely(false);
-  text_element_view->layer()->SetOpacity(0.f);
-
-  content_view()->AddChildView(text_element_view);
-
-  // We set the animator to handle all animations for this view.
-  AddElementAnimator(CreateTextAnimator(text_element_view));
-}
-
-void UiElementContainerView::OnAllViewsRemoved() {
-  // Reset state for the next response.
-  is_first_card_ = true;
+  // Return the animator that will be used to animate the view.
+  return view_ptr->CreateAnimator();
 }
 
 void UiElementContainerView::OnAllViewsAnimatedIn() {
+  const auto* response =
+      AssistantInteractionController::Get()->GetModel()->response();
+  DCHECK(response);
+
   // Let screen reader read the query result. This includes the text response
-  // and the card fallback text, but webview result is not included.
-  // We don't read when there is TTS to avoid speaking over the server response.
-  const AssistantResponse* response =
-      delegate()->GetInteractionModel()->response();
+  // and the card fallback text, but webview result is not included. We don't
+  // read when there is TTS to avoid speaking over the server response.
   if (!response->has_tts())
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void UiElementContainerView::OnScrollBarUpdated(views::ScrollBar* scroll_bar,
+                                                int viewport_size,
+                                                int content_size,
+                                                int content_scroll_offset) {
+  if (scroll_bar != vertical_scroll_bar())
+    return;
+
+  // When the vertical scroll bar is updated, we update our |scroll_indicator_|.
+  bool can_scroll = content_size > (content_scroll_offset + viewport_size);
+  UpdateScrollIndicator(can_scroll);
+}
+
+void UiElementContainerView::OnScrollBarVisibilityChanged(
+    views::ScrollBar* scroll_bar,
+    bool is_visible) {
+  // When the vertical scroll bar is hidden, we need to update our
+  // |scroll_indicator_|. This may occur during a layout pass when the new
+  // content no longer requires a vertical scroll bar while the old content did.
+  if (scroll_bar == vertical_scroll_bar() && !is_visible)
+    UpdateScrollIndicator(/*can_scroll=*/false);
+}
+
+void UiElementContainerView::UpdateScrollIndicator(bool can_scroll) {
+  const float target_opacity = can_scroll ? 1.f : 0.f;
+
+  ui::Layer* layer = scroll_indicator_->layer();
+  if (!cc::MathUtil::IsWithinEpsilon(layer->GetTargetOpacity(), target_opacity))
+    layer->SetOpacity(target_opacity);
 }
 
 }  // namespace ash

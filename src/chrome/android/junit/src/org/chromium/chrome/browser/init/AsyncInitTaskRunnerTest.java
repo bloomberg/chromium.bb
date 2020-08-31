@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.init;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -50,8 +49,9 @@ public class AsyncInitTaskRunnerTest {
     private VariationsSeedFetcher mVariationsSeedFetcher;
 
     public AsyncInitTaskRunnerTest() {
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
         mLoader = spy(LibraryLoader.getInstance());
-        doNothing().when(mLoader).ensureInitialized(anyInt());
+        doNothing().when(mLoader).ensureInitialized();
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
         mVariationsSeedFetcher = mock(VariationsSeedFetcher.class);
         VariationsSeedFetcher.setVariationsSeedFetcherForTesting(mVariationsSeedFetcher);
@@ -64,7 +64,7 @@ public class AsyncInitTaskRunnerTest {
                 mLatch.countDown();
             }
             @Override
-            protected void onFailure() {
+            protected void onFailure(Exception failureCause) {
                 mLatch.countDown();
             }
             @Override
@@ -89,22 +89,21 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushBackgroundThreadScheduler();
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
-        verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        verify(mLoader).ensureInitialized();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
 
     @Test
     public void libraryLoaderFailTest() throws InterruptedException {
-        doThrow(new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED))
-                .when(mLoader)
-                .ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        Exception failureCause = new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
+        doThrow(failureCause).when(mLoader).ensureInitialized();
         mRunner.startBackgroundTasks(false, false);
 
         Robolectric.flushBackgroundThreadScheduler();
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
-        verify(mRunner).onFailure();
+        verify(mRunner).onFailure(failureCause);
         verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
 
@@ -115,7 +114,7 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushBackgroundThreadScheduler();
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
-        verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        verify(mLoader).ensureInitialized();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher).fetchSeed(anyString(), anyString(), anyString());
     }

@@ -112,6 +112,10 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
       if (!view || !view->context_menu_controller())
         break;
       gfx::Point location(event->location());
+      // Controller requires locations to be in DIP, while |this| receives the
+      // location in px.
+      desktop_window_tree_host_->GetRootTransform().TransformPointReverse(
+          &location);
       views::View::ConvertPointToScreen(view, &location);
       view->ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
       event->SetHandled();
@@ -163,7 +167,7 @@ void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     // interactive move/resize.
     auto bounds_in_px =
         desktop_window_tree_host_->AsWindowTreeHost()->GetBoundsInPixels();
-    auto screen_point_in_px = event->root_location();
+    auto screen_point_in_px = event->location();
     screen_point_in_px.Offset(bounds_in_px.x(), bounds_in_px.y());
     handler_->DispatchHostWindowDragMovement(hittest, screen_point_in_px);
     event->StopPropagation();

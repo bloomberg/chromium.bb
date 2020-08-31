@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 
+#include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/dynamic_color_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -22,6 +24,9 @@
 namespace {
 // Horizontal padding betwee all elements (except the previous/next buttons).
 const CGFloat kPadding = 8;
+// Horizontal padding between the last button and the trailing edge in a
+// Regular x Regular environment.
+const CGFloat kIPadButtonEdgeSpacing = 17;
 const CGFloat kInputFieldCornerRadius = 10;
 const CGFloat kFontSize = 15;
 const CGFloat kButtonFontSize = 17;
@@ -97,6 +102,9 @@ const CGFloat kButtonLength = 44;
   [self.inputField setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
                                      forAxis:UILayoutConstraintAxisHorizontal];
 
+  const CGFloat closeButtonTrailingPadding =
+      ShouldShowCompactToolbar() ? kPadding : kIPadButtonEdgeSpacing;
+
   [NSLayoutConstraint activateConstraints:@[
     // Input Field.
     [self.inputField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
@@ -104,7 +112,6 @@ const CGFloat kButtonLength = 44;
     [self.inputField.leadingAnchor
         constraintEqualToAnchor:safeArea.leadingAnchor
                        constant:kPadding],
-
     [self.inputField.trailingAnchor
         constraintEqualToAnchor:self.previousButton.leadingAnchor
                        constant:-kPadding],
@@ -133,7 +140,7 @@ const CGFloat kButtonLength = 44;
     // Use button intrinsic width.
     [self.closeButton.trailingAnchor
         constraintEqualToAnchor:safeArea.trailingAnchor
-                       constant:-kPadding],
+                       constant:-closeButtonTrailingPadding],
   ]];
 }
 
@@ -237,6 +244,13 @@ const CGFloat kButtonLength = 44;
     SetA11yLabelAndUiAutomationName(_previousButton,
                                     IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP,
                                     kFindInPagePreviousButtonId);
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _previousButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _previousButton;
@@ -253,6 +267,13 @@ const CGFloat kButtonLength = 44;
     _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
     SetA11yLabelAndUiAutomationName(_nextButton, IDS_FIND_IN_PAGE_NEXT_TOOLTIP,
                                     kFindInPageNextButtonId);
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _nextButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _nextButton;
@@ -267,6 +288,13 @@ const CGFloat kButtonLength = 44;
     _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
     _closeButton.accessibilityIdentifier = kFindInPageCloseButtonId;
     _closeButton.titleLabel.font = [UIFont systemFontOfSize:kButtonFontSize];
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _closeButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _closeButton;

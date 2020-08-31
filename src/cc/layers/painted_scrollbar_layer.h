@@ -13,10 +13,17 @@
 
 namespace cc {
 
+// Generic scrollbar layer for cases not covered by PaintedOverlayScrollbarLayer
+// or SolidColorScrollbarLayer. This is not used for CSS-styled scrollbars. In
+// practice, this is used for overlay and non-overlay scrollbars on MacOS, as
+// well as non-overlay scrollbars on Win/Linux.
 class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
+  static scoped_refptr<PaintedScrollbarLayer> CreateOrReuse(
+      scoped_refptr<Scrollbar> scrollbar,
+      PaintedScrollbarLayer* existing_layer);
   static scoped_refptr<PaintedScrollbarLayer> Create(
       scoped_refptr<Scrollbar> scrollbar);
 
@@ -31,6 +38,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   const gfx::Size& internal_content_bounds() const {
     return internal_content_bounds_;
   }
+
+  ScrollbarLayerType GetScrollbarLayerType() const override;
 
  protected:
   explicit PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);
@@ -75,7 +84,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   gfx::Rect track_rect_;
   gfx::Rect back_button_rect_;
   gfx::Rect forward_button_rect_;
-  float thumb_opacity_;
+  float painted_opacity_;
   bool has_thumb_;
 
   const bool supports_drag_snap_back_;

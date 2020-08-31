@@ -24,8 +24,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_co_mem.h"
 #include "components/update_client/task_traits.h"
@@ -399,8 +398,8 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 BackgroundDownloader::BackgroundDownloader(
     std::unique_ptr<CrxDownloader> successor)
     : CrxDownloader(std::move(successor)),
-      com_task_runner_(
-          base::CreateCOMSTATaskRunner(kTaskTraitsBackgroundDownloader)),
+      com_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
+          kTaskTraitsBackgroundDownloader)),
       git_cookie_bits_manager_(0),
       git_cookie_job_(0) {}
 
@@ -662,9 +661,14 @@ bool BackgroundDownloader::OnStateTransferring() {
   // data and it is making progress.
   job_stuck_begin_time_ = base::TimeTicks::Now();
 
+  int64_t downloaded_bytes = -1;
+  int64_t total_bytes = -1;
+  GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
+
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
-                                base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
+                     base::Unretained(this), downloaded_bytes, total_bytes));
   return false;
 }
 

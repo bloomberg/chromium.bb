@@ -8,7 +8,6 @@
 # to talk about them that doesn't have quite so much legacy baggage), but
 # that might not be possible.
 
-import fnmatch
 import itertools
 import re
 import logging
@@ -26,6 +25,17 @@ _EXPECTATION_MAP = {
     'timeout': ResultType.Timeout,
     'skip': ResultType.Skip
 }
+
+_RESULT_TAGS = {
+    ResultType.Failure: 'Failure',
+    ResultType.Crash: 'Crash',
+    ResultType.Timeout: 'Timeout',
+    ResultType.Pass: 'Pass',
+    ResultType.Skip: 'Skip'
+}
+
+_SLOW_TAG = 'Slow'
+_RETRY_ON_FAILURE_TAG = 'RetryOnFailure'
 
 
 class ConflictResolutionTypes(object):
@@ -50,9 +60,10 @@ class ParseError(Exception):
 
 
 class Expectation(object):
-    def __init__(self, reason='', test='*', tags=None, results=None, lineno=0,
+    def __init__(self, reason=None, test='*', tags=None, results=None, lineno=0,
                  retry_on_failure=False, is_slow_test=False,
-                 conflict_resolution=ConflictResolutionTypes.UNION):
+                 conflict_resolution=ConflictResolutionTypes.UNION, raw_tags=None, raw_results=None,
+                 is_glob=False, trailing_comments=None):
         """Constructor for expectations.
 
         Args:
@@ -66,24 +77,90 @@ class Expectation(object):
           results: List of outcomes for test. Example: ['Skip', 'Pass']
         """
         tags = tags or []
+        self._is_default_pass = not results
         results = results or {ResultType.Pass}
-        assert python_2_3_compat.is_str(reason) or reason is None
+        reason = reason or ''
+        trailing_comments = trailing_comments or ''
+        assert python_2_3_compat.is_str(reason)
         assert python_2_3_compat.is_str(test)
         self._reason = reason
         self._test = test
         self._tags = frozenset(tags)
         self._results = frozenset(results)
         self._lineno = lineno
+        self._raw_tags = raw_tags
+        self._raw_results = raw_results
         self.should_retry_on_failure = retry_on_failure
         self.is_slow_test = is_slow_test
         self.conflict_resolution = conflict_resolution
+        self._is_glob = is_glob
+        self._trailing_comments = trailing_comments
 
     def __eq__(self, other):
         return (self.reason == other.reason and self.test == other.test
                 and self.should_retry_on_failure == other.should_retry_on_failure
                 and self.is_slow_test == other.is_slow_test
                 and self.tags == other.tags and self.results == other.results
-                and self.lineno == other.lineno)
+                and self.lineno == other.lineno
+                and self.trailing_comments == other.trailing_comments)
+
+    def _set_string_value(self):
+        """This method will create an expectation line in string form and set the
+        _string_value member variable to it. If the _raw_results lists and _raw_tags
+        list are not set then the _tags list and _results set will be used to set them.
+        Setting the _raw_results and _raw_tags list to the original lists through the constructor
+        during parsing stops unintended modifications to test expectations when rewriting files.
+        """
+        # If this instance is for a glob type expectation then do not escape
+        # the last asterisk
+        if self.is_glob:
+            assert len(self._test) and self._test[-1] == '*', (
+                'For Expectation instances for glob type expectations, the test value '
+                'must end in an asterisk')
+            pattern = self._test[:-1].replace('*', '\\*') + '*'
+        else:
+            pattern = self._test.replace('*', '\\*')
+        self._string_value = ''
+        if self._reason:
+            self._string_value += self._reason + ' '
+        if self.raw_tags:
+            self._string_value += '[ %s ] ' % ' '.join(self.raw_tags)
+        self._string_value += pattern + ' '
+        self._string_value += '[ %s ]' % ' '.join(self.raw_results)
+        if self._trailing_comments:
+            self._string_value += self._trailing_comments
+
+    def add_expectations(self, results, reason=None):
+        if reason:
+            self._reason = ' '.join(set(self._reason.split() + reason.split()))
+        if not results <= self._results:
+            self._results = frozenset(self._results | results)
+            self._raw_results = sorted(
+                [_RESULT_TAGS[t] for t in self._results])
+
+    @property
+    def raw_tags(self):
+        if not self._raw_tags:
+            self._raw_tags = {t[0].upper() + t[1:].lower() for t in self._tags}
+        return self._raw_tags
+
+    @property
+    def raw_results(self):
+        if not self._raw_results:
+            self._raw_results = {_RESULT_TAGS[t] for t in self._results}
+            if self.is_slow_test:
+                self._raw_results.add(_SLOW_TAG)
+            if self.should_retry_on_failure:
+                self._raw_results.add(_RETRY_ON_FAILURE_TAG)
+        return self._raw_results
+
+    def to_string(self):
+        self._set_string_value()
+        return self._string_value
+
+    @property
+    def is_default_pass(self):
+        return self._is_default_pass
 
     @property
     def reason(self):
@@ -92,6 +169,15 @@ class Expectation(object):
     @property
     def test(self):
         return self._test
+
+    @test.setter
+    def test(self, v):
+        if not len(v):
+            raise ValueError('Cannot set test to empty string')
+        if self.is_glob and v[-1] != '*':
+            raise ValueError(
+                'test value for glob type expectations must end with an asterisk')
+        self._test = v
 
     @property
     def tags(self):
@@ -104,6 +190,18 @@ class Expectation(object):
     @property
     def lineno(self):
         return self._lineno
+
+    @lineno.setter
+    def lineno(self, lineno):
+        self._lineno = lineno
+
+    @property
+    def is_glob(self):
+        return self._is_glob
+
+    @property
+    def trailing_comments(self):
+        return self._trailing_comments
 
 
 class TaggedTestListParser(object):
@@ -130,7 +228,8 @@ class TaggedTestListParser(object):
     RESULT_TOKEN = '# results: ['
     TAG_TOKEN = '# tags: ['
     # The bug field (optional), including optional subproject.
-    _MATCH_STRING = r'^(?:(crbug.com/(?:[^/]*/)?\d+) )?'
+    BUG_PREFIX_REGEX = '(?:crbug.com/|skbug.com/|webkit.org/)'
+    _MATCH_STRING = r'^(?:(' + BUG_PREFIX_REGEX + '(?:[^/]*/)?\d+\s)*)'
     _MATCH_STRING += r'(?:\[ (.+) \] )?'  # The label field (optional).
     _MATCH_STRING += r'(\S+) '  # The test path field.
     _MATCH_STRING += r'\[ ([^\[.]+) \]'  # The expectation field.
@@ -242,14 +341,23 @@ class TaggedTestListParser(object):
         if not match:
             raise ParseError(lineno, 'Syntax error: %s' % line)
 
-        # Unused group is optional trailing comment.
-        reason, raw_tags, test, raw_results, _ = match.groups()
+        reason, raw_tags, test, raw_results, trailing_comments = match.groups()
+
+        # TODO(rmhasan): Find a better regex to capture the reasons. The '*' in
+        # the reasons regex only allows us to get the last bug. We need to write
+        # the below code to get the full list of reasons.
+        if reason:
+            reason = reason.strip()
+            index = line.find(reason)
+            reason = line[:index] + reason
+
         tags = [raw_tag.lower() for raw_tag in raw_tags.split()] if raw_tags else []
         tag_set_ids = set()
 
-        if '*' in test[:-1]:
-            raise ParseError(lineno,
-                'Invalid glob, \'*\' can only be at the end of the pattern')
+        for i in range(len(test)-1):
+            if test[i] == '*' and ((i > 0 and test[i-1] != '\\') or i == 0):
+                raise ParseError(lineno,
+                    'Invalid glob, \'*\' can only be at the end of the pattern')
 
         for t in tags:
             if not t in  self._tag_to_tag_set:
@@ -289,11 +397,20 @@ class TaggedTestListParser(object):
             except KeyError:
                 raise ParseError(lineno, 'Unknown result type "%s"' % r)
 
+        # remove escapes for asterisks
+        is_glob = not test.endswith('\\*') and test.endswith('*')
+        test = test.replace('\\*', '*')
+        if raw_tags:
+            raw_tags = raw_tags.split()
+        if raw_results:
+            raw_results = raw_results.split()
         # Tags from tag groups will be stored in lower case in the Expectation
         # instance. These tags will be compared to the tags passed in to
         # the Runner instance which are also stored in lower case.
         return Expectation(
-            reason, test, tags, results, lineno, retry_on_failure, is_slow_test, self._conflict_resolution)
+            reason, test, tags, results, lineno, retry_on_failure, is_slow_test,
+            self._conflict_resolution, raw_tags=raw_tags, raw_results=raw_results,
+            is_glob=is_glob, trailing_comments=trailing_comments)
 
 
 class TestExpectations(object):
@@ -306,7 +423,7 @@ class TestExpectations(object):
         # expected results, so we store these in dicts ordered by the string
         # for ease of retrieve. glob_exps use an OrderedDict rather than
         # a regular dict for reasons given below.
-        self.individual_exps = {}
+        self.individual_exps = OrderedDict()
         self.glob_exps = OrderedDict()
         self._tags_conflict = _default_tags_conflict
 
@@ -365,7 +482,7 @@ class TestExpectations(object):
         # reject, etc. Right now, you effectively just get a union.
         glob_exps = []
         for exp in parser.expectations:
-            if exp.test.endswith('*'):
+            if exp.is_glob:
                 glob_exps.append(exp)
             else:
                 self.individual_exps.setdefault(exp.test, []).append(exp)
@@ -392,6 +509,8 @@ class TestExpectations(object):
             self.individual_exps.setdefault(pattern, []).extend(exps)
         for pattern, exps in other.glob_exps.items():
             self.glob_exps.setdefault(pattern, []).extend(exps)
+        # resort the glob patterns by length in self.glob_exps ordered
+        # dictionary
         glob_exps = self.glob_exps
         self.glob_exps = OrderedDict()
         for pattern, exps in sorted(
@@ -399,7 +518,7 @@ class TestExpectations(object):
             self.glob_exps[pattern] = exps
 
     def expectations_for(self, test):
-        # Returns a tuple of (expectations, should_retry_on_failure)
+        # Returns an Expectation.
         #
         # A given test may have multiple expectations, each with different
         # sets of tags that apply and different expected results, e.g.:
@@ -421,19 +540,24 @@ class TestExpectations(object):
         self._reasons = set()
         self._should_retry_on_failure = False
         self._is_slow_test = False
+        self._trailing_comments = str()
 
         def _update_expected_results(exp):
             if exp.tags.issubset(self._tags):
                 if exp.conflict_resolution == ConflictResolutionTypes.UNION:
-                    self._results.update(exp.results)
+                    if not exp.is_default_pass:
+                        self._results.update(exp.results)
                     self._should_retry_on_failure |= exp.should_retry_on_failure
                     self._is_slow_test |= exp.is_slow_test
+                    if exp.trailing_comments:
+                        self._trailing_comments += exp.trailing_comments + '\n'
                     if exp.reason:
                         self._reasons.update([exp.reason])
                 else:
                     self._results = set(exp.results)
                     self._should_retry_on_failure = exp.should_retry_on_failure
                     self._is_slow_test = exp.is_slow_test
+                    self._trailing_comments = exp.trailing_comments
                     if exp.reason:
                         self._reasons = {exp.reason}
 
@@ -441,27 +565,30 @@ class TestExpectations(object):
         for exp in self.individual_exps.get(test, []):
             _update_expected_results(exp)
 
-        if self._results or self._should_retry_on_failure:
+        if self._results or self._is_slow_test or self._should_retry_on_failure:
             return Expectation(
                     test=test, results=self._results,
                     retry_on_failure=self._should_retry_on_failure,
-                    is_slow_test=self._is_slow_test, reason=' '.join(self._reasons))
+                    is_slow_test=self._is_slow_test, reason=' '.join(self._reasons),
+                    trailing_comments=self._trailing_comments)
 
         # If we didn't find an exact match, check for matching globs. Match by
-        # the most specific (i.e., longest) glob first. Because self.globs is
-        # ordered by length, this is a simple linear search.
+        # the most specific (i.e., longest) glob first. Because self.globs_exps
+        # is ordered by length, this is a simple linear search
         for glob, exps in self.glob_exps.items():
-            if fnmatch.fnmatch(test, glob):
+            glob = glob[:-1]
+            if test.startswith(glob):
                 for exp in exps:
                     _update_expected_results(exp)
                 # if *any* of the exps matched, results will be non-empty,
                 # and we're done. If not, keep looking through ever-shorter
                 # globs.
-                if self._results or self._should_retry_on_failure:
+                if self._results or self._is_slow_test or self._should_retry_on_failure:
                     return Expectation(
                             test=test, results=self._results,
                             retry_on_failure=self._should_retry_on_failure,
-                            is_slow_test=self._is_slow_test, reason=' '.join(self._reasons))
+                            is_slow_test=self._is_slow_test, reason=' '.join(self._reasons),
+                            trailing_comments=self._trailing_comments)
 
         # Nothing matched, so by default, the test is expected to pass.
         return Expectation(test=test)
@@ -503,35 +630,6 @@ class TestExpectations(object):
                                   (e1.lineno, e2.lineno))
         return error_msg
 
-    @staticmethod
-    def get_broken_expectations(patterns_to_exps, test_names):
-        trie = {}
-        exps_dont_apply = []
-        # create trie of test names
-        for test in test_names:
-            _trie = trie.setdefault(test[0], {})
-            for l in test[1:]:
-                _trie = _trie.setdefault(l, {})
-            _trie.setdefault('$', {})
-        # look for patterns that do not match any test names and append their
-        # expectations to exps_dont_apply
-        for pattern, exps in patterns_to_exps.items():
-            _trie = trie
-            is_glob = False
-            broken_exp = False
-            for l in pattern:
-                if l == '*':
-                    is_glob = True
-                    break
-                if l not in _trie:
-                    exps_dont_apply.extend(exps)
-                    broken_exp = True
-                    break
-                _trie = _trie[l]
-            if not broken_exp and not is_glob and '$' not in _trie:
-                exps_dont_apply.extend(exps)
-        return exps_dont_apply
-
     def check_for_broken_expectations(self, test_names):
         # It returns a list expectations that do not apply to any test names in
         # the test_names list.
@@ -539,6 +637,31 @@ class TestExpectations(object):
         # args:
         # test_names: list of test names that are used to find test expectations
         # that do not apply to any of test names in the list.
-        patterns_to_exps = self.individual_exps.copy()
-        patterns_to_exps.update(self.glob_exps)
-        return self.get_broken_expectations(patterns_to_exps, test_names)
+        broken_exps = []
+        test_names = set(test_names)
+        for pattern, exps in self.individual_exps.items():
+            if pattern not in test_names:
+                broken_exps.extend(exps)
+
+        # look for broken glob expectations
+        # first create a trie of test names
+        trie = {}
+        broken_glob_exps = []
+        for test in test_names:
+            _trie = trie.setdefault(test[0], {})
+            for l in test[1:]:
+                _trie = _trie.setdefault(l, {})
+            _trie.setdefault('\0', {})
+
+        # look for globs that do not match any test names and append their
+        # expectations to glob_broken_exps
+        for pattern, exps in self.glob_exps.items():
+            _trie = trie
+            for i, l in enumerate(pattern):
+                if l == '*' and i == len(pattern) - 1:
+                    break
+                if l not in _trie:
+                    broken_glob_exps.extend(exps)
+                    break
+                _trie = _trie[l]
+        return broken_exps + broken_glob_exps

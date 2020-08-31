@@ -6,9 +6,11 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -52,8 +54,8 @@ Microsoft::WRL::ComPtr<IAccessible> AXSystemCaretWin::GetCaret() const {
   return caret_accessible;
 }
 
-void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
-  if (bounds.IsEmpty())
+void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds_physical_pixels) {
+  if (bounds_physical_pixels.IsEmpty())
     return;
 
   // If the caret has non-empty bounds, assume it has been made visible.
@@ -71,7 +73,7 @@ void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
                      -caret_->GetUniqueId());
   }
 
-  gfx::RectF new_location(bounds);
+  gfx::RectF new_location(bounds_physical_pixels);
   // Avoid redundant caret move events (if the location stays the same), but
   // always fire when it's made visible again.
   if (data_.relative_bounds.bounds != new_location || newly_visible) {
@@ -114,9 +116,12 @@ gfx::Rect AXSystemCaretWin::GetBoundsRect(
     const AXClippingBehavior clipping_behavior,
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case AXCoordinateSystem::kScreen:
+    case AXCoordinateSystem::kScreenPhysicalPixels:
       // We could optionally add clipping here if ever needed.
       return ToEnclosingRect(data_.relative_bounds.bounds);
+    case AXCoordinateSystem::kScreenDIPs:
+      return display::win::ScreenWin::ScreenToDIPRect(
+          event_target_, ToEnclosingRect(data_.relative_bounds.bounds));
     case AXCoordinateSystem::kRootFrame:
     case AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();

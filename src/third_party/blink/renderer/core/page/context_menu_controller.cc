@@ -31,7 +31,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -73,7 +74,7 @@ ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
 
 ContextMenuController::~ContextMenuController() = default;
 
-void ContextMenuController::Trace(blink::Visitor* visitor) {
+void ContextMenuController::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(menu_provider_);
   visitor->Trace(hit_test_result_);
@@ -127,16 +128,6 @@ Node* ContextMenuController::ContextMenuNodeForFrame(LocalFrame* frame) {
              : nullptr;
 }
 
-// Figure out the URL of a page or subframe.
-static KURL UrlFromFrame(LocalFrame* frame) {
-  if (frame) {
-    DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
-    if (document_loader)
-      return document_loader->UrlForHistory();
-  }
-  return KURL();
-}
-
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   int edit_flags = ContextMenuDataEditFlags::kCanDoNone;
   if (editor.CanUndo())
@@ -153,7 +144,7 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
     edit_flags |= ContextMenuDataEditFlags::kCanDelete;
   if (editor.CanEditRichly())
     edit_flags |= ContextMenuDataEditFlags::kCanEditRichly;
-  if (selected_document.IsHTMLDocument() ||
+  if (IsA<HTMLDocument>(selected_document) ||
       selected_document.IsXHTMLDocument()) {
     edit_flags |= ContextMenuDataEditFlags::kCanTranslate;
     if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
@@ -278,7 +269,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
     // We know that if absoluteMediaURL() is not empty or element has a media
     // stream descriptor, then this is a media element.
-    HTMLMediaElement* media_element = ToHTMLMediaElement(result.InnerNode());
+    auto* media_element = To<HTMLMediaElement>(result.InnerNode());
     if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
       // audio track but no video track.
@@ -332,8 +323,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebPlugin* plugin = plugin_view->Plugin();
         data.link_url = plugin->LinkAtPosition(data.mouse_position);
 
-        HTMLPlugInElement* plugin_element =
-            ToHTMLPlugInElement(result.InnerNode());
+        auto* plugin_element = To<HTMLPlugInElement>(result.InnerNode());
         data.src_url =
             plugin_element->GetDocument().CompleteURL(plugin_element->Url());
 
@@ -379,25 +369,6 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   // show a selection menu or a more generic page menu.
   if (selected_frame->GetDocument()->Loader())
     data.frame_encoding = selected_frame->GetDocument()->EncodingName();
-
-  // Send the frame and page URLs in any case.
-  auto* main_local_frame = DynamicTo<LocalFrame>(page_->MainFrame());
-  if (!main_local_frame) {
-    // TODO(kenrb): This works around the problem of URLs not being
-    // available for top-level frames that are in a different process.
-    // It mostly works to convert the security origin to a URL, but
-    // extensions accessing that property will not get the correct value
-    // in that case. See https://crbug.com/534561
-    const SecurityOrigin* origin =
-        page_->MainFrame()->GetSecurityContext()->GetSecurityOrigin();
-    if (origin)
-      data.page_url = KURL(origin->ToString());
-  } else {
-    data.page_url = WebURL(UrlFromFrame(main_local_frame));
-  }
-
-  if (selected_frame != page_->MainFrame())
-    data.frame_url = WebURL(UrlFromFrame(selected_frame));
 
   data.selection_start_offset = 0;
   // HitTestResult::isSelected() ensures clean layout by performing a hit test.

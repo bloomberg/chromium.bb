@@ -10,29 +10,36 @@
 #include "base/bit_cast.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/native_library.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "gpu/config/gpu_finch_features.h"
 
 namespace gpu {
 
-GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
-                                                 base::TimeDelta max_wait_time,
-                                                 bool is_test_mode)
+GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(
+    base::TimeDelta timeout,
+    int max_extra_cycles_before_kill,
+    bool is_test_mode)
     : watchdog_timeout_(timeout),
       in_gpu_initialization_(true),
-      max_wait_time_(max_wait_time),
+      max_extra_cycles_before_kill_(max_extra_cycles_before_kill),
       is_test_mode_(is_test_mode),
       watched_gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+  num_of_processors_ = base::SysInfo::NumberOfProcessors();
+
 #if defined(OS_WIN)
   // GetCurrentThread returns a pseudo-handle that cannot be used by one thread
   // to identify another. DuplicateHandle creates a "real" handle that can be
@@ -44,11 +51,24 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
   }
 #endif
 
+#if defined(USE_X11)
+  tty_file_ = base::OpenFile(
+      base::FilePath(FILE_PATH_LITERAL("/sys/class/tty/tty0/active")), "r");
+  UpdateActiveTTY();
+  host_tty_ = active_tty_;
+#endif
+
   Arm();
 }
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
+  // Stop() might take too long and the watchdog timeout is triggered.
+  // Disarm first before calling Stop() to avoid a crash.
+  if (IsArmed())
+    Disarm();
+  PauseWatchdog();
+
   Stop();  // stop the watchdog thread
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);
@@ -58,16 +78,21 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
   if (watched_thread_handle_)
     CloseHandle(watched_thread_handle_);
 #endif
+
+#if defined(USE_X11)
+  if (tty_file_)
+    fclose(tty_file_);
+#endif
 }
 
 // static
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded,
     base::TimeDelta timeout,
-    base::TimeDelta max_wait_time,
+    int max_extra_cycles_before_kill,
     bool is_test_mode) {
-  auto watchdog_thread = base::WrapUnique(
-      new GpuWatchdogThreadImplV2(timeout, max_wait_time, is_test_mode));
+  auto watchdog_thread = base::WrapUnique(new GpuWatchdogThreadImplV2(
+      timeout, max_extra_cycles_before_kill, is_test_mode));
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   watchdog_thread->StartWithOptions(options);
@@ -79,7 +104,31 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 // static
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded) {
-  return Create(start_backgrounded, kGpuWatchdogTimeout, kMaxWaitTime, false);
+  base::TimeDelta gpu_watchdog_timeout = kGpuWatchdogTimeout;
+  int max_extra_cycles_before_kill = kMaxExtraCyclesBeforeKill;
+
+  if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2NewTimeout)) {
+    const char kNewTimeOutParam[] = "new_time_out";
+    const char kMaxExtraCyclesBeforeKillParam[] =
+        "max_extra_cycles_before_kill";
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    constexpr int kFinchMaxExtraCyclesBeforeKill = 1;
+#else
+    constexpr int kFinchMaxExtraCyclesBeforeKill = 2;
+#endif
+
+    int timeout = base::GetFieldTrialParamByFeatureAsInt(
+        features::kGpuWatchdogV2NewTimeout, kNewTimeOutParam,
+        kGpuWatchdogTimeout.InSeconds());
+    gpu_watchdog_timeout = base::TimeDelta::FromSeconds(timeout);
+
+    max_extra_cycles_before_kill = base::GetFieldTrialParamByFeatureAsInt(
+        features::kGpuWatchdogV2NewTimeout, kMaxExtraCyclesBeforeKillParam,
+        kFinchMaxExtraCyclesBeforeKill);
+  }
+
+  return Create(start_backgrounded, gpu_watchdog_timeout,
+                max_extra_cycles_before_kill, false);
 }
 
 // Do not add power observer during watchdog init, PowerMonitor might not be up
@@ -170,9 +219,10 @@ void GpuWatchdogThreadImplV2::Init() {
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
       timeout);
 
-  last_arm_disarm_counter_ = base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  last_arm_disarm_counter_ = ReadArmDisarmCounter();
   watchdog_start_timeticks_ = base::TimeTicks::Now();
   last_on_watchdog_timeout_timeticks_ = watchdog_start_timeticks_;
+  next_on_watchdog_timeout_time_ = base::Time::Now() + timeout;
 
 #if defined(OS_WIN)
   if (watched_thread_handle_) {
@@ -278,8 +328,8 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         timeout);
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
-    last_arm_disarm_counter_ =
-        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+    next_on_watchdog_timeout_time_ = base::Time::Now() + timeout;
+    last_arm_disarm_counter_ = ReadArmDisarmCounter();
 #if defined(OS_WIN)
     if (watched_thread_handle_) {
       last_on_watchdog_timeout_thread_ticks_ = GetWatchedThreadTime();
@@ -360,6 +410,10 @@ bool GpuWatchdogThreadImplV2::IsArmed() {
   return base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1;
 }
 
+base::subtle::Atomic32 GpuWatchdogThreadImplV2::ReadArmDisarmCounter() {
+  return base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+}
+
 // Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
@@ -377,40 +431,35 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
     GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
   }
 
-  base::subtle::Atomic32 arm_disarm_counter =
-      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  auto arm_disarm_counter = ReadArmDisarmCounter();
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeout);
   if (power_resumed_event_)
     num_of_timeout_after_power_resume_++;
   if (foregrounded_event_)
     num_of_timeout_after_foregrounded_++;
 
+#if defined(USE_X11)
+  UpdateActiveTTY();
+#endif
+
   // Collect all needed info for gpu hang detection.
   bool disarmed = arm_disarm_counter % 2 == 0;  // even number
   bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
+  bool no_gpu_hang = disarmed || gpu_makes_progress || SlowWatchdogThread();
+
   bool watched_thread_needs_more_time =
-      WatchedThreadNeedsMoreTime(disarmed || gpu_makes_progress);
+      WatchedThreadNeedsMoreThreadTime(no_gpu_hang);
+  no_gpu_hang = no_gpu_hang || watched_thread_needs_more_time ||
+                ContinueOnNonHostX11ServerTty();
 
-  // No gpu hang is detected. Continue with another OnWatchdogTimeout task
-  if (disarmed || gpu_makes_progress || watched_thread_needs_more_time) {
+  bool allows_extra_timeout = WatchedThreadGetsExtraTimeout(no_gpu_hang);
+  no_gpu_hang = no_gpu_hang || allows_extra_timeout;
+
+  // No gpu hang. Continue with another OnWatchdogTimeout task.
+  if (no_gpu_hang) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
-    last_arm_disarm_counter_ =
-        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
-
-    task_runner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
-        watchdog_timeout_);
-    return;
-  }
-
-  // An experiment for all platforms: Wait for max_wait_time_ and see if GPU
-  // will response.
-  GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeoutWait);
-  if (GpuRespondsAfterWaiting()) {
-    last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
-    last_arm_disarm_counter_ =
-        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+    next_on_watchdog_timeout_time_ = base::Time::Now() + watchdog_timeout_;
+    last_arm_disarm_counter_ = ReadArmDisarmCounter();
 
     task_runner()->PostDelayedTask(
         FROM_HERE,
@@ -421,34 +470,51 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
 
   // Still armed without any progress. GPU possibly hangs.
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kKill);
+#if defined(OS_WIN)
+  if (less_than_full_thread_time_after_capped_)
+    GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kKillOnLessThreadTime);
+#endif
+
   DeliberatelyTerminateToRecoverFromHang();
 }
 
-bool GpuWatchdogThreadImplV2::GpuIsAlive() {
-  base::subtle::Atomic32 arm_disarm_counter =
-      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
-  bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
+bool GpuWatchdogThreadImplV2::SlowWatchdogThread() {
+  // If it takes 15 more seconds than the expected time between two
+  // OnWatchdogTimeout() calls, the system is considered slow and it's not a GPU
+  // hang.
+  bool slow_watchdog_thread =
+      (base::Time::Now() - next_on_watchdog_timeout_time_) >=
+      base::TimeDelta::FromSeconds(15);
 
-  return (gpu_makes_progress);
+  // Record this case only when a GPU hang is detected and the thread is slow.
+  if (slow_watchdog_thread)
+    GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kSlowWatchdogThread);
+
+  return slow_watchdog_thread;
 }
 
-bool GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreTime(
+bool GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreThreadTime(
     bool no_gpu_hang_detected) {
 #if defined(OS_WIN)
   if (!watched_thread_handle_)
     return false;
 
-  // For metrics only - If count_of_more_gpu_thread_time_allowed_ > 0, we know
-  // extra time was extended in the previous OnWatchdogTimeout(). Now we find
-  // gpu makes progress. Record this case.
-  if (no_gpu_hang_detected && count_of_more_gpu_thread_time_allowed_ > 0) {
-    GpuWatchdogTimeoutHistogram(
-        GpuWatchdogTimeoutEvent::kProgressAfterMoreThreadTime);
-    WindowsNumOfExtraTimeoutsHistogram();
+  // We allow extra thread time. When that runs out, we extend extra timeout
+  // cycles. Now, we are extending extra timeout cycles. Don't add extra thread
+  // time.
+  if (count_of_extra_cycles_ > 0)
+    return false;
+
+  WatchedThreadNeedsMoreThreadTimeHistogram(
+      no_gpu_hang_detected,
+      /*start_of_more_thread_time*/ false);
+
+  if (!no_gpu_hang_detected && count_of_more_gpu_thread_time_allowed_ >=
+                                   kMaxCountOfMoreGpuThreadTimeAllowed) {
+    less_than_full_thread_time_after_capped_ = true;
+  } else {
+    less_than_full_thread_time_after_capped_ = false;
   }
-  // For metrics only - The extra time was give in timeouts.
-  time_in_extra_timeouts_ =
-      count_of_more_gpu_thread_time_allowed_ * watchdog_timeout_;
 
   // Calculate how many thread ticks the watched thread spent doing the work.
   base::ThreadTicks now = GetWatchedThreadTime();
@@ -465,13 +531,15 @@ bool GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreTime(
     // Reset the remaining thread ticks.
     remaining_watched_thread_ticks_ = watchdog_timeout_;
     count_of_more_gpu_thread_time_allowed_ = 0;
+
     return false;
   } else {
+    // This is the start of allowing more thread time.
+    if (count_of_more_gpu_thread_time_allowed_ == 0) {
+      WatchedThreadNeedsMoreThreadTimeHistogram(
+          no_gpu_hang_detected, /*start_of_more_thread_time*/ true);
+    }
     count_of_more_gpu_thread_time_allowed_++;
-    // Only record it once for all extenteded timeout on the same detected gpu
-    // hang, so we know this is equivlent one crash in our crash reports.
-    if (count_of_more_gpu_thread_time_allowed_ == 1)
-      GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kMoreThreadTime);
 
     return true;
   }
@@ -510,25 +578,24 @@ base::ThreadTicks GpuWatchdogThreadImplV2::GetWatchedThreadTime() {
 }
 #endif
 
-// This is an experiment on all platforms to see whether GPU will response
-// after waiting longer.
-bool GpuWatchdogThreadImplV2::GpuRespondsAfterWaiting() {
-  base::TimeDelta duration;
-  base::TimeTicks start_timeticks = base::TimeTicks::Now();
+bool GpuWatchdogThreadImplV2::WatchedThreadGetsExtraTimeout(bool no_gpu_hang) {
+  if (max_extra_cycles_before_kill_ == 0)
+    return false;
 
-  while (duration < max_wait_time_) {
-    // Sleep for 1 seconds each time and check if the GPU makes a progress.
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-    duration = base::TimeTicks::Now() - start_timeticks;
+  // We want to record histograms even if there is no gpu hang.
+  bool allows_more_timeouts = false;
+  WatchedThreadGetsExtraTimeoutHistogram(no_gpu_hang);
 
-    if (GpuIsAlive()) {
-      GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kProgressAfterWait);
-      GpuWatchdogWaitTimeHistogram(duration);
-      return true;
+  if (no_gpu_hang) {
+    if (count_of_extra_cycles_ > 0) {
+      count_of_extra_cycles_ = 0;
     }
+  } else if (count_of_extra_cycles_ < max_extra_cycles_before_kill_) {
+    count_of_extra_cycles_++;
+    allows_more_timeouts = true;
   }
 
-  return false;
+  return allows_more_timeouts;
 }
 
 void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
@@ -567,8 +634,10 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::TimeDelta timeticks_elapses =
       function_begin_timeticks - last_on_watchdog_timeout_timeticks_;
   base::debug::Alias(&timeticks_elapses);
+  base::debug::Alias(&max_extra_cycles_before_kill_);
 #if defined(OS_WIN)
   base::debug::Alias(&remaining_watched_thread_ticks_);
+  base::debug::Alias(&less_than_full_thread_time_after_capped_);
 #endif
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
@@ -579,8 +648,14 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   crash_keys::gpu_watchdog_kill_after_power_resume.Set(
       WithinOneMinFromPowerResumed() ? "1" : "0");
 
+  crash_keys::num_of_processors.Set(base::NumberToString(num_of_processors_));
+
+  // Check the arm_disarm_counter value one more time.
+  auto last_arm_disarm_counter = ReadArmDisarmCounter();
+  base::debug::Alias(&last_arm_disarm_counter);
+
   // Deliberately crash the process to create a crash dump.
-  *((volatile int*)0) = 0xdeadface;
+  *static_cast<volatile int*>(nullptr) = 0x1337;
 }
 
 void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
@@ -619,7 +694,7 @@ void GpuWatchdogThreadImplV2::GpuWatchdogTimeoutHistogram(
 }
 
 #if defined(OS_WIN)
-void GpuWatchdogThreadImplV2::WindowsNumOfExtraTimeoutsHistogram() {
+void GpuWatchdogThreadImplV2::RecordExtraThreadTimeHistogram() {
   // Record the number of timeouts the GPU main thread needs to make a progress
   // after GPU OnWatchdogTimeout() is triggered. The maximum count is 6 which
   // is more  than kMaxCountOfMoreGpuThreadTimeAllowed(4);
@@ -657,47 +732,87 @@ void GpuWatchdogThreadImplV2::WindowsNumOfExtraTimeoutsHistogram() {
                                    count, kMin, kMax, kBuckets);
   }
 }
+
+void GpuWatchdogThreadImplV2::
+    RecordNumOfUsersWaitingWithExtraThreadTimeHistogram(int count) {
+  constexpr int kMax = 4;
+
+  base::UmaHistogramExactLinear("GPU.WatchdogThread.ExtraThreadTime.NumOfUsers",
+                                count, kMax);
+}
+
+void GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreThreadTimeHistogram(
+    bool no_gpu_hang_detected,
+    bool start_of_more_thread_time) {
+  if (start_of_more_thread_time) {
+    // This is the start of allowing more thread time. Only record it once for
+    // all following timeouts on the same detected gpu hang, so we know this
+    // is equivlent one crash in our crash reports.
+    GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kMoreThreadTime);
+    RecordNumOfUsersWaitingWithExtraThreadTimeHistogram(0);
+  } else {
+    if (count_of_more_gpu_thread_time_allowed_ > 0) {
+      if (no_gpu_hang_detected) {
+        // If count_of_more_gpu_thread_time_allowed_ > 0, we know extra time was
+        // extended in the previous OnWatchdogTimeout(). Now we find gpu makes
+        // progress. Record this case.
+        GpuWatchdogTimeoutHistogram(
+            GpuWatchdogTimeoutEvent::kProgressAfterMoreThreadTime);
+        RecordExtraThreadTimeHistogram();
+      } else {
+        if (count_of_more_gpu_thread_time_allowed_ >=
+            kMaxCountOfMoreGpuThreadTimeAllowed) {
+          GpuWatchdogTimeoutHistogram(
+              GpuWatchdogTimeoutEvent::kLessThanFullThreadTimeAfterCapped);
+        }
+      }
+
+      // Records the number of users who are still waiting. We can use this
+      // number to calculate the number of users who had already quit.
+      RecordNumOfUsersWaitingWithExtraThreadTimeHistogram(
+          count_of_more_gpu_thread_time_allowed_);
+
+      // Used by GPU.WatchdogThread.WaitTime later
+      time_in_wait_for_full_thread_time_ =
+          count_of_more_gpu_thread_time_allowed_ * watchdog_timeout_;
+    }
+  }
+}
 #endif
 
-void GpuWatchdogThreadImplV2::GpuWatchdogWaitTimeHistogram(
-    base::TimeDelta wait_time) {
+void GpuWatchdogThreadImplV2::WatchedThreadGetsExtraTimeoutHistogram(
+    bool no_gpu_hang) {
+  constexpr int kMax = 60;
+  if (count_of_extra_cycles_ == 0 && !no_gpu_hang) {
+    GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeoutWait);
+    base::UmaHistogramExactLinear("GPU.WatchdogThread.WaitTime.NumOfUsers", 0,
+                                  kMax);
+  } else if (count_of_extra_cycles_ > 0) {
+    int count = watchdog_timeout_.InSeconds() * count_of_extra_cycles_;
+    base::UmaHistogramExactLinear("GPU.WatchdogThread.WaitTime.NumOfUsers",
+                                  count, kMax);
+    if (no_gpu_hang) {
+      GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kProgressAfterWait);
+      base::UmaHistogramExactLinear(
+          "GPU.WatchdogThread.WaitTime.ProgressAfterWait", count, kMax);
+
 #if defined(OS_WIN)
-  // Add the time the GPU thread was given for full thread time.
-  wait_time += time_in_extra_timeouts_;
+      // Add the time the GPU thread was given for the full thread time up to 60
+      // seconds. GPU.WatchdogThread.WaitTime is essentially equal to
+      // GPU.WatchdogThread.WaitTime.ProgressAfterWait on non-Windows systems.
+      base::TimeDelta wait_time = base::TimeDelta::FromSeconds(count);
+      wait_time += time_in_wait_for_full_thread_time_;
+
+      constexpr base::TimeDelta kMinTime = base::TimeDelta::FromSeconds(1);
+      constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromSeconds(150);
+      constexpr int kBuckets = 50;
+
+      // The time the GPU main thread takes to finish a task after a "hang" is
+      // dectedted.
+      base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime", wait_time,
+                                    kMinTime, kMaxTime, kBuckets);
 #endif
-
-  // Record the wait time in OnWatchdogTimeout() for the GPU main thread to
-  // make a progress. The maximum recodrding time is 150 seconds because
-  // Windows need to add the time spent before reaching here (max 60 sec).
-  constexpr base::TimeDelta kMin = base::TimeDelta::FromSeconds(1);
-  constexpr base::TimeDelta kMax = base::TimeDelta::FromSeconds(150);
-  constexpr int kBuckets = 50;
-  bool recorded = false;
-
-  base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime", wait_time, kMin,
-                                kMax, kBuckets);
-
-  if (in_gpu_initialization_) {
-    base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime.Init", wait_time,
-                                  kMin, kMax, kBuckets);
-    recorded = true;
-  }
-
-  if (WithinOneMinFromPowerResumed()) {
-    base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime.PowerResume",
-                                  wait_time, kMin, kMax, kBuckets);
-    recorded = true;
-  }
-
-  if (WithinOneMinFromForegrounded()) {
-    base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime.Foregrounded",
-                                  wait_time, kMin, kMax, kBuckets);
-    recorded = true;
-  }
-
-  if (!recorded) {
-    base::UmaHistogramCustomTimes("GPU.WatchdogThread.WaitTime.Normal",
-                                  wait_time, kMin, kMax, kBuckets);
+    }
   }
 }
 
@@ -709,6 +824,40 @@ bool GpuWatchdogThreadImplV2::WithinOneMinFromPowerResumed() {
 bool GpuWatchdogThreadImplV2::WithinOneMinFromForegrounded() {
   size_t count = base::TimeDelta::FromSeconds(60) / watchdog_timeout_;
   return foregrounded_event_ && num_of_timeout_after_foregrounded_ <= count;
+}
+
+#if defined(USE_X11)
+void GpuWatchdogThreadImplV2::UpdateActiveTTY() {
+  last_active_tty_ = active_tty_;
+
+  active_tty_ = -1;
+  char tty_string[8] = {0};
+  if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
+      fread(tty_string, 1, 7, tty_file_)) {
+    int tty_number;
+    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1) {
+      active_tty_ = tty_number;
+    }
+  }
+}
+#endif
+
+bool GpuWatchdogThreadImplV2::ContinueOnNonHostX11ServerTty() {
+#if defined(USE_X11)
+  if (host_tty_ == -1 || active_tty_ == -1)
+    return false;
+
+  // Don't crash if we're not on the TTY of our host X11 server.
+  if (active_tty_ != host_tty_) {
+    // Only record for the time there is a change on TTY
+    if (last_active_tty_ == active_tty_) {
+      GpuWatchdogTimeoutHistogram(
+          GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+    }
+    return true;
+  }
+#endif
+  return false;
 }
 
 // For gpu testing only. Return whether a GPU hang was detected or not.
@@ -733,5 +882,4 @@ void GpuWatchdogThreadImplV2::WaitForPowerObserverAddedForTesting() {
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   event.Wait();
 }
-
 }  // namespace gpu

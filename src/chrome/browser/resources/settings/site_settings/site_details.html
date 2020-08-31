@@ -1,29 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/cr_elements/action_link_css.html">
-<link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="../icons.html">
-<link rel="import" href="../route.html">
-<link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="all_sites_icons.html">
-<link rel="import" href="clear_storage_dialog_css.html">
-<link rel="import" href="constants.html">
-<link rel="import" href="site_details_permission.html">
-<link rel="import" href="site_settings_behavior.html">
-<link rel="import" href="website_usage_private_api.html">
-
-<dom-module id="site-details">
-  <template>
-    <style include="settings-shared action-link">
+    <style include="cr-shared-style settings-shared action-link iron-flex">
       .favicon-image {
         margin: 2px;
       }
@@ -38,6 +13,10 @@
 
       #resetSettingsButton {
         margin-top: 24px;
+      }
+
+      #usageHeader {
+        padding: 0 var(--cr-section-padding);
       }
     </style>
     <!-- Confirm reset settings dialog. -->
@@ -95,10 +74,6 @@
             <iron-icon icon="all-sites:offline"></iron-icon>
             $i18n{siteSettingsSiteClearStorageOfflineData}
           </div>
-          <div class="detail">
-            <iron-icon icon="all-sites:apps"></iron-icon>
-            $i18n{siteSettingsSiteClearStorageApps}
-          </div>
         </div>
       </div>
       <div slot="button-container">
@@ -112,7 +87,7 @@
     </cr-dialog>
 
     <div id="usage">
-      <div class="settings-box first line-only">
+      <div id="usageHeader">
         <h2 class="first">$i18n{siteSettingsUsage}</h2>
       </div>
       <div class="list-frame">
@@ -138,8 +113,8 @@
       </div>
     </div>
 
-    <div class="settings-box first">
-      <h2 class="start">$i18n{siteSettingsPermissions}</h2>
+    <div class="cr-row first">
+      <h2 class="flex">$i18n{siteSettingsPermissions}</h2>
       <cr-button id="resetSettingsButton" class="header-aligned-button"
           role="button" aria-disabled="false"
           on-click="onConfirmClearSettings_">
@@ -214,11 +189,25 @@
           icon="settings:serial-port" id="serialPorts"
           label="$i18n{siteSettingsSerialPorts}">
       </site-details-permission>
+      <template is="dom-if" if="[[enableWebBluetoothNewPermissionsBackend_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.BLUETOOTH_DEVICES}}"
+            icon="settings:bluetooth" id="bluetoothDevices"
+            label="$i18n{siteSettingsBluetoothDevices}">
+        </site-details-permission>
+      </template>
       <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
         <site-details-permission
             category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
             icon="settings:save-original" id="nativeFileSystemWrite"
             label="$i18n{siteSettingsNativeFileSystemWrite}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="[[ContentSettingsTypes.HID_DEVICES]]"
+            icon="settings:hid-device" id="hidDevices"
+            label="$i18n{siteSettingsHidDevices}">
         </site-details-permission>
       </template>
       <site-details-permission
@@ -257,12 +246,23 @@
             label="$i18n{siteSettingsInsecureContent}">
         </site-details-permission>
       </template>
+      <template is="dom-if" if="[[enableWebXrContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.AR}}"
+            icon="settings:vr-headset" id="ar"
+            label="$i18n{siteSettingsAr}">
+        </site-details-permission>
+        <site-details-permission
+            category="{{ContentSettingsTypes.VR}}"
+            icon="settings:vr-headset" id="vr"
+            label="$i18n{siteSettingsVr}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}"
+            icon="settings:window-placement" id="windowPlacement"
+            label="$i18n{siteSettingsWindowPlacement}">
+        </site-details-permission>
+      </template>
     </div>
-
-    <website-usage-private-api id="usageApi"
-        website-data-usage="{{storedData_}}"
-        website-cookie-usage="{{numCookies_}}">
-    </website-usage-private-api>
-  </template>
-  <script src="site_details.js"></script>
-</dom-module>

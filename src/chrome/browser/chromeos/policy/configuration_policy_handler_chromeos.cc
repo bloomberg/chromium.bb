@@ -12,9 +12,10 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -324,11 +325,11 @@ bool PinnedLauncherAppsPolicyHandler::CheckListEntry(const base::Value& value) {
   return crx_file::id_util::IdIsValid(str);
 }
 
-void PinnedLauncherAppsPolicyHandler::ApplyList(
-    std::unique_ptr<base::ListValue> filtered_list,
-    PrefValueMap* prefs) {
+void PinnedLauncherAppsPolicyHandler::ApplyList(base::Value filtered_list,
+                                                PrefValueMap* prefs) {
+  DCHECK(filtered_list.is_list());
   std::vector<base::Value> pinned_apps_list;
-  for (const base::Value& entry : filtered_list->GetList()) {
+  for (const base::Value& entry : filtered_list.GetList()) {
     base::Value app_dict(base::Value::Type::DICTIONARY);
     app_dict.SetKey(kPinnedAppsPrefAppIDKey, entry.Clone());
     pinned_apps_list.push_back(std::move(app_dict));

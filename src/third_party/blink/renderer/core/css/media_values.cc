@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values.h"
 
+#include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
@@ -20,8 +21,8 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
 namespace blink {
 
@@ -124,28 +125,23 @@ const String MediaValues::CalculateMediaType(LocalFrame* frame) {
   return frame->View()->MediaType();
 }
 
-blink::mojom::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
+mojom::blink::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
   DCHECK(frame);
+
   blink::mojom::DisplayMode mode =
       frame->GetPage()->GetSettings().GetDisplayModeOverride();
-
-  if (mode != blink::mojom::DisplayMode::kUndefined)
+  if (mode != mojom::blink::DisplayMode::kUndefined)
     return mode;
 
-  if (!frame->View())
-    return blink::mojom::DisplayMode::kBrowser;
+  FrameWidget* widget = frame->GetWidgetForLocalRoot();
+  if (!widget)  // Is null in non-ordinary Pages.
+    return mojom::blink::DisplayMode::kBrowser;
 
-  return frame->View()->DisplayMode();
+  return widget->DisplayMode();
 }
 
 bool MediaValues::CalculateThreeDEnabled(LocalFrame* frame) {
-  DCHECK(frame);
-  DCHECK(frame->ContentLayoutObject());
-  DCHECK(frame->ContentLayoutObject()->Compositor());
-  bool three_d_enabled = false;
-  if (LayoutView* view = frame->ContentLayoutObject())
-    three_d_enabled = view->Compositor()->HasAcceleratedCompositing();
-  return three_d_enabled;
+  return frame->GetPage()->GetSettings().GetAcceleratedCompositingEnabled();
 }
 
 bool MediaValues::CalculateInImmersiveMode(LocalFrame* frame) {
@@ -230,6 +226,12 @@ NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   return frame->GetSettings()->GetNavigationControls();
+}
+
+ScreenSpanning MediaValues::CalculateScreenSpanning(LocalFrame* frame) {
+  // TODO(dlibby): Retrieve info propagated from the host as to our]
+  // screen-spanning state.
+  return ScreenSpanning::kNone;
 }
 
 bool MediaValues::ComputeLengthImpl(double value,

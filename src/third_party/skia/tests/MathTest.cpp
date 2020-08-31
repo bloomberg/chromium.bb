@@ -16,10 +16,13 @@
 #include "src/core/SkMathPriv.h"
 #include "tests/Test.h"
 
+#include <cinttypes>
+
 static void test_clz(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 32 == SkCLZ(0));
     REPORTER_ASSERT(reporter, 31 == SkCLZ(1));
     REPORTER_ASSERT(reporter, 1 == SkCLZ(1 << 30));
+    REPORTER_ASSERT(reporter, 1 == SkCLZ((1 << 30) | (1 << 24) | 1));
     REPORTER_ASSERT(reporter, 0 == SkCLZ(~0U));
 
     SkRandom rand;
@@ -30,7 +33,26 @@ static void test_clz(skiatest::Reporter* reporter) {
         mask >>= (mask & 31);
         int intri = SkCLZ(mask);
         int porta = SkCLZ_portable(mask);
-        REPORTER_ASSERT(reporter, intri == porta);
+        REPORTER_ASSERT(reporter, intri == porta, "mask:%d intri:%d porta:%d", mask, intri, porta);
+    }
+}
+
+static void test_ctz(skiatest::Reporter* reporter) {
+    REPORTER_ASSERT(reporter, 32 == SkCTZ(0));
+    REPORTER_ASSERT(reporter, 0 == SkCTZ(1));
+    REPORTER_ASSERT(reporter, 30 == SkCTZ(1 << 30));
+    REPORTER_ASSERT(reporter, 2 == SkCTZ((1 << 30) | (1 << 24) | (1 << 2)));
+    REPORTER_ASSERT(reporter, 0 == SkCTZ(~0U));
+
+    SkRandom rand;
+    for (int i = 0; i < 1000; ++i) {
+        uint32_t mask = rand.nextU();
+        // need to get some zeros for testing, but in some obscure way so the
+        // compiler won't "see" that, and work-around calling the functions.
+        mask >>= (mask & 31);
+        int intri = SkCTZ(mask);
+        int porta = SkCTZ_portable(mask);
+        REPORTER_ASSERT(reporter, intri == porta, "mask:%d intri:%d porta:%d", mask, intri, porta);
     }
 }
 
@@ -408,15 +430,6 @@ DEF_TEST(Math, reporter) {
         REPORTER_ASSERT(reporter, SkScalarIsNaN(x));
     }
 
-    for (i = 0; i < 1000; i++) {
-        int value = rand.nextS() >> 16;
-        int max = rand.nextU() >> 16;
-
-        int clamp = SkClampMax(value, max);
-        int clamp2 = value < 0 ? 0 : (value > max ? max : value);
-        REPORTER_ASSERT(reporter, clamp == clamp2);
-    }
-
     for (i = 0; i < 10000; i++) {
         SkPoint p;
 
@@ -469,7 +482,8 @@ DEF_TEST(Math, reporter) {
             check = SK_MinS32;
         }
         if (result != (int32_t)check) {
-            ERRORF(reporter, "\nFixed Divide: %8x / %8x -> %8x %8x\n", numer, denom, result, check);
+            ERRORF(reporter, "\nFixed Divide: %8x / %8x -> %8x %8" PRIx64 "\n", numer, denom,
+                   result, check);
         }
         REPORTER_ASSERT(reporter, result == (int32_t)check);
     }
@@ -481,6 +495,7 @@ DEF_TEST(Math, reporter) {
 
     test_muldivround(reporter);
     test_clz(reporter);
+    test_ctz(reporter);
 }
 
 template <typename T> struct PairRec {
@@ -651,14 +666,7 @@ DEF_TEST(FloatSaturate32, reporter) {
         int i = sk_float_saturate2int(r.fFloat);
         REPORTER_ASSERT(reporter, r.fExpectedInt == i);
 
-        // ensure that these bound even non-finite values (including NaN)
-
-        SkScalar mx = SkTMax<SkScalar>(r.fFloat, 50);
-        REPORTER_ASSERT(reporter, mx >= 50);
-
-        SkScalar mn = SkTMin<SkScalar>(r.fFloat, 50);
-        REPORTER_ASSERT(reporter, mn <= 50);
-
+        // Ensure that SkTPin bounds even non-finite values (including NaN)
         SkScalar p = SkTPin<SkScalar>(r.fFloat, 0, 100);
         REPORTER_ASSERT(reporter, p >= 0 && p <= 100);
     }

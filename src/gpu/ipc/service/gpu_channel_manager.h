@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -19,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -32,11 +32,18 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 namespace gl {
 class GLShareGroup;
@@ -168,8 +175,11 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // |sequence_num|. Repeated calls with the same value are ignored.
   void StartPeakMemoryMonitor(uint32_t sequence_num);
 
-  // Ends the tracking for |sequence_num| and returns the peak memory usage.
-  uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+  // Ends the tracking for |sequence_num| and returns the peak memory per
+  // allocation source. Along with the total |out_peak_memory|.
+  base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(
+      uint32_t sequence_num,
+      uint64_t* out_peak_memory);
 
   scoped_refptr<SharedContextState> GetSharedContextState(
       ContextResult* result);
@@ -198,21 +208,50 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
     GpuPeakMemoryMonitor();
     ~GpuPeakMemoryMonitor() override;
 
-    uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(
+        uint32_t sequence_num,
+        uint64_t* out_peak_memory);
     void StartGpuMemoryTracking(uint32_t sequence_num);
     void StopGpuMemoryTracking(uint32_t sequence_num);
 
+    base::WeakPtr<MemoryTracker::Observer> GetWeakPtr();
+    void InvalidateWeakPtrs();
+
    private:
+    struct SequenceTracker {
+     public:
+      SequenceTracker(uint64_t current_memory,
+                      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+                          current_memory_per_source);
+      SequenceTracker(const SequenceTracker&);
+      ~SequenceTracker();
+
+      uint64_t initial_memory_ = 0u;
+      uint64_t total_memory_ = 0u;
+      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+          initial_memory_per_source_;
+      base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+          peak_memory_per_source_;
+    };
+    std::unique_ptr<base::trace_event::TracedValue> StartTrackingTracedValue();
+    std::unique_ptr<base::trace_event::TracedValue> StopTrackingTracedValue(
+        SequenceTracker& sequence);
     // MemoryTracker::Observer:
-    void OnMemoryAllocatedChange(CommandBufferId id,
-                                 uint64_t old_size,
-                                 uint64_t new_size) override;
+    void OnMemoryAllocatedChange(
+        CommandBufferId id,
+        uint64_t old_size,
+        uint64_t new_size,
+        GpuPeakMemoryAllocationSource source =
+            GpuPeakMemoryAllocationSource::UNKNOWN) override;
 
     // Tracks all currently requested sequences mapped to the peak memory seen.
-    base::flat_map<uint32_t, uint64_t> sequence_trackers_;
+    base::flat_map<uint32_t, SequenceTracker> sequence_trackers_;
 
     // Tracks the total current memory across all MemoryTrackers.
     uint64_t current_memory_ = 0u;
+
+    base::flat_map<GpuPeakMemoryAllocationSource, uint64_t>
+        current_memory_per_source_;
 
     base::WeakPtrFactory<GpuPeakMemoryMonitor> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(GpuPeakMemoryMonitor);
@@ -231,7 +270,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
   // process.
-  std::unordered_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
+  base::flat_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -290,18 +329,20 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   // With --enable-vulkan, |vulkan_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization if
-  // --gr-context-type is also set to Vulkan.
+  // features::Vulkan is used.
   viz::VulkanContextProvider* vulkan_context_provider_ = nullptr;
 
-  // If features::SkiaOnMetad, |metal_context_provider_| will be set from
+  // If features::Metal, |metal_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::MetalContextProvider* metal_context_provider_ = nullptr;
 
-  // With --gr-context-type=dawn, |dawn_context_provider_| will be set from
+  // With features::SkiaDawn, |dawn_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::DawnContextProvider* dawn_context_provider_ = nullptr;
 
   GpuPeakMemoryMonitor peak_memory_monitor_;
+
+  THREAD_CHECKER(thread_checker_);
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

@@ -36,7 +36,7 @@ void SearchBouncer::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   // Note: Unretained is safe here because this class is a leaky LazyInstance.
   // For the same reason, UnregisterMojoInterfaces isn't required.
-  associated_interfaces->AddInterface(base::Bind(
+  associated_interfaces->AddInterface(base::BindRepeating(
       &SearchBouncer::BindSearchBouncerReceiver, base::Unretained(this)));
 }
 
@@ -51,6 +51,6 @@ void SearchBouncer::SetNewTabPageURL(const GURL& new_tab_page_url) {
 }
 
 void SearchBouncer::BindSearchBouncerReceiver(
-    mojo::PendingAssociatedReceiver<chrome::mojom::SearchBouncer> receiver) {
+    mojo::PendingAssociatedReceiver<search::mojom::SearchBouncer> receiver) {
   search_bouncer_receiver_.Bind(std::move(receiver));
 }

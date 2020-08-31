@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 import time
 
 from chromite.lib import constants
@@ -17,6 +18,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Version file location inside chroot.
@@ -225,7 +229,7 @@ def _DeviceFromFile(chroot_image):
   chroot_dev = None
   cmd = ['losetup', '-j', chroot_image]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      cmd, capture_output=True, check=False, print_cmd=False,
       encoding='utf-8')
   if result.returncode == 0:
     match = re.match(r'/dev/loop\d+', result.output)
@@ -336,7 +340,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     return False
   cmd = ['vgs', chroot_vg]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      cmd, capture_output=True, check=False, print_cmd=False,
       encoding='utf-8')
   if result.returncode == 0:
     logging.debug('Activating existing VG %s', chroot_vg)
@@ -363,7 +367,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
   chroot_dev_path = '/dev/%s' % chroot_lv
   cmd = ['lvs', chroot_lv]
   result = cros_build_lib.sudo_run(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      cmd, capture_output=True, check=False, print_cmd=False,
       encoding='utf-8')
   if result.returncode != 0:
     cmd = ['lvcreate', '-q', '-L499G', '-T',
@@ -460,9 +464,11 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     # TODO(lamontjones): Dump some information to help find the process still
     # inside the chroot, causing crbug.com/923432.  In the end, this is likely
     # to become fuser -k.
-    fuser = cros_build_lib.sudo_run(['fuser', chroot], error_code_ok=True)
-    lsof = cros_build_lib.sudo_run(['lsof', chroot], error_code_ok=True)
-    ps = cros_build_lib.run(['ps', 'auxf'], error_code_ok=True)
+    fuser = cros_build_lib.sudo_run(['fuser', chroot], check=False,
+                                    capture_output=True)
+    lsof = cros_build_lib.sudo_run(['lsof', chroot], check=False,
+                                   capture_output=True)
+    ps = cros_build_lib.run(['ps', 'auxf'], check=False, capture_output=True)
     raise Error(
         'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n' %
         (e.result.error, fuser.output, lsof.output, ps.output))
@@ -473,7 +479,7 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     cmd = ['vgs', '-q', '--noheadings', '-o', 'pv_name', '--unbuffered',
            vg_name]
     result = cros_build_lib.sudo_run(
-        cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+        cmd, capture_output=True, check=False, print_cmd=False,
         encoding='utf-8')
     if result.returncode == 0:
       chroot_dev = result.output.strip()
@@ -489,7 +495,7 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     if vg_name:
       cmd = ['vgs', vg_name]
       result = cros_build_lib.sudo_run(
-          cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+          cmd, capture_output=True, check=False, print_cmd=False,
           encoding='utf-8')
       if result.returncode != 0:
         vg_name = None
@@ -527,7 +533,7 @@ def _RescanDeviceLvmMetadata(chroot_dev):
   # exit code than to check if we should actually run the command.
   cmd = ['pvscan', '--cache', chroot_dev]
   cros_build_lib.sudo_run(
-      cmd, capture_output=True, print_cmd=False, error_code_ok=True)
+      cmd, capture_output=True, print_cmd=False, check=False)
 
 
 def RunChrootVersionHooks(version_file=None, hooks_dir=None):
@@ -638,7 +644,7 @@ class ChrootUpdater(object):
 
     for hook, version in self.GetChrootUpdates():
       result = cros_build_lib.run(['bash', hook],
-                                  enter_chroot=True, error_code_ok=True)
+                                  enter_chroot=True, check=False)
       if not result.returncode:
         self.SetVersion(version)
       else:

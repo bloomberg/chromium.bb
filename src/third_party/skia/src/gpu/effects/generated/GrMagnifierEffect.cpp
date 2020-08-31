@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrMagnifierEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -36,19 +36,19 @@ public:
         auto yInvInset = _outer.yInvInset;
         (void)yInvInset;
         boundsUniformVar = args.fUniformHandler->addUniform(
-                kFragment_GrShaderFlag, kFloat4_GrSLType, "boundsUniform");
+                &_outer, kFragment_GrShaderFlag, kFloat4_GrSLType, "boundsUniform");
         xInvZoomVar = args.fUniformHandler->addUniform(
-                kFragment_GrShaderFlag, kFloat_GrSLType, "xInvZoom");
+                &_outer, kFragment_GrShaderFlag, kFloat_GrSLType, "xInvZoom");
         yInvZoomVar = args.fUniformHandler->addUniform(
-                kFragment_GrShaderFlag, kFloat_GrSLType, "yInvZoom");
+                &_outer, kFragment_GrShaderFlag, kFloat_GrSLType, "yInvZoom");
         xInvInsetVar = args.fUniformHandler->addUniform(
-                kFragment_GrShaderFlag, kFloat_GrSLType, "xInvInset");
+                &_outer, kFragment_GrShaderFlag, kFloat_GrSLType, "xInvInset");
         yInvInsetVar = args.fUniformHandler->addUniform(
-                kFragment_GrShaderFlag, kFloat_GrSLType, "yInvInset");
-        offsetVar =
-                args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf2_GrSLType, "offset");
-        SkString sk_TransformedCoords2D_0 =
-                fragBuilder->ensureCoords2D(args.fTransformedCoords[0].fVaryingPoint);
+                &_outer, kFragment_GrShaderFlag, kFloat_GrSLType, "yInvInset");
+        offsetVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf2_GrSLType, "offset");
+        SkString sk_TransformedCoords2D_0 = fragBuilder->ensureCoords2D(
+                args.fTransformedCoords[0].fVaryingPoint, _outer.sampleMatrix());
         fragBuilder->codeAppendf(
                 "float2 coord = %s;\nfloat2 zoom_coord = float2(%s) + coord * float2(%s, "
                 "%s);\nfloat2 delta = (coord - %s.xy) * %s.zw;\ndelta = min(delta, "
@@ -85,8 +85,8 @@ private:
             pdman.set1f(xInvInsetVar, (_outer.xInvInset));
             pdman.set1f(yInvInsetVar, (_outer.yInvInset));
         }
-        GrSurfaceProxy& srcProxy = *_outer.textureSampler(0).proxy();
-        GrTexture& src = *srcProxy.peekTexture();
+        const GrSurfaceProxyView& srcView = _outer.textureSampler(0).view();
+        GrTexture& src = *srcView.proxy()->peekTexture();
         (void)src;
         auto bounds = _outer.bounds;
         (void)bounds;
@@ -110,7 +110,7 @@ private:
 
         {
             SkScalar y = srcRect.y() * invH;
-            if (srcProxy.origin() != kTopLeft_GrSurfaceOrigin) {
+            if (srcView.origin() != kTopLeft_GrSurfaceOrigin) {
                 y = 1.0f - (srcRect.height() / bounds.height()) - y;
             }
 
@@ -120,7 +120,7 @@ private:
         {
             SkScalar y = bounds.y() * invH;
             SkScalar hSign = 1.f;
-            if (srcProxy.origin() != kTopLeft_GrSurfaceOrigin) {
+            if (srcView.origin() != kTopLeft_GrSurfaceOrigin) {
                 y = 1.0f - bounds.y() * invH;
                 hSign = -1.f;
             }
@@ -178,7 +178,7 @@ const GrFragmentProcessor::TextureSampler& GrMagnifierEffect::onTextureSampler(i
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrMagnifierEffect);
 #if GR_TEST_UTILS
 std::unique_ptr<GrFragmentProcessor> GrMagnifierEffect::TestCreate(GrProcessorTestData* d) {
-    sk_sp<GrTextureProxy> proxy = d->textureProxy(0);
+    auto[view, ct, at] = d->randomView();
     const int kMaxWidth = 200;
     const int kMaxHeight = 200;
     const SkScalar kMaxInset = 20.0f;
@@ -189,7 +189,7 @@ std::unique_ptr<GrFragmentProcessor> GrMagnifierEffect::TestCreate(GrProcessorTe
     SkIRect bounds = SkIRect::MakeWH(SkIntToScalar(kMaxWidth), SkIntToScalar(kMaxHeight));
     SkRect srcRect = SkRect::MakeWH(SkIntToScalar(width), SkIntToScalar(height));
 
-    auto effect = GrMagnifierEffect::Make(std::move(proxy),
+    auto effect = GrMagnifierEffect::Make(std::move(view),
                                           bounds,
                                           srcRect,
                                           srcRect.width() / bounds.width(),

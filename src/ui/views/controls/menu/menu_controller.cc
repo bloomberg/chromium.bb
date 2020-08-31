@@ -49,6 +49,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/display/win/screen_win.h"
@@ -56,10 +58,11 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 using base::TimeDelta;
@@ -100,6 +103,18 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
          accelerator.IsCmdDown();
 }
 #endif
+
+bool ShouldIgnoreScreenBoundsForMenus() {
+#if defined(USE_OZONE)
+  // Wayland requires placing menus is screen coordinates. See comment in
+  // ozone_platform_wayland.cc.
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .ignore_screen_bounds_for_menus;
+#else
+  return false;
+#endif
+}
 
 // The amount of time the mouse should be down before a mouse release is
 // considered intentional. This is to prevent spurious mouse releases from
@@ -230,7 +245,6 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   if (!native_view)
     return;
 
-#if defined(OS_WIN)
   gfx::Point screen_loc_pixels =
       display::win::ScreenWin::DIPToScreenPoint(screen_loc);
   HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
@@ -300,9 +314,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     PostMessage(target_window, event_type, target, window_coords);
     return;
   }
-#endif  // defined(OS_WIN)
 
-#if defined(USE_AURA)
   if (!window)
     return;
 
@@ -322,7 +334,6 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   located_event->set_root_location(root_loc);
 
   root->GetHost()->dispatcher()->RepostEvent(located_event.get());
-#endif  // defined(USE_AURA)
 }
 #endif  // defined(OS_WIN)
 
@@ -781,19 +792,15 @@ void MenuController::OnMouseReleased(SubmenuView* source,
         return;
       }
     }
+    const int command = part.menu->GetCommand();
     if (part.menu->GetDelegate()->ShouldExecuteCommandWithoutClosingMenu(
-            part.menu->GetCommand(), event)) {
-      part.menu->GetDelegate()->ExecuteCommand(part.menu->GetCommand(),
-                                               event.flags());
+            command, event)) {
+      part.menu->GetDelegate()->ExecuteCommand(command, event.flags());
       return;
     }
     if (!part.menu->NonIconChildViewsCount() &&
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
-      base::TimeDelta shown_time = base::TimeTicks::Now() - menu_start_time_;
-      if (!state_.context_menu || !View::ShouldShowContextMenuOnMousePress() ||
-          shown_time > menu_selection_hold_time) {
-        Accept(part.menu, event.flags());
-      }
+      Accept(part.menu, event.flags());
       return;
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
@@ -1327,8 +1334,9 @@ void MenuController::SetSelection(MenuItemView* menu_item,
       current_path.empty() ? nullptr : current_path.front()->GetDelegate();
   for (size_t i = paths_differ_at; i < current_size; ++i) {
     if (current_delegate &&
-        (current_path[i]->GetType() == MenuItemView::SUBMENU ||
-         current_path[i]->GetType() == MenuItemView::ACTIONABLE_SUBMENU)) {
+        (current_path[i]->GetType() == MenuItemView::Type::kSubMenu ||
+         current_path[i]->GetType() ==
+             MenuItemView::Type::kActionableSubMenu)) {
       current_delegate->WillHideMenu(current_path[i]);
     }
     current_path[i]->SetSelected(false);
@@ -1338,12 +1346,13 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   for (size_t i = paths_differ_at; i < new_size; ++i) {
     new_path[i]->ScrollRectToVisible(new_path[i]->GetLocalBounds());
     new_path[i]->SetSelected(true);
-    if (new_path[i]->GetType() == MenuItemView::ACTIONABLE_SUBMENU) {
+    if (new_path[i]->GetType() == MenuItemView::Type::kActionableSubMenu) {
       new_path[i]->SetSelectionOfActionableSubmenu(
           (selection_types & SELECTION_OPEN_SUBMENU) != 0);
     }
   }
-  if (menu_item && menu_item->GetType() == MenuItemView::ACTIONABLE_SUBMENU) {
+  if (menu_item &&
+      menu_item->GetType() == MenuItemView::Type::kActionableSubMenu) {
     menu_item->SetSelectionOfActionableSubmenu(
         (selection_types & SELECTION_OPEN_SUBMENU) != 0);
   }
@@ -1365,10 +1374,11 @@ void MenuController::SetSelection(MenuItemView* menu_item,
     StartShowTimer();
 
   // Notify an accessibility focus event on all menu items except for the root.
-  if (menu_item && (MenuDepth(menu_item) != 1 ||
-                    menu_item->GetType() != MenuItemView::SUBMENU ||
-                    (menu_item->GetType() == MenuItemView::ACTIONABLE_SUBMENU &&
-                     (selection_types & SELECTION_OPEN_SUBMENU) == 0))) {
+  if (menu_item &&
+      (MenuDepth(menu_item) != 1 ||
+       menu_item->GetType() != MenuItemView::Type::kSubMenu ||
+       (menu_item->GetType() == MenuItemView::Type::kActionableSubMenu &&
+        (selection_types & SELECTION_OPEN_SUBMENU) == 0))) {
     menu_item->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
     // Notify an accessibility selected children changed event on the parent
     // submenu.
@@ -1894,7 +1904,7 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
     part->submenu = menu;
     part->should_submenu_show =
         part->submenu && part->menu &&
-        (part->menu->GetType() == MenuItemView::SUBMENU ||
+        (part->menu->GetType() == MenuItemView::Type::kSubMenu ||
          IsLocationOverSubmenuAreaOfActionableSubmenu(part->menu, screen_loc));
     if (!part->menu)
       part->parent = menu->GetMenuItem();
@@ -1942,7 +1952,7 @@ bool MenuController::DoesSubmenuContainLocation(SubmenuView* submenu,
 bool MenuController::IsLocationOverSubmenuAreaOfActionableSubmenu(
     MenuItemView* item,
     const gfx::Point& screen_loc) const {
-  if (!item || item->GetType() != MenuItemView::ACTIONABLE_SUBMENU)
+  if (!item || item->GetType() != MenuItemView::Type::kActionableSubMenu)
     return false;
 
   gfx::Point view_loc = screen_loc;
@@ -2090,12 +2100,9 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
         menu_open_mouse_loc_ = mouse_pos;
     }
 
-    // Menus are the only place using kGroupingPropertyKey, so any value (other
-    // than 0) is fine.
-    constexpr int kGroupingId = 1001;
     item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
         TooltipManager::kGroupingPropertyKey,
-        reinterpret_cast<void*>(kGroupingId));
+        reinterpret_cast<void*>(MenuConfig::kMenuControllerGroupingId));
 
     // Set the selection indices for this menu level based on traversal order.
     SetSelectionIndices(item);
@@ -2231,7 +2238,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
 
     // Everything after this check requires monitor bounds to be non-empty.
-    if (monitor_bounds.IsEmpty())
+    if (ShouldIgnoreScreenBoundsForMenus() || monitor_bounds.IsEmpty())
       return menu_bounds;
 
     // Menu does not actually fit where it was placed, move it to the other side
@@ -2263,7 +2270,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
           anchor_bounds.x() + (anchor_bounds.width() - menu_bounds.width()) / 2;
       menu_bounds.set_x(horizontally_centered);
       menu_bounds.set_y(above_anchor - kTouchYPadding);
-      if (menu_bounds.y() < monitor_bounds.y())
+      if (!ShouldIgnoreScreenBoundsForMenus() &&
+          menu_bounds.y() < monitor_bounds.y())
         menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
     }
 
@@ -2273,7 +2281,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     }
 
     // Everything beyond this point requires monitor bounds to be non-empty.
-    if (monitor_bounds.IsEmpty())
+    if (ShouldIgnoreScreenBoundsForMenus() || monitor_bounds.IsEmpty())
       return menu_bounds;
 
     // If the menu position is below or above the anchor bounds, force it to fit
@@ -2651,7 +2659,7 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
   if (to_select) {
     // Selection is going from the ACTIONABLE to the SUBMENU region of the
     // ACTIONABLE_SUBMENU, so highlight the SUBMENU area.
-    if (item->type_ == MenuItemView::ACTIONABLE_SUBMENU)
+    if (item->type_ == MenuItemView::Type::kActionableSubMenu)
       item->SetSelectionOfActionableSubmenu(true);
     SetSelection(to_select, SELECTION_UPDATE_IMMEDIATELY);
     return;

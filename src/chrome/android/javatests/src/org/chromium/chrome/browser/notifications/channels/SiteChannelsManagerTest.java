@@ -28,12 +28,13 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
-import org.chromium.chrome.browser.settings.website.PermissionInfo;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -70,10 +71,10 @@ public class SiteChannelsManagerTest {
     private static void clearExistingSiteChannels(
             NotificationManagerProxy notificationManagerProxy) {
         for (NotificationChannel channel : notificationManagerProxy.getNotificationChannels()) {
-            if (channel.getId().startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)
+            if (SiteChannelsManager.isValidSiteChannelId(channel.getId())
                     || (channel.getGroup() != null
-                               && channel.getGroup().equals(
-                                          ChannelDefinitions.ChannelGroupId.SITES))) {
+                            && channel.getGroup().equals(
+                                    ChromeChannelDefinitions.ChannelGroupId.SITES))) {
                 notificationManagerProxy.deleteNotificationChannel(channel.getId());
             }
         }
@@ -195,7 +196,10 @@ public class SiteChannelsManagerTest {
         PermissionInfo info = new PermissionInfo(
                 PermissionInfo.Type.NOTIFICATION, "https://example-incognito.com", null, true);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> info.setContentSetting(ContentSettingValues.BLOCK));
+                ()
+                        -> info.setContentSetting(
+                                Profile.getLastUsedRegularProfile().getOffTheRecordProfile(),
+                                ContentSettingValues.BLOCK));
         assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }
 
@@ -238,7 +242,7 @@ public class SiteChannelsManagerTest {
     public void testGetChannelIdForOrigin_unknownOrigin() {
         String channelId = mSiteChannelsManager.getChannelIdForOrigin("https://unknown.com");
 
-        assertThat(channelId, is(ChannelDefinitions.ChannelId.SITES));
+        assertThat(channelId, is(ChromeChannelDefinitions.ChannelId.SITES));
 
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            "Notifications.Android.SitesChannel"),

@@ -22,13 +22,13 @@ import sys
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
-import devil_chromium  # pylint: disable=import-error
-from devil.android import apk_helper # pylint: disable=import-error
-from devil.android import device_errors # pylint: disable=import-error
-from devil.android.ndk import abis  # pylint: disable=import-error
-from devil.android.tools import script_common  # pylint: disable=import-error
-from devil.utils import logging_common  # pylint: disable=import-error
-from py_utils import tempfile_ext  # pylint: disable=import-error
+import devil_chromium
+from devil.android import apk_helper
+from devil.android import device_errors
+from devil.android.ndk import abis
+from devil.android.tools import script_common
+from devil.utils import logging_common
+from py_utils import tempfile_ext
 
 _SUPPORTED_ARCH_DICT = {
     abis.ARM: 'arm',
@@ -98,6 +98,9 @@ class StackAddressInterpreter(object):
       for i in range(max(10, len(stack_output))):
         logging.debug(stack_output[i])
 
+    logging.info('We got the results from the stack script. Translating the '
+                 'addresses...')
+
     address_function_pairs = []
     pattern = re.compile(r'  0*(?P<address>[1-9a-f][0-9a-f]+)  (?P<function>.*)'
                          r'  (?P<file_name_line>.*)')
@@ -109,6 +112,8 @@ class StackAddressInterpreter(object):
           function_info += " | " + m.group('file_name_line')
 
         address_function_pairs.append((m.group('address'), function_info))
+
+    logging.info('The translation is done.')
     return address_function_pairs
 
 
@@ -132,9 +137,8 @@ class SimplePerfRunner(object):
                  self.device.product_cpu_abi)
     return arch
 
-  def GetWebViewLibraryNameAndPath(self):
+  def GetWebViewLibraryNameAndPath(self, package_name):
     """Get WebView library name and path on the device."""
-    package_name = self._GetCurrentWebViewProvider()
     apk_path = self._GetWebViewApkPath(package_name)
     logging.debug('WebView APK path:' + apk_path)
     # TODO(changwan): check if we need support for bundle.
@@ -153,16 +157,19 @@ class SimplePerfRunner(object):
 
   def Run(self):
     """Run the simpleperf and do the post processing."""
+    package_name = self.GetCurrentWebViewProvider()
+    SimplePerfRunner.RunPackageCompile(package_name)
     perf_data_path = os.path.join(self.tmp_dir, 'perf.data')
-    SimplePerfRunner.RunSimplePerf(perf_data_path, self.args.record_options)
+    SimplePerfRunner.RunSimplePerf(perf_data_path, self.args)
     lines = SimplePerfRunner.GetOriginalReportHtml(
         perf_data_path,
         os.path.join(self.tmp_dir, 'unprocessed_report.html'))
-    lib_name, lib_path = self.GetWebViewLibraryNameAndPath()
+    lib_name, lib_path = self.GetWebViewLibraryNameAndPath(package_name)
     addresses = SimplePerfRunner.CollectAddresses(lines, lib_name)
     logging.info("Extracted %d addresses", len(addresses))
     address_function_pairs = self.address_interpreter.Interpret(
         addresses, lib_path)
+
     lines = SimplePerfRunner.ReplaceAddressesWithFunctionInfos(
         lines, address_function_pairs, lib_name)
 
@@ -174,18 +181,36 @@ class SimplePerfRunner(object):
                  self.args.report_path)
 
   @staticmethod
-  def RunSimplePerf(perf_data_path, record_options):
+  def RunSimplePerf(perf_data_path, args):
     """Runs the simple perf commandline."""
     cmd = ['third_party/android_ndk/simpleperf/app_profiler.py',
-           '--app', 'org.chromium.webview_shell',
-           '--activity', '.TelemetryActivity',
            '--perf_data_path', perf_data_path,
            '--skip_collect_binaries']
-    if record_options:
-      cmd.extend(['--record_options', record_options])
+    if args.system_wide:
+      cmd.append('--system_wide')
+    else:
+      cmd.extend([
+          '--app', 'org.chromium.webview_shell', '--activity',
+          '.TelemetryActivity'
+      ])
+
+    if args.record_options:
+      cmd.extend(['--record_options', args.record_options])
+
+    logging.info("Profile has started.")
+    subprocess.check_call(cmd)
+    logging.info("Profile has finished, processing the results...")
+
+  @staticmethod
+  def RunPackageCompile(package_name):
+    """Compile the package (dex optimization)."""
+    cmd = [
+        'adb', 'shell', 'cmd', 'package', 'compile', '-m', 'speed', '-f',
+        package_name
+    ]
     subprocess.check_call(cmd)
 
-  def _GetCurrentWebViewProvider(self):
+  def GetCurrentWebViewProvider(self):
     return self.device.GetWebViewUpdateServiceDump()['CurrentWebViewPackage']
 
   def _GetWebViewApkPath(self, package_name):
@@ -235,14 +260,31 @@ class SimplePerfRunner(object):
       A list of strings with addresses replaced by function names.
     """
 
-    address_count = 0
-    for address, function in address_function_pairs:
-      pattern = re.compile(lib_name + r'\[\+' + address + r'\]')
-      for i, line in enumerate(lines):
-        address_count += len(pattern.findall(line))
-        lines[i] = pattern.sub(
-            lib_name + '[' + cgi.escape(function) + ']', line)
-    logging.info('There were %d matching addresses', address_count)
+    logging.info('Replacing the HTML content with new function names...')
+
+    # Note: Using a lenient pattern matching and a hashmap (dict) is much faster
+    # than using a double loop (by the order of 1,000).
+    # '+address' will be replaced by function name.
+    address_function_dict = {
+        '+' + k: cgi.escape(v)
+        for k, v in address_function_pairs
+    }
+    # Look behind the lib_name and '[' which will not be substituted. Note that
+    # '+' is used in the pattern but will be removed.
+    pattern = re.compile(r'(?<=' + lib_name + r'\[)\+([a-f0-9]+)(?=\])')
+
+    def replace_fn(match):
+      address = match.group(0)
+      if address in address_function_dict:
+        return address_function_dict[address]
+      else:
+        return address
+
+    # Line-by-line assignment to avoid creating a temp list.
+    for i, line in enumerate(lines):
+      lines[i] = pattern.sub(replace_fn, line)
+
+    logging.info('Replacing is done.')
     return lines
 
 
@@ -266,6 +308,11 @@ def main(raw_args):
                             ' to the default record options.'))
   parser.add_argument('--show-file-line', action='store_true',
                       help='Show file name and lines in the result.')
+  parser.add_argument(
+      '--system-wide',
+      action='store_true',
+      help=('Whether to profile system wide (without launching'
+            'an app).'))
 
   script_common.AddDeviceArguments(parser)
   logging_common.AddLoggingArguments(parser)

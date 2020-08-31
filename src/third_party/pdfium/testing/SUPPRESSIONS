@@ -325,20 +325,26 @@ resolve_nodes_1.pdf * * *
 #
 bug_492.in * nov8 *
 
-# TODO(pdfium:304): Remove after associated bug is fixed
-bug_304.pdf * * *
-
 # TODO(pdfium:1331): Remove after associated bug is fixed
 bug_1331.in * * *
+
+# TODO(pdfium:1461): Remove after associated bug is fixed
+bug_1402.in win * *
+
+# TODO(pdfium:1457): Remove after associated bug is fixed
+bug_1457.in * * *
+
+# TODO(pdfium:1519): Remove after associated bug is fixed
+bug_1519.in * * *
 
 # TODO(chromium:451366): Remove after associated bug is fixed
 bug_451366.in * * *
 
-# TODO(chromium:1012369): Remove after associated bug is fixed
-bug_1012369.in * * *
+# TODO(pdfium:1466): Remove after associated bug is fixed
+bug_1449.in linux * *
 
-# TODO(chromium:1021762): Remove after associated bug is fixed
-bug_1021762.in * * *
+# TODO(chromium:1028991): Remove after associated bug is fixed
+reset_button.in * * *
 
 # xfa_specific
 

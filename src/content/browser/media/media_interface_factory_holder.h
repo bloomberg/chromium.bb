@@ -10,23 +10,26 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace content {
 
 // Helper class to get mojo::PendingRemote<media::mojom::InterfaceFactory>.
-// Get() lazily connects to the media service specified by |service_name_|.
+// Get() lazily connects to the global Media Service instance.
 class MediaInterfaceFactoryHolder {
  public:
-  using CreateInterfaceProviderCB = base::RepeatingCallback<
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>()>;
+  using MediaServiceGetter =
+      base::RepeatingCallback<media::mojom::MediaService&()>;
+  using FrameServicesGetter = base::RepeatingCallback<
+      mojo::PendingRemote<media::mojom::FrameInterfaceFactory>()>;
 
-  MediaInterfaceFactoryHolder(
-      const std::string& service_name,
-      CreateInterfaceProviderCB create_interface_provider_cb);
+  // |media_service_getter| will be called from the UI thread.
+  MediaInterfaceFactoryHolder(MediaServiceGetter media_service_getter,
+                              FrameServicesGetter frame_services_getter);
   ~MediaInterfaceFactoryHolder();
 
   // Gets the MediaService |interface_factory_remote_|. The returned pointer is
@@ -39,8 +42,8 @@ class MediaInterfaceFactoryHolder {
   // Callback for connection error from |interface_factory_remote_|.
   void OnMediaServiceConnectionError();
 
-  const std::string service_name_;
-  CreateInterfaceProviderCB create_interface_provider_cb_;
+  MediaServiceGetter media_service_getter_;
+  FrameServicesGetter frame_services_getter_;
   mojo::Remote<media::mojom::InterfaceFactory> interface_factory_remote_;
 
   THREAD_CHECKER(thread_checker_);

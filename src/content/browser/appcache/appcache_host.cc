@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +20,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -57,18 +58,22 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
   return info;
 }
 
-bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
-  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
-  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+bool CanAccessDocumentURL(ChildProcessSecurityPolicyImpl::Handle* handle,
+                          const GURL& document_url) {
+  DCHECK(handle->is_valid());
   return document_url.is_empty() ||       // window.open("javascript:''") case.
          document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
          document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
          document_url == GURL("data:,") ||  // CSP blocked_urls.
          (document_url.SchemeIsBlob() &&    // <iframe src="blob:null/xx"> case.
           url::Origin::Create(document_url).opaque()) ||
-         security_policy->CanAccessDataForOrigin(process_id,
-                                                 document_url) ||
-         !security_policy->HasSecurityState(process_id);  // process shutdown.
+         handle->CanAccessDataForOrigin(document_url);
+}
+
+base::debug::CrashKeyString* GetDocumentUrlCrashKey() {
+  static auto* appcache_document_url_key = base::debug::AllocateCrashKeyString(
+      "appcache_document_url", base::debug::CrashKeySize::Size256);
+  return appcache_document_url_key;
 }
 
 }  // namespace
@@ -94,6 +99,13 @@ AppCacheHost::AppCacheHost(
       main_resource_blocked_(false),
       associated_cache_info_pending_(false) {
   service_->AddObserver(this);
+  if (process_id_ != ChildProcessHost::kInvalidUniqueID) {
+    security_policy_handle_ =
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            process_id_);
+  }
+  is_origin_trial_required_ =
+      service_->appcache_policy()->IsOriginTrialRequiredForAppCache();
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -148,16 +160,16 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     return;
   }
 
-  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
-  if (!CanAccessDocumentURL(process_id_, document_url)) {
+  DCHECK(security_policy_handle_.is_valid());
+  if (!CanAccessDocumentURL(security_policy_handle(), document_url)) {
+    base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
+                                   document_url.spec());
     mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
-  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!manifest_url.is_empty() &&
-      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url) &&
-      security_policy->HasSecurityState(process_id_)) {
+      !security_policy_handle()->CanAccessDataForOrigin(manifest_url)) {
     mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
     return;
   }
@@ -204,7 +216,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     // continue whether it was set or not.
 
     AppCachePolicy* policy = service()->appcache_policy();
-    if (policy && !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
+    if (policy && !policy->CanCreateAppCache(
+                      manifest_url, site_for_cookies_.RepresentativeUrl(),
+                      top_frame_origin_)) {
       FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
       frontend()->EventRaised(
           blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
@@ -254,7 +268,9 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
     return;
   }
 
-  if (!CanAccessDocumentURL(process_id_, document_url)) {
+  if (!CanAccessDocumentURL(security_policy_handle(), document_url)) {
+    base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
+                                   document_url.spec());
     mojo::ReportBadMessage(
         "ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
@@ -384,13 +400,14 @@ void AppCacheHost::GetResourceList(GetResourceListCallback callback) {
 
 std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     std::unique_ptr<AppCacheRequest> request,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     bool should_reset_appcache) {
   if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
-    first_party_url_ = request->GetSiteForCookies();
-    first_party_url_initialized_ = true;
+    site_for_cookies_ = request->GetSiteForCookies();
+    site_for_cookies_initialized_ = true;
+    top_frame_origin_ = request->GetTopFrameOrigin();
     return base::WrapUnique(new AppCacheRequestHandler(
         this, resource_type, should_reset_appcache, std::move(request)));
   }
@@ -611,8 +628,11 @@ void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
 
 void AppCacheHost::SetProcessId(int process_id) {
   DCHECK_EQ(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK(!security_policy_handle_.is_valid());
   DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
   process_id_ = process_id;
+  security_policy_handle_ =
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id_);
 }
 
 base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {
@@ -626,13 +646,24 @@ void AppCacheHost::MaybePassSubresourceFactory() {
     return;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
-  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
-                                                        &factory_remote);
+  auto factory_receiver = factory_remote.InitWithNewPipeAndPassReceiver();
+  auto* rfh = RenderFrameHost::FromID(process_id_, render_frame_id_);
+  if (rfh) {
+    GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        rfh->GetProcess()->GetBrowserContext(), rfh, process_id_,
+        ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+        origin_for_url_loader_factory_, base::nullopt /* navigation_id */,
+        &factory_receiver, nullptr /* header_client */,
+        nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
+        nullptr /* factory_override */);
+  }
 
   // We may not have bound |factory_remote| if the storage partition has shut
   // down.
-  if (factory_remote)
+  if (AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
+          GetWeakPtr(), std::move(factory_receiver))) {
     frontend()->SetSubresourceFactory(std::move(factory_remote));
+  }
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(
@@ -683,6 +714,10 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
 
 void AppCacheHost::OnContentBlocked(const GURL& manifest_url) {
   OnAppCacheAccessed(manifest_url, /*blocked=*/true);
+}
+
+bool AppCacheHost::IsOriginTrialRequiredForAppCache() {
+  return is_origin_trial_required_;
 }
 
 void AppCacheHost::OnAppCacheAccessed(const GURL& manifest_url, bool blocked) {

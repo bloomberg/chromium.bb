@@ -1,3 +1,9 @@
+2019-12-09 v1.8.2 "Pekin Duck"
+  This release collects incremental improvements to many aspects of the library.
+
+  - Upgrading:
+    ARCH_* defines have been removed in favor of VPX_ARCH_*.
+
 2019-07-15 v1.8.1 "Orpington Duck"
   This release collects incremental improvements to many aspects of the library.
 
@@ -356,7 +362,7 @@
       of particular interest to real time streaming applications.
 
       Temporal scalability allows the encoder to produce a stream that can
-      be decimated to different frame rates, with independent rate targetting
+      be decimated to different frame rates, with independent rate targeting
       for each substream.
 
       Multiframe quality enhancement postprocessing can make visual quality

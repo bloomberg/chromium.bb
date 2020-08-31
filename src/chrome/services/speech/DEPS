@@ -1,0 +1,7 @@
+include_rules = [
+  "+chrome/services/soda/internal",
+  "+components/soda/constants.h",
+  "+media",
+  "+third_party/grpc",
+  "+third_party/protobuf",
+]

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -19,6 +20,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -336,7 +338,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
 #endif  // defined(OS_ANDROID)
 
 // Flaky on Mac. crbug.com/809809
-#if defined(OS_MACOSX)
+// Failing on Android ASAN. crbug.com/1041392
+#if defined(OS_MACOSX) || (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump

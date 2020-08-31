@@ -10,8 +10,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/UpdatePasswordInfoBar_jni.h"
-#include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/android/update_password_infobar_delegate_android.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::JavaParamRef;
 
@@ -40,22 +42,15 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, update_password_delegate->GetDetailsMessageText());
 
   std::vector<base::string16> usernames;
-  int selected_username = 0;
-  if (update_password_delegate->ShowMultipleAccounts()) {
-    for (const auto& form : update_password_delegate->GetCurrentForms()) {
-      usernames.push_back(form->username_value);
-      if (usernames.back() == update_password_delegate->get_default_username())
-        selected_username = usernames.size() - 1;
-    }
-  } else {
-    usernames.push_back(update_password_delegate->get_default_username());
-  }
+  unsigned int selected_username =
+      update_password_delegate->GetDisplayUsernames(&usernames);
+  ScopedJavaLocalRef<jobjectArray> display_usernames =
+      base::android::ToJavaArrayOfStrings(env, usernames);
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_UpdatePasswordInfoBar_show(
-      env, GetEnumeratedIconId(),
-      base::android::ToJavaArrayOfStrings(env, usernames), selected_username,
-      message_text, details_message_text, ok_button_text));
+      env, GetJavaIconId(), display_usernames, selected_username, message_text,
+      details_message_text, ok_button_text));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;
@@ -63,5 +58,5 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
 void UpdatePasswordInfoBar::OnLinkClicked(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
-  GetDelegate()->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  delegate()->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }

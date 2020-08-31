@@ -14,10 +14,11 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
+      "position": [17, 17],
       "bounds": [196, 212],
       "contentsOpaque": true,
       "backgroundColor": "#DDDDDD",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='outer' (foreground) Layer",
@@ -36,6 +37,7 @@
       "name": "Scrolling Contents Layer",
       "position": [5, 5],
       "bounds": [220, 236],
+      "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "transform": 2
     },
@@ -64,16 +66,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [41, 41, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [17, 17, 0, 1]
       ]
     }
   ]

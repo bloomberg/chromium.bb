@@ -70,7 +70,7 @@ class ControllerImpl : public Controller,
   ~ControllerImpl() override;
 
   // Controller implementation.
-  void Initialize(const base::Closure& callback) override;
+  void Initialize(base::OnceClosure callback) override;
   State GetState() override;
   void StartDownload(const DownloadParams& params) override;
   void PauseDownload(const std::string& guid) override;
@@ -186,11 +186,10 @@ class ControllerImpl : public Controller,
   void HandleStartDownloadResponse(DownloadClient client,
                                    const std::string& guid,
                                    DownloadParams::StartResult result);
-  void HandleStartDownloadResponse(
-      DownloadClient client,
-      const std::string& guid,
-      DownloadParams::StartResult result,
-      const DownloadParams::StartCallback& callback);
+  void HandleStartDownloadResponse(DownloadClient client,
+                                   const std::string& guid,
+                                   DownloadParams::StartResult result,
+                                   DownloadParams::StartCallback callback);
 
   // Handles and clears any pending task finished callbacks.
   void HandleTaskFinished(DownloadTaskType task_type,
@@ -266,15 +265,15 @@ class ControllerImpl : public Controller,
   std::unique_ptr<FileMonitor> file_monitor_;
 
   // Internal state.
-  base::Closure init_callback_;
+  base::OnceClosure init_callback_;
   State controller_state_;
   StartupStatus startup_status_;
   std::set<std::string> externally_active_downloads_;
   std::set<std::string> pending_uploads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
-  base::CancelableClosure cancel_downloads_callback_;
-  base::CancelableClosure cancel_uploads_callback_;
+  base::CancelableOnceClosure cancel_downloads_callback_;
+  base::CancelableOnceClosure cancel_uploads_callback_;
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_{this};

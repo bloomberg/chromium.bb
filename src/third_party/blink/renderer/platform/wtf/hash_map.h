@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_MAP_H_
 
 #include <initializer_list>
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
@@ -42,6 +43,12 @@ struct KeyValuePairKeyExtractor {
   template <typename T>
   static const typename T::KeyType& Extract(const T& p) {
     return p.key;
+  }
+  // Assumes out points to a buffer of size at least sizeof(T::KeyType).
+  template <typename T>
+  static const typename T::KeyType& ExtractSafe(const T& p, void* out) {
+    AtomicReadMemcpy<sizeof(typename T::KeyType)>(out, &p.key);
+    return *reinterpret_cast<typename T::KeyType*>(out);
   }
 };
 
@@ -186,23 +193,12 @@ class HashMap {
   template <typename HashTranslator, typename T>
   bool Contains(const T&) const;
 
-  // An alternate version of insert() that finds the object by hashing and
-  // comparing with some other type, to avoid the cost of type conversion if
-  // the object is already in the table. HashTranslator must have the
-  // following function members:
-  //   static unsigned hash(const T&);
-  //   static bool equal(const ValueType&, const T&);
-  //   static translate(ValueType&, const T&, unsigned hashCode);
-  template <typename HashTranslator,
-            typename IncomingKeyType,
-            typename IncomingMappedType>
-  AddResult Insert(IncomingKeyType&&, IncomingMappedType&&);
-
   template <typename IncomingKeyType>
   static bool IsValidKey(const IncomingKeyType&);
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+  std::enable_if_t<A::kIsGarbageCollected> Trace(
+      VisitorDispatcher visitor) const {
     impl_.Trace(visitor);
   }
 
@@ -567,24 +563,6 @@ typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::Set(
                         result.stored_value->value);
   }
   return result;
-}
-
-template <typename T,
-          typename U,
-          typename V,
-          typename W,
-          typename X,
-          typename Y>
-template <typename HashTranslator,
-          typename IncomingKeyType,
-          typename IncomingMappedType>
-auto HashMap<T, U, V, W, X, Y>::Insert(IncomingKeyType&& key,
-                                       IncomingMappedType&& mapped)
-    -> AddResult {
-  return impl_.template AddPassingHashCode<
-      HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
-      std::forward<IncomingKeyType>(key),
-      std::forward<IncomingMappedType>(mapped));
 }
 
 template <typename T,

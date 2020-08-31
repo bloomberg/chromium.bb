@@ -25,7 +25,7 @@ const int kBluetoothInitializationDelay = 1000;
 
 BluetoothPowerController::BluetoothPowerController(PrefService* local_state)
     : local_state_(local_state) {
-  device::BluetoothAdapterFactory::GetAdapter(
+  device::BluetoothAdapterFactory::Get()->GetAdapter(
       base::BindOnce(&BluetoothPowerController::InitializeOnAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));
   Shell::Get()->session_controller()->AddObserver(this);
@@ -35,11 +35,10 @@ BluetoothPowerController::BluetoothPowerController(PrefService* local_state)
   if (local_state_) {
     StartWatchingLocalStatePrefsChanges();
 
-    if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
-      // Apply the local state pref only if no user has logged in (still in
-      // login screen).
-      ApplyBluetoothLocalStatePref();
-    }
+    DCHECK(!Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+    // Apply the local state pref since no user has logged in (still in login
+    // screen).
+    ApplyBluetoothLocalStatePref();
   }
 }
 

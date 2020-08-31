@@ -28,21 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
+import * as ColorPicker from '../color_picker/color_picker.js';
+import * as Common from '../common/common.js';
+import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as SourceFrame from '../source_frame/source_frame.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {Plugin} from './Plugin.js';
+
+export class CSSPlugin extends Plugin {
   /**
-   * @param {!SourceFrame.SourcesTextEditor} textEditor
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
    */
   constructor(textEditor) {
     super();
     this._textEditor = textEditor;
-    this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper();
+    this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
     this._muteSwatchProcessing = false;
     this._hadSwatchChange = false;
-    /** @type {?InlineEditor.BezierEditor} */
+    /** @type {?InlineEditor.BezierEditor.BezierEditor} */
     this._bezierEditor = null;
-    /** @type {?TextUtils.TextRange} */
+    /** @type {?TextUtils.TextRange.TextRange} */
     this._editedSwatchTextRange = null;
-    /** @type {?ColorPicker.Spectrum} */
+    /** @type {?ColorPicker.Spectrum.Spectrum} */
     this._spectrum = null;
     /** @type {?Element} */
     this._currentSwatch = null;
@@ -61,7 +73,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   static accepts(uiSourceCode) {
@@ -88,7 +100,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
    * @param {!Event} event
    */
   _handleKeyDown(event) {
-    const shortcutKey = UI.KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
+    const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(/** @type {!KeyboardEvent} */ (event));
     const handler = this._shortcuts[shortcutKey];
     if (handler && handler()) {
       event.consume(true);
@@ -112,7 +124,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
       return null;
     }
     const tail = unit.substring((unitValue).toString().length);
-    return String.sprintf('%d%s', unitValue + change, tail);
+    return Platform.StringUtilities.sprintf('%d%s', unitValue + change, tail);
   }
 
   /**
@@ -135,7 +147,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     }
 
     const cssUnitRange =
-        new TextUtils.TextRange(selection.startLine, token.startColumn, selection.startLine, token.endColumn);
+        new TextUtils.TextRange.TextRange(selection.startLine, token.startColumn, selection.startLine, token.endColumn);
     const cssUnitText = this._textEditor.text(cssUnitRange);
     const newUnitText = this._modifyUnit(cssUnitText, change);
     if (!newUnitText) {
@@ -163,8 +175,8 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     handlers.set(UI.Geometry.CubicBezier.Regex, this._createBezierSwatch.bind(this));
 
     for (let lineNumber = startLine; lineNumber <= endLine; lineNumber++) {
-      const line = this._textEditor.line(lineNumber).substring(0, Sources.CSSPlugin.maxSwatchProcessingLength);
-      const results = TextUtils.TextUtils.splitStringByRegexes(line, regexes);
+      const line = this._textEditor.line(lineNumber).substring(0, maxSwatchProcessingLength);
+      const results = TextUtils.TextUtils.Utils.splitStringByRegexes(line, regexes);
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.regexIndex === -1 || !handlers.has(regexes[result.regexIndex])) {
@@ -182,40 +194,41 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
           continue;
         }
         swatches.push(swatch);
-        swatchPositions.push(TextUtils.TextRange.createFromLocation(lineNumber, result.position));
+        swatchPositions.push(TextUtils.TextRange.TextRange.createFromLocation(lineNumber, result.position));
       }
     }
     this._textEditor.operation(putSwatchesInline.bind(this));
 
     /**
-     * @this {Sources.CSSPlugin}
+     * @this {CSSPlugin}
      */
     function putSwatchesInline() {
-      const clearRange = new TextUtils.TextRange(startLine, 0, endLine, this._textEditor.line(endLine).length);
-      this._textEditor.bookmarks(clearRange, Sources.CSSPlugin.SwatchBookmark).forEach(marker => marker.clear());
+      const clearRange =
+          new TextUtils.TextRange.TextRange(startLine, 0, endLine, this._textEditor.line(endLine).length);
+      this._textEditor.bookmarks(clearRange, SwatchBookmark).forEach(marker => marker.clear());
 
       for (let i = 0; i < swatches.length; i++) {
         const swatch = swatches[i];
         const swatchPosition = swatchPositions[i];
-        const bookmark = this._textEditor.addBookmark(
-            swatchPosition.startLine, swatchPosition.startColumn, swatch, Sources.CSSPlugin.SwatchBookmark);
-        swatch[Sources.CSSPlugin.SwatchBookmark] = bookmark;
+        const bookmark =
+            this._textEditor.addBookmark(swatchPosition.startLine, swatchPosition.startColumn, swatch, SwatchBookmark);
+        swatch[SwatchBookmark] = bookmark;
       }
     }
   }
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.ColorSwatch}
+   * @return {?InlineEditor.ColorSwatch.ColorSwatch}
    */
   _createColorSwatch(text) {
-    const color = Common.Color.parse(text);
+    const color = Common.Color.Color.parse(text);
     if (!color) {
       return null;
     }
-    const swatch = InlineEditor.ColorSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.ColorSwatch.create();
     swatch.setColor(color);
-    swatch.iconElement().title = Common.UIString('Open color picker.');
+    swatch.iconElement().title = Common.UIString.UIString('Open color picker.');
     swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
     swatch.hideText(true);
     return swatch;
@@ -223,15 +236,15 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
   /**
    * @param {string} text
-   * @return {?InlineEditor.BezierSwatch}
+   * @return {?InlineEditor.ColorSwatch.BezierSwatch}
    */
   _createBezierSwatch(text) {
     if (!UI.Geometry.CubicBezier.parse(text)) {
       return null;
     }
-    const swatch = InlineEditor.BezierSwatch.create();
+    const swatch = InlineEditor.ColorSwatch.BezierSwatch.create();
     swatch.setBezierText(text);
-    swatch.iconElement().title = Common.UIString('Open cubic bezier editor.');
+    swatch.iconElement().title = Common.UIString.UIString('Open cubic bezier editor.');
     swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
     swatch.hideText(true);
     return swatch;
@@ -245,25 +258,25 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     event.consume(true);
     this._hadSwatchChange = false;
     this._muteSwatchProcessing = true;
-    const swatchPosition = swatch[Sources.CSSPlugin.SwatchBookmark].position();
+    const swatchPosition = swatch[SwatchBookmark].position();
     this._textEditor.setSelection(swatchPosition);
     this._editedSwatchTextRange = swatchPosition.clone();
     this._editedSwatchTextRange.endColumn += swatch.textContent.length;
     this._currentSwatch = swatch;
 
-    if (swatch instanceof InlineEditor.ColorSwatch) {
+    if (swatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
       this._showSpectrum(swatch);
-    } else if (swatch instanceof InlineEditor.BezierSwatch) {
+    } else if (swatch instanceof InlineEditor.ColorSwatch.BezierSwatch) {
       this._showBezierEditor(swatch);
     }
   }
 
   /**
-   * @param {!InlineEditor.ColorSwatch} swatch
+   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
    */
   _showSpectrum(swatch) {
     if (!this._spectrum) {
-      this._spectrum = new ColorPicker.Spectrum();
+      this._spectrum = new ColorPicker.Spectrum.Spectrum();
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, this._spectrumResized, this);
       this._spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
     }
@@ -272,18 +285,18 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _spectrumResized(event) {
     this._swatchPopoverHelper.reposition();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _spectrumChanged(event) {
     const colorString = /** @type {string} */ (event.data);
-    const color = Common.Color.parse(colorString);
+    const color = Common.Color.Color.parse(colorString);
     if (!color) {
       return;
     }
@@ -292,11 +305,11 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   }
 
   /**
-   * @param {!InlineEditor.BezierSwatch} swatch
+   * @param {!InlineEditor.ColorSwatch.BezierSwatch} swatch
    */
   _showBezierEditor(swatch) {
     if (!this._bezierEditor) {
-      this._bezierEditor = new InlineEditor.BezierEditor();
+      this._bezierEditor = new InlineEditor.BezierEditor.BezierEditor();
       this._bezierEditor.addEventListener(InlineEditor.BezierEditor.Events.BezierChanged, this._bezierChanged, this);
     }
     let cubicBezier = UI.Geometry.CubicBezier.parse(swatch.bezierText());
@@ -309,7 +322,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _bezierChanged(event) {
     const bezierString = /** @type {string} */ (event.data);
@@ -323,7 +336,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   _changeSwatchText(text) {
     this._hadSwatchChange = true;
     this._textEditor.editRange(
-        /** @type {!TextUtils.TextRange} */ (this._editedSwatchTextRange), text, '*swatch-text-changed');
+        /** @type {!TextUtils.TextRange.TextRange} */ (this._editedSwatchTextRange), text, '*swatch-text-changed');
     this._editedSwatchTextRange.endColumn = this._editedSwatchTextRange.startColumn + text.length;
   }
 
@@ -338,7 +351,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onTextChanged(event) {
     if (!this._muteSwatchProcessing) {
@@ -351,12 +364,12 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
    * @return {boolean}
    */
   _isWordChar(char) {
-    return TextUtils.TextUtils.isWordChar(char) || char === '.' || char === '-' || char === '$';
+    return TextUtils.TextUtils.Utils.isWordChar(char) || char === '.' || char === '-' || char === '$';
   }
 
   /**
-   * @param {!TextUtils.TextRange} prefixRange
-   * @param {!TextUtils.TextRange} substituteRange
+   * @param {!TextUtils.TextRange.TextRange} prefixRange
+   * @param {!TextUtils.TextRange.TextRange} substituteRange
    * @return {?Promise.<!UI.SuggestBox.Suggestions>}
    */
   _cssSuggestions(prefixRange, substituteRange) {
@@ -372,7 +385,7 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
     const line = this._textEditor.line(prefixRange.startLine);
     const tokenContent = line.substring(propertyToken.startColumn, propertyToken.endColumn);
-    const propertyValues = SDK.cssMetadata().propertyValues(tokenContent);
+    const propertyValues = SDK.CSSMetadata.cssMetadata().propertyValues(tokenContent);
     return Promise.resolve(propertyValues.filter(value => value.startsWith(prefix)).map(value => ({text: value})));
   }
 
@@ -421,13 +434,13 @@ Sources.CSSPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     this._textEditor.removeEventListener(
         SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
     this._textEditor.removeEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
-    this._textEditor.bookmarks(this._textEditor.fullRange(), Sources.CSSPlugin.SwatchBookmark)
-        .forEach(marker => marker.clear());
+    this._textEditor.bookmarks(this._textEditor.fullRange(), SwatchBookmark).forEach(marker => marker.clear());
     this._textEditor.element.removeEventListener('keydown', this._boundHandleKeyDown, false);
   }
-};
+}
 
 /** @type {number} */
-Sources.CSSPlugin.maxSwatchProcessingLength = 300;
+export const maxSwatchProcessingLength = 300;
+
 /** @type {symbol} */
-Sources.CSSPlugin.SwatchBookmark = Symbol('swatch');
+export const SwatchBookmark = Symbol('swatch');

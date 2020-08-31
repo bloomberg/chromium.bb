@@ -8,13 +8,15 @@
 #include <dcomptypes.h>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/win/windows_version.h"
+#include "ui/gfx/color_space_win.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/color_space_utils.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -31,6 +33,8 @@
 #ifndef EGL_ANGLE_d3d_texture_client_buffer
 #define EGL_ANGLE_d3d_texture_client_buffer 1
 #define EGL_D3D_TEXTURE_ANGLE 0x33A3
+#define EGL_TEXTURE_OFFSET_X_ANGLE 0x3490
+#define EGL_TEXTURE_OFFSET_Y_ANGLE 0x3491
 #endif /* EGL_ANGLE_d3d_texture_client_buffer */
 
 namespace gl {
@@ -43,7 +47,9 @@ IDCompositionSurface* g_current_surface = nullptr;
 
 }  // namespace
 
-DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() = default;
+DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
+    bool use_angle_texture_offset)
+    : use_angle_texture_offset_(use_angle_texture_offset) {}
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -110,7 +116,6 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
       dcomp_surface_serial_++;
     } else if (!will_discard) {
-      TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain");
       const bool use_swap_chain_tearing =
           DirectCompositionSurfaceWin::AllowTearing();
       UINT interval =
@@ -120,6 +125,9 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
+
+      TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain",
+                   "interval", interval, "dirty_rect", swap_rect_.ToString());
       HRESULT hr = swap_chain_->Present1(interval, flags, &params);
       // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only
       // indicates that the window is occluded and we can stop rendering.
@@ -197,8 +205,8 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
              : gfx::SwapResult::SWAP_FAILED;
 }
 
-bool DirectCompositionChildSurfaceWin::FlipsVertically() const {
-  return true;
+gfx::SurfaceOrigin DirectCompositionChildSurfaceWin::GetOrigin() const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 bool DirectCompositionChildSurfaceWin::SupportsPostSubBuffer() {
@@ -215,7 +223,9 @@ bool DirectCompositionChildSurfaceWin::OnMakeCurrent(GLContext* context) {
       }
       g_current_surface = nullptr;
     }
-    if (draw_texture_) {
+    // We're in the middle of |dcomp_surface_| draw only if |draw_texture_| is
+    // not null.
+    if (dcomp_surface_ && draw_texture_) {
       HRESULT hr = dcomp_surface_->ResumeDraw();
       if (FAILED(hr)) {
         DLOG(ERROR) << "ResumeDraw failed with error " << std::hex << hr;
@@ -261,7 +271,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     return false;
   }
 
-  DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
+  DXGI_FORMAT dxgi_format = gfx::ColorSpaceWin::GetDXGIFormat(color_space_);
 
   if (!dcomp_surface_ && enable_dc_layers_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
@@ -301,24 +311,28 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = (has_alpha_ || enable_dc_layers_)
-                         ? DXGI_ALPHA_MODE_PREMULTIPLIED
-                         : DXGI_ALPHA_MODE_IGNORE;
+    desc.AlphaMode =
+        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags = DirectCompositionSurfaceWin::AllowTearing()
                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
                      : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
         d3d11_device_.Get(), &desc, nullptr, &swap_chain_);
     first_swap_ = true;
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
-                  << std::hex << hr;
-      return false;
-    }
+    base::UmaHistogramSparse(
+        "GPU.DirectComposition.CreateSwapChainForComposition", hr);
+
+    // If CreateSwapChainForComposition fails, we cannot draw to the
+    // browser window. Failure here is indicative of an unrecoverable driver
+    // bug.
+    CHECK(SUCCEEDED(hr));
+
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
-      swap_chain->SetColorSpace1(
-          ColorSpaceUtils::GetDXGIColorSpace(color_space_));
+      hr = swap_chain->SetColorSpace1(
+          gfx::ColorSpaceWin::GetDXGIColorSpace(color_space_));
+      DCHECK(SUCCEEDED(hr))
+          << "SetColorSpace1 failed with error " << std::hex << hr;
     }
   }
 
@@ -344,21 +358,26 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
   g_current_surface = dcomp_surface_.Get();
 
-  EGLint pbuffer_attribs[] = {
-      EGL_WIDTH,
-      size_.width(),
-      EGL_HEIGHT,
-      size_.height(),
-      EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE,
-      EGL_TRUE,
-      EGL_NONE,
-  };
+  std::vector<EGLint> pbuffer_attribs;
+  pbuffer_attribs.push_back(EGL_WIDTH);
+  pbuffer_attribs.push_back(size_.width());
+  pbuffer_attribs.push_back(EGL_HEIGHT);
+  pbuffer_attribs.push_back(size_.height());
+  pbuffer_attribs.push_back(EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE);
+  pbuffer_attribs.push_back(EGL_TRUE);
+  if (use_angle_texture_offset_) {
+    pbuffer_attribs.push_back(EGL_TEXTURE_OFFSET_X_ANGLE);
+    pbuffer_attribs.push_back(draw_offset_.x());
+    pbuffer_attribs.push_back(EGL_TEXTURE_OFFSET_Y_ANGLE);
+    pbuffer_attribs.push_back(draw_offset_.y());
+  }
+  pbuffer_attribs.push_back(EGL_NONE);
 
   EGLClientBuffer buffer =
       reinterpret_cast<EGLClientBuffer>(draw_texture_.Get());
-  real_surface_ =
-      eglCreatePbufferFromClientBuffer(GetDisplay(), EGL_D3D_TEXTURE_ANGLE,
-                                       buffer, GetConfig(), pbuffer_attribs);
+  real_surface_ = eglCreatePbufferFromClientBuffer(
+      GetDisplay(), EGL_D3D_TEXTURE_ANGLE, buffer, GetConfig(),
+      pbuffer_attribs.data());
   if (!real_surface_) {
     DLOG(ERROR) << "eglCreatePbufferFromClientBuffer failed with error "
                 << ui::GetLastEGLErrorString();
@@ -375,18 +394,24 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   return true;
 }
 
+void DirectCompositionChildSurfaceWin::SetDCompSurfaceForTesting(
+    Microsoft::WRL::ComPtr<IDCompositionSurface> surface) {
+  dcomp_surface_ = std::move(surface);
+}
+
 gfx::Vector2d DirectCompositionChildSurfaceWin::GetDrawOffset() const {
-  return draw_offset_;
+  return use_angle_texture_offset_ ? gfx::Vector2d() : draw_offset_;
 }
 
 void DirectCompositionChildSurfaceWin::SetVSyncEnabled(bool enabled) {
   vsync_enabled_ = enabled;
 }
 
-bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
-                                              float scale_factor,
-                                              ColorSpace color_space,
-                                              bool has_alpha) {
+bool DirectCompositionChildSurfaceWin::Resize(
+    const gfx::Size& size,
+    float scale_factor,
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) {
   if (size_ == size && has_alpha_ == has_alpha && color_space_ == color_space)
     return true;
 
@@ -403,7 +428,7 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
 
   // ResizeBuffers can't change alpha blending mode.
   if (swap_chain_ && resize_only) {
-    DXGI_FORMAT format = ColorSpaceUtils::GetDXGIFormat(color_space_);
+    DXGI_FORMAT format = gfx::ColorSpaceWin::GetDXGIFormat(color_space_);
     UINT flags = DirectCompositionSurfaceWin::AllowTearing()
                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
                      : 0;

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -17,12 +16,12 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class ServiceWorkerVersion;
-struct HttpResponseInfoIOBuffer;
 
 // This is the URLLoader used for loading scripts for a new (installing) service
 // worker. It fetches the script (the main script or imported script) and
@@ -44,15 +43,8 @@ struct HttpResponseInfoIOBuffer;
 // A set of |network_loader_state_|, |header_writer_state_|, and
 // |body_writer_state_| is the state of this loader. Each of them is changed
 // independently, while some state changes have dependency to other state
-// changes.  See the comment for each field below to see exactly when their
-// state changes happen. For resume loaders, these states are set to be
-// values extracted from ServiceWorkerSingleScriptUpdateChecker::PausedState
-// to make the loader seamlessly resume the download.
-//
-// In case there is already an installed service worker for this registration,
-// this class also performs the "byte-for-byte" comparison for updating the
-// worker. If the script is identical, the load succeeds but no script is
-// written, and ServiceWorkerVersion is told to terminate startup.
+// changes. See the comment for each field below to see exactly when their state
+// changes happen.
 //
 // NOTE: To perform the network request, this class uses |loader_factory_| which
 // may internally use a non-NetworkService factory if URL has a non-http(s)
@@ -82,14 +74,17 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t cache_resource_id);
 
   ~ServiceWorkerNewScriptLoader() override;
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -124,10 +119,11 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t cache_resource_id);
 
   // Writes the given headers into the service worker script storage.
-  void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
+  void WriteHeaders(network::mojom::URLResponseHeadPtr response_head);
   void OnWriteHeadersComplete(net::Error error);
 
   // Starts watching the data pipe for the network load (i.e.,
@@ -162,15 +158,12 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // If not all data are received, it continues to download from network.
   void OnCacheWriterResumed(net::Error error);
 
-#if DCHECK_IS_ON()
-  void CheckVersionStatusBeforeLoad();
-#endif  // DCHECK_IS_ON()
-
   const GURL request_url_;
 
-  // This is ResourceType::kServiceWorker for the main script or
-  // ResourceType::kScript for an imported script.
-  const ResourceType resource_type_;
+  // This is network::mojom::RequestDestination::kServiceWorker for the
+  // main script or network::mojom::RequestDestination::kScript for
+  // an imported script.
+  const network::mojom::RequestDestination resource_destination_;
 
   // Load options originally passed to this loader. The options passed to the
   // network loader might be different from this.

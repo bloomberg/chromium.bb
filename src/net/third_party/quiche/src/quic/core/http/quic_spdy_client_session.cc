@@ -56,27 +56,11 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingBidirectionalStream() {
   bool goaway_received = VersionUsesHttp3(transport_version())
                              ? http3_goaway_received()
                              : QuicSession::goaway_received();
-  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
-      !VersionHasIetfQuicFrames(transport_version())) {
-    if (GetNumOpenOutgoingStreams() >=
-        stream_id_manager().max_open_outgoing_streams()) {
-      QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
-                      << "Already " << GetNumOpenOutgoingStreams() << " open.";
-      return false;
-    }
-    if (goaway_received && respect_goaway_) {
-      QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
-                      << "Already received goaway.";
-      return false;
-    }
-    return true;
-  }
   if (goaway_received && respect_goaway_) {
     QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                     << "Already received goaway.";
     return false;
   }
-  QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
   return CanOpenNextOutgoingBidirectionalStream();
 }
 
@@ -126,6 +110,14 @@ int QuicSpdyClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
+bool QuicSpdyClientSession::EarlyDataAccepted() const {
+  return crypto_stream_->EarlyDataAccepted();
+}
+
+bool QuicSpdyClientSession::ReceivedInchoateReject() const {
+  return crypto_stream_->ReceivedInchoateReject();
+}
+
 int QuicSpdyClientSession::GetNumReceivedServerConfigUpdates() const {
   return crypto_stream_->num_scup_messages_received();
 }
@@ -143,9 +135,14 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
                     << "Already received goaway.";
     return false;
   }
-  if (QuicUtils::IsClientInitiatedStreamId(transport_version(), id) ||
-      (VersionHasIetfQuicFrames(transport_version()) &&
-       QuicUtils::IsBidirectionalStreamId(id))) {
+
+  if (QuicUtils::IsClientInitiatedStreamId(transport_version(), id)) {
+    QUIC_BUG << "ShouldCreateIncomingStream called with client initiated "
+                "stream ID.";
+    return false;
+  }
+
+  if (QuicUtils::IsClientInitiatedStreamId(transport_version(), id)) {
     QUIC_LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,
@@ -153,6 +150,16 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
+
+  if (VersionHasIetfQuicFrames(transport_version()) &&
+      QuicUtils::IsBidirectionalStreamId(id)) {
+    connection()->CloseConnection(
+        QUIC_HTTP_SERVER_INITIATED_BIDIRECTIONAL_STREAM,
+        "Server created bidirectional stream.",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+
   return true;
 }
 
@@ -179,7 +186,7 @@ QuicSpdyClientSession::CreateQuicCryptoStream() {
   return std::make_unique<QuicCryptoClientStream>(
       server_id_, this,
       crypto_config_->proof_verifier()->CreateDefaultContext(), crypto_config_,
-      this);
+      this, /*has_application_state = */ true);
 }
 
 bool QuicSpdyClientSession::IsAuthorized(const std::string& /*authority*/) {

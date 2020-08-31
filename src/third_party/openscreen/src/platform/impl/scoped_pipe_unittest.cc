@@ -8,7 +8,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace {

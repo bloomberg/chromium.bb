@@ -29,10 +29,6 @@ namespace network {
 class SessionCleanupCookieStore;
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
-
-// This is an IO thread object; all methods on this object must be called on
-// the IO thread.  Note that this does not restrict the locations from which
-// mojo messages may be sent to the object.
 class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     : public mojom::CookieManager {
  public:
@@ -62,7 +58,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                      const net::CookieOptions& cookie_options,
                      GetCookieListCallback callback) override;
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          const std::string& source_scheme,
+                          const GURL& source_url,
                           const net::CookieOptions& cookie_options,
                           SetCanonicalCookieCallback callback) override;
   void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -91,6 +87,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void BlockThirdPartyCookies(bool block) override;
   void SetContentSettingsForLegacyCookieAccess(
       const ContentSettingsForOneType& settings) override;
+  void SetStorageAccessGrantSettings(
+      const ContentSettingsForOneType& settings,
+      SetStorageAccessGrantSettingsCallback callback) override;
 
   // Configures |out| based on |params|. (This doesn't honor
   // allow_file_scheme_cookies, which affects the cookie store rather than the

@@ -6,10 +6,10 @@
 """Generate an HTML file containing license info for all installed packages.
 
 Documentation on this script is also available here:
-https://dev.chromium.org/chromium-os/licensing-for-chromiumos-developers
+https://dev.chromium.org/chromium-os/licensing/licensing-for-chromiumos-developers
 
 End user (i.e. package owners) documentation is here:
-https://dev.chromium.org/chromium-os/licensing-for-chromiumos-package-owners
+https://dev.chromium.org/chromium-os/licensing/licensing-for-chromiumos-package-owners
 
 Usage:
 For this script to work, you must have built the architecture
@@ -28,7 +28,7 @@ Recommended build:
   # configure. Configure will fail due to aclocal macros missing in
   # /build/x86-alex/usr/share/aclocal (those are generated during build).
   # This will take about 10mn on a Z620.
-  ./build_packages --board=$BOARD --nowithautotest --nowithtest --nowithdev
+  ./build_packages --board=$BOARD --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
   # This removes left over packages from an earlier build that could cause
@@ -59,7 +59,7 @@ licenses.
 
 You can check the licenses and/or generate a HTML file for a list of
 packages using --package or -p:
-  %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package
+  %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package \
   "net-misc/wget-1.14" --board $BOARD -o out.html
 
 Note that you'll want to use --generate to force regeneration of the licensing
@@ -70,53 +70,7 @@ run ./build_packages --board=$BOARD to build everything and then run
 this script with --all-packages.
 
 By default, when no package is specified, this script processes all
-packages for $BOARD. The output HTML file is meant to update
-http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
-  chromeos/about_os_credits.html?view=log
-(gclient config svn://svn.chromium.org/chrome/trunk/src)
-For an example CL, see https://codereview.chromium.org/13496002/
-
-The detailed process is listed below.
-
-* Check out the branch you intend to generate the HTML file for. Use
-  the internal manifest for this purpose.
-    repo init -b <branch_name> -u <URL>
-
-  The list of branches (e.g. release-R33-5116.B) are available here:
-  https://chromium.googlesource.com/chromiumos/manifest/+refs
-
-* Generate the HTML file by following the steps mentioned
-  previously. Check whether your changes are valid with:
-    bin/diff_license_html output.html-M33 output.html-M34
-  and review the diff.
-
-* Update the about_os_credits.html in the svn repository. Create a CL
-  and upload it for review.
-    gcl change <change_name>
-    gcl upload <change_name>
-
-  When uploading, you may get a warning for file being too large to
-  upload. In this case, your CL can still be reviewed. Always include
-  the diff in your commit message so that the reviewers know what the
-  changes are. You can add reviewers on the review page by clicking on
-  "Edit issue".  (A quick reference:
-  https://dev.chromium.org/developers/quick-reference)
-
-  Make sure you click on 'Publish+Mail Comments' after adding reviewers
-  (the review URL looks like this https://codereview.chromium.org/183883018/ ).
-
-* After receiving LGTMs, commit your change with 'gcl commit <change_name>'.
-
-If you don't get this in before the freeze window, it'll need to be merged into
-the branch being released, which is done by adding a Merge-Requested label.
-Once it's been updated to "Merge-Approved" by a TPM, please merge into the
-required release branch. You can ask karen@ for merge approve help.
-Example: https://crbug.com/221281
-
-Note however that this is only during the transition period.
-build-image will be modified to generate the license for each board and save
-the file in /opt/google/chrome/resources/about_os_credits.html or as defined
-in https://crbug.com/271832 .
+packages for $BOARD.
 """
 
 from __future__ import print_function
@@ -124,7 +78,6 @@ from __future__ import print_function
 import os
 
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
@@ -144,14 +97,6 @@ EXTRA_PACKAGES = (
 def LoadPackageInfo(board, all_packages, generateMissing, packages):
   """Do the work when we're not called as a hook."""
   logging.info('Using board %s.', board)
-
-  builddir = os.path.join(cros_build_lib.GetSysroot(board=board),
-                          'tmp', 'portage')
-
-  if not os.path.exists(builddir):
-    raise AssertionError(
-        'FATAL: %s missing.\n'
-        'Did you give the right board and build that tree?' % builddir)
 
   detect_packages = not packages
   if detect_packages:
@@ -186,7 +131,7 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
 
 def main(args):
   parser = commandline.ArgumentParser(usage=__doc__)
-  parser.add_argument('-b', '--board',
+  parser.add_argument('-b', '--board', required=True,
                       help='which board to run for, like x86-alex')
   parser.add_argument('-p', '--package', action='append', default=[],
                       dest='packages',
@@ -204,15 +149,8 @@ def main(args):
                       help='which html file to create with output')
   opts = parser.parse_args(args)
 
-
-  if not opts.board:
-    raise AssertionError('No board given (--board)')
-
   if not opts.output and not opts.gen_licenses:
-    raise AssertionError('You must specify --output and/or --generate-licenses')
-
-  if opts.gen_licenses and os.geteuid() != 0:
-    raise AssertionError('Run with sudo if you use --generate-licenses.')
+    parser.error('You must specify --output and/or --generate-licenses')
 
   licensing = LoadPackageInfo(
       opts.board, opts.all_packages, opts.gen_licenses, opts.packages)

@@ -8,11 +8,11 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/android/chrome_jni_headers/SimpleConfirmInfoBarBuilder_jni.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/messages/android/jni_headers/SimpleConfirmInfoBarBuilder_jni.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -38,15 +38,15 @@ class SimpleConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   gfx::Image GetIcon() const override;
+  base::string16 GetLinkText() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  base::string16 GetLinkText() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_listener_;
@@ -93,9 +93,19 @@ gfx::Image SimpleConfirmInfoBarDelegate::GetIcon() const {
                                 : icon_bitmap_;
 }
 
+base::string16 SimpleConfirmInfoBarDelegate::GetLinkText() const {
+  return link_text_str_;
+}
+
 bool SimpleConfirmInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
   return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
+}
+
+bool SimpleConfirmInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarLinkClicked(
+      base::android::AttachCurrentThread(), java_listener_);
 }
 
 void SimpleConfirmInfoBarDelegate::InfoBarDismissed() {
@@ -127,23 +137,13 @@ bool SimpleConfirmInfoBarDelegate::Cancel() {
       base::android::AttachCurrentThread(), java_listener_, false);
 }
 
-base::string16 SimpleConfirmInfoBarDelegate::GetLinkText() const {
-  return link_text_str_;
-}
-
-bool SimpleConfirmInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarLinkClicked(
-      base::android::AttachCurrentThread(), java_listener_);
-}
-
 }  // anonymous namespace
 
 // Native JNI methods ---------------------------------------------------------
 
 void JNI_SimpleConfirmInfoBarBuilder_Create(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_tab,
+    const JavaParamRef<jobject>& j_web_contents,
     jint j_identifier,
     const JavaParamRef<jobject>& j_icon,
     const JavaParamRef<jstring>& j_message,
@@ -176,7 +176,7 @@ void JNI_SimpleConfirmInfoBarBuilder_Create(
           : base::android::ConvertJavaStringToUTF16(env, j_link_text);
 
   InfoBarService* service = InfoBarService::FromWebContents(
-      TabAndroid::GetNativeTab(env, j_tab)->web_contents());
+      content::WebContents::FromJavaWebContents(j_web_contents));
   service->AddInfoBar(service->CreateConfirmInfoBar(
       std::make_unique<SimpleConfirmInfoBarDelegate>(
           j_listener, infobar_identifier, icon_bitmap, message_str, primary_str,

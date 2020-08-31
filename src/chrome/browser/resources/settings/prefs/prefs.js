@@ -13,7 +13,6 @@
  */
 
 (function() {
-'use strict';
 
 /**
  * Checks whether two values are recursively equal. Only compares serializable
@@ -146,7 +145,7 @@ Polymer({
      */
     lastPrefValues_: {
       type: Object,
-      value: function() {
+      value() {
         return {};
       },
     },
@@ -160,14 +159,14 @@ Polymer({
   settingsApi_: /** @type {SettingsPrivate} */ (chrome.settingsPrivate),
 
   /** @override */
-  created: function() {
+  created() {
     if (!CrSettingsPrefs.deferInitialization) {
       this.initialize();
     }
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     CrSettingsPrefs.resetForTesting();
   },
 
@@ -175,7 +174,7 @@ Polymer({
    * @param {SettingsPrivate=} opt_settingsApi SettingsPrivate implementation
    *     to use (chrome.settingsPrivate by default).
    */
-  initialize: function(opt_settingsApi) {
+  initialize(opt_settingsApi) {
     // Only initialize once (or after resetForTesting() is called).
     if (this.initialized_) {
       return;
@@ -197,7 +196,7 @@ Polymer({
    * @param {!{path: string}} e
    * @private
    */
-  prefsChanged_: function(e) {
+  prefsChanged_(e) {
     // |prefs| can be directly set or unset in tests.
     if (!CrSettingsPrefs.isInitialized || e.path == 'prefs') {
       return;
@@ -213,6 +212,10 @@ Polymer({
     // a change event from settingsPrivate could make us call
     // settingsPrivate.setPref and potentially trigger an IPC loop.)
     if (!deepEqual(prefStoreValue, prefObj.value)) {
+      // <if expr="chromeos">
+      this.fire('user-action-setting-change');
+      // </if>
+
       this.settingsApi_.setPref(
           key, prefObj.value,
           /* pageId */ '',
@@ -226,7 +229,7 @@ Polymer({
    *     The prefs that changed.
    * @private
    */
-  onSettingsPrivatePrefsChanged_: function(prefs) {
+  onSettingsPrivatePrefsChanged_(prefs) {
     if (CrSettingsPrefs.isInitialized) {
       this.updatePrefs_(prefs);
     }
@@ -237,7 +240,7 @@ Polymer({
    * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
    * @private
    */
-  onSettingsPrivatePrefsFetched_: function(prefs) {
+  onSettingsPrivatePrefsFetched_(prefs) {
     this.updatePrefs_(prefs);
     CrSettingsPrefs.setInitialized();
   },
@@ -248,7 +251,7 @@ Polymer({
    * @param {boolean} success True if setting the pref succeeded.
    * @private
    */
-  setPrefCallback_: function(key, success) {
+  setPrefCallback_(key, success) {
     if (!success) {
       this.refresh(key);
     }
@@ -259,10 +262,35 @@ Polymer({
    * stays up to date.
    * @param {string} key
    */
-  refresh: function(key) {
+  refresh(key) {
     this.settingsApi_.getPref(key, pref => {
       this.updatePrefs_([pref]);
     });
+  },
+
+  /**
+   * Builds an object structure for the provided |path| within |prefsObject|,
+   * ensuring that names that already exist are not overwritten. For example:
+   * "a.b.c" -> a = {};a.b={};a.b.c={};
+   * @param {string} path Path to the new pref value.
+   * @param {*} value The value to expose at the end of the path.
+   * @param {Object} prefsObject The prefs object to add the path to.
+   * @private
+   */
+  updatePrefPath_(path, value, prefsObject) {
+    const parts = path.split('.');
+    let cur = prefsObject;
+
+    for (let part; parts.length && (part = parts.shift());) {
+      if (!parts.length) {
+        // last part, set the value.
+        cur[part] = value;
+      } else if (part in cur) {
+        cur = cur[part];
+      } else {
+        cur = cur[part] = {};
+      }
+    }
   },
 
   /**
@@ -270,7 +298,7 @@ Polymer({
    * @param {!Array<!chrome.settingsPrivate.PrefObject>} newPrefs
    * @private
    */
-  updatePrefs_: function(newPrefs) {
+  updatePrefs_(newPrefs) {
     // Use the existing prefs object or create it.
     const prefs = this.prefs || {};
     newPrefs.forEach(function(newPrefObj) {
@@ -280,7 +308,7 @@ Polymer({
 
       if (!deepEqual(this.get(newPrefObj.key, prefs), newPrefObj)) {
         // Add the pref to |prefs|.
-        cr.exportPath(newPrefObj.key, newPrefObj, prefs);
+        this.updatePrefPath_(newPrefObj.key, newPrefObj, prefs);
         // If this.prefs already exists, notify listeners of the change.
         if (prefs == this.prefs) {
           this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
@@ -301,7 +329,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPrefKeyFromPath_: function(path) {
+  getPrefKeyFromPath_(path) {
     // Skip the first token, which refers to the member variable (this.prefs).
     const parts = path.split('.');
     assert(parts.shift() == 'prefs', 'Path doesn\'t begin with \'prefs\'');
@@ -319,7 +347,7 @@ Polymer({
   /**
    * Resets the element so it can be re-initialized with a new prefs state.
    */
-  resetForTesting: function() {
+  resetForTesting() {
     if (!this.initialized_) {
       return;
     }

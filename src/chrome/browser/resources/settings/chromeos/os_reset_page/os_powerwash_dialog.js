@@ -18,18 +18,19 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     settings.OsResetBrowserProxyImpl.getInstance().onPowerwashDialogShow();
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onRestartTap_: function() {
+  onRestartTap_() {
+    settings.recordSettingChange();
     settings.LifetimeBrowserProxyImpl.getInstance().factoryReset(
         this.requestTpmFirmwareUpdate);
   },

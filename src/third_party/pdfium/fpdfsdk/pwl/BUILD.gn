@@ -38,7 +38,6 @@ source_set("pwl") {
     "../../:pdfium_public_headers",
     "../../constants",
     "../../core/fpdfapi/font",
-    "../../core/fpdfapi/parser",
     "../../core/fpdfapi/render",
     "../../core/fpdfdoc",
     "../../core/fxcrt",
@@ -51,6 +50,7 @@ pdfium_embeddertest_source_set("embeddertests") {
   sources = [
     "cpwl_combo_box_embeddertest.cpp",
     "cpwl_edit_embeddertest.cpp",
+    "cpwl_special_button_embeddertest.cpp",
   ]
   deps = [
     ":pwl",

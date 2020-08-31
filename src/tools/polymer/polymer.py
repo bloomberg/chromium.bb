@@ -72,9 +72,16 @@ _namespace_rewrites = {}
 # ui/webui/resources/html/cr/ui/focus_outline_manager.html is encountered.
 _auto_imports = {}
 
+# Populated from command line arguments. Specifies a list of HTML imports to
+# ignore when converting HTML imports to JS modules.
+_ignore_imports = []
+
+_migrated_imports = []
+
 _chrome_redirects = {
-  'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
-  'chrome://resources/html/': 'ui/webui/resources/html/',
+    'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
+    'chrome://resources/html/': 'ui/webui/resources/html/',
+    'chrome://resources/cr_elements/': 'ui/webui/resources/cr_elements/',
 }
 
 _chrome_reverse_redirects = {
@@ -134,7 +141,9 @@ class Dependency:
           .replace(r'ui/webui/resources/html/', 'ui/webui/resources/js/')
           .replace(r'.html', '.m.js'))
 
-    return self.html_path_normalized.replace(r'.html', '.m.js')
+    extension = (
+        '.js' if self.html_path_normalized in _migrated_imports else '.m.js')
+    return self.html_path_normalized.replace(r'.html', extension)
 
   def _to_js(self):
     js_path = self.js_path_normalized
@@ -165,21 +174,48 @@ class Dependency:
     return 'import \'%s\';' % self.js_path
 
 
-def _extract_dependencies(html_file):
+def _generate_js_imports(html_file):
+  output = []
+  imports_end_index = -1
+  imports_found = False
   with io.open(html_file, encoding='utf-8', mode='r') as f:
     lines = f.readlines()
     deps = []
-    for line in lines:
+    for i, line in enumerate(lines):
       match = re.search(r'\s*<link rel="import" href="(.*)"', line)
       if match:
-        deps.append(match.group(1))
-  return deps;
+        if not imports_found:
+          imports_found = True
+          # Include the previous line if it is an opening <if> tag.
+          if (i > 0):
+            previous_line = lines[i - 1]
+            if re.search(r'^\s*<if', previous_line):
+              previous_line = '// ' + previous_line
+              output.append(previous_line.rstrip('\n'))
 
+        imports_end_index = i
 
-def _generate_js_imports(html_file):
-  return map(
-      lambda dep: Dependency(html_file, dep).to_js_import(_auto_imports),
-      _extract_dependencies(html_file))
+        # Convert HTML import URL to equivalent JS import URL.
+        dep = Dependency(html_file, match.group(1))
+        js_import = dep.to_js_import(_auto_imports)
+        if dep.html_path_normalized in _ignore_imports:
+          output.append('// ' + js_import)
+        else:
+          output.append(js_import)
+
+      elif imports_found:
+        if re.search(r'^\s*</?if', line):
+          line = '// ' + line
+        output.append(line.rstrip('\n'))
+
+  if len(output) == 0:
+    return output
+
+  # Include the next line if it is a closing </if> tag.
+  if re.search(r'^// \s*</if>', output[imports_end_index + 1]):
+    imports_end_index += 1
+
+  return output[0:imports_end_index + 1]
 
 
 def _extract_dom_module_id(html_file):
@@ -218,6 +254,14 @@ def _extract_template(html_file, html_type):
           assert re.match(r'\s*</template>', lines[i - 2])
           assert re.match(r'\s*<script ', lines[i - 1])
           end_line = i - 3;
+        # Should not have an iron-iconset-svg in a dom-module file.
+        assert not re.match(r'\s*<iron-iconset-svg ', line)
+
+    # If an opening <dom-module> tag was found, check that a closing one was
+    # found as well.
+    if start_line != - 1:
+      assert end_line != -1
+
     return _add_template_markers('\n' + ''.join(lines[start_line:end_line + 1]))
 
   if html_type == 'style-module':
@@ -287,7 +331,7 @@ def _rewrite_namespaces(string):
   return string
 
 
-def _process_v3_ready(js_file, html_file):
+def process_v3_ready(js_file, html_file):
   # Extract HTML template and place in JS file.
   html_template = _extract_template(html_file, 'v3-ready')
 
@@ -318,6 +362,9 @@ def _process_dom_module(js_file, html_file):
 
   # Replace export annotations with 'export'.
   EXPORT_LINE_REGEX = '/* #export */'
+
+  # Ignore lines with an ignore annotation.
+  IGNORE_LINE_REGEX = '\s*/\* #ignore \*/(\S|\s)*'
 
   with io.open(js_file, encoding='utf-8') as f:
     lines = f.readlines()
@@ -356,13 +403,13 @@ def _process_dom_module(js_file, html_file):
 
     line = line.replace(EXPORT_LINE_REGEX, 'export')
 
-    if line.startswith('cr.exportPath('):
-      line = ''
-
     if re.match(CR_DEFINE_END_REGEX, line):
       assert cr_define_found, 'Found cr_define_end without cr.define()'
       cr_define_end_line = i
       break
+
+    if re.match(IGNORE_LINE_REGEX, line):
+      line = ''
 
     line = _rewrite_namespaces(line)
     lines[i] = line
@@ -399,10 +446,10 @@ template.innerHTML = `
 <dom-module id="%(style_id)s" assetpath="chrome://resources/">%(html_template)s</dom-module>
 `;
 document.body.appendChild(template.content.cloneNode(true));""" % {
-  'html_template': html_template,
-  'js_imports': '\n'.join(js_imports),
-  'style_id': style_id,
-}
+      'html_template': html_template,
+      'js_imports': '\n'.join(js_imports),
+      'style_id': style_id,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
@@ -417,9 +464,9 @@ def _process_custom_style(js_file, html_file):
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `%(html_template)s`;
 document.head.appendChild($_documentContainer.content);""" % {
-  'js_imports': '\n'.join(js_imports),
-  'html_template': html_template,
-}
+      'js_imports': '\n'.join(js_imports),
+      'html_template': html_template,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
@@ -433,13 +480,22 @@ def _process_iron_iconset(js_file, html_file):
 const template = html`%(html_template)s`;
 document.head.appendChild(template.content);
 """ % {
-  'js_imports': '\n'.join(js_imports),
-  'html_template': html_template,
-}
+      'js_imports': '\n'.join(js_imports),
+      'html_template': html_template,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
 
+def _resetGlobals():
+  global _namespace_rewrites
+  _namespace_rewrites = {}
+  global _auto_imports
+  _auto_imports = {}
+  global _ignore_imports
+  _ignore_imports = []
+  global _migrated_imports
+  _migrated_imports = []
 
 def main(argv):
   parser = argparse.ArgumentParser()
@@ -448,7 +504,9 @@ def main(argv):
   parser.add_argument('--js_file', required=True)
   parser.add_argument('--html_file', required=True)
   parser.add_argument('--namespace_rewrites', required=False, nargs="*")
+  parser.add_argument('--ignore_imports', required=False, nargs="*")
   parser.add_argument('--auto_imports', required=False, nargs="*")
+  parser.add_argument('--migrated_imports', required=False, nargs="*")
   parser.add_argument(
       '--html_type', choices=['dom-module', 'style-module', 'custom-style',
       'iron-iconset', 'v3-ready'],
@@ -463,10 +521,22 @@ def main(argv):
 
   # Extract automatic imports from arguments.
   if args.auto_imports:
+    global _auto_imports
     for entry in args.auto_imports:
       path, imports = entry.split('|')
       _auto_imports[path] = imports.split(',')
 
+  # Extract ignored imports from arguments.
+  if args.ignore_imports:
+    assert args.html_type != 'v3-ready'
+    global _ignore_imports
+    _ignore_imports = args.ignore_imports
+
+  # Extract migrated imports from arguments.
+  if args.migrated_imports:
+    assert args.html_type != 'v3-ready'
+    global _migrated_imports
+    _migrated_imports = args.migrated_imports
 
   in_folder = os.path.normpath(os.path.join(_CWD, args.in_folder))
   out_folder = os.path.normpath(os.path.join(_CWD, args.out_folder))
@@ -484,16 +554,18 @@ def main(argv):
   elif args.html_type == 'iron-iconset':
     result = _process_iron_iconset(js_file, html_file)
   elif args.html_type == 'v3-ready':
-    result = _process_v3_ready(js_file, html_file)
+    result = process_v3_ready(js_file, html_file)
 
   # Reconstruct file.
   # Specify the newline character so that the exact same file is generated
   # across platforms.
-  with io.open(os.path.join(out_folder, result[1]), mode='w', encoding='utf-8', newline='\n') as f:
+  with io.open(os.path.join(out_folder, result[1]), mode='wb') as f:
     for l in result[0]:
-      if (type(l) != unicode):
-        l = unicode(l, encoding='utf-8')
-      f.write(l)
+      f.write(l.encode('utf-8'))
+
+  # Reset global variables so that main() can be invoked multiple times during
+  # testing without leaking state from one test to the next.
+  _resetGlobals()
   return
 
 

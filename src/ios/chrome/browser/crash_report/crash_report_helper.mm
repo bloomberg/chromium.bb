@@ -18,7 +18,10 @@
 #include "components/upload_list/crash_upload_list.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
+#import "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_observer.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -42,10 +45,10 @@
  @private
   // Map associating the tab id to the breakpad key used to keep track of the
   // loaded URL.
-  NSMutableDictionary* breakpadKeyByTabId_;
+  NSMutableDictionary* _breakpadKeyByTabId;
   // List of keys to use for recording URLs. This list is sorted such that a new
   // tab must use the first key in this list to record its URLs.
-  NSMutableArray* breakpadKeys_;
+  NSMutableArray* _breakpadKeys;
   // The WebStateObserverBridge used to register self as a WebStateObserver
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Forwards observer methods for all WebStates in the WebStateList monitored
@@ -83,7 +86,7 @@
  @private
   // Map associating the tab id to an object describing the current state of the
   // tab.
-  NSMutableDictionary* tabCurrentStateByTabId_;
+  NSMutableDictionary* _tabCurrentStateByTabId;
   // The WebStateObserverBridge used to register self as a WebStateObserver
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Bridges C++ WebStateListObserver methods to this
@@ -147,12 +150,12 @@ const NSString* kDocumentMimeType = @"application/pdf";
 
 - (id)init {
   if ((self = [super init])) {
-    breakpadKeyByTabId_ =
+    _breakpadKeyByTabId =
         [[NSMutableDictionary alloc] initWithCapacity:kNumberOfURLsToSend];
-    breakpadKeys_ =
+    _breakpadKeys =
         [[NSMutableArray alloc] initWithCapacity:kNumberOfURLsToSend];
     for (int i = 0; i < kNumberOfURLsToSend; ++i)
-      [breakpadKeys_ addObject:[NSString stringWithFormat:@"url%d", i]];
+      [_breakpadKeys addObject:[NSString stringWithFormat:@"url%d", i]];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -160,34 +163,34 @@ const NSString* kDocumentMimeType = @"application/pdf";
 }
 
 - (void)removeTabId:(NSString*)tabId {
-  NSString* key = [breakpadKeyByTabId_ objectForKey:tabId];
+  NSString* key = [_breakpadKeyByTabId objectForKey:tabId];
   if (!key)
     return;
   breakpad_helper::RemoveReportParameter(key);
   breakpad_helper::RemoveReportParameter(PendingURLKeyForKey(key));
-  [breakpadKeyByTabId_ removeObjectForKey:tabId];
-  [breakpadKeys_ removeObject:key];
-  [breakpadKeys_ insertObject:key atIndex:0];
+  [_breakpadKeyByTabId removeObjectForKey:tabId];
+  [_breakpadKeys removeObject:key];
+  [_breakpadKeys insertObject:key atIndex:0];
 }
 
 - (void)recordURL:(NSString*)url
          forTabId:(NSString*)tabId
           pending:(BOOL)pending {
-  NSString* breakpadKey = [breakpadKeyByTabId_ objectForKey:tabId];
+  NSString* breakpadKey = [_breakpadKeyByTabId objectForKey:tabId];
   BOOL reusingKey = NO;
   if (!breakpadKey) {
     // Get the first breakpad key and push it back at the end of the keys.
-    breakpadKey = [breakpadKeys_ objectAtIndex:0];
-    [breakpadKeys_ removeObject:breakpadKey];
-    [breakpadKeys_ addObject:breakpadKey];
+    breakpadKey = [_breakpadKeys objectAtIndex:0];
+    [_breakpadKeys removeObject:breakpadKey];
+    [_breakpadKeys addObject:breakpadKey];
     // Remove the current mapping to the breakpad key.
     for (NSString* tabId in
-         [breakpadKeyByTabId_ allKeysForObject:breakpadKey]) {
+         [_breakpadKeyByTabId allKeysForObject:breakpadKey]) {
       reusingKey = YES;
-      [breakpadKeyByTabId_ removeObjectForKey:tabId];
+      [_breakpadKeyByTabId removeObjectForKey:tabId];
     }
     // Associate the breakpad key to the tab id.
-    [breakpadKeyByTabId_ setObject:breakpadKey forKey:tabId];
+    [_breakpadKeyByTabId setObject:breakpadKey forKey:tabId];
   }
   NSString* pendingKey = PendingURLKeyForKey(breakpadKey);
   if (pending) {
@@ -209,6 +212,11 @@ const NSString* kDocumentMimeType = @"application/pdf";
 }
 
 - (void)observeWebStateList:(WebStateList*)webStateList {
+  if (_allWebStateObservationForwarder && IsMultiwindowSupported()) {
+    // TODO(crbug.com/1060658): enable crash reporting on more than one window.
+    return;
+  }
+
   webStateList->AddObserver(_webStateListObserver.get());
   // CrashReporterURLObserver should only observe one webStateList at a time.
   DCHECK(!_allWebStateObservationForwarder);
@@ -243,7 +251,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason {
+                     reason:(ActiveWebStateChangeReason)reason {
   if (!newWebState)
     return;
   web::NavigationItem* pendingItem =
@@ -295,7 +303,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
 
 - (id)init {
   if ((self = [super init])) {
-    tabCurrentStateByTabId_ = [[NSMutableDictionary alloc] init];
+    _tabCurrentStateByTabId = [[NSMutableDictionary alloc] init];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -305,7 +313,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
 - (void)closingDocumentInTab:(NSString*)tabId {
   NSString* mime = (NSString*)[self getTabInfo:@"mime" forTab:tabId];
   if ([kDocumentMimeType isEqualToString:mime])
-    breakpad_helper::SetCurrentTabIsPDF(false);
+    crash_keys::SetCurrentTabIsPDF(false);
   [self removeTabInfo:@"mime" forTab:tabId];
 }
 
@@ -313,28 +321,28 @@ const NSString* kDocumentMimeType = @"application/pdf";
          withValue:(const NSString*)value
             forTab:(NSString*)tabId {
   NSMutableDictionary* tabCurrentState =
-      [tabCurrentStateByTabId_ objectForKey:tabId];
+      [_tabCurrentStateByTabId objectForKey:tabId];
   if (tabCurrentState == nil) {
     NSMutableDictionary* currentStateOfNewTab =
         [[NSMutableDictionary alloc] init];
-    [tabCurrentStateByTabId_ setObject:currentStateOfNewTab forKey:tabId];
-    tabCurrentState = [tabCurrentStateByTabId_ objectForKey:tabId];
+    [_tabCurrentStateByTabId setObject:currentStateOfNewTab forKey:tabId];
+    tabCurrentState = [_tabCurrentStateByTabId objectForKey:tabId];
   }
   [tabCurrentState setObject:value forKey:key];
 }
 
 - (id)getTabInfo:(NSString*)key forTab:(NSString*)tabId {
-  NSMutableDictionary* tabValues = [tabCurrentStateByTabId_ objectForKey:tabId];
+  NSMutableDictionary* tabValues = [_tabCurrentStateByTabId objectForKey:tabId];
   return [tabValues objectForKey:key];
 }
 
 - (void)removeTabInfo:(NSString*)key forTab:(NSString*)tabId {
-  [[tabCurrentStateByTabId_ objectForKey:tabId] removeObjectForKey:key];
+  [[_tabCurrentStateByTabId objectForKey:tabId] removeObjectForKey:key];
 }
 
 - (void)removeTabId:(NSString*)tabId {
   [self closingDocumentInTab:tabId];
-  [tabCurrentStateByTabId_ removeObjectForKey:tabId];
+  [_tabCurrentStateByTabId removeObjectForKey:tabId];
 }
 
 - (void)observeWebState:(web::WebState*)webState {
@@ -393,7 +401,7 @@ const NSString* kDocumentMimeType = @"application/pdf";
     return;
 
   [self setTabInfo:@"mime" withValue:kDocumentMimeType forTab:tabID];
-  breakpad_helper::SetCurrentTabIsPDF(true);
+  crash_keys::SetCurrentTabIsPDF(true);
 }
 
 @end
@@ -436,6 +444,28 @@ void ClearStateForWebStateList(WebStateList* web_state_list) {
     web::WebState* web_state = web_state_list->GetWebStateAt(index);
     [observer removeTabId:TabIdTabHelper::FromWebState(web_state)->tab_id()];
   }
+}
+
+void MonitorBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      observeBreadcrumbManager:breadcrumb_manager];
+}
+
+void StopMonitoringBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      stopObservingBreadcrumbManager:breadcrumb_manager];
+}
+
+void MonitorBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      observeBreadcrumbManagerService:breadcrumb_manager_service];
+}
+
+void StopMonitoringBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      stopObservingBreadcrumbManagerService:breadcrumb_manager_service];
 }
 
 }  // namespace breakpad

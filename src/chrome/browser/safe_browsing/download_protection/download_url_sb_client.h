@@ -11,7 +11,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/download/public/common/download_item.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -79,6 +79,7 @@ class DownloadUrlSBClient : public SafeBrowsingDatabaseManager::Client,
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   base::TimeTicks start_time_;
   ExtendedReportingLevel extended_reporting_level_;
+  bool is_enhanced_protection_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
       download_item_observer_;

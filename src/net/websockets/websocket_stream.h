@@ -15,8 +15,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/isolation_info.h"
 #include "net/base/net_export.h"
-#include "net/base/network_isolation_key.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
@@ -97,7 +98,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
 
     // Called on successful connection. The parameter is an object derived from
     // WebSocketStream.
-    virtual void OnSuccess(std::unique_ptr<WebSocketStream> stream) = 0;
+    virtual void OnSuccess(
+        std::unique_ptr<WebSocketStream> stream,
+        std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
     // Called on failure to connect.
     // |message| contains defails of the failure.
@@ -106,10 +109,6 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // Called when the WebSocket Opening Handshake starts.
     virtual void OnStartOpeningHandshake(
         std::unique_ptr<WebSocketHandshakeRequestInfo> request) = 0;
-
-    // Called when the WebSocket Opening Handshake ends.
-    virtual void OnFinishOpeningHandshake(
-        std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
     // Called when there is an SSL certificate error. Should call
     // ssl_error_callbacks->ContinueSSLRequest() or
@@ -154,8 +153,8 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const SiteForCookies& site_for_cookies,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
@@ -170,8 +169,8 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const SiteForCookies& site_for_cookies,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,

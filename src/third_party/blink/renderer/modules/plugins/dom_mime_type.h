@@ -21,7 +21,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_MIME_TYPE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -32,7 +32,8 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType final : public ScriptWrappable, public ContextClient {
+class DOMMimeType final : public ScriptWrappable,
+                          public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -44,7 +45,7 @@ class DOMMimeType final : public ScriptWrappable, public ContextClient {
   const String& description() const;
   DOMPlugin* enabledPlugin() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<const MimeClassInfo> mime_class_info_;

@@ -42,6 +42,16 @@ class ReputationWebContentsObserver
   // check finishes.
   void RegisterReputationCheckCallbackForTesting(base::OnceClosure callback);
 
+  // Allows tests to see whether a reputation check has already completed since
+  // construction or last reset, and selectively register a callback if not.
+  bool reputation_check_pending_for_testing() {
+    return reputation_check_pending_for_testing_;
+  }
+
+  void reset_reputation_check_pending_for_testing() {
+    reputation_check_pending_for_testing_ = true;
+  }
+
  private:
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
 
@@ -49,17 +59,20 @@ class ReputationWebContentsObserver
 
   // Possibly show a Safety Tip. Called on visibility changes and page load.
   void MaybeShowSafetyTip(ukm::SourceId navigation_source_id,
+                          bool called_from_visibility_check,
                           bool record_ukm_if_tip_not_shown);
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
   void HandleReputationCheckResult(ukm::SourceId navigation_source_id,
+                                   bool called_from_visibility_check,
                                    bool record_ukm_if_tip_not_shown,
                                    ReputationCheckResult result);
 
   // A helper method that calls and resets
-  // |reputation_check_callback_for_testing_| if it is set.
-  void MaybeCallReputationCheckCallback();
+  // |reputation_check_callback_for_testing_| if it is set. Only flips
+  // |reputation_check_pending_for_testing_| if |heuristics_checked| is set.
+  void MaybeCallReputationCheckCallback(bool heuristics_checked);
 
   // A helper method to handle finalizing a reputation check. This method
   // records UKM data about triggered heuristics if |record_ukm| is true, and
@@ -79,6 +92,8 @@ class ReputationWebContentsObserver
   int last_safety_tip_navigation_entry_id_ = 0;
 
   base::OnceClosure reputation_check_callback_for_testing_;
+  // Whether or not heuristics have yet been checked yet.
+  bool reputation_check_pending_for_testing_;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

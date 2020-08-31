@@ -2,29 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
 group("closure_compile") {
-  deps = [
-    "sync_confirmation:closure_compile",
-  ]
+  deps = [ "sync_confirmation:closure_compile" ]
   if (!is_chromeos) {
-    deps += [ "signin_email_confirmation:closure_compile" ]
+    deps += [
+      "signin_email_confirmation:closure_compile",
+      "signin_error:closure_compile",
+    ]
   }
 }
 
-group("polymer3_elements") {
-  deps = [
-    ":signin_shared_css_module",
-    "sync_confirmation:polymer3_elements",
+group("web_components") {
+  public_deps = [
+    ":web_components_local",
+    "sync_confirmation:web_components",
   ]
   if (!is_chromeos) {
-    deps += [ "signin_email_confirmation:polymer3_elements" ]
+    public_deps += [
+      "signin_email_confirmation:web_components",
+      "signin_error:web_components",
+    ]
   }
 }
 
-polymer_modulizer("signin_shared_css") {
-  html_file = "signin_shared_css.html"
-  js_file = "signin_shared_css.js"
-  html_type = "v3-ready"
+html_to_js("web_components_local") {
+  js_files = [ "signin_shared_css.js" ]
 }

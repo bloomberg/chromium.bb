@@ -48,6 +48,7 @@ table_files = \
 	cy-cy-g2.ctb \
 	cy.tbl \
 	da-dk-6miscChars.cti \
+	da-dk-8miscChars.cti \
 	da-dk.dis \
 	da-dk-g08.ctb \
 	da-dk-g16.ctb \
@@ -260,6 +261,7 @@ table_files = \
 	nl-g0.uti \
 	nl-NL-g0.utb \
 	nl.tbl \
+	nl-comp8.utb \
 	no-no-8dot-fallback-6dot-g0.utb \
 	no-no-8dot.utb \
 	no-no-braillo-047-01.dis \

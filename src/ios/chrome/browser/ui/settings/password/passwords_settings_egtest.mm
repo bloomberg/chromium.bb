@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -51,6 +52,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PasswordSettingsAppInterface);
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TurnSettingsSwitchOn;
 
 namespace {
@@ -107,17 +109,6 @@ GREYElementInteraction* GetInteractionForPasswordsExportConfirmAlert(
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
       inRoot:grey_accessibilityID(kPasswordsExportConfirmViewId)];
-}
-
-id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
-#if defined(CHROME_EARL_GREY_2)
-  return grey_allOf(
-      grey_accessibilityLabel(backItemTitle),
-      grey_kindOfClassName(@"UIAccessibilityBackButtonElement"),
-      grey_ancestor(grey_accessibilityID(@"SettingNavigationBar")), nil);
-#else
-  return chrome_test_util::SettingsMenuBackButton();
-#endif
 }
 
 // Matcher for a UITextField inside a SettingsSearchCell.
@@ -395,10 +386,10 @@ void TapEdit() {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -416,7 +407,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Check the snackbar in case of successful reauthentication.
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
@@ -429,7 +421,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Check the snackbar in case of failed reauthentication.
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       performAction:grey_tap()];
 
@@ -439,9 +432,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -459,7 +452,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Check the snackbar in case of successful reauthentication.
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
@@ -470,9 +464,9 @@ void TapEdit() {
       selectElementWithMatcher:grey_accessibilityLabel(@"concrete password")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -490,7 +484,8 @@ void TapEdit() {
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
 
   // Check the snackbar in case of failed reauthentication.
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
@@ -505,9 +500,9 @@ void TapEdit() {
   // button, which does need one). The reason is that the password not being
   // shown is enough of a message that the action failed.
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -531,9 +526,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -557,9 +552,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -568,11 +563,6 @@ void TapEdit() {
 // Checks that deleting a saved password from password details view goes back
 // to the list-of-passwords view which doesn't display that form anymore.
 - (void)testSavedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -613,7 +603,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -623,11 +613,6 @@ void TapEdit() {
 // goes back to the list-of-passwords view which doesn't display that form
 // anymore.
 - (void)testDuplicatedSavedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
   // Save duplicate of the previously saved form to be deleted at the same time.
@@ -676,7 +661,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -685,11 +670,6 @@ void TapEdit() {
 // Checks that deleting a blocked form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
 - (void)testBlockedFormDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save blacklisted form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
                  saveExampleBlockedOrigin:@"https://blocked.com"],
@@ -731,7 +711,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -739,11 +719,6 @@ void TapEdit() {
 
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletionInDetailView {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -756,13 +731,19 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Tap the alert's Cancel button to cancel.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   ButtonWithAccessibilityLabel(
-                                       l10n_util::GetNSString(
-                                           IDS_IOS_CANCEL_PASSWORD_DELETION)),
-                                   grey_interactable(), nullptr)]
-      performAction:grey_tap()];
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kPasswordDetailsTableViewId)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     ButtonWithAccessibilityLabel(
+                                         l10n_util::GetNSString(
+                                             IDS_IOS_CANCEL_PASSWORD_DELETION)),
+                                     grey_interactable(), nullptr)]
+        performAction:grey_tap()];
+  }
 
   // Check that the current view is still the detail view, by locating the Copy
   // button.
@@ -775,12 +756,12 @@ void TapEdit() {
 
   // Go back to the list view and verify that the password is still in the
   // list.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -810,7 +791,7 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -843,9 +824,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -879,9 +860,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -906,7 +887,8 @@ void TapEdit() {
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Tap the context menu item for copying.
   [[EarlGrey
@@ -921,9 +903,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -948,7 +930,8 @@ void TapEdit() {
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Tap the context menu item for showing.
   [[EarlGrey
@@ -971,9 +954,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1010,9 +993,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(PasswordHeader())
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1067,9 +1050,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:FederationHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1107,9 +1090,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:FederationHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1160,9 +1143,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:PasswordHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1203,7 +1186,7 @@ void TapEdit() {
         assertWithMatcher:grey_notNil()];
   }
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1228,7 +1211,7 @@ void TapEdit() {
                     @"State of the UI toggle differs from real preferences.");
   }
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1257,7 +1240,7 @@ void TapEdit() {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1317,7 +1300,7 @@ void TapEdit() {
                                    learnHow)] performAction:grey_tap()];
   // Check the sub menu is closed due to the help article.
   NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       assertWithMatcher:grey_notNil()
                   error:&error];
   GREYAssertTrue(error, @"The settings back button is still displayed");
@@ -1380,9 +1363,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(siteCell)
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1410,7 +1393,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1418,18 +1401,14 @@ void TapEdit() {
 
 // Test export flow
 - (void)testExportFlow {
-  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
-  }
   // Saving a form is needed for exporting passwords.
   SaveExamplePasswordForm();
 
   OpenPasswordSettings();
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
-  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -1495,6 +1474,12 @@ void TapEdit() {
 // Test that when user types text in search field, passwords and blocked
 // items are filtered out and "save passwords" switch is removed.
 - (void)testSearchPasswords {
+// TODO(crbug.com/1067818): Test doesn't pass on iPad device.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   SaveExamplePasswordForms();
   SaveExampleBlockedForms();
 

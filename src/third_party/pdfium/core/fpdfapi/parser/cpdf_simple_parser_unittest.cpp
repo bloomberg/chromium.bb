@@ -7,6 +7,7 @@
 #include <string>
 
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/test_support.h"
 #include "third_party/base/span.h"
@@ -38,13 +39,15 @@ TEST(SimpleParserTest, GetWord) {
       STR_IN_OUT_CASE("\t\t<< /abc>>", "<<"),
       // Handling ending delimiters.
       STR_IN_OUT_CASE("> little bear", ">"),
-      STR_IN_OUT_CASE(") another bear", ")"), STR_IN_OUT_CASE(">> end ", ">>"),
+      STR_IN_OUT_CASE(") another bear", ")"),
+      STR_IN_OUT_CASE(">> end ", ">>"),
       // No ending delimiters.
       STR_IN_OUT_CASE("(sdfgfgbcv", "(sdfgfgbcv"),
       // Regular cases.
       STR_IN_OUT_CASE("apple pear", "apple"),
       STR_IN_OUT_CASE(" pi=3.1415 ", "pi=3.1415"),
-      STR_IN_OUT_CASE(" p t x c ", "p"), STR_IN_OUT_CASE(" pt\0xc ", "pt"),
+      STR_IN_OUT_CASE(" p t x c ", "p"),
+      STR_IN_OUT_CASE(" pt\0xc ", "pt"),
       STR_IN_OUT_CASE(" $^&&*\t\0sdff ", "$^&&*"),
       STR_IN_OUT_CASE("\n\r+3.5656 -11.0", "+3.5656"),
   };

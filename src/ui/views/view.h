@@ -22,6 +22,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/paint_info.h"
@@ -78,8 +80,9 @@ class DragController;
 class FocusManager;
 class FocusTraversable;
 class LayoutManager;
-class ViewAccessibility;
 class ScrollView;
+class ViewAccessibility;
+class ViewMaskLayer;
 class ViewObserver;
 class Widget;
 class WordLookupClient;
@@ -432,6 +435,21 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Removes |view| from this view. The view's parent will change to null.
   void RemoveChildView(View* view);
 
+  // Removes |view| from this view and transfers ownership back to the caller in
+  // the form of a std::unique_ptr<T>.
+  // TODO(kylixrd): Rename back to RemoveChildView() once the code is refactored
+  //                to eliminate the uses of the old RemoveChildView().
+  template <typename T>
+  std::unique_ptr<T> RemoveChildViewT(T* view) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client doesn't already have "
+           "ownership of |view|.";
+    DCHECK(std::find(children_.cbegin(), children_.cend(), view) !=
+           children_.cend());
+    RemoveChildView(view);
+    return base::WrapUnique(view);
+  }
+
   // Removes all the children from this view. If |delete_children| is true,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
@@ -539,6 +557,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetPreferredSize().height().
   virtual int GetHeightForWidth(int w) const;
 
+  // Returns a bound on the available space for a child view, for example, in
+  // case the child view wants to play an animation that would cause it to
+  // become larger. Default is not to bound the available size; it is the
+  // responsibility of specific view/layout manager implementations to determine
+  // if and when a bound applies.
+  virtual SizeBounds GetAvailableSize(const View* child) const;
+
   // The |Visible| property. See comment above for instructions on declaring and
   // implementing a property.
   //
@@ -588,7 +613,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Transform GetTransform() const;
 
   // Clipping is done relative to the view's local bounds.
-  void set_clip_path(const SkPath& path) { clip_path_ = path; }
+  void SetClipPath(const SkPath& path);
+  const SkPath& clip_path() const { return clip_path_; }
 
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
@@ -1030,7 +1056,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will be given a chance.
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event);
 
-
   // See field for description.
   void set_notify_enter_exit_on_child(bool notify) {
     notify_enter_exit_on_child_ = notify;
@@ -1196,10 +1221,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // as it is always equal to the current View.
   virtual void ShowContextMenu(const gfx::Point& p,
                                ui::MenuSourceType source_type);
-
-  // On some platforms, we show context menu on mouse press instead of release.
-  // This method returns true for those platforms.
-  static bool ShouldShowContextMenuOnMousePress();
 
   // Returns the location, in screen coordinates, to show the context menu at
   // when the context menu is shown from the keyboard. This implementation
@@ -1478,6 +1499,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
+  void OnLayerTransformed(const gfx::Transform& old_transform,
+                          ui::PropertyChangeReason reason) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
 
@@ -1521,7 +1544,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // allows individual Views to do special cleanup and processing (such as
   // dropping resource caches). To dispatch a theme changed notification, call
   // Widget::ThemeChanged().
-  virtual void OnThemeChanged() {}
+  virtual void OnThemeChanged();
 
   // Tooltips ------------------------------------------------------------------
 
@@ -1779,6 +1802,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetLayerBounds(const gfx::Size& size_in_dip,
                       const LayerOffsetData& layer_offset_data);
 
+  // Creates a mask layer for the current view using |clip_path_|.
+  void CreateMaskLayer();
+
   // Input ---------------------------------------------------------------------
 
   bool ProcessMousePressed(const ui::MouseEvent& event);
@@ -1914,8 +1940,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Transformations -----------------------------------------------------------
 
-  // Painting will be clipped to this path. TODO(estade): this doesn't work for
-  // layers.
+  // Painting will be clipped to this path.
   SkPath clip_path_;
 
   // Layout --------------------------------------------------------------------
@@ -1971,6 +1996,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // beneath.
   std::vector<ui::Layer*> layers_beneath_;
 
+  // If painting to a layer |mask_layer_| will mask the current layer and all
+  // child layers to within the |clip_path_|.
+  std::unique_ptr<views::ViewMaskLayer> mask_layer_;
+
   // Accelerators --------------------------------------------------------------
 
   // Focus manager accelerators registered on.
@@ -2005,6 +2034,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Input  --------------------------------------------------------------------
 
   std::unique_ptr<ViewTargeter> targeter_;
+
+  // System events -------------------------------------------------------------
+
+#if DCHECK_IS_ON()
+  bool on_theme_changed_called_ = false;
+#endif
 
   // Accessibility -------------------------------------------------------------
 

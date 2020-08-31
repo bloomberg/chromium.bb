@@ -8,16 +8,15 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "services/device/public/mojom/constants.mojom.h"
 
 namespace device {
 
 // TestWakeLock implements mojom::WakeLock on behalf of TestWakeLockProvider.
-class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock,
-                                           public service_manager::Service {
+class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock {
  public:
   TestWakeLock(mojo::PendingReceiver<mojom::WakeLock> receiver,
                mojom::WakeLockType type,
@@ -143,12 +142,6 @@ TestWakeLockProvider::TestWakeLockProvider() {
       std::make_unique<WakeLockDataPerType>();
 }
 
-TestWakeLockProvider::TestWakeLockProvider(
-    service_manager::mojom::ServiceRequest request)
-    : TestWakeLockProvider() {
-  service_binding_.Bind(std::move(request));
-}
-
 TestWakeLockProvider::~TestWakeLockProvider() = default;
 
 void TestWakeLockProvider::BindReceiver(
@@ -173,15 +166,6 @@ void TestWakeLockProvider::GetWakeLockWithoutContext(
       std::make_unique<TestWakeLock>(std::move(receiver), type, this);
   GetWakeLockDataPerType(type).wake_locks[wake_lock.get()] =
       std::move(wake_lock);
-}
-
-void TestWakeLockProvider::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_EQ(interface_name, mojom::WakeLockProvider::Name_);
-  receivers_.Add(this, mojo::PendingReceiver<mojom::WakeLockProvider>(
-                           std::move(interface_pipe)));
 }
 
 void TestWakeLockProvider::OnConnectionError(mojom::WakeLockType type,

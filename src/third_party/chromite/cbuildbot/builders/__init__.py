@@ -20,10 +20,11 @@ whose name is 'SimpleBuilder' in all the *_builders.py modules.
 
 from __future__ import print_function
 
-import glob
-import os
+import importlib
+import sys
 
-from chromite.lib import cros_import
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetBuilderClass(name):
@@ -65,7 +66,7 @@ def GetBuilderClass(name):
     name_parts = ['chromite', 'cbuildbot', 'builders'] + name_parts
 
   target = '.'.join(name_parts)
-  module = cros_import.ImportModule(target)
+  module = importlib.import_module(target)
 
   # See if this module has the builder we care about.
   if hasattr(module, builder_class_name):

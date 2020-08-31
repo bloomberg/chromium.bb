@@ -4,8 +4,8 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,16 +89,29 @@ void ChromeBookmarkClient::GetTypedCountForUrls(
   }
 }
 
-bool ChromeBookmarkClient::IsPermanentNodeVisible(
-    const bookmarks::BookmarkPermanentNode* node) {
-  DCHECK(bookmarks::IsPermanentNode(node, managed_bookmark_service_));
-  if (bookmarks::IsManagedNode(node, managed_bookmark_service_))
-    return false;
+bool ChromeBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
+    bookmarks::BookmarkNode::Type type) {
 #if defined(OS_ANDROID)
-  return node->type() == bookmarks::BookmarkNode::MOBILE;
+  const bool is_mobile = true;
 #else
-  return node->type() != bookmarks::BookmarkNode::MOBILE;
+  const bool is_mobile = false;
 #endif
+
+  switch (type) {
+    case bookmarks::BookmarkNode::URL:
+      NOTREACHED();
+      return false;
+    case bookmarks::BookmarkNode::FOLDER:
+      // Managed node.
+      return false;
+    case bookmarks::BookmarkNode::BOOKMARK_BAR:
+    case bookmarks::BookmarkNode::OTHER_NODE:
+      return !is_mobile;
+    case bookmarks::BookmarkNode::MOBILE:
+      return is_mobile;
+  }
+
+  return false;
 }
 
 void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {

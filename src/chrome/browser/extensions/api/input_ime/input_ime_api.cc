@@ -8,6 +8,7 @@
 #include <utility>
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
 
@@ -27,7 +28,7 @@ InputMethodEngineBase* GetEngineIfActive(Profile* profile,
                                          std::string* error) {
   extensions::InputImeEventRouter* event_router =
       extensions::GetInputImeEventRouter(profile);
-  CHECK(event_router) << kErrorRouterNotAvailable;
+  DCHECK(event_router) << kErrorRouterNotAvailable;
   InputMethodEngineBase* engine =
       event_router->GetEngineIfActive(extension_id, error);
   return engine;
@@ -164,7 +165,7 @@ void ImeObserver::OnCompositionBoundsChanged(
     const std::vector<gfx::Rect>& bounds) {}
 
 void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
-                                           const std::string& text,
+                                           const base::string16& text,
                                            int cursor_pos,
                                            int anchor_pos,
                                            int offset_pos) {
@@ -173,7 +174,10 @@ void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
     return;
 
   input_ime::OnSurroundingTextChanged::SurroundingInfo info;
-  info.text = text;
+  // |info.text| is encoded in UTF8 here so |info.focus| etc may not match the
+  // index in |info.text|, the javascript code on the extension side should
+  // handle it.
+  info.text = base::UTF16ToUTF8(text);
   info.focus = cursor_pos;
   info.anchor = anchor_pos;
   info.offset = offset_pos;
@@ -233,6 +237,9 @@ std::string ImeObserver::ConvertInputContextType(
       break;
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       input_context_type = "password";
+      break;
+    case ui::TEXT_INPUT_TYPE_NULL:
+      input_context_type = "null";
       break;
     default:
       input_context_type = "text";
@@ -419,9 +426,11 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
     event.shift_key = key_event.shift_key ? *(key_event.shift_key) : false;
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
-  if (!engine->SendKeyEvents(params.context_id, key_data_out))
-    return RespondNow(
-        Error(InformativeError(kErrorSetKeyEventsFail, function_name())));
+
+  if (!engine->SendKeyEvents(params.context_id, key_data_out, &error))
+    return RespondNow(Error(InformativeError(
+        base::StringPrintf("%s %s", kErrorSetKeyEventsFail, error.c_str()),
+        function_name())));
   return RespondNow(NoArguments());
 }
 
@@ -461,7 +470,7 @@ InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
 
 std::string InformativeError(const std::string& error,
                              const char* function_name) {
-  return base::StringPrintf("%s\nThrown by %s", error.c_str(), function_name);
+  return base::StringPrintf("[%s]: %s", function_name, error.c_str());
 }
 
 }  // namespace extensions

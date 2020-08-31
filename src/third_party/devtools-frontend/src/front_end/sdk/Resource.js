@@ -25,19 +25,31 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import * as Platfrom from '../platform/platform.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {Events, NetworkRequest} from './NetworkRequest.js';                   // eslint-disable-line no-unused-vars
+import {ResourceTreeFrame, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Common.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  * @unrestricted
  */
-export default class Resource {
+export class Resource {
   /**
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
-   * @param {?SDK.NetworkRequest} request
+   * @param {!ResourceTreeModel} resourceTreeModel
+   * @param {?NetworkRequest} request
    * @param {string} url
    * @param {string} documentURL
    * @param {!Protocol.Page.FrameId} frameId
    * @param {!Protocol.Network.LoaderId} loaderId
-   * @param {!Common.ResourceType} type
+   * @param {!Common.ResourceType.ResourceType} type
    * @param {string} mimeType
    * @param {?Date} lastModified
    * @param {?number} contentSize
@@ -50,10 +62,10 @@ export default class Resource {
     this._documentURL = documentURL;
     this._frameId = frameId;
     this._loaderId = loaderId;
-    this._type = type || Common.resourceTypes.Other;
+    this._type = type || Common.ResourceType.resourceTypes.Other;
     this._mimeType = mimeType;
 
-    this._lastModified = lastModified && lastModified.isValid() ? lastModified : null;
+    this._lastModified = lastModified && Platfrom.DateUtilities.isValid(lastModified) ? lastModified : null;
     this._contentSize = contentSize;
 
     /** @type {?string} */ this._content;
@@ -61,7 +73,7 @@ export default class Resource {
     /** @type {boolean} */ this._contentEncoded;
     this._pendingContentCallbacks = [];
     if (this._request && !this._request.finished) {
-      this._request.addEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._requestFinished, this);
+      this._request.addEventListener(Events.FinishedLoading, this._requestFinished, this);
     }
   }
 
@@ -74,7 +86,7 @@ export default class Resource {
     }
     const lastModifiedHeader = this._request.responseLastModified();
     const date = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
-    this._lastModified = date && date.isValid() ? date : null;
+    this._lastModified = date && Platfrom.DateUtilities.isValid(date) ? date : null;
     return this._lastModified;
   }
 
@@ -89,7 +101,7 @@ export default class Resource {
   }
 
   /**
-   * @return {?SDK.NetworkRequest}
+   * @return {?NetworkRequest}
    */
   get request() {
     return this._request;
@@ -107,7 +119,7 @@ export default class Resource {
    */
   set url(x) {
     this._url = x;
-    this._parsedURL = new Common.ParsedURL(x);
+    this._parsedURL = new Common.ParsedURL.ParsedURL(x);
   }
 
   get parsedURL() {
@@ -143,7 +155,7 @@ export default class Resource {
   }
 
   /**
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   resourceType() {
     return this._request ? this._request.resourceType() : this._type;
@@ -173,11 +185,12 @@ export default class Resource {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
-    if (this.resourceType() === Common.resourceTypes.Document && this.mimeType.indexOf('javascript') !== -1) {
-      return Common.resourceTypes.Script;
+    if (this.resourceType() === Common.ResourceType.resourceTypes.Document &&
+        this.mimeType.indexOf('javascript') !== -1) {
+      return Common.ResourceType.resourceTypes.Script;
     }
     return this.resourceType();
   }
@@ -193,7 +206,7 @@ export default class Resource {
 
   /**
    * @override
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     if (typeof this._content !== 'undefined') {
@@ -221,7 +234,7 @@ export default class Resource {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   async searchInContent(query, caseSensitive, isRegex) {
     if (!this.frameId) {
@@ -241,11 +254,11 @@ export default class Resource {
   async populateImageSource(image) {
     const {content} = await this.requestContent();
     const encoded = this._contentEncoded;
-    image.src = Common.ContentProvider.contentAsDataURL(content, this._mimeType, encoded) || this._url;
+    image.src = TextUtils.ContentProvider.contentAsDataURL(content, this._mimeType, encoded) || this._url;
   }
 
   _requestFinished() {
-    this._request.removeEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._requestFinished, this);
+    this._request.removeEventListener(Events.FinishedLoading, this._requestFinished, this);
     if (this._pendingContentCallbacks.length) {
       this._innerRequestContent();
     }
@@ -257,7 +270,7 @@ export default class Resource {
     }
     this._contentRequested = true;
 
-    /** @type {!Common.DeferredContent} */
+    /** @type {!TextUtils.ContentProvider.DeferredContent} */
     let loadResult;
     if (this.request) {
       const contentData = await this.request.contentData();
@@ -267,10 +280,10 @@ export default class Resource {
     } else {
       const response = await this._resourceTreeModel.target().pageAgent().invoke_getResourceContent(
           {frameId: this.frameId, url: this.url});
-      if (response[Protocol.Error]) {
-        this._contentLoadError = response[Protocol.Error];
+      if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
+        this._contentLoadError = response[ProtocolClient.InspectorBackend.ProtocolError];
         this._content = null;
-        loadResult = {error: response[Protocol.Error], isEncoded: false};
+        loadResult = {error: response[ProtocolClient.InspectorBackend.ProtocolError], isEncoded: false};
       } else {
         this._content = response.content;
         this._contentLoadError = null;
@@ -297,25 +310,16 @@ export default class Resource {
     if (this._type.isTextType()) {
       return true;
     }
-    if (this._type === Common.resourceTypes.Other) {
+    if (this._type === Common.ResourceType.resourceTypes.Other) {
       return !!this._content && !this._contentEncoded;
     }
     return false;
   }
 
   /**
-   * @return {!SDK.ResourceTreeFrame}
+   * @return {!ResourceTreeFrame}
    */
   frame() {
     return this._resourceTreeModel.frameForId(this._frameId);
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.Resource = Resource;

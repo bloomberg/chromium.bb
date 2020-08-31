@@ -24,6 +24,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -61,13 +62,14 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/back_forward_cache_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -2391,16 +2393,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Try to get cross-site passwords from the subframe's process and wait for it
   // to be killed.
-  std::vector<autofill::PasswordForm> password_forms;
-  password_forms.push_back(autofill::PasswordForm());
-  password_forms.back().origin = main_frame_url;
+  std::vector<autofill::FormData> forms_data(1, autofill::FormData());
+  forms_data.back().url = main_frame_url;
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
   EXPECT_TRUE(factory);
   autofill::mojom::PasswordManagerDriver* driver =
       factory->GetDriverForFrame(iframe);
   EXPECT_TRUE(driver);
-  driver->PasswordFormsParsed(password_forms);
+  driver->PasswordFormsParsed(forms_data);
 
   iframe_killed.Wait();
 }
@@ -2464,10 +2465,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwd1AccountStored) {
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
   // We emulate that the user clicks "Update" button.
-  const autofill::PasswordForm& pending_credentials =
-      ManagePasswordsUIController::FromWebContents(WebContents())
-          ->GetPendingPassword();
-  prompt_observer->AcceptUpdatePrompt(pending_credentials);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
@@ -2516,9 +2514,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithAutofillDisabled,
   // expected.
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
 }
@@ -2632,9 +2628,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
 }
@@ -3004,7 +2998,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, InternalsPage_Renderer) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"),
       WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* internals_web_contents = WebContents();
 
   // The renderer is supposed to ask whether logging is available. To avoid
@@ -3015,7 +3009,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, InternalsPage_Renderer) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/password/done.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* forms_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -3027,7 +3021,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, InternalsPage_Renderer) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/password/password_form.html"),
       WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   observer.Wait();
 
   std::string find_logs =
@@ -3045,13 +3039,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, InternalsPage_Browser) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"),
       WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* internals_web_contents = WebContents();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/password/password_form.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   std::string find_logs =
       "var text = document.getElementById('log-entries').innerText;"
@@ -3147,9 +3141,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // The new password "new_pw" is used, so update prompt is expected.
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
@@ -3339,7 +3331,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   password_store->AddLogin(signin_form);
   signin_form.username_value = base::ASCIIToUTF16("last_used_username");
   signin_form.password_value = base::ASCIIToUTF16("last_used_password");
-  signin_form.preferred = true;
   password_store->AddLogin(signin_form);
   WaitForPasswordStore();
 
@@ -3802,9 +3793,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
   // Check that the password is updated correctly if the user clicks Update.
-  const autofill::PasswordForm& stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   // The stored credential has been updated with the new password.
@@ -3868,12 +3857,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   admin_form.origin = embedded_test_server()->base_url();
   admin_form.username_value = base::ASCIIToUTF16("admin");
   admin_form.password_value = base::ASCIIToUTF16("random_secret");
-  admin_form.preferred = true;
   password_store->AddLogin(admin_form);
 
   autofill::PasswordForm user_form = admin_form;
   user_form.username_value = base::ASCIIToUTF16("user");
-  user_form.preferred = false;
   password_store->AddLogin(user_form);
 
   NavigateToFile("/password/password_form.html");
@@ -3912,8 +3899,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   controller = autofill_client->popup_controller_for_testing().get();
   ASSERT_TRUE(controller);
   EXPECT_EQ(2, controller->GetLineCount());
-  EXPECT_EQ(base::ASCIIToUTF16("user"), controller->GetElidedValueAt(0));
-  EXPECT_NE(base::ASCIIToUTF16("admin"), controller->GetElidedValueAt(1));
+  EXPECT_EQ(base::ASCIIToUTF16("user"), controller->GetSuggestionValueAt(0));
+  EXPECT_NE(base::ASCIIToUTF16("admin"), controller->GetSuggestionValueAt(1));
 
   // The username_field should get re-filled with "user" instead of "admin".
   WaitForElementValue("username_field", "user");
@@ -4018,7 +4005,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(
       WebContents(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   EXPECT_FALSE(rfh_deleted_observer.deleted());
-  EXPECT_TRUE(content::IsInBackForwardCache(rfh));
+  EXPECT_TRUE(rfh->IsInBackForwardCache());
 
   // Restore the cached page.
   WebContents()->GetController().GoBack();
@@ -4074,7 +4061,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   // Navigate away.
   EXPECT_TRUE(NavigateToURL(
       WebContents(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  EXPECT_TRUE(content::IsInBackForwardCache(rfh));
+  EXPECT_TRUE(rfh->IsInBackForwardCache());
 
   // Restore the cached page.
   WebContents()->GetController().GoBack();

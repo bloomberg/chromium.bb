@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/clang_coverage_buildflags.h"
+#include "base/check_op.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
-#include "base/logging.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "content/public/browser/child_process_launcher_utils.h"
@@ -40,10 +40,9 @@ ChildProcessLauncher::ChildProcessLauncher(
     bool terminate_on_shutdown)
     : client_(client),
       starting_(true),
-      start_time_(base::TimeTicks::Now()),
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(UNDEFINED_SANITIZER) || BUILDFLAG(CLANG_COVERAGE)
+    defined(UNDEFINED_SANITIZER) || BUILDFLAG(CLANG_PROFILING)
       terminate_child_on_shutdown_(false)
 #else
       terminate_child_on_shutdown_(terminate_on_shutdown)
@@ -118,19 +117,14 @@ ChildProcessTerminationInfo ChildProcessLauncher::GetChildTerminationInfo(
   if (!process_.process.IsValid()) {
     // Make sure to avoid using the default termination status if the process
     // hasn't even started yet.
-    if (IsStarting()) {
+    if (IsStarting())
       termination_info_.status = base::TERMINATION_STATUS_STILL_RUNNING;
-      termination_info_.uptime = base::TimeTicks::Now() - start_time_;
-      DCHECK_LE(base::TimeDelta::FromSeconds(0), termination_info_.uptime);
-    }
 
     // Process doesn't exist, so return the cached termination info.
     return termination_info_;
   }
 
   termination_info_ = helper_->GetTerminationInfo(process_, known_dead);
-  termination_info_.uptime = base::TimeTicks::Now() - start_time_;
-  DCHECK_LE(base::TimeDelta::FromSeconds(0), termination_info_.uptime);
 
   // POSIX: If the process crashed, then the kernel closed the socket for it and
   // so the child has already died by the time we get here. Since

@@ -8,21 +8,20 @@
 #include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_output.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_endpoint.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_session.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
 
-QuicTraceInterceptor::QuicTraceInterceptor(QuicStringPiece identifier)
+QuicTraceInterceptor::QuicTraceInterceptor(quiche::QuicheStringPiece identifier)
     : identifier_(identifier.data(), identifier.size()), delegate_(nullptr) {}
 
 QuicTraceInterceptor::~QuicTraceInterceptor() {
   if (trace_visitor_) {
-    QuicRecordTestOutput(identifier_,
-                         trace_visitor_->trace()->SerializeAsString());
+    QuicRecordTrace(identifier_, trace_visitor_->trace()->SerializeAsString());
   }
 }
 
@@ -59,7 +58,8 @@ void QuicTraceInterceptor::OnConnectionClosed(
   delegate_->OnConnectionClosed(frame, source);
 }
 
-void QuicTraceInterceptor::OnMessageReceived(QuicStringPiece message) {
+void QuicTraceInterceptor::OnMessageReceived(
+    quiche::QuicheStringPiece message) {
   delegate_->OnMessageReceived(message);
 }
 

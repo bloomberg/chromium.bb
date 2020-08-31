@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -37,10 +36,6 @@ NSString* const kReadingListActivityType =
 
 @synthesize dispatcher = _dispatcher;
 
-+ (NSString*)activityIdentifier {
-  return kReadingListActivityType;
-}
-
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
                  dispatcher:(id<BrowserCommands>)dispatcher {
@@ -55,7 +50,7 @@ NSString* const kReadingListActivityType =
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kReadingListActivityType;
 }
 
 - (NSString*)activityTitle {

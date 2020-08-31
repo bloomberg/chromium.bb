@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/x/x11.h"
 
 namespace {
@@ -189,6 +191,27 @@ void ScopedXI2Event::InitMotionEvent(const gfx::Point& location,
   event_->xmotion.y_root = root_location.y();
   event_->xmotion.state = XEventState(flags);
   event_->xmotion.same_screen = 1;
+}
+
+void ScopedXI2Event::InitButtonEvent(EventType type,
+                                     const gfx::Point& location,
+                                     int flags) {
+  event_.reset(new XEvent);
+  memset(event_.get(), 0, sizeof(XEvent));
+  event_->type = (type == ui::ET_MOUSE_PRESSED) ? ButtonPress : ButtonRelease;
+  event_->xbutton.serial = 0;
+  event_->xbutton.send_event = 0;
+  event_->xbutton.display = gfx::GetXDisplay();
+  event_->xbutton.time = 0;
+  event_->xbutton.window = 0;
+  event_->xbutton.root = 0;
+  event_->xbutton.x = location.x();
+  event_->xbutton.y = location.y();
+  event_->xbutton.x_root = location.x();
+  event_->xbutton.y_root = location.y();
+  event_->xbutton.state = 0;
+  event_->xbutton.button = XButtonEventButton(type, flags);
+  event_->xbutton.same_screen = 1;
 }
 
 void ScopedXI2Event::InitGenericKeyEvent(int deviceid,

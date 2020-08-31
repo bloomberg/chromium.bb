@@ -13,10 +13,12 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/atomic_flag.h"
 #include "build/build_config.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/gl_implementation_wrapper.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_workarounds.h"
@@ -67,7 +69,15 @@ enum ContextPriority {
   ContextPriorityHigh
 };
 
-struct GLContextAttribs {
+struct GL_EXPORT GLContextAttribs {
+  GLContextAttribs();
+  GLContextAttribs(const GLContextAttribs& other);
+  GLContextAttribs(GLContextAttribs&& other);
+  ~GLContextAttribs();
+
+  GLContextAttribs& operator=(const GLContextAttribs& other);
+  GLContextAttribs& operator=(GLContextAttribs&& other);
+
   GpuPreference gpu_preference = GpuPreference::kLowPower;
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
@@ -76,11 +86,13 @@ struct GLContextAttribs {
   bool robust_buffer_access = false;
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
+  bool can_skip_validation = false;
   ContextPriority context_priority = ContextPriorityMedium;
 };
 
 // Encapsulates an OpenGL context, hiding platform specific management.
-class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
+class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
+                            public base::SupportsWeakPtr<GLContext> {
  public:
   explicit GLContext(GLShareGroup* share_group);
 
@@ -256,7 +268,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   virtual void ResetExtensions() = 0;
 
-  GLApi* gl_api() { return gl_api_.get(); }
+  GLApi* gl_api() { return gl_api_wrapper_->api(); }
 
 #if defined(OS_MACOSX)
   // Child classes are responsible for calling DestroyBackpressureFences during
@@ -285,9 +297,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool static_bindings_initialized_ = false;
   bool dynamic_bindings_initialized_ = false;
   std::unique_ptr<DriverGL> driver_gl_;
-  std::unique_ptr<GLApi> gl_api_;
-  std::unique_ptr<TraceGLApi> trace_gl_api_;
-  std::unique_ptr<LogGLApi> log_gl_api_;
+
+  std::unique_ptr<GL_IMPL_WRAPPER_TYPE(GL)> gl_api_wrapper_;
   std::unique_ptr<CurrentGL> current_gl_;
 
   // Copy of the real API (if one was created) for dynamic initialization

@@ -12,8 +12,10 @@
 #include <list>
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -25,6 +27,7 @@
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
 #include "pdf/document_layout.h"
+#include "pdf/document_metadata.h"
 #include "pdf/pdf.h"
 #include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -155,6 +158,9 @@ constexpr char kJSEmailBody[] = "body";
 // Rotation (Page -> Plugin)
 constexpr char kJSRotateClockwiseType[] = "rotateClockwise";
 constexpr char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
+// Toggle two-up view (Page -> Plugin)
+constexpr char kJSSetTwoUpViewType[] = "setTwoUpView";
+constexpr char kJSEnableTwoUpView[] = "enableTwoUpView";
 // Select all text in the document (Page -> Plugin)
 constexpr char kJSSelectAllType[] = "selectAll";
 // Get the selected text in the document (Page -> Plugin)
@@ -196,18 +202,6 @@ constexpr int kAccessibilityPageDelayMs = 100;
 constexpr double kMinZoom = 0.01;
 
 constexpr char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
-
-// Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
-enum PDFFeatures {
-  LOADED_DOCUMENT = 0,
-  HAS_TITLE = 1,
-  HAS_BOOKMARKS = 2,
-  FEATURES_COUNT
-};
-
-// Used for UMA. Do not delete entries, and keep in sync with histograms.xml
-// and third_party/pdfium/public/fpdf_annot.h.
-constexpr int kAnnotationTypesCount = 28;
 
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
   pp::Var var;
@@ -434,29 +428,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      cursor_(PP_CURSORTYPE_POINTER),
-      zoom_(1.0),
-      needs_reraster_(true),
-      last_bitmap_smaller_(false),
-      device_scale_(1.0),
-      full_(false),
       paint_manager_(this, this, true),
-      first_paint_(true),
-      document_load_state_(LOAD_STATE_LOADING),
-      preview_document_load_state_(LOAD_STATE_COMPLETE),
-      uma_(this),
-      told_browser_about_unsupported_feature_(false),
-      print_preview_page_count_(-1),
-      print_preview_loaded_page_count_(-1),
-      last_progress_sent_(0),
-      recently_sent_find_update_(false),
-      received_viewport_message_(false),
-      did_call_start_loading_(false),
-      stop_scrolling_(false),
-      background_color_(0),
-      top_toolbar_height_in_viewport_coords_(0),
-      accessibility_state_(ACCESSIBILITY_STATE_OFF),
-      is_print_preview_(false) {
+      uma_(this) {
   callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -476,18 +449,21 @@ OutOfProcessInstance::~OutOfProcessInstance() {
 bool OutOfProcessInstance::Init(uint32_t argc,
                                 const char* argn[],
                                 const char* argv[]) {
-  // Check if the PDF is being loaded in the PDF chrome extension. We only allow
-  // the plugin to be loaded in the extension and print preview to avoid
-  // exposing sensitive APIs directly to external websites.
   pp::Var document_url_var = pp::URLUtil_Dev::Get()->GetDocumentURL(this);
   if (!document_url_var.is_string())
     return false;
 
+  // Check if the PDF is being loaded in the PDF chrome extension. We only allow
+  // the plugin to be loaded in the extension and print preview to avoid
+  // exposing sensitive APIs directly to external websites.
+  //
+  // This is enforced before launching the plugin process (see
+  // ChromeContentBrowserClient::ShouldAllowPluginCreation), so below we just do
+  // a CHECK as a defense-in-depth.
   std::string document_url = document_url_var.AsString();
   base::StringPiece document_url_piece(document_url);
   is_print_preview_ = IsPrintPreviewUrl(document_url_piece);
-  if (!document_url_piece.starts_with(kChromeExtension) && !is_print_preview_)
-    return false;
+  CHECK(document_url_piece.starts_with(kChromeExtension) || is_print_preview_);
 
   // Check if the plugin is full frame. This is passed in from JS.
   for (uint32_t i = 0; i < argc; ++i) {
@@ -716,6 +692,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
     RotateCounterclockwise();
+  } else if (type == kJSSetTwoUpViewType) {
+    SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
   } else if (type == kJSBackgroundColorChangedType) {
@@ -924,8 +902,7 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
 }
 
 void OutOfProcessInstance::DidChangeFocus(bool has_focus) {
-  if (!has_focus)
-    engine_->KillFormFocus();
+  engine_->UpdateFocus(has_focus);
 }
 
 void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
@@ -1175,6 +1152,7 @@ void OutOfProcessInstance::StopFind() {
 void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
                                    std::vector<PaintManager::ReadyRect>* ready,
                                    std::vector<pp::Rect>* pending) {
+  base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
   if (image_data_.is_null()) {
     DCHECK(plugin_size_.IsEmpty());
     return;
@@ -1238,6 +1216,12 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
   }
 
   engine_->PostPaint();
+
+  if (!deferred_invalidates_.empty()) {
+    pp::CompletionCallback callback = callback_factory_.NewCallback(
+        &OutOfProcessInstance::InvalidateAfterPaintDone);
+    pp::Module::Get()->core()->CallOnMainThread(0, callback);
+  }
 }
 
 void OutOfProcessInstance::DidOpen(int32_t result) {
@@ -1312,12 +1296,8 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
   dimensions.Set(kJSDocumentHeight, pp::Var(layout.size().height()));
   dimensions.Set(kJSLayoutOptions, layout.options().ToVar());
   pp::VarArray page_dimensions_array;
-  size_t num_pages = layout.page_count();
-  if (page_is_processed_.size() < num_pages)
-    page_is_processed_.resize(num_pages);
-
-  for (size_t i = 0; i < num_pages; ++i) {
-    pp::Rect page_rect = layout.page_rect(i);
+  for (size_t i = 0; i < layout.page_count(); ++i) {
+    const pp::Rect& page_rect = layout.page_rect(i);
     pp::VarDictionary page_dimensions;
     page_dimensions.Set(kJSPageX, pp::Var(page_rect.x()));
     page_dimensions.Set(kJSPageY, pp::Var(page_rect.y()));
@@ -1330,6 +1310,11 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
 }
 
 void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
+  if (in_paint_) {
+    deferred_invalidates_.push_back(rect);
+    return;
+  }
+
   pp::Rect offset_rect(rect);
   offset_rect.Offset(available_area_.point());
   paint_manager_.InvalidateRect(offset_rect);
@@ -1457,29 +1442,6 @@ void OutOfProcessInstance::NotifySelectedFindResultChanged(
     int current_find_index) {
   DCHECK_GE(current_find_index, -1);
   SelectedFindResultChanged(current_find_index);
-}
-
-void OutOfProcessInstance::NotifyPageBecameVisible(
-    const PDFEngine::PageFeatures* page_features) {
-  if (!page_features || !page_features->IsInitialized() ||
-      page_features->index >= static_cast<int>(page_is_processed_.size()) ||
-      page_is_processed_[page_features->index]) {
-    return;
-  }
-
-  for (const int annotation_type : page_features->annotation_types) {
-    if (annotation_type < 0 || annotation_type >= kAnnotationTypesCount) {
-      NOTREACHED();
-      continue;
-    }
-
-    bool inserted = annotation_types_counted_.insert(annotation_type).second;
-    if (inserted) {
-      HistogramEnumeration("PDF.AnnotationType", annotation_type,
-                           kAnnotationTypesCount);
-    }
-  }
-  page_is_processed_[page_features->index] = true;
 }
 
 void OutOfProcessInstance::GetDocumentPassword(
@@ -1611,10 +1573,6 @@ void OutOfProcessInstance::Print() {
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
 }
 
-void OutOfProcessInstance::OnPrint(int32_t) {
-  pp::PDF::Print(this);
-}
-
 void OutOfProcessInstance::SubmitForm(const std::string& url,
                                       const void* data,
                                       int length) {
@@ -1685,7 +1643,6 @@ void OutOfProcessInstance::DocumentLoadComplete(
   DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
-  HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT, FEATURES_COUNT);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1700,27 +1657,8 @@ void OutOfProcessInstance::DocumentLoadComplete(
     OnGeometryChanged(0, 0);
   }
 
-  pp::VarDictionary metadata_message;
-  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
-  std::string title = engine_->GetMetadata("Title");
-  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty()) {
-    metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
-    HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
-  }
-  metadata_message.Set(
-      pp::Var(kJSCanSerializeDocument),
-      pp::Var(IsSaveDataSizeValid(engine_->GetLoadedByteSize())));
-
-  pp::VarArray bookmarks = engine_->GetBookmarks();
-  metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
-  if (bookmarks.GetLength() > 0)
-    HistogramEnumeration("PDF.DocumentFeature", HAS_BOOKMARKS, FEATURES_COUNT);
-  PostMessage(metadata_message);
-
-  pp::VarDictionary progress_message;
-  progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
-  PostMessage(progress_message);
+  SendDocumentMetadata();
+  SendLoadingProgress(/*percentage=*/100);
 
   if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
     LoadAccessibility();
@@ -1744,14 +1682,16 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
-                        1000000, 50);
-  HistogramEnumeration("PDF.HasAttachment",
-                       document_features.has_attachments ? 1 : 0, 2);
-  HistogramEnumeration("PDF.IsTagged", document_features.is_tagged ? 1 : 0, 2);
-  HistogramEnumeration("PDF.FormType",
-                       static_cast<int32_t>(document_features.form_type),
-                       static_cast<int32_t>(PDFEngine::FormType::kCount));
+  HistogramCustomCountsDeprecated("PDF.PageCount", document_features.page_count,
+                                  1, 1000000, 50);
+  HistogramEnumerationDeprecated("PDF.HasAttachment",
+                                 document_features.has_attachments ? 1 : 0, 2);
+  HistogramEnumerationDeprecated("PDF.IsTagged",
+                                 document_features.is_tagged ? 1 : 0, 2);
+  HistogramEnumerationDeprecated(
+      "PDF.FormType", static_cast<int32_t>(document_features.form_type),
+      static_cast<int32_t>(PDFEngine::FormType::kCount));
+  HistogramEnumeration("PDF.Version", engine_->GetDocumentMetadata().version);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -1762,6 +1702,12 @@ void OutOfProcessInstance::RotateCounterclockwise() {
   engine_->RotateCounterclockwise();
 }
 
+void OutOfProcessInstance::SetTwoUpView(bool enable_two_up_view) {
+  DCHECK(base::FeatureList::IsEnabled(features::kPDFTwoUpView));
+  engine_->SetTwoUpView(enable_two_up_view);
+}
+
+// static
 std::string OutOfProcessInstance::GetFileNameFromUrl(const std::string& url) {
   // Generate a file name. Unfortunately, MIME type can't be provided, since it
   // requires IO.
@@ -1803,10 +1749,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
 
   // Send a progress value of -1 to indicate a failure.
-  pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1));
-  PostMessage(message);
+  SendLoadingProgress(-1);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadFailed() {
@@ -1868,10 +1811,7 @@ void OutOfProcessInstance::DocumentLoadProgress(uint32_t available,
   // Avoid sending too many progress messages over PostMessage.
   if (progress > last_progress_sent_ + 1) {
     last_progress_sent_ = progress;
-    pp::VarDictionary message;
-    message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-    message.Set(pp::Var(kJSProgressPercentage), pp::Var(progress));
-    PostMessage(message);
+    SendLoadingProgress(progress);
   }
 }
 
@@ -2041,6 +1981,32 @@ void OutOfProcessInstance::SendPrintPreviewLoadedNotification() {
   PostMessage(loaded_message);
 }
 
+void OutOfProcessInstance::SendDocumentMetadata() {
+  pp::VarDictionary metadata_message;
+  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
+
+  const std::string& title = engine_->GetDocumentMetadata().title;
+  if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty())
+    metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
+
+  pp::VarArray bookmarks = engine_->GetBookmarks();
+  metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
+
+  metadata_message.Set(
+      pp::Var(kJSCanSerializeDocument),
+      pp::Var(IsSaveDataSizeValid(engine_->GetLoadedByteSize())));
+
+  PostMessage(metadata_message);
+}
+
+void OutOfProcessInstance::SendLoadingProgress(double percentage) {
+  DCHECK(percentage == -1 || (percentage >= 0 && percentage <= 100));
+  pp::VarDictionary progress_message;
+  progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
+  progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(percentage));
+  PostMessage(progress_message);
+}
+
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
@@ -2059,23 +2025,44 @@ pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
   return pp::FloatPoint(x, y);
 }
 
-void OutOfProcessInstance::HistogramCustomCounts(const std::string& name,
-                                                 int32_t sample,
-                                                 int32_t min,
-                                                 int32_t max,
-                                                 uint32_t bucket_count) {
+template <typename T>
+void OutOfProcessInstance::HistogramEnumeration(const char* name, T sample) {
+  if (IsPrintPreview())
+    return;
+  base::UmaHistogramEnumeration(name, sample);
+}
+
+void OutOfProcessInstance::HistogramCustomCountsDeprecated(
+    const std::string& name,
+    int32_t sample,
+    int32_t min,
+    int32_t max,
+    uint32_t bucket_count) {
   if (IsPrintPreview())
     return;
 
   uma_.HistogramCustomCounts(name, sample, min, max, bucket_count);
 }
 
-void OutOfProcessInstance::HistogramEnumeration(const std::string& name,
-                                                int32_t sample,
-                                                int32_t boundary_value) {
+void OutOfProcessInstance::HistogramEnumerationDeprecated(
+    const std::string& name,
+    int32_t sample,
+    int32_t boundary_value) {
   if (IsPrintPreview())
     return;
   uma_.HistogramEnumeration(name, sample, boundary_value);
+}
+
+void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {
+  pp::PDF::Print(this);
+}
+
+void OutOfProcessInstance::InvalidateAfterPaintDone(
+    int32_t /*unused_but_required*/) {
+  DCHECK(!in_paint_);
+  for (const pp::Rect& rect : deferred_invalidates_)
+    Invalidate(rect);
+  deferred_invalidates_.clear();
 }
 
 void OutOfProcessInstance::PrintSettings::Clear() {

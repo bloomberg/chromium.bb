@@ -26,6 +26,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -170,10 +171,9 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
     OnUserActivity(nullptr);
   }
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::MayBlock()},
+      {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&internal::GetSystemEventTimes),
       base::BindOnce(&AutomaticRebootManager::Init,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -220,11 +220,10 @@ void AutomaticRebootManager::UpdateStatusChanged(
     return;
   }
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&SaveUpdateRebootNeededUptime));
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::BindOnce(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
 
@@ -240,11 +239,9 @@ void AutomaticRebootManager::OnUserActivity(const ui::Event* event) {
   // the timer fires predictably in tests.
   login_screen_idle_timer_.reset(new base::OneShotTimer);
   login_screen_idle_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
-      base::Bind(&AutomaticRebootManager::MaybeReboot,
-                 base::Unretained(this),
-                 false));
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kLoginManagerIdleTimeoutMs),
+      base::BindOnce(&AutomaticRebootManager::MaybeReboot,
+                     base::Unretained(this), false));
 }
 
 void AutomaticRebootManager::OnUserSessionStarted(bool is_primary_user) {
@@ -351,10 +348,10 @@ void AutomaticRebootManager::Reschedule() {
   if (!grace_start_timer_)
     grace_start_timer_.reset(new base::OneShotTimer);
   VLOG(1) << "Scheduling reboot attempt in " << (grace_start_time - now);
-  grace_start_timer_->Start(FROM_HERE,
-                            std::max(grace_start_time - now, base::TimeDelta()),
-                            base::Bind(&AutomaticRebootManager::RequestReboot,
-                                       base::Unretained(this)));
+  grace_start_timer_->Start(
+      FROM_HERE, std::max(grace_start_time - now, base::TimeDelta()),
+      base::BindOnce(&AutomaticRebootManager::RequestReboot,
+                     base::Unretained(this)));
 
   const base::TimeTicks grace_end_time = grace_start_time +
       base::TimeDelta::FromMilliseconds(kGracePeriodMs);
@@ -365,7 +362,7 @@ void AutomaticRebootManager::Reschedule() {
   VLOG(1) << "Scheduling unconditional reboot in " << (grace_end_time - now);
   grace_end_timer_->Start(
       FROM_HERE, std::max(grace_end_time - now, base::TimeDelta()),
-      base::Bind(&AutomaticRebootManager::Reboot, base::Unretained(this)));
+      base::BindOnce(&AutomaticRebootManager::Reboot, base::Unretained(this)));
 }
 
 void AutomaticRebootManager::RequestReboot() {

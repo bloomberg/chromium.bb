@@ -29,7 +29,7 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class HostContentSettingsMap;
 
@@ -47,7 +47,8 @@ class InfoMap;
 // is no IO thread).
 class ProfileIOData {
  public:
-  virtual ~ProfileIOData();
+  ProfileIOData();
+  ~ProfileIOData();
 
   static ProfileIOData* FromResourceContext(content::ResourceContext* rc);
 
@@ -72,15 +73,17 @@ class ProfileIOData {
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
-  BooleanPrefMember* safe_browsing_enabled() const {
-    return &safe_browsing_enabled_;
-  }
-
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
     return username_hash_;
   }
 #endif
+
+  void InitializeOnUIThread(Profile* profile);
+
+  // Called when the Profile is destroyed. Triggers destruction of the
+  // ProfileIOData.
+  void ShutdownOnUIThread();
 
  protected:
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
@@ -101,23 +104,6 @@ class ProfileIOData {
 #endif
   };
 
-  ProfileIOData();
-
-  void InitializeOnUIThread(Profile* profile);
-
-  // Called when the Profile is destroyed. Triggers destruction of the
-  // ProfileIOData.
-  void ShutdownOnUIThread();
-
-  bool initialized() const {
-    return initialized_;
-  }
-
-  // Destroys the ResourceContext first, to cancel any URLRequests that are
-  // using it still, before we destroy the member variables that those
-  // URLRequests may be accessing.
-  void DestroyResourceContext();
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -130,32 +116,12 @@ class ProfileIOData {
     ProfileIOData* const io_data_;
   };
 
-  // --------------------------------------------
-  // Virtual interface for subtypes to implement:
-  // --------------------------------------------
-
-  // The order *DOES* matter for the majority of these member variables, so
-  // don't move them around unless you know what you're doing!
-  // General rules:
-  //   * ResourceContext references the URLRequestContexts, so
-  //   URLRequestContexts must outlive ResourceContext, hence ResourceContext
-  //   should be destroyed first.
-  //   * URLRequestContexts reference a whole bunch of members, so
-  //   URLRequestContext needs to be destroyed before them.
-  //   * Therefore, ResourceContext should be listed last, and then the
-  //   URLRequestContexts, and then the URLRequestContext members.
-  //   * Note that URLRequestContext members have a directed dependency graph
-  //   too, so they must themselves be ordered correctly.
-
   // Tracks whether or not we've been lazily initialized.
   mutable bool initialized_;
 
   // Data from the UI thread from the Profile, used to initialize ProfileIOData.
   // Deleted after lazy initialization.
   mutable std::unique_ptr<ProfileParams> profile_params_;
-
-  // Member variables which are pointed to by the various context objects.
-  mutable BooleanPrefMember safe_browsing_enabled_;
 
   // Pointed to by URLRequestContext.
 #if BUILDFLAG(ENABLE_EXTENSIONS)

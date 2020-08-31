@@ -13,6 +13,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.WindowAndroid;
@@ -42,7 +44,7 @@ public class ChildAccountService {
      */
     public static void checkChildAccountStatus(final Callback<Integer> callback) {
         ThreadUtils.assertOnUiThread();
-        final AccountManagerFacade accountManager = AccountManagerFacade.get();
+        final AccountManagerFacade accountManager = AccountManagerFacadeProvider.getInstance();
         accountManager.tryGetGoogleAccounts(accounts -> {
             if (accounts.size() != 1) {
                 // Child accounts can't share a device.
@@ -75,8 +77,8 @@ public class ChildAccountService {
             return;
         }
 
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
-        AccountManagerFacade.get().updateCredentials(account, activity,
+        Account account = AccountUtils.createAccountFromName(accountName);
+        AccountManagerFacadeProvider.getInstance().updateCredentials(account, activity,
                 result
                 -> ChildAccountServiceJni.get().onReauthenticationResult(nativeCallback, result));
     }

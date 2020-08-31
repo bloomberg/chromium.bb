@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libkms
-Description: Library that abstract aways the different mm interface for kernel drivers
+Description: Library that abstracts away the different mm interface for kernel drivers
 Version: 1.0.0
 Libs: -L${libdir} -lkms
 Cflags: -I${includedir}/libkms

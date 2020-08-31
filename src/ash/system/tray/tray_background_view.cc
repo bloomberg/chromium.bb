@@ -28,6 +28,7 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -41,7 +42,6 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/fill_layout.h"
@@ -49,6 +49,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/wm/core/window_animations.h"
 
+namespace ash {
 namespace {
 
 const int kAnimationDurationForPopupMs = 200;
@@ -57,7 +58,7 @@ const int kAnimationDurationForPopupMs = 200;
 const int kAnimationDurationForVisibilityMs = 250;
 
 // When becoming visible delay the animation so that StatusAreaWidgetDelegate
-// can animate sibling views out of the position to be occuped by the
+// can animate sibling views out of the position to be occupied by the
 // TrayBackgroundView.
 const int kShowAnimationDelayMs = 100;
 
@@ -89,9 +90,31 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
   return insets;
 }
 
-}  // namespace
+class HighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  explicit HighlightPathGenerator(TrayBackgroundView* tray_background_view)
+      : tray_background_view_(tray_background_view), insets_(gfx::Insets()) {}
 
-namespace ash {
+  HighlightPathGenerator(TrayBackgroundView* tray_background_view,
+                         gfx::Insets insets)
+      : tray_background_view_(tray_background_view), insets_(insets) {}
+
+  HighlightPathGenerator(const HighlightPathGenerator&) = delete;
+  HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
+
+  // HighlightPathGenerator:
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+    gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
+    bounds.Inset(insets_);
+    return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
+  }
+
+ private:
+  TrayBackgroundView* const tray_background_view_;
+  const gfx::Insets insets_;
+};
+
+}  // namespace
 
 // static
 const char TrayBackgroundView::kViewClassName[] = "tray/TrayBackgroundView";
@@ -120,29 +143,6 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-class TrayBackgroundView::HighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  HighlightPathGenerator() = default;
-
-  // HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    const int focus_ring_padding = 1;
-    const int border_radius = ShelfConfig::Get()->control_border_radius();
-    SkPath path;
-
-    gfx::Rect bounds =
-        static_cast<const TrayBackgroundView*>(view)->GetBackgroundBounds();
-    bounds.Inset(gfx::Insets(focus_ring_padding));
-
-    path.addRoundRect(gfx::RectToSkRect(bounds), border_radius, border_radius);
-    return path;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
-};
-
 TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
     // Note the ink drop style is ignored.
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
@@ -163,14 +163,18 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
+
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+  focus_ring()->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
+      this, kTrayBackgroundFocusPadding));
   SetFocusPainter(nullptr);
+
   views::HighlightPathGenerator::Install(
-      this, std::make_unique<HighlightPathGenerator>());
+      this, std::make_unique<HighlightPathGenerator>(this));
 
   AddChildView(tray_container_);
 
-  tray_event_filter_.reset(new TrayEventFilter);
+  tray_event_filter_ = std::make_unique<TrayEventFilter>();
 
   // Use layer color to provide background color. Note that children views
   // need to have their own layers to be visible.
@@ -324,11 +328,9 @@ TrayBackgroundView::CreateInkDropHighlight() const {
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(
           ShelfConfig::Get()->GetDefaultShelfColor());
-  std::unique_ptr<views::InkDropHighlight> highlight(
-      new views::InkDropHighlight(bounds.size(), 0,
-                                  gfx::RectF(bounds).CenterPoint(),
-                                  ripple_attributes.base_color));
-  highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(bounds.size()), ripple_attributes.base_color);
+  highlight->set_visible_opacity(ripple_attributes.inkdrop_opacity);
   return highlight;
 }
 
@@ -345,24 +347,27 @@ void TrayBackgroundView::CloseBubble() {}
 
 void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
-void TrayBackgroundView::UpdateAfterShelfChange() {
-  tray_container_->UpdateAfterShelfChange();
+void TrayBackgroundView::CalculateTargetBounds() {
+  tray_container_->CalculateTargetBounds();
 }
 
-void TrayBackgroundView::UpdateAfterLoginStatusChange(
-    LoginStatus login_status) {
+void TrayBackgroundView::UpdateLayout() {
+  UpdateBackground();
+  tray_container_->UpdateLayout();
+}
+
+void TrayBackgroundView::UpdateAfterLoginStatusChange() {
   // Handled in subclasses.
-}
-
-void TrayBackgroundView::UpdateAfterRootWindowBoundsChange(
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
-  // Do nothing by default. Child class may do something.
 }
 
 void TrayBackgroundView::UpdateAfterStatusAreaCollapseChange() {
   // We call the base class' SetVisible to skip animations.
   views::View::SetVisible(GetEffectiveVisibility());
+}
+
+void TrayBackgroundView::UpdateAfterColorModeChange() {
+  UpdateBackground();
+  SchedulePaint();
 }
 
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
@@ -479,6 +484,13 @@ gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   MirrorInsetsIfNecessary(&local_contents_insets);
   insets += local_contents_insets;
 
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      ShelfConfig::Get()->is_in_app()) {
+    insets += gfx::Insets(
+        ShelfConfig::Get()->in_app_control_button_height_inset(), 0);
+  }
+
   return insets;
 }
 
@@ -486,6 +498,7 @@ void TrayBackgroundView::UpdateBackground() {
   const int radius = ShelfConfig::Get()->control_border_radius();
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   layer()->SetRoundedCornerRadius(rounded_corners);
+  layer()->SetIsFastRoundedCorner(true);
   layer()->SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
   layer()->SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
@@ -501,8 +514,7 @@ bool TrayBackgroundView::GetEffectiveVisibility() {
   if (!visible_preferred_)
     return false;
 
-  if (!GetWidget())
-    return false;
+  DCHECK(GetWidget());
 
   // When the status area is collapsed, the effective visibility of the view is
   // determined by |show_when_collapsed_|.

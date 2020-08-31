@@ -46,7 +46,34 @@ describe('Tests Mirror Settings', function() {
     expect(settings.toJsonString()).toEqual(jsonBefore);
   });
 
-  it('clamps max dimensions to 1920x1080 screen size', function() {
+  it('clamps max dimensions from 1280x800 (16:10) screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(1280);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(800);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1280);
+    expect(settings.maxHeight).toBe(720);
+  });
+
+  it('clamps max dimensions from 1366x768 screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(1366);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(768);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1280);
+    expect(settings.maxHeight).toBe(720);
+  });
+
+  it('clamps max dimensions from 768x1366 screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(768);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(1366);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1280);
+    expect(settings.maxHeight).toBe(720);
+  });
+
+  it('clamps max dimensions from 1920x1080 screen size', function() {
     spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(1920);
     spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(1080);
     const settings = new mr.mirror.Settings();
@@ -55,13 +82,51 @@ describe('Tests Mirror Settings', function() {
     expect(settings.maxHeight).toBe(1080);
   });
 
-  it('clamps max dimensions to 1366x768 screen size', function() {
-    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(1366);
-    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(768);
+  it('clamps max dimensions from 1546x2048 (2:3) screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(1546);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(2048);
     const settings = new mr.mirror.Settings();
     settings.makeFinalAdjustmentsAndFreeze();
-    expect(settings.maxWidth).toBe(1280);
-    expect(settings.maxHeight).toBe(720);
+    expect(settings.maxWidth).toBe(1920);
+    expect(settings.maxHeight).toBe(1080);
+  });
+
+  it('clamps max dimensions from 2399x1598 (3:2) screen size', function() {
+    // This odd dimension is what is actually reported by Pixelbook.
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(2399);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(1598);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1920);
+    expect(settings.maxHeight).toBe(1080);
+  });
+
+  it('clamps max dimensions from 2560x1080 (21:9) screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(2560);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(1080);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1920);
+    expect(settings.maxHeight).toBe(1080);
+  });
+
+  it('clamps max dimensions from 2560x1600 (16:10 "retina") screen size',
+     function() {
+       spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(2560);
+       spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(1080);
+       const settings = new mr.mirror.Settings();
+       settings.makeFinalAdjustmentsAndFreeze();
+       expect(settings.maxWidth).toBe(1920);
+       expect(settings.maxHeight).toBe(1080);
+     });
+
+  it('clamps max dimensions from 3840x2160 screen size', function() {
+    spyOn(mr.mirror.Settings, 'getScreenWidth').and.returnValue(3840);
+    spyOn(mr.mirror.Settings, 'getScreenHeight').and.returnValue(2160);
+    const settings = new mr.mirror.Settings();
+    settings.makeFinalAdjustmentsAndFreeze();
+    expect(settings.maxWidth).toBe(1920);
+    expect(settings.maxHeight).toBe(1080);
   });
 
   it('returns min size matching aspect ratio of max size', function() {

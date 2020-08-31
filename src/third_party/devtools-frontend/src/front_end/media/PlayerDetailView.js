@@ -2,46 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @unrestricted
- */
-Media.PlayerDetailView = class extends UI.TabbedPane {
-  constructor() {
-    super();
+import * as Common from '../common/common.js';
+import * as UI from '../ui/ui.js';
 
-    const propertyTable = new Media.MediaPlayerPropertiesRenderer();
-    const eventTable = new Media.MediaPlayerEventTableRenderer();
-
-    // maps handler type to a list of panels that support rendering changes.
-    this._panels = new Map([
-      [Media.MediaModel.MediaChangeTypeKeys.Property, [propertyTable]],
-      [Media.MediaModel.MediaChangeTypeKeys.Event, [eventTable]]
-    ]);
-
-    this.appendTab(
-        Media.PlayerDetailView.Tabs.Properties, Common.UIString('Properties'), propertyTable,
-        Common.UIString('Player properties'));
-
-    this.appendTab(
-        Media.PlayerDetailView.Tabs.Events, Common.UIString('Events'), eventTable, Common.UIString('Player events'));
-  }
-
-  /**
-   * @param {string} playerID
-   * @param {!Array.<!Media.Event>} changes
-   * @param {!Media.MediaModel.MediaChangeTypeKeys} changeType
-   */
-  renderChanges(playerID, changes, changeType) {
-    for (const panel of this._panels.get(changeType)) {
-      panel.renderChanges(playerID, changes, changeType);
-    }
-  }
-};
+import {PlayerEventsView} from './EventDisplayTable.js';
+import {TriggerHandler} from './MainView.js';  // eslint-disable-line no-unused-vars
+import {PlayerEvent} from './MediaModel.js';   // eslint-disable-line no-unused-vars
+import {PlayerPropertiesView} from './PlayerPropertiesView.js';
 
 /**
  * @enum {string}
  */
-Media.PlayerDetailView.Tabs = {
+export const PlayerDetailViewTabs = {
   Events: 'events',
   Properties: 'properties',
 };
+
+/**
+ * @unrestricted
+ * @implements TriggerHandler
+ */
+export class PlayerDetailView extends UI.TabbedPane.TabbedPane {
+  constructor() {
+    super();
+
+    this._eventView = new PlayerEventsView();
+    this._propertyView = new PlayerPropertiesView();
+
+    this.appendTab(
+        PlayerDetailViewTabs.Properties, Common.UIString.UIString('Properties'), this._propertyView,
+        Common.UIString.UIString('Player properties'));
+
+    this.appendTab(
+        PlayerDetailViewTabs.Events, Common.UIString.UIString('Events'), this._eventView,
+        Common.UIString.UIString('Player events'));
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerProperty} property
+   */
+  onProperty(property) {
+    this._propertyView.onProperty(property);
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerError} error
+   */
+  onError(error) {
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Media.PlayerMessage} message
+   */
+  onMessage(message) {
+  }
+
+  /**
+   * @override
+   * @param {!PlayerEvent} event
+   */
+  onEvent(event) {
+    this._eventView.onEvent(event);
+  }
+}

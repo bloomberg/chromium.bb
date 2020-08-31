@@ -10,8 +10,8 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
@@ -198,7 +198,7 @@ void WakeEventPage::OnWakeEventPageResponse(int request_id, bool success) {
   } else {
     content::WorkerThread::PostTask(
         request_data->thread_id,
-        base::Bind(request_data->on_response, success));
+        base::BindOnce(request_data->on_response, success));
   }
 }
 

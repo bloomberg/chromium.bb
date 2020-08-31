@@ -9,7 +9,10 @@
 
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
@@ -60,8 +63,15 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const override;
   void UseV4LocalDatabaseManager();
+
+  // By default, the TestSafeBrowsing service uses a regular URLLoaderFactory.
+  // This function can be used to override that behavior, exposing a
+  // TestURLLoaderFactory for mocking network traffic.
+  void SetUseTestUrlLoaderFactory(bool use_test_url_loader_factory);
+
   std::unique_ptr<SafeBrowsingService::StateSubscription> RegisterStateCallback(
       const base::Callback<void(void)>& callback) override;
+  network::TestURLLoaderFactory* GetTestUrlLoaderFactory();
 
  protected:
   // SafeBrowsingService overrides
@@ -71,21 +81,28 @@ class TestSafeBrowsingService : public SafeBrowsingService,
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDatabaseManager() override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   bool CanCreateDownloadProtectionService() override;
+#endif
   bool CanCreateIncidentReportingService() override;
   bool CanCreateResourceRequestDetector() override;
-  bool CanCreateBinaryUploadService() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   DownloadProtectionService* CreateDownloadProtectionService() override;
+#endif
   IncidentReportingService* CreateIncidentReportingService() override;
   ResourceRequestDetector* CreateResourceRequestDetector() override;
-  BinaryUploadService* CreateBinaryUploadService() override;
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   std::unique_ptr<V4ProtocolConfig> v4_protocol_config_;
   std::string serialized_download_report_;
   scoped_refptr<SafeBrowsingDatabaseManager> test_database_manager_;
   bool use_v4_local_db_manager_ = false;
+  bool use_test_url_loader_factory_ = false;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSafeBrowsingService);
 };

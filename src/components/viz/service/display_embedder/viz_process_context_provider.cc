@@ -27,10 +27,11 @@
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/skia_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -133,6 +134,8 @@ VizProcessContextProvider::VizProcessContextProvider(
   }
 }
 
+VizProcessContextProvider::VizProcessContextProvider() = default;
+
 VizProcessContextProvider::~VizProcessContextProvider() {
   if (context_result_ == gpu::ContextResult::kSuccess) {
     base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
@@ -170,7 +173,7 @@ class GrContext* VizProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::raster::DetermineGrCacheLimitsFromAvailableMemory(
+  gpu::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
@@ -242,13 +245,16 @@ void VizProcessContextProvider::InitializeContext(
     const gpu::SharedMemoryLimits& mem_limits) {
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
+  gpu_task_scheduler_helper_ =
+      base::MakeRefCounted<gpu::GpuTaskSchedulerHelper>(task_executor);
   command_buffer_ = std::make_unique<gpu::InProcessCommandBuffer>(
       task_executor,
       GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
-      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      base::ThreadTaskRunnerHandle::Get(),
+      gpu_task_scheduler_helper_->GetTaskSequence(), nullptr, nullptr);
   if (context_result_ != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return;
@@ -262,6 +268,8 @@ void VizProcessContextProvider::InitializeContext(
     DLOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     return;
   }
+
+  gpu_task_scheduler_helper_->Initialize(gles2_helper_.get());
 
   transfer_buffer_ = std::make_unique<gpu::TransferBuffer>(gles2_helper_.get());
 
@@ -324,6 +332,19 @@ bool VizProcessContextProvider::OnMemoryDump(
 
 base::ScopedClosureRunner VizProcessContextProvider::GetCacheBackBufferCb() {
   return command_buffer_->GetCacheBackBufferCb();
+}
+
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+VizProcessContextProvider::GetGpuTaskSchedulerHelper() {
+  return gpu_task_scheduler_helper_;
+}
+
+gpu::SharedImageManager* VizProcessContextProvider::GetSharedImageManager() {
+  return command_buffer_->GetSharedImageManager();
+}
+
+gpu::MemoryTracker* VizProcessContextProvider::GetMemoryTracker() {
+  return command_buffer_->GetMemoryTracker();
 }
 
 }  // namespace viz

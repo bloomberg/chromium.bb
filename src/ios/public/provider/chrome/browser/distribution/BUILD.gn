@@ -8,20 +8,5 @@ source_set("distribution") {
     "app_distribution_provider.h",
     "app_distribution_provider.mm",
   ]
-  deps = [
-    "//base",
-  ]
-}
-
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "test_app_distribution_provider.h",
-    "test_app_distribution_provider.mm",
-  ]
-  deps = [
-    ":distribution",
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

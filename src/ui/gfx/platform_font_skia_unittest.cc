@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
@@ -119,6 +121,17 @@ TEST_F(PlatformFontSkiaTest, DefaultFont) {
   EXPECT_EQ(15, font2->GetFontSize());
   EXPECT_NE(font2->GetStyle() & Font::ITALIC, 0);
   EXPECT_EQ(gfx::Font::Weight::BOLD, font2->GetWeight());
+}
+
+TEST(PlatformFontSkiaRenderParamsTest, DefaultFontRenderParams) {
+  scoped_refptr<PlatformFontSkia> default_font(new PlatformFontSkia());
+  scoped_refptr<PlatformFontSkia> named_font(new PlatformFontSkia(
+      default_font->GetFontName(), default_font->GetFontSize()));
+
+  // Ensures that both constructors are producing fonts with the same render
+  // params.
+  EXPECT_EQ(default_font->GetFontRenderParams(),
+            named_font->GetFontRenderParams());
 }
 
 #if defined(OS_WIN)

@@ -11,10 +11,10 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_endpoint.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_session.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -89,7 +89,7 @@ class QuartcSendChannel {
   // to demux sent, acked, and lost messages, the multiplexer assigns a globally
   // unique id to each message.  This map is used to restore the original caller
   // datagram id before issuing callbacks.
-  QuicUnorderedMap<int64_t, int64_t> multiplexer_to_user_datagram_ids_;
+  QuicHashMap<int64_t, int64_t> multiplexer_to_user_datagram_ids_;
 };
 
 // A single, multiplexed receive channel within a Quartc session.  A receive
@@ -104,7 +104,7 @@ class QuartcReceiveChannel {
 
   // Called when a message is recieved by this channel.
   virtual void OnMessageReceived(uint64_t channel_id,
-                                 QuicStringPiece message) = 0;
+                                 quiche::QuicheStringPiece message) = 0;
 };
 
 // Delegate for session-wide events.
@@ -159,7 +159,7 @@ class QuartcMultiplexer : public QuartcEndpoint::Delegate,
                                  QuicTime::Delta latest_rtt) override;
   void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                           ConnectionCloseSource source) override;
-  void OnMessageReceived(QuicStringPiece message) override;
+  void OnMessageReceived(quiche::QuicheStringPiece message) override;
   void OnMessageSent(int64_t datagram_id) override;
   void OnMessageAcked(int64_t datagram_id, QuicTime receive_timestamp) override;
   void OnMessageLost(int64_t datagram_id) override;
@@ -178,11 +178,11 @@ class QuartcMultiplexer : public QuartcEndpoint::Delegate,
 
   QuartcSession* session_ = nullptr;
   std::vector<std::unique_ptr<QuartcSendChannel>> send_channels_;
-  QuicUnorderedMap<uint64_t, QuartcReceiveChannel*> receive_channels_;
+  QuicHashMap<uint64_t, QuartcReceiveChannel*> receive_channels_;
   QuartcReceiveChannel* default_receive_channel_ = nullptr;
 
   int64_t next_datagram_id_ = 1;
-  QuicUnorderedMap<int64_t, QuartcSendChannel*> send_channels_by_datagram_id_;
+  QuicHashMap<int64_t, QuartcSendChannel*> send_channels_by_datagram_id_;
 };
 
 }  // namespace quic

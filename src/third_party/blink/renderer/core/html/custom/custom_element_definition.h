@@ -98,8 +98,7 @@ class CORE_EXPORT CustomElementDefinition
       const FileOrUSVStringOrFormData& value,
       const String& mode) = 0;
 
-  void EnqueueUpgradeReaction(Element&,
-                              bool upgrade_invisible_elements = false);
+  void EnqueueUpgradeReaction(Element&);
   void EnqueueConnectedCallback(Element&);
   void EnqueueDisconnectedCallback(Element&);
   void EnqueueAdoptedCallback(Element&,
@@ -136,7 +135,7 @@ class CORE_EXPORT CustomElementDefinition
 
    private:
     ConstructionStack& construction_stack_;
-    Member<Element> element_;
+    Element* element_;
     size_t depth_;
   };
 

@@ -41,6 +41,7 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
+struct WallpaperProperty;
 class WallpaperResizer;
 class WallpaperWindowStateManager;
 
@@ -155,22 +156,20 @@ class ASH_EXPORT WallpaperControllerImpl
   // including device policy).
   bool IsPolicyControlled(const AccountId& account_id) const;
 
-  // Update the blurred state of the current wallpaper. Applies blur if |blur|
-  // is true and blur is allowed by the controller, otherwise any existing blur
-  // is removed.
-  void UpdateWallpaperBlur(bool blur);
+  // Update the blurred state of the current wallpaper for lock screen. Applies
+  // blur if |blur| is true and blur is allowed by the controller, otherwise any
+  // existing blur is removed.
+  void UpdateWallpaperBlurForLockState(bool blur);
+
+  // Restores the wallpaper property from lock state.
+  void RestoreWallpaperPropertyForLockState(const WallpaperProperty& property);
 
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
   bool ShouldApplyDimming() const;
 
-  // Returns whether the current wallpaper is allowed to be blurred. See
-  // https://crbug.com/775591.
-  bool IsBlurAllowed() const;
-
-  // Returns whether the current wallpaper is blurred.
-  // Note: this returns false when there's no wallpaper yet. Check
-  // |HasShownAnyWallpaper| if there's need to distinguish.
-  bool IsWallpaperBlurred() const;
+  // Returns whether the current wallpaper is allowed to be blurred on
+  // lock/login screen. See https://crbug.com/775591.
+  bool IsBlurAllowedForLockState() const;
 
   // Sets wallpaper info for |account_id| and saves it to local state if the
   // user is not ephemeral. Returns false if it fails (which happens if local
@@ -265,7 +264,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void RemoveObserver(WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
   const std::vector<SkColor>& GetWallpaperColors() override;
-  bool IsWallpaperBlurred() override;
+  bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   WallpaperInfo GetActiveUserWallpaperInfo() override;
   bool ShouldShowWallpaperSetting() override;
@@ -309,6 +308,9 @@ class ASH_EXPORT WallpaperControllerImpl
     wallpaper_reload_delay_ = base::TimeDelta::FromMilliseconds(0);
   }
 
+  // Proxy to private ReloadWallpaper().
+  void ReloadWallpaperForTesting(bool clear_cache);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
@@ -332,11 +334,12 @@ class ASH_EXPORT WallpaperControllerImpl
     bool preview_mode;
   };
 
-  // Creates a WallpaperWidgetController for |root_window|.
-  void InstallDesktopController(aura::Window* root_window);
+  // Update a Wallpaper for |root_window|.
+  void UpdateWallpaperForRootWindow(aura::Window* root_window,
+                                    bool lock_state_changed);
 
-  // Creates a WallpaperWidgetController for all root windows.
-  void InstallDesktopControllerForAllWindows();
+  // Update a Wallpaper for all root windows.
+  void UpdateWallpaperForAllRootWindows(bool lock_state_changed);
 
   // Moves the wallpaper to the specified container across all root windows.
   // Returns true if a wallpaper moved.
@@ -477,14 +480,6 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnAlwaysOnTopWallpaperDecoded(const WallpaperInfo& info,
                                      const gfx::ImageSkia& image);
 
-  // Move all wallpaper widgets to the locked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToLockedContainer();
-
-  // Move all wallpaper widgets to unlocked container.
-  // Returns true if the wallpaper moved.
-  bool MoveToUnlockedContainer();
-
   // Returns whether the current wallpaper is set by device policy.
   bool IsDevicePolicyWallpaper() const;
 
@@ -559,7 +554,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   base::TimeDelta wallpaper_reload_delay_;
 
-  bool is_wallpaper_blurred_ = false;
+  bool is_wallpaper_blurred_for_lock_state_ = false;
 
   // The wallpaper animation duration. An empty value disables the animation.
   base::TimeDelta animation_duration_;

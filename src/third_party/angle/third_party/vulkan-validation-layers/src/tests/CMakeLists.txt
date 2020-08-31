@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2020 Valve Corporation
+# Copyright (c) 2014-2020 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 add_definitions(-DNV_EXTENSIONS -DAMD_EXTENSIONS)
 
 if(WIN32)
-    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR -DWIN32_LEAN_AND_MEAN)
+    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
     # Workaround for TR1 deprecation in Visual Studio 15.5 until Google Test is updated
     add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
     # Allow Windows to use multiprocessor compilation
@@ -63,10 +63,12 @@ endif()
 set(LIBGLM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs)
 
 set(COMMON_CPP
+    vklayertests_instanceless.cpp
     vklayertests_pipeline_shader.cpp
     vklayertests_buffer_image_memory_sampler.cpp
     vklayertests_others.cpp
     vklayertests_best_practices.cpp
+    vklayertests_gpu.cpp
     vklayertests_descriptor_renderpass_framebuffer.cpp
     vklayertests_command.cpp
     vklayertests_imageless_framebuffer.cpp
@@ -103,6 +105,7 @@ target_include_directories(vk_layer_validation_tests
                                   ${PROJECT_SOURCE_DIR}/layers/generated
                                   ${GLSLANG_SPIRV_INCLUDE_DIR}
                                   ${SPIRV_TOOLS_INCLUDE_DIR}
+                                  ${SPIRV_HEADERS_INCLUDE_DIR}
                                   ${CMAKE_CURRENT_BINARY_DIR}
                                   ${CMAKE_BINARY_DIR}
                                   ${PROJECT_BINARY_DIR}

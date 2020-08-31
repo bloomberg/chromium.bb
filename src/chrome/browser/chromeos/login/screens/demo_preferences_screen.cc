@@ -37,10 +37,21 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 
 }  // namespace
 
+// static
+std::string DemoPreferencesScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(DemoPreferencesScreenView::kScreenId),
+    : BaseScreen(DemoPreferencesScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -73,7 +84,7 @@ void DemoPreferencesScreen::SetDemoModeCountry(const std::string& country_id) {
                                               country_id);
 }
 
-void DemoPreferencesScreen::Show() {
+void DemoPreferencesScreen::ShowImpl() {
   WelcomeScreen* welcome_screen = GetWelcomeScreen();
   if (welcome_screen) {
     initial_locale_ = welcome_screen->GetApplicationLocale();
@@ -84,7 +95,7 @@ void DemoPreferencesScreen::Show() {
     view_->Show();
 }
 
-void DemoPreferencesScreen::Hide() {
+void DemoPreferencesScreen::HideImpl() {
   initial_locale_.clear();
   initial_input_method_.clear();
 

@@ -73,7 +73,15 @@ def RunSteps(api):
     if 'Win' in api.vars.builder_cfg.get('os', ''):
       api.python.inline(
           name='cleanup',
-          program='''import psutil
+          program='''
+# [VPYTHON:BEGIN]
+# wheel: <
+#  name: "infra/python/wheels/psutil/${vpython_platform}"
+#  version: "version:5.4.7"
+# >
+# [VPYTHON:END]
+
+import psutil
 for p in psutil.process_iter():
   try:
     if p.name in ('mspdbsrv.exe', 'vctip.exe', 'cl.exe', 'link.exe'):
@@ -81,14 +89,15 @@ for p in psutil.process_iter():
   except psutil._error.AccessDenied:
     pass
 ''',
-          infra_step=True)
+          infra_step=True,
+          venv=True)
 
   api.run.check_failure()
 
 
 TEST_BUILDERS = [
-  'Build-Debian9-Clang-universal-devrel-Android_SKQP',
-  'Build-Debian9-Clang-arm-Release-Flutter_Android',
+  'Build-Debian10-Clang-universal-devrel-Android_SKQP',
+  'Build-Debian10-Clang-arm-Release-Flutter_Android',
   'Build-Mac-Clang-x86_64-Debug-CommandBuffer',
   'Build-Win10-Clang-x86_64-Release-NoDEPS',
 ]

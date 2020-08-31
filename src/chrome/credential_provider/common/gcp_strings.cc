@@ -79,6 +79,10 @@ const char kGcpwEndpointPathSwitch[] = "gcpw-endpoint-path";
 // to GCPW.
 const char kGcpwAdditionalOauthScopes[] = "gcpw-additional-oauth-scopes";
 
+// The show_tos parameter is used to specify whether tos screen needs to be
+// shown as part of the login process or not.
+const char kShowTosSwitch[] = "show_tos";
+
 // Parameter appended to sign in URL to pass valid signin domains to the inline
 // login handler. These domains are separated by ','.
 const char kEmailDomainsSigninPromoParameter[] = "emailDomains";
@@ -87,6 +91,12 @@ const char kValidateGaiaIdSigninPromoParameter[] = "validate_gaia_id";
 const char kGcpwEndpointPathPromoParameter[] = "gcpw_endpoint_path";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
+
+// Flags to manipulate behavior of Chrome when importing credentials for the
+// account signs in through GCPW.
+const wchar_t kAllowImportOnlyOnFirstRun[] = L"allow_import_only_on_first_run";
+const wchar_t kAllowImportWhenPrimaryAccountExists[] =
+    L"allow_import_when_primary_exists";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const wchar_t kRegHkcuAccountsPath[] = L"Software\\Google\\Accounts";

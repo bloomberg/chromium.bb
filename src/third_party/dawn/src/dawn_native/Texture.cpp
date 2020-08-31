@@ -20,6 +20,7 @@
 #include "common/Constants.h"
 #include "common/Math.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/PassResourceUsage.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
 namespace dawn_native {
@@ -108,6 +109,11 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "The sample counts of the textures in BC formats must be 1.");
                 }
+
+                if (descriptor->usage & wgpu::TextureUsage::Storage) {
+                    return DAWN_VALIDATION_ERROR(
+                        "The sample counts of the storage textures must be 1.");
+                }
             }
 
             return {};
@@ -141,6 +147,10 @@ namespace dawn_native {
 
         MaybeError ValidateTextureSize(const TextureDescriptor* descriptor, const Format* format) {
             ASSERT(descriptor->size.width != 0 && descriptor->size.height != 0);
+            if (descriptor->size.width > kMaxTextureSize ||
+                descriptor->size.height > kMaxTextureSize) {
+                return DAWN_VALIDATION_ERROR("Texture max size exceeded");
+            }
 
             if (Log2(std::max(descriptor->size.width, descriptor->size.height)) + 1 <
                 descriptor->mipLevelCount) {
@@ -151,6 +161,13 @@ namespace dawn_native {
                                          descriptor->size.height % format->blockHeight != 0)) {
                 return DAWN_VALIDATION_ERROR(
                     "The size of the texture is incompatible with the texture format");
+            }
+
+            if (descriptor->arrayLayerCount > kMaxTexture2DArrayLayers) {
+                return DAWN_VALIDATION_ERROR("Texture 2D array layer count exceeded");
+            }
+            if (descriptor->mipLevelCount > kMaxTexture2DMipLevels) {
+                return DAWN_VALIDATION_ERROR("Max texture 2D mip level exceeded");
             }
 
             return {};
@@ -173,8 +190,9 @@ namespace dawn_native {
                     "Non-renderable format used with OutputAttachment usage");
             }
 
-            if (descriptor->usage & wgpu::TextureUsage::Storage) {
-                return DAWN_VALIDATION_ERROR("storage textures aren't supported (yet)");
+            if (!format->supportsStorageUsage &&
+                (descriptor->usage & wgpu::TextureUsage::Storage)) {
+                return DAWN_VALIDATION_ERROR("Format cannot be used in storage textures");
             }
 
             return {};
@@ -336,6 +354,12 @@ namespace dawn_native {
         uint32_t subresourceCount =
             GetSubresourceIndex(descriptor->mipLevelCount, descriptor->arrayLayerCount);
         mIsSubresourceContentInitializedAtIndex = std::vector<bool>(subresourceCount, false);
+
+        // Add readonly storage usage if the texture has a storage usage. The validation rules in
+        // ValidatePassResourceUsage will make sure we don't use both at the same time.
+        if (mUsage & wgpu::TextureUsage::Storage) {
+            mUsage |= kReadonlyStorageTexture;
+        }
     }
 
     static Format kUnusedFormat;

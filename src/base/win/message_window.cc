@@ -27,8 +27,8 @@ class MessageWindow::WindowClass {
   HINSTANCE instance() { return instance_; }
 
  private:
-  ATOM atom_;
-  HINSTANCE instance_;
+  ATOM atom_ = 0;
+  HINSTANCE instance_ = CURRENT_MODULE();
 
   DISALLOW_COPY_AND_ASSIGN(WindowClass);
 };
@@ -36,8 +36,7 @@ class MessageWindow::WindowClass {
 static LazyInstance<MessageWindow::WindowClass>::DestructorAtExit
     g_window_class = LAZY_INSTANCE_INITIALIZER;
 
-MessageWindow::WindowClass::WindowClass()
-    : atom_(0), instance_(CURRENT_MODULE()) {
+MessageWindow::WindowClass::WindowClass() {
   WNDCLASSEX window_class;
   window_class.cbSize = sizeof(window_class);
   window_class.style = 0;
@@ -45,12 +44,12 @@ MessageWindow::WindowClass::WindowClass()
   window_class.cbClsExtra = 0;
   window_class.cbWndExtra = 0;
   window_class.hInstance = instance_;
-  window_class.hIcon = NULL;
-  window_class.hCursor = NULL;
-  window_class.hbrBackground = NULL;
-  window_class.lpszMenuName = NULL;
+  window_class.hIcon = nullptr;
+  window_class.hCursor = nullptr;
+  window_class.hbrBackground = nullptr;
+  window_class.lpszMenuName = nullptr;
   window_class.lpszClassName = kMessageWindowClassName;
-  window_class.hIconSm = NULL;
+  window_class.hIconSm = nullptr;
   atom_ = RegisterClassEx(&window_class);
   if (atom_ == 0) {
     PLOG(ERROR)
@@ -69,21 +68,19 @@ MessageWindow::WindowClass::~WindowClass() {
   }
 }
 
-MessageWindow::MessageWindow()
-    : window_(NULL) {
-}
+MessageWindow::MessageWindow() = default;
 
 MessageWindow::~MessageWindow() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (window_ != NULL) {
+  if (window_ != nullptr) {
     BOOL result = DestroyWindow(window_);
     DCHECK(result);
   }
 }
 
 bool MessageWindow::Create(MessageCallback message_callback) {
-  return DoCreate(std::move(message_callback), NULL);
+  return DoCreate(std::move(message_callback), nullptr);
 }
 
 bool MessageWindow::CreateNamed(MessageCallback message_callback,
@@ -93,7 +90,7 @@ bool MessageWindow::CreateNamed(MessageCallback message_callback,
 
 // static
 HWND MessageWindow::FindWindow(const string16& window_name) {
-  return FindWindowEx(HWND_MESSAGE, NULL, kMessageWindowClassName,
+  return FindWindowEx(HWND_MESSAGE, nullptr, kMessageWindowClassName,
                       as_wcstr(window_name));
 }
 
@@ -106,8 +103,9 @@ bool MessageWindow::DoCreate(MessageCallback message_callback,
   message_callback_ = std::move(message_callback);
 
   WindowClass& window_class = g_window_class.Get();
-  window_ = CreateWindow(MAKEINTATOM(window_class.atom()), window_name, 0, 0, 0,
-                         0, 0, HWND_MESSAGE, 0, window_class.instance(), this);
+  window_ =
+      CreateWindow(MAKEINTATOM(window_class.atom()), window_name, 0, 0, 0, 0, 0,
+                   HWND_MESSAGE, nullptr, window_class.instance(), this);
   if (!window_) {
     PLOG(ERROR) << "Failed to create a message-only window";
     return false;
@@ -121,8 +119,8 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
                                            UINT message,
                                            WPARAM wparam,
                                            LPARAM lparam) {
-  MessageWindow* self = reinterpret_cast<MessageWindow*>(
-      GetWindowLongPtr(hwnd, GWLP_USERDATA));
+  MessageWindow* self =
+      reinterpret_cast<MessageWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
   switch (message) {
     // Set up the self before handling WM_CREATE.
@@ -136,8 +134,8 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
 
       // Store pointer to the self to the window's user data.
       SetLastError(ERROR_SUCCESS);
-      LONG_PTR result = SetWindowLongPtr(
-          hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+      LONG_PTR result = SetWindowLongPtr(hwnd, GWLP_USERDATA,
+                                         reinterpret_cast<LONG_PTR>(self));
       CHECK(result != 0 || GetLastError() == ERROR_SUCCESS);
       break;
     }

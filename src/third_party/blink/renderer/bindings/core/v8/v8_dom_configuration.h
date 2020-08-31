@@ -145,8 +145,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
-    // V8PrivateProperty::CachedAccessorSymbol
-    unsigned cached_property_key : 1;
+    // V8PrivateProperty::CachedAccessor
+    unsigned cached_property_key : 2;
     // v8::PropertyAttribute
     unsigned attribute : 8;
     // PropertyLocationConfiguration
@@ -228,6 +228,24 @@ class CORE_EXPORT V8DOMConfiguration final {
     };
   };
 
+  struct ConstantCallbackConfiguration {
+    DISALLOW_NEW();
+
+   public:
+    constexpr ConstantCallbackConfiguration(
+        const char* name,
+        v8::AccessorNameGetterCallback getter)
+        : name(name), getter(getter) {}
+    ConstantCallbackConfiguration(const ConstantCallbackConfiguration&) =
+        delete;
+
+    ConstantCallbackConfiguration& operator=(
+        const ConstantCallbackConfiguration&) = delete;
+
+    const char* const name;
+    const v8::AccessorNameGetterCallback getter;
+  };
+
   // Constant installation
   //
   // installConstants and installConstant are used for simple constants. They
@@ -252,6 +270,19 @@ class CORE_EXPORT V8DOMConfiguration final {
                               v8::Local<v8::Function> interface,
                               v8::Local<v8::Object> prototype,
                               const ConstantConfiguration&);
+
+  static void InstallConstants(
+      v8::Isolate* isolate,
+      v8::Local<v8::FunctionTemplate> interface_template,
+      v8::Local<v8::ObjectTemplate> prototype_template,
+      const ConstantCallbackConfiguration*,
+      size_t constant_count);
+
+  static void InstallConstants(v8::Isolate* isolate,
+                               v8::Local<v8::Function> interface_object,
+                               v8::Local<v8::Object> prototype_object,
+                               const ConstantConfiguration* constants,
+                               size_t constant_count);
 
   static void InstallConstantWithGetter(
       v8::Isolate*,
@@ -335,6 +366,14 @@ class CORE_EXPORT V8DOMConfiguration final {
 
   // If an empty handle is passed as |instance|, |prototype|, or |interface|,
   // then that object is ignored and no properties are installed on that object.
+  static void InstallMethods(v8::Isolate*,
+                             const DOMWrapperWorld&,
+                             v8::Local<v8::Object> instance,
+                             v8::Local<v8::Object> prototype,
+                             v8::Local<v8::Function> interface,
+                             v8::Local<v8::Signature>,
+                             const MethodConfiguration*,
+                             size_t method_count);
   static void InstallMethod(v8::Isolate*,
                             const DOMWrapperWorld&,
                             v8::Local<v8::Object> instance,

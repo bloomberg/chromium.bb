@@ -56,7 +56,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.AppCacheBackend",
                   "blink.mojom.BlobRegistry",
                   "blink.mojom.BroadcastChannelProvider",
-                  "blink.mojom.ClipboardHost",
                   "blink.mojom.CodeCacheHost",
                   "blink.mojom.FontUniqueNameLookup",
                   "blink.mojom.EmbeddedFrameSinkProvider",
@@ -74,7 +73,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.SpeechSynthesis",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
-                  "content.mojom.ClipboardHost",
                   "content.mojom.FieldTrialRecorder",
                   "content.mojom.FrameSinkProvider",
                   "content.mojom.RendererHost",
@@ -147,6 +145,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("device", "device:usb_test")
           .RequireCapability("device", "device:vibration")
           .RequireCapability("device", "device:wake_lock")
+          .RequireCapability("device", "device_service")
           .RequireCapability("media_session", "media_session:app")
           .RequireCapability("video_capture", "capture")
           .RequireCapability("video_capture", "tests")
@@ -162,15 +161,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("content_gpu", "browser")
           .RequireCapability("resource_coordinator", "app")
           .RequireCapability("resource_coordinator", "heap_profiler_helper")
-          .ExposeInterfaceFilterCapability_Deprecated(
-              "navigation:frame", "renderer",
-              std::set<const char*>{
-                  "autofill.mojom.AutofillDriver",
-                  "autofill.mojom.PasswordManagerDriver",
-                  "blink.mojom.DisplayCutoutHost",
-                  "blink.mojom.Portal",
-                  "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "viz.mojom.Gpu"})
           .Build()};
   return *manifest;
   // clang-format on

@@ -16,6 +16,7 @@
 #include "printing/common/metafile_utils.h"
 #include "printing/metafile.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -37,11 +38,11 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
   // Metafile methods.
   bool Init() override;
-  bool InitFromData(const void* src_buffer, size_t src_buffer_size) override;
+  bool InitFromData(base::span<const uint8_t> data) override;
 
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 const float& scale_factor) override;
+                 float scale_factor) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 
@@ -60,11 +61,16 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 #elif defined(OS_MACOSX)
   bool RenderPage(unsigned int page_number,
                   printing::NativeDrawingContext context,
-                  const CGRect rect,
-                  const MacRenderPageParams& params) const override;
+                  const CGRect& rect,
+                  bool autorotate,
+                  bool fit_to_page) const override;
 #endif
 
+#if defined(OS_ANDROID)
+  bool SaveToFileDescriptor(int fd) const override;
+#else
   bool SaveTo(base::File* file) const override;
+#endif  // defined(OS_ANDROID)
 
   // Unlike FinishPage() or FinishDocument(), this is for out-of-process
   // subframe printing. It will just serialize the content into SkPicture
@@ -83,7 +89,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   // until FinishPage() or FinishDocument() is called.
   cc::PaintCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
                                              const gfx::Rect& content_area,
-                                             const float& scale_factor);
+                                             float scale_factor);
 
   // This is used for painting content of out-of-process subframes.
   // For such a subframe, since the content is in another process, we create a
@@ -94,6 +100,11 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
   int GetDocumentCookie() const;
   const ContentToProxyIdMap& GetSubframeContentInfo() const;
+
+  const ui::AXTreeUpdate& accessibility_tree() const {
+    return accessibility_tree_;
+  }
+  ui::AXTreeUpdate& accessibility_tree() { return accessibility_tree_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetafileSkiaTest, TestFrameContent);
@@ -110,6 +121,8 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   void CustomDataToSkPictureCallback(SkCanvas* canvas, uint32_t content_id);
 
   std::unique_ptr<MetafileSkiaData> data_;
+
+  ui::AXTreeUpdate accessibility_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(MetafileSkia);
 };

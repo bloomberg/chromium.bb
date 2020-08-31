@@ -9,35 +9,32 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
-import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
 /** The tab switcher mode top toolbar shown on phones. */
@@ -139,11 +136,11 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // TODO(twellington): Handle interrupted animations to avoid jumps to 1.0 or 0.f.
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
-        boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
-                && TabFeatureUtilities.isTabToGtsAnimationEnabled();
+        boolean showZoomingAnimation = TabUiFeatureUtilities.isGridTabSwitcherEnabled()
+                && TabUiFeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
-                ? ToolbarManager.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
-                : ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
+                ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
+                : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
 
         mVisiblityAnimator =
                 ObjectAnimator.ofFloat(this, View.ALPHA, inTabSwitcherMode ? 1.0f : 0.0f);
@@ -254,7 +251,6 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     public void onIncognitoStateChanged(boolean isIncognito) {
         mIsIncognito = isIncognito;
         updatePrimaryColorAndTint();
-        updateIncognitoToggleTabsVisibility();
     }
 
     /** Called when accessibility status changes. */
@@ -269,12 +265,26 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         updatePrimaryColorAndTint();
     }
 
+    /** Called when incognito tab count changes. */
+    void onIncognitoTabsCountChanged(int incognitoTabsCount) {
+        boolean shouldShowNewTabVariation = incognitoTabsCount == 0;
+        if (shouldShowNewTabVariation == mShouldShowNewTabVariation) return;
+        mShouldShowNewTabVariation = shouldShowNewTabVariation;
+
+        // TODO(crbug.com/1012014): Address the empty top toolbar issue when adaptive toolbar and
+        // new tab variation are both on.
+        // Show new tab variation when there are no incognito tabs.
+        assert mIncognitoToggleTabLayout != null;
+        mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
+        setNewTabButtonVisibility(mShouldShowNewTabButton);
+    }
+
     /**
      * @param isVisible Whether the bottom toolbar is visible.
      */
     void onBottomToolbarVisibilityChanged(boolean isVisible) {
         mShouldShowNewTabButton = !isVisible
-                || (FeatureUtilities.isBottomToolbarEnabled()
+                || (BottomToolbarConfiguration.isBottomToolbarEnabled()
                         && !BottomToolbarVariationManager.isNewTabButtonOnBottom());
         setNewTabButtonVisibility(mShouldShowNewTabButton);
         // show tab switcher button on the top in landscape mode.
@@ -325,10 +335,10 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         mUseLightIcons = useLightIcons;
 
         if (mLightIconTint == null) {
-            mLightIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.tint_on_dark_bg);
-            mDarkIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
+            mLightIconTint = AppCompatResources.getColorStateList(
+                    getContext(), R.color.default_icon_color_light_tint_list);
+            mDarkIconTint = AppCompatResources.getColorStateList(
+                    getContext(), R.color.default_icon_color_tint_list);
         }
 
         ColorStateList tintList = useLightIcons ? mLightIconTint : mDarkIconTint;
@@ -344,7 +354,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private int getToolbarColorForCurrentState() {
         // TODO(huayinz): Split tab switcher background color from primary background color.
         if (DeviceClassManager.enableAccessibilityLayout()
-                || FeatureUtilities.isGridTabSwitcherEnabled()) {
+                || TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
             return ChromeColors.getPrimaryBackgroundColor(getResources(), mIsIncognito);
         }
 
@@ -373,11 +383,6 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     }
 
     private void setIncognitoToggleVisibility(boolean showIncognitoToggle) {
-        // If StartSurface is enabled, the incognito switch is shown and handled
-        // by the IncognitoSwitchCoordinator in the
-        // TabSwitcherModeTTCoordinatorPhone.
-        if (FeatureUtilities.isStartSurfaceEnabled()) return;
-
         if (mIncognitoToggleTabLayout == null) {
             if (showIncognitoToggle) inflateIncognitoToggle();
         } else {
@@ -400,35 +405,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
      *         and incognito status.
      */
     private boolean shouldShowIncognitoToggle() {
-        return (usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
+        return (usingHorizontalTabSwitcher() || TabUiFeatureUtilities.isGridTabSwitcherEnabled())
                 && IncognitoUtils.isIncognitoModeEnabled();
-    }
-
-    private void updateIncognitoToggleTabsVisibility() {
-        // TODO(yuezhanggg): Add a regression test for this "New Tab" variation. (crbug: 977546)
-        if (!FeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
-                || !ChromeFeatureList
-                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                                    "tab_grid_layout_android_new_tab")
-                            .equals("NewTabVariation")
-                || mIncognitoToggleTabLayout == null) {
-            mShouldShowNewTabVariation = false;
-            return;
-        }
-        // TODO(crbug.com/1012014): Address the empty top toolbar issue when adaptive toolbar and
-        // new tab variation are both on.
-        // Show new tab variation when there are no incognito tabs.
-        mShouldShowNewTabVariation = !hasIncognitoTabs();
-        mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
-        setNewTabButtonVisibility(mShouldShowNewTabButton);
-    }
-
-    private boolean hasIncognitoTabs() {
-        // Check if there is no incognito tab, or all the incognito tabs are being closed.
-        TabModel incognitoTabModel = mTabModelSelector.getModel(true);
-        for (int i = 0; i < incognitoTabModel.getCount(); i++) {
-            if (!((TabImpl) incognitoTabModel.getTabAt(i)).isClosing()) return true;
-        }
-        return false;
     }
 }

@@ -155,43 +155,43 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
 
   base::PostTaskAndReplyWithResult(
       decode_task_runner_.get(), FROM_HERE,
-      base::Bind(&DoDecodeFrame, decoder_.get(), base::Passed(&packet),
-                 base::Passed(&frame)),
-      base::Bind(&SoftwareVideoRenderer::RenderFrame,
-                 weak_factory_.GetWeakPtr(), base::Passed(&frame_stats),
-                 base::AdaptCallbackForRepeating(done_runner.Release())));
+      base::BindOnce(&DoDecodeFrame, decoder_.get(), std::move(packet),
+                     std::move(frame)),
+      base::BindOnce(&SoftwareVideoRenderer::RenderFrame,
+                     weak_factory_.GetWeakPtr(), std::move(frame_stats),
+                     base::AdaptCallbackForRepeating(done_runner.Release())));
 }
 
 void SoftwareVideoRenderer::RenderFrame(
     std::unique_ptr<protocol::FrameStats> stats,
-    const base::Closure& done,
+    base::OnceClosure done,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   stats->client_stats.time_decoded = base::TimeTicks::Now();
   if (!frame) {
-    if (!done.is_null())
-      done.Run();
+    if (done)
+      std::move(done).Run();
     return;
   }
 
-  consumer_->DrawFrame(
-      std::move(frame),
-      base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stats), done));
+  consumer_->DrawFrame(std::move(frame),
+                       base::BindOnce(&SoftwareVideoRenderer::OnFrameRendered,
+                                      weak_factory_.GetWeakPtr(),
+                                      std::move(stats), std::move(done)));
 }
 
 void SoftwareVideoRenderer::OnFrameRendered(
     std::unique_ptr<protocol::FrameStats> stats,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   stats->client_stats.time_rendered = base::TimeTicks::Now();
   if (stats_consumer_)
     stats_consumer_->OnVideoFrameStats(*stats);
 
-  if (!done.is_null())
-    done.Run();
+  if (done)
+    std::move(done).Run();
 }
 
 }  // namespace remoting

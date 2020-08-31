@@ -23,7 +23,7 @@ class ClipboardAndroid : public Clipboard {
  public:
   // Callback called whenever the clipboard is modified.  The parameter
   // represents the time of the modification.
-  using ModifiedCallback = base::Callback<void(base::Time)>;
+  using ModifiedCallback = base::RepeatingCallback<void(base::Time)>;
 
   // Called by Java when the Java Clipboard is notified that the clipboard has
   // changed.
@@ -43,11 +43,11 @@ class ClipboardAndroid : public Clipboard {
   int64_t GetLastModifiedTimeToJavaTime(JNIEnv* env);
 
   // Sets the callback called whenever the clipboard is modified.
-  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
   void SetModifiedCallback(ModifiedCallback cb);
 
   // Sets the last modified time without calling the above callback.
-  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
   void SetLastModifiedTimeWithoutRunningCallback(base::Time time);
 
  private:
@@ -63,8 +63,9 @@ class ClipboardAndroid : public Clipboard {
                          ClipboardBuffer buffer) const override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const override;
+                          std::vector<base::string16>* types) const override;
+  std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
+      ClipboardBuffer buffer) const override;
   void ReadText(ClipboardBuffer buffer, base::string16* result) const override;
   void ReadAsciiText(ClipboardBuffer buffer,
                      std::string* result) const override;
@@ -74,7 +75,8 @@ class ClipboardAndroid : public Clipboard {
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardBuffer buffer, std::string* result) const override;
-  SkBitmap ReadImage(ClipboardBuffer buffer) const override;
+  void ReadImage(ClipboardBuffer buffer,
+                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const base::string16& type,
                       base::string16* result) const override;

@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,7 +19,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -26,7 +26,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -34,6 +35,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using password_manager::metrics_util::LogPasswordSettingsReauthResult;
+using password_manager::metrics_util::ReauthResult;
 
 namespace {
 
@@ -106,8 +110,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _delegate = delegate;
     _weakReauthenticationModule = reauthenticationModule;
@@ -345,9 +348,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if ([_weakReauthenticationModule canAttemptReauth]) {
     __weak PasswordDetailsTableViewController* weakSelf = self;
-    void (^showPasswordHandler)(BOOL) = ^(BOOL success) {
+    void (^showPasswordHandler)(ReauthenticationResult) = ^(
+        ReauthenticationResult result) {
       PasswordDetailsTableViewController* strongSelf = weakSelf;
-      if (!strongSelf || !success)
+      if (!strongSelf)
+        return;
+      [strongSelf logPasswordSettingsReauthResult:result];
+      if (result == ReauthenticationResult::kFailure)
         return;
       TableViewTextItem* passwordItem = strongSelf->_passwordItem;
       passwordItem.masked = NO;
@@ -397,17 +404,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
         "PasswordManager.AccessPasswordInSettings",
         password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
         password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.ReauthToAccessPasswordInSettings",
-        password_manager::metrics_util::REAUTH_SKIPPED,
-        password_manager::metrics_util::REAUTH_COUNT);
+    password_manager::metrics_util::LogPasswordSettingsReauthResult(
+        password_manager::metrics_util::ReauthResult::kSkipped);
   } else if ([_weakReauthenticationModule canAttemptReauth]) {
     __weak PasswordDetailsTableViewController* weakSelf = self;
-    void (^copyPasswordHandler)(BOOL) = ^(BOOL success) {
+    void (^copyPasswordHandler)(ReauthenticationResult) = ^(
+        ReauthenticationResult result) {
       PasswordDetailsTableViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
-      if (success) {
+      [strongSelf logPasswordSettingsReauthResult:result];
+      if (result != ReauthenticationResult::kFailure) {
         UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
         generalPasteboard.string = strongSelf->_password;
         [strongSelf showToast:l10n_util::GetNSString(
@@ -459,6 +466,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              handler:nil];
   [alertController addAction:okAction];
   alertController.preferredAction = okAction;
+
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
@@ -504,6 +512,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                         deletePassword:_passwordForm];
               }];
   [_deleteConfirmation addAction:deleteAction];
+
+  // Starting with iOS13, alerts of style UIAlertControllerStyleActionSheet
+  // need a sourceView or sourceRect, or this crashes.
+  if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
+    _deleteConfirmation.popoverPresentationController.sourceView =
+        self.tableView;
+  }
 
   [self presentViewController:_deleteConfirmation animated:YES completion:nil];
 }
@@ -611,6 +626,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+#pragma mark - Metrics
+
+// Logs metrics for the given reauthentication result (success, failure or
+// skipped).
+- (void)logPasswordSettingsReauthResult:(ReauthenticationResult)result {
+  switch (result) {
+    case ReauthenticationResult::kSuccess:
+      LogPasswordSettingsReauthResult(ReauthResult::kSuccess);
+      break;
+    case ReauthenticationResult::kFailure:
+      LogPasswordSettingsReauthResult(ReauthResult::kFailure);
+      break;
+    case ReauthenticationResult::kSkipped:
+      LogPasswordSettingsReauthResult(ReauthResult::kSkipped);
+      break;
+  }
 }
 
 #pragma mark - ForTesting

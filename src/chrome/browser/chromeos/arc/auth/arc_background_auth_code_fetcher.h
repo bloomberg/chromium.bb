@@ -49,16 +49,17 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
   // ArcAuthCodeFetcher:
   void Fetch(FetchCallback callback) override;
 
-  void SkipMergeSessionForTesting();
-
  private:
-  void ResetFetchers();
   void OnPrepared(bool success);
+  void AttemptToRecoverAccessToken(const signin::AccessTokenInfo& token_info);
+
+  void StartFetchingAccessToken();
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   signin::AccessTokenInfo token_info);
 
-  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnSimpleLoaderComplete(signin::AccessTokenInfo token_info,
+                              std::unique_ptr<std::string> response_body);
 
   void ReportResult(const std::string& auth_code,
                     OptInSilentAuthCode uma_status);
@@ -68,6 +69,10 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
   Profile* const profile_;
   ArcAuthContext context_;
   FetchCallback callback_;
+
+  // Indicates whether |ArcBackgroundAuthCodeFetcher| tried to recover access
+  // token. Only one recovery attempt is applied during the fetcher lifetime.
+  bool attempted_to_recover_access_token_ = false;
 
   std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;

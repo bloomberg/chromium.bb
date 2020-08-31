@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandl
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -38,23 +37,22 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.SPenSupport;
 import org.chromium.ui.resources.ResourceManager;
@@ -115,10 +113,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private int mControlsShowingToken = TokenHolder.INVALID_TOKEN;
     private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mUpdateRequested;
-    private final ContextualSearchPanel mContextualSearchPanel;
-    private final EphemeralTabPanel mEphemeralTabPanel;
+    private ContextualSearchPanel mContextualSearchPanel;
     private final OverlayPanelManager mOverlayPanelManager;
-    private final ToolbarSceneLayer mToolbarOverlay;
+    private ToolbarSceneLayer mToolbarOverlay;
     private SceneOverlay mStatusIndicatorSceneOverlay;
 
     /** A delegate for interacting with the Contextual Search manager. */
@@ -145,7 +142,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     /**
      * Protected class to handle {@link TabModelObserver} related tasks. Extending classes will
      * need to override any related calls to add new functionality */
-    protected class LayoutManagerTabModelObserver extends EmptyTabModelObserver {
+    protected class LayoutManagerTabModelObserver implements TabModelObserver {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
@@ -161,11 +158,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 return;
             }
 
-            tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
+            tabCreating(
+                    getTabModelSelector().getCurrentTabId(), tab.getUrlString(), tab.isIncognito());
         }
 
         @Override
-        public void didAddTab(Tab tab, @TabLaunchType int launchType) {
+        public void didAddTab(
+                Tab tab, @TabLaunchType int launchType, @TabCreationState int creationState) {
             int tabId = tab.getId();
             if (launchType == TabLaunchType.FROM_RESTORE) {
                 getActiveLayout().onTabRestored(time(), tabId);
@@ -220,19 +219,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         mAnimationHandler = new CompositorAnimationHandler(this);
 
-        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
-
         mOverlayPanelManager = new OverlayPanelManager();
 
         // Build Layouts
         mStaticLayout = new StaticLayout(mContext, this, renderHost, null, mOverlayPanelManager);
-
-        // Contextual Search scene overlay.
-        mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
-
-        mEphemeralTabPanel = EphemeralTabPanel.isSupported()
-                ? new EphemeralTabPanel(mContext, this, mOverlayPanelManager)
-                : null;
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
@@ -245,13 +235,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     public OverlayPanelManager getOverlayPanelManager() {
         return mOverlayPanelManager;
-    }
-
-    /**
-     * @return The layout manager's ephemeral tab panel manager.
-     */
-    public EphemeralTabPanel getEphemeralTabPanel() {
-        return mEphemeralTabPanel;
     }
 
     @Override
@@ -386,6 +369,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
+        LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
+        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
+
+        // Initialize Layouts
+        mStaticLayout.onFinishNativeInitialization();
+
+        // Contextual Search scene overlay.
+        mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
+
         // Add any SceneOverlays to a layout.
         addAllSceneOverlays();
 
@@ -407,7 +399,16 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mOverlayPanelManager.setDynamicResourceLoader(dynamicResourceLoader);
         mOverlayPanelManager.setContainerView(androidContentContainer);
 
+        if (mTabModelSelector != selector) {
+            setTabModelSelector(selector);
+        }
+
+        mContentContainer = androidContentContainer;
+    }
+
+    public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
+        mStaticLayout.setTabModelSelector(selector, null);
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
@@ -435,8 +436,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             }
         };
 
-        mContentContainer = androidContentContainer;
-
         if (mNextActiveLayout != null) startShowing(mNextActiveLayout, true);
 
         updateLayoutForTabModelSelector();
@@ -463,7 +462,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mOverlayPanelManager != null) mOverlayPanelManager.destroy();
-        if (mEphemeralTabPanel != null) mEphemeralTabPanel.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         if (mTabModelSelectorObserver != null) {
             getTabModelSelector().removeObserver(mTabModelSelectorObserver);
@@ -644,13 +642,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         LayoutTab layoutTab = mTabCache.get(tabId);
         if (layoutTab == null) return;
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         boolean isNativePage = tab.isNativePage()
                 || (url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX));
         int themeColor = TabThemeColorHelper.getColor(tab);
 
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
-                && !isNativePage && !((TabImpl) tab).isHidden();
+                && !isNativePage && !tab.isHidden();
 
         layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab), shouldStall(tab),
                 canUseLiveTexture, ToolbarColors.getToolbarSceneLayerBackground(tab),
@@ -664,7 +662,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     // Whether the tab is ready to display or it should be faded in as it loads.
     private static boolean shouldStall(Tab tab) {
         return (tab.isFrozen() || tab.needsReload())
-                && !NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito());
+                && !NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito());
     }
 
     @Override
@@ -747,7 +745,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     @Override
     public void requestUpdate() {
-        if (!mUpdateRequested) mHost.requestRender();
+        requestUpdate(null);
+    }
+
+    @Override
+    public void requestUpdate(Runnable onUpdateEffective) {
+        if (mUpdateRequested && onUpdateEffective == null) return;
+        mHost.requestRender(onUpdateEffective);
         mUpdateRequested = true;
     }
 
@@ -853,15 +857,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // Nothing to do here yet.
     }
 
-    // TODO(crbug.com/1002519): This should be a temporary solution until the scene layer ownership
-    // is redone and the toolbar component owns its scene layer.
-    /**
-     * @return The {@link ToolbarSceneLayer}.
-     */
-    public ToolbarSceneLayer getToolbarSceneLayer() {
-        return mToolbarOverlay;
-    }
-
     /**
      * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the normal
      *         toolbar. By default this returns null.
@@ -916,7 +911,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             addGlobalSceneOverlay(mStatusIndicatorSceneOverlay);
         }
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
-        if (mEphemeralTabPanel != null) mStaticLayout.addSceneOverlay(mEphemeralTabPanel);
     }
 
     /**

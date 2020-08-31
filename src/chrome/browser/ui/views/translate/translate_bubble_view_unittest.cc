@@ -20,6 +20,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -88,9 +89,15 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   void DeclineTranslation() override { translation_declined_ = true; }
 
+  bool ShouldNeverTranslateLanguage() override {
+    return never_translate_language_;
+  }
+
   void SetNeverTranslateLanguage(bool value) override {
     never_translate_language_ = value;
   }
+
+  bool ShouldNeverTranslateSite() override { return never_translate_site_; }
 
   void SetNeverTranslateSite(bool value) override {
     never_translate_site_ = value;
@@ -166,12 +173,7 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     // The bubble needs the parent as an anchor.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(params));
+    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();
 
     mock_model_ = new MockTranslateBubbleModel(
@@ -238,11 +240,6 @@ TEST_F(TranslateBubbleViewTest, TranslateButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiTranslateButton) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   EXPECT_FALSE(mock_model_->translate_called_);
 
@@ -252,6 +249,9 @@ TEST_F(TranslateBubbleViewTest, TabUiTranslateButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
 
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
@@ -269,11 +269,6 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiOptionsMenuNeverTranslateLanguage) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
 
   EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
@@ -291,6 +286,9 @@ TEST_F(TranslateBubbleViewTest, TabUiOptionsMenuNeverTranslateLanguage) {
 }
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   // NEVER_TRANSLATE_SITE should only show up for sites that can be blacklisted.
   mock_model_->SetCanBlacklistSite(true);
   CreateAndShowBubble();
@@ -310,11 +308,6 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiOptionsMenuNeverTranslateSite) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   // NEVER_TRANSLATE_SITE should only show up for sites that can be blacklisted.
   mock_model_->SetCanBlacklistSite(true);
   CreateAndShowBubble();
@@ -358,6 +351,9 @@ TEST_F(TranslateBubbleViewTest, TryAgainButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -382,6 +378,9 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -406,11 +405,6 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxShortcut) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   mock_model_->SetShouldShowAlwaysTranslateShortcut(true);
   CreateAndShowBubble();
 
@@ -430,11 +424,6 @@ TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxShortcut) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndCloseButton) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
 
@@ -459,11 +448,6 @@ TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndCloseButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndDoneButton) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
 
@@ -488,6 +472,9 @@ TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndDoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, DoneButton) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -508,11 +495,6 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiSourceDoneButton) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
 
@@ -536,11 +518,6 @@ TEST_F(TranslateBubbleViewTest, TabUiSourceDoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiTargetDoneButton) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE);
 
@@ -563,6 +540,9 @@ TEST_F(TranslateBubbleViewTest, TabUiTargetDoneButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
             bubble_->GetViewState());
@@ -591,11 +571,6 @@ TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiDoneButtonWithoutTranslating) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
 
   // Translate the page once.
@@ -620,6 +595,9 @@ TEST_F(TranslateBubbleViewTest, TabUiDoneButtonWithoutTranslating) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningBeforeTranslate) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
@@ -632,6 +610,9 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningBeforeTranslate) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningAfterTranslate) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
@@ -644,6 +625,9 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningAfterTranslate) {
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ERROR);
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
@@ -655,6 +639,9 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
 }
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlacklistSite) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   mock_model_->SetCanBlacklistSite(false);
   CreateAndShowBubble();
 
@@ -669,11 +656,6 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlacklistSite) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiOptionsMenuRespectsBlacklistSite) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   mock_model_->SetCanBlacklistSite(false);
   CreateAndShowBubble();
 
@@ -688,6 +670,9 @@ TEST_F(TranslateBubbleViewTest, TabUiOptionsMenuRespectsBlacklistSite) {
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateLanguageMenuItem) {
+  scoped_feature_list_.InitAndDisableFeature(
+      language::kUseButtonTranslateBubbleUi);
+
   CreateAndShowBubble();
 
   TriggerOptionsMenu();
@@ -725,11 +710,6 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateLanguageMenuItem) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateLanguageMenuItem) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
 
   TriggerOptionsMenuTab();
@@ -767,11 +747,6 @@ TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateLanguageMenuItem) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateTriggerTranslation) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
 
   TriggerOptionsMenuTab();
@@ -802,11 +777,6 @@ TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateTriggerTranslation) {
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiTabSelectedAfterTranslation) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
   CreateAndShowBubble();
   EXPECT_EQ(bubble_->tabbed_pane_->GetSelectedTabIndex(),
             static_cast<size_t>(0));

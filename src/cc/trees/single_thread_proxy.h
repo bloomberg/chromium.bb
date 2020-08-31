@@ -22,7 +22,6 @@ struct FrameTimingDetails;
 
 namespace cc {
 
-class MutatorEvents;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
 class RenderFrameMetadataObserver;
@@ -79,7 +78,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;
   void DidFinishImplFrame() override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                          FrameSkippedReason reason) override;
   void WillNotReceiveBeginFrame() override;
   void ScheduledActionSendBeginMainFrame(
       const viz::BeginFrameArgs& args) override;
@@ -113,8 +113,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
-  void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<MutatorEvents> events) override;
   bool IsInsideDraw() override;
   bool IsBeginMainFrameExpected() override;
   void RenewTreePriority() override {}
@@ -138,6 +136,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       ElementListType element_list_type) override;
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override;
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override;
 
   void RequestNewLayerTreeFrameSink();
 
@@ -155,7 +154,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoBeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
   void DoPainting();
-  void DoCommit();
+  void DoCommit(const viz::BeginFrameArgs& commit_args);
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();

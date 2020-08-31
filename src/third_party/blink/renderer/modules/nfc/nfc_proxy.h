@@ -8,14 +8,15 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 class NDEFScanOptions;
 class NDEFReader;
 class NDEFWriter;
@@ -23,22 +24,18 @@ class NDEFWriter;
 // This is a proxy class used by NDEFWriter(s) and NDEFReader(s) to connect
 // to implementation of device::mojom::blink::NFC interface.
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
-                                      public PageVisibilityObserver,
-                                      public Supplement<Document>,
+                                      public Supplement<LocalDOMWindow>,
                                       public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
-  USING_PRE_FINALIZER(NFCProxy, Dispose);
 
  public:
   static const char kSupplementName[];
-  static NFCProxy* From(Document&);
+  static NFCProxy* From(LocalDOMWindow&);
 
-  explicit NFCProxy(Document&);
+  explicit NFCProxy(LocalDOMWindow&);
   ~NFCProxy() override;
 
-  void Dispose();
-
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // There is no matching RemoveWriter() method because writers are
   // automatically removed from the weak hash set when they are garbage
@@ -51,23 +48,21 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   void StopReading(NDEFReader*);
   bool IsReading(const NDEFReader*);
   void Push(device::mojom::blink::NDEFMessagePtr,
-            device::mojom::blink::NDEFPushOptionsPtr,
+            device::mojom::blink::NDEFWriteOptionsPtr,
             device::mojom::blink::NFC::PushCallback);
-  void CancelPush(const String&, device::mojom::blink::NFC::CancelPushCallback);
+  void CancelPush(device::mojom::blink::NFC::CancelPushCallback);
 
  private:
   // Implementation of device::mojom::blink::NFCClient.
   void OnWatch(const Vector<uint32_t>&,
                const String&,
                device::mojom::blink::NDEFMessagePtr) override;
+  void OnError(device::mojom::blink::NDEFErrorPtr) override;
 
   void OnReaderRegistered(NDEFReader*,
                           uint32_t watch_id,
                           device::mojom::blink::NFC::WatchCallback,
                           device::mojom::blink::NDEFErrorPtr);
-
-  // Implementation of PageVisibilityObserver.
-  void PageVisibilityChanged() override;
 
   void EnsureMojoConnection();
 
@@ -87,7 +82,10 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   WriterSet writers_;
 
   mojo::Remote<device::mojom::blink::NFC> nfc_remote_;
-  mojo::Receiver<device::mojom::blink::NFCClient> client_receiver_;
+  HeapMojoReceiver<device::mojom::blink::NFCClient,
+                   NFCProxy,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
 };
 
 }  // namespace blink

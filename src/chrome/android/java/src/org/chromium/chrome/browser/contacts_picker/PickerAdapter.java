@@ -9,8 +9,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +17,18 @@ import android.view.ViewGroup;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -438,13 +441,14 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     private String getOwnerEmail() {
         if (sTestOwnerEmail != null) return sTestOwnerEmail;
 
-        ChromeSigninController controller = ChromeSigninController.get();
-        Account account = controller.getSignedInUser();
-        if (account != null) {
-            return account.name;
+        CoreAccountInfo coreAccountInfo =
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
+        if (coreAccountInfo != null) {
+            return coreAccountInfo.getEmail();
         }
 
-        AccountManagerFacade manager = AccountManagerFacade.get();
+        AccountManagerFacade manager = AccountManagerFacadeProvider.getInstance();
         List<Account> accounts = manager.tryGetGoogleAccounts();
         if (accounts.size() > 0) {
             return accounts.get(0).name;
@@ -504,8 +508,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(ownerEmail);
         String name = profileData.getFullNameOrEmail();
         if (TextUtils.isEmpty(name) || TextUtils.equals(name, ownerEmail)) {
-            ChromeSigninController controller = ChromeSigninController.get();
-            name = controller.getSignedInAccountName();
+            name = CoreAccountInfo.getEmailFrom(
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC));
         }
 
         ArrayList<String> telephones = new ArrayList<>();

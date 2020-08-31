@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
 #include "base/optional.h"
 #include "content/common/ax_content_node_data.h"
@@ -90,6 +91,12 @@ class BlinkAXTreeSource
   bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
   void SetLoadInlineTextBoxesForId(int32_t id);
 
+  // Call this to enable populating the DOMNodeID for each node. This is
+  // currently only used for accessible PDF exporting. Warning, this is totally
+  // unrelated to the accessibility node ID, or the ID attribute for an HTML
+  // element.
+  void EnableDOMNodeIDs();
+
   // AXTreeSource implementation.
   bool GetTreeData(AXContentTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;
@@ -106,6 +113,7 @@ class BlinkAXTreeSource
   bool IsEqual(blink::WebAXObject node1,
                blink::WebAXObject node2) const override;
   blink::WebAXObject GetNull() const override;
+  std::string GetDebugString(blink::WebAXObject node) const override;
 
   blink::WebDocument GetMainDocument() const;
 
@@ -148,6 +156,11 @@ class BlinkAXTreeSource
 
   // A set of IDs for which we should always load inline text boxes.
   std::set<int32_t> load_inline_text_boxes_ids_;
+
+  // Whether we should store Blink DOMNodeIds in the accessibility tree.
+  // Warning, this is totally unrelated to the accessibility node ID, or the ID
+  // attribute for an HTML element.
+  bool enable_dom_node_ids_ = false;
 
   // The ID of the object to fetch image data for.
   int image_data_node_id_ = -1;

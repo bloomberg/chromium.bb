@@ -85,6 +85,7 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     Error releaseTexImage(const gl::Context *context, EGLint buffer);
 
     Error getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc);
+    Error getMscRate(EGLint *numerator, EGLint *denominator);
 
     EGLint isPostSubBufferSupported() const;
 
@@ -106,6 +107,15 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     // width and height can change with client window resizing
     EGLint getWidth() const;
     EGLint getHeight() const;
+    // Note: windows cannot be resized on Android.  The approach requires
+    // calling vkGetPhysicalDeviceSurfaceCapabilitiesKHR.  However, that is
+    // expensive; and there are troublesome timing issues for other parts of
+    // ANGLE (which cause test failures and crashes).  Therefore, a
+    // special-Android-only path is created just for the querying of EGL_WIDTH
+    // and EGL_HEIGHT.
+    // https://issuetracker.google.com/issues/153329980
+    egl::Error getUserWidth(const egl::Display *display, EGLint *value) const;
+    egl::Error getUserHeight(const egl::Display *display, EGLint *value) const;
     EGLint getPixelAspectRatio() const;
     EGLenum getRenderBuffer() const;
     EGLenum getSwapBehavior() const;
@@ -168,6 +178,11 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
                              const EGLint *timestamps,
                              EGLnsecsANDROID *values) const;
 
+    // Returns the offset into the texture backing the surface if specified via texture offset
+    // attributes (see EGL_ANGLE_d3d_texture_client_buffer extension). Returns zero offset
+    // otherwise.
+    const gl::Offset &getTextureOffset() const { return mTextureOffset; }
+
   protected:
     Surface(EGLint surfaceType,
             const egl::Config *config,
@@ -225,13 +240,19 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     gl::Format mColorFormat;
     gl::Format mDSFormat;
 
+    gl::Offset mTextureOffset;
+
   private:
     Error destroyImpl(const Display *display);
 
     void postSwap(const gl::Context *context);
     Error releaseRef(const Display *display);
 
+    // ObserverInterface implementation.
+    void onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message) override;
+
     gl::InitState mInitState;
+    angle::ObserverBinding mImplObserverBinding;
 };
 
 class WindowSurface final : public Surface

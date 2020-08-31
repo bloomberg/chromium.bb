@@ -62,6 +62,8 @@ def EnsureASANDirWorks(robo_configuration):
       robo_configuration: current RoboConfiguration.
   """
 
+  robo_configuration.chdir_to_chrome_src()
+
   directory_name = robo_configuration.absolute_asan_directory()
   if os.path.exists(directory_name):
     return
@@ -237,6 +239,7 @@ def EnsureToolchains(robo_configuration):
 
 def EnsureUpstreamRemote(robo_configuration):
   """Make sure that the upstream remote is defined."""
+  robo_configuration.chdir_to_ffmpeg_home()
   remotes = subprocess.check_output(["git", "remote", "-v"]).split()
   if "upstream" in remotes:
     log("Upstream remote found")

@@ -32,13 +32,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
-#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -49,8 +49,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -97,7 +97,7 @@ typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextO
 // this class and without overcomplicating context.
 class CORE_EXPORT HTMLCanvasElement final
     : public HTMLElement,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver,
       public CanvasRenderingContextHost,
       public WebSurfaceLayerBridgeObserver,
@@ -155,6 +155,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
 
+  void UpdateFilterQuality();
   void Paint(GraphicsContext&,
              const PhysicalRect&,
              bool flatten_composited_layers);
@@ -193,8 +194,8 @@ class CORE_EXPORT HTMLCanvasElement final
   bool PushFrame(scoped_refptr<CanvasResource> image,
                  const SkIRect& damage_rect) override;
 
-  // ContextLifecycleObserver and PageVisibilityObserver implementation
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver and PageVisibilityObserver implementation
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;
@@ -204,7 +205,8 @@ class CORE_EXPORT HTMLCanvasElement final
                                                AccelerationHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override;
-  FloatSize ElementSize(const FloatSize&) const override;
+  FloatSize ElementSize(const FloatSize&,
+                        const RespectImageOrientationEnum) const override;
   bool IsCanvasElement() const override { return true; }
   bool IsOpaque() const override;
   bool IsAccelerated() const override;
@@ -232,9 +234,9 @@ class CORE_EXPORT HTMLCanvasElement final
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  EventTarget&,
                                   base::Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions*) override;
+                                  const ImageBitmapOptions*,
+                                  ExceptionState&) override;
 
   // OffscreenCanvasPlaceholder implementation.
   void SetOffscreenCanvasResource(scoped_refptr<CanvasResource>,
@@ -288,6 +290,10 @@ class CORE_EXPORT HTMLCanvasElement final
     context_creation_was_blocked_ = true;
   }
 
+  ScriptPromise convertToBlob(ScriptState*,
+                              const ImageEncodeOptions*,
+                              ExceptionState&) override;
+
   bool NeedsUnbufferedInputEvents() const { return needs_unbuffered_input_; }
 
   void SetNeedsUnbufferedInputEvents(bool value) {
@@ -302,11 +308,19 @@ class CORE_EXPORT HTMLCanvasElement final
   // composited.
   cc::Layer* ContentsCcLayer() const;
 
+  // Return the image orientation setting from the layout object, if available.
+  // In the absence of a layout object, kRespectImageOrientation will be
+  // returned.
+  RespectImageOrientationEnum RespectImageOrientation() const;
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
  private:
   void Dispose();
+
+  void RecordIdentifiabilityMetric(const blink::IdentifiableSurface& surface,
+                                   int64_t value) const;
 
   void PaintInternal(GraphicsContext&, const PhysicalRect&);
 
@@ -344,11 +358,15 @@ class CORE_EXPORT HTMLCanvasElement final
   bool HasImageBitmapContext() const;
 
   // Returns the transparent image resource for this canvas.
-  scoped_refptr<Image> GetTransparentImage();
+  scoped_refptr<StaticBitmapImage> GetTransparentImage();
 
   CanvasRenderingContext* GetCanvasRenderingContextInternal(
       const String&,
       const CanvasContextCreationAttributesCore&);
+
+  scoped_refptr<StaticBitmapImage> GetSourceImageForCanvasInternal(
+      SourceImageStatus*,
+      AccelerationHint);
 
   void OnContentsCcLayerChanged();
 
@@ -391,7 +409,7 @@ class CORE_EXPORT HTMLCanvasElement final
   // GPU Memory Management
   mutable intptr_t externally_allocated_memory_;
 
-  scoped_refptr<Image> transparent_image_ = nullptr;
+  scoped_refptr<StaticBitmapImage> transparent_image_ = nullptr;
 };
 
 }  // namespace blink

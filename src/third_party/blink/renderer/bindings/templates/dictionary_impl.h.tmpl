@@ -19,6 +19,9 @@ class {{decl}};
 class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
  public:
   static {{cpp_class}}* Create() { return MakeGarbageCollected<{{cpp_class}}>(); }
+  static {{cpp_class}}* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<{{cpp_class}}>();
+  }
 
   {{cpp_class}}();
   virtual ~{{cpp_class}}();
@@ -38,7 +41,7 @@ class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
 
   {% endfor %}
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   {% for member in members if member.nullable_indicator_name %}

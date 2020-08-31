@@ -12,7 +12,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -20,10 +19,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -208,7 +209,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                                  false);
     content::DownloadManager* manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 
     return true;
   }
@@ -379,7 +380,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   void IdentifyReferrerChainForDownload(
       DownloadItem* download,
       ReferrerChain* referrer_chain) {
-    SessionID download_tab_id = SessionTabHelper::IdForTab(
+    SessionID download_tab_id = sessions::SessionTabHelper::IdForTab(
         content::DownloadItemUtils::GetWebContents(download));
     auto result = observer_manager_->IdentifyReferrerChainByEventURL(
         download->GetURL(), download_tab_id,
@@ -408,7 +409,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
       const GURL& initiating_frame_url,
       content::WebContents* web_contents,
       ReferrerChain* referrer_chain) {
-    SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
+    SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
     bool has_user_gesture = observer_manager_->HasUserGesture(web_contents);
     observer_manager_->OnUserGestureConsumed(web_contents, base::Time::Now());
     EXPECT_LE(observer_manager_->IdentifyReferrerChainByHostingPage(
@@ -452,6 +453,8 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
       SafeBrowsingNavigationObserverManager::AttributionResult result) {
     SetExtendedReportingPref(browser()->profile()->GetPrefs(),
                              extended_reporting_enabled);
+    browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                                 extended_reporting_enabled);
     return SafeBrowsingNavigationObserverManager::
         CountOfRecentNavigationsToAppend(
             is_incognito ? *browser()->profile()->GetOffTheRecordProfile()
@@ -2336,8 +2339,9 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
           SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
 }
 
+// Disabled due to flake: https://crbug.com/1048623
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       AppendRecentNavigationsToEmptyReferrerChain) {
+                       DISABLED_AppendRecentNavigationsToEmptyReferrerChain) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);

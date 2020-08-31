@@ -53,7 +53,7 @@ body.controls-refresh {
 }
 
 .controls-refresh .color-suggestion-picker-main {
-    border: 0;
+    border: 1px solid #bfbfbf;
     box-shadow: none;
     padding: 8px 8px 4px 8px;
 }
@@ -104,6 +104,11 @@ body.controls-refresh {
     width: 4px;
 }
 
+.controls-refresh .color-swatch:focus {
+    outline: solid 2px -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
 .other-color {
     width: 100%;
     margin: 4px 0 0 0;
@@ -114,7 +119,6 @@ body.controls-refresh {
     border-color: transparent;
     border-radius: 2px;
     color: #000000;
-    font-family: sans-serif;
     font-size: 12px;
     line-height: 16px;
     margin: 0;
@@ -136,7 +140,7 @@ body.controls-refresh {
     }
 
     .controls-refresh .color-swatch:focus {
-        border-color: Highlight;
+        outline-color: Highlight;
     }
 
     .controls-refresh .color-swatch-container {

@@ -5,12 +5,8 @@
 import("//build/config/compiler/compiler.gni")
 
 source_set("language_code_locator") {
-  sources = [
-    "language_code_locator.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "language_code_locator.h" ]
+  deps = [ "//base" ]
 }
 
 static_library("browser") {
@@ -31,9 +27,9 @@ static_library("browser") {
     "//components/language/core/browser:browser",
     "//components/language/core/common:common",
     "//components/prefs:prefs",
+    "//content/public/browser",
     "//net",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -54,7 +50,6 @@ source_set("unit_tests") {
     "//components/language/core/common",
     "//components/prefs:test_support",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

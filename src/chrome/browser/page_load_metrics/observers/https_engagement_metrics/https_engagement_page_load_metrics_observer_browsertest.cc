@@ -16,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/metrics_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_server_config.h"
@@ -81,7 +82,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(chrome::kChromeUIVersionURL),
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     base::TimeDelta upper_bound_delta = base::TimeTicks::Now() - start;
 
     // Make sure the correct tab is in the foreground.
@@ -104,7 +105,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
     // Make sure the correct tab is in the foreground.
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -125,7 +126,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
     // Make sure the correct tab is in the foreground.
     TabStripModel* tab_strip_model = browser()->tab_strip_model();

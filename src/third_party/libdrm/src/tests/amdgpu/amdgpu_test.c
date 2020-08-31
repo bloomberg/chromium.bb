@@ -21,10 +21,6 @@
  *
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +47,7 @@
 #include "amdgpu_test.h"
 #include "amdgpu_internal.h"
 
-/* Test suit names */
+/* Test suite names */
 #define BASIC_TESTS_STR "Basic Tests"
 #define BO_TESTS_STR "BO Tests"
 #define CS_TESTS_STR "CS Tests"
@@ -60,6 +56,8 @@
 #define UVD_ENC_TESTS_STR "UVD ENC Tests"
 #define DEADLOCK_TESTS_STR "Deadlock Tests"
 #define VM_TESTS_STR "VM Tests"
+#define RAS_TESTS_STR "RAS Tests"
+#define SYNCOBJ_TIMELINE_TESTS_STR "SYNCOBJ TIMELINE Tests"
 
 /**
  *  Open handles for amdgpu devices
@@ -120,6 +118,18 @@ static CU_SuiteInfo suites[] = {
 		.pCleanupFunc = suite_vm_tests_clean,
 		.pTests = vm_tests,
 	},
+	{
+		.pName = RAS_TESTS_STR,
+		.pInitFunc = suite_ras_tests_init,
+		.pCleanupFunc = suite_ras_tests_clean,
+		.pTests = ras_tests,
+	},
+	{
+		.pName = SYNCOBJ_TIMELINE_TESTS_STR,
+		.pInitFunc = suite_syncobj_timeline_tests_init,
+		.pCleanupFunc = suite_syncobj_timeline_tests_clean,
+		.pTests = syncobj_timeline_tests,
+	},
 
 	CU_SUITE_INFO_NULL,
 };
@@ -167,7 +177,15 @@ static Suites_Active_Status suites_active_stat[] = {
 		},
 		{
 			.pName = VM_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_vm_tests_enable,
+		},
+		{
+			.pName = RAS_TESTS_STR,
+			.pActive = suite_ras_tests_enable,
+		},
+		{
+			.pName = SYNCOBJ_TIMELINE_TESTS_STR,
+			.pActive = suite_syncobj_timeline_tests_enable,
 		},
 };
 
@@ -238,12 +256,11 @@ static const char usage[] =
 static const char options[]   = "hlrps:t:b:d:f";
 
 /* Open AMD devices.
- * Return the number of AMD device openned.
+ * Return the number of AMD device opened.
  */
 static int amdgpu_open_devices(int open_render_node)
 {
 	drmDevicePtr devices[MAX_CARDS_SUPPORTED];
-	int ret;
 	int i;
 	int drm_node;
 	int amd_index = 0;
@@ -327,7 +344,7 @@ static void amdgpu_print_devices()
 	int i;
 	drmDevicePtr device;
 
-	/* Open the first AMD devcie to print driver information. */
+	/* Open the first AMD device to print driver information. */
 	if (drm_amdgpu[0] >=0) {
 		/* Display AMD driver version information.*/
 		drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);
@@ -400,7 +417,7 @@ static int amdgpu_find_device(uint8_t bus, uint16_t dev)
 	return -1;
 }
 
-static void amdgpu_disable_suits()
+static void amdgpu_disable_suites()
 {
 	amdgpu_device_handle device_handle;
 	uint32_t major_version, minor_version, family_id;
@@ -416,27 +433,52 @@ static void amdgpu_disable_suits()
 	if (amdgpu_device_deinitialize(device_handle))
 		return;
 
-	/* Set active status for suits based on their policies */
+	/* Set active status for suites based on their policies */
 	for (i = 0; i < size; ++i)
 		if (amdgpu_set_suite_active(suites_active_stat[i].pName,
 				suites_active_stat[i].pActive()))
-			fprintf(stderr, "suit deactivation failed - %s\n", CU_get_error_msg());
+			fprintf(stderr, "suite deactivation failed - %s\n", CU_get_error_msg());
 
 	/* Explicitly disable specific tests due to known bugs or preferences */
 	/*
 	* BUG: Compute ring stalls and never recovers when the address is
 	* written after the command already submitted
 	*/
-	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR, "compute ring block test", CU_FALSE))
+	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR,
+			"compute ring block test (set amdgpu.lockup_timeout=50)", CU_FALSE))
+		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+
+	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR,
+				"sdma ring block test (set amdgpu.lockup_timeout=50)", CU_FALSE))
 		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
 	if (amdgpu_set_test_active(BO_TESTS_STR, "Metadata", CU_FALSE))
 		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
+	if (amdgpu_set_test_active(BASIC_TESTS_STR, "bo eviction Test", CU_FALSE))
+		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
 	/* This test was ran on GFX8 and GFX9 only */
 	if (family_id < AMDGPU_FAMILY_VI || family_id > AMDGPU_FAMILY_RV)
 		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Sync dependency Test", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+
+	/* This test was ran on GFX9 only */
+	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV) {
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Dispatch Test (GFX)", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Dispatch Test (Compute)", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+	}
+
+	/* This test was ran on GFX9 only */
+	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Draw Test", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+
+	/* This test was ran on GFX9 only */
+	//if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "GPU reset Test", CU_FALSE))
 			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 }
 
@@ -556,8 +598,8 @@ int main(int argc, char **argv)
 	/* Run tests using the CUnit Basic interface */
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 
-	/* Disable suits and individual tests based on misc. conditions */
-	amdgpu_disable_suits();
+	/* Disable suites and individual tests based on misc. conditions */
+	amdgpu_disable_suites();
 
 	if (display_list) {
 		display_test_suites();

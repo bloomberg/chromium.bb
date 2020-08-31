@@ -14,10 +14,10 @@
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrTexture.h"
 #include "include/gpu/gl/GrGLTypes.h"
 #include "include/private/GrGLTypesPriv.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/gl/GrGLCaps.h"
 #include "src/gpu/gl/GrGLTexture.h"
@@ -63,10 +63,10 @@ DEF_GPUTEST_FOR_ALL_GL_CONTEXTS(GLTextureParameters, reporter, ctxInfo) {
                                      kRGBA_8888_SkColorType, kPremul_SkAlphaType, nullptr);
     REPORTER_ASSERT(reporter, wrappedImage);
 
-    sk_sp<GrTextureProxy> texProxy = as_IB(wrappedImage)->asTextureProxyRef(context);
-    REPORTER_ASSERT(reporter, texProxy.get());
-    REPORTER_ASSERT(reporter, texProxy->isInstantiated());
-    auto texture = static_cast<GrGLTexture*>(texProxy->peekTexture());
+    const GrSurfaceProxyView* view = as_IB(wrappedImage)->view(context);
+    REPORTER_ASSERT(reporter, view);
+    REPORTER_ASSERT(reporter, view->proxy()->isInstantiated());
+    auto texture = static_cast<GrGLTexture*>(view->proxy()->peekTexture());
     REPORTER_ASSERT(reporter, texture);
     auto parameters = texture->parameters();
     REPORTER_ASSERT(reporter, parameters);

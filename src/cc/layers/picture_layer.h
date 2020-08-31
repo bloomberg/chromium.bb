@@ -71,8 +71,8 @@ class CC_EXPORT PictureLayer : public Layer {
     bool nearest_neighbor = false;
     bool transformed_rasterization_allowed = false;
     bool is_backdrop_filter_mask = false;
-    gfx::Rect recorded_viewport;
     scoped_refptr<DisplayItemList> display_list;
+    base::Optional<gfx::Size> directly_composited_image_size = base::nullopt;
     size_t painter_reported_memory_usage = 0;
   };
 

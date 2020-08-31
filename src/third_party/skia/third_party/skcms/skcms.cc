@@ -1364,6 +1364,47 @@ static skcms_Vector3 mv_mul(const skcms_Matrix3x3* m, const skcms_Vector3* v) {
     return dst;
 }
 
+bool skcms_AdaptToXYZD50(float wx, float wy,
+                         skcms_Matrix3x3* toXYZD50) {
+    if (!is_zero_to_one(wx) || !is_zero_to_one(wy) ||
+        !toXYZD50) {
+        return false;
+    }
+
+    // Assumes that Y is 1.0f.
+    skcms_Vector3 wXYZ = { { wx / wy, 1, (1 - wx - wy) / wy } };
+
+    // Now convert toXYZ matrix to toXYZD50.
+    skcms_Vector3 wXYZD50 = { { 0.96422f, 1.0f, 0.82521f } };
+
+    // Calculate the chromatic adaptation matrix.  We will use the Bradford method, thus
+    // the matrices below.  The Bradford method is used by Adobe and is widely considered
+    // to be the best.
+    skcms_Matrix3x3 xyz_to_lms = {{
+        {  0.8951f,  0.2664f, -0.1614f },
+        { -0.7502f,  1.7135f,  0.0367f },
+        {  0.0389f, -0.0685f,  1.0296f },
+    }};
+    skcms_Matrix3x3 lms_to_xyz = {{
+        {  0.9869929f, -0.1470543f, 0.1599627f },
+        {  0.4323053f,  0.5183603f, 0.0492912f },
+        { -0.0085287f,  0.0400428f, 0.9684867f },
+    }};
+
+    skcms_Vector3 srcCone = mv_mul(&xyz_to_lms, &wXYZ);
+    skcms_Vector3 dstCone = mv_mul(&xyz_to_lms, &wXYZD50);
+
+    *toXYZD50 = {{
+        { dstCone.vals[0] / srcCone.vals[0], 0, 0 },
+        { 0, dstCone.vals[1] / srcCone.vals[1], 0 },
+        { 0, 0, dstCone.vals[2] / srcCone.vals[2] },
+    }};
+    *toXYZD50 = skcms_Matrix3x3_concat(toXYZD50, &xyz_to_lms);
+    *toXYZD50 = skcms_Matrix3x3_concat(&lms_to_xyz, toXYZD50);
+
+    return true;
+}
+
 bool skcms_PrimariesToXYZD50(float rx, float ry,
                              float gx, float gy,
                              float bx, float by,
@@ -1399,33 +1440,10 @@ bool skcms_PrimariesToXYZD50(float rx, float ry,
     }};
     toXYZ = skcms_Matrix3x3_concat(&primaries, &toXYZ);
 
-    // Now convert toXYZ matrix to toXYZD50.
-    skcms_Vector3 wXYZD50 = { { 0.96422f, 1.0f, 0.82521f } };
-
-    // Calculate the chromatic adaptation matrix.  We will use the Bradford method, thus
-    // the matrices below.  The Bradford method is used by Adobe and is widely considered
-    // to be the best.
-    skcms_Matrix3x3 xyz_to_lms = {{
-        {  0.8951f,  0.2664f, -0.1614f },
-        { -0.7502f,  1.7135f,  0.0367f },
-        {  0.0389f, -0.0685f,  1.0296f },
-    }};
-    skcms_Matrix3x3 lms_to_xyz = {{
-        {  0.9869929f, -0.1470543f, 0.1599627f },
-        {  0.4323053f,  0.5183603f, 0.0492912f },
-        { -0.0085287f,  0.0400428f, 0.9684867f },
-    }};
-
-    skcms_Vector3 srcCone = mv_mul(&xyz_to_lms, &wXYZ);
-    skcms_Vector3 dstCone = mv_mul(&xyz_to_lms, &wXYZD50);
-
-    skcms_Matrix3x3 DXtoD50 = {{
-        { dstCone.vals[0] / srcCone.vals[0], 0, 0 },
-        { 0, dstCone.vals[1] / srcCone.vals[1], 0 },
-        { 0, 0, dstCone.vals[2] / srcCone.vals[2] },
-    }};
-    DXtoD50 = skcms_Matrix3x3_concat(&DXtoD50, &xyz_to_lms);
-    DXtoD50 = skcms_Matrix3x3_concat(&lms_to_xyz, &DXtoD50);
+    skcms_Matrix3x3 DXtoD50;
+    if (!skcms_AdaptToXYZD50(wx, wy, &DXtoD50)) {
+        return false;
+    }
 
     *toXYZD50 = skcms_Matrix3x3_concat(&DXtoD50, &toXYZ);
     return true;
@@ -1911,9 +1929,8 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
         // We'd better have a sane, sRGB-ish TF by now.
         // Other non-Bad TFs would be fine, but we know we've only ever tried to fit sRGBish;
         // anything else is just some accident of math and the way we pun tf.g as a type flag.
-        // fit_nonlinear() should guarantee this.
+        // fit_nonlinear() should guarantee this, but the special cases may fail this test.
         if (sRGBish != classify(tf)) {
-            assert(false);
             continue;
         }
 
@@ -1924,9 +1941,9 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
         //
         // We've kept tf and tf_inv in sync above, but we can't guarantee that tf is
         // invertible, so re-verify that here (and use the new inverse for testing).
-        // fit_nonlinear() should guarantee this.
+        // fit_nonlinear() should guarantee this, but the special cases that don't use
+        // it may fail this test.
         if (!skcms_TransferFunction_invert(&tf, &tf_inv)) {
-            assert(false);
             continue;
         }
 
@@ -2219,6 +2236,7 @@ static size_t bytes_per_pixel(skcms_PixelFormat fmt) {
         case skcms_PixelFormat_RGB_565            >> 1: return  2;
         case skcms_PixelFormat_RGB_888            >> 1: return  3;
         case skcms_PixelFormat_RGBA_8888          >> 1: return  4;
+        case skcms_PixelFormat_RGBA_8888_sRGB     >> 1: return  4;
         case skcms_PixelFormat_RGBA_1010102       >> 1: return  4;
         case skcms_PixelFormat_RGB_161616LE       >> 1: return  6;
         case skcms_PixelFormat_RGBA_16161616LE    >> 1: return  8;
@@ -2340,6 +2358,12 @@ bool skcms_TransformWithPalette(const void*             src,
         case skcms_PixelFormat_RGBA_8888_Palette8 >> 1: *ops++  = Op_load_8888_palette8;
                                                         *args++ = palette;
                                                         break;
+        case skcms_PixelFormat_RGBA_8888_sRGB >> 1:
+            *ops++ = Op_load_8888;
+            *ops++ = Op_tf_r;       *args++ = skcms_sRGB_TransferFunction();
+            *ops++ = Op_tf_g;       *args++ = skcms_sRGB_TransferFunction();
+            *ops++ = Op_tf_b;       *args++ = skcms_sRGB_TransferFunction();
+            break;
     }
     if (srcFmt == skcms_PixelFormat_RGB_hhh_Norm ||
         srcFmt == skcms_PixelFormat_RGBA_hhhh_Norm) {
@@ -2512,6 +2536,13 @@ bool skcms_TransformWithPalette(const void*             src,
         case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_store_hhhh;       break;
         case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_store_fff;        break;
         case skcms_PixelFormat_RGBA_ffff       >> 1: *ops++ = Op_store_ffff;       break;
+
+        case skcms_PixelFormat_RGBA_8888_sRGB >> 1:
+            *ops++ = Op_tf_r;       *args++ = skcms_sRGB_Inverse_TransferFunction();
+            *ops++ = Op_tf_g;       *args++ = skcms_sRGB_Inverse_TransferFunction();
+            *ops++ = Op_tf_b;       *args++ = skcms_sRGB_Inverse_TransferFunction();
+            *ops++ = Op_store_8888;
+            break;
     }
 
     auto run = baseline::run_program;

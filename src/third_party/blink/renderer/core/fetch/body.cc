@@ -64,7 +64,7 @@ class BodyConsumerBase : public GarbageCollected<BodyConsumerBase>,
                                      WrapPersistent(this), object));
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(resolver_);
     FetchDataLoader::Client::Trace(visitor);
   }
@@ -351,12 +351,13 @@ ScriptPromise Body::text(ScriptState* script_state,
 }
 
 ReadableStream* Body::body() {
-  auto* execution_context = GetExecutionContext();
-  if (execution_context->IsServiceWorkerGlobalScope()) {
-    execution_context->CountUse(WebFeature::kFetchBodyStreamInServiceWorker);
-  } else {
-    execution_context->CountUse(
-        WebFeature::kFetchBodyStreamOutsideServiceWorker);
+  if (auto* execution_context = GetExecutionContext()) {
+    if (execution_context->IsServiceWorkerGlobalScope()) {
+      execution_context->CountUse(WebFeature::kFetchBodyStreamInServiceWorker);
+    } else {
+      execution_context->CountUse(
+          WebFeature::kFetchBodyStreamOutsideServiceWorker);
+    }
   }
 
   if (!BodyBuffer())
@@ -399,7 +400,7 @@ bool Body::IsBodyUsedForDCheck(ExceptionState& exception_state) {
          BodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
-Body::Body(ExecutionContext* context) : ContextClient(context) {}
+Body::Body(ExecutionContext* context) : ExecutionContextClient(context) {}
 
 void Body::RejectInvalidConsumption(ScriptState* script_state,
                                     ExceptionState& exception_state) {

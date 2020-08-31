@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +23,10 @@
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace syncer {
 
@@ -182,22 +186,23 @@ class SectionList {
   std::vector<std::unique_ptr<Section>> sections_;
 };
 
-std::string GetDisableReasonsString(int disable_reasons) {
-  if (disable_reasons == syncer::SyncService::DISABLE_REASON_NONE) {
+std::string GetDisableReasonsString(
+    SyncService::DisableReasonSet disable_reasons) {
+  if (disable_reasons.Empty()) {
     return "None";
   }
   std::vector<std::string> reason_strings;
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE))
     reason_strings.push_back("Platform override");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_ENTERPRISE_POLICY))
     reason_strings.push_back("Enterprise policy");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_NOT_SIGNED_IN))
     reason_strings.push_back("Not signed in");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_USER_CHOICE)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_USER_CHOICE))
     reason_strings.push_back("User choice");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR))
     reason_strings.push_back("Unrecoverable error");
-  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PAUSED)
+  if (disable_reasons.Has(SyncService::DISABLE_REASON_PAUSED))
     reason_strings.push_back("Paused");
   return base::JoinString(reason_strings, ", ");
 }
@@ -312,6 +317,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_summary->AddStringStat("Transport State");
   Stat<std::string>* disable_reasons =
       section_summary->AddStringStat("Disable Reasons");
+#if defined(OS_CHROMEOS)
+  Stat<std::string>* os_feature_state =
+      section_summary->AddStringStat("Chrome OS Sync Feature");
+#endif
   Stat<bool>* feature_enabled =
       section_summary->AddBoolStat("Sync Feature Enabled");
   Stat<bool>* setup_in_progress =
@@ -440,6 +449,14 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   // Summary.
   transport_state->Set(GetTransportStateString(service->GetTransportState()));
   disable_reasons->Set(GetDisableReasonsString(service->GetDisableReasons()));
+#if defined(OS_CHROMEOS)
+  if (!chromeos::features::IsSplitSettingsSyncEnabled())
+    os_feature_state->Set("Flag disabled");
+  else if (service->GetUserSettings()->IsOsSyncFeatureEnabled())
+    os_feature_state->Set("Enabled");
+  else
+    os_feature_state->Set("Disabled");
+#endif  // defined(OS_CHROMEOS)
   feature_enabled->Set(service->IsSyncFeatureEnabled());
   setup_in_progress->Set(service->IsSetupInProgress());
   std::string auth_error_str = service->GetAuthError().ToString();

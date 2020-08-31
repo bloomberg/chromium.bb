@@ -62,13 +62,13 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kBackgroundAttr) {
-    String url = StripLeadingAndTrailingHTMLSpaces(value);
+    AtomicString url(StripLeadingAndTrailingHTMLSpaces(value));
     if (!url.IsEmpty()) {
-      CSSImageValue* image_value =
-          CSSImageValue::Create(url, GetDocument().CompleteURL(url),
-                                Referrer(GetDocument().OutgoingReferrer(),
-                                         GetDocument().GetReferrerPolicy()),
-                                OriginClean::kTrue);
+      CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
+          url, GetDocument().CompleteURL(url),
+          Referrer(GetDocument().OutgoingReferrer(),
+                   GetDocument().GetReferrerPolicy()),
+          OriginClean::kTrue, false /* is_ad_related */);
       image_value->SetInitiator(localName());
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
@@ -215,10 +215,15 @@ void HTMLBodyElement::ParseAttribute(
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kLanguagechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (RuntimeEnabledFeatures::PortalsEnabled() &&
+  } else if (RuntimeEnabledFeatures::PortalsEnabled(&GetDocument()) &&
              name == html_names::kOnportalactivateAttr) {
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kPortalactivate,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
+  } else if (RuntimeEnabledFeatures::TimeZoneChangeEventEnabled() &&
+             name == html_names::kOntimezonechangeAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        event_type_names::kTimezonechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else {
     HTMLElement::ParseAttribute(params);

@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/win/win_util.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -22,8 +24,7 @@ using ui::OSExchangeDataProviderWin;
 
 namespace {
 
-int ConvertKeyStateToAuraEventFlags(DWORD key_state)
-{
+int ConvertKeyStateToAuraEventFlags(DWORD key_state) {
   int flags = 0;
 
   if (key_state & MK_CONTROL)

@@ -19,6 +19,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/gpu/chromeos/image_processor.h"
@@ -27,13 +29,12 @@
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace media {
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
 
+namespace media {
 class BitstreamBuffer;
-
-}  // namespace media
-
-namespace media {
 
 // This class handles video encode acceleration by interfacing with a V4L2
 // device exposed by the codec hardware driver. The threading model of this
@@ -45,7 +46,7 @@ namespace media {
 class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
-  explicit V4L2VideoEncodeAccelerator(const scoped_refptr<V4L2Device>& device);
+  explicit V4L2VideoEncodeAccelerator(scoped_refptr<V4L2Device> device);
   ~V4L2VideoEncodeAccelerator() override;
 
   // VideoEncodeAccelerator implementation.
@@ -151,8 +152,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void Enqueue();
   void Dequeue();
   // Enqueue a buffer on the corresponding queue.  Returns false on fatal error.
-  bool EnqueueInputRecord();
-  bool EnqueueOutputRecord();
+  bool EnqueueInputRecord(V4L2WritableBufferRef input_buf);
+  bool EnqueueOutputRecord(V4L2WritableBufferRef output_buf);
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
@@ -176,16 +177,16 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void SetErrorState(Error error);
 
   //
-  // Other utility functions.  Called on encoder_thread_, unless
-  // encoder_thread_ is not yet started, in which case the child thread can call
-  // these (e.g. in Initialize() or Destroy()).
+  // Other utility functions.  Called on the |encoder_task_runner_|.
   //
 
-  // Create image processor that will process input_layout to output_layout. The
-  // visible size of processed video frames are |visible_size|.
+  // Create image processor that will process |input_layout| +
+  // |input_visible_rect| to |output_layout|+|output_visible_rect|.
   bool CreateImageProcessor(const VideoFrameLayout& input_layout,
-                            const VideoFrameLayout& output_layout,
-                            const gfx::Size& visible_size);
+                            const VideoPixelFormat output_format,
+                            const gfx::Size& output_size,
+                            const gfx::Rect& input_visible_rect,
+                            const gfx::Rect& output_visible_rect);
   // Process one video frame in |image_processor_input_queue_| by
   // |image_processor_|.
   void InputImageProcessorTask();
@@ -194,7 +195,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
 
-  // Do several initializations (e.g. set up format) on |encoder_thread_|.
+  // Do several initializations (e.g. set up format) on |encoder_task_runner_|.
   void InitializeTask(const Config& config,
                       bool* result,
                       base::WaitableEvent* done);
@@ -203,16 +204,21 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool SetFormats(VideoPixelFormat input_format,
                   VideoCodecProfile output_profile);
 
-  // Reconfigure format of input buffers and image processor if frame size
-  // given by client is different from one set in input buffers.
-  bool ReconfigureFormatIfNeeded(VideoPixelFormat format,
-                                 const gfx::Size& new_frame_size);
+  // Reconfigure format of input buffers and image processor if the buffer
+  // represented by |frame| is different from one set in input buffers.
+  bool ReconfigureFormatIfNeeded(const VideoFrame& frame);
 
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
-  // can later instantiate an ImageProcessor to convert to it.
-  bool NegotiateInputFormat(VideoPixelFormat input_format,
-                            const gfx::Size& frame_size);
+  // can later instantiate an ImageProcessor to convert to it. Return
+  // base::nullopt if no format is supported, otherwise return v4l2_format
+  // adjusted by the driver.
+  base::Optional<struct v4l2_format> NegotiateInputFormat(
+      VideoPixelFormat input_format,
+      const gfx::Size& frame_size);
+
+  // Apply the current crop parameters to the V4L2 device.
+  bool ApplyCrop();
 
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(VideoCodecProfile output_profile);
@@ -228,17 +234,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
 
-  // Set controls in |ctrls| and return true if successful.
-  bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
-
-  // Return true if a V4L2 control of |ctrl_id| is supported by the device,
-  // false otherwise.
-  bool IsCtrlExposed(uint32_t ctrl_id);
-
   // Allocates |count| video frames with |visible_size| for image processor's
   // output buffers. Returns false if there's something wrong.
-  bool AllocateImageProcessorOutputBuffers(size_t count,
-                                           const gfx::Size& visible_size);
+  bool AllocateImageProcessorOutputBuffers(size_t count);
 
   // Recycle output buffer of image processor with |output_buffer_index|.
   void ReuseImageProcessorOutputBuffer(size_t output_buffer_index);
@@ -254,33 +252,32 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Initializes input_memory_type_.
   bool InitInputMemoryType(const Config& config);
 
-  // Our original calling task runner for the child thread.
+  // Our original calling task runner for the child thread and its checker.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  SEQUENCE_CHECKER(child_sequence_checker_);
 
-  gfx::Size visible_size_;
+  // A coded_size() of VideoFrame on VEA::Encode(). This is updated on the first
+  // time Encode() if the coded size is different from the expected one by VEA.
+  // For example, it happens in WebRTC simulcast case.
+  gfx::Size input_frame_size_;
+
+  // Visible rectangle of VideoFrame to be fed to an encoder driver, in other
+  // words, a visible rectangle that output encoded bitstream buffers represent.
+  gfx::Rect encoder_input_visible_rect_;
+
   // Layout of device accepted input VideoFrame.
   base::Optional<VideoFrameLayout> device_input_layout_;
 
   // Stands for whether an input buffer is native graphic buffer.
   bool native_input_mode_;
 
-  // Input allocated size calculated by
-  // V4L2Device::AllocatedSizeFromV4L2Format().
-  // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers
-  // uses input's VideoFrameLayout to allocate input buffer.
-  gfx::Size input_allocated_size_;
-
   size_t output_buffer_byte_size_;
   uint32_t output_format_fourcc_;
 
-  //
-  // Encoder state, owned and operated by encoder_thread_.
-  // Before encoder_thread_ has started, the encoder state is managed by
-  // the child (main) thread.  After encoder_thread_ has started, the encoder
-  // thread should be the only one managing these.
-  //
+  size_t current_bitrate_;
+  size_t current_framerate_;
 
-  // Encoder state.
+  // Encoder state, owned and operated by |encoder_task_runner_|.
   State encoder_state_;
 
   // For H264, for resilience, we prepend each IDR with SPS and PPS. Some
@@ -327,6 +324,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;
+  // GpuMemoryBufferFactory to create GMB-based VideoFrame. This is needed only
+  // if image processor is used and its output buffer is GMB-based VideoFrame.
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> image_processor_gmb_factory_;
   // Video frames for image processor output / VideoEncodeAccelerator input.
   // Only accessed on child thread.
   std::vector<scoped_refptr<VideoFrame>> image_processor_output_buffers_;
@@ -336,10 +336,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Video frames ready to be processed. Only accessed on child thread.
   base::queue<InputFrameInfo> image_processor_input_queue_;
 
-  // This thread services tasks posted from the VideoEncodeAccelerator API entry
-  // points by the child thread and device service callbacks posted from the
-  // device thread.
-  base::Thread encoder_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+  SEQUENCE_CHECKER(encoder_sequence_checker_);
 
   // The device polling thread handles notifications of V4L2 device changes.
   // TODO(sheu): replace this thread with an TYPE_IO encoder_thread_.
@@ -347,15 +345,14 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_task_runner_.
+  // |child_task_runner_|.
   base::WeakPtr<Client> client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks to
-  // |encoder_thread_.task_runner()|. It guarantees no task will be executed
-  // after DestroyTask().
+  // |encoder_task_runner_|.
   base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
-  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
+  base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VideoEncodeAccelerator);
 };

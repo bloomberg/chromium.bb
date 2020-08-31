@@ -4,7 +4,6 @@
 
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -13,6 +12,7 @@
 #include "ash/system/keyboard_brightness/unified_keyboard_brightness_slider_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -34,7 +34,6 @@ bool IsAnyMainBubbleShown() {
 }
 
 void ConfigureSliderViewStyle(views::View* slider_view) {
-  slider_view->SetBackground(UnifiedSystemTrayView::CreateBackground());
   slider_view->SetBorder(views::CreateEmptyBorder(kUnifiedSliderBubblePadding));
 }
 
@@ -150,6 +149,8 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
     return;
   }
 
+  tray_->CloseSecondaryBubbles();
+
   DCHECK(!bubble_view_);
 
   slider_type_ = slider_type;
@@ -158,8 +159,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   TrayBubbleView::InitParams init_params;
 
   init_params.shelf_alignment = tray_->shelf()->alignment();
-  init_params.min_width = kTrayMenuWidth;
-  init_params.max_width = kTrayMenuWidth;
+  init_params.preferred_width = kTrayMenuWidth;
   init_params.delegate = this;
   init_params.parent_window = tray_->GetBubbleWindowContainer();
   init_params.anchor_view = nullptr;
@@ -167,29 +167,21 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
   // Decrease bottom and right insets to compensate for the adjustment of
   // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  init_params.insets = GetTrayBubbleInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
+  init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
   UnifiedSliderView* slider_view =
       static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
   ConfigureSliderViewStyle(slider_view);
   bubble_view_->AddChildView(slider_view);
-  bubble_view_->set_color(SK_ColorTRANSPARENT);
-  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
-
-  if (features::IsBackgroundBlurEnabled()) {
-    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
-        kUnifiedMenuBackgroundBlur);
-  }
 
   // Notify value change accessibility event because the popup is triggered by
   // changing value using an accessor key like VolUp.

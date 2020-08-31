@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,6 +22,10 @@
 #else
 #include "content/public/browser/service_process_host.h"
 #include "services/strings/grit/services_strings.h"
+#endif
+
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/sandbox_type.h"
 #endif
 
 namespace {
@@ -42,14 +46,10 @@ proxy_resolver::mojom::ProxyResolverFactory* GetProxyResolverFactory() {
     content::ServiceProcessHost::Launch(
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
-#if defined(OS_MACOSX)
-            // The proxy_resolver service runs V8, so it needs to run in the
-            // helper application that has the com.apple.security.cs.allow-jit
-            // code signing entitlement, which is CHILD_RENDERER. The service
-            // still runs under the utility process sandbox.
-            .WithChildFlags(content::ChildProcessHost::CHILD_RENDERER)
-#endif
             .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
+#if defined(OS_WIN)
+            .WithSandboxType(service_manager::SandboxType::kProxyResolver)
+#endif
             .Pass());
 
     // The service will report itself idle once there are no more bound

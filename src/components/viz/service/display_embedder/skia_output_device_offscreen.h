@@ -19,8 +19,9 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceOffscreen(
       scoped_refptr<gpu::SharedContextState> context_state,
-      bool flipped,
+      gfx::SurfaceOrigin origin,
       bool has_alpha,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceOffscreen() override;
 
@@ -28,7 +29,7 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                gfx::OverlayTransform transform) override;
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
@@ -37,8 +38,9 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
                      std::vector<ui::LatencyInfo> latency_info) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  SkSurface* BeginPaint() override;
-  void EndPaint(const GrBackendSemaphore& semaphore) override;
+  SkSurface* BeginPaint(
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
+  void EndPaint() override;
 
  protected:
   scoped_refptr<gpu::SharedContextState> context_state_;
@@ -49,6 +51,7 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
 
  private:
   gfx::Size size_;
+  uint64_t backbuffer_estimated_size_ = 0;
   sk_sp<SkColorSpace> sk_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);

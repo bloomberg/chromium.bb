@@ -25,11 +25,11 @@
 #include <assert.h>
 #include <chrono>
 #include <condition_variable>
-#include <mutex>
 #include <queue>
 
-namespace sw
-{
+#include "marl/mutex.h"
+
+namespace sw {
 
 // TaskEvents is an interface for notifying when tasks begin and end.
 // Tasks can be nested and/or overlapping.
@@ -43,7 +43,11 @@ public:
 	// a corresponding call to start().
 	virtual void finish() = 0;
 	// complete() is a helper for calling start() followed by finish().
-	inline void complete() { start(); finish(); }
+	inline void complete()
+	{
+		start();
+		finish();
+	}
 
 protected:
 	virtual ~TaskEvents() = default;
@@ -61,7 +65,7 @@ public:
 	// add() begins a new task.
 	void add()
 	{
-		std::unique_lock<std::mutex> lock(mutex);
+		marl::lock lock(mutex);
 		++count_;
 	}
 
@@ -70,7 +74,7 @@ public:
 	// WaitGroup.
 	bool done()
 	{
-		std::unique_lock<std::mutex> lock(mutex);
+		marl::lock lock(mutex);
 		assert(count_ > 0);
 		--count_;
 		if(count_ == 0)
@@ -83,18 +87,18 @@ public:
 	// wait() blocks until all the tasks have been finished.
 	void wait()
 	{
-		std::unique_lock<std::mutex> lock(mutex);
-		condition.wait(lock, [this] { return count_ == 0; });
+		marl::lock lock(mutex);
+		lock.wait(condition, [this]() REQUIRES(mutex) { return count_ == 0; });
 	}
 
 	// wait() blocks until all the tasks have been finished or the timeout
 	// has been reached, returning true if all tasks have been completed, or
 	// false if the timeout has been reached.
-	template <class CLOCK, class DURATION>
-	bool wait(const std::chrono::time_point<CLOCK, DURATION>& timeout)
+	template<class CLOCK, class DURATION>
+	bool wait(const std::chrono::time_point<CLOCK, DURATION> &timeout)
 	{
-		std::unique_lock<std::mutex> lock(mutex);
-		return condition.wait_until(lock, timeout, [this] { return count_ == 0; });
+		marl::lock lock(mutex);
+		return condition.wait_until(lock, timeout, [this]() REQUIRES(mutex) { return count_ == 0; });
 	}
 
 	// count() returns the number of times add() has been called without a call
@@ -103,7 +107,7 @@ public:
 	// change after returning.
 	int32_t count()
 	{
-		std::unique_lock<std::mutex> lock(mutex);
+		marl::lock lock(mutex);
 		return count_;
 	}
 
@@ -112,14 +116,14 @@ public:
 	void finish() override { done(); }
 
 private:
-	int32_t count_ = 0; // guarded by mutex
-	std::mutex mutex;
+	marl::mutex mutex;
+	int32_t count_ GUARDED_BY(mutex) = 0;
 	std::condition_variable condition;
 };
 
 // Chan is a thread-safe FIFO queue of type T.
 // Chan takes its name after Golang's chan.
-template <typename T>
+template<typename T>
 class Chan
 {
 public:
@@ -144,30 +148,31 @@ public:
 	size_t count();
 
 private:
-	std::queue<T> queue;
-	std::mutex mutex;
+	marl::mutex mutex;
+	std::queue<T> queue GUARDED_BY(mutex);
 	std::condition_variable added;
 };
 
-template <typename T>
-Chan<T>::Chan() {}
+template<typename T>
+Chan<T>::Chan()
+{}
 
-template <typename T>
+template<typename T>
 T Chan<T>::take()
 {
-	std::unique_lock<std::mutex> lock(mutex);
+	marl::lock lock(mutex);
 	// Wait for item to be added.
-	added.wait(lock, [this] { return queue.size() > 0; });
+	lock.wait(added, [this]() REQUIRES(mutex) { return queue.size() > 0; });
 	T out = queue.front();
 	queue.pop();
 	return out;
 }
 
-template <typename T>
+template<typename T>
 std::pair<T, bool> Chan<T>::tryTake()
 {
-	std::unique_lock<std::mutex> lock(mutex);
-	if (queue.size() == 0)
+	marl::lock lock(mutex);
+	if(queue.size() == 0)
 	{
 		return std::make_pair(T{}, false);
 	}
@@ -176,21 +181,21 @@ std::pair<T, bool> Chan<T>::tryTake()
 	return std::make_pair(out, true);
 }
 
-template <typename T>
+template<typename T>
 void Chan<T>::put(const T &item)
 {
-	std::unique_lock<std::mutex> lock(mutex);
+	marl::lock lock(mutex);
 	queue.push(item);
 	added.notify_one();
 }
 
-template <typename T>
+template<typename T>
 size_t Chan<T>::count()
 {
-	std::unique_lock<std::mutex> lock(mutex);
+	marl::lock lock(mutex);
 	return queue.size();
 }
 
-} // namespace sw
+}  // namespace sw
 
-#endif // sw_Synchronization_hpp
+#endif  // sw_Synchronization_hpp

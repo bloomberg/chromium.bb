@@ -17,10 +17,15 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
@@ -34,6 +39,7 @@
 
 using extensions::Extension;
 using extensions::Manifest;
+using web_app::ProviderType;
 
 namespace {
 
@@ -147,10 +153,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, CreateAppShortcut) {
                                   "createAppShortcut.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, GenerateAppForLink) {
+class GenerateAppManagementApiTest
+    : public ExtensionManagementApiTest,
+      public ::testing::WithParamInterface<ProviderType> {
+ public:
+  void SetUp() override {
+    if (GetParam() == ProviderType::kWebApps) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsWithoutExtensions}, {});
+    } else {
+      DCHECK_EQ(GetParam(), ProviderType::kBookmarkApps);
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kDesktopPWAsWithoutExtensions});
+    }
+
+    ExtensionManagementApiTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(GenerateAppManagementApiTest, GenerateAppForLink) {
   ASSERT_TRUE(RunExtensionSubtest("management/test",
                                   "generateAppForLink.html"));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GenerateAppManagementApiTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
 
 class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
  public:
@@ -166,6 +199,10 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     ExtensionManagementApiTest::SetUpOnMainThread();
     https_test_server_.ServeFilesFromDirectory(test_data_dir_);
     ASSERT_TRUE(https_test_server_.Start());
+
+    web_app::WebAppProviderBase::GetProviderBase(profile())
+        ->shortcut_manager()
+        .SuppressShortcutsForTesting();
   }
 
   void RunTest(const char* manifest,
@@ -320,15 +357,8 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
   RunInstallableWebAppTest(kAppManifest, kGoodWebAppURL, kGoodWebAppURL);
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
-#define MAYBE_ManagementPolicyAllowed DISABLED_ManagementPolicyAllowed
-#else
-#define MAYBE_ManagementPolicyAllowed ManagementPolicyAllowed
-#endif  // defined(OS_WIN)
 // Tests actions on extensions when no management policy is in place.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
-                       MAYBE_ManagementPolicyAllowed) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
   LoadExtensions();
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
@@ -349,15 +379,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                                  extensions::ExtensionRegistry::EVERYTHING));
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
-#define MAYBE_ManagementPolicyProhibited DISABLED_ManagementPolicyProhibited
-#else
-#define MAYBE_ManagementPolicyProhibited ManagementPolicyProhibited
-#endif  // defined(OS_WIN)
 // Tests actions on extensions when management policy prohibits those actions.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
-                       MAYBE_ManagementPolicyProhibited) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
   LoadExtensions();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());

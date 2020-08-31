@@ -11,9 +11,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/hash/md5.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -37,13 +37,13 @@ namespace history {
 namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
-    base::TaskRunner* task_runner,
-    const TopSitesImpl::GetMostVisitedURLsCallback& callback,
+    base::SequencedTaskRunner* task_runner,
+    TopSitesImpl::GetMostVisitedURLsCallback callback,
     const MostVisitedURLList& urls) {
   if (task_runner->RunsTasksInCurrentSequence())
-    callback.Run(urls);
+    std::move(callback).Run(urls);
   else
-    task_runner->PostTask(FROM_HERE, base::BindOnce(callback, urls));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), urls));
 }
 
 // Checks if the titles stored in |old_list| and |new_list| have changes.
@@ -110,22 +110,22 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
 }
 
 // WARNING: this function may be invoked on any thread.
-void TopSitesImpl::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback) {
+void TopSitesImpl::GetMostVisitedURLs(GetMostVisitedURLsCallback callback) {
   MostVisitedURLList filtered_urls;
   {
     base::AutoLock lock(lock_);
     if (!loaded_) {
       // A request came in before we finished loading. Store the callback and
       // we'll run it on current thread when we finish loading.
-      pending_callbacks_.push_back(base::Bind(
-          &RunOrPostGetMostVisitedURLsCallback,
-          base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
+      pending_callbacks_.push_back(
+          base::BindOnce(&RunOrPostGetMostVisitedURLsCallback,
+                         base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                         std::move(callback)));
       return;
     }
     filtered_urls = thread_safe_cache_;
   }
-  callback.Run(filtered_urls);
+  std::move(callback).Run(filtered_urls);
 }
 
 static bool Contains(const MostVisitedURLList& urls, const GURL& url) {
@@ -278,7 +278,7 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
 
   // Any member without the special marker in the all_old_urls list means that
   // there wasn't a "new" URL that mapped to it, so it was deleted.
-  for (const std::pair<GURL, size_t>& old_url : all_old_urls) {
+  for (const std::pair<const GURL, size_t>& old_url : all_old_urls) {
     if (old_url.second != kAlreadyFoundMarker)
       delta->deleted.push_back(old_list[old_url.second]);
   }
@@ -401,7 +401,7 @@ void TopSitesImpl::MoveStateToLoaded() {
   }
 
   for (auto& callback : pending_callbacks)
-    callback.Run(urls);
+    std::move(callback).Run(urls);
 
   if (history_service_)
     history_service_observer_.Add(history_service_);

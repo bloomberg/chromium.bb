@@ -29,12 +29,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
-#include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
@@ -46,13 +46,13 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -80,7 +80,7 @@ class WebMouseWheelEvent;
 class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
  public:
   explicit EventHandler(LocalFrame&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Clear();
 
@@ -93,10 +93,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // those APIs be more limited or removed.
 
   void StopAutoscroll();
-
-  void MayUpdateHoverWhenContentUnderMouseChanged(
-      MouseEventManager::UpdateHoverReason);
-  void MayUpdateHoverAfterScroll(const FloatRect&);
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
@@ -124,10 +120,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // testing.
   bool CursorUpdatePending();
 
-  // Return whether sending a fake mouse move is currently pending.  Used for
-  // testing.
-  bool FakeMouseMovePending() const;
-
   void SetResizingFrameSet(HTMLFrameSetElement*);
 
   void ResizeScrollableAreaDestroyed();
@@ -139,7 +131,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   // Performs a logical scroll that chains, crossing frames, starting from
   // the given node or a reasonable default (focus/last clicked).
-  bool BubblingScroll(ScrollDirection,
+  bool BubblingScroll(mojom::blink::ScrollDirection,
                       ScrollGranularity,
                       Node* starting_node = nullptr);
 
@@ -232,7 +224,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);
   void DefaultKeyboardEventHandler(KeyboardEvent*);
-  bool HandleFallbackCursorModeBackEvent();
 
   bool HandleTextInputEvent(const String& text,
                             Event* underlying_event = nullptr,
@@ -250,23 +241,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   SelectionController& GetSelectionController() const {
     return *selection_controller_;
   }
-
-  // FIXME(nzolghadr): This function is technically a private function of
-  // EventHandler class. Making it public temporary to make it possible to
-  // move some code around in the refactoring process.
-  // Performs a chaining logical scroll, within a *single* frame, starting
-  // from either a provided starting node or a default based on the focused or
-  // most recently clicked node, falling back to the frame.
-  // Returns true if the scroll was consumed.
-  // direction - The logical direction to scroll in. This will be converted to
-  //             a physical direction for each LayoutBox we try to scroll
-  //             based on that box's writing mode.
-  // granularity - The units that the  scroll delta parameter is in.
-  // startNode - Optional. If provided, start chaining from the given node.
-  //             If not, use the current focus or last clicked node.
-  bool LogicalScroll(ScrollDirection,
-                     ScrollGranularity,
-                     Node* start_node = nullptr);
 
   bool IsPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
 
@@ -286,44 +260,21 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   void MarkHoverStateDirty();
 
-  void SetIsFallbackCursorModeOn(bool is_on);
-
   // Reset the last mouse position so that movement after unlock will be
   // restart from the lock position.
   void ResetMousePositionForPointerUnlock();
 
   bool LongTapShouldInvokeContextMenu();
 
+  void UpdateCursor();
+
  private:
-  enum NoCursorChangeType { kNoCursorChange };
-
-  class OptionalCursor {
-    STACK_ALLOCATED();
-
-   public:
-    OptionalCursor(NoCursorChangeType) : is_cursor_change_(false) {}
-    OptionalCursor(const Cursor& cursor)
-        : is_cursor_change_(true), cursor_(cursor) {}
-
-    bool IsCursorChange() const { return is_cursor_change_; }
-    const Cursor& GetCursor() const {
-      DCHECK(is_cursor_change_);
-      return cursor_;
-    }
-
-   private:
-    bool is_cursor_change_;
-    Cursor cursor_;
-  };
-
   WebInputEventResult HandleMouseMoveOrLeaveEvent(
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events,
       const Vector<WebMouseEvent>& predicted_events,
       HitTestResult* hovered_node = nullptr,
-      HitTestLocation* hit_test_location = nullptr,
-      bool only_update_scrollbars = false,
-      bool force_leave = false);
+      HitTestLocation* hit_test_location = nullptr);
 
   // Updates the event, location and result to the adjusted target.
   void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
@@ -340,17 +291,15 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool IsSelectingLink(const HitTestResult&);
   bool ShouldShowIBeamForNode(const Node*, const HitTestResult&);
   bool ShouldShowResizeForNode(const Node*, const HitTestLocation&);
-  OptionalCursor SelectCursor(const HitTestLocation& location,
-                              const HitTestResult&);
-  OptionalCursor SelectAutoCursor(const HitTestResult&,
-                                  Node*,
-                                  const Cursor& i_beam);
+  base::Optional<ui::Cursor> SelectCursor(const HitTestLocation& location,
+                                          const HitTestResult&);
+  base::Optional<ui::Cursor> SelectAutoCursor(const HitTestResult&,
+                                              Node*,
+                                              const ui::Cursor& i_beam);
 
   void HoverTimerFired(TimerBase*);
   void CursorUpdateTimerFired(TimerBase*);
   void ActiveIntervalTimerFired(TimerBase*);
-
-  void UpdateCursor();
 
   ScrollableArea* AssociatedScrollableArea(const PaintLayer*) const;
 
@@ -388,7 +337,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   void DefaultBackspaceEventHandler(KeyboardEvent*);
   void DefaultTabEventHandler(KeyboardEvent*);
   void DefaultEscapeEventHandler(KeyboardEvent*);
-  void DefaultArrowEventHandler(WebFocusType, KeyboardEvent*);
+  void DefaultArrowEventHandler(mojom::blink::FocusType, KeyboardEvent*);
 
   // |last_scrollbar_under_mouse_| is set when the mouse moves off of a
   // scrollbar, and used to notify it of MouseUp events to release mouse
@@ -417,6 +366,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   const Member<SelectionController> selection_controller_;
 
+  // TODO(lanwei): Remove the below timers for updating hover and cursor.
   TaskRunnerTimer<EventHandler> hover_timer_;
 
   // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide
@@ -450,7 +400,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   Member<KeyboardEventManager> keyboard_event_manager_;
   Member<PointerEventManager> pointer_event_manager_;
   Member<GestureManager> gesture_manager_;
-  Member<FallbackCursorEventManager> fallback_cursor_event_manager_;
 
   double max_mouse_moved_duration_;
 
@@ -504,13 +453,6 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            CursorForInlineVerticalWritingMode);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForBlockVerticalWritingMode);
-
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
-                           MouseMoveCursorLockOnDiv);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
-                           MouseMoveCursorLockOnIFrame);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, KeyBackAndMouseMove);
-  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, MouseDownOnEditor);
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

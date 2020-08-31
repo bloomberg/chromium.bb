@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/web_app.h"
 
@@ -68,7 +68,8 @@ const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
   return web_app ? web_app->launch_url() : GURL::EmptyGURL();
 }
 
-base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
+base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (!web_app)
     return base::nullopt;
@@ -100,6 +101,13 @@ std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
                  : std::vector<WebApplicationIconInfo>();
 }
 
+std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->downloaded_icon_sizes()
+                 : std::vector<SquareSizePx>();
+}
+
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());
@@ -108,6 +116,10 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
     app_ids.push_back(app.app_id());
 
   return app_ids;
+}
+
+WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
+  return this;
 }
 
 WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)

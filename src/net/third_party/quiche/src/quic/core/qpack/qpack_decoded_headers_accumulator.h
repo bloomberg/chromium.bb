@@ -12,7 +12,7 @@
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -34,16 +34,19 @@ class QUIC_EXPORT_PRIVATE QpackDecodedHeadersAccumulator
    public:
     virtual ~Visitor() = default;
 
-    // Called when headers are successfully decoded.  If header list size
-    // exceeds the limit specified via |max_header_list_size| in
-    // QpackDecodedHeadersAccumulator constructor, then |headers| will be empty,
-    // but will still have the correct compressed and uncompressed size
-    // information.  However, header_list_size_limit_exceeded() is recommended
-    // instead of headers.empty() to check whether header size exceeds limit.
-    virtual void OnHeadersDecoded(QuicHeaderList headers) = 0;
+    // Called when headers are successfully decoded.  If the uncompressed header
+    // list size including an overhead for each header field exceeds the limit
+    // specified via |max_header_list_size| in QpackDecodedHeadersAccumulator
+    // constructor, then |header_list_size_limit_exceeded| will be true, and
+    // |headers| will be empty but will still have the correct compressed and
+    // uncompressed size
+    // information.
+    virtual void OnHeadersDecoded(QuicHeaderList headers,
+                                  bool header_list_size_limit_exceeded) = 0;
 
     // Called when an error has occurred.
-    virtual void OnHeaderDecodingError(QuicStringPiece error_message) = 0;
+    virtual void OnHeaderDecodingError(
+        quiche::QuicheStringPiece error_message) = 0;
   };
 
   QpackDecodedHeadersAccumulator(QuicStreamId id,
@@ -54,26 +57,21 @@ class QUIC_EXPORT_PRIVATE QpackDecodedHeadersAccumulator
 
   // QpackProgressiveDecoder::HeadersHandlerInterface implementation.
   // These methods should only be called by |decoder_|.
-  void OnHeaderDecoded(QuicStringPiece name, QuicStringPiece value) override;
+  void OnHeaderDecoded(quiche::QuicheStringPiece name,
+                       quiche::QuicheStringPiece value) override;
   void OnDecodingCompleted() override;
-  void OnDecodingErrorDetected(QuicStringPiece error_message) override;
+  void OnDecodingErrorDetected(
+      quiche::QuicheStringPiece error_message) override;
 
   // Decode payload data.
   // Must not be called if an error has been detected.
   // Must not be called after EndHeaderBlock().
-  void Decode(QuicStringPiece data);
+  void Decode(quiche::QuicheStringPiece data);
 
   // Signal end of HEADERS frame.
   // Must not be called if an error has been detected.
   // Must not be called more that once.
   void EndHeaderBlock();
-
-  // Returns true if the uncompressed size of the header list, including an
-  // overhead for each header field, exceeds |max_header_list_size| passed in
-  // the constructor.
-  bool header_list_size_limit_exceeded() const {
-    return header_list_size_limit_exceeded_;
-  }
 
  private:
   std::unique_ptr<QpackProgressiveDecoder> decoder_;

@@ -19,15 +19,19 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
                                                      BluetoothDevice* device)
-    : ContextLifecycleObserver(context), device_(device), connected_(false) {}
+    : ExecutionContextLifecycleObserver(context),
+      client_receivers_(this, context),
+      device_(device),
+      connected_(false) {}
 
-void BluetoothRemoteGATTServer::ContextDestroyed(ExecutionContext*) {
+void BluetoothRemoteGATTServer::ContextDestroyed() {
   Dispose();
 }
 
@@ -76,16 +80,14 @@ void BluetoothRemoteGATTServer::DispatchDisconnected() {
 
 void BluetoothRemoteGATTServer::Dispose() {
   DisconnectIfConnected();
-  // The pipe to this object must be closed when is marked unreachable to
-  // prevent messages from being dispatched before lazy sweeping.
-  client_receivers_.Clear();
 }
 
-void BluetoothRemoteGATTServer::Trace(blink::Visitor* visitor) {
+void BluetoothRemoteGATTServer::Trace(Visitor* visitor) {
+  visitor->Trace(client_receivers_);
   visitor->Trace(active_algorithms_);
   visitor->Trace(device_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void BluetoothRemoteGATTServer::ConnectCallback(
@@ -113,7 +115,7 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  client_receivers_.Add(this, client.InitWithNewEndpointAndPassReceiver(),
+  client_receivers_.Add(client.InitWithNewEndpointAndPassReceiver(),
                         std::move(task_runner));
 
   service->RemoteServerConnect(
@@ -193,8 +195,8 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(
     return ScriptPromise();
 
   return GetPrimaryServicesImpl(
-      script_state, mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE,
-      service_uuid);
+      script_state, exception_state,
+      mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE, service_uuid);
 }
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryServices(
@@ -206,25 +208,29 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServices(
     return ScriptPromise();
 
   return GetPrimaryServicesImpl(
-      script_state, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE,
-      service_uuid);
+      script_state, exception_state,
+      mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE, service_uuid);
 }
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryServices(
     ScriptState* script_state,
-    ExceptionState&) {
+    ExceptionState& exception_state) {
   return GetPrimaryServicesImpl(
-      script_state, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE);
+      script_state, exception_state,
+      mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE);
 }
 
 ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
     ScriptState* script_state,
+    ExceptionState& exception_state,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     String services_uuid) {
   if (!connected_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, BluetoothError::CreateNotConnectedException(
-                          BluetoothOperation::kServicesRetrieval));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNetworkError,
+        BluetoothError::CreateNotConnectedExceptionMessage(
+            BluetoothOperation::kServicesRetrieval));
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

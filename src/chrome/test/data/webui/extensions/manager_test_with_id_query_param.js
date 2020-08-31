@@ -19,7 +19,7 @@ extension_manager_tests.TestNames = {
 
 function getDataByName(list, name) {
   return assert(list.find(function(el) {
-    return el.name == name;
+    return el.name === name;
   }));
 }
 
@@ -33,7 +33,7 @@ suite(extension_manager_tests.suiteName, function() {
   }
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     window.history.replaceState(
         {}, '', '/?id=ldnnhddmnhbkjipkidpdiheffobcpfmf');
     manager = document.createElement('extensions-manager');

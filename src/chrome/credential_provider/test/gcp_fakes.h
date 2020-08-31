@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -14,6 +15,10 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
+#include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/event_logging_api_manager.h"
+#include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
+#include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
@@ -27,6 +32,13 @@ class WaitableEvent;
 }
 
 namespace credential_provider {
+
+enum class FAILEDOPERATIONS {
+  ADD_USER,
+  CHANGE_PASSWORD,
+  GET_USER_FULLNAME,
+  SET_USER_FULLNAME
+};
 
 void InitializeRegistryOverrideForTesting(
     registry_util::RegistryOverrideManager* registry_override);
@@ -117,10 +129,6 @@ class FakeOSUserManager : public OSUserManager {
 
   bool IsDeviceDomainJoined() override;
 
-  void SetShouldFailUserCreation(bool should_fail) {
-    should_fail_user_creation_ = should_fail;
-  }
-
   void SetIsDeviceDomainJoined(bool is_device_domain_joined) {
     is_device_domain_joined_ = is_device_domain_joined;
   }
@@ -178,12 +186,23 @@ class FakeOSUserManager : public OSUserManager {
   size_t GetUserCount() const { return username_to_info_.size(); }
   std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
+  void SetFailureReason(FAILEDOPERATIONS failed_operaetion,
+                        HRESULT failure_reason) {
+    failure_reasons_[failed_operaetion] = failure_reason;
+  }
+
+  bool DoesOperationFail(FAILEDOPERATIONS op) {
+    return failure_reasons_.find(op) != failure_reasons_.end();
+  }
+
+  void RestoreOperation(FAILEDOPERATIONS op) { failure_reasons_.erase(op); }
+
  private:
   OSUserManager* original_manager_;
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
-  bool should_fail_user_creation_ = false;
   bool is_device_domain_joined_ = false;
+  std::map<FAILEDOPERATIONS, HRESULT> failure_reasons_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,7 +239,11 @@ class FakeScopedLsaPolicy : public ScopedLsaPolicy {
                               wchar_t* value,
                               size_t length) override;
   bool PrivateDataExists(const wchar_t* key) override;
-  HRESULT AddAccountRights(PSID sid, const wchar_t* right) override;
+  HRESULT AddAccountRights(PSID sid,
+                           const std::vector<base::string16>& rights) override;
+  HRESULT RemoveAccountRights(
+      PSID sid,
+      const std::vector<base::string16>& rights) override;
   HRESULT RemoveAccount(PSID sid) override;
 
  private:
@@ -278,10 +301,21 @@ class FakeWinHttpUrlFetcherFactory {
   FakeWinHttpUrlFetcherFactory();
   ~FakeWinHttpUrlFetcherFactory();
 
+  // Sets the given |response| for any number of HTTP requests made for |url|.
   void SetFakeResponse(
       const GURL& url,
       const WinHttpUrlFetcher::Headers& headers,
       const std::string& response,
+      HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
+
+  // Queues the given |response| for the specified |num_requests| number of HTTP
+  // requests made for |url|. Different responses for the URL can be set by
+  // calling this function multiple times with different responses.
+  void SetFakeResponseForSpecifiedNumRequests(
+      const GURL& url,
+      const WinHttpUrlFetcher::Headers& headers,
+      const std::string& response,
+      unsigned int num_requests,
       HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
 
   // Sets the response as a failed http attempt. The return result
@@ -289,6 +323,23 @@ class FakeWinHttpUrlFetcherFactory {
   // to this method.
   void SetFakeFailedResponse(const GURL& url, HRESULT failed_hr);
 
+  // Sets the option to collect request data for each URL fetcher created.
+  void SetCollectRequestData(bool value) { collect_request_data_ = value; }
+
+  // Data used to make each HTTP request by the fetcher.
+  struct RequestData {
+    RequestData();
+    RequestData(const RequestData& rhs);
+    ~RequestData();
+    WinHttpUrlFetcher::Headers headers;
+    std::string body;
+    int timeout_in_millis;
+  };
+
+  // Returns the request data for the request identified by |request_index|.
+  RequestData GetRequestData(size_t request_index) const;
+
+  // Returns the number of requests created.
   size_t requests_created() const { return requests_created_; }
 
  private:
@@ -308,9 +359,12 @@ class FakeWinHttpUrlFetcherFactory {
     HANDLE send_response_event_handle;
   };
 
-  std::map<GURL, Response> fake_responses_;
+  std::map<GURL, std::deque<Response>> fake_responses_;
   std::map<GURL, HRESULT> failed_http_fetch_hr_;
   size_t requests_created_ = 0;
+  bool collect_request_data_ = false;
+  bool remove_fake_response_when_created_ = false;
+  std::vector<RequestData> requests_data_;
 };
 
 class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
@@ -324,16 +378,21 @@ class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
 
   // WinHttpUrlFetcher
   bool IsValid() const override;
+  HRESULT SetRequestHeader(const char* name, const char* value) override;
+  HRESULT SetRequestBody(const char* body) override;
+  HRESULT SetHttpRequestTimeout(const int timeout_in_millis) override;
   HRESULT Fetch(std::vector<char>* response) override;
   HRESULT Close() override;
 
  private:
   friend FakeWinHttpUrlFetcherFactory;
+  typedef FakeWinHttpUrlFetcherFactory::RequestData RequestData;
 
   Headers response_headers_;
   std::string response_;
   HANDLE send_response_event_handle_;
   HRESULT response_hr_ = S_OK;
+  RequestData* request_data_ = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -349,6 +408,32 @@ class FakeAssociatedUserValidator : public AssociatedUserValidator {
 
  private:
   AssociatedUserValidator* original_validator_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeChromeAvailabilityChecker : public ChromeAvailabilityChecker {
+ public:
+  enum HasSupportedChromeCheckType {
+    kChromeForceYes,
+    kChromeForceNo,
+    kChromeDontForce  // Uses the original checker to get result.
+  };
+
+  FakeChromeAvailabilityChecker(
+      HasSupportedChromeCheckType has_supported_chrome = kChromeForceYes);
+  ~FakeChromeAvailabilityChecker() override;
+
+  bool HasSupportedChromeVersion() override;
+  void SetHasSupportedChrome(HasSupportedChromeCheckType has_supported_chrome);
+
+ private:
+  ChromeAvailabilityChecker* original_checker_ = nullptr;
+
+  // Used during tests to force the credential provider to believe if a
+  // supported Chrome version is installed or not. In production a real
+  // check is performed at runtime.
+  HasSupportedChromeCheckType has_supported_chrome_ = kChromeForceYes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -390,6 +475,113 @@ class FakePasswordRecoveryManager : public PasswordRecoveryManager {
 
  private:
   PasswordRecoveryManager* original_validator_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeGemDeviceDetailsManager : public GemDeviceDetailsManager {
+ public:
+  FakeGemDeviceDetailsManager();
+  explicit FakeGemDeviceDetailsManager(
+      base::TimeDelta upload_device_details_request_timeout);
+  ~FakeGemDeviceDetailsManager() override;
+
+  using GemDeviceDetailsManager::GetRequestDictForTesting;
+  using GemDeviceDetailsManager::GetUploadStatusForTesting;
+  using GemDeviceDetailsManager::SetRequestTimeoutForTesting;
+
+ private:
+  GemDeviceDetailsManager* original_manager_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeEventLoggingApiManager : public EventLoggingApiManager {
+ public:
+  typedef EventLogsUploadManager::EventLogEntry EventLogEntry;
+
+  EVT_HANDLE EvtQuery(EVT_HANDLE session,
+                      LPCWSTR path,
+                      LPCWSTR query,
+                      DWORD flags) override;
+
+  EVT_HANDLE EvtOpenPublisherMetadata(EVT_HANDLE session,
+                                      LPCWSTR publisher_id,
+                                      LPCWSTR log_file_path,
+                                      LCID locale,
+                                      DWORD flags) override;
+
+  EVT_HANDLE EvtCreateRenderContext(DWORD value_paths_count,
+                                    LPCWSTR* value_paths,
+                                    DWORD flags) override;
+
+  BOOL EvtNext(EVT_HANDLE result_set,
+               DWORD events_size,
+               PEVT_HANDLE events,
+               DWORD timeout,
+               DWORD flags,
+               PDWORD num_returned) override;
+
+  BOOL EvtGetQueryInfo(EVT_HANDLE query,
+                       EVT_QUERY_PROPERTY_ID property_id,
+                       DWORD value_buffer_size,
+                       PEVT_VARIANT value_buffer,
+                       PDWORD value_buffer_used) override;
+
+  BOOL EvtRender(EVT_HANDLE context,
+                 EVT_HANDLE evt_handle,
+                 DWORD flags,
+                 DWORD buffer_size,
+                 PVOID buffer,
+                 PDWORD buffer_used,
+                 PDWORD property_count) override;
+
+  BOOL EvtFormatMessage(EVT_HANDLE publisher_metadata,
+                        EVT_HANDLE event,
+                        DWORD message_id,
+                        DWORD value_count,
+                        PEVT_VARIANT values,
+                        DWORD flags,
+                        DWORD buffer_size,
+                        LPWSTR buffer,
+                        PDWORD buffer_used) override;
+
+  BOOL EvtClose(EVT_HANDLE handle) override;
+
+  DWORD GetLastError() override;
+
+  explicit FakeEventLoggingApiManager(const std::vector<EventLogEntry>& logs);
+
+  ~FakeEventLoggingApiManager() override;
+
+ private:
+  EventLoggingApiManager* original_manager_ = nullptr;
+
+  const std::vector<EventLogEntry>& logs_;
+  EVT_HANDLE query_handle_, publisher_metadata_, render_context_;
+  DWORD last_error_;
+  size_t next_event_idx_;
+  std::vector<EVT_HANDLE> event_handles_;
+  std::unordered_map<EVT_HANDLE, size_t> handle_to_index_map_;
+};
+
+class FakeEventLogsUploadManager : public EventLogsUploadManager {
+ public:
+  typedef EventLogsUploadManager::EventLogEntry EventLogEntry;
+
+  // Construct with the logs that should be present in the fake event log.
+  explicit FakeEventLogsUploadManager(const std::vector<EventLogEntry>& logs);
+  ~FakeEventLogsUploadManager() override;
+
+  // Get the last upload status of the call to UploadEventViewerLogs.
+  HRESULT GetUploadStatus();
+
+  // Get the number of successfully uploaded event logs.
+  uint64_t GetNumLogsUploaded();
+
+ private:
+  EventLogsUploadManager* original_manager_ = nullptr;
+  FakeEventLoggingApiManager api_manager_;
 };
 
 }  // namespace credential_provider

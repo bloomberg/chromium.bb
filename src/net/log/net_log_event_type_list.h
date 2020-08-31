@@ -111,12 +111,12 @@ EVENT_TYPE(HOST_RESOLVER_IMPL_CREATE_JOB)
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB)
 
 // This event is created when a HostResolverImpl::Job is evicted from
-// PriorityDispatch before it can start, because the limit on number of queued
-// Jobs was reached.
+// PrioritizedDispatcher before it can start, because the limit on number of
+// queued Jobs was reached.
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB_EVICTED)
 
 // This event is created when a HostResolverImpl::Job is started by
-// PriorityDispatch.
+// PrioritizedDispatcher.
 EVENT_TYPE(HOST_RESOLVER_IMPL_JOB_STARTED)
 
 // This event is created when HostResolverImpl::ProcJob is about to start a new
@@ -247,7 +247,7 @@ EVENT_TYPE(PAC_FILE_DECIDER_HAS_NO_FETCHER)
 EVENT_TYPE(PAC_FILE_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE)
 
 // ------------------------------------------------------------------------
-// ProxyResolutionService
+// ConfiguredProxyResolutionService
 // ------------------------------------------------------------------------
 
 // The start/end of a proxy resolve request.
@@ -255,7 +255,7 @@ EVENT_TYPE(PROXY_RESOLUTION_SERVICE)
 
 // The time while a request is waiting on InitProxyResolver to configure
 // against either WPAD or custom PAC URL. The specifics on this time
-// are found from ProxyResolutionService::init_proxy_resolver_log().
+// are found from ConfiguredProxyResolutionService::init_proxy_resolver_log().
 EVENT_TYPE(PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC)
 
 // This event is emitted to show what the PAC script returned. It can contain
@@ -279,7 +279,7 @@ EVENT_TYPE(PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST)
 EVENT_TYPE(PROXY_RESOLUTION_SERVICE_DEPRIORITIZED_BAD_PROXIES)
 
 // This event is emitted whenever the proxy settings used by
-// ProxyResolutionService change.
+// ConfiguredProxyResolutionService change.
 //
 // It contains these parameters:
 //  {
@@ -809,6 +809,12 @@ EVENT_TYPE(SOCKET_POOL_BOUND_TO_SOCKET)
 //   }
 EVENT_TYPE(SOCKET_POOL_CONNECTING_N_SOCKETS)
 
+// Logged when a socket pool is closing a socket:
+//   {
+//      "reason": <Reason the socket was closed>,
+//   }
+EVENT_TYPE(SOCKET_POOL_CLOSING_SOCKET)
+
 // ------------------------------------------------------------------------
 // URLRequest
 // ------------------------------------------------------------------------
@@ -822,10 +828,13 @@ EVENT_TYPE(SOCKET_POOL_CONNECTING_N_SOCKETS)
 //   {
 //      "url": <String of URL being loaded>,
 //      "method": <The method ("POST" or "GET" or "HEAD" etc..)>,
+//      "initiator": <Initiator origin of the request, if any, or else "not an
+//                    origin">,
 //      "load_flags": <Numeric value of the combined load flags>,
-//      "privacy_mode": <True if privacy mode is enabled for the request>
-//      "network_isolation_key": <NIK associated with the request>
+//      "privacy_mode": <True if privacy mode is enabled for the request>,
+//      "network_isolation_key": <NIK associated with the request>,
 //      "priority": <Numeric priority of the request>,
+//      "site_for_cookies": <SiteForCookies associated with the request>,
 //      "traffic_annotation": <int32 for the request's TrafficAnnotationTag>,
 //      "upload_id" <String of upload body identifier, if present>,
 //   }
@@ -1803,6 +1812,15 @@ EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_SENT)
 
+// A stream frame is coalesced with an existing stream frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//     "fin": <True if this is the final data set by the peer on this stream>,
+//     "offset": <Offset in the byte stream where this data starts>,
+//     "length": <Length of the data in this frame>,
+//   }
+EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_COALESCED)
+
 // Session received an ACK frame.
 //   {
 //     "sent_info": <Details of packet sent by the peer>
@@ -2165,6 +2183,33 @@ EVENT_TYPE(QUIC_SESSION_MESSAGE_FRAME_SENT)
 //    "message_length": <the length of the message>
 //  }
 EVENT_TYPE(QUIC_SESSION_MESSAGE_FRAME_RECEIVED)
+
+// Session received a HANDSHAKE_DONE frame.
+EVENT_TYPE(QUIC_SESSION_HANDSHAKE_DONE_FRAME_RECEIVED)
+
+// Session sent a coalesced QUIC packet.
+// {
+//   "info": <coalesced packet info>
+// }
+EVENT_TYPE(QUIC_SESSION_COALESCED_PACKET_SENT)
+
+// Session buffered an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_BUFFERED_UNDECRYPTABLE_PACKET)
+
+// Session dropped an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_DROPPED_UNDECRYPTABLE_PACKET)
+
+// Session is attempting to process an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_ATTEMPTING_TO_PROCESS_UNDECRYPTABLE_PACKET)
 
 // ------------------------------------------------------------------------
 // QuicHttpStream
@@ -2838,6 +2883,7 @@ EVENT_TYPE(CERT_VERIFIER_REQUEST)
 //                                 has been installed locally. This is
 //                                 meaningless if the certificate was not
 //                                 trusted.>
+//     "net_error": <net error code returned from the verification.>
 //     "public_key_hashes": <If the certificate was successfully verified then
 //                           this contains the hashes, in several hash
 //                           algorithms, of the SubjectPublicKeyInfos of the
@@ -2860,6 +2906,127 @@ EVENT_TYPE(CERT_VERIFIER_JOB)
 //      "source_dependency": <Source identifier for the job we are bound to>,
 //   }
 EVENT_TYPE(CERT_VERIFIER_REQUEST_BOUND_TO_JOB)
+
+// This event is created when a CertVerifier task is about to be posted.
+EVENT_TYPE(CERT_VERIFIER_TASK)
+
+// This event is created when a CertVerifier task is created for a job.
+//
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for the job we are bound to>,
+//   }
+EVENT_TYPE(CERT_VERIFIER_TASK_BOUND)
+
+// This event is created when CertVerifyProc is verifying a certificate.
+// The BEGIN phase event parameters are:
+// {
+//   "additional_trust_anchors": <Optionally, a list of PEM encoded
+//                                certificates to be used as trust anchors
+//                                in addition to the trust store.>
+//   "certificates": <A list of PEM encoded certificates, the first one
+//                    being the certificate to verify and the remaining
+//                    being intermediate certificates to assist path
+//                    building.>
+//   "crlset_sequence": <Sequence number of the CRLSet.>
+//   "crlset_is_expired": <Boolean indicating whether the CRLSet is considered
+//                         expired.>
+//   "ocsp_response": <Optionally, a PEM encoded stapled OCSP response.>
+//   "sct_list": <Optionally, a PEM encoded SignedCertificateTimestampList.>
+//   "host": <The hostname verification is being performed for.>
+//   "verify_flags": <The CertVerifyProc::VerifyFlags.>
+// }
+//
+// The END phase event parameters are:
+//   {
+//     "cert_status": <Bitmask of CERT_STATUS_*
+//                     from net/base/cert_status_flags.h>
+//     "has_md2": <True if a certificate in the certificate chain is signed with
+//                 a MD2 signature.>
+//     "has_md4": <True if a certificate in the certificate chain is signed with
+//                 a MD4 signature.>
+//     "has_md5": <True if a certificate in the certificate chain is signed with
+//                 a MD5 signature.>
+//     "is_issued_by_additional_trust_anchor": <True if the root CA used for
+//                                              this verification came from the
+//                                              list of additional trust
+//                                              anchors.>
+//     "is_issued_by_known_root": <True if we recognise the root CA as a
+//                                 standard root.  If it isn't then it's
+//                                 probably the case that this certificate
+//                                 was generated by a MITM proxy whose root
+//                                 has been installed locally. This is
+//                                 meaningless if the certificate was not
+//                                 trusted.>
+//     "net_error": <net error code returned from the verification.>
+//     "public_key_hashes": <If the certificate was successfully verified then
+//                           this contains the hashes, in several hash
+//                           algorithms, of the SubjectPublicKeyInfos of the
+//                           chain.>
+//     "verified_cert": <The certificate chain that was constructed
+//                       during verification. Note that though the verified
+//                       certificate will match the originally supplied
+//                       certificate, the intermediate certificates stored
+//                       within may be substantially different. In the event
+//                       of a verification failure, this will contain the
+//                       chain as supplied by the server. This may be NULL
+//                       if running within the sandbox.>
+//   }
+EVENT_TYPE(CERT_VERIFY_PROC)
+
+// This event is created for the target cert passed into CertVerifyProcBulitin.
+// The event parameters are:
+//   {
+//      "certificate": <The PEM encoded certificate.>
+//      "errors": <Optionally, a string describing any errors or warnings
+//                 encountered while parsing the certificate.>
+//   }
+EVENT_TYPE(CERT_VERIFY_PROC_TARGET_CERT)
+
+// This event is created for each additional certificate passed into
+// CertVerifyProcBulitin.
+// The parameters are the same as for CERT_VERIFY_PROC_TARGET_CERT.
+EVENT_TYPE(CERT_VERIFY_PROC_INPUT_CERT)
+
+// This event is created for each additional trust anchor passed into
+// CertVerifyProcBulitin.
+// The parameters are the same as for CERT_VERIFY_PROC_TARGET_CERT.
+EVENT_TYPE(CERT_VERIFY_PROC_ADDITIONAL_TRUST_ANCHOR)
+
+// This event is created for each path building attempt performed by
+// CertVerifyProcBulitin.
+// The BEGIN phase contains the following information:
+// {
+//      "digest_policy": <Specifies which digest methods are accepted in this
+//                        attempt.>
+//      "is_ev_attempt": <True if this is an EV verification attempt.>
+// }
+//
+// The END phase contains the following information:
+// {
+//      "best_result_index": <Index of the best path that was found.>
+//      "has_valid_path": <True if one of the paths found was valid and
+//                         trusted.>
+//      "exceeded_iteration_limit": <True if the iteration limit was exceeded
+//                                   during path building.>
+//      "exceeded_deadline": <True if the time limit was exceeded during path
+//                            building.>
+// }
+EVENT_TYPE(CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT)
+
+// This event is created for each path built during a
+// CERT_VERIFY_PROC_PATH_BUILD_ATTEMPT.
+//
+// The event parameters are:
+//   {
+//      "certificates": <The certificate chain that was built.>
+//      "is_valid": <True if the chain is valid and trusted.>
+//      "last_cert_trust": <The trust setting found for the last cert in
+//                          the chain.>
+//      "errors": <Optionally, a string describing any errors or warnings
+//                 encountered while building or verifying the path.>
+//   }
+EVENT_TYPE(CERT_VERIFY_PROC_PATH_BUILT)
 
 // This event is created when a TrialComparisonCertVerifier starts a
 // verification using the trial verifier.
@@ -3411,8 +3578,10 @@ EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
 // Event emitted when a cookie is received but not stored, or when a cookie is
 // not sent to an associated domain.
 //  {
-//    "exclusion_reason": <Exclusion flags>,
+//    "status": <Exclusion flags>,
 //    "name": <Name of the cookie>,
+//    "domain": <Domain of the cookie>,
+//    "path": <Path of the cookie>,
 //    "operation": <Operation, either "send" or "store">
 //  }
 EVENT_TYPE(COOKIE_INCLUSION_STATUS)
@@ -3421,24 +3590,218 @@ EVENT_TYPE(COOKIE_INCLUSION_STATUS)
 // HTTP/3 events.
 // -----------------------------------------------------------------------------
 
-// Event emitted when peer created control stream type is received.
-// "stream_id": <The stream id of peer created control stream>
+// Event emitted when locally-initiated HTTP/3 control stream is created.
+//  {
+//    "stream_id": <The stream id of locally created control stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_CONTROL_STREAM_CREATED)
+
+// Event emitted when locally-initiated QPACK encoder stream is created.
+//  {
+//    "stream_id": <The stream id of locally created QPACK encoder stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_QPACK_ENCODER_STREAM_CREATED)
+
+// Event emitted when locally-initiated QPACK decoder stream is created.
+//  {
+//    "stream_id": <The stream id of locally created QPACK decoder stream>
+//  }
+EVENT_TYPE(HTTP3_LOCAL_QPACK_DECODER_STREAM_CREATED)
+
+// Event emitted when peer created HTTP/3 control stream type is received.
+//  {
+//    "stream_id": <The stream id of peer created control stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_CONTROL_STREAM_CREATED)
 
 // Event emitted when peer created QPACK encoder stream type is received.
-// "stream_id": <The stream id of the peer created QPACK encoder stream>
+//  {
+//    "stream_id": <The stream id of the peer created QPACK encoder stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_QPACK_ENCODER_STREAM_CREATED)
 
 // Event emitted when peer created QPACK decoder stream type is received.
-// "stream_id": <The stream id of the peer created QPACK decoder stream>
+//  {
+//    "stream_id": <The stream id of the peer created QPACK decoder stream>
+//  }
 EVENT_TYPE(HTTP3_PEER_QPACK_DECODER_STREAM_CREATED)
+
+// Event emitted when an HTTP/3 CANCEL_PUSH frame is received.
+//  {
+//    "push_id": <The push_id field of the CANCEL_PUSH frame>
+//  }
+EVENT_TYPE(HTTP3_CANCEL_PUSH_RECEIVED)
 
 // Event emitted when SETTINGS frame is received.
 // A list of settings will be logged by
 // <setting identifier>: <setting value>
 EVENT_TYPE(HTTP3_SETTINGS_RECEIVED)
 
-// EVENT emitted when SETTINGS frame is sent.
+// Event emitted when an HTTP/3 GOAWAY frame is received.
+//  {
+//    "stream_id": <The stream_id field of the GOAWAY frame>
+//  }
+EVENT_TYPE(HTTP3_GOAWAY_RECEIVED)
+
+// Event emitted when an HTTP/3 MAX_PUSH_ID frame is received.
+//  {
+//    "push_id": <The push_id field of the MAX_PUSH_ID frame>
+//  }
+EVENT_TYPE(HTTP3_MAX_PUSH_ID_RECEIVED)
+
+// Event emitted when an HTTP/3 PRIORITY_UPDATE frame is received.
+//  {
+//    "type": <The prioritized element type field of the PRIORITY_UPDATE frame>
+//    "prioritized_element_id": <The prioritized_element_id field of the
+//                               PRIORITY_UPDATE frame>
+//    "priority_field_value": <The priority_field_value field of the
+//                             PRIORITY_UPDATE frame>
+//  }
+EVENT_TYPE(HTTP3_PRIORITY_UPDATE_RECEIVED)
+
+// Event emitted when an HTTP/3 DATA frame header is received.
+//  {
+//    "stream_id": <The ID of the stream on which the DATA frame is received>
+//    "payload_length": <The length of DATA frame payload>
+//  }
+EVENT_TYPE(HTTP3_DATA_FRAME_RECEIVED)
+
+// Event emitted when the receipt of an HTTP/3 HEADERS frame is complete.
+//  {
+//    "stream_id": <The ID of the stream on which the HEADERS frame is received>
+//    "payload_length": <The total number of payload bytes received>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_RECEIVED)
+
+// Event emitted when headers received in an HTTP/3 HEADERS frame are decoded.
+//  {
+//    "stream_id": <The ID of the stream on which the HEADERS frame had been
+//                  received>
+//    "headers": <A dictionary of the decoded headers>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_DECODED)
+
+// Event emitted when the receipt of an HTTP/3 PUSH_PROMISE frame is complete.
+//  {
+//    "stream_id": <The ID of the stream on which the PUSH_PROMISE frame is
+//                  received>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_RECEIVED)
+
+// Event emitted when headers received in an HTTP/3 PUSH_PROMISE frame are
+// decoded.
+//  {
+//    "stream_id": <The ID of the stream on which the PUSH_PROMISE frame had
+//                  been received>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//    "headers": <A dictionary of the decoded headers>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_DECODED)
+
+// Event emitted when the frame header of an HTTP/3 frame of unknown type is
+// received.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is received>
+//    "frame_type": <The frame type>
+//    "payload_length": <The length of the frame payload>
+//  }
+EVENT_TYPE(HTTP3_UNKNOWN_FRAME_RECEIVED)
+
+// Event emitted when an HTTP/3 SETTINGS frame is sent.
 // A list of settings will be logged by
 // <setting identifier>: <setting value>
 EVENT_TYPE(HTTP3_SETTINGS_SENT)
+
+// Event emitted when an HTTP/3 GOAWAY frame is sent.
+//  {
+//    "stream_id": <The stream_id field of the GOAWAY frame>
+//  }
+EVENT_TYPE(HTTP3_GOAWAY_SENT)
+
+// Event emitted when an HTTP/3 MAX_PUSH_ID frame is sent.
+//  {
+//    "push_id": <The push_id field of the MAX_PUSH_ID frame>
+//  }
+EVENT_TYPE(HTTP3_MAX_PUSH_ID_SENT)
+
+// Event emitted when an HTTP/3 PRIORITY_UPDATE frame is sent.
+//  {
+//    "type": <The prioritized element type field of the PRIORITY_UPDATE frame>
+//    "prioritized_element_id": <The prioritized_element_id field of the
+//                               PRIORITY_UPDATE frame>
+//    "priority_field_value": <The priority_field_value field of the
+//                             PRIORITY_UPDATE frame>
+//  }
+EVENT_TYPE(HTTP3_PRIORITY_UPDATE_SENT)
+
+// Event emitted when an HTTP/3 DATA frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "payload_length": <The total payload length of the frame>
+//  }
+EVENT_TYPE(HTTP3_DATA_SENT)
+
+// Event emitted when an HTTP/3 HEADERS frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "headers": <A dictionary of the headers sent>
+//  }
+EVENT_TYPE(HTTP3_HEADERS_SENT)
+
+// Event emitted when an HTTP/3 PUSH_PROMISE frame is sent.
+//  {
+//    "stream_id": <The ID of the stream on which the frame is sent>
+//    "push_id": <The push_id field of the PUSH_PROMISE frame>
+//    "headers": <A dictionary of the headers sent>
+//  }
+EVENT_TYPE(HTTP3_PUSH_PROMISE_SENT)
+
+// -----------------------------------------------------------------------------
+// Trust Tokens-related events
+// -----------------------------------------------------------------------------
+
+// Event emitted when a request with an associated Trust Tokens operation
+// reaches the net stack (TrustTokenRequestHelperFactory).
+//
+// The BEGIN event contains the operation type:
+// {
+//  "Operation type (mojom.TrustTokenOperationType)": <The operation type>
+// }
+//
+// The END event contains a human-readable explanation of whether creating a
+// Trust Tokens helper (i.e., moving on to the bulk of the operation-specific
+// logic) succeeded or failed:
+// {
+//  "outcome": <human-readable explanation of the outcome>
+// }
+EVENT_TYPE(TRUST_TOKEN_OPERATION_REQUESTED)
+
+// For each of the BEGIN/FINALIZE event type pairs below:
+//
+// The BEGIN event type's BEGIN event is emitted when a request with an
+// associated Trust Tokens operation starts the "Begin" (outbound) phase of the
+// operation. Its END event contains a description of why the outbound phase of
+// the operation succeeded or failed:
+// {
+//  "outcome": <human-readable explanation of the outcome>
+// }
+//
+// The FINALIZE event type is the analogue for the "Finalize" (inbound) phase of
+// the operation.
+//
+// BEGIN_ISSUANCE's BEGIN event is the only event containing a dynamic parameter
+// populated with data from an operation (rather than just a success-or-error
+// description). On success, it contains the number of signed tokens that the
+// issuance operation yielded.
+// {
+//  "outcome": <human-readable explanation of the outcome>,
+//  "# tokens obtained": <number of tokens>
+// }
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_ISSUANCE)
+EVENT_TYPE(TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE)
+
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION)
+EVENT_TYPE(TRUST_TOKEN_OPERATION_FINALIZE_REDEMPTION)
+
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_SIGNING)

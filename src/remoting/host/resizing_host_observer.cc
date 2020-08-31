@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 
@@ -149,8 +149,8 @@ void ResizingHostObserver::SetScreenResolution(
   if (now < next_allowed_resize) {
     deferred_resize_timer_.Start(
         FROM_HERE, next_allowed_resize - now,
-        base::Bind(&ResizingHostObserver::SetScreenResolution,
-                   weak_factory_.GetWeakPtr(), resolution));
+        base::BindOnce(&ResizingHostObserver::SetScreenResolution,
+                       weak_factory_.GetWeakPtr(), resolution));
     return;
   }
 

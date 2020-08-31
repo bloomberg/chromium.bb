@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
+#include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
@@ -65,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, GaiaDialogOpen) {
 // Verifies that guest button and add user button are hidden on post-login
 // screens, after a user session is started.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
-  auto override = WizardController::ForceBrandedBuildForTesting();
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   test::OobeGaiaPageWaiter().WaitUntilReady();
   LoginDisplayHost::default_host()

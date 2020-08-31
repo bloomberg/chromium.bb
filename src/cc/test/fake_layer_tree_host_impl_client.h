@@ -28,8 +28,6 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void SetNeedsCommitOnImplThread() override {}
   void SetNeedsPrepareTilesOnImplThread() override {}
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
-  void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<MutatorEvents> events) override;
   bool IsInsideDraw() override;
   bool IsBeginMainFrameExpected() override;
   void RenewTreePriority() override {}
@@ -53,6 +51,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
                                          ElementListType tree_type) override {}
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

@@ -119,7 +119,6 @@ class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
   void ExecuteMenuItem(Browser* browser) override;
 
   // GlobalErrorWithStandardBubble implementation.
-  gfx::Image GetBubbleViewIcon() override;
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
   base::string16 GetBubbleViewAcceptButtonLabel() override;
@@ -222,17 +221,6 @@ void ExternalInstallBubbleAlert::ExecuteMenuItem(Browser* browser) {
   if (browser)
     ShowBubbleView(browser);
   error_->DidOpenBubbleView();
-}
-
-gfx::Image ExternalInstallBubbleAlert::GetBubbleViewIcon() {
-  if (prompt_->icon().IsEmpty())
-    return GlobalErrorWithStandardBubble::GetBubbleViewIcon();
-  // Scale icon to a reasonable size.
-  return gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
-      *prompt_->icon().ToImageSkia(),
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL)));
 }
 
 base::string16 ExternalInstallBubbleAlert::GetBubbleViewTitle() {
@@ -373,6 +361,7 @@ void ExternalInstallError::OnInstallPromptDone(
 
   switch (result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
+    case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED:
       if (extension) {
         ExtensionSystem::Get(browser_context_)
             ->extension_service()
@@ -424,11 +413,13 @@ const Extension* ExternalInstallError::GetExtension() const {
       ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
 }
 
-void ExternalInstallError::OnWebstoreRequestFailure() {
+void ExternalInstallError::OnWebstoreRequestFailure(
+    const std::string& extension_id) {
   OnFetchComplete();
 }
 
 void ExternalInstallError::OnWebstoreResponseParseSuccess(
+    const std::string& extension_id,
     std::unique_ptr<base::DictionaryValue> webstore_data) {
   std::string localized_user_count;
   double average_rating = 0;
@@ -453,6 +444,7 @@ void ExternalInstallError::OnWebstoreResponseParseSuccess(
 }
 
 void ExternalInstallError::OnWebstoreResponseParseFailure(
+    const std::string& extension_id,
     const std::string& error) {
   OnFetchComplete();
 }

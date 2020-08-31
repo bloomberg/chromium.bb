@@ -24,24 +24,26 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorProvider
     : public mojom::VideoEncodeAcceleratorProvider {
  public:
   using CreateAndInitializeVideoEncodeAcceleratorCallback =
-      MojoVideoEncodeAcceleratorService::
-          CreateAndInitializeVideoEncodeAcceleratorCallback;
+      base::RepeatingCallback<std::unique_ptr<::media::VideoEncodeAccelerator>(
+          const ::media::VideoEncodeAccelerator::Config& config,
+          VideoEncodeAccelerator::Client* client,
+          const gpu::GpuPreferences& gpu_preferences)>;
 
   static void Create(
       mojo::PendingReceiver<mojom::VideoEncodeAcceleratorProvider> receiver,
-      const CreateAndInitializeVideoEncodeAcceleratorCallback&
-          create_vea_callback,
+      CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
       const gpu::GpuPreferences& gpu_preferences);
 
   MojoVideoEncodeAcceleratorProvider(
-      const CreateAndInitializeVideoEncodeAcceleratorCallback&
-          create_vea_callback,
+      CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
       const gpu::GpuPreferences& gpu_preferences);
   ~MojoVideoEncodeAcceleratorProvider() override;
 
   // mojom::VideoEncodeAcceleratorProvider impl.
   void CreateVideoEncodeAccelerator(
       mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver) override;
+  void GetVideoEncodeAcceleratorSupportedProfiles(
+      GetVideoEncodeAcceleratorSupportedProfilesCallback callback) override;
 
  private:
   const CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback_;

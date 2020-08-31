@@ -19,7 +19,13 @@ using Microsoft::WRL::ComPtr;
 
 namespace ui {
 
-class AXFragmentRootTest : public ui::AXPlatformNodeWinTest {};
+class AXFragmentRootTest : public AXPlatformNodeWinTest {
+ public:
+  AXFragmentRootTest() = default;
+  ~AXFragmentRootTest() override = default;
+  AXFragmentRootTest(const AXFragmentRootTest&) = delete;
+  AXFragmentRootTest& operator=(const AXFragmentRootTest&) = delete;
+};
 
 TEST_F(AXFragmentRootTest, TestUIAGetFragmentRoot) {
   AXNodeData root;
@@ -55,7 +61,7 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   Init(root_data, element1_data, element2_data);
   InitFragmentRoot();
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
   AXNode* element1_node = root_node->children()[0];
   AXNode* element2_node = root_node->children()[1];
 
@@ -103,7 +109,7 @@ TEST_F(AXFragmentRootTest, TestUIAGetFocus) {
   Init(root_data, element1_data, element2_data);
   InitFragmentRoot();
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
   AXNode* element1_node = root_node->children()[0];
   AXNode* element2_node = root_node->children()[1];
 
@@ -141,7 +147,7 @@ TEST_F(AXFragmentRootTest, TestUIAErrorHandling) {
   ComPtr<IRawElementProviderFragmentRoot> fragment_root_provider =
       GetFragmentRoot();
 
-  tree_ = std::make_unique<AXTree>();
+  SetTree(std::make_unique<AXTree>());
   ax_fragment_root_.reset(nullptr);
 
   ComPtr<IRawElementProviderSimple> returned_simple_provider;
@@ -186,7 +192,7 @@ TEST_F(AXFragmentRootTest, TestChildAtIndex) {
   InitFragmentRoot();
 
   gfx::NativeViewAccessible native_view_accessible =
-      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+      AXPlatformNodeFromNode(GetRootAsAXNode())->GetNativeViewAccessible();
   AXPlatformNodeDelegate* fragment_root = ax_fragment_root_.get();
   EXPECT_EQ(native_view_accessible, fragment_root->ChildAtIndex(0));
   EXPECT_EQ(nullptr, fragment_root->ChildAtIndex(1));
@@ -204,7 +210,7 @@ TEST_F(AXFragmentRootTest, TestGetParent) {
   EXPECT_EQ(nullptr, fragment_root->GetParent());
 
   gfx::NativeViewAccessible native_view_accessible =
-      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+      AXPlatformNodeFromNode(GetRootAsAXNode())->GetNativeViewAccessible();
   test_fragment_root_delegate_->parent_ = native_view_accessible;
   EXPECT_EQ(native_view_accessible, fragment_root->GetParent());
 }
@@ -316,7 +322,7 @@ TEST_F(AXFragmentRootTest, TestUIAMultipleFragmentRoots) {
   Init(update);
   InitFragmentRoot();
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
 
   // Set up other fragment roots
   AXNode* child_fragment_root_n3_node = root_node->children()[1];
@@ -422,6 +428,36 @@ TEST_F(AXFragmentRootTest, TestUIAMultipleFragmentRoots) {
   EXPECT_EQ(
       IRawElementProviderFragmentFromNode(child_fragment_root_n5_node).Get(),
       test_fragment.Get());
+}
+
+TEST_F(AXFragmentRootTest, TestFragmentRootMap) {
+  AXNodeData root;
+  Init(root);
+
+  // There should be nothing in the map before we create a fragment root.
+  // Call GetForAcceleratedWidget() first to ensure that querying for a
+  // fragment root doesn't inadvertently create an empty entry in the map
+  // (https://crbug.com/1071185).
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetForAcceleratedWidget(
+                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetFragmentRootParentOf(
+                         GetRootIAccessible().Get()));
+
+  // After initializing a fragment root, we should be able to retrieve it using
+  // its accelerated widget, or as the parent of its child.
+  InitFragmentRoot();
+  EXPECT_EQ(ax_fragment_root_.get(), AXFragmentRootWin::GetForAcceleratedWidget(
+                                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(ax_fragment_root_.get(), AXFragmentRootWin::GetFragmentRootParentOf(
+                                         GetRootIAccessible().Get()));
+
+  // After deleting a fragment root, it should no longer be reachable from the
+  // map.
+  ax_fragment_root_.reset();
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetForAcceleratedWidget(
+                         gfx::kMockAcceleratedWidget));
+  EXPECT_EQ(nullptr, AXFragmentRootWin::GetFragmentRootParentOf(
+                         GetRootIAccessible().Get()));
 }
 
 }  // namespace ui

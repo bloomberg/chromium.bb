@@ -76,9 +76,14 @@ int main(int argc, char* argv[]) {
   // Write config to file.
   std::ofstream out_config(config_output_file);
   out_config << "{"
-             << "'frame_len_ms': " << absl::GetFlag(FLAGS_f) << ", "
-             << "'attack_ms': " << absl::GetFlag(FLAGS_a) << ", "
-             << "'decay_ms': " << absl::GetFlag(FLAGS_d) << "}\n";
+                "'frame_len_ms': "
+             << absl::GetFlag(FLAGS_f)
+             << ", "
+                "'attack_ms': "
+             << absl::GetFlag(FLAGS_a)
+             << ", "
+                "'decay_ms': "
+             << absl::GetFlag(FLAGS_d) << "}\n";
   out_config.close();
 
   // Measure level frame-by-frame.
@@ -95,9 +100,9 @@ int main(int argc, char* argv[]) {
     // Frame peak level.
     std::transform(samples.begin(), samples.begin() + audio_frame_length,
                    samples.begin(), [](int16_t s) { return std::abs(s); });
-    const auto* peak_level =
-        std::max_element(samples.begin(), samples.begin() + audio_frame_length);
-    const float level_curr = static_cast<float>(*peak_level) / 32768.f;
+    const int16_t peak_level = *std::max_element(
+        samples.cbegin(), samples.cbegin() + audio_frame_length);
+    const float level_curr = static_cast<float>(peak_level) / 32768.f;
 
     // Temporal smoothing.
     auto smooth = [&level_prev, &level_curr](float c) {

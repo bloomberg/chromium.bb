@@ -38,7 +38,7 @@ class ParentOutputSurface : public viz::OutputSurface {
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   bool HasExternalStencilTest() const override;
@@ -46,12 +46,14 @@ class ParentOutputSurface : public viz::OutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(
       viz::UpdateVSyncParametersCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
  private:
   void OnPresentation(base::TimeTicks swap_start,

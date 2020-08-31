@@ -20,16 +20,16 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(InstalledServiceWorkerModuleScriptFetcher);
 
  public:
-  explicit InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope*);
+  InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope*,
+                                            util::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
              ResourceFetcher*,
-             const Modulator* modulator_for_built_in_modules,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String DebugName() const override {

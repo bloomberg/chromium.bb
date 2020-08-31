@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <utility>
 #include <vector>
 
 #include "absl/types/span.h"
@@ -15,6 +16,7 @@
 #include "cast/streaming/constants.h"
 #include "cast/streaming/encoded_frame.h"
 #include "cast/streaming/frame_crypto.h"
+#include "cast/streaming/mock_environment.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtcp_session.h"
@@ -33,19 +35,7 @@
 #include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "util/logging.h"
-
-using openscreen::Error;
-using openscreen::ErrorOr;
-using openscreen::IPAddress;
-using openscreen::IPEndpoint;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::FakeClock;
-using openscreen::platform::FakeTaskRunner;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
-using openscreen::platform::UdpSocket;
+#include "util/osp_logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
@@ -58,8 +48,8 @@ using testing::Gt;
 using testing::Invoke;
 using testing::SaveArg;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 // Receiver configuration.
@@ -80,8 +70,12 @@ constexpr milliseconds kTargetPlayoutDelayChange{800};
 constexpr RtpPayloadType kRtpPayloadType = RtpPayloadType::kVideoVp8;
 constexpr int kMaxRtpPacketSize = 64;
 
-// A simulated one-way network delay.
-constexpr auto kOneWayNetworkDelay = milliseconds(23);
+// A simulated one-way network delay, and round-trip network delay.
+constexpr auto kOneWayNetworkDelay = milliseconds(3);
+constexpr auto kRoundTripNetworkDelay = 2 * kOneWayNetworkDelay;
+static_assert(kRoundTripNetworkDelay < kTargetPlayoutDelay &&
+                  kRoundTripNetworkDelay < kTargetPlayoutDelayChange,
+              "Network delay must be smaller than target playout delay.");
 
 // An EncodedFrame for unit testing, one of a sequence of simulated frames, each
 // of 10 ms duration. The first frame will be a key frame; and any later frames
@@ -180,10 +174,11 @@ class MockSender : public CompoundRtcpParser::Client {
     UdpPacket packet_to_send(packet_and_report_id.first.begin(),
                              packet_and_report_id.first.end());
     packet_to_send.set_source(sender_endpoint_);
-    task_runner_->PostTask(
+    task_runner_->PostTaskWithDelay(
         [receiver = receiver_, packet = std::move(packet_to_send)]() mutable {
           receiver->OnRead(nullptr, ErrorOr<UdpPacket>(std::move(packet)));
-        });
+        },
+        kOneWayNetworkDelay);
 
     return packet_and_report_id.second;
   }
@@ -224,10 +219,11 @@ class MockSender : public CompoundRtcpParser::Client {
           rtp_packetizer_.GeneratePacket(frame_being_sent_, packet_id, buffer);
       UdpPacket packet_to_send(span.begin(), span.end());
       packet_to_send.set_source(sender_endpoint_);
-      task_runner_->PostTask(
+      task_runner_->PostTaskWithDelay(
           [receiver = receiver_, packet = std::move(packet_to_send)]() mutable {
             receiver->OnRead(nullptr, ErrorOr<UdpPacket>(std::move(packet)));
-          });
+          },
+          kOneWayNetworkDelay);
     }
   }
 
@@ -263,19 +259,6 @@ class MockSender : public CompoundRtcpParser::Client {
   EncryptedFrame frame_being_sent_;
 };
 
-// An Environment that can intercept all packet sends. ReceiverTest will connect
-// the SendPacket() method calls to the MockSender.
-class MockEnvironment : public Environment {
- public:
-  MockEnvironment(ClockNowFunctionPtr now_function, TaskRunner* task_runner)
-      : Environment(now_function, task_runner) {}
-
-  ~MockEnvironment() override = default;
-
-  // Used for intercepting packet sends from the implementation under test.
-  MOCK_METHOD1(SendPacket, void(absl::Span<const uint8_t> packet));
-};
-
 class MockConsumer : public Receiver::Consumer {
  public:
   MOCK_METHOD1(OnFramesReady, void(int next_frame_buffer_size));
@@ -294,14 +277,21 @@ class ReceiverTest : public testing::Test {
                    /* .receiver_ssrc = */ kReceiverSsrc,
                    /* .rtp_timebase = */ kRtpTimebase,
                    /* .channels = */ 2,
+                   /* .target_playout_delay = */ kTargetPlayoutDelay,
                    /* .aes_secret_key = */ kAesKey,
-                   /* .aes_iv_mask = */ kCastIvMask},
-                  kTargetPlayoutDelay),
+                   /* .aes_iv_mask = */ kCastIvMask}),
         sender_(&task_runner_, &env_) {
     env_.set_socket_error_handler(
         [](Error error) { ASSERT_TRUE(error.ok()) << error; });
     ON_CALL(env_, SendPacket(_))
-        .WillByDefault(Invoke(&sender_, &MockSender::OnPacketFromReceiver));
+        .WillByDefault(Invoke([this](absl::Span<const uint8_t> packet) {
+          task_runner_.PostTaskWithDelay(
+              [sender = &sender_, copy_of_packet = std::vector<uint8_t>(
+                                      packet.begin(), packet.end())]() mutable {
+                sender->OnPacketFromReceiver(std::move(copy_of_packet));
+              },
+              kOneWayNetworkDelay);
+        }));
     receiver_.SetConsumer(&consumer_);
   }
 
@@ -313,6 +303,22 @@ class ReceiverTest : public testing::Test {
 
   void AdvanceClockAndRunTasks(Clock::duration delta) { clock_.Advance(delta); }
   void RunTasksUntilIdle() { task_runner_.RunTasksUntilIdle(); }
+
+  // Sends the initial Sender Report with lip-sync timing information to
+  // "unblock" the Receiver, and confirms the Receiver immediately replies with
+  // a corresponding Receiver Report.
+  void ExchangeInitialReportPackets() {
+    const Clock::time_point start_time = FakeClock::now();
+    sender_.SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
+    AdvanceClockAndRunTasks(
+        kOneWayNetworkDelay);  // Transmit report to Receiver.
+    // The Receiver will immediately reply with a Receiver Report.
+    EXPECT_CALL(sender_,
+                OnReceiverCheckpoint(FrameId::leader(), kTargetPlayoutDelay))
+        .Times(1);
+    AdvanceClockAndRunTasks(kOneWayNetworkDelay);  // Transmit reply to Sender.
+    testing::Mock::VerifyAndClearExpectations(&sender_);
+  }
 
   // Consume one frame from the Receiver, and verify that it is the same as the
   // |sent_frame|. Exception: The |reference_time| is the playout time on the
@@ -371,7 +377,7 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
   EXPECT_CALL(*sender(), OnReceiverReport(_))
       .WillOnce(SaveArg<0>(&receiver_report));
   EXPECT_CALL(*sender(),
-              OnReceiverCheckpoint(FrameId::first() - 1, kTargetPlayoutDelay))
+              OnReceiverCheckpoint(FrameId::leader(), kTargetPlayoutDelay))
       .Times(1);
 
   // Have the MockSender send a Sender Report with lip-sync timing information.
@@ -380,7 +386,8 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
       RtpTimeTicks::FromTimeSinceOrigin(seconds(1), kRtpTimebase);
   const StatusReportId sender_report_id =
       sender()->SendSenderReport(sender_reference_time, sender_rtp_timestamp);
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+
+  AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
 
   // Expect the MockSender got back a Receiver Report that includes its SSRC and
   // the last Sender Report ID.
@@ -389,7 +396,7 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
   EXPECT_EQ(sender_report_id, receiver_report.last_status_report_id);
 
   // Confirm the clock offset math: Since the Receiver and MockSender share the
-  // same underlying FakeClock, the Receiver should be 10ms ahead of the Sender,
+  // same underlying FakeClock, the Receiver should be ahead of the Sender,
   // which reflects the simulated one-way network packet travel time (of the
   // Sender Report).
   //
@@ -422,11 +429,8 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
 // out of order, but such that each frame is completely received in-order. Also,
 // confirms that target playout delay changes are processed/applied correctly.
 TEST_F(ReceiverTest, ReceivesFramesInOrder) {
-  // Send the initial Sender Report with lip-sync timing information to
-  // "unblock" the Receiver.
   const Clock::time_point start_time = FakeClock::now();
-  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  ExchangeInitialReportPackets();
 
   EXPECT_CALL(*consumer(), OnFramesReady(Gt(0))).Times(10);
   for (int i = 0; i <= 9; ++i) {
@@ -442,10 +446,15 @@ TEST_F(ReceiverTest, ReceivesFramesInOrder) {
     const int permutation = (i % 2) ? i : 0;
     sender()->SendRtpPackets(sender()->GetAllPacketIds(permutation));
 
+    AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
+
     // The Receiver should immediately ACK once it has received all the RTP
     // packets to complete the frame.
-    RunTasksUntilIdle();
     testing::Mock::VerifyAndClearExpectations(sender());
+
+    // Advance to next frame transmission time.
+    AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration -
+                            kRoundTripNetworkDelay);
   }
 
   // When the Receiver has all of the frames and they are complete, it should
@@ -466,11 +475,8 @@ TEST_F(ReceiverTest, ReceivesFramesInOrder) {
 // order, and issues the appropriate ACK/NACK feedback to the Sender as it
 // realizes what it has and what it's missing.
 TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
-  // Send the initial Sender Report with lip-sync timing information to
-  // "unblock" the Receiver.
   const Clock::time_point start_time = FakeClock::now();
-  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  ExchangeInitialReportPackets();
 
   constexpr static int kOutOfOrderFrames[] = {3, 4, 2, 0, 1};
   for (int i : kOutOfOrderFrames) {
@@ -479,7 +485,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       case 3: {
         // Note that frame 4 will not yet be known to the Receiver, and so it
         // should not be mentioned in any of the feedback for this case.
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(
@@ -498,7 +504,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       }
 
       case 4: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(),
@@ -517,7 +523,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       }
 
       case 2: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(), OnReceiverHasFrames(std::vector<FrameId>(
@@ -567,11 +573,13 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(i));
 
+    AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
+
     // While there are known incomplete frames, the Receiver should send RTCP
     // packets more frequently than the default "ping" interval. Thus, advancing
     // the clock by this much should result in several feedback reports
     // transmitted to the Sender.
-    AdvanceClockAndRunTasks(kRtcpReportInterval);
+    AdvanceClockAndRunTasks(kRtcpReportInterval - kRoundTripNetworkDelay);
 
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
@@ -585,11 +593,8 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
 // by sending a Picture Loss Indicator (PLI) to the Sender, and then will
 // automatically stop sending the PLI once a key frame has been received.
 TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
-  // Send the initial Sender Report with lip-sync timing information to
-  // "unblock" the Receiver.
   const Clock::time_point start_time = FakeClock::now();
-  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  ExchangeInitialReportPackets();
 
   // Send and Receive three frames in-order, normally.
   for (int i = 0; i <= 2; ++i) {
@@ -599,9 +604,12 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
         .Times(1);
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-    RunTasksUntilIdle();
+    AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
+    // Advance to next frame transmission time.
+    AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration -
+                            kRoundTripNetworkDelay);
   }
   ConsumeAndVerifyFrames(0, 2, start_time);
 
@@ -609,7 +617,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   // decoder failure). Ensure the Sender is immediately notified.
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(1);
   receiver()->RequestKeyFrame();
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);  // Propagate request to Sender.
   testing::Mock::VerifyAndClearExpectations(sender());
 
   // The Sender sends another frame that is not a key frame and, upon receipt,
@@ -618,10 +626,10 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   EXPECT_CALL(*sender(),
               OnReceiverCheckpoint(FrameId::first() + 3, kTargetPlayoutDelay))
       .Times(1);
-  EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(1);
+  EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(AtLeast(1));
   sender()->SetFrameBeingSent(SimulatedFrame(start_time, 3));
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration - kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(sender());
   testing::Mock::VerifyAndClearExpectations(consumer());
   ConsumeAndVerifyFrames(3, 3, start_time);
@@ -639,7 +647,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   key_frame.referenced_frame_id = key_frame.frame_id;
   sender()->SetFrameBeingSent(key_frame);
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
   testing::Mock::VerifyAndClearExpectations(sender());
   testing::Mock::VerifyAndClearExpectations(consumer());
 
@@ -647,7 +655,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   // RequestKeyFrame() should not set the PLI condition again.
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
   receiver()->RequestKeyFrame();
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(sender());
 
   // After consuming the requested key frame, the client should be able to set
@@ -655,7 +663,7 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   ConsumeAndVerifyFrame(key_frame);
   EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(1);
   receiver()->RequestKeyFrame();
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(sender());
 }
 
@@ -663,11 +671,8 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
 // full (i.e., when the consumer is not pulling them out of the queue). Since
 // the Receiver will stop ACK'ing frames, the Sender will become stalled.
 TEST_F(ReceiverTest, EatsItsFill) {
-  // Send the initial Sender Report with lip-sync timing information to
-  // "unblock" the Receiver.
   const Clock::time_point start_time = FakeClock::now();
-  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  ExchangeInitialReportPackets();
 
   // Send and Receive the maximum possible number of frames in-order, normally.
   for (int i = 0; i < kMaxUnackedFrames; ++i) {
@@ -678,7 +683,7 @@ TEST_F(ReceiverTest, EatsItsFill) {
         .Times(1);
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, i));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-    RunTasksUntilIdle();
+    AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
   }
@@ -692,11 +697,11 @@ TEST_F(ReceiverTest, EatsItsFill) {
     EXPECT_CALL(*sender(),
                 OnReceiverCheckpoint(FrameId::first() + (ignored_frame - 1),
                                      kTargetPlayoutDelayChange))
-        .Times(AtLeast(1));
+        .Times(AtLeast(0));
     EXPECT_CALL(*sender(), OnReceiverIsMissingPackets(_)).Times(0);
     sender()->SetFrameBeingSent(SimulatedFrame(start_time, ignored_frame));
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-    AdvanceClockAndRunTasks(kRtcpReportInterval);
+    AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
     testing::Mock::VerifyAndClearExpectations(sender());
     testing::Mock::VerifyAndClearExpectations(consumer());
   }
@@ -706,7 +711,7 @@ TEST_F(ReceiverTest, EatsItsFill) {
   ConsumeAndVerifyFrames(0, 0, start_time);
   int no_longer_ignored_frame = ignored_frame;
   ++ignored_frame;
-  EXPECT_CALL(*consumer(), OnFramesReady(Gt(0))).Times(1);
+  EXPECT_CALL(*consumer(), OnFramesReady(Gt(0))).Times(AtLeast(1));
   EXPECT_CALL(*sender(),
               OnReceiverCheckpoint(FrameId::first() + no_longer_ignored_frame,
                                    kTargetPlayoutDelayChange))
@@ -716,10 +721,11 @@ TEST_F(ReceiverTest, EatsItsFill) {
   sender()->SetFrameBeingSent(
       SimulatedFrame(start_time, no_longer_ignored_frame));
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
+  AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
   // This second frame should be ignored, however.
   sender()->SetFrameBeingSent(SimulatedFrame(start_time, ignored_frame));
   sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
-  AdvanceClockAndRunTasks(kRtcpReportInterval);
+  AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
   testing::Mock::VerifyAndClearExpectations(sender());
   testing::Mock::VerifyAndClearExpectations(consumer());
 }
@@ -728,11 +734,8 @@ TEST_F(ReceiverTest, EatsItsFill) {
 // but only as inter-frame data dependency requirements permit, and only if no
 // target playout delay change information would have been missed.
 TEST_F(ReceiverTest, DropsLateFrames) {
-  // Send the initial Sender Report with lip-sync timing information to
-  // "unblock" the Receiver.
   const Clock::time_point start_time = FakeClock::now();
-  sender()->SendSenderReport(start_time, SimulatedFrame::GetRtpStartTime());
-  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  ExchangeInitialReportPackets();
 
   // Before any packets have been sent/received, the Receiver should indicate no
   // frames are ready.
@@ -766,8 +769,8 @@ TEST_F(ReceiverTest, DropsLateFrames) {
     // is not exercising the logic meaningfully.
     ASSERT_LE(size_t{3}, sender()->GetAllPacketIds(0).size());
     sender()->SendRtpPackets({FramePacketId{1}});
+    AdvanceClockAndRunTasks(SimulatedFrame::kFrameDuration);
   }
-  RunTasksUntilIdle();
   testing::Mock::VerifyAndClearExpectations(consumer());
   testing::Mock::VerifyAndClearExpectations(sender());
   EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
@@ -782,7 +785,7 @@ TEST_F(ReceiverTest, DropsLateFrames) {
     sender()->SetFrameBeingSent(frames[i]);
     sender()->SendRtpPackets(sender()->GetAllPacketIds(0));
   }
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(consumer());
   testing::Mock::VerifyAndClearExpectations(sender());
   EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
@@ -800,7 +803,7 @@ TEST_F(ReceiverTest, DropsLateFrames) {
     sender()->SetFrameBeingSent(frames[i]);
     sender()->SendRtpPackets({FramePacketId{0}});
   }
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(consumer());
   testing::Mock::VerifyAndClearExpectations(sender());
   EXPECT_EQ(Receiver::kNoFramesReady, receiver()->AdvanceToNextFrame());
@@ -816,7 +819,7 @@ TEST_F(ReceiverTest, DropsLateFrames) {
       .Times(1);
   sender()->SetFrameBeingSent(frames[5]);
   sender()->SendRtpPackets({FramePacketId{0}});
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kRoundTripNetworkDelay);
   // Note: Consuming Frame 6 will trigger the checkpoint advancement, since the
   // call to AdvanceToNextFrame() contains the frame skipping/dropping logic.
   ConsumeAndVerifyFrame(frames[6]);
@@ -826,7 +829,7 @@ TEST_F(ReceiverTest, DropsLateFrames) {
   // After consuming Frame 6, the Receiver knows Frame 7 is also available and
   // should have scheduled an immediate task to notify the Consumer of this.
   EXPECT_CALL(*consumer(), OnFramesReady(Gt(0))).Times(1);
-  RunTasksUntilIdle();
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(consumer());
 
   // Now consume Frame 7. This shouldn't trigger any further checkpoint
@@ -834,10 +837,11 @@ TEST_F(ReceiverTest, DropsLateFrames) {
   EXPECT_CALL(*consumer(), OnFramesReady(_)).Times(0);
   EXPECT_CALL(*sender(), OnReceiverCheckpoint(_, _)).Times(0);
   ConsumeAndVerifyFrame(frames[7]);
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(consumer());
   testing::Mock::VerifyAndClearExpectations(sender());
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

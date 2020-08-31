@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/background_sync/sync_manager.h"
 
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -21,17 +22,21 @@ namespace blink {
 
 SyncManager::SyncManager(ServiceWorkerRegistration* registration,
                          scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registration_(registration), task_runner_(std::move(task_runner)) {
+    : registration_(registration),
+      background_sync_service_(registration->GetExecutionContext()) {
   DCHECK(registration);
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+      background_sync_service_.BindNewPipeAndPassReceiver(task_runner));
 }
 
 ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
-                                            const String& tag) {
+                                            const String& tag,
+                                            ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Registration failed - no active Service Worker"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Registration failed - no active Service Worker");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -41,7 +46,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
       mojom::blink::SyncRegistrationOptions::New();
   sync_registration->tag = tag;
 
-  GetBackgroundSyncServiceRemote()->Register(
+  background_sync_service_->Register(
       std::move(sync_registration), registration_->RegistrationId(),
       WTF::Bind(&SyncManager::RegisterCallback, WrapPersistent(this),
                 WrapPersistent(resolver)));
@@ -53,21 +58,12 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GetBackgroundSyncServiceRemote()->GetRegistrations(
+  background_sync_service_->GetRegistrations(
       registration_->RegistrationId(),
       WTF::Bind(&SyncManager::GetRegistrationsCallback,
                 WrapPersistent(resolver)));
 
   return promise;
-}
-
-const mojo::Remote<mojom::blink::OneShotBackgroundSyncService>&
-SyncManager::GetBackgroundSyncServiceRemote() {
-  if (!background_sync_service_.is_bound()) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
-        background_sync_service_.BindNewPipeAndPassReceiver(task_runner_));
-  }
-  return background_sync_service_;
 }
 
 void SyncManager::RegisterCallback(
@@ -85,7 +81,7 @@ void SyncManager::RegisterCallback(
       // Let the service know that the registration promise is resolved so that
       // it can fire the event.
 
-      GetBackgroundSyncServiceRemote()->DidResolveRegistration(
+      background_sync_service_->DidResolveRegistration(
           mojom::blink::BackgroundSyncRegistrationInfo::New(
               registration_->RegistrationId(), options->tag,
               mojom::blink::BackgroundSyncType::ONE_SHOT));
@@ -148,8 +144,9 @@ void SyncManager::GetRegistrationsCallback(
   }
 }
 
-void SyncManager::Trace(blink::Visitor* visitor) {
+void SyncManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(background_sync_service_);
   ScriptWrappable::Trace(visitor);
 }
 

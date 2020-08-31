@@ -9,10 +9,11 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,13 +76,12 @@ bool Emf::Init() {
   return !!hdc_;
 }
 
-bool Emf::InitFromData(const void* src_buffer, size_t src_buffer_size) {
+bool Emf::InitFromData(base::span<const uint8_t> data) {
   DCHECK(!emf_ && !hdc_);
-  if (!base::IsValueInRangeForNumericType<UINT>(src_buffer_size))
+  if (!base::IsValueInRangeForNumericType<UINT>(data.size()))
     return false;
 
-  emf_ = SetEnhMetaFileBits(static_cast<UINT>(src_buffer_size),
-                            reinterpret_cast<const BYTE*>(src_buffer));
+  emf_ = SetEnhMetaFileBits(static_cast<UINT>(data.size()), data.data());
   return !!emf_;
 }
 
@@ -342,7 +342,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
 
 void Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Rect& /*content_area*/,
-                    const float& /*scale_factor*/) {}
+                    float /*scale_factor*/) {}
 
 bool Emf::FinishPage() {
   return true;

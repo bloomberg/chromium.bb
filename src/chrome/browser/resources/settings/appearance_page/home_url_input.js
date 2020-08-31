@@ -7,8 +7,21 @@
  * `home-url-input` is a single-line text field intending to be used with
  * prefs.homepage
  */
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+
+import {CrPolicyPrefBehavior} from 'chrome://resources/cr_elements/policy/cr_policy_pref_behavior.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PrefControlBehavior} from '../controls/pref_control_behavior.m.js';
+
+import {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_browser_proxy.js';
+
 Polymer({
   is: 'home-url-input',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
 
@@ -35,19 +48,19 @@ Polymer({
     },
   },
 
-  /** @private {?settings.AppearanceBrowserProxy} */
+  /** @private {?AppearanceBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  created: function() {
-    this.browserProxy_ = settings.AppearanceBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy_ = AppearanceBrowserProxyImpl.getInstance();
     this.noExtensionIndicator = true;  // Prevent double indicator.
   },
 
   /**
    * Focuses the 'input' element.
    */
-  focus: function() {
+  focus() {
     this.$.input.focus();
   },
 
@@ -55,7 +68,7 @@ Polymer({
    * Polymer changed observer for |pref|.
    * @private
    */
-  prefChanged_: function() {
+  prefChanged_() {
     if (!this.pref) {
       return;
     }
@@ -70,7 +83,7 @@ Polymer({
   },
 
   /** @private */
-  setInputValueFromPref_: function() {
+  setInputValueFromPref_() {
     assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
     this.value = /** @type {string} */ (this.pref.value);
   },
@@ -81,7 +94,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getTabindex_: function(canTab) {
+  getTabindex_(canTab) {
     return canTab ? 0 : -1;
   },
 
@@ -90,7 +103,7 @@ Polymer({
    * settings-input uses the change event because it is fired by the Enter key.
    * @private
    */
-  onChange_: function() {
+  onChange_() {
     if (this.invalid) {
       this.resetValue_();
       return;
@@ -101,7 +114,7 @@ Polymer({
   },
 
   /** @private */
-  resetValue_: function() {
+  resetValue_() {
     this.invalid = false;
     this.setInputValueFromPref_();
     this.$.input.blur();
@@ -112,7 +125,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeydown_: function(event) {
+  onKeydown_(event) {
     // If pressed enter when input is invalid, do not trigger on-change.
     if (event.key == 'Enter' && this.invalid) {
       event.preventDefault();
@@ -129,7 +142,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  stopKeyEventPropagation_: function(e) {
+  stopKeyEventPropagation_(e) {
     e.stopPropagation();
   },
 
@@ -138,12 +151,12 @@ Polymer({
    * @return {boolean} Whether the element should be disabled.
    * @private
    */
-  isDisabled_: function(disabled) {
+  isDisabled_(disabled) {
     return disabled || this.isPrefEnforced();
   },
 
   /** @private */
-  validate_: function() {
+  validate_() {
     if (this.value == '') {
       this.invalid = false;
       return;

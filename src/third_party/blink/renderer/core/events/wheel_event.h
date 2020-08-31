@@ -26,25 +26,31 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WHEEL_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WHEEL_EVENT_H_
 
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/events/wheel_event_init.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
+
+class WheelEventInit;
 
 class CORE_EXPORT WheelEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum { kTickMultiplier = 120 };
+  constexpr static int kTickMultiplier = 120;
 
   enum DeltaMode { kDomDeltaPixel = 0, kDomDeltaLine, kDomDeltaPage };
 
   static WheelEvent* Create() { return MakeGarbageCollected<WheelEvent>(); }
 
   static WheelEvent* Create(const WebMouseWheelEvent& native_event,
+                            AbstractView*);
+
+  static WheelEvent* Create(const WebMouseWheelEvent& native_event,
+                            const gfx::Vector2dF& delta_in_pixels,
                             AbstractView*);
 
   static WheelEvent* Create(const AtomicString& type,
@@ -55,6 +61,9 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   WheelEvent();
   WheelEvent(const AtomicString&, const WheelEventInit*);
   WheelEvent(const WebMouseWheelEvent&, AbstractView*);
+  WheelEvent(const WebMouseWheelEvent&,
+             const gfx::Vector2dF& delta_in_pixels,
+             AbstractView*);
 
   double deltaX() const { return delta_x_; }  // Positive when scrolling right.
   double deltaY() const { return delta_y_; }  // Positive when scrolling down.
@@ -82,7 +91,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   // So we need to override its parent's DispatchEvent.
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   IntPoint wheel_delta_;
@@ -93,7 +102,10 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   WebMouseWheelEvent native_event_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(WheelEvent);
+template <>
+struct DowncastTraits<WheelEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsWheelEvent(); }
+};
 
 }  // namespace blink
 

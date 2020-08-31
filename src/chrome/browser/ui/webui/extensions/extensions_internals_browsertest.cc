@@ -14,6 +14,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsInternalsTest,
   ASSERT_TRUE(web_contents);
   EXPECT_EQ(navigation_url, web_contents->GetLastCommittedURL());
   EXPECT_FALSE(web_contents->IsCrashed());
-  EXPECT_FALSE(web_contents->GetInterstitialPage());
 
   // Look for a bit of JSON that has the extension's unique ID.
   bool has_text = false;

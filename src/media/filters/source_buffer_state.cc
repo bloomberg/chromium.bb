@@ -129,13 +129,13 @@ Ranges<TimeDelta> SourceBufferState::ComputeRangesIntersection(
 SourceBufferState::SourceBufferState(
     std::unique_ptr<StreamParser> stream_parser,
     std::unique_ptr<FrameProcessor> frame_processor,
-    const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+    CreateDemuxerStreamCB create_demuxer_stream_cb,
     MediaLog* media_log)
-    : timestamp_offset_during_append_(NULL),
+    : timestamp_offset_during_append_(nullptr),
       parsing_media_segment_(false),
       stream_parser_(stream_parser.release()),
       frame_processor_(frame_processor.release()),
-      create_demuxer_stream_cb_(create_demuxer_stream_cb),
+      create_demuxer_stream_cb_(std::move(create_demuxer_stream_cb)),
       media_log_(media_log),
       state_(UNINITIALIZED) {
   DCHECK(create_demuxer_stream_cb_);
@@ -150,11 +150,11 @@ void SourceBufferState::Init(
     StreamParser::InitCB init_cb,
     const std::string& expected_codecs,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const NewTextTrackCB& new_text_track_cb) {
+    NewTextTrackCB new_text_track_cb) {
   DCHECK_EQ(state_, UNINITIALIZED);
   init_cb_ = std::move(init_cb);
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
-  new_text_track_cb_ = new_text_track_cb;
+  new_text_track_cb_ = std::move(new_text_track_cb);
   state_ = PENDING_PARSER_CONFIG;
   InitializeParser(expected_codecs);
 }
@@ -196,7 +196,7 @@ void SourceBufferState::SetTracksWatcher(
 }
 
 void SourceBufferState::SetParseWarningCallback(
-    const SourceBufferParseWarningCB& parse_warning_cb) {
+    SourceBufferParseWarningCB parse_warning_cb) {
   // Give the callback to |frame_processor_|; none of these warnings are
   // currently emitted elsewhere.
   frame_processor_->SetParseWarningCallback(parse_warning_cb);
@@ -224,7 +224,7 @@ bool SourceBufferState::Append(const uint8_t* data,
         << " append_window_end=" << append_window_end.InSecondsF();
   }
 
-  timestamp_offset_during_append_ = NULL;
+  timestamp_offset_during_append_ = nullptr;
   append_in_progress_ = false;
   return result;
 }
@@ -239,7 +239,7 @@ void SourceBufferState::ResetParserState(TimeDelta append_window_start,
   append_window_end_during_append_ = append_window_end;
 
   stream_parser_->Flush();
-  timestamp_offset_during_append_ = NULL;
+  timestamp_offset_during_append_ = nullptr;
 
   frame_processor_->Reset();
   parsing_media_segment_ = false;
@@ -316,6 +316,13 @@ void SourceBufferState::OnMemoryPressure(
     base::TimeDelta media_time,
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
+  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
+  // ignored.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
+
   // Notify video streams about memory pressure first, since video typically
   // takes up the most memory and that's where we can expect most savings.
   for (const auto& it : video_streams_) {

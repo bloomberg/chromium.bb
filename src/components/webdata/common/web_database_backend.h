@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
+#include "components/webdata/common/web_data_request_manager.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_export.h"
 
@@ -44,7 +45,7 @@ class WEBDATA_EXPORT WebDatabaseBackend
 
   WebDatabaseBackend(
       const base::FilePath& path,
-      Delegate* delegate,
+      std::unique_ptr<Delegate> delegate,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread);
 
   // Must call only before InitDatabaseWithCallback.
@@ -61,15 +62,15 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // are used in cases where the request is being made from the UI thread and an
   // asyncronous callback is required to notify the client of |request|'s
   // completion.
-  void DBWriteTaskWrapper(const WebDatabaseService::WriteTask& task,
+  void DBWriteTaskWrapper(WebDatabaseService::WriteTask task,
                           std::unique_ptr<WebDataRequest> request);
-  void DBReadTaskWrapper(const WebDatabaseService::ReadTask& task,
+  void DBReadTaskWrapper(WebDatabaseService::ReadTask task,
                          std::unique_ptr<WebDataRequest> request);
 
   // Task runners to run database tasks.
-  void ExecuteWriteTask(const WebDatabaseService::WriteTask& task);
+  void ExecuteWriteTask(WebDatabaseService::WriteTask task);
   std::unique_ptr<WDTypedResult> ExecuteReadTask(
-      const WebDatabaseService::ReadTask& task);
+      WebDatabaseService::ReadTask task);
 
   const scoped_refptr<WebDataRequestManager>& request_manager() {
     return request_manager_;
@@ -111,19 +112,20 @@ class WEBDATA_EXPORT WebDatabaseBackend
   std::unique_ptr<WebDatabase> db_;
 
   // Keeps track of all pending requests made to the db.
-  scoped_refptr<WebDataRequestManager> request_manager_;
+  scoped_refptr<WebDataRequestManager> request_manager_ =
+      base::MakeRefCounted<WebDataRequestManager>();
 
   // State of database initialization. Used to prevent the executing of tasks
   // before the db is ready.
-  sql::InitStatus init_status_;
+  sql::InitStatus init_status_ = sql::INIT_FAILURE;
 
   // True if an attempt has been made to load the database (even if the attempt
   // fails), used to avoid continually trying to reinit if the db init fails.
-  bool init_complete_;
+  bool init_complete_ = false;
 
   // True if a catastrophic database error occurs and further error callbacks
   // from the database should be ignored.
-  bool catastrophic_error_occurred_;
+  bool catastrophic_error_occurred_ = false;
 
   // If a catastrophic database error has occurred, this contains any available
   // diagnostic information.

@@ -6,8 +6,8 @@ import hashlib
 
 
 class MockChromiumCommit(object):
-
-    def __init__(self, host,
+    def __init__(self,
+                 host,
                  position='refs/heads/master@{#123}',
                  change_id='Iba5eba11',
                  author='Fake author',
@@ -44,6 +44,8 @@ class MockChromiumCommit(object):
 
     def body(self):
         # The final newline is intentionally added to match the real behavior.
+        if not self.change_id():
+            return self._body + '\n'
         return self._body + '\n\nChange-Id: ' + self.change_id() + '\n'
 
     def message(self):

@@ -59,8 +59,8 @@ void SelectionEditor::ClearVisibleSelection() {
   selection_ = SelectionInDOMTree();
   cached_visible_selection_in_dom_tree_ = VisibleSelection();
   cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
-  cached_visible_selection_in_dom_tree_is_dirty_ = false;
-  cached_visible_selection_in_flat_tree_is_dirty_ = false;
+  cached_visible_selection_in_dom_tree_is_dirty_ = true;
+  cached_visible_selection_in_flat_tree_is_dirty_ = true;
 }
 
 void SelectionEditor::Dispose() {
@@ -69,8 +69,8 @@ void SelectionEditor::Dispose() {
 }
 
 Document& SelectionEditor::GetDocument() const {
-  DCHECK(LifecycleContext());
-  return *LifecycleContext();
+  DCHECK(SynchronousMutationObserver::GetDocument());
+  return *SynchronousMutationObserver::GetDocument();
 }
 
 VisibleSelection SelectionEditor::ComputeVisibleSelectionInDOMTree() const {
@@ -164,24 +164,29 @@ void SelectionEditor::DidFinishDOMMutation() {
 
 void SelectionEditor::DidAttachDocument(Document* document) {
   DCHECK(document);
-  DCHECK(!LifecycleContext()) << LifecycleContext();
+  DCHECK(!SynchronousMutationObserver::GetDocument())
+      << SynchronousMutationObserver::GetDocument();
+#if DCHECK_IS_ON()
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
   style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
+#endif
   ClearVisibleSelection();
-  SetContext(document);
+  SetDocument(document);
 }
 
-void SelectionEditor::ContextDestroyed(Document*) {
+void SelectionEditor::ContextDestroyed() {
   Dispose();
+#if DCHECK_IS_ON()
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
   style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
   style_version_for_absolute_bounds_ = static_cast<uint64_t>(-1);
+#endif
   selection_ = SelectionInDOMTree();
   cached_visible_selection_in_dom_tree_ = VisibleSelection();
   cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
-  cached_visible_selection_in_dom_tree_is_dirty_ = false;
-  cached_visible_selection_in_flat_tree_is_dirty_ = false;
-  cached_absolute_bounds_are_dirty_ = false;
+  cached_visible_selection_in_dom_tree_is_dirty_ = true;
+  cached_visible_selection_in_flat_tree_is_dirty_ = true;
+  cached_absolute_bounds_are_dirty_ = true;
   has_selection_bounds_ = false;
   cached_anchor_bounds_ = IntRect();
   cached_focus_bounds_ = IntRect();
@@ -395,8 +400,12 @@ bool SelectionEditor::ShouldAlwaysUseDirectionalSelection() const {
 }
 
 bool SelectionEditor::NeedsUpdateVisibleSelection() const {
-  return cached_visible_selection_in_dom_tree_is_dirty_ ||
-         style_version_for_dom_tree_ != GetDocument().StyleVersion();
+#if DCHECK_IS_ON()
+  // Verify that cache has been marked dirty on style changes
+  DCHECK(cached_visible_selection_in_dom_tree_is_dirty_ ||
+         style_version_for_dom_tree_ == GetDocument().StyleVersion());
+#endif
+  return cached_visible_selection_in_dom_tree_is_dirty_;
 }
 
 void SelectionEditor::UpdateCachedVisibleSelectionIfNeeded() const {
@@ -408,19 +417,27 @@ void SelectionEditor::UpdateCachedVisibleSelectionIfNeeded() const {
   AssertSelectionValid();
   if (!NeedsUpdateVisibleSelection())
     return;
+#if DCHECK_IS_ON()
   style_version_for_dom_tree_ = GetDocument().StyleVersion();
+#endif
   cached_visible_selection_in_dom_tree_is_dirty_ = false;
   cached_visible_selection_in_dom_tree_ = CreateVisibleSelection(selection_);
   if (!cached_visible_selection_in_dom_tree_.IsNone())
     return;
+#if DCHECK_IS_ON()
   style_version_for_flat_tree_ = GetDocument().StyleVersion();
+#endif
   cached_visible_selection_in_flat_tree_is_dirty_ = false;
   cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
 }
 
 bool SelectionEditor::NeedsUpdateVisibleSelectionInFlatTree() const {
-  return cached_visible_selection_in_flat_tree_is_dirty_ ||
-         style_version_for_flat_tree_ != GetDocument().StyleVersion();
+#if DCHECK_IS_ON()
+  // Verify that cache has been marked dirty on style changes
+  DCHECK(cached_visible_selection_in_flat_tree_is_dirty_ ||
+         style_version_for_flat_tree_ == GetDocument().StyleVersion());
+#endif
+  return cached_visible_selection_in_flat_tree_is_dirty_;
 }
 
 void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
@@ -432,7 +449,9 @@ void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
   AssertSelectionValid();
   if (!NeedsUpdateVisibleSelectionInFlatTree())
     return;
+#if DCHECK_IS_ON()
   style_version_for_flat_tree_ = GetDocument().StyleVersion();
+#endif
   cached_visible_selection_in_flat_tree_is_dirty_ = false;
   SelectionInFlatTree::Builder builder;
   const PositionInFlatTree& base = ToPositionInFlatTree(selection_.Base());
@@ -448,14 +467,20 @@ void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
       CreateVisibleSelection(builder.Build());
   if (!cached_visible_selection_in_flat_tree_.IsNone())
     return;
+#if DCHECK_IS_ON()
   style_version_for_dom_tree_ = GetDocument().StyleVersion();
+#endif
   cached_visible_selection_in_dom_tree_is_dirty_ = false;
   cached_visible_selection_in_dom_tree_ = VisibleSelection();
 }
 
 bool SelectionEditor::NeedsUpdateAbsoluteBounds() const {
-  return cached_absolute_bounds_are_dirty_ ||
-         style_version_for_absolute_bounds_ != GetDocument().StyleVersion();
+#if DCHECK_IS_ON()
+  // Verify that cache has been marked dirty on style changes
+  DCHECK(cached_absolute_bounds_are_dirty_ ||
+         style_version_for_absolute_bounds_ == GetDocument().StyleVersion());
+#endif
+  return cached_absolute_bounds_are_dirty_;
 }
 
 void SelectionEditor::UpdateCachedAbsoluteBoundsIfNeeded() const {
@@ -471,7 +496,9 @@ void SelectionEditor::UpdateCachedAbsoluteBoundsIfNeeded() const {
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       frame_->GetDocument()->Lifecycle());
 
+#if DCHECK_IS_ON()
   style_version_for_absolute_bounds_ = GetDocument().StyleVersion();
+#endif
   cached_absolute_bounds_are_dirty_ = false;
 
   const VisibleSelection selection = ComputeVisibleSelectionInDOMTree();

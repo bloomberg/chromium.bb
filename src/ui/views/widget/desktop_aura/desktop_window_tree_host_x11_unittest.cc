@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -14,18 +16,19 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
-#include "ui/events/platform/x11/x11_event_source_glib.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/test/platform_event_source_test_api.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -38,10 +41,10 @@ namespace {
 const int kPointerDeviceId = 1;
 
 // Blocks till the window state hint, |hint|, is set or unset.
-class WMStateWaiter : public X11PropertyChangeWaiter {
+class WMStateWaiter : public ui::X11PropertyChangeWaiter {
  public:
   WMStateWaiter(XID window, const char* hint, bool wait_till_set)
-      : X11PropertyChangeWaiter(window, "_NET_WM_STATE"),
+      : ui::X11PropertyChangeWaiter(window, "_NET_WM_STATE"),
         hint_(hint),
         wait_till_set_(wait_till_set) {}
 
@@ -49,7 +52,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(XEvent* event) override {
     std::vector<Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints))
       return base::Contains(hints, gfx::GetAtom(hint_)) != wait_till_set_;
@@ -173,7 +176,7 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
   DesktopWindowTreeHostX11Test()
-      : event_source_(ui::PlatformEventSource::GetInstance()) {}
+      : event_source_(ui::X11EventSource::GetInstance()) {}
   ~DesktopWindowTreeHostX11Test() override = default;
 
   void SetUp() override {
@@ -195,17 +198,17 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void DispatchSingleEventToWidget(XEvent* event, Widget* widget) {
-    DCHECK_EQ(GenericEvent, event->type);
+  void DispatchSingleEventToWidget(XEvent* xev, Widget* widget) {
+    DCHECK_EQ(GenericEvent, xev->type);
     XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(event->xcookie.data);
+        static_cast<XIDeviceEvent*>(xev->xcookie.data);
     device_event->event =
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-    event_source_.Dispatch(event);
+    event_source_->ProcessXEvent(xev);
   }
 
  private:
-  ui::test::PlatformEventSourceTestAPI event_source_;
+  ui::X11EventSource* event_source_;
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11Test);
 };
 

@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -556,7 +557,7 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
   if (!weak_this)
     return;
   buffer->AddConsumeCallback(
-      base::Bind(&SpdyStream::OnReadBufferConsumed, GetWeakPtr()));
+      base::BindRepeating(&SpdyStream::OnReadBufferConsumed, GetWeakPtr()));
 
   // May close |this|.
   delegate_->OnDataReceived(std::move(buffer));
@@ -863,7 +864,7 @@ void SpdyStream::QueueNextDataFrame() {
     // This currently isn't strictly needed, since write frames are
     // discarded only if the stream is about to be closed. But have it
     // here anyway just in case this changes.
-    data_buffer->AddConsumeCallback(base::Bind(
+    data_buffer->AddConsumeCallback(base::BindRepeating(
         &SpdyStream::OnWriteBufferConsumed, GetWeakPtr(), payload_size));
   }
 

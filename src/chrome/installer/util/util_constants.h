@@ -137,7 +137,6 @@ enum InstallerStage {
   CREATING_VISUAL_MANIFEST,  // Creating VisualElementsManifest.xml.
   BUILDING,                  // Building the install work item list.
   EXECUTING,                 // Executing the install work item list.
-  UPDATING_CHANNELS,         // Updating channel information.
   COPYING_PREFERENCES_FILE,  // Copying preferences file.
   CREATING_SHORTCUTS,        // Creating shortcuts.
   REGISTERING_CHROME,        // Performing Chrome registration.
@@ -162,6 +161,7 @@ extern const char kDoNotRemoveSharedItems[];
 extern const char kEnableLogging[];
 extern const char kForceConfigureUserSettings[];
 extern const char kForceUninstall[];
+extern const char kInputFile[];
 extern const char kInstallArchive[];
 extern const char kInstallerData[];
 extern const char kLogFile[];
@@ -169,28 +169,27 @@ extern const char kMakeChromeDefault[];
 extern const char kMsi[];
 extern const char kNewSetupExe[];
 extern const char kOnOsUpgrade[];
+extern const char kOutputFile[];
+extern const char kPatch[];
+extern const char kPatchFile[];
 extern const char kPreviousVersion[];
 extern const char kReenableAutoupdates[];
 extern const char kRegisterChromeBrowser[];
 extern const char kRegisterChromeBrowserSuffix[];
 extern const char kRegisterDevChrome[];
 extern const char kRegisterURLProtocol[];
-extern const char kRenameChromeExe[];
 extern const char kRemoveChromeRegistration[];
+extern const char kRenameChromeExe[];
 extern const char kRunAsAdmin[];
-extern const char kStoreDMToken[];
 extern const char kSelfDestruct[];
+extern const char kShowEula[];
+extern const char kStoreDMToken[];
 extern const char kSystemLevel[];
 extern const char kTriggerActiveSetup[];
+extern const char kUncompressedArchive[];
 extern const char kUninstall[];
 extern const char kUpdateSetupExe[];
-extern const char kUncompressedArchive[];
 extern const char kVerboseLogging[];
-extern const char kShowEula[];
-extern const char kPatch[];
-extern const char kInputFile[];
-extern const char kPatchFile[];
-extern const char kOutputFile[];
 
 }  // namespace switches
 
@@ -202,7 +201,6 @@ extern const char kGoogleUpdateIsMachineEnvVar[];
 
 extern const wchar_t kActiveSetupExe[];
 extern const wchar_t kChromeDll[];
-extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];

@@ -2,6 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FocusGrid} from 'chrome://resources/js/cr/ui/focus_grid.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import './shared_style.js';
+import './synced_device_card.js';
+import './strings.js';
+import {BrowserService} from './browser_service.js';
+import {ForeignSession, ForeignSessionTab} from './externs.js';
+import {SyncedTabsHistogram, SYNCED_TABS_HISTOGRAM_NAME} from './constants.js';
+
 /**
  * @typedef {{device: string,
  *           lastUpdateTime: string,
@@ -15,6 +32,8 @@ let ForeignDeviceInternal;
 
 Polymer({
   is: 'history-synced-device-manager',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -36,7 +55,7 @@ Polymer({
      */
     syncedDevices_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -74,27 +93,27 @@ Polymer({
     'update-focus-grid': 'updateFocusGrid_',
   },
 
-  /** @type {?cr.ui.FocusGrid} */
+  /** @type {?FocusGrid} */
   focusGrid_: null,
 
   /** @override */
-  attached: function() {
-    this.focusGrid_ = new cr.ui.FocusGrid();
+  attached() {
+    this.focusGrid_ = new FocusGrid();
 
     // Update the sign in state.
-    history.BrowserService.getInstance().otherDevicesInitialized();
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().otherDevicesInitialized();
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED,
         SyncedTabsHistogram.LIMIT);
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.focusGrid_.destroy();
   },
 
   /** @return {HTMLElement} */
-  getContentScrollTarget: function() {
+  getContentScrollTarget() {
     return this;
   },
 
@@ -103,13 +122,13 @@ Polymer({
    * @return {!ForeignDeviceInternal}
    * @private
    */
-  createInternalDevice_: function(session) {
+  createInternalDevice_(session) {
     let tabs = [];
     const separatorIndexes = [];
     for (let i = 0; i < session.windows.length; i++) {
       const windowId = session.windows[i].sessionId;
       const newTabs = session.windows[i].tabs;
-      if (newTabs.length == 0) {
+      if (newTabs.length === 0) {
         continue;
       }
 
@@ -126,13 +145,13 @@ Polymer({
         const searchText = this.searchTerm.toLowerCase();
         for (let j = 0; j < newTabs.length; j++) {
           const tab = newTabs[j];
-          if (tab.title.toLowerCase().indexOf(searchText) != -1) {
+          if (tab.title.toLowerCase().indexOf(searchText) !== -1) {
             tabs.push(tab);
             windowAdded = true;
           }
         }
       }
-      if (windowAdded && i != session.windows.length - 1) {
+      if (windowAdded && i !== session.windows.length - 1) {
         separatorIndexes.push(tabs.length - 1);
       }
     }
@@ -148,24 +167,24 @@ Polymer({
   },
 
   /** @private */
-  onSignInTap_: function() {
-    history.BrowserService.getInstance().startSignInFlow();
+  onSignInTap_() {
+    BrowserService.getInstance().startSignInFlow();
   },
 
   /** @private */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
     this.actionMenuModel_ = e.detail.tag;
     menu.showAt(e.detail.target);
-    history.BrowserService.getInstance().recordHistogram(
+    BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
         SyncedTabsHistogram.LIMIT);
   },
 
   /** @private */
-  onOpenAllTap_: function() {
+  onOpenAllTap_() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
         SyncedTabsHistogram.LIMIT);
@@ -175,7 +194,7 @@ Polymer({
   },
 
   /** @private */
-  updateFocusGrid_: function() {
+  updateFocusGrid_() {
     if (!this.focusGrid_) {
       return;
     }
@@ -193,9 +212,9 @@ Polymer({
   },
 
   /** @private */
-  onDeleteSessionTap_: function() {
+  onDeleteSessionTap_() {
     const menu = assert(this.$.menu.getIfExists());
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW,
         SyncedTabsHistogram.LIMIT);
@@ -205,7 +224,7 @@ Polymer({
   },
 
   /** @private */
-  clearDisplayedSyncedDevices_: function() {
+  clearDisplayedSyncedDevices_() {
     this.syncedDevices_ = [];
   },
 
@@ -216,13 +235,13 @@ Polymer({
    * @param {boolean} guestSession
    * @return {boolean}
    */
-  showNoSyncedMessage: function(
+  showNoSyncedMessage(
       signInState, syncedDevicesLength, guestSession) {
     if (guestSession) {
       return true;
     }
 
-    return signInState && syncedDevicesLength == 0;
+    return signInState && syncedDevicesLength === 0;
   },
 
   /**
@@ -232,10 +251,10 @@ Polymer({
    * @param {boolean} guestSession
    * @return {boolean}
    */
-  showSignInGuide: function(signInState, guestSession) {
+  showSignInGuide(signInState, guestSession) {
     const show = !signInState && !guestSession;
     if (show) {
-      history.BrowserService.getInstance().recordAction(
+      BrowserService.getInstance().recordAction(
           'Signin_Impression_FromRecentTabs');
     }
 
@@ -247,7 +266,7 @@ Polymer({
    * are no synced tabs.
    * @return {string}
    */
-  noSyncedTabsMessage: function() {
+  noSyncedTabsMessage() {
     let stringName = this.fetchingSyncedTabs_ ? 'loading' : 'noSyncedResults';
     if (this.searchTerm !== '') {
       stringName = 'noSearchResults';
@@ -263,7 +282,7 @@ Polymer({
    * this approach seems to have acceptable performance.
    * @param {?Array<!ForeignSession>} sessionList
    */
-  updateSyncedDevices: function(sessionList) {
+  updateSyncedDevices(sessionList) {
     this.fetchingSyncedTabs_ = false;
 
     if (!sessionList) {
@@ -272,7 +291,7 @@ Polymer({
 
     if (sessionList.length > 0 && !this.hasSeenForeignData_) {
       this.hasSeenForeignData_ = true;
-      history.BrowserService.getInstance().recordHistogram(
+      BrowserService.getInstance().recordHistogram(
           SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
           SyncedTabsHistogram.LIMIT);
     }
@@ -280,7 +299,7 @@ Polymer({
     const devices = [];
     sessionList.forEach((session) => {
       const device = this.createInternalDevice_(session);
-      if (device.tabs.length != 0) {
+      if (device.tabs.length !== 0) {
         devices.push(device);
       }
     });
@@ -295,7 +314,7 @@ Polymer({
    * @param {?boolean} current
    * @param {?boolean} previous
    */
-  signInStateChanged_: function(current, previous) {
+  signInStateChanged_(current, previous) {
     if (previous === undefined) {
       return;
     }
@@ -312,7 +331,7 @@ Polymer({
     this.fetchingSyncedTabs_ = true;
   },
 
-  searchTermChanged: function(searchTerm) {
+  searchTermChanged(searchTerm) {
     this.clearDisplayedSyncedDevices_();
     this.updateSyncedDevices(this.sessionList);
   }

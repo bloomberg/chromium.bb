@@ -55,9 +55,6 @@ class IDBObjectStore;
 
 class MODULES_EXPORT IDBAny final : public GarbageCollected<IDBAny> {
  public:
-  static IDBAny* CreateUndefined();
-  static IDBAny* CreateNull();
-
   enum Type {
     kUndefinedType = 0,
     kNullType,
@@ -81,7 +78,7 @@ class MODULES_EXPORT IDBAny final : public GarbageCollected<IDBAny> {
   explicit IDBAny(int64_t);
   ~IDBAny();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void ContextWillBeDestroyed();
 
   Type GetType() const { return type_; }

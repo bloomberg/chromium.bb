@@ -43,8 +43,6 @@ protected:
                   SkCanvas* canvas,
                   const SkMatrix& initialMatrix);
 
-    static DrawType ReadOpAndSize(SkReadBuffer* reader, uint32_t* size);
-
     class AutoResetOpID {
     public:
         AutoResetOpID(SkPicturePlayback* playback) : fPlayback(playback) { }

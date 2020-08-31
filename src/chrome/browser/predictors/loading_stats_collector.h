@@ -11,11 +11,13 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace predictors {
 
+struct OptimizationGuidePrediction;
 class ResourcePrefetchPredictor;
 struct PreconnectStats;
 struct LoadingPredictorConfig;
@@ -54,9 +56,13 @@ class LoadingStatsCollector {
   void RecordPreconnectStats(std::unique_ptr<PreconnectStats> stats);
   // Records a summary of a page load. The summary is collated with speculative
   // actions taken for a given page load if any. The summary is compared with a
-  // prediction by ResourcePrefetchPredictor as well.
-  // All results are reported to UMA.
-  void RecordPageRequestSummary(const PageRequestSummary& summary);
+  // prediction by ResourcePrefetchPredictor and the Optimization Guide, if
+  // |optimization_guide_prediction| is present.
+  // All results are reported to UMA and UKM.
+  void RecordPageRequestSummary(
+      const PageRequestSummary& summary,
+      const base::Optional<OptimizationGuidePrediction>&
+          optimization_guide_prediction);
   // Evicts all stale stats that are kept in memory. All speculative actions are
   // reported and considered as waste.
   void CleanupAbandonedStats();

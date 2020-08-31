@@ -10,28 +10,20 @@
 #include "core/fxcrt/cfx_binarybuf.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
+#include "third_party/base/span.h"
 
 class CFX_WideTextBuf final : public CFX_BinaryBuf {
  public:
-  void AppendChar(wchar_t wch);
+  // CFX_BinaryBuf:
   size_t GetLength() const override;
-  wchar_t* GetBuffer() const {
-    return reinterpret_cast<wchar_t*>(m_pBuffer.get());
-  }
 
-  WideStringView AsStringView() const {
-    return WideStringView(reinterpret_cast<const wchar_t*>(m_pBuffer.get()),
-                          m_DataSize / sizeof(wchar_t));
-  }
-  WideString MakeString() const {
-    return WideString(reinterpret_cast<const wchar_t*>(m_pBuffer.get()),
-                      m_DataSize / sizeof(wchar_t));
-  }
+  pdfium::span<wchar_t> GetWideSpan();
+  pdfium::span<const wchar_t> GetWideSpan() const;
+  WideStringView AsStringView() const;
+  WideString MakeString() const;
 
-  void Delete(int start_index, int count) {
-    CFX_BinaryBuf::Delete(start_index * sizeof(wchar_t),
-                          count * sizeof(wchar_t));
-  }
+  void AppendChar(wchar_t wch);
+  void Delete(int start_index, int count);
 
   CFX_WideTextBuf& operator<<(int i);
   CFX_WideTextBuf& operator<<(double f);
@@ -40,6 +32,10 @@ class CFX_WideTextBuf final : public CFX_BinaryBuf {
   CFX_WideTextBuf& operator<<(WideStringView str);
   CFX_WideTextBuf& operator<<(const WideString& str);
   CFX_WideTextBuf& operator<<(const CFX_WideTextBuf& buf);
+
+ private:
+  // Returned span is the newly-expanded space.
+  pdfium::span<wchar_t> ExpandWideBuf(size_t char_count);
 };
 
 #endif  // CORE_FXCRT_CFX_WIDETEXTBUF_H_

@@ -12,7 +12,14 @@
 
 namespace {
 static constexpr base::TimeDelta kSegmentSize =
+    base::TimeDelta::FromSeconds(5);
+
+// Maximum distance between NNRs for them to be consecutive.
+static constexpr base::TimeDelta kMaxNNRDistance =
     base::TimeDelta::FromSeconds(60);
+
+// Max proportion of dropped frames in a window before we call it "not smooth".
+static constexpr float kMaxDroppedFramesPerWindow = 0.2;
 }
 
 namespace media {
@@ -21,120 +28,207 @@ using learning::FeatureVector;
 using learning::LearningTaskController;
 using learning::TargetValue;
 
-class SmoothnessHelperImpl : public SmoothnessHelper {
+// Monitor smoothness during a playback, and call back on each window.
+class SmoothnessWindowMonitor {
  public:
-  SmoothnessHelperImpl(std::unique_ptr<LearningTaskController> controller,
-                       const FeatureVector& features,
-                       Client* player)
-      : controller_(std::move(controller)),
-        features_(features),
-        player_(player) {}
+  using WindowCB = base::RepeatingCallback<void(int64_t dropped_frames,
+                                                int64_t decoded_frames)>;
+  SmoothnessWindowMonitor(SmoothnessHelper::Client* player, WindowCB cb)
+      : player_(player), cb_(std::move(cb)) {
+    segment_dropped_frames_ = player_->DroppedFrameCount();
+    segment_decoded_frames_ = player_->DecodedFrameCount();
 
-  // This will ignore the last segment, if any, which is fine since it's not
-  // a complete segment.
-  ~SmoothnessHelperImpl() override = default;
-
-  void NotifyPlayState(bool playing) override {
-    if (playing) {
-      if (segment_decoded_frames_)
-        return;
-
-      // We're starting a new playback, so record the baseline frame counts.
-      segment_dropped_frames_ = player_->DroppedFrameCount();
-      segment_decoded_frames_ = player_->DecodedFrameCount();
-      worst_segment_during_playback_ = TargetValue(0);
-
-      DCHECK(!id_);
-
-      // Don't bother to start the observation until the timer fires, since we
-      // don't wanto to record short playbacks.
-
-      update_timer_.Start(FROM_HERE, kSegmentSize,
-                          base::BindRepeating(&SmoothnessHelperImpl::OnTimer,
-                                              base::Unretained(this)));
-    } else {
-      if (!segment_decoded_frames_)
-        return;
-
-      // If we started an observation, then complete it.  Otherwise, the segment
-      // wasn't long enough.  Note that we also don't update the worst NNR
-      // rate here, so that we don't include very short partial segments that
-      // might be artificially high.  Note that this might be a bad idea; if
-      // the site detects bad playback and adapts before we've measured one
-      // segment, then we'll never record those NNRs.  We might want to allow
-      // the final segment to be smaller than |kSegmentSize|, as long as it's
-      // not too small.
-      if (id_)
-        controller_->CompleteObservation(*id_, worst_segment_during_playback_);
-
-      // End the segment and the playback.
-      segment_decoded_frames_.reset();
-      segment_dropped_frames_.reset();
-      update_timer_.Stop();
-      id_.reset();
-    }
+    update_timer_.Start(FROM_HERE, kSegmentSize,
+                        base::BindRepeating(&SmoothnessWindowMonitor::OnTimer,
+                                            base::Unretained(this)));
   }
+
+  ~SmoothnessWindowMonitor() = default;
 
   // Split playback into segments of length |kSegmentSize|, and update the
   // default value of the current playback.
   void OnTimer() {
-    DCHECK(segment_decoded_frames_);
-
     auto new_dropped_frames = player_->DroppedFrameCount();
-    auto dropped_frames = new_dropped_frames - *segment_dropped_frames_;
+    auto dropped_frames = new_dropped_frames - segment_dropped_frames_;
     segment_dropped_frames_ = new_dropped_frames;
 
     auto new_decoded_frames = player_->DecodedFrameCount();
-    auto decoded_frames = new_decoded_frames - *segment_decoded_frames_;
+    auto decoded_frames = new_decoded_frames - segment_decoded_frames_;
     segment_decoded_frames_ = new_decoded_frames;
 
     if (!decoded_frames)
       return;
 
-    // The target value is just the percentage of dropped frames.
-    auto target = TargetValue(((double)dropped_frames) / decoded_frames);
+    cb_.Run(dropped_frames, decoded_frames);
+  }
 
-    // See if this is worse than any previous segment.
-    if (target > worst_segment_during_playback_)
-      worst_segment_during_playback_ = target;
+ private:
+  SmoothnessHelper::Client* player_ = nullptr;
+  WindowCB cb_;
+  base::RepeatingTimer update_timer_;
+  // Current dropped, decoded frames at the start of the segment.
+  int64_t segment_decoded_frames_;
+  int64_t segment_dropped_frames_;
+};
 
-    // Start an observation for this playback, or update the default.
-    if (!id_) {
-      id_ = base::UnguessableToken::Create();
-      controller_->BeginObservation(*id_, features_,
-                                    worst_segment_during_playback_);
-    } else {
-      controller_->UpdateDefaultTarget(*id_, worst_segment_during_playback_);
+SmoothnessHelper::SmoothnessHelper(const learning::FeatureVector& features)
+    : features_(features) {}
+
+SmoothnessHelper::~SmoothnessHelper() = default;
+
+class SmoothnessHelperImpl : public SmoothnessHelper {
+ public:
+  SmoothnessHelperImpl(
+      std::unique_ptr<LearningTaskController> consecutive_controller,
+      std::unique_ptr<LearningTaskController> nnr_controller,
+      const FeatureVector& features,
+      Client* player)
+      : SmoothnessHelper(features),
+        consecutive_bad_(std::move(consecutive_controller)),
+        consecutive_nnr_(std::move(nnr_controller)),
+        player_(player) {
+    monitor_ = std::make_unique<SmoothnessWindowMonitor>(
+        player_, base::BindRepeating(&SmoothnessHelperImpl::OnWindow,
+                                     base::Unretained(this)));
+  }
+
+  // This will ignore the last segment, if any, which is fine since it's not
+  // a complete segment.  However, any in-progress observation will be completed
+  // with the default value if we've gotten enough data to set one.
+  ~SmoothnessHelperImpl() override = default;
+
+  // See if we've exceeded the intra-NNR distance, and reset everything.  Note
+  // that this can be called even when there isn't an NNR.
+  void UpdateNNRWindow() {
+    if (!most_recent_nnr_)
+      return;
+
+    auto now = base::TimeTicks::Now();
+    auto delta = now - *most_recent_nnr_;
+    if (delta >= kMaxNNRDistance) {
+      most_recent_nnr_.reset();
+      num_consecutive_nnrs_ = 0;
     }
   }
 
-  // Current dropped, decoded frames at the start of the segment, if any.
-  base::Optional<int64_t> segment_decoded_frames_;
-  base::Optional<int64_t> segment_dropped_frames_;
+  void NotifyNNR() override {
+    UpdateNNRWindow();
+    most_recent_nnr_ = base::TimeTicks::Now();
+    num_consecutive_nnrs_++;
 
-  // Of all the segments in this playback, this is the worst NNR ratio.
-  TargetValue worst_segment_during_playback_;
+    if (num_consecutive_nnrs_ > max_num_consecutive_nnrs_) {
+      max_num_consecutive_nnrs_ = num_consecutive_nnrs_;
 
-  std::unique_ptr<LearningTaskController> controller_;
+      // Insist that we've started the NNR instance, so that we enforce a
+      // minimum amount of playback time before recording anything.  Though
+      // it's possible that an NNR is interesting enough to record it anyway,
+      // and we only want to elide zero-NNR observations for short playbacks.
+      if (consecutive_nnr_.is_started()) {
+        consecutive_nnr_.UpdateObservation(
+            features(), TargetValue(max_num_consecutive_nnrs_));
+      }
+    }
+  }
 
-  FeatureVector features_;
+  // Split playback into segments of length |kSegmentSize|, and update the
+  // default value of the current playback.
+  void OnWindow(int64_t dropped_frames, int64_t decoded_frames) {
+    // After the first window, start the NNR observation.  We want to ignore any
+    // short playback windows.  We might want to require more than one window.
+    // TODO(liberato): How many windows count as a playback for NNR?
+    if (!consecutive_nnr_.is_started()) {
+      UpdateNNRWindow();
+      consecutive_nnr_.UpdateObservation(
+          features(), TargetValue(max_num_consecutive_nnrs_));
+    }
 
-  base::RepeatingTimer update_timer_;
+    // Compute the percentage of dropped frames for this window.
+    double pct = (static_cast<double>(dropped_frames)) / decoded_frames;
+
+    // Once we get one full window, default to 0 for the consecutive windows
+    // prediction task.
+    if (!consecutive_bad_.is_started())
+      consecutive_bad_.UpdateObservation(features(), TargetValue(0));
+
+    // If this is a bad window, extend the run of consecutive bad windows, and
+    // update the target value if this is a new longest run.
+    if (pct >= kMaxDroppedFramesPerWindow) {
+      consecutive_bad_windows_++;
+      if (consecutive_bad_windows_ > max_consecutive_bad_windows_) {
+        max_consecutive_bad_windows_ = consecutive_bad_windows_;
+        consecutive_bad_.UpdateObservation(
+            features(), TargetValue(max_consecutive_bad_windows_));
+      }
+    } else {
+      consecutive_bad_windows_ = 0;
+      // Don't update the target value, since any previous target value is still
+      // the max consecutive windows.
+    }
+  }
+
+  // Helper for different learning tasks.
+  struct Task {
+    Task(std::unique_ptr<LearningTaskController> controller)
+        : controller_(std::move(controller)) {}
+
+    ~Task() = default;
+
+    // Return true if and only if we've started an observation.
+    bool is_started() const { return !!id_; }
+
+    void UpdateObservation(const FeatureVector& features,
+                           TargetValue current_target) {
+      target_value_ = current_target;
+      if (!is_started()) {
+        id_ = base::UnguessableToken::Create();
+        controller_->BeginObservation(*id_, features, target_value_);
+      } else {
+        controller_->UpdateDefaultTarget(*id_, target_value_);
+      }
+    }
+
+    const TargetValue& target_value() const { return target_value_; }
+
+   private:
+    // If an observation is in progress, then this is the id.
+    base::Optional<base::UnguessableToken> id_;
+    std::unique_ptr<LearningTaskController> controller_;
+    TargetValue target_value_;
+
+    DISALLOW_COPY_AND_ASSIGN(Task);
+  };
+
+  // Struct to hold all of the "at least |n| consecutive bad windows" data.
+  struct Task consecutive_bad_;
+
+  int consecutive_bad_windows_ = 0;
+  int max_consecutive_bad_windows_ = 0;
+
+  struct Task consecutive_nnr_;
+
+  // Time of the most recent nnr.
+  base::Optional<base::TimeTicks> most_recent_nnr_;
+
+  // Number of NNRs that have occurred within |kMaxNNRDistance|.
+  int num_consecutive_nnrs_ = 0;
+
+  // Maximum value of |num_consecutive_nnrs_| that we've observed.
+  int max_num_consecutive_nnrs_ = 0;
 
   // WebMediaPlayer which will tell us about the decoded / dropped frame counts.
   Client* player_;
 
-  // If an observation is in progress, then this is the id.
-  base::Optional<base::UnguessableToken> id_;
+  std::unique_ptr<SmoothnessWindowMonitor> monitor_;
 };
 
 // static
 std::unique_ptr<SmoothnessHelper> SmoothnessHelper::Create(
-    std::unique_ptr<LearningTaskController> controller,
+    std::unique_ptr<LearningTaskController> bad_controller,
+    std::unique_ptr<LearningTaskController> nnr_controller,
     const FeatureVector& features,
     Client* player) {
-  return std::make_unique<SmoothnessHelperImpl>(std::move(controller), features,
-                                                player);
+  return std::make_unique<SmoothnessHelperImpl>(
+      std::move(bad_controller), std::move(nnr_controller), features, player);
 }
 
 // static

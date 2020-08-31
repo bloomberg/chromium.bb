@@ -28,6 +28,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -93,7 +94,7 @@ PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
 }
 
 void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
-                                               const base::Closure& callback) {
+                                               base::OnceClosure callback) {
   root_url_ = root_url;
   int render_process_id = 0;
   int unused;
@@ -106,9 +107,9 @@ void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
   // operation by calling |callback|.
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
-      base::Bind(&PepperFileSystemBrowserHost::OpenExistingFileSystem,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
+      base::BindOnce(&PepperFileSystemBrowserHost::OpenExistingFileSystem,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 int32_t PepperFileSystemBrowserHost::OnResourceMessageReceived(
@@ -131,16 +132,16 @@ bool PepperFileSystemBrowserHost::IsFileSystemHost() { return true; }
 void PepperFileSystemBrowserHost::OpenQuotaFile(
     PepperFileIOHost* file_io_host,
     const storage::FileSystemURL& url,
-    const OpenQuotaFileCallback& callback) {
+    OpenQuotaFileCallback callback) {
   int32_t id = file_io_host->pp_resource();
   std::pair<FileMap::iterator, bool> insert_result =
       files_.insert(std::make_pair(id, file_io_host));
   if (insert_result.second) {
     base::PostTaskAndReplyWithResult(
-        file_system_context_->default_file_task_runner(),
-        FROM_HERE,
-        base::Bind(&QuotaReservation::OpenFile, quota_reservation_, id, url),
-        callback);
+        file_system_context_->default_file_task_runner(), FROM_HERE,
+        base::BindOnce(&QuotaReservation::OpenFile, quota_reservation_, id,
+                       url),
+        std::move(callback));
   } else {
     NOTREACHED();
   }
@@ -188,15 +189,15 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
-      base::Bind(&PepperFileSystemBrowserHost::OpenFileSystem,
-                 weak_factory_.GetWeakPtr(), context->MakeReplyMessageContext(),
-                 file_system_type));
+      base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
+      base::BindOnce(&PepperFileSystemBrowserHost::OpenFileSystem,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext(), file_system_type));
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperFileSystemBrowserHost::OpenExistingFileSystem(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     scoped_refptr<storage::FileSystemContext> file_system_context) {
   if (file_system_context.get()) {
     opened_ = true;
@@ -209,9 +210,9 @@ void PepperFileSystemBrowserHost::OpenExistingFileSystem(
   SetFileSystemContext(file_system_context);
 
   if (ShouldCreateQuotaReservation())
-    CreateQuotaReservation(callback);
+    CreateQuotaReservation(std::move(callback));
   else
-    callback.Run();
+    std::move(callback).Run();
 }
 
 void PepperFileSystemBrowserHost::OpenFileSystem(
@@ -229,7 +230,8 @@ void PepperFileSystemBrowserHost::OpenFileSystem(
   GURL origin =
       browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin();
   file_system_context_->OpenFileSystem(
-      origin, file_system_type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      url::Origin::Create(origin), file_system_type,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&PepperFileSystemBrowserHost::OpenFileSystemComplete,
                      weak_factory_.GetWeakPtr(), reply_context));
 }
@@ -246,10 +248,9 @@ void PepperFileSystemBrowserHost::OpenFileSystemComplete(
 
     if (ShouldCreateQuotaReservation()) {
       CreateQuotaReservation(
-          base::Bind(&PepperFileSystemBrowserHost::SendReplyForFileSystem,
-                     weak_factory_.GetWeakPtr(),
-                     reply_context,
-                     static_cast<int32_t>(PP_OK)));
+          base::BindOnce(&PepperFileSystemBrowserHost::SendReplyForFileSystem,
+                         weak_factory_.GetWeakPtr(), reply_context,
+                         static_cast<int32_t>(PP_OK)));
       return;
     }
   }
@@ -309,8 +310,8 @@ void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
   }
 
   file_system_context->OpenPluginPrivateFileSystem(
-      origin, storage::kFileSystemTypePluginPrivate, fsid, plugin_id,
-      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      url::Origin::Create(origin), storage::kFileSystemTypePluginPrivate, fsid,
+      plugin_id, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(
           &PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete,
           weak_factory_.GetWeakPtr(), reply_context, fsid));
@@ -354,10 +355,10 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
-      base::Bind(&PepperFileSystemBrowserHost::OpenIsolatedFileSystem,
-                 weak_factory_.GetWeakPtr(), context->MakeReplyMessageContext(),
-                 fsid, type));
+      base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
+      base::BindOnce(&PepperFileSystemBrowserHost::OpenIsolatedFileSystem,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext(), fsid, type));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -376,11 +377,12 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
       std::max<int64_t>(kMinimumQuotaReservationSize, amount);
   file_system_context_->default_file_task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&QuotaReservation::ReserveQuota, quota_reservation_,
-                     reservation_amount, file_growths,
-                     base::Bind(&PepperFileSystemBrowserHost::GotReservedQuota,
-                                weak_factory_.GetWeakPtr(),
-                                context->MakeReplyMessageContext())));
+      base::BindOnce(
+          &QuotaReservation::ReserveQuota, quota_reservation_,
+          reservation_amount, file_growths,
+          base::BindOnce(&PepperFileSystemBrowserHost::GotReservedQuota,
+                         weak_factory_.GetWeakPtr(),
+                         context->MakeReplyMessageContext())));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -430,25 +432,22 @@ bool PepperFileSystemBrowserHost::ShouldCreateQuotaReservation() const {
 }
 
 void PepperFileSystemBrowserHost::CreateQuotaReservation(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(root_url_.is_valid());
   base::PostTaskAndReplyWithResult(
-      file_system_context_->default_file_task_runner(),
-      FROM_HERE,
-      base::Bind(&QuotaReservation::Create,
-                 file_system_context_,
-                 root_url_.GetOrigin(),
-                 PepperFileSystemTypeToFileSystemType(type_)),
-      base::Bind(&PepperFileSystemBrowserHost::GotQuotaReservation,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+      file_system_context_->default_file_task_runner(), FROM_HERE,
+      base::BindOnce(&QuotaReservation::Create, file_system_context_,
+                     root_url_.GetOrigin(),
+                     PepperFileSystemTypeToFileSystemType(type_)),
+      base::BindOnce(&PepperFileSystemBrowserHost::GotQuotaReservation,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PepperFileSystemBrowserHost::GotQuotaReservation(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     scoped_refptr<QuotaReservation> quota_reservation) {
   quota_reservation_ = quota_reservation;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void PepperFileSystemBrowserHost::GotReservedQuota(

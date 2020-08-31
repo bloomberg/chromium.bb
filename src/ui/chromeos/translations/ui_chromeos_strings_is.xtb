@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Hlaða inn</translation>
 <translation id="1249250836236328755">Stefna</translation>
 <translation id="1278813325885878377">Ungverskt QWERTY-lyklaborð</translation>
+<translation id="1293556467332435079">Skrár</translation>
 <translation id="1297922636971898492">Google Drive er ekki í boði núna. Flutningur verður sjálfkrafa hafinn að nýju þegar Google Drive verður aftur tiltækt.</translation>
 <translation id="1307931752636661898">Ekki er hægt að skoða Linux-skrár</translation>
 <translation id="1310751437842832374">Umritun (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Vistað</translation>
 <translation id="1864756863218646478">Skráin fannst ekki.</translation>
 <translation id="1921986354447415460">Tyrkneskt F-lyklaborð</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> var forsniðið</translation>
 <translation id="1931134289871235022">Slóvakíska</translation>
 <translation id="1933345018156373194">Flutningur mistókst, óvænt villa: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finnskt</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Þýskt lyklaborð</translation>
 <translation id="1972984168337863910">Stækka svæði með ábendingum fyrir skrár</translation>
 <translation id="1984603991036629094">Armenskt hljóðritunarlyklaborð</translation>
+<translation id="1995337122023280937">Fara í staðsetningu skráar</translation>
 <translation id="2001796770603320721">Stjórna á Drive</translation>
 <translation id="2009067268969781306">Þegar drif er forsniðið eyðast öll gögn af því. Ekki er hægt að afturkalla þessa aðgerð.</translation>
 <translation id="2028997212275086731">RAR-skráasafn</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Ekki náðist í Google Drive. <ph name="BEGIN_LINK" />Skráðu þig út<ph name="END_LINK" /> og svo aftur inn.</translation>
 <translation id="2649120831653069427">Regnbogafiskur</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Staðsetning skráar</translation>
 <translation id="2672394958563893062">Villa kom upp. Smelltu til að byrja aftur frá byrjun.</translation>
 <translation id="2676946222714718093">Spilast í</translation>
 <translation id="2735698359135166290">Staðlað rúmenskt lyklaborð</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Þýskt NEO 2 lyklaborð</translation>
 <translation id="2943400156390503548">Skyggnur</translation>
 <translation id="2943503720238418293">Notaðu styttra heiti</translation>
+<translation id="2949781154072577687">Forsníður <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Marglytta</translation>
 <translation id="2963783323012015985">Tyrkneskt lyklaborð</translation>
 <translation id="2966459079597787514">Sænskt lyklaborð</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> villur.</translation>
 <translation id="3519867315646775981">Umritun (Shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portúgalskt</translation>
+<translation id="3524311639100184459">Varúð: Þessar skrár eru til bráðabirgða og þeim kann að vera eytt sjálfkrafa til að losa um diskpláss.  <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3549797760399244642">Fara á drive.google.com...</translation>
 <translation id="357479282490346887">Litháískt</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Loðber</translation>
 <translation id="3966388904776714213">Hljóðspilari</translation>
 <translation id="4002066346123236978">Heiti</translation>
+<translation id="4065397611279318371">Til að opna skrár með <ph name="APP_NAME" /> forritinu skaltu færa þær í <ph name="SHARED_DIRECTORY_LABEL" /> möppuna.</translation>
 <translation id="4070370845051020638">Kantónsk innsláttaraðferð</translation>
 <translation id="4072248638558688893">Tamil-lyklaborð (hljóðritun)</translation>
 <translation id="4124935795427217608">Einhyrningur</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Afritun mistókst. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Melóna</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">Ytri tengill</translation>
 <translation id="4425149324548788773">Drifið mitt</translation>
 <translation id="4465830120256509958">Barislískt lyklaborð</translation>
 <translation id="4470564870223067757">Hangul 2 sett</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Sjálfvirk lagfæring</translation>
 <translation id="4881695831933465202">Opna</translation>
 <translation id="4886021172213954916">Tamil-lyklaborð (ritvél)</translation>
+<translation id="4892969127351273348">Ekki tókst að opna með <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Tilbúið að afrita <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Lagfærð</translation>
 <translation id="4935975195727477204">Blóm</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">Stjórna deilingu Linux</translation>
 <translation id="6808193438228982088">Refur</translation>
 <translation id="6820687829547641339">Gzip-þjöppuð tar-safnskrá</translation>
+<translation id="6823166707458800069">Tekið er sjálfkrafa öryggisafrit af öllum skrám sem vistaðar eru í þessari möppu.</translation>
 <translation id="6825883775269213504">Rússneskt</translation>
 <translation id="6827236167376090743">Þetta myndskeið verður spilað til eilífðarnóns.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> fjarlægt úr vali.</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">Devanagari-lyklaborð (hljóðritun)</translation>
 <translation id="6885780034956018177">Snigill</translation>
 <translation id="6896758677409633944">Afrita</translation>
+<translation id="6898028766943174120">Fleiri undirmöppur...</translation>
 <translation id="691516599546977041">Ekki tókst að vista í <ph name="FOLDER_NAME" />. Breyttar myndir verða vistaðar í möppunni Niðurhal.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Bandarískt Workman</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">Virkja samstillingu með farsímagögnum</translation>
 <translation id="6965382102122355670">Í lagi</translation>
 <translation id="6970230597523682626">Búlgarskt</translation>
+<translation id="6973630695168034713">Möppur</translation>
 <translation id="6978611942794658017">Þessi skrá er hönnuð fyrir tölvu með Windows-hugbúnaði. Hún er ekki samhæf tækinu þínu sem keyrir Chrome OS. Leitaðu að hentugu forriti í stað þessa í vefverslun Chrome.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">Plássið er uppurið</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">Google kort</translation>
 <translation id="7419631653042041064">Katalónskt lyklaborð</translation>
 <translation id="7434823369735508263">Breskt Dvorak-lyklaborð</translation>
+<translation id="7447678886297481665">Skrár í þessari möppu eru skrifvarðar. Sumar aðgerðir eru ekki studdar.</translation>
 <translation id="7460898608667578234">Úkraínskt</translation>
 <translation id="7474889694310679759">Kanadískt enskt lyklaborð</translation>
 <translation id="7489215562877293245">Fann <ph name="FILE_COUNT" />
@@ -567,6 +580,7 @@
 <translation id="7649070708921625228">Hjálp</translation>
 <translation id="7654209398114106148">Flytur <ph name="NUMBER_OF_ITEMS" /> atriði...</translation>
 <translation id="7658239707568436148">Hætta við</translation>
+<translation id="7695430100978772476">Ekki tókst að forsníða <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Grískt</translation>
 <translation id="7706319470528945664">Portúgalskt lyklaborð</translation>
 <translation id="7711920809702896782">Myndupplýsingar</translation>

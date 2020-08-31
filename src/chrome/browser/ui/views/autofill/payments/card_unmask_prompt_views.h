@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -23,7 +22,6 @@ class WebContents;
 namespace views {
 class Checkbox;
 class Label;
-class Link;
 class Textfield;
 class Throbber;
 }  // namespace views
@@ -35,8 +33,7 @@ class CardUnmaskPromptController;
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               public views::ComboboxListener,
                               public views::BubbleDialogDelegateView,
-                              public views::TextfieldController,
-                              public views::LinkListener {
+                              public views::TextfieldController {
  public:
   CardUnmaskPromptViews(CardUnmaskPromptController* controller,
                         content::WebContents* web_contents);
@@ -59,7 +56,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -73,9 +69,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::LinkListener
-  void LinkClicked(views::Link* source, int event_flags) override;
-
  private:
   friend class CardUnmaskPromptViewTesterViews;
 
@@ -86,7 +79,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void ShowNewCardLink();
   void ClosePrompt();
 
-  void UpdateButtonLabels();
+  void UpdateButtons();
+
+  void LinkClicked();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;
@@ -103,7 +98,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
-  views::Link* new_card_link_ = nullptr;
+  views::View* new_card_link_ = nullptr;
 
   // The error row view and label for most errors, which live beneath the
   // inputs.

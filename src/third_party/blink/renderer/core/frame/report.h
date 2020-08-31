@@ -17,6 +17,8 @@ struct CORE_EXPORT ReportType {
   static constexpr const char kDeprecation[] = "deprecation";
   static constexpr const char kFeaturePolicyViolation[] =
       "feature-policy-violation";
+  static constexpr const char kDocumentPolicyViolation[] =
+      "document-policy-violation";
   static constexpr const char kIntervention[] = "intervention";
   static constexpr const char kCSPViolation[] = "csp-violation";
 };
@@ -34,7 +36,7 @@ class CORE_EXPORT Report : public ScriptWrappable {
   String url() const { return url_; }
   ReportBody* body() const { return body_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(body_);
     ScriptWrappable::Trace(visitor);
   }

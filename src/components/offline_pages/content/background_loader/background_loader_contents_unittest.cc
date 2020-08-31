@@ -101,7 +101,7 @@ void BackgroundLoaderContentsTest::MediaAccessCallback(
 }
 
 TEST_F(BackgroundLoaderContentsTest, NotVisible) {
-  ASSERT_TRUE(contents()->IsNeverVisible(nullptr));
+  ASSERT_TRUE(contents()->IsNeverComposited(nullptr));
 }
 
 TEST_F(BackgroundLoaderContentsTest, SuppressDialogs) {
@@ -146,6 +146,7 @@ TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {
   contents()->AddNewContents(
       nullptr /* source */,
       std::unique_ptr<content::WebContents>() /* new_contents */,
+      GURL() /* target_url */,
       WindowOpenDisposition::CURRENT_TAB /* disposition */,
       gfx::Rect() /* initial_rect */, false /* user_gesture */,
       &blocked /* was_blocked */);
@@ -162,7 +163,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
       std::string() /* requested_video_device_id */,
       blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE /* audio_type */,
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* video_type */,
-      false /* disable_local_echo */);
+      false /* disable_local_echo */,
+      false /* request_pan_tilt_zoom_permission */);
   contents()->RequestMediaAccessPermission(
       nullptr /* contents */, request /* request */,
       base::BindRepeating(&BackgroundLoaderContentsTest::MediaAccessCallback,

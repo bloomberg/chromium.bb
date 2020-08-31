@@ -18,15 +18,22 @@ class CORE_EXPORT StringListDirective final : public CSPDirective {
   StringListDirective(const String& name,
                       const String& value,
                       ContentSecurityPolicy*);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   bool Allows(const String& string_piece, bool is_duplicate);
+  bool IsAllowDuplicates() const { return allow_duplicates_; }
 
  private:
-  // Determine whether a given string in the string list is valid.
-  static bool IsInvalidStringValue(const String& str);
+  // Determine whether a given string is a valid policy name or a special token
+  // ("*" or "'allow-duplicates'"). In the token case, set the appropriate flags
+  // as a side effect.
+  bool AllowOrProcessValue(const String& src);
+
+  static bool IsPolicyName(const String& name);
+  static bool IsNotPolicyNameChar(UChar c);
 
   Vector<String> list_;
   bool allow_any_;
+  bool allow_duplicates_;
 };
 
 }  // namespace blink

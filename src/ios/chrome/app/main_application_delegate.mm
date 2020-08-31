@@ -6,7 +6,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
@@ -20,6 +19,7 @@
 #import "ios/chrome/app/main_application_delegate_testing.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #include "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -43,10 +43,6 @@
   id<StartupInformation> _startupInformation;
   // Helper to open new tabs.
   id<TabOpening> _tabOpener;
-  // Handles the application stage changes.
-  AppState* _appState;
-  // Handles tab switcher.
-  id<AppNavigation> _appNavigation;
   // Handles tab switcher.
   id<TabSwitching> _tabSwitcherProtocol;
 }
@@ -71,25 +67,28 @@
     [_mainController setMetricsMediator:_metricsMediator];
     _browserLauncher = _mainController;
     _startupInformation = _mainController;
-    _tabOpener = _mainController;
     _appState = [[AppState alloc] initWithBrowserLauncher:_browserLauncher
                                        startupInformation:_startupInformation
                                       applicationDelegate:self];
-    _tabSwitcherProtocol = _mainController;
-    _appNavigation = _mainController;
     [_mainController setAppState:_appState];
+    [_appState addObserver:_mainController];
 
-    if (!IsMultiwindowSupported()) {
-      // When multiwindow is not supported, this object holds a "scene" state
-      // and a "scene" controller. This allows the rest of the app to be mostly
-      // multiwindow-agnostic.
-      _sceneState = [[SceneState alloc] init];
+    if (!IsSceneStartupSupported()) {
+      // When the UIScene APU is not supported, this object holds a "scene"
+      // state and a "scene" controller. This allows the rest of the app to be
+      // mostly multiwindow-agnostic.
+      _sceneState = [[SceneState alloc] initWithAppState:_appState];
+      _appState.mainSceneState = _sceneState;
       _sceneController =
           [[SceneController alloc] initWithSceneState:_sceneState];
+      _sceneState.controller = _sceneController;
 
+      // TODO(crbug.com/1040501): remove this.
       // This is temporary plumbing that's not supposed to be here.
       _sceneController.mainController = (id<MainControllerGuts>)_mainController;
       _mainController.sceneController = _sceneController;
+      _tabSwitcherProtocol = _sceneController;
+      _tabOpener = _sceneController;
     }
   }
   return self;
@@ -116,23 +115,36 @@
   startup_loggers::RegisterAppDidFinishLaunchingTime();
 
   _mainController.window = self.window;
-  // self.window has been set by this time. _appState window can now be set.
-  _appState.window = self.window;
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;
   BOOL requiresHandling =
       [_appState requiresHandlingAfterLaunchWithOptions:launchOptions
                                         stateBackground:inBackground];
-  if (!IsMultiwindowSupported()) {
+  if (!IsSceneStartupSupported()) {
     self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+  }
+
+  if (@available(iOS 13, *)) {
+    if (IsSceneStartupSupported()) {
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneWillConnect:)
+                 name:UISceneWillConnectNotification
+               object:nil];
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneDidEnterBackground:)
+                 name:UISceneDidEnterBackgroundNotification
+               object:nil];
+    }
   }
 
   return requiresHandling;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application {
-  if (!IsMultiwindowSupported()) {
+  if (!IsSceneStartupSupported()) {
     self.sceneState.activationLevel = SceneActivationLevelForegroundActive;
   }
 
@@ -145,7 +157,7 @@
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application {
-  if (!IsMultiwindowSupported()) {
+  if (!IsSceneStartupSupported()) {
     self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
   }
 
@@ -158,7 +170,7 @@
 // Called when going into the background. iOS already broadcasts, so
 // stakeholders can register for it directly.
 - (void)applicationDidEnterBackground:(UIApplication*)application {
-  if (!IsMultiwindowSupported()) {
+  if (!IsSceneStartupSupported()) {
     self.sceneState.activationLevel = SceneActivationLevelBackground;
   }
 
@@ -170,15 +182,14 @@
 
 // Called when returning to the foreground.
 - (void)applicationWillEnterForeground:(UIApplication*)application {
-  if (!IsMultiwindowSupported()) {
+  if (!IsSceneStartupSupported()) {
     self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
   }
 
   [_appState applicationWillEnterForeground:application
                             metricsMediator:_metricsMediator
                                memoryHelper:_memoryHelper
-                                  tabOpener:_tabOpener
-                              appNavigation:_appNavigation];
+                                  tabOpener:_tabOpener];
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
@@ -187,8 +198,7 @@
 
   // Instead of adding code here, consider if it could be handled by listening
   // for  UIApplicationWillterminate.
-  [_appState applicationWillTerminate:application
-                applicationNavigation:_appNavigation];
+  [_appState applicationWillTerminate:application];
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application {
@@ -196,6 +206,57 @@
     return;
 
   [_memoryHelper handleMemoryPressure];
+}
+
+#pragma mark - Scenes lifecycle
+
+- (NSInteger)foregroundSceneCount {
+  DCHECK(IsSceneStartupSupported());
+  if (@available(iOS 13, *)) {
+    NSInteger foregroundSceneCount = 0;
+    for (UIScene* scene in UIApplication.sharedApplication.connectedScenes) {
+      if ((scene.activationState == UISceneActivationStateForegroundInactive) ||
+          (scene.activationState == UISceneActivationStateForegroundActive)) {
+        foregroundSceneCount++;
+      }
+    }
+    return foregroundSceneCount;
+  }
+  return 0;
+}
+
+- (void)sceneWillConnect:(NSNotification*)notification {
+  DCHECK(IsSceneStartupSupported());
+  if (@available(iOS 13, *)) {
+    UIWindowScene* scene = (UIWindowScene*)notification.object;
+    SceneDelegate* sceneDelegate = (SceneDelegate*)scene.delegate;
+    SceneController* sceneController = sceneDelegate.sceneController;
+
+    _tabSwitcherProtocol = sceneController;
+    _tabOpener = sceneController;
+
+    // TODO(crbug.com/1060645): This should be called later, or this flow should
+    // be changed completely.
+    if (self.foregroundSceneCount == 0) {
+      [_appState applicationWillEnterForeground:UIApplication.sharedApplication
+                                metricsMediator:_metricsMediator
+                                   memoryHelper:_memoryHelper
+                                      tabOpener:_tabOpener];
+    }
+  }
+}
+
+- (void)sceneDidEnterBackground:(NSNotification*)notification {
+  DCHECK(IsSceneStartupSupported());
+  if (@available(iOS 13, *)) {
+    // When the first scene enters foreground, update the app state.
+    if (self.foregroundSceneCount == 0) {
+      [_appState applicationDidEnterBackground:UIApplication.sharedApplication
+                                  memoryHelper:_memoryHelper
+                       incognitoContentVisible:self.sceneController
+                                                   .incognitoContentVisible];
+    }
+  }
 }
 
 #pragma mark Downloading Data in the Background
@@ -307,6 +368,12 @@
 
 - (AppState*)appState {
   return _appState;
+}
+
++ (AppState*)sharedAppState {
+  return base::mac::ObjCCast<MainApplicationDelegate>(
+             [[UIApplication sharedApplication] delegate])
+      .appState;
 }
 
 + (MainController*)sharedMainController {

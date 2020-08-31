@@ -11,47 +11,20 @@
 
 namespace ui {
 
-namespace {
-
-// TODO(msisov): In the future when GpuProcessHost is moved to vizhost, remove
-// this utility code.
-using BinderCallback = ui::GpuPlatformSupportHost::GpuHostBindInterfaceCallback;
-
-void BindInterfaceInGpuProcess(const std::string& interface_name,
-                               mojo::ScopedMessagePipeHandle interface_pipe,
-                               const BinderCallback& binder_callback) {
-  return binder_callback.Run(interface_name, std::move(interface_pipe));
-}
-
-template <typename Interface>
-void BindInterfaceInGpuProcess(mojo::PendingReceiver<Interface> request,
-                               const BinderCallback& binder_callback) {
-  BindInterfaceInGpuProcess(Interface::Name_, std::move(request.PassPipe()),
-                            binder_callback);
-}
-
-}  // namespace
-
 WaylandBufferManagerConnector::WaylandBufferManagerConnector(
     WaylandBufferManagerHost* buffer_manager_host)
-    : buffer_manager_host_(buffer_manager_host) {}
-
-WaylandBufferManagerConnector::~WaylandBufferManagerConnector() = default;
-
-void WaylandBufferManagerConnector::OnGpuProcessLaunched(
-    int host_id,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    base::RepeatingCallback<void(IPC::Message*)> send_callback) {}
-
-void WaylandBufferManagerConnector::OnChannelDestroyed(int host_id) {
-  buffer_manager_host_->OnChannelDestroyed();
+    : buffer_manager_host_(buffer_manager_host) {
+  DETACH_FROM_THREAD(io_thread_checker_);
 }
 
-void WaylandBufferManagerConnector::OnMessageReceived(
-    const IPC::Message& message) {
-  NOTREACHED() << "This class should only be used with mojo transport but here "
-                  "we're wrongly getting invoked to handle IPC communication.";
+WaylandBufferManagerConnector::~WaylandBufferManagerConnector() {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+}
+
+void WaylandBufferManagerConnector::OnChannelDestroyed(int host_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  if (host_id_ == host_id)
+    buffer_manager_host_->OnChannelDestroyed();
 }
 
 void WaylandBufferManagerConnector::OnGpuServiceLaunched(
@@ -60,30 +33,49 @@ void WaylandBufferManagerConnector::OnGpuServiceLaunched(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,
     GpuHostTerminateCallback terminate_callback) {
-  terminate_callback_ = std::move(terminate_callback);
-  binder_ = std::move(binder);
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
+  binder_ = std::move(binder);
   io_runner_ = io_runner;
+
+  ui_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandBufferManagerConnector::OnGpuServiceLaunchedOnUI,
+                     base::Unretained(this), host_id,
+                     std::move(terminate_callback)));
+}
+
+void WaylandBufferManagerConnector::OnGpuServiceLaunchedOnUI(
+    int host_id,
+    GpuHostTerminateCallback terminate_callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+
+  host_id_ = host_id;
+
   auto on_terminate_gpu_cb =
       base::BindOnce(&WaylandBufferManagerConnector::OnTerminateGpuProcess,
                      base::Unretained(this));
   buffer_manager_host_->SetTerminateGpuCallback(std::move(on_terminate_gpu_cb));
+  terminate_callback_ = std::move(terminate_callback);
 
-  base::PostTaskAndReplyWithResult(
-      ui_runner.get(), FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerHost::BindInterface,
-                     base::Unretained(buffer_manager_host_)),
+  auto pending_remote = buffer_manager_host_->BindInterface();
+
+  io_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded,
-          base::Unretained(this)));
+          base::Unretained(this), std::move(pending_remote)));
 }
 
 void WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded(
     mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
         buffer_manager_host) const {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+
   mojo::Remote<ozone::mojom::WaylandBufferManagerGpu> buffer_manager_gpu_remote;
-  auto receiver = buffer_manager_gpu_remote.BindNewPipeAndPassReceiver();
-  BindInterfaceInGpuProcess(std::move(receiver), binder_);
+  binder_.Run(
+      ozone::mojom::WaylandBufferManagerGpu::Name_,
+      buffer_manager_gpu_remote.BindNewPipeAndPassReceiver().PassPipe());
   DCHECK(buffer_manager_gpu_remote);
 
   wl::BufferFormatsWithModifiersMap buffer_formats_with_modifiers =
@@ -98,6 +90,9 @@ void WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded(
 }
 
 void WaylandBufferManagerConnector::OnTerminateGpuProcess(std::string message) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+
+  DCHECK(!terminate_callback_.is_null());
   io_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(terminate_callback_),
                                                  std::move(message)));
 }

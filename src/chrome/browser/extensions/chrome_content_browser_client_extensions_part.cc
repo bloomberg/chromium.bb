@@ -145,17 +145,16 @@ RenderProcessHostPrivilege GetProcessPrivilege(
   return PRIV_EXTENSION;
 }
 
-const Extension* GetEnabledExtensionFromEffectiveURL(
-    BrowserContext* context,
-    const GURL& effective_url) {
-  if (!effective_url.SchemeIs(kExtensionScheme))
+const Extension* GetEnabledExtensionFromSiteURL(BrowserContext* context,
+                                                const GURL& site_url) {
+  if (!site_url.SchemeIs(kExtensionScheme))
     return nullptr;
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   if (!registry)
     return nullptr;
 
-  return registry->enabled_extensions().GetByID(effective_url.host());
+  return registry->enabled_extensions().GetByID(site_url.host());
 }
 
 bool HasEffectiveUrl(content::BrowserContext* browser_context,
@@ -266,9 +265,10 @@ bool ChromeContentBrowserClientExtensionsPart::
 
 // static
 bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
-    Profile* profile, const GURL& effective_url) {
+    Profile* profile,
+    const GURL& site_url) {
   const Extension* extension =
-      GetEnabledExtensionFromEffectiveURL(profile, effective_url);
+      GetEnabledExtensionFromSiteURL(profile, site_url);
   if (!extension)
     return false;
 
@@ -629,11 +629,12 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 
 // static
 void ChromeContentBrowserClientExtensionsPart::OverrideURLLoaderFactoryParams(
-    content::RenderProcessHost* process,
+    content::BrowserContext* browser_context,
     const url::Origin& origin,
+    bool is_for_isolated_world,
     network::mojom::URLLoaderFactoryParams* factory_params) {
-  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(process, origin,
-                                                          factory_params);
+  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
+      browser_context, origin, is_for_isolated_world, factory_params);
 }
 
 // static
@@ -676,7 +677,7 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
   // the hosted app's Extension from the site URL using GetExtensionOrAppByURL,
   // since it isn't treated as a hosted app.
   const Extension* extension =
-      GetEnabledExtensionFromEffectiveURL(context, site_instance->GetSiteURL());
+      GetEnabledExtensionFromSiteURL(context, site_instance->GetSiteURL());
   if (!extension)
     return;
 

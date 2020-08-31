@@ -11,15 +11,7 @@
 #include "rtc_base/network.h"
 
 #if defined(WEBRTC_POSIX)
-// linux/if.h can't be included at the same time as the posix sys/if.h, and
-// it's transitively required by linux/route.h, so include that version on
-// linux instead of the standard posix one.
-#if defined(WEBRTC_LINUX)
-#include <linux/if.h>
-#include <linux/route.h>
-#elif !defined(__native_client__)
 #include <net/if.h>
-#endif
 #endif  // WEBRTC_POSIX
 
 #if defined(WEBRTC_WIN)
@@ -29,8 +21,6 @@
 #elif !defined(__native_client__)
 #include "rtc_base/ifaddrs_converter.h"
 #endif
-
-#include <stdio.h>
 
 #include <memory>
 
@@ -45,6 +35,7 @@
 #include "rtc_base/string_utils.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/thread.h"
+#include "system_wrappers/include/field_trial.h"
 
 namespace rtc {
 namespace {
@@ -95,29 +86,10 @@ bool SortNetworks(const Network* a, const Network* b) {
   return a->key() < b->key();
 }
 
-std::string AdapterTypeToString(AdapterType type) {
-  switch (type) {
-    case ADAPTER_TYPE_ANY:
-      return "Wildcard";
-    case ADAPTER_TYPE_UNKNOWN:
-      return "Unknown";
-    case ADAPTER_TYPE_ETHERNET:
-      return "Ethernet";
-    case ADAPTER_TYPE_WIFI:
-      return "Wifi";
-    case ADAPTER_TYPE_CELLULAR:
-      return "Cellular";
-    case ADAPTER_TYPE_VPN:
-      return "VPN";
-    case ADAPTER_TYPE_LOOPBACK:
-      return "Loopback";
-    default:
-      RTC_NOTREACHED() << "Invalid type " << type;
-      return std::string();
-  }
-}
-
-uint16_t ComputeNetworkCostByType(int type) {
+uint16_t ComputeNetworkCostByType(int type,
+                                  bool use_differentiated_cellular_costs) {
+  // TODO(jonaso) : Rollout support for cellular network cost using A/B
+  // experiment to make sure it does not introduce regressions.
   switch (type) {
     case rtc::ADAPTER_TYPE_ETHERNET:
     case rtc::ADAPTER_TYPE_LOOPBACK:
@@ -125,7 +97,19 @@ uint16_t ComputeNetworkCostByType(int type) {
     case rtc::ADAPTER_TYPE_WIFI:
       return kNetworkCostLow;
     case rtc::ADAPTER_TYPE_CELLULAR:
-      return kNetworkCostHigh;
+      return kNetworkCostCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_2G:
+      return use_differentiated_cellular_costs ? kNetworkCostCellular2G
+                                               : kNetworkCostCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_3G:
+      return use_differentiated_cellular_costs ? kNetworkCostCellular3G
+                                               : kNetworkCostCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_4G:
+      return use_differentiated_cellular_costs ? kNetworkCostCellular4G
+                                               : kNetworkCostCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_5G:
+      return use_differentiated_cellular_costs ? kNetworkCostCellular5G
+                                               : kNetworkCostCellular;
     case rtc::ADAPTER_TYPE_ANY:
       // Candidates gathered from the any-address/wildcard ports, as backups,
       // are given the maximum cost so that if there are other candidates with
@@ -172,6 +156,18 @@ bool IsIgnoredIPv6(const InterfaceAddress& ip) {
   return false;
 }
 #endif  // !defined(__native_client__)
+
+// Note: consider changing to const Network* as arguments
+// if/when considering other changes that should not trigger
+// OnNetworksChanged.
+bool ShouldAdapterChangeTriggerNetworkChange(rtc::AdapterType old_type,
+                                             rtc::AdapterType new_type) {
+  // skip triggering OnNetworksChanged if
+  // changing from one cellular to another.
+  if (Network::IsCellular(old_type) && Network::IsCellular(new_type))
+    return false;
+  return true;
+}
 
 }  // namespace
 
@@ -376,8 +372,11 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
       merged_list.push_back(existing_net);
       if (net->type() != ADAPTER_TYPE_UNKNOWN &&
           net->type() != existing_net->type()) {
+        if (ShouldAdapterChangeTriggerNetworkChange(existing_net->type(),
+                                                    net->type())) {
+          *changed = true;
+        }
         existing_net->set_type(net->type());
-        *changed = true;
       }
       // If the existing network was not active, networks have changed.
       if (!existing_net->active()) {
@@ -472,10 +471,7 @@ Network* NetworkManagerBase::GetNetworkFromAddress(
 }
 
 BasicNetworkManager::BasicNetworkManager()
-    : thread_(nullptr),
-      sent_first_update_(false),
-      start_count_(0),
-      ignore_non_default_routes_(false) {}
+    : thread_(nullptr), sent_first_update_(false), start_count_(0) {}
 
 BasicNetworkManager::~BasicNetworkManager() {}
 
@@ -767,33 +763,6 @@ bool BasicNetworkManager::CreateNetworks(bool include_ignored,
 }
 #endif  // WEBRTC_WIN
 
-#if defined(WEBRTC_LINUX)
-bool IsDefaultRoute(const std::string& network_name) {
-  FILE* f = fopen("/proc/net/route", "r");
-  if (!f) {
-    RTC_LOG(LS_WARNING)
-        << "Couldn't read /proc/net/route, skipping default "
-        << "route check (assuming everything is a default route).";
-    return true;
-  }
-  bool is_default_route = false;
-  char line[500];
-  while (fgets(line, sizeof(line), f)) {
-    char iface_name[256];
-    unsigned int iface_ip, iface_gw, iface_mask, iface_flags;
-    if (sscanf(line, "%255s %8X %8X %4X %*d %*u %*d %8X", iface_name, &iface_ip,
-               &iface_gw, &iface_flags, &iface_mask) == 5 &&
-        network_name == iface_name && iface_mask == 0 &&
-        (iface_flags & (RTF_UP | RTF_HOST)) == RTF_UP) {
-      is_default_route = true;
-      break;
-    }
-  }
-  fclose(f);
-  return is_default_route;
-}
-#endif
-
 bool BasicNetworkManager::IsIgnoredNetwork(const Network& network) const {
   // Ignore networks on the explicit ignore list.
   for (const std::string& ignored_name : network_ignore_list_) {
@@ -810,12 +779,6 @@ bool BasicNetworkManager::IsIgnoredNetwork(const Network& network) const {
       strncmp(network.name().c_str(), "vboxnet", 7) == 0) {
     return true;
   }
-#if defined(WEBRTC_LINUX)
-  // Make sure this is a default route, if we're ignoring non-defaults.
-  if (ignore_non_default_routes_ && !IsDefaultRoute(network.name())) {
-    return true;
-  }
-#endif
 #elif defined(WEBRTC_WIN)
   // Ignore any HOST side vmware adapters with a description like:
   // VMware Virtual Ethernet Adapter for VMnet1
@@ -977,7 +940,9 @@ Network::Network(const std::string& name,
       scope_id_(0),
       ignored_(false),
       type_(ADAPTER_TYPE_UNKNOWN),
-      preference_(0) {}
+      preference_(0),
+      use_differentiated_cellular_costs_(webrtc::field_trial::IsEnabled(
+          "WebRTC-UseDifferentiatedCellularCosts")) {}
 
 Network::Network(const std::string& name,
                  const std::string& desc,
@@ -992,7 +957,9 @@ Network::Network(const std::string& name,
       scope_id_(0),
       ignored_(false),
       type_(type),
-      preference_(0) {}
+      preference_(0),
+      use_differentiated_cellular_costs_(webrtc::field_trial::IsEnabled(
+          "WebRTC-UseDifferentiatedCellularCosts")) {}
 
 Network::Network(const Network&) = default;
 
@@ -1064,7 +1031,7 @@ webrtc::MdnsResponderInterface* Network::GetMdnsResponder() const {
 
 uint16_t Network::GetCost() const {
   AdapterType type = IsVpn() ? underlying_type_for_vpn_ : type_;
-  return ComputeNetworkCostByType(type);
+  return ComputeNetworkCostByType(type, use_differentiated_cellular_costs_);
 }
 
 std::string Network::ToString() const {

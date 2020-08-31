@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -60,10 +60,14 @@ class MultiDeviceSetupDialogUI : public ui::MojoWebDialogUI {
   explicit MultiDeviceSetupDialogUI(content::WebUI* web_ui);
   ~MultiDeviceSetupDialogUI() override;
 
- private:
-  void BindMultiDeviceSetup(
+  // Instantiates implementor of the mojom::MultiDeviceSetup mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver);
+
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupDialogUI);
 };

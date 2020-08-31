@@ -5,14 +5,16 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.Context;
-import android.support.v4.widget.ImageViewCompat;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
+
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.ui.vr.VrModeProvider;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
@@ -32,7 +34,12 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     }
 
     // A delegate to notify when the dialog should close.
-    ContactsToolbarDelegate mDelegate;
+    private ContactsToolbarDelegate mDelegate;
+
+    // Whether any filter chips are selected. Default to true because all filter chips are selected
+    // by default when opening the dialog.
+    private boolean mFilterChipsSelected = true;
+
     public ContactsPickerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -51,6 +58,16 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
         setNavigationButton(NAVIGATION_BUTTON_BACK);
     }
 
+    /**
+     * Sets whether any filter chips are |selected| in the dialog.
+     */
+    public void setFilterChipsSelected(boolean selected) {
+        mFilterChipsSelected = selected;
+        updateToolbarUI();
+    }
+
+    // SelectableListToolbar:
+
     @Override
     public void onNavigationBack() {
         if (isSearching()) {
@@ -62,9 +79,10 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
 
     @Override
     public void initialize(SelectionDelegate<ContactDetails> delegate, int titleResId,
-            int normalGroupResId, int selectedGroupResId, boolean updateStatusBarColor) {
-        super.initialize(
-                delegate, titleResId, normalGroupResId, selectedGroupResId, updateStatusBarColor);
+            int normalGroupResId, int selectedGroupResId, boolean updateStatusBarColor,
+            VrModeProvider vrModeProvider) {
+        super.initialize(delegate, titleResId, normalGroupResId, selectedGroupResId,
+                updateStatusBarColor, vrModeProvider);
 
         showBackArrow();
     }
@@ -72,22 +90,34 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     @Override
     public void onSelectionStateChange(List<ContactDetails> selectedItems) {
         super.onSelectionStateChange(selectedItems);
+        updateToolbarUI();
+    }
 
-        int selectCount = selectedItems.size();
+    /**
+     * Update the UI elements of the toolbar, based on whether contacts & filter chips are selected.
+     */
+    private void updateToolbarUI() {
+        boolean contactsSelected = !mSelectionDelegate.getSelectedItems().isEmpty();
+
+        boolean doneEnabled = contactsSelected && mFilterChipsSelected;
         ButtonCompat done = findViewById(R.id.done);
-        done.setEnabled(selectCount > 0);
+        done.setEnabled(doneEnabled);
 
         AppCompatImageView search = findViewById(R.id.search);
         ImageViewCompat.setImageTintList(search,
                 useDarkIcons() ? getDarkIconColorStateList() : getLightIconColorStateList());
 
-        if (selectCount > 0) {
-            ApiCompatibilityUtils.setTextAppearance(done, R.style.TextAppearance_Body_Inverse);
+        if (doneEnabled) {
+            ApiCompatibilityUtils.setTextAppearance(
+                    done, R.style.TextAppearance_TextMedium_Primary_Inverse);
         } else {
             ApiCompatibilityUtils.setTextAppearance(
-                    done, R.style.TextAppearance_BlackDisabledText3);
-
-            showBackArrow();
+                    done, R.style.TextAppearance_TextMedium_Tertiary);
+            if (contactsSelected) {
+                setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
+            } else {
+                showBackArrow();
+            }
         }
     }
 }

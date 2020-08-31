@@ -9,6 +9,7 @@
 #include "src/heap/array-buffer-collector.h"
 #include "src/heap/array-buffer-tracker-inl.h"
 #include "src/heap/heap.h"
+#include "src/heap/memory-chunk-inl.h"
 #include "src/heap/spaces.h"
 
 #define TRACE_BS(...)                                  \
@@ -50,7 +51,7 @@ void LocalArrayBufferTracker::Process(Callback callback) {
           tracker = target_page->local_tracker();
         }
         DCHECK_NOT_NULL(tracker);
-        const size_t length = PerIsolateAccountingLength(old_buffer);
+        const size_t length = it->second->PerIsolateAccountingLength();
         // We should decrement before adding to avoid potential overflows in
         // the external memory counters.
         tracker->AddInternal(new_buffer, std::move(it->second));
@@ -60,8 +61,8 @@ void LocalArrayBufferTracker::Process(Callback callback) {
             static_cast<MemoryChunk*>(target_page), length);
       }
     } else if (result == kRemoveEntry) {
-      freed_memory += PerIsolateAccountingLength(old_buffer);
       auto backing_store = std::move(it->second);
+      freed_memory += backing_store->PerIsolateAccountingLength();
       TRACE_BS("ABT:queue bs=%p mem=%p (length=%zu) cnt=%ld\n",
                backing_store.get(), backing_store->buffer_start(),
                backing_store->byte_length(), backing_store.use_count());

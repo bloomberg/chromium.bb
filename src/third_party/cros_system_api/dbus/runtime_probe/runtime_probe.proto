@@ -27,12 +27,14 @@ enum ErrorCode {
 // Request from client that indicates what categories to probe. Category must
 // be existed on the per-board probe statement in rootfs.
 message ProbeRequest {
+  // Next tag: 5
   enum SupportCategory {
     // The name style here is on purposely align with factory probe output.
     audio_codec = 0;
     battery = 1;
     storage = 2;
     vpd_cached = 3;
+    network = 4;
   }
   repeated SupportCategory categories = 1;
   // This option allows clients to retrieve data with privacy implication from
@@ -168,8 +170,54 @@ message VpdCached {
   Fields values = 2;  // Component's details
 }
 
+// Things about network
+message Network {
+  message Fields {
+    // The path of this network in system. It is useful if caller needs to
+    // correlate with other information.
+    string path = 1;
+    // Network type, could be wireless / ethernet / cellular
+    string type = 2;
+    // Network bus, could be pci / usb / sdio
+    string bus_type = 3;
+
+    // The following are fields for PCI. Every field name comes with
+    // prefix "pci_".
+    // These fields are based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/include/linux/pci.h#267
+
+    // Vendor ID, 16 bits
+    uint32 pci_vendor_id = 4;
+    // Device ID, 16 bits
+    uint32 pci_device_id = 5;
+    // Device revision, 8 bits
+    uint32 pci_revision = 6;
+
+    // The following are fields for USB. Every field name comes with
+    // prefix "usb_".
+
+    // Vendor ID, 16 bits
+    uint32 usb_vendor_id = 7;
+    // Product ID, 16 bits
+    uint32 usb_product_id = 8;
+    // Device Release Number, 16 bits.
+    uint32 usb_bcd_device = 9;
+
+    // The following are fields for SDIO. Every field name comes with
+    // prefix "sdio_".
+
+    // Vendor ID, 16 bits
+    uint32 sdio_vendor_id = 10;
+    // Product ID, 16 bits
+    uint32 sdio_device_id = 11;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
 // A ProbeResult contains all potential probe results. For category not
 // existed or not requested for probing, field is expected to be empty.
+// Next tag: 8
 message ProbeResult {
   // If a call was successful, error will not be defined.
   // If a call failed, it must set an error code.
@@ -182,4 +230,5 @@ message ProbeResult {
   repeated Battery battery = 3;
   repeated Storage storage = 4;
   repeated VpdCached vpd_cached = 5;
+  repeated Network network = 7;
 }

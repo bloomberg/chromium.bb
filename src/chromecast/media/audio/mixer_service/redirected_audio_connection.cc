@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/net/io_buffer_pool.h"
@@ -65,6 +65,10 @@ void RedirectedAudioConnection::OnConnected(
   RedirectionRequest* request = message.mutable_redirection_request();
   request->set_order(config_.order);
   request->set_num_channels(config_.num_output_channels);
+  if (config_.output_channel_layout != media::ChannelLayout::UNSUPPORTED) {
+    request->set_channel_layout(
+        ConvertChannelLayout(config_.output_channel_layout));
+  }
   request->set_apply_volume(config_.apply_volume);
   request->set_extra_delay_microseconds(config_.extra_delay_microseconds);
 
@@ -85,17 +89,19 @@ bool RedirectedAudioConnection::HandleMetadata(const Generic& message) {
     sample_rate_ = message.stream_config().sample_rate();
     DCHECK_EQ(message.stream_config().num_channels(),
               config_.num_output_channels);
+
+    delegate_->SetSampleRate(sample_rate_);
   }
   return true;
 }
 
 bool RedirectedAudioConnection::HandleAudioData(char* data,
-                                                int size,
+                                                size_t size,
                                                 int64_t timestamp) {
   if (sample_rate_ != 0) {
     int frames = size / (sizeof(float) * config_.num_output_channels);
-    delegate_->OnRedirectedAudio(timestamp, sample_rate_,
-                                 reinterpret_cast<float*>(data), frames);
+    delegate_->OnRedirectedAudio(timestamp, reinterpret_cast<float*>(data),
+                                 frames);
   }
   return true;
 }

@@ -57,6 +57,51 @@ uint32_t GetWeakPingIntervalInFieldTrial() {
   return cricket::WEAK_PING_INTERVAL;
 }
 
+rtc::AdapterType GuessAdapterTypeFromNetworkCost(int network_cost) {
+  // The current network costs have been unchanged since they were added
+  // to webrtc. If they ever were to change we would need to reconsider
+  // this method.
+  switch (network_cost) {
+    case rtc::kNetworkCostMin:
+      return rtc::ADAPTER_TYPE_ETHERNET;
+    case rtc::kNetworkCostLow:
+      return rtc::ADAPTER_TYPE_WIFI;
+    case rtc::kNetworkCostCellular:
+      return rtc::ADAPTER_TYPE_CELLULAR;
+    case rtc::kNetworkCostCellular2G:
+      return rtc::ADAPTER_TYPE_CELLULAR_2G;
+    case rtc::kNetworkCostCellular3G:
+      return rtc::ADAPTER_TYPE_CELLULAR_3G;
+    case rtc::kNetworkCostCellular4G:
+      return rtc::ADAPTER_TYPE_CELLULAR_4G;
+    case rtc::kNetworkCostCellular5G:
+      return rtc::ADAPTER_TYPE_CELLULAR_5G;
+    case rtc::kNetworkCostUnknown:
+      return rtc::ADAPTER_TYPE_UNKNOWN;
+    case rtc::kNetworkCostMax:
+      return rtc::ADAPTER_TYPE_ANY;
+  }
+  return rtc::ADAPTER_TYPE_UNKNOWN;
+}
+
+rtc::RouteEndpoint CreateRouteEndpointFromCandidate(
+    bool local,
+    const cricket::Candidate& candidate,
+    bool uses_turn) {
+  auto adapter_type = candidate.network_type();
+  if (!local && adapter_type == rtc::ADAPTER_TYPE_UNKNOWN) {
+    adapter_type = GuessAdapterTypeFromNetworkCost(candidate.network_cost());
+  }
+
+  // TODO(bugs.webrtc.org/9446) : Rewrite if information about remote network
+  // adapter becomes available. The implication of this implementation is that
+  // we will only ever report 1 adapter per type. In practice this is probably
+  // fine, since the endpoint also contains network-id.
+  uint16_t adapter_id = static_cast<int>(adapter_type);
+  return rtc::RouteEndpoint(adapter_type, adapter_id, candidate.network_id(),
+                            uses_turn);
+}
+
 }  // unnamed namespace
 
 namespace cricket {
@@ -116,9 +161,9 @@ P2PTransportChannel::P2PTransportChannel(
   // Validate IceConfig even for mostly built-in constant default values in case
   // we change them.
   RTC_DCHECK(ValidateIceConfig(config_).ok());
-  webrtc::BasicRegatheringController::Config regathering_config(
-      config_.regather_all_networks_interval_range,
-      config_.regather_on_failed_networks_interval_or_default());
+  webrtc::BasicRegatheringController::Config regathering_config;
+  regathering_config.regather_on_failed_networks_interval =
+      config_.regather_on_failed_networks_interval_or_default();
   regathering_controller_ =
       std::make_unique<webrtc::BasicRegatheringController>(
           regathering_config, this, network_thread_);
@@ -129,8 +174,7 @@ P2PTransportChannel::P2PTransportChannel(
   ice_event_log_.set_event_log(event_log);
 
   IceControllerFactoryArgs args{
-      [this] { return GetState(); },
-      [this] { return GetIceRole(); },
+      [this] { return GetState(); }, [this] { return GetIceRole(); },
       [this](const Connection* connection) {
         // TODO(webrtc:10647/jonaso): Figure out a way to remove friendship
         // between P2PTransportChannel and Connection.
@@ -138,7 +182,7 @@ P2PTransportChannel::P2PTransportChannel(
                IsRemoteCandidatePruned(connection->remote_candidate());
       },
       &field_trials_,
-  };
+      webrtc::field_trial::FindFullName("WebRTC-IceControllerFieldTrials")};
   if (ice_controller_factory != nullptr) {
     ice_controller_ = ice_controller_factory->Create(args);
   } else {
@@ -538,18 +582,6 @@ void P2PTransportChannel::SetIceConfig(const IceConfig& config) {
         << config_.regather_on_failed_networks_interval_or_default();
   }
 
-  if (config_.regather_all_networks_interval_range !=
-      config.regather_all_networks_interval_range) {
-    // Config validation is assumed to have already happened at the API layer.
-    RTC_DCHECK(config.continual_gathering_policy != GATHER_ONCE);
-    config_.regather_all_networks_interval_range =
-        config.regather_all_networks_interval_range;
-    RTC_LOG(LS_INFO) << "Set regather_all_networks_interval_range to "
-                     << config.regather_all_networks_interval_range
-                            .value_or(rtc::IntervalRange(-1, 0))
-                            .ToString();
-  }
-
   if (config_.receiving_switching_delay != config.receiving_switching_delay) {
     config_.receiving_switching_delay = config.receiving_switching_delay;
     RTC_LOG(LS_INFO) << "Set receiving_switching_delay to "
@@ -641,14 +673,38 @@ void P2PTransportChannel::SetIceConfig(const IceConfig& config) {
   }
 
   webrtc::StructParametersParser::Create(
+      // go/skylift-light
       "skip_relay_to_non_relay_connections",
       &field_trials_.skip_relay_to_non_relay_connections,
+      // Limiting pings sent.
       "max_outstanding_pings", &field_trials_.max_outstanding_pings,
+      // Delay initial selection of connection.
       "initial_select_dampening", &field_trials_.initial_select_dampening,
+      // Delay initial selection of connections, that are receiving.
       "initial_select_dampening_ping_received",
       &field_trials_.initial_select_dampening_ping_received,
-      "rtt_estimate_halftime_ms", &field_trials_.rtt_estimate_halftime_ms)
+      // Reply that we support goog ping.
+      "announce_goog_ping", &field_trials_.announce_goog_ping,
+      // Use goog ping if remote support it.
+      "enable_goog_ping", &field_trials_.enable_goog_ping,
+      // How fast does a RTT sample decay.
+      "rtt_estimate_halftime_ms", &field_trials_.rtt_estimate_halftime_ms,
+      // Make sure that nomination reaching ICE controlled asap.
+      "send_ping_on_switch_ice_controlling",
+      &field_trials_.send_ping_on_switch_ice_controlling,
+      // Reply to nomination ASAP.
+      "send_ping_on_nomination_ice_controlled",
+      &field_trials_.send_ping_on_nomination_ice_controlled,
+      // Allow connections to live untouched longer that 30s.
+      "dead_connection_timeout_ms", &field_trials_.dead_connection_timeout_ms)
       ->Parse(webrtc::field_trial::FindFullName("WebRTC-IceFieldTrials"));
+
+  if (field_trials_.dead_connection_timeout_ms < 30000) {
+    RTC_LOG(LS_WARNING) << "dead_connection_timeout_ms set to "
+                        << field_trials_.dead_connection_timeout_ms
+                        << " increasing it to 30000";
+    field_trials_.dead_connection_timeout_ms = 30000;
+  }
 
   if (field_trials_.skip_relay_to_non_relay_connections) {
     RTC_LOG(LS_INFO) << "Set skip_relay_to_non_relay_connections";
@@ -669,9 +725,9 @@ void P2PTransportChannel::SetIceConfig(const IceConfig& config) {
                      << *field_trials_.initial_select_dampening_ping_received;
   }
 
-  webrtc::BasicRegatheringController::Config regathering_config(
-      config_.regather_all_networks_interval_range,
-      config_.regather_on_failed_networks_interval_or_default());
+  webrtc::BasicRegatheringController::Config regathering_config;
+  regathering_config.regather_on_failed_networks_interval =
+      config_.regather_on_failed_networks_interval_or_default();
   regathering_controller_->SetConfig(regathering_config);
 
   ice_controller_->SetIceConfig(config_);
@@ -688,13 +744,6 @@ const IceConfig& P2PTransportChannel::config() const {
 // PeerConnection::SetConfiguration.
 // Static
 RTCError P2PTransportChannel::ValidateIceConfig(const IceConfig& config) {
-  if (config.regather_all_networks_interval_range &&
-      config.continual_gathering_policy == GATHER_ONCE) {
-    return RTCError(RTCErrorType::INVALID_PARAMETER,
-                    "regather_all_networks_interval_range specified but "
-                    "continual gathering policy is GATHER_ONCE");
-  }
-
   if (config.ice_check_interval_strong_connectivity_or_default() <
       config.ice_check_interval_weak_connectivity.value_or(
           GetWeakPingIntervalInFieldTrial())) {
@@ -733,13 +782,6 @@ RTCError P2PTransportChannel::ValidateIceConfig(const IceConfig& config) {
     return RTCError(RTCErrorType::INVALID_PARAMETER,
                     "The timeout period for the writability state to become "
                     "UNRELIABLE is longer than that to become TIMEOUT.");
-  }
-
-  if (config.regather_all_networks_interval_range &&
-      config.regather_all_networks_interval_range.value().min() < 0) {
-    return RTCError(
-        RTCErrorType::INVALID_RANGE,
-        "The minimum regathering interval for all networks is negative.");
   }
 
   return RTCError::OK();
@@ -982,6 +1024,9 @@ void P2PTransportChannel::OnUnknownAddress(PortInterface* port,
         component(), ProtoToString(proto), address, remote_candidate_priority,
         remote_username, remote_password, PRFLX_PORT_TYPE, remote_generation,
         "", network_id, network_cost);
+    if (proto == PROTO_TCP) {
+      remote_candidate.set_tcptype(TCPTYPE_ACTIVE_STR);
+    }
 
     // From RFC 5245, section-7.2.1.3:
     // The foundation of the candidate is set to an arbitrary value, different
@@ -1028,7 +1073,7 @@ void P2PTransportChannel::OnUnknownAddress(PortInterface* port,
                                                : "resurrected")
                    << " candidate: " << remote_candidate.ToSensitiveString();
   AddConnection(connection);
-  connection->HandleBindingRequest(stun_msg);
+  connection->HandleStunBindingOrGoogPingRequest(stun_msg);
 
   // Update the list of connections since we just added another.  We do this
   // after sending the response since it could (in principle) delete the
@@ -1077,6 +1122,11 @@ void P2PTransportChannel::OnNominated(Connection* conn) {
     return;
   }
 
+  if (field_trials_.send_ping_on_nomination_ice_controlled && conn != nullptr) {
+    PingConnection(conn);
+    MarkConnectionPinged(conn);
+  }
+
   // TODO(qingsi): RequestSortAndStateUpdate will eventually call
   // MaybeSwitchSelectedConnection again. Rewrite this logic.
   if (MaybeSwitchSelectedConnection(
@@ -1096,7 +1146,7 @@ void P2PTransportChannel::ResolveHostnameCandidate(const Candidate& candidate) {
   RTC_DCHECK_RUN_ON(network_thread_);
   if (!async_resolver_factory_) {
     RTC_LOG(LS_WARNING) << "Dropping ICE candidate with hostname address "
-                        << "(no AsyncResolverFactory)";
+                           "(no AsyncResolverFactory)";
     return;
   }
 
@@ -1693,18 +1743,30 @@ void P2PTransportChannel::SwitchSelectedConnection(Connection* conn,
 
     network_route_.emplace(rtc::NetworkRoute());
     network_route_->connected = ReadyToSend(selected_connection_);
-    network_route_->local_network_id =
-        selected_connection_->local_candidate().network_id();
-    network_route_->remote_network_id =
-        selected_connection_->remote_candidate().network_id();
+    network_route_->local = CreateRouteEndpointFromCandidate(
+        /* local= */ true, selected_connection_->local_candidate(),
+        /* uses_turn= */ selected_connection_->port()->Type() ==
+            RELAY_PORT_TYPE);
+    network_route_->remote = CreateRouteEndpointFromCandidate(
+        /* local= */ false, selected_connection_->remote_candidate(),
+        /* uses_turn= */ selected_connection_->remote_candidate().type() ==
+            RELAY_PORT_TYPE);
+
     network_route_->last_sent_packet_id = last_sent_packet_id_;
     network_route_->packet_overhead =
-        GetIpOverhead(
-            selected_connection_->local_candidate().address().family()) +
+        selected_connection_->local_candidate().address().ipaddr().overhead() +
         GetProtocolOverhead(selected_connection_->local_candidate().protocol());
   } else {
     RTC_LOG(LS_INFO) << ToString() << ": No selected connection";
   }
+
+  if (field_trials_.send_ping_on_switch_ice_controlling &&
+      ice_role_ == ICEROLE_CONTROLLING && old_selected_connection != nullptr &&
+      conn != nullptr) {
+    PingConnection(conn);
+    MarkConnectionPinged(conn);
+  }
+
   SignalNetworkRouteChanged(network_route_);
 
   // Create event for candidate pair change.
@@ -1764,7 +1826,8 @@ void P2PTransportChannel::UpdateState() {
         // TODO(deadbeef): Once we implement end-of-candidates signaling,
         // we shouldn't go from INIT to COMPLETED.
         RTC_DCHECK(state == IceTransportState::STATE_CONNECTING ||
-                   state == IceTransportState::STATE_COMPLETED);
+                   state == IceTransportState::STATE_COMPLETED ||
+                   state == IceTransportState::STATE_FAILED);
         break;
       case IceTransportState::STATE_CONNECTING:
         RTC_DCHECK(state == IceTransportState::STATE_COMPLETED ||
@@ -1844,8 +1907,9 @@ void P2PTransportChannel::CheckAndPing() {
   UpdateConnectionStates();
 
   auto result = ice_controller_->SelectConnectionToPing(last_ping_sent_ms_);
-  Connection* conn = result.first;
-  int delay = result.second;
+  Connection* conn =
+      const_cast<Connection*>(result.connection.value_or(nullptr));
+  int delay = result.recheck_delay_ms;
 
   if (conn) {
     PingConnection(conn);

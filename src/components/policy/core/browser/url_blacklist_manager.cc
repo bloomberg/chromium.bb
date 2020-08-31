@@ -13,18 +13,20 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -69,6 +71,14 @@ const char* kBypassBlacklistWildcardForSchemes[] = {
   "chrome-search",
 };
 
+#if defined(OS_IOS)
+// The two schemes used on iOS for the NTP.
+constexpr char kIosNtpAboutScheme[] = "about";
+constexpr char kIosNtpChromeScheme[] = "chrome";
+// The host string used on iOS for the NTP.
+constexpr char kIosNtpHost[] = "newtab";
+#endif
+
 // Returns a blacklist based on the given |block| and |allow| pattern lists.
 std::unique_ptr<URLBlacklist> BuildBlacklist(const base::ListValue* block,
                                              const base::ListValue* allow) {
@@ -84,6 +94,21 @@ bool BypassBlacklistWildcardForURL(const GURL& url) {
     if (scheme == kBypassBlacklistWildcardForSchemes[i])
       return true;
   }
+#if defined(OS_IOS)
+  // Compare the chrome scheme and host against the chrome://newtab version of
+  // the NTP URL.
+  if (scheme == kIosNtpChromeScheme && url.host() == kIosNtpHost) {
+    return true;
+  }
+  // Compare the URL scheme and path to the about:newtab version of the NTP URL.
+  // Leading and trailing slashes must be removed because the host name is
+  // parsed as the URL path (which may contain slashes).
+  base::StringPiece trimmed_path =
+      base::TrimString(url.path(), "/", base::TrimPositions::TRIM_ALL);
+  if (scheme == kIosNtpAboutScheme && trimmed_path == kIosNtpHost) {
+    return true;
+  }
+#endif
   return false;
 }
 
@@ -175,12 +200,12 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // This class assumes that it is created on the same thread that
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  background_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT});
+  background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT});
 
   pref_change_registrar_.Init(pref_service_);
-  base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
-                                      base::Unretained(this));
+  base::RepeatingClosure callback = base::BindRepeating(
+      &URLBlacklistManager::ScheduleUpdate, base::Unretained(this));
   pref_change_registrar_.Add(policy_prefs::kUrlBlacklist, callback);
   pref_change_registrar_.Add(policy_prefs::kUrlWhitelist, callback);
 

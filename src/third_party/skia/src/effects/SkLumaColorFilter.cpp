@@ -10,6 +10,7 @@
 #include "include/private/SkColorData.h"
 #include "src/core/SkEffectPriv.h"
 #include "src/core/SkRasterPipeline.h"
+#include "src/core/SkVM.h"
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
@@ -23,6 +24,17 @@ bool SkLumaColorFilter::onAppendStages(const SkStageRec& rec, bool shaderIsOpaqu
     rec.fPipeline->append(SkRasterPipeline::clamp_0);
     rec.fPipeline->append(SkRasterPipeline::clamp_1);
     return true;
+}
+
+skvm::Color SkLumaColorFilter::onProgram(skvm::Builder* p, skvm::Color c,
+                                         SkColorSpace* dstCS,
+                                         skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
+    return {
+        p->splat(0.0f),
+        p->splat(0.0f),
+        p->splat(0.0f),
+        clamp01(c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f),
+    };
 }
 
 sk_sp<SkColorFilter> SkLumaColorFilter::Make() {

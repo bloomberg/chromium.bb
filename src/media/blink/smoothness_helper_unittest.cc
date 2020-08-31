@@ -45,10 +45,11 @@ using testing::Return;
 class SmoothnessHelperTest : public testing::Test {
   class MockLearningTaskController : public LearningTaskController {
    public:
-    MOCK_METHOD3(BeginObservation,
+    MOCK_METHOD4(BeginObservation,
                  void(base::UnguessableToken id,
                       const FeatureVector& features,
-                      const base::Optional<TargetValue>& default_target));
+                      const base::Optional<TargetValue>& default_target,
+                      const base::Optional<ukm::SourceId>& source_id));
 
     MOCK_METHOD2(CompleteObservation,
                  void(base::UnguessableToken id,
@@ -61,6 +62,8 @@ class SmoothnessHelperTest : public testing::Test {
                       const base::Optional<TargetValue>& default_target));
 
     MOCK_METHOD0(GetLearningTask, const LearningTask&());
+    MOCK_METHOD2(PredictDistribution,
+                 void(const FeatureVector& features, PredictionCB callback));
   };
 
   class MockClient : public SmoothnessHelper::Client {
@@ -73,10 +76,13 @@ class SmoothnessHelperTest : public testing::Test {
 
  public:
   void SetUp() override {
-    auto ltc = std::make_unique<MockLearningTaskController>();
-    ltc_ = ltc.get();
+    auto bad_ltc = std::make_unique<MockLearningTaskController>();
+    bad_ltc_ = bad_ltc.get();
+    auto nnr_ltc = std::make_unique<MockLearningTaskController>();
+    nnr_ltc_ = nnr_ltc.get();
     features_.push_back(FeatureValue(123));
-    helper_ = SmoothnessHelper::Create(std::move(ltc), features_, &client_);
+    helper_ = SmoothnessHelper::Create(std::move(bad_ltc), std::move(nnr_ltc),
+                                       features_, &client_);
     segment_size_ = SmoothnessHelper::SegmentSizeForTesting();
   }
 
@@ -99,101 +105,104 @@ class SmoothnessHelperTest : public testing::Test {
   // Helper under test
   std::unique_ptr<SmoothnessHelper> helper_;
 
-  MockLearningTaskController* ltc_ = nullptr;
+  // Max bad consecutive windows by frame drop LTC.
+  MockLearningTaskController* bad_ltc_;
+
+  // Max consecutive NNRs LTC.
+  MockLearningTaskController* nnr_ltc_;
+
   MockClient client_;
   FeatureVector features_;
 
   base::TimeDelta segment_size_;
 };
 
-TEST_F(SmoothnessHelperTest, PauseWithoutPlayDoesNothing) {
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(0);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
+TEST_F(SmoothnessHelperTest, FeaturesAreReturned) {
+  EXPECT_EQ(features_, helper_->features());
 }
 
-TEST_F(SmoothnessHelperTest, PlayThenImmediatePauseCancelsObservation) {
-  // If not enough time has elapsed, play then pause shouldn't record anything.
-  // Note that Begin then Cancel would be okay too, but it's hard to set
-  // expectations for either case.  So, we just pick the one that it actually
-  // does in this case.
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(0);
-  helper_->NotifyPlayState(true);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, PlayRecordsWorstSegment) {
-  // Record three segments, and see if it chooses the worst.
+TEST_F(SmoothnessHelperTest, MaxBadWindowsRecordsTrue) {
+  // Record three bad segments, and verify that it records 'true'.
   SetFrameCounters(0, 0);
-  helper_->NotifyPlayState(true);
   base::RunLoop().RunUntilIdle();
+  int dropped_frames = 0;
+  int total_frames = 0;
 
-  // First segment has no dropped frames..
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, OPT_TARGET(Eq(0.0)))).Times(1);
-  SetFrameCounters(0, 1000);
+  // First segment has no dropped frames.  Should record 0.
+  EXPECT_CALL(*bad_ltc_, BeginObservation(_, _, OPT_TARGET(0.0), _)).Times(1);
+  SetFrameCounters(dropped_frames += 0, total_frames += 1000);
   FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(bad_ltc_);
 
-  // Second segment has quite a lot of dropped frames.
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, OPT_TARGET(Gt(0.99)))).Times(1);
-  SetFrameCounters(999, 2000);
+  // Second segment has a lot of dropped frames, so the target should increase.
+  EXPECT_CALL(*bad_ltc_, UpdateDefaultTarget(_, OPT_TARGET(1.0))).Times(1);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
   FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(bad_ltc_);
 
-  // Third segment has no dropped frames, so the default shouldn't change.
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, OPT_TARGET(Gt(0.99)))).Times(1);
-  SetFrameCounters(999, 3000);
+  // Third segment looks nice, so nothing should update.
+  EXPECT_CALL(*bad_ltc_, UpdateDefaultTarget(_, OPT_TARGET(_))).Times(0);
+  SetFrameCounters(dropped_frames += 0, total_frames += 1000);
   FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(bad_ltc_);
 
-  EXPECT_CALL(*ltc_, CompleteObservation(_, COMPLETION_TARGET(Gt(0.99))))
-      .Times(1);
-  helper_->NotifyPlayState(false);
+  // Fourth segment has dropped frames, but the default shouldn't change.
+  // It's okay if it changes to the same value, but we just memorize that it
+  // won't change at all.
+  EXPECT_CALL(*bad_ltc_, UpdateDefaultTarget(_, OPT_TARGET(_))).Times(0);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
+  FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(bad_ltc_);
+
+  // The last segment is also bad, and should increase the max.
+  EXPECT_CALL(*bad_ltc_, UpdateDefaultTarget(_, OPT_TARGET(2.0))).Times(1);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
+  FastForwardBy(segment_size_);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(bad_ltc_);
 }
 
-TEST_F(SmoothnessHelperTest, PlayIgnoresTrailingPartialSegments) {
-  helper_->NotifyPlayState(true);
-  base::RunLoop().RunUntilIdle();
-
-  // First segment has no dropped frames.
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, OPT_TARGET(Eq(0.0)))).Times(1);
-  SetFrameCounters(0, 1000);
+TEST_F(SmoothnessHelperTest, NNRTaskRecordsMaxNNRs) {
+  // We should get the first target once a window has elapsed.  We need some
+  // decoded frames before anything happens.
+  SetFrameCounters(0, 1);
+  EXPECT_CALL(*nnr_ltc_, BeginObservation(_, _, OPT_TARGET(0.0), _)).Times(1);
   FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
-
-  // Second segment has a lot of dropped frames, but isn't a full segment.
-  SetFrameCounters(1000, 2000);
-  FastForwardBy(segment_size_ / 2);
-  base::RunLoop().RunUntilIdle();
-
-  // On completion, we the observation should have no dropped frames.
-  EXPECT_CALL(*ltc_, CompleteObservation(_, COMPLETION_TARGET(Lt(0.1))))
-      .Times(1);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, DestructionRecordsObservations) {
-  // Destroying |helper_| should not send any observation; the last default
-  // value should be used.
-  helper_->NotifyPlayState(true);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(AnyNumber());
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, _)).Times(AnyNumber());
-  EXPECT_CALL(*ltc_, CancelObservation(_)).Times(0);
-  EXPECT_CALL(*ltc_, CompleteObservation(_, _)).Times(0);
-
-  // Fast forward so that we're sure that there is something to record.
-  SetFrameCounters(0, 1000);
   FastForwardBy(segment_size_);
-  SetFrameCounters(0, 2000);
-  FastForwardBy(segment_size_);
-  helper_.reset();
-
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(nnr_ltc_);
+
+  // Add some NNRs, which should be reported immediately now that a segment
+  // has started.  Note that we don't care if NNRs are reported before a segment
+  // is started, because it's not really clear which behavior is right anyway.
+  EXPECT_CALL(*nnr_ltc_, UpdateDefaultTarget(_, OPT_TARGET(1))).Times(1);
+  helper_->NotifyNNR();
+  testing::Mock::VerifyAndClearExpectations(nnr_ltc_);
+
+  // Advance time by one window, and add an NNR.  It's close enough that we
+  // should be notified that the max went up.
+  FastForwardBy(segment_size_);
+  EXPECT_CALL(*nnr_ltc_, UpdateDefaultTarget(_, OPT_TARGET(2))).Times(1);
+  helper_->NotifyNNR();
+  testing::Mock::VerifyAndClearExpectations(nnr_ltc_);
+
+  // Fast forward by a lot, so that the next NNR isn't consecutive.  Nothing
+  // should be reported, because it's less than the current maximum.
+  EXPECT_CALL(*nnr_ltc_, UpdateDefaultTarget(_, OPT_TARGET(_))).Times(0);
+  FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  helper_->NotifyNNR();
+  // It might be okay if this reported 2, since it's a tie.
+  helper_->NotifyNNR();
+  testing::Mock::VerifyAndClearExpectations(nnr_ltc_);
+
+  // The next NNR should advance the maximum to 3.
+  EXPECT_CALL(*nnr_ltc_, UpdateDefaultTarget(_, OPT_TARGET(3))).Times(1);
+  helper_->NotifyNNR();
 }
 
 }  // namespace media

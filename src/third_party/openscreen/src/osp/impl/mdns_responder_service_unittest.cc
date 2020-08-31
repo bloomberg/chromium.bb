@@ -24,12 +24,12 @@ namespace osp {
 class TestingMdnsResponderService final : public MdnsResponderService {
  public:
   TestingMdnsResponderService(
-      platform::FakeTaskRunner* task_runner,
+      FakeTaskRunner* task_runner,
       const std::string& service_name,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform_service)
-      : MdnsResponderService(&platform::FakeClock::now,
+      : MdnsResponderService(&FakeClock::now,
                              task_runner,
                              service_name,
                              service_protocol,
@@ -172,10 +172,10 @@ class MockServicePublisherObserver final : public ServicePublisher::Observer {
   MOCK_METHOD1(OnMetrics, void(ServicePublisher::Metrics));
 };
 
-platform::UdpSocket* const kDefaultSocket =
-    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(16));
-platform::UdpSocket* const kSecondSocket =
-    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(24));
+UdpSocket* const kDefaultSocket =
+    reinterpret_cast<UdpSocket*>(static_cast<uintptr_t>(16));
+UdpSocket* const kSecondSocket =
+    reinterpret_cast<UdpSocket*>(static_cast<uintptr_t>(24));
 
 class MdnsResponderServiceTest : public ::testing::Test {
  protected:
@@ -184,8 +184,8 @@ class MdnsResponderServiceTest : public ::testing::Test {
         std::make_unique<FakeMdnsResponderAdapterFactory>();
     auto wrapper_factory = std::make_unique<WrapperMdnsResponderAdapterFactory>(
         mdns_responder_factory_.get());
-    clock_ = std::make_unique<platform::FakeClock>(platform::Clock::now());
-    task_runner_ = std::make_unique<platform::FakeTaskRunner>(clock_.get());
+    clock_ = std::make_unique<FakeClock>(Clock::now());
+    task_runner_ = std::make_unique<FakeTaskRunner>(clock_.get());
     auto platform_service = std::make_unique<FakeMdnsPlatformService>();
     fake_platform_service_ = platform_service.get();
     fake_platform_service_->set_interfaces(bound_interfaces_);
@@ -202,8 +202,8 @@ class MdnsResponderServiceTest : public ::testing::Test {
         &publisher_observer_, mdns_service_.get());
   }
 
-  std::unique_ptr<platform::FakeClock> clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   MockServiceListenerObserver observer_;
   FakeMdnsPlatformService* fake_platform_service_;
   std::unique_ptr<FakeMdnsResponderAdapterFactory> mdns_responder_factory_;
@@ -213,22 +213,22 @@ class MdnsResponderServiceTest : public ::testing::Test {
   std::unique_ptr<ServicePublisherImpl> service_publisher_;
   const uint8_t default_mac_[6] = {0, 11, 22, 33, 44, 55};
   const uint8_t second_mac_[6] = {55, 33, 22, 33, 44, 77};
-  const platform::IPSubnet default_subnet_{IPAddress{192, 168, 3, 2}, 24};
-  const platform::IPSubnet second_subnet_{IPAddress{10, 0, 0, 3}, 24};
+  const IPSubnet default_subnet_{IPAddress{192, 168, 3, 2}, 24};
+  const IPSubnet second_subnet_{IPAddress{10, 0, 0, 3}, 24};
   std::vector<MdnsPlatformService::BoundInterface> bound_interfaces_{
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{1,
-                                  default_mac_,
-                                  "eth0",
-                                  platform::InterfaceInfo::Type::kEthernet,
-                                  {default_subnet_}},
+          InterfaceInfo{1,
+                        default_mac_,
+                        "eth0",
+                        InterfaceInfo::Type::kEthernet,
+                        {default_subnet_}},
           default_subnet_, kDefaultSocket},
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{2,
-                                  second_mac_,
-                                  "eth1",
-                                  platform::InterfaceInfo::Type::kEthernet,
-                                  {second_subnet_}},
+          InterfaceInfo{2,
+                        second_mac_,
+                        "eth1",
+                        InterfaceInfo::Type::kEthernet,
+                        {second_subnet_}},
           second_subnet_, kSecondSocket},
   };
 };
@@ -284,10 +284,9 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
 
 TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
   constexpr uint8_t mac[6] = {12, 34, 56, 78, 90};
-  const platform::IPSubnet subnet{IPAddress{10, 0, 0, 2}, 24};
+  const IPSubnet subnet{IPAddress{10, 0, 0, 2}, 24};
   bound_interfaces_.emplace_back(
-      platform::InterfaceInfo{
-          2, mac, "wlan0", platform::InterfaceInfo::Type::kWifi, {subnet}},
+      InterfaceInfo{2, mac, "wlan0", InterfaceInfo::Type::kWifi, {subnet}},
       subnet, kSecondSocket);
   fake_platform_service_->set_interfaces(bound_interfaces_);
   EXPECT_CALL(observer_, OnStarted());

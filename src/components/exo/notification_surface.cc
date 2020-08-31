@@ -4,12 +4,10 @@
 
 #include "components/exo/notification_surface.h"
 
-#include "ash/public/cpp/app_types.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,8 +22,7 @@ NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
       notification_key_(notification_key) {
   surface->AddSurfaceObserver(this);
   SetRootSurface(surface);
-  host_window()->SetProperty(aura::client::kAppType,
-                             static_cast<int>(ash::AppType::ARC_APP));
+  SetArcAppType(host_window());
   host_window()->Show();
   host_window()->AddObserver(this);
 }
@@ -98,7 +95,7 @@ void NotificationSurface::OnWindowRemovingFromRootWindow(
     // compositor frame when showing the message center. This is to prevent
     // flashes when opening the message center.
     aura::Env::GetInstance()
-        ->context_factory_private()
+        ->context_factory()
         ->GetHostFrameSinkManager()
         ->EvictSurfaces({host_window()->GetSurfaceId()});
 

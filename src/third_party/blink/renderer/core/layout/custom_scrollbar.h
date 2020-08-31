@@ -45,10 +45,6 @@ class LayoutObject;
 // LayoutCustomScrollbarPart.
 class CustomScrollbar final : public Scrollbar {
  public:
-  static Scrollbar* CreateCustomScrollbar(ScrollableArea*,
-                                          ScrollbarOrientation,
-                                          Element*);
-
   CustomScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);
   ~CustomScrollbar() override;
 
@@ -77,7 +73,7 @@ class CustomScrollbar final : public Scrollbar {
 
   void SetVisualRect(const IntRect&) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Scrollbar;
@@ -94,8 +90,9 @@ class CustomScrollbar final : public Scrollbar {
 
   void UpdateScrollbarParts(bool destroy = false);
 
-  scoped_refptr<ComputedStyle> GetScrollbarPseudoElementStyle(ScrollbarPart,
-                                                              PseudoId);
+  scoped_refptr<const ComputedStyle> GetScrollbarPseudoElementStyle(
+      ScrollbarPart,
+      PseudoId);
   void UpdateScrollbarPart(ScrollbarPart, bool destroy = false);
 
   HashMap<unsigned, LayoutCustomScrollbarPart*> parts_;

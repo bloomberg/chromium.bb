@@ -11,6 +11,7 @@
 @protocol ApplicationCommands;
 class Browser;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @protocol SettingsMainPageCommands;
 @class SigninInteractionController;
 
@@ -18,22 +19,15 @@ class Browser;
 @interface SettingsTableViewController
     : SettingsRootTableViewController <SettingsControllerProtocol>
 
-// Dispatcher for SettingsMainPageCommands. Defaults to self if not set.
-// TODO(crbug.com/738881): Unify this with the dispatcher passed into the init.
-@property(weak, nonatomic) id<SettingsMainPageCommands>
-    settingsMainPageDispatcher;
-
 // Initializes a new SettingsTableViewController. |browser| must not
 // be nil and must not be associated with an off the record browser state.
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithBrowser:(Browser*)browser
+         dispatcher:
+             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
+                 dispatcher NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 - (instancetype)init NS_UNAVAILABLE;
 

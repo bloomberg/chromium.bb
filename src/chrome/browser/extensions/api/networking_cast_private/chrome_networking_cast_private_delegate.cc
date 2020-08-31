@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -133,12 +136,11 @@ void ChromeNetworkingCastPrivateDelegate::VerifyDestination(
     std::unique_ptr<Credentials> credentials,
     const VerifiedCallback& success_callback,
     const FailureCallback& failure_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&RunDecodeAndVerifyCredentials, base::Passed(&credentials)),
-      base::Bind(&VerifyDestinationCompleted, success_callback,
-                 failure_callback));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&RunDecodeAndVerifyCredentials, std::move(credentials)),
+      base::BindOnce(&VerifyDestinationCompleted, success_callback,
+                     failure_callback));
 }
 
 void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(
@@ -146,12 +148,11 @@ void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(
     std::unique_ptr<Credentials> credentials,
     const DataCallback& success_callback,
     const FailureCallback& failure_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&RunVerifyAndEncryptData, data, base::Passed(&credentials)),
-      base::Bind(&VerifyAndEncryptDataCompleted, success_callback,
-                 failure_callback));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&RunVerifyAndEncryptData, data, std::move(credentials)),
+      base::BindOnce(&VerifyAndEncryptDataCompleted, success_callback,
+                     failure_callback));
 }
 
 }  // namespace extensions

@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+	-fvisibility=hidden \
 	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)/amdgpu \
 	-I $(top_srcdir) \
@@ -32,4 +33,6 @@ amdgpu_test_SOURCES = \
 	vcn_tests.c \
 	uve_ib.h \
 	deadlock_tests.c \
-	vm_tests.c
+	vm_tests.c	\
+	ras_tests.c \
+	syncobj_tests.c

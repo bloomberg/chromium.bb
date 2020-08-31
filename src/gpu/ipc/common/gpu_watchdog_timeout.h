@@ -17,12 +17,15 @@ namespace gpu {
 #if defined(CYGPROFILE_INSTRUMENTATION)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
     base::TimeDelta::FromSeconds(30);
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(15);
+    base::TimeDelta::FromSeconds(25);
+#elif defined(OS_WIN)
+constexpr base::TimeDelta kGpuWatchdogTimeout =
+    base::TimeDelta::FromSeconds(30);
 #else
 constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(10);
+    base::TimeDelta::FromSeconds(15);
 #endif
 
 // It usually takes longer to finish a GPU task when the system just resumes

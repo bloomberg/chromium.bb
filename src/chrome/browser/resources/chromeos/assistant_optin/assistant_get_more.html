@@ -4,25 +4,28 @@
 
 <dom-module id="assistant-get-more">
   <template>
-    <link rel="stylesheet" href="../login/oobe_dialog_host.css">
-    <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="assistant_get_more.css">
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
         no-footer-padding no-header
-        i18n-values="aria-label:assistantReadyTitle">
+        aria-label$="[[i18nDynamic(locale, 'assistantReadyTitle')]]">
       <div slot="footer">
         <div class="container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
-          <div class="title" i18n-content="assistantReadyTitle"></div>
-          <div class="content" id="intro-text"
-              i18n-content="assistantReadyMessage"></div>
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div class="title">
+            [[i18nDynamic(locale, 'assistantReadyTitle')]]
+          </div>
+          <div class="content" id="intro-text">
+            [[i18nDynamic(locale, 'assistantReadyMessage')]]
+          </div>
           <div class="flex layout horizontal center">
             <div id="ready-image-container">
               <img id="ready-img" class="oobe-illustration"
                   src="assistant_ready.svg">
             </div>
+            <div class="vertical-line"></div>
             <div id="toggles-container"></div>
           </div>
         </div>
@@ -30,8 +33,8 @@
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
-            disabled="[[buttonsDisabled]]" hidden="[[moreContents]]">
-          <div id="button-text" i18n-content="assistantReadyButton"></div>
+            disabled="[[buttonsDisabled]]" hidden="[[moreContents]]"
+            text-key="assistantReadyButton">
         </oobe-text-button>
       </div>
     </oobe-dialog>

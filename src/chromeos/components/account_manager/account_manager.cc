@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
@@ -15,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/constants/chromeos_pref_names.h"
@@ -179,9 +181,8 @@ void AccountManager::Initialize(
     base::OnceClosure initialization_callback) {
   Initialize(
       home_dir, url_loader_factory, std::move(delay_network_call_runner),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-           base::MayBlock()}),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}),
       std::move(initialization_callback));
 }
 

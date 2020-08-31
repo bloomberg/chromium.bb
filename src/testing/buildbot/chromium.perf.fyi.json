@@ -9,7 +9,8 @@
           "--browser=android-chrome",
           "--upload-results",
           "--test-shard-map-filename=android-nexus5x-perf-fyi_map.json",
-          "--output-format=histograms"
+          "--output-format=histograms",
+          "--experimental-tbmv3-metrics"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -27,14 +28,62 @@
               "device_os_flavor": "google",
               "device_type": "bullhead",
               "os": "Android",
-              "pool": "chrome.tests.perf-fyi"
+              "pool": "chrome.tests.perf-fyi.template"
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "android-pixel2-perf-aab-fyi": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-chrome-bundle",
+          "--upload-results",
+          "--test-shard-map-filename=android-pixel2-perf-aab-fyi_map.json",
+          "--run-ref-build"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.tests.perf-fyi.template"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 1
         },
         "trigger_script": {
           "args": [
@@ -60,6 +109,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -74,13 +127,14 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf-fyi"
+              "pool": "chrome.tests.perf-fyi.template"
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "trigger_script": {
@@ -93,6 +147,14 @@
         }
       }
     ]
+  },
+  "android-pixel2-processor-perf-fyi": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "chromeos-kevin-perf-fyi": {
     "isolated_scripts": [
@@ -123,9 +185,10 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "trigger_script": {
@@ -148,10 +211,14 @@
           "--upload-results",
           "--test-shard-map-filename=linux-perf-fyi_map.json",
           "--output-format=histograms",
-          "--experimental-proto-trace-format"
+          "--experimental-tbmv3-metrics"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -165,13 +232,14 @@
               "gpu": "10de",
               "id": "build186-b7",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf-fyi"
+              "pool": "chrome.tests.perf-fyi.template"
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 1
         },
         "trigger_script": {
@@ -184,6 +252,14 @@
         }
       }
     ]
+  },
+  "linux-processor-perf-fyi": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "win-10_laptop_low_end-perf_HP-Candidate": {
     "isolated_scripts": [
@@ -210,13 +286,14 @@
               "gpu": null,
               "id": "build370-a7",
               "os": "Windows-10",
-              "pool": "chrome.tests.perf-fyi"
+              "pool": "chrome.tests.perf-fyi.template"
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 43200,
+          "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 1
         },
         "trigger_script": {

@@ -8,7 +8,7 @@
 
 login.createScreen('DemoSetupScreen', 'demo-setup', function() {
   return {
-    EXTERNAL_API: ['onSetupSucceeded', 'onSetupFailed'],
+    EXTERNAL_API: ['setCurrentSetupStep', 'onSetupSucceeded', 'onSetupFailed'],
 
     /**
      * Demo setup module.
@@ -18,7 +18,7 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
 
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.demoSetupModule_ = $('demo-setup-content');
     },
 
@@ -28,17 +28,25 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
     },
 
     /** Called after resources are updated. */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.demoSetupModule_.updateLocalizedContent();
     },
 
     /** @override */
-    onBeforeShow: function() {
+    onBeforeShow() {
       this.demoSetupModule_.reset();
     },
 
+    /**
+     * Called at the beginning of a setup step.
+     * @param {number} currentStepIndex
+     */
+    setCurrentSetupStep(currentStepIndex) {
+      this.demoSetupModule_.setCurrentSetupStep(currentStepIndex);
+    },
+
     /** Called when demo mode setup succeeded. */
-    onSetupSucceeded: function() {
+    onSetupSucceeded() {
       this.demoSetupModule_.onSetupSucceeded();
     },
 
@@ -48,7 +56,7 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
      * @param {boolean} isPowerwashRequired Whether powerwash is required to
      *     recover from the error.
      */
-    onSetupFailed: function(message, isPowerwashRequired) {
+    onSetupFailed(message, isPowerwashRequired) {
       this.demoSetupModule_.onSetupFailed(message, isPowerwashRequired);
     },
   };

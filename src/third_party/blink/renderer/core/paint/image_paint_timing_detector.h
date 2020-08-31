@@ -63,6 +63,8 @@ typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
 // Node, LayoutObject, etc.
 class CORE_EXPORT ImageRecordsManager {
   friend class ImagePaintTimingDetectorTest;
+  DISALLOW_NEW();
+
   using NodesQueueComparator = bool (*)(const base::WeakPtr<ImageRecord>&,
                                         const base::WeakPtr<ImageRecord>&);
   using ImageRecordSet =
@@ -122,7 +124,7 @@ class CORE_EXPORT ImageRecordsManager {
 
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
-  inline bool HasUnregisteredRecordsInQueued(
+  inline bool HasUnregisteredRecordsInQueue(
       unsigned last_registered_frame_index) {
     while (!images_queued_for_paint_time_.IsEmpty() &&
            !images_queued_for_paint_time_.back()) {
@@ -130,7 +132,6 @@ class CORE_EXPORT ImageRecordsManager {
     }
     if (images_queued_for_paint_time_.IsEmpty())
       return false;
-    DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
     return last_registered_frame_index < LastQueuedFrameIndex();
   }
   void AssignPaintTimeToRegisteredQueuedRecords(
@@ -140,6 +141,8 @@ class CORE_EXPORT ImageRecordsManager {
     DCHECK(images_queued_for_paint_time_.back());
     return images_queued_for_paint_time_.back()->frame_index;
   }
+
+  void Trace(Visitor* visitor);
 
  private:
   // Find the image record of an visible image.
@@ -172,9 +175,8 @@ class CORE_EXPORT ImageRecordsManager {
   // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
   // first called.
   HashMap<RecordId, base::TimeTicks> image_finished_times_;
-  // ImageRecordsManager is always owned by ImagePaintTimingDetector, which
-  // contains the LocalFrameView as a Member.
-  UntracedMember<LocalFrameView> frame_view_;
+
+  Member<LocalFrameView> frame_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };
@@ -213,7 +215,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
                    const IntSize& intrinsic_size,
                    const ImageResourceContent&,
                    const PropertyTreeState& current_paint_chunk_properties,
-                   const StyleFetchedImage*);
+                   const StyleFetchedImage*,
+                   const IntRect* image_border);
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
@@ -236,7 +239,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Return the candidate.
   ImageRecord* UpdateCandidate();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class LargestContentfulPaintCalculatorTest;

@@ -83,7 +83,7 @@ public:
     // A nullptr for process means that the calls to the cache will be performed, but none of the
     // callbacks will be called.
     void processGlyphRunList(const SkGlyphRunList& glyphRunList,
-                             const SkMatrix& viewMatrix,
+                             const SkMatrix& drawMatrix,
                              const SkSurfaceProps& props,
                              bool contextSupportsDistanceFieldText,
                              const GrTextContext::Options& options,
@@ -101,9 +101,6 @@ private:
     };
 
     ScopedBuffers SK_WARN_UNUSED_RESULT ensureBuffers(const SkGlyphRunList& glyphRunList);
-
-    // TODO: Remove once I can hoist ensureBuffers above the list for loop in all cases.
-    ScopedBuffers SK_WARN_UNUSED_RESULT ensureBuffers(const SkGlyphRun& glyphRun);
 
     // The props as on the actual device.
     const SkSurfaceProps fDeviceProps;

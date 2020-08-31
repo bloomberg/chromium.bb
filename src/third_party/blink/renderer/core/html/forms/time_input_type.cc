@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/time_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
@@ -76,7 +77,7 @@ StepRange TimeInputType::CreateStepRange(
       (kTimeDefaultStep, kTimeDefaultStepBase, kTimeStepScaleFactor,
        StepRange::kScaledStepValueShouldBeInteger));
 
-  return InputType::CreateStepRange(
+  return InputType::CreateReversibleStepRange(
       any_step_handling, kTimeDefaultStepBase,
       Decimal::FromDouble(DateComponents::MinimumTime()),
       Decimal::FromDouble(DateComponents::MaximumTime()), step_description);
@@ -171,6 +172,18 @@ bool TimeInputType::IsValidFormat(bool has_year,
                                   bool has_minute,
                                   bool has_second) const {
   return has_hour && has_minute && has_ampm;
+}
+
+String TimeInputType::AriaRoleForPickerIndicator() const {
+  return GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_TIME_PICKER);
+}
+
+String TimeInputType::ReversedRangeOutOfRangeText(
+    const Decimal& minimum,
+    const Decimal& maximum) const {
+  return GetLocale().QueryString(
+      IDS_FORM_VALIDATION_REVERSED_RANGE_OUT_OF_RANGE_TIME,
+      LocalizeValue(Serialize(minimum)), LocalizeValue(Serialize(maximum)));
 }
 
 }  // namespace blink

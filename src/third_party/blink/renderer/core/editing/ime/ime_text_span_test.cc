@@ -14,7 +14,18 @@ ImeTextSpan CreateImeTextSpan(unsigned start_offset, unsigned end_offset) {
   return ImeTextSpan(ImeTextSpan::Type::kComposition, start_offset, end_offset,
                      Color::kTransparent,
                      ui::mojom::ImeTextSpanThickness::kNone,
-                     Color::kTransparent);
+                     ui::mojom::ImeTextSpanUnderlineStyle::kNone,
+                     Color::kTransparent, Color::kTransparent);
+}
+
+ImeTextSpan CreateImeTextSpan(
+    unsigned start_offset,
+    unsigned end_offset,
+    ui::mojom::ImeTextSpanUnderlineStyle underline_style) {
+  return ImeTextSpan(ImeTextSpan::Type::kComposition, start_offset, end_offset,
+                     Color::kTransparent,
+                     ui::mojom::ImeTextSpanThickness::kNone, underline_style,
+                     Color::kTransparent, Color::kTransparent);
 }
 
 TEST(ImeTextSpanTest, OneChar) {
@@ -71,6 +82,25 @@ TEST(ImeTextSpanTest, LastCharEndBeforeStartZeroEnd) {
   EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1,
             ime_text_span.StartOffset());
   EXPECT_EQ(std::numeric_limits<unsigned>::max(), ime_text_span.EndOffset());
+}
+
+TEST(ImeTextSpanTest, UnderlineStyles) {
+  ImeTextSpan ime_text_span =
+      CreateImeTextSpan(0, 5, ui::mojom::ImeTextSpanUnderlineStyle::kSolid);
+  EXPECT_EQ(ui::mojom::ImeTextSpanUnderlineStyle::kSolid,
+            ime_text_span.UnderlineStyle());
+  ime_text_span =
+      CreateImeTextSpan(0, 5, ui::mojom::ImeTextSpanUnderlineStyle::kDot);
+  EXPECT_EQ(ui::mojom::ImeTextSpanUnderlineStyle::kDot,
+            ime_text_span.UnderlineStyle());
+  ime_text_span =
+      CreateImeTextSpan(0, 5, ui::mojom::ImeTextSpanUnderlineStyle::kDash);
+  EXPECT_EQ(ui::mojom::ImeTextSpanUnderlineStyle::kDash,
+            ime_text_span.UnderlineStyle());
+  ime_text_span =
+      CreateImeTextSpan(0, 5, ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle);
+  EXPECT_EQ(ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle,
+            ime_text_span.UnderlineStyle());
 }
 
 }  // namespace

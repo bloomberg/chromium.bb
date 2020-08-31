@@ -23,6 +23,7 @@
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -245,8 +246,10 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
                              "/content_index/content_index.html",
                              base::CompareCase::SENSITIVE));
 
-  provider()->OpenItem(offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
-                       offline_items().at("my-id").id);
+  provider()->OpenItem(
+      offline_items_collection::OpenParams(
+          offline_items_collection::LaunchLocation::DOWNLOAD_HOME),
+      offline_items().at("my-id").id);
 
   // Wait for the page to open.
   base::RunLoop run_loop;
@@ -352,7 +355,8 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, MetricsCollected) {
     ukm::TestAutoSetUkmRecorder ukm_recorder;
 
     provider()->OpenItem(
-        offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
+        offline_items_collection::OpenParams(
+            offline_items_collection::LaunchLocation::DOWNLOAD_HOME),
         offline_items().at("my-id-2").id);
 
     // Wait for the page to open.

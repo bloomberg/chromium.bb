@@ -17,6 +17,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -31,10 +32,48 @@ namespace optimization_guide {
 
 namespace {
 
-// The duration that hosts placed in the HintsFetcherHostsSuccessfullyFetched
-// dictionary pref are considered valid.
-constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
-    base::TimeDelta::FromDays(7);
+// Returns the string that can be used to record histograms for the request
+// context.
+//
+// Keep in sync with OptimizationGuide.RequestContexts histogram_suffixes in
+// histograms.xml.
+std::string GetStringNameForRequestContext(
+    proto::RequestContext request_context) {
+  switch (request_context) {
+    case proto::RequestContext::CONTEXT_UNSPECIFIED:
+      NOTREACHED();
+      return "Unknown";
+    case proto::RequestContext::CONTEXT_BATCH_UPDATE:
+      return "BatchUpdate";
+    case proto::RequestContext::CONTEXT_PAGE_NAVIGATION:
+      return "PageNavigation";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Returns the subset of URLs from |urls| for which the URL is considered
+// valid and can be included in a hints fetch.
+std::vector<GURL> GetValidURLsForFetching(const std::vector<GURL>& urls) {
+  std::vector<GURL> valid_urls;
+  for (const auto& url : urls) {
+    if (valid_urls.size() >=
+        features::MaxUrlsForOptimizationGuideServiceHintsFetch()) {
+      break;
+    }
+    if (IsValidURLForURLKeyedHint(url))
+      valid_urls.push_back(url);
+  }
+  return valid_urls;
+}
+
+void RecordRequestStatusHistogram(proto::RequestContext request_context,
+                                  HintsFetcherRequestStatus status) {
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.HintsFetcher.RequestStatus." +
+          GetStringNameForRequestContext(request_context),
+      status);
+}
 
 }  // namespace
 
@@ -53,7 +92,17 @@ HintsFetcher::HintsFetcher(
   DCHECK(features::IsRemoteFetchingEnabled());
 }
 
-HintsFetcher::~HintsFetcher() {}
+HintsFetcher::~HintsFetcher() {
+  if (active_url_loader_) {
+    if (hints_fetched_callback_)
+      std::move(hints_fetched_callback_).Run(base::nullopt);
+    base::UmaHistogramExactLinear(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest."
+        "ActiveRequestCanceled." +
+            GetStringNameForRequestContext(request_context_),
+        1, 1);
+  }
+}
 
 // static
 void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {
@@ -91,59 +140,71 @@ bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
+    const std::vector<GURL>& urls,
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
+        optimization_types,
     optimization_guide::proto::RequestContext request_context,
     HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
+  DCHECK_GT(optimization_types.size(), 0u);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kNetworkOffline,
-             base::nullopt);
+    RecordRequestStatusHistogram(request_context,
+                                 HintsFetcherRequestStatus::kNetworkOffline);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
   if (active_url_loader_) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kFetcherBusy,
-             base::nullopt);
+    RecordRequestStatusHistogram(request_context,
+                                 HintsFetcherRequestStatus::kFetcherBusy);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
   std::vector<std::string> filtered_hosts =
       GetSizeLimitedHostsDueForHintsRefresh(hosts);
-  if (filtered_hosts.empty()) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kNoHostsToFetch,
-             base::nullopt);
+  std::vector<GURL> valid_urls = GetValidURLsForFetching(urls);
+  if (filtered_hosts.empty() && valid_urls.empty()) {
+    RecordRequestStatusHistogram(
+        request_context, HintsFetcherRequestStatus::kNoHostsOrURLsToFetch);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
   DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
             filtered_hosts.size());
+  DCHECK_GE(features::MaxUrlsForOptimizationGuideServiceHintsFetch(),
+            valid_urls.size());
+
+  if (optimization_types.empty()) {
+    RecordRequestStatusHistogram(
+        request_context,
+        HintsFetcherRequestStatus::kNoSupportedOptimizationTypes);
+    std::move(hints_fetched_callback).Run(base::nullopt);
+    return false;
+  }
 
   hints_fetch_start_time_ = base::TimeTicks::Now();
   request_context_ = request_context;
 
-  get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
+  proto::GetHintsRequest get_hints_request;
 
-  // Add all the optimizations supported by the current version of Chrome,
-  // regardless of whether the session is in holdback for any of them.
-  get_hints_request_->add_supported_optimizations(proto::NOSCRIPT);
-  get_hints_request_->add_supported_optimizations(proto::RESOURCE_LOADING);
-  get_hints_request_->add_supported_optimizations(proto::DEFER_ALL_SCRIPT);
-  // TODO(crbug/969558): Figure out a way to either have a registration call
-  // for clients to specify their supported optimization types or have a static
-  // assert on the last OptimizationType.
+  for (const auto& optimization_type : optimization_types)
+    get_hints_request.add_supported_optimizations(optimization_type);
 
-  get_hints_request_->set_context(request_context_);
+  get_hints_request.set_context(request_context_);
+
+  for (const auto& url : valid_urls)
+    get_hints_request.add_urls()->set_url(url.spec());
 
   for (const auto& host : filtered_hosts) {
-    proto::HostInfo* host_info = get_hints_request_->add_hosts();
+    proto::HostInfo* host_info = get_hints_request.add_hosts();
     host_info->set_host(host);
   }
 
   std::string serialized_request;
-  get_hints_request_->SerializeToString(&serialized_request);
+  get_hints_request.SerializeToString(&serialized_request);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("hintsfetcher_gethintsrequest", R"(
@@ -174,8 +235,12 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   resource_request->method = "POST";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  active_url_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
+  active_url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
+      std::move(resource_request),
+      // This is always InIncognito::kNo as the OptimizationGuideKeyedService is
+      // not enabled on incognito sessions and is rechecked before each fetch.
+      variations::InIncognito::kNo, variations::SignedIn::kNo,
+      traffic_annotation);
 
   active_url_loader_->AttachStringForUpload(serialized_request,
                                             "application/x-protobuf");
@@ -183,6 +248,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   UMA_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount",
       filtered_hosts.size());
+  UMA_HISTOGRAM_COUNTS_100(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount",
+      valid_urls.size());
 
   // |active_url_loader_| should not retry on 5xx errors since the server may
   // already be overloaded. |active_url_loader_| should retry on network changes
@@ -192,6 +260,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   active_url_loader_->SetRetryOptions(
       kMaxRetries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
+  // It's safe to use |base::Unretained(this)| here because |this| owns
+  // |active_url_loader_| and the callback will be canceled if
+  // |active_url_loader_| is destroyed.
   active_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
@@ -223,21 +294,35 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     UMA_HISTOGRAM_COUNTS_100(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
+    base::TimeDelta fetch_latency =
+        base::TimeTicks::Now() - hints_fetch_start_time_;
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency",
-        base::TimeTicks::Now() - hints_fetch_start_time_);
-    UpdateHostsSuccessfullyFetched();
-    std::move(hints_fetched_callback_)
-        .Run(request_context_, HintsFetcherRequestStatus::kSuccess,
-             std::move(get_hints_response));
+        fetch_latency);
+    base::UmaHistogramMediumTimes(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency." +
+            GetStringNameForRequestContext(request_context_),
+        fetch_latency);
+    base::TimeDelta valid_duration =
+        features::StoredFetchedHintsFreshnessDuration();
+    if (get_hints_response->has_max_cache_duration()) {
+      valid_duration = base::TimeDelta::FromSeconds(
+          get_hints_response->max_cache_duration().seconds());
+    }
+    UpdateHostsSuccessfullyFetched(valid_duration);
+    RecordRequestStatusHistogram(request_context_,
+                                 HintsFetcherRequestStatus::kSuccess);
+    std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
-    std::move(hints_fetched_callback_)
-        .Run(request_context_, HintsFetcherRequestStatus::kResponseError,
-             base::nullopt);
+    hosts_fetched_.clear();
+    RecordRequestStatusHistogram(request_context_,
+                                 HintsFetcherRequestStatus::kResponseError);
+    std::move(hints_fetched_callback_).Run(base::nullopt);
   }
 }
 
-void HintsFetcher::UpdateHostsSuccessfullyFetched() {
+void HintsFetcher::UpdateHostsSuccessfullyFetched(
+    base::TimeDelta valid_duration) {
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
 
@@ -275,8 +360,7 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
   }
 
   // Add the covered hosts in |hosts_fetched_| to the dictionary pref.
-  base::Time host_invalid_time =
-      time_clock_->Now() + kHintsFetcherHostFetchedValidDuration;
+  base::Time host_invalid_time = time_clock_->Now() + valid_duration;
   for (const std::string& host : hosts_fetched_) {
     hosts_fetched_list->SetDoubleKey(
         HashHostForDictionary(host),
@@ -287,6 +371,7 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
   hosts_fetched_.clear();
 }
 
+// Callback is only invoked if |active_url_loader_| is bound and still alive.
 void HintsFetcher::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
   SEQUENCE_CHECKER(sequence_checker_);
@@ -297,9 +382,12 @@ void HintsFetcher::OnURLLoadComplete(
     response_code =
         active_url_loader_->ResponseInfo()->headers->response_code();
   }
-  HandleResponse(response_body ? *response_body : "",
-                 active_url_loader_->NetError(), response_code);
+  auto net_error = active_url_loader_->NetError();
+  // Reset the active URL loader here since actions happening during response
+  // handling may destroy |this|.
   active_url_loader_.reset();
+
+  HandleResponse(response_body ? *response_body : "", net_error, response_code);
 }
 
 std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -13,15 +14,36 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feed.FeedUma;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.widget.RectProvider;
+import org.chromium.ui.widget.ViewRectProvider;
 
 /**
- * View for the header of a section of cards.
+ * View for the header of the personalized feed that has a context menu to
+ * manage the feed.
  */
 public class SectionHeaderView extends LinearLayout implements View.OnClickListener {
+    private static final int IPH_TIMEOUT_MS = 10000;
+
+    // Views in the header layout that are set during inflate.
     private TextView mTitleView;
     private TextView mStatusView;
-    private @Nullable SectionHeader mHeader;
+    private ListMenuButton mMenuView;
+
+    // Properties that are set after construction & inflate using setters.
+    @Nullable
+    private SectionHeader mHeader;
+
+    private boolean mHasMenu;
 
     public SectionHeaderView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -31,14 +53,24 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTitleView = findViewById(org.chromium.chrome.R.id.header_title);
-        mStatusView = findViewById(org.chromium.chrome.R.id.header_status);
+        mTitleView = findViewById(R.id.header_title);
+        mStatusView = findViewById(R.id.header_status);
+        mMenuView = findViewById(R.id.header_menu);
+
+        // Use the menu instead of the status text when the menu is available from the inflated
+        // layout.
+        mHasMenu = mMenuView != null;
+
+        if (mHasMenu) {
+            mMenuView.setOnClickListener((View v) -> { displayMenu(); });
+        }
     }
 
     @Override
     public void onClick(View view) {
         assert mHeader.isExpandable() : "onClick() is called on a non-expandable section header.";
         mHeader.toggleHeader();
+        FeedUma.recordFeedControlsAction(FeedUma.CONTROLS_ACTION_TOGGLED_FEED);
         SuggestionsMetrics.recordExpandableHeaderTapped(mHeader.isExpanded());
         SuggestionsMetrics.recordArticlesListVisible();
     }
@@ -48,6 +80,13 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         mHeader = header;
         if (mHeader == null) return;
 
+        // Set visuals with the menu view when present.
+        if (mHasMenu) {
+            updateVisuals();
+            return;
+        }
+
+        // Set visuals with the status view when no menu.
         mStatusView.setVisibility(mHeader.isExpandable() ? View.VISIBLE : View.GONE);
         updateVisuals();
         setOnClickListener(mHeader.isExpandable() ? this : null);
@@ -60,9 +99,67 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         mTitleView.setText(mHeader.getHeaderText());
 
         if (mHeader.isExpandable()) {
-            mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+            if (!mHasMenu) {
+                mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+            }
             setBackgroundResource(
                     mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
         }
+    }
+    /** Shows an IPH on the feed header menu button. */
+    public void showMenuIph(UserEducationHelper helper) {
+        helper.requestShowIPH(new IPHCommandBuilder(mMenuView.getContext().getResources(),
+                FeatureConstants.FEED_HEADER_MENU_FEATURE, R.string.ntp_feed_menu_iph,
+                R.string.accessibility_ntp_feed_menu_iph)
+                                      .setAnchorView(mMenuView)
+                                      .setCircleHighlight(true)
+                                      .setShouldHighlight(true)
+                                      .setDismissOnTouch(false)
+                                      .setInsetRect(new Rect(0, 0, 0, 0))
+                                      .setAutoDismissTimeout(5 * 1000)
+                                      .build());
+    }
+
+    private void displayMenu() {
+        FeedUma.recordFeedControlsAction(FeedUma.CONTROLS_ACTION_CLICKED_FEED_HEADER_MENU);
+
+        if (mMenuView == null) {
+            assert false : "No menu view to display the menu";
+            return;
+        }
+
+        ModelList listItems = mHeader.getMenuModelList();
+        if (listItems == null) {
+            assert false : "No list items model to display the menu";
+            return;
+        }
+
+        ListMenu.Delegate listMenuDelegate = mHeader.getListMenuDelegate();
+        if (listMenuDelegate == null) {
+            assert false : "No list menu delegate for the menu";
+            return;
+        }
+
+        BasicListMenu listMenu =
+                new BasicListMenu(mMenuView.getContext(), listItems, listMenuDelegate);
+
+        ListMenuButtonDelegate delegate = new ListMenuButtonDelegate() {
+            @Override
+            public ListMenu getListMenu() {
+                return listMenu;
+            }
+
+            @Override
+            public RectProvider getRectProvider(View listMenuButton) {
+                ViewRectProvider rectProvider = new ViewRectProvider(listMenuButton);
+                rectProvider.setIncludePadding(true);
+                rectProvider.setInsetPx(0, 0, 0, 0);
+                return rectProvider;
+            }
+        };
+
+        mMenuView.setDelegate(delegate);
+        mMenuView.tryToFitLargestItem(true);
+        mMenuView.showMenu();
     }
 }

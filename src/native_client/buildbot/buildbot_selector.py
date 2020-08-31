@@ -65,7 +65,7 @@ BOT_ASSIGNMENT = {
     'mac-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'win7-64-newlib-opt-pnacl':
-        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl --no-clang',
     # TODO: Use buildbot_pnacl.py instead of buildbot_pnacl.sh once
     # the gyp_build is moved to buildbot_pnacl.py.
     'linux_64-newlib-mips-pnacl':
@@ -124,7 +124,7 @@ BOT_ASSIGNMENT = {
     'nacl-mac_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-win7_64_newlib_opt_pnacl':
-        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl --no-clang',
     # Pnacl spec2k trybots
     'nacl-precise_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
@@ -233,7 +233,8 @@ BOT_ASSIGNMENT = {
         python +
         ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
         ' --sanitize thread --skip-tests',
-    # TODO(kschimpf): Bot is currently broken: --sanitize undefined not understood.
+    # TODO(kschimpf): Bot is currently broken: --sanitize undefined not
+    # understood.
     'nacl-toolchain-ubsan':
         python +
         ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
@@ -266,9 +267,8 @@ for platform in [
     # Test with Breakpad tools only on basic Linux builds.
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
-      arch_flags += ' --no-gn'
-    if arch != 'arm' and not 'win' in platform:
-      arch_flags += ' --clang'
+    if 'win' in platform:
+      arch_flags += ' --no-scons --no-clang'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.
@@ -324,12 +324,6 @@ def Main():
   # This avoids the need for admin changes on the bots in this case.
   env['PYTHONDONTWRITEBYTECODE'] = '1'
 
-  # Use .boto file from home-dir instead of buildbot supplied one.
-  if 'AWS_CREDENTIAL_FILE' in env:
-    del env['AWS_CREDENTIAL_FILE']
-  alt_boto = os.path.expanduser('~/.boto')
-  if os.path.exists(alt_boto):
-    env['BOTO_CONFIG'] = alt_boto
   env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py', require_executable=False)
 
   # When running from cygwin, we sometimes want to use a native python.

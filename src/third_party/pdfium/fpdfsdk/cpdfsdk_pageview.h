@@ -44,7 +44,7 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
 #ifdef PDF_ENABLE_XFA
   bool DeleteAnnot(CPDFSDK_Annot* pAnnot);
   CPDFSDK_Annot* AddAnnot(CXFA_FFWidget* pPDFAnnot);
-  CPDFSDK_Annot* GetAnnotByXFAWidget(CXFA_FFWidget* hWidget);
+  CPDFSDK_Annot* GetAnnotByXFAWidget(CXFA_FFWidget* pWidget);
   IPDF_Page* GetXFAPage();
 #endif  // PDF_ENABLE_XFA
 
@@ -63,20 +63,19 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
   bool Undo();
   bool Redo();
 
-  bool OnFocus(const CFX_PointF& point, uint32_t nFlag);
-  bool OnLButtonDown(const CFX_PointF& point, uint32_t nFlag);
-  bool OnLButtonUp(const CFX_PointF& point, uint32_t nFlag);
-  bool OnLButtonDblClk(const CFX_PointF& point, uint32_t nFlag);
-  bool OnRButtonDown(const CFX_PointF& point, uint32_t nFlag);
-  bool OnRButtonUp(const CFX_PointF& point, uint32_t nFlag);
+  bool OnFocus(uint32_t nFlag, const CFX_PointF& point);
+  bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point);
+  bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point);
+  bool OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point);
+  bool OnRButtonDown(uint32_t nFlag, const CFX_PointF& point);
+  bool OnRButtonUp(uint32_t nFlag, const CFX_PointF& point);
   bool OnChar(int nChar, uint32_t nFlag);
   bool OnKeyDown(int nKeyCode, int nFlag);
   bool OnKeyUp(int nKeyCode, int nFlag);
-  bool OnMouseMove(const CFX_PointF& point, int nFlag);
-  bool OnMouseWheel(double deltaX,
-                    double deltaY,
+  bool OnMouseMove(int nFlag, const CFX_PointF& point);
+  bool OnMouseWheel(int nFlag,
                     const CFX_PointF& point,
-                    int nFlag);
+                    const CFX_Vector& delta);
 
   bool SetIndexSelected(int index, bool selected);
   bool IsIndexSelected(int index);

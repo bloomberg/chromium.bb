@@ -1,32 +1,8 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
-<link rel="import" href="chrome://resources/html/util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="../global_scroll_target_behavior.html">
-<link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../icons.html">
-<link rel="import" href="../settings_main/settings_main.html">
-<link rel="import" href="../settings_menu/settings_menu.html">
-<link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../page_visibility.html">
-<link rel="import" href="../prefs/prefs.html">
-<link rel="import" href="../route.html">
-<link rel="import" href="../settings_vars_css.html">
-
-<dom-module id="settings-ui">
-  <template>
     <style include="cr-page-host-style settings-shared">
       :host {
-        @apply --layout-fit;
         display: flex;
         flex-direction: column;
+        height: 100%;
         --settings-menu-width: 250px;
         /* Centered cards has a max-width of var(--cr-centered-card-max-width)
          * and a width of a certain percentage. Therefore, to make room for the
@@ -37,10 +13,12 @@
       }
 
       cr-toolbar {
-        @apply --layout-center;
         min-height: 56px;
-        --cr-toolbar-left-spacer-width: var(--settings-menu-width);
         --cr-toolbar-center-basis: var(--settings-main-basis);
+      }
+
+      cr-toolbar:not([narrow]) {
+        --cr-toolbar-left-spacer-width: var(--settings-menu-width);
       }
 
       @media (prefers-color-scheme: light) {
@@ -121,11 +99,6 @@
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <settings-menu page-visibility="[[pageVisibility_]]"
-              show-android-apps="[[showAndroidApps_]]"
-              show-crostini="[[showCrostini_]]"
-              show-parental-controls="[[showParentalControls_]]"
-              show-plugin-vm="[[showPluginVm_]]"
-              have-play-store-app="[[havePlayStoreApp_]]"
               on-iron-activate="onIronActivate_"
               advanced-opened="{{advancedOpenedInMenu_}}">
           </settings-menu>
@@ -135,11 +108,6 @@
     <div id="container" class="no-outline">
       <div id="left">
         <settings-menu page-visibility="[[pageVisibility_]]"
-            show-android-apps="[[showAndroidApps_]]"
-            show-crostini="[[showCrostini_]]"
-            show-parental-controls="[[showParentalControls_]]"
-            show-plugin-vm="[[showPluginVm_]]"
-            have-play-store-app="[[havePlayStoreApp_]]"
             on-iron-activate="onIronActivate_"
             advanced-opened="{{advancedOpenedInMenu_}}">
         </settings-menu>
@@ -147,18 +115,9 @@
       <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
-          show-apps="[[showApps_]]"
-          show-android-apps="[[showAndroidApps_]]"
-          show-crostini="[[showCrostini_]]"
-          show-parental-controls="[[showParentalControls_]]"
-          show-plugin-vm="[[showPluginVm_]]"
-          have-play-store-app="[[havePlayStoreApp_]]"
           advanced-toggle-expanded="{{advancedOpenedInMain_}}">
       </settings-main>
       <!-- An additional child of the flex #container to take up space,
            aligned with the right-hand child of the flex toolbar. -->
       <div id="right"></div>
     </div>
-  </template>
-  <script src="settings_ui.js"></script>
-</dom-module>

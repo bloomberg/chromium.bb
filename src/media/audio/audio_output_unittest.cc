@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -23,6 +24,7 @@
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -38,6 +40,12 @@ class AudioOutputTest : public testing::TestWithParam<bool> {
     // The only parameter is used to enable/disable AAudio.
     if (GetParam())
       features_.InitAndEnableFeature(features::kUseAAudioDriver);
+#endif
+#if defined(OS_LINUX)
+    // Due to problems with PulseAudio failing to start, use a fake audio
+    // stream. https://crbug.com/1047655#c70
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableAudioOutput);
 #endif
     base::RunLoop().RunUntilIdle();
   }

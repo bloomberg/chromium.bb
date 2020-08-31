@@ -24,6 +24,8 @@
 
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,8 +37,7 @@
 
 namespace blink {
 
-FontBuilder::FontBuilder(const Document* document)
-    : document_(document), flags_(0) {
+FontBuilder::FontBuilder(Document* document) : document_(document), flags_(0) {
   DCHECK(!document || document->GetFrame());
 }
 
@@ -95,8 +96,6 @@ AtomicString FontBuilder::GenericFontFamilyName(
       return font_family_names::kWebkitCursive;
     case FontDescription::kFantasyFamily:
       return font_family_names::kWebkitFantasy;
-    case FontDescription::kPictographFamily:
-      return font_family_names::kWebkitPictograph;
   }
 }
 
@@ -255,18 +254,18 @@ float FontBuilder::GetComputedSizeFromSpecifiedSize(
 }
 
 void FontBuilder::CheckForGenericFamilyChange(
-    const FontDescription& old_description,
+    const FontDescription& parent_description,
     FontDescription& new_description) {
   DCHECK(document_);
   if (new_description.IsAbsoluteSize())
     return;
 
-  if (new_description.IsMonospace() == old_description.IsMonospace())
+  if (new_description.IsMonospace() == parent_description.IsMonospace())
     return;
 
   // For now, lump all families but monospace together.
   if (new_description.GenericFamily() != FontDescription::kMonospaceFamily &&
-      old_description.GenericFamily() != FontDescription::kMonospaceFamily)
+      parent_description.GenericFamily() != FontDescription::kMonospaceFamily)
     return;
 
   // We know the parent is monospace or the child is monospace, and that font
@@ -285,7 +284,7 @@ void FontBuilder::CheckForGenericFamilyChange(
             ? static_cast<float>(settings->GetDefaultFixedFontSize()) /
                   settings->GetDefaultFontSize()
             : 1;
-    size = old_description.IsMonospace()
+    size = parent_description.IsMonospace()
                ? new_description.SpecifiedSize() / fixed_scale_factor
                : new_description.SpecifiedSize() * fixed_scale_factor;
   }
@@ -294,7 +293,8 @@ void FontBuilder::CheckForGenericFamilyChange(
 }
 
 void FontBuilder::UpdateSpecifiedSize(FontDescription& font_description,
-                                      const ComputedStyle& style) {
+                                      const ComputedStyle& style,
+                                      const ComputedStyle* parent_style) {
   float specified_size = font_description.SpecifiedSize();
 
   if (!specified_size && font_description.KeywordSize())
@@ -303,7 +303,12 @@ void FontBuilder::UpdateSpecifiedSize(FontDescription& font_description,
 
   font_description.SetSpecifiedSize(specified_size);
 
-  CheckForGenericFamilyChange(style.GetFontDescription(), font_description);
+  // TODO(crbug.com/1086680): Avoid nullptr parent style.
+  const FontDescription& parent_description =
+      parent_style ? parent_style->GetFontDescription()
+                   : style.GetFontDescription();
+
+  CheckForGenericFamilyChange(parent_description, font_description);
 }
 
 void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
@@ -319,8 +324,7 @@ void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
   // FontDescription::EffectiveFontSize.
   font_description.SetAdjustedSize(font_description.ComputedSize());
 
-  Font font(font_description);
-  font.Update(font_selector);
+  Font font(font_description, font_selector);
 
   const SimpleFontData* font_data = font.PrimaryFont();
 
@@ -406,8 +410,8 @@ void FontBuilder::UpdateFontDescription(FontDescription& description,
     description.SetAdjustedSize(size);
 }
 
-void FontBuilder::CreateFont(FontSelector* font_selector,
-                             ComputedStyle& style) {
+void FontBuilder::CreateFont(ComputedStyle& style,
+                             const ComputedStyle* parent_style) {
   DCHECK(document_);
 
   if (!flags_)
@@ -416,18 +420,17 @@ void FontBuilder::CreateFont(FontSelector* font_selector,
   FontDescription description = style.GetFontDescription();
 
   UpdateFontDescription(description, style.ComputeFontOrientation());
-
-  UpdateSpecifiedSize(description, style);
+  UpdateSpecifiedSize(description, style, parent_style);
   UpdateComputedSize(description, style);
+
+  FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
   UpdateAdjustedSize(description, style, font_selector);
 
-  style.SetFontDescription(description);
-  style.GetFont().Update(font_selector);
+  style.SetFontInternal(Font(description, font_selector));
   flags_ = 0;
 }
 
-void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
-                                        ComputedStyle& document_style) {
+void FontBuilder::CreateFontForDocument(ComputedStyle& document_style) {
   DCHECK(document_);
   FontDescription font_description = FontDescription();
   font_description.SetLocale(document_style.GetFontDescription().Locale());
@@ -437,12 +440,13 @@ void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
   SetSize(font_description,
           FontDescription::Size(FontSizeFunctions::InitialKeywordSize(), 0.0f,
                                 false));
-  UpdateSpecifiedSize(font_description, document_style);
+  UpdateSpecifiedSize(font_description, document_style, &document_style);
   UpdateComputedSize(font_description, document_style);
 
   font_description.SetOrientation(document_style.ComputeFontOrientation());
-  document_style.SetFontDescription(font_description);
-  document_style.GetFont().Update(font_selector);
+
+  FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
+  document_style.SetFontInternal(Font(font_description, font_selector));
 }
 
 }  // namespace blink

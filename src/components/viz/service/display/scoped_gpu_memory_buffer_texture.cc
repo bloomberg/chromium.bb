@@ -5,7 +5,7 @@
 #include "components/viz/service/display/scoped_gpu_memory_buffer_texture.h"
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -49,8 +49,7 @@ ScopedGpuMemoryBufferTexture::ScopedGpuMemoryBufferTexture(
                                 GL_SCANOUT_CHROMIUM, size_.width(),
                                 size_.height());
   if (color_space_.IsValid()) {
-    gl->SetColorSpaceMetadataCHROMIUM(
-        gl_id_, reinterpret_cast<GLColorSpace>(&color_space_));
+    gl->SetColorSpaceMetadataCHROMIUM(gl_id_, color_space_.AsGLColorSpace());
   }
   gl->BindTexture(target_, 0);
 }

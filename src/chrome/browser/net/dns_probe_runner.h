@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom-forward.h"
 
 namespace network {
 namespace mojom {
@@ -73,6 +73,10 @@ class DnsProbeRunner : public network::ResolveHostClientBase {
       int32_t result,
       const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
+
+  net::DnsConfigOverrides GetConfigOverridesForTesting() {
+    return dns_config_overrides_;
+  }
 
  private:
   void CreateHostResolver();

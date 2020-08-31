@@ -16,6 +16,9 @@
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory_impl.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
@@ -87,6 +90,15 @@ void DisplayMediaAccessHandler::HandleRequest(
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile->GetPrefs()->GetBoolean(prefs::kScreenCaptureAllowed)) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, nullptr);
+    return;
+  }
 
 #if defined(OS_MACOSX)
   // Do not allow picker UI to be shown on a page that isn't in the foreground
@@ -225,6 +237,9 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
           display_notification_, visible_url, visible_url);
     }
   }
+
+  if (request_result == blink::mojom::MediaStreamRequestResult::OK)
+    UpdateTarget(pending_request.request, media_id);
 
   std::move(pending_request.callback)
       .Run(devices, request_result, std::move(ui));

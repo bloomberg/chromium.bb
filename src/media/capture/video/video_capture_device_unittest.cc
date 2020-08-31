@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -68,8 +69,9 @@
 #define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
-#elif defined(OS_WIN)
-// TODO(crbug.com/893494): Fails on win: error: Value of: device_descriptor.
+#elif defined(OS_WIN) || defined(OS_FUCHSIA)
+// Windows test bots don't have camera.
+// On Fuchsia the tests run under emulator that doesn't support camera.
 #define MAYBE_UsingRealWebcam_AllocateBadSize \
   DISABLED_UsingRealWebcam_AllocateBadSize
 #define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
@@ -96,7 +98,9 @@
 #define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
 #define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
-#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
+// Flaky crash: https://crbug.com/1069608
+#define MAYBE_UsingRealWebcam_CaptureWithSize \
+  DISABLED_UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_LINUX)
@@ -129,17 +133,14 @@
 #define WRAPPED_TEST_P(test_case_name, test_name) \
   TEST_P(test_case_name, test_name)
 
+using base::test::RunClosure;
 using ::testing::_;
 using ::testing::Invoke;
-using ::testing::SaveArg;
 using ::testing::Return;
+using ::testing::SaveArg;
 
 namespace media {
 namespace {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 void DumpError(media::VideoCaptureError,
                const base::Location& location,
@@ -164,15 +165,17 @@ class MockMFPhotoCallback final : public IMFCaptureEngineOnSampleCallback {
   MOCK_METHOD0(DoRelease, ULONG(void));
   MOCK_METHOD1(DoOnSample, HRESULT(IMFSample*));
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
     return DoQueryInterface(riid, object);
   }
 
-  STDMETHOD_(ULONG, AddRef)() override { return DoAddRef(); }
+  IFACEMETHODIMP_(ULONG) AddRef() override { return DoAddRef(); }
 
-  STDMETHOD_(ULONG, Release)() override { return DoRelease(); }
+  IFACEMETHODIMP_(ULONG) Release() override { return DoRelease(); }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override { return DoOnSample(sample); }
+  IFACEMETHODIMP OnSample(IMFSample* sample) override {
+    return DoOnSample(sample);
+  }
 };
 #endif
 
@@ -219,6 +222,18 @@ class MockImageCaptureClient
   mojom::PhotoStatePtr state_;
 };
 
+base::test::SingleThreadTaskEnvironment::MainThreadType kMainThreadType =
+#if defined(OS_MACOSX)
+    // Video capture code on MacOSX must run on a CFRunLoop enabled thread
+    // for interaction with AVFoundation.
+    base::test::SingleThreadTaskEnvironment::MainThreadType::UI;
+#elif defined(OS_FUCHSIA)
+    // FIDL APIs on Fuchsia requires IO thread.
+    base::test::SingleThreadTaskEnvironment::MainThreadType::IO;
+#else
+    base::test::SingleThreadTaskEnvironment::MainThreadType::DEFAULT;
+#endif
+
 }  // namespace
 
 class VideoCaptureDeviceTest
@@ -247,13 +262,7 @@ class VideoCaptureDeviceTest
   typedef VideoCaptureDevice::Client Client;
 
   VideoCaptureDeviceTest()
-      :
-#if defined(OS_MACOSX)
-        // Video capture code on MacOSX must run on a CFRunLoop enabled thread
-        // for interaction with AVFoundation.
-        task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
-#endif
+      : task_environment_(kMainThreadType),
         device_descriptors_(new VideoCaptureDeviceDescriptors()),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         video_capture_client_(CreateDeviceClient()),
@@ -354,6 +363,10 @@ class VideoCaptureDeviceTest
     video_capture_device_factory_->GetDeviceDescriptors(
         device_descriptors_.get());
 
+    if (device_descriptors_->empty()) {
+      DLOG(WARNING) << "No camera found";
+      return nullptr;
+    }
 #if defined(OS_ANDROID)
     for (const auto& descriptor : *device_descriptors_) {
       // Android deprecated/legacy devices capture on a single thread, which is
@@ -368,25 +381,11 @@ class VideoCaptureDeviceTest
     }
     DLOG(WARNING) << "No usable camera found";
     return nullptr;
-#endif
-
-    if (device_descriptors_->empty()) {
-      DLOG(WARNING) << "No camera found";
-      return nullptr;
-    }
-#if defined(OS_WIN)
-    // Dump the camera model to help debugging.
-    // TODO(alaoui.rda@gmail.com): remove after http://crbug.com/730068 is
-    // fixed.
-    LOG(INFO) << "Using camera "
-              << device_descriptors_->front().GetNameAndModel();
 #else
-    DLOG(INFO) << "Using camera "
-               << device_descriptors_->front().GetNameAndModel();
+    const auto& descriptor = device_descriptors_->front();
+    DLOG(INFO) << "Using camera " << descriptor.GetNameAndModel();
+    return std::make_unique<VideoCaptureDeviceDescriptor>(descriptor);
 #endif
-
-    return std::make_unique<VideoCaptureDeviceDescriptor>(
-        device_descriptors_->front());
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
@@ -476,8 +475,9 @@ class VideoCaptureDeviceTest
   std::unique_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
+// Causes a flaky crash on Chrome OS. https://crbug.com/1069608
 // Cause hangs on Windows Debug. http://crbug.com/417824
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS) || (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
 #else
 #define MAYBE_OpenInvalidDevice OpenInvalidDevice
@@ -761,7 +761,8 @@ void VideoCaptureDeviceTest::RunTakePhotoTestCase() {
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+  base::RepeatingClosure quit_closure =
+      BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));
@@ -814,7 +815,8 @@ void VideoCaptureDeviceTest::RunGetPhotoStateTestCase() {
   // first frame.
   WaitForCapturedFrame();
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+  base::RepeatingClosure quit_closure =
+      BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "ui/display/types/display_constants.h"
 
 class GURL;
 
@@ -49,13 +50,6 @@ class WebContents;
 // switched to another tab). This is both a performance and quality improvement
 // since scaling and letterboxing steps can be skipped in the capture pipeline.
 //
-// Content-fullscreen (for macOS only):
-// First, the browser window will not be fullscreened. Second, the WebContents's
-// view will not be displayed in the browser window but rather in a
-// separate window, SeparateFullscreenWindow, which will be fullscreened and
-// moved to a new space. This enables the user to have both the browser window
-// and the fullscreen content displayed separately at the same time.
-
 // This class implements fullscreen behaviour.
 class FullscreenController : public ExclusiveAccessControllerBase {
  public:
@@ -120,8 +114,13 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // |origin| represents the origin of the requesting frame inside the
   // WebContents. If empty, then the |web_contents|'s latest committed URL
   // origin will be used.
-  void EnterFullscreenModeForTab(content::WebContents* web_contents,
-                                 const GURL& origin);
+  // If the Window Placement experiment is enabled, fullscreen may be requested
+  // on a particular display. In that case, |display_id| is the display's id;
+  // otherwise, display::kInvalidDisplayId indicates no display is specified.
+  void EnterFullscreenModeForTab(
+      content::WebContents* web_contents,
+      const GURL& origin,
+      const int64_t display_id = display::kInvalidDisplayId);
 
   // Leave a tab-initiated fullscreen mode.
   // |web_contents| represents the tab that requests to no longer be fullscreen.
@@ -139,9 +138,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   GURL GetURLForExclusiveAccessBubble() const override;
   void ExitExclusiveAccessIfNecessary() override;
   // Callbacks /////////////////////////////////////////////////////////////////
-
-  // Called by Browser::WindowFullscreenStateWillChange.
-  void WindowFullscreenStateWillChange();
 
   // Called by Browser::WindowFullscreenStateChanged.
   void WindowFullscreenStateChanged();
@@ -168,8 +164,10 @@ class FullscreenController : public ExclusiveAccessControllerBase {
 
   void RecordBubbleReshowsHistogram(int bubble_reshow_count) override;
 
-  void ToggleFullscreenModeInternal(FullscreenInternalOption option);
-  void EnterFullscreenModeInternal(FullscreenInternalOption option);
+  void ToggleFullscreenModeInternal(FullscreenInternalOption option,
+                                    const int64_t display_id);
+  void EnterFullscreenModeInternal(FullscreenInternalOption option,
+                                   const int64_t display_id);
   void ExitFullscreenModeInternal();
   void SetFullscreenedTab(content::WebContents* tab, const GURL& origin);
 

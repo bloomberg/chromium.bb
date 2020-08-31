@@ -29,6 +29,7 @@ Description of common properties:
 """
 
 import collections
+import functools
 import logging
 import os
 import re
@@ -397,9 +398,17 @@ class Symbol(BaseSymbol):
       'component',
   )
 
-  def __init__(self, section_name, size_without_padding, address=None,
-               full_name=None, template_name=None, name=None, source_path=None,
-               object_path=None, flags=0, aliases=None):
+  def __init__(self,
+               section_name,
+               size_without_padding,
+               address=None,
+               full_name=None,
+               template_name=None,
+               name=None,
+               source_path=None,
+               object_path=None,
+               flags=0,
+               aliases=None):
     self.section_name = section_name
     self.address = address or 0
     self.full_name = full_name or ''
@@ -609,8 +618,13 @@ class SymbolGroup(BaseSymbol):
   )
 
   # template_name and full_name are useful when clustering symbol clones.
-  def __init__(self, symbols, filtered_symbols=None, full_name=None,
-               template_name=None, name='', section_name=None,
+  def __init__(self,
+               symbols,
+               filtered_symbols=None,
+               full_name=None,
+               template_name=None,
+               name='',
+               section_name=None,
                is_default_sorted=False):
     self._padding = None
     self._size = None
@@ -646,7 +660,7 @@ class SymbolGroup(BaseSymbol):
     """
     if isinstance(key, slice):
       return self._CreateTransformed(self._symbols.__getitem__(key))
-    if isinstance(key, basestring) or key > len(self._symbols):
+    if isinstance(key, str) or key > len(self._symbols):
       found = self.WhereAddressInRange(key)
       if len(found) != 1:
         raise KeyError('%d symbols found at address %s.' % (len(found), key))
@@ -749,17 +763,26 @@ class SymbolGroup(BaseSymbol):
   def CountUniqueSymbols(self):
     return sum(1 for s in self.IterUniqueSymbols())
 
-  def _CreateTransformed(self, symbols, filtered_symbols=None, full_name=None,
-                         template_name=None, name=None, section_name=None,
+  def _CreateTransformed(self,
+                         symbols,
+                         filtered_symbols=None,
+                         full_name=None,
+                         template_name=None,
+                         name=None,
+                         section_name=None,
                          is_default_sorted=None):
     if is_default_sorted is None:
       is_default_sorted = self.is_default_sorted
     if section_name is None:
       section_name = self.section_name
-    return self.__class__(symbols, filtered_symbols=filtered_symbols,
-                          full_name=full_name, template_name=template_name,
-                          name=name, section_name=section_name,
-                          is_default_sorted=is_default_sorted)
+    return self.__class__(
+        symbols,
+        filtered_symbols=filtered_symbols,
+        full_name=full_name,
+        template_name=template_name,
+        name=name,
+        section_name=section_name,
+        is_default_sorted=is_default_sorted)
 
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     """Sorts by abs(PSS)."""
@@ -768,8 +791,10 @@ class SymbolGroup(BaseSymbol):
       is_default_sorted = not reverse
       # Sort by PSS, but ensure ties are broken in a consistent manner.
       key = lambda s: (-abs(s.pss), s.full_name, s.object_path, s.section_name)
+    elif cmp_func is not None:
+      key = functools.cmp_to_key(cmp_func)
 
-    after_symbols = sorted(self._symbols, cmp_func, key, reverse)
+    after_symbols = sorted(self._symbols, key=key, reverse=reverse)
     return self._CreateTransformed(
         after_symbols, filtered_symbols=self._filtered_symbols,
         is_default_sorted=is_default_sorted)
@@ -889,7 +914,7 @@ class SymbolGroup(BaseSymbol):
 
     Args may be ints or hex strings. Default value for |end| is |start| + 1.
     """
-    if isinstance(start, basestring):
+    if isinstance(start, str):
       start = int(start, 16)
     if end is None:
       end = start + 1
@@ -913,7 +938,8 @@ class SymbolGroup(BaseSymbol):
         symbols.WherePathMatches(r'third_party').WhereMatches('foo').Inverted()
     """
     return self._CreateTransformed(
-        self._filtered_symbols, filtered_symbols=self._symbols,
+        self._filtered_symbols,
+        filtered_symbols=self._symbols,
         section_name=SECTION_MULTIPLE)
 
   def GroupedBy(self, func, min_count=0, group_factory=None):
@@ -958,7 +984,7 @@ class SymbolGroup(BaseSymbol):
     # Create the subgroups.
     include_singles = min_count >= 0
     min_count = abs(min_count)
-    for token, symbol_or_list in symbols_by_token.iteritems():
+    for token, symbol_or_list in symbols_by_token.items():
       count = 1
       if symbol_or_list.__class__ == list:
         count = len(symbol_or_list)
@@ -1017,11 +1043,17 @@ class SymbolGroup(BaseSymbol):
       sym = symbols[0]
       if token[1].startswith('*'):
         return self._CreateTransformed(
-            symbols, full_name=full_name, template_name=full_name,
-            name=full_name, section_name=sym.section_name)
+            symbols,
+            full_name=full_name,
+            template_name=full_name,
+            name=full_name,
+            section_name=sym.section_name)
       return self._CreateTransformed(
-          symbols, full_name=full_name, template_name=sym.template_name,
-          name=sym.name, section_name=sym.section_name)
+          symbols,
+          full_name=full_name,
+          template_name=sym.template_name,
+          name=sym.name,
+          section_name=sym.section_name)
 
     # A full second faster to cluster per-section. Plus, don't need create
     # (section_name, name) tuples in cluster_func.
@@ -1049,8 +1081,11 @@ class SymbolGroup(BaseSymbol):
     def group_factory(_, symbols):
       sym = symbols[0]
       return self._CreateTransformed(
-          symbols, full_name=sym.full_name, template_name=sym.template_name,
-          name=sym.name, section_name=sym.section_name)
+          symbols,
+          full_name=sym.full_name,
+          template_name=sym.template_name,
+          name=sym.name,
+          section_name=sym.section_name)
 
     return self.GroupedBy(
         lambda s: (same_name_only and s.full_name, id(s.aliases or s)),
@@ -1183,7 +1218,7 @@ class DeltaSymbolGroup(SymbolGroup):
 def _ExtractPrefixBeforeSeparator(string, separator, count):
   idx = -len(separator)
   prev_idx = None
-  for _ in xrange(count):
+  for _ in range(count):
     idx = string.find(separator, idx + len(separator))
     if idx < 0:
       break
@@ -1193,7 +1228,7 @@ def _ExtractPrefixBeforeSeparator(string, separator, count):
 
 def _ExtractSuffixAfterSeparator(string, separator, count):
   prev_idx = len(string) + 1
-  for _ in xrange(count):
+  for _ in range(count):
     idx = string.rfind(separator, 0, prev_idx - 1)
     if idx < 0:
       break

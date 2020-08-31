@@ -88,7 +88,7 @@ HomePageUndoBubble::HomePageUndoBubble(
       browser_(browser),
       undo_value_is_ntp_(undo_value_is_ntp),
       undo_url_(undo_url) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
   set_margins(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HOME_PAGE_UNDO);
@@ -160,7 +160,7 @@ bool HomeButton::GetDropFormats(
 }
 
 bool HomeButton::CanDrop(const OSExchangeData& data) {
-  return data.HasURL(ui::OSExchangeData::CONVERT_FILENAMES);
+  return data.HasURL(ui::CONVERT_FILENAMES);
 }
 
 int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {
@@ -170,8 +170,8 @@ int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {
 int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   GURL new_homepage_url;
   base::string16 title;
-  if (event.data().GetURLAndTitle(
-          ui::OSExchangeData::CONVERT_FILENAMES, &new_homepage_url, &title) &&
+  if (event.data().GetURLAndTitle(ui::CONVERT_FILENAMES, &new_homepage_url,
+                                  &title) &&
       new_homepage_url.is_valid()) {
     PrefService* prefs = browser_->profile()->GetPrefs();
     bool old_is_ntp = prefs->GetBoolean(prefs::kHomePageIsNewTabPage);

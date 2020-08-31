@@ -10,8 +10,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 // static
 TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
@@ -28,21 +30,20 @@ TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.visible_url = contents->GetVisibleURL();
+  // Allow empty title for chrome-untrusted:// URLs.
+  if (data.title.empty() &&
+      data.visible_url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    data.should_render_empty_title = true;
+  }
   data.last_committed_url = contents->GetLastCommittedURL();
   data.crashed_status = contents->GetCrashedStatus();
   data.incognito = contents->GetBrowserContext()->IsOffTheRecord();
   data.pinned = model->IsTabPinned(index);
-  data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
+  data.show_icon =
+      data.pinned || model->delegate()->ShouldDisplayFavicon(contents);
   data.blocked = model->IsTabBlocked(index);
   data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
-
-  // TODO(crbug.com/1004983): provide all current alerts in
-  // TabRendererData. Consumers that can only display 1 should handle
-  // this themselves.
-  auto alerts = chrome::GetTabAlertStatesForContents(contents);
-  data.alert_state =
-      alerts.empty() ? base::Optional<TabAlertState>() : alerts[0];
-
+  data.alert_state = chrome::GetTabAlertStatesForContents(contents);
   return data;
 }
 

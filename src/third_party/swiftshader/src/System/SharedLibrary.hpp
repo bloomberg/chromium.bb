@@ -16,9 +16,9 @@
 #define SharedLibrary_hpp
 
 #if defined(_WIN32)
-	#include <Windows.h>
+#	include <Windows.h>
 #else
-	#include <dlfcn.h>
+#	include <dlfcn.h>
 #endif
 
 #include <string>
@@ -67,105 +67,70 @@ void *loadLibrary(const std::string &libraryDirectory, const char *(&names)[n], 
 }
 
 #if defined(_WIN32)
-	inline void *loadLibrary(const char *path)
-	{
-		return (void*)LoadLibrary(path);
-	}
+inline void *loadLibrary(const char *path)
+{
+	return (void *)LoadLibrary(path);
+}
 
-	inline void *getLibraryHandle(const char *path)
-	{
-		HMODULE module = NULL;
-		GetModuleHandleEx(0, path, &module);
-		return (void*)module;
-	}
+inline void *getLibraryHandle(const char *path)
+{
+	HMODULE module = NULL;
+	GetModuleHandleEx(0, path, &module);
+	return (void *)module;
+}
 
-	inline void freeLibrary(void *library)
-	{
-		FreeLibrary((HMODULE)library);
-	}
+inline void freeLibrary(void *library)
+{
+	FreeLibrary((HMODULE)library);
+}
 
-	inline void *getProcAddress(void *library, const char *name)
-	{
-		return (void*)GetProcAddress((HMODULE)library, name);
-	}
-
-	inline std::string getModuleDirectory()
-	{
-		static int dummy_symbol = 0;
-
-		HMODULE module = NULL;
-		GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)&dummy_symbol, &module);
-
-		char filename[1024];
-		if(module && (GetModuleFileName(module, filename, sizeof(filename)) != 0))
-		{
-			std::string directory(filename);
-			return directory.substr(0, directory.find_last_of("\\/") + 1).c_str();
-		}
-		else
-		{
-			return "";
-		}
-	}
+inline void *getProcAddress(void *library, const char *name)
+{
+	return (void *)GetProcAddress((HMODULE)library, name);
+}
 #else
-	inline void *loadLibrary(const char *path)
+inline void *loadLibrary(const char *path)
+{
+	return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
+}
+
+inline void *getLibraryHandle(const char *path)
+{
+#	ifdef __ANDROID__
+	// bionic doesn't support RTLD_NOLOAD before L
+	return dlopen(path, RTLD_NOW | RTLD_LOCAL);
+#	else
+	void *resident = dlopen(path, RTLD_LAZY | RTLD_NOLOAD | RTLD_LOCAL);
+
+	if(resident)
 	{
-		return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
+		return dlopen(path, RTLD_LAZY | RTLD_LOCAL);  // Increment reference count
 	}
 
-	inline void *getLibraryHandle(const char *path)
+	return nullptr;
+#	endif
+}
+
+inline void freeLibrary(void *library)
+{
+	if(library)
 	{
-		#ifdef __ANDROID__
-			// bionic doesn't support RTLD_NOLOAD before L
-			return dlopen(path, RTLD_NOW | RTLD_LOCAL);
-		#else
-			void *resident = dlopen(path, RTLD_LAZY | RTLD_NOLOAD | RTLD_LOCAL);
+		dlclose(library);
+	}
+}
 
-			if(resident)
-			{
-				return dlopen(path, RTLD_LAZY | RTLD_LOCAL);   // Increment reference count
-			}
+inline void *getProcAddress(void *library, const char *name)
+{
+	void *symbol = dlsym(library, name);
 
-			return nullptr;
-		#endif
+	if(!symbol)
+	{
+		const char *reason = dlerror();  // Silence the error
+		(void)reason;
 	}
 
-	inline void freeLibrary(void *library)
-	{
-		if(library)
-		{
-			dlclose(library);
-		}
-	}
-
-	inline void *getProcAddress(void *library, const char *name)
-	{
-		void *symbol = dlsym(library, name);
-
-		if(!symbol)
-		{
-			const char *reason = dlerror();   // Silence the error
-			(void)reason;
-		}
-
-		return symbol;
-	}
-
-	inline std::string getModuleDirectory()
-	{
-		static int dummy_symbol = 0;
-
-		Dl_info dl_info;
-		if(dladdr(&dummy_symbol, &dl_info) != 0)
-		{
-			std::string directory(dl_info.dli_fname);
-			return directory.substr(0, directory.find_last_of("\\/") + 1).c_str();
-		}
-		else
-		{
-			return "";
-		}
-	}
+	return symbol;
+}
 #endif
 
-#endif   // SharedLibrary_hpp
+#endif  // SharedLibrary_hpp

@@ -28,24 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export default class Dialog extends UI.GlassPane {
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {GlassPane, PointerEventsBehavior} from './GlassPane.js';
+import {KeyboardShortcut, Keys} from './KeyboardShortcut.js';
+import {SplitWidget} from './SplitWidget.js';  // eslint-disable-line no-unused-vars
+import {WidgetFocusRestorer} from './Widget.js';
+
+export class Dialog extends GlassPane {
   constructor() {
     super();
     this.registerRequiredCSS('ui/dialog.css');
     this.contentElement.tabIndex = 0;
     this.contentElement.addEventListener('focus', () => this.widget().focus(), false);
     this.widget().setDefaultFocusedElement(this.contentElement);
-    this.setPointerEventsBehavior(UI.GlassPane.PointerEventsBehavior.BlockedByGlassPane);
+    this.setPointerEventsBehavior(PointerEventsBehavior.BlockedByGlassPane);
     this.setOutsideClickCallback(event => {
       this.hide();
       event.consume(true);
     });
-    UI.ARIAUtils.markAsModalDialog(this.contentElement);
-    /** @type {!UI.Dialog.OutsideTabIndexBehavior} */
+    ARIAUtils.markAsModalDialog(this.contentElement);
+    /** @type {!OutsideTabIndexBehavior} */
     this._tabIndexBehavior = OutsideTabIndexBehavior.DisableAllOutsideTabIndex;
     /** @type {!Map<!HTMLElement, number>} */
     this._tabIndexMap = new Map();
-    /** @type {?UI.WidgetFocusRestorer} */
+    /** @type {?WidgetFocusRestorer} */
     this._focusRestorer = null;
     this._closeOnEscape = true;
     /** @type {?Document} */
@@ -57,7 +66,7 @@ export default class Dialog extends UI.GlassPane {
    * @return {boolean}
    */
   static hasInstance() {
-    return !!UI.Dialog._instance;
+    return !!Dialog._instance;
   }
 
   /**
@@ -66,17 +75,17 @@ export default class Dialog extends UI.GlassPane {
    */
   show(where) {
     const document = /** @type {!Document} */ (
-        where instanceof Document ? where : (where || UI.inspectorView.element).ownerDocument);
+        where instanceof Document ? where : (where || self.UI.inspectorView.element).ownerDocument);
     this._targetDocument = document;
     this._targetDocument.addEventListener('keydown', this._targetDocumentKeyDownHandler, true);
 
-    if (UI.Dialog._instance) {
-      UI.Dialog._instance.hide();
+    if (Dialog._instance) {
+      Dialog._instance.hide();
     }
-    UI.Dialog._instance = this;
+    Dialog._instance = this;
     this._disableTabIndexOnElements(document);
     super.show(document);
-    this._focusRestorer = new UI.WidgetFocusRestorer(this.widget());
+    this._focusRestorer = new WidgetFocusRestorer(this.widget());
   }
 
   /**
@@ -90,7 +99,7 @@ export default class Dialog extends UI.GlassPane {
       this._targetDocument.removeEventListener('keydown', this._targetDocumentKeyDownHandler, true);
     }
     this._restoreTabIndexOnElements();
-    delete UI.Dialog._instance;
+    delete Dialog._instance;
   }
 
   /**
@@ -107,7 +116,7 @@ export default class Dialog extends UI.GlassPane {
   }
 
   /**
-   * @param {!UI.Dialog.OutsideTabIndexBehavior} tabIndexBehavior
+   * @param {!OutsideTabIndexBehavior} tabIndexBehavior
    */
   setOutsideTabIndexBehavior(tabIndexBehavior) {
     this._tabIndexBehavior = tabIndexBehavior;
@@ -123,7 +132,7 @@ export default class Dialog extends UI.GlassPane {
 
     let exclusionSet = /** @type {?Set.<!HTMLElement>} */ (null);
     if (this._tabIndexBehavior === OutsideTabIndexBehavior.PreserveMainViewTabIndex) {
-      exclusionSet = this._getMainWidgetTabIndexElements(UI.inspectorView.ownerSplit());
+      exclusionSet = this._getMainWidgetTabIndexElements(self.UI.inspectorView.ownerSplit());
     }
 
     this._tabIndexMap.clear();
@@ -140,7 +149,7 @@ export default class Dialog extends UI.GlassPane {
   }
 
   /**
-   * @param {?UI.SplitWidget} splitWidget
+   * @param {?SplitWidget} splitWidget
    * @return {!Set.<!HTMLElement>}
    */
   _getMainWidgetTabIndexElements(splitWidget) {
@@ -182,8 +191,7 @@ export default class Dialog extends UI.GlassPane {
    * @param {!Event} event
    */
   _onKeyDown(event) {
-    if (this._closeOnEscape && event.keyCode === UI.KeyboardShortcut.Keys.Esc.code &&
-        UI.KeyboardShortcut.hasNoModifiers(event)) {
+    if (this._closeOnEscape && event.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
       event.consume(true);
       this.hide();
     }
@@ -196,15 +204,3 @@ export const OutsideTabIndexBehavior = {
   PreserveMainViewTabIndex: Symbol('PreserveMainViewTabIndex'),
   PreserveTabIndex: Symbol('PreserveTabIndex')
 };
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.Dialog = Dialog;
-
-/** @enum {symbol} */
-UI.Dialog.OutsideTabIndexBehavior = OutsideTabIndexBehavior;

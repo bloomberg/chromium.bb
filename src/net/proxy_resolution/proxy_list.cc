@@ -5,7 +5,8 @@
 #include "net/proxy_resolution/proxy_list.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -22,6 +23,12 @@ namespace net {
 ProxyList::ProxyList() = default;
 
 ProxyList::ProxyList(const ProxyList& other) = default;
+
+ProxyList::ProxyList(ProxyList&& other) = default;
+
+ProxyList& ProxyList::operator=(const ProxyList& other) = default;
+
+ProxyList& ProxyList::operator=(ProxyList&& other) = default;
 
 ProxyList::~ProxyList() = default;
 

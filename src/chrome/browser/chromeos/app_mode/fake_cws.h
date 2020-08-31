@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_FAKE_CWS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -53,11 +56,11 @@ class FakeCWS {
   };
 
   void SetupWebStoreURL(const GURL& test_server_url);
-  void OverrideGalleryCommandlineSwitches(
-      GalleryUpdateMode gallery_update_mode);
+  void OverrideGalleryCommandlineSwitches();
 
   bool GetUpdateCheckContent(const std::vector<std::string>& ids,
-                             std::string* update_check_content);
+                             std::string* update_check_content,
+                             bool use_json);
 
   // Request handler for kiosk app update server.
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -65,13 +68,26 @@ class FakeCWS {
 
   GURL web_store_url_;
 
-  std::string has_update_template_;
-  std::string no_update_template_;
+  bool use_private_store_templates_;
   std::string update_check_end_point_;
 
-  // Map keyed by app_id to app_update_content.
-  std::map<std::string, std::string> id_to_update_check_content_map_;
+  // Map keyed by app_id to partially-bound functions that can generate the
+  // app's update content.
+  std::map<std::string, base::RepeatingCallback<std::string(bool, bool)>>
+      id_to_update_check_content_map_;
   int update_check_count_;
+
+  // FakeCWS overrides Chrome Web Store URLs, so extensions it provides in tests
+  // are considered as extensions from Chrome Web Store. ContentVerifier assumes
+  // that Chrome Web Store provides signed hashes for its extensions' resources
+  // (a.k.a. verified_contents.json). FakeCWS currently doesn't provide such
+  // hashes, so content verification fails with MISSING_ALL_HASHES, which is
+  // considered as a corruption. In order to not false-positively detect
+  // corruption in test extensions, disable content verification.
+  // TODO(https://crbug.com/1051560) Make FakeCWS support this feature of the
+  // real Chrome Web Store and remove this scoped ignore.
+  std::unique_ptr<extensions::ScopedIgnoreContentVerifierForTest>
+      scoped_ignore_content_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCWS);
 };

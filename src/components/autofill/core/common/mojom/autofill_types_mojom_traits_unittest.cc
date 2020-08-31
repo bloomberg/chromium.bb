@@ -14,7 +14,8 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -47,7 +48,7 @@ void CreateTestFieldDataPredictions(const std::string& signature,
 }
 
 void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
-  fill_data->form_renderer_id = 1234;
+  fill_data->form_renderer_id = autofill::FormRendererId(1234);
   fill_data->origin = GURL("https://foo.com/");
   fill_data->action = GURL("https://foo.com/login");
   test::CreateTestSelectField("TestUsernameFieldLabel", "TestUsernameFieldName",
@@ -59,18 +60,17 @@ void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
   fill_data->preferred_realm = "https://foo.com/";
   fill_data->uses_account_store = true;
 
-  base::string16 name;
   PasswordAndMetadata pr;
-  name = base::ASCIIToUTF16("Tom");
   pr.password = base::ASCIIToUTF16("Tom_Password");
   pr.realm = "https://foo.com/";
   pr.uses_account_store = false;
-  fill_data->additional_logins[name] = pr;
-  name = base::ASCIIToUTF16("Jerry");
+  pr.username = base::ASCIIToUTF16("Tom");
+  fill_data->additional_logins.push_back(pr);
   pr.password = base::ASCIIToUTF16("Jerry_Password");
   pr.realm = "https://bar.com/";
   pr.uses_account_store = true;
-  fill_data->additional_logins[name] = pr;
+  pr.username = base::ASCIIToUTF16("Jerry");
+  fill_data->additional_logins.push_back(pr);
 
   fill_data->wait_for_username = true;
 }
@@ -100,7 +100,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->new_password_value = base::ASCIIToUTF16("new_password_value");
   form->new_password_marked_by_site = false;
   form->new_password_element = base::ASCIIToUTF16("confirmation_password");
-  form->preferred = false;
   form->date_created = AutofillClock::Now();
   form->date_synced = AutofillClock::Now();
   form->blacklisted_by_user = false;
@@ -127,7 +126,7 @@ void CreatePasswordGenerationUIData(
   data->generation_element = base::ASCIIToUTF16("generation_element");
   data->text_direction = base::i18n::RIGHT_TO_LEFT;
   data->is_generation_element_password_type = false;
-  CreateTestPasswordForm(&data->password_form);
+  test::CreateTestAddressFormData(&data->form_data);
 }
 
 void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
@@ -148,11 +147,10 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
     auto iter2 = actual.additional_logins.begin();
     auto end2 = actual.additional_logins.end();
     for (; iter1 != end1 && iter2 != end2; ++iter1, ++iter2) {
-      EXPECT_EQ(iter1->first, iter2->first);
-      EXPECT_EQ(iter1->second.password, iter2->second.password);
-      EXPECT_EQ(iter1->second.realm, iter2->second.realm);
-      EXPECT_EQ(iter1->second.uses_account_store,
-                iter2->second.uses_account_store);
+      EXPECT_EQ(iter1->username, iter2->username);
+      EXPECT_EQ(iter1->password, iter2->password);
+      EXPECT_EQ(iter1->realm, iter2->realm);
+      EXPECT_EQ(iter1->uses_account_store, iter2->uses_account_store);
     }
     ASSERT_EQ(iter1, end1);
     ASSERT_EQ(iter2, end2);
@@ -170,7 +168,7 @@ void CheckEqualPassPasswordGenerationUIData(
   EXPECT_EQ(expected.is_generation_element_password_type,
             actual.is_generation_element_password_type);
   EXPECT_EQ(expected.text_direction, actual.text_direction);
-  EXPECT_EQ(expected.password_form, actual.password_form);
+  EXPECT_TRUE(expected.form_data.SameFormAs(actual.form_data));
 }
 
 }  // namespace
@@ -317,8 +315,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.should_autocomplete = true;
   input.role = FormFieldData::RoleAttribute::kPresentation;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
-  input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  input.properties_mask = FieldPropertiesFlags::kHadFocus;
   input.typed_value = base::ASCIIToUTF16("TestTypedValue");
+  input.bounds = gfx::RectF(1, 2, 10, 100);
 
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
@@ -330,7 +329,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
 TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   FormData input;
   test::CreateTestAddressFormData(&input);
-  input.username_predictions = {1, 13, 2};
+  input.username_predictions = {autofill::FieldRendererId(1),
+                                autofill::FieldRendererId(13),
+                                autofill::FieldRendererId(2)};
   input.button_titles.push_back(
       std::make_pair(base::ASCIIToUTF16("Sign-up"),
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
@@ -389,8 +390,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
 
 TEST_F(AutofillTypeTraitsTestImpl, PasswordFormGenerationData) {
   PasswordFormGenerationData input;
-  input.new_password_renderer_id = 1234u,
-  input.confirmation_password_renderer_id = 5789u;
+  input.new_password_renderer_id = autofill::FieldRendererId(1234u),
+  input.confirmation_password_renderer_id = autofill::FieldRendererId(5789u);
 
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());

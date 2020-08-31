@@ -9,9 +9,11 @@
 #include "cast/streaming/sender_report_parser.h"
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
+
+using openscreen::operator<<;
 
 constexpr Ssrc kSenderSsrc{1};
 constexpr Ssrc kReceiverSsrc{2};
@@ -25,8 +27,7 @@ class SenderReportTest : public testing::Test {
   }
 
  private:
-  RtcpSession session_{kSenderSsrc, kReceiverSsrc,
-                       openscreen::platform::Clock::now()};
+  RtcpSession session_{kSenderSsrc, kReceiverSsrc, Clock::now()};
   SenderReportBuilder builder_{&session_};
   SenderReportParser parser_{&session_};
 };
@@ -120,7 +121,7 @@ TEST_F(SenderReportTest, BuildPackets) {
     const bool with_report_block = (i == 1);
 
     RtcpSenderReport original;
-    original.reference_time = openscreen::platform::Clock::now();
+    original.reference_time = Clock::now();
     original.rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(5);
     original.send_packet_count = 55;
     original.send_octet_count = 20044;
@@ -161,6 +162,32 @@ TEST_F(SenderReportTest, BuildPackets) {
   }
 }
 
+TEST_F(SenderReportTest, ComputesTimePointsFromReportIds) {
+  // Note: The time_points can be off by up to 16 µs because of the loss of
+  // precision caused by truncating the NtpTimestamps into StatusReportIds.
+  constexpr std::chrono::microseconds kEpsilon{16};
+
+  // Test a sampling of time points over the last 65536 seconds to confirm the
+  // rollover correction logic is working.
+  Clock::time_point on_or_before = Clock::now() + std::chrono::seconds(65536);
+  constexpr int kNumIterations = 16;
+  constexpr int kSecondsPerStep = 4096;
+  for (int i = 0; i < kNumIterations; ++i) {
+    const Clock::time_point expected_time =
+        on_or_before - std::chrono::seconds(i * kSecondsPerStep);
+    const auto report_id =
+        ToStatusReportId(ntp_converter().ToNtpTimestamp(expected_time));
+    const Clock::time_point report_time =
+        builder()->GetRecentReportTime(report_id, on_or_before);
+    EXPECT_GE(on_or_before, report_time);
+    const auto absolute_difference = (expected_time < report_time)
+                                         ? (report_time - expected_time)
+                                         : (expected_time - report_time);
+    EXPECT_LE(absolute_difference, kEpsilon)
+        << expected_time << " vs " << report_time;
+  }
+}
+
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

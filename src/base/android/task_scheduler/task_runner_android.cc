@@ -16,16 +16,13 @@ namespace base {
 jlong JNI_TaskRunnerImpl_Init(
     JNIEnv* env,
     jint task_runner_type,
-    jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
     jboolean thread_pool,
-    jboolean current_thread,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data) {
   TaskTraits task_traits = PostTaskAndroid::CreateTaskTraits(
-      env, priority_set_explicitly, priority, may_block, thread_pool,
-      current_thread, extension_id, extension_data);
+      env, priority, may_block, thread_pool, extension_id, extension_data);
   scoped_refptr<TaskRunner> task_runner;
   switch (static_cast<TaskRunnerType>(task_runner_type)) {
     case TaskRunnerType::BASE:
@@ -38,11 +35,13 @@ jlong JNI_TaskRunnerImpl_Init(
       task_runner = CreateSingleThreadTaskRunner(task_traits);
       break;
   }
-  return reinterpret_cast<intptr_t>(new TaskRunnerAndroid(task_runner));
+  return reinterpret_cast<intptr_t>(new TaskRunnerAndroid(
+      task_runner, static_cast<TaskRunnerType>(task_runner_type)));
 }
 
-TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
+TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner,
+                                     TaskRunnerType type)
+    : task_runner_(std::move(task_runner)), type_(type) {}
 
 TaskRunnerAndroid::~TaskRunnerAndroid() = default;
 
@@ -63,7 +62,12 @@ void TaskRunnerAndroid::PostDelayedTask(
 }
 
 bool TaskRunnerAndroid::BelongsToCurrentThread(JNIEnv* env) {
-  return task_runner_->RunsTasksInCurrentSequence();
+  // TODO(crbug.com/1026641): Move BelongsToCurrentThread from TaskRunnerImpl to
+  // SequencedTaskRunnerImpl on the Java side too.
+  if (type_ == TaskRunnerType::BASE)
+    return false;
+  return static_cast<SequencedTaskRunner*>(task_runner_.get())
+      ->RunsTasksInCurrentSequence();
 }
 
 }  // namespace base

@@ -254,7 +254,6 @@ TEST(RasterSourceTest, RasterFullContents) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorBLACK);
-  recording_source->SetClearCanvasWithDebugColor(false);
 
   // Because the caller sets content opaque, it also promises that it
   // has at least filled in layer_bounds opaquely.
@@ -320,7 +319,6 @@ TEST(RasterSourceTest, RasterPartialContents) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
-  recording_source->SetClearCanvasWithDebugColor(false);
 
   // First record everything as white.
   PaintFlags white_flags;
@@ -415,7 +413,6 @@ TEST(RasterSourceTest, RasterPartialClear) {
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
   recording_source->SetRequiresClear(true);
-  recording_source->SetClearCanvasWithDebugColor(false);
 
   // First record everything as white.
   const unsigned alpha_dark = 10u;
@@ -462,7 +459,6 @@ TEST(RasterSourceTest, RasterPartialClear) {
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source_light->SetBackgroundColor(SK_ColorGREEN);
   recording_source_light->SetRequiresClear(true);
-  recording_source_light->SetClearCanvasWithDebugColor(false);
 
   // Record everything as a slightly lighter white.
   const unsigned alpha_light = 18u;
@@ -506,7 +502,6 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
   recording_source->SetRequiresClear(true);
-  recording_source->SetClearCanvasWithDebugColor(false);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
@@ -559,12 +554,11 @@ TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   StrictMock<MockCanvas> mock_canvas;
   Sequence s;
 
-  SkMatrix m;
-  m.setScale(1.f / recording_scale, 1.f / recording_scale);
+  SkScalar scale = 1.f / recording_scale;
 
   // The recording source has no ops, so will only do the setup.
   EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
-  EXPECT_CALL(mock_canvas, didConcat(m)).InSequence(s);
+  EXPECT_CALL(mock_canvas, didScale(scale, scale)).InSequence(s);
   EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
 
   gfx::Size small_size(50, 50);

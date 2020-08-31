@@ -298,7 +298,6 @@ he{
         ZZ{"אזור לא ידוע"}
     }
     Countries%short{
-        GB{"בריטניה"}
         US{"ארה״ב"}
     }
     Countries%variant{
@@ -309,5 +308,5 @@ he{
         SZ{"סווזילנד"}
         TL{"מזרח טימור"}
     }
-    Version{"36"}
+    Version{"37"}
 }

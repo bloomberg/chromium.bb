@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "src/objects/backing-store.h"
+
+#include <cstring>
+
 #include "src/execution/isolate.h"
 #include "src/handles/global-handles.h"
 #include "src/logging/counters.h"
+#include "src/wasm/wasm-constants.h"
 #include "src/wasm/wasm-engine.h"
 #include "src/wasm/wasm-limits.h"
 #include "src/wasm/wasm-objects-inl.h"
@@ -103,10 +107,19 @@ void RecordStatus(Isolate* isolate, AllocationStatus status) {
 
 inline void DebugCheckZero(void* start, size_t byte_length) {
 #if DEBUG
-  // Double check memory is zero-initialized.
+  // Double check memory is zero-initialized. Despite being DEBUG-only,
+  // this function is somewhat optimized for the benefit of test suite
+  // execution times (some tests allocate several gigabytes).
   const byte* bytes = reinterpret_cast<const byte*>(start);
-  for (size_t i = 0; i < byte_length; i++) {
+  const size_t kBaseCase = 32;
+  for (size_t i = 0; i < kBaseCase && i < byte_length; i++) {
     DCHECK_EQ(0, bytes[i]);
+  }
+  // Having checked the first kBaseCase bytes to be zero, we can now use
+  // {memcmp} to compare the range against itself shifted by that amount,
+  // thereby inductively checking the remaining bytes.
+  if (byte_length > kBaseCase) {
+    DCHECK_EQ(0, memcmp(bytes, bytes + kBaseCase, byte_length - kBaseCase));
   }
 #endif
 }
@@ -114,12 +127,12 @@ inline void DebugCheckZero(void* start, size_t byte_length) {
 
 bool BackingStore::ReserveAddressSpace(uint64_t num_bytes) {
   uint64_t reservation_limit = kAddressSpaceLimit;
+  uint64_t old_count = reserved_address_space_.load(std::memory_order_relaxed);
   while (true) {
-    uint64_t old_count = reserved_address_space_.load();
     if (old_count > reservation_limit) return false;
     if (reservation_limit - old_count < num_bytes) return false;
-    if (reserved_address_space_.compare_exchange_weak(old_count,
-                                                      old_count + num_bytes)) {
+    if (reserved_address_space_.compare_exchange_weak(
+            old_count, old_count + num_bytes, std::memory_order_acq_rel)) {
       return true;
     }
   }
@@ -152,7 +165,10 @@ void BackingStore::Clear() {
 BackingStore::~BackingStore() {
   GlobalBackingStoreRegistry::Unregister(this);
 
-  if (buffer_start_ == nullptr) return;  // nothing to deallocate
+  if (buffer_start_ == nullptr) {
+    Clear();
+    return;
+  }
 
   if (is_wasm_memory_) {
     DCHECK(free_on_destruct_);
@@ -250,7 +266,8 @@ std::unique_ptr<BackingStore> BackingStore::Allocate(
                                  false,         // is_wasm_memory
                                  true,          // free_on_destruct
                                  false,         // has_guard_regions
-                                 false);        // custom_deleter
+                                 false,         // custom_deleter
+                                 false);        // empty_deleter
 
   TRACE_BS("BS:alloc  bs=%p mem=%p (length=%zu)\n", result,
            result->buffer_start(), byte_length);
@@ -301,9 +318,11 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
 
   // Compute size of reserved memory.
 
-  size_t engine_max_pages = wasm::max_mem_pages();
-  size_t byte_capacity =
-      std::min(engine_max_pages, maximum_pages) * wasm::kWasmPageSize;
+  size_t engine_max_pages = wasm::max_maximum_mem_pages();
+  maximum_pages = std::min(engine_max_pages, maximum_pages);
+  CHECK_LE(maximum_pages,
+           std::numeric_limits<size_t>::max() / wasm::kWasmPageSize);
+  size_t byte_capacity = maximum_pages * wasm::kWasmPageSize;
   size_t reservation_size = GetReservationSize(guards, byte_capacity);
 
   //--------------------------------------------------------------------------
@@ -373,7 +392,8 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateWasmMemory(
                                  true,           // is_wasm_memory
                                  true,           // free_on_destruct
                                  guards,         // has_guard_regions
-                                 false);         // custom_deleter
+                                 false,          // custom_deleter
+                                 false);         // empty_deleter
 
   TRACE_BS("BSw:alloc bs=%p mem=%p (length=%zu, capacity=%zu)\n", result,
            result->buffer_start(), byte_length, byte_capacity);
@@ -396,7 +416,15 @@ std::unique_ptr<BackingStore> BackingStore::AllocateWasmMemory(
   DCHECK_EQ(0, wasm::kWasmPageSize % AllocatePageSize());
 
   // Enforce engine limitation on the maximum number of pages.
-  if (initial_pages > wasm::max_mem_pages()) return nullptr;
+  if (initial_pages > wasm::kV8MaxWasmMemoryPages) return nullptr;
+
+  // Trying to allocate 4 GiB on a 32-bit platform is guaranteed to fail.
+  // We don't lower the official max_maximum_mem_pages() limit because that
+  // would be observable upon instantiation; this way the effective limit
+  // on 32-bit platforms is defined by the allocator.
+  constexpr size_t kPlatformMax =
+      std::numeric_limits<size_t>::max() / wasm::kWasmPageSize;
+  if (initial_pages > kPlatformMax) return nullptr;
 
   auto backing_store =
       TryAllocateWasmMemory(isolate, initial_pages, maximum_pages, shared);
@@ -410,7 +438,6 @@ std::unique_ptr<BackingStore> BackingStore::AllocateWasmMemory(
 
 std::unique_ptr<BackingStore> BackingStore::CopyWasmMemory(Isolate* isolate,
                                                            size_t new_pages) {
-  DCHECK_GE(new_pages * wasm::kWasmPageSize, byte_length_);
   // Note that we could allocate uninitialized to save initialization cost here,
   // but since Wasm memories are allocated by the page allocator, the zeroing
   // cost is already built-in.
@@ -425,6 +452,9 @@ std::unique_ptr<BackingStore> BackingStore::CopyWasmMemory(Isolate* isolate,
   }
 
   if (byte_length_ > 0) {
+    // If the allocation was successful, then the new buffer must be at least
+    // as big as the old one.
+    DCHECK_GE(new_pages * wasm::kWasmPageSize, byte_length_);
     memcpy(new_backing_store->buffer_start(), buffer_start_, byte_length_);
   }
 
@@ -432,34 +462,63 @@ std::unique_ptr<BackingStore> BackingStore::CopyWasmMemory(Isolate* isolate,
 }
 
 // Try to grow the size of a wasm memory in place, without realloc + copy.
-bool BackingStore::GrowWasmMemoryInPlace(Isolate* isolate, size_t delta_pages,
-                                         size_t max_pages) {
+base::Optional<size_t> BackingStore::GrowWasmMemoryInPlace(Isolate* isolate,
+                                                           size_t delta_pages,
+                                                           size_t max_pages) {
+  // This function grows wasm memory by
+  // * changing the permissions of additional {delta_pages} pages to kReadWrite;
+  // * increment {byte_length_};
+  //
+  // As this code is executed concurrently, the following steps are executed:
+  // 1) Read the current value of {byte_length_};
+  // 2) Change the permission of all pages from {buffer_start_} to
+  //    {byte_length_} + {delta_pages} * {page_size} to kReadWrite;
+  //    * This operation may be executed racefully. The OS takes care of
+  //      synchronization.
+  // 3) Try to update {byte_length_} with a compare_exchange;
+  // 4) Repeat 1) to 3) until the compare_exchange in 3) succeeds;
+  //
+  // The result of this function is the {byte_length_} before growing in pages.
+  // The result of this function appears like the result of an RMW-update on
+  // {byte_length_}, i.e. two concurrent calls to this function will result in
+  // different return values if {delta_pages} != 0.
+  //
+  // Invariants:
+  // * Permissions are always set incrementally, i.e. for any page {b} with
+  //   kReadWrite permission, all pages between the first page {a} and page {b}
+  //   also have kReadWrite permission.
+  // * {byte_length_} is always lower or equal than the amount of memory with
+  //   permissions set to kReadWrite;
+  //     * This is guaranteed by incrementing {byte_length_} with a
+  //       compare_exchange after changing the permissions.
+  //     * This invariant is the reason why we cannot use a fetch_add.
   DCHECK(is_wasm_memory_);
   max_pages = std::min(max_pages, byte_capacity_ / wasm::kWasmPageSize);
-
-  if (delta_pages == 0) return true;          // degenerate grow.
-  if (delta_pages > max_pages) return false;  // would never work.
 
   // Do a compare-exchange loop, because we also need to adjust page
   // permissions. Note that multiple racing grows both try to set page
   // permissions for the entire range (to be RW), so the operating system
   // should deal with that raciness. We know we succeeded when we can
   // compare/swap the old length with the new length.
-  size_t old_length = 0;
+  size_t old_length = byte_length_.load(std::memory_order_relaxed);
+
+  if (delta_pages == 0)
+    return {old_length / wasm::kWasmPageSize};  // degenerate grow.
+  if (delta_pages > max_pages) return {};       // would never work.
+
   size_t new_length = 0;
   while (true) {
-    old_length = byte_length_.load(std::memory_order_acquire);
     size_t current_pages = old_length / wasm::kWasmPageSize;
 
     // Check if we have exceed the supplied maximum.
-    if (current_pages > (max_pages - delta_pages)) return false;
+    if (current_pages > (max_pages - delta_pages)) return {};
 
     new_length = (current_pages + delta_pages) * wasm::kWasmPageSize;
 
     // Try to adjust the permissions on the memory.
     if (!i::SetPermissions(GetPlatformPageAllocator(), buffer_start_,
                            new_length, PageAllocator::kReadWrite)) {
-      return false;
+      return {};
     }
     if (byte_length_.compare_exchange_weak(old_length, new_length,
                                            std::memory_order_acq_rel)) {
@@ -468,12 +527,12 @@ bool BackingStore::GrowWasmMemoryInPlace(Isolate* isolate, size_t delta_pages,
     }
   }
 
-  if (!is_shared_) {
+  if (!is_shared_ && free_on_destruct_) {
     // Only do per-isolate accounting for non-shared backing stores.
     reinterpret_cast<v8::Isolate*>(isolate)
         ->AdjustAmountOfExternalAllocatedMemory(new_length - old_length);
   }
-  return true;
+  return {old_length / wasm::kWasmPageSize};
 }
 
 void BackingStore::AttachSharedWasmMemoryObject(
@@ -486,10 +545,9 @@ void BackingStore::AttachSharedWasmMemoryObject(
 }
 
 void BackingStore::BroadcastSharedWasmMemoryGrow(
-    Isolate* isolate, std::shared_ptr<BackingStore> backing_store,
-    size_t new_pages) {
-  GlobalBackingStoreRegistry::BroadcastSharedWasmMemoryGrow(
-      isolate, backing_store, new_pages);
+    Isolate* isolate, std::shared_ptr<BackingStore> backing_store) {
+  GlobalBackingStoreRegistry::BroadcastSharedWasmMemoryGrow(isolate,
+                                                            backing_store);
 }
 
 void BackingStore::RemoveSharedWasmMemoryObjects(Isolate* isolate) {
@@ -510,7 +568,8 @@ std::unique_ptr<BackingStore> BackingStore::WrapAllocation(
                                  false,              // is_wasm_memory
                                  free_on_destruct,   // free_on_destruct
                                  false,              // has_guard_regions
-                                 false);             // custom_deleter
+                                 false,              // custom_deleter
+                                 false);             // empty_deleter
   result->SetAllocatorFromIsolate(isolate);
   TRACE_BS("BS:wrap   bs=%p mem=%p (length=%zu)\n", result,
            result->buffer_start(), result->byte_length());
@@ -519,8 +578,9 @@ std::unique_ptr<BackingStore> BackingStore::WrapAllocation(
 
 std::unique_ptr<BackingStore> BackingStore::WrapAllocation(
     void* allocation_base, size_t allocation_length,
-    v8::BackingStoreDeleterCallback deleter, void* deleter_data,
+    v8::BackingStore::DeleterCallback deleter, void* deleter_data,
     SharedFlag shared) {
+  bool is_empty_deleter = (deleter == v8::BackingStore::EmptyDeleter);
   auto result = new BackingStore(allocation_base,    // start
                                  allocation_length,  // length
                                  allocation_length,  // capacity
@@ -528,7 +588,8 @@ std::unique_ptr<BackingStore> BackingStore::WrapAllocation(
                                  false,              // is_wasm_memory
                                  true,               // free_on_destruct
                                  false,              // has_guard_regions
-                                 true);              // custom_deleter
+                                 true,               // custom_deleter
+                                 is_empty_deleter);  // empty_deleter
   result->type_specific_data_.deleter = {deleter, deleter_data};
   TRACE_BS("BS:wrap   bs=%p mem=%p (length=%zu)\n", result,
            result->buffer_start(), result->byte_length());
@@ -544,9 +605,25 @@ std::unique_ptr<BackingStore> BackingStore::EmptyBackingStore(
                                  false,    // is_wasm_memory
                                  true,     // free_on_destruct
                                  false,    // has_guard_regions
-                                 false);   // custom_deleter
+                                 false,    // custom_deleter
+                                 false);   // empty_deleter
 
   return std::unique_ptr<BackingStore>(result);
+}
+
+bool BackingStore::Reallocate(Isolate* isolate, size_t new_byte_length) {
+  CHECK(!is_wasm_memory_ && !custom_deleter_ && !globally_registered_ &&
+        free_on_destruct_);
+  auto allocator = get_v8_api_array_buffer_allocator();
+  CHECK_EQ(isolate->array_buffer_allocator(), allocator);
+  CHECK_EQ(byte_length_, byte_capacity_);
+  void* new_start =
+      allocator->Reallocate(buffer_start_, byte_length_, new_byte_length);
+  if (!new_start) return false;
+  buffer_start_ = new_start;
+  byte_capacity_ = new_byte_length;
+  byte_length_ = new_byte_length;
+  return true;
 }
 
 v8::ArrayBuffer::Allocator* BackingStore::get_v8_api_array_buffer_allocator() {
@@ -590,7 +667,7 @@ void GlobalBackingStoreRegistry::Register(
     // BackingStore per buffer_start() because the destructor of
     // of the BackingStore will be a no-op in that case.
 
-    // All WASM memory has to be registered.
+    // All Wasm memory has to be registered.
     CHECK(!backing_store->is_wasm_memory());
     return;
   }
@@ -688,8 +765,7 @@ void GlobalBackingStoreRegistry::AddSharedWasmMemoryObject(
 }
 
 void GlobalBackingStoreRegistry::BroadcastSharedWasmMemoryGrow(
-    Isolate* isolate, std::shared_ptr<BackingStore> backing_store,
-    size_t new_pages) {
+    Isolate* isolate, std::shared_ptr<BackingStore> backing_store) {
   {
     // The global lock protects the list of isolates per backing store.
     base::MutexGuard scope_lock(&impl()->mutex_);
@@ -720,11 +796,9 @@ void GlobalBackingStoreRegistry::UpdateSharedWasmMemoryObjects(
     Handle<JSArrayBuffer> old_buffer(memory_object->array_buffer(), isolate);
     std::shared_ptr<BackingStore> backing_store = old_buffer->GetBackingStore();
 
-    if (old_buffer->byte_length() != backing_store->byte_length()) {
-      Handle<JSArrayBuffer> new_buffer =
-          isolate->factory()->NewJSSharedArrayBuffer(std::move(backing_store));
-      memory_object->update_instances(isolate, new_buffer);
-    }
+    Handle<JSArrayBuffer> new_buffer =
+        isolate->factory()->NewJSSharedArrayBuffer(std::move(backing_store));
+    memory_object->update_instances(isolate, new_buffer);
   }
 }
 

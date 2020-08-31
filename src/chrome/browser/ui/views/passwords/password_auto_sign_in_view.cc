@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -27,16 +28,15 @@ PasswordAutoSignInView::~PasswordAutoSignInView() = default;
 
 PasswordAutoSignInView::PasswordAutoSignInView(
     content::WebContents* web_contents,
-    views::View* anchor_view,
-    DisplayReason reason)
+    views::View* anchor_view)
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
-                             reason,
-                             /*easily_dismissable=*/false) {
+                             /*easily_dismissable=*/false),
+      controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  const autofill::PasswordForm& form = model()->pending_password();
+  const autofill::PasswordForm& form = controller_.pending_password();
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_margins(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
@@ -44,11 +44,12 @@ PasswordAutoSignInView::PasswordAutoSignInView(
   CredentialsItemView* credential = new CredentialsItemView(
       this,
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD),
-      form.username_value, kButtonHoverColor, &form,
-      content::BrowserContext::GetDefaultStoragePartition(model()->GetProfile())
+      form.username_value, &form,
+      content::BrowserContext::GetDefaultStoragePartition(
+          controller_.GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      STYLE_HINT, views::style::STYLE_PRIMARY);
+      views::style::STYLE_HINT, views::style::STYLE_PRIMARY);
   credential->SetEnabled(false);
   AddChildView(credential);
 
@@ -63,6 +64,15 @@ PasswordAutoSignInView::PasswordAutoSignInView(
     timer_.Start(FROM_HERE, GetTimeout(), this,
                  &PasswordAutoSignInView::OnTimer);
   }
+}
+
+PasswordBubbleControllerBase* PasswordAutoSignInView::GetController() {
+  return &controller_;
+}
+
+const PasswordBubbleControllerBase* PasswordAutoSignInView::GetController()
+    const {
+  return &controller_;
 }
 
 void PasswordAutoSignInView::OnWidgetActivationChanged(views::Widget* widget,
@@ -87,7 +97,7 @@ void PasswordAutoSignInView::ButtonPressed(views::Button* sender,
 }
 
 void PasswordAutoSignInView::OnTimer() {
-  model()->OnAutoSignInToastTimeout();
+  controller_.OnAutoSignInToastTimeout();
   CloseBubble();
 }
 

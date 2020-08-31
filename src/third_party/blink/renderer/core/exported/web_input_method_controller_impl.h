@@ -49,11 +49,12 @@ class CORE_EXPORT WebInputMethodControllerImpl
 
   WebRange GetSelectionOffsets() const override;
 
-  void GetLayoutBounds(WebRect& control_bounds,
-                       WebRect& selection_bounds) override;
+  void GetLayoutBounds(WebRect* control_bounds,
+                       WebRect* selection_bounds) override;
+  bool IsInputPanelPolicyManual() const override;
   bool IsEditContextActive() const override;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   LocalFrame* GetFrame() const;

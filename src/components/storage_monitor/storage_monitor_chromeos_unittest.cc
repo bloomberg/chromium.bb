@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,8 +98,8 @@ class TestStorageMonitorCros : public StorageMonitorCros {
     return StorageMonitorCros::GetStorageInfoForPath(path, device_info);
   }
   void EjectDevice(const std::string& device_id,
-                   base::Callback<void(EjectStatus)> callback) override {
-    StorageMonitorCros::EjectDevice(device_id, callback);
+                   base::OnceCallback<void(EjectStatus)> callback) override {
+    StorageMonitorCros::EjectDevice(device_id, std::move(callback));
   }
 
  private:
@@ -534,8 +533,8 @@ TEST_F(StorageMonitorCrosTest, EjectTest) {
   EXPECT_CALL(*disk_mount_manager_mock_,
               UnmountPath(observer().last_attached().location(), _));
   monitor_->EjectDevice(observer().last_attached().device_id(),
-                        base::Bind(&StorageMonitorCrosTest::EjectNotify,
-                                   base::Unretained(this)));
+                        base::BindOnce(&StorageMonitorCrosTest::EjectNotify,
+                                       base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(StorageMonitor::EJECT_OK, status_);

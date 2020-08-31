@@ -4,6 +4,8 @@
 
 #include "platform/base/error.h"
 
+#include <sstream>
+
 namespace openscreen {
 
 Error::Error() = default;
@@ -32,6 +34,14 @@ bool Error::operator==(const Error& other) const {
 
 bool Error::operator!=(const Error& other) const {
   return !(*this == other);
+}
+
+bool Error::operator==(Code code) const {
+  return code_ == code;
+}
+
+bool Error::operator!=(Code code) const {
+  return !(*this == code);
 }
 
 std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
@@ -120,6 +130,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: FatalSSLError";
     case Error::Code::kRSAKeyGenerationFailure:
       return os << "Failure: RSAKeyGenerationFailure";
+    case Error::Code::kRSAKeyParseError:
+      return os << "Failure: RSAKeyParseError";
     case Error::Code::kEVPInitializationError:
       return os << "Failure: EVPInitializationError";
     case Error::Code::kCertificateCreationError:
@@ -166,6 +178,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: ItemNotFound";
     case Error::Code::kOperationInvalid:
       return os << "Failure: OperationInvalid";
+    case Error::Code::kOperationInProgress:
+      return os << "Failure: OperationInProgress";
     case Error::Code::kOperationCancelled:
       return os << "Failure: OperationCancelled";
     case Error::Code::kCastV2PeerCertEmpty:
@@ -220,10 +234,22 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: kCastV2PingTimeout";
     case Error::Code::kCastV2ChannelPolicyMismatch:
       return os << "Failure: kCastV2ChannelPolicyMismatch";
+    case Error::Code::kCreateSignatureFailed:
+      return os << "Failure: kCreateSignatureFailed";
+    case Error::Code::kUpdateReceivedRecordFailure:
+      return os << "Failure: kUpdateReceivedRecordFailure";
+    case Error::Code::kRecordPublicationError:
+      return os << "Failure: kRecordPublicationError";
   }
 
   // Unused 'return' to get around failure on GCC.
   return os;
+}
+
+std::string Error::ToString() const {
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 std::ostream& operator<<(std::ostream& out, const Error& error) {

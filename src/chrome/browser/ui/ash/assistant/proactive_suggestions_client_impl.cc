@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 
+#include <utility>
+
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -18,7 +20,7 @@ namespace {
 // Helpers ---------------------------------------------------------------------
 
 syncer::SyncService* GetSyncService(Profile* profile) {
-  return profile->IsSyncAllowed()
+  return ProfileSyncServiceFactory::IsSyncAllowed(profile)
              ? ProfileSyncServiceFactory::GetForProfile(profile)
              : nullptr;
 }
@@ -108,9 +110,9 @@ void ProactiveSuggestionsClientImpl::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   // When the currently active browser tab changes, that indicates there has
-  // been a change in the active contents.
+  // been a change in the active contents so we need to update active state.
   if (selection.active_tab_changed())
-    SetActiveContents(tab_strip_model->GetActiveWebContents());
+    UpdateActiveState();
 }
 
 void ProactiveSuggestionsClientImpl::DidStartNavigation(
@@ -125,7 +127,7 @@ void ProactiveSuggestionsClientImpl::DidChangeVerticalScrollDirection(
 }
 
 void ProactiveSuggestionsClientImpl::OnAssistantFeatureAllowedChanged(
-    ash::mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   // When the Assistant feature is allowed/disallowed we may need to resume/
   // pause observation of the browser. We accomplish this by updating active
   // state.
@@ -160,6 +162,11 @@ void ProactiveSuggestionsClientImpl::SetActiveBrowser(Browser* browser) {
     active_browser_->tab_strip_model()->RemoveObserver(this);
 
   active_browser_ = browser;
+
+  // We observe the tab strip associated with the active browser so as to detect
+  // changes to the currently active tab.
+  if (active_browser_)
+    active_browser_->tab_strip_model()->AddObserver(this);
 
   // We need to update active state to conditionally observe the active browser.
   UpdateActiveState();
@@ -220,27 +227,20 @@ void ProactiveSuggestionsClientImpl::UpdateActiveState() {
     return;
   }
 
-  auto* tab_strip_model = active_browser_->tab_strip_model();
-
   // We never observe browsers that are off the record and we never observe
   // browsers when the Assistant feature is not allowed. We also don't observe
   // the browser when the user has disabled either Assistant or screen context
   // or when the user has disabled history sync or is using a sync passphrase.
   if (active_browser_->profile()->IsOffTheRecord() ||
       ash::AssistantState::Get()->allowed_state() !=
-          ash::mojom::AssistantAllowedState::ALLOWED ||
+          chromeos::assistant::AssistantAllowedState::ALLOWED ||
       !ash::AssistantState::Get()->settings_enabled().value_or(false) ||
       !ash::AssistantState::Get()->context_enabled().value_or(false) ||
       !IsHistorySyncEnabledWithoutPassphrase(profile_)) {
-    tab_strip_model->RemoveObserver(this);
     SetActiveContents(nullptr);
     return;
   }
 
-  // We observe the tab strip associated with the active browser so as to detect
-  // changes to the currently active tab.
-  tab_strip_model->AddObserver(this);
-
-  // Perform an initial sync of the active contents.
-  SetActiveContents(tab_strip_model->GetActiveWebContents());
+  // Perform a sync of the active contents.
+  SetActiveContents(active_browser_->tab_strip_model()->GetActiveWebContents());
 }

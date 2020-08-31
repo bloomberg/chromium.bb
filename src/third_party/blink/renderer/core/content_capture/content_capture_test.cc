@@ -8,6 +8,7 @@
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -119,21 +120,26 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
       LocalFrame& local_frame_root,
       WebContentCaptureClientTestHelper& content_capture_client)
       : ContentCaptureManager(local_frame_root) {
-    content_capture_task_ = base::MakeRefCounted<ContentCaptureTaskTestHelper>(
+    content_capture_task_ = MakeGarbageCollected<ContentCaptureTaskTestHelper>(
         local_frame_root, GetTaskSessionForTesting(), content_capture_client);
   }
 
-  scoped_refptr<ContentCaptureTaskTestHelper> GetContentCaptureTask() {
+  ContentCaptureTaskTestHelper* GetContentCaptureTask() {
     return content_capture_task_;
   }
 
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(content_capture_task_);
+    ContentCaptureManager::Trace(visitor);
+  }
+
  protected:
-  scoped_refptr<ContentCaptureTask> CreateContentCaptureTask() override {
+  ContentCaptureTask* CreateContentCaptureTask() override {
     return content_capture_task_;
   }
 
  private:
-  scoped_refptr<ContentCaptureTaskTestHelper> content_capture_task_;
+  Member<ContentCaptureTaskTestHelper> content_capture_task_;
 };
 
 class ContentCaptureLocalFrameClientHelper : public EmptyLocalFrameClient {
@@ -192,7 +198,8 @@ class ContentCaptureTest : public PageTestBase {
     Element* div_element = GetElementById("d1");
     div_element->appendChild(element);
     UpdateAllLifecyclePhasesForTest();
-    created_node_id_ = GetContentCaptureManager()->GetNodeId(*node);
+    GetContentCaptureManager()->ScheduleTaskIfNeeded();
+    created_node_id_ = DOMNodeIds::IdForNode(node);
     Vector<DOMNodeId> captured_content{created_node_id_};
     content_capture_manager_->GetContentCaptureTask()
         ->SetCapturedContentForTesting(captured_content);
@@ -206,7 +213,7 @@ class ContentCaptureTest : public PageTestBase {
     return content_capture_client_.get();
   }
 
-  scoped_refptr<ContentCaptureTaskTestHelper> GetContentCaptureTask() const {
+  ContentCaptureTaskTestHelper* GetContentCaptureTask() const {
     return GetContentCaptureManager()->GetContentCaptureTask();
   }
 
@@ -268,7 +275,8 @@ class ContentCaptureTest : public PageTestBase {
       CHECK(layout_object);
       CHECK(layout_object->IsText());
       nodes_.push_back(node);
-      node_ids_.push_back(GetContentCaptureManager()->GetNodeId(*node));
+      GetContentCaptureManager()->ScheduleTaskIfNeeded();
+      node_ids_.push_back(DOMNodeIds::IdForNode(node));
     }
   }
 
@@ -430,7 +438,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
   // This performs gc for all DocumentSession, flushes the existing
   // SentContentCount and give a clean baseline for histograms.
   // We are not sure if it always work, maybe still be the source of flaky.
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  ThreadState::Current()->CollectAllGarbageForTesting();
   base::HistogramTester histograms;
 
   // The task stops before captures content.
@@ -507,7 +515,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
       ContentCaptureTaskHistogramReporter::kSentContentCount, 0u);
 
   GetContentCaptureTask()->ClearDocumentSessionsForTesting();
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  ThreadState::Current()->CollectAllGarbageForTesting();
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 2u);
   histograms.ExpectTotalCount(
@@ -523,7 +531,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
 
 TEST_F(ContentCaptureTest, RescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
-  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
   task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
@@ -540,7 +548,7 @@ TEST_F(ContentCaptureTest, RescheduleTask) {
 
 TEST_F(ContentCaptureTest, NotRescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
-  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
   task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
@@ -663,7 +671,7 @@ class ContentCaptureSimTest : public SimTest {
     auto* child_frame =
         To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
     child_document_ = child_frame->contentDocument();
-    child_document_->UpdateStyleAndLayout();
+    child_document_->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
     Compositor().BeginFrame();
     InitMainFrameNodeHolders();
     InitChildFrameNodeHolders(*child_document_);

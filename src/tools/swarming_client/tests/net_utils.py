@@ -7,11 +7,14 @@ import threading
 
 # third_party/
 from depot_tools import auto_stub
+import six
+
 from utils import net
 
 
 def make_fake_response(content, url, code=200, headers=None):
   """Returns HttpResponse with predefined content, useful in tests."""
+  assert isinstance(content, six.binary_type), content
   headers = dict(headers or {})
   headers['Content-Length'] = len(content)
   class _Fake(object):
@@ -30,7 +33,7 @@ def make_fake_response(content, url, code=200, headers=None):
 def make_fake_error(code, url, content=None, headers=None):
   """Returns HttpError that represents the given response, useful in tests."""
   if content is None:
-    content = 'Fake error body for code %d' % code
+    content = b'Fake error body for code %d' % code
   if headers is None:
     headers = {'Content-Type': 'text/plain'}
   return net.HttpError(make_fake_response(content, url, code, headers))
@@ -74,7 +77,7 @@ class TestCase(auto_stub.TestCase):
       self._requests = requests
 
   def _url_open(self, url, **kwargs):
-    logging.warn('url_open(%s, %s)', url[:500], str(kwargs)[:500])
+    logging.warning('url_open(%s, %s)', url[:500], str(kwargs)[:500])
     with self._lock:
       if not self._requests:
         return None
@@ -90,14 +93,14 @@ class TestCase(auto_stub.TestCase):
             expected_kwargs(kwargs)
           else:
             self.assertEqual(expected_kwargs, kwargs)
-          if result is not None:
-            return make_fake_response(result, url, headers)
+          if result is not None or headers is not None:
+            return make_fake_response(result, url, headers=headers)
           return None
     self.fail('Unknown request %s' % url)
     return None
 
   def _url_read_json(self, url, **kwargs):
-    logging.warn('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
+    logging.warning('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
     with self._lock:
       if not self._requests:
         return None

@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -239,6 +240,15 @@ class NavigationSimulator {
 
   // The following parameters are constant during the navigation and may only be
   // specified before calling |Start|.
+  //
+  // Sets the frame that initiated the navigation. Should only be specified for
+  // renderer-initiated navigations. For now this frame must belong to the same
+  // process as the frame that is navigating.
+  //
+  // TODO(https://crbug.com/1072790): Support cross-process initiators here by
+  // using NavigationRequest::CreateBrowserInitiated() (like
+  // RenderFrameProxyHost does) for the navigation.
+  virtual void SetInitiatorFrame(RenderFrameHost* initiator_frame_host) = 0;
   virtual void SetTransition(ui::PageTransition transition) = 0;
   virtual void SetHasUserGesture(bool has_user_gesture) = 0;
   // Note: ReloadType should only be specified for browser-initiated
@@ -296,6 +306,10 @@ class NavigationSimulator {
   // in throttles deferring the navigation with a call to Wait().
   virtual void SetAutoAdvance(bool auto_advance) = 0;
 
+  // Sets the ResolveErrorInfo to be set on the URLLoaderCompletionStatus.
+  virtual void SetResolveErrorInfo(
+      const net::ResolveErrorInfo& resolve_error_info) = 0;
+
   // Sets the SSLInfo to be set on the response. This should be called before
   // Commit().
   virtual void SetSSLInfo(const net::SSLInfo& ssl_info) = 0;
@@ -329,9 +343,7 @@ class NavigationSimulator {
   virtual void StopLoading() = 0;
 
   // Simulates the ongoing load stopping due to |error_code|.
-  virtual void FailLoading(const GURL& url,
-                           int error_code,
-                           const base::string16& error_description) = 0;
+  virtual void FailLoading(const GURL& url, int error_code) = 0;
 
  private:
   // This interface should only be implemented inside content.

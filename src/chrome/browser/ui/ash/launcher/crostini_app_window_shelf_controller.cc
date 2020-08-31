@@ -17,9 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,7 +38,6 @@
 #include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
-#include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
@@ -209,22 +209,26 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   const AccountId& primary_account_id =
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
-              primary_account_id));
-  const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
+  Profile* primary_account_profile =
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(primary_account_id);
+
+  const std::string& shelf_app_id = crostini::GetCrostiniShelfAppId(
+      primary_account_profile, exo::GetShellApplicationId(window),
+      exo::GetShellStartupId(window));
   // Windows without an application id set will get filtered out here.
   if (shelf_app_id.empty())
     return;
+
+  auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(
+          primary_account_profile);
 
   // At this point, all remaining windows are Crostini windows. Firstly, we add
   // support for forcibly closing it. We use the registration to retrieve the
   // app's name, but this may be null in the case of apps with no associated
   // launcher entry (i.e. no .desktop file), in which case the app's name is
   // unknown.
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(shelf_app_id);
   RegisterCrostiniWindowForForceClose(
       window, registration.has_value() ? registration->Name() : "");
@@ -241,8 +245,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   // respective apps take at most another few seconds to start.
   // Work is ongoing to make this occur as infrequently as possible.
   // See https://crbug.com/854911.
-  if (base::StartsWith(shelf_app_id, crostini::kCrostiniAppIdPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (crostini::IsUnmatchedCrostiniShelfAppId(shelf_app_id)) {
     owner()->GetShelfSpinnerController()->CloseCrostiniSpinners();
   }
 

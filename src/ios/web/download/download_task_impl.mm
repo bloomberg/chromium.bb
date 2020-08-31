@@ -173,13 +173,12 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
 
 namespace web {
 
-DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
+DownloadTaskImpl::DownloadTaskImpl(WebState* web_state,
                                    const GURL& original_url,
                                    NSString* http_method,
                                    const std::string& content_disposition,
                                    int64_t total_bytes,
                                    const std::string& mime_type,
-                                   ui::PageTransition page_transition,
                                    NSString* identifier,
                                    Delegate* delegate)
     : original_url_(original_url),
@@ -188,7 +187,6 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
       content_disposition_(content_disposition),
       original_mime_type_(mime_type),
       mime_type_(mime_type),
-      page_transition_(page_transition),
       identifier_([identifier copy]),
       web_state_(web_state),
       delegate_(delegate),
@@ -225,6 +223,10 @@ void DownloadTaskImpl::ShutDown() {
   [session_task_ cancel];
   session_task_ = nil;
   delegate_ = nullptr;
+}
+
+WebState* DownloadTaskImpl::GetWebState() {
+  return web_state_;
 }
 
 DownloadTask::State DownloadTaskImpl::GetState() const {
@@ -320,11 +322,6 @@ std::string DownloadTaskImpl::GetOriginalMimeType() const {
 std::string DownloadTaskImpl::GetMimeType() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return mime_type_;
-}
-
-ui::PageTransition DownloadTaskImpl::GetTransitionType() const {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return page_transition_;
 }
 
 base::string16 DownloadTaskImpl::GetSuggestedFilename() const {
@@ -489,7 +486,10 @@ void DownloadTaskImpl::OnDownloadFinished(int error_code) {
   // If downloads manager's flag is enabled, keeps the downloaded file. The
   // writer deletes it if it owns it, that's why it shouldn't owns it anymore
   // when the current download is finished.
-  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads))
+  // Check if writer_->AsFileWriter() is necessary because in some cases the
+  // writer isn't a fileWriter as for Passkit downloads for example.
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads) &&
+      writer_->AsFileWriter())
     writer_->AsFileWriter()->DisownFile();
   error_code_ = error_code;
   state_ = State::kComplete;

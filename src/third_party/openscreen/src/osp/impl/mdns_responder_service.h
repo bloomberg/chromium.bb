@@ -34,29 +34,27 @@ class MdnsResponderAdapterFactory {
 
 class MdnsResponderService : public ServiceListenerImpl::Delegate,
                              public ServicePublisherImpl::Delegate,
-                             public platform::UdpSocket::Client {
+                             public UdpSocket::Client {
  public:
   MdnsResponderService(
-      platform::ClockNowFunctionPtr now_function,
-      platform::TaskRunner* task_runner,
+      ClockNowFunctionPtr now_function,
+      TaskRunner* task_runner,
       const std::string& service_name,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform);
   virtual ~MdnsResponderService() override;
 
-  void SetServiceConfig(
-      const std::string& hostname,
-      const std::string& instance,
-      uint16_t port,
-      const std::vector<platform::NetworkInterfaceIndex> whitelist,
-      const std::map<std::string, std::string>& txt_data);
+  void SetServiceConfig(const std::string& hostname,
+                        const std::string& instance,
+                        uint16_t port,
+                        const std::vector<NetworkInterfaceIndex> whitelist,
+                        const std::map<std::string, std::string>& txt_data);
 
   // UdpSocket::Client overrides.
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnError(UdpSocket* socket, Error error) override;
 
   // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;
@@ -98,7 +96,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
-    platform::UdpSocket* ptr_socket = nullptr;
+    UdpSocket* ptr_socket = nullptr;
     DomainName domain_name;
     uint16_t port = 0;
     bool has_ptr_record = false;
@@ -116,7 +114,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   };
 
   struct NetworkScopedDomainName {
-    platform::UdpSocket* socket;
+    UdpSocket* socket;
     DomainName domain_name;
   };
 
@@ -144,7 +142,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
                       InstanceNameSet* modified_instance_names);
   bool HandleTxtEvent(const TxtEvent& txt_event,
                       InstanceNameSet* modified_instance_names);
-  bool HandleAddressEvent(platform::UdpSocket* socket,
+  bool HandleAddressEvent(UdpSocket* socket,
                           QueryEventHeader::Type response_type,
                           const DomainName& domain_name,
                           bool a_event,
@@ -155,13 +153,11 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   bool HandleAaaaEvent(const AaaaEvent& aaaa_event,
                        InstanceNameSet* modified_instance_names);
 
-  HostInfo* AddOrGetHostInfo(platform::UdpSocket* socket,
-                             const DomainName& domain_name);
-  HostInfo* GetHostInfo(platform::UdpSocket* socket,
-                        const DomainName& domain_name);
+  HostInfo* AddOrGetHostInfo(UdpSocket* socket, const DomainName& domain_name);
+  HostInfo* GetHostInfo(UdpSocket* socket, const DomainName& domain_name);
   bool IsServiceReady(const ServiceInstance& instance, HostInfo* host) const;
-  platform::NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
-      const platform::UdpSocket* socket) const;
+  NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
+      const UdpSocket* socket) const;
 
   // Runs background tasks to manage the internal mDNS state.
   void RunBackgroundTasks();
@@ -175,7 +171,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   std::string service_hostname_;
   std::string service_instance_name_;
   uint16_t service_port_;
-  std::vector<platform::NetworkInterfaceIndex> interface_index_whitelist_;
+  std::vector<NetworkInterfaceIndex> interface_index_whitelist_;
   std::map<std::string, std::string> service_txt_data_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;
@@ -199,7 +195,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   std::map<std::string, ServiceInfo> receiver_info_;
 
-  platform::TaskRunner* const task_runner_;
+  TaskRunner* const task_runner_;
 
   // Scheduled to run periodic background tasks.
   Alarm background_tasks_alarm_;

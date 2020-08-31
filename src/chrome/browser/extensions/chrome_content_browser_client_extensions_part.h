@@ -12,10 +12,9 @@
 #include "base/optional.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "content/public/browser/browser_or_resource_context.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -46,8 +45,7 @@ class ChromeContentBrowserClientExtensionsPart
       bool is_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url);
-  static bool ShouldUseProcessPerSite(Profile* profile,
-                                      const GURL& effective_url);
+  static bool ShouldUseProcessPerSite(Profile* profile, const GURL& site_url);
   static bool ShouldUseSpareRenderProcessHost(Profile* profile,
                                               const GURL& site_url);
   static bool DoesSiteRequireDedicatedProcess(
@@ -88,8 +86,9 @@ class ChromeContentBrowserClientExtensionsPart
       content::BrowserContext* browser_context);
 
   static void OverrideURLLoaderFactoryParams(
-      content::RenderProcessHost* process,
+      content::BrowserContext* browser_context,
       const url::Origin& origin,
+      bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params);
 
   static bool IsBuiltinComponent(content::BrowserContext* browser_context,

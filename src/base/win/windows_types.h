@@ -68,6 +68,8 @@ typedef LONG_PTR SSIZE_T, *PSSIZE_T;
 typedef DWORD ACCESS_MASK;
 typedef ACCESS_MASK REGSAM;
 
+typedef LONG NTSTATUS;
+
 // As defined in guiddef.h.
 #ifndef _REFGUID_DEFINED
 #define _REFGUID_DEFINED
@@ -93,6 +95,7 @@ CHROME_DECLARE_HANDLE(HWND);
 typedef LPVOID HINTERNET;
 typedef HINSTANCE HMODULE;
 typedef PVOID LSA_HANDLE;
+typedef PVOID HDEVINFO;
 
 // Forward declare some Windows struct/typedef sets.
 
@@ -114,6 +117,8 @@ typedef struct tagMENUITEMINFOW MENUITEMINFOW, MENUITEMINFO;
 
 typedef struct tagNMHDR NMHDR;
 
+typedef struct _SP_DEVINFO_DATA SP_DEVINFO_DATA;
+
 typedef PVOID PSID;
 
 // Declare Chrome versions of some Windows structures. These are needed for
@@ -129,9 +134,10 @@ struct CHROME_CONDITION_VARIABLE {
   PVOID Ptr;
 };
 
-
 // Define some commonly used Windows constants. Note that the layout of these
 // macros - including internal spacing - must be 100% consistent with windows.h.
+
+// clang-format off
 
 #ifndef INVALID_HANDLE_VALUE
 // Work around there being two slightly different definitions in the SDK.
@@ -198,6 +204,8 @@ struct CHROME_CONDITION_VARIABLE {
                                   KEY_CREATE_LINK)            \
                                   &                           \
                                  (~SYNCHRONIZE))
+
+// clang-format on
 
 // Define some macros needed when prototyping Windows functions.
 

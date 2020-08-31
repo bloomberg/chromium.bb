@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_view_controller_model_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -15,9 +16,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kManageSyncTableViewAccessibilityIdentifier =
-    @"ManageSyncTableViewAccessibilityIdentifier";
 
 @implementation ManageSyncSettingsTableViewController
 
@@ -33,6 +31,14 @@ NSString* const kManageSyncTableViewAccessibilityIdentifier =
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self reloadData];
+}
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.presentationDelegate
+        manageSyncSettingsTableViewControllerWasRemoved:self];
+  }
 }
 
 #pragma mark - Private
@@ -63,13 +69,6 @@ NSString* const kManageSyncTableViewAccessibilityIdentifier =
     switchCell.switchView.tag = item.type;
   }
   return cell;
-}
-
-#pragma mark - SettingsControllerProtocol
-
-- (void)viewControllerWasPopped {
-  [self.presentationDelegate
-      manageSyncSettingsTableViewControllerWasPopped:self];
 }
 
 #pragma mark - ChromeTableViewController

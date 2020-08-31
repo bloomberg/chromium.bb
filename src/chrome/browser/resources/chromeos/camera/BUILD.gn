@@ -5,9 +5,7 @@
 chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
 
 group("closure_compile") {
-  deps = [
-    "src/js:closure_compile",
-  ]
+  deps = [ "src/js:closure_compile" ]
 }
 
 group("chrome_camera_app") {
@@ -25,6 +23,7 @@ group("chrome_camera_app") {
     ":chrome_camera_app_js",
     ":chrome_camera_app_js_browser_proxy",
     ":chrome_camera_app_js_device",
+    ":chrome_camera_app_js_lib",
     ":chrome_camera_app_js_models",
     ":chrome_camera_app_js_mojo",
     ":chrome_camera_app_js_views",
@@ -36,23 +35,15 @@ group("chrome_camera_app") {
 }
 
 copy("chrome_camera_app_base") {
-  sources = [
-    "src/manifest.json",
-  ]
+  sources = [ "src/manifest.json" ]
 
-  outputs = [
-    "$chrome_camera_app_dir/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_css") {
-  sources = [
-    "src/css/main.css",
-  ]
+  sources = [ "src/css/main.css" ]
 
-  outputs = [
-    "$chrome_camera_app_dir/css/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/css/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_images") {
@@ -87,10 +78,6 @@ copy("chrome_camera_app_images") {
     "src/images/camera_shutter_photo_start_hover.svg",
     "src/images/camera_shutter_photo_stop.svg",
     "src/images/camera_shutter_photo_stop_hover.svg",
-    "src/images/camera_shutter_video_start.svg",
-    "src/images/camera_shutter_video_start_hover.svg",
-    "src/images/camera_shutter_video_stop.svg",
-    "src/images/camera_shutter_video_stop_hover.svg",
     "src/images/settings_button_back.svg",
     "src/images/settings_button_expand.svg",
     "src/images/settings_feedback.svg",
@@ -101,21 +88,21 @@ copy("chrome_camera_app_images") {
     "src/images/spinner.svg",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/images/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/images/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js") {
   sources = [
     "src/js/background.js",
+    "src/js/background_ops.js",
     "src/js/chrome_util.js",
+    "src/js/error.js",
     "src/js/gallerybutton.js",
-    "src/js/google-analytics-bundle.js",
     "src/js/intent.js",
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
+    "src/js/perf.js",
     "src/js/sound.js",
     "src/js/state.js",
     "src/js/toast.js",
@@ -124,19 +111,17 @@ copy("chrome_camera_app_js") {
     "src/js/util.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_browser_proxy") {
   sources = [
+    # TODO(b/129956426): Remove dependency used only in closure compiler check.
     "src/js/browser_proxy/browser_proxy.js",
+    "src/js/browser_proxy/browser_proxy_interface.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/browser_proxy/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/browser_proxy/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_device") {
@@ -147,25 +132,33 @@ copy("chrome_camera_app_js_device") {
     "src/js/device/error.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/device/{{source_file_part}}",
+  outputs = [ "$chrome_camera_app_dir/js/device/{{source_file_part}}" ]
+}
+
+copy("chrome_camera_app_js_lib") {
+  sources = [
+    "src/js/lib/analytics.js",
+    "src/js/lib/comlink.js",
+    "src/js/lib/ffmpeg.js",
+    "src/js/lib/ffmpeg.wasm",
   ]
+
+  outputs = [ "$chrome_camera_app_dir/js/lib/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_models") {
   sources = [
-    "src/js/models/file_video_saver.js",
+    "src/js/models/async_writer.js",
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
-    "src/js/models/gallery.js",
-    "src/js/models/intent_video_saver.js",
+    "src/js/models/mp4_video_processor.js",
+    "src/js/models/nop_video_processor.js",
     "src/js/models/result_saver.js",
-    "src/js/models/video_saver_interface.js",
+    "src/js/models/video_saver.js",
+    "src/js/models/waitable_event.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/models/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/models/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_mojo") {
@@ -175,9 +168,7 @@ copy("chrome_camera_app_js_mojo") {
     "src/js/mojo/image_capture.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/mojo/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/mojo/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_views") {
@@ -190,9 +181,7 @@ copy("chrome_camera_app_js_views") {
     "src/js/views/warning.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/views/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/views/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_views_camera") {
@@ -206,9 +195,7 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/timertick.js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/views/camera/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/views/camera/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_sounds") {
@@ -221,19 +208,16 @@ copy("chrome_camera_app_sounds") {
     "src/sounds/tick_start.ogg",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/sounds/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/sounds/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_views") {
   sources = [
+    "src/views/background.html",
     "src/views/main.html",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/views/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/views/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_mojo_generated") {
@@ -246,6 +230,8 @@ copy("chrome_camera_app_mojo_generated") {
     "$root_gen_dir/media/capture/video/chromeos/mojom/camera_metadata.mojom-lite.js",
     "$root_gen_dir/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-lite.js",
     "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
+    "$root_gen_dir/mojo/public/mojom/base/time.mojom-lite.js",
+    "$root_gen_dir/third_party/blink/public/mojom/idle/idle_manager.mojom-lite.js",
     "$root_gen_dir/ui/gfx/geometry/mojom/geometry.mojom-lite.js",
     "$root_gen_dir/ui/gfx/range/mojom/range.mojom-lite.js",
   ]
@@ -257,11 +243,10 @@ copy("chrome_camera_app_mojo_generated") {
     "//media/capture/mojom:image_capture_js",
     "//media/capture/video/chromeos/mojom:cros_camera_js",
     "//mojo/public/js:bindings_lite",
+    "//third_party/blink/public/mojom:mojom_platform_js",
     "//ui/gfx/geometry/mojom:mojom_js",
     "//ui/gfx/range/mojom:mojom_js",
   ]
 
-  outputs = [
-    "$chrome_camera_app_dir/js/mojo/{{source_file_part}}",
-  ]
+  outputs = [ "$chrome_camera_app_dir/js/mojo/{{source_file_part}}" ]
 }

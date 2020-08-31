@@ -30,10 +30,6 @@
 
 namespace blink {
 
-WebGLRenderbuffer* WebGLRenderbuffer::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLRenderbuffer>(ctx);
-}
-
 WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       internal_format_(GL_RGBA4),
@@ -63,7 +59,7 @@ int WebGLRenderbuffer::UpdateMultisampleState(bool multisampled) {
   return result;
 }
 
-void WebGLRenderbuffer::Trace(blink::Visitor* visitor) {
+void WebGLRenderbuffer::Trace(Visitor* visitor) {
   WebGLSharedPlatform3DObject::Trace(visitor);
 }
 

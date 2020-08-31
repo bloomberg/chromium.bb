@@ -35,6 +35,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) override;
   std::vector<const char*> GetRequiredDeviceExtensions() override;
+  std::vector<const char*> GetOptionalDeviceExtensions() override;
   VkFence CreateVkFenceForGpuFence(VkDevice vk_device) override;
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
@@ -47,15 +48,11 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
   VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
-  bool CreateImageFromGpuMemoryHandle(
-      VkDevice vk_device,
+  std::unique_ptr<gpu::VulkanImage> CreateImageFromGpuMemoryHandle(
+      gpu::VulkanDeviceQueue* device_queue,
       gfx::GpuMemoryBufferHandle gmb_handle,
       gfx::Size size,
-      VkImage* vk_image,
-      VkImageCreateInfo* vk_image_info,
-      VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size,
-      base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) override;
+      VkFormat vk_format) override;
   std::unique_ptr<gpu::SysmemBufferCollection> RegisterSysmemBufferCollection(
       VkDevice device,
       gfx::SysmemBufferCollectionId id,

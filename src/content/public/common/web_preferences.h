@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
@@ -122,6 +123,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool webgl_errors_to_console_enabled;
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
+  bool new_canvas_2d_api_enabled;
   bool antialiased_2d_canvas_disabled;
   bool antialiased_clips_2d_canvas_enabled;
   int accelerated_2d_canvas_msaa_sample_count;
@@ -198,6 +200,8 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  bool text_tracks_enabled;
+
   // These fields specify the foreground and background color for WebVTT text
   // tracks. Their values can be any legal CSS color descriptor.
   std::string text_track_background_color;
@@ -209,6 +213,7 @@ struct CONTENT_EXPORT WebPreferences {
   std::string text_track_text_size;
   std::string text_track_text_shadow;
   std::string text_track_font_family;
+  std::string text_track_font_style;
   // Specifies the value for CSS font-variant property.
   std::string text_track_font_variant;
 
@@ -264,8 +269,6 @@ struct CONTENT_EXPORT WebPreferences {
   // If enabled, fullscreen should be entered/exited when the device is rotated
   // to/from the orientation of the video.
   bool video_rotate_to_fullscreen_enabled;
-  // If enabled, video fullscreen detection will be enabled.
-  bool video_fullscreen_detection_enabled;
   bool embedded_media_experience_enabled;
   // Enable 8 (#RRGGBBAA) and 4 (#RGBA) value hex colors in CSS Android
   // WebView quirk (http://crbug.com/618472).
@@ -313,6 +316,12 @@ struct CONTENT_EXPORT WebPreferences {
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
 
+  // The preferred color scheme for the web content. The scheme is used to
+  // evaluate the prefers-color-scheme media query and resolve UA color scheme
+  // to be used based on the supported-color-schemes META tag and CSS property.
+  blink::PreferredColorScheme preferred_color_scheme =
+      blink::PreferredColorScheme::kNoPreference;
+
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.
   net::EffectiveConnectionType low_priority_iframes_threshold;
@@ -348,6 +357,10 @@ struct CONTENT_EXPORT WebPreferences {
   // Setting to false disables upgrades to HTTPS for HTTP resources in HTTPS
   // sites.
   bool allow_mixed_content_upgrades;
+
+  // Whether the focused element should always be indicated (for example, by
+  // forcing :focus-visible to match regardless of focus method).
+  bool always_show_focus;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

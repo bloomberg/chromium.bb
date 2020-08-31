@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/process/process.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"

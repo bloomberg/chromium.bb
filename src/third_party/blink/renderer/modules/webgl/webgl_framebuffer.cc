@@ -41,11 +41,9 @@ const char kIncompleteOpaque[] =
 class WebGLRenderbufferAttachment final
     : public WebGLFramebuffer::WebGLAttachment {
  public:
-  static WebGLFramebuffer::WebGLAttachment* Create(WebGLRenderbuffer*);
-
   explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "WebGLAttachment"; }
 
  private:
@@ -63,12 +61,7 @@ class WebGLRenderbufferAttachment final
   Member<WebGLRenderbuffer> renderbuffer_;
 };
 
-WebGLFramebuffer::WebGLAttachment* WebGLRenderbufferAttachment::Create(
-    WebGLRenderbuffer* renderbuffer) {
-  return MakeGarbageCollected<WebGLRenderbufferAttachment>(renderbuffer);
-}
-
-void WebGLRenderbufferAttachment::Trace(blink::Visitor* visitor) {
+void WebGLRenderbufferAttachment::Trace(Visitor* visitor) {
   visitor->Trace(renderbuffer_);
   WebGLFramebuffer::WebGLAttachment::Trace(visitor);
 }
@@ -109,17 +102,12 @@ void WebGLRenderbufferAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
  public:
-  static WebGLFramebuffer::WebGLAttachment* Create(WebGLTexture*,
-                                                   GLenum target,
-                                                   GLint level,
-                                                   GLint layer);
-
   WebGLTextureAttachment(WebGLTexture*,
                          GLenum target,
                          GLint level,
                          GLint layer);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "WebGLTextureAttachment";
   }
@@ -142,16 +130,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
   GLint layer_;
 };
 
-WebGLFramebuffer::WebGLAttachment* WebGLTextureAttachment::Create(
-    WebGLTexture* texture,
-    GLenum target,
-    GLint level,
-    GLint layer) {
-  return MakeGarbageCollected<WebGLTextureAttachment>(texture, target, level,
-                                                      layer);
-}
-
-void WebGLTextureAttachment::Trace(blink::Visitor* visitor) {
+void WebGLTextureAttachment::Trace(Visitor* visitor) {
   visitor->Trace(texture_);
   WebGLFramebuffer::WebGLAttachment::Trace(visitor);
 }
@@ -204,13 +183,12 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() = default;
 
-WebGLFramebuffer* WebGLFramebuffer::Create(WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLFramebuffer>(ctx, false);
-}
-
-WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(
-    WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLFramebuffer>(ctx, true);
+WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(WebGLRenderingContextBase* ctx,
+                                                 bool has_stencil) {
+  WebGLFramebuffer* const fb =
+      MakeGarbageCollected<WebGLFramebuffer>(ctx, true);
+  fb->SetOpaqueHasStencil(has_stencil);
+  return fb;
 }
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx, bool opaque)
@@ -391,10 +369,14 @@ GLenum WebGLFramebuffer::CheckDepthStencilStatus(const char** reason) const {
 }
 
 bool WebGLFramebuffer::HasStencilBuffer() const {
-  WebGLAttachment* attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
-  if (!attachment)
-    attachment = GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
-  return attachment && attachment->Valid();
+  if (opaque_) {
+    return opaque_has_stencil_;
+  } else {
+    WebGLAttachment* attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
+    if (!attachment)
+      attachment = GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
+    return attachment && attachment->Valid();
+  }
 }
 
 void WebGLFramebuffer::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
@@ -459,8 +441,9 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (texture && texture->Object()) {
-    attachments_.insert(attachment, WebGLTextureAttachment::Create(
-                                        texture, tex_target, level, layer));
+    attachments_.insert(attachment,
+                        MakeGarbageCollected<WebGLTextureAttachment>(
+                            texture, tex_target, level, layer));
     DrawBuffersIfNecessary(false);
     texture->OnAttached();
   }
@@ -473,8 +456,9 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (renderbuffer && renderbuffer->Object()) {
-    attachments_.insert(attachment,
-                        WebGLRenderbufferAttachment::Create(renderbuffer));
+    attachments_.insert(
+        attachment,
+        MakeGarbageCollected<WebGLRenderbufferAttachment>(renderbuffer));
     DrawBuffersIfNecessary(false);
     renderbuffer->OnAttached();
   }
@@ -563,7 +547,7 @@ GLenum WebGLFramebuffer::GetDrawBuffer(GLenum draw_buffer) {
   return GL_NONE;
 }
 
-void WebGLFramebuffer::Trace(blink::Visitor* visitor) {
+void WebGLFramebuffer::Trace(Visitor* visitor) {
   visitor->Trace(attachments_);
   WebGLContextObject::Trace(visitor);
 }

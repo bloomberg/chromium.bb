@@ -80,6 +80,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
   void DidUpdateAudioMutingState(bool muted) override;
 
   // TODO(zqzhang): this method is temporarily in MediaWebContentsObserver as
@@ -136,6 +137,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       int delegate_id,
       const media_session::MediaPosition& position);
+  void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
+                                             int delegate_id,
+                                             bool available);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

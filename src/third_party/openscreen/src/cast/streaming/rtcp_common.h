@@ -18,8 +18,8 @@
 #include "cast/streaming/rtp_time.h"
 #include "cast/streaming/ssrc.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 struct RtcpCommonHeader {
   RtcpCommonHeader();
@@ -116,8 +116,7 @@ struct RtcpReportBlock {
   // Convenience helper to convert the given |local_clock_delay| to the
   // RtcpReportBlock::Delay timebase, then clamp and assign it to
   // |delay_since_last_report|.
-  void SetDelaySinceLastReport(
-      openscreen::platform::Clock::duration local_clock_delay);
+  void SetDelaySinceLastReport(Clock::duration local_clock_delay);
 
   // Serializes this report block in the first |kRtcpReportBlockSize| bytes of
   // the given |buffer| and adjusts |buffer| to point to the first byte after
@@ -139,7 +138,7 @@ struct RtcpSenderReport {
   // common reference clock shared by all RTP streams; 2) the RTP timestamp on
   // the media capture/playout timeline. Together, these are used by a Receiver
   // to achieve A/V synchronization across RTP streams for playout.
-  openscreen::platform::Clock::time_point reference_time{};
+  Clock::time_point reference_time{};
   RtpTimeTicks rtp_timestamp;
 
   // The total number of RTP packets transmitted since the start of the session
@@ -178,7 +177,7 @@ struct PacketNack {
   }
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTCP_COMMON_H_

@@ -16,6 +16,7 @@ class Document;
 class EventTarget;
 class LocalFrame;
 
+// We use UntracedMember<> here to do custom weak processing.
 typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
@@ -78,7 +79,7 @@ class CORE_EXPORT EventHandlerRegistry final
   // references to handlers that are no longer related to it.
   void DocumentDetached(Document&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum ChangeOperation {
@@ -129,7 +130,7 @@ class CORE_EXPORT EventHandlerRegistry final
 
   Page* GetPage() const;
 
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   Member<LocalFrame> frame_;
   EventTargetSet targets_[kEventHandlerClassCount];

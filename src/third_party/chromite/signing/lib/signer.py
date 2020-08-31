@@ -111,7 +111,7 @@ class SignerInstructionConfig(object):
   def ReadIniFile(self, fd):
     """Reads given file descriptor into configuration"""
     config = configparser.ConfigParser(self.ToIniDict())
-    config.readfp(fd)
+    config.read_file(fd)
 
     self.archive = config.get('general', 'archive')
     self.board = config.get('general', 'board')
@@ -231,4 +231,4 @@ def RunFutility(args):
   """Runs futility with the given args, returns True if success"""
   cmd = ['futility']
   cmd += args
-  return cros_build_lib.run(cmd, error_code_ok=True).returncode == 0
+  return cros_build_lib.run(cmd, check=False).returncode == 0

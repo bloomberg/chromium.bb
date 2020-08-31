@@ -9,6 +9,18 @@ file validation.
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+
+try:
+  import googleclouddebugger
+  googleclouddebugger.enable()
+except ImportError:
+  pass
+
+import logging
+import google.cloud.logging
+
+google.cloud.logging.Client().setup_logging(log_level=logging.DEBUG)
+
 import service
 
 APP = service.CreateApp()

@@ -9,15 +9,6 @@
 
 // Contains constants for known URLs and portions thereof.
 
-// TODO(blundell): This file should be ios_chrome_url_constants.*, and all of
-// these constants should have a kIOSChrome prefix instead of a kChrome
-// prefix. crbug.com/537174
-
-// URL scheme for Chrome on iOS. This needs to be kept in sync with the constant
-// kChromeUIScheme defined in content/public/common/url_constants.h until Chrome
-// on iOS stops depending on //content downstream.
-extern const char kChromeUIScheme[];
-
 // chrome: URLs (including schemes). Should be kept in sync with the
 // URL components below.
 extern const char kChromeUIChromeURLsURL[];
@@ -25,6 +16,7 @@ extern const char kChromeUICreditsURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIInspectURL[];
+extern const char kChromeUIIntersitialsURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUINTPTilesInternalsURL[];
 extern const char kChromeUIOfflineURL[];
@@ -48,6 +40,7 @@ extern const char kChromeUIGCMInternalsHost[];
 extern const char kChromeUIHistogramHost[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIInspectHost[];
+extern const char kChromeUIIntersitialsHost[];
 extern const char kChromeUINetExportHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUINTPTilesInternalsHost[];
@@ -59,7 +52,6 @@ extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUIPrefsInternalsHost[];
 extern const char kChromeUISignInInternalsHost[];
 extern const char kChromeUISuggestionsHost[];
-extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITranslateInternalsHost[];
 extern const char kChromeUIURLKeyedMetricsHost[];

@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
@@ -437,6 +438,23 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
 }
 
 // static
+std::unique_ptr<Volume> Volume::CreateForSmb(const base::FilePath& mount_point,
+                                             const std::string display_name) {
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_SMB;
+  volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume->source_ = SOURCE_NETWORK;
+  volume->mount_path_ = mount_point;
+  volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->volume_label_ = display_name;
+  volume->watchable_ = false;
+  volume->is_read_only_ = false;
+  return volume;
+}
+
+// static
 std::unique_ptr<Volume> Volume::CreateForTesting(
     const base::FilePath& path,
     VolumeType volume_type,
@@ -516,10 +534,9 @@ void VolumeManager::Initialize() {
                Volume::CreateForDownloads(localVolume));
 
   // Asyncrhonously record the disk usage for the downloads path
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RecordDownloadsDiskUsageStats, std::move(localVolume)));
 
@@ -569,8 +586,8 @@ void VolumeManager::Initialize() {
   // Subscribe to storage monitor for MTP notifications.
   if (storage_monitor::StorageMonitor::GetInstance()) {
     storage_monitor::StorageMonitor::GetInstance()->EnsureInitialized(
-        base::Bind(&VolumeManager::OnStorageMonitorInitialized,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&VolumeManager::OnStorageMonitorInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Subscribe to ARC file system events.
@@ -925,7 +942,8 @@ void VolumeManager::OnMountEvent(
 void VolumeManager::OnFormatEvent(
     chromeos::disks::DiskMountManager::FormatEvent event,
     chromeos::FormatError error_code,
-    const std::string& device_path) {
+    const std::string& device_path,
+    const std::string& device_label) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code
            << ", " << device_path;
@@ -933,7 +951,7 @@ void VolumeManager::OnFormatEvent(
   switch (event) {
     case chromeos::disks::DiskMountManager::FORMAT_STARTED:
       for (auto& observer : observers_) {
-        observer.OnFormatStarted(device_path,
+        observer.OnFormatStarted(device_path, device_label,
                                  error_code == chromeos::FORMAT_ERROR_NONE);
       }
       return;
@@ -948,7 +966,7 @@ void VolumeManager::OnFormatEvent(
                                      GetExternalStorageAccessMode(profile_));
 
       for (auto& observer : observers_) {
-        observer.OnFormatCompleted(device_path,
+        observer.OnFormatCompleted(device_path, device_label,
                                    error_code == chromeos::FORMAT_ERROR_NONE);
       }
 
@@ -960,7 +978,8 @@ void VolumeManager::OnFormatEvent(
 void VolumeManager::OnRenameEvent(
     chromeos::disks::DiskMountManager::RenameEvent event,
     chromeos::RenameError error_code,
-    const std::string& device_path) {
+    const std::string& device_path,
+    const std::string& device_label) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code << ", "
            << device_path;
@@ -968,13 +987,13 @@ void VolumeManager::OnRenameEvent(
   switch (event) {
     case chromeos::disks::DiskMountManager::RENAME_STARTED:
       for (auto& observer : observers_) {
-        observer.OnRenameStarted(device_path,
+        observer.OnRenameStarted(device_path, device_label,
                                  error_code == chromeos::RENAME_ERROR_NONE);
       }
       return;
     case chromeos::disks::DiskMountManager::RENAME_COMPLETED:
       // Find previous mount point label if it exists
-      std::string mount_label = "";
+      std::string mount_label;
       auto disk_map_iter = disk_mount_manager_->disks().find(device_path);
       if (disk_map_iter != disk_mount_manager_->disks().end() &&
           !disk_map_iter->second->base_mount_path().empty()) {
@@ -993,7 +1012,8 @@ void VolumeManager::OnRenameEvent(
 
       bool successfully_renamed = error_code == chromeos::RENAME_ERROR_NONE;
       for (auto& observer : observers_)
-        observer.OnRenameCompleted(device_path, successfully_renamed);
+        observer.OnRenameCompleted(device_path, device_label,
+                                   successfully_renamed);
 
       return;
   }
@@ -1265,6 +1285,19 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
                      std::string(), GURL(), false));
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->UnregisterRoot(
       authority, document_id);
+}
+
+void VolumeManager::AddSmbFsVolume(const base::FilePath& mount_point,
+                                   const std::string& display_name) {
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForSmb(mount_point, display_name));
+}
+
+void VolumeManager::RemoveSmbFsVolume(const base::FilePath& mount_point) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForSmb(mount_point, ""));
 }
 
 void VolumeManager::OnDiskMountManagerRefreshed(bool success) {

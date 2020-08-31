@@ -5,7 +5,8 @@
 #include "cc/trees/draw_property_utils.h"
 
 #include <stddef.h>
-
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/containers/adapters.h"
@@ -190,7 +191,7 @@ bool ApplyClipNodeToAccumulatedClip(const PropertyTrees* property_trees,
 
       // Do the expansion.
       gfx::RectF expanded_clip_in_expanding_space =
-          gfx::RectF(clip_node->clip_expander->MapRectReverse(
+          gfx::RectF(clip_node->clip_expander->MapRect(
               ToEnclosingClipRect(accumulated_clip_rect_in_expanding_space),
               property_trees));
 
@@ -364,9 +365,7 @@ void SetHasContributingLayerThatEscapesClip(int lca_clip_id,
 template <typename LayerType>
 int TransformTreeIndexForBackfaceVisibility(LayerType* layer,
                                             const TransformTree& tree) {
-  if (!layer->use_parent_backface_visibility() || !layer->has_transform_node())
-    return layer->transform_tree_index();
-  return tree.Node(layer->transform_tree_index())->parent_id;
+  return layer->transform_tree_index();
 }
 
 bool IsTargetSpaceTransformBackFaceVisible(
@@ -446,16 +445,21 @@ bool LayerNeedsUpdate(LayerType* layer,
     // backface is not visible.
     if (TransformToScreenIsKnown(layer, backface_transform_id, tree) &&
         !HasSingularTransform(backface_transform_id, tree) &&
-        IsLayerBackFaceVisible(layer, backface_transform_id, property_trees))
+        IsLayerBackFaceVisible(layer, backface_transform_id, property_trees)) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Compositing.Renderer.LayerUpdateSkippedDueToBackface", true);
       return false;
+    }
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Compositing.Renderer.LayerUpdateSkippedDueToBackface",
+                        false);
 
   return true;
 }
 
-template <typename LayerType>
 inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
-    LayerType* layer,
+    Layer* layer,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
@@ -467,7 +471,36 @@ inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
   const TransformNode* transform_node =
       transform_tree.Node(layer->transform_tree_index());
   return !transform_node->node_and_ancestors_are_animated_or_invertible ||
-         effect_node->hidden_by_backface_visibility || !effect_node->is_drawn;
+         !effect_node->is_drawn;
+}
+
+inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
+    LayerImpl* layer,
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree) {
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+
+  if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
+    return false;
+
+  // Skip if the node's subtree is hidden and no need to cache.
+  if (effect_node->subtree_hidden && !effect_node->cache_render_surface)
+    return true;
+
+  // If the layer transform is not invertible, it should be skipped. In case the
+  // transform is animating and singular, we should not skip it.
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+
+  if (!transform_node->node_and_ancestors_are_animated_or_invertible ||
+      !effect_node->is_drawn)
+    return true;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Renderer.LayerSkippedForDrawPropertiesDueToBackface",
+      effect_node->hidden_by_backface_visibility);
+
+  return effect_node->hidden_by_backface_visibility;
 }
 
 gfx::Rect LayerDrawableContentRect(
@@ -1113,6 +1146,22 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   }
 }
 
+#if DCHECK_IS_ON()
+// See property_tree_builder.cc ComputeRenderSurfaceReason.
+bool NodeMayContainBackdropBlurFilter(const EffectNode& node) {
+  switch (node.render_surface_reason) {
+    case RenderSurfaceReason::kMask:
+    case RenderSurfaceReason::kTrilinearFiltering:
+    case RenderSurfaceReason::kFilter:
+    case RenderSurfaceReason::kBackdropFilter:
+      return true;
+    default:
+      return false;
+  }
+  return false;
+}
+#endif
+
 }  // namespace
 
 void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
@@ -1329,6 +1378,13 @@ void CalculateDrawProperties(
                                     output_render_surface_list,
                                     layer_tree_impl->max_texture_size());
   }
+
+#if DCHECK_IS_ON()
+  if (layer_tree_impl->settings().log_on_ui_double_background_blur)
+    DCHECK(
+        LogDoubleBackgroundBlur(*layer_tree_impl, *output_render_surface_list));
+#endif
+
   RecordRenderSurfaceReasonsForTracing(property_trees,
                                        output_render_surface_list);
 
@@ -1340,6 +1396,47 @@ void CalculateDrawProperties(
   if (output_update_layer_list_for_testing)
     *output_update_layer_list_for_testing = std::move(visible_layer_list);
 }
+
+#if DCHECK_IS_ON()
+bool LogDoubleBackgroundBlur(const LayerTreeImpl& layer_tree_impl,
+                             const RenderSurfaceList& render_surface_list) {
+  const PropertyTrees& property_trees = *layer_tree_impl.property_trees();
+  std::vector<std::pair<const LayerImpl*, gfx::Rect>> rects;
+  rects.reserve(render_surface_list.size());
+
+  for (const auto* render_surface : render_surface_list) {
+    const auto* effect_node =
+        property_trees.effect_tree.Node(render_surface->EffectTreeIndex());
+    if (NodeMayContainBackdropBlurFilter(*effect_node)) {
+      const FilterOperations& filters = render_surface->BackdropFilters();
+      if (filters.HasFilterOfType(FilterOperation::BLUR)) {
+        if (!render_surface->content_rect().IsEmpty()) {
+          const LayerImpl* layer_impl =
+              layer_tree_impl.LayerById(effect_node->stable_id);
+          gfx::Rect screen_space_rect = MathUtil::MapEnclosingClippedRect(
+              render_surface->screen_space_transform(),
+              render_surface->content_rect());
+          auto it = std::find_if(
+              rects.begin(), rects.end(),
+              [&screen_space_rect](
+                  const std::pair<const LayerImpl*, gfx::Rect>& r) {
+                return r.second.Intersects(screen_space_rect);
+              });
+          if (rects.end() == it) {
+            rects.push_back(std::make_pair(layer_impl, screen_space_rect));
+          } else {
+            LOG(ERROR) << "Double blur detected between layers: "
+                       << it->first->DebugName() << " and "
+                       << layer_impl->DebugName();
+            return false;
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+#endif
 
 }  // namespace draw_property_utils
 

@@ -5,11 +5,12 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXRAnchors
+    RuntimeEnabled=WebXRIncubations
 ]
 interface XRAnchor {
-    readonly attribute XRSpace? anchorSpace;
-    readonly attribute DOMHighResTimeStamp? lastChangedTime;
+    [RaisesException]
+    readonly attribute XRSpace anchorSpace;
 
-    void detach();
+    [ImplementedAs=Delete]
+    void delete();
 };

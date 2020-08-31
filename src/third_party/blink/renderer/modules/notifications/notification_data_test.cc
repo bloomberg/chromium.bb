@@ -7,10 +7,10 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_action.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_options.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
-#include "third_party/blink/renderer/modules/notifications/notification_action.h"
-#include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -89,7 +89,8 @@ TEST_F(NotificationDataTest, ReflectProperties) {
 
   HeapVector<Member<NotificationAction>> actions;
   for (size_t i = 0; i < Notification::maxActions(); ++i) {
-    NotificationAction* action = NotificationAction::Create();
+    NotificationAction* action =
+        NotificationAction::Create(GetExecutionContext()->GetIsolate());
     action->setType(kNotificationActionType);
     action->setAction(kNotificationActionAction);
     action->setTitle(kNotificationActionTitle);
@@ -102,7 +103,8 @@ TEST_F(NotificationDataTest, ReflectProperties) {
   DOMTimeStamp showTimestamp = base::Time::Now().ToDoubleT() * 1000.0;
   TimestampTrigger* showTrigger = TimestampTrigger::Create(showTimestamp);
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setDir(kNotificationDir);
   options->setLang(kNotificationLang);
   options->setBody(kNotificationBody);
@@ -172,7 +174,8 @@ TEST_F(NotificationDataTest, SilentNotificationWithVibration) {
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
   vibration_sequence.SetUnsignedLongSequence(vibration_pattern);
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setVibrate(vibration_sequence);
   options->setSilent(true);
 
@@ -192,7 +195,8 @@ TEST_F(NotificationDataTest, ActionTypeButtonWithPlaceholder) {
   action->setPlaceholder("I'm afraid I can't do that...");
   actions.push_back(action);
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setActions(actions);
 
   DummyExceptionStateForTesting exception_state;
@@ -205,7 +209,8 @@ TEST_F(NotificationDataTest, ActionTypeButtonWithPlaceholder) {
 }
 
 TEST_F(NotificationDataTest, RenotifyWithEmptyTag) {
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setTag(kNotificationEmptyTag);
   options->setRenotify(true);
 
@@ -229,7 +234,8 @@ TEST_F(NotificationDataTest, InvalidIconUrls) {
     actions.push_back(action);
   }
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setImage(kNotificationIconInvalid);
   options->setIcon(kNotificationIconInvalid);
   options->setBadge(kNotificationIconInvalid);
@@ -255,7 +261,8 @@ TEST_F(NotificationDataTest, VibrationNormalization) {
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
   vibration_sequence.SetUnsignedLongSequence(unnormalized_pattern);
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setVibrate(vibration_sequence);
 
   DummyExceptionStateForTesting exception_state;
@@ -276,7 +283,8 @@ TEST_F(NotificationDataTest, VibrationNormalization) {
 }
 
 TEST_F(NotificationDataTest, DefaultTimestampValue) {
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
 
   DummyExceptionStateForTesting exception_state;
   mojom::blink::NotificationDataPtr notification_data = CreateNotificationData(
@@ -300,7 +308,8 @@ TEST_F(NotificationDataTest, DirectionValues) {
   mappings.insert("peter", mojom::blink::NotificationDirection::AUTO);
 
   for (const String& direction : mappings.Keys()) {
-    NotificationOptions* options = NotificationOptions::Create();
+    NotificationOptions* options =
+        NotificationOptions::Create(GetExecutionContext()->GetIsolate());
     options->setDir(direction);
 
     DummyExceptionStateForTesting exception_state;
@@ -323,7 +332,8 @@ TEST_F(NotificationDataTest, MaximumActionCount) {
     actions.push_back(action);
   }
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setActions(actions);
 
   DummyExceptionStateForTesting exception_state;
@@ -347,7 +357,8 @@ TEST_F(NotificationDataTest, RejectsTriggerTimestampOverAYear) {
   TimestampTrigger* show_trigger =
       TimestampTrigger::Create(show_timestamp.ToJsTime());
 
-  NotificationOptions* options = NotificationOptions::Create();
+  NotificationOptions* options =
+      NotificationOptions::Create(GetExecutionContext()->GetIsolate());
   options->setShowTrigger(show_trigger);
 
   DummyExceptionStateForTesting exception_state;

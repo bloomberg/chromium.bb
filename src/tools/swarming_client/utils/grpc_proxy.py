@@ -6,10 +6,12 @@
 
 import logging
 import os
-import re
 import time
 import types
-import urlparse
+
+# third_party/
+from six.moves import urllib
+
 from utils import net
 
 # gRPC may not be installed on the worker machine. This is fine, as long as
@@ -103,7 +105,7 @@ class Proxy(object):
                    proxy, stub_class.__name__)
     # NB: everything in url is unicode; convert to strings where
     # needed.
-    url = urlparse.urlparse(proxy)
+    url = urllib.parse.urlparse(proxy)
     if self._verbose:
       logging.info('Parsed URL for proxy is %r', url)
     if url.scheme == 'http':
@@ -206,7 +208,7 @@ class Proxy(object):
     """
     method = getattr(self._stub, name)
     if method is None:
-      raise NameError('%s: "%s" is not a valid method name', self.name, name)
+      raise NameError('%s: "%s" is not a valid method name' % (self.name, name))
     return self._wrap_grpc_operation(
         name, lambda: method(request, timeout=GRPC_TIMEOUT_SEC))
 
@@ -268,7 +270,7 @@ class Proxy(object):
     overd = os.environ.get('LUCI_GRPC_PROXY_TLS_OVERRIDE')
     options = ()
     if overd:
-      options=(('grpc.ssl_target_name_override', overd),)
+      options = (('grpc.ssl_target_name_override', overd),)
     ssl_creds = grpc.ssl_channel_credentials(root_certificates=root_certs)
 
     # Authenticate the user.
@@ -278,7 +280,7 @@ class Proxy(object):
 
     # Create the channel.
     request = google_auth_transport_requests.Request()
-    if len(options) > 0:
+    if options:
       self._debug_info.append('Options are: %r' % options)
     else:
       self._debug_info.append('No options used')

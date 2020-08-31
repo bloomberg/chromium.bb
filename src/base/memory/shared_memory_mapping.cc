@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/shared_memory_security_policy.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -34,21 +35,18 @@ namespace base {
 SharedMemoryMapping::SharedMemoryMapping() = default;
 
 SharedMemoryMapping::SharedMemoryMapping(SharedMemoryMapping&& mapping) noexcept
-    : memory_(mapping.memory_),
+    : memory_(std::exchange(mapping.memory_, nullptr)),
       size_(mapping.size_),
       mapped_size_(mapping.mapped_size_),
-      guid_(mapping.guid_) {
-  mapping.memory_ = nullptr;
-}
+      guid_(mapping.guid_) {}
 
 SharedMemoryMapping& SharedMemoryMapping::operator=(
     SharedMemoryMapping&& mapping) noexcept {
   Unmap();
-  memory_ = mapping.memory_;
+  memory_ = std::exchange(mapping.memory_, nullptr);
   size_ = mapping.size_;
   mapped_size_ = mapping.mapped_size_;
   guid_ = mapping.guid_;
-  mapping.memory_ = nullptr;
   return *this;
 }
 
@@ -68,6 +66,7 @@ void SharedMemoryMapping::Unmap() {
   if (!IsValid())
     return;
 
+  SharedMemorySecurityPolicy::ReleaseReservationForMapping(size_);
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
 #if defined(OS_WIN)
   if (!UnmapViewOfFile(memory_))

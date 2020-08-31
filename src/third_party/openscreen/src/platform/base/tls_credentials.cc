@@ -5,7 +5,6 @@
 #include "platform/base/tls_credentials.h"
 
 namespace openscreen {
-namespace platform {
 
 TlsCredentials::TlsCredentials() = default;
 
@@ -18,5 +17,4 @@ TlsCredentials::TlsCredentials(std::vector<uint8_t> der_rsa_private_key,
 
 TlsCredentials::~TlsCredentials() = default;
 
-}  // namespace platform
 }  // namespace openscreen

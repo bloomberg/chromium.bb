@@ -17,11 +17,12 @@
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
-#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#include "components/safe_browsing/core/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync/protocol/gaia_password_reuse.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -55,8 +56,9 @@ using StringProvider = base::RepeatingCallback<std::string()>;
 using password_manager::metrics_util::PasswordType;
 using url::Origin;
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-// Shows the platform-specific password reuse modal dialog.
+#if !defined(OS_ANDROID)
+// Shows the desktop platforms specific password reuse modal dialog.
+// Implemented in password_reuse_modal_warning_dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
@@ -102,8 +104,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       Profile* profile);
 
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-  static bool ShouldShowChangePasswordSettingUI(Profile* profile);
-
   // Called by SecurityStateTabHelper to determine if page info bubble should
   // show password reuse warning.
   static bool ShouldShowPasswordReusePageInfoBubble(
@@ -184,7 +184,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // returns an empty string.
   std::string GetOrganizationName(
       ReusedPasswordAccountType password_type) const;
+#endif
 
+// The following functions are disabled on Android, because enterprise reporting
+// extension is not supported.
+#if !defined(OS_ANDROID)
   // If the browser is not incognito and the user is reusing their enterprise
   // password or is a GSuite user, triggers
   // safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
@@ -197,7 +201,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordChanged" API.
   void ReportPasswordChanged() override;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Returns true if there's any enterprise password reuses unhandled in
   // |web_contents|. "Unhandled" is defined as user hasn't clicked on
   // "Change Password" button in modal warning dialog.
@@ -224,11 +230,19 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                                         RequestOutcome* reason) const override;
 
   // Persist the phished saved password credential in the "compromised
-  // credentials" table. Calls the password store to add a row for each domain
-  // where the phished saved password is used on.
+  // credentials" table. Calls the password store to add a row for each
+  // MatchingReusedCredential where the phished saved password is used on.
   void PersistPhishedSavedPasswordCredential(
-      const std::string& username,
-      const std::vector<std::string>& matching_domains) override;
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) override;
+
+  // Remove all rows of the phished saved password credential in the
+  // "compromised credentials" table. Calls the password store to remove a row
+  // for each MatchingReusedCredential where the phished saved password is used
+  // on.
+  void RemovePhishedSavedPasswordCredential(
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) override;
 
   // Returns the profile PasswordStore associated with this instance.
   password_manager::PasswordStore* GetProfilePasswordStore() const;
@@ -281,6 +295,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                          LoginReputationClientRequest::Frame* frame) override;
 
   bool IsExtendedReporting() override;
+
+  bool IsEnhancedProtection() override;
 
   bool IsIncognito() override;
 
@@ -336,10 +352,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       WarningAction action);
 
   void HandleUserActionOnPageInfo(content::WebContents* web_contents,
-                                  ReusedPasswordAccountType password_type,
-                                  WarningAction action);
-
-  void HandleUserActionOnSettings(content::WebContents* web_contents,
                                   ReusedPasswordAccountType password_type,
                                   WarningAction action);
 
@@ -432,6 +444,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyGetWarningDetailTextSavedDomains);
 
   // Gets prefs associated with |profile_|.
   PrefService* GetPrefs();
@@ -482,6 +496,13 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   base::string16 GetWarningDetailTextForSavedPasswords(
       std::vector<size_t>* placeholder_offsets) const;
 
+  // Gets the warning text of the saved password reuse warnings that tells the
+  // user to check their saved passwords. |placeholder_offsets| are the start
+  // points/indices of the placeholders that are passed into the resource
+  // string.
+  base::string16 GetWarningDetailTextToCheckSavedPasswords(
+      std::vector<size_t>* placeholder_offsets) const;
+
   // Informs PasswordReuseDetector that enterprise password URLs (login URL or
   // change password URL) have been changed.
   void OnEnterprisePasswordUrlChanged();
@@ -490,6 +511,22 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // This also sets the reoccuring timer.
   void MaybeLogPasswordCapture(bool did_log_in);
   void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+
+  // Open the page where the user can checks their saved passwords
+  // or change their phished url depending on the the |password_type|.
+  void OpenChangePasswordUrl(content::WebContents* web_contents,
+                             ReusedPasswordAccountType password_type);
+
+  // Log user dialog interaction when the user clicks on the "Change Password"
+  // or "Check Passwords" button.
+  void LogDialogMetricsOnChangePassword(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      int64_t navigation_id,
+      RequestOutcome outcome,
+      LoginReputationClientResponse::VerdictType verdict_type,
+      const std::string& verdict_token);
+
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

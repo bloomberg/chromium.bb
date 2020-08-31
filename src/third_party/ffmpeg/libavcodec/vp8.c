@@ -27,7 +27,7 @@
 #include "libavutil/imgutils.h"
 
 #include "avcodec.h"
-#include "hwaccel.h"
+#include "hwconfig.h"
 #include "internal.h"
 #include "mathops.h"
 #include "rectangle.h"
@@ -2715,7 +2715,8 @@ int vp78_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     s->next_framep[VP56_FRAME_CURRENT] = curframe;
 
-    ff_thread_finish_setup(avctx);
+    if (avctx->codec->update_thread_context)
+        ff_thread_finish_setup(avctx);
 
     if (avctx->hwaccel) {
         ret = avctx->hwaccel->start_frame(avctx, avpkt->data, avpkt->size);
@@ -2852,7 +2853,6 @@ int vp78_decode_init(AVCodecContext *avctx, int is_vp7)
     s->vp7   = avctx->codec->id == AV_CODEC_ID_VP7;
     s->pix_fmt = AV_PIX_FMT_NONE;
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
-    avctx->internal->allocate_progress = 1;
 
     ff_videodsp_init(&s->vdsp, 8);
 
@@ -2894,21 +2894,6 @@ av_cold int ff_vp8_decode_init(AVCodecContext *avctx)
 
 #if CONFIG_VP8_DECODER
 #if HAVE_THREADS
-static av_cold int vp8_decode_init_thread_copy(AVCodecContext *avctx)
-{
-    VP8Context *s = avctx->priv_data;
-    int ret;
-
-    s->avctx = avctx;
-
-    if ((ret = vp8_init_frames(s)) < 0) {
-        ff_vp8_decode_free(avctx);
-        return ret;
-    }
-
-    return 0;
-}
-
 #define REBASE(pic) ((pic) ? (pic) - &s_src->frames[0] + &s->frames[0] : NULL)
 
 static int vp8_decode_update_thread_context(AVCodecContext *dst,
@@ -2976,7 +2961,6 @@ AVCodec ff_vp8_decoder = {
     .capabilities          = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
                              AV_CODEC_CAP_SLICE_THREADS,
     .flush                 = vp8_decode_flush,
-    .init_thread_copy      = ONLY_IF_THREADS_ENABLED(vp8_decode_init_thread_copy),
     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp8_decode_update_thread_context),
     .hw_configs            = (const AVCodecHWConfigInternal*[]) {
 #if CONFIG_VP8_VAAPI_HWACCEL
@@ -2987,5 +2971,6 @@ AVCodec ff_vp8_decoder = {
 #endif
                                NULL
                            },
+    .caps_internal         = FF_CODEC_CAP_ALLOCATE_PROGRESS,
 };
 #endif /* CONFIG_VP7_DECODER */

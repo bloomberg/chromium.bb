@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class CSSOverviewSidebarPanel extends UI.VBox {
+import * as UI from '../ui/ui.js';
+
+export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
   static get ITEM_CLASS_NAME() {
     return 'overview-sidebar-panel-item';
   }
@@ -19,17 +21,17 @@ export default class CSSOverviewSidebarPanel extends UI.VBox {
     this.contentElement.addEventListener('click', this._onItemClick.bind(this));
 
     // Clear overview.
-    const clearResultsButton = new UI.ToolbarButton(ls`Clear overview`, 'largeicon-clear');
-    clearResultsButton.addEventListener(UI.ToolbarButton.Events.Click, this._reset, this);
+    const clearResultsButton = new UI.Toolbar.ToolbarButton(ls`Clear overview`, 'largeicon-clear');
+    clearResultsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._reset, this);
 
     // Toolbar.
     const toolbarElement = this.contentElement.createChild('div', 'overview-toolbar');
-    const toolbar = new UI.Toolbar('', toolbarElement);
+    const toolbar = new UI.Toolbar.Toolbar('', toolbarElement);
     toolbar.appendToolbarItem(clearResultsButton);
   }
 
   addItem(name, id) {
-    const item = this.contentElement.createChild('div', CssOverview.CSSOverviewSidebarPanel.ITEM_CLASS_NAME);
+    const item = this.contentElement.createChild('div', CSSOverviewSidebarPanel.ITEM_CLASS_NAME);
     item.textContent = name;
     item.dataset.id = id;
   }
@@ -39,15 +41,15 @@ export default class CSSOverviewSidebarPanel extends UI.VBox {
   }
 
   _deselectAllItems() {
-    const items = this.contentElement.querySelectorAll(`.${CssOverview.CSSOverviewSidebarPanel.ITEM_CLASS_NAME}`);
+    const items = this.contentElement.querySelectorAll(`.${CSSOverviewSidebarPanel.ITEM_CLASS_NAME}`);
     for (const item of items) {
-      item.classList.remove(CssOverview.CSSOverviewSidebarPanel.SELECTED);
+      item.classList.remove(CSSOverviewSidebarPanel.SELECTED);
     }
   }
 
   _onItemClick(event) {
     const target = event.path[0];
-    if (!target.classList.contains(CssOverview.CSSOverviewSidebarPanel.ITEM_CLASS_NAME)) {
+    if (!target.classList.contains(CSSOverviewSidebarPanel.ITEM_CLASS_NAME)) {
       return;
     }
 
@@ -62,12 +64,12 @@ export default class CSSOverviewSidebarPanel extends UI.VBox {
       return;
     }
 
-    if (target.classList.contains(CssOverview.CSSOverviewSidebarPanel.SELECTED)) {
+    if (target.classList.contains(CSSOverviewSidebarPanel.SELECTED)) {
       return;
     }
 
     this._deselectAllItems();
-    target.classList.add(CssOverview.CSSOverviewSidebarPanel.SELECTED);
+    target.classList.add(CSSOverviewSidebarPanel.SELECTED);
   }
 }
 
@@ -75,16 +77,3 @@ export const SidebarEvents = {
   ItemSelected: Symbol('ItemSelected'),
   Reset: Symbol('Reset')
 };
-
-/* Legacy exported object */
-self.CssOverview = self.CssOverview || {};
-
-/* Legacy exported object */
-CssOverview = CssOverview || {};
-
-/**
- * @constructor
- */
-CssOverview.CSSOverviewSidebarPanel = CSSOverviewSidebarPanel;
-
-CssOverview.SidebarEvents = SidebarEvents;

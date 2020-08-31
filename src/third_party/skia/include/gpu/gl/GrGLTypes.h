@@ -71,8 +71,10 @@ enum class GrGLFormat {
     kRGB10_A2,
     kRGBA4,
     kSRGB8_ALPHA8,
-    kCOMPRESSED_RGB8_ETC2,
     kCOMPRESSED_ETC1_RGB8,
+    kCOMPRESSED_RGB8_ETC2,
+    kCOMPRESSED_RGB8_BC1,
+    kCOMPRESSED_RGBA8_BC1,
     kR16,
     kRG16,
     kRGBA16,
@@ -123,7 +125,8 @@ struct GrGLDrawArraysIndirectCommand {
     GrGLuint fBaseInstance;  // Requires EXT_base_instance on ES.
 };
 
-GR_STATIC_ASSERT(16 == sizeof(GrGLDrawArraysIndirectCommand));
+// static_asserts must have messages in this file because its included in C++14 client code.
+static_assert(16 == sizeof(GrGLDrawArraysIndirectCommand), "");
 
 struct GrGLDrawElementsIndirectCommand {
     GrGLuint fCount;
@@ -133,7 +136,7 @@ struct GrGLDrawElementsIndirectCommand {
     GrGLuint fBaseInstance;  // Requires EXT_base_instance on ES.
 };
 
-GR_STATIC_ASSERT(20 == sizeof(GrGLDrawElementsIndirectCommand));
+static_assert(20 == sizeof(GrGLDrawElementsIndirectCommand), "");
 
 /**
  * KHR_debug

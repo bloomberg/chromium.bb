@@ -2,12 +2,12 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import BaseHTTPServer
-import httplib
 import json
 import logging
 import threading
 
+from six.moves import BaseHTTPServer
+from six.moves import http_client
 
 _STOP_EVENT = '/fakeserver/__stop__'
 
@@ -24,10 +24,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.end_headers()
     json.dump(data, self.wfile)
 
-  def send_octet_stream(self, data):
+  def send_octet_stream(self, data, headers=None):
     """Sends a binary response."""
     self.send_response(200)
     self.send_header('Content-type', 'application/octet-stream')
+    for key, value in (headers or {}).items():
+      self.send_header(key, value)
     self.end_headers()
     self.wfile.write(data)
 
@@ -86,7 +88,7 @@ class Server(object):
     self._server.server_close()
 
   def _send_event(self, path):
-    conn = httplib.HTTPConnection(
+    conn = http_client.HTTPConnection(
         '127.0.0.1:%d' % self._server.server_port, timeout=60)
     try:
       conn.request('OPTIONS', path)

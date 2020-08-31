@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -431,15 +432,20 @@ void ExtensionRegistrar::ActivateExtension(const Extension* extension,
   // ensure its URLRequestContexts appropriately discover the loaded extension.
   extension_system_->RegisterExtensionWithRequestContexts(
       extension,
-      base::Bind(&ExtensionRegistrar::OnExtensionRegisteredWithRequestContexts,
-                 weak_factory_.GetWeakPtr(), WrapRefCounted(extension)));
+      base::BindOnce(
+          &ExtensionRegistrar::OnExtensionRegisteredWithRequestContexts,
+          weak_factory_.GetWeakPtr(), WrapRefCounted(extension)));
 
-  renderer_helper_->OnExtensionLoaded(*extension);
-
+  // Activate the extension before calling
+  // RendererStartupHelper::OnExtensionLoaded() below, so that we have
+  // activation information ready while we send ExtensionMsg_Load IPC.
+  //
   // TODO(lazyboy): We should move all logic that is required to start up an
   // extension to a separate class, instead of calling adhoc methods like
   // service worker ones below.
   ActivateTaskQueueForExtension(browser_context_, extension);
+
+  renderer_helper_->OnExtensionLoaded(*extension);
 
   // Tell subsystems that use the ExtensionRegistryObserver::OnExtensionLoaded
   // about the new extension.

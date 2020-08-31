@@ -14,6 +14,10 @@
 #include "net/cert/ocsp_verify_result.h"
 #include "net/cert/x509_cert_types.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 
 class X509Certificate;
@@ -36,9 +40,10 @@ class NET_EXPORT CertVerifyResult : public base::SupportsUserData {
 
   void Reset();
 
-  // Returns true if all the members of |this| are equal to |other|'s (including
-  // the |verified_cert| intermediates).
-  bool operator==(const CertVerifyResult& other) const;
+  // Creates NetLog parameter to describe the CertVerifyResult. |net_error| is
+  // a net error code to include in the params, if non-zero. It must not be
+  // ERR_IO_PENDING, as that is not a true error.
+  base::Value NetLogParams(int net_error) const;
 
   // The certificate chain that was constructed during verification.
   //

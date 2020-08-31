@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -36,10 +37,11 @@ class DesktopDisplayInfo {
   int NumDisplays();
   const DisplayGeometry* GetDisplayInfo(unsigned int id);
 
-  webrtc::DesktopVector CalcDisplayOffset(unsigned int id);
+  // Calculate the offset to the origin (upper left) of the specific display.
+  webrtc::DesktopVector CalcDisplayOffset(webrtc::ScreenId id);
 
   // Add a new display with the given info to the display list.
-  void AddDisplay(DisplayGeometry* display);
+  void AddDisplay(std::unique_ptr<DisplayGeometry> display);
 
   void AddDisplayFrom(protocol::VideoTrackLayout track);
 
@@ -49,10 +51,12 @@ class DesktopDisplayInfo {
   bool operator==(const DesktopDisplayInfo& other);
   bool operator!=(const DesktopDisplayInfo& other);
 
-  const std::vector<DisplayGeometry>& displays() const { return displays_; }
+  const std::vector<std::unique_ptr<DisplayGeometry>>& displays() const {
+    return displays_;
+  }
 
  private:
-  std::vector<DisplayGeometry> displays_;
+  std::vector<std::unique_ptr<DisplayGeometry>> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDisplayInfo);
 };

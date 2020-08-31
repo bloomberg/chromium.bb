@@ -26,7 +26,7 @@ ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create() {
 
 ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(
     ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
+    : ExecutionContextLifecycleObserver(context) {
   // For now we only support very limited task types. Sort in the TaskType enum
   // value order.
   for (auto type : {TaskType::kNetworking, TaskType::kPostedMessage,
@@ -45,11 +45,11 @@ ParentExecutionContextTaskRunners::Get(TaskType type) {
   return task_runners_.at(type);
 }
 
-void ParentExecutionContextTaskRunners::Trace(blink::Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+void ParentExecutionContextTaskRunners::Trace(Visitor* visitor) {
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
-void ParentExecutionContextTaskRunners::ContextDestroyed(ExecutionContext*) {
+void ParentExecutionContextTaskRunners::ContextDestroyed() {
   MutexLocker lock(mutex_);
   for (auto& entry : task_runners_)
     entry.value = Thread::Current()->GetTaskRunner();

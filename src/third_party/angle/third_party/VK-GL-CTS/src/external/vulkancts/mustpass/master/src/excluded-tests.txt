@@ -1,29 +1,6 @@
-# Excluded texture function tests according to the Android GLES3 issue list
-dEQP-VK.glsl.texture_functions.texturegrad.samplercubeshadow_fragment
-dEQP-VK.glsl.texture_functions.texturegrad.samplercubeshadow_vertex
-
-# Excluded sparse version of the above texture function tests
+# Excluded sparse version of texture function tests according to the Android GLES3 issue list
 dEQP-VK.glsl.texture_functions.texturegrad.sparse_samplercubeshadow_fragment
 dEQP-VK.glsl.texture_functions.texturegrad.sparse_samplercubeshadow_vertex
-dEQP-VK.glsl.texture_functions.texturegrad.sparse_isamplercube_fragment
-dEQP-VK.glsl.texture_functions.texturegrad.sparse_isamplercube_vertex
-dEQP-VK.glsl.texture_functions.texturegrad.sparse_usamplercube_fragment
-dEQP-VK.glsl.texture_functions.texturegrad.sparse_isampler3d_vertex
-
-# Issue 420: Exclude problematic clipping tests
-dEQP-VK.clipping.clip_volume.clipped.large_points
-dEQP-VK.clipping.clip_volume.clipped.wide_lines_axis_aligned
-dEQP-VK.clipping.clip_volume.clipped.wide_lines_diagonal
-
-# Issue 419: Failing sparse tests (Image mismatch)
-dEQP-VK.glsl.texture_functions.texture.sparse_isampler2d_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_usampler2d_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_isamplercube_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_usamplercube_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_isampler2darray_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_usampler2darray_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_isampler3d_bias_fragment
-dEQP-VK.glsl.texture_functions.texture.sparse_usampler3d_bias_fragment
 
 # Excluded Amber example tests
 dEQP-VK.amber-example.*
@@ -39,3 +16,9 @@ dEQP-VK.pipeline.multisample.*.primitive_point_1px_sparse
 # VK-GL-CTS 1829
 # Test shader length is excessive, excluding until such time as the test case can be re-visited.
 dEQP-VK.ssbo.layout.random.scalar.75
+
+
+# VK-GL-CTS 2157, CL 5278
+# Excluded them as Intel HW is failing these tests.
+dEQP-VK.pipeline.blend.dual_source.format.r8g8b8a8_srgb.states.color_ca_1ms1a_sub_alpha_1msa_1mca_sub-color_1msc_da_max_alpha_o_da_add-color_s1c_s1a_max_alpha_dc_1ms1a_sub-color_s1a_z_sub_alpha_1msa_1msc_max
+dEQP-VK.pipeline.blend.dual_source.format.r8g8b8a8_srgb.states.color_ca_1ms1a_sub_alpha_1msa_1mdc_sub-color_1mda_sas_add_alpha_o_ca_add-color_sa_1mdc_sub_alpha_o_1mca_rsub-color_s1c_1msa_rsub_alpha_1msa_1mca_add

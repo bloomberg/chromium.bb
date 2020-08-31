@@ -50,15 +50,15 @@ DIEDispatcher::~DIEDispatcher() {
   }
 }
 
-bool DIEDispatcher::StartCompilationUnit(uint64 offset, uint8 address_size,
-                                         uint8 offset_size, uint64 cu_length,
-                                         uint8 dwarf_version) {
+bool DIEDispatcher::StartCompilationUnit(uint64_t offset, uint8_t address_size,
+                                         uint8_t offset_size, uint64_t cu_length,
+                                         uint8_t dwarf_version) {
   return root_handler_->StartCompilationUnit(offset, address_size,
                                              offset_size, cu_length,
                                              dwarf_version);
 }
 
-bool DIEDispatcher::StartDIE(uint64 offset, enum DwarfTag tag) {
+bool DIEDispatcher::StartDIE(uint64_t offset, enum DwarfTag tag) {
   // The stack entry for the parent of this DIE, if there is one.
   HandlerStack *parent = die_handlers_.empty() ? NULL : &die_handlers_.top();
 
@@ -113,7 +113,7 @@ bool DIEDispatcher::StartDIE(uint64 offset, enum DwarfTag tag) {
   return handler != NULL;
 }
 
-void DIEDispatcher::EndDIE(uint64 offset) {
+void DIEDispatcher::EndDIE(uint64_t offset) {
   assert(!die_handlers_.empty());
   HandlerStack *entry = &die_handlers_.top();
   if (entry->handler_) {
@@ -135,48 +135,48 @@ void DIEDispatcher::EndDIE(uint64 offset) {
   die_handlers_.pop();
 }
 
-void DIEDispatcher::ProcessAttributeUnsigned(uint64 offset,
+void DIEDispatcher::ProcessAttributeUnsigned(uint64_t offset,
                                              enum DwarfAttribute attr,
                                              enum DwarfForm form,
-                                             uint64 data) {
+                                             uint64_t data) {
   HandlerStack &current = die_handlers_.top();
   // This had better be an attribute of the DIE we were meant to handle.
   assert(offset == current.offset_);
   current.handler_->ProcessAttributeUnsigned(attr, form, data);
 }
 
-void DIEDispatcher::ProcessAttributeSigned(uint64 offset,
+void DIEDispatcher::ProcessAttributeSigned(uint64_t offset,
                                            enum DwarfAttribute attr,
                                            enum DwarfForm form,
-                                           int64 data) {
+                                           int64_t data) {
   HandlerStack &current = die_handlers_.top();
   // This had better be an attribute of the DIE we were meant to handle.
   assert(offset == current.offset_);
   current.handler_->ProcessAttributeSigned(attr, form, data);
 }
 
-void DIEDispatcher::ProcessAttributeReference(uint64 offset,
+void DIEDispatcher::ProcessAttributeReference(uint64_t offset,
                                               enum DwarfAttribute attr,
                                               enum DwarfForm form,
-                                              uint64 data) {
+                                              uint64_t data) {
   HandlerStack &current = die_handlers_.top();
   // This had better be an attribute of the DIE we were meant to handle.
   assert(offset == current.offset_);
   current.handler_->ProcessAttributeReference(attr, form, data);
 }
 
-void DIEDispatcher::ProcessAttributeBuffer(uint64 offset,
+void DIEDispatcher::ProcessAttributeBuffer(uint64_t offset,
                                            enum DwarfAttribute attr,
                                            enum DwarfForm form,
                                            const uint8_t *data,
-                                           uint64 len) {
+                                           uint64_t len) {
   HandlerStack &current = die_handlers_.top();
   // This had better be an attribute of the DIE we were meant to handle.
   assert(offset == current.offset_);
   current.handler_->ProcessAttributeBuffer(attr, form, data, len);
 }
 
-void DIEDispatcher::ProcessAttributeString(uint64 offset,
+void DIEDispatcher::ProcessAttributeString(uint64_t offset,
                                            enum DwarfAttribute attr,
                                            enum DwarfForm form,
                                            const string& data) {
@@ -186,10 +186,10 @@ void DIEDispatcher::ProcessAttributeString(uint64 offset,
   current.handler_->ProcessAttributeString(attr, form, data);
 }
 
-void DIEDispatcher::ProcessAttributeSignature(uint64 offset,
+void DIEDispatcher::ProcessAttributeSignature(uint64_t offset,
                                               enum DwarfAttribute attr,
                                               enum DwarfForm form,
-                                              uint64 signature) {
+                                              uint64_t signature) {
   HandlerStack &current = die_handlers_.top();
   // This had better be an attribute of the DIE we were meant to handle.
   assert(offset == current.offset_);

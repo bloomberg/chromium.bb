@@ -19,9 +19,11 @@ source_set("infobars") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/upgrade",
@@ -51,8 +53,11 @@ source_set("feature_flags") {
     "infobar_feature.h",
     "infobar_feature.mm",
   ]
+  public_deps = [ "//base" ]
   deps = [
-    "//base",
+    "//components/infobars/core:feature_flags",
+    "//components/version_info",
+    "//ios/chrome/common",
   ]
 }
 
@@ -84,22 +89,22 @@ source_set("infobars_ui") {
     "//ios/chrome/app/theme:theme",
     "//ios/chrome/app/theme:theme_grit",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios",
     "//ui/base",
     "//ui/gfx",
     "//url",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
   libs = [
     "CoreGraphics.framework",
     "QuartzCore.framework",
@@ -125,6 +130,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/infobars/test",
@@ -147,14 +153,32 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "infobar_egtest.mm",
+    "translate_infobar_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
     "//base",
+    "//base/test:test_support",
+    "//components/infobars/core:feature_flags",
+    "//components/strings:components_strings_grit",
+    "//components/translate/core/browser:translate_pref_names",
+    "//components/translate/core/common",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/translate:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/badges:public",
+    "//ios/chrome/browser/ui/infobars:constants",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars/banners:public",
+    "//ios/chrome/browser/ui/infobars/modals:public",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/components/webui:url_constants",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test/http_server",
+    "//net",
+    "//ui/base",
     "//url",
   ]
   libs = [ "UIKit.framework" ]
@@ -166,13 +190,29 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "infobar_egtest.mm",
+    "translate_infobar_egtest.mm",
   ]
   deps = [
     ":eg_test_support",
     "//base",
+    "//base/test:test_support",
+    "//components/infobars/core:feature_flags",
+    "//components/translate/core/browser:translate_pref_names",
+    "//components/translate/core/common",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/translate:eg_test_support",
+    "//ios/chrome/browser/ui/badges:public",
+    "//ios/chrome/browser/ui/infobars:constants",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars/banners:public",
+    "//ios/chrome/browser/ui/infobars/modals:public",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/components/webui:url_constants",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/test/http_server",
+    "//ui/base",
     "//url",
   ]
   libs = [ "XCTest.framework" ]
@@ -192,6 +232,7 @@ source_set("eg_test_support") {
     "//components/infobars/core",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/test/app:test_support",
@@ -230,6 +271,7 @@ source_set("eg_app_support+eg2") {
     "//components/infobars/core",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/test/app:test_support",
@@ -243,7 +285,5 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "infobar_manager_app_interface.h",
-  ]
+  sources = [ "infobar_manager_app_interface.h" ]
 }

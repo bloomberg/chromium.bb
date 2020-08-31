@@ -114,9 +114,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // Implementation of RenderWidgetHostViewBase.
@@ -143,14 +141,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void EnsureSurfaceSynchronizedForWebTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
-      override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
-  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
@@ -167,16 +157,18 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const cc::RenderFrameMetadata& metadata) override;
   void DidNavigate() override;
 
-  bool LockMouse(bool) override;
+  blink::mojom::PointerLockResult LockMouse(bool) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
   void UnlockMouse() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultState ack_result) override;
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
 
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
 
@@ -313,7 +305,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ForwardKeyboardEventWithCommands(
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency_info,
-      const std::vector<EditCommand>& commands) override;
+      std::vector<blink::mojom::EditCommandPtr> commands) override;
   void RouteOrProcessMouseEvent(const blink::WebMouseEvent& web_event) override;
   void RouteOrProcessTouchEvent(const blink::WebTouchEvent& web_event) override;
   void RouteOrProcessWheelEvent(
@@ -344,7 +336,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       std::unique_ptr<InputEvent> event,
       const std::vector<uint8_t>& native_event_data,
       bool skip_in_browser,
-      const std::vector<EditCommand>& commands) override;
+      std::vector<blink::mojom::EditCommandPtr> commands) override;
   void RouteOrProcessMouseEvent(std::unique_ptr<InputEvent> event) override;
   void RouteOrProcessTouchEvent(std::unique_ptr<InputEvent> event) override;
   void RouteOrProcessWheelEvent(std::unique_ptr<InputEvent> event) override;
@@ -400,7 +392,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
-  void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DestroyCompositorForShutdown() override;
   bool OnBrowserCompositorSurfaceIdChanged() override;

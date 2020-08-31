@@ -19,6 +19,7 @@
 
 #include <array>
 #include <initializer_list>
+#include <vector>
 
 #include "common/Constants.h"
 
@@ -32,6 +33,7 @@ namespace utils {
                                           SingleShaderStage stage,
                                           const char* source);
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source);
+    std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source);
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
                                       const void* data,
@@ -47,8 +49,8 @@ namespace utils {
 
     wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
                                               uint64_t offset,
-                                              uint32_t rowPitch,
-                                              uint32_t imageHeight);
+                                              uint32_t bytesPerRow,
+                                              uint32_t rowsPerImage);
     wgpu::TextureCopyView CreateTextureCopyView(wgpu::Texture texture,
                                                 uint32_t level,
                                                 uint32_t slice,
@@ -58,6 +60,8 @@ namespace utils {
       public:
         ComboRenderPassDescriptor(std::initializer_list<wgpu::TextureView> colorAttachmentInfo,
                                   wgpu::TextureView depthStencil = wgpu::TextureView());
+
+        ComboRenderPassDescriptor(const ComboRenderPassDescriptor& otherRenderPass);
         const ComboRenderPassDescriptor& operator=(
             const ComboRenderPassDescriptor& otherRenderPass);
 
@@ -91,7 +95,7 @@ namespace utils {
                                                  const wgpu::BindGroupLayout* bindGroupLayout);
     wgpu::BindGroupLayout MakeBindGroupLayout(
         const wgpu::Device& device,
-        std::initializer_list<wgpu::BindGroupLayoutBinding> bindingsInitializer);
+        std::initializer_list<wgpu::BindGroupLayoutEntry> entriesInitializer);
 
     // Helpers to make creating bind groups look nicer:
     //
@@ -111,7 +115,7 @@ namespace utils {
                                     uint64_t offset = 0,
                                     uint64_t size = wgpu::kWholeSize);
 
-        wgpu::BindGroupBinding GetAsBinding() const;
+        wgpu::BindGroupEntry GetAsBinding() const;
 
         uint32_t binding;
         wgpu::Sampler sampler;
@@ -124,7 +128,7 @@ namespace utils {
     wgpu::BindGroup MakeBindGroup(
         const wgpu::Device& device,
         const wgpu::BindGroupLayout& layout,
-        std::initializer_list<BindingInitializationHelper> bindingsInitializer);
+        std::initializer_list<BindingInitializationHelper> entriesInitializer);
 
 }  // namespace utils
 

@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace openscreen {
-namespace platform {
 
 struct TlsCredentials {
   TlsCredentials();
@@ -29,7 +28,6 @@ struct TlsCredentials {
   std::vector<uint8_t> der_x509_cert;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TLS_CREDENTIALS_H_

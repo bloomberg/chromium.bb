@@ -62,6 +62,8 @@ class Ticket {
   struct Record;
 
  public:
+  using OnCall = std::function<void()>;
+
   // Queue hands out Tickets.
   class Queue {
    public:
@@ -93,7 +95,7 @@ class Ticket {
   // onCall() registers the function f to be invoked when this ticket is
   // called. If the ticket is already called prior to calling onCall(), then
   // f() will be executed immediately.
-  // F must be a function of the signature: void F()
+  // F must be a function of the OnCall signature.
   template <typename F>
   inline void onCall(F&& f) const;
 
@@ -103,22 +105,22 @@ class Ticket {
     inline ~Record();
 
     inline void done();
-    inline void callAndUnlock(std::unique_lock<std::mutex>& lock);
+    inline void callAndUnlock(marl::lock& lock);
+    inline void unlink();  // guarded by shared->mutex
 
     ConditionVariable isCalledCondVar;
 
     std::shared_ptr<Shared> shared;
     Record* next = nullptr;  // guarded by shared->mutex
     Record* prev = nullptr;  // guarded by shared->mutex
-    inline void unlink();    // guarded by shared->mutex
-    Task onCall;             // guarded by shared->mutex
+    OnCall onCall;           // guarded by shared->mutex
     bool isCalled = false;   // guarded by shared->mutex
     std::atomic<bool> isDone = {false};
   };
 
   // Data shared between all tickets and the queue.
   struct Shared {
-    std::mutex mutex;
+    marl::mutex mutex;
     Record tail;
   };
 
@@ -134,7 +136,7 @@ class Ticket {
 Ticket::Ticket(Loan<Record>&& record) : record(std::move(record)) {}
 
 void Ticket::wait() const {
-  std::unique_lock<std::mutex> lock(record->shared->mutex);
+  marl::lock lock(record->shared->mutex);
   record->isCalledCondVar.wait(lock, [this] { return record->isCalled; });
 }
 
@@ -144,7 +146,7 @@ void Ticket::done() const {
 
 template <typename Function>
 void Ticket::onCall(Function&& f) const {
-  std::unique_lock<std::mutex> lock(record->shared->mutex);
+  marl::lock lock(record->shared->mutex);
   if (record->isCalled) {
     marl::schedule(std::move(f));
     return;
@@ -155,7 +157,7 @@ void Ticket::onCall(Function&& f) const {
         a();
         b();
       }
-      Task a, b;
+      OnCall a, b;
     };
     record->onCall = std::move(Joined{std::move(record->onCall), std::move(f)});
   } else {
@@ -190,7 +192,7 @@ void Ticket::Queue::take(size_t n, const F& f) {
     f(std::move(Ticket(std::move(rec))));
   });
   last->next = &shared->tail;
-  std::unique_lock<std::mutex> lock(shared->mutex);
+  marl::lock lock(shared->mutex);
   first->prev = shared->tail.prev;
   shared->tail.prev = last.get();
   if (first->prev == nullptr) {
@@ -214,7 +216,7 @@ void Ticket::Record::done() {
   if (isDone.exchange(true)) {
     return;
   }
-  std::unique_lock<std::mutex> lock(shared->mutex);
+  marl::lock lock(shared->mutex);
   auto callNext = (prev == nullptr && next != nullptr) ? next : nullptr;
   unlink();
   if (callNext != nullptr) {
@@ -223,18 +225,18 @@ void Ticket::Record::done() {
   }
 }
 
-void Ticket::Record::callAndUnlock(std::unique_lock<std::mutex>& lock) {
+void Ticket::Record::callAndUnlock(marl::lock& lock) {
   if (isCalled) {
     return;
   }
   isCalled = true;
-  Task task;
-  std::swap(task, onCall);
+  OnCall callback;
+  std::swap(callback, onCall);
   isCalledCondVar.notify_all();
-  lock.unlock();
+  lock.unlock_no_tsa();
 
-  if (task) {
-    marl::schedule(std::move(task));
+  if (callback) {
+    marl::schedule(std::move(callback));
   }
 }
 

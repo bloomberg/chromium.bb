@@ -38,6 +38,8 @@ class IOSChromeUpdatePasswordInfoBarDelegate
 
   ~IOSChromeUpdatePasswordInfoBarDelegate() override;
 
+  bool ShouldExpire(const NavigationDetails& details) const override;
+
   // Returns whether the user has multiple saved credentials, of which the
   // infobar affects just one. If so, the infobar should clarify which
   // credential is being affected.
@@ -60,12 +62,12 @@ class IOSChromeUpdatePasswordInfoBarDelegate
 
   // ConfirmInfoBarDelegate implementation.
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  base::string16 GetLinkText() const override;
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
-  void InfoBarDismissed() override;
-  base::string16 GetLinkText() const override;
 
   // The credential that should be displayed in the infobar, and for which the
   // password will be updated.

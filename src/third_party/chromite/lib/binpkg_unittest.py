@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import binpkg
 from chromite.lib import cros_test_lib
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 PACKAGES_CONTENT = """USE: test
@@ -83,16 +87,19 @@ class PackageIndexTest(cros_test_lib.TempDirTestCase):
          'KEY': 'also_value'},
     ]
 
-    # Write the two package index files using each writing method.
+    # Write the package index files using each writing method.
     pkg_index.modified = True
     pkg_index.WriteFile(packages1)
     with open(packages2, 'w') as f:
       pkg_index.Write(f)
+    tmpf = pkg_index.WriteToNamedTemporaryFile()
 
-    # Make sure the two files are the same.
+    # Make sure the files are the same.
     fc1 = osutils.ReadFile(packages1)
     fc2 = osutils.ReadFile(packages2)
+    fc3 = tmpf.read()
     self.assertEqual(fc1, fc2)
+    self.assertEqual(fc1, fc3)
 
     # Make sure it parses out the same data we wrote.
     with open(packages1) as f:

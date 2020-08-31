@@ -44,6 +44,7 @@ class VideoStreamEncoderInterface : public rtc::VideoSinkInterface<VideoFrame> {
    public:
     virtual void OnEncoderConfigurationChanged(
         std::vector<VideoStream> streams,
+        bool is_svc,
         VideoEncoderConfig::ContentType content_type,
         int min_transmit_bitrate_bps) = 0;
   };
@@ -95,7 +96,8 @@ class VideoStreamEncoderInterface : public rtc::VideoSinkInterface<VideoFrame> {
                                 DataRate stable_target_bitrate,
                                 DataRate link_allocation,
                                 uint8_t fraction_lost,
-                                int64_t round_trip_time_ms) = 0;
+                                int64_t round_trip_time_ms,
+                                double cwnd_reduce_ratio) = 0;
 
   // Register observer for the bitrate allocation between the temporal
   // and spatial layers.

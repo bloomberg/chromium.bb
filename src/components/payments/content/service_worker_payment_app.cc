@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_request_converter.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -180,6 +182,8 @@ ServiceWorkerPaymentApp::CreateCanMakePaymentEventData() {
 
   event_data->top_origin = top_origin_;
   event_data->payment_request_origin = frame_origin_;
+  if (base::FeatureList::IsEnabled(::features::kWebPaymentsMinimalUI))
+    event_data->currency = spec_->details().total->amount->currency;
 
   DCHECK(spec_->details().modifiers);
   for (const auto& modifier : *spec_->details().modifiers) {
@@ -210,10 +214,10 @@ void ServiceWorkerPaymentApp::OnCanMakePaymentEventSkipped(
 
 void ServiceWorkerPaymentApp::OnCanMakePaymentEventResponded(
     ValidateCanMakePaymentCallback callback,
-    bool result) {
+    mojom::CanMakePaymentResponsePtr response) {
   // |can_make_payment| is true as long as there is a matching payment handler.
   can_make_payment_result_ = true;
-  has_enrolled_instrument_result_ = result;
+  has_enrolled_instrument_result_ = response->can_make_payment;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), this, can_make_payment_result_));
@@ -229,8 +233,8 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->icon == nullptr
             ? SkBitmap()
             : *(installable_web_app_info_->icon),
-        installable_web_app_info_->sw_js_url,
-        installable_web_app_info_->sw_scope,
+        GURL(installable_web_app_info_->sw_js_url),
+        GURL(installable_web_app_info_->sw_scope),
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
         installable_web_app_info_->supported_delegations,
         base::BindOnce(
@@ -389,16 +393,12 @@ bool ServiceWorkerPaymentApp::CanPreselect() const {
   return !GetLabel().empty() && !icon_image_.size().IsEmpty();
 }
 
-bool ServiceWorkerPaymentApp::IsExactlyMatchingMerchantRequest() const {
-  return true;
-}
-
 base::string16 ServiceWorkerPaymentApp::GetMissingInfoLabel() const {
   NOTREACHED();
   return base::string16();
 }
 
-bool ServiceWorkerPaymentApp::IsValidForCanMakePayment() const {
+bool ServiceWorkerPaymentApp::HasEnrolledInstrument() const {
   // This app should not be used when can_make_payment_result_ is false, so this
   // interface should not be invoked.
   DCHECK(can_make_payment_result_);
@@ -407,6 +407,10 @@ bool ServiceWorkerPaymentApp::IsValidForCanMakePayment() const {
 
 void ServiceWorkerPaymentApp::RecordUse() {
   NOTIMPLEMENTED();
+}
+
+bool ServiceWorkerPaymentApp::NeedsInstallation() const {
+  return needs_installation_;
 }
 
 base::string16 ServiceWorkerPaymentApp::GetLabel() const {
@@ -428,9 +432,7 @@ base::string16 ServiceWorkerPaymentApp::GetSublabel() const {
 bool ServiceWorkerPaymentApp::IsValidForModifier(
     const std::string& method,
     bool supported_networks_specified,
-    const std::set<std::string>& supported_networks,
-    bool supported_types_specified,
-    const std::set<autofill::CreditCard::CardType>& supported_types) const {
+    const std::set<std::string>& supported_networks) const {
   // Payment app that needs installation only supports url based payment
   // methods.
   if (needs_installation_)
@@ -447,9 +449,8 @@ bool ServiceWorkerPaymentApp::IsValidForModifier(
     return true;
 
   // Checking the capabilities of this app against the modifier.
-  // Return true if both card networks and types are not specified in the
-  // modifier.
-  if (!supported_networks_specified && !supported_types_specified)
+  // Return true if card networks are not specified in the  modifier.
+  if (!supported_networks_specified)
     return true;
 
   // Return false if no capabilities for this app.
@@ -468,21 +469,6 @@ bool ServiceWorkerPaymentApp::IsValidForModifier(
 
       if (base::STLSetIntersection<std::set<std::string>>(
               app_supported_networks, supported_networks)
-              .empty()) {
-        continue;
-      }
-    }
-
-    if (supported_types_specified) {
-      std::set<autofill::CreditCard::CardType> app_supported_types;
-      for (const auto& type :
-           stored_payment_app_info_->capabilities[i].supported_card_types) {
-        app_supported_types.insert(
-            GetBasicCardType(static_cast<mojom::BasicCardType>(type)));
-      }
-
-      if (base::STLSetIntersection<std::set<autofill::CreditCard::CardType>>(
-              app_supported_types, supported_types)
               .empty()) {
         continue;
       }
@@ -543,6 +529,21 @@ bool ServiceWorkerPaymentApp::HandlesPayerPhone() const {
 void ServiceWorkerPaymentApp::OnPaymentAppIdentity(const url::Origin& origin,
                                                    int64_t registration_id) {
   identity_callback_.Run(origin, registration_id);
+}
+
+ukm::SourceId ServiceWorkerPaymentApp::UkmSourceId() {
+  if (ukm_source_id_ == ukm::kInvalidSourceId) {
+    GURL sw_scope = needs_installation_
+                        ? GURL(installable_web_app_info_->sw_scope)
+                        : stored_payment_app_info_->scope;
+    // At this point we know that the payment handler window is open for this
+    // app since this getter is called for the invoked app inside the
+    // PaymentRequest::OnPaymentHandlerOpenWindowCalled function.
+    ukm_source_id_ =
+        content::PaymentAppProvider::GetInstance()
+            ->GetSourceIdForPaymentAppFromScope(sw_scope.GetOrigin());
+  }
+  return ukm_source_id_;
 }
 
 }  // namespace payments

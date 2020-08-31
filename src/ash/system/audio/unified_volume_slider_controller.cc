@@ -8,6 +8,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/audio/unified_volume_view.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 
@@ -33,10 +34,11 @@ void UnifiedVolumeSliderController::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
   if (sender == slider_->button()) {
     bool mute_on = !CrasAudioHandler::Get()->IsOutputMuted();
-    if (mute_on)
+    if (mute_on) {
       base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Muted"));
-    else
+    } else {
       base::RecordAction(base::UserMetricsAction("StatusArea_Audio_Unmuted"));
+    }
     CrasAudioHandler::Get()->SetOutputMute(mute_on);
   } else if (sender == slider_->more_button()) {
     delegate_->OnAudioSettingsButtonClicked();
@@ -48,7 +50,7 @@ void UnifiedVolumeSliderController::SliderValueChanged(
     float value,
     float old_value,
     views::SliderChangeReason reason) {
-  if (reason != views::VALUE_CHANGED_BY_USER)
+  if (reason != views::SliderChangeReason::kByUser)
     return;
 
   const int level = value * 100;

@@ -14,7 +14,9 @@
 #include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
@@ -36,6 +38,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 using testing::_;
 using testing::StrictMock;
@@ -52,7 +55,7 @@ class TestServerSession : public QuicServerSessionBase {
   TestServerSession(const QuicConfig& config,
                     QuicConnection* connection,
                     QuicSession::Visitor* visitor,
-                    QuicCryptoServerStream::Helper* helper,
+                    QuicCryptoServerStreamBase::Helper* helper,
                     const QuicCryptoServerConfig* crypto_config,
                     QuicCompressedCertsCache* compressed_certs_cache,
                     QuicSimpleServerBackend* quic_simple_server_backend)
@@ -65,7 +68,7 @@ class TestServerSession : public QuicServerSessionBase {
                               compressed_certs_cache),
         quic_simple_server_backend_(quic_simple_server_backend) {}
 
-  ~TestServerSession() override { delete connection(); }
+  ~TestServerSession() override { DeleteConnection(); }
 
  protected:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override {
@@ -102,11 +105,11 @@ class TestServerSession : public QuicServerSessionBase {
     return stream;
   }
 
-  QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+  std::unique_ptr<QuicCryptoServerStreamBase> CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override {
-    return new QuicCryptoServerStream(crypto_config, compressed_certs_cache,
-                                      this, stream_helper());
+    return CreateCryptoServerStream(crypto_config, compressed_certs_cache, this,
+                                    stream_helper());
   }
 
  private:
@@ -128,12 +131,12 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
                        KeyExchangeSource::Default()),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    config_.SetMaxIncomingBidirectionalStreamsToSend(kMaxStreamsForTest);
-    config_.SetMaxIncomingUnidirectionalStreamsToSend(kMaxStreamsForTest);
-    QuicConfigPeer::SetReceivedMaxIncomingBidirectionalStreams(
-        &config_, kMaxStreamsForTest);
-    QuicConfigPeer::SetReceivedMaxIncomingUnidirectionalStreams(
-        &config_, kMaxStreamsForTest);
+    config_.SetMaxBidirectionalStreamsToSend(kMaxStreamsForTest);
+    config_.SetMaxUnidirectionalStreamsToSend(kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxBidirectionalStreams(&config_,
+                                                       kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxUnidirectionalStreams(&config_,
+                                                        kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(
@@ -150,12 +153,7 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     handshake_message_ = crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions());
-    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     session_->Initialize();
-    if (!GetQuicReloadableFlag(quic_version_negotiated_by_default_at_server)) {
-      QuicSessionPeer::GetMutableCryptoStream(session_.get())
-          ->OnSuccessfulVersionNegotiation(supported_versions.front());
-    }
     QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
         session_->config(), kMinimumFlowControlSendWindow);
     session_->OnConfigNegotiated();
@@ -236,9 +234,9 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
   QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece("HT"));
+                        quiche::QuicheStringPiece("HT"));
   session_->OnStreamFrame(data1);
-  EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(1u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
 
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(kInvalidControlFrameId,
@@ -260,13 +258,12 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   InjectStopSendingFrame(GetNthClientInitiatedBidirectionalId(0),
                          QUIC_ERROR_PROCESSING_STREAM);
 
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
-
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   // Send the same two bytes of payload in a new packet.
   session_->OnStreamFrame(data1);
 
   // The stream should not be re-opened.
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   EXPECT_TRUE(connection_->connected());
 }
 
@@ -291,27 +288,26 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
   InjectStopSendingFrame(GetNthClientInitiatedBidirectionalId(0),
                          QUIC_ERROR_PROCESSING_STREAM);
 
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
-
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   // Send two bytes of payload.
   QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                        QuicStringPiece("HT"));
+                        quiche::QuicheStringPiece("HT"));
   session_->OnStreamFrame(data1);
 
   // The stream should never be opened, now that the reset is received.
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   EXPECT_TRUE(connection_->connected());
 }
 
 TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
   // Send (empty) compressed headers followed by two bytes of data.
   QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
-                         QuicStringPiece("\1\0\0\0\0\0\0\0HT"));
+                         quiche::QuicheStringPiece("\1\0\0\0\0\0\0\0HT"));
   QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(1), false, 0,
-                         QuicStringPiece("\2\0\0\0\0\0\0\0HT"));
+                         quiche::QuicheStringPiece("\2\0\0\0\0\0\0\0HT"));
   session_->OnStreamFrame(frame1);
   session_->OnStreamFrame(frame2);
-  EXPECT_EQ(2u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(2u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
 
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst(kInvalidControlFrameId,
@@ -337,13 +333,13 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
   // past the reset point of stream 3.  As it's a closed stream we just drop the
   // data on the floor, but accept the packet because it has data for stream 5.
   QuicStreamFrame frame3(GetNthClientInitiatedBidirectionalId(0), false, 2,
-                         QuicStringPiece("TP"));
+                         quiche::QuicheStringPiece("TP"));
   QuicStreamFrame frame4(GetNthClientInitiatedBidirectionalId(1), false, 2,
-                         QuicStringPiece("TP"));
+                         quiche::QuicheStringPiece("TP"));
   session_->OnStreamFrame(frame3);
   session_->OnStreamFrame(frame4);
   // The stream should never be opened, now that the reset is received.
-  EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(1u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   EXPECT_TRUE(connection_->connected());
 }
 
@@ -363,7 +359,7 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
     EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
               session_->max_open_incoming_bidirectional_streams());
   }
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   QuicStreamId stream_id = GetNthClientInitiatedBidirectionalId(0);
   // Open the max configured number of streams, should be no problem.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
@@ -409,7 +405,7 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableBidirectionalStreams) {
   const size_t kAvailableStreamLimit =
       session_->MaxAvailableBidirectionalStreams();
 
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(session_.get()));
   EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateStream(
       session_.get(), GetNthClientInitiatedBidirectionalId(0)));
 
@@ -440,7 +436,11 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableBidirectionalStreams) {
 
 TEST_P(QuicServerSessionBaseTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
+  const QuicErrorCode expected_error =
+      VersionHasIetfQuicFrames(transport_version())
+          ? QUIC_HTTP_STREAM_WRONG_DIRECTION
+          : QUIC_INVALID_STREAM_ID;
+  EXPECT_CALL(*connection_, CloseConnection(expected_error, _, _));
   EXPECT_EQ(nullptr, QuicServerSessionBasePeer::GetOrCreateStream(
                          session_.get(),
                          session_->next_outgoing_unidirectional_stream_id()));
@@ -465,7 +465,7 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache,
       QuicServerSessionBase* session,
-      QuicCryptoServerStream::Helper* helper)
+      QuicCryptoServerStreamBase::Helper* helper)
       : QuicCryptoServerStream(crypto_config,
                                compressed_certs_cache,
                                session,
@@ -475,8 +475,25 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
       delete;
   ~MockQuicCryptoServerStream() override {}
 
-  MOCK_METHOD1(SendServerConfigUpdate,
-               void(const CachedNetworkParameters* cached_network_parameters));
+  MOCK_METHOD(void,
+              SendServerConfigUpdate,
+              (const CachedNetworkParameters*),
+              (override));
+};
+
+class MockTlsServerHandshaker : public TlsServerHandshaker {
+ public:
+  explicit MockTlsServerHandshaker(QuicServerSessionBase* session,
+                                   const QuicCryptoServerConfig& crypto_config)
+      : TlsServerHandshaker(session, crypto_config) {}
+  MockTlsServerHandshaker(const MockTlsServerHandshaker&) = delete;
+  MockTlsServerHandshaker& operator=(const MockTlsServerHandshaker&) = delete;
+  ~MockTlsServerHandshaker() override {}
+
+  MOCK_METHOD(void,
+              SendServerConfigUpdate,
+              (const CachedNetworkParameters*),
+              (override));
 };
 
 TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
@@ -505,10 +522,21 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
         /*is_static=*/true);
   }
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
-  MockQuicCryptoServerStream* crypto_stream =
-      new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
-                                     session_.get(), &stream_helper_);
-  QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
+  MockQuicCryptoServerStream* quic_crypto_stream = nullptr;
+  MockTlsServerHandshaker* tls_server_stream = nullptr;
+  if (session_->connection()->version().handshake_protocol ==
+      PROTOCOL_QUIC_CRYPTO) {
+    quic_crypto_stream = new MockQuicCryptoServerStream(
+        &crypto_config_, &compressed_certs_cache_, session_.get(),
+        &stream_helper_);
+    QuicServerSessionBasePeer::SetCryptoStream(session_.get(),
+                                               quic_crypto_stream);
+  } else {
+    tls_server_stream =
+        new MockTlsServerHandshaker(session_.get(), crypto_config_);
+    QuicServerSessionBasePeer::SetCryptoStream(session_.get(),
+                                               tls_server_stream);
+  }
   if (!VersionUsesHttp3(transport_version())) {
     session_->RegisterStreamPriority(
         QuicUtils::GetHeadersStreamId(connection_->transport_version()),
@@ -592,9 +620,15 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       session_->connection()->clock()->WallNow().ToUNIXSeconds());
   expected_network_params.set_serving_region(serving_region);
 
-  EXPECT_CALL(*crypto_stream,
-              SendServerConfigUpdate(EqualsProto(expected_network_params)))
-      .Times(1);
+  if (quic_crypto_stream) {
+    EXPECT_CALL(*quic_crypto_stream,
+                SendServerConfigUpdate(EqualsProto(expected_network_params)))
+        .Times(1);
+  } else {
+    EXPECT_CALL(*tls_server_stream,
+                SendServerConfigUpdate(EqualsProto(expected_network_params)))
+        .Times(1);
+  }
   EXPECT_CALL(*connection_, OnSendConnectionState(_)).Times(1);
   session_->OnCongestionWindowChange(now);
 }
@@ -622,8 +656,9 @@ TEST_P(QuicServerSessionBaseTest, BandwidthResumptionExperiment) {
   connection_->AdvanceTime(
       QuicTime::Delta::FromSeconds(kNumSecondsPerHour + 1));
 
-  QuicCryptoServerStream* crypto_stream = static_cast<QuicCryptoServerStream*>(
-      QuicSessionPeer::GetMutableCryptoStream(session_.get()));
+  QuicCryptoServerStreamBase* crypto_stream =
+      static_cast<QuicCryptoServerStreamBase*>(
+          QuicSessionPeer::GetMutableCryptoStream(session_.get()));
 
   // No effect if no CachedNetworkParameters provided.
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);

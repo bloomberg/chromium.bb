@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -39,6 +40,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   LoadExtensions();
 
   // Sanity check: All extensions showing; order is A B C.
+  RunScheduledLayouts();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
@@ -112,6 +114,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
 
   // Shrink the size of the container so we have an overflow menu.
   toolbar_model()->SetVisibleIconCount(2u);
+  RunScheduledLayouts();
   EXPECT_EQ(2u, container->VisibleBrowserActions());
 
   // Simulate a drag and drop from the overflow menu.
@@ -134,6 +137,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
+  RunScheduledLayouts();
   EXPECT_EQ(3u, container->VisibleBrowserActions());
   EXPECT_TRUE(toolbar_model()->all_icons_visible());
 }
@@ -142,60 +146,66 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
 // windows so that it is consistent.
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   LoadExtensions();
-  BrowserActionsContainer* first =
-      BrowserView::GetBrowserViewForBrowser(browser())->toolbar()->
-          browser_actions();
+
+  BrowserActionsContainer* first_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->browser_actions();
 
   // Create a second browser.
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
-  BrowserActionsContainer* second =
-      BrowserView::GetBrowserViewForBrowser(second_browser)->toolbar()->
-          browser_actions();
+  BrowserActionsContainer* second_container =
+      BrowserView::GetBrowserViewForBrowser(second_browser)
+          ->toolbar()
+          ->browser_actions();
 
   // Both containers should have the same order and visible actions, which
   // is right now A B C.
-  EXPECT_EQ(3u, first->VisibleBrowserActions());
-  EXPECT_EQ(3u, second->VisibleBrowserActions());
-  EXPECT_EQ(extension_a()->id(), first->GetIdAt(0u));
-  EXPECT_EQ(extension_a()->id(), second->GetIdAt(0u));
-  EXPECT_EQ(extension_b()->id(), first->GetIdAt(1u));
-  EXPECT_EQ(extension_b()->id(), second->GetIdAt(1u));
-  EXPECT_EQ(extension_c()->id(), first->GetIdAt(2u));
-  EXPECT_EQ(extension_c()->id(), second->GetIdAt(2u));
+  RunScheduledLayouts();
+  EXPECT_EQ(3u, first_container->VisibleBrowserActions());
+  EXPECT_EQ(3u, second_container->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), first_container->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), second_container->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), first_container->GetIdAt(1u));
+  EXPECT_EQ(extension_b()->id(), second_container->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), first_container->GetIdAt(2u));
+  EXPECT_EQ(extension_c()->id(), second_container->GetIdAt(2u));
 
   // Simulate a drag and drop to the right.
   ui::OSExchangeData drop_data;
   // Drag extension A from index 0...
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  ToolbarActionView* view = first->GetViewForId(extension_b()->id());
+  ToolbarActionView* view = first_container->GetViewForId(extension_b()->id());
   // ...to the right of extension B.
   gfx::PointF location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
   // Drag and drop.
-  first->toolbar_actions_bar()->OnDragStarted(0u);
-  first->OnDragUpdated(target_event);
+  first_container->toolbar_actions_bar()->OnDragStarted(0u);
+  first_container->OnDragUpdated(target_event);
+  RunScheduledLayouts();
 
   // Semi-random placement for a regression test for crbug.com/539744.
-  first->Layout();
-  first->OnPerformDrop(target_event);
+  first_container->OnPerformDrop(target_event);
+  RunScheduledLayouts();
 
   // The new order, B A C, should be reflected in *both* containers, even
   // though the drag only happened in the first one.
-  EXPECT_EQ(extension_b()->id(), first->GetIdAt(0u));
-  EXPECT_EQ(extension_b()->id(), second->GetIdAt(0u));
-  EXPECT_EQ(extension_a()->id(), first->GetIdAt(1u));
-  EXPECT_EQ(extension_a()->id(), second->GetIdAt(1u));
-  EXPECT_EQ(extension_c()->id(), first->GetIdAt(2u));
-  EXPECT_EQ(extension_c()->id(), second->GetIdAt(2u));
+  EXPECT_EQ(extension_b()->id(), first_container->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), second_container->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), first_container->GetIdAt(1u));
+  EXPECT_EQ(extension_a()->id(), second_container->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), first_container->GetIdAt(2u));
+  EXPECT_EQ(extension_c()->id(), second_container->GetIdAt(2u));
 
   // Next, simulate a resize by shrinking the container.
-  first->OnResize(1, true);
+  first_container->OnResize(1, true);
   // The first and second container should each have resized.
-  EXPECT_EQ(2u, first->VisibleBrowserActions());
-  EXPECT_EQ(2u, second->VisibleBrowserActions());
+  RunScheduledLayouts();
+  EXPECT_EQ(2u, first_container->VisibleBrowserActions());
+  EXPECT_EQ(2u, second_container->VisibleBrowserActions());
 }
 
 // Test that the BrowserActionsContainer responds correctly when the underlying
@@ -205,9 +215,22 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   LoadExtensions();
 
+  BrowserActionsContainer* const container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetBrowserActionsContainer();
+  auto container_can_be_resized = [container]() {
+    // The container can only be resized if we can start a drag for the view.
+    EXPECT_GE(container->num_toolbar_actions(), 1u);
+    ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);
+    gfx::Point point(action_view->x(), action_view->y());
+    return container->CanStartDragForView(action_view, point, point);
+  };
+
+  RunScheduledLayouts();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
+  EXPECT_TRUE(container_can_be_resized());
 
   std::vector<std::string> action_ids;
   action_ids.push_back(extension_a()->id());
@@ -216,17 +239,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
                                     ToolbarActionsModel::HIGHLIGHT_WARNING);
 
   // Only two browser actions should be visible.
+  RunScheduledLayouts();
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
 
   // We shouldn't be able to drag in highlight mode.
-  EXPECT_FALSE(browser_actions_bar()->CanBeResized());
+  EXPECT_FALSE(container_can_be_resized());
 
   // We should go back to normal after leaving highlight mode.
   toolbar_model()->StopHighlighting();
+  RunScheduledLayouts();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
+  EXPECT_TRUE(container_can_be_resized());
 }
 
 namespace {
@@ -469,6 +494,11 @@ class BrowserActionsContainerOverflowTest
   ~BrowserActionsContainerOverflowTest() override = default;
 
  protected:
+  // Icon visibility is updated on layout, but layouts happen
+  // asynchronously in the production browser. Force any pending layout
+  // to happen immediately.
+  void UpdateUi();
+
   // Returns true if the order of the ToolbarActionViews in |main_bar_|
   // and |overflow_bar_| match.
   bool ViewOrdersMatch();
@@ -505,16 +535,23 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
   overflow_parent_ = std::make_unique<views::ResizeAwareParentView>();
-  overflow_parent_->set_owned_by_client();
-  overflow_bar_ = new BrowserActionsContainer(
-      browser(), main_bar_,
-      BrowserView::GetBrowserViewForBrowser(browser())->toolbar(), true);
-  overflow_parent_->AddChildView(overflow_bar_);
+  overflow_bar_ =
+      overflow_parent_->AddChildView(std::make_unique<BrowserActionsContainer>(
+          browser(), main_bar_,
+          BrowserView::GetBrowserViewForBrowser(browser())->toolbar(), true));
 }
 
 void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {
   overflow_parent_.reset();
   BrowserActionsBarBrowserTest::TearDownOnMainThread();
+}
+
+void BrowserActionsContainerOverflowTest::UpdateUi() {
+  // The overflow bar seems to layout correctly only if the main bar is
+  // laid out first. This happens in practice but we must force it in
+  // the test.
+  RunScheduledLayouts();
+  overflow_bar_->Layout();
 }
 
 bool BrowserActionsContainerOverflowTest::ViewOrdersMatch() {
@@ -556,10 +593,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
                        TestBasicActionOverflow) {
   LoadExtensions();
 
-  // Since the overflow bar isn't attached to a view, we have to kick it in
-  // order to retrigger layout each time we change the number of icons in the
-  // bar.
-  overflow_bar()->Layout();
+  UpdateUi();
 
   // All actions are showing, and are in the installation order.
   EXPECT_TRUE(toolbar_model()->all_icons_visible());
@@ -573,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   // Reduce the visible count to 2. Order should be unchanged (A B C), but
   // only A and B should be visible on the main bar.
   toolbar_model()->SetVisibleIconCount(2u);
-  overflow_bar()->Layout();  // Kick.
+  UpdateUi();
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
@@ -582,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   // Move extension C to the first position. Order should now be C A B, with
   // C and A visible in the main bar.
   toolbar_model()->MoveActionIcon(extension_c()->id(), 0);
-  overflow_bar()->Layout();  // Kick.
+  UpdateUi();
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
@@ -599,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
       static_cast<extensions::ExtensionContextMenuModel*>(menu_model);
   extension_menu->ExecuteCommand(
       extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY, 0);
-  overflow_bar()->Layout();  // Kick.
+  UpdateUi();
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
@@ -613,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   // Start with one extension in overflow.
   toolbar_model()->SetVisibleIconCount(2u);
-  overflow_bar()->Layout();
+  UpdateUi();
 
   // Verify starting state is A B [C].
   ASSERT_EQ(3u, main_bar()->num_toolbar_actions());
@@ -634,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   overflow_bar()->OnDragUpdated(target_event);
   overflow_bar()->OnPerformDrop(target_event);
-  overflow_bar()->Layout();
+  UpdateUi();
 
   // Order should now be B [A C].
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(0u));
@@ -655,6 +689,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   main_bar()->OnPerformDrop(target_event2);
 
   // Order should be A B [C] again.
+  UpdateUi();
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
@@ -672,6 +707,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   main_bar()->OnPerformDrop(target_event3);
 
   // Order should be A C B, and there should be no extensions in overflow.
+  UpdateUi();
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));

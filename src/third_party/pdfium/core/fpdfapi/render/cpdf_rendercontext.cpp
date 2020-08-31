@@ -6,7 +6,6 @@
 
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 
-#include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/page/cpdf_pageobjectholder.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -21,17 +20,14 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
 
-CPDF_RenderContext::CPDF_RenderContext(CPDF_Page* pPage)
-    : m_pDocument(pPage->GetDocument()),
-      m_pPageResources(pPage->m_pPageResources.Get()),
-      m_pPageCache(
-          static_cast<CPDF_PageRenderCache*>(pPage->GetRenderCache())) {}
-
 CPDF_RenderContext::CPDF_RenderContext(CPDF_Document* pDoc,
+                                       CPDF_Dictionary* pPageResources,
                                        CPDF_PageRenderCache* pPageCache)
-    : m_pDocument(pDoc), m_pPageResources(nullptr), m_pPageCache(pPageCache) {}
+    : m_pDocument(pDoc),
+      m_pPageResources(pPageResources),
+      m_pPageCache(pPageCache) {}
 
-CPDF_RenderContext::~CPDF_RenderContext() {}
+CPDF_RenderContext::~CPDF_RenderContext() = default;
 
 void CPDF_RenderContext::GetBackground(const RetainPtr<CFX_DIBitmap>& pBuffer,
                                        const CPDF_PageObject* pObj,
@@ -70,16 +66,13 @@ void CPDF_RenderContext::Render(CFX_RenderDevice* pDevice,
       status.SetOptions(*pOptions);
     status.SetStopObject(pStopObj);
     status.SetTransparency(layer.m_pObjectHolder->GetTransparency());
+    CFX_Matrix final_matrix = layer.m_Matrix;
     if (pLastMatrix) {
-      const CFX_Matrix& last_matrix = *pLastMatrix;
-      CFX_Matrix final_matrix = layer.m_Matrix * last_matrix;
-      status.SetDeviceMatrix(last_matrix);
-      status.Initialize(nullptr, nullptr);
-      status.RenderObjectList(layer.m_pObjectHolder.Get(), final_matrix);
-    } else {
-      status.Initialize(nullptr, nullptr);
-      status.RenderObjectList(layer.m_pObjectHolder.Get(), layer.m_Matrix);
+      final_matrix *= *pLastMatrix;
+      status.SetDeviceMatrix(*pLastMatrix);
     }
+    status.Initialize(nullptr, nullptr);
+    status.RenderObjectList(layer.m_pObjectHolder.Get(), final_matrix);
     if (status.GetRenderOptions().GetOptions().bLimitedImageCache) {
       m_pPageCache->CacheOptimization(
           status.GetRenderOptions().GetCacheSizeLimit());
@@ -89,8 +82,8 @@ void CPDF_RenderContext::Render(CFX_RenderDevice* pDevice,
   }
 }
 
-CPDF_RenderContext::Layer::Layer() {}
+CPDF_RenderContext::Layer::Layer() = default;
 
 CPDF_RenderContext::Layer::Layer(const Layer& that) = default;
 
-CPDF_RenderContext::Layer::~Layer() {}
+CPDF_RenderContext::Layer::~Layer() = default;

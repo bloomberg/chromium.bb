@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
@@ -46,6 +47,7 @@ class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
 class LayoutUnit;
 class PopupMenu;
+class SelectType;
 
 class CORE_EXPORT HTMLSelectElement final
     : public HTMLFormControlElementWithState,
@@ -74,9 +76,12 @@ class CORE_EXPORT HTMLSelectElement final
   // TODO(tkent): Rename |size| to |Size|. This is not an implementation of
   // |size| IDL attribute.
   unsigned size() const { return size_; }
+  // The number of items to be shown in the LisBox mode.
+  // Do not call this in the MenuList mode.
+  unsigned ListBoxSize() const;
   bool IsMultiple() const { return is_multiple_; }
 
-  bool UsesMenuList() const;
+  bool UsesMenuList() const { return uses_menu_list_; }
 
   void add(const HTMLOptionElementOrHTMLOptGroupElement&,
            const HTMLElementOrLong&,
@@ -118,11 +123,9 @@ class CORE_EXPORT HTMLSelectElement final
   HTMLOptionElement* item(unsigned index);
 
   void ScrollToSelection();
-  void ScrollToOption(HTMLOptionElement*);
 
   bool CanSelectAll() const;
   void SelectAll();
-  void ListBoxOnChange();
   int ActiveSelectionEndListIndex() const;
   HTMLOptionElement* ActiveSelectionEnd() const;
   void SetActiveSelectionAnchor(HTMLOptionElement*);
@@ -132,13 +135,14 @@ class CORE_EXPORT HTMLSelectElement final
   void OptionSelectionStateChanged(HTMLOptionElement*, bool option_is_selected);
   void OptionInserted(HTMLOptionElement&, bool option_is_selected);
   void OptionRemoved(HTMLOptionElement&);
-  bool AnonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
+                                                     HTMLOptionElement*,
+                                                     ExceptionState&);
 
   void OptGroupInsertedOrRemoved(HTMLOptGroupElement&);
   void HrInsertedOrRemoved(HTMLHRElement&);
 
   HTMLOptionElement* SpatialNavigationFocusedOption();
-  void HandleMouseRelease();
 
   int ListIndexForOption(const HTMLOptionElement&);
 
@@ -159,12 +163,14 @@ class CORE_EXPORT HTMLSelectElement final
   // Provisional selection is a selection made using arrow keys or type ahead.
   void ProvisionalSelectionChanged(unsigned);
   void PopupDidHide();
-  bool PopupIsVisible() const { return popup_is_visible_; }
-  HTMLOptionElement* OptionToBeShown() const;
+  bool PopupIsVisible() const;
+  HTMLOptionElement* OptionToBeShownForTesting() const;
+  // Style of the selected OPTION. This is nullable, and only for
+  // the menulist mode.
+  const ComputedStyle* OptionStyle() const;
   void ShowPopup();
   void HidePopup();
-  PopupMenu* Popup() const { return popup_.Get(); }
-  void DidMutateSubtree();
+  PopupMenu* PopupForTesting() const;
 
   void ResetTypeAheadSessionForTesting();
 
@@ -177,17 +183,22 @@ class CORE_EXPORT HTMLSelectElement final
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
+  // This should be called only if UsesMenuList().
+  Element& InnerElement() const;
+
  private:
   const AtomicString& FormControlType() const override;
 
   bool MayTriggerVirtualKeyboard() const override;
 
+  bool ShouldHaveFocusAppearance() const final;
+
   void DispatchFocusEvent(
       Element* old_focused_element,
-      WebFocusType,
+      mojom::blink::FocusType,
       InputDeviceCapabilities* source_capabilities) override;
   void DispatchBlurEvent(Element* new_focused_element,
-                         WebFocusType,
+                         mojom::blink::FocusType,
                          InputDeviceCapabilities* source_capabilities) override;
 
   bool CanStartSelection() const override { return false; }
@@ -199,9 +210,12 @@ class CORE_EXPORT HTMLSelectElement final
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;
 
+  void ChildrenChanged(const ChildrenChange& change) override;
+  bool ChildrenChangedAllChildrenRemovedNeedsList() const override;
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
 
+  bool TypeShouldForceLegacyLayout() const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DidRecalcStyle(const StyleRecalcChange) override;
   void AttachLayoutTree(AttachContext&) override;
@@ -211,15 +225,11 @@ class CORE_EXPORT HTMLSelectElement final
 
   void DefaultEventHandler(Event&) override;
 
-  void DispatchInputAndChangeEventForMenuList();
-
   void SetRecalcListItems();
   void RecalcListItems() const;
   enum ResetReason { kResetReasonSelectedOptionRemoved, kResetReasonOthers };
   void ResetToDefaultSelection(ResetReason = kResetReasonOthers);
   void TypeAheadFind(const KeyboardEvent&);
-  void SaveLastSelection();
-  void SaveListboxActiveSelection();
   // Returns the first selected OPTION, or nullptr.
   HTMLOptionElement* SelectedOption() const;
 
@@ -241,38 +251,19 @@ class CORE_EXPORT HTMLSelectElement final
       HTMLOptionElement* element_to_exclude = nullptr);
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
-  void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void MenuListDefaultEventHandler(Event&);
-  void HandlePopupOpenKeyboardEvent(Event&);
-  bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
-  bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
-  void ListBoxDefaultEventHandler(Event&);
-  void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,
                                    wtf_size_t list_index_start,
                                    wtf_size_t list_index_end) const;
-  void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
-  void UpdateMultiSelectListBoxFocus();
   void SetIndexToSelectOnCancel(int list_index);
   void SetSuggestedOption(HTMLOptionElement*);
-  void ToggleSelection(HTMLOptionElement&);
 
   // Returns nullptr if listIndex is out of bounds, or it doesn't point an
   // HTMLOptionElement.
   HTMLOptionElement* OptionAtListIndex(int list_index) const;
-  enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
-  HTMLOptionElement* NextValidOption(int list_index,
-                                     SkipDirection,
-                                     int skip) const;
-  HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;
-  HTMLOptionElement* PreviousSelectableOption(HTMLOptionElement*) const;
-  HTMLOptionElement* FirstSelectableOption() const;
-  HTMLOptionElement* LastSelectableOption() const;
-  HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
-                                                  SkipDirection) const;
-  HTMLOptionElement* EventTargetOption(const Event&);
+
   AutoscrollController* GetAutoscrollController() const;
-  void ScrollToOptionTask();
+  LayoutBox* AutoscrollBox() override;
+  void StopAutoscroll() override;
 
   bool AreAuthorShadowsAllowed() const override { return false; }
   void FinishParsingChildren() override;
@@ -282,41 +273,33 @@ class CORE_EXPORT HTMLSelectElement final
   int OptionCount() const override;
   String OptionAtIndex(int index) const override;
 
-  void ObserveTreeMutation();
-  void UnobserveTreeMutation();
-
+  void UpdateUsesMenuList();
   // Apply changes to rendering as a result of attribute changes (multiple,
   // size).
   void ChangeRendering();
+  void UpdateUserAgentShadowTree(ShadowRoot& root);
 
   // list_items_ contains HTMLOptionElement, HTMLOptGroupElement, and
   // HTMLHRElement objects.
   mutable ListItems list_items_;
-  Vector<bool> last_on_change_selection_;
-  Vector<bool> cached_state_for_active_selection_;
   TypeAhead type_ahead_;
   unsigned size_;
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> active_selection_anchor_;
   Member<HTMLOptionElement> active_selection_end_;
-  Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
+  bool uses_menu_list_ = true;
   bool is_multiple_;
-  bool is_in_non_contiguous_selection_;
-  bool active_selection_state_;
   mutable bool should_recalc_list_items_;
   bool is_autofilled_by_preview_;
 
-  class PopupUpdater;
-  Member<PopupUpdater> popup_updater_;
-  Member<PopupMenu> popup_;
+  Member<SelectType> select_type_;
   int index_to_select_on_cancel_;
-  bool popup_is_visible_;
 
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, FirstSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, LastSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, NextSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, PreviousSelectableOption);
+  friend class ListBoxSelectType;
+  friend class MenuListSelectType;
+  friend class SelectType;
+  friend class HTMLSelectElementTest;
 };
 
 }  // namespace blink

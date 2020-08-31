@@ -32,7 +32,7 @@ QuicSpdyClientSessionBase::~QuicSpdyClientSessionBase() {
     QUIC_DVLOG(1) << "erase stream " << it.first << " url " << it.second->url();
     push_promise_index_->promised_by_url()->erase(it.second->url());
   }
-  delete connection();
+  DeleteConnection();
 }
 
 void QuicSpdyClientSessionBase::OnConfigNegotiated() {
@@ -85,7 +85,7 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
   }
 
   if (VersionUsesHttp3(transport_version()) &&
-      promised_stream_id > max_allowed_push_id()) {
+      !CanCreatePushStreamWithId(promised_stream_id)) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,
         "Received push stream id higher than MAX_PUSH_ID.",
@@ -94,7 +94,7 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
   }
   largest_promised_stream_id_ = promised_stream_id;
 
-  QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
+  QuicSpdyStream* stream = GetOrCreateSpdyDataStream(stream_id);
   if (!stream) {
     // It's quite possible to receive headers after a stream has been reset.
     return;
@@ -105,6 +105,8 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
 bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
                                                QuicStreamId promised_id,
                                                const SpdyHeaderBlock& headers) {
+  // TODO(b/136295430): Do not treat |promised_id| as a stream ID when using
+  // IETF QUIC.
   // Due to pathalogical packet re-ordering, it is possible that
   // frames for the promised stream have already arrived, and the
   // promised stream could be active or closed.
@@ -202,15 +204,27 @@ void QuicSpdyClientSessionBase::ResetPromised(
     QuicStreamId id,
     QuicRstStreamErrorCode error_code) {
   DCHECK(QuicUtils::IsServerInitiatedStreamId(transport_version(), id));
-  SendRstStream(id, error_code, 0);
-  if (!IsOpenStream(id)) {
+  if (break_close_loop()) {
+    ResetStream(id, error_code, 0);
+  } else {
+    SendRstStream(id, error_code, 0);
+  }
+  if (!IsOpenStream(id) && !IsClosedStream(id)) {
     MaybeIncreaseLargestPeerStreamId(id);
   }
 }
 
 void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
-                                                 bool locally_reset) {
-  QuicSpdySession::CloseStreamInner(stream_id, locally_reset);
+                                                 bool rst_sent) {
+  QuicSpdySession::CloseStreamInner(stream_id, rst_sent);
+  if (!VersionUsesHttp3(transport_version())) {
+    headers_stream()->MaybeReleaseSequencerBuffer();
+  }
+}
+
+void QuicSpdyClientSessionBase::OnStreamClosed(QuicStreamId stream_id) {
+  DCHECK(break_close_loop());
+  QuicSpdySession::OnStreamClosed(stream_id);
   if (!VersionUsesHttp3(transport_version())) {
     headers_stream()->MaybeReleaseSequencerBuffer();
   }
@@ -218,6 +232,17 @@ void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
 
 bool QuicSpdyClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
   return !HasActiveRequestStreams() && promised_by_id_.empty();
+}
+
+void QuicSpdyClientSessionBase::OnSettingsFrame(const SettingsFrame& frame) {
+  QuicSpdySession::OnSettingsFrame(frame);
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount frame_length =
+      HttpEncoder::SerializeSettingsFrame(frame, &buffer);
+  auto serialized_data = std::make_unique<ApplicationState>(
+      buffer.get(), buffer.get() + frame_length);
+  static_cast<QuicCryptoClientStreamBase*>(GetMutableCryptoStream())
+      ->OnApplicationState(std::move(serialized_data));
 }
 
 }  // namespace quic

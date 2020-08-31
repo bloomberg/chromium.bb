@@ -87,26 +87,5 @@ class RtpPacketizerH264 : public RtpPacketizer {
 
   RTC_DISALLOW_COPY_AND_ASSIGN(RtpPacketizerH264);
 };
-
-// Depacketizer for H264.
-class RtpDepacketizerH264 : public RtpDepacketizer {
- public:
-  RtpDepacketizerH264();
-  ~RtpDepacketizerH264() override;
-
-  bool Parse(ParsedPayload* parsed_payload,
-             const uint8_t* payload_data,
-             size_t payload_data_length) override;
-
- private:
-  bool ParseFuaNalu(RtpDepacketizer::ParsedPayload* parsed_payload,
-                    const uint8_t* payload_data);
-  bool ProcessStapAOrSingleNalu(RtpDepacketizer::ParsedPayload* parsed_payload,
-                                const uint8_t* payload_data);
-
-  size_t offset_;
-  size_t length_;
-  std::unique_ptr<rtc::Buffer> modified_buffer_;
-};
 }  // namespace webrtc
 #endif  // MODULES_RTP_RTCP_SOURCE_RTP_FORMAT_H264_H_

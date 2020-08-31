@@ -13,7 +13,7 @@ class PrefValueMap;
 
 namespace policy {
 
-// Handles DnsOverHttpsMode policy.
+// Handles DnsOverHttpsMode and DnsOverHttpsTemplates policies.
 class SecureDnsPolicyHandler : public ConfigurationPolicyHandler {
  public:
   SecureDnsPolicyHandler();
@@ -28,7 +28,6 @@ class SecureDnsPolicyHandler : public ConfigurationPolicyHandler {
  private:
   bool IsTemplatesPolicyNotSpecified(const base::Value* templates,
                                      const base::StringPiece mode_str);
-  bool IsTemplatesPolicyInvalid(const base::StringPiece templates_str);
 
   bool ShouldSetTemplatesPref(const base::Value* templates);
 

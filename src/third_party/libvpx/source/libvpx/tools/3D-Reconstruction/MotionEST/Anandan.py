@@ -1,4 +1,12 @@
-#!/usr/bin/env python
+##  Copyright (c) 2020 The WebM project authors. All Rights Reserved.
+##
+##  Use of this source code is governed by a BSD-style license
+##  that can be found in the LICENSE file in the root of the source
+##  tree. An additional intellectual property rights grant can be found
+##  in the file PATENTS.  All contributing project authors may
+##  be found in the AUTHORS file in the root of the source tree.
+##
+
 # coding: utf-8
 import numpy as np
 import numpy.linalg as LA
@@ -122,7 +130,7 @@ class Anandan(MotionEST):
           for i, j in {(r, c), (r, c + 1), (r + 1, c), (r + 1, c + 1)}:
             if 0 <= i < last_mvs.shape[0] and 0 <= j < last_mvs.shape[1]:
               init_mvs.append(last_mvs[i, j])
-        #use last matching results as the start postion as current level
+        #use last matching results as the start position as current level
         min_ssd = None
         min_mv = None
         for init_mv in init_mvs:

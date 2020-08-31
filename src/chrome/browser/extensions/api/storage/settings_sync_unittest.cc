@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 #include "chrome/test/base/testing_profile.h"
@@ -103,20 +104,17 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   MockSyncChangeProcessor() : fail_all_requests_(false) {}
 
   // syncer::SyncChangeProcessor implementation.
-  syncer::SyncError ProcessSyncChanges(
+  base::Optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (fail_all_requests_) {
-      return syncer::SyncError(
-          FROM_HERE,
-          syncer::SyncError::DATATYPE_ERROR,
-          "MockSyncChangeProcessor: configured to fail",
-          change_list[0].sync_data().GetDataType());
+      return syncer::ModelError(FROM_HERE,
+                                "MockSyncChangeProcessor: configured to fail");
     }
     for (auto it = change_list.cbegin(); it != change_list.cend(); ++it) {
       changes_.push_back(std::make_unique<SettingSyncData>(*it));
     }
-    return syncer::SyncError();
+    return base::nullopt;
   }
 
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
@@ -198,6 +196,12 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
     EventRouterFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildEventRouter));
+
+    // Hold a pointer to SyncValueStoreCache in the main thread, such that
+    // GetSyncableService() can be called from the backend sequence.
+    sync_cache_ = static_cast<SyncValueStoreCache*>(
+        frontend_->GetValueStoreCache(settings_namespace::SYNC));
+    ASSERT_NE(sync_cache_, nullptr);
   }
 
   void TearDown() override {
@@ -218,17 +222,21 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Gets the syncer::SyncableService for the given sync type.
-  syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
-    SyncValueStoreCache* sync_cache = static_cast<SyncValueStoreCache*>(
-        frontend_->GetValueStoreCache(settings_namespace::SYNC));
-    return sync_cache->GetSyncableService(model_type);
+  SyncStorageBackend* GetSyncableService(syncer::ModelType model_type) {
+    // SyncValueStoreCache::GetSyncableService internally enforces |model_type|
+    // to be APP_SETTINGS or EXTENSION_SETTINGS, and the dynamic type of the
+    // returned service is always SyncStorageBackend, so it can be downcast.
+    DCHECK(model_type == syncer::APP_SETTINGS ||
+           model_type == syncer::EXTENSION_SETTINGS);
+    return static_cast<SyncStorageBackend*>(
+        sync_cache_->GetSyncableService(model_type));
   }
 
   // Gets all the sync data from the SyncableService for a sync type as a map
   // from extension id to its sync data.
   SettingSyncDataMultimap GetAllSyncData(syncer::ModelType model_type) {
     syncer::SyncDataList as_list =
-        GetSyncableService(model_type)->GetAllSyncData(model_type);
+        GetSyncableService(model_type)->GetAllSyncDataForTesting(model_type);
     SettingSyncDataMultimap as_map;
     for (auto it = as_list.begin(); it != as_list.end(); ++it) {
       std::unique_ptr<SettingSyncData> sync_data(new SettingSyncData(*it));
@@ -272,6 +280,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
       sync_processor_wrapper_;
+  SyncValueStoreCache* sync_cache_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS
@@ -1014,7 +1023,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
     GetExisting("bad")->set_status_code(ValueStore::CORRUPTION);
     {
       syncer::SyncDataList all_sync_data =
-          GetSyncableService(model_type)->GetAllSyncData(model_type);
+          GetSyncableService(model_type)->GetAllSyncDataForTesting(model_type);
       EXPECT_EQ(1u, all_sync_data.size());
       EXPECT_EQ("good/foo", syncer::SyncDataLocal(all_sync_data[0]).GetTag());
     }
@@ -1446,15 +1455,7 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
 
 }  // namespace
 
-#if defined(OS_WIN)
-// See: http://crbug.com/227296
-#define MAYBE_UnlimitedStorageForLocalButNotSync \
-  DISABLED_UnlimitedStorageForLocalButNotSync
-#else
-#define MAYBE_UnlimitedStorageForLocalButNotSync \
-  UnlimitedStorageForLocalButNotSync
-#endif
-TEST_F(ExtensionSettingsSyncTest, MAYBE_UnlimitedStorageForLocalButNotSync) {
+TEST_F(ExtensionSettingsSyncTest, UnlimitedStorageForLocalButNotSync) {
   const std::string id = "ext";
   std::set<std::string> permissions;
   permissions.insert("unlimitedStorage");

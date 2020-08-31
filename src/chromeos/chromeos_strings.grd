@@ -130,6 +130,7 @@
     <file path="strings/chromeos_strings_sl.xtb" lang="sl" />
     <file path="strings/chromeos_strings_sq.xtb" lang="sq" />
     <file path="strings/chromeos_strings_sr.xtb" lang="sr" />
+    <file path="strings/chromeos_strings_sr-Latn.xtb" lang="sr-Latn" />
     <file path="strings/chromeos_strings_sv.xtb" lang="sv" />
     <file path="strings/chromeos_strings_sw.xtb" lang="sw" />
     <file path="strings/chromeos_strings_ta.xtb" lang="ta" />
@@ -151,9 +152,6 @@
         I can't find anything on your screen I can help with.
 Try tapping the mic to ask me anything.
       </message>
-      <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
-        Nothing found on screen
-      </message>
 
       <!-- The following strings are located here for accessibility from both //ash and //chrome -->
       <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
@@ -166,6 +164,11 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
         <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and may be able to monitor your activity.
+      </message>
+
+      <!-- Managed user session warning -->
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_USER_WARNING" desc="Text shown in the user pod in case the user is managed.">
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this user. It may remotely manage settings and monitor user activity.
       </message>
 
       <!-- Status tray enterprise management. -->
@@ -271,6 +274,84 @@ Try tapping the mic to ask me anything.
 
       <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
         Chrome OS Input Method Service
+      </message>
+
+      <!-- Help App -->
+      <message name="IDS_HELP_APP_EXPLORE" desc="Name of the Explore app in the app shelf. Explore is an app for users to find helpful information about their Chromebooks. Should be translated into other languages into a similar verb." meaning="App name.">
+        Explore
+      </message>
+      <message name="IDS_HELP_APP_OFFERS" desc="Name of a tab in the Help app that offers users discounts or freebies, 'offers'.">
+        Offers
+      </message>
+      <message name="IDS_HELP_APP_PERKS" desc="Name of a tab in the Help app that offers users additional perks like apps or drive storage space.">
+        Perks
+      </message>
+
+      <!-- Media App -->
+      <message name="IDS_MEDIA_APP_APP_NAME" desc="Name of the Media App in the app shelf. This app is the default installed app to open and edit images, video, pdf and audio files." meaning="App name.">
+        Gallery
+      </message>
+
+      <!-- Pin dialog error messages -->
+      <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PIN was entered. Should end with a full stop since it can be chained with more text.">
+        Invalid PIN.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PUK was entered. Should end with a full stop since it can be chained with more text.">
+        Invalid PUK.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when maximum allowed attempts exceeded.">
+        Maximum allowed attempts exceeded.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when unknown error occurred in extension code. Should end with a full stop since it can be chained with more text.">
+        Unknown error.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT" desc="The text displayed in the certificate provider PIN request dialog about the number of attempts left">
+        <ph name="ATTEMPTS_LEFT">$1<ex>3</ex></ph> attempts left
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_ERROR_ATTEMPTS" desc="The text displayed in the certificate provider PIN request dialog when the previous login attempt was unsuccessful but there are more attempts remaining. Includes the reason for the previous failure.">
+        <ph name="ERROR_MESSAGE">$1<ex>Invalid PIN.</ex></ph> <ph name="ATTEMPTS_LEFT">$2<ex>3</ex></ph> attempts left
+      </message>
+
+      <!-- Print Management App -->
+      <!-- TODO(crbug/1067465): Update with finalized copies of the strings -->
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_FAILED" desc="Displayed text status if the print job failed." translateable="false">
+        Failed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED" desc="Displayed text status if the print job was canceled." translateable="false">
+        Canceled
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED" desc="Displayed text status if the print job was printed succesfully." translateable="false">
+        Printed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR" desc="Displayed text status if the print job had an unknown error." translateable="false">
+        Unknown Error
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_FILE_NAME_COLUMN" desc="The label for the column header that displays the file name of the print job.">
+        File name
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTER_NAME_COLUMN" desc="The label for the column header that displays the printer name.">
+        Printer
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DATE_COLUMN" desc="The label for the column header that displays the date of which the print job was created.">
+        Date
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_STATUS_COLUMN" desc="The label for the column header that displays the current status of the print job.">
+        Status
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TITLE" desc="The title of the print management app.">
+        Print Jobs
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_BUTTON_TEXT" desc="The label for the button that clears the print job history.">
+        Clear all history
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_CONFIRMATION_TEXT" desc="A confirmation text that ask users for confirmation that they want to delete their print jobs. Also notifies users that their ongoing jobs will not be deleted.">
+        Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CANCEL_BUTTON_LABEL" desc="The label for the button that closes the clear print history dialog.">
+        Cancel
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_CLEAR_BUTTON_LABEL" desc="The label for the action button that confirms clearing a user's print history in the clear print history dialog.">
+        Clear
       </message>
     </messages>
   </release>

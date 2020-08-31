@@ -6,6 +6,9 @@
 
 #include <map>
 #include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -140,7 +143,7 @@ ViewAXPlatformNodeDelegate::~ViewAXPlatformNodeDelegate() {
   ax_platform_node_->Destroy();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() const {
   DCHECK(ax_platform_node_);
   return ax_platform_node_->GetNativeViewAccessible();
 }
@@ -148,6 +151,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() {
 void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   DCHECK(ax_platform_node_);
+  if (accessibility_events_callback_)
+    accessibility_events_callback_.Run(this, event_type);
   if (g_is_queueing_events) {
     g_event_queue.Get().emplace_back(event_type, GetUniqueId());
     return;
@@ -217,6 +222,29 @@ void ViewAXPlatformNodeDelegate::OnMenuEnd() {
     ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
 
+void ViewAXPlatformNodeDelegate::FireFocusAfterMenuClose() {
+  ui::AXPlatformNodeBase* focused_node =
+      static_cast<ui::AXPlatformNodeBase*>(ax_platform_node_);
+  // Continue to drill down focused nodes to get to the "deepest" node that is
+  // focused, this is not necessarily a view. (It could be web content.)
+  while (focused_node) {
+    ui::AXPlatformNodeBase* deeper_focus = static_cast<ui::AXPlatformNodeBase*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(focused_node->GetFocus()));
+    if (!deeper_focus || deeper_focus == focused_node)
+      break;
+    focused_node = deeper_focus;
+  }
+  if (focused_node) {
+    // callback used for testing
+    if (accessibility_events_callback_)
+      accessibility_events_callback_.Run(
+          this, ax::mojom::Event::kFocusAfterMenuClose);
+
+    focused_node->NotifyAccessibilityEvent(
+        ax::mojom::Event::kFocusAfterMenuClose);
+  }
+}
+
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
@@ -247,12 +275,21 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   return data_;
 }
 
-int ViewAXPlatformNodeDelegate::GetChildCount() {
+int ViewAXPlatformNodeDelegate::GetChildCount() const {
   if (IsLeaf())
     return 0;
 
-  if (!virtual_children().empty())
-    return int{virtual_children().size()};
+  if (!virtual_children().empty()) {
+    int count = 0;
+    for (const std::unique_ptr<AXVirtualView>& child : virtual_children()) {
+      if (child->IsIgnored()) {
+        count += child->GetChildCount();
+        continue;
+      }
+      count++;
+    }
+    return count;
+  }
 
   const auto child_widgets_result = GetChildWidgets();
   if (child_widgets_result.is_tab_modal_showing) {
@@ -271,8 +308,24 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     return nullptr;
 
   size_t child_index = size_t{index};
-  if (!virtual_children().empty())
-    return virtual_children()[child_index]->GetNativeObject();
+  if (!virtual_children().empty()) {
+    int i = 0;
+    for (const std::unique_ptr<AXVirtualView>& child : virtual_children()) {
+      if (child->IsIgnored()) {
+        if (index - i < child->GetChildCount()) {
+          gfx::NativeViewAccessible result = child->ChildAtIndex(index - i);
+          if (result)
+            return result;
+        }
+        i += child->GetChildCount();
+        continue;
+      }
+      if (i == index)
+        return child->GetNativeObject();
+      i++;
+    }
+    return nullptr;
+  }
 
   // If this is a root view, our widget might have child widgets. Include
   const auto child_widgets_result = GetChildWidgets();
@@ -323,9 +376,10 @@ gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
     const ui::AXClippingBehavior clipping_behavior,
     ui::AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen:
+    case ui::AXCoordinateSystem::kScreenDIPs:
       // We could optionally add clipping here if ever needed.
       return view()->GetBoundsInScreen();
+    case ui::AXCoordinateSystem::kScreenPhysicalPixels:
     case ui::AXCoordinateSystem::kRootFrame:
     case ui::AXCoordinateSystem::kFrame:
       NOTIMPLEMENTED();
@@ -333,8 +387,9 @@ gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
   }
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
-                                                                  int y) {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
+    int screen_physical_pixel_x,
+    int screen_physical_pixel_y) const {
   if (!view() || !view()->GetWidget())
     return nullptr;
 
@@ -347,19 +402,19 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
     scale_factor = ui::GetScaleFactorForNativeView(native_view);
     scale_factor = scale_factor <= 0 ? 1.0 : scale_factor;
   }
-  x /= scale_factor;
-  y /= scale_factor;
+  int screen_dips_x = screen_physical_pixel_x / scale_factor;
+  int screen_dips_y = screen_physical_pixel_y / scale_factor;
 
   // Search child widgets first, since they're on top in the z-order.
   for (Widget* child_widget : GetChildWidgets().child_widgets) {
     View* child_root_view = child_widget->GetRootView();
-    gfx::Point point(x, y);
+    gfx::Point point(screen_dips_x, screen_dips_y);
     View::ConvertPointFromScreen(child_root_view, &point);
     if (child_root_view->HitTestPoint(point))
       return child_root_view->GetNativeViewAccessible();
   }
 
-  gfx::Point point(x, y);
+  gfx::Point point(screen_dips_x, screen_dips_y);
   View::ConvertPointFromScreen(view(), &point);
   if (!view()->HitTestPoint(point))
     return nullptr;
@@ -420,7 +475,7 @@ bool ViewAXPlatformNodeDelegate::ShouldIgnoreHoveredStateForTesting() {
 }
 
 bool ViewAXPlatformNodeDelegate::IsOffscreen() const {
-  // TODO: need to implement.
+  // TODO(katydek): need to implement.
   return false;
 }
 
@@ -517,13 +572,13 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
             ViewAccessibility& view_accessibility =
                 view->GetViewAccessibility();
             bool is_ignored = view_accessibility.IsIgnored();
-            // TODO Remove the ViewAXPlatformNodeDelegate::GetData() part of
-            // this lambda, once the temporary code in GetData() setting the
-            // role to kIgnored is moved to ViewAccessibility.
+            // TODO(dmazzoni): Remove the remainder of this lambda once the
+            // temporary code in GetData() setting the role to kIgnored is moved
+            // to ViewAccessibility.
             ViewAXPlatformNodeDelegate* ax_delegate =
                 static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
             if (ax_delegate)
-              is_ignored = is_ignored || ax_delegate->GetData().IsIgnored();
+              is_ignored = is_ignored || ax_delegate->IsIgnored();
             return is_ignored;
           }),
       views_in_group->end());

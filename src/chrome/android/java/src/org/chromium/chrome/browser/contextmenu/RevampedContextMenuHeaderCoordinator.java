@@ -9,16 +9,16 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.webkit.URLUtil;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -28,10 +28,12 @@ class RevampedContextMenuHeaderCoordinator {
 
     private Context mContext;
 
-    RevampedContextMenuHeaderCoordinator(Activity activity, ContextMenuParams params) {
+    RevampedContextMenuHeaderCoordinator(Activity activity, @PerformanceClass int performanceClass,
+            ContextMenuParams params, Profile profile) {
         mContext = activity;
-        mModel = buildModel(getTitle(params), getUrl(activity, params));
-        mMediator = new RevampedContextMenuHeaderMediator(activity, mModel, params);
+        mModel = buildModel(getTitle(params), getUrl(activity, params, profile));
+        mMediator = new RevampedContextMenuHeaderMediator(
+                activity, mModel, performanceClass, params, profile);
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {
@@ -42,6 +44,8 @@ class RevampedContextMenuHeaderCoordinator {
                 .with(RevampedContextMenuHeaderProperties.URL, url)
                 .with(RevampedContextMenuHeaderProperties.URL_MAX_LINES,
                         TextUtils.isEmpty(title) ? 2 : 1)
+                .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                        PerformanceClass.PERFORMANCE_UNKNOWN)
                 .with(RevampedContextMenuHeaderProperties.IMAGE, null)
                 .with(RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE, false)
                 .build();
@@ -60,7 +64,7 @@ class RevampedContextMenuHeaderCoordinator {
         return "";
     }
 
-    private CharSequence getUrl(Activity activity, ContextMenuParams params) {
+    private CharSequence getUrl(Activity activity, ContextMenuParams params, Profile profile) {
         CharSequence url = params.getUrl();
         if (!TextUtils.isEmpty(url)) {
             boolean useDarkColors =
@@ -73,9 +77,12 @@ class RevampedContextMenuHeaderCoordinator {
 
             SpannableString spannableUrl =
                     new SpannableString(ChromeContextMenuPopulator.createUrlText(params));
+            ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                    new ChromeAutocompleteSchemeClassifier(profile);
             OmniboxUrlEmphasizer.emphasizeUrl(spannableUrl, activity.getResources(),
-                    Profile.getLastUsedProfile(), ConnectionSecurityLevel.NONE, false,
+                    chromeAutocompleteSchemeClassifier, ConnectionSecurityLevel.NONE, false,
                     useDarkColors, false);
+            chromeAutocompleteSchemeClassifier.destroy();
             url = spannableUrl;
         }
         return url;
@@ -87,9 +94,5 @@ class RevampedContextMenuHeaderCoordinator {
 
     PropertyModel getModel() {
         return mModel;
-    }
-
-    View getView() {
-        return LayoutInflater.from(mContext).inflate(R.layout.revamped_context_menu_header, null);
     }
 }

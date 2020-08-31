@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,9 +48,7 @@ class TableViewTestHelper {
            base::NumberToString(region.max_column);
   }
 
-  size_t visible_col_count() {
-    return table_->visible_columns().size();
-  }
+  size_t visible_col_count() { return table_->visible_columns().size(); }
 
   int GetActiveVisibleColumnIndex() {
     return table_->GetActiveVisibleColumnIndex();
@@ -68,6 +69,49 @@ class TableViewTestHelper {
   AXVirtualView* GetVirtualAccessibilityCell(int row,
                                              int visible_column_index) {
     return table_->GetVirtualAccessibilityCell(row, visible_column_index);
+  }
+
+  std::vector<std::vector<gfx::Rect>> GenerateExpectedBounds() {
+    // Generates the expected bounds for |table_|'s rows and cells. Each vector
+    // represents a row. The first entry in each child vector is the bounds for
+    // the entire row. The following entries in that vector are the bounds for
+    // each individual cell contained in that row.
+    auto expected_bounds = std::vector<std::vector<gfx::Rect>>();
+
+    // Generate the bounds for the header row and cells.
+    auto header_row = std::vector<gfx::Rect>();
+    gfx::Rect header_row_bounds =
+        table_->CalculateHeaderRowAccessibilityBounds();
+    View::ConvertRectToScreen(table_, &header_row_bounds);
+    header_row.push_back(header_row_bounds);
+    for (size_t column_index = 0; column_index < visible_col_count();
+         column_index++) {
+      gfx::Rect header_cell_bounds =
+          table_->CalculateHeaderCellAccessibilityBounds(column_index);
+      View::ConvertRectToScreen(table_, &header_cell_bounds);
+      header_row.push_back(header_cell_bounds);
+    }
+    expected_bounds.push_back(header_row);
+
+    // Generate the bounds for the table rows and cells.
+    for (int row_index = 0; row_index < table_->GetRowCount(); row_index++) {
+      auto table_row = std::vector<gfx::Rect>();
+      gfx::Rect table_row_bounds =
+          table_->CalculateTableRowAccessibilityBounds(row_index);
+      View::ConvertRectToScreen(table_, &table_row_bounds);
+      table_row.push_back(table_row_bounds);
+      for (size_t column_index = 0; column_index < visible_col_count();
+           column_index++) {
+        gfx::Rect table_cell_bounds =
+            table_->CalculateTableCellAccessibilityBounds(row_index,
+                                                          column_index);
+        View::ConvertRectToScreen(table_, &table_cell_bounds);
+        table_row.push_back(table_cell_bounds);
+      }
+      expected_bounds.push_back(table_row);
+    }
+
+    return expected_bounds;
   }
 
  private:
@@ -122,7 +166,7 @@ class TestTableModel2 : public ui::TableModel {
   ui::TableModelObserver* observer_ = nullptr;
 
   // The data.
-  std::vector<std::vector<int> > rows_;
+  std::vector<std::vector<int>> rows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTableModel2);
 };
@@ -335,6 +379,53 @@ class TableViewTest : public ViewsTestBase {
     generator.PressKey(code, flags);
   }
 
+  // Helper function for comparing the bounds of |table_|'s virtual
+  // accessibility child rows and cells with a set of expected bounds.
+  void VerifyTableAccChildrenBounds(
+      const ViewAccessibility& view_accessibility,
+      const std::vector<std::vector<gfx::Rect>>& expected_bounds) {
+    auto& virtual_children = view_accessibility.virtual_children();
+    EXPECT_EQ(virtual_children.size(), expected_bounds.size());
+    EXPECT_EQ((size_t)(table_->GetRowCount()) + 1U, expected_bounds.size());
+
+    for (size_t row_index = 0; row_index < virtual_children.size();
+         row_index++) {
+      const auto& row = virtual_children[row_index];
+      ASSERT_TRUE(row);
+      const ui::AXNodeData& row_data = row->GetData();
+      EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
+
+      ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult();
+      gfx::Rect row_custom_bounds = row->GetBoundsRect(
+          ui::AXCoordinateSystem::kScreenDIPs,
+          ui::AXClippingBehavior::kUnclipped, &offscreen_result);
+      EXPECT_EQ(row_custom_bounds, expected_bounds[row_index][0]);
+
+      EXPECT_EQ(row->children().size(), expected_bounds[row_index].size() - 1U);
+      EXPECT_EQ(row->children().size(), helper_->visible_col_count());
+      for (size_t cell_index = 0; cell_index < row->children().size();
+           cell_index++) {
+        const auto& cell = row->children()[cell_index];
+        ASSERT_TRUE(cell);
+        const ui::AXNodeData& cell_data = cell->GetData();
+
+        if (row_index == 0)
+          EXPECT_EQ(ax::mojom::Role::kColumnHeader, cell_data.role);
+        else
+          EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
+
+        // Add 1 to get the cell's index into |expected_bounds| since the first
+        // entry is the row's bounds.
+        const int expected_bounds_index = cell_index + 1;
+        gfx::Rect cell_custom_bounds = cell->GetBoundsRect(
+            ui::AXCoordinateSystem::kScreenDIPs,
+            ui::AXClippingBehavior::kUnclipped, &offscreen_result);
+        EXPECT_EQ(cell_custom_bounds,
+                  expected_bounds[row_index][expected_bounds_index]);
+      }
+    }
+  }
+
  protected:
   virtual WidgetDelegate* GetWidgetDelegate(Widget* widget) { return nullptr; }
 
@@ -406,6 +497,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
     EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
     EXPECT_EQ(
         i, row_data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex));
+    ASSERT_FALSE(row_data.HasState(ax::mojom::State::kInvisible));
 
     ASSERT_EQ(helper_->visible_col_count(), row->children().size());
     j = 0;
@@ -417,8 +509,41 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
                        ax::mojom::IntAttribute::kTableCellRowIndex));
       EXPECT_EQ(j++, cell_data.GetIntAttribute(
                          ax::mojom::IntAttribute::kTableCellColumnIndex));
+      ASSERT_FALSE(cell_data.HasState(ax::mojom::State::kInvisible));
     }
   }
+}
+
+// Verifies the bounding rect of each virtual accessibility child of the
+// TableView (rows and cells) is updated appropriately as the table changes. For
+// example, verifies that if a column is resized or hidden, the bounds are
+// updated.
+TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBounds) {
+  // Verify the bounds are updated correctly when the TableView and its widget
+  // have been shown. Initially some widths would be 0 until the TableView's
+  // bounds are fully set up, so make sure the virtual children bounds have been
+  // updated and now match the expected bounds.
+  auto expected_bounds = helper_->GenerateExpectedBounds();
+  VerifyTableAccChildrenBounds(table_->GetViewAccessibility(), expected_bounds);
+}
+
+TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsWithResize) {
+  // Resize the first column 10 pixels smaller and check the bounds are updated.
+  int x = table_->GetVisibleColumn(0).width;
+  PressLeftMouseAt(helper_->header(), gfx::Point(x, 0));
+  DragLeftMouseTo(helper_->header(), gfx::Point(x - 10, 0));
+
+  auto expected_bounds_after_resize = helper_->GenerateExpectedBounds();
+  VerifyTableAccChildrenBounds(table_->GetViewAccessibility(),
+                               expected_bounds_after_resize);
+}
+
+TEST_F(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
+  // Hide 1 column and check the bounds are updated.
+  table_->SetColumnVisibility(1, false);
+  auto expected_bounds_after_hiding = helper_->GenerateExpectedBounds();
+  VerifyTableAccChildrenBounds(table_->GetViewAccessibility(),
+                               expected_bounds_after_hiding);
 }
 
 TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
@@ -773,9 +898,7 @@ class TableGrouperImpl : public TableGrouper {
  public:
   TableGrouperImpl() = default;
 
-  void SetRanges(const std::vector<int>& ranges) {
-    ranges_ = ranges;
-  }
+  void SetRanges(const std::vector<int>& ranges) { ranges_ = ranges; }
 
   // TableGrouper overrides:
   void GetGroupRange(int model_index, GroupRange* range) override {
@@ -1588,7 +1711,7 @@ class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
       : widget_(widget), listener_(nullptr) {}
   ~RemoveFocusChangeListenerDelegate() override = default;
 
-  // WidgetDelegate overrides:
+  // WidgetDelegate:
   void DeleteDelegate() override;
   Widget* GetWidget() override { return widget_; }
   const Widget* GetWidget() const override { return widget_; }

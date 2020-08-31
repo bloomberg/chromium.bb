@@ -48,6 +48,7 @@
 #include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -61,7 +62,6 @@
 #include "content/public/browser/browser_thread.h"
 
 class CustomThreadWatcher;
-class StartupTimeBomb;
 class ThreadWatcherList;
 
 namespace base {
@@ -184,6 +184,8 @@ class ThreadWatcher {
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNotResponding);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsResponding);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsNotResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTestWithMockTime,
+                           MemoryPressureCrashKey);
 
   // Post constructor initialization.
   void Initialize();
@@ -200,6 +202,9 @@ class ThreadWatcher {
   // This method records watched thread is not responding to the ping message.
   // It increments |unresponsive_count_| by 1.
   void GotNoResponse();
+
+  // Sets a crash key with the time since last critical memory pressure signal.
+  void SetTimeSinceLastCriticalMemoryPressureCrashKey();
 
   // This method returns true if the watched thread has not responded with a
   // pong message for |unresponsive_threshold_| number of ping messages.
@@ -280,6 +285,10 @@ class ThreadWatcher {
   // responsive.
   bool crash_on_hang_;
 
+  // The last time at which a critical memory pressure signal was received, or
+  // null if no signal was ever received. Maintained by ThreadWatcherList.
+  base::TimeTicks last_critical_memory_pressure_;
+
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
   // thread.
@@ -358,6 +367,7 @@ class ThreadWatcherList {
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherListTest, Restart);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesOnlyArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, CrashOnHangThreadsAllArgs);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherCrashKeyTest, MemoryPressureCrashKey);
 
   // This singleton holds the global list of registered ThreadWatchers.
   ThreadWatcherList();
@@ -383,7 +393,7 @@ class ThreadWatcherList {
 
   // This constructs the |ThreadWatcherList| singleton and starts watching
   // browser threads by calling StartWatching() on each browser thread that is
-  // watched. It disarms StartupTimeBomb.
+  // watched.
   static void InitializeAndStartWatching(
       uint32_t unresponsive_threshold,
       const CrashOnHangThreadMap& crash_on_hang_threads);
@@ -410,6 +420,10 @@ class ThreadWatcherList {
   // |StopWatchingAll|.
   static void SetStopped(bool stopped);
 
+  // Invoked on memory pressure signal.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // The singleton of this class and is used to keep track of information about
   // threads that are being watched.
   static ThreadWatcherList* g_thread_watcher_list_;
@@ -431,6 +445,9 @@ class ThreadWatcherList {
   // Default value for the delay until |InitializeAndStartWatching| is called.
   // Non-const for tests.
   static int g_initialize_delay_seconds;
+
+  // Registration to receive memory pressure signals.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Map of all registered watched threads, from thread_id to ThreadWatcher.
   RegistrationList registered_;
@@ -478,55 +495,10 @@ class WatchDogThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
-// StartupTimeBomb is disabled on Android, see https://crbug.com/366699.
-// NOTE: uncomment body of DisarmStartupTimeBomb() global function once
-//       StartupTimeBomb is enabled on Android.
 // ShutdownWatcherHelper is useless on Android because there is no shutdown,
 // Chrome is always killed one way or another (swiped away in the task
 // switcher, OOM-killed, etc.).
 #if !defined(OS_ANDROID)
-
-// This is a wrapper class for getting the crash dumps of the hangs during
-// startup.
-class StartupTimeBomb {
- public:
-  // This singleton is instantiated when the browser process is launched.
-  StartupTimeBomb();
-
-  // Destructor disarm's startup_watchdog_ (if it is arm'ed) so that alarm
-  // doesn't go off.
-  ~StartupTimeBomb();
-
-  // Constructs |startup_watchdog_| which spawns a thread and starts timer.
-  // |duration| specifies how long |startup_watchdog_| will wait before it
-  // calls alarm.
-  void Arm(const base::TimeDelta& duration);
-
-  // Disarms |startup_watchdog_| thread and then deletes it which stops the
-  // Watchdog thread.
-  void Disarm();
-
-  // Disarms |g_startup_timebomb_|.
-  static void DisarmStartupTimeBomb();
-
- private:
-  // Deletes the watchdog thread if it is joinable; otherwise it posts a delayed
-  // task to try again.
-  static void DeleteStartupWatchdog(const base::PlatformThreadId thread_id,
-                                    base::Watchdog* startup_watchdog);
-
-  // The singleton of this class.
-  static StartupTimeBomb* g_startup_timebomb_;
-
-  // Watches for hangs during startup until it is disarm'ed.
-  base::Watchdog* startup_watchdog_;
-
-  // The |thread_id_| on which this object is constructed.
-  const base::PlatformThreadId thread_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupTimeBomb);
-};
-
 // This is a wrapper class for detecting hangs during shutdown.
 class ShutdownWatcherHelper {
  public:

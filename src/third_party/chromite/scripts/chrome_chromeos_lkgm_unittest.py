@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -16,24 +17,18 @@ from chromite.lib import partial_mock
 from chromite.scripts import chrome_chromeos_lkgm
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # pylint: disable=protected-access
 class ChromeLKGMCommitterTester(cros_test_lib.RunCommandTestCase,
                                 cros_test_lib.MockTempDirTestCase):
   """Test cros_chromeos_lkgm.Committer."""
 
-  class Args(object):
-    """Class for ChromeLKGMComitter args."""
-    def __init__(self, workdir, lkgm):
-      self.workdir = workdir
-      self.lkgm = lkgm
-      self.dryrun = False
-      self.user_email = 'user@test.org'
-
-
   def setUp(self):
     """Common set up method for all tests."""
     self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
-        ChromeLKGMCommitterTester.Args(self.tempdir, '1001.0.0'))
+        'user@test.org', self.tempdir, '1001.0.0')
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.old_lkgm = None
 
@@ -87,7 +82,7 @@ class ChromeLKGMCommitterTester(cros_test_lib.RunCommandTestCase,
   def testVersionWithChromeBranch(self):
     """Tests passing a version with a chrome branch strips the branch."""
     self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
-        ChromeLKGMCommitterTester.Args(self.tempdir, '1003.0.0-rc2'))
+        'user@test.org', self.tempdir, '1003.0.0-rc2')
 
     self.old_lkgm = '1002.0.0'
     self.rc.AddCmdResult(partial_mock.In('remote'), returncode=0,

@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -21,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
+#include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -85,15 +87,15 @@ static url::Origin Origin() {
   return url::Origin::Create(GURL(kOrigin));
 }
 
-static GURL SiteForCookies() {
-  return GURL(kOrigin);
+static net::SiteForCookies SiteForCookies() {
+  return net::SiteForCookies::FromOrigin(Origin());
 }
 
-static net::NetworkIsolationKey CreateNetworkIsolationKey() {
-  // Top frame origin can be different but currently not testing in a
-  // third-party context so using the same kOrigin.
-  url::Origin top_frame_origin = url::Origin::Create(GURL(kOrigin));
-  return net::NetworkIsolationKey(top_frame_origin, Origin());
+static IsolationInfo CreateIsolationInfo() {
+  url::Origin origin = Origin();
+  return IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing,
+                               origin, origin,
+                               SiteForCookies::FromOrigin(origin));
 }
 
 class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
@@ -165,7 +167,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
               WebSocketExtraHeadersToString(extra_response_headers)) +
               additional_data_);
       CreateAndConnectStream(socket_url, sub_protocols, Origin(),
-                             SiteForCookies(), CreateNetworkIsolationKey(),
+                             SiteForCookies(), CreateIsolationInfo(),
                              WebSocketExtraHeadersToHttpRequestHeaders(
                                  send_additional_request_headers),
                              std::move(timer_));
@@ -300,7 +302,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     EXPECT_FALSE(request->is_pending());
 
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
-                           SiteForCookies(), CreateNetworkIsolationKey(),
+                           SiteForCookies(), CreateIsolationInfo(),
                            WebSocketExtraHeadersToHttpRequestHeaders(
                                send_additional_request_headers),
                            std::move(timer_));
@@ -327,7 +329,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
             WebSocketExtraHeadersToString(extra_request_headers)),
         response_body);
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
-                           SiteForCookies(), CreateNetworkIsolationKey(),
+                           SiteForCookies(), CreateIsolationInfo(),
                            WebSocketExtraHeadersToHttpRequestHeaders(
                                send_additional_request_headers),
                            nullptr);
@@ -350,7 +352,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
         WebSocketStandardRequest(socket_path, socket_host, Origin(), "", ""),
         WebSocketStandardResponse(extra_response_headers));
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
-                           SiteForCookies(), CreateNetworkIsolationKey(),
+                           SiteForCookies(), CreateIsolationInfo(),
                            HttpRequestHeaders(), nullptr);
   }
 
@@ -364,7 +366,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
     AddRawExpectations(std::move(socket_data));
     CreateAndConnectStream(GURL(url), sub_protocols, Origin(), SiteForCookies(),
-                           CreateNetworkIsolationKey(), additional_headers,
+                           CreateIsolationInfo(), additional_headers,
                            std::move(timer_));
   }
 
@@ -1464,7 +1466,7 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureNoCredentials) {
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("HTTP Authentication failed; no valid credentials available",
             failure_message());
-  EXPECT_TRUE(response_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessPasswordInUrl) {
@@ -1482,7 +1484,7 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
                                 "Zm9vOmJheg==", kUnauthorizedResponse);
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
-  EXPECT_TRUE(response_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {

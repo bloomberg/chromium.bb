@@ -11,7 +11,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
-#include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -68,11 +68,10 @@ bool FindMatchingMode(const std::vector<drmModeModeInfo> modes,
 
 DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
                                            DrmDeviceManager* drm_device_manager)
-    : screen_manager_(screen_manager), drm_device_manager_(drm_device_manager) {
-}
+    : screen_manager_(screen_manager),
+      drm_device_manager_(drm_device_manager) {}
 
-DrmGpuDisplayManager::~DrmGpuDisplayManager() {
-}
+DrmGpuDisplayManager::~DrmGpuDisplayManager() = default;
 
 void DrmGpuDisplayManager::SetClearOverlayCacheCallback(
     base::RepeatingClosure callback) {
@@ -87,6 +86,9 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
   size_t device_index = 0;
   for (const auto& drm : devices) {
+    // Receiving a signal that DRM state was updated. Need to reset the plane
+    // manager's resource cache since IDs may have changed.
+    drm->plane_manager()->ResetConnectorsCache(drm->GetResources());
     auto display_infos = GetAvailableDisplayControllerInfos(drm->get_fd());
     for (const auto& display_info : display_infos) {
       auto it = std::find_if(
@@ -215,9 +217,8 @@ void DrmGpuDisplayManager::SetColorMatrix(
   display->SetColorMatrix(color_matrix);
 }
 
-void DrmGpuDisplayManager::SetBackgroundColor(
-    int64_t display_id,
-    const uint64_t background_color) {
+void DrmGpuDisplayManager::SetBackgroundColor(int64_t display_id,
+                                              const uint64_t background_color) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
     LOG(ERROR) << "There is no display with ID" << display_id;
@@ -237,6 +238,16 @@ void DrmGpuDisplayManager::SetGammaCorrection(
     return;
   }
   display->SetGammaCorrection(degamma_lut, gamma_lut);
+}
+
+void DrmGpuDisplayManager::SetPrivacyScreen(int64_t display_id, bool enabled) {
+  DrmDisplay* display = FindDisplay(display_id);
+  if (!display) {
+    LOG(ERROR) << "There is no display with ID " << display_id;
+    return;
+  }
+
+  display->SetPrivacyScreen(enabled);
 }
 
 DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {

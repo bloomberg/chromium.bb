@@ -9,8 +9,10 @@ _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 COLOR_PALETTE_RELATIVE_PATH = 'ui/android/java/res/values/color_palette.xml'
 COLOR_PALETTE_PATH = os.path.join(_SRC_ROOT, COLOR_PALETTE_RELATIVE_PATH)
-SEMANTIC_COLORS_PATH = os.path.join(_SRC_ROOT,
-    'ui/android/java/res/values/semantic_colors.xml')
+ONE_OFF_COLORS_RELATIVE_PATH = 'ui/android/java/res/values/one_off_colors.xml'
+ONE_OFF_COLORS_PATH = os.path.join(_SRC_ROOT, ONE_OFF_COLORS_RELATIVE_PATH)
+BUTTOM_COMPAT_WIDGET_RELATIVE_PATH = (
+    'ui/android/java/src/org/chromium/ui/widget/ButtonCompat.java')
 
 COLOR_PATTERN = re.compile(r'(>|")(#[0-9A-Fa-f]+)(<|")')
 VALID_COLOR_PATTERN = re.compile(

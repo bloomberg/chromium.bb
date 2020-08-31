@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.v4.util.AtomicFile;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
@@ -16,6 +14,7 @@ import android.util.SparseIntArray;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.util.AtomicFile;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -35,11 +34,14 @@ import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -75,16 +77,12 @@ public class TabPersistentStore extends TabPersister {
 
     private static final String BASE_STATE_FOLDER = "tabs";
 
-    /** The name of the directory where the state is saved. */
+    /**
+     * The prefix of the name of the file where the state is saved.  Values returned by
+     * {@link #getStateFileName(String)} must begin with this prefix.
+     */
     @VisibleForTesting
-    static final String SAVED_STATE_DIRECTORY = "0";
-
-    @VisibleForTesting
-    static final String PREF_ACTIVE_TAB_ID =
-            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.ACTIVE_TAB_ID";
-
-    private static final String PREF_HAS_COMPUTED_MAX_ID =
-            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_COMPUTED_MAX_ID";
+    static final String SAVED_STATE_FILE_PREFIX = "tab_state";
 
     /** Prevents two TabPersistentStores from saving the same file simultaneously. */
     private static final Object SAVE_LIST_LOCK = new Object();
@@ -150,7 +148,8 @@ public class TabPersistentStore extends TabPersister {
         public final List<Integer> ids;
         public final List<String> urls;
 
-        TabModelMetadata(int selectedIndex) {
+        @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+        public TabModelMetadata(int selectedIndex) {
             index = selectedIndex;
             ids = new ArrayList<>();
             urls = new ArrayList<>();
@@ -188,7 +187,6 @@ public class TabPersistentStore extends TabPersister {
     private SparseIntArray mNormalTabsRestored;
     private SparseIntArray mIncognitoTabsRestored;
 
-    private SharedPreferences mPreferences;
     private SequencedTaskRunner mSequencedTaskRunner;
     private AsyncTask<DataInputStream> mPrefetchTabListTask;
     private List<Pair<AsyncTask<DataInputStream>, String>> mPrefetchTabListToMergeTasks;
@@ -223,7 +221,6 @@ public class TabPersistentStore extends TabPersister {
         mTabIdsToRestore = new HashSet<>();
         mObservers = new ObserverList<>();
         mObservers.addObserver(observer);
-        mPreferences = ContextUtils.getAppSharedPreferences();
         TaskTraits taskTraits = TaskTraits.USER_BLOCKING_MAY_BLOCK;
         mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
         mPrefetchTabListToMergeTasks = new ArrayList<>();
@@ -251,11 +248,6 @@ public class TabPersistentStore extends TabPersister {
                 AsyncTask<DataInputStream> task = startFetchTabListTask(taskRunner, mergedFileName);
                 mPrefetchTabListToMergeTasks.add(Pair.create(task, mergedFileName));
             }
-        }
-
-        if (!needsInitialization) {
-            // If a non-sequenced task runner was created above, destroy it now.
-            taskRunner.destroy();
         }
     }
 
@@ -559,7 +551,8 @@ public class TabPersistentStore extends TabPersister {
         try {
             long time = SystemClock.uptimeMillis();
             TabState state;
-            int restoredTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
+            int restoredTabId = SharedPreferencesManager.getInstance().readInt(
+                    ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
             if (restoredTabId == tabToRestore.id && mPrefetchActiveTabTask != null) {
                 long timeWaitingForPrefetch = SystemClock.uptimeMillis();
                 state = mPrefetchActiveTabTask.get();
@@ -754,7 +747,7 @@ public class TabPersistentStore extends TabPersister {
             return;
         }
 
-        if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
+        if (NewTabPage.isNTPUrl(tab.getUrlString()) && !tab.canGoBack() && !tab.canGoForward()) {
             return;
         }
         mTabsToSave.addLast(tab);
@@ -843,14 +836,14 @@ public class TabPersistentStore extends TabPersister {
         TabModelMetadata incognitoInfo = new TabModelMetadata(incognitoModel.index());
         for (int i = 0; i < incognitoModel.getCount(); i++) {
             incognitoInfo.ids.add(incognitoModel.getTabAt(i).getId());
-            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrl());
+            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrlString());
         }
 
         TabModel normalModel = selector.getModel(false);
         TabModelMetadata normalInfo = new TabModelMetadata(normalModel.index());
         for (int i = 0; i < normalModel.getCount(); i++) {
             normalInfo.ids.add(normalModel.getTabAt(i).getId());
-            normalInfo.urls.add(normalModel.getTabAt(i).getUrl());
+            normalInfo.urls.add(normalModel.getTabAt(i).getUrlString());
         }
 
         // Cache the active tab id to be pre-loaded next launch.
@@ -860,8 +853,8 @@ public class TabPersistentStore extends TabPersister {
             activeTabId = normalModel.getTabAt(activeIndex).getId();
         }
         // Always override the existing value in case there is no active tab.
-        ContextUtils.getAppSharedPreferences().edit().putInt(
-                PREF_ACTIVE_TAB_ID, activeTabId).apply();
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, activeTabId);
 
         byte[] listData = serializeMetadata(normalInfo, incognitoInfo, tabsBeingRestored);
         return new TabModelSelectorMetadata(listData, normalInfo, incognitoInfo, tabsBeingRestored);
@@ -877,8 +870,6 @@ public class TabPersistentStore extends TabPersister {
     public static byte[] serializeMetadata(TabModelMetadata standardInfo,
             TabModelMetadata incognitoInfo, @Nullable List<TabRestoreDetails> tabsBeingRestored)
             throws IOException {
-        ThreadUtils.assertOnUiThread();
-
         int standardCount = standardInfo.ids.size();
         int incognitoCount = incognitoInfo.ids.size();
 
@@ -1011,7 +1002,10 @@ public class TabPersistentStore extends TabPersister {
      * @throws IOException
      */
     private void checkAndUpdateMaxTabId() throws IOException {
-        if (mPreferences.getBoolean(PREF_HAS_COMPUTED_MAX_ID, false)) return;
+        if (SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.TABMODEL_HAS_COMPUTED_MAX_ID, false)) {
+            return;
+        }
 
         int maxId = 0;
         // Calculation of the max tab ID is done only once per user and is stored in
@@ -1053,7 +1047,8 @@ public class TabPersistentStore extends TabPersister {
             StrictMode.setThreadPolicy(oldPolicy);
         }
         TabIdManager.getInstance().incrementIdCounterTo(maxId);
-        mPreferences.edit().putBoolean(PREF_HAS_COMPUTED_MAX_ID, true).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_COMPUTED_MAX_ID, true);
     }
 
     /**
@@ -1370,7 +1365,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private boolean isTabUrlContentScheme(Tab tab) {
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         return url != null && url.startsWith(UrlConstants.CONTENT_SCHEME);
     }
 
@@ -1425,7 +1420,8 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private void startPrefetchActiveTabTask(TaskRunner taskRunner) {
-        final int activeTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
+        final int activeTabId = SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
         if (activeTabId == Tab.INVALID_TAB_ID) return;
         mPrefetchActiveTabTask = new BackgroundOnlyAsyncTask<TabState>() {
             @Override
@@ -1435,7 +1431,6 @@ public class TabPersistentStore extends TabPersister {
         }.executeOnTaskRunner(taskRunner);
     }
 
-    @VisibleForTesting
     public void addObserver(TabPersistentStoreObserver observer) {
         mObservers.addObserver(observer);
     }
@@ -1466,7 +1461,7 @@ public class TabPersistentStore extends TabPersister {
      */
     @VisibleForTesting
     public static String getStateFileName(String uniqueId) {
-        return TabPersistencePolicy.SAVED_STATE_FILE_PREFIX + uniqueId;
+        return SAVED_STATE_FILE_PREFIX + uniqueId;
     }
 
     /**
@@ -1476,14 +1471,14 @@ public class TabPersistentStore extends TabPersister {
      */
     public static String getStateFileUniqueId(String stateFileName) {
         assert isStateFile(stateFileName);
-        return stateFileName.substring(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX.length());
+        return stateFileName.substring(SAVED_STATE_FILE_PREFIX.length());
     }
 
     /**
      * @return Whether the specified filename matches the expected pattern of the tab state files.
      */
     public static boolean isStateFile(String fileName) {
-        return fileName.startsWith(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        return fileName.startsWith(SAVED_STATE_FILE_PREFIX);
     }
 
     /**
@@ -1492,5 +1487,10 @@ public class TabPersistentStore extends TabPersister {
     @VisibleForTesting
     public static void setBaseStateDirectoryForTests(File directory) {
         BaseStateDirectoryHolder.sDirectory = directory;
+    }
+
+    @VisibleForTesting
+    public SequencedTaskRunner getTaskRunnerForTests() {
+        return mSequencedTaskRunner;
     }
 }

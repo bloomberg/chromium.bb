@@ -35,6 +35,8 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
+#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_visual_picker_glx.h"
 #endif
 
@@ -155,9 +157,61 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
 
 namespace gpu {
 
+bool CollectGraphicsDeviceInfoFromCommandLine(
+    const base::CommandLine* command_line,
+    GPUInfo* gpu_info) {
+  GPUInfo::GPUDevice& gpu = gpu_info->gpu;
+
+  if (command_line->HasSwitch(switches::kGpuVendorId)) {
+    const std::string vendor_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuVendorId);
+    base::StringToUint(vendor_id_str, &gpu.vendor_id);
+  }
+
+  if (command_line->HasSwitch(switches::kGpuDeviceId)) {
+    const std::string device_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuDeviceId);
+    base::StringToUint(device_id_str, &gpu.device_id);
+  }
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(switches::kGpuSubSystemId)) {
+    const std::string syb_system_id_str =
+        command_line->GetSwitchValueASCII(switches::kGpuSubSystemId);
+    base::StringToUint(syb_system_id_str, &gpu.sub_sys_id);
+  }
+
+  if (command_line->HasSwitch(switches::kGpuRevision)) {
+    const std::string revision_str =
+        command_line->GetSwitchValueASCII(switches::kGpuRevision);
+    base::StringToUint(revision_str, &gpu.revision);
+  }
+#endif
+
+  if (command_line->HasSwitch(switches::kGpuDriverVersion)) {
+    gpu.driver_version =
+        command_line->GetSwitchValueASCII(switches::kGpuDriverVersion);
+  }
+
+  bool info_updated = gpu.vendor_id || gpu.device_id ||
+#if defined(OS_WIN)
+                      gpu.sub_sys_id || gpu.revision ||
+#endif
+                      !gpu.driver_version.empty();
+
+  return info_updated;
+}
+
 bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
                               GPUInfo* gpu_info) {
+  // In the info-collection GPU process on Windows, we get the device info from
+  // the browser.
+  if (CollectGraphicsDeviceInfoFromCommandLine(command_line, gpu_info))
+    return true;
+
   std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+  std::string use_angle =
+      command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   // If GL is disabled then we don't need GPUInfo.
   if (use_gl == gl::kGLImplementationDisabledName) {
@@ -184,6 +238,19 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
     // specify exceptions based on driver_vendor==<software GL> for some
     // blacklist rules.
     gpu_info->gpu.driver_vendor = software_gl_impl_name.as_string();
+
+    return true;
+  } else if (use_gl == gl::kGLImplementationANGLEName &&
+             use_angle == gl::kANGLEImplementationSwiftShaderName) {
+    // Similarly to the above, use fake vendor and device ids
+    // to make sure they never gets blacklisted for SwANGLE as well.
+    gpu_info->gpu.vendor_id = 0xffff;
+    gpu_info->gpu.device_id = 0xffff;
+
+    // Also declare the driver_vendor to be <SwANGLE> to be able to
+    // specify exceptions based on driver_vendor==<SwANGLE> for some
+    // blacklist rules.
+    gpu_info->gpu.driver_vendor = "SwANGLE";
 
     return true;
   }
@@ -260,17 +327,10 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
       gfx::HasExtension(extension_set, "GL_KHR_robustness") ||
       gfx::HasExtension(extension_set, "GL_ARB_robustness");
   if (supports_robustness) {
-    glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB,
+    glGetIntegerv(
+        GL_RESET_NOTIFICATION_STRATEGY_ARB,
         reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));
   }
-
-#if defined(USE_X11)
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
-    gl::GLVisualPickerGLX* visual_picker = gl::GLVisualPickerGLX::GetInstance();
-    gpu_info->system_visual = visual_picker->system_visual().visualid;
-    gpu_info->rgba_visual = visual_picker->rgba_visual().visualid;
-  }
-#endif
 
   // Unconditionally check oop raster status regardless of preferences
   // so that finch trials can turn it on.
@@ -403,7 +463,8 @@ void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
 #endif  // OS_ANDROID
 }
 
-bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info) {
+bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
+                         const GpuPreferences& prefs) {
   // Populate the list of ANGLE features by querying the functions exposed by
   // EGL_ANGLE_feature_control if it's available.
   if (gl::GLSurfaceEGL::IsANGLEFeatureControlSupported()) {
@@ -427,6 +488,39 @@ bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info) {
           QueryEGLStringi(display, EGL_FEATURE_CONDITION_ANGLE, i);
     }
   }
+
+#if defined(USE_X11)
+  // Create the GLVisualPickerGLX singleton now while the GbmSupportX11
+  // singleton is busy being created on another thread.
+  gl::GLVisualPickerGLX* visual_picker;
+  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL)
+    visual_picker = gl::GLVisualPickerGLX::GetInstance();
+
+  // TODO(https://crbug.com/1031269): Enable by default.
+  if (prefs.enable_native_gpu_memory_buffers) {
+    gpu_extra_info->gpu_memory_buffer_support_x11 =
+        ui::GpuMemoryBufferSupportX11::GetInstance()->supported_configs();
+  }
+
+  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
+    gpu_extra_info->system_visual = visual_picker->system_visual().visualid;
+    gpu_extra_info->rgba_visual = visual_picker->rgba_visual().visualid;
+
+    // With GLX, only BGR(A) buffer formats are supported.  EGL does not have
+    // this restriction.
+    gpu_extra_info->gpu_memory_buffer_support_x11.erase(
+        std::remove_if(gpu_extra_info->gpu_memory_buffer_support_x11.begin(),
+                       gpu_extra_info->gpu_memory_buffer_support_x11.end(),
+                       [&](gfx::BufferUsageAndFormat usage_and_format) {
+                         return !visual_picker->GetFbConfigForFormat(
+                             usage_and_format.format);
+                       }),
+        gpu_extra_info->gpu_memory_buffer_support_x11.end());
+  } else if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+    // ANGLE does not yet support EGL_EXT_image_dma_buf_import[_modifiers].
+    gpu_extra_info->gpu_memory_buffer_support_x11.clear();
+  }
+#endif
 
   return true;
 }

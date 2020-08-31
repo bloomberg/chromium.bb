@@ -13,10 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 
-namespace apps {
-class ExtensionAppShimHandler;
-}
-
 namespace base {
 class FilePath;
 }
@@ -40,10 +36,6 @@ class AppShimListener : public apps::MachBootstrapAcceptor::Delegate,
   // since the refcount is zero at that point.
   void Init();
 
-  apps::ExtensionAppShimHandler* extension_app_shim_handler() {
-    return extension_app_shim_handler_.get();
-  }
-
  private:
   friend class base::RefCountedThreadSafe<AppShimListener>;
   friend struct content::BrowserThread::DeleteOnThread<
@@ -51,6 +43,8 @@ class AppShimListener : public apps::MachBootstrapAcceptor::Delegate,
   friend class base::DeleteHelper<AppShimListener>;
   friend class test::AppShimListenerTestApi;
   virtual ~AppShimListener();
+
+  bool has_initialized_ = false;
 
   // MachBootstrapAcceptor::Delegate:
   void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
@@ -63,8 +57,6 @@ class AppShimListener : public apps::MachBootstrapAcceptor::Delegate,
   base::FilePath directory_in_tmp_;
 
   std::unique_ptr<apps::MachBootstrapAcceptor> mach_acceptor_;
-
-  std::unique_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimListener);
 };

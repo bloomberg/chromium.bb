@@ -8,6 +8,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -49,7 +51,7 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
     return true;
   }
 
-  bool ShouldPreventElision() const override { return should_prevent_elision_; }
+  bool ShouldPreventElision() override { return should_prevent_elision_; }
 
   security_state::SecurityLevel GetSecurityLevel() const override {
     return security_level_;
@@ -119,6 +121,61 @@ TEST_F(LocationBarModelImplTest,
             model()->GetURLForDisplay());
 }
 
+TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
+  const GURL http_url("http://www.example.com/article.html");
+  // Get the real article's URL shown to the user.
+  delegate()->SetURL(http_url);
+  base::string16 originalDisplayUrl = model()->GetURLForDisplay();
+  base::string16 originalFormattedFullUrl = model()->GetFormattedFullURL();
+  // We expect that they don't start with "http://." We want the reader mode
+  // URL shown to the user to be the same as this original URL.
+#if defined(OS_IOS)
+  EXPECT_EQ(base::ASCIIToUTF16("example.com/TestSuffix"), originalDisplayUrl);
+#else   // #!defined(OS_IOS)
+  EXPECT_EQ(base::ASCIIToUTF16("example.com/article.html/TestSuffix"),
+            originalDisplayUrl);
+#endif  // #defined (OS_IOS)
+  EXPECT_EQ(base::ASCIIToUTF16("www.example.com/article.html/TestSuffix"),
+            originalFormattedFullUrl);
+
+  GURL distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      dom_distiller::kDomDistillerScheme, http_url, "title");
+  // Ensure the test is set up properly by checking the reader mode URL has
+  // the reader mode scheme.
+  EXPECT_EQ(dom_distiller::kDomDistillerScheme, distilled.scheme());
+  delegate()->SetURL(distilled);
+
+  // The user should see the same URL seen for the original article.
+  EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
+  EXPECT_EQ(originalFormattedFullUrl, model()->GetFormattedFullURL());
+
+  // Similarly, https scheme should also be hidden, except from
+  // GetFormattedFullURL, because kFormatUrlOmitDefaults does not omit https.
+  const GURL https_url("https://www.example.com/article.html");
+  distilled = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      dom_distiller::kDomDistillerScheme, https_url, "title");
+  delegate()->SetURL(distilled);
+  EXPECT_EQ(originalDisplayUrl, model()->GetURLForDisplay());
+  EXPECT_EQ(
+      base::ASCIIToUTF16("https://www.example.com/article.html/TestSuffix"),
+      model()->GetFormattedFullURL());
+
+  // Invalid dom-distiller:// URLs should be shown, because they do not
+  // correspond to any article.
+  delegate()->SetURL(GURL(("chrome-distiller://abc/?url=invalid")));
+#if defined(OS_IOS)
+  EXPECT_EQ(base::ASCIIToUTF16("chrome-distiller://abc/TestSuffix"),
+            model()->GetURLForDisplay());
+#else   // #!defined(OS_IOS)
+  EXPECT_EQ(
+      base::ASCIIToUTF16("chrome-distiller://abc/?url=invalid/TestSuffix"),
+      model()->GetURLForDisplay());
+#endif  // #defined (OS_IOS)
+  EXPECT_EQ(
+      base::ASCIIToUTF16("chrome-distiller://abc/?url=invalid/TestSuffix"),
+      model()->GetFormattedFullURL());
+}
+
 // TODO(https://crbug.com/1010418): Fix flakes on linux_chromium_asan_rel_ng and
 // re-enable this test.
 #if defined(OS_LINUX)
@@ -143,6 +200,12 @@ TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   // Verify that query in omnibox is turned off.
   delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
+
+  // Also test that HTTP elisions are prevented.
+  delegate()->SetURL(GURL("http://www.google.com/search?q=foo+query+unelide"));
+  EXPECT_EQ(base::ASCIIToUTF16(
+                "http://www.google.com/search?q=foo+query+unelide/TestSuffix"),
+            model()->GetURLForDisplay());
 }
 
 TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {

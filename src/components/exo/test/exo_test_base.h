@@ -9,7 +9,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "components/exo/test/exo_test_helper.h"
 
 namespace viz {
 class SurfaceManager;
@@ -17,6 +17,7 @@ class SurfaceManager;
 
 namespace exo {
 class WMHelper;
+class Buffer;
 
 namespace test {
 class ExoTestHelper;
@@ -26,18 +27,39 @@ class ExoTestBase : public ash::AshTestBase {
   ExoTestBase();
   ~ExoTestBase() override;
 
-  // Overridden from testing::Test:
+  // TODO(oshima): Convert unit tests to use this.
+  class ShellSurfaceHolder {
+   public:
+    ShellSurfaceHolder(std::unique_ptr<Buffer> buffer,
+                       std::unique_ptr<Surface> surface,
+                       std::unique_ptr<ShellSurface> shell_surface);
+    ~ShellSurfaceHolder();
+    ShellSurfaceHolder(const ShellSurfaceHolder&) = delete;
+    ShellSurfaceHolder& operator=(const ShellSurfaceHolder&) = delete;
+
+    ShellSurface* shell_surface() { return shell_surface_.get(); }
+
+   private:
+    std::unique_ptr<Buffer> buffer_;
+    std::unique_ptr<Surface> surface_;
+    std::unique_ptr<ShellSurface> shell_surface_;
+  };
+
+  // ash::AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
   viz::SurfaceManager* GetSurfaceManager();
 
-  ExoTestHelper* exo_test_helper() { return exo_test_helper_.get(); }
+  std::unique_ptr<ShellSurfaceHolder> CreateShellSurfaceHolder(
+      const gfx::Size& buffer_size,
+      ShellSurface* parent);
+
+  ExoTestHelper* exo_test_helper() { return &exo_test_helper_; }
 
  private:
-  std::unique_ptr<ExoTestHelper> exo_test_helper_;
+  ExoTestHelper exo_test_helper_;
   std::unique_ptr<WMHelper> wm_helper_;
-  ui::ScopedAnimationDurationScaleMode scale_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ExoTestBase);
 };

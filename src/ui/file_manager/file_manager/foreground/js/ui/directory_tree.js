@@ -237,6 +237,34 @@ class TreeItem extends cr.ui.TreeItem {
   get labelElement() {
     return this.rowElement.querySelector('.label');
   }
+
+  /**
+   * Updates the expand icon. Defaults to doing nothing for FakeItem and
+   * ShortcutItem that don't have children, thus don't need expand icon.
+   */
+  updateExpandIcon() {}
+
+  /**
+   * Change current directory to the entry of this item.
+   */
+  activate() {}
+
+  /**
+   * Invoked when the tree item is clicked.
+   *
+   * @param {Event} e Click event.
+   * @override
+   */
+  handleClick(e) {
+    super.handleClick(e);
+    if (e.button === 2) {
+      return;
+    }
+    if (e.target.classList.contains('expand-icon')) {
+      return;
+    }
+    this.activate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,6 +429,7 @@ class DirectoryItem extends TreeItem {
     let index = 0;
     const tree = this.parentTree_;
     let item;
+
     while (this.entries_[index]) {
       const currentEntry = this.entries_[index];
       const currentElement = this.items[index];
@@ -408,6 +437,7 @@ class DirectoryItem extends TreeItem {
                         tree.volumeManager_.getLocationInfo(currentEntry),
                         currentEntry) ||
           '';
+
 
       if (index >= this.items.length) {
         // If currentEntry carries its navigationModel we generate an item
@@ -431,7 +461,7 @@ class DirectoryItem extends TreeItem {
             // Show the expander even without knowing if there are children.
             currentElement.mayHaveChildren_ = true;
           } else {
-            currentElement.updateSubDirectories(true /* recursive */);
+            currentElement.updateExpandIcon();
           }
         }
         index++;
@@ -583,14 +613,10 @@ class DirectoryItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    cr.ui.TreeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
-    if (!this.entry || e.button === 2) {
+    if (!this.entry) {
       return;
-    }
-
-    if (!e.target.classList.contains('expand-icon')) {
-      this.directoryModel_.activateDirectoryEntry(this.entry);
     }
 
     // If this is DriveVolumeItem, the UMA has already been recorded.
@@ -645,6 +671,42 @@ class DirectoryItem extends TreeItem {
         readEntry();
       });
     };
+    readEntry();
+  }
+
+  /**
+   * Updates expand icon.
+   * @override
+   */
+  updateExpandIcon() {
+    if (!this.entry || this.entry.createReader === undefined) {
+      this.hasChildren = false;
+      return;
+    }
+
+    const reader = this.entry.createReader();
+
+    const readEntry = () => {
+      reader.readEntries((results) => {
+        if (!results.length) {
+          // Reached the end without any directory;
+          this.hasChildren = false;
+          return;
+        }
+
+        for (let i = 0; i < results.length; i++) {
+          if (results[i].isDirectory) {
+            // Once the first directory is found we can stop reading.
+            this.hasChildren = true;
+            return;
+          }
+        }
+
+        // Read next batch of entries.
+        readEntry();
+      });
+    };
+
     readEntry();
   }
 
@@ -709,6 +771,7 @@ class DirectoryItem extends TreeItem {
 
   /**
    * Change current directory to the entry of this item.
+   * @override
    */
   activate() {
     if (this.entry) {
@@ -842,7 +905,7 @@ class SubDirectoryItem extends DirectoryItem {
 
     // Update children now if needed.
     if (parentDirItem.expanded) {
-      this.updateSubDirectories(false /* recursive */);
+      this.updateExpandIcon();
     }
   }
 
@@ -1074,10 +1137,19 @@ class VolumeItem extends DirectoryItem {
       this.setContextMenu_(tree.contextMenuForRootItems);
     }
 
+    /**
+     * Whether the display root has been resolved.
+     * @private {boolean}
+     */
+    this.resolved_ = false;
+
     // Populate children of this volume using resolved display root. For SMB
     // shares, avoid prefetching sub directories to delay authentication.
-    if (modelItem.volumeInfo_.providerId !== '@smb') {
+    if (modelItem.volumeInfo_.providerId !== '@smb' &&
+        modelItem.volumeInfo_.volumeType !==
+            VolumeManagerCommon.VolumeType.SMB) {
       this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
+        this.resolved_ = true;
         this.updateSubDirectories(false /* recursive */);
       });
     }
@@ -1087,6 +1159,10 @@ class VolumeItem extends DirectoryItem {
    * @override
    */
   updateSubDirectories(recursive, opt_successCallback, opt_errorCallback) {
+    if (!this.resolved_) {
+      return;
+    }
+
     if (this.volumeInfo.volumeType ===
         VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
       // If this is a media-view volume, we don't show child directories.
@@ -1105,9 +1181,9 @@ class VolumeItem extends DirectoryItem {
   activate() {
     const directoryModel = this.parentTree_.directoryModel;
     const onEntryResolved = (entry) => {
+      this.resolved_ = true;
       // Changes directory to the model item's root directory if needed.
       if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
-        metrics.recordUserAction('FolderShortcut.Navigate');
         directoryModel.changeDirectoryEntry(entry);
       }
       // In case of failure in resolveDisplayRoot() in the volume's constructor,
@@ -1134,6 +1210,10 @@ class VolumeItem extends DirectoryItem {
         util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
     if (backgroundImage !== 'none') {
       icon.setAttribute('style', 'background-image: ' + backgroundImage);
+    } else if (directorytree.FILES_NG_ENABLED) {
+      if (VolumeManagerCommon.shouldProvideIcons(volumeInfo.volumeType)) {
+        icon.setAttribute('use-generic-provided-icon', '');
+      }
     }
 
     icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
@@ -1215,7 +1295,7 @@ class DriveVolumeItem extends VolumeItem {
    * @override
    */
   handleClick(e) {
-    VolumeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
     this.selectDisplayRoot_(e.target);
 
@@ -1275,7 +1355,7 @@ class DriveVolumeItem extends VolumeItem {
           const item = new SubDirectoryItem(
               label, sharedDriveGrandRoot, this, this.parentTree_);
           this.addAt(item, 1);
-          item.updateSubDirectories(false);
+          item.updateExpandIcon();
           resolve(item);
           return;
         } else {
@@ -1345,7 +1425,7 @@ class DriveVolumeItem extends VolumeItem {
           // index to place "Computers" at.
           const position = this.computersIndexPosition_();
           this.addAt(item, position);
-          item.updateSubDirectories(false);
+          item.updateExpandIcon();
           resolve(item);
           return;
         } else {
@@ -1362,9 +1442,10 @@ class DriveVolumeItem extends VolumeItem {
 
   /**
    * Change current entry to the entry corresponding to My Drive.
+   * @override
    */
   activate() {
-    VolumeItem.prototype.activate.call(this);
+    super.activate();
     this.selectDisplayRoot_(this);
   }
 
@@ -1581,13 +1662,12 @@ class ShortcutItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    cr.ui.TreeItem.prototype.handleClick.call(this, e);
+    super.handleClick(e);
 
     // Do not activate with right click.
     if (e.button === 2) {
       return;
     }
-    this.activate();
 
     // Resets file selection when a volume is clicked.
     this.parentTree_.directoryModel.clearSelection();
@@ -1618,6 +1698,7 @@ class ShortcutItem extends TreeItem {
 
   /**
    * Change current entry to the entry corresponding to this shortcut.
+   * @override
    */
   activate() {
     const directoryModel = this.parentTree_.directoryModel;
@@ -1693,8 +1774,11 @@ class AndroidAppItem extends TreeItem {
       icon.setAttribute('use-generic-provided-icon', '');
     }
 
-    // Create an external link icon. TODO(crbug.com/986169) does this icon
-    // element need aria-label, role, tabindex, etc?
+    // Use aria-describedby attribute to let ChromeVox users know that the link
+    // launches an external app window.
+    this.setAttribute('aria-describedby', 'external-link-label');
+
+    // Create an external link icon.
     const externalLinkIcon = document.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
 
@@ -1763,10 +1847,14 @@ class FakeItem extends TreeItem {
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
 
-    if (rootType === VolumeManagerCommon.RootType.RECENT) {
-      this.labelElement.scrollIntoViewIfNeeded = () => {
-        this.scrollIntoView(true);
-      };
+    if (util.isRecentRootType(rootType)) {
+      if (this.dirEntry_.recentFileType) {
+        icon.setAttribute('recent-file-type', this.dirEntry_.recentFileType);
+      } else {  // Recent tab scroll fix: crbug.com/1027973.
+        this.labelElement.scrollIntoViewIfNeeded = () => {
+          this.scrollIntoView(true);
+        };
+      }
     }
 
     if (tree.disabledContextMenu) {
@@ -1786,7 +1874,7 @@ class FakeItem extends TreeItem {
    * @override
    */
   handleClick(e) {
-    this.activate();
+    super.handleClick(e);
 
     DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
         this, e, this.rootType_, true);
@@ -1803,6 +1891,7 @@ class FakeItem extends TreeItem {
 
   /**
    * Executes the command.
+   * @override
    */
   activate() {
     this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
@@ -1846,6 +1935,9 @@ class FakeItem extends TreeItem {
 class DirectoryTree extends cr.ui.Tree {
   constructor() {
     super();
+
+    /** @type {?HTMLElement} */
+    this.activeRow_ = null;
 
     /** @type {NavigationListModel} */
     this.dataModel_ = null;
@@ -2245,6 +2337,18 @@ class DirectoryTree extends cr.ui.Tree {
    */
   onCurrentDirectoryChanged_(event) {
     this.selectByEntry(event.newDirEntry);
+
+    const selectedItem = this.selectedItem;
+
+    if (this.activeRow_) {
+      this.activeRow_.removeAttribute('active');
+    }
+
+    this.activeRow_ = selectedItem ? selectedItem.rowElement : null;
+    if (this.activeRow_) {
+      this.activeRow_.setAttribute('active', '');
+    }
+
     this.updateSubDirectories(false /* recursive */, () => {});
   }
 
@@ -2269,7 +2373,8 @@ class DirectoryTree extends cr.ui.Tree {
   /*
    * The directory tree does not support horizontal scrolling (by design), but
    * can gain a scrollLeft > 0, see crbug.com/1025581. Always clamp scrollLeft
-   * back to 0 if needed.
+   * back to 0 if needed. In RTL, the scrollLeft clamp is not 0: it depends on
+   * the element scrollWidth and clientWidth per crbug.com/721759.
    */
   onTreeScrollEvent_() {
     if (this.scrollRAFActive_ === true) {
@@ -2285,7 +2390,12 @@ class DirectoryTree extends cr.ui.Tree {
 
     window.requestAnimationFrame(() => {
       this.scrollRAFActive_ = false;
-      if (this.scrollLeft) {
+      if (document.documentElement.getAttribute('dir') === 'rtl') {
+        const scrollRight = this.scrollWidth - this.clientWidth;
+        if (this.scrollLeft !== scrollRight) {
+          this.scrollLeft = scrollRight;
+        }
+      } else if (this.scrollLeft) {
         this.scrollLeft = 0;
       }
     });
@@ -2296,18 +2406,7 @@ class DirectoryTree extends cr.ui.Tree {
    * the splitter or from the DOM window.
    */
   relayout() {
-    this.setTreeClippedAttribute_();
     cr.dispatchSimpleEvent(this, 'relayout', true);
-  }
-
-  /**
-   * Sets the tree 'clipped' attribute. TODO(crbug.com/992819): the breakpoint
-   * in the design is unspecified. Punt: use 135px for now.
-   * @private
-   */
-  setTreeClippedAttribute_() {
-    const width = parseFloat(window.getComputedStyle(this).width);
-    this.toggleAttribute('clipped', width < 135);
   }
 
   // DirectoryTree is always expanded.
@@ -2379,12 +2478,27 @@ DirectoryTree.decorate =
      fakeEntriesVisible) => {
       el.__proto__ = DirectoryTree.prototype;
 
-      // TODO(crbug.com/992819): add overrides for the FILES_NG_ENABLED case.
+      if (util.isFilesNg()) {
+        directorytree.FILES_NG_ENABLED = true;
+        directorytree.rightIconSetPrefix = 'files20';
+        directorytree.createRowElementContent =
+            directorytree.createRowElementContentFilesNG;
+        directorytree.styleRowElementDepth =
+            directorytree.styleRowElementDepthFilesNG;
+        el.setAttribute('files-ng', '');
+      } else {
+        el.removeAttribute('files-ng');
+      }
+
       Object.freeze(directorytree);
 
       /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
           directoryModel, volumeManager, metadataModel, fileOperationManager,
           fakeEntriesVisible);
+
+      if (directorytree.FILES_NG_ENABLED) {
+        el.rowElementDepthStyleHandler = directorytree.styleRowElementDepth;
+      }
     };
 
 cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);

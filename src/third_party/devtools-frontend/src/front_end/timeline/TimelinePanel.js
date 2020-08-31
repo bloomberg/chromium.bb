@@ -29,113 +29,137 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Extensions from '../extensions/extensions.js';
+import * as Host from '../host/host.js';
+import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TimelineModel from '../timeline_model/timeline_model.js';
+import * as UI from '../ui/ui.js';
+
+import {Events, PerformanceModel, Window} from './PerformanceModel.js';  // eslint-disable-line no-unused-vars
+import {Client, TimelineController} from './TimelineController.js';      // eslint-disable-line no-unused-vars
+import {TimelineEventOverview, TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview,} from './TimelineEventOverview.js';  // eslint-disable-line no-unused-vars
+import {TimelineFlameChartView} from './TimelineFlameChartView.js';
+import {TimelineHistoryManager} from './TimelineHistoryManager.js';
+import {TimelineLoader} from './TimelineLoader.js';
+import {TimelineUIUtils} from './TimelineUIUtils.js';
+import {UIDevtoolsController} from './UIDevtoolsController.js';
+import {UIDevtoolsUtils} from './UIDevtoolsUtils.js';
+
 /**
- * @implements {Timeline.TimelineController.Client}
- * @implements {Timeline.TimelineModeViewDelegate}
+ * @implements {Client}
+ * @implements {TimelineModeViewDelegate}
  * @unrestricted
  */
-Timeline.TimelinePanel = class extends UI.Panel {
+export class TimelinePanel extends UI.Panel.Panel {
   constructor() {
     super('timeline');
     this.registerRequiredCSS('timeline/timelinePanel.css');
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), false);
-    this._dropTarget = new UI.DropTarget(
+    this._dropTarget = new UI.DropTarget.DropTarget(
         this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI],
-        Common.UIString('Drop timeline file or URL here'), this._handleDrop.bind(this));
+        Common.UIString.UIString('Drop timeline file or URL here'), this._handleDrop.bind(this));
 
-    /** @type {!Array<!UI.ToolbarItem>} */
+    /** @type {!Array<!UI.Toolbar.ToolbarItem>} */
     this._recordingOptionUIControls = [];
-    this._state = Timeline.TimelinePanel.State.Idle;
+    this._state = State.Idle;
     this._recordingPageReload = false;
     this._millisecondsToRecordAfterLoadEvent = 3000;
     this._toggleRecordAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.toggle-recording'));
+        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('timeline.toggle-recording'));
     this._recordReloadAction =
-        /** @type {!UI.Action }*/ (UI.actionRegistry.action('timeline.record-reload'));
+        /** @type {!UI.Action.Action }*/ (self.UI.actionRegistry.action('timeline.record-reload'));
 
-    this._historyManager = new Timeline.TimelineHistoryManager();
+    this._historyManager = new TimelineHistoryManager();
 
-    /** @type {?Timeline.PerformanceModel} */
+    /** @type {?PerformanceModel} */
     this._performanceModel = null;
 
-    this._viewModeSetting =
-        Common.settings.createSetting('timelineViewMode', Timeline.TimelinePanel.ViewMode.FlameChart);
+    this._viewModeSetting = Common.Settings.Settings.instance().createSetting('timelineViewMode', ViewMode.FlameChart);
 
-    this._disableCaptureJSProfileSetting = Common.settings.createSetting('timelineDisableJSSampling', false);
-    this._disableCaptureJSProfileSetting.setTitle(Common.UIString('Disable JavaScript samples'));
-    this._captureLayersAndPicturesSetting = Common.settings.createSetting('timelineCaptureLayersAndPictures', false);
-    this._captureLayersAndPicturesSetting.setTitle(Common.UIString('Enable advanced paint instrumentation (slow)'));
+    this._disableCaptureJSProfileSetting =
+        Common.Settings.Settings.instance().createSetting('timelineDisableJSSampling', false);
+    this._disableCaptureJSProfileSetting.setTitle(Common.UIString.UIString('Disable JavaScript samples'));
+    this._captureLayersAndPicturesSetting =
+        Common.Settings.Settings.instance().createSetting('timelineCaptureLayersAndPictures', false);
+    this._captureLayersAndPicturesSetting.setTitle(
+        Common.UIString.UIString('Enable advanced paint instrumentation (slow)'));
 
-    this._showScreenshotsSetting = Common.settings.createSetting('timelineShowScreenshots', true);
-    this._showScreenshotsSetting.setTitle(Common.UIString('Screenshots'));
+    this._showScreenshotsSetting = Common.Settings.Settings.instance().createSetting('timelineShowScreenshots', true);
+    this._showScreenshotsSetting.setTitle(Common.UIString.UIString('Screenshots'));
     this._showScreenshotsSetting.addChangeListener(this._updateOverviewControls, this);
 
-    this._startCoverage = Common.settings.createSetting('timelineStartCoverage', false);
+    this._startCoverage = Common.Settings.Settings.instance().createSetting('timelineStartCoverage', false);
     this._startCoverage.setTitle(ls`Coverage`);
 
     if (!Root.Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing')) {
       this._startCoverage.set(false);
     }
 
-
-    this._showMemorySetting = Common.settings.createSetting('timelineShowMemory', false);
-    this._showMemorySetting.setTitle(Common.UIString('Memory'));
+    this._showMemorySetting = Common.Settings.Settings.instance().createSetting('timelineShowMemory', false);
+    this._showMemorySetting.setTitle(Common.UIString.UIString('Memory'));
     this._showMemorySetting.addChangeListener(this._onModeChanged, this);
 
     const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
-    this._panelToolbar = new UI.Toolbar('timeline-main-toolbar', timelineToolbarContainer);
-    this._panelRightToolbar = new UI.Toolbar('', timelineToolbarContainer);
+    this._panelToolbar = new UI.Toolbar.Toolbar('timeline-main-toolbar', timelineToolbarContainer);
+    this._panelRightToolbar = new UI.Toolbar.Toolbar('', timelineToolbarContainer);
     this._createSettingsPane();
     this._updateShowSettingsToolbarButton();
 
-    this._timelinePane = new UI.VBox();
+    this._timelinePane = new UI.Widget.VBox();
     this._timelinePane.show(this.element);
     const topPaneElement = this._timelinePane.element.createChild('div', 'hbox');
     topPaneElement.id = 'timeline-overview-panel';
 
     // Create top overview component.
-    this._overviewPane = new PerfUI.TimelineOverviewPane('timeline');
+    this._overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('timeline');
     this._overviewPane.addEventListener(
         PerfUI.TimelineOverviewPane.Events.WindowChanged, this._onOverviewWindowChanged.bind(this));
     this._overviewPane.show(topPaneElement);
-    /** @type {!Array<!Timeline.TimelineEventOverview>} */
+    /** @type {!Array<!TimelineEventOverview>} */
     this._overviewControls = [];
 
     this._statusPaneContainer = this._timelinePane.element.createChild('div', 'status-pane-container fill');
 
     this._createFileSelector();
 
-    SDK.targetManager.addModelListener(
-        SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
-    this._flameChart = new Timeline.TimelineFlameChartView(this);
-    this._searchableView = new UI.SearchableView(this._flameChart);
+    this._flameChart = new TimelineFlameChartView(this);
+    this._searchableView = new UI.SearchableView.SearchableView(this._flameChart);
     this._searchableView.setMinimumSize(0, 100);
     this._searchableView.element.classList.add('searchable-view');
     this._searchableView.show(this._timelinePane.element);
     this._flameChart.show(this._searchableView.element);
     this._flameChart.setSearchableView(this._searchableView);
+    this._searchableView.hideWidget();
 
     this._onModeChanged();
     this._populateToolbar();
     this._showLandingPage();
     this._updateTimelineControls();
 
-    Extensions.extensionServer.addEventListener(
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
-    SDK.targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
   }
 
   /**
-   * @return {!Timeline.TimelinePanel}
+   * @return {!TimelinePanel}
    */
   static instance() {
-    return /** @type {!Timeline.TimelinePanel} */ (self.runtime.sharedInstance(Timeline.TimelinePanel));
+    return /** @type {!TimelinePanel} */ (self.runtime.sharedInstance(TimelinePanel));
   }
 
   /**
    * @override
-   * @return {?UI.SearchableView}
+   * @return {?UI.SearchableView.SearchableView}
    */
   searchableView() {
     return this._searchableView;
@@ -145,14 +169,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(Timeline.TimelinePanel, this);
+    self.UI.context.setFlavor(TimelinePanel, this);
+    // Record the performance tool load time.
+    Host.userMetrics.panelLoaded('timeline', 'DevTools.Launch.Timeline');
   }
 
   /**
    * @override
    */
   willHide() {
-    UI.context.setFlavor(Timeline.TimelinePanel, null);
+    self.UI.context.setFlavor(TimelinePanel, null);
     this._historyManager.cancelIfShowing();
   }
 
@@ -160,15 +186,15 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {!Array.<!SDK.TracingManager.EventPayload>} events
    */
   loadFromEvents(events) {
-    if (this._state !== Timeline.TimelinePanel.State.Idle) {
+    if (this._state !== State.Idle) {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromEvents(events, this);
+    this._loader = TimelineLoader.loadFromEvents(events, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onOverviewWindowChanged(event) {
     const left = event.data.startTime;
@@ -177,15 +203,15 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onModelWindowChanged(event) {
-    const window = /** @type {!Timeline.PerformanceModel.Window} */ (event.data.window);
+    const window = /** @type {!Window} */ (event.data.window);
     this._overviewPane.setWindowTimes(window.left, window.right);
   }
 
   /**
-   * @param {!Timeline.TimelinePanel.State} state
+   * @param {!State} state
    */
   _setState(state) {
     this._state = state;
@@ -193,29 +219,32 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Setting} setting
+   * @param {!Common.Settings.Setting} setting
    * @param {string} tooltip
-   * @return {!UI.ToolbarItem}
+   * @return {!UI.Toolbar.ToolbarItem}
    */
   _createSettingCheckbox(setting, tooltip) {
-    const checkboxItem = new UI.ToolbarSettingCheckbox(setting, tooltip);
+    const checkboxItem = new UI.Toolbar.ToolbarSettingCheckbox(setting, tooltip);
     this._recordingOptionUIControls.push(checkboxItem);
     return checkboxItem;
   }
 
   _populateToolbar() {
     // Record
-    this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._toggleRecordAction));
-    this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButton(this._recordReloadAction));
-    this._clearButton = new UI.ToolbarButton(Common.UIString('Clear'), 'largeicon-clear');
-    this._clearButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._onClearButton());
+    this._panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this._toggleRecordAction));
+    this._panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this._recordReloadAction));
+    this._clearButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Clear'), 'largeicon-clear');
+    this._clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._onClearButton());
     this._panelToolbar.appendToolbarItem(this._clearButton);
 
     // Load / Save
-    this._loadButton = new UI.ToolbarButton(Common.UIString('Load profile...'), 'largeicon-load');
-    this._loadButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._selectFileToLoad());
-    this._saveButton = new UI.ToolbarButton(Common.UIString('Save profile...'), 'largeicon-download');
-    this._saveButton.addEventListener(UI.ToolbarButton.Events.Click, () => this._saveToFile());
+    this._loadButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Load profile…'), 'largeicon-load');
+    this._loadButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this._selectFileToLoad());
+    this._saveButton =
+        new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Save profile…'), 'largeicon-download');
+    this._saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
+      this._saveToFile();
+    });
     this._panelToolbar.appendSeparator();
     this._panelToolbar.appendToolbarItem(this._loadButton);
     this._panelToolbar.appendToolbarItem(this._saveButton);
@@ -228,11 +257,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
     // View
     this._panelToolbar.appendSeparator();
     this._showScreenshotsToolbarCheckbox =
-        this._createSettingCheckbox(this._showScreenshotsSetting, Common.UIString('Capture screenshots'));
+        this._createSettingCheckbox(this._showScreenshotsSetting, Common.UIString.UIString('Capture screenshots'));
     this._panelToolbar.appendToolbarItem(this._showScreenshotsToolbarCheckbox);
 
     this._showMemoryToolbarCheckbox =
-        this._createSettingCheckbox(this._showMemorySetting, Common.UIString('Show memory timeline'));
+        this._createSettingCheckbox(this._showMemorySetting, Common.UIString.UIString('Show memory timeline'));
     this._panelToolbar.appendToolbarItem(this._showMemoryToolbarCheckbox);
 
     if (Root.Runtime.experiments.isEnabled('recordCoverageWithPerformanceTracing')) {
@@ -242,7 +271,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     }
 
     // GC
-    this._panelToolbar.appendToolbarItem(UI.Toolbar.createActionButtonForId('components.collect-garbage'));
+    this._panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
 
     // Settings
     this._panelRightToolbar.appendSeparator();
@@ -250,42 +279,46 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _createSettingsPane() {
-    this._showSettingsPaneSetting = Common.settings.createSetting('timelineShowSettingsToolbar', false);
-    this._showSettingsPaneButton = new UI.ToolbarSettingToggle(
-        this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString('Capture settings'));
-    SDK.multitargetNetworkManager.addEventListener(
-        SDK.MultitargetNetworkManager.Events.ConditionsChanged, this._updateShowSettingsToolbarButton, this);
-    MobileThrottling.throttlingManager().addEventListener(
+    this._showSettingsPaneSetting =
+        Common.Settings.Settings.instance().createSetting('timelineShowSettingsToolbar', false);
+    this._showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(
+        this._showSettingsPaneSetting, 'largeicon-settings-gear', Common.UIString.UIString('Capture settings'));
+    SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(
+        SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, this._updateShowSettingsToolbarButton,
+        this);
+    MobileThrottling.ThrottlingManager.throttlingManager().addEventListener(
         MobileThrottling.ThrottlingManager.Events.RateChanged, this._updateShowSettingsToolbarButton, this);
     this._disableCaptureJSProfileSetting.addChangeListener(this._updateShowSettingsToolbarButton, this);
     this._captureLayersAndPicturesSetting.addChangeListener(this._updateShowSettingsToolbarButton, this);
 
-    this._settingsPane = new UI.HBox();
+    this._settingsPane = new UI.Widget.HBox();
     this._settingsPane.element.classList.add('timeline-settings-pane');
     this._settingsPane.show(this.element);
 
-    const captureToolbar = new UI.Toolbar('', this._settingsPane.element);
+    const captureToolbar = new UI.Toolbar.Toolbar('', this._settingsPane.element);
     captureToolbar.element.classList.add('flex-auto');
     captureToolbar.makeVertical();
     captureToolbar.appendToolbarItem(this._createSettingCheckbox(
         this._disableCaptureJSProfileSetting,
-        Common.UIString('Disables JavaScript sampling, reduces overhead when running against mobile devices')));
+        Common.UIString.UIString(
+            'Disables JavaScript sampling, reduces overhead when running against mobile devices')));
     captureToolbar.appendToolbarItem(this._createSettingCheckbox(
         this._captureLayersAndPicturesSetting,
-        Common.UIString('Captures advanced paint instrumentation, introduces significant performance overhead')));
+        Common.UIString.UIString(
+            'Captures advanced paint instrumentation, introduces significant performance overhead')));
 
-    const throttlingPane = new UI.VBox();
+    const throttlingPane = new UI.Widget.VBox();
     throttlingPane.element.classList.add('flex-auto');
     throttlingPane.show(this._settingsPane.element);
 
-    const networkThrottlingToolbar = new UI.Toolbar('', throttlingPane.element);
-    networkThrottlingToolbar.appendText(Common.UIString('Network:'));
+    const networkThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
+    networkThrottlingToolbar.appendText(Common.UIString.UIString('Network:'));
     this._networkThrottlingSelect = this._createNetworkConditionsSelect();
     networkThrottlingToolbar.appendToolbarItem(this._networkThrottlingSelect);
 
-    const cpuThrottlingToolbar = new UI.Toolbar('', throttlingPane.element);
-    cpuThrottlingToolbar.appendText(Common.UIString('CPU:'));
-    this._cpuThrottlingSelect = MobileThrottling.throttlingManager().createCPUThrottlingSelector();
+    const cpuThrottlingToolbar = new UI.Toolbar.Toolbar('', throttlingPane.element);
+    cpuThrottlingToolbar.appendText(Common.UIString.UIString('CPU:'));
+    this._cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
     cpuThrottlingToolbar.appendToolbarItem(this._cpuThrottlingSelect);
 
     this._showSettingsPaneSetting.addChangeListener(this._updateSettingsPaneVisibility.bind(this));
@@ -293,43 +326,44 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-    * @param {!Common.Event} event
+    * @param {!Common.EventTarget.EventTargetEvent} event
     */
   _appendExtensionsToToolbar(event) {
-    const provider = /** @type {!Extensions.ExtensionTraceProvider} */ (event.data);
-    const setting = Timeline.TimelinePanel._settingForTraceProvider(provider);
+    const provider = /** @type {!Extensions.ExtensionTraceProvider.ExtensionTraceProvider} */ (event.data);
+    const setting = TimelinePanel._settingForTraceProvider(provider);
     const checkbox = this._createSettingCheckbox(setting, provider.longDisplayName());
     this._panelToolbar.appendToolbarItem(checkbox);
   }
 
   /**
-   * @param {!Extensions.ExtensionTraceProvider} traceProvider
-   * @return {!Common.Setting<boolean>}
+   * @param {!Extensions.ExtensionTraceProvider.ExtensionTraceProvider} traceProvider
+   * @return {!Common.Settings.Setting<boolean>}
    */
   static _settingForTraceProvider(traceProvider) {
-    let setting = traceProvider[Timeline.TimelinePanel._traceProviderSettingSymbol];
+    let setting = traceProvider[traceProviderSettingSymbol];
     if (!setting) {
       const providerId = traceProvider.persistentIdentifier();
-      setting = Common.settings.createSetting(providerId, false);
+      setting = Common.Settings.Settings.instance().createSetting(providerId, false);
       setting.setTitle(traceProvider.shortDisplayName());
-      traceProvider[Timeline.TimelinePanel._traceProviderSettingSymbol] = setting;
+      traceProvider[traceProviderSettingSymbol] = setting;
     }
     return setting;
   }
 
   /**
-   * @return {!UI.ToolbarComboBox}
+   * @return {!UI.Toolbar.ToolbarComboBox}
    */
   _createNetworkConditionsSelect() {
-    const toolbarItem = new UI.ToolbarComboBox(null, ls`Network conditions`);
+    const toolbarItem = new UI.Toolbar.ToolbarComboBox(null, ls`Network conditions`);
     toolbarItem.setMaxWidth(140);
-    MobileThrottling.throttlingManager().decorateSelectWithNetworkThrottling(toolbarItem.selectElement());
+    MobileThrottling.ThrottlingManager.throttlingManager().decorateSelectWithNetworkThrottling(
+        toolbarItem.selectElement());
     return toolbarItem;
   }
 
   _prepareToLoadTimeline() {
-    console.assert(this._state === Timeline.TimelinePanel.State.Idle);
-    this._setState(Timeline.TimelinePanel.State.Loading);
+    console.assert(this._state === State.Idle);
+    this._setState(State.Loading);
     if (this._performanceModel) {
       this._performanceModel.dispose();
       this._performanceModel = null;
@@ -340,7 +374,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (this._fileSelectorElement) {
       this._fileSelectorElement.remove();
     }
-    this._fileSelectorElement = UI.createFileSelectorElement(this._loadFromFile.bind(this));
+    this._fileSelectorElement = UI.UIUtils.createFileSelectorElement(this._loadFromFile.bind(this));
     this._timelinePane.element.appendChild(this._fileSelectorElement);
   }
 
@@ -348,7 +382,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {!Event} event
    */
   _contextMenu(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendItemsAtLocation('timelineMenu');
     contextMenu.show();
   }
@@ -357,7 +391,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @suppress {deprecated}
    */
   async _saveToFile() {
-    if (this._state !== Timeline.TimelinePanel.State.Idle) {
+    if (this._state !== State.Idle) {
       return;
     }
     const performanceModel = this._performanceModel;
@@ -367,7 +401,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
     const now = new Date();
     const fileName = 'Profile-' + now.toISO8601Compact() + '.json';
-    const stream = new Bindings.FileOutputStream();
+    const stream = new Bindings.FileUtils.FileOutputStream();
 
     const accepted = await stream.open(fileName);
     if (!accepted) {
@@ -378,8 +412,8 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (!error) {
       return;
     }
-    Common.console.error(
-        Common.UIString('Failed to save timeline: %s (%s, %s)', error.message, error.name, error.code));
+    Common.Console.Console.instance().error(
+        Common.UIString.UIString('Failed to save timeline: %s (%s, %s)', error.message, error.name, error.code));
   }
 
   async _showHistory() {
@@ -409,11 +443,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {!File} file
    */
   _loadFromFile(file) {
-    if (this._state !== Timeline.TimelinePanel.State.Idle) {
+    if (this._state !== State.Idle) {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromFile(file, this);
+    this._loader = TimelineLoader.loadFromFile(file, this);
     this._createFileSelector();
   }
 
@@ -421,31 +455,31 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {string} url
    */
   _loadFromURL(url) {
-    if (this._state !== Timeline.TimelinePanel.State.Idle) {
+    if (this._state !== State.Idle) {
       return;
     }
     this._prepareToLoadTimeline();
-    this._loader = Timeline.TimelineLoader.loadFromURL(url, this);
+    this._loader = TimelineLoader.loadFromURL(url, this);
   }
 
   _updateOverviewControls() {
     this._overviewControls = [];
-    this._overviewControls.push(new Timeline.TimelineEventOverviewResponsiveness());
+    this._overviewControls.push(new TimelineEventOverviewResponsiveness());
     if (Root.Runtime.experiments.isEnabled('inputEventsOnTimelineOverview')) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewInput());
+      this._overviewControls.push(new TimelineEventOverviewInput());
     }
-    this._overviewControls.push(new Timeline.TimelineEventOverviewFrames());
-    this._overviewControls.push(new Timeline.TimelineEventOverviewCPUActivity());
-    this._overviewControls.push(new Timeline.TimelineEventOverviewNetwork());
+    this._overviewControls.push(new TimelineEventOverviewFrames());
+    this._overviewControls.push(new TimelineEventOverviewCPUActivity());
+    this._overviewControls.push(new TimelineEventOverviewNetwork());
     if (this._showScreenshotsSetting.get() && this._performanceModel &&
         this._performanceModel.filmStripModel().frames().length) {
-      this._overviewControls.push(new Timeline.TimelineFilmStripOverview());
+      this._overviewControls.push(new TimelineFilmStripOverview());
     }
     if (this._showMemorySetting.get()) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewMemory());
+      this._overviewControls.push(new TimelineEventOverviewMemory());
     }
     if (this._startCoverage.get()) {
-      this._overviewControls.push(new Timeline.TimelineEventOverviewCoverage());
+      this._overviewControls.push(new TimelineEventOverviewCoverage());
     }
     for (const control of this._overviewControls) {
       control.setModel(this._performanceModel);
@@ -469,17 +503,17 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
   _updateShowSettingsToolbarButton() {
     const messages = [];
-    if (MobileThrottling.throttlingManager().cpuThrottlingRate() !== 1) {
-      messages.push(Common.UIString('- CPU throttling is enabled'));
+    if (MobileThrottling.ThrottlingManager.throttlingManager().cpuThrottlingRate() !== 1) {
+      messages.push(Common.UIString.UIString('- CPU throttling is enabled'));
     }
-    if (SDK.multitargetNetworkManager.isThrottling()) {
-      messages.push(Common.UIString('- Network throttling is enabled'));
+    if (SDK.NetworkManager.MultitargetNetworkManager.instance().isThrottling()) {
+      messages.push(Common.UIString.UIString('- Network throttling is enabled'));
     }
     if (this._captureLayersAndPicturesSetting.get()) {
-      messages.push(Common.UIString('- Significant overhead due to paint instrumentation'));
+      messages.push(Common.UIString.UIString('- Significant overhead due to paint instrumentation'));
     }
     if (this._disableCaptureJSProfileSetting.get()) {
-      messages.push(Common.UIString('- JavaScript sampling is disabled'));
+      messages.push(Common.UIString.UIString('- JavaScript sampling is disabled'));
     }
 
     this._showSettingsPaneButton.setDefaultWithRedColor(messages.length);
@@ -492,7 +526,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
       });
       this._showSettingsPaneButton.setTitle(tooltipElement);
     } else {
-      this._showSettingsPaneButton.setTitle(Common.UIString('Capture settings'));
+      this._showSettingsPaneButton.setTitle(Common.UIString.UIString('Capture settings'));
     }
   }
 
@@ -505,7 +539,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
 
   async _startRecording() {
     console.assert(!this._statusPane, 'Status pane is already opened.');
-    this._setState(Timeline.TimelinePanel.State.StartPending);
+    this._setState(State.StartPending);
 
     const recordingOptions = {
       enableJSSampling: !this._disableCaptureJSProfileSetting.get(),
@@ -515,27 +549,28 @@ Timeline.TimelinePanel = class extends UI.Panel {
     };
 
     if (recordingOptions.startCoverage) {
-      await UI.viewManager.showView('coverage')
-          .then(() => UI.viewManager.view('coverage').widget())
+      await UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
           .then(widget => widget.ensureRecordingStarted());
     }
 
     this._showRecordingStarted();
 
-    const enabledTraceProviders = Extensions.extensionServer.traceProviders().filter(
-        provider => Timeline.TimelinePanel._settingForTraceProvider(provider).get());
+    const enabledTraceProviders = self.Extensions.extensionServer.traceProviders().filter(
+        provider => TimelinePanel._settingForTraceProvider(provider).get());
 
-    const mainTarget = /** @type {!SDK.Target} */ (SDK.targetManager.mainTarget());
-    if (Timeline.UIDevtoolsUtils.isUiDevTools()) {
-      this._controller = new Timeline.UIDevtoolsController(mainTarget, this);
+    const mainTarget = /** @type {!SDK.SDKModel.Target} */ (SDK.SDKModel.TargetManager.instance().mainTarget());
+    if (UIDevtoolsUtils.isUiDevTools()) {
+      this._controller = new UIDevtoolsController(mainTarget, this);
     } else {
-      this._controller = new Timeline.TimelineController(mainTarget, this);
+      this._controller = new TimelineController(mainTarget, this);
     }
     this._setUIControlsEnabled(false);
     this._hideLandingPage();
     const response = await this._controller.startRecording(recordingOptions, enabledTraceProviders);
-    if (response[Protocol.Error]) {
-      this._recordingFailed(response[Protocol.Error]);
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
+      this._recordingFailed(response[ProtocolClient.InspectorBackend.ProtocolError]);
     } else {
       this._recordingStarted();
     }
@@ -544,10 +579,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
   async _stopRecording() {
     if (this._statusPane) {
       this._statusPane.finish();
-      this._statusPane.updateStatus(Common.UIString('Stopping timeline\u2026'));
-      this._statusPane.updateProgressBar(Common.UIString('Received'), 0);
+      this._statusPane.updateStatus(Common.UIString.UIString('Stopping timeline…'));
+      this._statusPane.updateProgressBar(Common.UIString.UIString('Received'), 0);
     }
-    this._setState(Timeline.TimelinePanel.State.StopPending);
+    this._setState(State.StopPending);
+    if (this._startCoverage.get()) {
+      await UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
+          .then(widget => widget.stopRecording());
+    }
     const model = await this._controller.stopRecording();
     this._performanceModel = model;
     this._setUIControlsEnabled(true);
@@ -562,14 +603,14 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (this._statusPane) {
       this._statusPane.hide();
     }
-    this._statusPane = new Timeline.TimelinePanel.StatusPane({description: error}, () => this.loadingComplete(null));
+    this._statusPane = new StatusPane(
+        {description: error, buttonText: ls`Close`, buttonDisabled: false}, () => this.loadingComplete(null));
     this._statusPane.showPane(this._statusPaneContainer);
     this._statusPane.updateStatus(ls`Recording failed`);
-    this._statusPane.updateButton(ls`Close`);
 
-    this._setState(Timeline.TimelinePanel.State.RecordingFailed);
+    this._setState(State.RecordingFailed);
     this._performanceModel = null;
-    this._setUIControlsEnabled(false);
+    this._setUIControlsEnabled(true);
     this._controller.dispose();
     this._controller = null;
   }
@@ -579,7 +620,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _updateTimelineControls() {
-    const state = Timeline.TimelinePanel.State;
+    const state = State;
     this._toggleRecordAction.setToggled(this._state === state.Recording);
     this._toggleRecordAction.setEnabled(this._state === state.Recording || this._state === state.Idle);
     this._recordReloadAction.setEnabled(this._state === state.Idle);
@@ -593,17 +634,17 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   _toggleRecording() {
-    if (this._state === Timeline.TimelinePanel.State.Idle) {
+    if (this._state === State.Idle) {
       this._recordingPageReload = false;
       this._startRecording();
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
-    } else if (this._state === Timeline.TimelinePanel.State.Recording) {
+    } else if (this._state === State.Recording) {
       this._stopRecording();
     }
   }
 
   _recordReload() {
-    if (this._state !== Timeline.TimelinePanel.State.Idle) {
+    if (this._state !== State.Idle) {
       return;
     }
     this._recordingPageReload = true;
@@ -627,34 +668,35 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!Timeline.PerformanceModel} model
+   * @param {!PerformanceModel} model
    */
   _applyFilters(model) {
     if (model.timelineModel().isGenericTrace() || Root.Runtime.experiments.isEnabled('timelineShowAllEvents')) {
       return;
     }
-    model.setFilters([Timeline.TimelineUIUtils.visibleEventsFilter()]);
+    model.setFilters([TimelineUIUtils.visibleEventsFilter()]);
   }
 
   /**
-   * @param {?Timeline.PerformanceModel} model
+   * @param {?PerformanceModel} model
    */
   _setModel(model) {
     if (this._performanceModel) {
-      this._performanceModel.removeEventListener(
-          Timeline.PerformanceModel.Events.WindowChanged, this._onModelWindowChanged, this);
+      this._performanceModel.removeEventListener(Events.WindowChanged, this._onModelWindowChanged, this);
     }
     this._performanceModel = model;
     if (model) {
+      this._searchableView.showWidget();
       this._applyFilters(model);
+    } else {
+      this._searchableView.hideWidget();
     }
     this._flameChart.setModel(model);
 
     this._updateOverviewControls();
     this._overviewPane.reset();
     if (model) {
-      this._performanceModel.addEventListener(
-          Timeline.PerformanceModel.Events.WindowChanged, this._onModelWindowChanged, this);
+      this._performanceModel.addEventListener(Events.WindowChanged, this._onModelWindowChanged, this);
       this._overviewPane.setBounds(
           model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime());
       const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Performance);
@@ -678,16 +720,17 @@ Timeline.TimelinePanel = class extends UI.Panel {
   _recordingStarted() {
     if (this._recordingPageReload) {
       const target = this._controller.mainTarget();
-      const resourceModel = target.model(SDK.ResourceTreeModel);
+      const resourceModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
       if (resourceModel) {
         resourceModel.reloadPage();
       }
     }
     this._reset();
-    this._setState(Timeline.TimelinePanel.State.Recording);
+    this._setState(State.Recording);
     this._showRecordingStarted();
-    this._statusPane.updateStatus(Common.UIString('Profiling\u2026'));
-    this._statusPane.updateProgressBar(Common.UIString('Buffer usage'), 0);
+    this._statusPane.enableAndFocusButton();
+    this._statusPane.updateStatus(Common.UIString.UIString('Profiling…'));
+    this._statusPane.updateProgressBar(Common.UIString.UIString('Buffer usage'), 0);
     this._statusPane.startTimer();
     this._hideLandingPage();
   }
@@ -697,7 +740,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @param {number} usage
    */
   recordingProgress(usage) {
-    this._statusPane.updateProgressBar(Common.UIString('Buffer usage'), usage * 100);
+    this._statusPane.updateProgressBar(Common.UIString.UIString('Buffer usage'), usage * 100);
   }
 
   _showLandingPage() {
@@ -716,28 +759,29 @@ Timeline.TimelinePanel = class extends UI.Panel {
       return e;
     }
 
-    const learnMoreNode = UI.XLink.create(
+    const learnMoreNode = UI.XLink.XLink.create(
         'https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/',
-        Common.UIString('Learn\xa0more'));
+        Common.UIString.UIString('Learn\xa0more'));
 
     const recordKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.toggle-recording')[0].name);
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.toggle-recording')[0].title());
     const reloadKey =
-        encloseWithTag('b', UI.shortcutRegistry.shortcutDescriptorsForAction('timeline.record-reload')[0].name);
-    const navigateNode = encloseWithTag('b', Common.UIString('WASD'));
+        encloseWithTag('b', self.UI.shortcutRegistry.shortcutsForAction('timeline.record-reload')[0].title());
+    const navigateNode = encloseWithTag('b', Common.UIString.UIString('WASD'));
 
-    this._landingPage = new UI.VBox();
+    this._landingPage = new UI.Widget.VBox();
     this._landingPage.contentElement.classList.add('timeline-landing-page', 'fill');
     const centered = this._landingPage.contentElement.createChild('div');
 
-    const recordButton = UI.createInlineButton(UI.Toolbar.createActionButton(this._toggleRecordAction));
-    const reloadButton = UI.createInlineButton(UI.Toolbar.createActionButtonForId('timeline.record-reload'));
+    const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this._toggleRecordAction));
+    const reloadButton =
+        UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('timeline.record-reload'));
 
-    centered.createChild('p').appendChild(UI.formatLocalized(
+    centered.createChild('p').appendChild(UI.UIUtils.formatLocalized(
         'Click the record button %s or hit %s to start a new recording.\nClick the reload button %s or hit %s to record the page load.',
         [recordButton, recordKey, reloadButton, reloadKey]));
 
-    centered.createChild('p').appendChild(UI.formatLocalized(
+    centered.createChild('p').appendChild(UI.UIUtils.formatLocalized(
         'After recording, select an area of interest in the overview by dragging.\nThen, zoom and pan the timeline with the mousewheel or %s keys.\n%s',
         [navigateNode, learnMoreNode]));
 
@@ -757,9 +801,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
     if (this._statusPane) {
       this._statusPane.hide();
     }
-    this._statusPane = new Timeline.TimelinePanel.StatusPane({showProgress: true}, this._cancelLoading.bind(this));
+    this._statusPane = new StatusPane({showProgress: true}, this._cancelLoading.bind(this));
     this._statusPane.showPane(this._statusPaneContainer);
-    this._statusPane.updateStatus(Common.UIString('Loading profile\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Loading profile…'));
     // FIXME: make loading from backend cancelable as well.
     if (!this._loader) {
       this._statusPane.finish();
@@ -773,7 +817,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
    */
   loadingProgress(progress) {
     if (typeof progress === 'number') {
-      this._statusPane.updateProgressBar(Common.UIString('Received'), progress * 100);
+      this._statusPane.updateProgressBar(Common.UIString.UIString('Received'), progress * 100);
     }
   }
 
@@ -781,16 +825,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
    * @override
    */
   processingStarted() {
-    this._statusPane.updateStatus(Common.UIString('Processing profile\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Processing profile…'));
   }
 
   /**
    * @override
-   * @param {?SDK.TracingModel} tracingModel
+   * @param {?SDK.TracingModel.TracingModel} tracingModel
    */
   loadingComplete(tracingModel) {
     delete this._loader;
-    this._setState(Timeline.TimelinePanel.State.Idle);
+    this._setState(State.Idle);
 
     if (this._statusPane) {
       this._statusPane.hide();
@@ -803,16 +847,17 @@ Timeline.TimelinePanel = class extends UI.Panel {
     }
 
     if (!this._performanceModel) {
-      this._performanceModel = new Timeline.PerformanceModel();
+      this._performanceModel = new PerformanceModel();
     }
     this._performanceModel.setTracingModel(tracingModel);
     this._setModel(this._performanceModel);
     this._historyManager.addRecording(this._performanceModel);
 
     if (this._startCoverage.get()) {
-      UI.viewManager.showView('coverage')
-          .then(() => UI.viewManager.view('coverage').widget())
-          .then(widget => widget.stopRecording())
+      UI.ViewManager.ViewManager.instance()
+          .showView('coverage')
+          .then(() => UI.ViewManager.ViewManager.instance().view('coverage').widget())
+          .then(widget => widget.processBacklog())
           .then(() => this._updateOverviewControls());
     }
   }
@@ -822,9 +867,9 @@ Timeline.TimelinePanel = class extends UI.Panel {
       return;
     }
     this._statusPane =
-        new Timeline.TimelinePanel.StatusPane({showTimer: true, showProgress: true}, this._stopRecording.bind(this));
+        new StatusPane({showTimer: true, showProgress: true, buttonDisabled: true}, this._stopRecording.bind(this));
     this._statusPane.showPane(this._statusPaneContainer);
-    this._statusPane.updateStatus(Common.UIString('Initializing profiler\u2026'));
+    this._statusPane.updateStatus(Common.UIString.UIString('Initializing profiler…'));
   }
 
   _cancelLoading() {
@@ -834,7 +879,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
   }
 
   /**
-   * @param {!TimelineModel.TimelineModel} timelineModel
+   * @param {!TimelineModel.TimelineModel.TimelineModelImpl} timelineModel
    */
   _setMarkers(timelineModel) {
     const markers = new Map();
@@ -844,16 +889,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
       if (event.name === recordTypes.TimeStamp || event.name === recordTypes.ConsoleTime) {
         continue;
       }
-      markers.set(event.startTime, Timeline.TimelineUIUtils.createEventDivider(event, zeroTime));
+      markers.set(event.startTime, TimelineUIUtils.createEventDivider(event, zeroTime));
     }
     this._overviewPane.setMarkers(markers);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   async _loadEventFired(event) {
-    if (this._state !== Timeline.TimelinePanel.State.Recording || !this._recordingPageReload ||
+    if (this._state !== State.Recording || !this._recordingPageReload ||
         this._controller.mainTarget() !== event.data.resourceTreeModel.target()) {
       return;
     }
@@ -861,23 +906,23 @@ Timeline.TimelinePanel = class extends UI.Panel {
     await new Promise(r => setTimeout(r, this._millisecondsToRecordAfterLoadEvent));
 
     // Check if we're still in the same recording session.
-    if (controller !== this._controller || this._state !== Timeline.TimelinePanel.State.Recording) {
+    if (controller !== this._controller || this._state !== State.Recording) {
       return;
     }
     this._stopRecording();
   }
 
   /**
-   * @param {!Timeline.TimelineSelection} selection
-   * @return {?TimelineModel.TimelineFrame}
+   * @param {!TimelineSelection} selection
+   * @return {?TimelineModel.TimelineFrameModel.TimelineFrame}
    */
   _frameForSelection(selection) {
     switch (selection.type()) {
-      case Timeline.TimelineSelection.Type.Frame:
-        return /** @type {!TimelineModel.TimelineFrame} */ (selection.object());
-      case Timeline.TimelineSelection.Type.Range:
+      case TimelineSelection.Type.Frame:
+        return /** @type {!TimelineModel.TimelineFrameModel.TimelineFrame} */ (selection.object());
+      case TimelineSelection.Type.Range:
         return null;
-      case Timeline.TimelineSelection.Type.TraceEvent:
+      case TimelineSelection.Type.TraceEvent:
         return this._performanceModel.frameModel().frames(selection._endTime, selection._endTime)[0];
       default:
         console.assert(false, 'Should never be reached');
@@ -896,16 +941,16 @@ Timeline.TimelinePanel = class extends UI.Panel {
     const frames = this._performanceModel.frames();
     let index = frames.indexOf(currentFrame);
     console.assert(index >= 0, 'Can\'t find current frame in the frame list');
-    index = Number.constrain(index + offset, 0, frames.length - 1);
+    index = Platform.NumberUtilities.clamp(index + offset, 0, frames.length - 1);
     const frame = frames[index];
     this._revealTimeRange(frame.startTime, frame.endTime);
-    this.select(Timeline.TimelineSelection.fromFrame(frame));
+    this.select(TimelineSelection.fromFrame(frame));
     return true;
   }
 
   /**
    * @override
-   * @param {?Timeline.TimelineSelection} selection
+   * @param {?TimelineSelection} selection
    */
   select(selection) {
     this._selection = selection;
@@ -925,11 +970,11 @@ Timeline.TimelinePanel = class extends UI.Panel {
     for (let index = events.upperBound(time, (time, event) => time - event.startTime) - 1; index >= 0; --index) {
       const event = events[index];
       const endTime = event.endTime || event.startTime;
-      if (SDK.TracingModel.isTopLevelEvent(event) && endTime < time) {
+      if (SDK.TracingModel.TracingModel.isTopLevelEvent(event) && endTime < time) {
         break;
       }
       if (this._performanceModel.isVisible(event) && endTime >= time) {
-        this.select(Timeline.TimelineSelection.fromTraceEvent(event));
+        this.select(TimelineSelection.fromTraceEvent(event));
         return;
       }
     }
@@ -970,7 +1015,7 @@ Timeline.TimelinePanel = class extends UI.Panel {
     const item = items[0];
     if (item.kind === 'string') {
       const url = dataTransfer.getData('text/uri-list');
-      if (new Common.ParsedURL(url).isValid) {
+      if (new Common.ParsedURL.ParsedURL(url).isValid) {
         this._loadFromURL(url);
       }
     } else if (item.kind === 'file') {
@@ -981,12 +1026,12 @@ Timeline.TimelinePanel = class extends UI.Panel {
       entry.file(this._loadFromFile.bind(this));
     }
   }
-};
+}
 
 /**
  * @enum {symbol}
  */
-Timeline.TimelinePanel.State = {
+export const State = {
   Idle: Symbol('Idle'),
   StartPending: Symbol('StartPending'),
   Recording: Symbol('Recording'),
@@ -998,7 +1043,7 @@ Timeline.TimelinePanel.State = {
 /**
  * @enum {string}
  */
-Timeline.TimelinePanel.ViewMode = {
+export const ViewMode = {
   FlameChart: 'FlameChart',
   BottomUp: 'BottomUp',
   CallTree: 'CallTree',
@@ -1006,15 +1051,13 @@ Timeline.TimelinePanel.ViewMode = {
 };
 
 // Define row and header height, should be in sync with styles for timeline graphs.
-Timeline.TimelinePanel.rowHeight = 18;
-Timeline.TimelinePanel.headerHeight = 20;
+export const rowHeight = 18;
 
-/** @typedef {{selection: ?Timeline.TimelineSelection, windowLeftTime: number, windowRightTime: number}} */
-Timeline.TimelinePanel.ModelSelectionData;
+export const headerHeight = 20;
 
-Timeline.TimelineSelection = class {
+export class TimelineSelection {
   /**
-   * @param {!Timeline.TimelineSelection.Type} type
+   * @param {!TimelineSelection.Type} type
    * @param {number} startTime
    * @param {number} endTime
    * @param {!Object=} object
@@ -1027,43 +1070,42 @@ Timeline.TimelineSelection = class {
   }
 
   /**
-   * @param {!TimelineModel.TimelineFrame} frame
-   * @return {!Timeline.TimelineSelection}
+   * @param {!TimelineModel.TimelineFrameModel.TimelineFrame} frame
+   * @return {!TimelineSelection}
    */
   static fromFrame(frame) {
-    return new Timeline.TimelineSelection(Timeline.TimelineSelection.Type.Frame, frame.startTime, frame.endTime, frame);
+    return new TimelineSelection(TimelineSelection.Type.Frame, frame.startTime, frame.endTime, frame);
   }
 
   /**
    * @param {!TimelineModel.TimelineModel.NetworkRequest} request
-   * @return {!Timeline.TimelineSelection}
+   * @return {!TimelineSelection}
    */
   static fromNetworkRequest(request) {
-    return new Timeline.TimelineSelection(
-        Timeline.TimelineSelection.Type.NetworkRequest, request.startTime, request.endTime || request.startTime,
-        request);
+    return new TimelineSelection(
+        TimelineSelection.Type.NetworkRequest, request.startTime, request.endTime || request.startTime, request);
   }
 
   /**
    * @param {!SDK.TracingModel.Event} event
-   * @return {!Timeline.TimelineSelection}
+   * @return {!TimelineSelection}
    */
   static fromTraceEvent(event) {
-    return new Timeline.TimelineSelection(
-        Timeline.TimelineSelection.Type.TraceEvent, event.startTime, event.endTime || (event.startTime + 1), event);
+    return new TimelineSelection(
+        TimelineSelection.Type.TraceEvent, event.startTime, event.endTime || (event.startTime + 1), event);
   }
 
   /**
    * @param {number} startTime
    * @param {number} endTime
-   * @return {!Timeline.TimelineSelection}
+   * @return {!TimelineSelection}
    */
   static fromRange(startTime, endTime) {
-    return new Timeline.TimelineSelection(Timeline.TimelineSelection.Type.Range, startTime, endTime);
+    return new TimelineSelection(TimelineSelection.Type.Range, startTime, endTime);
   }
 
   /**
-   * @return {!Timeline.TimelineSelection.Type}
+   * @return {!TimelineSelection.Type}
    */
   type() {
     return this._type;
@@ -1089,12 +1131,12 @@ Timeline.TimelineSelection = class {
   endTime() {
     return this._endTime;
   }
-};
+}
 
 /**
  * @enum {string}
  */
-Timeline.TimelineSelection.Type = {
+TimelineSelection.Type = {
   Frame: 'Frame',
   NetworkRequest: 'NetworkRequest',
   TraceEvent: 'TraceEvent',
@@ -1104,51 +1146,54 @@ Timeline.TimelineSelection.Type = {
 /**
  * @interface
  */
-Timeline.TimelineModeViewDelegate = function() {};
-
-Timeline.TimelineModeViewDelegate.prototype = {
+export class TimelineModeViewDelegate {
   /**
-   * @param {?Timeline.TimelineSelection} selection
+   * @param {?TimelineSelection} selection
    */
-  select(selection) {},
+  select(selection) {
+  }
 
   /**
    * @param {?Array<!SDK.TracingModel.Event>} events
    * @param {number} time
    */
-  selectEntryAtTime(events, time) {},
+  selectEntryAtTime(events, time) {
+  }
 
   /**
    * @param {?SDK.TracingModel.Event} event
    */
-  highlightEvent(event) {},
-};
+  highlightEvent(event) {
+  }
+}
 
 /**
  * @unrestricted
  */
-Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
+export class StatusPane extends UI.Widget.VBox {
   /**
-   * @param {!{showTimer: (boolean|undefined), showProgress: (boolean|undefined), description: (string|undefined)}} options - a collection of options controlling the appearance of the pane.
+   * @param {!{showTimer: (boolean|undefined), showProgress: (boolean|undefined), description: (string|undefined), buttonText: (string|undefined), buttonDisabled: (boolean|undefined)}} options - a collection of options controlling the appearance of the pane.
    *   The options object can have the following properties:
    *   - **showTimer** - `{boolean}` - Display seconds since dialog opened
    *   - **showProgress** - `{boolean}` - Display a progress bar
    *   - **description** - `{string}` - Display this string in a description line
-   * @param {function()} stopCallback
+   *   - **buttonText** - `{string}` - The localized text to display on the button
+   *   - **buttonDisabled** - `{string}` - Whether the button starts disabled or not - defaults to true
+   * @param {function(): undefined|function(): !Promise<undefined>} buttonCallback
    */
-  constructor(options, stopCallback) {
+  constructor(options, buttonCallback) {
     super(true);
     this.registerRequiredCSS('timeline/timelineStatusDialog.css');
     this.contentElement.classList.add('timeline-status-dialog');
 
     const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');
-    statusLine.createChild('div', 'label').textContent = Common.UIString('Status');
+    statusLine.createChild('div', 'label').textContent = Common.UIString.UIString('Status');
     this._status = statusLine.createChild('div', 'content');
     UI.ARIAUtils.markAsStatus(this._status);
 
     if (options.showTimer) {
       const timeLine = this.contentElement.createChild('div', 'status-dialog-line time');
-      timeLine.createChild('div', 'label').textContent = Common.UIString('Time');
+      timeLine.createChild('div', 'label').textContent = Common.UIString.UIString('Time');
       this._time = timeLine.createChild('div', 'content');
     }
 
@@ -1166,13 +1211,16 @@ Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
       this._description.innerText = options.description;
     }
 
-    this._stopButton = UI.createTextButton(Common.UIString('Stop'), stopCallback, '', true);
-    this.contentElement.createChild('div', 'stop-button').appendChild(this._stopButton);
+    const buttonText = options.buttonText || ls`Stop`;
+    this._button = UI.UIUtils.createTextButton(buttonText, buttonCallback, '', true);
+    // Profiling can't be stopped during initialization.
+    this._button.disabled = !options.buttonDisabled === false;
+    this.contentElement.createChild('div', 'stop-button').appendChild(this._button);
   }
 
   finish() {
     this._stopTimer();
-    this._stopButton.disabled = true;
+    this._button.disabled = true;
   }
 
   hide() {
@@ -1186,7 +1234,11 @@ Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
   showPane(parent) {
     this.show(parent);
     parent.classList.add('tinted');
-    this._stopButton.focus();
+  }
+
+  enableAndFocusButton() {
+    this._button.disabled = false;
+    this._button.focus();
   }
 
   /**
@@ -1205,13 +1257,6 @@ Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
     this._progressBar.style.width = percent.toFixed(1) + '%';
     UI.ARIAUtils.setValueNow(this._progressBar, percent);
     this._updateTimer();
-  }
-
-  /**
-   * @param {string} caption
-   */
-  updateButton(caption) {
-    this._stopButton.innerText = caption;
   }
 
   startTimer() {
@@ -1237,41 +1282,41 @@ Timeline.TimelinePanel.StatusPane = class extends UI.VBox {
       return;
     }
     const elapsed = (Date.now() - this._startTime) / 1000;
-    this._time.textContent = Common.UIString('%s\xa0sec', elapsed.toFixed(precise ? 1 : 0));
+    this._time.textContent = Common.UIString.UIString('%s\xa0sec', elapsed.toFixed(precise ? 1 : 0));
   }
-};
+}
 
 
 /**
- * @implements {Common.QueryParamHandler}
+ * @implements {Common.QueryParamHandler.QueryParamHandler}
  * @unrestricted
  */
-Timeline.LoadTimelineHandler = class {
+export class LoadTimelineHandler {
   /**
    * @override
    * @param {string} value
    */
   handleQueryParam(value) {
-    UI.viewManager.showView('timeline').then(() => {
-      Timeline.TimelinePanel.instance()._loadFromURL(window.decodeURIComponent(value));
+    UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
+      TimelinePanel.instance()._loadFromURL(window.decodeURIComponent(value));
     });
   }
-};
+}
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  * @unrestricted
  */
-Timeline.TimelinePanel.ActionDelegate = class {
+export class ActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const panel = UI.context.flavor(Timeline.TimelinePanel);
-    console.assert(panel && panel instanceof Timeline.TimelinePanel);
+    const panel = self.UI.context.flavor(TimelinePanel);
+    console.assert(panel && panel instanceof TimelinePanel);
     switch (actionId) {
       case 'timeline.toggle-recording':
         panel._toggleRecording();
@@ -1303,6 +1348,6 @@ Timeline.TimelinePanel.ActionDelegate = class {
     }
     return false;
   }
-};
+}
 
-Timeline.TimelinePanel._traceProviderSettingSymbol = Symbol('traceProviderSetting');
+export const traceProviderSettingSymbol = Symbol('traceProviderSetting');

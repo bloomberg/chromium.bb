@@ -36,26 +36,16 @@ export class WorkerWrapper {
    * @param {string} appName
    */
   constructor(appName) {
-    let url = appName + '.js';
-    url += Root.Runtime.queryParamsString();
+    const url = appName + '.js' + location.search;
 
     /** @type {!Promise<!Worker>} */
     this._workerPromise = new Promise(fulfill => {
-      this._worker = new Worker(url);
-      this._worker.onmessage = onMessage.bind(this);
-
-      /**
-       * @param {!Event} event
-       * @this {WorkerWrapper}
-       */
-      function onMessage(event) {
+      const worker = new Worker(url, {type: 'module'});
+      worker.onmessage = event => {
         console.assert(event.data === 'workerReady');
-        this._worker.onmessage = null;
-        fulfill(this._worker);
-        // No need to hold a reference to worker anymore as it's stored in
-        // the resolved promise.
-        this._worker = null;
-      }
+        worker.onmessage = null;
+        fulfill(worker);
+      };
     });
   }
 
@@ -80,25 +70,16 @@ export class WorkerWrapper {
   }
 
   /**
-   * @param {?function(!MessageEvent<*>)} listener
+   * @param {?function(!MessageEvent):void} listener
    */
   set onmessage(listener) {
     this._workerPromise.then(worker => worker.onmessage = listener);
   }
 
   /**
-   * @param {?function(!Event)} listener
+   * @param {?function(!Event):void} listener
    */
   set onerror(listener) {
     this._workerPromise.then(worker => worker.onerror = listener);
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @constructor
- */
-Common.Worker = WorkerWrapper;

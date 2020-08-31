@@ -5,6 +5,7 @@
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 
 #include "base/i18n/case_conversion.h"
@@ -272,9 +273,22 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
                                            bool use_weighted_ratio,
                                            bool use_edit_distance,
                                            double partial_match_penalty_rate) {
+  // If there is an exact match, relevance will be 1.0 and there is only 1 hit
+  // that is the entire text/query.
+  const auto& query_text = query.text();
+  const auto& text_text = text.text();
+  const auto query_size = query_text.size();
+  const auto text_size = text_text.size();
+  if (query_size > 0 && query_size == text_size &&
+      base::EqualsCaseInsensitiveASCII(query_text, text_text)) {
+    hits_.push_back(gfx::Range(0, query_size));
+    relevance_ = 1.0;
+    return true;
+  }
+
   // Find |hits_| using SequenceMatcher on original query and text.
   for (const auto& match :
-       SequenceMatcher(query.text(), text.text(), use_edit_distance)
+       SequenceMatcher(query_text, text_text, use_edit_distance)
            .GetMatchingBlocks()) {
     if (match.length > 0) {
       hits_.push_back(gfx::Range(match.pos_second_string,
@@ -283,7 +297,7 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
   }
 
   // If the query is much longer than the text then it's often not a match.
-  if (query.text().size() >= text.text().size() * 2) {
+  if (query_size >= text_size * 2) {
     return false;
   }
 
@@ -305,20 +319,10 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
                  2;
   } else {
     // Use simple algorithm to calculate match ratio.
-    double partial_match = 0.0;
-    for (const auto& query_token : query.tokens()) {
-      for (const auto& text_token : text.tokens()) {
-        partial_match =
-            std::max(partial_match,
-                     SequenceMatcher(query_token, text_token, use_edit_distance)
-                         .Ratio());
-      }
-    }
-    const double partial_scale = 0.9;
     relevance_ =
-        (std::max(SequenceMatcher(query.text(), text.text(), use_edit_distance)
-                      .Ratio(),
-                  partial_match * partial_scale) +
+        (SequenceMatcher(base::i18n::ToLower(query_text),
+                         base::i18n::ToLower(text_text), use_edit_distance)
+             .Ratio() +
          prefix_score) /
         2;
   }

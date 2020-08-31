@@ -44,7 +44,9 @@ class CFX_GlobalData {
   void SetGlobalVariableNumber(ByteString propname, double dData);
   void SetGlobalVariableBoolean(ByteString propname, bool bData);
   void SetGlobalVariableString(ByteString propname, const ByteString& sData);
-  void SetGlobalVariableObject(ByteString propname, CFX_GlobalArray array);
+  void SetGlobalVariableObject(
+      ByteString propname,
+      std::vector<std::unique_ptr<CFX_KeyValue>> array);
   void SetGlobalVariableNull(ByteString propname);
   bool SetGlobalVariablePersistent(ByteString propname, bool bPersistent);
   bool DeleteGlobalVariable(ByteString propname);
@@ -57,7 +59,6 @@ class CFX_GlobalData {
 
  private:
   using iterator = std::vector<std::unique_ptr<Element>>::iterator;
-  using const_iterator = std::vector<std::unique_ptr<Element>>::const_iterator;
 
   explicit CFX_GlobalData(Delegate* pDelegate);
   ~CFX_GlobalData();
@@ -67,7 +68,6 @@ class CFX_GlobalData {
   bool SaveGlobalPersisitentVariables();
 
   iterator FindGlobalVariable(const ByteString& sPropname);
-  const_iterator FindGlobalVariable(const ByteString& sPropname) const;
 
   void LoadFileBuffer(const wchar_t* sFilePath,
                       uint8_t*& pBuffer,

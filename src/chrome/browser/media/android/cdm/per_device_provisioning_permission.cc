@@ -12,9 +12,9 @@
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -68,21 +68,18 @@ LastResponse& GetLastResponse() {
   return *s_last_response;
 }
 
-// A PermissionRequest to allow MediaDrmBridge to use per-device provisioning.
-class PerDeviceProvisioningPermissionRequest : public PermissionRequest {
+// A permissions::PermissionRequest to allow MediaDrmBridge to use per-device
+// provisioning.
+class PerDeviceProvisioningPermissionRequest
+    : public permissions::PermissionRequest {
  public:
   PerDeviceProvisioningPermissionRequest(
       const url::Origin& origin,
       base::OnceCallback<void(bool)> callback)
       : origin_(origin), callback_(std::move(callback)) {}
 
-  PermissionRequest::IconId GetIconId() const final {
+  permissions::PermissionRequest::IconId GetIconId() const final {
     return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
-  }
-
-  base::string16 GetTitleText() const final {
-    return l10n_util::GetStringUTF16(
-        IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_TITLE);
   }
 
   base::string16 GetMessageText() const final {
@@ -125,8 +122,9 @@ class PerDeviceProvisioningPermissionRequest : public PermissionRequest {
     delete this;
   }
 
-  PermissionRequestType GetPermissionRequestType() const final {
-    return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+  permissions::PermissionRequestType GetPermissionRequestType() const final {
+    return permissions::PermissionRequestType::
+        PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
   }
 
  private:
@@ -170,7 +168,7 @@ void RequestPerDeviceProvisioningPermission(
   DCHECK(web_contents) << "WebContents not available.";
 
   auto* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   if (!permission_request_manager) {
     std::move(callback).Run(false);
     return;

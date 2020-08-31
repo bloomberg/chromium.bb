@@ -19,12 +19,11 @@
 #include <type_traits>
 #include <vector>
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/http2/http2_structures_test_util.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -440,7 +439,8 @@ TEST(Http2PushPromiseTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(Http2StrCat("promised_stream_id=", promised_stream_id), s.str());
+  EXPECT_EQ(quiche::QuicheStrCat("promised_stream_id=", promised_stream_id),
+            s.str());
 
   // High-bit is reserved, but not used, so we can set it.
   promised_stream_id |= 0x80000000;
@@ -497,8 +497,9 @@ TEST(Http2WindowUpdateTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(Http2StrCat("window_size_increment=", window_size_increment),
-            s.str());
+  EXPECT_EQ(
+      quiche::QuicheStrCat("window_size_increment=", window_size_increment),
+      s.str());
 
   // High-bit is reserved, but not used, so we can set it.
   window_size_increment |= 0x80000000;
@@ -522,7 +523,7 @@ TEST(Http2AltSvcTest, Misc) {
 
   std::stringstream s;
   s << v;
-  EXPECT_EQ(Http2StrCat("origin_length=", origin_length), s.str());
+  EXPECT_EQ(quiche::QuicheStrCat("origin_length=", origin_length), s.str());
 
   Http2AltSvcFields w{++origin_length};
   EXPECT_EQ(w, w);

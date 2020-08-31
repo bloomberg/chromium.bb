@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 
 #include <string>
 
@@ -32,9 +32,11 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  ContentSecurityPolicy policy;
-  policy.Parse(GURL("https://example.com/"),
-               std::string(reinterpret_cast<const char*>(data), size));
+  std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
+  AddContentSecurityPolicyFromHeaders(
+      std::string(reinterpret_cast<const char*>(data), size),
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      GURL("https://example.com/"), &policies);
 
   return 0;
 }

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from six.moves import urllib
 
@@ -17,12 +18,15 @@ from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
-from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import sysroot_lib
 from chromite.service import binhost
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _OVERLAY_TYPE_TO_NAME = {
     binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,
@@ -46,7 +50,7 @@ def _GetBinhostsResponse(_input_proto, output_proto, _config):
 @validate.validation_complete
 def GetBinhosts(input_proto, output_proto, _config):
   """Get a list of binhosts."""
-  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
 
   binhosts = binhost.GetBinhosts(build_target)
 
@@ -69,7 +73,7 @@ def _GetPrivatePrebuiltAclArgsResponse(_input_proto, output_proto, _config):
 @validate.validation_complete
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
   """Get the ACL args from the files in the private overlays."""
-  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
 
   try:
     args = binhost.GetPrebuiltAclArgs(build_target)
@@ -101,18 +105,19 @@ def PrepareBinhostUploads(input_proto, output_proto, config):
     output_proto (PrepareBinhostUploadsResponse): The output proto.
     config (api_config.ApiConfig): The API call config.
   """
-  target_name = (input_proto.sysroot.build_target.name
-                 or input_proto.build_target.name)
+  if input_proto.sysroot.build_target.name:
+    build_target_msg = input_proto.sysroot.build_target
+  else:
+    build_target_msg = input_proto.build_target
   sysroot_path = input_proto.sysroot.path
 
-  if not sysroot_path and not target_name:
+  if not sysroot_path and not build_target_msg.name:
     cros_build_lib.Die('Sysroot.path is required.')
 
-  build_target = build_target_util.BuildTarget(target_name)
+  build_target = controller_util.ParseBuildTarget(build_target_msg)
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   if not sysroot_path:
-    # Very temporary, so not worried about this not calling the lib function.
     sysroot_path = build_target.root
   sysroot = sysroot_lib.Sysroot(sysroot_path)
 
@@ -168,7 +173,6 @@ def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
   """
   sysroot_path = input_proto.sysroot.path
 
-  # build_target = build_target_util.BuildTarget(target_name)
   chroot = controller_util.ParseChroot(input_proto.chroot)
   sysroot = sysroot_lib.Sysroot(sysroot_path)
 

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -140,11 +139,11 @@ void ConvertAppToEntityChange(const WebApp& app,
   switch (change_type) {
     case syncer::EntityChange::ACTION_ADD:
       entity_change = syncer::EntityChange::CreateAdd(
-          app.app_id(), CreateSyncEntityData(app));
+          app.app_id(), std::move(*CreateSyncEntityData(app)));
       break;
     case syncer::EntityChange::ACTION_UPDATE:
       entity_change = syncer::EntityChange::CreateUpdate(
-          app.app_id(), CreateSyncEntityData(app));
+          app.app_id(), std::move(*CreateSyncEntityData(app)));
       break;
     case syncer::EntityChange::ACTION_DELETE:
       entity_change = syncer::EntityChange::CreateDelete(app.app_id());

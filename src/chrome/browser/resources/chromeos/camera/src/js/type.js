@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/* eslint-disable no-unused-vars */
-
 /**
  * Photo or video resolution.
  */
-var Resolution = class {
+export class Resolution {
   /**
    * @param {number} width
    * @param {number} height
@@ -78,18 +74,61 @@ var Resolution = class {
   toString() {
     return `${this.width}x${this.height}`;
   }
-};
+}
 
 /**
  * Capture modes.
  * @enum {string}
  */
-var Mode = {
+export const Mode = {
   PHOTO: 'photo',
   VIDEO: 'video',
   SQUARE: 'square',
   PORTRAIT: 'portrait',
 };
+
+/**
+ * Camera facings.
+ * @enum {string}
+ */
+export const Facing = {
+  USER: 'user',
+  ENVIRONMENT: 'environment',
+  EXTERNAL: 'external',
+  NOT_SET: '(not set)',
+  UNKNOWN: 'unknown',
+};
+
+/**
+ * @enum {string}
+ */
+export const ViewName = {
+  CAMERA: 'view-camera',
+  EXPERT_SETTINGS: 'view-expert-settings',
+  GRID_SETTINGS: 'view-grid-settings',
+  MESSAGE_DIALOG: 'view-message-dialog',
+  PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
+  RESOLUTION_SETTINGS: 'view-resolution-settings',
+  SETTINGS: 'view-settings',
+  SPLASH: 'view-splash',
+  TIMER_SETTINGS: 'view-timer-settings',
+  VIDEO_RESOLUTION_SETTINGS: 'view-video-resolution-settings',
+  WARNING: 'view-warning',
+};
+
+// The types here are used only in jsdoc and are required to be explicitly
+// exported in order to be referenced by closure compiler.
+// TODO(inker): Exports/Imports these jsdoc only types by closure compiler
+// comment syntax. The implementation of syntax is tracked here:
+// https://github.com/google/closure-compiler/issues/3041
+
+/**
+ * @typedef {{
+ *   hasError: (boolean|undefined),
+ *   resolution: (Resolution|undefined),
+ * }}
+ */
+export let PerfInformation;
 
 /**
  * @typedef {{
@@ -98,7 +137,7 @@ var Mode = {
  *   maxFps: number,
  * }}
  */
-var VideoConfig;
+export let VideoConfig;
 
 /**
  * @typedef {{
@@ -106,13 +145,13 @@ var VideoConfig;
  *   maxFps: number,
  * }}
  */
-var FpsRange;
+export let FpsRange;
 
 /**
  * A list of resolutions.
  * @typedef {Array<!Resolution>}
  */
-var ResolutionList;
+export let ResolutionList;
 
 /**
  * Map of all available resolution to its maximal supported capture fps. The key
@@ -120,12 +159,10 @@ var ResolutionList;
  * capture fps under that resolution.
  * @typedef {Object<(!Resolution|string), number>}
  */
-var MaxFpsInfo;
+export let MaxFpsInfo;
 
 /**
  * List of supported capture fps ranges.
  * @typedef {Array<!FpsRange>}
  */
-var FpsRangeList;
-
-/* eslint-enable no-unused-vars */
+export let FpsRangeList;

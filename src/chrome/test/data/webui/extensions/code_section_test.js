@@ -6,7 +6,7 @@
 import 'chrome://extensions/extensions.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.m.js';
 
 window.extension_code_section_tests = {};
 extension_code_section_tests.suiteName = 'ExtensionCodeSectionTest';
@@ -24,7 +24,7 @@ suite(extension_code_section_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     codeSection = document.createElement('extensions-code-section');
     codeSection.couldNotDisplayCode = couldNotDisplayCode;
     document.body.appendChild(codeSection);
@@ -39,7 +39,7 @@ suite(extension_code_section_tests.suiteName, function() {
       message: 'Highlight message',
     };
 
-    const testIsVisible = isVisible.bind(null, codeSection);
+    const testIsVisible = isChildVisible.bind(null, codeSection);
     expectFalse(!!codeSection.code);
     expectTrue(codeSection.$$('#scroll-container').hidden);
     expectFalse(testIsVisible('#main'));

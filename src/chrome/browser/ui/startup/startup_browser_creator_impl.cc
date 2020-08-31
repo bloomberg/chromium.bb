@@ -16,17 +16,19 @@
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/apps_launch.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
+#include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -61,6 +64,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -130,6 +135,7 @@ enum LaunchMode {
                                        // Credential Provider for Windows.
   LM_AS_WEBAPP_IN_TAB = 21,            // Launched as an installed web
                                        // application in a browser tab.
+  LM_UNKNOWN_WEBAPP = 22,  // The requested web application was not installed.
 };
 
 // Returns a LaunchMode value if one can be determined with low overhead, or
@@ -242,28 +248,62 @@ LaunchMode GetLaunchModeSlow() {
 // Log in a histogram the frequency of launching by the different methods. See
 // LaunchMode enum for the actual values of the buckets.
 void RecordLaunchModeHistogram(LaunchMode mode) {
-  static constexpr char kHistogramName[] = "Launch.Modes";
+  static constexpr char kLaunchModesHistogram[] = "Launch.Modes";
   if (mode == LM_TO_BE_DECIDED &&
       (mode = GetLaunchModeFast()) == LM_TO_BE_DECIDED) {
     // The mode couldn't be determined with a fast path. Perform a more
     // expensive evaluation out of the critical startup path.
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   base::BindOnce([]() {
-                     base::UmaHistogramSparse(kHistogramName,
-                                              GetLaunchModeSlow());
-                   }));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce([]() {
+          base::UmaHistogramSparse(kLaunchModesHistogram, GetLaunchModeSlow());
+        }));
   } else {
-    base::UmaHistogramSparse(kHistogramName, mode);
+    base::UmaHistogramSparse(kLaunchModesHistogram, mode);
   }
 }
 
+void MaybeToggleFullscreen(Browser* browser) {
+  // In kiosk mode, we want to always be fullscreen.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStartFullscreen)) {
+    chrome::ToggleFullscreenMode(browser);
+  }
+}
+
+void FinalizeWebAppLaunch(Browser* browser,
+                          apps::mojom::LaunchContainer container) {
+  LaunchMode mode;
+  switch (container) {
+    case apps::mojom::LaunchContainer::kLaunchContainerWindow:
+      DCHECK(browser->is_type_app());
+      mode = LM_AS_WEBAPP_IN_WINDOW;
+      break;
+    case apps::mojom::LaunchContainer::kLaunchContainerTab:
+      DCHECK(!browser->is_type_app());
+      mode = LM_AS_WEBAPP_IN_TAB;
+      break;
+    case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
+      NOTREACHED();
+      FALLTHROUGH;
+    case apps::mojom::LaunchContainer::kLaunchContainerNone:
+      DCHECK(!browser->is_type_app());
+      mode = LM_UNKNOWN_WEBAPP;
+      break;
+  }
+
+  RecordLaunchModeHistogram(mode);
+  MaybeToggleFullscreen(browser);
+}
+
 void UrlsToTabs(const std::vector<GURL>& urls, StartupTabs* tabs) {
-  for (size_t i = 0; i < urls.size(); ++i) {
+  for (const GURL& url : urls) {
     StartupTab tab;
     tab.is_pinned = false;
-    tab.url = urls[i];
+    tab.url = url;
     tabs->push_back(tab);
   }
 }
@@ -328,10 +368,6 @@ StartupBrowserCreatorImpl::~StartupBrowserCreatorImpl() {
 bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                                        const std::vector<GURL>& urls_to_open,
                                        bool process_startup) {
-  UMA_HISTOGRAM_COUNTS_100(
-      "Startup.BrowserLaunchURLCount",
-      static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
-
   DCHECK(profile);
   profile_ = profile;
 
@@ -367,8 +403,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
-    if (apps::OpenApplicationWithReenablePrompt(profile, app_id, command_line_,
-                                                cur_dir_)) {
+    if (apps::OpenExtensionApplicationWithReenablePrompt(
+            profile, app_id, command_line_, cur_dir_)) {
       return true;
     }
   }
@@ -380,11 +416,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // should either open in an existing Chrome window for this profile, or spawn
   // a new Chrome window without any NTP if no window exists (see
   // crbug.com/528385).
-  if (OpenApplicationWindow(profile)) {
-    RecordLaunchModeHistogram(LM_AS_WEBAPP_IN_WINDOW);
-  } else if (OpenApplicationTab(profile)) {
-    RecordLaunchModeHistogram(LM_AS_WEBAPP_IN_TAB);
-  } else {
+  if (!MaybeLaunchApplication(profile)) {
     // Check the true process command line for --try-chrome-again=N rather than
     // the one parsed for startup URLs and such.
     if (!base::CommandLine::ForCurrentProcess()
@@ -410,26 +442,39 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       KeystoneInfoBar::PromotionInfoBar(profile);
     }
 #endif
-  }
 
-  // In kiosk mode, we want to always be fullscreen, so switch to that now.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStartFullscreen)) {
     // It's possible for there to be no browser window, e.g. if someone
     // specified a non-sensical combination of options
     // ("--kiosk --no_startup_window"); do nothing in that case.
     Browser* browser = BrowserList::GetInstance()->GetLastActive();
     if (browser)
-      chrome::ToggleFullscreenMode(browser);
+      MaybeToggleFullscreen(browser);
   }
 
 #if defined(OS_WIN)
-  // TODO(gab): This could now run only during Active Setup (i.e. on explicit
-  // Active Setup versioning and on OS upgrades) instead of every startup.
-  // http://crbug.com/577697
-  if (process_startup)
-    shell_integration::win::MigrateTaskbarPins();
+  if (process_startup) {
+    // Update this number when users should go through a taskbar shortcut
+    // migration again. The last reason to do this was crrev.com/719141 @
+    // 80.0.3978.0.
+    //
+    // Note: If shortcut updates need to be done once after a future OS upgrade,
+    // that should be done by re-versioning Active Setup (see //chrome/installer
+    // and http://crbug.com/577697 for details).
+    const base::Version kLastVersionNeedingMigration({80U, 0U, 3978U, 0U});
+
+    PrefService* local_state = g_browser_process->local_state();
+    if (local_state) {
+      const base::Version last_version_migrated(
+          local_state->GetString(prefs::kShortcutMigrationVersion));
+      if (!last_version_migrated.IsValid() ||
+          last_version_migrated < kLastVersionNeedingMigration) {
+        shell_integration::win::MigrateTaskbarPins(base::BindOnce(
+            &PrefService::SetString, base::Unretained(local_state),
+            prefs::kShortcutMigrationVersion,
+            version_info::GetVersionNumber()));
+      }
+    }
+  }
 #endif  // defined(OS_WIN)
 
   return true;
@@ -529,18 +574,18 @@ bool StartupBrowserCreatorImpl::IsAppLaunch(std::string* app_url,
   return false;
 }
 
-bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
+bool StartupBrowserCreatorImpl::MaybeLaunchApplication(Profile* profile) {
   std::string url_string, app_id;
   if (!IsAppLaunch(&url_string, &app_id))
     return false;
 
-  // This can fail if the app_id is invalid.  It can also fail if the
-  // extension is external, and has not yet been installed.
-  // TODO(skerner): Do something reasonable here. Pop up a warning panel?
-  // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    return apps::LaunchService::Get(profile)->OpenApplicationWindow(
-        app_id, command_line_, cur_dir_);
+    // Opens an empty browser window if the app_id is invalid.
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        .LaunchAppWithCallback(app_id, command_line_, cur_dir_,
+                               base::BindOnce(&FinalizeWebAppLaunch));
+    return true;
   }
 
   if (url_string.empty())
@@ -557,22 +602,17 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
         content::ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(url::kFileScheme)) {
-      return apps::OpenAppShortcutWindow(profile, url);
+      const content::WebContents* web_contents =
+          apps::OpenExtensionAppShortcutWindow(profile, url);
+      if (web_contents) {
+        FinalizeWebAppLaunch(
+            chrome::FindBrowserWithWebContents(web_contents),
+            apps::mojom::LaunchContainer::kLaunchContainerWindow);
+        return true;
+      }
     }
   }
   return false;
-}
-
-bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
-  std::string app_id;
-  // App shortcuts to URLs always open in an app window.  Because this
-  // function will open an app that should be in a tab, there is no need
-  // to look at the app URL.  OpenApplicationWindow() will open app url
-  // shortcuts.
-  if (!IsAppLaunch(nullptr, &app_id) || app_id.empty())
-    return false;
-
-  return apps::LaunchService::Get(profile)->OpenApplicationTab(app_id);
 }
 
 void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
@@ -827,14 +867,20 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
-  if (HasPendingUncleanExit(browser->profile()))
-    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
-
+  // Show the Automation info bar unless it has been disabled by policy.
   bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
   if (command_line_.HasSwitch(switches::kEnableAutomation) &&
       show_bad_flags_security_warnings) {
     AutomationInfoBarDelegate::Create();
   }
+
+  // Do not show any other info bars in Kiosk mode, because it's unlikely that
+  // the viewer can act upon or dismiss them.
+  if (command_line_.HasSwitch(switches::kKioskMode))
+    return;
+
+  if (HasPendingUncleanExit(browser->profile()))
+    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
 
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,

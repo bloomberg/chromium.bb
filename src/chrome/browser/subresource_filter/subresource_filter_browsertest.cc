@@ -23,6 +23,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
@@ -37,8 +38,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/safe_browsing/db/v4_test_util.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/safe_browsing/core/db/v4_test_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -138,9 +139,8 @@ constexpr const char kBlinkDisallowSubframeConsoleMessageFormat[] =
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
                        MainFrameActivation_SubresourceFilterList) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsSubresourceFilterOnlyURL(url);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  EXPECT_EQ(kActivationConsoleMessage, console_observer.message());
+  EXPECT_FALSE(console_observer.messages().empty());
 
   // The main frame document should never be filtered.
   SetRulesetToDisallowURLsWithPathSuffix("frame_with_included_script.html");
@@ -169,9 +169,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
                        MainFrameActivationWithWarning_BetterAdsList) {
-  content::ConsoleObserverDelegate console_observer1(web_contents(),
-                                                     "*show ads*");
-  web_contents()->SetDelegate(&console_observer1);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern("*show ads*");
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureURLWithWarning(url,
                           {safe_browsing::SubresourceFilterType::BETTER_ADS});
@@ -185,17 +184,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_EQ(kActivationWarningConsoleMessage, console_observer1.message());
+  ASSERT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ(kActivationWarningConsoleMessage,
+            console_observer.GetMessageAt(0u));
 
-  content::ConsoleObserverDelegate console_observer2(web_contents(),
-                                                     "*show ads*");
-  web_contents()->SetDelegate(&console_observer2);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  EXPECT_EQ(kActivationWarningConsoleMessage, console_observer2.message());
+  ASSERT_EQ(2u, console_observer.messages().size());
+  EXPECT_EQ(kActivationWarningConsoleMessage,
+            console_observer.GetMessageAt(1u));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -232,9 +232,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
@@ -247,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
+  EXPECT_FALSE(console_observer.messages().empty());
 
   // The main frame document should never be filtered.
   SetRulesetToDisallowURLsWithPathSuffix("frame_with_included_script.html");
@@ -279,9 +278,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   std::string message_filter =
       base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(message_filter);
 
   GURL url(GetTestUrl(kTestFrameSetPath));
   ConfigureAsPhishingURL(url);
@@ -300,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
 
   // Console message for subframe blocking should be displayed.
   EXPECT_TRUE(base::MatchPattern(
-      console_observer.message(),
+      console_observer.GetMessageAt(0u),
       base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat,
                          "*included_script.js")));
 }
@@ -309,9 +307,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDisabled_NoConsoleMessage) {
   std::string message_filter =
       base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(message_filter);
 
   Configuration config(
       subresource_filter::mojom::ActivationLevel::kDisabled,
@@ -327,16 +324,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   // Console message for subframe blocking should not be displayed as filtering
   // is disabled.
-  EXPECT_TRUE(console_observer.message().empty());
+  EXPECT_TRUE(console_observer.messages().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDryRun_NoConsoleMessage) {
   std::string message_filter =
       base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(message_filter);
 
   Configuration config(
       subresource_filter::mojom::ActivationLevel::kDryRun,
@@ -352,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   // Console message for subframe blocking should not be displayed as filtering
   // is enabled in dryrun mode.
-  EXPECT_TRUE(console_observer.message().empty());
+  EXPECT_TRUE(console_observer.messages().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -419,9 +415,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        HistoryNavigationActivation) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   GURL url_with_activation(GetTestUrl(kTestFrameSetPath));
   GURL url_without_activation(
       embedded_test_server()->GetURL("a.com", kTestFrameSetPath));
@@ -440,14 +435,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       kSubframeNames, kExpectScriptInFrameToLoadWithoutActivation));
 
   // No message should be displayed for navigating to URL without activation.
-  EXPECT_TRUE(console_observer.message().empty());
+  EXPECT_TRUE(console_observer.messages().empty());
 
   ui_test_utils::NavigateToURL(browser(), url_with_activation);
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
 
   // Console message should now be displayed.
-  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
+  EXPECT_EQ(1u, console_observer.messages().size());
 
   ASSERT_TRUE(web_contents()->GetController().CanGoBack());
   content::WindowedNotificationObserver back_navigation_stop_observer(
@@ -506,9 +501,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 // dynamically inserting a subframe afterwards, and still expecting activation.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        PageLevelActivationOutlivesSameDocumentNavigation) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   GURL url(GetTestUrl(kTestFrameSetPath));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -526,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_TRUE(dynamic_frame);
   EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
 
-  EXPECT_EQ(console_observer.message(), kActivationConsoleMessage);
+  EXPECT_EQ(1u, console_observer.messages().size());
 }
 
 // If a navigation starts but aborts before commit, page level activation should
@@ -640,8 +634,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       std::vector<const char*>{"b", "d"}, {false, true});
 }
 
+// Disable the test as it's flaky on Win7 dbg.
+// crbug.com/1068185
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RendererDebugURL_NoLeakedThrottlePtrs \
+  DISABLED_RendererDebugURL_NoLeakedThrottlePtrs
+#else
+#define MAYBE_RendererDebugURL_NoLeakedThrottlePtrs \
+  RendererDebugURL_NoLeakedThrottlePtrs
+#endif
+
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       RendererDebugURL_NoLeakedThrottlePtrs) {
+                       MAYBE_RendererDebugURL_NoLeakedThrottlePtrs) {
   // Allow crashes caused by the navigation to kChromeUICrashURL below.
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -662,6 +666,155 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       GURL(content::kChromeUICrashURL), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
+}
+
+// Test that resources in frames with an aborted initial load due to a doc.write
+// are still disallowed.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       FrameWithDocWriteAbortedLoad_ResourceStillDisallowed) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/subresource_filter/docwrite_loads_disallowed_resource.html"));
+
+  // Check the load was blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that resources in frames with an aborted initial load due to a
+// window.stop are still disallowed.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       FrameWithWindowStopAbortedLoad_ResourceStillDisallowed) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/subresource_filter/window_stop_loads_disallowed_resource.html"));
+
+  // Check the load was blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that a frame with an aborted initial load due to a frame deletion does
+// not cause a crash.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       FrameDeletedDuringLoad_DoesNotCrash) {
+  // Watches for title set by end of frame deletion script.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("done"));
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/subresource_filter/delete_loading_frame.html"));
+
+  // Wait for the script to complete.
+  EXPECT_EQ(base::ASCIIToUTF16("done"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that an allowed resource in the child of a frame with its initial load
+// aborted due to a doc.write is not blocked.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    ChildOfFrameWithAbortedLoadLoadsAllowedResource_ResourceLoaded) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/subresource_filter/"
+                                     "docwrite_creates_subframe.html"));
+
+  content::RenderFrameHost* frame = FindFrameByName("grandchild");
+
+  EXPECT_TRUE(ExecJs(frame, R"SCRIPT(
+      let image = document.createElement('img');
+      image.src = 'pixel.png';
+      image.onload = function() {
+        top.document.title='loaded';
+      };
+      image.onerror = function() {
+        top.document.title='failed';
+      };
+      document.body.appendChild(image);
+  )SCRIPT"));
+
+  // Check the load wasn't blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("loaded"), title_watcher.WaitAndGetTitle());
+}
+
+// Test that a disallowed resource in the child of a frame with its initial load
+// aborted due to a doc.write is blocked.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    ChildOfFrameWithAbortedLoadLoadsDisallowedResource_ResourceBlocked) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("ad=true")}));
+
+  // Block disallowed resources.
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
+                       subresource_filter::ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
+
+  // Watches for title set by onload and onerror callbacks of tested resource.
+  content::TitleWatcher title_watcher(web_contents(),
+                                      base::ASCIIToUTF16("failed"));
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("loaded"));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/subresource_filter/"
+                                     "docwrite_creates_subframe.html"));
+
+  content::RenderFrameHost* frame = FindFrameByName("grandchild");
+
+  EXPECT_TRUE(ExecJs(frame, R"SCRIPT(
+      let image = document.createElement('img');
+      image.src = 'pixel.png?ad=true';
+      image.onload = function() {
+        top.document.title='loaded';
+      };
+      image.onerror = function() {
+        top.document.title='failed';
+      };
+      document.body.appendChild(image);
+  )SCRIPT"));
+
+  // Check the load was blocked.
+  EXPECT_EQ(base::ASCIIToUTF16("failed"), title_watcher.WaitAndGetTitle());
 }
 
 // Tests checking how histograms are recorded. ---------------------------------
@@ -795,6 +948,34 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   tester.ExpectTotalCount(kActivationDecision, 2);
   tester.ExpectBucketCount(kActivationDecision,
                            static_cast<int>(ActivationDecision::ACTIVATED), 2);
+}
+
+// If no ruleset is available, the VerifiedRulesetDealer considers it a
+// "invalid" or "corrupt" case, and any VerifiedRuleset::Handle's vended from it
+// will be useless for their entire lifetime.
+//
+// At first glance, this will be a problem, since the throttle manager attempts
+// to keep its handle in scope for as long as possible (to avoid un-mapping and
+// re-mapping the underlying file).
+//
+// However, in reality the throttle manager is robust to this. After every
+// navigation we destroy the handle if it is "no longer in use". Since a corrupt
+// or invalid ruleset will never be "in use" (i.e. activate any frame), we
+// destroy the handle after every navigation / frame destruction.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       NewRulesetSameTab_ActivatesSuccessfully) {
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_cross_site_set.html"));
+  ConfigureAsPhishingURL(a_url);
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  ExpectParsedScriptElementLoadedStatusInFrames(
+      std::vector<const char*>{"b", "d"}, {true, true});
+
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  ExpectParsedScriptElementLoadedStatusInFrames(
+      std::vector<const char*>{"b", "d"}, {false, false});
 }
 
 }  // namespace subresource_filter

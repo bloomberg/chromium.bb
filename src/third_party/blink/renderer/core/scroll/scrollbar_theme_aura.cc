@@ -32,8 +32,8 @@
 
 #include "build/build_config.h"
 #include "cc/input/scrollbar.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -139,9 +139,9 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 // is true for at least GTK and QT apps).
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   return false;
-#endif
-
+#else
   return true;
+#endif
 }
 
 int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {
@@ -160,22 +160,12 @@ bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
   return ThumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar,
-                                           ScrollbarPart part) {
-  // Windows and Linux just have single arrows.
-  if (part == kBackButtonEndPart)
-    return IntRect();
-
+IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar) {
   IntSize size = ButtonSize(scrollbar);
   return IntRect(scrollbar.X(), scrollbar.Y(), size.Width(), size.Height());
 }
 
-IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar,
-                                              ScrollbarPart part) {
-  // Windows and Linux just have single arrows.
-  if (part == kForwardButtonStartPart)
-    return IntRect();
-
+IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar) {
   IntSize size = ButtonSize(scrollbar);
   int x, y;
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
@@ -299,7 +289,6 @@ ScrollbarPart ScrollbarThemeAura::PartsToInvalidateOnThumbPositionChange(
     float old_position,
     float new_position) const {
   ScrollbarPart invalid_parts = kNoPart;
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementSingle);
   static const ScrollbarPart kButtonParts[] = {kBackButtonStartPart,
                                                kForwardButtonEndPart};
   for (ScrollbarPart part : kButtonParts) {

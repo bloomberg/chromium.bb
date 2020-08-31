@@ -6,6 +6,8 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_BACKEND_IMPL_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -51,9 +53,10 @@ class AutofillWebDataBackendImpl
       scoped_refptr<WebDatabaseBackend> web_database_backend,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-      const base::Closure& on_changed_callback,
-      const base::Closure& on_address_conversion_completed_callback,
-      const base::Callback<void(syncer::ModelType)>& on_sync_started_callback);
+      const base::RepeatingClosure& on_changed_callback,
+      const base::RepeatingClosure& on_address_conversion_completed_callback,
+      const base::RepeatingCallback<void(syncer::ModelType)>&
+          on_sync_started_callback);
 
   void SetAutofillProfileChangedCallback(
       base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
@@ -185,10 +188,15 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
                                                  WebDatabase* db);
 
-  WebDatabase::State AddVPA(const std::string& vpa_id, WebDatabase* db);
+  WebDatabase::State AddUpiId(const std::string& upi_id, WebDatabase* db);
+
+  std::unique_ptr<WDTypedResult> GetAllUpiIds(WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);
+
+  // Returns the CreditCardCloudTokenData from the database.
+  std::unique_ptr<WDTypedResult> GetCreditCardCloudTokenData(WebDatabase* db);
 
   WebDatabase::State ClearAllServerData(WebDatabase* db);
   WebDatabase::State ClearAllLocalData(WebDatabase* db);
@@ -246,9 +254,9 @@ class AutofillWebDataBackendImpl
   // TODO(caitkp): Make it so nobody but us needs direct DB access anymore.
   scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
-  base::Closure on_changed_callback_;
-  base::Closure on_address_conversion_completed_callback_;
-  base::Callback<void(syncer::ModelType)> on_sync_started_callback_;
+  base::RepeatingClosure on_changed_callback_;
+  base::RepeatingClosure on_address_conversion_completed_callback_;
+  base::RepeatingCallback<void(syncer::ModelType)> on_sync_started_callback_;
 
   base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
       on_autofill_profile_changed_cb_;

@@ -27,6 +27,7 @@
 #include "src/objects/js-promise-inl.h"
 #include "src/runtime/runtime-utils.h"
 #include "src/runtime/runtime.h"
+#include "src/snapshot/embedded/embedded-data.h"
 #include "src/snapshot/snapshot.h"
 #include "src/wasm/wasm-objects-inl.h"
 
@@ -66,16 +67,19 @@ RUNTIME_FUNCTION_RETURN_PAIR(Runtime_DebugBreakOnBytecode) {
   DCHECK(it.frame()->is_interpreted());
   InterpretedFrame* interpreted_frame =
       reinterpret_cast<InterpretedFrame*>(it.frame());
-  SharedFunctionInfo shared = interpreted_frame->function().shared();
-  BytecodeArray bytecode_array = shared.GetBytecodeArray();
-  int bytecode_offset = interpreted_frame->GetBytecodeOffset();
-  Bytecode bytecode = Bytecodes::FromByte(bytecode_array.get(bytecode_offset));
 
   bool side_effect_check_failed = false;
   if (isolate->debug_execution_mode() == DebugInfo::kSideEffects) {
     side_effect_check_failed =
         !isolate->debug()->PerformSideEffectCheckAtBytecode(interpreted_frame);
   }
+
+  // Make sure to only access these objects after the side effect check, as the
+  // check can allocate on failure.
+  SharedFunctionInfo shared = interpreted_frame->function().shared();
+  BytecodeArray bytecode_array = shared.GetBytecodeArray();
+  int bytecode_offset = interpreted_frame->GetBytecodeOffset();
+  Bytecode bytecode = Bytecodes::FromByte(bytecode_array.get(bytecode_offset));
 
   if (Bytecodes::Returns(bytecode)) {
     // If we are returning (or suspending), reset the bytecode array on the
@@ -494,7 +498,7 @@ int ScriptLinePosition(Handle<Script> script, int line) {
     return GetWasmFunctionOffset(script->wasm_native_module()->module(), line);
   }
 
-  Script::InitLineEnds(script);
+  Script::InitLineEnds(script->GetIsolate(), script);
 
   FixedArray line_ends_array = FixedArray::cast(script->line_ends());
   const int line_count = line_ends_array.length();

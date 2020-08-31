@@ -144,6 +144,20 @@ cr.define('settings_people_page', function() {
       assertTrue(peoplePage.$$('#account-manager-subpage-trigger').hidden);
     });
 
+    test('parental controls page is shown when enabled', () => {
+      loadTimeData.overrideValues({
+        // Simulate parental controls.
+        showParentalControls: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      // Setup button is shown and enabled.
+      assert(peoplePage.$$('settings-parental-controls-page'));
+    });
+
     test('GAIA name and picture, account manager enabled', async () => {
       loadTimeData.overrideValues({
         isAccountManagerEnabled: true,
@@ -185,7 +199,57 @@ cr.define('settings_people_page', function() {
 
       // Sub-page trigger navigates to Google account manager.
       subpageTrigger.click();
-      assertEquals(settings.getCurrentRoute(), settings.routes.ACCOUNT_MANAGER);
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.ACCOUNT_MANAGER);
+    });
+
+    test('Fingerprint dialog closes when token expires', async () => {
+      loadTimeData.overrideValues({
+        fingerprintUnlockEnabled: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+
+      await accountManagerBrowserProxy.whenCalled('getAccounts');
+      await syncBrowserProxy.whenCalled('getSyncStatus');
+      quickUnlockPrivateApi = new settings.FakeQuickUnlockPrivate();
+      peoplePage.authToken_ = quickUnlockPrivateApi.getFakeToken();
+
+      settings.Router.getInstance().navigateTo(settings.routes.LOCK_SCREEN);
+      Polymer.dom.flush();
+
+      const subpageTrigger = peoplePage.$$('#lock-screen-subpage-trigger');
+      // Sub-page trigger navigates to the lock screen page.
+      subpageTrigger.click();
+      Polymer.dom.flush();
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.LOCK_SCREEN);
+      const lockScreenPage = assert(peoplePage.$$('#lock-screen'));
+
+      // Password dialog should not open because the authToken_ is set.
+      assertFalse(lockScreenPage.showPasswordPromptDialog_);
+
+      const editFingerprintsTrigger = lockScreenPage.$$('#editFingerprints');
+      editFingerprintsTrigger.click();
+      Polymer.dom.flush();
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.FINGERPRINT);
+
+      const fingerprintTrigger =
+          peoplePage.$$('#fingerprint-list').$$('#addFingerprint');
+      fingerprintTrigger.click();
+      peoplePage.authToken_ = undefined;
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.LOCK_SCREEN);
+      assertTrue(lockScreenPage.showPasswordPromptDialog_);
     });
   });
 });

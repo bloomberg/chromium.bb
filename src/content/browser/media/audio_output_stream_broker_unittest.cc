@@ -121,7 +121,6 @@ class MockStreamFactory : public audio::FakeStreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
-      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final {
     // No way to cleanly exit the test here in case of failure, so use CHECK.
     CHECK(stream_request_data_);
@@ -150,7 +149,6 @@ struct TestEnvironment {
             kDeviceId,
             TestParams(),
             group,
-            base::nullopt,
             deleter.Get(),
             provider_client.MakePendingRemote())) {}
 
@@ -175,7 +173,7 @@ TEST(AudioOutputStreamBrokerTest, StoresProcessAndFrameId) {
 
   AudioOutputStreamBroker broker(
       kRenderProcessId, kRenderFrameId, kStreamId, kDeviceId, TestParams(),
-      base::UnguessableToken::Create(), base::nullopt, deleter.Get(),
+      base::UnguessableToken::Create(), deleter.Get(),
       provider_client.MakePendingRemote());
 
   EXPECT_EQ(kRenderProcessId, broker.render_process_id());
@@ -207,7 +205,7 @@ TEST(AudioOutputStreamBrokerTest, StreamCreationSuccess_Propagates) {
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
       .Run({base::in_place, base::UnsafeSharedMemoryRegion::Create(kShMemSize),
-            mojo::WrapPlatformFile(socket1.Release())});
+            mojo::PlatformHandle(socket1.Take())});
 
   EXPECT_CALL(env.provider_client, OnCreated());
 

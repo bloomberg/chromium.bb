@@ -151,7 +151,7 @@ static void nn_activate4(__m128 *x) { *x = _mm_max_ps(*x, _mm_setzero_ps()); }
 // Assume there are no more than NN_MAX_NODES_PER_LAYER nodes in each hidden
 // layer.
 void av1_nn_predict_sse3(const float *input_nodes,
-                         const NN_CONFIG *const nn_config,
+                         const NN_CONFIG *const nn_config, int reduce_prec,
                          float *const output) {
   float buf[2][NN_MAX_NODES_PER_LAYER];
   int buf_index = 0;
@@ -162,7 +162,7 @@ void av1_nn_predict_sse3(const float *input_nodes,
     const float *layer_weights = nn_config->weights[layer];
     const float *layer_bias = nn_config->bias[layer];
     bool output_layer = (layer == nn_config->num_hidden_layers);
-    float *const output_nodes = output_layer ? output : buf[buf_index];
+    float *const output_nodes = output_layer ? output : &buf[buf_index][0];
     const int num_outputs = output_layer ? nn_config->num_outputs
                                          : nn_config->num_hidden_nodes[layer];
 
@@ -240,4 +240,5 @@ void av1_nn_predict_sse3(const float *input_nodes,
     num_inputs = num_outputs;
     buf_index = 1 - buf_index;
   }
+  if (reduce_prec) av1_nn_output_prec_reduce(output, nn_config->num_outputs);
 }

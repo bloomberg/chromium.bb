@@ -6,19 +6,25 @@
 
 #include <utility>
 
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace {
 
-class FakeTaskRunner : public base::TaskRunner {
+class FakeTaskRunner : public base::SingleThreadTaskRunner {
  public:
+  // base::SingleThreadTaskRunner:
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     std::move(task).Run();
     return true;
+  }
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    return PostDelayedTask(from_here, std::move(task), delay);
   }
   bool RunsTasksInCurrentSequence() const override { return true; }
 
@@ -126,6 +132,13 @@ user_manager::User* MockUserManager::CreateKioskAppUser(
 void MockUserManager::AddUser(const AccountId& account_id) {
   AddUserWithAffiliationAndType(account_id, false,
                                 user_manager::USER_TYPE_REGULAR);
+}
+
+void MockUserManager::AddPublicAccountWithSAML(const AccountId& account_id) {
+  user_manager::User* user =
+      user_manager::User::CreatePublicAccountUserForTestingWithSAML(account_id);
+  user_list_.push_back(user);
+  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 }
 
 void MockUserManager::AddUserWithAffiliationAndType(

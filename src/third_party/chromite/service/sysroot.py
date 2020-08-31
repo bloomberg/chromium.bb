@@ -40,7 +40,8 @@ class SetupBoardRunConfig(object):
 
   def __init__(self, set_default=False, force=False, usepkg=True, jobs=None,
                regen_configs=False, quiet=False, update_toolchain=True,
-               upgrade_chroot=True, init_board_pkgs=True, local_build=False):
+               upgrade_chroot=True, init_board_pkgs=True, local_build=False,
+               toolchain_changed=False):
     """Initialize method.
 
     Args:
@@ -54,9 +55,12 @@ class SetupBoardRunConfig(object):
       upgrade_chroot (bool): Upgrade the chroot before building?
       init_board_pkgs (bool): Emerging packages to sysroot?
       local_build (bool): Bootstrap only from local packages?
+      toolchain_changed (bool): Has a toolchain change occurred? Implies
+        'force'.
     """
+
     self.set_default = set_default
-    self.force = force
+    self.force = force or toolchain_changed
     self.usepkg = usepkg
     self.jobs = jobs
     self.regen_configs = regen_configs
@@ -90,12 +94,12 @@ class SetupBoardRunConfig(object):
 class BuildPackagesRunConfig(object):
   """Value object to hold build packages run configs."""
 
-  def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
-               packages=None, use_flags=None, use_goma=False):
+  def __init__(self, usepkg=True, install_debug_symbols=False,
+               packages=None, use_flags=None, use_goma=False,
+               incremental_build=True):
     """Init method.
 
     Args:
-      event_file (str): The event file location, enables events.
       usepkg (bool): Whether to use binpkgs or build from source. False
         currently triggers a local build, which will enable local reuse.
       install_debug_symbols (bool): Whether to include the debug symbols for all
@@ -104,13 +108,17 @@ class BuildPackagesRunConfig(object):
         install all packages for the target.
       use_flags (list[str]|None): A list of use flags to set.
       use_goma (bool): Whether to enable goma.
+      incremental_build (bool): Whether to treat the build as an incremental
+        build or a fresh build. Always treating it as an incremental build is
+        safe, but certain operations can be faster when we know we are doing
+        a fresh build.
     """
-    self.event_file = event_file
     self.usepkg = usepkg
     self.install_debug_symbols = install_debug_symbols
     self.packages = packages
     self.use_flags = use_flags
     self.use_goma = use_goma
+    self.is_incremental = incremental_build
 
   def GetBuildPackagesArgs(self):
     """Get the build_packages script arguments."""
@@ -124,19 +132,17 @@ class BuildPackagesRunConfig(object):
         '--nouse_any_chrome',
     ]
 
-    if self.event_file:
-      args.append('--withevents')
-      args.extend(['--eventfile', self.event_file])
-
     if not self.usepkg:
       args.append('--nousepkg')
-      args.append('--reuse_pkgs_from_local_boards')
 
     if self.install_debug_symbols:
       args.append('--withdebugsymbols')
 
     if self.use_goma:
       args.append('--run_goma')
+
+    if not self.is_incremental:
+      args.append('--nowithrevdeps')
 
     if self.packages:
       args.extend(self.packages)
@@ -168,6 +174,9 @@ class BuildPackagesRunConfig(object):
     if self.HasUseFlags():
       env['USE'] = self.GetUseFlags()
 
+    if self.use_goma:
+      env['USE_GOMA'] = 'true'
+
     return env
 
 
@@ -177,7 +186,7 @@ def SetupBoard(target, accept_licenses=None, run_configs=None):
   This is the entry point to run the setup_board script.
 
   Args:
-    target (build_target_util.BuildTarget): The build target configuration.
+    target (build_target_lib.BuildTarget): The build target configuration.
     accept_licenses (str|None): The additional licenses to accept.
     run_configs (SetupBoardRunConfig): The run configs.
 
@@ -270,6 +279,25 @@ def Create(target, run_configs, accept_licenses):
   return sysroot
 
 
+def GenerateArchive(output_dir, build_target_name, pkg_list):
+  """Generate a sysroot tarball for informational builders.
+
+  Args:
+    output_dir (string): Directory to contain the created the sysroot.
+    build_target_name (string): The build target for the sysroot being created.
+    pkg_list (list[string]|None): List of 'category/package' package strings.
+
+  Returns:
+    Path to the sysroot tar file.
+  """
+  cmd = ['cros_generate_sysroot',
+         '--out-file', constants.TARGET_SYSROOT_TAR,
+         '--out-dir', output_dir,
+         '--board', build_target_name,
+         '--package', ' '.join(pkg_list)]
+  cros_build_lib.run(cmd, cwd=constants.SOURCE_ROOT)
+  return os.path.join(output_dir, constants.TARGET_SYSROOT_TAR)
+
 def CreateSimpleChromeSysroot(target, use_flags):
   """Create a sysroot for SimpleChrome to use.
 
@@ -277,7 +305,6 @@ def CreateSimpleChromeSysroot(target, use_flags):
     target (build_target.BuildTarget): The build target being installed for the
       sysroot being created.
     use_flags (list[string]|None): Additional USE flags for building chrome.
-    output_directory (string): Where to put output files.
 
   Returns:
     Path to the sysroot tar file.
@@ -288,8 +315,8 @@ def CreateSimpleChromeSysroot(target, use_flags):
   with osutils.TempDir(delete=False) as tempdir:
     cmd = ['cros_generate_sysroot', '--out-dir', tempdir, '--board',
            target, '--deps-only', '--package', constants.CHROME_CP]
-    cros_build_lib.RunCommand(cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
-                              extra_env=extra_env)
+    cros_build_lib.run(cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+                       extra_env=extra_env)
     sysroot_tar_path = os.path.join(tempdir, constants.CHROME_SYSROOT_TAR)
     return sysroot_tar_path
 
@@ -300,7 +327,7 @@ def InstallToolchain(target, sysroot, run_configs):
   Everything else must have been done already for this to be successful.
 
   Args:
-    target (build_target_util.BuildTarget): The target whose toolchain is being
+    target (build_target_lib.BuildTarget): The target whose toolchain is being
       installed.
     sysroot (sysroot_lib.Sysroot): The sysroot where the toolchain is being
       installed.
@@ -324,7 +351,7 @@ def BuildPackages(target, sysroot, run_configs):
   """Build and install packages into a sysroot.
 
   Args:
-    target (build_target_util.BuildTarget): The target whose packages are being
+    target (build_target_lib.BuildTarget): The target whose packages are being
       installed.
     sysroot (sysroot_lib.Sysroot): The sysroot where the packages are being
       installed.
@@ -444,7 +471,7 @@ def _ChooseProfile(target, sysroot):
   call here, and by extension this method all together.
 
   Args:
-    target (build_target_util.BuildTarget): The build target whose profile is
+    target (build_target_lib.BuildTarget): The build target whose profile is
       being chosen.
     sysroot (sysroot_lib.Sysroot): The sysroot for which the profile is
       being chosen.

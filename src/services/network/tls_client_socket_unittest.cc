@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -20,6 +20,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -78,8 +79,9 @@ class TLSClientSocketTestBase {
           &mock_client_socket_factory_);
     }
     if (configure_proxy) {
-      proxy_resolution_service_ = net::ProxyResolutionService::CreateFixed(
-          "http://proxy:8080", TRAFFIC_ANNOTATION_FOR_TESTS);
+      proxy_resolution_service_ =
+          net::ConfiguredProxyResolutionService::CreateFixed(
+              "http://proxy:8080", TRAFFIC_ANNOTATION_FOR_TESTS);
       url_request_context_.set_proxy_resolution_service(
           proxy_resolution_service_.get());
     }
@@ -875,7 +877,7 @@ TEST_P(TLSClientSocketTest, WriteErrorBeforeUpgradeToTLS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLSClientSocketTest,
     ::testing::Values(TLSClientSocketTestBase::kDirect,
                       TLSClientSocketTestBase::kProxyResolving));
@@ -954,7 +956,7 @@ class TLSClientSocketIoModeTest : public TLSClientSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(TLSClientSocketIoModeTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TLSClientSocketIoModeTest,
                          testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
@@ -1185,7 +1187,7 @@ TEST_P(TLSClientSocketTestWithEmbeddedTestServer, ServerCertError) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLSClientSocketTestWithEmbeddedTestServer,
     ::testing::Values(TLSClientSocketTestBase::kDirect,
                       TLSClientSocketTestBase::kProxyResolving));

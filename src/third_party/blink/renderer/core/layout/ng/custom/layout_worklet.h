@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/pending_layout_registry.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -34,7 +35,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   static const size_t kNumGlobalScopes;
   static LayoutWorklet* From(LocalDOMWindow&);
 
-  explicit LayoutWorklet(LocalFrame*);
+  explicit LayoutWorklet(LocalDOMWindow&);
   ~LayoutWorklet() override;
 
   typedef HeapHashMap<String, Member<DocumentLayoutDefinition>>
@@ -46,7 +47,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   void AddPendingLayout(const AtomicString& name, Node*);
   LayoutWorkletGlobalScopeProxy* Proxy();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // TODO(ikilpatrick): Make selection of the global scope non-deterministic.

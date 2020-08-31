@@ -38,11 +38,13 @@ mr.Init.providerManager_;
 
 /**
  * @param {!mr.ProviderManager} providerManager
+ * @param {boolean} enableExtensionCastProvider
  * @return {!Array.<!mr.Provider>}
  * @private
  */
-mr.Init.getProviders_ = function(providerManager) {
-  const providers = mr.InitHelper.getProviders(providerManager);
+mr.Init.getProviders_ = function(providerManager, enableExtensionCastProvider) {
+  const providers =
+      mr.InitHelper.getProviders(providerManager, enableExtensionCastProvider);
   if (!mr.Config.isPublicChannel) {
     providers.push(new mr.TestProvider(providerManager));
   }
@@ -66,7 +68,7 @@ mr.Init.initProviderManager_ = function() {
           throw Error('Failed to get MR instance ID.');
         }
         mr.Init.logger_.info('MR instance ID: ' + mrInstanceId);
-        mr.Init.logDialogType_(result['mrConfig'].use_views_dialog);
+        mr.Init.logFeatureStatuses_(result['mrConfig']);
         const mediaRouterService =
             /** @type {!mr.MediaRouterService} */ (result['mrService']);
         if (!mr.Init.providerManager_) {
@@ -86,7 +88,8 @@ mr.Init.initProviderManager_ = function() {
 
         mr.LogManager.getInstance().registerDataManager();
 
-        const providers = mr.Init.getProviders_(providerManager);
+        const providers = mr.Init.getProviders_(
+            providerManager, !!result['mrConfig'].enable_cast_sink_query);
         if (!mr.Config.isDebugChannel) {
           // Log unhandled promise rejections for external channels,
           // but leave them as thrown exceptions for internal.
@@ -143,13 +146,23 @@ mr.Init.addEventListeners_ = function() {
 
 
 /**
- * @param {boolean|undefined} useViewsDialog
+ * @param {!mojo.MediaRouteProviderConfig} config
  * @private
  */
-mr.Init.logDialogType_ = function(useViewsDialog) {
-  if (useViewsDialog === undefined) return;
-  const dialogType = useViewsDialog ? 'Views (Harmony)' : 'WebUI';
-  mr.Init.logger_.info(`Using the ${dialogType} dialog.`);
+mr.Init.logFeatureStatuses_ = function(config) {
+  if (config.use_views_dialog !== undefined) {
+    mr.Init.logger_.info(`Using the ${
+        config.use_views_dialog ? 'Views (Harmony)' : 'WebUI'} dialog.`);
+  }
+  if (config.enable_cast_sink_query !== undefined) {
+    // Native Cast MRP usage is the opposite of |enable_cast_sink_query|.
+    mr.Init.logger_.info(`Native Cast MRP is ${
+        config.enable_cast_sink_query ? 'disabled' : 'enabled'}.`);
+  }
+  if (config.use_mirroring_service !== undefined) {
+    mr.Init.logger_.info(`Native Mirroring Service is ${
+        config.use_mirroring_service ? 'enabled' : 'disabled'}.`);
+  }
 };
 
 

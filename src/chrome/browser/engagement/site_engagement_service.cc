@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
@@ -111,16 +113,27 @@ mojom::SiteEngagementDetails GetDetailsImpl(base::Clock* clock,
 }
 
 std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
+    browsing_data::TimePeriod time_period,
     base::Clock* clock,
     HostContentSettingsMap* map) {
   std::set<GURL> origins = GetEngagementOriginsFromContentSettings(map);
 
   std::vector<mojom::SiteEngagementDetails> details;
   details.reserve(origins.size());
+
+  auto begin_time = browsing_data::CalculateBeginDeleteTime(time_period);
+  auto end_time = browsing_data::CalculateEndDeleteTime(time_period);
+
   for (const GURL& origin : origins) {
     if (!origin.is_valid())
       continue;
-    details.push_back(GetDetailsImpl(clock, origin, map));
+
+    auto score = CreateEngagementScoreImpl(clock, origin, map);
+    auto last_engagement_time = score.last_engagement_time();
+    if (begin_time > last_engagement_time || end_time < last_engagement_time)
+      continue;
+
+    details.push_back(score.GetDetails());
   }
 
   return details;
@@ -183,7 +196,8 @@ SiteEngagementService::GetAllDetailsInBackground(
     base::Time now,
     scoped_refptr<HostContentSettingsMap> map) {
   StoppedClock clock(now);
-  return GetAllDetailsImpl(&clock, map.get());
+  return GetAllDetailsImpl(browsing_data::TimePeriod::ALL_TIME, &clock,
+                           map.get());
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
@@ -226,7 +240,19 @@ std::vector<mojom::SiteEngagementDetails> SiteEngagementService::GetAllDetails()
     CleanupEngagementScores(true);
 
   return GetAllDetailsImpl(
-      clock_, HostContentSettingsMapFactory::GetForProfile(profile_));
+      browsing_data::TimePeriod::ALL_TIME, clock_,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
+}
+
+std::vector<mojom::SiteEngagementDetails>
+SiteEngagementService::GetAllDetailsEngagedInTimePeriod(
+    browsing_data::TimePeriod time_period) const {
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
+
+  return GetAllDetailsImpl(
+      time_period, clock_,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {
@@ -479,9 +505,9 @@ void SiteEngagementService::MaybeRecordMetrics() {
   // strong reference to HostContentSettingsMap (which supports outliving the
   // profile), and needs to avoid using any members of SiteEngagementService
   // (which does not). See https://crbug.com/900022.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &GetAllDetailsInBackground, now,
@@ -509,10 +535,6 @@ void SiteEngagementService::RecordMetrics(
     total_engagement += detail.total_score;
   }
 
-  int percent_origins_with_max_engagement =
-      (total_origins == 0
-           ? 0
-           : (origins_with_max_engagement * 100) / total_origins);
   double mean_engagement =
       (total_origins == 0 ? 0 : total_engagement / total_origins);
 
@@ -527,8 +549,6 @@ void SiteEngagementService::RecordMetrics(
       OriginsWithMaxDailyEngagement());
   SiteEngagementMetrics::RecordOriginsWithMaxEngagement(
       origins_with_max_engagement);
-  SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
-      percent_origins_with_max_engagement);
 }
 
 bool SiteEngagementService::ShouldRecordEngagement(const GURL& url) const {

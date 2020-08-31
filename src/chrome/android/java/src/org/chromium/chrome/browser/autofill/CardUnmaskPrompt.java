@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
-import android.support.v4.text.TextUtilsCompat;
-import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -27,11 +25,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.text.TextUtilsCompat;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils.ErrorType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -147,8 +146,8 @@ public class CardUnmaskPrompt
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, boolean defaultUseScreenlockChecked,
-            long successMessageDurationMilliseconds) {
+            boolean defaultToStoringLocally, boolean shouldOfferWebauthn,
+            boolean defaultUseScreenlockChecked, long successMessageDurationMilliseconds) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -169,9 +168,7 @@ public class CardUnmaskPrompt
         mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
         mUseScreenlockCheckbox = (CheckBox) v.findViewById(R.id.use_screenlock_checkbox);
         mUseScreenlockCheckbox.setChecked(defaultUseScreenlockChecked);
-        if (canStoreLocally
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_CREDIT_CARD_AUTHENTICATION)) {
+        if (canStoreLocally || !shouldOfferWebauthn) {
             mUseScreenlockCheckbox.setVisibility(View.GONE);
             mUseScreenlockCheckbox.setChecked(false);
         }

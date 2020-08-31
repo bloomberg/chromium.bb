@@ -99,7 +99,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   ScrollbarPart HoveredPart() const { return hovered_part_; }
 
   virtual void StyleChanged() {}
-  void SetScrollbarsHiddenIfOverlay(bool);
+  void SetScrollbarsHiddenFromExternalAnimator(bool);
   bool Enabled() const { return enabled_; }
   virtual void SetEnabled(bool);
 
@@ -111,7 +111,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   // Called by the ScrollableArea when the scroll offset changes.
   // Will trigger paint invalidation if required.
-  void OffsetDidChange();
+  void OffsetDidChange(mojom::blink::ScrollType scroll_type);
 
   virtual void DisconnectFromScrollableArea();
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
@@ -124,7 +124,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   void SetProportion(int visible_size, int total_size);
   void SetPressedPos(int p) { pressed_pos_ = p; }
 
-  void Paint(GraphicsContext&) const;
+  void Paint(GraphicsContext&, const IntPoint& paint_offset) const;
 
   virtual bool IsSolidColor() const;
   virtual bool IsOverlayScrollbar() const;
@@ -192,7 +192,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // part.
   void SetNeedsPaintInvalidation(ScrollbarPart invalid_parts);
 
-  CompositorElementId GetElementId();
+  CompositorElementId GetElementId() const;
 
   float EffectiveZoom() const;
   bool ContainerIsRightToLeft() const;
@@ -204,7 +204,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   WebColorScheme UsedColorScheme() const;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   void AutoscrollTimerFired(TimerBase*);
@@ -254,6 +254,15 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
   bool injected_gesture_scroll_begin_;
+
+  // This is set based on the event modifiers. In scenarios like scrolling or
+  // layout, the element that the cursor is over can change without the cursor
+  // itself moving. In these cases, a "fake" mouse move may be dispatched (see
+  // MouseEventManager::RecomputeMouseHoverState) in order to apply hover etc.
+  // Such mouse events do not have the modifier set and hence, maintaining this
+  // additional state is necessary.
+  bool scrollbar_manipulation_in_progress_on_cc_thread_;
+
   IntRect visual_rect_;
   IntRect frame_rect_;
   Member<Element> style_source_;

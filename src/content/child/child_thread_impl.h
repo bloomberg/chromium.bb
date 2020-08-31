@@ -16,8 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
 #if defined(OS_WIN)
@@ -211,6 +212,7 @@ class CONTENT_EXPORT ChildThreadImpl
   const mojo::Remote<mojom::FontCacheWin>& GetFontCacheWin();
 #endif
 
+  base::Thread mojo_ipc_thread_{"Mojo IPC"};
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
 
   mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};

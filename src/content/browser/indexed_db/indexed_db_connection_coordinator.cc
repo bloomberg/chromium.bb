@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
@@ -24,8 +26,10 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
+#include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 using base::ASCIIToUTF16;
 using base::NumberToString16;
@@ -131,7 +135,6 @@ class IndexedDBConnectionCoordinator::OpenRequest
                           std::move(tasks_available_callback)),
         pending_(std::move(pending_connection)) {
     db_->metadata_.was_cold_open = pending_->was_cold_open;
-    DCHECK(!pending_->execution_context_connection_handle.is_null());
   }
 
   // Note: the |tasks_available_callback_| is NOT called here because the state
@@ -171,9 +174,8 @@ class IndexedDBConnectionCoordinator::OpenRequest
       // DEFAULT_VERSION throws exception.)
       DCHECK(is_new_database);
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(
-              std::move(origin_state_handle_), pending_->database_callbacks,
-              std::move(pending_->execution_context_connection_handle)),
+          db_->CreateConnection(std::move(origin_state_handle_),
+                                pending_->database_callbacks),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -183,9 +185,8 @@ class IndexedDBConnectionCoordinator::OpenRequest
         (new_version == old_version ||
          new_version == IndexedDBDatabaseMetadata::NO_VERSION)) {
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(
-              std::move(origin_state_handle_), pending_->database_callbacks,
-              std::move(pending_->execution_context_connection_handle)),
+          db_->CreateConnection(std::move(origin_state_handle_),
+                                pending_->database_callbacks),
           db_->metadata_);
       state_ = RequestState::kDone;
       return;
@@ -278,9 +279,8 @@ class IndexedDBConnectionCoordinator::OpenRequest
     DCHECK(state_ == RequestState::kPendingLocks);
 
     DCHECK(!lock_receiver_.locks.empty());
-    connection_ = db_->CreateConnection(
-        std::move(origin_state_handle_), pending_->database_callbacks,
-        std::move(pending_->execution_context_connection_handle));
+    connection_ = db_->CreateConnection(std::move(origin_state_handle_),
+                                        pending_->database_callbacks);
     DCHECK(!connection_ptr_for_close_comparision_);
     connection_ptr_for_close_comparision_ = connection_.get();
     DCHECK_EQ(db_->connections().count(connection_.get()), 1UL);
@@ -445,6 +445,9 @@ class IndexedDBConnectionCoordinator::DeleteRequest
   void DoDelete() {
     DCHECK(state_ == RequestState::kPendingLocks);
     state_ = RequestState::kPendingTransactionComplete;
+    UMA_HISTOGRAM_ENUMERATION(
+        indexed_db::kBackingStoreActionUmaName,
+        indexed_db::IndexedDBAction::kDatabaseDeleteAttempt);
     // This is used to check if this class is still alive after the destruction
     // of the TransactionalLevelDBTransaction, which can synchronously cause the
     // system to be shut down if the disk is really bad.
@@ -460,7 +463,12 @@ class IndexedDBConnectionCoordinator::DeleteRequest
       }
       saved_leveldb_status_ =
           db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
+      base::UmaHistogramEnumeration(
+          "WebCore.IndexedDB.BackingStore.DeleteDatabaseStatus",
+          leveldb_env::GetLevelDBStatusUMAValue(saved_leveldb_status_),
+          leveldb_env::LEVELDB_STATUS_MAX);
     }
+
     if (!weak_ptr)
       return;
 

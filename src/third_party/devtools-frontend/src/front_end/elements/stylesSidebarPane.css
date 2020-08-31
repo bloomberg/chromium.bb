@@ -7,7 +7,7 @@
 .styles-section {
     min-height: 18px;
     white-space: nowrap;
-    -webkit-user-select: text;
+    user-select: text;
     border-bottom: 1px solid var(--divider-color);
     position: relative;
     overflow: hidden;
@@ -240,4 +240,34 @@
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: -webkit-fill-available;
+}
+
+@media (forced-colors: active) {
+    .styles-sidebar-pane-filter-box > input {
+        border: 1px solid ButtonText;
+        background: ButtonFace;
+    }
+    .styles-section[data-keyboard-focus="true"]:focus,
+    .styles-section.read-only[data-keyboard-focus="true"]:focus {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .styles-section[data-keyboard-focus="true"]:focus *,
+    .styles-section.read-only[data-keyboard-focus="true"]:focus *,
+    .styles-section[data-keyboard-focus="true"]:focus .styles-section-subtitle .devtools-link {
+        color: HighlightText;
+        text-decoration-color: HighlightText;
+    }
+    .styles-section[data-keyboard-focus="true"]:focus .sidebar-pane-section-toolbar {
+        background-color: ButtonFace;
+    }
+    .sidebar-pane-section-toolbar {
+        forced-color-adjust: none;
+        border-color: 1px solid ButtonText;
+        background-color: ButtonFace;
+    }
+    .styles-section .styles-section-subtitle .devtools-link {
+        color: LinkText;
+        text-decoration-color: LinkText;
+    }
 }

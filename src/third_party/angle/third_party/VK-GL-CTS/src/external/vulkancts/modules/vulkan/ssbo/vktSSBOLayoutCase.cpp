@@ -23,20 +23,21 @@
  * \brief SSBO layout case.
  *//*--------------------------------------------------------------------*/
 
-#include "vktSSBOLayoutCase.hpp"
-#include "gluShaderProgram.hpp"
+#include "deFloat16.h"
+#include "deInt32.h"
+#include "deMath.h"
+#include "deMemory.h"
+#include "deRandom.hpp"
+#include "deSharedPtr.hpp"
+#include "deString.h"
+#include "deStringUtil.hpp"
 #include "gluContextInfo.hpp"
+#include "gluShaderProgram.hpp"
 #include "gluShaderUtil.hpp"
 #include "gluVarType.hpp"
 #include "gluVarTypeUtil.hpp"
 #include "tcuTestLog.hpp"
-#include "deRandom.hpp"
-#include "deStringUtil.hpp"
-#include "deMemory.h"
-#include "deString.h"
-#include "deMath.h"
-#include "deSharedPtr.hpp"
-#include "deFloat16.h"
+#include "vktSSBOLayoutCase.hpp"
 
 #include "vkBuilderUtil.hpp"
 #include "vkMemUtil.hpp"
@@ -314,12 +315,6 @@ int getDataTypeByteAlignment (glu::DataType type)
 			DE_ASSERT(false);
 			return 0;
 	}
-}
-
-static inline int deRoundUp32 (int a, int b)
-{
-	int d = a/b;
-	return d*b == a ? a : (d+1)*b;
 }
 
 int computeStd140BaseAlignment (const VarType& type, deUint32 layoutFlags)
@@ -1028,6 +1023,17 @@ bool usesScalarLayout (const ShaderInterface& interface)
 	return false;
 }
 
+bool usesDescriptorIndexing(const ShaderInterface& interface)
+{
+	// If any of blocks has DESCRIPTOR_INDEXING flag
+	for (int ndx = 0; ndx < interface.getNumBlocks(); ++ndx)
+	{
+		if (interface.getBlock(ndx).getFlags() & LAYOUT_DESCRIPTOR_INDEXING)
+			return true;
+	}
+	return false;
+}
+
 struct Indent
 {
 	int level;
@@ -1111,7 +1117,9 @@ void generateDeclaration (std::ostream& src, const BufferBlock& block, int bindi
 		if (block.getInstanceName() != DE_NULL)
 		{
 			src << " " << block.getInstanceName();
-			if (block.isArray())
+			if (block.getFlags() & LAYOUT_DESCRIPTOR_INDEXING)
+				src << "[]";
+			else if (block.isArray())
 				src << "[" << block.getArraySize() << "]";
 		}
 		else
@@ -1121,7 +1129,7 @@ void generateDeclaration (std::ostream& src, const BufferBlock& block, int bindi
 	src << ";\n";
 }
 
-void generateImmMatrixSrc (std::ostream& src, glu::DataType basicType, int matrixStride, bool isRowMajor, const void* valuePtr)
+void generateImmMatrixSrc (std::ostream& src, glu::DataType basicType, int matrixStride, bool isRowMajor, bool singleCol, int colNumber, const void* valuePtr)
 {
 	DE_ASSERT(glu::isDataTypeMatrix(basicType));
 
@@ -1129,20 +1137,25 @@ void generateImmMatrixSrc (std::ostream& src, glu::DataType basicType, int matri
 	const int		numRows			= glu::getDataTypeMatrixNumRows(basicType);
 	const int		numCols			= glu::getDataTypeMatrixNumColumns(basicType);
 
-	src << glu::getDataTypeName(basicType) << "(";
+	src << glu::getDataTypeName(singleCol ? glu::getDataTypeMatrixColumnType(basicType) : basicType) << "(";
 
 	// Constructed in column-wise order.
+	bool firstElem = true;
 	for (int colNdx = 0; colNdx < numCols; colNdx++)
 	{
+		if (singleCol && colNdx != colNumber)
+			continue;
+
 		for (int rowNdx = 0; rowNdx < numRows; rowNdx++)
 		{
 			const deUint8*	compPtr	= (const deUint8*)valuePtr + (isRowMajor ? rowNdx*matrixStride + colNdx*compSize
 																				: colNdx*matrixStride + rowNdx*compSize);
 
-			if (colNdx > 0 || rowNdx > 0)
+			if (!firstElem)
 				src << ", ";
 
 			src << de::floatToString(*((const float*)compPtr), 1);
+			firstElem = false;
 		}
 	}
 
@@ -1275,7 +1288,9 @@ string getShaderName (const BufferBlock& block, int instanceNdx, const BufferVar
 	{
 		name << block.getInstanceName();
 
-		if (block.isArray())
+		if (block.getFlags() & LAYOUT_DESCRIPTOR_INDEXING)
+			name << "[nonuniformEXT(" << instanceNdx << ")]";
+		else if (block.isArray())
 			name << "[" << instanceNdx << "]";
 
 		name << ".";
@@ -1362,7 +1377,7 @@ void generateCompareSrc (
 				else
 				{
 					src << "\t" << resultVar << " = " << resultVar << " && compare_" << typeName << "(" << shaderName << ", ";
-					generateImmMatrixSrc (src, basicType, varLayout.matrixStride, varLayout.isRowMajor, valuePtr);
+					generateImmMatrixSrc (src, basicType, varLayout.matrixStride, varLayout.isRowMajor, false, -1, valuePtr);
 					src << ");\n";
 				}
 			}
@@ -1419,7 +1434,8 @@ void generateWriteSrc (
 	int							instanceNdx,
 	const BlockDataPtr&			blockPtr,
 	const BufferVar&			bufVar,
-	const glu::SubTypeAccess&	accessPath)
+	const glu::SubTypeAccess&	accessPath,
+	MatrixStoreFlags			matrixStoreFlag)
 {
 	const VarType curType = accessPath.getType();
 
@@ -1428,14 +1444,14 @@ void generateWriteSrc (
 		const int arraySize = curType.getArraySize() == VarType::UNSIZED_ARRAY ? block.getLastUnsizedArraySize(instanceNdx) : curType.getArraySize();
 
 		for (int elemNdx = 0; elemNdx < arraySize; elemNdx++)
-			generateWriteSrc(src, bufferLayout, block, instanceNdx, blockPtr, bufVar, accessPath.element(elemNdx));
+			generateWriteSrc(src, bufferLayout, block, instanceNdx, blockPtr, bufVar, accessPath.element(elemNdx), matrixStoreFlag);
 	}
 	else if (curType.isStructType())
 	{
 		const int numMembers = curType.getStructPtr()->getNumMembers();
 
 		for (int memberNdx = 0; memberNdx < numMembers; memberNdx++)
-			generateWriteSrc(src, bufferLayout, block, instanceNdx, blockPtr, bufVar, accessPath.member(memberNdx));
+			generateWriteSrc(src, bufferLayout, block, instanceNdx, blockPtr, bufVar, accessPath.member(memberNdx), matrixStoreFlag);
 	}
 	else
 	{
@@ -1455,21 +1471,43 @@ void generateWriteSrc (
 			const char* castName = "";
 			glu::DataType promoteType = getPromoteType(basicType);
 			if (basicType != promoteType)
-				castName = glu::getDataTypeName(basicType);
-
-			src << "\t" << shaderName << " = " << castName << "(";
+				castName = glu::getDataTypeName((!isMatrix || matrixStoreFlag == STORE_FULL_MATRIX) ? basicType : glu::getDataTypeMatrixColumnType(basicType));
 
 			if (isMatrix)
-				generateImmMatrixSrc(src, basicType, varLayout.matrixStride, varLayout.isRowMajor, valuePtr);
-			else
+			{
+				switch (matrixStoreFlag)
+				{
+					case STORE_FULL_MATRIX: {
+						src << "\t" << shaderName << " = " << castName << "(";
+						generateImmMatrixSrc(src, basicType, varLayout.matrixStride, varLayout.isRowMajor, false, -1, valuePtr);
+						src << ");\n";
+						break;
+					}
+					case STORE_MATRIX_COLUMNS: {
+						int numCols = glu::getDataTypeMatrixNumColumns(basicType);
+						for (int colIdx = 0; colIdx < numCols; ++colIdx)
+						{
+							src << "\t" << shaderName << "[" << colIdx << "]" << " = " << castName << "(";
+							generateImmMatrixSrc(src, basicType, varLayout.matrixStride, varLayout.isRowMajor, true, colIdx, valuePtr);
+							src << ");\n";
+						}
+						break;
+					}
+					default:
+						DE_ASSERT(false);
+						break;
+				}
+			}
+			else {
+				src << "\t" << shaderName << " = " << castName << "(";
 				generateImmScalarVectorSrc(src, basicType, valuePtr);
-
-			src << ");\n";
+				src << ");\n";
+			}
 		}
 	}
 }
 
-void generateWriteSrc (std::ostream& src, const ShaderInterface& interface, const BufferLayout& layout, const vector<BlockDataPtr>& blockPointers)
+void generateWriteSrc (std::ostream& src, const ShaderInterface& interface, const BufferLayout& layout, const vector<BlockDataPtr>& blockPointers, MatrixStoreFlags matrixStoreFlag)
 {
 	for (int declNdx = 0; declNdx < interface.getNumBlocks(); declNdx++)
 	{
@@ -1492,25 +1530,31 @@ void generateWriteSrc (std::ostream& src, const ShaderInterface& interface, cons
 				if ((bufVar.getFlags() & ACCESS_WRITE) == 0)
 					continue; // Don't write to that variable.
 
-				generateWriteSrc(src, layout, block, instanceNdx, blockPtr, bufVar, glu::SubTypeAccess(bufVar.getType()));
+				generateWriteSrc(src, layout, block, instanceNdx, blockPtr, bufVar, glu::SubTypeAccess(bufVar.getType()), matrixStoreFlag);
 			}
 		}
 	}
 }
 
-string generateComputeShader (const ShaderInterface& interface, const BufferLayout& layout, const vector<BlockDataPtr>& comparePtrs, const vector<BlockDataPtr>& writePtrs, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
+string generateComputeShader (const ShaderInterface& interface, const BufferLayout& layout, const vector<BlockDataPtr>& comparePtrs, const vector<BlockDataPtr>& writePtrs, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
 {
 	std::ostringstream src;
 
-	if (uses16BitStorage(interface) || uses8BitStorage(interface) || usesRelaxedLayout(interface) || usesScalarLayout(interface))
+	if (uses16BitStorage(interface) || uses8BitStorage(interface) ||
+		usesRelaxedLayout(interface) || usesScalarLayout(interface) ||
+		usesDescriptorIndexing(interface))
+	{
 		src << "#version 450\n";
+	}
 	else
 		src << "#version 310 es\n";
+
 
 	src << "#extension GL_EXT_shader_16bit_storage : enable\n";
 	src << "#extension GL_EXT_shader_8bit_storage : enable\n";
 	src << "#extension GL_EXT_scalar_block_layout : enable\n";
 	src << "#extension GL_EXT_buffer_reference : enable\n";
+	src << "#extension GL_EXT_nonuniform_qualifier : enable\n";
 	src << "layout(local_size_x = 1) in;\n";
 	src << "\n";
 
@@ -1564,7 +1608,7 @@ string generateComputeShader (const ShaderInterface& interface, const BufferLayo
 		<< "\n";
 
 	// Value write.
-	generateWriteSrc(src, interface, layout, writePtrs);
+	generateWriteSrc(src, interface, layout, writePtrs, matrixStoreFlag);
 
 	src << "}\n";
 
@@ -1845,8 +1889,8 @@ bool compareBufferVarData (tcu::TestLog& log, const BufferVarLayoutEntry& refEnt
 					if (numFailed < maxPrints)
 					{
 						std::ostringstream expected, got;
-						generateImmMatrixSrc(expected, refEntry.type, refEntry.matrixStride, refEntry.isRowMajor, refElemPtr);
-						generateImmMatrixSrc(got, resEntry.type, resEntry.matrixStride, resEntry.isRowMajor, resElemPtr);
+						generateImmMatrixSrc(expected, refEntry.type, refEntry.matrixStride, refEntry.isRowMajor, false, -1, refElemPtr);
+						generateImmMatrixSrc(got, resEntry.type, resEntry.matrixStride, resEntry.isRowMajor, false, -1, resElemPtr);
 						log << TestLog::Message << "ERROR: mismatch in " << refEntry.name << ", top-level ndx " << topElemNdx << ", bottom-level ndx " << elementNdx << ":\n"
 												<< "  expected " << expected.str() << "\n"
 												<< "  got " << got.str()
@@ -2234,8 +2278,13 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 	vector<BlockDataPtr>  mappedBlockPtrs;
 
 	vk::VkFlags usageFlags = vk::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	bool memoryDeviceAddress = false;
 	if (m_usePhysStorageBuffer)
-		usageFlags |= vk::VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT;
+	{
+		usageFlags |= vk::VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+		if (m_context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address"))
+			memoryDeviceAddress = true;
+	}
 
 	// Upload base buffers
 	const std::vector<int> bufferSizes	= computeBufferSizes(m_interface, m_refLayout);
@@ -2256,7 +2305,7 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 				blockLocations[blockNdx] = BlockLocation(blockNdx, 0, bufferSize);
 
 				vk::Move<vk::VkBuffer>				buffer		= createBuffer(m_context, bufferSize, usageFlags);
-				de::MovePtr<vk::Allocation>			alloc		= allocateAndBindMemory(m_context, *buffer, vk::MemoryRequirement::HostVisible);
+				de::MovePtr<vk::Allocation>			alloc		= allocateAndBindMemory(m_context, *buffer, vk::MemoryRequirement::HostVisible | (memoryDeviceAddress ? vk::MemoryRequirement::DeviceAddress : vk::MemoryRequirement::Any));
 
 				descriptors[blockNdx] = makeDescriptorBufferInfo(*buffer, 0ull, bufferSize);
 
@@ -2288,7 +2337,7 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 
 			const int						totalBufferSize = curOffset;
 			vk::Move<vk::VkBuffer>			buffer			= createBuffer(m_context, totalBufferSize, usageFlags);
-			de::MovePtr<vk::Allocation>		alloc			= allocateAndBindMemory(m_context, *buffer, vk::MemoryRequirement::HostVisible);
+			de::MovePtr<vk::Allocation>		alloc			= allocateAndBindMemory(m_context, *buffer, vk::MemoryRequirement::HostVisible | (memoryDeviceAddress ? vk::MemoryRequirement::DeviceAddress : vk::MemoryRequirement::Any));
 
 			mapPtrs.push_back(alloc->getHostPtr());
 
@@ -2336,9 +2385,11 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 	// Query the buffer device addresses and push them via push constants
 	if (m_usePhysStorageBuffer)
 	{
-		vk::VkBufferDeviceAddressInfoEXT info =
+		const bool useKHR = m_context.isDeviceFunctionalitySupported("VK_KHR_buffer_device_address");
+
+		vk::VkBufferDeviceAddressInfo info =
 		{
-			vk::VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_EXT,	// VkStructureType	sType;
+			vk::VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,		// VkStructureType	sType;
 			DE_NULL,												// const void*		pNext;
 			0,														// VkBuffer			buffer
 		};
@@ -2346,7 +2397,11 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 		for (deUint32 i = 0; i < descriptors.size(); ++i)
 		{
 			info.buffer = descriptors[i].buffer;
-			vk::VkDeviceAddress addr = vk.getBufferDeviceAddressEXT(device, &info);
+			vk::VkDeviceAddress addr;
+			if (useKHR)
+				addr = vk.getBufferDeviceAddress(device, &info);
+			else
+				addr = vk.getBufferDeviceAddressEXT(device, &info);
 			addr += descriptors[i].offset;
 			gpuAddrs.push_back(addr);
 		}
@@ -2371,7 +2426,7 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 		(vk::VkPipelineLayoutCreateFlags)0,
 		1u,													// deUint32						descriptorSetCount;
 		&*descriptorSetLayout,								// const VkDescriptorSetLayout*	pSetLayouts;
-        m_usePhysStorageBuffer ? 1u : 0u,					// deUint32						pushConstantRangeCount;
+		m_usePhysStorageBuffer ? 1u : 0u,					// deUint32						pushConstantRangeCount;
 		&pushConstRange,									// const VkPushConstantRange*	pPushConstantRanges;
 	};
 	vk::Move<vk::VkPipelineLayout> pipelineLayout(createPipelineLayout(vk, device, &pipelineLayoutParams));
@@ -2472,7 +2527,7 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 		const int refCount = 1;
 		int resCount = 0;
 
-		invalidateMappedMemoryRange(vk, device, acBufferAlloc->getMemory(), acBufferAlloc->getOffset(), acBufferSize);
+		invalidateAlloc(vk, device, *acBufferAlloc);
 
 		resCount = *((const int*)acBufferAlloc->getHostPtr());
 
@@ -2486,7 +2541,7 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 	for (size_t allocNdx = 0; allocNdx < m_uniformAllocs.size(); allocNdx++)
 	{
 		vk::Allocation *alloc = m_uniformAllocs[allocNdx].get();
-		invalidateMappedMemoryRange(vk, device, alloc->getMemory(), alloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *alloc);
 	}
 
 	// Validate result
@@ -2504,10 +2559,11 @@ tcu::TestStatus SSBOLayoutCaseInstance::iterate (void)
 
 // SSBOLayoutCase.
 
-SSBOLayoutCase::SSBOLayoutCase (tcu::TestContext& testCtx, const char* name, const char* description, BufferMode bufferMode, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
+SSBOLayoutCase::SSBOLayoutCase (tcu::TestContext& testCtx, const char* name, const char* description, BufferMode bufferMode, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
 	: TestCase			(testCtx, name, description)
 	, m_bufferMode		(bufferMode)
 	, m_matrixLoadFlag	(matrixLoadFlag)
+	, m_matrixStoreFlag	(matrixStoreFlag)
 	, m_usePhysStorageBuffer(usePhysStorageBuffer)
 {
 }
@@ -2537,7 +2593,7 @@ void SSBOLayoutCase::initPrograms (vk::SourceCollections& programCollection) con
 
 TestInstance* SSBOLayoutCase::createInstance (Context& context) const
 {
-	if (!vk::isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_relaxed_block_layout") && usesRelaxedLayout(m_interface))
+	if (!context.isDeviceFunctionalitySupported("VK_KHR_relaxed_block_layout") && usesRelaxedLayout(m_interface))
 		TCU_THROW(NotSupportedError, "VK_KHR_relaxed_block_layout not supported");
 	if (!context.get16BitStorageFeatures().storageBuffer16BitAccess && uses16BitStorage(m_interface))
 		TCU_THROW(NotSupportedError, "storageBuffer16BitAccess not supported");
@@ -2545,8 +2601,10 @@ TestInstance* SSBOLayoutCase::createInstance (Context& context) const
 		TCU_THROW(NotSupportedError, "storageBuffer8BitAccess not supported");
 	if (!context.getScalarBlockLayoutFeatures().scalarBlockLayout && usesScalarLayout(m_interface))
 		TCU_THROW(NotSupportedError, "scalarBlockLayout not supported");
-	if (!context.getBufferDeviceAddressFeatures().bufferDeviceAddress && m_usePhysStorageBuffer)
+	if (m_usePhysStorageBuffer && !context.isBufferDeviceAddressSupported())
 		TCU_THROW(NotSupportedError, "Physical storage buffer pointers not supported");
+	if (!context.getDescriptorIndexingFeatures().shaderStorageBufferArrayNonUniformIndexing && usesDescriptorIndexing(m_interface))
+		TCU_THROW(NotSupportedError, "Descriptor indexing over storage buffer not supported");
 	return new SSBOLayoutCaseInstance(context, m_bufferMode, m_interface, m_refLayout, m_initialData, m_writeData, m_usePhysStorageBuffer);
 }
 
@@ -2559,7 +2617,7 @@ void SSBOLayoutCase::delayedInit (void)
 	generateValues(m_refLayout, m_writeData.pointers, deStringHash(getName()) ^ 0x25ca4e7);
 	copyNonWrittenData(m_interface, m_refLayout, m_initialData.pointers, m_writeData.pointers);
 
-	m_computeShaderSrc = generateComputeShader(m_interface, m_refLayout, m_initialData.pointers, m_writeData.pointers, m_matrixLoadFlag, m_usePhysStorageBuffer);
+	m_computeShaderSrc = generateComputeShader(m_interface, m_refLayout, m_initialData.pointers, m_writeData.pointers, m_matrixLoadFlag, m_matrixStoreFlag, m_usePhysStorageBuffer);
 }
 
 } // ssbo

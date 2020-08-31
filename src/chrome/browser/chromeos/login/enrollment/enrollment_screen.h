@@ -46,6 +46,8 @@ class EnrollmentScreen
  public:
   enum class Result { COMPLETED, BACK };
 
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EnrollmentScreen(EnrollmentScreenView* view,
                    const ScreenExitCallback& exit_callback);
@@ -56,14 +58,9 @@ class EnrollmentScreen
   // Setup how this screen will handle enrollment.
   void SetEnrollmentConfig(const policy::EnrollmentConfig& enrollment_config);
 
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-
   // EnrollmentScreenView::Controller implementation:
   void OnLoginDone(const std::string& user,
                    const std::string& auth_code) override;
-  void OnLicenseTypeSelected(const std::string& license_type) override;
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
@@ -77,8 +74,6 @@ class EnrollmentScreen
 
   // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer implementation:
   void OnAuthError(const GoogleServiceAuthError& error) override;
-  void OnMultipleLicensesAvailable(
-      const EnrollmentLicenseMap& licenses) override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceEnrolled() override;
@@ -99,11 +94,14 @@ class EnrollmentScreen
   }
 
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   // Expose the exit_callback to test screen overrides.
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
-  friend class MultiLicenseEnrollmentScreenUnitTest;
   friend class ZeroTouchEnrollmentScreenUnitTest;
   friend class AutomaticReenrollmentScreenUnitTest;
   friend class test::EnrollmentHelperMixin;
@@ -188,8 +186,11 @@ class EnrollmentScreen
   ScreenExitCallback exit_callback_;
   policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
+
+  // 'Current' and 'Next' authentication mechanisms to be used.
   Auth current_auth_ = AUTH_OAUTH;
-  Auth last_auth_ = AUTH_OAUTH;
+  Auth next_auth_ = AUTH_OAUTH;
+
   bool enrollment_failed_once_ = false;
   bool enrollment_succeeded_ = false;
   std::string enrolling_user_domain_;

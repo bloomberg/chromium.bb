@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -32,9 +33,16 @@ extern const base::Feature kOptimizationTargetPrediction;
 // requested until the user navigates to the host again.
 size_t MaxHintsFetcherTopHostBlacklistSize();
 
+// Whether hints for top hosts should be batch updated.
+bool ShouldBatchUpdateHintsForTopHosts();
+
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
+
+// The maximum number of URLs allowed to be requested by the client to the
+// remote Optimzation Guide Service.
+size_t MaxUrlsForOptimizationGuideServiceHintsFetch();
 
 // The maximum number of hosts allowed to be stored as covered by the hints
 // fetcher.
@@ -92,12 +100,20 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 // GetHintsFetchRefreshDuration().
 base::TimeDelta GetHintsFetchRefreshDuration();
 
+// Returns the max number of concurrent fetches to the remote Optimization Guide
+// Service that should be allowed.
+size_t MaxConcurrentPageNavigationFetches();
+
 // Returns true if optimization target prediction is enabled.
 bool IsOptimizationTargetPredictionEnabled();
 
 // The amount of time host model features will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
+
+// The amount of time URL-keyed hints within the hint cache will be
+// allowed to be used and not be purged.
+base::TimeDelta URLKeyedHintValidCacheDuration();
 
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service for use by prediction models.
@@ -106,6 +122,10 @@ size_t MaxHostsForOptimizationGuideServiceModelsFetch();
 // The maximum number of hosts allowed to be maintained in a least-recently-used
 // cache by the prediction manager.
 size_t MaxHostModelFeaturesCacheSize();
+
+// The maximum number of hints allowed to be maintained in a least-recently-used
+// cache.
+size_t MaxURLKeyedHintCacheSize();
 
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the
@@ -120,6 +140,10 @@ int PredictionModelFetchRandomMinDelaySecs();
 // Returns the maximum number of seconds to randomly delay before starting to
 // fetch for prediction models and host model features.
 int PredictionModelFetchRandomMaxDelaySecs();
+
+// Returns a set of external Android app packages whose predictions have been
+// approved for fetching from the remote Optimization Guide Service.
+base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
 
 }  // namespace features
 }  // namespace optimization_guide

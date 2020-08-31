@@ -23,22 +23,27 @@ OriginPolicyContents::OriginPolicyContents(const OriginPolicyContents& other) =
     default;
 
 OriginPolicyContents::OriginPolicyContents(
-    const std::vector<std::string>& features,
+    const std::vector<std::string>& ids,
+    const base::Optional<std::string>& feature_policy,
     const std::vector<std::string>& content_security_policies,
-    const std::vector<std::string>& content_security_policies_report_only)
-    : features(features),
+    const std::vector<std::string>& content_security_policies_report_only,
+    const base::Optional<IsolationOptInHints>& isolation_optin_hints)
+    : ids(ids),
+      feature_policy(feature_policy),
       content_security_policies(content_security_policies),
       content_security_policies_report_only(
-          content_security_policies_report_only) {}
+          content_security_policies_report_only),
+      isolation_optin_hints(isolation_optin_hints) {}
 
 OriginPolicyContents& OriginPolicyContents::operator=(
     const OriginPolicyContents& other) = default;
 
 bool OriginPolicyContents::operator==(const OriginPolicyContents& other) const {
-  return features == other.features &&
+  return ids == other.ids && feature_policy == other.feature_policy &&
          content_security_policies == other.content_security_policies &&
          content_security_policies_report_only ==
-             other.content_security_policies_report_only;
+             other.content_security_policies_report_only &&
+         isolation_optin_hints == other.isolation_optin_hints;
 }
 
 OriginPolicyContentsPtr OriginPolicyContents::ClonePtr() {

@@ -24,9 +24,10 @@ import androidx.browser.customtabs.TrustedWebUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
@@ -34,8 +35,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.PaymentHandlerActivity;
-import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -43,16 +44,13 @@ import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.UUID;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and
@@ -66,15 +64,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
     private static final String TAG = "ActivitiyDispatcher";
-
-    /**
-     * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
-     * provider by default.
-     */
-    private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-
-    private static final CachedMetrics.SparseHistogramSample sIntentFlagsHistogram =
-            new CachedMetrics.SparseHistogramSample("Launch.IntentFlags");
 
     private final Activity mActivity;
     private final Intent mIntent;
@@ -152,8 +141,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Read partner browser customizations information asynchronously.
         // We want to initialize early because when there are no tabs to restore, we should possibly
         // show homepage, which might require reading PartnerBrowserCustomizations provider.
-        PartnerBrowserCustomizations.initializeAsync(
-                mActivity.getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
+        PartnerBrowserCustomizations.getInstance().initializeAsync(
+                mActivity.getApplicationContext());
 
         int tabId = IntentUtils.safeGetIntExtra(
                 mIntent, IntentHandler.TabOpenType.BRING_TAB_TO_FRONT_STRING, Tab.INVALID_TAB_ID);
@@ -161,7 +150,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 mIntent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
 
         // Check if a web search Intent is being handled.
-        IntentHandler intentHandler = new IntentHandler(this, mActivity.getPackageName());
+        IntentHandler intentHandler = new IntentHandler(mActivity, this);
         String url = IntentHandler.getUrlFromIntent(mIntent);
         if (url == null && tabId == Tab.INVALID_TAB_ID && !incognito
                 && intentHandler.handleWebSearchIntent(mIntent)) {
@@ -287,9 +276,12 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             }
         }
 
+        boolean isIntentSenderChrome = IntentHandler.wasIntentSenderChrome(intent);
+
         // Use a custom tab with a unique theme for payment handlers.
         if (intent.getIntExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT)
-                == CustomTabsUiType.PAYMENT_REQUEST) {
+                        == CustomTabsUiType.PAYMENT_REQUEST
+                && isIntentSenderChrome) {
             newIntent.setClassName(context, PaymentHandlerActivity.class.getName());
         }
 
@@ -318,40 +310,16 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // Android will try to find and reuse an existing CCT activity in the background. Use
             // this flag to always start a new one instead.
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-
-            // Provide the general feeling of supporting multi tasks in Android version that did not
-            // fully support them. Reuse the least recently used SeparateTaskCustomTabActivity
-            // instance.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                String uuid = UUID.randomUUID().toString();
-                int activityIndex = ActivityAssigner
-                                            .instance(ActivityAssigner.ActivityAssignerNamespace
-                                                              .SEPARATE_TASK_CCT_NAMESPACE)
-                                            .assign(uuid);
-                String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
-                newIntent.setClassName(context, className);
-
-                String url = IntentHandler.getUrlFromIntent(newIntent);
-                assert url != null;
-                newIntent.setData(new Uri.Builder()
-                                          .scheme(UrlConstants.CUSTOM_TAB_SCHEME)
-                                          .authority(uuid)
-                                          .query(url)
-                                          .build());
-            } else {
-                // Force a new document to ensure the proper task/stack creation.
-                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            }
+            // Force a new document to ensure the proper task/stack creation.
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         }
 
-        // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME or
-        // EXTRA_IS_OPENED_BY_WEBAPK for malicious purpose, remove it. The new intent will be sent
-        // by Chrome, but was not sent by Chrome initially.
-        if (!IntentHandler.wasIntentSenderChrome(intent)) {
+        // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME
+        // for malicious purpose, remove it. The new intent will be sent by Chrome, but was not
+        // sent by Chrome initially.
+        if (!isIntentSenderChrome) {
             IntentUtils.safeRemoveExtra(
                     newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
-            IntentUtils.safeRemoveExtra(
-                    newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_WEBAPK);
         }
 
         return newIntent;
@@ -475,7 +443,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 flagsOfInterest |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
             }
             int maskedFlags = mIntent.getFlags() & flagsOfInterest;
-            sIntentFlagsHistogram.record(maskedFlags);
+            RecordHistogram.recordSparseHistogram("Launch.IntentFlags", maskedFlags);
         }
         MediaNotificationUma.recordClickSource(mIntent);
     }

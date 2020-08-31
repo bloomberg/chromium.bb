@@ -21,11 +21,11 @@ enum class MachineRepresentation : uint8_t {
   kWord16,
   kWord32,
   kWord64,
-  kTaggedSigned,
-  kTaggedPointer,
-  kTagged,
-  kCompressedPointer,
-  kCompressed,
+  kTaggedSigned,       // (uncompressed) Smi
+  kTaggedPointer,      // (uncompressed) HeapObject
+  kTagged,             // (uncompressed) Object (Smi or HeapObject)
+  kCompressedPointer,  // (compressed) HeapObject
+  kCompressed,         // (compressed) Object (Smi or HeapObject)
   // FP representations must be last, and in order of increasing size.
   kFloat32,
   kFloat64,
@@ -268,8 +268,12 @@ class MachineType {
     }
   }
 
-  bool LessThanOrEqualPointerSize() {
+  constexpr bool LessThanOrEqualPointerSize() const {
     return ElementSizeLog2Of(this->representation()) <= kSystemPointerSizeLog2;
+  }
+
+  constexpr byte MemSize() const {
+    return 1 << i::ElementSizeLog2Of(this->representation());
   }
 
  private:

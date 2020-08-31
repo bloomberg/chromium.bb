@@ -10,10 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_list.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -34,13 +32,19 @@ class ExternalConnector {
       const std::string& broker_path,
       base::OnceCallback<void(std::unique_ptr<ExternalConnector>)> callback);
 
+  static std::unique_ptr<ExternalConnector> Create(
+      const std::string& broker_path);
+
   virtual ~ExternalConnector() = default;
 
-  // Sets the callback that will be called if this class loses its connection to
-  // the Mojo broker. Note that once the connection is lost, this instance
-  // becomes nonfunctional (all public methods are no-ops); a new connection
-  // must be made instead.
-  virtual void SetConnectionErrorCallback(base::OnceClosure callback) = 0;
+  // Adds a callback that will be called if this class loses its connection to
+  // the Mojo broker. The calling class must retain the returned Subscription
+  // until it intends to unregister.
+  // By the time |callback| is executed, a new attempt at connecting will be
+  // started, and this object is valid. Note that some prior messages may be
+  // lost.
+  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddConnectionErrorCallback(base::RepeatingClosure callback) = 0;
 
   // Registers a service that other Mojo processes/services can bind to. Others
   // can call BindInterface(|service_name|, interface_name) to bind to this
@@ -54,24 +58,20 @@ class ExternalConnector {
 
   // Asks the Mojo broker to bind to a matching interface on the service with
   // the given |service_name|. If the service does not yet exist, the binding
-  // will remain in progress until the service is registered.
+  // will remain in progress until the service is registered. If |async| is
+  // |false|, then the bind will execute synchronously; otherwise, it will
+  // execute asynchronously on the same sequence (see b/146508043).
   template <typename Interface>
   void BindInterface(const std::string& service_name,
-                     mojo::InterfacePtr<Interface>* ptr) {
-    BindInterface(service_name, Interface::Name_,
-                  mojo::MakeRequest(ptr).PassMessagePipe());
-  }
-
-  template <typename Interface>
-  void BindInterface(const std::string& service_name,
-                     mojo::PendingRemote<Interface>* ptr) {
-    BindInterface(service_name, Interface::Name_,
-                  ptr->InitWithNewPipeAndPassReceiver().PassPipe());
+                     mojo::PendingReceiver<Interface> receiver,
+                     bool async = true) {
+    BindInterface(service_name, Interface::Name_, receiver.PassPipe(), async);
   }
 
   virtual void BindInterface(const std::string& service_name,
                              const std::string& interface_name,
-                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+                             mojo::ScopedMessagePipeHandle interface_pipe,
+                             bool async = true) = 0;
 
   // Creates a new instance of this class which may be passed to another thread.
   // The returned object may be passed across sequences until any of its public

@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,11 +17,16 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/metrics/test/demographic_metrics_test_utils.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
+#include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_device_info/device_info.h"
@@ -50,13 +56,23 @@ NSString* const kSyncTestErrorDomain = @"SyncTestDomain";
 // |create_http_post_provider_factory_cb|.
 void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
                              create_http_post_provider_factory_cb) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
           browser_state);
   service->OverrideNetworkForTest(create_http_post_provider_factory_cb);
+}
+
+// Returns a bookmark server entity based on |title| and |url|.
+std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
+    const std::string& title,
+    const GURL& url) {
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  return bookmark_builder.BuildBookmark(url);
 }
 
 }  // namespace
@@ -79,7 +95,7 @@ void TearDownFakeSyncServer() {
 
 void StartSync() {
   DCHECK(!IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
@@ -88,7 +104,7 @@ void StartSync() {
 
 void StopSync() {
   DCHECK(IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
@@ -96,7 +112,7 @@ void StopSync() {
 }
 
 void TriggerSyncCycle(syncer::ModelType type) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
@@ -109,7 +125,6 @@ void ClearSyncServerData() {
 }
 
 int GetNumberOfSyncEntities(syncer::ModelType type) {
-  DCHECK(gSyncFakeServer);
   std::unique_ptr<base::DictionaryValue> entities =
       gSyncFakeServer->GetEntitiesAsDictionaryValue();
 
@@ -141,16 +156,27 @@ BOOL VerifyNumberOfSyncEntitiesWithName(syncer::ModelType type,
   return result == testing::AssertionSuccess();
 }
 
-void InjectBookmarkOnFakeSyncServer(std::string url, std::string title) {
-  DCHECK(gSyncFakeServer);
+void AddBookmarkToFakeSyncServer(std::string url, std::string title) {
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(title);
   gSyncFakeServer->InjectEntity(bookmark_builder.BuildBookmark(GURL(url)));
 }
 
+void AddLegacyBookmarkToFakeSyncServer(std::string url,
+                                       std::string title,
+                                       std::string originator_client_item_id) {
+  DCHECK(!base::IsValidGUID(originator_client_item_id));
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          title, std::move(originator_client_item_id));
+  gSyncFakeServer->InjectEntity(
+      bookmark_builder.BuildBookmark(GURL(url), /*is_legacy=*/true));
+}
+
 bool IsSyncInitialized() {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::SyncService* syncService =
@@ -160,7 +186,7 @@ bool IsSyncInitialized() {
 
 std::string GetSyncCacheGuid() {
   DCHECK(IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   syncer::DeviceInfoSyncService* service =
       DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state);
@@ -169,9 +195,15 @@ std::string GetSyncCacheGuid() {
   return info_provider->GetLocalDeviceInfo()->guid();
 }
 
-void InjectAutofillProfileOnFakeSyncServer(std::string guid,
-                                           std::string full_name) {
-  DCHECK(gSyncFakeServer);
+void AddUserDemographicsToSyncServer(
+    int birth_year,
+    metrics::UserDemographicsProto::Gender gender) {
+  metrics::test::AddUserBirthYearAndGenderToSyncServer(
+      gSyncFakeServer->AsWeakPtr(), birth_year, gender);
+}
+
+void AddAutofillProfileToFakeSyncServer(std::string guid,
+                                        std::string full_name) {
   sync_pb::EntitySpecifics entity_specifics;
   sync_pb::AutofillProfileSpecifics* autofill_profile =
       entity_specifics.mutable_autofill_profile();
@@ -185,8 +217,7 @@ void InjectAutofillProfileOnFakeSyncServer(std::string guid,
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
-void DeleteAutofillProfileOnFakeSyncServer(std::string guid) {
-  DCHECK(gSyncFakeServer);
+void DeleteAutofillProfileFromFakeSyncServer(std::string guid) {
   std::vector<sync_pb::SyncEntity> autofill_profiles =
       gSyncFakeServer->GetSyncEntitiesByModelType(syncer::AUTOFILL_PROFILE);
   std::string entity_id;
@@ -208,7 +239,7 @@ void DeleteAutofillProfileOnFakeSyncServer(std::string guid) {
 }
 
 bool IsAutofillProfilePresent(std::string guid, std::string full_name) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
@@ -224,7 +255,7 @@ bool IsAutofillProfilePresent(std::string guid, std::string full_name) {
 }
 
 void ClearAutofillProfile(std::string guid) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
@@ -250,8 +281,8 @@ BOOL VerifySessionsOnSyncServer(const std::multiset<std::string>& expected_urls,
   return result == testing::AssertionSuccess();
 }
 
-void AddTypedURLOnClient(const GURL& url) {
-  ios::ChromeBrowserState* browser_state =
+void AddTypedURLToClient(const GURL& url) {
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* historyService =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -262,8 +293,7 @@ void AddTypedURLOnClient(const GURL& url) {
                           history::SOURCE_BROWSED, false);
 }
 
-void InjectTypedURLOnFakeSyncServer(const std::string& url) {
-  DCHECK(gSyncFakeServer);
+void AddTypedURLToFakeSyncServer(const std::string& url) {
   sync_pb::EntitySpecifics entitySpecifics;
   sync_pb::TypedUrlSpecifics* typedUrl = entitySpecifics.mutable_typed_url();
   typedUrl->set_url(url);
@@ -282,7 +312,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
                                BOOL expect_present,
                                NSError** error) {
   // Call the history service.
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -330,7 +360,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
 }
 
 void DeleteTypedUrlFromClient(const GURL& url) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -340,7 +370,6 @@ void DeleteTypedUrlFromClient(const GURL& url) {
 }
 
 void DeleteTypedUrlFromFakeSyncServer(std::string url) {
-  DCHECK(gSyncFakeServer);
   std::vector<sync_pb::SyncEntity> typed_urls =
       gSyncFakeServer->GetSyncEntitiesByModelType(syncer::TYPED_URLS);
   std::string entity_id;
@@ -356,6 +385,19 @@ void DeleteTypedUrlFromFakeSyncServer(std::string url) {
         syncer::PersistentTombstoneEntity::CreateNew(entity_id, std::string());
     gSyncFakeServer->InjectEntity(std::move(entity));
   }
+}
+
+void AddBookmarkWithSyncPassphrase(const std::string& sync_passphrase) {
+  syncer::KeyParamsForTesting key_params = {
+      syncer::KeyDerivationParams::CreateForPbkdf2(), sync_passphrase};
+  std::unique_ptr<syncer::LoopbackServerEntity> server_entity =
+      CreateBookmarkServerEntity("PBKDF2-encrypted bookmark",
+                                 GURL("http://example.com/doesnt-matter"));
+  server_entity->SetSpecifics(GetEncryptedBookmarkEntitySpecifics(
+      server_entity->GetSpecifics().bookmark(), key_params));
+  gSyncFakeServer->InjectEntity(std::move(server_entity));
+  fake_server::SetNigoriInFakeServer(CreateCustomPassphraseNigori(key_params),
+                                     gSyncFakeServer);
 }
 
 }  // namespace chrome_test_util

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/tests/results/core/test_interface_or_test_interface_empty.h"
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
@@ -62,7 +63,7 @@ TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty(const TestI
 TestInterfaceOrTestInterfaceEmpty::~TestInterfaceOrTestInterfaceEmpty() = default;
 TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(const TestInterfaceOrTestInterfaceEmpty&) = default;
 
-void TestInterfaceOrTestInterfaceEmpty::Trace(blink::Visitor* visitor) {
+void TestInterfaceOrTestInterfaceEmpty::Trace(Visitor* visitor) {
   visitor->Trace(test_interface_);
   visitor->Trace(test_interface_empty_);
 }

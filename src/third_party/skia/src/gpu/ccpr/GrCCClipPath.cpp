@@ -7,10 +7,10 @@
 
 #include "src/gpu/ccpr/GrCCClipPath.h"
 
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTarget.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/ccpr/GrCCPerFlushResources.h"
 
 void GrCCClipPath::init(
@@ -19,8 +19,7 @@ void GrCCClipPath::init(
     SkASSERT(!this->isInitialized());
 
     fAtlasLazyProxy = GrCCAtlas::MakeLazyAtlasProxy(
-            [this](GrResourceProvider* resourceProvider, GrPixelConfig,
-                   const GrBackendFormat& format, int sampleCount) {
+            [this](GrResourceProvider* resourceProvider, const GrCCAtlas::LazyAtlasDesc& desc) {
                 SkASSERT(fHasAtlas);
                 SkASSERT(!fHasAtlasTransform);
 
@@ -34,9 +33,6 @@ void GrCCClipPath::init(
 
                 sk_sp<GrTexture> texture = sk_ref_sp(textureProxy->peekTexture());
                 SkASSERT(texture);
-                SkASSERT(texture->backendFormat() == format);
-                SkASSERT(texture->asRenderTarget()->numSamples() == sampleCount);
-                SkASSERT(textureProxy->origin() == kTopLeft_GrSurfaceOrigin);
 
                 fAtlasScale = {1.f / texture->width(), 1.f / texture->height()};
                 fAtlasTranslate.set(fDevToAtlasOffset.fX * fAtlasScale.x(),

@@ -16,14 +16,16 @@ group("telemetry_chrome_test") {
 
   data_deps = [
     ":telemetry_chrome_test_without_chrome",
+    "//third_party/perfetto/src/trace_processor:trace_processor_shell",
   ]
   data = []
 
   if (is_android) {
     data_deps += [
+      ":telemetry_weblayer_apks",
       "//android_webview/test:webview_instrumentation_apk",
       "//chrome/android:chrome_public_apk",
-      ":telemetry_weblayer_apks",
+      "//chrome/android/webapk/shell_apk:maps_go_webapk",
     ]
 
     if (enable_chrome_android_internal) {
@@ -34,9 +36,10 @@ group("telemetry_chrome_test") {
         "//android_webview:system_webview_apk",
         "//android_webview/tools/system_webview_shell:system_webview_shell_apk",
         "//chrome/android:monochrome_public_apk",
+        "//chrome/android:monochrome_public_bundle",
       ]
     }
-  } else {
+  } else if (!is_fuchsia) {
     data_deps += [ "//chrome" ]
   }
 
@@ -45,7 +48,10 @@ group("telemetry_chrome_test") {
   }
 
   if (is_linux) {
-    data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
+    data_deps += [
+      "//third_party/breakpad:dump_syms($host_toolchain)",
+      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
   }
 
   if (is_mac) {
@@ -78,12 +84,12 @@ group("telemetry_weblayer_apks") {
   data_deps = []
   if (is_android) {
     data_deps += [
+      "//weblayer/shell/android:weblayer_shell_system_webview_apk",
+
       # TODO(crbug.com/1022823): Remove the following two deps once our tooling
       # is configured to use weblayer_shell_system_webview_apk.
-      "//weblayer/shell/android:weblayer_support_apk",
       "//weblayer/shell/android:weblayer_shell_apk",
-
-      "//weblayer/shell/android:weblayer_shell_system_webview_apk",
+      "//weblayer/shell/android:weblayer_support_apk",
     ]
   }
 }
@@ -98,18 +104,25 @@ group("telemetry_chrome_test_without_chrome") {
   ]
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",
+    "//tools/metrics:metrics_python_tests",
   ]
-  if (is_chromeos) {
+
+  # Cr-Fuchsia doesn't support breakpad.
+  if (!is_win && !is_fuchsia) {
     data_deps += [
-      "//third_party/breakpad:minidump_stackwalk",
+      # This is defined for Windows, but is unused by Telemetry on
+      # Windows, and including it can have issues when cross-compiling
+      # for Arm-based Windows.
       "//third_party/breakpad:dump_syms",
+
+      # These explicitly not defined for Windows builds in Breakpad.
+      "//third_party/breakpad:minidump_dump",
+      "//third_party/breakpad:minidump_stackwalk",
     ]
   }
+
   if (is_android) {
     data += [
-      "//build/android/stacktrace/",
-      "//build/android/tombstones.py",
-
       # TODO(httpss://crbug.com/833808): Remove this once bots always set
       # CHROMIUM_OUTPUT_DIR correctly. Currently, this is necessary in order
       # for //build/android/pylib/constants/__init__.py to detect the output
@@ -117,13 +130,10 @@ group("telemetry_chrome_test_without_chrome") {
       "$root_out_dir/build.ninja",
     ]
     data_deps += [
-      "//chrome/android/webapk/shell_apk:maps_go_webapk",
       "//build/android:devil_chromium_py",
-      "//third_party/breakpad:dump_syms",
-      "//third_party/breakpad:minidump_dump",
-      "//third_party/breakpad:minidump_stackwalk",
+      "//build/android:stack_tools",
     ]
-  } else {
+  } else if (!is_fuchsia) {
     data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]
   }
 }

@@ -21,13 +21,13 @@ using ui::KeycodeConverter;
 namespace {
 
 // Number of native codes expected to be mapped for each kind of native code.
-// These are in the same order as the columns in keycode_converter_data.inc
-// as reflected in the USB_KEYMAP() macro below.
+// These are in the same order as the columns in dom_code_data.inc
+// as reflected in the DOM_CODE() macro below.
 const size_t expected_mapped_key_count[] = {
-  212,  // evdev
-  212,  // xkb
-  157,  // windows
-  118,  // mac
+    216,  // evdev
+    216,  // xkb
+    157,  // windows
+    119,  // mac
 };
 
 const size_t kNativeColumns = base::size(expected_mapped_key_count);
@@ -39,20 +39,20 @@ struct KeycodeConverterData {
   int native_keycode[kNativeColumns];
 };
 
-#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) \
-  { usb, code, #id, { evdev, xkb, win, mac } }
-#define USB_KEYMAP_DECLARATION \
+#define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
+  {                                                   \
+    usb, code, #id, { evdev, xkb, win, mac }          \
+  }
+#define DOM_CODE_DECLARATION \
   const KeycodeConverterData kKeycodeConverterData[] =
-#include "ui/events/keycodes/dom/keycode_converter_data.inc"
-#undef USB_KEYMAP
-#undef USB_KEYMAP_DECLARATION
+#include "ui/events/keycodes/dom/dom_code_data.inc"
+#undef DOM_CODE
+#undef DOM_CODE_DECLARATION
 
 const uint32_t kUsbNonExistentKeycode = 0xffffff;
-const uint32_t kUsbUsBackslash =        0x070031;
-const uint32_t kUsbNonUsHash =          0x070032;
+const uint32_t kUsbUsBackslash = 0x070031;
+const uint32_t kUsbNonUsHash = 0x070032;
 
-// TODO(crbug.com/956756)
-#if !defined(NOTOUCH_BUILD)
 TEST(UsbKeycodeMap, KeycodeConverterData) {
   // This test looks at all kinds of supported native codes.
   // Verify that there are no duplicate entries in the mapping.
@@ -108,7 +108,6 @@ TEST(UsbKeycodeMap, EvdevXkb) {
     }
   }
 }
-#endif
 
 TEST(UsbKeycodeMap, Basic) {
   // Verify that the first element in the table is the "invalid" code.
@@ -173,6 +172,10 @@ TEST(KeycodeConverter, DomCode) {
       EXPECT_STREQ(entry->code,
                    ui::KeycodeConverter::DomCodeToCodeString(code));
     }
+    ui::DomCode code =
+        ui::KeycodeConverter::NativeKeycodeToDomCode(entry->native_keycode);
+    EXPECT_EQ(entry->native_keycode,
+              ui::KeycodeConverter::DomCodeToNativeKeycode(code));
   }
 }
 

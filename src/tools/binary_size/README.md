@@ -16,31 +16,19 @@ Bugs and feature requests are tracked in crbug under:
 
 Per-Milestone Binary Size Breakdowns:
 
- * https://storage.googleapis.com/chrome-supersize/index.html
+ * https://chrome-supersize.firebaseapp.com/chrome-supersize/index.html
 
 [TOC]
 
 ## Binary Size Trybot (android-binary-size)
 
  * Introduced October 2018 as a mandatory CQ bot.
- * Example builds: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size
- * Provides size per-patch size analysis via `resource_sizes.py` and SuperSize.
- * Forces a `Binary-Size:` footer to be present for commits that are larger than
-   16KiB (autorollers exempted).
+ * Documented [here](/docs/speed/binary_size/android_binary_size_trybot.md).
 
 ## Binary Size Gerrit Plugin
 
- * Currently in development, should hopefully be launched soon.
- * This bot surfaces the info from the binary size trybot on the cl view page
-   itself.
- * Surfacing binary size impact for a change allows authors and reviewers
-   to easily assess whether or not it makes sense for the change.
- * Shows you only the binary size metrics your patchset affects.
- * Links to SuperSize html and text output for more details on which symbols
-   were changed.
- * For tips on reducing binary size, see [Optimization Advice][optimization_advice].
-
-[optimization_advice]: //docs/speed/binary_size/optimization_advice.md
+ * Introduced February 2020 to surface results from android-binary-size.
+ * Documented [here](/docs/speed/binary_size/android_binary_size_trybot.md).
 
 ## resource_sizes.py
 
@@ -248,7 +236,7 @@ tools/binary_size/supersize archive chrome.size --elf-file out/Release/chrome -v
 ### Usage: html_report
 
 Creates an `.ndjson` (newline-delimited JSON) file that the
-[SuperSize viewer](https://storage.googleapis.com/chrome-supersize/viewer.html)
+[SuperSize viewer](https://chrome-supersize.firebaseapp.com/viewer.html)
 is able to load.
 
 Example Usage:

@@ -207,7 +207,7 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
   UpdateRingSize();
 }
 
-void AutoclickController::SetMenuPosition(AutoclickMenuPosition menu_position) {
+void AutoclickController::SetMenuPosition(FloatingMenuPosition menu_position) {
   menu_position_ = menu_position;
   UpdateAutoclickMenuBoundsIfNeeded();
 }
@@ -514,10 +514,8 @@ void AutoclickController::UpdateRingSize() {
 
 void AutoclickController::InitializeScrollLocation() {
   // Sets the scroll location to the center of the root window.
-  scroll_location_ = ash::Shell::Get()
-                         ->GetPrimaryRootWindow()
-                         ->GetBoundsInScreen()
-                         .CenterPoint();
+  scroll_location_ =
+      Shell::Get()->GetPrimaryRootWindow()->GetBoundsInScreen().CenterPoint();
   is_initial_scroll_location_ = true;
   Shell::Get()
       ->accessibility_controller()

@@ -90,13 +90,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   ~WKBasedNavigationManagerImpl() override;
 
   // NavigationManagerImpl:
-  void SetSessionController(CRWSessionController* session_controller) override;
   void InitializeSession() override;
-  void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemCommitted() override;
   void OnNavigationStarted(const GURL& url) override;
   void DetachFromWebView() override;
-  CRWSessionController* GetSessionController() const override;
   void AddTransientItem(const GURL& url) override;
   void AddPendingItem(
       const GURL& url,
@@ -109,9 +106,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   std::unique_ptr<web::NavigationItemImpl> ReleasePendingItem() override;
   void SetPendingItem(std::unique_ptr<web::NavigationItemImpl> item) override;
   int GetIndexForOffset(int offset) const override;
-  // Returns the previous navigation item in the main frame.
-  int GetPreviousItemIndex() const override;
-  void SetPreviousItemIndex(int previous_item_index) override;
   void AddPushStateItemIfNecessary(const GURL& url,
                                    NSString* state_object,
                                    ui::PageTransition transition) override;
@@ -210,6 +204,12 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
     DISALLOW_COPY_AND_ASSIGN(WKWebViewCache);
   };
 
+  // Type of the list passed to restore items.
+  enum class RestoreItemListType {
+    kBackList,
+    kForwardList,
+  };
+
   // NavigationManagerImpl:
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
   NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
@@ -227,6 +227,17 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void FinishLoadURLWithParams(
       NavigationInitiationType initiation_type) override;
   bool IsPlaceholderUrl(const GURL& url) const override;
+
+  // Restores the state of the |items_restored| in the navigation items
+  // associated with the WKBackForwardList. |back_list| is used to specify if
+  // the items passed are the list containing the back list or the forward list.
+  void RestoreItemsState(
+      RestoreItemListType list_type,
+      std::vector<std::unique_ptr<NavigationItem>> items_restored);
+
+  // Restores the state of the |restored_visible_item_| in the last committed
+  // item.
+  void RestoreVisibleItemState();
 
   // Restores the specified navigation session in the current web view. This
   // differs from Restore() in that it doesn't reset the current navigation
@@ -264,10 +275,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // back-forward list.
   int pending_item_index_;
 
-  // Index of the previous navigation item in the main frame. If there is none,
-  // this field will have value -1.
-  int previous_item_index_;
-
   // Index of the last committed item in the main frame. If there is none, this
   // field will equal to -1.
   int last_committed_item_index_;
@@ -280,6 +287,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   std::unique_ptr<NavigationItemImpl> empty_window_open_item_;
 
   // The transient item in main frame.
+  // TODO(crbug.com/1028755): Remove the transient item once SafeBrowsing is
+  // launched.
   std::unique_ptr<NavigationItemImpl> transient_item_;
 
   // A placeholder item used when CanTrustLastCommittedItem

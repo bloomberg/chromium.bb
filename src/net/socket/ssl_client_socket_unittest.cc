@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -58,6 +59,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/read_buffering_stream_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -116,168 +118,6 @@ const uint8_t kGoodHashValueVectorInput = 0;
 // not sha256/AA...=, and hence will cause pin validation failure with the
 // TestSPKI pin.
 const uint8_t kBadHashValueVectorInput = 3;
-
-// ReadBufferingStreamSocket is a wrapper for an existing StreamSocket that
-// will ensure a certain amount of data is internally buffered before
-// satisfying a Read() request. It exists to mimic OS-level internal
-// buffering, but in a way to guarantee that X number of bytes will be
-// returned to callers of Read(), regardless of how quickly the OS receives
-// them from the TestServer.
-class ReadBufferingStreamSocket : public WrappedStreamSocket {
- public:
-  explicit ReadBufferingStreamSocket(std::unique_ptr<StreamSocket> transport);
-  ~ReadBufferingStreamSocket() override = default;
-
-  // Socket implementation:
-  int Read(IOBuffer* buf,
-           int buf_len,
-           CompletionOnceCallback callback) override;
-
-  int ReadIfReady(IOBuffer* buf,
-                  int buf_len,
-                  CompletionOnceCallback callback) override;
-
-  // Sets the internal buffer to |size|. This must not be greater than
-  // the largest value supplied to Read() - that is, it does not handle
-  // having "leftovers" at the end of Read().
-  // Each call to Read() will be prevented from completion until at least
-  // |size| data has been read.
-  // Set to 0 to turn off buffering, causing Read() to transparently
-  // read via the underlying transport.
-  void SetBufferSize(int size);
-
- private:
-  enum State {
-    STATE_NONE,
-    STATE_READ,
-    STATE_READ_COMPLETE,
-  };
-
-  int DoLoop(int result);
-  int DoRead();
-  int DoReadComplete(int result);
-  void OnReadCompleted(int result);
-
-  State state_;
-  scoped_refptr<GrowableIOBuffer> read_buffer_;
-  int buffer_size_;
-
-  scoped_refptr<IOBuffer> user_read_buf_;
-  CompletionOnceCallback user_read_callback_;
-};
-
-ReadBufferingStreamSocket::ReadBufferingStreamSocket(
-    std::unique_ptr<StreamSocket> transport)
-    : WrappedStreamSocket(std::move(transport)),
-      read_buffer_(base::MakeRefCounted<GrowableIOBuffer>()),
-      buffer_size_(0) {}
-
-void ReadBufferingStreamSocket::SetBufferSize(int size) {
-  DCHECK(!user_read_buf_);
-  buffer_size_ = size;
-  read_buffer_->SetCapacity(size);
-}
-
-int ReadBufferingStreamSocket::Read(IOBuffer* buf,
-                                    int buf_len,
-                                    CompletionOnceCallback callback) {
-  DCHECK(!user_read_buf_);
-  if (buffer_size_ == 0)
-    return transport_->Read(buf, buf_len, std::move(callback));
-  int rv = ReadIfReady(buf, buf_len, std::move(callback));
-  if (rv == ERR_IO_PENDING)
-    user_read_buf_ = buf;
-  return rv;
-}
-
-int ReadBufferingStreamSocket::ReadIfReady(IOBuffer* buf,
-                                           int buf_len,
-                                           CompletionOnceCallback callback) {
-  DCHECK(!user_read_buf_);
-  if (buffer_size_ == 0)
-    return transport_->ReadIfReady(buf, buf_len, std::move(callback));
-
-  if (read_buffer_->RemainingCapacity() == 0) {
-    memcpy(buf->data(), read_buffer_->StartOfBuffer(),
-           read_buffer_->capacity());
-    read_buffer_->set_offset(0);
-    return read_buffer_->capacity();
-  }
-
-  if (buf_len < buffer_size_)
-    return ERR_UNEXPECTED;
-
-  state_ = STATE_READ;
-  int rv = DoLoop(OK);
-  if (rv == ERR_IO_PENDING)
-    user_read_callback_ = std::move(callback);
-  return rv;
-}
-
-int ReadBufferingStreamSocket::DoLoop(int result) {
-  int rv = result;
-  do {
-    State current_state = state_;
-    state_ = STATE_NONE;
-    switch (current_state) {
-      case STATE_READ:
-        rv = DoRead();
-        break;
-      case STATE_READ_COMPLETE:
-        rv = DoReadComplete(rv);
-        break;
-      case STATE_NONE:
-      default:
-        NOTREACHED() << "Unexpected state: " << current_state;
-        rv = ERR_UNEXPECTED;
-        break;
-    }
-  } while (rv != ERR_IO_PENDING && state_ != STATE_NONE);
-  return rv;
-}
-
-int ReadBufferingStreamSocket::DoRead() {
-  state_ = STATE_READ_COMPLETE;
-  return transport_->Read(
-      read_buffer_.get(), read_buffer_->RemainingCapacity(),
-      base::BindOnce(&ReadBufferingStreamSocket::OnReadCompleted,
-                     base::Unretained(this)));
-}
-
-int ReadBufferingStreamSocket::DoReadComplete(int result) {
-  state_ = STATE_NONE;
-
-  if (result <= 0)
-    return result;
-
-  read_buffer_->set_offset(read_buffer_->offset() + result);
-  if (read_buffer_->RemainingCapacity() > 0) {
-    state_ = STATE_READ;
-    return OK;
-  }
-
-  // If ReadIfReady() is called by the user and this is an asynchronous
-  // completion, notify the user that read can be retried.
-  if (user_read_buf_ == nullptr)
-    return OK;
-
-  memcpy(user_read_buf_->data(),
-         read_buffer_->StartOfBuffer(),
-         read_buffer_->capacity());
-  read_buffer_->set_offset(0);
-  return read_buffer_->capacity();
-}
-
-void ReadBufferingStreamSocket::OnReadCompleted(int result) {
-  DCHECK_NE(ERR_IO_PENDING, result);
-  DCHECK(user_read_callback_);
-
-  result = DoLoop(result);
-  if (result == ERR_IO_PENDING)
-    return;
-  user_read_buf_ = nullptr;
-  std::move(user_read_callback_).Run(result);
-}
 
 // Simulates synchronously receiving an error during Read() or Write()
 class SynchronousErrorStreamSocket : public WrappedStreamSocket {
@@ -893,8 +733,24 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
     spawned_test_server_ = nullptr;
     embedded_test_server_ =
         std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
-    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
     embedded_test_server_->SetSSLConfig(cert, server_config);
+    return FinishStartingEmbeddedTestServer();
+  }
+
+  // Starts the embedded test server with the specified parameters. Returns true
+  // on success.
+  bool StartEmbeddedTestServer(
+      const EmbeddedTestServer::ServerCertificateConfig& cert_config,
+      const SSLServerConfig& server_config) {
+    spawned_test_server_ = nullptr;
+    embedded_test_server_ =
+        std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
+    embedded_test_server_->SetSSLConfig(cert_config, server_config);
+    return FinishStartingEmbeddedTestServer();
+  }
+
+  bool FinishStartingEmbeddedTestServer() {
+    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
     if (!embedded_test_server_->Start()) {
       LOG(ERROR) << "Could not start EmbeddedTestServer";
       return false;
@@ -1211,7 +1067,7 @@ class SSLClientSocketReadTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     SSLClientSocketReadTest,
     ::testing::Combine(::testing::Values(READ_IF_READY_SUPPORTED,
                                          READ_IF_READY_NOT_SUPPORTED),
@@ -2448,7 +2304,7 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
   // 15K was chosen because 15K is smaller than the 17K (max) read issued by
   // the SSLClientSocket implementation, and larger than the minimum amount
   // of ciphertext necessary to contain the 8K of plaintext requested below.
-  raw_transport->SetBufferSize(15000);
+  raw_transport->BufferNextRead(15000);
 
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(8192);
   rv = ReadAndWaitForCompletion(sock.get(), buffer.get(), 8192);
@@ -3068,14 +2924,15 @@ TEST_P(SSLClientSocketVersionTest, CTCompliantEVHistogram) {
 
 // Tests that OCSP stapling is requested, as per Certificate Transparency (RFC
 // 6962).
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnablesOCSP) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.staple_ocsp_response = true;
+TEST_P(SSLClientSocketVersionTest, ConnectSignedCertTimestampsEnablesOCSP) {
   // The test server currently only knows how to generate OCSP responses
   // for a freshly minted certificate.
-  ssl_options.server_certificate = SpawnedTestServer::SSLOptions::CERT_AUTO;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  ASSERT_TRUE(StartEmbeddedTestServer(cert_config, GetServerConfig()));
 
   SSLConfig ssl_config;
 
@@ -3539,6 +3396,44 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+TEST_F(SSLClientSocketTest, 3DES) {
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  // TLS_RSA_WITH_3DES_EDE_CBC_SHA
+  server_config.cipher_suite_for_testing = 0x000a;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLConfig config;
+  config.disable_legacy_crypto = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+TEST_F(SSLClientSocketTest, SHA1) {
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  // Disable RSA key exchange, to ensure the server does not pick a non-signing
+  // cipher.
+  server_config.require_ecdhe = true;
+  server_config.signature_algorithm_for_testing = SSL_SIGN_RSA_PKCS1_SHA1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLConfig config;
+  config.disable_legacy_crypto = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 }
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
@@ -4478,10 +4373,9 @@ TEST_P(SSLClientSocketVersionTest, CTRequiredHistogramNonCompliantLocalRoot) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the CT requirement and failure to comply.
-  base::ScopedClosureRunner cleanup(base::BindOnce(
-      &TransportSecurityState::SetShouldRequireCTForTesting, nullptr));
-  bool require_ct = true;
-  TransportSecurityState::SetShouldRequireCTForTesting(&require_ct);
+  base::ScopedClosureRunner cleanup(
+      base::BindOnce(&TransportSecurityState::SetRequireCTForTesting, false));
+  TransportSecurityState::SetRequireCTForTesting(true);
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_->SetRequireCTDelegate(&require_ct_delegate);
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
@@ -5085,14 +4979,13 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimit) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
-TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTNoZeroRTTOnResume) {
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTReject) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
   SSLServerConfig server_config;
   server_config.early_data_enabled = false;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-
   SetServerConfig(server_config);
 
   // 0-RTT Connection
@@ -5109,6 +5002,50 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTNoZeroRTTOnResume) {
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
   rv = WriteAndWait(kRequest);
   EXPECT_EQ(ERR_EARLY_DATA_REJECTED, rv);
+
+  // Retrying the connection should succeed.
+  socket = MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+}
+
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTWrongVersion) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  SetServerConfig(server_config);
+
+  // 0-RTT Connection
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+  socket->UnblockReadResult();
+
+  // Expect early data to be rejected because the TLS version was incorrect.
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int rv = ReadAndWait(buf.get(), 4096);
+  EXPECT_EQ(ERR_WRONG_VERSION_ON_EARLY_DATA, rv);
+  rv = WriteAndWait(kRequest);
+  // TODO(https://crbug.com/1078515): This should be
+  // ERR_WRONG_VERSION_ON_EARLY_DATA. We assert on the current value so that,
+  // when the bug is fixed (likely in BoringSSL), we remember to fix the test to
+  // set a proper test expectation.
+  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
+
+  // Retrying the connection should succeed.
+  socket = MakeClient(true);
+  ASSERT_THAT(Connect(), IsOk());
+  ASSERT_THAT(MakeHTTPRequest(ssl_socket()), IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
 // Test that the ConfirmHandshake successfully completes the handshake and that
@@ -5510,7 +5447,7 @@ class TLS13DowngradeTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     TLS13DowngradeTest,
     ::testing::Combine(
         ::testing::Values(
@@ -5612,7 +5549,7 @@ class TLS13DowngradeMetricsTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          TLS13DowngradeMetricsTest,
                          ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
 
@@ -5714,7 +5651,7 @@ class SSLHandshakeDetailsTest
     : public SSLClientSocketTest,
       public ::testing::WithParamInterface<SSLHandshakeDetailsParams> {};
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SSLHandshakeDetailsTest,
                          ::testing::ValuesIn(kSSLHandshakeDetailsParams));
 
@@ -5798,6 +5735,162 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
   }
+}
+
+class LegacyTLSDeprecationTest : public SSLClientSocketTest {
+ public:
+  LegacyTLSDeprecationTest() {
+    feature_list_.InitAndEnableFeature(features::kLegacyTLSEnforced);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Set version_min_warn to TLS 1.2 and check that TLS 1.0 and 1.1 fail (with the
+// expected error and cert status) but TLS 1.2 and 1.3 pass.
+TEST_F(LegacyTLSDeprecationTest, SetVersionMinWarnToTLS12) {
+  const struct TestCase {
+    uint16_t ssl_version;
+    int expected_net_error;
+    CertStatus expected_cert_status;
+  } kTestCases[]{
+      {SSL_PROTOCOL_VERSION_TLS1, ERR_SSL_OBSOLETE_VERSION,
+       CERT_STATUS_LEGACY_TLS},
+      {SSL_PROTOCOL_VERSION_TLS1_1, ERR_SSL_OBSOLETE_VERSION,
+       CERT_STATUS_LEGACY_TLS},
+      {SSL_PROTOCOL_VERSION_TLS1_2, OK, 0},
+      {SSL_PROTOCOL_VERSION_TLS1_3, OK, 0},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.ssl_version);
+
+    SSLServerConfig server_config;
+    server_config.version_min = test_case.ssl_version;
+    server_config.version_max = test_case.ssl_version;
+    ASSERT_TRUE(
+        StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+    SSLContextConfig client_context_config;
+    client_context_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+    client_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+    client_context_config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1_2;
+    ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+
+    SSLConfig client_config;
+
+    // Try to connect, then check that the expected error is returned and no
+    // unexpected cert_status are set.
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsError(test_case.expected_net_error));
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(test_case.expected_cert_status,
+              info.cert_status & test_case.expected_cert_status);
+    net::CertStatus extra_cert_errors =
+        test_case.expected_cert_status ^
+        (info.cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_FALSE(extra_cert_errors);
+  }
+}
+
+// Check that TLS 1.0 and TLS 1.1 failure is bypassed when you add
+// allowed_bad_certs (with the expected error and cert status).
+TEST_F(LegacyTLSDeprecationTest, NoErrorWhenAddedToAllowedBadCerts) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+  client_config.allowed_bad_certs.emplace_back(
+      embedded_test_server()->GetCertificate(), CERT_STATUS_LEGACY_TLS);
+
+  // Connection should proceed without a net error but with
+  // CERT_STATUS_LEGACY_TLS.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(CERT_STATUS_LEGACY_TLS, info.cert_status);
+}
+
+// Check that if the we have bypassed a certificate error previously and then
+// the server responded with TLS 1.0, we fill in both cert status flags.
+TEST_F(LegacyTLSDeprecationTest, BypassedCertShouldSetLegacyTLSStatus) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_MISMATCHED_NAME,
+                                      server_config));
+  cert_verifier_->set_default_result(ERR_CERT_COMMON_NAME_INVALID);
+
+  SSLConfig client_config;
+  client_config.allowed_bad_certs.emplace_back(
+      embedded_test_server()->GetCertificate(),
+      CERT_STATUS_COMMON_NAME_INVALID);
+
+  // Connection should proceed, and CERT_STATUS_LEGACY_TLS and
+  // CERT_STATUS_COMMON_NAME_INVALID should be set.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
+}
+
+// Checks that other errors are prioritized over legacy TLS errors.
+TEST_F(LegacyTLSDeprecationTest, PrioritizeCertErrorsOverLegacyTLS) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_EXPIRED, server_config));
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+
+  SSLConfig client_config;
+
+  // Connection should fail with ERR_CERT_DATE_INVALID and only the date invalid
+  // cert status.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_CERT_DATE_INVALID));
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_FALSE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_DATE_INVALID);
+}
+
+// Checks that legacy TLS errors are not fatal.
+TEST_F(LegacyTLSDeprecationTest, LegacyTLSErrorsNotFatal) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+
+  // Connection should fail with ERR_SSL_OBSOLETE_VERSION and the legacy TLS
+  // cert status.
+  int rv;
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  transport_security_state_->AddHSTS(host_port_pair().host(), expiry, true);
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_OBSOLETE_VERSION));
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+
+  // The error should not be marked as fatal.
+  EXPECT_FALSE(info.is_fatal_cert_error);
 }
 
 TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNewSession) {

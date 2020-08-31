@@ -58,10 +58,22 @@
 #define SIT_PID         0x001F /* Selection Information Table */
 /* PID from 0x0020 to 0x1FFA may be assigned as needed to PMT, elementary
  * streams and other data tables */
+#define FIRST_OTHER_PID 0x0020
+#define  LAST_OTHER_PID 0x1FFA
 /* PID 0x1FFB is used by DigiCipher 2/ATSC MGT metadata */
 /* PID from 0x1FFC to 0x1FFE may be assigned as needed to PMT, elementary
  * streams and other data tables */
 #define NULL_PID        0x1FFF /* Null packet (used for fixed bandwidth padding) */
+
+/* m2ts pids */
+#define M2TS_PMT_PID                      0x0100
+#define M2TS_PCR_PID                      0x1001
+#define M2TS_VIDEO_PID                    0x1011
+#define M2TS_AUDIO_START_PID              0x1100
+#define M2TS_PGSSUB_START_PID             0x1200
+#define M2TS_TEXTSUB_PID                  0x1800
+#define M2TS_SECONDARY_AUDIO_START_PID    0x1A00
+#define M2TS_SECONDARY_VIDEO_START_PID    0x1B00
 
 /* table ids */
 #define PAT_TID         0x00 /* Program Association section */

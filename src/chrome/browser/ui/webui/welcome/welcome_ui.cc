@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -25,6 +26,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/url_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

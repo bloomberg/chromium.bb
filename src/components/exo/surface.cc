@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
@@ -26,8 +27,6 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_manager.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
@@ -37,6 +36,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -136,7 +136,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
         views::Widget::GetTopLevelWidgetForNativeView(surface_->window());
     if (widget)
       return widget->GetNativeWindow()->GetCursor(point /* not used */);
-    return ui::CursorType::kNull;
+    return ui::mojom::CursorType::kNull;
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
     views::Widget* widget =
@@ -522,6 +522,13 @@ void Surface::SetApplicationId(const char* application_id) {
     delegate_->OnSetApplicationId(application_id);
 }
 
+void Surface::SetColorSpace(gfx::ColorSpace color_space) {
+  TRACE_EVENT1("exo", "Surface::SetColorSpace", "color_space",
+               color_space.ToString());
+
+  pending_state_.color_space = color_space;
+}
+
 void Surface::SetParent(Surface* parent, const gfx::Point& position) {
   TRACE_EVENT2("exo", "Surface::SetParent", "parent", !!parent, "position",
                position.ToString());
@@ -552,6 +559,10 @@ void Surface::SetEmbeddedSurfaceId(
     base::RepeatingCallback<viz::SurfaceId()> surface_id_callback) {
   get_current_surface_id_ = std::move(surface_id_callback);
   first_embedded_surface_id_ = viz::SurfaceId();
+}
+
+void Surface::SetEmbeddedSurfaceSize(const gfx::Size& size) {
+  embedded_surface_size_ = size;
 }
 
 void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
@@ -598,7 +609,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.only_visible_on_secure_output !=
             state_.only_visible_on_secure_output ||
         pending_state_.blend_mode != state_.blend_mode ||
-        pending_state_.alpha != state_.alpha;
+        pending_state_.alpha != state_.alpha ||
+        pending_state_.color_space != state_.color_space;
 
     bool needs_update_buffer_transform =
         pending_state_.buffer_scale != state_.buffer_scale ||
@@ -927,6 +939,7 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
             state_.only_visible_on_secure_output, &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
+      current_resource_.color_space = state_.color_space;
     } else {
       current_resource_.id = 0;
       // Use the buffer's size, so the AppendContentsToFrame() will append
@@ -959,7 +972,9 @@ void Surface::UpdateBufferTransform(bool y_invert) {
   }
   if (y_invert)
     buffer_matrix.preScale(1, -1, 0.5f, 0.5f);
-  buffer_matrix.postIDiv(state_.buffer_scale, state_.buffer_scale);
+  if (state_.buffer_scale != 0)
+    buffer_matrix.postScale(1.0f / state_.buffer_scale,
+                            1.0f / state_.buffer_scale);
   buffer_transform_ = gfx::Transform(buffer_matrix);
 }
 
@@ -985,14 +1000,39 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
         gfx::ConvertRectToPixel(device_scale_factor, damage_rect));
   }
 
+  gfx::PointF scale(content_size_.width(), content_size_.height());
+
+  gfx::Vector2dF translate(0.0f, 0.0f);
+
+  // Surface quads require the quad rect to be appropriately sized and need to
+  // use the shared quad clip rect.
+  if (get_current_surface_id_) {
+    quad_rect = gfx::Rect(embedded_surface_size_);
+    scale = gfx::PointF(1.0f, 1.0f);
+
+    if (!state_.crop.IsEmpty()) {
+      // In order to crop an AxB rect to CxD we need to scale by A/C, B/D.
+      // We achieve clipping by scaling it up and then drawing only in the
+      // output rectangle.
+      scale.Scale(content_size_.width() / state_.crop.width(),
+                  content_size_.height() / state_.crop.height());
+
+      auto offset = state_.crop.origin().OffsetFromOrigin();
+      translate =
+          gfx::Vector2dF(-offset.x() * scale.x(), -offset.y() * scale.y());
+    }
+  } else {
+    scale.Scale(state_.buffer_scale);
+  }
+
   // Compute the total transformation from post-transform buffer coordinates to
   // target coordinates.
   SkMatrix viewport_to_target_matrix;
   // Scale and offset the normalized space to fit the content size rectangle.
-  viewport_to_target_matrix.setScale(
-      content_size_.width() * state_.buffer_scale,
-      content_size_.height() * state_.buffer_scale);
-  viewport_to_target_matrix.postTranslate(origin.x(), origin.y());
+  viewport_to_target_matrix.setScale(scale.x(), scale.y());
+
+  gfx::PointF target = gfx::PointF(origin) + translate;
+  viewport_to_target_matrix.postTranslate(target.x(), target.y());
   // Convert from DPs to pixels.
   viewport_to_target_matrix.postScale(device_scale_factor, device_scale_factor);
 
@@ -1045,14 +1085,19 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
           first_embedded_surface_id_ = current_surface_id;
         }
       }
-      if (latest_embedded_surface_id_.is_valid()) {
+      if (latest_embedded_surface_id_.is_valid() &&
+          !embedded_surface_size_.IsEmpty()) {
+        if (!state_.crop.IsEmpty()) {
+          quad_state->is_clipped = true;
+          quad_state->clip_rect = output_rect;
+        }
         viz::SurfaceDrawQuad* surface_quad =
             render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
         surface_quad->SetNew(quad_state, quad_rect, quad_rect,
                              viz::SurfaceRange(first_embedded_surface_id_,
                                                latest_embedded_surface_id_),
                              background_color,
-                             /*stretch_content_to_fill_bounds=*/true);
+                             /*stretch_content_to_fill_bounds=*/false);
       }
       // A resource was still produced for this so we still need to release it
       // later.

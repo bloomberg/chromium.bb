@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import tempfile
 
 from six.moves import urllib
@@ -16,6 +17,9 @@ from six.moves import urllib
 from chromite.lib import cros_test_lib
 from chromite.lib import perf_uploader
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class PerfUploadTestCase(cros_test_lib.MockTestCase):
@@ -101,7 +105,7 @@ class SendToDashboardTest(PerfUploadTestCase):
     self.assertEqual(os.path.join(perf_uploader.DASHBOARD_URL, 'add_point'),
                      request.get_full_url())
     data = request.data
-    data = urllib.parse.parse_qs(data)['data']
+    data = urllib.parse.parse_qs(data)[b'data']
     entries = [json.loads(x) for x in data]
     entry = entries[0][0]
     self.assertEqual('cros', entry['supplemental_columns']['r_cros_version'])

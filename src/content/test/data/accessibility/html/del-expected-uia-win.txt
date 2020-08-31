@@ -1,5 +1,5 @@
-document
-++group
-++++description Name='I am '
-++++group
-++++++description Name='vegetarian'
+Document
+++Group IsControlElement=false
+++++Text Name='I am '
+++++Group IsControlElement=false
+++++++Text Name='vegetarian'

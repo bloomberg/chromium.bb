@@ -10,11 +10,17 @@
 
 namespace media_router {
 
-CastDialogMetrics::CastDialogMetrics(const base::Time& initialization_time,
-                                     Profile* profile)
-    : initialization_time_(initialization_time) {
-  MediaRouterMetrics::RecordIconStateAtDialogOpen(
-      profile->GetPrefs()->GetBoolean(prefs::kShowCastIconInToolbar));
+CastDialogMetrics::CastDialogMetrics(
+    const base::Time& initialization_time,
+    MediaRouterDialogOpenOrigin activation_location,
+    Profile* profile)
+    : initialization_time_(initialization_time),
+      activation_location_(activation_location),
+      is_icon_pinned_(
+          profile->GetPrefs()->GetBoolean(prefs::kShowCastIconInToolbar)) {
+  MediaRouterMetrics::RecordIconStateAtDialogOpen(is_icon_pinned_);
+  MediaRouterMetrics::RecordCloudPrefAtDialogOpen(
+      profile->GetPrefs()->GetBoolean(prefs::kMediaRouterEnableCloudServices));
 }
 
 CastDialogMetrics::~CastDialogMetrics() = default;
@@ -36,7 +42,8 @@ void CastDialogMetrics::OnPaint(const base::Time& paint_time) {
 }
 
 void CastDialogMetrics::OnStartCasting(const base::Time& start_time,
-                                       int selected_sink_index) {
+                                       int selected_sink_index,
+                                       MediaCastMode cast_mode) {
   DCHECK(!sinks_load_time_.is_null());
   MediaRouterMetrics::RecordStartRouteDeviceIndex(selected_sink_index);
   if (!first_action_recorded_) {
@@ -44,6 +51,7 @@ void CastDialogMetrics::OnStartCasting(const base::Time& start_time,
                                                        sinks_load_time_);
   }
   MaybeRecordFirstAction(MediaRouterUserAction::START_LOCAL);
+  MaybeRecordActivationLocationAndCastMode(cast_mode);
 }
 
 void CastDialogMetrics::OnStopCasting(bool is_local_route) {
@@ -75,6 +83,15 @@ void CastDialogMetrics::MaybeRecordFirstAction(MediaRouterUserAction action) {
     return;
   MediaRouterMetrics::RecordMediaRouterInitialUserAction(action);
   first_action_recorded_ = true;
+}
+
+void CastDialogMetrics::MaybeRecordActivationLocationAndCastMode(
+    MediaCastMode cast_mode) {
+  if (activation_location_and_cast_mode_recorded_)
+    return;
+  MediaRouterMetrics::RecordDialogActivationLocationAndCastMode(
+      activation_location_, cast_mode, is_icon_pinned_);
+  activation_location_and_cast_mode_recorded_ = true;
 }
 
 }  // namespace media_router

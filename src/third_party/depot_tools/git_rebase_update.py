@@ -92,6 +92,9 @@ def remove_empty_branches(branch_tree):
   reparents = {}
   downstreams = collections.defaultdict(list)
   for branch, parent in git.topo_iter(branch_tree, top_down=False):
+    if git.is_dormant(branch):
+      continue
+
     downstreams[parent].append(branch)
 
     # If branch and parent have the same tree, then branch has to be marked

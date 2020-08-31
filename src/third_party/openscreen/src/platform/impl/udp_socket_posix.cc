@@ -18,15 +18,15 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/types/optional.h"
 #include "platform/api/task_runner.h"
 #include "platform/base/error.h"
 #include "platform/impl/udp_socket_reader_posix.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 constexpr bool IsPowerOf2(uint32_t x) {
@@ -84,9 +84,10 @@ const SocketHandle& UdpSocketPosix::GetHandle() const {
 }
 
 // static
-ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
-                                              Client* client,
-                                              const IPEndpoint& endpoint) {
+ErrorOr<std::unique_ptr<UdpSocket>> UdpSocket::Create(
+    TaskRunner* task_runner,
+    Client* client,
+    const IPEndpoint& endpoint) {
   static std::atomic_bool in_create{false};
   const bool in_create_local = in_create.exchange(true);
   OSP_DCHECK_EQ(in_create_local, false)
@@ -112,8 +113,8 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
     return fd.error();
   }
 
-  auto socket = UdpSocketUniquePtr(static_cast<UdpSocket*>(new UdpSocketPosix(
-      task_runner, client, SocketHandle(fd.value()), endpoint)));
+  std::unique_ptr<UdpSocket> socket = std::make_unique<UdpSocketPosix>(
+      task_runner, client, SocketHandle(fd.value()), endpoint);
   in_create = false;
   return socket;
 }
@@ -346,11 +347,11 @@ uint16_t GetPortFromFromSockAddr(const sockaddr_in& sa) {
 }
 
 IPAddress GetIPAddressFromSockAddr(const sockaddr_in6& sa) {
-  return IPAddress(sa.sin6_addr.s6_addr);
+  return IPAddress(IPAddress::Version::kV6, sa.sin6_addr.s6_addr);
 }
 
 IPAddress GetIPAddressFromPktInfo(const in6_pktinfo& pktinfo) {
-  return IPAddress(pktinfo.ipi6_addr.s6_addr);
+  return IPAddress(IPAddress::Version::kV6, pktinfo.ipi6_addr.s6_addr);
 }
 
 uint16_t GetPortFromFromSockAddr(const sockaddr_in6& sa) {
@@ -618,5 +619,4 @@ void UdpSocketPosix::Close() {
   handle_.fd = -1;
 }
 
-}  // namespace platform
 }  // namespace openscreen

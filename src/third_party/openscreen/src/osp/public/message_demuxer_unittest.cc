@@ -48,14 +48,12 @@ class MessageDemuxerTest : public ::testing::Test {
 
   const uint64_t endpoint_id_ = 13;
   const uint64_t connection_id_ = 45;
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
+  FakeClock fake_clock_{Clock::time_point(std::chrono::milliseconds(1298424))};
   msgs::CborEncodeBuffer buffer_;
   msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man",
                                                    "url"};
   MockMessageCallback mock_callback_;
-  MessageDemuxer demuxer_{platform::FakeClock::now,
-                          MessageDemuxer::kDefaultBufferLimit};
+  MessageDemuxer demuxer_{FakeClock::now, MessageDemuxer::kDefaultBufferLimit};
 };
 
 }  // namespace
@@ -75,15 +73,14 @@ TEST_F(MessageDemuxerTest, WatchStartStop) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                         buffer_.size());
   ExpectDecodedRequest(decode_result, received_request);
@@ -110,15 +107,14 @@ TEST_F(MessageDemuxerTest, BufferPartialMessage) {
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
       .Times(2)
-      .WillRepeatedly(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillRepeatedly(Invoke([&decode_result, &received_request](
+                                 uint64_t endpoint_id, uint64_t connection_id,
+                                 msgs::Type message_type, const uint8_t* buffer,
+                                 size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                         buffer_.size() - 3);
   demuxer_.OnStreamData(endpoint_id_, connection_id_,
@@ -140,15 +136,14 @@ TEST_F(MessageDemuxerTest, DefaultWatch) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                         buffer_.size());
   ExpectDecodedRequest(decode_result, received_request);
@@ -176,15 +171,14 @@ TEST_F(MessageDemuxerTest, DefaultWatchOverridden) {
       mock_callback_global,
       OnStreamMessage(endpoint_id_ + 1, 14,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer_.OnStreamData(endpoint_id_ + 1, 14, buffer_.data(), buffer_.size());
   ExpectDecodedRequest(decode_result, received_request);
 
@@ -193,15 +187,14 @@ TEST_F(MessageDemuxerTest, DefaultWatchOverridden) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                         buffer_.size());
   ExpectDecodedRequest(decode_result, received_request);
@@ -214,15 +207,14 @@ TEST_F(MessageDemuxerTest, WatchAfterData) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   MessageDemuxer::MessageWatch watch = demuxer_.WatchMessageType(
       endpoint_id_, msgs::Type::kPresentationConnectionOpenRequest,
       &mock_callback_);
@@ -245,27 +237,25 @@ TEST_F(MessageDemuxerTest, WatchAfterMultipleData) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result1, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result1 = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result1);
-          }));
+      .WillOnce(Invoke([&decode_result1, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result1 = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result1);
+      }));
   EXPECT_CALL(mock_init_callback,
               OnStreamMessage(endpoint_id_, connection_id_,
                               msgs::Type::kPresentationStartRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result2, &received_init_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result2 = msgs::DecodePresentationStartRequest(
-                buffer, buffer_size, &received_init_request);
-            return ConvertDecodeResult(decode_result2);
-          }));
+      .WillOnce(Invoke([&decode_result2, &received_init_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result2 = msgs::DecodePresentationStartRequest(
+            buffer, buffer_size, &received_init_request);
+        return ConvertDecodeResult(decode_result2);
+      }));
   MessageDemuxer::MessageWatch watch = demuxer_.WatchMessageType(
       endpoint_id_, msgs::Type::kPresentationConnectionOpenRequest,
       &mock_callback_);
@@ -296,15 +286,14 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   MessageDemuxer::MessageWatch watch = demuxer_.SetDefaultMessageTypeWatch(
       msgs::Type::kPresentationConnectionOpenRequest, &mock_callback_);
   ASSERT_TRUE(watch);
@@ -314,7 +303,7 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
 }
 
 TEST_F(MessageDemuxerTest, BufferLimit) {
-  MessageDemuxer demuxer(platform::FakeClock::now, 10);
+  MessageDemuxer demuxer(FakeClock::now, 10);
 
   demuxer.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                        buffer_.size());
@@ -329,15 +318,14 @@ TEST_F(MessageDemuxerTest, BufferLimit) {
       mock_callback_,
       OnStreamMessage(endpoint_id_, connection_id_,
                       msgs::Type::kPresentationConnectionOpenRequest, _, _, _))
-      .WillOnce(
-          Invoke([&decode_result, &received_request](
-                     uint64_t endpoint_id, uint64_t connection_id,
-                     msgs::Type message_type, const uint8_t* buffer,
-                     size_t buffer_size, platform::Clock::time_point now) {
-            decode_result = msgs::DecodePresentationConnectionOpenRequest(
-                buffer, buffer_size, &received_request);
-            return ConvertDecodeResult(decode_result);
-          }));
+      .WillOnce(Invoke([&decode_result, &received_request](
+                           uint64_t endpoint_id, uint64_t connection_id,
+                           msgs::Type message_type, const uint8_t* buffer,
+                           size_t buffer_size, Clock::time_point now) {
+        decode_result = msgs::DecodePresentationConnectionOpenRequest(
+            buffer, buffer_size, &received_request);
+        return ConvertDecodeResult(decode_result);
+      }));
   demuxer.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                        buffer_.size());
   ExpectDecodedRequest(decode_result, received_request);

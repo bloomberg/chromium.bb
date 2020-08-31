@@ -8,6 +8,7 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_server_session_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -18,7 +19,7 @@ class QuicSimpleDispatcher : public QuicDispatcher {
       const QuicCryptoServerConfig* crypto_config,
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
-      std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
+      std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
       QuicSimpleServerBackend* quic_simple_server_backend,
       uint8_t expected_server_connection_id_length);
@@ -30,10 +31,10 @@ class QuicSimpleDispatcher : public QuicDispatcher {
   void OnRstStreamReceived(const QuicRstStreamFrame& frame) override;
 
  protected:
-  QuicServerSessionBase* CreateQuicSession(
+  std::unique_ptr<QuicSession> CreateQuicSession(
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
-      QuicStringPiece alpn,
+      quiche::QuicheStringPiece alpn,
       const ParsedQuicVersion& version) override;
 
   QuicSimpleServerBackend* server_backend() {

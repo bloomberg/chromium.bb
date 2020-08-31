@@ -10,15 +10,18 @@
 #include <vector>
 
 #include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
 
-// Implementation of ProofSource which delegates to a ProofSourceForTesting,
-// except that when the async GetProof is called, it captures the call and
-// allows tests to see that a call is pending, which they can then cause to
-// complete at a time of their choosing.
+// Implementation of ProofSource which delegates to a ProofSourceForTesting, but
+// allows for overriding certain functionality. FakeProofSource allows
+// intercepting calls to GetProof and ComputeTlsSignature to force them to run
+// asynchronously, and allow the caller to see that the call is pending and
+// resume the operation at the caller's choosing. FakeProofSource also allows
+// the caller to replace the TicketCrypter provided by
+// FakeProofSource::GetTicketCrypter.
 class FakeProofSource : public ProofSource {
  public:
   FakeProofSource();
@@ -32,20 +35,28 @@ class FakeProofSource : public ProofSource {
 
   // ProofSource interface
   void GetProof(const QuicSocketAddress& server_address,
+                const QuicSocketAddress& client_address,
                 const std::string& hostname,
                 const std::string& server_config,
                 QuicTransportVersion transport_version,
-                QuicStringPiece chlo_hash,
+                quiche::QuicheStringPiece chlo_hash,
                 std::unique_ptr<ProofSource::Callback> callback) override;
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
+      const QuicSocketAddress& client_address,
       const std::string& hostname) override;
   void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
+      const QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      QuicStringPiece in,
+      quiche::QuicheStringPiece in,
       std::unique_ptr<ProofSource::SignatureCallback> callback) override;
+  TicketCrypter* GetTicketCrypter() override;
+
+  // Sets the TicketCrypter to use. If nullptr, the TicketCrypter from
+  // ProofSourceForTesting will be returned instead.
+  void SetTicketCrypter(std::unique_ptr<TicketCrypter> ticket_crypter);
 
   // Get the number of callbacks which are pending
   int NumPendingCallbacks() const;
@@ -56,6 +67,7 @@ class FakeProofSource : public ProofSource {
 
  private:
   std::unique_ptr<ProofSource> delegate_;
+  std::unique_ptr<TicketCrypter> ticket_crypter_;
   bool active_ = false;
 
   class PendingOp {
@@ -67,6 +79,7 @@ class FakeProofSource : public ProofSource {
   class GetProofOp : public PendingOp {
    public:
     GetProofOp(const QuicSocketAddress& server_addr,
+               const QuicSocketAddress& client_address,
                std::string hostname,
                std::string server_config,
                QuicTransportVersion transport_version,
@@ -79,6 +92,7 @@ class FakeProofSource : public ProofSource {
 
    private:
     QuicSocketAddress server_address_;
+    QuicSocketAddress client_address_;
     std::string hostname_;
     std::string server_config_;
     QuicTransportVersion transport_version_;
@@ -90,9 +104,10 @@ class FakeProofSource : public ProofSource {
   class ComputeSignatureOp : public PendingOp {
    public:
     ComputeSignatureOp(const QuicSocketAddress& server_address,
+                       const QuicSocketAddress& client_address,
                        std::string hostname,
                        uint16_t sig_alg,
-                       QuicStringPiece in,
+                       quiche::QuicheStringPiece in,
                        std::unique_ptr<ProofSource::SignatureCallback> callback,
                        ProofSource* delegate);
     ~ComputeSignatureOp() override;
@@ -101,6 +116,7 @@ class FakeProofSource : public ProofSource {
 
    private:
     QuicSocketAddress server_address_;
+    QuicSocketAddress client_address_;
     std::string hostname_;
     uint16_t sig_alg_;
     std::string in_;

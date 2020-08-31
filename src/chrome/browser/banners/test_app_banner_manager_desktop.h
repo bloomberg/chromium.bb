@@ -23,8 +23,13 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   explicit TestAppBannerManagerDesktop(content::WebContents* web_contents);
   ~TestAppBannerManagerDesktop() override;
 
-  static TestAppBannerManagerDesktop* CreateForWebContents(
-      content::WebContents* web_contents);
+  // Ensure this test class will be instantiated in place of
+  // AppBannerManagerDesktop. Must be called before AppBannerManagerDesktop is
+  // first instantiated.
+  static void SetUp();
+
+  static TestAppBannerManagerDesktop* FromWebContents(
+      content::WebContents* contents);
 
   // Blocks until the existing installability check has been cleared.
   void WaitForInstallableCheckTearDown();
@@ -32,18 +37,41 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   // Returns whether the installable check passed.
   bool WaitForInstallableCheck();
 
+  // Configures a callback to be invoked when the app banner flow finishes.
+  void PrepareDone(base::OnceClosure on_done);
+
+  // Returns the internal state of the AppBannerManager.
+  AppBannerManager::State state();
+
+  // Block until the current app has been installed.
+  void AwaitAppInstall();
+
   // AppBannerManager:
   void OnDidGetManifest(const InstallableData& result) override;
   void OnDidPerformInstallableWebAppCheck(
       const InstallableData& result) override;
   void ResetCurrentPageData() override;
 
+  // AppBannerManagerDesktop:
+  TestAppBannerManagerDesktop* AsTestAppBannerManagerDesktopForTesting()
+      override;
+
+ protected:
+  // AppBannerManager:
+  void OnInstall(blink::mojom::DisplayMode display) override;
+  void DidFinishCreatingWebApp(const web_app::AppId& app_id,
+                               web_app::InstallResultCode code) override;
+  void UpdateState(AppBannerManager::State state) override;
+
  private:
   void SetInstallable(bool installable);
+  void OnFinished();
 
   base::Optional<bool> installable_;
   base::OnceClosure tear_down_quit_closure_;
   base::OnceClosure installable_quit_closure_;
+  base::OnceClosure on_done_;
+  base::OnceClosure on_install_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppBannerManagerDesktop);
 };

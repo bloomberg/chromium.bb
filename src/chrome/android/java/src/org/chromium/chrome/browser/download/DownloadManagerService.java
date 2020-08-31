@@ -30,26 +30,28 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.download.DownloadState;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -76,29 +78,24 @@ import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * Chrome implementation of the {@link DownloadController.DownloadNotificationService} interface.
+ * Chrome implementation of the {@link DownloadController.Observer} interface.
  * This class is responsible for keeping track of which downloads are in progress. It generates
  * updates for progress of downloads and handles cleaning up of interrupted progress notifications.
  * TODO(qinmin): move BroadcastReceiver inheritance into DownloadManagerBridge, as it
  * handles all Android DownloadManager interactions. And DownloadManagerService should not know
  * download Id issued by Android DownloadManager.
  */
-public class DownloadManagerService implements DownloadController.DownloadNotificationService,
+public class DownloadManagerService implements DownloadController.Observer,
                                                NetworkChangeNotifierAutoDetect.Observer,
                                                DownloadServiceDelegate, ProfileManager.Observer {
     private static final String TAG = "DownloadService";
-    private static final String DOWNLOAD_DIRECTORY = "Download";
-    private static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
     private static final String DOWNLOAD_RETRY_COUNT_FILE_NAME = "DownloadRetryCount";
     private static final String DOWNLOAD_MANUAL_RETRY_SUFFIX = ".Manual";
     private static final String DOWNLOAD_TOTAL_RETRY_SUFFIX = ".Total";
     private static final long UPDATE_DELAY_MILLIS = 1000;
     // Wait 10 seconds to resume all downloads, so that we won't impact tab loading.
     private static final long RESUME_DELAY_MILLIS = 10000;
-    private static final int UNKNOWN_DOWNLOAD_STATUS = -1;
     public static final long UNKNOWN_BYTES_RECEIVED = -1;
-    private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
-            "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
 
     private static final Set<String> sFirstSeenDownloadIds = new HashSet<String>();
     private static final Set<String> sBackgroundDownloadIds = new HashSet<String>();
@@ -107,7 +104,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     private static boolean sIsNetworkListenerDisabled;
     private static boolean sIsNetworkMetered;
 
-    private final SharedPreferences mSharedPrefs;
+    private final SharedPreferencesManager mSharedPrefs;
     private final HashMap<String, DownloadProgress> mDownloadProgressMap =
             new HashMap<String, DownloadProgress>(4, 0.75f);
 
@@ -116,10 +113,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     private final long mUpdateDelayInMillis;
 
     private final Handler mHandler;
-
-    // The first download that is triggered in background mode.
-    private String mFirstBackgroundDownloadId;
-    private int mFirstBackgroundDownloadInterruptionCount;
 
     /** Generic interface for notifying external UI components about downloads and their states. */
     public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
@@ -141,7 +134,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
             new ArrayList<String>();
-    private final List<DownloadUmaStatsEntry> mUmaEntries = new ArrayList<DownloadUmaStatsEntry>();
     private final ObserverList<DownloadObserver> mDownloadObservers = new ObserverList<>();
 
     private OMADownloadHandler mOMADownloadHandler;
@@ -165,7 +157,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * Interface to intercept download request to Android DownloadManager. This is implemented by
      * tests so that we don't need to actually enqueue a download into the Android DownloadManager.
      */
-    static interface DownloadManagerRequestInterceptor {
+    interface DownloadManagerRequestInterceptor {
         void interceptDownloadRequest(DownloadItem item, boolean notifyComplete);
     }
 
@@ -281,14 +273,13 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     protected DownloadManagerService(
             DownloadNotifier downloadNotifier, Handler handler, long updateDelayInMillis) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        mSharedPrefs = ContextUtils.getAppSharedPreferences();
-        // Clean up unused shared prefs. TODO(qinmin): remove this after M61.
-        mSharedPrefs.edit().remove(PREF_IS_DOWNLOAD_HOME_ENABLED).apply();
+        mSharedPrefs = SharedPreferencesManager.getInstance();
         mDownloadNotifier = downloadNotifier;
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;
         mDownloadSnackbarController = new DownloadSnackbarController();
         mOMADownloadHandler = new OMADownloadHandler(applicationContext);
+        DownloadCollectionBridge.setDownloadDelegate(new DownloadDelegateImpl());
         // Note that this technically leaks the native object, however, DownloadManagerService
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();
@@ -300,22 +291,8 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         DownloadController.setDownloadNotificationService(this);
         // Post a delayed task to resume all pending downloads.
         mHandler.postDelayed(() -> mDownloadNotifier.resumePendingDownloads(), RESUME_DELAY_MILLIS);
-        parseUMAStatsEntriesFromSharedPrefs();
-        Iterator<DownloadUmaStatsEntry> iterator = mUmaEntries.iterator();
-        boolean hasChanges = false;
-        while (iterator.hasNext()) {
-            DownloadUmaStatsEntry entry = iterator.next();
-            if (entry.useDownloadManager) {
-                DownloadItem item = entry.buildDownloadItem();
-                DownloadManagerBridge.queryDownloadResult(item.getSystemDownloadId(),
-                        result -> onQueryCompleted(item, false, result));
-            } else if (!entry.isPaused) {
-                entry.isPaused = true;
-                entry.numInterruptions++;
-                hasChanges = true;
-            }
-        }
-        if (hasChanges) storeUmaEntries();
+        // Clean up unused shared prefs. TODO(qinmin): remove this after M84.
+        mSharedPrefs.removeKey(ChromePreferenceKeys.DOWNLOAD_UMA_ENTRY);
     }
 
     /**
@@ -402,7 +379,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         updateDownloadProgress(item, status);
         updateDownloadInfoBar(item);
 
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
@@ -469,41 +448,49 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
     /**
      * Gets download information from SharedPreferences.
-     * @param sharedPrefs The SharedPreferences object to parse.
+     * @param sharedPrefs The SharedPreferencesManager to read from.
      * @param type Type of the information to retrieve.
      * @return download information saved to the SharedPrefs for the given type.
      */
     @VisibleForTesting
-    protected static Set<String> getStoredDownloadInfo(SharedPreferences sharedPrefs, String type) {
-        return new HashSet<String>(sharedPrefs.getStringSet(type, new HashSet<String>()));
+    protected static Set<String> getStoredDownloadInfo(
+            SharedPreferencesManager sharedPrefs, String type) {
+        return new HashSet<>(sharedPrefs.readStringSet(type));
     }
 
     /**
      * Stores download information to shared preferences. The information can be
      * either pending download IDs, or pending OMA downloads.
      *
-     * @param sharedPrefs   SharedPreferences to update.
+     * @param sharedPrefs   SharedPreferencesManager to write to.
      * @param type          Type of the information.
      * @param downloadInfo  Information to be saved.
      * @param forceCommit   Whether to synchronously update shared preferences.
      */
     @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
-    static void storeDownloadInfo(SharedPreferences sharedPrefs, String type,
+    static void storeDownloadInfo(SharedPreferencesManager sharedPrefs, String type,
             Set<String> downloadInfo, boolean forceCommit) {
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        boolean success;
         if (downloadInfo.isEmpty()) {
-            editor.remove(type);
-        } else {
-            editor.putStringSet(type, downloadInfo);
-        }
-
-        if (forceCommit) {
-            // Write synchronously because it might be used on restart and needs to stay up-to-date.
-            if (!editor.commit()) {
-                Log.e(TAG, "Failed to write DownloadInfo " + type);
+            if (forceCommit) {
+                success = sharedPrefs.removeKeySync(type);
+            } else {
+                sharedPrefs.removeKey(type);
+                success = true;
             }
         } else {
-            editor.apply();
+            if (forceCommit) {
+                success = sharedPrefs.writeStringSetSync(type, downloadInfo);
+            } else {
+                sharedPrefs.writeStringSet(type, downloadInfo);
+                success = true;
+            }
+        }
+
+        if (!success) {
+            // Write synchronously because it might be used on restart and needs to stay
+            // up-to-date.
+            Log.e(TAG, "Failed to write DownloadInfo " + type);
         }
     }
 
@@ -698,14 +685,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 progress.mIsSupportedMimeType = isSupportedMimeType;
                 mDownloadProgressMap.put(id, progress);
                 sFirstSeenDownloadIds.add(id);
-                DownloadUmaStatsEntry entry = getUmaStatsEntry(downloadItem.getId());
-                if (entry == null) {
-                    addUmaStatsEntry(new DownloadUmaStatsEntry(downloadItem.getId(), startTime,
-                            downloadStatus == DownloadStatus.INTERRUPTED ? 1 : 0, false, false,
-                            bytesReceived, 0));
-                } else if (updateBytesReceived(entry, bytesReceived)) {
-                    storeUmaEntries();
-                }
 
                 // This is mostly for testing, when the download is not tracked/progress is null but
                 // downloadStatus is not DownloadStatus.IN_PROGRESS.
@@ -721,33 +700,19 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         progress.mIsUpdated = true;
         progress.mIsAutoResumable = mAutoResumableDownloadIds.contains(id);
         progress.mIsSupportedMimeType = isSupportedMimeType;
-        DownloadUmaStatsEntry entry;
         switch (downloadStatus) {
             case DownloadStatus.COMPLETE:
             case DownloadStatus.FAILED:
             case DownloadStatus.CANCELLED:
-                recordDownloadFinishedUMA(
-                        downloadStatus, id, downloadItem.getDownloadInfo().getBytesReceived());
                 clearDownloadRetryCount(id, true);
                 clearDownloadRetryCount(id, false);
                 updateNotification(progress);
                 sFirstSeenDownloadIds.remove(id);
                 break;
             case DownloadStatus.INTERRUPTED:
-                entry = getUmaStatsEntry(id);
-                entry.numInterruptions++;
-                updateBytesReceived(entry, bytesReceived);
-                storeUmaEntries();
                 updateNotification(progress);
                 break;
             case DownloadStatus.IN_PROGRESS:
-                entry = getUmaStatsEntry(id);
-                if (entry.isPaused != downloadItem.getDownloadInfo().isPaused()
-                        || updateBytesReceived(entry, bytesReceived)) {
-                    entry.isPaused = downloadItem.getDownloadInfo().isPaused();
-                    storeUmaEntries();
-                }
-
                 if (downloadItem.getDownloadInfo().isPaused()) {
                     updateNotification(progress);
                 }
@@ -755,32 +720,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             default:
                 assert false;
         }
-    }
-
-    /**
-     * Helper method to update the received bytes and wasted bytes for UMA reporting.
-     * @param  entry UMA entry to update.
-     * @param bytesReceived The current received bytes.
-     * @return true if the UMA stats is updated, or false otherwise.
-     */
-    private boolean updateBytesReceived(DownloadUmaStatsEntry entry, long bytesReceived) {
-        if (bytesReceived == UNKNOWN_BYTES_RECEIVED || bytesReceived == entry.lastBytesReceived) {
-            return false;
-        }
-        if (bytesReceived < entry.lastBytesReceived) {
-            entry.bytesWasted += entry.lastBytesReceived - bytesReceived;
-        }
-        entry.lastBytesReceived = bytesReceived;
-        return true;
-    }
-    /**
-     * Sets the download handler for OMA downloads, for testing purpose.
-     *
-     * @param omaDownloadHandler Download handler for OMA contents.
-     */
-    @VisibleForTesting
-    protected void setOMADownloadHandler(OMADownloadHandler omaDownloadHandler) {
-        mOMADownloadHandler = omaDownloadHandler;
     }
 
     /** See {@link DownloadManagerBridge.enqueueNewDownload}. */
@@ -808,13 +747,10 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         downloadItem.setSystemDownloadId(response.downloadId);
         if (!response.result) {
             onDownloadFailed(downloadItem, response.failureReason);
-            recordDownloadCompletionStats(true, DownloadStatus.FAILED, 0, 0, 0, 0);
             return;
         }
 
         getInfoBarController(downloadItem.getDownloadInfo().isOffTheRecord()).onDownloadStarted();
-        addUmaStatsEntry(new DownloadUmaStatsEntry(String.valueOf(response.downloadId),
-                downloadItem.getStartTime(), 0, false, true, 0, 0));
     }
 
     @Nullable
@@ -906,25 +842,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         Intent intent = getLaunchIntentForDownload(download.getDownloadInfo().getFilePath(),
                 download.getSystemDownloadId(), isSupportedMimeType, null, null,
                 download.getDownloadInfo().getMimeType());
-        return (intent == null) ? false
-                                : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
-    }
-
-    /**
-     * Return whether a download item can be resolved to any activity.
-     * @param filePath The file path for the download.
-     * @param mimeType The mime type of the download
-     * @param systemDownloadId They download ID generated from the android DownloadManager.
-     * @return True, if the download can be handled by an activity, false otherwise
-     */
-    public static boolean canResolveDownload(
-            String filePath, String mimeType, long systemDownloadId) {
-        assert !ThreadUtils.runningOnUiThread();
-        if (MimeUtils.isOMADownloadDescription(mimeType)) return true;
-
-        Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
-                DownloadManagerService.isSupportedMimeType(mimeType), null, null, mimeType);
-        return intent != null && ExternalNavigationDelegateImpl.resolveIntent(intent, true);
+        return (intent == null) ? false : ExternalNavigationHandler.resolveIntent(intent, true);
     }
 
     /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
@@ -965,7 +883,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             @Override
             protected void onPostExecute(Intent intent) {
                 boolean didLaunchIntent = intent != null
-                        && ExternalNavigationDelegateImpl.resolveIntent(intent, true)
+                        && ExternalNavigationHandler.resolveIntent(intent, true)
                         && DownloadUtils.fireOpenIntentForDownload(context, intent);
 
                 if (!didLaunchIntent) {
@@ -998,22 +916,13 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 getDownloadFailureMessage(item.getDownloadInfo().getFileName(), reason);
 
         if (mDownloadSnackbarController.getSnackbarManager() != null) {
-            mDownloadSnackbarController.onDownloadFailed(
-                    failureMessage,
-                    reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS);
+            mDownloadSnackbarController.onDownloadFailed(failureMessage,
+                    reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS,
+                    item.getDownloadInfo().isOffTheRecord());
         } else {
             Toast.makeText(ContextUtils.getApplicationContext(), failureMessage, Toast.LENGTH_SHORT)
                     .show();
         }
-    }
-
-    /**
-     * Set the DownloadSnackbarController for testing purpose.
-     */
-    @VisibleForTesting
-    protected void setDownloadSnackbarController(
-            DownloadSnackbarController downloadSnackbarController) {
-        mDownloadSnackbarController = downloadSnackbarController;
     }
 
     /**
@@ -1117,7 +1026,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             DownloadInfoBarController infoBarController = getInfoBarController(isOffTheRecord);
             if (infoBarController != null) infoBarController.onDownloadItemRemoved(id);
         }
-        recordDownloadFinishedUMA(DownloadStatus.CANCELLED, id.id, 0);
         maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, id.id);
     }
 
@@ -1205,11 +1113,14 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     }
 
     @Override
-    public void onProfileCreated(Profile profile) {
+    public void onProfileAdded(Profile profile) {
         ProfileManager.removeObserver(this);
-        DownloadManagerServiceJni.get().onProfileCreated(
+        DownloadManagerServiceJni.get().onProfileAdded(
                 mNativeDownloadManagerService, DownloadManagerService.this);
     }
+
+    @Override
+    public void onProfileDestroyed(Profile profile) {}
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {
@@ -1220,7 +1131,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         removeDownloadProgress(downloadGuid);
         DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(
                 UmaDownloadResumption.FAILED);
-        recordDownloadFinishedUMA(DownloadStatus.FAILED, downloadGuid, 0);
     }
 
     /**
@@ -1252,82 +1162,12 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             }
         }
 
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             Profile profile = info.isOffTheRecord()
-                    ? Profile.getLastUsedProfile().getOffTheRecordProfile()
-                    : Profile.getLastUsedProfile().getOriginalProfile();
+                    ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                    : Profile.getLastUsedRegularProfile();
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
-        }
-    }
-
-    /**
-     * Helper method to record the metrics when a download completes.
-     * @param useDownloadManager Whether the download goes through Android DownloadManager.
-     * @param status Download completion status.
-     * @param totalDuration Total time in milliseconds to download the file.
-     * @param bytesDownloaded Total bytes downloaded.
-     * @param numInterruptions Number of interruptions during the download.
-     */
-    private void recordDownloadCompletionStats(boolean useDownloadManager, int status,
-            long totalDuration, long bytesDownloaded, int numInterruptions, long bytesWasted) {
-        switch (status) {
-            case DownloadStatus.COMPLETE:
-                if (useDownloadManager) {
-                    RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.DownloadManager.Success", totalDuration);
-                    RecordHistogram.recordCount1000Histogram(
-                            "MobileDownload.BytesDownloaded.DownloadManager.Success",
-                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
-                } else {
-                    RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.ChromeNetworkStack.Success",
-                            totalDuration);
-                    RecordHistogram.recordCount1000Histogram(
-                            "MobileDownload.BytesDownloaded.ChromeNetworkStack.Success",
-                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
-                    RecordHistogram.recordCountHistogram(
-                            "MobileDownload.InterruptionsCount.ChromeNetworkStack.Success",
-                            numInterruptions);
-                    recordBytesWasted(
-                            "MobileDownload.BytesWasted.ChromeNetworkStack.Success", bytesWasted);
-                }
-                break;
-            case DownloadStatus.FAILED:
-                if (useDownloadManager) {
-                    RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.DownloadManager.Failure", totalDuration);
-                    RecordHistogram.recordCount1000Histogram(
-                            "MobileDownload.BytesDownloaded.DownloadManager.Failure",
-                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
-                } else {
-                    RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.ChromeNetworkStack.Failure",
-                            totalDuration);
-                    RecordHistogram.recordCount1000Histogram(
-                            "MobileDownload.BytesDownloaded.ChromeNetworkStack.Failure",
-                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
-                    RecordHistogram.recordCountHistogram(
-                            "MobileDownload.InterruptionsCount.ChromeNetworkStack.Failure",
-                            numInterruptions);
-                    recordBytesWasted(
-                            "MobileDownload.BytesWasted.ChromeNetworkStack.Failure", bytesWasted);
-                }
-                break;
-            case DownloadStatus.CANCELLED:
-                if (!useDownloadManager) {
-                    RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.ChromeNetworkStack.Cancel", totalDuration);
-                    RecordHistogram.recordCountHistogram(
-                            "MobileDownload.InterruptionsCount.ChromeNetworkStack.Cancel",
-                            numInterruptions);
-                    recordBytesWasted(
-                            "MobileDownload.BytesWasted.ChromeNetworkStack.Cancel", bytesWasted);
-                }
-                break;
-            default:
-                break;
         }
     }
 
@@ -1390,11 +1230,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                     break;
             }
         }
-
-        long totalTime = Math.max(0, result.lastModifiedTime - item.getStartTime());
-        recordDownloadCompletionStats(
-                true, result.downloadStatus, totalTime, result.bytesDownloaded, 0, 0);
-        removeUmaStatsEntry(item.getId());
     }
 
     /**
@@ -1419,7 +1254,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void addAutoResumableDownload(String guid) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty() && !sIsNetworkListenerDisabled) {
             mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(
                     this, new RegistrationPolicyAlwaysRegister());
@@ -1434,7 +1271,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void removeAutoResumableDownload(String guid) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty()) return;
         mAutoResumableDownloadIds.remove(guid);
         stopListenToConnectionChangeIfNotNeeded();
@@ -1452,7 +1291,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
         boolean isMetered = isActiveNetworkMetered(ContextUtils.getApplicationContext());
@@ -1487,90 +1328,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.isActiveNetworkMetered();
-    }
-
-    /**
-     * Adds a DownloadUmaStatsEntry to |mUmaEntries| and SharedPrefs.
-     * @param umaEntry A DownloadUmaStatsEntry to be added.
-     */
-    private void addUmaStatsEntry(DownloadUmaStatsEntry umaEntry) {
-        mUmaEntries.add(umaEntry);
-        storeUmaEntries();
-    }
-
-    /**
-     * Gets a DownloadUmaStatsEntry from |mUmaEntries| given by its ID.
-     * @param id ID of the UMA entry.
-     */
-    private DownloadUmaStatsEntry getUmaStatsEntry(String id) {
-        Iterator<DownloadUmaStatsEntry> iterator = mUmaEntries.iterator();
-        while (iterator.hasNext()) {
-            DownloadUmaStatsEntry entry = iterator.next();
-            if (entry.id.equals(id)) {
-                return entry;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Removes a DownloadUmaStatsEntry from SharedPrefs given by the id.
-     * @param id ID to be removed.
-     */
-    private void removeUmaStatsEntry(String id) {
-        Iterator<DownloadUmaStatsEntry> iterator = mUmaEntries.iterator();
-        boolean found = false;
-        while (iterator.hasNext()) {
-            DownloadUmaStatsEntry entry = iterator.next();
-            if (entry.id.equals(id)) {
-                iterator.remove();
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            storeUmaEntries();
-        }
-    }
-
-    /**
-     * Helper method to store all the DownloadUmaStatsEntry into SharedPreferences.
-     */
-    private void storeUmaEntries() {
-        Set<String> entries = new HashSet<String>();
-        for (int i = 0; i < mUmaEntries.size(); ++i) {
-            entries.add(mUmaEntries.get(i).getSharedPreferenceString());
-        }
-        storeDownloadInfo(mSharedPrefs, DOWNLOAD_UMA_ENTRY, entries, false /* forceCommit */);
-    }
-
-    /**
-     * Helper method to record the download completion UMA and remove the SharedPreferences entry.
-     */
-    private void recordDownloadFinishedUMA(
-            int downloadStatus, String entryId, long bytesDownloaded) {
-        DownloadUmaStatsEntry entry = getUmaStatsEntry(entryId);
-        if (entry == null) return;
-        long currentTime = System.currentTimeMillis();
-        long totalTime = Math.max(0, currentTime - entry.downloadStartTime);
-        recordDownloadCompletionStats(
-                false, downloadStatus, totalTime, bytesDownloaded, entry.numInterruptions,
-                entry.bytesWasted);
-        removeUmaStatsEntry(entryId);
-    }
-
-    /**
-     * Parse the DownloadUmaStatsEntry from the shared preference.
-     */
-    private void parseUMAStatsEntriesFromSharedPrefs() {
-        if (mSharedPrefs.contains(DOWNLOAD_UMA_ENTRY)) {
-            Set<String> entries =
-                    DownloadManagerService.getStoredDownloadInfo(mSharedPrefs, DOWNLOAD_UMA_ENTRY);
-            for (String entryString : entries) {
-                DownloadUmaStatsEntry entry = DownloadUmaStatsEntry.parseFromString(entryString);
-                if (entry != null) mUmaEntries.add(entry);
-            }
-        }
     }
 
     /** Adds a new DownloadObserver to the list. */
@@ -1969,14 +1726,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(
                 UmaBackgroundDownload.STARTED);
         sBackgroundDownloadIds.add(downloadGuid);
-        if (mFirstBackgroundDownloadId == null) {
-            mFirstBackgroundDownloadId = downloadGuid;
-            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
-                    UmaBackgroundDownload.STARTED, 0);
-            DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
-                    getNativeDownloadManagerService(), DownloadManagerService.this,
-                    mFirstBackgroundDownloadId, true /* downloadStarted */);
-        }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             mBackgroundDownloadUmaRecorder = new BackgroundDownloadUmaRecorder();
         }
@@ -1994,16 +1743,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 sBackgroundDownloadIds.remove(downloadGuid);
             }
             DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(event);
-        }
-        if (downloadGuid.equals(mFirstBackgroundDownloadId)) {
-            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
-                    event, mFirstBackgroundDownloadInterruptionCount);
-            if (event == UmaBackgroundDownload.INTERRUPTED) {
-                mFirstBackgroundDownloadInterruptionCount++;
-                DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
-                        getNativeDownloadManagerService(), DownloadManagerService.this,
-                        mFirstBackgroundDownloadId, false /* downloadStarted */);
-            }
         }
     }
 
@@ -2054,7 +1793,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     interface Natives {
         boolean isSupportedMimeType(String mimeType);
         int getAutoResumptionLimit();
-        long init(DownloadManagerService caller, boolean isProfileCreated);
+        long init(DownloadManagerService caller, boolean isProfileAdded);
         void openDownload(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord, int source);
         void resumeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
@@ -2076,10 +1815,8 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 DownloadManagerService caller, boolean isOffTheRecord);
         void updateLastAccessTime(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, boolean isOffTheRecord);
-        void onProfileCreated(long nativeDownloadManagerService, DownloadManagerService caller);
+        void onProfileAdded(long nativeDownloadManagerService, DownloadManagerService caller);
         void createInterruptedDownloadForTest(long nativeDownloadManagerService,
                 DownloadManagerService caller, String url, String guid, String targetPath);
-        void recordFirstBackgroundInterruptReason(long nativeDownloadManagerService,
-                DownloadManagerService caller, String guid, boolean downloadStarted);
     }
 }

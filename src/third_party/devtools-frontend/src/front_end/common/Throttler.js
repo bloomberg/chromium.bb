@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @typedef {function(!Error=):void} */
+// @ts-ignore Typedef.
+export let FinishCallback;
+
 /**
  * @unrestricted
  */
@@ -12,8 +16,9 @@ export class Throttler {
   constructor(timeout) {
     this._timeout = timeout;
     this._isRunningProcess = false;
+    /** @type {boolean} */
     this._asSoonAsPossible = false;
-    /** @type {?function():(!Promise.<?>)} */
+    /** @type {?function():(!Promise<void>)} */
     this._process = null;
     this._lastCompleteTime = 0;
 
@@ -52,9 +57,9 @@ export class Throttler {
   }
 
   /**
-   * @param {function():(!Promise.<?>)} process
+   * @param {function():(!Promise<?>)} process
    * @param {boolean=} asSoonAsPossible
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   schedule(process, asSoonAsPossible) {
     // Deliberately skip previous process.
@@ -99,12 +104,12 @@ export class Throttler {
   }
 
   /**
-   * @param {function()} operation
+   * @param {function():void} operation
    * @param {number} timeout
    * @return {number}
    */
   _setTimeout(operation, timeout) {
-    return setTimeout(operation, timeout);
+    return window.setTimeout(operation, timeout);
   }
 
   /**
@@ -114,12 +119,3 @@ export class Throttler {
     return window.performance.now();
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-Common.Throttler = Throttler;
-
-/** @typedef {function(!Error=)} */
-Common.Throttler.FinishCallback;

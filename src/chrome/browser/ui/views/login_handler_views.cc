@@ -86,9 +86,24 @@ class LoginHandlerViews : public LoginHandler {
            const base::string16& explanation,
            LoginHandler::LoginModelData* login_model_data)
         : handler_(handler), login_view_(nullptr), widget_(nullptr) {
-      DialogDelegate::set_button_label(
+      SetButtonLabel(
           ui::DIALOG_BUTTON_OK,
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL));
+      SetAcceptCallback(base::BindOnce(
+          [](Dialog* dialog) {
+            if (!dialog->handler_)
+              return;
+            dialog->handler_->SetAuth(dialog->login_view_->GetUsername(),
+                                      dialog->login_view_->GetPassword());
+          },
+          base::Unretained(this)));
+      SetCancelCallback(base::BindOnce(
+          [](Dialog* dialog) {
+            if (!dialog->handler_)
+              return;
+            dialog->handler_->CancelAuth();
+          },
+          base::Unretained(this)));
 
       // Create a new LoginView and set the model for it.  The model (password
       // manager) is owned by the WebContents, but the view is parented to the
@@ -126,21 +141,6 @@ class LoginHandlerViews : public LoginHandler {
     void DeleteDelegate() override { delete this; }
 
     ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
-
-    bool Cancel() override {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-      if (handler_)
-        handler_->CancelAuth();
-      return true;
-    }
-
-    bool Accept() override {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-      if (handler_)
-        handler_->SetAuth(login_view_->GetUsername(),
-                          login_view_->GetPassword());
-      return true;
-    }
 
     views::View* GetInitiallyFocusedView() override {
       return login_view_->GetInitiallyFocusedView();

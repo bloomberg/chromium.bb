@@ -6,7 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/libvpx/libvpx_srcs.gni")
-import("//third_party/yasm/yasm_assemble.gni")
+import("//third_party/nasm/nasm_assemble.gni")
 
 # Sets the architecture name for building libvpx.
 if (current_cpu == "x86") {
@@ -101,7 +101,7 @@ config("libvpx_external_config") {
 }
 
 if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
-  yasm_assemble("libvpx_yasm") {
+  nasm_assemble("libvpx_asm") {
     if (current_cpu == "x86") {
       sources = libvpx_srcs_x86_assembly
     } else if (current_cpu == "x64") {
@@ -267,9 +267,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
     gen_file =
         get_label_info("//third_party/libvpx/source/libvpx", "root_gen_dir") +
         "/{{source_root_relative_dir}}/{{source_file_part}}.S"
-    outputs = [
-      gen_file,
-    ]
+    outputs = [ gen_file ]
     if (is_ios) {
       ads2gas_script =
           "//third_party/libvpx/source/libvpx/build/make/ads2gas_apple.pl"
@@ -300,9 +298,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
       include_dirs = [ get_label_info("//third_party/libvpx/source/libvpx",
                                       "target_gen_dir") ]
     }
-    deps = [
-      ":convert_arm_assembly",
-    ]
+    deps = [ ":convert_arm_assembly" ]
   }
 }
 
@@ -348,6 +344,7 @@ static_library("libvpx") {
   deps = []
   if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
     deps += [
+      ":libvpx_asm",
       ":libvpx_intrinsics_avx",
       ":libvpx_intrinsics_avx2",
       ":libvpx_intrinsics_avx512",
@@ -355,7 +352,73 @@ static_library("libvpx") {
       ":libvpx_intrinsics_sse2",
       ":libvpx_intrinsics_sse4_1",
       ":libvpx_intrinsics_ssse3",
-      ":libvpx_yasm",
+    ]
+  }
+  if (cpu_arch_full == "arm-neon-cpu-detect") {
+    deps += [ ":libvpx_intrinsics_neon" ]
+  }
+  if (is_android) {
+    deps += [ "//third_party/android_ndk:cpu_features" ]
+  }
+  if (current_cpu == "arm" && arm_assembly_sources != []) {
+    deps += [ ":libvpx_assembly_arm" ]
+  }
+
+  public_configs = [ ":libvpx_external_config" ]
+}
+
+static_library("libvp9rc") {
+  if (!is_debug && is_win) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (is_nacl) {
+    sources = libvpx_srcs_generic
+  } else if (current_cpu == "x86") {
+    sources = libvpx_srcs_x86
+  } else if (current_cpu == "x64") {
+    if (is_msan) {
+      sources = libvpx_srcs_generic
+    } else {
+      sources = libvpx_srcs_x86_64
+    }
+  } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+    sources = libvpx_srcs_mips
+  } else if (current_cpu == "arm") {
+    if (is_chromeos) {
+      sources = libvpx_srcs_arm_neon_highbd
+    } else if (arm_use_neon) {
+      sources = libvpx_srcs_arm_neon
+    } else if (is_android) {
+      sources = libvpx_srcs_arm_neon_cpu_detect
+    } else {
+      sources = libvpx_srcs_arm
+    }
+  } else if (current_cpu == "arm64") {
+    if (is_chromeos || is_win) {
+      sources = libvpx_srcs_arm64_highbd
+    } else {
+      sources = libvpx_srcs_arm64
+    }
+  }
+  sources += [ "//third_party/libvpx/source/libvpx/vp9/ratectrl_rtc.cc" ]
+  sources += [ "//third_party/libvpx/source/libvpx/vp9/ratectrl_rtc.h" ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":libvpx_config" ]
+  deps = []
+  if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
+    deps += [
+      ":libvpx_asm",
+      ":libvpx_intrinsics_avx",
+      ":libvpx_intrinsics_avx2",
+      ":libvpx_intrinsics_avx512",
+      ":libvpx_intrinsics_mmx",
+      ":libvpx_intrinsics_sse2",
+      ":libvpx_intrinsics_sse4_1",
+      ":libvpx_intrinsics_ssse3",
     ]
   }
   if (cpu_arch_full == "arm-neon-cpu-detect") {

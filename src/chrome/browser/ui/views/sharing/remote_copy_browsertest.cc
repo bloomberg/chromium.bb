@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -23,11 +24,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "net/http/http_status_code.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -58,6 +61,7 @@ class ClipboardObserver : public ui::ClipboardObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardObserver);
 };
+
 }  // namespace
 
 // Browser tests for the Remote Copy feature.
@@ -119,9 +123,8 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
 
   std::vector<base::string16> GetAvailableClipboardTypes() {
     std::vector<base::string16> types;
-    bool contains_filenames;
     ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-        ui::ClipboardBuffer::kCopyPaste, &types, &contains_filenames);
+        ui::ClipboardBuffer::kCopyPaste, &types);
     return types;
   }
 
@@ -133,8 +136,8 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
   }
 
   SkBitmap ReadClipboardImage() {
-    return ui::Clipboard::GetForCurrentThread()->ReadImage(
-        ui::ClipboardBuffer::kCopyPaste);
+    return ui::clipboard_test_util::ReadImage(
+        ui::Clipboard::GetForCurrentThread());
   }
 
   message_center::Notification GetNotification() {
@@ -184,9 +187,11 @@ class RemoteCopyBrowserTest : public RemoteCopyBrowserTestBase {
     EXPECT_TRUE(server_->Start());
 
     url::Origin allowlist_origin = url::Origin::Create(server_->base_url());
-    feature_list_.InitAndEnableFeatureWithParameters(
-        kRemoteCopyReceiver,
-        {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{kRemoteCopyReceiver,
+          {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}}},
+         {kRemoteCopyImageNotification, {}}},
+        {});
   }
 };
 
@@ -235,8 +240,14 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
                 base::ASCIIToUTF16(kDeviceName)),
             notification.title());
   ASSERT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
+#if defined(OS_MACOSX)
+  // We show the image in the notification icon on macOS.
+  ASSERT_EQ(640, notification.icon().Width());
+  ASSERT_EQ(480, notification.icon().Height());
+#else
   ASSERT_EQ(640, notification.rich_notification_data().image.Width());
   ASSERT_EQ(480, notification.rich_notification_data().image.Height());
+#endif  // defined(OS_MACOSX)
   histograms_.ExpectUniqueSample(kStatusCodeHistogram, net::HTTP_OK, 1);
   histograms_.ExpectTotalCount(kLoadTimeHistogram, 1);
   histograms_.ExpectUniqueSample(kImageSizeBeforeDecodeHistogram, 810490, 1);

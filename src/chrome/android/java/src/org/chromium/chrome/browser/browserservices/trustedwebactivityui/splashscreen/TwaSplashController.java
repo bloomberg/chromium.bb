@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,19 +22,16 @@ import androidx.browser.customtabs.TrustedWebUtils;
 import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.browser.trusted.splashscreens.SplashScreenParamKey;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.SplashController;
 import org.chromium.chrome.browser.webapps.SplashDelegate;
-import org.chromium.chrome.browser.webapps.SplashscreenObserver;
-import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.util.ColorUtils;
 
 import javax.inject.Inject;
 
@@ -47,7 +43,7 @@ import javax.inject.Inject;
  * - TWA client app verifies conditions for showing splash screen. If the checks pass, it shows the
  * splash screen immediately.
  * - The client passes the URI to a file with the splash image to
- * {@link android.support.customtabs.CustomTabsService}. The image is decoded and put into
+ * {@link androidx.browser.customtabs.CustomTabsService}. The image is decoded and put into
  * {@link SplashImageHolder}.
  * - The client then launches a TWA, at which point the Bitmap is already available.
  * - ChromeLauncherActivity calls {@link #handleIntent}, which starts
@@ -65,9 +61,7 @@ import javax.inject.Inject;
  * gc-ed when it finishes its job (to that end, it removes all observers it has set).
  * If these lifecycle assumptions change, consider whether @ActivityScope needs to be added.
  */
-public class TwaSplashController
-        implements InflationObserver, SplashDelegate, SplashscreenObserver {
-
+public class TwaSplashController implements InflationObserver, SplashDelegate {
     // TODO(pshmakov): move this to AndroidX.
     private static final String KEY_SHOWN_IN_CLIENT =
             "androidx.browser.trusted.KEY_SPLASH_SCREEN_SHOWN_IN_CLIENT";
@@ -76,46 +70,28 @@ public class TwaSplashController
     private final Activity mActivity;
     private final ActivityWindowAndroid mActivityWindowAndroid;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-    private final ScreenOrientationProvider mScreenOrientationProvider;
     private final SplashImageHolder mSplashImageCache;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final TwaFinishHandler mFinishHandler;
 
     @Inject
     public TwaSplashController(SplashController splashController, Activity activity,
             ActivityWindowAndroid activityWindowAndroid,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            ScreenOrientationProvider screenOrientationProvider, SplashImageHolder splashImageCache,
-            BrowserServicesIntentDataProvider intentDataProvider, TwaFinishHandler finishHandler) {
+            SplashImageHolder splashImageCache,
+            BrowserServicesIntentDataProvider intentDataProvider) {
         mSplashController = splashController;
         mActivity = activity;
         mActivityWindowAndroid = activityWindowAndroid;
         mLifecycleDispatcher = lifecycleDispatcher;
-        mScreenOrientationProvider = screenOrientationProvider;
         mSplashImageCache = splashImageCache;
         mIntentDataProvider = intentDataProvider;
-        mFinishHandler = finishHandler;
 
-        long splashHideAnimationDurationMs = IntentUtils.safeGetInt(
-                getSplashScreenParamsFromIntent(), SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS,
-                0);
-        boolean isWindowInitiallyTranslucent = mActivity instanceof TranslucentCustomTabActivity;
-        mSplashController.setConfig(
-                this, isWindowInitiallyTranslucent, splashHideAnimationDurationMs);
+        long splashHideAnimationDurationMs =
+                IntentUtils.safeGetInt(getSplashScreenParamsFromIntent(),
+                        SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS, 0);
+        mSplashController.setConfig(this, splashHideAnimationDurationMs);
 
-        mSplashController.addObserver(this);
         lifecycleDispatcher.register(this);
-
-        // Setting the screen orientation while the activity is translucent throws an exception on
-        // O (but not on O MR1). Delay setting it.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
-            mScreenOrientationProvider.delayOrientationRequests(mActivityWindowAndroid);
-        }
-
-        // If the client's activity is opaque, finishing the activities one after another may lead
-        // to bottom activity showing itself in a short flash. The problem can be solved by bottom
-        // activity killing the whole task.
-        mFinishHandler.setShouldAttemptFinishingTask(true);
     }
 
     @Override
@@ -133,9 +109,7 @@ public class TwaSplashController
     }
 
     @Override
-    public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
-            long startTimestamp, long endTimestamp) {
-        mFinishHandler.setShouldAttemptFinishingTask(false);
+    public void onSplashHidden(Tab tab, long startTimestamp, long endTimestamp) {
         mLifecycleDispatcher.unregister(this); // Unregister to get gc-ed
     }
 
@@ -152,23 +126,15 @@ public class TwaSplashController
         mSplashController.bringSplashBackToFront();
     }
 
-    @Override
-    public void onTranslucencyRemoved() {
-        mScreenOrientationProvider.runDelayedOrientationRequests(mActivityWindowAndroid);
-    }
-
-    @Override
-    public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {}
-
     private void applyCustomizationsToSplashScreenView(ImageView imageView) {
         Bundle params = getSplashScreenParamsFromIntent();
 
-        int backgroundColor = IntentUtils.safeGetInt(params,
-                SplashScreenParamKey.KEY_BACKGROUND_COLOR, Color.WHITE);
+        int backgroundColor = IntentUtils.safeGetInt(
+                params, SplashScreenParamKey.KEY_BACKGROUND_COLOR, Color.WHITE);
         imageView.setBackgroundColor(ColorUtils.getOpaqueColor(backgroundColor));
 
-        int scaleTypeOrdinal = IntentUtils.safeGetInt(params,
-                SplashScreenParamKey.KEY_SCALE_TYPE, -1);
+        int scaleTypeOrdinal =
+                IntentUtils.safeGetInt(params, SplashScreenParamKey.KEY_SCALE_TYPE, -1);
         ImageView.ScaleType[] scaleTypes = ImageView.ScaleType.values();
         ImageView.ScaleType scaleType;
         if (scaleTypeOrdinal < 0 || scaleTypeOrdinal >= scaleTypes.length) {

@@ -13,8 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/task_runner.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -100,9 +100,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
                                                 // partially encrypted in old
                                                 // format.
     OFFLINE_NO_MOUNT = 26,  // Offline login failed due to missing cryptohome.
+    TPM_UPDATE_REQUIRED = 27,  // TPM firmware update is required.
   };
 
-  CryptohomeAuthenticator(scoped_refptr<base::TaskRunner> task_runner,
+  CryptohomeAuthenticator(scoped_refptr<base::SequencedTaskRunner> task_runner,
                           AuthStatusConsumer* consumer);
 
   // Authenticator overrides.
@@ -192,7 +193,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
  protected:
   ~CryptohomeAuthenticator() override;
 
-  typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
+  using IsOwnerCallback = base::OnceCallback<void(bool is_owner)>;
 
   // Method to be implemented in child. Return |true| if user specified in
   // |context| exists on device.
@@ -206,7 +207,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // parameter that indicates if user in |context| can act as an owner in
   // safe mode.
   virtual void CheckSafeModeOwnership(const UserContext& context,
-                                      const IsOwnerCallback& callback) = 0;
+                                      IsOwnerCallback callback) = 0;
 
  private:
   friend class CryptohomeAuthenticatorTest;
@@ -266,7 +267,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<AuthAttemptState> current_state_;
   bool migrate_attempted_;

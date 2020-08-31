@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/process/process_handle.h"
@@ -34,7 +35,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/test/not_implemented_network_url_loader_factory.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -66,7 +67,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       is_unused_(true),
       keep_alive_ref_count_(0),
       foreground_service_worker_count_(0),
-      url_loader_factory_(nullptr) {
+      url_loader_factory_(std::make_unique<FakeNetworkURLLoaderFactory>()) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
@@ -99,7 +100,6 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
   termination_info.status = status;
   termination_info.exit_code = exit_code;
   termination_info.renderer_has_visible_clients = VisibleClientCount() > 0;
-  termination_info.renderer_was_subframe = GetFrameDepth() > 0;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<ChildProcessTerminationInfo>(&termination_info));
@@ -267,6 +267,15 @@ static void DeleteIt(base::WeakPtr<MockRenderProcessHost> h) {
 
 void MockRenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
+    if (IsInitializedAndNotDead()) {
+      ChildProcessTerminationInfo termination_info;
+      termination_info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
+      termination_info.exit_code = 0;
+      termination_info.renderer_has_visible_clients = VisibleClientCount() > 0;
+      for (auto& observer : observers_)
+        observer.RenderProcessExited(this, termination_info);
+    }
+
     for (auto& observer : observers_)
       observer.RenderProcessHostDestroyed(this);
     // Post the delete of |this| as a WeakPtr so that if |this| is deleted by a
@@ -403,16 +412,8 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 }
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
-    const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-    const WebPreferences* preferences,
-    const net::NetworkIsolationKey& network_isolation_key,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-        header_client,
-    const base::Optional<base::UnguessableToken>& top_frame_token,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
+    network::mojom::URLLoaderFactoryParamsPtr params) {
   if (GetNetworkFactoryCallback().is_null()) {
     url_loader_factory_->Clone(std::move(receiver));
     return;
@@ -450,19 +451,21 @@ void MockRenderProcessHost::LockToOrigin(
 }
 
 void MockRenderProcessHost::BindCacheStorage(
+    const network::CrossOriginEmbedderPolicy&,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   cache_storage_receiver_ = std::move(receiver);
 }
 
 void MockRenderProcessHost::BindIndexedDB(
-    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   idb_factory_receiver_ = std::move(receiver);
 }
 
-void MockRenderProcessHost::CleanupCorbExceptionForPluginUponDestruction() {}
+void MockRenderProcessHost::
+    CleanupNetworkServicePluginExceptionsUponDestruction() {}
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
@@ -475,11 +478,10 @@ void MockRenderProcessHost::EnableAudioDebugRecordings(
 void MockRenderProcessHost::DisableAudioDebugRecordings() {}
 
 RenderProcessHost::WebRtcStopRtpDumpCallback
-MockRenderProcessHost::StartRtpDump(
-    bool incoming,
-    bool outgoing,
-    const WebRtcRtpPacketCallback& packet_callback) {
-  return WebRtcStopRtpDumpCallback();
+MockRenderProcessHost::StartRtpDump(bool incoming,
+                                    bool outgoing,
+                                    WebRtcRtpPacketCallback packet_callback) {
+  return base::NullCallback();
 }
 
 void MockRenderProcessHost::EnableWebRtcEventLogOutput(int lid,
@@ -507,14 +509,7 @@ void MockRenderProcessHost::OverrideRendererInterfaceForTesting(
   renderer_interface_ = std::move(renderer_interface);
 }
 
-void MockRenderProcessHost::OverrideURLLoaderFactory(
-    network::mojom::URLLoaderFactory* factory) {
-  url_loader_factory_ = factory;
-}
-
-MockRenderProcessHostFactory::MockRenderProcessHostFactory()
-    : default_mock_url_loader_factory_(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>()) {}
+MockRenderProcessHostFactory::MockRenderProcessHostFactory() = default;
 
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   // Detach this object from MockRenderProcesses to prevent them from calling
@@ -528,7 +523,6 @@ RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     SiteInstance* site_instance) {
   std::unique_ptr<MockRenderProcessHost> host =
       std::make_unique<MockRenderProcessHost>(browser_context);
-  host->OverrideURLLoaderFactory(default_mock_url_loader_factory_.get());
   processes_.push_back(std::move(host));
   processes_.back()->SetFactory(this);
   return processes_.back().get();

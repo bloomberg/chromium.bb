@@ -33,7 +33,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
@@ -42,15 +42,6 @@ namespace {
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchLoadResultHistogram[] =
     "SignedExchange.Prefetch.LoadResult2";
-constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
-constexpr char kNoSniffHeaderValue[] = "nosniff";
-
-bool HasNoSniffHeader(const network::mojom::URLResponseHead& response) {
-  std::string content_type_options;
-  response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
-                                    &content_type_options);
-  return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
-}
 
 SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
@@ -135,7 +126,7 @@ void SignedExchangeLoader::OnUploadProgress(
 }
 
 void SignedExchangeLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
-  // Curerntly CachedMetadata for Signed Exchange is not supported.
+  // CachedMetadata for Signed Exchange is not supported.
   NOTREACHED();
 }
 
@@ -148,7 +139,16 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle response_body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
       url_loader_factory_, url_loader_throttles_getter_,
-      outer_request_.throttling_profile_id);
+      outer_request_.throttling_profile_id,
+      (outer_request_.trusted_params &&
+       !outer_request_.trusted_params->isolation_info.IsEmpty())
+          ? net::IsolationInfo::Create(
+                net::IsolationInfo::RedirectMode::kUpdateNothing,
+                *outer_request_.trusted_params->isolation_info
+                     .top_frame_origin(),
+                *outer_request_.trusted_params->isolation_info.frame_origin(),
+                net::SiteForCookies())
+          : net::IsolationInfo());
 
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
@@ -163,14 +163,15 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       IsOriginSecure(outer_request_.url),
-      HasNoSniffHeader(*outer_response_head_), content_type_,
+      signed_exchange_utils::HasNoSniffHeader(*outer_response_head_),
+      content_type_,
       std::make_unique<network::DataPipeToSourceStream>(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), outer_request_.load_flags,
-      std::make_unique<blink::SignedExchangeRequestMatcher>(
-          outer_request_.headers, accept_langs_),
+      std::make_unique<blink::WebPackageRequestMatcher>(outer_request_.headers,
+                                                        accept_langs_),
       std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_);
 }
 
@@ -186,6 +187,7 @@ void SignedExchangeLoader::OnComplete(
 void SignedExchangeLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED();
 }

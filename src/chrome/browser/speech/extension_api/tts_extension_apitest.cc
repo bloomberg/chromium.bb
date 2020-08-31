@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
@@ -482,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
   // TODO(katie): Expect the deprecated gender warning rather than ignoring
   // warnings.
   ASSERT_TRUE(RunExtensionTestWithFlags("tts_engine/register_engine",
-                                        kFlagIgnoreManifestWarnings))
+                                        kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 

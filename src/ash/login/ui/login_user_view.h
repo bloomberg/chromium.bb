@@ -37,8 +37,10 @@ class ASH_EXPORT LoginUserView : public views::View,
     views::View* user_label() const;
     views::View* tap_button() const;
     views::View* dropdown() const;
-    LoginBaseBubbleView* menu() const;
-    views::View* user_domain() const;
+    LoginUserMenuView* menu() const;
+    views::View* enterprise_icon() const;
+
+    void OnTap() const;
 
     bool is_opaque() const;
 
@@ -57,7 +59,6 @@ class ASH_EXPORT LoginUserView : public views::View,
   // |show_dropdown| arg is false.
   LoginUserView(LoginDisplayStyle style,
                 bool show_dropdown,
-                bool show_domain,
                 const OnTap& on_tap,
                 const OnRemoveWarningShown& on_remove_warning_shown,
                 const OnRemove& on_remove);

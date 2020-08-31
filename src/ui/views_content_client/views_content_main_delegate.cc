@@ -15,6 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views_content_client/views_content_browser_client.h"
+#include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
 #if defined(OS_WIN)
@@ -47,8 +48,6 @@ bool ViewsContentMainDelegate::BasicStartupComplete(int* exit_code) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-  content::SetContentClient(&content_client_);
-
   logging::LoggingSettings settings;
   settings.logging_dest =
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
@@ -79,11 +78,17 @@ void ViewsContentMainDelegate::PreSandboxStartup() {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         ui_test_resources_200, ui::SCALE_FACTOR_200P);
   }
+
+  views_content_client_->OnResourcesLoaded();
 }
 
 void ViewsContentMainDelegate::PreCreateMainMessageLoop() {
   content::ContentMainDelegate::PreCreateMainMessageLoop();
   ViewsContentClientMainParts::PreCreateMainMessageLoop();
+}
+
+content::ContentClient* ViewsContentMainDelegate::CreateContentClient() {
+  return &content_client_;
 }
 
 content::ContentBrowserClient*

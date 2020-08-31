@@ -52,8 +52,7 @@ TSAN_TEST(FontObjectThreadedTest, GetDefaultFontData) {
     for (FontDescription::GenericFamilyType family_type :
          {FontDescription::kStandardFamily, FontDescription::kSerifFamily,
           FontDescription::kSansSerifFamily, FontDescription::kMonospaceFamily,
-          FontDescription::kCursiveFamily, FontDescription::kFantasyFamily,
-          FontDescription::kPictographFamily}) {
+          FontDescription::kCursiveFamily, FontDescription::kFantasyFamily}) {
       FontDescription font_description;
       font_description.SetComputedSize(12.0);
       font_description.SetLocale(LayoutLocale::Get("en"));
@@ -61,8 +60,6 @@ TSAN_TEST(FontObjectThreadedTest, GetDefaultFontData) {
       font_description.SetGenericFamily(family_type);
 
       Font font = Font(font_description);
-      font.Update(nullptr);
-
       ASSERT_TRUE(font.PrimaryFont());
     }
   });
@@ -121,7 +118,6 @@ TSAN_TEST(FontObjectThreadedTest, WordShaperTest) {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     Font font = Font(font_description);
-    font.Update(nullptr);
     ASSERT_TRUE(font.CanShapeWordByWord());
     ShapeCache cache;
 

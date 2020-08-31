@@ -78,7 +78,7 @@
 #
 # Specifying a target CPU
 #   To specify a target CPU, the variables target_cpu and target_cpu_only
-#   are available and are analagous to target_os and target_os_only.
+#   are available and are analogous to target_os and target_os_only.
 
 from __future__ import print_function
 
@@ -118,11 +118,16 @@ import setup_color
 
 from third_party import six
 
-# Check for people accidentally running this script with Python3 - an
-# increasingly common error on Windows 10 due to the store version of Python.
-if sys.version_info.major >= 3 and not 'GCLIENT_TEST' in os.environ:
-  print("Warning: gclient doesn't yet support Python 3 and may not work "
-        "correctly.", file=sys.stderr)
+# Warn when executing this script with Python 3 when the GCLIENT_PY3 environment
+# variable is not set to 1.
+# It is an increasingly common error on Windows 10 due to the store version of
+# Python.
+if (sys.version_info.major >= 3
+    and not 'GCLIENT_TEST' in os.environ
+    and os.getenv('GCLIENT_PY3') != '1'):
+  print('Warning: Running gclient on Python 3. \n'
+        'If you encounter any issues, please file a bug on crbug.com under '
+        'the Infra>SDK component.', file=sys.stderr)
 
 
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
@@ -545,7 +550,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # thus unsorted, while the .gclient format is a list thus sorted.
     #
     # Interestingly enough, the following condition only works in the case we
-    # want: self is a 2nd level node. 3nd level node wouldn't need this since
+    # want: self is a 2nd level node. 3rd level node wouldn't need this since
     # they already have their parent as a requirement.
     if self.parent and self.parent.parent and not self.parent.parent.parent:
       requirements |= set(i.name for i in self.root.dependencies if i.name)
@@ -596,7 +601,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               self.url))
       # In theory we could keep it as a shadow of the other one. In
       # practice, simply ignore it.
-      logging.warn('Won\'t process duplicate dependency %s' % sibling)
+      logging.warning("Won't process duplicate dependency %s" % sibling)
       return False
     return True
 
@@ -716,8 +721,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if deps_content:
       try:
         local_scope = gclient_eval.Parse(
-            deps_content, self._get_option('validate_syntax', False),
-            filepath, self.get_vars(), self.get_builtin_vars())
+            deps_content, filepath, self.get_vars(), self.get_builtin_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
 
@@ -1042,8 +1046,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if isinstance(value, basestring):
         value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
-    with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
-      f.write('\n'.join(lines))
+    with open(os.path.join(self.root.root_dir, self._gn_args_file), 'wb') as f:
+      f.write('\n'.join(lines).encode('utf-8', 'replace'))
 
   @gclient_utils.lockedmethod
   def _run_is_done(self, file_list):
@@ -1322,10 +1326,10 @@ class GClient(GitDependency):
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
 solutions = [
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "deps_file"   : "%(deps_file)s",
-    "managed"     : %(managed)s,
+  { "name"        : %(solution_name)r,
+    "url"         : %(solution_url)r,
+    "deps_file"   : %(deps_file)r,
+    "managed"     : %(managed)r,
     "custom_deps" : {
     },
     "custom_vars": %(custom_vars)r,
@@ -2698,12 +2702,6 @@ def CMDsync(parser, args):
                     help='DEPRECATED: This is a no-op.')
   parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
                     help='DEPRECATED: This is a no-op.')
-  # TODO(phajdan.jr): Remove validation options once default (crbug/570091).
-  parser.add_option('--validate-syntax', action='store_true', default=True,
-                    help='Validate the .gclient and DEPS syntax')
-  parser.add_option('--disable-syntax-validation', action='store_false',
-                    dest='validate_syntax',
-                    help='Disable validation of .gclient and DEPS syntax.')
   parser.add_option('--no-rebase-patch-ref', action='store_false',
                     dest='rebase_patch_ref', default=True,
                     help='Bypass rebase of the patch ref after checkout.')
@@ -2745,7 +2743,6 @@ CMDupdate = CMDsync
 def CMDvalidate(parser, args):
   """Validates the .gclient and DEPS syntax."""
   options, args = parser.parse_args(args)
-  options.validate_syntax = True
   client = GClient.LoadCurrentConfig(options)
   rv = client.RunOnDeps('validate', args)
   if rv == 0:
@@ -2981,8 +2978,8 @@ def CMDsetdep(parser, args):
     else:
       gclient_eval.SetRevision(local_scope, name, value)
 
-  with open(options.deps_file, 'w') as f:
-    f.write(gclient_eval.RenderDEPSFile(local_scope))
+  with open(options.deps_file, 'wb') as f:
+    f.write(gclient_eval.RenderDEPSFile(local_scope).encode('utf-8'))
 
 
 @metrics.collector.collect_metrics('gclient verify')
@@ -3089,7 +3086,7 @@ class OptionParser(optparse.OptionParser):
         level=levels[min(options.verbose, len(levels) - 1)],
         format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
     if options.config_filename and options.spec:
-      self.error('Cannot specifiy both --gclientfile and --spec')
+      self.error('Cannot specify both --gclientfile and --spec')
     if (options.config_filename and
         options.config_filename != os.path.basename(options.config_filename)):
       self.error('--gclientfile target must be a filename, not a path')

@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
@@ -228,9 +229,9 @@ RLZTracker::RLZTracker()
       homepage_used_(false),
       app_list_used_(false),
       min_init_delay_(kMinInitDelay),
-      background_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-           base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
+      background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT})) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -289,15 +290,15 @@ bool RLZTracker::Init(bool first_run,
     // Register for notifications from the omnibox so that we can record when
     // the user performs a first search.
     delegate_->SetOmniboxSearchCallback(
-        base::Bind(&RLZTracker::RecordFirstSearch, base::Unretained(this),
-                   ChromeOmnibox()));
+        base::BindOnce(&RLZTracker::RecordFirstSearch, base::Unretained(this),
+                       ChromeOmnibox()));
 
 #if !defined(OS_IOS)
     // Register for notifications from navigations, to see if the user has used
     // the home page.
     delegate_->SetHomepageSearchCallback(
-        base::Bind(&RLZTracker::RecordFirstSearch, base::Unretained(this),
-                   ChromeHomePage()));
+        base::BindOnce(&RLZTracker::RecordFirstSearch, base::Unretained(this),
+                       ChromeHomePage()));
 #endif
   }
   delegate_->GetReactivationBrand(&reactivation_brand_);

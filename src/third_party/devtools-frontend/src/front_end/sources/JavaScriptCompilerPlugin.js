@@ -1,10 +1,20 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
+
+import * as Bindings from '../bindings/bindings.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Snippets from '../snippets/snippets.js';
+import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {Plugin} from './Plugin.js';
+
+export class JavaScriptCompilerPlugin extends Plugin {
   /**
-   * @param {!SourceFrame.SourcesTextEditor} textEditor
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!SourceFrame.SourcesTextEditor.SourcesTextEditor} textEditor
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   constructor(textEditor, uiSourceCode) {
     super();
@@ -26,18 +36,19 @@ Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugi
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   static accepts(uiSourceCode) {
     if (uiSourceCode.extension() === 'js') {
       return true;
     }
-    if (Snippets.isSnippetsUISourceCode(uiSourceCode)) {
+    if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
       return true;
     }
-    for (const debuggerModel of SDK.targetManager.models(SDK.DebuggerModel)) {
-      if (Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel)) {
+    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+      if (Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
+              uiSourceCode, debuggerModel)) {
         return true;
       }
     }
@@ -52,21 +63,24 @@ Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugi
     if (this._timeout) {
       clearTimeout(this._timeout);
     }
-    this._timeout = setTimeout(this._compile.bind(this), Sources.JavaScriptCompilerPlugin.CompileDelay);
+    this._timeout = setTimeout(this._compile.bind(this), CompileDelay);
   }
 
   /**
-   * @return {?SDK.RuntimeModel}
+   * @return {?SDK.RuntimeModel.RuntimeModel}
    */
   _findRuntimeModel() {
-    const debuggerModels = SDK.targetManager.models(SDK.DebuggerModel);
+    const debuggerModels = SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel);
     for (let i = 0; i < debuggerModels.length; ++i) {
-      const scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(this._uiSourceCode, debuggerModels[i]);
+      const scriptFile = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
+          this._uiSourceCode, debuggerModels[i]);
       if (scriptFile) {
         return debuggerModels[i].runtimeModel();
       }
     }
-    return SDK.targetManager.mainTarget() ? SDK.targetManager.mainTarget().model(SDK.RuntimeModel) : null;
+    return SDK.SDKModel.TargetManager.instance().mainTarget() ?
+        SDK.SDKModel.TargetManager.instance().mainTarget().model(SDK.RuntimeModel.RuntimeModel) :
+        null;
   }
 
   async _compile() {
@@ -74,7 +88,7 @@ Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugi
     if (!runtimeModel) {
       return;
     }
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
+    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (!currentExecutionContext) {
       return;
     }
@@ -101,7 +115,7 @@ Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugi
     }
 
     const exceptionDetails = result.exceptionDetails;
-    const text = SDK.RuntimeModel.simpleTextFromException(exceptionDetails);
+    const text = SDK.RuntimeModel.RuntimeModel.simpleTextFromException(exceptionDetails);
     this._message = this._uiSourceCode.addLineMessage(
         Workspace.UISourceCode.Message.Level.Error, text, exceptionDetails.lineNumber, exceptionDetails.columnNumber);
     this._compilationFinishedForTest();
@@ -123,6 +137,6 @@ Sources.JavaScriptCompilerPlugin = class extends Sources.UISourceCodeFrame.Plugi
       clearTimeout(this._timeout);
     }
   }
-};
+}
 
-Sources.JavaScriptCompilerPlugin.CompileDelay = 1000;
+export const CompileDelay = 1000;

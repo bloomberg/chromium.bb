@@ -8,11 +8,10 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
 // https://w3c.github.io/performance-timeline/#the-performanceobserver-interface
 [
     ActiveScriptWrappable,
-    Constructor(PerformanceObserverCallback callback),
-    ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker)
 ] interface PerformanceObserver {
-    [RaisesException] void observe(optional PerformanceObserverInit options);
+    [CallWith=ScriptState] constructor(PerformanceObserverCallback callback);
+    [RaisesException] void observe(optional PerformanceObserverInit options = {});
     void disconnect();
     PerformanceEntryList takeRecords();
     [SameObject, SaveSameObject, CallWith=ScriptState] static readonly attribute FrozenArray<DOMString> supportedEntryTypes;

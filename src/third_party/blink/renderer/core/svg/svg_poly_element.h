@@ -35,7 +35,7 @@ class SVGPolyElement : public SVGGeometryElement {
   SVGPointListTearOff* pointsFromJavascript() { return points_->baseVal(); }
   SVGPointListTearOff* animatedPoints() { return points_->animVal(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   SVGPolyElement(const QualifiedName&, Document&);
@@ -49,12 +49,21 @@ class SVGPolyElement : public SVGGeometryElement {
   Member<SVGAnimatedPointList> points_;
 };
 
-inline bool IsSVGPolyElement(const SVGElement& element) {
-  return element.HasTagName(svg_names::kPolygonTag) ||
-         element.HasTagName(svg_names::kPolylineTag);
+template <>
+inline bool IsElementOfType<const SVGPolyElement>(const Node& node) {
+  return IsA<SVGPolyElement>(node);
 }
-
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
+template <>
+struct DowncastTraits<SVGPolyElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* svg_element = DynamicTo<SVGElement>(node);
+    return svg_element && AllowFrom(*svg_element);
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.HasTagName(svg_names::kPolygonTag) ||
+           svg_element.HasTagName(svg_names::kPolylineTag);
+  }
+};
 
 }  // namespace blink
 

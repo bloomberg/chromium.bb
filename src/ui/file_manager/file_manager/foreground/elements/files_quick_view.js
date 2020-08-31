@@ -14,6 +14,12 @@ const FilesQuickView = Polymer({
     // True if there is a file task that can open the file type.
     hasTask: Boolean,
 
+    /**
+     * True if the entry shown in Quick View can be deleted.
+     * @type {boolean}
+     */
+    canDelete: Boolean,
+
     // URLs should be accessible from the <webview> since their content is
     // rendered inside the <wevbiew>. Hint: use URL.createObjectURL.
     contentUrl: String,
@@ -47,7 +53,9 @@ const FilesQuickView = Polymer({
   },
 
   listeners: {
+    'files-safe-media-tap-inside': 'tapInside',
     'files-safe-media-tap-outside': 'close',
+    'files-safe-media-load-error': 'loaderror',
   },
 
   /**
@@ -74,17 +82,27 @@ const FilesQuickView = Polymer({
         subtype: '',
         filePath: '',
         hasTask: false,
+        canDelete: false,
         contentUrl: '',
         videoPoster: '',
         audioArtwork: '',
         autoplay: false,
         browsable: false,
     });
+
     const video = this.$.contentPanel.querySelector('#videoSafeMedia');
     if (video) {
       video.src = '';
       video.fire('src-changed');
     }
+
+    this.removeAttribute('load-error');
+  },
+
+  // Handle load error from the files-safe-media container.
+  loaderror: function() {
+    this.setAttribute('load-error', '');
+    this.contentUrl = '';
   },
 
   /** @return {boolean} */
@@ -110,6 +128,13 @@ const FilesQuickView = Polymer({
   close: function() {
     if (this.isOpened()) {
       this.$.dialog.close();
+    }
+  },
+
+  tapInside: function(e) {
+    if (this.type === 'image') {
+      const dialog = this.shadowRoot.querySelector('#dialog');
+      dialog.focus();
     }
   },
 
@@ -139,14 +164,39 @@ const FilesQuickView = Polymer({
   },
 
   /**
+   * Client should assign the function to delete the file.
+   *
+   * @param {!Event} event
+   */
+  onDeleteButtonTap: function(event) {},
+
+  /**
+   * @param {boolean} canDelete
+   * @param {boolean} isModal
+   * @return {boolean}
+   *
+   * @private
+   */
+  shouldShowDeleteButton_: function(canDelete, isModal) {
+    return canDelete && !isModal;
+  },
+
+  /**
+   * See the changes on crbug.com/641587, but crbug.com/779044#c11 later undid
+   * that work. So the focus remains on the metadata button when clicked after
+   * the crbug.com/779044 "ghost focus" fix.
+   *
+   * crbug.com/641587 mentions a different UI behavior, that was wanted to fix
+   * that bug. TODO(files-ng): UX to resolve the correct behavior needed here.
+   *
    * @param {!Event} event tap event.
    *
    * @private
    */
   onMetadataButtonTap_: function(event) {
-    // Set focus back to innerContent panel so that pressing space key next
-    // closes Quick View.
-    this.$.innerContentPanel.focus();
+    if (this.hasAttribute('files-ng')) {
+      this.metadataBoxActive = !this.metadataBoxActive;
+    }
   },
 
   /**

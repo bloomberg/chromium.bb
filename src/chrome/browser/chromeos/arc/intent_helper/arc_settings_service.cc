@@ -40,7 +40,6 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/font_size_util.h"
 #include "components/arc/mojom/backup_settings.mojom.h"
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -65,6 +64,8 @@ constexpr char kSetPageZoomAction[] =
     "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
 
 constexpr char kArcProxyBypassListDelimiter[] = ",";
+
+constexpr float kAndroidFontScaleNormal = 1;
 
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,
@@ -167,8 +168,6 @@ class ArcSettingsServiceImpl
   void SyncAccessibilityVirtualKeyboardEnabled() const;
   void SyncBackupEnabled() const;
   void SyncFocusHighlightEnabled() const;
-  void SyncFontSize() const;
-  void SyncPageZoom() const;
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
@@ -282,10 +281,6 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncUse24HourClock();
   } else if (pref_name == ::prefs::kResolveTimezoneByGeolocationMethod) {
     SyncTimeZoneByGeolocation();
-  } else if (pref_name == ::prefs::kWebKitDefaultFixedFontSize ||
-             pref_name == ::prefs::kWebKitDefaultFontSize ||
-             pref_name == ::prefs::kWebKitMinimumFontSize) {
-    SyncFontSize();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
   } else {
@@ -333,9 +328,6 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(::prefs::kResolveTimezoneByGeolocationMethod);
   AddPrefToObserve(::prefs::kUse24HourClock);
-  AddPrefToObserve(::prefs::kWebKitDefaultFixedFontSize);
-  AddPrefToObserve(::prefs::kWebKitDefaultFontSize);
-  AddPrefToObserve(::prefs::kWebKitMinimumFontSize);
   AddPrefToObserve(proxy_config::prefs::kProxy);
   AddPrefToObserve(onc::prefs::kDeviceOpenNetworkConfiguration);
   AddPrefToObserve(onc::prefs::kOpenNetworkConfiguration);
@@ -348,14 +340,6 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
       chromeos::StatsReportingController::Get()->AddObserver(
           base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
                      base::Unretained(this), /*initial_sync=*/false));
-
-  // It's safe to use base::Unretained. This is unregistered when
-  // default_zoom_level_subscription_ is destructed which is stored as
-  // unique_ptr in member of this class.
-  default_zoom_level_subscription_ =
-      profile_->GetZoomLevelPrefs()->RegisterDefaultZoomLevelCallback(
-          base::BindRepeating(&ArcSettingsServiceImpl::SyncPageZoom,
-                              base::Unretained(this)));
 
   TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -394,16 +378,10 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncTimeZoneByGeolocation();
   SyncUse24HourClock();
 
-  // SplitSettings decouples browser font size and page zoom from Android's
-  // font size and display scale. Reset the values to default in case the user
-  // had a custom value. https://crbug.com/955071
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    ResetFontScaleToDefault();
-    ResetPageZoomToDefault();
-  } else {
-    SyncFontSize();
-    SyncPageZoom();
-  }
+  // Reset the values to default in case the user had a custom value.
+  // https://crbug.com/955071
+  ResetFontScaleToDefault();
+  ResetPageZoomToDefault();
 }
 
 void ArcSettingsServiceImpl::SyncAppTimeSettings() {
@@ -454,38 +432,6 @@ void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
   SendBoolPrefSettingsBroadcast(
       ash::prefs::kAccessibilityFocusHighlightEnabled,
       "org.chromium.arc.intent_helper.SET_FOCUS_HIGHLIGHT_ENABLED");
-}
-
-void ArcSettingsServiceImpl::SyncFontSize() const {
-  // When OS settings are split from browser, don't use the browser's font size
-  // to change ARC++ font scale.
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
-    return;
-
-  int default_size = GetIntegerPref(::prefs::kWebKitDefaultFontSize);
-  int default_fixed_size = GetIntegerPref(::prefs::kWebKitDefaultFixedFontSize);
-  int minimum_size = GetIntegerPref(::prefs::kWebKitMinimumFontSize);
-
-  double android_scale = ConvertFontSizeChromeToAndroid(
-      default_size, default_fixed_size, minimum_size);
-
-  base::DictionaryValue extras;
-  extras.SetDouble("scale", android_scale);
-  SendSettingsBroadcast(kSetFontScaleAction, extras);
-}
-
-void ArcSettingsServiceImpl::SyncPageZoom() const {
-  // When OS settings are split from browser, don't use the browser's page zoom
-  // to set ARC++ application density.
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
-    return;
-
-  double zoom_level = profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
-  double zoom_factor = blink::PageZoomLevelToZoomFactor(zoom_level);
-
-  base::DictionaryValue extras;
-  extras.SetDouble("zoomFactor", zoom_factor);
-  SendSettingsBroadcast(kSetPageZoomAction, extras);
 }
 
 void ArcSettingsServiceImpl::SyncLocale() const {

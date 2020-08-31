@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
+#include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
@@ -18,8 +20,9 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,6 +35,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [NSIndexPath indexPathForItem:index inSection:0];
 }
 }  // namespace
+
+#if defined(__IPHONE_13_4)
+@interface GridViewController (Pointer) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
 
 @interface GridViewController ()<GridCellDelegate,
                                  UICollectionViewDataSource,
@@ -70,6 +78,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, strong) UICollectionViewLayout* reorderingLayout;
 // YES if, when reordering is enabled, the order of the cells has changed.
 @property(nonatomic, assign) BOOL hasChangedOrder;
+#if defined(__IPHONE_13_4)
+// Cells for which pointer interactions have been added. Pointer interactions
+// should only be added to displayed cells (not transition cells). This is only
+// expected to get as large as the number of reusable cells in memory.
+@property(nonatomic, strong)
+    NSHashTable<UICollectionViewCell*>* pointerInteractionCells API_AVAILABLE(
+        ios(13.4));
+#endif  // defined(__IPHONE_13_4)
 @end
 
 @implementation GridViewController
@@ -123,29 +139,24 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // behavior. Multiple selection will not actually be possible since
   // |-collectionView:shouldSelectItemAtIndexPath:| returns NO.
   collectionView.allowsMultipleSelection = YES;
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.pointerInteractionCells =
+          [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  self.updatesCollectionView = YES;
-  self.defaultLayout.animatesItemUpdates = YES;
-  [self.collectionView reloadData];
-  // Selection is invalid if there are no items.
-  if (self.items.count == 0) {
-    [self animateEmptyStateIn];
-    return;
-  }
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:animated
-                              scrollPosition:UICollectionViewScrollPositionTop];
-  // Update the delegate, in case it wasn't set when |items| was populated.
-  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
-  [self removeEmptyStateAnimated:NO];
-  self.lastInsertedItemID = nil;
+  [self contentWillAppearAnimated:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.updatesCollectionView = NO;
+  [self contentWillDisappear];
   [super viewWillDisappear:animated];
 }
 
@@ -247,6 +258,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   self.defaultLayout.animatesItemUpdates = NO;
 }
 
+- (void)contentWillAppearAnimated:(BOOL)animated {
+  self.updatesCollectionView = YES;
+  self.defaultLayout.animatesItemUpdates = YES;
+  [self.collectionView reloadData];
+  // Selection is invalid if there are no items.
+  if (self.items.count == 0) {
+    [self animateEmptyStateIn];
+    return;
+  }
+  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                                    animated:NO
+                              scrollPosition:UICollectionViewScrollPositionTop];
+  // Update the delegate, in case it wasn't set when |items| was populated.
+  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
+  [self removeEmptyStateAnimated:NO];
+  self.lastInsertedItemID = nil;
+}
+
+- (void)contentWillDisappear {
+  self.updatesCollectionView = NO;
+}
+
 #pragma mark - UICollectionViewDataSource
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
@@ -262,8 +295,36 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.accessibilityIdentifier =
       [NSString stringWithFormat:@"%@%ld", kGridCellIdentifierPrefix,
                                  base::checked_cast<long>(indexPath.item)];
-  GridItem* item = self.items[indexPath.item];
+
+  // In some cases this is called with an indexPath.item that's beyond (by 1)
+  // the bounds of self.items -- see crbug.com/1068136. Presumably this is a
+  // race condition where an item has been deleted at the same time as the
+  // collection is doing layout (potentially during rotation?). DCHECK to
+  // catch this in debug, and then in production fudge by duplicating the last
+  // cell. The assumption is that there will be another, correct layout shortly
+  // after the incorrect one.
+  NSUInteger itemIndex = indexPath.item;
+  DCHECK(itemIndex < self.items.count);
+  // Outside of debug builds, keep array bounds valid.
+  if (itemIndex >= self.items.count)
+    itemIndex = self.items.count - 1;
+
+  GridItem* item = self.items[itemIndex];
   [self configureCell:cell withItem:item];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      if (![self.pointerInteractionCells containsObject:cell]) {
+        [cell addInteraction:[[UIPointerInteraction alloc]
+                                 initWithDelegate:self]];
+        // |self.pointerInteractionCells| is only expected to get as large as
+        // the number of reusable cells in memory.
+        [self.pointerInteractionCells addObject:cell];
+      }
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
   return cell;
 }
 
@@ -308,6 +369,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Tapping on the current selected cell should not deselect it.
   return NO;
 }
+
+#if defined(__IPHONE_13_4)
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerLiftEffect* effect = [UIPointerLiftEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:interaction.view]];
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - UIScrollViewDelegate
 

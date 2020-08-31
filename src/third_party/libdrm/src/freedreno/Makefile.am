@@ -3,6 +3,7 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	$(VALGRIND_CFLAGS) \
@@ -27,5 +28,6 @@ libdrm_freedrenocommoninclude_HEADERS = $(LIBDRM_FREEDRENO_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_freedreno.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = freedreno-symbol-check
 EXTRA_DIST = $(TESTS)

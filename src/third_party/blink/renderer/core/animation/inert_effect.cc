@@ -60,11 +60,11 @@ void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
 AnimationTimeDelta InertEffect::CalculateTimeToEffectChange(
     bool,
     base::Optional<double>,
-    double) const {
+    AnimationTimeDelta) const {
   return AnimationTimeDelta::Max();
 }
 
-void InertEffect::Trace(blink::Visitor* visitor) {
+void InertEffect::Trace(Visitor* visitor) {
   visitor->Trace(model_);
   AnimationEffect::Trace(visitor);
 }

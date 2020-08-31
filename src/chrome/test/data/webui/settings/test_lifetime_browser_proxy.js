@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {LifetimeBrowserProxy} from 'chrome://settings/settings.js';
+
 cr.define('settings', function() {
   /**
    * A test version of LifetimeBrowserProxy.
    *
    * @implements {settings.LifetimeBrowserProxy}
    */
-  class TestLifetimeBrowserProxy extends TestBrowserProxy {
+  /* #export */ class TestLifetimeBrowserProxy extends TestBrowserProxy {
     constructor() {
       const methodNames = ['restart', 'relaunch'];
       if (cr.isChromeOS) {
@@ -42,6 +46,7 @@ cr.define('settings', function() {
     };
   }
 
+  // #cr_define_end
   return {
     TestLifetimeBrowserProxy: TestLifetimeBrowserProxy,
   };

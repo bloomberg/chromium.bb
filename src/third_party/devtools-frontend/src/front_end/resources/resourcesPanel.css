@@ -80,13 +80,17 @@
     border-bottom: var(--divider-border);
 }
 
+.database-query-group-messages {
+    overflow-y: auto;
+}
+
 .database-query-prompt-container {
     position: relative;
     padding: 1px 22px 1px 24px;
+    min-height: 16px;
 }
 
 .database-query-prompt {
-    min-height: 16px;
     white-space: pre-wrap;
 }
 
@@ -96,7 +100,7 @@
     left: 7px;
     top: 9px;
     margin-top: -7px;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .database-query-prompt-container .prompt-icon {
@@ -111,24 +115,29 @@
     flex-shrink: 0;
 }
 
+.database-user-query[data-keyboard-focus="true"]:focus {
+    background-color: hsl(214, 48%, 95%);
+}
+
 .database-query-text {
     color: rgb(0, 128, 255);
-    -webkit-user-select: text;
+    user-select: text;
 }
 
 .database-query-result {
     position: relative;
-    padding: 1px 22px 1px 24px;
+    padding: 1px 22px 1px 22px;
     min-height: 16px;
-    margin-left: -24px;
+    margin-left: -22px;
     padding-right: 0;
 }
 
 .database-query-result.error {
     color: red;
-    -webkit-user-select: text;
+    user-select: text;
 }
 
 .resources-sidebar {
     padding: 0;
+    overflow-x: auto;
 }

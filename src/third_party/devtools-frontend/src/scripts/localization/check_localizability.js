@@ -11,14 +11,23 @@
 // Since the check scans for common error patterns, it might misidentify something.
 // In this case, add it to the excluded errors at the top of the script.
 
+const fs = require('fs');
+const {promisify} = require('util');
+const readFileAsync = promisify(fs.readFile);
 const path = require('path');
 const localizationUtils = require('./utils/localization_utils');
-const esprimaTypes = localizationUtils.esprimaTypes;
+const espreeTypes = localizationUtils.espreeTypes;
 const escodegen = localizationUtils.escodegen;
-const esprima = localizationUtils.esprima;
+const espree = localizationUtils.espree;
 
 // Exclude known errors
 const excludeErrors = [
+  'Common.UIString.UIString(view.title())', 'Common.UIString.UIString(setting.title() || \'\')',
+  'Common.UIString.UIString(option.text)', 'Common.UIString.UIString(experiment.title)',
+  'Common.UIString.UIString(phase.message)', 'Common.UIString.UIString(Help.latestReleaseNote().header)',
+  'Common.UIString.UIString(conditions.title)', 'Common.UIString.UIString(extension.title())',
+  'Common.UIString.UIString(this._currentValueLabel, value)',
+
   'Common.UIString(view.title())', 'Common.UIString(setting.title() || \'\')', 'Common.UIString(option.text)',
   'Common.UIString(experiment.title)', 'Common.UIString(phase.message)',
   'Common.UIString(Help.latestReleaseNote().header)', 'Common.UIString(conditions.title)',
@@ -42,12 +51,19 @@ async function main() {
   try {
     let filePaths = [];
     const frontendPath = path.resolve(__dirname, '..', '..', 'front_end');
-    let filePathPromises = [localizationUtils.getFilesFromDirectory(frontendPath, filePaths, ['.grdp'])];
+    const filePathPromises = [localizationUtils.getFilesFromDirectory(frontendPath, filePaths, ['.grdp'])];
     if (process.argv[2] === '-a') {
       filePathPromises.push(localizationUtils.getFilesFromDirectory(frontendPath, filePaths, ['.js']));
     } else {
-      // esprima has a bug parsing a valid JSON format, so exclude them.
-      filePaths = process.argv.slice(2).filter( file => {
+      if (process.argv[2] === '--file-list') {
+        const fileContent = await readFileAsync(process.argv[3]);
+        // convert to a list of filenames, remove the last empty string
+        filePaths = fileContent.toString().split(/\r?\n/g).slice(0, -1);
+      } else {
+        filePaths = process.argv.slice(2);
+      }
+      // espree has a bug parsing a valid JSON format, so exclude them.
+      filePaths = filePaths.filter(file => {
         return (path.extname(file) !== '.json') && localizationUtils.shouldParseDirectory(file);
       });
     }
@@ -71,17 +87,19 @@ async function main() {
 main();
 
 function includesConditionalExpression(listOfElements) {
-  return listOfElements.filter(ele => ele !== undefined && ele.type === esprimaTypes.COND_EXPR).length > 0;
+  return listOfElements.filter(ele => ele !== undefined && ele.type === espreeTypes.COND_EXPR).length > 0;
 }
 
 function addError(error, errors) {
-  if (!errors.includes(error))
+  if (!errors.includes(error)) {
     errors.push(error);
+  }
 }
 
 function buildConcatenatedNodesList(node, nodes) {
-  if (!node)
+  if (!node) {
     return;
+  }
   if (node.left === undefined && node.right === undefined) {
     nodes.push(node);
     return;
@@ -101,27 +119,31 @@ function buildConcatenatedNodesList(node, nodes) {
  */
 function checkConcatenation(parentNode, node, filePath, errors) {
   function isConcatenationDisallowed(node) {
-    if (node.type !== esprimaTypes.LITERAL && node.type !== esprimaTypes.TEMP_LITERAL)
+    if (node.type !== espreeTypes.LITERAL && node.type !== espreeTypes.TEMP_LITERAL) {
       return true;
+    }
 
     let value;
-    if (node.type === esprimaTypes.LITERAL)
+    if (node.type === espreeTypes.LITERAL) {
       value = node.value;
-    else if (node.type === esprimaTypes.TEMP_LITERAL && node.expressions.length === 0)
+    } else if (node.type === espreeTypes.TEMP_LITERAL && node.expressions.length === 0) {
       value = node.quasis[0].value.cooked;
+    }
 
-    if (!value || typeof value !== 'string')
+    if (!value || typeof value !== 'string') {
       return true;
+    }
 
     return value.match(/[a-z]/i) !== null;
   }
 
   function isConcatenation(node) {
-    return (node !== undefined && node.type === esprimaTypes.BI_EXPR && node.operator === '+');
+    return (node !== undefined && node.type === espreeTypes.BI_EXPR && node.operator === '+');
   }
 
-  if (isConcatenation(parentNode))
+  if (isConcatenation(parentNode)) {
     return;
+  }
 
   if (isConcatenation(node)) {
     const concatenatedNodes = [];
@@ -144,52 +166,18 @@ function checkConcatenation(parentNode, node, filePath, errors) {
 }
 
 /**
- * Check if an argument of a function is localized.
- */
-function checkFunctionArgument(functionName, argumentIndex, node, filePath, errors) {
-  if (node !== undefined && node.type === esprimaTypes.CALL_EXPR &&
-      localizationUtils.verifyFunctionCallee(node.callee, functionName) && node.arguments !== undefined &&
-      node.arguments.length > argumentIndex) {
-    const arg = node.arguments[argumentIndex];
-    // No need to localize empty strings.
-    if (arg.type === esprimaTypes.LITERAL && arg.value === '')
-      return;
-
-    if (!localizationUtils.isLocalizationCall(arg)) {
-      let order = '';
-      switch (argumentIndex) {
-        case 0:
-          order = 'first';
-          break;
-        case 1:
-          order = 'second';
-          break;
-        case 2:
-          order = 'third';
-          break;
-        default:
-          order = `${argumentIndex + 1}th`;
-      }
-      addError(
-          `${localizationUtils.getRelativeFilePathFromSrc(filePath)}${
-              localizationUtils.getLocationMessage(
-                  node.loc)}: ${order} argument to ${functionName}() should be localized: ${escodegen.generate(node)}`,
-          errors);
-    }
-  }
-}
-
-/**
- * Check esprima node object that represents the AST of code
+ * Check espree node object that represents the AST of code
  * to see if there is any localization error.
  */
 function analyzeNode(parentNode, node, filePath, errors) {
-  if (node === undefined || node === null)
+  if (node === undefined || node === null) {
     return;
+  }
 
   if (node instanceof Array) {
-    for (const child of node)
+    for (const child of node) {
       analyzeNode(node, child, filePath, errors);
+    }
 
     return;
   }
@@ -207,10 +195,10 @@ function analyzeNode(parentNode, node, filePath, errors) {
   const code = escodegen.generate(node);
   switch (locCase) {
     case 'Common.UIString':
-    case 'UI.formatLocalized':
+    case 'UI.formatLocalized': {
       const firstArgType = node.arguments[0].type;
-      if (firstArgType !== esprimaTypes.LITERAL && firstArgType !== esprimaTypes.TEMP_LITERAL &&
-          firstArgType !== esprimaTypes.IDENTIFIER && !excludeErrors.includes(code)) {
+      if (firstArgType !== espreeTypes.LITERAL && firstArgType !== espreeTypes.TEMP_LITERAL &&
+          firstArgType !== espreeTypes.IDENTIFIER && !excludeErrors.includes(code)) {
         addError(
             `${localizationUtils.getRelativeFilePathFromSrc(filePath)}${
                 localizationUtils.getLocationMessage(node.loc)}: first argument to call should be a string: ${code}`,
@@ -224,7 +212,9 @@ function analyzeNode(parentNode, node, filePath, errors) {
             errors);
       }
       break;
-    case 'Tagged Template':
+    }
+
+    case 'Tagged Template': {
       if (includesConditionalExpression(node.quasi.expressions)) {
         addError(
             `${localizationUtils.getRelativeFilePathFromSrc(filePath)}${
@@ -233,10 +223,13 @@ function analyzeNode(parentNode, node, filePath, errors) {
             errors);
       }
       break;
-    default:
+    }
+
+    default: {
       // String concatenation to localization call(s) should be changed
       checkConcatenation(parentNode, node, filePath, errors);
       break;
+    }
   }
 
   for (const key of objKeys) {
@@ -286,12 +279,17 @@ function auditGrdpFile(filePath, fileContent, errors) {
 
 async function auditFileForLocalizability(filePath, errors) {
   const fileContent = await localizationUtils.parseFileContent(filePath);
-  if (path.extname(filePath) === '.grdp')
+  if (path.extname(filePath) === '.grd') {
+    return;
+  }
+  if (path.extname(filePath) === '.grdp') {
     return auditGrdpFile(filePath, fileContent, errors);
+  }
 
-  const ast = esprima.parseModule(fileContent, {loc: true});
+  const ast = espree.parse(fileContent, {ecmaVersion: 11, sourceType: 'module', range: true, loc: true});
 
   const relativeFilePath = localizationUtils.getRelativeFilePathFromSrc(filePath);
-  for (const node of ast.body)
+  for (const node of ast.body) {
     analyzeNode(undefined, node, relativeFilePath, errors);
+  }
 }

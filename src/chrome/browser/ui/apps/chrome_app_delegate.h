@@ -49,6 +49,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
       const content::OpenURLParams& params) override;
   void AddNewContents(content::BrowserContext* context,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture) override;
@@ -71,7 +72,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
-  void SetTerminatingCallback(const base::Closure& callback) override;
+  void SetTerminatingCallback(base::OnceClosure callback) override;
   void OnHide() override;
   void OnShow() override;
   bool TakeFocus(content::WebContents* web_contents, bool reverse) override;
@@ -91,7 +92,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   bool for_lock_screen_app_;
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
   std::unique_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
-  base::Closure terminating_callback_;
+  base::OnceClosure terminating_callback_;
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<ChromeAppDelegate> weak_factory_{this};
 

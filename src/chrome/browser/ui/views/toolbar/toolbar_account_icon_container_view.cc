@@ -5,13 +5,16 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -32,7 +35,7 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
           /*uses_highlight=*/!browser->profile()->IsIncognitoProfile()),
       avatar_(new AvatarToolbarButton(browser, this)),
       browser_(browser) {
-  PageActionIconContainerView::Params params;
+  PageActionIconParams params;
   params.types_enabled = {
       PageActionIconType::kManagePasswords,
       PageActionIconType::kLocalCardMigration,
@@ -40,29 +43,45 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   };
   params.browser = browser_;
   params.command_updater = browser_->command_controller();
+  params.icon_label_bubble_delegate = this;
   params.page_action_icon_delegate = this;
   params.button_observer = this;
   params.view_observer = this;
-  page_action_icon_container_view_ =
-      AddChildView(std::make_unique<PageActionIconContainerView>(params));
-
-  avatar_->SetProperty(views::kFlexBehaviorKey,
-                       views::FlexSpecification::ForSizeRule(
-                           views::MinimumFlexSizeRule::kScaleToMinimum,
-                           views::MaximumFlexSizeRule::kPreferred));
   AddMainButton(avatar_);
+
+  // Since the insertion point for icons before the avatar button, we don't
+  // initialize until after the avatar button has been added.
+  page_action_icon_controller_ = std::make_unique<PageActionIconController>();
+  page_action_icon_controller_->Init(params, this);
+
+  avatar_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
 }
 
 ToolbarAccountIconContainerView::~ToolbarAccountIconContainerView() = default;
 
 void ToolbarAccountIconContainerView::UpdateAllIcons() {
-  page_action_icon_container_view_->SetIconColor(GetIconColor());
-  page_action_icon_container_view_->UpdateAll();
+  page_action_icon_controller_->SetIconColor(GetIconColor());
+  page_action_icon_controller_->UpdateAll();
   avatar_->UpdateIcon();
 }
 
-SkColor ToolbarAccountIconContainerView::GetPageActionInkDropColor() const {
+SkColor
+ToolbarAccountIconContainerView::GetIconLabelBubbleSurroundingForegroundColor()
+    const {
+  return GetIconColor();
+}
+
+SkColor ToolbarAccountIconContainerView::GetIconLabelBubbleInkDropColor()
+    const {
   return GetToolbarInkDropBaseColor(this);
+}
+
+SkColor ToolbarAccountIconContainerView::GetIconLabelBubbleBackgroundColor()
+    const {
+  return GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
 }
 
 float ToolbarAccountIconContainerView::GetPageActionInkDropVisibleOpacity()
@@ -75,15 +94,16 @@ ToolbarAccountIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-std::unique_ptr<views::Border>
-ToolbarAccountIconContainerView::CreatePageActionIconBorder() const {
-  // With this border, the icon will have the same ink drop shape as toolbar
-  // buttons.
-  return views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::InsetsMetric::INSETS_LABEL_BUTTON));
+gfx::Insets ToolbarAccountIconContainerView::GetPageActionIconInsets(
+    const PageActionIconView* icon_view) const {
+  // Ideally, the icon should have the same ink drop shape as toolbar buttons.
+  // TODO(crbug.com/1060250): fix actual inkdrop shape.
+  return ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::InsetsMetric::INSETS_LABEL_BUTTON);
 }
 
 void ToolbarAccountIconContainerView::OnThemeChanged() {
+  ToolbarIconContainerView::OnThemeChanged();
   // Update icon color.
   UpdateAllIcons();
 }
@@ -92,6 +112,8 @@ const char* ToolbarAccountIconContainerView::GetClassName() const {
   return kToolbarAccountIconContainerViewClassName;
 }
 
-const views::View::Views& ToolbarAccountIconContainerView::GetChildren() const {
-  return page_action_icon_container_view_->children();
+void ToolbarAccountIconContainerView::AddPageActionIcon(views::View* icon) {
+  // Add the page action icons to the end of the container, just before the
+  // avatar icon.
+  AddChildViewAt(icon, GetIndexOf(avatar_));
 }

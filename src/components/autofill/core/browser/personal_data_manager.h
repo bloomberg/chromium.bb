@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_profile_validator.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/test_data_creator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
@@ -75,6 +76,8 @@ class PersonalDataManager : public KeyedService,
                             public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
+  PersonalDataManager(const std::string& app_locale,
+                      const std::string& country_code);
   ~PersonalDataManager() override;
 
   // Kicks off asynchronous loading of profiles and credit cards.
@@ -154,9 +157,12 @@ class PersonalDataManager : public KeyedService,
   std::string OnAcceptedLocalCreditCardSave(
       const CreditCard& imported_credit_card);
 
-  // Triggered when the user accepts saving a VPA value. Stores the |vpa_id| to
+  // Triggered when the user accepts saving a UPI ID. Stores the |upi_id| to
   // the database.
-  virtual void AddVPA(const std::string& vpa_id);
+  virtual void AddUpiId(const std::string& upi_id);
+
+  // Returns all the stored UPI IDs.
+  virtual std::vector<std::string> GetUpiIds();
 
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
@@ -251,6 +257,10 @@ class PersonalDataManager : public KeyedService,
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
 
+  // Returns the credit card cloud token data.
+  virtual std::vector<CreditCardCloudTokenData*> GetCreditCardCloudTokenData()
+      const;
+
   // Updates the validity states of |profiles| according to server validity map.
   void UpdateProfilesServerValidityMapsIfNeeded(
       const std::vector<AutofillProfile*>& profiles);
@@ -321,7 +331,21 @@ class PersonalDataManager : public KeyedService,
   // Also see SetProfile for more details.
   virtual void Refresh();
 
+  // Returns the |app_locale_| that was provided during construction.
   const std::string& app_locale() const { return app_locale_; }
+
+#ifdef UNIT_TEST
+  // Returns the country code that was provided from the variations service
+  // during construction.
+  const std::string& variations_country_code_for_testing() const {
+    return variations_country_code_;
+  }
+
+  // Sets the country code from the variations service.
+  void set_variations_country_code_for_testing(std::string country_code) {
+    variations_country_code_ = country_code;
+  }
+#endif
 
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
@@ -336,6 +360,9 @@ class PersonalDataManager : public KeyedService,
 
   // Cancels any pending queries to the server web database.
   void CancelPendingServerQueries();
+
+  // Returns if there are any pending queries to the web database.
+  bool HasPendingQueriesForTesting();
 
   // This function assumes |credit_card| contains the full PAN. Returns |true|
   // if the card number of |credit_card| is equal to any local card or any
@@ -372,6 +399,18 @@ class PersonalDataManager : public KeyedService,
   // Called when at least one (can be multiple) card was saved. |is_local_card|
   // indicates if the card is saved to local storage.
   void OnCreditCardSaved(bool is_local_card);
+
+  // Returns true if either Profile or CreditCard Autofill is enabled.
+  virtual bool IsAutofillEnabled() const;
+
+  // Returns the value of the AutofillProfileEnabled pref.
+  virtual bool IsAutofillProfileEnabled() const;
+
+  // Returns the value of the AutofillCreditCardEnabled pref.
+  virtual bool IsAutofillCreditCardEnabled() const;
+
+  // Returns the value of the AutofillWalletImportEnabled pref.
+  virtual bool IsAutofillWalletImportEnabled() const;
 
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
@@ -493,8 +532,14 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
+  // Loads the saved credit card cloud token data from the web database.
+  virtual void LoadCreditCardCloudTokenData();
+
   // Loads the payments customer data from the web database.
   virtual void LoadPaymentsCustomerData();
+
+  // Loads the saved UPI IDs from the web database.
+  virtual void LoadUpiIds();
 
   // Cancels a pending query to the local web database.  |handle| is a pointer
   // to the query handle.
@@ -511,18 +556,6 @@ class PersonalDataManager : public KeyedService,
   // The first time this is called, logs an UMA metric about the user's autofill
   // credit cardss. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
-
-  // Returns true if either Profile or CreditCard Autofill is enabled.
-  virtual bool IsAutofillEnabled() const;
-
-  // Returns the value of the AutofillProfileEnabled pref.
-  virtual bool IsAutofillProfileEnabled() const;
-
-  // Returns the value of the AutofillCreditCardEnabled pref.
-  virtual bool IsAutofillCreditCardEnabled() const;
-
-  // Returns the value of the AutofillWalletImportEnabled pref.
-  virtual bool IsAutofillWalletImportEnabled() const;
 
   // Whether the server cards are enabled and should be suggested to the user.
   virtual bool ShouldSuggestServerCards() const;
@@ -566,6 +599,13 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
   std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
+  // Cached UPI IDs.
+  std::vector<std::string> upi_ids_;
+
+  // Cached version of the CreditCardCloudTokenData obtained from the database.
+  std::vector<std::unique_ptr<CreditCardCloudTokenData>>
+      server_credit_card_cloud_token_data_;
+
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
@@ -574,7 +614,10 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_server_profiles_query_ = 0;
   WebDataServiceBase::Handle pending_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
+      0;
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
+  WebDataServiceBase::Handle pending_upi_ids_query_ = 0;
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
@@ -702,7 +745,19 @@ class PersonalDataManager : public KeyedService,
   // Clear |ongoing_profile_changes_|.
   void ClearOnGoingProfileChanges();
 
+  // Returns if there are any pending queries to the web database.
+  bool HasPendingQueries();
+
+  // Migrates the user opted in to wallet sync transport. This is needed while
+  // migrating from using email to Gaia ID as th account identifier.
+  void MigrateUserOptedInWalletSyncTransportIfNeeded();
+
+  // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
+
+  // Stores the country code that was provided from the variations service
+  // during construction.
+  std::string variations_country_code_;
 
   // The default country code for new addresses.
   mutable std::string default_country_code_;

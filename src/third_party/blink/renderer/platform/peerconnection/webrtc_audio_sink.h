@@ -22,8 +22,11 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
+#include "third_party/webrtc/rtc_base/timestamp_aligner.h"
 
 namespace blink {
 
@@ -100,7 +103,10 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
     void DeliverPCMToWebRtcSinks(const int16_t* audio_data,
                                  int sample_rate,
                                  size_t number_of_channels,
-                                 size_t number_of_frames);
+                                 size_t number_of_frames,
+                                 base::TimeTicks estimated_capture_time);
+
+    std::string label() const { return label_; }
 
     // webrtc::MediaStreamTrack implementation.
     std::string kind() const override;
@@ -114,10 +120,14 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
         override;
     webrtc::AudioSourceInterface* GetSource() const override;
 
+    void UpdateTimestampAligner(base::TimeTicks capture_time);
+
    protected:
     ~Adapter() override;
 
    private:
+    const std::string label_;
+
     const scoped_refptr<webrtc::AudioSourceInterface> source_;
 
     // Task runner for operations that must be done on libjingle's signaling
@@ -146,6 +156,11 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
     // A vector of pointers to unowned WebRTC-internal objects which each
     // receive the audio data.
     std::vector<webrtc::AudioTrackSinkInterface*> sinks_;
+
+    // Used for getting capture timestamps referenced on the rtc::TimeMicros()
+    // clock. See the comment at the implementation of UpdateTimestampAligner()
+    // for more details.
+    rtc::TimestampAligner timestamp_aligner_;
 
     DISALLOW_COPY_AND_ASSIGN(Adapter);
   };
@@ -177,6 +192,8 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
   // Buffer used for converting into the required signed 16-bit integer
   // interleaved samples.
   std::unique_ptr<int16_t[]> interleaved_data_;
+
+  base::TimeTicks last_estimated_capture_time_;
 
   // In debug builds, check that WebRtcAudioSink's public methods are all being
   // called on the main render thread.

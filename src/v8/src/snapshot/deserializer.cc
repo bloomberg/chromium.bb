@@ -4,7 +4,9 @@
 
 #include "src/snapshot/deserializer.h"
 
+#include "src/base/logging.h"
 #include "src/codegen/assembler-inl.h"
+#include "src/common/external-pointer.h"
 #include "src/execution/isolate.h"
 #include "src/heap/heap-inl.h"
 #include "src/heap/heap-write-barrier-inl.h"
@@ -22,6 +24,7 @@
 #include "src/objects/smi.h"
 #include "src/objects/string.h"
 #include "src/roots/roots.h"
+#include "src/snapshot/embedded/embedded-data.h"
 #include "src/snapshot/snapshot.h"
 #include "src/tracing/trace-event.h"
 #include "src/tracing/traced-value.h"
@@ -42,6 +45,15 @@ TSlot Deserializer::WriteAddress(TSlot dest, Address value) {
   memcpy(dest.ToVoidPtr(), &value, kSystemPointerSize);
   STATIC_ASSERT(IsAligned(kSystemPointerSize, TSlot::kSlotDataSize));
   return dest + (kSystemPointerSize / TSlot::kSlotDataSize);
+}
+
+template <typename TSlot>
+TSlot Deserializer::WriteExternalPointer(TSlot dest, Address value) {
+  value = EncodeExternalPointer(isolate(), value);
+  DCHECK(!allocator()->next_reference_is_weak());
+  memcpy(dest.ToVoidPtr(), &value, kExternalPointerSize);
+  STATIC_ASSERT(IsAligned(kExternalPointerSize, TSlot::kSlotDataSize));
+  return dest + (kExternalPointerSize / TSlot::kSlotDataSize);
 }
 
 void Deserializer::Initialize(Isolate* isolate) {
@@ -267,42 +279,47 @@ HeapObject Deserializer::PostProcessNewObject(HeapObject obj,
     uint32_t index = string.resource_as_uint32();
     Address address =
         static_cast<Address>(isolate_->api_external_references()[index]);
-    string.set_address_as_resource(address);
+    string.set_address_as_resource(isolate_, address);
     isolate_->heap()->UpdateExternalString(string, 0,
                                            string.ExternalPayloadSize());
     isolate_->heap()->RegisterExternalString(String::cast(obj));
   } else if (obj.IsJSDataView()) {
     JSDataView data_view = JSDataView::cast(obj);
     JSArrayBuffer buffer = JSArrayBuffer::cast(data_view.buffer());
+    void* backing_store = nullptr;
+    if (buffer.backing_store() != nullptr) {
+      // The backing store of the JSArrayBuffer has not been correctly restored
+      // yet, as that may trigger GC. The backing_store field currently contains
+      // a numbered reference to an already deserialized backing store.
+      uint32_t store_index = buffer.GetBackingStoreRefForDeserialization();
+      backing_store = backing_stores_[store_index]->buffer_start();
+    }
     data_view.set_data_pointer(
-        reinterpret_cast<uint8_t*>(buffer.backing_store()) +
-        data_view.byte_offset());
+        isolate_,
+        reinterpret_cast<uint8_t*>(backing_store) + data_view.byte_offset());
   } else if (obj.IsJSTypedArray()) {
     JSTypedArray typed_array = JSTypedArray::cast(obj);
     // Fixup typed array pointers.
     if (typed_array.is_on_heap()) {
-      typed_array.SetOnHeapDataPtr(HeapObject::cast(typed_array.base_pointer()),
+      typed_array.SetOnHeapDataPtr(isolate(),
+                                   HeapObject::cast(typed_array.base_pointer()),
                                    typed_array.external_pointer());
     } else {
       // Serializer writes backing store ref as a DataPtr() value.
-      size_t store_index = reinterpret_cast<size_t>(typed_array.DataPtr());
+      uint32_t store_index =
+          typed_array.GetExternalBackingStoreRefForDeserialization();
       auto backing_store = backing_stores_[store_index];
       auto start = backing_store
                        ? reinterpret_cast<byte*>(backing_store->buffer_start())
                        : nullptr;
-      typed_array.SetOffHeapDataPtr(start, typed_array.byte_offset());
+      typed_array.SetOffHeapDataPtr(isolate(), start,
+                                    typed_array.byte_offset());
     }
   } else if (obj.IsJSArrayBuffer()) {
     JSArrayBuffer buffer = JSArrayBuffer::cast(obj);
-    // Only fixup for the off-heap case.
+    // Postpone allocation of backing store to avoid triggering the GC.
     if (buffer.backing_store() != nullptr) {
-      // Serializer writes backing store ref in |backing_store| field.
-      size_t store_index = reinterpret_cast<size_t>(buffer.backing_store());
-      auto backing_store = backing_stores_[store_index];
-      SharedFlag shared = backing_store && backing_store->is_shared()
-                              ? SharedFlag::kShared
-                              : SharedFlag::kNotShared;
-      buffer.Setup(shared, backing_store);
+      new_off_heap_array_buffers_.push_back(handle(buffer, isolate_));
     }
   } else if (obj.IsBytecodeArray()) {
     // TODO(mythria): Remove these once we store the default values for these
@@ -578,10 +595,10 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
       // Find an object in the roots array and write a pointer to it to the
       // current object.
       SINGLE_CASE(kRootArray, SnapshotSpace::kReadOnlyHeap)
-      // Find an object in the partial snapshots cache and write a pointer to it
+      // Find an object in the startup object cache and write a pointer to it
       // to the current object.
-      SINGLE_CASE(kPartialSnapshotCache, SnapshotSpace::kReadOnlyHeap)
-      // Find an object in the partial snapshots cache and write a pointer to it
+      SINGLE_CASE(kStartupObjectCache, SnapshotSpace::kReadOnlyHeap)
+      // Find an object in the read-only object cache and write a pointer to it
       // to the current object.
       SINGLE_CASE(kReadOnlyObjectCache, SnapshotSpace::kReadOnlyHeap)
       // Find an object in the attached references and write a pointer to it to
@@ -594,9 +611,15 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
 
       // Find an external reference and write a pointer to it to the current
       // object.
+      case kSandboxedExternalReference:
       case kExternalReference: {
         Address address = ReadExternalReferenceCase();
-        current = WriteAddress(current, address);
+        if (V8_HEAP_SANDBOX_BOOL && data == kSandboxedExternalReference) {
+          current = WriteExternalPointer(current, address);
+        } else {
+          DCHECK(!V8_HEAP_SANDBOX_BOOL);
+          current = WriteAddress(current, address);
+        }
         break;
       }
 
@@ -666,6 +689,7 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
       }
 
       case kOffHeapBackingStore: {
+        AlwaysAllocateScope scope(isolate->heap());
         int byte_length = source_.GetInt();
         std::unique_ptr<BackingStore> backing_store =
             BackingStore::Allocate(isolate, byte_length, SharedFlag::kNotShared,
@@ -676,6 +700,7 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
         break;
       }
 
+      case kSandboxedApiReference:
       case kApiReference: {
         uint32_t reference_id = static_cast<uint32_t>(source_.GetInt());
         Address address;
@@ -688,7 +713,12 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
         } else {
           address = reinterpret_cast<Address>(NoExternalReferencesCallback);
         }
-        current = WriteAddress(current, address);
+        if (V8_HEAP_SANDBOX_BOOL && data == kSandboxedApiReference) {
+          current = WriteExternalPointer(current, address);
+        } else {
+          DCHECK(!V8_HEAP_SANDBOX_BOOL);
+          current = WriteAddress(current, address);
+        }
         break;
       }
 
@@ -749,13 +779,17 @@ bool Deserializer::ReadData(TSlot current, TSlot limit,
         break;
       }
 
-      // Deserialize raw data of fixed length from 1 to 32 words.
+      // Deserialize raw data of fixed length from 1 to 32 times kTaggedSize.
       STATIC_ASSERT(kNumberOfFixedRawData == 32);
       SIXTEEN_CASES(kFixedRawData)
       SIXTEEN_CASES(kFixedRawData + 16) {
         int size_in_tagged = data - kFixedRawDataStart;
         source_.CopyRaw(current.ToVoidPtr(), size_in_tagged * kTaggedSize);
-        current += size_in_tagged;
+
+        int size_in_bytes = size_in_tagged * kTaggedSize;
+        int size_in_slots = size_in_bytes / TSlot::kSlotDataSize;
+        DCHECK(IsAligned(size_in_bytes, TSlot::kSlotDataSize));
+        current += size_in_slots;
         break;
       }
 
@@ -822,10 +856,10 @@ TSlot Deserializer::ReadDataCase(Isolate* isolate, TSlot current,
         isolate->read_only_heap()->cached_read_only_object(cache_index));
     DCHECK(!Heap::InYoungGeneration(heap_object));
     emit_write_barrier = false;
-  } else if (bytecode == kPartialSnapshotCache) {
+  } else if (bytecode == kStartupObjectCache) {
     int cache_index = source_.GetInt();
     heap_object =
-        HeapObject::cast(isolate->partial_snapshot_cache()->at(cache_index));
+        HeapObject::cast(isolate->startup_object_cache()->at(cache_index));
     emit_write_barrier = Heap::InYoungGeneration(heap_object);
   } else {
     DCHECK_EQ(bytecode, kAttachedReference);

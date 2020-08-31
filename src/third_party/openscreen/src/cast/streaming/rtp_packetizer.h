@@ -12,8 +12,8 @@
 #include "cast/streaming/rtp_defines.h"
 #include "cast/streaming/ssrc.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Transforms a logical sequence of EncryptedFrames into RTP packets for
 // transmission. A single instance of RtpPacketizer should be used for all the
@@ -47,6 +47,15 @@ class RtpPacketizer {
   // packetized.
   int ComputeNumberOfPackets(const EncryptedFrame& frame) const;
 
+  // See rtp_defines.h for wire-format diagram.
+  static constexpr int kBaseRtpHeaderSize =
+      // Plus one byte, because this implementation always includes the 8-bit
+      // Reference Frame ID field.
+      kRtpPacketMinValidSize + 1;
+  static constexpr int kAdaptiveLatencyHeaderSize = 4;
+  static constexpr int kMaxRtpHeaderSize =
+      kBaseRtpHeaderSize + kAdaptiveLatencyHeaderSize;
+
  private:
   int max_payload_size() const {
     // Start with the configured max packet size, then subtract reserved space
@@ -64,18 +73,9 @@ class RtpPacketizer {
   // re-transmitted, must have different sequence numbers (within wrap-around
   // concerns) per the RTP spec.
   uint16_t sequence_number_;
-
-  // See rtp_defines.h for wire-format diagram.
-  static constexpr int kBaseRtpHeaderSize =
-      // Plus one byte, because this implementation always includes the 8-bit
-      // Reference Frame ID field.
-      kRtpPacketMinValidSize + 1;
-  static constexpr int kAdaptiveLatencyHeaderSize = 4;
-  static constexpr int kMaxRtpHeaderSize =
-      kBaseRtpHeaderSize + kAdaptiveLatencyHeaderSize;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_PACKETIZER_H_

@@ -17,11 +17,13 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
@@ -39,7 +41,10 @@ public class ChromeActivityCommonsModule {
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     /** See {@link ModuleFactoryOverrides} */
-    public interface Factory { ChromeActivityCommonsModule create(ChromeActivity<?> activity); }
+    public interface Factory {
+        ChromeActivityCommonsModule create(ChromeActivity<?> activity,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher);
+    }
 
     public ChromeActivityCommonsModule(
             ChromeActivity<?> activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
@@ -71,7 +76,7 @@ public class ChromeActivityCommonsModule {
     }
 
     @Provides
-    public ChromeActivity provideChromeActivity() {
+    public ChromeActivity<?> provideChromeActivity() {
         // Ideally providing Context or Activity should be enough, but currently a lot of code is
         // coupled specifically to ChromeActivity.
         return mActivity;
@@ -125,7 +130,7 @@ public class ChromeActivityCommonsModule {
 
     @Provides
     public TabCreatorManager provideTabCreatorManager() {
-        return (TabCreatorManager) mActivity;
+        return mActivity;
     }
 
     @Provides
@@ -136,5 +141,10 @@ public class ChromeActivityCommonsModule {
     @Provides
     public ScreenOrientationProvider provideScreenOrientationProvider() {
         return ScreenOrientationProvider.getInstance();
+    }
+
+    @Provides
+    public NotificationManagerProxy provideNotificationManagerProxy() {
+        return new NotificationManagerProxyImpl(mActivity.getApplicationContext());
     }
 }

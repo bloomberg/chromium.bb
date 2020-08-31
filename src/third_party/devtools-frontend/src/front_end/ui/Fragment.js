@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class Fragment {
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+export class Fragment {
   /**
    * @param {!Element} element
    */
@@ -53,7 +56,7 @@ export default class Fragment {
 
   /**
    * @param {!Array<string>} strings
-   * @return {!Fragment._Template}
+   * @return {!_Template}
    * @suppressGlobalPropertiesCheck
    */
   static _template(strings) {
@@ -68,7 +71,7 @@ export default class Fragment {
       } else if (open !== -1) {
         insideText = false;
       }
-      html += insideText ? Fragment._textMarker : Fragment._attributeMarker(i);
+      html += insideText ? _textMarker : _attributeMarker(i);
     }
     html += strings[strings.length - 1];
 
@@ -111,7 +114,7 @@ export default class Fragment {
         }
       }
 
-      if (node.nodeType === Node.TEXT_NODE && node.data.indexOf(Fragment._textMarker) !== -1) {
+      if (node.nodeType === Node.TEXT_NODE && node.data.indexOf(_textMarker) !== -1) {
         const texts = node.data.split(_textMarkerRegex);
         node.data = texts[texts.length - 1];
         for (let i = 0; i < texts.length - 1; i++) {
@@ -143,7 +146,7 @@ export default class Fragment {
   }
 
   /**
-   * @param {!Fragment._Template} template
+   * @param {!_Template} template
    * @param {!Array<*>} values
    * @return {!Fragment}
    */
@@ -233,28 +236,6 @@ export const html = (strings, ...vararg) => {
   return Fragment.cached(strings, ...vararg).element();
 };
 
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.Fragment = Fragment;
-
-UI.Fragment._textMarker = _textMarker;
-UI.Fragment._attributeMarker = _attributeMarker;
-
-UI.html = html;
-
-/**
- * @typedef {!{
-  *   template: !Element,
-  *   binds: !Array<!Fragment._Bind>
-  * }}
-  */
-UI.Fragment._Template;
-
 /**
   * @typedef {!{
   *   elementId: (string|undefined),
@@ -268,4 +249,12 @@ UI.Fragment._Template;
   *   replaceNodeIndex: (number|undefined)
   * }}
   */
-UI.Fragment._Bind;
+export let _Bind;
+
+/**
+ * @typedef {!{
+  *   template: !Element,
+  *   binds: !Array<!_Bind>
+  * }}
+  */
+export let _Template;

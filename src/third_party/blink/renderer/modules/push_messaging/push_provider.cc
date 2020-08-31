@@ -6,14 +6,14 @@
 
 #include <utility>
 
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -23,7 +23,8 @@ namespace blink {
 const char PushProvider::kSupplementName[] = "PushProvider";
 
 PushProvider::PushProvider(ServiceWorkerRegistration& registration)
-    : Supplement<ServiceWorkerRegistration>(registration) {}
+    : Supplement<ServiceWorkerRegistration>(registration),
+      push_messaging_manager_(nullptr) {}
 
 // static
 PushProvider* PushProvider::From(ServiceWorkerRegistration* registration) {
@@ -42,9 +43,11 @@ PushProvider* PushProvider::From(ServiceWorkerRegistration* registration) {
 
 // static
 mojom::blink::PushMessaging* PushProvider::GetPushMessagingRemote() {
-  if (!push_messaging_manager_) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
-        push_messaging_manager_.BindNewPipeAndPassReceiver());
+  if (!push_messaging_manager_.is_bound()) {
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+        push_messaging_manager_.BindNewPipeAndPassReceiver(
+            GetSupplementable()->GetExecutionContext()->GetTaskRunner(
+                TaskType::kMiscPlatformAPI)));
   }
 
   return push_messaging_manager_.get();
@@ -57,7 +60,7 @@ void PushProvider::Subscribe(
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr content_options_ptr =
-      mojom::blink::PushSubscriptionOptions::From(options);
+      ConvertSubscriptionOptionPointer(options);
 
   GetPushMessagingRemote()->Subscribe(
       GetSupplementable()->RegistrationId(), std::move(content_options_ptr),
@@ -121,6 +124,11 @@ void PushProvider::GetSubscription(
       GetSupplementable()->RegistrationId(),
       WTF::Bind(&PushProvider::DidGetSubscription, WrapPersistent(this),
                 WTF::Passed(std::move(callbacks))));
+}
+
+void PushProvider::Trace(Visitor* visitor) {
+  visitor->Trace(push_messaging_manager_);
+  Supplement::Trace(visitor);
 }
 
 void PushProvider::DidGetSubscription(

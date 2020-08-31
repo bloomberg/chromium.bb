@@ -22,7 +22,7 @@ const size_t kOverflowIntAlloc2D = kMaxIntAlloc / kWidth + 10;
 TEST(fxcrt, FX_AllocZero) {
   uint8_t* ptr = FX_Alloc(uint8_t, 0);
   uint8_t* ptr2 = FX_Alloc(uint8_t, 0);
-  EXPECT_TRUE(ptr);  // Malloc(0) is distinguishable from OOM.
+  EXPECT_TRUE(ptr);      // Malloc(0) is distinguishable from OOM.
   EXPECT_NE(ptr, ptr2);  // Each malloc(0) is distinguishable.
   FX_Free(ptr2);
   FX_Free(ptr);
@@ -92,6 +92,14 @@ TEST(fxcrt, DISABLED_FXMEM_DefaultOOM) {
   EXPECT_TRUE(ptr);
   EXPECT_FALSE(FXMEM_DefaultRealloc(ptr, kMaxByteAlloc));
   FXMEM_DefaultFree(ptr);
+}
+
+TEST(fxcrt, AllocZeroesMemory) {
+  uint8_t* ptr = FX_Alloc(uint8_t, 32);
+  ASSERT_TRUE(ptr);
+  for (size_t i = 0; i < 32; ++i)
+    EXPECT_EQ(0, ptr[i]);
+  FX_Free(ptr);
 }
 
 TEST(fxcrt, FXAlign) {

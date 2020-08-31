@@ -10,6 +10,8 @@
 #include <stdint.h>
 
 enum class WordBreakProperty : uint8_t {
+  // Internal tables depend on constants computed from these values, so do
+  // not re-order.
   kNone = 0,
   kCR,
   kLF,
@@ -25,7 +27,8 @@ enum class WordBreakProperty : uint8_t {
   kExtendNumLet,
 };
 
-extern const uint16_t gs_FX_WordBreak_Table[];
-extern const uint8_t gs_FX_WordBreak_CodePointProperties[];
+bool FX_CheckStateChangeForWordBreak(WordBreakProperty from,
+                                     WordBreakProperty to);
+WordBreakProperty FX_GetWordBreakProperty(wchar_t wcCodePoint);
 
 #endif  // XFA_FDE_CFDE_WORDBREAK_DATA_H_

@@ -61,7 +61,7 @@ set BOOTSTRAP_PATH=%BOOTSTRAP_ROOT_DIR%\%BOOTSTRAP_NAME%
 set BOOTSTRAP_EXTRA_ARGS=--bootstrap-name "%BOOTSTRAP_NAME%"
 
 :: Install our CIPD packages. The CIPD client self-bootstraps.
-:: See "//cipd.bat" and "//cipd.ps1" for more information.
+:: See "//cipd.bat" and "//.cipd_impl.ps1" for more information.
 set CIPD_EXE=%BOOTSTRAP_ROOT_DIR%\cipd.bat
 call "%CIPD_EXE%" ensure -log-level warning -ensure-file "%~dp0%CIPD_MANIFEST%" -root "%BOOTSTRAP_PATH%"
 if errorlevel 1 goto :END

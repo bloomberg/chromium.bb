@@ -15,7 +15,7 @@ namespace metrics {
 
 // static
 const base::Feature DemographicMetricsProvider::kDemographicMetricsReporting = {
-    "DemographicMetricsReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DemographicMetricsReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 DemographicMetricsProvider::DemographicMetricsProvider(
     std::unique_ptr<ProfileClient> profile_client,

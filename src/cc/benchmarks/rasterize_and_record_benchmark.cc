@@ -32,9 +32,7 @@ const int kDefaultRecordRepeatCount = 100;
 
 const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
     "",
-    "_painting_disabled",
     "_caching_disabled",
-    "_construction_disabled",
     "_subsequence_caching_disabled",
     "_partial_invalidation"};
 
@@ -43,12 +41,8 @@ RecordingModeToPaintingControlSetting(RecordingSource::RecordingMode mode) {
   switch (mode) {
     case RecordingSource::RECORD_NORMALLY:
       return ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST;
-    case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
-      return ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
     case RecordingSource::RECORD_WITH_CACHING_DISABLED:
       return ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
-    case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
-      return ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
     case RecordingSource::RECORD_WITH_SUBSEQUENCE_CACHING_DISABLED:
       return ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED;
     case RecordingSource::RECORD_WITH_PARTIAL_INVALIDATION:
@@ -84,6 +78,12 @@ RasterizeAndRecordBenchmark::~RasterizeAndRecordBenchmark() {
 
 void RasterizeAndRecordBenchmark::DidUpdateLayers(
     LayerTreeHost* layer_tree_host) {
+  // It is possible that this will be called before NotifyDone is called, in the
+  // event that a BeginMainFrame was scheduled before NotifyDone for example.
+  // This check prevents the benchmark from being run a second time redundantly.
+  if (main_thread_benchmark_done_)
+    return;
+
   layer_tree_host_ = layer_tree_host;
   for (auto* layer : *layer_tree_host)
     layer->RunMicroBenchmark(this);

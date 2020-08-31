@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import distutils.version  # pylint: disable=import-error,no-name-in-module
 import os
+import sys
 
 from chromite.cbuildbot import manifest_version
 from chromite.lib import chrome_committer
@@ -17,6 +18,9 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class LKGMNotValid(chrome_committer.CommitError):
@@ -34,7 +38,6 @@ class ChromeLKGMCommitter(object):
   # landing. Since they're internal trybots, the CQ won't automatically trigger
   # them, so we have to explicitly tell it to.
   _PRESUBMIT_BOTS = [
-      'chromeos-betty-chrome',
       'chromeos-betty-pi-arc-chrome',
       'chromeos-eve-compile-chrome',
       'chromeos-kevin-compile-chrome',
@@ -49,17 +52,17 @@ class ChromeLKGMCommitter(object):
       'tools/translation/TRANSLATION_OWNERS',
   ]
 
-  def __init__(self, args):
-    self._committer = chrome_committer.ChromeCommitter(args)
+  def __init__(self, user_email, workdir, lkgm, dryrun=False):
+    self._committer = chrome_committer.ChromeCommitter(
+        user_email, workdir, dryrun)
 
     # Strip any chrome branch from the lkgm version.
-    self._lkgm = manifest_version.VersionInfo(args.lkgm).VersionString()
+    self._lkgm = manifest_version.VersionInfo(lkgm).VersionString()
     self._old_lkgm = None
 
     if not self._lkgm:
       raise LKGMNotValid('LKGM not provided.')
-
-    logging.info('lkgm=%s', self._lkgm)
+    logging.info('lkgm=%s', lkgm)
 
   def Run(self):
     self.CloseOldLKGMRolls()
@@ -95,7 +98,8 @@ class ChromeLKGMCommitter(object):
     for open_issue in gerrit_helper.Query(**query_params):
       logging.info(
           'Closing old LKGM roll crrev.com/c/%s', open_issue.gerrit_number)
-      gerrit_helper.AbandonChange(open_issue)
+      gerrit_helper.AbandonChange(
+          open_issue, msg='Superceded by LKGM %s' % self._lkgm)
 
   def UpdateLKGM(self):
     """Updates the LKGM file with the new version."""
@@ -133,14 +137,14 @@ class ChromeLKGMCommitter(object):
                            self.ComposeCommitMsg())
 
 
-def GetArgs(argv):
-  """Returns a dictionary of parsed args.
+def GetOpts(argv):
+  """Returns a dictionary of parsed options.
 
   Args:
     argv: raw command line.
 
   Returns:
-    Dictionary of parsed args.
+    Dictionary of parsed options.
   """
   committer_parser = chrome_committer.ChromeCommitter.GetParser()
   parser = commandline.ArgumentParser(description=__doc__,
@@ -151,5 +155,8 @@ def GetArgs(argv):
   return parser.parse_args(argv)
 
 def main(argv):
-  ChromeLKGMCommitter(GetArgs(argv)).Run()
+  opts = GetOpts(argv)
+  committer = ChromeLKGMCommitter(opts.user_email, opts.workdir,
+                                  opts.lkgm, opts.dryrun)
+  committer.Run()
   return 0

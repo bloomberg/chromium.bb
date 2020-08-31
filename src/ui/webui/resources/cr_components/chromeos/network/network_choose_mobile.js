@@ -43,7 +43,7 @@ Polymer({
      */
     mobileNetworkList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -56,7 +56,7 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.scanRequested_ = false;
   },
 
@@ -77,7 +77,7 @@ Polymer({
    * Polymer managedProperties changed method.
    * @private
    */
-  managedPropertiesChanged_: function() {
+  managedPropertiesChanged_() {
     const cellular = this.managedProperties.typeProperties.cellular;
     this.mobileNetworkList_ = cellular.foundNetworks || [];
     if (!this.mobileNetworkList_.length) {
@@ -88,7 +88,7 @@ Polymer({
     // Set selectedMobileNetworkId_ after the dom-repeat has been stamped.
     this.async(() => {
       let selected = this.mobileNetworkList_.find(function(mobileNetwork) {
-        return mobileNetwork.status == 'current';
+        return mobileNetwork.status === 'current';
       });
       if (!selected) {
         selected = this.mobileNetworkList_[0];
@@ -102,9 +102,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getMobileNetworkIsDisabled_: function(foundNetwork) {
-    return foundNetwork.status != 'available' &&
-        foundNetwork.status != 'current';
+  getMobileNetworkIsDisabled_(foundNetwork) {
+    return foundNetwork.status !== 'available' &&
+        foundNetwork.status !== 'current';
   },
 
   /**
@@ -112,8 +112,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getEnableScanButton_: function(properties) {
-    return properties.connectionState ==
+  getEnableScanButton_(properties) {
+    return properties.connectionState ===
         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
         !!this.deviceState && !this.deviceState.scanning;
   },
@@ -123,10 +123,10 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getEnableSelectNetwork_: function(properties) {
+  getEnableSelectNetwork_(properties) {
     return (
         !!this.deviceState && !this.deviceState.scanning &&
-        properties.connectionState ==
+        properties.connectionState ===
             chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
         !!properties.typeProperties.cellular.foundNetworks &&
         properties.typeProperties.cellular.foundNetworks.length > 0);
@@ -137,7 +137,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSecondaryText_: function(properties) {
+  getSecondaryText_(properties) {
     if (!properties) {
       return '';
     }
@@ -147,7 +147,7 @@ Polymer({
     if (this.scanRequested_) {
       return this.i18n('networkCellularScanCompleted');
     }
-    if (properties.connectionState !=
+    if (properties.connectionState !==
         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected) {
       return this.i18n('networkCellularScanConnectedHelp');
     }
@@ -159,7 +159,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getName_: function(foundNetwork) {
+  getName_(foundNetwork) {
     return foundNetwork.longName || foundNetwork.shortName ||
         foundNetwork.networkId;
   },
@@ -170,7 +170,7 @@ Polymer({
    * Cellular.FoundNetworks changes).
    * @private
    */
-  onScanTap_: function() {
+  onScanTap_() {
     this.scanRequested_ = true;
 
     this.getNetworkConfig_().requestNetworkScan(
@@ -181,14 +181,15 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onChange_: function(event) {
+  onChange_(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
-    if (!target.value || target.value == 'none') {
+    if (!target.value || target.value === 'none') {
       return;
     }
 
     this.getNetworkConfig_().selectCellularMobileNetwork(
         this.managedProperties.guid, target.value);
+    this.fire('user-action-setting-change');
   },
 });
 })();

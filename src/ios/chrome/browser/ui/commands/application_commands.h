@@ -7,12 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
-
 @class OpenNewTabCommand;
 @class ShowSigninCommand;
 @class StartVoiceSearchCommand;
 @class UIViewController;
+namespace syncer {
+enum class KeyRetrievalTriggerForUMA;
+}  // namespace syncer
 
 // This protocol groups commands that are part of ApplicationCommands, but
 // may also be forwarded directly to a settings navigation controller.
@@ -57,9 +58,7 @@
 // object that implements the methods in this protocol should be able to forward
 // ApplicationSettingsCommands to the settings view controller if necessary.
 
-@protocol ApplicationCommands<NSObject,
-                              ApplicationSettingsCommands,
-                              BrowsingDataCommands>
+@protocol ApplicationCommands <NSObject, ApplicationSettingsCommands>
 
 // Dismisses all modal dialogs.
 - (void)dismissModalDialogs;
@@ -81,6 +80,17 @@
 //|SigninPromoViewController| and this command should be removed.
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController;
+
+// Presents the Trusted Vault reauth dialog.
+// |baseViewController| presents the sign-in.
+// |retrievalTrigger| UI elements where the trusted vault reauth has been
+// triggered.
+- (void)
+    showTrustedVaultReauthenticationFromViewController:
+        (UIViewController*)baseViewController
+                                      retrievalTrigger:
+                                          (syncer::KeyRetrievalTriggerForUMA)
+                                              retrievalTrigger;
 
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;
@@ -125,6 +135,9 @@
 
 // Sets whether the UI is displaying incognito content.
 - (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible;
+
+// Open a new window with |userActivity|
+- (void)openNewWindowWithActivity:(NSUserActivity*)userActivity;
 
 @end
 

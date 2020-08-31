@@ -18,7 +18,13 @@ class FormStructure;
 // available in Java.
 class FormDataAndroid {
  public:
-  FormDataAndroid(const FormData& form);
+  // The callback func to transform FormFieldData's bounds to viewport's
+  // coordinates, it is only used in FormDataAndroid constructor and transforms
+  // bounds in place to avoids an extra copy of FormData.
+  using TransformCallback =
+      base::RepeatingCallback<gfx::RectF(const gfx::RectF&)>;
+
+  FormDataAndroid(const FormData& form, const TransformCallback& callback);
   virtual ~FormDataAndroid();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaPeer(
@@ -27,9 +33,7 @@ class FormDataAndroid {
   // Get autofill values from Java side and return FormData.
   const FormData& GetAutofillValues();
 
-  base::android::ScopedJavaLocalRef<jobject> GetNextFormFieldData(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
+  base::android::ScopedJavaLocalRef<jobject> GetNextFormFieldData(JNIEnv* env);
 
   // Get index of given field, return True and index of focus field if found.
   bool GetFieldIndex(const FormFieldData& field, size_t* index);
@@ -53,6 +57,8 @@ class FormDataAndroid {
   const FormData& form_for_testing() { return form_; }
 
  private:
+  // Same as the form passed in from constructor, but FormFieldData's bounds is
+  // transformed to viewport coordinates.
   FormData form_;
   std::vector<std::unique_ptr<FormFieldDataAndroid>> fields_;
   JavaObjectWeakGlobalRef java_ref_;

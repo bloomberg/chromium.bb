@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installed app</translation>
 <translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> swapped with <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
-<translation id="1938451708255335766">To adjust the window display density, restart the app.</translation>
 <translation id="2006524834898217237">Make sure that this device is connected to the Internet.</translation>
 <translation id="208586643495776849">Please try again</translation>
 <translation id="2090963878406559571">To send a number from <ph name="ORIGIN" /> to your Android phone, <ph name="TROUBLESHOOT_LINK" /> for both devices in settings.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 day}other{# days}}</translation>
 <translation id="3295886253693811851">Make a call from</translation>
+<translation id="3306688585798492231">Built-in display</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">Text is too large</translation>
-<translation id="3479552764303398839">Not now</translation>
 <translation id="348799646910989694">Shelf auto hidden</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> was pinned</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 day left}other{# days left}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Continue reading from your mobile device <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
-<translation id="3892641579809465218">Internal Display</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cu&amp;t</translation>
 <translation id="3990502903496589789">Right Edge</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# mins}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Active today}=1{Active 1 day ago}other{Active # days ago}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 day and }other{# days and }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{in 1 y}other{in # y}}</translation>
-<translation id="5895138241574237353">Restart</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 second left}other{# seconds left}}</translation>
 <translation id="5941711191222866238">Minimise</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hour}other{# hours}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Right to Left</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MOST LIKELY</translation>
+<translation id="7170202025028120564">Your application's display settings will take effect when it is next restarted.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min left}other{# mins left}}</translation>
 <translation id="7319740667687257810">Launcher, partial view</translation>

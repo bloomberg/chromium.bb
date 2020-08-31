@@ -6,7 +6,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 天前}other{# 天前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
-<translation id="1181037720776840403">删除</translation>
+<translation id="1181037720776840403">移除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />，Play 商店应用</translation>
 <translation id="1243314992276662751">上传</translation>
@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />，已安装的应用</translation>
 <translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">“<ph name="FIRST_ITEM_TITLE" />”与“<ph name="SECOND_ITEM_TITLE" />”交换了位置</translation>
 <translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
-<translation id="1938451708255335766">要调整窗口显示密度，请重启该应用。</translation>
 <translation id="2006524834898217237">请确保此设备已连接到互联网。</translation>
 <translation id="208586643495776849">请重试</translation>
 <translation id="2090963878406559571">要从 <ph name="ORIGIN" /> 向您的 Android 手机发送电话号码，请在这两部设备的设置中分别<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">向下箭头</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="3295886253693811851">通过以下方式拨打电话：</translation>
+<translation id="3306688585798492231">内置显示屏</translation>
 <translation id="335581015389089642">语音</translation>
 <translation id="3389286852084373014">文本过长</translation>
-<translation id="3479552764303398839">以后再说</translation>
 <translation id="348799646910989694">任务栏已自动隐藏</translation>
 <translation id="3554637740840164787">“<ph name="ITEM_TITLE" />”已被固定</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{还剩 1 天}other{还剩 # 天}}</translation>
@@ -100,9 +100,8 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">继续在移动设备“<ph name="TITLE" />”上阅读</translation>
-<translation id="385051799172605136">后退</translation>
+<translation id="385051799172605136">返回</translation>
 <translation id="3889424535448813030">向右箭头</translation>
-<translation id="3892641579809465218">内部显示屏</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3909791450649380159">剪切(&amp;T)</translation>
 <translation id="3990502903496589789">右边缘</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{今天曾有活动}=1{1 天前曾有活动}other{# 天前曾有活动}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天 }other{# 天 }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年后}other{# 年后}}</translation>
-<translation id="5895138241574237353">重新启动</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小时}other{# 小时}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">从右向左</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">很可能会点击的应用</translation>
+<translation id="7170202025028120564">您的应用的显示设置会在下次重启此应用时生效。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7319740667687257810">启动器，局部视图</translation>

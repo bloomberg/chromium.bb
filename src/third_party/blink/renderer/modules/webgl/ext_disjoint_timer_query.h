@@ -18,7 +18,6 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static EXTDisjointTimerQuery* Create(WebGLRenderingContextBase*);
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
@@ -35,7 +34,7 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
   ScriptValue getQueryEXT(ScriptState*, GLenum, GLenum);
   ScriptValue getQueryObjectEXT(ScriptState*, WebGLTimerQueryEXT*, GLenum);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class WebGLTimerQueryEXT;

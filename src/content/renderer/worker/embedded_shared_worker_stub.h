@@ -15,19 +15,19 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
-#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
-#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-forward.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-forward.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
-#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/gurl.h"
@@ -38,6 +38,7 @@ class WebSharedWorker;
 
 namespace blink {
 class MessagePortChannel;
+class MessagePortDescriptor;
 class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
@@ -57,7 +58,9 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
  public:
   EmbeddedSharedWorkerStub(
       blink::mojom::SharedWorkerInfoPtr info,
+      const url::Origin& constructor_origin,
       const std::string& user_agent,
+      const blink::UserAgentMetadata& ua_metadata,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const blink::mojom::RendererPreferences& renderer_preferences,
@@ -85,7 +88,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerReadyForInspection(
       mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
       mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
-  void WorkerScriptLoadFailed() override;
+  void WorkerScriptLoadFailed(const std::string& error_message) override;
   void WorkerScriptEvaluated(bool success) override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;
@@ -97,7 +100,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   // mojom::SharedWorker methods:
   void Connect(int connection_request_id,
-               mojo::ScopedMessagePipeHandle port) override;
+               blink::MessagePortDescriptor port) override;
   void Terminate() override;
 
   mojo::Receiver<blink::mojom::SharedWorker> receiver_;

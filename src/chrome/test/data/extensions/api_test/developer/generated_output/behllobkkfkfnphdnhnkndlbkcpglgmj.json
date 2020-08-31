@@ -2,7 +2,10 @@
    "dependentExtensions": [  ],
    "description": "The first extension that I made.",
    "disableReasons": {
+      "blockedByPolicy": false,
+      "parentDisabledPermissions": false,
       "corruptInstall": false,
+      "custodianApprovalRequired": false,
       "suspiciousInstall": false,
       "updateRequired": false
    },

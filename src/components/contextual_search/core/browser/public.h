@@ -27,21 +27,23 @@ extern const int kContextualCardsUrlActionsIntegration;
 extern const int kContextualCardsDefinitionsIntegration;
 // Support of translations in the bar as part of the resolve request.
 extern const int kContextualCardsTranslationsIntegration;
-// Support of unlimited cards with diagnostics enabled, for development.
+
+// Development-level CoCa integration codes.
+
+// Generates diagnostics on the client and uses the ENTRYPOINT_UNSPECIFIED for
+// CoCa to return unlimited cards with diagnostics enabled.
 extern const int kContextualCardsDiagnosticIntegration;
 
-// Can be mixed in with one of the above.
-extern const int kContextualCardsSimplifiedServerMixin;
-extern const char kContextualCardsSimplifiedServerMixinChar[];
+// Mixin values. You must choose only one of the above, but any combination
+// of these mixin values.
 
-// String form of kContextualCardsSimplifiedServerMixin +
-// kContextualCardsDiagnosticIntegration.
-extern const char kContextualCardsSimplifiedServerWithDiagnosticChar[];
+// Deprecated value that might be sent by an old client.
+extern const int kSimplifiedServerDeprecatedMixin;
+// Activates server-side debugging.
+extern const int kContextualCardsServerDebugMixin;
 
 // Longpress resolve variations:
 extern const char kLongpressResolveParamName[];
-extern const char kLongpressResolveHideOnScroll[];
-extern const char kLongpressResolvePrivacyAggressive[];
 extern const char kLongpressResolvePreserveTap[];
 
 }  // namespace contextual_search

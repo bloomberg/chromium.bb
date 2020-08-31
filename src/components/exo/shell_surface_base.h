@@ -137,7 +137,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
-  // Overridden from SurfaceDelegate:
+  // SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
@@ -146,14 +146,14 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetApplicationId(const char* application_id) override;
   void OnActivationRequested() override;
 
-  // Overridden from SurfaceObserver:
+  // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
-  // Overridden from CaptureClientObserver:
+  // CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
                         aura::Window* gained_capture) override;
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate:
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
@@ -170,24 +170,24 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
 
-  // Overridden from views::WidgetObserver:
+  // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
 
-  // Overridden from views::View:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // Overridden from aura::WindowObserver:
+  // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Overridden from wm::ActivationChangeObserver:
+  // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // Overridden from ui::AcceleratorTarget:
+  // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   bool frame_enabled() const {

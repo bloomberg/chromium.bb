@@ -17,8 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_reporter_client.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/minidump_uploader/rewrite_minidumps_as_mimes.h"
 #include "components/version_info/android/channel_getter.h"
@@ -61,10 +61,10 @@ class AwDebugCrashReporterClient
     return true;
   }
 
-  void GetSanitizationInformation(const char* const** annotations_whitelist,
+  void GetSanitizationInformation(const char* const** crash_key_allowlist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    *annotations_whitelist = crash_keys::kWebViewCrashKeyWhiteList;
+    *crash_key_allowlist = crash_keys::kWebViewCrashKeyAllowList;
     *target_module = nullptr;
     *sanitize_stacks = true;
   }
@@ -173,15 +173,13 @@ static void JNI_AwDebug_InitCrashKeysForWebViewTesting(JNIEnv* env) {
   crash_keys::InitCrashKeysForWebViewTesting();
 }
 
-static void JNI_AwDebug_SetWhiteListedKeyForTesting(JNIEnv* env) {
-  static ::crash_reporter::CrashKeyString<32> crash_key(
-      "AW_WHITELISTED_DEBUG_KEY");
+static void JNI_AwDebug_SetAllowedKeyForTesting(JNIEnv* env) {
+  static ::crash_reporter::CrashKeyString<32> crash_key("AW_ALLOWED_DEBUG_KEY");
   crash_key.Set("AW_DEBUG_VALUE");
 }
 
-static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(JNIEnv* env) {
-  static ::crash_reporter::CrashKeyString<32> crash_key(
-      "AW_NONWHITELISTED_DEBUG_KEY");
+static void JNI_AwDebug_SetDeniedKeyForTesting(JNIEnv* env) {
+  static ::crash_reporter::CrashKeyString<32> crash_key("AW_DENIED_DEBUG_KEY");
   crash_key.Set("AW_DEBUG_VALUE");
 }
 

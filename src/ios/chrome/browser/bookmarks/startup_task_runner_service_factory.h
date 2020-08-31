@@ -11,20 +11,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace bookmarks {
 class StartupTaskRunnerService;
 }
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // Singleton that owns all StartupTaskRunnerServices and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class StartupTaskRunnerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static bookmarks::StartupTaskRunnerService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static StartupTaskRunnerServiceFactory* GetInstance();
 
  private:

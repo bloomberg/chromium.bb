@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 
@@ -36,16 +37,11 @@ class GURL;
 
 namespace base {
 class FilePath;
-class Token;
 }  // namespace base
 
 namespace download {
 class InProgressDownloadManager;
 }
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace storage {
 class ExternalMountPoints;
@@ -66,6 +62,10 @@ namespace storage {
 class BlobStorageContext;
 class SpecialStoragePolicy;
 }  // namespace storage
+
+namespace variations {
+class VariationsClient;
+}  // namespace variations
 
 namespace content {
 
@@ -88,7 +88,6 @@ class PermissionController;
 class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
-class ServiceManagerConnection;
 class SharedCorsOriginAccessList;
 class SiteInstance;
 class StorageNotificationService;
@@ -138,18 +137,21 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   using StoragePartitionCallback =
       base::RepeatingCallback<void(StoragePartition*)>;
   static void ForEachStoragePartition(BrowserContext* browser_context,
-                                      const StoragePartitionCallback& callback);
+                                      StoragePartitionCallback callback);
+  // Returns the number of StoragePartitions that exist for the given
+  // |browser_context|.
+  static size_t GetStoragePartitionCount(BrowserContext* browser_context);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
       const std::string& partition_domain,
-      const base::Closure& on_gc_required);
+      base::OnceClosure on_gc_required);
 
   // This function clears the contents of |active_paths| but does not take
   // ownership of the pointer.
   static void GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
       std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-      const base::Closure& done);
+      base::OnceClosure done);
 
   static StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
@@ -211,31 +213,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void SetPermissionControllerForTesting(
       BrowserContext* browser_context,
       std::unique_ptr<PermissionController> permission_controller);
-
-  // Makes the Service Manager aware of this BrowserContext, and assigns a
-  // instance group ID to it. Should be called for each BrowserContext created.
-  static void Initialize(BrowserContext* browser_context,
-                         const base::FilePath& path);
-
-  // Returns a Service instance group ID associated with this BrowserContext.
-  // This ID is not persistent across runs. See
-  // services/service_manager/public/mojom/connector.mojom. By default,
-  // group ID is randomly generated when Initialize() is called.
-  static const base::Token& GetServiceInstanceGroupFor(
-      BrowserContext* browser_context);
-
-  // Returns the BrowserContext associated with |instance_group|, or nullptr if
-  // no BrowserContext exists for that |instance_group|.
-  static BrowserContext* GetBrowserContextForServiceInstanceGroup(
-      const base::Token& instance_group);
-
-  // Returns a Connector associated with this BrowserContext, which can be used
-  // to connect to service instances bound as this user.
-  static service_manager::Connector* GetConnectorFor(
-      BrowserContext* browser_context);
-
-  static ServiceManagerConnection* GetServiceManagerConnectionFor(
-      BrowserContext* browser_context);
 
   BrowserContext();
 
@@ -384,6 +361,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // API implementation can give some benefits over the in-memory
   // implementation.
   virtual bool CanUseDiskWhenOffTheRecord();
+
+  // Returns the VariationsClient associated with the context if any, or
+  // nullptr if there isn't one.
+  virtual variations::VariationsClient* GetVariationsClient();
 
  private:
   const std::string unique_id_;

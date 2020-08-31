@@ -10,6 +10,8 @@
 #ifndef PUBLIC_FPDFVIEW_H_
 #define PUBLIC_FPDFVIEW_H_
 
+// clang-format off
+
 #include <stddef.h>
 
 #if defined(_WIN32) && !defined(__WINDOWS__)
@@ -35,14 +37,18 @@
 #define FPDF_OBJECT_REFERENCE 9
 
 // PDF text rendering modes
-#define FPDF_TEXTRENDERMODE_FILL 0
-#define FPDF_TEXTRENDERMODE_STROKE 1
-#define FPDF_TEXTRENDERMODE_FILL_STROKE 2
-#define FPDF_TEXTRENDERMODE_INVISIBLE 3
-#define FPDF_TEXTRENDERMODE_FILL_CLIP 4
-#define FPDF_TEXTRENDERMODE_STROKE_CLIP 5
-#define FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP 6
-#define FPDF_TEXTRENDERMODE_CLIP 7
+typedef enum {
+  FPDF_TEXTRENDERMODE_UNKNOWN = -1,
+  FPDF_TEXTRENDERMODE_FILL = 0,
+  FPDF_TEXTRENDERMODE_STROKE = 1,
+  FPDF_TEXTRENDERMODE_FILL_STROKE = 2,
+  FPDF_TEXTRENDERMODE_INVISIBLE = 3,
+  FPDF_TEXTRENDERMODE_FILL_CLIP = 4,
+  FPDF_TEXTRENDERMODE_STROKE_CLIP = 5,
+  FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP = 6,
+  FPDF_TEXTRENDERMODE_CLIP = 7,
+  FPDF_TEXTRENDERMODE_LAST = FPDF_TEXTRENDERMODE_CLIP,
+} FPDF_TEXT_RENDERMODE;
 
 // PDF types - use incomplete types (never completed) just for API type safety.
 typedef struct fpdf_action_t__* FPDF_ACTION;
@@ -68,23 +74,13 @@ typedef struct fpdf_schhandle_t__* FPDF_SCHHANDLE;
 typedef struct fpdf_structelement_t__* FPDF_STRUCTELEMENT;
 typedef struct fpdf_structtree_t__* FPDF_STRUCTTREE;
 typedef struct fpdf_textpage_t__* FPDF_TEXTPAGE;
-
-#ifdef PDF_ENABLE_XFA
 typedef struct fpdf_widget_t__* FPDF_WIDGET;
-#endif  // PDF_ENABLE_XFA
 
 // Basic data types
 typedef int FPDF_BOOL;
-typedef int FPDF_ERROR;
+typedef int FPDF_RESULT;
 typedef unsigned long FPDF_DWORD;
 typedef float FS_FLOAT;
-
-#ifdef PDF_ENABLE_XFA
-typedef void* FPDF_LPVOID;
-typedef void const* FPDF_LPCVOID;
-typedef char const* FPDF_LPCSTR;
-typedef int FPDF_RESULT;
-#endif
 
 // Duplex types
 typedef enum _FPDF_DUPLEXTYPE_ {
@@ -96,7 +92,6 @@ typedef enum _FPDF_DUPLEXTYPE_ {
 
 // String types
 typedef unsigned short FPDF_WCHAR;
-typedef unsigned char const* FPDF_LPCBYTE;
 
 // FPDFSDK may use three types of strings: byte string, wide string (UTF-16LE
 // encoded), and platform dependent string
@@ -106,15 +101,13 @@ typedef const char* FPDF_BYTESTRING;
 // bytes (except surrogation), with the low byte first.
 typedef const unsigned short* FPDF_WIDESTRING;
 
-#ifdef PDF_ENABLE_XFA
 // Structure for persisting a string beyond the duration of a callback.
 // Note: although represented as a char*, string may be interpreted as
-// a UTF-16LE formated string.
-typedef struct _FPDF_BSTR {
+// a UTF-16LE formated string. Used only by XFA callbacks.
+typedef struct FPDF_BSTR_ {
   char* str;  // String buffer, manipulate only with FPDF_BStr_* methods.
   int len;    // Length of the string, in bytes.
 } FPDF_BSTR;
-#endif  // PDF_ENABLE_XFA
 
 // For Windows programmers: In most cases it's OK to treat FPDF_WIDESTRING as a
 // Windows unicode string, however, special care needs to be taken if you
@@ -157,15 +150,30 @@ typedef struct _FS_RECTF_ {
 // Const Pointer to FS_RECTF structure.
 typedef const FS_RECTF* FS_LPCRECTF;
 
+// Rectangle size. Coordinate system agnostic.
+typedef struct FS_SIZEF_ {
+  float width;
+  float height;
+} * FS_LPSIZEF, FS_SIZEF;
+
+// Const Pointer to FS_SIZEF structure.
+typedef const FS_SIZEF* FS_LPCSIZEF;
+
+// 2D Point. Coordinate system agnostic.
+typedef struct FS_POINTF_ {
+  float x;
+  float y;
+} * FS_LPPOINTF, FS_POINTF;
+
+// Const Pointer to FS_POINTF structure.
+typedef const FS_POINTF* FS_LPCPOINTF;
+
 // Annotation enums.
 typedef int FPDF_ANNOTATION_SUBTYPE;
 typedef int FPDF_ANNOT_APPEARANCEMODE;
 
 // Dictionary value types.
 typedef int FPDF_OBJECT_TYPE;
-
-// Text object enums.
-typedef int FPDF_TEXT_RENDERMODE;
 
 #if defined(COMPONENT_BUILD)
 // FPDF_EXPORT should be consistent with |export| in the pdfium_fuzzer
@@ -206,12 +214,14 @@ extern "C" {
 //          None.
 // Comments:
 //          Convenience function to call FPDF_InitLibraryWithConfig() for
-//          backwards comatibility purposes.
+//          backwards compatibility purposes. This will be deprecated in the
+//          future.
 FPDF_EXPORT void FPDF_CALLCONV FPDF_InitLibrary();
 
 // Process-wide options for initializing the library.
 typedef struct FPDF_LIBRARY_CONFIG_ {
   // Version number of the interface. Currently must be 2.
+  // Support for version 1 will be deprecated in the future.
   int version;
 
   // Array of paths to scan in place of the defaults when using built-in
@@ -226,9 +236,9 @@ typedef struct FPDF_LIBRARY_CONFIG_ {
   void* m_pIsolate;
 
   // The embedder data slot to use in the v8::Isolate to store PDFium's
-  // per-isolate data. The value needs to be between 0 and
-  // v8::Internals::kNumIsolateDataLots (exclusive). Note that 0 is fine
-  // for most embedders.
+  // per-isolate data. The value needs to be in the range
+  // [0, |v8::Internals::kNumIsolateDataLots|). Note that 0 is fine for most
+  // embedders.
   unsigned int m_v8EmbedderSlot;
 } FPDF_LIBRARY_CONFIG;
 
@@ -315,6 +325,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_SetPrintTextWithGDI(FPDF_BOOL use_gdi);
 //                 PostScript via ExtEscape() in PASSTHROUGH mode.
 //                 FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH to output level 3
 //                 PostScript via ExtEscape() in PASSTHROUGH mode.
+//                 FPDF_PRINTMODE_EMF_IMAGE_MASKS to output EMF, with more
+//                 efficient processing of documents containing image masks.
 // Return value:
 //          True if successful, false if unsuccessful (typically invalid input).
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode);
@@ -366,6 +378,33 @@ FPDF_LoadDocument(FPDF_STRING file_path, FPDF_BYTESTRING password);
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
 FPDF_LoadMemDocument(const void* data_buf, int size, FPDF_BYTESTRING password);
 
+// Function: FPDF_LoadMemDocument64
+//          Open and load a PDF document from memory.
+//          Experimental API.
+// Parameters:
+//          data_buf    -   Pointer to a buffer containing the PDF document.
+//          size        -   Number of bytes in the PDF document.
+//          password    -   A string used as the password for the PDF file.
+//                          If no password is needed, empty or NULL can be used.
+// Return value:
+//          A handle to the loaded document, or NULL on failure.
+// Comments:
+//          The memory buffer must remain valid when the document is open.
+//          The loaded document can be closed by FPDF_CloseDocument.
+//          If this function fails, you can use FPDF_GetLastError() to retrieve
+//          the reason why it failed.
+//
+//          See the comments for FPDF_LoadDocument() regarding the encoding for
+//          |password|.
+// Notes:
+//          If PDFium is built with the XFA module, the application should call
+//          FPDF_LoadXFA() function after the PDF document loaded to support XFA
+//          fields defined in the fpdfformfill.h file.
+FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
+FPDF_LoadMemDocument64(const void* data_buf,
+                       size_t size,
+                       FPDF_BYTESTRING password);
+
 // Structure for custom file access.
 typedef struct {
   // File length, in bytes.
@@ -388,92 +427,101 @@ typedef struct {
   void* m_Param;
 } FPDF_FILEACCESS;
 
-#ifdef PDF_ENABLE_XFA
-/**
- * @brief Structure for file reading or writing (I/O).
+/*
+ * Structure for file reading or writing (I/O).
  *
- * @note This is a handler and should be implemented by callers.
+ * Note: This is a handler and should be implemented by callers,
+ * and is only used from XFA.
  */
-typedef struct _FPDF_FILEHANDLER {
-  /**
-   * @brief User-defined data.
-   * @note Callers can use this field to track controls.
+typedef struct FPDF_FILEHANDLER_ {
+  /*
+   * User-defined data.
+   * Note: Callers can use this field to track controls.
    */
-  FPDF_LPVOID clientData;
-  /**
-   * @brief Callback function to release the current file stream object.
-   *
-   * @param[in] clientData    Pointer to user-defined data.
-   *
-   * @return None.
-   */
-  void (*Release)(FPDF_LPVOID clientData);
-  /**
-   * @brief Callback function to retrieve the current file stream size.
-   *
-   * @param[in] clientData    Pointer to user-defined data.
-   *
-   * @return Size of file stream.
-   */
-  FPDF_DWORD (*GetSize)(FPDF_LPVOID clientData);
-  /**
-   * @brief Callback function to read data from the current file stream.
-   *
-   * @param[in]   clientData  Pointer to user-defined data.
-   * @param[in]   offset      Offset position starts from the beginning of file
-   * stream. This parameter indicates reading position.
-   * @param[in]   buffer      Memory buffer to store data which are read from
-   * file stream. This parameter should not be <b>NULL</b>.
-   * @param[in]   size        Size of data which should be read from file
-   * stream, in bytes. The buffer indicated by the parameter <i>buffer</i>
-   * should be enough to store specified data.
-   *
-   * @return 0 for success, other value for failure.
-   */
-  FPDF_RESULT (*ReadBlock)(FPDF_LPVOID clientData,
-                           FPDF_DWORD offset,
-                           FPDF_LPVOID buffer,
-                           FPDF_DWORD size);
-  /**
-   * @brief   Callback function to write data into the current file stream.
-   *
-   * @param[in]   clientData  Pointer to user-defined data.
-   * @param[in]   offset      Offset position starts from the beginning of file
-   * stream. This parameter indicates writing position.
-   * @param[in]   buffer      Memory buffer contains data which is written into
-   * file stream. This parameter should not be <b>NULL</b>.
-   * @param[in]   size        Size of data which should be written into file
-   * stream, in bytes.
-   *
-   * @return 0 for success, other value for failure.
-   */
-  FPDF_RESULT (*WriteBlock)(FPDF_LPVOID clientData,
-                            FPDF_DWORD offset,
-                            FPDF_LPCVOID buffer,
-                            FPDF_DWORD size);
-  /**
-   * @brief   Callback function to flush all internal accessing buffers.
-   *
-   * @param[in]   clientData  Pointer to user-defined data.
-   *
-   * @return 0 for success, other value for failure.
-   */
-  FPDF_RESULT (*Flush)(FPDF_LPVOID clientData);
-  /**
-   * @brief   Callback function to change file size.
-   *
-   * @details This function is called under writing mode usually. Implementer
-   * can determine whether to realize it based on application requests.
-   *
-   * @param[in]   clientData  Pointer to user-defined data.
-   * @param[in]   size        New size of file stream, in bytes.
-   *
-   * @return 0 for success, other value for failure.
-   */
-  FPDF_RESULT (*Truncate)(FPDF_LPVOID clientData, FPDF_DWORD size);
-} FPDF_FILEHANDLER, *FPDF_LPFILEHANDLER;
+  void* clientData;
 
-#endif  // PDF_ENABLE_XFA
+  /*
+   * Callback function to release the current file stream object.
+   *
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   * Returns:
+   *       None.
+   */
+  void (*Release)(void* clientData);
+
+  /*
+   * Callback function to retrieve the current file stream size.
+   *
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   * Returns:
+   *       Size of file stream.
+   */
+  FPDF_DWORD (*GetSize)(void* clientData);
+
+  /*
+   * Callback function to read data from the current file stream.
+   *
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   *       offset       -  Offset position starts from the beginning of file
+   *                       stream. This parameter indicates reading position.
+   *       buffer       -  Memory buffer to store data which are read from
+   *                       file stream. This parameter should not be NULL.
+   *       size         -  Size of data which should be read from file stream,
+   *                       in bytes. The buffer indicated by |buffer| must be
+   *                       large enough to store specified data.
+   * Returns:
+   *       0 for success, other value for failure.
+   */
+  FPDF_RESULT (*ReadBlock)(void* clientData,
+                           FPDF_DWORD offset,
+                           void* buffer,
+                           FPDF_DWORD size);
+
+  /*
+   * Callback function to write data into the current file stream.
+   *
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   *       offset       -  Offset position starts from the beginning of file
+   *                       stream. This parameter indicates writing position.
+   *       buffer       -  Memory buffer contains data which is written into
+   *                       file stream. This parameter should not be NULL.
+   *       size         -  Size of data which should be written into file
+   *                       stream, in bytes.
+   * Returns:
+   *       0 for success, other value for failure.
+   */
+  FPDF_RESULT (*WriteBlock)(void* clientData,
+                            FPDF_DWORD offset,
+                            const void* buffer,
+                            FPDF_DWORD size);
+  /*
+   * Callback function to flush all internal accessing buffers.
+   *
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   * Returns:
+   *       0 for success, other value for failure.
+   */
+  FPDF_RESULT (*Flush)(void* clientData);
+
+  /*
+   * Callback function to change file size.
+   *
+   * Description:
+   *       This function is called under writing mode usually. Implementer
+   *       can determine whether to realize it based on application requests.
+   * Parameters:
+   *       clientData   -  Pointer to user-defined data.
+   *       size         -  New size of file stream, in bytes.
+   * Returns:
+   *       0 for success, other value for failure.
+   */
+  FPDF_RESULT (*Truncate)(void* clientData, FPDF_DWORD size);
+} FPDF_FILEHANDLER;
 
 // Function: FPDF_LoadCustomDocument
 //          Load PDF document from a custom access descriptor.
@@ -593,6 +641,16 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetPageCount(FPDF_DOCUMENT document);
 FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDF_LoadPage(FPDF_DOCUMENT document,
                                                   int page_index);
 
+// Experimental API
+// Function: FPDF_GetPageWidthF
+//          Get page width.
+// Parameters:
+//          page        -   Handle to the page. Returned by FPDF_LoadPage().
+// Return value:
+//          Page width (excluding non-displayable area) measured in points.
+//          One point is 1/72 inch (around 0.3528 mm).
+FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageWidthF(FPDF_PAGE page);
+
 // Function: FPDF_GetPageWidth
 //          Get page width.
 // Parameters:
@@ -600,7 +658,20 @@ FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDF_LoadPage(FPDF_DOCUMENT document,
 // Return value:
 //          Page width (excluding non-displayable area) measured in points.
 //          One point is 1/72 inch (around 0.3528 mm).
+// Note:
+//          Prefer FPDF_GetPageWidthF() above. This will be deprecated in the
+//          future.
 FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageWidth(FPDF_PAGE page);
+
+// Experimental API
+// Function: FPDF_GetPageHeightF
+//          Get page height.
+// Parameters:
+//          page        -   Handle to the page. Returned by FPDF_LoadPage().
+// Return value:
+//          Page height (excluding non-displayable area) measured in points.
+//          One point is 1/72 inch (around 0.3528 mm)
+FPDF_EXPORT float FPDF_CALLCONV FPDF_GetPageHeightF(FPDF_PAGE page);
 
 // Function: FPDF_GetPageHeight
 //          Get page height.
@@ -609,6 +680,9 @@ FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageWidth(FPDF_PAGE page);
 // Return value:
 //          Page height (excluding non-displayable area) measured in points.
 //          One point is 1/72 inch (around 0.3528 mm)
+// Note:
+//          Prefer FPDF_GetPageHeightF() above. This will be deprecated in the
+//          future.
 FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageHeight(FPDF_PAGE page);
 
 // Experimental API.
@@ -624,6 +698,21 @@ FPDF_EXPORT double FPDF_CALLCONV FPDF_GetPageHeight(FPDF_PAGE page);
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetPageBoundingBox(FPDF_PAGE page,
                                                             FS_RECTF* rect);
 
+// Experimental API.
+// Function: FPDF_GetPageSizeByIndexF
+//          Get the size of the page at the given index.
+// Parameters:
+//          document    -   Handle to document. Returned by FPDF_LoadDocument().
+//          page_index  -   Page index, zero for the first page.
+//          size        -   Pointer to a FS_SIZEF to receive the page size.
+//                          (in points).
+// Return value:
+//          Non-zero for success. 0 for error (document or page not found).
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDF_GetPageSizeByIndexF(FPDF_DOCUMENT document,
+                         int page_index,
+                         FS_SIZEF* size);
+
 // Function: FPDF_GetPageSizeByIndex
 //          Get the size of the page at the given index.
 // Parameters:
@@ -635,6 +724,9 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetPageBoundingBox(FPDF_PAGE page,
 //                          (in points).
 // Return value:
 //          Non-zero for success. 0 for error (document or page not found).
+// Note:
+//          Prefer FPDF_GetPageSizeByIndexF() above. This will be deprecated in
+//          the future.
 FPDF_EXPORT int FPDF_CALLCONV FPDF_GetPageSizeByIndex(FPDF_DOCUMENT document,
                                                       int page_index,
                                                       double* width,
@@ -669,6 +761,19 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetPageSizeByIndex(FPDF_DOCUMENT document,
 // Set whether to render in a reverse Byte order, this flag is only used when
 // rendering to a bitmap.
 #define FPDF_REVERSE_BYTE_ORDER 0x10
+// Set whether fill paths need to be stroked. This flag is only used when
+// FPDF_COLORSCHEME is passed in, since with a single fill color for paths the
+// boundaries of adjacent fill paths are less visible.
+#define FPDF_CONVERT_FILL_TO_STROKE 0x20
+
+// Struct for color scheme.
+// Each should be a 32-bit value specifying the color, in 8888 ARGB format.
+typedef struct FPDF_COLORSCHEME_ {
+  FPDF_DWORD path_fill_color;
+  FPDF_DWORD path_stroke_color;
+  FPDF_DWORD text_fill_color;
+  FPDF_DWORD text_stroke_color;
+} FPDF_COLORSCHEME;
 
 #ifdef _WIN32
 // Function: FPDF_RenderPage
@@ -1198,7 +1303,7 @@ FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Init(FPDF_BSTR* bstr);
 // Function: FPDF_BStr_Set
 //          Helper function to copy string data into the FPDF_BSTR.
 FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Set(FPDF_BSTR* bstr,
-                                                    FPDF_LPCSTR cstr,
+                                                    const char* cstr,
                                                     int length);
 
 // Function: FPDF_BStr_Clear

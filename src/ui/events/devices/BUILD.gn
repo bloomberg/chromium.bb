@@ -11,7 +11,7 @@ if (is_android) {
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -77,9 +77,7 @@ jumbo_component("devices") {
 
 if (is_android) {
   generate_jni("ui_events_devices_jni_headers") {
-    sources = [
-      "../../android/java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
-    ]
+    sources = [ "../../android/java/src/org/chromium/ui/events/devices/InputDeviceObserver.java" ]
   }
 }
 
@@ -89,11 +87,7 @@ source_set("test_support") {
     "device_data_manager_test_api.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
-  public_deps = [
-    ":devices",
-  ]
+  public_deps = [ ":devices" ]
 }

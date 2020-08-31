@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Updates the FeaturePolicyFeature enum in enums.xml file with
-values read from feature_policy.mojom.
+values read from feature_policy_feature.mojom.
 
 If the file was pretty-printed, the updated version is pretty-printed too.
 """
@@ -24,8 +24,10 @@ if __name__ == '__main__':
 
   source_file = 'third_party/blink/public/mojom/feature_policy/' \
                 'feature_policy_feature.mojom'
-  UpdateHistogramEnum(histogram_enum_name='FeaturePolicyFeature',
-                      source_enum_path=source_file,
-                      start_marker='^enum FeaturePolicyFeature {',
-                      end_marker='^};',
-                      strip_k_prefix=True)
+  UpdateHistogramEnum(
+      histogram_enum_name='FeaturePolicyFeature',
+      source_enum_path=source_file,
+      start_marker='^enum FeaturePolicyFeature {',
+      end_marker='^};',
+      strip_k_prefix=True,
+      calling_script=os.path.basename(__file__))

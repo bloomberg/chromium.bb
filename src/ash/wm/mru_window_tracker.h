@@ -21,6 +21,11 @@ enum DesksMruType {
   kAllDesks,
 
   // The MRU window list will exclude windows from the inactive desks.
+  //
+  // NOTE: During an on-going desk-switch animation, getting the MRU window list
+  // for the active desk can be inconsistent, depending on at which stage of the
+  // animation it is done. If you want the MRU windows in the soon-to-be active
+  // desk, then wait for the animation to finish.
   kActiveDesk,
 };
 
@@ -43,6 +48,14 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
 
   MruWindowTracker();
   ~MruWindowTracker() override;
+
+  // Returns the set windows in the mru list regardless of whether they can be
+  // included in the cycler or not.
+  // |desks_mru_type| determines whether to include or exclude windows from the
+  // inactive desks.
+  // TODO(oshima|afakhry): Investigate if we can consolidate BuildXXXList
+  // methods with parameters.
+  WindowList BuildAppWindowList(DesksMruType desks_mru_type) const;
 
   // Returns the set of windows which can be cycled through using the tracked
   // list of most recently used windows.
@@ -78,6 +91,11 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   // MRU window list. Used by WindowCycleList to avoid adding all cycled
   // windows to the front of the MRU window list.
   void SetIgnoreActivations(bool ignore);
+
+  // Called after |window| moved out of its about-to-be-removed desk, to a new
+  // target desk's container. This causes |window| to be made the least-recently
+  // used window across all desks.
+  void OnWindowMovedOutFromRemovingDesk(aura::Window* window);
 
   // Add/Remove observers.
   void AddObserver(Observer* observer);

@@ -6,8 +6,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
@@ -21,6 +23,8 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -37,21 +41,23 @@ bool ConvertAnimationEffects(
   // Currently we only support KeyframeEffect.
   if (effects.IsAnimationEffect()) {
     auto* const effect = effects.GetAsAnimationEffect();
-    if (!effect->IsKeyframeEffect()) {
+    auto* key_frame = DynamicTo<KeyframeEffect>(effect);
+    if (!key_frame) {
       error_string = "Effect must be a KeyframeEffect object";
       return false;
     }
-    keyframe_effects.push_back(ToKeyframeEffect(effect));
+    keyframe_effects.push_back(key_frame);
   } else {
     const HeapVector<Member<AnimationEffect>>& effect_sequence =
         effects.GetAsAnimationEffectSequence();
     keyframe_effects.ReserveInitialCapacity(effect_sequence.size());
     for (const auto& effect : effect_sequence) {
-      if (!effect->IsKeyframeEffect()) {
+      auto* key_frame = DynamicTo<KeyframeEffect>(*effect);
+      if (!key_frame) {
         error_string = "Effects must all be KeyframeEffect objects";
         return false;
       }
-      keyframe_effects.push_back(ToKeyframeEffect(effect));
+      keyframe_effects.push_back(key_frame);
     }
   }
 
@@ -118,14 +124,13 @@ bool CheckElementComposited(const Node& target) {
 void StartEffectOnCompositor(CompositorAnimation* animation,
                              KeyframeEffect* effect) {
   DCHECK(effect);
-  DCHECK(effect->target());
-  Element& target = *effect->target();
+  DCHECK(effect->EffectTarget());
+  Element& target = *effect->EffectTarget();
   effect->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   int group = 0;
   base::Optional<double> start_time = base::nullopt;
-  double time_offset = 0;
 
   // Normally the playback rate of a blink animation gets translated into
   // equivalent playback rate of cc::KeyframeModels.
@@ -139,7 +144,7 @@ void StartEffectOnCompositor(CompositorAnimation* animation,
   // it on animation. https://crbug.com/925373.
   double playback_rate = 1;
 
-  effect->StartAnimationOnCompositor(group, start_time, time_offset,
+  effect->StartAnimationOnCompositor(group, start_time, base::TimeDelta(),
                                      playback_rate, animation);
 }
 
@@ -161,7 +166,7 @@ base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  base::Optional<double> timeline_current_time_ms = timeline.CurrentTime();
+  base::Optional<double> timeline_current_time_ms = timeline.currentTime();
   return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
          (current_time / playback_rate);
 }
@@ -173,7 +178,8 @@ WorkletAnimation* WorkletAnimation::Create(
     const AnimationEffectOrAnimationEffectSequence& effects,
     ExceptionState& exception_state) {
   return Create(script_state, animator_name, effects,
-                DocumentTimelineOrScrollTimeline(), nullptr, exception_state);
+                DocumentTimelineOrScrollTimeline(), ScriptValue(),
+                exception_state);
 }
 
 WorkletAnimation* WorkletAnimation::Create(
@@ -182,7 +188,7 @@ WorkletAnimation* WorkletAnimation::Create(
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
     ExceptionState& exception_state) {
-  return Create(script_state, animator_name, effects, timeline, nullptr,
+  return Create(script_state, animator_name, effects, timeline, ScriptValue(),
                 exception_state);
 }
 WorkletAnimation* WorkletAnimation::Create(
@@ -190,7 +196,7 @@ WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
-    scoped_refptr<SerializedScriptValue> options,
+    const ScriptValue& options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -208,7 +214,7 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = *To<Document>(ExecutionContext::From(script_state));
+  Document& document = *LocalDOMWindow::From(script_state)->document();
   if (!document.GetWorkletAnimationController().IsAnimatorRegistered(
           animator_name)) {
     exception_state.ThrowDOMException(
@@ -225,9 +231,20 @@ WorkletAnimation* WorkletAnimation::Create(
   AnimationTimeline* animation_timeline =
       ConvertAnimationTimeline(document, timeline);
 
+  scoped_refptr<SerializedScriptValue> animation_options;
+  if (!options.IsEmpty()) {
+    animation_options = SerializedScriptValue::Serialize(
+        script_state->GetIsolate(), options.V8Value(),
+        SerializedScriptValue::SerializeOptions(
+            SerializedScriptValue::kNotForStorage),
+        exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+  }
+
   WorkletAnimation* animation = MakeGarbageCollected<WorkletAnimation>(
       id, animator_name, document, keyframe_effects, animation_timeline,
-      std::move(options));
+      std::move(animation_options));
 
   return animation;
 }
@@ -266,7 +283,7 @@ WorkletAnimation::WorkletAnimation(
   effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
 
   if (timeline_->IsScrollTimeline())
-    timeline_->AnimationAttached(nullptr);
+    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached();
 }
 
 String WorkletAnimation::playState() {
@@ -306,7 +323,7 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   has_started_ = true;
 
   for (auto& effect : effects_) {
-    Element* target = effect->target();
+    Element* target = effect->EffectTarget();
     if (!target)
       continue;
 
@@ -320,18 +337,20 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   }
 }
 
-double WorkletAnimation::currentTime(bool& is_null) {
+base::Optional<double> WorkletAnimation::currentTime() {
   base::Optional<base::TimeDelta> current_time = CurrentTime();
-  is_null = !current_time.has_value();
-  return ToMilliseconds(current_time);
+  if (!current_time)
+    return base::nullopt;
+  return ToMilliseconds(current_time.value());
 }
 
-double WorkletAnimation::startTime(bool& is_null) {
+base::Optional<double> WorkletAnimation::startTime() {
   // The timeline may have become newly active or inactive, which then can cause
   // the start time to change.
   UpdateCurrentTimeIfNeeded();
-  is_null = !start_time_.has_value();
-  return ToMilliseconds(start_time_);
+  if (!start_time_)
+    return base::nullopt;
+  return ToMilliseconds(start_time_.value());
 }
 
 void WorkletAnimation::pause(ExceptionState& exception_state) {
@@ -379,7 +398,7 @@ void WorkletAnimation::cancel() {
   SetCurrentTime(base::nullopt);
 
   for (auto& effect : effects_) {
-    Element* target = effect->target();
+    Element* target = effect->EffectTarget();
     if (!target)
       continue;
     // TODO(yigu): Currently we have to keep a set of worklet animations in
@@ -416,10 +435,11 @@ void WorkletAnimation::setPlaybackRate(ScriptState* script_state,
   if (!playback_rate) {
     if (document_->GetFrame() && ExecutionContext::From(script_state)) {
       document_->GetFrame()->Console().AddMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 "WorkletAnimation currently does not support "
-                                 "playback rate of Zero."));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              "WorkletAnimation currently does not support "
+              "playback rate of Zero."));
     }
     return;
   }
@@ -545,10 +565,10 @@ bool WorkletAnimation::CanStartOnCompositor() {
     return false;
   }
 
-  if (!GetEffect()->target())
+  if (!GetEffect()->EffectTarget())
     return false;
 
-  Element& target = *GetEffect()->target();
+  Element& target = *GetEffect()->EffectTarget();
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
   // happening and needs to be investigated/fixed.
@@ -573,7 +593,7 @@ bool WorkletAnimation::CanStartOnCompositor() {
   // If the scroll source is not composited, fall back to main thread.
   if (timeline_->IsScrollTimeline() &&
       !CheckElementComposited(
-          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
+          *To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
     return false;
   }
 
@@ -600,18 +620,23 @@ bool WorkletAnimation::StartOnCompositor() {
     // offset information.
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
         id_, animator_name_, playback_rate_,
-        scroll_timeline_util::ToCompositorScrollTimeline(timeline_),
         std::move(options_), std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 
   // Register ourselves on the compositor timeline. This will cause our cc-side
   // animation animation to be registered.
-  if (CompositorAnimationTimeline* compositor_timeline =
-          document_->Timeline().CompositorTimeline())
+  CompositorAnimationTimeline* compositor_timeline =
+      timeline_ ? timeline_->EnsureCompositorTimeline() : nullptr;
+  if (compositor_timeline) {
     compositor_timeline->AnimationAttached(*this);
+    // Note that while we attach here but we don't detach because the
+    // |compositor_timeline| is detached in its destructor.
+    if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
+      document_->AttachCompositorTimeline(compositor_timeline);
+  }
 
-  CompositorAnimations::AttachCompositedLayers(*GetEffect()->target(),
+  CompositorAnimations::AttachCompositedLayers(*GetEffect()->EffectTarget(),
                                                compositor_animation_.get());
 
   // TODO(smcgruer): We need to start all of the effects, not just the first.
@@ -644,25 +669,11 @@ bool WorkletAnimation::UpdateOnCompositor() {
   }
 
   if (timeline_->IsScrollTimeline()) {
-    Node* scroll_source = ToScrollTimeline(timeline_)->ResolvedScrollSource();
-    LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
+    auto& timeline = To<ScrollTimeline>(*timeline_);
+    Node* scroll_source = timeline.ResolvedScrollSource();
+    auto start_scroll_offset = timeline.GetResolvedStartScrollOffset();
+    auto end_scroll_offset = timeline.GetResolvedEndScrollOffset();
 
-    base::Optional<double> start_scroll_offset;
-    base::Optional<double> end_scroll_offset;
-    if (box) {
-      double current_offset;
-      double max_offset;
-      ToScrollTimeline(timeline_)->GetCurrentAndMaxOffset(box, current_offset,
-                                                          max_offset);
-
-      double resolved_start_scroll_offset = 0;
-      double resolved_end_scroll_offset = max_offset;
-      ToScrollTimeline(timeline_)->ResolveScrollStartAndEnd(
-          box, max_offset, resolved_start_scroll_offset,
-          resolved_end_scroll_offset);
-      start_scroll_offset = resolved_start_scroll_offset;
-      end_scroll_offset = resolved_end_scroll_offset;
-    }
     compositor_animation_->UpdateScrollTimeline(
         scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
         start_scroll_offset, end_scroll_offset);
@@ -675,8 +686,9 @@ void WorkletAnimation::DestroyCompositorAnimation() {
   if (compositor_animation_ && compositor_animation_->IsElementAttached())
     compositor_animation_->DetachElement();
 
-  if (CompositorAnimationTimeline* compositor_timeline =
-          document_->Timeline().CompositorTimeline())
+  CompositorAnimationTimeline* compositor_timeline =
+      timeline_ ? timeline_->CompositorTimeline() : nullptr;
+  if (compositor_timeline)
     compositor_timeline->AnimationDestroyed(*this);
 
   if (compositor_animation_) {
@@ -722,7 +734,7 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
 
   base::Optional<base::TimeDelta> starting_time =
       timeline_->InitialStartTimeForAnimations();
-  base::Optional<double> current_time = timeline_->CurrentTime();
+  base::Optional<double> current_time = timeline_->currentTime();
 
   if (!starting_time || !current_time) {
     return base::nullopt;
@@ -734,8 +746,6 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
 }
 
 void WorkletAnimation::UpdateCurrentTimeIfNeeded() {
-  DCHECK(play_state_ != Animation::kIdle && play_state_ != Animation::kUnset);
-
   bool is_timeline_active = IsTimelineActive();
   if (is_timeline_active != was_timeline_active_) {
     if (is_timeline_active) {
@@ -780,19 +790,18 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   if (!IsTimelineActive())
     return base::nullopt;
 
-  bool is_null;
-  double timeline_time_ms = timeline_->currentTime(is_null);
   // Currently ScrollTimeline may return unresolved current time when:
   // - Current scroll offset is less than startScrollOffset and fill mode is
   //   none or forward.
   // OR
   // - Current scroll offset is greater than or equal to endScrollOffset and
   //   fill mode is none or backwards.
-  if (is_null)
+  base::Optional<double> timeline_time_ms = timeline_->currentTime();
+  if (!timeline_time_ms)
     return base::nullopt;
 
   base::TimeDelta timeline_time =
-      base::TimeDelta::FromMillisecondsD(timeline_time_ms);
+      base::TimeDelta::FromMillisecondsD(timeline_time_ms.value());
   DCHECK(start_time_);
   return (timeline_time - start_time_.value()) * playback_rate_;
 }
@@ -852,11 +861,11 @@ void WorkletAnimation::NotifyLocalTimeUpdated(
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
   if (timeline_->IsScrollTimeline())
-    timeline_->AnimationDetached(nullptr);
+    To<ScrollTimeline>(*timeline_).WorkletAnimationDetached();
   DestroyCompositorAnimation();
 }
 
-void WorkletAnimation::Trace(blink::Visitor* visitor) {
+void WorkletAnimation::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(effects_);
   visitor->Trace(timeline_);

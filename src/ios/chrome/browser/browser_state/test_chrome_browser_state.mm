@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
@@ -57,8 +58,8 @@
 
 namespace {
 std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<history::HistoryService>(
       base::WrapUnique(new HistoryClientImpl(
           ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
@@ -66,11 +67,11 @@ std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
 }
 
 std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
-          browser_state,
+          browser_state, nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
@@ -104,7 +105,7 @@ base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
 
     base::FilePath fallback_dir(
         system_tmp_dir.Append(FILE_PATH_LITERAL("TestChromeBrowserStatePath")));
-    base::DeleteFile(fallback_dir, true);
+    base::DeleteFileRecursively(fallback_dir);
     base::CreateDirectory(fallback_dir);
     if (!temp_dir->Set(fallback_dir)) {
       // That shouldn't happen, but if it does, try to recover.
@@ -135,9 +136,8 @@ TestChromeBrowserState::TestChromeBrowserState(
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingFactories testing_factories,
     RefcountedTestingFactories refcounted_testing_factories)
-    : ChromeBrowserState(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+    : ChromeBrowserState(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       state_path_(path),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
@@ -244,8 +244,7 @@ TestChromeBrowserState::GetIOTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-ios::ChromeBrowserState*
-TestChromeBrowserState::GetOriginalChromeBrowserState() {
+ChromeBrowserState* TestChromeBrowserState::GetOriginalChromeBrowserState() {
   if (IsOffTheRecord())
     return original_browser_state_;
   return this;
@@ -255,7 +254,7 @@ bool TestChromeBrowserState::HasOffTheRecordChromeBrowserState() const {
   return otr_browser_state_ != nullptr;
 }
 
-ios::ChromeBrowserState*
+ChromeBrowserState*
 TestChromeBrowserState::GetOffTheRecordChromeBrowserState() {
   if (IsOffTheRecord())
     return this;
@@ -269,6 +268,12 @@ TestChromeBrowserState::GetOffTheRecordChromeBrowserState() {
 }
 
 PrefProxyConfigTracker* TestChromeBrowserState::GetProxyConfigTracker() {
+  return nullptr;
+}
+
+BrowserStatePolicyConnector* TestChromeBrowserState::GetPolicyConnector() {
+  // TODO(crbug.com/1055318): Determine what level of support is needed for
+  // unittesting and return a mock or fake here.
   return nullptr;
 }
 

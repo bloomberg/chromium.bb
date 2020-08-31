@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool pin_support = false;
     bool is_platform_authenticator = false;
     bool internal_uv_support = false;
+    // Ignored if |internal_uv_support| is false.
+    bool uv_token_support = false;
     bool resident_key_support = false;
     bool credential_management_support = false;
     bool bio_enrollment_support = false;
@@ -50,6 +52,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_capacity = 10;
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
+
+    // force_cred_protect, if set and if |cred_protect_support| is true, is a
+    // credProtect level that will be forced for all registrations. This
+    // overrides any level requested in the makeCredential.
+    base::Optional<device::CredProtect> force_cred_protect;
+
+    // default_cred_protect, if |cred_protect_support| is true, is the
+    // credProtect level that will be set for makeCredential requests that do
+    // not specify one.
+    device::CredProtect default_cred_protect = device::CredProtect::kUVOptional;
 
     // max_credential_count_in_list, if non-zero, is the value to return for
     // maxCredentialCountInList in the authenticatorGetInfo reponse.
@@ -105,6 +117,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // add_extra_extension causes an unsolicited extension to be added in the
     // authenticator extensions output.
     bool add_extra_extension = false;
+
+    // reject_all_extensions causes the authenticator to return a CTAP error if
+    // a makeCredential or getAssertion request carries any extension.
+    bool reject_all_extensions = false;
+
+    // Support a non-standard CTAP extension that lets the platform supply an
+    // unhashed client data for the authenticator to assemble and hash instead
+    // of using the regular, already hashed value.
+    bool support_android_client_data_extension = false;
+
+    // Support a non-standard CTAP extension that lets the platform supply an
+    // unhashed client data for the authenticator to assemble and hash instead
+    // of using the regular, already hashed value.
+    bool send_unsolicited_android_client_data_extension = false;
   };
 
   VirtualCtap2Device();
@@ -118,6 +144,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
+  // CheckUserVerification implements the first, common steps of
+  // makeCredential and getAssertion from the CTAP2 spec.
+  base::Optional<CtapDeviceResponseCode> CheckUserVerification(
+      bool is_make_credential,
+      const AuthenticatorSupportedOptions& options,
+      const base::Optional<std::vector<uint8_t>>& pin_auth,
+      const base::Optional<uint8_t>& pin_protocol,
+      base::span<const uint8_t> pin_token,
+      base::span<const uint8_t> client_data_hash,
+      UserVerificationRequirement user_verification,
+      bool* out_user_verified);
   base::Optional<CtapDeviceResponseCode> OnMakeCredential(
       base::span<const uint8_t> request,
       std::vector<uint8_t>* response);
@@ -126,8 +163,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnGetNextAssertion(base::span<const uint8_t> request,
                                             std::vector<uint8_t>* response);
-  CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
-                                      std::vector<uint8_t>* response);
+  base::Optional<CtapDeviceResponseCode> OnPINCommand(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnCredentialManagement(
       base::span<const uint8_t> request,
       std::vector<uint8_t>* response);
@@ -141,7 +179,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   void InitPendingRegistrations(base::span<const uint8_t> rp_id_hash);
 
   AttestedCredentialData ConstructAttestedCredentialData(
-      std::vector<uint8_t> u2f_data,
+      base::span<const uint8_t> key_handle,
       std::unique_ptr<PublicKey> public_key);
   AuthenticatorData ConstructAuthenticatorData(
       base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
@@ -157,22 +195,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 
   DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);
 };
-
-// Decodes a CBOR-encoded CTAP2 authenticatorMakeCredential request message. The
-// request's client_data_json() value will be empty, and the hashed client data
-// is returned separately.
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::pair<CtapMakeCredentialRequest,
-                         CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map);
-
-// Decodes a CBOR-encoded CTAP2 authenticatorGetAssertion request message. The
-// request's client_data_json() value will be empty, and the hashed client data
-// is returned separately.
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<
-    std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map);
 
 }  // namespace device
 

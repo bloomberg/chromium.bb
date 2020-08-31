@@ -13,6 +13,7 @@ import tempfile
 import unittest
 import mock
 
+from devil.utils import cmd_helper
 from telemetry.core import cros_interface
 from telemetry import decorators
 from telemetry.internal.forwarders import cros_forwarder
@@ -111,10 +112,39 @@ class CrOSInterfaceTest(unittest.TestCase):
       shutil.rmtree(tempdir)
 
   @decorators.Enabled('chromeos')
+  def testPullDumpsDirectoriesIgnored(self):
+    """Tests that directories are ignored when pulling minidumps."""
+    tempdir = tempfile.mkdtemp()
+    try:
+      with self._GetCRI() as cri:
+        remote_path = '/tmp/dumps/'
+        cri.CROS_MINIDUMP_DIR = remote_path
+        cri.RunCmdOnDevice(['mkdir', '-p', remote_path + 'test_dir'])
+        # Set the mtime to one second after the epoch
+        cri.RunCmdOnDevice(['touch', remote_path + 'test_dump'])
+        try:
+          cri.PullDumps(tempdir)
+        finally:
+          cri.RmRF(remote_path)
+        # We should have pulled the dump, but not the directory.
+        self.assertEqual(os.listdir(tempdir), ['test_dump'])
+    finally:
+      shutil.rmtree(tempdir)
+
+  @decorators.Enabled('chromeos')
   def testGetFile(self):  # pylint: disable=no-self-use
     with self._GetCRI() as cri:
       f = tempfile.NamedTemporaryFile()
       cri.GetFile('/etc/lsb-release', f.name)
+      with open(f.name, 'r') as f2:
+        res = f2.read()
+        self.assertTrue('CHROMEOS' in res)
+
+  @decorators.Enabled('chromeos')
+  def testGetFileQuotes(self):  # pylint: disable=no-self-use
+    with self._GetCRI() as cri:
+      f = tempfile.NamedTemporaryFile()
+      cri.GetFile(cmd_helper.SingleQuote('/etc/lsb-release'), f.name)
       with open(f.name, 'r') as f2:
         res = f2.read()
         self.assertTrue('CHROMEOS' in res)
@@ -195,6 +225,11 @@ class CrOSInterfaceTest(unittest.TestCase):
       self.assertTrue(build_num.isdigit())
       device_type = cri.GetDeviceTypeName()
       self.assertTrue(device_type.isalpha())
+
+  @decorators.Enabled('chromeos')
+  def testGetBoard(self):
+    # All devices, including VMs, should have board names.
+    self.assertIsNotNone(self._GetCRI().GetBoard())
 
   @decorators.Enabled('chromeos')
   def testEscapeCmdArguments(self):
@@ -298,6 +333,10 @@ class CrOSInterfaceTest(unittest.TestCase):
     def mockRunCmdOnDevice(args): # pylint: disable=invalid-name
       if args[0] == 'cryptohome-path':
         return ('/home/user/%s' % args[2], '')
+      elif args[0] == 'nsenter':
+        # 'nsenter' is used to find Guest sessions. Ignore it in unit tests.
+        # 'nsenter' takes one argument so skip first two args.
+        return mockRunCmdOnDevice(args[2:])
       elif args[0] == '/bin/df':
         if 'unmount' in args[2]:
           # For the user unmount@gmail.com, returns the unmounted state.

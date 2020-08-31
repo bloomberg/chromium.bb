@@ -16,8 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -50,7 +52,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
 
     constexpr bool allow_placeholder_icon = true;
     CallLoadIcon(false, allow_placeholder_icon);
-    if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
+    if (is_recommendation) {
       CallLoadIcon(true, allow_placeholder_icon);
     }
   }
@@ -82,9 +84,9 @@ AppServiceAppResult::~AppServiceAppResult() = default;
 
 void AppServiceAppResult::Open(int event_flags) {
   Launch(event_flags,
-         (display_type() == ash::SearchResultDisplayType::kRecommendation)
-             ? apps::mojom::LaunchSource::kFromAppListRecommendation
-             : apps::mojom::LaunchSource::kFromAppListQuery);
+         (is_recommendation()
+              ? apps::mojom::LaunchSource::kFromAppListRecommendation
+              : apps::mojom::LaunchSource::kFromAppListQuery));
 }
 
 void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
@@ -95,8 +97,13 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
     return;
   }
 
-  context_menu_ = AppServiceAppItem::MakeAppContextMenu(
-      app_type_, this, profile(), app_id(), controller(), is_platform_app_);
+  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
+    context_menu_ = std::make_unique<AppServiceContextMenu>(
+        this, profile(), app_id(), controller());
+  } else {
+    context_menu_ = AppServiceAppItem::MakeAppContextMenu(
+        app_type_, this, profile(), app_id(), controller(), is_platform_app_);
+  }
   context_menu_->GetMenuModel(std::move(callback));
 }
 
@@ -114,12 +121,17 @@ ash::SearchResultType AppServiceAppResult::GetSearchResultType() const {
       return ash::PLAY_STORE_APP;
     case apps::mojom::AppType::kBuiltIn:
       return ash::INTERNAL_APP;
+    case apps::mojom::AppType::kPluginVm:
+      return ash::PLUGIN_VM_APP;
     case apps::mojom::AppType::kCrostini:
       return ash::CROSTINI_APP;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
       return ash::EXTENSION_APP;
-    default:
+    case apps::mojom::AppType::kLacros:
+      return ash::LACROS;
+    case apps::mojom::AppType::kMacNative:
+    case apps::mojom::AppType::kUnknown:
       NOTREACHED();
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
@@ -222,8 +234,7 @@ void AppServiceAppResult::HandleSuggestionChip(Profile* profile) {
   // Set these values to make sure that the chip will show up
   // in the proper position.
   SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
-  SetDisplayLocation(
-      ash::SearchResultDisplayLocation::kSuggestionChipContainer);
+  SetDisplayType(ash::SearchResultDisplayType::kChip);
 
   if (id() == ash::kReleaseNotesAppId) {
     SetNotifyVisibilityChange(true);
@@ -253,9 +264,9 @@ void AppServiceAppResult::UpdateContinueReadingFavicon(
     large_icon_service_->GetLargeIconImageOrFallbackStyleForPageUrl(
         url_for_continuous_reading_, min_source_size_in_pixel,
         desired_size_in_pixel,
-        base::BindRepeating(&AppServiceAppResult::OnGetFaviconFromCacheFinished,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            continue_to_google_server),
+        base::BindOnce(&AppServiceAppResult::OnGetFaviconFromCacheFinished,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       continue_to_google_server),
         &task_tracker_);
   }
 }
@@ -300,7 +311,7 @@ void AppServiceAppResult::OnGetFaviconFromCacheFinished(
           url_for_continuous_reading_,
           /*may_page_url_be_private=*/false,
           /*should_trim_page_url_path=*/false, traffic_annotation,
-          base::BindRepeating(
+          base::BindOnce(
               &AppServiceAppResult::OnGetFaviconFromGoogleServerFinished,
               weak_ptr_factory_.GetWeakPtr()));
 }

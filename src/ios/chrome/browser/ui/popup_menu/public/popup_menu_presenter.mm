@@ -4,13 +4,13 @@
 
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/material_timing.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -141,7 +141,10 @@ const CGFloat kDamping = 0.85;
             CGAffineTransformIdentity;
       }
       withCompletion:^(BOOL finished) {
-        [self.delegate containedPresenterDidPresent:self];
+        if ([self.delegate
+                respondsToSelector:@selector(containedPresenterDidPresent:)]) {
+          [self.delegate containedPresenterDidPresent:self];
+        }
       }];
 }
 
@@ -153,7 +156,10 @@ const CGFloat kDamping = 0.85;
     [self.popupViewController.view removeFromSuperview];
     [self.popupViewController removeFromParentViewController];
     self.popupViewController = nil;
-    [self.delegate containedPresenterDidDismiss:self];
+    if ([self.delegate
+            respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+      [self.delegate containedPresenterDidDismiss:self];
+    }
   };
   if (animated) {
     [self

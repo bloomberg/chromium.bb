@@ -4,7 +4,8 @@
 
 #import "ui/base/cocoa/tool_tip_base_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 // Below is the nasty tooltip stuff -- copied from WebKit's WebHTMLView.mm
 // with minor modifications for code style and commenting.
@@ -60,9 +61,9 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
                                owner:(id)owner
                             userData:(void *)data
                         assumeInside:(BOOL)assumeInside {
-  DCHECK(trackingRectOwner_ == nil);
-  trackingRectOwner_ = owner;
-  trackingRectUserData_ = data;
+  DCHECK(_trackingRectOwner == nil);
+  _trackingRectOwner = owner;
+  _trackingRectUserData = data;
   return kTrackingRectTag;
 }
 
@@ -73,9 +74,9 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
                          assumeInside:(BOOL)assumeInside
                        useTrackingNum:(int)tag {
   DCHECK(tag == 0 || tag == kTrackingRectTag);
-  DCHECK(trackingRectOwner_ == nil);
-  trackingRectOwner_ = owner;
-  trackingRectUserData_ = data;
+  DCHECK(_trackingRectOwner == nil);
+  _trackingRectOwner = owner;
+  _trackingRectUserData = data;
   return kTrackingRectTag;
 }
 
@@ -88,9 +89,9 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
                     count:(int)count {
   DCHECK(count == 1);
   DCHECK(trackingNums[0] == 0 || trackingNums[0] == kTrackingRectTag);
-  DCHECK(trackingRectOwner_ == nil);
-  trackingRectOwner_ = owner;
-  trackingRectUserData_ = userDataList[0];
+  DCHECK(_trackingRectOwner == nil);
+  _trackingRectOwner = owner;
+  _trackingRectUserData = userDataList[0];
   trackingNums[0] = kTrackingRectTag;
 }
 
@@ -101,13 +102,13 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
     return;
 
   if (tag == kTrackingRectTag) {
-    trackingRectOwner_ = nil;
+    _trackingRectOwner = nil;
     return;
   }
 
-  if (tag == lastToolTipTag_) {
+  if (tag == _lastToolTipTag) {
     [super removeTrackingRect:tag];
-    lastToolTipTag_ = 0;
+    _lastToolTipTag = 0;
     return;
   }
 
@@ -123,7 +124,7 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
     if (tag == 0)
       continue;
     DCHECK(tag == kTrackingRectTag);
-    trackingRectOwner_ = nil;
+    _trackingRectOwner = nil;
   }
 }
 
@@ -140,8 +141,8 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
                                                context:NULL
                                            eventNumber:0
                                         trackingNumber:kTrackingRectTag
-                                              userData:trackingRectUserData_];
-  [trackingRectOwner_ mouseExited:fakeEvent];
+                                              userData:_trackingRectUserData];
+  [_trackingRectOwner mouseExited:fakeEvent];
 }
 
 // Sends a fake NSMouseEntered event to the view for its current tracking rect.
@@ -164,8 +165,8 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
                                                context:NULL
                                            eventNumber:0
                                         trackingNumber:kTrackingRectTag
-                                              userData:trackingRectUserData_];
-  [trackingRectOwner_ mouseEntered:fakeEvent];
+                                              userData:_trackingRectUserData];
+  [_trackingRectOwner mouseEntered:fakeEvent];
 }
 
 // Sets the view's current tooltip, to be displayed at the current mouse
@@ -173,23 +174,23 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 // appears after a delay.) Pass null to remove the tooltip.
 - (void)setToolTipAtMousePoint:(NSString *)string {
   NSString *toolTip = [string length] == 0 ? nil : string;
-  if ((toolTip && toolTip_ && [toolTip isEqualToString:toolTip_]) ||
-      (!toolTip && !toolTip_)) {
+  if ((toolTip && _toolTip && [toolTip isEqualToString:_toolTip]) ||
+      (!toolTip && !_toolTip)) {
     return;
   }
 
-  if (toolTip_) {
+  if (_toolTip) {
     [self _sendToolTipMouseExited];
   }
 
-  toolTip_.reset([toolTip copy]);
+  _toolTip.reset([toolTip copy]);
 
   if (toolTip) {
     // See radar 3500217 for why we remove all tooltips
     // rather than just the single one we created.
     [self removeAllToolTips];
     NSRect wideOpenRect = NSMakeRect(-100000, -100000, 200000, 200000);
-    lastToolTipTag_ = [self addToolTipRect:wideOpenRect
+    _lastToolTipTag = [self addToolTipRect:wideOpenRect
                                      owner:self
                                   userData:NULL];
     [self _sendToolTipMouseEntered];
@@ -201,7 +202,7 @@ const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
   stringForToolTip:(NSToolTipTag)tag
              point:(NSPoint)point
           userData:(void *)data {
-  return [[toolTip_ copy] autorelease];
+  return [[_toolTip copy] autorelease];
 }
 
 @end

@@ -39,12 +39,13 @@ class ColorSpace;
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
-}
+}  // namespace gles2
 }  // namespace gpu
 
 namespace viz {
 
 class ContextProvider;
+class ScopedAllowGpuAccessForDisplayResourceProvider;
 class SharedBitmapManager;
 
 // This class provides abstractions for receiving and using resources from other
@@ -243,7 +244,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // There should be at most one instance of this class per
     // |resource_provider|. Both |resource_provider| and |client| outlive this
     // class.
-    LockSetForExternalUse(DisplayResourceProvider* resourcqe_provider,
+    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
                           ExternalUseClient* client);
     ~LockSetForExternalUse();
 
@@ -254,8 +255,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // Lock a resource for external use. The return value was created by
     // |client| at some point in the past.
     ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
-                                                  bool is_video_plane = false,
-                                                  float sdr_scale_factor = 1.f);
+                                                  bool is_video_plane);
 
     // Unlock all locked resources with a |sync_token|.  The |sync_token| should
     // be waited on before reusing the resource's backing to ensure that any
@@ -273,11 +273,13 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   class VIZ_SERVICE_EXPORT ScopedBatchReturnResources {
    public:
     explicit ScopedBatchReturnResources(
-        DisplayResourceProvider* resource_provider);
+        DisplayResourceProvider* resource_provider,
+        bool allow_access_to_gpu_thread = false);
     ~ScopedBatchReturnResources();
 
    private:
     DisplayResourceProvider* const resource_provider_;
+    const bool was_access_to_gpu_thread_allowed_;
   };
 
   class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
@@ -310,11 +312,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     current_read_lock_fence_ = fence;
   }
 
-  // Creates accounting for a child. Returns a child ID. |needs_sync_tokens|
-  // sets whether resources need sync points set on them when returned to this
-  // child.
-  int CreateChild(const ReturnCallback& return_callback,
-                  bool needs_sync_tokens);
+  // Creates accounting for a child. Returns a child ID.
+  int CreateChild(const ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -342,7 +341,15 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   void DeclareUsedResourcesFromChild(int child,
                                      const ResourceIdSet& resources_from_child);
 
+  // Returns the mailbox corresponding to a resource id.
+  gpu::Mailbox GetMailbox(int resource_id);
+
+  // Sets if the GPU thread is available (it always is for Chrome, but for
+  // WebView it happens only when Android calls us on RenderThread.
+  void SetAllowAccessToGPUThread(bool allow);
+
  private:
+  friend class ScopedAllowGpuAccessForDisplayResourceProvider;
   enum DeleteStyle {
     NORMAL,
     FOR_SHUTDOWN,
@@ -385,7 +392,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     std::unordered_map<ResourceId, ResourceId> child_to_parent_map;
     ReturnCallback return_callback;
     bool marked_for_deletion = false;
-    bool needs_sync_tokens = true;
   };
 
   // The data structure used to track state of Gpu and Software-based
@@ -482,6 +488,18 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     gpu::SyncToken sync_token_;
   };
 
+  // Class to do Scoped Begin/End read access on a batch of shared images.
+  class ScopedBatchReadAccess {
+   public:
+    explicit ScopedBatchReadAccess(gpu::gles2::GLES2Interface* gl);
+    ~ScopedBatchReadAccess();
+
+   private:
+    gpu::gles2::GLES2Interface* gl_ = nullptr;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReadAccess);
+  };
+
   using ChildMap = std::unordered_map<int, Child>;
   using ResourceMap = std::unordered_map<ResourceId, ChildResource>;
 
@@ -523,6 +541,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
 
   void SetBatchReturnResources(bool aggregate);
+  void TryFlushBatchedResources();
 
   THREAD_CHECKER(thread_checker_);
   const Mode mode_;
@@ -558,6 +577,12 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 #endif
 
   bool enable_shared_images_;
+  std::unique_ptr<ScopedBatchReadAccess> scoped_batch_read_access_;
+
+  // Indicates that gpu thread is available and calls like
+  // ReleaseImageContexts() are expected to finish in finite time. It's always
+  // true for Chrome, but on WebView we need to have access to RenderThread.
+  bool can_access_gpu_thread_ = true;
 };
 
 }  // namespace viz

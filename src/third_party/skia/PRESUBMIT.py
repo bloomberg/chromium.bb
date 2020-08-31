@@ -163,7 +163,7 @@ def _InfraTests(input_api, output_api):
 def _CheckGNFormatted(input_api, output_api):
   """Make sure any .gn files we're changing have been formatted."""
   files = []
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().endswith('.gn') or
         f.LocalPath().endswith('.gni')):
       files.append(f)
@@ -278,6 +278,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckCompileIsolate(input_api, output_api))
   results.extend(_CheckDEPSValid(input_api, output_api))
   results.extend(_CheckIncludesFormatted(input_api, output_api))
+  results.extend(_CheckGNFormatted(input_api, output_api))
   return results
 
 
@@ -288,8 +289,6 @@ def CheckChangeOnUpload(input_api, output_api):
   # Run on upload, not commit, since the presubmit bot apparently doesn't have
   # coverage or Go installed.
   results.extend(_InfraTests(input_api, output_api))
-
-  results.extend(_CheckGNFormatted(input_api, output_api))
   results.extend(_CheckReleaseNotesForPublicAPI(input_api, output_api))
   return results
 

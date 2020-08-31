@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -34,6 +34,10 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
       Profile* profile,
       const extensions::Extension* app,
       const base::Callback<void(bool)>& close_callback);
+  CreateChromeApplicationShortcutView(
+      Profile* profile,
+      const std::string& web_app_id,
+      const base::Callback<void(bool)>& close_callback);
   ~CreateChromeApplicationShortcutView() override;
 
   // Initialize the controls on the dialog.
@@ -44,19 +48,22 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView,
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
-  bool Cancel() override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  CreateChromeApplicationShortcutView(Profile* profile,
+                                      const base::Callback<void(bool)>& cb);
+
   // Creates a new check-box with the given text and checked state.
   std::unique_ptr<views::Checkbox> AddCheckbox(const base::string16& text,
                                                bool checked);
 
   // Called when the app's ShortcutInfo (with icon) is loaded.
   void OnAppInfoLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+
+  void OnDialogAccepted();
 
   // Profile in which the shortcuts will be created.
   Profile* profile_;

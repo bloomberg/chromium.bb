@@ -14,30 +14,29 @@
 #include "include/gpu/vk/GrVkVulkan.h"
 
 #include "tests/Test.h"
+#include "tests/TestUtils.h"
 
 #include "include/core/SkImage.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrTexture.h"
 #include "include/gpu/vk/GrVkTypes.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGpuDevice.h"
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/gpu/vk/GrVkImageLayout.h"
 #include "src/gpu/vk/GrVkTexture.h"
 #include "src/image/SkImage_Base.h"
+#include "src/image/SkImage_GpuBase.h"
 #include "src/image/SkSurface_Gpu.h"
 
 DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkImageLayoutTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
 
-    GrBackendTexture backendTex = context->createBackendTexture(1, 1,
-                                                                kRGBA_8888_SkColorType,
-                                                                SkColors::kTransparent,
-                                                                GrMipMapped::kNo,
-                                                                GrRenderable::kNo,
-                                                                GrProtected::kNo);
+    GrBackendTexture backendTex;
+    CreateBackendTexture(context, &backendTex, 1, 1, kRGBA_8888_SkColorType, SkColors::kTransparent,
+                         GrMipMapped::kNo, GrRenderable::kNo, GrProtected::kNo);
     REPORTER_ASSERT(reporter, backendTex.isValid());
 
     GrVkImageInfo info;
@@ -67,10 +66,10 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkImageLayoutTest, reporter, ctxInfo) {
                                                            kPremul_SkAlphaType, nullptr);
     REPORTER_ASSERT(reporter, wrappedImage.get());
 
-    sk_sp<GrTextureProxy> texProxy = as_IB(wrappedImage)->asTextureProxyRef(context);
-    REPORTER_ASSERT(reporter, texProxy.get());
-    REPORTER_ASSERT(reporter, texProxy->isInstantiated());
-    GrTexture* texture = texProxy->peekTexture();
+    const GrSurfaceProxyView* view = as_IB(wrappedImage)->view(context);
+    REPORTER_ASSERT(reporter, view);
+    REPORTER_ASSERT(reporter, view->proxy()->isInstantiated());
+    GrTexture* texture = view->proxy()->peekTexture();
     REPORTER_ASSERT(reporter, texture);
 
     // Verify that modifying the layout via the GrVkTexture is reflected in the GrBackendTexture
@@ -180,7 +179,8 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkReleaseExternalQueueTest, reporter, ctxInfo) {
 
         REPORTER_ASSERT(reporter, !count);
 
-        GrTexture* texture = image->getTexture();
+        SkImage_GpuBase* gpuImage = static_cast<SkImage_GpuBase*>(as_IB(image));
+        GrTexture* texture = gpuImage->getTexture();
         REPORTER_ASSERT(reporter, texture);
         GrVkTexture* vkTex = static_cast<GrVkTexture*>(texture);
 
@@ -272,7 +272,8 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkPrepareForExternalIOQueueTransitionTest, report
                     continue;
                 }
 
-                texture = image->getTexture();
+                SkImage_GpuBase* gpuImage = static_cast<SkImage_GpuBase*>(as_IB(image));
+                texture = gpuImage->getTexture();
             }
 
             REPORTER_ASSERT(reporter, texture);

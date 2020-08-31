@@ -12,10 +12,8 @@ class GURL;
 // Activity that copies the URL to the pasteboard.
 @interface CopyActivity : UIActivity
 
+// Initializes the copy activity with the given |URL| to be copied.
 - (instancetype)initWithURL:(const GURL&)URL;
-
-// Identifier for the copy activity.
-+ (NSString*)activityIdentifier;
 
 @end
 

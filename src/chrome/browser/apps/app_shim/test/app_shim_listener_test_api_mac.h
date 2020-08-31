@@ -16,7 +16,6 @@ class FilePath;
 }
 
 namespace apps {
-class ExtensionAppShimHandler;
 class MachBootstrapAcceptor;
 }  // namespace apps
 
@@ -29,9 +28,6 @@ class AppShimListenerTestApi {
   apps::MachBootstrapAcceptor* mach_acceptor();
 
   const base::FilePath& directory_in_tmp();
-
-  void SetExtensionAppShimHandler(
-      std::unique_ptr<apps::ExtensionAppShimHandler> handler);
 
  private:
   AppShimListener* listener_;  // Not owned.

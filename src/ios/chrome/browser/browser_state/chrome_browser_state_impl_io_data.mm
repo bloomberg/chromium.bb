@@ -11,9 +11,10 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/json_pref_store.h"
@@ -38,15 +39,13 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
-#include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-ChromeBrowserStateImplIOData::Handle::Handle(
-    ios::ChromeBrowserState* browser_state)
+ChromeBrowserStateImplIOData::Handle::Handle(ChromeBrowserState* browser_state)
     : io_data_(new ChromeBrowserStateImplIOData),
       browser_state_(browser_state),
       initialized_(false) {
@@ -149,8 +148,7 @@ ChromeBrowserStateImplIOData::LazyParams::LazyParams() : cache_max_size(0) {}
 ChromeBrowserStateImplIOData::LazyParams::~LazyParams() {}
 
 ChromeBrowserStateImplIOData::ChromeBrowserStateImplIOData()
-    : ChromeBrowserStateIOData(
-          ios::ChromeBrowserStateType::REGULAR_BROWSER_STATE),
+    : ChromeBrowserStateIOData(ChromeBrowserStateType::REGULAR_BROWSER_STATE),
       app_cache_max_size_(0) {}
 
 ChromeBrowserStateImplIOData::~ChromeBrowserStateImplIOData() {}
@@ -164,9 +162,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       profile_path_.Append(kIOSChromeNetworkPersistentStateFilename));
   network_json_store_ = new JsonPrefStore(
       network_json_store_filepath, std::unique_ptr<PrefFilter>(),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   network_json_store_->ReadPrefsAsync(nullptr);
 
@@ -220,7 +217,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   std::unique_ptr<net::HttpCache::BackendFactory> main_backend(
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE,
-          lazy_params_->cache_path, lazy_params_->cache_max_size));
+          lazy_params_->cache_path, lazy_params_->cache_max_size,
+          /*hard_reset=*/false));
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
                                              std::move(main_backend));

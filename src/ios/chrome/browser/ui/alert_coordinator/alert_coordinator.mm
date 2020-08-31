@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 
-#include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -43,22 +43,10 @@
 @synthesize message = _message;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                    message:(NSString*)message {
-  self = [super initWithBaseViewController:viewController browserState:nullptr];
-  if (self) {
-    [self commonInitWithTitle:title message:message];
-  }
-  return self;
-}
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
-                                   message:(NSString*)message
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState {
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     [self commonInitWithTitle:title message:message];
   }

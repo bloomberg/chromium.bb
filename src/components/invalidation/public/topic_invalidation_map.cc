@@ -6,8 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/json/json_string_value_serializer.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "base/values.h"
 
 namespace syncer {
 
@@ -30,16 +29,28 @@ bool TopicInvalidationMap::Empty() const {
 }
 
 void TopicInvalidationMap::Insert(const Invalidation& invalidation) {
-  map_[invalidation.object_id().name()].Insert(invalidation);
+  map_[invalidation.topic()].Insert(invalidation);
 }
 
 TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
     const Topics& topics) const {
-  TopicToListMap new_map;
+  std::map<Topic, SingleObjectInvalidationSet> new_map;
   for (const auto& topic : topics) {
     auto lookup = map_.find(topic.first);
     if (lookup != map_.end()) {
       new_map[topic.first] = lookup->second;
+    }
+  }
+  return TopicInvalidationMap(new_map);
+}
+
+TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
+    const TopicSet& topics) const {
+  std::map<Topic, SingleObjectInvalidationSet> new_map;
+  for (const auto& topic : topics) {
+    auto lookup = map_.find(topic);
+    if (lookup != map_.end()) {
+      new_map[topic] = lookup->second;
     }
   }
   return TopicInvalidationMap(new_map);
@@ -82,54 +93,8 @@ std::unique_ptr<base::ListValue> TopicInvalidationMap::ToValue() const {
   return value;
 }
 
-bool TopicInvalidationMap::ResetFromValue(const base::ListValue& value) {
-  map_.clear();
-  for (size_t i = 0; i < value.GetSize(); ++i) {
-    const base::DictionaryValue* dict;
-    if (!value.GetDictionary(i, &dict)) {
-      return false;
-    }
-    std::unique_ptr<Invalidation> invalidation =
-        Invalidation::InitFromValue(*dict);
-    if (!invalidation) {
-      return false;
-    }
-    Insert(*invalidation);
-  }
-  return true;
-}
-
-std::string TopicInvalidationMap::ToString() const {
-  std::string output;
-  JSONStringValueSerializer serializer(&output);
-  serializer.set_pretty_print(true);
-  serializer.Serialize(*ToValue());
-  return output;
-}
-
-TopicInvalidationMap::TopicInvalidationMap(const TopicToListMap& map)
+TopicInvalidationMap::TopicInvalidationMap(
+    const std::map<Topic, SingleObjectInvalidationSet>& map)
     : map_(map) {}
-
-TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-    ObjectIdInvalidationMap object_ids_map) {
-  TopicInvalidationMap topics_map;
-  std::vector<Invalidation> invalidations;
-  object_ids_map.GetAllInvalidations(&invalidations);
-  for (const auto& invalidation : invalidations) {
-    topics_map.Insert(invalidation);
-  }
-  return topics_map;
-}
-
-ObjectIdInvalidationMap ConvertTopicInvalidationMapToObjectIdInvalidationMap(
-    const TopicInvalidationMap& topics_map) {
-  ObjectIdInvalidationMap object_ids_map;
-  std::vector<Invalidation> invalidations;
-  topics_map.GetAllInvalidations(&invalidations);
-  for (const auto& invalidation : invalidations) {
-    object_ids_map.Insert(invalidation);
-  }
-  return object_ids_map;
-}
 
 }  // namespace syncer

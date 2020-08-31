@@ -20,12 +20,14 @@
 
 #include "third_party/blink/renderer/core/svg/svg_tests.h"
 
+#include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_static_string_list.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -42,7 +44,7 @@ SVGTests::SVGTests(SVGElement* context_element)
   context_element->AddToPropertyMap(system_language_);
 }
 
-void SVGTests::Trace(blink::Visitor* visitor) {
+void SVGTests::Trace(Visitor* visitor) {
   visitor->Trace(required_extensions_);
   visitor->Trace(system_language_);
 }
@@ -91,9 +93,19 @@ bool SVGTests::IsValid() const {
       return false;
   }
 
-  if (!required_extensions_->Value()->Values().IsEmpty())
-    return false;
-
+  if (required_extensions_->IsSpecified()) {
+    const Vector<String>& extensions = required_extensions_->Value()->Values();
+    // 'If a null string or empty string value is given to attribute
+    // 'requiredExtensions', the attribute evaluates to "false".'
+    if (extensions.IsEmpty())
+      return false;
+    for (const auto& extension : extensions) {
+      if (extension != html_names::xhtmlNamespaceURI &&
+          (!RuntimeEnabledFeatures::MathMLCoreEnabled() ||
+           extension != mathml_names::kNamespaceURI))
+        return false;
+    }
+  }
   return true;
 }
 

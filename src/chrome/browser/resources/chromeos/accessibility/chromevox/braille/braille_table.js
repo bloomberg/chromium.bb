@@ -25,7 +25,7 @@ BrailleTable.Table;
 /**
  * @const {string}
  */
-BrailleTable.TABLE_PATH = 'braille/tables.json';
+BrailleTable.TABLE_PATH = 'chromevox/braille/tables.json';
 
 
 /**
@@ -48,12 +48,12 @@ BrailleTable.getAll = function(callback) {
     });
     return tables;
   }
-  var url = chrome.extension.getURL(BrailleTable.TABLE_PATH);
+  const url = chrome.extension.getURL(BrailleTable.TABLE_PATH);
   if (!url) {
     throw 'Invalid path: ' + BrailleTable.TABLE_PATH;
   }
 
-  var xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
@@ -115,7 +115,9 @@ BrailleTable.getUncontracted = function(tables, table) {
  * @return {string} Localized display name.
  */
 BrailleTable.getDisplayName = function(table) {
-  var localeName = Msgs.getLocaleDisplayName(table.locale);
+  const localeName = chrome.accessibilityPrivate.getDisplayNameForLocale(
+      table.locale /* locale to be displayed */,
+      chrome.i18n.getUILanguage().toLowerCase() /* locale to localize into */);
   if (!table.grade && !table.variant) {
     return localeName;
   } else if (table.grade && !table.variant) {

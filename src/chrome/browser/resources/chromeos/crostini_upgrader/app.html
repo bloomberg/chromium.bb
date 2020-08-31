@@ -14,7 +14,7 @@
   }
 
   #icon {
-    fill: var(--cros-default-button-color);
+    fill: var(--cros-default-icon-color-prominent);
     height: 32px;
     margin-top: 28px;
     width: 32px;
@@ -46,8 +46,23 @@
     line-height: 18px;
   }
 
+  #progress-message {
+    height: 36px;
+  }
+
+  #progress-submessage {
+    color: var(--google-grey-600);
+    flex-grow: 1;
+    font-family: Roboto;
+    font-size: 13px;
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   paper-progress {
-    --paper-progress-active-color: var(--cros-default-button-color);
+    --paper-progress-active-color: var(--cros-default-icon-color-prominent);
     --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
     margin-top: 36px;
     width: 100%;
@@ -62,6 +77,7 @@
     justify-content: flex-end;
     margin: 32px 0;
   }
+
 </style>
 
 <div id="main">
@@ -73,12 +89,17 @@
 
     <!-- Prompt message.  Has Learn More link.-->
     <div id="prompt-message" hidden="[[!isState_(state_, State.PROMPT)]]">
-      <span>[[getProgressMessage_(state_)]]</span>
+      <span>[[getProgressMessage_(state_)]] </span>
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
     <!-- Progress message. -->
     <div id="progress-message" hidden="[[isState_(state_, State.PROMPT)]]">
       <span>[[getProgressMessage_(state_)]]</span>
+      <!-- Progress submessage. -->
+      <div id = "progress-submessage"
+          hidden="[[!isState_(state_, State.UPGRADING)]]">
+        <span>[[lastProgressLine_]]</span>
+      </div>
     </div>
     <!-- Progress bar containers. Depending on the current state, only one
       of them is visible. -->
@@ -86,9 +107,14 @@
       <paper-progress class="progress-bar" value="[[backupProgress_]]">
       </paper-progress>
     </div>
-    <div id="upgrader-progress-bar"
+    <div id="restore-progress-bar"
+        hidden="[[!isState_(state_, State.RESTORE)]]">
+      <paper-progress class="progress-bar" value="[[restoreProgress_]]">
+      </paper-progress>
+    </div>
+    <div id="upgrade-progress-bar"
         hidden="[[!isState_(state_, State.UPGRADING)]]">
-      <paper-progress class="progress-bar" value="[[upgraderProgress_]]">
+      <paper-progress class="progress-bar" indeterminate>
       </paper-progress>
     </div>
     <div id="canceling-progress-bar"
@@ -106,7 +132,8 @@
     <cr-checkbox checked="{{backupCheckboxChecked_}}" >
       <p class="checkbox-text">
         $i18n{backupCheckboxMessage}
-        <a href="$i18n{learnMoreUrl}" target="_blank">
+        <a href="#" on-click="onChangeLocationButtonClick_"
+            style="text-decoration: none">
         $i18n{backupChangeLocation}</a>
       </p>
     </cr-checkbox>

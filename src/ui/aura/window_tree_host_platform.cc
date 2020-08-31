@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
@@ -53,21 +54,17 @@ std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties,
-    std::unique_ptr<Window> window,
-    const char* trace_environment_name,
-    bool use_external_begin_frame_control)
+    std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)) {
   bounds_in_pixels_ = properties.bounds;
-  CreateCompositor(viz::FrameSinkId(),
-                   /* force_software_compositor */ false,
-                   use_external_begin_frame_control, trace_environment_name);
+  CreateCompositor();
   CreateAndSetPlatformWindow(std::move(properties));
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)),
       widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::CursorType::kNull) {}
+      current_cursor_(ui::mojom::CursorType::kNull) {}
 
 void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
     ui::PlatformWindowInitProperties properties) {
@@ -77,9 +74,12 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
 #elif defined(OS_WIN)
   platform_window_.reset(new ui::WinWindow(this, properties.bounds));
 #elif defined(USE_X11)
-  auto x11_window = std::make_unique<ui::X11Window>(this);
+  auto platform_window = std::make_unique<ui::X11Window>(this);
+  auto* x11_window = platform_window.get();
+  // platform_window() may be called during Initialize(), so call
+  // SetPlatformWindow() now.
+  SetPlatformWindow(std::move(platform_window));
   x11_window->Initialize(std::move(properties));
-  SetPlatformWindow(std::move(x11_window));
 #else
   NOTIMPLEMENTED();
 #endif

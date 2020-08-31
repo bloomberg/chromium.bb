@@ -74,7 +74,7 @@ int StyleRuleKeyframes::FindKeyframeIndex(const String& key) const {
   return -1;
 }
 
-void StyleRuleKeyframes::TraceAfterDispatch(blink::Visitor* visitor) {
+void StyleRuleKeyframes::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(keyframes_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
@@ -200,7 +200,7 @@ void CSSKeyframesRule::Reattach(StyleRuleBase* rule) {
   keyframes_rule_ = To<StyleRuleKeyframes>(rule);
 }
 
-void CSSKeyframesRule::Trace(blink::Visitor* visitor) {
+void CSSKeyframesRule::Trace(Visitor* visitor) {
   CSSRule::Trace(visitor);
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(keyframes_rule_);

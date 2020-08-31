@@ -39,7 +39,7 @@
 class GURL;
 
 namespace media {
-struct MediaLogEvent;
+struct MediaLogRecord;
 }
 
 namespace content {
@@ -64,8 +64,6 @@ class CONTENT_EXPORT RenderMessageFilter
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
 
   int render_process_id() const { return render_process_id_; }
 
@@ -80,12 +78,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback routing_id) override;
-  void CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       CreateNewWidgetCallback callback) override;
-  void CreateFullscreenWidget(int opener_id,
-                              mojo::PendingRemote<mojom::Widget> widget,
-                              CreateFullscreenWidgetCallback callback) override;
   void HasGpuProcess(HasGpuProcessCallback callback) override;
 #if defined(OS_LINUX)
   void SetThreadPriority(int32_t ns_tid,
@@ -99,7 +91,7 @@ class CONTENT_EXPORT RenderMessageFilter
                                      base::ThreadPriority priority);
 #endif
 
-  void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
+  void OnMediaLogRecords(const std::vector<media::MediaLogRecord>&);
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;

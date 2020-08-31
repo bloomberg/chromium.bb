@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
 
@@ -71,6 +71,16 @@ public class AssistantLoginSection extends AssistantCollectUserDataSection<Assis
     protected String getEditButtonContentDescription(AssistantLoginChoice choice) {
         // TODO(b/143862732): Send this a11y string from the backend.
         return mContext.getString(R.string.learn_more);
+    }
+
+    @Override
+    protected boolean areEqual(
+            @Nullable AssistantLoginChoice optionA, @Nullable AssistantLoginChoice optionB) {
+        if (optionA == null || optionB == null) {
+            return optionA == optionB;
+        }
+        // Native ensures that each login choice has a unique identifier.
+        return TextUtils.equals(optionA.getIdentifier(), optionB.getIdentifier());
     }
 
     /**

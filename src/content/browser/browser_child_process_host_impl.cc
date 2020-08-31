@@ -7,7 +7,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -27,10 +26,10 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/histogram_controller.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -50,6 +49,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
@@ -351,6 +351,8 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   if (data_.metrics_name.empty())
     data_.metrics_name = GetProcessTypeNameInEnglish(data_.process_type);
 
+  data_.sandbox_type = delegate->GetSandboxType();
+
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,
@@ -440,17 +442,13 @@ void BrowserChildProcessHostImpl::OnBadMessageReceived(
 
 void BrowserChildProcessHostImpl::TerminateOnBadMessageReceived(
     const std::string& error) {
-  HistogramBadMessageTerminated(static_cast<ProcessType>(data_.process_type));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableKillAfterBadIPC)) {
-    return;
-  }
-  LOG(ERROR) << "Terminating child process for bad IPC message: " << error;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Create a memory dump. This will contain enough stack frames to work out
   // what the bad message was.
   base::debug::DumpWithoutCrashing();
 
-  child_process_->Terminate(RESULT_CODE_KILLED_BAD_MESSAGE);
+  TerminateProcessForBadMessage(weak_factory_.GetWeakPtr(), error);
 }
 
 void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
@@ -471,7 +469,11 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     ChildProcessTerminationInfo info =
         GetTerminationInfo(true /* known_dead */);
 #if defined(OS_ANDROID)
-    delegate_->OnProcessCrashed(info.exit_code);
+    // Do not treat clean_exit, ie when child process exited due to quitting
+    // its main loop, as a crash.
+    if (!info.clean_exit) {
+      delegate_->OnProcessCrashed(info.exit_code);
+    }
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));
@@ -653,25 +655,28 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
   if (!IsProcessLaunched())
     return;
 
-  base::PostTask(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(
-          [](mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator>
-                 receiver,
-             mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
-                 client_process,
-             memory_instrumentation::mojom::ProcessType process_type,
-             base::ProcessId process_id,
-             base::Optional<std::string> service_name) {
-            GetMemoryInstrumentationCoordinatorController()
-                ->RegisterClientProcess(std::move(receiver),
-                                        std::move(client_process), process_type,
-                                        process_id, std::move(service_name));
-          },
-          std::move(receiver), std::move(client_process),
-          GetCoordinatorClientProcessType(
-              static_cast<ProcessType>(data_.process_type)),
-          child_process_->GetProcess().Pid(), delegate_->GetServiceName()));
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->GetDumpThreadTaskRunner()
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](mojo::PendingReceiver<
+                     memory_instrumentation::mojom::Coordinator> receiver,
+                 mojo::PendingRemote<
+                     memory_instrumentation::mojom::ClientProcess>
+                     client_process,
+                 memory_instrumentation::mojom::ProcessType process_type,
+                 base::ProcessId process_id,
+                 base::Optional<std::string> service_name) {
+                GetMemoryInstrumentationCoordinatorController()
+                    ->RegisterClientProcess(
+                        std::move(receiver), std::move(client_process),
+                        process_type, process_id, std::move(service_name));
+              },
+              std::move(receiver), std::move(client_process),
+              GetCoordinatorClientProcessType(
+                  static_cast<ProcessType>(data_.process_type)),
+              child_process_->GetProcess().Pid(), delegate_->GetServiceName()));
 }
 
 bool BrowserChildProcessHostImpl::IsProcessLaunched() const {
@@ -685,12 +690,31 @@ void BrowserChildProcessHostImpl::OnMojoError(
     base::WeakPtr<BrowserChildProcessHostImpl> process,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& error) {
-  if (!task_runner->BelongsToCurrentThread()) {
+  // Create a memory dump with the error message captured in a crash key value.
+  // This will make it easy to determine details about what interface call
+  // failed.
+  //
+  // It is important to call DumpWithoutCrashing synchronously - this will help
+  // to preserve the callstack and the crash keys present when the bad mojo
+  // message was received.
+  mojo::debug::ScopedMessageErrorCrashKey scoped_error_key(error);
+  base::debug::DumpWithoutCrashing();
+
+  if (task_runner->BelongsToCurrentThread()) {
+    TerminateProcessForBadMessage(process, error);
+  } else {
     task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&BrowserChildProcessHostImpl::OnMojoError,
-                                  process, task_runner, error));
-    return;
+        FROM_HERE,
+        base::BindOnce(
+            &BrowserChildProcessHostImpl::TerminateProcessForBadMessage,
+            process, error));
   }
+}
+
+// static
+void BrowserChildProcessHostImpl::TerminateProcessForBadMessage(
+    base::WeakPtr<BrowserChildProcessHostImpl> process,
+    const std::string& error) {
   if (!process)
     return;
   HistogramBadMessageTerminated(
@@ -699,14 +723,7 @@ void BrowserChildProcessHostImpl::OnMojoError(
           switches::kDisableKillAfterBadIPC)) {
     return;
   }
-  LOG(ERROR) << "Terminating child process for bad Mojo message: " << error;
-
-  // Create a memory dump with the error message captured in a crash key value.
-  // This will make it easy to determine details about what interface call
-  // failed.
-  base::debug::ScopedCrashKeyString scoped_error_key(
-      bad_message::GetMojoErrorCrashKey(), error);
-  base::debug::DumpWithoutCrashing();
+  LOG(ERROR) << "Terminating child process for bad message: " << error;
   process->child_process_->Terminate(RESULT_CODE_KILLED_BAD_MESSAGE);
 }
 

@@ -10,9 +10,9 @@
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_input_stream.h"
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 
@@ -85,7 +85,7 @@ CastAudioManagerAlsa::CastAudioManagerAlsa(
     GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
     bool use_mixer)
     : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
@@ -93,7 +93,7 @@ CastAudioManagerAlsa::CastAudioManagerAlsa(
                        std::move(get_session_id_callback),
                        browser_task_runner,
                        media_task_runner,
-                       connector,
+                       std::move(connector),
                        use_mixer),
       wrapper_(new ::media::AlsaWrapper()) {}
 
@@ -167,7 +167,7 @@ void CastAudioManagerAlsa::GetAudioInputDeviceNames(
     NOTIMPLEMENTED() << "Capture Service is not enabled, return nullptr.";
     return nullptr;
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
-    return new CastAudioInputStream(params, device_name);
+    return new CastAudioInputStream(this, params, device_name);
   }
   return new ::media::AlsaPcmInputStream(this, device_name, params,
                                          wrapper_.get());

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Εγκατεστημένη εφαρμογή</translation>
 <translation id="1450753235335490080">Δεν είναι δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Γίνεται ανταλλαγή του στοιχείου <ph name="FIRST_ITEM_TITLE" /> με το στοιχείο <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Αναζητήσατε αυτόν τον όρο στο παρελθόν. Η διαγραφή του όρου "<ph name="QUERY" />" από το ιστορικό σας θα τον καταργήσει οριστικά από τον λογαριασμό σας σε όλες τις συσκευές σας.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Επιλογή όλ&amp;ων</translation>
-<translation id="1938451708255335766">Για να προσαρμόσετε την πυκνότητα της προβολής του παραθύρου, επανεκκινήστε την εφαρμογή.</translation>
 <translation id="2006524834898217237">Βεβαιωθείτε ότι αυτή η συσκευή είναι συνδεδεμένη στο διαδίκτυο.</translation>
 <translation id="208586643495776849">Προσπαθήστε ξανά</translation>
 <translation id="2090963878406559571">Για να στείλετε έναν αριθμό από <ph name="ORIGIN" /> σε τηλέφωνο Android, <ph name="TROUBLESHOOT_LINK" /> και για τις δύο συσκευές στις ρυθμίσεις.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Κάτω βέλος</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ημέρα}other{# ημέρες}}</translation>
 <translation id="3295886253693811851">Πραγματοποιήστε κλήση από</translation>
+<translation id="3306688585798492231">Ενσωματωμένη οθόνη</translation>
 <translation id="335581015389089642">Ομιλία</translation>
 <translation id="3389286852084373014">Το κείμενο είναι υπερβολικά μεγάλο</translation>
-<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="348799646910989694">Αυτόματη απόκρυψη ραφιού</translation>
 <translation id="3554637740840164787">Το στοιχείο <ph name="ITEM_TITLE" /> καρφιτσώθηκε</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Απομένει 1 ημέρα}other{Απομένουν # ημέρες}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Συνέχεια ανάγνωσης από την κινητή συσκευή σας <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3889424535448813030">Δεξιό βέλος</translation>
-<translation id="3892641579809465218">Εσωτερική οθόνη</translation>
 <translation id="3897092660631435901">Μενού</translation>
 <translation id="3909791450649380159">Απο&amp;κοπή</translation>
 <translation id="3990502903496589789">Δεξιά άκρη</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Ενεργή σήμερα}=1{Ενεργή 1 ημέρα πριν}other{Ενεργή # ημέρες πριν}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ημέρα και }other{# ημέρες και }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{σε 1 ε.}other{σε # ε.}}</translation>
-<translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Από δεξιά προς τα αριστερά</translation>
 <translation id="7052633198403197513">Πλήκτρο F1</translation>
 <translation id="7130207228079676353">ΔΗΜΟΦΙΛΕΣΤΕΡΕΣ</translation>
+<translation id="7170202025028120564">Οι ρυθμίσεις προβολής της εφαρμογής σας θα τεθούν σε ισχύ κατά την επόμενη επανεκκίνηση.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7319740667687257810">Εφαρμογή εκκίνησης, μερική προβολή</translation>

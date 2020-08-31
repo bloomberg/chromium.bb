@@ -40,9 +40,12 @@ struct MEDIA_EXPORT OverlayInfo {
   bool is_persistent_video = false;
 };
 
-using ProvideOverlayInfoCB = base::Callback<void(const OverlayInfo&)>;
+// Used by the WebMediaPlayer to provide overlay information to the decoder,
+// which can ask for that information repeatedly (see
+// WebMediaPlayerImpl::OnOverlayInfoRequested).
+using ProvideOverlayInfoCB = base::RepeatingCallback<void(const OverlayInfo&)>;
 using RequestOverlayInfoCB =
-    base::Callback<void(bool, const ProvideOverlayInfoCB&)>;
+    base::RepeatingCallback<void(bool, ProvideOverlayInfoCB)>;
 
 }  // namespace media
 

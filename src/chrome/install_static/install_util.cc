@@ -16,6 +16,7 @@
 
 #include "build/branding_buildflags.h"
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/policy_path_parser.h"
@@ -34,6 +35,7 @@ enum class ProcessType {
   NACL_BROKER_PROCESS,
   NACL_LOADER_PROCESS,
 #endif
+  CRASHPAD_HANDLER_PROCESS,
 };
 
 // Caches the |ProcessType| of the current process.
@@ -59,6 +61,7 @@ const wchar_t kUtilityProcess[] = L"utility";
 
 namespace {
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 // TODO(ananta)
 // http://crbug.com/604923
 // The constants defined in this file are also defined in chrome/installer and
@@ -67,13 +70,16 @@ namespace {
 constexpr wchar_t kChromeChannelDev[] = L"dev";
 constexpr wchar_t kChromeChannelBeta[] = L"beta";
 constexpr wchar_t kChromeChannelStableExplicit[] = L"stable";
+#endif
 
 // TODO(ananta)
 // http://crbug.com/604923
 // These constants are defined in the chrome/installer directory as well. We
 // need to unify them.
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 constexpr wchar_t kRegValueAp[] = L"ap";
 constexpr wchar_t kRegValueName[] = L"name";
+#endif
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
@@ -272,12 +278,11 @@ std::vector<StringType> TokenizeStringT(
   return tokens;
 }
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 // Returns Chrome's update channel name based on the contents of the given "ap"
 // value from Chrome's ClientState key.
 std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
                                              const std::wstring& ap_value) {
-  assert(kUseGoogleUpdateIntegration);
-
   static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
   static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
   static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
@@ -306,6 +311,7 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   // rules in the update configs.
   return std::wstring();
 }
+#endif
 
 // Converts a process type specified as a string to the ProcessType enum.
 ProcessType GetProcessType(const std::wstring& process_type) {
@@ -319,6 +325,8 @@ ProcessType GetProcessType(const std::wstring& process_type) {
   if (process_type == kNaClLoaderProcess)
     return ProcessType::NACL_LOADER_PROCESS;
 #endif
+  if (process_type == kCrashpadHandler)
+    return ProcessType::CRASHPAD_HANDLER_PROCESS;
   return ProcessType::OTHER_PROCESS;
 }
 
@@ -336,6 +344,8 @@ bool ProcessNeedsProfileDir(ProcessType process_type) {
 #endif
       return true;
     case ProcessType::OTHER_PROCESS:
+      return false;
+    case ProcessType::CRASHPAD_HANDLER_PROCESS:
       return false;
     case ProcessType::UNINITIALIZED:
       assert(false);
@@ -375,14 +385,6 @@ std::wstring GetClientStateKeyPath() {
 
 std::wstring GetClientStateMediumKeyPath() {
   return GetClientStateMediumKeyPath(GetAppGuid());
-}
-
-std::wstring GetClientStateKeyPathForBinaries() {
-  return GetBinariesClientStateKeyPath();
-}
-
-std::wstring GetClientStateMediumKeyPathForBinaries() {
-  return GetBinariesClientStateMediumKeyPath();
 }
 
 std::wstring GetUninstallRegistryPath() {
@@ -575,6 +577,11 @@ bool IsProcessTypeInitialized() {
 bool IsNonBrowserProcess() {
   assert(g_process_type != ProcessType::UNINITIALIZED);
   return g_process_type != ProcessType::BROWSER_PROCESS;
+}
+
+bool IsCrashpadHandlerProcess() {
+  assert(g_process_type != ProcessType::UNINITIALIZED);
+  return g_process_type == ProcessType::CRASHPAD_HANDLER_PROCESS;
 }
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {
@@ -913,16 +920,13 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 // InstallDetails instance since it is used to bootstrap InstallDetails.
 std::wstring DetermineChannel(const InstallConstants& mode,
                               bool system_level,
-                              bool from_binaries,
                               std::wstring* update_ap,
                               std::wstring* update_cohort_name) {
-  if (!kUseGoogleUpdateIntegration)
-    return std::wstring();
-
+#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  return std::wstring();
+#else
   // Read the "ap" value and cache it if requested.
-  std::wstring client_state(from_binaries
-                                ? GetBinariesClientStateKeyPath()
-                                : GetClientStateKeyPath(mode.app_guid));
+  std::wstring client_state(GetClientStateKeyPath(mode.app_guid));
   std::wstring ap_value;
   // An empty |ap_value| is used in case of error.
   nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
@@ -948,6 +952,7 @@ std::wstring DetermineChannel(const InstallConstants& mode,
   }
 
   return std::wstring();
+#endif
 }
 
 }  // namespace install_static

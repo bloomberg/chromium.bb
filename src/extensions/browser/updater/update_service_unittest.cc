@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
@@ -23,6 +24,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/mock_extension_system.h"
@@ -80,15 +83,23 @@ class FakeUpdateClient : public update_client::UpdateClient {
   void RemoveObserver(Observer* observer) override {}
   void Install(const std::string& id,
                CrxDataCallback crx_data_callback,
+               CrxStateChangeCallback crx_state_change_callback,
                update_client::Callback callback) override {}
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              CrxStateChangeCallback crx_state_change_callback,
               bool is_foreground,
               update_client::Callback callback) override;
   bool GetCrxUpdateState(
       const std::string& id,
       update_client::CrxUpdateItem* update_item) const override {
     update_item->next_version = base::Version("2.0");
+    if (is_malware_update_item_) {
+      std::map<std::string, std::string> custom_attributes = {
+          {"_malware", "true"},
+      };
+      update_item->custom_updatecheck_data = custom_attributes;
+    }
     return true;
   }
   bool IsUpdating(const std::string& id) const override { return false; }
@@ -107,6 +118,8 @@ class FakeUpdateClient : public update_client::UpdateClient {
 
   void set_delay_update() { delay_update_ = true; }
 
+  void set_is_malware_update_item() { is_malware_update_item_ = true; }
+
   bool delay_update() const { return delay_update_; }
 
   UpdateRequest& update_request(int index) { return delayed_requests_[index]; }
@@ -114,22 +127,25 @@ class FakeUpdateClient : public update_client::UpdateClient {
     return static_cast<int>(delayed_requests_.size());
   }
 
-  void RunDelayedUpdate(int index) {
+  void RunDelayedUpdate(
+      int index,
+      Observer::Events event = Observer::Events::COMPONENT_UPDATED) {
     UpdateRequest& request = update_request(index);
     for (const std::string& id : request.extension_ids)
-      FireEvent(Observer::Events::COMPONENT_UPDATED, id);
+      FireEvent(event, id);
     std::move(request.callback).Run(update_client::Error::NONE);
   }
 
  protected:
   friend class base::RefCounted<FakeUpdateClient>;
-  ~FakeUpdateClient() override {}
+  ~FakeUpdateClient() override = default;
 
   std::vector<base::Optional<update_client::CrxComponent>> data_;
   std::vector<UninstallPing> uninstall_pings_;
   std::vector<Observer*> observers_;
 
   bool delay_update_;
+  bool is_malware_update_item_ = false;
   std::vector<UpdateRequest> delayed_requests_;
 
  private:
@@ -140,6 +156,7 @@ FakeUpdateClient::FakeUpdateClient() : delay_update_(false) {}
 
 void FakeUpdateClient::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              CrxStateChangeCallback crx_state_change_callback,
                               bool is_foreground,
                               update_client::Callback callback) {
   data_ = std::move(crx_data_callback).Run(ids);
@@ -212,7 +229,7 @@ class FakeExtensionSystem : public MockExtensionSystem {
   using InstallUpdateCallback = MockExtensionSystem::InstallUpdateCallback;
   explicit FakeExtensionSystem(content::BrowserContext* context)
       : MockExtensionSystem(context) {}
-  ~FakeExtensionSystem() override {}
+  ~FakeExtensionSystem() override = default;
 
   struct InstallUpdateRequest {
     InstallUpdateRequest(const std::string& extension_id,
@@ -249,6 +266,24 @@ class FakeExtensionSystem : public MockExtensionSystem {
     std::move(install_update_callback).Run(base::nullopt);
   }
 
+  void PerformActionBasedOnOmahaAttributes(
+      const std::string& extension_id,
+      const base::Value& attributes) override {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+    scoped_refptr<const Extension> extension1 =
+        ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+    const base::Value* malware_value = attributes.FindKey("_malware");
+    if (malware_value && malware_value->GetBool())
+      registry->AddDisabled(extension1);
+    else
+      registry->AddEnabled(extension1);
+  }
+
+  bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                        bool install_immediately) override {
+    return false;
+  }
+
  private:
   std::vector<InstallUpdateRequest> install_requests_;
   base::OnceClosure next_install_callback_;
@@ -256,8 +291,8 @@ class FakeExtensionSystem : public MockExtensionSystem {
 
 class UpdateServiceTest : public ExtensionsTest {
  public:
-  UpdateServiceTest() {}
-  ~UpdateServiceTest() override {}
+  UpdateServiceTest() = default;
+  ~UpdateServiceTest() override = default;
 
   void SetUp() override {
     ExtensionsTest::SetUp();
@@ -365,7 +400,7 @@ class UpdateServiceTest : public ExtensionsTest {
 
     bool done = false;
     installer->Install(
-        new_version_dir.GetPath(), std::string(),
+        new_version_dir.GetPath(), std::string(), nullptr, base::DoNothing(),
         base::BindOnce(
             [](bool* done, const update_client::CrxInstaller::Result& result) {
               *done = true;
@@ -462,6 +497,65 @@ TEST_F(UpdateServiceTest, UninstallPings) {
   }
 }
 
+TEST_F(UpdateServiceTest, CheckOmahaAttributes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kDisableMalwareExtensionsRemotely);
+  std::string extension_id = "lpcaedmchfhocbbapmcbpinfpgnhiddi";
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  scoped_refptr<const Extension> extension1 =
+      ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+  EXPECT_TRUE(registry->AddEnabled(extension1));
+
+  update_client()->set_is_malware_update_item();
+  update_client()->set_delay_update();
+
+  ExtensionUpdateCheckParams update_check_params;
+  update_check_params.update_info[extension_id] = ExtensionUpdateData();
+
+  bool executed = false;
+  update_service()->StartUpdateCheck(
+      update_check_params,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+  EXPECT_FALSE(executed);
+
+  const auto& request = update_client()->update_request(0);
+  EXPECT_THAT(request.extension_ids, testing::ElementsAre(extension_id));
+
+  update_client()->RunDelayedUpdate(0,
+                                    UpdateClientEvents::COMPONENT_NOT_UPDATED);
+  EXPECT_TRUE(registry->disabled_extensions().GetByID(extension_id));
+}
+
+TEST_F(UpdateServiceTest, CheckNoOmahaAttributes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kDisableMalwareExtensionsRemotely);
+  std::string extension_id = "lpcaedmchfhocbbapmcbpinfpgnhiddi";
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  scoped_refptr<const Extension> extension1 =
+      ExtensionBuilder("1").SetVersion("1.2").SetID(extension_id).Build();
+  EXPECT_TRUE(registry->AddDisabled(extension1));
+
+  update_client()->set_delay_update();
+
+  ExtensionUpdateCheckParams update_check_params;
+  update_check_params.update_info[extension_id] = ExtensionUpdateData();
+
+  bool executed = false;
+  update_service()->StartUpdateCheck(
+      update_check_params,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+  EXPECT_FALSE(executed);
+
+  const auto& request = update_client()->update_request(0);
+  EXPECT_THAT(request.extension_ids, testing::ElementsAre(extension_id));
+
+  update_client()->RunDelayedUpdate(0,
+                                    UpdateClientEvents::COMPONENT_NOT_UPDATED);
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(extension_id));
+}
+
 TEST_F(UpdateServiceTest, UpdateFoundNotification) {
   UpdateFoundNotificationObserver notification_observer("id", "2.0");
 
@@ -500,24 +594,19 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed);
-  EXPECT_FALSE(update_service()->IsBusy());
 }
 
-TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
+// Incorrect deduplicating of the same extension ID but with different flags may
+// lead to incorrect behaviour: corrupted extension won't be reinstalled.
+TEST_F(UpdateServiceTest, InProgressUpdate_DuplicateWithDifferentData) {
   base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2;
   uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-  uc1.update_info["D"] = ExtensionUpdateData();
-  uc1.update_info["E"] = ExtensionUpdateData();
 
   uc2.update_info["A"] = ExtensionUpdateData();
-  uc2.update_info["B"] = ExtensionUpdateData();
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
+  uc2.update_info["A"].install_source = "reinstall";
+  uc2.update_info["A"].is_corrupt_reinstall = true;
 
   bool executed1 = false;
   update_service()->StartUpdateCheck(
@@ -531,16 +620,24 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
       base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
   EXPECT_FALSE(executed2);
 
-  ASSERT_EQ(1, update_client()->num_update_requests());
+  ASSERT_EQ(2, update_client()->num_update_requests());
 
-  const auto& request = update_client()->update_request(0);
-  EXPECT_THAT(request.extension_ids,
-              testing::ElementsAre("A", "B", "C", "D", "E"));
+  {
+    const auto& request = update_client()->update_request(0);
+    EXPECT_THAT(request.extension_ids, testing::ElementsAre("A"));
+  }
+
+  {
+    const auto& request = update_client()->update_request(1);
+    EXPECT_THAT(request.extension_ids, testing::ElementsAre("A"));
+  }
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
+  EXPECT_FALSE(executed2);
+
+  update_client()->RunDelayedUpdate(1);
   EXPECT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
@@ -578,308 +675,15 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
   EXPECT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   EXPECT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
-  // 3 overlapped requests. The 3rd request have all of its IDs in request1 and
-  // request2.
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2, uc3;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
-
-  uc3.update_info["A"] = ExtensionUpdateData();
-  uc3.update_info["B"] = ExtensionUpdateData();
-  uc3.update_info["C"] = ExtensionUpdateData();
-  uc3.update_info["D"] = ExtensionUpdateData();
-  uc3.update_info["E"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  bool executed3 = false;
-  update_service()->StartUpdateCheck(
-      uc3,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed3));
-  EXPECT_FALSE(executed3);
-
-  ASSERT_EQ(2, update_client()->num_update_requests());
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  ASSERT_FALSE(executed3);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  ASSERT_TRUE(executed3);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
-  // Similar to 3Overlapped, but the 4th request doesn't overlap with the first
-  // 3 requests.
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2, uc3, uc4;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
-
-  uc3.update_info["A"] = ExtensionUpdateData();
-  uc3.update_info["B"] = ExtensionUpdateData();
-  uc3.update_info["C"] = ExtensionUpdateData();
-  uc3.update_info["D"] = ExtensionUpdateData();
-  uc3.update_info["E"] = ExtensionUpdateData();
-
-  uc4.update_info["G"] = ExtensionUpdateData();
-  uc4.update_info["H"] = ExtensionUpdateData();
-  uc4.update_info["I"] = ExtensionUpdateData();
-  uc4.update_info["J"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  bool executed3 = false;
-  update_service()->StartUpdateCheck(
-      uc3,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed3));
-  EXPECT_FALSE(executed3);
-
-  bool executed4 = false;
-  update_service()->StartUpdateCheck(
-      uc4,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed4));
-  EXPECT_FALSE(executed4);
-
-  ASSERT_EQ(3, update_client()->num_update_requests());
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-  const auto& request3 = update_client()->update_request(2);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-  EXPECT_THAT(request3.extension_ids, testing::ElementsAre("G", "H", "I", "J"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  ASSERT_FALSE(executed3);
-  ASSERT_FALSE(executed4);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  ASSERT_TRUE(executed3);
-  ASSERT_FALSE(executed4);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(2);
-  ASSERT_TRUE(executed4);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
-  // Verify that extensions are batched when the number of extensions exceeds
-  // 23.
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc;
-
-  for (int i = 0; i < 60; ++i)
-    uc.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
-
-  bool executed = false;
-  update_service()->StartUpdateCheck(
-      uc, base::BindOnce([](bool* executed) { *executed = true; }, &executed));
-  EXPECT_FALSE(executed);
-
-  ASSERT_EQ(3, update_client()->num_update_requests());
-
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-  const auto& request3 = update_client()->update_request(2);
-
-  EXPECT_THAT(request1.extension_ids,
-              testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
-                                   "A06", "A07", "A08", "A09", "A10", "A11",
-                                   "A12", "A13", "A14", "A15", "A16", "A17",
-                                   "A18", "A19", "A20", "A21"));
-  EXPECT_THAT(request2.extension_ids,
-              testing::ElementsAre("A22", "A23", "A24", "A25", "A26", "A27",
-                                   "A28", "A29", "A30", "A31", "A32", "A33",
-                                   "A34", "A35", "A36", "A37", "A38", "A39",
-                                   "A40", "A41", "A42", "A43"));
-  EXPECT_THAT(request3.extension_ids,
-              testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
-                                   "A50", "A51", "A52", "A53", "A54", "A55",
-                                   "A56", "A57", "A58", "A59"));
-
-  update_client()->RunDelayedUpdate(0);
-  EXPECT_FALSE(executed);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  EXPECT_FALSE(executed);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(2);
-  EXPECT_TRUE(executed);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1;
-  ExtensionUpdateCheckParams uc2;
-
-  uc1.update_info["AA"] = ExtensionUpdateData();
-  uc1.update_info["BB"] = ExtensionUpdateData();
-  uc1.update_info["CC"] = ExtensionUpdateData();
-  uc1.update_info["DD"] = ExtensionUpdateData();
-
-  for (int i = 0; i < 55; ++i)
-    uc2.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  ASSERT_EQ(4, update_client()->num_update_requests());
-
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-  const auto& request3 = update_client()->update_request(2);
-  const auto& request4 = update_client()->update_request(3);
-
-  EXPECT_THAT(request1.extension_ids,
-              testing::ElementsAre("AA", "BB", "CC", "DD"));
-  EXPECT_THAT(request2.extension_ids,
-              testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
-                                   "A06", "A07", "A08", "A09", "A10", "A11",
-                                   "A12", "A13", "A14", "A15", "A16", "A17",
-                                   "A18", "A19", "A20", "A21"));
-  EXPECT_THAT(request3.extension_ids,
-              testing::ElementsAre("A22", "A23", "A24", "A25", "A26", "A27",
-                                   "A28", "A29", "A30", "A31", "A32", "A33",
-                                   "A34", "A35", "A36", "A37", "A38", "A39",
-                                   "A40", "A41", "A42", "A43"));
-  EXPECT_THAT(request4.extension_ids,
-              testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
-                                   "A50", "A51", "A52", "A53", "A54"));
-
-  update_client()->RunDelayedUpdate(0);
-  EXPECT_TRUE(executed1);
-  EXPECT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  EXPECT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(2);
-  EXPECT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(3);
-  EXPECT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 class UpdateServiceCanUpdateTest : public UpdateServiceTest {
  public:
-  UpdateServiceCanUpdateTest() {}
-  ~UpdateServiceCanUpdateTest() override {}
+  UpdateServiceCanUpdateTest() = default;
+  ~UpdateServiceCanUpdateTest() override = default;
 
   void SetUp() override {
     UpdateServiceTest::SetUp();
@@ -941,7 +745,7 @@ class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
     auto* command_line = base::CommandLine::ForCurrentProcess();
     // Note: |offstore_extension_|'s update url is the same.
     command_line->AppendSwitchASCII("apps-gallery-update-url",
-                                    "http://localhost/test/updates.xml");
+                                    "http://localhost/test2/updates.xml");
     ExtensionsClient::Get()->InitializeWebStoreUrls(
         base::CommandLine::ForCurrentProcess());
   }
@@ -952,7 +756,7 @@ TEST_F(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
   EXPECT_TRUE(update_service()->CanUpdate(store_extension_->id()));
   // ... and extensions with empty update URL.
   EXPECT_TRUE(update_service()->CanUpdate(emptyurl_extension_->id()));
-  // It can't update off-store extrensions.
+  // It can't update off-store extensions.
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
   // ... or extensions with empty update URL converted from user script.
   EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
@@ -964,10 +768,10 @@ TEST_F(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
 
 TEST_F(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
        UpdateService_CanUpdate) {
-  // Update service cannot update extensions when the default webstore update
-  // url is changed.
+  // Update service can update extensions when the default webstore update url
+  // is changed.
   EXPECT_FALSE(update_service()->CanUpdate(store_extension_->id()));
-  EXPECT_FALSE(update_service()->CanUpdate(emptyurl_extension_->id()));
+  EXPECT_TRUE(update_service()->CanUpdate(emptyurl_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));

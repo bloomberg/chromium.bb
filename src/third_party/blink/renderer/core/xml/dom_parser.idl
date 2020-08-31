@@ -28,9 +28,8 @@ enum SupportedType {
 };
 
 [
-    Constructor,
-    ConstructorCallWith=Document,
     Exposed=Window
 ] interface DOMParser {
-    [NewObject, RaisesException] Document parseFromString(HTMLString str, SupportedType type);
+    [CallWith=ScriptState] constructor();
+    [NewObject] Document parseFromString(HTMLString str, SupportedType type);
 };

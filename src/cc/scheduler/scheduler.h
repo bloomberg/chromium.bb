@@ -7,12 +7,15 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/tiles/tile_priority.h"
@@ -39,6 +42,12 @@ namespace cc {
 struct BeginMainFrameMetrics;
 class CompositorTimingHistory;
 
+enum class FrameSkippedReason {
+  kRecoverLatency,
+  kNoDamage,
+  kWaitingOnMain,
+};
+
 class SchedulerClient {
  public:
   // Returns whether the frame has damage.
@@ -61,7 +70,8 @@ class SchedulerClient {
       bool needs_redraw) = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
-  virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
+  virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                                  FrameSkippedReason reason) = 0;
   virtual void WillNotReceiveBeginFrame() = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
@@ -162,7 +172,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   // Drawing should result in submitting a CompositorFrame to the
   // LayerTreeFrameSink and then calling this.
-  void DidSubmitCompositorFrame(uint32_t frame_token);
+  void DidSubmitCompositorFrame(uint32_t frame_token,
+                                EventMetricsSet events_metrics);
   // The LayerTreeFrameSink acks when it is ready for a new frame which
   // should result in this getting called to unblock the next draw.
   void DidReceiveCompositorFrameAck();
@@ -357,7 +368,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void BeginImplFrameSynchronous(const viz::BeginFrameArgs& args);
   void BeginImplFrame(const viz::BeginFrameArgs& args, base::TimeTicks now);
   void FinishImplFrame();
-  void SendDidNotProduceFrame(const viz::BeginFrameArgs& args);
+  void SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
+                              FrameSkippedReason reason);
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
   void BeginMainFrameAnimateAndLayoutOnly(const viz::BeginFrameArgs& args);

@@ -18,7 +18,8 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
+#include "components/autofill_assistant/browser/website_login_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill_assistant {
@@ -46,8 +47,10 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jinitial_url,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jstring>& jcaller_account,
       const base::android::JavaParamRef<jobjectArray>& parameter_names,
       const base::android::JavaParamRef<jobjectArray>& parameter_values,
+      jboolean jis_cct,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
       jboolean jonboarding_shown,
       jlong jservice);
@@ -94,15 +97,18 @@ class ClientAndroid : public Client,
   // Overrides Client
   void AttachUI() override;
   void DestroyUI() override;
-  std::string GetApiKey() override;
-  std::string GetAccountEmailAddress() override;
+  version_info::Channel GetChannel() const override;
+  std::string GetEmailAddressForAccessTokenAccount() const override;
+  std::string GetChromeSignedInEmailAddress() const override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
-  autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
-  std::string GetServerUrl() override;
-  std::string GetLocale() override;
-  std::string GetCountryCode() override;
-  DeviceContext GetDeviceContext() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() const override;
+  password_manager::PasswordManagerClient* GetPasswordManagerClient()
+      const override;
+  WebsiteLoginManager* GetWebsiteLoginManager() const override;
+  std::string GetLocale() const override;
+  std::string GetCountryCode() const override;
+  DeviceContext GetDeviceContext() const override;
+  content::WebContents* GetWebContents() const override;
   void Shutdown(Metrics::DropOutReason reason) override;
 
   // Overrides AccessTokenFetcher
@@ -135,10 +141,14 @@ class ClientAndroid : public Client,
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   content::WebContents* web_contents_;
+  // Once initialized, the |password_manager_client_| is available while
+  // |web_contents_| is available.
+  mutable password_manager::PasswordManagerClient* password_manager_client_ =
+      nullptr;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
-  std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
+  mutable std::unique_ptr<WebsiteLoginManager> website_login_manager_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;
@@ -147,7 +157,6 @@ class ClientAndroid : public Client,
 
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
-  std::string server_url_;
 
   base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_{this};
 

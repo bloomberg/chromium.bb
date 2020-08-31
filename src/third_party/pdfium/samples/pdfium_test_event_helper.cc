@@ -14,6 +14,19 @@
 #include "testing/fx_string_testhelpers.h"
 
 namespace {
+
+uint32_t GetModifiers(std::string modifiers_string) {
+  uint32_t modifiers = 0;
+  if (modifiers_string.find("shift") != std::string::npos)
+    modifiers |= FWL_EVENTFLAG_ShiftKey;
+  if (modifiers_string.find("control") != std::string::npos)
+    modifiers |= FWL_EVENTFLAG_ControlKey;
+  if (modifiers_string.find("alt") != std::string::npos)
+    modifiers |= FWL_EVENTFLAG_AltKey;
+
+  return modifiers;
+}
+
 void SendCharCodeEvent(FPDF_FORMHANDLE form,
                        FPDF_PAGE page,
                        const std::vector<std::string>& tokens) {
@@ -29,32 +42,21 @@ void SendCharCodeEvent(FPDF_FORMHANDLE form,
 void SendKeyCodeEvent(FPDF_FORMHANDLE form,
                       FPDF_PAGE page,
                       const std::vector<std::string>& tokens) {
-  if (tokens.size() != 2) {
+  if (tokens.size() < 2 || tokens.size() > 3) {
     fprintf(stderr, "keycode: bad args\n");
     return;
   }
 
   int keycode = atoi(tokens[1].c_str());
-  FORM_OnKeyDown(form, page, keycode, 0);
-  FORM_OnKeyUp(form, page, keycode, 0);
-}
-
-uint32_t GetModifiers(std::string modifiers_string) {
-  int modifiers = 0;
-  if (modifiers_string.find("shift") != std::string::npos)
-    modifiers |= FWL_EVENTFLAG_ShiftKey;
-  if (modifiers_string.find("control") != std::string::npos)
-    modifiers |= FWL_EVENTFLAG_ControlKey;
-  if (modifiers_string.find("alt") != std::string::npos)
-    modifiers |= FWL_EVENTFLAG_AltKey;
-
-  return modifiers;
+  uint32_t modifiers = tokens.size() >= 3 ? GetModifiers(tokens[2]) : 0;
+  FORM_OnKeyDown(form, page, keycode, modifiers);
+  FORM_OnKeyUp(form, page, keycode, modifiers);
 }
 
 void SendMouseDownEvent(FPDF_FORMHANDLE form,
                         FPDF_PAGE page,
                         const std::vector<std::string>& tokens) {
-  if (tokens.size() != 4 && tokens.size() != 5) {
+  if (tokens.size() < 4 && tokens.size() > 5) {
     fprintf(stderr, "mousedown: bad args\n");
     return;
   }
@@ -74,7 +76,7 @@ void SendMouseDownEvent(FPDF_FORMHANDLE form,
 void SendMouseUpEvent(FPDF_FORMHANDLE form,
                       FPDF_PAGE page,
                       const std::vector<std::string>& tokens) {
-  if (tokens.size() != 4 && tokens.size() != 5) {
+  if (tokens.size() < 4 && tokens.size() > 5) {
     fprintf(stderr, "mouseup: bad args\n");
     return;
   }
@@ -90,6 +92,24 @@ void SendMouseUpEvent(FPDF_FORMHANDLE form,
     fprintf(stderr, "mouseup: bad button name\n");
 }
 
+void SendMouseDoubleClickEvent(FPDF_FORMHANDLE form,
+                               FPDF_PAGE page,
+                               const std::vector<std::string>& tokens) {
+  if (tokens.size() < 4 && tokens.size() > 5) {
+    fprintf(stderr, "mousedoubleclick: bad args\n");
+    return;
+  }
+
+  int x = atoi(tokens[2].c_str());
+  int y = atoi(tokens[3].c_str());
+  int modifiers = tokens.size() >= 5 ? GetModifiers(tokens[4]) : 0;
+  if (tokens[1] != "left") {
+    fprintf(stderr, "mousedoubleclick: bad button name\n");
+    return;
+  }
+  FORM_OnLButtonDoubleClick(form, page, modifiers, x, y);
+}
+
 void SendMouseMoveEvent(FPDF_FORMHANDLE form,
                         FPDF_PAGE page,
                         const std::vector<std::string>& tokens) {
@@ -101,6 +121,22 @@ void SendMouseMoveEvent(FPDF_FORMHANDLE form,
   int x = atoi(tokens[1].c_str());
   int y = atoi(tokens[2].c_str());
   FORM_OnMouseMove(form, page, 0, x, y);
+}
+
+void SendMouseWheelEvent(FPDF_FORMHANDLE form,
+                         FPDF_PAGE page,
+                         const std::vector<std::string>& tokens) {
+  if (tokens.size() < 5 && tokens.size() > 6) {
+    fprintf(stderr, "mousewheel: bad args\n");
+    return;
+  }
+
+  const FS_POINTF point = {static_cast<float>(atoi(tokens[1].c_str())),
+                           static_cast<float>(atoi(tokens[2].c_str()))};
+  int delta_x = atoi(tokens[3].c_str());
+  int delta_y = atoi(tokens[4].c_str());
+  int modifiers = tokens.size() >= 6 ? GetModifiers(tokens[5]) : 0;
+  FORM_OnMouseWheel(form, page, modifiers, &point, delta_x, delta_y);
 }
 
 void SendFocusEvent(FPDF_FORMHANDLE form,
@@ -115,13 +151,14 @@ void SendFocusEvent(FPDF_FORMHANDLE form,
   int y = atoi(tokens[2].c_str());
   FORM_OnFocus(form, page, 0, x, y);
 }
+
 }  // namespace
 
 void SendPageEvents(FPDF_FORMHANDLE form,
                     FPDF_PAGE page,
                     const std::string& events) {
   auto lines = StringSplit(events, '\n');
-  for (auto line : lines) {
+  for (const auto& line : lines) {
     auto command = StringSplit(line, '#');
     if (command[0].empty())
       continue;
@@ -134,8 +171,12 @@ void SendPageEvents(FPDF_FORMHANDLE form,
       SendMouseDownEvent(form, page, tokens);
     } else if (tokens[0] == "mouseup") {
       SendMouseUpEvent(form, page, tokens);
+    } else if (tokens[0] == "mousedoubleclick") {
+      SendMouseDoubleClickEvent(form, page, tokens);
     } else if (tokens[0] == "mousemove") {
       SendMouseMoveEvent(form, page, tokens);
+    } else if (tokens[0] == "mousewheel") {
+      SendMouseWheelEvent(form, page, tokens);
     } else if (tokens[0] == "focus") {
       SendFocusEvent(form, page, tokens);
     } else {

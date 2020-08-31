@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -28,8 +29,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_win.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -49,13 +49,6 @@ namespace {
 const gfx::Rect kOverlayRect(0, 0, 256, 256);
 const gfx::Rect kOverlayBottomRightRect(128, 128, 128, 128);
 
-class DCLayerValidator : public OverlayCandidateValidator {
- public:
-  bool AllowCALayerOverlays() const override { return false; }
-  bool AllowDCLayerOverlays() const override { return true; }
-  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
-};
-
 class OverlayOutputSurface : public OutputSurface {
  public:
   explicit OverlayOutputSurface(
@@ -73,7 +66,7 @@ class OverlayOutputSurface : public OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override {}
   void SwapBuffers(OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override {
@@ -86,9 +79,6 @@ class OverlayOutputSurface : public OutputSurface {
     return is_displayed_as_overlay_plane_;
   }
   unsigned GetOverlayTextureId() const override { return 10000; }
-  gfx::BufferFormat GetOverlayBufferFormat() const override {
-    return gfx::BufferFormat::RGBX_8888;
-  }
   unsigned UpdateGpuFence() override { return 0; }
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override {}
@@ -96,6 +86,11 @@ class OverlayOutputSurface : public OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override {
     return gfx::OVERLAY_TRANSFORM_NONE;
   }
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override {
+    return nullptr;
+  }
+  gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;
@@ -108,10 +103,11 @@ class OverlayOutputSurface : public OutputSurface {
   unsigned bind_framebuffer_count_ = 0;
 };
 
-class DCTestOverlayProcessor : public OverlayProcessor {
+class DCTestOverlayProcessor : public OverlayProcessorWin {
  public:
   DCTestOverlayProcessor()
-      : OverlayProcessor(std::make_unique<DCLayerValidator>()) {}
+      : OverlayProcessorWin(true, std::make_unique<DCLayerOverlayProcessor>()) {
+  }
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
@@ -150,8 +146,7 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
   ResourceId resource_id = CreateResourceInLayerTree(
       child_resource_provider, size, is_overlay_candidate);
 
-  int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating([](const std::vector<ReturnedResource>&) {}), true);
+  int child_id = parent_resource_provider->CreateChild(base::DoNothing());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -236,7 +231,7 @@ class DCLayerOverlayTest : public testing::Test {
 
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     overlay_processor_ = std::make_unique<DCTestOverlayProcessor>();
   }
@@ -276,8 +271,8 @@ TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
       ->quad_to_target_transform.RotateAboutZAxis(45.f);
 
   DCLayerOverlayList dc_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   damage_rect_ = gfx::Rect(1, 1, 10, 10);
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -306,8 +301,8 @@ TEST_F(DCLayerOverlayTest, AllowRequiredNonAxisAlignedTransform) {
 
   gfx::Rect damage_rect;
   DCLayerOverlayList dc_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   damage_rect_ = gfx::Rect(1, 1, 10, 10);
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -332,9 +327,12 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
-    CreateFullscreenCandidateYUVVideoQuad(
+    auto* first_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    // Set the protected video flag will force DCLayerOverlay to use hw overlay
+    first_video_quad->protected_video_type =
+        gfx::ProtectedVideoType::kHardwareProtected;
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -349,8 +347,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
@@ -358,6 +356,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters, nullptr,
         &dc_layer_list, &damage_rect_, &content_bounds_);
+
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
     EXPECT_EQ(-1, dc_layer_list.front().z_order);
@@ -372,9 +371,12 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(3, 3, 100, 100), SK_ColorWHITE);
-    CreateFullscreenCandidateYUVVideoQuad(
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    // Set the protected video flag will force DCLayerOverlay to use hw overlay
+    video_quad->protected_video_type =
+        gfx::ProtectedVideoType::kHardwareProtected;
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -388,8 +390,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
@@ -397,6 +399,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters, nullptr,
         &dc_layer_list, &damage_rect_, &content_bounds_);
+
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
     EXPECT_EQ(-1, dc_layer_list.front().z_order);
@@ -436,8 +439,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     video_quad->visible_rect = video_quad->rect;
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     // Damage rect fully outside video quad
     damage_rect_ = gfx::Rect(210, 210, 20, 20);
     RenderPassList pass_list;
@@ -472,8 +475,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     video_quad->visible_rect = video_quad->rect;
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     // Damage rect fully outside video quad
     damage_rect_ = gfx::Rect(210, 210, 20, 20);
     RenderPassList pass_list;
@@ -512,8 +515,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithNonRootOverlay) {
     video_quad->visible_rect = video_quad->rect;
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     // Damage rect fully outside video quad
     damage_rect_ = gfx::Rect(210, 0, 20, 20);
     RenderPassList pass_list;
@@ -547,8 +550,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithNonRootOverlay) {
     video_quad->visible_rect = video_quad->rect;
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     // Damage rect fully outside video quad
     damage_rect_ = gfx::Rect(210, 0, 20, 20);
     RenderPassList pass_list;
@@ -575,8 +578,8 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
 
     gfx::Rect damage_rect;
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
@@ -669,8 +672,8 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
 
   gfx::Rect root_damage_rect;
   DCLayerOverlayList dc_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass1));
   pass_list.push_back(std::move(child_pass2));
@@ -763,8 +766,8 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
     shared_state->clip_rect = gfx::Rect(0, 0, 100, 3);
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
@@ -798,8 +801,8 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
     pass->shared_quad_state_list.back()->opacity = 0.5f;
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
@@ -832,8 +835,8 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
         child_provider_.get(), shared_state, pass.get());
 
     DCLayerOverlayList dc_layer_list;
-    OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     gfx::Rect damage_rect_ = kOverlayRect;
@@ -859,6 +862,53 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
       EXPECT_EQ(kOverlayBottomRightRect, damage_rect_);
     else if (i == 2)
       EXPECT_EQ(gfx::Rect(), damage_rect_);
+  }
+}
+
+// If there are multiple overlay quad candidates, the one with the largest
+// size should be promoted to overlay.
+TEST_F(DCLayerOverlayTest, DifferentOverlaySizes) {
+  base::test::ScopedFeatureList feature_list;
+  {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    pass->shared_quad_state_list.back();
+    CreateOpaqueQuadAt(resource_provider_.get(),
+                       pass->shared_quad_state_list.back(), pass.get(),
+                       gfx::Rect(0, 0, 256, 256), SK_ColorWHITE);
+
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    gfx::Rect rect(10, 10, 80, 80);
+    video_quad->rect = rect;
+    video_quad->visible_rect = rect;
+
+    auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    gfx::Rect second_rect(100, 100, 120, 120);
+    second_video_quad->rect = second_rect;
+    second_video_quad->visible_rect = second_rect;
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+    damage_rect_ = gfx::Rect(0, 0, 220, 220);
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, nullptr,
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    // Only one overlay is allowed.
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(gfx::Rect(0, 0, 220, 220), damage_rect_);
+
+    // The second video with a larger size should be prmoted to overlay.
+    EXPECT_EQ(second_rect, dc_layer_list.front().quad_rect);
   }
 }
 

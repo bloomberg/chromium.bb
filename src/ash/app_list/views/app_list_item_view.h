@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
@@ -26,7 +27,6 @@ class SimpleMenuModel;
 namespace views {
 class ImageView;
 class Label;
-class ProgressBar;
 }  // namespace views
 
 namespace ash {
@@ -39,7 +39,8 @@ class AppsGridView;
 
 class APP_LIST_EXPORT AppListItemView : public views::Button,
                                         public views::ContextMenuController,
-                                        public AppListItemObserver {
+                                        public AppListItemObserver,
+                                        public ui::ImplicitAnimationObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -56,10 +57,12 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Sets the icon of this image.
   void SetIcon(const gfx::ImageSkia& icon);
 
+  // Updates the current item icon to match the current model and app list
+  // config state.
+  void RefreshIcon();
+
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
-  void SetItemIsInstalling(bool is_installing);
-  void SetItemPercentDownloaded(int percent_downloaded);
 
   void CancelContextMenu();
 
@@ -97,13 +100,19 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // Sets UI state to dragging state.
   void SetDragUIState();
+  // Sets UI state to cardify state.
+  void SetCardifyUIState();
+  // Sets UI state to normal state.
+  void SetNormalUIState();
 
   // Returns the icon bounds for with |target_bounds| as the bounds of this view
-  // and given |icon_size|.
+  // and given |icon_size| and the |icon_scale| if the icon was scaled from the
+  // original display size.
   static gfx::Rect GetIconBoundsForTargetViewBounds(
       const AppListConfig& config,
       const gfx::Rect& target_bounds,
-      const gfx::Size& icon_size);
+      const gfx::Size& icon_size,
+      float icon_scale);
 
   // Returns the title bounds for with |target_bounds| as the bounds of this
   // view and given |title_size|.
@@ -111,12 +120,6 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
       const AppListConfig& config,
       const gfx::Rect& target_bounds,
       const gfx::Size& title_size);
-
-  // Returns the progress bar bounds for with |target_bounds| as the bounds of
-  // this view and given |progress_bar_size|.
-  static gfx::Rect GetProgressBarBoundsForTargetViewBounds(
-      const gfx::Rect& target_bounds,
-      const gfx::Size& progress_bar_size);
 
   // views::Button overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -138,6 +141,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   void FireMouseDragTimerForTest();
 
+  bool FireTouchDragTimerForTest();
+
   bool is_folder() const { return is_folder_; }
 
  private:
@@ -147,6 +152,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
     UI_STATE_NORMAL,              // Normal UI (icon + label)
     UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
+    UI_STATE_CARDIFY,             // Cardify UI (scaled icon + label)
   };
 
   // gfx::AnimationDelegate:
@@ -166,6 +172,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Scales up app icon if |scale_up| is true; otherwise, scale it back to
   // normal size.
   void ScaleAppIcon(bool scale_up);
+
+  // Scale app icon to |scale_factor| without animation.
+  void ScaleIconImmediatly(float scale_factor);
 
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);
@@ -203,17 +212,19 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
 
   // AppListItemObserver overrides:
-  void ItemIconChanged(ash::AppListConfigType config_type) override;
+  void ItemIconChanged(AppListConfigType config_type) override;
   void ItemNameChanged() override;
-  void ItemIsInstallingChanged() override;
-  void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   // Returns the radius of preview circle.
   int GetPreviewCircleRadius() const;
@@ -224,6 +235,10 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Modifies AppListItemView bounds to match the selected highlight bounds.
   void AdaptBoundsForSelectionHighlight(gfx::Rect* rect);
 
+  // Calculates the transform between the icon scaled by |icon_scale| and the
+  // normal size icon.
+  gfx::Transform GetScaleTransform(float icon_scale);
+
   const bool is_folder_;
 
   // Whether context menu options have been requested. Prevents multiple
@@ -232,12 +247,11 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItem* item_weak_;  // Owned by AppListModel. Can be nullptr.
 
-  AppListViewDelegate* delegate_;            // Unowned.
-  AppsGridView* apps_grid_view_;             // Parent view, owns this.
-  IconImageView* icon_;                      // Strongly typed child view.
-  views::Label* title_;                      // Strongly typed child view.
-  views::ProgressBar* progress_bar_;         // Strongly typed child view.
-  views::ImageView* icon_shadow_ = nullptr;  // Strongly typed child view.
+  AppListViewDelegate* delegate_;               // Unowned.
+  AppsGridView* apps_grid_view_;                // Parent view, owns this.
+  IconImageView* icon_ = nullptr;               // Strongly typed child view.
+  views::Label* title_ = nullptr;               // Strongly typed child view.
+  views::ImageView* icon_shadow_ = nullptr;     // Strongly typed child view.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
@@ -248,8 +262,6 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // True if the app is enabled for drag/drop operation by mouse.
   bool mouse_dragging_ = false;
-  // True if the drag host proxy is crated for mouse dragging.
-  bool mouse_drag_proxy_created_ = false;
 
   // Whether AppsGridView should not be notified of a focus event, triggering
   // A11y alerts and a focus ring.
@@ -260,8 +272,6 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // The radius of preview circle for non-folder item.
   int preview_circle_radius_ = 0;
-
-  bool is_installing_ = false;
 
   // Whether |context_menu_| was cancelled as the result of a continuous drag
   // gesture.
@@ -279,6 +289,12 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // The shadow margins added to the app list item title.
   gfx::Insets title_shadow_margins_;
+
+  // The bitmap image for this app list item.
+  gfx::ImageSkia icon_image_;
+
+  // The scaling factor for displaying the app icon.
+  float icon_scale_ = 1.0f;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 

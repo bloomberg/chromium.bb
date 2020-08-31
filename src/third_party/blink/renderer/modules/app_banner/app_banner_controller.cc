@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
 
@@ -38,6 +40,13 @@ void AppBannerController::BannerPromptRequest(
     std::move(callback).Run(mojom::blink::AppBannerPromptReply::NONE);
     return;
   }
+
+  // With the current implementation, bfcache could cause prompt() event to be
+  // lost if called after being put into the cache, and the banner will not be
+  // hidden properly. We disable bfcache to avoid these issues.
+  frame_->GetFrameScheduler()->RegisterStickyFeature(
+      blink::SchedulingPolicy::Feature::kAppBanner,
+      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
 
   mojom::AppBannerPromptReply reply =
       frame_->DomWindow()->DispatchEvent(*BeforeInstallPromptEvent::Create(

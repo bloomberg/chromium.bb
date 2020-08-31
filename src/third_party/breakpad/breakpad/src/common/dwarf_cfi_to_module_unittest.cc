@@ -125,7 +125,7 @@ struct RuleFixture: public DwarfCFIToModuleFixture {
     EXPECT_EQ(entry_address, entries[0]->address);
     EXPECT_EQ(entry_size, entries[0]->size);
   }
-  uint64 entry_address, entry_size;
+  uint64_t entry_address, entry_size;
   unsigned return_reg;
 };
 

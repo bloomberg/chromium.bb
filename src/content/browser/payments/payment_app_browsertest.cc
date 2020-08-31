@@ -11,6 +11,7 @@
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -25,6 +26,7 @@ namespace {
 
 using ::payments::mojom::CanMakePaymentEventData;
 using ::payments::mojom::CanMakePaymentEventDataPtr;
+using ::payments::mojom::CanMakePaymentResponsePtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
@@ -41,9 +43,16 @@ void GetAllPaymentAppsCallback(base::OnceClosure done_callback,
   std::move(done_callback).Run();
 }
 
-void PaymentEventResultCallback(base::OnceClosure done_callback,
-                                bool* out_payment_event_result,
-                                bool payment_event_result) {
+void CaptureCanMakePaymentResult(base::OnceClosure done_callback,
+                                 bool* out_payment_event_result,
+                                 CanMakePaymentResponsePtr response) {
+  *out_payment_event_result = response->can_make_payment;
+  std::move(done_callback).Run();
+}
+
+void CaptureAbortResult(base::OnceClosure done_callback,
+                        bool* out_payment_event_result,
+                        bool payment_event_result) {
   *out_payment_event_result = payment_event_result;
   std::move(done_callback).Run();
 }
@@ -124,7 +133,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     PaymentAppProvider::GetInstance()->AbortPayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         sw_origin, payment_request_id,
-        base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
+        base::BindOnce(&CaptureAbortResult, run_loop.QuitClosure(),
                        &payment_aborted));
     run_loop.Run();
 
@@ -143,7 +152,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     PaymentAppProvider::GetInstance()->CanMakePayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         sw_origin, payment_request_id, std::move(event_data),
-        base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
+        base::BindOnce(&CaptureCanMakePaymentResult, run_loop.QuitClosure(),
                        &can_make_payment));
     run_loop.Run();
 

@@ -9,10 +9,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
-
 class TextToSpeechPlaybackController;
 
 // TextToSpeechPlaybackControllerFactory attaches
@@ -23,7 +20,7 @@ class TextToSpeechPlaybackControllerFactory
   // Convenience getter that typecasts the value returned to a
   // TextToSpeechPlaybackController.
   static TextToSpeechPlaybackController* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   // Getter for singleton instance.
   static TextToSpeechPlaybackControllerFactory* GetInstance();
 

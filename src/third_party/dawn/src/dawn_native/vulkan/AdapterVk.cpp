@@ -20,7 +20,7 @@
 namespace dawn_native { namespace vulkan {
 
     Adapter::Adapter(Backend* backend, VkPhysicalDevice physicalDevice)
-        : AdapterBase(backend->GetInstance(), BackendType::Vulkan),
+        : AdapterBase(backend->GetInstance(), wgpu::BackendType::Vulkan),
           mPhysicalDevice(physicalDevice),
           mBackend(backend) {
     }
@@ -39,9 +39,8 @@ namespace dawn_native { namespace vulkan {
 
     MaybeError Adapter::Initialize() {
         DAWN_TRY_ASSIGN(mDeviceInfo, GatherDeviceInfo(*this));
-        if (!mDeviceInfo.maintenance1 &&
-            mDeviceInfo.properties.apiVersion < VK_MAKE_VERSION(1, 1, 0)) {
-            return DAWN_DEVICE_LOST_ERROR(
+        if (!mDeviceInfo.maintenance1) {
+            return DAWN_INTERNAL_ERROR(
                 "Dawn requires Vulkan 1.1 or Vulkan 1.0 with KHR_Maintenance1 in order to support "
                 "viewport flipY");
         }
@@ -54,16 +53,16 @@ namespace dawn_native { namespace vulkan {
 
         switch (mDeviceInfo.properties.deviceType) {
             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                mDeviceType = DeviceType::IntegratedGPU;
+                mAdapterType = wgpu::AdapterType::IntegratedGPU;
                 break;
             case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                mDeviceType = DeviceType::DiscreteGPU;
+                mAdapterType = wgpu::AdapterType::DiscreteGPU;
                 break;
             case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                mDeviceType = DeviceType::CPU;
+                mAdapterType = wgpu::AdapterType::CPU;
                 break;
             default:
-                mDeviceType = DeviceType::Unknown;
+                mAdapterType = wgpu::AdapterType::Unknown;
                 break;
         }
 
@@ -77,9 +76,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
-        std::unique_ptr<Device> device = std::make_unique<Device>(this, descriptor);
-        DAWN_TRY(device->Initialize());
-        return device.release();
+        return Device::Create(this, descriptor);
     }
 
 }}  // namespace dawn_native::vulkan

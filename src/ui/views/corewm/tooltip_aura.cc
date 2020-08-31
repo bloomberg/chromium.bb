@@ -4,6 +4,9 @@
 
 #include "ui/views/corewm/tooltip_aura.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -51,8 +54,7 @@ bool CanUseTranslucentTooltipWidget() {
 }
 
 // Creates a widget of type TYPE_TOOLTIP
-views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
-                                   const gfx::Rect& bounds) {
+views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   // For aura, since we set the type to TYPE_TOOLTIP, the widget will get
@@ -62,7 +64,6 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   DCHECK(params.context);
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.accept_events = false;
-  params.bounds = bounds;
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
@@ -115,9 +116,7 @@ class TooltipAura::TooltipView : public views::View {
     return view_size;
   }
 
-  const char* GetClassName() const override {
-    return "TooltipView";
-  }
+  const char* GetClassName() const override { return "TooltipView"; }
 
   void SetText(const base::string16& text) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
@@ -131,9 +130,7 @@ class TooltipAura::TooltipView : public views::View {
     SchedulePaint();
   }
 
-  void SetForegroundColor(SkColor color) {
-    render_text_->SetColor(color);
-  }
+  void SetForegroundColor(SkColor color) { render_text_->SetColor(color); }
 
   void SetBackgroundColor(SkColor background_color, SkColor border_color) {
     if (CanUseTranslucentTooltipWidget()) {
@@ -238,15 +235,10 @@ void TooltipAura::SetText(aura::Window* window,
   tooltip_view_->SetMaxWidth(GetMaxWidth(location));
   tooltip_view_->SetText(tooltip_text);
 
-  const gfx::Rect adjusted_bounds =
-      GetTooltipBounds(location, tooltip_view_->GetPreferredSize());
-
   if (!widget_) {
-    widget_ = CreateTooltipWidget(tooltip_window_, adjusted_bounds);
+    widget_ = CreateTooltipWidget(tooltip_window_);
     widget_->SetContentsView(tooltip_view_.get());
     widget_->AddObserver(this);
-  } else {
-    widget_->SetBounds(adjusted_bounds);
   }
 
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
@@ -264,6 +256,17 @@ void TooltipAura::SetText(aura::Window* window,
         color_utils::GetResultingPaintColor(foreground_color, background_color);
   tooltip_view_->SetBackgroundColor(background_color, foreground_color);
   tooltip_view_->SetForegroundColor(foreground_color);
+
+  // Calculate the tooltip preferred size after all tooltip attributes are
+  // updated - tooltip updates (for example setting text color) may invalidate
+  // the tooltip render text layout, which would make layout run just done to
+  // calculate the tooltip string size get immendiately disregarded.
+  // This also addresses https://crbug.com/2181825 (after color update,
+  // GetPreferredSize() will generate fresh render text layout, even if the
+  // actual tooltip text hasn't changed).
+  const gfx::Rect adjusted_bounds =
+      GetTooltipBounds(location, tooltip_view_->GetPreferredSize());
+  widget_->SetBounds(adjusted_bounds);
 }
 
 void TooltipAura::Show() {
@@ -283,9 +286,8 @@ void TooltipAura::Hide() {
     // OnPaint() which happens asynchronously after the Show(). As a result,
     // we can just destroy the widget and create a new one each time which
     // guarantees we never show outdated information.
-    // TODO: Figure out why the old content is displayed despite the size
-    // change.
-    // http://crbug.com/998280
+    // TODO(http://crbug.com/998280): Figure out why the old content is
+    // displayed despite the size change.
     DestroyWidget();
     tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipClosed,
                                             true);
@@ -298,6 +300,8 @@ bool TooltipAura::IsVisible() {
 
 void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget_, widget);
+  if (widget_)
+    widget_->RemoveObserver(this);
   widget_ = nullptr;
   tooltip_window_ = nullptr;
 }

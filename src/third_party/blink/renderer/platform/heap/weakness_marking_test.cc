@@ -161,7 +161,7 @@ class EphemeronCallbacksCounter
         this);
   }
 
-  void Callback(const WeakCallbackInfo& info) {
+  void Callback(const LivenessBroker& info) {
     *count_holder_ = ThreadState::Current()->Heap().ephemeron_callbacks_.size();
   }
 
@@ -196,6 +196,50 @@ TEST_F(WeaknessMarkingTest, TracableEphemeronIsRegsitered) {
               MakeGarbageCollected<IntegerObject>(2));
   TestSupportingGC::PreciselyCollectGarbage();
   EXPECT_NE(old_ephemeron_count, ephemeron_count);
+}
+
+// TODO(keinakashima): add tests for NewLinkedHashSet after supporting
+// WeakMember
+TEST_F(WeaknessMarkingTest, SwapIntoAlreadyProcessedWeakSet) {
+  // Regression test: https://crbug.com/1038623
+  //
+  // Test ensures that an empty weak set that has already been marked sets up
+  // weakness callbacks. This is important as another backing may be swapped in
+  // at some point after marking it initially.
+  using WeakLinkedSet = HeapLinkedHashSet<WeakMember<IntegerObject>>;
+  Persistent<WeakLinkedSet> holder1(MakeGarbageCollected<WeakLinkedSet>());
+  Persistent<WeakLinkedSet> holder2(MakeGarbageCollected<WeakLinkedSet>());
+  holder1->insert(MakeGarbageCollected<IntegerObject>(1));
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  holder1->Swap(*holder2.Get());
+  driver.FinishGC();
+}
+
+TEST_F(WeaknessMarkingTest, EmptyEphemeronCollection) {
+  // Tests that an empty ephemeron collection does not crash in the GC when
+  // processing a non-existent backing store.
+  using Map = HeapHashMap<Member<IntegerObject>, WeakMember<IntegerObject>>;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST_F(WeaknessMarkingTest, ClearWeakHashTableAfterMarking) {
+  // Regression test: https://crbug.com/1054363
+  //
+  // Test ensures that no marked backing with weak pointers to dead object is
+  // left behind after marking. The test creates a backing that is floating
+  // garbage. The marking verifier ensures that all buckets are properly
+  // deleted.
+  using Set = HeapHashSet<WeakMember<IntegerObject>>;
+  Persistent<Set> holder(MakeGarbageCollected<Set>());
+  holder->insert(MakeGarbageCollected<IntegerObject>(1));
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  holder->clear();
+  driver.FinishGC();
 }
 
 }  // namespace weakness_marking_test

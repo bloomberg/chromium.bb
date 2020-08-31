@@ -29,7 +29,9 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
@@ -37,6 +39,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -55,10 +58,10 @@ void FrameConsole::AddMessage(ConsoleMessage* console_message,
 
 bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message,
                                        bool discard_duplicates) {
-  if (!frame_->GetDocument() || !frame_->GetPage())
+  if (!frame_->DomWindow())
     return false;
   return frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
-      frame_->GetDocument(), console_message, discard_duplicates);
+      frame_->DomWindow(), console_message, discard_duplicates);
 }
 
 void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,
@@ -105,7 +108,7 @@ void FrameConsole::ReportResourceResponseReceived(
       "Failed to load resource: the server responded with a status of " +
       String::Number(response.HttpStatusCode()) + " (" +
       response.HttpStatusText() + ')';
-  ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+  auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
       message, response.CurrentRequestUrl().GetString(), loader,
       request_identifier);
@@ -115,20 +118,22 @@ void FrameConsole::ReportResourceResponseReceived(
 void FrameConsole::DidFailLoading(DocumentLoader* loader,
                                   uint64_t request_identifier,
                                   const ResourceError& error) {
-  if (error.IsCancellation())  // Report failures only.
+  // Report failures only.
+  if (error.IsCancellation() || error.IsTrustTokenCacheHit())
     return;
+
   StringBuilder message;
   message.Append("Failed to load resource");
   if (!error.LocalizedDescription().IsEmpty()) {
     message.Append(": ");
     message.Append(error.LocalizedDescription());
   }
-  AddMessageToStorage(ConsoleMessage::CreateForRequest(
+  AddMessageToStorage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
       message.ToString(), error.FailingURL(), loader, request_identifier));
 }
 
-void FrameConsole::Trace(blink::Visitor* visitor) {
+void FrameConsole::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

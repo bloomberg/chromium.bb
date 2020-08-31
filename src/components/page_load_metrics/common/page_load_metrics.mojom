@@ -4,6 +4,7 @@
 
 module page_load_metrics.mojom;
 
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "third_party/blink/public/mojom/use_counter/css_property_id.mojom";
@@ -16,9 +17,6 @@ struct DocumentTiming {
 
   // Time immediately before the load event is fired.
   mojo_base.mojom.TimeDelta? load_event_start;
-
-  // Time when the first layout is completed.
-  mojo_base.mojom.TimeDelta? first_layout;
 };
 
 // TimeDeltas below relative to navigation start.
@@ -48,6 +46,10 @@ struct PaintTiming {
   // (Experimental) Size of the largest text of the largest text paint, by
   // Size = Height * Width.
   uint64 largest_text_paint_size;
+
+  // (Experimental) Time when first input or scroll is received, causing the
+  // largest contentful paint algorithm to stop.
+  mojo_base.mojom.TimeDelta? first_input_or_scroll_notified_timestamp;
 };
 
 // TimeDeltas below represent durations of time during the page load.
@@ -89,26 +91,6 @@ struct ParseTiming {
 };
 
 struct InteractiveTiming {
-  // The first time the page is considered 'interactive'. This is determined
-  // using heuristics based on main thread and network activity. Time delta is
-  // relative to navigation_start.
-  mojo_base.mojom.TimeDelta? interactive;
-
-  // The time of when we detect the page is interactive. There is a delay
-  // between when the page was interactive and when we were able to detect it.
-  // Time delta is relative to navigation_start.
-  // This is a page load metrics internal value and not generally intended for
-  // consumption by observers.
-  mojo_base.mojom.TimeDelta? interactive_detection;
-
-
-  // The time of when a significant input event happened that may cause
-  // observers to discard the value of Time to Interactive. Time delta is
-  // relative to navigation start.
-  // This is a page load metrics internal value and not generally intended for
-  // consumption by observers.
-  mojo_base.mojom.TimeDelta? first_invalidating_input;
-
   // Queueing Time of the first click, tap, key press, cancellable touchstart,
   // or pointer down followed by a pointer up.
   mojo_base.mojom.TimeDelta? first_input_delay;
@@ -124,7 +106,6 @@ struct InteractiveTiming {
   // The timestamp of the event whose delay is reported as longest_input_delay.
   mojo_base.mojom.TimeDelta? longest_input_timestamp;
 };
-
 
 // PageLoadTiming contains timing metrics associated with a page load. Many of
 // the metrics here are based on the Navigation Timing spec:
@@ -151,9 +132,26 @@ struct PageLoadTiming {
   // If you add additional members, also be sure to update page_load_timing.h.
 };
 
-struct PageLoadMetadata {
+// FrameIntersectionUpdate contains a frame's intersections with other elements
+// in a page load.
+struct FrameIntersectionUpdate {
+  // The frame's current intersection rect with the main frame document in the
+  // coordinate system of the main frame's viewport. The intersection rect is
+  // an empty rect when there is no intersection with the main frame and
+  // returns the document size of the root document for the main frame. This
+  // is only set the first time an intersection changes and is null otherwise.
+  // TODO(https://crbug/1084786): This is not reported in the correct
+  // coordinate system and returns inaccurate rects when style transforms are
+  // applied.
+  gfx.mojom.Rect? main_frame_document_intersection_rect;
+};
+
+struct FrameMetadata {
   // These are packed blink::LoadingBehaviorFlag enums.
   int32 behavior_flags = 0;
+
+  // The frame's intersection with page elements.
+  FrameIntersectionUpdate? intersection_update;
 };
 
 // PageLoadFeatures contains a list of features newly observed by use counter.
@@ -189,6 +187,10 @@ struct ResourceDataUpdate {
   // The length of the response body for the resource before removing any
   // content encodings. Only set for complete resources.
   int64 encoded_body_length = 0;
+
+  // The length of the response body in bytes for the resource after decoding.
+  // Only set for complete resources.
+  int64 decoded_body_length = 0;
 
   // Whether this resource load has completed.
   bool is_complete;
@@ -241,6 +243,18 @@ struct FrameRenderDataUpdate {
   // How much visible elements in the frame shifted (bit.ly/lsm-explainer),
   // before a user input or document scroll, since the last timing update.
   float layout_shift_delta_before_input_or_scroll;
+
+  // How many LayoutBlock instances were created.
+  uint32 all_layout_block_count_delta;
+
+  // How many LayoutNG-based LayoutBlock instances were created.
+  uint32 ng_layout_block_count_delta;
+
+  // How many times LayoutObject::UpdateLayout() is called.
+  uint32 all_layout_call_count_delta;
+
+  // How many times LayoutNG-based LayoutObject::UpdateLayout() is called.
+  uint32 ng_layout_call_count_delta;
 };
 
 // Metrics about the time spent in tasks (cpu time) by a frame.
@@ -262,14 +276,34 @@ struct DeferredResourceCounts {
   uint64 images_loaded_after_deferral = 0;
 };
 
+// Metrics about general input delay.
+struct InputTiming {
+  // The sum of all input delay.
+  mojo_base.mojom.TimeDelta total_input_delay;
+
+  // The sum of all adjusted input delay. We adjust each input delay by
+  // subtracting a small number, currently 50ms but subject to change in the
+  // future. And if the subtraction result is negative, we will use 0ms.
+  mojo_base.mojom.TimeDelta total_adjusted_input_delay;
+
+  // The number of user interactions, including click, tap, key press,
+  // cancellable touchstart, or pointer down followed by a pointer up.
+  uint64 num_input_events = 0;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
+  // Called when an update is ready to be sent from renderer to browser.
+  // UpdateTiming calls are buffered, and contain all updates that have been
+  // received in the last buffer window. Some of the update data may be empty.
+  // Only called when at least one change has been observed within the frame.
   UpdateTiming(PageLoadTiming page_load_timing,
-               PageLoadMetadata page_load_metadata,
+               FrameMetadata frame_metadata,
                PageLoadFeatures new_features,
                array<ResourceDataUpdate> resources,
                FrameRenderDataUpdate render_data,
                CpuTiming cpu_load_timing,
-               DeferredResourceCounts new_deferred_resource_data);
+               DeferredResourceCounts new_deferred_resource_data,
+               InputTiming input_timing_delta);
 };

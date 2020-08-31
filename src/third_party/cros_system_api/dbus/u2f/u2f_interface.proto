@@ -20,8 +20,8 @@ message UserNotification {
 
 enum VerificationType {
   VERIFICATION_UNKNOWN = 0;
-  VERIFICATION_PRESENCE = 1;
-  VERIFICATION_FP = 2;
+  VERIFICATION_USER_PRESENCE = 1;
+  VERIFICATION_USER_VERIFICATION = 2;
 }
 
 message MakeCredentialRequest {

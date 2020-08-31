@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -18,7 +19,7 @@ FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(LocalFrameView* view)
   DCHECK(frame_view_);
 }
 
-void FrameViewAutoSizeInfo::Trace(blink::Visitor* visitor) {
+void FrameViewAutoSizeInfo::Trace(Visitor* visitor) {
   visitor->Trace(frame_view_);
 }
 
@@ -63,7 +64,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
   // second iteration.
   for (int i = 0; i < 2; i++) {
     // Update various sizes including contentsSize, scrollHeight, etc.
-    document->UpdateStyleAndLayout();
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kSizeChange);
 
     auto* layout_view = document->GetLayoutView();
     if (!layout_view)
@@ -72,7 +73,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     // TODO(bokan): This code doesn't handle subpixel sizes correctly. Because
     // of that, it's forced to maintain all the special ScrollbarMode code
     // below. https://crbug.com/812311.
-    int width = layout_view->MinPreferredLogicalWidth().ToInt();
+    int width = layout_view->PreferredLogicalWidths().min_size.ToInt();
 
     LayoutBox* document_layout_box = document_element->GetLayoutBox();
     if (!document_layout_box)
@@ -92,7 +93,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
       // already greater the maximum.
     } else if (new_size.Height() > max_auto_size_.Height() &&
                // If we have a real vertical scrollbar, it's already included in
-               // MinPreferredLogicalWidth, so don't add a hypothetical one.
+               // PreferredLogicalWidths(), so don't add a hypothetical one.
                !layout_viewport->HasVerticalScrollbar()) {
       new_size.Expand(
           layout_viewport->HypotheticalScrollbarThickness(kVerticalScrollbar),
@@ -106,15 +107,17 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
 
     // Bound the dimensions by the max bounds and determine what scrollbars to
     // show.
-    ScrollbarMode horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOff;
+    mojom::blink::ScrollbarMode horizontal_scrollbar_mode =
+        mojom::blink::ScrollbarMode::kAlwaysOff;
     if (new_size.Width() > max_auto_size_.Width()) {
       new_size.SetWidth(max_auto_size_.Width());
-      horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOn;
+      horizontal_scrollbar_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
     }
-    ScrollbarMode vertical_scrollbar_mode = ScrollbarMode::kAlwaysOff;
+    mojom::blink::ScrollbarMode vertical_scrollbar_mode =
+        mojom::blink::ScrollbarMode::kAlwaysOff;
     if (new_size.Height() > max_auto_size_.Height()) {
       new_size.SetHeight(max_auto_size_.Height());
-      vertical_scrollbar_mode = ScrollbarMode::kAlwaysOn;
+      vertical_scrollbar_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
     }
 
     if (new_size == size)

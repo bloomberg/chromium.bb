@@ -7,30 +7,33 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   generate_java = true
   sources = [
-    "cursor.mojom",
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
   ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//skia/public/mojom",
-    "//ui/gfx/geometry/mojom",
-    "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-source_set("unittests") {
-  testonly = true
-  sources = [
-    "cursor_mojom_traits_unittest.cc",
-  ]
-  deps = [
-    ":mojom",
-    "//skia/public/mojom",
-    "//testing/gtest",
-    "//ui/base",
-    "//ui/events",
-    "//ui/gfx/geometry/mojom:mojom_traits",
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "ui.mojom.DialogButton"
+          cpp = "::ui::DialogButton"
+        },
+        {
+          mojom = "ui.mojom.ModalType"
+          cpp = "::ui::ModalType"
+        },
+      ]
+      traits_headers = [ "ui_base_types_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/base" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ui.mojom.WindowOpenDisposition"
+          cpp = "::WindowOpenDisposition"
+        },
+      ]
+      traits_headers = [ "window_open_disposition_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/base" ]
+    },
   ]
 }

@@ -17,10 +17,11 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ସୁପାରିଶ୍ କରାଯାଇଥିବା ଆପ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="1368832886055348810">ବାମରୁ ଡାହାଣ</translation>
-<translation id="1383876407941801731">ସନ୍ଧାନ</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">ସର୍ବାଧିକ କରନ୍ତୁ</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ଇନ୍‌ଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପ୍</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ସେୟାର୍ କରାଯାଇ ପାରିବ ନାହିଁ</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />କୁ <ph name="SECOND_ITEM_TITLE" /> ସହିତ ସ୍ୱାପ୍ କରାଯାଇଛି</translation>
 <translation id="1498028757988366001">ଆପଣ ପୂର୍ବରୁ ଏହାକୁ ସନ୍ଧାନ କରିଥିଲେ। ଆପଣଙ୍କ ଇତିହାସରୁ "<ph name="QUERY" />" ଡିଲିଟ୍ କରିବା ଦ୍ୱାରା, ଏହା ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ଥିବା ଆକାଉଣ୍ଟରୁ ସ୍ଥାୟୀ ଭାବେ କାଢ଼ି ହୋଇଯିବ।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ମିନିଟ୍‍ ଏବଂ }other{# ମିନିଟ୍‍ ଏବଂ }}</translation>
 <translation id="1643823602425662293">ବିଜ୍ଞପ୍ତି</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ସମସ୍ତ ଚୟନ କରନ୍ତୁ</translation>
-<translation id="1938451708255335766">ୱିଣ୍ଡୋ ଡିସ୍‌ପ୍ଲେର ସାନ୍ଧ୍ରତା ଆଡ୍‍ଜଷ୍ଟ କରିବାକୁ, ଆପ୍‌ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ।</translation>
 <translation id="2006524834898217237">ଏହି ଡିଭାଇସ୍‌ଟି ଇଣ୍ଟର୍ନେଟ୍ ସହ ସଂଯୁକ୍ତ ହୋଇଥିବା ସୁନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="208586643495776849">ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />ରୁ ଆପଣଙ୍କ Android ଫୋନ୍‌କୁ ଏକ ନମ୍ବର ପଠାଇବା ପାଇଁ ସେଟିଂସ୍‌ରେ ଉଭୟ ଡିଭାଇସ୍ ନିମନ୍ତେ <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -58,7 +58,7 @@
 <translation id="2388990488038464401">ଆପଣଙ୍କ ଫୋନ୍‌ରୁ ଏହି ନମ୍ବର୍‍କୁ କଲ୍ କରିବେ?</translation>
 <translation id="24452542372838207">ବିଜ୍ଞପ୍ତି ସଂପ୍ରସାରଣ କରନ୍ତୁ</translation>
 <translation id="2445449901874883781">ଉଚ୍ଚ ସାନ୍ଧ୍ରତା ବ୍ୟବହାର କରନ୍ତୁ</translation>
-<translation id="2482878487686419369">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ</translation>
+<translation id="2482878487686419369">ବିଜ୍ଞପ୍ତି</translation>
 <translation id="2497284189126895209">ସମସ୍ତ ଫାଇଲଗୁଡିକ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">କାଲିବ୍ରାସନ୍‍ ସମ୍ପୂର୍ଣ୍ଣ ହୋ‍ଇଛି</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ଦିନ}other{# ଦିନ}}</translation>
 <translation id="3295886253693811851">ଏଥିରୁ ଏକ କଲ୍ କରନ୍ତୁ</translation>
+<translation id="3306688585798492231">ବିଲ୍ଟ-ଇନ୍ ଡିସପ୍ଲେ</translation>
 <translation id="335581015389089642">ସ୍ପୀଚ୍‌</translation>
 <translation id="3389286852084373014">ଟେକ୍ସଟ୍ ବହୁତ ଲମ୍ବା ଅଟେ</translation>
-<translation id="3479552764303398839">ଏବେ ନୁହେଁ</translation>
 <translation id="348799646910989694">ସେଲ୍ପ ସ୍ୱଚାଳିତ ରୂପେ ଲୁଚାଯାଇଛି</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ପିନ୍ କରାଯାଇଥିଲା</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ଦିନ ବାକି ଅଛି}other{# ଦିନ ବାକି ଅଛି}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">ଆପଣଙ୍କର ମୋବାଇଲ୍ ଡିଭାଇସ୍ <ph name="TITLE" />ରୁ ପଢ଼ିବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="385051799172605136">ପଛକୁ</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
-<translation id="3892641579809465218">ଆଭ୍ୟନ୍ତରୀଣ ଡିସ୍‌ପ୍ଲେ</translation>
 <translation id="3897092660631435901">ମେନୁ</translation>
 <translation id="3909791450649380159">&amp;ଛେଦନ କରନ୍ତୁ</translation>
 <translation id="3990502903496589789">ଠିକ୍ ଧାର</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ମିନିଟ୍}other{# ମିନିଟ୍}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ଆଜି ସକ୍ରିୟ ଅଛି}=1{1 ଦିନ ପୂର୍ବେ ସକ୍ରିୟ ଥିଲା}other{# ଦିନ ପୂର୍ବେ ସକ୍ରିୟ ଥିଲା}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ଦିନ ଏବଂ }other{# ଦିନ ଏବଂ }}</translation>
+<translation id="5789643057113097023">।</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{ବର୍ଷରେ}other{# ବର୍ଷରେ}}</translation>
-<translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ ବାକିଅଛି}other{# ସେକେଣ୍ଡ ବାକିଅଛି}}</translation>
 <translation id="5941711191222866238">ସର୍ବନିମ୍ନ କରନ୍ତୁ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}</translation>
@@ -163,7 +162,7 @@
 <translation id="6394627529324717982">କମା</translation>
 <translation id="6397363302884558537">କଥା କହିବା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ ପୂର୍ବେ}other{# ସେକେଣ୍ଡ ପୂର୍ବେ}}</translation>
-<translation id="6417265370957905582">Google ଆସିଷ୍ଟାଣ୍ଟ</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">ଏହି ଆପ୍‌ରୁ ସମସ୍ତ ବିଜ୍ଞପ୍ତି ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ ପୂର୍ବେ}other{# ସେକେଣ୍ଡ ପୂର୍ବେ}}</translation>
 <translation id="6539092367496845964">କିଛି ଭୁଲ ହୋଇଗଲା। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">ଡାହାଣରୁ ବାମକୁ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ସବୁଠୁ ଲୋକପ୍ରିୟ</translation>
+<translation id="7170202025028120564">ପରବର୍ତ୍ତୀ ସମୟରେ ଆପଣଙ୍କ ଆପ୍ଲିକେସନର ଡିସପ୍ଲେ ସେଟିଂସ୍ ରିଷ୍ଟାର୍ଟ ହେଲେ ଏଥିରେ ପରିବର୍ତ୍ତନଗୁଡ଼ିକ କାର୍ଯ୍ୟକାରୀ ହେବ।</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ମିନିଟ୍ ବାକି ଅଛି}other{# ମିନିଟ୍ ବାକି ଅଛି}}</translation>
 <translation id="7319740667687257810">ଲଞ୍ଚର୍, ଆଂଶିକ ଦୃଶ୍ୟ</translation>

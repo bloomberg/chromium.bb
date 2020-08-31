@@ -91,11 +91,11 @@ int32_t GetMinimumCount(const std::array<uint8_t, kEncoderCount>& mins) {
 }
 
 bool IsNativeC40(wchar_t ch) {
-  return (ch == ' ') || (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z');
+  return (ch == ' ') || (ch >= '0' && ch <= '9') || FXSYS_IsUpperASCII(ch);
 }
 
 bool IsNativeText(wchar_t ch) {
-  return (ch == ' ') || (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z');
+  return (ch == ' ') || (ch >= '0' && ch <= '9') || FXSYS_IsLowerASCII(ch);
 }
 
 bool IsX12TermSep(wchar_t ch) {
@@ -104,7 +104,7 @@ bool IsX12TermSep(wchar_t ch) {
 
 bool IsNativeX12(wchar_t ch) {
   return IsX12TermSep(ch) || (ch == ' ') || (ch >= '0' && ch <= '9') ||
-         (ch >= 'A' && ch <= 'Z');
+         FXSYS_IsUpperASCII(ch);
 }
 
 bool IsNativeEDIFACT(wchar_t ch) {
@@ -131,8 +131,8 @@ WideString CBC_HighLevelEncoder::EncodeHighLevel(const WideString& msg) {
   if (context.HasCharactersOutsideISO88591Encoding())
     return WideString();
 
-  if (msg.Last() == kMacroTrailer) {
-    WideString left = msg.Left(6);
+  if (msg.Back() == kMacroTrailer) {
+    WideString left = msg.First(6);
     if (left == kMacro05Header) {
       context.writeCodeword(kMacro05);
       context.setSkipAtEnd(2);
@@ -165,7 +165,7 @@ WideString CBC_HighLevelEncoder::EncodeHighLevel(const WideString& msg) {
   if (!context.UpdateSymbolInfo())
     return WideString();
 
-  size_t capacity = context.m_symbolInfo->dataCapacity();
+  size_t capacity = context.m_symbolInfo->data_capacity();
   if (len < capacity) {
     if (encodingMode != Encoding::ASCII && encodingMode != Encoding::BASE256)
       context.writeCodeword(0x00fe);

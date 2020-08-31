@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-
 #include "cc/debug/debug_colors.h"
+
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace cc {
 
@@ -36,14 +37,6 @@ SkColor DebugColors::ContentLayerBorderColor() {
 }
 int DebugColors::ContentLayerBorderWidth(float device_scale_factor) {
   return Scale(2, device_scale_factor);
-}
-
-// Masking layers are pale blue and wide.
-SkColor DebugColors::MaskingLayerBorderColor() {
-  return SkColorSetARGB(48, 128, 255, 255);
-}
-int DebugColors::MaskingLayerBorderWidth(float device_scale_factor) {
-  return Scale(20, device_scale_factor);
 }
 
 // Other container layers are yellow.
@@ -327,6 +320,28 @@ SkColor DebugColors::MemoryDisplayTextColor() {
 // Paint time display in green (similar to paint times in the WebInspector)
 SkColor DebugColors::PaintTimeDisplayTextAndGraphColor() {
   return SkColorSetRGB(75, 155, 55);
+}
+
+SkColor DebugColors::NonLCDTextHighlightColor(LCDTextDisallowedReason reason) {
+  switch (reason) {
+    case LCDTextDisallowedReason::kNone:
+      return SK_ColorTRANSPARENT;
+    case LCDTextDisallowedReason::kSetting:
+      return SkColorSetARGB(96, 128, 255, 0);
+    case LCDTextDisallowedReason::kBackgroundColorNotOpaque:
+      return SkColorSetARGB(96, 128, 128, 0);
+    case LCDTextDisallowedReason::kContentsNotOpaque:
+      return SkColorSetARGB(96, 255, 0, 0);
+    case LCDTextDisallowedReason::kNonIntegralTranslation:
+      return SkColorSetARGB(96, 255, 128, 0);
+    case LCDTextDisallowedReason::kNonIntegralXOffset:
+    case LCDTextDisallowedReason::kNonIntegralYOffset:
+      return SkColorSetARGB(96, 255, 0, 128);
+    case LCDTextDisallowedReason::kWillChangeTransform:
+      return SkColorSetARGB(96, 128, 0, 255);
+  }
+  NOTREACHED();
+  return SK_ColorTRANSPARENT;
 }
 
 }  // namespace cc

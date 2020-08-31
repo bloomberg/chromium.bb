@@ -8,11 +8,19 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='intervening'",
-      "position": [98, 90],
       "bounds": [300, 300],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "backgroundColor": "#FFEFD5"
+      "backgroundColor": "#FFEFD5",
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "position": [1, 1],
+      "bounds": [100, 100],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",

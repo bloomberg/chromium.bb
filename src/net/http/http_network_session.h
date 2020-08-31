@@ -202,7 +202,7 @@ class NET_EXPORT HttpNetworkSession {
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {
-      return proxy_resolution_service_;
+    return proxy_resolution_service_;
   }
   SSLConfigService* ssl_config_service() { return ssl_config_service_; }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
@@ -240,8 +240,8 @@ class NET_EXPORT HttpNetworkSession {
   // configuration.
   std::unique_ptr<base::Value> QuicInfoToValue() const;
 
-  void CloseAllConnections();
-  void CloseIdleConnections();
+  void CloseAllConnections(int net_error, const char* net_log_reason_utf8);
+  void CloseIdleConnections(const char* net_log_reason_utf8);
 
   // Returns the original Params used to construct this session.
   const Params& params() const { return params_; }

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -72,6 +73,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     OutputSurfaceProvider* output_surface_provider = nullptr;
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
+    bool log_capture_pipeline_in_webrtc = false;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
   // TODO(kylechar): Cleanup tests and remove this constructor.
@@ -101,9 +103,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                            bool report_activation) override;
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) override;
-  void EnableSynchronizationReporting(
-      const FrameSinkId& frame_sink_id,
-      const std::string& reporting_label) override;
   void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
                               const std::string& debug_label) override;
   void CreateRootCompositorFrameSink(
@@ -139,14 +138,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
-  void OnSurfaceActivated(const SurfaceId& surface_id,
-                          base::Optional<base::TimeDelta> duration) override;
-  bool OnSurfaceDamaged(const SurfaceId& surface_id,
-                        const BeginFrameAck& ack) override;
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
-  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override;
-  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                               const BeginFrameArgs& args) override;
 
   // HitTestAggregatorDelegate implementation:
   void OnAggregatedHitTestRegionListUpdated(
@@ -156,6 +147,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // SurfaceManagerDelegate implementation:
   base::StringPiece GetFrameSinkDebugLabel(
       const FrameSinkId& frame_sink_id) const override;
+  void AggregatedFrameSinksChanged() override;
 
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.
@@ -220,10 +212,16 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
-  void SetPreferredFrameIntervalForFrameSinkId(const FrameSinkId& id,
-                                               base::TimeDelta interval);
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) const;
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) const;
+
+  // This cancels pending output requests owned by the frame sinks associated
+  // with the specified BeginFrameSource.
+  // The requets callback will be fired as part of request destruction.
+  // This may be used in case we know a frame can't be produced any time soon,
+  // so there's no point for caller to wait for the copy of output.
+  void DiscardPendingCopyOfOutputRequests(const BeginFrameSource* source);
 
  private:
   friend class FrameSinkManagerTest;
@@ -238,14 +236,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     // A label to identify frame sink.
     std::string debug_label;
 
-    // Record synchronization events for this FrameSinkId if not empty.
-    std::string synchronization_label;
-
     // Indicates whether the client wishes to receive FirstSurfaceActivation
     // notification.
     bool report_activation;
-
-    base::TimeDelta preferred_frame_interval = BeginFrameArgs::MinInterval();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
@@ -300,6 +293,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Whether display scheduler should wait for all pipeline stages before draw.
   const bool run_all_compositor_stages_before_draw_;
+
+  // Whether capture pipeline should emit log messages to webrtc log.
+  const bool log_capture_pipeline_in_webrtc_;
 
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and

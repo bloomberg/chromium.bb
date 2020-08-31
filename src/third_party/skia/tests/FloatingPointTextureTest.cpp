@@ -19,6 +19,7 @@
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "tools/gpu/ProxyUtils.h"
 
@@ -56,8 +57,11 @@ void runFPTest(skiatest::Reporter* reporter, GrContext* context, T min, T max, T
             continue;
         }
 
-        auto sContext = context->priv().makeWrappedSurfaceContext(std::move(fpProxy), colorType,
-                                                                  kPremul_SkAlphaType);
+        GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(fpProxy->backendFormat(),
+                                                                   colorType);
+        GrSurfaceProxyView view(std::move(fpProxy), origin, swizzle);
+        auto sContext = GrSurfaceContext::Make(context, std::move(view), colorType,
+                                               kPremul_SkAlphaType, nullptr);
         REPORTER_ASSERT(reporter, sContext);
 
         bool result = sContext->readPixels({colorType, kPremul_SkAlphaType, nullptr, DEV_W, DEV_H},

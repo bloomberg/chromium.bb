@@ -11,8 +11,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.WebContents;
 
@@ -23,7 +21,6 @@ import org.chromium.content_public.browser.WebContents;
 //                class.
 public abstract class FullscreenManager {
     private final FullscreenHtmlApiHandler mHtmlApiHandler;
-    private boolean mOverlayVideoMode;
     @Nullable private Tab mTab;
 
     /**
@@ -49,67 +46,6 @@ public abstract class FullscreenManager {
     }
 
     /**
-     * @return The height of the top controls in pixels.
-     */
-    public abstract int getTopControlsHeight();
-
-    /**
-     * @return The minimum visible height top controls can have in pixels.
-     */
-    public abstract int getTopControlsMinHeight();
-
-    /**
-     * @return The offset of the controls from the top of the screen.
-     */
-    public abstract int getTopControlOffset();
-
-    /**
-     * @return The height of the bottom controls in pixels.
-     */
-    public abstract int getBottomControlsHeight();
-
-    /**
-     * @return The minimum visible height bottom controls can have in pixels.
-     */
-    public abstract int getBottomControlsMinHeight();
-
-    /**
-     * @return Whether or not the browser controls height changes should be animated.
-     */
-    public abstract boolean shouldAnimateBrowserControlsHeightChanges();
-
-    /**
-     * @return The offset of the controls from the bottom of the screen.
-     */
-    public abstract int getBottomControlOffset();
-
-    /**
-     * @return The ratio that the browser controls are off screen; this will be a number [0,1]
-     *         where 1 is completely hidden and 0 is completely shown.
-     */
-    public abstract float getBrowserControlHiddenRatio();
-
-    /**
-     * @return The offset of the content from the top of the screen in px.
-     */
-    public abstract int getContentOffset();
-
-    /**
-     * Tells the fullscreen manager a ContentVideoView is created below the contents.
-     * @param enabled Whether to enter or leave overlay video mode.
-     */
-    public void setOverlayVideoMode(boolean enabled) {
-        mOverlayVideoMode = enabled;
-    }
-
-    /**
-     * @return Check whether ContentVideoView is shown.
-     */
-    public boolean isOverlayVideoMode() {
-        return mOverlayVideoMode;
-    }
-
-    /**
      * Updates the positions of the browser controls and content to the default non fullscreen
      * values.
      */
@@ -121,9 +57,12 @@ public abstract class FullscreenManager {
      * @param topControlsOffset The Y offset of the top controls in px.
      * @param bottomControlsOffset The Y offset of the bottom controls in px.
      * @param topContentOffset The Y offset for the content in px.
+     * @param topControlsMinHeightOffset The Y offset for the top controls min-height in px.
+     * @param bottomControlsMinHeightOffset The Y offset for the bottom controls min-height in px.
      */
-    public abstract void setPositionsForTab(
-            int topControlsOffset, int bottomControlsOffset, int topContentOffset);
+    public abstract void setPositionsForTab(int topControlsOffset, int bottomControlsOffset,
+            int topContentOffset, int topControlsMinHeightOffset,
+            int bottomControlsMinHeightOffset);
 
     /**
      * Updates the current ContentView's children and any popups with the correct offsets based on
@@ -153,7 +92,6 @@ public abstract class FullscreenManager {
      */
     protected void enterPersistentFullscreenMode(FullscreenOptions options) {
         mHtmlApiHandler.enterPersistentFullscreenMode(options);
-        TabBrowserControlsConstraintsHelper.updateEnabledState(getTab());
         updateMultiTouchZoomSupport(false);
     }
 
@@ -163,7 +101,6 @@ public abstract class FullscreenManager {
      */
     public void exitPersistentFullscreenMode() {
         mHtmlApiHandler.exitPersistentFullscreenMode();
-        TabBrowserControlsConstraintsHelper.updateEnabledState(getTab());
         updateMultiTouchZoomSupport(true);
     }
 
@@ -172,7 +109,7 @@ public abstract class FullscreenManager {
      */
     protected void updateMultiTouchZoomSupport(boolean enable) {
         Tab tab = getTab();
-        if (tab == null || ((TabImpl) tab).isHidden()) return;
+        if (tab == null || tab.isHidden()) return;
         WebContents webContents = tab.getWebContents();
         if (webContents != null) {
             GestureListenerManager manager = GestureListenerManager.fromWebContents(webContents);

@@ -40,8 +40,8 @@ def main():
   for path, packages in new_content.items():
     if not os.path.exists(path):
       os.makedirs(path)
-    with open(os.path.join(path, '_cipd'), 'w') as f:
-      f.write('\n'.join(packages))
+    with open(os.path.join(path, '_cipd'), 'wb') as f:
+      f.write('\n'.join(packages).encode('utf-8', 'replace'))
 
   # Save the ensure file that we got
   shutil.copy(args.ensure_file, os.path.join(args.root, '_cipd'))

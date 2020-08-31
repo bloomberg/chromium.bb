@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -24,23 +25,37 @@ namespace gles2 {
 class ProgramCache;
 }  // namespace gles2
 
+class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadServiceDelegate {
+ public:
+  GpuInProcessThreadServiceDelegate();
+
+  GpuInProcessThreadServiceDelegate(const GpuInProcessThreadServiceDelegate&) =
+      delete;
+  GpuInProcessThreadServiceDelegate& operator=(
+      const GpuInProcessThreadServiceDelegate&) = delete;
+
+  virtual ~GpuInProcessThreadServiceDelegate();
+
+  virtual scoped_refptr<SharedContextState> GetSharedContextState() = 0;
+  virtual scoped_refptr<gl::GLShareGroup> GetShareGroup() = 0;
+};
+
 // Default Service class when no service is specified. GpuInProcessThreadService
 // is used by Mus and unit tests.
 class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
     : public CommandBufferTaskExecutor {
  public:
   GpuInProcessThreadService(
+      GpuInProcessThreadServiceDelegate* delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       Scheduler* scheduler,
       SyncPointManager* sync_point_manager,
       MailboxManager* mailbox_manager,
-      scoped_refptr<gl::GLShareGroup> share_group,
       gl::GLSurfaceFormat share_group_surface_format,
       const GpuFeatureInfo& gpu_feature_info,
       const GpuPreferences& gpu_preferences,
       SharedImageManager* shared_image_manager,
-      gles2::ProgramCache* program_cache,
-      scoped_refptr<SharedContextState> shared_context_state);
+      gles2::ProgramCache* program_cache);
   ~GpuInProcessThreadService() override;
 
   // CommandBufferTaskExecutor implementation.
@@ -50,8 +65,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
   void PostNonNestableToClient(base::OnceClosure callback) override;
+  scoped_refptr<SharedContextState> GetSharedContextState() override;
+  scoped_refptr<gl::GLShareGroup> GetShareGroup() override;
 
  private:
+  GpuInProcessThreadServiceDelegate* const delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Scheduler* scheduler_;
 

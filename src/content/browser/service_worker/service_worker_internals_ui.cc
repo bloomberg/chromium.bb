@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -23,7 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/grit/content_resources.h"
+#include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -158,8 +159,9 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   for (auto& it : version.clients) {
     auto client = DictionaryValue();
     client.SetStringPath("client_id", it.first);
-    if (it.second.web_contents_getter) {
-      WebContents* web_contents = it.second.web_contents_getter.Run();
+    if (it.second.type == blink::mojom::ServiceWorkerClientType::kWindow) {
+      WebContents* web_contents =
+          WebContents::FromFrameTreeNodeId(it.second.frame_tree_node_id);
       if (web_contents)
         client.SetStringPath("url", web_contents->GetURL().spec());
     }
@@ -390,12 +392,11 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
-  BrowserContext::StoragePartitionCallback remove_observer_cb =
+  BrowserContext::ForEachStoragePartition(
+      browser_context,
       base::BindRepeating(
           &ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
-          base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context,
-                                          std::move(remove_observer_cb));
+          base::Unretained(this)));
 }
 
 void ServiceWorkerInternalsUI::GetOptions(const ListValue* args) {
@@ -423,11 +424,11 @@ void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
-  BrowserContext::StoragePartitionCallback add_context_cb = base::BindRepeating(
-      &ServiceWorkerInternalsUI::AddContextFromStoragePartition,
-      base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context,
-                                          std::move(add_context_cb));
+  BrowserContext::ForEachStoragePartition(
+      browser_context,
+      base::BindRepeating(
+          &ServiceWorkerInternalsUI::AddContextFromStoragePartition,
+          base::Unretained(this)));
 }
 
 void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
@@ -486,12 +487,11 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   StoragePartition* result_partition(nullptr);
-  BrowserContext::StoragePartitionCallback find_context_cb =
+  BrowserContext::ForEachStoragePartition(
+      browser_context,
       base::BindRepeating(&ServiceWorkerInternalsUI::FindContext,
                           base::Unretained(this), partition_id,
-                          &result_partition);
-  BrowserContext::ForEachStoragePartition(browser_context,
-                                          std::move(find_context_cb));
+                          &result_partition));
   if (!result_partition)
     return false;
   *context = static_cast<ServiceWorkerContextWrapper*>(
@@ -633,7 +633,8 @@ void ServiceWorkerInternalsUI::UnregisterWithScope(
   // ServiceWorkerContextWrapper::UnregisterServiceWorker doesn't work here
   // because that reduces a status code to boolean.
   context->context()->UnregisterServiceWorker(
-      scope, base::AdaptCallbackForRepeating(std::move(callback)));
+      scope, /*is_immediate=*/false,
+      base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 }  // namespace content

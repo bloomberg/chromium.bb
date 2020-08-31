@@ -130,7 +130,7 @@ class PackageDefinition(object):
     version information about themselves. <name> could be the name of the
     binary tool, like 'cipd' in the example above.
 
-    A version file may be specifed exactly once per package.
+    A version file may be specified exactly once per package.
 
     Args:
       ver_file_rel (str) - A path string relative to the installation root.

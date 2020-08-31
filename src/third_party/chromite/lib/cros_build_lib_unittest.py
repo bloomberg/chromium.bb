@@ -34,7 +34,7 @@ class RunCommandErrorStrTest(cros_test_lib.TestCase):
 
   def testNonUTF8Characters(self):
     """Test that non-UTF8 characters do not kill __str__"""
-    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], check=False)
     rce = cros_build_lib.RunCommandError('\x81', result)
     str(rce)
 
@@ -159,58 +159,92 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
   def testErrorCodeNotRaisesError(self):
     """Don't raise exception when command returns non-zero exit code."""
-    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], check=False)
     self.assertTrue(result.returncode != 0)
 
   def testMissingCommandRaisesError(self):
     """Raise error when command is not found."""
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
-                      ['/does/not/exist'], error_code_ok=False)
+                      ['/does/not/exist'], check=True)
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
-                      ['/does/not/exist'], error_code_ok=True)
+                      ['/does/not/exist'], check=False)
+
+  def testDryRun(self):
+    """Verify dryrun doesn't run the real command."""
+    # Check exit & output when not captured.
+    result = cros_build_lib.run(['false'], dryrun=True)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(None, result.stdout)
+    self.assertEqual(None, result.stderr)
+
+    # Check captured binary output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                capture_output=True)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'', result.stderr)
+
+    # Check captured text output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                capture_output=True, encoding='utf-8')
+    self.assertEqual(0, result.returncode)
+    self.assertEqual('', result.stdout)
+    self.assertEqual('', result.stderr)
+
+    # Check captured merged output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                stdout=True, stderr=subprocess.STDOUT)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(None, result.stderr)
 
   def testInputBytes(self):
     """Verify input argument when it is bytes."""
     for data in (b'', b'foo', b'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data)
+      result = cros_build_lib.run(['cat'], input=data, capture_output=True)
       self.assertEqual(result.stdout, data)
 
   def testInputBytesEncoding(self):
     """Verify bytes input argument when encoding is set."""
     for data in (b'', b'foo', b'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8',
+                                  capture_output=True)
       self.assertEqual(result.stdout, data.decode('utf-8'))
 
   def testInputString(self):
     """Verify input argument when it is a string."""
     for data in ('', 'foo', 'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data)
+      result = cros_build_lib.run(['cat'], input=data, capture_output=True)
       self.assertEqual(result.stdout, data.encode('utf-8'))
 
   def testInputStringEncoding(self):
     """Verify bytes input argument when encoding is set."""
     for data in ('', 'foo', 'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8',
+                                  capture_output=True)
       self.assertEqual(result.stdout, data)
 
   def testInputFileObject(self):
     """Verify input argument when it is a file object."""
-    result = cros_build_lib.run(['cat'], input=open('/dev/null'))
+    result = cros_build_lib.run(['cat'], input=open('/dev/null'),
+                                capture_output=True)
     self.assertEqual(result.output, b'')
 
     with open(__file__) as f:
-      result = cros_build_lib.run(['cat'], input=f)
+      result = cros_build_lib.run(['cat'], input=f, capture_output=True)
       self.assertEqual(result.stdout,
                        osutils.ReadFile(__file__, mode='rb'))
 
   def testInputFileDescriptor(self):
     """Verify input argument when it is a file descriptor."""
     with open('/dev/null') as f:
-      result = cros_build_lib.run(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno(),
+                                  capture_output=True)
       self.assertEqual(result.output, b'')
 
     with open(__file__) as f:
-      result = cros_build_lib.run(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno(),
+                                  capture_output=True)
       self.assertEqual(result.stdout,
                        osutils.ReadFile(__file__, mode='rb'))
 
@@ -413,8 +447,15 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     if rc_kv is None:
       rc_kv = {}
 
+    stdout = None
+    stderr = None
+    if rc_kv.get('stdout') or rc_kv.get('capture_output'):
+      stdout = self.output
+    if rc_kv.get('stderr') or rc_kv.get('capture_output'):
+      stderr = self.error
+
     expected_result = cros_build_lib.CommandResult(
-        args=real_cmd, stdout=self.output, stderr=self.error,
+        args=real_cmd, stdout=stdout, stderr=stderr,
         returncode=self.proc_mock.returncode)
 
     arg_dict = dict()
@@ -443,8 +484,10 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # passing to _Popen is stored as bytes.
     if 'encoding' in rc_kv:
       encoding = rc_kv['encoding']
-      actual_result.stdout = actual_result.stdout.encode(encoding)
-      actual_result.stderr = actual_result.stderr.encode(encoding)
+      if actual_result.stdout is not None:
+        actual_result.stdout = actual_result.stdout.encode(encoding)
+      if actual_result.stderr is not None:
+        actual_result.stderr = actual_result.stderr.encode(encoding)
 
     self._AssertCrEqual(expected_result, actual_result)
 
@@ -491,7 +534,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                            ignore_sigint=ignore_sigint):
       self.assertRaises(cros_build_lib.RunCommandError,
                         cros_build_lib.run, cmd, shell=True,
-                        ignore_sigint=ignore_sigint, error_code_ok=False)
+                        ignore_sigint=ignore_sigint, check=True)
 
   @_ForceLoggingLevel
   def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
@@ -687,6 +730,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.assertEqual(self.stdin, unicode_input.encode('utf-8'))
 
 
+# TODO(crbug.com/1072139): Migrate tests to use 'legacy_capture_output' fixture
+#                          once this module is Python 3-only.
 class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
                            cros_test_lib.OutputTestCase):
   """Tests of run output options."""
@@ -694,7 +739,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
@@ -702,7 +747,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys3 >&2'],
-        log_stdout_to_file=log, redirect_stderr=True)
+        stdout=log, stderr=True)
     self.assertEqual(ret.error, b'monkeys3\n')
     self.assertExists(log)
     self.assertEqual(os.path.getsize(log), 0)
@@ -710,7 +755,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys4; echo monkeys5 >&2'],
-        log_stdout_to_file=log, combine_stdout_stderr=True)
+        stdout=log, stderr=subprocess.STDOUT)
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
@@ -719,67 +764,50 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   @_ForceLoggingLevel
   def testLogStdoutToFileWithOrWithoutAppend(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # Without append
-    ret = cros_build_lib.run(['echo', 'monkeys2'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys2'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # With append
     ret = cros_build_lib.run(
-        ['echo', 'monkeys3'], append_to_file=True, log_stdout_to_file=log)
+        ['echo', 'monkeys3'], append_to_file=True, stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\nmonkeys3\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
+  def testOutputFileHandle(self):
+    """Verify writing to existing file handles."""
+    stdout = os.path.join(self.tempdir, 'stdout')
+    stderr = os.path.join(self.tempdir, 'stderr')
+    with open(stdout, 'wb') as outfp:
+      with open(stderr, 'wb') as errfp:
+        cros_build_lib.run(['sh', '-c', 'echo out; echo err >&2'],
+                           stdout=outfp, stderr=errfp)
+    self.assertEqual('out\n', osutils.ReadFile(stdout))
+    self.assertEqual('err\n', osutils.ReadFile(stderr))
 
-  def _CaptureRunCommand(self, command, mute_output):
-    """Capture a run() output with the specified |mute_output|.
-
-    Args:
-      command: command to send to run().
-      mute_output: run() |mute_output| parameter.
-
-    Returns:
-      A (stdout, stderr) pair of captured output.
-    """
-    with self.OutputCapturer() as output:
-      cros_build_lib.run(command, debug_level=logging.DEBUG,
-                         mute_output=mute_output)
-    return (output.GetStdout(), output.GetStderr())
-
-  @_ForceLoggingLevel
-  def testSubprocessMuteOutput(self):
-    """Test run |mute_output| parameter."""
-    command = ['sh', '-c', 'echo foo; echo bar >&2']
-    # Always mute: we shouldn't get any output.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=True),
-                     ('', ''))
-    # Mute based on |debug_level|: we should't get any output.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=None),
-                     ('', ''))
-    # Never mute: we should get 'foo\n' and 'bar\n'.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=False),
-                     ('foo\n', 'bar\n'))
-
+  # TODO(crbug.com/1072139): Re-enable this test and migrate away from using
+  #                          OutputCapturer once this module is Python 3 only.
+  @cros_test_lib.pytestmark_skip
   def testRunCommandAtNoticeLevel(self):
     """Ensure that run prints output when mute_output is False."""
     # Needed by cros_sdk and brillo/cros chroot.
     with self.OutputCapturer():
-      cros_build_lib.run(['echo', 'foo'], mute_output=False,
-                         error_code_ok=True, print_cmd=False,
+      cros_build_lib.run(['echo', 'foo'], check=False, print_cmd=False,
                          debug_level=logging.NOTICE)
     self.AssertOutputContainsLine('foo')
 
   def testRunCommandRedirectStdoutStderrOnCommandError(self):
     """Tests that stderr is captured when run raises."""
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
-      cros_build_lib.run(['cat', '/'], redirect_stderr=True)
+      cros_build_lib.run(['cat', '/'], stderr=True)
     self.assertIsNotNone(cm.exception.result.error)
     self.assertNotEqual('', cm.exception.result.error)
 
@@ -1147,10 +1175,52 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     cros_build_lib.CreateTarball(self.target, largeInputDir, inputs=inputs)
 
 
-# Tests for tar failure retry logic.
+# Tests for tar exceptions.
+class FailedCreateTarballExceptionTests(cros_test_lib.TempDirTestCase,
+                                        cros_test_lib.LoggingTestCase):
+  """Tests exception handling for CreateTarball."""
 
+  def setUp(self):
+    self.inputDir = os.path.join(self.tempdir, 'BadInputDirectory')
+
+  def testSuccess(self):
+    """Verify tarball creation when cwd and target dir exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    osutils.SafeMakedirs(target_dir)
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    osutils.SafeMakedirs(working_dir)
+    osutils.WriteFile(os.path.join(working_dir, 'file1.txt'), 'file1')
+    osutils.WriteFile(os.path.join(working_dir, 'file2.txt'), 'file2')
+    cros_build_lib.CreateTarball(target_file, working_dir)
+    target_contents = os.listdir(target_dir)
+    self.assertEqual(target_contents, ['stuff.tar'])
+
+  def testFailureBadTarget(self):
+    """Verify expected error when target does not exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    osutils.SafeMakedirs(working_dir)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.assertRaises(cros_build_lib.CreateTarballError):
+        cros_build_lib.CreateTarball(target_file, working_dir)
+      self.AssertLogsContain(logs, 'CreateTarball failed creating')
+
+  def testFailureBadWorkingDir(self):
+    """Verify expected error when cwd does not exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    osutils.SafeMakedirs(target_dir)
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.assertRaises(cros_build_lib.RunCommandError):
+        cros_build_lib.CreateTarball(target_file, working_dir)
+      self.AssertLogsContain(logs, 'CreateTarball unable to run tar for')
+
+# Tests for tar failure retry logic.
 class FailedCreateTarballTests(cros_test_lib.MockTestCase):
-  """Tests special case error handling for CreateTarBall."""
+  """Tests special case error handling for CreateTarball."""
 
   def setUp(self):
     """Mock run mock."""

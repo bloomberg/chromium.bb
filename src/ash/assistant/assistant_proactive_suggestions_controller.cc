@@ -4,18 +4,24 @@
 
 #include "ash/assistant/assistant_proactive_suggestions_controller.h"
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_suggestions_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "ash/assistant/assistant_controller_impl.h"
+#include "ash/assistant/assistant_suggestions_controller_impl.h"
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,10 +33,10 @@ using assistant::util::ProactiveSuggestionsAction;
 
 AssistantProactiveSuggestionsController::
     AssistantProactiveSuggestionsController(
-        AssistantController* assistant_controller)
+        AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
   DCHECK(chromeos::assistant::features::IsProactiveSuggestionsEnabled());
-  assistant_controller_->AddObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
 AssistantProactiveSuggestionsController::
@@ -40,20 +46,18 @@ AssistantProactiveSuggestionsController::
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
     client->SetDelegate(nullptr);
-
-  assistant_controller_->RemoveObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerConstructed() {
-  assistant_controller_->suggestions_controller()->AddModelObserver(this);
+  AssistantSuggestionsController::Get()->AddModelObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  assistant_controller_->suggestions_controller()->RemoveModelObserver(this);
+  AssistantSuggestionsController::Get()->RemoveModelObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::OnAssistantReady() {
@@ -108,7 +112,8 @@ void AssistantProactiveSuggestionsController::OnProactiveSuggestionsChanged(
   // read-only access to the Assistant suggestions model, we forward this event
   // to the Assistant suggestions controller to cache state. We will then react
   // to the change in model state in OnProactiveSuggestionsChanged(new, old).
-  assistant_controller_->suggestions_controller()
+  static_cast<AssistantSuggestionsControllerImpl*>(
+      AssistantSuggestionsController::Get())
       ->OnProactiveSuggestionsChanged(std::move(proactive_suggestions));
 }
 
@@ -222,8 +227,8 @@ void AssistantProactiveSuggestionsController::
 
   // Clicking on the proactive suggestions view causes the user to enter
   // Assistant UI where a proactive suggestions interaction will be initiated.
-  assistant_controller_->ui_controller()->ShowUi(
-      AssistantEntryPoint::kProactiveSuggestions);
+  AssistantUiController::Get()->ShowUi(
+      chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 
 void AssistantProactiveSuggestionsController::OnWidgetVisibilityChanged(
@@ -264,7 +269,7 @@ void AssistantProactiveSuggestionsController::OnCardClickDeepLinkReceived(
   const base::Optional<GURL> url =
       assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
   if (url)
-    assistant_controller_->OpenUrl(url.value());
+    AssistantController::Get()->OpenUrl(url.value());
 
   // For metrics tracking, obtain the |category| of the content associated w/
   // the proactive suggestion card that was clicked...
@@ -298,15 +303,15 @@ void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
   // to direct the user to the complete inline collection.
   if (teleport.has_value()) {
     CloseUi(ProactiveSuggestionsShowResult::kTeleport);
-    assistant_controller_->OpenUrl(teleport.value());
+    AssistantController::Get()->OpenUrl(teleport.value());
     return;
   }
 
   // When no |kHref| is specified, we handle this as a normal click on the entry
   // point to open the set of proactive suggestions inline in Assistant UI.
   CloseUi(ProactiveSuggestionsShowResult::kClick);
-  assistant_controller_->ui_controller()->ShowUi(
-      AssistantEntryPoint::kProactiveSuggestions);
+  AssistantUiController::Get()->ShowUi(
+      chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 
 void AssistantProactiveSuggestionsController::OnViewImpressionDeepLinkReceived(
@@ -359,8 +364,8 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
 
   // Retrieve the cached set of proactive suggestions.
   scoped_refptr<const ProactiveSuggestions> proactive_suggestions =
-      assistant_controller_->suggestions_controller()
-          ->model()
+      AssistantSuggestionsController::Get()
+          ->GetModel()
           ->GetProactiveSuggestions();
 
   // There's nothing to show if there are no proactive suggestions in the cache.

@@ -9,8 +9,7 @@ from testrunner.objects import testcase
 
 proposal_flags = [{
                     'name': 'reference-types',
-                    'flags': ['--experimental-wasm-anyref',
-                              '--no-experimental-wasm-bulk-memory']
+                    'flags': ['--experimental-wasm-anyref']
                   },
                   {
                     'name': 'bulk-memory-operations',
@@ -24,11 +23,6 @@ proposal_flags = [{
                   {
                     'name': 'JS-BigInt-integration',
                     'flags': ['--experimental-wasm-bigint']
-                  },
-                  {
-                    'name': 'multi-value',
-                    'flags': ['--experimental-wasm-mv',
-                              '--no-experimental-wasm-bulk-memory']
                   },
                   ]
 
@@ -55,7 +49,8 @@ class TestCase(testcase.D8TestCase):
     for proposal in proposal_flags:
       if os.sep.join(['proposals', proposal['name']]) in self.path:
         return proposal['flags']
-    return []
+    # TODO(thibaudm): Remove the flag once multi-value is shipped in V8.
+    return ['--experimental-wasm-mv']
 
 
 def GetSuite(*args, **kwargs):

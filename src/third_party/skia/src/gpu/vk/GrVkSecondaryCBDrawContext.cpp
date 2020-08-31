@@ -7,11 +7,11 @@
 
 #include "src/gpu/vk/GrVkSecondaryCBDrawContext.h"
 
+#include "include/core/SkDeferredDisplayList.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkSurfaceCharacterization.h"
 #include "include/gpu/GrContext.h"
 #include "include/gpu/vk/GrVkTypes.h"
-#include "include/private/SkDeferredDisplayList.h"
 #include "src/core/SkSurfacePriv.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrContextThreadSafeProxyPriv.h"
@@ -30,7 +30,7 @@ sk_sp<GrVkSecondaryCBDrawContext> GrVkSecondaryCBDrawContext::Make(GrContext* ct
         return nullptr;
     }
 
-    auto rtc = ctx->priv().makeVulkanSecondaryCBRenderTargetContext(imageInfo, vkInfo, props);
+    auto rtc = GrRenderTargetContext::MakeFromVulkanSecondaryCB(ctx, imageInfo, vkInfo, props);
     SkASSERT(rtc->asSurfaceProxy()->isInstantiated());
 
     sk_sp<SkGpuDevice> device(
@@ -99,7 +99,7 @@ bool GrVkSecondaryCBDrawContext::characterize(SkSurfaceCharacterization* charact
                           SkSurfaceCharacterization::MipMapped(false),
                           SkSurfaceCharacterization::UsesGLFBO0(false),
                           SkSurfaceCharacterization::VulkanSecondaryCBCompatible(true),
-                          GrProtected(rtc->asRenderTargetProxy()->isProtected()),
+                          rtc->asRenderTargetProxy()->isProtected(),
                           this->props());
 
     return true;
@@ -138,7 +138,7 @@ bool GrVkSecondaryCBDrawContext::isCompatible(
     }
 
     GrBackendFormat rtcFormat = rtc->asRenderTargetProxy()->backendFormat();
-    GrProtected isProtected = GrProtected(rtc->asRenderTargetProxy()->isProtected());
+    GrProtected isProtected = rtc->asRenderTargetProxy()->isProtected();
 
     return characterization.contextInfo() && characterization.contextInfo()->priv().matches(ctx) &&
            characterization.cacheMaxResourceBytes() <= maxResourceBytes &&

@@ -82,11 +82,6 @@ void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetDisplayLocation(DisplayLocation display_location) {
-  metadata_->display_location = display_location;
-  SetSearchResultMetadata();
-}
-
 void ChromeSearchResult::SetPositionPriority(float position_priority) {
   metadata_->position_priority = position_priority;
   SetSearchResultMetadata();
@@ -97,10 +92,9 @@ void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetPercentDownloaded(int percent_downloaded) {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->SetSearchResultPercentDownloaded(id(), percent_downloaded);
+void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
+  metadata_->is_recommendation = is_recommendation;
+  SetSearchResultMetadata();
 }
 
 void ChromeSearchResult::SetQueryUrl(const GURL& url) {
@@ -139,12 +133,6 @@ void ChromeSearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
 void ChromeSearchResult::SetNotifyVisibilityChange(
     bool notify_visibility_change) {
   metadata_->notify_visibility_change = notify_visibility_change;
-}
-
-void ChromeSearchResult::NotifyItemInstalled() {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->NotifySearchResultItemInstalled(id());
 }
 
 void ChromeSearchResult::SetSearchResultMetadata() {

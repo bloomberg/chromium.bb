@@ -13,10 +13,11 @@
 #include <utility>
 
 #include "base/bit_cast.h"
+#include "base/check_op.h"
 #include "base/containers/checked_iterators.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -220,7 +221,7 @@ Value::Value(StringPiece in_string) : Value(std::string(in_string)) {}
 
 Value::Value(std::string&& in_string) noexcept
     : type_(Type::STRING), string_value_(std::move(in_string)) {
-  DCHECK(IsStringUTF8(string_value_));
+  DCHECK(IsStringUTF8AllowingNoncharacters(string_value_));
 }
 
 Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
@@ -343,7 +344,7 @@ const Value::BlobStorage& Value::GetBlob() const {
   return binary_value_;
 }
 
-Value::ListStorage& Value::GetList() {
+Value::ListView Value::GetList() {
   CHECK(is_list());
   return list_;
 }
@@ -403,12 +404,6 @@ void Value::Append(Value&& value) {
   list_.emplace_back(std::move(value));
 }
 
-Value::ListStorage::iterator Value::Insert(ListStorage::const_iterator pos,
-                                           Value&& value) {
-  CHECK(is_list());
-  return list_.insert(pos, std::move(value));
-}
-
 CheckedContiguousIterator<Value> Value::Insert(
     CheckedContiguousConstIterator<Value> pos,
     Value&& value) {
@@ -418,18 +413,15 @@ CheckedContiguousIterator<Value> Value::Insert(
   return make_span(list_).begin() + offset;
 }
 
-bool Value::EraseListIter(ListStorage::const_iterator iter) {
+bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
   CHECK(is_list());
-  if (iter == list_.end())
+  const auto offset = iter - ListView(list_).begin();
+  auto list_iter = list_.begin() + offset;
+  if (list_iter == list_.end())
     return false;
 
-  list_.erase(iter);
+  list_.erase(list_iter);
   return true;
-}
-
-bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
-  const auto offset = iter - as_const(*this).GetList().begin();
-  return EraseListIter(list_.begin() + offset);
 }
 
 size_t Value::EraseListValue(const Value& val) {
@@ -549,16 +541,16 @@ Value* Value::SetStringKey(StringPiece key, StringPiece value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
+Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
 Value* Value::SetStringKey(StringPiece key, const char* value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
 Value* Value::SetStringKey(StringPiece key, std::string&& value) {
   return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
-}
-
-Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
-  return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
 bool Value::RemoveKey(StringPiece key) {
@@ -1213,7 +1205,7 @@ DictionaryValue::DictionaryValue(DictStorage&& in_dict) noexcept
     : Value(std::move(in_dict)) {}
 
 bool DictionaryValue::HasKey(StringPiece key) const {
-  DCHECK(IsStringUTF8(key));
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
   auto current_entry = dict_.find(key);
   DCHECK((current_entry == dict_.end()) || current_entry->second);
   return current_entry != dict_.end();
@@ -1224,7 +1216,7 @@ void DictionaryValue::Clear() {
 }
 
 Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
-  DCHECK(IsStringUTF8(path));
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
   DCHECK(in_value);
 
   // IMPORTANT NOTE: Do not replace with SetPathInternal() yet, because the
@@ -1299,7 +1291,7 @@ Value* DictionaryValue::SetWithoutPathExpansion(
 
 bool DictionaryValue::Get(StringPiece path,
                           const Value** out_value) const {
-  DCHECK(IsStringUTF8(path));
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
   const Value* value = FindPath(path);
   if (!value)
     return false;
@@ -1424,7 +1416,7 @@ bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
 
 bool DictionaryValue::GetWithoutPathExpansion(StringPiece key,
                                               const Value** out_value) const {
-  DCHECK(IsStringUTF8(key));
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
   auto entry_iterator = dict_.find(key);
   if (entry_iterator == dict_.end())
     return false;
@@ -1529,7 +1521,7 @@ bool DictionaryValue::GetListWithoutPathExpansion(StringPiece key,
 
 bool DictionaryValue::Remove(StringPiece path,
                              std::unique_ptr<Value>* out_value) {
-  DCHECK(IsStringUTF8(path));
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
   StringPiece current_path(path);
   DictionaryValue* current_dictionary = this;
   size_t delimiter_position = current_path.rfind('.');
@@ -1547,7 +1539,7 @@ bool DictionaryValue::Remove(StringPiece path,
 bool DictionaryValue::RemoveWithoutPathExpansion(
     StringPiece key,
     std::unique_ptr<Value>* out_value) {
-  DCHECK(IsStringUTF8(key));
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
   auto entry_iterator = dict_.find(key);
   if (entry_iterator == dict_.end())
     return false;
@@ -1761,7 +1753,10 @@ ListValue::iterator ListValue::Erase(iterator iter,
   if (out_value)
     *out_value = std::make_unique<Value>(std::move(*iter));
 
-  return list_.erase(iter);
+  auto list_iter = list_.begin() + (iter - GetList().begin());
+  CHECK(list_iter != list_.end());
+  list_iter = list_.erase(list_iter);
+  return GetList().begin() + (list_iter - list_.begin());
 }
 
 void ListValue::Append(std::unique_ptr<Value> in_value) {
@@ -1819,7 +1814,7 @@ bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
 }
 
 ListValue::const_iterator ListValue::Find(const Value& value) const {
-  return std::find(list_.begin(), list_.end(), value);
+  return std::find(GetList().begin(), GetList().end(), value);
 }
 
 void ListValue::Swap(ListValue* other) {

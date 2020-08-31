@@ -29,13 +29,13 @@ struct QueryEventHeader {
   };
 
   QueryEventHeader();
-  QueryEventHeader(Type response_type, platform::UdpSocket* socket);
+  QueryEventHeader(Type response_type, UdpSocket* socket);
   QueryEventHeader(QueryEventHeader&&) noexcept;
   ~QueryEventHeader();
   QueryEventHeader& operator=(QueryEventHeader&&) noexcept;
 
   Type response_type;
-  platform::UdpSocket* socket;
+  UdpSocket* socket;
 };
 
 struct PtrEvent {
@@ -160,7 +160,7 @@ enum class MdnsResponderErrorCode {
 // called after any sequence of calls to mDNSResponder.  It also returns a
 // timeout value, after which it must be called again (e.g. for maintaining its
 // cache).
-class MdnsResponderAdapter : public platform::UdpSocket::Client {
+class MdnsResponderAdapter : public UdpSocket::Client {
  public:
   MdnsResponderAdapter();
   virtual ~MdnsResponderAdapter() = 0;
@@ -184,14 +184,14 @@ class MdnsResponderAdapter : public platform::UdpSocket::Client {
   // mDNSResponder.  |socket| will be used to identify which interface received
   // the data in OnDataReceived and will be used to send data via the platform
   // layer.
-  virtual Error RegisterInterface(const platform::InterfaceInfo& interface_info,
-                                  const platform::IPSubnet& interface_address,
-                                  platform::UdpSocket* socket) = 0;
-  virtual Error DeregisterInterface(platform::UdpSocket* socket) = 0;
+  virtual Error RegisterInterface(const InterfaceInfo& interface_info,
+                                  const IPSubnet& interface_address,
+                                  UdpSocket* socket) = 0;
+  virtual Error DeregisterInterface(UdpSocket* socket) = 0;
 
   // Returns the time period after which this method must be called again, if
   // any.
-  virtual platform::Clock::duration RunTasks() = 0;
+  virtual Clock::duration RunTasks() = 0;
 
   virtual std::vector<PtrEvent> TakePtrResponses() = 0;
   virtual std::vector<SrvEvent> TakeSrvResponses() = 0;
@@ -200,33 +200,33 @@ class MdnsResponderAdapter : public platform::UdpSocket::Client {
   virtual std::vector<AaaaEvent> TakeAaaaResponses() = 0;
 
   virtual MdnsResponderErrorCode StartPtrQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_type) = 0;
   virtual MdnsResponderErrorCode StartSrvQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) = 0;
   virtual MdnsResponderErrorCode StartTxtQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) = 0;
-  virtual MdnsResponderErrorCode StartAQuery(platform::UdpSocket* socket,
+  virtual MdnsResponderErrorCode StartAQuery(UdpSocket* socket,
                                              const DomainName& domain_name) = 0;
   virtual MdnsResponderErrorCode StartAaaaQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& domain_name) = 0;
 
   virtual MdnsResponderErrorCode StopPtrQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_type) = 0;
   virtual MdnsResponderErrorCode StopSrvQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) = 0;
   virtual MdnsResponderErrorCode StopTxtQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) = 0;
-  virtual MdnsResponderErrorCode StopAQuery(platform::UdpSocket* socket,
+  virtual MdnsResponderErrorCode StopAQuery(UdpSocket* socket,
                                             const DomainName& domain_name) = 0;
   virtual MdnsResponderErrorCode StopAaaaQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& domain_name) = 0;
 
   // The following methods concern advertising a service via mDNS.  The

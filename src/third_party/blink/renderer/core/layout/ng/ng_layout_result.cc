@@ -39,6 +39,7 @@ static_assert(sizeof(NGLayoutResult) == sizeof(SameSizeAsNGLayoutResult),
 }  // namespace
 
 NGLayoutResult::NGLayoutResult(
+    NGBoxFragmentBuilderPassKey passkey,
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
@@ -48,6 +49,10 @@ NGLayoutResult::NGLayoutResult(
   bitfields_.subtree_modified_margin_strut =
       builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
+  // We don't support fragment caching when block-fragmenting, so mark the
+  // result as non-reusable.
+  if (builder->has_block_fragmentation_)
+    EnsureRareData()->is_single_use = true;
   if (builder->minimal_space_shortage_ != LayoutUnit::Max()) {
 #if DCHECK_IS_ON()
     DCHECK(!HasRareData() || !rare_data_->has_tallest_unbreakable_block_size);
@@ -62,10 +67,9 @@ NGLayoutResult::NGLayoutResult(
     rare_data->has_tallest_unbreakable_block_size = true;
 #endif
   }
-  if (builder->unconstrained_intrinsic_block_size_ != kIndefiniteSize &&
-      builder->unconstrained_intrinsic_block_size_ != intrinsic_block_size_) {
-    EnsureRareData()->unconstrained_intrinsic_block_size_ =
-        builder->unconstrained_intrinsic_block_size_;
+  if (builder->overflow_block_size_ != kIndefiniteSize &&
+      builder->overflow_block_size_ != intrinsic_block_size_) {
+    EnsureRareData()->overflow_block_size = builder->overflow_block_size_;
   }
   if (builder->custom_layout_data_) {
     EnsureRareData()->custom_layout_data =
@@ -73,6 +77,8 @@ NGLayoutResult::NGLayoutResult(
   }
   if (builder->column_spanner_)
     EnsureRareData()->column_spanner = builder->column_spanner_;
+  if (builder->lines_until_clamp_)
+    EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   bitfields_.initial_break_before =
       static_cast<unsigned>(builder->initial_break_before_);
   bitfields_.final_break_after =
@@ -81,15 +87,20 @@ NGLayoutResult::NGLayoutResult(
 }
 
 NGLayoutResult::NGLayoutResult(
+    NGLineBoxFragmentBuilderPassKey passkey,
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
                      static_cast<NGContainerFragmentBuilder*>(builder)) {}
 
-NGLayoutResult::NGLayoutResult(EStatus status, NGBoxFragmentBuilder* builder)
+NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey key,
+                               EStatus status,
+                               NGBoxFragmentBuilder* builder)
     : NGLayoutResult(/* physical_fragment */ nullptr,
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.status = status;
+  if (builder->lines_until_clamp_)
+    EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
 }
@@ -152,7 +163,7 @@ NGLayoutResult::NGLayoutResult(
 #if DCHECK_IS_ON()
   if (bitfields_.is_self_collapsing && physical_fragment_) {
     // A new formatting-context shouldn't be self-collapsing.
-    DCHECK(!physical_fragment_->IsBlockFormattingContextRoot());
+    DCHECK(!physical_fragment_->IsFormattingContextRoot());
 
     // Self-collapsing children must have a block-size of zero.
     NGFragment fragment(physical_fragment_->Style().GetWritingMode(),
@@ -243,6 +254,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
           To<NGPhysicalBoxFragment>(*other.physical_fragment_),
           check_same_block_size);
 
+  DCHECK(LinesUntilClamp() == other.LinesUntilClamp());
   DCHECK(UnpositionedListMarker() == other.UnpositionedListMarker());
   ExclusionSpace().CheckSameForSimplifiedLayout(other.ExclusionSpace());
 
@@ -264,6 +276,8 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK_EQ(bitfields_.subtree_modified_margin_strut,
             other.bitfields_.subtree_modified_margin_strut);
+
+  DCHECK_EQ(CustomLayoutData(), other.CustomLayoutData());
 
   DCHECK_EQ(bitfields_.initial_break_before,
             other.bitfields_.initial_break_before);

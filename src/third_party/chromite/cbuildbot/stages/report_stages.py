@@ -12,8 +12,6 @@ import datetime
 import os
 import sys
 
-from infra_libs import ts_mon
-
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
@@ -244,6 +242,7 @@ class BuildStartStage(generic_stages.BuilderStage):
                    d['build_id'])
       return
 
+    buildbucket_id = self._run.options.buildbucket_id
     # Note: In other build stages we use self._run.GetCIDBHandle to fetch
     # a cidb handle. However, since we don't yet have a build_id, we can't
     # do that here.
@@ -258,7 +257,7 @@ class BuildStartStage(generic_stages.BuilderStage):
             master_build_id=d['master_build_id'],
             timeout_seconds=self._GetBuildTimeoutSeconds(),
             important=d['important'],
-            buildbucket_id=self._run.options.buildbucket_id,
+            buildbucket_id=buildbucket_id,
             branch=self._run.manifest_branch)
       except Exception as e:
         logging.error('Error: %s\n If the buildbucket_id to insert is '
@@ -269,8 +268,12 @@ class BuildStartStage(generic_stages.BuilderStage):
                       'crbug.com/679974 and crbug.com/685889', e)
         raise e
 
-      self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
-                                               'db_type': db_type})
+      master_bb_id = self._run.options.master_buildbucket_id
+      self._run.attrs.metadata.UpdateWithDict(
+          {'build_id': build_id,
+           'buildbucket_id': buildbucket_id,
+           'master_buildbucket_id': master_bb_id,
+           'db_type': db_type})
       logging.info('Inserted build_id %s into cidb database type %s.',
                    build_id, db_type)
       logging.PrintBuildbotStepText('database: %s, build_id: %s' %
@@ -552,11 +555,12 @@ class ReportStage(generic_stages.BuilderStage,
     self._completion_instance = completion_instance
     self._post_completion = False
 
-  def _UpdateRunStreak(self, builder_run, final_status):
-    """Update the streak counter for this builder, if applicable, and notify.
 
-    Update the pass/fail streak counter for the builder.  If the new
-    streak should trigger a notification email then send it now.
+  def _UpdateEmailNotify(self, builder_run, final_status):
+    """Update email_notify build property based on the builder's fail streak.
+
+    Update the pass/fail streak counter for the builder. Update the build's
+    email_notify property based on the new streak.
 
     Args:
       builder_run: BuilderRun for this run.
@@ -566,22 +570,14 @@ class ReportStage(generic_stages.BuilderStage,
       streak_value = self._UpdateStreakCounter(
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.options.debug_forced)
-      verb = 'passed' if streak_value > 0 else 'failed'
+      status = 'passed' if streak_value > 0 else 'failed'
       logging.info('Builder %s has %s %s time(s) in a row.',
-                   builder_run.config.name, verb, abs(streak_value))
-      # See if updated streak should trigger a notification email.
-      if (builder_run.config.health_alert_recipients and
-          builder_run.config.health_threshold > 0 and
-          streak_value <= -builder_run.config.health_threshold):
-        logging.info('Builder failed %i consecutive times, sending health '
-                     'alert email to %s.', -streak_value,
-                     builder_run.config.health_alert_recipients)
+                   builder_run.config.name, status, abs(streak_value))
 
-        subject = '%s health alert' % builder_run.config.name
-        body = self._HealthAlertMessage(-streak_value)
-        extra_fields = {'X-cbuildbot-alert': 'cq-health'}
-        alerts.SendHealthAlert(builder_run, subject, body,
-                               extra_fields=extra_fields)
+      if builder_run.config.notification_configs and status == 'failed':
+        email_notify = alerts.GetUpdatedEmailNotify(builder_run,
+                                                    abs(streak_value))
+        self.buildstore.UpdateLuciNotifyProperties(email_notify=email_notify)
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -618,22 +614,6 @@ class ReportStage(generic_stages.BuilderStage,
     """Returns the body of a health alert email message."""
     return 'The builder named %s has failed %i consecutive times. See %s' % (
         self._run.config['name'], fail_count, self.ConstructDashboardURL())
-
-  def _SendPreCQInfraAlertMessageIfNeeded(self):
-    """Send alerts on Pre-CQ infra failures."""
-    msg = self.GetBuildFailureMessage()
-    pre_cq = self._run.config.pre_cq
-    if (pre_cq and
-        msg.HasExceptionCategories(
-            {constants.EXCEPTION_CATEGORY_INFRA,
-             constants.EXCEPTION_CATEGORY_LAB})):
-      name = self._run.config.name
-      title = 'pre-cq infra failures'
-      body = ['%s failed on %s' % (name, cros_build_lib.GetHostName()),
-              '%s' % msg]
-      extra_fields = {'X-cbuildbot-alert': 'pre-cq-infra-alert'}
-      alerts.SendHealthAlert(self._run, title, '\n\n'.join(body),
-                             extra_fields=extra_fields)
 
   def _LinkArtifacts(self, builder_run):
     """Upload an HTML index and uploaded.json for artifacts.
@@ -857,11 +837,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
     self.UploadMetadata(export=True)
-    self._UpdateRunStreak(self._run, final_status)
-
-    # Alert if the Pre-CQ has infra failures.
-    if final_status == constants.BUILDER_STATUS_FAILED:
-      self._SendPreCQInfraAlertMessageIfNeeded()
+    self._UpdateEmailNotify(self._run, final_status)
 
     build_identifier, db = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
@@ -1017,31 +993,6 @@ class ReportStage(generic_stages.BuilderStage,
           fields=mon_fields)
       metrics.CumulativeSecondsDistribution(constants.MON_BUILD_DURATION).add(
           duration, fields=mon_fields)
-
-      if self._run.options.sanity_check_build:
-        metrics.Counter(constants.MON_BUILD_SANITY_COMP_COUNT).increment(
-            fields=mon_fields)
-        metrics.Gauge(
-            constants.MON_BUILD_SANITY_ID,
-            description='The build number of the latest sanity build. Used '
-                        'for recovering the link to the latest failing build '
-                        'in the alert when a sanity build fails.',
-            field_spec=[ts_mon.StringField('status'),
-                        ts_mon.StringField('build_config'),
-                        ts_mon.StringField('builder_name'),
-                        ts_mon.BooleanField('important')]
-        ).set(self._run.buildnumber,
-              fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
-
-      if config_lib.IsMasterCQ(self._run.config):
-        self_destructed = self._run.attrs.metadata.GetValueWithDefault(
-            constants.SELF_DESTRUCTED_BUILD, False)
-        mon_fields = {'status': status_for_db,
-                      'self_destructed': self_destructed}
-        metrics.CumulativeSecondsDistribution(
-            constants.MON_CQ_BUILD_DURATION).add(duration, fields=mon_fields)
-        annotator_link = uri_lib.ConstructAnnotatorUri(build_id)
-        logging.PrintBuildbotLink('Build annotator', annotator_link)
 
       # From this point forward, treat all exceptions as warnings.
       self._post_completion = True

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -73,6 +72,15 @@ void It2MeHost::set_enable_dialogs(bool enable) {
 #endif
 }
 
+void It2MeHost::set_enable_notifications(bool enable) {
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+  enable_notifications_ = enable;
+#else
+  NOTREACHED() << "It2MeHost::set_enable_notifications is only supported on "
+               << "ChromeOS";
+#endif
+}
+
 void It2MeHost::set_terminate_upon_input(bool terminate_upon_input) {
 #if defined(OS_CHROMEOS) || !defined(NDEBUG)
   terminate_upon_input_ = terminate_upon_input;
@@ -102,10 +110,11 @@ void It2MeHost::Connect(
 
   OnPolicyUpdate(std::move(policies));
 
-  desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
-      host_context_->network_task_runner(),
-      host_context_->video_capture_task_runner(),
-      host_context_->input_task_runner(), host_context_->ui_task_runner()));
+  desktop_environment_factory_ =
+      std::make_unique<It2MeDesktopEnvironmentFactory>(
+          host_context_->network_task_runner(),
+          host_context_->video_capture_task_runner(),
+          host_context_->input_task_runner(), host_context_->ui_task_runner());
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -177,9 +186,9 @@ void It2MeHost::ConnectOnNetworkThread(
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
-          base::WrapUnique(new ChromiumUrlRequestFactory(
-              host_context_->url_loader_factory())),
+          std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
+          std::make_unique<ChromiumUrlRequestFactory>(
+              host_context_->url_loader_factory()),
           network_settings, protocol::TransportRole::SERVER);
   transport_context->set_turn_ice_config(ice_config);
 
@@ -197,14 +206,15 @@ void It2MeHost::ConnectOnNetworkThread(
   // Create the host.
   DesktopEnvironmentOptions options(DesktopEnvironmentOptions::CreateDefault());
   options.set_enable_user_interface(enable_dialogs_);
+  options.set_enable_notifications(enable_notifications_);
   options.set_terminate_upon_input(terminate_upon_input_);
-  host_.reset(new ChromotingHost(
+  host_ = std::make_unique<ChromotingHost>(
       desktop_environment_factory_.get(), std::move(session_manager),
       transport_context, host_context_->audio_task_runner(),
-      host_context_->video_encode_task_runner(), options));
+      host_context_->video_encode_task_runner(), options);
   host_->status_monitor()->AddStatusObserver(this);
-  host_status_logger_.reset(
-      new HostStatusLogger(host_->status_monitor(), log_to_server_.get()));
+  host_status_logger_ = std::make_unique<HostStatusLogger>(
+      host_->status_monitor(), log_to_server_.get());
 
   // Create event logger.
   host_event_logger_ =
@@ -262,8 +272,8 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
 }
 
 ValidationCallback It2MeHost::GetValidationCallbackForTesting() {
-  return base::Bind(&It2MeHost::ValidateConnectionDetails,
-                    base::Unretained(this));
+  return base::BindRepeating(&It2MeHost::ValidateConnectionDetails,
+                             base::Unretained(this));
 }
 
 void It2MeHost::OnPolicyUpdate(
@@ -453,8 +463,8 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
   std::unique_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
           local_certificate, host_key_pair_, access_code_hash,
-          base::Bind(&It2MeHost::ValidateConnectionDetails,
-                     base::Unretained(this))));
+          base::BindRepeating(&It2MeHost::ValidateConnectionDetails,
+                              base::Unretained(this))));
   host_->SetAuthenticatorFactory(std::move(factory));
 
   // Pass the Access Code to the script object before changing state.
@@ -496,7 +506,7 @@ void It2MeHost::DisconnectOnNetworkThread() {
 
 void It2MeHost::ValidateConnectionDetails(
     const std::string& original_remote_jid,
-    const ValidationResultCallback& result_callback) {
+    ValidationResultCallback result_callback) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   // First ensure the JID we received is valid.
@@ -505,8 +515,8 @@ void It2MeHost::ValidateConnectionDetails(
                                 /*resource=*/nullptr)) {
     LOG(ERROR) << "Rejecting incoming connection from " << original_remote_jid
                << ": Invalid JID.";
-    result_callback.Run(
-        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    std::move(result_callback)
+        .Run(protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
     DisconnectOnNetworkThread();
     return;
   }
@@ -514,8 +524,8 @@ void It2MeHost::ValidateConnectionDetails(
 
   if (client_username.empty()) {
     LOG(ERROR) << "Invalid user name passed in: " << remote_jid;
-    result_callback.Run(
-        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    std::move(result_callback)
+        .Run(protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
     DisconnectOnNetworkThread();
     return;
   }
@@ -533,7 +543,7 @@ void It2MeHost::ValidateConnectionDetails(
     if (!matched) {
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain not allowed.";
-      result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
+      std::move(result_callback).Run(ValidationResult::ERROR_INVALID_ACCOUNT);
       DisconnectOnNetworkThread();
       return;
     }
@@ -544,7 +554,8 @@ void It2MeHost::ValidateConnectionDetails(
   if (state_ != kReceivedAccessCode) {
     DCHECK_EQ(kConnecting, state_);
     LOG(ERROR) << "Received too many connection requests.";
-    result_callback.Run(ValidationResult::ERROR_TOO_MANY_CONNECTIONS);
+    std::move(result_callback)
+        .Run(ValidationResult::ERROR_TOO_MANY_CONNECTIONS);
     DisconnectOnNetworkThread();
     return;
   }
@@ -556,32 +567,32 @@ void It2MeHost::ValidateConnectionDetails(
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
   // If dialogs are suppressed, just call the callback directly.
   if (enable_dialogs_) {
-    confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
+    confirmation_dialog_proxy_ = std::make_unique<It2MeConfirmationDialogProxy>(
         host_context_->ui_task_runner(),
-        confirmation_dialog_factory_->Create()));
+        confirmation_dialog_factory_->Create());
     confirmation_dialog_proxy_->Show(
-        client_username, base::Bind(&It2MeHost::OnConfirmationResult,
-                                    base::Unretained(this), result_callback));
+        client_username,
+        base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this),
+                   base::Passed(std::move(result_callback))));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(result_callback, ValidationResult::SUCCESS));
+        base::BindOnce(std::move(result_callback), ValidationResult::SUCCESS));
   }
 }
 
-void It2MeHost::OnConfirmationResult(
-    const ValidationResultCallback& result_callback,
-    It2MeConfirmationDialog::Result result) {
+void It2MeHost::OnConfirmationResult(ValidationResultCallback result_callback,
+                                     It2MeConfirmationDialog::Result result) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   connecting_jid_.clear();
   switch (result) {
     case It2MeConfirmationDialog::Result::OK:
-      result_callback.Run(ValidationResult::SUCCESS);
+      std::move(result_callback).Run(ValidationResult::SUCCESS);
       break;
 
     case It2MeConfirmationDialog::Result::CANCEL:
-      result_callback.Run(ValidationResult::ERROR_REJECTED_BY_USER);
+      std::move(result_callback).Run(ValidationResult::ERROR_REJECTED_BY_USER);
       DisconnectOnNetworkThread();
       break;
   }

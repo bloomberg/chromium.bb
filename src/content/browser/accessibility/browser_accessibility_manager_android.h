@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 
+#include <utility>
+
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/render_accessibility.mojom-forward.h"
 
 namespace ui {
 class MotionEventAndroid;
@@ -39,9 +42,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  public:
   BrowserAccessibilityManagerAndroid(
       const ui::AXTreeUpdate& initial_tree,
-      WebContentsAccessibilityAndroid* web_contents_accessibility,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+      base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
+      BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerAndroid() override;
 
@@ -59,8 +61,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   }
   bool prune_tree_for_screen_reader() { return prune_tree_for_screen_reader_; }
 
-  void set_web_contents_accessibility(WebContentsAccessibilityAndroid* wcax) {
-    web_contents_accessibility_ = wcax;
+  void set_web_contents_accessibility(
+      base::WeakPtr<WebContentsAccessibilityAndroid> wcax) {
+    web_contents_accessibility_ = std::move(wcax);
   }
 
   bool ShouldRespectDisplayedPasswordText();
@@ -72,14 +75,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // BrowserAccessibilityManager overrides.
   BrowserAccessibility* GetFocus() const override;
   void SendLocationChangeEvents(
-      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params)
-      override;
+      const std::vector<mojom::LocationChangesPtr>& changes) override;
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
-  gfx::Rect GetViewBounds() override;
+  gfx::Rect GetViewBoundsInScreenCoordinates() const override;
 
   void FireLocationChanged(BrowserAccessibility* node);
 
@@ -100,6 +102,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                              int32_t* start_index,
                              int32_t* end_index);
 
+  // Helper method to clear AccessibilityNodeInfo cache on given node
+  void ClearNodeInfoCacheForGivenId(int32_t unique_id);
+
  private:
   // AXTreeObserver overrides.
   void OnAtomicUpdateFinished(
@@ -107,7 +112,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
-  bool UseRootScrollOffsetsWhenComputingBounds() override;
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
 
   WebContentsAccessibilityAndroid* GetWebContentsAXFromRootManager();
 
@@ -118,10 +123,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // Handle a hover event from the renderer process.
   void HandleHoverEvent(BrowserAccessibility* node);
 
-  // Pointer to WebContentsAccessibility for reaching Java layer.
+  // A weak reference to WebContentsAccessibility for reaching Java layer.
   // Only the root manager has the reference. Should be accessed through
   // |GetWebContentsAXFromRootManager| rather than directly.
-  WebContentsAccessibilityAndroid* web_contents_accessibility_;
+  base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility_;
 
   // See docs for set_prune_tree_for_screen_reader, above.
   bool prune_tree_for_screen_reader_;

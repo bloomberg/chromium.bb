@@ -31,7 +31,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void SetOverflowElementIsWanted(bool) final;
   void MaybeRecordDisplayed() final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   MediaControlInputElement* OverflowElementForTests() const {
     return overflow_element_;
@@ -106,7 +106,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   enum class CTREvent {
     kDisplayed = 0,
     kInteracted,
-    kCount,
+    kMaxValue = kInteracted,
   };
 
   // Records the CTR event.

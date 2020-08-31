@@ -5,10 +5,10 @@
 #ifndef V8_HEAP_SCAVENGER_INL_H_
 #define V8_HEAP_SCAVENGER_INL_H_
 
-#include "src/heap/scavenger.h"
-
 #include "src/heap/incremental-marking-inl.h"
 #include "src/heap/local-allocator-inl.h"
+#include "src/heap/memory-chunk.h"
+#include "src/heap/scavenger.h"
 #include "src/objects/map.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/slots-inl.h"
@@ -474,6 +474,13 @@ void ScavengeVisitor::VisitPointersImpl(HeapObject host, TSlot start,
       VisitHeapObjectImpl(slot, heap_object);
     }
   }
+}
+
+int ScavengeVisitor::VisitJSArrayBuffer(Map map, JSArrayBuffer object) {
+  object.YoungMarkExtension();
+  int size = JSArrayBuffer::BodyDescriptor::SizeOf(map, object);
+  JSArrayBuffer::BodyDescriptor::IterateBody(map, object, size, this);
+  return size;
 }
 
 int ScavengeVisitor::VisitEphemeronHashTable(Map map,

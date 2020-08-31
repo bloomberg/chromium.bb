@@ -231,7 +231,7 @@ class Builder(object):
       return_obj = cros_build_lib.run(
           args,
           cwd=self._run.options.buildroot,
-          error_code_ok=True,
+          check=False,
           kill_timeout=30)
       return return_obj.returncode == 0
 

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_util.h"
@@ -40,30 +41,48 @@ class WebApkIconHasherRunner {
            const GURL& icon_url) {
     WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
         url_loader_factory, url::Origin::Create(icon_url), icon_url, 300,
-        base::Bind(&WebApkIconHasherRunner::OnCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&WebApkIconHasherRunner::OnCompleted,
+                       base::Unretained(this)));
 
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
-  const std::string& murmur2_hash() { return murmur2_hash_; }
+  std::map<std::string, WebApkIconHasher::Icon> RunMultiple(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      const std::set<GURL>& icon_urls) {
+    std::map<std::string, WebApkIconHasher::Icon> result;
+    base::RunLoop run_loop;
+    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+        url_loader_factory, url::Origin::Create(*icon_urls.begin()), icon_urls,
+        base::BindLambdaForTesting(
+            [&](base::Optional<std::map<std::string, WebApkIconHasher::Icon>>
+                    hashes) {
+              ASSERT_TRUE(hashes);
+              result = std::move(*hashes);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
+  const WebApkIconHasher::Icon& icon() { return icon_; }
 
  private:
-  void OnCompleted(const std::string& murmur2_hash) {
-    murmur2_hash_ = murmur2_hash;
-    on_completed_callback_.Run();
+  void OnCompleted(WebApkIconHasher::Icon icon) {
+    icon_ = std::move(icon);
+    std::move(on_completed_callback_).Run();
   }
 
   // Fake factory that can be primed to return fake data.
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   // Called once the Murmur2 hash is taken.
-  base::Closure on_completed_callback_;
+  base::OnceClosure on_completed_callback_;
 
   // Computed Murmur2 hash.
-  std::string murmur2_hash_;
+  WebApkIconHasher::Icon icon_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkIconHasherRunner);
 };
@@ -105,7 +124,8 @@ TEST_F(WebApkIconHasherTest, Success) {
 
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
-  EXPECT_EQ(kIconMurmur2Hash, runner.murmur2_hash());
+  EXPECT_EQ(kIconMurmur2Hash, runner.icon().hash);
+  EXPECT_FALSE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, DataUri) {
@@ -114,28 +134,73 @@ TEST_F(WebApkIconHasherTest, DataUri) {
       "9TXL0Y4OHwAAAABJRU5ErkJggg==");
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
-  EXPECT_EQ("536500236142107998", runner.murmur2_hash());
+  EXPECT_EQ("536500236142107998", runner.icon().hash);
+  EXPECT_FALSE(runner.icon().unsafe_data.empty());
+}
+
+TEST_F(WebApkIconHasherTest, MultipleIconUrls) {
+  std::string icon_url1_string =
+      "http://www.google.com/chrome/test/data/android/google.png";
+  base::FilePath source_path;
+  base::FilePath icon_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  icon_path = source_path.AppendASCII("chrome")
+                  .AppendASCII("test")
+                  .AppendASCII("data")
+                  .AppendASCII("android")
+                  .AppendASCII("google.png");
+  std::string icon_data;
+  ASSERT_TRUE(base::ReadFileToString(icon_path, &icon_data));
+  test_url_loader_factory()->AddResponse(icon_url1_string, icon_data);
+
+  GURL icon_url1(icon_url1_string);
+  GURL icon_url2(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"
+      "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO"
+      "9TXL0Y4OHwAAAABJRU5ErkJggg==");
+
+  WebApkIconHasherRunner runner;
+  {
+    auto result = runner.RunMultiple(test_url_loader_factory(), {icon_url1});
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[icon_url1.spec()].hash, kIconMurmur2Hash);
+    EXPECT_FALSE(result[icon_url1.spec()].unsafe_data.empty());
+  }
+
+  {
+    auto result =
+        runner.RunMultiple(test_url_loader_factory(), {icon_url1, icon_url2});
+    ASSERT_EQ(result.size(), 2u);
+    EXPECT_EQ(result[icon_url1.spec()].hash, kIconMurmur2Hash);
+    EXPECT_FALSE(result[icon_url1.spec()].unsafe_data.empty());
+
+    EXPECT_EQ(result[icon_url2.spec()].hash, "536500236142107998");
+    EXPECT_FALSE(result[icon_url2.spec()].unsafe_data.empty());
+  }
 }
 
 TEST_F(WebApkIconHasherTest, DataUriInvalid) {
   GURL icon_url("data:image/png;base64");
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
-  EXPECT_EQ("", runner.murmur2_hash());
+  EXPECT_TRUE(runner.icon().hash.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, InvalidUrl) {
   GURL icon_url("http::google.com");
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
-  EXPECT_EQ("", runner.murmur2_hash());
+  EXPECT_TRUE(runner.icon().hash.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 TEST_F(WebApkIconHasherTest, DownloadTimedOut) {
   std::string icon_url = "http://www.google.com/timeout";
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
-  EXPECT_EQ("", runner.murmur2_hash());
+  EXPECT_TRUE(runner.icon().hash.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }
 
 // Test that the hash callback is called with an empty string if an HTTP error
@@ -154,5 +219,6 @@ TEST_F(WebApkIconHasherTest, HTTPError) {
 
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));
-  EXPECT_EQ("", runner.murmur2_hash());
+  EXPECT_TRUE(runner.icon().hash.empty());
+  EXPECT_TRUE(runner.icon().unsafe_data.empty());
 }

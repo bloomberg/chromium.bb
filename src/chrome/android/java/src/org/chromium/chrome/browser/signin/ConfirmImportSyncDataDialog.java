@@ -7,20 +7,17 @@ package org.chromium.chrome.browser.signin;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
+import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
+import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,10 +46,6 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         void onCancel();
     }
 
-    @VisibleForTesting
-    public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
-            "sync_account_switch_import_data_tag";
-
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
@@ -60,43 +53,35 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
     private RadioButtonWithDescription mKeepSeparateOption;
 
     private Listener mListener;
-    private boolean mListenerCalled;
 
-    private static ConfirmImportSyncDataDialog newInstance(
-            String oldAccountName, String newAccountName) {
+    /**
+     * Creates a new instance of ConfirmImportSyncDataDialog, a dialog that gives the
+     * user the option to merge data between the account they are attempting to sign in to and the
+     * account they were previously signed into, or to keep the data separate.
+     * @param listener        Callback to be called if the user completes the dialog (as opposed to
+     *                        hitting cancel).
+     * @param oldAccountName  The previous sync account name.
+     * @param newAccountName  The potential next sync account name.
+     */
+    static ConfirmImportSyncDataDialog create(
+            Listener listener, String oldAccountName, String newAccountName) {
         ConfirmImportSyncDataDialog fragment = new ConfirmImportSyncDataDialog();
         Bundle args = new Bundle();
         args.putString(KEY_OLD_ACCOUNT_NAME, oldAccountName);
         args.putString(KEY_NEW_ACCOUNT_NAME, newAccountName);
         fragment.setArguments(args);
+        fragment.setListener(listener);
         return fragment;
     }
 
-    /**
-     * Creates and shows a new instance of ConfirmImportSyncDataFragment, a dialog that gives the
-     * user the option to merge data between the account they are attempting to sign in to and the
-     * account they were previously signed into, or to keep the data separate.
-     * @param oldAccountName  The previous sync account name.
-     * @param newAccountName  The potential next sync account name.
-     * @param fragmentManager FragmentManager to attach the dialog to.
-     * @param callback        Callback to be called if the user completes the dialog (as opposed to
-     *                        hitting cancel).
-     */
-    public static void showNewInstance(String oldAccountName, String newAccountName,
-            FragmentManager fragmentManager, Listener callback) {
-        ConfirmImportSyncDataDialog confirmSync = newInstance(oldAccountName, newAccountName);
-
-        confirmSync.setListener(callback);
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(confirmSync, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
-        transaction.commitAllowingStateLoss();
+    private void setListener(Listener listener) {
+        assert listener != null;
+        mListener = listener;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // If the dialog is being recreated it won't have the listener set and so won't be
-        // functional. Therefore we dismiss, and the user will need to open the dialog again.
-        if (savedInstanceState != null) {
+        if (mListener == null) {
             dismiss();
         }
         String oldAccountName = getArguments().getString(KEY_OLD_ACCOUNT_NAME);
@@ -122,7 +107,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         mKeepSeparateOption.setRadioButtonGroup(radioGroup);
 
         // If the account is managed, disallow merging information.
-        if (IdentityServicesProvider.getSigninManager().getManagementDomain() != null) {
+        if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() != null) {
             mKeepSeparateOption.setChecked(true);
             mConfirmImportOption.setOnClickListener(
                     view -> ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity()));
@@ -137,15 +122,8 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
                 .create();
     }
 
-    private void setListener(Listener listener) {
-        assert mListener == null;
-        mListener = listener;
-    }
-
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        if (mListener == null) return;
-
         if (which == AlertDialog.BUTTON_POSITIVE) {
             assert mConfirmImportOption.isChecked() ^ mKeepSeparateOption.isChecked();
 
@@ -159,15 +137,12 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
             mListener.onCancel();
         }
-        mListenerCalled = true;
     }
 
     @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (mListener != null && !mListenerCalled) {
-            mListener.onCancel();
-        }
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        mListener.onCancel();
     }
 }
 

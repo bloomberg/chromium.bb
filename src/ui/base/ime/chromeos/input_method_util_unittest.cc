@@ -50,9 +50,9 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodUtilTest()
       : util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
     delegate_.set_get_localized_string_callback(
-        base::Bind(&l10n_util::GetStringUTF16));
+        base::BindRepeating(&l10n_util::GetStringUTF16));
     delegate_.set_get_display_language_name_callback(
-        base::Bind(&InputMethodUtilTest::GetDisplayLanguageName));
+        base::BindRepeating(&InputMethodUtilTest::GetDisplayLanguageName));
   }
 
   void SetUp() override {
@@ -355,7 +355,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Zh) {
   util_.GetFirstLoginInputMethodIds("zh-CN", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ(Id("xkb:us::eng"), input_method_ids[0]);
-  EXPECT_EQ(Id(pinyin_ime_id), input_method_ids[1]);  // Pinyin for US keybaord.
+  EXPECT_EQ(Id(pinyin_ime_id), input_method_ids[1]);  // Pinyin for US keyboard.
 }
 
 // US keyboard + Russian UI = US keyboard + Russsian keyboard

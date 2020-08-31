@@ -54,14 +54,6 @@
           </div>
         </div>
         <iframe id="logo-doodle-iframe" scrolling="no"></iframe>
-        <!-- A spinner, prompting the doodle. Visible on NTPs with customized
-             backgrounds. -->
-        <button id="logo-doodle-notifier">
-          <div class="outer ball0"><div class="inner"></div></div>
-          <div class="outer ball1"><div class="inner"></div></div>
-          <div class="outer ball2"><div class="inner"></div></div>
-          <div class="outer ball3"><div class="inner"></div></div>
-        </button>
       </div>
     </div>
 
@@ -78,7 +70,8 @@
 
     <div id="realbox-container" $i18n{hiddenIfRealboxDisabled}>
       <div id="realbox-input-wrapper">
-        <div id="realbox-icon" class="$i18n{realboxIconClass}"></div>
+        <div id="realbox-icon" data-default-icon="$i18n{realboxDefaultIcon}">
+        </div>
         <input id="realbox" type="search" autocomplete="off" spellcheck="false"
             aria-live="polite" autofocus>
         <button id="realbox-microphone" class="microphone-icon" hidden></button>
@@ -400,6 +393,7 @@
       </div>
     </div>
   </dialog>
+  <div id="screen-reader-announcer" role="status" aria-live="polite"></div>
 
   <div id="one-google-end-of-body"></div>
 

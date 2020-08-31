@@ -9,7 +9,6 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -29,7 +29,6 @@ namespace content {
 
 class BrowserContext;
 class ServiceWorkerVersion;
-struct HttpResponseInfoIOBuffer;
 
 // Used only for ServiceWorkerImportedScriptUpdateCheck.
 //
@@ -140,9 +139,11 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   ~ServiceWorkerUpdatedScriptLoader() override;
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -164,8 +165,8 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // Implements ServiceWorkerCacheWriter::WriteObserver.
-  int WillWriteInfo(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
+  int WillWriteResponseHead(
+      const network::mojom::URLResponseHead& response_head) override;
   int WillWriteData(scoped_refptr<net::IOBuffer> data,
                     int length,
                     base::OnceCallback<void(net::Error)> callback) override;
@@ -213,15 +214,12 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
       uint32_t consumed_bytes,
       net::Error error);
 
-#if DCHECK_IS_ON()
-  void CheckVersionStatusBeforeLoad();
-#endif  // DCHECK_IS_ON()
-
   const GURL request_url_;
 
-  // This is ResourceType::kServiceWorker for the main script or
-  // ResourceType::kScript for an imported script.
-  const ResourceType resource_type_;
+  // This is network::mojom::RequestDestination::kServiceWorker for the main
+  // script or network::mojom::RequestDestination::kScript for an imported
+  // script.
+  const network::mojom::RequestDestination request_destination_;
 
   // Loader options to pass to the network loader.
   const uint32_t options_;

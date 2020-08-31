@@ -25,13 +25,10 @@ CustomLayoutConstraints::CustomLayoutConstraints(
 
 CustomLayoutConstraints::~CustomLayoutConstraints() = default;
 
-double CustomLayoutConstraints::fixedBlockSize(bool& is_null) const {
+base::Optional<double> CustomLayoutConstraints::fixedBlockSize() const {
   // Check if we've been passed an indefinite block-size.
-  if (fixed_block_size_ < 0.0) {
-    is_null = true;
-    return 0.0;
-  }
-
+  if (fixed_block_size_ < 0.0)
+    return base::nullopt;
   return fixed_block_size_;
 }
 
@@ -50,7 +47,7 @@ ScriptValue CustomLayoutConstraints::data(ScriptState* script_state) const {
       layout_worklet_world_v8_data_.NewLocal(script_state->GetIsolate()));
 }
 
-void CustomLayoutConstraints::Trace(blink::Visitor* visitor) {
+void CustomLayoutConstraints::Trace(Visitor* visitor) {
   visitor->Trace(layout_worklet_world_v8_data_);
   ScriptWrappable::Trace(visitor);
 }

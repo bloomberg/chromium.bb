@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -48,6 +49,14 @@ void CompositingInputsUpdater::Update() {
   UpdateType update_type = kDoNotForceUpdate;
   PaintLayer* layer =
       compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_;
+
+  // We don't need to do anything if the layer is under a locked display lock
+  // that prevents updates.
+  if (DisplayLockUtilities::LockedAncestorPreventingPrePaint(
+          layer->GetLayoutObject())) {
+    return;
+  }
+
   CompositingReasons initial_compositing_reasons =
       layer->DirectCompositingReasons();
   ApplyAncestorInfoToSelfAndAncestorsRecursively(layer, update_type, info);
@@ -108,13 +117,13 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
       // root layer, we are no longer viewport constrained.
       if (previous_overflow_layer && previous_overflow_layer->IsRootLayer()) {
         layout_object.View()->GetFrameView()->RemoveViewportConstrainedObject(
-            layout_object);
+            layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
       }
     }
 
     if (info.last_overflow_clip_layer->IsRootLayer()) {
       layout_object.View()->GetFrameView()->AddViewportConstrainedObject(
-          layout_object);
+          layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
     }
     layout_object.UpdateStickyPositionConstraints();
 
@@ -167,13 +176,14 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
           DisplayLockLifecycleTarget::kChildren);
 
   bool should_recurse = (layer->ChildNeedsCompositingInputsUpdate() ||
-                         update_type == kForceUpdate) &&
-                        !recursion_blocked_by_display_lock;
+                         update_type == kForceUpdate);
 
   layer->SetDescendantHasDirectOrScrollingCompositingReason(false);
   bool descendant_has_direct_compositing_reason = false;
-  for (PaintLayer* child = layer->FirstChild(); child;
-       child = child->NextSibling()) {
+
+  auto* first_child =
+      recursion_blocked_by_display_lock ? nullptr : layer->FirstChild();
+  for (PaintLayer* child = first_child; child; child = child->NextSibling()) {
     if (should_recurse)
       UpdateSelfAndDescendantsRecursively(child, update_type, info);
     descendant_has_direct_compositing_reason |=
@@ -219,6 +229,22 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       info.enclosing_stacking_composited_layer;
   PaintLayer* enclosing_squashing_composited_layer =
       info.enclosing_squashing_composited_layer;
+
+  if (layer->NeedsCompositingInputsUpdate()) {
+    if (enclosing_stacking_composited_layer) {
+      enclosing_stacking_composited_layer->GetCompositedLayerMapping()
+          ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+    }
+
+    if (enclosing_squashing_composited_layer) {
+      enclosing_squashing_composited_layer->GetCompositedLayerMapping()
+          ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+    }
+
+    update_type = kForceUpdate;
+  }
+
+
   switch (layer->GetCompositingState()) {
     case kNotComposited:
       break;
@@ -232,17 +258,19 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       break;
   }
 
+  // invalidate again after the switch, in case
+  // enclosing_stacking_composited_layer or
+  // enclosing_squashing_composited_layer was previously null.
   if (layer->NeedsCompositingInputsUpdate()) {
     if (enclosing_stacking_composited_layer) {
       enclosing_stacking_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
     }
+
     if (enclosing_squashing_composited_layer) {
       enclosing_squashing_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
     }
-
-    update_type = kForceUpdate;
   }
 
   if (style.GetPosition() == EPosition::kAbsolute) {
@@ -287,13 +315,13 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
   // in the sense that they don't scroll along with its in-flow contents.
   // However LayoutView does clip them.
   if (layout_object.CanContainFixedPositionObjects() &&
-      !layout_object.IsLayoutView()) {
+      !IsA<LayoutView>(layout_object)) {
     info.clip_chain_parent_for_fixed = layer;
     info.escape_clip_to_for_fixed = info.escape_clip_to;
     info.scrolling_ancestor_for_fixed = info.scrolling_ancestor;
     info.needs_reparent_scroll_for_fixed = info.needs_reparent_scroll;
   }
-  if (layout_object.IsLayoutView())
+  if (IsA<LayoutView>(layout_object))
     info.clip_chain_parent_for_fixed = layer;
 
   // CSS clip affects all descendants, not just containing-block descendants.
@@ -440,7 +468,6 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
-  properties.is_under_position_sticky = info.is_under_position_sticky;
   properties.nearest_contained_layout_layer =
       info.nearest_contained_layout_layer;
 

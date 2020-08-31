@@ -6,16 +6,17 @@
 
 #include <type_traits>
 
+#include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -53,10 +54,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/system_connector.h"
 #include "google_apis/google_api_keys.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
@@ -101,12 +99,8 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
 
   ash::TabletMode::Get()->AddObserver(this);
 
-  // |connector| may be null in tests.
-  auto* connector = content::GetSystemConnector();
-  if (connector) {
-    connector->Connect(ash::mojom::kServiceName,
-                       cros_display_config_.BindNewPipeAndPassReceiver());
-  }
+  ash::BindCrosDisplayConfigController(
+      cros_display_config_.BindNewPipeAndPassReceiver());
   OobeConfiguration::Get()->AddAndFireObserver(this);
 }
 
@@ -169,7 +163,7 @@ void CoreOobeHandler::DeclareLocalizedValues(
 void CoreOobeHandler::Initialize() {
   UpdateA11yState();
   UpdateOobeUIVisibility();
-#if defined(OFFICIAL_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   version_info_updater_.StartUpdate(true);
 #else
   version_info_updater_.StartUpdate(false);
@@ -208,8 +202,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
-  AddRawCallback("skipToLoginForTesting",
-                 &CoreOobeHandler::HandleSkipToLoginForTesting);
+  AddCallback("skipToLoginForTesting",
+              &CoreOobeHandler::HandleSkipToLoginForTesting);
   AddCallback("skipToUpdateForTesting",
               &CoreOobeHandler::HandleSkipToUpdateForTesting);
   AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
@@ -225,6 +219,9 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
   AddCallback("startDemoModeSetupForTesting",
               &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
+
+  AddCallback("hideOobeDialog", &CoreOobeHandler::HandleHideOobeDialog);
+  AddCallback("updateOobeUIState", &CoreOobeHandler::HandleUpdateOobeUIState);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -326,6 +323,8 @@ void CoreOobeHandler::SetShelfHeight(int height) {
 }
 
 void CoreOobeHandler::HandleInitialized() {
+  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+  LOG(ERROR) << "CoreOobeHandler::HandleInitialized";
   GetOobeUI()->InitializeHandlers();
   AllowJavascript();
 }
@@ -383,6 +382,11 @@ void CoreOobeHandler::HandleEnableDockedMagnifier(bool enabled) {
   MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
 }
 
+void CoreOobeHandler::HandleHideOobeDialog() {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->HideOobeDialog();
+}
+
 void CoreOobeHandler::HandleSetDeviceRequisition(
     const std::string& requisition) {
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -406,18 +410,9 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
   }
 }
 
-void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
-  LoginScreenContext context;
-
-  // Parse |args|.
-  if (args->GetSize() > 0) {
-    std::string email;
-    if (args->GetString(0, &email))
-      context.set_email(email);
-  }
-
+void CoreOobeHandler::HandleSkipToLoginForTesting() {
   if (WizardController::default_controller())
-    WizardController::default_controller()->SkipToLoginForTesting(context);
+    WizardController::default_controller()->SkipToLoginForTesting();
 }
 
 void CoreOobeHandler::HandleSkipToUpdateForTesting() {
@@ -479,10 +474,6 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("selectToSpeakEnabled",
                        AccessibilityManager::Get()->IsSelectToSpeakEnabled());
-  a11y_info.SetBoolean(
-      "enableExperimentalA11yFeatures",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityFeatures));
   DCHECK(MagnificationManager::Get());
   a11y_info.SetBoolean("screenMagnifierEnabled",
                        MagnificationManager::Get()->IsMagnifierEnabled());
@@ -669,6 +660,13 @@ void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->SimulateDemoModeSetupForTesting(config);
     wizard_controller->AdvanceToScreen(DemoSetupScreenView::kScreenId);
+  }
+}
+
+void CoreOobeHandler::HandleUpdateOobeUIState(int state) {
+  if (LoginDisplayHost::default_host()) {
+    auto dialog_state = static_cast<ash::OobeDialogState>(state);
+    LoginDisplayHost::default_host()->UpdateOobeDialogState(dialog_state);
   }
 }
 

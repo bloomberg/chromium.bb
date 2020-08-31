@@ -11,7 +11,9 @@ import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.metrics.AndroidMetricsLogUploader;
 
 /**
  * This class manages platform-specific services. (i.e. Google Services) The platform
@@ -27,7 +29,14 @@ public abstract class PlatformServiceBridge {
     private static Handler sHandler;
     private static final Object sHandlerLock = new Object();
 
-    protected PlatformServiceBridge() {}
+    protected PlatformServiceBridge() {
+        AndroidMetricsLogUploader.setUploader(new Consumer<byte[]>() {
+            @Override
+            public void accept(byte[] data) {
+                logMetrics(data);
+            }
+        });
+    }
 
     @SuppressWarnings("unused")
     public static PlatformServiceBridge getInstance() {
@@ -70,7 +79,9 @@ public abstract class PlatformServiceBridge {
 
     // Overriding implementations may call "callback" asynchronously, on any thread.
     public void querySafeBrowsingUserConsent(@NonNull final Callback<Boolean> callback) {
-        // User opt-in preference depends on a SafetyNet API.
+        // User opt-in preference depends on a SafetyNet API. In purely upstream builds (which don't
+        // communicate with GMS), assume the user has not opted in.
+        callback.onResult(false);
     }
 
     // Overriding implementations may call "callback" asynchronously. For simplicity (and not

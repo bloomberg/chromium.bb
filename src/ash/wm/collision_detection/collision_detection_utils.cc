@@ -5,8 +5,10 @@
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/macros.h"
@@ -87,14 +89,31 @@ std::vector<gfx::Rect> CollectCollisionRects(
       rects.push_back(ComputeCollisionRectFromBounds(
           shelf_window->GetTargetBounds(), shelf_window->parent()));
 
+    // The hotseat doesn't span the whole width of the display, but to allow
+    // a PIP window to be slided horizontally along the hotseat, we extend the
+    // width of the hotseat to that of the display.
+    auto* hotseat_widget = shelf->hotseat_widget();
+    if (hotseat_widget) {
+      auto* hotseat_window = hotseat_widget->GetNativeWindow();
+      gfx::Rect hotseat_rect{root_window->bounds().x(),
+                             hotseat_window->GetTargetBounds().y(),
+                             root_window->bounds().width(),
+                             hotseat_window->GetTargetBounds().height()};
+      if (hotseat_widget->state() != HotseatState::kHidden &&
+          !ShouldIgnoreWindowForCollision(hotseat_window, priority)) {
+        rects.push_back(ComputeCollisionRectFromBounds(
+            hotseat_rect, hotseat_window->parent()));
+      }
+    }
+
     // Check the Automatic Clicks windows.
-    // TODO(Katie): The PIP isn't re-triggered to check the autoclick window
-    // when the autoclick window moves, just when the PIP moves or another
-    // system window. Need to ensure that changing the autoclick menu position
-    // triggers the PIP to re-check its bounds. crbug.com/954546.
-    auto* autoclick_container =
-        root_window->GetChildById(kShellWindowId_AutoclickContainer);
-    for (auto* window : autoclick_container->children()) {
+    // TODO(Katie): The PIP isn't re-triggered to check the accessibility bubble
+    // windows when the autoclick window moves, just when the PIP moves or
+    // another system window. Need to ensure that changing the autoclick menu
+    // position triggers the PIP to re-check its bounds. crbug.com/954546.
+    auto* accessibility_bubble_container =
+        root_window->GetChildById(kShellWindowId_AccessibilityBubbleContainer);
+    for (auto* window : accessibility_bubble_container->children()) {
       if (!window->IsVisible() && !window->GetTargetBounds().IsEmpty())
         continue;
       if (ShouldIgnoreWindowForCollision(window, priority))
@@ -226,17 +245,23 @@ gfx::Rect CollisionDetectionUtils::GetMovementArea(
   return work_area;
 }
 
+gfx::Rect CollisionDetectionUtils::AdjustToFitMovementAreaByGravity(
+    const display::Display& display,
+    const gfx::Rect& bounds_in_screen) {
+  gfx::Rect resting_bounds = bounds_in_screen;
+  gfx::Rect area = GetMovementArea(display);
+  resting_bounds.AdjustToFit(area);
+  const CollisionDetectionUtils::Gravity gravity =
+      GetGravityToClosestEdge(resting_bounds, area);
+  return GetAdjustedBoundsByGravity(resting_bounds, area, gravity);
+}
+
 gfx::Rect CollisionDetectionUtils::GetRestingPosition(
     const display::Display& display,
     const gfx::Rect& bounds_in_screen,
     CollisionDetectionUtils::RelativePriority priority) {
-  gfx::Rect resting_bounds = bounds_in_screen;
-  gfx::Rect area = GetMovementArea(display);
-  resting_bounds.AdjustToFit(area);
-
-  const CollisionDetectionUtils::Gravity gravity =
-      GetGravityToClosestEdge(resting_bounds, area);
-  resting_bounds = GetAdjustedBoundsByGravity(resting_bounds, area, gravity);
+  gfx::Rect resting_bounds =
+      AdjustToFitMovementAreaByGravity(display, bounds_in_screen);
   return AvoidObstacles(display, resting_bounds, priority);
 }
 

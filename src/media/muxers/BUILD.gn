@@ -28,15 +28,14 @@ source_set("muxers") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "webm_muxer_unittest.cc",
-  ]
+  sources = [ "webm_muxer_unittest.cc" ]
 
   deps = [
     "//base/test:test_support",
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libwebm",
   ]
 
   configs += [

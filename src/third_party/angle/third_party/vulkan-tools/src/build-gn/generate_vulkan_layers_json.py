@@ -79,7 +79,7 @@ def main():
             data[data_key]['library_path'] = prev_name
 
         target_fname = os.path.join(target_dir, os.path.basename(json_fname))
-        with open(target_fname, 'wb') as outfile:
+        with open(target_fname, 'w') as outfile:
             json.dump(data, outfile)
 
     # Get the Vulkan version from the vulkan_core.h file
@@ -100,6 +100,8 @@ def main():
     if platform.system() == 'Windows':
         relative_path_prefix = r'..\\'  # json-escaped, hence two backslashes.
         file_type_suffix = '.dll'
+    elif platform.system() == 'Darwin':
+        file_type_suffix = '.dylib'
 
     # For each *.json.in template files in source dir generate actual json file
     # in target dir

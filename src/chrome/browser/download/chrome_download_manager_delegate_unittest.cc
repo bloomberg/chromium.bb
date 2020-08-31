@@ -24,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -39,6 +40,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
@@ -92,9 +95,6 @@ using url::Origin;
 
 namespace {
 
-const Origin kSecureOrigin = Origin::Create(GURL("https://example.org/"));
-const Origin kInsecureOrigin = Origin::Create(GURL("http://example.org/"));
-
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
   ~MockWebContentsDelegate() override {}
@@ -126,6 +126,7 @@ struct DetermineDownloadTargetResult {
   base::FilePath target_path;
   download::DownloadItem::TargetDisposition disposition;
   download::DownloadDangerType danger_type;
+  download::DownloadItem::MixedContentStatus mixed_content_status;
   base::FilePath intermediate_path;
   download::DownloadInterruptReason interrupt_reason;
 };
@@ -133,6 +134,7 @@ struct DetermineDownloadTargetResult {
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
     : disposition(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
+      mixed_content_status(download::DownloadItem::MixedContentStatus::UNKNOWN),
       interrupt_reason(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 // Subclass of the ChromeDownloadManagerDelegate that replaces a few interaction
@@ -173,13 +175,12 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-      const DownloadPathReservationTracker::ReservedPathCallback& callback)
-      override {
+      DownloadPathReservationTracker::ReservedPathCallback callback) override {
     PathValidationResult result = PathValidationResult::SUCCESS;
     base::FilePath path_to_return = MockReserveVirtualPath(
         download, virtual_path, create_directory, conflict_action, &result);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, result, path_to_return));
+        FROM_HERE, base::BindOnce(std::move(callback), result, path_to_return));
   }
 
 #if defined(OS_ANDROID)
@@ -286,6 +287,13 @@ class ChromeDownloadManagerDelegateTest
   const std::vector<uint32_t>& download_ids() const { return download_ids_; }
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
+  void VerifyMixedContentExtensionOverride(
+      DownloadItem* download_item,
+      const base::FieldTrialParams& parameters,
+      InsecureDownloadExtensions extension,
+      download::DownloadInterruptReason interrupt_reason,
+      download::DownloadItem::MixedContentStatus mixed_content_status);
+
  private:
   base::FilePath test_download_dir_;
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
@@ -391,11 +399,13 @@ void StoreDownloadTargetInfo(
     const base::FilePath& target_path,
     DownloadItem::TargetDisposition target_disposition,
     download::DownloadDangerType danger_type,
+    download::DownloadItem::MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
     download::DownloadInterruptReason interrupt_reason) {
   result->target_path = target_path;
   result->disposition = target_disposition;
   result->danger_type = danger_type;
+  result->mixed_content_status = mixed_content_status;
   result->intermediate_path = intermediate_path;
   result->interrupt_reason = interrupt_reason;
   closure.Run();
@@ -405,9 +415,10 @@ void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
     DownloadItem* download_item,
     DetermineDownloadTargetResult* result) {
   base::RunLoop loop_runner;
-  delegate()->DetermineDownloadTarget(
-      download_item,
-      base::Bind(&StoreDownloadTargetInfo, loop_runner.QuitClosure(), result));
+  content::DownloadTargetCallback callback = base::BindOnce(
+      &StoreDownloadTargetInfo, loop_runner.QuitClosure(), result);
+  EXPECT_TRUE(delegate()->DetermineDownloadTarget(download_item, &callback));
+  EXPECT_FALSE(callback);  // DetermineDownloadTarget() took the callback.
   loop_runner.Run();
 }
 
@@ -489,6 +500,36 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
   }
 }
 
+// Determine download target for |download_item| after enabling active content
+// download blocking with the |parameters| enabled. Verify |extension|,
+// |interrupt_reason| and |mixed_content_status|. Used by
+// BlockedAsActiveContent_ tests.
+void ChromeDownloadManagerDelegateTest::VerifyMixedContentExtensionOverride(
+    DownloadItem* download_item,
+    const base::FieldTrialParams& parameters,
+    InsecureDownloadExtensions extension,
+    download::DownloadInterruptReason interrupt_reason,
+    download::DownloadItem::MixedContentStatus mixed_content_status) {
+  DetermineDownloadTargetResult result;
+  base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kTreatUnsafeDownloadsAsActive, parameters);
+
+  DetermineDownloadTarget(download_item, &result);
+
+  EXPECT_EQ(interrupt_reason, result.interrupt_reason);
+  EXPECT_EQ(mixed_content_status, result.mixed_content_status);
+  histograms.ExpectUniqueSample(
+      kInsecureDownloadHistogramName,
+      InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
+  ExpectExtensionOnlyIn(extension, kInsecureDownloadExtensionInitiatorSecure,
+                        kInsecureDownloadHistogramTargetInsecure, histograms);
+}
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
 GURL ForceGoogleSafeSearch(const GURL& url) {
   GURL new_url;
   safe_search_util::ForceGoogleSafeSearch(url, &new_url);
@@ -691,107 +732,22 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
   VerifyAndClearExpectations();
 }
 
-TEST_F(ChromeDownloadManagerDelegateTest, BlockedByHttpPolicy_HttpTarget) {
-  // Tests blocking unsafe downloads when the download target is over HTTP,
-  // using the default mime-type matching policy.
-  const GURL kUrl("http://example.com/foo");
-  const GURL kReferrerUrl("https://example.org/");
-  const std::string kMimeType("application/vnd.microsoft.portable-executable");
-  std::vector<GURL> kUrlChain;
-  kUrlChain.push_back(kReferrerUrl);
-
-  std::unique_ptr<download::MockDownloadItem> download_item =
-      CreateActiveDownloadItem(0);
-  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
-  EXPECT_CALL(*download_item, GetUrlChain())
-      .WillRepeatedly(ReturnRef(kUrlChain));
-  EXPECT_CALL(*download_item, GetMimeType()).WillRepeatedly(Return(kMimeType));
-  DetermineDownloadTargetResult result;
-
-  {
-    // Test default mime-type filter.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kDisallowUnsafeHttpDownloads);
-    DetermineDownloadTarget(download_item.get(), &result);
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-              result.interrupt_reason);
-  }
-  {
-    // Test mime-type filter override.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        features::kDisallowUnsafeHttpDownloads,
-        {{"MimeTypeList", "application/pdf,image/,application/postscript"}});
-    DetermineDownloadTarget(download_item.get(), &result);
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
-              result.interrupt_reason);
-  }
-}
-
-TEST_F(ChromeDownloadManagerDelegateTest, BlockedByHttpPolicy_HttpChain) {
-  // Tests blocking unsafe downloads when a step in the referrer chain is HTTP,
-  // using the default mime-type matching policy.
-  const GURL kUrl("https://example.com/foo");
-  const GURL kReferrerUrl("http://example.org/");
-  const std::string kMimeType("application/vnd.microsoft.portable-executable");
-  std::vector<GURL> kUrlChain;
-  kUrlChain.push_back(kReferrerUrl);
-
-  std::unique_ptr<download::MockDownloadItem> download_item =
-      CreateActiveDownloadItem(0);
-  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
-  EXPECT_CALL(*download_item, GetUrlChain())
-      .WillRepeatedly(ReturnRef(kUrlChain));
-  EXPECT_CALL(*download_item, GetMimeType()).WillRepeatedly(Return(kMimeType));
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDisallowUnsafeHttpDownloads);
-  DetermineDownloadTargetResult result;
-  DetermineDownloadTarget(download_item.get(), &result);
-  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-            result.interrupt_reason);
-}
-
-TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Blocked) {
-  // Tests blocking of unsafe active content downloads when the download target
-  // is over HTTP.
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
-  content::PluginService::GetInstance()->Init();
-#endif
-  const GURL kExeUrl("http://example.com/foo.exe");
-
-  std::unique_ptr<download::MockDownloadItem> exe_download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
-  DetermineDownloadTargetResult result;
-  base::HistogramTester histograms;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
-
-  DetermineDownloadTarget(exe_download_item.get(), &result);
-
-  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-            result.interrupt_reason);
-  histograms.ExpectUniqueSample(
-      kInsecureDownloadHistogramName,
-      InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
-  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
-                        kInsecureDownloadExtensionInitiatorSecure,
-                        kInsecureDownloadHistogramTargetInsecure, histograms);
-}
-
 TEST_F(ChromeDownloadManagerDelegateTest,
        BlockedAsActiveContent_HttpsTargetOk) {
   // Active content download blocking ought not occur when the chain is secure.
-  const GURL kExeUrl("https://example.com/foo.exe");
   const GURL kRedirectUrl("https://example.org/");
+  const GURL kSecureSilentlyBlockableFile(
+      "https://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
   content::PluginService::GetInstance()->Init();
 #endif
   std::unique_ptr<download::MockDownloadItem> download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+      PrepareDownloadItemForMixedContent(kSecureSilentlyBlockableFile,
+                                         kSecureOrigin, kRedirectUrl);
   DetermineDownloadTargetResult result;
   base::test::ScopedFeatureList feature_list;
   base::HistogramTester histograms;
@@ -802,7 +758,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   histograms.ExpectUniqueSample(
       kInsecureDownloadHistogramName,
       InsecureDownloadSecurityStatus::kInitiatorSecureFileSecure, 1);
-  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kTest,
                         kInsecureDownloadExtensionInitiatorSecure,
                         kInsecureDownloadHistogramTargetSecure, histograms);
 }
@@ -811,6 +767,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
   // Active content download blocking ought not occur on HTTP pages.
   const GURL kHttpUrl("http://example.com/foo");
   const GURL kHttpsUrl("https://example.com/foo");
+  const auto kInsecureOrigin = Origin::Create(GURL("http://example.org"));
 
   DetermineDownloadTargetResult result;
   base::test::ScopedFeatureList feature_list;
@@ -856,32 +813,35 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
 TEST_F(ChromeDownloadManagerDelegateTest,
        BlockedAsActiveContent_InferredInitiatorStillBlocked) {
   // Verify context-menu-initiated downloads are blocked when warranted.
+  const GURL kInsecureSilentlyBlockableFile(
+      "http://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
 #if BUILDFLAG(ENABLE_PLUGINS)
   // DownloadTargetDeterminer looks for plugin handlers when there's a file
   // extension.
   content::PluginService::GetInstance()->Init();
 #endif
-  const GURL kExeUrl("http://example.com/foo.exe");
 
-  std::unique_ptr<download::MockDownloadItem> exe_download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, base::nullopt, base::nullopt);
-  ON_CALL(*exe_download_item, GetTabUrl())
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      PrepareDownloadItemForMixedContent(kInsecureSilentlyBlockableFile,
+                                         base::nullopt, base::nullopt);
+  ON_CALL(*download_item, GetTabUrl())
       .WillByDefault(ReturnRefOfCopy(kSecureOrigin.GetURL()));
-  ON_CALL(*exe_download_item, GetDownloadSource())
+  ON_CALL(*download_item, GetDownloadSource())
       .WillByDefault(Return(download::DownloadSource::CONTEXT_MENU));
   DetermineDownloadTargetResult result;
   base::HistogramTester histograms;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
 
-  DetermineDownloadTarget(exe_download_item.get(), &result);
+  DetermineDownloadTarget(download_item.get(), &result);
 
-  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-            result.interrupt_reason);
+  EXPECT_EQ(download::DownloadItem::MixedContentStatus::BLOCK,
+            result.mixed_content_status);
   histograms.ExpectUniqueSample(
       kInsecureDownloadHistogramName,
       InsecureDownloadSecurityStatus::kInitiatorInferredSecureFileInsecure, 1);
-  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kTest,
                         kInsecureDownloadExtensionInitiatorInferredSecure,
                         kInsecureDownloadHistogramTargetInsecure, histograms);
 }
@@ -903,15 +863,19 @@ TEST_F(ChromeDownloadManagerDelegateTest, InterceptDownloadByOfflinePages) {
 TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpChain) {
   // Tests blocking unsafe active content downloads when a step in the referrer
   // chain is HTTP, using the default mime-type matching policy.
-  const GURL kExeUrl("https://example.com/foo.exe");
   const GURL kRedirectUrl("http://example.org/");
+  const GURL kSecureSilentlyBlockableFile(
+      "https://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
   content::PluginService::GetInstance()->Init();
 #endif
   std::unique_ptr<download::MockDownloadItem> download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+      PrepareDownloadItemForMixedContent(kSecureSilentlyBlockableFile,
+                                         kSecureOrigin, kRedirectUrl);
   DetermineDownloadTargetResult result;
   base::test::ScopedFeatureList feature_list;
   base::HistogramTester histograms;
@@ -924,83 +888,312 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpChain) {
   histograms.ExpectUniqueSample(
       kInsecureDownloadHistogramName,
       InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
-  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
+  ExpectExtensionOnlyIn(InsecureDownloadExtensions::kTest,
                         kInsecureDownloadExtensionInitiatorSecure,
                         kInsecureDownloadHistogramTargetInsecure, histograms);
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest,
-       BlockedAsActiveContent_ExtensionControl) {
-  // Verifies proper file extension overriding for active content blocking.
-  const GURL kExeUrl("http://example.com/foo.exe");
-  const GURL kFooUrl("http://example.com/foo.foo");
+       BlockedAsActiveContent_BenignExtensionsIgnored) {
+  // Verifies benign extensions are not blocked for active content blocking.
+  const GURL kFooUrl("http://example.com/file.foo");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // DownloadTargetDeterminer looks for plugin handlers if there's an extension.
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
   content::PluginService::GetInstance()->Init();
 #endif
 
-  std::unique_ptr<download::MockDownloadItem> exe_download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
   std::unique_ptr<download::MockDownloadItem> foo_download_item =
       PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
-  DetermineDownloadTargetResult result;
 
-  {
-    // Test benign extensions aren't blocked.
-    base::HistogramTester histograms;
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kTreatUnsafeDownloadsAsActive);
-    DetermineDownloadTarget(foo_download_item.get(), &result);
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
-              result.interrupt_reason);
-    histograms.ExpectUniqueSample(
-        kInsecureDownloadHistogramName,
-        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
-    ExpectExtensionOnlyIn(InsecureDownloadExtensions::kUnknown,
-                          kInsecureDownloadExtensionInitiatorSecure,
-                          kInsecureDownloadHistogramTargetInsecure, histograms);
-  }
-  {
-    // Test default extensions aren't still blocked when overridden.
-    base::HistogramTester histograms;
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        features::kTreatUnsafeDownloadsAsActive, {{"ExtensionList", "foo"}});
-    DetermineDownloadTarget(exe_download_item.get(), &result);
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(), {{"TreatWarnListAsAllowlist", "false"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+}
 
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
-              result.interrupt_reason);
-    histograms.ExpectUniqueSample(
-        kInsecureDownloadHistogramName,
-        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
-    ExpectExtensionOnlyIn(InsecureDownloadExtensions::kMSExecutable,
-                          kInsecureDownloadExtensionInitiatorSecure,
-                          kInsecureDownloadHistogramTargetInsecure, histograms);
-  }
-  {
-    // Test overridden extensions are respected.
-    base::HistogramTester histograms;
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        features::kTreatUnsafeDownloadsAsActive, {{"ExtensionList", "foo"}});
-    DetermineDownloadTarget(foo_download_item.get(), &result);
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_SilentBlock) {
+  // Verifies that active mixed content download silent blocking works by
+  // default, and that extensions can be overridden by feature parameter.
+  const GURL kFooUrl("http://example.com/file.foo");
+  const GURL kBarUrl("http://example.com/file.bar");
+  const GURL kInsecureSilentlyBlockableFile(
+      "http://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
 
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-              result.interrupt_reason);
-    histograms.ExpectUniqueSample(
-        kInsecureDownloadHistogramName,
-        InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure, 1);
-    ExpectExtensionOnlyIn(InsecureDownloadExtensions::kUnknown,
-                          kInsecureDownloadExtensionInitiatorSecure,
-                          kInsecureDownloadHistogramTargetInsecure, histograms);
-  }
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureSilentlyBlockableFile,
+                                         kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> foo_download_item =
+      PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> bar_download_item =
+      PrepareDownloadItemForMixedContent(kBarUrl, kSecureOrigin, base::nullopt);
+
+  // Test default-blocked extensions are blocked normally, but not when
+  // overridden.
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{}}, InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+      download::DownloadItem::MixedContentStatus::SILENT_BLOCK);
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{"SilentBlockExtensionList", "foo"}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+
+  // Test default-listed extensions aren't blocked, but other extensions
+  // are, when the extension list is configured as an allowlist.
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(),
+      {{"TreatSilentBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(), {{"TreatSilentBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+      download::DownloadItem::MixedContentStatus::SILENT_BLOCK);
+
+  // Test extensions blocked via parameter are indeed blocked.
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(), {{"SilentBlockExtensionList", "foo,bar"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+      download::DownloadItem::MixedContentStatus::SILENT_BLOCK);
+  VerifyMixedContentExtensionOverride(
+      bar_download_item.get(), {{"SilentBlockExtensionList", "foo,bar"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+      download::DownloadItem::MixedContentStatus::SILENT_BLOCK);
+
+  // Test that overriding extensions AND allowlisting work together.
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(),
+      {{"SilentBlockExtensionList", "foo"},
+       {"TreatSilentBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      bar_download_item.get(),
+      {{"SilentBlockExtensionList", "foo"},
+       {"TreatSilentBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+      download::DownloadItem::MixedContentStatus::SILENT_BLOCK);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Warn) {
+  // Verifies that active mixed content download warning works by default, and
+  // that extensions can be overridden by feature parameter.
+  const GURL kFooUrl("http://example.com/file.foo");
+  const GURL kBarUrl("http://example.com/file.bar");
+  const GURL kDontWarnUrl("http://example.com/file.dont_warn_for_testing");
+  const GURL kInsecureWarnableFile("http://example.com/foo.warn_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> warned_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureWarnableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> foo_download_item =
+      PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> bar_download_item =
+      PrepareDownloadItemForMixedContent(kBarUrl, kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> dont_warn_download_item =
+      PrepareDownloadItemForMixedContent(kDontWarnUrl, kSecureOrigin,
+                                         base::nullopt);
+
+  // WarnExtensionList is configured as an allowlist by default, so verify that
+  // extensions not listed are warned on normally, but not if they're listed.
+  VerifyMixedContentExtensionOverride(
+      warned_download_item.get(), {{}}, InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      warned_download_item.get(), {{"WarnExtensionList", "warn_for_testing"}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+
+  // Test default-warned extensions aren't still warned, but listed extensions
+  // are, when warnings are configured as a blocklist.
+  VerifyMixedContentExtensionOverride(
+      warned_download_item.get(), {{"TreatWarnListAsAllowlist", "false"}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+  VerifyMixedContentExtensionOverride(
+      dont_warn_download_item.get(), {{"TreatWarnListAsAllowlist", "false"}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+
+  // Test extensions selected via parameter are indeed warned on.
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(),
+      {{"WarnExtensionList", "foo,bar"}, {"TreatWarnListAsAllowlist", "false"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      bar_download_item.get(),
+      {{"WarnExtensionList", "foo,bar"}, {"TreatWarnListAsAllowlist", "false"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Block) {
+  // Verifies that active mixed content download user-visible blocking works by
+  // default, and that extensions can be overridden by feature parameter.
+  const GURL kFooUrl("http://example.com/file.foo");
+  const GURL kBarUrl("http://example.com/file.bar");
+  const GURL kInsecureBlockableFile("http://example.com/foo.exe");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureBlockableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> foo_download_item =
+      PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> bar_download_item =
+      PrepareDownloadItemForMixedContent(kBarUrl, kSecureOrigin, base::nullopt);
+
+  // Test default-blocked extensions are blocked normally, but not when
+  // overridden.
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{}},
+      InsecureDownloadExtensions::kMSExecutable,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::BLOCK);
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{"BlockExtensionList", "foo"}},
+      InsecureDownloadExtensions::kMSExecutable,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+
+  // Test default-listed extensions aren't blocked, but other extensions
+  // are, when the extension list is configured as an allowlist.
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{"TreatBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kMSExecutable,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(), {{"TreatBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::BLOCK);
+
+  // Test extensions selected via parameter are indeed blocked.
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(), {{"BlockExtensionList", "foo,bar"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::BLOCK);
+  VerifyMixedContentExtensionOverride(
+      bar_download_item.get(), {{"BlockExtensionList", "foo,bar"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::BLOCK);
+
+  // Test that overriding extensions AND allowlisting work together.
+  VerifyMixedContentExtensionOverride(
+      foo_download_item.get(),
+      {{"BlockExtensionList", "foo"}, {"TreatBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::WARN);
+  VerifyMixedContentExtensionOverride(
+      bar_download_item.get(),
+      {{"BlockExtensionList", "foo"}, {"TreatBlockListAsAllowlist", "true"}},
+      InsecureDownloadExtensions::kUnknown,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::BLOCK);
+}
+
+// TODO(crbug.com/1048957): Checking content settings crashes unit tests on
+// Android. It shouldn't.
+#if defined(OS_ANDROID)
+#define MAYBE_BlockedAsActiveContent_PolicyOverride \
+  DISABLED_BlockedAsActiveContent_PolicyOverride
+#else
+#define MAYBE_BlockedAsActiveContent_PolicyOverride \
+  BlockedAsActiveContent_PolicyOverride
+#endif
+TEST_F(ChromeDownloadManagerDelegateTest,
+       MAYBE_BlockedAsActiveContent_PolicyOverride) {
+  // Verifies that active mixed content download blocking is overridden by the
+  // "Insecure content" site setting.
+  const GURL kInsecureWarnableFile("http://example.com/foo.warn_for_testing");
+  const GURL kInsecureBlockableFile("http://example.com/foo.exe");
+  const GURL kInsecureSilentlyBlockableFile(
+      "http://example.com/foo.silently_blocked_for_testing");
+  const auto kSecureOrigin = Origin::Create(GURL("https://example.org"));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // DownloadTargetDeterminer looks for plugin handlers if there's an
+  // extension.
+  content::PluginService::GetInstance()->Init();
+#endif
+
+  std::unique_ptr<download::MockDownloadItem> warned_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureWarnableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureBlockableFile, kSecureOrigin,
+                                         base::nullopt);
+  std::unique_ptr<download::MockDownloadItem> silent_blocked_download_item =
+      PrepareDownloadItemForMixedContent(kInsecureSilentlyBlockableFile,
+                                         kSecureOrigin, base::nullopt);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetContentSettingDefaultScope(kSecureOrigin.GetURL(), GURL(),
+                                      ContentSettingsType::MIXEDSCRIPT,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  VerifyMixedContentExtensionOverride(
+      warned_download_item.get(), {{}}, InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+  VerifyMixedContentExtensionOverride(
+      blocked_download_item.get(), {{}},
+      InsecureDownloadExtensions::kMSExecutable,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
+  VerifyMixedContentExtensionOverride(
+      silent_blocked_download_item.get(), {{}},
+      InsecureDownloadExtensions::kTest,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE,
+      download::DownloadItem::MixedContentStatus::SAFE);
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
-  content::DownloadIdCallback id_callback = base::Bind(
-      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
-  delegate()->GetNextId(id_callback);
-  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
   // When download database fails to initialize, id will be set to
   // |download::DownloadItem::kInvalidId|.
   delegate()->GetDownloadIdReceiverCallback().Run(
@@ -1011,10 +1204,10 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
-  content::DownloadIdCallback id_callback = base::Bind(
-      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
-  delegate()->GetNextId(id_callback);
-  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
+  delegate()->GetNextId(base::BindOnce(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this)));
   // Simulates a valid download database with no records.
   delegate()->GetDownloadIdReceiverCallback().Run(1u);
   std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
@@ -1031,8 +1224,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, SanitizeGoogleSearchLink) {
     prefs->SetBoolean(prefs::kForceGoogleSafeSearch, is_safe_search_enabled);
 
     download::DownloadUrlParameters params(kGoogleSearchUrl,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS,
-                                           net::NetworkIsolationKey());
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
 
     delegate()->SanitizeDownloadParameters(&params);
     const auto& actual_url =

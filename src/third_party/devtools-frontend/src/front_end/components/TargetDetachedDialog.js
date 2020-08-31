@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @implements {Protocol.InspectorDispatcher}
  */
-export default class TargetDetachedDialog extends SDK.SDKModel {
+export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
@@ -26,23 +29,23 @@ export default class TargetDetachedDialog extends SDK.SDKModel {
    */
   detached(reason) {
     TargetDetachedDialog._disconnectedScreenWithReasonWasShown = true;
-    UI.RemoteDebuggingTerminatedScreen.show(reason);
+    UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(reason);
   }
 
   static webSocketConnectionLost() {
-    UI.RemoteDebuggingTerminatedScreen.show(ls`WebSocket disconnected`);
+    UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(ls`WebSocket disconnected`);
   }
 
   /**
    * @override
    */
   targetCrashed() {
-    const dialog = new UI.Dialog();
+    const dialog = new UI.Dialog.Dialog();
     dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     dialog.addCloseButton();
     dialog.setDimmed(true);
     this._hideCrashedDialog = dialog.hide.bind(dialog);
-    new UI.TargetCrashedScreen(() => this._hideCrashedDialog = null).show(dialog.contentElement);
+    new UI.TargetCrashedScreen.TargetCrashedScreen(() => this._hideCrashedDialog = null).show(dialog.contentElement);
     dialog.show();
   }
 
@@ -58,13 +61,4 @@ export default class TargetDetachedDialog extends SDK.SDKModel {
   }
 }
 
-/* Legacy exported object */
-self.Components = self.Components || {};
-
-/* Legacy exported object */
-Components = Components || {};
-
-/** @constructor */
-Components.TargetDetachedDialog = TargetDetachedDialog;
-
-SDK.SDKModel.register(TargetDetachedDialog, SDK.Target.Capability.Inspector, true);
+SDK.SDKModel.SDKModel.register(TargetDetachedDialog, SDK.SDKModel.Capability.Inspector, true);

@@ -8,16 +8,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.IBinder;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
 import android.widget.FrameLayout;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 import org.chromium.chromecast.base.Observer;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 class CastWebContentsScopes {
@@ -70,9 +70,7 @@ class CastWebContentsScopes {
             layout.addView(contentViewRenderView, matchParent);
 
             ContentView contentView = ContentView.createContentView(context, webContents);
-            // TODO(derekjchow): productVersion
-            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
-                    contentView, window, WebContents.createDefaultInternalsHolder());
+            WebContentsRegistry.initializeWebContents(webContents, contentView, window);
 
             // Enable display of current webContents.
             webContents.onShow();
@@ -85,6 +83,7 @@ class CastWebContentsScopes {
                 layout.setForeground(new ColorDrawable(backgroundColor));
                 layout.removeView(contentView);
                 layout.removeView(contentViewRenderView);
+                webContents.setTopLevelNativeWindow(null);
                 contentViewRenderView.destroy();
                 window.destroy();
             };
@@ -95,9 +94,7 @@ class CastWebContentsScopes {
         return (WebContents webContents) -> {
             WindowAndroid window = new WindowAndroid(context);
             ContentView contentView = ContentView.createContentView(context, webContents);
-            // TODO(derekjchow): productVersion
-            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
-                    contentView, window, WebContents.createDefaultInternalsHolder());
+            WebContentsRegistry.initializeWebContents(webContents, contentView, window);
             // Enable display of current webContents.
             webContents.onShow();
             return () -> {

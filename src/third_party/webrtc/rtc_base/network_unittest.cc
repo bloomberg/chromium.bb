@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/strings/match.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/net_helpers.h"
 #include "rtc_base/network_monitor.h"
@@ -47,10 +48,10 @@ class FakeNetworkMonitor : public NetworkMonitorBase {
   AdapterType GetAdapterType(const std::string& if_name) override {
     // Note that the name matching rules are different from the
     // GetAdapterTypeFromName in NetworkManager.
-    if (if_name.find("wifi") == 0) {
+    if (absl::StartsWith(if_name, "wifi")) {
       return ADAPTER_TYPE_WIFI;
     }
-    if (if_name.find("cellular") == 0) {
+    if (absl::StartsWith(if_name, "cellular")) {
       return ADAPTER_TYPE_CELLULAR;
     }
     return ADAPTER_TYPE_UNKNOWN;
@@ -900,51 +901,6 @@ TEST_F(NetworkTest, TestGetAdapterTypeFromNameMatching) {
 }
 #endif  // defined(WEBRTC_POSIX)
 
-#if defined(WEBRTC_LINUX) && !defined(WEBRTC_ANDROID)
-// If you want to test non-default routes, you can do the following on a linux
-// machine:
-// 1) Load the dummy network driver:
-// sudo modprobe dummy
-// sudo ifconfig dummy0 127.0.0.1
-// 2) Run this test and confirm the output says it found a dummy route (and
-// passes).
-// 3) When done:
-// sudo rmmmod dummy
-TEST_F(NetworkTest, TestIgnoreNonDefaultRoutes) {
-  BasicNetworkManager manager;
-  NetworkManager::NetworkList list;
-  list = GetNetworks(manager, false);
-  bool found_dummy = false;
-  RTC_LOG(LS_INFO) << "Looking for dummy network: ";
-  for (NetworkManager::NetworkList::iterator it = list.begin();
-       it != list.end(); ++it) {
-    RTC_LOG(LS_INFO) << "  Network name: " << (*it)->name();
-    found_dummy |= (*it)->name().find("dummy0") != std::string::npos;
-  }
-  for (NetworkManager::NetworkList::iterator it = list.begin();
-       it != list.end(); ++it) {
-    delete (*it);
-  }
-  if (!found_dummy) {
-    RTC_LOG(LS_INFO) << "No dummy found, quitting.";
-    return;
-  }
-  RTC_LOG(LS_INFO) << "Found dummy, running again while ignoring non-default "
-                   << "routes.";
-  manager.set_ignore_non_default_routes(true);
-  list = GetNetworks(manager, false);
-  for (NetworkManager::NetworkList::iterator it = list.begin();
-       it != list.end(); ++it) {
-    RTC_LOG(LS_INFO) << "  Network name: " << (*it)->name();
-    EXPECT_TRUE((*it)->name().find("dummy0") == std::string::npos);
-  }
-  for (NetworkManager::NetworkList::iterator it = list.begin();
-       it != list.end(); ++it) {
-    delete (*it);
-  }
-}
-#endif
-
 // Test MergeNetworkList successfully combines all IPs for the same
 // prefix/length into a single Network.
 TEST_F(NetworkTest, TestMergeNetworkList) {
@@ -1160,6 +1116,67 @@ TEST_F(NetworkTest, MAYBE_DefaultLocalAddress) {
   EXPECT_EQ(static_cast<IPAddress>(ip1), ip);
 
   manager.StopUpdating();
+}
+
+// Test that MergeNetworkList does not set change = true
+// when changing from cellular_X to cellular_Y.
+TEST_F(NetworkTest, TestWhenNetworkListChangeReturnsChangedFlag) {
+  BasicNetworkManager manager;
+
+  IPAddress ip1;
+  EXPECT_TRUE(IPFromString("2400:4030:1:2c00:be30:0:0:1", &ip1));
+  Network* net1 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+  net1->set_type(ADAPTER_TYPE_CELLULAR_3G);
+  net1->AddIP(ip1);
+  NetworkManager::NetworkList list;
+  list.push_back(net1);
+
+  {
+    bool changed;
+    MergeNetworkList(manager, list, &changed);
+    EXPECT_TRUE(changed);
+    NetworkManager::NetworkList list2;
+    manager.GetNetworks(&list2);
+    EXPECT_EQ(list2.size(), 1uL);
+    EXPECT_EQ(ADAPTER_TYPE_CELLULAR_3G, list2[0]->type());
+  }
+
+  // Modify net1 from 3G to 4G
+  {
+    Network* net2 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+    net2->set_type(ADAPTER_TYPE_CELLULAR_4G);
+    net2->AddIP(ip1);
+    list.clear();
+    list.push_back(net2);
+    bool changed;
+    MergeNetworkList(manager, list, &changed);
+
+    // Change from 3G to 4G shall not trigger OnNetworksChanged,
+    // i.e changed = false.
+    EXPECT_FALSE(changed);
+    NetworkManager::NetworkList list2;
+    manager.GetNetworks(&list2);
+    ASSERT_EQ(list2.size(), 1uL);
+    EXPECT_EQ(ADAPTER_TYPE_CELLULAR_4G, list2[0]->type());
+  }
+
+  // Don't modify.
+  {
+    Network* net2 = new Network("em1", "em1", TruncateIP(ip1, 64), 64);
+    net2->set_type(ADAPTER_TYPE_CELLULAR_4G);
+    net2->AddIP(ip1);
+    list.clear();
+    list.push_back(net2);
+    bool changed;
+    MergeNetworkList(manager, list, &changed);
+
+    // No change.
+    EXPECT_FALSE(changed);
+    NetworkManager::NetworkList list2;
+    manager.GetNetworks(&list2);
+    ASSERT_EQ(list2.size(), 1uL);
+    EXPECT_EQ(ADAPTER_TYPE_CELLULAR_4G, list2[0]->type());
+  }
 }
 
 }  // namespace rtc

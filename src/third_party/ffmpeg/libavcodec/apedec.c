@@ -496,6 +496,7 @@ static inline int ape_decode_value_3860(APEContext *ctx, GetBitContext *gb,
         x = (overflow << rice->k) + get_bits(gb, rice->k);
     } else {
         av_log(ctx->avctx, AV_LOG_ERROR, "Too many bits: %"PRIu32"\n", rice->k);
+        ctx->error = 1;
         return AVERROR_INVALIDDATA;
     }
     rice->ksum += x - (rice->ksum + 8 >> 4);
@@ -585,6 +586,11 @@ static inline int ape_decode_value_3990(APEContext *ctx, APERice *rice)
     return ((x >> 1) ^ ((x & 1) - 1)) + 1;
 }
 
+static int get_k(int ksum)
+{
+    return av_log2(ksum) + !!ksum;
+}
+
 static void decode_array_0000(APEContext *ctx, GetBitContext *gb,
                               int32_t *out, APERice *rice, int blockstodecode)
 {
@@ -596,25 +602,34 @@ static void decode_array_0000(APEContext *ctx, GetBitContext *gb,
         out[i] = get_rice_ook(&ctx->gb, 10);
         rice->ksum += out[i];
     }
-    rice->k = av_log2(rice->ksum / 10) + 1;
+
+    if (blockstodecode <= 5)
+        goto end;
+
+    rice->k = get_k(rice->ksum / 10);
     if (rice->k >= 24)
         return;
     for (; i < FFMIN(blockstodecode, 64); i++) {
         out[i] = get_rice_ook(&ctx->gb, rice->k);
         rice->ksum += out[i];
-        rice->k = av_log2(rice->ksum / ((i + 1) * 2)) + 1;
+        rice->k = get_k(rice->ksum / ((i + 1) * 2));
         if (rice->k >= 24)
             return;
     }
+
+    if (blockstodecode <= 64)
+        goto end;
+
+    rice->k = get_k(rice->ksum >> 7);
     ksummax = 1 << rice->k + 7;
     ksummin = rice->k ? (1 << rice->k + 6) : 0;
     for (; i < blockstodecode; i++) {
         if (get_bits_left(&ctx->gb) < 1) {
             ctx->error = 1;
-            return ;
+            return;
         }
         out[i] = get_rice_ook(&ctx->gb, rice->k);
-        rice->ksum += out[i] - out[i - 64];
+        rice->ksum += out[i] - (unsigned)out[i - 64];
         while (rice->ksum < ksummin) {
             rice->k--;
             ksummin = rice->k ? ksummin >> 1 : 0;
@@ -629,6 +644,7 @@ static void decode_array_0000(APEContext *ctx, GetBitContext *gb,
         }
     }
 
+end:
     for (i = 0; i < blockstodecode; i++)
         out[i] = ((out[i] >> 1) ^ ((out[i] & 1) - 1)) + 1;
 }
@@ -885,7 +901,7 @@ static av_always_inline int filter_3800(APEPredictor *p,
     p->coeffsB[filter][1] -= (((d4 >> 30) & 2) - 1) * sign;
 
     p->filterB[filter] = p->lastA[filter] + (predictionB >> shift);
-    p->filterA[filter] = p->filterB[filter] + ((int)(p->filterA[filter] * 31U) >> 5);
+    p->filterA[filter] = p->filterB[filter] + (unsigned)((int)(p->filterA[filter] * 31U) >> 5);
 
     return p->filterA[filter];
 }
@@ -920,7 +936,8 @@ static void long_filter_ehigh_3830(int32_t *buffer, int length)
 {
     int i, j;
     int32_t dotprod, sign;
-    int32_t coeffs[8] = { 0 }, delay[8] = { 0 };
+    int32_t delay[8] = { 0 };
+    uint32_t coeffs[8] = { 0 };
 
     for (i = 0; i < length; i++) {
         dotprod = 0;
@@ -1206,14 +1223,14 @@ static void predictor_decode_mono_3950(APEContext *ctx, int count)
         A = *decoded0;
 
         p->buf[YDELAYA] = currentA;
-        p->buf[YDELAYA - 1] = p->buf[YDELAYA] - p->buf[YDELAYA - 1];
+        p->buf[YDELAYA - 1] = p->buf[YDELAYA] - (unsigned)p->buf[YDELAYA - 1];
 
         predictionA = p->buf[YDELAYA    ] * p->coeffsA[0][0] +
                       p->buf[YDELAYA - 1] * p->coeffsA[0][1] +
                       p->buf[YDELAYA - 2] * p->coeffsA[0][2] +
                       p->buf[YDELAYA - 3] * p->coeffsA[0][3];
 
-        currentA = A + (predictionA >> 10);
+        currentA = A + (unsigned)(predictionA >> 10);
 
         p->buf[YADAPTCOEFFSA]     = APESIGN(p->buf[YDELAYA    ]);
         p->buf[YADAPTCOEFFSA - 1] = APESIGN(p->buf[YDELAYA - 1]);
@@ -1233,7 +1250,7 @@ static void predictor_decode_mono_3950(APEContext *ctx, int count)
             p->buf = p->historybuffer;
         }
 
-        p->filterA[0] = currentA + ((int)(p->filterA[0] * 31U) >> 5);
+        p->filterA[0] = currentA + (unsigned)((int)(p->filterA[0] * 31U) >> 5);
         *(decoded0++) = p->filterA[0];
     }
 
@@ -1271,7 +1288,7 @@ static void do_apply_filter(APEContext *ctx, int version, APEFilter *f,
                                                      f->adaptcoeffs - order,
                                                      order, APESIGN(*data));
         res = (int)(res + (1U << (fracbits - 1))) >> fracbits;
-        res += *data;
+        res += (unsigned)*data;
         *data++ = res;
 
         /* Update the output history */
@@ -1301,7 +1318,7 @@ static void do_apply_filter(APEContext *ctx, int version, APEFilter *f,
             else
                 *f->adaptcoeffs = 0;
 
-            f->avg += (absres - f->avg) / 16;
+            f->avg += (int)(absres - (unsigned)f->avg) / 16;
 
             f->adaptcoeffs[-1] >>= 1;
             f->adaptcoeffs[-2] >>= 1;
@@ -1516,7 +1533,7 @@ static int ape_decode_frame(AVCodecContext *avctx, void *data,
     av_fast_malloc(&s->decoded_buffer, &s->decoded_size, decoded_buffer_size);
     if (!s->decoded_buffer)
         return AVERROR(ENOMEM);
-    memset(s->decoded_buffer, 0, s->decoded_size);
+    memset(s->decoded_buffer, 0, decoded_buffer_size);
     s->decoded[0] = s->decoded_buffer;
     s->decoded[1] = s->decoded_buffer + FFALIGN(blockstodecode, 8);
 
@@ -1553,7 +1570,7 @@ static int ape_decode_frame(AVCodecContext *avctx, void *data,
         for (ch = 0; ch < s->channels; ch++) {
             sample24 = (int32_t *)frame->data[ch];
             for (i = 0; i < blockstodecode; i++)
-                *sample24++ = s->decoded[ch][i] << 8;
+                *sample24++ = s->decoded[ch][i] * 256;
         }
         break;
     }

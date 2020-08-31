@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -59,9 +60,10 @@ PickerIndicatorElement::~PickerIndicatorElement() {
 LayoutObject* PickerIndicatorElement::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
+  UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByDetailsMarker);
   return new LayoutDetailsMarker(this);
 }
 
@@ -72,12 +74,12 @@ void PickerIndicatorElement::DefaultEventHandler(Event& event) {
       picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return;
 
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
   if (event.type() == event_type_names::kClick) {
     OpenPopup();
     event.SetDefaultHandled();
-  } else if (event.type() == event_type_names::kKeypress &&
-             event.IsKeyboardEvent()) {
-    int char_code = ToKeyboardEvent(event).charCode();
+  } else if (event.type() == event_type_names::kKeypress && keyboard_event) {
+    int char_code = keyboard_event->charCode();
     if (char_code == ' ' || char_code == '\r') {
       OpenPopup();
       event.SetDefaultHandled();
@@ -109,10 +111,16 @@ void PickerIndicatorElement::DidChooseValue(double value) {
 
 void PickerIndicatorElement::DidEndChooser() {
   chooser_.Clear();
+  picker_indicator_owner_->DidEndChooser();
+  if (::features::IsFormControlsRefreshEnabled() &&
+      OwnerElement().GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is shown.
+    OwnerElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 void PickerIndicatorElement::OpenPopup() {
-  if (chooser_)
+  if (HasOpenedPopup())
     return;
   if (!GetDocument().GetPage())
     return;
@@ -123,6 +131,11 @@ void PickerIndicatorElement::OpenPopup() {
     return;
   chooser_ = GetDocument().GetPage()->GetChromeClient().OpenDateTimeChooser(
       GetDocument().GetFrame(), this, parameters);
+  if (::features::IsFormControlsRefreshEnabled() &&
+      OwnerElement().GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is removed.
+    OwnerElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 Element& PickerIndicatorElement::OwnerElement() const {
@@ -134,6 +147,10 @@ void PickerIndicatorElement::ClosePopup() {
   if (!chooser_)
     return;
   chooser_->EndChooser();
+}
+
+bool PickerIndicatorElement::HasOpenedPopup() const {
+  return chooser_;
 }
 
 void PickerIndicatorElement::DetachLayoutTree(bool performing_reattach) {
@@ -160,7 +177,8 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
     return;
   // Don't make this focusable if we are in web tests in order to avoid
   // breaking existing tests.
-  // FIXME: We should have a way to disable accessibility in web tests.
+  // TODO(crbug.com/1054048): We should have a way to disable accessibility in
+  // web tests.  Once we do have it, this early return should be removed.
   if (WebTestSupport::IsRunningWebTest())
     return;
   setAttribute(html_names::kTabindexAttr, "0");
@@ -168,7 +186,8 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   setAttribute(html_names::kRoleAttr, "button");
   setAttribute(
       html_names::kAriaLabelAttr,
-      AtomicString(GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_DATE_PICKER)));
+      AtomicString(
+          this->picker_indicator_owner_->AriaRoleForPickerIndicator()));
 }
 
 void PickerIndicatorElement::Trace(Visitor* visitor) {

@@ -61,7 +61,7 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
   for reference in reference_maps:
     base = os.path.join(reference, '.repo', 'manifests.git')
     result = git.RunGit(base, ['config', '--local', '--get', 'repo.mirror'],
-                        error_code_ok=True)
+                        check=False)
     is_mirror[reference] = (result.returncode == 0 and
                             result.output.strip() == 'true')
 
@@ -145,7 +145,8 @@ def _GetProjects(repo_root):
   data = cros_build_lib.run(
       ['find', './', '-type', 'd', '-name', '*.git', '-a',
        '!', '-wholename', '*/*.git/*', '-prune'],
-      cwd=os.path.join(repo_root, 'project-objects'), capture_output=True)
+      cwd=os.path.join(repo_root, 'project-objects'), capture_output=True,
+      encoding='utf-8')
 
   # Drop the leading ./ and the trailing .git
   data = [x[2:-4] for x in data.output.splitlines() if x]
@@ -214,7 +215,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
     seen.add(repo_root)
     base = os.path.join(repo_root, '.repo', 'manifests.git')
     result = git.RunGit(
-        base, ['config', 'repo.reference'], error_code_ok=True)
+        base, ['config', 'repo.reference'], check=False)
 
     if result.returncode not in (0, 1):
       raise Failed('Unexpected returncode %i from examining %s git '

@@ -1,10 +1,13 @@
-document
-++group
-++++group
-++++++description Name='a'
-++++++description Name='2'
-++++++description Name=' '
-++++++description Name='+'
-++++++description Name=' '
-++++++description Name='b'
-++++++description Name='2'
+Document
+++Group IsControlElement=false
+++++Group IsControlElement=false
+++++++Group IsControlElement=false
+++++++++Text Name='𝐴'
+++++++Group IsControlElement=false
+++++++++Text Name='2'
+++++++Group IsControlElement=false
+++++++++Text Name='+'
+++++++Group IsControlElement=false
+++++++++Text Name='𝐵'
+++++++Group IsControlElement=false
+++++++++Text Name='2'

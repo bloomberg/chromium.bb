@@ -5,6 +5,7 @@
 #include "ui/views/examples/label_example.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -30,7 +31,7 @@ namespace examples {
 
 namespace {
 
-const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
+const char* kAlignments[] = {"Left", "Center", "Right", "Head"};
 
 // A Label with a clamped preferred width to demonstrate eliding or wrapping.
 class ExamplePreferredSizeLabel : public Label {
@@ -98,14 +99,16 @@ void LabelExample::CreateExampleView(View* container) {
   container->AddChildView(std::move(label));
 
   label = std::make_unique<ExamplePreferredSizeLabel>();
-  label->SetText(ASCIIToUTF16("A long label will elide toward its logical end "
-      "if the text's width exceeds the label's available width."));
+  label->SetText(
+      ASCIIToUTF16("A long label will elide toward its logical end "
+                   "if the text's width exceeds the label's available width."));
   container->AddChildView(std::move(label));
 
   label = std::make_unique<ExamplePreferredSizeLabel>();
-  label->SetText(ASCIIToUTF16("A multi-line label will wrap onto subsequent "
-    "lines if the text's width exceeds the label's available width, which is "
-    "helpful for extemely long text used to demonstrate line wrapping."));
+  label->SetText(ASCIIToUTF16(
+      "A multi-line label will wrap onto subsequent "
+      "lines if the text's width exceeds the label's available width, which is "
+      "helpful for extemely long text used to demonstrate line wrapping."));
   label->SetMultiLine(true);
   container->AddChildView(std::move(label));
 
@@ -163,10 +166,10 @@ void LabelExample::AddCustomLabel(View* container) {
       std::make_unique<views::GridLayout>());
 
   ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
-                        0.0f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        1.0f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0.0f,
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(std::make_unique<Label>(ASCIIToUTF16("Content: ")));
@@ -185,12 +188,12 @@ void LabelExample::AddCustomLabel(View* container) {
       base::size(ExamplePreferredSizeLabel::kElideBehaviors));
 
   column_set = layout->AddColumnSet(1);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                        0, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                        0, GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(0, 1);
   multiline_ = layout->AddView(
       std::make_unique<Checkbox>(base::ASCIIToUTF16("Multiline"), this));
@@ -201,8 +204,8 @@ void LabelExample::AddCustomLabel(View* container) {
   layout->AddPaddingRow(0, 8);
 
   column_set = layout->AddColumnSet(2);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        1, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(0, 2);
   auto custom_label = std::make_unique<ExamplePreferredSizeLabel>();
   custom_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

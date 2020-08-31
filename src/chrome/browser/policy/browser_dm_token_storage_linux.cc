@@ -22,6 +22,7 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -34,9 +35,6 @@ namespace {
 const char kDmTokenBaseDir[] = FILE_PATH_LITERAL("Policy/Enrollment/");
 const char kEnrollmentTokenFilename[] =
     FILE_PATH_LITERAL("enrollment/CloudManagementEnrollmentToken");
-// TODO(crbug.com/907589) : Remove once no longer in use.
-const char kEnrollmentTokenOldFilename[] =
-    FILE_PATH_LITERAL("enrollment/enrollment_token");
 const char kMachineIdFilename[] = FILE_PATH_LITERAL("/etc/machine-id");
 
 // Enrollment Mandatory Option.
@@ -83,8 +81,7 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
 }
 
 BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux()
-    : task_runner_(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
+    : task_runner_(base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 BrowserDMTokenStorageLinux::~BrowserDMTokenStorageLinux() {}
 
@@ -125,15 +122,8 @@ std::string BrowserDMTokenStorageLinux::InitEnrollmentToken() {
   base::FilePath token_file_path =
       dir_policy_files_path.Append(kEnrollmentTokenFilename);
 
-  // Read the enrollment token from the new location. If that fails, try the old
-  // location (which will be deprecated soon). If that also fails, bail as there
-  // is no token set.
-  if (!base::ReadFileToString(token_file_path, &enrollment_token)) {
-    // TODO(crbug.com/907589) : Remove once no longer in use.
-    token_file_path = dir_policy_files_path.Append(kEnrollmentTokenOldFilename);
-    if (!base::ReadFileToString(token_file_path, &enrollment_token))
-      return std::string();
-  }
+  if (!base::ReadFileToString(token_file_path, &enrollment_token))
+    return std::string();
 
   return base::TrimWhitespaceASCII(enrollment_token, base::TRIM_ALL)
       .as_string();

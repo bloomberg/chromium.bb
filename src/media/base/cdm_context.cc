@@ -29,11 +29,12 @@ bool CdmContext::RequiresMediaFoundationRenderer() {
   return false;
 }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-CdmProxyContext* CdmContext::GetCdmProxyContext() {
-  return nullptr;
+#if defined(OS_WIN)
+bool CdmContext::GetMediaFoundationCdmProxy(
+    GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb) {
+  return false;
 }
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif
 
 #if defined(OS_ANDROID)
 MediaCryptoContext* CdmContext::GetMediaCryptoContext() {

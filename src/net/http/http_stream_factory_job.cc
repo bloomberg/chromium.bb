@@ -9,11 +9,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -339,6 +340,10 @@ const SSLConfig& HttpStreamFactory::Job::proxy_ssl_config() const {
 
 const ProxyInfo& HttpStreamFactory::Job::proxy_info() const {
   return proxy_info_;
+}
+
+ResolveErrorInfo HttpStreamFactory::Job::resolve_error_info() const {
+  return resolve_error_info_;
 }
 
 void HttpStreamFactory::Job::GetSSLInfo(SSLInfo* ssl_info) {
@@ -920,6 +925,8 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
     return OK;
   }
 
+  resolve_error_info_ = connection_->resolve_error_info();
+
   // |result| may be the result of any of the stacked pools. The following
   // logic is used when determining how to interpret an error.
   // If |result| < 0:
@@ -1139,7 +1146,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
   // Close idle sockets in this group, since subsequent requests will go over
   // |spdy_session|.
   if (connection_->socket()->IsConnected())
-    connection_->CloseIdleSocketsInGroup();
+    connection_->CloseIdleSocketsInGroup("Switching to HTTP2 session");
 
   // If |spdy_session_direct_| is false, then |proxy_info_| is guaranteed to
   // have a non-empty proxy list.

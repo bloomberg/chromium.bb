@@ -176,12 +176,9 @@ void OpaqueBrowserFrameView::InitViews() {
 
   web_app::AppBrowserController* controller =
       browser_view()->browser()->app_controller();
-  if (controller && controller->HasTitlebarToolbar()) {
-    set_web_app_frame_toolbar(
-        AddChildView(std::make_unique<WebAppFrameToolbarView>(
-            frame(), browser_view(),
-            GetCaptionColor(BrowserFrameActiveState::kActive),
-            GetCaptionColor(BrowserFrameActiveState::kInactive))));
+  if (controller) {
+    set_web_app_frame_toolbar(AddChildView(
+        std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
   }
 
   // The window title appears above the web app frame toolbar (if present),
@@ -203,7 +200,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStripRegion(
   if (!tabstrip)
     return gfx::Rect();
 
-  return layout_->GetBoundsForTabStripRegion(tabstrip->GetPreferredSize(),
+  return layout_->GetBoundsForTabStripRegion(tabstrip->GetMinimumSize(),
                                              width());
 }
 
@@ -452,8 +449,8 @@ int OpaqueBrowserFrameView::GetTabStripHeight() const {
   return browser_view()->GetTabStripHeight();
 }
 
-gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
-  return browser_view()->tabstrip()->GetPreferredSize();
+gfx::Size OpaqueBrowserFrameView::GetTabstripMinimumSize() const {
+  return browser_view()->tabstrip()->GetMinimumSize();
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {

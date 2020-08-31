@@ -16,8 +16,9 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -34,10 +35,9 @@ typedef base::OnceCallback<void(bool succeeded)> CommandCompletionCallback;
 const char kGzipCommand[] = "/bin/gzip";
 const char kTarCommand[] = "/bin/tar";
 
-base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
+base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
                          base::TaskPriority::BEST_EFFORT,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
@@ -182,9 +182,8 @@ void OnSystemLogsAdded(DebugLogWriter::StoreLogsCallback callback,
   base::FilePath user_log_dir =
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AddUserLogsToArchive, user_log_dir, tar_file_path,
                      compressed_output_path, std::move(callback)));
 }
@@ -218,7 +217,7 @@ void StartLogRetrieval(const base::FilePath& file_name_template,
       FROM_HERE,
       base::BindOnce(&InitializeLogFile, base::Unretained(file_ptr), file_path,
                      flags),
-      base::BindOnce(&WriteDebugLogToFile, base::Passed(&file), file_path,
+      base::BindOnce(&WriteDebugLogToFile, std::move(file), file_path,
                      should_compress, std::move(callback)));
 }
 

@@ -170,12 +170,14 @@ struct TestParams
 	deUint32		mipLevels;
 	deBool			singleCommand;
 	deUint32		barrierCount;
+	deBool			separateDepthStencilLayouts;
 
 	TestParams (void)
 	{
-		mipLevels		= 1u;
-		singleCommand	= DE_TRUE;
-		barrierCount	= 1u;
+		mipLevels					= 1u;
+		singleCommand				= DE_TRUE;
+		barrierCount				= 1u;
+		separateDepthStencilLayouts	= DE_FALSE;
 	}
 };
 
@@ -274,6 +276,7 @@ const tcu::TextureFormat mapCombinedToDepthTransferFormat (const tcu::TextureFor
 	tcu::TextureFormat format;
 	switch (combinedFormat.type)
 	{
+		case tcu::TextureFormat::UNORM_INT16:
 		case tcu::TextureFormat::UNSIGNED_INT_16_8_8:
 			format = tcu::TextureFormat(tcu::TextureFormat::D, tcu::TextureFormat::UNORM_INT16);
 			break;
@@ -281,6 +284,7 @@ const tcu::TextureFormat mapCombinedToDepthTransferFormat (const tcu::TextureFor
 			format = tcu::TextureFormat(tcu::TextureFormat::D, tcu::TextureFormat::UNSIGNED_INT_24_8_REV);
 			break;
 		case tcu::TextureFormat::FLOAT_UNSIGNED_INT_24_8_REV:
+		case tcu::TextureFormat::FLOAT:
 			format = tcu::TextureFormat(tcu::TextureFormat::D, tcu::TextureFormat::FLOAT);
 			break;
 		default:
@@ -504,9 +508,10 @@ void CopiesAndBlittingTestInstance::uploadImageAspect (const tcu::ConstPixelBuff
 		bufferSize										// VkDeviceSize		size;
 	};
 
-	const VkImageAspectFlags		formatAspect		= getAspectFlags(parms.format);
-	const bool						skipPreImageBarrier	= formatAspect == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) &&
-														  getAspectFlags(imageAccess.getFormat()) == VK_IMAGE_ASPECT_STENCIL_BIT;
+	const VkImageAspectFlags		formatAspect		= (m_params.separateDepthStencilLayouts) ? getAspectFlags(imageAccess.getFormat()) : getAspectFlags(parms.format);
+	const bool						skipPreImageBarrier	= (m_params.separateDepthStencilLayouts) ? false : ((formatAspect == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) &&
+														  getAspectFlags(imageAccess.getFormat()) == VK_IMAGE_ASPECT_STENCIL_BIT));
+
 	const VkImageMemoryBarrier		preImageBarrier		=
 	{
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,			// VkStructureType			sType;
@@ -624,8 +629,16 @@ tcu::TestStatus CopiesAndBlittingTestInstance::checkTestResult (tcu::ConstPixelB
 	else
 	{
 		const tcu::UVec4 threshold (0u);
-		if (!tcu::intThresholdCompare(m_context.getTestContext().getLog(), "Compare", "Result comparison", expected, result, threshold, tcu::COMPARE_LOG_RESULT))
-			return tcu::TestStatus::fail("CopiesAndBlitting test");
+		if (tcu::hasDepthComponent(result.getFormat().order) || tcu::hasStencilComponent(result.getFormat().order))
+		{
+			if (!tcu::dsThresholdCompare(m_context.getTestContext().getLog(), "Compare", "Result comparison", expected, result, 0.1f, tcu::COMPARE_LOG_RESULT))
+				return tcu::TestStatus::fail("CopiesAndBlitting test");
+		}
+		else
+		{
+			if (!tcu::intThresholdCompare(m_context.getTestContext().getLog(), "Compare", "Result comparison", expected, result, threshold, tcu::COMPARE_LOG_RESULT))
+				return tcu::TestStatus::fail("CopiesAndBlitting test");
+		}
 	}
 
 	return tcu::TestStatus::pass("CopiesAndBlitting test");
@@ -1162,14 +1175,18 @@ public:
 	{
 		if (m_params.allocationKind == ALLOCATION_KIND_DEDICATED)
 		{
-			if (!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_dedicated_allocation"))
+			if (!context.isDeviceFunctionalitySupported("VK_KHR_dedicated_allocation"))
 				TCU_THROW(NotSupportedError, "VK_KHR_dedicated_allocation is not supported");
 		}
+
+		if (m_params.separateDepthStencilLayouts)
+			if (!context.isDeviceFunctionalitySupported("VK_KHR_separate_depth_stencil_layouts"))
+				TCU_THROW(NotSupportedError, "VK_KHR_separate_depth_stencil_layouts is not supported");
 
 		if ((m_params.dst.image.imageType == VK_IMAGE_TYPE_3D && m_params.src.image.imageType == VK_IMAGE_TYPE_2D) ||
 			(m_params.dst.image.imageType == VK_IMAGE_TYPE_2D && m_params.src.image.imageType == VK_IMAGE_TYPE_3D))
 		{
-			if (!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_KHR_maintenance1"))
+			if (!context.isDeviceFunctionalitySupported("VK_KHR_maintenance1"))
 				TCU_THROW(NotSupportedError, "Extension VK_KHR_maintenance1 not supported");
 		}
 
@@ -1597,6 +1614,7 @@ public:
 								CopyBufferToImage			(Context&	context,
 															 TestParams	testParams);
 	virtual tcu::TestStatus		iterate						(void);
+
 private:
 	virtual void				copyRegionToTextureLevel	(tcu::ConstPixelBufferAccess src, tcu::PixelBufferAccess dst, CopyRegion region, deUint32 mipLevel = 0u);
 
@@ -1775,6 +1793,313 @@ void CopyBufferToImage::copyRegionToTextureLevel (tcu::ConstPixelBufferAccess sr
 		}
 	}
 }
+
+class CopyBufferToDepthStencil : public CopiesAndBlittingTestInstance
+{
+public:
+								CopyBufferToDepthStencil	(Context& context,
+															 TestParams	testParams);
+	virtual tcu::TestStatus		iterate						(void);
+private:
+	virtual void				copyRegionToTextureLevel	(tcu::ConstPixelBufferAccess src, tcu::PixelBufferAccess dst, CopyRegion region, deUint32 mipLevel = 0u);
+
+	tcu::TextureFormat			m_textureFormat;
+	VkDeviceSize				m_bufferSize;
+
+	Move<VkBuffer>				m_source;
+	de::MovePtr<Allocation>		m_sourceBufferAlloc;
+	Move<VkImage>				m_destination;
+	de::MovePtr<Allocation>		m_destinationImageAlloc;
+};
+
+void CopyBufferToDepthStencil::copyRegionToTextureLevel(tcu::ConstPixelBufferAccess src, tcu::PixelBufferAccess dst, CopyRegion region, deUint32 mipLevel)
+{
+	DE_UNREF(mipLevel);
+
+	deUint32			rowLength	= region.bufferImageCopy.bufferRowLength;
+	if (!rowLength)
+		rowLength = region.bufferImageCopy.imageExtent.width;
+
+	deUint32			imageHeight = region.bufferImageCopy.bufferImageHeight;
+	if (!imageHeight)
+		imageHeight = region.bufferImageCopy.imageExtent.height;
+
+	const int			texelSize	= dst.getFormat().getPixelSize();
+	const VkExtent3D	extent		= region.bufferImageCopy.imageExtent;
+	const VkOffset3D	dstOffset	= region.bufferImageCopy.imageOffset;
+	const int			texelOffset = (int)region.bufferImageCopy.bufferOffset / texelSize;
+
+	for (deUint32 z = 0; z < extent.depth; z++)
+	{
+		for (deUint32 y = 0; y < extent.height; y++)
+		{
+			int									texelIndex = texelOffset + (z * imageHeight + y) * rowLength;
+			const tcu::ConstPixelBufferAccess	srcSubRegion = tcu::getSubregion(src, texelIndex, 0, region.bufferImageCopy.imageExtent.width, 1);
+			const tcu::PixelBufferAccess		dstSubRegion = tcu::getSubregion(dst, dstOffset.x, dstOffset.y + y, dstOffset.z + z,
+				region.bufferImageCopy.imageExtent.width, 1, 1);
+
+			if (region.bufferImageCopy.imageSubresource.aspectMask == VK_IMAGE_ASPECT_DEPTH_BIT)
+			{
+				tcu::copy(dstSubRegion, tcu::getEffectiveDepthStencilAccess(srcSubRegion, tcu::Sampler::MODE_DEPTH), DE_FALSE);
+			}
+			else
+			{
+				tcu::copy(dstSubRegion, tcu::getEffectiveDepthStencilAccess(srcSubRegion, tcu::Sampler::MODE_STENCIL), DE_FALSE);
+			}
+		}
+	}
+}
+
+bool isSupportedDepthStencilFormat(const InstanceInterface& vki, const VkPhysicalDevice physDevice, const VkFormat format)
+{
+	VkFormatProperties formatProps;
+	vki.getPhysicalDeviceFormatProperties(physDevice, format, &formatProps);
+	return (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
+}
+
+CopyBufferToDepthStencil::CopyBufferToDepthStencil(Context& context, TestParams testParams)
+	: CopiesAndBlittingTestInstance(context, testParams)
+	, m_textureFormat(mapVkFormat(testParams.dst.image.format))
+	, m_bufferSize(0)
+{
+	const InstanceInterface&	vki					= context.getInstanceInterface();
+	const DeviceInterface&		vk					= context.getDeviceInterface();
+	const VkPhysicalDevice		vkPhysDevice		= context.getPhysicalDevice();
+	const VkDevice				vkDevice			= context.getDevice();
+	const deUint32				queueFamilyIndex	= context.getUniversalQueueFamilyIndex();
+	Allocator&					memAlloc			= context.getDefaultAllocator();
+	const bool					hasDepth			= tcu::hasDepthComponent(mapVkFormat(m_params.dst.image.format).order);
+	const bool					hasStencil			= tcu::hasStencilComponent(mapVkFormat(m_params.dst.image.format).order);
+
+	if (!isSupportedDepthStencilFormat(vki, vkPhysDevice, testParams.dst.image.format))
+	{
+		TCU_THROW(NotSupportedError, "Image format not supported.");
+	}
+
+	if (hasDepth)
+	{
+		glw::GLuint texelSize = m_textureFormat.getPixelSize();
+		if (texelSize > sizeof(float))
+		{
+			// We must have D32F_S8 format, depth must be packed so we only need
+			// to allocate space for the D32F part. Stencil will be separate
+			texelSize = sizeof(float);
+		}
+		m_bufferSize += static_cast<VkDeviceSize>(m_params.dst.image.extent.width) * static_cast<VkDeviceSize>(m_params.dst.image.extent.height) * static_cast<VkDeviceSize>(texelSize);
+	}
+	if (hasStencil)
+	{
+		// Stencil is always 8bits and packed.
+		m_bufferSize += static_cast<VkDeviceSize>(m_params.dst.image.extent.width) * static_cast<VkDeviceSize>(m_params.dst.image.extent.height);
+	}
+
+	// Create source buffer, this is where the depth & stencil data will go that's used by test's regions.
+	{
+		const VkBufferCreateInfo	sourceBufferParams		=
+		{
+			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,		// VkStructureType		sType;
+			DE_NULL,									// const void*			pNext;
+			0u,											// VkBufferCreateFlags	flags;
+			m_bufferSize,								// VkDeviceSize			size;
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,			// VkBufferUsageFlags	usage;
+			VK_SHARING_MODE_EXCLUSIVE,					// VkSharingMode		sharingMode;
+			1u,											// deUint32				queueFamilyIndexCount;
+			&queueFamilyIndex,							// const deUint32*		pQueueFamilyIndices;
+		};
+
+		m_source				= createBuffer(vk, vkDevice, &sourceBufferParams);
+		m_sourceBufferAlloc		= allocateBuffer(vki, vk, vkPhysDevice, vkDevice, *m_source, MemoryRequirement::HostVisible, memAlloc, m_params.allocationKind);
+		VK_CHECK(vk.bindBufferMemory(vkDevice, *m_source, m_sourceBufferAlloc->getMemory(), m_sourceBufferAlloc->getOffset()));
+	}
+
+	// Create destination image
+	{
+		const VkImageCreateInfo		destinationImageParams	=
+		{
+			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,	// VkStructureType		sType;
+			DE_NULL,								// const void*			pNext;
+			getCreateFlags(m_params.dst.image),		// VkImageCreateFlags	flags;
+			m_params.dst.image.imageType,			// VkImageType			imageType;
+			m_params.dst.image.format,				// VkFormat				format;
+			getExtent3D(m_params.dst.image),		// VkExtent3D			extent;
+			1u,										// deUint32				mipLevels;
+			getArraySize(m_params.dst.image),		// deUint32				arraySize;
+			VK_SAMPLE_COUNT_1_BIT,					// deUint32				samples;
+			VK_IMAGE_TILING_OPTIMAL,				// VkImageTiling		tiling;
+			VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT,	// VkImageUsageFlags	usage;
+			VK_SHARING_MODE_EXCLUSIVE,				// VkSharingMode		sharingMode;
+			1u,										// deUint32				queueFamilyCount;
+			&queueFamilyIndex,						// const deUint32*		pQueueFamilyIndices;
+			VK_IMAGE_LAYOUT_UNDEFINED,				// VkImageLayout		initialLayout;
+		};
+
+		m_destination				= createImage(vk, vkDevice, &destinationImageParams);
+		m_destinationImageAlloc		= allocateImage(vki, vk, vkPhysDevice, vkDevice, *m_destination, MemoryRequirement::Any, memAlloc, m_params.allocationKind);
+		VK_CHECK(vk.bindImageMemory(vkDevice, *m_destination, m_destinationImageAlloc->getMemory(), m_destinationImageAlloc->getOffset()));
+	}
+}
+
+tcu::TestStatus CopyBufferToDepthStencil::iterate(void)
+{
+	// Create source depth/stencil content. Treat as 1D texture to get different pattern
+	m_sourceTextureLevel = de::MovePtr<tcu::TextureLevel>(new tcu::TextureLevel(m_textureFormat, (int)m_params.src.buffer.size, 1));
+	// Fill buffer with linear gradiant
+	generateBuffer(m_sourceTextureLevel->getAccess(), (int)m_params.src.buffer.size, 1, 1);
+
+	// Create image layer for depth/stencil
+	m_destinationTextureLevel = de::MovePtr<tcu::TextureLevel>(new tcu::TextureLevel(m_textureFormat,
+		m_params.dst.image.extent.width,
+		m_params.dst.image.extent.height,
+		m_params.dst.image.extent.depth));
+
+	// Fill image layer with 2D gradiant
+	generateBuffer(m_destinationTextureLevel->getAccess(), m_params.dst.image.extent.width, m_params.dst.image.extent.height, m_params.dst.image.extent.depth);
+
+	// Fill m_extendedTextureLevel with copy of m_destinationTextureLevel
+	// Then iterate over each of the regions given in m_params.regions and copy m_sourceTextureLevel content to m_extendedTextureLevel
+	// This emulates what the HW will be doing.
+	generateExpectedResult();
+
+	// Upload our source depth/stencil content to the source buffer
+	// This is the buffer that will be used by region commands
+	std::vector<VkBufferImageCopy>	bufferImageCopies;
+	VkDeviceSize					bufferOffset	= 0;
+	const VkDevice					vkDevice		= m_context.getDevice();
+	const DeviceInterface&			vk				= m_context.getDeviceInterface();
+	const VkQueue					queue			= m_context.getUniversalQueue();
+	char*							dstPtr			= reinterpret_cast<char*>(m_sourceBufferAlloc->getHostPtr());
+	bool							depthLoaded		= DE_FALSE;
+	bool							stencilLoaded	= DE_FALSE;
+	VkDeviceSize					depthOffset		= 0;
+	VkDeviceSize					stencilOffset	= 0;
+
+	// To be able to test ordering depth & stencil differently
+	// we take the given copy regions and use that as the desired order
+	// and copy the appropriate data into place and compute the appropriate
+	// data offsets to be used in the copy command.
+	for (deUint32 i = 0; i < m_params.regions.size(); i++)
+	{
+		tcu::ConstPixelBufferAccess bufferAccess	= m_sourceTextureLevel->getAccess();
+		deUint32					bufferSize		= bufferAccess.getWidth() * bufferAccess.getHeight() * bufferAccess.getDepth();
+		VkBufferImageCopy			copyData		= m_params.regions[i].bufferImageCopy;
+		char*						srcPtr;
+
+		if (copyData.imageSubresource.aspectMask == VK_IMAGE_ASPECT_DEPTH_BIT && !depthLoaded)
+		{
+			// Create level that is same component as depth buffer (e.g. D16, D24, D32F)
+			tcu::TextureLevel	depthTexture(mapCombinedToDepthTransferFormat(bufferAccess.getFormat()), bufferAccess.getWidth(), bufferAccess.getHeight(), bufferAccess.getDepth());
+			bufferSize *= tcu::getPixelSize(depthTexture.getFormat());
+			// Copy depth component only from source data. This gives us packed depth-only data.
+			tcu::copy(depthTexture.getAccess(), tcu::getEffectiveDepthStencilAccess(bufferAccess, tcu::Sampler::MODE_DEPTH));
+			srcPtr = (char*)depthTexture.getAccess().getDataPtr();
+			// Copy packed depth-only data to output buffer
+			deMemcpy(dstPtr, srcPtr, bufferSize);
+			depthLoaded = DE_TRUE;
+			depthOffset = bufferOffset;
+			dstPtr += bufferSize;
+			bufferOffset += bufferSize;
+			copyData.bufferOffset += depthOffset;
+		}
+		else if (!stencilLoaded)
+		{
+			// Create level that is same component as stencil buffer (always 8-bits)
+			tcu::TextureLevel	stencilTexture(tcu::getEffectiveDepthStencilTextureFormat(bufferAccess.getFormat(), tcu::Sampler::MODE_STENCIL), bufferAccess.getWidth(), bufferAccess.getHeight(), bufferAccess.getDepth());
+			// Copy stencil component only from source data. This gives us packed stencil-only data.
+			tcu::copy(stencilTexture.getAccess(), tcu::getEffectiveDepthStencilAccess(bufferAccess, tcu::Sampler::MODE_STENCIL));
+			srcPtr = (char*)stencilTexture.getAccess().getDataPtr();
+			// Copy packed stencil-only data to output buffer
+			deMemcpy(dstPtr, srcPtr, bufferSize);
+			stencilLoaded = DE_TRUE;
+			stencilOffset = bufferOffset;
+			dstPtr += bufferSize;
+			bufferOffset += bufferSize;
+
+			// Reference image generation uses pixel offsets based on buffer offset.
+			// We need to adjust the offset now that the stencil data is not interleaved.
+			copyData.bufferOffset /= tcu::getPixelSize(m_textureFormat);
+
+			copyData.bufferOffset += stencilOffset;
+		}
+
+		bufferImageCopies.push_back(copyData);
+	}
+
+	flushAlloc(vk, vkDevice, *m_sourceBufferAlloc);
+
+	// Upload the depth/stencil data from m_destinationTextureLevel to initialize
+	// depth and stencil to known values.
+	// Uses uploadImageAspect so makes its own buffers for depth and stencil
+	// aspects (as needed) and copies them with independent vkCmdCopyBufferToImage commands.
+	uploadImage(m_destinationTextureLevel->getAccess(), *m_destination, m_params.dst.image);
+
+	const VkImageMemoryBarrier	imageBarrier	=
+	{
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
+		DE_NULL,									// const void*				pNext;
+		VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			srcAccessMask;
+		VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			dstAccessMask;
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			oldLayout;
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			newLayout;
+		VK_QUEUE_FAMILY_IGNORED,					// deUint32					srcQueueFamilyIndex;
+		VK_QUEUE_FAMILY_IGNORED,					// deUint32					dstQueueFamilyIndex;
+		*m_destination,								// VkImage					image;
+		{											// VkImageSubresourceRange	subresourceRange;
+			getAspectFlags(m_textureFormat),	// VkImageAspectFlags	aspectMask;
+			0u,								// deUint32				baseMipLevel;
+			1u,								// deUint32				mipLevels;
+			0u,								// deUint32				baseArraySlice;
+			1u								// deUint32				arraySize;
+		}
+	};
+
+	// Copy from buffer to depth/stencil image
+
+	beginCommandBuffer(vk, *m_cmdBuffer);
+	vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1, &imageBarrier);
+
+	if (m_params.singleCommand)
+	{
+		// Issue a single copy command with regions defined by the test.
+		vk.cmdCopyBufferToImage(*m_cmdBuffer, m_source.get(), m_destination.get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (deUint32)m_params.regions.size(), bufferImageCopies.data());
+	}
+	else
+	{
+		// Issue a a copy command per region defined by the test.
+		for (deUint32 i = 0; i < bufferImageCopies.size(); i++)
+		{
+			vk.cmdCopyBufferToImage(*m_cmdBuffer, m_source.get(), m_destination.get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopies[i]);
+		}
+	}
+	endCommandBuffer(vk, *m_cmdBuffer);
+
+	submitCommandsAndWait(vk, vkDevice, queue, *m_cmdBuffer);
+
+	de::MovePtr<tcu::TextureLevel>	resultLevel = readImage(*m_destination, m_params.dst.image);
+
+	return checkTestResult(resultLevel->getAccess());
+}
+
+class CopyBufferToDepthStencilTestCase : public vkt::TestCase
+{
+public:
+							CopyBufferToDepthStencilTestCase	(tcu::TestContext&		testCtx,
+																 const std::string&		name,
+																 const std::string&		description,
+																 const TestParams		params)
+								: vkt::TestCase(testCtx, name, description)
+								, m_params(params)
+							{}
+
+	virtual					~CopyBufferToDepthStencilTestCase	(void) {}
+
+	virtual TestInstance*	createInstance						(Context&				context) const
+							{
+								return new CopyBufferToDepthStencil(context, m_params);
+							}
+private:
+	TestParams				m_params;
+};
 
 // Copy from image to image with scaling.
 
@@ -1984,6 +2309,14 @@ tcu::Vec4 getFormatThreshold (const tcu::TextureFormat& format)
 
 	case tcu::TextureFormat::UNSIGNED_INT_999_E5_REV:
 		threshold = tcu::Vec4(0.05f, 0.05f, 0.05f, 1.0f);
+		break;
+
+	case tcu::TextureFormat::UNORM_INT_1010102_REV:
+		threshold = tcu::Vec4(0.002f, 0.002f, 0.002f, 0.3f);
+		break;
+
+	case tcu:: TextureFormat::UNORM_INT8:
+		threshold = tcu::Vec4(0.008f, 0.008f, 0.008f, 0.008f);
 		break;
 
 	default:
@@ -4962,6 +5295,10 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 		params.src.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
 		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind				= allocationKind;
+		params.separateDepthStencilLayouts	= DE_FALSE;
+
+		bool hasDepth	= tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order);
+		bool hasStencil	= tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order);
 
 		const VkImageSubresourceLayers		defaultDepthSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 0u, 1u };
 		const VkImageSubresourceLayers		defaultStencilSourceLayer	= { VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
@@ -4973,7 +5310,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 			const VkOffset3D	dstOffset	= {i, defaultSize - i - defaultFourthSize, 0};
 			const VkExtent3D	extent		= {defaultFourthSize, defaultFourthSize, 1};
 
-			if (tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order))
+			if (hasDepth)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -4987,7 +5324,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 				copyRegion.imageCopy	= testCopy;
 				params.regions.push_back(copyRegion);
 			}
-			if (tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order))
+			if (hasStencil)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -5022,6 +5359,9 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind				= allocationKind;
 
+		bool hasDepth	= tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order);
+		bool hasStencil	= tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order);
+
 		const VkImageSubresourceLayers		defaultDepthSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 0u, 1u };
 		const VkImageSubresourceLayers		defaultStencilSourceLayer	= { VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
 
@@ -5032,7 +5372,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 			const VkOffset3D	dstOffset	= {i, 0, 0};
 			const VkExtent3D	extent		= {defaultFourthSize, 1, 1};
 
-			if (tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order))
+			if (hasDepth)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -5046,7 +5386,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 				copyRegion.imageCopy	= testCopy;
 				params.regions.push_back(copyRegion);
 			}
-			if (tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order))
+			if (hasStencil)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -5081,6 +5421,9 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind				= allocationKind;
 
+		bool hasDepth	= tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order);
+		bool hasStencil	= tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order);
+
 		const VkImageSubresourceLayers		defaultDepthSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 0u, 1u };
 		const VkImageSubresourceLayers		defaultStencilSourceLayer	= { VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
 
@@ -5091,7 +5434,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 			const VkOffset3D	dstOffset	= {i, defaultFourthSize - i - defaultSixteenthSize, i};
 			const VkExtent3D	extent		= {defaultSixteenthSize, defaultSixteenthSize, defaultSixteenthSize};
 
-			if (tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order))
+			if (hasDepth)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -5105,7 +5448,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 				copyRegion.imageCopy	= testCopy;
 				params.regions.push_back(copyRegion);
 			}
-			if (tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order))
+			if (hasStencil)
 			{
 				const VkImageCopy				testCopy	=
 				{
@@ -5124,6 +5467,14 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 		const std::string testName		= "3d_"+ getFormatCaseName(params.src.image.format) + "_" + getFormatCaseName(params.dst.image.format);
 		const std::string description	= "3D copy from " + getFormatCaseName(params.src.image.format) + " to " + getFormatCaseName(params.dst.image.format);
 		addTestGroup(group, testName, description, addImageToImageAllFormatsDepthStencilFormatsTests, params);
+
+		if (hasDepth && hasStencil)
+		{
+			params.separateDepthStencilLayouts	= DE_TRUE;
+			const std::string testName2		= getFormatCaseName(params.src.image.format) + "_" + getFormatCaseName(params.dst.image.format) + "_separate_layouts";
+			const std::string description2	= "Copy from " + getFormatCaseName(params.src.image.format) + " to " + getFormatCaseName(params.dst.image.format) + " with separate depth/stencil layouts";
+			addTestGroup(group, testName2, description2, addImageToImageAllFormatsDepthStencilFormatsTests, params);
+		}
 	}
 }
 
@@ -5624,6 +5975,165 @@ void addImageToBufferTests (tcu::TestCaseGroup* group, AllocationKind allocation
 
 		group->addChild(new CopyImageToBufferTestCase(testCtx, "tightly_sized_buffer_offset", "Copy from image to a buffer that is just large enough to contain the data", params));
 	}
+}
+
+void addBufferToDepthStencilTests(tcu::TestCaseGroup* group, AllocationKind allocationKind)
+{
+	tcu::TestContext& testCtx = group->getTestContext();
+
+	const struct
+	{
+		const char*		name;
+		const VkFormat	format;
+	} depthAndStencilFormats[] =
+	{
+		{ "d16_unorm",				VK_FORMAT_D16_UNORM				},
+		{ "x8_d24_unorm_pack32",	VK_FORMAT_X8_D24_UNORM_PACK32	},
+		{ "d32_sfloat",				VK_FORMAT_D32_SFLOAT			},
+		{ "d16_unorm_s8_uint",		VK_FORMAT_D16_UNORM_S8_UINT		},
+		{ "d24_unorm_s8_uint",		VK_FORMAT_D24_UNORM_S8_UINT		},
+		{ "d32_sfloat_s8_uint",		VK_FORMAT_D32_SFLOAT_S8_UINT	}
+	};
+
+	const VkImageSubresourceLayers	depthSourceLayer		=
+	{
+		VK_IMAGE_ASPECT_DEPTH_BIT,	// VkImageAspectFlags	aspectMask;
+		0u,							// deUint32				mipLevel;
+		0u,							// deUint32				baseArrayLayer;
+		1u,							// deUint32				layerCount;
+	};
+
+	const VkBufferImageCopy			bufferDepthCopy			=
+	{
+		0u,											// VkDeviceSize				bufferOffset;
+		0u,											// deUint32					bufferRowLength;
+		0u,											// deUint32					bufferImageHeight;
+		depthSourceLayer,							// VkImageSubresourceLayers	imageSubresource;
+		{0, 0, 0},									// VkOffset3D				imageOffset;
+		defaultExtent								// VkExtent3D				imageExtent;
+	};
+
+	const VkBufferImageCopy			bufferDepthCopyOffset	=
+	{
+		32,											// VkDeviceSize				bufferOffset;
+		defaultHalfSize + defaultFourthSize,		// deUint32					bufferRowLength;
+		defaultHalfSize + defaultFourthSize,		// deUint32					bufferImageHeight;
+		depthSourceLayer,							// VkImageSubresourceLayers	imageSubresource;
+		{defaultFourthSize, defaultFourthSize, 0},	// VkOffset3D				imageOffset;
+		defaultHalfExtent							// VkExtent3D				imageExtent;
+	};
+
+	const VkImageSubresourceLayers	stencilSourceLayer		=
+	{
+		VK_IMAGE_ASPECT_STENCIL_BIT,	// VkImageAspectFlags	aspectMask;
+		0u,								// deUint32				mipLevel;
+		0u,								// deUint32				baseArrayLayer;
+		1u,								// deUint32				layerCount;
+	};
+
+	const VkBufferImageCopy			bufferStencilCopy		=
+	{
+		0u,					// VkDeviceSize				bufferOffset;
+		0u,					// deUint32					bufferRowLength;
+		0u,					// deUint32					bufferImageHeight;
+		stencilSourceLayer,	// VkImageSubresourceLayers	imageSubresource;
+		{0, 0, 0},			// VkOffset3D				imageOffset;
+		defaultExtent		// VkExtent3D				imageExtent;
+	};
+
+    const VkBufferImageCopy			bufferStencilCopyOffset	=
+	{
+		32,											// VkDeviceSize				bufferOffset;
+		defaultHalfSize + defaultFourthSize,		// deUint32					bufferRowLength;
+		defaultHalfSize + defaultFourthSize,		// deUint32					bufferImageHeight;
+		stencilSourceLayer,							// VkImageSubresourceLayers	imageSubresource;
+		{defaultFourthSize, defaultFourthSize, 0},	// VkOffset3D				imageOffset;
+		defaultHalfExtent							// VkExtent3D				imageExtent;
+	};
+
+    const bool						useOffset[]				= {false, true};
+
+	// Note: Depth stencil tests I want to do
+	// Formats: D16, D24S8, D32FS8
+	// Test writing each component with separate CopyBufferToImage commands
+	// Test writing both components in one CopyBufferToImage command
+	// Swap order of writes of Depth & Stencil
+	// whole surface, subimages?
+	// Similar tests as BufferToImage?
+	for (const auto config : depthAndStencilFormats)
+		for (const auto offset : useOffset)
+		{
+			// TODO: Check that this format is supported before creating tests?
+			//if (isSupportedDepthStencilFormat(vki, physDevice, VK_FORMAT_D24_UNORM_S8_UINT))
+
+			CopyRegion					copyDepthRegion;
+			CopyRegion					copyStencilRegion;
+			TestParams					params;
+			const tcu::TextureFormat	format		= mapVkFormat(config.format);
+			const bool					hasDepth	= tcu::hasDepthComponent(format.order);
+			const bool					hasStencil	= tcu::hasStencilComponent(format.order);
+			std::string					description	= config.name;
+
+			if (offset)
+			{
+				copyDepthRegion.bufferImageCopy = bufferDepthCopyOffset;
+				copyStencilRegion.bufferImageCopy = bufferStencilCopyOffset;
+				description = "buffer_offset_" + description;
+				params.src.buffer.size = (defaultHalfSize - 1u) * defaultSize + defaultHalfSize + defaultFourthSize;
+			}
+			else
+			{
+				copyDepthRegion.bufferImageCopy = bufferDepthCopy;
+				copyStencilRegion.bufferImageCopy = bufferStencilCopy;
+				params.src.buffer.size = defaultSize * defaultSize;
+			}
+
+			params.dst.image.imageType = VK_IMAGE_TYPE_2D;
+			params.dst.image.format = config.format;
+			params.dst.image.extent = defaultExtent;
+			params.dst.image.tiling = VK_IMAGE_TILING_OPTIMAL;
+			params.dst.image.operationLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			params.allocationKind = allocationKind;
+
+			if (hasDepth && hasStencil)
+			{
+				params.singleCommand = DE_TRUE;
+
+				params.regions.push_back(copyDepthRegion);
+				params.regions.push_back(copyStencilRegion);
+
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_DS", "Copy from depth&stencil to image", params));
+
+				params.singleCommand = DE_FALSE;
+
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_D_S", "Copy from depth then stencil to image", params));
+
+				params.regions.clear();
+				params.regions.push_back(copyStencilRegion);
+				params.regions.push_back(copyDepthRegion);
+
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_S_D", "Copy from depth then stencil to image", params));
+
+				params.singleCommand = DE_TRUE;
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_SD", "Copy from depth&stencil to image", params));
+			}
+
+			if (hasStencil)
+			{
+				params.regions.clear();
+				params.regions.push_back(copyStencilRegion);
+
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_S", "Copy from stencil to image", params));
+			}
+
+			if (hasDepth)
+			{
+				params.regions.clear();
+				params.regions.push_back(copyDepthRegion);
+
+				group->addChild(new CopyBufferToDepthStencilTestCase(testCtx, description + "_D", "Copy from depth to image", params));
+			}
+		}
 }
 
 void addBufferToImageTests (tcu::TestCaseGroup* group, AllocationKind allocationKind)
@@ -7104,6 +7614,7 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 		params.dst.image.format				= params.src.image.format;
 		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
 		params.allocationKind				= allocationKind;
+		params.separateDepthStencilLayouts	= DE_FALSE;
 
 		bool hasDepth	= tcu::hasDepthComponent(mapVkFormat(params.src.image.format).order);
 		bool hasStencil	= tcu::hasStencilComponent(mapVkFormat(params.src.image.format).order);
@@ -7401,6 +7912,16 @@ void addBlittingImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, All
 		const std::string description	= "3D blit from " + getFormatCaseName(params.src.image.format) +
 										  " to " + getFormatCaseName(params.dst.image.format);
 		addTestGroup(group, testName, description, addBlittingImageAllFormatsDepthStencilFormatsTests, params);
+
+		if (hasDepth && hasStencil)
+		{
+			params.separateDepthStencilLayouts	= DE_TRUE;
+			const std::string testName2		= getFormatCaseName(params.src.image.format) + "_" +
+											  getFormatCaseName(params.dst.image.format) + "_separate_layouts";
+			const std::string description2	= "Blit from " + getFormatCaseName(params.src.image.format) +
+											  " to " + getFormatCaseName(params.dst.image.format) + " with separate depth/stencil layouts";
+			addTestGroup(group, testName2, description2, addBlittingImageAllFormatsDepthStencilFormatsTests, params);
+		}
 	}
 }
 
@@ -8106,6 +8627,7 @@ void addCopiesAndBlittingTests (tcu::TestCaseGroup* group, AllocationKind alloca
 	addTestGroup(group, "image_to_image", "Copy from image to image", addImageToImageTests, allocationKind);
 	addTestGroup(group, "image_to_buffer", "Copy from image to buffer", addImageToBufferTests, allocationKind);
 	addTestGroup(group, "buffer_to_image", "Copy from buffer to image", addBufferToImageTests, allocationKind);
+	addTestGroup(group, "buffer_to_depthstencil", "Copy from buffer to depth/Stencil", addBufferToDepthStencilTests, allocationKind);
 	addTestGroup(group, "buffer_to_buffer", "Copy from buffer to buffer", addBufferToBufferTests, allocationKind);
 	addTestGroup(group, "blit_image", "Blitting image", addBlittingImageTests, allocationKind);
 	addTestGroup(group, "resolve_image", "Resolve image", addResolveImageTests, allocationKind);

@@ -23,24 +23,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as DataGrid from '../data_grid/data_grid.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-Resources.DatabaseTableView = class extends UI.SimpleView {
+export class DatabaseTableView extends UI.View.SimpleView {
   constructor(database, tableName) {
-    super(Common.UIString('Database'));
+    super(Common.UIString.UIString('Database'));
 
     this.database = database;
     this.tableName = tableName;
 
     this.element.classList.add('storage-view', 'table');
 
-    this._visibleColumnsSetting = Common.settings.createSetting('databaseTableViewVisibleColumns', {});
+    this._visibleColumnsSetting =
+        Common.Settings.Settings.instance().createSetting('databaseTableViewVisibleColumns', {});
 
-    this.refreshButton = new UI.ToolbarButton(Common.UIString('Refresh'), 'largeicon-refresh');
-    this.refreshButton.addEventListener(UI.ToolbarButton.Events.Click, this._refreshButtonClicked, this);
-    this._visibleColumnsInput = new UI.ToolbarInput(Common.UIString('Visible columns'), '', 1);
-    this._visibleColumnsInput.addEventListener(UI.ToolbarInput.Event.TextChanged, this._onVisibleColumnsChanged, this);
+    this.refreshButton = new UI.Toolbar.ToolbarButton(Common.UIString.UIString('Refresh'), 'largeicon-refresh');
+    this.refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._refreshButtonClicked, this);
+    this._visibleColumnsInput = new UI.Toolbar.ToolbarInput(Common.UIString.UIString('Visible columns'), '', 1);
+    this._visibleColumnsInput.addEventListener(
+        UI.Toolbar.ToolbarInput.Event.TextChanged, this._onVisibleColumnsChanged, this);
+
+    /** @type {?DataGrid.DataGrid.DataGridImpl} */
+    this._dataGrid;
   }
 
   /**
@@ -52,9 +61,9 @@ Resources.DatabaseTableView = class extends UI.SimpleView {
 
   /**
    * @override
-   * @return {!Array.<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
-  syncToolbarItems() {
+  async toolbarItems() {
     return [this.refreshButton, this._visibleColumnsInput];
   }
 
@@ -76,10 +85,10 @@ Resources.DatabaseTableView = class extends UI.SimpleView {
     this.detachChildWidgets();
     this.element.removeChildren();
 
-    this._dataGrid = DataGrid.SortableDataGrid.create(columnNames, values);
+    this._dataGrid = DataGrid.SortableDataGrid.SortableDataGrid.create(columnNames, values, ls`Database`);
     this._visibleColumnsInput.setVisible(!!this._dataGrid);
     if (!this._dataGrid) {
-      this._emptyWidget = new UI.EmptyWidget(ls`The "${this.tableName}"\ntable is empty.`);
+      this._emptyWidget = new UI.EmptyWidget.EmptyWidget(ls`The "${this.tableName}"\ntable is empty.`);
       this._emptyWidget.show(this.element);
       return;
     }
@@ -113,7 +122,7 @@ Resources.DatabaseTableView = class extends UI.SimpleView {
         columnsVisibility[this._columnsMap.get(part)] = true;
       }
     }
-    const newVisibleColumns = matches.valuesArray().sort().join(', ');
+    const newVisibleColumns = [...matches].sort().join(', ');
     if (newVisibleColumns.length === 0) {
       for (const v of this._columnsMap.values()) {
         columnsVisibility[v] = true;
@@ -140,9 +149,9 @@ Resources.DatabaseTableView = class extends UI.SimpleView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _refreshButtonClicked(event) {
     this.update();
   }
-};
+}

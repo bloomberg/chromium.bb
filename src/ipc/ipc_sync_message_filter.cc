@@ -5,8 +5,8 @@
 #include "ipc/ipc_sync_message_filter.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
@@ -81,7 +81,7 @@ bool SyncMessageFilter::Send(Message* message) {
   const bool* stop_flags[] = { &done, &shutdown };
   registry->Wait(stop_flags, 2);
   if (done) {
-    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                           "SyncMessageFilter::Send", &done_event);
   }
 
@@ -131,7 +131,7 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
         (*iter)->send_result =
             (*iter)->deserializer->SerializeOutputParameters(message);
       }
-      TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+      TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                               "SyncMessageFilter::OnMessageReceived",
                               (*iter)->done_event);
       (*iter)->done_event->Signal();
@@ -169,7 +169,7 @@ void SyncMessageFilter::SignalAllEvents() {
   lock_.AssertAcquired();
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
-    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                             "SyncMessageFilter::SignalAllEvents",
                             (*iter)->done_event);
     (*iter)->done_event->Signal();

@@ -17,11 +17,11 @@
 
 namespace base {
 class Clock;
-class FilePath;
 }  // namespace base
 
 class PrefRegistrySimple;
 class PrefService;
+class Profile;
 
 // Whether to enable announcement notification system.
 extern const base::Feature kAnnouncementNotification;
@@ -32,8 +32,8 @@ constexpr char kSkipFirstRun[] = "skip_first_run";
 
 // The Finch parameter name for a string value that represents a time.
 // If first run happens after this time, notification will not show.
-// The string defined in Finch config should specify UTC time, and will be
-// parsed by base::Time::FromString().
+// The string defined in Finch config should specify the time zone.
+// e.g. 02 Feb 2020 13:00:00 GMT.
 constexpr char kSkipFirstRunAfterTime[] = "skip_first_run_after_time";
 
 // The Finch parameter name for a boolean value that whether to show
@@ -86,12 +86,14 @@ class AnnouncementNotificationService : public KeyedService {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static AnnouncementNotificationService* Create(
-      const base::FilePath& profile_path,
-      bool new_profile,
+      Profile* profile,
       PrefService* pref_service,
       std::unique_ptr<Delegate> delegate,
       base::Clock* clock);
   static GURL GetAnnouncementURL();
+
+  // Returns if the announcement can be opened.
+  static bool CanOpenAnnouncement(Profile* profile);
 
   AnnouncementNotificationService();
   ~AnnouncementNotificationService() override;

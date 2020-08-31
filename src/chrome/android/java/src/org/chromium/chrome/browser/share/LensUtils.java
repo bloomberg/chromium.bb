@@ -13,10 +13,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.variations.VariationsAssociatedData;
 
 /**
  * This class provides utilities for intenting into Google Lens.
@@ -26,15 +32,24 @@ public class LensUtils {
     private static final String LENS_BITMAP_URI_KEY = "LensBitmapUriKey";
     private static final String ACCOUNT_NAME_URI_KEY = "AccountNameUriKey";
     private static final String INCOGNITO_URI_KEY = "IncognitoUriKey";
+    private static final String LAUNCH_TIMESTAMP_URI_KEY = "ActivityLaunchTimestampNanos";
+    private static final String IMAGE_SRC_URI_KEY = "ImageSrc";
+    private static final String ALT_URI_KEY = "ImageAlt";
+    private static final String VARIATION_ID_URI_KEY = "Gid";
+
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
             "useSearchByImageText";
+    private static final String LOG_UKM_PARAM_NAME = "logUkm";
+    private static final String SEND_SRC_PARAM_NAME = "sendSrc";
+    private static final String SEND_ALT_PARAM_NAME = "sendAlt";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
      * See function for details.
      */
     private static boolean sFakePassableLensEnvironmentForTesting;
+    private static String sFakeVariationsForTesting;
 
     /*
      * If true, short-circuit the version name intent check to always return a high enough version.
@@ -44,6 +59,16 @@ public class LensUtils {
      */
     public static void setFakePassableLensEnvironmentForTesting(boolean shouldFake) {
         sFakePassableLensEnvironmentForTesting = shouldFake;
+    }
+
+    /*
+     * If set, short-circuit the JNI call to retrieve the variation IDs.
+     * Used by test cases.
+     * @param fakeIdString Whether to fake the version check.
+     */
+    @VisibleForTesting
+    static void setFakeVariationsForTesting(String fakeVariations) {
+        sFakeVariationsForTesting = fakeVariations;
     }
 
     /**
@@ -63,8 +88,9 @@ public class LensUtils {
             try {
                 PackageManager pm = context.getPackageManager();
                 // No data transmission occurring so safe to assume incognito is false.
-                Intent lensIntent =
-                        getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
+                Intent lensIntent = getShareWithGoogleLensIntent(Uri.EMPTY,
+                        /* isIncognito= */ false,
+                        /* currentTimeNanos= */ 0L, /* srcUrl */ "", /* titleOrAltText */ "");
                 ComponentName lensActivity = lensIntent.resolveActivity(pm);
                 if (lensActivity == null) return "";
                 PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
@@ -87,7 +113,7 @@ public class LensUtils {
      *
      * @return The minimum version name string or an empty string if not available.
      */
-    private static String getMinimumAgsaVersionForLensSupport() {
+    public static String getMinimumAgsaVersionForLensSupport() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS)) {
             final String serverProvidedMinAgsaVersion =
                     ChromeFeatureList.getFieldTrialParamByFeature(
@@ -105,39 +131,6 @@ public class LensUtils {
     }
 
     /**
-     * Checks if the AGSA version is below a certain {@code String} version name
-     * which denotes support for the Lens postcapture experience.
-     * @param installedVersionName The AGSA version installed on this device,
-     * @return Whether the AGSA version on the device is high enough.
-     */
-    public static boolean isAgsaVersionBelowMinimum(String installedVersionName) {
-        String minimumAllowedAgsaVersionName = getMinimumAgsaVersionForLensSupport();
-        if (TextUtils.isEmpty(installedVersionName)
-                || TextUtils.isEmpty(minimumAllowedAgsaVersionName)) {
-            return true;
-        }
-
-        String[] agsaNumbers = installedVersionName.split("\\.", -1);
-        String[] targetAgsaNumbers = minimumAllowedAgsaVersionName.split("\\.", -1);
-
-        // To avoid IndexOutOfBounds
-        int maxIndex = Math.min(agsaNumbers.length, targetAgsaNumbers.length);
-        for (int i = 0; i < maxIndex; ++i) {
-            int agsaNumber = Integer.parseInt(agsaNumbers[i]);
-            int targetAgsaNumber = Integer.parseInt(targetAgsaNumbers[i]);
-
-            if (agsaNumber < targetAgsaNumber) {
-                return true;
-            } else if (agsaNumber > targetAgsaNumber) {
-                return false;
-            }
-        }
-
-        // If versions are the same so far, but they have different length...
-        return agsaNumbers.length < targetAgsaNumbers.length;
-    }
-
-    /**
      * Checks whether the device is below Android O.  We restrict to these versions
      * to limit to OS"s where image processing vulnerabilities can be retroactively
      * fixed if they are discovered in the future.
@@ -152,38 +145,111 @@ public class LensUtils {
     }
 
     /**
-     * Get a deeplink intent to Google Lens with an optional content provider image URI.
+     * Checks whether the GSA package on the device is guaranteed to be an official GSA build.
+     * @return Whether the package is valid.
+     */
+    public static boolean isValidAgsaPackage(ExternalAuthUtils externalAuthUtils) {
+        if (sFakePassableLensEnvironmentForTesting) {
+            return true;
+        }
+
+        return externalAuthUtils.isGoogleSigned(IntentHandler.PACKAGE_GSA);
+    }
+
+    /**
+     * Get a deeplink intent to Google Lens with an optional content provider image URI. The intent
+     * should be constructed immediately before the intent is fired to ensure that the launch
+     * timestamp is accurate.
      * @param imageUri The content provider URI generated by chrome (or empty URI)
      *                 if only resolving the activity.
      * @param isIncognito Whether the current tab is in incognito mode.
+     * @param currentTimeNanos The current system time since boot in nanos.
+     * @param srcUrl The 'src' attribute of the image.
+     * @param titleOrAltText The 'title' or, if empty, the 'alt' attribute of the image.
      * @return The intent to Google Lens.
      */
-    public static Intent getShareWithGoogleLensIntent(Uri imageUri, boolean isIncognito) {
-        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+
+    public static Intent getShareWithGoogleLensIntent(Uri imageUri, boolean isIncognito,
+            long currentTimeNanos, String srcUrl, String titleOrAltText) {
+        CoreAccountInfo coreAccountInfo =
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
         // If incognito do not send the account name to avoid leaking session information to Lens.
-        if (signedInAccountName == null || isIncognito) signedInAccountName = "";
+        String signedInAccountName =
+                (coreAccountInfo == null || isIncognito) ? "" : coreAccountInfo.getEmail();
 
         Uri lensUri = Uri.parse(LENS_CONTRACT_URI);
         if (!Uri.EMPTY.equals(imageUri)) {
-            lensUri =
+            Uri.Builder lensUriBuilder =
                     lensUri.buildUpon()
                             .appendQueryParameter(LENS_BITMAP_URI_KEY, imageUri.toString())
                             .appendQueryParameter(ACCOUNT_NAME_URI_KEY, signedInAccountName)
                             .appendQueryParameter(INCOGNITO_URI_KEY, Boolean.toString(isIncognito))
-                            .build();
+                            .appendQueryParameter(
+                                    LAUNCH_TIMESTAMP_URI_KEY, Long.toString(currentTimeNanos));
+
+            if (!isIncognito) {
+                if ((srcUrl != null)
+                        && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                                SEND_SRC_PARAM_NAME, false)) {
+                    lensUriBuilder.appendQueryParameter(IMAGE_SRC_URI_KEY, srcUrl);
+                }
+                if ((titleOrAltText != null)
+                        && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                                SEND_ALT_PARAM_NAME, false)) {
+                    lensUriBuilder.appendQueryParameter(ALT_URI_KEY, titleOrAltText);
+                }
+                String variations = sFakeVariationsForTesting == null
+                        ? VariationsAssociatedData.getGoogleAppVariations()
+                        : sFakeVariationsForTesting;
+                variations = variations.trim();
+                if (!variations.isEmpty()) {
+                    lensUriBuilder.appendQueryParameter(VARIATION_ID_URI_KEY, variations);
+                }
+                lensUri = lensUriBuilder.build();
+            }
+
+            lensUri = lensUriBuilder.build();
             ContextUtils.getApplicationContext().grantUriPermission(
                     IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
+        ContextUtils.getApplicationContext().grantUriPermission(
+                IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         Intent intent = new Intent(Intent.ACTION_VIEW).setData(lensUri);
         intent.setPackage(IntentHandler.PACKAGE_GSA);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
         return intent;
     }
 
+    public static boolean enableGoogleLensFeature() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS);
+    }
+
+    /**
+     * Whether to display the lens menu item with the search by image text
+     */
     public static boolean useLensWithSearchByImageText() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
                 USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME, false);
+    }
+
+    /*
+     * Whether to log UKM pings for lens-related behavior.
+     * If in the experiment will log by default and will only be disabled
+     * if the parameter is not absent and set to true.
+     */
+    public static boolean shouldLogUkm() {
+        if (enableGoogleLensFeature()) {
+            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS, LOG_UKM_PARAM_NAME,
+                    true);
+        }
+
+        return false;
     }
 }

@@ -11,7 +11,6 @@
 #include "cc/paint/paint_record.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/theme_provider.h"
@@ -607,10 +607,14 @@ float GM2TabStyle::GetSeparatorOpacity(bool for_layout, bool leading) const {
   // animation. Only hide the separator if it's in the first slot, or in
   // certain cases if the tab has a visible background (see below).
 
-  // If the adjacent view is actually a group header, show the separator since
-  // the group header takes up a slot.
-  if (adjacent_to_header)
+  // Do not show the separator if it is to the right of a group header.
+  // Otherwise, show the separator since the following group header takes up a
+  // slot.
+  if (adjacent_to_header) {
+    if (leading)
+      return 0.0f;
     return GetHoverInterpolatedSeparatorOpacity(for_layout, nullptr);
+  }
 
   // If the tab has a visible background even when not selected or active, there
   // are additional cases where the separators can be hidden.
@@ -727,8 +731,8 @@ float GM2TabStyle::GetThrobValue() const {
 }
 
 int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
-  base::Optional<SkColor> group_color = tab_->GetGroupColor();
-  if (group_color.has_value() && tab_->IsActive())
+  base::Optional<tab_groups::TabGroupId> group = tab_->group();
+  if (group.has_value() && tab_->IsActive())
     return TabGroupUnderline::kStrokeThickness;
 
   if (tab_->IsActive() || should_paint_as_active)

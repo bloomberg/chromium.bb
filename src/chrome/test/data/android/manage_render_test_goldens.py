@@ -58,7 +58,28 @@ except NotImplementedError:
   THREAD_COUNT = 4
 
 
+def is_file_of_interest(f):
+  if not f.endswith('.png'):
+    return False
+  for combo in ALLOWED_DEVICE_SDK_COMBINATIONS:
+    if combo in f:
+      return True
+  return False
+
+
 def download(directory):
+  # If someone removes a SHA1 file, we want to remove the associated PNG file
+  # the next time images are updated.
+  images_to_delete = []
+  for f in os.listdir(directory):
+    if not is_file_of_interest(f):
+      continue
+    sha1_path = os.path.join(directory, f + '.sha1')
+    if not os.path.exists(sha1_path):
+      images_to_delete.append(os.path.join(directory, f))
+  for image_path in images_to_delete:
+    os.remove(image_path)
+
   # Downloading the files can be very spammy, so only show the output if
   # something actually goes wrong.
   try:
@@ -73,15 +94,7 @@ def download(directory):
            '%d: %s') % (directory, e.returncode, e.output)
 
 
-def upload(directory):
-  def is_file_of_interest(f):
-    if not f.endswith('.png'):
-      return False
-    for combo in ALLOWED_DEVICE_SDK_COMBINATIONS:
-      if combo in f:
-        return True
-    return False
-
+def upload(directory, dry_run):
   files_to_upload = []
   for f in os.listdir(directory):
     # Skip any files that we don't care about.
@@ -103,6 +116,11 @@ def upload(directory):
     files_to_upload.append(png_path)
 
   if len(files_to_upload):
+    if dry_run:
+      print ('Will upload the following files:')
+      for f in files_to_upload:
+        print ('  ' + f)
+      return
     subprocess.check_call([
         'upload_to_google_storage.py',
         '--bucket', STORAGE_BUCKET,
@@ -114,6 +132,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('action', choices=['download', 'upload'],
                       help='Which action to perform')
+  parser.add_argument('--dry_run', action='store_true',
+                      help='Dry run for uploading')
   args = parser.parse_args()
 
   if args.action == 'download':
@@ -121,7 +141,7 @@ def main():
       download(d)
   else:
     for d in GOLDEN_DIRECTORIES:
-      upload(d)
+      upload(d, args.dry_run)
 
 
 if __name__ == '__main__':

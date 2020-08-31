@@ -9,11 +9,11 @@
 
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 
 namespace blink {
@@ -240,34 +240,34 @@ class MODULES_EXPORT AudioCaptureSettings {
 // Returns true if the constraint is specified in either mandatory or optional
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsBoolean(
-    const blink::WebMediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const blink::BooleanConstraint MediaTrackConstraintSetPlatform::*picker,
     bool* value);
 
 // Method to get int value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
 MODULES_EXPORT bool GetConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMinAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 MODULES_EXPORT bool GetConstraintMaxAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const blink::LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value);
 
 // Method to get double precision value of constraint with |name| from
 // constraints. Returns true if the constraint is specified in either mandatory
 // or Optional constraints.
 MODULES_EXPORT bool GetConstraintValueAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const blink::DoubleConstraint MediaTrackConstraintSetPlatform::*picker,
     double* value);
 
 // This function selects track settings from a set of candidate resolutions and
@@ -296,7 +296,7 @@ MODULES_EXPORT bool GetConstraintValueAsDouble(
 // This function has undefined behavior if any of |resolution_set| or
 // |frame_rate_set| are empty.
 MODULES_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format,

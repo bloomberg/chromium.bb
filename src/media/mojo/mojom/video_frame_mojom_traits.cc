@@ -7,16 +7,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "media/mojo/mojom/hdr_metadata_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 
@@ -48,27 +49,29 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     mojo::ScopedSharedBufferHandle dup = mojo_frame->Handle().Clone(
         mojo::SharedBufferHandle::AccessMode::READ_WRITE);
     DCHECK(dup.is_valid());
+    size_t num_planes = media::VideoFrame::NumPlanes(mojo_frame->format());
+    std::vector<uint32_t> offsets(num_planes);
+    std::vector<int32_t> strides(num_planes);
+    for (size_t i = 0; i < num_planes; ++i) {
+      offsets[i] = mojo_frame->PlaneOffset(i);
+      strides[i] = mojo_frame->stride(i);
+    }
 
     return media::mojom::VideoFrameData::NewSharedBufferData(
         media::mojom::SharedBufferVideoFrameData::New(
-            std::move(dup), mojo_frame->MappedSize(),
-            mojo_frame->stride(media::VideoFrame::kYPlane),
-            mojo_frame->stride(media::VideoFrame::kUPlane),
-            mojo_frame->stride(media::VideoFrame::kVPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kYPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kUPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kVPlane)));
+            std::move(dup), mojo_frame->MappedSize(), std::move(strides),
+            std::move(offsets)));
   }
 
 #if defined(OS_LINUX)
   if (input->storage_type() == media::VideoFrame::STORAGE_DMABUFS) {
-    std::vector<mojo::ScopedHandle> dmabuf_fds;
+    std::vector<mojo::PlatformHandle> dmabuf_fds;
 
     const size_t num_planes = media::VideoFrame::NumPlanes(input->format());
     dmabuf_fds.reserve(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
       const int dmabuf_fd = HANDLE_EINTR(dup(input->DmabufFds()[i].get()));
-      dmabuf_fds.emplace_back(mojo::WrapPlatformFile(dmabuf_fd));
+      dmabuf_fds.emplace_back(base::ScopedFD(dmabuf_fd));
       DCHECK(dmabuf_fds.back().is_valid());
     }
 
@@ -151,22 +154,24 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     media::mojom::SharedBufferVideoFrameDataDataView shared_buffer_data;
     data.GetSharedBufferDataDataView(&shared_buffer_data);
 
-    // TODO(sandersd): Conversion from uint64_t to size_t could cause
-    // corruption. Platform-dependent types should be removed from the
-    // implementation (limiting to 32-bit offsets is fine).
+    std::vector<int32_t> strides;
+    if (!shared_buffer_data.ReadStrides(&strides))
+      return false;
+
+    std::vector<uint32_t> offsets;
+    if (!shared_buffer_data.ReadOffsets(&offsets))
+      return false;
     frame = media::MojoSharedBufferVideoFrame::Create(
         format, coded_size, visible_rect, natural_size,
         shared_buffer_data.TakeFrameData(),
-        shared_buffer_data.frame_data_size(), shared_buffer_data.y_offset(),
-        shared_buffer_data.u_offset(), shared_buffer_data.v_offset(),
-        shared_buffer_data.y_stride(), shared_buffer_data.u_stride(),
-        shared_buffer_data.v_stride(), timestamp);
+        shared_buffer_data.frame_data_size(), std::move(offsets),
+        std::move(strides), timestamp);
 #if defined(OS_LINUX)
   } else if (data.is_dmabuf_data()) {
     media::mojom::DmabufVideoFrameDataDataView dmabuf_data;
     data.GetDmabufDataDataView(&dmabuf_data);
 
-    std::vector<mojo::ScopedHandle> dmabuf_fds_data;
+    std::vector<mojo::PlatformHandle> dmabuf_fds_data;
     if (!dmabuf_data.ReadDmabufFds(&dmabuf_fds_data))
       return false;
 
@@ -194,9 +199,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     std::vector<base::ScopedFD> dmabuf_fds;
     dmabuf_fds.reserve(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
-      base::PlatformFile platform_file;
-      mojo::UnwrapPlatformFile(std::move(dmabuf_fds_data[i]), &platform_file);
-      dmabuf_fds.emplace_back(platform_file);
+      dmabuf_fds.push_back(dmabuf_fds_data[i].TakeFD());
       DCHECK(dmabuf_fds.back().is_valid());
     }
     frame = media::VideoFrame::WrapExternalDmabufs(
@@ -282,6 +285,11 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadColorSpace(&color_space))
     return false;
   frame->set_color_space(color_space);
+
+  base::Optional<media::HDRMetadata> hdr_metadata;
+  if (!input.ReadHdrMetadata(&hdr_metadata))
+    return false;
+  frame->set_hdr_metadata(std::move(hdr_metadata));
 
   *output = std::move(frame);
   return true;

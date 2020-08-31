@@ -17,15 +17,20 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
   ~UnacceleratedStaticBitmapImage() override;
-  static scoped_refptr<UnacceleratedStaticBitmapImage> Create(sk_sp<SkImage>);
-  static scoped_refptr<UnacceleratedStaticBitmapImage> Create(PaintImage);
+
+  // The ImageOrientation should be derived from the source of the image data.
+  static scoped_refptr<UnacceleratedStaticBitmapImage> Create(
+      sk_sp<SkImage>,
+      ImageOrientation orientation = kDefaultImageOrientation);
+  static scoped_refptr<UnacceleratedStaticBitmapImage> Create(
+      PaintImage,
+      ImageOrientation orientation = kDefaultImageOrientation);
 
   bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
   bool IsPremultiplied() const override;
-  scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
-      override;
+  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
+                                                       SkColorType) override;
 
   void Draw(cc::PaintCanvas*,
             const cc::PaintFlags&,
@@ -40,8 +45,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
   void Transfer() final;
 
  private:
-  UnacceleratedStaticBitmapImage(sk_sp<SkImage>);
-  UnacceleratedStaticBitmapImage(PaintImage);
+  UnacceleratedStaticBitmapImage(sk_sp<SkImage>, ImageOrientation);
+  UnacceleratedStaticBitmapImage(PaintImage, ImageOrientation);
 
   PaintImage paint_image_;
   THREAD_CHECKER(thread_checker_);

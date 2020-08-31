@@ -13,6 +13,8 @@ namespace internal {
 class HeapNumber;
 class BigInt;
 class Object;
+class Smi;
+class TaggedIndex;
 
 namespace compiler {
 
@@ -77,6 +79,12 @@ struct UintPtrT : WordT {
   static constexpr MachineType kMachineType = MachineType::UintPtr();
 };
 
+struct ExternalPointerT : UntaggedT {
+  static const MachineRepresentation kMachineRepresentation =
+      MachineType::PointerRepresentation();
+  static constexpr MachineType kMachineType = MachineType::Pointer();
+};
+
 struct Float32T : UntaggedT {
   static const MachineRepresentation kMachineRepresentation =
       MachineRepresentation::kFloat32;
@@ -130,6 +138,10 @@ template <>
 struct MachineTypeOf<Smi> {
   static constexpr MachineType value = MachineType::TaggedSigned();
 };
+template <>
+struct MachineTypeOf<TaggedIndex> {
+  static constexpr MachineType value = MachineType::Pointer();
+};
 template <class HeapObjectSubtype>
 struct MachineTypeOf<HeapObjectSubtype,
                      typename std::enable_if<std::is_base_of<
@@ -149,6 +161,12 @@ constexpr MachineType MachineTypeOf<
 template <class Type, class Enable = void>
 struct MachineRepresentationOf {
   static const MachineRepresentation value = Type::kMachineRepresentation;
+};
+// If T defines kMachineType, then we take the machine representation from
+// there.
+template <class T>
+struct MachineRepresentationOf<T, base::void_t<decltype(T::kMachineType)>> {
+  static const MachineRepresentation value = T::kMachineType.representation();
 };
 template <class T>
 struct MachineRepresentationOf<

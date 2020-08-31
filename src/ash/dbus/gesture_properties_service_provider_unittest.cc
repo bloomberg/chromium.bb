@@ -4,11 +4,11 @@
 
 #include "ash/dbus/gesture_properties_service_provider.h"
 
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "gmock/gmock.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/ozone/testhelpers/mock_gesture_properties_service.h"
 
@@ -62,7 +62,6 @@ double expect_double(dbus::MessageReader* reader) {
 class GesturePropertiesServiceProviderTest : public testing::Test {
  public:
   GesturePropertiesServiceProviderTest() {
-    service_manager::TestConnectorFactory test_connector_factory;
     mock_service_ = std::make_unique<MockGesturePropertiesService>();
     ON_CALL(*mock_service_, ListDevices(_))
         .WillByDefault(Invoke(
@@ -153,6 +152,8 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
     CallWithoutParameters(name, response);
     EXPECT_EQ(dbus::Message::MESSAGE_ERROR, response->GetMessageType());
   }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   base::flat_map<int, std::string> list_devices_response_ = {};
   std::vector<std::string> list_properties_response_ = {};

@@ -14,7 +14,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -56,7 +56,7 @@ void QuartcStream::OnClose() {
   delegate_->OnClose(this);
 }
 
-void QuartcStream::OnStreamDataConsumed(size_t bytes_consumed) {
+void QuartcStream::OnStreamDataConsumed(QuicByteCount bytes_consumed) {
   QuicStream::OnStreamDataConsumed(bytes_consumed);
 
   if (delegate_) {
@@ -78,6 +78,7 @@ bool QuartcStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                       QuicByteCount data_length,
                                       bool fin_acked,
                                       QuicTime::Delta ack_delay_time,
+                                      QuicTime receive_timestamp,
                                       QuicByteCount* newly_acked_length) {
   // Previous losses of acked data are no longer relevant to the retransmission
   // count.  Once data is acked, it will never be retransmitted.
@@ -85,7 +86,8 @@ bool QuartcStream::OnStreamFrameAcked(QuicStreamOffset offset,
       QuicInterval<QuicStreamOffset>(offset, offset + data_length));
 
   return QuicStream::OnStreamFrameAcked(offset, data_length, fin_acked,
-                                        ack_delay_time, newly_acked_length);
+                                        ack_delay_time, receive_timestamp,
+                                        newly_acked_length);
 }
 
 void QuartcStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
@@ -157,7 +159,7 @@ QuicStreamOffset QuartcStream::ReadOffset() {
 }
 
 void QuartcStream::FinishWriting() {
-  WriteOrBufferData(QuicStringPiece(nullptr, 0), true, nullptr);
+  WriteOrBufferData(quiche::QuicheStringPiece(nullptr, 0), true, nullptr);
 }
 
 void QuartcStream::SetDelegate(Delegate* delegate) {

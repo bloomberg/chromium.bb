@@ -6,8 +6,9 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -105,6 +106,9 @@ void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {
   layer_->SchedulePaint(gfx::Rect(layer_->size()));
   animator_.SetSize(layer_->size());
 }
+
+void InstallableInkDrop::HostTransformChanged(
+    const gfx::Transform& new_transform) {}
 
 InkDropState InstallableInkDrop::GetTargetInkDropState() const {
   return animator_.target_state();

@@ -8,11 +8,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "base/check.h"
 #include "base/debug/crash_logging.h"
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"

@@ -8,16 +8,14 @@
 #include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/shell.h"
-#include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_browsertest.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,7 +26,7 @@ enum SpokenFeedbackAppListTestVariant { kTestAsNormalUser, kTestAsGuestUser };
 class TestSuggestionChipResult : public ash::TestSearchResult {
  public:
   explicit TestSuggestionChipResult(const base::string16& title) {
-    set_display_type(ash::SearchResultDisplayType::kRecommendation);
+    set_display_type(ash::SearchResultDisplayType::kChip);
     set_title(title);
   }
   ~TestSuggestionChipResult() override = default;
@@ -104,86 +102,68 @@ INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
-  while (!base::MatchPattern(speech_monitor_.GetNextUtterance(), "Launcher")) {
-  }
-
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Search your device,*"));
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeechPattern("Launcher");
+  sm_.ExpectSpeech("Button");
+  sm_.ExpectSpeech("Shelf");
+  sm_.ExpectSpeech("Tool bar");
+  // Press space on the launcher button in shelf, this opens peeking
+  // launcher.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeechPattern("Search your device,*");
+  sm_.ExpectSpeech("Edit text");
   // Check that Launcher, partial view state is announced.
-  EXPECT_EQ("Launcher, partial view", speech_monitor_.GetNextUtterance());
-
+  sm_.ExpectSpeech("Launcher, partial view");
   // Send a key press to enable keyboard traversal
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
   // Move focus to expand all apps button;
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-  EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeech("Expand to all apps");
+  sm_.ExpectSpeech("Button");
   // Press space on expand arrow to go to fullscreen launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_EQ(
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech(
       "Search your device, apps, and web."
-      " Use the arrow keys to navigate your apps.",
-      speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-
+      " Use the arrow keys to navigate your apps.");
+  sm_.ExpectSpeech("Edit text");
   // Check that Launcher, all apps state is announced.
-  EXPECT_EQ("Launcher, all apps", speech_monitor_.GetNextUtterance());
+  sm_.ExpectSpeech("Launcher, all apps");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
                        DisabledFullscreenExpandButton) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate.") {
-  }
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeech("Shelf");
 
   // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
-  }
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, partial view");
 
   // Send a key press to enable keyboard traversal
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
 
   // Move focus to expand all apps button.
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate.") {
-  }
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeech("Expand to all apps");
 
   // Press space on expand arrow to go to fullscreen launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, all apps") {
-  }
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, all apps");
 
   // Make sure the first traversal left is not the expand arrow button.
-  SendKeyPressWithSearch(ui::VKEY_LEFT);
-  EXPECT_NE("Expand to all apps", speech_monitor_.GetNextUtterance());
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+  sm_.ExpectNextSpeechIsNot("Expand to all apps");
 
   // Make sure the second traversal left is not the expand arrow button.
-  SendKeyPressWithSearch(ui::VKEY_LEFT);
-  EXPECT_NE("Expand to all apps", speech_monitor_.GetNextUtterance());
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+  sm_.ExpectNextSpeechIsNot("Expand to all apps");
+
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
@@ -193,54 +173,33 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate.") {
-  }
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
-  }
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeech("Press Search plus Space to activate");
+  // Press space on the launcher button in shelf, this opens peeking
+  // launcher.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, partial view");
   // Move focus to 1st suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Chip 0");
+  sm_.ExpectSpeech("Button");
   // Move focus to 2nd suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 1", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Chip 1");
+  sm_.ExpectSpeech("Button");
   // Move focus to 3rd suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 2", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Chip 2");
+  sm_.ExpectSpeech("Button");
   // Move focus to expand all apps button;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Expand to all apps");
+  sm_.ExpectSpeech("Button");
   // Move focus to app list window;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-
-  // Move focus to search box;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Search your device,*"));
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeechPattern("Search your device,*");
+  sm_.Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
@@ -251,127 +210,93 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate.") {
-  }
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
-  }
-
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeech("Press Search plus Space to activate");
+  // Press space on the launcher button in shelf, this opens peeking
+  // launcher.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, partial view");
   // Send a key press to enable keyboard traversal
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
   // Move focus to expand all apps button.
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate.") {
-  }
-
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeech("Press Search plus Space to activate");
   // Press space on expand arrow to go to fullscreen launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, all apps") {
-  }
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, all apps");
   // Move focus to the suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Chip 0");
+  sm_.ExpectSpeech("Button");
   // Move focus to 1st app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Item 0");
+  sm_.ExpectSpeech("Button");
   // Move focus to 2nd app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 1", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Item 1");
+  sm_.ExpectSpeech("Button");
   // Move focus to 3rd app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 2", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate.",
-            speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Item 2");
+  sm_.ExpectSpeech("Button");
   // Move focus to app list window;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech(
+      "Search your device, apps, and web. Use the arrow keys to navigate "
+      "your "
+      "apps.");
   // Move focus to search box;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ(
-      "Search your device, apps, and web."
-      " Use the arrow keys to navigate your apps.",
-      speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  sm_.ExpectSpeech("Edit text");
+  sm_.Replay();
 }
 
-// TODO(newcomer): reimplement this test once the AppListFocus changes are
-// complete (http://crbug.com/784942).
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
-                       DISABLED_NavigateAppLauncher) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, NavigateAppLauncher) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  sm_.Call([this]() {
+    // Add one app to the applist.
+    PopulateApps(1);
+
+    EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  });
 
   // Wait for it to say "Launcher", "Button", "Shelf", "Tool bar".
-  while (true) {
-    std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Launcher"))
-      break;
-  }
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  sm_.ExpectSpeechPattern("Launcher");
+  sm_.ExpectSpeech("Button");
+  sm_.ExpectSpeech("Shelf");
+  sm_.ExpectSpeech("Tool bar");
 
   // Click on the launcher, it brings up the app list UI.
-  SendKeyPress(ui::VKEY_SPACE);
-  while ("Search or type URL" != speech_monitor_.GetNextUtterance()) {
-  }
-  while ("Edit text" != speech_monitor_.GetNextUtterance()) {
-  }
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech(
+      "Search your device, apps, and web. Use the arrow keys to navigate your "
+      "apps.");
+  sm_.ExpectSpeech("Edit text");
 
   // Close it and open it again.
-  SendKeyPress(ui::VKEY_ESCAPE);
-  while (true) {
-    std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "*window*"))
-      break;
-  }
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_ESCAPE); });
+  sm_.ExpectSpeechPattern("*window*");
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-  while (true) {
-    std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Button"))
-      break;
-  }
-  SendKeyPress(ui::VKEY_SPACE);
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeechPattern("Launcher");
+  sm_.ExpectSpeech("Button");
 
-  // Now type a space into the text field and wait until we hear "space".
-  // This makes the test more robust as it allows us to skip over other
-  // speech along the way.
-  SendKeyPress(ui::VKEY_SPACE);
-  while (true) {
-    if ("space" == speech_monitor_.GetNextUtterance())
-      break;
-  }
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech(
+      "Search your device, apps, and web. Use the arrow keys to navigate your "
+      "apps.");
 
-  // Now press the down arrow and we should be focused on an app button
+  // Now press the right arrow and we should be focused on an app button
   // in a dialog.
-  SendKeyPress(ui::VKEY_DOWN);
-  while ("Button" != speech_monitor_.GetNextUtterance()) {
-  }
+  // THis doesn't work though (to be done below).
+
+  // TODO(newcomer): reimplement this test once the AppListFocus changes are
+  // complete (http://crbug.com/784942).
+
+  sm_.Replay();
 }
 
 }  // namespace chromeos

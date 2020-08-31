@@ -49,7 +49,7 @@
           applications.</para>
 
     <para>In earlier days, the kernel framework was solely used to provide raw
-          hardware access to priviledged user-space processes which implement
+          hardware access to privileged user-space processes which implement
           all the hardware abstraction layers. But more and more tasks were
           moved into the kernel. All these interfaces are based on
           <citerefentry><refentrytitle>ioctl</refentrytitle><manvolnum>2</manvolnum></citerefentry>
@@ -64,7 +64,7 @@
           <citerefentry><refentrytitle>open</refentrytitle><manvolnum>2</manvolnum></citerefentry>
           and
           <citerefentry><refentrytitle>close</refentrytitle><manvolnum>2</manvolnum></citerefentry>.
-          However, it still depends on the grapics driver which interfaces are
+          However, it still depends on the graphics driver which interfaces are
           available on these devices. If an interface is not available, the
           syscalls will fail with <literal>EINVAL</literal>.</para>
 

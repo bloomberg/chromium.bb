@@ -4,7 +4,7 @@
 
 #include "chromecast/media/audio/mixer_service/conversions.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chromecast {
 namespace media {
@@ -76,6 +76,14 @@ ContentType ConvertContentType(media::AudioContentType content_type) {
 
 media::AudioContentType ConvertContentType(ContentType type) {
   return static_cast<media::AudioContentType>(type);
+}
+
+ChannelLayout ConvertChannelLayout(media::ChannelLayout channel_layout) {
+  return static_cast<ChannelLayout>(channel_layout);
+}
+
+media::ChannelLayout ConvertChannelLayout(ChannelLayout channel_layout) {
+  return static_cast<media::ChannelLayout>(channel_layout);
 }
 
 }  // namespace mixer_service

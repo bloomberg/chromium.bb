@@ -114,7 +114,7 @@ v8::Local<v8::Module> ModuleRecordResolverImpl::Resolve(
   return record;
 }
 
-void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
+void ModuleRecordResolverImpl::ContextDestroyed() {
   // crbug.com/725816 : What we should really do is to make the map key
   // weak reference to v8::Module.
   record_to_module_script_map_.clear();
@@ -122,7 +122,7 @@ void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
 
 void ModuleRecordResolverImpl::Trace(Visitor* visitor) {
   ModuleRecordResolver::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);
   visitor->Trace(modulator_);
 }

@@ -73,12 +73,17 @@ config("compiler") {
 # that is iOS-only. Please see that target for advice on what should go in
 # :runtime_library vs. :compiler.
 config("runtime_library") {
-  common_flags = [
-    "-isysroot",
-    sysroot,
-
-    "-stdlib=libc++",
-  ]
+  if (ios_enable_relative_sdk_path) {
+    common_flags = [
+      "-isysroot",
+      rebase_path(sysroot, root_build_dir),
+    ]
+  } else {
+    common_flags = [
+      "-isysroot",
+      sysroot,
+    ]
+  }
 
   if (use_ios_simulator) {
     common_flags += [ "-mios-simulator-version-min=$ios_deployment_target" ]
@@ -111,15 +116,9 @@ config("ios_dynamic_flags") {
 }
 
 config("xctest_config") {
-  common_flags = [
-    "-F",
-    "$ios_sdk_platform_path/Developer/Library/Frameworks",
-  ]
+  framework_dirs = [ "$ios_sdk_platform_path/Developer/Library/Frameworks" ]
 
-  cflags = common_flags
-  ldflags = common_flags
-
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "XCTest.framework",
   ]
@@ -127,4 +126,52 @@ config("xctest_config") {
 
 group("xctest") {
   public_configs = [ ":xctest_config" ]
+}
+
+_xctrunner_path =
+    "$ios_sdk_platform_abs_path/Developer/Library/Xcode/Agents/XCTRunner.app"
+
+# When building with Goma RBE, $ios_sdk_platform_abs_path corresponds to a
+# symlink below $root_build_dir that points to the real SDK to use. Because
+# the files are below $root_build_dir, it is not possible to list them as a
+# target input without gn complaining (as it can't find a target creating
+# those files).
+#
+# The symlinks are created by //build/config/mac/sdk_info.py script invoked
+# via exec_script() from //build/config/{ios/ios_sdk.gni,mac/mac_sdk.gni}.
+# As the invocation is done by exec_script, there is no target that can list
+# those files as output.
+#
+# To workaround this, add a target that pretends to create those files
+# (but does nothing). See https://crbug.com/1061487 for why this is needed.
+if (ios_use_goma_rbe) {
+  action("copy_xctrunner_app") {
+    testonly = true
+    script = "//build/noop.py"
+    outputs = [
+      "$_xctrunner_path/Info.plist",
+      "$_xctrunner_path/PkgInfo",
+      "$_xctrunner_path/XCTRunner",
+    ]
+  }
+}
+
+# When creating the test runner for an XCUITest, the arm64e slice of the binary
+# must be removed (at least until the app ships with arm64e slice which is not
+# yet supported by Apple).
+action("xctest_runner_without_arm64e") {
+  testonly = true
+  script = "//build/config/ios/strip_arm64e.py"
+  sources = [ "$_xctrunner_path/XCTRunner" ]
+  outputs = [ "$target_out_dir/XCTRunner" ]
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+    "--input",
+    rebase_path(sources[0], root_build_dir),
+  ]
+
+  if (ios_use_goma_rbe) {
+    deps = [ ":copy_xctrunner_app" ]
+  }
 }

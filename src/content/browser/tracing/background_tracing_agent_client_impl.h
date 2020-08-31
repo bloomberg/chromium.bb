@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
 
 namespace content {
 
@@ -19,8 +19,7 @@ class BackgroundTracingAgentClientImpl
  public:
   static void Create(
       int child_process_id,
-      mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
-          pending_provider);
+      mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider);
 
   ~BackgroundTracingAgentClientImpl() override;
 

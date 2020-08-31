@@ -87,20 +87,7 @@ NSString* const kTestFormHtml =
 // Tests autofill features in CWVWebViews.
 class WebViewAutofillTest : public WebViewInttestBase {
  protected:
-  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {
-    // Ensure CWVAutofillProfiles are saved by default.
-    id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
-    autofill_controller_.delegate = delegate;
-    [[delegate stub] autofillController:autofill_controller_
-        decideSavePolicyForAutofillProfile:[OCMArg any]
-                           decisionHandler:[OCMArg
-                                               checkWithBlock:^BOOL(id param) {
-                                                 void (^decisionHandler)(BOOL) =
-                                                     param;
-                                                 decisionHandler(YES);
-                                                 return YES;
-                                               }]];
-  }
+  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {}
 
   bool LoadTestPage() WARN_UNUSED_RESULT {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);
@@ -320,32 +307,6 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
     return [current_value isEqualToString:@""];
   }));
   ASSERT_NSEQ(nil, cleared_error);
-}
-
-// Tests that CWVAutofillController can remove a suggestion.
-TEST_F(WebViewAutofillTest, TestSuggestionFetchRemoveFetch) {
-  ASSERT_TRUE(test_server_->Start());
-  ASSERT_TRUE(LoadTestPage());
-  ASSERT_TRUE(SetFormFieldValue(kTestNameFieldID, kTestNameFieldValue));
-  ASSERT_TRUE(SetFormFieldValue(kTestAddressFieldID, kTestAddressFieldValue));
-  ASSERT_TRUE(SetFormFieldValue(kTestStateFieldID, kTestStateFieldValue));
-  ASSERT_TRUE(SetFormFieldValue(kTestCityFieldID, kTestCityFieldValue));
-  ASSERT_TRUE(SetFormFieldValue(kTestZipFieldID, kTestZipFieldValue));
-  ASSERT_TRUE(SubmitForm());
-  // Wait for about:blank to be loaded after <form> submitted.
-  ASSERT_TRUE(WaitUntilPageLoaded());
-  ASSERT_TRUE(LoadTestPage());
-
-  NSArray* fetched_suggestions_after_creating = FetchSuggestions();
-  ASSERT_EQ(1U, fetched_suggestions_after_creating.count);
-
-  CWVAutofillSuggestion* suggestion_to_remove =
-      fetched_suggestions_after_creating.firstObject;
-  EXPECT_TRUE([autofill_controller_ removeSuggestion:suggestion_to_remove]);
-
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
-    return FetchSuggestions().count == 0;
-  }));
 }
 
 }  // namespace ios_web_view

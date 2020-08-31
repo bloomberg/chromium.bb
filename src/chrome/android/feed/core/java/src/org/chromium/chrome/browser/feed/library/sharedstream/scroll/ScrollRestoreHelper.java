@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.scroll;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
@@ -28,7 +30,7 @@ public class ScrollRestoreHelper {
      *
      * @param currentHeaderCount The amount of headers which appear before Stream content.
      */
-    /*@Nullable*/
+    @Nullable
     public static ScrollState getScrollStateForScrollRestore(LinearLayoutManager layoutManager,
             Configuration configuration, int currentHeaderCount) {
         int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
@@ -41,7 +43,7 @@ public class ScrollRestoreHelper {
                 lastVisibleItemPosition, configuration, currentHeaderCount);
     }
 
-    /*@Nullable*/
+    @Nullable
     public static ScrollState getScrollStateForScrollRestore(int firstVisibleItemPosition,
             int firstVisibleTop, int lastVisibleItemPosition, Configuration configuration,
             int currentHeaderCount) {

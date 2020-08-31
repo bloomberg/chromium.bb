@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import tarfile
 
 import mock
@@ -28,6 +29,9 @@ from chromite.lib.paygen import test_params
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
@@ -1294,29 +1298,16 @@ from autotest_lib.client.common_lib import error, utils
 from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
-AUTHOR = "Chromium OS"
+AUTHOR = "dhaddock@, ahassani@"
 NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0_omaha"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"
 TEST_TYPE = "server"
-JOB_RETRIES = 1
-BUG_TEMPLATE = {
-    'cc': ['chromeos-installer-alerts@google.com'],
-    'components': ['Internals>Installer'],
-}
 
 # Skip provision special task for AU tests.
 DEPENDENCIES = "skip_provision"
-
-# Disable server-side packaging support for this test.
-# This control file is used as the template for paygen_au_canary suite, which
-# creates the control files during paygen. Therefore, autotest server package
-# does not have these test control files for paygen_au_canary suite.
-REQUIRE_SSP = False
-
-DOC ="""))
-
+"""))
     # We only checking the beginning to avoid the very long doc string.
     self.assertTrue(full_contents.startswith(b"""name = 'paygen_au_foo'
 update_type = 'full'
@@ -1337,28 +1328,16 @@ from autotest_lib.client.common_lib import error, utils
 from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
-AUTHOR = "Chromium OS"
+AUTHOR = "dhaddock@, ahassani@"
 NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3_n2n"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"
 TEST_TYPE = "server"
-JOB_RETRIES = 1
-BUG_TEMPLATE = {
-    'cc': ['chromeos-installer-alerts@google.com'],
-    'components': ['Internals>Installer'],
-}
 
 # Skip provision special task for AU tests.
 DEPENDENCIES = "skip_provision"
-
-# Disable server-side packaging support for this test.
-# This control file is used as the template for paygen_au_canary suite, which
-# creates the control files during paygen. Therefore, autotest server package
-# does not have these test control files for paygen_au_canary suite.
-REQUIRE_SSP = False
-
-DOC ="""))
+"""))
 
 
 class HWTest(cros_test_lib.MockTestCase):

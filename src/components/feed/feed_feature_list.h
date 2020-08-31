@@ -22,6 +22,14 @@ extern const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess;
 
 extern const base::Feature kInterestFeedNotifications;
 
+extern const base::Feature kInterestFeedFeedback;
+
+// Indicates if user card clicks and views in Chrome's feed should be reported
+// for personalization. Also enables the feed header menu to manage the feed.
+extern const base::Feature kReportFeedUserActions;
+
+extern const base::Feature kInterestFeedV2;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

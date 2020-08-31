@@ -51,9 +51,9 @@ bool AXVirtualObject::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
   if (!accessible_node_)
     return false;
 
-  bool is_null = true;
-  result = accessible_node_->GetProperty(property, is_null);
-  return !is_null;
+  base::Optional<bool> property_value = accessible_node_->GetProperty(property);
+  result = property_value.value_or(false);
+  return property_value.has_value();
 }
 
 AccessibleNode* AXVirtualObject::GetAccessibleNode() const {
@@ -75,7 +75,7 @@ String AXVirtualObject::TextAlternative(bool recursive,
                              &found_text_alternative);
 }
 
-void AXVirtualObject::Trace(blink::Visitor* visitor) {
+void AXVirtualObject::Trace(Visitor* visitor) {
   visitor->Trace(accessible_node_);
   AXObject::Trace(visitor);
 }

@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -54,8 +55,8 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotSamples() const override;
   std::unique_ptr<HistogramSamples> SnapshotDelta() override;
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
-  void WriteHTMLGraph(std::string* output) const override;
   void WriteAscii(std::string* output) const override;
+  base::DictionaryValue ToGraphDict() const override;
 
  protected:
   // HistogramBase implementation:
@@ -80,12 +81,13 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
                              ListValue* buckets) const override;
 
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
-  void WriteAsciiImpl(bool graph_it,
+  void WriteAsciiBody(const HistogramSamples& snapshot,
+                      bool graph_it,
                       const std::string& newline,
                       std::string* output) const;
 
   // Write a common header message describing this histogram.
-  void WriteAsciiHeader(const Count total_count,
+  void WriteAsciiHeader(const HistogramSamples& snapshot,
                         std::string* output) const;
 
   // For constuctor calling.

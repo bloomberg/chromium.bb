@@ -26,6 +26,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
@@ -132,8 +133,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     base::FilePath local_state_file;
     CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file));
     local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
-    base::WriteFile(local_state_file, local_state_json.data(),
-                    local_state_json.size());
+    base::WriteFile(local_state_file, local_state_json);
   }
 
   std::string test_app_id_ = kTestKioskApp;

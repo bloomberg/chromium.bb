@@ -82,7 +82,7 @@ LOTTIE_WEB_CANVAS_BLACKLIST = LOTTIE_WEB_BLACKLIST + [
 
 def RunSteps(api):
   api.vars.setup()
-  api.flavor.setup()
+  api.flavor.setup(None)
   checkout_root = api.path['start_dir']
   buildername = api.properties['buildername']
   node_path = api.path['start_dir'].join('node', 'node', 'bin', 'node')
@@ -359,7 +359,7 @@ def GenTests(api):
   }
 
 
-  skottie_cpu_buildername = ('Perf-Debian9-EMCC-GCE-CPU-AVX2-wasm-Release-All-'
+  skottie_cpu_buildername = ('Perf-Debian10-EMCC-GCE-CPU-AVX2-wasm-Release-All-'
                              'SkottieWASM')
   yield (
       api.test('skottie_wasm_perf') +
@@ -399,7 +399,7 @@ def GenTests(api):
                     api.json.output(parse_trace_json))
   )
 
-  skottie_gpu_buildername = ('Perf-Debian9-EMCC-NUC7i5BNK-GPU-IntelIris640-'
+  skottie_gpu_buildername = ('Perf-Debian10-EMCC-NUC7i5BNK-GPU-IntelIris640-'
                              'wasm-Release-All-SkottieWASM')
   yield (
       api.test('skottie_wasm_perf_gpu') +
@@ -417,7 +417,7 @@ def GenTests(api):
                     api.json.output(parse_trace_json))
   )
 
-  lottieweb_cpu_buildername = ('Perf-Debian9-none-GCE-CPU-AVX2-x86_64-Release-'
+  lottieweb_cpu_buildername = ('Perf-Debian10-none-GCE-CPU-AVX2-x86_64-Release-'
                                'All-LottieWeb')
   yield (
       api.test('lottie_web_perf') +
@@ -458,7 +458,7 @@ def GenTests(api):
   )
 
   lottieweb_canvas_cpu_buildername = (
-      'Perf-Debian9-none-GCE-CPU-AVX2-x86_64-Release-All-LottieWeb_Canvas')
+      'Perf-Debian10-none-GCE-CPU-AVX2-x86_64-Release-All-LottieWeb_Canvas')
   yield (
       api.test('lottie_web_canvas_perf') +
       api.properties(buildername=lottieweb_canvas_cpu_buildername,
@@ -497,7 +497,7 @@ def GenTests(api):
                     api.json.output(parse_trace_json))
   )
 
-  unrecognized_buildername = ('Perf-Debian9-none-GCE-CPU-AVX2-x86_64-Release-'
+  unrecognized_buildername = ('Perf-Debian10-none-GCE-CPU-AVX2-x86_64-Release-'
                               'All-Unrecognized')
   yield (
       api.test('unrecognized_builder') +

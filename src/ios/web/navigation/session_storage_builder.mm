@@ -6,9 +6,8 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
-#import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
@@ -41,8 +40,6 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
     session_storage.lastCommittedItemIndex =
         navigation_manager->GetItemCount() - 1;
   }
-  session_storage.previousItemIndex =
-      navigation_manager->GetPreviousItemIndex();
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
   size_t originalIndex = session_storage.lastCommittedItemIndex;
@@ -67,9 +64,7 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
       &web_state->GetSessionCertificatePolicyCacheImpl());
   web::SerializableUserDataManager* user_data_manager =
       web::SerializableUserDataManager::FromWebState(web_state);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
-  }
+  web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
   [session_storage
       setSerializableUserData:user_data_manager->CreateSerializableUserData()];
 
@@ -96,15 +91,14 @@ void SessionStorageBuilder::ExtractSessionState(
   }
   web_state->navigation_manager_->Restore(storage.lastCommittedItemIndex,
                                           std::move(items));
-  web_state->navigation_manager_->SetPreviousItemIndex(
-      storage.previousItemIndex);
 
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cert_policy_cache =
       cert_builder.BuildSessionCertificatePolicyCache(
-          storage.certPolicyCacheStorage);
+          storage.certPolicyCacheStorage, web_state->GetBrowserState());
   if (!cert_policy_cache)
-    cert_policy_cache = std::make_unique<SessionCertificatePolicyCacheImpl>();
+    cert_policy_cache = std::make_unique<SessionCertificatePolicyCacheImpl>(
+        web_state->GetBrowserState());
   web_state->certificate_policy_cache_ = std::move(cert_policy_cache);
   web::SerializableUserDataManager::FromWebState(web_state)
       ->AddSerializableUserData(storage.userData);

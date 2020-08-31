@@ -56,7 +56,7 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1, 1, 1);
+        pass.Dispatch(1);
         pass.EndPass();
 
         commands = encoder.Finish();
@@ -98,7 +98,7 @@ TEST_P(ComputeSharedMemoryTests, Basic) {
 }
 
 DAWN_INSTANTIATE_TEST(ComputeSharedMemoryTests,
-                     D3D12Backend,
-                     MetalBackend,
-                     OpenGLBackend,
-                     VulkanBackend);
+                     D3D12Backend(),
+                     MetalBackend(),
+                     OpenGLBackend(),
+                     VulkanBackend());

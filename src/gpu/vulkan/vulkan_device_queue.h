@@ -10,10 +10,11 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "gpu/vulkan/vulkan_export.h"
+#include "gpu/vulkan/vma_wrapper.h"
 #include "ui/gfx/extension_set.h"
 
 namespace gpu {
@@ -21,8 +22,9 @@ namespace gpu {
 class VulkanCommandPool;
 class VulkanFenceHelper;
 class VulkanInfo;
+struct GPUInfo;
 
-class VULKAN_EXPORT VulkanDeviceQueue {
+class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
  public:
   enum DeviceQueueOption {
     GRAPHICS_QUEUE_FLAG = 0x01,
@@ -39,8 +41,10 @@ class VULKAN_EXPORT VulkanDeviceQueue {
                                    uint32_t queue_family_index)>;
   bool Initialize(
       uint32_t options,
+      const GPUInfo* gpu_info,
       const VulkanInfo& info,
       const std::vector<const char*>& required_extensions,
+      const std::vector<const char*>& optional_extensions,
       bool allow_protected_memory,
       const GetPresentationSupportCallback& get_presentation_support);
 
@@ -82,6 +86,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   std::unique_ptr<gpu::VulkanCommandPool> CreateCommandPool();
 
+  VmaAllocator vma_allocator() const { return vma_allocator_; }
+
   VulkanFenceHelper* GetFenceHelper() const { return cleanup_helper_.get(); }
 
   const VkPhysicalDeviceFeatures2& enabled_device_features_2() const {
@@ -103,6 +109,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   VkQueue vk_queue_ = VK_NULL_HANDLE;
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
+  VmaAllocator vma_allocator_ = VK_NULL_HANDLE;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
   VkPhysicalDeviceFeatures2 enabled_device_features_2_;
 

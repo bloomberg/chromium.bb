@@ -15,7 +15,9 @@
 #include "base/json/json_writer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -29,6 +31,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -127,8 +130,9 @@ void RequestOpenApp(Profile* profile) {
           arc::kPlayStoreAppId);
   DCHECK(extension);
   DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
-  apps::LaunchService::Get(profile)->OpenApplication(
-      CreateAppLaunchParamsUserContainer(
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
@@ -536,20 +540,34 @@ bool ArcSupportHost::Initialize() {
       "controlledByPolicy",
       l10n_util::GetStringUTF16(IDS_CONTROLLED_SETTING_POLICY));
   loadtime_data->SetString(
+      "learnMoreStatisticsTitle",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_TITLE));
+  loadtime_data->SetString(
       "learnMoreStatistics",
       l10n_util::GetStringUTF16(is_child
                                     ? IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD
                                     : IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS));
+  loadtime_data->SetString(
+      "learnMoreBackupAndRestoreTitle",
+      l10n_util::GetStringUTF16(
+          IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_TITLE));
   loadtime_data->SetString(
       "learnMoreBackupAndRestore",
       l10n_util::GetStringUTF16(
           is_child ? IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE));
   loadtime_data->SetString(
+      "learnMoreLocationServicesTitle",
+      l10n_util::GetStringUTF16(
+          IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_TITLE));
+  loadtime_data->SetString(
       "learnMoreLocationServices",
       l10n_util::GetStringUTF16(
           is_child ? IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD
                    : IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES));
+  loadtime_data->SetString(
+      "learnMorePaiServiceTitle",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE_TITLE));
   loadtime_data->SetString(
       "learnMorePaiService",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE));
@@ -664,8 +682,11 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     }
 
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-    DCHECK(identity_manager->HasPrimaryAccount());
-    CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
+    // This class doesn't care about browser sync consent.
+    DCHECK(identity_manager->HasPrimaryAccount(
+        signin::ConsentLevel::kNotRequired));
+    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
+        signin::ConsentLevel::kNotRequired);
     bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 
     // Record acceptance of ToS if it was shown to the user, otherwise simply

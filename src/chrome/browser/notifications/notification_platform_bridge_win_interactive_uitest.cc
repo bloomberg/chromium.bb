@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 
 namespace mswr = Microsoft::WRL;
 namespace winui = ABI::Windows::UI;
@@ -368,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         browser()->profile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -396,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile1->GetOffTheRecordProfile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -409,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile1,
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -422,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile2->GetOffTheRecordProfile(),
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -435,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     base::RunLoop run_loop;
     bridge->GetDisplayed(
         profile2,
-        base::BindRepeating(
+        base::BindOnce(
             &NotificationPlatformBridgeWinUITest::DisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

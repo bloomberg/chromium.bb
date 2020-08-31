@@ -111,6 +111,10 @@ EGLBoolean eglGetFrameTimestampsANDROIDFn(EGLDisplay dpy,
 EGLBoolean eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
                                                   EGLSurface surface,
                                                   EGLint timestamp) override;
+EGLBoolean eglGetMscRateANGLEFn(EGLDisplay dpy,
+                                EGLSurface surface,
+                                EGLint* numerator,
+                                EGLint* denominator) override;
 EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
     const struct AHardwareBuffer* ahardwarebuffer) override;
 EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
@@ -156,6 +160,11 @@ EGLBoolean eglQueryContextFn(EGLDisplay dpy,
                              EGLint attribute,
                              EGLint* value) override;
 EGLBoolean eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) override;
+EGLBoolean eglQueryDevicesEXTFn(EGLint max_devices,
+                                EGLDeviceEXT* devices,
+                                EGLint* num_devices) override;
+const char* eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
+                                      EGLint name) override;
 EGLBoolean eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
                                         EGLint attribute,
                                         EGLAttrib* value) override;

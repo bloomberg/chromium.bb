@@ -157,7 +157,7 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
   autofill::PasswordAutofillAgent* password_autofill_agent =
       new autofill::PasswordAutofillAgent(render_frame, &registry_);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
-                              &registry_);
+                              nullptr, &registry_);
   if (content_capture::features::IsContentCaptureEnabled())
     new content_capture::ContentCaptureSender(render_frame, &registry_);
 
@@ -281,7 +281,7 @@ void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
     return;
 
   const blink::WebHitTestResult result = webview->HitTestResultForTap(
-      blink::WebPoint(touch_center.x(), touch_center.y()),
+      gfx::Point(touch_center.x(), touch_center.y()),
       blink::WebSize(touch_area.width(), touch_area.height()));
   AwHitTestData data;
 

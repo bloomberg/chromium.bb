@@ -36,9 +36,8 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
-  registry->RegisterDictionaryPref(prefs::kNetworkProperties);
 
-  registry->RegisterIntegerPref(prefs::kThisWeekNumber, false);
+  registry->RegisterIntegerPref(prefs::kThisWeekNumber, 0);
   registry->RegisterDictionaryPref(
       prefs::kThisWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(
@@ -79,9 +78,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
-  registry->RegisterDictionaryPref(prefs::kNetworkProperties);
 
-  registry->RegisterIntegerPref(prefs::kThisWeekNumber, false);
+  registry->RegisterIntegerPref(prefs::kThisWeekNumber, 0);
   registry->RegisterDictionaryPref(
       prefs::kThisWeekServicesDownstreamBackgroundKB, PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(

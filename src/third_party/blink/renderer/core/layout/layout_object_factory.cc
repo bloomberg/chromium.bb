@@ -5,26 +5,35 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_as_block.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_legacy.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -74,39 +83,68 @@ LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
+  if (style.Display() == EDisplay::kListItem) {
+    // Create a LayoutBlockFlow with a list marker
+    return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
+        node, style, legacy);
+  }
+
+  // Create a plain LayoutBlockFlow
   return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow>(node, style, legacy);
+}
+
+// static
+LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
+    Node& node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  DCHECK(RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled());
+  return CreateObject<LayoutBlock, LayoutNGBlockFlow,
+                      LayoutDeprecatedFlexibleBox>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFlexBox);
   return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
       node, style, legacy, disable_ng_for_type);
 }
 
-LayoutBlockFlow* LayoutObjectFactory::CreateListItem(Node& node,
-                                                     const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
-      node, style, legacy);
+LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
+                                             const ComputedStyle& style,
+                                             LegacyLayout legacy) {
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGGridEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByGrid);
+  return CreateObject<LayoutBlock, LayoutNGGrid, LayoutGrid>(
+      node, style, legacy, disable_ng_for_type);
+}
+
+LayoutBlock* LayoutObjectFactory::CreateMath(Node& node,
+                                             const ComputedStyle& style,
+                                             LegacyLayout legacy) {
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::MathMLCoreEnabled();
+  return CreateObject<LayoutBlock, LayoutNGMathMLBlock, LayoutBlockFlow>(
+      node, style, legacy, disable_ng_for_type);
 }
 
 LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
-  // TODO(obrufau): allow ::marker pseudo-elements to generate legacy layout.
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled() ||
-      legacy == LegacyLayout::kForce)
-    return nullptr;
-  // TODO(obrufau): markers may be forced to be inside despite having
-  // `list-style-position: outside`.
-  if (style.ListStylePosition() == EListStylePosition::kInside) {
+  const Node* parent = node.parentNode();
+  const ComputedStyle* parent_style = parent->GetComputedStyle();
+  bool is_inside =
+      parent_style->ListStylePosition() == EListStylePosition::kInside ||
+      (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
+  if (is_inside) {
     return CreateObject<LayoutObject, LayoutNGInsideListMarker,
-                        LayoutNGInsideListMarker>(node, style, legacy);
+                        LayoutInsideListMarker>(node, style, legacy);
   }
-  return CreateObject<LayoutObject, LayoutNGListMarker, LayoutNGListMarker>(
-      node, style, legacy);
+  return CreateObject<LayoutObject, LayoutNGOutsideListMarker,
+                      LayoutOutsideListMarker>(node, style, legacy);
 }
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(
@@ -121,15 +159,26 @@ LayoutTableCell* LayoutObjectFactory::CreateTableCell(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  return CreateObject<LayoutTableCell, LayoutNGTableCell>(node, style, legacy);
+  return CreateObject<LayoutTableCell, LayoutNGTableCellLegacy>(node, style,
+                                                                legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
                                                  const ComputedStyle& style,
                                                  LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFieldSet);
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
       node, style, legacy, disable_ng_for_type);
+}
+
+LayoutBlockFlow* LayoutObjectFactory::CreateFileUploadControl(
+    Node& node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow,
+                      LayoutFileUploadControl>(node, style, legacy);
 }
 
 LayoutText* LayoutObjectFactory::CreateText(Node* node,
@@ -170,6 +219,14 @@ LayoutProgress* LayoutObjectFactory::CreateProgress(Node* node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   return CreateObject<LayoutProgress, LayoutNGProgress>(*node, style, legacy);
+}
+
+LayoutRubyAsBlock* LayoutObjectFactory::CreateRubyAsBlock(
+    Node* node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return CreateObject<LayoutRubyAsBlock, LayoutNGRubyAsBlock>(*node, style,
+                                                              legacy);
 }
 
 }  // namespace blink

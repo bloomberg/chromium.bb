@@ -84,43 +84,34 @@ void hostSignal (const DeviceInterface& vk, const VkDevice& device, VkSemaphore 
 {
 	VkSemaphoreSignalInfoKHR	ssi	=
 	{
-		VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR,// VkStructureType				sType;
+		VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,	// VkStructureType				sType;
 		DE_NULL,									// const void*					pNext;
 		semaphore,									// VkSemaphore					semaphore;
 		timelineValue,								// deUint64						value;
 	};
 
-	VK_CHECK(vk.signalSemaphoreKHR(device, &ssi));
+	VK_CHECK(vk.signalSemaphore(device, &ssi));
 }
 
-Move<VkDevice> createDevice (const deUint32							apiVersion,
-							 const VkPhysicalDeviceFeatures&		deviceFeatures,
-							 const PlatformInterface&				vkp,
-							 VkInstance								instance,
-							 const vk::InstanceInterface&			vki,
-							 VkPhysicalDevice						physicalDevice,
-							 VkSemaphoreTypeKHR						semaphoreType,
-							 VkExternalSemaphoreHandleTypeFlagBits	semaphoreHandleType)
+Move<VkDevice> createDevice (const Context& context)
 {
 	const float									priority				= 0.0f;
-	const std::vector<VkQueueFamilyProperties>	queueFamilyProperties	= getPhysicalDeviceQueueFamilyProperties(vki, physicalDevice);
+	const std::vector<VkQueueFamilyProperties>	queueFamilyProperties	= getPhysicalDeviceQueueFamilyProperties(context.getInstanceInterface(), context.getPhysicalDevice());
 	std::vector<deUint32>						queueFamilyIndices		(queueFamilyProperties.size(), 0xFFFFFFFFu);
 	std::vector<const char*>					extensions;
 
-	if (semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR)
+	if (context.isDeviceFunctionalitySupported("VK_KHR_timeline_semaphore"))
 		extensions.push_back("VK_KHR_timeline_semaphore");
 
-	if (!isCoreDeviceExtension(apiVersion, "VK_KHR_external_semaphore"))
+	if (!isCoreDeviceExtension(context.getUsedApiVersion(), "VK_KHR_external_semaphore"))
 		extensions.push_back("VK_KHR_external_semaphore");
-	if (!isCoreDeviceExtension(apiVersion, "VK_KHR_external_memory"))
+	if (!isCoreDeviceExtension(context.getUsedApiVersion(), "VK_KHR_external_memory"))
 		extensions.push_back("VK_KHR_external_memory");
 
-	if (semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT ||
-		semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT)
+	if (context.isDeviceFunctionalitySupported("VK_KHR_external_semaphore_fd"))
 		extensions.push_back("VK_KHR_external_semaphore_fd");
 
-	if (semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT ||
-		semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT)
+	if (context.isDeviceFunctionalitySupported("VK_KHR_external_semaphore_win32"))
 		extensions.push_back("VK_KHR_external_semaphore_win32");
 
 	try
@@ -147,7 +138,7 @@ Move<VkDevice> createDevice (const deUint32							apiVersion,
 		{
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
 			DE_NULL,
-			deviceFeatures,
+			context.getDeviceFeatures(),
 		};
 		const VkDeviceCreateInfo				createInfo				=
 		{
@@ -166,7 +157,7 @@ Move<VkDevice> createDevice (const deUint32							apiVersion,
 			0u
 		};
 
-		return createDevice(vkp, instance, vki, physicalDevice, &createInfo);
+		return createDevice(context.getPlatformInterface(), context.getInstance(), context.getInstanceInterface(), context.getPhysicalDevice(), &createInfo);
 	}
 	catch (const vk::Error& error)
 	{
@@ -175,6 +166,43 @@ Move<VkDevice> createDevice (const deUint32							apiVersion,
 		else
 			throw;
 	}
+}
+
+// Class to wrap a singleton instance and device
+class SingletonDevice
+{
+	SingletonDevice	(const Context& context)
+		: m_logicalDevice	(createDevice(context))
+	{
+	}
+
+public:
+
+	static const Unique<vk::VkDevice>& getDevice(const Context& context)
+	{
+		if (!m_singletonDevice)
+			m_singletonDevice = SharedPtr<SingletonDevice>(new SingletonDevice(context));
+
+		DE_ASSERT(m_singletonDevice);
+		return m_singletonDevice->m_logicalDevice;
+	}
+
+	static void destroy()
+	{
+		m_singletonDevice.clear();
+	}
+
+private:
+	const Unique<vk::VkDevice>					m_logicalDevice;
+
+	static SharedPtr<SingletonDevice>	m_singletonDevice;
+};
+SharedPtr<SingletonDevice>		SingletonDevice::m_singletonDevice;
+
+static void cleanupGroup ()
+{
+	// Destroy singleton object
+	SingletonDevice::destroy();
 }
 
 class SimpleAllocation : public Allocation
@@ -204,11 +232,9 @@ SimpleAllocation::~SimpleAllocation (void)
 	m_vkd.freeMemory(m_device, getMemory(), DE_NULL);
 }
 
-MovePtr<Allocation> allocateAndBindMemory (const DeviceInterface&				vkd,
-										   VkDevice								device,
-										   VkBuffer								buffer,
-										   VkExternalMemoryHandleTypeFlagBits	externalType,
-										   deUint32&							memoryIndex)
+vk::VkMemoryRequirements getMemoryRequirements (const DeviceInterface&				vkd,
+												 VkDevice							device,
+												 VkBuffer							buffer)
 {
 	const VkBufferMemoryRequirementsInfo2	requirementInfo =
 	{
@@ -223,20 +249,13 @@ MovePtr<Allocation> allocateAndBindMemory (const DeviceInterface&				vkd,
 		{ 0u, 0u, 0u, }
 	};
 	vkd.getBufferMemoryRequirements2(device, &requirementInfo, &requirements);
-
-	Move<VkDeviceMemory>					memory			= allocateExportableMemory(vkd, device, requirements.memoryRequirements, externalType, buffer, memoryIndex);
-	VK_CHECK(vkd.bindBufferMemory(device, buffer, *memory, 0u));
-
-	return MovePtr<Allocation>(new SimpleAllocation(vkd, device, memory.disown()));
+	return requirements.memoryRequirements;
 }
 
-MovePtr<Allocation> allocateAndBindMemory (const DeviceInterface&				vkd,
-										   VkDevice								device,
-										   VkImage								image,
-										   VkExternalMemoryHandleTypeFlagBits	externalType,
-										   deUint32&							exportedMemoryTypeIndex)
+vk::VkMemoryRequirements getMemoryRequirements(const DeviceInterface&				vkd,
+												VkDevice							device,
+												VkImage								image)
 {
-	VkMemoryRequirements memoryRequirements = { 0u, 0u, 0u, };
 	const VkImageMemoryRequirementsInfo2	requirementInfo =
 	{
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2,
@@ -251,41 +270,44 @@ MovePtr<Allocation> allocateAndBindMemory (const DeviceInterface&				vkd,
 	};
 	vkd.getImageMemoryRequirements2(device, &requirementInfo, &requirements);
 
-	memoryRequirements = requirements.memoryRequirements;
-
-	Move<VkDeviceMemory> memory = allocateExportableMemory(vkd, device, memoryRequirements, externalType, image, exportedMemoryTypeIndex);
-	VK_CHECK(vkd.bindImageMemory(device, image, *memory, 0u));
-
-	return MovePtr<Allocation>(new SimpleAllocation(vkd, device, memory.disown()));
+	return requirements.memoryRequirements;
 }
 
-
-MovePtr<Allocation> importAndBindMemory (const DeviceInterface&				vkd,
-										 VkDevice							device,
-										 VkBuffer							buffer,
-										 NativeHandle&						nativeHandle,
-										 VkExternalMemoryHandleTypeFlagBits	externalType,
-										 const deUint32						exportedMemoryTypeIndex)
+MovePtr<Allocation> importAndBindMemory (const DeviceInterface&					vkd,
+										 VkDevice								device,
+										 VkBuffer								buffer,
+										 NativeHandle&							nativeHandle,
+										 VkExternalMemoryHandleTypeFlagBits		externalType,
+										 const deUint32							exportedMemoryTypeIndex)
 {
 	const VkMemoryRequirements	requirements			= getBufferMemoryRequirements(vkd, device, buffer);
-	Move<VkDeviceMemory>		memory					= importMemory(vkd, device, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
+	Move<VkDeviceMemory>		memory;
 
-	NativeHandle				nativeMemoryHandle;
+	if (!!buffer)
+		memory = importDedicatedMemory(vkd, device, buffer, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
+	else
+		memory = importMemory(vkd, device, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
 
 	VK_CHECK(vkd.bindBufferMemory(device, buffer, *memory, 0u));
 
 	return MovePtr<Allocation>(new SimpleAllocation(vkd, device, memory.disown()));
 }
 
-MovePtr<Allocation> importAndBindMemory (const DeviceInterface&				vkd,
-										 VkDevice							device,
-										 VkImage							image,
-										 NativeHandle&						nativeHandle,
-										 VkExternalMemoryHandleTypeFlagBits	externalType,
-										 deUint32							exportedMemoryTypeIndex)
+MovePtr<Allocation> importAndBindMemory (const DeviceInterface&					vkd,
+										 VkDevice								device,
+										 VkImage								image,
+										 NativeHandle&							nativeHandle,
+										 VkExternalMemoryHandleTypeFlagBits		externalType,
+										 deUint32								exportedMemoryTypeIndex)
 {
 	const VkMemoryRequirements	requirements	= getImageMemoryRequirements(vkd, device, image);
-	Move<VkDeviceMemory>		memory			=  importMemory(vkd, device, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
+	Move<VkDeviceMemory>		memory;
+
+	if (!!image)
+		memory = importDedicatedMemory(vkd, device, image, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
+	else
+		memory = importMemory(vkd, device, requirements, externalType, exportedMemoryTypeIndex, nativeHandle);
+
 	VK_CHECK(vkd.bindImageMemory(device, image, *memory, 0u));
 
 	return MovePtr<Allocation>(new SimpleAllocation(vkd, device, memory.disown()));
@@ -312,100 +334,6 @@ struct QueueTimelineIteration
 	deUint64					timelineValue;
 	SharedPtr<Operation>		op;
 };
-
-de::MovePtr<Resource> createResource (const DeviceInterface&				vkd,
-									  VkDevice								device,
-									  const ResourceDescription&			resourceDesc,
-									  const deUint32						queueFamilyIndex,
-									  const OperationSupport&				readOp,
-									  const OperationSupport&				writeOp,
-									  VkExternalMemoryHandleTypeFlagBits	externalType,
-									  deUint32&								exportedMemoryTypeIndex)
-{
-	if (resourceDesc.type == RESOURCE_TYPE_IMAGE)
-	{
-		const VkExtent3D				extent					=
-		{
-			(deUint32)resourceDesc.size.x(),
-			de::max(1u, (deUint32)resourceDesc.size.y()),
-			de::max(1u, (deUint32)resourceDesc.size.z())
-		};
-		const VkImageSubresourceRange	subresourceRange		=
-		{
-			resourceDesc.imageAspect,
-			0u,
-			1u,
-			0u,
-			1u
-		};
-		const VkImageSubresourceLayers	subresourceLayers		=
-		{
-			resourceDesc.imageAspect,
-			0u,
-			0u,
-			1u
-		};
-		const VkExternalMemoryImageCreateInfo externalInfo		=
-		{
-			VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
-			DE_NULL,
-			(VkExternalMemoryHandleTypeFlags)externalType
-		};
-		const VkImageCreateInfo			createInfo				=
-		{
-			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-			&externalInfo,
-			0u,
-
-			resourceDesc.imageType,
-			resourceDesc.imageFormat,
-			extent,
-			1u,
-			1u,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_IMAGE_TILING_OPTIMAL,
-			readOp.getInResourceUsageFlags() | writeOp.getOutResourceUsageFlags(),
-			VK_SHARING_MODE_EXCLUSIVE,
-
-			1u,
-			&queueFamilyIndex,
-			VK_IMAGE_LAYOUT_UNDEFINED
-		};
-
-		Move<VkImage>			image		= createImage(vkd, device, &createInfo);
-		MovePtr<Allocation>		allocation	= allocateAndBindMemory(vkd, device, *image, externalType, exportedMemoryTypeIndex);
-
-		return MovePtr<Resource>(new Resource(image, allocation, extent, resourceDesc.imageType, resourceDesc.imageFormat, subresourceRange, subresourceLayers));
-	}
-	else
-	{
-		const VkDeviceSize						offset			= 0u;
-		const VkDeviceSize						size			= static_cast<VkDeviceSize>(resourceDesc.size.x());
-		const VkBufferUsageFlags				usage			= readOp.getInResourceUsageFlags() | writeOp.getOutResourceUsageFlags();
-		const VkExternalMemoryBufferCreateInfo	externalInfo	=
-		{
-			VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
-			DE_NULL,
-			(VkExternalMemoryHandleTypeFlags)externalType
-		};
-		const VkBufferCreateInfo				createInfo		=
-		{
-			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-			&externalInfo,
-			0u,
-
-			size,
-			usage,
-			VK_SHARING_MODE_EXCLUSIVE,
-			1u,
-			&queueFamilyIndex
-		};
-		Move<VkBuffer>							buffer		= createBuffer(vkd, device, &createInfo);
-		MovePtr<Allocation>						allocation	= allocateAndBindMemory(vkd, device, *buffer, externalType, exportedMemoryTypeIndex);
-
-		return MovePtr<Resource>(new Resource(resourceDesc.type, buffer, allocation, offset, size));
-	}
-}
 
 de::MovePtr<Resource> importResource (const DeviceInterface&				vkd,
 									  VkDevice								device,
@@ -495,8 +423,13 @@ de::MovePtr<Resource> importResource (const DeviceInterface&				vkd,
 			1u,
 			&queueFamilyIndex
 		};
-		Move<VkBuffer>							buffer			= createBuffer(vkd, device, &createInfo);
-		MovePtr<Allocation>						allocation		= importAndBindMemory(vkd, device, *buffer, nativeHandle, externalType, exportedMemoryTypeIndex);
+		Move<VkBuffer>							buffer		= createBuffer(vkd, device, &createInfo);
+		MovePtr<Allocation>						allocation	= importAndBindMemory(vkd,
+																				  device,
+																				  *buffer,
+																				  nativeHandle,
+																				  externalType,
+																				  exportedMemoryTypeIndex);
 
 		return MovePtr<Resource>(new Resource(resourceDesc.type, buffer, allocation, offset, size));
 	}
@@ -532,7 +465,7 @@ public:
 											  const SharedPtr<OperationSupport>			readOpSupport,
 											  const ResourceDescription&				resourceDesc,
 											  VkExternalMemoryHandleTypeFlagBits		memoryHandleType,
-											  VkSemaphoreTypeKHR						semaphoreType,
+											  VkSemaphoreType							semaphoreType,
 											  VkExternalSemaphoreHandleTypeFlagBits		semaphoreHandleType,
 											  PipelineCacheData&						pipelineCacheData)
 		: TestInstance			(context)
@@ -584,19 +517,73 @@ public:
 
 	}
 
+	Move<VkImage> createImage (const vk::DeviceInterface&	vkd,
+							   vk::VkDevice					device,
+							   const vk::VkExtent3D&		extent,
+							   deUint32						queueFamilyIndex)
+	{
+		const VkExternalMemoryImageCreateInfo externalInfo =
+		{
+			VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+			DE_NULL,
+			(VkExternalMemoryHandleTypeFlags)m_memoryHandleType
+		};
+		const VkImageCreateInfo createInfo =
+		{
+			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+			&externalInfo,
+			0u,
+
+			m_resourceDesc.imageType,
+			m_resourceDesc.imageFormat,
+			extent,
+			1u,
+			1u,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_IMAGE_TILING_OPTIMAL,
+			m_readOpSupport->getInResourceUsageFlags() | m_writeOpSupport->getOutResourceUsageFlags(),
+			VK_SHARING_MODE_EXCLUSIVE,
+
+			1u,
+			&queueFamilyIndex,
+			VK_IMAGE_LAYOUT_UNDEFINED
+		};
+
+		return vk::createImage(vkd, device, &createInfo);
+	}
+
+	Move<VkBuffer> createBuffer (const vk::DeviceInterface&		vkd,
+								 vk::VkDevice					device,
+								 const vk::VkDeviceSize&		size,
+								 deUint32						queueFamilyIndex)
+	{
+		const VkExternalMemoryBufferCreateInfo	externalInfo =
+		{
+			VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
+			DE_NULL,
+			(VkExternalMemoryHandleTypeFlags)m_memoryHandleType
+		};
+		const VkBufferCreateInfo				createInfo =
+		{
+			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			&externalInfo,
+			0u,
+
+			size,
+			m_readOpSupport->getInResourceUsageFlags() | m_writeOpSupport->getOutResourceUsageFlags(),
+			VK_SHARING_MODE_EXCLUSIVE,
+			1u,
+			&queueFamilyIndex
+		};
+		return vk::createBuffer(vkd, device, &createInfo);
+	}
+
 	tcu::TestStatus iterate (void)
 	{
 		// We're using 2 devices to make sure we have 2 queues even on
 		// implementations that only have a single queue.
 		const VkDevice&										deviceA						= m_context.getDevice();
-		const Unique<VkDevice>								deviceB						(createDevice(m_context.getUsedApiVersion(),
-																									  m_context.getDeviceFeatures(),
-																									  m_context.getPlatformInterface(),
-																									  m_context.getInstance(),
-																									  m_context.getInstanceInterface(),
-																									  m_context.getPhysicalDevice(),
-																									  m_semaphoreType,
-																									  m_semaphoreHandleType));
+		const Unique<VkDevice>&								deviceB						(SingletonDevice::getDevice(m_context));
 		const DeviceInterface&								vkA							= m_context.getDeviceInterface();
 		const DeviceDriver									vkB							(m_context.getPlatformInterface(), m_context.getInstance(), *deviceB);
 		UniquePtr<SimpleAllocator>							allocatorA					(new SimpleAllocator(vkA, deviceA, vk::getPhysicalDeviceMemoryProperties(m_context.getInstanceInterface(),
@@ -622,24 +609,65 @@ public:
 		std::vector<VkSemaphore>							semaphoreHandlesB;
 		std::vector<deUint64>								timelineValuesA;
 		std::vector<deUint64>								timelineValuesB;
-		std::vector<QueueSubmitOrderSharedIteration>		iterations;
+		std::vector<QueueSubmitOrderSharedIteration>		iterations(12);
 		std::vector<VkPipelineStageFlags>					stageBits;
 
 		// Create a dozen of set of write/read operations.
-		iterations.resize(12);
 		for (deUint32 iterIdx = 0; iterIdx < iterations.size(); iterIdx++)
 		{
 			QueueSubmitOrderSharedIteration&	iter				= iterations[iterIdx];
 			deUint32							memoryTypeIndex;
 			NativeHandle						nativeMemoryHandle;
 
-			iter.resourceA	= makeSharedPtr(createResource(vkA, deviceA,
-														   m_resourceDesc,
-														   universalQueueFamilyIndex,
-														   *m_readOpSupport,
-														   *m_writeOpSupport,
-														   m_memoryHandleType,
-														   memoryTypeIndex));
+			if (m_resourceDesc.type == RESOURCE_TYPE_IMAGE)
+			{
+				const VkExtent3D				extent =
+				{
+					(deUint32)m_resourceDesc.size.x(),
+					de::max(1u, (deUint32)m_resourceDesc.size.y()),
+					de::max(1u, (deUint32)m_resourceDesc.size.z())
+				};
+				const VkImageSubresourceRange	subresourceRange =
+				{
+					m_resourceDesc.imageAspect,
+					0u,
+					1u,
+					0u,
+					1u
+				};
+				const VkImageSubresourceLayers	subresourceLayers =
+				{
+					m_resourceDesc.imageAspect,
+					0u,
+					0u,
+					1u
+				};
+
+				Move<VkImage>							image			= createImage(vkA, deviceA, extent, universalQueueFamilyIndex);
+				const vk::VkMemoryRequirements			requirements	= getMemoryRequirements(vkA, deviceA, *image);
+														memoryTypeIndex = chooseMemoryType(requirements.memoryTypeBits);
+				vk::Move<vk::VkDeviceMemory>			memory			= allocateExportableMemory(vkA, deviceA, requirements.size, memoryTypeIndex, m_memoryHandleType, *image);
+
+				VK_CHECK(vkA.bindImageMemory(deviceA, *image, *memory, 0u));
+
+				MovePtr<Allocation> allocation(new SimpleAllocation(vkA, deviceA, memory.disown()));
+				iter.resourceA = makeSharedPtr(new Resource(image, allocation, extent, m_resourceDesc.imageType, m_resourceDesc.imageFormat, subresourceRange, subresourceLayers));
+			}
+			else
+			{
+				const VkDeviceSize						offset			= 0u;
+				const VkDeviceSize						size			= static_cast<VkDeviceSize>(m_resourceDesc.size.x());
+				Move<VkBuffer>							buffer			= createBuffer(vkA, deviceA, size, universalQueueFamilyIndex);
+				const vk::VkMemoryRequirements			requirements	= getMemoryRequirements(vkA, deviceA, *buffer);
+														memoryTypeIndex	= chooseMemoryType(requirements.memoryTypeBits);
+				vk::Move<vk::VkDeviceMemory>			memory			= allocateExportableMemory(vkA, deviceA, requirements.size, memoryTypeIndex, m_memoryHandleType, *buffer);
+
+				VK_CHECK(vkA.bindBufferMemory(deviceA, *buffer, *memory, 0u));
+
+				MovePtr<Allocation> allocation(new SimpleAllocation(vkA, deviceA, memory.disown()));
+				iter.resourceA = makeSharedPtr(new Resource(m_resourceDesc.type, buffer, allocation, offset, size));
+			}
+
 			getMemoryNative(vkA, deviceA, iter.resourceA->getMemory(), m_memoryHandleType, nativeMemoryHandle);
 			iter.resourceB	= makeSharedPtr(importResource(vkB, *deviceB,
 														   m_resourceDesc,
@@ -730,7 +758,10 @@ public:
 			addSemaphore(vkB, *deviceB, semaphoresB, semaphoreHandlesB, timelineValuesB, false, timelineValuesA.back());
 		}
 
-		// Submit writes, each in its own VkSubmitInfo.
+		// Submit writes, each in its own VkSubmitInfo. With binary
+		// semaphores, submission don't wait on anything, with
+		// timeline semaphores, submissions wait on a host signal
+		// operation done below.
 		{
 			std::vector<VkTimelineSemaphoreSubmitInfoKHR>	timelineSubmitInfos;
 			std::vector<VkSubmitInfo>						submitInfos;
@@ -745,7 +776,8 @@ public:
 				{
 					VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR,	// VkStructureType	sType;
 					DE_NULL,												// const void*		pNext;
-					iterIdx == 0 ? 1u: 0,									// deUint32			waitSemaphoreValueCount
+					m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR ?
+					1u: 0,													// deUint32			waitSemaphoreValueCount
 					&waitValue,												// const deUint64*	pWaitSemaphoreValues
 					1u,														// deUint32			signalSemaphoreValueCount
 					&timelineValuesA[iterIdx],								// const deUint64*	pSignalSemaphoreValues
@@ -803,9 +835,9 @@ public:
 
 			if (m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR)
 			{
-				const VkSemaphoreWaitInfoKHR		waitInfo	=
+				const VkSemaphoreWaitInfo		waitInfo	=
 				{
-					VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR,// VkStructureType			sType;
+					VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,	// VkStructureType			sType;
 					DE_NULL,								// const void*				pNext;
 					0u,										// VkSemaphoreWaitFlagsKHR	flags;
 					1u,										// deUint32					semaphoreCount;
@@ -816,7 +848,7 @@ public:
 				// Unblock the whole lot.
 				hostSignal(vkA, deviceA, semaphoreHandlesA.front(), 1);
 
-				VK_CHECK(vkB.waitSemaphoresKHR(*deviceB, &waitInfo, ~0ull));
+				VK_CHECK(vkB.waitSemaphores(*deviceB, &waitInfo, ~0ull));
 			}
 			else
 			{
@@ -973,7 +1005,7 @@ private:
 	SharedPtr<OperationSupport>					m_readOpSupport;
 	const ResourceDescription&					m_resourceDesc;
 	VkExternalMemoryHandleTypeFlagBits			m_memoryHandleType;
-	VkSemaphoreTypeKHR							m_semaphoreType;
+	VkSemaphoreType								m_semaphoreType;
 	VkExternalSemaphoreHandleTypeFlagBits		m_semaphoreHandleType;
 	PipelineCacheData&							m_pipelineCacheData;
 	de::Random									m_rng;
@@ -988,7 +1020,7 @@ public:
 										  OperationName							readOp,
 										  const ResourceDescription&			resourceDesc,
 										  VkExternalMemoryHandleTypeFlagBits	memoryHandleType,
-										  VkSemaphoreTypeKHR					semaphoreType,
+										  VkSemaphoreType						semaphoreType,
 										  VkExternalSemaphoreHandleTypeFlagBits	semaphoreHandleType,
 										  PipelineCacheData&					pipelineCacheData)
 		: TestCase				(testCtx, name.c_str(), "")
@@ -1000,6 +1032,23 @@ public:
 		, m_semaphoreHandleType	(semaphoreHandleType)
 		, m_pipelineCacheData	(pipelineCacheData)
 	{
+	}
+
+	virtual void checkSupport(Context& context) const
+	{
+		if (m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR &&
+			!context.getTimelineSemaphoreFeatures().timelineSemaphore)
+			TCU_THROW(NotSupportedError, "Timeline semaphore not supported");
+
+		if ((m_semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT ||
+			 m_semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) &&
+			 !context.isDeviceFunctionalitySupported("VK_KHR_external_semaphore_fd"))
+			TCU_THROW(NotSupportedError, "VK_KHR_external_semaphore_fd not supported");
+
+		if ((m_semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT ||
+			 m_semaphoreHandleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT) &&
+			!context.isDeviceFunctionalitySupported("VK_KHR_external_semaphore_win32"))
+			TCU_THROW(NotSupportedError, "VK_KHR_external_semaphore_win32 not supported");
 	}
 
 	TestInstance* createInstance (Context& context) const
@@ -1025,7 +1074,7 @@ private:
 	SharedPtr<OperationSupport>				m_readOpSupport;
 	const ResourceDescription&				m_resourceDesc;
 	VkExternalMemoryHandleTypeFlagBits		m_memoryHandleType;
-	VkSemaphoreTypeKHR						m_semaphoreType;
+	VkSemaphoreType							m_semaphoreType;
 	VkExternalSemaphoreHandleTypeFlagBits	m_semaphoreHandleType;
 	PipelineCacheData&						m_pipelineCacheData;
 };
@@ -1033,7 +1082,7 @@ private:
 class QueueSubmitSignalOrderSharedTests : public tcu::TestCaseGroup
 {
 public:
-	QueueSubmitSignalOrderSharedTests (tcu::TestContext& testCtx, VkSemaphoreTypeKHR semaphoreType, const char *name)
+	QueueSubmitSignalOrderSharedTests (tcu::TestContext& testCtx, VkSemaphoreType semaphoreType, const char *name)
 		: tcu::TestCaseGroup	(testCtx, name, "Signal ordering of semaphores")
 		, m_semaphoreType		(semaphoreType)
 	{
@@ -1157,8 +1206,13 @@ public:
 		}
 	}
 
+	void deinit (void)
+	{
+		cleanupGroup();
+	}
+
 private:
-	VkSemaphoreTypeKHR	m_semaphoreType;
+	VkSemaphoreType		m_semaphoreType;
 	// synchronization.op tests share pipeline cache data to speed up test
 	// execution.
 	PipelineCacheData	m_pipelineCacheData;
@@ -1192,21 +1246,14 @@ public:
 										const SharedPtr<OperationSupport>			writeOpSupport,
 										const SharedPtr<OperationSupport>			readOpSupport,
 										const ResourceDescription&					resourceDesc,
-										VkSemaphoreTypeKHR							semaphoreType,
+										VkSemaphoreType								semaphoreType,
 										PipelineCacheData&							pipelineCacheData)
 		: TestInstance			(context)
 		, m_writeOpSupport		(writeOpSupport)
 		, m_readOpSupport		(readOpSupport)
 		, m_resourceDesc		(resourceDesc)
 		, m_semaphoreType		(semaphoreType)
-		, m_device				(createDevice(context.getUsedApiVersion(),
-											  context.getDeviceFeatures(),
-											  context.getPlatformInterface(),
-											  context.getInstance(),
-											  context.getInstanceInterface(),
-											  context.getPhysicalDevice(),
-											  semaphoreType,
-											  (VkExternalSemaphoreHandleTypeFlagBits)0))
+		, m_device				(SingletonDevice::getDevice(context))
 		, m_deviceInterface		(context.getPlatformInterface(), context.getInstance(), *m_device)
 		, m_allocator			(new SimpleAllocator(m_deviceInterface,
 													 *m_device,
@@ -1360,7 +1407,10 @@ public:
 
 		addSemaphore(vk, device, semaphoresB, semaphoreHandlesB, timelineValuesB, timelineValuesA.back());
 
-		// Submit writes, each in its own VkSubmitInfo.
+		// Submit writes, each in its own VkSubmitInfo. With binary
+		// semaphores, submission don't wait on anything, with
+		// timeline semaphores, submissions wait on a host signal
+		// operation done below.
 		{
 			std::vector<VkTimelineSemaphoreSubmitInfoKHR>	timelineSubmitInfos;
 			std::vector<VkSubmitInfo>						submitInfos;
@@ -1375,7 +1425,8 @@ public:
 				{
 					VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR,	// VkStructureType	sType;
 					DE_NULL,												// const void*		pNext;
-					iterIdx == 0 ? 1u: 0,									// deUint32			waitSemaphoreValueCount
+					m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR ?
+					1u : 0u,												// deUint32			waitSemaphoreValueCount
 					&waitValue,												// const deUint64*	pWaitSemaphoreValues
 					1u,														// deUint32			signalSemaphoreValueCount
 					&timelineValuesA[iterIdx],								// const deUint64*	pSignalSemaphoreValues
@@ -1433,9 +1484,9 @@ public:
 
 			if (m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR)
 			{
-				const VkSemaphoreWaitInfoKHR		waitInfo	=
+				const VkSemaphoreWaitInfo		waitInfo	=
 				{
-					VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR,// VkStructureType			sType;
+					VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,	// VkStructureType			sType;
 					DE_NULL,								// const void*				pNext;
 					0u,										// VkSemaphoreWaitFlagsKHR	flags;
 					1u,										// deUint32					semaphoreCount;
@@ -1446,7 +1497,7 @@ public:
 				// Unblock the whole lot.
 				hostSignal(vk, device, semaphoreHandlesA.front(), 1);
 
-				VK_CHECK(vk.waitSemaphoresKHR(device, &waitInfo, ~0ull));
+				VK_CHECK(vk.waitSemaphores(device, &waitInfo, ~0ull));
 			}
 			else
 			{
@@ -1511,8 +1562,8 @@ private:
 	SharedPtr<OperationSupport>					m_writeOpSupport;
 	SharedPtr<OperationSupport>					m_readOpSupport;
 	const ResourceDescription&					m_resourceDesc;
-	VkSemaphoreTypeKHR							m_semaphoreType;
-	Unique<VkDevice>							m_device;
+	VkSemaphoreType								m_semaphoreType;
+	const Unique<VkDevice>&						m_device;
 	const DeviceDriver							m_deviceInterface;
 	UniquePtr<SimpleAllocator>					m_allocator;
 	UniquePtr<OperationContext>					m_operationContext;
@@ -1531,7 +1582,7 @@ public:
 									OperationName				writeOp,
 									OperationName				readOp,
 									const ResourceDescription&	resourceDesc,
-									VkSemaphoreTypeKHR			semaphoreType,
+									VkSemaphoreType				semaphoreType,
 									PipelineCacheData&			pipelineCacheData)
 		: TestCase				(testCtx, name.c_str(), "")
 		, m_writeOpSupport		(makeOperationSupport(writeOp, resourceDesc).release())
@@ -1540,6 +1591,13 @@ public:
 		, m_semaphoreType		(semaphoreType)
 		, m_pipelineCacheData	(pipelineCacheData)
 	{
+	}
+
+	virtual void checkSupport(Context& context) const
+	{
+		if (m_semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE_KHR &&
+			!context.getTimelineSemaphoreFeatures().timelineSemaphore)
+			TCU_THROW(NotSupportedError, "Timeline semaphore not supported");
 	}
 
 	TestInstance* createInstance (Context& context) const
@@ -1562,14 +1620,14 @@ private:
 	SharedPtr<OperationSupport>				m_writeOpSupport;
 	SharedPtr<OperationSupport>				m_readOpSupport;
 	const ResourceDescription&				m_resourceDesc;
-	VkSemaphoreTypeKHR						m_semaphoreType;
+	VkSemaphoreType							m_semaphoreType;
 	PipelineCacheData&						m_pipelineCacheData;
 };
 
 class QueueSubmitSignalOrderTests : public tcu::TestCaseGroup
 {
 public:
-	QueueSubmitSignalOrderTests (tcu::TestContext& testCtx, VkSemaphoreTypeKHR semaphoreType, const char *name)
+	QueueSubmitSignalOrderTests (tcu::TestContext& testCtx, VkSemaphoreType semaphoreType, const char *name)
 		: tcu::TestCaseGroup	(testCtx, name, "Signal ordering of semaphores")
 		, m_semaphoreType		(semaphoreType)
 	{
@@ -1664,8 +1722,13 @@ public:
 		}
 	}
 
+	void deinit (void)
+	{
+		cleanupGroup();
+	}
+
 private:
-	VkSemaphoreTypeKHR		m_semaphoreType;
+	VkSemaphoreType		m_semaphoreType;
 	// synchronization.op tests share pipeline cache data to speed up test
 	// execution.
 	PipelineCacheData	m_pipelineCacheData;

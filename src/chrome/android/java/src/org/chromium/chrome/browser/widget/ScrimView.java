@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -85,7 +85,7 @@ public class ScrimView extends View implements View.OnClickListener {
          * ScrimObserver#onScrimClick} will not be called when an event filter is set.
          */
         @Nullable
-        public EventFilter eventFilter;
+        public GestureDetector eventFilter;
 
         /**
          * Build a new set of params to control the scrim.
@@ -135,6 +135,17 @@ public class ScrimView extends View implements View.OnClickListener {
          * @param visible True if the overlay has become visible.
          */
         void onScrimVisibilityChanged(boolean visible);
+    }
+
+    /**
+     * An empty implementation of the ScrimObserver interface.
+     */
+    public static class EmptyScrimObserver implements ScrimObserver {
+        @Override
+        public void onScrimClick() {}
+
+        @Override
+        public void onScrimVisibilityChanged(boolean visible) {}
     }
 
     /** The duration for the fading animation. */
@@ -334,7 +345,7 @@ public class ScrimView extends View implements View.OnClickListener {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        EventFilter eventFilter = mActiveParams == null ? null : mActiveParams.eventFilter;
+        GestureDetector eventFilter = mActiveParams == null ? null : mActiveParams.eventFilter;
         if (eventFilter == null) return super.onTouchEvent(e);
 
         // Make sure the first event that goes through the filter is an ACTION_DOWN, even in the

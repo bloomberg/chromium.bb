@@ -10,8 +10,11 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -744,6 +747,8 @@ void BackgroundSyncManager::InitDidGetControllerParameters(
     return;
   }
 
+  network_observer_->Init();
+
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
       base::BindOnce(&BackgroundSyncManager::InitDidGetDataFromBackend,
@@ -1214,7 +1219,7 @@ BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
 
 void BackgroundSyncManager::StoreRegistrations(
     int64_t sw_registration_id,
-    ServiceWorkerStorage::StatusCallback callback) {
+    ServiceWorkerRegistry::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // Serialize the data.
@@ -1411,7 +1416,7 @@ void BackgroundSyncManager::StoreDataInBackend(
     const url::Origin& origin,
     const std::string& backend_key,
     const std::string& data,
-    ServiceWorkerStorage::StatusCallback callback) {
+    ServiceWorkerRegistry::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->StoreRegistrationUserData(
@@ -1421,7 +1426,7 @@ void BackgroundSyncManager::StoreDataInBackend(
 
 void BackgroundSyncManager::GetDataFromBackend(
     const std::string& backend_key,
-    ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
+    ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->GetUserDataForAllRegistrations(backend_key,

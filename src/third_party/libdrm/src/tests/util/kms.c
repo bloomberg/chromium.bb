@@ -37,10 +37,6 @@
  *       the mode has been programmed, along with possible test patterns.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -148,6 +144,9 @@ static const char * const modules[] = {
 	"mediatek",
 	"meson",
 	"pl111",
+	"stm",
+	"sun4i-drm",
+	"armada-drm",
 };
 
 int util_open(const char *device, const char *module)

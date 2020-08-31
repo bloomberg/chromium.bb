@@ -33,13 +33,21 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_drag_status.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "v8/include/v8.h"
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
+
+namespace ui {
+class Cursor;
+}
 
 namespace blink {
 
@@ -48,11 +56,8 @@ class WebDragData;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebImeTextSpan;
-struct WebCursorInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
-struct WebPoint;
-struct WebFloatPoint;
 struct WebRect;
 struct WebURLError;
 template <typename T>
@@ -105,7 +110,7 @@ class WebPlugin {
 
   virtual bool CanProcessDrag() const { return false; }
 
-  virtual void UpdateAllLifecyclePhases(WebWidget::LifecycleUpdateReason) = 0;
+  virtual void UpdateAllLifecyclePhases(blink::DocumentUpdateReason) = 0;
   virtual void Paint(cc::PaintCanvas*, const WebRect&) = 0;
 
   // Coordinates are relative to the containing window.
@@ -114,18 +119,18 @@ class WebPlugin {
                               const WebRect& unobscured_rect,
                               bool is_visible) = 0;
 
-  virtual void UpdateFocus(bool focused, WebFocusType) = 0;
+  virtual void UpdateFocus(bool focused, mojom::FocusType) = 0;
 
   virtual void UpdateVisibility(bool) = 0;
 
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
-                                               WebCursorInfo&) = 0;
+                                               ui::Cursor*) = 0;
 
   virtual bool HandleDragStatusUpdate(WebDragStatus,
                                       const WebDragData&,
                                       WebDragOperationsMask,
-                                      const WebFloatPoint& position,
-                                      const WebFloatPoint& screen_position) {
+                                      const gfx::PointF& position,
+                                      const gfx::PointF& screen_position) {
     return false;
   }
 
@@ -213,7 +218,7 @@ class WebPlugin {
   virtual void DeleteSurroundingTextInCodePoints(int before, int after) {}
   // If the given position is over a link, returns the absolute url.
   // Otherwise an empty url is returned.
-  virtual WebURL LinkAtPosition(const WebPoint& position) const {
+  virtual WebURL LinkAtPosition(const gfx::Point& position) const {
     return WebURL();
   }
 

@@ -12,11 +12,15 @@ from __future__ import print_function
 
 import io
 import os
+import sys
 
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import puppet_metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _SUMMARY = u"""\
@@ -191,5 +195,5 @@ class TestPuppetMetrics(cros_test_lib.TempDirTestCase):
         mock.call('puppet/age', (), None,
                   20329.0, enforce_ge=mock.ANY),
     ]
-    setter.assert_has_calls(calls)
+    setter.assert_has_calls(calls, any_order=True)
     self.assertEqual(len(setter.mock_calls), len(calls))

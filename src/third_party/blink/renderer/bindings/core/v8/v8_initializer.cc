@@ -25,7 +25,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -54,7 +56,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -65,15 +66,20 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
@@ -92,7 +98,7 @@ static void ReportFatalErrorInMainThread(const char* location,
 static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
   DVLOG(1) << "V8 " << (is_js_heap ? "javascript" : "process") << " OOM: ("
            << location << ").";
-  OOM_CRASH();
+  OOM_CRASH(0);
 }
 
 static String ExtractMessageForConsole(v8::Isolate* isolate,
@@ -157,7 +163,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
       SourceLocation::FromMessage(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
-    context->AddConsoleMessage(ConsoleMessage::Create(
+    context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));
@@ -202,7 +208,7 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
       SourceLocation::FromMessage(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
-    context->AddConsoleMessage(ConsoleMessage::Create(
+    context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));
@@ -336,7 +342,9 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
     return;
 
   auto* script_controller =
-      To<WorkerGlobalScope>(execution_context)->ScriptController();
+      execution_context->IsWorkerGlobalScope()
+          ? To<WorkerGlobalScope>(execution_context)->ScriptController()
+          : To<WorkletGlobalScope>(execution_context)->ScriptController();
   DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),
@@ -375,7 +383,7 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      return policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+      return policy->AllowEval(ReportingDisposition::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }
@@ -406,7 +414,7 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
     return {false, v8::MaybeLocal<v8::String>()};
   }
 
-  String stringified_source = GetStringFromTrustedScript(
+  String stringified_source = TrustedTypesCheckForScript(
       string_or_trusted_script, ToExecutionContext(context), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
@@ -449,7 +457,7 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     if (ContentSecurityPolicy* policy =
-            To<Document>(execution_context)->GetContentSecurityPolicy()) {
+            execution_context->GetContentSecurityPolicy()) {
       v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
@@ -459,15 +467,23 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
       // Wasm code generation is allowed if we have either the wasm-eval
       // directive or the unsafe-eval directive. However, we only recognize
       // wasm-eval for certain schemes
-      return policy->AllowWasmEval(SecurityViolationReportingPolicy::kReport,
+      return policy->AllowWasmEval(ReportingDisposition::kReport,
                                    ContentSecurityPolicy::kWillThrowException,
                                    snippet) ||
-             policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+             policy->AllowEval(ReportingDisposition::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }
   }
   return false;
+}
+
+static bool WasmSimdEnabledCallback(v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context)
+    return false;
+
+  return RuntimeEnabledFeatures::WebAssemblySimdEnabled(execution_context);
 }
 
 static bool WasmThreadsEnabledCallback(v8::Local<v8::Context> context) {
@@ -520,7 +536,7 @@ static bool WasmInstanceOverride(
   if (!WTF::IsMainThread() || args.Length() < 1)
     return false;
   v8::Local<v8::Value> source = args[0];
-  if (!source->IsWebAssemblyCompiledModule())
+  if (!source->IsWasmModuleObject())
     return false;
 
   v8::CompiledWasmModule compiled_module =
@@ -618,16 +634,18 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   // Set up garbage collection before setting up anything else as V8 may trigger
   // GCs during Blink setup.
-  isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
-  isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
+  V8PerIsolateData::From(isolate)->SetGCCallbacks(
+      isolate, V8GCController::GcPrologue, V8GCController::GcEpilogue);
   ThreadState::Current()->AttachToIsolate(
-      isolate, V8GCController::TraceDOMWrappers,
-      EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+      isolate, EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+  V8PerIsolateData::From(isolate)->SetActiveScriptWrappableManager(
+      MakeGarbageCollected<ActiveScriptWrappableManager>());
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
+  isolate->SetWasmSimdEnabledCallback(WasmSimdEnabledCallback);
   isolate->SetWasmThreadsEnabledCallback(WasmThreadsEnabledCallback);
   isolate->SetHostImportModuleDynamicallyCallback(HostImportModuleDynamically);
   isolate->SetHostInitializeImportMetaObjectCallback(

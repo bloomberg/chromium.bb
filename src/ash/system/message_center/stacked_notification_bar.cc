@@ -98,22 +98,6 @@ class StackingBarLabelButton : public views::LabelButton {
         TrayPopupInkDropStyle::FILL_BOUNDS, this, background_color_);
   }
 
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-    SkRect bounds = gfx::RectToSkRect(GetContentsBounds());
-    SkPath path;
-
-    if (base::i18n::IsRTL()) {
-      SkScalar radii[8] = {top_radius, top_radius, 0, 0, 0, 0, 0, 0};
-      path.addRoundRect(bounds, radii);
-    } else {
-      SkScalar radii[8] = {0, 0, top_radius, top_radius, 0, 0, 0, 0};
-      path.addRoundRect(bounds, radii);
-    }
-
-    return std::make_unique<views::PathInkDropMask>(size(), path);
-  }
-
  private:
   SkColor background_color_ = gfx::kPlaceholderColor;
   UnifiedMessageCenterView* message_center_view_;
@@ -134,6 +118,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
   }
 
   ~StackedNotificationBarIcon() override {
+    StopObserving();
     if (is_animating_out())
       layer()->GetAnimator()->StopAnimating();
   }
@@ -259,7 +244,6 @@ StackedNotificationBar::StackedNotificationBar(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
   if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    message_center::MessageCenter::Get()->AddObserver(this);
     notification_icons_container_ = new views::View();
     notification_icons_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
@@ -267,6 +251,7 @@ StackedNotificationBar::StackedNotificationBar(
             kStackedNotificationIconsContainerPadding,
             kStackedNotificationBarIconSpacing));
     AddChildView(notification_icons_container_);
+    message_center::MessageCenter::Get()->AddObserver(this);
   }
 
   count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
@@ -483,14 +468,8 @@ void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
-  SkPath background_path;
-  SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-  SkScalar radii[8] = {top_radius, top_radius, top_radius, top_radius,
-                       0,          0,          0,          0};
-
   gfx::Rect bounds = GetLocalBounds();
-  background_path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-  canvas->DrawPath(background_path, flags);
+  canvas->DrawRect(bounds, flags);
 
   // We draw a border here than use a views::Border so the ink drop highlight
   // of the clear all button overlays the border.
@@ -544,7 +523,7 @@ void StackedNotificationBar::OnNotificationAdded(const std::string& id) {
 void StackedNotificationBar::OnNotificationRemoved(const std::string& id,
                                                    bool by_user) {
   const StackedNotificationBarIcon* icon = GetIconFromId(id);
-  if (icon) {
+  if (icon && !icon->is_animating_out()) {
     delete icon;
     stacked_notification_count_--;
   }

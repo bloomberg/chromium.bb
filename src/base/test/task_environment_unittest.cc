@@ -16,13 +16,14 @@
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/time_domain.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/mock_log.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -43,6 +44,10 @@
 
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
 namespace base {
 namespace test {
@@ -76,19 +81,21 @@ void RunUntilIdleTest(
                           Unretained(&first_main_thread_task_ran)));
 
   AtomicFlag first_thread_pool_task_ran;
-  PostTask(FROM_HERE, BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
-                               Unretained(&run_until_idle_returned),
-                               Unretained(&first_thread_pool_task_ran)));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
+                                Unretained(&run_until_idle_returned),
+                                Unretained(&first_thread_pool_task_ran)));
 
   AtomicFlag second_thread_pool_task_ran;
   AtomicFlag second_main_thread_task_ran;
-  PostTaskAndReply(FROM_HERE,
-                   BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
-                            Unretained(&run_until_idle_returned),
-                            Unretained(&second_thread_pool_task_ran)),
-                   BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
-                            Unretained(&run_until_idle_returned),
-                            Unretained(&second_main_thread_task_ran)));
+  ThreadPool::PostTaskAndReply(
+      FROM_HERE,
+      BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
+               Unretained(&run_until_idle_returned),
+               Unretained(&second_thread_pool_task_ran)),
+      BindOnce(&VerifyRunUntilIdleDidNotReturnAndSetFlag,
+               Unretained(&run_until_idle_returned),
+               Unretained(&second_main_thread_task_ran)));
 
   task_environment.RunUntilIdle();
   run_until_idle_returned.Set();
@@ -116,21 +123,23 @@ TEST_F(TaskEnvironmentTest, QueuedTasksDoNotRunOutsideOfRunUntilIdle) {
       TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   AtomicFlag run_until_idle_called;
-  PostTask(FROM_HERE, BindOnce(
-                          [](AtomicFlag* run_until_idle_called) {
-                            EXPECT_TRUE(run_until_idle_called->IsSet());
-                          },
-                          Unretained(&run_until_idle_called)));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindOnce(
+                           [](AtomicFlag* run_until_idle_called) {
+                             EXPECT_TRUE(run_until_idle_called->IsSet());
+                           },
+                           Unretained(&run_until_idle_called)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   run_until_idle_called.Set();
   task_environment.RunUntilIdle();
 
   AtomicFlag other_run_until_idle_called;
-  PostTask(FROM_HERE, BindOnce(
-                          [](AtomicFlag* other_run_until_idle_called) {
-                            EXPECT_TRUE(other_run_until_idle_called->IsSet());
-                          },
-                          Unretained(&other_run_until_idle_called)));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindOnce(
+                           [](AtomicFlag* other_run_until_idle_called) {
+                             EXPECT_TRUE(other_run_until_idle_called->IsSet());
+                           },
+                           Unretained(&other_run_until_idle_called)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   other_run_until_idle_called.Set();
   task_environment.RunUntilIdle();
@@ -143,7 +152,8 @@ TEST_F(TaskEnvironmentTest, AsyncTasksRunAsTheyArePosted) {
       TaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   WaitableEvent task_ran;
-  PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
   task_ran.Wait();
 }
 
@@ -157,7 +167,8 @@ TEST_F(TaskEnvironmentTest, AsyncTasksRunAsTheyArePostedAfterRunUntilIdle) {
   task_environment.RunUntilIdle();
 
   WaitableEvent task_ran;
-  PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
   task_ran.Wait();
 }
 
@@ -179,13 +190,14 @@ void DelayedTasksTest(TaskEnvironment::TimeSource time_source) {
           },
           Unretained(&counter)),
       kShortTaskDelay);
-  PostDelayedTask(FROM_HERE,
-                  BindOnce(
-                      [](subtle::Atomic32* counter) {
-                        subtle::NoBarrier_AtomicIncrement(counter, 128);
-                      },
-                      Unretained(&counter)),
-                  kShortTaskDelay);
+  ThreadPool::PostDelayedTask(FROM_HERE,
+                              BindOnce(
+                                  [](subtle::Atomic32* counter) {
+                                    subtle::NoBarrier_AtomicIncrement(counter,
+                                                                      128);
+                                  },
+                                  Unretained(&counter)),
+                              kShortTaskDelay);
 
   constexpr base::TimeDelta kLongTaskDelay = TimeDelta::FromDays(7);
   // Same as first task, longer delays to exercise
@@ -206,13 +218,14 @@ void DelayedTasksTest(TaskEnvironment::TimeSource time_source) {
           },
           Unretained(&counter)),
       kLongTaskDelay);
-  PostDelayedTask(FROM_HERE,
-                  BindOnce(
-                      [](subtle::Atomic32* counter) {
-                        subtle::NoBarrier_AtomicIncrement(counter, 256);
-                      },
-                      Unretained(&counter)),
-                  kLongTaskDelay * 2);
+  ThreadPool::PostDelayedTask(FROM_HERE,
+                              BindOnce(
+                                  [](subtle::Atomic32* counter) {
+                                    subtle::NoBarrier_AtomicIncrement(counter,
+                                                                      256);
+                                  },
+                                  Unretained(&counter)),
+                              kLongTaskDelay * 2);
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       BindOnce(
@@ -221,13 +234,14 @@ void DelayedTasksTest(TaskEnvironment::TimeSource time_source) {
           },
           Unretained(&counter)),
       kLongTaskDelay * 3);
-  PostDelayedTask(FROM_HERE,
-                  BindOnce(
-                      [](subtle::Atomic32* counter) {
-                        subtle::NoBarrier_AtomicIncrement(counter, 1024);
-                      },
-                      Unretained(&counter)),
-                  kLongTaskDelay * 4);
+  ThreadPool::PostDelayedTask(FROM_HERE,
+                              BindOnce(
+                                  [](subtle::Atomic32* counter) {
+                                    subtle::NoBarrier_AtomicIncrement(counter,
+                                                                      1024);
+                                  },
+                                  Unretained(&counter)),
+                              kLongTaskDelay * 4);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(
@@ -235,11 +249,12 @@ void DelayedTasksTest(TaskEnvironment::TimeSource time_source) {
                        subtle::NoBarrier_AtomicIncrement(counter, 1);
                      },
                      Unretained(&counter)));
-  PostTask(FROM_HERE, BindOnce(
-                          [](subtle::Atomic32* counter) {
-                            subtle::NoBarrier_AtomicIncrement(counter, 2);
-                          },
-                          Unretained(&counter)));
+  ThreadPool::PostTask(FROM_HERE, BindOnce(
+                                      [](subtle::Atomic32* counter) {
+                                        subtle::NoBarrier_AtomicIncrement(
+                                            counter, 2);
+                                      },
+                                      Unretained(&counter)));
 
   // This expectation will fail flakily if the preceding PostTask() is executed
   // asynchronously, indicating a problem with the QUEUED execution mode.
@@ -390,7 +405,7 @@ TEST_F(TaskEnvironmentTest,
 // Verify that the TickClock returned by
 // |TaskEnvironment::GetMockTickClock| gets updated when the
 // FastForward(By|UntilNoTasksRemain) functions are called.
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTickClock) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTickClock) {
   // Use a QUEUED execution-mode environment, so that no tasks are actually
   // executed until RunUntilIdle()/FastForwardBy() are invoked.
   TaskEnvironment task_environment(
@@ -422,7 +437,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTickClock) {
   EXPECT_EQ(kLongTaskDelay * 2, tick_clock->NowTicks() - tick_clock_ref);
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceMockClock) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesMockClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -433,7 +448,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceMockClock) {
   EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTime) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTime) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -442,7 +457,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTime) {
   EXPECT_EQ(start_time + kDelay, base::Time::Now());
 }
 
-TEST_F(TaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
+TEST_F(TaskEnvironmentTest, FastForwardAdvancesTimeTicks) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -451,7 +466,7 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTickClock) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTickClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -462,7 +477,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTickClock) {
   EXPECT_EQ(start_time + kDelay, tick_clock->NowTicks());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceMockClock) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesMockClock) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -473,7 +488,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceMockClock) {
   EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTime) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTime) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -482,7 +497,7 @@ TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTime) {
   EXPECT_EQ(start_time + kDelay, base::Time::Now());
 }
 
-TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTimeTicks) {
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvancesTimeTicks) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -506,6 +521,21 @@ TEST_F(TaskEnvironmentTest, AdvanceClockDoesNotRunTasks) {
   // The task is still pending, but is now runnable.
   EXPECT_EQ(1U, task_environment.GetPendingMainThreadTaskCount());
   EXPECT_FALSE(task_environment.NextTaskIsDelayed());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockSchedulesRipeDelayedTasks) {
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  bool ran = false;
+
+  constexpr base::TimeDelta kTaskDelay = TimeDelta::FromDays(1);
+  ThreadPool::PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { ran = true; }), kTaskDelay);
+
+  task_environment.AdvanceClock(kTaskDelay);
+  EXPECT_FALSE(ran);
+  task_environment.RunUntilIdle();
+  EXPECT_TRUE(ran);
 }
 
 // Verify that FastForwardBy() runs existing immediate tasks before advancing,
@@ -541,9 +571,9 @@ TEST_F(TaskEnvironmentTest, FastForwardZero) {
         FROM_HERE, BindLambdaForTesting([&]() {
           run_count.fetch_add(1, std::memory_order_relaxed);
         }));
-    base::PostTask(FROM_HERE, BindLambdaForTesting([&]() {
-                     run_count.fetch_add(1, std::memory_order_relaxed);
-                   }));
+    ThreadPool::PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                           run_count.fetch_add(1, std::memory_order_relaxed);
+                         }));
   }
 
   task_environment.FastForwardBy(base::TimeDelta());
@@ -634,7 +664,7 @@ TEST_F(TaskEnvironmentTest,
   // races.
   base::WaitableEvent first_reply_is_incoming;
   for (int i = 0; i < 1000; ++i) {
-    base::PostTaskAndReply(
+    ThreadPool::PostTaskAndReply(
         FROM_HERE,
         BindOnce(&WaitableEvent::Signal, Unretained(&first_reply_is_incoming)),
         DoNothing());
@@ -711,8 +741,8 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTime) {
 
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, post_main_thread_delayed_task, kOneMs);
-  CreateSequencedTaskRunner({ThreadPool()})
-      ->PostDelayedTask(FROM_HERE, post_thread_pool_delayed_task, kOneMs);
+  ThreadPool::CreateSequencedTaskRunner({})->PostDelayedTask(
+      FROM_HERE, post_thread_pool_delayed_task, kOneMs);
 
   task_environment.FastForwardUntilNoTasksRemain();
 
@@ -734,8 +764,8 @@ TEST_F(TaskEnvironmentTest, MultiThreadedFastForwardBy) {
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE),
       TimeDelta::FromSeconds(5));
-  PostDelayedTask(FROM_HERE, {ThreadPool()}, MakeExpectedRunClosure(FROM_HERE),
-                  TimeDelta::FromSeconds(1));
+  ThreadPool::PostDelayedTask(FROM_HERE, {}, MakeExpectedRunClosure(FROM_HERE),
+                              TimeDelta::FromSeconds(1));
   task_environment.FastForwardBy(TimeDelta::FromSeconds(2));
 
   EXPECT_EQ(task_environment.NowTicks(),
@@ -756,11 +786,11 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
 
   // Neither of these should run automatically per
   // ThreadPoolExecutionMode::QUEUED.
-  PostTask(FROM_HERE, {ThreadPool()},
-           BindLambdaForTesting([&]() { count += 128; }));
-  PostDelayedTask(FROM_HERE, {ThreadPool()},
-                  BindLambdaForTesting([&]() { count += 256; }),
-                  TimeDelta::FromSeconds(5));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindLambdaForTesting([&]() { count += 128; }));
+  ThreadPool::PostDelayedTask(FROM_HERE, {},
+                              BindLambdaForTesting([&]() { count += 256; }),
+                              TimeDelta::FromSeconds(5));
 
   // Time should auto-advance to +500s in RunLoop::Run() without having to run
   // the above forcefully QUEUED tasks.
@@ -792,9 +822,9 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
             TimeDelta::FromSeconds(500));
 
   // Test advancing time to a QUEUED task in the future.
-  PostDelayedTask(FROM_HERE, {ThreadPool()},
-                  BindLambdaForTesting([&]() { count += 512; }),
-                  TimeDelta::FromSeconds(5));
+  ThreadPool::PostDelayedTask(FROM_HERE,
+                              BindLambdaForTesting([&]() { count += 512; }),
+                              TimeDelta::FromSeconds(5));
   task_environment.FastForwardBy(TimeDelta::FromSeconds(7));
   expected_value += 512;
   EXPECT_EQ(expected_value, count);
@@ -803,8 +833,8 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
 
   // Confirm that QUEUED mode is still active after the above fast forwarding
   // (only the main thread task should run from RunLoop).
-  PostTask(FROM_HERE, {ThreadPool()},
-           BindLambdaForTesting([&]() { count += 1024; }));
+  ThreadPool::PostTask(FROM_HERE,
+                       BindLambdaForTesting([&]() { count += 1024; }));
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindLambdaForTesting([&]() { count += 2048; }));
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
@@ -827,15 +857,15 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
 // and com_init_util.h's assertions are happy in unit tests).
 TEST_F(TaskEnvironmentTest, ThreadPoolPoolAllowsMTA) {
   TaskEnvironment task_environment;
-  PostTask(FROM_HERE,
-           BindOnce(&win::AssertComApartmentType, win::ComApartmentType::MTA));
+  ThreadPool::PostTask(FROM_HERE, BindOnce(&win::AssertComApartmentType,
+                                           win::ComApartmentType::MTA));
   task_environment.RunUntilIdle();
 }
 #endif  // defined(OS_WIN)
 
 TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
-  const RunLoop::ScopedRunTimeoutForTest* old_run_timeout =
-      RunLoop::ScopedRunTimeoutForTest::Current();
+  const RunLoop::RunLoopTimeout* old_run_timeout =
+      ScopedRunLoopTimeout::GetTimeoutForCurrentThread();
 
   {
     TaskEnvironment task_environment;
@@ -843,21 +873,20 @@ TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
     // TaskEnvironment should set a default Run() timeout that fails the
     // calling test (before test_launcher_timeout()).
 
-    const RunLoop::ScopedRunTimeoutForTest* run_timeout =
-        RunLoop::ScopedRunTimeoutForTest::Current();
+    const RunLoop::RunLoopTimeout* run_timeout =
+        ScopedRunLoopTimeout::GetTimeoutForCurrentThread();
     EXPECT_NE(run_timeout, old_run_timeout);
     EXPECT_TRUE(run_timeout);
     if (!debug::BeingDebugged()) {
-      EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+      EXPECT_LT(run_timeout->timeout, TestTimeouts::test_launcher_timeout());
     }
-    EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
-                            "RunLoop::Run() timed out");
+    static const RepeatingClosure& static_on_timeout = run_timeout->on_timeout;
+    EXPECT_FATAL_FAILURE(static_on_timeout.Run(), "RunLoop::Run() timed out");
   }
 
-  EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);
+  EXPECT_EQ(ScopedRunLoopTimeout::GetTimeoutForCurrentThread(),
+            old_run_timeout);
 }
-
-namespace {}
 
 TEST_F(TaskEnvironmentTest, DescribePendingMainThreadTasks) {
   TaskEnvironment task_environment;
@@ -1024,7 +1053,7 @@ TEST_F(TaskEnvironmentTest, RunLoopDriveable) {
 
   // Disable Run() timeout here, otherwise we'll fast-forward to it before we
   // reach the quit task.
-  RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
+  ScopedDisableRunLoopTimeout disable_timeout;
 
   RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1156,7 +1185,7 @@ TEST_F(TaskEnvironmentTest, SingleThread) {
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(ran);
 
-  EXPECT_DCHECK_DEATH(PostTask(FROM_HERE, {ThreadPool()}, DoNothing()));
+  EXPECT_DCHECK_DEATH(ThreadPool::PostTask(FROM_HERE, {}, DoNothing()));
 }
 
 // Verify that traits other than ThreadingMode can be applied to
@@ -1188,34 +1217,58 @@ TEST_F(TaskEnvironmentTest, SingleThreadMockTime) {
   EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
 }
 
-TEST_F(TaskEnvironmentTest, CurrentThread) {
-  SingleThreadTaskEnvironment task_environment;
-  RunLoop run_loop;
+#if defined(OS_WIN)
+namespace {
 
-  PostTask(FROM_HERE, {CurrentThread()}, BindLambdaForTesting([&]() {
-             PostTask(FROM_HERE, {CurrentThread()}, run_loop.QuitClosure());
-           }));
+enum class ApartmentType {
+  kSTA,
+  kMTA,
+};
 
-  run_loop.Run();
+void InitializeSTAApartment() {
+  base::win::ScopedCOMInitializer initializer;
+  EXPECT_TRUE(initializer.Succeeded());
 }
 
-TEST_F(TaskEnvironmentTest, GetContinuationTaskRunner) {
-  SingleThreadTaskEnvironment task_environment;
-  RunLoop run_loop;
-  auto task_runner = CreateSingleThreadTaskRunner({CurrentThread()});
-
-  task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
-                          EXPECT_EQ(task_runner, GetContinuationTaskRunner());
-                          run_loop.Quit();
-                        }));
-
-  run_loop.Run();
+void InitializeMTAApartment() {
+  base::win::ScopedCOMInitializer initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  EXPECT_TRUE(initializer.Succeeded());
 }
 
-TEST_F(TaskEnvironmentTest, GetContinuationTaskRunnerWithNoTaskRunning) {
-  SingleThreadTaskEnvironment task_environment;
-  EXPECT_DCHECK_DEATH(GetContinuationTaskRunner());
+void InitializeCOMOnWorker(
+    TaskEnvironment::ThreadPoolCOMEnvironment com_environment,
+    ApartmentType apartment_type) {
+  TaskEnvironment task_environment(com_environment);
+  ThreadPool::PostTask(FROM_HERE, BindOnce(apartment_type == ApartmentType::kSTA
+                                               ? &InitializeSTAApartment
+                                               : &InitializeMTAApartment));
+  task_environment.RunUntilIdle();
 }
+
+}  // namespace
+
+TEST_F(TaskEnvironmentTest, DefaultCOMEnvironment) {
+  // Attempt to initialize an MTA COM apartment. Expect this to succeed since
+  // the thread is already in an MTA apartment.
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::DEFAULT,
+                        ApartmentType::kMTA);
+
+  // Attempt to initialize an STA COM apartment. Expect this to fail since the
+  // thread is already in an MTA apartment.
+  EXPECT_DCHECK_DEATH(InitializeCOMOnWorker(
+      TaskEnvironment::ThreadPoolCOMEnvironment::DEFAULT, ApartmentType::kSTA));
+}
+
+TEST_F(TaskEnvironmentTest, NoCOMEnvironment) {
+  // Attempt to initialize both MTA and STA COM apartments. Both should succeed
+  // when the thread is not already in an apartment.
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::NONE,
+                        ApartmentType::kMTA);
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::NONE,
+                        ApartmentType::kSTA);
+}
+#endif
 
 }  // namespace test
 }  // namespace base

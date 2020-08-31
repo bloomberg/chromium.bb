@@ -21,10 +21,6 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -33,9 +29,9 @@
 #include "amdgpu_internal.h"
 #include "util_math.h"
 
-int amdgpu_va_range_query(amdgpu_device_handle dev,
-			  enum amdgpu_gpu_va_range type,
-			  uint64_t *start, uint64_t *end)
+drm_public int amdgpu_va_range_query(amdgpu_device_handle dev,
+				     enum amdgpu_gpu_va_range type,
+				     uint64_t *start, uint64_t *end)
 {
 	if (type != amdgpu_gpu_va_range_general)
 		return -EINVAL;
@@ -48,12 +44,19 @@ int amdgpu_va_range_query(amdgpu_device_handle dev,
 drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 				   uint64_t max, uint64_t alignment)
 {
-	mgr->va_offset = start;
+	struct amdgpu_bo_va_hole *n;
+
 	mgr->va_max = max;
 	mgr->va_alignment = alignment;
 
 	list_inithead(&mgr->va_holes);
 	pthread_mutex_init(&mgr->bo_va_mutex, NULL);
+	pthread_mutex_lock(&mgr->bo_va_mutex);
+	n = calloc(1, sizeof(struct amdgpu_bo_va_hole));
+	n->size = mgr->va_max - start;
+	n->offset = start;
+	list_add(&n->list, &mgr->va_holes);
+	pthread_mutex_unlock(&mgr->bo_va_mutex);
 }
 
 drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
@@ -73,6 +76,7 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 	struct amdgpu_bo_va_hole *hole, *n;
 	uint64_t offset = 0, waste = 0;
 
+
 	alignment = MAX2(alignment, mgr->va_alignment);
 	size = ALIGN(size, mgr->va_alignment);
 
@@ -80,9 +84,7 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 		return AMDGPU_INVALID_VA_ADDRESS;
 
 	pthread_mutex_lock(&mgr->bo_va_mutex);
-	/* TODO: using more appropriate way to track the holes */
-	/* first look for a hole */
-	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &mgr->va_holes, list) {
+	LIST_FOR_EACH_ENTRY_SAFE_REV(hole, n, &mgr->va_holes, list) {
 		if (base_required) {
 			if (hole->offset > base_required ||
 			    (hole->offset + hole->size) < (base_required + size))
@@ -124,41 +126,14 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 		}
 	}
 
-	if (base_required) {
-		if (base_required < mgr->va_offset) {
-			pthread_mutex_unlock(&mgr->bo_va_mutex);
-			return AMDGPU_INVALID_VA_ADDRESS;
-		}
-		offset = mgr->va_offset;
-		waste = base_required - mgr->va_offset;
-	} else {
-		offset = mgr->va_offset;
-		waste = offset % alignment;
-		waste = waste ? alignment - waste : 0;
-	}
-
-	if (offset + waste + size > mgr->va_max) {
-		pthread_mutex_unlock(&mgr->bo_va_mutex);
-		return AMDGPU_INVALID_VA_ADDRESS;
-	}
-
-	if (waste) {
-		n = calloc(1, sizeof(struct amdgpu_bo_va_hole));
-		n->size = waste;
-		n->offset = offset;
-		list_add(&n->list, &mgr->va_holes);
-	}
-
-	offset += waste;
-	mgr->va_offset += size + waste;
 	pthread_mutex_unlock(&mgr->bo_va_mutex);
-	return offset;
+	return AMDGPU_INVALID_VA_ADDRESS;
 }
 
 static drm_private void
 amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size)
 {
-	struct amdgpu_bo_va_hole *hole;
+	struct amdgpu_bo_va_hole *hole, *next;
 
 	if (va == AMDGPU_INVALID_VA_ADDRESS)
 		return;
@@ -166,80 +141,77 @@ amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size)
 	size = ALIGN(size, mgr->va_alignment);
 
 	pthread_mutex_lock(&mgr->bo_va_mutex);
-	if ((va + size) == mgr->va_offset) {
-		mgr->va_offset = va;
-		/* Delete uppermost hole if it reaches the new top */
-		if (!LIST_IS_EMPTY(&mgr->va_holes)) {
-			hole = container_of(mgr->va_holes.next, hole, list);
-			if ((hole->offset + hole->size) == va) {
-				mgr->va_offset = hole->offset;
+	hole = container_of(&mgr->va_holes, hole, list);
+	LIST_FOR_EACH_ENTRY(next, &mgr->va_holes, list) {
+		if (next->offset < va)
+			break;
+		hole = next;
+	}
+
+	if (&hole->list != &mgr->va_holes) {
+		/* Grow upper hole if it's adjacent */
+		if (hole->offset == (va + size)) {
+			hole->offset = va;
+			hole->size += size;
+			/* Merge lower hole if it's adjacent */
+			if (next != hole &&
+			    &next->list != &mgr->va_holes &&
+			    (next->offset + next->size) == va) {
+				next->size += hole->size;
 				list_del(&hole->list);
 				free(hole);
 			}
-		}
-	} else {
-		struct amdgpu_bo_va_hole *next;
-
-		hole = container_of(&mgr->va_holes, hole, list);
-		LIST_FOR_EACH_ENTRY(next, &mgr->va_holes, list) {
-			if (next->offset < va)
-				break;
-			hole = next;
-		}
-
-		if (&hole->list != &mgr->va_holes) {
-			/* Grow upper hole if it's adjacent */
-			if (hole->offset == (va + size)) {
-				hole->offset = va;
-				hole->size += size;
-				/* Merge lower hole if it's adjacent */
-				if (next != hole &&
-				    &next->list != &mgr->va_holes &&
-				    (next->offset + next->size) == va) {
-					next->size += hole->size;
-					list_del(&hole->list);
-					free(hole);
-				}
-				goto out;
-			}
-		}
-
-		/* Grow lower hole if it's adjacent */
-		if (next != hole && &next->list != &mgr->va_holes &&
-				(next->offset + next->size) == va) {
-			next->size += size;
 			goto out;
 		}
-
-		/* FIXME on allocation failure we just lose virtual address space
-		 * maybe print a warning
-		 */
-		next = calloc(1, sizeof(struct amdgpu_bo_va_hole));
-		if (next) {
-			next->size = size;
-			next->offset = va;
-			list_add(&next->list, &hole->list);
-		}
 	}
+
+	/* Grow lower hole if it's adjacent */
+	if (next != hole && &next->list != &mgr->va_holes &&
+	    (next->offset + next->size) == va) {
+		next->size += size;
+		goto out;
+	}
+
+	/* FIXME on allocation failure we just lose virtual address space
+	 * maybe print a warning
+	 */
+	next = calloc(1, sizeof(struct amdgpu_bo_va_hole));
+	if (next) {
+		next->size = size;
+		next->offset = va;
+		list_add(&next->list, &hole->list);
+	}
+
 out:
 	pthread_mutex_unlock(&mgr->bo_va_mutex);
 }
 
-int amdgpu_va_range_alloc(amdgpu_device_handle dev,
-			  enum amdgpu_gpu_va_range va_range_type,
-			  uint64_t size,
-			  uint64_t va_base_alignment,
-			  uint64_t va_base_required,
-			  uint64_t *va_base_allocated,
-			  amdgpu_va_handle *va_range_handle,
-			  uint64_t flags)
+drm_public int amdgpu_va_range_alloc(amdgpu_device_handle dev,
+				     enum amdgpu_gpu_va_range va_range_type,
+				     uint64_t size,
+				     uint64_t va_base_alignment,
+				     uint64_t va_base_required,
+				     uint64_t *va_base_allocated,
+				     amdgpu_va_handle *va_range_handle,
+				     uint64_t flags)
 {
 	struct amdgpu_bo_va_mgr *vamgr;
 
-	if (flags & AMDGPU_VA_RANGE_32_BIT)
-		vamgr = &dev->vamgr_32;
-	else
-		vamgr = &dev->vamgr;
+	/* Clear the flag when the high VA manager is not initialized */
+	if (flags & AMDGPU_VA_RANGE_HIGH && !dev->vamgr_high_32.va_max)
+		flags &= ~AMDGPU_VA_RANGE_HIGH;
+
+	if (flags & AMDGPU_VA_RANGE_HIGH) {
+		if (flags & AMDGPU_VA_RANGE_32_BIT)
+			vamgr = &dev->vamgr_high_32;
+		else
+			vamgr = &dev->vamgr_high;
+	} else {
+		if (flags & AMDGPU_VA_RANGE_32_BIT)
+			vamgr = &dev->vamgr_32;
+		else
+			vamgr = &dev->vamgr;
+	}
 
 	va_base_alignment = MAX2(va_base_alignment, vamgr->va_alignment);
 	size = ALIGN(size, vamgr->va_alignment);
@@ -250,7 +222,10 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	if (!(flags & AMDGPU_VA_RANGE_32_BIT) &&
 	    (*va_base_allocated == AMDGPU_INVALID_VA_ADDRESS)) {
 		/* fallback to 32bit address */
-		vamgr = &dev->vamgr_32;
+		if (flags & AMDGPU_VA_RANGE_HIGH)
+			vamgr = &dev->vamgr_high_32;
+		else
+			vamgr = &dev->vamgr_32;
 		*va_base_allocated = amdgpu_vamgr_find_va(vamgr, size,
 					va_base_alignment, va_base_required);
 	}
@@ -275,7 +250,7 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
+drm_public int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
 {
 	if(!va_range_handle || !va_range_handle->address)
 		return 0;

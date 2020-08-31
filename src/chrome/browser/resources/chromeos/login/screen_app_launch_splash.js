@@ -14,8 +14,13 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
       'updateMessage',
     ],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.KIOSK;
+    },
+
     /** @override */
-    decorate: function() {
+    decorate() {
       $('splash-config-network').addEventListener('click', function(e) {
         chrome.send('configureNetwork');
       });
@@ -35,7 +40,7 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
     },
 
     /** @override */
-    onWindowResize: function() {
+    onWindowResize() {
       if (Oobe.getInstance().currentScreen !== this)
         return;
 
@@ -46,7 +51,7 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
      * Event handler that is invoked just before the frame is shown.
      * @param {string} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       $('splash-config-network').hidden = true;
       this.toggleNetworkConfig(false);
       this.updateApp(data['appInfo']);
@@ -59,7 +64,7 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
-    onBeforeHide: function() {
+    onBeforeHide() {
       Oobe.getInstance().solidBackground = false;
     },
 
@@ -67,7 +72,7 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
      * Toggles visibility of the network configuration option.
      * @param {boolean} visible Whether to show the option.
      */
-    toggleNetworkConfig: function(visible) {
+    toggleNetworkConfig(visible) {
       var container = $('splash-config-network-container');
       var currVisible = !container.classList.contains('faded');
       if (currVisible == visible)
@@ -85,16 +90,17 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
      * Updates the app name and icon.
      * @param {Object} app Details of app being launched.
      */
-    updateApp: function(app) {
+    updateApp(app) {
       $('splash-header').textContent = app.name;
-      $('splash-header').style.backgroundImage = 'url(' + app.iconURL + ')';
+      $('splash-subheader').textContent = app.url;
+      $('splash-title').style.backgroundImage = 'url(' + app.iconURL + ')';
     },
 
     /**
      * Updates the message for the current launch state.
      * @param {string} message Description for current launch state.
      */
-    updateMessage: function(message) {
+    updateMessage(message) {
       $('splash-launch-text').textContent = message;
     }
   };

@@ -4,11 +4,12 @@
 
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/permissions/permission_request_id.h"
 
-NfcPermissionContext::NfcPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+NfcPermissionContext::NfcPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::NFC,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -25,25 +26,27 @@ ContentSetting NfcPermissionContext::GetPermissionStatusInternal(
 
 void NfcPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   if (!user_gesture) {
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
-  PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
-                                          embedding_origin, user_gesture,
-                                          std::move(callback));
+  permissions::PermissionContextBase::DecidePermission(
+      web_contents, id, requesting_origin, embedding_origin, user_gesture,
+      std::move(callback));
 }
 
-void NfcPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                            const GURL& requesting_frame,
-                                            bool allowed) {
-  auto* content_settings = TabSpecificContentSettings::GetForFrame(
-      id.render_process_id(), id.render_frame_id());
+void NfcPermissionContext::UpdateTabContext(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_frame,
+    bool allowed) {
+  auto* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;
 

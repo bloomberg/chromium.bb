@@ -104,7 +104,7 @@ class AutotestEvaluator(evaluator.Evaluator):
       logging.info('Copy report from DUT(%s:%s) to %s',
                    dut.remote_host, remote_report_file, report_file)
       scp_result = dut.ScpToLocal(remote_report_file, report_file,
-                                  error_code_ok=True)
+                                  check=False)
       if scp_result.returncode != 0:
         logging.error('Failed to copy report from DUT(%s:%s) to host(%s)',
                       dut.remote_host, remote_report_file, report_file)
@@ -130,13 +130,13 @@ class AutotestEvaluator(evaluator.Evaluator):
 
       # Make sure that both self.AUTOTEST_CLIENT and test_target exist.
       sanity_check_result = dut.RemoteSh(['ls'] + run_test_command,
-                                         error_code_ok=True, ssh_error_ok=True)
+                                         check=False, ssh_error_ok=True)
       if sanity_check_result.returncode != 0:
         logging.info('Failed to run autotest from DUT %s: One of %s does not '
                      'exist.', dut.remote_host, run_test_command)
         return False
 
-      run_test_result = dut.RemoteSh(run_test_command, error_code_ok=True,
+      run_test_result = dut.RemoteSh(run_test_command, check=False,
                                      ssh_error_ok=True)
       run_test_returncode = run_test_result.returncode
 

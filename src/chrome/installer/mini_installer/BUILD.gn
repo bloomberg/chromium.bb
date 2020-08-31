@@ -47,9 +47,7 @@ source_set("lib") {
     "regkey.h",
   ]
 
-  deps = [
-    "//build:branding_buildflags",
-  ]
+  deps = [ "//build:branding_buildflags" ]
 
   if (skip_archive_compression) {
     defines = [ "SKIP_ARCHIVE_COMPRESSION" ]
@@ -75,9 +73,7 @@ source_set("unit_tests") {
     "mini_string_test.cc",
   ]
 
-  public_deps = [
-    ":lib",
-  ]
+  public_deps = [ ":lib" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -103,9 +99,7 @@ group("chrome_runtime_deps") {
 
 group("setup_runtime_deps") {
   write_runtime_deps = setup_runtime_deps
-  data_deps = [
-    "//chrome/installer/setup",
-  ]
+  data_deps = [ "//chrome/installer/setup" ]
 }
 
 # Generates a mini installer.
@@ -176,7 +170,7 @@ template("generate_mini_installer") {
       #'--diff_algorithm=COURGETTE',
 
       # Optional argument for verbose archiving output.
-      #'--verbose',
+      #"--verbose",
     ]
 
     deps = [
@@ -247,18 +241,15 @@ template("generate_mini_installer") {
     ]
 
     # This target is special so we manually override most linker flags and
-    # specify our own to keep the size down. Also make sure that we don't use
-    # WPO as it's not supported by the mini installer.
+    # specify our own to keep the size down.
     configs -= [
       # Initialization may insert unexpected memset calls.
       "//build/config/compiler:default_init_stack_vars",
-      "//build/config/compiler:default_optimization",
       "//build/config:executable_config",
       "//build/config/win:console",
     ]
     configs += [
       ":mini_installer_compiler_flags",
-      "//build/config/compiler:optimize_no_wpo",
       "//build/config/sanitizers:link_executable",
       "//build/config/win:sdk_link",
       "//build/config/win:windowed",
@@ -276,6 +267,7 @@ template("generate_mini_installer") {
       ":$archive_name",
       ":lib",
       ":version",
+      "//base:clang_profiling_buildflags",
       "//build/win:default_exe_manifest",
     ]
 
@@ -290,10 +282,10 @@ template("generate_mini_installer") {
     # The net result is similar to linking with /NODEFAULTLIB, but more precise
     # as it just excludes the CRT.
     #
-    # But in asan builds we need to link against the asan runtime library, which
-    # in turn depends on the standard library and relies on it to run
-    # initializers.
-    if (!is_asan) {
+    # But in asan and clang profiling builds we need to link against a runtime
+    # library, which in turn depends on the standard library and relies on it
+    # to run initializers.
+    if (!is_asan && !use_clang_profiling) {
       no_default_deps = true
       ldflags += [ "/ENTRY:MainEntryPoint" ]
     }
@@ -303,7 +295,7 @@ template("generate_mini_installer") {
 generate_mini_installer("mini_installer") {
   out_dir = root_out_dir
   chrome_dll_file = "$root_out_dir/chrome.dll"
-  chrome_dll_target = "//chrome:main_dll"
+  chrome_dll_target = "//chrome:chrome_dll"
 }
 
 # previous_version_mini_installer.exe can't be generated in an x86 Debug
@@ -330,9 +322,7 @@ if (!(is_component_build && is_debug && target_cpu == "x86") &&
       "$root_out_dir/" + alternate_version_generator_rel_path,
       "$root_out_dir/mini_installer.exe",
     ]
-    outputs = [
-      "$root_out_dir/$target_name.exe",
-    ]
+    outputs = [ "$root_out_dir/$target_name.exe" ]
     args = [
       "--alternate_version_generator",
       alternate_version_generator_rel_path,

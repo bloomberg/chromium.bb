@@ -8,6 +8,8 @@ import collections
 import json
 import time
 
+CURRENT_VERSION = 3
+
 
 class LRUDict(object):
   """Dictionary that can evict least recently used items.
@@ -61,18 +63,23 @@ class LRUDict(object):
 
     Raises ValueError if state file is corrupted.
     """
+
     try:
-      state = json.load(open(state_file, 'r'))
+      json_state = None
+      with open(state_file, 'r') as f:
+        json_state = f.read()
+        state = json.loads(json_state)
     except (IOError, ValueError) as e:
-      raise ValueError('Broken state file %s: %s' % (state_file, e))
+      raise ValueError(
+          'Broken state file %s with "%s": %s' % (state_file, json_state, e))
     if not isinstance(state, dict):
       raise ValueError(
           'Broken state file %s, should be json object or list' % (state_file,))
     state_ver = state.get('version')
-    if state_ver != 2:
+    if state_ver != CURRENT_VERSION:
       raise ValueError(
           'Unsupported state file %s, version is %s. '
-          'Latest supported is 2' % (state_file, state_ver))
+          'Latest supported is %d' % (state_file, state_ver, CURRENT_VERSION))
     state_items = state.get('items')
     if not isinstance(state_items, list):
       raise ValueError(
@@ -108,12 +115,12 @@ class LRUDict(object):
     if not self._dirty:
       return False
 
-    with open(state_file, 'wb') as f:
+    with open(state_file, 'w') as f:
       contents = {
-        'version': 2,
-        'items': self._items.items(),
+          'version': CURRENT_VERSION,
+          'items': list(self._items.items()),
       }
-      json.dump(contents, f, separators=(',',':'))
+      json.dump(contents, f, separators=(',', ':'))
 
     self._dirty = False
     return True
@@ -151,7 +158,7 @@ class LRUDict(object):
 
     Raises KeyError if dict is empty.
     """
-    for item in self._items.iteritems():
+    for item in self._items.items():
       return item
     raise KeyError('dictionary is empty')
 
@@ -164,18 +171,18 @@ class LRUDict(object):
     self._dirty = True
     return item
 
-  def iteritems(self):
+  def items(self):
     """Iterator over stored values in order."""
-    for key, (val, _ts) in self._items.iteritems():
+    for key, (val, _ts) in self._items.items():
       yield key, val
 
-  def itervalues(self):
+  def values(self):
     """Iterator over stored values in order."""
-    for val, _ in self._items.itervalues():
+    for val, _ in self._items.values():
       yield val
 
   def transform(self, mutator):
     """Updates the data format and saves immediately."""
-    for key, (val, timestamp) in self._items.iteritems():
+    for key, (val, timestamp) in self._items.items():
       self._items[key] = (mutator(key, val), timestamp)
     self._dirty = True

@@ -9,17 +9,14 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/system/sys_info.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/shell/app/shell_main_delegate.h"
 #include "content/shell/common/shell_switches.h"
-#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 
@@ -54,13 +51,8 @@ class AshContentPerfTestLauncherDelegate : public content::TestLauncherDelegate 
   int RunTestSuite(int argc, char** argv) override {
     return AshContentTestSuite(argc, argv).Run();
   }
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    command_line->AppendSwitchPath(switches::kContentShellDataPath,
-                                   temp_data_dir);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-    return true;
+  std::string GetUserDataDirectoryCommandLineSwitch() override {
+    return switches::kContentShellDataPath;
   }
 
  protected:

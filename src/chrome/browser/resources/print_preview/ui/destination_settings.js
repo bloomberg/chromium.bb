@@ -7,7 +7,12 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../data/user_manager.js';
 import './destination_dialog.js';
+// <if expr="not chromeos">
 import './destination_select.js';
+// </if>
+// <if expr="chromeos">
+import './destination_select_cros.js';
+// </if>
 import './print_preview_shared_css.js';
 import './print_preview_vars_css.js';
 import './throbber_css.js';
@@ -20,8 +25,8 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CloudPrintInterface} from '../cloud_print_interface.js';
-import {createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
+import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
+import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
 import {InvitationStore} from '../data/invitation_store.js';
 import {Error, State} from '../data/state.js';
@@ -52,12 +57,6 @@ Polymer({
   ],
 
   properties: {
-    /** @type {CloudPrintInterface} */
-    cloudPrintInterface: {
-      type: Object,
-      observer: 'onCloudPrintInterfaceSet_',
-    },
-
     dark: Boolean,
 
     /** @type {?Destination} */
@@ -96,7 +95,10 @@ Polymer({
     },
 
     /** @private {boolean} */
-    cloudPrintDisabled_: Boolean,
+    cloudPrintDisabled_: {
+      type: Boolean,
+      value: true,
+    },
 
     /** @private {?DestinationStore} */
     destinationStore_: {
@@ -104,8 +106,14 @@ Polymer({
       value: null,
     },
 
-    /** @private {!Array<!RecentDestination>} */
+    /** @private {!Array<!Destination>} */
     displayedDestinations_: Array,
+
+    /** @private */
+    driveDestinationReady_: {
+      type: Boolean,
+      value: false,
+    },
 
     // <if expr="chromeos">
     hasPinSetting_: {
@@ -137,15 +145,9 @@ Polymer({
     pdfPrinterDisabled_: Boolean,
 
     /** @private */
-    shouldHideSpinner_: {
+    loaded_: {
       type: Boolean,
-      computed: 'computeShouldHideSpinner_(destinationState, destination)',
-    },
-
-    /** @private {string} */
-    statusText_: {
-      type: String,
-      computed: 'computeStatusText_(destination)',
+      computed: 'computeLoaded_(destinationState, destination)',
     },
 
     /** @private {!Array<string>} */
@@ -159,7 +161,7 @@ Polymer({
   tracker_: new EventTracker(),
 
   /** @override */
-  attached: function() {
+  attached() {
     this.destinationStore_ =
         new DestinationStore(this.addWebUIListener.bind(this));
     this.invitationStore_ = new InvitationStore();
@@ -192,21 +194,35 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.invitationStore_.resetTracker();
     this.destinationStore_.resetTracker();
     this.tracker_.removeAll();
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_: function() {
-    const cloudPrintInterface = assert(this.cloudPrintInterface);
-    this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
-    this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
+  updateDriveDestination_() {
+    const key = createDestinationKey(
+        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
+        this.activeUser_);
+    this.driveDestinationKey_ =
+        this.destinationStore_.getDestinationByKey(key) ? key : '';
   },
 
   /** @private */
-  onActiveUserChanged_: function() {
+  onActiveUserChanged_() {
+    this.destinationStore_.startLoadCookieDestination(
+        Destination.GooglePromotedId.DOCS);
+    this.updateDriveDestination_();
+    const recentDestinations = this.getSettingValue('recentDestinations');
+    recentDestinations.forEach(destination => {
+      if (destination.origin === DestinationOrigin.COOKIES &&
+          (destination.account === this.activeUser_ ||
+           destination.account === '')) {
+        this.destinationStore_.startLoadCookieDestination(destination.id);
+      }
+    });
+
     // Re-filter the dropdown destinations for the new account.
     if (!this.isDialogOpen_) {
       // Don't update the destination settings UI while the dialog is open in
@@ -247,11 +263,8 @@ Polymer({
           d.account === this.activeUser_;
     });
     if (recent) {
-      const success = this.destinationStore_.selectRecentDestinationByKey(
-          createRecentDestinationKey(recent), this.displayedDestinations_);
-      if (success) {
-        return;
-      }
+      this.destinationStore_.selectDestination(recent);
+      return;
     }
     this.destinationStore_.selectDefaultDestination();
   },
@@ -266,9 +279,15 @@ Polymer({
    *     determine whether to wait for user info updates from the handler, or
    *     to always send requests to the Google Cloud Print server.
    */
-  init: function(
+  init(
       defaultPrinter, pdfPrinterDisabled, serializedDefaultDestinationRulesStr,
       userAccounts, syncAvailable) {
+    const cloudPrintInterface = CloudPrintInterfaceImpl.getInstance();
+    if (cloudPrintInterface.isConfigured()) {
+      this.cloudPrintDisabled_ = false;
+      this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
+      this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
+    }
     this.pdfPrinterDisabled_ = pdfPrinterDisabled;
     this.$.userManager.initUserAccounts(userAccounts, syncAvailable);
     this.destinationStore_.init(
@@ -279,7 +298,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationSelect_: function() {
+  onDestinationSelect_() {
     // If the user selected a destination in the dialog after changing the
     // active user, do the UI updates that were previously deferred.
     if (this.isDialogOpen_ && this.lastUser_ !== this.activeUser_) {
@@ -298,6 +317,7 @@ Polymer({
     } else {
       this.destinationState = DestinationState.SELECTED;
     }
+
     // Notify observers that the destination is set only after updating the
     // destinationState.
     this.destination = destination;
@@ -305,7 +325,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationCapabilitiesReady_: function() {
+  onDestinationCapabilitiesReady_() {
     this.notifyPath('destination.capabilities');
     this.updateRecentDestinations_();
     if (this.destinationState === DestinationState.SET) {
@@ -317,7 +337,7 @@ Polymer({
    * @param {!CustomEvent<!DestinationErrorType>} e
    * @private
    */
-  onDestinationError_: function(e) {
+  onDestinationError_(e) {
     let errorType = Error.NONE;
     switch (e.detail) {
       case DestinationErrorType.INVALID:
@@ -337,10 +357,10 @@ Polymer({
   },
 
   /** @private */
-  onErrorChanged_: function() {
-    if (this.error == Error.INVALID_PRINTER ||
-        this.error == Error.UNSUPPORTED_PRINTER ||
-        this.error == Error.NO_DESTINATIONS) {
+  onErrorChanged_() {
+    if (this.error === Error.INVALID_PRINTER ||
+        this.error === Error.UNSUPPORTED_PRINTER ||
+        this.error === Error.NO_DESTINATIONS) {
       this.destinationState = DestinationState.ERROR;
     }
   },
@@ -350,13 +370,13 @@ Polymer({
    * @return {boolean} Whether the destination is Save as PDF or Save to
    *     Drive.
    */
-  destinationIsDriveOrPdf_: function(destination) {
+  destinationIsDriveOrPdf_(destination) {
     return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
         destination.id === Destination.GooglePromotedId.DOCS;
   },
 
   /** @private */
-  updateRecentDestinations_: function() {
+  updateRecentDestinations_() {
     if (!this.destination) {
       return;
     }
@@ -369,23 +389,23 @@ Polymer({
             this.getSettingValue('recentDestinations'));
     let indexFound = recentDestinations.findIndex(function(recent) {
       return (
-          newDestination.id == recent.id &&
-          newDestination.origin == recent.origin);
+          newDestination.id === recent.id &&
+          newDestination.origin === recent.origin);
     });
 
     // No change
-    if (indexFound == 0 &&
-        recentDestinations[0].capabilities == newDestination.capabilities) {
+    if (indexFound === 0 &&
+        recentDestinations[0].capabilities === newDestination.capabilities) {
       return;
     }
-    const isNew = indexFound == -1;
+    const isNew = indexFound === -1;
 
     // Shift the array so that the nth most recent destination is located at
     // index n.
-    if (isNew && recentDestinations.length == NUM_PERSISTED_DESTINATIONS) {
+    if (isNew && recentDestinations.length === NUM_PERSISTED_DESTINATIONS) {
       indexFound = NUM_PERSISTED_DESTINATIONS - 1;
     }
-    if (indexFound != -1) {
+    if (indexFound !== -1) {
       this.setSettingSplice('recentDestinations', indexFound, 1, null);
     }
 
@@ -397,29 +417,36 @@ Polymer({
   },
 
   /** @private */
-  updateDropdownDestinations_: function() {
-    this.displayedDestinations_ =
-        /** @type {!Array<!RecentDestination>} */ (
-            this.getSettingValue('recentDestinations'))
-            .filter(d => {
-              return !this.destinationIsDriveOrPdf_(d) &&
-                  (d.origin !== DestinationOrigin.COOKIES ||
-                   d.account === this.activeUser_);
-            });
+  updateDropdownDestinations_() {
+    const recentDestinations = /** @type {!Array<!RecentDestination>} */ (
+        this.getSettingValue('recentDestinations'));
+
+    const updatedDestinations = [];
+    recentDestinations.forEach(recent => {
+      const key = createRecentDestinationKey(recent);
+      const destination = this.destinationStore_.getDestinationByKey(key);
+      if (destination && !this.destinationIsDriveOrPdf_(recent) &&
+          (!destination.account || destination.account === this.activeUser_)) {
+        updatedDestinations.push(destination);
+      }
+    });
+
+    this.displayedDestinations_ = updatedDestinations;
+    this.updateDriveDestination_();
   },
 
   /**
    * @return {boolean} Whether the destinations dropdown should be disabled.
    * @private
    */
-  shouldDisableDropdown_: function() {
+  shouldDisableDropdown_() {
     return this.state === State.FATAL_ERROR ||
         (this.destinationState === DestinationState.UPDATED && this.disabled &&
          this.state !== State.NOT_READY);
   },
 
   /** @private */
-  computeShouldHideSpinner_: function() {
+  computeLoaded_() {
     return this.destinationState === DestinationState.ERROR ||
         this.destinationState === DestinationState.UPDATED ||
         (this.destinationState === DestinationState.SET && !!this.destination &&
@@ -427,27 +454,12 @@ Polymer({
           this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF));
   },
 
-  /**
-   * @return {string} The connection status text to display.
-   * @private
-   */
-  computeStatusText_: function() {
-    // |destination| can be either undefined, or null here.
-    if (!this.destination) {
-      return '';
-    }
-
-    return this.destination.shouldShowInvalidCertificateError ?
-        this.i18n('noLongerSupportedFragment') :
-        this.destination.connectionStatusText;
-  },
-
   // <if expr="chromeos">
   /**
    * @return {boolean}
    * @private
    */
-  computeHasPinSetting_: function() {
+  computeHasPinSetting_() {
     return this.getSetting('pin').available;
   },
   // </if>
@@ -457,7 +469,7 @@ Polymer({
    *     destination that was selected, or "seeMore".
    * @private
    */
-  onSelectedDestinationOptionChange_: function(e) {
+  onSelectedDestinationOptionChange_(e) {
     const value = e.detail;
     if (value === 'seeMore') {
       this.destinationStore_.startLoadAllDestinations();
@@ -468,11 +480,7 @@ Polymer({
       this.lastUser_ = this.activeUser_;
       this.isDialogOpen_ = true;
     } else {
-      const success = this.destinationStore_.selectRecentDestinationByKey(
-          value, this.displayedDestinations_);
-      if (!success) {
-        this.error = Error.INVALID_PRINTER;
-      }
+      this.destinationStore_.selectDestinationByKey(value);
     }
   },
 
@@ -481,23 +489,25 @@ Polymer({
    *     account.
    * @private
    */
-  onAccountChange_: function(e) {
+  onAccountChange_(e) {
     this.$.userManager.updateActiveUser(e.detail, true);
+    this.updateDriveDestination_();
   },
 
   /** @private */
-  onDialogClose_: function() {
-    // Reset the select value if the user dismissed the dialog without
-    // selecting a new destination.
-    if (this.lastUser_ != this.activeUser_) {
+  onDialogClose_() {
+    if (this.lastUser_ !== this.activeUser_) {
       this.updateDropdownDestinations_();
     }
+
+    // Reset the select value if the user dismissed the dialog without
+    // selecting a new destination.
     this.updateDestinationSelect_();
     this.isDialogOpen_ = false;
   },
 
   /** @private */
-  updateDestinationSelect_: function() {
+  updateDestinationSelect_() {
     if (this.destinationState === DestinationState.ERROR && !this.destination) {
       return;
     }
@@ -522,7 +532,7 @@ Polymer({
    * @param {!CustomEvent<string>} e Event containing the current destination's
    * EULA URL.
    */
-  updateDestinationEulaUrl_: function(e) {
+  updateDestinationEulaUrl_(e) {
     if (!this.destination) {
       return;
     }

@@ -35,7 +35,9 @@ namespace autotestPrivate {
     Crostini,
     Extension,
     Web,
-    MacNative
+    MacNative,
+    PluginVm,
+    Lacros
   };
 
   // A mapping of apps::mojom::Readiness
@@ -85,6 +87,11 @@ namespace autotestPrivate {
     Half,
     FullscreenAllApps,
     FullscreenSearch
+  };
+
+  enum OverviewStateType {
+   Shown,
+   Hidden
   };
 
   enum MouseButton {
@@ -197,22 +204,6 @@ namespace autotestPrivate {
   };
   callback PlayStoreStateCallback = void (PlayStoreState result);
 
-  dictionary HistogramBucket {
-    // Minimum sample value that can be stored in this bucket (i.e. inclusive).
-    long min;
-    // Exclusive maximum value for samples stored this bucket.
-    long max;
-    // Number of samples stored in this bucket.
-    long count;
-  };
-  dictionary Histogram {
-    // Sum of the all entries.
-    double sum;
-    // Buckets containing samples.
-    HistogramBucket[] buckets;
-  };
-  callback HistogramCallback = void (Histogram histogram);
-
   dictionary AssistantQueryResponse {
     // Text response returned from server.
     DOMString? text;
@@ -238,6 +229,8 @@ namespace autotestPrivate {
   callback IsAppShownCallback = void (boolean appShown);
 
   callback IsArcProvisionedCallback = void (boolean arcProvisioned);
+
+  callback IsArcPackageListInitialRefreshedCallback = void (boolean refreshed);
 
   dictionary ArcAppDict {
     DOMString name;
@@ -339,6 +332,14 @@ namespace autotestPrivate {
     ExtensionApp
   };
 
+  // A mapping of HotseatState in ash/public/cpp/shelf_types.h.
+  enum HotseatState {
+    Hidden,
+    ShownClamShell,
+    ShownHomeLauncher,
+    Extended
+  };
+
   // The frame mode of a window. None if the window is framesless.
   enum FrameMode {
     Normal,
@@ -395,6 +396,7 @@ namespace autotestPrivate {
     boolean hasFocus;
     boolean onActiveDesk;
     boolean hasCapture;
+    boolean canResize;
 
     // Window frame info
     FrameMode frameMode;
@@ -420,6 +422,52 @@ namespace autotestPrivate {
     boolean pressed;
   };
 
+  // Mapped to ScrollableShelfState in ash/public/cpp/shelf_ui_info.h.
+  // [deprecated="Use ShelfState"]
+  dictionary ScrollableShelfState {
+    double? scrollDistance;
+  };
+
+  // Mapped to ShelfState in ash/public/cpp/shelf_ui_info.h.
+  dictionary ShelfState {
+    double? scrollDistance;
+  };
+
+  // Mapped to ScrollableShelfInfo in ash/public/cpp/shelf_ui_info.h.
+  // |targetMainAxisOffset| is set when ShelfState used in query
+  // specifies the scroll distance.
+  dictionary ScrollableShelfInfo {
+    double mainAxisOffset;
+    double pageOffset;
+    double? targetMainAxisOffset;
+    Bounds leftArrowBounds;
+    Bounds rightArrowBounds;
+    boolean isAnimating;
+    boolean isOverflow;
+    Bounds[] iconsBoundsInScreen;
+    boolean isShelfWidgetAnimating;
+  };
+
+  // Mapped to HotseatSwipeDescriptor in ash/public/cpp/shelf_ui_info.h.
+  dictionary HotseatSwipeDescriptor {
+    Location swipeStartLocation;
+    Location swipeEndLocation;
+  };
+
+  // Mapped to HotseatInfo in ash/public/cpp/shelf_ui_info.h.
+  dictionary HotseatInfo {
+    HotseatSwipeDescriptor swipeUp;
+    HotseatState state;
+    boolean isAnimating;
+  };
+
+  // The ui information of shelf components, including hotseat and
+  // scrollable shelf.
+  dictionary ShelfUIInfo {
+    HotseatInfo hotseatInfo;
+    ScrollableShelfInfo scrollableShelfInfo;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
@@ -437,6 +485,59 @@ namespace autotestPrivate {
   callback AcceleratorCallback = void (boolean success);
 
   callback DesksCallback = void (boolean success);
+
+  callback GetScrollableShelfInfoForStateCallback = void (
+      ScrollableShelfInfo info);
+
+  callback GetShelfUIInfoForStateCallback = void (ShelfUIInfo info);
+
+  dictionary TraceConfig {
+    // The recording mode of the trace. Possible options are:
+    // "record-until-full", "record-continuously", "record-as-much-as-possible",
+    // and "trace-to-console".
+    DOMString? record_mode;
+    // Stop trace after capturing |trace_buffer_size_in_events| events.
+    long? trace_buffer_size_in_events;
+    // Stop trace after capturing |trace_buffer_size_in_kb| kilobytes worth of
+    // events.
+    long? trace_buffer_size_in_kb;
+    // Determines whether systrace events should be included in the trace.
+    boolean? enable_systrace;
+    // Enables argument filter.
+    boolean? enable_argument_filter;
+    // A list of categories that should be included in the trace.
+    DOMString[]? included_categories;
+    // A list of categories that should be excluded from the the trace.
+    DOMString[]? excluded_categories;
+    // A list of processes from which events should be included in the trace. If
+    // this parameter is empty or missing, traces from all processes are
+    // included.
+    DOMString[]? included_process_ids;
+    // A list of Systrace events that will be included in the trace.
+    DOMString[]? enable_systrace_events;
+  };
+
+  // Defines a callback that will be run when the trace is complete. The parameter
+  // |data| contains the result of the trace in Trace Event JSON format.
+  callback TraceCompleteCallback = void (DOMString data);
+
+  // Result of calling setWindowBounds, which returns the actual bounds and
+  // display the window was set to. This may be different than the requested
+  // bounds and display, for example if the window is showing an ARC app and
+  // Android modifies the bounds request. Further, this result may never be
+  // returned in some situations (e.g. Android ignoring a bounds request),
+  // causing a timeout.
+  dictionary SetWindowBoundsResult {
+    // Bounds of the window.
+    Bounds bounds;
+    // Display ID of the display the window is on.
+    DOMString displayId;
+  };
+  callback WindowBoundsCallback = void (SetWindowBoundsResult result);
+
+  // Callback invoked to report the smoothness after StopSmoothnessTracking is
+  // called. |smoothness| is a percentage number between 0 to 100.
+  callback StopSmoothnessTrackingCallback = void (long smoothness);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -557,11 +658,6 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
 
-    // Get details about a histogram displayed at chrome://histogram.
-    // |name|: Histogram name, e.g. "Accessibility.CrosAutoclick".
-    // |callback|: Invoked with details.
-    static void getHistogram(DOMString name, HistogramCallback callback);
-
     // Get text from ui::Clipboard.
     // |callback|: Called with result.
     static void getClipboardTextData(DOMStringCallback callback);
@@ -662,6 +758,11 @@ namespace autotestPrivate {
         long timeout_s,
         AssistantQueryStatusCallback callback);
 
+    // Whether the local list of installed ARC packages has been refreshed for
+    // the first time after user login.
+    static void isArcPackageListInitialRefreshed(
+        IsArcPackageListInitialRefreshedCallback callback);
+
     // Set value for the specified user pref in the pref tree.
     static void setWhitelistedPref(DOMString pref_name, any value,
                                    VoidCallback callback);
@@ -723,6 +824,9 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setShelfAlignment(DOMString displayId,
         ShelfAlignmentType alignment, VoidCallback callback);
+
+    // Create a pin on shelf for the app specified by |appId|.
+    static void pinShelfIcon(DOMString appId, VoidCallback callback);
 
     // Enter or exit the overview mode.
     // |start|: whether entering to or exiting from the overview mode.
@@ -800,6 +904,13 @@ namespace autotestPrivate {
     static void waitForLauncherState(LauncherStateType launcherState,
                                      VoidCallback callback);
 
+    // Wait until overview has transitioned to |overviewState|, if it is not in
+    // that state.
+    // |overviewState|: the target overview state.
+    // |callback|: called when overview has reached |overviewState|.
+    static void waitForOverviewState(OverviewStateType overviewState,
+                                     VoidCallback callback);
+
     // Creates a new desk if the maximum number of desks has not been reached.
     // |callback|: called to indicate success or failure.
     static void createNewDesk(DesksCallback callback);
@@ -849,6 +960,58 @@ namespace autotestPrivate {
     // |enabled|: Enable metrics reporting.
     // |callback|: Called when the operation has completed.
     static void setMetricsEnabled(boolean enabled, VoidCallback callback);
+
+    // Starts Chrome tracing.
+    // |config|: the tracing configuration.
+    // |callback|: called when tracing has started.
+    static void startTracing(TraceConfig config, VoidCallback callback);
+
+    // Stops Chrome tracing.
+    // |completeCallback|: called when tracing is complete, with results as a
+    //     parameter.
+    static void stopTracing(TraceCompleteCallback completeCallback);
+
+    // Sends ARC touch mode enabled or disabled.
+    // |enable|: whether enabled touch mode.
+    // |callback|: called when action performed.
+    static void setArcTouchMode(boolean enabled, VoidCallback callback);
+
+    // Fetches ui information of scrollable shelf view for the given shelf
+    // state. This function does not change scrollable shelf.
+    // [deprecated="Use getShelfUIInfoForState()"]
+    static void getScrollableShelfInfoForState(
+        ScrollableShelfState state,
+        GetScrollableShelfInfoForStateCallback callback);
+
+    // Fetches UI information of shelf (including scrollable shelf and hotseat)
+    // for the given shelf state. This function does not change any shelf
+    // component.
+    static void getShelfUIInfoForState(
+        ShelfState state,
+        GetShelfUIInfoForStateCallback callback);
+
+    // Sends a WM event to change a window's bounds and/or the display it is on.
+    // |id|: the id of the window.
+    // |bounds|: bounds the window should be set to.
+    // |displayId|: id of display to move the window to.
+    // |callback|: called when the window bounds are changed.
+    static void setWindowBounds(
+        long id,
+        Bounds bounds,
+        DOMString displayId,
+        WindowBoundsCallback callback);
+
+    // Starts smoothness tracking for a display. If the display id is not
+    // specified, the primary display is used. Otherwise, the display specified
+    // by the display id is used.
+    static void startSmoothnessTracking(optional DOMString displayId,
+                                        VoidCallback callback);
+
+    // Stops smoothness tracking for a display and report the smoothness. If
+    // the display id is not specified, the primary display is used. Otherwise,
+    // the display specified by the display id is used.
+    static void stopSmoothnessTracking(optional DOMString displayId,
+                                       StopSmoothnessTrackingCallback callback);
   };
 
   interface Events {

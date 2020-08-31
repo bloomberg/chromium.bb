@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
@@ -40,6 +41,7 @@
 #include "extensions/common/user_script.h"
 #include "extensions/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/accessibility/ax_param_traits.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -183,8 +185,8 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // are examples of when this will be false.
   IPC_STRUCT_MEMBER(bool, wants_result)
 
-  // The URL of the file that was injected, if any.
-  IPC_STRUCT_MEMBER(GURL, file_url)
+  // The URL of the script that was injected, if any.
+  IPC_STRUCT_MEMBER(GURL, script_url)
 
   // Whether the code to be executed should be associated with a user gesture.
   IPC_STRUCT_MEMBER(bool, user_gesture)
@@ -356,13 +358,19 @@ struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
   ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
-                             bool include_tab_permissions);
+                             bool include_tab_permissions,
+                             base::Optional<extensions::ActivationSequence>
+                                 worker_activation_sequence);
 
   ExtensionMsg_Loaded_Params(ExtensionMsg_Loaded_Params&& other);
   ExtensionMsg_Loaded_Params& operator=(ExtensionMsg_Loaded_Params&& other);
 
   // Creates a new extension from the data in this object.
+  // A context_id needs to be passed because each browser context can have
+  // different values for default_policy_blocked/allowed_hosts.
+  // (see extension_util.cc#GetBrowserContextId)
   scoped_refptr<extensions::Extension> ConvertToExtension(
+      int context_id,
       std::string* error) const;
 
   // The subset of the extension manifest data we send to renderers.
@@ -390,6 +398,10 @@ struct ExtensionMsg_Loaded_Params {
 
   // We keep this separate so that it can be used in logging.
   std::string id;
+
+  // If this extension is Service Worker based, then this contains the
+  // activation sequence of the extension.
+  base::Optional<extensions::ActivationSequence> worker_activation_sequence;
 
   // Send creation flags so extension is initialized identically.
   int creation_flags;
@@ -1060,64 +1072,21 @@ IPC_MESSAGE_CONTROL3(ExtensionHostMsg_DidInitializeServiceWorkerContext,
 //     straightforward as it changes SW IPC ordering with respect of rest of
 //     Chrome.
 // See https://crbug.com/879015#c4 for details.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStartServiceWorkerContext,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStartServiceWorkerContext,
                      std::string /* extension_id */,
+                     extensions::ActivationSequence /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
 
 // Tells the browser that an extension service worker context has been
 // destroyed.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStopServiceWorkerContext,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStopServiceWorkerContext,
                      std::string /* extension_id */,
+                     extensions::ActivationSequence /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(role)
-  IPC_STRUCT_TRAITS_MEMBER(state)
-  IPC_STRUCT_TRAITS_MEMBER(actions)
-  IPC_STRUCT_TRAITS_MEMBER(string_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(int_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(float_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(bool_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(intlist_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(stringlist_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(html_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(child_ids)
-  IPC_STRUCT_TRAITS_MEMBER(relative_bounds)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeData)
-  IPC_STRUCT_TRAITS_MEMBER(tree_id)
-  IPC_STRUCT_TRAITS_MEMBER(parent_tree_id)
-  IPC_STRUCT_TRAITS_MEMBER(focused_tree_id)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(mimetype)
-  IPC_STRUCT_TRAITS_MEMBER(doctype)
-  IPC_STRUCT_TRAITS_MEMBER(loaded)
-  IPC_STRUCT_TRAITS_MEMBER(loading_progress)
-  IPC_STRUCT_TRAITS_MEMBER(focus_id)
-  IPC_STRUCT_TRAITS_MEMBER(sel_is_backward)
-  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_object_id)
-  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_offset)
-  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_affinity)
-  IPC_STRUCT_TRAITS_MEMBER(sel_focus_object_id)
-  IPC_STRUCT_TRAITS_MEMBER(sel_focus_offset)
-  IPC_STRUCT_TRAITS_MEMBER(sel_focus_affinity)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate)
-  IPC_STRUCT_TRAITS_MEMBER(has_tree_data)
-  IPC_STRUCT_TRAITS_MEMBER(tree_data)
-  IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
-  IPC_STRUCT_TRAITS_MEMBER(root_id)
-  IPC_STRUCT_TRAITS_MEMBER(nodes)
-  IPC_STRUCT_TRAITS_MEMBER(event_from)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventBundleParams)
   // ID of the accessibility tree that this event applies to.

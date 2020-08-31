@@ -9,11 +9,8 @@
 
 #include "ui/base/page_transition_types.h"
 
-class GURL;
-
-namespace ios {
 class ChromeBrowserState;
-}
+class GURL;
 
 namespace web {
 class NavigationItem;
@@ -33,13 +30,11 @@ class BrowserState;
 - (void)triggerSystemPromptForNewUser:(BOOL)newUser;
 
 // Notifies the receiver that the location bar became the first responder.
-- (void)locationBarDidBecomeFirstResponder:
-    (ios::ChromeBrowserState*)browserState;
+- (void)locationBarDidBecomeFirstResponder:(ChromeBrowserState*)browserState;
 
 // Notifies the receiver that the location bar stopped being the first
 // responder.
-- (void)locationBarDidResignFirstResponder:
-    (ios::ChromeBrowserState*)browserState;
+- (void)locationBarDidResignFirstResponder:(ChromeBrowserState*)browserState;
 
 // Notifies the receiver that the user submitted a URL via the location bar.
 - (void)locationBarDidSubmitURL;

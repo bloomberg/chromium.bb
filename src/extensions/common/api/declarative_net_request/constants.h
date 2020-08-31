@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 #define EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 
+#include "base/util/type_safety/id_type.h"
+
 namespace extensions {
 namespace declarative_net_request {
 
@@ -19,6 +21,12 @@ constexpr int kMinValidID = 1;
 
 // Minimum valid value of a declarative rule priority.
 constexpr int kMinValidPriority = 1;
+
+using RulesetID =
+    ::util::IdType<class RulesetIDTag, int, -1 /* invalid value */>;
+
+constexpr RulesetID kMinValidStaticRulesetID(1);
+constexpr RulesetID kDynamicRulesetID(0);
 
 // Default priority used for rules when the priority is not explicity provided
 // by an extension.
@@ -38,7 +46,6 @@ extern const char kResourceTypesKey[];
 extern const char kExcludedResourceTypesKey[];
 extern const char kDomainTypeKey[];
 extern const char kRuleActionTypeKey[];
-extern const char kRemoveHeadersListKey[];
 extern const char kRedirectPath[];
 extern const char kExtensionPathPath[];
 extern const char kTransformSchemePath[];
@@ -66,6 +73,12 @@ extern const char kQueryKeyKey[];
 extern const char kQueryValueKey[];
 extern const char kRegexSubstitutionKey[];
 extern const char kRegexSubstitutionPath[];
+extern const char kRequestHeadersKey[];
+extern const char kResponseHeadersKey[];
+extern const char kRequestHeadersPath[];
+extern const char kResponseHeadersPath[];
+extern const char kHeaderNameKey[];
+extern const char kHeaderOperationKey[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
@@ -16,8 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -211,6 +212,13 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_flush_bytecode) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8OffThreadFinalization)) {
+    static const char finalize_streaming_on_background[] =
+        "--finalize-streaming-on-background";
+    v8::V8::SetFlagsFromString(finalize_streaming_on_background,
+                               sizeof(finalize_streaming_on_background) - 1);
+  }
+
   if (!base::FeatureList::IsEnabled(features::kV8LazyFeedbackAllocation)) {
     static const char no_lazy_feedback_allocation[] =
         "--no-lazy-feedback-allocation";
@@ -218,40 +226,18 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_lazy_feedback_allocation) - 1);
   }
 
-  if (!base::FeatureList::IsEnabled(features::kV8MemoryReducerForSmallHeaps)) {
-    static const char no_memory_reducer[] =
-        "--no-memory-reducer-for-small-heaps";
-    v8::V8::SetFlagsFromString(no_memory_reducer,
-                               sizeof(no_memory_reducer) - 1);
+  if (base::FeatureList::IsEnabled(features::kV8ConcurrentInlining)) {
+    static const char tf_experiment_concurrent_inlining[] =
+        "--concurrent_inlining";
+    v8::V8::SetFlagsFromString(tf_experiment_concurrent_inlining,
+                               sizeof(tf_experiment_concurrent_inlining) - 1);
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8HugeMaxOldGenerationSize)) {
-    static const char huge_max_old_generation_size[] =
-        "--huge_max_old_generation_size";
-    v8::V8::SetFlagsFromString(huge_max_old_generation_size,
-                               sizeof(huge_max_old_generation_size) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCBackgroundSchedule)) {
-    static const char gc_experiment_background_schedule[] =
-        "--gc_experiment_background_schedule";
-    v8::V8::SetFlagsFromString(gc_experiment_background_schedule,
-                               sizeof(gc_experiment_background_schedule) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCLessCompaction)) {
-    static const char gc_experiment_less_compaction[] =
-        "--gc_experiment_less_compaction";
-    v8::V8::SetFlagsFromString(gc_experiment_less_compaction,
-                               sizeof(gc_experiment_less_compaction) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCAlwaysPromoteYoungMC)) {
-    static const char gc_experiment_always_promote_young_mc[] =
-        "--always_promote_young_mc";
-    v8::V8::SetFlagsFromString(
-        gc_experiment_always_promote_young_mc,
-        sizeof(gc_experiment_always_promote_young_mc) - 1);
+  if (base::FeatureList::IsEnabled(features::kV8PerContextMarkingWorklist)) {
+    static const char stress_per_context_marking_worklist[] =
+        "--stress-per-context-marking-worklist";
+    v8::V8::SetFlagsFromString(stress_per_context_marking_worklist,
+                               sizeof(stress_per_context_marking_worklist) - 1);
   }
 
   if (IsolateHolder::kStrictMode == mode) {

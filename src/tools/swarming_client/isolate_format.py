@@ -20,6 +20,8 @@ import posixpath
 import re
 import sys
 
+import six
+
 from utils import fs
 
 
@@ -56,7 +58,7 @@ def determine_root_dir(relative_root, infiles):
 
 
 def replace_variable(part, variables):
-  m = re.match(r'<\((' + VALID_VARIABLE + ')\)', part)
+  m = re.match(r'<\((' + VALID_VARIABLE + r')\)', part)
   if m:
     if m.group(1) not in variables:
       raise IsolateError(
@@ -73,7 +75,7 @@ def eval_variables(item, variables):
   """
   return ''.join(
       replace_variable(p, variables)
-      for p in re.split(r'(<\(' + VALID_VARIABLE + '\))', item))
+      for p in re.split(r'(<\(' + VALID_VARIABLE + r'\))', item))
 
 
 def pretty_print(variables, stdout):
@@ -94,56 +96,56 @@ def pretty_print(variables, stdout):
 
   def loop_list(indent, items):
     for item in items:
-      if isinstance(item, basestring):
-        stdout.write('%s\'%s\',\n' % (indent, item))
+      if isinstance(item, six.string_types):
+        stdout.write(indent + ('\'%s\',\n' % item).encode('utf-8'))
       elif isinstance(item, dict):
-        stdout.write('%s{\n' % indent)
-        loop_dict(indent + '  ', item)
-        stdout.write('%s},\n' % indent)
+        stdout.write(b'%s{\n' % indent)
+        loop_dict(indent + b'  ', item)
+        stdout.write(b'%s},\n' % indent)
       elif isinstance(item, list):
         # A list inside a list will write the first item embedded.
-        stdout.write('%s[' % indent)
+        stdout.write(b'%s[' % indent)
         for index, i in enumerate(item):
-          if isinstance(i, basestring):
-            stdout.write(
-                '\'%s\', ' % i.replace('\\', '\\\\').replace('\'', '\\\''))
+          if isinstance(i, six.string_types):
+            stdout.write(('\'%s\', ' % i.replace('\\', '\\\\').replace(
+                '\'', '\\\'')).encode('utf-8'))
           elif isinstance(i, dict):
-            stdout.write('{\n')
-            loop_dict(indent + '  ', i)
+            stdout.write(b'{\n')
+            loop_dict(indent + b'  ', i)
             if index != len(item) - 1:
-              x = ', '
+              x = b', '
             else:
-              x = ''
-            stdout.write('%s}%s' % (indent, x))
+              x = b''
+            stdout.write(b'%s}%s' % (indent, x))
           else:
             assert False
-        stdout.write('],\n')
+        stdout.write(b'],\n')
       else:
         assert False
 
   def loop_dict(indent, items):
     for key in sorted(items, key=sorting_key):
       item = items[key]
-      stdout.write("%s'%s': " % (indent, key))
+      stdout.write(indent + ("'%s': " % key).encode('utf-8'))
       if isinstance(item, dict):
-        stdout.write('{\n')
-        loop_dict(indent + '  ', item)
-        stdout.write(indent + '},\n')
+        stdout.write(b'{\n')
+        loop_dict(indent + b'  ', item)
+        stdout.write(indent + b'},\n')
       elif isinstance(item, list):
-        stdout.write('[\n')
-        loop_list(indent + '  ', item)
-        stdout.write(indent + '],\n')
-      elif isinstance(item, basestring):
-        stdout.write(
-            '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
+        stdout.write(b'[\n')
+        loop_list(indent + b'  ', item)
+        stdout.write(indent + b'],\n')
+      elif isinstance(item, six.string_types):
+        stdout.write(('\'%s\',\n' % item.replace('\\', '\\\\').replace(
+            '\'', '\\\'')).encode('utf-8'))
       elif isinstance(item, (int, bool)) or item is None:
-        stdout.write('%s,\n' % item)
+        stdout.write(('%s,\n' % item).encode('utf-8'))
       else:
         assert False, item
 
-  stdout.write('{\n')
-  loop_dict('  ', variables)
-  stdout.write('}\n')
+  stdout.write(b'{\n')
+  loop_dict(b'  ', variables)
+  stdout.write(b'}\n')
 
 
 def print_all(comment, data, stream):
@@ -171,7 +173,7 @@ def eval_content(content):
 
   Used in practice for .isolate files.
   """
-  globs = {'__builtins__': None}
+  globs = {'__builtins__': {}}
   locs = {}
   try:
     value = eval(content, globs, locs)
@@ -179,7 +181,7 @@ def eval_content(content):
     e.args = list(e.args) + [content]
     raise
   assert locs == {}, locs
-  assert globs == {'__builtins__': None}, globs
+  assert globs == {'__builtins__': {}}, globs
   return value
 
 
@@ -204,18 +206,17 @@ def match_configs(expr, config_variables, all_configs):
       (True, False), repeat=len(config_variables)):
     # Add the combination of variables bound.
     combinations.append(
-        (
-          [c for c, b in zip(config_variables, bound_variables) if b],
-          set(
-            tuple(v if b else None for v, b in zip(line, bound_variables))
-            for line in all_configs)
-        ))
+        ([c for c, b in zip(config_variables, bound_variables) if b],
+         set(
+             tuple(v if b else None
+                   for v, b in zip(line, bound_variables))
+             for line in all_configs)))
 
   out = []
   for variables, configs in combinations:
     # Strip variables and see if expr can still be evaluated.
     for values in configs:
-      globs = {'__builtins__': None}
+      globs = {'__builtins__': {}}
       globs.update(zip(variables, (v for v in values if v is not None)))
       try:
         assertion = eval(expr, globs, {})
@@ -225,7 +226,7 @@ def match_configs(expr, config_variables, all_configs):
         raise IsolateError('Invalid condition')
       if assertion:
         out.append(values)
-  return out
+  return sorted(out, key=str)
 
 
 def verify_variables(variables):
@@ -237,12 +238,12 @@ def verify_variables(variables):
   ]
   assert isinstance(variables, dict), variables
   assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
-  for name, value in variables.iteritems():
+  for name, value in variables.items():
     if name == 'read_only':
       assert value in (0, 1, 2, None), value
     else:
       assert isinstance(value, list), value
-      assert all(isinstance(i, basestring) for i in value), value
+      assert all(isinstance(i, six.string_types) for i in value), value
 
 
 def verify_ast(expr, variables_and_values):
@@ -298,7 +299,7 @@ def verify_root(value, variables_and_values):
   includes = value.get('includes', [])
   assert isinstance(includes, list), includes
   for include in includes:
-    assert isinstance(include, basestring), include
+    assert isinstance(include, six.string_types), include
 
   conditions = value.get('conditions', [])
   assert isinstance(conditions, list), conditions
@@ -312,7 +313,7 @@ def verify_root(value, variables_and_values):
 def get_folders(values_dict):
   """Returns a dict of all the folders in the given value_dict."""
   return dict(
-    (item, configs) for (item, configs) in values_dict.iteritems()
+    (item, configs) for (item, configs) in values_dict.items()
     if item.endswith('/')
   )
 
@@ -377,6 +378,7 @@ class ConfigSettings(object):
 
     rebase_path = os.path.relpath(r_rel_cwd, l_rel_cwd).replace(
         os.path.sep, '/')
+
     def rebase_item(f):
       if f.startswith('<(') or rebase_path == '.':
         return f
@@ -386,7 +388,7 @@ class ConfigSettings(object):
       """Rebase items in either lhs or rhs, as needed."""
       if use_rhs:
         l, r = r, l
-      return sorted(l + map(rebase_item, r))
+      return sorted(l + list(map(rebase_item, r)))
 
     var = {
       'command': self.command or rhs.command,
@@ -412,11 +414,8 @@ class ConfigSettings(object):
   def __str__(self):
     """Returns a short representation useful for debugging."""
     files = ''.join('\n    ' + f for f in self.files)
-    return 'ConfigSettings(%s, %s, %s, %s)' % (
-        self.command,
-        self.isolate_dir,
-        self.read_only,
-        files or '[]')
+    return 'ConfigSettings(%s, %s, %s, %s)' % (self.command, self.isolate_dir,
+                                               self.read_only, files or '[]')
 
 
 def _safe_index(l, k):
@@ -462,7 +461,7 @@ class Configs(object):
     # .isolate file(s). The order is important since the same order is used for
     # keys in self._by_config.
     assert isinstance(config_variables, tuple)
-    assert all(isinstance(c, basestring) for c in config_variables), (
+    assert all(isinstance(c, six.string_types) for c in config_variables), (
         config_variables)
     config_variables = tuple(config_variables)
     assert tuple(sorted(config_variables)) == config_variables, config_variables
@@ -485,7 +484,7 @@ class Configs(object):
     # necessarily sorted in the way that makes sense, they are alphabetically
     # sorted. It is important because the left-most takes predescence.
     out = ConfigSettings({}, None)
-    for k, v in sorted(self._by_config.iteritems()):
+    for k, v in sorted(self._by_config.items(), key=str):
       if all(i == j or j is None for i, j in zip(config, k)):
         out = out.union(v)
     return out
@@ -499,8 +498,8 @@ class Configs(object):
     """
     assert key not in self._by_config, (key, self._by_config.keys())
     assert isinstance(key, tuple)
-    assert len(key) == len(self._config_variables), (
-        key, self._config_variables)
+    assert len(key) == len(self._config_variables), (key,
+                                                     self._config_variables)
     assert isinstance(value, ConfigSettings)
     self._by_config[key] = value
 
@@ -512,16 +511,16 @@ class Configs(object):
     """
     # Merge the keys of config_variables for each Configs instances. All the new
     # variables will become unbounded. This requires realigning the keys.
-    config_variables = tuple(sorted(
-        set(self.config_variables) | set(rhs.config_variables)))
+    config_variables = tuple(
+        sorted(set(self.config_variables) | set(rhs.config_variables)))
     out = Configs(self.file_comment or rhs.file_comment, config_variables)
     mapping_lhs = _get_map_keys(out.config_variables, self.config_variables)
     mapping_rhs = _get_map_keys(out.config_variables, rhs.config_variables)
     lhs_config = dict(
-        (_map_keys(mapping_lhs, k), v) for k, v in self._by_config.iteritems())
+        (_map_keys(mapping_lhs, k), v) for k, v in self._by_config.items())
     # pylint: disable=W0212
     rhs_config = dict(
-        (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.iteritems())
+        (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.items())
 
     for key in set(lhs_config) | set(rhs_config):
       l = lhs_config.get(key)
@@ -532,7 +531,7 @@ class Configs(object):
   def flatten(self):
     """Returns a flat dictionary representation of the configuration.
     """
-    return dict((k, v.flatten()) for k, v in self._by_config.iteritems())
+    return dict((k, v.flatten()) for k, v in self._by_config.items())
 
   def __str__(self):
     return 'Configs(%s,%s)' % (
@@ -548,13 +547,10 @@ def load_included_isolate(isolate_dir, isolate_path):
   included_isolate = os.path.normpath(os.path.join(isolate_dir, isolate_path))
   if sys.platform == 'win32':
     if included_isolate[0].lower() != isolate_dir[0].lower():
-      raise IsolateError(
-          'Can\'t reference a .isolate file from another drive')
+      raise IsolateError('Can\'t reference a .isolate file from another drive')
   with fs.open(included_isolate, 'r') as f:
     return load_isolate_as_config(
-        os.path.dirname(included_isolate),
-        eval_content(f.read()),
-        None)
+        os.path.dirname(included_isolate), eval_content(f.read()), None)
 
 
 def load_isolate_as_config(isolate_dir, value, file_comment):
@@ -597,8 +593,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   variables_and_values = {}
   verify_root(value, variables_and_values)
   if variables_and_values:
-    config_variables, config_values = zip(
-        *sorted(variables_and_values.iteritems()))
+    config_variables, config_values = zip(*sorted(variables_and_values.items()))
     all_configs = list(itertools.product(*config_values))
   else:
     config_variables = ()
@@ -607,9 +602,8 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   isolate = Configs(file_comment, config_variables)
 
   # Add global variables. The global variables are on the empty tuple key.
-  isolate.set_config(
-      (None,) * len(config_variables),
-      ConfigSettings(value.get('variables', {}), isolate_dir))
+  isolate.set_config((None,) * len(config_variables),
+                     ConfigSettings(value.get('variables', {}), isolate_dir))
 
   # Add configuration-specific variables.
   for expr, then in value.get('conditions', []):
@@ -620,7 +614,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     isolate = isolate.union(new)
 
   # If the .isolate contains command, ignore any command in child .isolate.
-  root_has_command = any(c.command for c in isolate._by_config.itervalues())
+  root_has_command = any(c.command for c in isolate._by_config.values())
 
   # Load the includes. Process them in reverse so the last one take precedence.
   for include in reversed(value.get('includes', [])):
@@ -629,7 +623,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
       # Strip any command in the imported isolate. It is because the chosen
       # command is not related to the one in the top-most .isolate, since the
       # configuration is flattened.
-      for c in included._by_config.itervalues():
+      for c in included._by_config.values():
         c.command = []
     isolate = isolate.union(included)
 

@@ -7,14 +7,13 @@
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
-#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-forward.h"
 
 namespace resource_coordinator {
 
 using ::mojom::LifecycleUnitState;
 
 extern const char kPendingFreezeTracingEventName[];
-extern const char kPendingDiscardTracingEventName[];
 extern const char kPendingUnfreezeTracingEventName[];
 
 // Observes a LifecycleUnit to generate trace events.

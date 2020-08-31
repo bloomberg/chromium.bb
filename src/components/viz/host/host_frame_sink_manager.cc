@@ -12,10 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 
@@ -24,18 +21,15 @@ HostFrameSinkManager::HostFrameSinkManager() = default;
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 
 void HostFrameSinkManager::SetLocalManager(
-    FrameSinkManagerImpl* frame_sink_manager_impl) {
+    mojom::FrameSinkManager* frame_sink_manager) {
   DCHECK(!frame_sink_manager_remote_);
-  frame_sink_manager_impl_ = frame_sink_manager_impl;
-
-  frame_sink_manager_ = frame_sink_manager_impl;
+  frame_sink_manager_ = frame_sink_manager;
 }
 
 void HostFrameSinkManager::BindAndSetManager(
     mojo::PendingReceiver<mojom::FrameSinkManagerClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     mojo::PendingRemote<mojom::FrameSinkManager> remote) {
-  DCHECK(!frame_sink_manager_impl_);
   DCHECK(!receiver_.is_bound());
 
   receiver_.Bind(std::move(receiver), std::move(task_runner));
@@ -111,19 +105,6 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   }
 
   frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
-}
-
-void HostFrameSinkManager::EnableSynchronizationReporting(
-    const FrameSinkId& frame_sink_id,
-    const std::string& reporting_label) {
-  DCHECK(frame_sink_id.is_valid());
-
-  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
-  DCHECK(data.IsFrameSinkRegistered());
-
-  data.synchronization_reporting_label = reporting_label;
-  frame_sink_manager_->EnableSynchronizationReporting(frame_sink_id,
-                                                      reporting_label);
 }
 
 void HostFrameSinkManager::SetFrameSinkDebugLabel(
@@ -317,30 +298,6 @@ void HostFrameSinkManager::RemoveHitTestRegionObserver(
   observers_.RemoveObserver(observer);
 }
 
-std::unique_ptr<CompositorFrameSinkSupport>
-HostFrameSinkManager::CreateCompositorFrameSinkSupport(
-    mojom::CompositorFrameSinkClient* client,
-    const FrameSinkId& frame_sink_id,
-    bool is_root,
-    bool needs_sync_points) {
-  DCHECK(frame_sink_manager_impl_);
-
-  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
-  DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.has_created_compositor_frame_sink);
-
-  auto support = std::make_unique<CompositorFrameSinkSupport>(
-      client, frame_sink_manager_impl_, frame_sink_id, is_root,
-      needs_sync_points);
-
-  data.is_root = is_root;
-
-  if (is_root)
-    display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
-
-  return support;
-}
-
 void HostFrameSinkManager::OnConnectionLost() {
   connection_was_lost_ = true;
 
@@ -370,10 +327,6 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
       frame_sink_manager_->RegisterFrameSinkId(
           frame_sink_id,
           data.report_activation == ReportFirstSurfaceActivation::kYes);
-    }
-    if (!data.synchronization_reporting_label.empty()) {
-      frame_sink_manager_->EnableSynchronizationReporting(
-          frame_sink_id, data.synchronization_reporting_label);
     }
     if (!data.debug_label.empty()) {
       frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id,

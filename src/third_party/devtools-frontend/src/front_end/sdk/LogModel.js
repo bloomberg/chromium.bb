@@ -2,19 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Host from '../host/host.js';
+
+import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @implements {Protocol.LogDispatcher}
  */
-export default class LogModel extends SDK.SDKModel {
+export class LogModel extends SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    */
   constructor(target) {
     super(target);
     target.registerLogDispatcher(this);
     this._logAgent = target.logAgent();
     this._logAgent.enable();
-    if (!Host.isUnderTest()) {
+    if (!Host.InspectorFrontendHost.isUnderTest()) {
       this._logAgent.startViolationsReport([
         {name: 'longTask', threshold: 200}, {name: 'longLayout', threshold: 30}, {name: 'blockedEvent', threshold: 100},
         {name: 'blockedParser', threshold: -1}, {name: 'handler', threshold: 150},
@@ -41,16 +48,4 @@ export const Events = {
   EntryAdded: Symbol('EntryAdded')
 };
 
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.LogModel = LogModel;
-
-/** @enum {symbol} */
-SDK.LogModel.Events = Events;
-
-SDK.SDKModel.register(SDK.LogModel, SDK.Target.Capability.Log, true);
+SDKModel.register(LogModel, Capability.Log, true);

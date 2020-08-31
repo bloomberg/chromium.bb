@@ -5,6 +5,7 @@
 module paint_preview.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -49,6 +50,10 @@ struct PaintPreviewCaptureParams {
   // File to write the SkPicture to (write-only). A separate file should be
   // created for each RenderFrame.
   mojo_base.mojom.File file;
+
+  // The maximum allowed size of a capture that can be produced. A value of
+  // 0 means the size is unrestricted.
+  uint64 max_capture_size;
 };
 
 struct LinkData {
@@ -60,14 +65,20 @@ struct LinkData {
 };
 
 struct PaintPreviewCaptureResponse {
-  // Routing ID of the frame.
-  uint64 id;
+  // Embedding token of the frame. Will be nullopt for the main frame.
+  mojo_base.mojom.UnguessableToken? embedding_token;
 
   // Map between subframe content IDs and the RenderFrameProxy Routing ID.
-  map<uint32, uint64> content_id_proxy_id_map;
+  map<uint32, mojo_base.mojom.UnguessableToken> content_id_to_embedding_token;
 
   // A list of links within the frame.
   array<LinkData> links;
+
+  // The time spent capturing in Blink.
+  mojo_base.mojom.TimeDelta blink_recording_time;
+
+  // The size of the resulting serialized capture.
+  uint64 serialized_size;
 };
 
 // Service for capturing a paint preview of a RenderFrame's contents. This

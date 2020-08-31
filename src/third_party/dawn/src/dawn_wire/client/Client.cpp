@@ -13,13 +13,14 @@
 // limitations under the License.
 
 #include "dawn_wire/client/Client.h"
+
+#include "common/Compiler.h"
 #include "dawn_wire/client/Device.h"
 
 namespace dawn_wire { namespace client {
 
     Client::Client(CommandSerializer* serializer, MemoryTransferService* memoryTransferService)
         : ClientBase(),
-          mDevice(DeviceAllocator().New(this)->object.get()),
           mSerializer(serializer),
           mMemoryTransferService(memoryTransferService) {
         if (mMemoryTransferService == nullptr) {
@@ -30,7 +31,16 @@ namespace dawn_wire { namespace client {
     }
 
     Client::~Client() {
-        DeviceAllocator().Free(mDevice);
+        if (mDevice != nullptr) {
+            DeviceAllocator().Free(mDevice);
+        }
+    }
+
+    WGPUDevice Client::GetDevice() {
+        if (mDevice == nullptr) {
+            mDevice = DeviceAllocator().New(this)->object.get();
+        }
+        return reinterpret_cast<WGPUDeviceImpl*>(mDevice);
     }
 
     ReservedTexture Client::ReserveTexture(WGPUDevice cDevice) {
@@ -40,8 +50,29 @@ namespace dawn_wire { namespace client {
         ReservedTexture result;
         result.texture = reinterpret_cast<WGPUTexture>(allocation->object.get());
         result.id = allocation->object->id;
-        result.generation = allocation->serial;
+        result.generation = allocation->generation;
         return result;
+    }
+
+    void* Client::GetCmdSpace(size_t size) {
+        if (DAWN_UNLIKELY(mIsDisconnected)) {
+            if (size > mDummyCmdSpace.size()) {
+                mDummyCmdSpace.resize(size);
+            }
+            return mDummyCmdSpace.data();
+        }
+        return mSerializer->GetCmdSpace(size);
+    }
+
+    void Client::Disconnect() {
+        if (mIsDisconnected) {
+            return;
+        }
+
+        mIsDisconnected = true;
+        if (mDevice != nullptr) {
+            mDevice->HandleDeviceLost("GPU connection lost");
+        }
     }
 
 }}  // namespace dawn_wire::client

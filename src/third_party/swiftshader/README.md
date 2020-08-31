@@ -1,11 +1,11 @@
 # SwiftShader
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Build Status](https://travis-ci.org/google/swiftshader.svg?branch=master)](https://travis-ci.org/google/swiftshader) [![Build status](https://ci.appveyor.com/api/projects/status/yrmyvb34j22jg1uj?svg=true)](https://ci.appveyor.com/project/c0d1f1ed/swiftshader)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Introduction
 ------------
 
-SwiftShader is a high-performance CPU-based implementation of the Vulkan, OpenGL ES, and Direct3D 9 graphics APIs<sup>1</sup><sup>2</sup>. Its goal is to provide hardware independence for advanced 3D graphics.
+SwiftShader is a high-performance CPU-based implementation of the Vulkan and OpenGL ES graphics APIs<sup>1</sup><sup>2</sup>. Its goal is to provide hardware independence for advanced 3D graphics.
 
 Building
 --------
@@ -17,8 +17,6 @@ Android and Chrome (OS) build environments are also supported.
 \
   For building the Vulkan ICD library, use [Visual Studio 2019](https://visualstudio.microsoft.com/vs/community/) to open the project folder and wait for it to run CMake. Open the [CMake Targets View](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019#ide-integration) in the Solution Explorer and select the vk_swiftshader project to [build](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019#building-cmake-projects) it.
 
-  There is also a legacy [SwiftShader.sln](SwiftShader.sln) file for Visual Studio 2017 for building OpenGL ES and Direct3D libraries. Output DLLs will be placed in the _out_ subfolder. Sample executables such as _OGLES3ColourGrading_ can be found under the Tests solution folder and can be run from the IDE.
-
 * **CMake**
 
   [Install CMake](https://cmake.org/download/) for Linux, Mac OS X, or Windows and use either [the IDE](https://cmake.org/runningcmake/) or run the following terminal commands:
@@ -27,8 +25,7 @@ Android and Chrome (OS) build environments are also supported.
       cmake ..
       make --jobs=8
 
-      ./gles-unittests
-      ./OGLES2HelloAPI
+      ./vk-unittests
 
 Usage
 -----
@@ -59,6 +56,10 @@ https://gerrit-review.googlesource.com/tools/hooks/commit-msg. To clone the repo
 Changes are uploaded to Gerrit by executing:
 
     git push origin HEAD:refs/for/master
+
+When ready, [add](https://gerrit-review.googlesource.com/Documentation/intro-user.html#adding-reviewers) a project [owner](OWNERS) as a reviewer on your change.
+
+Some tests will automatically be run against the change. Notably, [presubmit.sh](tests/presubmit.sh) verifies the change has been formatted using [clang-format 10.0](tests/kokoro/gcp_ubuntu/check_style.sh). Most IDEs come with clang-format support, but may require downgrading to [clang-format version 10.0](https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.0).
 
 Testing
 -------
@@ -111,5 +112,5 @@ Disclaimer
 ----------
 
 1. Trademarks are the property of their respective owners.
-2. We do not claim official conformance with the Direct3D and OpenGL graphics APIs at this moment.
+2. We do not claim official conformance with the OpenGL graphics API at this moment.
 3. This is not an official Google product.

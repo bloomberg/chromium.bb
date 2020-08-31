@@ -26,6 +26,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/fx_memory.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
@@ -315,7 +316,7 @@ RetainPtr<CPDF_Font> CPDF_Font::Create(CPDF_Document* pDoc,
   ByteString type = pFontDict->GetStringFor("Subtype");
   RetainPtr<CPDF_Font> pFont;
   if (type == "TrueType") {
-    ByteString tag = pFontDict->GetStringFor("BaseFont").Left(4);
+    ByteString tag = pFontDict->GetStringFor("BaseFont").First(4);
     for (size_t i = 0; i < FX_ArraySize(kChineseFontNames); ++i) {
       if (tag == ByteString(kChineseFontNames[i], kChineseFontNameSize)) {
         const CPDF_Dictionary* pFontDesc =
@@ -345,8 +346,7 @@ uint32_t CPDF_Font::GetNextChar(ByteStringView pString, size_t* pOffset) const {
     return 0;
 
   size_t& offset = *pOffset;
-  return offset < pString.GetLength() ? pString[offset++]
-                                      : pString[pString.GetLength() - 1];
+  return offset < pString.GetLength() ? pString[offset++] : pString.Back();
 }
 
 bool CPDF_Font::IsStandardFont() const {
@@ -381,7 +381,7 @@ const char* CPDF_Font::GetAdobeCharName(
 uint32_t CPDF_Font::FallbackFontFromCharcode(uint32_t charcode) {
   if (m_FontFallbacks.empty()) {
     m_FontFallbacks.push_back(pdfium::MakeUnique<CFX_Font>());
-    pdfium::base::CheckedNumeric<int> safeWeight = m_StemV;
+    FX_SAFE_INT32 safeWeight = m_StemV;
     safeWeight *= 5;
     m_FontFallbacks[0]->LoadSubst("Arial", IsTrueTypeFont(), m_Flags,
                                   safeWeight.ValueOrDefault(FXFONT_FW_NORMAL),
@@ -438,7 +438,7 @@ bool CPDF_Font::FT_UseTTCharmap(FXFT_FaceRec* face,
 }
 
 int CPDF_Font::GetFontWeight() const {
-  pdfium::base::CheckedNumeric<int> safeStemV(m_StemV);
+  FX_SAFE_INT32 safeStemV(m_StemV);
   if (m_StemV < 140)
     safeStemV *= 5;
   else

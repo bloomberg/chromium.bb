@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_types.h"
 
@@ -62,6 +63,11 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
 
   // Called when the blocking state of |blocker| is changed.
   virtual void OnBlockingStateChanged(NotificationBlocker* blocker) {}
+
+  // Called after a visible notification popup closes, indicating it has been
+  // shown to the user, and whether the notification is marked as read.
+  virtual void OnNotificationPopupShown(const std::string& notification_id,
+                                        bool mark_notification_as_read) {}
 };
 
 }  // namespace message_center

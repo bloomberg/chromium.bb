@@ -28,6 +28,69 @@ class CheckedContiguousIterator {
   friend class CheckedContiguousIterator;
 
   constexpr CheckedContiguousIterator() = default;
+
+#if defined(_LIBCPP_VERSION)
+  // The following using declaration, single argument implicit constructor and
+  // friended `__unwrap_iter` overload are required to use an optimized code
+  // path when using a CheckedContiguousIterator with libc++ algorithms such as
+  // std::copy(first, last, result), std::copy_backward(first, last, result),
+  // std::move(first, last, result) and std::move_backward(first, last, result).
+  //
+  // Each of these algorithms dispatches to a std::memmove if this is safe to do
+  // so, i.e. when all of `first`, `last` and `result` are iterators over
+  // contiguous storage of the same type modulo const qualifiers.
+  //
+  // libc++ implements this for its contiguous iterators by invoking the
+  // unqualified __unwrap_iter, which returns the underlying pointer for
+  // iterators over std::vector and std::string, and returns the original
+  // iterator otherwise.
+  //
+  // Thus in order to opt into this optimization for CCI, we need to provide our
+  // own __unwrap_iter, returning the underlying raw pointer if it is safe to do
+  // so.
+  //
+  // Furthermore, considering that std::copy is implemented as follows, the
+  // return type of __unwrap_iter(CCI) needs to be convertible to CCI, which is
+  // why an appropriate implicit single argument constructor is provided for the
+  // optimized case:
+  //
+  //     template <class InIter, class OutIter>
+  //     OutIter copy(InIter first, InIter last, OutIter result) {
+  //       return __copy(__unwrap_iter(first), __unwrap_iter(last),
+  //                     __unwrap_iter(result));
+  //     }
+  //
+  //     Unoptimized __copy() signature:
+  //     template <class InIter, class OutIter>
+  //     OutIter __copy(InIter first, InIter last, OutIter result);
+  //
+  //     Optimized __copy() signature:
+  //     template <class T, class U>
+  //     U* __copy(T* first, T* last, U* result);
+  //
+  // Finally, this single argument constructor sets all internal fields to the
+  // passed in pointer. This allows the resulting CCI to be used in other
+  // optimized calls to std::copy (or std::move, std::copy_backward,
+  // std::move_backward). However, it should not be used otherwise, since
+  // invoking any of its public API will result in a CHECK failure. This also
+  // means that callers should never use the single argument constructor
+  // directly.
+  template <typename U>
+  using PtrIfSafeToMemmove = std::enable_if_t<
+      std::is_trivially_copy_assignable<std::remove_const_t<U>>::value,
+      U*>;
+
+  template <int&... ExplicitArgumentBarrier, typename U = T>
+  constexpr CheckedContiguousIterator(PtrIfSafeToMemmove<U> ptr)
+      : start_(ptr), current_(ptr), end_(ptr) {}
+
+  template <int&... ExplicitArgumentBarrier, typename U = T>
+  friend constexpr PtrIfSafeToMemmove<U> __unwrap_iter(
+      CheckedContiguousIterator iter) {
+    return iter.current_;
+  }
+#endif
+
   constexpr CheckedContiguousIterator(T* start, const T* end)
       : CheckedContiguousIterator(start, start, end) {}
   constexpr CheckedContiguousIterator(const T* start, T* current, const T* end)
@@ -60,34 +123,39 @@ class CheckedContiguousIterator {
   constexpr CheckedContiguousIterator& operator=(
       const CheckedContiguousIterator& other) = default;
 
-  constexpr bool operator==(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ == other.current_;
+  friend constexpr bool operator==(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ == rhs.current_;
   }
 
-  constexpr bool operator!=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ != other.current_;
+  friend constexpr bool operator!=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ != rhs.current_;
   }
 
-  constexpr bool operator<(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ < other.current_;
+  friend constexpr bool operator<(const CheckedContiguousIterator& lhs,
+                                  const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ < rhs.current_;
   }
 
-  constexpr bool operator<=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ <= other.current_;
+  friend constexpr bool operator<=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ <= rhs.current_;
+  }
+  friend constexpr bool operator>(const CheckedContiguousIterator& lhs,
+                                  const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ > rhs.current_;
   }
 
-  constexpr bool operator>(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ > other.current_;
-  }
-
-  constexpr bool operator>=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ >= other.current_;
+  friend constexpr bool operator>=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ >= rhs.current_;
   }
 
   constexpr CheckedContiguousIterator& operator++() {
@@ -149,8 +217,7 @@ class CheckedContiguousIterator {
   constexpr friend difference_type operator-(
       const CheckedContiguousIterator& lhs,
       const CheckedContiguousIterator& rhs) {
-    CHECK_EQ(lhs.start_, rhs.start_);
-    CHECK_EQ(lhs.end_, rhs.end_);
+    lhs.CheckComparable(rhs);
     return lhs.current_ - rhs.current_;
   }
 

@@ -69,15 +69,12 @@ namespace dawn_native { namespace vulkan {
             allocateInfo.memoryTypeIndex = mMemoryTypeIndex;
 
             VkDeviceMemory allocatedMemory = VK_NULL_HANDLE;
-            VkResult allocationResult = mDevice->fn.AllocateMemory(
-                mDevice->GetVkDevice(), &allocateInfo, nullptr, &allocatedMemory);
 
-            // Handle vkAllocateMemory error but differentiate OOM that we want to surface to
-            // the application.
-            if (allocationResult == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
-                return DAWN_OUT_OF_MEMORY_ERROR("OOM while creating the Vkmemory");
-            }
-            DAWN_TRY(CheckVkSuccess(allocationResult, "vkAllocateMemory"));
+            // First check OOM that we want to surface to the application.
+            DAWN_TRY(CheckVkOOMThenSuccess(
+                mDevice->fn.AllocateMemory(mDevice->GetVkDevice(), &allocateInfo, nullptr,
+                                           &*allocatedMemory),
+                "vkAllocateMemory"));
 
             ASSERT(allocatedMemory != VK_NULL_HANDLE);
             return {std::make_unique<ResourceHeap>(allocatedMemory, mMemoryTypeIndex)};
@@ -115,31 +112,35 @@ namespace dawn_native { namespace vulkan {
 
         VkDeviceSize size = requirements.size;
 
-        // If the resource is too big, allocate memory just for it.
-        // Also allocate mappable resources separately because at the moment the mapped pointer
+        // Sub-allocate non-mappable resources because at the moment the mapped pointer
         // is part of the resource and not the heap, which doesn't match the Vulkan model.
         // TODO(cwallez@chromium.org): allow sub-allocating mappable resources, maybe.
-        if (requirements.size >= kMaxSizeForSubAllocation || mappable) {
-            std::unique_ptr<ResourceHeapBase> resourceHeap;
-            DAWN_TRY_ASSIGN(resourceHeap,
-                            mAllocatorsPerType[memoryType]->AllocateResourceHeap(size));
-
-            void* mappedPointer = nullptr;
-            if (mappable) {
-                DAWN_TRY(
-                    CheckVkSuccess(mDevice->fn.MapMemory(mDevice->GetVkDevice(),
-                                                         ToBackend(resourceHeap.get())->GetMemory(),
-                                                         0, size, 0, &mappedPointer),
-                                   "vkMapMemory"));
+        if (requirements.size < kMaxSizeForSubAllocation && !mappable) {
+            ResourceMemoryAllocation subAllocation;
+            DAWN_TRY_ASSIGN(subAllocation,
+                            mAllocatorsPerType[memoryType]->AllocateMemory(requirements));
+            if (subAllocation.GetInfo().mMethod != AllocationMethod::kInvalid) {
+                return std::move(subAllocation);
             }
-
-            AllocationInfo info;
-            info.mMethod = AllocationMethod::kDirect;
-            return ResourceMemoryAllocation(info, /*offset*/ 0, resourceHeap.release(),
-                                            static_cast<uint8_t*>(mappedPointer));
-        } else {
-            return mAllocatorsPerType[memoryType]->AllocateMemory(requirements);
         }
+
+        // If sub-allocation failed, allocate memory just for it.
+        std::unique_ptr<ResourceHeapBase> resourceHeap;
+        DAWN_TRY_ASSIGN(resourceHeap, mAllocatorsPerType[memoryType]->AllocateResourceHeap(size));
+
+        void* mappedPointer = nullptr;
+        if (mappable) {
+            DAWN_TRY(
+                CheckVkSuccess(mDevice->fn.MapMemory(mDevice->GetVkDevice(),
+                                                     ToBackend(resourceHeap.get())->GetMemory(), 0,
+                                                     size, 0, &mappedPointer),
+                               "vkMapMemory"));
+        }
+
+        AllocationInfo info;
+        info.mMethod = AllocationMethod::kDirect;
+        return ResourceMemoryAllocation(info, /*offset*/ 0, resourceHeap.release(),
+                                        static_cast<uint8_t*>(mappedPointer));
     }
 
     void ResourceMemoryAllocator::Deallocate(ResourceMemoryAllocation* allocation) {
@@ -151,10 +152,13 @@ namespace dawn_native { namespace vulkan {
 
             // For direct allocation we can put the memory for deletion immediately and the fence
             // deleter will make sure the resources are freed before the memory.
-            case AllocationMethod::kDirect:
-                mDevice->GetFencedDeleter()->DeleteWhenUnused(
-                    ToBackend(allocation->GetResourceHeap())->GetMemory());
+            case AllocationMethod::kDirect: {
+                ResourceHeap* heap = ToBackend(allocation->GetResourceHeap());
+                allocation->Invalidate();
+                mDevice->GetFencedDeleter()->DeleteWhenUnused(heap->GetMemory());
+                delete heap;
                 break;
+            }
 
             // Suballocations aren't freed immediately, otherwise another resource allocation could
             // happen just after that aliases the old one and would require a barrier.

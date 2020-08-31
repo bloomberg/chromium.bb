@@ -132,6 +132,7 @@ VideoCaptureFormat FindClosestSupportedFormat(
 gfx::ColorSpace GetDefaultColorSpace(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_I422:
@@ -498,8 +499,11 @@ void FakePhotoDevice::TakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
   sk_n32_painter_->PaintFrame(elapsed_time, buffer.get());
   mojom::BlobPtr blob = mojom::Blob::New();
   const gfx::PNGCodec::ColorFormat encoding_source_format =
-      (kN32_SkColorType == kRGBA_8888_SkColorType) ? gfx::PNGCodec::FORMAT_RGBA
-                                                   : gfx::PNGCodec::FORMAT_BGRA;
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+      gfx::PNGCodec::FORMAT_RGBA;
+#else
+      gfx::PNGCodec::FORMAT_BGRA;
+#endif
   const bool result = gfx::PNGCodec::Encode(
       buffer.get(), encoding_source_format,
       fake_device_state_->format.frame_size,
@@ -685,7 +689,7 @@ void FakeVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakePhotoDevice::TakePhoto,
                                 base::Unretained(photo_device_.get()),
-                                base::Passed(&callback), elapsed_time_));
+                                std::move(callback), elapsed_time_));
 }
 
 OwnBufferFrameDeliverer::OwnBufferFrameDeliverer(

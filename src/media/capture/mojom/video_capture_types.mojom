@@ -21,6 +21,7 @@ enum VideoCapturePixelFormat {
   I444,
   NV12,
   NV21,
+  UYVY,
   YUY2,
   ARGB,
   XRGB,
@@ -73,6 +74,7 @@ enum VideoCaptureApi {
   ANDROID_API2_LEGACY,
   ANDROID_API2_FULL,
   ANDROID_API2_LIMITED,
+  FUCHSIA_CAMERA3,
   VIRTUAL_DEVICE,
   UNKNOWN
 };
@@ -212,7 +214,14 @@ enum VideoCaptureError {
   kMacDeckLinkUnsupportedPixelFormat,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
   kAndroidApi2ErrorConfiguringCamera,
-  kCrosHalV3DeviceDelegateFailedToFlush
+  kCrosHalV3DeviceDelegateFailedToFlush,
+  kFuchsiaCameraDeviceDisconnected,
+  kFuchsiaCameraStreamDisconnected,
+  kFuchsiaSysmemDidNotSetImageFormat,
+  kFuchsiaSysmemInvalidBufferIndex,
+  kFuchsiaSysmemInvalidBufferSize,
+  kFuchsiaUnsupportedPixelFormat,
+  kFuchsiaFailedToMapSysmemBuffer,
 };
 
 enum VideoCaptureFrameDropReason {
@@ -304,7 +313,7 @@ struct MailboxBufferHandleSet {
 };
 
 struct SharedMemoryViaRawFileDescriptor {
-  handle file_descriptor_handle;
+  handle<platform> file_descriptor_handle;
   uint32 shared_memory_size_in_bytes;
 };
 

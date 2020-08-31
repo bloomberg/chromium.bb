@@ -25,16 +25,14 @@ class MseTrackBuffer;
 // algorithm.
 class MEDIA_EXPORT FrameProcessor {
  public:
-  typedef base::Callback<void(base::TimeDelta)> UpdateDurationCB;
+  using UpdateDurationCB = base::RepeatingCallback<void(base::TimeDelta)>;
 
-  FrameProcessor(const UpdateDurationCB& update_duration_cb,
-                 MediaLog* media_log);
+  FrameProcessor(UpdateDurationCB update_duration_cb, MediaLog* media_log);
   ~FrameProcessor();
 
   // This must be called exactly once, before doing any track buffer creation or
   // frame processing.
-  void SetParseWarningCallback(
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(SourceBufferParseWarningCB parse_warning_cb);
 
   // Get/set the current append mode, which if true means "sequence" and if
   // false means "segments".
@@ -171,7 +169,7 @@ class MEDIA_EXPORT FrameProcessor {
   // and gets updated by ProcessFrames().
   base::TimeDelta group_end_timestamp_;
 
-  UpdateDurationCB update_duration_cb_;
+  const UpdateDurationCB update_duration_cb_;
 
   // MediaLog for reporting messages and properties to debug content and engine.
   MediaLog* media_log_;

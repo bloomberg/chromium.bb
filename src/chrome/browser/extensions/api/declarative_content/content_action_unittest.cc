@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -33,7 +33,7 @@
 namespace extensions {
 namespace {
 
-using base::test::ParseJsonDeprecated;
+using base::test::ParseJson;
 using testing::HasSubstr;
 
 std::unique_ptr<base::DictionaryValue> SimpleManifest() {
@@ -60,7 +60,6 @@ class RequestContentScriptTest : public ExtensionServiceTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  Profile* profile() { return profile_.get(); }
   const Extension* extension() { return extension_.get(); }
 
  private:
@@ -75,27 +74,23 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 
   // Test wrong data type passed.
   error.clear();
-  result = ContentAction::Create(&profile, nullptr, *ParseJsonDeprecated("[]"),
-                                 &error);
+  result = ContentAction::Create(&profile, nullptr, ParseJson("[]"), &error);
   EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   error.clear();
-  result = ContentAction::Create(&profile, nullptr, *ParseJsonDeprecated("{}"),
-                                 &error);
+  result = ContentAction::Create(&profile, nullptr, ParseJson("{}"), &error);
   EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   error.clear();
-  result = ContentAction::Create(
-      &profile, nullptr,
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.UnknownType\",\n"
-          "}"),
-      &error);
+  result = ContentAction::Create(&profile, nullptr, ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.UnknownType",
+          })"),
+                                 &error);
   EXPECT_THAT(error, HasSubstr("invalid instanceType"));
   EXPECT_FALSE(result.get());
 }
@@ -119,13 +114,12 @@ TEST(DeclarativeContentActionTest, ShowActionWithoutAction) {
 
   TestingProfile profile;
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      &profile, extension.get(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.ShowAction\",\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(&profile, extension.get(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.ShowAction",
+          })"),
+                            &error);
   EXPECT_THAT(error, testing::HasSubstr("without an action"));
   ASSERT_FALSE(result.get());
 }
@@ -149,8 +143,7 @@ TEST_P(ParameterizedDeclarativeContentActionTest, ShowAction) {
   TestingProfile profile;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
       nullptr, extension.get(),
-      *ParseJsonDeprecated(
-          R"({"instanceType": "declarativeContent.ShowAction"})"),
+      ParseJson(R"({"instanceType": "declarativeContent.ShowAction"})"),
       &error);
   EXPECT_TRUE(error.empty()) << error;
   ASSERT_TRUE(result.get());
@@ -221,8 +214,8 @@ TEST(DeclarativeContentActionTest, SetIcon) {
           .Set("imageData", DictionaryBuilder().Set("19", data64).Build())
           .Build();
 
-  const Extension* extension = env.MakeExtension(*ParseJsonDeprecated(
-      "{\"page_action\": { \"default_title\": \"Extension\" } }"));
+  const Extension* extension = env.MakeExtension(
+      ParseJson(R"({"page_action": {"default_title": "Extension"}})"));
   base::HistogramTester histogram_tester;
   TestingProfile profile;
   std::string error;
@@ -280,8 +273,8 @@ TEST(DeclarativeContentActionTest, SetInvisibleIcon) {
           .Build();
 
   // Expect an error and no instance to be created.
-  const Extension* extension = env.MakeExtension(*ParseJsonDeprecated(
-      R"({"page_action": {"default_title": "Extension"}})"));
+  const Extension* extension = env.MakeExtension(
+      ParseJson(R"({"page_action": {"default_title": "Extension"}})"));
   base::HistogramTester histogram_tester;
   TestingProfile profile;
   std::string error;
@@ -302,15 +295,14 @@ TEST(DeclarativeContentActionTest, SetInvisibleIcon) {
 TEST_F(RequestContentScriptTest, MissingScripts) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"allFrames\": true,\n"
-          "  \"matchAboutBlank\": true\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "allFrames": true,
+            "matchAboutBlank": true
+          })"),
+                            &error);
   EXPECT_THAT(error, testing::HasSubstr("Missing parameter is required"));
   ASSERT_FALSE(result.get());
 }
@@ -318,14 +310,13 @@ TEST_F(RequestContentScriptTest, MissingScripts) {
 TEST_F(RequestContentScriptTest, CSS) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"css\": [\"style.css\"]\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "css": ["style.css"]
+          })"),
+                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 }
@@ -333,14 +324,13 @@ TEST_F(RequestContentScriptTest, CSS) {
 TEST_F(RequestContentScriptTest, JS) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": [\"script.js\"]\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": ["script.js"]
+          })"),
+                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 }
@@ -348,43 +338,40 @@ TEST_F(RequestContentScriptTest, JS) {
 TEST_F(RequestContentScriptTest, CSSBadType) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"css\": \"style.css\"\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "css": "style.css"
+          })"),
+                            &error);
   ASSERT_FALSE(result.get());
 }
 
 TEST_F(RequestContentScriptTest, JSBadType) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": \"script.js\"\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": "script.js"
+          })"),
+                            &error);
   ASSERT_FALSE(result.get());
 }
 
 TEST_F(RequestContentScriptTest, AllFrames) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": [\"script.js\"],\n"
-          "  \"allFrames\": true\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": ["script.js"],
+            "allFrames": true
+          })"),
+                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 }
@@ -392,15 +379,14 @@ TEST_F(RequestContentScriptTest, AllFrames) {
 TEST_F(RequestContentScriptTest, MatchAboutBlank) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": [\"script.js\"],\n"
-          "  \"matchAboutBlank\": true\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": ["script.js"],
+            "matchAboutBlank": true
+          })"),
+                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 }
@@ -408,30 +394,28 @@ TEST_F(RequestContentScriptTest, MatchAboutBlank) {
 TEST_F(RequestContentScriptTest, AllFramesBadType) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": [\"script.js\"],\n"
-          "  \"allFrames\": null\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": ["script.js"],
+            "allFrames": null
+          })"),
+                            &error);
   ASSERT_FALSE(result.get());
 }
 
 TEST_F(RequestContentScriptTest, MatchAboutBlankBadType) {
   Init();
   std::string error;
-  std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      profile(), extension(),
-      *ParseJsonDeprecated(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
-          "  \"js\": [\"script.js\"],\n"
-          "  \"matchAboutBlank\": null\n"
-          "}"),
-      &error);
+  std::unique_ptr<const ContentAction> result =
+      ContentAction::Create(profile(), extension(), ParseJson(R"(
+          {
+            "instanceType": "declarativeContent.RequestContentScript",
+            "js": ["script.js"],
+            "matchAboutBlank": null
+          })"),
+                            &error);
   ASSERT_FALSE(result.get());
 }
 

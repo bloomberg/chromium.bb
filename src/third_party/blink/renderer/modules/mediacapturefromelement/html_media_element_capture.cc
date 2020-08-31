@@ -4,14 +4,16 @@
 
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_media_element_capture.h"
 
+#include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
@@ -138,7 +140,7 @@ class MediaElementEventListener final : public NativeEventListener {
   MediaElementEventListener(HTMLMediaElement*, MediaStream*);
   void UpdateSources(ExecutionContext*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
@@ -200,14 +202,14 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
 
   if (media_element_->HasVideo()) {
     CreateHTMLVideoElementCapturer(
-        To<Document>(context)->GetFrame(), &web_stream,
+        To<LocalDOMWindow>(context)->GetFrame(), &web_stream,
         media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
   }
   if (media_element_->HasAudio()) {
     CreateHTMLAudioElementCapturer(
-        To<Document>(context)->GetFrame(), &web_stream,
+        To<LocalDOMWindow>(context)->GetFrame(), &web_stream,
         media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
@@ -240,14 +242,19 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   for (auto track : media_stream_->getTracks())
     sources_.insert(track->Component()->Source());
 
+  // Handling of the ended event in JS triggered by DidStopMediaStreamSource()
+  // may cause a reentrant call to this function, which can modify |sources_|.
+  // Iterate over a copy of |sources_| to avoid invalidation of the iterator
+  // when a reentrant call occurs.
+  auto sources_copy = sources_;
   if (!media_element_->currentSrc().IsEmpty() &&
       !media_element_->IsMediaDataCorsSameOrigin()) {
-    for (auto source : sources_)
+    for (auto source : sources_copy)
       DidStopMediaStreamSource(source.Get());
   }
 }
 
-void MediaElementEventListener::Trace(blink::Visitor* visitor) {
+void MediaElementEventListener::Trace(Visitor* visitor) {
   visitor->Trace(media_element_);
   visitor->Trace(media_stream_);
   visitor->Trace(sources_);

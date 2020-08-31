@@ -13,7 +13,6 @@
 #include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace audio {
@@ -50,8 +49,7 @@ class FakeStreamFactory : public mojom::StreamFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
-      mojo::ScopedSharedBufferHandle key_press_count_buffer,
-      mojom::AudioProcessingConfigPtr processing_config,
+      base::ReadOnlySharedMemoryRegion key_press_count_buffer,
       CreateInputStreamCallback callback) override {}
 
   void AssociateInputAndOutputForAec(
@@ -66,7 +64,6 @@ class FakeStreamFactory : public mojom::StreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
-      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) override {}
   void BindMuter(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
                  const base::UnguessableToken& group_id) override {}

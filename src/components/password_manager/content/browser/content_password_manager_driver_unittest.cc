@@ -14,6 +14,7 @@
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/navigation_entry.h"
@@ -119,7 +120,6 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
   preferred_match.password_element = ASCIIToUTF16("password");
   preferred_match.password_value = ASCIIToUTF16("test");
-  preferred_match.preferred = true;
 
   std::vector<const PasswordForm*> matches;
   PasswordForm non_preferred_match = preferred_match;
@@ -127,7 +127,8 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   non_preferred_match.password_value = ASCIIToUTF16("test1");
   matches.push_back(&non_preferred_match);
 
-  return PasswordFormFillData(form_on_page, matches, preferred_match, true);
+  return CreatePasswordFormFillData(form_on_page, matches, preferred_match,
+                                    true);
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {
@@ -135,7 +136,7 @@ MATCHER(WerePasswordsCleared, "Passwords not cleared") {
     return false;
 
   for (auto& credentials : arg.additional_logins)
-    if (!credentials.second.password.empty())
+    if (!credentials.password.empty())
       return false;
 
   return true;
@@ -156,8 +157,8 @@ class ContentPasswordManagerDriverTest
         web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         autofill::mojom::PasswordAutofillAgent::Name_,
-        base::Bind(&FakePasswordAutofillAgent::BindPendingReceiver,
-                   base::Unretained(&fake_agent_)));
+        base::BindRepeating(&FakePasswordAutofillAgent::BindPendingReceiver,
+                            base::Unretained(&fake_agent_)));
   }
 
   bool WasLoggingActivationMessageSent(bool* activation_flag) {
@@ -218,7 +219,6 @@ TEST_P(ContentPasswordManagerDriverTest, SendLoggingStateAfterLogManagerReady) {
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_activated));
   EXPECT_EQ(should_allow_logging, logging_activated);
 }
-
 
 TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
   std::unique_ptr<ContentPasswordManagerDriver> driver(

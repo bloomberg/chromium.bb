@@ -28,25 +28,41 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as Extensions from '../extensions/extensions.js';
+import * as Host from '../host/host.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {ComputedStyleWidget} from './ComputedStyleWidget.js';
+import {ElementsBreadcrumbs, Events} from './ElementsBreadcrumbs.js';
+import {ElementsTreeElement} from './ElementsTreeElement.js';  // eslint-disable-line no-unused-vars
+import {ElementsTreeElementHighlighter} from './ElementsTreeElementHighlighter.js';
+import {ElementsTreeOutline} from './ElementsTreeOutline.js';
+import {MarkerDecorator} from './MarkerDecorator.js';  // eslint-disable-line no-unused-vars
+import {MetricsSidebarPane} from './MetricsSidebarPane.js';
+import {StylesSidebarPane} from './StylesSidebarPane.js';
+
 /**
- * @implements {UI.Searchable}
- * @implements {SDK.SDKModelObserver<!SDK.DOMModel>}
- * @implements {UI.ViewLocationResolver}
+ * @implements {UI.SearchableView.Searchable}
+ * @implements {SDK.SDKModel.SDKModelObserver<!SDK.DOMModel.DOMModel>}
+ * @implements {UI.View.ViewLocationResolver}
  * @unrestricted
  */
-export default class ElementsPanel extends UI.Panel {
+export class ElementsPanel extends UI.Panel.Panel {
   constructor() {
     super('elements');
     this.registerRequiredCSS('elements/elementsPanel.css');
 
-    this._splitWidget = new UI.SplitWidget(true, true, 'elementsPanelSplitViewState', 325, 325);
+    this._splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'elementsPanelSplitViewState', 325, 325);
     this._splitWidget.addEventListener(
         UI.SplitWidget.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
     this._splitWidget.show(this.element);
 
-    this._searchableView = new UI.SearchableView(this);
+    this._searchableView = new UI.SearchableView.SearchableView(this);
     this._searchableView.setMinimumSize(25, 28);
-    this._searchableView.setPlaceholder(Common.UIString('Find by string, selector, or XPath'));
+    this._searchableView.setPlaceholder(Common.UIString.UIString('Find by string, selector, or XPath'));
     const stackElement = this._searchableView.element;
 
     this._contentElement = createElement('div');
@@ -60,39 +76,45 @@ export default class ElementsPanel extends UI.Panel {
 
     this._contentElement.id = 'elements-content';
     // FIXME: crbug.com/425984
-    if (Common.moduleSetting('domWordWrap').get()) {
+    if (Common.Settings.Settings.instance().moduleSetting('domWordWrap').get()) {
       this._contentElement.classList.add('elements-wrap');
     }
-    Common.moduleSetting('domWordWrap').addChangeListener(this._domWordWrapSettingChanged.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('domWordWrap')
+        .addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     crumbsContainer.id = 'elements-crumbs';
-    this._breadcrumbs = new Elements.ElementsBreadcrumbs();
+    this._breadcrumbs = new ElementsBreadcrumbs();
     this._breadcrumbs.show(crumbsContainer);
-    this._breadcrumbs.addEventListener(Elements.ElementsBreadcrumbs.Events.NodeSelected, this._crumbNodeSelected, this);
+    this._breadcrumbs.addEventListener(Events.NodeSelected, this._crumbNodeSelected, this);
 
-    this._stylesWidget = new Elements.StylesSidebarPane();
-    this._computedStyleWidget = new Elements.ComputedStyleWidget();
-    this._metricsWidget = new Elements.MetricsSidebarPane();
+    this._stylesWidget = new StylesSidebarPane();
+    this._computedStyleWidget = new ComputedStyleWidget();
+    this._metricsWidget = new MetricsSidebarPane();
 
-    Common.moduleSetting('sidebarPosition').addChangeListener(this._updateSidebarPosition.bind(this));
+    Common.Settings.Settings.instance()
+        .moduleSetting('sidebarPosition')
+        .addChangeListener(this._updateSidebarPosition.bind(this));
     this._updateSidebarPosition();
 
-    /** @type {!Array.<!Elements.ElementsTreeOutline>} */
-    this._treeOutlines = [];
-    /** @type {!Map<!Elements.ElementsTreeOutline, !Element>} */
+    /** @type {!Set.<!ElementsTreeOutline>} */
+    this._treeOutlines = new Set();
+    /** @type {!Map<!ElementsTreeOutline, !Element>} */
     this._treeOutlineHeaders = new Map();
-    SDK.targetManager.observeModels(SDK.DOMModel, this);
-    SDK.targetManager.addEventListener(
-        SDK.TargetManager.Events.NameChanged,
-        event => this._targetNameChanged(/** @type {!SDK.Target} */ (event.data)));
-    Common.moduleSetting('showUAShadowDOM').addChangeListener(this._showUAShadowDOMChanged.bind(this));
-    SDK.targetManager.addModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
-    Extensions.extensionServer.addEventListener(
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this);
+    SDK.SDKModel.TargetManager.instance().addEventListener(
+        SDK.SDKModel.Events.NameChanged,
+        event => this._targetNameChanged(/** @type {!SDK.SDKModel.Target} */ (event.data)));
+    Common.Settings.Settings.instance()
+        .moduleSetting('showUAShadowDOM')
+        .addChangeListener(this._showUAShadowDOMChanged.bind(this));
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+    self.Extensions.extensionServer.addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
 
     /**
-     * @type {!Array.<{domModel: !SDK.DOMModel, index: number, node: (?SDK.DOMNode|undefined)}>|undefined}
+     * @type {!Array.<{domModel: !SDK.DOMModel.DOMModel, index: number, node: (?SDK.DOMModel.DOMNode|undefined)}>|undefined}
      */
     this._searchResults;
   }
@@ -105,26 +127,26 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!SDK.CSSProperty} cssProperty
+   * @param {!SDK.CSSProperty.CSSProperty} cssProperty
    */
   _revealProperty(cssProperty) {
     return this.sidebarPaneView.showView(this._stylesViewToReveal).then(() => {
-      this._stylesWidget.revealProperty(/** @type {!SDK.CSSProperty} */ (cssProperty));
+      this._stylesWidget.revealProperty(/** @type {!SDK.CSSProperty.CSSProperty} */ (cssProperty));
     });
   }
 
   /**
    * @override
    * @param {string} locationName
-   * @return {?UI.ViewLocation}
+   * @return {?UI.View.ViewLocation}
    */
   resolveLocation(locationName) {
     return this.sidebarPaneView;
   }
 
   /**
-   * @param {?UI.Widget} widget
-   * @param {?UI.ToolbarToggle} toggle
+   * @param {?UI.Widget.Widget} widget
+   * @param {?UI.Toolbar.ToolbarToggle} toggle
    */
   showToolbarPane(widget, toggle) {
     // TODO(luoe): remove this function once its providers have an alternative way to reveal their views.
@@ -133,22 +155,23 @@ export default class ElementsPanel extends UI.Panel {
 
   /**
    * @override
-   * @param {!SDK.DOMModel} domModel
+   * @param {!SDK.DOMModel.DOMModel} domModel
    */
   modelAdded(domModel) {
     const parentModel = domModel.parentModel();
-    let treeOutline = parentModel ? Elements.ElementsTreeOutline.forDOMModel(parentModel) : null;
+    let treeOutline = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
     if (!treeOutline) {
-      treeOutline = new Elements.ElementsTreeOutline(true, true);
-      treeOutline.setWordWrap(Common.moduleSetting('domWordWrap').get());
+      treeOutline = new ElementsTreeOutline(true, true);
+      treeOutline.setWordWrap(Common.Settings.Settings.instance().moduleSetting('domWordWrap').get());
+      treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
       treeOutline.addEventListener(
-          Elements.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
-      treeOutline.addEventListener(
-          Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
-      new Elements.ElementsTreeElementHighlighter(treeOutline);
-      this._treeOutlines.push(treeOutline);
+          ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
+      new ElementsTreeElementHighlighter(treeOutline);
+      this._treeOutlines.add(treeOutline);
       if (domModel.target().parentTarget()) {
-        this._treeOutlineHeaders.set(treeOutline, createElementWithClass('div', 'elements-tree-header'));
+        const element = document.createElement('div');
+        element.classList.add('elements-tree-header');
+        this._treeOutlineHeaders.set(treeOutline, element);
         this._targetNameChanged(domModel.target());
       }
     }
@@ -162,15 +185,15 @@ export default class ElementsPanel extends UI.Panel {
 
   /**
    * @override
-   * @param {!SDK.DOMModel} domModel
+   * @param {!SDK.DOMModel.DOMModel} domModel
    */
   modelRemoved(domModel) {
-    const treeOutline = Elements.ElementsTreeOutline.forDOMModel(domModel);
+    const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
     treeOutline.unwireFromDOMModel(domModel);
     if (domModel.parentModel()) {
       return;
     }
-    this._treeOutlines.remove(treeOutline);
+    this._treeOutlines.delete(treeOutline);
     const header = this._treeOutlineHeaders.get(treeOutline);
     if (header) {
       header.remove();
@@ -180,14 +203,14 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   _targetNameChanged(target) {
-    const domModel = target.model(SDK.DOMModel);
+    const domModel = target.model(SDK.DOMModel.DOMModel);
     if (!domModel) {
       return;
     }
-    const treeOutline = Elements.ElementsTreeOutline.forDOMModel(domModel);
+    const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
     if (!treeOutline) {
       return;
     }
@@ -196,12 +219,12 @@ export default class ElementsPanel extends UI.Panel {
       return;
     }
     header.removeChildren();
-    header.createChild('div', 'elements-tree-header-frame').textContent = Common.UIString('Frame');
-    header.appendChild(Components.Linkifier.linkifyURL(target.inspectedURL(), {text: target.name()}));
+    header.createChild('div', 'elements-tree-header-frame').textContent = Common.UIString.UIString('Frame');
+    header.appendChild(Components.Linkifier.Linkifier.linkifyURL(target.inspectedURL(), {text: target.name()}));
   }
 
   _updateTreeOutlineVisibleWidth() {
-    if (!this._treeOutlines.length) {
+    if (!this._treeOutlines.size) {
       return;
     }
 
@@ -209,8 +232,8 @@ export default class ElementsPanel extends UI.Panel {
     if (this._splitWidget.isVertical()) {
       width -= this._splitWidget.sidebarSize();
     }
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].setVisibleWidth(width);
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.setVisibleWidth(width);
     }
 
     this._breadcrumbs.updateSizes();
@@ -220,14 +243,14 @@ export default class ElementsPanel extends UI.Panel {
    * @override
    */
   focus() {
-    if (this._treeOutlines.length) {
-      this._treeOutlines[0].focus();
+    if (this._treeOutlines.size) {
+      this._treeOutlines.values().next().value.focus();
     }
   }
 
   /**
    * @override
-   * @return {!UI.SearchableView}
+   * @return {!UI.SearchableView.SearchableView}
    */
   searchableView() {
     return this._searchableView;
@@ -237,10 +260,9 @@ export default class ElementsPanel extends UI.Panel {
    * @override
    */
   wasShown() {
-    UI.context.setFlavor(ElementsPanel, this);
+    self.UI.context.setFlavor(ElementsPanel, this);
 
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    for (const treeOutline of this._treeOutlines) {
       // Attach heavy component lazily
       if (treeOutline.element.parentElement !== this._contentElement) {
         const header = this._treeOutlineHeaders.get(treeOutline);
@@ -253,12 +275,12 @@ export default class ElementsPanel extends UI.Panel {
     super.wasShown();
     this._breadcrumbs.update();
 
-    const domModels = SDK.targetManager.models(SDK.DOMModel);
+    const domModels = SDK.SDKModel.TargetManager.instance().models(SDK.DOMModel.DOMModel);
     for (const domModel of domModels) {
       if (domModel.parentModel()) {
         continue;
       }
-      const treeOutline = Elements.ElementsTreeOutline.forDOMModel(domModel);
+      const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
       treeOutline.setVisible(true);
 
       if (!treeOutline.rootDOMNode) {
@@ -276,9 +298,8 @@ export default class ElementsPanel extends UI.Panel {
    * @override
    */
   willHide() {
-    SDK.OverlayModel.hideDOMNodeHighlight();
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    for (const treeOutline of this._treeOutlines) {
       treeOutline.setVisible(false);
       // Detach heavy component on hide
       this._contentElement.removeChild(treeOutline.element);
@@ -287,11 +308,8 @@ export default class ElementsPanel extends UI.Panel {
         this._contentElement.removeChild(header);
       }
     }
-    if (this._popoverHelper) {
-      this._popoverHelper.hidePopover();
-    }
     super.willHide();
-    UI.context.setFlavor(ElementsPanel, null);
+    self.UI.context.setFlavor(ElementsPanel, null);
   }
 
   /**
@@ -303,20 +321,20 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _selectedNodeChanged(event) {
-    const selectedNode = /** @type {?SDK.DOMNode} */ (event.data.node);
+    const selectedNode = /** @type {?SDK.DOMModel.DOMNode} */ (event.data.node);
     const focus = /** @type {boolean} */ (event.data.focus);
     for (const treeOutline of this._treeOutlines) {
-      if (!selectedNode || Elements.ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline) {
+      if (!selectedNode || ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline) {
         treeOutline.selectDOMNode(null);
       }
     }
 
     this._breadcrumbs.setSelectedNode(selectedNode);
 
-    UI.context.setFlavor(SDK.DOMNode, selectedNode);
+    self.UI.context.setFlavor(SDK.DOMModel.DOMNode, selectedNode);
 
     if (!selectedNode) {
       return;
@@ -331,22 +349,22 @@ export default class ElementsPanel extends UI.Panel {
     const nodeFrameId = selectedNode.frameId();
     for (const context of executionContexts) {
       if (context.frameId === nodeFrameId) {
-        UI.context.setFlavor(SDK.ExecutionContext, context);
+        self.UI.context.setFlavor(SDK.RuntimeModel.ExecutionContext, context);
         break;
       }
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _documentUpdatedEvent(event) {
-    const domModel = /** @type {!SDK.DOMModel} */ (event.data);
+    const domModel = /** @type {!SDK.DOMModel.DOMModel} */ (event.data);
     this._documentUpdated(domModel);
   }
 
   /**
-   * @param {!SDK.DOMModel} domModel
+   * @param {!SDK.DOMModel.DOMModel} domModel
    */
   _documentUpdated(domModel) {
     this._searchableView.resetSearch();
@@ -368,13 +386,12 @@ export default class ElementsPanel extends UI.Panel {
     restoreNode.call(this, domModel, this._selectedNodeOnReset);
 
     /**
-     * @param {!SDK.DOMModel} domModel
-     * @param {?SDK.DOMNode} staleNode
+     * @param {!SDK.DOMModel.DOMModel} domModel
+     * @param {?SDK.DOMModel.DOMNode} staleNode
      * @this {ElementsPanel}
      */
     async function restoreNode(domModel, staleNode) {
       const nodePath = staleNode ? staleNode.path() : null;
-
       const restoredNodeId = nodePath ? await domModel.pushNodeByPathToFrontend(nodePath) : null;
 
       if (savedSelectedNodeOnReset !== this._selectedNodeOnReset) {
@@ -385,8 +402,14 @@ export default class ElementsPanel extends UI.Panel {
         const inspectedDocument = domModel.existingDocument();
         node = inspectedDocument ? inspectedDocument.body || inspectedDocument.documentElement : null;
       }
-      this._setDefaultSelectedNode(node);
-      this._lastSelectedNodeSelectedForTest();
+      // If `node` is null here, the document hasn't been transmitted from the backend yet
+      // and isn't in a valid state to have a default-selected node. Another document update
+      // should be forthcoming. In the meantime, don't set the default-selected node or notify
+      // the test that it's ready, because it isn't.
+      if (node) {
+        this._setDefaultSelectedNode(node);
+        this._lastSelectedNodeSelectedForTest();
+      }
     }
   }
 
@@ -394,13 +417,13 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {?SDK.DOMNode} node
+   * @param {?SDK.DOMModel.DOMNode} node
    */
   _setDefaultSelectedNode(node) {
     if (!node || this._hasNonDefaultSelectedNode || this._pendingNodeReveal) {
       return;
     }
-    const treeOutline = Elements.ElementsTreeOutline.forDOMModel(node.domModel());
+    const treeOutline = ElementsTreeOutline.forDOMModel(node.domModel());
     if (!treeOutline) {
       return;
     }
@@ -422,7 +445,7 @@ export default class ElementsPanel extends UI.Panel {
     delete this._currentSearchResultIndex;
     delete this._searchResults;
 
-    SDK.DOMModel.cancelSearch();
+    SDK.DOMModel.DOMModel.cancelSearch();
   }
 
   /**
@@ -447,8 +470,8 @@ export default class ElementsPanel extends UI.Panel {
 
     this._searchConfig = searchConfig;
 
-    const showUAShadowDOM = Common.moduleSetting('showUAShadowDOM').get();
-    const domModels = SDK.targetManager.models(SDK.DOMModel);
+    const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get();
+    const domModels = SDK.SDKModel.TargetManager.instance().models(SDK.DOMModel.DOMModel);
     const promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     Promise.all(promises).then(resultCountCallback.bind(this));
 
@@ -488,45 +511,15 @@ export default class ElementsPanel extends UI.Panel {
   _domWordWrapSettingChanged(event) {
     // FIXME: crbug.com/425984
     this._contentElement.classList.toggle('elements-wrap', event.data);
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].setWordWrap(/** @type {boolean} */ (event.data));
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.setWordWrap(/** @type {boolean} */ (event.data));
     }
   }
 
   switchToAndFocus(node) {
     // Reset search restore.
     this._searchableView.cancelSearch();
-    UI.viewManager.showView('elements').then(() => this.selectDOMNode(node, true));
-  }
-
-  /**
-   * @param {!Event} event
-   * @return {?UI.PopoverRequest}
-   */
-  _getPopoverRequest(event) {
-    let link = event.target;
-    while (link && !link[Elements.ElementsTreeElement.HrefSymbol]) {
-      link = link.parentElementOrShadowHost();
-    }
-    if (!link) {
-      return null;
-    }
-
-    return {
-      box: link.boxInWindow(),
-      show: async popover => {
-        const node = this.selectedDOMNode();
-        if (!node) {
-          return false;
-        }
-        const preview = await Components.ImagePreview.build(
-            node.domModel().target(), link[Elements.ElementsTreeElement.HrefSymbol], true);
-        if (preview) {
-          popover.contentElement.appendChild(preview);
-        }
-        return !!preview;
-      }
-    };
+    UI.ViewManager.ViewManager.instance().showView('elements').then(() => this.selectDOMNode(node, true));
   }
 
   _jumpToSearchResult(index) {
@@ -591,7 +584,13 @@ export default class ElementsPanel extends UI.Panel {
       // No data for slot, request it.
       searchResult.domModel.searchResult(searchResult.index).then(node => {
         searchResult.node = node;
-        this._highlightCurrentSearchResult();
+
+        // If any of these properties are undefined, this means the search/highlight request is outdated.
+        const highlightRequestValid =
+            this._searchConfig && this._searchResults && (this._currentSearchResultIndex !== undefined);
+        if (highlightRequestValid) {
+          this._highlightCurrentSearchResult();
+        }
       });
       return;
     }
@@ -601,7 +600,7 @@ export default class ElementsPanel extends UI.Panel {
     if (treeElement) {
       treeElement.highlightSearchResults(this._searchConfig.query);
       treeElement.reveal();
-      const matches = treeElement.listItemElement.getElementsByClassName(UI.highlightedSearchResultClassName);
+      const matches = treeElement.listItemElement.getElementsByClassName(UI.UIUtils.highlightedSearchResultClassName);
       if (matches.length) {
         matches[0].scrollIntoViewIfNeeded(false);
       }
@@ -616,7 +615,7 @@ export default class ElementsPanel extends UI.Panel {
     if (!searchResult.node) {
       return;
     }
-    const treeOutline = Elements.ElementsTreeOutline.forDOMModel(searchResult.node.domModel());
+    const treeOutline = ElementsTreeOutline.forDOMModel(searchResult.node.domModel());
     const treeElement = treeOutline.findTreeElement(searchResult.node);
     if (treeElement) {
       treeElement.hideSearchHighlights();
@@ -624,11 +623,10 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @return {?SDK.DOMNode}
+   * @return {?SDK.DOMModel.DOMNode}
    */
   selectedDOMNode() {
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      const treeOutline = this._treeOutlines[i];
+    for (const treeOutline of this._treeOutlines) {
       if (treeOutline.selectedDOMNode()) {
         return treeOutline.selectedDOMNode();
       }
@@ -637,12 +635,12 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    * @param {boolean=} focus
    */
   selectDOMNode(node, focus) {
     for (const treeOutline of this._treeOutlines) {
-      const outline = Elements.ElementsTreeOutline.forDOMModel(node.domModel());
+      const outline = ElementsTreeOutline.forDOMModel(node.domModel());
       if (outline === treeOutline) {
         treeOutline.selectDOMNode(node, focus);
       } else {
@@ -652,44 +650,44 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _updateBreadcrumbIfNeeded(event) {
-    const nodes = /** @type {!Array.<!SDK.DOMNode>} */ (event.data);
+    const nodes = /** @type {!Array.<!SDK.DOMModel.DOMNode>} */ (event.data);
     this._breadcrumbs.updateNodes(nodes);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _crumbNodeSelected(event) {
-    const node = /** @type {!SDK.DOMNode} */ (event.data);
+    const node = /** @type {!SDK.DOMModel.DOMNode} */ (event.data);
     this.selectDOMNode(node, true);
   }
 
   /**
-   * @param {?SDK.DOMNode} node
-   * @return {?Elements.ElementsTreeOutline}
+   * @param {?SDK.DOMModel.DOMNode} node
+   * @return {?ElementsTreeOutline}
    */
   _treeOutlineForNode(node) {
     if (!node) {
       return null;
     }
-    return Elements.ElementsTreeOutline.forDOMModel(node.domModel());
+    return ElementsTreeOutline.forDOMModel(node.domModel());
   }
 
   /**
-   * @param {!SDK.DOMNode} node
-   * @return {?Elements.ElementsTreeElement}
+   * @param {!SDK.DOMModel.DOMNode} node
+   * @return {?ElementsTreeElement}
    */
   _treeElementForNode(node) {
     const treeOutline = this._treeOutlineForNode(node);
-    return /** @type {?Elements.ElementsTreeElement} */ (treeOutline.findTreeElement(node));
+    return /** @type {?ElementsTreeElement} */ (treeOutline.findTreeElement(node));
   }
 
   /**
-   * @param {!SDK.DOMNode} node
-   * @return {!SDK.DOMNode}
+   * @param {!SDK.DOMModel.DOMNode} node
+   * @return {!SDK.DOMModel.DOMNode}
    */
   _leaveUserAgentShadowDOM(node) {
     let userAgentShadowRoot;
@@ -700,7 +698,8 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @suppress {accessControls}
+   * @param {!SDK.DOMModel.DOMNode} node
    * @param {boolean} focus
    * @param {boolean=} omitHighlight
    * @return {!Promise}
@@ -708,27 +707,29 @@ export default class ElementsPanel extends UI.Panel {
   revealAndSelectNode(node, focus, omitHighlight) {
     this._omitDefaultSelection = true;
 
-    node = Common.moduleSetting('showUAShadowDOM').get() ? node : this._leaveUserAgentShadowDOM(node);
+    node = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
+        node :
+        this._leaveUserAgentShadowDOM(node);
     if (!omitHighlight) {
       node.highlightForTwoSeconds();
     }
 
-    return UI.viewManager.showView('elements', false, !focus).then(() => {
+    return UI.ViewManager.ViewManager.instance().showView('elements', false, !focus).then(() => {
       this.selectDOMNode(node, focus);
       delete this._omitDefaultSelection;
 
       if (!this._notFirstInspectElement) {
-        Elements.ElementsPanel._firstInspectElementNodeNameForTest = node.nodeName();
-        Elements.ElementsPanel._firstInspectElementCompletedForTest();
-        Host.InspectorFrontendHost.inspectElementCompleted();
+        ElementsPanel._firstInspectElementNodeNameForTest = node.nodeName();
+        ElementsPanel._firstInspectElementCompletedForTest();
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectElementCompleted();
       }
       this._notFirstInspectElement = true;
     });
   }
 
   _showUAShadowDOMChanged() {
-    for (let i = 0; i < this._treeOutlines.length; ++i) {
-      this._treeOutlines[i].update();
+    for (const treeOutline of this._treeOutlines) {
+      treeOutline.update();
     }
   }
 
@@ -757,7 +758,7 @@ export default class ElementsPanel extends UI.Panel {
       stylePaneWrapperElement.style.setProperty('left', `${- 1 * largeLength}px`);
       stylePaneWrapperElement.style.setProperty('padding-left', `${largeLength}px`);
       stylePaneWrapperElement.style.setProperty('width', `calc(100% + ${largeLength}px)`);
-      stylePaneWrapperElement.style.setProperty('position', `fixed`);
+      stylePaneWrapperElement.style.setProperty('position', 'fixed');
 
       stylePaneWrapperElement.window().addEventListener('blur', uninstallHackBound);
       stylePaneWrapperElement.window().addEventListener('contextmenu', uninstallHackBound, true);
@@ -792,10 +793,10 @@ export default class ElementsPanel extends UI.Panel {
     }  // We can't reparent extension iframes.
 
     let splitMode;
-    const position = Common.moduleSetting('sidebarPosition').get();
-    if (position === 'right' || (position === 'auto' && UI.inspectorView.element.offsetWidth > 680)) {
+    const position = Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get();
+    if (position === 'right' || (position === 'auto' && self.UI.inspectorView.element.offsetWidth > 680)) {
       splitMode = _splitMode.Vertical;
-    } else if (UI.inspectorView.element.offsetWidth > 415) {
+    } else if (self.UI.inspectorView.element.offsetWidth > 415) {
       splitMode = _splitMode.Horizontal;
     } else {
       splitMode = _splitMode.Slim;
@@ -806,7 +807,7 @@ export default class ElementsPanel extends UI.Panel {
     }
     this._splitMode = splitMode;
 
-    const extensionSidebarPanes = Extensions.extensionServer.sidebarPanes();
+    const extensionSidebarPanes = self.Extensions.extensionServer.sidebarPanes();
     let lastSelectedTabId = null;
     if (this.sidebarPaneView) {
       lastSelectedTabId = this.sidebarPaneView.tabbedPane().selectedTabId;
@@ -817,12 +818,12 @@ export default class ElementsPanel extends UI.Panel {
     this._splitWidget.setVertical(this._splitMode === _splitMode.Vertical);
     this.showToolbarPane(null /* widget */, null /* toggle */);
 
-    const matchedStylePanesWrapper = new UI.VBox();
+    const matchedStylePanesWrapper = new UI.Widget.VBox();
     matchedStylePanesWrapper.element.classList.add('style-panes-wrapper');
     this._stylesWidget.show(matchedStylePanesWrapper.element);
     this._setupTextSelectionHack(matchedStylePanesWrapper.element);
 
-    const computedStylePanesWrapper = new UI.VBox();
+    const computedStylePanesWrapper = new UI.Widget.VBox();
     computedStylePanesWrapper.element.classList.add('style-panes-wrapper');
     this._computedStyleWidget.show(computedStylePanesWrapper.element);
 
@@ -839,38 +840,33 @@ export default class ElementsPanel extends UI.Panel {
     }
 
     /**
-     * @param {!Common.Event} event
+     * @param {!Common.EventTarget.EventTargetEvent} event
      * @this {ElementsPanel}
      */
     function tabSelected(event) {
       const tabId = /** @type {string} */ (event.data.tabId);
-      if (tabId === Common.UIString('Computed')) {
+      if (tabId === Common.UIString.UIString('Computed')) {
         showMetrics.call(this, true);
-      } else if (tabId === Common.UIString('Styles')) {
+      } else if (tabId === Common.UIString.UIString('Styles')) {
         showMetrics.call(this, false);
       }
     }
 
-    this.sidebarPaneView = UI.viewManager.createTabbedLocation(() => UI.viewManager.showView('elements'));
+    this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(
+        () => UI.ViewManager.ViewManager.instance().showView('elements'));
     const tabbedPane = this.sidebarPaneView.tabbedPane();
-    if (this._popoverHelper) {
-      this._popoverHelper.hidePopover();
-    }
-    this._popoverHelper = new UI.PopoverHelper(tabbedPane.element, this._getPopoverRequest.bind(this));
-    this._popoverHelper.setHasPadding(true);
-    this._popoverHelper.setTimeout(0);
 
     if (this._splitMode !== _splitMode.Vertical) {
       this._splitWidget.installResizer(tabbedPane.headerElement());
     }
 
-    const stylesView = new UI.SimpleView(Common.UIString('Styles'));
+    const stylesView = new UI.View.SimpleView(Common.UIString.UIString('Styles'));
     this.sidebarPaneView.appendView(stylesView);
     if (splitMode === _splitMode.Horizontal) {
       // Styles and computed are merged into a single tab.
       stylesView.element.classList.add('flex-auto');
 
-      const splitWidget = new UI.SplitWidget(true, true, 'stylesPaneSplitViewState', 215);
+      const splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'stylesPaneSplitViewState', 215);
       splitWidget.show(stylesView.element);
       splitWidget.setMainWidget(matchedStylePanesWrapper);
       splitWidget.setSidebarWidget(computedStylePanesWrapper);
@@ -879,7 +875,7 @@ export default class ElementsPanel extends UI.Panel {
       stylesView.element.classList.add('flex-auto');
       matchedStylePanesWrapper.show(stylesView.element);
 
-      const computedView = new UI.SimpleView(Common.UIString('Computed'));
+      const computedView = new UI.View.SimpleView(Common.UIString.UIString('Computed'));
       computedView.element.classList.add('composite', 'fill');
       computedStylePanesWrapper.show(computedView.element);
 
@@ -903,15 +899,15 @@ export default class ElementsPanel extends UI.Panel {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _extensionSidebarPaneAdded(event) {
-    const pane = /** @type {!Extensions.ExtensionSidebarPane} */ (event.data);
+    const pane = /** @type {!Extensions.ExtensionPanel.ExtensionSidebarPane} */ (event.data);
     this._addExtensionSidebarPane(pane);
   }
 
   /**
-   * @param {!Extensions.ExtensionSidebarPane} pane
+   * @param {!Extensions.ExtensionPanel.ExtensionSidebarPane} pane
    */
   _addExtensionSidebarPane(pane) {
     if (pane.panelName() === this.name) {
@@ -919,6 +915,8 @@ export default class ElementsPanel extends UI.Panel {
     }
   }
 }
+
+ElementsPanel._firstInspectElementCompletedForTest = function() {};
 
 /** @enum {symbol} */
 export const _splitMode = {
@@ -935,12 +933,13 @@ export class ContextMenuProvider {
   /**
    * @override
    * @param {!Event} event
-   * @param {!UI.ContextMenu} contextMenu
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
    * @param {!Object} object
    */
   appendApplicableItems(event, contextMenu, object) {
-    if (!(object instanceof SDK.RemoteObject && (/** @type {!SDK.RemoteObject} */ (object)).isNode()) &&
-        !(object instanceof SDK.DOMNode) && !(object instanceof SDK.DeferredDOMNode)) {
+    if (!(object instanceof SDK.RemoteObject.RemoteObject &&
+          (/** @type {!SDK.RemoteObject.RemoteObject} */ (object)).isNode()) &&
+        !(object instanceof SDK.DOMModel.DOMNode) && !(object instanceof SDK.DOMModel.DeferredDOMNode)) {
       return;
     }
 
@@ -948,13 +947,13 @@ export class ContextMenuProvider {
     if (ElementsPanel.instance().element.isAncestor(/** @type {!Node} */ (event.target))) {
       return;
     }
-    const commandCallback = Common.Revealer.reveal.bind(Common.Revealer, object);
-    contextMenu.revealSection().appendItem(Common.UIString('Reveal in Elements panel'), commandCallback);
+    const commandCallback = Common.Revealer.reveal.bind(Common.Revealer.Revealer, object);
+    contextMenu.revealSection().appendItem(Common.UIString.UIString('Reveal in Elements panel'), commandCallback);
   }
 }
 
 /**
- * @implements {Common.Revealer}
+ * @implements {Common.Revealer.Revealer}
  * @unrestricted
  */
 export class DOMNodeRevealer {
@@ -975,14 +974,15 @@ export class DOMNodeRevealer {
      * @param {function(!Error)} reject
      */
     function revealPromise(resolve, reject) {
-      if (node instanceof SDK.DOMNode) {
-        onNodeResolved(/** @type {!SDK.DOMNode} */ (node));
-      } else if (node instanceof SDK.DeferredDOMNode) {
-        (/** @type {!SDK.DeferredDOMNode} */ (node)).resolve(onNodeResolved);
-      } else if (node instanceof SDK.RemoteObject) {
-        const domModel = /** @type {!SDK.RemoteObject} */ (node).runtimeModel().target().model(SDK.DOMModel);
+      if (node instanceof SDK.DOMModel.DOMNode) {
+        onNodeResolved(/** @type {!SDK.DOMModel.DOMNode} */ (node));
+      } else if (node instanceof SDK.DOMModel.DeferredDOMNode) {
+        (/** @type {!SDK.DOMModel.DeferredDOMNode} */ (node)).resolve(checkDeferredDOMNodeThenReveal);
+      } else if (node instanceof SDK.RemoteObject.RemoteObject) {
+        const domModel =
+            /** @type {!SDK.RemoteObject.RemoteObject} */ (node).runtimeModel().target().model(SDK.DOMModel.DOMModel);
         if (domModel) {
-          domModel.pushObjectAsNodeToFrontend(node).then(onNodeResolved);
+          domModel.pushObjectAsNodeToFrontend(node).then(checkRemoteObjectThenReveal);
         } else {
           reject(new Error('Could not resolve a node to reveal.'));
         }
@@ -992,7 +992,7 @@ export class DOMNodeRevealer {
       }
 
       /**
-       * @param {?SDK.DOMNode} resolvedNode
+       * @param {!SDK.DOMModel.DOMNode} resolvedNode
        */
       function onNodeResolved(resolvedNode) {
         panel._pendingNodeReveal = false;
@@ -1005,12 +1005,12 @@ export class DOMNodeRevealer {
         while (currentNode.parentNode) {
           currentNode = currentNode.parentNode;
         }
-        const isDetached = !(currentNode instanceof SDK.DOMDocument);
+        const isDetached = !(currentNode instanceof SDK.DOMModel.DOMDocument);
 
-        const isDocument = node instanceof SDK.DOMDocument;
+        const isDocument = node instanceof SDK.DOMModel.DOMDocument;
         if (!isDocument && isDetached) {
           const msg = ls`Node cannot be found in the current page.`;
-          Common.console.warn(msg);
+          Common.Console.Console.instance().warn(msg);
           reject(new Error(msg));
           return;
         }
@@ -1021,12 +1021,38 @@ export class DOMNodeRevealer {
         }
         reject(new Error('Could not resolve node to reveal.'));
       }
+
+      /**
+       * @param {?SDK.DOMModel.DOMNode} resolvedNode
+       */
+      function checkRemoteObjectThenReveal(resolvedNode) {
+        if (!resolvedNode) {
+          const msg = ls`The remote object could not be resolved into a valid node.`;
+          Common.Console.Console.instance().warn(msg);
+          reject(new Error(msg));
+          return;
+        }
+        onNodeResolved(resolvedNode);
+      }
+
+      /**
+       * @param {?SDK.DOMModel.DOMNode} resolvedNode
+       */
+      function checkDeferredDOMNodeThenReveal(resolvedNode) {
+        if (!resolvedNode) {
+          const msg = ls`The deferred DOM Node could not be resolved into a valid node.`;
+          Common.Console.Console.instance().warn(msg);
+          reject(new Error(msg));
+          return;
+        }
+        onNodeResolved(resolvedNode);
+      }
     }
   }
 }
 
 /**
- * @implements {Common.Revealer}
+ * @implements {Common.Revealer.Revealer}
  * @unrestricted
  */
 export class CSSPropertyRevealer {
@@ -1037,28 +1063,28 @@ export class CSSPropertyRevealer {
    */
   reveal(property) {
     const panel = ElementsPanel.instance();
-    return panel._revealProperty(/** @type {!SDK.CSSProperty} */ (property));
+    return panel._revealProperty(/** @type {!SDK.CSSProperty.CSSProperty} */ (property));
   }
 }
 
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  * @unrestricted
  */
 export class ElementsActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return true;
     }
-    const treeOutline = Elements.ElementsTreeOutline.forDOMModel(node.domModel());
+    const treeOutline = ElementsTreeOutline.forDOMModel(node.domModel());
     if (!treeOutline) {
       return true;
     }
@@ -1071,11 +1097,11 @@ export class ElementsActionDelegate {
         treeOutline.toggleEditAsHTML(node);
         return true;
       case 'elements.undo':
-        SDK.domModelUndoStack.undo();
+        self.SDK.domModelUndoStack.undo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
       case 'elements.redo':
-        SDK.domModelUndoStack.redo();
+        self.SDK.domModelUndoStack.redo();
         ElementsPanel.instance()._stylesWidget.forceUpdate();
         return true;
     }
@@ -1084,49 +1110,20 @@ export class ElementsActionDelegate {
 }
 
 /**
- * @implements {Elements.MarkerDecorator}
+ * @implements {MarkerDecorator}
  * @unrestricted
  */
 export class PseudoStateMarkerDecorator {
   /**
    * @override
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    * @return {?{title: string, color: string}}
    */
   decorate(node) {
     return {
       color: 'orange',
-      title: Common.UIString('Element state: %s', ':' + node.domModel().cssModel().pseudoState(node).join(', :'))
+      title:
+          Common.UIString.UIString('Element state: %s', ':' + node.domModel().cssModel().pseudoState(node).join(', :'))
     };
   }
 }
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.ElementsPanel = ElementsPanel;
-
-// Sniffed in tests.
-Elements.ElementsPanel._firstInspectElementCompletedForTest = function() {};
-
-/** @enum {symbol} */
-Elements.ElementsPanel._splitMode = _splitMode;
-
-/** @constructor */
-Elements.ElementsPanel.ContextMenuProvider = ContextMenuProvider;
-
-/** @constructor */
-Elements.ElementsPanel.DOMNodeRevealer = DOMNodeRevealer;
-
-/** @constructor */
-Elements.ElementsPanel.CSSPropertyRevealer = CSSPropertyRevealer;
-
-/** @constructor */
-Elements.ElementsActionDelegate = ElementsActionDelegate;
-
-/** @constructor */
-Elements.ElementsPanel.PseudoStateMarkerDecorator = PseudoStateMarkerDecorator;

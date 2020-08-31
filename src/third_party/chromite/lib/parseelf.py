@@ -10,11 +10,15 @@ from __future__ import print_function
 import io
 import os
 import struct
+import sys
 
 from elftools.elf import elffile
 from elftools.common import utils
 
 from chromite.scripts import lddtree
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetSymbolTableSize(elf):

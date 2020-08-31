@@ -109,8 +109,8 @@ class LoginScreenClient : public ash::LoginScreenClient {
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
   void FocusLockScreenApps(bool reverse) override;
   void FocusOobeDialog() override;
-  void ShowGaiaSignin(bool can_close,
-                      const AccountId& prefilled_account) override;
+  void ShowGaiaSignin(const AccountId& prefilled_account) override;
+  void HideGaiaSignin() override;
   void OnRemoveUserWarningShown() override;
   void RemoveUser(const AccountId& account_id) override;
   void LaunchPublicSession(const AccountId& account_id,
@@ -120,8 +120,8 @@ class LoginScreenClient : public ash::LoginScreenClient {
                                            const std::string& locale) override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
-  void ShowAccountAccessHelpApp() override;
-  void ShowParentAccessHelpApp() override;
+  void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) override;
+  void ShowParentAccessHelpApp(gfx::NativeWindow parent_window) override;
   void ShowLockScreenNotificationSettings() override;
   void OnFocusLeavingSystemTray(bool reverse) override;
   void OnUserActivity() override;

@@ -10,8 +10,6 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -27,6 +25,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -215,12 +216,6 @@ public class AccountChooserDialog
         TextView text = (TextView) inflater.inflate(layoutId, null);
         text.setText(message);
         text.announceForAccessibility(message);
-
-        // This is a work-around for a bug on Android versions KitKat and below
-        // (http://crbug.com/693076). The tooltip wouldn't be shown otherwise.
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
-            text.setSingleLine(false);
-        }
 
         // The tooltip should be shown above and to the left (right for RTL) of the info button.
         // In order to do so the tooltip's location on the screen is determined. This location is

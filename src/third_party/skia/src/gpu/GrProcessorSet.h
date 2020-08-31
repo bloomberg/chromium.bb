@@ -121,7 +121,7 @@ public:
 
         friend class GrProcessorSet;
     };
-    GR_STATIC_ASSERT(sizeof(Analysis) <= sizeof(uint32_t));
+    static_assert(sizeof(Analysis) <= sizeof(uint32_t));
 
     /**
      * This analyzes the processors given an op's input color and coverage as well as a clip. The
@@ -187,7 +187,7 @@ private:
         return fXP.fFactory;
     }
 
-    SkAutoSTArray<4, std::unique_ptr<const GrFragmentProcessor>> fFragmentProcessors;
+    SkAutoSTArray<4, std::unique_ptr<GrFragmentProcessor>> fFragmentProcessors;
     XP fXP;
     uint8_t fColorFragmentProcessorCnt = 0;
     uint8_t fFragmentProcessorOffset = 0;

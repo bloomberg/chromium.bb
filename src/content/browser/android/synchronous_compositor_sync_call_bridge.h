@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/thread_annotations.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "content/common/input/sync_compositor_messages.h"
+#include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 
 namespace content {
@@ -79,18 +79,20 @@ class SynchronousCompositorSyncCallBridge
   void RemoteClosedOnIOThread();
 
   // Receive a frame. Return false if the corresponding frame wasn't found.
-  bool ReceiveFrameOnIOThread(int frame_sink_id,
-                              uint32_t metadata_version,
-                              base::Optional<viz::CompositorFrame>);
+  bool ReceiveFrameOnIOThread(
+      int frame_sink_id,
+      uint32_t metadata_version,
+      base::Optional<viz::CompositorFrame>,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list);
 
   // Receive a BeginFrameResponse. Returns true if handling the response was
   // successful or not.
   bool BeginFrameResponseOnIOThread(
-      const SyncCompositorCommonRendererParams& render_params);
+      mojom::SyncCompositorCommonRendererParamsPtr render_params);
 
   // Schedule a callback for when vsync finishes and wait for the
   // BeginFrameResponse callback.
-  bool WaitAfterVSyncOnUIThread(ui::WindowAndroid* window_android);
+  bool WaitAfterVSyncOnUIThread();
 
   // Store a FrameFuture for a later ReceiveFrame callback. Return if the
   // future was stored for further handling.
@@ -131,7 +133,8 @@ class SynchronousCompositorSyncCallBridge
   base::Lock lock_;
   FrameFutureQueue frame_futures_ GUARDED_BY(lock_);
   bool begin_frame_response_valid_ GUARDED_BY(lock_) = false;
-  SyncCompositorCommonRendererParams last_render_params_ GUARDED_BY(lock_);
+  mojom::SyncCompositorCommonRendererParams last_render_params_
+      GUARDED_BY(lock_);
   base::ConditionVariable begin_frame_condition_ GUARDED_BY(lock_);
   RemoteState remote_state_ GUARDED_BY(lock_) = RemoteState::INIT;
 

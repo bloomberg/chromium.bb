@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "extensions/common/constants.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link_listener.h"
 
 class LaunchOptionsComboboxModel;
 class Profile;
@@ -26,7 +25,6 @@ class Extension;
 namespace views {
 class Combobox;
 class Label;
-class Link;
 class View;
 }
 
@@ -34,7 +32,6 @@ class View;
 // and controls related to the app.
 class AppInfoSummaryPanel : public AppInfoPanel,
                             public views::ComboboxListener,
-                            public views::LinkListener,
                             public base::SupportsWeakPtr<AppInfoSummaryPanel> {
  public:
   AppInfoSummaryPanel(Profile* profile, const extensions::Extension* app);
@@ -50,9 +47,6 @@ class AppInfoSummaryPanel : public AppInfoPanel,
 
   // Overridden from views::ComboboxListener:
   void OnPerformAction(views::Combobox* combobox) override;
-
-  // Overridden from views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Called asynchronously to calculate and update the size of the app displayed
   // in the dialog.
@@ -79,12 +73,10 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   const std::vector<GURL> GetLicenseUrls() const;
 
   // UI elements on the dialog.
-  views::Label* size_value_;
-  views::Link* homepage_link_;
-  views::Link* licenses_link_;
+  views::Label* size_value_ = nullptr;
 
   std::unique_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
-  views::Combobox* launch_options_combobox_;
+  views::Combobox* launch_options_combobox_ = nullptr;
 
   base::WeakPtrFactory<AppInfoSummaryPanel> weak_ptr_factory_{this};
 

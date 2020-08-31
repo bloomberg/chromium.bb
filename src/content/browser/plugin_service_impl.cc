@@ -20,9 +20,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/plugin_list.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -70,13 +72,13 @@ void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
 // static
 void PluginServiceImpl::RecordBrokerUsage(int render_process_id,
                                           int render_frame_id) {
-  WebContents* web_contents = WebContents::FromRenderFrameHost(
-      RenderFrameHost::FromID(render_process_id, render_frame_id));
-  if (web_contents) {
-    ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                  ->GetUkmSourceIdForLastCommittedSource();
-    ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
-  }
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!rfh)
+    return;
+
+  ukm::SourceId source_id = rfh->GetPageUkmSourceId();
+  ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
 }
 
 // static
@@ -115,8 +117,8 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  plugin_list_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  plugin_list_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Setup the sequence checker right after setting up the task runner.
@@ -166,6 +168,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     int render_process_id,
+    const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
     const base::Optional<url::Origin>& origin_lock) {
@@ -184,20 +187,53 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     return nullptr;
   }
 
-  // Flash has its own flavour of CORS, so CORB needs to allow all responses
-  // and rely on Flash to enforce same-origin policy.  See also
-  // https://crbug.com/874515 and https://crbug.com/816318#c5.
-  //
-  // Note that ppapi::PERMISSION_FLASH is present not only in the Flash plugin.
-  // This permission is also present in plugins added from the cmdline and so
-  // will be also present for "PPAPI Tests" plugin used for
-  // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
-  //
-  // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
-  // once Flash support is removed from Chromium (probably around 2020 - see
-  // https://www.chromium.org/flash-roadmap).
-  if (info->permissions & ppapi::PERMISSION_FLASH)
+  // Validate that |embedder_origin| is allowed to embed the plugin.
+  if (!GetContentClient()->browser()->ShouldAllowPluginCreation(embedder_origin,
+                                                                *info)) {
+    return nullptr;
+  }
+
+  if (info->permissions & ppapi::PERMISSION_FLASH) {
+    // Flash has its own flavour of CORS, so CORB needs to allow all responses
+    // and rely on Flash to enforce same-origin policy.  See also
+    // https://crbug.com/874515 and https://crbug.com/816318#c5.
+    //
+    // Note that ppapi::PERMISSION_FLASH is present not only in the Flash
+    // plugin. This permission is also present in plugins added from the cmdline
+    // and so will be also present for "PPAPI Tests" plugin used for
+    // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
+    //
+    // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
+    // once Flash support is removed from Chromium (probably around 2020 - see
+    // https://www.chromium.org/flash-roadmap).
     RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
+  } else if (info->permissions & ppapi::PERMISSION_PDF) {
+    // We want to limit ability to bypass |request_initiator_site_lock| to
+    // trustworthy renderers.  PDF plugin is okay, because it is always hosted
+    // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
+    // chrome://print, both of which we assume are trustworthy (the extension
+    // process can also host other extensions, but this is okay).
+    //
+    // The CHECKs below help verify that |render_process_id| does not host
+    // web-controlled content.  This is a defense-in-depth for verifying that
+    // ShouldAllowPluginCreation called above is doing the right thing.
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    GURL renderer_lock = policy->GetOriginLock(render_process_id);
+    CHECK(!renderer_lock.SchemeIsHTTPOrHTTPS());
+    CHECK(embedder_origin.scheme() != url::kHttpScheme);
+    CHECK(embedder_origin.scheme() != url::kHttpsScheme);
+    CHECK(!embedder_origin.opaque());
+
+    // In some scenarios, the PDF plugin can issue fetch requests that will need
+    // to be proxied by |render_process_id| - such proxying needs to bypass
+    // CORB. See also https://crbug.com/1027173.
+    //
+    // TODO(lukasza, kmoon): https://crbug.com/702993: Remove the code here once
+    // PDF support doesn't depend on PPAPI anymore.
+    DCHECK(origin_lock.has_value());
+    RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
+        render_process_id, origin_lock.value());
+  }
 
   PpapiPluginProcessHost* plugin_host =
       FindPpapiPluginProcess(plugin_path, profile_data_directory, origin_lock);
@@ -256,12 +292,14 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
 
 void PluginServiceImpl::OpenChannelToPpapiPlugin(
     int render_process_id,
+    const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
     const base::Optional<url::Origin>& origin_lock,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
-      render_process_id, plugin_path, profile_data_directory, origin_lock);
+      render_process_id, embedder_origin, plugin_path, profile_data_directory,
+      origin_lock);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {

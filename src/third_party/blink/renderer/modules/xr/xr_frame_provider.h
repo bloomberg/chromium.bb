@@ -14,16 +14,16 @@
 
 namespace blink {
 
-class XR;
-class XRSession;
 class XRFrameTransport;
+class XRSession;
+class XRSystem;
 class XRWebGLLayer;
 
 // This class manages requesting and dispatching frame updates, which includes
 // pose information for a given XRDevice.
 class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
  public:
-  explicit XRFrameProvider(XR*);
+  explicit XRFrameProvider(XRSystem*);
 
   XRSession* immersive_session() const { return immersive_session_; }
 
@@ -45,7 +45,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
     return immersive_data_provider_.get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  private:
   void OnImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);
@@ -72,7 +72,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double high_res_now_ms);
 
-  const Member<XR> xr_;
+  const Member<XRSystem> xr_;
 
   // Immersive session state
   Member<XRSession> immersive_session_;
@@ -88,7 +88,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   HeapHashMap<Member<XRSession>,
               mojo::Remote<device::mojom::blink::XRFrameDataProvider>>
       non_immersive_data_providers_;
-  HeapHashMap<Member<XRSession>, device::mojom::blink::VRPosePtr>
+  HeapHashMap<Member<XRSession>, device::mojom::blink::XRFrameDataPtr>
       requesting_sessions_;
 
   // This frame ID is XR-specific and is used to track when frames arrive at the

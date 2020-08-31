@@ -9,16 +9,18 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/render_frame_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
 
-class FrameNodeImpl;
+class FrameNodeImplDescriber;
 class PageNodeImpl;
 class ProcessNodeImpl;
 class WorkerNodeImpl;
@@ -57,8 +59,7 @@ class FrameNodeImpl
   // optionally with a |parent_frame_node|. For the main frame of |page_node|
   // the |parent_frame_node| parameter should be nullptr. |render_frame_id| is
   // the routing id of the frame (from RenderFrameHost::GetRoutingID).
-  FrameNodeImpl(GraphImpl* graph,
-                ProcessNodeImpl* process_node,
+  FrameNodeImpl(ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
                 int frame_tree_node_id,
@@ -76,9 +77,13 @@ class FrameNodeImpl
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetOriginTrialFreezePolicy(mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
+  void SetHadFormInteraction() override;
   void OnNonPersistentNotificationCreated() override;
+  void OnFirstContentfulPaint(
+      base::TimeDelta time_since_navigation_start) override;
+  const RenderFrameHostProxy& GetRenderFrameHostProxy() const override;
 
-  // Partial FrameNode implementation:
+  // Partial FrameNodbase::TimeDelta time_since_navigatione implementation:
   bool IsMainFrame() const override;
 
   // Getters for const properties. These can be called from any thread.
@@ -90,6 +95,7 @@ class FrameNodeImpl
   const base::UnguessableToken& dev_tools_token() const;
   int32_t browsing_instance_id() const;
   int32_t site_instance_id() const;
+  const RenderFrameHostProxy& render_frame_host_proxy() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
@@ -104,6 +110,7 @@ class FrameNodeImpl
   bool is_holding_indexeddb_lock() const;
   const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
   const PriorityAndReason& priority_and_reason() const;
+  bool had_form_interaction() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
@@ -120,7 +127,12 @@ class FrameNodeImpl
   // Invoked to set the frame priority, and the reason behind it.
   void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
+  base::WeakPtr<FrameNodeImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
+  friend class FrameNodeImplDescriber;
   friend class FramePriorityAccess;
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
@@ -134,6 +146,7 @@ class FrameNodeImpl
   const base::UnguessableToken& GetDevToolsToken() const override;
   int32_t GetBrowsingInstanceId() const override;
   int32_t GetSiteInstanceId() const override;
+  bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const override;
   const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
   LifecycleState GetLifecycleState() const override;
   InterventionPolicy GetOriginTrialFreezePolicy() const override;
@@ -146,6 +159,7 @@ class FrameNodeImpl
   bool IsHoldingIndexedDBLock() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
   const PriorityAndReason& GetPriorityAndReason() const override;
+  bool HadFormInteraction() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -175,14 +189,21 @@ class FrameNodeImpl
         const mojom::InterventionPolicy&,
         &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
         origin_trial_freeze_policy{mojom::InterventionPolicy::kDefault};
+
+    // Indicates if a form in the frame has been interacted with.
+    ObservedProperty::NotifiesOnlyOnChanges<
+        bool,
+        &FrameNodeObserver::OnHadFormInteractionChanged>
+        had_form_interaction{false};
   };
 
   // Invoked by subframes on joining/leaving the graph.
   void AddChildFrame(FrameNodeImpl* frame_node);
   void RemoveChildFrame(FrameNodeImpl* frame_node);
 
-  void JoinGraph() override;
-  void LeaveGraph() override;
+  // NodeBase:
+  void OnJoiningGraph() override;
+  void OnBeforeLeavingGraph() override;
 
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
@@ -211,6 +232,9 @@ class FrameNodeImpl
   // same SiteInstance may sychronously script each other. Frames with the
   // same |site_instance_id_| will also have the same |browsing_instance_id_|.
   const int32_t site_instance_id_;
+  // A proxy object that lets the underlying RFH be safely dereferenced on the
+  // UI thread.
+  const RenderFrameHostProxy render_frame_host_proxy_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
 
@@ -261,6 +285,8 @@ class FrameNodeImpl
 
   // Inline storage for FramePriorityDecorator data.
   frame_priority::AcceptedVote accepted_vote_;
+
+  base::WeakPtrFactory<FrameNodeImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

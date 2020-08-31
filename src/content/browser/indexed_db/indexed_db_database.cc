@@ -29,13 +29,13 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/cursor_impl.h"
-#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
@@ -46,7 +46,6 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/transaction_impl.h"
-#include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
@@ -876,8 +875,8 @@ Status IndexedDBDatabase::GetOperation(
 
     blink::mojom::IDBReturnValuePtr mojo_value =
         IndexedDBReturnValue::ConvertReturnValue(&value);
-    dispatcher_host->CreateAllBlobs(value.blob_info,
-                                    &mojo_value->value->blob_or_file_info);
+    dispatcher_host->CreateAllExternalObjects(
+        origin(), value.external_objects, &mojo_value->value->external_objects);
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
     return s;
@@ -933,8 +932,8 @@ Status IndexedDBDatabase::GetOperation(
 
   blink::mojom::IDBReturnValuePtr mojo_value =
       IndexedDBReturnValue::ConvertReturnValue(&value);
-  dispatcher_host->CreateAllBlobs(value.blob_info,
-                                  &mojo_value->value->blob_or_file_info);
+  dispatcher_host->CreateAllExternalObjects(
+      origin(), value.external_objects, &mojo_value->value->external_objects);
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
   return s;
@@ -956,7 +955,7 @@ Status IndexedDBDatabase::GetAllOperation(
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::GetAllOperation", "txn.id", transaction->id());
 
-  if (!IsObjectStoreIdInMetadata(object_store_id)) {
+  if (!IsObjectStoreIdAndMaybeIndexIdInMetadata(object_store_id, index_id)) {
     IndexedDBDatabaseError error = CreateError(
         blink::mojom::IDBException::kUnknownError, "Bad request", transaction);
     std::move(callback).Run(
@@ -1109,8 +1108,9 @@ Status IndexedDBDatabase::GetAllOperation(
   for (size_t i = 0; i < found_values.size(); ++i) {
     mojo_values.push_back(
         IndexedDBReturnValue::ConvertReturnValue(&found_values[i]));
-    dispatcher_host->CreateAllBlobs(found_values[i].blob_info,
-                                    &mojo_values[i]->value->blob_or_file_info);
+    dispatcher_host->CreateAllExternalObjects(
+        origin(), found_values[i].external_objects,
+        &mojo_values[i]->value->external_objects);
   }
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetAllResult::NewValues(std::move(mojo_values)));
@@ -1125,6 +1125,8 @@ Status IndexedDBDatabase::PutOperation(
   DCHECK_NE(transaction->mode(), blink::mojom::IDBTransactionMode::ReadOnly);
   bool key_was_generated = false;
   Status s = Status::OK();
+  transaction->set_in_flight_memory(transaction->in_flight_memory() -
+                                    params->value.SizeEstimate());
 
   if (!IsObjectStoreIdInMetadata(params->object_store_id)) {
     IndexedDBDatabaseError error = CreateError(
@@ -1393,14 +1395,16 @@ Status IndexedDBDatabase::OpenCursorOperation(
   transaction->RegisterOpenCursor(cursor_ptr);
 
   blink::mojom::IDBValuePtr mojo_value;
-  std::vector<IndexedDBBlobInfo> blob_info;
+  std::vector<IndexedDBExternalObject> external_objects;
   if (cursor_ptr->Value()) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(cursor_ptr->Value());
-    blob_info.swap(cursor_ptr->Value()->blob_info);
+    external_objects.swap(cursor_ptr->Value()->external_objects);
   }
 
-  if (mojo_value)
-    dispatcher_host->CreateAllBlobs(blob_info, &mojo_value->blob_or_file_info);
+  if (mojo_value) {
+    dispatcher_host->CreateAllExternalObjects(origin, external_objects,
+                                              &mojo_value->external_objects);
+  }
 
   std::move(params->callback)
       .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(
@@ -1614,14 +1618,9 @@ Status IndexedDBDatabase::OpenInternal() {
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     IndexedDBOriginStateHandle origin_state_handle,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    IndexedDBExecutionContextConnectionTracker::Handle
-        execution_context_connection_handle) {
-  const int render_process_id =
-      execution_context_connection_handle.render_process_id();
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
-          std::move(execution_context_connection_handle),
           std::move(origin_state_handle), class_factory_,
           weak_factory_.GetWeakPtr(),
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
@@ -1630,7 +1629,6 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                          weak_factory_.GetWeakPtr()),
           database_callbacks);
   connections_.insert(connection.get());
-  backing_store_->GrantChildProcessPermissions(render_process_id);
   return connection;
 }
 

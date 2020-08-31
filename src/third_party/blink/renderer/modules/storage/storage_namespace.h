@@ -29,14 +29,15 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -44,6 +45,7 @@
 
 namespace blink {
 
+class CachedStorageArea;
 class InspectorDOMStorageAgent;
 class StorageController;
 class SecurityOrigin;
@@ -66,8 +68,7 @@ class WebViewClient;
 // is used to get the storage area for an origin.
 class MODULES_EXPORT StorageNamespace final
     : public GarbageCollected<StorageNamespace>,
-      public Supplement<Page>,
-      public CachedStorageArea::InspectorEventListener {
+      public Supplement<Page> {
   USING_GARBAGE_COLLECTED_MIXIN(StorageNamespace);
 
  public:
@@ -82,8 +83,6 @@ class MODULES_EXPORT StorageNamespace final
   StorageNamespace(StorageController*);
   // Creates a namespace for SessionStorage.
   StorageNamespace(StorageController*, const String& namespace_id);
-
-  ~StorageNamespace() override;
 
   scoped_refptr<CachedStorageArea> GetCachedArea(const SecurityOrigin* origin);
 
@@ -108,7 +107,18 @@ class MODULES_EXPORT StorageNamespace final
   void DidDispatchStorageEvent(const SecurityOrigin* origin,
                                const String& key,
                                const String& old_value,
-                               const String& new_value) override;
+                               const String& new_value);
+
+  // Called by areas in |cached_areas_| to bind/rebind their StorageArea
+  // interface.
+  void BindStorageArea(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver);
+
+  // If this StorageNamespace was previously connected to the backend, this
+  // forcibly disconnects it so that it reconnects lazily when next needed.
+  // Also forces all owned CachedStorageAreas to be reconnected.
+  void ResetStorageAreaAndNamespaceConnections();
 
  private:
   void EnsureConnected();
@@ -118,7 +128,11 @@ class MODULES_EXPORT StorageNamespace final
   // Lives globally.
   StorageController* controller_;
   String namespace_id_;
-  mojo::Remote<mojom::blink::SessionStorageNamespace> namespace_;
+  // |StorageNamespace| is a per-Page object and doesn't have any
+  // |ExecutionContext|.
+  HeapMojoRemote<mojom::blink::SessionStorageNamespace,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      namespace_{nullptr};
   HashMap<scoped_refptr<const SecurityOrigin>,
           scoped_refptr<CachedStorageArea>,
           SecurityOriginHash>

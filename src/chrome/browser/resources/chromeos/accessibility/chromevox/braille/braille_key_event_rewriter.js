@@ -14,22 +14,21 @@ goog.require('BrailleKeyEvent');
 /**
  * A class that transforms a sequence of braille key events into a standard key
  * event.
- * @constructor
  */
-BrailleKeyEventRewriter = function() {
-  /** @private {Object} */
-  this.incrementalKey_ = null;
-};
+BrailleKeyEventRewriter = class {
+  constructor() {
+    /** @private {Object} */
+    this.incrementalKey_ = null;
+  }
 
-BrailleKeyEventRewriter.prototype = {
   /**
    * Accumulates and optionally modifies in-coming braille key events.
    * @param {BrailleKeyEvent} evt
    * @return {boolean} False to continue event propagation.
    */
-  onBrailleKeyEvent: function(evt) {
-    var standardKeyCode;
-    var dots = evt.brailleDots;
+  onBrailleKeyEvent(evt) {
+    let standardKeyCode;
+    const dots = evt.brailleDots;
     if (!dots) {
       this.incrementalKey_ = null;
       return false;
@@ -37,12 +36,12 @@ BrailleKeyEventRewriter.prototype = {
 
     if (evt.command == BrailleKeyCommand.CHORD) {
       Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
-      var modifiers = BrailleKeyEvent.brailleDotsToModifiers[dots];
+      const modifiers = BrailleKeyEvent.brailleDotsToModifiers[dots];
 
       // Check for a modifier mapping.
       if (modifiers) {
         this.incrementalKey_ = this.incrementalKey_ || {};
-        for (var key in modifiers) {
+        for (const key in modifiers) {
           this.incrementalKey_[key] = true;
         }
 

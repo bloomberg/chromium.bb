@@ -35,10 +35,12 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -156,6 +158,10 @@ bool LayoutImage::NeedsLayoutOnIntrinsicSizeChange() const {
           kDontRegisterPercentageDescendant);
   if (!image_size_is_constrained)
     return true;
+  // Flex layout algorithm uses the intrinsic image width/height even if
+  // width/height are specified.
+  if (IsFlexItemIncludingNG())
+    return true;
   // FIXME: We only need to recompute the containing block's preferred size if
   // the containing block's size depends on the image's size (i.e., the
   // container uses shrink-to-fit sizing). There's no easy way to detect that
@@ -179,7 +185,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     return;
 
   if (old_intrinsic_size != new_intrinsic_size) {
-    SetPreferredLogicalWidthsDirty();
+    SetIntrinsicLogicalWidthsDirty();
 
     if (NeedsLayoutOnIntrinsicSizeChange()) {
       SetNeedsLayoutAndFullPaintInvalidation(
@@ -306,20 +312,19 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
   return inside;
 }
 
-IntSize LayoutImage::GetOverriddenIntrinsicSize() const {
-  if (auto* image_element = DynamicTo<HTMLImageElement>(GetNode())) {
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
-      return image_element->GetOverriddenIntrinsicSize();
-  }
-  return IntSize();
+bool LayoutImage::HasOverriddenIntrinsicSize() const {
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+    return false;
+  auto* image_element = DynamicTo<HTMLImageElement>(GetNode());
+  return image_element && image_element->IsDefaultIntrinsicSize();
 }
 
 FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
     float multiplier) const {
-  FloatSize overridden_intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
-  if (overridden_intrinsic_size.IsEmpty())
+  if (!HasOverriddenIntrinsicSize())
     return image_resource_->ImageSize(multiplier);
 
+  FloatSize overridden_intrinsic_size(kDefaultWidth, kDefaultHeight);
   if (multiplier != 1) {
     overridden_intrinsic_size.Scale(multiplier);
     if (overridden_intrinsic_size.Width() < 1.0f)
@@ -333,11 +338,11 @@ FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
 
 bool LayoutImage::OverrideIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  IntSize overridden_intrinsic_size = GetOverriddenIntrinsicSize();
-  if (overridden_intrinsic_size.IsEmpty())
+  if (!HasOverriddenIntrinsicSize())
     return false;
 
-  intrinsic_sizing_info.size = FloatSize(overridden_intrinsic_size);
+  FloatSize overridden_intrinsic_size(kDefaultWidth, kDefaultHeight);
+  intrinsic_sizing_info.size = overridden_intrinsic_size;
   intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   if (!IsHorizontalWritingMode())
     intrinsic_sizing_info.Transpose();
@@ -393,7 +398,8 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
   // we're painting alt text and/or a broken image.
   // Video is excluded from this behavior because video elements have a default
   // aspect ratio that a failed poster image load should not override.
-  if (image_resource_ && image_resource_->ErrorOccurred() && !IsVideo()) {
+  if (image_resource_ && image_resource_->ErrorOccurred() &&
+      !IsA<LayoutVideo>(this)) {
     intrinsic_sizing_info.aspect_ratio = FloatSize(1, 1);
     return;
   }
@@ -414,15 +420,18 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
   // https://crbug.com/761026
   if (!cached_image || cached_image->IsCacheValidator())
     return nullptr;
-  return ToSVGImageOrNull(cached_image->GetImage());
+  return DynamicTo<SVGImage>(cached_image->GetImage());
 }
 
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
   if (auto* image_element = DynamicTo<HTMLImageElement>(node)) {
-    media_element_parser_helpers::ReportUnsizedMediaViolation(
+    media_element_parser_helpers::CheckUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());
+  } else if (auto* video_element = DynamicTo<HTMLVideoElement>(node)) {
+    media_element_parser_helpers::CheckUnsizedMediaViolation(
+        this, video_element->IsDefaultIntrinsicSize());
   }
 }
 

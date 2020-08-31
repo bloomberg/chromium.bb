@@ -10,6 +10,7 @@
 
 #include "include/gpu/gl/GrGLInterface.h"
 #include "include/private/GrTypesPriv.h"
+#include "include/private/SkImageInfoPriv.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/gl/GrGLDefines.h"
@@ -37,6 +38,35 @@ typedef uint64_t GrGLDriverVersion;
 #define GR_GLSL_INVALID_VER GR_GLSL_VER(0, 0)
 #define GR_GL_DRIVER_UNKNOWN_VER GR_GL_DRIVER_VER(0, 0, 0)
 
+static constexpr uint32_t GrGLFormatChannels(GrGLFormat format) {
+    switch (format) {
+        case GrGLFormat::kUnknown:               return 0;
+        case GrGLFormat::kRGBA8:                 return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kR8:                    return kRed_SkColorChannelFlag;
+        case GrGLFormat::kALPHA8:                return kAlpha_SkColorChannelFlag;
+        case GrGLFormat::kLUMINANCE8:            return kGray_SkColorChannelFlag;
+        case GrGLFormat::kBGRA8:                 return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kRGB565:                return kRGB_SkColorChannelFlags;
+        case GrGLFormat::kRGBA16F:               return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kR16F:                  return kRed_SkColorChannelFlag;
+        case GrGLFormat::kRGB8:                  return kRGB_SkColorChannelFlags;
+        case GrGLFormat::kRG8:                   return kRG_SkColorChannelFlags;
+        case GrGLFormat::kRGB10_A2:              return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kRGBA4:                 return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kSRGB8_ALPHA8:          return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kCOMPRESSED_ETC1_RGB8:  return kRGB_SkColorChannelFlags;
+        case GrGLFormat::kCOMPRESSED_RGB8_ETC2:  return kRGB_SkColorChannelFlags;
+        case GrGLFormat::kCOMPRESSED_RGB8_BC1:   return kRGB_SkColorChannelFlags;
+        case GrGLFormat::kCOMPRESSED_RGBA8_BC1:  return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kR16:                   return kRed_SkColorChannelFlag;
+        case GrGLFormat::kRG16:                  return kRG_SkColorChannelFlags;
+        case GrGLFormat::kRGBA16:                return kRGBA_SkColorChannelFlags;
+        case GrGLFormat::kRG16F:                 return kRG_SkColorChannelFlags;
+        case GrGLFormat::kLUMINANCE16F:          return kGray_SkColorChannelFlag;
+    }
+    SkUNREACHABLE;
+}
+
 /**
  * The Vendor and Renderer enum values are lazily updated as required.
  */
@@ -63,6 +93,7 @@ enum GrGLRenderer {
     kAdreno5xx_GrGLRenderer,
     kAdreno615_GrGLRenderer,  // Pixel3a
     kAdreno630_GrGLRenderer,  // Pixel3
+    kAdreno640_GrGLRenderer,  // Pixel4
     kGoogleSwiftShader_GrGLRenderer,
 
     /** Intel GPU families, ordered by generation **/
@@ -90,6 +121,8 @@ enum GrGLRenderer {
 
     kGalliumLLVM_GrGLRenderer,
     kMali4xx_GrGLRenderer,
+    /** G-3x, G-5x, or G-7x */
+    kMaliG_GrGLRenderer,
     /** T-6xx, T-7xx, or T-8xx */
     kMaliT_GrGLRenderer,
     kANGLE_GrGLRenderer,
@@ -123,7 +156,8 @@ enum class GrGLANGLEBackend {
 
 enum class GrGLANGLEVendor {
     kUnknown,
-    kIntel
+    kIntel,
+    kNVIDIA
 };
 
 enum class GrGLANGLERenderer {
@@ -195,8 +229,8 @@ GrGLStandard GrGLGetStandardInUseFromString(const char* versionString);
 GrGLSLVersion GrGLGetGLSLVersionFromString(const char* versionString);
 GrGLVendor GrGLGetVendorFromString(const char* vendorString);
 GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString, const GrGLExtensions&);
-void GrGLGetANGLEInfoFromString(const char* rendererString, GrGLANGLEBackend*,
-                                GrGLANGLEVendor*, GrGLANGLERenderer*);
+std::tuple<GrGLANGLEBackend, GrGLANGLEVendor, GrGLANGLERenderer> GrGLGetANGLEInfoFromString(
+        const char* rendererString);
 
 void GrGLGetDriverInfo(GrGLStandard standard,
                        GrGLVendor vendor,
@@ -210,6 +244,8 @@ GrGLVersion GrGLGetVersion(const GrGLInterface*);
 GrGLSLVersion GrGLGetGLSLVersion(const GrGLInterface*);
 GrGLVendor GrGLGetVendor(const GrGLInterface*);
 GrGLRenderer GrGLGetRenderer(const GrGLInterface*);
+std::tuple<GrGLANGLEBackend, GrGLANGLEVendor, GrGLANGLERenderer> GrGLGetANGLEInfo(
+        const GrGLInterface*);
 
 /**
  * Helpers for glGetError()
@@ -297,8 +333,10 @@ static constexpr GrGLFormat GrGLFormatFromGLEnum(GrGLenum glFormat) {
         case GR_GL_RGB10_A2:             return GrGLFormat::kRGB10_A2;
         case GR_GL_RGBA4:                return GrGLFormat::kRGBA4;
         case GR_GL_SRGB8_ALPHA8:         return GrGLFormat::kSRGB8_ALPHA8;
-        case GR_GL_COMPRESSED_RGB8_ETC2: return GrGLFormat::kCOMPRESSED_RGB8_ETC2;
         case GR_GL_COMPRESSED_ETC1_RGB8: return GrGLFormat::kCOMPRESSED_ETC1_RGB8;
+        case GR_GL_COMPRESSED_RGB8_ETC2: return GrGLFormat::kCOMPRESSED_RGB8_ETC2;
+        case GR_GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return GrGLFormat::kCOMPRESSED_RGB8_BC1;
+        case GR_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: return GrGLFormat::kCOMPRESSED_RGBA8_BC1;
         case GR_GL_R16:                  return GrGLFormat::kR16;
         case GR_GL_RG16:                 return GrGLFormat::kRG16;
         case GR_GL_RGBA16:               return GrGLFormat::kRGBA16;
@@ -325,8 +363,10 @@ static constexpr GrGLenum GrGLFormatToEnum(GrGLFormat format) {
         case GrGLFormat::kRGB10_A2:             return GR_GL_RGB10_A2;
         case GrGLFormat::kRGBA4:                return GR_GL_RGBA4;
         case GrGLFormat::kSRGB8_ALPHA8:         return GR_GL_SRGB8_ALPHA8;
-        case GrGLFormat::kCOMPRESSED_RGB8_ETC2: return GR_GL_COMPRESSED_RGB8_ETC2;
         case GrGLFormat::kCOMPRESSED_ETC1_RGB8: return GR_GL_COMPRESSED_ETC1_RGB8;
+        case GrGLFormat::kCOMPRESSED_RGB8_ETC2: return GR_GL_COMPRESSED_RGB8_ETC2;
+        case GrGLFormat::kCOMPRESSED_RGB8_BC1:  return GR_GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        case GrGLFormat::kCOMPRESSED_RGBA8_BC1: return GR_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         case GrGLFormat::kR16:                  return GR_GL_R16;
         case GrGLFormat::kRG16:                 return GR_GL_RG16;
         case GrGLFormat::kRGBA16:               return GR_GL_RGBA16;
@@ -354,8 +394,10 @@ static constexpr const char* GrGLFormatToStr(GrGLenum glFormat) {
         case GR_GL_RGBA4:                return "RGBA4";
         case GR_GL_RGBA32F:              return "RGBA32F";
         case GR_GL_SRGB8_ALPHA8:         return "SRGB8_ALPHA8";
-        case GR_GL_COMPRESSED_RGB8_ETC2: return "ETC2";
         case GR_GL_COMPRESSED_ETC1_RGB8: return "ETC1";
+        case GR_GL_COMPRESSED_RGB8_ETC2: return "ETC2";
+        case GR_GL_COMPRESSED_RGB_S3TC_DXT1_EXT: return "RGB8_BC1";
+        case GR_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT: return "RGBA8_BC1";
         case GR_GL_R16:                  return "R16";
         case GR_GL_RG16:                 return "RG16";
         case GR_GL_RGBA16:               return "RGBA16";
@@ -374,8 +416,8 @@ GrGLenum GrToGLStencilFunc(GrStencilTest test);
 bool GrGLFormatIsCompressed(GrGLFormat);
 
 /**
- * Maps a GrGLFormat into the CompressionType enum if appropriate.
+ * This will return CompressionType::kNone if the format is uncompressed.
  */
-bool GrGLFormatToCompressionType(GrGLFormat, SkImage::CompressionType*);
+SkImage::CompressionType GrGLFormatToCompressionType(GrGLFormat);
 
 #endif

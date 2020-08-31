@@ -17,14 +17,15 @@
 TEST_F(WebGPUFormatTest, DawnCommands) {
   cmds::DawnCommands& cmd = *GetBufferAs<cmds::DawnCommands>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<uint32_t>(11), static_cast<uint32_t>(12),
-              static_cast<uint32_t>(13));
+      cmd.Set(&cmd, static_cast<uint64_t>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
   EXPECT_EQ(static_cast<uint32_t>(cmds::DawnCommands::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<uint32_t>(11), cmd.commands_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.commands_shm_offset);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.size);
+  EXPECT_EQ(static_cast<uint64_t>(11), cmd.device_client_id);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.commands_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.commands_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.size);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -51,14 +52,14 @@ TEST_F(WebGPUFormatTest, AssociateMailboxImmediate) {
   cmds::AssociateMailboxImmediate& cmd =
       *GetBufferAs<cmds::AssociateMailboxImmediate>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+      cmd.Set(&cmd, static_cast<GLuint64>(11), static_cast<GLuint>(12),
               static_cast<GLuint>(13), static_cast<GLuint>(14),
               static_cast<GLuint>(15), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::AssociateMailboxImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.device_id);
+  EXPECT_EQ(static_cast<GLuint64>(11), cmd.device_client_id());
   EXPECT_EQ(static_cast<GLuint>(12), cmd.device_generation);
   EXPECT_EQ(static_cast<GLuint>(13), cmd.id);
   EXPECT_EQ(static_cast<GLuint>(14), cmd.generation);
@@ -69,24 +70,25 @@ TEST_F(WebGPUFormatTest, AssociateMailboxImmediate) {
 
 TEST_F(WebGPUFormatTest, DissociateMailbox) {
   cmds::DissociateMailbox& cmd = *GetBufferAs<cmds::DissociateMailbox>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12));
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13));
   EXPECT_EQ(static_cast<uint32_t>(cmds::DissociateMailbox::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture_generation);
+  EXPECT_EQ(static_cast<GLuint64>(11), cmd.device_client_id());
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.texture_id);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.texture_generation);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
 TEST_F(WebGPUFormatTest, RequestAdapter) {
   cmds::RequestAdapter& cmd = *GetBufferAs<cmds::RequestAdapter>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<uint32_t>(11), static_cast<uint32_t>(12));
+      cmd.Set(&cmd, static_cast<uint64_t>(11), static_cast<uint32_t>(12));
   EXPECT_EQ(static_cast<uint32_t>(cmds::RequestAdapter::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<uint32_t>(11), cmd.request_adapter_serial);
+  EXPECT_EQ(static_cast<uint64_t>(11), cmd.request_adapter_serial);
   EXPECT_EQ(static_cast<uint32_t>(12), cmd.power_preference);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
@@ -94,16 +96,28 @@ TEST_F(WebGPUFormatTest, RequestAdapter) {
 TEST_F(WebGPUFormatTest, RequestDevice) {
   cmds::RequestDevice& cmd = *GetBufferAs<cmds::RequestDevice>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<uint32_t>(11), static_cast<uint32_t>(12),
-              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+      cmd.Set(&cmd, static_cast<uint64_t>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
   EXPECT_EQ(static_cast<uint32_t>(cmds::RequestDevice::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<uint32_t>(11), cmd.adapter_service_id);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.request_device_properties_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(13),
+  EXPECT_EQ(static_cast<uint64_t>(11), cmd.device_client_id);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.adapter_service_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.request_device_properties_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14),
             cmd.request_device_properties_shm_offset);
-  EXPECT_EQ(static_cast<uint32_t>(14), cmd.request_device_properties_size);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.request_device_properties_size);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(WebGPUFormatTest, RemoveDevice) {
+  cmds::RemoveDevice& cmd = *GetBufferAs<cmds::RemoveDevice>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<uint64_t>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::RemoveDevice::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<uint64_t>(11), cmd.device_client_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

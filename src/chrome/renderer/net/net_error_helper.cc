@@ -116,6 +116,11 @@ bool IsAutoFetchFeatureEnabled() {
 }
 #endif  // OS_ANDROID
 
+bool IsRunningInForcedAppMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceAppMode);
+}
+
 const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
   static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
       net::DefineNetworkTrafficAnnotation("net_error_helper", R"(
@@ -162,10 +167,11 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
                                      !render_frame->IsHidden()));
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
-                 base::Unretained(this)));
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-      &NetErrorHelper::OnNavigationCorrectorRequest, base::Unretained(this)));
+      base::BindRepeating(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
+                          base::Unretained(this)));
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&NetErrorHelper::OnNavigationCorrectorRequest,
+                          base::Unretained(this)));
 }
 
 NetErrorHelper::~NetErrorHelper() {
@@ -267,8 +273,9 @@ void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
                           error_html);
 }
 
-bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
-  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url);
+bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url, int error_code) {
+  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url,
+                                        error_code);
 }
 
 std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
@@ -276,10 +283,9 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = "POST";
-  resource_request->fetch_request_context_type =
-      static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+  resource_request->destination = network::mojom::RequestDestination::kEmpty;
   resource_request->resource_type =
-      static_cast<int>(content::ResourceType::kSubResource);
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   resource_request->site_for_cookies = frame->GetDocument().SiteForCookies();
@@ -334,10 +340,12 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
 
   LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
+      error.resolve_error_info().is_secure_network_error,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::move(params));
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
+      std::move(params));
   DCHECK(!template_html.empty()) << "unable to load template.";
   // "t" is the id of the template's root node.
   *error_html =
@@ -365,10 +373,12 @@ LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
     bool can_show_network_diagnostics_dialog) {
   LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
+      error.resolve_error_info().is_secure_network_error,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>());
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
+      std::unique_ptr<ErrorPageParams>());
 
   std::string json;
   JSONWriter::Write(page_state.strings, &json);

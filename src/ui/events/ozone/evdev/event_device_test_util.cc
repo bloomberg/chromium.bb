@@ -172,6 +172,43 @@ const DeviceCapabilities kiBuffaloGamepad = {
     base::size(kiBuffaloGamepadAbsAxes),
 };
 
+// Captured from Basking.
+const DeviceAbsoluteAxis kBaskingTouchScreenAbsAxes[] = {
+    {ABS_X, {0, 0, 3520, 0, 0, 14}},
+    {ABS_Y, {0, 0, 1984, 0, 0, 14}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 3520, 0, 0, 14}},
+    {ABS_MT_POSITION_Y, {0, 0, 1984, 0, 0, 14}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
+
+const DeviceCapabilities kBaskingTouchScreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:16.3/i2c_designware.3/i2c-9/"
+    "i2c-ELAN0001:00/input/input8/event8",
+    /* name */ "Elan Touchscreen",
+    /* phys */ "",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "0000",
+    /* product */ "0000",
+    /* version */ "0000",
+    /* prop */ "2",
+    /* ev */ "b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "661800001000003",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kBaskingTouchScreenAbsAxes,
+    base::size(kBaskingTouchScreenAbsAxes),
+};
+
 // Captured from Pixelbook.
 const DeviceAbsoluteAxis kEveTouchScreenAbsAxes[] = {
     {ABS_X, {0, 0, 10368, 0, 0, 40}},
@@ -920,6 +957,95 @@ const DeviceCapabilities kKohakuStylus = {
     /* ff */ "0",
     kKohakuStylusAxes,
     base::size(kKohakuStylusAxes),
+};
+
+const DeviceAbsoluteAxis kXboxEliteAxes[] = {
+    {ABS_X, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_Y, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_Z, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_RZ, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_GAS, {0, 0, 1023, 3, 63, 0}},
+    {ABS_BRAKE, {0, 0, 1023, 3, 63, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0, 0}},
+    {ABS_HAT0Y, {0, -1, 1, 0, 0, 0}},
+};
+
+// captured from Xbox Elite series 2 controller
+const DeviceCapabilities kXboxElite = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-3/1-3:1.0/bluetooth/hci0/"
+    "hci0:256:11/0005:045E:0B05.000C/input/input21/event11",
+    /* name */ "Xbox Elite Wireless Controller",
+    /* phys */ "a0:af:bd:9f:2f:76",
+    /* uniq */ "98:7a:14:3b:42:b3",
+    /* bustype */ "0005",
+    /* vendor */ "045e",
+    /* product */ "0b05",
+    /* version */ "0903",
+    /* prop */ "0",
+    /* ev */ "10001b",
+    /* key */ "4000000 0 7fff000000000000 1000000000000 100040000000 e080ffdf01cfffff fffffffffffffffe",
+    /* rel */ "0",
+    /* abs */ "30627",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kXboxEliteAxes,
+    base::size(kXboxEliteAxes),
+};
+const DeviceCapabilities kDellActivePenButton = {
+    /* path */
+    "/sys/devices/virtual/misc/uhid/0005:413C:81D5.0004/input/input13/event11",
+    /* name */ "Dell Active Pen PN579X",
+    /* phys */ "f8:94:c2:b9:dd:b2",
+    /* uniq */ "90:7f:61:28:8d:09",
+    /* bustype */ "0005",
+    /* vendor */ "413c",
+    /* product */ "81d5",
+    /* version */ "0f08",
+    /* prop */ "0",
+    /* ev */ "100013",
+    /* key */ "7f80000000000000 e0b0ffdf01cfffff fffffffffffffffe",
+    /* rel */ "0",
+    /* abs */ "0",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+};
+
+const DeviceAbsoluteAxis kDrallionStylusAxes[] = {
+    {ABS_X, {0, 0, 30931, 0, 0, 100}},
+    {ABS_Y, {0, 0, 17399, 0, 0, 100}},
+    {ABS_PRESSURE, {0, 0, 4095, 0, 0, 0}},
+    {ABS_TILT_X, {0, -90, 90, 0, 0, 57}},
+    {ABS_TILT_Y, {0, -90, 90, 0, 0, 57}},
+    {ABS_MISC, {0, 0, 65535, 0, 0, 0}},
+};
+
+const DeviceCapabilities kDrallionStylus = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-7/"
+    "i2c-WCOM48E2:00/0018:2D1F:4971.0001/input/input6/event5",
+    /* name */ "WCOM48E2:00 2D1F:4971 Pen",
+    /* phys */ "i2c-WCOM48E2:00",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "4971",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "1c03 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "1000d000003",
+    /* msc */ "11",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kDrallionStylusAxes,
+    base::size(kDrallionStylusAxes),
 };
 
 // NB: Please use the capture_device_capabilities.py script to add more

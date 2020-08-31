@@ -44,7 +44,7 @@ Polymer({
   },
 
   /** @private */
-  focus: function() {
+  focus() {
     this.$$('cr-input').focus();
 
     // If the input has any contents, the should be selected when focus is
@@ -56,7 +56,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getInputType_: function() {
+  getInputType_() {
     return this.showPassword ? 'text' : 'password';
   },
 
@@ -64,15 +64,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isShowingPlaceholder_: function() {
-    return this.value == FAKE_CREDENTIAL;
+  isShowingPlaceholder_() {
+    return this.value === FAKE_CREDENTIAL;
   },
 
   /**
    * @return {string}
    * @private
    */
-  getIconClass_: function() {
+  getIconClass_() {
     return this.showPassword ? 'icon-visibility-off' : 'icon-visibility';
   },
 
@@ -80,7 +80,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getShowPasswordTitle_: function() {
+  getShowPasswordTitle_() {
     return this.showPassword ? this.i18n('hidePassword') :
                                this.i18n('showPassword');
   },
@@ -89,7 +89,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onShowPasswordTap_: function(event) {
+  onShowPasswordTap_(event) {
     if (this.isShowingPlaceholder_()) {
       // Never show the actual placeholder, clear the field instead.
       this.value = '';
@@ -104,8 +104,8 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeypress_: function(event) {
-    if (event.target.id == 'input' && event.key == 'Enter') {
+  onKeypress_(event) {
+    if (event.target.id === 'input' && event.key === 'Enter') {
       event.stopPropagation();
       this.fire('enter');
     }
@@ -115,13 +115,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeydown_: function(event) {
+  onKeydown_(event) {
     if (!this.isShowingPlaceholder_()) {
       return;
     }
 
-    if (event.key.indexOf('Arrow') < 0 && event.key != 'Home' &&
-        event.key != 'End') {
+    if (event.key.indexOf('Arrow') < 0 && event.key !== 'Home' &&
+        event.key !== 'End') {
       return;
     }
 
@@ -135,12 +135,12 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onMousedown_: function(event) {
+  onMousedown_(event) {
     if (!this.isShowingPlaceholder_()) {
       return;
     }
 
-    if (document.activeElement != event.target) {
+    if (document.activeElement !== event.target) {
       // Focus the field and select the placeholder text if not already focused.
       this.focus();
     }

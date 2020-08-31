@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/scoped_observer.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -67,6 +68,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
     PLACEHOLDER_CHANGED,
+    PORTAL_ACTIVATED,
     POSITION_IN_SET_CHANGED,
     RELATED_NODE_CHANGED,
     READONLY_CHANGED,
@@ -217,6 +219,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  void PostprocessEvents();
   static void GetRestrictionStates(ax::mojom::Restriction restriction,
                                    bool* is_enabled,
                                    bool* is_readonly);
@@ -232,6 +235,10 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // Valid between the call to OnIntAttributeChanged and the call to
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
+
+  // Please make sure that this ScopedObserver is always declared last in order
+  // to prevent any use-after-free.
+  ScopedObserver<AXTree, AXTreeObserver> tree_event_observer_{this};
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& os,

@@ -12,12 +12,22 @@ import json
 import os
 import smtplib
 import socket
+import sys
 
 import mock
 
 from chromite.lib import alerts
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
+# No need to make unittests sleep.
+alerts.SmtpServer.SMTP_RETRY_DELAY = 0
 
 
 class SmtpServerTest(cros_test_lib.MockTestCase):
@@ -245,10 +255,3 @@ class SendHealthAlertTest(cros_test_lib.MockTestCase):
         self.send_email.call_args_list,
         [mock.call(subject, self.recipients,
                    server=mock.ANY, message=body, extra_fields=None)])
-
-
-def main(_argv):
-  # No need to make unittests sleep.
-  alerts.SmtpServer.SMTP_RETRY_DELAY = 0
-
-  cros_test_lib.main(module=__name__)

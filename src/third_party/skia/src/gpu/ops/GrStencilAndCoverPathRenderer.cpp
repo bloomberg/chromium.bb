@@ -14,7 +14,7 @@
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrStencilClip.h"
 #include "src/gpu/GrStyle.h"
-#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/ops/GrDrawPathOp.h"
 #include "src/gpu/ops/GrStencilAndCoverPathRenderer.h"
 #include "src/gpu/ops/GrStencilPathOp.h"
@@ -32,6 +32,18 @@ GrStencilAndCoverPathRenderer::GrStencilAndCoverPathRenderer(GrResourceProvider*
     : fResourceProvider(resourceProvider) {
 }
 
+static bool has_matrix(const GrFragmentProcessor& fp) {
+    if (fp.sampleMatrix().fKind != SkSL::SampleMatrix::Kind::kNone) {
+        return true;
+    }
+    for (int i = fp.numChildProcessors() - 1; i >= 0; --i) {
+        if (has_matrix(fp.childProcessor(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 GrPathRenderer::CanDrawPath
 GrStencilAndCoverPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
     SkASSERT(!args.fTargetIsWrappedVkSecondaryCB);
@@ -46,10 +58,20 @@ GrStencilAndCoverPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const 
         // We rely on a mixed sampled stencil buffer to implement coverage AA.
         return CanDrawPath::kNo;
     }
+    // The lack of vertex shaders means we can't move transform matrices into the vertex shader. We
+    // could do the transform in the fragment processor, but that would be very slow, so instead we
+    // just avoid using this path renderer in the face of transformed FPs.
+    if (args.fPaint) {
+        for (int i = args.fPaint->numColorFragmentProcessors() - 1; i >= 0; --i) {
+            if (has_matrix(*args.fPaint->getColorFragmentProcessor(i))) {
+                return CanDrawPath::kNo;
+            }
+        }
+    }
     return CanDrawPath::kYes;
 }
 
-static sk_sp<GrPath> get_gr_path(GrResourceProvider* resourceProvider, const GrShape& shape) {
+static sk_sp<GrPath> get_gr_path(GrResourceProvider* resourceProvider, const GrStyledShape& shape) {
     GrUniqueKey key;
     bool isVolatile;
     GrPath::ComputeKey(shape, &key, &isVolatile);

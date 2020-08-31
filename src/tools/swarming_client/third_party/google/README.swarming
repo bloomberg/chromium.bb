@@ -48,3 +48,17 @@ touch __init__.py
 cd ../..
 protoc --python_out=. google/rpc/*.proto
 ```
+
+---
+
+Name: Google API services protocol buffers
+Revision: 4543762b23a57fc3c53d409efc3a9affd47b6ab3
+Home-page: https://github.com/googleapis/googleapis/tree/master/google/api
+License: Apache License 2.0
+
+Local modification in ./api
+```
+touch __init__.py
+cd ../..
+protoc --python_out=. google/api/*.proto
+```

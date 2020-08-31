@@ -7,8 +7,8 @@
 
 #include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrCoordTransform.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
@@ -19,8 +19,8 @@ SkMatrix GrGLSLPrimitiveProcessor::GetTransformMatrix(const GrCoordTransform& co
     SkMatrix combined;
     combined.setConcat(coordTransform.matrix(), preMatrix);
     if (coordTransform.normalize()) {
-        combined.postIDiv(coordTransform.peekTexture()->width(),
-                          coordTransform.peekTexture()->height());
+        SkMatrixPriv::PostIDiv(&combined, coordTransform.peekTexture()->width(),
+                                          coordTransform.peekTexture()->height());
     }
 
     if (coordTransform.reverseY()) {
@@ -54,7 +54,8 @@ void GrGLSLPrimitiveProcessor::setupUniformColor(GrGLSLFPFragmentBuilder* fragBu
                                                  UniformHandle* colorUniform) {
     SkASSERT(colorUniform);
     const char* stagedLocalVarName;
-    *colorUniform = uniformHandler->addUniform(kFragment_GrShaderFlag,
+    *colorUniform = uniformHandler->addUniform(nullptr,
+                                               kFragment_GrShaderFlag,
                                                kHalf4_GrSLType,
                                                "Color",
                                                &stagedLocalVarName);

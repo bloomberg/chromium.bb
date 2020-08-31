@@ -9,18 +9,21 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_message.h"
+#include "ipc/trace_ipc_message.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "url/gurl.h"
 
@@ -50,12 +53,14 @@ GpuChannelHost::GpuChannelHost(int channel_id,
   for (int32_t i = 0;
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
     next_route_id_.GetNext();
+
+#if defined(OS_MACOSX)
+  gpu::SetMacOSSpecificTextureTarget(gpu_info.macos_specific_texture_target);
+#endif  // defined(OS_MACOSX)
 }
 
 bool GpuChannelHost::Send(IPC::Message* msg) {
-  TRACE_EVENT2("ipc", "GpuChannelHost::Send", "class",
-               IPC_MESSAGE_ID_CLASS(msg->type()), "line",
-               IPC_MESSAGE_ID_LINE(msg->type()));
+  TRACE_IPC_MESSAGE_SEND("ipc", "GpuChannelHost::Send", msg);
 
   auto message = base::WrapUnique(msg);
 
@@ -105,12 +110,6 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
   UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUChannelHostWaitTime2", wait_duration,
                              base::TimeDelta::FromSeconds(1),
                              kGpuChannelHostMaxWaitTime, 50);
-
-  // Histogram to measure how long the browser UI thread spends blocked.
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "GPU.GPUChannelHostWaitTime.MicroSeconds", wait_duration,
-      base::TimeDelta::FromMicroseconds(10), base::TimeDelta::FromSeconds(10),
-      50);
 
   // Continue waiting for the event if not signaled
   if (!signaled)
@@ -245,6 +244,15 @@ int32_t GpuChannelHost::GenerateRouteID() {
 
 void GpuChannelHost::CrashGpuProcessForTesting() {
   Send(new GpuChannelMsg_CrashForTesting());
+}
+
+void GpuChannelHost::TerminateGpuProcessForTesting() {
+  Send(new GpuChannelMsg_TerminateForTesting());
+}
+
+std::unique_ptr<ClientSharedImageInterface>
+GpuChannelHost::CreateClientSharedImageInterface() {
+  return std::make_unique<ClientSharedImageInterface>(&shared_image_interface_);
 }
 
 GpuChannelHost::~GpuChannelHost() = default;

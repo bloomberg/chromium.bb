@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
@@ -29,8 +30,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
-#include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
 namespace content {
 
@@ -94,22 +97,30 @@ FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   return it == nodes->end() ? nullptr : it->second;
 }
 
-FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
-                             Navigator* navigator,
-                             FrameTreeNode* parent,
-                             blink::WebTreeScopeType scope,
-                             const std::string& name,
-                             const std::string& unique_name,
-                             bool is_created_by_script,
-                             const base::UnguessableToken& devtools_frame_token,
-                             const FrameOwnerProperties& frame_owner_properties,
-                             blink::FrameOwnerElementType owner_type)
+// static
+FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
+  if (!rfh)
+    return nullptr;
+  return static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node();
+}
+
+FrameTreeNode::FrameTreeNode(
+    FrameTree* frame_tree,
+    Navigator* navigator,
+    RenderFrameHostImpl* parent,
+    blink::mojom::TreeScopeType scope,
+    const std::string& name,
+    const std::string& unique_name,
+    bool is_created_by_script,
+    const base::UnguessableToken& devtools_frame_token,
+    const blink::mojom::FrameOwnerProperties& frame_owner_properties,
+    blink::mojom::FrameOwnerElementType owner_type)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this, frame_tree->manager_delegate()),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
-      depth_(parent ? parent->depth_ + 1 : 0u),
+      depth_(parent ? parent->frame_tree_node()->depth_ + 1 : 0u),
       opener_(nullptr),
       original_opener_(nullptr),
       has_committed_real_load_(false),
@@ -118,7 +129,10 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
           scope,
           name,
           unique_name,
-          false /* should enforce strict mixed content checking */,
+          blink::mojom::InsecureRequestPolicy::
+              kLeaveInsecureRequestsAlone /* should enforce strict mixed content
+                                             checking */
+          ,
           std::vector<uint32_t>()
           /* hashes of hosts for insecure request upgrades */,
           false /* is a potentially trustworthy unique origin */,
@@ -129,7 +143,7 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
       was_discarded_(false),
-      blame_context_(frame_tree_node_id_, parent) {
+      blame_context_(frame_tree_node_id_, FrameTreeNode::From(parent)) {
   std::pair<FrameTreeNodeIdMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));
@@ -226,12 +240,13 @@ void FrameTreeNode::ResetForNavigation() {
 
   // Clear any CSP-set sandbox flags, and the declared feature policy for the
   // frame.
-  UpdateFramePolicyHeaders(blink::WebSandboxFlags::kNone, {});
+  UpdateFramePolicyHeaders(network::mojom::WebSandboxFlags::kNone, {});
 
   // This frame has had its user activation bits cleared in the renderer
   // before arriving here. We just need to clear them here and in the other
   // renderer processes that may have a reference to this frame.
-  UpdateUserActivationState(blink::UserActivationUpdateType::kClearActivation);
+  UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType::kClearActivation);
 }
 
 size_t FrameTreeNode::GetFrameTreeSize() const {
@@ -334,15 +349,14 @@ void FrameTreeNode::SetFrameName(const std::string& name,
 }
 
 void FrameTreeNode::AddContentSecurityPolicies(
-    const std::vector<ContentSecurityPolicyHeader>& headers) {
-  replication_state_.accumulated_csp_headers.insert(
-      replication_state_.accumulated_csp_headers.end(), headers.begin(),
-      headers.end());
-  render_manager_.OnDidAddContentSecurityPolicies(headers);
+    std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers) {
+  for (auto& header : headers)
+    replication_state_.accumulated_csp_headers.push_back(*header);
+  render_manager_.OnDidAddContentSecurityPolicies(std::move(headers));
 }
 
 void FrameTreeNode::SetInsecureRequestPolicy(
-    blink::WebInsecureRequestPolicy policy) {
+    blink::mojom::InsecureRequestPolicy policy) {
   if (policy == replication_state_.insecure_request_policy)
     return;
   render_manager_.OnEnforceInsecureRequestPolicy(policy);
@@ -361,13 +375,18 @@ void FrameTreeNode::SetInsecureNavigationsSet(
 
 void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   pending_frame_policy_.sandbox_flags = frame_policy.sandbox_flags;
+  pending_frame_policy_.disallow_document_access =
+      frame_policy.disallow_document_access;
 
   if (parent()) {
     // Subframes should always inherit their parent's sandbox flags.
-    pending_frame_policy_.sandbox_flags |= parent()->active_sandbox_flags();
-    // This is only applied on subframes; container policy is not mutable on
-    // main frame.
+    pending_frame_policy_.sandbox_flags |=
+        parent()->frame_tree_node()->active_sandbox_flags();
+    // This is only applied on subframes; container policy and required document
+    // policy are not mutable on main frame.
     pending_frame_policy_.container_policy = frame_policy.container_policy;
+    pending_frame_policy_.required_document_policy =
+        frame_policy.required_document_policy;
   }
 }
 
@@ -395,21 +414,36 @@ bool FrameTreeNode::IsLoading() const {
   return current_frame_host->is_loading();
 }
 
-bool FrameTreeNode::CommitPendingFramePolicy() {
-  bool did_change_flags = pending_frame_policy_.sandbox_flags !=
+bool FrameTreeNode::CommitFramePolicy(
+    const blink::FramePolicy& new_frame_policy) {
+  bool did_change_flags = new_frame_policy.sandbox_flags !=
                           replication_state_.frame_policy.sandbox_flags;
   bool did_change_container_policy =
-      pending_frame_policy_.container_policy !=
+      new_frame_policy.container_policy !=
       replication_state_.frame_policy.container_policy;
+  bool did_change_required_document_policy =
+      pending_frame_policy_.required_document_policy !=
+      replication_state_.frame_policy.required_document_policy;
+  bool did_change_document_access =
+      new_frame_policy.disallow_document_access !=
+      replication_state_.frame_policy.disallow_document_access;
   if (did_change_flags)
     replication_state_.frame_policy.sandbox_flags =
-        pending_frame_policy_.sandbox_flags;
+        new_frame_policy.sandbox_flags;
   if (did_change_container_policy)
     replication_state_.frame_policy.container_policy =
-        pending_frame_policy_.container_policy;
-  UpdateFramePolicyHeaders(pending_frame_policy_.sandbox_flags,
+        new_frame_policy.container_policy;
+  if (did_change_required_document_policy)
+    replication_state_.frame_policy.required_document_policy =
+        new_frame_policy.required_document_policy;
+  if (did_change_document_access)
+    replication_state_.frame_policy.disallow_document_access =
+        new_frame_policy.disallow_document_access;
+
+  UpdateFramePolicyHeaders(new_frame_policy.sandbox_flags,
                            replication_state_.feature_policy_header);
-  return did_change_flags || did_change_container_policy;
+  return did_change_flags || did_change_container_policy ||
+         did_change_required_document_policy || did_change_document_access;
 }
 
 void FrameTreeNode::TransferNavigationRequestOwnership(
@@ -549,17 +583,17 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     speculative_frame_host->ResetLoadingState();
   // Note: there is no need to set an error code on the NavigationHandle here
   // as it has not been created yet. It is only created when the
-  // BeforeUnloadACK is received.
+  // BeforeUnloadCompleted callback is invoked.
   if (navigation_request_)
     ResetNavigationRequest(false);
 }
 
 bool FrameTreeNode::NotifyUserActivation() {
-  for (FrameTreeNode* node = this; node; node = node->parent()) {
-    if (!node->user_activation_state_.HasBeenActive() &&
-        node->current_frame_host())
-      node->current_frame_host()->DidReceiveFirstUserActivation();
-    node->user_activation_state_.Activate();
+  for (RenderFrameHostImpl* rfh = current_frame_host(); rfh;
+       rfh = rfh->GetParent()) {
+    if (!rfh->frame_tree_node()->user_activation_state_.HasBeenActive())
+      rfh->DidReceiveFirstUserActivation();
+    rfh->frame_tree_node()->user_activation_state_.Activate();
   }
   replication_state_.has_received_user_gesture = true;
 
@@ -599,28 +633,31 @@ bool FrameTreeNode::ClearUserActivation() {
 }
 
 bool FrameTreeNode::VerifyUserActivation() {
-  if (!base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation))
-    return true;
+  DCHECK(base::FeatureList::IsEnabled(
+             features::kBrowserVerifiedUserActivationMouse) ||
+         base::FeatureList::IsEnabled(
+             features::kBrowserVerifiedUserActivationKeyboard));
+
   return render_manager_.current_frame_host()
       ->GetRenderWidgetHost()
       ->RemovePendingUserActivationIfAvailable();
 }
 
 bool FrameTreeNode::UpdateUserActivationState(
-    blink::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type) {
   bool update_result = false;
   switch (update_type) {
-    case blink::UserActivationUpdateType::kConsumeTransientActivation:
+    case blink::mojom::UserActivationUpdateType::kConsumeTransientActivation:
       update_result = ConsumeTransientUserActivation();
       break;
-    case blink::UserActivationUpdateType::kNotifyActivation:
+    case blink::mojom::UserActivationUpdateType::kNotifyActivation:
       update_result = NotifyUserActivation();
       break;
-    case blink::UserActivationUpdateType::
+    case blink::mojom::UserActivationUpdateType::
         kNotifyActivationPendingBrowserVerification:
       if (VerifyUserActivation()) {
         update_result = NotifyUserActivation();
-        update_type = blink::UserActivationUpdateType::kNotifyActivation;
+        update_type = blink::mojom::UserActivationUpdateType::kNotifyActivation;
       } else {
         // TODO(crbug.com/848778): We need to decide what to do when user
         // activation verification failed. NOTREACHED here will make all
@@ -628,7 +665,7 @@ bool FrameTreeNode::UpdateUserActivationState(
         return false;
       }
       break;
-    case blink::UserActivationUpdateType::kClearActivation:
+    case blink::mojom::UserActivationUpdateType::kClearActivation:
       update_result = ClearUserActivation();
       break;
   }
@@ -636,8 +673,8 @@ bool FrameTreeNode::UpdateUserActivationState(
   return update_result;
 }
 
-void FrameTreeNode::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
-  render_manager_.OnSetHasReceivedUserGestureBeforeNavigation(value);
+void FrameTreeNode::OnSetHadStickyUserActivationBeforeNavigation(bool value) {
+  render_manager_.OnSetHadStickyUserActivationBeforeNavigation(value);
   replication_state_.has_received_user_gesture_before_nav = value;
 }
 
@@ -660,7 +697,7 @@ FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
 }
 
 void FrameTreeNode::UpdateFramePolicyHeaders(
-    blink::WebSandboxFlags sandbox_flags,
+    network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& parsed_header) {
   bool changed = false;
   if (replication_state_.feature_policy_header != parsed_header) {
@@ -669,7 +706,7 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
   }
   // TODO(iclelland): Kill the renderer if sandbox flags is not a subset of the
   // currently effective sandbox flags from the frame. https://crbug.com/740556
-  blink::WebSandboxFlags updated_flags =
+  network::mojom::WebSandboxFlags updated_flags =
       sandbox_flags | effective_frame_policy().sandbox_flags;
   if (replication_state_.active_sandbox_flags != updated_flags) {
     replication_state_.active_sandbox_flags = updated_flags;
@@ -710,6 +747,16 @@ void FrameTreeNode::SetOpenerFeaturePolicyState(
   DCHECK(IsMainFrame());
   if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox)) {
     replication_state_.opener_feature_state = feature_state;
+  }
+}
+
+void FrameTreeNode::SetAdFrameType(blink::mojom::AdFrameType ad_frame_type) {
+  DCHECK_NE(ad_frame_type, blink::mojom::AdFrameType::kNonAd);
+  if (replication_state_.ad_frame_type == blink::mojom::AdFrameType::kNonAd) {
+    replication_state_.ad_frame_type = ad_frame_type;
+    render_manager()->OnDidSetAdFrameType(ad_frame_type);
+  } else {
+    DCHECK_EQ(ad_frame_type, replication_state_.ad_frame_type);
   }
 }
 

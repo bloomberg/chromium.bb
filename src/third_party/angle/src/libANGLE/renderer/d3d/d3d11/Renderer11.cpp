@@ -369,6 +369,33 @@ void PopulateFormatDeviceCaps(ID3D11Device *device,
     }
 }
 
+angle::Result GetTextureD3DResourceFromStorageOrImage(const gl::Context *context,
+                                                      TextureD3D *texture,
+                                                      const gl::ImageIndex &index,
+                                                      const TextureHelper11 **outResource,
+                                                      UINT *outSubresource)
+{
+    // If the storage exists, use it. Otherwise, copy directly from the images to avoid
+    // allocating a new storage.
+    if (texture->hasStorage())
+    {
+        TextureStorage *storage = nullptr;
+        ANGLE_TRY(texture->getNativeTexture(context, &storage));
+
+        TextureStorage11 *storage11 = GetAs<TextureStorage11>(storage);
+        ANGLE_TRY(storage11->getResource(context, outResource));
+        ANGLE_TRY(storage11->getSubresourceIndex(context, index, outSubresource));
+    }
+    else
+    {
+        ImageD3D *image  = texture->getImage(index);
+        Image11 *image11 = GetAs<Image11>(image);
+        ANGLE_TRY(image11->getStagingTexture(context, outResource, outSubresource));
+    }
+
+    return angle::Result::Continue;
+}
+
 }  // anonymous namespace
 
 Renderer11DeviceCaps::Renderer11DeviceCaps() = default;
@@ -663,10 +690,39 @@ egl::Error Renderer11::initialize()
 
 HRESULT Renderer11::callD3D11CreateDevice(PFN_D3D11_CREATE_DEVICE createDevice, bool debug)
 {
+    angle::ComPtr<IDXGIAdapter> adapter;
+
+    const egl::AttributeMap &attributes = mDisplay->getAttributeMap();
+    long high = static_cast<long>(attributes.get(EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE, 0));
+    unsigned long low =
+        static_cast<unsigned long>(attributes.get(EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE, 0));
+
+    if (high != 0 || low != 0)
+    {
+        angle::ComPtr<IDXGIFactory1> factory;
+        if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory))))
+        {
+            angle::ComPtr<IDXGIAdapter> temp;
+            for (UINT i = 0; SUCCEEDED(factory->EnumAdapters(i, &temp)); i++)
+            {
+                DXGI_ADAPTER_DESC desc;
+                if (SUCCEEDED(temp->GetDesc(&desc)) && desc.AdapterLuid.HighPart == high &&
+                    desc.AdapterLuid.LowPart == low)
+                {
+                    adapter = temp;
+                    break;
+                }
+            }
+        }
+    }
+
+    // If adapter is not nullptr, the driver type must be D3D_DRIVER_TYPE_UNKNOWN or
+    // D3D11CreateDevice will return E_INVALIDARG.
     return createDevice(
-        nullptr, mRequestedDriverType, nullptr, debug ? D3D11_CREATE_DEVICE_DEBUG : 0,
-        mAvailableFeatureLevels.data(), static_cast<unsigned int>(mAvailableFeatureLevels.size()),
-        D3D11_SDK_VERSION, &mDevice, &(mRenderer11DeviceCaps.featureLevel), &mDeviceContext);
+        adapter.Get(), adapter ? D3D_DRIVER_TYPE_UNKNOWN : mRequestedDriverType, nullptr,
+        debug ? D3D11_CREATE_DEVICE_DEBUG : 0, mAvailableFeatureLevels.data(),
+        static_cast<unsigned int>(mAvailableFeatureLevels.size()), D3D11_SDK_VERSION, &mDevice,
+        &(mRenderer11DeviceCaps.featureLevel), &mDeviceContext);
 }
 
 HRESULT Renderer11::callD3D11On12CreateDevice(PFN_D3D12_CREATE_DEVICE createDevice12,
@@ -2498,36 +2554,29 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
                                       bool unpackPremultiplyAlpha,
                                       bool unpackUnmultiplyAlpha)
 {
-    TextureD3D *sourceD3D = GetImplAs<TextureD3D>(source);
 
-    TextureStorage *sourceStorage = nullptr;
-    ANGLE_TRY(sourceD3D->getNativeTexture(context, &sourceStorage));
-
-    TextureStorage11 *sourceStorage11 = GetAs<TextureStorage11>(sourceStorage);
-    ASSERT(sourceStorage11);
+    TextureD3D *sourceD3D                = GetImplAs<TextureD3D>(source);
+    const gl::ImageDesc &sourceImageDesc = source->getTextureState().getImageDesc(
+        NonCubeTextureTypeToTarget(source->getType()), sourceLevel);
 
     TextureStorage11 *destStorage11 = GetAs<TextureStorage11>(storage);
     ASSERT(destStorage11);
 
     // Check for fast path where a CopySubresourceRegion can be used.
     if (unpackPremultiplyAlpha == unpackUnmultiplyAlpha && !unpackFlipY &&
-        source->getFormat(srcTarget, sourceLevel).info->format == destFormat &&
-        sourceStorage11->getFormatSet().internalFormat ==
+        sourceImageDesc.format.info->sizedInternalFormat ==
             destStorage11->getFormatSet().internalFormat)
     {
-        const TextureHelper11 *sourceResource = nullptr;
-        ANGLE_TRY(sourceStorage11->getResource(context, &sourceResource));
-
         const TextureHelper11 *destResource = nullptr;
         ANGLE_TRY(destStorage11->getResource(context, &destResource));
 
         if (srcTarget == gl::TextureTarget::_2D || srcTarget == gl::TextureTarget::_3D)
         {
             gl::ImageIndex sourceIndex = gl::ImageIndex::MakeFromTarget(srcTarget, sourceLevel, 1);
-
-            UINT sourceSubresource = 0;
-            ANGLE_TRY(
-                sourceStorage11->getSubresourceIndex(context, sourceIndex, &sourceSubresource));
+            const TextureHelper11 *sourceResource = nullptr;
+            UINT sourceSubresource                = 0;
+            ANGLE_TRY(GetTextureD3DResourceFromStorageOrImage(context, sourceD3D, sourceIndex,
+                                                              &sourceResource, &sourceSubresource));
 
             gl::ImageIndex destIndex = gl::ImageIndex::MakeFromTarget(destTarget, destLevel, 1);
 
@@ -2547,7 +2596,6 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
         }
         else if (srcTarget == gl::TextureTarget::_2DArray)
         {
-
             D3D11_BOX d3dBox{static_cast<UINT>(sourceBox.x),
                              static_cast<UINT>(sourceBox.y),
                              0,
@@ -2557,10 +2605,12 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
 
             for (int i = 0; i < sourceBox.depth; i++)
             {
-                gl::ImageIndex srcIndex = gl::ImageIndex::Make2DArray(sourceLevel, i + sourceBox.z);
-                UINT sourceSubresource  = 0;
-                ANGLE_TRY(
-                    sourceStorage11->getSubresourceIndex(context, srcIndex, &sourceSubresource));
+                gl::ImageIndex sourceIndex =
+                    gl::ImageIndex::Make2DArray(sourceLevel, i + sourceBox.z);
+                const TextureHelper11 *sourceResource = nullptr;
+                UINT sourceSubresource                = 0;
+                ANGLE_TRY(GetTextureD3DResourceFromStorageOrImage(
+                    context, sourceD3D, sourceIndex, &sourceResource, &sourceSubresource));
 
                 gl::ImageIndex dIndex = gl::ImageIndex::Make2DArray(destLevel, i + destOffset.z);
                 UINT destSubresource  = 0;
@@ -2578,15 +2628,14 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
     }
     else
     {
+        TextureStorage *sourceStorage = nullptr;
+        ANGLE_TRY(sourceD3D->getNativeTexture(context, &sourceStorage));
+
+        TextureStorage11 *sourceStorage11 = GetAs<TextureStorage11>(sourceStorage);
+        ASSERT(sourceStorage11);
+
         const d3d11::SharedSRV *sourceSRV = nullptr;
         ANGLE_TRY(sourceStorage11->getSRVLevels(context, sourceLevel, sourceLevel, &sourceSRV));
-
-        gl::Extents sourceSize(static_cast<int>(source->getWidth(
-                                   NonCubeTextureTypeToTarget(source->getType()), sourceLevel)),
-                               static_cast<int>(source->getHeight(
-                                   NonCubeTextureTypeToTarget(source->getType()), sourceLevel)),
-                               static_cast<int>(source->getDepth(
-                                   NonCubeTextureTypeToTarget(source->getType()), sourceLevel)));
 
         gl::ImageIndex destIndex;
         if (destTarget == gl::TextureTarget::_2D || destTarget == gl::TextureTarget::_3D ||
@@ -2596,7 +2645,7 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
         }
         else if (destTarget == gl::TextureTarget::_2DArray)
         {
-            destIndex = gl::ImageIndex::Make2DArrayRange(destLevel, 0, sourceSize.depth);
+            destIndex = gl::ImageIndex::Make2DArrayRange(destLevel, 0, sourceImageDesc.size.depth);
         }
         else
         {
@@ -2630,9 +2679,9 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
         // Use nearest filtering because source and destination are the same size for the direct
         // copy
         GLenum sourceFormat = source->getFormat(srcTarget, sourceLevel).info->format;
-        ANGLE_TRY(mBlit->copyTexture(context, *sourceSRV, sourceArea, sourceSize, sourceFormat,
-                                     destRTV, destArea, destSize, nullptr, destFormat, destType,
-                                     GL_NEAREST, false, unpackPremultiplyAlpha,
+        ANGLE_TRY(mBlit->copyTexture(context, *sourceSRV, sourceArea, sourceImageDesc.size,
+                                     sourceFormat, destRTV, destArea, destSize, nullptr, destFormat,
+                                     destType, GL_NEAREST, false, unpackPremultiplyAlpha,
                                      unpackUnmultiplyAlpha));
     }
 
@@ -2703,7 +2752,7 @@ angle::Result Renderer11::createRenderTarget(const gl::Context *context,
         desc.ArraySize          = 1;
         desc.Format             = formatInfo.texFormat;
         desc.SampleDesc.Count   = (supportedSamples == 0) ? 1 : supportedSamples;
-        desc.SampleDesc.Quality = (supportedSamples == 0) ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
+        desc.SampleDesc.Quality = getSampleDescQuality(supportedSamples);
         desc.Usage              = D3D11_USAGE_DEFAULT;
         desc.CPUAccessFlags     = 0;
         desc.MiscFlags          = 0;
@@ -3037,7 +3086,7 @@ StreamProducerImpl *Renderer11::createStreamProducerD3DTexture(
 
 bool Renderer11::supportsFastCopyBufferToTexture(GLenum internalFormat) const
 {
-    ASSERT(getNativeExtensions().pixelBufferObject);
+    ASSERT(getNativeExtensions().pixelBufferObjectNV);
 
     const gl::InternalFormat &internalFormatInfo = gl::GetSizedInternalFormatInfo(internalFormat);
     const d3d11::Format &d3d11FormatInfo =
@@ -3084,6 +3133,7 @@ bool Renderer11::supportsFastCopyBufferToTexture(GLenum internalFormat) const
 
 angle::Result Renderer11::fastCopyBufferToTexture(const gl::Context *context,
                                                   const gl::PixelUnpackState &unpack,
+                                                  gl::Buffer *unpackBuffer,
                                                   unsigned int offset,
                                                   RenderTargetD3D *destRenderTarget,
                                                   GLenum destinationFormat,
@@ -3091,8 +3141,9 @@ angle::Result Renderer11::fastCopyBufferToTexture(const gl::Context *context,
                                                   const gl::Box &destArea)
 {
     ASSERT(supportsFastCopyBufferToTexture(destinationFormat));
-    return mPixelTransfer->copyBufferToTexture(context, unpack, offset, destRenderTarget,
-                                               destinationFormat, sourcePixelsType, destArea);
+    return mPixelTransfer->copyBufferToTexture(context, unpack, unpackBuffer, offset,
+                                               destRenderTarget, destinationFormat,
+                                               sourcePixelsType, destArea);
 }
 
 ImageD3D *Renderer11::createImage()
@@ -3844,7 +3895,7 @@ void Renderer11::initializeFeatures(angle::FeaturesD3D *features) const
     {
         d3d11::InitializeFeatures(mRenderer11DeviceCaps, mAdapterDescription, features);
     }
-    OverrideFeaturesWithDisplayState(features, mDisplay->getState());
+    ApplyFeatureOverrides(features, mDisplay->getState());
 }
 
 DeviceImpl *Renderer11::createEGLDevice()
@@ -4035,6 +4086,19 @@ angle::Result Renderer11::getSamplerState(const gl::Context *context,
                                           ID3D11SamplerState **outSamplerState)
 {
     return mStateCache.getSamplerState(context, this, samplerState, outSamplerState);
+}
+
+UINT Renderer11::getSampleDescQuality(GLuint supportedSamples) const
+{
+    // Per the documentation on
+    // https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_standard_multisample_quality_levels
+    // applications can only request the standard multisample pattern on
+    // feature levels 10_1 and above.
+    if (supportedSamples > 0 && mDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1)
+    {
+        return D3D11_STANDARD_MULTISAMPLE_PATTERN;
+    }
+    return 0;
 }
 
 angle::Result Renderer11::clearRenderTarget(const gl::Context *context,

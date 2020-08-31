@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -63,9 +65,16 @@ bool IsUninstallable(Profile* profile, const std::string& app_id);
 // Returns whether the default Crostini VM is running for the user.
 bool IsCrostiniRunning(Profile* profile);
 
+// Whether the user is able to perform a container upgrade.
+bool ShouldAllowContainerUpgrade(Profile* profile);
+
 // Returns whether default Crostini container should be configured according to
 // the configuration specified by CrostiniAnsiblePlaybook user policy.
 bool ShouldConfigureDefaultContainer(Profile* profile);
+
+// Returns whether a dialog from Crostini is blocking the immediate launch.
+bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
+                                         CrostiniResult result);
 
 // Launches the Crostini app with ID of |app_id| on the display with ID of
 // |display_id|. |app_id| should be a valid Crostini app list id.
@@ -112,6 +121,10 @@ std::string AppNameFromCrostiniAppId(const std::string& id);
 base::Optional<std::string> CrostiniAppIdFromAppName(
     const std::string& app_name);
 
+// Returns a list of ports currently being forwarded in Crostini as a JSON
+// object.
+std::string GetActivePortListAsJSON(Profile* profile);
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
@@ -119,17 +132,14 @@ enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
 // See chrome/browser/ui/views/crostini for implementation of the ShowXXX
 // functions below.
 
-// Shows the Crostini Installer dialog.
-void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
+bool IsCrostiniRecoveryViewShowing();
+
 // Shows the Crostini App installer dialog.
 void ShowCrostiniAppInstallerView(Profile* profile,
                                   const LinuxPackageInfo& package_info);
-// Shows the Crostini App Uninstaller dialog.
-void ShowCrostiniAppUninstallerView(Profile* profile,
-                                    const std::string& app_id);
 // Shows the Crostini force-close dialog. If |app_name| is nonempty, the dialog
 // will include the window's name as text. Returns a handle to that dialog, so
 // that we can add observers to the dialog itself.
@@ -141,6 +151,8 @@ views::Widget* ShowCrostiniForceCloseDialog(
 // Termina version matches).
 void ShowCrostiniUpdateComponentView(Profile* profile,
                                      CrostiniUISurface ui_surface);
+// Shows the ui with the error message when installing a package fails.
+void ShowCrostiniPackageInstallFailureView(const std::string& error_message);
 
 // Shows the Crostini Container Upgrade dialog (for running upgrades in the
 // container).
@@ -158,6 +170,14 @@ void CloseCrostiniUpdateFilesystemView();
 // applying an Ansible playbook in the container).
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
+// Show the Crostini Recovery dialog when Crostini is still running after a
+// Chrome crash. Returns false if recovery terminal can be launched.
+bool ShowCrostiniRecoveryView(Profile* profile,
+                              CrostiniUISurface ui_surface,
+                              const std::string& app_id,
+                              int64_t display_id,
+                              LaunchCrostiniAppCallback callback);
+
 // Returns App ID of the terminal app which is either the older crosh-based
 // terminal, or the new Terminal System App if the TerminalSystemApp feature
 // is enabled.
@@ -170,15 +190,14 @@ const std::string& GetDeletedTerminalId();
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
 constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
-// web_app::GenerateAppIdFromURL("chrome://terminal/html/terminal.html")
+// web_app::GenerateAppIdFromURL(
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
 constexpr char kCrostiniTerminalSystemAppId[] =
-    "oapmgeobaaddjmlgbbjbdhapidbomlgg";
+    "fhicihalidkgcimdmhpohldehjmcabcf";
 
 constexpr char kCrostiniDefaultVmName[] = "termina";
 constexpr char kCrostiniDefaultContainerName[] = "penguin";
 constexpr char kCrostiniDefaultUsername[] = "emperor";
-constexpr char kCrostiniCroshBuiltinAppId[] =
-    "nkoccljplnhpfnfiajclkommnmllphnl";
 // In order to be compatible with sync folder id must match standard.
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
@@ -205,6 +224,26 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
 // left for an operation to run which started and time |start| and is current
 // at |percent| way through.
 base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent);
+
+// Splits the range between |min_size| and |available_space| into enough
+// evenly-spaced intervals you can use them as ticks on a slider. Will return an
+// empty set if the range is invalid (e.g. any numbers are negative).
+// The number of ticks will fit in a signed integer.
+std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
+                                         int64_t available_space);
+
+// Returns a pref value stored for a specific container.
+const base::Value* GetContainerPrefValue(Profile* profile,
+                                         const ContainerId& container_id,
+                                         const std::string& key);
+
+// Sets a pref value for a specific container.
+void UpdateContainerPref(Profile* profile,
+                         const ContainerId& container_id,
+                         const std::string& key,
+                         base::Value value);
+
+const ContainerId& DefaultContainerId();
 
 }  // namespace crostini
 

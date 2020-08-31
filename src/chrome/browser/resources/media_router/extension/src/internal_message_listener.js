@@ -14,6 +14,7 @@ goog.require('mr.EventAnalytics');
 goog.require('mr.EventListener');
 goog.require('mr.InternalMessage');
 goog.require('mr.InternalMessageType');
+goog.require('mr.ModuleId');
 
 
 /**
@@ -30,10 +31,10 @@ mr.InternalMessageListener = class extends mr.EventListener {
    * @override
    */
   validateEvent(message, sender, sendResponse) {
-    const internalMessage = /** @type {mr.InternalMessage} */ (message);
+    const internalMessage = /** @type {!mr.InternalMessage} */ (message);
     return internalMessage.type == mr.InternalMessageType.RETRIEVE_LOG_DATA &&
-        sender.id == chrome.runtime.id &&
-        sender.url == `chrome-extension://${sender.id}/feedback.html`;
+        sender.origin == `chrome-extension://${chrome.runtime.id}` &&
+        sender.url == `${sender.origin}/feedback.html`;
   }
 
   /**

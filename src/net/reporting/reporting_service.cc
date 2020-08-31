@@ -71,10 +71,12 @@ class ReportingServiceImpl : public ReportingService {
 
     // base::Unretained is safe because the callback is stored in
     // |task_backlog_| which will not outlive |this|.
-    DoOrBacklogTask(base::BindOnce(&ReportingServiceImpl::DoQueueReport,
-                                   base::Unretained(this),
-                                   std::move(sanitized_url), user_agent, group,
-                                   type, std::move(body), depth, queued_ticks));
+    // TODO(chlily): Get NetworkIsolationKey from caller.
+    NetworkIsolationKey network_isolation_key = NetworkIsolationKey::Todo();
+    DoOrBacklogTask(base::BindOnce(
+        &ReportingServiceImpl::DoQueueReport, base::Unretained(this),
+        network_isolation_key, std::move(sanitized_url), user_agent, group,
+        type, std::move(body), depth, queued_ticks));
   }
 
   void ProcessHeader(const GURL& url,
@@ -93,9 +95,10 @@ class ReportingServiceImpl : public ReportingService {
     }
 
     DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
-    DoOrBacklogTask(base::BindOnce(&ReportingServiceImpl::DoProcessHeader,
-                                   base::Unretained(this), url,
-                                   std::move(header_value)));
+    // TODO(chlily): Get the proper NetworkIsolationKey from the caller.
+    DoOrBacklogTask(base::BindOnce(
+        &ReportingServiceImpl::DoProcessHeader, base::Unretained(this),
+        NetworkIsolationKey::Todo(), url, std::move(header_value)));
   }
 
   void RemoveBrowsingData(int data_type_mask,
@@ -148,7 +151,8 @@ class ReportingServiceImpl : public ReportingService {
     std::move(task).Run();
   }
 
-  void DoQueueReport(GURL sanitized_url,
+  void DoQueueReport(const NetworkIsolationKey& network_isolation_key,
+                     GURL sanitized_url,
                      const std::string& user_agent,
                      const std::string& group,
                      const std::string& type,
@@ -156,16 +160,17 @@ class ReportingServiceImpl : public ReportingService {
                      int depth,
                      base::TimeTicks queued_ticks) {
     DCHECK(initialized_);
-    context_->cache()->AddReport(sanitized_url, user_agent, group, type,
-                                 std::move(body), depth, queued_ticks,
-                                 0 /* attempts */);
+    context_->cache()->AddReport(network_isolation_key, sanitized_url,
+                                 user_agent, group, type, std::move(body),
+                                 depth, queued_ticks, 0 /* attempts */);
   }
 
-  void DoProcessHeader(const GURL& url,
+  void DoProcessHeader(const NetworkIsolationKey& network_isolation_key,
+                       const GURL& url,
                        std::unique_ptr<base::Value> header_value) {
     DCHECK(initialized_);
-    ReportingHeaderParser::ParseHeader(context_.get(), url,
-                                       std::move(header_value));
+    ReportingHeaderParser::ParseHeader(context_.get(), network_isolation_key,
+                                       url, std::move(header_value));
   }
 
   void DoRemoveBrowsingData(

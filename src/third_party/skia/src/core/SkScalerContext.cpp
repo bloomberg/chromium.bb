@@ -20,8 +20,8 @@
 #include "src/core/SkDraw.h"
 #include "src/core/SkFontPriv.h"
 #include "src/core/SkGlyph.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkMaskGamma.h"
+#include "src/core/SkMatrixProvider.h"
 #include "src/core/SkPaintPriv.h"
 #include "src/core/SkPathPriv.h"
 #include "src/core/SkRasterClip.h"
@@ -367,8 +367,8 @@ static void pack4xHToLCD16(const SkPixmap& src, const SkMask& dst,
         // It should be possible to make it much faster.
         for (int sample_x = -4; sample_x < sample_width + 4; sample_x += 4) {
             int fir[LCD_PER_PIXEL] = { 0 };
-            for (int sample_index = SkMax32(0, sample_x - 4), coeff_index = sample_index - (sample_x - 4)
-                ; sample_index < SkMin32(sample_x + 8, sample_width)
+            for (int sample_index = std::max(0, sample_x - 4), coeff_index = sample_index - (sample_x - 4)
+                ; sample_index < std::min(sample_x + 8, sample_width)
                 ; ++sample_index, ++coeff_index)
             {
                 int sample_value = srcP[sample_index];
@@ -378,7 +378,7 @@ static void pack4xHToLCD16(const SkPixmap& src, const SkMask& dst,
             }
             for (int subpxl_index = 0; subpxl_index < LCD_PER_PIXEL; ++subpxl_index) {
                 fir[subpxl_index] /= 0x100;
-                fir[subpxl_index] = SkMin32(fir[subpxl_index], 255);
+                fir[subpxl_index] = std::min(fir[subpxl_index], 255);
             }
 
             U8CPU r, g, b;
@@ -397,7 +397,7 @@ static void pack4xHToLCD16(const SkPixmap& src, const SkMask& dst,
                 b = maskPreBlend.fB[b];
             }
 #if SK_SHOW_TEXT_BLIT_COVERAGE
-            r = SkMax32(r, 10); g = SkMax32(g, 10); b = SkMax32(b, 10);
+            r = std::max(r, 10); g = std::max(g, 10); b = std::max(b, 10);
 #endif
             *dstP = SkPack888ToRGB16(r, g, b);
             dstP = SkTAddOffset<uint16_t>(dstP, dstPDelta);
@@ -510,9 +510,10 @@ static void generateMask(const SkMask& mask, const SkPath& path,
     sk_bzero(dst.writable_addr(), dst.computeByteSize());
 
     SkDraw  draw;
-    draw.fDst   = dst;
-    draw.fRC    = &clip;
-    draw.fMatrix = &matrix;
+    SkSimpleMatrixProvider matrixProvider(matrix);
+    draw.fDst            = dst;
+    draw.fRC             = &clip;
+    draw.fMatrixProvider = &matrixProvider;
     draw.drawPath(path, paint);
 
     switch (mask.fFormat) {
@@ -588,8 +589,8 @@ void SkScalerContext::getImage(const SkGlyph& origGlyph) {
         fRec.getMatrixFrom2x2(&matrix);
 
         if (as_MFB(fMaskFilter)->filterMask(&dstM, srcM, matrix, nullptr)) {
-            int width = SkMin32(origGlyph.fWidth, dstM.fBounds.width());
-            int height = SkMin32(origGlyph.fHeight, dstM.fBounds.height());
+            int width = std::min<int>(origGlyph.fWidth, dstM.fBounds.width());
+            int height = std::min<int>(origGlyph.fHeight, dstM.fBounds.height());
             int dstRB = origGlyph.rowBytes();
             int srcRB = dstM.fRowBytes;
 
@@ -864,53 +865,13 @@ void SkScalerContextRec::setLuminanceColor(SkColor c) {
             SkColorSetRGB(SkColorGetR(c), SkColorGetG(c), SkColorGetB(c)));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-class SkScalerContext_Empty : public SkScalerContext {
-public:
-    SkScalerContext_Empty(sk_sp<SkTypeface> typeface, const SkScalerContextEffects& effects,
-                          const SkDescriptor* desc)
-        : SkScalerContext(std::move(typeface), effects, desc) {}
-
-protected:
-    unsigned generateGlyphCount() override {
-        return 0;
-    }
-    bool generateAdvance(SkGlyph* glyph) override {
-        glyph->zeroMetrics();
-        return true;
-    }
-    void generateMetrics(SkGlyph* glyph) override {
-        glyph->fMaskFormat = fRec.fMaskFormat;
-        glyph->zeroMetrics();
-    }
-    void generateImage(const SkGlyph& glyph) override {}
-    bool generatePath(SkGlyphID glyph, SkPath* path) override {
-        path->reset();
-        return false;
-    }
-    void generateFontMetrics(SkFontMetrics* metrics) override {
-        if (metrics) {
-            sk_bzero(metrics, sizeof(*metrics));
-        }
-    }
-};
-
 extern SkScalerContext* SkCreateColorScalerContext(const SkDescriptor* desc);
 
 std::unique_ptr<SkScalerContext> SkTypeface::createScalerContext(
-    const SkScalerContextEffects& effects, const SkDescriptor* desc, bool allowFailure) const
-{
-    std::unique_ptr<SkScalerContext> c(this->onCreateScalerContext(effects, desc));
-    if (!c && !allowFailure) {
-        c = skstd::make_unique<SkScalerContext_Empty>(sk_ref_sp(const_cast<SkTypeface*>(this)),
-                                                      effects, desc);
-    }
-
-    // !allowFailure implies c != nullptr
-    SkASSERT(c || allowFailure);
-
-    return c;
+        const SkScalerContextEffects& effects, const SkDescriptor* desc) const {
+    auto answer = std::unique_ptr<SkScalerContext>{this->onCreateScalerContext(effects, desc)};
+    SkASSERT(answer != nullptr);
+    return answer;
 }
 
 /*
@@ -1115,7 +1076,7 @@ void SkScalerContext::MakeRecAndEffects(const SkFont& font, const SkPaint& paint
 SkDescriptor* SkScalerContext::MakeDescriptorForPaths(SkFontID typefaceID,
                                                       SkAutoDescriptor* ad) {
     SkScalerContextRec rec;
-    memset(&rec, 0, sizeof(rec));
+    memset((void*)&rec, 0, sizeof(rec));
     rec.fFontID = typefaceID;
     rec.fTextSize = SkFontPriv::kCanonicalTextSizeForPaths;
     rec.fPreScaleX = rec.fPost2x2[0][0] = rec.fPost2x2[1][1] = SK_Scalar1;
@@ -1152,7 +1113,6 @@ static size_t calculate_size_and_flatten(const SkScalerContextRec& rec,
 static void generate_descriptor(const SkScalerContextRec& rec,
                                 const SkBinaryWriteBuffer& effectBuffer,
                                 SkDescriptor* desc) {
-    desc->init();
     desc->addEntry(kRec_SkDescriptorTag, sizeof(rec), &rec);
 
     if (effectBuffer.bytesWritten() > 0) {
@@ -1198,6 +1158,42 @@ bool SkScalerContext::CheckBufferSizeForRec(const SkScalerContextRec& rec,
                                             size_t size) {
     SkBinaryWriteBuffer buf;
     return size >= calculate_size_and_flatten(rec, effects, &buf);
+}
+
+SkScalerContext* SkScalerContext::MakeEmptyContext(
+        sk_sp<SkTypeface> typeface, const SkScalerContextEffects& effects,
+        const SkDescriptor* desc) {
+    class SkScalerContext_Empty : public SkScalerContext {
+    public:
+        SkScalerContext_Empty(sk_sp<SkTypeface> typeface, const SkScalerContextEffects& effects,
+                              const SkDescriptor* desc)
+                : SkScalerContext(std::move(typeface), effects, desc) {}
+
+    protected:
+        unsigned generateGlyphCount() override {
+            return 0;
+        }
+        bool generateAdvance(SkGlyph* glyph) override {
+            glyph->zeroMetrics();
+            return true;
+        }
+        void generateMetrics(SkGlyph* glyph) override {
+            glyph->fMaskFormat = fRec.fMaskFormat;
+            glyph->zeroMetrics();
+        }
+        void generateImage(const SkGlyph& glyph) override {}
+        bool generatePath(SkGlyphID glyph, SkPath* path) override {
+            path->reset();
+            return false;
+        }
+        void generateFontMetrics(SkFontMetrics* metrics) override {
+            if (metrics) {
+                sk_bzero(metrics, sizeof(*metrics));
+            }
+        }
+    };
+
+    return new SkScalerContext_Empty{std::move(typeface), effects, desc};
 }
 
 

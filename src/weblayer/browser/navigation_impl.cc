@@ -5,7 +5,10 @@
 #include "weblayer/browser/navigation_impl.h"
 
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -32,27 +35,54 @@ NavigationImpl::~NavigationImpl() {
 #endif
 }
 
+void NavigationImpl::SetParamsToLoadWhenSafe(
+    std::unique_ptr<content::NavigationController::LoadURLParams> params) {
+  scheduled_load_params_ = std::move(params);
+}
+
+std::unique_ptr<content::NavigationController::LoadURLParams>
+NavigationImpl::TakeParamsToLoadWhenSafe() {
+  return std::move(scheduled_load_params_);
+}
+
 #if defined(OS_ANDROID)
 void NavigationImpl::SetJavaNavigation(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& java_navigation) {
-  java_navigation_.Reset(env, java_navigation);
+  java_navigation_ = java_navigation;
 }
 
-ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(JNIEnv* env) {
   return ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
 }
 
-ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(JNIEnv* env) {
   std::vector<std::string> jni_redirects;
   for (const GURL& redirect : GetRedirectChain())
     jni_redirects.push_back(redirect.spec());
   return base::android::ToJavaArrayOfStrings(env, jni_redirects);
+}
+
+jboolean NavigationImpl::SetRequestHeader(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& name,
+    const base::android::JavaParamRef<jstring>& value) {
+  if (!safe_to_set_request_headers_)
+    return false;
+
+  SetRequestHeader(ConvertJavaStringToUTF8(name),
+                   ConvertJavaStringToUTF8(value));
+  return true;
+}
+
+jboolean NavigationImpl::SetUserAgentString(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& value) {
+  if (!safe_to_set_user_agent_)
+    return false;
+  SetUserAgentString(ConvertJavaStringToUTF8(value));
+  return true;
 }
 
 #endif
@@ -66,7 +96,7 @@ const std::vector<GURL>& NavigationImpl::GetRedirectChain() {
 }
 
 NavigationState NavigationImpl::GetState() {
-  if (navigation_handle_->IsErrorPage())
+  if (navigation_handle_->IsErrorPage() || navigation_handle_->IsDownload())
     return NavigationState::kFailed;
   if (navigation_handle_->HasCommitted())
     return NavigationState::kComplete;
@@ -86,6 +116,14 @@ bool NavigationImpl::IsSameDocument() {
 
 bool NavigationImpl::IsErrorPage() {
   return navigation_handle_->IsErrorPage();
+}
+
+bool NavigationImpl::IsDownload() {
+  return navigation_handle_->IsDownload();
+}
+
+bool NavigationImpl::WasStopCalled() {
+  return was_stopped_;
 }
 
 Navigation::LoadError NavigationImpl::GetLoadError() {
@@ -109,5 +147,33 @@ Navigation::LoadError NavigationImpl::GetLoadError() {
 
   return kOtherError;
 }
+
+void NavigationImpl::SetRequestHeader(const std::string& name,
+                                      const std::string& value) {
+  // Any headers coming from the client should be exempt from CORS checks.
+  navigation_handle_->SetCorsExemptRequestHeader(name, value);
+}
+
+void NavigationImpl::SetUserAgentString(const std::string& value) {
+  DCHECK(safe_to_set_user_agent_);
+  navigation_handle_->GetWebContents()->SetUserAgentOverride(
+      blink::UserAgentOverride::UserAgentOnly(value),
+      /* override_in_new_tabs */ false);
+  navigation_handle_->SetIsOverridingUserAgent(!value.empty());
+}
+
+#if defined(OS_ANDROID)
+static jboolean JNI_NavigationImpl_IsValidRequestHeaderName(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& name) {
+  return net::HttpUtil::IsValidHeaderName(ConvertJavaStringToUTF8(name));
+}
+
+static jboolean JNI_NavigationImpl_IsValidRequestHeaderValue(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& value) {
+  return net::HttpUtil::IsValidHeaderValue(ConvertJavaStringToUTF8(value));
+}
+#endif
 
 }  // namespace weblayer

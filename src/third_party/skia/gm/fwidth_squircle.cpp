@@ -23,7 +23,6 @@
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrGpuBuffer.h"
 #include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrMesh.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrPipeline.h"
@@ -97,8 +96,8 @@ class FwidthSquircleTestProcessor::Impl : public GrGLSLGeometryProcessor {
         const auto& proc = args.fGP.cast<FwidthSquircleTestProcessor>();
 
         auto* uniforms = args.fUniformHandler;
-        fViewMatrixHandle =
-                uniforms->addUniform(kVertex_GrShaderFlag, kFloat3x3_GrSLType, "viewmatrix");
+        fViewMatrixHandle = uniforms->addUniform(nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType,
+                                                 "viewmatrix");
 
         auto* varyings = args.fVaryingHandler;
         varyings->emitAttributes(proc);
@@ -170,8 +169,29 @@ private:
         return GrProcessorSet::EmptySetAnalysis();
     }
 
+    GrProgramInfo* createProgramInfo(const GrCaps* caps,
+                                     SkArenaAlloc* arena,
+                                     const GrSurfaceProxyView* writeView,
+                                     GrAppliedClip&& appliedClip,
+                                     const GrXferProcessor::DstProxyView& dstProxyView) const {
+        GrGeometryProcessor* geomProc = FwidthSquircleTestProcessor::Make(arena, fViewMatrix);
+
+        return sk_gpu_test::CreateProgramInfo(caps, arena, writeView,
+                                              std::move(appliedClip), dstProxyView,
+                                              geomProc, SkBlendMode::kSrcOver,
+                                              GrPrimitiveType::kTriangleStrip);
+    }
+
+    GrProgramInfo* createProgramInfo(GrOpFlushState* flushState) const {
+        return this->createProgramInfo(&flushState->caps(),
+                                       flushState->allocator(),
+                                       flushState->writeView(),
+                                       flushState->detachAppliedClip(),
+                                       flushState->dstProxyView());
+    }
+
     void onPrePrepare(GrRecordingContext* context,
-                      const GrSurfaceProxyView* dstView,
+                      const GrSurfaceProxyView* writeView,
                       GrAppliedClip* clip,
                       const GrXferProcessor::DstProxyView& dstProxyView) final {
         SkArenaAlloc* arena = context->priv().recordTimeAllocator();
@@ -179,13 +199,10 @@ private:
         // This is equivalent to a GrOpFlushState::detachAppliedClip
         GrAppliedClip appliedClip = clip ? std::move(*clip) : GrAppliedClip();
 
-        GrGeometryProcessor* geomProc = FwidthSquircleTestProcessor::Make(arena, fViewMatrix);
+        fProgramInfo = this->createProgramInfo(context->priv().caps(), arena, writeView,
+                                               std::move(appliedClip), dstProxyView);
 
-        // TODO: need to also give this to the recording context
-        fProgramInfo = sk_gpu_test::CreateProgramInfo(context->priv().caps(), arena, dstView,
-                                                      std::move(appliedClip), dstProxyView,
-                                                      geomProc, SkBlendMode::kSrcOver,
-                                                      GrPrimitiveType::kTriangleStrip);
+        context->priv().recordProgramInfo(fProgramInfo);
     }
 
     void onPrepare(GrOpFlushState* flushState) final {
@@ -205,24 +222,12 @@ private:
         }
 
         if (!fProgramInfo) {
-            auto geomProc = FwidthSquircleTestProcessor::Make(flushState->allocator(),
-                                                              fViewMatrix);
-
-            fProgramInfo = sk_gpu_test::CreateProgramInfo(&flushState->caps(),
-                                                          flushState->allocator(),
-                                                          flushState->view(),
-                                                          flushState->detachAppliedClip(),
-                                                          flushState->dstProxyView(),
-                                                          geomProc, SkBlendMode::kSrcOver,
-                                                          GrPrimitiveType::kTriangleStrip);
+            fProgramInfo = this->createProgramInfo(flushState);
         }
 
-        GrMesh mesh(GrPrimitiveType::kTriangleStrip);
-        mesh.setNonIndexedNonInstanced(4);
-        mesh.setVertexData(std::move(fVertexBuffer));
-
-        flushState->opsRenderPass()->draw(*fProgramInfo, &mesh, 1,
-                                          SkRect::MakeIWH(kWidth, kHeight));
+        flushState->bindPipeline(*fProgramInfo, SkRect::MakeIWH(kWidth, kHeight));
+        flushState->bindBuffers(nullptr, nullptr, fVertexBuffer.get());
+        flushState->draw(4, 0);
 
     }
 

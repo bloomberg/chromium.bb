@@ -397,10 +397,10 @@ static void NamedPropertySetter(
     return;
   }
 
-  bool result = impl->setNamedItem(name, property_value, exception_state);
+  NamedPropertySetterResult result = impl->setNamedItem(name, property_value, exception_state);
   if (exception_state.HadException())
     return;
-  if (!result)
+  if (result == NamedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -416,12 +416,12 @@ static void NamedPropertyDeleter(
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
-  DeleteResult result = impl->deleteNamedItem(name, exception_state);
+  NamedPropertyDeleterResult result = impl->deleteNamedItem(name, exception_state);
   if (exception_state.HadException())
     return;
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 static void NamedPropertyQuery(
@@ -520,10 +520,10 @@ static void IndexedPropertySetter(
     return;
   }
 
-  bool result = impl->setItem(index, property_value, exception_state);
+  IndexedPropertySetterResult result = impl->setItem(index, property_value, exception_state);
   if (exception_state.HadException())
     return;
-  if (!result)
+  if (result == IndexedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -537,12 +537,12 @@ static void IndexedPropertyDeleter(
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
-  DeleteResult result = impl->deleteItem(index, exception_state);
+  NamedPropertyDeleterResult result = impl->deleteItem(index, exception_state);
   if (exception_state.HadException())
     return;
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 }  // namespace test_interface_2_v8_internal
@@ -554,78 +554,91 @@ void V8TestInterface2::SizeAttributeGetterCallback(const v8::FunctionCallbackInf
 }
 
 void V8TestInterface2::ItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.item");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_item");
 
   test_interface_2_v8_internal::ItemMethod(info);
 }
 
 void V8TestInterface2::SetItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.setItem");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_setItem");
 
   test_interface_2_v8_internal::SetItemMethod(info);
 }
 
 void V8TestInterface2::DeleteItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.deleteItem");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_deleteItem");
 
   test_interface_2_v8_internal::DeleteItemMethod(info);
 }
 
 void V8TestInterface2::NamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.namedItem");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_namedItem");
 
   test_interface_2_v8_internal::NamedItemMethod(info);
 }
 
 void V8TestInterface2::SetNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.setNamedItem");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_setNamedItem");
 
   test_interface_2_v8_internal::SetNamedItemMethod(info);
 }
 
 void V8TestInterface2::DeleteNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.deleteNamedItem");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_deleteNamedItem");
 
   test_interface_2_v8_internal::DeleteNamedItemMethod(info);
 }
 
 void V8TestInterface2::StringifierMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.stringifierMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_stringifierMethod");
 
   test_interface_2_v8_internal::StringifierMethodMethod(info);
 }
 
 void V8TestInterface2::KeysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.keys");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_keys");
 
   test_interface_2_v8_internal::KeysMethod(info);
 }
 
 void V8TestInterface2::EntriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.entries");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_entries");
 
   test_interface_2_v8_internal::EntriesMethod(info);
 }
 
 void V8TestInterface2::ForEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.forEach");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_forEach");
 
   test_interface_2_v8_internal::ForEachMethod(info);
 }
 
 void V8TestInterface2::HasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.has");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_has");
 
   test_interface_2_v8_internal::HasMethod(info);
 }
 
 void V8TestInterface2::ToStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.toString");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_toString");
 
   test_interface_2_v8_internal::ToStringMethod(info);
 }
 
 void V8TestInterface2::IteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.iterator");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_iterator");
 
   test_interface_2_v8_internal::IteratorMethod(info);
@@ -761,7 +774,7 @@ void V8TestInterface2::InstallV8TestInterface2Template(
   static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "size", V8TestInterface2::SizeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "size", V8TestInterface2::SizeAttributeGetterCallback, nullptr, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
@@ -850,16 +863,6 @@ v8::Local<v8::Object> V8TestInterface2::FindInstanceInPrototypeChain(
 TestInterface2* V8TestInterface2::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestInterface2* NativeValueTraits<TestInterface2>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterface2* native_value = V8TestInterface2::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterface2"));
-  }
-  return native_value;
 }
 
 InstallRuntimeEnabledFeaturesOnTemplateFunction

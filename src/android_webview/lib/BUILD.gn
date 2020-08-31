@@ -31,7 +31,7 @@ source_set("lib") {
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//components/viz/common",
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/common:content_descriptor_keys",
@@ -59,12 +59,10 @@ source_set("webview_entry_point") {
     ":lib",
     "//base",
   ]
-  sources = [
-    "webview_entry_point.cc",
-  ]
+  sources = [ "webview_entry_point.cc" ]
 
   if (webview_includes_weblayer) {
     defines = [ "WEBVIEW_INCLUDES_WEBLAYER" ]
-    deps += [ "//weblayer:weblayer_lib" ]
+    deps += [ "//weblayer:weblayer_lib_webview" ]
   }
 }

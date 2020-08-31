@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://print/print_preview.js';
+import {DEFAULT_MAX_COPIES} from 'chrome://print/print_preview.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {triggerInputEvent} from 'chrome://test/print_preview/print_preview_test_utils.js';
@@ -12,11 +12,15 @@ suite('CopiesSettingsTest', function() {
   /** @type {?PrintPreviewCopiesSettingsElement} */
   let copiesSection = null;
 
+  /** @type {?PrintPreviewModelElement} */
+  let model = null;
+
   /** @override */
   setup(function() {
     PolymerTest.clearBody();
-    const model = document.createElement('print-preview-model');
+    model = document.createElement('print-preview-model');
     document.body.appendChild(model);
+    model.set('settings.collate.available', true);
 
     copiesSection = document.createElement('print-preview-copies-settings');
     copiesSection.settings = model.settings;
@@ -25,11 +29,52 @@ suite('CopiesSettingsTest', function() {
     document.body.appendChild(copiesSection);
   });
 
+  /**
+   * Confirms that |max| is currently set as copiesSection's maxCopies.
+   * @param {number} Expected maximum copies value to check.
+   */
+  async function checkCopiesMax(max) {
+    const input =
+        copiesSection.$$('print-preview-number-settings-section').getInput();
+
+    // Check that |max| copies is valid.
+    await triggerInputEvent(input, max.toString(), copiesSection);
+    assertTrue(copiesSection.getSetting('copies').valid);
+
+    // Check that |max| + 1 copies is invalid.
+    await triggerInputEvent(input, (max + 1).toString(), copiesSection);
+    assertFalse(copiesSection.getSetting('copies').valid);
+  }
+
+  // Verifies that the copies capability is correctly parsed for the max copies
+  // supported.
+  test('set copies max', async () => {
+    const copiesInput =
+        copiesSection.$$('print-preview-number-settings-section').getInput();
+    assertEquals('1', copiesInput.value);
+    assertFalse(copiesSection.getSetting('copies').setFromUi);
+
+    copiesSection.capability = {max: 1234};
+    await checkCopiesMax(1234);
+
+    // Missing and empty capabilities should choose default max copies.
+    copiesSection.capability = null;
+    await checkCopiesMax(DEFAULT_MAX_COPIES);
+
+    copiesSection.capability = {};
+    await checkCopiesMax(DEFAULT_MAX_COPIES);
+  });
+
   test('collate visibility', async () => {
     const collateSection = copiesSection.$$('.checkbox');
     assertTrue(collateSection.hidden);
 
     copiesSection.setSetting('copies', 2);
+    assertFalse(collateSection.hidden);
+
+    model.set('settings.collate.available', false);
+    assertTrue(collateSection.hidden);
+    model.set('settings.collate.available', true);
     assertFalse(collateSection.hidden);
 
     // Set copies empty.

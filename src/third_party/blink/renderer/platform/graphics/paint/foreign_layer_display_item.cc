@@ -93,30 +93,25 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 }
 #endif
 
-static void RecordForeignLayerInternal(
-    GraphicsContext& context,
-    const DisplayItemClient& client,
-    DisplayItem::Type type,
-    scoped_refptr<cc::Layer> layer,
-    const FloatPoint& offset,
-    const LayerAsJSONClient* json_client,
-    const base::Optional<PropertyTreeState>& properties) {
+static void RecordForeignLayerInternal(GraphicsContext& context,
+                                       const DisplayItemClient& client,
+                                       DisplayItem::Type type,
+                                       scoped_refptr<cc::Layer> layer,
+                                       const FloatPoint& offset,
+                                       const LayerAsJSONClient* json_client,
+                                       const PropertyTreeState* properties) {
   PaintController& paint_controller = context.GetPaintController();
-  if (paint_controller.DisplayItemConstructionIsDisabled())
-    return;
-
   // This is like ScopedPaintChunkProperties but uses null id because foreign
   // layer chunk doesn't need an id nor a client.
   base::Optional<PropertyTreeState> previous_properties;
   if (properties) {
     previous_properties.emplace(paint_controller.CurrentPaintChunkProperties());
-    paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
-                                                       *properties);
+    paint_controller.UpdateCurrentPaintChunkProperties(nullptr, *properties);
   }
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
       client, type, std::move(layer), offset, json_client);
   if (properties) {
-    paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
+    paint_controller.UpdateCurrentPaintChunkProperties(nullptr,
                                                        *previous_properties);
   }
 }
@@ -126,25 +121,9 @@ void RecordForeignLayer(GraphicsContext& context,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
                         const FloatPoint& offset,
-                        const base::Optional<PropertyTreeState>& properties) {
+                        const PropertyTreeState* properties) {
   RecordForeignLayerInternal(context, client, type, std::move(layer), offset,
                              nullptr, properties);
-}
-
-void RecordGraphicsLayerAsForeignLayer(GraphicsContext& context,
-                                       DisplayItem::Type type,
-                                       const GraphicsLayer& graphics_layer) {
-  // In pre-CompositeAfterPaint, the GraphicsLayer hierarchy is still built
-  // during CompositingUpdate, and we have to clear them here to ensure no
-  // extraneous layers are still attached. In future we will disable all
-  // those layer hierarchy code so we won't need this line.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  graphics_layer.CcLayer()->RemoveAllChildren();
-
-  RecordForeignLayerInternal(
-      context, graphics_layer, type, graphics_layer.CcLayer(),
-      FloatPoint(graphics_layer.GetOffsetFromTransformNode()), &graphics_layer,
-      graphics_layer.GetPropertyTreeState());
 }
 
 }  // namespace blink

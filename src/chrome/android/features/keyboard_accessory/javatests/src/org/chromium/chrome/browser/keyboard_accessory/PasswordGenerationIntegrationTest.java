@@ -29,14 +29,15 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.IntegrationTest;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.concurrent.TimeoutException;
@@ -65,7 +66,8 @@ public class PasswordGenerationIntegrationTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        ManualFillingTestHelper.disableServerPredictions();
         mHelper.loadTestPage(FORM_URL, false);
     }
 
@@ -109,7 +111,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
-    @DisabledTest(message = "crbug.com/1010344")
+    @DisabledTest(message = "crbug.com/1067171")
     public void testAutomaticGenerationUsePassword() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID);
@@ -123,6 +125,8 @@ public class PasswordGenerationIntegrationTest {
         waitForGenerationDialog();
         String generatedPassword = getTextFromTextView(R.id.generated_password);
         onView(withId(R.id.positive_button)).perform(click());
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mHelper.getFieldText(PASSWORD_NODE_ID).isEmpty());
         assertPasswordText(PASSWORD_NODE_ID, generatedPassword);
         clickNode(SUBMIT_NODE_ID);
         mHelper.waitForViewOnActivityRoot(withId(R.id.infobar_message))
@@ -186,10 +190,9 @@ public class PasswordGenerationIntegrationTest {
 
     private void waitForGenerationDialog() {
         waitForModalDialogPresenter();
-        Window window = ((AppModalPresenter) mSyncTestRule.getActivity()
-                                 .getModalDialogManager()
-                                 .getCurrentPresenterForTest())
-                                .getWindow();
+        ModalDialogManager manager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                mSyncTestRule.getActivity()::getModalDialogManager);
+        Window window = ((AppModalPresenter) manager.getCurrentPresenterForTest()).getWindow();
         mHelper.waitForViewOnRoot(
                 window.getDecorView().getRootView(), withId(password_generation_dialog));
     }

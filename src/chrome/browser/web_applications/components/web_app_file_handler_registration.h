@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_FILE_HANDLER_REGISTRATION_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_FILE_HANDLER_REGISTRATION_H_
 
-#include <set>
 #include <string>
 
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
+#include "build/build_config.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 
 class Profile;
 
@@ -29,12 +32,31 @@ bool ShouldRegisterFileHandlersWithOs();
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types);
+                                const apps::FileHandlers& file_handlers);
 
 // Undo the file extensions registration for the PWA with specified |app_id|.
 // If a shim app was required, also removes the shim app.
 void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile);
+
+#if defined(OS_LINUX)
+using RegisterMimeTypesOnLinuxCallback =
+    base::OnceCallback<bool(base::FilePath profile_path,
+                            std::string file_contents)>;
+
+// Exposed for testing purposes. Register the set of
+// MIME-type-to-file-extensions mappings corresponding to |file_handlers|. File
+// I/O and a a callout to the Linux shell are performed asynchronously in a
+// |callback|, which is set automatically on the usual install code path.
+void RegisterMimeTypesOnLinux(const AppId& app_id,
+                              Profile* profile,
+                              const apps::FileHandlers& file_handlers,
+                              RegisterMimeTypesOnLinuxCallback callback);
+
+// Override the default |callback| passed to RegisterMimeTypesOnLinux. Used in
+// automated browser tests.
+void SetRegisterMimeTypesOnLinuxCallbackForTesting(
+    RegisterMimeTypesOnLinuxCallback callback);
+#endif
 
 }  // namespace web_app
 

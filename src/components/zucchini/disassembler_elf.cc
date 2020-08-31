@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/zucchini/abs32_utils.h"
 #include "components/zucchini/algorithm.h"
@@ -44,6 +45,15 @@ enum SectionJudgement : int {
 // from SectionJudgement values.
 template <class Traits>
 int JudgeSection(size_t image_size, const typename Traits::Elf_Shdr* section) {
+  // BufferRegion uses |size_t| this can be 32-bit in some cases. For Elf64
+  // |sh_addr|, |sh_offset| and |sh_size| are 64-bit this can result in
+  // overflows in the subsequent validation steps.
+  if (!base::IsValueInRangeForNumericType<size_t>(section->sh_addr) ||
+      !base::IsValueInRangeForNumericType<size_t>(section->sh_offset) ||
+      !base::IsValueInRangeForNumericType<size_t>(section->sh_size)) {
+    return SECTION_IS_MALFORMED;
+  }
+
   // Examine RVA range: Reject if numerical overflow may happen.
   if (!BufferRegion{section->sh_addr, section->sh_size}.FitsIn(kSizeBound))
     return SECTION_IS_MALFORMED;
@@ -219,6 +229,9 @@ std::unique_ptr<ReferenceWriter> DisassemblerElf<Traits>::MakeWriteRelocs(
 template <class Traits>
 bool DisassemblerElf<Traits>::ParseHeader() {
   BufferSource source(image_);
+  // Ensure any offsets will fit within the |image_|'s bounds.
+  if (!base::IsValueInRangeForNumericType<offset_t>(image_.size()))
+    return false;
 
   // Ensures |header_| is valid later on.
   if (!QuickDetect(image_))
@@ -263,10 +276,16 @@ bool DisassemblerElf<Traits>::ParseHeader() {
   // Visits |segments_| to get estimate on |offset_bound|.
   for (const typename Traits::Elf_Phdr* segment = segments_;
        segment != segments_ + segments_count_; ++segment) {
-    if (!image_.covers({segment->p_offset, segment->p_filesz}))
+    // |image_.covers()| is a sufficient check except when size_t is 32 bit and
+    // parsing ELF64. In such cases a value-in-range check is needed on the
+    // segment. This fixes crbug/1035603.
+    offset_t segment_end;
+    base::CheckedNumeric<offset_t> checked_segment_end = segment->p_offset;
+    checked_segment_end += segment->p_filesz;
+    if (!checked_segment_end.AssignIfValid(&segment_end) ||
+        !image_.covers({segment->p_offset, segment->p_filesz})) {
       return false;
-    offset_t segment_end =
-        base::checked_cast<offset_t>(segment->p_offset + segment->p_filesz);
+    }
     offset_bound = std::max(offset_bound, segment_end);
   }
 

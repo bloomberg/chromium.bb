@@ -11,10 +11,16 @@ package org.chromium.android_webview.common.services;
  * their name.
  */
 public class ServiceNames {
+    public static final String AW_MINIDUMP_UPLOAD_JOB_SERVICE =
+            "org.chromium.android_webview.services.AwMinidumpUploadJobService";
     public static final String CRASH_RECEIVER_SERVICE =
             "org.chromium.android_webview.services.CrashReceiverService";
+    public static final String DEVELOPER_MODE_CONTENT_PROVIDER =
+            "org.chromium.android_webview.services.DeveloperModeContentProvider";
     public static final String DEVELOPER_UI_SERVICE =
             "org.chromium.android_webview.services.DeveloperUiService";
+    public static final String METRICS_BRIDGE_SERVICE =
+            "org.chromium.android_webview.services.MetricsBridgeService";
     public static final String VARIATIONS_SEED_SERVER =
             "org.chromium.android_webview.services.VariationsSeedServer";
 

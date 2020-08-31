@@ -6,6 +6,7 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -85,7 +86,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
   [ChromeEarlGrey waitForPageToFinishLoading];
-  GREYAssertEqual(2, visitCounter, @"The page should have been loaded twice");
+  static int visitCountBeforePrerender = visitCounter;
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
 
@@ -100,7 +101,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Wait until prerender request reaches the server.
   bool prerendered = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return visitCounter == 3;
+    return visitCounter == visitCountBeforePrerender + 1;
   });
   GREYAssertTrue(prerendered, @"Prerender did not happen");
 
@@ -124,7 +125,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
-  GREYAssertEqual(3, visitCounter, @"Prerender should have been the last load");
+  GREYAssertEqual(visitCountBeforePrerender + 1, visitCounter,
+                  @"Prerender should have been the last load");
 }
 
 @end

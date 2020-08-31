@@ -13,6 +13,7 @@ import tempfile
 import time
 
 from devil.utils import cmd_helper
+from telemetry.util import cmd_util
 
 # Some developers' workflow includes running the Chrome process from
 # /usr/local/... instead of the default location. We have to check for both
@@ -20,87 +21,23 @@ from devil.utils import cmd_helper
 _CHROME_PROCESS_REGEX = [re.compile(r'^/opt/google/chrome/chrome '),
                          re.compile(r'^/usr/local/?.*/chrome/chrome ')]
 
+_CHROME_MOUNT_NAMESPACE_PATH = "/run/namespaces/mnt_chrome"
+
 
 def RunCmd(args, cwd=None, quiet=False):
-  """Opens a subprocess to execute a program and returns its return value.
-
-  Args:
-    args: A string or a sequence of program arguments. The program to execute is
-      the string or the first item in the args sequence.
-    cwd: If not None, the subprocess's current directory will be changed to
-      |cwd| before it's executed.
-
-  Returns:
-    Return code from the command execution.
-  """
-  if not quiet:
-    logging.debug(' '.join(args) + ' ' + (cwd or ''))
-  with open(os.devnull, 'w') as devnull:
-    p = subprocess.Popen(args=args,
-                         cwd=cwd,
-                         stdout=devnull,
-                         stderr=devnull,
-                         stdin=devnull,
-                         shell=False)
-    return p.wait()
+  return cmd_util.RunCmd(args, cwd, quiet)
 
 
 def GetAllCmdOutput(args, cwd=None, quiet=False):
-  """Open a subprocess to execute a program and returns its output.
-
-  Args:
-    args: A string or a sequence of program arguments. The program to execute is
-      the string or the first item in the args sequence.
-    cwd: If not None, the subprocess's current directory will be changed to
-      |cwd| before it's executed.
-
-  Returns:
-    Captures and returns the command's stdout.
-    Prints the command's stderr to logger (which defaults to stdout).
-  """
-  if not quiet:
-    logging.debug(' '.join(args) + ' ' + (cwd or ''))
-  with open(os.devnull, 'w') as devnull:
-    p = subprocess.Popen(args=args,
-                         cwd=cwd,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
-                         stdin=devnull)
-    stdout, stderr = p.communicate()
-    if not quiet:
-      logging.debug(' > stdout=[%s], stderr=[%s]', stdout, stderr)
-    return stdout, stderr
+  return cmd_util.GetAllCmdOutput(args, cwd, quiet)
 
 
 def StartCmd(args, cwd=None, quiet=False):
-  """Starts a subprocess to execute a program and returns its handle.
-
-  Args:
-    args: A string or a sequence of program arguments. The program to execute is
-      the string or the first item in the args sequence.
-    cwd: If not None, the subprocess's current directory will be changed to
-      |cwd| before it's executed.
-
-  Returns:
-     An instance of subprocess.Popen associated with the live process.
-  """
-  if not quiet:
-    logging.debug(' '.join(args) + ' ' + (cwd or ''))
-  return subprocess.Popen(args=args,
-                          cwd=cwd,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+  return cmd_util.StartCmd(args, cwd, quiet)
 
 
 def HasSSH():
-  try:
-    RunCmd(['ssh'], quiet=True)
-    RunCmd(['scp'], quiet=True)
-    logging.debug("HasSSH()->True")
-    return True
-  except OSError:
-    logging.debug("HasSSH()->False")
-    return False
+  return cmd_util.HasSSH()
 
 
 class LoginException(Exception):
@@ -113,6 +50,24 @@ class KeylessLoginRequiredException(LoginException):
 
 class DNSFailureException(LoginException):
   pass
+
+
+def _Unquote(s):
+  """Removes any trailing/leading single/double quotes from a string.
+
+  No-ops if the given object is not a string or otherwise does not have a
+  .strip() method.
+
+  Args:
+    s: The string to remove quotes from.
+
+  Returns:
+    |s| with trailing/leading quotes removed.
+  """
+  if not hasattr(s, 'strip'):
+    return s
+  # Repeated to handle both "'foo'" and '"foo"'
+  return s.strip("'").strip('"').strip("'")
 
 
 class CrOSInterface(object):
@@ -129,9 +84,9 @@ class CrOSInterface(object):
     self._reserved_ports = []
 
     self._device_host_clock_offset = None
-    self._root_is_writable = False
     self._master_connection_open = False
     self._disable_strict_filenames = False
+    self._board = None
 
     if self.local:
       return
@@ -168,10 +123,6 @@ class CrOSInterface(object):
   @property
   def ssh_port(self):
     return self._ssh_port
-
-  @property
-  def root_is_writable(self):
-    return self._root_is_writable
 
   def OpenConnection(self):
     """Opens a master connection to the device."""
@@ -366,6 +317,8 @@ class CrOSInterface(object):
     """
     logging.debug("GetFile(%s, %s)" % (filename, destfile))
     if self.local:
+      filename = _Unquote(filename)
+      destfile = _Unquote(destfile)
       if destfile is not None and destfile != filename:
         shutil.copyfile(filename, destfile)
         return
@@ -437,20 +390,37 @@ class CrOSInterface(object):
     device_dumps = stdout.splitlines()
     for dump_filename in device_dumps:
       host_path = os.path.join(host_dir, dump_filename)
-      if not os.path.exists(host_path):
-        device_path = cmd_helper.SingleQuote(
-            posixpath.join(self.CROS_MINIDUMP_DIR, dump_filename))
-        self.GetFile(device_path, host_path)
-        # Set the local version's modification time to the device's.
-        stdout, _ = self.RunCmdOnDevice(
-            ['ls', '--time-style', '+%s', '-l', device_path])
-        stdout = stdout.strip()
-        # We expect whitespace-separated fields in this order:
-        # mode, links, owner, group, size, mtime, filename.
-        # Offset by the difference of the device and host clocks.
-        device_mtime = int(stdout.split()[5])
-        host_mtime = device_mtime - time_offset
-        os.utime(host_path, (host_mtime, host_mtime))
+      # Skip any .lock files since they're not useful and could be deleted by
+      # the time we try to pull them.
+      if dump_filename.endswith('.lock'):
+        continue
+      if os.path.exists(host_path):
+        continue
+      device_path = cmd_helper.SingleQuote(
+          posixpath.join(self.CROS_MINIDUMP_DIR, dump_filename))
+      # Skip any directories that happen to be in the list.
+      stdout, _ = self.RunCmdOnDevice(['test', '-f', device_path, '&&',
+                                       'echo', 'true', '||', 'echo', 'false'])
+      if 'false' in stdout:
+        continue
+      # Skip any files that have a corresponding .lock file, as that implies the
+      # file hasn't been fully written to disk yet.
+      device_lock_path = device_path + '.lock'
+      if self.FileExistsOnDevice(device_lock_path):
+        logging.debug('Not pulling file %s because a .lock file exists for it',
+                      device_path)
+        continue
+      self.GetFile(device_path, host_path)
+      # Set the local version's modification time to the device's.
+      stdout, _ = self.RunCmdOnDevice(
+          ['ls', '--time-style', '+%s', '-l', device_path])
+      stdout = stdout.strip()
+      # We expect whitespace-separated fields in this order:
+      # mode, links, owner, group, size, mtime, filename.
+      # Offset by the difference of the device and host clocks.
+      device_mtime = int(stdout.split()[5])
+      host_mtime = device_mtime - time_offset
+      os.utime(host_path, (host_mtime, host_mtime))
 
   def GetDeviceHostClockOffset(self):
     """Returns the difference between the device and host clocks."""
@@ -592,10 +562,27 @@ class CrOSInterface(object):
 
     return True
 
-  def _GetMountSourceAndTarget(self, path):
-    df_out, _ = self.RunCmdOnDevice(['/bin/df', '--output=source,target', path])
-    df_ary = df_out.split('\n')
-    # 3 lines for title, mount info, and empty line.
+  def _GetMountSourceAndTarget(self, path, ns=None):
+    def _RunAndSplit(cmd):
+      cmd_out, _ = self.RunCmdOnDevice(cmd)
+      return cmd_out.split('\n')
+
+    cmd = ['/bin/df', '--output=source,target', path]
+    df_ary = []
+    if ns:
+      ns_cmd = ['nsenter', '--mount=%s' % ns]
+      ns_cmd.extend(cmd)
+      # Try running 'df' in the non-root mount namespace.
+      df_ary = _RunAndSplit(ns_cmd)
+
+    if len(df_ary) < 3:
+      df_ary = _RunAndSplit(cmd)
+
+    # 3 lines for title, mount info, and empty line:
+    # # df --output=source,target `cryptohome-path user '$guest'`
+    # Filesystem     Mounted on\n
+    # /dev/loop6     /home/user/a5715c406109752ce7c31dad219c85c4e812728f\n
+    #
     if len(df_ary) == 3:
       line_ary = df_ary[1].split()
       return line_ary if len(line_ary) == 2 else None
@@ -625,7 +612,11 @@ class CrOSInterface(object):
     """Returns True iff |user|'s cryptohome is mounted."""
     # Check whether it's ephemeral mount from a loop device.
     profile_ephemeral_path = self.EphemeralCryptohomePath(username)
-    ephemeral_mount_info = self._GetMountSourceAndTarget(profile_ephemeral_path)
+    ns = None
+    if is_guest:
+      ns = _CHROME_MOUNT_NAMESPACE_PATH
+    ephemeral_mount_info = self._GetMountSourceAndTarget(profile_ephemeral_path,
+                                                         ns)
     if ephemeral_mount_info:
       return (ephemeral_mount_info[0].startswith('/dev/loop') and
               ephemeral_mount_info[1] == profile_ephemeral_path)
@@ -680,6 +671,17 @@ class CrOSInterface(object):
     """DEVICETYPE in /etc/lsb-release is CHROMEBOOK, CHROMEBIT, etc."""
     return self.LsbReleaseValue(key='DEVICETYPE', default='CHROMEBOOK')
 
+  def GetBoard(self):
+    """Gets the name of the board of the device, e.g. "kevin".
+
+    Returns:
+      The name of the board as a string, or None if it can't be retrieved.
+    """
+    if self._board is None:
+      self._board = self.LsbReleaseValue(
+          key='CHROMEOS_RELEASE_BOARD', default=None)
+    return self._board
+
   def RestartUI(self, clear_enterprise_policy):
     logging.info('(Re)starting the ui (logs the user out)')
     start_cmd = ['start', 'ui']
@@ -707,33 +709,6 @@ class CrOSInterface(object):
             stdout=devnull,
             stderr=devnull)
       self._master_connection_open = False
-
-  def MakeRootReadWriteIfNecessary(self):
-    """Remounts / as read-write if it is currently read-only."""
-    if self._root_is_writable:
-      return
-    write_check_cmd = ['touch', '/testfile', '&&', 'rm', '/testfile']
-    _, stderr = self.RunCmdOnDevice(write_check_cmd)
-    if stderr == '':
-      self._root_is_writable = True
-      return
-    if self.local:
-      logging.error('Root is read-only, and running in local mode, so cannot '
-                    'remount as read-write. Functionality such as stack '
-                    'symbolization will be broken.')
-      return
-    logging.warning('Root is currently read-only. Attempting to remount as '
-                    'read-write, which will disable rootfs verification and '
-                    'require a reboot.')
-    self._DisableRootFsVerification()
-    self._RemountRootAsReadWrite()
-
-    _, stderr = self.RunCmdOnDevice(write_check_cmd)
-    if stderr != '':
-      logging.error('Failed to set root to read-write. Functionality such as '
-                    'stack symbolization will be broken.')
-      return
-    self._root_is_writable = True
 
   def _DisableRootFsVerification(self):
     """Disables rootfs verification on the device, requiring a reboot."""

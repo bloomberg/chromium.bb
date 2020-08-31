@@ -31,14 +31,13 @@ void OverscrollActionsTabHelper::SetDelegate(
     overscroll_actions_controller_ = [[OverscrollActionsController alloc]
         initWithWebViewProxy:web_state_->GetWebViewProxy()];
   }
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   overscroll_actions_controller_.style =
       browser_state->IsOffTheRecord()
           ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
           : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
   overscroll_actions_controller_.delegate = delegate;
-  overscroll_actions_controller_.browserState = browser_state;
 }
 
 OverscrollActionsTabHelper::OverscrollActionsTabHelper(web::WebState* web_state)

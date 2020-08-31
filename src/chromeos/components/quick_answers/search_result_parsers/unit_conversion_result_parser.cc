@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/values.h"
 
 namespace chromeos {
@@ -29,7 +30,11 @@ bool UnitConversionResultParser::Parse(const Value* result,
     return false;
   }
 
+  quick_answer->result_type = ResultType::kUnitConversionResult;
   quick_answer->primary_answer = *dest;
+  quick_answer->first_answer_row.push_back(
+      std::make_unique<QuickAnswerResultText>(*dest));
+
   return true;
 }
 

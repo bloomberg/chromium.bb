@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/button/toggle_button.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -18,6 +22,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 
@@ -38,7 +43,7 @@ constexpr int kThumbInset = 2;
 // Class representing the thumb (the circle that slides horizontally).
 class ToggleButton::ThumbView : public InkDropHostView {
  public:
-  ThumbView() = default;
+  ThumbView() { views::InstallEmptyHighlightPathGenerator(this); }
   ~ThumbView() override = default;
 
   void Update(const gfx::Rect& bounds, float color_ratio) {
@@ -52,6 +57,14 @@ class ToggleButton::ThumbView : public InkDropHostView {
   static gfx::Insets GetShadowOutsets() {
     return gfx::Insets(-kShadowBlur)
         .Offset(gfx::Vector2d(kShadowOffsetX, kShadowOffsetY));
+  }
+
+  void SetThumbColor(bool is_on, const base::Optional<SkColor>& thumb_color) {
+    (is_on ? thumb_on_color_ : thumb_off_color_) = thumb_color;
+  }
+
+  base::Optional<SkColor> GetThumbColor(bool is_on) const {
+    return is_on ? thumb_on_color_ : thumb_off_color_;
   }
 
  protected:
@@ -70,20 +83,20 @@ class ToggleButton::ThumbView : public InkDropHostView {
 
   void OnPaint(gfx::Canvas* canvas) override {
     const float dsf = canvas->UndoDeviceScaleFactor();
+    const ui::NativeTheme* theme = GetNativeTheme();
     std::vector<gfx::ShadowValue> shadows;
     gfx::ShadowValue shadow(
         gfx::Vector2d(kShadowOffsetX, kShadowOffsetY), 2 * kShadowBlur,
-        SkColorSetA(GetNativeTheme()->GetSystemColor(
-                        ui::NativeTheme::kColorId_LabelEnabledColor),
-                    0x99));
+        theme->GetSystemColor(
+            ui::NativeTheme::kColorId_ToggleButtonShadowColor));
     shadows.push_back(shadow.Scale(dsf));
     cc::PaintFlags thumb_flags;
     thumb_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
     thumb_flags.setAntiAlias(true);
-    const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor);
-    const SkColor thumb_off_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DialogBackground);
+    const SkColor thumb_on_color = thumb_on_color_.value_or(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor));
+    const SkColor thumb_off_color = thumb_off_color_.value_or(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonColor));
     thumb_flags.setColor(
         color_utils::AlphaBlend(thumb_on_color, thumb_off_color, color_ratio_));
 
@@ -98,9 +111,9 @@ class ToggleButton::ThumbView : public InkDropHostView {
                        thumb_flags);
   }
 
-  std::unique_ptr<InkDropMask> CreateInkDropMask() const override {
-    return nullptr;
-  }
+  // Colors used for the thumb, defaults to NativeTheme if not set explicitly.
+  base::Optional<SkColor> thumb_on_color_;
+  base::Optional<SkColor> thumb_off_color_;
 
   // Color ratio between 0 and 1 that controls the thumb color.
   float color_ratio_ = 0.0f;
@@ -149,6 +162,42 @@ bool ToggleButton::GetIsOn() const {
   return slide_animation_.IsShowing();
 }
 
+void ToggleButton::SetThumbOnColor(
+    const base::Optional<SkColor>& thumb_on_color) {
+  thumb_view_->SetThumbColor(true /* is_on */, thumb_on_color);
+}
+
+base::Optional<SkColor> ToggleButton::GetThumbOnColor() const {
+  return thumb_view_->GetThumbColor(true);
+}
+
+void ToggleButton::SetThumbOffColor(
+    const base::Optional<SkColor>& thumb_off_color) {
+  thumb_view_->SetThumbColor(false /* is_on */, thumb_off_color);
+}
+
+base::Optional<SkColor> ToggleButton::GetThumbOffColor() const {
+  return thumb_view_->GetThumbColor(false);
+}
+
+void ToggleButton::SetTrackOnColor(
+    const base::Optional<SkColor>& track_on_color) {
+  track_on_color_ = track_on_color;
+}
+
+base::Optional<SkColor> ToggleButton::GetTrackOnColor() const {
+  return track_on_color_;
+}
+
+void ToggleButton::SetTrackOffColor(
+    const base::Optional<SkColor>& track_off_color) {
+  track_off_color_ = track_off_color;
+}
+
+base::Optional<SkColor> ToggleButton::GetTrackOffColor() const {
+  return track_off_color_;
+}
+
 void ToggleButton::SetAcceptsEvents(bool accepts_events) {
   if (GetAcceptsEvents() == accepts_events)
     return;
@@ -192,11 +241,10 @@ void ToggleButton::UpdateThumb() {
 }
 
 SkColor ToggleButton::GetTrackColor(bool is_on) const {
-  const SkAlpha kTrackAlpha = 0x66;
-  ui::NativeTheme::ColorId color_id =
-      is_on ? ui::NativeTheme::kColorId_ProminentButtonColor
-            : ui::NativeTheme::kColorId_LabelEnabledColor;
-  return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id), kTrackAlpha);
+  base::Optional<SkColor> color = is_on ? track_on_color_ : track_off_color_;
+  return color.value_or(GetNativeTheme()->GetSystemColor(
+      is_on ? ui::NativeTheme::kColorId_ToggleButtonTrackColorOn
+            : ui::NativeTheme::kColorId_ToggleButtonTrackColorOff));
 }
 
 bool ToggleButton::CanAcceptEvent(const ui::Event& event) {
@@ -208,6 +256,7 @@ void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void ToggleButton::OnThemeChanged() {
+  Button::OnThemeChanged();
   SchedulePaint();
 }
 
@@ -310,6 +359,10 @@ BEGIN_METADATA(ToggleButton)
 METADATA_PARENT_CLASS(Button)
 ADD_PROPERTY_METADATA(ToggleButton, bool, IsOn)
 ADD_PROPERTY_METADATA(ToggleButton, bool, AcceptsEvents)
+ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, ThumbOnColor)
+ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, ThumbOffColor)
+ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, TrackOnColor)
+ADD_PROPERTY_METADATA(ToggleButton, base::Optional<SkColor>, TrackOffColor)
 END_METADATA()
 
 }  // namespace views

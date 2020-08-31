@@ -21,8 +21,8 @@ struct ExternalValueReference : public Expression {
     : INHERITED(offset, kExternalValue_Kind, ev->type())
     , fValue(ev) {}
 
-    bool hasSideEffects() const override {
-        return true;
+    bool hasProperty(Property property) const override {
+        return property == Property::kSideEffects;
     }
 
     String description() const override {

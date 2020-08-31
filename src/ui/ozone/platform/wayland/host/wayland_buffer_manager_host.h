@@ -65,14 +65,6 @@ struct WaylandBuffer {
   // surface can tell the gpu about successful swap.
   bool released = true;
 
-  // In some cases, a presentation feedback can come earlier than we fire a
-  // submission callback. Thus, instead of sending it immediately to the GPU
-  // process, we store it and fire as soon as the submission callback is
-  // fired.
-  bool needs_send_feedback = false;
-
-  gfx::PresentationFeedback feedback;
-
   DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
 };
 
@@ -93,7 +85,9 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
 
-  // Returns bound pointer to own mojo interface.
+  // Returns bound pointer to own mojo interface. If there were previous
+  // interface bindings, it will be unbound and the state of the
+  // |buffer_manager_| will be cleared.
   mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> BindInterface();
 
   // Unbinds the interface and clears the state of the |buffer_manager_|. Used
@@ -117,7 +111,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateDmabufBasedBuffer(mojo::ScopedHandle dmabuf_fd,
+  void CreateDmabufBasedBuffer(mojo::PlatformHandle dmabuf_fd,
                                const gfx::Size& size,
                                const std::vector<uint32_t>& strides,
                                const std::vector<uint32_t>& offsets,
@@ -128,7 +122,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a shared memory
   // file descriptor using wl_shm protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
+  void CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
                             uint64_t length,
                             const gfx::Size& size,
                             uint32_t buffer_id) override;

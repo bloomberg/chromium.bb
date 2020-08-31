@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "storage/browser/quota/quota_settings.h"
 
 class GURL;
 
@@ -48,11 +47,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                               const GURL& effective_url) override;
-  void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      storage::OptionalQuotaSettingsCallback callback) override;
+                               const GURL& site_url) override;
   bool IsHandledURL(const GURL& url) override;
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
@@ -94,6 +89,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
       bool* bypass_redirect_checks,
+      bool* disable_secure_dns,
       network::mojom::URLLoaderFactoryOverridePtr* factory_override) override;
   bool HandleExternalProtocol(
       const GURL& url,
@@ -107,8 +103,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory)
       override;
   void OverrideURLLoaderFactoryParams(
-      content::RenderProcessHost* process,
+      content::BrowserContext* browser_context,
       const url::Origin& origin,
+      bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params) override;
   std::string GetUserAgent() override;
 

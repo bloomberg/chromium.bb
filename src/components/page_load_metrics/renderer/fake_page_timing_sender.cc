@@ -17,17 +17,21 @@ FakePageTimingSender::~FakePageTimingSender() {}
 
 void FakePageTimingSender::SendTiming(
     const mojom::PageLoadTimingPtr& timing,
-    const mojom::PageLoadMetadataPtr& metadata,
+    const mojom::FrameMetadataPtr& metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
-    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+    const mojom::InputTimingPtr new_input_timing) {
   validator_->UpdateTiming(timing, metadata, new_features, resources,
-                           render_data, cpu_timing, new_deferred_resource_data);
+                           render_data, cpu_timing, new_deferred_resource_data,
+                           new_input_timing);
 }
 
-FakePageTimingSender::PageTimingValidator::PageTimingValidator() {}
+FakePageTimingSender::PageTimingValidator::PageTimingValidator()
+    : expected_input_timing(mojom::InputTiming::New()),
+      actual_input_timing(mojom::InputTiming::New()) {}
 
 FakePageTimingSender::PageTimingValidator::~PageTimingValidator() {
   VerifyExpectedTimings();
@@ -55,6 +59,25 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedTimings() const {
       continue;
     ADD_FAILURE() << "Actual timing != expected timing at index " << i;
   }
+}
+
+void FakePageTimingSender::PageTimingValidator::UpdateExpectedInputTiming(
+    const base::TimeDelta input_delay) {
+  expected_input_timing->num_input_events++;
+  expected_input_timing->total_input_delay += input_delay;
+  expected_input_timing->total_adjusted_input_delay +=
+      base::TimeDelta::FromMilliseconds(
+          std::max(int64_t(0), input_delay.InMilliseconds() - int64_t(50)));
+}
+void FakePageTimingSender::PageTimingValidator::VerifyExpectedInputTiming()
+    const {
+  ASSERT_EQ(expected_input_timing.is_null(), actual_input_timing.is_null());
+  ASSERT_EQ(expected_input_timing->num_input_events,
+            actual_input_timing->num_input_events);
+  ASSERT_EQ(expected_input_timing->total_input_delay,
+            actual_input_timing->total_input_delay);
+  ASSERT_EQ(expected_input_timing->total_adjusted_input_delay,
+            actual_input_timing->total_adjusted_input_delay);
 }
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedCpuTimings()
@@ -120,14 +143,24 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedRenderData()
                   actual_render_data_.layout_shift_delta);
 }
 
+void FakePageTimingSender::PageTimingValidator::
+    VerifyExpectedFrameIntersectionUpdate() const {
+  if (!expected_frame_intersection_update_.is_null()) {
+    EXPECT_FALSE(actual_frame_intersection_update_.is_null());
+    EXPECT_TRUE(expected_frame_intersection_update_->Equals(
+        *actual_frame_intersection_update_));
+  }
+}
+
 void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::PageLoadTimingPtr& timing,
-    const mojom::PageLoadMetadataPtr& metadata,
+    const mojom::FrameMetadataPtr& metadata,
     const mojom::PageLoadFeaturesPtr& new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
-    const mojom::DeferredResourceCountsPtr& new_deferred_resource_data) {
+    const mojom::DeferredResourceCountsPtr& new_deferred_resource_data,
+    const mojom::InputTimingPtr& new_input_timing) {
   actual_timings_.push_back(timing.Clone());
   if (!cpu_timing->task_time.is_zero()) {
     actual_cpu_timings_.push_back(cpu_timing.Clone());
@@ -145,11 +178,19 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     actual_css_properties_.insert(css_property_id);
   }
   actual_render_data_.layout_shift_delta = render_data.layout_shift_delta;
+  actual_frame_intersection_update_ = metadata->intersection_update.Clone();
+
+  actual_input_timing->num_input_events += new_input_timing->num_input_events;
+  actual_input_timing->total_input_delay += new_input_timing->total_input_delay;
+  actual_input_timing->total_adjusted_input_delay +=
+      new_input_timing->total_adjusted_input_delay;
+
   VerifyExpectedTimings();
   VerifyExpectedCpuTimings();
   VerifyExpectedFeatures();
   VerifyExpectedCssProperties();
   VerifyExpectedRenderData();
+  VerifyExpectedFrameIntersectionUpdate();
 }
 
 }  // namespace page_load_metrics

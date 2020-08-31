@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_IN_TRANSFER_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_IN_TRANSFER_RESULT_H_
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -29,8 +30,9 @@ class USBInTransferResult final : public ScriptWrappable {
     return MakeGarbageCollected<USBInTransferResult>(status, nullptr);
   }
 
-  static USBInTransferResult* Create(const String& status, DOMDataView* data) {
-    return MakeGarbageCollected<USBInTransferResult>(status, data);
+  static USBInTransferResult* Create(const String& status,
+                                     NotShared<DOMDataView> data) {
+    return MakeGarbageCollected<USBInTransferResult>(status, data.View());
   }
 
   USBInTransferResult(const String& status, DOMDataView* data)
@@ -41,7 +43,7 @@ class USBInTransferResult final : public ScriptWrappable {
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(data_);
     ScriptWrappable::Trace(visitor);
   }

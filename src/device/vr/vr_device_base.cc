@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
-#include "device/vr/vr_device_provider.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 
 namespace device {
 
@@ -82,13 +82,6 @@ mojo::PendingRemote<mojom::XRRuntime> VRDeviceBase::BindXRRuntime() {
 
 void VRDeviceBase::SetInlinePosesEnabled(bool enable) {
   inline_poses_enabled_ = enable;
-}
-
-void VRDeviceBase::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  NOTREACHED() << "Unexpected call to a device without hit-test support";
-  std::move(callback).Run(base::nullopt);
 }
 
 void LogViewerType(VrViewerType type) {

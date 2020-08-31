@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
+
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
@@ -17,16 +18,13 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
 
 class AutocompleteResult;
+class ChromeBrowserState;
 class GURL;
 class WebOmniboxEditController;
 struct AutocompleteMatch;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
-@protocol OmniboxFocuser;
-
-namespace ios {
-class ChromeBrowserState;
-}
+@protocol OmniboxCommands;
 
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
@@ -38,8 +36,8 @@ class OmniboxViewIOS : public OmniboxView,
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
                  id<OmniboxLeftImageConsumer> left_image_consumer,
-                 ios::ChromeBrowserState* browser_state,
-                 id<OmniboxFocuser> omnibox_focuser);
+                 ChromeBrowserState* browser_state,
+                 id<OmniboxCommands> omnibox_focuser);
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
     popup_provider_ = provider;
@@ -121,7 +119,7 @@ class OmniboxViewIOS : public OmniboxView,
                                  const base::string16& pasted_text,
                                  size_t index) override;
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_; }
+  ChromeBrowserState* browser_state() { return browser_state_; }
 
   // Updates this edit view to show the proper text, highlight and images.
   void UpdateAppearance();
@@ -144,13 +142,9 @@ class OmniboxViewIOS : public OmniboxView,
   // Returns |true| if AutocompletePopupView is currently open.
   BOOL IsPopupOpen();
 
-  // Returns the resource ID of the icon to show for the current text. Takes
-  // into account the security level of the page, and |offline_page|.
-  int GetIcon(bool offline_page) const;
-
  protected:
   int GetOmniboxTextLength() const override;
-  void EmphasizeURLComponents() override;
+  void EmphasizeURLComponents() override {}
 
  private:
   void SetEmphasis(bool emphasize, const gfx::Range& range) override {}
@@ -171,7 +165,7 @@ class OmniboxViewIOS : public OmniboxView,
   // TODO(crbug.com/303212): Remove this workaround once the crash is fixed.
   bool ShouldIgnoreUserInputDueToPendingVoiceSearch();
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   OmniboxTextFieldIOS* field_;
 
@@ -180,7 +174,7 @@ class OmniboxViewIOS : public OmniboxView,
   __weak id<OmniboxLeftImageConsumer> left_image_consumer_;
   // Focuser, used to transition the location bar to focused/defocused state as
   // necessary.
-  __weak id<OmniboxFocuser> omnibox_focuser_;
+  __weak id<OmniboxCommands> omnibox_focuser_;
 
   State state_before_change_;
   NSString* marked_text_before_change_;

@@ -34,8 +34,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mutation_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -50,7 +50,7 @@ namespace blink {
 
 class MutationObserver::V8DelegateImpl final
     : public MutationObserver::Delegate,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
 
  public:
@@ -61,10 +61,10 @@ class MutationObserver::V8DelegateImpl final
 
   V8DelegateImpl(V8MutationCallback* callback,
                  ExecutionContext* execution_context)
-      : ContextClient(execution_context), callback_(callback) {}
+      : ExecutionContextClient(execution_context), callback_(callback) {}
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,
@@ -77,7 +77,7 @@ class MutationObserver::V8DelegateImpl final
   void Trace(Visitor* visitor) override {
     visitor->Trace(callback_);
     MutationObserver::Delegate::Trace(visitor);
-    ContextClient::Trace(visitor);
+    ExecutionContextClient::Trace(visitor);
   }
 
  private:
@@ -108,7 +108,8 @@ MutationObserver* MutationObserver::Create(ScriptState* script_state,
 
 MutationObserver::MutationObserver(ExecutionContext* execution_context,
                                    Delegate* delegate)
-    : ContextLifecycleStateObserver(execution_context), delegate_(delegate) {
+    : ExecutionContextLifecycleStateObserver(execution_context),
+      delegate_(delegate) {
   priority_ = g_observer_priority++;
   UpdateStateIfNeeded();
 }
@@ -346,7 +347,7 @@ void MutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(records_);
   visitor->Trace(registrations_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

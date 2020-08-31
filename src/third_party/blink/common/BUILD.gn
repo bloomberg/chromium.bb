@@ -5,6 +5,28 @@
 import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
+
+blink_python_runner("make_generated_document_policy_features") {
+  script = "../renderer/build/scripts/make_document_policy_features.py"
+
+  inputs =
+      scripts_for_json5_files + [
+        "../renderer/build/scripts/make_document_policy_features.py",
+        "../renderer/core/feature_policy/document_policy_features.json5",
+        "../renderer/build/scripts/templates/document_policy_features.cc.tmpl",
+      ]
+  outputs = [ "$root_gen_dir/third_party/blink/common/feature_policy/document_policy_features.cc" ]
+
+  args = [
+    rebase_path(
+        "../renderer/core/feature_policy/document_policy_features.json5",
+        root_build_dir),
+    "--output_dir",
+    rebase_path("$root_gen_dir/third_party/blink/common/feature_policy",
+                root_build_dir),
+  ]
+}
 
 jumbo_source_set("common") {
   # No target should directly depend on this target since this is just the
@@ -35,23 +57,31 @@ jumbo_source_set("common") {
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/document_policy.cc",
     "feature_policy/feature_policy.cc",
+    "feature_policy/feature_policy_mojom_traits.cc",
     "feature_policy/policy_value.cc",
     "features.cc",
     "fetch/fetch_api_request_body_mojom_traits.cc",
     "frame/frame_policy.cc",
+    "frame/frame_policy_mojom_traits.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
-    "http/structured_header.cc",
     "indexeddb/indexed_db_default_mojom_traits.cc",
     "indexeddb/indexeddb_key.cc",
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
+    "input/web_coalesced_input_event.cc",
+    "input/web_gesture_event.cc",
+    "input/web_input_event.cc",
+    "input/web_keyboard_event.cc",
+    "input/web_mouse_event.cc",
+    "input/web_mouse_wheel_event.cc",
+    "input/web_pointer_event.cc",
+    "input/web_touch_event.cc",
     "loader/mime_sniffing_throttle.cc",
     "loader/mime_sniffing_url_loader.cc",
-    "loader/request_destination.cc",
+    "loader/resource_type_util.cc",
     "loader/throttling_url_loader.cc",
-    "loader/throttling_url_loader.h",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
     "loader/url_loader_throttle.cc",
@@ -72,35 +102,46 @@ jumbo_source_set("common") {
     "messaging/string_message_codec.cc",
     "messaging/transferable_message.cc",
     "messaging/transferable_message_mojom_traits.cc",
+    "messaging/web_message_port.cc",
     "mime_util/mime_util.cc",
     "notifications/notification_mojom_traits.cc",
     "notifications/notification_resources.cc",
     "notifications/platform_notification_data.cc",
-    "origin_policy/origin_policy.cc",
-    "origin_policy/origin_policy_parser.cc",
-    "origin_policy/origin_policy_parser.h",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
     "page/page_zoom.cc",
     "peerconnection/webrtc_ip_handling_policy.cc",
+    "permissions/permission_utils.cc",
+    "privacy_budget/identifiability_metric_builder.cc",
+    "privacy_budget/identifiability_metrics.cc",
+    "privacy_budget/identifiability_study_participation.cc",
     "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
+    "switches.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
+    "user_agent/user_agent_metadata.cc",
     "web_package/signed_exchange_consts.cc",
-    "web_package/signed_exchange_request_matcher.cc",
+    "web_package/web_package_request_matcher.cc",
   ]
 
+  sources += get_target_outputs(":make_generated_document_policy_features")
+
   public_deps = [
+    ":make_generated_document_policy_features",
     "//third_party/blink/public/common:headers",
   ]
 
   deps = [
     "//base",
+    "//media/capture:capture_base",
+    "//media/capture/mojom:video_capture_mojom_support",
     "//mojo/public/cpp/system",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/mojom:mojom",
     "//services/network/public/cpp:cpp",
   ]
 
@@ -125,21 +166,13 @@ jumbo_source_set("common") {
   }
 }
 
-fuzzer_test("http_structured_header_fuzzer") {
-  sources = [
-    "http/structured_header_fuzzer.cc",
-  ]
-  deps = [
-    ":common",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-  ]
-  seed_corpus = "http/structured_header_corpus"
-}
-
 test("blink_common_unittests") {
   visibility = [ "*" ]
   deps = [
     ":common_unittests_sources",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/mojom:mojom",
     "//third_party/blink/public/common",
   ]
   if (is_android) {
@@ -157,10 +190,12 @@ jumbo_source_set("common_unittests_sources") {
     "bluetooth/web_bluetooth_device_id_unittest.cc",
     "client_hints/client_hints_unittest.cc",
     "device_memory/approximated_device_memory_unittest.cc",
+    "feature_policy/document_policy_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
+    "feature_policy/policy_value_unittest.cc",
     "frame/user_activation_state_unittest.cc",
-    "http/structured_header_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",
+    "input/web_input_event_unittest.cc",
     "loader/mime_sniffing_throttle_unittest.cc",
     "loader/throttling_url_loader_unittest.cc",
     "manifest/manifest_icon_selector_unittest.cc",
@@ -169,11 +204,14 @@ jumbo_source_set("common_unittests_sources") {
     "messaging/message_port_descriptor_unittest.cc",
     "mime_util/mime_util_unittest.cc",
     "notifications/notification_mojom_traits_unittest.cc",
-    "origin_policy/origin_policy_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
+    "privacy_budget/identifiability_metric_builder_unittest.cc",
+    "privacy_budget/identifiability_metrics_unittest.cc",
+    "privacy_budget/identifiable_surface_unittest.cc",
     "test/run_all_unittests.cc",
-    "web_package/signed_exchange_request_matcher_unittest.cc",
+    "user_agent/user_agent_metadata_unittest.cc",
+    "web_package/web_package_request_matcher_unittest.cc",
   ]
 
   deps = [
@@ -196,7 +234,10 @@ jumbo_source_set("common_unittests_sources") {
     # TODO(crbug.com/845384): Enable these tests also on Android. Currently
     # they are excluded as they require V8 environment but V8 snapshot is
     # not available in the current minimum test setting.
-    sources += [ "messaging/string_message_codec_unittest.cc" ]
+    sources += [
+      "messaging/string_message_codec_unittest.cc",
+      "messaging/web_message_port_unittest.cc",
+    ]
   }
 
   if (is_android || is_win) {

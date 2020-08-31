@@ -42,9 +42,9 @@ void BackgroundLoaderContents::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-bool BackgroundLoaderContents::IsNeverVisible(
+bool BackgroundLoaderContents::IsNeverComposited(
     content::WebContents* web_contents) {
-  // Background, so not visible.
+  // Background, so not user-visible.
   return true;
 }
 
@@ -89,6 +89,7 @@ bool BackgroundLoaderContents::IsWebContentsCreationOverridden(
 void BackgroundLoaderContents::AddNewContents(
     content::WebContents* source,
     std::unique_ptr<content::WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture,

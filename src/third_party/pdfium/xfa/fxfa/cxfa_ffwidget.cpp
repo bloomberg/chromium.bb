@@ -23,7 +23,7 @@
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffdocview.h"
-#include "xfa/fxfa/cxfa_ffpageview.h"
+#include "xfa/fxfa/cxfa_ffwidgethandler.h"
 #include "xfa/fxfa/cxfa_imagerenderer.h"
 #include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_border.h"
@@ -242,16 +242,20 @@ const CFWL_App* CXFA_FFWidget::GetFWLApp() {
   return GetPageView()->GetDocView()->GetDoc()->GetApp()->GetFWLApp();
 }
 
+CXFA_FFWidget* CXFA_FFWidget::GetNextFFWidget() const {
+  return GetFFWidget(GetLayoutItem()->GetNext());
+}
+
 const CFX_RectF& CXFA_FFWidget::GetWidgetRect() const {
   if (!GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_RectCached))
     RecacheWidgetRect();
-  return m_rtWidget;
+  return m_WidgetRect;
 }
 
 const CFX_RectF& CXFA_FFWidget::RecacheWidgetRect() const {
   GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_RectCached);
-  m_rtWidget = GetLayoutItem()->GetRect(false);
-  return m_rtWidget;
+  m_WidgetRect = GetLayoutItem()->GetRect(false);
+  return m_WidgetRect;
 }
 
 CFX_RectF CXFA_FFWidget::GetRectWithoutRotate() {
@@ -283,6 +287,10 @@ void CXFA_FFWidget::ModifyStatus(uint32_t dwAdded, uint32_t dwRemoved) {
   GetLayoutItem()->SetStatusBits(dwAdded);
 }
 
+CXFA_FFField* CXFA_FFWidget::AsField() {
+  return nullptr;
+}
+
 CFX_RectF CXFA_FFWidget::GetBBox(FocusOption focus) {
   if (focus == kDrawFocus || !m_pPageView)
     return CFX_RectF();
@@ -311,6 +319,9 @@ bool CXFA_FFWidget::IsLoaded() {
 }
 
 bool CXFA_FFWidget::LoadWidget() {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   PerformLayout();
   return true;
 }
@@ -325,6 +336,22 @@ bool CXFA_FFWidget::UpdateFWLData() {
 }
 
 void CXFA_FFWidget::UpdateWidgetProperty() {}
+
+bool CXFA_FFWidget::HasEventUnderHandler(XFA_EVENTTYPE eEventType,
+                                         CXFA_FFWidgetHandler* pHandler) {
+  CXFA_Node* pNode = GetNode();
+  return pNode->IsWidgetReady() && pHandler->HasEvent(pNode, eEventType);
+}
+
+bool CXFA_FFWidget::ProcessEventUnderHandler(CXFA_EventParam* params,
+                                             CXFA_FFWidgetHandler* pHandler) {
+  CXFA_Node* pNode = GetNode();
+  if (!pNode->IsWidgetReady())
+    return false;
+
+  params->m_pTarget = pNode;
+  return pHandler->ProcessEvent(pNode, params) == XFA_EventError::kSuccess;
+}
 
 void CXFA_FFWidget::DrawBorder(CXFA_Graphics* pGS,
                                CXFA_Box* box,
@@ -363,7 +390,9 @@ bool CXFA_FFWidget::AcceptsFocusOnButtonDown(uint32_t dwFlags,
   return false;
 }
 
-void CXFA_FFWidget::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {}
+bool CXFA_FFWidget::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+  return false;
+}
 
 bool CXFA_FFWidget::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
   return false;
@@ -378,12 +407,14 @@ bool CXFA_FFWidget::OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFWidget::OnMouseWheel(uint32_t dwFlags,
-                                 int16_t zDelta,
-                                 const CFX_PointF& point) {
+                                 const CFX_PointF& point,
+                                 const CFX_Vector& delta) {
   return false;
 }
 
-void CXFA_FFWidget::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {}
+bool CXFA_FFWidget::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+  return false;
+}
 
 bool CXFA_FFWidget::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
   return false;
@@ -394,37 +425,30 @@ bool CXFA_FFWidget::OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFWidget::OnSetFocus(CXFA_FFWidget* pOldWidget) {
-  // OnSetFocus event may remove this widget.
-  ObservedPtr<CXFA_FFWidget> pWatched(this);
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   CXFA_FFWidget* pParent = GetFFWidget(ToContentLayoutItem(GetParent()));
   if (pParent && !pParent->IsAncestorOf(pOldWidget)) {
     if (!pParent->OnSetFocus(pOldWidget))
       return false;
   }
-  if (!pWatched)
-    return false;
-
   GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
 
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Enter;
   eParam.m_pTarget = m_pNode.Get();
   m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::Enter, &eParam);
-  if (!pWatched)
-    return false;
-
   return true;
 }
 
 bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
-  // OnKillFocus event may remove these widgets.
-  ObservedPtr<CXFA_FFWidget> pWatched(this);
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   ObservedPtr<CXFA_FFWidget> pNewWatched(pNewWidget);
   GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
   EventKillFocus();
-  if (!pWatched)
-    return false;
-
   if (!pNewWidget)
     return true;
 
@@ -437,7 +461,7 @@ bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
     if (!pParent->OnKillFocus(pNewWidget))
       return false;
   }
-  return pWatched && pNewWatched;
+  return !!pNewWatched;
 }
 
 bool CXFA_FFWidget::OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) {
@@ -452,12 +476,8 @@ bool CXFA_FFWidget::OnChar(uint32_t dwChar, uint32_t dwFlags) {
   return false;
 }
 
-FWL_WidgetHit CXFA_FFWidget::OnHitTest(const CFX_PointF& point) {
+FWL_WidgetHit CXFA_FFWidget::HitTest(const CFX_PointF& point) {
   return FWL_WidgetHit::Unknown;
-}
-
-bool CXFA_FFWidget::OnSetCursor(const CFX_PointF& point) {
-  return false;
 }
 
 bool CXFA_FFWidget::CanUndo() {
@@ -465,14 +485,6 @@ bool CXFA_FFWidget::CanUndo() {
 }
 
 bool CXFA_FFWidget::CanRedo() {
-  return false;
-}
-
-bool CXFA_FFWidget::Undo() {
-  return false;
-}
-
-bool CXFA_FFWidget::Redo() {
   return false;
 }
 
@@ -498,6 +510,14 @@ bool CXFA_FFWidget::CanDelete() {
 
 bool CXFA_FFWidget::CanDeSelect() {
   return CanCopy();
+}
+
+bool CXFA_FFWidget::Undo() {
+  return false;
+}
+
+bool CXFA_FFWidget::Redo() {
+  return false;
 }
 
 Optional<WideString> CXFA_FFWidget::Copy() {

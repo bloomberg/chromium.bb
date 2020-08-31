@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
 import org.chromium.base.ChildBindingState;
 import org.chromium.base.CollectionUtil;
@@ -60,6 +61,14 @@ public final class ChildProcessLauncherHelperImpl {
             "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
     private static final String NUM_PRIVILEGED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
+
+    // When decrementing the refcount on bindings, delay the decrement by this amount of time in
+    // case a new ref count is added in the mean time. This is a heuristic to avoid temporarily
+    // dropping bindings when inputs to calculating importance change independently.
+    private static final int REMOVE_BINDING_DELAY_MS = 500;
+
+    // To be conservative, only delay removing binding in the initial second of the process.
+    private static final int TIMEOUT_FOR_DELAY_BINDING_REMOVE_MS = 1000;
 
     // Flag to check features after native is initialized.
     private static boolean sCheckedFeatures;
@@ -183,6 +192,8 @@ public final class ChildProcessLauncherHelperImpl {
 
     private long mNativeChildProcessLauncherHelper;
 
+    private long mStartTimeMs;
+
     // This is the current computed importance from all the inputs from setPriority.
     // The initial value is MODERATE since a newly created connection has moderate bindings.
     private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
@@ -227,9 +238,17 @@ public final class ChildProcessLauncherHelperImpl {
                 // We only support sandboxed utility processes now.
                 assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
 
+                String serviceSandboxType = ContentSwitchUtils.getSwitchValue(
+                        commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE);
+
+                // Non-sandboxed utility processes only supported for non-public Chromecast.
+                if (BuildConfig.IS_CHROMECAST_BRANDING_INTERNAL
+                        && ContentSwitches.NONE_SANDBOX_TYPE.equals(serviceSandboxType)) {
+                    sandboxed = false;
+                }
+
                 // Remove sandbox restriction on network service process.
-                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(ContentSwitchUtils.getSwitchValue(
-                            commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE))) {
+                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(serviceSandboxType)) {
                     sandboxed = false;
                 }
             }
@@ -350,23 +369,25 @@ public final class ChildProcessLauncherHelperImpl {
     @VisibleForTesting
     static ChildConnectionAllocator getConnectionAllocator(Context context, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        final String packageName = ChildProcessCreationParamsImpl.getPackageNameForService();
         boolean bindToCaller = ChildProcessCreationParamsImpl.getBindToCallerCheck();
         boolean bindAsExternalService =
                 sandboxed && ChildProcessCreationParamsImpl.getIsSandboxedServiceExternal();
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
-                        LauncherThread.getHandler(), null, packageName,
-                        ChildProcessCreationParamsImpl.getPrivilegedServicesName(),
-                        NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
-                        true /* useStrongBinding */);
+                sPrivilegedChildConnectionAllocator =
+                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(), null,
+                                ChildProcessCreationParamsImpl.getPackageNameForPrivilegedService(),
+                                ChildProcessCreationParamsImpl.getPrivilegedServicesName(),
+                                NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                                true /* useStrongBinding */);
             }
             return sPrivilegedChildConnectionAllocator;
         }
 
         if (sSandboxedChildConnectionAllocator == null) {
+            final String packageName =
+                    ChildProcessCreationParamsImpl.getPackageNameForSandboxedService();
             Log.d(TAG,
                     "Create a new ChildConnectionAllocator with package name = %s,"
                             + " sandboxed = true",
@@ -391,7 +412,7 @@ public final class ChildProcessLauncherHelperImpl {
                                 bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else if (ChildProcessConnection.supportVariableConnections()) {
                 connectionAllocator = ChildConnectionAllocator.createVariableSize(context,
-                        LauncherThread.getHandler(), packageName,
+                        LauncherThread.getHandler(), freeSlotRunnable, packageName,
                         ChildProcessCreationParamsImpl.getSandboxedServicesName(), bindToCaller,
                         bindAsExternalService, false /* useStrongBinding */);
             } else {
@@ -446,6 +467,7 @@ public final class ChildProcessLauncherHelperImpl {
 
     private void start() {
         mLauncher.start(true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
+        mStartTimeMs = System.currentTimeMillis();
     }
 
     /**
@@ -550,19 +572,28 @@ public final class ChildProcessLauncherHelperImpl {
             if (mBindingManager != null) mBindingManager.rankingChanged();
         }
 
-        if (mEffectiveImportance != newEffectiveImportance) {
-            switch (mEffectiveImportance) {
-                case ChildProcessImportance.NORMAL:
-                    // Nothing to remove.
-                    break;
-                case ChildProcessImportance.MODERATE:
-                    connection.removeModerateBinding();
-                    break;
-                case ChildProcessImportance.IMPORTANT:
-                    connection.removeStrongBinding();
-                    break;
-                default:
-                    assert false;
+        if (mEffectiveImportance != newEffectiveImportance
+                && mEffectiveImportance != ChildProcessImportance.NORMAL) {
+            final int existingEffectiveImportance = mEffectiveImportance;
+            Runnable removeBindingRunnable = () -> {
+                switch (existingEffectiveImportance) {
+                    case ChildProcessImportance.NORMAL:
+                        // Nothing to remove.
+                        break;
+                    case ChildProcessImportance.MODERATE:
+                        connection.removeModerateBinding();
+                        break;
+                    case ChildProcessImportance.IMPORTANT:
+                        connection.removeStrongBinding();
+                        break;
+                    default:
+                        assert false;
+                }
+            };
+            if (System.currentTimeMillis() - mStartTimeMs < TIMEOUT_FOR_DELAY_BINDING_REMOVE_MS) {
+                LauncherThread.postDelayed(removeBindingRunnable, REMOVE_BINDING_DELAY_MS);
+            } else {
+                removeBindingRunnable.run();
             }
         }
 
@@ -618,14 +649,7 @@ public final class ChildProcessLauncherHelperImpl {
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;
-        if (LibraryLoader.getInstance().areTestsEnabled()) {
-            Linker linker = Linker.getInstance();
-            return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros,
-                    linker.getTestRunnerClassNameForTesting(),
-                    linker.getImplementationForTesting());
-        } else {
-            return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
-        }
+        return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
     }
 
     private static Bundle populateServiceBundle(Bundle bundle) {

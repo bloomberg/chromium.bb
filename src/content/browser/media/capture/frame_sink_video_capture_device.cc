@@ -8,11 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,10 +22,9 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace content {
@@ -54,13 +54,10 @@ class ScopedFrameDoneHelper
   ~ScopedFrameDoneHelper() final = default;
 };
 
-std::unique_ptr<service_manager::Connector> MaybeGetServiceConnector() {
+void BindWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // In some testing environments, the system Connector isn't initialized.
-  if (auto* connector = GetSystemConnector())
-    return connector->Clone();  // Clone for use on a different thread.
-  return nullptr;
+  GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 }  // namespace
@@ -132,11 +129,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   }
 
   DCHECK(!wake_lock_);
-  // Gets a service_manager::Connector first, then request a wake lock.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI}, base::BindOnce(&MaybeGetServiceConnector),
-      base::BindOnce(&FrameSinkVideoCaptureDevice::RequestWakeLock,
-                     weak_factory_.GetWeakPtr()));
+  RequestWakeLock();
 }
 
 void FrameSinkVideoCaptureDevice::AllocateAndStart(
@@ -271,6 +264,21 @@ void FrameSinkVideoCaptureDevice::OnStopped() {
   OnFatalError("Capturer service cannot continue.");
 }
 
+void FrameSinkVideoCaptureDevice::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (receiver_) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      receiver_->OnLog(message);
+    } else {
+      base::PostTask(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&media::VideoFrameReceiver::OnLog,
+                         base::Unretained(receiver_.get()), message));
+    }
+  }
+}
+
 void FrameSinkVideoCaptureDevice::OnTargetChanged(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -366,17 +374,13 @@ void FrameSinkVideoCaptureDevice::OnFatalError(std::string message) {
   StopAndDeAllocate();
 }
 
-void FrameSinkVideoCaptureDevice::RequestWakeLock(
-    std::unique_ptr<service_manager::Connector> connector) {
+void FrameSinkVideoCaptureDevice::RequestWakeLock() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!connector) {
-    return;
-  }
-
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  connector->Connect(device::mojom::kServiceName,
-                     wake_lock_provider.BindNewPipeAndPassReceiver());
+  auto receiver = wake_lock_provider.BindNewPipeAndPassReceiver();
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&BindWakeLockProvider, std::move(receiver)));
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "screen capture",

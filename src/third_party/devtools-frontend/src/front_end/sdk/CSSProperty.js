@@ -1,12 +1,22 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as HostModule from '../host/host.js';
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {cssMetadata, GridAreaRowRegex} from './CSSMetadata.js';
+import {Edit} from './CSSModel.js';                            // eslint-disable-line no-unused-vars
+import {CSSStyleDeclaration} from './CSSStyleDeclaration.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class CSSProperty {
+export class CSSProperty {
   /**
-   * @param {!SDK.CSSStyleDeclaration} ownerStyle
+   * @param {!CSSStyleDeclaration} ownerStyle
    * @param {number} index
    * @param {string} name
    * @param {string} value
@@ -27,14 +37,15 @@ export default class CSSProperty {
     this.parsedOk = parsedOk;
     this.implicit = implicit;  // A longhand, implicitly set by missing values of shorthand.
     this.text = text;
-    this.range = range ? TextUtils.TextRange.fromObject(range) : null;
+    /** @type {?TextUtils.TextRange.TextRange} */
+    this.range = range ? TextUtils.TextRange.TextRange.fromObject(range) : null;
     this._active = true;
     this._nameRange = null;
     this._valueRange = null;
   }
 
   /**
-   * @param {!SDK.CSSStyleDeclaration} ownerStyle
+   * @param {!CSSStyleDeclaration} ownerStyle
    * @param {number} index
    * @param {!Protocol.CSS.CSSProperty} payload
    * @return {!CSSProperty}
@@ -56,7 +67,7 @@ export default class CSSProperty {
       return;
     }
     const range = this.range;
-    const text = this.text ? new TextUtils.Text(this.text) : null;
+    const text = this.text ? new TextUtils.Text.Text(this.text) : null;
     if (!range || !text) {
       return;
     }
@@ -67,17 +78,17 @@ export default class CSSProperty {
       return;
     }
 
-    const nameSourceRange = new TextUtils.SourceRange(nameIndex, this.name.length);
-    const valueSourceRange = new TextUtils.SourceRange(valueIndex, this.value.length);
+    const nameSourceRange = new TextUtils.TextRange.SourceRange(nameIndex, this.name.length);
+    const valueSourceRange = new TextUtils.TextRange.SourceRange(valueIndex, this.value.length);
 
     this._nameRange = rebase(text.toTextRange(nameSourceRange), range.startLine, range.startColumn);
     this._valueRange = rebase(text.toTextRange(valueSourceRange), range.startLine, range.startColumn);
 
     /**
-     * @param {!TextUtils.TextRange} oneLineRange
+     * @param {!TextUtils.TextRange.TextRange} oneLineRange
      * @param {number} lineOffset
      * @param {number} columnOffset
-     * @return {!TextUtils.TextRange}
+     * @return {!TextUtils.TextRange.TextRange}
      */
     function rebase(oneLineRange, lineOffset, columnOffset) {
       if (oneLineRange.startLine === 0) {
@@ -91,7 +102,7 @@ export default class CSSProperty {
   }
 
   /**
-   * @return {?TextUtils.TextRange}
+   * @return {?TextUtils.TextRange.TextRange}
    */
   nameRange() {
     this._ensureRanges();
@@ -99,7 +110,7 @@ export default class CSSProperty {
   }
 
   /**
-   * @return {?TextUtils.TextRange}
+   * @return {?TextUtils.TextRange.TextRange}
    */
   valueRange() {
     this._ensureRanges();
@@ -107,7 +118,7 @@ export default class CSSProperty {
   }
 
   /**
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!Edit} edit
    */
   rebase(edit) {
     if (this.ownerStyle.styleSheetId !== edit.styleSheetId) {
@@ -163,7 +174,7 @@ export default class CSSProperty {
     }
 
     if (majorChange) {
-      Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
+      HostModule.userMetrics.actionTaken(HostModule.UserMetrics.Action.StyleRuleEdited);
     }
 
     if (overwrite && propertyText === this.propertyText) {
@@ -172,13 +183,15 @@ export default class CSSProperty {
     }
 
     const range = this.range.relativeTo(this.ownerStyle.range.startLine, this.ownerStyle.range.startColumn);
-    const indentation = this.ownerStyle.cssText ? this._detectIndentation(this.ownerStyle.cssText) :
-                                                  Common.moduleSetting('textEditorIndent').get();
+    const indentation = this.ownerStyle.cssText ?
+        this._detectIndentation(this.ownerStyle.cssText) :
+        Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
     const endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : '';
-    const text = new TextUtils.Text(this.ownerStyle.cssText || '');
-    const newStyleText = text.replaceRange(range, String.sprintf(';%s;', propertyText));
-
-    const tokenizerFactory = await self.runtime.extension(TextUtils.TokenizerFactory).instance();
+    const text = new TextUtils.Text.Text(this.ownerStyle.cssText || '');
+    const newStyleText = text.replaceRange(range, Platform.StringUtilities.sprintf(';%s;', propertyText));
+    // TODO(crbug.com/1081614) replace self.runtime with Root.Runtime.Runtime.instance()
+    // @ts-ignore: undefined `self.runtime`
+    const tokenizerFactory = await self.runtime.extension(TextUtils.TextUtils.TokenizerFactory).instance();
     const styleText = CSSProperty._formatStyle(newStyleText, indentation, endIndentation, tokenizerFactory);
     return this.ownerStyle.setText(styleText, majorChange);
   }
@@ -187,7 +200,7 @@ export default class CSSProperty {
    * @param {string} styleText
    * @param {string} indentation
    * @param {string} endIndentation
-   * @param {!TextUtils.TokenizerFactory} tokenizerFactory
+   * @param {!TextUtils.TextUtils.TokenizerFactory} tokenizerFactory
    * @return {string}
    */
   static _formatStyle(styleText, indentation, endIndentation, tokenizerFactory) {
@@ -197,7 +210,7 @@ export default class CSSProperty {
     }
     let result = '';
     let propertyName = '';
-    let propertyText;
+    let propertyText = '';
     let insideProperty = false;
     let needsSemi = false;
     const tokenize = tokenizerFactory.createTokenizer('text/css');
@@ -247,8 +260,8 @@ export default class CSSProperty {
           result += '}';
         }
       } else {
-        if (SDK.cssMetadata().isGridAreaDefiningProperty(propertyName)) {
-          const rowResult = SDK.CSSMetadata.GridAreaRowRegex.exec(token);
+        if (cssMetadata().isGridAreaDefiningProperty(propertyName)) {
+          const rowResult = GridAreaRowRegex.exec(token);
           if (rowResult && rowResult.index === 0 && !propertyText.trimRight().endsWith(']')) {
             propertyText = propertyText.trimRight() + '\n' + doubleIndent;
           }
@@ -270,7 +283,7 @@ export default class CSSProperty {
         return false;
       }
       const propertyName = text.substring(2, colon).trim();
-      return SDK.cssMetadata().isCSSPropertyName(propertyName);
+      return cssMetadata().isCSSPropertyName(propertyName);
     }
   }
 
@@ -283,14 +296,14 @@ export default class CSSProperty {
     if (lines.length < 2) {
       return '';
     }
-    return TextUtils.TextUtils.lineIndent(lines[1]);
+    return TextUtils.TextUtils.Utils.lineIndent(lines[1]);
   }
 
   /**
    * @param {string} newValue
    * @param {boolean} majorChange
    * @param {boolean} overwrite
-   * @param {function(boolean)=} userCallback
+   * @param {function(boolean):void=} userCallback
    */
   setValue(newValue, majorChange, overwrite, userCallback) {
     const text = this.name + ': ' + newValue + (this.important ? ' !important' : '') + ';';
@@ -308,17 +321,11 @@ export default class CSSProperty {
     if (disabled === this.disabled) {
       return Promise.resolve(true);
     }
+    if (!this.text) {
+      return Promise.resolve(true);
+    }
     const propertyText = this.text.trim();
     const text = disabled ? '/* ' + propertyText + ' */' : this.text.substring(2, propertyText.length - 2).trim();
     return this.setText(text, true, true);
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.CSSProperty = CSSProperty;

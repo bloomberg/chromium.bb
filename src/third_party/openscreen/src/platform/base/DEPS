@@ -3,13 +3,18 @@
 # found in the LICENSE file.
 
 include_rules = [
-    '-platform'
+    # Platform base code should depend on no outside code/libraries, other than
+    # the standard toolchain libraries (C, STL).
+    '-absl',
+    '-platform',
+    '+platform/base',
     '-util',
     '-third_party',
 ]
 
 specific_include_rules = {
   ".*_unittest\.cc": [
+    '+platform/test',
     '+util',
     '+third_party',
   ],

@@ -49,6 +49,11 @@ interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
     method constructor
     method updateUI
+interface BarcodeDetector
+    static method getSupportedFormats
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface Blob
     attribute @@toStringTag
     getter size
@@ -650,6 +655,7 @@ interface IDBRequest : EventTarget
 interface IDBTransaction : EventTarget
     attribute @@toStringTag
     getter db
+    getter durability
     getter error
     getter mode
     getter objectStoreNames
@@ -1059,6 +1065,12 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
+interface ReportingObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+    method takeRecords
 interface Request
     attribute @@toStringTag
     getter bodyUsed
@@ -1221,6 +1233,19 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    getter defaultPolicy
+    getter emptyHTML
+    getter emptyScript
+    method constructor
+    method createPolicy
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
+    method isHTML
+    method isScript
+    method isScriptURL
 interface URL
     attribute @@toStringTag
     getter hash
@@ -2593,6 +2618,7 @@ interface WorkerGlobalScope : EventTarget
     getter origin
     getter performance
     getter self
+    getter trustedTypes
     method atob
     method btoa
     method clearInterval
@@ -2642,11 +2668,14 @@ interface WorkerNavigator
     getter storage
     getter usb
     getter userAgent
+    method clearAppBadge
     method constructor
+    method setAppBadge
 interface WritableStream
     attribute @@toStringTag
     getter locked
     method abort
+    method close
     method constructor
     method getWriter
 interface WritableStreamDefaultWriter
@@ -2674,6 +2703,7 @@ interface WritableStreamDefaultWriter
     getter onfetch
     getter oninstall
     getter onmessage
+    getter onmessageerror
     getter onnotificationclick
     getter onnotificationclose
     getter onpaymentrequest
@@ -2694,6 +2724,7 @@ interface WritableStreamDefaultWriter
     setter onfetch
     setter oninstall
     setter onmessage
+    setter onmessageerror
     setter onnotificationclick
     setter onnotificationclose
     setter onpaymentrequest

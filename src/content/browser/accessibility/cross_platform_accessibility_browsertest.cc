@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -20,10 +21,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 
@@ -31,13 +34,6 @@
 #include "base/win/atl.h"
 #include "base/win/scoped_com_initializer.h"
 #include "ui/base/win/atl_module.h"
-#endif
-
-// TODO(dmazzoni): Disabled accessibility tests on Win64. crbug.com/179717
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_TableSpan DISABLED_TableSpan
-#else
-#define MAYBE_TableSpan TableSpan
 #endif
 
 namespace content {
@@ -501,68 +497,6 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const ui::AXNode* root = tree.root();
   std::unordered_set<int> ids;
   RecursiveAssertUniqueIds(root, &ids);
-}
-
-IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, MAYBE_TableSpan) {
-  // +---+---+---+
-  // |   1   | 2 |
-  // +---+---+---+
-  // | 3 |   4   |
-  // +---+---+---+
-
-  const char url_str[] =
-      "data:text/html,"
-      "<!doctype html>"
-      "<table border=1>"
-      " <tr>"
-      "  <td colspan=2>1</td><td>2</td>"
-      " </tr>"
-      " <tr>"
-      "  <td>3</td><td colspan=2>4</td>"
-      " </tr>"
-      "</table>";
-  GURL url(url_str);
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.root();
-  const ui::AXNode* table = root->GetUnignoredChildAtIndex(0);
-  EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
-  ASSERT_GE(table->GetUnignoredChildCount(), 2u);
-  EXPECT_EQ(ax::mojom::Role::kRow,
-            table->GetUnignoredChildAtIndex(0)->data().role);
-  EXPECT_EQ(ax::mojom::Role::kRow,
-            table->GetUnignoredChildAtIndex(1)->data().role);
-  EXPECT_EQ(3, GetIntAttr(table, ax::mojom::IntAttribute::kTableColumnCount));
-  EXPECT_EQ(2, GetIntAttr(table, ax::mojom::IntAttribute::kTableRowCount));
-
-  const ui::AXNode* cell1 =
-      table->GetUnignoredChildAtIndex(0)->GetUnignoredChildAtIndex(0);
-  const ui::AXNode* cell2 =
-      table->GetUnignoredChildAtIndex(0)->GetUnignoredChildAtIndex(1);
-  const ui::AXNode* cell3 =
-      table->GetUnignoredChildAtIndex(1)->GetUnignoredChildAtIndex(0);
-  const ui::AXNode* cell4 =
-      table->GetUnignoredChildAtIndex(1)->GetUnignoredChildAtIndex(1);
-
-  EXPECT_EQ(0,
-            GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellColumnIndex));
-  EXPECT_EQ(0, GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellRowIndex));
-  EXPECT_EQ(2,
-            GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellColumnSpan));
-  EXPECT_EQ(1, GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellRowSpan));
-  EXPECT_EQ(2,
-            GetIntAttr(cell2, ax::mojom::IntAttribute::kTableCellColumnIndex));
-  EXPECT_EQ(1,
-            GetIntAttr(cell2, ax::mojom::IntAttribute::kTableCellColumnSpan));
-  EXPECT_EQ(0,
-            GetIntAttr(cell3, ax::mojom::IntAttribute::kTableCellColumnIndex));
-  EXPECT_EQ(1,
-            GetIntAttr(cell3, ax::mojom::IntAttribute::kTableCellColumnSpan));
-  EXPECT_EQ(1,
-            GetIntAttr(cell4, ax::mojom::IntAttribute::kTableCellColumnIndex));
-  EXPECT_EQ(2,
-            GetIntAttr(cell4, ax::mojom::IntAttribute::kTableCellColumnSpan));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
@@ -1135,5 +1069,127 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   }
 }
 
-#endif
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TextFragmentAnchor) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  AccessibilityNotificationWaiter anchor_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrolledToAnchor);
+
+  GURL url(
+      "data:text/html,"
+      "<p>Some text</p>"
+      "<p id='target' style='position: absolute; top: 1000px'>Anchor text</p>"
+      "#:~:text=Anchor%20text");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  anchor_waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Anchor text");
+
+  const BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_EQ(2u, root->PlatformChildCount());
+  const BrowserAccessibility* target = root->PlatformGetChild(1);
+  ASSERT_EQ(1u, target->PlatformChildCount());
+  const BrowserAccessibility* text = target->PlatformGetChild(0);
+
+  EXPECT_EQ(text->GetId(), anchor_waiter.event_target_id());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       IFrameContentHadFocus_ThenRootDocumentGainedFocus) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the root BrowserAccessibilityManager and BrowserAccessibility node.
+  BrowserAccessibilityManager* root_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, root_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      root_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_browser_accessibility->GetRole());
+
+  // Focus the button within the iframe.
+  {
+    BrowserAccessibility* leaf_iframe_browser_accessibility =
+        root_browser_accessibility->InternalDeepestLastChild();
+    ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kIframe,
+              leaf_iframe_browser_accessibility->GetRole());
+    BrowserAccessibility* second_iframe_root_browser_accessibility =
+        leaf_iframe_browser_accessibility->PlatformGetChild(0);
+    ASSERT_NE(nullptr, second_iframe_root_browser_accessibility);
+    ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+              second_iframe_root_browser_accessibility->GetRole());
+    BrowserAccessibility* second_button = FindNodeByRole(
+        second_iframe_root_browser_accessibility, ax::mojom::Role::kButton);
+    ASSERT_NE(nullptr, second_button);
+
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+    second_iframe_root_browser_accessibility->manager()->SetFocus(
+        *second_button);
+    waiter.WaitForNotification();
+    ASSERT_EQ(second_button, root_accessibility_manager->GetFocus());
+  }
+
+  // Focusing the root Document should cause the iframe content to blur.
+  // The Document Element becomes implicitly focused when the focus is cleared,
+  // so there will not be a focus event.
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kBlur);
+    root_accessibility_manager->SetFocus(*root_browser_accessibility);
+    waiter.WaitForNotification();
+    ASSERT_EQ(root_browser_accessibility,
+              root_accessibility_manager->GetFocus());
+  }
+}
+#endif  // ifndef OS_ANDROID
+
+class CrossPlatformAccessibilityBrowserTestWithImplicitRootScrolling
+    : public CrossPlatformAccessibilityBrowserTest {
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kImplicitRootScroller);
+    CrossPlatformAccessibilityBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    CrossPlatformAccessibilityBrowserTestWithImplicitRootScrolling,
+    ImplicitRootScroller) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/implicit-root-scroller.html");
+
+  BrowserAccessibilityManager* manager = GetManager();
+  const BrowserAccessibility* heading =
+      FindNodeByRole(manager->GetRoot(), ax::mojom::Role::kHeading);
+
+  // Ensure that this page has an implicit root scroller that's something
+  // other than the root of the accessibility tree.
+  ui::AXNode::AXID root_scroller_id = manager->GetTreeData().root_scroller_id;
+  BrowserAccessibility* root_scroller = manager->GetFromID(root_scroller_id);
+  ASSERT_TRUE(root_scroller);
+  EXPECT_NE(root_scroller_id, manager->GetRoot()->GetId());
+
+  // If we take the root scroll offsets into account (most platforms)
+  // the heading should be scrolled above the top.
+  manager->SetUseRootScrollOffsetsWhenComputingBoundsForTesting(true);
+  gfx::Rect bounds = heading->GetUnclippedRootFrameBoundsRect();
+  EXPECT_LT(bounds.y(), 0);
+
+  // If we don't take the root scroll offsets into account (Android)
+  // the heading should not have a negative top coordinate.
+  manager->SetUseRootScrollOffsetsWhenComputingBoundsForTesting(false);
+  bounds = heading->GetUnclippedRootFrameBoundsRect();
+  EXPECT_GT(bounds.y(), 0);
+}
+
 }  // namespace content

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
 class TabStripModel;
@@ -198,13 +198,14 @@ struct TabGroupChange {
   // A group is created when the first tab is added to it and closed when the
   // last tab is removed from it. Whenever the set of tabs in the group changes,
   // a kContentsChange event is fired. Whenever the group's visual data changes,
-  // such as its title or color, a kVisualsChange event is fired.
-  enum Type { kCreated, kContentsChanged, kVisualsChanged, kClosed };
+  // such as its title or color, a kVisualsChange event is fired. Whenever the
+  // group is moved by interacting with its header, a kMoved event is fired.
+  enum Type { kCreated, kContentsChanged, kVisualsChanged, kMoved, kClosed };
 
-  TabGroupChange(TabGroupId group, Type type);
+  TabGroupChange(tab_groups::TabGroupId group, Type type);
   ~TabGroupChange();
 
-  TabGroupId group;
+  tab_groups::TabGroupId group;
   Type type;
 };
 
@@ -278,8 +279,9 @@ class TabStripModelObserver {
                                       int index);
 
   // Called when the tab at |index| is added to the group with id |group|.
-  virtual void TabGroupedStateChanged(base::Optional<TabGroupId> group,
-                                      int index);
+  virtual void TabGroupedStateChanged(
+      base::Optional<tab_groups::TabGroupId> group,
+      int index);
 
   // The TabStripModel now no longer has any tabs. The implementer may
   // use this as a trigger to try and close the window containing the

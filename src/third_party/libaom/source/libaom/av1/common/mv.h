@@ -21,23 +21,72 @@ extern "C" {
 #endif
 
 #define INVALID_MV 0x80008000
+#define GET_MV_RAWPEL(x) (((x) + 3 + ((x) >= 0)) >> 3)
+#define GET_MV_SUBPEL(x) ((x)*8)
 
+#define MARK_MV_INVALID(mv)                \
+  do {                                     \
+    ((int_mv *)(mv))->as_int = INVALID_MV; \
+  } while (0);
+#define CHECK_MV_EQUAL(x, y) (((x).row == (y).row) && ((x).col == (y).col))
+
+// The motion vector in units of full pixel
+typedef struct fullpel_mv {
+  int16_t row;
+  int16_t col;
+} FULLPEL_MV;
+
+// The motion vector in units of 1/8-pel
 typedef struct mv {
   int16_t row;
   int16_t col;
 } MV;
 
 static const MV kZeroMv = { 0, 0 };
+static const FULLPEL_MV kZeroFullMv = { 0, 0 };
 
 typedef union int_mv {
   uint32_t as_int;
   MV as_mv;
+  FULLPEL_MV as_fullmv;
 } int_mv; /* facilitates faster equality tests and copies */
 
 typedef struct mv32 {
   int32_t row;
   int32_t col;
 } MV32;
+
+// The mv limit for fullpel mvs
+typedef struct {
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
+} FullMvLimits;
+
+// The mv limit for subpel mvs
+typedef struct {
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
+} SubpelMvLimits;
+
+static AOM_INLINE FULLPEL_MV get_fullmv_from_mv(const MV *subpel_mv) {
+  const FULLPEL_MV full_mv = { (int16_t)GET_MV_RAWPEL(subpel_mv->row),
+                               (int16_t)GET_MV_RAWPEL(subpel_mv->col) };
+  return full_mv;
+}
+
+static AOM_INLINE MV get_mv_from_fullmv(const FULLPEL_MV *full_mv) {
+  const MV subpel_mv = { (int16_t)GET_MV_SUBPEL(full_mv->row),
+                         (int16_t)GET_MV_SUBPEL(full_mv->col) };
+  return subpel_mv;
+}
+
+static AOM_INLINE void convert_fullmv_to_mv(int_mv *mv) {
+  mv->as_mv = get_mv_from_fullmv(&mv->as_fullmv);
+}
 
 // Bits of precision used for the model
 #define WARPEDMODEL_PREC_BITS 16
@@ -225,7 +274,8 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     // All global motion vectors are stored with WARPEDMODEL_PREC_BITS (16)
     // bits of fractional precision. The offset for a translation is stored in
     // entries 0 and 1. For translations, all but the top three (two if
-    // cm->allow_high_precision_mv is false) fractional bits are always zero.
+    // cm->features.allow_high_precision_mv is false) fractional bits are always
+    // zero.
     //
     // After the right shifts, there are 3 fractional bits of precision. If
     // allow_hp is false, the bottom bit is always zero (so we don't need a
@@ -277,7 +327,6 @@ static INLINE TransformationType get_wmtype(const WarpedMotionParams *gm) {
 typedef struct candidate_mv {
   int_mv this_mv;
   int_mv comp_mv;
-  int weight;
 } CANDIDATE_MV;
 
 static INLINE int is_zero_mv(const MV *mv) {
@@ -288,10 +337,14 @@ static INLINE int is_equal_mv(const MV *a, const MV *b) {
   return *((const uint32_t *)a) == *((const uint32_t *)b);
 }
 
-static INLINE void clamp_mv(MV *mv, int min_col, int max_col, int min_row,
-                            int max_row) {
-  mv->col = clamp(mv->col, min_col, max_col);
-  mv->row = clamp(mv->row, min_row, max_row);
+static INLINE void clamp_mv(MV *mv, const SubpelMvLimits *mv_limits) {
+  mv->col = clamp(mv->col, mv_limits->col_min, mv_limits->col_max);
+  mv->row = clamp(mv->row, mv_limits->row_min, mv_limits->row_max);
+}
+
+static INLINE void clamp_fullmv(FULLPEL_MV *mv, const FullMvLimits *mv_limits) {
+  mv->col = clamp(mv->col, mv_limits->col_min, mv_limits->col_max);
+  mv->row = clamp(mv->row, mv_limits->row_min, mv_limits->row_max);
 }
 
 #ifdef __cplusplus

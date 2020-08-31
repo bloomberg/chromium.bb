@@ -2,27 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserService, listenForPrivilegedLinkClicks} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
 suite('listenForPrivilegedLinkClicks unit test', function() {
-  test('click handler', function() {
-    history.listenForPrivilegedLinkClicks();
+  test('click handler', async () => {
+    document.body.innerHTML = '';
+    const testService = new TestBrowserService();
+    BrowserService.instance_ = testService;
+
+    listenForPrivilegedLinkClicks();
     document.body.innerHTML = `
       <a id="file" href="file:///path/to/file">File</a>
       <a id="chrome" href="about:chrome">Chrome</a>
       <a href="about:blank"><b id="blank">Click me</b></a>
     `;
 
-    let clickArgs = null;
-    const oldSend = chrome.send;
-    chrome.send = function(message, args) {
-      assertEquals('navigateToUrl', message);
-      clickArgs = args;
-    };
     $('file').click();
-    assertEquals('file:///path/to/file', clickArgs[0]);
+    let clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('file:///path/to/file', clickUrl);
+    testService.resetResolver('navigateToUrl');
+
     $('chrome').click();
-    assertEquals('about:chrome', clickArgs[0]);
+    clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('about:chrome', clickUrl);
+    testService.resetResolver('navigateToUrl');
+
     $('blank').click();
-    assertEquals('about:blank', clickArgs[0]);
-    chrome.send = oldSend;
+    clickUrl = await testService.whenCalled('navigateToUrl');
+    assertEquals('about:blank', clickUrl);
   });
 });

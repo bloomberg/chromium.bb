@@ -46,8 +46,6 @@ class SimpleIndexDelegate;
 class SimpleIndexFile;
 struct SimpleIndexLoadResult;
 
-NET_EXPORT_PRIVATE extern const base::Feature kSimpleCacheEvictionWithSize;
-
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
   EntryMetadata();
@@ -245,6 +243,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, DiskWriteExecuted);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, DiskWritePostponed);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexAppCacheTest, DiskWriteQueued);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexCodeCacheTest, DisableEvictBySize);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexCodeCacheTest, EnableEvictBySize);
 
   void StartEvictionIfNeeded();
   void EvictionDone(int result);
@@ -303,7 +303,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   base::TimeTicks last_write_to_disk_;
 
   base::OneShotTimer write_to_disk_timer_;
-  base::Closure write_to_disk_cb_;
+  base::RepeatingClosure write_to_disk_cb_;
 
   typedef std::list<net::CompletionOnceCallback> CallbackList;
   CallbackList to_run_when_initialized_;
@@ -312,6 +312,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // background we can write the index much more frequently, to insure fresh
   // index on next startup.
   bool app_on_background_ = false;
+
+  static const base::Feature
+      kSimpleCacheDisableEvictionSizeHeuristicForCodeCache;
 };
 
 }  // namespace disk_cache

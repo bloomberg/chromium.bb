@@ -19,8 +19,12 @@
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_metrics_recorder.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "net/base/mac/url_conversions.h"
@@ -36,7 +40,7 @@ namespace {
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   BlockPopupInfoBarDelegate(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       web::WebState* web_state,
       const std::vector<BlockedPopupTabHelper::Popup>& popups)
       : browser_state_(browser_state), web_state_(web_state), popups_(popups) {
@@ -103,7 +107,7 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override { return BUTTON_OK; }
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   // The popups to open.
   std::vector<BlockedPopupTabHelper::Popup> popups_;
@@ -159,8 +163,20 @@ void BlockedPopupTabHelper::ShowInfoBar() {
   std::unique_ptr<BlockPopupInfoBarDelegate> delegate(
       std::make_unique<BlockPopupInfoBarDelegate>(GetBrowserState(), web_state_,
                                                   popups_));
-  std::unique_ptr<infobars::InfoBar> infobar =
-      infobar_manager->CreateConfirmInfoBar(std::move(delegate));
+
+  std::unique_ptr<infobars::InfoBar> infobar;
+  if (IsBlockPopupInfobarMessagesUIEnabled()) {
+    InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
+        initWithInfoBarDelegate:delegate.get()
+                   badgeSupport:NO
+                           type:InfobarType::kInfobarTypeConfirm];
+    infobar = std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  } else {
+    ConfirmInfoBarController* controller = [[ConfirmInfoBarController alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  }
+
   if (infobar_) {
     infobar_ = infobar_manager->ReplaceInfoBar(infobar_, std::move(infobar));
   } else {
@@ -172,9 +188,8 @@ void BlockedPopupTabHelper::ShowInfoBar() {
                                     kInfobarConfirmTypeBlockPopups];
 }
 
-ios::ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {
-  return ios::ChromeBrowserState::FromBrowserState(
-      web_state_->GetBrowserState());
+ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {
+  return ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 }
 
 void BlockedPopupTabHelper::RegisterAsInfoBarManagerObserverIfNeeded(

@@ -58,36 +58,27 @@ BluetoothLowEnergyWeaveClientConnection::Factory*
 
 // static
 std::unique_ptr<Connection>
-BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
+BluetoothLowEnergyWeaveClientConnection::Factory::Create(
     multidevice::RemoteDeviceRef remote_device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const device::BluetoothUUID remote_service_uuid,
     const std::string& device_address,
     bool should_set_low_connection_latency) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
+  if (factory_instance_) {
+    return factory_instance_->CreateInstance(
+        remote_device, adapter, remote_service_uuid, device_address,
+        should_set_low_connection_latency);
   }
-  return factory_instance_->BuildInstance(remote_device, adapter,
-                                          remote_service_uuid, device_address,
-                                          should_set_low_connection_latency);
-}
 
-// static
-void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
-}
-
-std::unique_ptr<Connection>
-BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
-    multidevice::RemoteDeviceRef remote_device,
-    scoped_refptr<device::BluetoothAdapter> adapter,
-    const device::BluetoothUUID remote_service_uuid,
-    const std::string& device_address,
-    bool should_set_low_connection_latency) {
   return std::make_unique<BluetoothLowEnergyWeaveClientConnection>(
       remote_device, adapter, remote_service_uuid, device_address,
       should_set_low_connection_latency);
+}
+
+// static
+void BluetoothLowEnergyWeaveClientConnection::Factory::SetFactoryForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
 }
 
 // static
@@ -238,10 +229,10 @@ void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
   PA_LOG(INFO) << "Creating GATT connection with " << GetDeviceInfoLogString()
                << ".";
   bluetooth_device->CreateGattConnection(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -621,11 +612,12 @@ void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
   PA_LOG(INFO) << "Starting notification session for "
                << GetDeviceInfoLogString() << ".";
   characteristic->StartNotifySession(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
@@ -702,12 +694,12 @@ void BluetoothLowEnergyWeaveClientConnection::SendPendingWriteRequest() {
 
   characteristic->WriteRemoteCharacteristic(
       pending_write_request_->value,
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::
-                     OnRemoteCharacteristicWritten,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::
-                     OnWriteRemoteCharacteristicError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::
+                         OnRemoteCharacteristicWritten,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::
+                         OnWriteRemoteCharacteristicError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {

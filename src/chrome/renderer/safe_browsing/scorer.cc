@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
+#include "components/safe_browsing/core/proto/client_model.pb.h"
 
 namespace {
 // Enum used to keep stats about the status of the Scorer creation.
@@ -112,6 +112,10 @@ size_t Scorer::max_shingles_per_page() const {
 
 size_t Scorer::shingle_size() const {
   return model_.shingle_size();
+}
+
+float Scorer::threshold_probability() const {
+  return model_.threshold_probability();
 }
 
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,

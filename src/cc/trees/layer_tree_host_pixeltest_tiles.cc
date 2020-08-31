@@ -36,6 +36,17 @@ class LayerTreeHostTilesPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<TilesTestConfig> {
  protected:
+  LayerTreeHostTilesPixelTest() : LayerTreePixelTest(renderer_type()) {
+    switch (raster_mode()) {
+      case GPU:
+      case GPU_LOW_BIT_DEPTH:
+        set_gpu_rasterization();
+        break;
+      default:
+        break;
+    }
+  }
+
   RendererType renderer_type() const { return GetParam().renderer_type; }
 
   RasterMode raster_mode() const { return GetParam().raster_mode; }
@@ -45,14 +56,8 @@ class LayerTreeHostTilesPixelTest
     switch (raster_mode()) {
       case ONE_COPY:
         settings->use_zero_copy = false;
-        settings->gpu_rasterization_disabled = true;
-        settings->gpu_rasterization_forced = false;
-        break;
-      case GPU:
-        settings->gpu_rasterization_forced = true;
         break;
       case GPU_LOW_BIT_DEPTH:
-        settings->gpu_rasterization_forced = true;
         settings->use_rgba_4444 = true;
         settings->unpremultiply_and_dither_low_bit_depth_tiles = true;
         break;
@@ -183,7 +188,7 @@ std::vector<TilesTestConfig> const kTestCases = {
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
-#endif
+#endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -193,13 +198,13 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, PartialRaster) {
   use_partial_raster_ = true;
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
@@ -208,7 +213,7 @@ std::vector<TilesTestConfig> const kTestCasesMultiThread = {
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
-#endif
+#endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =
@@ -218,8 +223,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidationMultiThread,
                          ::testing::ValuesIn(kTestCasesMultiThread));
 
-// Flaky on Linux TSAN. https://crbug.com/707711
 #if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// Flaky on Linux TSAN. https://crbug.com/707711
+#define MAYBE_PartialRaster DISABLED_PartialRaster
+#elif defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Flaky on Windows ASAN https://crbug.com/1045521
 #define MAYBE_PartialRaster DISABLED_PartialRaster
 #else
 #define MAYBE_PartialRaster PartialRaster
@@ -228,12 +236,12 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread,
        MAYBE_PartialRaster) {
   use_partial_raster_ = true;
   RunPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
-  RunPixelTest(renderer_type(), picture_layer_,
+  RunPixelTest(picture_layer_,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
@@ -247,19 +255,19 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
     ::testing::Values(
-        TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH},
-        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH}));
+        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH},
+        TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH}));
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;
-  RunSingleThreadedPixelTest(renderer_type(), picture_layer_,
+  RunSingleThreadedPixelTest(picture_layer_,
                              base::FilePath(FILE_PATH_LITERAL(
                                  "blue_yellow_partial_flipped_dither.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, FullRaster) {
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped_dither.png")));
 }
 

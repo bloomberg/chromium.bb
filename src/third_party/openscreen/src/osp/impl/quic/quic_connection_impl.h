@@ -26,7 +26,7 @@ class QuicConnectionFactoryImpl;
 
 class UdpTransport final : public ::quic::QuartcPacketTransport {
  public:
-  UdpTransport(platform::UdpSocket* socket, const IPEndpoint& destination);
+  UdpTransport(UdpSocket* socket, const IPEndpoint& destination);
   UdpTransport(UdpTransport&&) noexcept;
   ~UdpTransport() override;
 
@@ -37,10 +37,10 @@ class UdpTransport final : public ::quic::QuartcPacketTransport {
             size_t buffer_length,
             const PacketInfo& info) override;
 
-  platform::UdpSocket* socket() const { return socket_; }
+  UdpSocket* socket() const { return socket_; }
 
  private:
-  platform::UdpSocket* socket_;
+  UdpSocket* socket_;
   IPEndpoint destination_;
 };
 
@@ -76,10 +76,9 @@ class QuicConnectionImpl final : public QuicConnection,
   ~QuicConnectionImpl() override;
 
   // UdpSocket::Client overrides.
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> data) override;
-  void OnError(platform::UdpSocket* socket, Error error) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> data) override;
+  void OnError(UdpSocket* socket, Error error) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
 
   // QuicConnection overrides.
   std::unique_ptr<QuicStream> MakeOutgoingStream(

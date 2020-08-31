@@ -148,16 +148,16 @@ void VulkanTestHelper::cleanup() {
 sk_sp<SkSurface> VulkanTestHelper::createSkSurface(skiatest::Reporter* reporter) {
     const int kW = 8;
     const int kH = 8;
-    GrBackendTexture backendTex = grContext()->createBackendTexture(
-        kW, kH, kRGBA_8888_SkColorType, GrMipMapped::kNo, GrRenderable::kNo,
+    GrBackendTexture backendTex = this->grContext()->createBackendTexture(
+        kW, kH, kRGBA_8888_SkColorType, GrMipMapped::kNo, GrRenderable::kYes,
         fIsProtected ? GrProtected::kYes : GrProtected::kNo);
     REPORTER_ASSERT(reporter, backendTex.isValid());
     REPORTER_ASSERT(reporter, backendTex.isProtected() == fIsProtected);
 
     SkSurfaceProps surfaceProps =
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-    sk_sp<SkSurface> surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        grContext(), backendTex, kTopLeft_GrSurfaceOrigin, 1,
+    sk_sp<SkSurface> surface = SkSurface::MakeFromBackendTexture(
+        this->grContext(), backendTex, kTopLeft_GrSurfaceOrigin, 1,
         kRGBA_8888_SkColorType, nullptr, &surfaceProps);
     REPORTER_ASSERT(reporter, surface);
     return surface;

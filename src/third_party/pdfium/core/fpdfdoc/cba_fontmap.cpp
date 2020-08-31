@@ -35,9 +35,6 @@ namespace {
 
 bool FindNativeTrueTypeFont(ByteString sFontFaceName) {
   CFX_FontMgr* pFontMgr = CFX_GEModule::Get()->GetFontMgr();
-  if (!pFontMgr)
-    return false;
-
   CFX_FontMapper* pFontMapper = pFontMgr->GetBuiltinMapper();
   pFontMapper->LoadInstalledFonts();
 
@@ -161,21 +158,6 @@ void CBA_FontMap::Reset() {
   m_sDefaultFontName.clear();
 }
 
-void CBA_FontMap::SetDefaultFont(const RetainPtr<CPDF_Font>& pFont,
-                                 const ByteString& sFontName) {
-  ASSERT(pFont);
-
-  if (m_pDefaultFont)
-    return;
-
-  m_pDefaultFont = pFont;
-  m_sDefaultFontName = sFontName;
-
-  const CFX_SubstFont* pSubstFont = m_pDefaultFont->GetSubstFont();
-  int32_t nCharset = pSubstFont ? pSubstFont->m_Charset : FX_CHARSET_Default;
-  AddFontData(m_pDefaultFont, m_sDefaultFontName, nCharset);
-}
-
 void CBA_FontMap::SetAPType(const ByteString& sAPType) {
   m_sAPType = sAPType;
 
@@ -279,13 +261,14 @@ RetainPtr<CPDF_Font> CBA_FontMap::GetAnnotDefaultFont(ByteString* sAlias) {
   }
 
   ByteString sDA;
-  const CPDF_Object* pObj = FPDF_GetFieldAttr(m_pAnnotDict.Get(), "DA");
+  const CPDF_Object* pObj =
+      CPDF_FormField::GetFieldAttr(m_pAnnotDict.Get(), "DA");
   if (pObj)
     sDA = pObj->GetString();
 
   if (bWidget) {
     if (sDA.IsEmpty()) {
-      pObj = FPDF_GetFieldAttr(pAcroFormDict, "DA");
+      pObj = CPDF_FormField::GetFieldAttr(pAcroFormDict, "DA");
       sDA = pObj ? pObj->GetString() : ByteString();
     }
   }
@@ -387,7 +370,7 @@ int32_t CBA_FontMap::GetFontIndex(const ByteString& sFontName,
       bFind ? FindFontSameCharset(&sAlias, nCharset) : nullptr;
   if (!pFont) {
     ByteString sTemp = sFontName;
-    pFont = AddFontToDocument(m_pDocument.Get(), sTemp, nCharset);
+    pFont = AddFontToDocument(sTemp, nCharset);
     sAlias = EncodeFontAlias(sTemp, nCharset);
   }
   AddFontToAnnotDict(pFont, sAlias);
@@ -456,13 +439,12 @@ ByteString CBA_FontMap::GetCachedNativeFontName(int32_t nCharset) {
   return sNew;
 }
 
-RetainPtr<CPDF_Font> CBA_FontMap::AddFontToDocument(CPDF_Document* pDoc,
-                                                    ByteString& sFontName,
+RetainPtr<CPDF_Font> CBA_FontMap::AddFontToDocument(ByteString sFontName,
                                                     uint8_t nCharset) {
   if (IsStandardFont(sFontName))
-    return AddStandardFont(pDoc, sFontName);
+    return AddStandardFont(sFontName);
 
-  return AddSystemFont(pDoc, sFontName, nCharset);
+  return AddSystemFont(sFontName, nCharset);
 }
 
 bool CBA_FontMap::IsStandardFont(const ByteString& sFontName) {
@@ -487,30 +469,22 @@ bool CBA_FontMap::IsStandardFont(const ByteString& sFontName) {
   return false;
 }
 
-RetainPtr<CPDF_Font> CBA_FontMap::AddStandardFont(CPDF_Document* pDoc,
-                                                  ByteString& sFontName) {
-  if (!pDoc)
-    return nullptr;
-
-  auto* pPageData = CPDF_DocPageData::FromDocument(pDoc);
+RetainPtr<CPDF_Font> CBA_FontMap::AddStandardFont(ByteString sFontName) {
+  auto* pPageData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
   if (sFontName == "ZapfDingbats")
-    return pPageData->AddStandardFont(sFontName.c_str(), nullptr);
+    return pPageData->AddStandardFont(sFontName, nullptr);
 
   static const CPDF_FontEncoding fe(PDFFONT_ENCODING_WINANSI);
-  return pPageData->AddStandardFont(sFontName.c_str(), &fe);
+  return pPageData->AddStandardFont(sFontName, &fe);
 }
 
-RetainPtr<CPDF_Font> CBA_FontMap::AddSystemFont(CPDF_Document* pDoc,
-                                                ByteString& sFontName,
+RetainPtr<CPDF_Font> CBA_FontMap::AddSystemFont(ByteString sFontName,
                                                 uint8_t nCharset) {
-  if (!pDoc)
-    return nullptr;
-
   if (sFontName.IsEmpty())
     sFontName = GetNativeFontName(nCharset);
 
   if (nCharset == FX_CHARSET_Default)
     nCharset = GetNativeCharset();
 
-  return AddNativeTrueTypeFontToPDF(pDoc, sFontName, nCharset);
+  return AddNativeTrueTypeFontToPDF(m_pDocument.Get(), sFontName, nCharset);
 }

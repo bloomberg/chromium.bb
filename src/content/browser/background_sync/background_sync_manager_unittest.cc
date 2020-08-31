@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -533,7 +533,7 @@ class BackgroundSyncManagerTest
   void UnregisterServiceWorker(uint64_t sw_registration_id) {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
-        ScopeForSWId(sw_registration_id),
+        ScopeForSWId(sw_registration_id), /*is_immediate=*/false,
         base::BindOnce(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);

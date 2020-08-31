@@ -25,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -66,7 +67,7 @@ void SetCookieDirect(WebContentsImpl* tab,
   net::CookieOptions options;
   // Allow setting SameSite cookies.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   auto cookie_obj = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), base::nullopt /* server_time */);
@@ -75,7 +76,7 @@ void SetCookieDirect(WebContentsImpl* tab,
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
       ->GetCookieManagerForBrowserProcess()
       ->SetCanonicalCookie(
-          *cookie_obj, url.scheme(), options,
+          *cookie_obj, url, options,
           base::BindLambdaForTesting(
               [&](net::CanonicalCookie::CookieInclusionStatus status) {
                 run_loop.Quit();
@@ -87,7 +88,7 @@ std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
   net::CookieOptions options;
   // Allow setting SameSite cookies.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   net::CookieList result;
   base::RunLoop run_loop;
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
@@ -296,7 +297,7 @@ class RestrictedCookieManagerInterceptor
   }
 
   void SetCookieFromString(const GURL& url,
-                           const GURL& site_for_cookies,
+                           const net::SiteForCookies& site_for_cookies,
                            const url::Origin& top_frame_origin,
                            const std::string& cookie,
                            SetCookieFromStringCallback callback) override {
@@ -306,7 +307,7 @@ class RestrictedCookieManagerInterceptor
   }
 
   void GetCookiesString(const GURL& url,
-                        const GURL& site_for_cookies,
+                        const net::SiteForCookies& site_for_cookies,
                         const url::Origin& top_frame_origin,
                         GetCookiesStringCallback callback) override {
     GetForwardingInterface()->GetCookiesString(
@@ -336,7 +337,7 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,

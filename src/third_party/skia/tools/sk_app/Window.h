@@ -20,6 +20,7 @@ class GrContext;
 class SkCanvas;
 class SkSurface;
 class SkSurfaceProps;
+class SkString;
 
 namespace sk_app {
 
@@ -45,7 +46,9 @@ public:
     virtual bool scaleContentToFit() const { return false; }
 
     enum BackendType {
+#ifdef SK_GL
         kNativeGL_BackendType,
+#endif
 #if SK_ANGLE && defined(SK_BUILD_FOR_WIN)
         kANGLE_BackendType,
 #endif

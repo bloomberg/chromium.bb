@@ -34,7 +34,7 @@ namespace device_sync {
 
 namespace {
 
-const char kTestUserId[] = "testUserId";
+const char kTestUserEmail[] = "test@gmail.com";
 const char kTestUserPrivateKey[] = "testUserPrivateKey";
 const char kTestRemoteDeviceInstanceIdPrefix[] = "instanceId-";
 const char kTestRemoteDeviceNamePrefix[] = "name-";
@@ -52,7 +52,7 @@ multidevice::RemoteDevice CreateRemoteDeviceForTest(const std::string& suffix,
       has_instance_id ? "has Instance ID" : "no Instance ID";
 
   return multidevice::RemoteDevice(
-      kTestUserId,
+      kTestUserEmail,
       has_instance_id ? kTestRemoteDeviceInstanceIdPrefix + suffix
                       : std::string(),
       kTestRemoteDeviceNamePrefix + suffix,
@@ -170,13 +170,13 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
     TestRemoteDeviceLoaderFactory() = default;
     ~TestRemoteDeviceLoaderFactory() = default;
 
-    std::unique_ptr<RemoteDeviceLoader> BuildInstance(
+    std::unique_ptr<RemoteDeviceLoader> CreateInstance(
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
-        const std::string& user_id,
+        const std::string& user_email,
         const std::string& user_private_key,
         std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate) override {
-      EXPECT_EQ(std::string(kTestUserId), user_id);
+      EXPECT_EQ(std::string(kTestUserEmail), user_email);
       EXPECT_EQ(std::string(kTestUserPrivateKey), user_private_key);
       std::unique_ptr<FakeDeviceLoader> device_loader =
           std::make_unique<FakeDeviceLoader>();
@@ -190,7 +190,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
       // Fetch only the devices inserted by tests, since GetV1RemoteDevices()
       // contains all available devices.
       multidevice::RemoteDeviceList devices;
-      for (const auto remote_device : GetV1RemoteDevices()) {
+      for (const auto& remote_device : GetV1RemoteDevices()) {
         for (const auto& external_device_info : device_info_list) {
           if (remote_device.public_key == external_device_info.public_key())
             devices.push_back(remote_device);
@@ -237,12 +237,12 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
 
     fake_secure_message_delegate_factory_ =
         std::make_unique<multidevice::FakeSecureMessageDelegateFactory>();
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         fake_secure_message_delegate_factory_.get());
 
     test_device_loader_factory_ =
         std::make_unique<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>();
-    RemoteDeviceLoader::Factory::SetInstanceForTesting(
+    RemoteDeviceLoader::Factory::SetFactoryForTesting(
         test_device_loader_factory_.get());
     fake_remote_device_v2_loader_factory_ =
         std::make_unique<FakeRemoteDeviceV2LoaderFactory>();
@@ -253,9 +253,9 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetFactoryForTesting(
         nullptr);
-    RemoteDeviceLoader::Factory::SetInstanceForTesting(nullptr);
+    RemoteDeviceLoader::Factory::SetFactoryForTesting(nullptr);
     RemoteDeviceV2LoaderImpl::Factory::SetFactoryForTesting(nullptr);
   }
 
@@ -271,10 +271,10 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
 
     if (use_v1) {
       disabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     } else {
       enabled_features.push_back(
-          chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
     }
 
     if (use_v2) {
@@ -289,7 +289,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   // Set the v1 device manager's synced devices to correspond to the first
   // |num_devices| of GetV1RemoteDevices().
   void SetV1ManagerDevices(size_t num_devices) {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
 
     static const base::NoDestructor<std::vector<cryptauth::ExternalDeviceInfo>>
         device_info([] {
@@ -350,7 +350,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   void CreateRemoteDeviceProvider() {
     remote_device_provider_ = std::make_unique<RemoteDeviceProviderImpl>(
         fake_device_manager_.get(), fake_v2_device_manager_.get(),
-        CoreAccountId(kTestUserId), kTestUserPrivateKey);
+        kTestUserEmail, kTestUserPrivateKey);
     remote_device_provider_->AddObserver(test_observer_.get());
     EXPECT_EQ(0u, remote_device_provider_->GetSyncedDevices().size());
 
@@ -363,7 +363,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void NotifyV1SyncFinished(bool success, bool did_devices_change) {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
 
     fake_device_manager_->NotifySyncFinished(
         success ? CryptAuthDeviceManager::SyncResult::SUCCESS
@@ -392,7 +392,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
   }
 
   void RunV1RemoteDeviceLoader() {
-    ASSERT_FALSE(features::ShouldDeprecateV1DeviceSync());
+    ASSERT_TRUE(features::ShouldUseV1DeviceSync());
     ASSERT_TRUE(test_device_loader_factory_->HasQueuedCallback());
     test_device_loader_factory_->InvokeLastCallback(
         fake_device_manager_->GetSyncedDevices());
@@ -406,8 +406,8 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
     EXPECT_TRUE(loader->id_to_device_map());
     EXPECT_EQ(fake_v2_device_manager_->GetSyncedDevices(),
               *loader->id_to_device_map());
-    EXPECT_TRUE(loader->user_id());
-    EXPECT_EQ(kTestUserId, *loader->user_id());
+    EXPECT_TRUE(loader->user_email());
+    EXPECT_EQ(kTestUserEmail, *loader->user_email());
     EXPECT_TRUE(loader->user_private_key());
     EXPECT_EQ(kTestUserPrivateKey, *loader->user_private_key());
 

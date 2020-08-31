@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
@@ -16,7 +18,7 @@ using device::mojom::blink::GamepadHapticsManager;
 
 void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
   if (reader_) {
-    reader_->SampleGamepads(gamepads);
+    reader_->SampleGamepads(&gamepads);
   }
 }
 
@@ -38,21 +40,24 @@ void GamepadDispatcher::ResetVibrationActuator(
                                                           std::move(callback));
 }
 
-GamepadDispatcher::GamepadDispatcher(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
+GamepadDispatcher::GamepadDispatcher(ExecutionContext* context)
+    :  // See https://bit.ly/2S0zRAS for task types.
+      task_runner_(context->GetTaskRunner(TaskType::kMiscPlatformAPI)),
+      gamepad_haptics_manager_remote_(context) {}
 
 GamepadDispatcher::~GamepadDispatcher() = default;
 
 void GamepadDispatcher::InitializeHaptics() {
-  if (!gamepad_haptics_manager_remote_) {
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+  if (!gamepad_haptics_manager_remote_.is_bound()) {
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         gamepad_haptics_manager_remote_.BindNewPipeAndPassReceiver(
             task_runner_));
   }
 }
 
-void GamepadDispatcher::Trace(blink::Visitor* visitor) {
+void GamepadDispatcher::Trace(Visitor* visitor) {
+  visitor->Trace(reader_);
+  visitor->Trace(gamepad_haptics_manager_remote_);
   PlatformEventDispatcher::Trace(visitor);
 }
 
@@ -85,7 +90,7 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
 void GamepadDispatcher::StartListening(LocalFrame* frame) {
   if (!reader_) {
     DCHECK(frame);
-    reader_ = std::make_unique<GamepadSharedMemoryReader>(*frame);
+    reader_ = MakeGarbageCollected<GamepadSharedMemoryReader>(*frame);
   }
   reader_->Start(this);
 }

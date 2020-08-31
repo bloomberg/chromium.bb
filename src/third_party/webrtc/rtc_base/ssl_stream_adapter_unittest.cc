@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "rtc_base/buffer_queue.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/gunit.h"
@@ -24,19 +25,23 @@
 #include "rtc_base/ssl_identity.h"
 #include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/stream.h"
+#include "test/field_trial.h"
 
-using ::testing::WithParamInterface;
-using ::testing::Values;
 using ::testing::Combine;
 using ::testing::tuple;
+using ::testing::Values;
+using ::testing::WithParamInterface;
 
 static const int kBlockSize = 4096;
 static const char kExporterLabel[] = "label";
 static const unsigned char kExporterContext[] = "context";
 static int kExporterContextLen = sizeof(kExporterContext);
 
-static const char kRSA_PRIVATE_KEY_PEM[] =
-    "-----BEGIN RSA PRIVATE KEY-----\n"
+// A private key used for testing, broken into pieces in order to avoid
+// issues with Git's checks for private keys in repos.
+#define RSA_PRIVATE_KEY_HEADER "-----BEGIN RSA PRIVATE KEY-----\n"
+
+static const char kRSA_PRIVATE_KEY_PEM[] = RSA_PRIVATE_KEY_HEADER
     "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMYRkbhmI7kVA/rM\n"
     "czsZ+6JDhDvnkF+vn6yCAGuRPV03zuRqZtDy4N4to7PZu9PjqrRl7nDMXrG3YG9y\n"
     "rlIAZ72KjcKKFAJxQyAKLCIdawKRyp8RdK3LEySWEZb0AV58IadqPZDTNHHRX8dz\n"
@@ -52,6 +57,8 @@ static const char kRSA_PRIVATE_KEY_PEM[] =
     "1pOEjsYQn0X5KEIrz1G3bfCbB848Ime3U2/FWlCHMr6ch8kCZ5d1WUeJD3LbwMNG\n"
     "UCXiYxSsu20QNVw=\n"
     "-----END RSA PRIVATE KEY-----\n";
+
+#undef RSA_PRIVATE_KEY_HEADER
 
 static const char kCERT_PEM[] =
     "-----BEGIN CERTIFICATE-----\n"
@@ -292,8 +299,6 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
         server_key_type_(server_key_type),
         client_stream_(nullptr),
         server_stream_(nullptr),
-        client_identity_(nullptr),
-        server_identity_(nullptr),
         delay_(0),
         mtu_(1460),
         loss_(0),
@@ -314,23 +319,26 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
   void SetUp() override {
     CreateStreams();
 
-    client_ssl_.reset(rtc::SSLStreamAdapter::Create(client_stream_));
-    server_ssl_.reset(rtc::SSLStreamAdapter::Create(server_stream_));
+    client_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(client_stream_));
+    server_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(server_stream_));
 
     // Set up the slots
     client_ssl_->SignalEvent.connect(this, &SSLStreamAdapterTestBase::OnEvent);
     server_ssl_->SignalEvent.connect(this, &SSLStreamAdapterTestBase::OnEvent);
 
+    std::unique_ptr<rtc::SSLIdentity> client_identity;
     if (!client_cert_pem_.empty() && !client_private_key_pem_.empty()) {
-      client_identity_ = rtc::SSLIdentity::FromPEMStrings(
+      client_identity = rtc::SSLIdentity::CreateFromPEMStrings(
           client_private_key_pem_, client_cert_pem_);
     } else {
-      client_identity_ = rtc::SSLIdentity::Generate("client", client_key_type_);
+      client_identity = rtc::SSLIdentity::Create("client", client_key_type_);
     }
-    server_identity_ = rtc::SSLIdentity::Generate("server", server_key_type_);
+    auto server_identity = rtc::SSLIdentity::Create("server", server_key_type_);
 
-    client_ssl_->SetIdentity(client_identity_);
-    server_ssl_->SetIdentity(server_identity_);
+    client_ssl_->SetIdentity(std::move(client_identity));
+    server_ssl_->SetIdentity(std::move(server_identity));
   }
 
   void TearDown() override {
@@ -346,8 +354,10 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
   void ResetIdentitiesWithValidity(int not_before, int not_after) {
     CreateStreams();
 
-    client_ssl_.reset(rtc::SSLStreamAdapter::Create(client_stream_));
-    server_ssl_.reset(rtc::SSLStreamAdapter::Create(server_stream_));
+    client_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(client_stream_));
+    server_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(server_stream_));
 
     client_ssl_->SignalEvent.connect(this, &SSLStreamAdapterTestBase::OnEvent);
     server_ssl_->SignalEvent.connect(this, &SSLStreamAdapterTestBase::OnEvent);
@@ -359,17 +369,17 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
     client_params.common_name = "client";
     client_params.not_before = now + not_before;
     client_params.not_after = now + not_after;
-    client_identity_ = rtc::SSLIdentity::GenerateForTest(client_params);
+    auto client_identity = rtc::SSLIdentity::CreateForTest(client_params);
 
     rtc::SSLIdentityParams server_params;
     server_params.key_params = rtc::KeyParams(rtc::KT_DEFAULT);
     server_params.common_name = "server";
     server_params.not_before = now + not_before;
     server_params.not_after = now + not_after;
-    server_identity_ = rtc::SSLIdentity::GenerateForTest(server_params);
+    auto server_identity = rtc::SSLIdentity::CreateForTest(server_params);
 
-    client_ssl_->SetIdentity(client_identity_);
-    server_ssl_->SetIdentity(server_identity_);
+    client_ssl_->SetIdentity(std::move(client_identity));
+    server_ssl_->SetIdentity(std::move(server_identity));
   }
 
   virtual void OnEvent(rtc::StreamInterface* stream, int sig, int err) {
@@ -398,10 +408,10 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
 
     RTC_LOG(LS_INFO) << "Setting peer identities by digest";
 
-    rv = server_identity_->certificate().ComputeDigest(
+    rv = server_identity()->certificate().ComputeDigest(
         rtc::DIGEST_SHA_1, server_digest, 20, &server_digest_len);
     ASSERT_TRUE(rv);
-    rv = client_identity_->certificate().ComputeDigest(
+    rv = client_identity()->certificate().ComputeDigest(
         rtc::DIGEST_SHA_1, client_digest, 20, &client_digest_len);
     ASSERT_TRUE(rv);
 
@@ -628,6 +638,19 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
   virtual void TestTransfer(int size) = 0;
 
  protected:
+  rtc::SSLIdentity* client_identity() const {
+    if (!client_ssl_) {
+      return nullptr;
+    }
+    return client_ssl_->GetIdentityForTesting();
+  }
+  rtc::SSLIdentity* server_identity() const {
+    if (!server_ssl_) {
+      return nullptr;
+    }
+    return server_ssl_->GetIdentityForTesting();
+  }
+
   std::string client_cert_pem_;
   std::string client_private_key_pem_;
   rtc::KeyParams client_key_type_;
@@ -636,8 +659,6 @@ class SSLStreamAdapterTestBase : public ::testing::Test,
   SSLDummyStreamBase* server_stream_;  // freed by server_ssl_ destructor
   std::unique_ptr<rtc::SSLStreamAdapter> client_ssl_;
   std::unique_ptr<rtc::SSLStreamAdapter> server_ssl_;
-  rtc::SSLIdentity* client_identity_;  // freed by client_ssl_ destructor
-  rtc::SSLIdentity* server_identity_;  // freed by server_ssl_ destructor
   int delay_;
   size_t mtu_;
   int loss_;
@@ -767,24 +788,18 @@ class SSLStreamAdapterTestTLS
   rtc::MemoryStream recv_stream_;
 };
 
-class SSLStreamAdapterTestDTLS
-    : public SSLStreamAdapterTestBase,
-      public WithParamInterface<tuple<rtc::KeyParams, rtc::KeyParams>> {
+class SSLStreamAdapterTestDTLSBase : public SSLStreamAdapterTestBase {
  public:
-  SSLStreamAdapterTestDTLS()
-      : SSLStreamAdapterTestBase("",
-                                 "",
-                                 true,
-                                 ::testing::get<0>(GetParam()),
-                                 ::testing::get<1>(GetParam())),
+  SSLStreamAdapterTestDTLSBase(rtc::KeyParams param1, rtc::KeyParams param2)
+      : SSLStreamAdapterTestBase("", "", true, param1, param2),
         client_buffer_(kBufferCapacity, kDefaultBufferSize),
         server_buffer_(kBufferCapacity, kDefaultBufferSize),
         packet_size_(1000),
         count_(0),
         sent_(0) {}
 
-  SSLStreamAdapterTestDTLS(const std::string& cert_pem,
-                           const std::string& private_key_pem)
+  SSLStreamAdapterTestDTLSBase(const std::string& cert_pem,
+                               const std::string& private_key_pem)
       : SSLStreamAdapterTestBase(cert_pem, private_key_pem, true),
         client_buffer_(kBufferCapacity, kDefaultBufferSize),
         server_buffer_(kBufferCapacity, kDefaultBufferSize),
@@ -883,13 +898,28 @@ class SSLStreamAdapterTestDTLS
     }
   }
 
- private:
+ protected:
   BufferQueueStream client_buffer_;
   BufferQueueStream server_buffer_;
+
+ private:
   size_t packet_size_;
   int count_;
   int sent_;
   std::set<int> received_;
+};
+
+class SSLStreamAdapterTestDTLS
+    : public SSLStreamAdapterTestDTLSBase,
+      public WithParamInterface<tuple<rtc::KeyParams, rtc::KeyParams>> {
+ public:
+  SSLStreamAdapterTestDTLS()
+      : SSLStreamAdapterTestDTLSBase(::testing::get<0>(GetParam()),
+                                     ::testing::get<1>(GetParam())) {}
+
+  SSLStreamAdapterTestDTLS(const std::string& cert_pem,
+                           const std::string& private_key_pem)
+      : SSLStreamAdapterTestDTLSBase(cert_pem, private_key_pem) {}
 };
 
 rtc::StreamResult SSLDummyStreamBase::Write(const void* data,
@@ -924,8 +954,10 @@ class SSLStreamAdapterTestDTLSCertChain : public SSLStreamAdapterTestDTLS {
   void SetUp() override {
     CreateStreams();
 
-    client_ssl_.reset(rtc::SSLStreamAdapter::Create(client_stream_));
-    server_ssl_.reset(rtc::SSLStreamAdapter::Create(server_stream_));
+    client_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(client_stream_));
+    server_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(server_stream_));
 
     // Set up the slots
     client_ssl_->SignalEvent.connect(
@@ -935,14 +967,15 @@ class SSLStreamAdapterTestDTLSCertChain : public SSLStreamAdapterTestDTLS {
         reinterpret_cast<SSLStreamAdapterTestBase*>(this),
         &SSLStreamAdapterTestBase::OnEvent);
 
+    std::unique_ptr<rtc::SSLIdentity> client_identity;
     if (!client_cert_pem_.empty() && !client_private_key_pem_.empty()) {
-      client_identity_ = rtc::SSLIdentity::FromPEMStrings(
+      client_identity = rtc::SSLIdentity::CreateFromPEMStrings(
           client_private_key_pem_, client_cert_pem_);
     } else {
-      client_identity_ = rtc::SSLIdentity::Generate("client", client_key_type_);
+      client_identity = rtc::SSLIdentity::Create("client", client_key_type_);
     }
 
-    client_ssl_->SetIdentity(client_identity_);
+    client_ssl_->SetIdentity(std::move(client_identity));
   }
 };
 
@@ -960,13 +993,13 @@ TEST_P(SSLStreamAdapterTestTLS, GetPeerCertChainWithOneCertificate) {
   ASSERT_NE(nullptr, cert_chain);
   EXPECT_EQ(1u, cert_chain->GetSize());
   EXPECT_EQ(cert_chain->Get(0).ToPEMString(),
-            server_identity_->certificate().ToPEMString());
+            server_identity()->certificate().ToPEMString());
 }
 
 TEST_F(SSLStreamAdapterTestDTLSCertChain, TwoCertHandshake) {
-  server_identity_ = rtc::SSLIdentity::FromPEMChainStrings(
+  auto server_identity = rtc::SSLIdentity::CreateFromPEMChainStrings(
       kRSA_PRIVATE_KEY_PEM, std::string(kCERT_PEM) + kCACert);
-  server_ssl_->SetIdentity(server_identity_);
+  server_ssl_->SetIdentity(std::move(server_identity));
   TestHandshake();
   std::unique_ptr<rtc::SSLCertChain> peer_cert_chain =
       client_ssl_->GetPeerSSLCertChain();
@@ -977,11 +1010,8 @@ TEST_F(SSLStreamAdapterTestDTLSCertChain, TwoCertHandshake) {
 }
 
 TEST_F(SSLStreamAdapterTestDTLSCertChain, TwoCertHandshakeWithCopy) {
-  std::unique_ptr<rtc::SSLIdentity> identity(
-      rtc::SSLIdentity::FromPEMChainStrings(kRSA_PRIVATE_KEY_PEM,
-                                            std::string(kCERT_PEM) + kCACert));
-  server_identity_ = identity->GetReference();
-  server_ssl_->SetIdentity(server_identity_);
+  server_ssl_->SetIdentity(rtc::SSLIdentity::CreateFromPEMChainStrings(
+      kRSA_PRIVATE_KEY_PEM, std::string(kCERT_PEM) + kCACert));
   TestHandshake();
   std::unique_ptr<rtc::SSLCertChain> peer_cert_chain =
       client_ssl_->GetPeerSSLCertChain();
@@ -992,9 +1022,8 @@ TEST_F(SSLStreamAdapterTestDTLSCertChain, TwoCertHandshakeWithCopy) {
 }
 
 TEST_F(SSLStreamAdapterTestDTLSCertChain, ThreeCertHandshake) {
-  server_identity_ = rtc::SSLIdentity::FromPEMChainStrings(
-      kRSA_PRIVATE_KEY_PEM, std::string(kCERT_PEM) + kIntCert1 + kCACert);
-  server_ssl_->SetIdentity(server_identity_);
+  server_ssl_->SetIdentity(rtc::SSLIdentity::CreateFromPEMChainStrings(
+      kRSA_PRIVATE_KEY_PEM, std::string(kCERT_PEM) + kIntCert1 + kCACert));
   TestHandshake();
   std::unique_ptr<rtc::SSLCertChain> peer_cert_chain =
       client_ssl_->GetPeerSSLCertChain();
@@ -1060,7 +1089,7 @@ TEST_P(SSLStreamAdapterTestTLS,
   bool rv;
   rtc::SSLPeerCertificateDigestError err;
 
-  rv = server_identity_->certificate().ComputeDigest(
+  rv = server_identity()->certificate().ComputeDigest(
       rtc::DIGEST_SHA_1, server_digest, 20, &server_digest_len);
   ASSERT_TRUE(rv);
 
@@ -1078,7 +1107,7 @@ TEST_P(SSLStreamAdapterTestTLS, TestSetPeerCertificateDigestWithInvalidLength) {
   bool rv;
   rtc::SSLPeerCertificateDigestError err;
 
-  rv = server_identity_->certificate().ComputeDigest(
+  rv = server_identity()->certificate().ComputeDigest(
       rtc::DIGEST_SHA_1, server_digest, 20, &server_digest_len);
   ASSERT_TRUE(rv);
 
@@ -1380,25 +1409,6 @@ TEST_F(SSLStreamAdapterTestDTLSFromPEMStrings, TestDTLSGetPeerCertificate) {
   ASSERT_EQ(kCERT_PEM, server_peer_cert->ToPEMString());
 }
 
-// Test getting the used DTLS ciphers.
-// DTLS 1.2 enabled for neither client nor server -> DTLS 1.0 will be used.
-TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuite) {
-  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_10);
-  TestHandshake();
-
-  int client_cipher;
-  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
-  int server_cipher;
-  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
-
-  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(true));
-  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(false));
-
-  ASSERT_EQ(client_cipher, server_cipher);
-  ASSERT_TRUE(rtc::SSLStreamAdapter::IsAcceptableCipher(
-      server_cipher, ::testing::get<1>(GetParam()).type()));
-}
-
 // Test getting the used DTLS 1.2 ciphers.
 // DTLS 1.2 enabled for client and server -> DTLS 1.2 will be used.
 TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuiteDtls12Both) {
@@ -1418,27 +1428,11 @@ TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuiteDtls12Both) {
       server_cipher, ::testing::get<1>(GetParam()).type()));
 }
 
-// DTLS 1.2 enabled for client only -> DTLS 1.0 will be used.
-TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuiteDtls12Client) {
-  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_12);
-  TestHandshake();
-
-  int client_cipher;
-  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
-  int server_cipher;
-  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
-
-  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(true));
-  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(false));
-
-  ASSERT_EQ(client_cipher, server_cipher);
-  ASSERT_TRUE(rtc::SSLStreamAdapter::IsAcceptableCipher(
-      server_cipher, ::testing::get<1>(GetParam()).type()));
-}
-
-// DTLS 1.2 enabled for server only -> DTLS 1.0 will be used.
-TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuiteDtls12Server) {
-  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_12, rtc::SSL_PROTOCOL_DTLS_10);
+// Test getting the used DTLS ciphers.
+// DTLS 1.0 is max version for client and server, this will only work if
+// legacy is enabled.
+TEST_P(SSLStreamAdapterTestDTLS, TestGetSslCipherSuite) {
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_10);
   TestHandshake();
 
   int client_cipher;
@@ -1475,3 +1469,164 @@ INSTANTIATE_TEST_SUITE_P(
             Values(rtc::KeyParams::RSA(1024, 65537),
                    rtc::KeyParams::RSA(1152, 65537),
                    rtc::KeyParams::ECDSA(rtc::EC_NIST_P256))));
+
+// Tests for enabling / disabling legacy TLS protocols in DTLS.
+class SSLStreamAdapterTestDTLSLegacyProtocols
+    : public SSLStreamAdapterTestDTLSBase {
+ public:
+  SSLStreamAdapterTestDTLSLegacyProtocols()
+      : SSLStreamAdapterTestDTLSBase(rtc::KeyParams::ECDSA(rtc::EC_NIST_P256),
+                                     rtc::KeyParams::ECDSA(rtc::EC_NIST_P256)) {
+  }
+
+  // Do not use the SetUp version from the parent class.
+  void SetUp() override {}
+
+  // The legacy TLS protocols flag is read when the OpenSSLStreamAdapter is
+  // initialized, so we set the experiment while creationg client_ssl_
+  // and server_ssl_.
+
+  void ConfigureClient(std::string experiment) {
+    webrtc::test::ScopedFieldTrials trial(experiment);
+    client_stream_ =
+        new SSLDummyStreamDTLS(this, "c2s", &client_buffer_, &server_buffer_);
+    client_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(client_stream_));
+    client_ssl_->SignalEvent.connect(
+        static_cast<SSLStreamAdapterTestBase*>(this),
+        &SSLStreamAdapterTestBase::OnEvent);
+    auto client_identity = rtc::SSLIdentity::Create("client", client_key_type_);
+    client_ssl_->SetIdentity(std::move(client_identity));
+  }
+
+  void ConfigureServer(std::string experiment) {
+    // webrtc::test::ScopedFieldTrials trial(experiment);
+    server_stream_ =
+        new SSLDummyStreamDTLS(this, "s2c", &server_buffer_, &client_buffer_);
+    server_ssl_ =
+        rtc::SSLStreamAdapter::Create(absl::WrapUnique(server_stream_));
+    server_ssl_->SignalEvent.connect(
+        static_cast<SSLStreamAdapterTestBase*>(this),
+        &SSLStreamAdapterTestBase::OnEvent);
+    server_ssl_->SetIdentity(
+        rtc::SSLIdentity::Create("server", server_key_type_));
+  }
+};
+
+// Test getting the used DTLS ciphers.
+// DTLS 1.2 enabled for neither client nor server -> DTLS 1.0 will be used.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols, TestGetSslCipherSuite) {
+  ConfigureClient("");
+  ConfigureServer("");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_10);
+  TestHandshake();
+
+  int client_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
+  int server_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
+
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(true));
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(false));
+
+  ASSERT_EQ(client_cipher, server_cipher);
+}
+
+// Test getting the used DTLS 1.2 ciphers.
+// DTLS 1.2 enabled for client and server -> DTLS 1.2 will be used.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslCipherSuiteDtls12Both) {
+  ConfigureClient("");
+  ConfigureServer("");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_12, rtc::SSL_PROTOCOL_DTLS_12);
+  TestHandshake();
+
+  int client_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
+  int server_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
+
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_12, GetSslVersion(true));
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_12, GetSslVersion(false));
+
+  ASSERT_EQ(client_cipher, server_cipher);
+}
+
+// DTLS 1.2 enabled for client only -> DTLS 1.0 will be used.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslCipherSuiteDtls12Client) {
+  ConfigureClient("");
+  ConfigureServer("");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_12);
+  TestHandshake();
+
+  int client_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
+  int server_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
+
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(true));
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(false));
+
+  ASSERT_EQ(client_cipher, server_cipher);
+}
+
+// DTLS 1.2 enabled for server only -> DTLS 1.0 will be used.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslCipherSuiteDtls12Server) {
+  ConfigureClient("");
+  ConfigureServer("");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_12, rtc::SSL_PROTOCOL_DTLS_10);
+  TestHandshake();
+
+  int client_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(true, &client_cipher));
+  int server_cipher;
+  ASSERT_TRUE(GetSslCipherSuite(false, &server_cipher));
+
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(true));
+  ASSERT_EQ(rtc::SSL_PROTOCOL_DTLS_10, GetSslVersion(false));
+
+  ASSERT_EQ(client_cipher, server_cipher);
+}
+
+// Client has legacy TLS versions disabled, server has DTLS 1.0 only.
+// This is meant to cause a failure.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslVersionLegacyDisabledServer10) {
+  ConfigureClient("WebRTC-LegacyTlsProtocols/Disabled/");
+  ConfigureServer("");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_12);
+  // Handshake should fail.
+  TestHandshake(false);
+}
+
+// Both client and server have legacy TLS versions disabled and support
+// DTLS 1.2. This should work.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslVersionLegacyDisabledServer12) {
+  ConfigureClient("WebRTC-LegacyTlsProtocols/Disabled/");
+  ConfigureServer("WebRTC-LegacyTlsProtocols/Disabled/");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_12, rtc::SSL_PROTOCOL_DTLS_12);
+  TestHandshake();
+}
+
+// Both client and server have legacy TLS versions enabled and support DTLS 1.0.
+// This should work.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslVersionLegacyEnabledClient10Server10) {
+  ConfigureClient("WebRTC-LegacyTlsProtocols/Enabled/");
+  ConfigureServer("WebRTC-LegacyTlsProtocols/Enabled/");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_10);
+  TestHandshake();
+}
+
+// Legacy protocols are disabled, max TLS version is 1.0
+// This should be a configuration error, and handshake should fail.
+TEST_F(SSLStreamAdapterTestDTLSLegacyProtocols,
+       TestGetSslVersionLegacyDisabledClient10Server10) {
+  ConfigureClient("WebRTC-LegacyTlsProtocols/Disabled/");
+  ConfigureServer("WebRTC-LegacyTlsProtocols/Disabled/");
+  SetupProtocolVersions(rtc::SSL_PROTOCOL_DTLS_10, rtc::SSL_PROTOCOL_DTLS_10);
+  TestHandshake(false);
+}

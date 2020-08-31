@@ -4,7 +4,6 @@
 
 #include "media/capture/video/video_capture_device_descriptor.h"
 
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 
 namespace media {
@@ -90,6 +89,8 @@ const char* VideoCaptureDeviceDescriptor::GetCaptureApiTypeString() const {
       return "Camera API2 Full";
     case VideoCaptureApi::ANDROID_API2_LIMITED:
       return "Camera API2 Limited";
+    case VideoCaptureApi::FUCHSIA_CAMERA3:
+      return "fuchsia.camera3 API";
     case VideoCaptureApi::VIRTUAL_DEVICE:
       return "Virtual Device";
     case VideoCaptureApi::UNKNOWN:

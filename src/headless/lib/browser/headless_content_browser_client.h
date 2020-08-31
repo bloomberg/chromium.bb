@@ -9,7 +9,6 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include "headless/public/headless_browser.h"
-#include "storage/browser/quota/quota_settings.h"
 
 namespace headless {
 
@@ -28,10 +27,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;
-  void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      ::storage::OptionalQuotaSettingsCallback callback) override;
   content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -60,10 +55,13 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   bool ShouldEnableStrictSiteIsolation() override;
 
-  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      ::network::mojom::NetworkContextParams* network_context_params,
+      ::network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params) override;
 
   std::string GetProduct() override;
   std::string GetUserAgent() override;

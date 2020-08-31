@@ -35,15 +35,6 @@ class GlobalContext : public ContextualClass<GlobalContext> {
     return Get().declarables_;
   }
 
-  static void RegisterClass(const TypeAlias* alias) {
-    DCHECK(alias->ParentScope()->IsNamespace());
-    Get().classes_.push_back(alias);
-  }
-
-  using GlobalClassList = std::vector<const TypeAlias*>;
-
-  static const GlobalClassList& GetClasses() { return Get().classes_; }
-
   static void AddCppInclude(std::string include_path) {
     Get().cpp_includes_.insert(std::move(include_path));
   }
@@ -76,6 +67,14 @@ class GlobalContext : public ContextualClass<GlobalContext> {
     return Get().generated_per_file_[file];
   }
 
+  static void SetInstanceTypesInitialized() {
+    DCHECK(!Get().instance_types_initialized_);
+    Get().instance_types_initialized_ = true;
+  }
+  static bool IsInstanceTypesInitialized() {
+    return Get().instance_types_initialized_;
+  }
+
  private:
   bool collect_language_server_data_;
   bool force_assert_statements_;
@@ -84,8 +83,8 @@ class GlobalContext : public ContextualClass<GlobalContext> {
   std::vector<std::unique_ptr<Declarable>> declarables_;
   std::set<std::string> cpp_includes_;
   std::map<SourceId, PerFileStreams> generated_per_file_;
-  GlobalClassList classes_;
   std::map<std::string, size_t> fresh_ids_;
+  bool instance_types_initialized_ = false;
 
   friend class LanguageServerData;
 };
@@ -99,12 +98,18 @@ class TargetArchitecture : public ContextualClass<TargetArchitecture> {
  public:
   explicit TargetArchitecture(bool force_32bit);
 
-  static int TaggedSize() { return Get().tagged_size_; }
-  static int RawPtrSize() { return Get().raw_ptr_size_; }
+  static size_t TaggedSize() { return Get().tagged_size_; }
+  static size_t RawPtrSize() { return Get().raw_ptr_size_; }
+  static size_t ExternalPointerSize() { return Get().external_ptr_size_; }
+  static size_t MaxHeapAlignment() { return TaggedSize(); }
+  static bool ArePointersCompressed() { return TaggedSize() < RawPtrSize(); }
+  static int SmiTagAndShiftSize() { return Get().smi_tag_and_shift_size_; }
 
  private:
-  const int tagged_size_;
-  const int raw_ptr_size_;
+  const size_t tagged_size_;
+  const size_t raw_ptr_size_;
+  const int smi_tag_and_shift_size_;
+  const size_t external_ptr_size_;
 };
 
 }  // namespace torque

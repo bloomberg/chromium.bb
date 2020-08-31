@@ -33,12 +33,13 @@ namespace mp2t {
 //   creating a hole in the video timeline.
 class MEDIA_EXPORT EsAdapterVideo {
  public:
-  typedef base::Callback<void(const VideoDecoderConfig&)> NewVideoConfigCB;
-  typedef base::Callback<void(scoped_refptr<StreamParserBuffer>)> EmitBufferCB;
+  using NewVideoConfigCB =
+      base::RepeatingCallback<void(const VideoDecoderConfig&)>;
+  using EmitBufferCB =
+      base::RepeatingCallback<void(scoped_refptr<StreamParserBuffer>)>;
 
-  EsAdapterVideo(
-      const NewVideoConfigCB& new_video_config_cb,
-      const EmitBufferCB& emit_buffer_cb);
+  EsAdapterVideo(NewVideoConfigCB new_video_config_cb,
+                 EmitBufferCB emit_buffer_cb);
   ~EsAdapterVideo();
 
   // Force the emission of the pending video buffers.
@@ -68,7 +69,7 @@ class MEDIA_EXPORT EsAdapterVideo {
   // (this one must be a key frame).
   void ReplaceDiscardedFrames(const StreamParserBuffer& stream_parser_buffer);
 
-  NewVideoConfigCB new_video_config_cb_;
+  const NewVideoConfigCB new_video_config_cb_;
   EmitBufferCB emit_buffer_cb_;
 
   bool has_valid_config_;

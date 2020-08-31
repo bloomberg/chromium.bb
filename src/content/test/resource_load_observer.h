@@ -12,9 +12,8 @@
 #include "base/files/file_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/resource_load_info.mojom.h"
-#include "content/public/common/resource_type.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -26,7 +25,8 @@ class ResourceLoadObserver : public WebContentsObserver {
 
   ~ResourceLoadObserver() override;
 
-  const std::vector<mojom::ResourceLoadInfoPtr>& resource_load_infos() const {
+  const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos()
+      const {
     return resource_load_infos_;
   }
 
@@ -41,10 +41,10 @@ class ResourceLoadObserver : public WebContentsObserver {
   // Use this method with the SCOPED_TRACE macro, so it shows the caller context
   // if it fails.
   void CheckResourceLoaded(
-      const GURL& url,
+      const GURL& original_url,
       const GURL& referrer,
       const std::string& load_method,
-      content::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       const base::FilePath::StringPieceType& served_file_name,
       const std::string& mime_type,
       const std::string& ip_address,
@@ -54,26 +54,27 @@ class ResourceLoadObserver : public WebContentsObserver {
       const base::TimeTicks& after_request);
 
   // Returns the resource with the given url if found, otherwise nullptr.
-  mojom::ResourceLoadInfoPtr* FindResource(const GURL& url);
+  blink::mojom::ResourceLoadInfoPtr* FindResource(const GURL& original_url);
 
   void Reset();
 
-  void WaitForResourceCompletion(const GURL& url);
+  void WaitForResourceCompletion(const GURL& original_url);
 
  private:
   // WebContentsObserver implementation:
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const GlobalRequestID& request_id,
-      const mojom::ResourceLoadInfo& resource_load_info) override;
-  void DidLoadResourceFromMemoryCache(const GURL& url,
-                                      const std::string& mime_type,
-                                      ResourceType resource_type) override;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+  void DidLoadResourceFromMemoryCache(
+      const GURL& url,
+      const std::string& mime_type,
+      network::mojom::RequestDestination request_destination) override;
 
   std::vector<GURL> memory_cached_loaded_urls_;
-  std::vector<mojom::ResourceLoadInfoPtr> resource_load_infos_;
+  std::vector<blink::mojom::ResourceLoadInfoPtr> resource_load_infos_;
   std::vector<bool> resource_is_associated_with_main_frame_;
-  GURL waiting_url_;
+  GURL waiting_original_url_;
   base::OnceClosure waiting_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);

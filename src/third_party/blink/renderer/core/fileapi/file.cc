@@ -29,7 +29,7 @@
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/fileapi/file_property_bag.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_file_property_bag.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -239,7 +239,6 @@ File::File(const String& name,
       has_backing_file_(false),
       user_visibility_(File::kIsNotUserVisible),
       name_(name),
-      snapshot_size_(Blob::size()),
       snapshot_modification_time_(modification_time) {
   uint64_t size = Blob::size();
   if (size != std::numeric_limits<uint64_t>::max())
@@ -272,9 +271,9 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
+      snapshot_size_(metadata.length),
       snapshot_modification_time_(metadata.modification_time) {
-  if (metadata.length >= 0)
-    snapshot_size_ = metadata.length;
+  DCHECK_GE(metadata.length, 0);
 }
 
 File::File(const File& other)
@@ -296,13 +295,10 @@ File* File::Clone(const String& name) const {
 }
 
 base::Time File::LastModifiedTime() const {
+  CaptureSnapshotIfNeeded();
+
   if (HasValidSnapshotMetadata() && snapshot_modification_time_)
     return *snapshot_modification_time_;
-
-  base::Optional<base::Time> modification_time;
-  if (HasBackingFile() && GetFileModificationTime(path_, modification_time) &&
-      modification_time)
-    return *modification_time;
 
   // lastModified / lastModifiedDate getters should return the current time
   // when the last modification time isn't known.
@@ -322,16 +318,21 @@ ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
                      ToV8(LastModifiedTime(), script_state));
 }
 
+base::Optional<base::Time> File::LastModifiedTimeForSerialization() const {
+  CaptureSnapshotIfNeeded();
+
+  return snapshot_modification_time_;
+}
+
 uint64_t File::size() const {
-  if (HasValidSnapshotMetadata())
-    return *snapshot_size_;
+  CaptureSnapshotIfNeeded();
 
   // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
   // to come up with an exception to throw if file size is not representable.
-  int64_t size;
-  if (!HasBackingFile() || !GetFileSize(path_, size))
-    return 0;
-  return static_cast<uint64_t>(size);
+  if (HasValidSnapshotMetadata())
+    return *snapshot_size_;
+
+  return 0;
 }
 
 Blob* File::slice(int64_t start,
@@ -341,44 +342,30 @@ Blob* File::slice(int64_t start,
   if (!has_backing_file_)
     return Blob::slice(start, end, content_type, exception_state);
 
-  // FIXME: This involves synchronous file operation. We need to figure out how
-  // to make it asynchronous.
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  CaptureSnapshot(size, modification_time);
-  ClampSliceOffsets(size, start, end);
+  // FIXME: Calling size triggers capturing a snapshot, if we don't have one
+  // already. This involves synchronous file operation. We need to figure out
+  // how to make it asynchronous (or make sure snapshot state is always passed
+  // in when creating a File instance).
+  ClampSliceOffsets(size(), start, end);
 
   uint64_t length = end - start;
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
-  blob_data->AppendFile(path_, start, length, modification_time);
+  blob_data->AppendFile(path_, start, length, snapshot_modification_time_);
   return MakeGarbageCollected<Blob>(
       BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void File::CaptureSnapshot(
-    uint64_t& snapshot_size,
-    base::Optional<base::Time>& snapshot_modification_time) const {
-  if (HasValidSnapshotMetadata()) {
-    snapshot_size = *snapshot_size_;
-    snapshot_modification_time = snapshot_modification_time_;
+void File::CaptureSnapshotIfNeeded() const {
+  if (HasValidSnapshotMetadata() && snapshot_modification_time_)
     return;
-  }
 
-  // Obtains a snapshot of the file by capturing its current size and
-  // modification time. This is used when we slice a file for the first time.
-  // If we fail to retrieve the size or modification time, probably due to that
-  // the file has been deleted, 0 size is returned.
-  FileMetadata metadata;
-  if (!HasBackingFile() || !GetFileMetadata(path_, metadata)) {
-    snapshot_size = 0;
-    snapshot_modification_time = base::nullopt;
-    return;
+  uint64_t snapshot_size;
+  if (GetBlobDataHandle()->CaptureSnapshot(&snapshot_size,
+                                           &snapshot_modification_time_)) {
+    snapshot_size_ = snapshot_size;
   }
-
-  snapshot_size = static_cast<uint64_t>(metadata.length);
-  snapshot_modification_time = metadata.modification_time;
 }
 
 void File::AppendTo(BlobData& blob_data) const {
@@ -389,11 +376,9 @@ void File::AppendTo(BlobData& blob_data) const {
 
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
-  uint64_t size;
-  base::Optional<base::Time> modification_time;
-  CaptureSnapshot(size, modification_time);
+  CaptureSnapshotIfNeeded();
   DCHECK(!path_.IsEmpty());
-  blob_data.AppendFile(path_, 0, size, modification_time);
+  blob_data.AppendFile(path_, 0, *snapshot_size_, snapshot_modification_time_);
 }
 
 bool File::HasSameSource(const File& other) const {

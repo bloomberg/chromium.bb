@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -452,7 +452,7 @@ void SpdyHttpStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyHttpStream::OnDataSent() {
-  if (HasUploadData()) {
+  if (request_info_ && HasUploadData()) {
     request_body_buf_size_ = 0;
     ReadAndSendRequestBodyData();
   } else {

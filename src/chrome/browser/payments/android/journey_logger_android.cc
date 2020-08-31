@@ -5,7 +5,7 @@
 #include "chrome/browser/payments/android/journey_logger_android.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/android/chrome_jni_headers/JourneyLogger_jni.h"
+#include "chrome/browser/payments/android/jni_headers/JourneyLogger_jni.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 
@@ -155,6 +155,13 @@ void JourneyLoggerAndroid::SetTriggerTime(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   journey_logger_.SetTriggerTime();
+}
+
+void JourneyLoggerAndroid::SetPaymentAppUkmSourceId(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    ukm::SourceId source_id) {
+  journey_logger_.SetPaymentAppUkmSourceId(source_id);
 }
 
 static jlong JNI_JourneyLogger_InitJourneyLoggerAndroid(

@@ -235,10 +235,9 @@ static void ProduceCacheInternal(
           code_cache_size_histogram.Count(cache_size_ratio);
         }
         cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kCacheLocally);
+            CachedMetadataHandler::kClearLocally);
         cache_handler->SetCachedMetadata(
-            V8CodeCache::TagForCodeCache(cache_handler), data, length,
-            CachedMetadataHandler::kSendToPlatform);
+            V8CodeCache::TagForCodeCache(cache_handler), data, length);
       }
 
       TRACE_EVENT_END1(
@@ -296,10 +295,10 @@ uint32_t V8CodeCache::TagForTimeStamp(
 void V8CodeCache::SetCacheTimeStamp(
     SingleCachedMetadataHandler* cache_handler) {
   uint64_t now_ms = base::TimeTicks::Now().since_origin().InMilliseconds();
-  cache_handler->ClearCachedMetadata(CachedMetadataHandler::kCacheLocally);
-  cache_handler->SetCachedMetadata(
-      TagForTimeStamp(cache_handler), reinterpret_cast<uint8_t*>(&now_ms),
-      sizeof(now_ms), CachedMetadataHandler::kSendToPlatform);
+  cache_handler->ClearCachedMetadata(CachedMetadataHandler::kClearLocally);
+  cache_handler->SetCachedMetadata(TagForTimeStamp(cache_handler),
+                                   reinterpret_cast<uint8_t*>(&now_ms),
+                                   sizeof(now_ms));
 }
 
 // static

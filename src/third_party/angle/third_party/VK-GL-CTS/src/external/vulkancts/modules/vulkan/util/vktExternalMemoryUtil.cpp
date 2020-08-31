@@ -52,19 +52,6 @@ namespace ExternalMemoryUtil
 {
 namespace
 {
-deUint32 chooseMemoryType (deUint32 bits)
-{
-	DE_ASSERT(bits != 0);
-
-	for (deUint32 memoryTypeIndex = 0; (1u << memoryTypeIndex) <= bits; memoryTypeIndex++)
-	{
-		if ((bits & (1u << memoryTypeIndex)) != 0)
-			return memoryTypeIndex;
-	}
-
-	DE_FATAL("No supported memory types");
-	return -1;
-}
 
 } // anonymous
 
@@ -73,6 +60,7 @@ NativeHandle::NativeHandle (void)
 	, m_win32HandleType			(WIN32HANDLETYPE_LAST)
 	, m_win32Handle				(DE_NULL)
 	, m_androidHardwareBuffer	(DE_NULL)
+	, m_hostPtr					(DE_NULL)
 {
 }
 
@@ -81,6 +69,7 @@ NativeHandle::NativeHandle (const NativeHandle& other)
 	, m_win32HandleType			(WIN32HANDLETYPE_LAST)
 	, m_win32Handle				(DE_NULL)
 	, m_androidHardwareBuffer	(DE_NULL)
+	, m_hostPtr					(DE_NULL)
 {
 	if (other.m_fd >= 0)
 	{
@@ -140,6 +129,7 @@ NativeHandle::NativeHandle (int fd)
 	, m_win32HandleType			(WIN32HANDLETYPE_LAST)
 	, m_win32Handle				(DE_NULL)
 	, m_androidHardwareBuffer	(DE_NULL)
+	, m_hostPtr					(DE_NULL)
 {
 }
 
@@ -148,6 +138,7 @@ NativeHandle::NativeHandle (Win32HandleType handleType, vk::pt::Win32Handle hand
 	, m_win32HandleType			(handleType)
 	, m_win32Handle				(handle)
 	, m_androidHardwareBuffer	(DE_NULL)
+	, m_hostPtr					(DE_NULL)
 {
 }
 
@@ -156,6 +147,7 @@ NativeHandle::NativeHandle (vk::pt::AndroidHardwareBufferPtr buffer)
 	, m_win32HandleType			(WIN32HANDLETYPE_LAST)
 	, m_win32Handle				(DE_NULL)
 	, m_androidHardwareBuffer	(buffer)
+	, m_hostPtr					(DE_NULL)
 {
 }
 
@@ -208,6 +200,7 @@ void NativeHandle::reset (void)
 	m_win32Handle			= vk::pt::Win32Handle(DE_NULL);
 	m_win32HandleType		= WIN32HANDLETYPE_LAST;
 	m_androidHardwareBuffer	= vk::pt::AndroidHardwareBufferPtr(DE_NULL);
+	m_hostPtr				= DE_NULL;
 }
 
 NativeHandle& NativeHandle::operator= (int fd)
@@ -236,17 +229,27 @@ void NativeHandle::setWin32Handle (Win32HandleType type, vk::pt::Win32Handle han
 	m_win32Handle		= handle;
 }
 
+void NativeHandle::setHostPtr(void* hostPtr)
+{
+	reset();
+
+	m_hostPtr = hostPtr;
+}
+
 void NativeHandle::disown (void)
 {
 	m_fd = -1;
 	m_win32Handle = vk::pt::Win32Handle(DE_NULL);
 	m_androidHardwareBuffer = vk::pt::AndroidHardwareBufferPtr(DE_NULL);
+	m_hostPtr = DE_NULL;
 }
 
 vk::pt::Win32Handle NativeHandle::getWin32Handle (void) const
 {
 	DE_ASSERT(m_fd == -1);
 	DE_ASSERT(!m_androidHardwareBuffer.internal);
+	DE_ASSERT(m_hostPtr == DE_NULL);
+
 	return m_win32Handle;
 }
 
@@ -254,15 +257,23 @@ int NativeHandle::getFd (void) const
 {
 	DE_ASSERT(!m_win32Handle.internal);
 	DE_ASSERT(!m_androidHardwareBuffer.internal);
+	DE_ASSERT(m_hostPtr == DE_NULL);
 	return m_fd;
 }
-
 
 vk::pt::AndroidHardwareBufferPtr NativeHandle::getAndroidHardwareBuffer (void) const
 {
 	DE_ASSERT(m_fd == -1);
 	DE_ASSERT(!m_win32Handle.internal);
+	DE_ASSERT(m_hostPtr == DE_NULL);
 	return m_androidHardwareBuffer;
+}
+
+void* NativeHandle::getHostPtr(void) const
+{
+	DE_ASSERT(m_fd == -1);
+	DE_ASSERT(!m_win32Handle.internal);
+	return m_hostPtr;
 }
 
 const char* externalSemaphoreTypeToName (vk::VkExternalSemaphoreHandleTypeFlagBits type)
@@ -342,6 +353,9 @@ const char* externalMemoryTypeToName (vk::VkExternalMemoryHandleTypeFlagBits typ
 
 		case vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT:
 			return "dma_buf";
+
+		case vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT:
+			return "host_allocation";
 
 		default:
 			DE_FATAL("Unknown external memory type");
@@ -714,12 +728,12 @@ vk::Move<vk::VkSemaphore> createExportableSemaphore (const vk::DeviceInterface&	
 
 vk::Move<vk::VkSemaphore> createExportableSemaphoreType (const vk::DeviceInterface&					vkd,
 														 vk::VkDevice								device,
-														 vk::VkSemaphoreTypeKHR						semaphoreType,
+														 vk::VkSemaphoreType						semaphoreType,
 														 vk::VkExternalSemaphoreHandleTypeFlagBits	externalType)
 {
-	const vk::VkSemaphoreTypeCreateInfoKHR		semaphoreTypeCreateInfo	=
+	const vk::VkSemaphoreTypeCreateInfo		semaphoreTypeCreateInfo	=
 	{
-		vk::VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR,
+		vk::VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
 		DE_NULL,
 		semaphoreType,
 		0,
@@ -875,14 +889,42 @@ vk::Move<vk::VkSemaphore> createAndImportSemaphore (const vk::DeviceInterface&		
 	return semaphore;
 }
 
+deUint32 chooseMemoryType(deUint32 bits)
+{
+	DE_ASSERT(bits != 0);
+
+	for (deUint32 memoryTypeIndex = 0; (1u << memoryTypeIndex) <= bits; memoryTypeIndex++)
+	{
+		if ((bits & (1u << memoryTypeIndex)) != 0)
+			return memoryTypeIndex;
+	}
+
+	DE_FATAL("No supported memory types");
+	return -1;
+}
+
+deUint32 chooseHostVisibleMemoryType (deUint32 bits, const vk::VkPhysicalDeviceMemoryProperties properties)
+{
+	DE_ASSERT(bits != 0);
+
+	for (deUint32 memoryTypeIndex = 0; (1u << memoryTypeIndex) <= bits; memoryTypeIndex++)
+	{
+		if (((bits & (1u << memoryTypeIndex)) != 0) &&
+			((properties.memoryTypes[memoryTypeIndex].propertyFlags & vk::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0))
+			return memoryTypeIndex;
+	}
+
+	TCU_THROW(NotSupportedError, "No supported memory type found");
+	return -1;
+}
+
 vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::DeviceInterface&					vkd,
 													   vk::VkDevice									device,
-													   const vk::VkMemoryRequirements&				requirements,
+													   vk::VkDeviceSize								allocationSize,
+													   deUint32										memoryTypeIndex,
 													   vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-													   vk::VkBuffer									buffer,
-													   deUint32&									exportedMemoryTypeIndex)
+													   vk::VkBuffer									buffer)
 {
-	exportedMemoryTypeIndex = chooseMemoryType(requirements.memoryTypeBits);
 	const vk::VkMemoryDedicatedAllocateInfo	dedicatedInfo	=
 	{
 		vk::VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
@@ -901,20 +943,19 @@ vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::DeviceInterface
 	{
 		vk::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		&exportInfo,
-		requirements.size,
-		exportedMemoryTypeIndex
+		allocationSize,
+		memoryTypeIndex
 	};
 	return vk::allocateMemory(vkd, device, &info);
 }
 
 vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::DeviceInterface&					vkd,
 													   vk::VkDevice									device,
-													   const vk::VkMemoryRequirements&				requirements,
+													   vk::VkDeviceSize								allocationSize,
+													   deUint32										memoryTypeIndex,
 													   vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-													   vk::VkImage									image,
-													   deUint32&									exportedMemoryTypeIndex)
+													   vk::VkImage									image)
 {
-	exportedMemoryTypeIndex = chooseMemoryType(requirements.memoryTypeBits);
 	const vk::VkMemoryDedicatedAllocateInfo	dedicatedInfo	=
 	{
 		vk::VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
@@ -933,57 +974,10 @@ vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::DeviceInterface
 	{
 		vk::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		&exportInfo,
-		requirements.size,
-		exportedMemoryTypeIndex
+		allocationSize,
+		memoryTypeIndex
 	};
 	return vk::allocateMemory(vkd, device, &info);
-}
-
-vk::Move<vk::VkDeviceMemory> allocateExportableMemory (const vk::InstanceInterface&					vki,
-													   vk::VkPhysicalDevice							physicalDevice,
-													   const vk::DeviceInterface&					vkd,
-													   vk::VkDevice									device,
-													   const vk::VkMemoryRequirements&				requirements,
-													   vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-													   bool											hostVisible,
-													   vk::VkBuffer									buffer,
-													   deUint32&									exportedMemoryTypeIndex)
-{
-	const vk::VkPhysicalDeviceMemoryProperties properties = vk::getPhysicalDeviceMemoryProperties(vki, physicalDevice);
-
-	for (deUint32 memoryTypeIndex = 0; (1u << memoryTypeIndex) <= requirements.memoryTypeBits; memoryTypeIndex++)
-	{
-		if (((requirements.memoryTypeBits & (1u << memoryTypeIndex)) != 0)
-			&& (((properties.memoryTypes[memoryTypeIndex].propertyFlags & vk::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) == hostVisible))
-		{
-			const vk::VkMemoryDedicatedAllocateInfo	dedicatedInfo	=
-			{
-				vk::VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
-				DE_NULL,
-
-				(vk::VkImage)0,
-				buffer
-			};
-			const vk::VkExportMemoryAllocateInfo	exportInfo	=
-			{
-				vk::VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
-				!!buffer ? &dedicatedInfo : DE_NULL,
-				(vk::VkExternalMemoryHandleTypeFlags)externalType
-			};
-			const vk::VkMemoryAllocateInfo			info		=
-			{
-				vk::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				&exportInfo,
-				requirements.size,
-				memoryTypeIndex
-			};
-
-			exportedMemoryTypeIndex = memoryTypeIndex;
-			return vk::allocateMemory(vkd, device, &info);
-		}
-	}
-
-	TCU_THROW(NotSupportedError, "No supported memory type found");
 }
 
 static vk::Move<vk::VkDeviceMemory> importMemory (const vk::DeviceInterface&				vkd,
@@ -1098,27 +1092,20 @@ static vk::Move<vk::VkDeviceMemory> importMemory (const vk::DeviceInterface&				
 
 		return memory;
 	}
-	else if (externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+	else if (externalType == vk::VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT)
 	{
-		AndroidHardwareBufferExternalApi* ahbApi = AndroidHardwareBufferExternalApi::getInstance();
-		if (!ahbApi)
-		{
-			TCU_THROW(NotSupportedError, "Platform doesn't support Android Hardware Buffer handles");
-		}
+		DE_ASSERT(memoryTypeIndex != ~0U);
 
-		deUint32 ahbFormat = 0;
-		ahbApi->describe(handle.getAndroidHardwareBuffer(), DE_NULL, DE_NULL, DE_NULL, &ahbFormat, DE_NULL, DE_NULL);
-		DE_ASSERT(ahbApi->ahbFormatIsBlob(ahbFormat) || image != 0);
-
-		vk::VkImportAndroidHardwareBufferInfoANDROID	importInfo =
+		const vk::VkImportMemoryHostPointerInfoEXT	importInfo		=
 		{
-			vk::VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID,
+			vk::VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT,
 			DE_NULL,
-			handle.getAndroidHardwareBuffer()
+			externalType,
+			handle.getHostPtr()
 		};
-		const vk::VkMemoryDedicatedAllocateInfo		dedicatedInfo =
+		const vk::VkMemoryDedicatedAllocateInfo		dedicatedInfo	=
 		{
-			vk::VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR,
+			vk::VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
 			&importInfo,
 			image,
 			buffer,
@@ -1128,7 +1115,7 @@ static vk::Move<vk::VkDeviceMemory> importMemory (const vk::DeviceInterface&				
 			vk::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			(isDedicated ? (const void*)&dedicatedInfo : (const void*)&importInfo),
 			requirements.size,
-			(memoryTypeIndex == ~0U) ? chooseMemoryType(requirements.memoryTypeBits)  : memoryTypeIndex
+			memoryTypeIndex
 		};
 		vk::Move<vk::VkDeviceMemory> memory (vk::allocateMemory(vkd, device, &info));
 
@@ -1345,7 +1332,7 @@ bool AndroidHardwareBufferExternalApi::loadAhbDynamicApis(deInt32 sdkVersion)
 	{
 		if (!ahbFunctionsLoaded(&ahbFunctions))
 		{
-			de::DynamicLibrary libnativewindow("libnativewindow.so");
+			static de::DynamicLibrary libnativewindow("libnativewindow.so");
 			ahbFunctions.allocate = reinterpret_cast<pfnAHardwareBuffer_allocate>(libnativewindow.getFunction("AHardwareBuffer_allocate"));
 			ahbFunctions.describe = reinterpret_cast<pfnAHardwareBuffer_describe>(libnativewindow.getFunction("AHardwareBuffer_describe"));
 			ahbFunctions.acquire  = reinterpret_cast<pfnAHardwareBuffer_acquire>(libnativewindow.getFunction("AHardwareBuffer_acquire"));
@@ -1561,6 +1548,26 @@ AndroidHardwareBufferExternalApi* AndroidHardwareBufferExternalApi::getInstance(
 	DE_UNREF(sdkVersion);
 #endif // DE_OS == DE_OS_ANDROID
 	return DE_NULL;
+}
+
+vk::VkPhysicalDeviceExternalMemoryHostPropertiesEXT getPhysicalDeviceExternalMemoryHostProperties(const vk::InstanceInterface&	vki,
+																								  vk::VkPhysicalDevice			physicalDevice)
+{
+	vk::VkPhysicalDeviceExternalMemoryHostPropertiesEXT externalProps =
+	{
+		vk::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT,
+		DE_NULL,
+		0u,
+	};
+
+	vk::VkPhysicalDeviceProperties2 props2;
+	deMemset(&props2, 0, sizeof(props2));
+	props2.sType = vk::VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+	props2.pNext = &externalProps;
+
+	vki.getPhysicalDeviceProperties2(physicalDevice, &props2);
+
+	return externalProps;
 }
 
 } // ExternalMemoryUtil

@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/tls_connection.h"
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -108,7 +109,7 @@ TlsConnection* TlsConnection::ConnectionFromSsl(const SSL* ssl) {
 }
 
 const SSL_QUIC_METHOD TlsConnection::kSslQuicMethod{
-    TlsConnection::SetEncryptionSecretCallback,
+    TlsConnection::SetReadSecretCallback, TlsConnection::SetWriteSecretCallback,
     TlsConnection::WriteMessageCallback, TlsConnection::FlushFlightCallback,
     TlsConnection::SendAlertCallback};
 
@@ -124,8 +125,44 @@ int TlsConnection::SetEncryptionSecretCallback(
   std::vector<uint8_t> read_secret(key_length), write_secret(key_length);
   memcpy(read_secret.data(), read_key, key_length);
   memcpy(write_secret.data(), write_key, key_length);
-  ConnectionFromSsl(ssl)->delegate_->SetEncryptionSecret(
-      QuicEncryptionLevel(level), read_secret, write_secret);
+  TlsConnection::Delegate* delegate = ConnectionFromSsl(ssl)->delegate_;
+  const SSL_CIPHER* cipher = SSL_get_pending_cipher(ssl);
+  delegate->SetWriteSecret(QuicEncryptionLevel(level), cipher, write_secret);
+  if (!delegate->SetReadSecret(QuicEncryptionLevel(level), cipher,
+                               read_secret)) {
+    return 0;
+  }
+  return 1;
+}
+
+// static
+int TlsConnection::SetReadSecretCallback(SSL* ssl,
+                                         enum ssl_encryption_level_t level,
+                                         const SSL_CIPHER* cipher,
+                                         const uint8_t* secret,
+                                         size_t secret_length) {
+  // TODO(nharper): replace this vector with a span (which unfortunately doesn't
+  // yet exist in quic/platform/api).
+  std::vector<uint8_t> secret_vec(secret, secret + secret_length);
+  TlsConnection::Delegate* delegate = ConnectionFromSsl(ssl)->delegate_;
+  if (!delegate->SetReadSecret(QuicEncryptionLevel(level), cipher,
+                               secret_vec)) {
+    return 0;
+  }
+  return 1;
+}
+
+// static
+int TlsConnection::SetWriteSecretCallback(SSL* ssl,
+                                          enum ssl_encryption_level_t level,
+                                          const SSL_CIPHER* cipher,
+                                          const uint8_t* secret,
+                                          size_t secret_length) {
+  // TODO(nharper): replace this vector with a span (which unfortunately doesn't
+  // yet exist in quic/platform/api).
+  std::vector<uint8_t> secret_vec(secret, secret + secret_length);
+  TlsConnection::Delegate* delegate = ConnectionFromSsl(ssl)->delegate_;
+  delegate->SetWriteSecret(QuicEncryptionLevel(level), cipher, secret_vec);
   return 1;
 }
 
@@ -136,7 +173,7 @@ int TlsConnection::WriteMessageCallback(SSL* ssl,
                                         size_t len) {
   ConnectionFromSsl(ssl)->delegate_->WriteMessage(
       QuicEncryptionLevel(level),
-      QuicStringPiece(reinterpret_cast<const char*>(data), len));
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(data), len));
   return 1;
 }
 

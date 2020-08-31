@@ -18,6 +18,7 @@ import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
@@ -237,21 +238,51 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    public void testMetadata_privacySensitiveData() throws Throwable {
-        // We assert we do *not* log data which is deemed to be privacy sensitive. It's OK to
-        // reverse these test conditions, but only if we log these fields in a manner which is
-        // approved to preserve user privacy.
+    public void testMetadata_hardwareDrive() throws Throwable {
         ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
         SystemProfileProto systemProfile = log.getSystemProfile();
-        Assert.assertFalse(
-                "Should not log hardware.bluetooth", systemProfile.getHardware().hasBluetooth());
-        Assert.assertFalse("Should not log hardware.usb", systemProfile.getHardware().hasUsb());
+        Assert.assertTrue("Should have some hardware.app_drive.has_seek_penalty",
+                systemProfile.getHardware().getAppDrive().hasHasSeekPenalty());
+        Assert.assertTrue("Should have some hardware.user_data_drive.has_seek_penalty",
+                systemProfile.getHardware().getUserDataDrive().hasHasSeekPenalty());
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=WebViewWakeMetricsService")
+    public void testMetadata_network() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some network.connection_type_is_ambiguous",
+                systemProfile.getNetwork().hasConnectionTypeIsAmbiguous());
+        Assert.assertTrue("Should have some network.connection_type",
+                systemProfile.getNetwork().hasConnectionType());
+        Assert.assertTrue("Should have some network.wifi_phy_layer_protocol_is_ambiguous",
+                systemProfile.getNetwork().hasWifiPhyLayerProtocolIsAmbiguous());
+        Assert.assertTrue("Should have some network.wifi_phy_layer_protocol",
+                systemProfile.getNetwork().hasWifiPhyLayerProtocol());
+        Assert.assertTrue("Should have some network.min_effective_connection_type",
+                systemProfile.getNetwork().hasMinEffectiveConnectionType());
+        Assert.assertTrue("Should have some network.max_effective_connection_type",
+                systemProfile.getNetwork().hasMaxEffectiveConnectionType());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_androidHistograms() throws Throwable {
+        // Wait for a metrics log, since AndroidMetricsProvider only logs this histogram during log
+        // collection. Do not assert anything about this histogram before this point (ex. do not
+        // assert total count == 0), because this would race with the initial metrics log.
+        mPlatformServiceBridge.waitForNextMetricsLog();
+
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("MemoryAndroid.LowRamDevice"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testPageLoadsEnableMultipleUploads() throws Throwable {
         mPlatformServiceBridge.waitForNextMetricsLog();
 

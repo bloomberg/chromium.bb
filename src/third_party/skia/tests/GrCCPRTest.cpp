@@ -10,10 +10,8 @@
 
 #include "include/core/SkMatrix.h"
 #include "include/core/SkRect.h"
-#include "include/gpu/GrTexture.h"
 #include "include/gpu/mock/GrMockTypes.h"
 #include "include/private/GrRecordingContext.h"
-#include "src/core/SkExchange.h"
 #include "src/core/SkPathPriv.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrContextPriv.h"
@@ -23,9 +21,10 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
-#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/geometry/GrStyledShape.h"
 #include "tools/ToolUtils.h"
 
 #include <cmath>
@@ -49,12 +48,7 @@ private:
     }
     bool quickContains(const SkRect&) const final { return false; }
     bool isRRect(const SkRect& rtBounds, SkRRect* rr, GrAA*) const final { return false; }
-    void getConservativeBounds(int width, int height, SkIRect* rect, bool* iior) const final {
-        rect->setWH(width, height);
-        if (iior) {
-            *iior = false;
-        }
-    }
+
     GrCoverageCountingPathRenderer* const fCCPR;
     const SkPath fPath;
 };
@@ -64,9 +58,9 @@ public:
     CCPRPathDrawer(sk_sp<GrContext> ctx, skiatest::Reporter* reporter, DoStroke doStroke)
             : fCtx(ctx)
             , fCCPR(fCtx->priv().drawingManager()->getCoverageCountingPathRenderer())
-            , fRTC(fCtx->priv().makeDeferredRenderTargetContext(
-                      SkBackingFit::kExact, kCanvasSize, kCanvasSize, GrColorType::kRGBA_8888,
-                      nullptr))
+            , fRTC(GrRenderTargetContext::Make(
+                      fCtx.get(), GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
+                      {kCanvasSize, kCanvasSize}))
             , fDoStroke(DoStroke::kYes == doStroke) {
         if (!fCCPR) {
             ERRORF(reporter, "ccpr not enabled in GrContext for ccpr tests");
@@ -98,16 +92,16 @@ public:
         GrNoClip noClip;
         SkIRect clipBounds = SkIRect::MakeWH(kCanvasSize, kCanvasSize);
 
-        GrShape shape;
+        GrStyledShape shape;
         if (!fDoStroke) {
-            shape = GrShape(path);
+            shape = GrStyledShape(path);
         } else {
             // Use hairlines for now, since they are the only stroke type that doesn't require a
             // rigid-body transform. The CCPR stroke code makes no distinction between hairlines
             // and regular strokes other than how it decides the device-space stroke width.
             SkStrokeRec stroke(SkStrokeRec::kHairline_InitStyle);
             stroke.setStrokeParams(SkPaint::kRound_Cap, SkPaint::kMiter_Join, 4);
-            shape = GrShape(path, GrStyle(stroke, nullptr));
+            shape = GrStyledShape(path, GrStyle(stroke, nullptr));
         }
 
         fCCPR->testingOnly_drawPathDirectly({
@@ -141,7 +135,7 @@ class CCPRTest {
 public:
     void run(skiatest::Reporter* reporter, DoCoverageCount doCoverageCount, DoStroke doStroke) {
         GrMockOptions mockOptions;
-        mockOptions.fInstanceAttribSupport = true;
+        mockOptions.fDrawInstancedSupport = true;
         mockOptions.fHalfFloatVertexAttributeSupport = true;
         mockOptions.fMapBufferFlags = GrCaps::kCanMap_MapFlag;
         mockOptions.fConfigOptions[(int)GrColorType::kAlpha_F16].fRenderability =
@@ -171,7 +165,7 @@ public:
             return;
         }
 
-        CCPRPathDrawer ccpr(skstd::exchange(mockContext, nullptr), reporter, doStroke);
+        CCPRPathDrawer ccpr(std::exchange(mockContext, nullptr), reporter, doStroke);
         if (!ccpr.valid()) {
             return;
         }
@@ -200,6 +194,7 @@ protected:
     }
 
 class CCPR_cleanup : public CCPRTest {
+protected:
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr) override {
         REPORTER_ASSERT(reporter, SkPathPriv::TestingOnly_unique(fPath));
 
@@ -235,6 +230,10 @@ DEF_CCPR_TEST(CCPR_cleanup)
 class CCPR_cleanupWithTexAllocFail : public CCPR_cleanup {
     void customizeOptions(GrMockOptions* mockOptions, GrContextOptions*) override {
         mockOptions->fFailTextureAllocations = true;
+    }
+    void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr) override {
+        ((GrRecordingContext*)ccpr.ctx())->priv().incrSuppressWarningMessages();
+        this->CCPR_cleanup::onRun(reporter, ccpr);
     }
 };
 DEF_CCPR_TEST(CCPR_cleanupWithTexAllocFail)
@@ -306,7 +305,7 @@ static int get_mock_texture_id(const GrTexture* texture) {
 
     GrMockTextureInfo info;
     backingTexture.getMockTextureInfo(&info);
-    return info.fID;
+    return info.id();
 }
 
 // Base class for cache path unit tests.
@@ -351,8 +350,8 @@ protected:
 
         SkRandom rand;
         for (size_t i = 0; i < SK_ARRAY_COUNT(fPaths); ++i) {
-            int numPts = rand.nextRangeU(GrShape::kMaxKeyFromDataVerbCnt + 1,
-                                         GrShape::kMaxKeyFromDataVerbCnt * 2);
+            int numPts = rand.nextRangeU(GrStyledShape::kMaxKeyFromDataVerbCnt + 1,
+                                         GrStyledShape::kMaxKeyFromDataVerbCnt * 2);
             int step;
             do {
                 step = primes[rand.nextU() % SK_ARRAY_COUNT(primes)];
@@ -675,7 +674,7 @@ class CCPR_cache_multiFlush : public CCPRCacheTest {
                     } else {
                         REPORTER_ASSERT(reporter, 0 == atlasIDRecorder.lastRenderedAtlasID());
                     }
-                    nextFlush = SkTMin(j + (int)rand.nextRangeU(1, 29), kNumPaths - 1);
+                    nextFlush = std::min(j + (int)rand.nextRangeU(1, 29), kNumPaths - 1);
                 }
             }
             SkASSERT(endPathIdx == pathIdx % kNumPaths);

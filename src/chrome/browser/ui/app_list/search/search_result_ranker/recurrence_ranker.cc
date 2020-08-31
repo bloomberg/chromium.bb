@@ -8,13 +8,14 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,8 +26,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/channel.h"
 
 namespace app_list {
 namespace {
@@ -73,14 +72,6 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
     const std::string& model_identifier) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  // TODO(crbug.com/955893): for debugging, this prevents loading models for
-  // zero-state files ranking on dev channel. To be removed when no longer
-  // necessary.
-  if (model_identifier == "ZeroStateGroups" &&
-      chrome::GetChannel() == version_info::Channel::DEV) {
-    return nullptr;
-  }
-
   std::string proto_str;
   if (!base::ReadFileToString(filepath, &proto_str)) {
     LogSerializationStatus(model_identifier,
@@ -175,8 +166,8 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
           TimeDelta::FromSeconds(config.min_seconds_between_saves())),
       time_of_last_save_(Time::Now()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   targets_ = std::make_unique<FrecencyStore>(config.target_limit(),

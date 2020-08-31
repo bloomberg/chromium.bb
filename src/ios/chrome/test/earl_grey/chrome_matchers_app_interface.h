@@ -138,6 +138,9 @@
 // Matcher for the done button on the Bookmarks navigation bar.
 + (id<GREYMatcher>)bookmarksNavigationBarDoneButton;
 
+// Matcher for the back button on the Bookmarks navigation bar.
++ (id<GREYMatcher>)bookmarksNavigationBarBackButton;
+
 // Returns matcher for the account consistency confirmation button.
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton;
 
@@ -284,6 +287,10 @@
 // panel.
 + (id<GREYMatcher>)clearSavedPasswordsButton;
 
+// Returns matcher for the clear saved passwords cell on the clear browsing data
+// panel.
++ (id<GREYMatcher>)clearAutofillButton;
+
 // Returns matcher for the collection view of content suggestion.
 + (id<GREYMatcher>)contentSuggestionCollectionView;
 
@@ -395,6 +402,9 @@
 // views.
 + (id<GREYMatcher>)settingsBottomToolbarDeleteButton;
 
+// Returns a matcher for the search engine button in the main settings view.
++ (id<GREYMatcher>)settingsSearchEngineButton;
+
 // Returns a matcher for an autofill suggestion view.
 + (id<GREYMatcher>)autofillSuggestionViewMatcher;
 
@@ -407,6 +417,9 @@
 
 // Returns a matcher for the infobar asking to upload a credit card.
 + (id<GREYMatcher>)autofillUploadCardInfobar;
+
+// Returns a matcher for a history entry with |url| and |title|.
++ (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title;
 
 #pragma mark - Manual Fallback
 

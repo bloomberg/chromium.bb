@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
 
 namespace spdy {
 
@@ -33,8 +33,8 @@ class HpackHeaderTablePeer {
   size_t index_size() {
     return table_->static_index_.size() + table_->dynamic_index_.size();
   }
-  std::vector<HpackEntry*> EvictionSet(SpdyStringPiece name,
-                                       SpdyStringPiece value) {
+  std::vector<HpackEntry*> EvictionSet(quiche::QuicheStringPiece name,
+                                       quiche::QuicheStringPiece value) {
     HpackHeaderTable::EntryTable::iterator begin, end;
     table_->EvictionSet(name, value, &begin, &end);
     std::vector<HpackEntry*> result;
@@ -45,7 +45,8 @@ class HpackHeaderTablePeer {
   }
   size_t total_insertions() { return table_->total_insertions_; }
   size_t dynamic_entries_count() { return table_->dynamic_entries_.size(); }
-  size_t EvictionCountForEntry(SpdyStringPiece name, SpdyStringPiece value) {
+  size_t EvictionCountForEntry(quiche::QuicheStringPiece name,
+                               quiche::QuicheStringPiece value) {
     return table_->EvictionCountForEntry(name, value);
   }
   size_t EvictionCountToReclaim(size_t reclaim_size) {
@@ -53,7 +54,8 @@ class HpackHeaderTablePeer {
   }
   void Evict(size_t count) { return table_->Evict(count); }
 
-  void AddDynamicEntry(SpdyStringPiece name, SpdyStringPiece value) {
+  void AddDynamicEntry(quiche::QuicheStringPiece name,
+                       quiche::QuicheStringPiece value) {
     table_->dynamic_entries_.push_back(
         HpackEntry(name, value, false, table_->total_insertions_++));
   }
@@ -66,7 +68,7 @@ class HpackHeaderTablePeer {
 
 namespace {
 
-class HpackHeaderTableTest : public ::testing::Test {
+class HpackHeaderTableTest : public QuicheTest {
  protected:
   typedef std::vector<HpackEntry> HpackEntryVector;
 

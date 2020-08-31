@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
- * Namespace for the Camera app.
+ * The singleton instance of ChromeHelper. Initialized by the first
+ * invocation of getInstance().
+ * @type {?ChromeHelper}
  */
-var cca = cca || {};
-
-/**
- * Namespace for mojo.
- */
-cca.mojo = cca.mojo || {};
+let instance = null;
 
 /**
  * Communicates with Chrome.
  */
-cca.mojo.ChromeHelper = class {
+export class ChromeHelper {
   /**
    * @public
    */
@@ -30,13 +25,46 @@ cca.mojo.ChromeHelper = class {
   }
 
   /**
+   * Starts tablet mode monitor monitoring tablet mode state of device.
+   * @param {function(boolean)} onChange Callback called each time when tablet
+   *     mode state of device changes with boolean parameter indecating whether
+   *     device is entering tablet mode.
+   * @return {!Promise<boolean>} Resolved to initial state of whether device is
+   *     is in tablet mode.
+   */
+  async initTabletModeMonitor(onChange) {
+    const monitorCallbackRouter =
+        new chromeosCamera.mojom.TabletModeMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener(onChange);
+
+    return (await this.remote_.setTabletMonitor(
+                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
+        .isTabletMode;
+  }
+
+  /**
    * Checks if the device is under tablet mode currently.
    * @return {!Promise<boolean>}
    */
   async isTabletMode() {
-    return await this.remote_.isTabletMode().then(({isTabletMode}) => {
-      return isTabletMode;
-    });
+    const {isTabletMode} = await this.remote_.isTabletMode();
+    return isTabletMode;
+  }
+
+  /**
+   * Triggers the begin of event tracing in Chrome.
+   * @param {string} event Name of the event.
+   */
+  startTracing(event) {
+    this.remote_.startPerfEventTrace(event);
+  }
+
+  /**
+   * Triggers the end of event tracing in Chrome.
+   * @param {string} event Name of the event.
+   */
+  stopTracing(event) {
+    this.remote_.stopPerfEventTrace(event);
   }
 
   /**
@@ -114,21 +142,33 @@ cca.mojo.ChromeHelper = class {
   }
 
   /**
+   * Adds listener for screen locked event.
+   * @param {function(boolean)} callback Callback for screen locked status
+   *     changed. Called with the latest status of whether screen is locked.
+   */
+  async addOnLockListener(callback) {
+    const monitorCallbackRouter = new blink.mojom.IdleMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener((newState) => {
+      callback(newState.screen === blink.mojom.ScreenIdleState.kLocked);
+    });
+
+    const idleManager = blink.mojom.IdleManager.getRemote();
+    // Set a large threshold since we don't care about user idle.
+    const threshold = {microseconds: 86400000000};
+    const {state} = await idleManager.addMonitor(
+        threshold, monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    callback(state.screen === blink.mojom.ScreenIdleState.kLocked);
+  }
+
+  /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
    *     exist instance.
-   * @return {!cca.mojo.ChromeHelper} The singleton instance.
+   * @return {!ChromeHelper} The singleton instance.
    */
   static getInstance() {
-    if (this.instance === null) {
-      this.instance = new cca.mojo.ChromeHelper();
+    if (instance === null) {
+      instance = new ChromeHelper();
     }
-    return this.instance;
+    return instance;
   }
-};
-
-/**
- * The singleton instance of ChromeHelper. Initialized by the first
- * invocation of getInstance().
- * @type {?cca.mojo.ChromeHelper}
- */
-cca.mojo.ChromeHelper.instance = null;
+}

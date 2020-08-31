@@ -26,7 +26,6 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/rect.h"
@@ -115,13 +114,10 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
     if (gl::GetGLImplementation() == gl::kGLImplementationNone)
       gl::GLSurfaceTestSupport::InitializeOneOff();
 
-    AuraTestBase::SetUp();
-    ui::InitializeInputMethodForTesting();
-
-    display::Screen::SetScreenInstance(test_screen());
-
     scoped_feature_list_.InitAndEnableFeature(
         features::kCalculateNativeWinOcclusion);
+
+    AuraTestBase::SetUp();
   }
 
   void SetNativeWindowBounds(HWND hwnd, const gfx::Rect& bounds) {
@@ -199,6 +195,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, SimpleOcclusion) {
   CreateNativeWindowWithBounds(gfx::Rect(0, 0, 100, 100));
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Simple test partially covering an aura window with a native window.
@@ -211,6 +208,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, PartialOcclusion) {
   CreateNativeWindowWithBounds(gfx::Rect(0, 0, 50, 50));
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Simple test that a partly off screen aura window, with the on screen part
@@ -231,6 +229,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, OffscreenOcclusion) {
   observer.set_expectation(Window::OcclusionState::OCCLUDED);
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Simple test with an aura window and native window that do not overlap.
@@ -243,6 +242,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, SimpleVisible) {
 
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Simple test with a minimized aura window and native window.
@@ -257,6 +257,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, SimpleHidden) {
   observer.set_expectation(Window::OcclusionState::HIDDEN);
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Test that minimizing and restoring an app window results in the occlusion
@@ -305,6 +306,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, OcclusionAfterVisibilityToggle) {
   CreateNativeWindowWithBounds(gfx::Rect(0, 0, 100, 100));
   run_loop4.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Test that locking the screen causes visible windows to become occluded.
@@ -329,6 +331,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, LockScreenVisibleOcclusion) {
               WTS_SESSION_LOCK, current_session_id);
   run_loop2.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Test that locking the screen leaves hidden windows as hidden.
@@ -361,6 +364,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, LockScreenHiddenOcclusion) {
               WTS_SESSION_LOCK, current_session_id);
   run_loop2.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 // Test that locking the screen from a different session doesn't mark window
@@ -393,6 +397,7 @@ TEST_F(NativeWindowOcclusionTrackerTest, LockScreenDifferentSession) {
   CreateNativeWindowWithBounds(gfx::Rect(0, 0, 50, 50));
   run_loop2.Run();
   EXPECT_FALSE(observer.is_expecting_call());
+  host()->RemoveObserver(&observer);
 }
 
 }  // namespace aura

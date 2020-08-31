@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -60,6 +61,7 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
+#include "third_party/blink/public/platform/web_isolate.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -99,22 +101,16 @@ class SyntheticBeginFrameSource;
 
 namespace content {
 class AudioRendererMixerManager;
-class BrowserPluginManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
+class VariationsRenderThreadObserver;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
-#endif
-
-#if defined(COMPILER_MSVC)
-// See explanation for other RenderViewHostImpl which is the same issue.
-#pragma warning(push)
-#pragma warning(disable: 4250)
 #endif
 
 // The RenderThreadImpl class represents the main thread, where RenderView
@@ -196,7 +192,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
   // CompositorDependencies implementation.
-  bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsZeroCopyEnabled() override;
@@ -204,10 +199,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorMainThreadTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorImplThreadTaskRunner() override;
+  bool IsSingleThreaded() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() override;
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -218,16 +210,14 @@ class CONTENT_EXPORT RenderThreadImpl
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
-      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
-          render_frame_metadata_observer_client_receiver,
-      mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
-          render_frame_metadata_observer_remote,
       const char* client_name) override;
 #ifdef OS_ANDROID
   bool UsingSynchronousCompositing() override;
 #endif
 
   bool IsThreadedAnimationEnabled();
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetCompositorMainThreadTaskRunner();
 
   // viz::mojom::CompositingModeWatcher implementation.
   void CompositingModeFallbackToSoftware() override;
@@ -246,12 +236,6 @@ class CONTENT_EXPORT RenderThreadImpl
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
-
-  // True if we are running web tests. This currently disables forwarding
-  // various status messages to the console, skips network error pages, and
-  // short circuits size update and focus events.
-  bool web_test_mode() const { return web_test_mode_; }
-  void enable_web_test_mode() { web_test_mode_ = true; }
 
   base::DiscardableMemoryAllocator* GetDiscardableMemoryAllocatorForTest()
       const {
@@ -282,10 +266,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
   bool EnableStreamTextureCopy();
 #endif
-
-  BrowserPluginManager* browser_plugin_manager() const {
-    return browser_plugin_manager_.get();
-  }
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
@@ -341,6 +321,10 @@ class CONTENT_EXPORT RenderThreadImpl
     void AddListenerUnfreezableTaskRunner(
         int32_t routing_id,
         scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner);
+
+    // Removes |unfreezable_task_runner| for the task to be executed later.
+    void RemoveListenerUnfreezableTaskRunner(
+        int32_t routing_id);
 
     // Called on the I/O thread.
     // Returns the unfreezable task runner associated with |routing_id|.
@@ -480,6 +464,7 @@ class CONTENT_EXPORT RenderThreadImpl
       int32_t opener_routing_id,
       int32_t parent_routing_id,
       const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token) override;
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
@@ -504,7 +489,10 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetSchedulerKeepActive(bool keep_active) override;
   void SetIsLockedToSite() override;
   void EnableV8LowMemoryMode() override;
-
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override;
+#endif
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -542,8 +530,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
-  std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
-
   // Filter out unfreezable messages and pass it to unfreezable task runners.
   scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;
 
@@ -565,9 +551,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::WebString user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
-
-  // Used to control web test specific behavior.
-  bool web_test_mode_ = false;
 
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be
@@ -619,11 +602,12 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<viz::Gpu> gpu_;
 
+  std::unique_ptr<VariationsRenderThreadObserver> variations_observer_;
+
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
 
   // Compositor settings.
-  bool is_gpu_rasterization_forced_;
   int gpu_rasterization_msaa_sample_count_;
   bool is_lcd_text_enabled_;
   bool is_zero_copy_enabled_;
@@ -637,30 +621,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // Target rendering ColorSpace.
   gfx::ColorSpace rendering_color_space_;
 
-  class PendingFrameCreate : public base::RefCounted<PendingFrameCreate> {
-   public:
-    PendingFrameCreate(int routing_id,
-                       mojo::PendingReceiver<mojom::Frame> frame_receiver);
-
-    mojo::PendingReceiver<mojom::Frame> TakeFrameReceiver() {
-      return std::move(frame_receiver_);
-    }
-
-   private:
-    friend class base::RefCounted<PendingFrameCreate>;
-
-    ~PendingFrameCreate();
-
-    // Mojo error handler.
-    void OnConnectionError();
-
-    int routing_id_;
-    mojo::PendingReceiver<mojom::Frame> frame_receiver_;
-  };
-
-  using PendingFrameCreateMap =
-      std::map<int, scoped_refptr<PendingFrameCreate>>;
-  PendingFrameCreateMap pending_frame_creates_;
+  // Used when AddRoute() is called and the RenderFrameImpl hasn't been created
+  // yet.
+  std::map<int, mojo::PendingReceiver<mojom::Frame>> pending_frames_;
 
   mojo::AssociatedRemote<mojom::RendererHost> renderer_host_;
 
@@ -669,6 +632,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
   mojo::AssociatedRemote<mojom::RenderMessageFilter> render_message_filter_;
+
+  std::unique_ptr<blink::WebIsolate> isolate_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   bool needs_to_record_first_active_paint_;
@@ -691,10 +656,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 }  // namespace content
 

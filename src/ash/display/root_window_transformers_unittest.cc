@@ -171,8 +171,9 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  int64_t display2_id = display_manager()->GetSecondaryDisplay().id();
+  int64_t display2_id = display_manager_test.GetSecondaryDisplay().id();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ui::test::EventGenerator generator1(root_windows[0]);
@@ -183,7 +184,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("120,0 150x200",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(40, 80);
   EXPECT_EQ("50,90", event_handler.GetLocationAndReset());
   EXPECT_EQ("50,90",
@@ -204,7 +205,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(39, 120);
   EXPECT_EQ("110,70", event_handler.GetLocationAndReset());
   EXPECT_EQ("110,70",
@@ -218,7 +219,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
       display::test::CreateDisplayLayout(
           display_manager(), display::DisplayPlacement::BOTTOM, 50));
   EXPECT_EQ("50,120 150x200",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
 
   display_manager()->SetDisplayRotation(
       display2_id, display::Display::ROTATE_270,
@@ -230,7 +231,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   generator2.MoveMouseToInHost(172, 219);
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
   EXPECT_EQ("145,200",
@@ -250,9 +251,9 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   magnifier->SetEnabled(true);
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
-  // Dislay must share at least 100, so the x's offset becomes 20.
+  // Display must share at least 100, so the x's offset becomes 20.
   EXPECT_EQ("20,200 200x150",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(39, 59);
   EXPECT_EQ("70,120", event_handler.GetLocationAndReset());
   EXPECT_EQ(display::Display::ROTATE_180,
@@ -273,7 +274,8 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                          display1.id());
-  display::Display display2 = display_manager()->GetSecondaryDisplay();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  display::Display display2 = display_manager_test.GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
@@ -293,7 +295,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
 
   display_manager()->UpdateZoomFactor(display1.id(), 1.f / 1.2f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  display2 = display_manager()->GetSecondaryDisplay();
+  display2 = display_manager_test.GetSecondaryDisplay();
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
   EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
@@ -304,64 +306,6 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   magnifier->SetEnabled(false);
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
-}
-
-// Make sure the origin of rotated root layer is aligned with pixels
-// on 2.25 scale factor device so that HW overlay kicks in.
-// https://crbug.com/869090.
-TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
-  auto* host = Shell::GetPrimaryRootWindow()->GetHost();
-  auto* host_window = host->window();
-  EXPECT_EQ(Shell::GetPrimaryRootWindow(), host_window);
-
-  float device_scale_factor = 2.25f;
-  gfx::Transform scale_transform;
-  scale_transform.matrix().set3x3(device_scale_factor, 0, 0, 0,
-                                  device_scale_factor, 0, 0, 0, 1);
-  gfx::Transform invert_transform;
-  invert_transform.matrix().set3x3(1.0f / device_scale_factor, 0, 0, 0,
-                                   1.0f / device_scale_factor, 0, 0, 0, 1);
-
-  {
-    // Rotate 90 degree to right.
-    UpdateDisplay("3000x2000*2.25/r");
-
-    // The size of the scaled layer.
-    gfx::RectF tmp(1998, 2999);
-    // Creates a transform that can be applied to already scaled layer.
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
-
-  {
-    // Upside Down.
-    UpdateDisplay("3000x2000*2.25/u");
-
-    gfx::RectF tmp(2999, 1998);
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
-
-  {
-    // Rotate 90 degree to left.
-    UpdateDisplay("3000x2000*2.25/l");
-
-    gfx::RectF tmp(1998, 2999);
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
 }
 
 TEST_F(RootWindowTransformersTest, TouchScaleAndMagnify) {

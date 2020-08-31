@@ -26,11 +26,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -42,6 +43,7 @@ namespace content {
 
 using blink::mojom::MediaSessionPlaybackState;
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
+using media_session::mojom::MediaAudioVideoState;
 using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionImageType;
 using media_session::mojom::MediaSessionInfo;
@@ -128,6 +130,10 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::SeekTo;
     case media_session::mojom::MediaSessionAction::kScrubTo:
       return MediaSessionUserAction::ScrubTo;
+    case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
+      return MediaSessionUserAction::EnterPictureInPicture;
+    case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
+      return MediaSessionUserAction::ExitPictureInPicture;
   }
   NOTREACHED();
   return MediaSessionUserAction::Play;
@@ -274,30 +280,31 @@ void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
 }
 
 void MediaSessionImpl::DidUpdateFaviconURL(
-    const std::vector<FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   std::vector<media_session::MediaImage> icons;
 
   for (auto& icon : candidates) {
     // We only want either favicons or the touch icons. There is another type of
     // touch icon which is "precomposed". This means it might have rounded
     // corners, etc. but it is not predictable so we cannot show them in the UI.
-    if (icon.icon_type != FaviconURL::IconType::kFavicon &&
-        icon.icon_type != FaviconURL::IconType::kTouchIcon) {
+    if (icon->icon_type != blink::mojom::FaviconIconType::kFavicon &&
+        icon->icon_type != blink::mojom::FaviconIconType::kTouchIcon) {
       continue;
     }
 
-    std::vector<gfx::Size> sizes = icon.icon_sizes;
+    std::vector<gfx::Size> sizes = icon->icon_sizes;
 
     // If we are a favicon and we do not have a size then we should assume the
     // default size for favicons.
-    if (icon.icon_type == FaviconURL::IconType::kFavicon && sizes.empty())
+    if (icon->icon_type == blink::mojom::FaviconIconType::kFavicon &&
+        sizes.empty())
       sizes.push_back(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
 
-    if (sizes.empty() || !icon.icon_url.is_valid())
+    if (sizes.empty() || !icon->icon_url.is_valid())
       continue;
 
     media_session::MediaImage image;
-    image.src = icon.icon_url;
+    image.src = icon->icon_url;
     image.sizes = sizes;
     icons.push_back(image);
   }
@@ -310,6 +317,11 @@ void MediaSessionImpl::DidUpdateFaviconURL(
 
   for (auto& observer : observers_)
     observer->MediaSessionImagesChanged(this->images_);
+}
+
+void MediaSessionImpl::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  RebuildAndNotifyMediaSessionInfoChanged();
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
@@ -831,6 +843,9 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 void MediaSessionImpl::Initialize() {
   delegate_ = AudioFocusDelegate::Create(this);
   delegate_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+
+  DCHECK(web_contents());
+  DidUpdateFaviconURL(web_contents()->GetFaviconURLs());
 }
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
@@ -911,10 +926,18 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
     info->playback_state = MediaPlaybackState::kPlaying;
   }
 
+  info->audio_video_state = GetMediaAudioVideoState();
   info->is_controllable = IsControllable();
 
   // If the browser context is off the record then it should be sensitive.
   info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
+
+  info->picture_in_picture_state =
+      web_contents()->HasPictureInPictureVideo()
+          ? media_session::mojom::MediaPictureInPictureState::
+                kInPictureInPicture
+          : media_session::mojom::MediaPictureInPictureState::
+                kNotInPictureInPicture;
 
   return info;
 }
@@ -1000,6 +1023,34 @@ void MediaSessionImpl::ScrubTo(base::TimeDelta seek_time) {
       media_session::mojom::MediaSessionAction::kSeekTo,
       blink::mojom::MediaSessionActionDetails::NewSeekTo(
           blink::mojom::MediaSessionSeekToDetails::New(seek_time, true)));
+}
+
+void MediaSessionImpl::EnterPictureInPicture() {
+  if (ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kEnterPictureInPicture)) {
+    DidReceiveAction(
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+    return;
+  }
+
+  // There should be one and only one player when we enter picture-in-picture.
+  DCHECK_EQ(normal_players_.size(), 1u);
+  normal_players_.begin()->first.observer->OnEnterPictureInPicture(
+      normal_players_.begin()->first.player_id);
+}
+
+void MediaSessionImpl::ExitPictureInPicture() {
+  if (ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kExitPictureInPicture)) {
+    DidReceiveAction(
+        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
+    return;
+  }
+
+  // There should be one and only one player when we exit picture-in-picture.
+  DCHECK_EQ(normal_players_.size(), 1u);
+  normal_players_.begin()->first.observer->OnExitPictureInPicture(
+      normal_players_.begin()->first.player_id);
 }
 
 void MediaSessionImpl::GetMediaImageBitmap(
@@ -1274,6 +1325,13 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   return best_frame ? services_[best_frame] : nullptr;
 }
 
+void MediaSessionImpl::OnPictureInPictureAvailabilityChanged() {
+  if (normal_players_.size() != 1)
+    return;
+
+  RebuildAndNotifyActionsChanged();
+}
+
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ && base::Contains(routed_service_->actions(), action);
@@ -1307,6 +1365,15 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
     actions.insert(media_session::mojom::MediaSessionAction::kPlay);
     actions.insert(media_session::mojom::MediaSessionAction::kPause);
     actions.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          media::kGlobalMediaControlsPictureInPicture) &&
+      IsPictureInPictureAvailable()) {
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
   }
 
   // If we support kSeekTo then we support kScrubTo as well.
@@ -1375,6 +1442,50 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
     if (images_changed)
       observer->MediaSessionImagesChanged(this->images_);
   }
+}
+
+bool MediaSessionImpl::IsPictureInPictureAvailable() const {
+  if (normal_players_.size() != 1)
+    return false;
+
+  auto& first = normal_players_.begin()->first;
+  return first.observer->IsPictureInPictureAvailable(first.player_id);
+}
+
+MediaAudioVideoState MediaSessionImpl::GetMediaAudioVideoState() {
+  RenderFrameHost* routed_rfh =
+      routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
+  MediaAudioVideoState state = MediaAudioVideoState::kUnknown;
+
+  ForAllPlayers(base::BindRepeating(
+      [](RenderFrameHost* routed_rfh, MediaAudioVideoState* state,
+         const PlayerIdentifier& player) {
+        // If we have a routed frame then we should limit the players to the
+        // frame so it is aligned with the media metadata.
+        if (routed_rfh && player.observer->render_frame_host() != routed_rfh)
+          return;
+
+        if (player.observer->HasVideo(player.player_id))
+          *state = MediaAudioVideoState::kAudioVideo;
+
+        if (*state != MediaAudioVideoState::kAudioVideo)
+          *state = MediaAudioVideoState::kAudioOnly;
+      },
+      routed_rfh, &state));
+
+  return state;
+}
+
+void MediaSessionImpl::ForAllPlayers(
+    base::RepeatingCallback<void(const PlayerIdentifier&)> callback) {
+  for (const auto& player : normal_players_)
+    callback.Run(player.first);
+
+  for (const auto& player : one_shot_players_)
+    callback.Run(player);
+
+  for (const auto& player : pepper_players_)
+    callback.Run(player);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)

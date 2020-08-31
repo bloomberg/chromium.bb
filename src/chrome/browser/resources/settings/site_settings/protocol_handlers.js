@@ -8,6 +8,26 @@
  * protocol handlers category under Site Settings.
  */
 
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
+// <if expr="chromeos">
+import {AndroidAppsInfo, AndroidInfoBrowserProxyImpl} from './android_info_browser_proxy.js';
+// </if>
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+
 /**
  * All possible actions in the menu.
  * @enum {string}
@@ -24,17 +44,19 @@ const MenuActions = {
  *            protocol_display_name: string,
  *            spec: string}}
  */
-let HandlerEntry;
+export let HandlerEntry;
 
 /**
  * @typedef {{handlers: !Array<!HandlerEntry>,
  *            protocol: string,
  *            protocol_display_name: string}}
  */
-let ProtocolEntry;
+export let ProtocolEntry;
 
 Polymer({
   is: 'protocol-handlers',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
@@ -76,7 +98,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'setHandlersEnabled', this.setHandlersEnabled_.bind(this));
     this.addWebUIListener(
@@ -89,13 +111,10 @@ Polymer({
 
   // <if expr="chromeos">
   /** @override */
-  attached: function() {
-    if (settings.AndroidAppsBrowserProxyImpl) {
-      cr.addWebUIListener(
-          'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
-      settings.AndroidAppsBrowserProxyImpl.getInstance()
-          .requestAndroidAppsInfo();
-    }
+  attached() {
+    this.addWebUIListener(
+        'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
+    AndroidInfoBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
   },
   // </if>
 
@@ -105,13 +124,13 @@ Polymer({
    * @param {AndroidAppsInfo} info
    * @private
    */
-  androidAppsInfoUpdate_: function(info) {
+  androidAppsInfoUpdate_(info) {
     this.settingsAppAvailable_ = info.settingsAppAvailable;
   },
   // </if>
 
   /** @private */
-  categoryLabelClicked_: function() {
+  categoryLabelClicked_() {
     this.$.toggle.click();
   },
 
@@ -120,7 +139,7 @@ Polymer({
    * @return {string} The description to use.
    * @private
    */
-  computeHandlersDescription_: function() {
+  computeHandlersDescription_() {
     return this.categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
   },
 
@@ -129,7 +148,7 @@ Polymer({
    * @param {boolean} enabled The state to set.
    * @private
    */
-  setHandlersEnabled_: function(enabled) {
+  setHandlersEnabled_(enabled) {
     this.categoryEnabled = enabled;
   },
 
@@ -138,7 +157,7 @@ Polymer({
    * @param {!Array<!ProtocolEntry>} protocols The new protocol handler list.
    * @private
    */
-  setProtocolHandlers_: function(protocols) {
+  setProtocolHandlers_(protocols) {
     this.protocols = protocols;
   },
 
@@ -148,7 +167,7 @@ Polymer({
    *     handler list.
    * @private
    */
-  setIgnoredProtocolHandlers_: function(ignoredProtocols) {
+  setIgnoredProtocolHandlers_(ignoredProtocols) {
     this.ignoredProtocols = ignoredProtocols;
   },
 
@@ -156,7 +175,7 @@ Polymer({
    * Closes action menu and resets action menu model
    * @private
    */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.$$('cr-action-menu').close();
     this.actionMenuModel_ = null;
   },
@@ -165,7 +184,7 @@ Polymer({
    * A handler when the toggle is flipped.
    * @private
    */
-  onToggleChange_: function(event) {
+  onToggleChange_(event) {
     this.browserProxy.setProtocolHandlerDefault(this.categoryEnabled);
   },
 
@@ -173,7 +192,7 @@ Polymer({
    * The handler for when "Set Default" is selected in the action menu.
    * @private
    */
-  onDefaultClick_: function() {
+  onDefaultClick_() {
     const item = this.actionMenuModel_;
     this.browserProxy.setProtocolDefault(item.protocol, item.spec);
     this.closeActionMenu_();
@@ -183,7 +202,7 @@ Polymer({
    * The handler for when "Remove" is selected in the action menu.
    * @private
    */
-  onRemoveClick_: function() {
+  onRemoveClick_() {
     const item = this.actionMenuModel_;
     this.browserProxy.removeProtocolHandler(item.protocol, item.spec);
     this.closeActionMenu_();
@@ -193,7 +212,7 @@ Polymer({
    * Handler for removing handlers that were blocked
    * @private
    */
-  onRemoveIgnored_: function(event) {
+  onRemoveIgnored_(event) {
     const item = event.model.item;
     this.browserProxy.removeProtocolHandler(item.protocol, item.spec);
   },
@@ -203,7 +222,7 @@ Polymer({
    * @param {!{model: !{item: HandlerEntry}}} event
    * @private
    */
-  showMenu_: function(event) {
+  showMenu_(event) {
     this.actionMenuModel_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(
@@ -215,7 +234,7 @@ Polymer({
    * Opens an activity to handle App links (preferred apps).
    * @private
    */
-  onManageAndroidAppsClick_: function() {
+  onManageAndroidAppsClick_() {
     this.browserProxy.showAndroidManageAppLinks();
   },
   // </if>

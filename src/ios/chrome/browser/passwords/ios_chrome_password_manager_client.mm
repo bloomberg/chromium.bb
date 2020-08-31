@@ -49,8 +49,7 @@ using password_manager::SyncState;
 
 namespace {
 
-const syncer::SyncService* GetSyncService(
-    ios::ChromeBrowserState* browser_state) {
+const syncer::SyncService* GetSyncService(ChromeBrowserState* browser_state) {
   return ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 
@@ -98,13 +97,20 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   if (form_to_save->IsBlacklisted())
     return false;
 
+  [delegate_ removePasswordInfoBarManualFallback:YES];
+
   if (update_password) {
-    [delegate_ showUpdatePasswordInfoBar:std::move(form_to_save)];
+    [delegate_ showUpdatePasswordInfoBar:std::move(form_to_save) manual:NO];
   } else {
-    [delegate_ showSavePasswordInfoBar:std::move(form_to_save)];
+    [delegate_ showSavePasswordInfoBar:std::move(form_to_save) manual:NO];
   }
 
   return true;
+}
+
+void IOSChromePasswordManagerClient::PromptUserToMovePasswordToAccount(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
+  NOTIMPLEMENTED();
 }
 
 bool IOSChromePasswordManagerClient::ShowOnboarding(
@@ -116,11 +122,15 @@ void IOSChromePasswordManagerClient::ShowManualFallbackForSaving(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,
     bool is_update) {
-  NOTIMPLEMENTED();
+  if (is_update) {
+    [delegate_ showUpdatePasswordInfoBar:std::move(form_to_save) manual:YES];
+  } else {
+    [delegate_ showSavePasswordInfoBar:std::move(form_to_save) manual:YES];
+  }
 }
 
 void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
-  NOTIMPLEMENTED();
+  [delegate_ removePasswordInfoBarManualFallback:YES];
 }
 
 void IOSChromePasswordManagerClient::FocusedInputChanged(
@@ -186,8 +196,10 @@ void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
 }
 
 void IOSChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
-    const autofill::PasswordForm& form) {
-  helper_.NotifySuccessfulLoginWithExistingPassword(form);
+    std::unique_ptr<password_manager::PasswordFormManagerForUI>
+        submitted_manager) {
+  helper_.NotifySuccessfulLoginWithExistingPassword(
+      std::move(submitted_manager));
 }
 
 void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
@@ -196,7 +208,8 @@ void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
 
 void IOSChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {
+    const GURL& origin,
+    const base::string16& username) {
   [delegate_ showPasswordBreachForLeakType:leak_type URL:origin];
 }
 
@@ -239,7 +252,8 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), delegate_.lastCommittedURL);
+    metrics_recorder_.emplace(GetUkmSourceId(), delegate_.lastCommittedURL,
+                              /*navigation_metric_recorder=*/nullptr);
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }

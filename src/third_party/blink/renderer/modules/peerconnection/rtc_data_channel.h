@@ -31,7 +31,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -44,12 +44,12 @@ class Blob;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
-class WebRTCPeerConnectionHandler;
+class RTCPeerConnectionHandler;
 
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RTCDataChannel>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
@@ -57,7 +57,7 @@ class MODULES_EXPORT RTCDataChannel final
  public:
   RTCDataChannel(ExecutionContext*,
                  scoped_refptr<webrtc::DataChannelInterface> channel,
-                 WebRTCPeerConnectionHandler* peer_connection_handler);
+                 RTCPeerConnectionHandler* peer_connection_handler);
   ~RTCDataChannel() override;
 
   String label() const;
@@ -66,11 +66,11 @@ class MODULES_EXPORT RTCDataChannel final
   bool reliable() const;
 
   bool ordered() const;
-  uint16_t maxPacketLifeTime(bool&) const;
-  uint16_t maxRetransmits(bool&) const;
+  base::Optional<uint16_t> maxPacketLifeTime() const;
+  base::Optional<uint16_t> maxRetransmits() const;
   String protocol() const;
   bool negotiated() const;
-  uint16_t id(bool& is_null) const;
+  base::Optional<uint16_t> id() const;
   String readyState() const;
   unsigned bufferedAmount() const;
 
@@ -79,6 +79,12 @@ class MODULES_EXPORT RTCDataChannel final
 
   String binaryType() const;
   void setBinaryType(const String&, ExceptionState&);
+
+  // Functions called from RTCPeerConnection's DidAddRemoteDataChannel
+  // in order to make things happen in the specified order when announcing
+  // a remote channel.
+  void SetStateToOpenWithoutEvent();
+  void DispatchOpenEvent();
 
   void send(const String&, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
@@ -91,19 +97,20 @@ class MODULES_EXPORT RTCDataChannel final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(bufferedamountlow, kBufferedamountlow)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(closing, kClosing)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Observer;
@@ -174,6 +181,7 @@ class MODULES_EXPORT RTCDataChannel final
   unsigned buffered_amount_low_threshold_;
   unsigned buffered_amount_;
   bool stopped_;
+  bool closed_from_owner_;
   scoped_refptr<Observer> observer_;
   THREAD_CHECKER(thread_checker_);
 };

@@ -13,7 +13,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_client_stats.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 
 namespace quic {
 
@@ -69,7 +69,7 @@ QuicCryptoClientHandshaker::QuicCryptoClientHandshaker(
       proof_verify_start_time_(QuicTime::Zero()),
       num_scup_messages_received_(0),
       encryption_established_(false),
-      handshake_confirmed_(false),
+      one_rtt_keys_available_(false),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {}
 
 QuicCryptoClientHandshaker::~QuicCryptoClientHandshaker() {
@@ -82,8 +82,8 @@ void QuicCryptoClientHandshaker::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   QuicCryptoHandshaker::OnHandshakeMessage(message);
   if (message.tag() == kSCUP) {
-    if (!handshake_confirmed()) {
-      stream_->CloseConnectionWithDetails(
+    if (!one_rtt_keys_available()) {
+      stream_->OnUnrecoverableError(
           QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE,
           "Early SCUP disallowed");
       return;
@@ -97,10 +97,9 @@ void QuicCryptoClientHandshaker::OnHandshakeMessage(
   }
 
   // Do not process handshake messages after the handshake is confirmed.
-  if (handshake_confirmed()) {
-    stream_->CloseConnectionWithDetails(
-        QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
-        "Unexpected handshake message");
+  if (one_rtt_keys_available()) {
+    stream_->OnUnrecoverableError(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
+                                  "Unexpected handshake message");
     return;
   }
 
@@ -118,10 +117,20 @@ int QuicCryptoClientHandshaker::num_sent_client_hellos() const {
 }
 
 bool QuicCryptoClientHandshaker::IsResumption() const {
-  QUIC_BUG_IF(!handshake_confirmed_);
+  QUIC_BUG_IF(!one_rtt_keys_available_);
   // While 0-RTT handshakes could be considered to be like resumption, QUIC
   // Crypto doesn't have the same notion of a resumption like TLS does.
   return false;
+}
+
+bool QuicCryptoClientHandshaker::EarlyDataAccepted() const {
+  QUIC_BUG_IF(!one_rtt_keys_available_);
+  return num_client_hellos_ == 1;
+}
+
+bool QuicCryptoClientHandshaker::ReceivedInchoateReject() const {
+  QUIC_BUG_IF(!one_rtt_keys_available_);
+  return num_client_hellos_ >= 3;
 }
 
 int QuicCryptoClientHandshaker::num_scup_messages_received() const {
@@ -136,8 +145,8 @@ bool QuicCryptoClientHandshaker::encryption_established() const {
   return encryption_established_;
 }
 
-bool QuicCryptoClientHandshaker::handshake_confirmed() const {
-  return handshake_confirmed_;
+bool QuicCryptoClientHandshaker::one_rtt_keys_available() const {
+  return one_rtt_keys_available_;
 }
 
 const QuicCryptoNegotiatedParameters&
@@ -147,6 +156,14 @@ QuicCryptoClientHandshaker::crypto_negotiated_params() const {
 
 CryptoMessageParser* QuicCryptoClientHandshaker::crypto_message_parser() {
   return QuicCryptoHandshaker::crypto_message_parser();
+}
+
+HandshakeState QuicCryptoClientHandshaker::GetHandshakeState() const {
+  return one_rtt_keys_available() ? HANDSHAKE_COMPLETE : HANDSHAKE_START;
+}
+
+void QuicCryptoClientHandshaker::OnHandshakeDoneReceived() {
+  DCHECK(false);
 }
 
 size_t QuicCryptoClientHandshaker::BufferSizeLimitForLevel(
@@ -166,12 +183,12 @@ void QuicCryptoClientHandshaker::HandleServerConfigUpdateMessage(
       crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
-    stream_->CloseConnectionWithDetails(
+    stream_->OnUnrecoverableError(
         error, "Server config update invalid: " + error_details);
     return;
   }
 
-  DCHECK(handshake_confirmed());
+  DCHECK(one_rtt_keys_available());
   if (proof_verify_callback_) {
     proof_verify_callback_->Cancel();
   }
@@ -211,8 +228,8 @@ void QuicCryptoClientHandshaker::DoHandshakeLoop(
         break;
       case STATE_IDLE:
         // This means that the peer sent us a message that we weren't expecting.
-        stream_->CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                            "Handshake in idle state");
+        stream_->OnUnrecoverableError(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                      "Handshake in idle state");
         return;
       case STATE_INITIALIZE_SCUP:
         DoInitializeServerConfigUpdate(cached);
@@ -248,10 +265,11 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   encryption_established_ = false;
   if (num_client_hellos_ >= QuicCryptoClientStream::kMaxClientHellos) {
-    stream_->CloseConnectionWithDetails(
+    stream_->OnUnrecoverableError(
         QUIC_CRYPTO_TOO_MANY_REJECTS,
-        QuicStrCat("More than ", QuicCryptoClientStream::kMaxClientHellos,
-                   " rejects"));
+        quiche::QuicheStrCat("More than ",
+                             QuicCryptoClientStream::kMaxClientHellos,
+                             " rejects"));
     return;
   }
   num_client_hellos_++;
@@ -275,14 +293,13 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
     if (max_packet_size <= kFramingOverhead) {
       QUIC_DLOG(DFATAL) << "max_packet_length (" << max_packet_size
                         << ") has no room for framing overhead.";
-      stream_->CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                                          "max_packet_size too smalll");
+      stream_->OnUnrecoverableError(QUIC_INTERNAL_ERROR,
+                                    "max_packet_size too smalll");
       return;
     }
     if (kClientHelloMinimumSize > max_packet_size - kFramingOverhead) {
       QUIC_DLOG(DFATAL) << "Client hello won't fit in a single packet.";
-      stream_->CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                                          "CHLO too large");
+      stream_->OnUnrecoverableError(QUIC_INTERNAL_ERROR, "CHLO too large");
       return;
     }
     next_state_ = STATE_RECV_REJ;
@@ -305,7 +322,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
     // Flush the cached config so that, if it's bad, the server has a
     // chance to send us another in the future.
     cached->InvalidateServerConfig();
-    stream_->CloseConnectionWithDetails(error, error_details);
+    stream_->OnUnrecoverableError(error, error_details);
     return;
   }
   chlo_hash_ = CryptoUtils::HashHandshakeMessage(out, Perspective::IS_CLIENT);
@@ -318,36 +335,16 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
       crypto_config_->pad_full_hello());
   SendHandshakeMessage(out);
   // Be prepared to decrypt with the new server write key.
-  if (session()->use_handshake_delegate()) {
-    delegate_->OnNewKeysAvailable(
-        ENCRYPTION_ZERO_RTT,
-        std::move(crypto_negotiated_params_->initial_crypters.decrypter),
-        /*set_alternative_decrypter=*/true,
-        /*latch_once_used=*/true,
-        std::move(crypto_negotiated_params_->initial_crypters.encrypter));
-    encryption_established_ = true;
-    delegate_->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-    return;
-  }
-  if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
-    session()->connection()->InstallDecrypter(
-        ENCRYPTION_ZERO_RTT,
-        std::move(crypto_negotiated_params_->initial_crypters.decrypter));
-  } else {
-    session()->connection()->SetAlternativeDecrypter(
-        ENCRYPTION_ZERO_RTT,
-        std::move(crypto_negotiated_params_->initial_crypters.decrypter),
-        true /* latch once used */);
-  }
-  // Send subsequent packets under encryption on the assumption that the
-  // server will accept the handshake.
-  session()->connection()->SetEncrypter(
+  delegate_->OnNewEncryptionKeyAvailable(
       ENCRYPTION_ZERO_RTT,
       std::move(crypto_negotiated_params_->initial_crypters.encrypter));
-  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-
+  delegate_->OnNewDecryptionKeyAvailable(
+      ENCRYPTION_ZERO_RTT,
+      std::move(crypto_negotiated_params_->initial_crypters.decrypter),
+      /*set_alternative_decrypter=*/true,
+      /*latch_once_used=*/true);
   encryption_established_ = true;
-  session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
+  delegate_->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
 }
 
 void QuicCryptoClientHandshaker::DoReceiveREJ(
@@ -359,8 +356,8 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
   // that we need.
   if (in->tag() != kREJ) {
     next_state_ = STATE_NONE;
-    stream_->CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                        "Expected REJ");
+    stream_->OnUnrecoverableError(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                  "Expected REJ");
     return;
   }
 
@@ -388,11 +385,7 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
 
   // Receipt of a REJ message means that the server received the CHLO
   // so we can cancel and retransmissions.
-  if (session()->use_handshake_delegate()) {
-    delegate_->NeuterUnencryptedData();
-  } else {
-    session()->NeuterUnencryptedData();
-  }
+  delegate_->NeuterUnencryptedData();
 
   std::string error_details;
   QuicErrorCode error = crypto_config_->ProcessRejection(
@@ -402,7 +395,7 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
 
   if (error != QUIC_NO_ERROR) {
     next_state_ = STATE_NONE;
-    stream_->CloseConnectionWithDetails(error, error_details);
+    stream_->OnUnrecoverableError(error, error_details);
     return;
   }
   if (!cached->proof_valid()) {
@@ -472,9 +465,9 @@ void QuicCryptoClientHandshaker::DoVerifyProofComplete(
     }
     next_state_ = STATE_NONE;
     QUIC_CLIENT_HISTOGRAM_BOOL("QuicVerifyProofFailed.HandshakeConfirmed",
-                               handshake_confirmed(), "");
-    stream_->CloseConnectionWithDetails(
-        QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
+                               one_rtt_keys_available(), "");
+    stream_->OnUnrecoverableError(QUIC_PROOF_INVALID,
+                                  "Proof invalid: " + verify_error_details_);
     return;
   }
 
@@ -485,7 +478,7 @@ void QuicCryptoClientHandshaker::DoVerifyProofComplete(
   } else {
     SetCachedProofValid(cached);
     cached->SetProofVerifyDetails(verify_details_.release());
-    if (!handshake_confirmed()) {
+    if (!one_rtt_keys_available()) {
       next_state_ = STATE_SEND_CHLO;
     } else {
       // TODO: Enable Expect-Staple. https://crbug.com/631101
@@ -506,8 +499,8 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
     // A reject message must be sent in ENCRYPTION_INITIAL.
     if (session()->connection()->last_decrypted_level() != ENCRYPTION_INITIAL) {
       // The rejection was sent encrypted!
-      stream_->CloseConnectionWithDetails(
-          QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT, "encrypted REJ message");
+      stream_->OnUnrecoverableError(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
+                                    "encrypted REJ message");
       return;
     }
     next_state_ = STATE_RECV_REJ;
@@ -515,15 +508,17 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
   }
 
   if (in->tag() != kSHLO) {
-    stream_->CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                        "Expected SHLO or REJ");
+    stream_->OnUnrecoverableError(
+        QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+        quiche::QuicheStrCat("Expected SHLO or REJ. Received: ",
+                             QuicTagToString(in->tag())));
     return;
   }
 
   if (session()->connection()->last_decrypted_level() == ENCRYPTION_INITIAL) {
     // The server hello was sent without encryption.
-    stream_->CloseConnectionWithDetails(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
-                                        "unencrypted SHLO message");
+    stream_->OnUnrecoverableError(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT,
+                                  "unencrypted SHLO message");
     return;
   }
 
@@ -535,14 +530,14 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
       crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
-    stream_->CloseConnectionWithDetails(
-        error, "Server hello invalid: " + error_details);
+    stream_->OnUnrecoverableError(error,
+                                  "Server hello invalid: " + error_details);
     return;
   }
   error = session()->config()->ProcessPeerHello(*in, SERVER, &error_details);
   if (error != QUIC_NO_ERROR) {
-    stream_->CloseConnectionWithDetails(
-        error, "Server hello invalid: " + error_details);
+    stream_->OnUnrecoverableError(error,
+                                  "Server hello invalid: " + error_details);
     return;
   }
   session()->OnConfigNegotiated();
@@ -552,33 +547,16 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
   // has been floated that the server shouldn't send packets encrypted
   // with the FORWARD_SECURE key until it receives a FORWARD_SECURE
   // packet from the client.
-  if (session()->use_handshake_delegate()) {
-    delegate_->OnNewKeysAvailable(
-        ENCRYPTION_FORWARD_SECURE, std::move(crypters->decrypter),
-        /*set_alternative_decrypter=*/true,
-        /*latch_once_used=*/false, std::move(crypters->encrypter));
-    handshake_confirmed_ = true;
-    delegate_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-    delegate_->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
-    delegate_->NeuterHandshakeData();
-    return;
-  }
-
-  if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
-    session()->connection()->InstallDecrypter(ENCRYPTION_FORWARD_SECURE,
-                                              std::move(crypters->decrypter));
-  } else {
-    session()->connection()->SetAlternativeDecrypter(
-        ENCRYPTION_FORWARD_SECURE, std::move(crypters->decrypter),
-        false /* don't latch */);
-  }
-  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                                        std::move(crypters->encrypter));
-  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-
-  handshake_confirmed_ = true;
-  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
-  session()->connection()->OnHandshakeComplete();
+  delegate_->OnNewEncryptionKeyAvailable(ENCRYPTION_FORWARD_SECURE,
+                                         std::move(crypters->encrypter));
+  delegate_->OnNewDecryptionKeyAvailable(ENCRYPTION_FORWARD_SECURE,
+                                         std::move(crypters->decrypter),
+                                         /*set_alternative_decrypter=*/true,
+                                         /*latch_once_used=*/false);
+  one_rtt_keys_available_ = true;
+  delegate_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  delegate_->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+  delegate_->NeuterHandshakeData();
 }
 
 void QuicCryptoClientHandshaker::DoInitializeServerConfigUpdate(

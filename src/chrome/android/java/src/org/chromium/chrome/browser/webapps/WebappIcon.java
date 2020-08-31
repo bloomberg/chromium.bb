@@ -9,6 +9,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -19,11 +21,18 @@ public class WebappIcon {
     private Bitmap mBitmap;
     private String mWebApkPackageName;
     private int mResourceId;
+    private boolean mIsTrusted;
 
     public WebappIcon() {}
 
-    public WebappIcon(String encoded) {
+    /**
+     * @param encoded The encoded data of a bitmap.
+     * @param isTrusted Whether the encoded data came from a trusted source. If false, the data
+     *     won't be used to generate a bitmap.
+     */
+    public WebappIcon(String encoded, boolean isTrusted) {
         mEncoded = encoded;
+        mIsTrusted = isTrusted;
     }
 
     public WebappIcon(Bitmap bitmap) {
@@ -49,8 +58,13 @@ public class WebappIcon {
         return mBitmap;
     }
 
+    @VisibleForTesting
+    public int resourceIdForTesting() {
+        return mResourceId;
+    }
+
     private Bitmap generateBitmap() {
-        if (mEncoded != null) {
+        if (mEncoded != null && mIsTrusted) {
             return ShortcutHelper.decodeBitmapFromString(mEncoded);
         }
         if (mWebApkPackageName != null && mResourceId != 0) {

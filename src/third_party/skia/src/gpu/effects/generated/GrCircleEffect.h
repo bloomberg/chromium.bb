@@ -11,12 +11,14 @@
 #ifndef GrCircleEffect_DEFINED
 #define GrCircleEffect_DEFINED
 #include "include/core/SkTypes.h"
+#include "include/core/SkM44.h"
 
 #include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
 class GrCircleEffect : public GrFragmentProcessor {
 public:
-    static std::unique_ptr<GrFragmentProcessor> Make(GrClipEdgeType edgeType, SkPoint center,
+    static std::unique_ptr<GrFragmentProcessor> Make(GrClipEdgeType edgeType,
+                                                     SkPoint center,
                                                      float radius) {
         // A radius below half causes the implicit insetting done by this processor to become
         // inverted. We could handle this case by making the processor code more complicated.

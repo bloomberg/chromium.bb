@@ -19,28 +19,15 @@ namespace SkSL {
 class  ExternalValue;
 struct FunctionDeclaration;
 
-// GCC and Clang support the "labels as values" extension which we need to implement the interpreter
-// using threaded code. Otherwise, we fall back to using a switch statement in a for loop.
-#if defined(__GNUC__) || defined(__clang__)
-    #define SKSLC_THREADED_CODE
-    using instruction = void*;
-#else
-    using instruction = uint16_t;
-#endif
-
 #define VECTOR(name) name ## 4, name ## 3, name ## 2, name
 #define VECTOR_MATRIX(name) name ## 4, name ## 3, name ## 2, name, name ## N
 
 enum class ByteCodeInstruction : uint16_t {
     // B = bool, F = float, I = int, S = signed, U = unsigned
-    // All binary VECTOR instructions (kAddF, KSubtractI, kCompareIEQ, etc.) are followed by a byte
-    // indicating the count, even though it is redundant due to the count appearing in the opcode.
-    // This is because the original opcodes are lost after we preprocess it into threaded code, and
-    // we need to still be able to access the count so as to permit the implementation to use opcode
-    // fallthrough.
     VECTOR_MATRIX(kAddF),
     VECTOR(kAddI),
     kAndB,
+    VECTOR(kATan),
     kBranch,
     // Followed by a byte indicating the index of the function to call
     kCall,
@@ -68,18 +55,19 @@ enum class ByteCodeInstruction : uint16_t {
     VECTOR(kConvertFtoI),
     VECTOR(kConvertStoF),
     VECTOR(kConvertUtoF),
-    // Followed by a (redundant) byte indicating the count
     VECTOR(kCos),
     VECTOR_MATRIX(kDivideF),
     VECTOR(kDivideS),
     VECTOR(kDivideU),
-    // Duplicates the top stack value. Followed by a (redundant) byte indicating the count.
+    // Duplicates the top stack value
     VECTOR_MATRIX(kDup),
+    VECTOR(kFract),
     kInverse2x2,
     kInverse3x3,
     kInverse4x4,
-    // kLoad/kLoadGlobal are followed by a byte indicating the count, and a byte indicating the
-    // local/global slot to load
+    // A1, A2, .., B1, B2, .., T1, T2, .. -> lerp(A1, B1, T1), lerp(A2, B2, T2), ..
+    VECTOR(kLerp),
+    // kLoad/kLoadGlobal are followed by a byte indicating the local/global slot to load
     VECTOR(kLoad),
     VECTOR(kLoadGlobal),
     VECTOR(kLoadUniform),
@@ -99,13 +87,21 @@ enum class ByteCodeInstruction : uint16_t {
     kMatrixToMatrix,
     // Followed by three bytes: leftCols (== rightRows), leftRows, rightCols
     kMatrixMultiply,
+    VECTOR(kMaxF),
+    VECTOR(kMaxS),  // SkSL only declares signed versions of min/max
+    VECTOR(kMinF),
+    VECTOR(kMinS),
+    // Masked selection: Stack is ... A1, A2, A3, B1, B2, B3, M1, M2, M3
+    //                   Result:      M1 ? B1 : A1, M2 ? B2 : A2, M3 ? B3 : A3
+    VECTOR(kMix),
     VECTOR_MATRIX(kNegateF),
     VECTOR(kNegateI),
     VECTOR_MATRIX(kMultiplyF),
     VECTOR(kMultiplyI),
-    kNotB,
+    VECTOR(kNotB),
     kOrB,
     VECTOR_MATRIX(kPop),
+    VECTOR(kPow),
     // Followed by a 32 bit value containing the value to push
     kPushImmediate,
     // Followed by a byte indicating external value to read
@@ -125,7 +121,6 @@ enum class ByteCodeInstruction : uint16_t {
     kShiftLeft,
     kShiftRightS,
     kShiftRightU,
-    // Followed by a (redundant) byte indicating the count
     VECTOR(kSin),
     VECTOR(kSqrt),
     // kStore/kStoreGlobal are followed by a byte indicating the local/global slot to store
@@ -148,7 +143,6 @@ enum class ByteCodeInstruction : uint16_t {
     kSwizzle,
     VECTOR_MATRIX(kSubtractF),
     VECTOR(kSubtractI),
-    // Followed by a (redundant) byte indicating the count
     VECTOR(kTan),
     // Followed by a byte indicating external value to write
     VECTOR(kWriteExternal),
@@ -175,6 +169,10 @@ class ByteCodeFunction {
 public:
     int getParameterCount() const { return fParameterCount; }
     int getReturnCount() const { return fReturnCount; }
+    int getLocalCount() const { return fLocalCount; }
+
+    const uint8_t* code() const { return fCode.data(); }
+    size_t         size() const { return fCode.size(); }
 
     /**
      * Print bytecode disassembly to stdout.
@@ -202,13 +200,7 @@ private:
     int fStackCount = 0;
     int fConditionCount = 0;
     int fLoopCount = 0;
-    mutable SkOnce fPreprocessOnce;
     std::vector<uint8_t> fCode;
-
-    /**
-     * Replace each opcode with the corresponding entry from the labels array.
-     */
-    void preprocess(const void* labels[]);
 };
 
 enum class TypeCategory {
@@ -220,7 +212,7 @@ enum class TypeCategory {
 
 class SK_API ByteCode {
 public:
-    static constexpr int kVecWidth = 16;
+    static constexpr int kVecWidth = 8;
 
     ByteCode() = default;
 

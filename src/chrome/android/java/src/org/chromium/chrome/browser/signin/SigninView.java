@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.UiUtils;
@@ -136,8 +136,8 @@ public class SigninView extends LinearLayout {
     }
 
     static Drawable getExpandArrowDrawable(Context context) {
-        return UiUtils.getTintedDrawable(
-                context, R.drawable.ic_expand_more_black_24dp, R.color.standard_mode_tint);
+        return UiUtils.getTintedDrawable(context, R.drawable.ic_expand_more_black_24dp,
+                R.color.default_icon_color_tint_list);
     }
 
     static Drawable getCheckmarkDrawable(Context context) {

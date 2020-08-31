@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_keyframe.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_property_indexed_keyframe.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
-#include "third_party/blink/renderer/core/animation/base_keyframe.h"
-#include "third_party/blink/renderer/core/animation/base_property_indexed_keyframe.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
@@ -49,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -102,10 +101,12 @@ void SetKeyframeValue(Element* element,
                                            style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
-        document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Invalid keyframe value for property " + property + ": " + value));
+        document.GetFrame()->Console().AddMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript,
+                mojom::ConsoleMessageLevel::kWarning,
+                "Invalid keyframe value for property " + property + ": " +
+                    value));
       }
     }
     return;
@@ -126,9 +127,9 @@ void SetKeyframeValue(Element* element,
 }
 
 bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
-  // CSSAdditiveAnimationsEnabled guards both additive animations and allowing
+  // WebAnimationsAPIEnabled guards both additive animations and allowing
   // partial (implicit) keyframes.
-  if (RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled())
+  if (RuntimeEnabledFeatures::WebAnimationsAPIEnabled())
     return true;
 
   // An implicit keyframe is inserted in the below cases. Note that the 'first'
@@ -182,7 +183,7 @@ EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
     StringKeyframe* keyframe) {
   bool additive_composite = composite == EffectModel::kCompositeAdd ||
                             composite == EffectModel::kCompositeAccumulate;
-  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
+  if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled() &&
       keyframe->HasCssProperty() && additive_composite) {
     return EffectModel::kCompositeReplace;
   }
@@ -669,7 +670,7 @@ KeyframeEffectModelBase* EffectInput::Convert(
   auto* keyframe_effect_model = MakeGarbageCollected<StringKeyframeEffectModel>(
       parsed_keyframes, composite, LinearTimingFunction::Shared());
 
-  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
+  if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled()) {
     // This should be enforced by the parsing code.
     DCHECK(!HasAdditiveCompositeCSSKeyframe(
         keyframe_effect_model->GetPropertySpecificKeyframeGroups()));
@@ -698,9 +699,9 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
     return {};
 
   // TODO(crbug.com/816934): Get spec to specify what parsing context to use.
-  Document& document =
-      element ? element->GetDocument()
-              : *To<Document>(ExecutionContext::From(script_state));
+  Document& document = element
+                           ? element->GetDocument()
+                           : *LocalDOMWindow::From(script_state)->document();
 
   StringKeyframeVector parsed_keyframes;
   if (script_iterator.IsNull()) {

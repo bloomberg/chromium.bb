@@ -21,10 +21,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -91,7 +87,7 @@ compare_batch(struct drm_intel_decode *ctx, const char *batch_filename)
 {
 	FILE *out = NULL;
 	void *ptr, *ref_ptr, *batch_ptr;
-#ifdef HAVE_OPEN_MEMSTREAM
+#if HAVE_OPEN_MEMSTREAM
 	size_t size;
 #endif
 	size_t ref_size, batch_size;
@@ -109,7 +105,7 @@ compare_batch(struct drm_intel_decode *ctx, const char *batch_filename)
 	 * figure out how to output to a file in a safe and sane way
 	 * inside of an automake project's test infrastructure.
 	 */
-#ifdef HAVE_OPEN_MEMSTREAM
+#if HAVE_OPEN_MEMSTREAM
 	out = open_memstream((char **)&ptr, &size);
 #else
 	fprintf(stderr, "platform lacks open_memstream, skipping.\n");

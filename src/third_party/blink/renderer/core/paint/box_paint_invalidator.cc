@@ -17,7 +17,7 @@ namespace blink {
 
 bool BoxPaintInvalidator::HasEffectiveBackground() {
   // The view can paint background not from the style.
-  if (box_.IsLayoutView())
+  if (IsA<LayoutView>(box_))
     return true;
   return box_.StyleRef().HasBackground() && !box_.BackgroundTransfersToView();
 }
@@ -184,27 +184,14 @@ bool BoxPaintInvalidator::BackgroundGeometryDependsOnLayoutOverflowRect() {
 bool BoxPaintInvalidator::BackgroundPaintsOntoScrollingContentsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return box_.GetBackgroundPaintLocation() &
-           kBackgroundPaintInScrollingContents;
-  }
-  if (!box_.HasLayer())
-    return false;
-  if (auto* mapping = box_.Layer()->GetCompositedLayerMapping())
-    return mapping->BackgroundPaintsOntoScrollingContentsLayer();
-  return false;
+  return box_.GetBackgroundPaintLocation() &
+         kBackgroundPaintInScrollingContents;
 }
 
 bool BoxPaintInvalidator::BackgroundPaintsOntoMainGraphicsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return box_.GetBackgroundPaintLocation() & kBackgroundPaintInGraphicsLayer;
-  if (!box_.HasLayer())
-    return true;
-  if (auto* mapping = box_.Layer()->GetCompositedLayerMapping())
-    return mapping->BackgroundPaintsOntoGraphicsLayer();
-  return true;
+  return box_.GetBackgroundPaintLocation() & kBackgroundPaintInGraphicsLayer;
 }
 
 bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
@@ -227,9 +214,9 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
 
 BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
-  DCHECK(box_.IsLayoutView());
+  DCHECK(IsA<LayoutView>(box_));
 
-  const auto& layout_view = ToLayoutView(box_);
+  const auto& layout_view = To<LayoutView>(box_);
   auto new_background_rect = layout_view.BackgroundRect();
   auto old_background_rect = layout_view.PreviousBackgroundRect();
   layout_view.SetPreviousBackgroundRect(new_background_rect);
@@ -250,18 +237,31 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
       layout_view.BackgroundNeedsFullPaintInvalidation())
     return BackgroundInvalidationType::kFull;
 
-  // LayoutView's non-fixed-attachment background is positioned in the
-  // document element and needs to invalidate if the size changes.
-  // See: https://drafts.csswg.org/css-backgrounds-3/#root-background.
-  if (BackgroundGeometryDependsOnLayoutOverflowRect()) {
-    Element* document_element = box_.GetDocument().documentElement();
+  if (Element* document_element = box_.GetDocument().documentElement()) {
     if (document_element) {
-      const auto* document_background = document_element->GetLayoutObject();
-      if (document_background && document_background->IsBox()) {
-        const auto* document_background_box = ToLayoutBox(document_background);
-        if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-                document_background_box->PreviousPhysicalLayoutOverflowRect(),
-                document_background_box->PhysicalLayoutOverflowRect())) {
+      if (const auto* document_element_object =
+              document_element->GetLayoutObject()) {
+        // LayoutView's non-fixed-attachment background is positioned in the
+        // document element and needs to invalidate if the size changes.
+        // See: https://drafts.csswg.org/css-backgrounds-3/#root-background.
+        if (BackgroundGeometryDependsOnLayoutOverflowRect()) {
+          if (document_element_object->IsBox()) {
+            const auto* document_background_box =
+                ToLayoutBox(document_element_object);
+            if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
+                    document_background_box
+                        ->PreviousPhysicalLayoutOverflowRect(),
+                    document_background_box->PhysicalLayoutOverflowRect())) {
+              return BackgroundInvalidationType::kFull;
+            }
+          }
+        }
+
+        // The document background paints with a transform but nevertheless
+        // extended onto an infinite canvas. In cases where it has a transform
+        // we cna't apply incremental invalidation, because the visual rect is
+        // no longer axis-aligned to the LayoutView.
+        if (document_element_object->StyleRef().HasTransform()) {
           return BackgroundInvalidationType::kFull;
         }
       }
@@ -275,16 +275,6 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
 BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeBackgroundInvalidation(
     bool& should_invalidate_all_layers) {
-  // Need to fully invalidate the background on all layers if background paint
-  // location changed.
-  auto new_background_location = box_.GetBackgroundPaintLocation();
-  if (new_background_location != box_.PreviousBackgroundPaintLocation()) {
-    should_invalidate_all_layers = true;
-    box_.GetMutableForPainting().SetPreviousBackgroundPaintLocation(
-        new_background_location);
-    return BackgroundInvalidationType::kFull;
-  }
-
   // If background changed, we may paint the background on different graphics
   // layer, so we need to fully invalidate the background on all layers.
   if (box_.BackgroundNeedsFullPaintInvalidation()) {
@@ -332,7 +322,7 @@ void BoxPaintInvalidator::InvalidateBackground() {
   bool should_invalidate_all_layers = false;
   auto background_invalidation_type =
       ComputeBackgroundInvalidation(should_invalidate_all_layers);
-  if (box_.IsLayoutView()) {
+  if (IsA<LayoutView>(box_)) {
     background_invalidation_type = std::max(
         background_invalidation_type, ComputeViewBackgroundInvalidation());
   }
@@ -392,9 +382,6 @@ bool BoxPaintInvalidator::
   // Don't save old box geometries if the paint rect is empty because we'll
   // fully invalidate once the paint rect becomes non-empty.
   if (context_.fragment_data->VisualRect().IsEmpty())
-    return false;
-
-  if (box_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
     return false;
 
   const ComputedStyle& style = box_.StyleRef();

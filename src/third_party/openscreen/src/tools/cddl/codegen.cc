@@ -1580,7 +1580,7 @@ bool WriteSourcePrologue(int fd, const std::string& header_filename) {
       R"(#include "%s"
 
 #include "third_party/tinycbor/src/src/utf8_p.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace msgs {

@@ -16,12 +16,17 @@ import collections
 import datetime
 import json
 import os
+import sys
 import time
 
 import mock
 from chromite.cbuildbot import afdo
 from chromite.lib import (cros_build_lib, cros_test_lib, gs, osutils,
                           path_util, portage_util)
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 MockGsFile = collections.namedtuple('MockGsFile', ['url', 'creation_time'])
 

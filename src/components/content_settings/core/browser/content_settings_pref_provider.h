@@ -38,7 +38,8 @@ class PrefProvider : public UserModifiableProvider {
 
   PrefProvider(PrefService* prefs,
                bool off_the_record,
-               bool store_last_modified);
+               bool store_last_modified,
+               bool restore_session);
   ~PrefProvider() override;
 
   // UserModifiableProvider implementations.
@@ -50,7 +51,8 @@ class PrefProvider : public UserModifiableProvider {
                          const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType content_type,
                          const ResourceIdentifier& resource_identifier,
-                         std::unique_ptr<base::Value>&& value) override;
+                         std::unique_ptr<base::Value>&& value,
+                         const ContentSettingConstraints& constraints) override;
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
   base::Time GetWebsiteSettingLastModified(
@@ -58,12 +60,11 @@ class PrefProvider : public UserModifiableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
   void ClearPrefs();
 
   ContentSettingsPref* GetPref(ContentSettingsType type) const;
-
-  void SetClockForTesting(base::Clock* clock);
 
  private:
   friend class DeadlockCheckerObserver;  // For testing.

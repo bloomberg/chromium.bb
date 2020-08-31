@@ -42,7 +42,7 @@ class CORE_EXPORT FontBuilder {
   STACK_ALLOCATED();
 
  public:
-  FontBuilder(const Document*);
+  explicit FontBuilder(Document*);
 
   void SetInitial(float effective_zoom);
 
@@ -79,9 +79,8 @@ class CORE_EXPORT FontBuilder {
   // FIXME: These need to just vend a Font object eventually.
   void UpdateFontDescription(FontDescription&,
                              FontOrientation = FontOrientation::kHorizontal);
-  void CreateFont(FontSelector*, ComputedStyle&);
-
-  void CreateFontForDocument(FontSelector*, ComputedStyle&);
+  void CreateFont(ComputedStyle&, const ComputedStyle* parent_style);
+  void CreateFontForDocument(ComputedStyle&);
 
   bool FontDirty() const { return flags_; }
 
@@ -129,7 +128,9 @@ class CORE_EXPORT FontBuilder {
   // This function fixes up the default font size if it detects that the current
   // generic font family has changed. -dwh
   void CheckForGenericFamilyChange(const FontDescription&, FontDescription&);
-  void UpdateSpecifiedSize(FontDescription&, const ComputedStyle&);
+  void UpdateSpecifiedSize(FontDescription&,
+                           const ComputedStyle&,
+                           const ComputedStyle* parent_style);
   void UpdateComputedSize(FontDescription&, const ComputedStyle&);
   void UpdateAdjustedSize(FontDescription&,
                           const ComputedStyle&,
@@ -139,7 +140,7 @@ class CORE_EXPORT FontBuilder {
                                          float effective_zoom,
                                          float specified_size);
 
-  Member<const Document> document_;
+  Document* document_;
   FontDescription font_description_;
 
   enum class PropertySetFlag {

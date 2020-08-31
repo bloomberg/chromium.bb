@@ -175,9 +175,9 @@ static void InstallV8TestElementTemplate(
   // Register IDL constants, attributes and operations.
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "reflectedBoolAttribute", V8TestElement::ReflectedBoolAttributeAttributeGetterCallback, V8TestElement::ReflectedBoolAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-      { "reflectedStringAttribute", V8TestElement::ReflectedStringAttributeAttributeGetterCallback, V8TestElement::ReflectedStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-      { "reflectedNullableStringAttribute", V8TestElement::ReflectedNullableStringAttributeAttributeGetterCallback, V8TestElement::ReflectedNullableStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "reflectedBoolAttribute", V8TestElement::ReflectedBoolAttributeAttributeGetterCallback, V8TestElement::ReflectedBoolAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "reflectedStringAttribute", V8TestElement::ReflectedStringAttributeAttributeGetterCallback, V8TestElement::ReflectedStringAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "reflectedNullableStringAttribute", V8TestElement::ReflectedNullableStringAttributeAttributeGetterCallback, V8TestElement::ReflectedNullableStringAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
@@ -206,7 +206,7 @@ void V8TestElement::InstallRuntimeEnabledFeaturesOnTemplate(
   if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     static constexpr V8DOMConfiguration::AccessorConfiguration
     kAccessorConfigurations[] = {
-        { "reflectedRuntimeEnabeld", V8TestElement::ReflectedRuntimeEnabeldAttributeGetterCallback, V8TestElement::ReflectedRuntimeEnabeldAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "reflectedRuntimeEnabeld", V8TestElement::ReflectedRuntimeEnabeldAttributeGetterCallback, V8TestElement::ReflectedRuntimeEnabeldAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
@@ -237,16 +237,6 @@ v8::Local<v8::Object> V8TestElement::FindInstanceInPrototypeChain(
 TestElement* V8TestElement::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestElement* NativeValueTraits<TestElement>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestElement* native_value = V8TestElement::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestElement"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

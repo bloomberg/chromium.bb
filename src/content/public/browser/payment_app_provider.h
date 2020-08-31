@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 
 class SkBitmap;
@@ -45,7 +46,9 @@ class CONTENT_EXPORT PaymentAppProvider {
       base::OnceCallback<void(int64_t registration_id)>;
   using InvokePaymentAppCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerResponsePtr)>;
-  using PaymentEventResultCallback = base::OnceCallback<void(bool)>;
+  using CanMakePaymentCallback =
+      base::OnceCallback<void(payments::mojom::CanMakePaymentResponsePtr)>;
+  using AbortCallback = base::OnceCallback<void(bool)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
@@ -61,8 +64,8 @@ class CONTENT_EXPORT PaymentAppProvider {
       payments::mojom::PaymentRequestEventDataPtr event_data,
       const std::string& app_name,
       const SkBitmap& app_icon,
-      const std::string& sw_js_url,
-      const std::string& sw_scope,
+      const GURL& sw_js_url,
+      const GURL& sw_scope,
       bool sw_use_cache,
       const std::string& method,
       const SupportedDelegations& supported_delegations,
@@ -74,12 +77,12 @@ class CONTENT_EXPORT PaymentAppProvider {
       const url::Origin& sw_origin,
       const std::string& payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
-      PaymentEventResultCallback callback) = 0;
+      CanMakePaymentCallback callback) = 0;
   virtual void AbortPayment(BrowserContext* browser_context,
                             int64_t registration_id,
                             const url::Origin& sw_origin,
                             const std::string& payment_request_id,
-                            PaymentEventResultCallback callback) = 0;
+                            AbortCallback callback) = 0;
 
   // Set opened window for payment handler. Note that we maintain at most one
   // opened window for payment handler at any moment in a browser context. The
@@ -101,8 +104,13 @@ class CONTENT_EXPORT PaymentAppProvider {
                                             const GURL& sw_scope,
                                             std::string* error_message) = 0;
 
+  // Gets the ukm source id for a payment app with |sw_scope|.
+  // This must ONLY be called when payment app window has been opened.
+  virtual ukm::SourceId GetSourceIdForPaymentAppFromScope(
+      const GURL& sw_scope) = 0;
+
  protected:
-  virtual ~PaymentAppProvider() {}
+  virtual ~PaymentAppProvider() = default;
 };
 
 }  // namespace content

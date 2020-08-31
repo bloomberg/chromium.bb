@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -22,15 +21,14 @@
 #include "chrome/android/features/keyboard_accessory/jni_headers/UserInfoField_jni.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
+#include "chrome/browser/password_manager/android/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-#include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/image/image.h"
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
@@ -100,20 +98,6 @@ void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
       env, java_object_, available);
 }
 
-void ManualFillingViewAndroid::OnFaviconRequested(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& j_origin,
-    jint desired_size_in_px,
-    const base::android::JavaParamRef<jobject>& j_callback) {
-  controller_->GetFavicon(
-      desired_size_in_px, ConvertJavaStringToUTF8(env, j_origin),
-      base::BindOnce(&ManualFillingViewAndroid::OnImageFetched,
-                     base::Unretained(this),  // Outlives or cancels request.
-                     base::android::ScopedJavaGlobalRef<jstring>(j_origin),
-                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
-}
-
 void ManualFillingViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -132,18 +116,13 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
-void ManualFillingViewAndroid::OnImageFetched(
-    base::android::ScopedJavaGlobalRef<jstring> j_origin,
-    base::android::ScopedJavaGlobalRef<jobject> j_callback,
-    const gfx::Image& image) {
-  base::android::ScopedJavaLocalRef<jobject> j_bitmap;
-  if (!image.IsEmpty())
-    j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
-
-  RunObjectCallbackAndroid(
-      j_callback,
-      Java_ManualFillingComponentBridge_createFaviconResult(
-          base::android::AttachCurrentThread(), j_origin, j_bitmap));
+void ManualFillingViewAndroid::OnToggleChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint selected_action,
+    jboolean enabled) {
+  controller_->OnToggleChanged(
+      static_cast<autofill::AccessoryAction>(selected_action), enabled);
 }
 
 ScopedJavaLocalRef<jobject>
@@ -156,11 +135,20 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
           ConvertUTF16ToJavaString(env, tab_data.title()),
           ConvertUTF16ToJavaString(env, tab_data.warning()));
 
+  if (tab_data.option_toggle().has_value()) {
+    autofill::OptionToggle toggle = tab_data.option_toggle().value();
+    Java_ManualFillingComponentBridge_addOptionToggleToAccessorySheetData(
+        env, java_object_, j_tab_data,
+        ConvertUTF16ToJavaString(env, toggle.display_text()),
+        toggle.is_enabled(), static_cast<int>(toggle.accessory_action()));
+  }
+
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
             env, java_object_, j_tab_data,
-            ConvertUTF8ToJavaString(env, user_info.origin()));
+            ConvertUTF8ToJavaString(env, user_info.origin()),
+            user_info.is_psl_match().value());
     for (const UserInfo::Field& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_, j_user_info,
@@ -201,7 +189,8 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents,
     const base::android::JavaParamRef<jobjectArray>& j_usernames,
-    const base::android::JavaParamRef<jobjectArray>& j_passwords) {
+    const base::android::JavaParamRef<jobjectArray>& j_passwords,
+    jboolean j_blacklisted) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
@@ -222,7 +211,10 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
   }
   return ChromePasswordManagerClient::FromWebContents(web_contents)
       ->GetCredentialCacheForTesting()
-      ->SaveCredentialsForOrigin(credentials, origin);
+      ->SaveCredentialsAndBlacklistedForOrigin(
+          credentials,
+          password_manager::CredentialCache::IsOriginBlacklisted(j_blacklisted),
+          origin);
 }
 
 // static
@@ -248,6 +240,13 @@ void JNI_ManualFillingComponentBridge_SignalAutoGenerationStatusForTesting(
   // avoid setup overhead, since its logic is currently not needed for tests.
   ManualFillingControllerImpl::GetOrCreate(web_contents)
       ->OnAutomaticGenerationStatusChanged(j_available);
+}
+
+// static
+void JNI_ManualFillingComponentBridge_DisableServerPredictionsForTesting(
+    JNIEnv* env) {
+  password_manager::PasswordFormManager::
+      DisableFillingServerPredictionsForTesting();
 }
 
 // static

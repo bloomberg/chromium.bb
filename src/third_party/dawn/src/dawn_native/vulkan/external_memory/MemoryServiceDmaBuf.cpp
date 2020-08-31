@@ -41,13 +41,13 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
             formatProps.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2;
             formatProps.pNext = &formatModifierPropsList;
 
-            fn.GetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, &formatProps);
+            fn.GetPhysicalDeviceFormatProperties2(physicalDevice, format, &formatProps);
 
             uint32_t modifierCount = formatModifierPropsList.drmFormatModifierCount;
             std::vector<VkDrmFormatModifierPropertiesEXT> formatModifierProps(modifierCount);
             formatModifierPropsList.pDrmFormatModifierProperties = formatModifierProps.data();
 
-            fn.GetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, &formatProps);
+            fn.GetPhysicalDeviceFormatProperties2(physicalDevice, format, &formatProps);
             for (const auto& props : formatModifierProps) {
                 if (props.drmFormatModifier == modifier) {
                     uint32_t count = props.drmFormatModifierPlaneCount;
@@ -141,8 +141,8 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         imageFormatProps.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
         imageFormatProps.pNext = &externalImageFormatProps;
 
-        VkResult result = mDevice->fn.GetPhysicalDeviceImageFormatProperties2KHR(
-            physicalDevice, &imageFormatInfo, &imageFormatProps);
+        VkResult result = VkResult::WrapUnsafe(mDevice->fn.GetPhysicalDeviceImageFormatProperties2(
+            physicalDevice, &imageFormatInfo, &imageFormatProps));
         if (result != VK_SUCCESS) {
             return false;
         }
@@ -180,7 +180,8 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         if (memoryTypeIndex == -1) {
             return DAWN_VALIDATION_ERROR("Unable to find appropriate memory type for import");
         }
-        MemoryImportParams params = {memoryRequirements.size, memoryTypeIndex};
+        MemoryImportParams params = {memoryRequirements.size,
+                                     static_cast<uint32_t>(memoryTypeIndex)};
         return params;
     }
 
@@ -195,7 +196,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         memoryDedicatedAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
         memoryDedicatedAllocateInfo.pNext = nullptr;
         memoryDedicatedAllocateInfo.image = image;
-        memoryDedicatedAllocateInfo.buffer = VK_NULL_HANDLE;
+        memoryDedicatedAllocateInfo.buffer = VkBuffer{};
 
         VkImportMemoryFdInfoKHR importMemoryFdInfo;
         importMemoryFdInfo.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR;
@@ -212,7 +213,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         VkDeviceMemory allocatedMemory = VK_NULL_HANDLE;
         DAWN_TRY(
             CheckVkSuccess(mDevice->fn.AllocateMemory(mDevice->GetVkDevice(), &memoryAllocateInfo,
-                                                      nullptr, &allocatedMemory),
+                                                      nullptr, &*allocatedMemory),
                            "vkAllocateMemory"));
         return allocatedMemory;
     }
@@ -263,7 +264,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
         // Create a new VkImage with tiling equal to the DRM format modifier.
         VkImage image;
-        DAWN_TRY(CheckVkSuccess(mDevice->fn.CreateImage(device, &createInfo, nullptr, &image),
+        DAWN_TRY(CheckVkSuccess(mDevice->fn.CreateImage(device, &createInfo, nullptr, &*image),
                                 "CreateImage"));
         return image;
     }

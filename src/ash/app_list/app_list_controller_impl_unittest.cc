@@ -18,14 +18,16 @@
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -33,8 +35,8 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/unified/unified_system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -44,6 +46,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/with_feature_override.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -55,6 +58,12 @@
 namespace ash {
 
 namespace {
+
+void PressHomeButton() {
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      AppListShowSource::kShelfButton, base::TimeTicks());
+}
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -88,7 +97,7 @@ aura::Window* GetVirtualKeyboardWindow() {
 }
 
 AppsGridView* GetAppsGridView() {
-  return GetContentsView()->GetAppsContainerView()->apps_grid_view();
+  return GetContentsView()->apps_container_view()->apps_grid_view();
 }
 
 void ShowAppListNow() {
@@ -130,6 +139,13 @@ class AppListControllerImplTest : public AshTestBase {
     }
   }
 
+  bool IsAppListBoundsAnimationRunning() {
+    AppListView* app_list_view = GetAppListTestHelper()->GetAppListView();
+    ui::Layer* widget_layer =
+        app_list_view ? app_list_view->GetWidget()->GetLayer() : nullptr;
+    return widget_layer && !widget_layer->GetAnimator()->is_animating();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
@@ -141,9 +157,9 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
   Shelf* const shelf = AshTestBase::GetPrimaryShelf();
   shelf->SetAlignment(ShelfAlignment::kBottom);
 
-  const std::vector<ash::ShelfAlignment> alignments(
+  const std::vector<ShelfAlignment> alignments(
       {ShelfAlignment::kLeft, ShelfAlignment::kRight, ShelfAlignment::kBottom});
-  for (ash::ShelfAlignment alignment : alignments) {
+  for (ShelfAlignment alignment : alignments) {
     ShowAppListNow();
     EXPECT_TRUE(Shell::Get()
                     ->app_list_controller()
@@ -152,38 +168,6 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
     shelf->SetAlignment(alignment);
     EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
   }
-}
-
-// Hide the expand arrow view in tablet mode when there is no activatable window
-// (see https://crbug.com/923089).
-TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
-  // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_TRUE(IsTabletMode());
-
-  // No activatable windows. So hide the expand arrow view.
-  EXPECT_FALSE(GetExpandArrowViewVisibility());
-
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-
-  // Activate w1 then press home launcher button. Expand arrow view should show
-  // because w1 still exists.
-  wm::ActivateWindow(w1.get());
-  Shell::Get()->home_screen_controller()->GoHome(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  EXPECT_EQ(WindowStateType::kMinimized,
-            WindowState::Get(w1.get())->GetStateType());
-  EXPECT_TRUE(GetExpandArrowViewVisibility());
-
-  // Activate w2 then close w1. w2 still exists so expand arrow view shows.
-  wm::ActivateWindow(w2.get());
-  w1.reset();
-  EXPECT_TRUE(GetExpandArrowViewVisibility());
-
-  // No activatable windows. Hide the expand arrow view.
-  w2.reset();
-  EXPECT_FALSE(GetExpandArrowViewVisibility());
 }
 
 // In clamshell mode, when the AppListView's bottom is on the display edge
@@ -209,7 +193,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   aura::Window* native_window = GetAppListView()->GetWidget()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
   expected_transform.Translate(0, -(ShelfConfig::Get()->shelf_size() / 2));
   EXPECT_EQ(
@@ -234,7 +218,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   // Set IME client. Otherwise the emoji panel is unable to show.
   ImeController* ime_controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  ime_controller->SetClient(client.CreateRemote());
+  ime_controller->SetClient(&client);
 
   // Show the app list view and right-click on the search box with mouse. So the
   // text field's context menu shows.
@@ -311,6 +295,33 @@ TEST_F(AppListControllerImplTest, CheckTabOrderAfterDragIconToShelf) {
   EXPECT_EQ(item3, item2->GetNextFocusableView());
 }
 
+TEST_F(AppListControllerImplTest, PageResetByTimerInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  PopulateItem(30);
+
+  ShowAppListNow();
+
+  AppsGridView* apps_grid_view = GetAppsGridView();
+  apps_grid_view->pagination_model()->SelectPage(1, false /* animate */);
+
+  DismissAppListNow();
+
+  // When timer is not skipped the selected page should not change when app list
+  // is closed.
+  EXPECT_EQ(1, apps_grid_view->pagination_model()->selected_page());
+
+  // Skip the page reset timer to simulate timer exipration.
+  GetAppListView()->SetSkipPageResetTimerForTesting(true);
+
+  ShowAppListNow();
+  EXPECT_EQ(1, apps_grid_view->pagination_model()->selected_page());
+  DismissAppListNow();
+
+  // Once the app list is closed, the page should be reset when the timer is
+  // skipped.
+  EXPECT_EQ(0, apps_grid_view->pagination_model()->selected_page());
+}
+
 // Verifies that in clamshell mode the bounds of AppListView are correct when
 // the AppListView is in PEEKING state and the virtual keyboard is enabled (see
 // https://crbug.com/944233).
@@ -337,11 +348,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::AppListViewState::kPeeking),
+                AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -359,7 +369,7 @@ TEST_F(AppListControllerImplTest,
   ShowAppListNow();
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
@@ -368,7 +378,7 @@ TEST_F(AppListControllerImplTest,
   // remain at the top of the screen.
   GetAppListView()->SetState(AppListViewState::kHalf);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
 
   EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
 
@@ -378,7 +388,7 @@ TEST_F(AppListControllerImplTest,
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 
   // Verify the app list bounds have been updated to match kHalf state.
-  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
   const gfx::Rect shelf_bounds =
       AshTestBase::GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
   EXPECT_EQ(shelf_bounds.bottom() - 545 /*half app list height*/,
@@ -412,10 +422,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   // (1) AppListView's state is FULLSCREEN_SEARCH
   // (2) AppListView's bounds are the same as the preferred bounds for
   // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch,
+  EXPECT_EQ(AppListViewState::kFullscreenSearch,
             GetAppListView()->app_list_state());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::AppListViewState::kFullscreenSearch),
+                AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -442,7 +452,7 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
       1u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 
   // Calculate the drag start point and end point.
-  UnifiedSystemTrayTestApi test_api(GetPrimaryUnifiedSystemTray());
+  SystemTrayTestApi test_api;
   message_center::MessagePopupView* popup_view =
       test_api.GetPopupViewForNotificationID(notification_id);
   ASSERT_TRUE(popup_view);
@@ -460,6 +470,68 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
       0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 }
 
+// Verifiy that when showing the launcher, the virtual keyboard dismissed before
+// will not show automatically due to the feature called "transient blur" (see
+// https://crbug.com/1057320).
+TEST_F(AppListControllerImplTest,
+       TransientBlurIsNotTriggeredWhenShowingLauncher) {
+  // Enable animation.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Enable virtual keyboard.
+  KeyboardController* const keyboard_controller =
+      Shell::Get()->keyboard_controller();
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kCommandLineEnabled);
+
+  // Create |window1| which contains a textfield as child view.
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 200, 200));
+  auto* widget = views::Widget::GetWidgetForNativeView(window1.get());
+  std::unique_ptr<views::Textfield> text_field =
+      std::make_unique<views::Textfield>();
+
+  // Note that the bounds of |text_field| cannot be too small. Otherwise, it
+  // may not receive the gesture event.
+  text_field->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  const auto* text_field_p = text_field.get();
+  widget->GetRootView()->AddChildView(std::move(text_field));
+  wm::ActivateWindow(window1.get());
+  widget->Show();
+
+  // Create |window2|.
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(200, 0, 200, 200));
+  window2->Show();
+
+  // Tap at the textfield in |window1|. The virtual keyboard should be visible.
+  const gfx::Point tap_point = text_field_p->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureTapAt(tap_point);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Tap at the center of |window2| to hide the virtual keyboard.
+  GetEventGenerator()->GestureTapAt(window2->GetBoundsInScreen().CenterPoint());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+
+  // Press the home button to show the launcher. Wait for the animation of
+  // launcher to finish. Note that the launcher does not exist before toggling
+  // the home button.
+  PressHomeButton();
+  const base::TimeDelta delta = base::TimeDelta::FromMilliseconds(200);
+  do {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), delta);
+    run_loop.Run();
+  } while (IsAppListBoundsAnimationRunning());
+
+  // Expect that the virtual keyboard is invisible when the launcher shows.
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+}
+
 // Tests that full screen apps list opens when user touches on or near the
 // expand view arrow. (see https://crbug.com/906858)
 TEST_F(AppListControllerImplTest,
@@ -470,8 +542,7 @@ TEST_F(AppListControllerImplTest,
   constexpr int tapping_height = 72;
 
   ShowAppListNow();
-  ASSERT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   // Get in screen bounds of arrow
   gfx::Rect expand_arrow = GetAppListView()
@@ -486,7 +557,7 @@ TEST_F(AppListControllerImplTest,
   // Tap expand arrow icon and check that full screen apps view is entered.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->GestureTapAt(expand_arrow.CenterPoint());
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   // Hide the AppListView. Wait until animation is finished
@@ -497,32 +568,107 @@ TEST_F(AppListControllerImplTest,
   // tap target for the expand arrow icon still brings up full app list
   // view.
   ShowAppListNow();
-  ASSERT_EQ(ash::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
 
   event_generator->GestureTapAt(gfx::Point(expand_arrow.top_right().x() - 1,
                                            expand_arrow.top_right().y() + 1));
 
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 }
 
-class HotseatAppListControllerImplTest
-    : public AppListControllerImplTest,
-      public testing::WithParamInterface<bool> {
- public:
-  HotseatAppListControllerImplTest() = default;
-  ~HotseatAppListControllerImplTest() override = default;
+// Regression test for https://crbug.com/1073548
+// Verifies that app list shown from overview after toggling tablet mode can be
+// closed.
+TEST_F(AppListControllerImplTest,
+       CloseAppListShownFromOverviewAfterTabletExit) {
+  // Move to tablet mode and back.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
+  std::unique_ptr<aura::Window> w(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  OverviewController* const overview_controller =
+      Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+
+  // Press home button - verify overview exits and the app list is shown.
+  PressHomeButton();
+
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  GetAppListTestHelper()->CheckVisibility(true);
+  ASSERT_TRUE(GetAppListView()->GetWidget());
+  EXPECT_TRUE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+
+  // Pressing home button again should close the app list.
+  PressHomeButton();
+
+  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  GetAppListTestHelper()->CheckVisibility(false);
+  ASSERT_TRUE(GetAppListView()->GetWidget());
+  EXPECT_FALSE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+}
+
+class AppListControllerImplTestWithoutHotseat
+    : public AppListControllerImplTest {
+ public:
+  AppListControllerImplTestWithoutHotseat() = default;
+  ~AppListControllerImplTestWithoutHotseat() override = default;
   // AshTestBase:
   void SetUp() override {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
-    } else {
-      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
-    }
+    // The feature verified by this test is only enabled if drag from shelf to
+    // home or overview is disabled.
+    scoped_features_.InitWithFeatures({},
+                                      {features::kDragFromShelfToHomeOrOverview,
+                                       chromeos::features::kShelfHotseat});
     AppListControllerImplTest::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTestWithoutHotseat);
+};
+
+// Hide the expand arrow view in tablet mode when there is no activatable window
+// (see https://crbug.com/923089).
+TEST_F(AppListControllerImplTestWithoutHotseat,
+       UpdateExpandArrowViewVisibility) {
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  // No activatable windows. So hide the expand arrow view.
+  EXPECT_FALSE(GetExpandArrowViewVisibility());
+
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+
+  // Activate w1 then press home launcher button. Expand arrow view should show
+  // because w1 still exists.
+  wm::ActivateWindow(w1.get());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_EQ(WindowStateType::kMinimized,
+            WindowState::Get(w1.get())->GetStateType());
+  EXPECT_TRUE(GetExpandArrowViewVisibility());
+
+  // Activate w2 then close w1. w2 still exists so expand arrow view shows.
+  wm::ActivateWindow(w2.get());
+  w1.reset();
+  EXPECT_TRUE(GetExpandArrowViewVisibility());
+
+  // No activatable windows. Hide the expand arrow view.
+  w2.reset();
+  EXPECT_FALSE(GetExpandArrowViewVisibility());
+}
+
+class HotseatAppListControllerImplTest : public base::test::WithFeatureOverride,
+                                         public AppListControllerImplTest {
+ public:
+  HotseatAppListControllerImplTest()
+      : WithFeatureOverride(chromeos::features::kShelfHotseat) {}
+  ~HotseatAppListControllerImplTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -530,9 +676,7 @@ class HotseatAppListControllerImplTest
 };
 
 // Tests with both hotseat disabled and enabled.
-INSTANTIATE_TEST_SUITE_P(All,
-                         HotseatAppListControllerImplTest,
-                         testing::Bool());
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(HotseatAppListControllerImplTest);
 
 // Verifies that the pinned app should still show after canceling the drag from
 // AppsGridView to Shelf (https://crbug.com/1021768).
@@ -603,7 +747,7 @@ TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
   AppsGridView* apps_grid_view = GetAppListView()
                                      ->app_list_main_view()
                                      ->contents_view()
-                                     ->GetAppsContainerView()
+                                     ->apps_container_view()
                                      ->apps_grid_view();
   auto apps_grid_test_api =
       std::make_unique<test::AppsGridViewTestApi>(apps_grid_view);
@@ -657,8 +801,7 @@ TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
                    << "} with selected page " << selected_page);
 
       std::unique_ptr<aura::Window> window(CreateTestWindow());
-      window->SetProperty(ash::kAppIDKey,
-                          new std::string(test_case.window_app_id));
+      window->SetProperty(kAppIDKey, new std::string(test_case.window_app_id));
 
       const gfx::Rect item_bounds =
           home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
@@ -693,7 +836,7 @@ TEST_P(HotseatAppListControllerImplTest,
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
       shelf->shelf_widget()->GetWindowBoundsInScreen()));
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
+      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
@@ -704,7 +847,7 @@ TEST_P(HotseatAppListControllerImplTest,
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
       shelf->shelf_widget()->GetWindowBoundsInScreen()));
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
+      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
 }
 
 // The test parameter indicates whether the shelf should auto-hide. In either
@@ -722,7 +865,7 @@ class AppListAnimationTest : public AshTestBase,
     shelf->SetAlignment(ShelfAlignment::kBottom);
 
     if (GetParam()) {
-      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+      shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
     }
 
     // The shelf should be shown at this point despite auto hide behavior, given
@@ -859,6 +1002,55 @@ TEST_P(AppListAnimationTest, AppListShowPeekingWhileClosing) {
   EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
 }
 
+// Tests that how search box opacity is animated when the app list is shown and
+// closed.
+TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
+  // Set a transition duration that prevents the app list view from snapping to
+  // the final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ShowAppListNow();
+
+  SearchBoxView* const search_box = GetSearchBoxView();
+
+  // The search box opacity should start  at 0, and animate to 1.
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+
+  // If the app list is closed while the animation is still in progress, the
+  // search box opacity should animate from the current opacity.
+  DismissAppListNow();
+
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(0.0f, search_box->layer()->GetTargetOpacity());
+
+  search_box->layer()->GetAnimator()->StopAnimating();
+
+  // When show again, verify the app list animates from 0 opacity again.
+  ShowAppListNow();
+
+  EXPECT_EQ(0.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+
+  search_box->layer()->GetAnimator()->StopAnimating();
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+
+  // Search box opacity animates from the current (full opacity) when closed
+  // from shown state.
+  DismissAppListNow();
+
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+  EXPECT_EQ(0.0f, search_box->layer()->GetTargetOpacity());
+
+  // If the app list is show again during close animation, the search box
+  // opacity should animate from the current value.
+  ShowAppListNow();
+
+  EXPECT_EQ(1.0f, search_box->layer()->opacity());
+  EXPECT_EQ(1.0f, search_box->layer()->GetTargetOpacity());
+}
+
 class AppListControllerImplMetricsTest : public AshTestBase {
  public:
   AppListControllerImplMetricsTest() = default;
@@ -866,13 +1058,12 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_ = ash::Shell::Get()->app_list_controller();
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
-        true);
+    controller_ = Shell::Get()->app_list_controller();
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
   }
 
   void TearDown() override {
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     AshTestBase::TearDown();
   }
@@ -892,15 +1083,6 @@ TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
                                         4);
   histogram_tester_.ExpectUniqueSample(kAppListResultLaunchIndexAndQueryLength,
                                        4, 1);
-}
-
-TEST_F(AppListControllerImplMetricsTest, LogSingleTileListClick) {
-  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  SetSearchText(controller_, "aaaa");
-  controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
-                                        4);
-  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
-                                       32, 1);
 }
 
 TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
@@ -924,87 +1106,6 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
           7 * query_length + click_index, 1);
     }
   }
-}
-
-TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
-  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  SetSearchText(controller_, "aaaa");
-  for (int i = 0; i < 50; ++i)
-    controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
-                                          4);
-  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
-                                       32, 50);
-}
-
-// Verifies that the PresentationTimeRecorder works correctly for the home
-// launcher gesture drag in tablet mode (https://crbug.com/947105).
-TEST_F(AppListControllerImplMetricsTest,
-       PresentationTimeRecordedForDragInTabletMode) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kDragFromShelfToHomeOrOverview);
-
-  // Wait until the construction of TabletModeController finishes.
-  base::RunLoop().RunUntilIdle();
-
-  // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_TRUE(IsTabletMode());
-
-  // Create a window then press the home launcher button. Expect that |w| is
-  // hidden.
-  std::unique_ptr<aura::Window> w(
-      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()->home_screen_controller()->GoHome(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  EXPECT_FALSE(w->IsVisible());
-  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-
-  int delta_y = 1;
-  gfx::Point start =
-      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
-  base::TimeTicks timestamp = base::TimeTicks::Now();
-
-  // Emulate to drag the launcher downward.
-  // Send SCROLL_START event. Check the presentation metrics values.
-  ui::GestureEvent start_event = ui::GestureEvent(
-      start.x(), start.y(), ui::EF_NONE, timestamp,
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
-  GetAppListView()->OnGestureEvent(&start_event);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
-
-  // Send SCROLL_UPDATE event. Check the presentation metrics values.
-  timestamp += base::TimeDelta::FromMilliseconds(25);
-  delta_y += 20;
-  start.Offset(0, 1);
-  ui::GestureEvent update_event = ui::GestureEvent(
-      start.x(), start.y(), ui::EF_NONE, timestamp,
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
-  GetAppListView()->OnGestureEvent(&update_event);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
-
-  // Send SCROLL_END event. Check the presentation metrics values.
-  timestamp += base::TimeDelta::FromMilliseconds(25);
-  start.Offset(0, 1);
-  ui::GestureEvent end_event =
-      ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
-                       ui::GestureEventDetails(ui::ET_GESTURE_END));
-  GetAppListView()->OnGestureEvent(&end_event);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
-  histogram_tester_.ExpectTotalCount(
-      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 1);
-
-  // After the gesture scroll event ends, the window shows.
-  EXPECT_TRUE(w->IsVisible());
-  ASSERT_TRUE(IsTabletMode());
 }
 
 // One edge case may do harm to the presentation metrics reporter for tablet
@@ -1085,6 +1186,89 @@ TEST_F(AppListControllerImplMetricsTest,
 
   histogram_tester_.ExpectTotalCount(
       "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
+}
+
+class AppListControllerImplMetricsTestWithoutHotseat
+    : public AppListControllerImplMetricsTest {
+ public:
+  AppListControllerImplMetricsTestWithoutHotseat() = default;
+  ~AppListControllerImplMetricsTestWithoutHotseat() override = default;
+  void SetUp() override {
+    // The feature verified by this test is only enabled if drag from shelf to
+    // home or overview is disabled.
+    scoped_features_.InitWithFeatures({},
+                                      {features::kDragFromShelfToHomeOrOverview,
+                                       chromeos::features::kShelfHotseat});
+    AppListControllerImplMetricsTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerImplMetricsTestWithoutHotseat);
+};
+
+// Verifies that the PresentationTimeRecorder works correctly for the home
+// launcher gesture drag in tablet mode (https://crbug.com/947105).
+TEST_F(AppListControllerImplMetricsTestWithoutHotseat,
+       PresentationTimeRecordedForDragInTabletMode) {
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  // Create a window then press the home launcher button. Expect that |w| is
+  // hidden.
+  std::unique_ptr<aura::Window> w(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(w->IsVisible());
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  int delta_y = 1;
+  gfx::Point start =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+
+  // Emulate to drag the launcher downward.
+  // Send SCROLL_START event. Check the presentation metrics values.
+  ui::GestureEvent start_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
+  GetAppListView()->OnGestureEvent(&start_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // Send SCROLL_UPDATE event. Check the presentation metrics values.
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  delta_y += 20;
+  start.Offset(0, 1);
+  ui::GestureEvent update_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
+  GetAppListView()->OnGestureEvent(&update_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 0);
+
+  // Send SCROLL_END event. Check the presentation metrics values.
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  start.Offset(0, 1);
+  ui::GestureEvent end_event =
+      ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
+                       ui::GestureEventDetails(ui::ET_GESTURE_END));
+  GetAppListView()->OnGestureEvent(&end_event);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.TabletMode", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode", 1);
+
+  // After the gesture scroll event ends, the window shows.
+  EXPECT_TRUE(w->IsVisible());
+  ASSERT_TRUE(IsTabletMode());
 }
 
 }  // namespace ash

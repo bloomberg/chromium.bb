@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -95,6 +96,8 @@ component("bindings_base") {
     "message.h",
     "message_header_validator.h",
     "scoped_interface_endpoint_handle.h",
+    "scoped_message_error_crash_key.cc",
+    "scoped_message_error_crash_key.h",
     "string_data_view.h",
     "string_traits.h",
     "string_traits_stl.h",
@@ -117,6 +120,11 @@ component("bindings_base") {
   if (enable_ipc_fuzzer) {
     all_dependent_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
+
+  if (!is_debug && !optimize_for_size) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 component("bindings") {
@@ -129,7 +137,8 @@ component("bindings") {
     "associated_receiver.h",
     "associated_receiver_set.h",
     "associated_remote.h",
-    "binder_map.cc",
+    "async_flusher.cc",
+    "async_flusher.h",
     "binder_map.h",
     "binding.h",
     "binding_set.h",
@@ -148,6 +157,7 @@ component("bindings") {
     "lib/associated_interface_ptr.cc",
     "lib/associated_interface_ptr_state.cc",
     "lib/associated_interface_ptr_state.h",
+    "lib/binder_map_internal.h",
     "lib/binding_state.cc",
     "lib/binding_state.h",
     "lib/connector.cc",
@@ -183,6 +193,8 @@ component("bindings") {
     "native_enum.h",
     "pending_associated_receiver.h",
     "pending_associated_remote.h",
+    "pending_flush.cc",
+    "pending_flush.h",
     "pending_receiver.h",
     "pending_remote.h",
     "pipe_control_message_handler.h",
@@ -240,9 +252,7 @@ component("bindings") {
     "//mojo/public/interfaces/bindings",
   ]
 
-  deps = [
-    "//ipc:native_handle_type_converters",
-  ]
+  deps = [ "//ipc:native_handle_type_converters" ]
 
   defines = [ "IS_MOJO_CPP_BINDINGS_IMPL" ]
 }
@@ -260,7 +270,6 @@ source_set("struct_traits") {
 }
 
 if (!is_ios) {
-  # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
   component("wtf_support") {
     sources = [
       "array_traits_web_vector.h",

@@ -7,9 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/webauthn/webauthn_hover_button.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -19,6 +20,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
@@ -27,54 +29,20 @@ namespace {
 
 constexpr int kPlaceHolderItemTag = -1;
 
-class WebauthnHoverButton : public HoverButton {
- public:
-  WebauthnHoverButton(views::ButtonListener* button_listener,
-                      std::unique_ptr<views::View> icon_view,
-                      const base::string16& title,
-                      const base::string16& subtitle,
-                      std::unique_ptr<views::View> secondary_view)
-      : HoverButton(button_listener,
-                    std::move(icon_view),
-                    title,
-                    subtitle,
-                    std::move(secondary_view),
-                    false) {}
-
-  gfx::Insets GetInsets() const override {
-    gfx::Insets ret = HoverButton::GetInsets();
-    if (vert_inset_.has_value()) {
-      ret.set_top(*vert_inset_);
-      ret.set_bottom(*vert_inset_);
-    }
-    if (left_inset_.has_value()) {
-      ret.set_left(*left_inset_);
-    }
-    ret.set_right(8);
-    return ret;
-  }
-
-  void SetInsetForNoIcon() {
-    // When there's no icon, insets within the underlying HoverButton take care
-    // of the padding on the left and we don't want to add any more.
-    left_inset_ = 0;
-  }
-
-  void SetVertInset(int vert_inset) { vert_inset_ = vert_inset; }
-
- private:
-  base::Optional<int> left_inset_;
-  base::Optional<int> vert_inset_;
+enum class ItemType {
+  kButton,
+  kPlaceholder,
+  kThrobber,
 };
 
-std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
+std::unique_ptr<WebAuthnHoverButton> CreateHoverButtonForListItem(
     int item_tag,
     const gfx::VectorIcon* vector_icon,
     base::string16 item_title,
     base::string16 item_description,
     views::ButtonListener* listener,
     bool is_two_line_item,
-    bool is_placeholder_item = false) {
+    ItemType item_type = ItemType::kButton) {
   // Derive the icon color from the text color of an enabled label.
   auto color_reference_label = std::make_unique<views::Label>(
       base::string16(), CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
@@ -88,61 +56,56 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
         gfx::CreateVectorIcon(*vector_icon, kIconSize, icon_color));
   }
 
-  std::unique_ptr<views::ImageView> chevron_image = nullptr;
-  // kTwoLineVertInset is the top and bottom padding of the HoverButton if
-  // |is_two_line_item| is true. This ensures that the spacing between the two
-  // lines isn't too large because HoverButton will otherwise spread the lines
-  // evenly over the given vertical space.
-  constexpr int kTwoLineVertInset = 6;
+  std::unique_ptr<views::View> secondary_view = nullptr;
 
-  if (!is_placeholder_item) {
-    constexpr int kChevronSize = 8;
-    chevron_image = std::make_unique<views::ImageView>();
-    chevron_image->SetImage(gfx::CreateVectorIcon(views::kSubmenuArrowIcon,
-                                                  kChevronSize, icon_color));
+  switch (item_type) {
+    case ItemType::kPlaceholder:
+      // No secondary view in this case.
+      break;
 
-    int chevron_vert_inset = 0;
-    if (is_two_line_item) {
-      // Items that are sized for two lines use the top and bottom insets of the
-      // chevron image to pad single-line items out to a uniform height of
-      // |kHeight|.
-      constexpr int kHeight = 56;
-      chevron_vert_inset =
-          (kHeight - (2 * kTwoLineVertInset) - kChevronSize) / 2;
+    case ItemType::kButton: {
+      constexpr int kChevronSize = 8;
+      auto chevron_image = std::make_unique<views::ImageView>();
+      chevron_image->SetImage(gfx::CreateVectorIcon(views::kSubmenuArrowIcon,
+                                                    kChevronSize, icon_color));
+      secondary_view.reset(chevron_image.release());
+      break;
     }
-    chevron_image->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(/*top=*/chevron_vert_inset, /*left=*/12,
-                    /*bottom=*/chevron_vert_inset, /*right=*/0)));
+
+    case ItemType::kThrobber: {
+      auto throbber = std::make_unique<views::Throbber>();
+      throbber->Start();
+      secondary_view.reset(throbber.release());
+      // A border isn't set for kThrobber items because they are assumed to
+      // always have a description.
+      DCHECK(!item_description.empty());
+      break;
+    }
   }
 
-  auto hover_button = std::make_unique<WebauthnHoverButton>(
-      listener, std::move(item_image), std::move(item_title),
-      std::move(item_description), std::move(chevron_image));
+  auto hover_button = std::make_unique<WebAuthnHoverButton>(
+      listener, std::move(item_image), item_title, item_description,
+      std::move(secondary_view), is_two_line_item);
   hover_button->set_tag(item_tag);
-  if (!vector_icon) {
-    hover_button->SetInsetForNoIcon();
-  }
-  if (is_two_line_item) {
-    hover_button->SetVertInset(kTwoLineVertInset);
-  }
 
-  // Because there is an icon on both sides, set a custom border that has only
-  // half of the normal padding horizontally.
-  constexpr int kExtraVerticalPadding = 2;
-  constexpr int kHorizontalPadding = 8;
-  gfx::Insets padding(views::LayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_CONTROL_LIST_VERTICAL) +
-                          kExtraVerticalPadding,
-                      kHorizontalPadding);
-  hover_button->SetBorder(views::CreateEmptyBorder(padding));
+  switch (item_type) {
+    case ItemType::kPlaceholder: {
+      hover_button->SetState(HoverButton::ButtonState::STATE_DISABLED);
+      const auto background_color =
+          hover_button->GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_BubbleBackground);
+      hover_button->SetTitleTextStyle(views::style::STYLE_DISABLED,
+                                      background_color);
+      break;
+    }
 
-  if (is_placeholder_item) {
-    hover_button->SetState(HoverButton::ButtonState::STATE_DISABLED);
-    const auto background_color =
-        hover_button->GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_BubbleBackground);
-    hover_button->SetTitleTextStyle(views::style::STYLE_DISABLED,
-                                    background_color);
+    case ItemType::kButton:
+      // No extra styling.
+      break;
+
+    case ItemType::kThrobber:
+      hover_button->SetState(HoverButton::ButtonState::STATE_DISABLED);
+      break;
   }
 
   return hover_button;
@@ -172,7 +135,16 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
   item_container_ = item_container.get();
   AddSeparatorAsChild(item_container_);
 
-  for (const auto item_tag : model_->GetItemTags()) {
+  for (const auto item_tag : model_->GetThrobberTags()) {
+    auto button = CreateHoverButtonForListItem(
+        item_tag, model_->GetItemIcon(item_tag), model_->GetItemText(item_tag),
+        model_->GetDescriptionText(item_tag), this, true, ItemType::kThrobber);
+    throbber_views_.push_back(button.get());
+    item_container_->AddChildView(button.release());
+    AddSeparatorAsChild(item_container_);
+  }
+
+  for (const auto item_tag : model_->GetButtonTags()) {
     AppendListItemView(model_->GetItemIcon(item_tag),
                        model_->GetItemText(item_tag),
                        model_->GetDescriptionText(item_tag), item_tag);
@@ -214,7 +186,7 @@ void HoverListView::CreateAndAppendPlaceholderItem() {
   auto placeholder_item = CreateHoverButtonForListItem(
       kPlaceHolderItemTag, model_->GetPlaceholderIcon(),
       model_->GetPlaceholderText(), base::string16(), nullptr,
-      true /* is_placeholder_item */);
+      /*is_two_line_list=*/false, ItemType::kPlaceholder);
   item_container_->AddChildView(placeholder_item.get());
   auto* separator = AddSeparatorAsChild(item_container_);
   placeholder_list_item_view_.emplace(
@@ -314,10 +286,12 @@ int HoverListView::GetPreferredViewHeight() const {
   // contain one separator and one hover button.
   const auto separator_height = views::Separator().GetPreferredSize().height();
   int size = separator_height;
-  for (auto iter = tags_to_list_item_views_.begin();
-       iter != tags_to_list_item_views_.end(); ++iter) {
+  for (const auto& iter : tags_to_list_item_views_) {
     size +=
-        iter->second.item_view->GetPreferredSize().height() + separator_height;
+        iter.second.item_view->GetPreferredSize().height() + separator_height;
+  }
+  for (const auto* iter : throbber_views_) {
+    size += iter->GetPreferredSize().height() + separator_height;
   }
   int reserved_items =
       model_->GetPreferredItemCount() - tags_to_list_item_views_.size();

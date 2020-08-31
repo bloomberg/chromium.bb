@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.net.http.SslCertificate;
 import android.net.http.SslError;
-import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConversionHelper;
@@ -171,7 +170,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> mClient.onReceivedSslError(callback, sslError));
+        AwThreadUtils.postToCurrentLooper(() -> mClient.onReceivedSslError(callback, sslError));
 
         // Record UMA on ssl error
         // Use sparse histogram in case new values are added in future releases
@@ -236,7 +235,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsAlert(url, message, handler);
         });
@@ -248,7 +247,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsConfirm(url, message, handler);
         });
@@ -261,7 +260,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsPrompt(url, message, defaultValue, handler);
         });
@@ -273,7 +272,7 @@ public class AwContentsClientBridge {
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
-        new Handler().post(() -> {
+        AwThreadUtils.postToCurrentLooper(() -> {
             JsResultHandler handler = new JsResultHandler(AwContentsClientBridge.this, id);
             mClient.handleJsBeforeUnload(url, message, handler);
         });
@@ -305,7 +304,8 @@ public class AwContentsClientBridge {
             String url, boolean isMainFrame, boolean hasUserGesture, boolean isRendererInitiated,
             String method, String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
-            @NetError int errorCode, String description, boolean safebrowsingHit) {
+            @NetError int errorCode, String description, boolean safebrowsingHit,
+            boolean shouldOmitNotificationsForSafeBrowsingHit) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
                 url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
         AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
@@ -325,7 +325,14 @@ public class AwContentsClientBridge {
             // Android WebView does not notify the embedder of these situations using
             // this error code with the WebViewClient.onReceivedError callback.
             if (safebrowsingHit) {
-                error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
+                if (shouldOmitNotificationsForSafeBrowsingHit) {
+                    // With committed interstitials we don't fire these notifications when the
+                    // interstitial shows, we instead handle them once the interstitial is
+                    // dismissed.
+                    return;
+                } else {
+                    error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
+                }
             } else {
                 error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
             }
@@ -363,10 +370,6 @@ public class AwContentsClientBridge {
 
         int webViewThreatType = AwSafeBrowsingConversionHelper.convertThreatType(threatType);
         mClient.getCallbackHelper().postOnSafeBrowsingHit(request, webViewThreatType, callback);
-
-        // Record UMA on threat type
-        RecordHistogram.recordEnumeratedHistogram("Android.WebView.onSafeBrowsingHit.ThreatType",
-                webViewThreatType, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_BOUNDARY);
     }
 
     @CalledByNative

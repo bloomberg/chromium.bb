@@ -24,6 +24,8 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/drop_data.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -106,9 +108,8 @@ class CONTENT_EXPORT WebContentsViewAura
 
   ~WebContentsViewAura() override;
 
-  void SizeChangedCommon(const gfx::Size& size);
-
-  void EndDrag(RenderWidgetHost* source_rwh, blink::WebDragOperationsMask ops);
+  void EndDrag(base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
+               blink::WebDragOperationsMask ops);
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
@@ -137,7 +138,6 @@ class CONTENT_EXPORT WebContentsViewAura
   gfx::NativeView GetContentNativeView() const override;
   gfx::NativeWindow GetTopLevelNativeWindow() const override;
   void GetContainerBounds(gfx::Rect* out) const override;
-  void SizeContents(const gfx::Size& size) override;
   void Focus() override;
   void SetInitialFocus() override;
   void StoreFocus() override;
@@ -151,7 +151,6 @@ class CONTENT_EXPORT WebContentsViewAura
   RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
-  void RenderViewCreated(RenderViewHost* host) override;
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
@@ -174,16 +173,16 @@ class CONTENT_EXPORT WebContentsViewAura
   int GetBottomControlsHeight() const override;
   bool DoBrowserControlsShrinkRendererSize() const override;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void ShowPopupMenu(RenderFrameHost* render_frame_host,
-                     const gfx::Rect& bounds,
-                     int item_height,
-                     double item_font_size,
-                     int selected_item,
-                     const std::vector<MenuItem>& items,
-                     bool right_aligned,
-                     bool allow_multiple_selection) override;
-
-  void HidePopupMenu() override;
+  void ShowPopupMenu(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
+      const gfx::Rect& bounds,
+      int item_height,
+      double item_font_size,
+      int selected_item,
+      std::vector<blink::mojom::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override;
 #endif
 
   // Overridden from aura::WindowDelegate:
@@ -231,6 +230,9 @@ class CONTENT_EXPORT WebContentsViewAura
                            std::unique_ptr<ui::OSExchangeData> data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
                            base::Optional<gfx::PointF> transformed_pt);
+
+  // Completes a drag exit operation by communicating with the renderer process.
+  void CompleteDragExit();
 
   // Called from PerformDropCallback() to finish processing the drop.
   void FinishOnPerformDropCallback(
@@ -327,8 +329,6 @@ class CONTENT_EXPORT WebContentsViewAura
 
   bool init_rwhv_with_null_parent_for_testing_;
 
-  // Used to ensure that the drag and drop callbacks bound to this
-  // object are canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);

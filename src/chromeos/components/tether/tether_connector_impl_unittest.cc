@@ -105,7 +105,7 @@ class FakeConnectTetheringOperationFactory
     : public ConnectTetheringOperation::Factory {
  public:
   FakeConnectTetheringOperationFactory() = default;
-  virtual ~FakeConnectTetheringOperationFactory() = default;
+  ~FakeConnectTetheringOperationFactory() override = default;
 
   std::vector<FakeConnectTetheringOperation*>& created_operations() {
     return created_operations_;
@@ -113,7 +113,7 @@ class FakeConnectTetheringOperationFactory
 
  protected:
   // ConnectTetheringOperation::Factory:
-  std::unique_ptr<ConnectTetheringOperation> BuildInstance(
+  std::unique_ptr<ConnectTetheringOperation> CreateInstance(
       multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
@@ -145,7 +145,7 @@ class TetherConnectorImplTest : public testing::Test {
 
     fake_operation_factory_ =
         base::WrapUnique(new FakeConnectTetheringOperationFactory());
-    ConnectTetheringOperation::Factory::SetInstanceForTesting(
+    ConnectTetheringOperation::Factory::SetFactoryForTesting(
         fake_operation_factory_.get());
 
     fake_device_sync_client_ =
@@ -249,8 +249,8 @@ class TetherConnectorImplTest : public testing::Test {
   void CallConnect(const std::string& tether_network_guid) {
     tether_connector_->ConnectToNetwork(
         tether_network_guid,
-        base::Bind(&TetherConnectorImplTest::SuccessCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&TetherConnectorImplTest::SuccessCallback,
+                       base::Unretained(this)),
         base::Bind(&TetherConnectorImplTest::ErrorCallback,
                    base::Unretained(this)));
   }

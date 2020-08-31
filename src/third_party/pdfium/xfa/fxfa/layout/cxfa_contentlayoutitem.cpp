@@ -22,10 +22,10 @@ CXFA_ContentLayoutItem::CXFA_ContentLayoutItem(
 }
 
 CXFA_ContentLayoutItem::~CXFA_ContentLayoutItem() {
+  if (m_pFFWidget)
+    m_pFFWidget->SetLayoutItem(nullptr);
+
   RemoveSelf();
-  CJX_Object* pJsObject = GetFormNode()->JSObject();
-  if (pJsObject->GetLayoutItem() == this)
-    pJsObject->SetLayoutItem(nullptr);
 }
 
 CXFA_ContentLayoutItem* CXFA_ContentLayoutItem::GetFirst() {
@@ -45,6 +45,7 @@ CXFA_ContentLayoutItem* CXFA_ContentLayoutItem::GetLast() {
 }
 
 void CXFA_ContentLayoutItem::InsertAfter(CXFA_ContentLayoutItem* pItem) {
+  CHECK_NE(this, pItem);
   pItem->RemoveSelf();
   pItem->m_pNext = m_pNext;
   pItem->m_pPrev = this;

@@ -11,7 +11,6 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -36,8 +35,8 @@ class OptimizationGuideTopHostProviderTest
     // Advance by 1-day to avoid running into null checks.
     test_clock_.Advance(base::TimeDelta::FromDays(1));
 
-    top_host_provider_ = std::make_unique<OptimizationGuideTopHostProvider>(
-        profile(), &test_clock_);
+    top_host_provider_ = base::WrapUnique(
+        new OptimizationGuideTopHostProvider(profile(), &test_clock_));
 
     service_ = SiteEngagementService::Get(profile());
     pref_service_ = profile()->GetPrefs();
@@ -46,7 +45,6 @@ class OptimizationGuideTopHostProviderTest
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
             .Build();
-    drp_test_context_->DisableWarmupURLFetch();
   }
 
   void TearDown() override {
@@ -208,10 +206,9 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   // Make sure infobar not shown.
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  PreviewsLitePageRedirectDecider* decider =
-      previews_service->previews_lite_page_redirect_decider();
-  // Initialize settings here so Lite Pages Decider checks for the Data Saver
-  // bit.
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+  // Initialize settings here so |decider| checks for the Data Saver bit.
   decider->OnSettingsInitialized();
   EXPECT_TRUE(decider->NeedsToNotifyUser());
 
@@ -416,10 +413,11 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   // The host, anyscheme.com, should still be on the blacklist.
   EXPECT_TRUE(IsHostBlacklisted(file_url.host()));
 
-  // TopHostProviderImpl prevents HTTP hosts from being returned.
+  // HTTP/HTTPS navigation should remove the host from the blacklist and then
+  // be returned.
   SimulateNavigation(http_url);
   hosts = top_host_provider()->GetTopHosts();
-  EXPECT_EQ(hosts.size(), 0u);
+  EXPECT_EQ(hosts.size(), 1u);
 
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
 }

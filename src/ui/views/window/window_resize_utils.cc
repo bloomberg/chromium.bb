@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 

@@ -7,9 +7,12 @@
 
 from __future__ import print_function
 
+import fcntl
+import multiprocessing
 import os
 import socket
 import stat
+import sys
 
 import mock
 
@@ -18,10 +21,16 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import device
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import vm
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access
@@ -31,7 +40,10 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     """Common set up method for all tests."""
     opts = vm.VM.GetParser().parse_args([])
-    self._vm = vm.VM(opts)
+    opts.enable_kvm = True
+    with mock.patch.object(multiprocessing, 'cpu_count', return_value=8):
+      self._vm = vm.VM(opts)
+    self._vm.use_sudo = False
     self._vm.board = 'amd64-generic'
     self._vm.cache_dir = self.tempdir
     self._vm.image_path = self.TempFilePath('chromiumos_qemu_image.bin')
@@ -100,6 +112,24 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         % self.TempFilePath('chromiumos_qemu_image.bin'),
     ])
     self.assertCommandContains(['-enable-kvm'])
+
+  @mock.patch('chromite.lib.device.Device.WaitForBoot')
+  def testStartRetriesSuccess(self, mock_wait):
+    """Start() should return normally if WaitForBoot fails transiently once."""
+    mock_wait.side_effect = (
+        device.DeviceError('error'),
+        True,
+    )
+    self._vm.Start()
+
+  @mock.patch('chromite.lib.device.Device.WaitForBoot')
+  def testStartRetriesFailure(self, mock_wait):
+    """Start() should raise a DeviceError if WaitForBoot fails all attempts."""
+    mock_wait.side_effect = (
+        device.DeviceError('error'),
+        device.DeviceError('error'),
+    )
+    self.assertRaises(device.DeviceError, self._vm.Start)
 
   def testStartWithVMX(self):
     """Verify vmx is enabled if the host supports nested virtualizaton."""
@@ -215,13 +245,16 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     initial_img_path = self._vm.image_path
     self._vm.Start()
 
+    # The command that creates the Qcow2 image.
     self.assertCommandContains([
         self._vm.qemu_img_path, 'create', '-f', 'qcow2', '-o',
         'backing_file=%s' % initial_img_path, os.path.join(self._vm.vm_dir,
                                                            'qcow2.img')])
-    self.assertEqual(self._vm.image_path,
-                     os.path.join(self._vm.vm_dir, 'qcow2.img'))
-    self.assertEqual(self._vm.image_format, 'qcow2')
+    # The command that launches a VM with the new Qcow2 image.
+    self.assertCommandContains([
+        '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=qcow2'
+        % os.path.join(self._vm.vm_dir, 'qcow2.img')
+    ])
 
   @mock.patch('os.path.isfile', return_value=False)
   @mock.patch('chromite.lib.osutils.Which', return_value=None)
@@ -240,6 +273,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def testRmVMDir(self):
     """Verify that the vm directory is removed after calling RmVMDir."""
     self.assertExists(self._vm.vm_dir)
+    self._vm.use_sudo = False
     self._vm.Stop()
     self.assertNotExists(self._vm.vm_dir)
 
@@ -439,3 +473,86 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     start_mock.assert_called()
     boot_mock.assert_called()
     procs_mock.assert_called()
+
+  @mock.patch('fcntl.fcntl')
+  def testSaveVMImageOnShutdownBasic(self, fcntl_mock):
+    # mock.mock_open only seems to properly mock out read, not readline, so
+    # do it ourselves.
+    def readline_impl():
+      readline_impl.count += 1
+      if readline_impl.count == 1:
+        return 'some_output\n'
+      return 'thisisafakecommand\n'
+    readline_impl.count = 0
+
+    fcntl_mock.return_value = 0
+
+    builtin = '__builtin__' if sys.version_info[0] == 2 else 'builtins'
+    m = mock.mock_open()
+    filehandle = m()
+    filehandle.readline.side_effect = readline_impl
+    with mock.patch('%s.open' % builtin, m, create=True):
+      self._vm.SaveVMImageOnShutdown('/some/dir/')
+
+    self.assertTrue(self._vm.copy_image_on_shutdown)
+    self.assertEqual(self._vm.image_copy_dir, '/some/dir/')
+
+    write_calls = [
+        mock.call('savevm chromite_lib_vm_snapshot\n'),
+        mock.call('thisisafakecommand\n'),
+    ]
+    filehandle.write.assert_has_calls(write_calls)
+    self.assertEqual(filehandle.write.call_count, 2)
+
+    fcntl_calls = [
+        mock.call(mock.ANY, fcntl.F_GETFL),
+        mock.call(mock.ANY, fcntl.F_SETFL, os.O_NONBLOCK),
+    ]
+    fcntl_mock.assert_has_calls(fcntl_calls)
+    self.assertEqual(fcntl_mock.call_count, 2)
+
+  @mock.patch('fcntl.fcntl')
+  @mock.patch('time.time')
+  @mock.patch('time.sleep')
+  def testSaveVMImageOnShutdownTimeout(self, sleep_mock, time_mock, fcntl_mock):
+    def time_impl():
+      time_impl.count += 1
+      if time_impl.count <= 2:
+        return 0
+      if time_impl.count == 3:
+        return 30
+      if time_impl.count == 4:
+        return 31
+      return 100
+    time_impl.count = 0
+    time_mock.side_effect = time_impl
+
+    fcntl_mock.return_value = 0
+
+    self._vm.copy_on_write = True
+    builtin = '__builtin__' if sys.version_info[0] == 2 else 'builtins'
+    m = mock.mock_open()
+    filehandle = m()
+    filehandle.readline.side_effect = IOError(
+        'Resource temporarily unavailable')
+    with mock.patch('%s.open' % builtin, m, create=True):
+      self._vm.SaveVMImageOnShutdown('/some/dir/')
+
+    self.assertEqual(sleep_mock.call_count, 1)
+
+    self.assertTrue(self._vm.copy_image_on_shutdown)
+    self.assertEqual(self._vm.image_copy_dir, '/some/dir/')
+
+    write_calls = [
+        mock.call('savevm chromite_lib_vm_snapshot\n'),
+        mock.call('thisisafakecommand\n'),
+    ]
+    filehandle.write.assert_has_calls(write_calls)
+    self.assertEqual(filehandle.write.call_count, 2)
+
+    fcntl_calls = [
+        mock.call(mock.ANY, fcntl.F_GETFL),
+        mock.call(mock.ANY, fcntl.F_SETFL, os.O_NONBLOCK),
+    ]
+    fcntl_mock.assert_has_calls(fcntl_calls)
+    self.assertEqual(fcntl_mock.call_count, 2)

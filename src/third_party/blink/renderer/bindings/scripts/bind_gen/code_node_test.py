@@ -4,15 +4,14 @@
 
 import unittest
 
-from .code_node import FunctionDefinitionNode
-from .code_node import LikelyExitNode
-from .code_node import LiteralNode
 from .code_node import ListNode
+from .code_node import LiteralNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
-from .code_node import UnlikelyExitNode
-from .codegen_utils import render_code_node
+from .code_node import WeakDependencyNode
+from .code_node import render_code_node
+from .codegen_accumulator import CodeGenAccumulator
 from .mako_renderer import MakoRenderer
 
 
@@ -24,6 +23,8 @@ class CodeNodeTest(unittest.TestCase):
     def assertRenderResult(self, node, expected):
         if node.renderer is None:
             node.set_renderer(MakoRenderer())
+        if node.accumulator is None:
+            node.set_accumulator(CodeGenAccumulator())
 
         def simplify(text):
             return "\n".join(
@@ -75,6 +76,14 @@ class CodeNodeTest(unittest.TestCase):
         root.remove(root[-1])
         self.assertRenderResult(root, "2,3,5")
 
+    def test_list_node_head_and_tail(self):
+        self.assertRenderResult(ListNode(), "")
+        self.assertRenderResult(ListNode(head="head"), "")
+        self.assertRenderResult(ListNode(tail="tail"), "")
+        self.assertRenderResult(
+            ListNode([TextNode("-content-")], head="head", tail="tail"),
+            "head-content-tail")
+
     def test_nested_sequence(self):
         """Tests nested ListNodes."""
         root = ListNode(separator=",")
@@ -96,7 +105,7 @@ class CodeNodeTest(unittest.TestCase):
         Tests that use of SymbolNode inserts necessary SymbolDefinitionNode
         appropriately.
         """
-        root = SymbolScopeNode(separator_last="\n")
+        root = SymbolScopeNode(tail="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = ${var2} + ${var3};"),
@@ -118,162 +127,30 @@ int var1 = var2 + var3;
 (void)var1;
 """)
 
-    def test_symbol_definition_with_exit_branches(self):
-        root = SymbolScopeNode(separator_last="\n")
+    def test_weak_dependency_node(self):
+        root = SymbolScopeNode(tail="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = 1;"),
             SymbolNode("var2", "int ${var2} = 2;"),
             SymbolNode("var3", "int ${var3} = 3;"),
-            SymbolNode("var4", "int ${var4} = 4;"),
-            SymbolNode("var5", "int ${var5} = 5;"),
-            SymbolNode("var6", "int ${var6} = 6;"),
         ])
 
         root.extend([
-            TextNode("${var1};"),
-            UnlikelyExitNode(
-                cond=TextNode("${var2}"),
-                body=SymbolScopeNode([
-                    TextNode("${var3};"),
-                    TextNode("return ${var4};"),
-                ])),
-            LikelyExitNode(
-                cond=TextNode("${var5}"),
-                body=SymbolScopeNode([
-                    TextNode("return ${var6};"),
-                ])),
-            TextNode("${var3};"),
+            WeakDependencyNode(dep_syms=["var1", "var2"]),
+            TextNode("f();"),
+            TextNode("(void)${var3};"),
+            TextNode("(void)${var1};"),
         ])
 
         self.assertRenderResult(
             root, """\
 int var1 = 1;
-var1;
-int var2 = 2;
+
+f();
 int var3 = 3;
-if (var2) {
-  var3;
-  int var4 = 4;
-  return var4;
-}
-int var5 = 5;
-if (var5) {
-  int var6 = 6;
-  return var6;
-}
-var3;
-""")
-
-    def test_symbol_definition_with_nested_exit_branches(self):
-        root = SymbolScopeNode(separator_last="\n")
-
-        root.register_code_symbols([
-            SymbolNode("var1", "int ${var1} = 1;"),
-            SymbolNode("var2", "int ${var2} = 2;"),
-            SymbolNode("var3", "int ${var3} = 3;"),
-            SymbolNode("var4", "int ${var4} = 4;"),
-            SymbolNode("var5", "int ${var5} = 5;"),
-            SymbolNode("var6", "int ${var6} = 6;"),
-        ])
-
-        root.extend([
-            UnlikelyExitNode(
-                cond=LiteralNode("false"),
-                body=SymbolScopeNode([
-                    UnlikelyExitNode(
-                        cond=LiteralNode("false"),
-                        body=SymbolScopeNode([
-                            TextNode("return ${var1};"),
-                        ])),
-                    LiteralNode("return;"),
-                ])),
-            LikelyExitNode(
-                cond=LiteralNode("true"),
-                body=SymbolScopeNode([
-                    LikelyExitNode(
-                        cond=LiteralNode("true"),
-                        body=SymbolScopeNode([
-                            TextNode("return ${var2};"),
-                        ])),
-                    LiteralNode("return;"),
-                ])),
-        ])
-
-        self.assertRenderResult(
-            root, """\
-if (false) {
-  if (false) {
-    int var1 = 1;
-    return var1;
-  }
-  return;
-}
-if (true) {
-  if (true) {
-    int var2 = 2;
-    return var2;
-  }
-  return;
-}
-""")
-
-    def test_function_definition_minimum(self):
-        root = SymbolScopeNode(separator_last="\n")
-        root.append(
-            FunctionDefinitionNode(
-                name=LiteralNode("blink::bindings::func"),
-                arg_decls=[],
-                return_type=LiteralNode("void")))
-
-        self.assertRenderResult(root, """\
-
-void blink::bindings::func() {
-
-}
-""")
-
-    def test_function_definition_full(self):
-        root = SymbolScopeNode(separator_last="\n")
-
-        local_vars = [
-            SymbolNode("var1", "int ${var1} = 1;"),
-            SymbolNode("var2", "int ${var2} = 2;"),
-        ]
-
-        func_body = SymbolScopeNode([
-            UnlikelyExitNode(
-                cond=TextNode("${var1}"),
-                body=SymbolScopeNode([TextNode("return ${var1};")])),
-            TextNode("return ${var2};"),
-        ])
-
-        root.append(
-            FunctionDefinitionNode(
-                name=LiteralNode("blink::bindings::func"),
-                arg_decls=[LiteralNode("int arg1"),
-                           LiteralNode("int arg2")],
-                return_type=LiteralNode("void"),
-                member_initializer_list=[
-                    LiteralNode("member1(0)"),
-                    LiteralNode("member2(\"str\")")
-                ],
-                local_vars=local_vars,
-                body=func_body,
-                comment=LiteralNode("// comment1\n// comment2")))
-
-        self.assertRenderResult(
-            root, """\
-// comment1
-// comment2
-void blink::bindings::func(int arg1, int arg2) : member1(0), member2("str") {
-  int var1 = 1;
-  if (var1) {
-    return var1;
-  }
-  int var2 = 2;
-  return var2;
-}
+(void)var3;
+(void)var1;
 """)
 
     def test_template_error_handling(self):
@@ -288,7 +165,8 @@ void blink::bindings::func(int arg1, int arg2) : member1(0), member2("str") {
             ]))
 
         with self.assertRaises(NameError):
-            root.render()
+            renderer.reset()
+            root.render(renderer)
 
         callers_on_error = list(renderer.callers_on_error)
         self.assertEqual(len(callers_on_error), 3)

@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider.internal;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChange;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChange.ChildChanges;
@@ -35,7 +36,7 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     @GuardedBy("mLock")
     private final List<UpdatableModelChild> mChildList;
 
-    /*@Nullable*/
+    @Nullable
     @GuardedBy("mLock")
     private CursorIterator mIterator;
 
@@ -114,7 +115,7 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     }
 
     @Override
-    /*@Nullable*/
+    @Nullable
     public ModelChild getNextItem() {
         // The TimeoutSessionImpl may use the cursor to access the model structure
         ModelChild nextChild;

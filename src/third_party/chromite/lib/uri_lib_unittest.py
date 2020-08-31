@@ -7,8 +7,13 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import cros_test_lib
 from chromite.lib import uri_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ShortenUriTests(cros_test_lib.TestCase):
@@ -167,11 +172,4 @@ class ConstructUrlTests(cros_test_lib.TestCase):
     actual = uri_lib.ConstructGoldenEyeBuildDetailsUri(123)
     expected = ('http://go/goldeneye/'
                 'chromeos/healthmonitoring/buildDetails?id=123')
-    self.assertEqual(actual, expected)
-
-  def testConstructAnnotatorUri(self):
-    """Test generating GoldenEye suite details URIs with suite ID."""
-    actual = uri_lib.ConstructAnnotatorUri(123)
-    expected = ('https://chromiumos-build-annotator.googleplex.com/'
-                'build_annotations/edit_annotations/master-paladin/123/?')
     self.assertEqual(actual, expected)

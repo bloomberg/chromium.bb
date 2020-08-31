@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # Will fail if any generated config files are out of date.
-config/chromeos_config_unittest ConfigDumpTest.testDump
+exec ./run_pytest --quickstart --no-chroot \
+  config/chromeos_config_unittest.py::ConfigDumpTest::testDump

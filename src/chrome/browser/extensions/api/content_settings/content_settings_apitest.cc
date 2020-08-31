@@ -20,18 +20,19 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/permissions/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -255,13 +256,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_Standard DISABLED_Standard
-#else
-#define MAYBE_Standard Standard
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, MAYBE_Standard) {
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, Standard) {
   CheckContentSettingsDefault();
 
   const char kExtensionPath[] = "content_settings/standard";
@@ -285,6 +280,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, MAYBE_Standard) {
   CheckContentSettingsDefault();
 }
 
+// TODO(crbug.com/1073588): Make this test work in branded builds.
+// Pass the plugins to look for into the JS to make this test less
+// brittle or just have the JS side look for the additional plugins.
+//
 // Flaky on the trybots. See http://crbug.com/96725.
 IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
                        DISABLED_GetResourceIdentifiers) {
@@ -335,8 +334,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
 
   // Run extension, set all permissions to allow, and check if they are changed.
   EXPECT_TRUE(RunExtensionSubtest("content_settings/incognitoisolation",
-                                  "test.html?allow",
-                                  kFlagUseIncognito | kFlagEnableIncognito))
+                                  "test.html?allow", kFlagEnableIncognito,
+                                  kFlagUseIncognito))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.
@@ -345,8 +344,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
 
   // Run extension, set all permissions to block, and check if they are changed.
   EXPECT_TRUE(RunExtensionSubtest("content_settings/incognitoisolation",
-                                  "test.html?block",
-                                  kFlagUseIncognito | kFlagEnableIncognito))
+                                  "test.html?block", kFlagEnableIncognito,
+                                  kFlagUseIncognito))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.
@@ -395,7 +394,8 @@ class ExtensionContentSettingsApiTestWithPermissionDelegationDisabled
     : public ExtensionContentSettingsApiTest {
  public:
   ExtensionContentSettingsApiTestWithPermissionDelegationDisabled() {
-    feature_list_.InitAndDisableFeature(features::kPermissionDelegation);
+    feature_list_.InitAndDisableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
  private:
@@ -406,7 +406,8 @@ class ExtensionContentSettingsApiTestWithPermissionDelegationEnabled
     : public ExtensionContentSettingsApiTest {
  public:
   ExtensionContentSettingsApiTestWithPermissionDelegationEnabled() {
-    feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
+    feature_list_.InitAndEnableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
  private:

@@ -12,19 +12,20 @@
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
+#include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/graphics/cast_window_tree_host_aura.h"
 #include "chromecast/graphics/gestures/cast_system_gesture_event_handler.h"
 #include "chromecast/graphics/gestures/side_swipe_detector.h"
 #include "chromecast/graphics/rounded_window_corners.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/display.h"
+#include "ui/display/display_transform.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -37,10 +38,23 @@
 namespace chromecast {
 namespace {
 
+// Returns true if we have something that needs explicit corner decorations in
+// the app list. This includes unmanaged apps, boot overlay, etc. Anything which
+// is not a managed app or the corners overlay itself.
+bool WindowListNeedsCorners(
+    const std::vector<CastWindowManager::WindowId>& windows) {
+  for (CastWindowManager::WindowId window_id : windows) {
+    if (window_id != CastWindowManager::APP &&
+        window_id != CastWindowManager::CORNERS_OVERLAY)
+      return true;
+  }
+  return false;
+}
+
 gfx::Transform GetPrimaryDisplayRotationTransform() {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  return display::Display::GetRotationTransform(display.rotation(),
-                                                gfx::SizeF(display.size()));
+  return display::CreateRotationTransform(display.rotation(),
+                                          gfx::SizeF(display.size()));
 }
 
 gfx::Rect GetPrimaryDisplayHostBounds() {
@@ -212,12 +226,10 @@ void CastWindowManagerAura::Setup() {
   aura::client::SetWindowParentingClient(tree_window, this);
   capture_client_.reset(new aura::client::DefaultCaptureClient(tree_window));
 
-  screen_position_client_ = std::make_unique<wm::DefaultScreenPositionClient>();
-
   // TODO(seantopping): Is |root_window| different from |tree_window|?
   aura::Window* root_window = tree_window->GetRootWindow();
-  aura::client::SetScreenPositionClient(root_window,
-                                        screen_position_client_.get());
+  screen_position_client_ =
+      std::make_unique<wm::DefaultScreenPositionClient>(root_window);
 
   window_tree_host_->Show();
 
@@ -247,8 +259,24 @@ void CastWindowManagerAura::Setup() {
 #endif
 }
 
+bool CastWindowManagerAura::HasRoundedWindowCorners() const {
+  return rounded_window_corners_.get() != nullptr &&
+         rounded_window_corners_->IsEnabled();
+}
+
 void CastWindowManagerAura::OnWindowOrderChanged(
     std::vector<WindowId> window_order) {
+  // Manage window corner state for unmanaged applications that do not provide
+  // their own.  Note: we do not run this logic if rounded_window_corners_
+  // isn't initialized yet, as it means Setup is running, and will get called
+  // recursively as the corners are added as a window.
+  if (rounded_window_corners_) {
+    bool needs_corners =
+        WindowListNeedsCorners(window_order) || needs_rounded_corners_;
+
+    rounded_window_corners_->SetEnabled(needs_corners);
+  }
+
   window_order_.swap(window_order);
   for (auto& observer : observer_list_) {
     observer.WindowOrderChanged();
@@ -269,6 +297,7 @@ void CastWindowManagerAura::TearDown() {
   capture_client_.reset();
   aura::client::SetWindowParentingClient(window_tree_host_->window(), nullptr);
   wm::SetActivationClient(window_tree_host_->window(), nullptr);
+  screen_position_client_.reset();
   aura::client::SetFocusClient(window_tree_host_->window(), nullptr);
   focus_client_.reset();
   system_gesture_event_handler_.reset();
@@ -355,7 +384,11 @@ void CastWindowManagerAura::RemoveTouchActivityObserver(
 }
 
 void CastWindowManagerAura::SetEnableRoundedCorners(bool enable) {
-  rounded_window_corners_->SetEnabled(enable);
+  DCHECK(rounded_window_corners_);
+  needs_rounded_corners_ = enable;
+  bool enable_corners =
+      needs_rounded_corners_ || WindowListNeedsCorners(window_order_);
+  rounded_window_corners_->SetEnabled(enable_corners);
 }
 
 void CastWindowManagerAura::NotifyColorInversionEnabled(bool enabled) {

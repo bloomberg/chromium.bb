@@ -98,7 +98,8 @@ media::VideoEncodeAccelerator::SupportedProfiles GetVEASupportedProfiles() {
     DVLOG(2) << "Couldn't initialize GpuVideoAcceleratorFactories";
     return media::VideoEncodeAccelerator::SupportedProfiles();
   }
-  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
+  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles().value_or(
+      media::VideoEncodeAccelerator::SupportedProfiles());
 }
 
 VideoTrackRecorderImpl::CodecEnumerator* GetCodecEnumerator() {
@@ -108,6 +109,10 @@ VideoTrackRecorderImpl::CodecEnumerator* GetCodecEnumerator() {
 }
 
 }  // anonymous namespace
+
+VideoTrackRecorder::VideoTrackRecorder(
+    base::OnceClosure on_track_source_ended_cb)
+    : TrackRecorder(std::move(on_track_source_ended_cb)) {}
 
 VideoTrackRecorderImpl::CodecEnumerator::CodecEnumerator(
     const media::VideoEncodeAccelerator::SupportedProfiles&
@@ -194,18 +199,18 @@ VideoTrackRecorderImpl::Counter::GetWeakPtr() {
 }
 
 VideoTrackRecorderImpl::Encoder::Encoder(
-    const OnEncodedVideoCB& on_encoded_video_callback,
+    const OnEncodedVideoCB& on_encoded_video_cb,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner)
     : main_task_runner_(std::move(main_task_runner)),
       encoding_task_runner_(encoding_task_runner),
       paused_(false),
-      on_encoded_video_callback_(on_encoded_video_callback),
+      on_encoded_video_cb_(on_encoded_video_cb),
       bits_per_second_(bits_per_second),
       num_frames_in_encode_(
           std::make_unique<VideoTrackRecorderImpl::Counter>()) {
-  DCHECK(!on_encoded_video_callback_.is_null());
+  DCHECK(!on_encoded_video_cb_.is_null());
   if (encoding_task_runner_)
     return;
 
@@ -236,6 +241,7 @@ void VideoTrackRecorderImpl::Encoder::StartFrameEncode(
 
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_ARGB ||
+        video_frame->format() == media::PIXEL_FORMAT_ABGR ||
         video_frame->format() == media::PIXEL_FORMAT_I420A ||
         video_frame->format() == media::PIXEL_FORMAT_NV12 ||
         video_frame->format() == media::PIXEL_FORMAT_XRGB)) {
@@ -308,6 +314,7 @@ void VideoTrackRecorderImpl::Encoder::RetrieveFrameOnMainThread(
     // TODO(crbug/1023390): Add browsertest for these.
     DCHECK(video_frame->HasTextures());
     DCHECK(video_frame->format() == media::PIXEL_FORMAT_ARGB ||
+           video_frame->format() == media::PIXEL_FORMAT_ABGR ||
            video_frame->format() == media::PIXEL_FORMAT_XRGB);
 
     const gfx::Size& old_visible_size = video_frame->visible_rect().size();
@@ -348,9 +355,11 @@ void VideoTrackRecorderImpl::Encoder::RetrieveFrameOnMainThread(
       return;
     }
 
-    const uint32_t source_pixel_format =
-        (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
-                                                     : libyuv::FOURCC_ARGB;
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+    const uint32_t source_pixel_format = libyuv::FOURCC_ABGR;
+#else
+    const uint32_t source_pixel_format = libyuv::FOURCC_ARGB;
+#endif
     if (libyuv::ConvertToI420(static_cast<uint8_t*>(pixmap.writable_addr()),
                               pixmap.computeByteSize(),
                               frame->visible_data(media::VideoFrame::kYPlane),
@@ -477,26 +486,31 @@ bool VideoTrackRecorderImpl::CanUseAcceleratedEncoder(CodecId codec,
 VideoTrackRecorderImpl::VideoTrackRecorderImpl(
     CodecId codec,
     MediaStreamComponent* track,
-    const OnEncodedVideoCB& on_encoded_video_callback,
+    OnEncodedVideoCB on_encoded_video_cb,
+    base::OnceClosure on_track_source_ended_cb,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : track_(track),
+    : VideoTrackRecorder(std::move(on_track_source_ended_cb)),
+      track_(track),
       should_pause_encoder_on_initialization_(false),
       main_task_runner_(std::move(main_task_runner)) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(track_);
   DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);
 
-  initialize_encoder_callback_ = WTF::BindRepeating(
-      &VideoTrackRecorderImpl::InitializeEncoder, WrapWeakPersistent(this),
-      codec, on_encoded_video_callback, bits_per_second);
+  initialize_encoder_cb_ = WTF::BindRepeating(
+      &VideoTrackRecorderImpl::InitializeEncoder, weak_factory_.GetWeakPtr(),
+      codec, std::move(on_encoded_video_cb), bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
   ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
-      initialize_encoder_callback_, true /* allow_vea_encoder */)));
+      initialize_encoder_cb_, true /* allow_vea_encoder */)));
 }
 
-VideoTrackRecorderImpl::~VideoTrackRecorderImpl() = default;
+VideoTrackRecorderImpl::~VideoTrackRecorderImpl() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DisconnectFromTrack();
+}
 
 void VideoTrackRecorderImpl::Pause() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -520,9 +534,8 @@ void VideoTrackRecorderImpl::OnVideoFrameForTesting(
   DVLOG(3) << __func__;
 
   if (!encoder_) {
-    DCHECK(!initialize_encoder_callback_.is_null());
-    initialize_encoder_callback_.Run(true /* allow_vea_encoder */, frame,
-                                     timestamp);
+    DCHECK(!initialize_encoder_cb_.is_null());
+    initialize_encoder_cb_.Run(true /* allow_vea_encoder */, frame, timestamp);
   }
 
   encoder_->StartFrameEncode(std::move(frame), timestamp);
@@ -530,7 +543,7 @@ void VideoTrackRecorderImpl::OnVideoFrameForTesting(
 
 void VideoTrackRecorderImpl::InitializeEncoder(
     CodecId codec,
-    const OnEncodedVideoCB& on_encoded_video_callback,
+    const OnEncodedVideoCB& on_encoded_video_cb,
     int32_t bits_per_second,
     bool allow_vea_encoder,
     scoped_refptr<media::VideoFrame> frame,
@@ -554,9 +567,9 @@ void VideoTrackRecorderImpl::InitializeEncoder(
     bool use_import_mode =
         frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER;
     encoder_ = VEAEncoder::Create(
-        on_encoded_video_callback,
+        on_encoded_video_cb,
         media::BindToCurrentLoop(WTF::BindRepeating(
-            &VideoTrackRecorderImpl::OnError, WrapWeakPersistent(this))),
+            &VideoTrackRecorderImpl::OnError, weak_factory_.GetWeakPtr())),
         bits_per_second, vea_profile, input_size, use_import_mode,
         main_task_runner_);
   } else {
@@ -565,13 +578,13 @@ void VideoTrackRecorderImpl::InitializeEncoder(
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::H264:
         encoder_ = base::MakeRefCounted<H264Encoder>(
-            on_encoded_video_callback, bits_per_second, main_task_runner_);
+            on_encoded_video_cb, bits_per_second, main_task_runner_);
         break;
 #endif
       case CodecId::VP8:
       case CodecId::VP9:
         encoder_ = base::MakeRefCounted<VpxEncoder>(
-            codec == CodecId::VP9, on_encoded_video_callback, bits_per_second,
+            codec == CodecId::VP9, on_encoded_video_cb, bits_per_second,
             main_task_runner_);
         break;
       default:
@@ -595,8 +608,8 @@ void VideoTrackRecorderImpl::OnError() {
   // thread.
   DisconnectFromTrack();
   encoder_ = nullptr;
-  ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
-      initialize_encoder_callback_, false /*allow_vea_encoder*/)));
+  ConnectToTrack(media::BindToCurrentLoop(
+      WTF::BindRepeating(initialize_encoder_cb_, false /*allow_vea_encoder*/)));
 }
 
 void VideoTrackRecorderImpl::ConnectToTrack(
@@ -612,38 +625,30 @@ void VideoTrackRecorderImpl::DisconnectFromTrack() {
   video_track->RemoveSink(this);
 }
 
-void VideoTrackRecorderImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
-}
-
-void VideoTrackRecorderImpl::Prefinalize() {
-  // TODO(crbug.com/704136) : Remove this method when moving
-  // MediaStreamVideoTrack to Oilpan's heap.
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  DisconnectFromTrack();
-  track_ = nullptr;
-}
-
 VideoTrackRecorderPassthrough::VideoTrackRecorderPassthrough(
     MediaStreamComponent* track,
-    OnEncodedVideoCB on_encoded_video_callback,
+    OnEncodedVideoCB on_encoded_video_cb,
+    base::OnceClosure on_track_source_ended_cb,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : track_(track),
+    : VideoTrackRecorder(std::move(on_track_source_ended_cb)),
+      track_(track),
       state_(KeyFrameState::kWaitingForKeyFrame),
       main_task_runner_(main_task_runner),
-      callback_(std::move(on_encoded_video_callback)) {
+      callback_(std::move(on_encoded_video_cb)) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  auto* video_track =
-      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
-  DCHECK(video_track);
-
   // HandleEncodedVideoFrame() will be called on Render Main thread.
   // Note: Adding an encoded sink internally generates a new key frame
   // request, no need to RequestRefreshFrame().
-  video_track->AddEncodedSink(
-      this, media::BindToCurrentLoop(WTF::BindRepeating(
-                &VideoTrackRecorderPassthrough::HandleEncodedVideoFrame,
-                WrapWeakPersistent(this))));
+  ConnectEncodedToTrack(
+      WebMediaStreamTrack(track_),
+      media::BindToCurrentLoop(WTF::BindRepeating(
+          &VideoTrackRecorderPassthrough::HandleEncodedVideoFrame,
+          weak_factory_.GetWeakPtr())));
+}
+
+VideoTrackRecorderPassthrough::~VideoTrackRecorderPassthrough() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DisconnectFromTrack();
 }
 
 void VideoTrackRecorderPassthrough::Pause() {
@@ -663,10 +668,6 @@ void VideoTrackRecorderPassthrough::OnEncodedVideoFrameForTesting(
   HandleEncodedVideoFrame(frame, capture_time);
 }
 
-void VideoTrackRecorderPassthrough::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
-}
-
 void VideoTrackRecorderPassthrough::RequestRefreshFrame() {
   auto* video_track =
       static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
@@ -678,9 +679,7 @@ void VideoTrackRecorderPassthrough::DisconnectFromTrack() {
   // TODO(crbug.com/704136) : Remove this method when moving
   // MediaStreamVideoTrack to Oilpan's heap.
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  auto* video_track =
-      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
-  video_track->RemoveEncodedSink(this);
+  DisconnectEncodedFromTrack();
 }
 
 void VideoTrackRecorderPassthrough::HandleEncodedVideoFrame(
@@ -697,12 +696,16 @@ void VideoTrackRecorderPassthrough::HandleEncodedVideoFrame(
   }
   state_ = KeyFrameState::kKeyFrameReceivedOK;
 
+  base::Optional<gfx::ColorSpace> color_space;
+  if (encoded_frame->ColorSpace())
+    color_space = encoded_frame->ColorSpace()->ToGfxColorSpace();
   auto span = encoded_frame->Data();
   const char* span_begin = reinterpret_cast<const char*>(span.data());
   std::string data(span_begin, span_begin + span.size());
   media::WebmMuxer::VideoParameters params(encoded_frame->Resolution(),
                                            /*framerate=*/0.0f,
-                                           /*codec=*/encoded_frame->Codec());
+                                           /*codec=*/encoded_frame->Codec(),
+                                           color_space);
   callback_.Run(params, std::move(data), {}, estimated_capture_time,
                 encoded_frame->IsKeyFrame());
 }

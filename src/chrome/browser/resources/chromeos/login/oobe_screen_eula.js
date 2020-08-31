@@ -7,15 +7,45 @@
  */
 
 login.createScreen('EulaScreen', 'eula', function() {
-  var CLEAR_ANCHORS_CONTENT_SCRIPT = {
+  const CLEAR_ANCHORS_CONTENT_SCRIPT = {
     code: 'A=Array.from(document.getElementsByTagName("a"));' +
         'for(var i = 0; i < A.length; ++i) {' +
         '  const el = A[i];' +
         '  let e = document.createElement("span");' +
-        '  e.textContent=el.textContent;' +
+        '  if (el.textContent.trim().length > 0) {' +
+        '    e.textContent=el.textContent + "(" + el.href + ")";' +
+        '  }' +
         '  el.parentNode.replaceChild(e,el);' +
         '}'
   };
+
+  const EULA_FONTS_CSS = {
+    code: `body * {
+          font-family: Roboto, sans-serif !important;
+          font-size: 13px !important;
+          line-height: 20px !important;}
+         body h2 {
+           font-size: 15px !important;
+           line-height: 22px !important;}`
+  };
+
+  /**
+   * Timeout to load online Eula.
+   * @type {number}
+   */
+  const ONLINE_EULA_LOAD_TIMEOUT_IN_MS = 7000;
+
+  /**
+   * Timeout between consequent loads of online Eula.
+   * @type {number}
+   */
+  const ONLINE_EULA_RETRY_BACKOFF_TIMEOUT_IN_MS = 1000;
+
+  /**
+   * URL to use when online page is not available.
+   * @type {string}
+   */
+  const TERMS_URL = 'chrome://terms';
 
   // EulaLoader assists on the process of loading an URL into a webview.
   // It listens for events from the webRequest API for the given URL and loads
@@ -26,12 +56,12 @@ login.createScreen('EulaScreen', 'eula', function() {
   // the current requests fail. This prevents webview-loadAbort events from
   // being fired and unnecessary reloads.
   class EulaLoader {
-    constructor(webview, timeout, load_offline_callback) {
+    constructor(webview, timeout, load_offline_callback, clear_anchors) {
       assert(webview.tagName === 'WEBVIEW');
 
       // Do not create multiple loaders.
-      if (EulaLoader.instance_) {
-        return EulaLoader.instance_;
+      if (EulaLoader.instances[webview.id]) {
+        return EulaLoader.instances[webview.id];
       }
 
       this.webview_ = webview;
@@ -40,16 +70,22 @@ login.createScreen('EulaScreen', 'eula', function() {
       this.reloadRequested_ = false;
       this.loadOfflineCallback_ = load_offline_callback;
       this.loadTimer_ = 0;
+      this.backOffTimer_ = 0;
 
-      // Add the CLEAR_ANCHORS_CONTENT_SCRIPT that will clear <a><\a> (anchors)
-      // in order to prevent any navigation in the webview itself.
-      webview.addContentScripts([{
-        name: 'clearAnchors',
-        matches: ['<all_urls>'],
-        js: CLEAR_ANCHORS_CONTENT_SCRIPT,
-      }]);
+      if (clear_anchors) {
+        // Add the CLEAR_ANCHORS_CONTENT_SCRIPT that will clear <a><\a>
+        // (anchors) in order to prevent any navigation in the webview itself.
+        webview.addContentScripts([{
+          name: 'clearAnchors',
+          matches: ['<all_urls>'],
+          js: CLEAR_ANCHORS_CONTENT_SCRIPT,
+        }]);
+        webview.addEventListener('contentload', () => {
+          webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+        });
+      }
       webview.addEventListener('contentload', () => {
-        webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+        webview.insertCSS(EULA_FONTS_CSS);
       });
 
       // Monitor webRequests API events
@@ -61,13 +97,14 @@ login.createScreen('EulaScreen', 'eula', function() {
           {urls: ['<all_urls>'], types: ['main_frame']});
 
       // The only instance of the EulaLoader.
-      EulaLoader.instance_ = this;
+      EulaLoader.instances[webview.id] = this;
     }
 
     // Clears the internal state of the EULA loader. Stops the timeout timer
     // and prevents events from being handled.
     clearInternalState() {
       window.clearTimeout(this.loadTimer_);
+      window.clearTimeout(this.backOffTimer_);
       this.isPerformingRequests_ = false;
       this.reloadRequested_ = false;
     }
@@ -101,7 +138,10 @@ login.createScreen('EulaScreen', 'eula', function() {
       if (!this.isPerformingRequests_)
         return;
 
-      this.reloadIfRequestedOrLoadOffline();
+      if (this.reloadRequested_)
+        this.loadWithFallbackTimer();
+      else
+        this.tryLoadOffline();
     }
 
     // Loads the offline version of the EULA.
@@ -121,7 +161,10 @@ login.createScreen('EulaScreen', 'eula', function() {
       if (!this.shouldProcessEvent(details))
         return;
 
-      this.reloadIfRequestedOrLoadOffline();
+      if (this.reloadRequested_)
+        this.loadWithFallbackTimer();
+      else
+        this.loadAfterBackoff();
     }
 
     // webRequest API Event Handler for 'onCompleted'
@@ -132,7 +175,10 @@ login.createScreen('EulaScreen', 'eula', function() {
       // Http errors such as 4xx, 5xx hit here instead of 'onErrorOccurred'.
       if (details.statusCode != 200) {
         // Not a successful request. Perform a reload if requested.
-        this.reloadIfRequestedOrLoadOffline();
+        if (this.reloadRequested_)
+          this.loadWithFallbackTimer();
+        else
+          this.loadAfterBackoff();
       } else {
         // Success!
         this.clearInternalState();
@@ -141,34 +187,35 @@ login.createScreen('EulaScreen', 'eula', function() {
 
     // Loads the URL into the webview and starts a timer.
     loadWithFallbackTimer() {
-      // A request is being made
-      this.isPerformingRequests_ = true;
-
       // Clear previous timer and perform a load.
       window.clearTimeout(this.loadTimer_);
       this.loadTimer_ =
           window.setTimeout(this.onTimeoutError_.bind(this), this.timeout_);
+      this.tryLoadOnline();
+    }
 
+    loadAfterBackoff() {
+      window.clearTimeout(this.backOffTimer_);
+      this.backOffTimer_ = window.setTimeout(
+          this.tryLoadOnline.bind(this),
+          ONLINE_EULA_RETRY_BACKOFF_TIMEOUT_IN_MS);
+    }
+
+    tryLoadOnline() {
+      this.reloadRequested_ = false;
+      // A request is being made
+      this.isPerformingRequests_ = true;
       if (this.webview_.src === this.url_)
         this.webview_.reload();
       else
         this.webview_.src = this.url_;
     }
-
-    // Tries to perform a reload if it was requested, otherwise load offline.
-    reloadIfRequestedOrLoadOffline() {
-      if (this.reloadRequested_) {
-        this.reloadRequested_ = false;
-        this.loadWithFallbackTimer();
-      } else {
-        this.tryLoadOffline();
-      }
-    }
   }
+  EulaLoader.instances = {};
 
   return {
     /** @override */
-    decorate: function() {
+    decorate() {
       $('oobe-eula-md').screen = this;
     },
 
@@ -176,14 +223,14 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Called from $('oobe-eula-md') onUsageChanged handler.
      * @param {boolean} value $('usage-stats').checked value.
      */
-    onUsageStatsClicked_: function(value) {
+    onUsageStatsClicked_(value) {
       chrome.send('EulaScreen.usageStatsEnabled', [value]);
     },
 
     /**
      * Event handler that is invoked when 'chrome://terms' is loaded.
      */
-    onFrameLoad: function() {
+    onFrameLoad() {
       $('eula').classList.remove('eula-loading');
     },
 
@@ -191,7 +238,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
-    onBeforeShow: function() {
+    onBeforeShow() {
       $('eula').classList.add('eula-loading');
       this.updateLocalizedContent();
     },
@@ -203,12 +250,12 @@ login.createScreen('EulaScreen', 'eula', function() {
       return $('oobe-eula-md');
     },
 
-    enableKeyboardFlow: function() {},
+    enableKeyboardFlow() {},
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       // Reload the terms contents.
       $('oobe-eula-md').updateLocalizedContent();
     },
@@ -217,7 +264,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Sets TPM password.
      * @param {text} password TPM password to be shown.
      */
-    setTpmPassword: function(password) {
+    setTpmPassword(password) {
       $('oobe-eula-md').password = password;
     },
 
@@ -230,44 +277,30 @@ login.createScreen('EulaScreen', 'eula', function() {
      * privileged webui bindings.
      *
      * @param {!WebView} webview Webview element to host the terms.
+     * @param {!string} onlineEulaUrl
+     * @param {boolean} clear_anchors if true the script will clear anchors
+     *                                from the loaded page.
      */
-    loadEulaToWebview_: function(webview) {
+    loadEulaToWebview_(webview, onlineEulaUrl, clear_anchors) {
       assert(webview.tagName === 'WEBVIEW');
-
-      /**
-       * Timeout to load online Eula.
-       * @type {number}
-       */
-      var ONLINE_EULA_LOAD_TIMEOUT_IN_MS = 7000;
-
-      /**
-       * URL to use when online page is not available.
-       * @type {string}
-       */
-      var TERMS_URL = 'chrome://terms';
 
       var loadBundledEula = function() {
         WebViewHelper.loadUrlContentToWebView(
             webview, TERMS_URL, WebViewHelper.ContentType.HTML);
       };
 
-      var onlineEulaUrl = loadTimeData.getString('eulaOnlineUrl');
-      if (!onlineEulaUrl) {
-        loadBundledEula();
-        return;
-      }
-
       // Load online Eula with a timeout to fallback to the offline version.
       // This won't construct multiple EulaLoaders. Single instance.
       var eulaLoader = new EulaLoader(
-          webview, ONLINE_EULA_LOAD_TIMEOUT_IN_MS, loadBundledEula);
+          webview, ONLINE_EULA_LOAD_TIMEOUT_IN_MS, loadBundledEula,
+          clear_anchors);
       eulaLoader.setUrl(onlineEulaUrl);
     },
 
     /**
      * Called when focus is returned.
      */
-    onFocusReturned: function() {
+    onFocusReturned() {
       $('oobe-eula-md').focus();
     },
   };

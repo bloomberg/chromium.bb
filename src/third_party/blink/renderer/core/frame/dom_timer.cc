@@ -61,7 +61,7 @@ void DOMTimer::RemoveByID(ExecutionContext* context, int timeout_id) {
                        inspector_timer_remove_event::Data(context, timeout_id));
   // Eagerly unregister as ExecutionContext observer.
   if (timer)
-    timer->ClearContext();
+    timer->SetExecutionContext(nullptr);
 }
 
 DOMTimer::DOMTimer(ExecutionContext* context,
@@ -69,7 +69,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    base::TimeDelta interval,
                    bool single_shot,
                    int timeout_id)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       TimerBase(context->GetTaskRunner(TaskType::kJavascriptTimer)),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
@@ -118,7 +118,7 @@ void DOMTimer::Stop() {
   TimerBase::Stop();
 }
 
-void DOMTimer::ContextDestroyed(ExecutionContext*) {
+void DOMTimer::ContextDestroyed() {
   Stop();
 }
 
@@ -171,12 +171,12 @@ void DOMTimer::Fired() {
 
   execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
-  ClearContext();
+  SetExecutionContext(nullptr);
 }
 
-void DOMTimer::Trace(blink::Visitor* visitor) {
+void DOMTimer::Trace(Visitor* visitor) {
   visitor->Trace(action_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

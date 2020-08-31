@@ -11,14 +11,11 @@ namespace chromecast {
 
 class WebviewRpcInstance : public PlatformViewsRpcInstance {
  public:
-  WebviewRpcInstance(webview::WebviewService::AsyncService* service,
-                     grpc::ServerCompletionQueue* cq,
-                     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     WebviewWindowManager* window_manager);
   WebviewRpcInstance(webview::PlatformViewsService::AsyncService* service,
                      grpc::ServerCompletionQueue* cq,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     WebviewWindowManager* window_manager);
+                     WebviewWindowManager* window_manager,
+                     bool enabled_for_dev);
   ~WebviewRpcInstance() override;
 
  protected:
@@ -27,8 +24,8 @@ class WebviewRpcInstance : public PlatformViewsRpcInstance {
 
  private:
   void CreateWebview(int app_id, int window_id);
-  webview::WebviewService::AsyncService* webview_service_;
   webview::PlatformViewsService::AsyncService* platform_views_service_;
+  bool enabled_for_dev_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewRpcInstance);
 };

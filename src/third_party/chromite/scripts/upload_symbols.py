@@ -36,6 +36,10 @@ from chromite.lib import path_util
 from chromite.lib import retry_stats
 from chromite.scripts import cros_generate_breakpad_symbols
 
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Needs to be after chromite imports.
 # We don't want to import the general keyring module as that will implicitly
 # try to import & connect to a dbus server.  That's a waste of time.
@@ -46,8 +50,8 @@ sys.modules['keyring'] = None
 OFFICIAL_UPLOAD_URL = 'https://prod-crashsymbolcollector-pa.googleapis.com/v1'
 STAGING_UPLOAD_URL = 'https://staging-crashsymbolcollector-pa.googleapis.com/v1'
 
-# The crash server rejects files that are this big.
-CRASH_SERVER_FILE_LIMIT = 700 * 1024 * 1024
+# The crash server rejects files that are bigger than 1GB.
+CRASH_SERVER_FILE_LIMIT = 1024 * 1024 * 1024
 # Give ourselves a little breathing room from what the server expects.
 DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
 
@@ -394,7 +398,7 @@ def UploadSymbolFile(upload_url, symbol, api_key):
       ExecRequest('put',
                   upload['uploadUrl'], timeout,
                   api_key=api_key,
-                  data=fp)
+                  data=fp.read())
     ExecRequest('post',
                 '%s/uploads/%s:complete' % (
                     upload_url, upload['uploadKey']),

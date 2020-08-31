@@ -13,23 +13,27 @@ source_set("commands") {
     "browsing_data_commands.h",
     "command_dispatcher.h",
     "command_dispatcher.mm",
+    "find_in_page_commands.h",
+    "generate_qr_code_command.h",
+    "generate_qr_code_command.mm",
+    "help_commands.h",
     "infobar_commands.h",
     "load_query_commands.h",
+    "omnibox_commands.h",
     "omnibox_suggestion_commands.h",
     "open_new_tab_command.h",
     "open_new_tab_command.mm",
     "page_info_commands.h",
     "password_breach_commands.h",
     "popup_menu_commands.h",
+    "qr_generation_commands.h",
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
-    "send_tab_to_self_command.h",
-    "send_tab_to_self_command.mm",
-    "settings_main_page_commands.h",
     "show_signin_command.h",
     "show_signin_command.mm",
     "snackbar_commands.h",
+    "text_zoom_commands.h",
     "toolbar_commands.h",
   ]
 
@@ -51,9 +55,7 @@ source_set("commands") {
 source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "command_dispatcher_unittest.mm",
-  ]
+  sources = [ "command_dispatcher_unittest.mm" ]
   deps = [
     ":commands",
     "//base",

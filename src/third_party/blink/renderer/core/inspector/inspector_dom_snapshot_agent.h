@@ -26,16 +26,9 @@ class PaintLayer;
 class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
  public:
-  static InspectorDOMSnapshotAgent* Create(
-      InspectedFrames* inspected_frames,
-      InspectorDOMDebuggerAgent* dom_debugger_agent) {
-    return MakeGarbageCollected<InspectorDOMSnapshotAgent>(inspected_frames,
-                                                           dom_debugger_agent);
-  }
-
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Restore() override;
 
@@ -64,14 +57,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void CharacterDataModified(CharacterData*);
   void DidInsertDOMNode(Node*);
 
-  // Helpers for traversal.
-  static bool HasChildren(const Node& node,
-                          bool include_user_agent_shadow_tree);
-  static Node* FirstChild(const Node& node,
-                          bool include_user_agent_shadow_tree);
-  static Node* NextSibling(const Node& node,
-                           bool include_user_agent_shadow_tree);
-
   // Helpers for rects
   static PhysicalRect RectInDocument(const LayoutObject* layout_object);
   static PhysicalRect TextFragmentRectInDocument(
@@ -95,14 +80,13 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
                const String& value);
   void SetRare(protocol::DOMSnapshot::RareBooleanData* data, int index);
   void VisitDocument(Document*);
-  int VisitNode(Node*, int parent_index);
+
+  void VisitNode(Node*, int parent_index);
   void VisitContainerChildren(Node* container, int parent_index);
   void VisitPseudoElements(Element* parent, int parent_index);
   std::unique_ptr<protocol::Array<int>> BuildArrayForElementAttributes(Node*);
   int BuildLayoutTreeNode(LayoutObject*, Node*, int node_index);
   std::unique_ptr<protocol::Array<int>> BuildStylesForNode(Node*);
-
-  void GetOriginUrl(String*, const Node*);
 
   static void TraversePaintLayerTree(Document*, PaintOrderMap* paint_order_map);
   static void VisitPaintLayer(PaintLayer*, PaintOrderMap* paint_order_map);
@@ -136,6 +120,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
   InspectorAgentState::Boolean enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };
 

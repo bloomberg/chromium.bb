@@ -22,6 +22,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -29,6 +30,10 @@ namespace chromeos {
 
 const char RecentDriveSource::kLoadHistogramName[] =
     "FileBrowser.Recent.LoadDrive";
+
+const char kAudioMimeType[] = "audio";
+const char kImageMimeType[] = "image";
+const char kVideoMimeType[] = "video";
 
 RecentDriveSource::RecentDriveSource(Profile* profile) : profile_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -64,6 +69,20 @@ void RecentDriveSource::GetRecentFiles(Params params) {
       drivefs::mojom::QueryParameters::SortField::kLastModified;
   query_params->sort_direction =
       drivefs::mojom::QueryParameters::SortDirection::kDescending;
+  switch (params_->file_type()) {
+    case FileType::kAudio:
+      query_params->mime_type = kAudioMimeType;
+      break;
+    case FileType::kImage:
+      query_params->mime_type = kImageMimeType;
+      break;
+    case FileType::kVideo:
+      query_params->mime_type = kVideoMimeType;
+      break;
+    default:
+      // Leave the mime_type null to query all files.
+      break;
+  }
   integration_service->GetDriveFsInterface()->StartSearchQuery(
       search_query_.BindNewPipeAndPassReceiver(), std::move(query_params));
   search_query_->GetNextPage(base::BindOnce(
@@ -113,7 +132,8 @@ void RecentDriveSource::GotSearchResults(
     }
     files_.emplace_back(
         params_.value().file_system_context()->CreateCrackedFileSystemURL(
-            params_->origin(), storage::kFileSystemTypeExternal, path),
+            url::Origin::Create(params_->origin()),
+            storage::kFileSystemTypeExternal, path),
         result->metadata->last_viewed_by_me_time);
   }
   OnComplete();

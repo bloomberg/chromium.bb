@@ -7,11 +7,8 @@
 
 #include "base/macros.h"
 
-@class TabModel;
-
-namespace ios {
 class ChromeBrowserState;
-}  // namespace ios
+@class TabModel;
 
 // Interface for getting notified when TabModels get associated/dissociated
 // to/from browser states.
@@ -23,12 +20,12 @@ class TabModelListObserver {
   // Called when |tab_model| is associated to |browser_state|.
   virtual void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) = 0;
+      ChromeBrowserState* browser_state) = 0;
 
   // Called when the |tab_model| is dissociated from |browser_state|.
   virtual void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) = 0;
+      ChromeBrowserState* browser_state) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabModelListObserver);

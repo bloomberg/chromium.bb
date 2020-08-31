@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -30,10 +31,10 @@ bool AbortOnEndInterceptor(URLLoaderInterceptor::RequestParams* params) {
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  network::ResourceResponseHead response;
-  response.headers = info.headers;
-  response.headers->GetMimeType(&response.mime_type);
-  params->client->OnReceiveResponse(response);
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = info.headers;
+  response->headers->GetMimeType(&response->mime_type);
+  params->client->OnReceiveResponse(std::move(response));
 
   std::string body = "some data\r\n";
   uint32_t bytes_written = body.size();

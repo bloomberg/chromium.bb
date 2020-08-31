@@ -12,16 +12,22 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
 class Profile;
 
+// Forward declared to support safe downcast;
+namespace extensions {
+class BookmarkAppRegistrar;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
+class WebAppRegistrar;
 
 enum class ExternalInstallSource;
 
@@ -30,10 +36,15 @@ class AppRegistrar {
   explicit AppRegistrar(Profile* profile);
   virtual ~AppRegistrar();
 
-  // Returns true if the app with |app_id| is currently installed.
+  // Returns whether the app with |app_id| is currently listed in the registry.
+  // ie. we have data for web app manifest and icons, and this |app_id| can be
+  // used in other registrar methods.
   virtual bool IsInstalled(const AppId& app_id) const = 0;
 
-  // Returns true if the app with |app_id| is currently fully locally installed.
+  // Returns whether the app with |app_id| is currently fully locally installed.
+  // ie. app is not grey in chrome://apps UI surface and may have OS integration
+  // like shortcuts. |IsLocallyInstalled| apps is a subset of |IsInstalled|
+  // apps. On Chrome OS all apps are always locally installed.
   virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
   // Returns true if the app was installed by user, false if default installed.
@@ -52,6 +63,10 @@ class AppRegistrar {
       const GURL& install_url) const;
 
   // Returns whether the AppRegistrar has an externally installed app with
+  // |app_id| from any |install_source|.
+  virtual bool HasExternalApp(const AppId& app_id) const;
+
+  // Returns whether the AppRegistrar has an externally installed app with
   // |app_id| from |install_source|.
   virtual bool HasExternalAppWithInstallSource(
       const AppId& app_id,
@@ -67,7 +82,11 @@ class AppRegistrar {
   virtual base::Optional<SkColor> GetAppThemeColor(
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
-  virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
+
+  // TODO(crbug.com/910016): Replace uses of this with GetAppScope().
+  virtual base::Optional<GURL> GetAppScopeInternal(
+      const AppId& app_id) const = 0;
+
   virtual DisplayMode GetAppDisplayMode(const AppId& app_id) const = 0;
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
 
@@ -76,14 +95,37 @@ class AppRegistrar {
   virtual std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const = 0;
 
+  // Represents which icon sizes we successfully downloaded from the IconInfos.
+  virtual std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+      const AppId& app_id) const = 0;
+
   virtual std::vector<AppId> GetAppIds() const = 0;
 
-  // Searches for the first app id in the registry for which the |url| is in
-  // scope.
+  // Safe downcast.
+  virtual WebAppRegistrar* AsWebAppRegistrar() = 0;
+  virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
+
+  // Returns the "scope" field from the app manifest, or infers a scope from the
+  // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
+  // does not refer to an installed web app.
+  GURL GetAppScope(const AppId& app_id) const;
+
+  // Returns the app id of an app in the registry with the longest scope that is
+  // a prefix of |url|, if any.
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const;
+
+  // Returns true if there exists at least one app installed under |scope|.
+  bool DoesScopeContainAnyApp(const GURL& scope) const;
 
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;
+
+  // Returns the app id of an installed app in the registry with the longest
+  // scope that is a prefix of |url|, if any. If |window_only| is specified,
+  // only apps that open in app windows will be considered.
+  base::Optional<AppId> FindInstalledAppWithUrlInScope(
+      const GURL& url,
+      bool window_only = false) const;
 
   // Returns whether the app is a shortcut app (as opposed to a PWA).
   bool IsShortcutApp(const AppId& app_id) const;
@@ -100,11 +142,18 @@ class AppRegistrar {
 
   DisplayMode GetAppEffectiveDisplayMode(const AppId& app_id) const;
 
+  // TODO(crbug.com/897314): Finish experiment by legitimising it as a
+  // DisplayMode or removing entirely.
+  bool IsInExperimentalTabbedWindowMode(const AppId& app_id) const;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
+  void NotifyWebAppLocallyInstalledStateChanged(const AppId& app_id,
+                                                bool is_locally_installed);
+  void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
 
  protected:
   Profile* profile() const { return profile_; }

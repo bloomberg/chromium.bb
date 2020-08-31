@@ -11,10 +11,11 @@
 #include "include/core/SkTypeface.h"
 #include "include/private/SkMutex.h"
 #include "include/private/SkOnce.h"
+#include "include/utils/SkCustomTypeface.h"
 #include "src/core/SkAdvancedTypefaceMetrics.h"
 #include "src/core/SkEndian.h"
 #include "src/core/SkFontDescriptor.h"
-#include "src/core/SkMakeUnique.h"
+#include "src/core/SkScalerContext.h"
 #include "src/core/SkSurfacePriv.h"
 #include "src/core/SkTypefaceCache.h"
 #include "src/sfnt/SkOTTable_OS_2.h"
@@ -48,9 +49,10 @@ protected:
     sk_sp<SkTypeface> onMakeClone(const SkFontArguments& args) const override {
         return sk_ref_sp(this);
     }
-    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                           const SkDescriptor*) const override {
-        return nullptr;
+    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects& effects,
+                                           const SkDescriptor* desc) const override {
+        return SkScalerContext::MakeEmptyContext(
+                sk_ref_sp(const_cast<SkEmptyTypeface*>(this)), effects, desc);
     }
     void onFilterRec(SkScalerContextRec*) const override { }
     std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override {
@@ -160,6 +162,12 @@ sk_sp<SkTypeface> SkTypeface::MakeFromData(sk_sp<SkData> data, int index) {
 }
 
 sk_sp<SkTypeface> SkTypeface::MakeFromFontData(std::unique_ptr<SkFontData> data) {
+    if (data->hasStream()) {
+        if (auto tf = SkCustomTypefaceBuilder::Deserialize(data->getStream())) {
+            return tf;
+        }
+    }
+
     return SkFontMgr::RefDefault()->makeFromFontData(std::move(data));
 }
 
@@ -291,7 +299,7 @@ std::unique_ptr<SkFontData> SkTypeface::onMakeFontData() const {
     if (!stream) {
         return nullptr;
     }
-    return skstd::make_unique<SkFontData>(std::move(stream), index, nullptr, 0);
+    return std::make_unique<SkFontData>(std::move(stream), index, nullptr, 0);
 };
 
 void SkTypeface::unicharsToGlyphs(const SkUnichar uni[], int count, SkGlyphID glyphs[]) const {
@@ -402,10 +410,7 @@ bool SkTypeface::onComputeBounds(SkRect* bounds) const {
     SkScalerContextEffects noeffects;
     SkScalerContext::AutoDescriptorGivenRecAndEffects(rec, noeffects, &ad);
 
-    std::unique_ptr<SkScalerContext> ctx = this->createScalerContext(noeffects, ad.getDesc(), true);
-    if (!ctx) {
-        return false;
-    }
+    std::unique_ptr<SkScalerContext> ctx = this->createScalerContext(noeffects, ad.getDesc());
 
     SkFontMetrics fm;
     ctx->getFontMetrics(&fm);

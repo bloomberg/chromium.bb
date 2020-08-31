@@ -49,13 +49,13 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   void CallSlotChangeAfterRemoved(HTMLSlotElement& slot);
   void CallSlotChangeIfNeeded(HTMLSlotElement& slot, Node& child);
 
-  HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
-
   void Trace(Visitor*);
 
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();
   void RecalcAssignment();
+  bool UpdateCandidateNodeAssignedSlot(Node&, HTMLSlotElement&);
+  void ClearCandidateNodes(const HeapLinkedHashSet<Member<Node>>& candidates);
 
  private:
   enum class SlotMutationType {
@@ -81,6 +81,9 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   unsigned needs_collect_slots_ : 1;
   unsigned needs_assignment_recalc_ : 1;
   unsigned slot_count_ : 30;
+  // TODO: (1067157) Ensure references inside the map are GCed.
+  HeapHashMap<Member<Node>, Member<HTMLSlotElement>>
+      candidate_assigned_slot_map_;
 };
 
 }  // namespace blink

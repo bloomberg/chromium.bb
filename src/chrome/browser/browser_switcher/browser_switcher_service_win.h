@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/optional.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
@@ -16,8 +17,12 @@ namespace browser_switcher {
 // Windows-specific extension of BrowserSwitcherService.
 class BrowserSwitcherServiceWin : public BrowserSwitcherService {
  public:
-  explicit BrowserSwitcherServiceWin(Profile* profile);
+  explicit BrowserSwitcherServiceWin(
+      Profile* profile,
+      base::FilePath cache_dir_for_testing = base::FilePath());
   ~BrowserSwitcherServiceWin() override;
+
+  void Init() override;
 
   static void SetIeemSitelistUrlForTesting(const std::string& url);
 
@@ -25,6 +30,9 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   std::vector<RulesetSource> GetRulesetSources() override;
 
   void LoadRulesFromPrefs() override;
+
+  void OnCacheFileUpdatedForTesting(base::OnceClosure cb);
+  void OnSitelistCacheFileUpdatedForTesting(base::OnceClosure cb);
 
  protected:
   // BrowserSwitcherService:
@@ -35,6 +43,9 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
       const std::vector<std::string>& changed_prefs) override;
 
  private:
+  // Returns "AppData\Local\Google\BrowserSwitcher", in official builds.
+  base::FilePath GetCacheDir();
+
   // Returns the URL to fetch to get Internet Explorer's Enterprise Mode
   // sitelist, based on policy. Returns an empty (invalid) URL if IE's SiteList
   // policy is unset, or if |use_ie_sitelist| is false.
@@ -53,9 +64,16 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   // extension, or from a previous Chrome version. Called during initialization.
   void DeleteSitelistCacheFile();
 
+  void CacheFileUpdated();
+  void SitelistCacheFileUpdated();
+
   // Updates or cleans up cache.dat and sitelistcache.dat, based on whether
   // BrowserSwitcher is enabled or disabled.
   void UpdateAllCacheFiles();
+
+  base::FilePath cache_dir_for_testing_;
+  base::OnceClosure cache_file_updated_callback_for_testing_;
+  base::OnceClosure sitelist_cache_file_updated_callback_for_testing_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

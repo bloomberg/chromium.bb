@@ -4,19 +4,25 @@
 
 #include "components/exo/surface_tree_host.h"
 
-#include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -95,11 +101,16 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
   host_window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>(this));
   layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
-  aura::Env::GetInstance()->context_factory()->AddObserver(this);
+  context_provider_ = aura::Env::GetInstance()
+                          ->context_factory()
+                          ->SharedMainThreadContextProvider();
+  DCHECK(context_provider_);
+  context_provider_->AddObserver(this);
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
-  aura::Env::GetInstance()->context_factory()->RemoveObserver(this);
+  context_provider_->RemoveObserver(this);
+
   SetRootSurface(nullptr);
   LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
       std::move(layer_tree_frame_sink_holder_));
@@ -197,13 +208,14 @@ bool SurfaceTreeHost::IsInputEnabled(Surface*) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ui::ContextFactoryObserver overrides:
+// viz::ContextLostObserver overrides:
 
-void SurfaceTreeHost::OnLostSharedContext() {
-  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
-    return;
-  root_surface_->SurfaceHierarchyResourcesLost();
-  SubmitCompositorFrame();
+void SurfaceTreeHost::OnContextLost() {
+  // Handle context loss in a new stack frame to avoid bugs from re-entrant
+  // code.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SurfaceTreeHost::HandleContextLost,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,6 +223,21 @@ void SurfaceTreeHost::OnLostSharedContext() {
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
   viz::CompositorFrame frame = PrepareToSubmitCompositorFrame();
+
+  // TODO(1041932,1034876): Remove or early return once these issues
+  // are fixed or identified.
+  if (frame.size_in_pixels().IsEmpty()) {
+    aura::Window* toplevel = root_surface_->window()->GetToplevelWindow();
+    auto app_type = toplevel->GetProperty(aura::client::kAppType);
+    const std::string* app_id = GetShellApplicationId(toplevel);
+    const std::string* startup_id = GetShellStartupId(toplevel);
+    auto* shell_surface = GetShellSurfaceBaseForWindow(toplevel);
+    CHECK(!frame.size_in_pixels().IsEmpty())
+        << " Title=" << shell_surface->GetWindowTitle()
+        << ", AppType=" << static_cast<int>(app_type)
+        << ", AppId=" << (app_id ? *app_id : "''")
+        << ", StartupId=" << (startup_id ? *startup_id : "''");
+  }
 
   root_surface_->AppendSurfaceHierarchyCallbacks(&frame_callbacks_,
                                                  &presentation_callbacks_);
@@ -229,10 +256,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   std::vector<GLbyte*> sync_tokens;
   for (auto& resource : frame.resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
-  ui::ContextFactory* context_factory =
-      aura::Env::GetInstance()->context_factory();
-  gpu::gles2::GLES2Interface* gles2 =
-      context_factory->SharedMainThreadContextProvider()->ContextGL();
+  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
@@ -315,8 +339,13 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
   // because  the size is different.
   const float device_scale_factor =
       host_window()->layer()->device_scale_factor();
-  const gfx::Size output_surface_size_in_pixels = gfx::ConvertSizeToPixel(
+  gfx::Size output_surface_size_in_pixels = gfx::ConvertSizeToPixel(
       device_scale_factor, host_window_->bounds().size());
+  // Viz will crash if the frame size is empty. Ensure it's not empty.
+  // crbug.com/1041932.
+  if (output_surface_size_in_pixels.IsEmpty())
+    output_surface_size_in_pixels.SetSize(1, 1);
+
   render_pass->SetNew(kRenderPassId, gfx::Rect(output_surface_size_in_pixels),
                       gfx::Rect(), gfx::Transform());
   frame.metadata.device_scale_factor = device_scale_factor;
@@ -324,6 +353,24 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
       host_window()->GetLocalSurfaceIdAllocation().allocation_time();
 
   return frame;
+}
+
+void SurfaceTreeHost::HandleContextLost() {
+  // Stop observering the lost context.
+  context_provider_->RemoveObserver(this);
+
+  // Get new context and start observing it.
+  context_provider_ = aura::Env::GetInstance()
+                          ->context_factory()
+                          ->SharedMainThreadContextProvider();
+  DCHECK(context_provider_);
+  context_provider_->AddObserver(this);
+
+  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
+    return;
+
+  root_surface_->SurfaceHierarchyResourcesLost();
+  SubmitCompositorFrame();
 }
 
 }  // namespace exo

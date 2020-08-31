@@ -9,6 +9,7 @@
 *.c text eol=lf
 *.cc text eol=lf
 *.cpp text eol=lf
+*.csv text eol=lf
 *.grd   text eol=lf
 *.grdp   text eol=lf
 *.gn text eol=lf
@@ -25,6 +26,7 @@
 *.md text eol=lf
 *.mm text eol=lf
 *.mojom text eol=lf
+*.pdf -diff
 *.sh text eol=lf
 *.sql   text eol=lf
 *.txt   text eol=lf

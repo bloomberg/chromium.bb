@@ -40,14 +40,6 @@ class SettingsResetPromptDialog : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
 
-  // views::DialogDelegate overrides.
-  bool Accept() override;
-  bool Cancel() override;
-  // We override |Close()| because we want to distinguish in our metrics between
-  // users clicking the cancel button versus dismissing the dialog in other
-  // ways.
-  bool Close() override;
-
   // views::View overrides.
   gfx::Size CalculatePreferredSize() const override;
 

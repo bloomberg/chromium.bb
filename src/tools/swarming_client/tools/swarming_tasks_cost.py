@@ -16,7 +16,8 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
+
+from six.moves import urllib
 
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
@@ -153,11 +154,10 @@ def fetch_data(options):
     options.end = options.start + datetime.timedelta(days=1)
   else:
     options.end = parse_time_option(options.end)
-  url = 'tasks/list?' + urllib.urlencode(
-      {
-        'start': int((options.start - _EPOCH).total_seconds()),
-        'end': int((options.end - _EPOCH).total_seconds()),
-      })
+  url = 'tasks/list?' + urllib.parse.urlencode({
+      'start': int((options.start - _EPOCH).total_seconds()),
+      'end': int((options.end - _EPOCH).total_seconds()),
+  })
   cmd = [
     sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
     'query',
@@ -281,26 +281,21 @@ def stats(tasks, show_cost):
         'Total tasks' % (
           len(tasks), seconds_to_timedelta(duration_total),
           cost if show_cost else ''))
-  print (
-      '        Reliability:    %7g%%    Internal errors: %-4d' % (
-        reliability, len(internal_failures)))
-  print (
-      '        Tasks failures: %-4d (%5.3f%%)' % (
-        len(failures), percent_failures))
-  print (
-      '        Retried:        %-4d (%5.3f%%)  (Upgraded an internal failure '
-      'to a successful task)' %
-        (len(two_tries), percent_two_tries))
-  print (
-      '        Pending  Total: %13s    Avg: %7s    Median: %7s  P99%%: %7s' % (
-        pending_total, pending_avg, pending_med, pending_p99))
+  print('        Reliability:    %7g%%    Internal errors: %-4d' %
+        (reliability, len(internal_failures)))
+  print('        Tasks failures: %-4d (%5.3f%%)' % (len(failures),
+                                                    percent_failures))
+  print('        Retried:        %-4d (%5.3f%%)  (Upgraded an internal failure '
+        'to a successful task)' % (len(two_tries), percent_two_tries))
+  print('        Pending  Total: %13s    Avg: %7s    Median: %7s  P99%%: %7s' %
+        (pending_total, pending_avg, pending_med, pending_p99))
 
 
 def present_task_types(items, bucket_type, show_cost):
   cost = '    Usage Cost $USD' if show_cost else ''
   print('      Nb of Tasks              Total Duration%s' % cost)
   buckets = do_bucket(items, bucket_type)
-  for index, (bucket, tasks) in enumerate(sorted(buckets.iteritems())):
+  for index, (bucket, tasks) in enumerate(sorted(buckets.items())):
     if index:
       print('')
     print('%s:' % (bucket or '<None>'))
@@ -332,7 +327,7 @@ def present_users(items):
   maxlen = max(len(i) for i in users)
   maxusers = 100
   for index, (name, tasks) in enumerate(
-      sorted(users.iteritems(), key=lambda x: -x[1])):
+      sorted(users.items(), key=lambda x: -x[1])):
     if index == maxusers:
       break
     print('%3d  %-*s: %d' % (index + 1, maxlen, name, tasks))

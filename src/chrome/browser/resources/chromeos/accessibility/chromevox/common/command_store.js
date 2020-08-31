@@ -38,15 +38,15 @@ goog.provide('CommandStore');
  * @return {Array<string>} The collection of categories.
  */
 CommandStore.categories = function() {
-  var categorySet = {};
-  for (var cmd in CommandStore.CMD_WHITELIST) {
-    var struct = CommandStore.CMD_WHITELIST[cmd];
+  const categorySet = {};
+  for (const cmd in CommandStore.CMD_WHITELIST) {
+    const struct = CommandStore.CMD_WHITELIST[cmd];
     if (struct.category) {
       categorySet[struct.category] = true;
     }
   }
-  var ret = [];
-  for (var category in categorySet) {
+  const ret = [];
+  for (const category in categorySet) {
     ret.push(category);
   }
   return ret;
@@ -79,14 +79,25 @@ CommandStore.categoryForCommand = function(command) {
  * @return {Array<string>} The commands, if any.
  */
 CommandStore.commandsForCategory = function(category) {
-  var ret = [];
-  for (var cmd in CommandStore.CMD_WHITELIST) {
-    var struct = CommandStore.CMD_WHITELIST[cmd];
+  const ret = [];
+  for (const cmd in CommandStore.CMD_WHITELIST) {
+    const struct = CommandStore.CMD_WHITELIST[cmd];
     if (category == struct.category) {
       ret.push(cmd);
     }
   }
   return ret;
+};
+
+/**
+ * @param {string} command The command to query.
+ * @return {boolean} Whether or not this command is disallowed in the OOBE.
+ */
+CommandStore.disallowOOBE = function(command) {
+  if (!CommandStore.CMD_WHITELIST[command]) {
+    return false;
+  }
+  return !!CommandStore.CMD_WHITELIST[command].disallowOOBE;
 };
 
 
@@ -102,7 +113,8 @@ CommandStore.commandsForCategory = function(category) {
  *                nodeList: (undefined|string),
  *                skipInput: (undefined|boolean),
  *                allowEvents: (undefined|boolean),
- *                disallowContinuation: (undefined|boolean)}>}
+ *                disallowContinuation: (undefined|boolean),
+ *                disallowOOBE: (undefined|boolean)}>}
  *  forward: Whether this command points forward.
  *  backward: Whether this command points backward. If neither forward or
  *            backward are specified, it stays facing in the current direction.
@@ -383,9 +395,7 @@ CommandStore.CMD_WHITELIST = {
     category: 'information'
   },
 
-  'undarkenScreen': {msgId: 'undarken_screen'},
-
-  'darkenScreen': {msgId: 'darken_screen'},
+  'toggleDarkScreen': {announce: false, msgId: 'toggle_dark_screen'},
 
   'toggleBrailleTable':
       {msgId: 'toggle_braille_table', category: 'help_commands'},

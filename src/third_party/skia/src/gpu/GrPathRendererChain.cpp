@@ -23,12 +23,20 @@
 #include "src/gpu/ops/GrDefaultPathRenderer.h"
 #include "src/gpu/ops/GrSmallPathRenderer.h"
 #include "src/gpu/ops/GrStencilAndCoverPathRenderer.h"
-#include "src/gpu/ops/GrTessellatingPathRenderer.h"
+#include "src/gpu/ops/GrTriangulatingPathRenderer.h"
+#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 
 GrPathRendererChain::GrPathRendererChain(GrRecordingContext* context, const Options& options) {
     const GrCaps& caps = *context->priv().caps();
     if (options.fGpuPathRenderers & GpuPathRenderers::kDashLine) {
         fChain.push_back(sk_make_sp<GrDashLinePathRenderer>());
+    }
+    if (options.fGpuPathRenderers & GpuPathRenderers::kTessellation) {
+        if (caps.shaderCaps()->tessellationSupport() && caps.drawInstancedSupport()) {
+            auto tess = sk_make_sp<GrTessellationPathRenderer>(caps);
+            context->priv().addOnFlushCallbackObject(tess.get());
+            fChain.push_back(std::move(tess));
+        }
     }
     if (options.fGpuPathRenderers & GpuPathRenderers::kAAConvex) {
         fChain.push_back(sk_make_sp<GrAAConvexPathRenderer>());
@@ -66,8 +74,8 @@ GrPathRendererChain::GrPathRendererChain(GrRecordingContext* context, const Opti
             }
         }
     }
-    if (options.fGpuPathRenderers & GpuPathRenderers::kTessellating) {
-        fChain.push_back(sk_make_sp<GrTessellatingPathRenderer>());
+    if (options.fGpuPathRenderers & GpuPathRenderers::kTriangulating) {
+        fChain.push_back(sk_make_sp<GrTriangulatingPathRenderer>());
     }
 
     // We always include the default path renderer (as well as SW), so we can draw any path
@@ -78,10 +86,10 @@ GrPathRenderer* GrPathRendererChain::getPathRenderer(
         const GrPathRenderer::CanDrawPathArgs& args,
         DrawType drawType,
         GrPathRenderer::StencilSupport* stencilSupport) {
-    GR_STATIC_ASSERT(GrPathRenderer::kNoSupport_StencilSupport <
-                     GrPathRenderer::kStencilOnly_StencilSupport);
-    GR_STATIC_ASSERT(GrPathRenderer::kStencilOnly_StencilSupport <
-                     GrPathRenderer::kNoRestriction_StencilSupport);
+    static_assert(GrPathRenderer::kNoSupport_StencilSupport <
+                  GrPathRenderer::kStencilOnly_StencilSupport);
+    static_assert(GrPathRenderer::kStencilOnly_StencilSupport <
+                  GrPathRenderer::kNoRestriction_StencilSupport);
     GrPathRenderer::StencilSupport minStencilSupport;
     if (DrawType::kStencil == drawType) {
         minStencilSupport = GrPathRenderer::kStencilOnly_StencilSupport;

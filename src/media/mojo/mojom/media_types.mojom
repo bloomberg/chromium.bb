@@ -15,6 +15,8 @@ import "ui/gfx/mojom/color_space.mojom";
 // See media/base/audio_codecs.h for descriptions.
 [Native]
 enum AudioCodec;
+[Native]
+enum AudioCodecProfile;
 
 // See media/base/buffering_state.h for descriptions.
 [Native]
@@ -26,17 +28,17 @@ enum BufferingStateChangeReason;
 [Native]
 enum ChannelLayout;
 
-// See media/base/video_types.h for descriptions.
-[Native]
-enum ColorSpace;
-
 // See media/base/decode_status.h for descriptions.
 [Native]
 enum DecodeStatus;
 
-// See media/base/media_log_event.h for description.
+// See media/base/status_codes.h for descriptions.
 [Native]
-struct MediaLogEvent;
+enum StatusCode;
+
+// See media/base/media_log_record.h for description.
+[Native]
+struct MediaLogRecord;
 
 // See media/base/output_device_info.h for descriptions.
 [Native]
@@ -141,6 +143,7 @@ struct HDRMetadata {
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
   AudioCodec codec;
+  AudioCodecProfile profile;
   SampleFormat sample_format;
   ChannelLayout channel_layout;
   int32 samples_per_second;
@@ -155,6 +158,7 @@ struct AudioDecoderConfig {
 struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
+  uint32 level;
   bool has_alpha;
   VideoTransformation transformation;
   gfx.mojom.Size coded_size;
@@ -235,6 +239,22 @@ struct AudioBuffer {
   array<uint8> data;
 };
 
+// This defines a mojo transport format for an interleaved, signed
+// 16-bit audio buffer.
+struct AudioDataS16 {
+  // Number of channels.
+  int32 channel_count;
+
+  // Sample rate of the buffer.
+  int32 sample_rate;
+
+  // Number of frames in the buffer.
+  int32 frame_count;
+
+  // Channel data.
+  array<int16> data;
+};
+
 // This defines a mojo transport format for media::VideoFrame.
 struct VideoFrame {
   // Format of the frame.
@@ -259,6 +279,7 @@ struct VideoFrame {
   mojo_base.mojom.DictionaryValue metadata;
 
   gfx.mojom.ColorSpace color_space;
+  HDRMetadata? hdr_metadata;
 };
 
 // Possible choices for storing VideoFrame data.
@@ -282,18 +303,14 @@ struct SharedBufferVideoFrameData {
 
   // Stride and offsets for each plane. Offsets are relative to the start
   // of |frame_data|.
-  int32 y_stride;
-  int32 u_stride;
-  int32 v_stride;
-  uint64 y_offset;
-  uint64 u_offset;
-  uint64 v_offset;
+  array<int32> strides;
+  array<uint32> offsets;
 };
 
 // This defines video frame data stored in dmabuf.
 struct DmabufVideoFrameData {
   // Size depends on media::VideoFrame::NumPlanes with frame format.
-  array<handle> dmabuf_fds;
+  array<handle<platform>> dmabuf_fds;
 };
 
 struct GpuMemoryBufferVideoFrameData {
@@ -346,4 +363,13 @@ struct PipelineDecoderInfo {
   string decoder_name;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+};
+
+// See media/base/status.h for descriptions.
+struct Status {
+  StatusCode code;
+  string? message;
+  array<mojo_base.mojom.Value> frames;
+  array<media.mojom.Status> causes;
+  mojo_base.mojom.Value? data;
 };

@@ -89,8 +89,8 @@ class SearchResultTileItemListViewTest
 
     // Sets up the views.
     textfield_ = std::make_unique<views::Textfield>();
-    view_ = std::make_unique<SearchResultTileItemListView>(
-        nullptr, textfield_.get(), &view_delegate_);
+    view_ = std::make_unique<SearchResultTileItemListView>(textfield_.get(),
+                                                           &view_delegate_);
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
     widget_->GetContentsView()->AddChildView(view_.get());
     widget_->Show();
@@ -144,11 +144,10 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_is_recommendation(true);
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            SearchResultDisplayLocation::kTileListContainer);
         result->set_display_index(SearchResultDisplayIndex::kSixthIndex);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
@@ -206,11 +205,10 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_is_recommendation(true);
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            SearchResultDisplayLocation::kTileListContainer);
         result->set_display_index(display_indexes[i]);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
@@ -233,11 +231,6 @@ class SearchResultTileItemListViewTest
   }
 
   size_t GetResultCount() const { return view_->num_results(); }
-
-  bool KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-    return view_->OnKeyPressed(event);
-  }
 
  private:
   test::AppListTestViewDelegate view_delegate_;

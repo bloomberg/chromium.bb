@@ -63,6 +63,7 @@ class LargeImageView : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
  private:
   gfx::Size GetResizedImageSize();
@@ -124,11 +125,12 @@ class NotificationInputContainerMD : public views::InkDropHostView,
 
   void AnimateBackground(const ui::Event& event);
 
-  // Overridden from views::InkDropHostView:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  // views::InkDropHostView:
+  void AddLayerBeneathView(ui::Layer* layer) override;
+  void RemoveLayerBeneathView(ui::Layer* layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+  void OnThemeChanged() override;
 
   // Overridden from views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
@@ -142,6 +144,8 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   views::ImageButton* button() const { return button_; }
 
  private:
+  void SetButtonImage();
+
   NotificationInputDelegate* const delegate_;
 
   views::InkDropContainerView* const ink_drop_container_;
@@ -170,7 +174,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void AddBackgroundAnimation(const ui::Event& event);
   void RemoveBackgroundAnimation();
 
-  // Overridden from views::View:
+  // MessageView:
+  void AddLayerBeneathView(ui::Layer* layer) override;
+  void RemoveLayerBeneathView(ui::Layer* layer) override;
   void Layout() override;
   void OnFocus() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -178,16 +184,11 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Overridden from views::InkDropHostView:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void PreferredSizeChanged() override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
-
-  // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
@@ -197,6 +198,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   bool IsManuallyExpandedOrCollapsed() const override;
   void SetManuallyExpandedOrCollapsed(bool value) override;
   void OnSettingsButtonPressed(const ui::Event& event) override;
+  void OnThemeChanged() override;
 
   // views::InkDropObserver:
   void InkDropAnimationStarted() override;
@@ -216,6 +218,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
                            InlineSettingsInkDropAnimation);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ShowProgress);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ShowTimestamp);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClick);
@@ -234,10 +238,13 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateInSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateType);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
 
   friend class NotificationViewMDTest;
+
+  class NotificationViewMDPathGenerator;
 
   void UpdateControlButtonsVisibilityWithNotification(
       const Notification& notification);
@@ -262,8 +269,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void UpdateViewForExpandedState(bool expanded);
   void ToggleInlineSettings(const ui::Event& event);
 
-  // Initializes |ink_drop_mask_| and sets the mask on |ink_drop_layer_|.
-  void InstallNotificationInkDropMask();
+  // Returns the list of children which need to have their layers created or
+  // destroyed when the ink drop is visible.
+  std::vector<views::View*> GetChildrenForLayerAdjustment() const;
 
   views::InkDropContainerView* const ink_drop_container_;
 
@@ -285,15 +293,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
-
-  // Corner radii for the InkDropMask.
-  int top_radius_ = 0;
-  int bottom_radius_ = 0;
-
-  // The InkDrop layer and InkDropMask used to update their bounds on
-  // OnBoundsChanged(). See crbug.com/915222.
-  ui::Layer* ink_drop_layer_ = nullptr;
-  std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
   // Container views directly attached to this view.
   NotificationHeaderView* header_row_ = nullptr;
@@ -326,6 +325,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::RadioButton* block_all_button_ = nullptr;
   views::RadioButton* dont_block_button_ = nullptr;
   views::LabelButton* settings_done_button_ = nullptr;
+
+  // Owned by views properties. Guaranteed to be not null for the lifetime of
+  // |this| because views properties are the last thing cleaned up.
+  NotificationViewMDPathGenerator* highlight_path_generator_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> click_activator_;
 

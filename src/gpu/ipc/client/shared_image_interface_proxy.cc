@@ -12,7 +12,6 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace gpu {
@@ -70,12 +69,14 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params.usage = usage;
   {
     base::AutoLock lock(lock_);
+    AddMailbox(params.mailbox, usage);
     params.release_id = ++next_release_id_;
     // Note: we enqueue the IPC under the lock to guarantee monotonicity of the
     // release ids as seen by the service.
     last_flush_id_ = host_->EnqueueDeferredMessage(
         GpuChannelMsg_CreateSharedImage(route_id_, params));
   }
+
   return params.mailbox;
 }
 
@@ -117,6 +118,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params.release_id = ++next_release_id_;
   last_flush_id_ = host_->EnqueueDeferredMessage(
       GpuChannelMsg_CreateSharedImageWithData(route_id_, params));
+
+  AddMailbox(params.mailbox, usage);
   return params.mailbox;
 }
 
@@ -163,6 +166,9 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
                                                        sync_token);
   }
+
+  base::AutoLock lock(lock_);
+  AddMailbox(params.mailbox, usage);
   return mailbox;
 }
 
@@ -228,6 +234,10 @@ void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
   }
   {
     base::AutoLock lock(lock_);
+
+    DCHECK_NE(mailbox_to_usage_.count(mailbox), 0u);
+    mailbox_to_usage_.erase(mailbox);
+
     last_flush_id_ = host_->EnqueueDeferredMessage(
         GpuChannelMsg_DestroySharedImage(route_id_, mailbox),
         std::move(dependencies));
@@ -268,7 +278,7 @@ bool SharedImageInterfaceProxy::GetSHMForPixelData(
       GetRemainingSize(upload_buffer_, upload_buffer_offset_) <
           pixel_data.size()) {
     size_t size_to_alloc = std::max(kUploadBufferSize, pixel_data.size());
-    auto shm = mojo::CreateReadOnlySharedMemoryRegion(size_to_alloc);
+    auto shm = base::ReadOnlySharedMemoryRegion::Create(size_to_alloc);
     if (!shm.IsValid())
       return false;
 
@@ -333,6 +343,10 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
   params.usage = usage;
   {
     base::AutoLock lock(lock_);
+
+    AddMailbox(params.front_buffer_mailbox, usage);
+    AddMailbox(params.back_buffer_mailbox, usage);
+
     params.release_id = ++next_release_id_;
     last_flush_id_ = host_->EnqueueDeferredMessage(
         GpuChannelMsg_CreateSwapChain(route_id_, params));
@@ -386,5 +400,31 @@ void SharedImageInterfaceProxy::ReleaseSysmemBufferCollection(
   host_->Send(new GpuChannelMsg_ReleaseSysmemBufferCollection(route_id_, id));
 }
 #endif  // defined(OS_FUCHSIA)
+
+scoped_refptr<gfx::NativePixmap> SharedImageInterfaceProxy::GetNativePixmap(
+    const gpu::Mailbox& mailbox) {
+  // Clients outside of the GPU process cannot obtain the backing NativePixmap
+  // for SharedImages.
+  return nullptr;
+}
+
+void SharedImageInterfaceProxy::AddMailbox(const Mailbox& mailbox,
+                                           uint32_t usage) {
+  lock_.AssertAcquired();
+
+  DCHECK_EQ(mailbox_to_usage_.count(mailbox), 0u);
+  mailbox_to_usage_[mailbox] = usage;
+}
+
+uint32_t SharedImageInterfaceProxy::UsageForMailbox(const Mailbox& mailbox) {
+  base::AutoLock lock(lock_);
+
+  // The mailbox may have been destroyed if the context on which the shared
+  // image was created is deleted.
+  auto it = mailbox_to_usage_.find(mailbox);
+  if (it == mailbox_to_usage_.end())
+    return 0u;
+  return it->second;
+}
 
 }  // namespace gpu

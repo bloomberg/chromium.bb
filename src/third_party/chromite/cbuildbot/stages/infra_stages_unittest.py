@@ -60,7 +60,7 @@ class PackageInfraGoBinariesTest(generic_stages_unittest.AbstractStageTestCase,
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
     self._stage = infra_stages.PackageInfraGoBinariesStage(self._run,
-                                                           self._current_board)
+                                                           self.buildstore)
 
     # Mock out a method that PackageInfraGoBinariesStage inherits from
     # generic_stages.

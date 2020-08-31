@@ -12,7 +12,8 @@
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
 #include "net/third_party/quiche/src/quic/core/qpack/value_splitting_header_list.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -57,7 +58,7 @@ QpackInstructionWithValues
 QpackEncoder::EncodeLiteralHeaderFieldWithNameReference(
     bool is_static,
     uint64_t index,
-    QuicStringPiece value,
+    quiche::QuicheStringPiece value,
     QpackBlockingManager::IndexSet* referred_indices) {
   // Add |index| to |*referred_indices| only if entry is in the dynamic table.
   if (!is_static) {
@@ -69,8 +70,8 @@ QpackEncoder::EncodeLiteralHeaderFieldWithNameReference(
 
 // static
 QpackInstructionWithValues QpackEncoder::EncodeLiteralHeaderField(
-    QuicStringPiece name,
-    QuicStringPiece value) {
+    quiche::QuicheStringPiece name,
+    quiche::QuicheStringPiece value) {
   return QpackInstructionWithValues::LiteralHeaderField(name, value);
 }
 
@@ -79,6 +80,11 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
     const spdy::SpdyHeaderBlock& header_list,
     QpackBlockingManager::IndexSet* referred_indices,
     QuicByteCount* encoder_stream_sent_byte_count) {
+  // If previous instructions are buffered in |encoder_stream_sender_|,
+  // do not count them towards the current header block.
+  const QuicByteCount initial_encoder_stream_buffered_byte_count =
+      encoder_stream_sender_.BufferedByteCount();
+
   Instructions instructions;
   instructions.reserve(header_list.size());
 
@@ -104,8 +110,8 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
 
   for (const auto& header : ValueSplittingHeaderList(&header_list)) {
     // These strings are owned by |header_list|.
-    QuicStringPiece name = header.first;
-    QuicStringPiece value = header.second;
+    quiche::QuicheStringPiece name = header.first;
+    quiche::QuicheStringPiece value = header.second;
 
     bool is_static;
     uint64_t index;
@@ -265,10 +271,16 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
     }
   }
 
-  const QuicByteCount sent_byte_count = encoder_stream_sender_.Flush();
+  const QuicByteCount encoder_stream_buffered_byte_count =
+      encoder_stream_sender_.BufferedByteCount();
+  DCHECK_GE(encoder_stream_buffered_byte_count,
+            initial_encoder_stream_buffered_byte_count);
   if (encoder_stream_sent_byte_count) {
-    *encoder_stream_sent_byte_count = sent_byte_count;
+    *encoder_stream_sent_byte_count =
+        encoder_stream_buffered_byte_count -
+        initial_encoder_stream_buffered_byte_count;
   }
+  encoder_stream_sender_.Flush();
 
   ++header_list_count_;
 
@@ -373,7 +385,8 @@ void QpackEncoder::SetMaximumDynamicTableCapacity(
 
 void QpackEncoder::SetDynamicTableCapacity(uint64_t dynamic_table_capacity) {
   encoder_stream_sender_.SendSetDynamicTableCapacity(dynamic_table_capacity);
-  encoder_stream_sender_.Flush();
+  // Do not flush encoder stream.  This write can safely be delayed until more
+  // instructions are written.
 
   bool success = header_table_.SetDynamicTableCapacity(dynamic_table_capacity);
   DCHECK(success);
@@ -397,7 +410,7 @@ void QpackEncoder::OnInsertCountIncrement(uint64_t increment) {
 
   if (blocking_manager_.known_received_count() >
       header_table_.inserted_entry_count()) {
-    decoder_stream_error_delegate_->OnDecoderStreamError(QuicStrCat(
+    decoder_stream_error_delegate_->OnDecoderStreamError(quiche::QuicheStrCat(
         "Increment value ", increment, " raises known received count to ",
         blocking_manager_.known_received_count(),
         " exceeding inserted entry count ",
@@ -408,8 +421,8 @@ void QpackEncoder::OnInsertCountIncrement(uint64_t increment) {
 void QpackEncoder::OnHeaderAcknowledgement(QuicStreamId stream_id) {
   if (!blocking_manager_.OnHeaderAcknowledgement(stream_id)) {
     decoder_stream_error_delegate_->OnDecoderStreamError(
-        QuicStrCat("Header Acknowledgement received for stream ", stream_id,
-                   " with no outstanding header blocks."));
+        quiche::QuicheStrCat("Header Acknowledgement received for stream ",
+                             stream_id, " with no outstanding header blocks."));
   }
 }
 
@@ -417,7 +430,7 @@ void QpackEncoder::OnStreamCancellation(QuicStreamId stream_id) {
   blocking_manager_.OnStreamCancellation(stream_id);
 }
 
-void QpackEncoder::OnErrorDetected(QuicStringPiece error_message) {
+void QpackEncoder::OnErrorDetected(quiche::QuicheStringPiece error_message) {
   decoder_stream_error_delegate_->OnDecoderStreamError(error_message);
 }
 

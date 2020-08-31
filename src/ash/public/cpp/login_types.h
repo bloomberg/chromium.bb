@@ -11,14 +11,14 @@
 #include "base/time/time.h"
 #include "base/token.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 
 namespace ash {
 
 // State of the Oobe UI dialog, which is used to update the visibility of login
 // shelf buttons.
-// This comes from SIGNIN_UI_STATE defined in display_manager.js, with an
+// This comes from OOBE_UI_STATE defined in display_manager_types.js, with an
 // additional value HIDDEN to indicate the visibility of the oobe ui dialog.
 enum class OobeDialogState {
   // Showing other screen, which does not impact the visibility of login shelf
@@ -48,15 +48,24 @@ enum class OobeDialogState {
   // Showing error screen.
   ERROR = 8,
 
-  // Showing sync consent screen.
-  SYNC_CONSENT = 9,
+  // Showing any of post-login onboarding screens.
+  ONBOARDING = 9,
+
+  // Screen that blocks device usage for some reason.
+  BLOCKING = 10,
+
+  // Showing any of kiosk launch screens.
+  KIOSK_LAUNCH = 11,
+
+  // Showing data migration screen.
+  MIGRATION = 12,
 
   // Oobe UI dialog is currently hidden.
-  HIDDEN = 10,
+  HIDDEN = 13,
 
   // Showing login UI provided by a Chrome extension using chrome.loginScreenUi
   // API.
-  EXTENSION_LOGIN = 11,
+  EXTENSION_LOGIN = 14,
 };
 
 // Supported multi-profile user behavior values.
@@ -97,7 +106,12 @@ enum class FingerprintState {
   //  - the device does not have a fingerprint sensor
   UNAVAILABLE,
   // Fingerprint can be used to unlock the device.
-  AVAILABLE,
+  AVAILABLE_DEFAULT,
+  // Fingerprint can be used to unlock the device but the user touched the
+  // fingerprint icon instead of the fingerprint sensor. A warning message
+  // should be displayed for 3 seconds before getting back to AVAILABLE_DEFAULT
+  // state.
+  AVAILABLE_WITH_TOUCH_SENSOR_WARNING,
   // There have been too many attempts, so now fingerprint is disabled.
   DISABLED_FROM_ATTEMPTS,
   // It has been too long since the device was last used.
@@ -170,6 +184,8 @@ struct ASH_PUBLIC_EXPORT LocaleItem {
   LocaleItem& operator=(const LocaleItem& other);
   LocaleItem& operator=(LocaleItem&& other);
 
+  bool operator==(const LocaleItem& other) const;
+
   // Language code of the locale.
   std::string language_code;
 
@@ -190,8 +206,9 @@ struct ASH_PUBLIC_EXPORT PublicAccountInfo {
   PublicAccountInfo& operator=(const PublicAccountInfo& other);
   PublicAccountInfo& operator=(PublicAccountInfo&& other);
 
-  // The domain name displayed in the login screen UI.
-  base::Optional<std::string> enterprise_domain;
+  // The domain name displayed in the login screen UI for device-level
+  // management.
+  base::Optional<std::string> device_enterprise_domain;
 
   // A list of available user locales.
   std::vector<LocaleItem> available_locales;
@@ -254,6 +271,14 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
 
   // Show pin pad for password for this user or not.
   bool show_pin_pad_for_password = false;
+
+  // True if the display password button should be visible on the login/lock
+  // screen for this user.
+  bool show_display_password_button = false;
+
+  // The domain name displayed in the login screen UI for user-level
+  // management. This is only set if the relevant user is managed.
+  base::Optional<std::string> user_enterprise_domain;
 
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;
@@ -324,16 +349,16 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
   AccountId account_id;
 
   // Type of the code requested from the user.
-  chromeos::SecurityTokenPinCodeType code_type =
-      chromeos::SecurityTokenPinCodeType::kPin;
+  chromeos::security_token_pin::CodeType code_type =
+      chromeos::security_token_pin::CodeType::kPin;
 
   // Whether the UI controls that allow user to enter the value should be
   // enabled. MUST be |false| when |attempts_left| is zero.
   bool enable_user_input = true;
 
   // An optional error to be displayed to the user.
-  chromeos::SecurityTokenPinErrorLabel error_label =
-      chromeos::SecurityTokenPinErrorLabel::kNone;
+  chromeos::security_token_pin::ErrorLabel error_label =
+      chromeos::security_token_pin::ErrorLabel::kNone;
 
   // When non-negative, the UI should indicate this number to the user;
   // otherwise must be equal to -1.
@@ -341,11 +366,13 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
 
   // Called when the user submits the input. Will not be called if the UI is
   // closed before that happens.
-  base::OnceCallback<void(const std::string& user_input)> pin_entered_callback;
+  using OnPinEntered = base::OnceCallback<void(const std::string& user_input)>;
+  OnPinEntered pin_entered_callback;
 
   // Called when the PIN request UI gets closed. Will not be called when the
   // browser itself requests the UI to be closed.
-  base::OnceClosure pin_ui_closed_callback;
+  using OnUiClosed = base::OnceClosure;
+  OnUiClosed pin_ui_closed_callback;
 };
 
 }  // namespace ash

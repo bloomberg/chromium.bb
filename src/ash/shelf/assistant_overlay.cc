@@ -73,7 +73,7 @@ AssistantOverlay::AssistantOverlay(HomeButton* host_view)
       host_view_(host_view),
       circle_layer_delegate_(kRippleColor, kRippleCircleInitRadiusDip) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  layer()->set_name("AssistantOverlay:ROOT_LAYER");
+  layer()->SetName("AssistantOverlay:ROOT_LAYER");
   layer()->SetMasksToBounds(false);
 
   ripple_layer_->SetBounds(gfx::Rect(0, 0, kRippleCircleInitRadiusDip * 2,
@@ -81,7 +81,7 @@ AssistantOverlay::AssistantOverlay(HomeButton* host_view)
   ripple_layer_->set_delegate(&circle_layer_delegate_);
   ripple_layer_->SetFillsBoundsOpaquely(false);
   ripple_layer_->SetMasksToBounds(true);
-  ripple_layer_->set_name("AssistantOverlay:PAINTED_LAYER");
+  ripple_layer_->SetName("AssistantOverlay:PAINTED_LAYER");
   layer()->Add(ripple_layer_.get());
 }
 
@@ -95,7 +95,7 @@ void AssistantOverlay::StartAnimation(bool show_icon) {
   // Setup ripple initial state.
   ripple_layer_->SetOpacity(0);
 
-  SkMScalar scale_factor =
+  SkScalar scale_factor =
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
@@ -134,7 +134,7 @@ void AssistantOverlay::BurstAnimation() {
 
   // Setup ripple animations.
   {
-    SkMScalar scale_factor =
+    SkScalar scale_factor =
         kRippleCircleBurstRadiusDip / kRippleCircleInitRadiusDip;
     transform.Translate(center.x() - kRippleCircleBurstRadiusDip,
                         center.y() - kRippleCircleBurstRadiusDip);
@@ -161,7 +161,7 @@ void AssistantOverlay::EndAnimation() {
 
   // Play reverse animation
   // Setup ripple animations.
-  SkMScalar scale_factor =
+  SkScalar scale_factor =
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 

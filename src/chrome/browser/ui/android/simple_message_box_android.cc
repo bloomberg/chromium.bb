@@ -7,14 +7,13 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chrome {
 
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
-                           const base::string16& message,
-                           bool can_close) {
+                           const base::string16& message) {
   NOTIMPLEMENTED();
 }
 

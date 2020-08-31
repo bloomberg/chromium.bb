@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
@@ -15,22 +17,27 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Build.VERSION;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.ViewAssertion;
+import android.support.test.espresso.core.deps.guava.base.Preconditions;
 import android.support.test.espresso.matcher.BoundedMatcher;
-import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.style.ClickableSpan;
+import android.text.style.StyleSpan;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -40,25 +47,26 @@ import org.json.JSONArray;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -67,7 +75,7 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
  */
 class AutofillAssistantUiTestUtil {
     /** Image fetcher which synchronously returns a preset image. */
-    static class MockImageFetcher extends ImageFetcher {
+    static class MockImageFetcher extends ImageFetcher.ImageFetcherForTesting {
         private final Bitmap mBitmapToFetch;
         private final BaseGifImage mGifToFetch;
 
@@ -88,6 +96,11 @@ class AutofillAssistantUiTestUtil {
         }
 
         @Override
+        public void fetchImage(Params params, Callback<Bitmap> callback) {
+            callback.onResult(mBitmapToFetch);
+        }
+
+        @Override
         public void clear() {}
 
         @Override
@@ -100,7 +113,7 @@ class AutofillAssistantUiTestUtil {
     }
 
     /** Checks that a text view has a specific maximum number of lines to display. */
-    public static TypeSafeMatcher<View> isTextMaxLines(int maxLines) {
+    static TypeSafeMatcher<View> isTextMaxLines(int maxLines) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -117,8 +130,12 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    /** Checks that a text view has a specific typeface style. */
-    public static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
+    /**
+     * Checks that a text view has a specific typeface style. NOTE: this only works for views that
+     * explicitly set the text style, *NOT* for text spans! @see {@link #hasTypefaceSpan(int, int,
+     * int)}
+     */
+    static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -139,7 +156,47 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> isImportantForAccessibility(int mode) {
+    /**
+     * Checks that a text view has a span with the specified style in the specified region.
+     * @param start The start offset of the style span
+     * @param end The end offset of the style span
+     * @param style The style to check for
+     * @return A matcher that returns true if the view satisfies the condition.
+     */
+    static TypeSafeMatcher<View> hasTypefaceSpan(
+            int start, int end, /*@Typeface.Style*/ int style) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                if (!(item instanceof TextView)) {
+                    return false;
+                }
+                TextView textView = (TextView) item;
+                if (!(textView.getText() instanceof SpannedString)) {
+                    return false;
+                }
+                if (start >= textView.length() || end >= textView.length()) {
+                    return false;
+                }
+                StyleSpan[] spans =
+                        ((SpannedString) textView.getText()).getSpans(start, end, StyleSpan.class);
+                for (StyleSpan span : spans) {
+                    if (span.getStyle() == style) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(
+                        "hasTypefaceSpan(" + style + ") in [" + start + ", " + end + "]");
+            }
+        };
+    }
+
+    static Matcher<View> isImportantForAccessibility(int mode) {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
@@ -153,7 +210,7 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> hasTintColor(final int colorResId) {
+    static Matcher<View> hasTintColor(final int colorResId) {
         return new BoundedMatcher<View, ImageView>(ImageView.class) {
             private Context mContext;
 
@@ -186,7 +243,111 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static ViewAction openTextLink(String textLink) {
+    static Matcher<View> isNextAfterSibling(final Matcher<View> siblingMatcher) {
+        Preconditions.checkNotNull(siblingMatcher);
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is next after sibling: ");
+                siblingMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                if (!(parent instanceof ViewGroup)) {
+                    return false;
+                } else {
+                    ViewGroup parentGroup = (ViewGroup) parent;
+
+                    for (int i = 1; i < parentGroup.getChildCount(); ++i) {
+                        if (view == parentGroup.getChildAt(i)) {
+                            return siblingMatcher.matches(parentGroup.getChildAt(i - 1));
+                        }
+                    }
+
+                    return false;
+                }
+            }
+        };
+    }
+
+    static Matcher<View> withParentIndex(int parentIndex) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("withParentIndex: " + parentIndex);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                if (!(parent instanceof ViewGroup)) {
+                    return false;
+                } else {
+                    ViewGroup parentGroup = (ViewGroup) parent;
+                    return parentGroup.getChildAt(parentIndex) == view;
+                }
+            }
+        };
+    }
+
+    static Matcher<View> withMinimumSize(int minWidthInPixels, int minHeightInPixels) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                return view.getWidth() >= minWidthInPixels && view.getHeight() >= minHeightInPixels
+                        && view.getMinimumWidth() == minWidthInPixels
+                        && view.getMinimumHeight() == minHeightInPixels;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(
+                        "Width >= " + minWidthInPixels + " and height >= " + minHeightInPixels);
+            }
+        };
+    }
+
+    static Matcher<View> fullyCovers(Rect rect) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                Rect viewRect = new Rect();
+                if (!view.getGlobalVisibleRect(viewRect)) {
+                    throw new AssertionError("Expected view to be visible.");
+                }
+
+                return rect.left >= viewRect.left && rect.right <= viewRect.right
+                        && rect.top >= viewRect.top && rect.bottom <= viewRect.bottom;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("fully covering [" + rect.left + ", " + rect.top + ", "
+                        + rect.right + ", " + rect.bottom + "]");
+            }
+        };
+    }
+
+    static Matcher<View> withTextGravity(int gravity) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                if (!(view instanceof TextView)) {
+                    return false;
+                }
+                return ((TextView) view).getGravity() == gravity;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("withTextGravity " + gravity);
+            }
+        };
+    }
+
+    static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override
             public Matcher<View> getConstraints() {
@@ -201,13 +362,13 @@ class AutofillAssistantUiTestUtil {
             @Override
             public void perform(UiController uiController, View view) {
                 TextView textView = (TextView) view;
-                SpannableString spannableString = (SpannableString) textView.getText();
+                Spanned spannedString = (Spanned) textView.getText();
                 ClickableSpan[] spans =
-                        spannableString.getSpans(0, spannableString.length(), ClickableSpan.class);
+                        spannedString.getSpans(0, spannedString.length(), ClickableSpan.class);
                 for (ClickableSpan span : spans) {
                     if (textLink.contentEquals(
-                                spannableString.subSequence(spannableString.getSpanStart(span),
-                                        spannableString.getSpanEnd(span)))) {
+                                spannedString.subSequence(spannedString.getSpanStart(span),
+                                        spannedString.getSpanEnd(span)))) {
                         span.onClick(view);
                         return;
                     }
@@ -265,29 +426,76 @@ class AutofillAssistantUiTestUtil {
     }
 
     /**
-     * Creates a {@link BottomSheetController} for the activity, suitable for testing.
-     *
-     * <p>The returned controller is different from the one returned by {@link
-     * ChromeActivity#getBottomSheetController}.
+     * Same as {@link #waitUntilViewMatchesCondition(Matcher, Matcher, long)}, but waits for a view
+     * assertion instead.
      */
-    static BottomSheetController createBottomSheetController(ChromeActivity activity) {
-        // Copied from {@link ChromeActivity#initializeBottomSheet}.
+    public static void waitUntilViewAssertionTrue(
+            Matcher<View> matcher, ViewAssertion viewAssertion, long maxTimeoutMs) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria(
+                        "Timeout while waiting for " + matcher + " to satisfy " + viewAssertion) {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            onView(matcher).check(viewAssertion);
+                            return true;
+                        } catch (NoMatchingViewException | AssertionError e) {
+                            // Note: all other exceptions are let through, in particular
+                            // AmbiguousViewMatcherException.
+                            return false;
+                        }
+                    }
+                },
+                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
+    }
 
-        Supplier<View> sheetSupplier = () -> {
-            ViewGroup coordinator = activity.findViewById(R.id.coordinator);
-            LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
-            View bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-            return bottomSheet;
-        };
+    /**
+     * Waits until keyboard is visible or not based on {@code isShowing}. Will automatically fail
+     * after a default timeout.
+     */
+    public static void waitUntilKeyboardMatchesCondition(
+            ChromeActivityTestRule testRule, boolean isShowing) {
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
+                "Timeout while waiting for the keyboard to be "
+                + (isShowing ? "visible" : "hidden")) {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    boolean isKeyboardShowing =
+                            testRule.getActivity()
+                                    .getWindowAndroid()
+                                    .getKeyboardDelegate()
+                                    .isKeyboardShowing(testRule.getActivity(),
+                                            testRule.getActivity().getCompositorViewHolder());
+                    assertThat("", isKeyboardShowing == isShowing);
+                    return true;
+                } catch (AssertionError e) {
+                    return false;
+                }
+            }
+        });
+    }
 
-        Supplier<OverlayPanelManager> panelManagerProvider = () -> {
-            return activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-        };
+    public static void waitUntil(Callable<Boolean> condition) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Timeout while waiting for condition") {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            return condition.call();
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                },
+                DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
 
-        return new BottomSheetController(activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), activity.getScrim(), sheetSupplier,
-                panelManagerProvider, activity.getFullscreenManager(), activity.getWindow(),
-                activity.getWindowAndroid().getKeyboardDelegate());
+    /**
+     * Get a {@link BottomSheetController} to run the tests with.
+     */
+    static BottomSheetController getBottomSheetController(ChromeActivity activity) {
+        return activity.getRootUiCoordinatorForTesting().getBottomSheetController();
     }
 
     /**
@@ -310,6 +518,7 @@ class AutofillAssistantUiTestUtil {
         testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank"));
     }
+
     /**
      * Starts Autofill Assistant on the given {@code activity} and injects the given {@code
      * testService}.
@@ -320,11 +529,29 @@ class AutofillAssistantUiTestUtil {
         TestThreadUtils.runOnUiThreadBlocking(() -> AutofillAssistantFacade.start(activity));
     }
 
-    /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
-    public static Rect getAbsoluteBoundingRect(String elementId, CustomTabActivityTestRule testRule)
+    /** Performs a single tap on the center of the specified element. */
+    public static void tapElement(ChromeActivityTestRule testRule, String... elementIds)
             throws Exception {
+        Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
+        float x = coords.left + 0.5f * (coords.right - coords.left);
+        float y = coords.top + 0.5f * (coords.bottom - coords.top);
+
+        // Sanity check, can only click on coordinates on screen.
+        DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
+        if (x < 0 || x > displayMetrics.widthPixels || y < 0 || y > displayMetrics.heightPixels) {
+            throw new IllegalArgumentException(Arrays.toString(elementIds)
+                    + " not on screen: tried to tap x=" + x + ", y=" + y
+                    + ", which is outside of display with w=" + displayMetrics.widthPixels
+                    + ", h=" + displayMetrics.heightPixels);
+        }
+        TestTouchUtils.singleClick(InstrumentationRegistry.getInstrumentation(), x, y);
+    }
+
+    /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
+    public static Rect getAbsoluteBoundingRect(
+            ChromeActivityTestRule testRule, String... elementIds) throws Exception {
         // Get bounding rectangle in viewport space.
-        Rect elementRect = getBoundingRectForElement(elementId, testRule.getWebContents());
+        Rect elementRect = getBoundingRectForElement(testRule.getWebContents(), elementIds);
 
         /*
          * Conversion from viewport space to screen space is done in two steps:
@@ -350,34 +577,69 @@ class AutofillAssistantUiTestUtil {
      * Retrieves the bounding rectangle for the specified element in the DOM tree in CSS pixel
      * coordinates.
      */
-    public static Rect getBoundingRectForElement(String elementId, WebContents webContents)
+    public static Rect getBoundingRectForElement(WebContents webContents, String... elementIds)
             throws Exception {
-        if (!checkElementExists(elementId, webContents)) {
-            throw new IllegalArgumentException(elementId + " does not exist");
+        if (!checkElementExists(webContents, elementIds)) {
+            throw new IllegalArgumentException(Arrays.toString(elementIds) + " does not exist");
         }
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
-        javascriptHelper.evaluateJavaScriptForTests(webContents,
-                "(function() {"
-                        + " rect = document.getElementById('" + elementId
-                        + "').getBoundingClientRect();"
-                        + " return [window.scrollX + rect.left, window.scrollY + rect.top, "
-                        + "         window.scrollX + rect.right, window.scrollY + rect.bottom];"
-                        + "})()");
-        javascriptHelper.waitUntilHasValue();
-        JSONArray rectJson = new JSONArray(javascriptHelper.getJsonResultAndClear());
-        return new Rect(
-                rectJson.getInt(0), rectJson.getInt(1), rectJson.getInt(2), rectJson.getInt(3));
+        Rect rect = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        for (int i = 0; i < elementIds.length; ++i) {
+            String offsetX = i == 0 ? "window.scrollX" : "0";
+            String offsetY = i == 0 ? "window.scrollY" : "0";
+            String elementSelector =
+                    getElementSelectorString(Arrays.copyOfRange(elementIds, 0, i + 1));
+            javascriptHelper.evaluateJavaScriptForTests(webContents,
+                    "(function() {"
+                            + " rect = " + elementSelector + ".getBoundingClientRect();"
+                            + " return [" + offsetX + " + rect.left, " + offsetY + " + rect.top, "
+                            + "         " + offsetX + " + rect.right, " + offsetY
+                            + " + rect.bottom];"
+                            + "})()");
+            javascriptHelper.waitUntilHasValue();
+            JSONArray rectJson = new JSONArray(javascriptHelper.getJsonResultAndClear());
+
+            rect = new Rect(Math.min(rect.right, rect.left + rectJson.getInt(0)),
+                    Math.min(rect.bottom, rect.top + rectJson.getInt(1)),
+                    Math.min(rect.right, rect.left + rectJson.getInt(2)),
+                    Math.min(rect.bottom, rect.top + rectJson.getInt(3)));
+        }
+        return rect;
+    }
+
+    public static boolean checkElementOnScreen(
+            ChromeActivityTestRule testRule, String... elementIds) throws Exception {
+        Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
+        DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
+
+        return (coords.left < displayMetrics.widthPixels && 0 <= coords.right)
+                && (coords.top < displayMetrics.heightPixels && 0 <= coords.bottom);
     }
 
     /** Checks whether the specified element exists in the DOM tree. */
-    public static boolean checkElementExists(String elementId, WebContents webContents)
+    public static boolean checkElementExists(WebContents webContents, String... elementIds)
             throws Exception {
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
-                        + " return [document.getElementById('" + elementId + "') != null]; "
+                        + " return [" + getElementSelectorString(elementIds) + " != null]; "
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return result.getBoolean(0);
+    }
+
+    /** Checks whether the specified element is displayed in the DOM tree. */
+    public static boolean checkElementIsDisplayed(WebContents webContents, String... elementIds)
+            throws Exception {
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " return [" + getElementSelectorString(elementIds)
+                        + ".style.display != \"none\"]; "
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
@@ -403,19 +665,37 @@ class AutofillAssistantUiTestUtil {
     /**
      * Retrieves the value of the specified element.
      */
-    public static String getElementValue(String elementId, WebContents webContents)
+    public static String getElementValue(WebContents webContents, String... elementIds)
             throws Exception {
-        if (!checkElementExists(elementId, webContents)) {
-            throw new IllegalArgumentException(elementId + " does not exist");
+        if (!checkElementExists(webContents, elementIds)) {
+            throw new IllegalArgumentException(Arrays.toString(elementIds) + " does not exist");
         }
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
-                        + " return [document.getElementById('" + elementId + "').value]"
+                        + " return [" + getElementSelectorString(elementIds) + ".value]"
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
         return result.getString(0);
+    }
+
+    private static String getElementSelectorString(String[] elementIds) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("document");
+
+        for (int i = 0; i < elementIds.length; ++i) {
+            builder.append(".getElementById('");
+            builder.append(elementIds[i]);
+            builder.append("')");
+            if (i != elementIds.length - 1) {
+                // Get the iFrame document. This only works for local iFrames, OutOfProcess iFrames
+                // may respond with an error.
+                builder.append(".contentWindow.document");
+            }
+        }
+
+        return builder.toString();
     }
 }

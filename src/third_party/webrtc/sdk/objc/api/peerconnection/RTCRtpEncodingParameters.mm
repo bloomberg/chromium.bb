@@ -12,7 +12,7 @@
 
 #import "helpers/NSString+StdString.h"
 
-@implementation RTCRtpEncodingParameters
+@implementation RTC_OBJC_TYPE (RTCRtpEncodingParameters)
 
 @synthesize rid = _rid;
 @synthesize isActive = _isActive;
@@ -22,6 +22,7 @@
 @synthesize numTemporalLayers = _numTemporalLayers;
 @synthesize scaleResolutionDownBy = _scaleResolutionDownBy;
 @synthesize ssrc = _ssrc;
+@synthesize bitratePriority = _bitratePriority;
 @synthesize networkPriority = _networkPriority;
 
 - (instancetype)init {
@@ -56,7 +57,9 @@
     if (nativeParameters.ssrc) {
       _ssrc = [NSNumber numberWithUnsignedLong:*nativeParameters.ssrc];
     }
-    _networkPriority = nativeParameters.network_priority;
+    _bitratePriority = nativeParameters.bitrate_priority;
+    _networkPriority = [RTC_OBJC_TYPE(RTCRtpEncodingParameters)
+        priorityFromNativePriority:nativeParameters.network_priority];
   }
   return self;
 }
@@ -86,8 +89,36 @@
   if (_ssrc != nil) {
     parameters.ssrc = absl::optional<uint32_t>(_ssrc.unsignedLongValue);
   }
-  parameters.network_priority = _networkPriority;
+  parameters.bitrate_priority = _bitratePriority;
+  parameters.network_priority =
+      [RTC_OBJC_TYPE(RTCRtpEncodingParameters) nativePriorityFromPriority:_networkPriority];
   return parameters;
+}
+
++ (webrtc::Priority)nativePriorityFromPriority:(RTCPriority)networkPriority {
+  switch (networkPriority) {
+    case RTCPriorityVeryLow:
+      return webrtc::Priority::kVeryLow;
+    case RTCPriorityLow:
+      return webrtc::Priority::kLow;
+    case RTCPriorityMedium:
+      return webrtc::Priority::kMedium;
+    case RTCPriorityHigh:
+      return webrtc::Priority::kHigh;
+  }
+}
+
++ (RTCPriority)priorityFromNativePriority:(webrtc::Priority)nativePriority {
+  switch (nativePriority) {
+    case webrtc::Priority::kVeryLow:
+      return RTCPriorityVeryLow;
+    case webrtc::Priority::kLow:
+      return RTCPriorityLow;
+    case webrtc::Priority::kMedium:
+      return RTCPriorityMedium;
+    case webrtc::Priority::kHigh:
+      return RTCPriorityHigh;
+  }
 }
 
 @end

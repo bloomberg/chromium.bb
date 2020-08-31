@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "components/user_manager/user_manager.h"
@@ -207,7 +208,8 @@ void FirstRunController::ShowNextStep() {
     RecordCompletion(first_run::TUTORIAL_COMPLETED_WITH_GOT_IT);
     return;
   }
-  GetCurrentStep()->Show();
+  if (!GetCurrentStep()->Show())
+    ShowNextStep();
 }
 
 void FirstRunController::AdvanceStep() {

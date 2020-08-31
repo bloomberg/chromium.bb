@@ -45,15 +45,12 @@ void CreateRequestValueFromJSON(const std::string& json,
   using extensions::api::file_system_provider_internal::
       GetMetadataRequestedSuccess::Params;
 
-  int json_error_code;
-  std::string json_error_msg;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg);
-  ASSERT_TRUE(value.get()) << json_error_msg;
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(json);
+  ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
   base::ListValue* value_as_list;
-  ASSERT_TRUE(value->GetAsList(&value_as_list));
+  ASSERT_TRUE(parsed_json.value->GetAsList(&value_as_list));
   std::unique_ptr<Params> params(Params::Create(*value_as_list));
   ASSERT_TRUE(params.get());
   *result = RequestValue::CreateForGetMetadataSuccess(std::move(params));
@@ -231,8 +228,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -266,8 +263,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -287,8 +284,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
           ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
           ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
           ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -347,8 +344,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
           ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
           ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
           ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
@@ -396,8 +393,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
-      base::Bind(&CallbackLogger::OnGetMetadata,
-                 base::Unretained(&callback_logger)));
+      base::BindOnce(&CallbackLogger::OnGetMetadata,
+                     base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));

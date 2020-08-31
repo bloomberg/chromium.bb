@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">මෙනු අයිතමය</translation>
 <translation id="10623998915015855">මාරු බොත්තම</translation>
 <translation id="1088086359088493902">තත්පර</translation>
+<translation id="1142001580032786438">සති තෝරකය පෙන්වන්න</translation>
 <translation id="1171774979989969504">කරුණාකර ඊමේල් ලිපිනයක් ඇතුළත් කරන්න.</translation>
 <translation id="1178581264944972037">විරාමය</translation>
 <translation id="1188858454923323853">ඌනපූරක</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">ස්ලයිඩරය</translation>
 <translation id="1211441953136645838">නිමි සටහන</translation>
 <translation id="1281252709823657822">සංවාදය</translation>
+<translation id="1306460908038601864">අක්‍රිය</translation>
 <translation id="1335095011850992622">සම්මාන</translation>
 <translation id="1342835525016946179">ලිපිය</translation>
 <translation id="1359897965706325498">බැනරය</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">සිරස්තල මෙනුව සඟවන්න</translation>
 <translation id="1729654308190250600">කරුණාකර හිස් නොවන ඊමේල් ලිපිනයක් ඇතුල් කරන්න.</translation>
 <translation id="1758486001363313524">වෙනත්...</translation>
+<translation id="1787192514241997742">සම්පූර්ණ කාලය: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">ඇඟවුම්_සංවාදය</translation>
 <translation id="1821985195704844674">රුක් ජාලය</translation>
 <translation id="1822429046913737220">පෙව/පව</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">අගය <ph name="MAXIMUM_DATE_OR_TIME" /> හෝ ඊට වඩා කළින් විය යුතුය.</translation>
 <translation id="1946271899482435442">දින තෝරනය පෙන්වන්න</translation>
 <translation id="1993104285338243655">දර්පණයට මාරු විය</translation>
+<translation id="2031987842108996681">රතු නාලිකාව</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' '<ph name="INVALIDDOMAIN" />' හි වැරදි ස්ථානයක් අසල භාවිතා කෙරේ.</translation>
 <translation id="2148716181193084225">අද</translation>
 <translation id="2158401438286456825">පිටු ලැයිස්තුව</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">තේරීම් කොටුව</translation>
 <translation id="2311842470354187719">පිටු බිඳුම</translation>
 <translation id="2335594187091864976">දිනය හා වේලාව තෝරකය</translation>
+<translation id="2393030564806080191">ෂෂ්ඨ දශක වර්ණ අගය</translation>
 <translation id="245932805758469625">වීඩියෝවේ ඉතිරි තත්පර ගණන</translation>
 <translation id="248395913932153421">දිනය</translation>
 <translation id="2507943997699731163">කරුණාකර මෙම ක්ෂේත්‍රය පුරවන්න.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">තවත් මාධ්‍ය පාලන පෙන්වන්න</translation>
 <translation id="2572483411312390101">වාදනය කරන්න</translation>
 <translation id="2613802280814924224">වලංගු අගයක් ඇතුළත් කරන්න. ආසන්නතම වලංගු අගය <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">කොළ නාලිකාව</translation>
 <translation id="2653659639078652383">ඉදිරිපත් කරන්න</translation>
 <translation id="2657045182931379222">චිත්‍රක වස්තුව</translation>
 <translation id="2674318244760992338">පාදම</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">කරුණාකර URL එකක් ඇතුළු කරන්න.</translation>
 <translation id="3175736971608411871">කාල ගණකය</translation>
 <translation id="3199563858620722075">සංයුක්ත කොටුව</translation>
+<translation id="3329013043687509092">සංතෘප්ත වීම</translation>
 <translation id="3450233048674729344">අගය <ph name="MAXIMUM" /> ට හෝ ඊට වඩා අඩු විය යුතුය.</translation>
 <translation id="3486220673238053218">නිර්වචනය</translation>
 <translation id="3557673793733683882">ශීර්ෂය <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">රුණාකර මෙම පෙළ අනුලකුණු <ph name="MIN_CHARACTERS" /> කට හෝ ඊට වඩා දිගු කරන්න (ඔබ දැනට අනුලකුණු <ph name="CURRENT_LENGTH" /> ක් භාවිත කරමින් සිටී).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ට පසු කොසෙහි '<ph name="INVALIDCHARACTER" />' සංකේතය අඩංගු නොවිය යුතුය.</translation>
 <translation id="3846214748874656680">පූර්ණ තිරයෙන් ඉවත් වන්න</translation>
-<translation id="3889183436948184105">සංශෝධනය</translation>
 <translation id="3920932319529768807">නිගමනය</translation>
 <translation id="3924558731517983934">යෙදුම</translation>
 <translation id="3944740393230681990">උපන්‍යාසය</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">මෙසේ කියන බව පෙනේ: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">ශබ්ද මාලා යොමුව</translation>
 <translation id="4522570452068850558">විස්තර</translation>
-<translation id="4542388879936266156">ඉතිරි කාලය: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">පෝරමය</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">පහත ඒවායින් කොටසක් '<ph name="ATSIGN" />' තුළ මෙම සංකේතය අඩංගු නොවිය යුතුය '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">සොයන්න</translation>
 <translation id="4812940957355064477">කරුණාකර නමක් අතුළු කරන්න.</translation>
 <translation id="4912536737030637138">ග්‍රන්ථ නාමාවලිය ඇතුළත් කිරීම</translation>
+<translation id="4915360478455618802">වේලා තෝරකය පෙන්වන්න</translation>
 <translation id="492244087561876220">අදහස් දක්වන්න</translation>
+<translation id="4950364064308314478">ප්‍රාදේශීය දිනය සහ වේලාව තෝරකය පෙන්වන්න</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> තේරිණි</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> තෝරා ගැනිණි</translation>
 <translation id="4992066212339426712">නිශ්ශබ්දතාවය ඉවත් කරන්න</translation>
 <translation id="49969490063480558">කරුණාකර '<ph name="ATSIGN" />' පසුව එන කොටසක් ඇතුළු කරන්න. '<ph name="INVALIDADDRESS" />' අසම්පූර්ණයි.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">ප්‍රගති දර්ශකය</translation>
 <translation id="5090250355906949916">වීඩියෝ වේලා අතුල්ලනය</translation>
 <translation id="5093189678851173835">ශිලාලේඛනය</translation>
+<translation id="509897012892853729">නිල් නාලිකාව</translation>
 <translation id="5117590920725113268">ඊළඟ මාසය පෙන්වන්න</translation>
 <translation id="512758898067543763">පේළි ශීර්ෂය</translation>
 <translation id="5143125788380636750">අපරකථනය</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">කරුණාකර '<ph name="ATSIGN" />' පසුපසින් යෙදෙන කොටසක් ඇතුළත් කරන්න. '<ph name="INVALIDADDRESS" />' අසම්පූර්ණයි.</translation>
 <translation id="5334352251556557839">මාධ්‍ය ධාවන කළ නොහැක.</translation>
+<translation id="537648784377940524">අවම දිනය (<ph name="MIN_DATE_OR_TIME" />) උපරිම දිනයට (<ph name="MAX_DATE_OR_TIME" />) පෙර ආ යුතුම ය.</translation>
 <translation id="5406322316791861025">රූප සටහන</translation>
 <translation id="5453733299334684579">රුක් අයිතමය</translation>
 <translation id="5466621249238537318">කරුණාකර ගොනු එකක් හෝ කිහිපයක් තෝරන්න.</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">තවත් විකල්ප</translation>
 <translation id="576709008726043716">හැඳින්වීම</translation>
 <translation id="57838592816432529">නිහඬ කරන්න</translation>
-<translation id="5860033963881614850">අක්‍රීය</translation>
 <translation id="588258955323874662">සම්පුර්ණ තිරය</translation>
 <translation id="5888666972993069672">දැන් <ph name="DEVICE_FRIENDLY_NAME" /> වෙත විකාශය කරමින්</translation>
 <translation id="591047860372322273">සෙවීම් කොටුව</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">පසුවදන</translation>
 <translation id="6209276755895393898">මේ බව පෙනේ: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ශබ්ද මාලාව</translation>
+<translation id="6281588256137006900">සැහැල්ලු</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">පින්තූරය-තුළ-පින්තූරයෙන් පිටවන්න</translation>
 <translation id="6398862346408813489">මාසය තේරීමේ පැනලය පෙන්වන්න</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">වාදනය කරන්න</translation>
 <translation id="6820355525329141109">ප්ලගිනය පූරණය කළ නොහැකි විය.</translation>
 <translation id="6820615603175220800">ග්‍රන්ථ නාමාවලි යොමුව</translation>
+<translation id="6831465880655513317">සන්තෘප්තිය සහ සැහැල්ලු බව තේරීම සඳහා ද්විමාන ස්ලයිඩරය සමඟ වර්ණ ගන්වන්න</translation>
 <translation id="6843725295806269523">නිහඬ කරන්න</translation>
 <translation id="6885760532393684712">නාමාවලිය</translation>
 <translation id="689129560213475294">ග්‍රන්ථවිස්තරය</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">කරුණාකර ලැයිස්තුවෙහි අයිතමයක් තෝරන්න.</translation>
 <translation id="727747134524199931">තීරු ශීර්ෂය</translation>
 <translation id="7320576522385648310">අන්තරාචයනය</translation>
+<translation id="7341556277900466204">හොඳින් වර්ණ ගන්වන්න</translation>
 <translation id="7353453495576941748">ස්තූතිය</translation>
 <translation id="7364796246159120393">ගොනුව තෝරන්න</translation>
 <translation id="739024184232394898">වෙනත්...</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">වලංගු නොවන ඇතුළත් කිරීමකි</translation>
 <translation id="7789962463072032349">අත්හිටුවන්න</translation>
 <translation id="7802800022689234070">අනාවරණය ත්‍රිකෝණය</translation>
+<translation id="7852167693871241274">පැහැ ස්ලයිඩරය</translation>
 <translation id="7888071071722539607">ඊමේල් ලිපිනයේ '<ph name="ATSIGN" />' ලකුණ ඇතුළත් කරන්න. '<ph name="INVALIDADDRESS" />' ලිපිනයේ '<ph name="ATSIGN" />' සලකුණ නොමැත.</translation>
 <translation id="7891486169920085145">බෙදුම</translation>
 <translation id="795667975304826397">කිසිදු ගොනුවක් තෝරා නැත</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> නොතේරිණි</translation>
 <translation id="8034303206267677282">ප්‍රබල</translation>
 <translation id="8053789581856978548">පෙළ ක්ෂේත්‍රය සොයන්න</translation>
 <translation id="8057695513531652401">නිවේදනය</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">සිරස්තල</translation>
 <translation id="8346634859695247203">කොටස</translation>
 <translation id="835897206747267392">අවලංගු අගය.</translation>
+<translation id="839593075537728968">අගය <ph name="MINIMUM_TIME" /> සහ <ph name="MAXIMUM_TIME" /> අතර විය යුතුම ය.</translation>
 <translation id="8403857369060869934">ගත වූ කාලය: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">කොටස</translation>
 <translation id="8433900881053900389">මෙවලම් තීරුව</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">පටුන</translation>
 <translation id="8613126697340063924">දුරස්ථ පසුධාවනය පාලනය කරන්න</translation>
 <translation id="862370744433916922">උපසිරැසිය</translation>
+<translation id="8634971699417195529">මාස තෝරකය පෙන්වන්න</translation>
 <translation id="8711688047404765493">ප්‍රතිදානය</translation>
 <translation id="8750798805984357768">කරුණාකර මෙම විකල්පවලින් එකක් තෝරන්න.</translation>
 <translation id="8808573423886751634">පරිච්ඡේදය</translation>
 <translation id="8845239796550121995">දැන් ඔබේ TV වෙත විකාශය කරමින්</translation>
 <translation id="8851136666856101339">ප්‍රධාන</translation>
 <translation id="8875657656876809964">වීඩියෝ පසුධාවන දෝෂය</translation>
+<translation id="8889402386540077796">හියු</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ටොගල්කරණය ආකෘති කරන්න</translation>
 <translation id="8987927404178983737">මාසය</translation>
 <translation id="901493112792887934">වත්මන් කාලය තත්පර වලින්</translation>
 <translation id="901834265349196618">ඊතැපෑල</translation>
-<translation id="9023835124071926463">අදහස් කොටස</translation>
 <translation id="9048119486235211610">සංචාලනය</translation>
 <translation id="9062295712474918030">ලේඛනය</translation>
 <translation id="9093215626363556771">පින්තූරය-තුළ-පින්තූරයෙන් පිටවන්න</translation>

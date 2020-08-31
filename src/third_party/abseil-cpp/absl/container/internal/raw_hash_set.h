@@ -104,6 +104,7 @@
 
 #include "absl/base/internal/bits.h"
 #include "absl/base/internal/endian.h"
+#include "absl/base/optimization.h"
 #include "absl/base/port.h"
 #include "absl/container/internal/common.h"
 #include "absl/container/internal/compressed_tuple.h"
@@ -118,6 +119,7 @@
 #include "absl/utility/utility.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace container_internal {
 
 template <size_t Width>
@@ -311,7 +313,7 @@ inline bool IsFull(ctrl_t c) { return c >= 0; }
 inline bool IsDeleted(ctrl_t c) { return c == kDeleted; }
 inline bool IsEmptyOrDeleted(ctrl_t c) { return c < kSentinel; }
 
-#if SWISSTABLE_HAVE_SSE2
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSE2
 
 // https://github.com/abseil/abseil-cpp/issues/209
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87853
@@ -345,7 +347,7 @@ struct GroupSse2Impl {
 
   // Returns a bitmask representing the positions of empty slots.
   BitMask<uint32_t, kWidth> MatchEmpty() const {
-#if SWISSTABLE_HAVE_SSSE3
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSSE3
     // This only works because kEmpty is -128.
     return BitMask<uint32_t, kWidth>(
         _mm_movemask_epi8(_mm_sign_epi8(ctrl, ctrl)));
@@ -371,7 +373,7 @@ struct GroupSse2Impl {
   void ConvertSpecialToEmptyAndFullToDeleted(ctrl_t* dst) const {
     auto msbs = _mm_set1_epi8(static_cast<char>(-128));
     auto x126 = _mm_set1_epi8(126);
-#if SWISSTABLE_HAVE_SSSE3
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSSE3
     auto res = _mm_or_si128(_mm_shuffle_epi8(x126, ctrl), msbs);
 #else
     auto zero = _mm_setzero_si128();
@@ -383,7 +385,7 @@ struct GroupSse2Impl {
 
   __m128i ctrl;
 };
-#endif  // SWISSTABLE_HAVE_SSE2
+#endif  // ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSE2
 
 struct GroupPortableImpl {
   static constexpr size_t kWidth = 8;
@@ -437,7 +439,7 @@ struct GroupPortableImpl {
   uint64_t ctrl;
 };
 
-#if SWISSTABLE_HAVE_SSE2
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSE2
 using Group = GroupSse2Impl;
 #else
 using Group = GroupPortableImpl;
@@ -614,13 +616,17 @@ class raw_hash_set {
     iterator() {}
 
     // PRECONDITION: not an end() iterator.
-    reference operator*() const { return PolicyTraits::element(slot_); }
+    reference operator*() const {
+      assert_is_full();
+      return PolicyTraits::element(slot_);
+    }
 
     // PRECONDITION: not an end() iterator.
     pointer operator->() const { return &operator*(); }
 
     // PRECONDITION: not an end() iterator.
     iterator& operator++() {
+      assert_is_full();
       ++ctrl_;
       ++slot_;
       skip_empty_or_deleted();
@@ -634,6 +640,8 @@ class raw_hash_set {
     }
 
     friend bool operator==(const iterator& a, const iterator& b) {
+      a.assert_is_valid();
+      b.assert_is_valid();
       return a.ctrl_ == b.ctrl_;
     }
     friend bool operator!=(const iterator& a, const iterator& b) {
@@ -641,23 +649,30 @@ class raw_hash_set {
     }
 
    private:
-    iterator(ctrl_t* ctrl) : ctrl_(ctrl) {}  // for end()
-    iterator(ctrl_t* ctrl, slot_type* slot) : ctrl_(ctrl), slot_(slot) {}
+    iterator(ctrl_t* ctrl, slot_type* slot) : ctrl_(ctrl), slot_(slot) {
+      // This assumption helps the compiler know that any non-end iterator is
+      // not equal to any end iterator.
+      ABSL_INTERNAL_ASSUME(ctrl != nullptr);
+    }
+
+    void assert_is_full() const {
+      ABSL_HARDENING_ASSERT(ctrl_ != nullptr && IsFull(*ctrl_));
+    }
+    void assert_is_valid() const {
+      ABSL_HARDENING_ASSERT(ctrl_ == nullptr || IsFull(*ctrl_));
+    }
 
     void skip_empty_or_deleted() {
       while (IsEmptyOrDeleted(*ctrl_)) {
-        // ctrl is not necessarily aligned to Group::kWidth. It is also likely
-        // to read past the space for ctrl bytes and into slots. This is ok
-        // because ctrl has sizeof() == 1 and slot has sizeof() >= 1 so there
-        // is no way to read outside the combined slot array.
         uint32_t shift = Group{ctrl_}.CountLeadingEmptyOrDeleted();
         ctrl_ += shift;
         slot_ += shift;
       }
+      if (ABSL_PREDICT_FALSE(*ctrl_ == kSentinel)) ctrl_ = nullptr;
     }
 
     ctrl_t* ctrl_ = nullptr;
-    // To avoid uninitialized member warnigs, put slot_ in an anonymous union.
+    // To avoid uninitialized member warnings, put slot_ in an anonymous union.
     // The member is not initialized on singleton and end iterators.
     union {
       slot_type* slot_;
@@ -895,12 +910,12 @@ class raw_hash_set {
     it.skip_empty_or_deleted();
     return it;
   }
-  iterator end() { return {ctrl_ + capacity_}; }
+  iterator end() { return {}; }
 
   const_iterator begin() const {
     return const_cast<raw_hash_set*>(this)->begin();
   }
-  const_iterator end() const { return const_cast<raw_hash_set*>(this)->end(); }
+  const_iterator end() const { return {}; }
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
@@ -938,8 +953,11 @@ class raw_hash_set {
   //
   //   flat_hash_map<std::string, int> m;
   //   m.insert(std::make_pair("abc", 42));
+  // TODO(cheshire): A type alias T2 is introduced as a workaround for the nvcc
+  // bug.
   template <class T, RequiresInsertable<T> = 0,
-            typename std::enable_if<IsDecomposable<T>::value, int>::type = 0,
+            class T2 = T,
+            typename std::enable_if<IsDecomposable<T2>::value, int>::type = 0,
             T* = nullptr>
   std::pair<iterator, bool> insert(T&& value) {
     return emplace(std::forward<T>(value));
@@ -975,8 +993,10 @@ class raw_hash_set {
     return emplace(std::move(value));
   }
 
-  template <class T, RequiresInsertable<T> = 0,
-            typename std::enable_if<IsDecomposable<T>::value, int>::type = 0,
+  // TODO(cheshire): A type alias T2 is introduced as a workaround for the nvcc
+  // bug.
+  template <class T, RequiresInsertable<T> = 0, class T2 = T,
+            typename std::enable_if<IsDecomposable<T2>::value, int>::type = 0,
             T* = nullptr>
   iterator insert(const_iterator, T&& value) {
     return insert(std::forward<T>(value)).first;
@@ -1050,8 +1070,7 @@ class raw_hash_set {
   template <class... Args, typename std::enable_if<
                                !IsDecomposable<Args...>::value, int>::type = 0>
   std::pair<iterator, bool> emplace(Args&&... args) {
-    typename std::aligned_storage<sizeof(slot_type), alignof(slot_type)>::type
-        raw;
+    alignas(slot_type) unsigned char raw[sizeof(slot_type)];
     slot_type* slot = reinterpret_cast<slot_type*>(&raw);
 
     PolicyTraits::construct(&alloc_ref(), slot, std::forward<Args>(args)...);
@@ -1067,10 +1086,15 @@ class raw_hash_set {
   // Extension API: support for lazy emplace.
   //
   // Looks up key in the table. If found, returns the iterator to the element.
-  // Otherwise calls f with one argument of type raw_hash_set::constructor. f
-  // MUST call raw_hash_set::constructor with arguments as if a
-  // raw_hash_set::value_type is constructed, otherwise the behavior is
-  // undefined.
+  // Otherwise calls `f` with one argument of type `raw_hash_set::constructor`.
+  //
+  // `f` must abide by several restrictions:
+  //  - it MUST call `raw_hash_set::constructor` with arguments as if a
+  //    `raw_hash_set::value_type` is constructed,
+  //  - it MUST NOT access the container before the call to
+  //    `raw_hash_set::constructor`, and
+  //  - it MUST NOT erase the lazily emplaced element.
+  // Doing any of these is undefined behavior.
   //
   // For example:
   //
@@ -1133,15 +1157,16 @@ class raw_hash_set {
   }
 
   // Erases the element pointed to by `it`.  Unlike `std::unordered_set::erase`,
-  // this method returns void to reduce algorithmic complexity to O(1).  In
-  // order to erase while iterating across a map, use the following idiom (which
-  // also works for standard containers):
+  // this method returns void to reduce algorithmic complexity to O(1).  The
+  // iterator is invalidated, so any increment should be done before calling
+  // erase.  In order to erase while iterating across a map, use the following
+  // idiom (which also works for standard containers):
   //
   // for (auto it = m.begin(), end = m.end(); it != end;) {
+  //   // `erase()` will invalidate `it`, so advance `it` first.
+  //   auto copy_it = it++;
   //   if (<pred>) {
-  //     m.erase(it++);
-  //   } else {
-  //     ++it;
+  //     m.erase(copy_it);
   //   }
   // }
   void erase(const_iterator cit) { erase(cit.inner_); }
@@ -1149,7 +1174,7 @@ class raw_hash_set {
   // This overload is necessary because otherwise erase<K>(const K&) would be
   // a better match if non-const iterator is passed as an argument.
   void erase(iterator it) {
-    assert(it != end());
+    it.assert_is_full();
     PolicyTraits::destroy(&alloc_ref(), it.slot_);
     erase_meta_only(it);
   }
@@ -1166,12 +1191,14 @@ class raw_hash_set {
   template <typename H, typename E>
   void merge(raw_hash_set<Policy, H, E, Alloc>& src) {  // NOLINT
     assert(this != &src);
-    for (auto it = src.begin(), e = src.end(); it != e; ++it) {
+    for (auto it = src.begin(), e = src.end(); it != e;) {
+      auto next = std::next(it);
       if (PolicyTraits::apply(InsertSlot<false>{*this, std::move(*it.slot_)},
                               PolicyTraits::element(it.slot_))
               .second) {
         src.erase_meta_only(it);
       }
+      it = next;
     }
   }
 
@@ -1181,6 +1208,7 @@ class raw_hash_set {
   }
 
   node_type extract(const_iterator position) {
+    position.inner_.assert_is_full();
     auto node =
         CommonAccess::Transfer<node_type>(alloc_ref(), position.inner_.slot_);
     erase_meta_only(position);
@@ -1530,8 +1558,7 @@ class raw_hash_set {
     //       mark target as FULL
     //       repeat procedure for current slot with moved from element (target)
     ConvertDeletedToEmptyAndFullToDeleted(ctrl_, capacity_);
-    typename std::aligned_storage<sizeof(slot_type), alignof(slot_type)>::type
-        raw;
+    alignas(slot_type) unsigned char raw[sizeof(slot_type)];
     size_t total_probe_length = 0;
     slot_type* slot = reinterpret_cast<slot_type*>(&raw);
     for (size_t i = 0; i != capacity_; ++i) {
@@ -1780,6 +1807,17 @@ class raw_hash_set {
       settings_{0, hasher{}, key_equal{}, allocator_type{}};
 };
 
+// Erases all elements that satisfy the predicate `pred` from the container `c`.
+template <typename P, typename H, typename E, typename A, typename Predicate>
+void EraseIf(Predicate pred, raw_hash_set<P, H, E, A>* c) {
+  for (auto it = c->begin(), last = c->end(); it != last;) {
+    auto copy_it = it++;
+    if (pred(*copy_it)) {
+      c->erase(copy_it);
+    }
+  }
+}
+
 namespace hashtable_debug_internal {
 template <typename Set>
 struct HashtableDebugAccess<Set, absl::void_t<typename Set::raw_hash_set>> {
@@ -1841,6 +1879,7 @@ struct HashtableDebugAccess<Set, absl::void_t<typename Set::raw_hash_set>> {
 
 }  // namespace hashtable_debug_internal
 }  // namespace container_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_CONTAINER_INTERNAL_RAW_HASH_SET_H_

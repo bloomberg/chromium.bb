@@ -24,6 +24,7 @@
 #include <inttypes.h>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -43,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
@@ -96,22 +99,20 @@ LayoutView::LayoutView(Document* document)
     : LayoutBlockFlow(document),
       frame_view_(document->View()),
       layout_state_(nullptr),
-      // TODO(pdr): This should be null if CompositeAfterPaintEnabled() is true.
-      compositor_(std::make_unique<PaintLayerCompositor>(*this)),
+      compositor_(RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                      ? nullptr
+                      : std::make_unique<PaintLayerCompositor>(*this)),
       layout_quote_head_(nullptr),
       layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
       hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
-      autosize_h_scrollbar_mode_(ScrollbarMode::kAuto),
-      autosize_v_scrollbar_mode_(ScrollbarMode::kAuto) {
+      autosize_h_scrollbar_mode_(mojom::blink::ScrollbarMode::kAuto),
+      autosize_v_scrollbar_mode_(mojom::blink::ScrollbarMode::kAuto) {
   // init LayoutObject attributes
   SetInline(false);
 
-  min_preferred_logical_width_ = LayoutUnit();
-  max_preferred_logical_width_ = LayoutUnit();
-
-  SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+  SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
 
@@ -135,7 +136,8 @@ bool LayoutView::HitTest(const HitTestLocation& location,
   // Note that if an iframe has its render pipeline throttled, it will not
   // update layout here, and it will also not propagate the hit test into the
   // iframe's inner document.
-  if (!GetFrameView()->UpdateAllLifecyclePhasesExceptPaint())
+  if (!GetFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+          DocumentUpdateReason::kHitTest))
     return false;
   HitTestLatencyRecorder hit_test_latency_recorder(
       result.GetHitTestRequest().AllowsChildFrameContent());
@@ -240,7 +242,8 @@ bool LayoutView::CanHaveChildren() const {
   // the PluginDocument's <embed> element to have an EmbeddedContentView, which
   // it acquires during LocalFrameView::UpdatePlugins, which operates on the
   // <embed> element's layout object (LayoutEmbeddedObject).
-  if (GetDocument().IsPluginDocument() || GetDocument().IsForExternalHandler())
+  if (IsA<PluginDocument>(GetDocument()) ||
+      GetDocument().IsForExternalHandler())
     return true;
   return !owner->IsDisplayNone();
 }
@@ -304,12 +307,15 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 }
 
 void LayoutView::UpdateLayout() {
-  if (!GetDocument().Printing())
+  if (!GetDocument().Printing()) {
     SetPageLogicalHeight(LayoutUnit());
+    named_pages_mapper_ = nullptr;
+  }
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        LogicalWidth();
+    if (RuntimeEnabledFeatures::NamedPagesEnabled())
+      named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
+    intrinsic_logical_widths_ = LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =
           std::make_unique<ViewFragmentationContext>(*this);
@@ -528,7 +534,8 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   if (!owner) {
     PhysicalRect rect = PhysicalRect::EnclosingRect(
         transform_state.LastPlanarQuad().BoundingBox());
-    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(rect);
+    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(
+        rect, !(visual_rect_flags & kDontApplyMainFrameOverflowClip));
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
     return retval;
   }
@@ -617,15 +624,17 @@ PhysicalRect LayoutView::OverflowClipRect(
   return rect;
 }
 
-void LayoutView::SetAutosizeScrollbarModes(ScrollbarMode h_mode,
-                                           ScrollbarMode v_mode) {
-  DCHECK_EQ(v_mode == ScrollbarMode::kAuto, h_mode == ScrollbarMode::kAuto);
+void LayoutView::SetAutosizeScrollbarModes(mojom::blink::ScrollbarMode h_mode,
+                                           mojom::blink::ScrollbarMode v_mode) {
+  DCHECK_EQ(v_mode == mojom::blink::ScrollbarMode::kAuto,
+            h_mode == mojom::blink::ScrollbarMode::kAuto);
   autosize_v_scrollbar_mode_ = v_mode;
   autosize_h_scrollbar_mode_ = h_mode;
 }
 
-void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
-                                         ScrollbarMode& v_mode) const {
+void LayoutView::CalculateScrollbarModes(
+    mojom::blink::ScrollbarMode& h_mode,
+    mojom::blink::ScrollbarMode& v_mode) const {
 #define RETURN_SCROLLBAR_MODE(mode) \
   {                                 \
     h_mode = v_mode = mode;         \
@@ -634,8 +643,8 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 
   // FrameViewAutoSizeInfo manually controls the appearance of the main frame's
   // scrollbars so defer to those if we're in AutoSize mode.
-  if (AutosizeVerticalScrollbarMode() != ScrollbarMode::kAuto ||
-      AutosizeHorizontalScrollbarMode() != ScrollbarMode::kAuto) {
+  if (AutosizeVerticalScrollbarMode() != mojom::blink::ScrollbarMode::kAuto ||
+      AutosizeHorizontalScrollbarMode() != mojom::blink::ScrollbarMode::kAuto) {
     h_mode = AutosizeHorizontalScrollbarMode();
     v_mode = AutosizeVerticalScrollbarMode();
     return;
@@ -643,19 +652,19 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 
   LocalFrame* frame = GetFrame();
   if (!frame)
-    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
 
   if (FrameOwner* owner = frame->Owner()) {
     // Setting scrolling="no" on an iframe element disables scrolling.
-    if (owner->ScrollingMode() == ScrollbarMode::kAlwaysOff)
-      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+    if (owner->ScrollbarMode() == mojom::blink::ScrollbarMode::kAlwaysOff)
+      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
   Document& document = GetDocument();
   if (Node* body = document.body()) {
     // Framesets can't scroll.
     if (body->GetLayoutObject() && body->GetLayoutObject()->IsFrameSet())
-      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
   if (document.IsCapturingLayout()) {
@@ -663,40 +672,40 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
     // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
-    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
   if (LocalFrameView* frameView = GetFrameView()) {
     // Scrollbars can be disabled by LocalFrameView::setCanHaveScrollbars.
     if (!frameView->CanHaveScrollbars())
-      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
   Element* viewportDefiningElement = document.ViewportDefiningElement();
   if (!viewportDefiningElement)
-    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAuto);
 
   LayoutObject* viewport = viewportDefiningElement->GetLayoutObject();
   if (!viewport)
-    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAuto);
 
   const ComputedStyle* style = viewport->Style();
   if (!style)
-    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAuto);
 
   if (viewport->IsSVGRoot()) {
     // Don't allow overflow to affect <img> and css backgrounds
     if (ToLayoutSVGRoot(viewport)->IsEmbeddedThroughSVGImage())
-      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
+      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAuto);
 
     // FIXME: evaluate if we can allow overflow for these cases too.
     // Overflow is always hidden when stand-alone SVG documents are embedded.
     if (ToLayoutSVGRoot(viewport)
             ->IsEmbeddedThroughFrameContainingSVGDocument())
-      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
+      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
-  h_mode = v_mode = ScrollbarMode::kAuto;
+  h_mode = v_mode = mojom::blink::ScrollbarMode::kAuto;
 
   EOverflow overflow_x = style->OverflowX();
   EOverflow overflow_y = style->OverflowY();
@@ -709,23 +718,17 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
   }
   if (!shouldIgnoreOverflowHidden) {
     if (overflow_x == EOverflow::kHidden)
-      h_mode = ScrollbarMode::kAlwaysOff;
+      h_mode = mojom::blink::ScrollbarMode::kAlwaysOff;
     if (overflow_y == EOverflow::kHidden)
-      v_mode = ScrollbarMode::kAlwaysOff;
+      v_mode = mojom::blink::ScrollbarMode::kAlwaysOff;
   }
 
   if (overflow_x == EOverflow::kScroll)
-    h_mode = ScrollbarMode::kAlwaysOn;
+    h_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
   if (overflow_y == EOverflow::kScroll)
-    v_mode = ScrollbarMode::kAlwaysOn;
+    v_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
 
 #undef RETURN_SCROLLBAR_MODE
-}
-
-void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
-    EventHandler& event_handler) {
-  event_handler.MayUpdateHoverWhenContentUnderMouseChanged(
-      MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 }
 
 PhysicalRect LayoutView::DocumentRect() const {
@@ -813,7 +816,6 @@ bool LayoutView::UsesCompositing() const {
 }
 
 PaintLayerCompositor* LayoutView::Compositor() {
-  DCHECK(compositor_);
   return compositor_.get();
 }
 

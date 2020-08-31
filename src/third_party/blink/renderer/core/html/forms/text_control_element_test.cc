@@ -30,8 +30,7 @@ class TextControlElementTest : public testing::Test {
   HTMLInputElement& Input() const { return *input_; }
 
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 
  private:
@@ -49,7 +48,7 @@ void TextControlElementTest::SetUp() {
       std::make_unique<DummyPageHolder>(IntSize(800, 600), &page_clients);
 
   document_ = &dummy_page_holder_->GetDocument();
-  document_->documentElement()->SetInnerHTMLFromString(
+  document_->documentElement()->setInnerHTML(
       "<body><textarea id=textarea></textarea><input id=input /></body>");
   UpdateAllLifecyclePhases();
   text_control_ = ToTextControl(document_->getElementById("textarea"));

@@ -21,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadExtensionAndSendMessages) {
       extensions::ExtensionSystem::Get(browser()->profile())
           ->extension_service())
       ->Load(extension_dir);
-  auto* const extension =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::TestExtensionRegistryObserver(
           extensions::ExtensionRegistry::Get(browser()->profile()))
           .WaitForExtensionReady();
@@ -253,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, BlobXMLHttpRequest) {
 // use BEST_EFFORT tasks.
 class NoBestEffortTasksTestWithQuota : public NoBestEffortTasksTest {
  protected:
-  std::unique_ptr<storage::QuotaSettings> CreateQuotaSettings() override {
-    // Return nullptr to use the real quota subsystem.
-    return nullptr;
+  bool UseProductionQuotaSettings() override {
+    // Return true to use the real quota subsystem.
+    return true;
   }
 };
 

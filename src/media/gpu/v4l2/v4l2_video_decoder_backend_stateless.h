@@ -44,17 +44,19 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
                          int32_t bitstream_id) override;
   void OnOutputBufferDequeued(V4L2ReadableBufferRef buffer) override;
   void OnStreamStopped() override;
+  bool ApplyResolution(const gfx::Size& pic_size,
+                       const gfx::Rect& visible_rect,
+                       const size_t num_output_frames) override;
   void OnChangeResolutionDone(bool success) override;
   void ClearPendingRequests(DecodeStatus status) override;
 
   // V4L2DecodeSurfaceHandler implementation.
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
-  bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+  bool SubmitSlice(V4L2DecodeSurface* dec_surface,
                    const uint8_t* data,
                    size_t size) override;
-  void DecodeSurface(
-      const scoped_refptr<V4L2DecodeSurface>& dec_surface) override;
-  void SurfaceReady(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+  void DecodeSurface(scoped_refptr<V4L2DecodeSurface> dec_surface) override;
+  void SurfaceReady(scoped_refptr<V4L2DecodeSurface> dec_surface,
                     int32_t bitstream_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& color_space) override;
@@ -121,11 +123,11 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
   void ChangeResolution();
 
-  // Check whether request api is supported or not.
-  bool CheckRequestAPISupport();
-
   // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
   bool IsSupportedProfile(VideoCodecProfile profile);
+
+  // Create codec-specific AcceleratedVideoDecoder and reset related variables.
+  bool CreateAvd();
 
   // Video profile we are decoding.
   VideoCodecProfile profile_;
@@ -165,8 +167,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
 
   // VideoCodecProfiles supported by a v4l2 stateless decoder driver.
   std::vector<VideoCodecProfile> supported_profiles_;
-  // Set to true during Initialize() if the codec driver supports request API.
-  bool supports_requests_ = false;
 
   // Reference to request queue to get free requests.
   V4L2RequestsQueue* requests_queue_;

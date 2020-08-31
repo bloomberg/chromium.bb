@@ -13,7 +13,7 @@
 // When adding/removing values from this enum, be sure to update the
 // kHistogramValue array in content_settings.cc as well.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 enum class ContentSettingsType : int32_t {
   // "DEFAULT" is only used as an argument to the Content Settings Window
   // opener; there it means "whatever was last shown".
@@ -96,15 +96,6 @@ enum class ContentSettingsType : int32_t {
   // technology.
   ACCESSIBILITY_EVENTS,
 
-  // Content setting which stores whether or not the user has granted the site
-  // full (read/write without a gesture) permission to access the system
-  // clipboard.
-  CLIPBOARD_READ,
-
-  // This is special-cased in the permissions layer to always allow, and as
-  // such doesn't have associated prefs data.
-  CLIPBOARD_WRITE,
-
   // Used to store whether the user has ever changed the Flash permission for
   // a site.
   PLUGINS_DATA,
@@ -181,6 +172,47 @@ enum class ContentSettingsType : int32_t {
   // Website setting to store permissions granted to access particular Bluetooth
   // devices.
   BLUETOOTH_CHOOSER_DATA,
+
+  // Full access to the system clipboard (sanitized read without user gesture,
+  // and unsanitized read and write with user gesture).
+  // TODO(https://crbug.com/1027225): Move CLIPBOARD_READ_WRITE uses to be
+  // ordered in the same order as listed in the enum.
+  CLIPBOARD_READ_WRITE,
+
+  // This is special-cased in the permissions layer to always allow, and as
+  // such doesn't have associated prefs data.
+  // TODO(https://crbug.com/1027225): Move CLIPBOARD_SANITIZED_WRITE uses to be
+  // ordered in the same order as listed in the enum.
+  CLIPBOARD_SANITIZED_WRITE,
+
+  // This content setting type is for caching safe browsing real time url
+  // check's verdicts of each origin.
+  SAFE_BROWSING_URL_CHECK_DATA,
+
+  // Used to store whether a site is allowed to request AR or VR sessions with
+  // the WebXr Device API.
+  VR,
+  AR,
+
+  // Content setting which stores whether to allow site to open and read files
+  // and directories selected through the Native File System API.
+  NATIVE_FILE_SYSTEM_READ_GUARD,
+
+  // Access to first party storage in a third-party context. Exceptions are
+  // scoped to the combination of requesting/top-level origin, and are managed
+  // through the Storage Access API. For the time being, this content setting
+  // exists in parallel to third-party cookie rules stored in COOKIES.
+  // TODO(https://crbug.com/989663): Reconcile the two.
+  STORAGE_ACCESS,
+
+  // Content setting which stores whether to allow a site to control camera
+  // movements. It does not give access to camera.
+  CAMERA_PAN_TILT_ZOOM,
+
+  // Content setting for Screen Enumeration and Window Placement functionality.
+  // Permits access to information about the screens, like size and position.
+  // Permits creating and placing windows across the set of connected screens.
+  WINDOW_PLACEMENT,
 
   NUM_TYPES,
 };

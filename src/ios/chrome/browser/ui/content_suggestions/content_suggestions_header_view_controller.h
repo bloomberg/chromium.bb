@@ -19,7 +19,7 @@
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 @protocol FakeboxFocuser;
 @protocol NewTabPageControllerDelegate;
-@protocol OmniboxFocuser;
+@protocol OmniboxCommands;
 @class PrimaryToolbarViewController;
 class ReadingListModel;
 
@@ -32,17 +32,13 @@ class ReadingListModel;
                        NTPHomeConsumer,
                        LogoAnimationControllerOwnerOwner>
 
-// Whether |voiceSearchIsEnabled|.
-- (instancetype)initWithVoiceSearchEnabled:(BOOL)voiceSearchIsEnabled
-    NS_DESIGNATED_INITIALIZER;
-
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser>
+    id<ApplicationCommands, BrowserCommands, OmniboxCommands, FakeboxFocuser>
         dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;

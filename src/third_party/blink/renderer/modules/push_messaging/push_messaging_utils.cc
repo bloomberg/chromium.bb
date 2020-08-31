@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 
-#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -66,6 +68,10 @@ String PushRegistrationStatusToString(mojom::PushRegistrationStatus status) {
 
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
       return "Registration failed - renderer shutdown";
+
+    case mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID:
+      return "Registration failed - GCM Sender IDs are no longer supported, "
+             "please upgrade to VAPID authentication instead";
   }
   NOTREACHED();
   return String();
@@ -97,10 +103,25 @@ mojom::PushErrorType PushRegistrationStatusToPushErrorType(
     case mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING:
     case mojom::PushRegistrationStatus::STORAGE_CORRUPT:
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
+    case mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID:
       error_type = mojom::PushErrorType::ABORT;
       break;
   }
   return error_type;
+}
+
+blink::mojom::blink::PushSubscriptionOptionsPtr
+ConvertSubscriptionOptionPointer(blink::PushSubscriptionOptions* input) {
+  Vector<uint8_t> application_server_key;
+  // The checked_cast here guarantees that the input buffer fits into the
+  // result buffer.
+  application_server_key.Append(
+      reinterpret_cast<uint8_t*>(input->applicationServerKey()->Data()),
+      base::checked_cast<wtf_size_t>(
+          input->applicationServerKey()->ByteLengthAsSizeT()));
+
+  return blink::mojom::blink::PushSubscriptionOptions::New(
+      input->userVisibleOnly(), application_server_key);
 }
 
 }  // namespace blink

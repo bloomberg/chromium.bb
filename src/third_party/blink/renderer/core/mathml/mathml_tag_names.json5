@@ -2,14 +2,54 @@
   metadata: {
     namespace: "MathML",
     namespaceURI: "http://www.w3.org/1998/Math/MathML",
-    fallbackInterfaceName: "MathMLElement",
+    fallbackInterfaceName: "MathMLRowElement",
     fallbackJSInterfaceName: "MathMLElement",
     export: "CORE_EXPORT",
   },
   data: [
     {
-      name: "math",
+      name: "annotation",
       interfaceName: "MathMLElement",
+    },
+    {
+      name: "annotation-xml",
+      interfaceName: "MathMLElement",
+    },
+    {
+      name: "maction",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "malignmark",
+      interfaceName: "MathMLElement",
+    },
+    {
+      name: "math",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "merror",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mfrac",
+      interfaceName: "MathMLFractionElement",
+    },
+    {
+      name: "mglyph",
+      interfaceName: "MathMLElement",
+    },
+    {
+      name: "msub",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
+      name: "msup",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
+      name: "msubsup",
+      interfaceName: "MathMLScriptsElement",
     },
     {
       name: "mi",
@@ -24,32 +64,44 @@
       interfaceName: "MathMLElement",
     },
     {
-      name: "mtext",
-      interfaceName: "MathMLElement",
+      name: "mphantom",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mrow",
+      interfaceName: "MathMLRowElement",
     },
     {
       name: "ms",
       interfaceName: "MathMLElement",
     },
     {
-      name: "mglyph",
+      name: "mspace",
+      interfaceName: "MathMLSpaceElement",
+    },
+    {
+      name: "mstyle",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "mtext",
       interfaceName: "MathMLElement",
     },
     {
-      name: "malignmark",
-      interfaceName: "MathMLElement",
+      name: "mover",
+      interfaceName: "MathMLUnderOverElement",
     },
     {
-      name: "annotation",
-      interfaceName: "MathMLElement",
+      name: "munder",
+      interfaceName: "MathMLUnderOverElement",
     },
     {
-      name: "annotation-xml",
-      interfaceName: "MathMLElement",
+      name: "munderover",
+      interfaceName: "MathMLUnderOverElement",
     },
     {
       name: "semantics",
-      interfaceName: "MathMLElement",
+      interfaceName: "MathMLRowElement",
     },
   ]
 }

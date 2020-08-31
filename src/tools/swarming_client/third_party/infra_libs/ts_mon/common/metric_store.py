@@ -4,11 +4,14 @@
 
 import collections
 import copy
+import inspect
 import itertools
 import threading
 import time
 
+from google.protobuf import message
 from infra_libs.ts_mon.common import errors
+import six
 
 
 def default_modify_fn(name):
@@ -110,14 +113,6 @@ class MetricStore(object):
     """
     raise NotImplementedError
 
-  def _start_time(self, name):
-    if name in self._state.metrics:
-      ret = self._state.metrics[name].start_time
-      if ret is not None:
-        return ret
-
-    return self._time_fn()
-
 
 class _TargetFieldsValues(object):
   """Holds all values for a single metric.
@@ -126,38 +121,68 @@ class _TargetFieldsValues(object):
   default target fields configured globally for the process).
   """
 
-  def __init__(self, start_time):
-    self.start_time = start_time
-
+  def __init__(self):
     # {normalized_target_fields: {normalized_metric_fields: value}}
     self._values = collections.defaultdict(dict)
+    self._start_times = collections.defaultdict(dict)
+
+  def gen_key(self, target_fields):
+    if not isinstance(target_fields, message.Message):
+      # It's a dict. Canonicalise its items.
+      return tuple(sorted(six.iteritems(target_fields)))
+
+    # It's a protobuf. Serialise its values.
+    # The zeroth element is the target type.
+    values = [type(target_fields)]
+    for field in target_fields.DESCRIPTOR.fields:
+      name = field.name
+      value = getattr(target_fields, name)
+      values.append(value)
+    return tuple(values)
 
   def _get_target_values(self, target_fields):
     # Normalize the target fields by converting them into a hashable tuple.
     if not target_fields:
       target_fields = {}
-    key = tuple(sorted(target_fields.iteritems()))
+    return self._values[self.gen_key(target_fields)]
 
-    return self._values[key]
+  def _get_target_start_times(self, target_fields):
+    # Normalize the target fields by converting them into a hashable tuple.
+    if not target_fields:
+      target_fields = {}
+    return self._start_times[self.gen_key(target_fields)]
 
   def get_value(self, fields, target_fields, default=None):
     return self._get_target_values(target_fields).get(
         fields, default)
 
-  def set_value(self, fields, target_fields, value):
+  def set_value(self, fields, target_fields, value, time_fn=None):
     self._get_target_values(target_fields)[fields] = value
+    start_time = time_fn() if time_fn else time.time()
+    self._get_target_start_times(target_fields).setdefault(fields, start_time)
 
   def iter_targets(self, default_target):
-    for target_fields, fields_values in self._values.iteritems():
-      if target_fields:
-        target = copy.copy(default_target)
-        target.update({k: v for k, v in target_fields})
-      else:
-        target = default_target
+    targets = self.iter_targets_with_start_times(default_target)
+    for target, fields_values, _ in targets:
       yield target, fields_values
 
+  def iter_targets_with_start_times(self, default_target):
+    for target_fields, fields_values in six.iteritems(self._values):
+      if target_fields:
+        if inspect.isclass(target_fields[0]):
+          # It's a target type plus serialised values.
+          # Output the tuple as is.
+          target = target_fields
+        else:
+          target = copy.copy(default_target)
+          target.update({k: v for k, v in target_fields})
+      else:
+        target = default_target
+      yield target, fields_values, self._start_times[target_fields]
+
   def __deepcopy__(self, memo_dict):
-    ret = _TargetFieldsValues(self.start_time)
+    ret = _TargetFieldsValues()
+    ret._start_times = copy.deepcopy(self._start_times, memo_dict)
     ret._values = copy.deepcopy(self._values, memo_dict)
     return ret
 
@@ -182,8 +207,8 @@ class InProcessMetricStore(MetricStore):
 
   def iter_field_values(self, name):
     return itertools.chain.from_iterable(
-        x.iteritems() for _, x
-        in self._entry(name).iter_targets(self._state.target))
+        six.iteritems(x)
+        for _, x in self._entry(name).iter_targets(self._state.target))
 
   def get_all(self):
     # Make a copy of the metric values in case another thread (or this
@@ -192,13 +217,13 @@ class InProcessMetricStore(MetricStore):
       values = copy.deepcopy(self._values)
     end_time = self._time_fn()
 
-    for name, metric_values in values.iteritems():
+    for name, metric_values in six.iteritems(values):
       if name not in self._state.metrics:
         continue
-      start_time = metric_values.start_time
-      for target, fields_values in metric_values.iter_targets(
-          self._state.target):
-        yield (target, self._state.metrics[name], start_time, end_time,
+      targets = metric_values.iter_targets_with_start_times(
+          self._state.target)
+      for target, fields_values, start_times in targets:
+        yield (target, self._state.metrics[name], start_times, end_time,
                fields_values)
 
   def set(self, name, fields, target_fields, value, enforce_ge=False):
@@ -208,7 +233,7 @@ class InProcessMetricStore(MetricStore):
         if value < old_value:
           raise errors.MonitoringDecreasingValueError(name, old_value, value)
 
-      self._entry(name).set_value(fields, target_fields, value)
+      self._entry(name).set_value(fields, target_fields, value, self._time_fn)
 
   def incr(self, name, fields, target_fields, delta, modify_fn=None):
     if delta < 0:
@@ -219,7 +244,7 @@ class InProcessMetricStore(MetricStore):
 
     with self._thread_lock:
       self._entry(name).set_value(fields, target_fields, modify_fn(
-          self.get(name, fields, target_fields, 0), delta))
+          self.get(name, fields, target_fields, 0), delta), self._time_fn)
 
   def reset_for_unittest(self, name=None):
     if name is not None:
@@ -229,4 +254,4 @@ class InProcessMetricStore(MetricStore):
         self._reset(name)
 
   def _reset(self, name):
-    self._values[name] = _TargetFieldsValues(self._start_time(name))
+    self._values[name] = _TargetFieldsValues()

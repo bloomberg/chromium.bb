@@ -5,11 +5,22 @@
 import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
-  # TODO(gayane): remove dependency on chrome/android:chrome_app_java_resources
-  # once strings and common styles move out of chrome/android
-  deps = [
-    "//chrome/android:chrome_app_java_resources",
+  sources = [
+    "java/res/drawable/camera_img.xml",
+    "java/res/drawable/qrcode_background.xml",
+    "java/res/layout/qrcode_camera_error_layout.xml",
+    "java/res/layout/qrcode_dialog.xml",
+    "java/res/layout/qrcode_open_settings_layout.xml",
+    "java/res/layout/qrcode_permission_layout.xml",
+    "java/res/layout/qrcode_share_layout.xml",
+    "java/res/values-night/colors.xml",
+    "java/res/values-sw600dp/dimens.xml",
+    "java/res/values/colors.xml",
+    "java/res/values/dimens.xml",
   ]
-  resource_dirs = [ "java/res" ]
-  custom_package = "org.chromium.chrome.browser.share.qrcode"
+  custom_package = "org.chromium.chrome.browser.share"
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/browser/share/qrcode/QRCodeGenerationRequest.java" ]
 }

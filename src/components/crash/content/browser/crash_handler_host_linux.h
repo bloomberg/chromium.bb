@@ -22,7 +22,7 @@
 #include "build/build_config.h"
 
 #if !defined(OS_ANDROID)
-#include "components/crash/content/app/breakpad_linux_impl.h"
+#include "components/crash/core/app/breakpad_linux_impl.h"
 #endif
 
 namespace base {
@@ -156,7 +156,9 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
   CrashHandlerHost();
 
   void Init();
-  bool ReceiveClientMessage(int client_fd, base::ScopedFD* handler_fd);
+  bool ReceiveClientMessage(int client_fd,
+                            base::ScopedFD* handler_fd,
+                            bool* write_minidump_to_database);
   void NotifyCrashSignalObservers(base::ProcessId pid, int signo);
 
   // MessagePumbLibevent::Watcher impl:

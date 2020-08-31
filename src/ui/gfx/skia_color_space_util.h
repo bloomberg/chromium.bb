@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkICC.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/color_space_export.h"
 
 namespace gfx {
@@ -23,6 +24,9 @@ SkTransferFnEvalUnclamped(const skcms_TransferFunction& fn, float x);
 
 skcms_TransferFunction COLOR_SPACE_EXPORT
 SkTransferFnInverse(const skcms_TransferFunction& fn);
+
+skcms_TransferFunction COLOR_SPACE_EXPORT
+SkTransferFnScaled(const skcms_TransferFunction& fn, float scale);
 
 bool COLOR_SPACE_EXPORT
 SkTransferFnsApproximatelyCancel(const skcms_TransferFunction& a,

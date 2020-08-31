@@ -15,6 +15,8 @@ policy_tests.suiteName = 'PolicyTest';
 policy_tests.TestNames = {
   HeaderFooterPolicy: 'header/footer policy',
   CssBackgroundPolicy: 'css background policy',
+  MediaSizePolicy: 'media size policy',
+  SheetsPolicy: 'sheets policy',
 };
 
 suite(policy_tests.suiteName, function() {
@@ -61,7 +63,7 @@ suite(policy_tests.suiteName, function() {
    * @return {!Promise} A Promise that resolves once initial settings are done
    *     loading.
    */
-  function doPolicySetup(
+  function doAllowedDefaultModePolicySetup(
       settingName, serializedSettingName, allowedMode, defaultMode) {
     const initialSettings = getDefaultInitialSettings();
 
@@ -75,11 +77,32 @@ suite(policy_tests.suiteName, function() {
       }
       initialSettings.policies = {[settingName]: policy};
     }
-    // We want to make sure sticky settings get overridden.
-    initialSettings.serializedAppStateStr = JSON.stringify({
-      version: 2,
-      [serializedSettingName]: !defaultMode,
-    });
+    if (defaultMode !== undefined && serializedSettingName !== undefined) {
+      // We want to make sure sticky settings get overridden.
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        [serializedSettingName]: !defaultMode,
+      });
+    }
+    return loadInitialSettings(initialSettings);
+  }
+
+  /**
+   * Sets up the Print Preview app, and loads initial settings with the
+   * given policy.
+   * @param {string} settingName Name of the setting to set up.
+   * @param {string} serializedSettingName Name of the serialized setting.
+   * @param {*} allowedMode Allowed value for the given setting.
+   * @param {*} defaultMode Default value for the given setting.
+   * @return {!Promise} A Promise that resolves once initial settings are
+   *     done loading.
+   */
+  function doValuePolicySetup(settingName, value) {
+    const initialSettings = getDefaultInitialSettings();
+    if (value !== undefined) {
+      const policy = {value: value};
+      initialSettings.policies = {[settingName]: policy};
+    }
     return loadInitialSettings(initialSettings);
   }
 
@@ -96,102 +119,199 @@ suite(policy_tests.suiteName, function() {
   }
 
   /** Tests different scenarios of applying header/footer policy. */
-  test(assert(policy_tests.TestNames.HeaderFooterPolicy), function() {
-    [{
-      // No policies.
-      allowedMode: undefined,
-      defaultMode: undefined,
-      expectedDisabled: false,
-      expectedChecked: false,
-    },
-     {
-       // Restrict header/footer to be enabled.
-       allowedMode: true,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: true,
-     },
-     {
-       // Restrict header/footer to be disabled.
-       allowedMode: false,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: false,
-     },
-     {
-       // Check header/footer checkbox.
-       allowedMode: undefined,
-       defaultMode: true,
-       expectedDisabled: false,
-       expectedChecked: true,
-     },
-     {
-       // Uncheck header/footer checkbox.
-       allowedMode: undefined,
-       defaultMode: false,
-       expectedDisabled: false,
-       expectedChecked: false,
-     }].forEach(subtestParams => {
-      doPolicySetup(
+  test(assert(policy_tests.TestNames.HeaderFooterPolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        allowedMode: undefined,
+        defaultMode: undefined,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Restrict header/footer to be enabled.
+        allowedMode: true,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: true,
+      },
+      {
+        // Restrict header/footer to be disabled.
+        allowedMode: false,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: false,
+      },
+      {
+        // Check header/footer checkbox.
+        allowedMode: undefined,
+        defaultMode: true,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Uncheck header/footer checkbox.
+        allowedMode: undefined,
+        defaultMode: false,
+        expectedDisabled: false,
+        expectedChecked: false,
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doAllowedDefaultModePolicySetup(
           'headerFooter', 'isHeaderFooterEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
-          .then(function() {
-            toggleMoreSettings();
-            const checkbox = getCheckbox('headerFooter');
-            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
-            assertEquals(subtestParams.expectedChecked, checkbox.checked);
-          });
-    });
+          subtestParams.defaultMode);
+      toggleMoreSettings();
+      const checkbox = getCheckbox('headerFooter');
+      assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
+      assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
   });
 
   /** Tests different scenarios of applying background graphics policy. */
-  test(assert(policy_tests.TestNames.CssBackgroundPolicy), function() {
-    [{
-      // No policies.
-      allowedMode: undefined,
-      defaultMode: undefined,
-      expectedDisabled: false,
-      expectedChecked: true,
-    },
-     {
-       // Restrict background graphics to be enabled.
-       // Check that checkbox value default mode is not applied if it
-       // contradicts allowed mode.
-       allowedMode: BackgroundGraphicsModeRestriction.ENABLED,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: true,
-       expectedChecked: true,
-     },
-     {
-       // Restrict background graphics to be disabled.
-       allowedMode: BackgroundGraphicsModeRestriction.DISABLED,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: false,
-     },
-     {
-       // Check background graphics checkbox.
-       allowedMode: undefined,
-       defaultMode: BackgroundGraphicsModeRestriction.ENABLED,
-       expectedDisabled: false,
-       expectedChecked: true,
-     },
-     {
-       // Uncheck background graphics checkbox.
-       allowedMode: BackgroundGraphicsModeRestriction.UNSET,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: false,
-       expectedChecked: false,
-     }].forEach(subtestParams => {
-      doPolicySetup(
+  test(assert(policy_tests.TestNames.CssBackgroundPolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        allowedMode: undefined,
+        defaultMode: undefined,
+        expectedDisabled: false,
+        expectedChecked: false,
+      },
+      {
+        // Restrict background graphics to be enabled.
+        // Check that checkbox value default mode is not applied if it
+        // contradicts allowed mode.
+        allowedMode: BackgroundGraphicsModeRestriction.ENABLED,
+        defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
+        expectedDisabled: true,
+        expectedChecked: true,
+      },
+      {
+        // Restrict background graphics to be disabled.
+        allowedMode: BackgroundGraphicsModeRestriction.DISABLED,
+        defaultMode: undefined,
+        expectedDisabled: true,
+        expectedChecked: false,
+      },
+      {
+        // Check background graphics checkbox.
+        allowedMode: undefined,
+        defaultMode: BackgroundGraphicsModeRestriction.ENABLED,
+        expectedDisabled: false,
+        expectedChecked: true,
+      },
+      {
+        // Uncheck background graphics checkbox.
+        allowedMode: BackgroundGraphicsModeRestriction.UNSET,
+        defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
+        expectedDisabled: false,
+        expectedChecked: false,
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doAllowedDefaultModePolicySetup(
           'cssBackground', 'isCssBackgroundEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
-          .then(function() {
-            toggleMoreSettings();
-            const checkbox = getCheckbox('cssBackground');
-            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
-            assertEquals(subtestParams.expectedChecked, checkbox.checked);
-          });
-    });
+          subtestParams.defaultMode);
+      toggleMoreSettings();
+      const checkbox = getCheckbox('cssBackground');
+      assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
+      assertEquals(subtestParams.expectedChecked, checkbox.checked);
+    }
+  });
+
+  /** Tests different scenarios of applying default paper policy. */
+  test(assert(policy_tests.TestNames.MediaSizePolicy), async () => {
+    const tests = [
+      {
+        // No policies.
+        defaultMode: undefined,
+        expectedName: 'NA_LETTER',
+      },
+      {
+        // Not available option shouldn't change actual paper size setting.
+        defaultMode: {width: 200000, height: 200000},
+        expectedName: 'NA_LETTER',
+      },
+      {
+        // Change default paper size setting.
+        defaultMode: {width: 215900, height: 215900},
+        expectedName: 'CUSTOM_SQUARE',
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doAllowedDefaultModePolicySetup(
+          'mediaSize', /*serializedSettingName=*/ undefined,
+          /*allowedMode=*/ undefined, subtestParams.defaultMode);
+      toggleMoreSettings();
+      const mediaSettingsSelect = page.$$('print-preview-sidebar')
+                                      .$$('print-preview-media-size-settings')
+                                      .$$('print-preview-settings-select')
+                                      .$$('select');
+      assertEquals(
+          subtestParams.expectedName,
+          JSON.parse(mediaSettingsSelect.value).name);
+    }
+  });
+
+  test(assert(policy_tests.TestNames.SheetsPolicy), async () => {
+    const tests = [
+      {
+        // No policy.
+        maxSheets: 0,
+        pages: [1, 2, 3],
+        expectedDisabled: false,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, actual pages are not calculated yet.
+        maxSheets: 3,
+        pages: [],
+        expectedDisabled: true,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, but the limit is not hit.
+        maxSheets: 3,
+        pages: [1, 2],
+        expectedDisabled: false,
+        expectedHidden: true,
+        expectedErrorMessage: '',
+      },
+      {
+        // Policy is set, the limit is hit, singular form is used.
+        maxSheets: 1,
+        pages: [1, 2],
+        expectedDisabled: true,
+        expectedHidden: false,
+        expectedErrorMessage: 'Exceeds limit of 1 sheet of paper',
+      },
+      {
+        // Policy is set, the limit is hit, plural form is used.
+        maxSheets: 2,
+        pages: [1, 2, 3],
+        expectedDisabled: true,
+        expectedHidden: false,
+        expectedErrorMessage: 'Exceeds limit of 2 sheets of paper',
+      }
+    ];
+    for (const subtestParams of tests) {
+      await doValuePolicySetup('sheets', subtestParams.maxSheets);
+      page.setSetting('pages', subtestParams.pages);
+      const printButton = page.$$('print-preview-sidebar')
+                              .$$('print-preview-button-strip')
+                              .$$('cr-button.action-button');
+      const errorMessage = page.$$('print-preview-sidebar')
+                               .$$('print-preview-button-strip')
+                               .$$('div.error-message');
+      assertEquals(subtestParams.expectedDisabled, printButton.disabled);
+      assertEquals(subtestParams.expectedHidden, errorMessage.hidden);
+      if (!errorMessage.hidden) {
+        assertEquals(
+            subtestParams.expectedErrorMessage, errorMessage.innerText);
+      }
+    }
   });
 });

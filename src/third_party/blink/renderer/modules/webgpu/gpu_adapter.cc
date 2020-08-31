@@ -6,10 +6,11 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_request_adapter_options.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_extensions.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -17,23 +18,19 @@ namespace {
 WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   DCHECK_NE(nullptr, descriptor);
 
+  HashSet<String> extension_set;
+  for (auto& extension : descriptor->extensions())
+    extension_set.insert(extension);
+
   WGPUDeviceProperties requested_device_properties = {};
+  // TODO(crbug.com/1048603): We should validate that the extension_set is a
+  // subset of the adapter's extension set.
   requested_device_properties.textureCompressionBC =
-      descriptor->extensions()->textureCompressionBC();
+      extension_set.Contains("textureCompressionBC");
 
   return requested_device_properties;
 }
 }  // anonymous namespace
-
-// static
-GPUAdapter* GPUAdapter::Create(
-    const String& name,
-    uint32_t adapter_service_id,
-    const WGPUDeviceProperties& properties,
-    scoped_refptr<DawnControlClientHolder> dawn_control_client) {
-  return MakeGarbageCollected<GPUAdapter>(name, adapter_service_id, properties,
-                                          std::move(dawn_control_client));
-}
 
 GPUAdapter::GPUAdapter(
     const String& name,
@@ -43,17 +40,40 @@ GPUAdapter::GPUAdapter(
     : DawnObjectBase(dawn_control_client),
       name_(name),
       adapter_service_id_(adapter_service_id),
-      adapter_properties_(properties) {}
+      adapter_properties_(properties) {
+  InitializeExtensionNameList();
+}
 
 const String& GPUAdapter::name() const {
   return name_;
 }
 
-ScriptValue GPUAdapter::extensions(ScriptState* script_state) const {
-  V8ObjectBuilder object_builder(script_state);
-  object_builder.AddBoolean("textureCompressionBC",
-                            adapter_properties_.textureCompressionBC);
-  return object_builder.GetScriptValue();
+Vector<String> GPUAdapter::extensions(ScriptState* script_state) const {
+  return extension_name_list_;
+}
+
+void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
+                                         const GPUDeviceDescriptor* descriptor,
+                                         bool is_request_device_success,
+                                         uint64_t device_client_id) {
+  if (is_request_device_success) {
+    ExecutionContext* execution_context = resolver->GetExecutionContext();
+    auto* device = MakeGarbageCollected<GPUDevice>(
+        execution_context, GetDawnControlClient(), this, device_client_id,
+        descriptor);
+    resolver->Resolve(device);
+  } else {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError,
+        "Fail to request GPUDevice with the given GPUDeviceDescriptor"));
+  }
+}
+
+void GPUAdapter::InitializeExtensionNameList() {
+  DCHECK(extension_name_list_.IsEmpty());
+  if (adapter_properties_.textureCompressionBC) {
+    extension_name_list_.emplace_back("textureCompressionBC");
+  }
 }
 
 ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
@@ -62,16 +82,15 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
-  GetInterface()->RequestDevice(adapter_service_id_,
-                                &requested_device_properties);
 
-  // TODO(jiawei.shao@intel.com): create GPUDevice in the callback of
-  // GetInterface()->RequestDevice().
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  GPUDevice* device = GPUDevice::Create(
-      execution_context, GetDawnControlClient(), this, descriptor);
+  if (!GetInterface()->RequestDeviceAsync(
+          adapter_service_id_, requested_device_properties,
+          WTF::Bind(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
+                    WrapPersistent(resolver), WrapPersistent(descriptor)))) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "Unknown error creating GPUDevice"));
+  }
 
-  resolver->Resolve(device);
   return promise;
 }
 

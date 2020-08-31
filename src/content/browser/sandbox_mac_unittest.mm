@@ -81,14 +81,14 @@ class SandboxMacTest : public base::MultiProcessTest {
   void ExecuteInAllSandboxTypes(const std::string& multiprocess_main,
                                 base::RepeatingClosure after_each) {
     constexpr service_manager::SandboxType kSandboxTypes[] = {
-        service_manager::SandboxType::SANDBOX_TYPE_AUDIO,
-        service_manager::SandboxType::SANDBOX_TYPE_CDM,
-        service_manager::SandboxType::SANDBOX_TYPE_GPU,
-        service_manager::SandboxType::SANDBOX_TYPE_NACL_LOADER,
-        service_manager::SandboxType::SANDBOX_TYPE_PDF_COMPOSITOR,
-        service_manager::SandboxType::SANDBOX_TYPE_PPAPI,
-        service_manager::SandboxType::SANDBOX_TYPE_RENDERER,
-        service_manager::SandboxType::SANDBOX_TYPE_UTILITY,
+        service_manager::SandboxType::kAudio,
+        service_manager::SandboxType::kCdm,
+        service_manager::SandboxType::kGpu,
+        service_manager::SandboxType::kNaClLoader,
+        service_manager::SandboxType::kPpapi,
+        service_manager::SandboxType::kPrintCompositor,
+        service_manager::SandboxType::kRenderer,
+        service_manager::SandboxType::kUtility,
     };
 
     for (const auto type : kSandboxTypes) {
@@ -141,7 +141,7 @@ MULTIPROCESS_TEST_MAIN(RendererWriteProcess) {
 
 TEST_F(SandboxMacTest, RendererCannotWriteHomeDir) {
   ExecuteWithParams("RendererWriteProcess",
-                    service_manager::SandboxType::SANDBOX_TYPE_RENDERER);
+                    service_manager::SandboxType::kRenderer);
 }
 
 MULTIPROCESS_TEST_MAIN(ClipboardAccessProcess) {
@@ -211,17 +211,17 @@ MULTIPROCESS_TEST_MAIN(FontLoadingProcess) {
       font_shmem->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   CHECK(shmem_handle.is_valid());
 
-  base::ScopedCFTypeRef<CGFontRef> cgfont;
-  CHECK(FontLoader::CGFontRefFromBuffer(
-      std::move(shmem_handle), font_data_length, cgfont.InitializeInto()));
-  CHECK(cgfont);
+  base::ScopedCFTypeRef<CTFontDescriptorRef> data_descriptor;
+  CHECK(FontLoader::CTFontDescriptorFromBuffer(
+      std::move(shmem_handle), font_data_length, &data_descriptor));
+  CHECK(data_descriptor);
 
-  base::ScopedCFTypeRef<CTFontRef> ctfont(
-      CTFontCreateWithGraphicsFont(cgfont.get(), 16.0, NULL, NULL));
-  CHECK(ctfont);
+  base::ScopedCFTypeRef<CTFontRef> sized_ctfont(
+      CTFontCreateWithFontDescriptor(data_descriptor.get(), 16.0, nullptr));
+  CHECK(sized_ctfont);
 
   // Do something with the font to make sure it's loaded.
-  CGFloat cap_height = CTFontGetCapHeight(ctfont);
+  CGFloat cap_height = CTFontGetCapHeight(sized_ctfont);
   CHECK(cap_height > 0.0);
 
   return 0;
@@ -229,9 +229,9 @@ MULTIPROCESS_TEST_MAIN(FontLoadingProcess) {
 
 TEST_F(SandboxMacTest, FontLoadingTest) {
   base::FilePath temp_file_path;
-  FILE* temp_file = base::CreateAndOpenTemporaryFile(&temp_file_path);
+  base::ScopedFILE temp_file =
+      base::CreateAndOpenTemporaryStream(&temp_file_path);
   ASSERT_TRUE(temp_file);
-  base::ScopedFILE temp_file_closer(temp_file);
 
   std::unique_ptr<FontLoader::ResultInternal> result =
       FontLoader::LoadFontForTesting(base::ASCIIToUTF16("Geeza Pro"), 16);
@@ -245,14 +245,14 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
       result->font_data->Map(font_data_size);
   ASSERT_TRUE(mapping);
 
-  base::WriteFileDescriptor(fileno(temp_file),
+  base::WriteFileDescriptor(fileno(temp_file.get()),
                             static_cast<const char*>(mapping.get()),
                             font_data_size);
 
   extra_data_ = temp_file_path.value();
   ExecuteWithParams("FontLoadingProcess",
-                    service_manager::SandboxType::SANDBOX_TYPE_RENDERER);
-  temp_file_closer.reset();
+                    service_manager::SandboxType::kRenderer);
+  temp_file.reset();
   ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
 }
 

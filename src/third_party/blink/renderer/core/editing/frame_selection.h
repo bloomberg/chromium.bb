@@ -87,6 +87,9 @@ struct LayoutSelectionStatus {
       : start(passed_start), end(passed_end), line_break(passed_line_break) {
     DCHECK_LE(start, end);
   }
+
+  bool HasValidRange() const { return start < end; }
+
   bool operator==(const LayoutSelectionStatus& other) const {
     return start == other.start && end == other.end &&
            line_break == other.line_break;
@@ -129,7 +132,7 @@ class CORE_EXPORT FrameSelection final
   explicit FrameSelection(LocalFrame&);
   ~FrameSelection();
 
-  bool IsAvailable() const { return LifecycleContext(); }
+  bool IsAvailable() const;
   // You should not call |document()| when |!isAvailable()|.
   Document& GetDocument() const;
   LocalFrame* GetFrame() const { return frame_; }
@@ -163,7 +166,8 @@ class CORE_EXPORT FrameSelection final
   // be called.
   bool SetSelectionDeprecated(const SelectionInDOMTree&,
                               const SetSelectionOptions&);
-  void DidSetSelectionDeprecated(const SetSelectionOptions&);
+  void DidSetSelectionDeprecated(const SelectionInDOMTree&,
+                                 const SetSelectionOptions&);
 
   // Call this after doing user-triggered selections to make it easy to delete
   // the frame you entirely selected.
@@ -260,7 +264,7 @@ class CORE_EXPORT FrameSelection final
   // TODO(tkent): This function has a bug that scrolling doesn't work well in
   // a case of RangeSelection. crbug.com/443061
   void RevealSelection(
-      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded,
+      const mojom::blink::ScrollAlignment& = ScrollAlignment::CenterIfNeeded(),
       RevealExtentOption = kDoNotRevealExtent);
   void SetSelectionFromNone();
 
@@ -271,6 +275,10 @@ class CORE_EXPORT FrameSelection final
   void CacheRangeOfDocument(Range*);
   Range* DocumentCachedRange() const;
   void ClearDocumentCachedRange();
+
+  // Invalidates the cached visual selection information, like
+  // |VisibleSelection| and selection bounds.
+  void MarkCacheDirty();
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
@@ -304,7 +312,7 @@ class CORE_EXPORT FrameSelection final
   void MoveRangeSelectionInternal(const SelectionInDOMTree&, TextGranularity);
 
   // Implementation of |SynchronousMutationObserver| member functions.
-  void ContextDestroyed(Document*) final;
+  void ContextDestroyed() final;
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;
 
@@ -316,6 +324,10 @@ class CORE_EXPORT FrameSelection final
   LayoutUnit x_pos_for_vertical_arrow_navigation_;
 
   bool focused_ : 1;
+
+  // The selection is currently being modified via the "Modify" method.
+  bool is_being_modified_ = false;
+
   bool is_handle_visible_ = false;
   // TODO(editing-dev): We should change is_directional_ type to enum.
   // as directional can have three values forward, backward or directionless.

@@ -55,6 +55,8 @@ class FakePageTimingSender : public PageTimingSender {
     // expected timings provided via ExpectCpuTiming.
     void VerifyExpectedCpuTimings() const;
 
+    void VerifyExpectedInputTiming() const;
+
     // PageLoad features that are expected to be sent through SendTiming()
     // should be passed via UpdateExpectedPageLoadFeatures.
     void UpdateExpectPageLoadFeatures(const blink::mojom::WebFeature feature);
@@ -68,6 +70,13 @@ class FakePageTimingSender : public PageTimingSender {
       expected_render_data_ = render_data;
     }
 
+    void UpdateExpectedInputTiming(const base::TimeDelta input_delay);
+
+    void UpdateExpectFrameIntersectionUpdate(
+        const mojom::FrameIntersectionUpdate& frame_intersection_update) {
+      expected_frame_intersection_update_ = frame_intersection_update.Clone();
+    }
+
     // Forces verification that actual features sent through SendTiming match
     // expected features provided via ExpectPageLoadFeatures.
     void VerifyExpectedFeatures() const;
@@ -75,6 +84,7 @@ class FakePageTimingSender : public PageTimingSender {
     // match expected CSS properties provided via ExpectPageLoadCSSProperties.
     void VerifyExpectedCssProperties() const;
     void VerifyExpectedRenderData() const;
+    void VerifyExpectedFrameIntersectionUpdate() const;
 
     const std::vector<mojom::PageLoadTimingPtr>& expected_timings() const {
       return expected_timings_;
@@ -85,12 +95,13 @@ class FakePageTimingSender : public PageTimingSender {
 
     void UpdateTiming(
         const mojom::PageLoadTimingPtr& timing,
-        const mojom::PageLoadMetadataPtr& metadata,
+        const mojom::FrameMetadataPtr& metadata,
         const mojom::PageLoadFeaturesPtr& new_features,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources,
         const mojom::FrameRenderDataUpdate& render_data,
         const mojom::CpuTimingPtr& cpu_timing,
-        const mojom::DeferredResourceCountsPtr& new_deferred_resource_data);
+        const mojom::DeferredResourceCountsPtr& new_deferred_resource_data,
+        const mojom::InputTimingPtr& input_timing);
 
    private:
     std::vector<mojom::PageLoadTimingPtr> expected_timings_;
@@ -103,19 +114,23 @@ class FakePageTimingSender : public PageTimingSender {
     std::set<blink::mojom::CSSSampleId> actual_css_properties_;
     mojom::FrameRenderDataUpdate expected_render_data_;
     mojom::FrameRenderDataUpdate actual_render_data_;
+    mojom::FrameIntersectionUpdatePtr expected_frame_intersection_update_;
+    mojom::FrameIntersectionUpdatePtr actual_frame_intersection_update_;
+    mojom::InputTimingPtr expected_input_timing;
+    mojom::InputTimingPtr actual_input_timing;
     DISALLOW_COPY_AND_ASSIGN(PageTimingValidator);
   };
 
   explicit FakePageTimingSender(PageTimingValidator* validator);
   ~FakePageTimingSender() override;
-  void SendTiming(
-      const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
-      std::vector<mojom::ResourceDataUpdatePtr> resources,
-      const mojom::FrameRenderDataUpdate& render_data,
-      const mojom::CpuTimingPtr& cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data) override;
+  void SendTiming(const mojom::PageLoadTimingPtr& timing,
+                  const mojom::FrameMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features,
+                  std::vector<mojom::ResourceDataUpdatePtr> resources,
+                  const mojom::FrameRenderDataUpdate& render_data,
+                  const mojom::CpuTimingPtr& cpu_timing,
+                  mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+                  mojom::InputTimingPtr new_input_timing) override;
 
  private:
   PageTimingValidator* const validator_;

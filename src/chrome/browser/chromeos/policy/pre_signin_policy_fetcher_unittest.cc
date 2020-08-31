@@ -96,9 +96,7 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
 
   void StoreUserPolicyKey(const std::string& public_key) {
     ASSERT_TRUE(base::CreateDirectory(user_policy_key_file().DirName()));
-    ASSERT_EQ(static_cast<int>(public_key.size()),
-              base::WriteFile(user_policy_key_file(), public_key.data(),
-                              public_key.size()));
+    ASSERT_TRUE(base::WriteFile(user_policy_key_file(), public_key));
   }
 
   base::FilePath user_policy_keys_dir() const {
@@ -158,8 +156,8 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
 
   void ExecuteFetchPolicy() {
     pre_signin_policy_fetcher_->FetchPolicy(
-        base::Bind(&PreSigninPolicyFetcherTestBase::OnPolicyRetrieved,
-                   base::Unretained(this)));
+        base::BindOnce(&PreSigninPolicyFetcherTestBase::OnPolicyRetrieved,
+                       base::Unretained(this)));
     task_environment_.RunUntilIdle();
   }
 

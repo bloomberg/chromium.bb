@@ -7,9 +7,14 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import faux
 from chromite.api import router as router_lib
 from chromite.api import validate
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # API version number.
 # The major version MUST be updated on breaking changes.

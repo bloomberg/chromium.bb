@@ -7,8 +7,8 @@
 #include "cast/streaming/rtp_packet_parser.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  using cast::streaming::RtpPacketParser;
-  using cast::streaming::Ssrc;
+  using openscreen::cast::RtpPacketParser;
+  using openscreen::cast::Ssrc;
 
   constexpr Ssrc kSenderSsrcInSeedCorpus = 0x01020304;
   RtpPacketParser parser(kSenderSsrcInSeedCorpus);

@@ -18,12 +18,12 @@ in uniform half outerThreshold;
 }
 
 @make {
-    static std::unique_ptr<GrFragmentProcessor> Make(sk_sp<GrSurfaceProxy> mask,
+    static std::unique_ptr<GrFragmentProcessor> Make(GrSurfaceProxyView mask,
                                                      float innerThreshold,
                                                      float outerThreshold,
                                                      const SkIRect& bounds) {
         return std::unique_ptr<GrFragmentProcessor>(new GrAlphaThresholdFragmentProcessor(
-                mask, innerThreshold, outerThreshold, bounds));
+                std::move(mask), innerThreshold, outerThreshold, bounds));
     }
 }
 
@@ -61,7 +61,7 @@ void main() {
 }
 
 @test(testData) {
-    sk_sp<GrTextureProxy> maskProxy = testData->textureProxy(GrProcessorUnitTest::kAlphaTextureIdx);
+    auto [maskView, ct, at] = testData->randomAlphaOnlyView();
     // Make the inner and outer thresholds be in (0, 1) exclusive and be sorted correctly.
     float innerThresh = testData->fRandom->nextUScalar1() * .99f + 0.005f;
     float outerThresh = testData->fRandom->nextUScalar1() * .99f + 0.005f;
@@ -72,6 +72,7 @@ void main() {
     uint32_t x = testData->fRandom->nextULessThan(kMaxWidth - width);
     uint32_t y = testData->fRandom->nextULessThan(kMaxHeight - height);
     SkIRect bounds = SkIRect::MakeXYWH(x, y, width, height);
-    return GrAlphaThresholdFragmentProcessor::Make(std::move(maskProxy), innerThresh, outerThresh,
+
+    return GrAlphaThresholdFragmentProcessor::Make(std::move(maskView), innerThresh, outerThresh,
                                                    bounds);
 }

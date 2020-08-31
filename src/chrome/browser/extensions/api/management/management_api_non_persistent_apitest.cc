@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -64,7 +65,12 @@ IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest, UninstallSelf) {
       extensions::ExtensionRegistry::Get(browser()->profile()));
 
   base::FilePath path = test_dir.Pack();
-  scoped_refptr<const Extension> extension = LoadExtension(path);
+  // Note: We pass kFlagDontWaitForExtensionRenderers because the extension
+  // uninstalls itself, so the ExtensionHost never fully finishes loading. Since
+  // we wait for the uninstall explicitly, this isn't racy.
+  scoped_refptr<const Extension> extension =
+      LoadExtensionWithFlags(path, kFlagDontWaitForExtensionRenderers);
+
   EXPECT_EQ(extension, observer.WaitForExtensionUninstalled());
 }
 

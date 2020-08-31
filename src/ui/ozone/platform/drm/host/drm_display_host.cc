@@ -45,8 +45,8 @@ void DrmDisplayHost::Configure(const display::DisplayMode* mode,
   configure_callback_ = std::move(callback);
   bool status = false;
   if (mode) {
-    status = sender_->GpuConfigureNativeDisplay(
-        snapshot_->display_id(), GetDisplayModeParams(*mode), origin);
+    status = sender_->GpuConfigureNativeDisplay(snapshot_->display_id(), *mode,
+                                                origin);
   } else {
     status = sender_->GpuDisableNativeDisplay(snapshot_->display_id());
   }
@@ -115,6 +115,10 @@ void DrmDisplayHost::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   sender_->GpuSetGammaCorrection(snapshot_->display_id(), degamma_lut,
                                  gamma_lut);
+}
+
+void DrmDisplayHost::SetPrivacyScreen(bool enabled) {
+  sender_->GpuSetPrivacyScreen(snapshot_->display_id(), enabled);
 }
 
 void DrmDisplayHost::OnGpuProcessLaunched() {}

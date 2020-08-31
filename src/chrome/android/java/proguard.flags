@@ -2,28 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Fragments loaded by name via Fragment.instantiate(Context,String)
-# Not all fragments in this package are PreferenceFragments. E.g. HomepageEditor
-# is a normal Fragment.
--keep public class org.chromium.chrome.browser.settings.** extends android.support.v4.app.Fragment {
+# Every fragment must have an empty constructor, so it can be instantiated when
+# restoring its activity's state.
+-keep public class org.chromium.** extends androidx.fragment.app.Fragment {
   public <init>();
-}
-
-# Referenced by android.support.v7.preference.PreferenceInflater
--keep public class android.support.v14.preference.SwitchPreference {}
-
-# Inflated via reflection
--keep public class android.support.v7.preference.Preference {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class android.support.v7.preference.PreferenceScreen {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class android.support.v7.preference.PreferenceCategory {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class android.support.v7.preference.ListPreference {
-    public <init>(android.content.Context, android.util.AttributeSet);
 }
 
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
@@ -39,6 +21,7 @@
 
 # SearchView is used in website_preferences_menu.xml and is constructed by
 # Android using reflection.
+# TODO(bjoyce): Remove after verifying AndroidX migration is sound.
 -keep class android.support.v7.widget.SearchView {
   public <init>(...);
 }
@@ -46,7 +29,15 @@
 # This class member is referenced in BottomSheetBottomNav as a temporary
 # measure until the support library contains a solution for disabling shifting
 # mode. TODO(twellington): remove once support library has a fix and is rolled.
+# TODO(bjoyce): Remove after verifying AndroidX migration is sound.
 -keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
+    boolean mShiftingMode;
+}
+
+# This class member is referenced in BottomSheetBottomNav as a temporary
+# measure until the support library contains a solution for disabling shifting
+# mode. TODO(twellington): remove once support library has a fix and is rolled.
+-keepclassmembers class com.google.android.material.bottomnavigation.BottomNavigationMenuView {
     boolean mShiftingMode;
 }
 

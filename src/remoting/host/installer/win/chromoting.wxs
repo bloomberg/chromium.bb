@@ -752,6 +752,27 @@
                   Property="REINSTALLMODE"
                   Value="amus" />
 
+    <CustomAction Id="make_symbolic_link"
+      Directory="chromoting"
+      ExeCommand='cmd /c mklink /d CurrentVersion ".\$(var.Version)\"'
+      Execute="deferred"
+      Impersonate="no"
+      Return="ignore"/>
+
+    <CustomAction Id="remove_symbolic_link"
+       Directory="chromoting"
+       ExeCommand='cmd /c rmdir CurrentVersion'
+       Execute="deferred"
+       Impersonate="no"
+       Return="ignore"/>
+
+    <CustomAction Id="remove_debug_log"
+      Directory="binaries"
+      ExeCommand='cmd /c del /f debug.log'
+      Execute="deferred"
+      Impersonate="no"
+      Return="ignore"/>
+
     <InstallExecuteSequence>
       <!-- Set REINSTALL=all and REINSTALLMODE=amus if the user reruns the
            MSI, which will force reinstalling all files and services.  -->
@@ -778,6 +799,16 @@
       <!-- Schedule RemoveExistingProducts before installing any files.
            See http://msdn.microsoft.com/en-us/library/aa371197.aspx. -->
       <RemoveExistingProducts After="InstallInitialize" />
+
+      <Custom Action="remove_debug_log" Before="RemoveFiles">
+        Installed AND (NOT MAINTENANCE)
+      </Custom>
+      <Custom Action="remove_symbolic_link" Before="RemoveFiles">
+        Installed AND (NOT MAINTENANCE)
+      </Custom>
+      <Custom Action="make_symbolic_link" After="InstallFiles">
+        NOT Installed
+      </Custom>
     </InstallExecuteSequence>
   </Product>
 </Wix>

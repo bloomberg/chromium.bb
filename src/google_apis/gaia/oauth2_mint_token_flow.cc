@@ -25,7 +25,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -41,12 +40,13 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "&response_type=%s"
     "&scope=%s"
     "&client_id=%s"
-    "&origin=%s";
-// TODO(pavely): lib_ver is passed to differentiate IssueToken requests from
-// different code locations. Remove once device_id mismatch is understood.
-// (crbug.com/481596)
+    "&origin=%s"
+    "&lib_ver=%s"
+    "&release_channel=%s";
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
-    "&device_id=%s&device_type=chrome&lib_ver=extension";
+    "&device_id=%s&device_type=chrome";
+const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
+    "&consent_result=%s";
 const char kIssueAdviceKey[] = "issueAdvice";
 const char kIssueAdviceValueConsent[] = "consent";
 const char kIssueAdviceValueRemoteConsent[] = "remoteConsent";
@@ -100,9 +100,9 @@ static GoogleServiceAuthError CreateAuthError(
   return GoogleServiceAuthError::FromServiceError(*message);
 }
 
-bool AreCookiesEqual(const std::unique_ptr<net::CanonicalCookie>& lhs,
-                     const std::unique_ptr<net::CanonicalCookie>& rhs) {
-  return lhs->IsEquivalent(*rhs);
+bool AreCookiesEqual(const net::CanonicalCookie& lhs,
+                     const net::CanonicalCookie& rhs) {
+  return lhs.IsEquivalent(rhs);
 }
 
 void RecordApiCallResult(OAuth2MintTokenApiCallResult result) {
@@ -129,9 +129,9 @@ bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
 RemoteConsentResolutionData::RemoteConsentResolutionData() = default;
 RemoteConsentResolutionData::~RemoteConsentResolutionData() = default;
 RemoteConsentResolutionData::RemoteConsentResolutionData(
-    RemoteConsentResolutionData&& other) = default;
+    const RemoteConsentResolutionData& other) = default;
 RemoteConsentResolutionData& RemoteConsentResolutionData::operator=(
-    RemoteConsentResolutionData&& other) = default;
+    const RemoteConsentResolutionData& other) = default;
 
 bool RemoteConsentResolutionData::operator==(
     const RemoteConsentResolutionData& rhs) const {
@@ -146,13 +146,18 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::string& cid,
     const std::vector<std::string>& scopes_arg,
     const std::string& device_id,
+    const std::string& consent_result,
+    const std::string& version,
+    const std::string& channel,
     Mode mode_arg)
     : extension_id(eid),
       client_id(cid),
       scopes(scopes_arg),
       device_id(device_id),
-      mode(mode_arg) {
-}
+      consent_result(consent_result),
+      version(version),
+      channel(channel),
+      mode(mode_arg) {}
 
 OAuth2MintTokenFlow::Parameters::Parameters(const Parameters& other) = default;
 
@@ -213,14 +218,21 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
       kOAuth2IssueTokenBodyFormat,
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),
-      net::EscapeUrlEncodedData(
-          base::JoinString(parameters_.scopes, " "), true).c_str(),
+      net::EscapeUrlEncodedData(base::JoinString(parameters_.scopes, " "), true)
+          .c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
-      net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str());
+      net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str(),
+      net::EscapeUrlEncodedData(parameters_.version, true).c_str(),
+      net::EscapeUrlEncodedData(parameters_.channel, true).c_str());
   if (!parameters_.device_id.empty()) {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,
         net::EscapeUrlEncodedData(parameters_.device_id, true).c_str()));
+  }
+  if (!parameters_.consent_result.empty()) {
+    body.append(base::StringPrintf(
+        kOAuth2IssueTokenBodyFormatConsentResultAddendum,
+        net::EscapeUrlEncodedData(parameters_.consent_result, true).c_str()));
   }
   return body;
 }
@@ -402,7 +414,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
 
   base::Time time_now = base::Time::Now();
   bool success = true;
-  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  std::vector<net::CanonicalCookie> cookies;
   for (const auto& cookie_dict : cookie_list) {
     if (!cookie_dict.is_dict()) {
       success = false;
@@ -444,7 +456,7 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
             is_http_only ? *is_http_only : false,
             net::StringToCookieSameSite(same_site ? *same_site : ""),
             net::COOKIE_PRIORITY_DEFAULT);
-    cookies.push_back(std::move(cookie));
+    cookies.push_back(*cookie);
   }
 
   if (success) {

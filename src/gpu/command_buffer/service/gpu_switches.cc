@@ -43,6 +43,13 @@ const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 // Sets the total amount of memory that may be allocated for GPU resources
 const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 
+// Sets the maximum GPU memory to use for discardable caches.
+const char kForceGpuMemDiscardableLimitMb[] =
+    "force-gpu-mem-discardable-limit-mb";
+
+// Sets the maximum texture size in pixels.
+const char kForceMaxTextureSize[] = "force-max-texture-size";
+
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
@@ -62,14 +69,10 @@ const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
 // round intermediate values in ANGLE.
 const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
-// Selects the type of the GrContext.
-const char kGrContextType[] = "gr-context-type";
-const char kGrContextTypeGL[] = "gl";
-const char kGrContextTypeVulkan[] = "vulkan";
-const char kGrContextTypeMetal[] = "metal";
-const char kGrContextTypeDawn[] = "dawn";
 // Enable Vulkan support and select Vulkan implementation, must also have
-// ENABLE_VULKAN defined.
+// ENABLE_VULKAN defined. This only initializes Vulkan, the flag
+// --enable-features=Vulkan must also be used to select Vulkan for compositing
+// and rasterization.
 const char kUseVulkan[] = "use-vulkan";
 const char kVulkanImplementationNameNative[] = "native";
 const char kVulkanImplementationNameSwiftshader[] = "swiftshader";

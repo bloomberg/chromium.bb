@@ -21,7 +21,7 @@ from telemetry.internal.util import binary_manager
 from telemetry.testing import options_for_unittests
 
 
-def FakeFetchPath(dependency, arch, os_name, os_version=None):
+def FakeFetchPath(dependency, os_name, arch, os_version=None):
   return os.path.join('dependency_dir', dependency,
                       '%s_%s_%s.apk' % (os_name, os_version, arch))
 
@@ -49,7 +49,7 @@ class AndroidBrowserFinderTest(fake_filesystem_unittest.TestCase):
     self.fake_platform.GetArchName.return_value = 'armeabi-v7a'
     # The android_browser_finder converts the os version name to 'k' or 'l'
     self.expected_reference_build = FakeFetchPath(
-        'chrome_stable', 'armeabi-v7a', 'android', 'l')
+        'chrome_stable', 'android', 'armeabi-v7a', 'l')
 
   def tearDown(self):
     self.tearDownPyfakefs()
@@ -157,6 +157,12 @@ class AndroidBrowserFinderTest(fake_filesystem_unittest.TestCase):
     possible_browsers = android_browser_finder._FindAllPossibleBrowsers(
         self.finder_options, self.fake_platform)
     self.assertNotIn('reference', [b.browser_type for b in possible_browsers])
+
+  def testWebViewBrowserReturned(self):
+    self.finder_options.browser_type = 'android-webview'
+    possible_browsers = android_browser_finder._FindAllPossibleBrowsers(
+        self.finder_options, self.fake_platform)
+    self.assertEqual(possible_browsers[0].target_os, 'android_webview')
 
   def testCanPossiblyHandlePath(self):
     self.assertTrue(android_browser_finder._CanPossiblyHandlePath('foo.apk'))

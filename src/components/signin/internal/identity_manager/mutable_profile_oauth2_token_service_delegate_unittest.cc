@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -124,9 +125,8 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     web_database->LoadDatabase();
     token_web_data_ =
         new TokenWebData(web_database, base::ThreadTaskRunnerHandle::Get(),
-                         base::ThreadTaskRunnerHandle::Get(),
-                         WebDataServiceBase::ProfileErrorCallback());
-    token_web_data_->Init();
+                         base::ThreadTaskRunnerHandle::Get());
+    token_web_data_->Init(base::NullCallback());
   }
 
   void AddSuccessfulOAuhTokenResponse() {

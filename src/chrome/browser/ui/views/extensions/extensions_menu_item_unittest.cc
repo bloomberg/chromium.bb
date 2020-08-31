@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
@@ -47,11 +48,11 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
     controller_ = controller.get();
     controller_->SetActionName(initial_extension_name_);
     controller_->SetTooltip(initial_tooltip_);
-    menu_item_ = std::make_unique<ExtensionsMenuItemView>(
+    auto menu_item = std::make_unique<ExtensionsMenuItemView>(
         browser(), std::move(controller));
-    menu_item_->set_owned_by_client();
+    primary_button_on_menu_ = menu_item->primary_action_button_for_testing();
 
-    widget_->SetContentsView(menu_item_.get());
+    widget_->SetContentsView(menu_item.release());
   }
 
   void TearDown() override {
@@ -61,15 +62,13 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  ExtensionsMenuButton* primary_button() {
-    return menu_item_->primary_action_button_for_testing();
-  }
+  ExtensionsMenuButton* primary_button() { return primary_button_on_menu_; }
 
   base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<ExtensionsMenuItemView> menu_item_;
+  ExtensionsMenuButton* primary_button_on_menu_ = nullptr;
   TestToolbarActionViewController* controller_ = nullptr;
 };
 
@@ -84,7 +83,11 @@ TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayCorrectActionTitle) {
 }
 
 TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {
+  base::UserActionTester user_action_tester;
+  constexpr char kActivatedUserAction[] =
+      "Extensions.Toolbar.ExtensionActivatedFromMenu";
   EXPECT_EQ(0, controller_->execute_action_count());
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kActivatedUserAction));
 
   primary_button()->SetBounds(0, 0, 100, 100);
   ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED,
@@ -94,6 +97,7 @@ TEST_F(ExtensionsMenuItemViewTest, NotifyClickExecutesAction) {
   primary_button()->button_controller()->OnMouseReleased(click_event);
 
   EXPECT_EQ(1, controller_->execute_action_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kActivatedUserAction));
 }
 
 TEST_F(ExtensionsMenuItemViewTest, UpdatesToDisplayTooltip) {

@@ -51,6 +51,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override {
+    NOTREACHED();
+    return {MinMaxSizes(), true};
+  }
+
  private:
   unsigned PositionLeadingFloats(NGExclusionSpace*, NGPositionedFloatVector*);
   NGPositionedFloat PositionFloat(LayoutUnit origin_block_bfc_offset,
@@ -69,6 +74,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
                                   const NGInlineItemResult&,
+                                  NGLineBoxFragmentBuilder::ChildList*,
                                   NGInlineLayoutStateStack*) const;
   NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
                                    const NGInlineItemResult&,
@@ -80,9 +86,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                         const NGLineInfo&,
                         NGInlineItemResult*,
                         NGInlineBoxState*);
-  void PlaceGeneratedContent(scoped_refptr<const NGPhysicalTextFragment>,
-                             UBiDiLevel,
-                             NGInlineBoxState*);
+  void PlaceHyphen(const NGInlineItemResult&,
+                   LayoutUnit hyphen_inline_size,
+                   NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       const NGLineInfo&,
                                       NGInlineItemResult*);

@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -26,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -39,6 +41,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
@@ -56,31 +59,6 @@ using base::Time;
 using base::TimeDelta;
 using net::test::IsError;
 using net::test::IsOk;
-
-// TODO(eroman): Add a regression test for http://crbug.com/40505.
-
-namespace {
-
-// TODO(akalin): Move all the test data to somewhere under net/.
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
-const char kTestServerFilePrefix[] = "/";
-
-// Test server path and response body for the default URL used by many of the
-// tests.
-const char kDefaultResponsePath[] = "/defaultresponse";
-const char kDefaultResponseBody[] =
-    "Default response given for path: /defaultresponse";
-
-// Request body for streams created by CreateUploadStream.
-const char kCreateUploadStreamBody[] = "rosebud";
-
-base::FilePath GetUploadFileTestPath() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  return path.Append(
-      FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
-}
 
 // Simple URLRequestDelegate that waits for the specified fetcher to complete.
 // Can only be used once.
@@ -180,6 +158,29 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(WaitingURLFetcherDelegate);
 };
+
+namespace {
+
+// TODO(akalin): Move all the test data to somewhere under net/.
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
+const char kTestServerFilePrefix[] = "/";
+
+// Test server path and response body for the default URL used by many of the
+// tests.
+const char kDefaultResponsePath[] = "/defaultresponse";
+const char kDefaultResponseBody[] =
+    "Default response given for path: /defaultresponse";
+
+// Request body for streams created by CreateUploadStream.
+const char kCreateUploadStreamBody[] = "rosebud";
+
+base::FilePath GetUploadFileTestPath() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.Append(
+      FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
+}
 
 // A TestURLRequestContext with a ThrottleManager and a MockHostResolver.
 class FetcherTestURLRequestContext : public TestURLRequestContext {
@@ -506,7 +507,7 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
                                       test_server_->host_port_pair());
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
-      ProxyResolutionService::CreateFixedFromPacResult(
+      ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
   context_getter->set_proxy_resolution_service(
       std::move(proxy_resolution_service));
@@ -569,8 +570,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 
 // Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
-  auto sequenced_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto sequenced_task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
 
   // Since we cannot use StartFetchAndWait(), which runs a nested RunLoop owned
   // by the Delegate, in the ThreadPool, this test is split into two Callbacks,
@@ -600,7 +600,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
                   EXPECT_EQ(kDefaultResponseBody, data);
                   std::move(quit_closure).Run();
                 },
-                std::move(quit_closure), base::Passed(&delegate)));
+                std::move(quit_closure), std::move(delegate)));
 
             raw_delegate->CreateFetcher(response_path, URLFetcher::GET,
                                         context_getter);
@@ -852,8 +852,8 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactory) {
   delegate.CreateFetcher(test_server_->GetURL("/echo"), URLFetcher::POST,
                          CreateSameThreadContextGetter());
   delegate.fetcher()->SetUploadStreamFactory(
-      "text/plain",
-      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+      "text/plain", base::BindRepeating(&URLFetcherTest::CreateUploadStream,
+                                        base::Unretained(this)));
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
@@ -871,8 +871,8 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
   delegate.fetcher()->SetAutomaticallyRetryOn5xx(true);
   delegate.fetcher()->SetMaxRetriesOn5xx(1);
   delegate.fetcher()->SetUploadStreamFactory(
-      "text/plain",
-      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+      "text/plain", base::BindRepeating(&URLFetcherTest::CreateUploadStream,
+                                        base::Unretained(this)));
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
@@ -1183,6 +1183,9 @@ TEST_F(URLFetcherTest, StopOnRedirect) {
             delegate.fetcher()->GetStatus().status());
   EXPECT_THAT(delegate.fetcher()->GetStatus().error(), IsError(ERR_ABORTED));
   EXPECT_EQ(301, delegate.fetcher()->GetResponseCode());
+  ASSERT_TRUE(delegate.fetcher()->GetResponseHeaders());
+  EXPECT_TRUE(delegate.fetcher()->GetResponseHeaders()->HasHeaderValue(
+      "Location", std::string(kRedirectTarget)));
 }
 
 TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {

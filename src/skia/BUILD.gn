@@ -49,16 +49,15 @@ config("skia_config") {
     }
   }
   if (enable_vulkan) {
-    include_dirs += [
-      "//third_party/vulkan/include",
-      "//third_party/skia/third_party/vulkanmemoryallocator",
-    ]
-    configs = [ "//third_party/vulkan:vulkan_config" ]
+    include_dirs += [ "//third_party/vulkan/include" ]
+    configs = [ "//third_party/vulkan_headers:vulkan_headers_config" ]
   }
 
   defines = [
-    "SK_HAS_PNG_LIBRARY",
-    "SK_HAS_WEBP_LIBRARY",
+    "SK_CODEC_DECODES_PNG",
+    "SK_CODEC_DECODES_WEBP",
+    "SK_ENCODE_PNG",
+    "SK_ENCODE_WEBP",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
   ]
 
@@ -67,7 +66,10 @@ config("skia_config") {
   }
 
   if (!is_ios) {
-    defines += [ "SK_HAS_JPEG_LIBRARY" ]
+    defines += [
+      "SK_CODEC_DECODES_JPEG",
+      "SK_ENCODE_JPEG",
+    ]
     if (enable_skia_wuffs_gif) {
       defines += [ "SK_HAS_WUFFS_LIBRARY" ]
     } else {
@@ -198,7 +200,8 @@ config("skia_library_config") {
                   # assembly code contains flow control(jmp or jcc) statements.
 
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
-      "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+      "/wd5041",  # out-of-line definition for constexpr static data member is
+                  # not needed and is deprecated in C++17
     ]
     cflags_cc = [ "/std:c++17" ]
   } else {
@@ -223,9 +226,7 @@ source_set("skcms") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
-  public = [
-    "//third_party/skia/include/third_party/skcms/skcms.h",
-  ]
+  public = [ "//third_party/skia/include/third_party/skcms/skcms.h" ]
   include_dirs = [ "//third_party/skia/include/third_party/skcms" ]
   sources =
       rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
@@ -375,8 +376,6 @@ component("skia") {
 
   # Remove unused util sources.
   sources -= [
-    "//third_party/skia/src/utils/SkCamera.cpp",
-    "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
   ]
@@ -474,11 +473,11 @@ component("skia") {
       "ext/fontmgr_default_fuchsia.cc",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
-      "//third_party/fuchsia-sdk/sdk:zx",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
       "//third_party/icu:icuuc",
     ]
   }
@@ -514,8 +513,9 @@ component("skia") {
   if (skia_use_dawn) {
     public_deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
     deps += [
-      "//third_party/dawn:libdawn_native",
-      "//third_party/dawn/src/dawn:libdawn",
+      "//third_party/dawn/src/dawn:dawn_proc",
+      "//third_party/dawn/src/dawn:dawncpp",
+      "//third_party/dawn/src/dawn_native",
     ]
   }
 
@@ -581,10 +581,6 @@ component("skia") {
     }
     if (enable_vulkan) {
       sources += skia_vk_sources
-      sources += [
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.cpp",
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.h",
-      ]
     }
     deps += [ "//gpu/config:workaround_list" ]
   }
@@ -592,8 +588,6 @@ component("skia") {
   if (skia_support_pdf) {
     deps += [
       "//third_party:freetype_harfbuzz",
-      "//third_party/sfntly",
-      "//third_party/sfntly:sfntly_chromium",
       "//third_party/zlib",
     ]
     sources += skia_pdf_sources
@@ -647,7 +641,8 @@ template("skia_source_set") {
     if (is_win) {
       cflags_cc = [
         "/std:c++17",
-        "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+        "/wd5041",  # out-of-line definition for constexpr static data member is
+                    # not needed and is deprecated in C++17
       ]
     } else {
       cflags_cc = [ "-std=c++17" ]
@@ -662,9 +657,7 @@ skia_source_set("skia_core_and_effects") {
   sources += skia_effects_sources
   sources += skia_effects_imagefilter_sources
   if (skia_support_gpu) {
-    deps = [
-      "//gpu/config:workaround_list",
-    ]
+    deps = [ "//gpu/config:workaround_list" ]
   }
   if (skia_use_dawn) {
     deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
@@ -744,9 +737,7 @@ skia_source_set("skia_opts") {
   cflags = []
   defines = []
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources = skia_opts.sse2_sources
@@ -813,9 +804,7 @@ if (is_mac) {
       "-Wno-unguarded-availability",
       "-fobjc-arc",
     ]
-    deps = [
-      "//gpu/config:workaround_list",
-    ]
+    deps = [ "//gpu/config:workaround_list" ]
     if (skia_use_dawn) {
       deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
     }
@@ -823,41 +812,22 @@ if (is_mac) {
 }
 
 # Font copies.
-if (is_android) {
-  copy("copy_android_fonts_config") {
-    sources = [
-      "ext/data/test_fonts/android_fallback_fonts.xml",
-      "ext/data/test_fonts/android_main_fonts.xml",
-    ]
-    outputs = [
-      "$root_out_dir/test_fonts/{{source_file_part}}",
-    ]
-  }
-}
 if (is_fuchsia) {
   copy("copy_fuchsia_fonts_manifest") {
-    sources = [
-      "ext/data/test_fonts/fuchsia_test_fonts_manifest.json",
-    ]
-    outputs = [
-      "$root_out_dir/test_fonts/{{source_file_part}}",
-    ]
+    sources = [ "ext/data/test_fonts/fuchsia_test_fonts_manifest.json" ]
+    outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
   }
 }
-if (is_mac) {
+if (is_mac || is_ios) {
   bundle_data("test_fonts_bundle_data") {
-    public_deps = [
-      "//third_party/test_fonts",
-    ]
+    public_deps = [ "//third_party/test_fonts" ]
 
     sources = [
       "$root_out_dir/test_fonts/Ahem.ttf",
       "ext/data/test_fonts/ChromiumAATTest.ttf",
     ]
 
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 
@@ -865,7 +835,7 @@ group("test_fonts_resources") {
   deps = []
   data_deps = []
 
-  if (is_mac) {
+  if (is_mac || is_ios) {
     deps += [ ":test_fonts_bundle_data" ]
     data_deps += [ ":test_fonts_bundle_data" ]
   } else {
@@ -873,10 +843,6 @@ group("test_fonts_resources") {
     data_deps += [ "//third_party/test_fonts" ]
   }
 
-  if (is_android) {
-    deps += [ ":copy_android_fonts_config" ]
-    data_deps += [ ":copy_android_fonts_config" ]
-  }
   if (is_fuchsia) {
     deps += [ ":copy_fuchsia_fonts_manifest" ]
     data_deps += [ ":copy_fuchsia_fonts_manifest" ]
@@ -886,32 +852,24 @@ group("test_fonts_resources") {
 source_set("test_fonts") {
   testonly = true
 
-  sources = [
-    "ext/test_fonts.h",
-  ]
+  sources = [ "ext/test_fonts.h" ]
   deps = [
     ":test_fonts_resources",
     "//base/test:test_support",
     "//skia",
   ]
 
-  if (is_android) {
-    sources += [ "ext/test_fonts_android.cc" ]
-  }
   if (is_fuchsia) {
     sources += [
       "ext/test_fonts_fuchsia.cc",
       "ext/test_fonts_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
-  }
-  if (is_linux) {
-    sources += [ "ext/test_fonts_linux.cc" ]
   }
   if (is_mac) {
     sources += [ "ext/test_fonts_mac.mm" ]
@@ -957,12 +915,10 @@ test("skia_unittests") {
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
       "//third_party/test_fonts",
     ]
-    data_deps = [
-      "//third_party/test_fonts",
-    ]
+    data_deps = [ "//third_party/test_fonts" ]
   }
 
   if (skia_support_skottie) {
@@ -972,9 +928,7 @@ test("skia_unittests") {
 
 if (!is_ios) {
   executable("image_operations_bench") {
-    sources = [
-      "ext/image_operations_bench.cc",
-    ]
+    sources = [ "ext/image_operations_bench.cc" ]
 
     deps = [
       ":skia",
@@ -985,9 +939,7 @@ if (!is_ios) {
 
   executable("filter_fuzz_stub") {
     testonly = true
-    sources = [
-      "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
-    ]
+    sources = [ "tools/filter_fuzz_stub/filter_fuzz_stub.cc" ]
 
     deps = [
       ":skia",
@@ -999,7 +951,5 @@ if (!is_ios) {
 }
 
 group("fuzzers") {
-  deps = [
-    "//skia/tools/fuzzers",
-  ]
+  deps = [ "//skia/tools/fuzzers" ]
 }

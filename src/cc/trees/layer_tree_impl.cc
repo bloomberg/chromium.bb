@@ -74,8 +74,8 @@ class ViewportAnchor {
   void ResetViewportToAnchoredPosition() {
     DCHECK(outer_);
 
-    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
-    scroll_tree().ClampScrollToMaxScrollOffset(outer_, tree_impl_);
+    scroll_tree().ClampScrollToMaxScrollOffset(*inner_, tree_impl_);
+    scroll_tree().ClampScrollToMaxScrollOffset(*outer_, tree_impl_);
 
     gfx::ScrollOffset viewport_location =
         scroll_tree().current_scroll_offset(inner_->element_id) +
@@ -84,8 +84,8 @@ class ViewportAnchor {
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
 
-    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
-    scroll_tree().ScrollBy(outer_, delta, tree_impl_);
+    delta = scroll_tree().ScrollBy(*inner_, delta, tree_impl_);
+    scroll_tree().ScrollBy(*outer_, delta, tree_impl_);
   }
 
  private:
@@ -369,21 +369,22 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollNode(),
                         this);
 
-  // Top/bottom controls always share the same shown ratio.
   float top_controls_shown_ratio =
       top_controls_shown_ratio_->Current(IsActiveTree());
   float bottom_controls_shown_ratio =
       bottom_controls_shown_ratio_->Current(IsActiveTree());
-  float top_controls_layout_height =
-      browser_controls_shrink_blink_size() ? top_controls_height() : 0.f;
+  float top_controls_layout_height = browser_controls_shrink_blink_size()
+                                         ? top_controls_height()
+                                         : top_controls_min_height();
   float top_content_offset =
       top_controls_height() > 0
           ? top_controls_height() * top_controls_shown_ratio
           : 0.f;
   float delta_from_top_controls =
       top_controls_layout_height - top_content_offset;
-  float bottom_controls_layout_height =
-      browser_controls_shrink_blink_size() ? bottom_controls_height() : 0.f;
+  float bottom_controls_layout_height = browser_controls_shrink_blink_size()
+                                            ? bottom_controls_height()
+                                            : bottom_controls_min_height();
   float bottom_content_offset =
       bottom_controls_height() > 0
           ? bottom_controls_height() * bottom_controls_shown_ratio
@@ -521,6 +522,10 @@ void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
     scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
   }
   target_tree->SetCurrentlyScrollingNode(scrolling_node);
+
+  std::vector<EventMetrics> events_metrics;
+  events_metrics.swap(events_metrics_from_main_thread_);
+  target_tree->AppendEventsMetricsFromMainThread(std::move(events_metrics));
 }
 
 void LayerTreeImpl::PushSurfaceRangesTo(LayerTreeImpl* target_tree) {
@@ -565,7 +570,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_overscroll_behavior(overscroll_behavior_);
 
-  target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
+  target_tree->SetRasterColorSpace(raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
@@ -689,15 +694,12 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::AddToElementLayerList", "element",
-               element_id.AsValue().release());
+               element_id.ToString());
 
   if (!settings().use_layer_lists) {
     host_impl_->mutator_host()->RegisterElementId(element_id,
                                                   GetElementTypeForAnimation());
   }
-
-  if (layer->scrollable())
-    AddScrollableLayer(layer);
 }
 
 void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
@@ -706,26 +708,12 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::RemoveFromElementLayerList", "element",
-               element_id.AsValue().release());
+               element_id.ToString());
 
   if (!settings().use_layer_lists) {
     host_impl_->mutator_host()->UnregisterElementId(
         element_id, GetElementTypeForAnimation());
   }
-
-  element_id_to_scrollable_layer_.erase(element_id);
-}
-
-void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
-  DCHECK(layer);
-  DCHECK(layer->scrollable());
-
-  if (!layer->element_id())
-    return;
-
-  DCHECK(!element_id_to_scrollable_layer_.count(layer->element_id()));
-  element_id_to_scrollable_layer_.insert(
-      std::make_pair(layer->element_id(), layer));
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
@@ -1016,9 +1004,10 @@ void LayerTreeImpl::SetBrowserControlsParams(
   browser_controls_params_ = params;
   UpdateViewportContainerSizes();
 
-  if (IsActiveTree())
+  if (IsActiveTree()) {
     host_impl_->browser_controls_manager()->OnBrowserControlsParamsChanged(
         params.animate_browser_controls_height_changes);
+  }
 }
 
 void LayerTreeImpl::set_overscroll_behavior(
@@ -1028,14 +1017,28 @@ void LayerTreeImpl::set_overscroll_behavior(
 
 bool LayerTreeImpl::ClampTopControlsShownRatio() {
   float ratio = top_controls_shown_ratio_->Current(true);
+  auto range = std::make_pair(0.f, 1.f);
+  if (IsActiveTree()) {
+    // BCOM might need to set ratios outside the [0, 1] range (e.g. animation
+    // running). So, use the values it provides instead of clamping to [0, 1].
+    range =
+        host_impl_->browser_controls_manager()->TopControlsShownRatioRange();
+  }
   return top_controls_shown_ratio_->SetCurrent(
-      base::ClampToRange(ratio, 0.f, 1.f));
+      base::ClampToRange(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::ClampBottomControlsShownRatio() {
   float ratio = bottom_controls_shown_ratio_->Current(true);
+  auto range = std::make_pair(0.f, 1.f);
+  if (IsActiveTree()) {
+    // BCOM might need to set ratios outside the [0, 1] range (e.g. animation
+    // running). So, use the values it provides instead of clamping to [0, 1].
+    range =
+        host_impl_->browser_controls_manager()->BottomControlsShownRatioRange();
+  }
   return bottom_controls_shown_ratio_->SetCurrent(
-      base::ClampToRange(ratio, 0.f, 1.f));
+      base::ClampToRange(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float top_ratio,
@@ -1171,11 +1174,9 @@ gfx::Rect LayerTreeImpl::GetDeviceViewport() const {
 }
 
 void LayerTreeImpl::SetRasterColorSpace(
-    int raster_color_space_id,
     const gfx::ColorSpace& raster_color_space) {
   if (raster_color_space == raster_color_space_)
     return;
-  raster_color_space_id_ = raster_color_space_id;
   raster_color_space_ = raster_color_space;
 }
 
@@ -1467,12 +1468,6 @@ LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
   return *it;
 }
 
-LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
-    ElementId element_id) const {
-  auto iter = element_id_to_scrollable_layer_.find(element_id);
-  return iter != element_id_to_scrollable_layer_.end() ? iter->second : nullptr;
-}
-
 void LayerTreeImpl::SetSurfaceRanges(
     const base::flat_set<viz::SurfaceRange> surface_ranges) {
   DCHECK(surface_layer_ranges_.empty());
@@ -1590,6 +1585,10 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return host_impl_->fps_counter();
 }
 
+base::Optional<int> LayerTreeImpl::current_universal_throughput() {
+  return host_impl_->current_universal_throughput();
+}
+
 MemoryHistory* LayerTreeImpl::memory_history() const {
   return host_impl_->memory_history();
 }
@@ -1632,7 +1631,7 @@ bool LayerTreeImpl::PinchGestureActive() const {
   return host_impl_->pinch_gesture_active();
 }
 
-viz::BeginFrameArgs LayerTreeImpl::CurrentBeginFrameArgs() const {
+const viz::BeginFrameArgs& LayerTreeImpl::CurrentBeginFrameArgs() const {
   return host_impl_->CurrentBeginFrameArgs();
 }
 
@@ -1950,9 +1949,9 @@ ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   if (it != element_id_to_scrollbar_layer_ids_.end()) {
     const ScrollbarLayerIds& layer_ids = it->second;
     if (layer_ids.horizontal != Layer::INVALID_ID)
-      scrollbars.insert(LayerById(layer_ids.horizontal)->ToScrollbarLayer());
+      scrollbars.insert(ToScrollbarLayer(LayerById(layer_ids.horizontal)));
     if (layer_ids.vertical != Layer::INVALID_ID)
-      scrollbars.insert(LayerById(layer_ids.vertical)->ToScrollbarLayer());
+      scrollbars.insert(ToScrollbarLayer(LayerById(layer_ids.vertical)));
   }
   return scrollbars;
 }
@@ -2153,13 +2152,6 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-struct HitTestScrollingLayerOrScrollbarFunctor {
-  bool operator()(LayerImpl* layer) const {
-    return layer->HitTestable() &&
-           (layer->scrollable() || layer->is_scrollbar());
-  }
-};
-
 LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
@@ -2167,8 +2159,15 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
 
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_[0].get();
+  auto HitTestScrollingLayerOrScrollbarFunctor =
+      [this](const LayerImpl* layer) {
+        return layer->HitTestable() &&
+               (layer->IsScrollbarLayer() ||
+                (property_trees()->scroll_tree.FindNodeFromElementId(
+                    layer->element_id())));
+      };
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           HitTestScrollingLayerOrScrollbarFunctor(), &state);
+                           HitTestScrollingLayerOrScrollbarFunctor, &state);
   return state.closest_match;
 }
 
@@ -2255,6 +2254,37 @@ LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
   }
 
   return layers;
+}
+
+struct HitTestFramedVisibleScrollableOrTouchableFunctor {
+  bool operator()(LayerImpl* layer) const {
+    return layer->HitTestable() && layer->frame_element_id();
+  }
+};
+
+ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
+    const gfx::PointF& screen_space_point) {
+  if (layer_list_.empty())
+    return {};
+  if (!UpdateDrawProperties())
+    return {};
+  FindClosestMatchingLayerState state;
+  FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(),
+                           HitTestFramedVisibleScrollableOrTouchableFunctor(),
+                           &state);
+
+  if (auto* layer = state.closest_match) {
+    // TODO(https://crbug.com/1058870): Permit hit testing only if the framed
+    // element hit has a simple mask/clip. We don't have enough information
+    // about complex masks/clips on the impl-side to do accurate hit testing.
+    bool layer_hit_test_region_is_masked =
+        property_trees()->effect_tree.HitTestMayBeAffectedByMask(
+            layer->effect_tree_index());
+
+    if (!layer_hit_test_region_is_masked)
+      return layer->frame_element_id();
+  }
+  return {};
 }
 
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
@@ -2388,10 +2418,6 @@ void LayerTreeImpl::UpdateImageDecodingHints(
   host_impl_->UpdateImageDecodingHints(std::move(decoding_mode_map));
 }
 
-bool LayerTreeImpl::IsActivelyScrolling() const {
-  return host_impl_->IsActivelyScrolling();
-}
-
 int LayerTreeImpl::GetMSAASampleCountForRaster(
     const scoped_refptr<DisplayItemList>& display_list) {
   return host_impl_->GetMSAASampleCountForRaster(display_list);
@@ -2405,6 +2431,21 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 std::unique_ptr<PendingPageScaleAnimation>
 LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
+}
+
+void LayerTreeImpl::AppendEventsMetricsFromMainThread(
+    std::vector<EventMetrics> events_metrics) {
+  events_metrics_from_main_thread_.reserve(
+      events_metrics_from_main_thread_.size() + events_metrics.size());
+  events_metrics_from_main_thread_.insert(
+      events_metrics_from_main_thread_.end(), events_metrics.begin(),
+      events_metrics.end());
+}
+
+std::vector<EventMetrics> LayerTreeImpl::TakeEventsMetrics() {
+  std::vector<EventMetrics> main_event_metrics_result;
+  main_event_metrics_result.swap(events_metrics_from_main_thread_);
+  return main_event_metrics_result;
 }
 
 bool LayerTreeImpl::TakeForceSendMetadataRequest() {
@@ -2422,16 +2463,15 @@ void LayerTreeImpl::ResetAllChangeTracking() {
 }
 
 std::string LayerTreeImpl::LayerListAsJson() const {
-  auto list = std::make_unique<base::ListValue>();
-  for (auto* layer : *this)
-    list->Append(layer->LayerAsJson());
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *list,
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &str);
-  return str;
+  base::trace_event::TracedValueJSON value;
+  value.BeginArray("LayerTreeImpl");
+  for (auto* layer : *this) {
+    value.BeginDictionary();
+    layer->AsValueInto(&value);
+    value.EndDictionary();
+  }
+  value.EndArray();
+  return value.ToFormattedJSON();
 }
 
 }  // namespace cc

@@ -29,10 +29,6 @@
 #ifndef MM_H
 #define MM_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "libdrm_macros.h"
 
 struct mem_block {
@@ -77,7 +73,7 @@ drm_private extern int mmFreeMem(struct mem_block *b);
 drm_private extern void mmDestroy(struct mem_block *mmInit);
 
 /**
- * For debuging purpose.
+ * For debugging purpose.
  */
 drm_private extern void mmDumpMemInfo(const struct mem_block *mmInit);
 

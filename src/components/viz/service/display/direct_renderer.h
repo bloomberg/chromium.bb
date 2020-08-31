@@ -12,13 +12,15 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_candidate.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/latency/latency_info.h"
@@ -51,7 +53,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
   DirectRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
-                 DisplayResourceProvider* resource_provider);
+                 DisplayResourceProvider* resource_provider,
+                 OverlayProcessorInterface* overlay_processor);
   virtual ~DirectRenderer();
 
   void Initialize();
@@ -61,11 +64,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
-  void DrawFrame(
-      RenderPassList* render_passes_in_draw_order,
-      float device_scale_factor,
-      const gfx::Size& device_viewport_size,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  void DrawFrame(RenderPassList* render_passes_in_draw_order,
+                 float device_scale_factor,
+                 const gfx::Size& device_viewport_size,
+                 const gfx::DisplayColorSpaces& display_color_spaces);
 
   // Public interface implemented by subclasses.
   struct SwapFrameData {
@@ -99,16 +101,16 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
     gfx::Size device_viewport_size;
-    float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel;
+    gfx::DisplayColorSpaces display_color_spaces;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
 
-    OverlayProcessor::CandidateList overlay_list;
+    OverlayProcessorInterface::CandidateList overlay_list;
     // When we have a buffer queue, the output surface could be treated as an
     // overlay plane, and the struct to store that information is in
     // |output_surface_plane|.
-    base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
+    base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
         output_surface_plane;
   };
 
@@ -120,11 +122,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetEnlargePassTextureAmountForTesting(const gfx::Size& amount) {
     enlarge_pass_texture_amount_ = amount;
   }
-
-  bool has_overlay_validator() const {
-    return !!overlay_processor_->GetOverlayCandidateValidator();
-  }
-  bool OverlayNeedsSurfaceOccludingDamageRect() const;
 
   gfx::Rect GetLastRootScissorRectForTesting() const {
     return last_root_render_pass_scissor_rect_;
@@ -241,11 +238,16 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   bool ShouldApplyRoundedCorner(const DrawQuad* quad) const;
 
+  gfx::ColorSpace RootRenderPassColorSpace() const;
+  gfx::ColorSpace CurrentRenderPassColorSpace() const;
+
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;
   DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.
-  std::unique_ptr<OverlayProcessor> overlay_processor_;
+  // TODO(weiliangc): For SoftwareRenderer and tests where overlay is not used,
+  // use OverlayProcessorStub so this pointer is never null.
+  OverlayProcessorInterface* overlay_processor_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.
@@ -305,6 +307,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool initialized_ = false;
 #if DCHECK_IS_ON()
   bool overdraw_feedback_support_missing_logged_once_ = false;
+  bool overdraw_tracing_support_missing_logged_once_ = false;
+  bool supports_occlusion_query_ = false;
 #endif
   gfx::Rect last_root_render_pass_scissor_rect_;
   gfx::Size enlarge_pass_texture_amount_;
@@ -315,11 +319,12 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   DrawingFrame current_frame_;
   bool current_frame_valid_ = false;
 
-  // Cached values given to Reshape().
+  // Cached values given to Reshape(). The |reshape_buffer_format_| is optional
+  // to prevent use of uninitialized values.
   gfx::Size reshape_surface_size_;
   float reshape_device_scale_factor_ = 0.f;
-  gfx::ColorSpace reshape_device_color_space_;
-  bool reshape_has_alpha_ = false;
+  gfx::ColorSpace reshape_color_space_;
+  base::Optional<gfx::BufferFormat> reshape_buffer_format_;
   bool reshape_use_stencil_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);

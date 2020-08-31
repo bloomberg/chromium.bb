@@ -94,7 +94,6 @@ bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
 
 UserSelectableTypeSet SyncUserSettingsImpl::GetSelectedTypes() const {
   UserSelectableTypeSet types = prefs_->GetSelectedTypes();
-  types.PutAll(GetForcedTypes());
   types.RetainAll(GetRegisteredSelectableTypes());
   return types;
 }
@@ -103,7 +102,8 @@ void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
   UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
   DCHECK(registered_types.HasAll(types))
-      << UserSelectableTypeSetToString(types);
+      << "\n registered: " << UserSelectableTypeSetToString(registered_types)
+      << "\n setting to: " << UserSelectableTypeSetToString(types);
   prefs_->SetSelectedTypes(sync_everything, registered_types, types);
 }
 
@@ -153,9 +153,9 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
   return registered_types;
 }
 
-bool SyncUserSettingsImpl::GetOsSyncFeatureEnabled() const {
+bool SyncUserSettingsImpl::IsOsSyncFeatureEnabled() const {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
-  return prefs_->GetOsSyncFeatureEnabled();
+  return prefs_->IsOsSyncFeatureEnabled();
 }
 
 void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
@@ -163,13 +163,6 @@ void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
   prefs_->SetOsSyncFeatureEnabled(enabled);
 }
 #endif  // defined(OS_CHROMEOS)
-
-UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {
-  if (preference_provider_) {
-    return preference_provider_->GetForcedTypes();
-  }
-  return UserSelectableTypeSet();
-}
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
   return !preference_provider_ ||
@@ -194,6 +187,10 @@ bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
   // passphrase, we must prompt the user for a passphrase. The only way for the
   // user to avoid entering their passphrase is to disable the encrypted types.
   return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
+}
+
+bool SyncUserSettingsImpl::IsTrustedVaultKeyRequired() const {
+  return crypto_->IsTrustedVaultKeyRequired();
 }
 
 bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
@@ -226,16 +223,7 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
 
   DVLOG(1) << "Setting passphrase for decryption.";
 
-  bool result = crypto_->SetDecryptionPassphrase(passphrase);
-  UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
-  return result;
-}
-
-void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
-    const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
-  DVLOG(1) << "Adding trusted vault decryption keys.";
-  crypto_->AddTrustedVaultDecryptionKeys(gaia_id, keys);
+  return crypto_->SetDecryptionPassphrase(passphrase);
 }
 
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
@@ -251,7 +239,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
 #endif
   types.RetainAll(registered_model_types_);
 
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   types.PutAll(ControlTypes());
@@ -259,6 +247,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.Remove(APP_LIST);
     types.Remove(SECURITY_EVENTS);
     types.Remove(SEND_TAB_TO_SELF);
+    types.Remove(SHARING_MESSAGE);
     types.Remove(USER_CONSENTS);
     types.Remove(USER_EVENTS);
   }

@@ -32,6 +32,7 @@ static_assert(sizeof(NGPhysicalTextFragment) ==
 }  // anonymous namespace
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(
+    PassKey key,
     const NGPhysicalTextFragment& source,
     unsigned start_offset,
     unsigned end_offset,
@@ -43,35 +44,44 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
               ? PhysicalSize{shape_result->SnappedWidth(), source.Size().height}
               : PhysicalSize{source.Size().width, shape_result->SnappedWidth()},
           kFragmentText,
-          source.TextType()),
+          static_cast<unsigned>(source.TextType())),
       text_(source.text_),
-      start_offset_(start_offset),
-      end_offset_(end_offset),
+      text_offset_(start_offset, end_offset),
       shape_result_(std::move(shape_result)) {
-  DCHECK_GE(start_offset_, source.StartOffset());
-  DCHECK_LE(end_offset_, source.EndOffset());
+  DCHECK_GE(text_offset_.start, source.StartOffset());
+  DCHECK_LE(text_offset_.end, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << *this;
-  is_generated_text_ = source.is_generated_text_;
+  base_or_resolved_direction_ = source.base_or_resolved_direction_;
   ink_overflow_computed_ = false;
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
-    : NGPhysicalFragment(builder, kFragmentText, builder->text_type_),
+    : NGPhysicalFragment(builder,
+                         kFragmentText,
+                         static_cast<unsigned>(builder->text_type_)),
       text_(builder->text_),
-      start_offset_(builder->start_offset_),
-      end_offset_(builder->end_offset_),
+      text_offset_({builder->start_offset_, builder->end_offset_}),
       shape_result_(std::move(builder->shape_result_)) {
   DCHECK(shape_result_ || IsFlowControl()) << *this;
-  is_generated_text_ = builder->IsGeneratedText();
+  base_or_resolved_direction_ =
+      static_cast<unsigned>(builder->ResolvedDirection());
   ink_overflow_computed_ = false;
+}
+
+bool NGPhysicalTextFragment::IsGeneratedText() const {
+  if (UNLIKELY(TextType() == NGTextType::kLayoutGenerated))
+    return true;
+  return GetLayoutObject()->IsStyleGenerated();
 }
 
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
     unsigned offset,
     LayoutUnit (*round_function)(float),
     AdjustMidCluster adjust_mid_cluster) const {
-  return NGFragmentItem(*this).InlinePositionForOffset(
-      Text(), offset, round_function, adjust_mid_cluster);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->InlinePositionForOffset(Text(), offset, round_function,
+                                       adjust_mid_cluster);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to
@@ -115,14 +125,17 @@ LayoutUnit NGFragmentItem::InlinePositionForOffset(StringView text,
 
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
     unsigned offset) const {
-  return NGFragmentItem(*this).InlinePositionForOffset(Text(), offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->InlinePositionForOffset(Text(), offset);
 }
 
 std::pair<LayoutUnit, LayoutUnit>
 NGPhysicalTextFragment::LineLeftAndRightForOffsets(unsigned start_offset,
                                                    unsigned end_offset) const {
-  return NGFragmentItem(*this).LineLeftAndRightForOffsets(Text(), start_offset,
-                                                          end_offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->LineLeftAndRightForOffsets(Text(), start_offset, end_offset);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to
@@ -149,7 +162,9 @@ std::pair<LayoutUnit, LayoutUnit> NGFragmentItem::LineLeftAndRightForOffsets(
 
 PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
                                                unsigned end_offset) const {
-  return NGFragmentItem(*this).LocalRect(Text(), start_offset, end_offset);
+  scoped_refptr<NGFragmentItem> item =
+      base::MakeRefCounted<NGFragmentItem>(*this);
+  return item->LocalRect(Text(), start_offset, end_offset);
 }
 
 // TODO(yosin): We should move |NGFragmentItem::InlinePositionForOffset" to
@@ -214,8 +229,9 @@ scoped_refptr<const NGPhysicalTextFragment> NGPhysicalTextFragment::TrimText(
   DCHECK_LE(new_end_offset, EndOffset());
   scoped_refptr<ShapeResultView> new_shape_result = ShapeResultView::Create(
       shape_result_.get(), new_start_offset, new_end_offset);
-  return base::AdoptRef(new NGPhysicalTextFragment(
-      *this, new_start_offset, new_end_offset, std::move(new_shape_result)));
+  return base::AdoptRef(
+      new NGPhysicalTextFragment(PassKey(), *this, new_start_offset,
+                                 new_end_offset, std::move(new_shape_result)));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
@@ -261,12 +277,6 @@ UBiDiLevel NGPhysicalTextFragment::BidiLevel() const {
   DCHECK(containing_item);
   DCHECK_NE(containing_item, items.end());
   return containing_item->BidiLevel();
-}
-
-TextDirection NGPhysicalTextFragment::ResolvedDirection() const {
-  if (TextShapeResult())
-    return TextShapeResult()->Direction();
-  return DirectionFromLevel(BidiLevel());
 }
 
 }  // namespace blink

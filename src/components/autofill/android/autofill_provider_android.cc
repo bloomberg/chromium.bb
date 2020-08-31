@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "components/autofill/android/form_data_android.h"
 #include "components/autofill/android/jni_headers/AutofillProvider_jni.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,10 +35,27 @@ AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
     content::WebContents* web_contents)
     : id_(kNoQueryId), web_contents_(web_contents), check_submission_(false) {
-  JNIEnv* env = AttachCurrentThread();
+  OnJavaAutofillProviderChanged(AttachCurrentThread(), jcaller);
+}
+
+void AutofillProviderAndroid::OnJavaAutofillProviderChanged(
+    JNIEnv* env,
+    const JavaRef<jobject>& jcaller) {
+  // If the current Java object isn't null (e.g., because it hasn't been
+  // garbage-collected yet), clear its reference to this object.
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    Java_AutofillProvider_setNativeAutofillProvider(env, obj, 0);
+  }
+
   java_ref_ = JavaObjectWeakGlobalRef(env, jcaller);
-  Java_AutofillProvider_setNativeAutofillProvider(
-      env, jcaller, reinterpret_cast<jlong>(this));
+
+  // If the new Java object isn't null, set its native object to |this|.
+  obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    Java_AutofillProvider_setNativeAutofillProvider(
+        env, obj, reinterpret_cast<jlong>(this));
+  }
 }
 
 AutofillProviderAndroid::~AutofillProviderAndroid() {
@@ -86,7 +104,10 @@ void AutofillProviderAndroid::StartNewSession(AutofillHandlerProxy* handler,
   if (obj.is_null())
     return;
 
-  form_ = std::make_unique<FormDataAndroid>(form);
+  form_ = std::make_unique<FormDataAndroid>(
+      form, base::BindRepeating(
+                &AutofillDriver::TransformBoundingBoxToViewportCoordinates,
+                base::Unretained(handler->driver())));
 
   size_t index;
   if (!form_->GetFieldIndex(field, &index)) {

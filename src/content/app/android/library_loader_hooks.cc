@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/url_schemes.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
 namespace content {
@@ -22,9 +23,6 @@ bool LibraryLoaded(JNIEnv* env,
     base::android::InitReachedCodeProfilerAtStartup(library_process_type);
   }
 
-  // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
-  tracing::EnableStartupTracingIfNeeded();
-
   // Android's main browser loop is custom so we set the browser name here as
   // early as possible if this is the browser process or main webview process.
   if (library_process_type ==
@@ -36,8 +34,8 @@ bool LibraryLoaded(JNIEnv* env,
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  // Can only use event tracing after setting up the command line.
-  TRACE_EVENT0("jni", "JNI_OnLoad continuation");
+  // Tracing itself can only be enabled after mojo is initialized, we do so in
+  // ContentMainRunnerImpl::Initialize.
 
   logging::LoggingSettings settings;
   settings.logging_dest =
@@ -54,6 +52,10 @@ bool LibraryLoaded(JNIEnv* env,
             << ", default verbosity = " << logging::GetVlogVerbosity();
   }
 
+  // Content Schemes need to be registered as early as possible after the
+  // CommandLine has been initialized to allow java and tests to use GURL before
+  // running ContentMain.
+  RegisterContentSchemes();
   return true;
 }
 

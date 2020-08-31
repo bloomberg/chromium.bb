@@ -5,8 +5,10 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
+import android.webkit.ValueCallback;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,25 +16,31 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.weblayer.Download;
 import org.chromium.weblayer.DownloadCallback;
+import org.chromium.weblayer.DownloadError;
+import org.chromium.weblayer.DownloadState;
+import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Tests that the DownloadCallback method is invoked for downloads.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class DownloadCallbackTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
+
+    private static boolean sIsFileNameSupported;
 
     private InstrumentationActivity mActivity;
     private Callback mCallback;
@@ -42,7 +50,15 @@ public class DownloadCallbackTest {
         public String mUserAgent;
         public String mContentDisposition;
         public String mMimetype;
+        public String mLocation;
+        public String mFileName;
+        public @DownloadState int mState;
+        public @DownloadError int mError;
         public long mContentLength;
+        public boolean mIntercept;
+        public boolean mSeenStarted;
+        public boolean mSeenCompleted;
+        public boolean mSeenFailed;
 
         @Override
         public boolean onInterceptDownload(Uri uri, String userAgent, String contentDisposition,
@@ -52,16 +68,54 @@ public class DownloadCallbackTest {
             mContentDisposition = contentDisposition;
             mMimetype = mimetype;
             mContentLength = contentLength;
-            return true;
+            return mIntercept;
         }
 
-        public void waitForDownload() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mUrl != null;
-                }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        @Override
+        public void allowDownload(Uri uri, String requestMethod, Uri requestInitiator,
+                ValueCallback<Boolean> callback) {
+            callback.onReceiveValue(true);
+        }
+
+        @Override
+        public void onDownloadStarted(Download download) {
+            mSeenStarted = true;
+            download.disableNotification();
+        }
+
+        @Override
+        public void onDownloadCompleted(Download download) {
+            mSeenCompleted = true;
+            mLocation = download.getLocation().toString();
+            if (sIsFileNameSupported) {
+                mFileName = download.getFileNameToReportToUser().toString();
+            }
+            mState = download.getState();
+            mError = download.getError();
+            mMimetype = download.getMimeType();
+        }
+
+        @Override
+        public void onDownloadFailed(Download download) {
+            mSeenFailed = true;
+            mState = download.getState();
+            mError = download.getError();
+        }
+
+        public void waitForIntercept() {
+            CriteriaHelper.pollInstrumentationThread(() -> Assert.assertNotNull(mUrl));
+        }
+
+        public void waitForStarted() {
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenStarted);
+        }
+
+        public void waitForCompleted() {
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenCompleted);
+        }
+
+        public void waitForFailed() {
+            CriteriaHelper.pollInstrumentationThread(() -> mSeenFailed);
         }
     }
 
@@ -70,9 +124,20 @@ public class DownloadCallbackTest {
         mActivity = mActivityTestRule.launchShellWithUrl(null);
         Assert.assertNotNull(mActivity);
 
+        // Don't fill up the default download directory on the device.
+        String tempDownloadDirectory =
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir()
+                + "/weblayer/Downloads";
+
         mCallback = new Callback();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getTab().setDownloadCallback(mCallback); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = mActivity.getBrowser().getProfile();
+            profile.setDownloadCallback(mCallback);
+            profile.setDownloadDirectory(new File(tempDownloadDirectory));
+
+            sIsFileNameSupported =
+                    WebLayer.getSupportedMajorVersion(mActivity.getApplicationContext()) >= 86;
+        });
     }
 
     /**
@@ -81,7 +146,8 @@ public class DownloadCallbackTest {
      */
     @Test
     @SmallTest
-    public void testDownloadByContentDisposition() throws Throwable {
+    public void testInterceptDownloadByContentDisposition() throws Throwable {
+        mCallback.mIntercept = true;
         final String data = "download data";
         final String contentDisposition = "attachment;filename=\"download.txt\"";
         final String mimetype = "text/plain";
@@ -97,7 +163,7 @@ public class DownloadCallbackTest {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 mActivity.getTab().getNavigationController().navigate(Uri.parse(pageUrl));
             });
-            mCallback.waitForDownload();
+            mCallback.waitForIntercept();
 
             Assert.assertEquals(pageUrl, mCallback.mUrl);
             Assert.assertEquals(contentDisposition, mCallback.mContentDisposition);
@@ -115,12 +181,32 @@ public class DownloadCallbackTest {
      */
     @Test
     @SmallTest
-    public void testDownloadByLinkAttribute() {
+    public void testInterceptDownloadByLinkAttribute() {
+        mCallback.mIntercept = true;
         String pageUrl = mActivityTestRule.getTestDataURL("download.html");
         mActivityTestRule.navigateAndWait(pageUrl);
 
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
-        mCallback.waitForDownload();
+        mCallback.waitForIntercept();
         Assert.assertEquals(mActivityTestRule.getTestDataURL("lorem_ipsum.txt"), mCallback.mUrl);
+    }
+
+    @Test
+    @SmallTest
+    public void testBasic() {
+        String url = mActivityTestRule.getTestDataURL("content-disposition.html");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivity.getTab().getNavigationController().navigate(Uri.parse(url)); });
+        mCallback.waitForStarted();
+        mCallback.waitForCompleted();
+
+        Assert.assertTrue(mCallback.mLocation.contains(
+                "org.chromium.weblayer.shell/cache/weblayer/Downloads/"));
+        if (sIsFileNameSupported) {
+            Assert.assertTrue(mCallback.mFileName.contains("test"));
+        }
+        Assert.assertEquals(DownloadState.COMPLETE, mCallback.mState);
+        Assert.assertEquals(DownloadError.NO_ERROR, mCallback.mError);
+        Assert.assertEquals("text/html", mCallback.mMimetype);
     }
 }

@@ -16,10 +16,36 @@
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 #include "third_party/webrtc/media/base/codec.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 namespace blink {
 
 namespace {
+
+base::Optional<media::VideoCodecProfile> WebRTCFormatToCodecProfile(
+    const webrtc::SdpVideoFormat& sdp) {
+  if (sdp.name == "H264") {
+#if !defined(OS_ANDROID)
+    // Enable H264 HW encode for WebRTC when SW fallback is available, which is
+    // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
+    // removed when SW implementation is fully enabled.
+    bool webrtc_h264_sw_enabled = false;
+#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+    webrtc_h264_sw_enabled = base::FeatureList::IsEnabled(
+        blink::features::kWebRtcH264WithOpenH264FFmpeg);
+#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+    if (!webrtc_h264_sw_enabled)
+      return base::nullopt;
+#endif
+
+    return media::VideoCodecProfile::H264PROFILE_MIN;
+  } else if (sdp.name == "VP8") {
+    return media::VideoCodecProfile::VP8PROFILE_MIN;
+  } else if (sdp.name == "VP9") {
+    return media::VideoCodecProfile::VP9PROFILE_MIN;
+  }
+  return base::nullopt;
+}
 
 // Translate from media::VideoEncodeAccelerator::SupportedProfile to
 // webrtc::SdpVideoFormat, or return nothing if the profile isn't supported.
@@ -88,10 +114,28 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
         {cricket::kH264FmtpPacketizationMode, "1"}};
     return format;
   }
+
   if (profile.profile >= media::VP9PROFILE_MIN &&
       profile.profile <= media::VP9PROFILE_MAX) {
-    return webrtc::SdpVideoFormat("VP9");
+    webrtc::VP9Profile vp9_profile;
+    switch (profile.profile) {
+      case media::VP9PROFILE_PROFILE0:
+        vp9_profile = webrtc::VP9Profile::kProfile0;
+        break;
+      case media::VP9PROFILE_PROFILE2:
+        vp9_profile = webrtc::VP9Profile::kProfile2;
+        break;
+      default:
+        // Unsupported VP9 profiles (profile1 & profile3) in WebRTC.
+        return base::nullopt;
+    }
+    webrtc::SdpVideoFormat format("VP9");
+    format.parameters = {
+        {webrtc::kVP9FmtpProfileId,
+         webrtc::VP9ProfileToString(vp9_profile)}};
+    return format;
   }
+
   return base::nullopt;
 }  // namespace
 
@@ -101,38 +145,64 @@ bool IsSameFormat(const webrtc::SdpVideoFormat& format1,
                               format2.parameters);
 }
 
+struct SupportedFormats {
+  bool unknown = true;
+  std::vector<media::VideoCodecProfile> profiles;
+  std::vector<webrtc::SdpVideoFormat> sdp_formats;
+};
+
+SupportedFormats GetSupportedFormatsInternal(
+    media::GpuVideoAcceleratorFactories* gpu_factories) {
+  SupportedFormats supported_formats;
+  auto profiles = gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
+  if (!profiles)
+    return supported_formats;
+
+  // |profiles| are either the info at GpuInfo instance or the info got by
+  // querying GPU process.
+  supported_formats.unknown = false;
+  for (const auto& profile : *profiles) {
+    base::Optional<webrtc::SdpVideoFormat> format = VEAToWebRTCFormat(profile);
+    if (format) {
+      supported_formats.profiles.push_back(profile.profile);
+      supported_formats.sdp_formats.push_back(std::move(*format));
+    }
+  }
+  return supported_formats;
+}
+
 }  // anonymous namespace
 
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories)
-    : gpu_factories_(gpu_factories) {
-  const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
-      gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
-  for (const auto& profile : profiles) {
-    base::Optional<webrtc::SdpVideoFormat> format = VEAToWebRTCFormat(profile);
-    if (format) {
-      supported_formats_.push_back(std::move(*format));
-      profiles_.push_back(profile.profile);
-    }
-  }
-}
+    : gpu_factories_(gpu_factories) {}
 
 RTCVideoEncoderFactory::~RTCVideoEncoderFactory() {}
 
 std::unique_ptr<webrtc::VideoEncoder>
 RTCVideoEncoderFactory::CreateVideoEncoder(
     const webrtc::SdpVideoFormat& format) {
-  for (size_t i = 0; i < supported_formats_.size(); ++i) {
-    if (IsSameFormat(format, supported_formats_[i])) {
-      return std::make_unique<RTCVideoEncoder>(profiles_[i], gpu_factories_);
+  std::unique_ptr<webrtc::VideoEncoder> encoder;
+  auto supported_formats = GetSupportedFormatsInternal(gpu_factories_);
+  if (!supported_formats.unknown) {
+    for (size_t i = 0; i < supported_formats.sdp_formats.size(); ++i) {
+      if (IsSameFormat(format, supported_formats.sdp_formats[i])) {
+        encoder = std::make_unique<RTCVideoEncoder>(
+            supported_formats.profiles[i], gpu_factories_);
+        break;
+      }
     }
+  } else {
+    auto profile = WebRTCFormatToCodecProfile(format);
+    if (profile)
+      encoder = std::make_unique<RTCVideoEncoder>(*profile, gpu_factories_);
   }
-  return nullptr;
+  return encoder;
 }
 
 std::vector<webrtc::SdpVideoFormat>
 RTCVideoEncoderFactory::GetSupportedFormats() const {
-  return supported_formats_;
+  return GetSupportedFormatsInternal(gpu_factories_).sdp_formats;
 }
 
 webrtc::VideoEncoderFactory::CodecInfo

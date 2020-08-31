@@ -52,6 +52,8 @@ class DelegatingSignalStrategy : public SignalStrategy {
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
+  bool SendMessage(const SignalingAddress& destination_address,
+                   const ftl::ChromotingMessage& message) override;
   std::string GetNextId() override;
 
  private:

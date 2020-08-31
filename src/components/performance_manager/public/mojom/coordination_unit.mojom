@@ -37,6 +37,8 @@ interface DocumentCoordinationUnit {
   SetNetworkAlmostIdle();
   SetLifecycleState(LifecycleState state);
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
+  // Called the first time a form in this document is interacted with.
+  SetHadFormInteraction();
 
   // Sets the freeze policy set via origin trial for the document. Invoked once
   // after finishing to parse the document. The freeze policies of all frames on
@@ -47,7 +49,18 @@ interface DocumentCoordinationUnit {
   SetIsAdFrame();
 
   // Event signals.
+
+  // Called when the associated frame has caused a non-persistent notification
+  // to be created.
   OnNonPersistentNotificationCreated();
+
+  // Invoked when the frame associated with this document has had a first
+  // contentful paint, as defined here:
+  // https://developers.google.com/web/tools/lighthouse/audits/first-contentful-paint
+  // This may not fire for all frames, depending on if the load is interrupted
+  // or if the content is even visible. It will fire at most once for a given
+  // frame. It will only fire for main-frame nodes.
+  OnFirstContentfulPaint(mojo_base.mojom.TimeDelta time_since_navigation_start);
 };
 
 interface ProcessCoordinationUnit {

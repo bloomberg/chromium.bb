@@ -10,9 +10,11 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.graphics.drawable.ShapeDrawable;
-import android.support.annotation.VisibleForTesting;
 
-import org.chromium.base.Supplier;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.supplier.Supplier;
 
 /** Generates a linear gradient according to CSS behavior */
 class GradientShader extends ShapeDrawable.ShaderFactory {
@@ -22,10 +24,12 @@ class GradientShader extends ShapeDrawable.ShaderFactory {
     final double mAngleRadians;
     @VisibleForTesting
     final double mAngleRadiansSmall;
-    @VisibleForTesting /*@Nullable*/ final Supplier<Boolean> mRtLSupplier;
+    @VisibleForTesting
+    @Nullable
+    final Supplier<Boolean> mRtLSupplier;
 
     GradientShader(
-            int[] colors, float[] stops, int angle, /*@Nullable*/ Supplier<Boolean> rtLSupplier) {
+            int[] colors, float[] stops, int angle, @Nullable Supplier<Boolean> rtLSupplier) {
         checkState(colors.length == stops.length, "Mismatch: got %s colors and %s stops",
                 colors.length, stops.length);
         this.mColors = colors;

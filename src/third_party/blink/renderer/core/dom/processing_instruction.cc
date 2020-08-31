@@ -138,7 +138,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     // can hang off some parent sheet.
     if (is_xsl_ && RuntimeEnabledFeatures::XSLTEnabled()) {
       KURL final_url(local_href_);
-      sheet_ = XSLStyleSheet::CreateEmbedded(this, final_url);
+      sheet_ = MakeGarbageCollected<XSLStyleSheet>(this, final_url.GetString(),
+                                                   final_url, true);
       loading_ = false;
     }
     return;
@@ -195,9 +196,9 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       is_xsl_ ? std::make_unique<IncrementLoadEventDelayCount>(GetDocument())
               : nullptr;
   if (is_xsl_) {
-    sheet_ = XSLStyleSheet::Create(this, resource->Url(),
-                                   resource->GetResponse().ResponseUrl());
-    ToXSLStyleSheet(sheet_.Get())
+    sheet_ = MakeGarbageCollected<XSLStyleSheet>(
+        this, resource->Url(), resource->GetResponse().ResponseUrl(), false);
+    To<XSLStyleSheet>(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {
     DCHECK(is_css_);
@@ -206,6 +207,8 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
         GetDocument(), style_resource->GetResponse().ResponseUrl(),
         style_resource->GetResponse().IsCorsSameOrigin(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
+    if (style_resource->GetResourceRequest().IsAdResource())
+      parser_context->SetIsAdRelated();
 
     auto* new_sheet = MakeGarbageCollected<StyleSheetContents>(
         parser_context, style_resource->Url());
@@ -217,7 +220,8 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(
           title_);
     }
-    css_sheet->SetMediaQueries(MediaQuerySet::Create(media_));
+    css_sheet->SetMediaQueries(
+        MediaQuerySet::Create(media_, GetExecutionContext()));
     sheet_ = css_sheet;
     // We don't need the cross-origin security check here because we are
     // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
@@ -232,7 +236,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   if (is_css_)
     To<CSSStyleSheet>(sheet_.Get())->Contents()->CheckLoaded();
   else if (is_xsl_)
-    ToXSLStyleSheet(sheet_.Get())->CheckLoaded();
+    To<XSLStyleSheet>(sheet_.Get())->CheckLoaded();
 }
 
 Node::InsertionNotificationRequest ProcessingInstruction::InsertedInto(
@@ -282,6 +286,8 @@ void ProcessingInstruction::ClearSheet() {
 }
 
 void ProcessingInstruction::RemovePendingSheet() {
+  if (is_xsl_)
+    return;
   GetDocument().GetStyleEngine().RemovePendingSheet(*this,
                                                     style_engine_context_);
 }

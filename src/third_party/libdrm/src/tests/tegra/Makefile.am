@@ -3,7 +3,9 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/tegra \
 	-I$(top_srcdir)
 
-AM_CFLAGS = $(WARN_CFLAGS)
+AM_CFLAGS = \
+	$(WARN_CFLAGS) \
+	-fvisibility=hidden
 
 LDADD = \
 	../../tegra/libdrm_tegra.la \

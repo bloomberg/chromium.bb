@@ -17,9 +17,10 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -28,9 +29,7 @@
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/testing_api.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -133,18 +132,15 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
         "getSources()");
     EXPECT_FALSE(devices_as_json.empty());
 
-    int error_code;
-    std::string error_message;
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
-            &error_message);
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS);
 
-    ASSERT_TRUE(value.get() != nullptr) << error_message;
-    EXPECT_EQ(value->type(), base::Value::Type::LIST);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+    EXPECT_EQ(parsed_json.value->type(), base::Value::Type::LIST);
 
     base::ListValue* values;
-    ASSERT_TRUE(value->GetAsList(&values));
+    ASSERT_TRUE(parsed_json.value->GetAsList(&values));
 
     for (auto it = values->begin(); it != values->end(); ++it) {
       const base::DictionaryValue* dict;
@@ -803,8 +799,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   // Crash the audio service process.
   mojo::Remote<audio::mojom::TestingApi> service_testing_api;
-  GetSystemConnector()->Connect(
-      audio::mojom::kServiceName,
+  GetAudioService().BindTestingApi(
       service_testing_api.BindNewPipeAndPassReceiver());
   service_testing_api->Crash();
 

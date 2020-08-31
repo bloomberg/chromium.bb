@@ -42,15 +42,30 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
+#if defined(USE_X11)
+#include "content/browser/gpu/gpu_memory_buffer_manager_singleton_x11.h"  // nogncheck
+#endif
+
 namespace content {
 
-#if defined(OS_ANDROID)
 namespace {
+
+#if defined(OS_ANDROID)
 void TimedOut() {
   LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
-}  // namespace
 #endif  // OS_ANDROID
+
+GpuMemoryBufferManagerSingleton* CreateGpuMemoryBufferManagerSingleton(
+    int gpu_client_id) {
+#if defined(USE_X11)
+  return new GpuMemoryBufferManagerSingletonX11(gpu_client_id);
+#else
+  return new GpuMemoryBufferManagerSingleton(gpu_client_id);
+#endif
+}
+
+}  // namespace
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = nullptr;
 
@@ -246,6 +261,15 @@ void BrowserGpuChannelHostFactory::Terminate() {
   instance_ = nullptr;
 }
 
+void BrowserGpuChannelHostFactory::MaybeCloseChannel() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!gpu_channel_ || !gpu_channel_->HasOneRef())
+    return;
+
+  gpu_channel_->DestroyChannel();
+  gpu_channel_ = nullptr;
+}
+
 void BrowserGpuChannelHostFactory::CloseChannel() {
   if (gpu_channel_) {
     gpu_channel_->DestroyChannel();
@@ -259,7 +283,7 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
       gpu_client_tracing_id_(
           memory_instrumentation::mojom::kServiceTracingProcessId),
       gpu_memory_buffer_manager_(
-          new GpuMemoryBufferManagerSingleton(gpu_client_id_)) {
+          CreateGpuMemoryBufferManagerSingleton(gpu_client_id_)) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
     DCHECK(GetContentClient());
@@ -335,13 +359,14 @@ BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
 #if defined(OS_ANDROID)
   NOTREACHED();
   return nullptr;
-#endif
+#else
   EstablishGpuChannel(gpu::GpuChannelEstablishedCallback());
 
   if (pending_request_.get())
     pending_request_->Wait();
 
   return gpu_channel_;
+#endif
 }
 
 gpu::GpuMemoryBufferManager*
@@ -385,8 +410,14 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 // Only implement timeout on Android, which does not have a software fallback.
 #if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTimeoutsForProfiling)) {
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kDisableTimeoutsForProfiling)) {
+    return;
+  }
+  // Only enable it for out of process GPU. In-process generally only has false
+  // positives.
+  if (cl->HasSwitch(switches::kSingleProcess) ||
+      cl->HasSwitch(switches::kInProcessGPU)) {
     return;
   }
 
@@ -415,10 +446,8 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
-  if (features::IsVizDisplayCompositorEnabled()) {
-    GetShaderCacheFactorySingleton()->SetCacheInfo(
-        gpu::kInProcessCommandBufferClientId, cache_dir);
-  }
+  GetShaderCacheFactorySingleton()->SetCacheInfo(
+      gpu::kInProcessCommandBufferClientId, cache_dir);
 }
 
 // static

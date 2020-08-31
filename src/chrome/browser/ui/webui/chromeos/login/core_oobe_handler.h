@@ -180,11 +180,12 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleEnableSpokenFeedback(bool /* enabled */);
   void HandleEnableSelectToSpeak(bool /* enabled */);
   void HandleEnableDockedMagnifier(bool /* enabled */);
+  void HandleHideOobeDialog();
   void HandleInitialized();
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSetDeviceRequisition(const std::string& requisition);
-  void HandleSkipToLoginForTesting(const base::ListValue* args);
+  void HandleSkipToLoginForTesting();
   void HandleSkipToUpdateForTesting();
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
@@ -198,6 +199,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Handles demo mode setup for tests. Accepts 'online' and 'offline' as
   // |demo_config|.
   void HandleStartDemoModeSetupForTesting(const std::string& demo_config);
+  void HandleUpdateOobeUIState(int state);
 
   // Shows the reset screen if |is_reset_allowed| and updates the
   // tpm_firmware_update in settings.

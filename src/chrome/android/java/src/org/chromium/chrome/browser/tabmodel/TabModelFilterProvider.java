@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +17,7 @@ import java.util.List;
  * {@link TabModel}s. It always owns two {@link TabModelFilter}s, one for normal {@link TabModel}
  * and one for incognito {@link TabModel}.
  */
-public class TabModelFilterProvider {
+public class TabModelFilterProvider extends EmptyTabModelSelectorObserver {
     private List<TabModelFilter> mTabModelFilterList = Collections.emptyList();
 
     TabModelFilterProvider() {}
@@ -95,12 +95,24 @@ public class TabModelFilterProvider {
      * @return a {@link TabModelFilter}.
      */
     private TabModelFilter createTabModelFilter(TabModel model) {
-        if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
             TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
             if (tabManagementDelegate != null) {
                 return tabManagementDelegate.createTabGroupModelFilter(model);
             }
         }
         return new EmptyTabModelFilter(model);
+    }
+
+    private void markTabStateInitialized() {
+        for (TabModelFilter filter : mTabModelFilterList) {
+            filter.markTabStateInitialized();
+        }
+    }
+
+    // Override EmptyTabModelSelectorObserver.
+    @Override
+    public void onTabStateInitialized() {
+        markTabStateInitialized();
     }
 }

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"
 
 namespace apps {
@@ -19,6 +20,7 @@ enum InstanceState {
   kRunning = 0x02,
   kActive = 0x04,
   kVisible = 0x08,
+  kHidden = 0x10,
   kDestroyed = 0x80,
 };
 
@@ -35,12 +37,14 @@ class Instance {
 
   void SetLaunchId(const std::string& launch_id) { launch_id_ = launch_id; }
   void UpdateState(InstanceState state, const base::Time& last_updated_time);
+  void SetBrowserContext(content::BrowserContext* browser_context);
 
   const std::string& AppId() const { return app_id_; }
   aura::Window* Window() const { return window_; }
   const std::string& LaunchId() const { return launch_id_; }
   InstanceState State() const { return state_; }
   const base::Time& LastUpdatedTime() const { return last_updated_time_; }
+  content::BrowserContext* BrowserContext() const { return browser_context_; }
 
  private:
   std::string app_id_;
@@ -53,6 +57,7 @@ class Instance {
   std::string launch_id_;
   InstanceState state_;
   base::Time last_updated_time_;
+  content::BrowserContext* browser_context_ = nullptr;
 };
 
 }  // namespace apps

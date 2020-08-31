@@ -9,16 +9,14 @@
 
 #include "platform/api/time.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Tracks the jitter and drift between clocks, providing a smoothed offset.
 // Internally, a Simple IIR filter is used to maintain a running average that
 // moves at a rate based on the passage of time.
 class ClockDriftSmoother {
  public:
-  using Clock = openscreen::platform::Clock;
-
   // |time_constant| is the amount of time an impulse signal takes to decay by
   // ~62.6%.  Interpretation: If the value passed to several Update() calls is
   // held constant for T seconds, then the running average will have moved
@@ -54,7 +52,7 @@ class ClockDriftSmoother {
   double estimated_tick_offset_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_CLOCK_DRIFT_SMOOTHER_H_

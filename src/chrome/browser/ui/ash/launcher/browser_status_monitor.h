@@ -9,14 +9,15 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/app_service_instance_registry_helper.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
-#include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class Browser;
@@ -24,8 +25,7 @@ class Browser;
 // BrowserStatusMonitor monitors creation/deletion of Browser and its
 // TabStripModel to keep the launcher representation up to date as the
 // active tab changes.
-class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
-                             public BrowserListObserver,
+class BrowserStatusMonitor : public BrowserListObserver,
                              public TabStripModelObserver {
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
@@ -48,9 +48,6 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   // A shortcut to call the BrowserShortcutLauncherItemController's
   // UpdateBrowserItemState().
   void UpdateBrowserItemState();
-
-  // BrowserTabStripTrackerDelegate overrides:
-  bool ShouldTrackBrowser(Browser* browser) override;
 
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
@@ -79,10 +76,6 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   // Check if a V1 application is currently in the shelf by browser or app id.
   bool IsV1AppInShelf(Browser* browser);
   bool IsV1AppInShelfWithAppId(const std::string& app_id);
-
-  AppServiceInstanceRegistryHelper* app_service_instance_helper() const {
-    return app_service_instance_helper_.get();
-  }
 
  private:
   class LocalWebContentsObserver;
@@ -115,8 +108,14 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   BrowserTabStripTracker browser_tab_strip_tracker_;
   bool initialized_ = false;
 
-  std::unique_ptr<AppServiceInstanceRegistryHelper>
-      app_service_instance_helper_;
+  AppServiceInstanceRegistryHelper* app_service_instance_helper_ = nullptr;
+
+#if DCHECK_IS_ON()
+  // Browsers for which OnBrowserAdded() was called, but not OnBrowserRemoved().
+  // Used to validate that OnBrowserAdded() is invoked before
+  // OnTabStripModelChanged().
+  std::set<Browser*> known_browsers_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);
 };

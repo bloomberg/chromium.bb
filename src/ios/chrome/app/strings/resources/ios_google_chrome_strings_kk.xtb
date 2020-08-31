@@ -4,14 +4,13 @@
 <translation id="1282031177488366470">Chrome функциялары мен жұмысын жақсартуға көмектесу</translation>
 <translation id="1682483655351012182">Chrome деректеріңізді синхрондау</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1816764564654397850">Google Chrome Құпиялылық туралы ескертуі</translation>
-<translation id="1863312987075920112">Бұл қолданбаны пайдалану арқылы Chrome <ph name="BEGIN_LINK_TOS" />Қызмет көрсету шарттары<ph name="END_LINK_TOS" /> және <ph name="BEGIN_LINK_PRIVACY" />Құпиялылық туралы ескертуі<ph name="END_LINK_PRIVACY" /> талаптарын қабылдайсыз.</translation>
 <translation id="2147651015520127414">Chrome жүйесі <ph name="ISSUER" /> осы веб-сайт сертификатын шығарғанын растайды.</translation>
 <translation id="2199719347983604670">Chrome Sync деректері</translation>
 <translation id="2347208864470321755">Бұл функция қосылған кезде, Chrome басқа тілдерде жазылған беттерді Google Translate арқылы аударуды ұсынады. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Кескіндерді сақтау үшін "Параметрлер" түймесін түртіп, Chrome қолданбасына суреттеріңізді пайдалануға рұқсат беріңіз</translation>
 <translation id="2576431527583832481">Chrome жақсара түсті! Жаңа нұсқасын қолданып көріңіз.</translation>
 <translation id="257708665678654955">Google Chrome келесіде осы сайттағы <ph name="LANGUAGE_NAME" /> беттерін аударуды ұсынуын қалайсыз ба?</translation>
+<translation id="2919738076569633423">Chrome браузерін пайдалану арқылы <ph name="BEGIN_LINK_TOS" />Қызмет көрсету шарттарына<ph name="END_LINK_TOS" /> келісесіз.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> басқаратын есептік жазбадан шықсаңыз, Chrome деректеріңіз құрылғыдан жойылады. Деректеріңіз Google есептік жазбасында қалады.</translation>
 <translation id="3148688391461398285">Орныңызға негізделіп Chrome жақсырақ сынағын алыңыз.</translation>
 <translation id="3167189358072330585">Есептік жазба Google Chrome бағдарламасында жұмыс істемейді. Домен әкімшісіне хабарласыңыз немесе кіру үшін әдеттегі Google есептік жазбасын пайдаланыңыз.</translation>
@@ -37,7 +36,6 @@
 <translation id="6600954340915313787">Chrome жүйесіне көшірілген</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" /> басқаратын есептік жазбамен кірудесіз және оның әкімшісіне Chrome деректерін басқару құқығы берілуде. Деректер бұл есептік жазбаға біржола байланыстырылады. Chrome жүйесінен шыққанда, деректер бұл құрылғыдан жойылады, бірақ Google есептік жазбасында сақталады.</translation>
 <translation id="6676840375528380067">Chrome деректері осы құрылғыдан жойылсын ба?</translation>
-<translation id="690638524486313356">Google Chrome қызмет шарттары</translation>
 <translation id="7165736900384873061">Google Chrome QR сканерін пайдалана бастау</translation>
 <translation id="7172660552945675509">Кеңес: <ph name="BEGIN_LINK" />Chrome браузерін Dock тақтасына көшіріңіз<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Құпия сөздеріңізге рұқсатсыз кіруге жол бермеу үшін Chrome браузері Face ID технологиясын пайдаланады.</translation>

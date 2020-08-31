@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -20,6 +19,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
@@ -40,10 +40,6 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/switches.h"
 #include "ui/platform_window/platform_window_init_properties.h"
-
-#if defined(OS_WIN)
-#include "ui/aura/native_window_occlusion_tracker_win.h"
-#endif  // OS_WIN
 
 namespace aura {
 
@@ -79,14 +75,6 @@ class ScopedLocalSurfaceIdValidator {
   ~ScopedLocalSurfaceIdValidator() {}
 };
 #endif
-
-#if defined(OS_WIN)
-bool IsNativeWindowOcclusionEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kHeadless) &&
-         base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
-}
-#endif  // OS_WIN
 
 }  // namespace
 
@@ -343,21 +331,8 @@ bool WindowTreeHost::ShouldSendKeyEventToIme() {
   return true;
 }
 
-void WindowTreeHost::EnableNativeWindowOcclusionTracking() {
-#if defined(OS_WIN)
-  if (IsNativeWindowOcclusionEnabled()) {
-    NativeWindowOcclusionTrackerWin::GetOrCreateInstance()->Enable(window());
-  }
-#endif  // OS_WIN
-}
-
-void WindowTreeHost::DisableNativeWindowOcclusionTracking() {
-#if defined(OS_WIN)
-  if (IsNativeWindowOcclusionEnabled()) {
-    occlusion_state_ = Window::OcclusionState::UNKNOWN;
-    NativeWindowOcclusionTrackerWin::GetOrCreateInstance()->Disable(window());
-  }
-#endif  // OS_WIN
+bool WindowTreeHost::IsNativeWindowOcclusionEnabled() {
+  return native_window_occlusion_enabled_;
 }
 
 void WindowTreeHost::SetNativeWindowOcclusionState(
@@ -381,7 +356,7 @@ WindowTreeHost::RequestUnadjustedMovement() {
 WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
     : window_(window.release()),  // See header for details on ownership.
       occlusion_state_(Window::OcclusionState::UNKNOWN),
-      last_cursor_(ui::CursorType::kNull),
+      last_cursor_(ui::mojom::CursorType::kNull),
       input_method_(nullptr),
       owned_input_method_(false) {
   if (!window_)
@@ -389,6 +364,13 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
   display::Screen::GetScreen()->AddObserver(this);
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
+#if defined(OS_WIN)
+  // The feature state is neccessary but not sufficient for checking if
+  // occlusion is enabled. It may be disabled by other means (e.g., policy).
+  native_window_occlusion_enabled_ =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless) &&
+      base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
+#endif
 }
 
 void WindowTreeHost::IntializeDeviceScaleFactor(float device_scale_factor) {
@@ -420,21 +402,16 @@ void WindowTreeHost::DestroyDispatcher() {
 
 void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
                                       bool force_software_compositor,
-                                      bool use_external_begin_frame_control,
-                                      const char* trace_environment_name) {
+                                      bool use_external_begin_frame_control) {
   Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
-  ui::ContextFactoryPrivate* context_factory_private =
-      env->context_factory_private();
   compositor_ = std::make_unique<ui::Compositor>(
-      (!context_factory_private || frame_sink_id.is_valid())
-          ? frame_sink_id
-          : context_factory_private->AllocateFrameSinkId(),
-      context_factory, context_factory_private,
-      base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
-      use_external_begin_frame_control, force_software_compositor,
-      trace_environment_name);
+      (frame_sink_id.is_valid()) ? frame_sink_id
+                                 : context_factory->AllocateFrameSinkId(),
+      context_factory, base::ThreadTaskRunnerHandle::Get(),
+      ui::IsPixelCanvasRecordingEnabled(), use_external_begin_frame_control,
+      force_software_compositor);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif
@@ -454,8 +431,7 @@ void WindowTreeHost::InitCompositor() {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space(),
-                                    display.sdr_white_level());
+  compositor_->SetDisplayColorSpaces(display.color_spaces());
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {
@@ -506,8 +482,7 @@ void WindowTreeHost::OnHostDisplayChanged() {
     return;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space(),
-                                    display.sdr_white_level());
+  compositor_->SetDisplayColorSpaces(display.color_spaces());
 }
 
 void WindowTreeHost::OnHostCloseRequested() {
@@ -533,8 +508,7 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
     display::Screen* screen = display::Screen::GetScreen();
     if (compositor_ &&
         display.id() == screen->GetDisplayNearestView(window()).id()) {
-      compositor_->SetDisplayColorSpace(display.color_space(),
-                                        display.sdr_white_level());
+      compositor_->SetDisplayColorSpaces(display.color_spaces());
     }
   }
 }
@@ -544,6 +518,13 @@ gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
   gfx::RectF new_bounds = gfx::RectF(gfx::Rect(size_in_pixels));
   GetInverseRootTransform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
+}
+
+void WindowTreeHost::SetNativeWindowOcclusionEnabled(bool enable) {
+  native_window_occlusion_enabled_ = enable;
+  // TODO(crbug.com/1051306) If enabled is false, make this
+  // turn off native window occlusion on this window. Only Windows has
+  // native window occlusion currently.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

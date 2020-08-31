@@ -9,10 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -199,9 +200,9 @@ class MockTriggerableClientSocket : public TransportClientSocket {
   // Call this method to get a closure which will trigger the connect callback
   // when called. The closure can be called even after the socket is deleted; it
   // will safely do nothing.
-  base::Closure GetConnectCallback() {
-    return base::Bind(&MockTriggerableClientSocket::DoCallback,
-                      weak_factory_.GetWeakPtr());
+  base::OnceClosure GetConnectCallback() {
+    return base::BindOnce(&MockTriggerableClientSocket::DoCallback,
+                          weak_factory_.GetWeakPtr());
   }
 
   static std::unique_ptr<TransportClientSocket> MakeMockPendingClientSocket(
@@ -432,7 +433,7 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
       // don't need to worry about atomicity because this code is
       // single-threaded.
       if (!run_loop_quit_closure_.is_null())
-        run_loop_quit_closure_.Run();
+        std::move(run_loop_quit_closure_).Run();
       return std::move(rv);
     }
     default:
@@ -476,7 +477,7 @@ void MockTransportClientSocketFactory::set_client_socket_types(
   client_socket_index_max_ = num_types;
 }
 
-base::Closure
+base::OnceClosure
 MockTransportClientSocketFactory::WaitForTriggerableSocketCreation() {
   while (triggerable_sockets_.empty()) {
     base::RunLoop run_loop;
@@ -484,7 +485,7 @@ MockTransportClientSocketFactory::WaitForTriggerableSocketCreation() {
     run_loop.Run();
     run_loop_quit_closure_.Reset();
   }
-  base::Closure trigger = triggerable_sockets_.front();
+  base::OnceClosure trigger = std::move(triggerable_sockets_.front());
   triggerable_sockets_.pop();
   return trigger;
 }

@@ -22,11 +22,14 @@ jumbo_component("native_theme") {
     "native_theme.h",
     "native_theme_base.cc",
     "native_theme_base.h",
+    "native_theme_color_id.h",
     "native_theme_export.h",
     "native_theme_features.cc",
     "native_theme_features.h",
     "native_theme_observer.cc",
     "native_theme_observer.h",
+    "themed_vector_icon.cc",
+    "themed_vector_icon.h",
   ]
 
   if (is_android) {
@@ -52,23 +55,23 @@ jumbo_component("native_theme") {
     sources += [
       "native_theme_aura.cc",
       "native_theme_aura.h",
-      "native_theme_dark_aura.cc",
-      "native_theme_dark_aura.h",
       "overlay_scrollbar_constants_aura.h",
     ]
   }
 
   defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//skia",
-  ]
+  public_deps = [ "//skia" ]
 
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
     "//ui/base",
+    "//ui/color",
+
+    # http://crbug.com/730719 - No !is_android to work around gn --check.
+    "//ui/color:mixers",
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -125,7 +128,10 @@ jumbo_source_set("test_support") {
 }
 
 test("native_theme_unittests") {
-  sources = []
+  sources = [
+    "native_theme_unittest.cc",
+    "themed_vector_icon_unittest.cc",
+  ]
 
   if (use_aura) {
     sources += [ "native_theme_aura_unittest.cc" ]

@@ -7,20 +7,40 @@
 
 #include <string>
 
+#include "base/component_export.h"
+#include "base/macros.h"
+
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 // Observer class for network configuration events (remove only).
-class NetworkConfigurationObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationObserver {
  public:
+  // Called after a new network configuration is created successfully.
+  virtual void OnConfigurationCreated(const std::string& service_path,
+                                      const std::string& guid);
+
+  // Called whenever properties on a network configuration are modified.
+  virtual void OnConfigurationModified(const std::string& service_path,
+                                       const std::string& guid,
+                                       base::DictionaryValue* set_properties);
+
+  // Called before a delete is attempted.
+  virtual void OnBeforeConfigurationRemoved(const std::string& service_path,
+                                            const std::string& guid);
+
   // Called whenever a network configuration is removed. |service_path|
   // provides the Shill current identifier for the network. |guid| will be set
   // to the corresponding GUID for the network if known at the time of removal,
   // otherwise it will be empty.
   virtual void OnConfigurationRemoved(const std::string& service_path,
-                                      const std::string& guid) = 0;
+                                      const std::string& guid);
 
  protected:
-  virtual ~NetworkConfigurationObserver() {}
+  virtual ~NetworkConfigurationObserver();
 
  private:
   DISALLOW_ASSIGN(NetworkConfigurationObserver);

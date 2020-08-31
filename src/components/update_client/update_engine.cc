@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -33,25 +33,29 @@ UpdateContext::UpdateContext(
     bool is_foreground,
     const std::vector<std::string>& ids,
     UpdateClient::CrxDataCallback crx_data_callback,
+    UpdateClient::CrxStateChangeCallback crx_state_change_callback,
     const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
     UpdateEngine::Callback callback,
-    CrxDownloader::Factory crx_downloader_factory)
+    CrxDownloader::Factory crx_downloader_factory,
+    PersistedData* persisted_data)
     : config(config),
       is_foreground(is_foreground),
       enabled_component_updates(config->EnabledComponentUpdates()),
       ids(ids),
       crx_data_callback(std::move(crx_data_callback)),
+      crx_state_change_callback(crx_state_change_callback),
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
       crx_downloader_factory(crx_downloader_factory),
-      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})) {
+      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})),
+      persisted_data(persisted_data) {
   for (const auto& id : ids) {
     components.insert(
         std::make_pair(id, std::make_unique<Component>(*this, id)));
   }
 }
 
-UpdateContext::~UpdateContext() {}
+UpdateContext::~UpdateContext() = default;
 
 UpdateEngine::UpdateEngine(
     scoped_refptr<Configurator> config,
@@ -72,10 +76,12 @@ UpdateEngine::~UpdateEngine() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void UpdateEngine::Update(bool is_foreground,
-                          const std::vector<std::string>& ids,
-                          UpdateClient::CrxDataCallback crx_data_callback,
-                          Callback callback) {
+void UpdateEngine::Update(
+    bool is_foreground,
+    const std::vector<std::string>& ids,
+    UpdateClient::CrxDataCallback crx_data_callback,
+    UpdateClient::CrxStateChangeCallback crx_state_change_callback,
+    Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (ids.empty()) {
@@ -86,11 +92,6 @@ void UpdateEngine::Update(bool is_foreground,
   }
 
   if (IsThrottled(is_foreground)) {
-    // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
-    VLOG(1) << "Background update is throttled for following components:";
-    for (const auto& id : ids) {
-      VLOG(1) << "id:" << id;
-    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), Error::RETRY_LATER));
     return;
@@ -98,7 +99,8 @@ void UpdateEngine::Update(bool is_foreground,
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, is_foreground, ids, std::move(crx_data_callback),
-      notify_observers_callback_, std::move(callback), crx_downloader_factory_);
+      crx_state_change_callback, notify_observers_callback_,
+      std::move(callback), crx_downloader_factory_, metadata_.get());
   DCHECK(!update_context->session_id.empty());
 
   const auto result = update_contexts_.insert(
@@ -136,15 +138,15 @@ void UpdateEngine::Update(bool is_foreground,
 
   if (update_context->components_to_check_for_updates.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&UpdateEngine::HandleComponent,
-                                  base::Unretained(this), update_context));
+        FROM_HERE,
+        base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
     return;
   }
 
   for (const auto& id : update_context->components_to_check_for_updates)
     update_context->components[id]->Handle(
-        base::BindOnce(&UpdateEngine::ComponentCheckingForUpdatesStart,
-                       base::Unretained(this), update_context, id));
+        base::BindOnce(&UpdateEngine::ComponentCheckingForUpdatesStart, this,
+                       update_context, id));
 }
 
 void UpdateEngine::ComponentCheckingForUpdatesStart(
@@ -159,8 +161,8 @@ void UpdateEngine::ComponentCheckingForUpdatesStart(
   // Handle |kChecking| state.
   auto& component = *update_context->components.at(id);
   component.Handle(
-      base::BindOnce(&UpdateEngine::ComponentCheckingForUpdatesComplete,
-                     base::Unretained(this), update_context));
+      base::BindOnce(&UpdateEngine::ComponentCheckingForUpdatesComplete, this,
+                     update_context));
 
   ++update_context->num_components_ready_to_check;
   if (update_context->num_components_ready_to_check <
@@ -169,8 +171,8 @@ void UpdateEngine::ComponentCheckingForUpdatesStart(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateEngine::DoUpdateCheck,
-                                base::Unretained(this), update_context));
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::DoUpdateCheck, this, update_context));
 }
 
 void UpdateEngine::DoUpdateCheck(scoped_refptr<UpdateContext> update_context) {
@@ -185,8 +187,8 @@ void UpdateEngine::DoUpdateCheck(scoped_refptr<UpdateContext> update_context) {
       update_context->components_to_check_for_updates,
       update_context->components, config_->ExtraRequestParams(),
       update_context->enabled_component_updates,
-      base::BindOnce(&UpdateEngine::UpdateCheckResultsAvailable,
-                     base::Unretained(this), update_context));
+      base::BindOnce(&UpdateEngine::UpdateCheckResultsAvailable, this,
+                     update_context));
 }
 
 void UpdateEngine::UpdateCheckResultsAvailable(
@@ -277,8 +279,8 @@ void UpdateEngine::ComponentCheckingForUpdatesComplete(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateEngine::UpdateCheckComplete,
-                                base::Unretained(this), update_context));
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::UpdateCheckComplete, this, update_context));
 }
 
 void UpdateEngine::UpdateCheckComplete(
@@ -290,8 +292,8 @@ void UpdateEngine::UpdateCheckComplete(
     update_context->component_queue.push(id);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateEngine::HandleComponent,
-                                base::Unretained(this), update_context));
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
 void UpdateEngine::HandleComponent(
@@ -307,9 +309,8 @@ void UpdateEngine::HandleComponent(
                             : Error::NONE;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UpdateEngine::UpdateComplete, base::Unretained(this),
-                       update_context, error));
+        FROM_HERE, base::BindOnce(&UpdateEngine::UpdateComplete, this,
+                                  update_context, error));
     return;
   }
 
@@ -322,18 +323,15 @@ void UpdateEngine::HandleComponent(
   if (!next_update_delay.is_zero() && component->IsUpdateAvailable()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&UpdateEngine::HandleComponent, base::Unretained(this),
-                       update_context),
+        base::BindOnce(&UpdateEngine::HandleComponent, this, update_context),
         next_update_delay);
     next_update_delay = base::TimeDelta();
-
-    notify_observers_callback_.Run(
-        UpdateClient::Observer::Events::COMPONENT_WAIT, id);
+    component->NotifyWait();
     return;
   }
 
-  component->Handle(base::BindOnce(&UpdateEngine::HandleComponentComplete,
-                                   base::Unretained(this), update_context));
+  component->Handle(base::BindOnce(&UpdateEngine::HandleComponentComplete, this,
+                                   update_context));
 }
 
 void UpdateEngine::HandleComponentComplete(
@@ -361,8 +359,8 @@ void UpdateEngine::HandleComponentComplete(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateEngine::HandleComponent,
-                                base::Unretained(this), update_context));
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
 void UpdateEngine::UpdateComplete(scoped_refptr<UpdateContext> update_context,
@@ -413,8 +411,9 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
-      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      std::move(callback), nullptr);
+      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateEngine::NotifyObserversCallback(), std::move(callback), nullptr,
+      metadata_.get());
   DCHECK(!update_context->session_id.empty());
 
   const auto result = update_contexts_.insert(
@@ -431,8 +430,8 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
   update_context->component_queue.push(id);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&UpdateEngine::HandleComponent,
-                                base::Unretained(this), update_context));
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
 }  // namespace update_client

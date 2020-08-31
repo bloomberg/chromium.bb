@@ -20,16 +20,21 @@ public:
     ~GrDawnRingBuffer() override;
 
     struct Slice {
-        Slice(wgpu::Buffer buffer, int offset) : fBuffer(buffer), fOffset(offset) {}
-        Slice() : fBuffer(nullptr), fOffset(0) {}
-        Slice(const Slice& other) : fBuffer(other.fBuffer), fOffset(other.fOffset) {}
+        Slice(wgpu::Buffer buffer, int offset, void* data)
+          : fBuffer(buffer), fOffset(offset), fData(data) {}
+        Slice()
+          : fBuffer(nullptr), fOffset(0), fData(nullptr) {}
+        Slice(const Slice& other)
+          : fBuffer(other.fBuffer), fOffset(other.fOffset), fData(other.fData) {}
         Slice& operator=(const Slice& other) {
             fBuffer = other.fBuffer;
             fOffset = other.fOffset;
+            fData = other.fData;
             return *this;
         }
         wgpu::Buffer fBuffer;
-        int fOffset;
+        int          fOffset;
+        void*        fData;
     };
     Slice allocate(int size);
 

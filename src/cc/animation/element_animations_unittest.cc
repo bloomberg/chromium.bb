@@ -5,6 +5,7 @@
 #include "cc/animation/element_animations.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
@@ -14,7 +15,6 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve_factory.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/animation_timelines_test_common.h"
@@ -42,7 +42,6 @@ class ElementAnimationsTest : public AnimationTimelinesTest {
 
   void SetUp() override {
     AnimationTimelinesTest::SetUp();
-    animation_ = SingleKeyframeEffectAnimation::Create(animation_id_);
   }
 
   void CreateImplTimelineAndAnimation() override {
@@ -177,12 +176,10 @@ TEST_F(ElementAnimationsTest, AddRemoveAnimations) {
       animation_->keyframe_effect()->element_animations();
   EXPECT_TRUE(element_animations);
 
-  scoped_refptr<SingleKeyframeEffectAnimation> animation1 =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
-  scoped_refptr<SingleKeyframeEffectAnimation> animation2 =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation1 =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation2 =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
 
   timeline_->AttachAnimation(animation1);
   timeline_->AttachAnimation(animation2);
@@ -239,7 +236,7 @@ TEST_F(ElementAnimationsTest, SyncNewAnimation) {
       keyframe_model_id));
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -315,16 +312,15 @@ class TestAnimationDelegateThatDestroysAnimation
     timeline_->DetachAnimation(animation_);
   }
 
-  void setTimelineAndAnimation(
-      scoped_refptr<AnimationTimeline> timeline,
-      scoped_refptr<SingleKeyframeEffectAnimation> animation) {
+  void setTimelineAndAnimation(scoped_refptr<AnimationTimeline> timeline,
+                               scoped_refptr<Animation> animation) {
     timeline_ = timeline;
     animation_ = animation;
   }
 
  private:
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_;
+  scoped_refptr<Animation> animation_;
 };
 
 // Test that we don't crash if a animation is deleted while ElementAnimations is
@@ -338,8 +334,7 @@ TEST_F(ElementAnimationsTest, AddedAnimationIsDestroyed) {
   TestAnimationDelegateThatDestroysAnimation delegate;
 
   const int animation2_id = AnimationIdProvider::NextAnimationId();
-  scoped_refptr<SingleKeyframeEffectAnimation> animation2 =
-      SingleKeyframeEffectAnimation::Create(animation2_id);
+  scoped_refptr<Animation> animation2 = Animation::Create(animation2_id);
   delegate.setTimelineAndAnimation(timeline_, animation2);
 
   timeline_->AttachAnimation(animation2);
@@ -351,12 +346,11 @@ TEST_F(ElementAnimationsTest, AddedAnimationIsDestroyed) {
 
   PushProperties();
 
-  scoped_refptr<SingleKeyframeEffectAnimation> animation2_impl =
-      (SingleKeyframeEffectAnimation*)timeline_impl_->GetAnimationById(
-          animation2_id);
+  scoped_refptr<Animation> animation2_impl =
+      timeline_impl_->GetAnimationById(animation2_id);
   DCHECK(animation2_impl);
 
-  animation2_impl->ActivateKeyframeEffects();
+  animation2_impl->ActivateKeyframeModels();
   EXPECT_TRUE(animation2_impl->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
 
@@ -385,7 +379,7 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0, 1, false);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -432,7 +426,7 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
       ->set_start_time(start_time);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -496,7 +490,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   EXPECT_EQ(1u, host->ticking_animations_for_testing().size());
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   // Both animationss should now be active.
   EXPECT_EQ(1u, host->ticking_animations_for_testing().size());
   EXPECT_EQ(1u, host_impl->ticking_animations_for_testing().size());
@@ -541,7 +535,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   EXPECT_EQ(0u, host->ticking_animations_for_testing().size());
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(animation_->keyframe_effect()->has_any_keyframe_model());
   EXPECT_FALSE(animation_impl_->keyframe_effect()->has_any_keyframe_model());
   EXPECT_EQ(0u, host->ticking_animations_for_testing().size());
@@ -566,7 +560,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
       ->set_time_offset(TimeDelta::FromSecondsD(1.01));
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -609,14 +603,15 @@ TEST_F(ElementAnimationsTest, SyncPause) {
 
   // Pause the animation at the middle of the second range so the offset
   // delays animation until the middle of the third range.
-  animation_->PauseKeyframeModel(keyframe_model_id, 1.5);
+  animation_->PauseKeyframeModel(keyframe_model_id,
+                                 base::TimeDelta::FromMilliseconds(1500));
   EXPECT_EQ(KeyframeModel::PAUSED, animation_->keyframe_effect()
                                        ->GetKeyframeModelById(keyframe_model_id)
                                        ->run_state());
 
   // The pause run state change should make it to the impl thread animations.
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   // Advance time so it stays within the first range.
   time += TimeDelta::FromMilliseconds(10);
@@ -646,7 +641,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0, 1, false);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -677,7 +672,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   animation_->UpdateState(true, nullptr);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_FALSE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
@@ -704,7 +699,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   EXPECT_FALSE(host_->needs_push_properties());
   EXPECT_FALSE(host_impl_->needs_push_properties());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   animation_impl_->UpdateState(true, events.get());
@@ -900,7 +895,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
 
   client_impl_.SetScrollOffsetForAnimation(initial_value);
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET));
   TimeDelta duration =
       animation_impl_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET)
@@ -1071,7 +1066,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
 
   client_.SetScrollOffsetForAnimation(initial_value);
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET));
   TimeDelta duration =
       animation_impl_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET)
@@ -1148,7 +1143,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   keyframe_model->set_needs_synchronized_start_time(true);
   animation_->AddKeyframeModel(std::move(keyframe_model));
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animation_impl_->keyframe_effect()
@@ -1164,7 +1159,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(animation_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
@@ -1176,7 +1171,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   keyframe_model->set_needs_synchronized_start_time(true);
   animation_->AddKeyframeModel(std::move(keyframe_model));
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animation_impl_->keyframe_effect()
@@ -1192,7 +1187,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(animation_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
@@ -1201,7 +1196,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   keyframe_model_id =
       AddAnimatedTransformToAnimation(animation_.get(), 1.0, 1, 2);
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animation_impl_->keyframe_effect()
@@ -1217,14 +1212,14 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(animation_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 
   keyframe_model_id =
       AddAnimatedFilterToAnimation(animation_.get(), 1.0, 0.1f, 0.2f);
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
   EXPECT_FALSE(animation_impl_->keyframe_effect()
@@ -1240,7 +1235,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(
       animation_->keyframe_effect()->scroll_offset_animation_was_interrupted());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(animation_impl_->keyframe_effect()
                    ->scroll_offset_animation_was_interrupted());
 }
@@ -1308,7 +1303,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
       ->set_start_time(start_time);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -1364,7 +1359,7 @@ TEST_F(ElementAnimationsTest,
   animation_->DispatchAndDelegateAnimationEvent(
       AnimationEvent(AnimationEvent::STARTED,
                      {animation_->animation_timeline()->id(), animation_->id(),
-                      animation_->keyframe_effect()->id(), keyframe_model_id},
+                      keyframe_model_id},
                      1, TargetProperty::OPACITY,
                      kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
   animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(5000));
@@ -1595,7 +1590,7 @@ TEST_F(ElementAnimationsTest, InfiniteLooping) {
   std::unique_ptr<KeyframeModel> to_add(CreateKeyframeModel(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       1, TargetProperty::OPACITY));
-  to_add->set_iterations(-1);
+  to_add->set_iterations(std::numeric_limits<double>::infinity());
   animation_->AddKeyframeModel(std::move(to_add));
 
   animation_->Tick(kInitialTickTime);
@@ -1740,7 +1735,7 @@ TEST_F(ElementAnimationsTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
 
   EXPECT_TRUE(animation_->keyframe_effect()->needs_push_properties());
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   active_keyframe_model =
       animation_impl_->GetKeyframeModel(TargetProperty::OPACITY);
@@ -1945,7 +1940,7 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
 
   PushProperties();
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
@@ -1989,7 +1984,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   PushProperties();
   EXPECT_FALSE(host_->needs_push_properties());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
 
@@ -2024,7 +2019,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
 
   PushProperties();
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_FALSE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
@@ -2060,7 +2055,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   PushProperties();
   EXPECT_FALSE(host_->needs_push_properties());
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
       keyframe_model_id));
 
@@ -2089,15 +2084,15 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_TRUE(delegate.takeover());
 
-  // SingleKeyframeEffectAnimation::NotifyAnimationTakeover requests
-  // SetNeedsPushProperties to purge CT animations marked for deletion.
+  // Animation::NotifyAnimationTakeover requests SetNeedsPushProperties to purge
+  // CT animations marked for deletion.
   EXPECT_TRUE(animation_->keyframe_effect()->needs_push_properties());
 
   // ElementAnimations::PurgeAnimationsMarkedForDeletion call happens only in
   // ElementAnimations::PushPropertiesTo.
   PushProperties();
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(
       animation_->keyframe_effect()->GetKeyframeModelById(keyframe_model_id));
   EXPECT_FALSE(animation_impl_->keyframe_effect()->GetKeyframeModelById(
@@ -2293,7 +2288,7 @@ TEST_F(ElementAnimationsTest, GetAnimationScales) {
   EXPECT_EQ(kNotScaled, max_scale);
   EXPECT_EQ(kNotScaled, start_scale);
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetAnimationScales(
       ElementListType::PENDING, &max_scale, &start_scale));
   EXPECT_EQ(5.f, max_scale);
@@ -2350,7 +2345,7 @@ TEST_F(ElementAnimationsTest, GetAnimationScales) {
   EXPECT_EQ(kNotScaled, max_scale);
   EXPECT_EQ(kNotScaled, start_scale);
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()->GetAnimationScales(
       ElementListType::PENDING, &max_scale, &start_scale));
   EXPECT_EQ(3.5f, max_scale);
@@ -2540,7 +2535,7 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
   EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()
                   ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
@@ -2596,7 +2591,7 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
   EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(animation_impl_->keyframe_effect()
                   ->GetKeyframeModelById(keyframe_model_id)
                   ->affects_pending_elements());
@@ -2659,7 +2654,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2733,7 +2728,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   // animation1 is in effect currently and animation2 isn't. As the element has
@@ -2765,7 +2760,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2789,7 +2784,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2841,7 +2836,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
@@ -2886,7 +2881,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -2952,7 +2947,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -2980,7 +2975,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3004,7 +2999,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3056,7 +3051,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
@@ -3100,7 +3095,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3166,7 +3161,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3194,7 +3189,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3218,7 +3213,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3270,7 +3265,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
@@ -3315,7 +3310,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::PENDING));
   EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
@@ -3381,7 +3376,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
@@ -3409,7 +3404,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
@@ -3433,7 +3428,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
@@ -3485,7 +3480,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
@@ -3530,7 +3525,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   const int keyframe_model_id =
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0.5f, 1.f, true);
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
   EXPECT_EQ(KeyframeModel::RUNNING,
@@ -3571,7 +3566,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   EXPECT_EQ(0.75f,
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   events = CreateEventsForTesting();
   animation_impl_->UpdateState(true, events.get());
 
@@ -3604,7 +3599,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0.f, 1.f, true);
 
   PushProperties();
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
 
@@ -3652,7 +3647,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   EXPECT_EQ(0.5f,
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
-  animation_impl_->ActivateKeyframeEffects();
+  animation_impl_->ActivateKeyframeModels();
 
   // The original animation no longer affect either elements, and the new
   // animation should now affect both elements.
@@ -3717,7 +3712,7 @@ TEST_F(ElementAnimationsTest, TestIsCurrentlyAnimatingProperty) {
   EXPECT_FALSE(animation_->keyframe_effect()->IsCurrentlyAnimatingProperty(
       TargetProperty::FILTER, ElementListType::ACTIVE));
 
-  animation_->ActivateKeyframeEffects();
+  animation_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_->keyframe_effect()->IsCurrentlyAnimatingProperty(
       TargetProperty::OPACITY, ElementListType::PENDING));
@@ -3792,7 +3787,7 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   EXPECT_FALSE(animation_->keyframe_effect()->IsPotentiallyAnimatingProperty(
       TargetProperty::FILTER, ElementListType::ACTIVE));
 
-  animation_->ActivateKeyframeEffects();
+  animation_->ActivateKeyframeModels();
 
   EXPECT_TRUE(animation_->keyframe_effect()->IsPotentiallyAnimatingProperty(
       TargetProperty::OPACITY, ElementListType::PENDING));

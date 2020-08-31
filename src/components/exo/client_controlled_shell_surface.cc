@@ -16,13 +16,16 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/rounded_corner_decorator.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/drag_details.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -35,6 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -190,7 +194,7 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     shell_surface_->OnDragStarted(component);
   }
 
-  void OnDragFinished(bool canceled, const gfx::Point& location) override {
+  void OnDragFinished(bool canceled, const gfx::PointF& location) override {
     shell_surface_->OnDragFinished(canceled, location);
   }
 
@@ -482,7 +486,7 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
 }
 
 void ClientControlledShellSurface::StartDrag(int component,
-                                             const gfx::Point& location) {
+                                             const gfx::PointF& location) {
   TRACE_EVENT2("exo", "ClientControlledShellSurface::StartDrag", "component",
                component, "location", location.ToString());
 
@@ -493,7 +497,7 @@ void ClientControlledShellSurface::StartDrag(int component,
 
 void ClientControlledShellSurface::AttemptToStartDrag(
     int component,
-    const gfx::Point& location) {
+    const gfx::PointF& location) {
   aura::Window* target = widget_->GetNativeWindow();
   ash::ToplevelWindowEventHandler* toplevel_handler =
       ash::Shell::Get()->toplevel_window_event_handler();
@@ -504,7 +508,7 @@ void ClientControlledShellSurface::AttemptToStartDrag(
   // 2) mouse was pressed on the target or its subsurfaces.
   if (toplevel_handler->gesture_target() ||
       (mouse_pressed_handler && target->Contains(mouse_pressed_handler))) {
-    gfx::Point point_in_root(location);
+    gfx::PointF point_in_root(location);
     wm::ConvertPointFromScreen(target->GetRootWindow(), &point_in_root);
     toplevel_handler->AttemptToStartDrag(
         target, point_in_root, component,
@@ -578,6 +582,28 @@ void ClientControlledShellSurface::SetOrientationLock(
       widget_->GetNativeWindow(), orientation_lock);
 }
 
+void ClientControlledShellSurface::SetClientAccessibilityId(
+    int32_t accessibility_id) {
+  if (accessibility_id >= 0)
+    client_accessibility_id_ = accessibility_id;
+  else
+    client_accessibility_id_.reset();
+
+  if (widget_ && widget_->GetNativeWindow()) {
+    SetShellClientAccessibilityId(widget_->GetNativeWindow(),
+                                  client_accessibility_id_);
+  }
+}
+
+void ClientControlledShellSurface::DidReceiveCompositorFrameAck() {
+  orientation_ = pending_orientation_;
+  // Unlock the compositor after the frame is received by viz so that
+  // screenshot contain the correct frame.
+  if (expected_orientation_ == orientation_)
+    orientation_compositor_lock_.reset();
+  SurfaceTreeHost::DidReceiveCompositorFrameAck();
+}
+
 void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::WindowStateType current_state,
     ash::WindowStateType requested_state,
@@ -598,13 +624,16 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
 
+    // The client's geometry uses fullscreen in client controlled,
+    // (but the surface is placed under the frame), so just use
+    // the window bounds instead for maximixed state.
     // Snapped window states in tablet mode do not include the caption height.
     const bool becoming_snapped =
         requested_state == ash::WindowStateType::kLeftSnapped ||
         requested_state == ash::WindowStateType::kRightSnapped;
     const bool is_tablet_mode = WMHelper::GetInstance()->InTabletMode();
     gfx::Rect client_bounds =
-        becoming_snapped && is_tablet_mode
+        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
@@ -639,7 +668,7 @@ void ClientControlledShellSurface::OnDragStarted(int component) {
 }
 
 void ClientControlledShellSurface::OnDragFinished(bool canceled,
-                                                  const gfx::Point& location) {
+                                                  const gfx::PointF& location) {
   in_drag_ = false;
   if (drag_finished_callback_)
     drag_finished_callback_.Run(location.x(), location.y(), canceled);
@@ -783,6 +812,19 @@ void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
 void ClientControlledShellSurface::OnDisplayMetricsChanged(
     const display::Display& new_display,
     uint32_t changed_metrics) {
+  // The PIP window bounds is adjusted in Ash when the screen is rotated, but
+  // Android has an obsolete bounds for a while and applies it incorrectly.
+  // We need to ignore those bounds change until the states are completely
+  // synced on both sides.
+  if (widget_ && GetWindowState()->IsPip() &&
+      changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION) {
+    gfx::Rect bounds_after_rotation =
+        ash::PipPositioner::GetSnapFractionAppliedBounds(GetWindowState());
+    display_rotating_with_pip_ =
+        bounds_after_rotation !=
+        GetWindowState()->window()->GetBoundsInScreen();
+  }
+
   if (!widget_ || !widget_->IsActive() ||
       !WMHelper::GetInstance()->InTabletMode()) {
     return;
@@ -847,7 +889,18 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   gfx::Rect adjusted_bounds = bounds;
   if (!is_display_move_pending) {
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-        target_display.bounds(), &adjusted_bounds);
+        target_display.work_area(), &adjusted_bounds);
+    // Collision detection to the bounds set by Android should be applied only
+    // to initial bounds. Do not adjust new bounds as it can be obsolete or in
+    // transit during animation, which results in incorrect resting postiion.
+    // The resting position should be fully controlled by chrome afterwards
+    // because Android isn't aware of Chrome OS System UI.
+    if (GetWindowState()->IsPip() &&
+        !ash::PipPositioner::HasSnapFraction(GetWindowState())) {
+      adjusted_bounds = ash::CollisionDetectionUtils::GetRestingPosition(
+          target_display, adjusted_bounds,
+          ash::CollisionDetectionUtils::RelativePriority::kPictureInPicture);
+    }
   }
 
   if (adjusted_bounds == widget_->GetWindowBoundsInScreen() &&
@@ -856,7 +909,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   }
 
   bool set_bounds_locally =
-      GetWindowState()->is_dragged() && !is_display_move_pending;
+      display_rotating_with_pip_ ||
+      (GetWindowState()->is_dragged() && !is_display_move_pending);
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
@@ -931,6 +985,8 @@ void ClientControlledShellSurface::InitializeWindowState(
   accelerator_target_ =
       std::make_unique<ClientControlledAcceleratorTarget>(this);
 
+  // These shortcuts are same as ones used in chrome.
+  // TODO: investigate if we need to reassign.
   for (const auto& entry : kAccelerators) {
     focus_manager->RegisterAccelerator(
         ui::Accelerator(entry.keycode, entry.modifiers),
@@ -938,6 +994,9 @@ void ClientControlledShellSurface::InitializeWindowState(
     accelerator_target_->RegisterAccelerator(
         ui::Accelerator(entry.keycode, entry.modifiers), entry.action);
   }
+
+  auto* window = widget_->GetNativeWindow();
+  SetShellClientAccessibilityId(window, client_accessibility_id_);
 }
 
 float ClientControlledShellSurface::GetScale() const {
@@ -948,7 +1007,13 @@ base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->GetVisible()) {
-    return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
+    gfx::Rect visible_bounds = ShellSurfaceBase::GetVisibleBounds();
+    if (widget_->IsMaximized() && frame_type_ == SurfaceFrameType::NORMAL) {
+      // When the widget is maximized in clamshell mode, client sends
+      // |geometry_| without taking caption height into account.
+      visible_bounds.Offset(0, frame_view->NonClientTopBorderHeight());
+    }
+    return frame_view->GetWindowBoundsForClientBounds(visible_bounds);
   }
 
   return GetVisibleBounds();
@@ -968,6 +1033,14 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
       origin_ = pending_geometry_.origin();
     CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
   }
+
+  // Finish ignoring obsolete bounds update as the state changes caused by
+  // display rotation are synced.
+  // TODO(takise): This assumes no other bounds update happens during screen
+  // rotation. Implement more robust logic to handle synchronization for
+  // screen rotation.
+  if (pending_geometry_ != geometry_)
+    display_rotating_with_pip_ = false;
 
   ash::WindowState* window_state = GetWindowState();
   state_changed_ = window_state->GetStateType() != pending_window_state_;
@@ -1062,27 +1135,19 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   // Update surface scale.
   CommitPendingScale();
 
-  orientation_ = pending_orientation_;
-  if (expected_orientation_ == orientation_)
-    orientation_compositor_lock_.reset();
+  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                          pending_always_on_top_
+                                              ? ui::ZOrderLevel::kFloatingWindow
+                                              : ui::ZOrderLevel::kNormal);
 
-  ui::ZOrderLevel z_order_level = pending_always_on_top_
-                                   ? ui::ZOrderLevel::kFloatingWindow
-                                   : ui::ZOrderLevel::kNormal;
   ash::WindowState* window_state = GetWindowState();
-  if (window_state->IsPip()) {
-    // CTS requires a PIP window to stay at the initial position that Android
-    // calculates. UpdatePipBounds() is triggered by setting the window always
-    // on top, and depending on the density, it's adjusted by one pixel, which
-    // makes CTS fail.
-    // TODO(takise): Remove this workaround once ARC P is gone. See b/147847272
-    // for more detail.
-    base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
-    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                            z_order_level);
-  } else {
-    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                            z_order_level);
+  // For PIP, the snap fraction is used to specify the ideal position. Usually
+  // this value is set in CompleteDrag, but for the initial position, we need
+  // to set it here, when the transition is completed.
+  if (window_state->IsPip() &&
+      !ash::PipPositioner::HasSnapFraction(window_state)) {
+    ash::PipPositioner::SaveSnapFraction(
+        window_state, window_state->window()->GetBoundsInScreen());
   }
 }
 
@@ -1127,6 +1192,8 @@ void ClientControlledShellSurface::UpdateFrame() {
 
       UpdateCaptionButtonModel();
     }
+    DCHECK_EQ(ash::FrameHeader::Get(widget_),
+              wide_frame_->header_view()->GetFrameHeader());
   } else {
     if (wide_frame_) {
       update_frame = true;
@@ -1139,6 +1206,8 @@ void ClientControlledShellSurface::UpdateFrame() {
 
       UpdateCaptionButtonModel();
     }
+    DCHECK_EQ(ash::FrameHeader::Get(widget_),
+              GetFrameView()->GetHeaderView()->GetFrameHeader());
     UpdateFrameWidth();
   }
   // The autohide should be applied when the window state is in
@@ -1162,14 +1231,15 @@ void ClientControlledShellSurface::UpdateBackdrop() {
 
   // Always create a backdrop regardless of the geometry because
   // maximized/fullscreen widget's geometry can be cropped.
-  bool enable_backdrop = (widget_->IsFullscreen() || widget_->IsMaximized());
+  bool enable_backdrop = widget_->IsFullscreen() || widget_->IsMaximized();
 
-  ash::BackdropWindowMode target_backdrop_mode =
-      enable_backdrop ? ash::BackdropWindowMode::kEnabled
-                      : ash::BackdropWindowMode::kAutoOpaque;
+  ash::WindowBackdrop::BackdropMode target_backdrop_mode =
+      enable_backdrop ? ash::WindowBackdrop::BackdropMode::kEnabled
+                      : ash::WindowBackdrop::BackdropMode::kAuto;
 
-  if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
-    window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);
+  ash::WindowBackdrop* window_backdrop = ash::WindowBackdrop::Get(window);
+  if (window_backdrop->mode() != target_backdrop_mode)
+    window_backdrop->SetBackdropMode(target_backdrop_mode);
 }
 
 void ClientControlledShellSurface::UpdateFrameWidth() {

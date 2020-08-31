@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -32,12 +33,6 @@ struct SupervisedUserSettingsPrefMappingEntry {
 };
 
 SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
-#if defined(OS_CHROMEOS)
-    {
-        supervised_users::kAccountConsistencyMirrorRequired,
-        prefs::kAccountConsistencyMirrorRequired,
-    },
-#endif
     {
         supervised_users::kContentPackDefaultFilteringBehavior,
         prefs::kDefaultSupervisedUserFilteringBehavior,
@@ -51,16 +46,20 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
         prefs::kSupervisedUserManualURLs,
     },
     {
-        supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
+        supervised_users::kForceSafeSearch,
+        prefs::kForceGoogleSafeSearch,
     },
     {
-        supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
+        supervised_users::kSafeSitesEnabled,
+        prefs::kSupervisedUserSafeSites,
     },
     {
-        supervised_users::kSigninAllowed, prefs::kSigninAllowed,
+        supervised_users::kSigninAllowed,
+        prefs::kSigninAllowed,
     },
     {
-        supervised_users::kUserName, prefs::kProfileName,
+        supervised_users::kUserName,
+        prefs::kProfileName,
     },
 };
 
@@ -118,17 +117,14 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   prefs_.reset(new PrefValueMap);
   if (settings) {
     // Set hardcoded prefs and defaults.
-#if defined(OS_CHROMEOS)
-    prefs_->SetBoolean(prefs::kAccountConsistencyMirrorRequired, false);
-#endif
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        SupervisedUserURLFilter::ALLOW);
     prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
     prefs_->SetInteger(prefs::kForceYouTubeRestrict,
                        safe_search_util::YOUTUBE_RESTRICT_MODERATE);
-    prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
+    prefs_->SetBoolean(prefs::kHideWebStoreIcon, false);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
-    prefs_->SetBoolean(ntp_snippets::prefs::kEnableSnippets, false);
+    prefs_->SetBoolean(feed::prefs::kEnableSnippets, false);
 
     // Copy supervised user settings to prefs.
     for (const auto& entry : kSupervisedUserSettingsPrefMapping) {
@@ -164,8 +160,8 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     {
       // TODO(crbug/1024646): Update Kids Management server to set a new bit for
       // extension permissions. Until then, rely on other side effects of the
-      // "Permissions for sites and apps" setting, like geolocation being
-      // disallowed.
+      // "Permissions for sites, apps and extensions" setting, like geolocation
+      // being disallowed.
       bool permissions_disallowed = true;
       settings->GetBoolean(supervised_users::kGeolocationDisabled,
                            &permissions_disallowed);

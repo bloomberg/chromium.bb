@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -265,6 +265,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // Returns true if the action is visible on the toolbar.
   bool IsActionVisible(const ActionId& action_id) const;
+
+  // Updates |pinned_action_ids_| per GetFilteredPinnedActionIds() and notifies
+  // observers if they have changed.
+  void UpdatePinnedActionIds();
 
   // Gets a list of pinned action ids that only contains that only contains IDs
   // with a corresponding action in the model.

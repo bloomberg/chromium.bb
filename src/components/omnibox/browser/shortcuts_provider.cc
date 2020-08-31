@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -334,8 +334,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
       if (inline_autocomplete_offset != base::string16::npos) {
         match.inline_autocompletion =
             match.fill_into_edit.substr(inline_autocomplete_offset);
-        match.allowed_to_be_default_match =
-            AutocompleteMatch::AllowedToBeDefault(input, match);
+        match.SetAllowedToBeDefault(input);
       }
     }
   }

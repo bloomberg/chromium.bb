@@ -94,9 +94,7 @@ target(link_target_type, "child") {
     "//cc/paint",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/mojom",
-    "//components/tracing",
     "//components/tracing:startup_tracing",
-    "//components/tracing/common:interfaces",
     "//components/variations",
     "//components/webcrypto",
     "//content/app/resources",
@@ -110,12 +108,12 @@ target(link_target_type, "child") {
     "//net",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
-    "//services/device/public/mojom:constants",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/tracing/public/cpp",
     "//services/tracing/public/cpp:traced_process",
+    "//services/tracing/public/cpp/background_tracing:background_tracing",
     "//skia",
     "//storage/common",
     "//third_party/blink/public:blink_headers",
@@ -179,8 +177,6 @@ target(link_target_type, "child") {
 group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":child",
-    ]
+    public_deps = [ ":child" ]
   }
 }

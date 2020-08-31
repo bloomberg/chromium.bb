@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/clipboard/navigator_clipboard.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard.h"
 
@@ -22,20 +22,26 @@ Clipboard* NavigatorClipboard::clipboard(ScriptState* script_state,
     ProvideTo(navigator, supplement);
   }
 
+  if (!supplement->GetSupplementable()->GetFrame())
+    return nullptr;
+
   return supplement->clipboard_;
 }
 
-void NavigatorClipboard::Trace(blink::Visitor* visitor) {
+void NavigatorClipboard::Trace(Visitor* visitor) {
   visitor->Trace(clipboard_);
   Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
-  clipboard_ = MakeGarbageCollected<Clipboard>(
-      GetSupplementable()->GetFrame()
-          ? GetSupplementable()->GetFrame()->GetDocument()
-          : nullptr);
+  // TODO(crbug.com/1028591): Figure out how navigator.clipboard is supposed to
+  // behave in a detached execution context.
+  if (!GetSupplementable()->DomWindow())
+    return;
+
+  clipboard_ =
+      MakeGarbageCollected<Clipboard>(GetSupplementable()->DomWindow());
 }
 
 }  // namespace blink

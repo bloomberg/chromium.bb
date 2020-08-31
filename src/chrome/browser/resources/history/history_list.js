@@ -2,8 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
+import {BrowserService} from './browser_service.js';
+import {HistoryEntry, HistoryQuery, QueryState} from './externs.js';
+import {BROWSING_GAP_TIME, UMA_MAX_BUCKET_VALUE, UMA_MAX_SUBSET_BUCKET_VALUE} from './constants.js';
+import {searchResultsTitle} from './history_item.js';
+import './shared_style.js';
+
 Polymer({
   is: 'history-list',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
@@ -79,7 +98,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // It is possible (eg, when middle clicking the reload button) for all other
     // resize events to fire before the list is attached and can be measured.
     // Adding another resize here ensures it will get sized correctly.
@@ -99,14 +118,14 @@ Polymer({
    *    query.
    * @param {!Array<!HistoryEntry>} results A list of results.
    */
-  historyResult: function(info, results) {
+  historyResult(info, results) {
     this.initializeResults_(info, results);
     this.closeMenu_();
 
     if (info.term && !this.queryState.incremental) {
-      Polymer.IronA11yAnnouncer.requestAvailability();
+      IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
-        text: history.HistoryItem.searchResultsTitle(results.length, info.term)
+        text: searchResultsTitle(results.length, info.term)
       });
     }
 
@@ -122,7 +141,7 @@ Polymer({
    * @param {boolean} finished True if there are no more results available and
    * result loading should be disabled.
    */
-  addNewResults: function(historyResults, incremental, finished) {
+  addNewResults(historyResults, incremental, finished) {
     const results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */ (this.$['scroll-threshold'])
         .clearTriggers();
@@ -151,7 +170,7 @@ Polymer({
   },
 
   /** @private */
-  onHistoryDeleted_: function() {
+  onHistoryDeleted_() {
     // Do not reload the list when there are items checked.
     if (this.getSelectedItemCount() > 0) {
       return;
@@ -161,8 +180,8 @@ Polymer({
     this.fire('query-history', false);
   },
 
-  selectOrUnselectAll: function() {
-    if (this.historyData_.length == this.getSelectedItemCount()) {
+  selectOrUnselectAll() {
+    if (this.historyData_.length === this.getSelectedItemCount()) {
       this.unselectAllItems();
     } else {
       this.selectAllItems();
@@ -172,8 +191,8 @@ Polymer({
   /**
    * Select each item in |historyData|.
    */
-  selectAllItems: function() {
-    if (this.historyData_.length == this.getSelectedItemCount()) {
+  selectAllItems() {
+    if (this.historyData_.length === this.getSelectedItemCount()) {
       return;
     }
 
@@ -185,16 +204,16 @@ Polymer({
   /**
    * Deselect each item in |selectedItems|.
    */
-  unselectAllItems: function() {
+  unselectAllItems() {
     this.selectedItems.forEach((index) => {
       this.changeSelection_(index, false);
     });
 
-    assert(this.selectedItems.size == 0);
+    assert(this.selectedItems.size === 0);
   },
 
   /** @return {number} */
-  getSelectedItemCount: function() {
+  getSelectedItemCount() {
     return this.selectedItems.size;
   },
 
@@ -202,14 +221,14 @@ Polymer({
    * Delete all the currently selected history items. Will prompt the user with
    * a dialog to confirm that the deletion should be performed.
    */
-  deleteSelectedWithPrompt: function() {
+  deleteSelectedWithPrompt() {
     if (!this.canDeleteHistory_) {
       return;
     }
 
-    const browserService = history.BrowserService.getInstance();
+    const browserService = BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
-    if (this.queryState.searchTerm != '') {
+    if (this.queryState.searchTerm !== '') {
       browserService.recordAction('SearchResultRemove');
     }
     this.$.dialog.get().showModal();
@@ -227,7 +246,7 @@ Polymer({
    * @param {boolean} selected
    * @private
    */
-  changeSelection_: function(index, selected) {
+  changeSelection_(index, selected) {
     this.set(`historyData_.${index}.selected`, selected);
     if (selected) {
       this.selectedItems.add(index);
@@ -243,7 +262,7 @@ Polymer({
    * does prompt.
    * @private
    */
-  deleteSelected_: function() {
+  deleteSelected_() {
     assert(!this.pendingDelete);
 
     const toBeRemoved = Array.from(this.selectedItems.values())
@@ -253,7 +272,7 @@ Polymer({
       this.pendingDelete = false;
       this.removeItemsByIndex_(Array.from(this.selectedItems));
       this.fire('unselect-all');
-      if (this.historyData_.length == 0) {
+      if (this.historyData_.length === 0) {
         // Try reloading if nothing is rendered.
         this.fire('query-history', false);
       }
@@ -267,7 +286,7 @@ Polymer({
    * @param {!Array<number>} indices
    * @private
    */
-  removeItemsByIndex_: function(indices) {
+  removeItemsByIndex_(indices) {
     const splices = [];
     indices.sort(function(a, b) {
       // Sort in reverse numerical order.
@@ -290,7 +309,7 @@ Polymer({
    * Closes the overflow menu.
    * @private
    */
-  closeMenu_: function() {
+  closeMenu_() {
     const menu = this.$.sharedMenu.getIfExists();
     if (menu && menu.open) {
       this.actionMenuModel_ = null;
@@ -302,8 +321,8 @@ Polymer({
   // Event listeners:
 
   /** @private */
-  onDialogConfirmTap_: function() {
-    history.BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
+  onDialogConfirmTap_() {
+    BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
 
     this.deleteSelected_();
     const dialog = assert(this.$.dialog.getIfExists());
@@ -311,8 +330,8 @@ Polymer({
   },
 
   /** @private */
-  onDialogCancelTap_: function() {
-    history.BrowserService.getInstance().recordAction('CancelRemoveSelected');
+  onDialogCancelTap_() {
+    BrowserService.getInstance().recordAction('CancelRemoveSelected');
 
     const dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
@@ -323,7 +342,7 @@ Polymer({
    * @param {!CustomEvent<string>} e
    * @private
    */
-  onRemoveBookmarkStars_: function(e) {
+  onRemoveBookmarkStars_(e) {
     const url = e.detail;
 
     if (this.historyData_ === undefined) {
@@ -331,7 +350,7 @@ Polymer({
     }
 
     for (let i = 0; i < this.historyData_.length; i++) {
-      if (this.historyData_[i].url == url) {
+      if (this.historyData_[i].url === url) {
         this.set(`historyData_.${i}.starred`, false);
       }
     }
@@ -341,7 +360,7 @@ Polymer({
    * Called when the page is scrolled to near the bottom of the list.
    * @private
    */
-  onScrollToBottom_: function() {
+  onScrollToBottom_() {
     if (this.resultLoadingDisabled_ || this.queryState.querying) {
       return;
     }
@@ -359,7 +378,7 @@ Polymer({
    * }>} e
    * @private
    */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['infinite-list']);
     if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
@@ -373,9 +392,8 @@ Polymer({
   },
 
   /** @private */
-  onMoreFromSiteTap_: function() {
-    history.BrowserService.getInstance().recordAction(
-        'EntryMenuShowMoreFromSite');
+  onMoreFromSiteTap_() {
+    BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
 
     const menu = assert(this.$.sharedMenu.getIfExists());
     this.fire('change-query', {search: this.actionMenuModel_.item.domain});
@@ -388,19 +406,19 @@ Polymer({
    * @return {!Promise}
    * @private
    */
-  deleteItems_: function(items) {
+  deleteItems_(items) {
     const removalList = items.map(item => ({
                                     url: item.url,
                                     timestamps: item.allTimestamps,
                                   }));
 
     this.pendingDelete = true;
-    return history.BrowserService.getInstance().removeVisits(removalList);
+    return BrowserService.getInstance().removeVisits(removalList);
   },
 
   /** @private */
-  onRemoveFromHistoryTap_: function() {
-    const browserService = history.BrowserService.getInstance();
+  onRemoveFromHistoryTap_() {
+    const browserService = BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
 
     assert(!this.pendingDelete);
@@ -418,18 +436,22 @@ Polymer({
       this.removeItemsByIndex_([itemData.index]);
 
       const index = itemData.index;
-      if (index == undefined) {
+      if (index === undefined) {
         return;
       }
-      setTimeout(() => {
-        this.$['infinite-list'].focusItem(index);
-        const item = getDeepActiveElement();
-        if (item) {
-          item.focusOnMenuButton();
-        }
-      }, 1);
 
-      const browserService = history.BrowserService.getInstance();
+      if (this.historyData_.length > 0) {
+        setTimeout(() => {
+          this.$['infinite-list'].focusItem(
+              Math.min(this.historyData_.length - 1, index));
+          const item = getDeepActiveElement();
+          if (item && item.focusOnMenuButton) {
+            item.focusOnMenuButton();
+          }
+        }, 1);
+      }
+
+      const browserService = BrowserService.getInstance();
       browserService.recordHistogram(
           'HistoryPage.RemoveEntryPosition',
           Math.min(index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
@@ -446,20 +468,20 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onItemSelected_: function(e) {
+  onItemSelected_(e) {
     const index = e.detail.index;
     const indices = [];
 
     // Handle shift selection. Change the selection state of all items between
     // |path| and |lastSelected| to the selection state of |item|.
-    if (e.detail.shiftKey && this.lastSelectedIndex != undefined) {
+    if (e.detail.shiftKey && this.lastSelectedIndex !== undefined) {
       for (let i = Math.min(index, this.lastSelectedIndex);
            i <= Math.max(index, this.lastSelectedIndex); i++) {
         indices.push(i);
       }
     }
 
-    if (indices.length == 0) {
+    if (indices.length === 0) {
       indices.push(index);
     }
 
@@ -483,9 +505,9 @@ Polymer({
    * @return {boolean} Whether or not time gap separator is required.
    * @private
    */
-  needsTimeGap_: function(item, index) {
+  needsTimeGap_(item, index) {
     const length = this.historyData_.length;
-    if (index === undefined || index >= length - 1 || length == 0) {
+    if (index === undefined || index >= length - 1 || length === 0) {
       return false;
     }
 
@@ -493,11 +515,11 @@ Polymer({
     const nextItem = this.historyData_[index + 1];
 
     if (this.searchedTerm) {
-      return currentItem.dateShort != nextItem.dateShort;
+      return currentItem.dateShort !== nextItem.dateShort;
     }
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
-        currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+        currentItem.dateRelativeDay === nextItem.dateRelativeDay;
   },
 
   /**
@@ -507,13 +529,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCardStart_: function(item, i) {
+  isCardStart_(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1) {
+    if (i === undefined || length === 0 || i > length - 1) {
       return false;
     }
-    return i == 0 ||
-        this.historyData_[i].dateRelativeDay !=
+    return i === 0 ||
+        this.historyData_[i].dateRelativeDay !==
         this.historyData_[i - 1].dateRelativeDay;
   },
 
@@ -524,13 +546,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCardEnd_: function(item, i) {
+  isCardEnd_(item, i) {
     const length = this.historyData_.length;
-    if (i === undefined || length == 0 || i > length - 1) {
+    if (i === undefined || length === 0 || i > length - 1) {
       return false;
     }
-    return i == length - 1 ||
-        this.historyData_[i].dateRelativeDay !=
+    return i === length - 1 ||
+        this.historyData_[i].dateRelativeDay !==
         this.historyData_[i + 1].dateRelativeDay;
   },
 
@@ -538,7 +560,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasResults_: function() {
+  hasResults_() {
     return this.historyData_.length > 0;
   },
 
@@ -547,7 +569,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  noResultsMessage_: function(searchedTerm) {
+  noResultsMessage_(searchedTerm) {
     const messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
     return loadTimeData.getString(messageId);
   },
@@ -558,7 +580,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canSearchMoreFromSite_: function(searchedTerm, domain) {
+  canSearchMoreFromSite_(searchedTerm, domain) {
     return searchedTerm === '' || searchedTerm !== domain;
   },
 
@@ -567,8 +589,8 @@ Polymer({
    * @param {!Array<HistoryEntry>} results
    * @private
    */
-  initializeResults_: function(info, results) {
-    if (results.length == 0) {
+  initializeResults_(info, results) {
+    if (results.length === 0) {
       return;
     }
 
@@ -578,9 +600,9 @@ Polymer({
       // Sets the default values for these fields to prevent undefined types.
       results[i].selected = false;
       results[i].readableTimestamp =
-          info.term == '' ? results[i].dateTimeOfDay : results[i].dateShort;
+          info.term === '' ? results[i].dateTimeOfDay : results[i].dateShort;
 
-      if (results[i].dateRelativeDay != currentDate) {
+      if (results[i].dateRelativeDay !== currentDate) {
         currentDate = results[i].dateRelativeDay;
       }
     }
@@ -592,7 +614,7 @@ Polymer({
    * This has yet to be reproduced in manual testing.
    * @private
    */
-  onHistoryDataChanged_: function() {
+  onHistoryDataChanged_() {
     this.$['infinite-list'].fire('iron-resize');
   },
 });

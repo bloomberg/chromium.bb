@@ -11,8 +11,11 @@ include_rules = [
     "+base/memory/scoped_policy.h",
     "+base/memory/scoped_refptr.h",
     "+base/metrics/field_trial_params.h",
+    "+base/numerics/ranges.h",
+    "+base/profiler/sample_metadata.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
+    "+base/values.h",
     "+base/task/sequence_manager/task_time_observer.h",
     "+base/test/bind_test_util.h",
     "+base/test/simple_test_tick_clock.h",
@@ -25,6 +28,7 @@ include_rules = [
     "+cc/animation/scroll_offset_animations.h",
     "+cc/animation/scroll_offset_animation_curve.h",
     "+cc/animation/scroll_state.h",
+    "+cc/animation/scroll_timeline.h",
     "+cc/base/region.h",
     "+cc/input/browser_controls_state.h",
     "+cc/input/event_listener_properties.h",
@@ -46,12 +50,16 @@ include_rules = [
     "+cc/layers/scrollbar_layer_base.h",
     "+cc/layers/surface_layer.h",
     "+cc/metrics/begin_main_frame_metrics.h",
+    "+cc/metrics/frame_sequence_tracker_collection.h",
     "+cc/paint/display_item_list.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
+    "+cc/paint/paint_image.h",
     "+cc/paint/paint_worklet_input.h",
     "+cc/trees/browser_controls_params.h",
+    "+cc/trees/layer_tree_host.h",
     "+cc/trees/paint_holding_commit_trigger.h",
+    "+cc/trees/ukm_manager.h",
     "+components/performance_manager/public/mojom/coordination_unit.mojom-blink.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
@@ -59,11 +67,15 @@ include_rules = [
     "+mojo/public/cpp/base",
     "+mojo/public/cpp/bindings",
     "+mojo/public/cpp/system",
+    "+mojo/public/mojom/base",
+    "+services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h",
     "+services/device/public/mojom/wake_lock.mojom-blink.h",
     "+services/metrics/public",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/features.h",
+    "+services/network/public/cpp/request_destination.h",
     "+services/network/public/cpp/request_mode.h",
+    "+services/network/public/cpp/web_sandbox_flags.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",
     "+services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h",
     "+services/service_manager/public",
@@ -79,12 +91,19 @@ include_rules = [
     "+third_party/blink/renderer/core",
     "-third_party/blink/renderer/modules",
     "+third_party/skia/include",
+    "+ui/accessibility/ax_enums.mojom-blink.h",
+    "+ui/accessibility/ax_enums.mojom-blink-forward.h",
+    "+ui/accessibility/ax_event.h",
+    "+ui/accessibility/ax_event_intent.h",
+    "+ui/base/cursor/cursor.h",
     "+ui/base/ime/mojom/ime_types.mojom-blink.h",
     "+ui/base/ime/mojom/ime_types.mojom-blink-forward.h",
     "+ui/base/resource/scale_factor.h",
+    "+ui/base/ui_base_features.h",
     "+ui/display/mojom/display.mojom-blink.h",
     "+ui/gfx/mac/cocoa_scrollbar_painter.h",
     "+ui/gfx/geometry",
+    "+ui/gfx/range/range.h",
     "+ui/gfx/skia_util.h",
     "-web",
     # We do not want any new dependencies into core/exported until we resolve
@@ -115,11 +134,18 @@ specific_include_rules = {
         "+url/url_util.h"
     ],
     "data_object_item.cc" : [ "+ui/gfx/codec" ],
+    "chrome_client.h" : [
+        "+components/viz/common/surfaces/frame_sink_id.h",
+    ],
     "clipboard_utilities.cc" : [ "+net/base/escape.h" ],
     "find_in_page.cc" : [
         "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
     ],
     "find_task_controller.cc" : [
+        "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
+    ],
+    # TODO(darin): Remove once onion-souping is complete for prerendering.
+    "prerenderer_client.cc" : [
         "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
     ],
     "html_media_element_test.cc": [
@@ -130,5 +156,9 @@ specific_include_rules = {
     ],
     "html_canvas_painter_test.cc": [
         "+components/viz/test/test_context_provider.h",
-    ]
+    ],
+    "local_dom_window.cc" : [
+        "+net/base/registry_controlled_domains/registry_controlled_domain.h",
+    ],
+    "(computed_style|computed_style_test)\.cc" : [ "+ui/base/ui_base_features.h" ]
 }

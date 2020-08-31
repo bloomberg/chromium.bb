@@ -59,9 +59,8 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n,
 void LayoutSVGInlineText::TextDidChange() {
   SetTextInternal(NormalizeWhitespace(GetText().Impl()));
   LayoutText::TextDidChange();
-  if (LayoutSVGText* text_layout_object =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    text_layout_object->SubtreeTextDidChange();
+  LayoutSVGText::NotifySubtreeStructureChanged(
+      this, layout_invalidation_reason::kTextChanged);
 }
 
 void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
@@ -69,10 +68,9 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   LayoutText::StyleDidChange(diff, old_style);
   UpdateScaledFont();
 
-  bool new_preserves =
-      Style() ? StyleRef().WhiteSpace() == EWhiteSpace::kPre : false;
+  bool new_preserves = StyleRef().WhiteSpace() == EWhiteSpace::kPre;
   bool old_preserves =
-      old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
+      old_style && old_style->WhiteSpace() == EWhiteSpace::kPre;
   if (old_preserves != new_preserves) {
     ForceSetText(OriginalText());
     return;
@@ -153,7 +151,7 @@ bool LayoutSVGInlineText::CharacterStartsNewTextChunk(int position) const {
 
 PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
     const PhysicalOffset& point) const {
-  if (!HasTextBoxes() || !TextLength())
+  if (!HasInlineFragments() || !TextLength())
     return CreatePositionWithAffinity(0);
 
   DCHECK(scaling_factor_);
@@ -178,10 +176,10 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   SVGInlineTextBox* closest_distance_box = nullptr;
 
   for (InlineTextBox* box : TextBoxes()) {
-    if (!box->IsSVGInlineTextBox())
+    auto* text_box = DynamicTo<SVGInlineTextBox>(box);
+    if (!text_box)
       continue;
 
-    SVGInlineTextBox* text_box = ToSVGInlineTextBox(box);
     for (const SVGTextFragment& fragment : text_box->TextFragments()) {
       FloatRect fragment_rect = fragment.BoundingBox(baseline);
 
@@ -416,8 +414,8 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
   FontDescription font_description = unscaled_font_description;
   font_description.SetComputedSize(scaled_font_size);
 
-  scaled_font = Font(font_description);
-  scaled_font.Update(document.GetStyleEngine().GetFontSelector());
+  scaled_font =
+      Font(font_description, document.GetStyleEngine().GetFontSelector());
 }
 
 PhysicalRect LayoutSVGInlineText::VisualRectInDocument(

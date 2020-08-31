@@ -51,7 +51,7 @@ TEST_P(ViewportOrientationTests, OriginAt0x0) {
     {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.SetPipeline(pipeline);
-        pass.Draw(1, 1, 0, 0);
+        pass.Draw(1);
         pass.EndPass();
     }
 
@@ -64,4 +64,4 @@ TEST_P(ViewportOrientationTests, OriginAt0x0) {
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kZero, renderPass.color, 1, 1);
 }
 
-DAWN_INSTANTIATE_TEST(ViewportOrientationTests, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(ViewportOrientationTests, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

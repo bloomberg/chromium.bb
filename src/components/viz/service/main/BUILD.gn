@@ -33,14 +33,13 @@ source_set("main") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/mojom",
     "//services/service_manager/public/cpp",
+    "//services/tracing/public/cpp",
     "//services/viz/privileged/mojom",
     "//ui/gfx:memory_buffer",
     "//ui/gl/init",
   ]
 
-  public_deps = [
-    "//services/network/public/mojom",
-  ]
+  public_deps = [ "//services/network/public/mojom" ]
 
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
@@ -51,7 +50,6 @@ source_set("main") {
   }
 
   if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
     deps += [ "//chromecast/media/service/mojom" ]
   }
 }

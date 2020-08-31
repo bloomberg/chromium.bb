@@ -21,6 +21,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/buildflags/buildflags.h"
+#include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -31,8 +32,13 @@ extern const char kManagementReportActivityTimes[];
 extern const char kManagementReportHardwareStatus[];
 extern const char kManagementReportNetworkInterfaces[];
 extern const char kManagementReportUsers[];
+extern const char kManagementReportCrashReports[];
 extern const char kManagementPrinting[];
 extern const char kManagementCrostini[];
+extern const char kManagementCrostiniContainerConfiguration[];
+extern const char kManagementReportExtensions[];
+extern const char kManagementReportAndroidApplications[];
+extern const char kManagementReportProxyServer[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kCloudReportingExtensionId[];
@@ -80,7 +86,10 @@ class Extension;
 }  // namespace extensions
 
 namespace policy {
+class DeviceCloudPolicyManagerChromeOS;
 class PolicyService;
+class StatusCollector;
+class SystemLogUploader;
 }  // namespace policy
 
 class Profile;
@@ -115,7 +124,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
                                  Profile* profile);
   void AddReportingInfo(base::Value* report_sources);
 
-  base::DictionaryValue GetContextualManagedData(Profile* profile);
+  base::Value GetContextualManagedData(Profile* profile);
   base::Value GetThreatProtectionInfo(Profile* profile) const;
   virtual policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
@@ -124,6 +133,12 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 #if defined(OS_CHROMEOS)
   // Protected for testing.
   virtual const std::string GetDeviceDomain() const;
+  virtual const policy::DeviceCloudPolicyManagerChromeOS*
+  GetDeviceCloudPolicyManager() const;
+  void AddDeviceReportingInfo(base::Value* report_sources,
+                              const policy::StatusCollector* collector,
+                              const policy::SystemLogUploader* uploader,
+                              Profile* profile) const;
 #endif  // defined(OS_CHROMEOS)
  private:
   void GetManagementStatus(Profile* profile, base::Value* status) const;

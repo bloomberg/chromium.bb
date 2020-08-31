@@ -94,8 +94,8 @@ const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
     FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
 const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING " Helper.app/Contents/MacOS/"
-        CHROMIUM_PRODUCT_STRING " Helper");
+    FPL(CHROMIUM_PRODUCT_STRING
+        " Helper.app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING " Helper");
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #elif defined(OS_ANDROID)
@@ -123,8 +123,6 @@ const base::FilePath::CharType kFrameworkExecutableName[] =
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kBrowserResourcesDll[] = FPL("chrome.dll");
-// Only relevant if building with is_multi_dll_chrome=true.
-const base::FilePath::CharType kChildDll[] = FPL("chrome_child.dll");
 const base::FilePath::CharType kElfDll[] = FPL("chrome_elf.dll");
 const base::FilePath::CharType kStatusTrayWindowClass[] =
     FPL("Chrome_StatusTrayWindow");
@@ -171,6 +169,7 @@ const base::FilePath::CharType kOfflinePageRequestQueueDirname[] =
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kPreviewsOptOutDBFilename[] =
     FPL("previews_opt_out.db");
+const base::FilePath::CharType kQueryTileStorageDirname[] = FPL("Query Tiles");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");
@@ -183,6 +182,7 @@ const base::FilePath::CharType kSingletonSocketFilename[] =
 const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
+const base::FilePath::CharType kTrustTokenFilename[] = FPL("Trust Tokens");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 // Only use if the ENABLE_REPORTING build flag is true
 const base::FilePath::CharType kReportingAndNelStoreFilename[] =
@@ -208,11 +208,6 @@ const wchar_t kUserDataDirname[] = L"User Data";
 #endif
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
-
-#if defined(OS_LINUX)
-const int kLowestRendererOomScore = 300;
-const int kHighestRendererOomScore = 1000;
-#endif
 
 #if defined(OS_CHROMEOS)
 const char kProfileDirPrefix[] = "u-";

@@ -19,14 +19,12 @@
 // <include
 // src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
 // <include src="cr_ui.js">
-// <include src="oobe_screen_reset.js">
 // <include src="oobe_screen_autolaunch.js">
 // <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
 
 // <include src="screen_app_launch_splash.js">
-// <include src="screen_arc_kiosk_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
 // <include src="screen_password_changed.js">
@@ -43,7 +41,6 @@
 // <include src="screen_recommend_apps.js">
 // <include src="screen_app_downloading.js">
 // <include src="screen_discover.js">
-// <include src="screen_marketing_opt_in.js">
 // <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
@@ -66,11 +63,10 @@ cr.define('cr.ui.Oobe', function() {
      * Initializes the OOBE flow.  This will cause all C++ handlers to
      * be invoked to do final setup.
      */
-    initialize: function() {
+    initialize() {
       cr.ui.login.DisplayManager.initialize();
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
-      login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
@@ -81,7 +77,6 @@ cr.define('cr.ui.Oobe', function() {
       login.RecommendAppsScreen.register();
       login.AppDownloadingScreen.register();
       login.AppLaunchSplashScreen.register();
-      login.ArcKioskSplashScreen.register();
       login.ConfirmPasswordScreen.register();
       login.FatalErrorScreen.register();
       login.DeviceDisabledScreen.register();
@@ -90,10 +85,8 @@ cr.define('cr.ui.Oobe', function() {
       login.SupervisionTransitionScreen.register();
       login.UpdateRequiredScreen.register();
       login.DiscoverScreen.register();
-      login.MarketingOptInScreen.register();
       login.AssistantOptInFlowScreen.register();
       login.MultiDeviceSetupScreen.register();
-      login.UpdateRequiredScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;
@@ -101,20 +94,22 @@ cr.define('cr.ui.Oobe', function() {
 
       cr.ui.Bubble.decorate($('bubble'));
 
+      // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+      console.warn('Login : Initialize');
       chrome.send('screenStateInitialize');
     },
 
     // Dummy Oobe functions not present with stripped login UI.
-    setUsageStats: function(checked) {},
-    setTpmPassword: function(password) {},
-    refreshA11yInfo: function(data) {},
-    reloadEulaContent: function(data) {},
+    setUsageStats(checked) {},
+    setTpmPassword(password) {},
+    refreshA11yInfo(data) {},
+    reloadEulaContent(data) {},
 
     /**
      * Reloads content of the page.
      * @param {!Object} data New dictionary with i18n values.
      */
-    reloadContent: function(data) {
+    reloadContent(data) {
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
       Oobe.getInstance().updateLocalizedContent_();
@@ -124,7 +119,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates "device in tablet mode" state when tablet mode is changed.
      * @param {Boolean} isInTabletMode True when in tablet mode.
      */
-    setTabletModeState: function(isInTabletMode) {
+    setTabletModeState(isInTabletMode) {
       Oobe.getInstance().setTabletModeState_(isInTabletMode);
     },
 
@@ -132,7 +127,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates OOBE configuration when it is loaded.
      * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
-    updateOobeConfiguration: function(configuration) {
+    updateOobeConfiguration(configuration) {
       Oobe.getInstance().updateOobeConfiguration_(configuration);
     },
   };

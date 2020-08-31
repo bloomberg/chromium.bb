@@ -6,9 +6,10 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/notreached.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -97,6 +98,13 @@ std::unique_ptr<HistogramSamples> DummyHistogram::SnapshotDelta() {
 
 std::unique_ptr<HistogramSamples> DummyHistogram::SnapshotFinalDelta() const {
   return std::make_unique<DummyHistogramSamples>();
+}
+
+base::DictionaryValue DummyHistogram::ToGraphDict() const {
+  base::DictionaryValue dict;
+  dict.SetString("header", "dummy");
+  dict.SetString("body", "dummy");
+  return dict;
 }
 
 }  // namespace base

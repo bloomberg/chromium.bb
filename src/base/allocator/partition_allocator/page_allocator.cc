@@ -12,7 +12,7 @@
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
@@ -239,14 +239,21 @@ bool ReserveAddressSpace(size_t size) {
   return false;
 }
 
-void ReleaseReservation() {
+bool ReleaseReservation() {
   // To avoid deadlock, call only FreePages.
   subtle::SpinLock::Guard guard(GetReserveLock());
-  if (s_reservation_address != nullptr) {
-    FreePages(s_reservation_address, s_reservation_size);
-    s_reservation_address = nullptr;
-    s_reservation_size = 0;
-  }
+  if (!s_reservation_address)
+    return false;
+
+  FreePages(s_reservation_address, s_reservation_size);
+  s_reservation_address = nullptr;
+  s_reservation_size = 0;
+  return true;
+}
+
+bool HasReservationForTesting() {
+  subtle::SpinLock::Guard guard(GetReserveLock());
+  return s_reservation_address != nullptr;
 }
 
 uint32_t GetAllocPageErrorCode() {

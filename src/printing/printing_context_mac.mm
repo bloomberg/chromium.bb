@@ -10,7 +10,7 @@
 #import <iomanip>
 #import <numeric>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -363,19 +363,19 @@ bool PrintingContextMac::SetOrientationIsLandscape(bool landscape) {
   return true;
 }
 
-bool PrintingContextMac::SetDuplexModeInPrintSettings(DuplexMode mode) {
+bool PrintingContextMac::SetDuplexModeInPrintSettings(mojom::DuplexMode mode) {
   PMDuplexMode duplexSetting;
   switch (mode) {
-    case LONG_EDGE:
+    case mojom::DuplexMode::kLongEdge:
       duplexSetting = kPMDuplexNoTumble;
       break;
-    case SHORT_EDGE:
+    case mojom::DuplexMode::kShortEdge:
       duplexSetting = kPMDuplexTumble;
       break;
-    case SIMPLEX:
+    case mojom::DuplexMode::kSimplex:
       duplexSetting = kPMDuplexNone;
       break;
-    default:  // UNKNOWN_DUPLEX_MODE
+    default:  // kUnknownDuplexMode
       return true;
   }
 

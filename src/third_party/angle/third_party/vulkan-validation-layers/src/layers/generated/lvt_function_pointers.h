@@ -3,9 +3,9 @@
 // See lvt_file_generator.py for modifications
 
 /*
- * Copyright (c) 2015-2019 The Khronos Group Inc.
- * Copyright (c) 2015-2019 Valve Corporation
- * Copyright (c) 2015-2019 LunarG, Inc.
+ * Copyright (c) 2015-2020 The Khronos Group Inc.
+ * Copyright (c) 2015-2020 Valve Corporation
+ * Copyright (c) 2015-2020 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,6 +193,19 @@ extern PFN_vkGetPhysicalDeviceExternalBufferProperties GetPhysicalDeviceExternal
 extern PFN_vkGetPhysicalDeviceExternalFenceProperties GetPhysicalDeviceExternalFenceProperties;
 extern PFN_vkGetPhysicalDeviceExternalSemaphoreProperties GetPhysicalDeviceExternalSemaphoreProperties;
 extern PFN_vkGetDescriptorSetLayoutSupport GetDescriptorSetLayoutSupport;
+extern PFN_vkCmdDrawIndirectCount CmdDrawIndirectCount;
+extern PFN_vkCmdDrawIndexedIndirectCount CmdDrawIndexedIndirectCount;
+extern PFN_vkCreateRenderPass2 CreateRenderPass2;
+extern PFN_vkCmdBeginRenderPass2 CmdBeginRenderPass2;
+extern PFN_vkCmdNextSubpass2 CmdNextSubpass2;
+extern PFN_vkCmdEndRenderPass2 CmdEndRenderPass2;
+extern PFN_vkResetQueryPool ResetQueryPool;
+extern PFN_vkGetSemaphoreCounterValue GetSemaphoreCounterValue;
+extern PFN_vkWaitSemaphores WaitSemaphores;
+extern PFN_vkSignalSemaphore SignalSemaphore;
+extern PFN_vkGetBufferDeviceAddress GetBufferDeviceAddress;
+extern PFN_vkGetBufferOpaqueCaptureAddress GetBufferOpaqueCaptureAddress;
+extern PFN_vkGetDeviceMemoryOpaqueCaptureAddress GetDeviceMemoryOpaqueCaptureAddress;
 extern PFN_vkDestroySurfaceKHR DestroySurfaceKHR;
 extern PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR;
 extern PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR;

@@ -44,7 +44,7 @@ void SkSVGGradient::onSetAttribute(SkSVGAttribute attr, const SkSVGValue& v) {
     }
 }
 
-// https://www.w3.org/TR/SVG/pservers.html#LinearGradientElementHrefAttribute
+// https://www.w3.org/TR/SVG11/pservers.html#LinearGradientElementHrefAttribute
 void SkSVGGradient::collectColorStops(const SkSVGRenderContext& ctx,
                                       StopPositionArray* pos,
                                       StopColorArray* colors) const {
@@ -57,21 +57,43 @@ void SkSVGGradient::collectColorStops(const SkSVGRenderContext& ctx,
         }
 
         const auto& stop = static_cast<const SkSVGStop&>(*child);
-        colors->push_back(SkColorSetA(stop.stopColor(),
-                                      SkScalarRoundToInt(stop.stopOpacity() * 255)));
+        colors->push_back(this->resolveStopColor(ctx, stop));
         pos->push_back(SkTPin(ltx.resolve(stop.offset(), SkSVGLengthContext::LengthType::kOther),
                               0.f, 1.f));
     }
 
     SkASSERT(colors->count() == pos->count());
 
-    if (pos->empty() && !fHref.value().isEmpty()) {
-        const auto* ref = ctx.findNodeById(fHref);
+    if (pos->empty() && !fHref.isEmpty()) {
+        const auto ref = ctx.findNodeById(fHref);
         if (ref && (ref->tag() == SkSVGTag::kLinearGradient ||
                     ref->tag() == SkSVGTag::kRadialGradient)) {
-            static_cast<const SkSVGGradient*>(ref)->collectColorStops(ctx, pos, colors);
+            static_cast<const SkSVGGradient*>(ref.get())->collectColorStops(ctx, pos, colors);
         }
     }
+}
+
+SkColor SkSVGGradient::resolveStopColor(const SkSVGRenderContext& ctx,
+                                        const SkSVGStop& stop) const {
+    const SkSVGStopColor& stopColor = stop.stopColor();
+    SkColor color;
+    switch (stopColor.type()) {
+        case SkSVGStopColor::Type::kColor:
+            color = stopColor.color();
+            break;
+        case SkSVGStopColor::Type::kCurrentColor:
+            color = *ctx.presentationContext().fInherited.fColor;
+            break;
+        case SkSVGStopColor::Type::kICCColor:
+            SkDebugf("unimplemented 'icccolor' stop-color type\n");
+            color = SK_ColorBLACK;
+            break;
+        case SkSVGStopColor::Type::kInherit:
+            SkDebugf("unimplemented 'inherit' stop-color type\n");
+            color = SK_ColorBLACK;
+            break;
+    }
+    return SkColorSetA(color, SkScalarRoundToInt(stop.stopOpacity() * 255));
 }
 
 bool SkSVGGradient::onAsPaint(const SkSVGRenderContext& ctx, SkPaint* paint) const {
@@ -95,6 +117,6 @@ bool SkSVGGradient::onAsPaint(const SkSVGRenderContext& ctx, SkPaint* paint) con
     const auto tileMode = static_cast<SkTileMode>(fSpreadMethod.type());
 
     paint->setShader(this->onMakeShader(ctx, colors.begin(), pos.begin(), colors.count(), tileMode,
-                                        fGradientTransform.value()));
+                                        fGradientTransform));
     return true;
 }

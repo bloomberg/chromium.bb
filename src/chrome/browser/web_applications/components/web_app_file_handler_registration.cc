@@ -4,18 +4,15 @@
 
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace web_app {
 
 // This block defines stub implementations of OS specific methods for
-// FileHandling. Currently, Windows and Desktop Linux (but not Chrome OS) have
-// their own implementations.
-//
-// Note: Because OS_LINUX includes OS_CHROMEOS be sure to use the stub on
-// OS_CHROMEOS.
-#if !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// FileHandling. Currently, Windows, MacOSX and Desktop Linux (but not Chrome
+// OS) have their own implementations.
+#if defined(OS_CHROMEOS)
 bool ShouldRegisterFileHandlersWithOs() {
   return false;
 }
@@ -23,8 +20,7 @@ bool ShouldRegisterFileHandlersWithOs() {
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types) {
+                                const apps::FileHandlers& file_handlers) {
   DCHECK(ShouldRegisterFileHandlersWithOs());
   // Stub function for OS's which don't register file handlers with the OS.
 }

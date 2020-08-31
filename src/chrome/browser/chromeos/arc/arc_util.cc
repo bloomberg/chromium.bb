@@ -21,7 +21,9 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -582,9 +584,9 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
   }
 
   // Otherwise, check the underlying filesystem.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&IsArcCompatibleFilesystem, profile_path),
       base::BindOnce(&StoreCompatibilityCheckResult, account_id,
@@ -627,7 +629,12 @@ bool IsPlayStoreAvailable() {
     return true;
 
   // Demo Mode is the only public session scenario that can launch Play.
-  return chromeos::DemoSession::IsDeviceInDemoMode() &&
+  if (!chromeos::DemoSession::IsDeviceInDemoMode())
+    return false;
+
+  // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when fixed
+  //                    in Play Store.
+  return !chromeos::DemoSession::IsDemoModeOfflineEnrolled() &&
          chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 
@@ -656,14 +663,23 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
       content::WebContents::Create(create_params);
 
   // Use the same version number as browser_commands.cc
-  // TODO(hashimoto): Get the actual Android version from the container.
+  // TODO(hashimoto): Get the actual Android version from the container;
+  // also for |structured_ua.platform_version| below.
   constexpr char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
   // Override the user agent to request mobile version web sites.
   const std::string product =
       version_info::GetProductNameAndVersionForUserAgent();
-  const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+  blink::UserAgentOverride ua_override;
+  ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
       kOsOverrideForTabletSite, product);
-  web_contents->SetUserAgentOverride(user_agent,
+
+  ua_override.ua_metadata_override = ::GetUserAgentMetadata();
+  ua_override.ua_metadata_override->platform = "Android";
+  ua_override.ua_metadata_override->platform_version = "9";
+  ua_override.ua_metadata_override->model = "Chrome tablet";
+  ua_override.ua_metadata_override->mobile = false;
+
+  web_contents->SetUserAgentOverride(ua_override,
                                      false /*override_in_new_tabs=*/);
 
   content::NavigationController::LoadURLParams load_url_params(url);

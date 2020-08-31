@@ -13,9 +13,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +33,7 @@ bool IsDisplayScaleFactorOne(int64_t display_id) {
 }
 
 bool ShouldShowDisplayDensityMenuItem(
-    const base::Optional<crostini::CrostiniRegistryService::Registration>& reg,
+    const base::Optional<guest_os::GuestOsRegistryService::Registration>& reg,
     int64_t display_id) {
   // The default terminal app is crosh in a Chrome window and it doesn't run in
   // the Crostini container so it doesn't support display density the same way.
@@ -53,11 +53,11 @@ CrostiniShelfContextMenu::CrostiniShelfContextMenu(
 CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
 
 void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  const crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+  auto menu_model = GetBaseMenuModel();
+  const auto* registry_service =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(
           controller()->profile());
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+  base::Optional<guest_os::GuestOsRegistryService::Registration> registration =
       registry_service->GetRegistration(item().id.app_id);
 
   // For apps which Crostini knows about (i.e. those with .desktop files), we
@@ -71,7 +71,7 @@ void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
   if (item().id.app_id == crostini::GetTerminalId() &&
       crostini::IsCrostiniRunning(controller()->profile())) {
-    AddContextMenuOption(menu_model.get(), ash::STOP_APP,
+    AddContextMenuOption(menu_model.get(), ash::SHUTDOWN_GUEST_OS,
                          IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
   }
 
@@ -107,7 +107,7 @@ void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 bool CrostiniShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::UNINSTALL)
     return IsUninstallable();
-  if (command_id == ash::STOP_APP &&
+  if (command_id == ash::SHUTDOWN_GUEST_OS &&
       item().id.app_id == crostini::GetTerminalId()) {
     return crostini::IsCrostiniRunning(controller()->profile());
   }
@@ -124,7 +124,7 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
       return;
     }
-    case ash::STOP_APP:
+    case ash::SHUTDOWN_GUEST_OS:
       if (item().id.app_id == crostini::GetTerminalId()) {
         crostini::CrostiniManager::GetForProfile(controller()->profile())
             ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
@@ -136,13 +136,13 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       return;
     case ash::CROSTINI_USE_LOW_DENSITY:
     case ash::CROSTINI_USE_HIGH_DENSITY: {
-      crostini::CrostiniRegistryService* registry_service =
-          crostini::CrostiniRegistryServiceFactory::GetForProfile(
+      auto* registry_service =
+          guest_os::GuestOsRegistryServiceFactory::GetForProfile(
               controller()->profile());
       const bool scaled = command_id == ash::CROSTINI_USE_LOW_DENSITY;
       registry_service->SetAppScaled(item().id.app_id, scaled);
       if (controller()->IsOpen(item().id))
-        CrostiniAppRestartView::Show(item().id, display_id());
+        CrostiniAppRestartView::Show(display_id());
       return;
     }
     default:

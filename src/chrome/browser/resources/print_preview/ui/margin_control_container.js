@@ -146,14 +146,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeAvailable_: function() {
+  computeAvailable_() {
     return this.previewLoaded && !!this.clipSize_ &&
-        this.getSettingValue('margins') == MarginsType.CUSTOM &&
+        this.getSettingValue('margins') === MarginsType.CUSTOM &&
         !!this.pageSize;
   },
 
   /** @private */
-  onAvailableChange_: function() {
+  onAvailableChange_() {
     if (this.available_ && this.resetMargins_) {
       // Set the custom margins values to the current document margins if the
       // custom margins were reset.
@@ -169,9 +169,9 @@ Polymer({
   },
 
   /** @private */
-  onMarginSettingsChange_: function() {
+  onMarginSettingsChange_() {
     const margins = this.getSettingValue('customMargins');
-    if (margins.marginTop === undefined) {
+    if (!margins || margins.marginTop === undefined) {
       // This may be called when print preview model initially sets the
       // settings. It sets custom margins empty by default.
       return;
@@ -186,7 +186,7 @@ Polymer({
   },
 
   /** @private */
-  onMediaSizeOrLayoutChange_: function() {
+  onMediaSizeOrLayoutChange_() {
     // Reset the custom margins when the paper size changes. Don't do this if
     // it is the first preview.
     if (this.resetMargins_ === null) {
@@ -194,23 +194,18 @@ Polymer({
     }
 
     this.resetMargins_ = true;
-    const marginsSetting = this.getSetting('margins');
-    if (marginsSetting.value == MarginsType.CUSTOM) {
-      // Set the margins value to default first.
-      this.setSetting('margins', MarginsType.DEFAULT);
-    }
-    // Reset custom margins so that the sticky value is not restored for the
-    // new paper size.
+    // Reset custom margins so that the sticky value is not restored for the new
+    // paper size.
     this.setSetting('customMargins', {});
   },
 
   /** @private */
-  onStateChanged_: function() {
-    if (this.state == State.READY && this.resetMargins_ === null) {
+  onStateChanged_() {
+    if (this.state === State.READY && this.resetMargins_ === null) {
       // Don't reset margins if there are sticky values. Otherwise, set them
       // to the document margins when the user selects custom margins.
-      this.resetMargins_ =
-          this.getSettingValue('customMargins').marginTop === undefined;
+      const margins = this.getSettingValue('customMargins');
+      this.resetMargins_ = !margins || margins.marginTop === undefined;
     }
   },
 
@@ -218,7 +213,7 @@ Polymer({
    * @return {boolean} Whether the controls should be disabled.
    * @private
    */
-  controlsDisabled_: function() {
+  controlsDisabled_() {
     return this.state !== State.READY || this.invisible_;
   },
 
@@ -228,9 +223,9 @@ Polymer({
    * @return {boolean} Whether the given orientation is TOP or BOTTOM.
    * @private
    */
-  isTopOrBottom_: function(orientation) {
-    return orientation == CustomMarginsOrientation.TOP ||
-        orientation == CustomMarginsOrientation.BOTTOM;
+  isTopOrBottom_(orientation) {
+    return orientation === CustomMarginsOrientation.TOP ||
+        orientation === CustomMarginsOrientation.BOTTOM;
   },
 
   /**
@@ -242,7 +237,7 @@ Polymer({
    *     x direction for the left/right controls, y direction otherwise.
    * @private
    */
-  posInPixelsToPts_: function(control, posInPixels) {
+  posInPixelsToPts_(control, posInPixels) {
     const side =
         /** @type {CustomMarginsOrientation} */ (control.side);
     return this.clipAndRoundValue_(
@@ -260,7 +255,7 @@ Polymer({
    * is for the left or right margin, and the y direction otherwise.
    * @private
    */
-  moveControlWithConstraints_: function(control, posInPts) {
+  moveControlWithConstraints_(control, posInPts) {
     control.setPositionInPts(posInPts);
     control.setTextboxValue(posInPts);
   },
@@ -272,7 +267,7 @@ Polymer({
    *     the pointer.
    * @return {!Coordinate2d} New position of the margin control.
    */
-  translatePointerToPositionInPixels: function(pointerPosition) {
+  translatePointerToPositionInPixels(pointerPosition) {
     return new Coordinate2d(
         pointerPosition.x - this.pointerStartPositionInPixels_.x +
             this.marginStartPositionInPixels_.x,
@@ -286,7 +281,7 @@ Polymer({
    * @param {!PointerEvent} event Contains the position of the pointer.
    * @private
    */
-  onPointerMove_: function(event) {
+  onPointerMove_(event) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (event.target);
     const posInPts = this.posInPixelsToPts_(
@@ -302,7 +297,7 @@ Polymer({
    * @param {!PointerEvent} event Contains the position of the pointer.
    * @private
    */
-  onPointerUp_: function(event) {
+  onPointerUp_(event) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (event.target);
     this.dragging_ = '';
@@ -323,7 +318,7 @@ Polymer({
    * @param {boolean} invisible Whether the margin controls should be
    *     invisible.
    */
-  setInvisible: function(invisible) {
+  setInvisible(invisible) {
     // Ignore changes if the margin controls are not available.
     if (!this.available_) {
       return;
@@ -331,7 +326,7 @@ Polymer({
 
     // Do not set the controls invisible if the user is dragging or focusing
     // the textbox for one of them.
-    if (invisible && (this.dragging_ != '' || this.textboxFocused_)) {
+    if (invisible && (this.dragging_ !== '' || this.textboxFocused_)) {
       return;
     }
 
@@ -343,7 +338,7 @@ Polymer({
    *     event.
    * @private
    */
-  onTextFocus_: function(e) {
+  onTextFocus_(e) {
     this.textboxFocused_ = true;
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
@@ -394,13 +389,13 @@ Polymer({
    * @param {number} marginValue New value for the margin in points.
    * @private
    */
-  setMargin_: function(side, marginValue) {
+  setMargin_(side, marginValue) {
     const marginSide =
         /** @type {!CustomMarginsOrientation} */ (side);
     const oldMargins =
         /** @type {MarginsSetting} */ (this.getSettingValue('customMargins'));
     const key = MARGIN_KEY_MAP.get(marginSide);
-    if (oldMargins[key] == marginValue) {
+    if (oldMargins[key] === marginValue) {
       return;
     }
     const newMargins = Object.assign({}, oldMargins);
@@ -414,7 +409,7 @@ Polymer({
    * @return {number} The clipped margin value in points.
    * @private
    */
-  clipAndRoundValue_: function(side, value) {
+  clipAndRoundValue_(side, value) {
     const marginSide =
         /** @type {!CustomMarginsOrientation} */ (side);
     if (value < 0) {
@@ -423,14 +418,14 @@ Polymer({
     const Orientation = CustomMarginsOrientation;
     let limit = 0;
     const margins = this.getSettingValue('customMargins');
-    if (marginSide == Orientation.TOP) {
+    if (marginSide === Orientation.TOP) {
       limit = this.pageSize.height - margins.marginBottom - MINIMUM_DISTANCE;
-    } else if (marginSide == Orientation.RIGHT) {
+    } else if (marginSide === Orientation.RIGHT) {
       limit = this.pageSize.width - margins.marginLeft - MINIMUM_DISTANCE;
-    } else if (marginSide == Orientation.BOTTOM) {
+    } else if (marginSide === Orientation.BOTTOM) {
       limit = this.pageSize.height - margins.marginTop - MINIMUM_DISTANCE;
     } else {
-      assert(marginSide == Orientation.LEFT);
+      assert(marginSide === Orientation.LEFT);
       limit = this.pageSize.width - margins.marginRight - MINIMUM_DISTANCE;
     }
     return Math.round(Math.min(value, limit));
@@ -440,7 +435,7 @@ Polymer({
    * @param {!CustomEvent<number>} e Event containing the new textbox value.
    * @private
    */
-  onTextChange_: function(e) {
+  onTextChange_(e) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
     control.invalid = false;
@@ -455,7 +450,7 @@ Polymer({
    *     invalid state.
    * @private
    */
-  onTextBlur_: function(e) {
+  onTextBlur_(e) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
     control.setTextboxValue(control.getPositionInPts());
@@ -470,7 +465,7 @@ Polymer({
    *     control.
    * @private
    */
-  onPointerDown_: function(e) {
+  onPointerDown_(e) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
     if (!control.shouldDrag(e)) {
@@ -497,7 +492,7 @@ Polymer({
    * Set display:none after the opacity transition for the controls is done.
    * @private
    */
-  onTransitionEnd_: function() {
+  onTransitionEnd_() {
     if (this.invisible_) {
       this.style.display = 'none';
     }
@@ -509,7 +504,7 @@ Polymer({
    * @param {Coordinate2d} translateTransform Updated value of
    *     the translation transformation.
    */
-  updateTranslationTransform: function(translateTransform) {
+  updateTranslationTransform(translateTransform) {
     if (!translateTransform.equals(this.translateTransform_)) {
       this.translateTransform_ = translateTransform;
     }
@@ -519,8 +514,8 @@ Polymer({
    * Updates the scaling transform that scales pixels values to point values.
    * @param {number} scaleTransform Updated value of the scale transform.
    */
-  updateScaleTransform: function(scaleTransform) {
-    if (scaleTransform != this.scaleTransform_) {
+  updateScaleTransform(scaleTransform) {
+    if (scaleTransform !== this.scaleTransform_) {
       this.scaleTransform_ = scaleTransform;
     }
   },
@@ -529,7 +524,7 @@ Polymer({
    * Clips margin controls to the given clip size in pixels.
    * @param {Size} clipSize Size to clip the margin controls to.
    */
-  updateClippingMask: function(clipSize) {
+  updateClippingMask(clipSize) {
     if (!clipSize) {
       return;
     }

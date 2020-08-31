@@ -4,6 +4,19 @@
 
 /** @fileoverview Suite of tests for site-list-entry. */
 
+// clang-format off
+import 'chrome://test/cr_elements/cr_policy_strings.js';
+
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {Router, routes} from 'chrome://settings/settings.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+// clang-format on
+
 suite('SiteListEntry', function() {
   let testElement;
 
@@ -15,7 +28,7 @@ suite('SiteListEntry', function() {
 
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('site-list-entry');
     document.body.appendChild(testElement);
@@ -27,7 +40,7 @@ suite('SiteListEntry', function() {
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       origin: 'http://example.com',
     };
-    Polymer.dom.flush();
+    flush();
     const prefIndicator = testElement.$$('cr-policy-pref-indicator');
     assertTrue(!!prefIndicator);
     const icon = prefIndicator.$$('cr-tooltip-icon');
@@ -35,7 +48,7 @@ suite('SiteListEntry', function() {
     // Never shown since site-list will show a common tooltip.
     assertEquals('none', paperTooltip.computedStyleMap().get('display').value);
     assertFalse(paperTooltip._showing);
-    const wait = test_util.eventToPromise('show-tooltip', document);
+    const wait = eventToPromise('show-tooltip', document);
     icon.$.indicator.dispatchEvent(
         new MouseEvent('mouseenter', {bubbles: true, composed: true}));
     return wait.then(() => {
@@ -45,14 +58,14 @@ suite('SiteListEntry', function() {
     });
   });
 
-  if (cr.isChromeOS) {
+  if (isChromeOS) {
     test('shows androidSms note', function() {
       testElement.model = {
         origin: 'http://example.com',
         showAndroidSmsNote: true,
-        category: settings.ContentSettingsTypes.NOTIFICATIONS
+        category: ContentSettingsTypes.NOTIFICATIONS
       };
-      Polymer.dom.flush();
+      flush();
       const siteDescription = testElement.$$('#siteDescription');
       assertEquals(
           loadTimeData.getString('androidSmsNote'),
@@ -67,10 +80,10 @@ suite('SiteListEntry', function() {
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       origin: 'example.com',
     };
-    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS);
     return browserProxy.whenCalled('isOriginValid').then((args) => {
       assertEquals('example.com', args);
-      Polymer.dom.flush();
+      flush();
       const settingsRow = testElement.root.querySelector('.settings-row');
       assertFalse(settingsRow.hasAttribute('actionable'));
       const subpageArrow = settingsRow.querySelector('.subpage-arrow');
@@ -79,7 +92,8 @@ suite('SiteListEntry', function() {
       assertTrue(!separator);
       settingsRow.click();
       assertEquals(
-          settings.routes.SITE_SETTINGS.path, settings.getCurrentRoute().path);
+          routes.SITE_SETTINGS.path,
+          Router.getInstance().getCurrentRoute().path);
     });
   });
 
@@ -90,11 +104,11 @@ suite('SiteListEntry', function() {
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       origin: 'http://example.com',
     };
-    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS);
     return browserProxy.whenCalled('isOriginValid').then((args) => {
       assertEquals('http://example.com', args);
-      Polymer.dom.flush();
-      settingsRow = testElement.root.querySelector('.settings-row');
+      flush();
+      const settingsRow = testElement.root.querySelector('.settings-row');
       assertTrue(settingsRow.hasAttribute('actionable'));
       const subpageArrow = settingsRow.querySelector('.subpage-arrow');
       assertFalse(!subpageArrow);
@@ -102,8 +116,8 @@ suite('SiteListEntry', function() {
       assertFalse(!separator);
       settingsRow.click();
       assertEquals(
-          settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
-          settings.getCurrentRoute().path);
+          routes.SITE_SETTINGS_SITE_DETAILS.path,
+          Router.getInstance().getCurrentRoute().path);
     });
   });
 });

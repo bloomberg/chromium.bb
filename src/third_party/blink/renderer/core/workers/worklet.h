@@ -8,23 +8,23 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
-#include "third_party/blink/renderer/core/workers/worklet_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
+class WorkletOptions;
 
 // This is the base implementation of Worklet interface defined in the spec:
 // https://drafts.css-houdini.org/worklets/#worklet
 // Although some worklets run off the main thread, this must be created and
 // destroyed on the main thread.
 class CORE_EXPORT Worklet : public ScriptWrappable,
-                            public ContextLifecycleObserver {
+                            public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Worklet);
   USING_PRE_FINALIZER(Worklet, Dispose);
@@ -41,8 +41,8 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
                           const WorkletOptions*,
                           ExceptionState&);
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() override;
 
   // Returns true if there is ongoing module loading tasks. BaseAudioContext
   // uses this check to keep itself alive until pending tasks are resolved.
@@ -51,10 +51,10 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // Called by WorkletPendingTasks to notify the Worklet.
   void FinishPendingTasks(WorkletPendingTasks*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
-  explicit Worklet(Document*);
+  explicit Worklet(LocalDOMWindow&);
 
   // Returns one of available global scopes.
   WorkletGlobalScopeProxy* FindAvailableGlobalScope();

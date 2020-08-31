@@ -19,3 +19,14 @@ message GetLicenseDataResponse {
 message ShowSettingsPageRequest {
   string subpage_path = 1; // The subpage path.
 }
+
+// Permissions emitted by Chrome as a response to the GetPermissions call in
+// org.chromium.PluginVmService.
+message GetPermissionsResponse {
+  bool data_collection_enabled = 1;  // Data collection enablement status.
+}
+
+// User ID for the Plugin VM user.
+message GetAppLicenseUserIdResponse {
+  string user_id = 1; // The PluginVm user id for the OU.
+}

@@ -8,6 +8,8 @@
 from __future__ import print_function
 
 import os
+import subprocess
+import sys
 import unittest
 
 from chromite.lib import cros_build_lib
@@ -18,6 +20,9 @@ from chromite.lib import osutils
 from chromite.lib import retry_util
 from chromite.lib import sudo
 from chromite.scripts import cros_sdk
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # This long decorator triggers a false positive in the docstring test.
@@ -37,21 +42,21 @@ class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
     """Check for commands from the lvm2 package."""
     with sudo.SudoKeepAlive():
       cmd = ['lvs', '--version']
-      result = cros_build_lib.run(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, check=False)
       self.assertEqual(result.returncode, 0)
 
   def testThinProvisioningToolsPresent(self):
     """Check for commands from the thin-provisioning-tools package."""
     with sudo.SudoKeepAlive():
       cmd = ['thin_check', '-V']
-      result = cros_build_lib.run(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, check=False)
       self.assertEqual(result.returncode, 0)
 
   def testLosetupCommandPresent(self):
     """Check for commands from the mount package."""
     with sudo.SudoKeepAlive():
       cmd = ['losetup', '--help']
-      result = cros_build_lib.run(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, check=False)
       self.assertEqual(result.returncode, 0)
 
 
@@ -118,8 +123,8 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
     try:
       result = cros_build_lib.run(
-          cmd, print_cmd=False, capture_output=True, error_code_ok=True,
-          combine_stdout_stderr=True)
+          cmd, print_cmd=False, capture_output=True, check=False,
+          stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as e:
       raise SystemExit('Running %r failed!: %s' % (cmd, e))
 

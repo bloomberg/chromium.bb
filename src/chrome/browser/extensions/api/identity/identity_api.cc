@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -31,6 +32,7 @@
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
@@ -41,20 +43,59 @@
 
 namespace extensions {
 
-IdentityTokenCacheValue::IdentityTokenCacheValue()
-    : status_(CACHE_STATUS_NOTFOUND) {}
-
-IdentityTokenCacheValue::IdentityTokenCacheValue(
-    const IssueAdviceInfo& issue_advice)
-    : status_(CACHE_STATUS_ADVICE), issue_advice_(issue_advice) {
-  expiration_time_ =
-      base::Time::Now() + base::TimeDelta::FromSeconds(
-                              identity_constants::kCachedIssueAdviceTTLSeconds);
+namespace {
+const char kIdentityGaiaIdPref[] = "identity_gaia_id";
 }
 
-IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
-                                                 base::TimeDelta time_to_live)
-    : status_(CACHE_STATUS_TOKEN), token_(token) {
+IdentityTokenCacheValue::IdentityTokenCacheValue() = default;
+IdentityTokenCacheValue::IdentityTokenCacheValue(
+    const IdentityTokenCacheValue& other) = default;
+IdentityTokenCacheValue::~IdentityTokenCacheValue() = default;
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateIssueAdvice(
+    const IssueAdviceInfo& issue_advice) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_ADVICE;
+  cache_value.issue_advice_ = issue_advice;
+  cache_value.expiration_time_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(
+                              identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
+}
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsent(
+    const RemoteConsentResolutionData& resolution_data) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_REMOTE_CONSENT;
+  cache_value.resolution_data_ = resolution_data;
+  cache_value.expiration_time_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(
+                              identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
+}
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateRemoteConsentApproved(
+    const std::string& consent_result) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_REMOTE_CONSENT_APPROVED;
+  cache_value.consent_result_ = consent_result;
+  cache_value.expiration_time_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(
+                              identity_constants::kCachedIssueAdviceTTLSeconds);
+  return cache_value;
+}
+
+// static
+IdentityTokenCacheValue IdentityTokenCacheValue::CreateToken(
+    const std::string& token,
+    base::TimeDelta time_to_live) {
+  IdentityTokenCacheValue cache_value;
+  cache_value.status_ = CACHE_STATUS_TOKEN;
+  cache_value.token_ = token;
+
   // Remove 20 minutes from the ttl so cached tokens will have some time
   // to live any time they are returned.
   time_to_live -= base::TimeDelta::FromMinutes(20);
@@ -63,13 +104,9 @@ IdentityTokenCacheValue::IdentityTokenCacheValue(const std::string& token,
   if (time_to_live < zero_delta)
     time_to_live = zero_delta;
 
-  expiration_time_ = base::Time::Now() + time_to_live;
+  cache_value.expiration_time_ = base::Time::Now() + time_to_live;
+  return cache_value;
 }
-
-IdentityTokenCacheValue::IdentityTokenCacheValue(
-    const IdentityTokenCacheValue& other) = default;
-
-IdentityTokenCacheValue::~IdentityTokenCacheValue() {}
 
 IdentityTokenCacheValue::CacheValueStatus IdentityTokenCacheValue::status()
     const {
@@ -81,6 +118,15 @@ IdentityTokenCacheValue::CacheValueStatus IdentityTokenCacheValue::status()
 
 const IssueAdviceInfo& IdentityTokenCacheValue::issue_advice() const {
   return issue_advice_;
+}
+
+const RemoteConsentResolutionData& IdentityTokenCacheValue::resolution_data()
+    const {
+  return resolution_data_;
+}
+
+const std::string& IdentityTokenCacheValue::consent_result() const {
+  return consent_result_;
 }
 
 const std::string& IdentityTokenCacheValue::token() const { return token_; }
@@ -95,9 +141,11 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 }
 
 IdentityAPI::IdentityAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
-}
+    : IdentityAPI(Profile::FromBrowserContext(context),
+                  IdentityManagerFactory::GetForProfile(
+                      Profile::FromBrowserContext(context)),
+                  ExtensionPrefs::Get(context),
+                  EventRouter::Get(context)) {}
 
 IdentityAPI::~IdentityAPI() {}
 
@@ -136,9 +184,66 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
   return token_cache_;
 }
 
+void IdentityAPI::SetGaiaIdForExtension(const std::string& extension_id,
+                                        const std::string& gaia_id) {
+  DCHECK(!gaia_id.empty());
+  extension_prefs_->UpdateExtensionPref(extension_id, kIdentityGaiaIdPref,
+                                        std::make_unique<base::Value>(gaia_id));
+}
+
+base::Optional<std::string> IdentityAPI::GetGaiaIdForExtension(
+    const std::string& extension_id) {
+  std::string gaia_id;
+  if (!extension_prefs_->ReadPrefAsString(extension_id, kIdentityGaiaIdPref,
+                                          &gaia_id)) {
+    return base::nullopt;
+  }
+  return gaia_id;
+}
+
+void IdentityAPI::EraseGaiaIdForExtension(const std::string& extension_id) {
+  extension_prefs_->UpdateExtensionPref(extension_id, kIdentityGaiaIdPref,
+                                        nullptr);
+}
+
+void IdentityAPI::EraseStaleGaiaIdsForAllExtensions() {
+  // Refresh tokens haven't been loaded yet. Wait for OnRefreshTokensLoaded() to
+  // fire.
+  if (!identity_manager_->AreRefreshTokensLoaded())
+    return;
+  std::vector<CoreAccountInfo> accounts =
+      identity_manager_->GetAccountsWithRefreshTokens();
+  extensions::ExtensionIdList extensions;
+  extension_prefs_->GetExtensions(&extensions);
+  for (const ExtensionId& extension_id : extensions) {
+    base::Optional<std::string> gaia_id = GetGaiaIdForExtension(extension_id);
+    if (!gaia_id)
+      continue;
+    auto account_it = std::find_if(accounts.begin(), accounts.end(),
+                                   [&](const CoreAccountInfo& account) {
+                                     return account.gaia == *gaia_id;
+                                   });
+    if (account_it == accounts.end()) {
+      EraseGaiaIdForExtension(extension_id);
+    }
+  }
+}
+
+void IdentityAPI::SetConsentResult(const std::string& result,
+                                   const std::string& window_id) {
+  on_set_consent_result_callback_list_.Notify(result, window_id);
+}
+
+std::unique_ptr<
+    base::CallbackList<IdentityAPI::OnSetConsentResultSignature>::Subscription>
+IdentityAPI::RegisterOnSetConsentResultCallback(
+    const base::RepeatingCallback<OnSetConsentResultSignature>& callback) {
+  return on_set_consent_result_callback_list_.Add(callback);
+}
+
 void IdentityAPI::Shutdown() {
   on_shutdown_callback_list_.Notify();
-  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI>>::
@@ -149,15 +254,37 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_identity_api_factory.Pointer();
 }
 
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+IdentityAPI::RegisterOnShutdownCallback(const base::Closure& cb) {
+  return on_shutdown_callback_list_.Add(cb);
+}
+
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
-  return !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
+  return !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+         !AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile_);
+}
+
+IdentityAPI::IdentityAPI(Profile* profile,
+                         signin::IdentityManager* identity_manager,
+                         ExtensionPrefs* extension_prefs,
+                         EventRouter* event_router)
+    : profile_(profile),
+      identity_manager_(identity_manager),
+      extension_prefs_(extension_prefs),
+      event_router_(event_router) {
+  identity_manager_->AddObserver(this);
+  EraseStaleGaiaIdsForAllExtensions();
+}
+
+void IdentityAPI::OnRefreshTokensLoaded() {
+  EraseStaleGaiaIdsForAllExtensions();
 }
 
 void IdentityAPI::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   // Refresh tokens are sometimes made available in contexts where
-  // AccountTrackerService is not tracking the account in question (one example
-  // is SupervisedUserService::InitSync()). Bail out in these cases.
+  // AccountTrackerService is not tracking the account in question. Bail out in
+  // these cases.
   if (account_info.gaia.empty())
     return;
 
@@ -167,6 +294,7 @@ void IdentityAPI::OnRefreshTokenUpdatedForAccount(
 void IdentityAPI::OnExtendedAccountInfoRemoved(
     const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());
+  EraseStaleGaiaIdsForAllExtensions();
   FireOnAccountSignInChanged(account_info.gaia, false);
 }
 
@@ -185,7 +313,7 @@ void IdentityAPI::FireOnAccountSignInChanged(const std::string& gaia_id,
   if (on_signin_changed_callback_for_testing_)
     on_signin_changed_callback_for_testing_.Run(event.get());
 
-  EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
+  event_router_->BroadcastEvent(std::move(event));
 }
 
 template <>

@@ -20,18 +20,16 @@ void PaintGeneratedImage::Draw(cc::PaintCanvas* canvas,
                                ImageDecodingMode) {
   PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(dest_rect);
-  canvas->translate(dest_rect.X(), dest_rect.Y());
-  if (dest_rect.Size() != src_rect.Size())
-    canvas->scale(dest_rect.Width() / src_rect.Width(),
-                  dest_rect.Height() / src_rect.Height());
-  canvas->translate(-src_rect.X(), -src_rect.Y());
+  canvas->concat(SkMatrix::MakeRectToRect(src_rect, dest_rect,
+                                          SkMatrix::kFill_ScaleToFit));
   SkRect bounds = src_rect;
   canvas->saveLayer(&bounds, &flags);
   canvas->drawPicture(record_);
 }
 
 void PaintGeneratedImage::DrawTile(GraphicsContext& context,
-                                   const FloatRect& src_rect) {
+                                   const FloatRect& src_rect,
+                                   RespectImageOrientationEnum) {
   context.DrawRecord(record_);
 }
 

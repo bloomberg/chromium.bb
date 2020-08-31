@@ -6,16 +6,15 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace content {
 
-TestWebUI::TestWebUI() : web_contents_(nullptr) {
-}
+TestWebUI::TestWebUI() : web_contents_(nullptr) {}
 
 TestWebUI::~TestWebUI() {
   ClearTrackedCalls();
@@ -66,6 +65,16 @@ int TestWebUI::GetBindings() {
 
 void TestWebUI::SetBindings(int bindings) {
   bindings_ = bindings;
+}
+
+const std::vector<std::string>& TestWebUI::GetRequestableSchemes() {
+  NOTIMPLEMENTED();
+  return std::move(std::vector<std::string>());
+}
+
+void TestWebUI::AddRequestableScheme(const char* scheme) {
+  NOTIMPLEMENTED();
+  return;
 }
 
 void TestWebUI::AddMessageHandler(

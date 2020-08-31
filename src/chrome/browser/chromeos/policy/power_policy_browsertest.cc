@@ -53,6 +53,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/power/power_api.h"
 #include "extensions/common/api/power.h"
@@ -206,9 +207,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
   std::string user_key_bits = user_policy_.GetPublicSigningKeyAsString();
   ASSERT_FALSE(user_key_bits.empty());
   ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-  ASSERT_EQ(base::checked_cast<int>(user_key_bits.length()),
-            base::WriteFile(user_key_file, user_key_bits.data(),
-                            user_key_bits.length()));
+  ASSERT_TRUE(base::WriteFile(user_key_file, user_key_bits));
 }
 
 void PowerPolicyBrowserTestBase::StoreAndReloadUserPolicy() {

@@ -10,7 +10,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -48,10 +51,26 @@ const char kHelloPath[] = "/hello.txt";
 const char kHelloBodyValue[] = "Hello from QUIC Server";
 const int kHelloStatus = 200;
 
-class URLRequestQuicTest : public TestWithTaskEnvironment {
+// Used as a simple pushed response from the server.
+const char kKittenPath[] = "/kitten-1.jpg";
+const char kKittenBodyValue[] = "Kitten image";
+
+// Used as a simple pushed response from the server.
+const char kFaviconPath[] = "/favicon.ico";
+const char kFaviconBodyValue[] = "Favion";
+
+// Used as a simple pushed response from the server.
+const char kIndexPath[] = "/index2.html";
+const char kIndexBodyValue[] = "Hello from QUIC Server";
+const int kIndexStatus = 200;
+
+class URLRequestQuicTest
+    : public TestWithTaskEnvironment,
+      public ::testing::WithParamInterface<quic::ParsedQuicVersion> {
  protected:
   URLRequestQuicTest() : context_(new TestURLRequestContext(true)) {
-    StartQuicServer();
+    QuicEnableVersion(version());
+    StartQuicServer(version());
 
     std::unique_ptr<HttpNetworkSession::Params> params(
         new HttpNetworkSession::Params);
@@ -64,6 +83,7 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
     context_->set_quic_context(&quic_context_);
+    quic_context_.params()->supported_versions = {version()};
     quic_context_.params()->origins_to_force_quic_on.insert(
         HostPortPair(kTestServerHost, 443));
     params->enable_quic = true;
@@ -133,15 +153,35 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
     return nullptr;
   }
 
+  quic::ParsedQuicVersion version() { return GetParam(); }
+
  protected:
+  // Returns a fully-qualified URL for |path| on the test server.
+  std::string UrlFromPath(base::StringPiece path) {
+    return std::string("https://") + std::string(kTestServerHost) +
+           std::string(path);
+  }
+
   RecordingTestNetLog net_log_;
 
  private:
-  void StartQuicServer() {
+  void StartQuicServer(quic::ParsedQuicVersion version) {
     // Set up in-memory cache.
+
+    // Add the simply hello response.
     memory_cache_backend_.AddSimpleResponse(kTestServerHost, kHelloPath,
                                             kHelloStatus, kHelloBodyValue);
-    memory_cache_backend_.InitializeBackend(ServerPushCacheDirectory());
+
+    // Now set up index so that it pushes kitten and favicon.
+    quic::QuicBackendResponse::ServerPushInfo push_info1(
+        quic::QuicUrl(UrlFromPath(kKittenPath)), spdy::SpdyHeaderBlock(),
+        spdy::kV3LowestPriority, kKittenBodyValue);
+    quic::QuicBackendResponse::ServerPushInfo push_info2(
+        quic::QuicUrl(UrlFromPath(kFaviconPath)), spdy::SpdyHeaderBlock(),
+        spdy::kV3LowestPriority, kFaviconBodyValue);
+    memory_cache_backend_.AddSimpleResponseWithServerPushResources(
+        kTestServerHost, kIndexPath, kIndexStatus, kIndexBodyValue,
+        {push_info1, push_info2});
     quic::QuicConfig config;
     // Set up server certs.
     std::unique_ptr<net::ProofSourceChromium> proof_source(
@@ -153,8 +193,8 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
         base::FilePath()));
     server_.reset(new QuicSimpleServer(
         quic::test::crypto_test_utils::ProofSourceForTesting(), config,
-        quic::QuicCryptoServerConfig::ConfigOptions(),
-        quic::AllSupportedVersions(), &memory_cache_backend_));
+        quic::QuicCryptoServerConfig::ConfigOptions(), {version},
+        &memory_cache_backend_));
     int rv =
         server_->Listen(net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
     EXPECT_GE(rv, 0) << "Quic server fails to start";
@@ -185,6 +225,7 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
   QuicContext quic_context_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
 };
 
 // A URLRequest::Delegate that checks LoadTimingInfo when response headers are
@@ -255,23 +296,37 @@ class WaitForCompletionNetworkDelegate : public net::TestNetworkDelegate {
 
 }  // namespace
 
-TEST_F(URLRequestQuicTest, TestGetRequest) {
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const quic::ParsedQuicVersion& v) {
+  return quic::ParsedQuicVersionToString(v);
+}
+
+INSTANTIATE_TEST_SUITE_P(Version,
+                         URLRequestQuicTest,
+                         ::testing::ValuesIn(quic::AllSupportedVersions()),
+                         ::testing::PrintToStringParamName());
+
+TEST_P(URLRequestQuicTest, TestGetRequest) {
   Init();
   CheckLoadTimingDelegate delegate(false);
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, kHelloPath);
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
   delegate.RunUntilComplete();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_EQ(OK, delegate.request_status());
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
+  EXPECT_TRUE(request->ssl_info().is_valid());
 }
 
-TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
+TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
+  if (VersionUsesHttp3(version().transport_version)) {
+    Init();
+    return;
+  }
+
   // Skip test if "split cache" is enabled while "partition connections" is
   // disabled, as it breaks push.
   if (base::FeatureList::IsEnabled(
@@ -283,47 +338,43 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example.com"));
-  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+  const IsolationInfo kTestIsolationInfo =
+      IsolationInfo::CreateForInternalRequest(kOrigin1);
 
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
   // cache.
   CheckLoadTimingDelegate delegate_0(false);
-  std::string url_0 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/kitten-1.jpg");
-  std::unique_ptr<URLRequest> request_0 =
-      CreateRequest(GURL(url_0), DEFAULT_PRIORITY, &delegate_0);
+  std::unique_ptr<URLRequest> request_0 = CreateRequest(
+      GURL(UrlFromPath(kKittenPath)), DEFAULT_PRIORITY, &delegate_0);
 
-  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_0->set_isolation_info(kTestIsolationInfo);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
   // Spin the message loop until the client receives the response for the first
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_0->status().is_io_pending());
-  EXPECT_TRUE(request_0->status().is_success());
+  delegate_0.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_0.request_status());
 
   // Send a request to /index2.html which pushes /kitten-1.jpg and /favicon.ico.
   // Should cancel push for /kitten-1.jpg.
   CheckLoadTimingDelegate delegate(true);
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/index2.html");
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(GURL(UrlFromPath(kIndexPath)), DEFAULT_PRIORITY, &delegate);
 
-  request->set_network_isolation_key(kTestNetworkIsolationKey);
+  request->set_isolation_info(kTestIsolationInfo);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 
   // Spin the message loop until the client receives the response for the second
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
+  // Wait until all QUIC events are process, some of which happen
+  // asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
@@ -332,10 +383,8 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   ASSERT_EQ(4u, entries.size());
 
   std::string value;
-  std::string push_url_1 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/kitten-1.jpg");
-  std::string push_url_2 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
+  std::string push_url_1 = UrlFromPath(kKittenPath);
+  std::string push_url_2 = UrlFromPath(kFaviconPath);
 
   const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
   EXPECT_TRUE(source_1.IsValid());
@@ -355,11 +404,24 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   EXPECT_TRUE(end_entry_2->HasParams());
   EXPECT_EQ(-400, GetNetErrorCodeFromParams(*end_entry_2));
 
+#if !defined(OS_FUCHSIA) && !defined(OS_IOS)
+  // TODO(crbug.com/813631): Make this work on Fuchsia.
+  // TODO(crbug.com/1032568): Make this work on iOS.
+
+  // Wait until the server has processed all errors which is
+  // happening asynchronously
+  base::RunLoop().RunUntilIdle();
   // Verify the reset error count received on the server side.
   EXPECT_LE(1u, GetRstErrorCountReceivedByServer(quic::QUIC_STREAM_CANCELLED));
+#endif
 }
 
-TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
+TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
+  if (VersionUsesHttp3(version().transport_version)) {
+    Init();
+    return;
+  }
+
   // Skip test if "split cache" is enabled while "partition connections" is
   // disabled, as it breaks push.
   if (base::FeatureList::IsEnabled(
@@ -371,78 +433,68 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 
   const url::Origin kOrigin1 =
       url::Origin::Create(GURL("http://www.example.com"));
-  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+  const IsolationInfo kTestIsolationInfo =
+      IsolationInfo::CreateForInternalRequest(kOrigin1);
 
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
   // cache.
   CheckLoadTimingDelegate delegate_0(false);
-  std::string url_0 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/kitten-1.jpg");
-  std::unique_ptr<URLRequest> request_0 =
-      CreateRequest(GURL(url_0), DEFAULT_PRIORITY, &delegate_0);
+  std::unique_ptr<URLRequest> request_0 = CreateRequest(
+      GURL(UrlFromPath(kKittenPath)), DEFAULT_PRIORITY, &delegate_0);
 
-  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_0->set_isolation_info(kTestIsolationInfo);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
   // Spin the message loop until the client receives the response for the first
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_0->status().is_io_pending());
-  EXPECT_TRUE(request_0->status().is_success());
+  delegate_0.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_0.request_status());
 
   // Send a request to the pushed url: /favicon.ico to pull the resource into
   // cache.
   CheckLoadTimingDelegate delegate_1(true);
-  std::string url_1 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
-  std::unique_ptr<URLRequest> request_1 =
-      CreateRequest(GURL(url_1), DEFAULT_PRIORITY, &delegate_1);
+  std::unique_ptr<URLRequest> request_1 = CreateRequest(
+      GURL(UrlFromPath(kFaviconPath)), DEFAULT_PRIORITY, &delegate_1);
 
-  request_1->set_network_isolation_key(kTestNetworkIsolationKey);
+  request_1->set_isolation_info(kTestIsolationInfo);
   request_1->Start();
   ASSERT_TRUE(request_1->is_pending());
 
   // Spin the message loop until the client receives the response for the second
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request_1->status().is_io_pending());
-  EXPECT_TRUE(request_1->status().is_success());
+  delegate_1.RunUntilComplete();
+  EXPECT_EQ(OK, delegate_1.request_status());
 
   // Send a request to /index2.html which pushes /kitten-1.jpg and /favicon.ico.
   // Should cancel push for both pushed resources, since they're already cached.
   CheckLoadTimingDelegate delegate(true);
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/index2.html");
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(GURL(UrlFromPath(kIndexPath)), DEFAULT_PRIORITY, &delegate);
 
-  request->set_network_isolation_key(kTestNetworkIsolationKey);
+  request->set_isolation_info(kTestIsolationInfo);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 
   // Spin the message loop until the client receives the response for the third
   // request.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
+  // Wait until all QUIC events are process, some of which happen
+  // asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
       NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
 
-  EXPECT_EQ(4u, entries.size());
+  ASSERT_EQ(4u, entries.size());
 
   std::string value;
-  std::string push_url_1 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/kitten-1.jpg");
-  std::string push_url_2 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
+  std::string push_url_1 = UrlFromPath(kKittenPath);
+  std::string push_url_2 = UrlFromPath(kFaviconPath);
 
   const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
   EXPECT_TRUE(source_1.IsValid());
@@ -461,18 +513,26 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   EXPECT_FALSE(end_entry_2->HasParams());
   EXPECT_FALSE(GetOptionalNetErrorCodeFromParams(*end_entry_2));
 
+#if !defined(OS_FUCHSIA) && !defined(OS_IOS)
+  // TODO(crbug.com/813631): Make this work on Fuchsia.
+  // TODO(crbug.com/1032568): Make this work on iOS.
   // Verify the reset error count received on the server side.
   EXPECT_LE(2u, GetRstErrorCountReceivedByServer(quic::QUIC_STREAM_CANCELLED));
+#endif
 }
 
-TEST_F(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
+TEST_P(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
+  if (VersionUsesHttp3(version().transport_version)) {
+    Init();
+    return;
+  }
+
   Init();
 
   // Send a request to /index2.hmtl which pushes /kitten-1.jpg and /favicon.ico
   // and shouldn't cancel any since neither is in cache.
   CheckLoadTimingDelegate delegate(false);
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/index2.html");
+  std::string url = UrlFromPath(kIndexPath);
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
 
@@ -480,22 +540,18 @@ TEST_F(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
   ASSERT_TRUE(request->is_pending());
 
   // Spin the message loop until the client receives response.
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (request->status().is_io_pending());
-  EXPECT_TRUE(request->status().is_success());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
 
   // Extract net logs on client side to verify push lookup transactions.
   auto entries = net_log_.GetEntriesWithType(
       NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
 
-  EXPECT_EQ(4u, entries.size());
+  ASSERT_EQ(4u, entries.size());
 
   std::string value;
-  std::string push_url_1 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/kitten-1.jpg");
-  std::string push_url_2 =
-      base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
+  std::string push_url_1 = UrlFromPath(kKittenPath);
+  std::string push_url_2 = UrlFromPath(kFaviconPath);
 
   const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
   EXPECT_TRUE(source_1.IsValid());
@@ -516,7 +572,7 @@ TEST_F(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
 
 // Tests that if two requests use the same QUIC session, the second request
 // should not have |LoadTimingInfo::connect_timing|.
-TEST_F(URLRequestQuicTest, TestTwoRequests) {
+TEST_P(URLRequestQuicTest, TestTwoRequests) {
   base::RunLoop run_loop;
   WaitForCompletionNetworkDelegate network_delegate(
       run_loop.QuitClosure(), /*num_expected_requests=*/2);
@@ -524,28 +580,26 @@ TEST_F(URLRequestQuicTest, TestTwoRequests) {
   Init();
   CheckLoadTimingDelegate delegate(false);
   delegate.set_on_complete(base::DoNothing());
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, kHelloPath);
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
 
   CheckLoadTimingDelegate delegate2(true);
   delegate2.set_on_complete(base::DoNothing());
-  std::unique_ptr<URLRequest> request2 =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate2);
+  std::unique_ptr<URLRequest> request2 = CreateRequest(
+      GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate2);
   request->Start();
   request2->Start();
   ASSERT_TRUE(request->is_pending());
   ASSERT_TRUE(request2->is_pending());
   run_loop.Run();
 
-  EXPECT_TRUE(request->status().is_success());
-  EXPECT_TRUE(request2->status().is_success());
+  EXPECT_EQ(OK, delegate.request_status());
+  EXPECT_EQ(OK, delegate2.request_status());
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
   EXPECT_EQ(kHelloBodyValue, delegate2.data_received());
 }
 
-TEST_F(URLRequestQuicTest, RequestHeadersCallback) {
+TEST_P(URLRequestQuicTest, RequestHeadersCallback) {
   Init();
   HttpRawRequestHeaders raw_headers;
   TestDelegate delegate;
@@ -553,30 +607,33 @@ TEST_F(URLRequestQuicTest, RequestHeadersCallback) {
   HttpRequestHeaders extra_headers;
   extra_headers.SetHeader("X-Foo", "bar");
 
-  std::string url =
-      base::StringPrintf("https://%s%s", kTestServerHost, kHelloPath);
   std::unique_ptr<URLRequest> request =
-      CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
+      CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
 
   request->SetExtraRequestHeaders(extra_headers);
-  request->SetRequestHeadersCallback(base::Bind(
-      &HttpRawRequestHeaders::Assign, base::Unretained(&raw_headers)));
+  request->SetRequestHeadersCallback(
+      base::BindLambdaForTesting([&](HttpRawRequestHeaders raw_headers) {
+        // This should be invoked before the request is completed, or any bytes
+        // are read.
+        EXPECT_FALSE(delegate.response_completed());
+        EXPECT_FALSE(delegate.bytes_received());
+
+        EXPECT_FALSE(raw_headers.headers().empty());
+        std::string value;
+        EXPECT_TRUE(raw_headers.FindHeaderForTest("x-foo", &value));
+        EXPECT_EQ("bar", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest("accept-encoding", &value));
+        EXPECT_EQ("gzip, deflate", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest(":path", &value));
+        EXPECT_EQ("/hello.txt", value);
+        EXPECT_TRUE(raw_headers.FindHeaderForTest(":authority", &value));
+        EXPECT_EQ("test.example.com", value);
+        EXPECT_TRUE(raw_headers.request_line().empty());
+      }));
   request->Start();
   ASSERT_TRUE(request->is_pending());
-  do {
-    base::RunLoop().RunUntilIdle();
-  } while (!delegate.response_started_count());
-  EXPECT_FALSE(raw_headers.headers().empty());
-  std::string value;
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("x-foo", &value));
-  EXPECT_EQ("bar", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("accept-encoding", &value));
-  EXPECT_EQ("gzip, deflate", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest(":path", &value));
-  EXPECT_EQ("/hello.txt", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest(":authority", &value));
-  EXPECT_EQ("test.example.com", value);
-  EXPECT_TRUE(raw_headers.request_line().empty());
+  delegate.RunUntilComplete();
+  EXPECT_EQ(OK, delegate.request_status());
 }
 
 }  // namespace net

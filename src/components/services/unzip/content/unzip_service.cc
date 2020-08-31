@@ -28,7 +28,6 @@ mojo::PendingRemote<mojom::Unzipper> LaunchUnzipper() {
   content::ServiceProcessHost::Launch<mojom::Unzipper>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
           .WithDisplayName(IDS_UNZIP_SERVICE_DISPLAY_NAME)
           .Pass());
   return remote;

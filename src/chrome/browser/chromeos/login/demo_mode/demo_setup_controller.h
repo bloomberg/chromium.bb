@@ -14,8 +14,8 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/browser/policy/enrollment_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 class PrefRegistrySimple;
@@ -28,11 +28,21 @@ namespace chromeos {
 
 class DemoResources;
 
-// Controlls enrollment flow for setting up Demo Mode.
+// Controls enrollment flow for setting up Demo Mode.
 class DemoSetupController
     : public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public policy::CloudPolicyStore::Observer {
  public:
+  // All steps required for setup.
+  enum class DemoSetupStep {
+    // Downloading Demo Mode resources.
+    kDownloadResources,
+    // Enrolling in Demo Mode.
+    kEnrollment,
+    // Setup is complete.
+    kComplete
+  };
+
   // Contains information related to setup error.
   class DemoSetupError {
    public:
@@ -155,6 +165,8 @@ class DemoSetupController
   // Demo mode setup callbacks.
   using OnSetupSuccess = base::OnceClosure;
   using OnSetupError = base::OnceCallback<void(const DemoSetupError&)>;
+  using OnSetCurrentSetupStep =
+      base::RepeatingCallback<void(const DemoSetupStep)>;
   using HasPreinstalledDemoResourcesCallback = base::OnceCallback<void(bool)>;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -176,6 +188,12 @@ class DemoSetupController
   // Otherwise, returns an empty string.
   static std::string GetSubOrganizationEmail();
 
+  // Returns a dictionary mapping setup steps to step indices.
+  static base::Value GetDemoSetupSteps();
+
+  // Converts a step enum to a string e.g. to sent to JavaScript.
+  static std::string GetDemoSetupStepString(const DemoSetupStep step_enum);
+
   DemoSetupController();
   ~DemoSetupController() override;
 
@@ -193,8 +211,11 @@ class DemoSetupController
   // performed and it should be set with set_enrollment_type() before calling
   // Enroll(). |on_setup_success| will be called when enrollment finishes
   // successfully. |on_setup_error| will be called when enrollment finishes with
-  // an error.
-  void Enroll(OnSetupSuccess on_setup_success, OnSetupError on_setup_error);
+  // an error. |set_current_setup_step| will be called when an enrollment step
+  // completes.
+  void Enroll(OnSetupSuccess on_setup_success,
+              OnSetupError on_setup_error,
+              const OnSetCurrentSetupStep& set_current_setup_step);
 
   // Tries to mount the preinstalled offline resources necessary for offline
   // Demo Mode.
@@ -214,8 +235,6 @@ class DemoSetupController
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
-  void OnMultipleLicensesAvailable(
-      const EnrollmentLicenseMap& licenses) override;
   void OnRestoreAfterRollbackCompleted() override;
 
   void SetCrOSComponentLoadErrorForTest(
@@ -255,6 +274,9 @@ class DemoSetupController
   // is completed. This is the last step of demo mode setup flow.
   void OnDeviceRegistered();
 
+  // Sets current setup step.
+  void SetCurrentSetupStep(DemoSetupStep current_step);
+
   // Finish the flow with an error.
   void SetupFailed(const DemoSetupError& error);
 
@@ -264,6 +286,16 @@ class DemoSetupController
   // policy::CloudPolicyStore::Observer:
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
+
+  // Keeps track of when downloading demo mode resources begins.
+  base::TimeTicks download_start_time_;
+
+  // Keeps track of when enrolling in enterprise) begins.
+  base::TimeTicks enroll_start_time_;
+
+  // Keeps track of how many times an operator has been required to retry
+  // setup.
+  int num_setup_retries_ = 0;
 
   // Demo mode configuration type that will be setup when Enroll() is called.
   // Should be set explicitly.
@@ -276,6 +308,9 @@ class DemoSetupController
 
   // Path at which to mount preinstalled offline demo resources for tests.
   base::FilePath preinstalled_offline_resources_path_for_tests_;
+
+  // Callback to call when setup step is updated.
+  OnSetCurrentSetupStep set_current_setup_step_;
 
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;

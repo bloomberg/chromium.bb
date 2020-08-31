@@ -120,16 +120,6 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   // extension ID (among extensions IDs with policy-provided certificates) that
   // corresponds to |partition_path|.
 
-  // Only allow certificates that are specific to |partition_path| if the
-  // built-in certificate verifier is active. The platform certificate verifier
-  // is not able to isolate contexts from each other.
-  auto* profile_network_context =
-      ProfileNetworkContextServiceFactory::GetForContext(profile_);
-  if (!profile_network_context->using_builtin_cert_verifier()) {
-    LOG(ERROR) << "Ignoring extension-scoped policy certificates";
-    return;
-  }
-
   base::FilePath default_storage_partition_path =
       content::BrowserContext::GetDefaultStoragePartition(profile_)->GetPath();
   // Among the extension IDs that have policy-provided certificates, attempt to
@@ -140,16 +130,15 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   std::set<std::string> extension_ids_with_policy_certificates =
       policy_certificate_provider_->GetExtensionIdsWithPolicyCertificates();
   for (const auto& extension_id : extension_ids_with_policy_certificates) {
-    const GURL extension_site =
-        extensions::util::GetSiteForExtensionId(extension_id, profile_);
     // Only allow policy-provided certificates for extensions with isolated
     // storage. Also sanity-check that it's not the default partition.
     content::StoragePartition* extension_partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile_, extension_site, /*can_create=*/false);
+        extensions::util::GetStoragePartitionForExtensionId(
+            extension_id, profile_,
+            /*can_create=*/false);
     if (!extension_partition)
       continue;
-    if (!extensions::util::SiteHasIsolatedStorage(extension_site, profile_) ||
+    if (!extensions::util::HasIsolatedStorage(extension_id, profile_) ||
         extension_partition->GetPath() == default_storage_partition_path) {
       LOG(ERROR) << "Ignoring policy certificates for " << extension_id
                  << " because it does not have isolated storage";

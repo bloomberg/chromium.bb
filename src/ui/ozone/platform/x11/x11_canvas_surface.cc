@@ -11,25 +11,22 @@
 
 namespace ui {
 
-X11CanvasSurface::X11CanvasSurface(gfx::AcceleratedWidget widget,
-                                   base::TaskRunner* gpu_task_runner)
+X11CanvasSurface::X11CanvasSurface(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner)
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       x11_software_bitmap_presenter_(widget,
                                      task_runner_.get(),
-                                     gpu_task_runner) {}
+                                     std::move(gpu_task_runner)) {}
 
 X11CanvasSurface::~X11CanvasSurface() = default;
 
-sk_sp<SkSurface> X11CanvasSurface::GetSurface() {
-  DCHECK(surface_);
-  return surface_;
+SkCanvas* X11CanvasSurface::GetCanvas() {
+  return x11_software_bitmap_presenter_.GetSkCanvas();
 }
 
 void X11CanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   x11_software_bitmap_presenter_.Resize(viewport_size);
-  SkImageInfo info = SkImageInfo::MakeN32(
-      viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
-  surface_ = x11_software_bitmap_presenter_.GetSkCanvas()->makeSurface(info);
 }
 
 void X11CanvasSurface::PresentCanvas(const gfx::Rect& damage) {

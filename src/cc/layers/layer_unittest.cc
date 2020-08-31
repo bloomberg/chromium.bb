@@ -267,6 +267,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   scoped_refptr<Layer> grand_child = Layer::Create();
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask_layer1 = PictureLayer::Create(&client);
+  mask_layer1->SetElementId(LayerIdToElementIdForTesting(mask_layer1->id()));
 
   layer_tree_host_->SetRootLayer(root);
   root->AddChild(top);
@@ -359,14 +360,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetDoubleSided(false));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      top->PushPropertiesTo(top_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetHideLayerAndSubtree(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       top->PushPropertiesTo(top_impl.get());
@@ -404,7 +397,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       top->SetBackdropFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
@@ -491,7 +484,7 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask->parent());
   EXPECT_EQ(mask.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   // Should ignore mask layer's position.
   EXPECT_TRUE(mask->position().IsOrigin());
@@ -502,7 +495,7 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask->parent());
   EXPECT_EQ(mask.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask2);
@@ -510,12 +503,12 @@ TEST_F(LayerTest, SetMaskLayer) {
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask2->parent());
   EXPECT_EQ(mask2.get(), parent->children()[0]);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->SetMaskLayer(nullptr);
   EXPECT_EQ(0u, parent->children().size());
   EXPECT_FALSE(mask2->parent());
-  EXPECT_FALSE(parent->IsMaskedByChild());
+  EXPECT_FALSE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, RemoveMaskLayerFromParent) {
@@ -527,11 +520,11 @@ TEST_F(LayerTest, RemoveMaskLayerFromParent) {
   mask->RemoveFromParent();
   EXPECT_EQ(0u, parent->children().size());
   EXPECT_FALSE(mask->parent());
-  EXPECT_FALSE(parent->IsMaskedByChild());
+  EXPECT_FALSE(parent->mask_layer());
 
   scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask2);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
@@ -539,15 +532,15 @@ TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   parent->SetMaskLayer(mask);
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->AddChild(Layer::Create());
   EXPECT_EQ(mask.get(), parent->children().back().get());
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 
   parent->InsertChild(Layer::Create(), parent->children().size());
   EXPECT_EQ(mask.get(), parent->children().back().get());
-  EXPECT_TRUE(parent->IsMaskedByChild());
+  EXPECT_TRUE(parent->mask_layer());
 }
 
 TEST_F(LayerTest, AddSameChildTwice) {
@@ -936,9 +929,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(
       gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetDoubleSided(false));
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10));
+  touch_action_region.Union(TouchAction::kNone, gfx::Rect(10, 10));
   EXPECT_SET_NEEDS_COMMIT(
       1, test_layer->SetTouchActionRegion(std::move(touch_action_region)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurfaceForTesting(true));
@@ -1556,26 +1548,6 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
   test_layer->SetLayerTreeHost(nullptr);
 }
 
-// Verifies that mirror count is pushed to the LayerImpl.
-TEST_F(LayerTest, MirrorCountIsPushed) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  std::unique_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-  EXPECT_EQ(0, test_layer->mirror_count());
-  EXPECT_EQ(0, impl_layer->mirror_count());
-
-  test_layer->IncrementMirrorCount();
-  EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_EQ(0, impl_layer->mirror_count());
-
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_EQ(1, impl_layer->mirror_count());
-
-  test_layer->SetLayerTreeHost(nullptr);
-}
-
 // Verifies that when mirror count of the layer is incremented or decremented,
 // SetPropertyTreesNeedRebuild() and SetNeedsPushProperties() are called
 // appropriately.
@@ -1846,94 +1818,6 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   EXPECT_EQ(
       gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kUpdatedRoundedCorners),
       node_5->rounded_corner_bounds);
-}
-
-class LayerTestWithLayerLists : public LayerTest {
- protected:
-  void SetUp() override {
-    settings_.use_layer_lists = true;
-    LayerTest::SetUp();
-  }
-};
-
-TEST_F(LayerTestWithLayerLists, LayerTreeHostRegistersScrollingElementId) {
-  scoped_refptr<Layer> normal_layer = Layer::Create();
-  scoped_refptr<Layer> scrolling_layer = Layer::Create();
-  scrolling_layer->SetScrollable(gfx::Size(1000, 1000));
-  ElementId normal_element_id = ElementId(2);
-  ElementId scrolling_element_id = ElementId(3);
-  normal_layer->SetElementId(normal_element_id);
-  scrolling_layer->SetElementId(scrolling_element_id);
-
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(normal_element_id));
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(scrolling_element_id));
-  normal_layer->SetLayerTreeHost(layer_tree_host_.get());
-  scrolling_layer->SetLayerTreeHost(layer_tree_host_.get());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(normal_element_id));
-  EXPECT_EQ(scrolling_layer,
-            layer_tree_host_->LayerByElementId(scrolling_element_id));
-
-  normal_layer->SetLayerTreeHost(nullptr);
-  scrolling_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(scrolling_element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, ChangingScrollableElementIdRegistersElement) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  test_layer->SetScrollable(gfx::Size(1000, 1000));
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-
-  ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Setting the element id should register the layer.
-  test_layer->SetElementId(element_id);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
-
-  // Unsetting the element id should unregister the layer.
-  test_layer->SetElementId(ElementId());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  test_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, ChangingScrollableRegistersElement) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
-
-  ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Setting the element id commits the element id but should not register
-  // the layer.
-  test_layer->SetElementId(element_id);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  // Making the layer scrollable should register it.
-  test_layer->SetScrollable(gfx::Size(1000, 1000));
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
-
-  // Unsetting the element id should unregister the layer.
-  test_layer->SetElementId(ElementId());
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-
-  test_layer->SetLayerTreeHost(nullptr);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-}
-
-TEST_F(LayerTestWithLayerLists, SetElementIdUsingLayerLists) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  ElementId element_id = ElementId(2);
-  test_layer->SetElementId(element_id);
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
 }  // namespace

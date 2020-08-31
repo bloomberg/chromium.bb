@@ -13,6 +13,7 @@ import re
 import shutil
 import socket
 import stat
+import subprocess
 import tempfile
 import time
 
@@ -162,8 +163,8 @@ def GetUnusedPort(ip=LOCALHOST, family=socket.AF_INET,
 def RunCommandFuncWrapper(func, msg, *args, **kwargs):
   """Wraps a function that invokes cros_build_lib.run.
 
-  If the command failed, logs warning |msg| if error_code_ok is set;
-  logs error |msg| if error_code_ok is not set.
+  If the command failed, logs warning |msg| if check is not set;
+  logs error |msg| if check is set.
 
   Args:
     func: The function to call.
@@ -176,15 +177,14 @@ def RunCommandFuncWrapper(func, msg, *args, **kwargs):
     The result of |func|.
 
   Raises:
-    cros_build_lib.RunCommandError if the command failed and error_code_ok
-    is not set.
+    cros_build_lib.RunCommandError if the command failed and check is set.
   """
-  error_code_ok = kwargs.pop('error_code_ok', False)
+  check = kwargs.pop('check', True)
   ignore_failures = kwargs.pop('ignore_failures', False)
-  result = func(*args, error_code_ok=True, **kwargs)
+  result = func(*args, check=False, **kwargs)
 
   if not ignore_failures:
-    if result.returncode != 0 and not error_code_ok:
+    if result.returncode != 0 and check:
       raise cros_build_lib.RunCommandError(msg, result)
 
     if result.returncode != 0:
@@ -254,6 +254,27 @@ def RemoveKnownHost(host, known_hosts_path=KNOWN_HOSTS_PATH):
     shutil.copy2(temp_file, known_hosts_path)
 
 
+class PortForwardSpec(object):
+  """Represent the information required to define an SSH tunnel."""
+
+  def __init__(self, local_port, remote_host='localhost', remote_port=None,
+               local_host='localhost'):
+    if remote_port is None:
+      remote_port = local_port
+    self.local_port = NormalizePort(local_port)
+    self.remote_port = NormalizePort(remote_port)
+    self.local_host = local_host
+    self.remote_host = remote_host
+
+  @property
+  def command_line_spec(self):
+    """Return the port forwarding spec for the `ssh` command."""
+    if not self.remote_host:
+      return '%d:%s:%d' % (self.remote_port, self.local_host, self.local_port)
+    return '%s:%d:%s:%d' % (self.remote_host, self.remote_port, self.local_host,
+                            self.local_port)
+
+
 class RemoteAccess(object):
   """Provides access to a remote test machine."""
 
@@ -287,6 +308,11 @@ class RemoteAccess(object):
     shutil.copyfile(private_key_src, self.private_key)
     os.chmod(self.private_key, stat.S_IRUSR)
 
+  @staticmethod
+  def _mockable_popen(*args, **kwargs):
+    """This wraps subprocess.Popen so it can be mocked in unit tests."""
+    return subprocess.Popen(*args, **kwargs)
+
   @property
   def target_ssh_url(self):
     return '%s@%s' % (self.username, self.remote_host)
@@ -317,7 +343,7 @@ class RemoteAccess(object):
 
     return ssh_cmd
 
-  def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
+  def RemoteSh(self, cmd, connect_settings=None, check=True,
                remote_sudo=False, remote_user=None, ssh_error_ok=False,
                **kwargs):
     """Run a sh command on the remote device through ssh.
@@ -326,10 +352,9 @@ class RemoteAccess(object):
       cmd: The command string or list to run. None or empty string/list will
            start an interactive session.
       connect_settings: The SSH connect settings to use.
-      error_code_ok: Does not throw an exception when the command exits with a
-                     non-zero returncode.  This does not cover the case where
-                     the ssh command itself fails (return code 255).
-                     See ssh_error_ok.
+      check: Throw an exception when the command exits with a non-zero
+             returncode.  This does not cover the case where the ssh command
+             itself fails (return code 255).  See ssh_error_ok.
       ssh_error_ok: Does not throw an exception when the ssh command itself
                     fails (return code 255).
       remote_sudo: If set, run the command in remote shell with sudo.
@@ -342,7 +367,7 @@ class RemoteAccess(object):
       interrupted, etc.)
 
     Raises:
-      RunCommandError when error is not ignored through the error_code_ok flag.
+      RunCommandError when error is not ignored through the check flag.
       SSHConnectionError when ssh command error is not ignored through
       the ssh_error_ok flag.
     """
@@ -379,7 +404,7 @@ class RemoteAccess(object):
     except cros_build_lib.RunCommandError as e:
       if ((e.result.returncode == SSH_ERROR_CODE and ssh_error_ok) or
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
-           and error_code_ok)):
+           and not check)):
         return e.result
       elif e.result.returncode == SSH_ERROR_CODE:
         raise SSHConnectionError(e.result.error)
@@ -388,6 +413,38 @@ class RemoteAccess(object):
     finally:
       # Restore the previous user if we temporarily changed it earlier.
       self.username = prev_user
+
+  def CreateTunnel(self, to_local=None, to_remote=None, connect_settings=None):
+    """Establishes a SSH tunnel to the remote device as a background process.
+
+    Args:
+      to_local: A list of PortForwardSpec objects to forward from the local
+          machine to the remote machine.
+      to_remote: A list of PortForwardSpec to forward from the remote machine
+          to the local machine.
+      connect_settings: The SSH connect settings to use.
+
+    Returns:
+      A Popen object. Note that it represents an already started background
+      process. Calling poll() on the return value can be used to check that
+      the tunnel is still running. To close the tunnel call terminate().
+    """
+
+    ssh_cmd = self._GetSSHCmd(connect_settings=connect_settings)
+    if to_local is not None:
+      ssh_cmd.extend(
+          token for spec in to_local for token in ('-L',
+                                                   spec.command_line_spec))
+    if to_remote is not None:
+      ssh_cmd.extend(
+          token for spec in to_remote for token in ('-R',
+                                                    spec.command_line_spec))
+    ssh_cmd.append('-N')
+    ssh_cmd.append(self.target_ssh_url)
+
+    logging.log(self.debug_level, '%s', cros_build_lib.CmdToStr(ssh_cmd))
+
+    return RemoteAccess._mockable_popen(ssh_cmd)
 
   def _GetBootId(self, rebooting=False):
     """Obtains unique boot session identifier.
@@ -405,7 +462,7 @@ class RemoteAccess(object):
           ConnectionAttempts=REBOOT_SSH_CONNECT_ATTEMPTS)
       result = self.RemoteSh(['cat', '/proc/sys/kernel/random/boot_id'],
                              connect_settings=connect_settings,
-                             error_code_ok=True, ssh_error_ok=True,
+                             check=False, ssh_error_ok=True,
                              log_output=True)
       if result.returncode == SSH_ERROR_CODE:
         return None
@@ -713,7 +770,7 @@ class RemoteDevice(object):
 
     result = cros_build_lib.run(
         [ping_command, '-c', '1', '-w', str(timeout), self.hostname],
-        error_code_ok=True,
+        check=False,
         capture_output=True)
     return result.returncode == 0
 
@@ -753,7 +810,7 @@ class RemoteDevice(object):
   def HasProgramInPath(self, binary):
     """Checks if the given binary exists on the device."""
     result = self.GetAgent().RemoteSh(
-        ['PATH=%s:$PATH which' % DEV_BIN_PATHS, binary], error_code_ok=True)
+        ['PATH=%s:$PATH which' % DEV_BIN_PATHS, binary], check=False)
     return result.returncode == 0
 
   def HasRsync(self):
@@ -766,7 +823,7 @@ class RemoteDevice(object):
 
     The function checkes the device's first ethernet interface (eth0).
     """
-    result = self.GetAgent().RemoteSh(['ethtool', 'eth0'], error_code_ok=True,
+    result = self.GetAgent().RemoteSh(['ethtool', 'eth0'], check=False,
                                       capture_output=True)
     return re.search(r'Speed: \d+000Mb/s', result.output)
 
@@ -798,7 +855,7 @@ class RemoteDevice(object):
     """Remove work/temp directories and run all registered cleanup commands."""
     for cmd, kwargs in self.cleanup_cmds:
       # We want to run through all cleanup commands even if there are errors.
-      kwargs.setdefault('error_code_ok', True)
+      kwargs.setdefault('check', False)
       try:
         self.BaseRunCommand(cmd, **kwargs)
       except SSHConnectionError:
@@ -833,9 +890,9 @@ class RemoteDevice(object):
         chunks = '%s/%s*' % (dest, chunk_prefix)
         final_dest = '%s/%s' % (dest, src_filename)
         assemble_cmd = ['cat', chunks, '>', final_dest]
-        self.RunCommand(assemble_cmd)
+        self.run(assemble_cmd)
         cleanup_cmd = ['rm', '-f', chunks]
-        self.RunCommand(cleanup_cmd)
+        self.run(cleanup_cmd)
       except IOError:
         logging.err('Could not complete the payload transfer...')
         raise
@@ -912,11 +969,19 @@ class RemoteDevice(object):
     """Copy path to working directory on the device."""
     return self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
 
-  def IfFileExists(self, path, **kwargs):
-    """Check if the given path exists on the device."""
-    kwargs.setdefault('error_code_ok', True)
-    result = self.RunCommand(['test -f %s' % path], **kwargs)
+  def _TestPath(self, path, option, **kwargs):
+    """Tests a given path for specific options."""
+    kwargs.setdefault('check', False)
+    result = self.run(['test', option, path], **kwargs)
     return result.returncode == 0
+
+  def IfFileExists(self, path, **kwargs):
+    """Check if the given file exists on the device."""
+    return self._TestPath(path, '-f', **kwargs)
+
+  def IfPathExists(self, path, **kwargs):
+    """Check if the given path exists on the device."""
+    return self._TestPath(path, '-e', **kwargs)
 
   def IsDirWritable(self, path):
     """Checks if the given directory is writable on the device.
@@ -927,7 +992,7 @@ class RemoteDevice(object):
     tmp_file = os.path.join(path, '.tmp.remote_access.is.writable')
     result = self.GetAgent().RemoteSh(
         ['touch', tmp_file, '&&', 'rm', tmp_file],
-        error_code_ok=True, remote_sudo=True, capture_output=True)
+        check=False, remote_sudo=True, capture_output=True)
     return result.returncode == 0
 
   def IsFileExecutable(self, path):
@@ -941,7 +1006,7 @@ class RemoteDevice(object):
       not executable.
     """
     cmd = ['test', '-f', path, '-a', '-x', path,]
-    result = self.GetAgent().RemoteSh(cmd, remote_sudo=True, error_code_ok=True,
+    result = self.GetAgent().RemoteSh(cmd, remote_sudo=True, check=False,
                                       capture_output=True)
     return result.returncode == 0
 
@@ -988,7 +1053,7 @@ class RemoteDevice(object):
                            (path, max_size))
 
     result = self.BaseRunCommand(['cat', path], remote_sudo=True,
-                                 error_code_ok=True, capture_output=True)
+                                 check=False, capture_output=True)
     if result.returncode:
       raise CatFileError('Failed to read file "%s" on the device' % path)
     return result.output
@@ -1013,7 +1078,7 @@ class RemoteDevice(object):
       cmd = ['pgrep', exe]
       if full_path:
         cmd.append('-f')
-      result = self.GetAgent().RemoteSh(cmd, error_code_ok=True,
+      result = self.GetAgent().RemoteSh(cmd, check=False,
                                         capture_output=True)
       try:
         return [int(pid) for pid in result.output.splitlines()]
@@ -1028,7 +1093,12 @@ class RemoteDevice(object):
     """Reboot the device."""
     return self.GetAgent().RemoteReboot(timeout_sec=timeout_sec)
 
+  # TODO(vapier): Delete this shim once chromite & users migrate.
   def BaseRunCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.base_run(cmd, **kwargs)
+
+  def base_run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Args:
@@ -1044,7 +1114,7 @@ class RemoteDevice(object):
       logging.error('Error connecting to device %s', self.hostname)
       raise
 
-  def RunCommand(self, cmd, **kwargs):
+  def run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Also sets environment variables using dictionary provided by
@@ -1205,12 +1275,11 @@ class ChromiumOSDevice(RemoteDevice):
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
     logging.info("Remounting '/' with rw...")
-    self.RunCommand(self.MOUNT_ROOTFS_RW_CMD, error_code_ok=True,
-                    remote_sudo=True)
+    self.run(self.MOUNT_ROOTFS_RW_CMD, check=False, remote_sudo=True)
 
   def _RootfsIsReadOnly(self):
     """Returns True if rootfs on is mounted as read-only."""
-    r = self.RunCommand(self.LIST_MOUNTS_CMD, capture_output=True)
+    r = self.run(self.LIST_MOUNTS_CMD, capture_output=True)
     for line in r.output.splitlines():
       if not line:
         continue
@@ -1224,9 +1293,9 @@ class ChromiumOSDevice(RemoteDevice):
   def DisableRootfsVerification(self):
     """Disables device rootfs verification."""
     logging.info('Disabling rootfs verification on device...')
-    self.RunCommand(
+    self.run(
         [self.MAKE_DEV_SSD_BIN, '--remove_rootfs_verification', '--force'],
-        error_code_ok=True, remote_sudo=True)
+        check=False, remote_sudo=True)
     # TODO(yjhong): Make sure an update is not pending.
     logging.info('Need to reboot to actually disable the verification.')
     self.Reboot()
@@ -1255,7 +1324,7 @@ class ChromiumOSDevice(RemoteDevice):
 
     return not self._RootfsIsReadOnly()
 
-  def RunCommand(self, cmd, **kwargs):
+  def run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Also makes sure $PATH is set correctly by adding DEV_BIN_PATHS to
@@ -1276,4 +1345,4 @@ class ChromiumOSDevice(RemoteDevice):
     if path_env is not None:
       extra_env['PATH'] = path_env
     kwargs['extra_env'] = extra_env
-    return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
+    return super(ChromiumOSDevice, self).run(cmd, **kwargs)

@@ -39,7 +39,7 @@ Frame* ToCoreFrame(WebFrame* frame) {
 RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
     : web_frame_(web_frame) {}
 
-void RemoteFrameClientImpl::Trace(blink::Visitor* visitor) {
+void RemoteFrameClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(web_frame_);
   RemoteFrameClient::Trace(visitor);
 }
@@ -100,19 +100,22 @@ base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
 
 void RemoteFrameClientImpl::Navigate(
     const ResourceRequest& request,
+    blink::WebLocalFrame* initiator_frame,
     bool should_replace_current_entry,
     bool is_opener_navigation,
-    bool has_download_sandbox_flag,
+    bool initiator_frame_has_download_sandbox_flag,
     bool initiator_frame_is_ad,
-    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token) {
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
+    const base::Optional<WebImpression>& impression) {
   bool blocking_downloads_in_sandbox_enabled =
       RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
   if (web_frame_->Client()) {
     web_frame_->Client()->Navigate(
-        WrappedResourceRequest(request), should_replace_current_entry,
-        is_opener_navigation, has_download_sandbox_flag,
+        WrappedResourceRequest(request), initiator_frame,
+        should_replace_current_entry, is_opener_navigation,
+        initiator_frame_has_download_sandbox_flag,
         blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
-        blob_url_token.PassPipe());
+        blob_url_token.PassPipe(), impression);
   }
 }
 
@@ -124,18 +127,16 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
   return 2;
 }
 
-void RemoteFrameClientImpl::CheckCompleted() {
-  web_frame_->Client()->CheckCompleted();
-}
-
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
+    base::Optional<base::UnguessableToken> cluster_id,
     LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
+        WebSecurityOrigin(std::move(target)),
+        WebDOMMessageEvent(event, cluster_id));
   }
 }
 
@@ -150,21 +151,10 @@ void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);
 }
 
-void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
+void RemoteFrameClientImpl::AdvanceFocus(mojom::blink::FocusType type,
                                          LocalFrame* source) {
   web_frame_->Client()->AdvanceFocus(type,
                                      WebLocalFrameImpl::FromFrame(source));
-}
-
-void RemoteFrameClientImpl::SetIsInert(bool inert) {
-  web_frame_->Client()->SetIsInert(inert);
-}
-
-void RemoteFrameClientImpl::UpdateRenderThrottlingStatus(
-    bool is_throttled,
-    bool subtree_throttled) {
-  web_frame_->Client()->UpdateRenderThrottlingStatus(is_throttled,
-                                                     subtree_throttled);
 }
 
 uint32_t RemoteFrameClientImpl::Print(const IntRect& rect,

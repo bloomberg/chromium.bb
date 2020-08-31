@@ -28,25 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
+import {Calculator, TimelineGrid} from './TimelineGrid.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-PerfUI.OverviewGrid = class {
+export class OverviewGrid {
   /**
    * @param {string} prefix
-   * @param {!PerfUI.TimelineGrid.Calculator=} calculator
+   * @param {!Calculator=} calculator
    */
   constructor(prefix, calculator) {
     this.element = createElement('div');
     this.element.id = prefix + '-overview-container';
 
-    this._grid = new PerfUI.TimelineGrid();
+    this._grid = new TimelineGrid();
     this._grid.element.id = prefix + '-overview-grid';
     this._grid.setScrollTop(0);
 
     this.element.appendChild(this._grid.element);
 
-    this._window = new PerfUI.OverviewGrid.Window(this.element, this._grid.dividersLabelBarElement, calculator);
+    this._window = new Window(this.element, this._grid.dividersLabelBarElement, calculator);
   }
 
   /**
@@ -57,7 +63,7 @@ PerfUI.OverviewGrid = class {
   }
 
   /**
-   * @param {!PerfUI.TimelineGrid.Calculator} calculator
+   * @param {!Calculator} calculator
    */
   updateDividers(calculator) {
     this._grid.updateDividers(calculator);
@@ -102,7 +108,7 @@ PerfUI.OverviewGrid = class {
 
   /**
    * @param {symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!Common.EventTarget.EventTargetEvent)} listener
    * @param {!Object=} thisObject
    * @return {!Common.EventTarget.EventDescriptor}
    */
@@ -131,24 +137,21 @@ PerfUI.OverviewGrid = class {
   setResizeEnabled(enabled) {
     this._window.setEnabled(enabled);
   }
-};
+}
 
-PerfUI.OverviewGrid.MinSelectableSize = 14;
-
-PerfUI.OverviewGrid.WindowScrollSpeedFactor = .3;
-
-PerfUI.OverviewGrid.ResizerOffset = 3.5;  // half pixel because offset values are not rounded but ceiled
-
-PerfUI.OverviewGrid.OffsetFromWindowEnds = 10;
+export const MinSelectableSize = 14;
+export const WindowScrollSpeedFactor = .3;
+export const ResizerOffset = 3.5;  // half pixel because offset values are not rounded but ceiled
+export const OffsetFromWindowEnds = 10;
 
 /**
  * @unrestricted
  */
-PerfUI.OverviewGrid.Window = class extends Common.Object {
+export class Window extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Element} parentElement
    * @param {!Element=} dividersLabelBarElement
-   * @param {!PerfUI.TimelineGrid.Calculator=} calculator
+   * @param {!Calculator=} calculator
    */
   constructor(parentElement, dividersLabelBarElement, calculator) {
     super();
@@ -158,36 +161,34 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
 
     UI.ARIAUtils.setAccessibleName(this._parentElement, ls`Overview grid window`);
 
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._parentElement, this._startWindowSelectorDragging.bind(this), this._windowSelectorDragging.bind(this),
         this._endWindowSelectorDragging.bind(this), 'text', null);
     if (dividersLabelBarElement) {
-      UI.installDragHandle(
+      UI.UIUtils.installDragHandle(
           dividersLabelBarElement, this._startWindowDragging.bind(this), this._windowDragging.bind(this), null,
           '-webkit-grabbing', '-webkit-grab');
     }
 
     this._parentElement.addEventListener('mousewheel', this._onMouseWheel.bind(this), true);
     this._parentElement.addEventListener('dblclick', this._resizeWindowMaximum.bind(this), true);
-    UI.appendStyle(this._parentElement, 'perf_ui/overviewGrid.css');
+    UI.Utils.appendStyle(this._parentElement, 'perf_ui/overviewGrid.css');
 
     this._leftResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._leftResizeElement, this._resizerElementStartDragging.bind(this),
         this._leftResizeElementDragging.bind(this), null, 'ew-resize');
     this._rightResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._rightResizeElement, this._resizerElementStartDragging.bind(this),
         this._rightResizeElementDragging.bind(this), null, 'ew-resize');
 
     UI.ARIAUtils.setAccessibleName(this._leftResizeElement, ls`Left Resizer`);
     UI.ARIAUtils.markAsSlider(this._leftResizeElement);
-    this._leftResizeElement.tabIndex = 0;
     this._leftResizeElement.addEventListener('keydown', event => this._handleKeyboardResizing(event, false));
 
     UI.ARIAUtils.setAccessibleName(this._rightResizeElement, ls`Right Resizer`);
     UI.ARIAUtils.markAsSlider(this._rightResizeElement);
-    this._rightResizeElement.tabIndex = 0;
     this._rightResizeElement.addEventListener('keydown', event => this._handleKeyboardResizing(event, true));
     this._rightResizeElement.addEventListener('focus', this._onRightResizeElementFocused.bind(this));
 
@@ -213,6 +214,8 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
    */
   setEnabled(enabled) {
     this._enabled = enabled;
+    this._rightResizeElement.tabIndex = enabled ? 0 : -1;
+    this._leftResizeElement.tabIndex = enabled ? 0 : -1;
   }
 
   /**
@@ -281,14 +284,14 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
     // We shift by 10px if the ctrlKey is pressed and 2 otherwise.  1px shifts result in noOp due to rounding in _updateCurtains
     let pixelsToShift = ctrlPressed ? 10 : 2;
     pixelsToShift = increment ? pixelsToShift : -Math.abs(pixelsToShift);
-    const offsetLeft = offset + PerfUI.OverviewGrid.ResizerOffset;
+    const offsetLeft = offset + ResizerOffset;
     newPos = offsetLeft + pixelsToShift;
-    if (increment && newPos < PerfUI.OverviewGrid.OffsetFromWindowEnds) {
+    if (increment && newPos < OffsetFromWindowEnds) {
       // When incrementing, snap to the window offset value (10px) if the new position is between 0px and 10px
-      newPos = PerfUI.OverviewGrid.OffsetFromWindowEnds;
-    } else if (!increment && newPos > this._parentElement.clientWidth - PerfUI.OverviewGrid.OffsetFromWindowEnds) {
+      newPos = OffsetFromWindowEnds;
+    } else if (!increment && newPos > this._parentElement.clientWidth - OffsetFromWindowEnds) {
       // When decrementing, snap to the window offset value (10px) from the rightmost side if the new position is within 10px from the end.
-      newPos = this._parentElement.clientWidth - PerfUI.OverviewGrid.OffsetFromWindowEnds;
+      newPos = this._parentElement.clientWidth - OffsetFromWindowEnds;
     }
 
     return newPos;
@@ -304,7 +307,7 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
     }
     this._offsetLeft = this._parentElement.totalOffsetLeft();
     const position = event.x - this._offsetLeft;
-    this._overviewWindowSelector = new PerfUI.OverviewGrid.WindowSelector(this._parentElement, position);
+    this._overviewWindowSelector = new WindowSelector(this._parentElement, position);
     return true;
   }
 
@@ -328,13 +331,13 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
         return;
       }
       const middle = window.end;
-      window.start = Math.max(0, middle - PerfUI.OverviewGrid.MinSelectableSize / 2);
-      window.end = Math.min(this._parentElement.clientWidth, middle + PerfUI.OverviewGrid.MinSelectableSize / 2);
-    } else if (window.end - window.start < PerfUI.OverviewGrid.MinSelectableSize) {
-      if (this._parentElement.clientWidth - window.end > PerfUI.OverviewGrid.MinSelectableSize) {
-        window.end = window.start + PerfUI.OverviewGrid.MinSelectableSize;
+      window.start = Math.max(0, middle - MinSelectableSize / 2);
+      window.end = Math.min(this._parentElement.clientWidth, middle + MinSelectableSize / 2);
+    } else if (window.end - window.start < MinSelectableSize) {
+      if (this._parentElement.clientWidth - window.end > MinSelectableSize) {
+        window.end = window.start + MinSelectableSize;
       } else {
-        window.start = window.end - PerfUI.OverviewGrid.MinSelectableSize;
+        window.start = window.end - MinSelectableSize;
       }
     }
     this._setWindowPosition(window.start, window.end);
@@ -374,7 +377,7 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
    */
   _resizeWindowLeft(start) {
     // Glue to edge.
-    if (start < PerfUI.OverviewGrid.OffsetFromWindowEnds) {
+    if (start < OffsetFromWindowEnds) {
       start = 0;
     } else if (start > this._rightResizeElement.offsetLeft - 4) {
       start = this._rightResizeElement.offsetLeft - 4;
@@ -387,10 +390,10 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
    */
   _resizeWindowRight(end) {
     // Glue to edge.
-    if (end > this._parentElement.clientWidth - PerfUI.OverviewGrid.OffsetFromWindowEnds) {
+    if (end > this._parentElement.clientWidth - OffsetFromWindowEnds) {
       end = this._parentElement.clientWidth;
-    } else if (end < this._leftResizeElement.offsetLeft + PerfUI.OverviewGrid.MinSelectableSize) {
-      end = this._leftResizeElement.offsetLeft + PerfUI.OverviewGrid.MinSelectableSize;
+    } else if (end < this._leftResizeElement.offsetLeft + MinSelectableSize) {
+      end = this._leftResizeElement.offsetLeft + MinSelectableSize;
     }
     this._setWindowPosition(null, end);
   }
@@ -409,9 +412,8 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
     const valueSpan = this._calculator.maximumBoundary() - minimumValue;
     if (leftSlider) {
       return minimumValue + valueSpan * this.windowLeft;
-    } else {
-      return minimumValue + valueSpan * this.windowRight;
     }
+    return minimumValue + valueSpan * this.windowRight;
   }
 
   /**
@@ -469,7 +471,7 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
     if (this._calculator) {
       windowPosition = this._calculateWindowPosition();
     }
-    this.dispatchEventToListeners(PerfUI.OverviewGrid.Events.WindowChanged, windowPosition);
+    this.dispatchEventToListeners(Events.WindowChanged, windowPosition);
   }
 
   _updateCurtains() {
@@ -481,7 +483,7 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
     if (this._parentElement.clientWidth !== 0) {
       // We allow actual time window to be arbitrarily small but don't want the UI window to be too small.
       const widthInPixels = width * this._parentElement.clientWidth;
-      const minWidthInPixels = PerfUI.OverviewGrid.MinSelectableSize / 2;
+      const minWidthInPixels = MinSelectableSize / 2;
       if (widthInPixels < minWidthInPixels) {
         const factor = minWidthInPixels / widthInPixels;
         left = ((this.windowRight + this.windowLeft) - width * factor) / 2;
@@ -535,9 +537,9 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
       this._zoom(Math.pow(zoomFactor, -event.wheelDeltaY * mouseWheelZoomSpeed), reference);
     }
     if (typeof event.wheelDeltaX === 'number' && event.wheelDeltaX) {
-      let offset = Math.round(event.wheelDeltaX * PerfUI.OverviewGrid.WindowScrollSpeedFactor);
-      const windowLeft = this._leftResizeElement.offsetLeft + PerfUI.OverviewGrid.ResizerOffset;
-      const windowRight = this._rightResizeElement.offsetLeft + PerfUI.OverviewGrid.ResizerOffset;
+      let offset = Math.round(event.wheelDeltaX * WindowScrollSpeedFactor);
+      const windowLeft = this._leftResizeElement.offsetLeft + ResizerOffset;
+      const windowRight = this._rightResizeElement.offsetLeft + ResizerOffset;
 
       if (windowLeft - offset < 0) {
         offset = windowLeft;
@@ -567,23 +569,23 @@ PerfUI.OverviewGrid.Window = class extends Common.Object {
       factor = newWindowSize / windowSize;
     }
     left = reference + (left - reference) * factor;
-    left = Number.constrain(left, 0, 1 - newWindowSize);
+    left = Platform.NumberUtilities.clamp(left, 0, 1 - newWindowSize);
 
     right = reference + (right - reference) * factor;
-    right = Number.constrain(right, newWindowSize, 1);
+    right = Platform.NumberUtilities.clamp(right, newWindowSize, 1);
     this._setWindow(left, right);
   }
-};
+}
 
 /** @enum {symbol} */
-PerfUI.OverviewGrid.Events = {
+export const Events = {
   WindowChanged: Symbol('WindowChanged')
 };
 
 /**
  * @unrestricted
  */
-PerfUI.OverviewGrid.WindowSelector = class {
+export class WindowSelector {
   constructor(parent, position) {
     this._startPosition = position;
     this._width = parent.offsetWidth;
@@ -611,4 +613,4 @@ PerfUI.OverviewGrid.WindowSelector = class {
       this._windowSelector.style.right = this._width - position + 'px';
     }
   }
-};
+}

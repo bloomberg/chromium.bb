@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -456,18 +457,18 @@ void CpuDataCollector::PostSampleCpuState() {
   std::vector<StateOccupancySample>* freq_samples =
       new std::vector<StateOccupancySample>;
 
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&SampleCpuStateAsync, base::Unretained(cpu_count),
-                 base::Unretained(cpu_idle_state_names),
-                 base::Unretained(idle_samples),
-                 base::Unretained(cpu_freq_state_names),
-                 base::Unretained(freq_samples)),
-      base::Bind(&CpuDataCollector::SaveCpuStateSamplesOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(cpu_count),
-                 base::Owned(cpu_idle_state_names), base::Owned(idle_samples),
-                 base::Owned(cpu_freq_state_names), base::Owned(freq_samples)));
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&SampleCpuStateAsync, base::Unretained(cpu_count),
+                     base::Unretained(cpu_idle_state_names),
+                     base::Unretained(idle_samples),
+                     base::Unretained(cpu_freq_state_names),
+                     base::Unretained(freq_samples)),
+      base::BindOnce(
+          &CpuDataCollector::SaveCpuStateSamplesOnUIThread,
+          weak_ptr_factory_.GetWeakPtr(), base::Owned(cpu_count),
+          base::Owned(cpu_idle_state_names), base::Owned(idle_samples),
+          base::Owned(cpu_freq_state_names), base::Owned(freq_samples)));
 }
 
 void CpuDataCollector::SaveCpuStateSamplesOnUIThread(

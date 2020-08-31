@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/shadow_value.h"
 
 namespace {
@@ -17,7 +17,6 @@ namespace {
 // respected (there's 3 * unit / 4 in use to express 12).
 // The Harmony layout unit. All distances are in terms of this unit.
 constexpr int kHarmonyLayoutUnit = 16;
-constexpr int kExtraSmallBubbleSize = 240;
 constexpr int kSmallSnapPoint = 320;
 constexpr int kMediumSnapPoint = 448;
 constexpr int kLargeSnapPoint = 512;
@@ -51,15 +50,14 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   switch (metric) {
     case views::INSETS_DIALOG:
     case views::INSETS_DIALOG_SUBSECTION:
       return gfx::Insets(kHarmonyLayoutUnit);
     case views::INSETS_CHECKBOX_RADIO_BUTTON: {
       gfx::Insets insets = LayoutProvider::GetInsetsMetric(metric);
-      // Material Design requires that checkboxes and radio buttons are aligned
-      // flush to the left edge.
+      // Checkboxes and radio buttons should be aligned flush to the left edge.
       return gfx::Insets(insets.top(), 0, insets.bottom(), insets.right());
     }
     case views::INSETS_VECTOR_IMAGE_BUTTON:
@@ -157,8 +155,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return kHarmonyLayoutUnit;
-    case DISTANCE_BUBBLE_TABSTRIP_PREFERRED_WIDTH:
-      return kExtraSmallBubbleSize;
+    case DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE:
+      return 20;
     case DISTANCE_BUBBLE_PREFERRED_WIDTH:
       return kSmallSnapPoint;
     case DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH:

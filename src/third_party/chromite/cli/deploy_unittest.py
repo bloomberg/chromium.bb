@@ -18,11 +18,15 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.lib import remote_access
-try:
-  import portage
-except ImportError:
-  if cros_build_lib.IsInsideChroot():
-    raise
+
+pytestmark = [cros_test_lib.pytestmark_inside_only]
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
+if cros_build_lib.IsInsideChroot():
+  import portage  # pylint: disable=import-error
 
 
 # pylint: disable=protected-access
@@ -50,8 +54,11 @@ class ChromiumOSDeviceFake(object):
   def IsSELinuxEnforced(self):
     return True
 
-  def RunCommand(self, cmd, **_kwargs):
+  def run(self, cmd, **_kwargs):
     self.cmds.append(cmd)
+
+  def CopyToDevice(self, _src, _dest, _mode='rsync', **_kwargs):
+    return True
 
 
 class ChromiumOSDeviceHandlerFake(object):
@@ -408,8 +415,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
 
     self.assertEqual(
         self.device.device.cmds,
-        [['sudo', '-u', 'chronos', 'dlcservice_util',
-          '--uninstall', '--dlc_ids=foodlc'],
+        [['dlcservice_util', '--uninstall', '--dlc_ids=foodlc'],
          ['restart', 'dlcservice']])
 
   def testDeployMergeWithProgressBar(self):

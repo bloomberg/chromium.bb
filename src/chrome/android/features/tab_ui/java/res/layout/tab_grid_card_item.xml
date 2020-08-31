@@ -37,7 +37,7 @@
                 android:minWidth="8dp"
                 android:adjustViewBounds="true"
                 android:importantForAccessibility="no"
-                android:src="@drawable/ic_omnibox_page"/>
+                app:srcCompat="@drawable/ic_globe_24dp"/>
             <TextView
                 android:id="@+id/tab_title"
                 android:layout_width="match_parent"
@@ -50,8 +50,8 @@
                 android:fadingEdgeLength="24dp"
                 android:ellipsize="none"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackTitle2"/>
-            <org.chromium.chrome.browser.ui.widget.RoundedCornerImageView
+                android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
+            <org.chromium.components.browser_ui.widget.RoundedCornerImageView
                 android:id="@+id/tab_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -67,7 +67,7 @@
                 android:id="@+id/divider_view"
                 style="@style/HorizontalDivider"
                 android:layout_below="@id/tab_title"
-                android:background="@color/divider_bg_color"/>
+                android:background="@color/divider_line_bg_color"/>
             <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/create_group_button"
                 android:layout_width="wrap_content"

@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/history/core/browser/history_types.h"
+#include "content/public/test/browser_test.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkNode;
@@ -424,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       E2E_ENABLED(DisableEnableSync)) {
+                       DisableEnableSync) {
   ResetSyncForPrimaryAccount();
   const base::string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
   const base::string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));

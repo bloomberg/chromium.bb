@@ -9,18 +9,22 @@ import "content/public/common/was_activated_option.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/ip_address_space.mojom";
+import "services/network/public/mojom/source_location.mojom";
+import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
-import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
-import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
+import "third_party/blink/public/mojom/referrer.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 [Native]
-struct InitiatorCSPInfo;
+struct Impression;
 
 [Native]
 enum MixedContentContextType;
@@ -34,8 +38,21 @@ struct PageState;
 [Native]
 enum PageTransition;
 
-[Native]
-struct SourceLocation;
+// Represents the Content Security Policy of the initator of the navigation.
+struct InitiatorCSPInfo {
+  // Whether or not the CSP of the main world should apply. When the navigation
+  // is initiated from a content script in an isolated world, the CSP defined
+  // in the main world should not apply.
+  // TODO(arthursonzogni): Instead of this boolean, the origin of the isolated
+  // world which has initiated the navigation should be passed.
+  // See https://crbug.com/702540
+  network.mojom.CSPDisposition should_check_main_world_csp =
+      network.mojom.CSPDisposition.CHECK;
+
+  // The relevant CSP policies and the initiator 'self' source to be used.
+  array<network.mojom.ContentSecurityPolicy> initiator_csp;
+  network.mojom.CSPSource? initiator_self_source;
+};
 
 enum NavigationType {
   // Reload the page, validating only cache entry for the main resource.
@@ -76,6 +93,12 @@ enum NavigationType {
 // This struct holds parameters sent by the renderer to the browser, that are
 // needed to start a navigation.
 struct BeginNavigationParams {
+  // Routing id of the initiator of the navigation. This routing id may no
+  // longer be valid by the time the navigation is seen by the browser process,
+  // if the initiator frame is deleted before the navigation IPC arrives. A
+  // value of MSG_ROUTING_NONE indicates this navigation is not associated
+  // with a frame.
+  int32 initiator_routing_id;
 
   // Additional HTTP request headers.
   string headers;
@@ -89,13 +112,16 @@ struct BeginNavigationParams {
   // Indicates the request context type.
   blink.mojom.RequestContextType request_context_type;
 
+  // Indicates the request destination.
+  network.mojom.RequestDestination request_destination;
+
   // The mixed content context type for potential mixed content checks.
   MixedContentContextType mixed_content_context_type;
 
   // Whether or not the navigation has been initiated by a form submission.
   bool is_form_submission;
 
- // Whether or not the navigation has been initiated by a link click.
+  // Whether or not the navigation has been initiated by a link click.
   bool was_initiated_by_link_click;
 
   // See WebSearchableFormData for a description of these.
@@ -114,14 +140,21 @@ struct BeginNavigationParams {
   mojo_base.mojom.DictionaryValue? devtools_initiator;
 
   // Whether or not this navigation should unconditionally attach SameSite
-  // cookies. At present, this is used for navigations initiated by extensions,
-  // or having an extension as the site_for_cookies, where the extension has
-  // site permission for the requested page. Such requests should be treated as
-  // first-party, hence SameSite cookies should be attached. This param is
-  // necessary to indicate this, since such requests will otherwise appear as if
-  // they were cross-site due to the site_for_cookies and request URL differing.
-  // See the field of the same name in network::ResourceRequest.
-  bool attach_same_site_cookies = false;
+  // cookies, bypassing the usual site_for_cookies checks. Setting this to true
+  // causes SameSite cookies to be attached for cross-site requests (or requests
+  // that "look" cross-site). See the field of the same name in
+  // network::ResourceRequest.
+  bool force_ignore_site_for_cookies = false;
+
+  // Specifies whether, and how, the navigation should execute a Trust Tokens
+  // operation (https://github.com/wicg/trust-token-api) and attach headers
+  // conveying the result of the operation. Set on some child frame navigations.
+  network.mojom.TrustTokenParams? trust_token_params;
+
+  // Carries optional information associated with conversion measurement for
+  // this navigation. Only set on navigations originating from anchors with
+  // relevant impression attributes set.
+  Impression? impression;
 };
 
 // Provided by the browser or the renderer -------------------------------------
@@ -170,10 +203,6 @@ struct CommonNavigationParams {
   int32 previews_state;
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
-  // If this is for a browser-initiated navigation, this can override the
-  // navigation_start value in Blink.
-  // For renderer initiated navigations, this will be set on the
-  // renderer side and sent with FrameHost::BeginNavigation.
   mojo_base.mojom.TimeTicks navigation_start;
 
   // The request method: GET, POST, etc.
@@ -184,9 +213,9 @@ struct CommonNavigationParams {
 
   // Information about the Javascript source for this navigation. Used for
   // providing information in console error messages triggered by the
-  // navigation. If the navigation was not caused by Javascript, this should
-  // not be set.
-  SourceLocation? source_location;
+  // navigation. If the navigation is not caused by Javascript, the
+  // SourceLocation's URL is empty.
+  network.mojom.SourceLocation source_location;
 
   // Whether or not this navigation was started from a context menu.
   bool started_from_context_menu = false;
@@ -219,20 +248,6 @@ struct CommonNavigationParams {
   // not always be set; it depends on the creator of the CommonNavigationParams
   // setting it.
   mojo_base.mojom.TimeTicks input_start;
-
-  // A snapshot value of frame policy(both sandbox flags and container policy)
-  // of the frame that is being navigated. The snapshot value is captured at the
-  // start of navigation.
-  // The value is set to null for top-level browser-initiated navigation.
-  // The value is also set to null when Ctrl-click was used to create a new tab
-  // and navigate, i.e. the document in new tab will inherit no frame_policy.
-  // For navigation created from NavigationControllerImpl::
-  // CreateNavigationRequestFromEntry which corresponds to history navigation,
-  // the value is set to current FrameTreeNode::pending_frame_policy in
-  // frame_tree_node. This behavior is currently undocumented and probably need
-  // further discussion. Another potential approach is to record frame policy
-  // value in NavigationEntry and reuse the historical value.
-  blink.mojom.FramePolicy? frame_policy;
 };
 
 // Provided by the browser -----------------------------------------------------
@@ -375,7 +390,28 @@ struct CommitNavigationParams {
   // Used as an additional identifier for MemoryCache.
   url.mojom.Url web_bundle_physical_url;
 
-  // The base URL which will be set for the document to support relative path
-  // subresource loading in unsigned Web Bundle file.
-  url.mojom.Url base_url_override_for_web_bundle;
+  // The claimed URL inside Web Bundle from which the document is loaded.
+  url.mojom.Url web_bundle_claimed_url;
+
+  // A snapshot value of frame policy(both sandbox flags and container policy)
+  // of the frame that is being navigated. The snapshot value is captured at the
+  // start of navigation.
+  // - The value is set to null for top-level browser-initiated navigation.
+  // - The value is also set to null when Ctrl-click was used to create a new
+  // tab and navigate, i.e. the document in new tab will inherit no
+  // frame_policy.
+  // - For navigation created from NavigationControllerImpl::
+  // CreateNavigationRequestFromEntry which corresponds to history navigation,
+  // the value is set to current FrameTreeNode::pending_frame_policy in
+  // frame_tree_node. This behavior is currently undocumented and probably need
+  // further discussion. Another potential approach is to record frame policy
+  // value in NavigationEntry and reuse the historical value.
+  // - For local frame navigation, the value is set at NavigationRequest::
+  // CreateRendererInitiated.
+  // - For remote frame navigation, the value is set at
+  // NavigationControllerImpl::CreateNavigationRequestFromLoadParams.
+  blink.mojom.FramePolicy? frame_policy;
+
+  // The names of origin trials to be force enabled for this navigation.
+  array<string> force_enabled_origin_trials;
 };

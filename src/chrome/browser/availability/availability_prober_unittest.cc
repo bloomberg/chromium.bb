@@ -26,8 +26,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const GURL kTestUrl("https://test.com");
+
 const base::TimeDelta kCacheRevalidateAfter(base::TimeDelta::FromDays(1));
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl() {
+  return GURL("https://test.com");
+}
+
 }  // namespace
 
 class TestDelegate : public AvailabilityProber::Delegate {
@@ -126,12 +133,12 @@ class AvailabilityProberTest : public testing::Test {
     std::unique_ptr<TestAvailabilityProber> prober =
         std::make_unique<TestAvailabilityProber>(
             delegate, test_shared_loader_factory_, &test_prefs_,
-            AvailabilityProber::ClientName::kLitepages, kTestUrl,
-            AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
-            timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+            AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck,
+            TestUrl(), AvailabilityProber::HttpMethod::kGet, headers,
+            retry_policy, timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
             kCacheRevalidateAfter, task_environment_.GetMockTickClock(),
             task_environment_.GetMockClock());
-    prober->SetOnCompleteCallback(base::BindRepeating(
+    prober->SetOnCompleteCallback(base::BindOnce(
         &AvailabilityProberTest::OnProbeComplete, base::Unretained(this)));
     return prober;
   }
@@ -147,8 +154,8 @@ class AvailabilityProberTest : public testing::Test {
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
 
-    ASSERT_EQ(request->request.url.host(), kTestUrl.host());
-    ASSERT_EQ(request->request.url.scheme(), kTestUrl.scheme());
+    ASSERT_EQ(request->request.url.host(), TestUrl().host());
+    ASSERT_EQ(request->request.url.scheme(), TestUrl().scheme());
 
     auto head = network::CreateURLResponseHead(http_status);
     network::URLLoaderCompletionStatus status(net_error);
@@ -180,7 +187,7 @@ class AvailabilityProberTest : public testing::Test {
     EXPECT_EQ(request->request.credentials_mode,
               network::mojom::CredentialsMode::kOmit);
     if (expect_random_guid) {
-      EXPECT_NE(request->request.url, kTestUrl);
+      EXPECT_NE(request->request.url, TestUrl());
       EXPECT_TRUE(request->request.url.query().find("guid=") !=
                   std::string::npos);
       EXPECT_EQ(request->request.url.query().length(),
@@ -188,7 +195,7 @@ class AvailabilityProberTest : public testing::Test {
       // We don't check for the randomness of successive GUIDs on the assumption
       // base::GenerateGUID() is always correct.
     } else {
-      EXPECT_EQ(request->request.url, kTestUrl);
+      EXPECT_EQ(request->request.url, TestUrl());
     }
   }
 
@@ -218,15 +225,19 @@ TEST_F(AvailabilityProberTest, OK) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", true, 1);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", true, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.NumAttemptsBeforeSuccess.Litepages", 1, 1);
+      "Availability.Prober.NumAttemptsBeforeSuccess."
+      "IsolatedPrerenderOriginCheck",
+      1, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::OK), 1);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck",
+      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::OK), 1);
 }
 
 TEST_F(AvailabilityProberTest, OK_Callback) {
@@ -245,13 +256,15 @@ TEST_F(AvailabilityProberTest, OK_Callback) {
   EXPECT_TRUE(callback_result().value());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", true, 1);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", true, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::OK), 1);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck",
+      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::OK), 1);
 }
 
 TEST_F(AvailabilityProberTest, MultipleStart) {
@@ -396,13 +409,15 @@ TEST_F(AvailabilityProberTest, PersistentCache) {
   EXPECT_TRUE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", true, 1);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", true, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::OK), 1);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck",
+      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::OK), 1);
 }
 
 #if defined(OS_ANDROID)
@@ -439,13 +454,14 @@ TEST_F(AvailabilityProberTest, NetError) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 4);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 4);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", false, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_FAILED), 4);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_FAILED), 4);
 }
 
 TEST_F(AvailabilityProberTest, NetError_Callback) {
@@ -464,13 +480,14 @@ TEST_F(AvailabilityProberTest, NetError_Callback) {
   EXPECT_FALSE(callback_result().value());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 4);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 4);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", false, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_FAILED), 4);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_FAILED), 4);
 }
 
 TEST_F(AvailabilityProberTest, HttpError) {
@@ -486,13 +503,15 @@ TEST_F(AvailabilityProberTest, HttpError) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 4);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 4);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", false, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.ResponseCode.Litepages", net::HTTP_NOT_FOUND, 4);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::OK), 4);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck",
+      net::HTTP_NOT_FOUND, 4);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::OK), 4);
 }
 
 TEST_F(AvailabilityProberTest, TimeUntilSuccess) {
@@ -510,9 +529,10 @@ TEST_F(AvailabilityProberTest, TimeUntilSuccess) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilFailure2.Litepages", 0);
+      "Availability.Prober.TimeUntilFailure2.IsolatedPrerenderOriginCheck", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilSuccess2.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilSuccess2.IsolatedPrerenderOriginCheck",
+      11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, TimeUntilFailure) {
@@ -535,9 +555,10 @@ TEST_F(AvailabilityProberTest, TimeUntilFailure) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilSuccess2.Litepages", 0);
+      "Availability.Prober.TimeUntilSuccess2.IsolatedPrerenderOriginCheck", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilFailure2.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilFailure2.IsolatedPrerenderOriginCheck",
+      11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, RandomGUID) {
@@ -575,9 +596,9 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
   EXPECT_TRUE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 1);
-  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
-                                    0);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", 0);
 
   // First retry.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -589,9 +610,9 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
   EXPECT_TRUE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 2);
-  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
-                                    0);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 2);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", 0);
 
   // Second retry should be another 1000ms later and be the final one.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -603,15 +624,18 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 3);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 3);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", false, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_FAILED), 3);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_FAILED), 3);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.NumAttemptsBeforeSuccess.Litepages", 0);
+      "Availability.Prober.NumAttemptsBeforeSuccess."
+      "IsolatedPrerenderOriginCheck",
+      0);
 }
 
 TEST_F(AvailabilityProberTest, RetryThenSucceed) {
@@ -632,9 +656,9 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
   EXPECT_TRUE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 1);
-  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
-                                    0);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", 0);
 
   // First retry.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -646,9 +670,9 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
   EXPECT_TRUE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 2);
-  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
-                                    0);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 2);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", 0);
 
   // Second retry should be another 1000ms later and be the final one.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -659,22 +683,27 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     false, 2);
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 2);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.FinalState.Litepages", true, 1);
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.NumAttemptsBeforeSuccess.Litepages", 3, 1);
+      "Availability.Prober.NumAttemptsBeforeSuccess."
+      "IsolatedPrerenderOriginCheck",
+      3, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
-  histogram_tester.ExpectBucketCount("Availability.Prober.NetError.Litepages",
-                                     std::abs(net::ERR_FAILED), 2);
-  histogram_tester.ExpectBucketCount("Availability.Prober.NetError.Litepages",
-                                     std::abs(net::OK), 1);
-  histogram_tester.ExpectTotalCount("Availability.Prober.NetError.Litepages",
-                                    3);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck",
+      net::HTTP_OK, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_FAILED), 2);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::OK), 1);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck", 3);
 }
 
 TEST_F(AvailabilityProberTest, RetryExponential) {
@@ -713,11 +742,12 @@ TEST_F(AvailabilityProberTest, RetryExponential) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 3);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 3);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_FAILED), 3);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_FAILED), 3);
 }
 
 TEST_F(AvailabilityProberTest, TimeoutLinear) {
@@ -757,11 +787,12 @@ TEST_F(AvailabilityProberTest, TimeoutLinear) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 2);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 2);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_TIMED_OUT), 2);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_TIMED_OUT), 2);
 }
 
 TEST_F(AvailabilityProberTest, TimeoutExponential) {
@@ -801,11 +832,12 @@ TEST_F(AvailabilityProberTest, TimeoutExponential) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.Litepages", false, 2);
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 2);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.ResponseCode.Litepages", 0);
-  histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
-                                      std::abs(net::ERR_TIMED_OUT), 2);
+      "Availability.Prober.ResponseCode.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.NetError.IsolatedPrerenderOriginCheck",
+      std::abs(net::ERR_TIMED_OUT), 2);
 }
 
 TEST_F(AvailabilityProberTest, DelegateStopsFirstProbe) {
@@ -827,10 +859,10 @@ TEST_F(AvailabilityProberTest, DelegateStopsFirstProbe) {
   EXPECT_FALSE(prober->is_active());
   VerifyNoRequests();
 
-  histogram_tester.ExpectTotalCount("Availability.Prober.DidSucceed.Litepages",
-                                    0);
-  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
-                                    0);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", 0);
+  histogram_tester.ExpectTotalCount(
+      "Availability.Prober.FinalState.IsolatedPrerenderOriginCheck", 0);
 }
 
 TEST_F(AvailabilityProberTest, DelegateStopsRetries) {
@@ -875,17 +907,17 @@ TEST_F(AvailabilityProberTest, CacheEntryAge) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.CacheEntryAge.Litepages", 0, 1);
+      "Availability.Prober.CacheEntryAge.IsolatedPrerenderOriginCheck", 0, 1);
 
   FastForward(base::TimeDelta::FromHours(24));
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
 
   histogram_tester.ExpectBucketCount(
-      "Availability.Prober.CacheEntryAge.Litepages", 0, 1);
+      "Availability.Prober.CacheEntryAge.IsolatedPrerenderOriginCheck", 0, 1);
   histogram_tester.ExpectBucketCount(
-      "Availability.Prober.CacheEntryAge.Litepages", 24, 1);
+      "Availability.Prober.CacheEntryAge.IsolatedPrerenderOriginCheck", 24, 1);
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.CacheEntryAge.Litepages", 2);
+      "Availability.Prober.CacheEntryAge.IsolatedPrerenderOriginCheck", 2);
 }
 
 TEST_F(AvailabilityProberTest, Repeating) {
@@ -924,12 +956,14 @@ TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileIdle) {
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+      "Availability.Prober.DidSucceed.AfterReportedFailure."
+      "IsolatedPrerenderOriginCheck",
+      true, 1);
 }
 
 TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileActive) {
@@ -952,10 +986,12 @@ TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileActive) {
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
-                                     false, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", true, 1);
+  histogram_tester.ExpectBucketCount(
+      "Availability.Prober.DidSucceed.IsolatedPrerenderOriginCheck", false, 1);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+      "Availability.Prober.DidSucceed.AfterReportedFailure."
+      "IsolatedPrerenderOriginCheck",
+      true, 1);
 }

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/resolve_node.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 using protocol::Response;
@@ -82,7 +83,7 @@ InspectorLogAgent::InspectorLogAgent(
 
 InspectorLogAgent::~InspectorLogAgent() = default;
 
-void InspectorLogAgent::Trace(blink::Visitor* visitor) {
+void InspectorLogAgent::Trace(Visitor* visitor) {
   visitor->Trace(storage_);
   visitor->Trace(performance_monitor_);
   InspectorBaseAgent::Trace(visitor);
@@ -182,24 +183,24 @@ void InspectorLogAgent::InnerEnable() {
 
 Response InspectorLogAgent::enable() {
   if (enabled_.Get())
-    return Response::OK();
+    return Response::Success();
   enabled_.Set(true);
   InnerEnable();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorLogAgent::disable() {
   if (!enabled_.Get())
-    return Response::OK();
+    return Response::Success();
   enabled_.Clear();
   stopViolationsReport();
   instrumenting_agents_->RemoveInspectorLogAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorLogAgent::clear() {
   storage_->Clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 static PerformanceMonitor::Violation ParseViolation(const String& name) {
@@ -223,9 +224,11 @@ static PerformanceMonitor::Violation ParseViolation(const String& name) {
 Response InspectorLogAgent::startViolationsReport(
     std::unique_ptr<protocol::Array<ViolationSetting>> settings) {
   if (!enabled_.Get())
-    return Response::Error("Log is not enabled");
-  if (!performance_monitor_)
-    return Response::Error("Violations are not supported for this target");
+    return Response::ServerError("Log is not enabled");
+  if (!performance_monitor_) {
+    return Response::ServerError(
+        "Violations are not supported for this target");
+  }
   performance_monitor_->UnsubscribeAll(this);
   violation_thresholds_.Clear();
   for (const std::unique_ptr<ViolationSetting>& setting : *settings) {
@@ -238,22 +241,24 @@ Response InspectorLogAgent::startViolationsReport(
         violation, base::TimeDelta::FromMillisecondsD(threshold), this);
     violation_thresholds_.Set(name, threshold);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorLogAgent::stopViolationsReport() {
   violation_thresholds_.Clear();
-  if (!performance_monitor_)
-    return Response::Error("Violations are not supported for this target");
+  if (!performance_monitor_) {
+    return Response::ServerError(
+        "Violations are not supported for this target");
+  }
   performance_monitor_->UnsubscribeAll(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorLogAgent::ReportLongLayout(base::TimeDelta duration) {
   String message_text = String::Format(
       "Forced reflow while executing JavaScript took %" PRId64 "ms",
       duration.InMilliseconds());
-  ConsoleMessage* message = ConsoleMessage::Create(
+  auto* message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kViolation,
       mojom::ConsoleMessageLevel::kVerbose, message_text);
   ConsoleMessageAdded(message);
@@ -263,7 +268,7 @@ void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                base::TimeDelta time,
                                                SourceLocation* location) {
-  ConsoleMessage* message = ConsoleMessage::Create(
+  auto* message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kViolation,
       mojom::ConsoleMessageLevel::kVerbose, text, location->Clone());
   ConsoleMessageAdded(message);

@@ -4,6 +4,7 @@
 
 import unittest
 
+from tracing.proto import histogram_proto
 from tracing.value import histogram_deserializer
 from tracing.value import histogram_serializer
 from tracing.value.diagnostics import diagnostic
@@ -117,3 +118,35 @@ class GenericSetUnittest(unittest.TestCase):
     self.assertEqual(g.Serialize(s), [0, 1])
     g = generic_set.GenericSet(['a'])
     self.assertEqual(g.Serialize(s), 0)
+
+  def testFromProto(self):
+    p = histogram_proto.Pb2().GenericSet()
+    p.values.append('12345')
+    p.values.append('"string"')
+    p.values.append('{"attr":1}')
+
+    g = generic_set.GenericSet.FromProto(p)
+
+    values = list(g)
+    self.assertEqual([12345, 'string', {"attr": 1}], values)
+
+  def testProtoRoundtrip(self):
+    a_set = generic_set.GenericSet([
+        None,
+        True,
+        False,
+        0,
+        1,
+        42,
+        [],
+        {},
+        [0, False],
+        {'a': 1, 'b': True},
+    ])
+    self.assertEqual(a_set, diagnostic.Diagnostic.FromProto(a_set.AsProto()))
+
+  def testInvalidJsonValueInProto(self):
+    with self.assertRaises(TypeError):
+      p = histogram_proto.Pb2().GenericSet()
+      p.values.append('this_is_an_undefined_json_indentifier')
+      generic_set.GenericSet.FromProto(p)

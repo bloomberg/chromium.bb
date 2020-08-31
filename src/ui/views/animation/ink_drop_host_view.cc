@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
@@ -52,7 +53,9 @@ InkDropHostView::~InkDropHostView() {
 }
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  InstallInkDropMask(ink_drop_layer);
+  // If a clip is provided, use that as it is more performant than a mask.
+  if (!AddInkDropClip(ink_drop_layer))
+    InstallInkDropMask(ink_drop_layer);
   AddLayerBeneathView(ink_drop_layer);
 }
 
@@ -63,6 +66,11 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   if (destroying_)
     return;
   RemoveLayerBeneathView(ink_drop_layer);
+
+  // Remove clipping.
+  ink_drop_layer->SetClipRect(gfx::Rect());
+  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(0.f));
+
   // Layers safely handle destroying a mask layer before the masked layer.
   ink_drop_mask_.reset();
 }
@@ -153,21 +161,6 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateSquareInkDropRipple(
   return ripple;
 }
 
-std::unique_ptr<InkDropHighlight>
-InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
-                                               const gfx::Size& size) const {
-  return CreateSquareInkDropHighlight(center_point, size);
-}
-
-std::unique_ptr<InkDropHighlight> InkDropHostView::CreateSquareInkDropHighlight(
-    const gfx::PointF& center_point,
-    const gfx::Size& size) const {
-  auto highlight = std::make_unique<InkDropHighlight>(
-      size, ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor());
-  highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));
-  return highlight;
-}
-
 bool InkDropHostView::HasInkDrop() const {
   return !!ink_drop_;
 }
@@ -186,6 +179,31 @@ void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
 
 void InkDropHostView::ResetInkDropMask() {
   ink_drop_mask_.reset();
+}
+
+bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
+  base::Optional<gfx::RRectF> clipping_data =
+      HighlightPathGenerator::GetRoundRectForView(this);
+  if (!clipping_data)
+    return false;
+
+  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->rect()));
+  auto get_corner_radii =
+      [&clipping_data](gfx::RRectF::Corner corner) -> float {
+    return clipping_data.value().GetCornerRadii(corner).x();
+  };
+  gfx::RoundedCornersF rounded_corners;
+  rounded_corners.set_upper_left(
+      get_corner_radii(gfx::RRectF::Corner::kUpperLeft));
+  rounded_corners.set_upper_right(
+      get_corner_radii(gfx::RRectF::Corner::kUpperRight));
+  rounded_corners.set_lower_right(
+      get_corner_radii(gfx::RRectF::Corner::kLowerRight));
+  rounded_corners.set_lower_left(
+      get_corner_radii(gfx::RRectF::Corner::kLowerLeft));
+  ink_drop_layer->SetRoundedCornerRadius(rounded_corners);
+  ink_drop_layer->SetIsFastRoundedCorner(true);
+  return true;
 }
 
 // static

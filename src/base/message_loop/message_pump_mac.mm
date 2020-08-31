@@ -10,10 +10,12 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop/timer_slack.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -51,6 +53,9 @@ bool g_not_using_cr_app = false;
 
 // The MessagePump controlling [NSApp run].
 MessagePumpNSApplication* g_app_pump;
+
+Feature kMessagePumpTimerInvalidation{"MessagePumpMacTimerInvalidation",
+                                      FEATURE_ENABLED_BY_DEFAULT};
 
 // Various CoreFoundation definitions.
 typedef struct __CFRuntimeBase {
@@ -368,6 +373,10 @@ int MessagePumpCFRunLoopBase::GetModeMask() const {
 // uses public API to confirm that the private API changed the correct bit.
 // static
 bool MessagePumpCFRunLoopBase::CanInvalidateCFRunLoopTimers() {
+  if (!FeatureList::IsEnabled(kMessagePumpTimerInvalidation)) {
+    return false;
+  }
+
   CFRunLoopTimerContext timer_context = CFRunLoopTimerContext();
   timer_context.info = nullptr;
   ScopedCFTypeRef<CFRunLoopTimerRef> test_timer(
@@ -488,7 +497,7 @@ bool MessagePumpCFRunLoopBase::RunWork() {
   // released promptly even in the absence of UI events.
   MessagePumpScopedAutoreleasePool autorelease_pool(this);
 
-  Delegate::NextWorkInfo next_work_info = delegate_->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = delegate_->DoWork();
 
   if (next_work_info.is_immediate()) {
     CFRunLoopSourceSignal(work_source_);

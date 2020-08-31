@@ -23,8 +23,10 @@
 #include "base/values.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/message_bundle.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -35,6 +37,8 @@ namespace errors = extensions::manifest_errors;
 namespace keys = extensions::manifest_keys;
 
 namespace {
+
+bool g_allow_gzipped_messages_for_test = false;
 
 // Loads contents of the messages file for given locale. If file is not found,
 // or there was parsing error we return null and set |error|. If
@@ -54,7 +58,8 @@ std::unique_ptr<base::DictionaryValue> LoadMessageFile(
     dictionary = base::DictionaryValue::From(
         messages_deserializer.Deserialize(nullptr, error));
   } else if (gzip_permission == extension_l10n_util::GzippedMessagesPermission::
-                                    kAllowForTrustedSource) {
+                                    kAllowForTrustedSource ||
+             g_allow_gzipped_messages_for_test) {
     // If a compressed version of the file exists, load that.
     base::FilePath compressed_file_path =
         file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
@@ -75,6 +80,8 @@ std::unique_ptr<base::DictionaryValue> LoadMessageFile(
       dictionary = base::DictionaryValue::From(
           messages_deserializer.Deserialize(nullptr, error));
     }
+  } else {
+    LOG(ERROR) << "Unable to load message file: " << locale_path.AsUTF8Unsafe();
   }
 
   if (!dictionary) {
@@ -153,6 +160,26 @@ std::string LocaleForLocalization() {
 }  // namespace
 
 namespace extension_l10n_util {
+
+GzippedMessagesPermission GetGzippedMessagesPermissionForExtension(
+    const extensions::Extension* extension) {
+  return extension
+             ? GetGzippedMessagesPermissionForLocation(extension->location())
+             : GzippedMessagesPermission::kDisallow;
+}
+
+GzippedMessagesPermission GetGzippedMessagesPermissionForLocation(
+    extensions::Manifest::Location location) {
+  // Component extensions are part of the chromium or chromium OS source and
+  // as such are considered a trusted source.
+  return location == extensions::Manifest::COMPONENT
+             ? GzippedMessagesPermission::kAllowForTrustedSource
+             : GzippedMessagesPermission::kDisallow;
+}
+
+base::AutoReset<bool> AllowGzippedMessagesAllowedForTest() {
+  return base::AutoReset<bool>(&g_allow_gzipped_messages_for_test, true);
+}
 
 void SetProcessLocale(const std::string& locale) {
   GetProcessLocale() = locale;

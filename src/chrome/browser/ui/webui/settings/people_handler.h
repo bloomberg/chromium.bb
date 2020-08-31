@@ -47,13 +47,9 @@ class PeopleHandler : public SettingsPageUIHandler,
  public:
   // TODO(tommycli): Remove these strings and instead use WebUIListener events.
   // These string constants are used from JavaScript (sync_browser_proxy.js).
-  static const char kSpinnerPageStatus[];
   static const char kConfigurePageStatus[];
-  static const char kTimeoutPageStatus[];
   static const char kDonePageStatus[];
   static const char kPassphraseFailedPageStatus[];
-  // TODO(crbug.com/): Remove kSpinnerPageStatus and kTimeoutPageStatus (plus
-  // their JS-side handling); they're unused.
 
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
@@ -89,6 +85,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetup);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, NonRegisteredType);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncIndividualTypes);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
@@ -97,10 +94,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterWrongExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterBlankExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            UnrecoverableErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GaiaErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, DisplayBasicLogin);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, RestartSyncAfterDashboardClear);
@@ -113,6 +110,9 @@ class PeopleHandler : public SettingsPageUIHandler,
                            DashboardClearWhileSettingsOpen_ConfirmLater);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
                            StoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerGuestModeTest, GetStoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOffSync);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GetStoredAccountsList);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
@@ -127,10 +127,8 @@ class PeopleHandler : public SettingsPageUIHandler,
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
-#endif
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -155,10 +153,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleSetDatatypes(const base::ListValue* args);
   void HandleSetEncryption(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
-  void HandleAttemptUserExit(const base::ListValue* args);
   void HandleSyncPrefsDispatch(const base::ListValue* args);
 #if defined(OS_CHROMEOS)
-  void HandleRequestPinLoginState(const base::ListValue* args);
+  void HandleAttemptUserExit(const base::ListValue* args);
+  void HandleTurnOnSync(const base::ListValue* args);
+  void HandleTurnOffSync(const base::ListValue* args);
 #endif
 #if !defined(OS_CHROMEOS)
   void HandleStartSignin(const base::ListValue* args);
@@ -178,15 +177,9 @@ class PeopleHandler : public SettingsPageUIHandler,
       signin_metrics::AccessPoint access_point);
 #endif
 
-#if defined(OS_CHROMEOS)
-  void OnPinLoginAvailable(bool is_available);
-#endif
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandleGetStoredAccounts(const base::ListValue* args);
   void HandleStartSyncingWithEmail(const base::ListValue* args);
   base::Value GetStoredAccountsList();
-#endif
 
   // Pushes the updated sync prefs to JavaScript.
   void PushSyncPrefs();
@@ -233,9 +226,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_{this};
 
-#if defined(OS_CHROMEOS)
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PeopleHandler);
 };

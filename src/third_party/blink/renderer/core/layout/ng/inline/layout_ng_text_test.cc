@@ -47,6 +47,20 @@ class LayoutNGTextTest : public PageTestBase {
   }
 };
 
+TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendBidi) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<div dir=rtl id=target>\u05D0\u05D1\u05BC\u05D2</div>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.appendData(u"\u05D0\u05D1\u05BC\u05D2");
+
+  EXPECT_EQ(String(u"*{'\u05D0\u05D1\u05BC\u05D2\u05D0\u05D1\u05BC\u05D2', "
+                   u"ShapeResult=0+8}\n")
+                .Utf8(),
+            GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendControl) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
@@ -136,8 +150,11 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
   Text& text = To<Text>(*GetElementById("target")->firstChild());
   text.deleteData(2, 2, ASSERT_NO_EXCEPTION);  // remove "23"
 
-  EXPECT_EQ("*{'0 4', ShapeResult=0+3}\n",
-            GetItemsAsString(*text.GetLayoutObject()));
+  EXPECT_EQ(
+      "*{'0', ShapeResult=0+1}\n"
+      "*{' ', ShapeResult=1+1}\n"
+      "*{'4', ShapeResult=2+1}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
 }
 
 // http://crbug.com/1000685
@@ -149,7 +166,26 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
   Text& text = To<Text>(*GetElementById("target")->firstChild());
   text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "0"
 
-  EXPECT_EQ("*{'(xy)5', ShapeResult=0+5}\n",
+  EXPECT_EQ(
+      "*{'(', ShapeResult=0+1}\n"
+      "*{'xy', ShapeResult=1+2}\n"
+      "*{')', ShapeResult=3+1}\n"
+      "*{'5', ShapeResult=4+1}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// http://crbug.com/1039143
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithBidiControl) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  // In text content, we have bidi control codes:
+  // U+2066 U+2069 \n U+2066 abc U+2066
+  SetBodyInnerHTML(u"<pre><b id=target dir=ltr>\nabc</b></pre>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "\n"
+
+  EXPECT_EQ("LayoutText has NeedsCollectInlines",
             GetItemsAsString(*text.GetLayoutObject()));
 }
 

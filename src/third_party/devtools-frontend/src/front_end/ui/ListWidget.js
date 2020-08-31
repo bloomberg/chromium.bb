@@ -1,22 +1,34 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {Toolbar, ToolbarButton} from './Toolbar.js';
+import {createInput, createTextButton, ElementFocusRestorer} from './UIUtils.js';
+import {VBox} from './Widget.js';
+
 /**
  * @template T
  */
-export default class ListWidget extends UI.VBox {
+export class ListWidget extends VBox {
   /**
    * @param {!Delegate<T>} delegate
+   * @param {boolean=} delegatesFocus
    */
-  constructor(delegate) {
-    super(true, true /* delegatesFocus */);
+  constructor(delegate, delegatesFocus = true) {
+    super(true, delegatesFocus);
     this.registerRequiredCSS('ui/listWidget.css');
     this._delegate = delegate;
 
     this._list = this.contentElement.createChild('div', 'list');
 
     this._lastSeparator = false;
-    /** @type {?UI.ElementFocusRestorer} */
+    /** @type {?ElementFocusRestorer} */
     this._focusRestorer = null;
     /** @type {!Array<T>} */
     this._items = [];
@@ -53,7 +65,9 @@ export default class ListWidget extends UI.VBox {
    */
   appendItem(item, editable) {
     if (this._lastSeparator && this._items.length) {
-      this._list.appendChild(createElementWithClass('div', 'list-separator'));
+      const element = document.createElement('div');
+      element.classList.add('list-separator');
+      this._list.appendChild(element);
     }
     this._lastSeparator = false;
 
@@ -64,6 +78,7 @@ export default class ListWidget extends UI.VBox {
     element.appendChild(this._delegate.renderItem(item, editable));
     if (editable) {
       element.classList.add('editable');
+      element.tabIndex = 0;
       element.appendChild(this._createControls(item, element));
     }
     this._elements.push(element);
@@ -126,19 +141,21 @@ export default class ListWidget extends UI.VBox {
    * @return {!Element}
    */
   _createControls(item, element) {
-    const controls = createElementWithClass('div', 'controls-container fill');
+    const controls = document.createElement('div');
+    controls.classList.add('controls-container');
+    controls.classList.add('fill');
     controls.createChild('div', 'controls-gradient');
 
     const buttons = controls.createChild('div', 'controls-buttons');
 
-    const toolbar = new UI.Toolbar('', buttons);
+    const toolbar = new Toolbar('', buttons);
 
-    const editButton = new UI.ToolbarButton(Common.UIString('Edit'), 'largeicon-edit');
-    editButton.addEventListener(UI.ToolbarButton.Events.Click, onEditClicked.bind(this));
+    const editButton = new ToolbarButton(Common.UIString.UIString('Edit'), 'largeicon-edit');
+    editButton.addEventListener(ToolbarButton.Events.Click, onEditClicked.bind(this));
     toolbar.appendToolbarItem(editButton);
 
-    const removeButton = new UI.ToolbarButton(Common.UIString('Remove'), 'largeicon-trash-bin');
-    removeButton.addEventListener(UI.ToolbarButton.Events.Click, onRemoveClicked.bind(this));
+    const removeButton = new ToolbarButton(Common.UIString.UIString('Remove'), 'largeicon-trash-bin');
+    removeButton.addEventListener(ToolbarButton.Events.Click, onRemoveClicked.bind(this));
     toolbar.appendToolbarItem(removeButton);
 
     return controls;
@@ -193,7 +210,7 @@ export default class ListWidget extends UI.VBox {
     }
 
     this._stopEditing();
-    this._focusRestorer = new UI.ElementFocusRestorer(this.element);
+    this._focusRestorer = new ElementFocusRestorer(this.element);
 
     this._list.classList.add('list-editing');
     this._editItem = item;
@@ -207,8 +224,8 @@ export default class ListWidget extends UI.VBox {
     this._updatePlaceholder();
     this._list.insertBefore(this._editor.element, insertionPoint);
     this._editor.beginEdit(
-        item, index, element ? Common.UIString('Save') : Common.UIString('Add'), this._commitEditing.bind(this),
-        this._stopEditing.bind(this));
+        item, index, element ? Common.UIString.UIString('Save') : Common.UIString.UIString('Add'),
+        this._commitEditing.bind(this), this._stopEditing.bind(this));
   }
 
   _commitEditing() {
@@ -278,26 +295,27 @@ export class Delegate {
  */
 export class Editor {
   constructor() {
-    this.element = createElementWithClass('div', 'editor-container');
+    this.element = document.createElement('div');
+    this.element.classList.add('editor-container');
     this.element.addEventListener('keydown', onKeyDown.bind(null, isEscKey, this._cancelClicked.bind(this)), false);
     this.element.addEventListener('keydown', onKeyDown.bind(null, isEnterKey, this._commitClicked.bind(this)), false);
 
     this._contentElement = this.element.createChild('div', 'editor-content');
 
     const buttonsRow = this.element.createChild('div', 'editor-buttons');
-    this._commitButton = UI.createTextButton('', this._commitClicked.bind(this), '', true /* primary */);
+    this._commitButton = createTextButton('', this._commitClicked.bind(this), '', true /* primary */);
     buttonsRow.appendChild(this._commitButton);
-    this._cancelButton = UI.createTextButton(Common.UIString('Cancel'), this._cancelClicked.bind(this));
+    this._cancelButton = createTextButton(Common.UIString.UIString('Cancel'), this._cancelClicked.bind(this));
     this._cancelButton.addEventListener(
         'keydown', onKeyDown.bind(null, isEnterKey, this._cancelClicked.bind(this)), false);
     buttonsRow.appendChild(this._cancelButton);
 
     this._errorMessageContainer = this.element.createChild('div', 'list-widget-input-validation-error');
-    UI.ARIAUtils.markAsAlert(this._errorMessageContainer);
+    ARIAUtils.markAsAlert(this._errorMessageContainer);
 
     /**
      * @param {function(!Event):boolean} predicate
-     * @param {function()} callback
+     * @param {function():void} callback
      * @param {!Event} event
      */
     function onKeyDown(predicate, callback, event) {
@@ -311,12 +329,12 @@ export class Editor {
     this._controls = [];
     /** @type {!Map<string, !HTMLInputElement|!HTMLSelectElement>} */
     this._controlByName = new Map();
-    /** @type {!Array<function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !UI.ListWidget.ValidatorResult>} */
+    /** @type {!Array<function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !ValidatorResult>} */
     this._validators = [];
 
-    /** @type {?function()} */
+    /** @type {?function():void} */
     this._commit = null;
-    /** @type {?function()} */
+    /** @type {?function():void} */
     this._cancel = null;
     /** @type {?T} */
     this._item = null;
@@ -335,15 +353,15 @@ export class Editor {
    * @param {string} name
    * @param {string} type
    * @param {string} title
-   * @param {function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !UI.ListWidget.ValidatorResult} validator
+   * @param {function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !ValidatorResult} validator
    * @return {!HTMLInputElement}
    */
   createInput(name, type, title, validator) {
-    const input = /** @type {!HTMLInputElement} */ (UI.createInput('', type));
+    const input = /** @type {!HTMLInputElement} */ (createInput('', type));
     input.placeholder = title;
     input.addEventListener('input', this._validateControls.bind(this, false), false);
     input.addEventListener('blur', this._validateControls.bind(this, false), false);
-    UI.ARIAUtils.setAccessibleName(input, title);
+    ARIAUtils.setAccessibleName(input, title);
     this._controlByName.set(name, input);
     this._controls.push(input);
     this._validators.push(validator);
@@ -353,12 +371,13 @@ export class Editor {
   /**
    * @param {string} name
    * @param {!Array<string>} options
-   * @param {function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !UI.ListWidget.ValidatorResult} validator
+   * @param {function(!T, number, (!HTMLInputElement|!HTMLSelectElement)): !ValidatorResult} validator
    * @param {string=} title
    * @return {!HTMLSelectElement}
    */
   createSelect(name, options, validator, title) {
-    const select = /** @type {!HTMLSelectElement} */ (createElementWithClass('select', 'chrome-select'));
+    const select = /** @type {!HTMLSelectElement} */ (document.createElement('select'));
+    select.classList.add('chrome-select');
     for (let index = 0; index < options.length; ++index) {
       const option = select.createChild('option');
       option.value = options[index];
@@ -366,7 +385,7 @@ export class Editor {
     }
     if (title) {
       select.title = title;
-      UI.ARIAUtils.setAccessibleName(select, title);
+      ARIAUtils.setAccessibleName(select, title);
     }
     select.addEventListener('input', this._validateControls.bind(this, false), false);
     select.addEventListener('blur', this._validateControls.bind(this, false), false);
@@ -396,9 +415,9 @@ export class Editor {
 
       input.classList.toggle('error-input', !valid && !forceValid);
       if (valid || forceValid) {
-        UI.ARIAUtils.setInvalid(input, false);
+        ARIAUtils.setInvalid(input, false);
       } else {
-        UI.ARIAUtils.setInvalid(input, true);
+        ARIAUtils.setInvalid(input, true);
       }
 
       if (!forceValid && errorMessage && !this._errorMessageContainer.textContent) {
@@ -414,8 +433,8 @@ export class Editor {
    * @param {!T} item
    * @param {number} index
    * @param {string} commitButtonTitle
-   * @param {function()} commit
-   * @param {function()} cancel
+   * @param {function():void} commit
+   * @param {function():void} cancel
    */
   beginEdit(item, index, commitButtonTitle, commit, cancel) {
     this._commit = commit;
@@ -454,25 +473,5 @@ export class Editor {
   }
 }
 
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ListWidget = ListWidget;
-
-/**
- * @template T
- * @interface
- */
-UI.ListWidget.Delegate = Delegate;
-
-/**
- * @constructor
- */
-UI.ListWidget.Editor = Editor;
-
 /** @typedef {{valid: boolean, errorMessage: (string|undefined)}} */
-UI.ListWidget.ValidatorResult;
+export let ValidatorResult;

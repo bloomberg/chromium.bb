@@ -20,19 +20,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
-#include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/guest_os_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,6 +47,7 @@
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
@@ -57,6 +58,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
+#include "net/base/mime_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -78,6 +80,7 @@ const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
+const char kPluginVmAppTaskType[] = "pluginvm";
 const char kWebAppTaskType[] = "web";
 const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
 const char kInstallLinuxPackageHandlerId[] = "install-linux-package";
@@ -95,6 +98,8 @@ std::string TaskTypeToString(TaskType task_type) {
       return kCrostiniAppTaskType;
     case TASK_TYPE_WEB_APP:
       return kWebAppTaskType;
+    case TASK_TYPE_PLUGIN_VM_APP:
+      return kPluginVmAppTaskType;
     case TASK_TYPE_UNKNOWN:
     case DEPRECATED_TASK_TYPE_DRIVE_APP:
     case NUM_TASK_TYPE:
@@ -116,6 +121,8 @@ TaskType StringToTaskType(const std::string& str) {
     return TASK_TYPE_CROSTINI_APP;
   if (str == kWebAppTaskType)
     return TASK_TYPE_WEB_APP;
+  if (str == kPluginVmAppTaskType)
+    return TASK_TYPE_PLUGIN_VM_APP;
   return TASK_TYPE_UNKNOWN;
 }
 
@@ -154,6 +161,80 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
   tasks->swap(filtered);
 }
 
+// Adjusts |tasks| to reflect the product decision that chrome://media-app
+// should behave more like a user-installed app than a fallback handler.
+// Specifically, only apps set as the default in user prefs should be preferred
+// over chrome://media-app.
+// Until the Gallery app is removed, this function will also hide the Gallery
+// task in cases where choosing it would instead launch chrome://media-app due
+// to interception done in executeTask to support the "camera roll" function,
+// when the MediaApp feature is enabled. If the feature is not enabled, there
+// will be no MediaApp task and this function does nothing.
+void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
+                            std::vector<FullTaskDescriptor>* tasks) {
+  const auto task_for_app = [&](const std::string& app_id) {
+    return std::find_if(tasks->begin(), tasks->end(), [&](const auto& task) {
+      return task.task_descriptor().app_id == app_id;
+    });
+  };
+
+  const auto media_app_task =
+      task_for_app(chromeos::default_web_apps::kMediaAppId);
+  if (media_app_task == tasks->end())
+    return;
+
+  // TODO(crbug/1030935): Once Media app supports RAW files, delete the
+  // IsRawImage early exit. This is necessary while Gallery is still the
+  // better option for RAW files. The any_non_image check can be removed once
+  // video player functionality of the Media App is fully polished.
+  bool any_non_image = false;
+  for (const auto& entry : entries) {
+    if (IsRawImage(entry.path)) {
+      tasks->erase(media_app_task);
+      return;  // Let Gallery handle it.
+    }
+
+    any_non_image =
+        any_non_image || !net::MatchesMimeType("image/*", entry.mime_type);
+  }
+
+  const auto gallery_task = task_for_app(kGalleryAppId);
+  if (any_non_image) {
+    // Remove the gallery app (if it was found), but don't re-order prefs.
+    // Picking it would launch Media App due to executeTask interception, but we
+    // should still prefer the Video Player app over Media App.
+    if (gallery_task != tasks->end())
+      tasks->erase(gallery_task);  // Note: invalidates iterators.
+    return;
+  }
+
+  // Due to https://crbug.com/1071289, configuring extension matches in SWA
+  // manifests has no effect on is_file_extension_match(), which means a non-
+  // "fallback" web app (i.e. a built-in app) can never be an automatic default.
+  // Fallback handlers are never preferred over extension-matched handlers, so
+  // we must instead pretend that the media app has an extension match.
+  // Note this must be done after the any_non_image check to ensure the video
+  // player app gets preference as "default".
+
+  // First DCHECK to see if the hack can be removed.
+  DCHECK(!media_app_task->is_file_extension_match());
+  media_app_task->set_is_file_extension_match(true);
+
+  // The logic in ChooseAndSetDefaultTask() also requires the following to hold.
+  // This should only fail if the media app is configured for "*" (e.g. like
+  // Zip Archiver). "image/*" does not count as "generic".
+  DCHECK(!media_app_task->is_generic_file_handler());
+
+  // Otherwise, build a new list with Media App at the front, and no Gallery.
+  std::vector<FullTaskDescriptor> new_tasks;
+  new_tasks.push_back(*media_app_task);
+  for (auto it = tasks->begin(); it != tasks->end(); ++it) {
+    if (it != media_app_task && it != gallery_task)
+      new_tasks.push_back(std::move(*it));
+  }
+  std::swap(*tasks, new_tasks);
+}
+
 // Returns true if the given task is a handler by built-in apps like the Files
 // app itself or QuickOffice etc. They are used as the initial default app.
 bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
@@ -165,7 +246,12 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
     return false;
   }
 
-  const char* const kBuiltInApps[] = {
+  // Note that chromeos::default_web_apps::kMediaAppId does not appear in the
+  // list of built-in apps below. Doing so would mean the presence of any other
+  // handler of image files (e.g. Keep, Photos) would take precedence. But we
+  // want that only to occur if the user has explicitly set the preference for
+  // an app other than kMediaAppId to be the default (b/153387960).
+  constexpr const char* kBuiltInApps[] = {
       kFileManagerAppId,
       kVideoPlayerAppId,
       kGalleryAppId,
@@ -175,12 +261,7 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
       extension_misc::kQuickOfficeInternalExtensionId,
       extension_misc::kQuickOfficeExtensionId};
 
-  for (size_t i = 0; i < base::size(kBuiltInApps); ++i) {
-    if (task.task_descriptor().app_id == kBuiltInApps[i]) {
-      return true;
-    }
-  }
-  return false;
+  return base::Contains(kBuiltInApps, task.task_descriptor().app_id);
 }
 
 // Gets the profile in which a file task owned by |extension| should be
@@ -228,6 +309,8 @@ void PostProcessFoundTasks(
     disabled_actions.emplace("view-swf");
   if (!disabled_actions.empty())
     RemoveFileManagerInternalActions(disabled_actions, result_list.get());
+
+  AdjustTasksForMediaApp(entries, result_list.get());
 
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
@@ -425,9 +508,10 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (task.task_type == TASK_TYPE_CROSTINI_APP) {
-    DCHECK_EQ(kCrostiniAppActionID, task.action_id);
-    ExecuteCrostiniTask(profile, task, file_urls, std::move(done));
+  if (task.task_type == TASK_TYPE_CROSTINI_APP ||
+      task.task_type == TASK_TYPE_PLUGIN_VM_APP) {
+    DCHECK_EQ(kGuestOsAppActionID, task.action_id);
+    ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
     return true;
   }
 
@@ -501,6 +585,41 @@ bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
   // If text/* file handler matches with unsupported text mime type, we don't
   // regard it as good match.
   if (file_handler_info.types.count("text/*")) {
+    for (const auto& entry : entries) {
+      if (blink::IsUnsupportedTextMimeType(entry.mime_type))
+        return false;
+    }
+  }
+
+  // We consider it a good match if no directories are selected.
+  for (const auto& entry : entries) {
+    if (entry.is_directory)
+      return false;
+  }
+  return true;
+}
+
+bool IsGoodMatchAppsFileHandler(
+    const apps::FileHandler& file_handler,
+    const std::vector<extensions::EntryInfo>& entries) {
+  // TODO(crbug.com/938103): Duplicates functionality from
+  // FileHandlerManager::GetMimeTypesFromFileHandlers and
+  // ::GetFileExtensionsFromFileHandlers.
+  std::set<std::string> mime_types;
+  std::set<std::string> file_extensions;
+  for (const auto& accept_entry : file_handler.accept) {
+    mime_types.insert(accept_entry.mime_type);
+    file_extensions.insert(accept_entry.file_extensions.begin(),
+                           accept_entry.file_extensions.end());
+  }
+
+  if (mime_types.count("*") || mime_types.count("*/*") ||
+      file_extensions.count("*"))
+    return false;
+
+  // If a "text/*" file handler matches with an unsupported text MIME type, we
+  // don't regard it as a good match.
+  if (mime_types.count("text/*")) {
     for (const auto& entry : entries) {
       if (blink::IsUnsupportedTextMimeType(entry.mime_type))
         return false;
@@ -669,12 +788,11 @@ void FindExtensionAndAppTasks(
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // 5. Find and append Crostini tasks.
-  FindCrostiniTasks(
-      profile, entries, result_list_ptr,
-      // Done. Apply post-filtering and callback.
-      base::BindOnce(PostProcessFoundTasks, profile, entries,
-                     std::move(callback), std::move(result_list)));
+  // 5. Find and append Guest OS tasks.
+  FindGuestOsTasks(profile, entries, result_list_ptr,
+                   // Done. Apply post-filtering and callback.
+                   base::BindOnce(PostProcessFoundTasks, profile, entries,
+                                  std::move(callback), std::move(result_list)));
 }
 
 void FindAllTypesOfTasks(Profile* profile,
@@ -739,6 +857,16 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
       return;
     }
   }
+}
+
+bool IsRawImage(const base::FilePath& path) {
+  constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
+                                            ".nrw", ".orf", ".raf", ".rw2"};
+  for (const char* extension : kRawExtensions) {
+    if (path.MatchesExtension(extension))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace file_tasks

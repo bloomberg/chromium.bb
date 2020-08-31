@@ -6,7 +6,50 @@
 
 #include <limits>
 
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+TEST(fxcrt, FXSYS_IsLowerASCII) {
+  EXPECT_TRUE(FXSYS_IsLowerASCII('a'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII(L'a'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII('b'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII(L'b'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII('y'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII(L'y'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII('z'));
+  EXPECT_TRUE(FXSYS_IsLowerASCII(L'z'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII('`'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(L'`'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII('{'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(L'{'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII('Z'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(L'Z'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII('7'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(L'7'));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(static_cast<char>(-78)));
+  EXPECT_FALSE(FXSYS_IsLowerASCII(static_cast<wchar_t>(0xb2)));
+}
+
+TEST(fxcrt, FXSYS_IsUpperASCII) {
+  EXPECT_TRUE(FXSYS_IsUpperASCII('A'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII(L'A'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII('B'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII(L'B'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII('Y'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII(L'Y'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII('Z'));
+  EXPECT_TRUE(FXSYS_IsUpperASCII(L'Z'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII('@'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(L'@'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII('['));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(L'['));
+  EXPECT_FALSE(FXSYS_IsUpperASCII('z'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(L'z'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII('7'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(L'7'));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(static_cast<char>(-78)));
+  EXPECT_FALSE(FXSYS_IsUpperASCII(static_cast<wchar_t>(0xb2)));
+}
 
 TEST(fxcrt, FXSYS_HexCharToInt) {
   EXPECT_EQ(10, FXSYS_HexCharToInt('a'));

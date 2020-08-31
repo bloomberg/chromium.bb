@@ -17,16 +17,23 @@
 #include "src/gpu/GrTextureResolveRenderTask.h"
 
 std::unique_ptr<GrRenderTargetContext> GrOnFlushResourceProvider::makeRenderTargetContext(
-        sk_sp<GrSurfaceProxy> proxy, GrColorType colorType, sk_sp<SkColorSpace> colorSpace,
-        const SkSurfaceProps* props) {
+        sk_sp<GrSurfaceProxy> proxy, GrSurfaceOrigin origin, GrColorType colorType,
+        sk_sp<SkColorSpace> colorSpace, const SkSurfaceProps* props) {
     // Since this is at flush time and these won't be allocated for us by the GrResourceAllocator
     // we have to manually ensure it is allocated here.
     if (!this->instatiateProxy(proxy.get())) {
         return nullptr;
     }
 
-    auto renderTargetContext = fDrawingMgr->makeRenderTargetContext(
-            std::move(proxy), colorType, std::move(colorSpace), props, false);
+    auto context = fDrawingMgr->getContext();
+
+    if (!proxy->asRenderTargetProxy()) {
+        return nullptr;
+    }
+
+    auto renderTargetContext = GrRenderTargetContext::Make(
+            context, colorType, std::move(colorSpace), std::move(proxy),
+            origin, props, false);
 
     if (!renderTargetContext) {
         return nullptr;
@@ -50,8 +57,7 @@ void GrOnFlushResourceProvider::addTextureResolveTask(sk_sp<GrTextureProxy> text
     }
     auto task = static_cast<GrTextureResolveRenderTask*>(fDrawingMgr->fOnFlushRenderTasks.push_back(
             sk_make_sp<GrTextureResolveRenderTask>()).get());
-    task->addProxy(GrSurfaceProxyView(textureProxy, textureProxy->origin(), GrSwizzle()),
-                   resolveFlags, *this->caps());
+    task->addProxy(std::move(textureProxy), resolveFlags, *this->caps());
     task->makeClosed(*this->caps());
 }
 
@@ -74,11 +80,9 @@ void GrOnFlushResourceProvider::processInvalidUniqueKey(const GrUniqueKey& key) 
 
 sk_sp<GrTextureProxy> GrOnFlushResourceProvider::findOrCreateProxyByUniqueKey(
         const GrUniqueKey& key,
-        GrColorType colorType,
-        GrSurfaceOrigin origin,
         UseAllocator useAllocator) {
     auto proxyProvider = fDrawingMgr->getContext()->priv().proxyProvider();
-    return proxyProvider->findOrCreateProxyByUniqueKey(key, colorType, origin, useAllocator);
+    return proxyProvider->findOrCreateProxyByUniqueKey(key, useAllocator);
 }
 
 bool GrOnFlushResourceProvider::instatiateProxy(GrSurfaceProxy* proxy) {
@@ -132,4 +136,12 @@ uint32_t GrOnFlushResourceProvider::contextID() const {
 
 const GrCaps* GrOnFlushResourceProvider::caps() const {
     return fDrawingMgr->getContext()->priv().caps();
+}
+
+GrOpMemoryPool* GrOnFlushResourceProvider::opMemoryPool() const {
+    return fDrawingMgr->getContext()->priv().opMemoryPool();
+}
+
+void GrOnFlushResourceProvider::printWarningMessage(const char* msg) const {
+    fDrawingMgr->getContext()->priv().printWarningMessage(msg);
 }

@@ -13,7 +13,12 @@ if [ "$BUILD_SYSTEM" == "cmake" ]; then
     mkdir build
     cd build
 
-    cmake .. -DMARL_BUILD_EXAMPLES=1 -DMARL_BUILD_TESTS=1 -DMARL_WARNINGS_AS_ERRORS=1
+    cmake .. -DMARL_BUILD_EXAMPLES=1 \
+             -DMARL_BUILD_TESTS=1 \
+             -DMARL_BUILD_BENCHMARKS=1 \
+             -DMARL_WARNINGS_AS_ERRORS=1 \
+             -DMARL_DEBUG_ENABLED=1
+
     make -j$(sysctl -n hw.logicalcpu)
 
     ./marl-unittests
@@ -27,7 +32,7 @@ elif [ "$BUILD_SYSTEM" == "bazel" ]; then
     sh bazel-0.29.1-installer-darwin-x86_64.sh --prefix=$BUILD_ROOT/bazel
     rm bazel-0.29.1-installer-darwin-x86_64.sh
     # Build and run
-    $BUILD_ROOT/bazel/bin/bazel test //:tests
+    $BUILD_ROOT/bazel/bin/bazel test //:tests --test_output=all
     $BUILD_ROOT/bazel/bin/bazel run //examples:fractal
     $BUILD_ROOT/bazel/bin/bazel run //examples:primes > /dev/null
 else

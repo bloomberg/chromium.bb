@@ -9,6 +9,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -37,7 +40,7 @@ class TextFinderTest : public testing::Test {
     WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
     frame_impl.ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
     frame_impl.ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     document_ = static_cast<Document*>(frame_impl.GetDocument());
     text_finder_ = &frame_impl.EnsureTextFinder();
   }
@@ -45,16 +48,27 @@ class TextFinderTest : public testing::Test {
   Document& GetDocument() const;
   TextFinder& GetTextFinder() const;
 
-  static WebFloatRect FindInPageRect(Node* start_container,
-                                     int start_offset,
-                                     Node* end_container,
-                                     int end_offset);
+  v8::Local<v8::Value> EvalJs(const std::string& script);
+
+  static gfx::RectF FindInPageRect(Node* start_container,
+                                   int start_offset,
+                                   Node* end_container,
+                                   int end_offset);
 
  private:
   frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
   Persistent<TextFinder> text_finder_;
 };
+
+v8::Local<v8::Value> TextFinderTest::EvalJs(const std::string& script) {
+  return GetDocument()
+      .GetFrame()
+      ->GetScriptController()
+      .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(script.c_str()),
+                                              KURL(),
+                                              SanitizeScriptErrors::kSanitize);
+}
 
 Document& TextFinderTest::GetDocument() const {
   return *document_;
@@ -64,19 +78,19 @@ TextFinder& TextFinderTest::GetTextFinder() const {
   return *text_finder_;
 }
 
-WebFloatRect TextFinderTest::FindInPageRect(Node* start_container,
-                                            int start_offset,
-                                            Node* end_container,
-                                            int end_offset) {
+gfx::RectF TextFinderTest::FindInPageRect(Node* start_container,
+                                          int start_offset,
+                                          Node* end_container,
+                                          int end_offset) {
   const Position start_position(start_container, start_offset);
   const Position end_position(end_container, end_offset);
   const EphemeralRange range(start_position, end_position);
-  return WebFloatRect(FindInPageRectFromRange(range));
+  return gfx::RectF(FindInPageRectFromRange(range));
 }
 
 TEST_F(TextFinderTest, FindTextSimple) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Node* text_node = GetDocument().body()->firstChild();
 
   int identifier = 0;
@@ -150,8 +164,8 @@ TEST_F(TextFinderTest, FindTextSimple) {
 }
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -170,7 +184,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
       IntSize(20, 20));
   GetDocument().GetTextAutosizer()->UpdatePageInfo();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // In case of autosizing, scale _should_ change
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
@@ -182,7 +196,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   visual_viewport.SetScale(20);
   GetDocument().GetSettings()->SetTextAutosizingEnabled(false);
   GetDocument().GetTextAutosizer()->UpdatePageInfo();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
@@ -191,8 +205,8 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
 }
 
 TEST_F(TextFinderTest, FindTextNotFound) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("Boo"));
@@ -206,15 +220,15 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 }
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot& shadow_root =
       GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("foo"));
@@ -308,8 +322,8 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -324,7 +338,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
                                             *find_options);
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
@@ -332,7 +346,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
   // Modify the document size and ensure the cached match rects are recomputed
   // to reflect the updated layout.
   GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 2000px");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
@@ -341,8 +355,8 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
-  GetDocument().body()->SetInnerHTMLFromString("XXXXFindMeYYYYfindmeZZZZ");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -361,22 +375,22 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
 
   // Only searchText2 should be highlighted.
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot& shadow_root =
       GetDocument().body()->CreateV0ShadowRootForTesting();
-  shadow_root.SetInnerHTMLFromString(
+  shadow_root.setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   Node* text_in_u_element = shadow_root.childNodes()->item(1)->firstChild();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("fOO"));
@@ -392,7 +406,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
   // so in this case the matches will be returned in the order of
   // <i> -> <u> -> <b>.
   EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(3u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_in_i_element, 0, text_in_i_element, 3),
             match_rects[0]);
@@ -403,8 +417,8 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("ab ab ab ab ab");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("ab ab ab ab ab");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -419,15 +433,15 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
                                             *find_options);
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 5), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 6, text_node, 11), match_rects[1]);
 }
 
 TEST_F(TextFinderTest, OverlappingMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("aababaa");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("aababaa");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -443,14 +457,14 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 
   // We shouldn't find overlapped matches.
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(1u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 1, text_node, 4), match_rects[0]);
 }
 
 TEST_F(TextFinderTest, SequentialMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("ababab");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("ababab");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* text_node = GetDocument().body()->firstChild();
 
@@ -465,7 +479,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
                                             *find_options);
 
   EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(3u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 2), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 2, text_node, 4), match_rects[1]);
@@ -473,8 +487,8 @@ TEST_F(TextFinderTest, SequentialMatches) {
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>XXXXFindMeYYYY</b><i></i>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -499,8 +513,8 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   // Add new text to DOM and try FindNext.
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
-  i_element->SetInnerHTMLFromString("ZZFindMe");
-  GetDocument().UpdateStyleAndLayout();
+  i_element->setInnerHTML("ZZFindMe");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame, &active_now));
@@ -519,7 +533,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
@@ -530,8 +544,8 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
-  GetDocument().body()->SetInnerHTMLFromString("<b>XXXXYYYY</b><i></i>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("<b>XXXXYYYY</b><i></i>");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
@@ -553,8 +567,8 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   // Add new text to DOM and try FindNext.
   auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
-  i_element->SetInnerHTMLFromString("ZZFindMe");
-  GetDocument().UpdateStyleAndLayout();
+  i_element->setInnerHTML("ZZFindMe");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame, &active_now));
@@ -573,7 +587,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
 
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(1u, match_rects.size());
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   EXPECT_EQ(FindInPageRect(text_in_i_element, 2, text_in_i_element, 8),
@@ -593,8 +607,8 @@ TEST_F(TextFinderTest, ScopeWithTimeouts) {
     }
   }
 
-  GetDocument().body()->SetInnerHTMLFromString(text.ToString());
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML(text.ToString());
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   int identifier = 0;
   auto find_options =
@@ -610,5 +624,97 @@ TEST_F(TextFinderTest, ScopeWithTimeouts) {
 
   EXPECT_EQ(4, GetTextFinder().TotalMatchCount());
 }
+
+TEST_F(TextFinderTest, BeforeMatchEvent) {
+  V8TestingScope v8_testing_scope;
+
+  EvalJs(R"(
+      const spacer = document.createElement('div');
+      spacer.style.height = '2000px';
+      document.body.appendChild(spacer);
+
+      const foo = document.createElement('div');
+      foo.textContent = 'foo';
+      document.body.appendChild(foo);
+      window.beforematchFiredOnFoo = false;
+      foo.addEventListener('beforematch', () => {
+        window.beforematchFiredOnFoo = true;
+      });
+
+      const bar = document.createElement('div');
+      bar.textContent = 'bar';
+      document.body.appendChild(bar);
+      window.beforematchFiredOnBar = false;
+      bar.addEventListener('beforematch', () => {
+        window.YOffsetOnBeforematch = window.pageYOffset;
+        window.beforematchFiredOnBar = true;
+      });
+      )");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  auto find_options = mojom::blink::FindOptions::New();
+  find_options->run_synchronously_for_testing = true;
+  GetTextFinder().Find(/*identifier=*/0, WebString(String("bar")),
+                       *find_options, /*wrap_within_frame=*/false);
+
+  v8::Local<v8::Value> beforematch_fired_on_foo =
+      EvalJs("window.beforematchFiredOnFoo");
+  ASSERT_TRUE(beforematch_fired_on_foo->IsBoolean());
+  EXPECT_FALSE(
+      beforematch_fired_on_foo->ToBoolean(v8::Isolate::GetCurrent())->Value());
+
+  v8::Local<v8::Value> beforematch_fired_on_bar =
+      EvalJs("window.beforematchFiredOnBar");
+  ASSERT_TRUE(beforematch_fired_on_bar->IsBoolean());
+  EXPECT_TRUE(
+      beforematch_fired_on_bar->ToBoolean(v8::Isolate::GetCurrent())->Value());
+
+  // Scrolling should occur after the beforematch event.
+  v8::Local<v8::Context> context =
+      v8_testing_scope.GetScriptState()->GetContext();
+  v8::Local<v8::Value> beforematch_y_offset =
+      EvalJs("window.YOffsetOnBeforematch");
+  ASSERT_TRUE(beforematch_y_offset->IsNumber());
+  EXPECT_TRUE(
+      beforematch_y_offset->ToNumber(context).ToLocalChecked()->Value() == 0);
+}
+
+TEST_F(TextFinderTest, BeforeMatchEventRemoveElement) {
+  V8TestingScope v8_testing_scope;
+
+  EvalJs(R"(
+      const spacer = document.createElement('div');
+      spacer.style.height = '2000px';
+      document.body.appendChild(spacer);
+
+      const foo = document.createElement('div');
+      foo.textContent = 'foo';
+      document.body.appendChild(foo);
+      window.beforematchFiredOnFoo = false;
+      foo.addEventListener('beforematch', () => {
+        foo.remove();
+        window.beforematchFiredOnFoo = true;
+      });
+      )");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  auto find_options = mojom::blink::FindOptions::New();
+  find_options->run_synchronously_for_testing = true;
+  GetTextFinder().Find(/*identifier=*/0, WebString(String("foo")),
+                       *find_options, /*wrap_within_frame=*/false);
+
+  v8::Local<v8::Value> beforematch_fired_on_foo =
+      EvalJs("window.beforematchFiredOnFoo");
+  ASSERT_TRUE(beforematch_fired_on_foo->IsBoolean());
+  EXPECT_TRUE(
+      beforematch_fired_on_foo->ToBoolean(v8::Isolate::GetCurrent())->Value());
+
+  // TODO(jarhar): Update this test to include checks for scrolling behavior
+  // once we decide what the behavior should be. Right now it is just here to
+  // make sure we avoid a renderer crash due to the detached element.
+}
+
+// TODO(jarhar): Write more tests here once we decide on a behavior here:
+// https://github.com/WICG/display-locking/issues/150
 
 }  // namespace blink

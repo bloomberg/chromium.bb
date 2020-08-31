@@ -9,7 +9,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.v4.view.ViewCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -18,6 +17,9 @@ import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;
@@ -414,7 +416,7 @@ class StyleProvider {
      * Return a {@link Drawable} with the fill and rounded corners defined on the style; returns
      * {@code null} if the background has no color defined.
      */
-    /*@Nullable*/
+    @Nullable
     Drawable createBackground() {
         return createBackgroundForFill(getBackground());
     }
@@ -423,7 +425,7 @@ class StyleProvider {
      * Return a {@link Drawable} with the fill and rounded corners defined on the style; returns
      * {@code null} if the pre load fill has no color defined.
      */
-    /*@Nullable*/
+    @Nullable
     Drawable createPreLoadFill() {
         return createBackgroundForFill(getPreLoadFill());
     }
@@ -432,7 +434,7 @@ class StyleProvider {
      * Return a {@link Drawable} with a given Fill and the rounded corners defined on the style;
      * returns {@code null} if the background has no color defined.
      */
-    /*@Nullable*/
+    @Nullable
     private Drawable createBackgroundForFill(Fill background) {
         switch (background.getFillTypeCase()) {
             case COLOR:
@@ -446,7 +448,7 @@ class StyleProvider {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

@@ -6,14 +6,10 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 
-import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import org.chromium.chrome.R;
 
@@ -39,64 +35,40 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         void onCancel();
     }
 
-    @VisibleForTesting
-    public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
-            "sync_managed_data_tag";
-
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_DESCRIPTION = "description";
-    private static final String KEY_POSITIVE_BUTTON = "positiveButton";
-    private static final String KEY_NEGATIVE_BUTTON = "negativeButton";
+    private static final String KEY_DOMAIN = "domain";
 
     private Listener mListener;
-    private boolean mListenerCalled;
 
     /**
-     * Create the dialog to show when signing in to a managed account (either through sign in or
-     * when switching accounts).
-     * @param callback Callback for result.
-     * @param fragmentManager FragmentManaged to display the dialog.
-     * @param resources Resources to load the strings.
+     * Creates {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
+     * (either through sign in or when switching accounts).
+     * @param listener Callback for result.
      * @param domain The domain of the managed account.
      */
-    public static void showSignInToManagedAccountDialog(Listener callback,
-            FragmentManager fragmentManager, Resources resources, String domain) {
-        String title = resources.getString(R.string.sign_in_managed_account);
-        String positive = resources.getString(R.string.policy_dialog_proceed);
-        String negative = resources.getString(R.string.cancel);
-        String desc = resources.getString(R.string.sign_in_managed_account_description, domain);
-        showNewInstance(title, desc, positive, negative, fragmentManager, callback);
-    }
-
-    private static void showNewInstance(String title, String description, String positiveButton,
-            String negativeButton, FragmentManager fragmentManager, Listener callback) {
-        ConfirmManagedSyncDataDialog confirmSync =
-                newInstance(title, description, positiveButton, negativeButton);
-
-        confirmSync.setListener(callback);
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(confirmSync, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
-        transaction.commitAllowingStateLoss();
-    }
-
-    private static ConfirmManagedSyncDataDialog newInstance(String title, String description,
-            String positiveButton, String negativeButton) {
-        ConfirmManagedSyncDataDialog fragment = new ConfirmManagedSyncDataDialog();
+    static ConfirmManagedSyncDataDialog create(Listener listener, String domain) {
+        ConfirmManagedSyncDataDialog dialog = new ConfirmManagedSyncDataDialog();
         Bundle args = new Bundle();
-        args.putString(KEY_TITLE, title);
-        args.putString(KEY_DESCRIPTION, description);
-        args.putString(KEY_POSITIVE_BUTTON, positiveButton);
-        args.putString(KEY_NEGATIVE_BUTTON, negativeButton);
-        fragment.setArguments(args);
-        return fragment;
+        args.putString(KEY_DOMAIN, domain);
+        dialog.setArguments(args);
+        dialog.setListener(listener);
+        return dialog;
+    }
+
+    private void setListener(Listener listener) {
+        assert listener != null;
+        mListener = listener;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        String title = getArguments().getString(KEY_TITLE);
-        String description = getArguments().getString(KEY_DESCRIPTION);
-        String positiveButton = getArguments().getString(KEY_POSITIVE_BUTTON);
-        String negativeButton = getArguments().getString(KEY_NEGATIVE_BUTTON);
+        if (mListener == null) {
+            dismiss();
+        }
+        String title = getString(R.string.sign_in_managed_account);
+        String description = getString(
+                R.string.sign_in_managed_account_description, getArguments().getString(KEY_DOMAIN));
+        String positiveButton = getString(R.string.policy_dialog_proceed);
+        String negativeButton = getString(R.string.cancel);
 
         return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(title)
@@ -104,11 +76,6 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
                 .setPositiveButton(positiveButton, this)
                 .setNegativeButton(negativeButton, this)
                 .create();
-    }
-
-    private void setListener(Listener listener) {
-        assert mListener == null;
-        mListener = listener;
     }
 
     @Override
@@ -119,15 +86,12 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
             assert which == AlertDialog.BUTTON_NEGATIVE;
             mListener.onCancel();
         }
-        mListenerCalled = true;
     }
 
     @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (!mListenerCalled) {
-            mListener.onCancel();
-        }
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        mListener.onCancel();
     }
 }
 

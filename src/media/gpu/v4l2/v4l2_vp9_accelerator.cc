@@ -184,11 +184,8 @@ V4L2VP9Accelerator::V4L2VP9Accelerator(
     : surface_handler_(surface_handler), device_(device) {
   DCHECK(surface_handler_);
 
-  struct v4l2_queryctrl query_ctrl;
-  memset(&query_ctrl, 0, sizeof(query_ctrl));
-  query_ctrl.id = V4L2_CID_MPEG_VIDEO_VP9_ENTROPY;
   device_needs_frame_context_ =
-      (device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0);
+      device_->IsCtrlExposed(V4L2_CID_MPEG_VIDEO_VP9_ENTROPY);
 
   DVLOG_IF(1, device_needs_frame_context_)
       << "Device requires frame context parsing";
@@ -209,7 +206,7 @@ bool V4L2VP9Accelerator::SubmitDecode(scoped_refptr<VP9Picture> pic,
                                       const Vp9SegmentationParams& segm_params,
                                       const Vp9LoopFilterParams& lf_params,
                                       const Vp9ReferenceFrameVector& ref_frames,
-                                      const base::Closure& done_cb) {
+                                      base::OnceClosure done_cb) {
   const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DCHECK(frame_hdr);
 
@@ -357,9 +354,9 @@ bool V4L2VP9Accelerator::SubmitDecode(scoped_refptr<VP9Picture> pic,
   }
 
   dec_surface->SetReferenceSurfaces(ref_surfaces);
-  dec_surface->SetDecodeDoneCallback(done_cb);
+  dec_surface->SetDecodeDoneCallback(std::move(done_cb));
 
-  if (!surface_handler_->SubmitSlice(dec_surface, frame_hdr->data,
+  if (!surface_handler_->SubmitSlice(dec_surface.get(), frame_hdr->data,
                                      frame_hdr->frame_size))
     return false;
 

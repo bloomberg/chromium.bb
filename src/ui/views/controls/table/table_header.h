@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/table/table_view.h"
@@ -37,6 +39,9 @@ class VIEWS_EXPORT TableHeader : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
+  void AddedToWidget() override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;

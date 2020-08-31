@@ -26,15 +26,19 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
 
   bool IsGenerationEnabled() const override;
 
-  bool ShouldCheckReuseOnLeakDetection() const override;
-
   bool IsOptedInForAccountStorage() const override;
   bool ShouldShowAccountStorageOptIn() const override;
-  void SetAccountStorageOptIn(bool opt_in) override;
+  bool ShouldShowAccountStorageReSignin() const override;
+  void OptInToAccountStorage() override;
+  void OptOutOfAccountStorageAndClearSettings() override;
+
+  bool ShouldShowPasswordStorePicker() const override;
 
   void SetDefaultPasswordStore(
       const autofill::PasswordForm::Store& store) override;
   autofill::PasswordForm::Store GetDefaultPasswordStore() const override;
+  metrics_util::PasswordAccountStorageUsageLevel
+  ComputePasswordAccountStorageUsageLevel() const override;
 
  private:
   PrefService* const pref_service_;

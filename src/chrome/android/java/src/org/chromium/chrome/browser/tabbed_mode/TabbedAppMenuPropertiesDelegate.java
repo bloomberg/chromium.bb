@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.tabbed_mode;
 import android.content.Context;
 import android.view.View;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
+import org.chromium.chrome.browser.app.appmenu.AppMenuIconRowFooter;
+import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;

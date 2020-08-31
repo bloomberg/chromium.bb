@@ -8,23 +8,32 @@
 
 from __future__ import print_function
 
+import base64
 import os
+import shutil
 import multiprocessing
+import subprocess
 
 from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gob_util
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
 
 
-NEBRASKA_SOURCE_FILE = os.path.join(constants.SOURCE_ROOT, 'src', 'platform',
-                                    'dev', 'nebraska', 'nebraska.py')
+NEBRASKA_FILENAME = 'nebraska.py'
 
 # Error msg in loading shared libraries when running python command.
 ERROR_MSG_IN_LOADING_LIB = 'error while loading shared libraries'
+
+# File copying mode.
+_RSYNC = 'rsync'
+
 
 class Error(Exception):
   """Base exception class of nebraska errors."""
@@ -54,11 +63,12 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   LOG_FILE_PATH = '/tmp/nebraska.log'
   REQUEST_LOG_FILE_PATH = '/tmp/nebraska_request_log.json'
 
-  NEBRASKA_PATH = '/usr/local/bin/nebraska.py'
+  NEBRASKA_PATH = os.path.join('/usr/local/bin', NEBRASKA_FILENAME)
 
   def __init__(self, remote_device, nebraska_bin=None,
                update_payloads_address=None, update_metadata_dir=None,
-               install_payloads_address=None, install_metadata_dir=None):
+               install_payloads_address=None, install_metadata_dir=None,
+               copy_mode=_RSYNC):
     """Initializes the nebraska wrapper.
 
     Args:
@@ -73,6 +83,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
           operations.
       install_metadata_dir: Similar to update_metadata_dir but for install
           payloads.
+      copy_mode: Mode for copying files. Must be either 'rsync' or 'scp'.
     """
     super(RemoteNebraskaWrapper, self).__init__()
 
@@ -92,6 +103,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
 
     self._port = None
     self._pid = None
+    self._copy_mode = copy_mode
 
   def _RemoteCommand(self, *args, **kwargs):
     """Runs a remote shell command.
@@ -101,12 +113,12 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       **kwargs: See remote_access.RemoteDevice documentation.
     """
     kwargs.setdefault('debug_level', logging.DEBUG)
-    return self._device.RunCommand(*args, **kwargs)
+    return self._device.run(*args, **kwargs)
 
   def _PortFileExists(self):
     """Checks whether the port file exists in the remove device or not."""
     result = self._RemoteCommand(
-        ['test', '-f', self._port_file], error_code_ok=True)
+        ['test', '-f', self._port_file], check=False)
     return result.returncode == 0
 
   def _ReadPortNumber(self):
@@ -131,11 +143,11 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       raise NebraskaStartupError('Nebraska is not alive, so not ready!')
 
     url = 'http://%s:%d/%s' % (remote_access.LOCALHOST_IP, self._port,
-                               'check_health')
+                               'health_check')
     # Running curl through SSH because the port on the device is not accessible
     # by default.
     result = self._RemoteCommand(
-        ['curl', url, '-o', '/dev/null'], error_code_ok=True)
+        ['curl', url, '-o', '/dev/null'], check=False)
     return result.returncode == 0
 
   def _WaitUntilStarted(self):
@@ -178,7 +190,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       cmd += ['--install-payloads-address', self._install_payloads_address]
 
     try:
-      self._RemoteCommand(cmd, redirect_stdout=True, combine_stdout_stderr=True)
+      self._RemoteCommand(cmd, stdout=True, stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as err:
       msg = 'Remote nebraska failed (to start): %s' % str(err)
       logging.error(msg)
@@ -187,7 +199,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   def Start(self):
     """Starts the nebraska process remotely on the remote device."""
     if self.is_alive():
-      logging.warn('Nebraska is already running, not running again.')
+      logging.warning('Nebraska is already running, not running again.')
       return
 
     self.start()
@@ -200,7 +212,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     """
     logging.debug('Stopping nebraska instance with pid %s', self._pid)
     if self.is_alive():
-      self._RemoteCommand(['kill', str(self._pid)], error_code_ok=True)
+      self._RemoteCommand(['kill', str(self._pid)], check=False)
     else:
       logging.debug('Nebraska is not running, stopping nothing!')
       return
@@ -241,7 +253,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   def PrintLog(self):
     """Print Nebraska log to stdout."""
     if self._RemoteCommand(
-        ['test', '-f', self._log_file], error_code_ok=True).returncode != 0:
+        ['test', '-f', self._log_file], check=False).returncode != 0:
       logging.error('Nebraska log file %s does not exist on the device.',
                     self._log_file)
       return
@@ -259,7 +271,8 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       target_log: The file to copy the log to from the device.
     """
     try:
-      self._device.CopyFromDevice(self._log_file, target_log)
+      self._device.CopyFromDevice(self._log_file, target_log,
+                                  mode=self._copy_mode)
     except (remote_access.RemoteAccessException,
             cros_build_lib.RunCommandError) as err:
       logging.error('Failed to copy nebraska logs from device, ignoring: %s',
@@ -279,7 +292,8 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     try:
       self._RemoteCommand(
           ['curl', request_log_url, '-o', self.REQUEST_LOG_FILE_PATH])
-      self._device.CopyFromDevice(self.REQUEST_LOG_FILE_PATH, target_log)
+      self._device.CopyFromDevice(self.REQUEST_LOG_FILE_PATH, target_log,
+                                  mode=self._copy_mode)
     except (remote_access.RemoteAccessException,
             cros_build_lib.RunCommandError) as err:
       logging.error('Failed to get requestlog from nebraska. ignoring: %s',
@@ -301,7 +315,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     # Try to capture the output from the command so we can dump it in the case
     # of errors. Note that this will not work if we were requested to redirect
     # logs to a |log_file|.
-    cmd_kwargs = {'capture_output': True, 'combine_stdout_stderr': True}
+    cmd_kwargs = {'capture_output': True, 'stderr': subprocess.STDOUT}
     cmd = ['python', self._nebraska_bin, '--help']
     logging.info('Checking if we can run nebraska on the device...')
     try:
@@ -322,3 +336,33 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
           raise NebraskaStartupError(e.result.error)
 
       raise NebraskaStartupError(str(e))
+
+  @staticmethod
+  def GetNebraskaSrcFile(source_dir):
+    """Returns path to nebraska source file.
+
+    nebraska is copied to source_dir, either from a local file or by
+    downloading from googlesource.com.
+    """
+    assert os.path.isdir(source_dir), ('%s must be a valid directory.'
+                                       % source_dir)
+
+    nebraska_path = os.path.join(source_dir, NEBRASKA_FILENAME)
+    checkout = path_util.DetermineCheckout()
+    if checkout.type == path_util.CHECKOUT_TYPE_GCLIENT:
+      # Chrome checkout. Download from googlesource.
+      nebraska_url_path = '%s/+/%s/%s?format=text' % (
+          'chromiumos/platform/dev-util', 'refs/heads/master',
+          'nebraska/nebraska.py')
+      contents_b64 = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST,
+                                       nebraska_url_path)
+      osutils.WriteFile(nebraska_path,
+                        base64.b64decode(contents_b64).decode('utf-8'))
+    else:
+      # ChromeOS checkout. Copy existing file to destination.
+      local_src = os.path.join(constants.SOURCE_ROOT, 'src', 'platform',
+                               'dev', 'nebraska', NEBRASKA_FILENAME)
+      assert os.path.isfile(local_src), "%s doesn't exist" % local_src
+      shutil.copy2(local_src, source_dir)
+
+    return nebraska_path

@@ -119,14 +119,14 @@ SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
 }
 
 // static
-OwningSerializedPacketPointer
+std::unique_ptr<SerializedPacket>
 QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
     QuicPacketCreator* creator) {
   return creator->SerializeConnectivityProbingPacket();
 }
 
 // static
-OwningSerializedPacketPointer
+std::unique_ptr<SerializedPacket>
 QuicPacketCreatorPeer::SerializePathChallengeConnectivityProbingPacket(
     QuicPacketCreator* creator,
     QuicPathFrameBuffer* payload) {
@@ -142,6 +142,16 @@ EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
 // static
 QuicFramer* QuicPacketCreatorPeer::framer(QuicPacketCreator* creator) {
   return creator->framer_;
+}
+
+// static
+std::string QuicPacketCreatorPeer::GetRetryToken(QuicPacketCreator* creator) {
+  return creator->retry_token_;
+}
+
+// static
+QuicFrames& QuicPacketCreatorPeer::QueuedFrames(QuicPacketCreator* creator) {
+  return creator->queued_frames_;
 }
 
 }  // namespace test

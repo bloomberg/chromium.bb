@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal.scroll;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObserver;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,7 +29,7 @@ public class BasicStreamScrollMonitor
 
     public BasicStreamScrollMonitor(Clock clock) {
         this.mClock = clock;
-        mScrollObservers = Collections.newSetFromMap(Collections.synchronizedMap(new HashMap<>()));
+        mScrollObservers = Collections.synchronizedSet(new HashSet<>());
     }
 
     @Override

@@ -90,11 +90,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   void Paint(const PaintInfo&) const override;
 
-  // Replaced objects often have contents to paint.
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
-    return false;
-  }
-
   // This function is public only so we can call it when computing
   // intrinsic size in LayoutNG.
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
@@ -136,8 +131,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   void ComputePositionedLogicalHeight(
       LogicalExtentComputedValues&) const override;
 
-  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
-                                     LayoutUnit& max_logical_width) const final;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final;
 
   // This function calculates the placement of the replaced contents. It takes
   // intrinsic size of the replaced contents, stretch to fit CSS content box
@@ -164,7 +158,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   }
 
  private:
-  void ComputePreferredLogicalWidths() final;
+  MinMaxSizes PreferredLogicalWidths() const final;
 
   void ComputeIntrinsicSizingInfoForReplacedContent(IntrinsicSizingInfo&) const;
   FloatSize ConstrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;

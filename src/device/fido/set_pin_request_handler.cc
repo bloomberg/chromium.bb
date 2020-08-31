@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
@@ -15,13 +15,11 @@
 namespace device {
 
 SetPINRequestHandler::SetPINRequestHandler(
-    service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     GetPINCallback get_pin_callback,
     FinishedCallback finished_callback,
     std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory)
-    : FidoRequestHandlerBase(connector,
-                             fido_discovery_factory.get(),
+    : FidoRequestHandlerBase(fido_discovery_factory.get(),
                              supported_transports),
       get_pin_callback_(std::move(get_pin_callback)),
       finished_callback_(std::move(finished_callback)),
@@ -46,10 +44,18 @@ void SetPINRequestHandler::ProvidePIN(const std::string& old_pin,
     return;
   }
 
-  state_ = State::kGetEphemeralKey;
-  authenticator_->GetEphemeralKey(base::BindOnce(
-      &SetPINRequestHandler::OnHaveEphemeralKey, weak_factory_.GetWeakPtr(),
-      std::move(old_pin), std::move(new_pin)));
+  state_ = State::kSettingPIN;
+
+  if (old_pin.empty()) {
+    authenticator_->SetPIN(
+        new_pin, base::BindOnce(&SetPINRequestHandler::OnSetPINComplete,
+                                weak_factory_.GetWeakPtr()));
+  } else {
+    authenticator_->ChangePIN(
+        old_pin, new_pin,
+        base::BindOnce(&SetPINRequestHandler::OnSetPINComplete,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void SetPINRequestHandler::DispatchRequest(FidoAuthenticator* authenticator) {
@@ -92,7 +98,7 @@ void SetPINRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
         kSupportedAndPinSet:
       state_ = State::kGettingRetries;
       CancelActiveAuthenticators(authenticator->GetId());
-      authenticator_->GetRetries(
+      authenticator_->GetPinRetries(
           base::BindOnce(&SetPINRequestHandler::OnRetriesResponse,
                          weak_factory_.GetWeakPtr()));
       break;
@@ -120,35 +126,6 @@ void SetPINRequestHandler::OnRetriesResponse(
 
   state_ = State::kWaitingForPIN;
   std::move(get_pin_callback_).Run(response->retries);
-}
-
-void SetPINRequestHandler::OnHaveEphemeralKey(
-    std::string old_pin,
-    std::string new_pin,
-    CtapDeviceResponseCode status,
-    base::Optional<pin::KeyAgreementResponse> response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  DCHECK_EQ(state_, State::kGetEphemeralKey);
-
-  if (status != CtapDeviceResponseCode::kSuccess) {
-    state_ = State::kFinished;
-    finished_callback_.Run(status);
-    return;
-  }
-
-  state_ = State::kSettingPIN;
-
-  if (old_pin.empty()) {
-    authenticator_->SetPIN(
-        new_pin, *response,
-        base::BindOnce(&SetPINRequestHandler::OnSetPINComplete,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    authenticator_->ChangePIN(
-        old_pin, new_pin, *response,
-        base::BindOnce(&SetPINRequestHandler::OnSetPINComplete,
-                       weak_factory_.GetWeakPtr()));
-  }
 }
 
 void SetPINRequestHandler::OnSetPINComplete(

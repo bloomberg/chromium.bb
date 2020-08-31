@@ -129,6 +129,8 @@ message SharePathRequest {
     PLAY_FILES = 6;
     // The user's LinuxFiles/ directory /media/fuse/crostini_<username>_terminal_penguin.
     LINUX_FILES = 7;
+    // The system fonts directory /usr/share/fonts
+    FONTS = 8;
   }
   StorageLocation storage_location = 3;
 

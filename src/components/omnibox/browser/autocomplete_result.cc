@@ -11,10 +11,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -73,11 +74,9 @@ struct MatchGURLHash {
 };
 
 // static
-size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
+size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
 #if (defined(OS_ANDROID))
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
-  if (is_zero_suggest)
-    return kDefaultMaxAutocompleteMatches;
 #elif defined(OS_IOS)  // !defined(OS_ANDROID)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
 #else                  // !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -87,6 +86,24 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
                 "kMaxAutocompletePositionValue must be larger than the largest "
                 "possible autocomplete result size.");
 
+  // If new search features are disabled, ignore the other parameters and use
+  // the default value.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return kDefaultMaxAutocompleteMatches;
+
+  // If we're interested in the zero suggest match limit, and one has been
+  // specified, return it.
+  if (input_from_omnibox_focus) {
+    size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
+        omnibox::kMaxZeroSuggestMatches,
+        OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, 0);
+    DCHECK(kMaxAutocompletePositionValue > field_trial_value);
+    if (field_trial_value > 0)
+      return field_trial_value;
+  }
+
+  //  Otherwise, i.e. if no zero suggest specific limit has been specified or
+  //  the input is not from omnibox focus, return the general max matches limit.
   size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kUIExperimentMaxAutocompleteMatches,
       OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam,
@@ -96,8 +113,9 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 }
 
 AutocompleteResult::AutocompleteResult() {
-  // Reserve space for the max number of matches we'll show.
-  matches_.reserve(GetMaxMatches());
+  // Reserve enough space for the maximum number of matches we'll show in either
+  // on-focus or prefix-suggest mode.
+  matches_.reserve(std::max(GetMaxMatches(), GetMaxMatches(true)));
 }
 
 AutocompleteResult::~AutocompleteResult() {}
@@ -145,8 +163,7 @@ void AutocompleteResult::TransferOldMatches(
   old_matches->BuildProviderToMatchesMove(&old_matches_per_provider);
   for (ProviderToMatches::iterator i = old_matches_per_provider.begin();
        i != old_matches_per_provider.end(); ++i) {
-    MergeMatchesByProvider(input.current_page_classification(), &i->second,
-                           matches_per_provider[i->first]);
+    MergeMatchesByProvider(&i->second, matches_per_provider[i->first]);
   }
 
   SortAndCull(input, template_url_service);
@@ -205,9 +222,9 @@ void AutocompleteResult::SortAndCull(
   MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
 
-  DeduplicateMatches(input.current_page_classification(), &matches_);
+  DeduplicateMatches(&matches_);
 
-  // Sort and trim to the most relevant GetMaxMatches() matches.
+  // Sort the matches.
   std::sort(matches_.begin(), matches_.end(), comparing_object);
 
   // Find the best match and rotate it to the front to become the default match.
@@ -238,17 +255,20 @@ void AutocompleteResult::SortAndCull(
     DiscourageTopMatchFromBeingSearchEntity(&matches_);
   }
 
+  // Limit URL matches per OmniboxMaxURLMatches.
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
-    LimitNumberOfURLsShown(max_url_count, comparing_object);
+    LimitNumberOfURLsShown(GetMaxMatches(input.from_omnibox_focus()),
+                           max_url_count, comparing_object);
 
+  // Limit total matches per OmniboxUIExperimentMaxAutocompleteMatches &
+  // OmniboxMaxZeroSuggestMatches.
   const size_t num_matches = CalculateNumMatches(input.from_omnibox_focus(),
                                                  matches_, comparing_object);
   matches_.resize(num_matches);
 
-  if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
-      matches_.size() > 2) {
+  if (matches_.size() > 2) {
     // Skip over default match.
     auto next = std::next(matches_.begin());
     // If it has submatches, skip them too.
@@ -294,8 +314,7 @@ void AutocompleteResult::SortAndCull(
 }
 
 void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
-  const std::string mode = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "DemoteOnDeviceSearchSuggestionsMode");
+  const std::string mode = OmniboxFieldTrial::OnDeviceHeadSuggestDemoteMode();
   if (mode != "decrease-relevances" && mode != "remove-suggestions")
     return;
 
@@ -379,6 +398,35 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
   }
   if (!pedal_suggestions.empty()) {
     AppendMatches(input, pedal_suggestions);
+  }
+}
+
+void AutocompleteResult::ConvertInSuggestionPedalMatches(
+    AutocompleteProviderClient* client) {
+  const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  // Used to ensure we keep only one Pedal of each kind.
+  std::unordered_set<OmniboxPedal*> pedals_found;
+  for (auto& match : matches_) {
+    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+      // Skip only matches that have already detected their pedal. With the
+      // button row enabled, a pedal may attach along with tab switch and
+      // associated keyword buttons.
+      if (match.pedal)
+        continue;
+    } else {
+      // Skip matches that will not show Pedal because they already
+      // have a tab match or associated keyword.  Also skip matches
+      // that have already detected their Pedal.
+      if (match.has_tab_match || match.associated_keyword || match.pedal)
+        continue;
+    }
+
+    OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
+    if (pedal) {
+      const auto result = pedals_found.insert(pedal);
+      if (result.second)
+        match.pedal = pedal;
+    }
   }
 }
 
@@ -487,23 +535,21 @@ ACMatches::const_iterator AutocompleteResult::FindTopMatch(
 ACMatches::iterator AutocompleteResult::FindTopMatch(
     const AutocompleteInput& input,
     ACMatches* matches) {
-  // The matches may be sorted by type-demoted relevance. If we want to choose
-  // the highest-relevance, allowed-to-be-default match while ignoring type
-  // demotion, as we do when IsPreserveDefaultMatchScoreEnabled is true, we need
-  // to explicitly find the highest relevance match rather than just accepting
-  // the first allowed-to-be-default match in the list.
+  // The matches may be sorted by type-demoted relevance. We want to choose the
+  // highest-relevance, allowed-to-be-default match while ignoring type demotion
+  // in order to explicitly find the highest relevance match rather than just
+  // accepting the first allowed-to-be-default match in the list.
   // The goal of this behavior is to ensure that in situations where the user
   // expects to see a commonly visited URL as the default match, the URL is not
   // suppressed by type demotion.
-  // However, even if IsPreserveDefaultMatchScoreEnabled is true, we don't care
-  // about this URL behavior when the user is using the fakebox, which is
-  // intended to work more like a search-only box. Unless the user's input is a
-  // URL in which case we still want to ensure they can get a URL as the default
-  // match.
+  // However, we don't care about this URL behavior when the user is using the
+  // fakebox/realbox, which is intended to work more like a search-only box.
+  // Unless the user's input is a URL in which case we still want to ensure they
+  // can get a URL as the default match.
   if ((input.current_page_classification() !=
-           OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS ||
-       input.type() == metrics::OmniboxInputType::URL) &&
-      OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
+           OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS &&
+       input.current_page_classification() != OmniboxEventProto::NTP_REALBOX) ||
+      input.type() == metrics::OmniboxInputType::URL) {
     auto best = matches->end();
     for (auto it = matches->begin(); it != matches->end(); ++it) {
       if (it->allowed_to_be_default_match && !it->IsSubMatch() &&
@@ -613,9 +659,7 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
-void AutocompleteResult::DeduplicateMatches(
-    metrics::OmniboxEventProto::PageClassification page_classification,
-    ACMatches* matches) {
+void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
   // Group matches by stripped URL and whether it's a calculator suggestion.
   std::unordered_map<std::pair<GURL, bool>, std::vector<ACMatches::iterator>,
                      MatchGURLHash>
@@ -705,6 +749,14 @@ AutocompleteResult::GetMatchDedupComparators() const {
   return comparators;
 }
 
+base::string16 AutocompleteResult::GetHeaderForGroupId(
+    int suggestion_group_id) const {
+  const auto& it = headers_map_.find(suggestion_group_id);
+  if (it != headers_map_.end())
+    return it->second;
+  return base::string16();
+}
+
 // static
 void AutocompleteResult::LogAsynchronousUpdateMetrics(
     const std::vector<MatchDedupComparator>& old_result,
@@ -712,11 +764,14 @@ void AutocompleteResult::LogAsynchronousUpdateMetrics(
   constexpr char kAsyncMatchChangeHistogramName[] =
       "Omnibox.MatchStability.AsyncMatchChange2";
 
+  bool any_match_changed = false;
+
   size_t min_size = std::min(old_result.size(), new_result.size());
   for (size_t i = 0; i < min_size; ++i) {
     if (old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
       base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
                                     kMaxAutocompletePositionValue);
+      any_match_changed = true;
     }
   }
 
@@ -725,7 +780,12 @@ void AutocompleteResult::LogAsynchronousUpdateMetrics(
   for (size_t i = new_result.size(); i < old_result.size(); ++i) {
     base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
                                   kMaxAutocompletePositionValue);
+    any_match_changed = true;
   }
+
+  base::UmaHistogramBoolean(
+      "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition",
+      any_match_changed);
 }
 
 // static
@@ -824,10 +884,8 @@ void AutocompleteResult::BuildProviderToMatchesMove(
     (*provider_to_matches)[match.provider].push_back(std::move(match));
 }
 
-void AutocompleteResult::MergeMatchesByProvider(
-    metrics::OmniboxEventProto::PageClassification page_classification,
-    ACMatches* old_matches,
-    const ACMatches& new_matches) {
+void AutocompleteResult::MergeMatchesByProvider(ACMatches* old_matches,
+                                                const ACMatches& new_matches) {
   if (new_matches.size() >= old_matches->size())
     return;
 
@@ -875,6 +933,7 @@ std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
 }
 
 void AutocompleteResult::LimitNumberOfURLsShown(
+    size_t max_matches,
     size_t max_url_count,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   size_t search_count = std::count_if(
@@ -885,9 +944,8 @@ void AutocompleteResult::LimitNumberOfURLsShown(
       });
   // Display more than GetMaxURLMatches() if there are no non-URL suggestions
   // to replace them. Avoid signed math.
-  if (GetMaxMatches() > search_count &&
-      GetMaxMatches() - search_count > max_url_count)
-    max_url_count = GetMaxMatches() - search_count;
+  if (max_matches > search_count && max_matches - search_count > max_url_count)
+    max_url_count = max_matches - search_count;
   size_t url_count = 0;
   // Erase URL suggestions past the count of allowed ones, or anything past
   // maximum.

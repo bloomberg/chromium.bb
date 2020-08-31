@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -84,15 +86,25 @@ class MockObserver : public UpdateClient::Observer {
 class MockActionHandler : public ActionHandler {
  public:
   MockActionHandler() = default;
+  MockActionHandler(const MockActionHandler&) = delete;
+  MockActionHandler& operator=(const MockActionHandler&) = delete;
 
   MOCK_METHOD3(Handle,
                void(const base::FilePath&, const std::string&, Callback));
 
  private:
   ~MockActionHandler() override = default;
+};
 
-  MockActionHandler(const MockActionHandler&) = delete;
-  MockActionHandler& operator=(const MockActionHandler&) = delete;
+class MockCrxStateChangeReceiver
+    : public base::RefCounted<MockCrxStateChangeReceiver> {
+ public:
+  MOCK_METHOD(void, Receive, (CrxUpdateItem));
+
+ private:
+  friend class base::RefCounted<MockCrxStateChangeReceiver>;
+
+  ~MockCrxStateChangeReceiver() = default;
 };
 
 }  // namespace
@@ -143,7 +155,7 @@ class MockPingManagerImpl : public PingManager {
 MockPingManagerImpl::MockPingManagerImpl(scoped_refptr<Configurator> config)
     : PingManager(config) {}
 
-MockPingManagerImpl::~MockPingManagerImpl() {}
+MockPingManagerImpl::~MockPingManagerImpl() = default;
 
 void MockPingManagerImpl::SendPing(const Component& component,
                                    Callback callback) {
@@ -195,11 +207,12 @@ class UpdateClientTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   base::RunLoop runloop_;
 
-  scoped_refptr<update_client::TestConfigurator> config_ =
-      base::MakeRefCounted<TestConfigurator>();
   std::unique_ptr<TestingPrefServiceSimple> pref_ =
       std::make_unique<TestingPrefServiceSimple>();
-  std::unique_ptr<update_client::PersistedData> metadata_;
+  scoped_refptr<update_client::TestConfigurator> config_ =
+      base::MakeRefCounted<TestConfigurator>(pref_.get());
+  std::unique_ptr<update_client::PersistedData> metadata_ =
+      std::make_unique<PersistedData>(pref_.get(), nullptr);
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientTest);
 };
@@ -208,11 +221,9 @@ constexpr int UpdateClientTest::kNumWorkerThreads_;
 
 UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
-  metadata_ = std::make_unique<PersistedData>(pref_.get(), nullptr);
 }
 
-UpdateClientTest::~UpdateClientTest() {
-}
+UpdateClientTest::~UpdateClientTest() = default;
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
@@ -323,20 +334,35 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
   MockObserver observer;
-  InSequence seq;
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+  }
+
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
   update_client->AddObserver(&observer);
-
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), true,
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver), true,
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
   RunThreads();
+
+  EXPECT_EQ(2u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpToDate, items[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[1].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -489,7 +515,15 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes / 2,
+                                    download_metrics.total_bytes));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -543,15 +577,49 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
                                   "abagagagagagagagagagagagagagagag")).Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "abagagagagagagagagagagagagagagag"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(9u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kChecking, items[1].state);
+  EXPECT_STREQ("abagagagagagagagagagagagagagagag", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[6].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[6].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[7].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[7].id.c_str());
+  EXPECT_EQ(ComponentState::kUpToDate, items[8].state);
+  EXPECT_STREQ("abagagagagagagagagagagagagagagag", items[8].id.c_str());
+
+  std::vector<std::tuple<int64_t, int64_t>> progress_bytes = {
+      {-1, -1},     {-1, -1},     {-1, -1},     {-1, -1}, {921, 1843},
+      {1843, 1843}, {1843, 1843}, {1843, 1843}, {-1, -1}};
+  EXPECT_EQ(items.size(), progress_bytes.size());
+  for (size_t i{0}; i != items.size(); ++i) {
+    EXPECT_EQ(items[i].downloaded_bytes, std::get<0>(progress_bytes[i]));
+    EXPECT_EQ(items[i].total_bytes, std::get<1>(progress_bytes[i]));
+  }
 
   update_client->RemoveObserver(&observer);
 }
@@ -690,7 +758,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -758,15 +828,38 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
         }));
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "abagagagagagagagagagagagagagagag"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(8u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kChecking, items[1].state);
+  EXPECT_STREQ("abagagagagagagagagagagagagagagag", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[6].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[6].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[7].state);
+  EXPECT_STREQ("abagagagagagagagagagagagagagagag", items[7].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -902,7 +995,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -955,15 +1050,36 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
         .Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(7u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[1].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[6].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[6].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -1048,15 +1164,26 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
         .Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(2u, items.size());
+  EXPECT_EQ(ComponentState::kUpdateError, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[1].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -1242,7 +1369,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1317,21 +1446,50 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
-
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(11u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kChecking, items[1].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[6].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[7].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[8].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[9].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[9].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[10].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[10].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
 
-// Tests the differential update scenario for one CRX.
+// Tests the differential update scenario for one CRX. Tests install progress
+// for differential and full updates.
 TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   class DataCallbackMock {
    public:
@@ -1340,8 +1498,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
-      static scoped_refptr<CrxInstaller> installer =
-          base::MakeRefCounted<VersionedTestInstaller>();
+      static auto installer = base::MakeRefCounted<VersionedTestInstaller>();
+      installer->set_installer_progress_samples({-1, 50, 100});
 
       ++num_calls;
 
@@ -1536,7 +1694,15 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes / 2,
+                                    download_metrics.total_bytes));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1587,6 +1753,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         .Times(AtLeast(1));
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_UPDATING,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(3);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
@@ -1598,29 +1767,101 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         .Times(AtLeast(1));
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_UPDATING,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(3);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
   }
 
   update_client->AddObserver(&observer);
-
   const std::vector<std::string> ids = {"ihfokbkgjpifnbbojhneepfflplebdkc"};
   {
+    std::vector<CrxUpdateItem> items;
+    auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+    EXPECT_CALL(*receiver, Receive(_))
+        .WillRepeatedly(
+            [&items](const CrxUpdateItem& item) { items.push_back(item); });
+
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
-                          false,
-                          base::BindOnce(&CompletionCallbackMock::Callback,
-                                         runloop.QuitClosure()));
+    update_client->Update(
+        ids, base::BindOnce(&DataCallbackMock::Callback),
+        base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+        false,
+        base::BindOnce(&CompletionCallbackMock::Callback,
+                       runloop.QuitClosure()));
     runloop.Run();
+
+    EXPECT_EQ(10u, items.size());
+    EXPECT_EQ(ComponentState::kChecking, items[0].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
+    EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[2].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[2].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[3].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[5].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[6].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[7].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[8].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[9].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[9].id.c_str());
+
+    std::vector<int> samples = {-1, -1, -1, -1, -1, -1, -1, 50, 100, 100};
+    EXPECT_EQ(items.size(), samples.size());
+    for (size_t i = 0; i != items.size(); ++i)
+      EXPECT_EQ(items[i].install_progress, samples[i]);
   }
 
   {
+    std::vector<CrxUpdateItem> items;
+    auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+    EXPECT_CALL(*receiver, Receive(_))
+        .WillRepeatedly(
+            [&items](const CrxUpdateItem& item) { items.push_back(item); });
+
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
-                          false,
-                          base::BindOnce(&CompletionCallbackMock::Callback,
-                                         runloop.QuitClosure()));
+    update_client->Update(
+        ids, base::BindOnce(&DataCallbackMock::Callback),
+        base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+        false,
+        base::BindOnce(&CompletionCallbackMock::Callback,
+                       runloop.QuitClosure()));
     runloop.Run();
+
+    EXPECT_EQ(10u, items.size());
+    EXPECT_EQ(ComponentState::kChecking, items[0].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
+    EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloadingDiff, items[2].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[2].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloadingDiff, items[3].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[3].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloadingDiff, items[4].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[5].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[6].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[7].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[8].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[9].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[9].id.c_str());
+
+    std::vector<int> samples = {-1, -1, -1, -1, -1, -1, -1, 50, 100, 100};
+    EXPECT_EQ(items.size(), samples.size());
+    for (size_t i = 0; i != items.size(); ++i)
+      EXPECT_EQ(items[i].install_progress, samples[i]);
   }
 
   update_client->RemoveObserver(&observer);
@@ -1643,13 +1884,15 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
     void Install(const base::FilePath& unpack_path,
                  const std::string& public_key,
+                 std::unique_ptr<InstallParams> /*install_params*/,
+                 ProgressCallback progress_callback,
                  Callback callback) override {
       DoInstall(unpack_path, std::move(callback));
 
       unpack_path_ = unpack_path;
       EXPECT_TRUE(base::DirectoryExists(unpack_path_));
-      base::PostTask(
-          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock()},
           base::BindOnce(std::move(callback),
                          CrxInstaller::Result(InstallError::GENERIC_ERROR)));
     }
@@ -1792,7 +2035,9 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1840,14 +2085,33 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
         .Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(6u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -1861,8 +2125,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
-      static scoped_refptr<CrxInstaller> installer =
-          base::MakeRefCounted<VersionedTestInstaller>();
+      static auto installer = base::MakeRefCounted<VersionedTestInstaller>();
 
       ++num_calls;
 
@@ -2069,7 +2332,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -2141,21 +2406,68 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   const std::vector<std::string> ids = {"ihfokbkgjpifnbbojhneepfflplebdkc"};
 
   {
+    std::vector<CrxUpdateItem> items;
+    auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+    EXPECT_CALL(*receiver, Receive(_))
+        .WillRepeatedly(
+            [&items](const CrxUpdateItem& item) { items.push_back(item); });
+
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
-                          false,
-                          base::BindOnce(&CompletionCallbackMock::Callback,
-                                         runloop.QuitClosure()));
+    update_client->Update(
+        ids, base::BindOnce(&DataCallbackMock::Callback),
+        base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+        false,
+        base::BindOnce(&CompletionCallbackMock::Callback,
+                       runloop.QuitClosure()));
     runloop.Run();
+    EXPECT_EQ(6u, items.size());
+    EXPECT_EQ(ComponentState::kChecking, items[0].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
+    EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[2].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[2].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[3].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[4].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[5].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
   }
 
   {
+    std::vector<CrxUpdateItem> items;
+    auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+    EXPECT_CALL(*receiver, Receive(_))
+        .WillRepeatedly(
+            [&items](const CrxUpdateItem& item) { items.push_back(item); });
+
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
-                          false,
-                          base::BindOnce(&CompletionCallbackMock::Callback,
-                                         runloop.QuitClosure()));
+    update_client->Update(
+        ids, base::BindOnce(&DataCallbackMock::Callback),
+        base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+        false,
+        base::BindOnce(&CompletionCallbackMock::Callback,
+                       runloop.QuitClosure()));
     runloop.Run();
+
+    EXPECT_EQ(8u, items.size());
+    EXPECT_EQ(ComponentState::kChecking, items[0].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
+    EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloadingDiff, items[2].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[2].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloadingDiff, items[3].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[3].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[4].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
+    EXPECT_EQ(ComponentState::kDownloading, items[5].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[6].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[7].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
   }
 
   update_client->RemoveObserver(&observer);
@@ -2259,32 +2571,64 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
   MockObserver observer;
-  InSequence seq;
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+  }
+
+  std::vector<CrxUpdateItem> items1;
+  auto receiver1 = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver1, Receive(_))
+      .WillRepeatedly(
+          [&items1](const CrxUpdateItem& item) { items1.push_back(item); });
+
+  std::vector<CrxUpdateItem> items2;
+  auto receiver2 = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver2, Receive(_))
+      .WillRepeatedly(
+          [&items2](const CrxUpdateItem& item) { items2.push_back(item); });
 
   update_client->AddObserver(&observer);
-
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver1),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver2),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(2u, items1.size());
+  EXPECT_EQ(ComponentState::kChecking, items1[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items1[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpToDate, items1[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items1[1].id.c_str());
+
+  EXPECT_EQ(2u, items2.size());
+  EXPECT_EQ(ComponentState::kChecking, items2[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items2[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpToDate, items2[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items2[1].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
 
-// Tests the install of one CRX.
+// Tests the install of one CRX. Tests the installer is invoked with the
+// run and arguments values of the manifest object. Tests that "pv" and "fp"
+// are persisted.
 TEST_F(UpdateClientTest, OneCrxInstall) {
   class DataCallbackMock {
    public:
@@ -2333,7 +2677,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
             <urls>
               <url codebase='http://localhost/download/'/>
             </urls>
-            <manifest version='1.0' prodversionmin='11.0.1.0'>
+            <manifest version='1.0' prodversionmin='11.0.1.0'
+              run='UpdaterSetup.exe' arguments='--arg1 --arg2'>
               <packages>
                 <package name='jebgalgnebhfojomionfpkfelancnnkf.crx'
                          hash_sha256='7ab32f071cd9b5ef8e0d7913be161f532d98b3e9f
@@ -2356,6 +2701,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
       package.hash_sha256 =
           "7ab32f071cd9b5ef8e0d7913be161f532d98b3e9fa284a7cd8059c3409ce0498";
+      package.fingerprint = "some-fingerprint";
 
       ProtocolParser::Result result;
       result.extension_id = id;
@@ -2363,6 +2709,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       result.crx_urls.push_back(GURL("http://localhost/download/"));
       result.manifest.version = "1.0";
       result.manifest.browser_min_version = "11.0.1.0";
+      result.manifest.run = "UpdaterSetup.exe";
+      result.manifest.arguments = "--arg1 --arg2";
       result.manifest.packages.push_back(package);
 
       ProtocolParser::Results results;
@@ -2411,7 +2759,9 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -2441,29 +2791,80 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+  {
+    EXPECT_FALSE(config()->GetPrefService()->FindPreference(
+        "updateclientdata.apps.jebgalgnebhfojomionfpkfelancnnkf.pv"));
+    EXPECT_FALSE(config()->GetPrefService()->FindPreference(
+        "updateclientdata.apps.jebgalgnebhfojomionfpkfelancnnkf.fp"));
+  }
 
   MockObserver observer;
-  InSequence seq;
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_FOUND,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_DOWNLOADING,
-                                "jebgalgnebhfojomionfpkfelancnnkf"))
-      .Times(AtLeast(1));
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_FOUND,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_DOWNLOADING,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(AtLeast(1));
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1)
+        .WillOnce(Invoke([update_client](Events event, const std::string& id) {
+          CrxUpdateItem update_item;
+          ASSERT_TRUE(update_client->GetCrxUpdateState(id, &update_item));
+          ASSERT_TRUE(update_item.component);
+          const auto* test_installer = static_cast<TestInstaller*>(
+              update_item.component->installer.get());
+          EXPECT_STREQ("UpdaterSetup.exe",
+                       test_installer->install_params()->run.c_str());
+          EXPECT_STREQ("--arg1 --arg2",
+                       test_installer->install_params()->arguments.c_str());
+        }));
+  }
+
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
   update_client->AddObserver(&observer);
-
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
       base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
   RunThreads();
+
+  EXPECT_EQ(6u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[4].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[5].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[5].id.c_str());
+
+  const base::DictionaryValue* dict =
+      config()->GetPrefService()->GetDictionary("updateclientdata");
+  std::string pv;
+  dict->GetString("apps.jebgalgnebhfojomionfpkfelancnnkf.pv", &pv);
+  EXPECT_STREQ("1.0", pv.c_str());
+  std::string fingerprint;
+  dict->GetString("apps.jebgalgnebhfojomionfpkfelancnnkf.fp", &fingerprint);
+  EXPECT_STREQ("some-fingerprint", fingerprint.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -2537,32 +2938,43 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
   MockObserver observer;
-  InSequence seq;
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
-                                "jebgalgnebhfojomionfpkfelancnnkf"))
-      .Times(1)
-      .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
-        // Tests that the state of the component when the CrxComponent data
-        // is not provided. In this case, the optional |item.component| instance
-        // is not present.
-        CrxUpdateItem item;
-        EXPECT_TRUE(update_client->GetCrxUpdateState(id, &item));
-        EXPECT_EQ(ComponentState::kUpdateError, item.state);
-        EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", item.id.c_str());
-        EXPECT_FALSE(item.component);
-        EXPECT_EQ(ErrorCategory::kService, item.error_category);
-        EXPECT_EQ(static_cast<int>(Error::CRX_NOT_FOUND), item.error_code);
-        EXPECT_EQ(0, item.extra_code1);
-      }));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          // Tests that the state of the component when the CrxComponent data
+          // is not provided. In this case, the optional |item.component|
+          // instance is not present.
+          CrxUpdateItem item;
+          EXPECT_TRUE(update_client->GetCrxUpdateState(id, &item));
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", item.id.c_str());
+          EXPECT_FALSE(item.component);
+          EXPECT_EQ(ErrorCategory::kService, item.error_category);
+          EXPECT_EQ(static_cast<int>(Error::CRX_NOT_FOUND), item.error_code);
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
   update_client->AddObserver(&observer);
-
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
       base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
   RunThreads();
+
+  EXPECT_EQ(1u, items.size());
+  EXPECT_EQ(ComponentState::kUpdateError, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -2676,19 +3088,38 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
                                 "jebgalgnebhfojomionfpkfelancnnkf"))
       .Times(1);
 
+  std::vector<CrxUpdateItem> items1;
+  auto receiver1 = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver1, Receive(_))
+      .WillRepeatedly(
+          [&items1](const CrxUpdateItem& item) { items1.push_back(item); });
+
+  std::vector<CrxUpdateItem> items2;
+  auto receiver2 = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver2, Receive(_))
+      .WillRepeatedly(
+          [&items2](const CrxUpdateItem& item) { items2.push_back(item); });
+
   update_client->AddObserver(&observer);
-
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
       base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver1),
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
       base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver2),
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
   RunThreads();
+
+  EXPECT_EQ(2u, items1.size());
+  EXPECT_EQ(ComponentState::kChecking, items1[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items1[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpToDate, items1[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items1[1].id.c_str());
+
+  EXPECT_TRUE(items2.empty());
 
   update_client->RemoveObserver(&observer);
 }
@@ -2707,7 +3138,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   class CompletionCallbackMock {
    public:
     static void Callback(base::OnceClosure quit_closure, Error error) {
-      DCHECK_EQ(Error::INVALID_ARGUMENT, error);
+      EXPECT_EQ(Error::INVALID_ARGUMENT, error);
       std::move(quit_closure).Run();
     }
   };
@@ -2761,7 +3192,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   const std::vector<std::string> empty_id_list;
   update_client->Update(
-      empty_id_list, base::BindOnce(&DataCallbackMock::Callback), false,
+      empty_id_list, base::BindOnce(&DataCallbackMock::Callback), {}, false,
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
 }
@@ -2803,7 +3234,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
    private:
     MockCrxDownloader() : CrxDownloader(nullptr) {}
-    ~MockCrxDownloader() override {}
+    ~MockCrxDownloader() override = default;
 
     void DoStartDownload(const GURL& url) override {}
   };
@@ -2982,7 +3413,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // The engine handles this Update call but responds with a valid
     // |retry_after_sec|, which causes subsequent calls to fail.
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
+    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback), {},
                           false,
                           base::BindOnce(&CompletionCallbackMock::Callback,
                                          runloop.QuitClosure()));
@@ -2993,7 +3424,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // This call will result in a completion callback invoked with
     // Error::ERROR_UPDATE_RETRY_LATER.
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
+    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback), {},
                           false,
                           base::BindOnce(&CompletionCallbackMock::Callback,
                                          runloop.QuitClosure()));
@@ -3005,7 +3436,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // the value of |retry_after_sec| in the completion callback.
     base::RunLoop runloop;
     update_client->Install(std::string("jebgalgnebhfojomionfpkfelancnnkf"),
-                           base::BindOnce(&DataCallbackMock::Callback),
+                           base::BindOnce(&DataCallbackMock::Callback), {},
                            base::BindOnce(&CompletionCallbackMock::Callback,
                                           runloop.QuitClosure()));
     runloop.Run();
@@ -3014,7 +3445,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
   {
     // This call succeeds.
     base::RunLoop runloop;
-    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback),
+    update_client->Update(ids, base::BindOnce(&DataCallbackMock::Callback), {},
                           false,
                           base::BindOnce(&CompletionCallbackMock::Callback,
                                          runloop.QuitClosure()));
@@ -3202,7 +3633,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    download_metrics.downloaded_bytes,
+                                    download_metrics.total_bytes));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -3272,15 +3705,40 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
         .Times(1);
   }
 
-  update_client->AddObserver(&observer);
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
+  update_client->AddObserver(&observer);
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(9u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kChecking, items[1].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[1].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[2].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[2].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[3].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[3].id.c_str());
+  EXPECT_EQ(ComponentState::kCanUpdate, items[4].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[5].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
+  EXPECT_EQ(ComponentState::kDownloading, items[6].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdating, items[7].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdated, items[8].state);
+  EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -3366,30 +3824,43 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
   MockObserver observer;
-  InSequence seq;
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf"))
-      .Times(1);
-  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
-                                "jebgalgnebhfojomionfpkfelancnnkf"))
-      .Times(1)
-      .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
-        CrxUpdateItem item;
-        EXPECT_TRUE(update_client->GetCrxUpdateState(id, &item));
-        EXPECT_EQ(ComponentState::kUpdateError, item.state);
-        EXPECT_EQ(5, static_cast<int>(item.error_category));
-        EXPECT_EQ(-1, item.error_code);
-        EXPECT_EQ(0, item.extra_code1);
-      }));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          EXPECT_TRUE(update_client->GetCrxUpdateState(id, &item));
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(5, static_cast<int>(item.error_category));
+          EXPECT_EQ(-1, item.error_code);
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+
+  std::vector<CrxUpdateItem> items;
+  auto receiver = base::MakeRefCounted<MockCrxStateChangeReceiver>();
+  EXPECT_CALL(*receiver, Receive(_))
+      .WillRepeatedly(
+          [&items](const CrxUpdateItem& item) { items.push_back(item); });
 
   update_client->AddObserver(&observer);
-
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), false,
-      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
-
+      ids, base::BindOnce(&DataCallbackMock::Callback),
+      base::BindRepeating(&MockCrxStateChangeReceiver::Receive, receiver),
+      false, base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
   RunThreads();
+
+  EXPECT_EQ(2u, items.size());
+  EXPECT_EQ(ComponentState::kChecking, items[0].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[0].id.c_str());
+  EXPECT_EQ(ComponentState::kUpdateError, items[1].state);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", items[1].id.c_str());
 
   update_client->RemoveObserver(&observer);
 }
@@ -3598,7 +4069,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
       "jebgalgnebhfojomionfpkfelancnnkf", "abagagagagagagagagagagagagagagag",
       "ihfokbkgjpifnbbojhneepfflplebdkc", "gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackMock::Callback), true,
+      ids, base::BindOnce(&DataCallbackMock::Callback), {}, true,
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
 
   RunThreads();
@@ -3788,6 +4259,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
         crx.crx_format_requirement = crx_file::VerifierFormat::CRX3;
         return std::vector<base::Optional<CrxComponent>>{crx};
       }),
+      {},
       base::BindOnce(
           [](base::OnceClosure quit_closure, Error error) {
             EXPECT_EQ(Error::NONE, error);
@@ -3951,7 +4423,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
             return std::vector<base::Optional<CrxComponent>>{crx};
           },
           unpack_path),
-      false,
+      {}, false,
       base::BindOnce(
           [](base::OnceClosure quit_closure, Error error) {
             EXPECT_EQ(Error::NONE, error);
@@ -3962,4 +4434,132 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   RunThreads();
 }
 
+// Tests that custom response attributes are visible to observers.
+TEST_F(UpdateClientTest, CustomAttributeNoUpdate) {
+  class DataCallbackMock {
+   public:
+    static std::vector<base::Optional<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      CrxComponent crx;
+      crx.name = "test_jebg";
+      crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
+      crx.version = base::Version("0.9");
+      crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX3;
+      std::vector<base::Optional<CrxComponent>> component = {crx};
+      return component;
+    }
+  };
+
+  class CompletionCallbackMock {
+   public:
+    static void Callback(base::OnceClosure quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
+      std::move(quit_closure).Run();
+    }
+  };
+
+  class MockUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        scoped_refptr<Configurator> config,
+        PersistedData* metadata) {
+      return std::make_unique<MockUpdateChecker>();
+    }
+
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+      EXPECT_TRUE(enabled_component_updates);
+      EXPECT_EQ(1u, ids_to_check.size());
+      const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
+      EXPECT_EQ(id, ids_to_check.front());
+      EXPECT_EQ(1u, components.count(id));
+
+      auto& component = components.at(id);
+
+      EXPECT_TRUE(component->is_foreground());
+
+      ProtocolParser::Result result;
+      result.extension_id = id;
+      result.status = "noupdate";
+      result.custom_attributes["_example"] = "example_value";
+
+      ProtocolParser::Results results;
+      results.list.push_back(result);
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
+    }
+  };
+
+  class MockCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
+      return std::make_unique<MockCrxDownloader>();
+    }
+
+    MockCrxDownloader() : CrxDownloader(nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class MockPingManager : public MockPingManagerImpl {
+   public:
+    explicit MockPingManager(scoped_refptr<Configurator> config)
+        : MockPingManagerImpl(config) {}
+
+   protected:
+    ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeRefCounted<MockPingManager>(config()),
+          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+
+  class Observer : public UpdateClient::Observer {
+   public:
+    explicit Observer(scoped_refptr<UpdateClient> update_client)
+        : update_client_(update_client) {}
+
+    void OnEvent(Events event, const std::string& id) override {
+      if (event != Events::COMPONENT_NOT_UPDATED)
+        return;
+      ++calls;
+      CrxUpdateItem item;
+      EXPECT_TRUE(update_client_->GetCrxUpdateState(
+          "jebgalgnebhfojomionfpkfelancnnkf", &item));
+      EXPECT_EQ("example_value", item.custom_updatecheck_data["_example"]);
+    }
+
+    int calls = 0;
+
+   private:
+    scoped_refptr<UpdateClient> update_client_;
+  };
+
+  Observer observer(update_client);
+  update_client->AddObserver(&observer);
+
+  const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
+  update_client->Update(
+      ids, base::BindOnce(&DataCallbackMock::Callback), {}, true,
+      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
+
+  RunThreads();
+
+  update_client->RemoveObserver(&observer);
+
+  EXPECT_EQ(1, observer.calls);
+}
 }  // namespace update_client

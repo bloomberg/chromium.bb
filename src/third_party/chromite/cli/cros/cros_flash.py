@@ -7,16 +7,18 @@
 
 from __future__ import print_function
 
-import os
+import sys
 
 from chromite.cli import command
 from chromite.cli import flash
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
-from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import cros_sdk_lib
 from chromite.lib import dev_server_wrapper
+from chromite.lib import path_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 @command.CommandDecorator('flash')
@@ -54,11 +56,11 @@ To update/image the device with a local image path:
   cros flash device /path/to/image.bin
 
 Examples:
-  cros flash 192.168.1.7 xbuddy://remote/x86-mario/latest-canary
-  cros flash 192.168.1.7 xbuddy://remote/x86-mario-paladin/R32-4830.0.0-rc1
-  cros flash usb:// xbuddy://remote/trybot-x86-mario-paladin/R32-5189.0.0-b100
-  cros flash usb:///dev/sde xbuddy://peppy/latest
-  cros flash file:///~/images xbuddy://peppy/latest
+  cros flash 192.168.1.7 xbuddy://remote/amd64-generic/latest-canary
+  cros flash 192.168.1.7 xbuddy://remote/amd64-generic-full/R84-13039.0.0
+  cros flash usb:// xbuddy://remote/kevin
+  cros flash usb:///dev/sde kevin/latest
+  cros flash file:///~/images kevin
 
   # For a recovery image
   cros flash usb:// xbuddy://remote/link/latest-stable/recovery
@@ -70,15 +72,24 @@ Examples:
   https://dev.chromium.org/chromium-os/build/cros-flash
 """
 
+  # Override base class property to use cache related commandline options.
+  use_caching_options = True
+
   @classmethod
   def AddParser(cls, parser):
     """Add parser arguments."""
     super(FlashCommand, cls).AddParser(parser)
-    cls.AddDeviceArgument(parser, schemes=[commandline.DEVICE_SCHEME_FILE,
-                                           commandline.DEVICE_SCHEME_SSH,
-                                           commandline.DEVICE_SCHEME_USB])
+    cls.AddDeviceArgument(
+        parser,
+        positional=True,
+        schemes=[
+            commandline.DEVICE_SCHEME_FILE,
+            commandline.DEVICE_SCHEME_SSH,
+            commandline.DEVICE_SCHEME_USB,
+        ])
     parser.add_argument(
-        'image', nargs='?', default='latest',
+        'image',
+        nargs='?',
         help='A local path or an xbuddy path: '
         'xbuddy://{local|remote}/board/version/{image_type} image_type '
         "can be: 'test', 'dev', 'base', 'recovery', or 'signed'. Note any "
@@ -128,6 +139,9 @@ Examples:
         '--clobber-stateful', action='store_true', default=False,
         help='Clobber stateful partition when performing update.')
     update.add_argument(
+        '--restore-stateful', action='store_false', dest='rootfs_update',
+        help='Restore the stateful partition. Same as --no-rootfs-update.')
+    update.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
     update.add_argument(
@@ -145,23 +159,34 @@ Examples:
         '--install', default=False, action='store_true',
         help='Install to the USB device using the base disk layout.')
 
+  def _GetDefaultVersion(self):
+    """Get default full SDK version.
+
+    For non-chrome, use 'latest'. For chrome, look up the
+    full version in the misc cache.
+    """
+    if path_util.DetermineCheckout().type != path_util.CHECKOUT_TYPE_GCLIENT:
+      return 'latest'
+
+    board = self.options.board or flash.GetDefaultBoard()
+    if not board:
+      raise flash.FlashError('Must specify board.')
+
+    full_version = cros_chrome_sdk.SDKFetcher.GetCachedFullVersion(
+        self.options.cache_dir or path_util.GetCacheDir(), board) or 'latest'
+    logging.debug('Using default version %s', full_version)
+    return full_version
+
   def Run(self):
-    """Perfrom the cros flash command."""
+    """Perform the cros flash command."""
     self.options.Freeze()
-
-    if (self.options.device.scheme == commandline.DEVICE_SCHEME_SSH and
-        not cros_build_lib.IsInsideChroot()):
-      chroot_dir = os.path.join(constants.SOURCE_ROOT,
-                                constants.DEFAULT_CHROOT_DIR)
-
-      if not cros_sdk_lib.MountChroot(chroot=chroot_dir, create=False):
-        raise Exception('Unable to find chroot.')
 
     try:
       flash.Flash(
           self.options.device,
           self.options.image,
           board=self.options.board,
+          version=self._GetDefaultVersion(),
           install=self.options.install,
           src_image_to_delta=self.options.src_image_to_delta,
           rootfs_update=self.options.rootfs_update,

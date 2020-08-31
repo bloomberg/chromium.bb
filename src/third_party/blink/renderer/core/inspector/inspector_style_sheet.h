@@ -43,6 +43,7 @@ class CSSMediaRule;
 class CSSStyleDeclaration;
 class CSSStyleRule;
 class CSSStyleSheet;
+class Document;
 class Element;
 class ExceptionState;
 class InspectorNetworkAgent;
@@ -57,14 +58,16 @@ class InspectorStyle final : public GarbageCollected<InspectorStyle> {
   InspectorStyle(CSSStyleDeclaration*,
                  CSSRuleSourceData*,
                  InspectorStyleSheetBase* parent_style_sheet);
-  ~InspectorStyle();
 
   CSSStyleDeclaration* CssStyle() { return style_.Get(); }
+  InspectorStyleSheetBase* InspectorStyleSheet() {
+    return parent_style_sheet_.Get();
+  }
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForStyle();
   bool StyleText(String* result);
   bool TextForRange(const SourceRange&, String* result);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void PopulateAllProperties(Vector<CSSPropertySourceData>& result);
@@ -86,13 +89,14 @@ class InspectorStyleSheetBase
     virtual void StyleSheetChanged(InspectorStyleSheetBase*) = 0;
   };
   virtual ~InspectorStyleSheetBase() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
   String Id() { return id_; }
 
   virtual bool SetText(const String&, ExceptionState&) = 0;
   virtual bool GetText(String* result) = 0;
   virtual String SourceMapURL() { return String(); }
+  virtual const Document* GetDocument() = 0;
 
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForStyle(
       CSSStyleDeclaration*);
@@ -122,13 +126,6 @@ class InspectorStyleSheetBase
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
  public:
-  static InspectorStyleSheet* Create(InspectorNetworkAgent*,
-                                     CSSStyleSheet* page_style_sheet,
-                                     const String& origin,
-                                     const String& document_url,
-                                     InspectorStyleSheetBase::Listener*,
-                                     InspectorResourceContainer*);
-
   InspectorStyleSheet(InspectorNetworkAgent*,
                       CSSStyleSheet* page_style_sheet,
                       const String& origin,
@@ -136,7 +133,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
                       InspectorStyleSheetBase::Listener*,
                       InspectorResourceContainer*);
   ~InspectorStyleSheet() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   String FinalURL();
   bool SetText(const String&, ExceptionState&) override;
@@ -189,6 +186,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   const CSSRuleVector& FlatRules();
   CSSRuleSourceData* SourceDataForRule(CSSRule*);
   String SourceMapURL() override;
+  const Document* GetDocument() override;
 
  protected:
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;
@@ -249,8 +247,6 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
 
 class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
  public:
-  static InspectorStyleSheetForInlineStyle* Create(Element*, Listener*);
-
   InspectorStyleSheetForInlineStyle(Element*, Listener*);
   void DidModifyElementAttribute();
   bool SetText(const String&, ExceptionState&) override;
@@ -258,7 +254,9 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
   CSSStyleDeclaration* InlineStyle();
   CSSRuleSourceData* RuleSourceData();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
+
+  const Document* GetDocument() override;
 
  protected:
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;

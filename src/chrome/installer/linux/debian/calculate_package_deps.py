@@ -31,7 +31,11 @@ arch = args.arch
 dep_filename = os.path.abspath(args.dep_filename)
 distro_check = args.distro_check
 
-cmd = ['dpkg-shlibdeps']
+script_dir = os.path.dirname(os.path.realpath(__file__))
+dpkg_shlibdeps = os.path.join(script_dir, '..', '..', '..', '..', 'third_party',
+                              'dpkg-shlibdeps', 'dpkg-shlibdeps.pl')
+
+cmd = [dpkg_shlibdeps, '--ignore-weak-undefined']
 if arch == 'x64':
   cmd.extend(['-l%s/usr/lib/x86_64-linux-gnu' % sysroot,
               '-l%s/lib/x86_64-linux-gnu' % sysroot])
@@ -64,7 +68,11 @@ if exit_code != 0:
   print 'stderr was ' + stderr
   sys.exit(1)
 
-deps_str = stdout.replace('shlibs:Depends=', '').replace('\n', '')
+SHLIBS_DEPENDS_PREFIX = 'shlibs:Depends='
+deps_str = ''
+for line in stdout.split('\n'):
+  if line.startswith(SHLIBS_DEPENDS_PREFIX):
+    deps_str = line[len(SHLIBS_DEPENDS_PREFIX):]
 deps = deps_str.split(', ')
 interval_sets = []
 if deps_str != '':

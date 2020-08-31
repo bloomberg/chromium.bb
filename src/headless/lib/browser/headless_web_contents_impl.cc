@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/security_state/content/content_utils.h"
@@ -71,7 +73,6 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   explicit Delegate(HeadlessWebContentsImpl* headless_web_contents)
       : headless_web_contents_(headless_web_contents) {}
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // Return the security style of the given |web_contents|, populating
   // |security_style_explanations| to explain why the SecurityStyle was chosen.
   blink::SecurityStyle GetSecurityStyle(
@@ -84,11 +85,9 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     return security_state::GetSecurityStyle(
         security_state::GetSecurityLevel(
             *visible_security_state.get(),
-            false /* used_policy_installed_certificate */,
-            base::BindRepeating(&content::IsOriginSecure)),
+            false /* used_policy_installed_certificate */),
         *visible_security_state.get(), security_style_explanations);
   }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   void ActivateContents(content::WebContents* contents) override {
     contents->GetRenderViewHost()->GetWidget()->Focus();
@@ -103,6 +102,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -190,8 +190,8 @@ class HeadlessWebContentsImpl::PendingFrame
       : sequence_number_(sequence_number), callback_(std::move(callback)) {}
 
   void OnFrameComplete(const viz::BeginFrameAck& ack) {
-    DCHECK_EQ(kBeginFrameSourceId, ack.source_id);
-    DCHECK_EQ(sequence_number_, ack.sequence_number);
+    DCHECK_EQ(kBeginFrameSourceId, ack.frame_id.source_id);
+    DCHECK_EQ(sequence_number_, ack.frame_id.sequence_number);
     has_damage_ = ack.has_damage;
   }
 
@@ -285,7 +285,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
           content::DevToolsAgentHost::GetOrCreateFor(web_contents_.get())),
       browser_context_(browser_context),
       render_process_host_(web_contents_->GetMainFrame()->GetProcess()) {
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if BUILDFLAG(ENABLE_PRINTING)
   HeadlessPrintManager::CreateForWebContents(web_contents_.get());
 // TODO(weili): Add support for printing OOPIFs.
 #endif
@@ -304,6 +304,10 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
+  // Defer destruction of WindowTreeHost, as it does sync mojo calls
+  // in the destructor of ui::Compositor.
+  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, std::move(window_tree_host_));
 }
 
 void HeadlessWebContentsImpl::RenderFrameCreated(
@@ -483,8 +487,8 @@ void HeadlessWebContentsImpl::BeginFrame(
 
   ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
   CHECK(compositor);
-  compositor->context_factory_private()->IssueExternalBeginFrame(
-      compositor, args, /* force= */ true,
+  compositor->IssueExternalBeginFrame(
+      args, /*force=*/true,
       base::BindOnce(&PendingFrame::OnFrameComplete, pending_frame));
 }
 

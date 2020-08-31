@@ -85,13 +85,13 @@ class ElementStyleResources {
   StyleImage* LoadPendingImage(
       ComputedStyle*,
       StylePendingImage*,
-      FetchParameters::ImageRequestOptimization,
+      FetchParameters::ImageRequestBehavior,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
-  Member<Element> element_;
+  Element* element_;
   HashSet<CSSPropertyID> pending_image_properties_;
   float device_scale_factor_;
-  Member<PseudoElement> pseudo_element_;
+  PseudoElement* pseudo_element_;
   DISALLOW_COPY_AND_ASSIGN(ElementStyleResources);
 };
 

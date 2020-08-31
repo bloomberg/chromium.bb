@@ -7,17 +7,22 @@
 #include <oleacc.h>
 #include <wrl/client.h>
 
+#include <utility>
+
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_constants.mojom.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/views/accessibility/test_list_grid_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
-using Microsoft::WRL::ComPtr;
 using base::win::ScopedBstr;
 using base::win::ScopedVariant;
+using Microsoft::WRL::ComPtr;
 
 namespace views {
 namespace test {
@@ -88,15 +93,16 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
   ScopedVariant childid_self(CHILDID_SELF);
   ASSERT_EQ(S_OK,
             textfield_accessible->get_accName(childid_self, name.Receive()));
-  EXPECT_STREQ(L"Name", static_cast<BSTR>(name));
+  EXPECT_STREQ(L"Name", name.Get());
 
   ScopedBstr value;
   ASSERT_EQ(S_OK,
             textfield_accessible->get_accValue(childid_self, value.Receive()));
-  EXPECT_STREQ(L"Value", static_cast<BSTR>(value));
+  EXPECT_STREQ(L"Value", value.Get());
 
   ScopedBstr new_value(L"New value");
-  ASSERT_EQ(S_OK, textfield_accessible->put_accValue(childid_self, new_value));
+  ASSERT_EQ(S_OK,
+            textfield_accessible->put_accValue(childid_self, new_value.Get()));
   EXPECT_STREQ(L"New value", textfield->GetText().c_str());
 }
 
@@ -131,15 +137,15 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   ScopedVariant childid_self(CHILDID_SELF);
   ASSERT_EQ(S_OK,
             textfield_accessible->get_accName(childid_self, name.Receive()));
-  ASSERT_STREQ(L"Label", name);
+  ASSERT_STREQ(L"Label", name.Get());
 
   ComPtr<IAccessible2_2> textfield_ia2;
   EXPECT_EQ(S_OK, textfield_accessible.As(&textfield_ia2));
   ScopedBstr type(IA2_RELATION_LABELLED_BY);
   IUnknown** targets;
   LONG n_targets;
-  EXPECT_EQ(S_OK, textfield_ia2->get_relationTargetsOfType(type, 0, &targets,
-                                                           &n_targets));
+  EXPECT_EQ(S_OK, textfield_ia2->get_relationTargetsOfType(
+                      type.Get(), 0, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
   ComPtr<IUnknown> label_unknown(targets[0]);
   ComPtr<IAccessible> label_accessible;
@@ -277,9 +283,9 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   // Initially, there are no alerts
   ScopedBstr alerts_bstr(L"alerts");
   IUnknown** targets;
-  long n_targets;
+  LONG n_targets;
   ASSERT_EQ(S_FALSE, root_view_accessible->get_relationTargetsOfType(
-                         alerts_bstr, 0, &targets, &n_targets));
+                         alerts_bstr.Get(), 0, &targets, &n_targets));
   ASSERT_EQ(0, n_targets);
 
   // Fire alert events on the infobars.
@@ -288,7 +294,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
 
   // Now calling get_relationTargetsOfType should retrieve the alerts.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-                      alerts_bstr, 0, &targets, &n_targets));
+                      alerts_bstr.Get(), 0, &targets, &n_targets));
   ASSERT_EQ(2, n_targets);
   ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
   ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[1]));
@@ -296,7 +302,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
 
   // If we set max_targets to 1, we should only get the first one.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-                      alerts_bstr, 1, &targets, &n_targets));
+                      alerts_bstr.Get(), 1, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
   ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
@@ -304,7 +310,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   // If we delete the first view, we should only get the second one now.
   delete infobar;
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-                      alerts_bstr, 0, &targets, &n_targets));
+                      alerts_bstr.Get(), 0, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
   ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
@@ -379,13 +385,13 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   // Name.
   ScopedBstr name;
   ASSERT_EQ(S_OK, content_accessible->get_accName(child_index, name.Receive()));
-  ASSERT_STREQ(L"Name", name);
+  ASSERT_STREQ(L"Name", name.Get());
 
   // Description.
   ScopedBstr description;
   ASSERT_EQ(S_OK, content_accessible->get_accDescription(
                       child_index, description.Receive()));
-  ASSERT_STREQ(L"Description", description);
+  ASSERT_STREQ(L"Description", description.Get());
 
   // Get the child accessible.
   ComPtr<IDispatch> alert_dispatch;
@@ -403,6 +409,83 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   ASSERT_EQ(E_INVALIDARG,
             alert_accessible->get_accChild(child_index, &child_dispatch));
   ASSERT_EQ(child_dispatch.Get(), nullptr);
+}
+
+TEST_F(ViewAXPlatformNodeDelegateWinTest, GridRowColumnCount) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(std::move(init_params));
+
+  View* content = new View;
+  widget.SetContentsView(content);
+  TestListGridView* grid = new TestListGridView();
+  content->AddChildView(grid);
+
+  Microsoft::WRL::ComPtr<IGridProvider> grid_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      grid->GetViewAccessibility().GetNativeObject()->QueryInterface(
+          __uuidof(IGridProvider), &grid_provider));
+
+  // If set, aria row/column count takes precedence over table row/column count.
+  // Expect E_UNEXPECTED if the result is kUnknownAriaColumnOrRowCount (-1) or
+  // if neither is set.
+  int row_count;
+  int column_count;
+
+  // aria row/column count = not set
+  // table row/column count = not set
+  grid->UnsetAriaTableSize();
+  grid->UnsetTableSize();
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_RowCount(&row_count));
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(0, row_count);
+  EXPECT_EQ(0, column_count);
+  // To do still: When nothing is set, currently
+  // AXPlatformNodeDelegateBase::GetTable{Row/Col}Count() returns 0 Should it
+  // return base::nullopt if the attribute is not set? Like
+  // GetTableAria{Row/Col}Count()
+  // EXPECT_EQ(E_UNEXPECTED, grid_provider->get_RowCount(&row_count));
+
+  // aria row/column count = 2
+  // table row/column count = not set
+  grid->SetAriaTableSize(2, 2);
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_RowCount(&row_count));
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(2, row_count);
+  EXPECT_EQ(2, column_count);
+
+  // aria row/column count = kUnknownAriaColumnOrRowCount
+  // table row/column count = not set
+  grid->SetAriaTableSize(ax::mojom::kUnknownAriaColumnOrRowCount,
+                         ax::mojom::kUnknownAriaColumnOrRowCount);
+  EXPECT_EQ(E_UNEXPECTED, grid_provider->get_RowCount(&row_count));
+  EXPECT_EQ(E_UNEXPECTED, grid_provider->get_ColumnCount(&column_count));
+
+  // aria row/column count = 3
+  // table row/column count = 4
+  grid->SetAriaTableSize(3, 3);
+  grid->SetTableSize(4, 4);
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_RowCount(&row_count));
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(3, row_count);
+  EXPECT_EQ(3, column_count);
+
+  // aria row/column count = not set
+  // table row/column count = 4
+  grid->UnsetAriaTableSize();
+  grid->SetTableSize(4, 4);
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_RowCount(&row_count));
+  EXPECT_HRESULT_SUCCEEDED(grid_provider->get_ColumnCount(&column_count));
+  EXPECT_EQ(4, row_count);
+  EXPECT_EQ(4, column_count);
+
+  // aria row/column count = not set
+  // table row/column count = kUnknownAriaColumnOrRowCount
+  grid->SetTableSize(ax::mojom::kUnknownAriaColumnOrRowCount,
+                     ax::mojom::kUnknownAriaColumnOrRowCount);
+  EXPECT_EQ(E_UNEXPECTED, grid_provider->get_RowCount(&row_count));
+  EXPECT_EQ(E_UNEXPECTED, grid_provider->get_ColumnCount(&column_count));
 }
 }  // namespace test
 }  // namespace views

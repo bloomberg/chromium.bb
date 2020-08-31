@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -310,8 +309,11 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
   // deadlines (6.7s or 13s) bypass the web test running deadline (6s)
   // and result in timeouts on different tests. We use
   // enforce_idle_encoding_for_test_ to test idle encoding in unit tests.
+  // We also don't use idle tasks in workers because the short idle periods are
+  // not implemented, so the idle task can take a long time even when the thread
+  // is not busy.
   bool use_idle_encoding =
-      (mime_type_ != kMimeTypeWebp) &&
+      WTF::IsMainThread() && (mime_type_ != kMimeTypeWebp) &&
       (enforce_idle_encoding_for_test_ ||
        !RuntimeEnabledFeatures::NoIdleEncodingForWebTestsEnabled());
 

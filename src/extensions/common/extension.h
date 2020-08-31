@@ -52,9 +52,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLED = 0,
     ENABLED = 1,
 
+    // DEPRECATED. External uninstallation bits are now stored directly in
+    // the ExtensionPrefs. See https://crbug.com/795026.
     // An external extension that the user uninstalled. We should not reinstall
     // such extensions on startup.
-    EXTERNAL_EXTENSION_UNINSTALLED = 2,
+    DEPRECATED_EXTERNAL_EXTENSION_UNINSTALLED = 2,
 
     // DEPRECATED: Special state for component extensions.
     // ENABLED_COMPONENT_DEPRECATED = 3,
@@ -220,11 +222,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const ExtensionId& extension_id);
 
-  // Returns true if the extension should be displayed in the extension
-  // settings page (i.e. chrome://extensions).
-  static bool ShouldDisplayInExtensionSettings(Manifest::Type type,
-                                               Manifest::Location location);
-
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 
@@ -232,15 +229,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // for displaying in a launcher or new tab page.
   bool RequiresSortOrdinal() const;
 
+  // TODO(devlin): The core Extension class shouldn't be responsible for these
+  // ShouldDisplay/ShouldExpose style functions; it doesn't know about the NTP,
+  // Management API, etc.
+
   // Returns true if the extension should be displayed in the app launcher.
   bool ShouldDisplayInAppLauncher() const;
 
   // Returns true if the extension should be displayed in the browser NTP.
   bool ShouldDisplayInNewTabPage() const;
-
-  // Returns true if the extension should be displayed in the extension
-  // settings page (i.e. chrome://extensions).
-  bool ShouldDisplayInExtensionSettings() const;
 
   // Returns true if the extension should be exposed via the chrome.management
   // API.
@@ -473,8 +470,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 };
 
 typedef std::vector<scoped_refptr<const Extension> > ExtensionList;
-typedef std::set<ExtensionId> ExtensionIdSet;
-typedef std::vector<ExtensionId> ExtensionIdList;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {
@@ -494,20 +489,6 @@ struct ExtensionInfo {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
-};
-
-// TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
-enum class UnloadedExtensionReason {
-  UNDEFINED,              // Undefined state used to initialize variables.
-  DISABLE,                // Extension is being disabled.
-  UPDATE,                 // Extension is being updated to a newer version.
-  UNINSTALL,              // Extension is being uninstalled.
-  TERMINATE,              // Extension has terminated.
-  BLACKLIST,              // Extension has been blacklisted.
-  PROFILE_SHUTDOWN,       // Profile is being shut down.
-  LOCK_ALL,               // All extensions for the profile are blocked.
-  MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component
-                          // action.
 };
 
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.

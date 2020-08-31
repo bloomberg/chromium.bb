@@ -29,39 +29,7 @@
 
 namespace blink {
 
-class FilterEffect;
 class SVGFilterElement;
-class SVGFilterGraphNodeMap;
-class SVGFilterPrimitiveStandardAttributes;
-
-class FilterData final : public GarbageCollected<FilterData> {
- public:
-  /*
-   * The state transitions should follow the following:
-   * Initial->RecordingContent->ReadyToPaint->PaintingFilter->ReadyToPaint
-   *              |     ^                       |     ^
-   *              v     |                       v     |
-   *     RecordingContentCycleDetected     PaintingFilterCycle
-   */
-  enum FilterDataState {
-    kInitial,
-    kRecordingContent,
-    kRecordingContentCycleDetected,
-    kReadyToPaint,
-    kPaintingFilter,
-    kPaintingFilterCycleDetected
-  };
-
-  FilterData() : state_(kInitial) {}
-
-  void Dispose();
-
-  void Trace(blink::Visitor*);
-
-  Member<FilterEffect> last_effect;
-  Member<SVGFilterGraphNodeMap> node_map;
-  FilterDataState state_;
-};
 
 class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
  public:
@@ -71,44 +39,27 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
   const char* GetName() const override { return "LayoutSVGResourceFilter"; }
-  bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectSVGResourceFilter ||
-           LayoutSVGResourceContainer::IsOfType(type);
-  }
 
-  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  bool RemoveClientFromCache(SVGResourceClient&) override;
+  void RemoveAllClientsFromCache() override;
 
   FloatRect ResourceBoundingBox(const FloatRect& reference_box) const;
 
   SVGUnitTypes::SVGUnitType FilterUnits() const;
   SVGUnitTypes::SVGUnitType PrimitiveUnits() const;
 
-  void PrimitiveAttributeChanged(SVGFilterPrimitiveStandardAttributes&,
-                                 const QualifiedName&);
-
   static const LayoutSVGResourceType kResourceType = kFilterResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  FilterData* GetFilterDataForClient(const SVGResourceClient* client) {
-    return filter_->at(const_cast<SVGResourceClient*>(client));
-  }
-  void SetFilterDataForClient(const SVGResourceClient* client,
-                              FilterData* filter_data) {
-    filter_->Set(const_cast<SVGResourceClient*>(client), filter_data);
-  }
-
- protected:
-  void WillBeDestroyed() override;
-
  private:
-  void DisposeFilterMap();
-
-  using FilterMap = HeapHashMap<Member<SVGResourceClient>, Member<FilterData>>;
-  Persistent<FilterMap> filter_;
+  bool FindCycleFromSelf(SVGResourcesCycleSolver&) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, IsSVGResourceFilter());
+// Get the LayoutSVGResourceFilter from the 'filter' property iff the 'filter'
+// is a single url(...) reference.
+LayoutSVGResourceFilter* GetFilterResourceForSVG(const ComputedStyle&);
+
+DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceFilter,
+                                      kFilterResourceType);
 
 }  // namespace blink
 

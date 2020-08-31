@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include "base/mac/mac_util.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
@@ -207,7 +208,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
         left.mac_key_code, 0, left.left_or_right_mask | left.non_specific_mask,
         NSFlagsChanged);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
+    EXPECT_EQ(WebInputEvent::Type::kRawKeyDown, web_event.GetType());
     // Press the right key
     mac_event =
         BuildFakeKeyEvent(right.mac_key_code, 0,
@@ -215,7 +216,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
                               left.non_specific_mask,
                           NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
+    EXPECT_EQ(WebInputEvent::Type::kRawKeyDown, web_event.GetType());
     // Release the right key
     mac_event = BuildFakeKeyEvent(
         right.mac_key_code, 0, left.left_or_right_mask | left.non_specific_mask,
@@ -223,7 +224,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
     // Release the left key
     mac_event = BuildFakeKeyEvent(left.mac_key_code, 0, 0, NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::kKeyUp, web_event.GetType());
+    EXPECT_EQ(WebInputEvent::Type::kKeyUp, web_event.GetType());
   }
 }
 
@@ -235,10 +236,10 @@ TEST(WebInputEventBuilderMacTest, MissingUndocumentedModifierFlags) {
     NSEvent* mac_event = BuildFakeKeyEvent(
         key.mac_key_code, 0, key.non_specific_mask, NSFlagsChanged);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
+    EXPECT_EQ(WebInputEvent::Type::kRawKeyDown, web_event.GetType());
     mac_event = BuildFakeKeyEvent(key.mac_key_code, 0, 0, NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::kKeyUp, web_event.GetType());
+    EXPECT_EQ(WebInputEvent::Type::kKeyUp, web_event.GetType());
   }
 }
 
@@ -665,19 +666,22 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
   EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.delta_y);
   EXPECT_EQ(web_event.delta_y, ui_event.y_offset());
 
-  EXPECT_EQ(11, web_event.PositionInWidget().x);
-  EXPECT_EQ(web_event.PositionInWidget().x, ui_event.x());
+  EXPECT_EQ(11, web_event.PositionInWidget().x());
+  EXPECT_EQ(web_event.PositionInWidget().x(), ui_event.x());
 
   // Both ui:: and blink:: events use an origin at the top-left.
-  EXPECT_EQ(100 - 22, web_event.PositionInWidget().y);
-  EXPECT_EQ(web_event.PositionInWidget().y, ui_event.y());
+  EXPECT_EQ(100 - 22, web_event.PositionInWidget().y());
+  EXPECT_EQ(web_event.PositionInWidget().y(), ui_event.y());
   [window close];
 }
 
-#if !defined(MAC_OS_X_VERSION_10_12)
 // Test if the value of twist and rotation_angle are set correctly when the
 // NSEvent's rotation is less than 90.
 TEST(WebInputEventBuilderMacTest, TouchEventsWithPointerTypePenRotationLess90) {
+  if (base::mac::IsOS10_12()) {
+    // Fails on macOS 10.12; https://crbug.com/992915
+    return;
+  }
   NSEvent* mac_event =
       BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
                           kCGEventMouseSubtypeTabletPoint, 60.0);
@@ -697,6 +701,10 @@ TEST(WebInputEventBuilderMacTest, TouchEventsWithPointerTypePenRotationLess90) {
 // NSEvent's rotation is between 90 and 180.
 TEST(WebInputEventBuilderMacTest,
      TouchEventsWithPointerTypePenRotationLess180) {
+  if (base::mac::IsOS10_12()) {
+    // Fails on macOS 10.12; https://crbug.com/992915
+    return;
+  }
   NSEvent* mac_event =
       BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
                           kCGEventMouseSubtypeTabletPoint, 160.0);
@@ -716,6 +724,10 @@ TEST(WebInputEventBuilderMacTest,
 // NSEvent's rotation is between 180 and 360.
 TEST(WebInputEventBuilderMacTest,
      TouchEventsWithPointerTypePenRotationLess360) {
+  if (base::mac::IsOS10_12()) {
+    // Fails on macOS 10.12; https://crbug.com/992915
+    return;
+  }
   NSEvent* mac_event =
       BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
                           kCGEventMouseSubtypeTabletPoint, 260.0);
@@ -735,6 +747,10 @@ TEST(WebInputEventBuilderMacTest,
 // NSEvent's rotation is greater than 360.
 TEST(WebInputEventBuilderMacTest,
      TouchEventsWithPointerTypePenRotationGreater360) {
+  if (base::mac::IsOS10_12()) {
+    // Fails on macOS 10.12; https://crbug.com/992915
+    return;
+  }
   NSEvent* mac_event =
       BuildFakeMouseEvent(kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
                           kCGEventMouseSubtypeTabletPoint, 390.0);
@@ -752,6 +768,10 @@ TEST(WebInputEventBuilderMacTest,
 
 // Test if all the values of a WebTouchEvent are set correctly.
 TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
+  if (base::mac::IsOS10_12()) {
+    // Fails on macOS 10.12; https://crbug.com/992915
+    return;
+  }
   NSEvent* mac_event = BuildFakeMouseEvent(
       kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
       kCGEventMouseSubtypeTabletPoint, /* rotation */ 60.0,
@@ -765,12 +785,12 @@ TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
                                       defer:NO];
   blink::WebTouchEvent touch_event =
       content::WebTouchEventBuilder::Build(mac_event, [window contentView]);
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart, touch_event.GetType());
+  EXPECT_EQ(blink::WebInputEvent::Type::kTouchStart, touch_event.GetType());
   EXPECT_FALSE(touch_event.hovering);
   EXPECT_EQ(1U, touch_event.touches_length);
-  EXPECT_EQ(blink::WebFloatPoint(6, 9),
-            touch_event.touches[0].PositionInScreen());
-  EXPECT_EQ(blink::WebTouchPoint::kStatePressed, touch_event.touches[0].state);
+  EXPECT_EQ(gfx::PointF(6, 9), touch_event.touches[0].PositionInScreen());
+  EXPECT_EQ(blink::WebTouchPoint::State::kStatePressed,
+            touch_event.touches[0].state);
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             touch_event.touches[0].pointer_type);
   EXPECT_EQ(0, touch_event.touches[0].id);
@@ -782,7 +802,6 @@ TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
   EXPECT_EQ(60, touch_event.touches[0].twist);
   EXPECT_FLOAT_EQ(60.0, touch_event.touches[0].rotation_angle);
 }
-#endif  // MAC_OS_X_VERSION_10_12
 
 // Test if the mouse back button values of a WebMouseEvent are set correctly.
 TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithBackButton) {
@@ -799,8 +818,8 @@ TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithBackButton) {
                                       defer:NO];
   blink::WebMouseEvent mouse_event =
       content::WebMouseEventBuilder::Build(mac_event, [window contentView]);
-  EXPECT_EQ(blink::WebInputEvent::kMouseDown, mouse_event.GetType());
-  EXPECT_EQ(blink::WebFloatPoint(6, 9), mouse_event.PositionInScreen());
+  EXPECT_EQ(blink::WebInputEvent::Type::kMouseDown, mouse_event.GetType());
+  EXPECT_EQ(gfx::PointF(6, 9), mouse_event.PositionInScreen());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             mouse_event.pointer_type);
   EXPECT_EQ(blink::WebMouseEvent::Button::kBack, mouse_event.button);
@@ -821,8 +840,8 @@ TEST(WebInputEventBuilderMacTest, BuildWebMouseEventsWithForwardButton) {
                                       defer:NO];
   blink::WebMouseEvent mouse_event =
       content::WebMouseEventBuilder::Build(mac_event, [window contentView]);
-  EXPECT_EQ(blink::WebInputEvent::kMouseDown, mouse_event.GetType());
-  EXPECT_EQ(blink::WebFloatPoint(6, 9), mouse_event.PositionInScreen());
+  EXPECT_EQ(blink::WebInputEvent::Type::kMouseDown, mouse_event.GetType());
+  EXPECT_EQ(gfx::PointF(6, 9), mouse_event.PositionInScreen());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             mouse_event.pointer_type);
   EXPECT_EQ(blink::WebMouseEvent::Button::kForward, mouse_event.button);

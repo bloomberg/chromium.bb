@@ -1096,6 +1096,11 @@ void LayoutTableSection::DistributeRemainingExtraLogicalHeight(
   int total_logical_height_added = 0;
   int previous_row_position = row_pos_[0];
   float total_row_size = row_pos_[total_rows] - previous_row_position;
+  if (total_row_size == 0) {
+    // crbug.com/1074722 prevents division by 0.
+    extra_logical_height = 0;
+    return;
+  }
   for (unsigned r = 0; r < total_rows; r++) {
     // weight with the original height
     float height_to_add = extra_logical_height *
@@ -1478,7 +1483,7 @@ void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
   for (LayoutTableRow* row = FirstRow(); row; row = row->NextRow()) {
     for (LayoutTableCell* cell = row->FirstCell(); cell;
          cell = cell->NextCell()) {
-      cell->SetPreferredLogicalWidthsDirty();
+      cell->SetIntrinsicLogicalWidthsDirty();
       if (what_to_mark == LayoutTable::kMarkDirtyAndNeedsLayout)
         cell->SetChildNeedsLayout();
     }
@@ -2106,15 +2111,6 @@ bool LayoutTableSection::MapToVisualRectInAncestorSpaceInternal(
   }
   return LayoutTableBoxComponent::MapToVisualRectInAncestorSpaceInternal(
       ancestor, transform_state, flags);
-}
-
-bool LayoutTableSection::PaintedOutputOfObjectHasNoEffectRegardlessOfSize()
-    const {
-  // LayoutTableSection paints background from columns.
-  if (Table()->HasColElements())
-    return false;
-  return LayoutTableBoxComponent::
-      PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 }  // namespace blink

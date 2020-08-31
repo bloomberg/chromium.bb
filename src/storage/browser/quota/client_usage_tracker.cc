@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "net/base/url_util.h"
@@ -60,6 +61,12 @@ void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
 }
 
 }  // namespace
+
+struct ClientUsageTracker::AccumulateInfo {
+  size_t pending_jobs = 0;
+  int64_t limited_usage = 0;
+  int64_t unlimited_usage = 0;
+};
 
 ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker,
@@ -180,34 +187,35 @@ int64_t ClientUsageTracker::GetCachedUsage() const {
   return usage;
 }
 
-void ClientUsageTracker::GetCachedHostsUsage(
-    std::map<std::string, int64_t>* host_usage) const {
+std::map<std::string, int64_t> ClientUsageTracker::GetCachedHostsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(host_usage);
+  std::map<std::string, int64_t> host_usage;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     const std::string& host = host_and_usage_map.first;
-    (*host_usage)[host] += GetCachedHostUsage(host);
+    host_usage[host] += GetCachedHostUsage(host);
   }
+  return host_usage;
 }
 
-void ClientUsageTracker::GetCachedOriginsUsage(
-    std::map<url::Origin, int64_t>* origin_usage) const {
+std::map<url::Origin, int64_t> ClientUsageTracker::GetCachedOriginsUsage()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origin_usage);
+  std::map<url::Origin, int64_t> origin_usage;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     for (const auto& origin_and_usage : host_and_usage_map.second)
-      (*origin_usage)[origin_and_usage.first] += origin_and_usage.second;
+      origin_usage[origin_and_usage.first] += origin_and_usage.second;
   }
+  return origin_usage;
 }
 
-void ClientUsageTracker::GetCachedOrigins(
-    std::set<url::Origin>* origins) const {
+std::set<url::Origin> ClientUsageTracker::GetCachedOrigins() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origins);
+  std::set<url::Origin> origins;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     for (const auto& origin_and_usage : host_and_usage_map.second)
-      origins->insert(origin_and_usage.first);
+      origins.insert(origin_and_usage.first);
   }
+  return origins;
 }
 
 void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
@@ -447,34 +455,34 @@ bool ClientUsageTracker::IsUsageCacheEnabledForOrigin(
                                host, origin);
 }
 
-void ClientUsageTracker::OnGranted(const GURL& origin_url, int change_flags) {
+void ClientUsageTracker::OnGranted(const url::Origin& origin,
+                                   int change_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
-    url::Origin origin = url::Origin::Create(origin_url);
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ += usage;
       global_limited_usage_ -= usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin_url);
+    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
     if (EraseOriginFromOriginSet(&non_cached_limited_origins_by_host_,
                                  host, origin))
       non_cached_unlimited_origins_by_host_[host].insert(origin);
   }
 }
 
-void ClientUsageTracker::OnRevoked(const GURL& origin_url, int change_flags) {
+void ClientUsageTracker::OnRevoked(const url::Origin& origin,
+                                   int change_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
-    url::Origin origin = url::Origin::Create(origin_url);
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ -= usage;
       global_limited_usage_ += usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin_url);
+    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
     if (EraseOriginFromOriginSet(&non_cached_unlimited_origins_by_host_,
                                  host, origin))
       non_cached_limited_origins_by_host_[host].insert(origin);

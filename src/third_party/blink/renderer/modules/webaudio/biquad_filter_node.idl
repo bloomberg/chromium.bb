@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#biquadfilternode
+// https://webaudio.github.io/web-audio-api/#biquadfilternode
 enum BiquadFilterType {
     "lowpass",
     "highpass",
@@ -36,12 +36,9 @@ enum BiquadFilterType {
 };
 
 [
-    Exposed=Window,
-    Constructor(BaseAudioContext context, optional BiquadFilterOptions options),
-    RaisesException=Constructor,
-    Measure
-]
-interface BiquadFilterNode : AudioNode {
+    Exposed=Window
+] interface BiquadFilterNode : AudioNode {
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional BiquadFilterOptions options = {});
     attribute BiquadFilterType type;
 
     readonly attribute AudioParam frequency; // in Hertz

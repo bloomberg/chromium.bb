@@ -92,7 +92,7 @@ class ServiceSandboxedProcessLauncherDelegate
   }
 
   service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SANDBOX_TYPE_UTILITY;
+    return service_manager::SandboxType::kUtility;
   }
 
  private:
@@ -250,7 +250,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(size);
-  if (!memory.region.IsValid() || !memory.mapping.IsValid())
+  if (!memory.IsValid())
     return false;
 
   int result =
@@ -439,7 +439,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
   base::PostTaskAndReplyWithResult(
       client_task_runner_.get(), FROM_HERE,
       base::BindOnce(&Client::MetafileAvailable, client_.get(), scale_factor,
-                     base::Passed(&emf_region)),
+                     std::move(emf_region)),
       base::BindOnce(&ServiceUtilityProcessHost::OnMetafileSpooled,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -523,7 +523,7 @@ bool ServiceUtilityProcessHost::Client::MetafileAvailable(
     return false;
   }
   printing::Emf emf;
-  if (!emf.InitFromData(mapping.memory(), mapping.size())) {
+  if (!emf.InitFromData(mapping.GetMemoryAsSpan<const uint8_t>())) {
     OnRenderPDFPagesToMetafileDone(false);
     return false;
   }

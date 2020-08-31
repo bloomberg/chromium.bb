@@ -114,6 +114,9 @@ class MultiQueues
 		const VkPhysicalDevice						physicalDevice			= context.getPhysicalDevice();
 		const std::vector<VkQueueFamilyProperties>	queueFamilyProperties	= getPhysicalDeviceQueueFamilyProperties(instance, physicalDevice);
 
+		if (timelineSemaphore)
+			context.requireDeviceFunctionality("VK_KHR_timeline_semaphore");
+
 		for (deUint32 queuePropertiesNdx = 0; queuePropertiesNdx < queueFamilyProperties.size(); ++queuePropertiesNdx)
 		{
 			addQueueIndex(queuePropertiesNdx,
@@ -156,9 +159,6 @@ class MultiQueues
 				extensions,														//const char* const*				ppEnabledExtensionNames;
 				&context.getDeviceFeatures()									//const VkPhysicalDeviceFeatures*	pEnabledFeatures;
 			};
-
-			if (timelineSemaphore && !context.getTimelineSemaphoreFeatures().timelineSemaphore)
-				TCU_THROW(NotSupportedError, "Timeline semaphore not supported");
 
 			m_logicalDevice	= createCustomDevice(context.getTestContext().getCommandLine().isValidationEnabled(), context.getPlatformInterface(), context.getInstance(), instance, physicalDevice, &deviceInfo);
 			m_deviceDriver	= MovePtr<DeviceDriver>(new DeviceDriver(context.getPlatformInterface(), context.getInstance(), *m_logicalDevice));
@@ -586,9 +586,9 @@ public:
 		for (deUint32 opIdx = 0; opIdx < m_ops.size(); opIdx++)
 		{
 			const VkPipelineStageFlags				stageBits[]				= { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
-			const VkTimelineSemaphoreSubmitInfoKHR	timelineSubmitInfo		=
+			const VkTimelineSemaphoreSubmitInfo		timelineSubmitInfo		=
 			{
-				VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR,	// VkStructureType	sType;
+				VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,		// VkStructureType	sType;
 				DE_NULL,												// const void*		pNext;
 				opIdx == 0 ? 0u : 1u,									// deUint32			waitSemaphoreValueCount
 				opIdx == 0 ? DE_NULL : &timelineValues[opIdx - 1],		// const deUint64*	pWaitSemaphoreValues
@@ -642,8 +642,19 @@ public:
 			const Data	expected	= m_ops.front()->getData();
 			const Data	actual		= m_ops.back()->getData();
 
-			if (0 != deMemCmp(expected.data, actual.data, expected.size))
-				return tcu::TestStatus::fail("Memory contents don't match");
+			if (isIndirectBuffer(m_resourceDesc.type))
+			{
+				const deUint32 expectedValue = reinterpret_cast<const deUint32*>(expected.data)[0];
+				const deUint32 actualValue   = reinterpret_cast<const deUint32*>(actual.data)[0];
+
+				if (actualValue < expectedValue)
+					return tcu::TestStatus::fail("Counter value is smaller than expected");
+			}
+			else
+			{
+				if (0 != deMemCmp(expected.data, actual.data, expected.size))
+					return tcu::TestStatus::fail("Memory contents don't match");
+			}
 		}
 
 		// Make the validation layers happy.

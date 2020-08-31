@@ -163,7 +163,6 @@ bool NetworkLocationRequest::MakeRequest(
   FormUploadData(wifi_data, wifi_timestamp, &upload_data);
   url_loader_->AttachStringForUpload(upload_data, "application/json");
 
-  request_start_time_ = base::TimeTicks::Now();
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&NetworkLocationRequest::OnRequestComplete,
@@ -188,14 +187,6 @@ void NetworkLocationRequest::OnRequestComplete(
 
   bool server_error =
       net_error != net::OK || (response_code >= 500 && response_code < 600);
-  if (!server_error) {
-    const base::TimeDelta request_time =
-        base::TimeTicks::Now() - request_start_time_;
-
-    UMA_HISTOGRAM_CUSTOM_TIMES("Net.Wifi.LbsLatency", request_time,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromSeconds(10), 100);
-  }
 
   url_loader_.reset();
 
@@ -386,22 +377,22 @@ bool ParseServerResponse(const std::string& response_body,
   DVLOG(1) << "ParseServerResponse() : Parsing response " << response_body;
 
   // Parse the response, ignoring comments.
-  std::string error_msg;
-  std::unique_ptr<base::Value> response_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
-  if (response_value == NULL) {
-    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : " << error_msg;
+  auto response_result =
+      base::JSONReader::ReadAndReturnValueWithError(response_body);
+  if (!response_result.value) {
+    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
+                 << response_result.error_message;
     return false;
   }
+  base::Value response_value = std::move(*response_result.value);
 
-  if (!response_value->is_dict()) {
+  if (!response_value.is_dict()) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
-            << response_value->type();
+            << response_value.type();
     return false;
   }
   const base::DictionaryValue* response_object =
-      static_cast<base::DictionaryValue*>(response_value.get());
+      static_cast<base::DictionaryValue*>(&response_value);
 
   // Get the location
   const base::Value* location_value = NULL;

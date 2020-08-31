@@ -313,7 +313,7 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
 
   String DebugName() const override { return "DataPipeAndDataBytesConsumer"; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(execution_context_);
     visitor->Trace(client_);
     visitor->Trace(simple_consumer_);
@@ -479,7 +479,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
   Error GetError() const override { return blob_bytes_consumer_->GetError(); }
   String DebugName() const override { return "ComplexFormDataBytesConsumer"; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(blob_bytes_consumer_);
     BytesConsumer::Trace(visitor);
   }
@@ -497,12 +497,14 @@ FormDataBytesConsumer::FormDataBytesConsumer(const String& string)
               UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
-    : FormDataBytesConsumer(buffer->Data(),
-                            buffer->DeprecatedByteLengthAsUnsigned()) {}
+    : FormDataBytesConsumer(
+          buffer->Data(),
+          base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT())) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
-    : FormDataBytesConsumer(view->BaseAddress(),
-                            view->deprecatedByteLengthAsUnsigned()) {}
+    : FormDataBytesConsumer(
+          view->BaseAddress(),
+          base::checked_cast<wtf_size_t>(view->byteLengthAsSizeT())) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
     : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(

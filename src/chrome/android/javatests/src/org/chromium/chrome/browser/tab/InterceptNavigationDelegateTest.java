@@ -18,11 +18,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
+import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -72,7 +74,7 @@ public class InterceptNavigationDelegateTest {
 
     class TestExternalNavigationHandler extends ExternalNavigationHandler {
         public TestExternalNavigationHandler() {
-            super(mActivity.getActivityTab());
+            super(new ExternalNavigationDelegateImpl(mActivity.getActivityTab()));
         }
 
         @Override
@@ -99,15 +101,18 @@ public class InterceptNavigationDelegateTest {
         mActivity = mActivityTestRule.getActivity();
         final Tab tab = mActivity.getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(tab) {
+            InterceptNavigationDelegateClientImpl client =
+                    new InterceptNavigationDelegateClientImpl(tab);
+            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(client) {
                 @Override
                 public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
                     mNavParamHistory.add(navigationParams);
                     return super.shouldIgnoreNavigation(navigationParams);
                 }
             };
+            client.initializeWithDelegate(delegate);
             delegate.setExternalNavigationHandler(new TestExternalNavigationHandler());
-            InterceptNavigationDelegateImpl.initDelegateForTesting(tab, delegate);
+            delegate.associateWithWebContents(tab.getWebContents());
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
@@ -207,6 +212,6 @@ public class InterceptNavigationDelegateTest {
         Assert.assertTrue(mNavParamHistory.get(2).isExternalProtocol);
         Assert.assertFalse(mNavParamHistory.get(2).isMainFrame);
         Assert.assertTrue(
-                mExternalNavParamHistory.get(2).getRedirectHandler().shouldStayInChrome(true));
+                mExternalNavParamHistory.get(2).getRedirectHandler().shouldStayInApp(true, false));
     }
 }

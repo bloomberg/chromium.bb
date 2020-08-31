@@ -1,4 +1,13 @@
 .CodeMirror {
+    --breakpoint-background-red: #FF4E4226;
+}
+
+:host-context(.-theme-with-dark-background) .CodeMirror,
+.-theme-with-dark-background .CodeMirror {
+    --breakpoint-background-red: #FF4E4233;
+}
+
+.CodeMirror {
     line-height: 1.2em !important;
     background-color: transparent !important;
     color: #222;
@@ -116,7 +125,7 @@
 
 .CodeMirror-linenumber {
     color: hsl(0, 0%, 46%);
-    padding: 0 3px 0 5px;
+    padding: 0 3px 0 12px;
     min-width: 22px;
     text-align: right;
     white-space: nowrap;
@@ -167,47 +176,89 @@
     to { background-color: #14522b; }
 }
 
-.cm-breakpoint .CodeMirror-gutter-wrapper .CodeMirror-linenumber, -theme-preserve {
-    color: white;
-    border-width: 1px 4px 1px 1px !important;
-    -webkit-border-image: url(Images/breakpoint.svg) 1 4 1 1;
-    margin: 0 0 0 3px !important;
-    padding-right: 3px;
-    padding-left: 1px;
-    height: 11px;
-    line-height: 12px !important;
-    border-style: solid;
-}
-
-.cm-line-without-source-mapping .CodeMirror-linenumber {
+.cm-non-breakable-line .CodeMirror-linenumber {
     color: rgba(128, 128, 128, 0.4);
 }
 
-.cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
-    -webkit-border-image: url(Images/breakpointConditional.svg) 1 4 1 1;
+.CodeMirror-gutter-background.cm-breakpoint {
+    background-color: var(--breakpoint-background-red);
 }
 
-:host-context(.-theme-with-dark-background) .cm-breakpoint:not(.cm-breakpoint-conditional) .CodeMirror-gutter-wrapper .CodeMirror-linenumber,
-.-theme-with-dark-background .cm-breakpoint:not(.cm-breakpoint-conditional) .CodeMirror-gutter-wrapper .CodeMirror-linenumber {
-    filter: hue-rotate(-139deg);
+.CodeMirror-gutter-background.cm-breakpoint::before {
+    content: url(Images/breakpoint.svg);
+    position: relative;
+    top: 1px;
+    left: 1px;
 }
 
-.cm-breakpoint-disabled .CodeMirror-linenumber {
-    opacity: 0.5;
+.breakpoints-deactivated .CodeMirror-gutter-background.cm-breakpoint::before,
+.CodeMirror-gutter-background.cm-breakpoint-unbound::before,
+.CodeMirror-gutter-background.cm-breakpoint-disabled::before {
+    content: url(Images/breakpoint-disabled.svg);
 }
 
-.breakpoints-deactivated .cm-breakpoint .CodeMirror-linenumber {
-    opacity: 0.5;
+.CodeMirror-gutter-background.cm-breakpoint.cm-breakpoint-conditional::before {
+    content: url(Images/breakpoint-conditional.svg);
 }
 
-.breakpoints-deactivated .cm-breakpoint-disabled .CodeMirror-linenumber {
-    opacity: 0.3;
+.CodeMirror-gutter-background.cm-breakpoint-disabled.cm-breakpoint-conditional::before,
+.CodeMirror-gutter-background.cm-breakpoint-unbound.cm-breakpoint-conditional::before,
+.breakpoints-deactivated .CodeMirror-gutter-background.cm-breakpoint.cm-breakpoint-conditional::before {
+    content: url(Images/breakpoint-conditional-disabled.svg);
+}
+
+.CodeMirror-gutter-background.cm-breakpoint.cm-breakpoint-logpoint::before {
+    content: url(Images/logpoint.svg);
+}
+
+.CodeMirror-gutter-background.cm-breakpoint-disabled.cm-breakpoint-logpoint::before,
+.CodeMirror-gutter-background.cm-breakpoint-unbound.cm-breakpoint-logpoint::before,
+.breakpoints-deactivated .CodeMirror-gutter-background.cm-breakpoint.cm-breakpoint-logpoint::before {
+    content: url(Images/logpoint-disabled.svg);
 }
 
 .cm-inline-breakpoint {
-    position:relative;
-    top: 2px;
     cursor: pointer;
+    padding-left: 1px;
+    padding-right: 2px;
+    position:relative;
+    top: 1px;
+}
+
+.cm-inline-breakpoint::before {
+    content: url(Images/breakpoint.svg);
+}
+
+.cm-inline-breakpoint.cm-inline-disabled::before {
+    content: url(Images/breakpoint-disabled.svg);
+}
+
+.breakpoints-deactivated .cm-inline-breakpoint::before {
+    content: url(Images/breakpoint-disabled.svg);
+}
+
+.cm-inline-breakpoint.cm-inline-breakpoint-conditional::before {
+    content: url(Images/breakpoint-conditional.svg);
+}
+
+.cm-inline-breakpoint.cm-inline-breakpoint-conditional.cm-inline-disabled::before {
+    content: url(Images/breakpoint-conditional-disabled.svg);
+}
+
+.breakpoints-deactivated .cm-inline-breakpoint.cm-inline-breakpoint-conditional::before {
+    content: url(Images/breakpoint-conditional-disabled.svg);
+}
+
+.cm-inline-breakpoint.cm-inline-logpoint::before {
+    content: url(Images/logpoint.svg);
+}
+
+.cm-inline-breakpoint.cm-inline-logpoint.cm-inline-disabled::before {
+    content: url(Images/logpoint-disabled.svg);
+}
+
+.breakpoints-deactivated .cm-inline-breakpoint.cm-inline-logpoint::before {
+    content: url(Images/logpoint-disabled.svg);
 }
 
 .cm-execution-line-tail + .CodeMirror-widget {
@@ -231,10 +282,6 @@
 
 .cm-inline-breakpoint.cm-inline-conditional {
     background-color: #ef9d0d;
-}
-
-.cm-inline-breakpoint.cm-inline-disabled {
-    opacity: 0.5;
 }
 
 .cm-continue-to-location {
@@ -282,7 +329,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     position: relative;
 }
 
-.cm-tab:before {
+.cm-tab::before {
     display: none;
     content: ".";
     color: transparent;
@@ -293,7 +340,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     left: 5%;
 }
 
-.show-whitespaces .CodeMirror .cm-tab:before {
+.show-whitespaces .CodeMirror .cm-tab::before {
     display: block !important;
 }
 
@@ -328,7 +375,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     position: relative;
 }
 
-.cm-token-highlight:before {
+.cm-token-highlight::before {
     position: absolute;
     border: 1px solid gray;
     border-radius: 3px;
@@ -339,7 +386,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     content: "";
 }
 
-.cm-line-with-selection .cm-column-with-selection:before {
+.cm-line-with-selection .cm-column-with-selection::before {
     border: none;
 }
 
@@ -347,7 +394,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     position: relative;
 }
 
-.cm-search-highlight:before {
+.cm-search-highlight::before {
     position: absolute;
     border-top-style: solid;
     border-bottom-style: solid;
@@ -362,12 +409,12 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     content: "";
 }
 
-.cm-search-highlight-full:before {
+.cm-search-highlight-full::before {
     border: 1px solid gray;
     border-radius: 3px;
 }
 
-.cm-search-highlight-start:before {
+.cm-search-highlight-start::before {
     border-left-width: 1px;
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
@@ -375,7 +422,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     border-left-color: gray;
 }
 
-.cm-search-highlight-end:before {
+.cm-search-highlight-end::before {
     border-right-width: 1px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
@@ -383,28 +430,28 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     border-right-color: gray;
 }
 
-.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-full:before {
+.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-full::before {
     border-radius: 1px;
 }
 
-.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-start:before {
+.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-start::before {
     border-top-left-radius: 1px;
     border-bottom-left-radius: 1px;
 }
 
-.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-end:before {
+.cm-line-with-selection .cm-column-with-selection.cm-search-highlight-end::before {
     border-top-right-radius: 1px;
     border-bottom-right-radius: 1px;
 }
 
-.cm-line-with-selection .cm-column-with-selection.cm-search-highlight:before {
+.cm-line-with-selection .cm-column-with-selection.cm-search-highlight::before {
     margin: -1px -1px -1px -1px;
     background-color: rgb(241, 234, 0);
     z-index: -1;
 }
 
-:host-context(.-theme-with-dark-background) .cm-line-with-selection .cm-column-with-selection.cm-search-highlight:before,
-.-theme-with-dark-background .cm-line-with-selection .cm-column-with-selection.cm-search-highlight:before {
+:host-context(.-theme-with-dark-background) .cm-line-with-selection .cm-column-with-selection.cm-search-highlight::before,
+.-theme-with-dark-background .cm-line-with-selection .cm-column-with-selection.cm-search-highlight::before {
     background-color: hsl(133, 100%, 30%);
 }
 
@@ -470,7 +517,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
     margin-left: 10px;
     padding-left: 5px;
     color: #222;
-    -webkit-user-select: text;
+    user-select: text;
 }
 
 .CodeMirror .cm-execution-line .text-editor-value-decoration {
@@ -602,7 +649,7 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 .CodeMirror-foldgutter-open::before,
 .CodeMirror-foldgutter-folded::before {
     background-color: #727272;
-    -webkit-user-select: none;
+    user-select: none;
     -webkit-mask-image: url(Images/treeoutlineTriangles.svg);
     -webkit-mask-size: 32px 24px;
     content: "";
@@ -635,4 +682,11 @@ div.CodeMirror:focus-within span.CodeMirror-nonmatchingbracket {
 .CodeMirror .CodeMirror-line > span::selection,
 .CodeMirror .CodeMirror-line > span > span::selection {
     background: var(--item-selection-bg-color);
+}
+
+@media (forced-colors: active) {
+    .cm-token-highlight::before {
+        forced-color-adjust: none;
+        border-color: Highlight;
+    }
 }

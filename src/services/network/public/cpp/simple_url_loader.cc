@@ -10,11 +10,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -46,8 +47,8 @@
 
 namespace network {
 
-const size_t SimpleURLLoader::kMaxBoundedStringDownloadSize = 5 * 1024 * 1024;
-const size_t SimpleURLLoader::kMaxUploadStringSizeToCopy = 256 * 1024;
+constexpr size_t SimpleURLLoader::kMaxBoundedStringDownloadSize;
+constexpr size_t SimpleURLLoader::kMaxUploadStringSizeToCopy;
 
 namespace {
 
@@ -229,6 +230,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       uint64_t length = std::numeric_limits<uint64_t>::max()) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
   void SetURLLoaderFactoryOptions(uint32_t options) override;
+  void SetRequestID(int32_t request_id) override;
   void SetTimeoutDuration(base::TimeDelta timeout_duration) override;
 
   int NetError() const override;
@@ -344,6 +346,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   int remaining_retries_ = 0;
   int retry_mode_ = RETRY_NEVER;
   uint32_t url_loader_factory_options_ = 0;
+  int32_t request_id_ = 0;
 
   // The next values contain all the information required to restart the
   // request.
@@ -851,8 +854,8 @@ class SaveToFileBodyHandler : public BodyHandler {
                base::TaskPriority priority,
                base::RepeatingCallback<void(int64_t)> progress_callback)
         : body_handler_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-          file_writer_task_runner_(base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(), priority,
+          file_writer_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), priority,
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
           path_(path),
           create_temp_file_(create_temp_file),
@@ -1290,8 +1293,8 @@ void SimpleURLLoaderImpl::AttachStringForUpload(
     const std::string& upload_content_type) {
   // Currently only allow a single string to be attached.
   DCHECK(!resource_request_->request_body);
-  DCHECK(resource_request_->method != "GET" &&
-         resource_request_->method != "HEAD");
+  DCHECK(resource_request_->method != net::HttpRequestHeaders::kGetMethod &&
+         resource_request_->method != net::HttpRequestHeaders::kHeadMethod);
 
   resource_request_->request_body = new ResourceRequestBody();
 
@@ -1320,8 +1323,8 @@ void SimpleURLLoaderImpl::AttachFileForUpload(
 
   // Currently only allow a single file to be attached.
   DCHECK(!resource_request_->request_body);
-  DCHECK(resource_request_->method != "GET" &&
-         resource_request_->method != "HEAD");
+  DCHECK(resource_request_->method != net::HttpRequestHeaders::kGetMethod &&
+         resource_request_->method != net::HttpRequestHeaders::kHeadMethod);
 
   // Create an empty body to make DCHECKing that there's no upload body yet
   // simpler.
@@ -1363,6 +1366,12 @@ void SimpleURLLoaderImpl::SetURLLoaderFactoryOptions(uint32_t options) {
   // Check if a request has not yet been started.
   DCHECK(!body_handler_);
   url_loader_factory_options_ = options;
+}
+
+void SimpleURLLoaderImpl::SetRequestID(int32_t request_id) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+  request_id_ = request_id;
 }
 
 void SimpleURLLoaderImpl::SetTimeoutDuration(base::TimeDelta timeout_duration) {
@@ -1515,8 +1524,8 @@ void SimpleURLLoaderImpl::StartRequest(
         string_upload_data_pipe_getter_->GetRemoteForNewUpload());
   }
   url_loader_factory->CreateLoaderAndStart(
-      url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
-      0 /* request_id */, url_loader_factory_options_, *resource_request_,
+      url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */, request_id_,
+      url_loader_factory_options_, *resource_request_,
       client_receiver_.BindNewPipeAndPassRemote(),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
   client_receiver_.set_disconnect_handler(base::BindOnce(
@@ -1617,6 +1626,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
 
   final_url_ = redirect_info.new_url;
   url_loader_->FollowRedirect(removed_headers, {} /* modified_headers */,
+                              {} /* modified_cors_exempt_headers */,
                               {} /* new_url */);
 }
 
@@ -1702,6 +1712,14 @@ void SimpleURLLoaderImpl::MaybeComplete() {
   // read more data.
   if (request_state_->body_started && !request_state_->body_completed)
     return;
+
+  // DNS errors can be transient, and due to other issues, especially with
+  // DoH. If required, retry.
+  if (request_state_->net_error == net::ERR_NAME_NOT_RESOLVED &&
+      remaining_retries_ > 0 && (retry_mode_ & RETRY_ON_NAME_NOT_RESOLVED)) {
+    Retry();
+    return;
+  }
 
   // Retry on network change errors. Waiting for body complete isn't strictly
   // necessary, but it guarantees a consistent situation, with no reads pending

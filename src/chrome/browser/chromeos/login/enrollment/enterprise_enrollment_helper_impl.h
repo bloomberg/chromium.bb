@@ -13,16 +13,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/policy/device_account_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/policy/device_account_initializer.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace policy {
 class DMAuth;
 class PolicyOAuth2TokenFetcher;
-}
+}  // namespace policy
 
 namespace chromeos {
 
@@ -42,7 +42,6 @@ class EnterpriseEnrollmentHelperImpl
   void EnrollForOfflineDemo() override;
   void RestoreAfterRollback() override;
   void ClearAuth(base::OnceClosure callback) override;
-  void UseLicenseType(policy::LicenseType type) override;
   void GetDeviceAttributeUpdatePermission() override;
   void UpdateDeviceAttributes(const std::string& asset_id,
                               const std::string& location) override;
@@ -60,6 +59,10 @@ class EnterpriseEnrollmentHelperImpl
   void OnDeviceAccountTokenError(policy::EnrollmentStatus status) override;
   void OnDeviceAccountClientError(
       policy::DeviceManagementStatus status) override;
+  enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+  GetRobotAuthCodeDeviceType() override;
+  std::string GetRobotOAuthScopes() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
@@ -67,18 +70,12 @@ class EnterpriseEnrollmentHelperImpl
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAttributePromptPageGetsLoaded);
 
-  // Checks if license type selection should be performed during enrollment.
-  bool ShouldCheckLicenseType() const;
-
   // Attempt enrollment using |auth_data| for authentication.
   void DoEnroll(std::unique_ptr<policy::DMAuth> auth_data);
 
   // Handles completion of the OAuth2 token fetch attempt.
   void OnTokenFetched(const std::string& token,
                       const GoogleServiceAuthError& error);
-
-  // Handles multiple license types case.
-  void OnLicenseMapObtained(const EnrollmentLicenseMap& licenses);
 
   // Handles completion of the enrollment attempt.
   void OnEnrollmentFinished(policy::EnrollmentStatus status);

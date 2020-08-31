@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {DOMModel, DOMNode} from './DOMModel.js';      // eslint-disable-line no-unused-vars
+import {SnapshotWithRect} from './PaintProfiler.js';  // eslint-disable-line no-unused-vars
+import {Target} from './SDKModel.js';                 // eslint-disable-line no-unused-vars
+
 /**
  * @interface
  */
@@ -43,13 +50,13 @@ export class Layer {
   }
 
   /**
-   * @return {?SDK.DOMNode}
+   * @return {?DOMNode}
    */
   node() {
   }
 
   /**
-   * @return {?SDK.DOMNode}
+   * @return {?DOMNode}
    */
   nodeForSelfOrAncestor() {
   }
@@ -121,7 +128,7 @@ export class Layer {
   }
 
   /**
-   * @return {?Layer.StickyPositionConstraint}
+   * @return {?StickyPositionConstraint}
    */
   stickyPositionConstraint() {
   }
@@ -135,7 +142,7 @@ export class Layer {
   /**
    * @return {!Promise<!Array<string>>}
    */
-  requestCompositingReasons() {
+  requestCompositingReasonIds() {
   }
 
   /**
@@ -145,7 +152,7 @@ export class Layer {
   }
 
   /**
-   * @return {!Array<!Promise<?SDK.SnapshotWithRect>>}
+   * @return {!Array<!Promise<?SnapshotWithRect>>}
    */
   snapshots() {}
 }
@@ -214,22 +221,22 @@ export class StickyPositionConstraint {
 /**
  * @unrestricted
  */
-export default class LayerTreeBase {
+export class LayerTreeBase {
   /**
-   * @param {?SDK.Target} target
+   * @param {?Target} target
    */
   constructor(target) {
     this._target = target;
-    this._domModel = target ? target.model(SDK.DOMModel) : null;
+    this._domModel = target ? target.model(DOMModel) : null;
     this._layersById = {};
     this._root = null;
     this._contentRoot = null;
-    /** @type {!Map<number, ?SDK.DOMNode>} */
+    /** @type {!Map<number, ?DOMNode>} */
     this._backendNodeIdToNode = new Map();
   }
 
   /**
-   * @return {?SDK.Target}
+   * @return {?Target}
    */
   target() {
     return this._target;
@@ -266,9 +273,9 @@ export default class LayerTreeBase {
   }
 
   /**
-   * @param {function(!Layer)} callback
+   * @param {function(!Layer):*} callback
    * @param {?Layer=} root
-   * @return {boolean}
+   * @return {*}
    */
   forEachLayer(callback, root) {
     if (!root) {
@@ -290,7 +297,7 @@ export default class LayerTreeBase {
 
   /**
    * @param {!Set<number>} requestedNodeIds
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async resolveBackendNodeIds(requestedNodeIds) {
     if (!requestedNodeIds.size || !this._domModel) {
@@ -302,13 +309,13 @@ export default class LayerTreeBase {
     if (!nodesMap) {
       return;
     }
-    for (const nodeId of nodesMap.keysArray()) {
+    for (const nodeId of nodesMap.keys()) {
       this._backendNodeIdToNode.set(nodeId, nodesMap.get(nodeId) || null);
     }
   }
 
   /**
-   * @return {!Map<number, ?SDK.DOMNode>}
+   * @return {!Map<number, ?DOMNode>}
    */
   backendNodeIdToNode() {
     return this._backendNodeIdToNode;
@@ -330,31 +337,9 @@ export default class LayerTreeBase {
 
   /**
    * @param {number} id
-   * @return {?SDK.DOMNode}
+   * @return {?DOMNode}
    */
   _nodeForId(id) {
     return this._domModel ? this._domModel.nodeForId(id) : null;
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @interface */
-SDK.Layer = Layer;
-
-/** @constructor */
-SDK.LayerTreeBase = LayerTreeBase;
-
-/** @constructor */
-SDK.Layer.StickyPositionConstraint = StickyPositionConstraint;
-
-/** @typedef {!{
-        rect: !Protocol.DOM.Rect,
-        snapshot: !SDK.PaintProfilerSnapshot
-    }}
-*/
-SDK.SnapshotWithRect;

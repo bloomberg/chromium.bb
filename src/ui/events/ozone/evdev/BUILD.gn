@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/args.gni")
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
 assert(use_ozone && is_linux)
@@ -10,7 +12,7 @@ visibility = [ ":*" ]
 
 declare_args() {
   # Support ChromeOS touchpad gestures with ozone.
-  use_evdev_gestures = false
+  use_evdev_gestures = is_chromeos_device
 }
 
 config("evdev_config") {
@@ -18,6 +20,14 @@ config("evdev_config") {
 }
 
 if (use_evdev_gestures) {
+  pkg_config("libevdev-cros") {
+    packages = [ "libevdev-cros" ]
+  }
+
+  pkg_config("libgestures") {
+    packages = [ "libgestures" ]
+  }
+
   config("evdev_gestures_config") {
     defines = [ "USE_EVDEV_GESTURES" ]
   }
@@ -57,6 +67,8 @@ component("evdev") {
     "keyboard_util_evdev.h",
     "mouse_button_map_evdev.cc",
     "mouse_button_map_evdev.h",
+    "stylus_button_event_converter_evdev.cc",
+    "stylus_button_event_converter_evdev.h",
     "tablet_event_converter_evdev.cc",
     "tablet_event_converter_evdev.h",
     "touch_evdev_debug_buffer.cc",
@@ -129,10 +141,11 @@ component("evdev") {
       "libgestures_glue/gesture_timer_provider.h",
     ]
 
-    deps += [
-      "//third_party/gestures",
-      "//third_party/libevdev",
-      "//ui/ozone/public/mojom:gesture_properties_service",
+    deps += [ "//ui/ozone/public/mojom:gesture_properties_service" ]
+
+    configs += [
+      ":libevdev-cros",
+      ":libgestures",
     ]
 
     public_configs += [ ":evdev_gestures_config" ]
@@ -156,6 +169,7 @@ source_set("unittests") {
     "event_device_test_util.h",
     "gamepad_event_converter_evdev_unittest.cc",
     "input_injector_evdev_unittest.cc",
+    "stylus_button_event_converter_evdev_unittest.cc",
     "tablet_event_converter_evdev_unittest.cc",
     "testing/fake_cursor_delegate_evdev.h",
     "touch_event_converter_evdev_unittest.cc",

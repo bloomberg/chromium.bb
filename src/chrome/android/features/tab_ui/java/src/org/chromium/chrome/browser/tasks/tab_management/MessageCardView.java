@@ -11,8 +11,8 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.snackbar.TemplatePreservingTextView;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChromeImageView;
 
@@ -38,7 +38,9 @@ class MessageCardView extends LinearLayout {
     /**
      * An interface to handle the dismiss action.
      */
-    public interface DismissActionProvider { void dismiss(); }
+    public interface DismissActionProvider {
+        void dismiss(@MessageService.MessageType int messageType);
+    }
 
     private ChromeImageView mIcon;
     private TemplatePreservingTextView mDescription;
@@ -121,5 +123,25 @@ class MessageCardView extends LinearLayout {
      */
     void setDismissButtonOnClickListener(OnClickListener listener) {
         mCloseButton.setOnClickListener(listener);
+    }
+
+    /**
+     * Modify the view based on the visibility of the icon. For messages that doesn't have an icon,
+     * remove the icon and update the margin of the description text field.
+     * @param visible  Whether icon is visible.
+     */
+    void setIconVisibility(boolean visible) {
+        MarginLayoutParams params = (MarginLayoutParams) mDescription.getLayoutParams();
+        if (visible) {
+            if (indexOfChild(mIcon) == -1) {
+                addView(mIcon, 0);
+                params.setMargins(0, 0, 0, 0);
+            }
+        } else {
+            int margin = (int) getContext().getResources().getDimension(
+                    R.dimen.tab_grid_iph_item_description_margin);
+            removeView(mIcon);
+            params.setMargins(margin, 0, 0, 0);
+        }
     }
 }

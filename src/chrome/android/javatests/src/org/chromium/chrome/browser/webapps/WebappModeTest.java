@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -19,19 +18,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
-import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -110,18 +109,20 @@ public class WebappModeTest {
                     WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            WebappInfo webappInfo = WebappInfo.create(createIntent(
-                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                            storage.updateFromWebappInfo(webappInfo);
+                            BrowserServicesIntentDataProvider intentDataProvider =
+                                    WebappIntentDataProviderFactory.create(createIntent(WEBAPP_1_ID,
+                                            WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappIntentDataProvider(intentDataProvider);
                         }
                     });
             WebappRegistry.getInstance().register(
                     WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            WebappInfo webappInfo = WebappInfo.create(createIntent(
-                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                            storage.updateFromWebappInfo(webappInfo);
+                            BrowserServicesIntentDataProvider intentDataProvider =
+                                    WebappIntentDataProviderFactory.create(createIntent(WEBAPP_1_ID,
+                                            WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappIntentDataProvider(intentDataProvider);
                         }
                     });
         });
@@ -173,10 +174,8 @@ public class WebappModeTest {
     @MediumTest
     @Feature({"Webapps"})
     public void testWebappTabIdsProperlyAssigned() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
-        editor.apply();
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.TAB_ID_MANAGER_NEXT_ID, 11684);
 
         final WebappActivity webappActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
@@ -191,6 +190,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
+    @DisabledTest(message = "crbug.com/1064395")
     public void testBringTabToFront() {
         // Start the WebappActivity.
         final WebappActivity firstActivity =
@@ -253,62 +253,6 @@ public class WebappModeTest {
                 return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
             }
         });
-    }
-
-    /**
-     * Test that a WebappActivity uses WebappInfo set via WebappActivity#putWebappInfo() if
-     * available instead of constructing the WebappInfo from the launch intent.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Webapps"})
-    public void testWebappInfoReuse() {
-        Intent intent = createIntent(
-                WebappActivityTestRule.WEBAPP_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        Intent newIntent = createIntent(
-                WebappActivityTestRule.WEBAPP_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
-        WebappInfo webappInfo = WebappInfo.create(intent);
-        WebappActivity.addWebappInfo(WebappActivityTestRule.WEBAPP_ID, webappInfo);
-
-        WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
-        mActivityTestRule.startWebappActivity(newIntent);
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
-            }
-        });
-
-        Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-        WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
-
-        Assert.assertEquals(webappInfo, lastWebappActivity.getWebappInfo());
-        Assert.assertTrue(lastWebappActivity.getWebappInfo().url().equals(WEBAPP_2_URL));
-    }
-
-    /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */
-    // Flaky even with RetryOnFailure: http://crbug.com/749375
-    @DisabledTest
-    @Test
-    //    @MediumTest
-    //    @Feature({"Webapps"})
-    public void testSetsHasBeenLaunchedOnFirstLaunch() {
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
-        Assert.assertFalse(storage.hasBeenLaunched());
-
-        startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-
-        // Use a longer timeout because the DeferredStartupHandler is called after the page has
-        // finished loading.
-        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
-            @Override
-            public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
-            }
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-
-        Assert.assertTrue(storage.hasBeenLaunched());
     }
 
     /**

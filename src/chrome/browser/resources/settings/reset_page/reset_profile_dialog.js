@@ -10,8 +10,27 @@
  * circumstances. See triggered_profile_resetter.h for when the triggered
  * variant will be used.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../settings_shared_css.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Router} from '../router.m.js';
+
+import {ResetBrowserProxy, ResetBrowserProxyImpl} from './reset_browser_proxy.js';
+
 Polymer({
   is: 'settings-reset-profile-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -41,14 +60,14 @@ Polymer({
     },
   },
 
-  /** @private {?settings.ResetBrowserProxy} */
+  /** @private {?ResetBrowserProxy} */
   browserProxy_: null,
 
   /**
    * @private
    * @return {string}
    */
-  getExplanationText_: function() {
+  getExplanationText_() {
     if (this.isTriggered_) {
       return loadTimeData.getStringF(
           'triggeredResetPageExplanation', this.triggeredResetToolName_);
@@ -60,7 +79,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getPageTitle_: function() {
+  getPageTitle_() {
     if (this.isTriggered_) {
       return loadTimeData.getStringF(
           'triggeredResetPageTitle', this.triggeredResetToolName_);
@@ -69,8 +88,8 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
-    this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
+  ready() {
+    this.browserProxy_ = ResetBrowserProxyImpl.getInstance();
 
     this.addEventListener('cancel', () => {
       this.browserProxy_.onHideResetProfileDialog();
@@ -81,16 +100,16 @@ Polymer({
   },
 
   /** @private */
-  showDialog_: function() {
+  showDialog_() {
     if (!this.$.dialog.open) {
       this.$.dialog.showModal();
     }
     this.browserProxy_.onShowResetProfileDialog();
   },
 
-  show: function() {
+  show() {
     this.isTriggered_ =
-        settings.getCurrentRoute() == settings.routes.TRIGGERED_RESET_DIALOG;
+        Router.getInstance().getCurrentRoute() == routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
       this.browserProxy_.getTriggeredResetToolName().then(name => {
         this.resetRequestOrigin_ = 'triggeredreset';
@@ -103,25 +122,25 @@ Polymer({
       // with the startup URL chrome://settings/resetProfileSettings#cct.
       const origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
           'cct' :
-          settings.getQueryParameters().get('origin');
+          Router.getInstance().getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';
       this.showDialog_();
     }
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.cancel();
   },
 
-  cancel: function() {
+  cancel() {
     if (this.$.dialog.open) {
       this.$.dialog.cancel();
     }
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     this.clearingInProgress_ = true;
     this.browserProxy_
         .performResetProfileSettings(
@@ -140,7 +159,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onShowReportedSettingsTap_: function(e) {
+  onShowReportedSettingsTap_(e) {
     this.browserProxy_.showReportedSettings();
     e.stopPropagation();
   },

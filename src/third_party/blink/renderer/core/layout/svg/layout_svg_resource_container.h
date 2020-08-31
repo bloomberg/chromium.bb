@@ -21,9 +21,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_CONTAINER_H_
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_hidden_container.h"
+#include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 
 namespace blink {
+
+class SVGResourcesCycleSolver;
 
 enum LayoutSVGResourceType {
   kMaskerResourceType,
@@ -40,7 +44,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   explicit LayoutSVGResourceContainer(SVGElement*);
   ~LayoutSVGResourceContainer() override;
 
-  virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
+  virtual void RemoveAllClientsFromCache() = 0;
 
   // Remove any cached data for the |client|, and return true if so.
   virtual bool RemoveClientFromCache(SVGResourceClient&) { return false; }
@@ -64,6 +68,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
                                        SubtreeLayoutScope* = nullptr);
   void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
+  bool FindCycle(SVGResourcesCycleSolver&) const;
+
   static void MarkForLayoutAndParentResourceInvalidation(
       LayoutObject&,
       bool needs_layout = true);
@@ -74,6 +80,14 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  protected:
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
+
+  virtual bool FindCycleFromSelf(SVGResourcesCycleSolver&) const;
+  static bool FindCycleInDescendants(SVGResourcesCycleSolver&,
+                                     const LayoutObject& root);
+  static bool FindCycleInResources(SVGResourcesCycleSolver&,
+                                   const LayoutObject& object);
+  static bool FindCycleInSubtree(SVGResourcesCycleSolver&,
+                                 const LayoutObject& root);
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
@@ -96,6 +110,30 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
   DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, \
                     resource->ResourceType() == typeName,           \
                     resource.ResourceType() == typeName)
+
+template <typename ContainerType>
+inline bool IsResourceOfType(const LayoutSVGResourceContainer* container) {
+  return container->ResourceType() == ContainerType::kResourceType;
+}
+
+template <typename ContainerType>
+inline ContainerType* GetSVGResourceAsType(const SVGResource* resource) {
+  if (!resource)
+    return nullptr;
+  if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
+    if (IsResourceOfType<ContainerType>(container))
+      return static_cast<ContainerType*>(container);
+  }
+  return nullptr;
+}
+
+template <typename ContainerType>
+inline ContainerType* GetSVGResourceAsType(
+    const StyleSVGResource* style_resource) {
+  if (!style_resource)
+    return nullptr;
+  return GetSVGResourceAsType<ContainerType>(style_resource->Resource());
+}
 
 }  // namespace blink
 

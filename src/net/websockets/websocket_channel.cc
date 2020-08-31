@@ -16,7 +16,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -132,8 +132,61 @@ class DependentIOBuffer : public WrappedIOBuffer {
 
  private:
   ~DependentIOBuffer() override = default;
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<IOBuffer> buffer_;
 };
+
+void LogCloseCodeForUma(uint16_t code) {
+  // From RFC6455: "The status code is an integer number between 1000 and 4999
+  // (inclusive)". In practice, any 16-bit unsigned integer may be sent. For UMA
+  // purposes, we bucket codes whose meanings are not standardised. This enum is
+  // emitted to UMA, so don't remove entries or renumber it. It's better not to
+  // add new entries at all, since it will make older records incompatible with
+  // newer records.
+  enum class BucketedCloseCode {
+    kNormalClosure = 0,            // 1000
+    kGoingAway = 1,                // 1001
+    kProtocolError = 2,            // 1002
+    kUnsupportedData = 3,          // 1003
+    kReserved = 4,                 // 1004
+    kNoStatusRcvd = 5,             // 1005
+    kAbnormalClosure = 6,          // 1006
+    kInvalidFramePayloadData = 7,  // 1007
+    kPolicyViolation = 8,          // 1008
+    kMessageTooBig = 9,            // 1009
+    kMandatoryExt = 10,            // 1010
+    kInternalError = 11,           // 1011
+    kServiceRestart = 12,          // 1012
+    kTryAgainLater = 13,           // 1013
+    kBadGateway = 14,              // 1014
+    kTlsHandshake = 15,            // 1015
+    kOther1000Range = 16,          // 1016-1999
+    k2000Range = 17,               // 2000-2999
+    k3000Range = 18,               // 3000-3999
+    k4000Range = 19,               // 4000-4999
+    kUnder1000 = 20,               // 0-999
+    k5000AndOver = 21,             // 5000-65535
+    kMaxValue = k5000AndOver
+  };
+
+  BucketedCloseCode bucketed_code;
+  if (code >= 1000 && code <= 1015) {
+    bucketed_code = static_cast<BucketedCloseCode>(code - 1000);
+  } else if (code < 1000) {
+    bucketed_code = BucketedCloseCode::kUnder1000;
+  } else if (code < 2000) {
+    bucketed_code = BucketedCloseCode::kOther1000Range;
+  } else if (code < 3000) {
+    bucketed_code = BucketedCloseCode::k2000Range;
+  } else if (code < 4000) {
+    bucketed_code = BucketedCloseCode::k3000Range;
+  } else if (code < 5000) {
+    bucketed_code = BucketedCloseCode::k4000Range;
+  } else {
+    bucketed_code = BucketedCloseCode::k5000AndOver;
+  }
+
+  base::UmaHistogramEnumeration("Net.WebSocket.CloseCode", bucketed_code);
+}
 
 }  // namespace
 
@@ -177,12 +230,14 @@ class WebSocketChannel::ConnectDelegate
  public:
   explicit ConnectDelegate(WebSocketChannel* creator) : creator_(creator) {}
 
-  void OnCreateRequest(net::URLRequest* request) override {
+  void OnCreateRequest(URLRequest* request) override {
     creator_->OnCreateURLRequest(request);
   }
 
-  void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {
-    creator_->OnConnectSuccess(std::move(stream));
+  void OnSuccess(
+      std::unique_ptr<WebSocketStream> stream,
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
+    creator_->OnConnectSuccess(std::move(stream), std::move(response));
     // |this| may have been deleted.
   }
 
@@ -194,11 +249,6 @@ class WebSocketChannel::ConnectDelegate
   void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override {
     creator_->OnStartOpeningHandshake(std::move(request));
-  }
-
-  void OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response) override {
-    creator_->OnFinishOpeningHandshake(std::move(response));
   }
 
   void OnSSLCertificateError(
@@ -264,13 +314,13 @@ void WebSocketChannel::SendAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const SiteForCookies& site_for_cookies,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers,
-      base::Bind(&WebSocketStream::CreateAndConnectStream));
+      isolation_info, additional_headers,
+      base::BindOnce(&WebSocketStream::CreateAndConnectStream));
 }
 
 void WebSocketChannel::SetState(State new_state) {
@@ -408,13 +458,13 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const SiteForCookies& site_for_cookies,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
-    const WebSocketStreamRequestCreationCallback& callback) {
+    WebSocketStreamRequestCreationCallback callback) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers, callback);
+      isolation_info, additional_headers, std::move(callback));
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -431,10 +481,10 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
-    const GURL& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const SiteForCookies& site_for_cookies,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
-    const WebSocketStreamRequestCreationCallback& callback) {
+    WebSocketStreamRequestCreationCallback callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   if (!socket_url.SchemeIsWSOrWSS()) {
     // TODO(ricea): Kill the renderer (this error should have been caught by
@@ -445,9 +495,9 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
   }
   socket_url_ = socket_url;
   auto connect_delegate = std::make_unique<ConnectDelegate>(this);
-  stream_request_ = callback.Run(
+  stream_request_ = std::move(callback).Run(
       socket_url_, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers, url_request_context_,
+      isolation_info, additional_headers, url_request_context_,
       NetLogWithSource(), std::move(connect_delegate));
   SetState(CONNECTING);
 }
@@ -457,7 +507,8 @@ void WebSocketChannel::OnCreateURLRequest(URLRequest* request) {
 }
 
 void WebSocketChannel::OnConnectSuccess(
-    std::unique_ptr<WebSocketStream> stream) {
+    std::unique_ptr<WebSocketStream> stream,
+    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
   DCHECK(stream);
   DCHECK_EQ(CONNECTING, state_);
 
@@ -471,9 +522,9 @@ void WebSocketChannel::OnConnectSuccess(
   // TODO(ricea): Get flow control information from the WebSocketStream once we
   // have a multiplexing WebSocketStream.
   current_send_quota_ = send_quota_high_water_mark_;
-  event_interface_->OnAddChannelResponse(stream_->GetSubProtocol(),
-                                         stream_->GetExtensions(),
-                                         send_quota_high_water_mark_);
+  event_interface_->OnAddChannelResponse(
+      std::move(response), stream_->GetSubProtocol(), stream_->GetExtensions(),
+      send_quota_high_water_mark_);
   // |this| may have been deleted after OnAddChannelResponse.
 }
 
@@ -514,11 +565,6 @@ int WebSocketChannel::OnAuthRequired(
 void WebSocketChannel::OnStartOpeningHandshake(
     std::unique_ptr<WebSocketHandshakeRequestInfo> request) {
   event_interface_->OnStartOpeningHandshake(std::move(request));
-}
-
-void WebSocketChannel::OnFinishOpeningHandshake(
-    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
-  event_interface_->OnFinishOpeningHandshake(std::move(response));
 }
 
 ChannelState WebSocketChannel::WriteFrames() {
@@ -1030,6 +1076,7 @@ bool WebSocketChannel::ParseClose(base::span<const char> payload,
 void WebSocketChannel::DoDropChannel(bool was_clean,
                                      uint16_t code,
                                      const std::string& reason) {
+  LogCloseCodeForUma(code);
   event_interface_->OnDropChannel(was_clean, code, reason);
 }
 

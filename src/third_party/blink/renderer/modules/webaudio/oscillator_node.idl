@@ -23,7 +23,9 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#oscillatornode
+// https://webaudio.github.io/web-audio-api/#oscillatornode
+
+// https://webaudio.github.io/web-audio-api/#enumdef-oscillatortype
 enum OscillatorType {
     "sine",
     "square",
@@ -34,12 +36,9 @@ enum OscillatorType {
 
 // OscillatorNode is an audio generator of periodic waveforms.
 [
-    Exposed=Window,
-    Constructor(BaseAudioContext context, optional OscillatorOptions options),
-    RaisesException=Constructor,
-    Measure
-]
-interface OscillatorNode : AudioScheduledSourceNode {
+    Exposed=Window
+] interface OscillatorNode : AudioScheduledSourceNode {
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional OscillatorOptions options = {});
 
     [RaisesException=Setter] attribute OscillatorType type;
 

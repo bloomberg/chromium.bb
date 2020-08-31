@@ -8,9 +8,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
 midl("elevation_service_idl") {
-  sources = [
-    "elevation_service_idl.idl",
-  ]
+  sources = [ "elevation_service_idl.idl" ]
 
   writes_tlb = true
 }
@@ -50,6 +48,7 @@ executable("elevation_service") {
     ":version_resources",
     "//base",
     "//build/win:default_exe_manifest",
+    "//chrome/install_static:install_static_util",
     "//chrome/install_static:primary_module",
     "//components/crx_file",
     "//third_party/zlib/google:zip",
@@ -59,15 +58,12 @@ executable("elevation_service") {
 source_set("lib") {
   visibility = [ ":*" ]
 
-  public = [
-    "elevated_recovery_impl.h",
-    "elevator.h",
-    "service_main.h",
-  ]
-
   sources = [
     "elevated_recovery_impl.cc",
+    "elevated_recovery_impl.h",
     "elevator.cc",
+    "elevator.h",
+    "service_main.h",
     "service_main.cc",
   ]
 
@@ -75,20 +71,17 @@ source_set("lib") {
   configs -= [ "//build/config/win:winver" ]
   configs += [ ":winver" ]
 
-  public_deps = [
+  deps = [
     ":elevation_service_idl",
     "//base",
-  ]
-
-  deps = [
     "//chrome/install_static:install_static_util",
+    "//components/crx_file:crx_file",
+    "//third_party/zlib/google:zip",
   ]
 }
 
 process_version_rc_template("version_resources") {
-  sources = [
-    "elevation_service_exe.ver",
-  ]
+  sources = [ "elevation_service_exe.ver" ]
   output = "$target_gen_dir/elevation_service_exe.rc"
 }
 
@@ -98,9 +91,7 @@ copy("elevation_service_unittests_files") {
     "//components/test/data/crx_file/valid_publisher.crx3",
     "//components/test/data/update_client/ChromeRecovery.crx3",
   ]
-  outputs = [
-    "$root_out_dir/elevated_recovery_unittest/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/elevated_recovery_unittest/{{source_file_part}}" ]
 }
 
 test("elevation_service_unittests") {
@@ -117,6 +108,7 @@ test("elevation_service_unittests") {
     ":lib",
     "//base",
     "//base/test:test_support",
+    "//chrome/elevation_service:elevation_service_idl",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static/test:test_support",
     "//components/crx_file",

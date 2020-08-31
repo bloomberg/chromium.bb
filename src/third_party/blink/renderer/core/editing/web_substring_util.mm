@@ -77,7 +77,8 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
 
   // TODO(editing-dev): The use of updateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  range.StartPosition().GetDocument()->UpdateStyleAndLayout();
+  range.StartPosition().GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kEditing);
 
   for (TextIterator it(range.StartPosition(), range.EndPosition());
        !it.AtEnd() && [string length] < length; it.Advance()) {
@@ -138,9 +139,9 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
   return [string autorelease];
 }
 
-WebPoint GetBaselinePoint(LocalFrameView* frame_view,
-                          const EphemeralRange& range,
-                          NSAttributedString* string) {
+gfx::Point GetBaselinePoint(LocalFrameView* frame_view,
+                            const EphemeralRange& range,
+                            NSAttributedString* string) {
   IntRect string_rect = frame_view->FrameToViewport(FirstRectForRange(range));
   IntPoint string_point = string_rect.MinXMaxYCorner();
 
@@ -157,10 +158,10 @@ WebPoint GetBaselinePoint(LocalFrameView* frame_view,
 
 NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     WebFrameWidget* frame_widget,
-    WebPoint point,
-    WebPoint& baseline_point) {
+    gfx::Point point,
+    gfx::Point& baseline_point) {
   HitTestResult result = static_cast<WebFrameWidgetBase*>(frame_widget)
-                             ->CoreHitTestResultAt(IntPoint(point));
+                             ->CoreHitTestResultAt(FloatPoint(IntPoint(point)));
 
   if (!result.InnerNode())
     return nil;
@@ -195,7 +196,7 @@ NSAttributedString* WebSubstringUtil::AttributedSubstringInRange(
     WebLocalFrame* web_frame,
     size_t location,
     size_t length,
-    WebPoint* baseline_point) {
+    gfx::Point* baseline_point) {
   LocalFrame* frame = To<WebLocalFrameImpl>(web_frame)->GetFrame();
   if (frame->View()->NeedsLayout())
     frame->View()->UpdateLayout();

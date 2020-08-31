@@ -8,11 +8,11 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
@@ -54,7 +54,7 @@ public class WebappIntentDataProviderFactory {
      * @param intent Intent containing info about the app.
      */
     public static BrowserServicesIntentDataProvider create(Intent intent) {
-        String id = WebappIntentUtils.idFromIntent(intent);
+        String id = WebappIntentUtils.getId(intent);
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
         if (id == null || url == null) {
             Log.e(TAG, "Incomplete data provided: " + id + ", " + url);
@@ -96,10 +96,11 @@ public class WebappIntentDataProviderFactory {
         int defaultBackgroundColor =
                 SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
 
-        WebappExtras webappExtras = new WebappExtras(id, url, scope, new WebappIcon(icon), name,
-                shortName, displayMode, orientation, source, backgroundColor,
-                defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
-        return new WebappIntentDataProvider(
-                toolbarColor, hasValidToolbarColor, webappExtras, null /* webApkExtras */);
+        WebappExtras webappExtras =
+                new WebappExtras(id, url, scope, new WebappIcon(icon, true /* isTrusted */), name,
+                        shortName, displayMode, orientation, source, backgroundColor,
+                        defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
+        return new WebappIntentDataProvider(toolbarColor, hasValidToolbarColor,
+                null /* shareData */, webappExtras, null /* webApkExtras */);
     }
 }

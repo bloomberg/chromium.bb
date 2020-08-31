@@ -64,7 +64,8 @@ class WebRtcVoiceEngine final : public VoiceEngineInterface {
 
   const std::vector<AudioCodec>& send_codecs() const override;
   const std::vector<AudioCodec>& recv_codecs() const override;
-  RtpCapabilities GetCapabilities() const override;
+  std::vector<webrtc::RtpHeaderExtensionCapability> GetRtpHeaderExtensions()
+      const override;
 
   // For tracking WebRtc channels. Needed because we have to pause them
   // all when switching devices.
@@ -207,6 +208,17 @@ class WebRtcVoiceMediaChannel final : public VoiceMediaChannel,
       std::unique_ptr<webrtc::AudioSinkInterface> sink) override;
 
   std::vector<webrtc::RtpSource> GetSources(uint32_t ssrc) const override;
+
+  // Sets a frame transformer between encoder and packetizer, to transform
+  // encoded frames before sending them out the network.
+  void SetEncoderToPacketizerFrameTransformer(
+      uint32_t ssrc,
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
+      override;
+  void SetDepacketizerToDecoderFrameTransformer(
+      uint32_t ssrc,
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
+      override;
 
   // implements Transport interface
   bool SendRtp(const uint8_t* data,

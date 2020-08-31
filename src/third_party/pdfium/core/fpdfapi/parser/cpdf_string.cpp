@@ -14,7 +14,7 @@
 #include "core/fxcrt/fx_stream.h"
 #include "third_party/base/ptr_util.h"
 
-CPDF_String::CPDF_String() : m_bHex(false) {}
+CPDF_String::CPDF_String() = default;
 
 CPDF_String::CPDF_String(WeakPtr<ByteStringPool> pPool,
                          const ByteString& str,
@@ -25,12 +25,12 @@ CPDF_String::CPDF_String(WeakPtr<ByteStringPool> pPool,
 }
 
 CPDF_String::CPDF_String(WeakPtr<ByteStringPool> pPool, const WideString& str)
-    : m_String(PDF_EncodeText(str)), m_bHex(false) {
+    : m_String(PDF_EncodeText(str)) {
   if (pPool)
     m_String = pPool->Intern(m_String);
 }
 
-CPDF_String::~CPDF_String() {}
+CPDF_String::~CPDF_String() = default;
 
 CPDF_Object::Type CPDF_String::GetType() const {
   return kString;
@@ -69,7 +69,7 @@ WideString CPDF_String::GetUnicodeText() const {
 
 bool CPDF_String::WriteTo(IFX_ArchiveStream* archive,
                           const CPDF_Encryptor* encryptor) const {
-  std::vector<uint8_t> encrypted_data;
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> encrypted_data;
   pdfium::span<const uint8_t> data = m_String.raw_span();
   if (encryptor) {
     encrypted_data = encryptor->Encrypt(data);

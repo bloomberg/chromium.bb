@@ -17,7 +17,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/browser/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -77,10 +77,8 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                            ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW,
                            IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (controller()->CanDoShowAppInfoFlow()) {
-      AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
-                           IDS_APP_CONTEXT_MENU_SHOW_INFO);
-    }
+    AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
+                         IDS_APP_CONTEXT_MENU_SHOW_INFO);
   } else {
     extension_menu_items_ = std::make_unique<extensions::ContextMenuMatcher>(
         profile(), this, menu_model,
@@ -117,7 +115,7 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                          is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
                                           : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
 
-    if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
+    if (!is_system_web_app) {
       AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
                            IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }
@@ -132,12 +130,14 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
   return AppContextMenu::GetLabelForCommandId(command_id);
 }
 
-const gfx::VectorIcon* ExtensionAppContextMenu::GetVectorIconForCommandId(
+ui::ImageModel ExtensionAppContextMenu::GetIconForCommandId(
     int command_id) const {
-  if (command_id == ash::LAUNCH_NEW)
-    return &GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId());
+  if (command_id == ash::LAUNCH_NEW) {
+    return ui::ImageModel::FromVectorIcon(
+        GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()));
+  }
 
-  return AppContextMenu::GetVectorIconForCommandId(command_id);
+  return AppContextMenu::GetIconForCommandId(command_id);
 }
 
 bool ExtensionAppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
@@ -203,9 +203,9 @@ void ExtensionAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     extension_menu_items_->ExecuteCommand(command_id, nullptr, nullptr,
                                           content::ContextMenuParams());
   } else if (command_id == ash::APP_CONTEXT_MENU_NEW_WINDOW) {
-    controller()->CreateNewWindow(profile(), false);
+    controller()->CreateNewWindow(/*incognito=*/false);
   } else if (command_id == ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW) {
-    controller()->CreateNewWindow(profile(), true);
+    controller()->CreateNewWindow(/*incognito=*/true);
   } else {
     AppContextMenu::ExecuteCommand(command_id, event_flags);
   }
@@ -224,7 +224,8 @@ void ExtensionAppContextMenu::CreateOpenNewSubmenu(
       kGroupId);
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::LAUNCH_NEW, GetLaunchStringId(), open_new_submenu_model_.get(),
-      GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()));
+      ui::ImageModel::FromVectorIcon(
+          GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId())));
 }
 
 }  // namespace app_list

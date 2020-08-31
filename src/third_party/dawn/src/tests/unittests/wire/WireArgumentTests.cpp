@@ -48,20 +48,18 @@ TEST_F(WireArgumentTests, ValueArgument) {
 // Test that the wire is able to send arrays of numerical values
 TEST_F(WireArgumentTests, ValueArrayArgument) {
     // Create a bindgroup.
-    WGPUBindGroupLayoutDescriptor bglDescriptor;
-    bglDescriptor.nextInChain = nullptr;
-    bglDescriptor.bindingCount = 0;
-    bglDescriptor.bindings = nullptr;
+    WGPUBindGroupLayoutDescriptor bglDescriptor = {};
+    bglDescriptor.entryCount = 0;
+    bglDescriptor.entries = nullptr;
 
     WGPUBindGroupLayout bgl = wgpuDeviceCreateBindGroupLayout(device, &bglDescriptor);
     WGPUBindGroupLayout apiBgl = api.GetNewBindGroupLayout();
     EXPECT_CALL(api, DeviceCreateBindGroupLayout(apiDevice, _)).WillOnce(Return(apiBgl));
 
-    WGPUBindGroupDescriptor bindGroupDescriptor;
-    bindGroupDescriptor.nextInChain = nullptr;
+    WGPUBindGroupDescriptor bindGroupDescriptor = {};
     bindGroupDescriptor.layout = bgl;
-    bindGroupDescriptor.bindingCount = 0;
-    bindGroupDescriptor.bindings = nullptr;
+    bindGroupDescriptor.entryCount = 0;
+    bindGroupDescriptor.entries = nullptr;
 
     WGPUBindGroup bindGroup = wgpuDeviceCreateBindGroup(device, &bindGroupDescriptor);
     WGPUBindGroup apiBindGroup = api.GetNewBindGroup();
@@ -97,35 +95,30 @@ TEST_F(WireArgumentTests, ValueArrayArgument) {
 // Test that the wire is able to send C strings
 TEST_F(WireArgumentTests, CStringArgument) {
     // Create shader module
-    WGPUShaderModuleDescriptor vertexDescriptor;
-    vertexDescriptor.nextInChain = nullptr;
-    vertexDescriptor.codeSize = 0;
+    WGPUShaderModuleDescriptor vertexDescriptor = {};
     WGPUShaderModule vsModule = wgpuDeviceCreateShaderModule(device, &vertexDescriptor);
     WGPUShaderModule apiVsModule = api.GetNewShaderModule();
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiVsModule));
 
     // Create the color state descriptor
-    WGPUBlendDescriptor blendDescriptor;
+    WGPUBlendDescriptor blendDescriptor = {};
     blendDescriptor.operation = WGPUBlendOperation_Add;
     blendDescriptor.srcFactor = WGPUBlendFactor_One;
     blendDescriptor.dstFactor = WGPUBlendFactor_One;
-    WGPUColorStateDescriptor colorStateDescriptor;
-    colorStateDescriptor.nextInChain = nullptr;
+    WGPUColorStateDescriptor colorStateDescriptor = {};
     colorStateDescriptor.format = WGPUTextureFormat_RGBA8Unorm;
     colorStateDescriptor.alphaBlend = blendDescriptor;
     colorStateDescriptor.colorBlend = blendDescriptor;
     colorStateDescriptor.writeMask = WGPUColorWriteMask_All;
 
     // Create the input state
-    WGPUVertexStateDescriptor vertexState;
-    vertexState.nextInChain = nullptr;
+    WGPUVertexStateDescriptor vertexState = {};
     vertexState.indexFormat = WGPUIndexFormat_Uint32;
     vertexState.vertexBufferCount = 0;
     vertexState.vertexBuffers = nullptr;
 
     // Create the rasterization state
-    WGPURasterizationStateDescriptor rasterizationState;
-    rasterizationState.nextInChain = nullptr;
+    WGPURasterizationStateDescriptor rasterizationState = {};
     rasterizationState.frontFace = WGPUFrontFace_CCW;
     rasterizationState.cullMode = WGPUCullMode_None;
     rasterizationState.depthBias = 0;
@@ -133,14 +126,13 @@ TEST_F(WireArgumentTests, CStringArgument) {
     rasterizationState.depthBiasClamp = 0.0;
 
     // Create the depth-stencil state
-    WGPUStencilStateFaceDescriptor stencilFace;
+    WGPUStencilStateFaceDescriptor stencilFace = {};
     stencilFace.compare = WGPUCompareFunction_Always;
     stencilFace.failOp = WGPUStencilOperation_Keep;
     stencilFace.depthFailOp = WGPUStencilOperation_Keep;
     stencilFace.passOp = WGPUStencilOperation_Keep;
 
-    WGPUDepthStencilStateDescriptor depthStencilState;
-    depthStencilState.nextInChain = nullptr;
+    WGPUDepthStencilStateDescriptor depthStencilState = {};
     depthStencilState.format = WGPUTextureFormat_Depth24PlusStencil8;
     depthStencilState.depthWriteEnabled = false;
     depthStencilState.depthCompare = WGPUCompareFunction_Always;
@@ -150,8 +142,7 @@ TEST_F(WireArgumentTests, CStringArgument) {
     depthStencilState.stencilWriteMask = 0xff;
 
     // Create the pipeline layout
-    WGPUPipelineLayoutDescriptor layoutDescriptor;
-    layoutDescriptor.nextInChain = nullptr;
+    WGPUPipelineLayoutDescriptor layoutDescriptor = {};
     layoutDescriptor.bindGroupLayoutCount = 0;
     layoutDescriptor.bindGroupLayouts = nullptr;
     WGPUPipelineLayout layout = wgpuDeviceCreatePipelineLayout(device, &layoutDescriptor);
@@ -159,15 +150,12 @@ TEST_F(WireArgumentTests, CStringArgument) {
     EXPECT_CALL(api, DeviceCreatePipelineLayout(apiDevice, _)).WillOnce(Return(apiLayout));
 
     // Create pipeline
-    WGPURenderPipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor.nextInChain = nullptr;
+    WGPURenderPipelineDescriptor pipelineDescriptor = {};
 
-    pipelineDescriptor.vertexStage.nextInChain = nullptr;
     pipelineDescriptor.vertexStage.module = vsModule;
     pipelineDescriptor.vertexStage.entryPoint = "main";
 
-    WGPUProgrammableStageDescriptor fragmentStage;
-    fragmentStage.nextInChain = nullptr;
+    WGPUProgrammableStageDescriptor fragmentStage = {};
     fragmentStage.module = vsModule;
     fragmentStage.entryPoint = "main";
     pipelineDescriptor.fragmentStage = &fragmentStage;
@@ -204,8 +192,7 @@ TEST_F(WireArgumentTests, ObjectAsValueArgument) {
     WGPUCommandEncoder apiEncoder = api.GetNewCommandEncoder();
     EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice, nullptr)).WillOnce(Return(apiEncoder));
 
-    WGPUBufferDescriptor descriptor;
-    descriptor.nextInChain = nullptr;
+    WGPUBufferDescriptor descriptor = {};
     descriptor.size = 8;
     descriptor.usage =
         static_cast<WGPUBufferUsage>(WGPUBufferUsage_CopySrc | WGPUBufferUsage_CopyDst);
@@ -244,11 +231,6 @@ TEST_F(WireArgumentTests, ObjectsAsPointerArgument) {
             .WillOnce(Return(apiCmdBufs[i]));
     }
 
-    // Create queue
-    WGPUQueue queue = wgpuDeviceCreateQueue(device);
-    WGPUQueue apiQueue = api.GetNewQueue();
-    EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue));
-
     // Submit command buffer and check we got a call with both API-side command buffers
     wgpuQueueSubmit(queue, 2, cmdBufs);
 
@@ -262,8 +244,7 @@ TEST_F(WireArgumentTests, ObjectsAsPointerArgument) {
 
 // Test that the wire is able to send structures that contain pure values (non-objects)
 TEST_F(WireArgumentTests, StructureOfValuesArgument) {
-    WGPUSamplerDescriptor descriptor;
-    descriptor.nextInChain = nullptr;
+    WGPUSamplerDescriptor descriptor = {};
     descriptor.magFilter = WGPUFilterMode_Linear;
     descriptor.minFilter = WGPUFilterMode_Nearest;
     descriptor.mipmapFilter = WGPUFilterMode_Linear;
@@ -296,17 +277,15 @@ TEST_F(WireArgumentTests, StructureOfValuesArgument) {
 
 // Test that the wire is able to send structures that contain objects
 TEST_F(WireArgumentTests, StructureOfObjectArrayArgument) {
-    WGPUBindGroupLayoutDescriptor bglDescriptor;
-    bglDescriptor.nextInChain = nullptr;
-    bglDescriptor.bindingCount = 0;
-    bglDescriptor.bindings = nullptr;
+    WGPUBindGroupLayoutDescriptor bglDescriptor = {};
+    bglDescriptor.entryCount = 0;
+    bglDescriptor.entries = nullptr;
 
     WGPUBindGroupLayout bgl = wgpuDeviceCreateBindGroupLayout(device, &bglDescriptor);
     WGPUBindGroupLayout apiBgl = api.GetNewBindGroupLayout();
     EXPECT_CALL(api, DeviceCreateBindGroupLayout(apiDevice, _)).WillOnce(Return(apiBgl));
 
-    WGPUPipelineLayoutDescriptor descriptor;
-    descriptor.nextInChain = nullptr;
+    WGPUPipelineLayoutDescriptor descriptor = {};
     descriptor.bindGroupLayoutCount = 1;
     descriptor.bindGroupLayouts = &bgl;
 
@@ -328,34 +307,51 @@ TEST_F(WireArgumentTests, StructureOfObjectArrayArgument) {
 // Test that the wire is able to send structures that contain objects
 TEST_F(WireArgumentTests, StructureOfStructureArrayArgument) {
     static constexpr int NUM_BINDINGS = 3;
-    WGPUBindGroupLayoutBinding bindings[NUM_BINDINGS]{
-        {0, WGPUShaderStage_Vertex, WGPUBindingType_Sampler, false, false,
-         WGPUTextureViewDimension_2D, WGPUTextureComponentType_Float},
-        {1, WGPUShaderStage_Vertex, WGPUBindingType_SampledTexture, false, false,
-         WGPUTextureViewDimension_2D, WGPUTextureComponentType_Float},
-        {2, static_cast<WGPUShaderStage>(WGPUShaderStage_Vertex | WGPUShaderStage_Fragment),
-         WGPUBindingType_UniformBuffer, false, false, WGPUTextureViewDimension_2D,
-         WGPUTextureComponentType_Float},
+    WGPUBindGroupLayoutEntry entries[NUM_BINDINGS]{
+        {0,
+         WGPUShaderStage_Vertex,
+         WGPUBindingType_Sampler,
+         false,
+         false,
+         WGPUTextureViewDimension_2D,
+         WGPUTextureComponentType_Float,
+         WGPUTextureFormat_RGBA8Unorm},
+        {1,
+         WGPUShaderStage_Vertex,
+         WGPUBindingType_SampledTexture,
+         false,
+         false,
+         WGPUTextureViewDimension_2D,
+         WGPUTextureComponentType_Float,
+         WGPUTextureFormat_RGBA8Unorm},
+        {2,
+         static_cast<WGPUShaderStage>(WGPUShaderStage_Vertex | WGPUShaderStage_Fragment),
+         WGPUBindingType_UniformBuffer,
+         false,
+         false,
+         WGPUTextureViewDimension_2D,
+         WGPUTextureComponentType_Float,
+         WGPUTextureFormat_RGBA8Unorm},
     };
-    WGPUBindGroupLayoutDescriptor bglDescriptor;
-    bglDescriptor.bindingCount = NUM_BINDINGS;
-    bglDescriptor.bindings = bindings;
+    WGPUBindGroupLayoutDescriptor bglDescriptor = {};
+    bglDescriptor.entryCount = NUM_BINDINGS;
+    bglDescriptor.entries = entries;
 
     wgpuDeviceCreateBindGroupLayout(device, &bglDescriptor);
     WGPUBindGroupLayout apiBgl = api.GetNewBindGroupLayout();
     EXPECT_CALL(
         api,
         DeviceCreateBindGroupLayout(
-            apiDevice, MatchesLambda([bindings](const WGPUBindGroupLayoutDescriptor* desc) -> bool {
+            apiDevice, MatchesLambda([entries](const WGPUBindGroupLayoutDescriptor* desc) -> bool {
                 for (int i = 0; i < NUM_BINDINGS; ++i) {
-                    const auto& a = desc->bindings[i];
-                    const auto& b = bindings[i];
+                    const auto& a = desc->entries[i];
+                    const auto& b = entries[i];
                     if (a.binding != b.binding || a.visibility != b.visibility ||
                         a.type != b.type) {
                         return false;
                     }
                 }
-                return desc->nextInChain == nullptr && desc->bindingCount == 3;
+                return desc->nextInChain == nullptr && desc->entryCount == 3;
             })))
         .WillOnce(Return(apiBgl));
 
@@ -366,8 +362,7 @@ TEST_F(WireArgumentTests, StructureOfStructureArrayArgument) {
 TEST_F(WireArgumentTests, DISABLED_NullptrInArray) {
     WGPUBindGroupLayout nullBGL = nullptr;
 
-    WGPUPipelineLayoutDescriptor descriptor;
-    descriptor.nextInChain = nullptr;
+    WGPUPipelineLayoutDescriptor descriptor = {};
     descriptor.bindGroupLayoutCount = 1;
     descriptor.bindGroupLayouts = &nullBGL;
 

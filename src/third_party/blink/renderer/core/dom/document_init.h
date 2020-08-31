@@ -31,12 +31,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -45,9 +47,12 @@ namespace blink {
 class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
-class LocalFrame;
 class HTMLImportsController;
+class LocalFrame;
+class PluginData;
 class Settings;
+class UseCounter;
+class WindowAgentFactory;
 
 class CORE_EXPORT DocumentInit final {
   STACK_ALLOCATED();
@@ -65,11 +70,24 @@ class CORE_EXPORT DocumentInit final {
   //       .WithURL(url);
   //   Document* document = MakeGarbageCollected<Document>(init);
   static DocumentInit Create();
-  static DocumentInit CreateWithImportsController(HTMLImportsController*);
 
   DocumentInit(const DocumentInit&);
   ~DocumentInit();
 
+  enum class Type {
+    kHTML,
+    kXHTML,
+    kImage,
+    kPlugin,
+    kMedia,
+    kSVG,
+    kXML,
+    kViewSource,
+    kText,
+    kUnspecified
+  };
+
+  DocumentInit& WithImportsController(HTMLImportsController*);
   HTMLImportsController* ImportsController() const {
     return imports_controller_;
   }
@@ -77,8 +95,8 @@ class CORE_EXPORT DocumentInit final {
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  WebSandboxFlags GetSandboxFlags() const;
-  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
+  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
+  mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
   bool GrantLoadLocalResources() const { return grant_load_local_resources_; }
@@ -87,6 +105,23 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithDocumentLoader(DocumentLoader*);
   LocalFrame* GetFrame() const;
+  UseCounter* GetUseCounter() const;
+
+  // Compute the type of document to be loaded inside a |frame|, given its |url|
+  // and its |mime_type|.
+  //
+  // In case of plugin handled by MimeHandlerview (which do not create a
+  // PluginDocument), the type is Type::KHTML and |is_for_external_handler| is
+  // set to true.
+  static Type ComputeDocumentType(LocalFrame* frame,
+                                  const KURL& url,
+                                  const String& mime_type,
+                                  bool* is_for_external_handler = nullptr);
+  DocumentInit& WithTypeFrom(const String& mime_type);
+  Type GetType() const { return type_; }
+  const String& GetMimeType() const { return mime_type_; }
+  bool IsForExternalHandler() const { return is_for_external_handler_; }
+  Color GetPluginBackgroundColor() const { return plugin_background_color_; }
 
   // Used by the DOMImplementation and DOMParser to pass their parent Document
   // so that the created Document will return the Document when the
@@ -101,7 +136,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Specifies the Document to inherit security configurations from.
   DocumentInit& WithOwnerDocument(Document*);
-  Document* OwnerDocument() const { return owner_document_.Get(); }
+  Document* OwnerDocument() const { return owner_document_; }
 
   // Specifies the SecurityOrigin in which the URL was requested. This is
   // relevant for determining properties of the resulting document's origin
@@ -130,10 +165,15 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithFeaturePolicyHeader(const String& header);
   const String& FeaturePolicyHeader() const { return feature_policy_header_; }
 
+  DocumentInit& WithReportOnlyFeaturePolicyHeader(const String& header);
+  const String& ReportOnlyFeaturePolicyHeader() const {
+    return report_only_feature_policy_header_;
+  }
+
   DocumentInit& WithOriginTrialsHeader(const String& header);
   const String& OriginTrialsHeader() const { return origin_trials_header_; }
 
-  DocumentInit& WithSandboxFlags(WebSandboxFlags flags);
+  DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
   DocumentInit& WithContentSecurityPolicyFromContextDoc();
@@ -145,8 +185,25 @@ class CORE_EXPORT DocumentInit final {
     return frame_policy_;
   }
 
+  DocumentInit& WithDocumentPolicy(
+      const DocumentPolicy::ParsedDocumentPolicy& document_policy);
+  const DocumentPolicy::ParsedDocumentPolicy& GetDocumentPolicy() const {
+    return document_policy_;
+  }
+
+  DocumentInit& WithReportOnlyDocumentPolicyHeader(const String& header);
+  const String& ReportOnlyDocumentPolicyHeader() const {
+    return report_only_document_policy_header_;
+  }
+
+  DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
+  const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
+
+  WindowAgentFactory* GetWindowAgentFactory() const;
+  Settings* GetSettingsForWindowAgentFactory() const;
+
  private:
-  DocumentInit(HTMLImportsController*);
+  DocumentInit() = default;
 
   // For a Document associated directly with a frame, this will be the
   // DocumentLoader driving the commit. For an import, XSLT-generated
@@ -154,14 +211,19 @@ class CORE_EXPORT DocumentInit final {
   // of its owning Document.
   DocumentLoader* MasterDocumentLoader() const;
 
-  Member<DocumentLoader> document_loader_;
-  Member<Document> parent_document_;
+  static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
-  Member<HTMLImportsController> imports_controller_;
+  Type type_ = Type::kUnspecified;
+  String mime_type_;
 
-  Member<Document> context_document_;
+  DocumentLoader* document_loader_ = nullptr;
+  Document* parent_document_ = nullptr;
+
+  HTMLImportsController* imports_controller_ = nullptr;
+
+  Document* context_document_ = nullptr;
   KURL url_;
-  Member<Document> owner_document_;
+  Document* owner_document_ = nullptr;
 
   // Initiator origin is used for calculating the document origin when the
   // navigation is started in a different process. In such cases, the document
@@ -194,27 +256,41 @@ class CORE_EXPORT DocumentInit final {
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources_ = false;
 
-  Member<V0CustomElementRegistrationContext> registration_context_;
-  bool create_new_registration_context_;
+  V0CustomElementRegistrationContext* registration_context_ = nullptr;
+  bool create_new_registration_context_ = false;
 
   // The feature policy set via response header.
   String feature_policy_header_;
+  String report_only_feature_policy_header_;
 
   // The origin trial set via response header.
   String origin_trials_header_;
 
   // Additional sandbox flags
-  WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
+  network::mojom::blink::WebSandboxFlags sandbox_flags_ =
+      network::mojom::blink::WebSandboxFlags::kNone;
 
   // Loader's CSP
-  Member<ContentSecurityPolicy> content_security_policy_;
-  bool content_security_policy_from_context_doc_;
+  ContentSecurityPolicy* content_security_policy_ = nullptr;
+  bool content_security_policy_from_context_doc_ = false;
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
 
   // The frame policy snapshot from the beginning of navigation.
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;
+
+  // The document policy set via response header.
+  DocumentPolicy::ParsedDocumentPolicy document_policy_;
+  String report_only_document_policy_header_;
+
+  // The claimed URL inside Web Bundle file from which the document is loaded.
+  // This URL is used for window.location and document.URL and relative path
+  // computation in the document.
+  KURL web_bundle_claimed_url_;
+
+  bool is_for_external_handler_ = false;
+  Color plugin_background_color_;
 };
 
 }  // namespace blink

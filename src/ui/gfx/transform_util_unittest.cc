@@ -81,8 +81,8 @@ TEST(TransformUtilTest, SnapTranslation) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Translate3d(SkDoubleToMScalar(1.01), SkDoubleToMScalar(1.99),
-                        SkDoubleToMScalar(3.0));
+  transform.Translate3d(SkDoubleToScalar(1.01), SkDoubleToScalar(1.99),
+                        SkDoubleToScalar(3.0));
 
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -95,8 +95,8 @@ TEST(TransformUtilTest, SnapTranslationDistantViewport) {
   Transform transform;
   const int kOffset = 5000;
 
-  transform.Translate3d(SkDoubleToMScalar(1.01), SkDoubleToMScalar(1.99),
-                        SkDoubleToMScalar(3.0));
+  transform.Translate3d(SkDoubleToScalar(1.01), SkDoubleToScalar(1.99),
+                        SkDoubleToScalar(3.0));
 
   Rect viewport(kOffset, kOffset, 1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -109,8 +109,8 @@ TEST(TransformUtilTest, SnapScale) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Scale3d(SkDoubleToMScalar(5.0), SkDoubleToMScalar(2.00001),
-                    SkDoubleToMScalar(1.0));
+  transform.Scale3d(SkDoubleToScalar(5.0), SkDoubleToScalar(2.00001),
+                    SkDoubleToScalar(1.0));
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
 
@@ -121,8 +121,8 @@ TEST(TransformUtilTest, NoSnapScale) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Scale3d(SkDoubleToMScalar(5.0), SkDoubleToMScalar(2.1),
-                    SkDoubleToMScalar(1.0));
+  transform.Scale3d(SkDoubleToScalar(5.0), SkDoubleToScalar(2.1),
+                    SkDoubleToScalar(1.0));
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
 
@@ -133,11 +133,11 @@ TEST(TransformUtilTest, SnapCompositeTransform) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Translate3d(SkDoubleToMScalar(30.5), SkDoubleToMScalar(20.0),
-                        SkDoubleToMScalar(10.1));
+  transform.Translate3d(SkDoubleToScalar(30.5), SkDoubleToScalar(20.0),
+                        SkDoubleToScalar(10.1));
   transform.RotateAboutZAxis(89.99);
-  transform.Scale3d(SkDoubleToMScalar(1.0), SkDoubleToMScalar(3.00001),
-                    SkDoubleToMScalar(2.0));
+  transform.Scale3d(SkDoubleToScalar(1.0), SkDoubleToScalar(3.00001),
+                    SkDoubleToScalar(2.0));
 
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -168,10 +168,10 @@ TEST(TransformUtilTest, NoSnapSkewedCompositeTransform) {
   Transform transform;
 
   transform.RotateAboutZAxis(89.99);
-  transform.Scale3d(SkDoubleToMScalar(1.0), SkDoubleToMScalar(3.00001),
-                    SkDoubleToMScalar(2.0));
-  transform.Translate3d(SkDoubleToMScalar(30.5), SkDoubleToMScalar(20.0),
-                        SkDoubleToMScalar(10.1));
+  transform.Scale3d(SkDoubleToScalar(1.0), SkDoubleToScalar(3.00001),
+                    SkDoubleToScalar(2.0));
+  transform.Translate3d(SkDoubleToScalar(30.5), SkDoubleToScalar(20.0),
+                        SkDoubleToScalar(10.1));
   transform.Skew(20.0, 0.0);
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -320,13 +320,32 @@ TEST(TransformUtilTest, Transform2D) {
 }
 
 TEST(TransformUtilTest, TransformBetweenRects) {
-  const RectF src_rect(0.f, 0.f, 5.f, 5.f);
-  const RectF dst_rect(10.f, 10.f, 10.f, 20.f);
+  auto verify = [](const RectF& src_rect, const RectF& dst_rect) {
+    const Transform transform = TransformBetweenRects(src_rect, dst_rect);
 
-  Transform transform = TransformBetweenRects(src_rect, dst_rect);
-  RectF transformed_rect = src_rect;
-  transform.TransformRect(&transformed_rect);
-  EXPECT_EQ(dst_rect, transformed_rect);
+    // Applies |transform| to calculate the target rectangle from |src_rect|.
+    // Notes that |transform| is in |src_rect|'s local coordinates.
+    RectF dst_in_src_coordinates = RectF(src_rect.size());
+    transform.TransformRect(&dst_in_src_coordinates);
+    RectF dst_in_parent_coordinates = dst_in_src_coordinates;
+    dst_in_parent_coordinates.Offset(src_rect.OffsetFromOrigin());
+
+    // Verifies that the target rectangle is expected.
+    EXPECT_EQ(dst_rect, dst_in_parent_coordinates);
+  };
+
+  std::vector<const std::pair<const RectF, const RectF>> test_cases{
+      {RectF(0.f, 0.f, 2.f, 3.f), RectF(3.f, 5.f, 4.f, 9.f)},
+      {RectF(10.f, 7.f, 2.f, 6.f), RectF(4.f, 2.f, 1.f, 12.f)},
+      {RectF(0.f, 0.f, 3.f, 5.f), RectF(0.f, 0.f, 6.f, 2.5f)}};
+
+  for (const auto& test_case : test_cases) {
+    verify(test_case.first, test_case.second);
+    verify(test_case.second, test_case.first);
+  }
+
+  // Tests the case where the destination is an empty rectangle.
+  verify(RectF(0.f, 0.f, 3.f, 5.f), RectF());
 }
 
 }  // namespace

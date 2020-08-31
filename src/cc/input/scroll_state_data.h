@@ -11,6 +11,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/trees/property_tree.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace cc {
 
@@ -46,8 +47,9 @@ class CC_EXPORT ScrollStateData {
   // True if the user interacts directly with the display, e.g., via
   // touch.
   bool is_direct_manipulation;
-  // Minimum amount this input device can scroll.
-  double delta_granularity;
+
+  // Granularity units for the scroll delta.
+  ui::ScrollGranularity delta_granularity;
 
   // TODO(tdresser): ScrollState shouldn't need to keep track of whether or not
   // this ScrollState object has caused a scroll. Ideally, any native scroller
@@ -65,20 +67,10 @@ class CC_EXPORT ScrollStateData {
   // resolved. crbug.com/755164.
   bool is_scroll_chain_cut;
 
-  ScrollNode* current_native_scrolling_node() const;
-  void set_current_native_scrolling_node(
-      ScrollNode* current_native_scrolling_node);
   ElementId current_native_scrolling_element() const;
   void set_current_native_scrolling_element(ElementId element_id);
 
  private:
-  // Only one of current_native_scrolling_node_ and
-  // current_native_scrolling_element_ may be non-null at a time. Whenever
-  // possible, we should store the scroll node.
-
-  // The last scroll node to respond to a scroll, or null if none exists.
-  // TODO(bokan): This is redundant with the member below.
-  ScrollNode* current_native_scrolling_node_;
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
   // TODO(bokan): In the compositor, this is now only used as an override to

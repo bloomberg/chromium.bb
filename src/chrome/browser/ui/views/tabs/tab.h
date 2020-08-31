@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -63,6 +63,10 @@ class Tab : public gfx::AnimationDelegate,
   static constexpr int kMinimumContentsWidthForCloseButtons = 68;
   static constexpr int kTouchMinimumContentsWidthForCloseButtons = 100;
 
+  // Sets whether hover cards should appear on mouse hover. Used in browser
+  // tests to prevent them from interfering with unrelated tests.
+  static void SetShowHoverCardOnMouseHoverForTesting(bool value);
+
   explicit Tab(TabController* controller);
   ~Tab() override;
 
@@ -80,6 +84,7 @@ class Tab : public gfx::AnimationDelegate,
   void Layout() override;
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -165,6 +170,10 @@ class Tab : public gfx::AnimationDelegate,
   static base::string16 GetTooltipText(
       const base::string16& title,
       base::Optional<TabAlertState> alert_state);
+
+  // Returns an alert state to be shown among given alert states.
+  static base::Optional<TabAlertState> GetAlertStateToShow(
+      const std::vector<TabAlertState>& alert_states);
 
  private:
   class TabCloseButtonObserver;

@@ -34,10 +34,10 @@ RelativeOrientationSensor::RelativeOrientationSensor(
                         options,
                         exception_state,
                         SensorType::RELATIVE_ORIENTATION_QUATERNION,
-                        {mojom::FeaturePolicyFeature::kAccelerometer,
-                         mojom::FeaturePolicyFeature::kGyroscope}) {}
+                        {mojom::blink::FeaturePolicyFeature::kAccelerometer,
+                         mojom::blink::FeaturePolicyFeature::kGyroscope}) {}
 
-void RelativeOrientationSensor::Trace(blink::Visitor* visitor) {
+void RelativeOrientationSensor::Trace(Visitor* visitor) {
   OrientationSensor::Trace(visitor);
 }
 

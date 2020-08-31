@@ -20,7 +20,6 @@
 #include "libavutil/intmath.h"
 #include "libavutil/log.h"
 #include "libavutil/mem.h"
-#include "libavutil/opt.h"
 
 #include "bsf.h"
 #include "get_bits.h"
@@ -292,7 +291,7 @@ static int vp9_raw_reorder_filter(AVBSFContext *bsf, AVPacket *out)
             return err;
         }
 
-        if (in->data[in->size - 1] & 0xe0 == 0xc0) {
+        if ((in->data[in->size - 1] & 0xe0) == 0xc0) {
             av_log(bsf, AV_LOG_ERROR, "Input in superframes is not "
                    "supported.\n");
             av_packet_free(&in);

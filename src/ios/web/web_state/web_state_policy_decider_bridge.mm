@@ -17,23 +17,34 @@ WebStatePolicyDeciderBridge::WebStatePolicyDeciderBridge(
 
 WebStatePolicyDeciderBridge::~WebStatePolicyDeciderBridge() = default;
 
-bool WebStatePolicyDeciderBridge::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDeciderBridge::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
   if ([decider_
           respondsToSelector:@selector(shouldAllowRequest:requestInfo:)]) {
     return [decider_ shouldAllowRequest:request requestInfo:request_info];
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool WebStatePolicyDeciderBridge::ShouldAllowResponse(NSURLResponse* response,
-                                                      bool for_main_frame) {
-  if ([decider_
-          respondsToSelector:@selector(shouldAllowResponse:forMainFrame:)]) {
-    return [decider_ shouldAllowResponse:response forMainFrame:for_main_frame];
+void WebStatePolicyDeciderBridge::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
+  if ([decider_ respondsToSelector:@selector
+                (decidePolicyForNavigationResponse:
+                                      forMainFrame:completionHandler:)]) {
+    __block base::OnceCallback<void(PolicyDecision)> block_callback =
+        std::move(callback);
+    [decider_ decidePolicyForNavigationResponse:response
+                                   forMainFrame:for_main_frame
+                              completionHandler:^(PolicyDecision result) {
+                                std::move(block_callback).Run(result);
+                              }];
+    return;
   }
-  return true;
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 }  // namespace web

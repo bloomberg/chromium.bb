@@ -67,7 +67,7 @@ std::unique_ptr<OverlaySurface> SurfaceFactoryOzone::CreateOverlaySurface(
 
 std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return nullptr;
 }
 
@@ -76,7 +76,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    base::Optional<gfx::Size> framebuffer_size) {
   return nullptr;
 }
 

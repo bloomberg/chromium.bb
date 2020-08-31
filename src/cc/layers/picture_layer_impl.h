@@ -18,6 +18,7 @@
 #include "cc/layers/tile_size_calculator.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/image_id.h"
+#include "cc/raster/lcd_text_disallowed_reason.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/tiling_set_eviction_queue.h"
@@ -64,6 +65,7 @@ class CC_EXPORT PictureLayerImpl
   void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  gfx::ContentColorUsage GetContentColorUsage() const override;
 
   // PictureLayerTilingClient overrides.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
@@ -104,6 +106,8 @@ class CC_EXPORT PictureLayerImpl
 
   void SetUseTransformedRasterization(bool use);
 
+  void SetDirectlyCompositedImageSize(base::Optional<gfx::Size>);
+
   size_t GPUMemoryUsageInBytes() const override;
 
   void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
@@ -119,10 +123,6 @@ class CC_EXPORT PictureLayerImpl
   // Used for benchmarking
   RasterSource* GetRasterSource() const { return raster_source_.get(); }
 
-  void set_is_directly_composited_image(bool is_directly_composited_image) {
-    is_directly_composited_image_ = is_directly_composited_image;
-  }
-
   // This enum is the return value of the InvalidateRegionForImages() call. The
   // possible values represent the fact that there are no images on this layer
   // (kNoImages), the fact that the invalidation images don't cause an
@@ -137,7 +137,15 @@ class CC_EXPORT PictureLayerImpl
   ImageInvalidationResult InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
 
-  bool can_use_lcd_text() const { return can_use_lcd_text_; }
+  bool can_use_lcd_text() const {
+    return lcd_text_disallowed_reason_ == LCDTextDisallowedReason::kNone;
+  }
+  LCDTextDisallowedReason lcd_text_disallowed_reason() const {
+    return lcd_text_disallowed_reason_;
+  }
+  LCDTextDisallowedReason ComputeLCDTextDisallowedReasonForTesting() const {
+    return ComputeLCDTextDisallowedReason();
+  }
 
   const Region& InvalidationForTesting() const { return invalidation_; }
 
@@ -165,7 +173,7 @@ class CC_EXPORT PictureLayerImpl
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
   void AddLowResolutionTilingIfNeeded();
-  bool ShouldAdjustRasterScale() const;
+  bool ShouldAdjustRasterScale(bool ideal_contents_scale_changed) const;
   void RecalculateRasterScales();
   gfx::Vector2dF CalculateRasterTranslation(float raster_scale);
   void CleanUpTilingsOnActiveLayer(
@@ -174,6 +182,21 @@ class CC_EXPORT PictureLayerImpl
   float MaximumContentsScale() const;
   void UpdateViewportRectForTilePriorityInContentSpace();
   PictureLayerImpl* GetRecycledTwinLayer() const;
+  bool ShouldDirectlyCompositeImage(float raster_scale) const;
+
+  // Returns the default raster scale used for current layer bounds and directly
+  // composited image size. To avoid re-raster on scale changes, this may be
+  // different than the used raster scale, see: |RecalculateRasterScales()| and
+  // |CalculateDirectlyCompositedImageRasterScale()|.
+  float GetDefaultDirectlyCompositedImageRasterScale() const;
+
+  // Returns the raster scale that should be used for a directly composited
+  // image. This takes into account the ideal contents scale to ensure we don't
+  // use too much memory for layers that are small due to contents scale
+  // factors, and bumps up the reduced scale if those layers end up increasing
+  // their contents scale.
+  float CalculateDirectlyCompositedImageRasterScale() const;
+  void LogDirectlyCompositedImageRasterScaleUMAs() const;
 
   void SanityCheckTilingState() const;
 
@@ -189,13 +212,13 @@ class CC_EXPORT PictureLayerImpl
   void RegisterAnimatedImages();
   void UnregisterAnimatedImages();
 
-  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
-
   // Set the collection of PaintWorkletInput as well as their PaintImageId that
   // are part of this layer.
   void SetPaintWorkletInputs(
       const std::vector<DiscardableImageMap::PaintWorkletInputWithImageId>&
           inputs);
+
+  LCDTextDisallowedReason ComputeLCDTextDisallowedReason() const;
 
   PictureLayerImpl* twin_layer_;
 
@@ -230,8 +253,19 @@ class CC_EXPORT PictureLayerImpl
 
   bool nearest_neighbor_ : 1;
   bool use_transformed_rasterization_ : 1;
-  bool is_directly_composited_image_ : 1;
-  bool can_use_lcd_text_ : 1;
+
+  LCDTextDisallowedReason lcd_text_disallowed_reason_;
+
+  // The intrinsic size of the directly composited image. A directly composited
+  // image is an image which is the only thing drawn into a layer. In these
+  // cases we attempt to raster the image at its intrinsic size.
+  base::Optional<gfx::Size> directly_composited_image_size_;
+
+  // The default raster source scale for a directly composited image, the last
+  // time raster scales were calculated. This will be the same as
+  // |raster_source_scale_| if no adjustments were made in
+  // |CalculateDirectlyCompositedImageRasterScale()|.
+  float directly_composited_image_initial_raster_scale_;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This
   // takes external viewport and transform for tile priority into account.

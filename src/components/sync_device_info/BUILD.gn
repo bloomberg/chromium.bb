@@ -56,7 +56,7 @@ jumbo_static_library("sync_device_info") {
   if (is_mac) {
     libs = [
       "CoreFoundation.framework",
-      "SystemConfiguration.framework",  # Required by local_device_info_util_mac.mm.
+      "SystemConfiguration.framework",  # For local_device_info_util_mac.mm.
     ]
   }
 
@@ -77,13 +77,9 @@ static_library("test_support") {
     "fake_local_device_info_provider.h",
   ]
 
-  public_deps = [
-    ":sync_device_info",
-  ]
+  public_deps = [ ":sync_device_info" ]
 
-  deps = [
-    "//components/sync:test_support_model",
-  ]
+  deps = [ "//components/sync:test_support_model" ]
 }
 
 source_set("unit_tests") {

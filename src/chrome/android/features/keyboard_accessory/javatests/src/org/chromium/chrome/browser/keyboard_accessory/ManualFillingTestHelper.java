@@ -16,22 +16,25 @@ import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_componen
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.app.Activity;
-import android.support.design.widget.TabLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.matcher.BoundedMatcher;
-import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -121,7 +124,7 @@ public class ManualFillingTestHelper {
                     AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
-        cacheCredentials(new String[0], new String[0]); // This caches the empty state.
+        cacheCredentials(new String[0], new String[0], false); // This caches the empty state.
     }
 
     public void clear() {
@@ -314,7 +317,7 @@ public class ManualFillingTestHelper {
      */
     public void cacheTestCredentials() {
         cacheCredentials(new String[] {"mpark@gmail.com", "mayapark@googlemail.com"},
-                new String[] {"TestPassword", "SomeReallyLongPassword"});
+                new String[] {"TestPassword", "SomeReallyLongPassword"}, false);
     }
 
     /**
@@ -323,7 +326,7 @@ public class ManualFillingTestHelper {
      * @param password A {@link String} to be used as display text for a password chip.
      */
     public void cacheCredentials(String username, String password) {
-        cacheCredentials(new String[] {username}, new String[] {password});
+        cacheCredentials(new String[] {username}, new String[] {password}, false);
     }
 
     /**
@@ -331,11 +334,14 @@ public class ManualFillingTestHelper {
      * controller. The controller will only refresh this cache on page load.
      * @param usernames {@link String}s to be used as display text for username chips.
      * @param passwords {@link String}s to be used as display text for password chips.
+     * @param originBlacklisted boolean indicating whether password saving is disabled for the
+     *                          origin.
      */
-    public void cacheCredentials(String[] usernames, String[] passwords) {
+    public void cacheCredentials(
+            String[] usernames, String[] passwords, boolean originBlacklisted) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingComponentBridge.cachePasswordSheetData(
-                    mActivityTestRule.getWebContents(), usernames, passwords);
+                    mActivityTestRule.getWebContents(), usernames, passwords, originBlacklisted);
         });
     }
 
@@ -349,6 +355,11 @@ public class ManualFillingTestHelper {
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "Marcus McSpartangregor", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
                 "94102", "", "US", "(415) 999-0000", "marc@acme-mail.inc", "en"));
+    }
+
+    public static void disableServerPredictions() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ManualFillingComponentBridge.disableServerPredictionsForTesting(); });
     }
 
     // --------------------------------------------------
@@ -439,11 +450,10 @@ public class ManualFillingTestHelper {
      * Use like {@link android.support.test.espresso.Espresso#onView}. It waits for a view matching
      * the given |matcher| to be displayed and allows to chain checks/performs on the result.
      * @param matcher The matcher matching exactly the view that is expected to be displayed.
-     * @return An interaction on the view matching |matcher.
+     * @return An interaction on the view matching |matcher|.
      */
     public static ViewInteraction whenDisplayed(Matcher<View> matcher) {
-        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, allOf(matcher, isDisplayed())));
-        return onView(matcher);
+        return onViewWaiting(allOf(matcher, isDisplayed()));
     }
 
     public ViewInteraction waitForViewOnRoot(View root, Matcher<View> matcher) {
@@ -458,9 +468,7 @@ public class ManualFillingTestHelper {
     }
 
     public static void waitToBeHidden(Matcher<View> matcher) {
-        onView(isRoot()).check((r, e) -> {
-            waitForView((ViewGroup) r, matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE);
-        });
+        onView(isRoot()).check(waitForView(matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE));
     }
 
     public String getAttribute(String node, String attribute)

@@ -6,12 +6,10 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
@@ -26,43 +24,19 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-namespace {
-
-UserContext CreateUserContext(const AccountId& account_id) {
-  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
-                           account_id);
-  user_context.SetKey(Key("password"));
-  if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser1) {
-    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken1);
-  } else if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser2) {
-    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken2);
-  }
-  return user_context;
-}
-
-}  // namespace
-
-LoginManagerTest::LoginManagerTest(bool should_launch_browser,
-                                   bool should_initialize_webui)
-    : should_launch_browser_(should_launch_browser),
-      should_initialize_webui_(should_initialize_webui) {
+LoginManagerTest::LoginManagerTest() {
   set_exit_when_last_browser_closes(false);
 }
 
 LoginManagerTest::~LoginManagerTest() {}
 
 void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
-  if (force_webui_login_) {
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  }
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
 
@@ -74,12 +48,6 @@ void LoginManagerTest::SetUpOnMainThread() {
 
   host_resolver()->AddRule("*", "127.0.0.1");
 
-  if (should_initialize_webui_) {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources())
-        .Wait();
-  }
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldLaunchBrowserInTests(
@@ -93,8 +61,26 @@ void LoginManagerTest::RegisterUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   users_pref->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
-  if (user_manager::UserManager::IsInitialized())
+  if (user_manager::UserManager::IsInitialized()) {
     user_manager::known_user::SaveKnownUser(account_id);
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
+        account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+  }
+}
+
+constexpr char LoginManagerTest::kPassword[] = "password";
+
+UserContext LoginManagerTest::CreateUserContext(const AccountId& account_id,
+                                                const std::string& password) {
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           account_id);
+  user_context.SetKey(Key(password));
+  if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser1) {
+    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken1);
+  } else if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser2) {
+    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken2);
+  }
+  return user_context;
 }
 
 void LoginManagerTest::SetExpectedCredentials(const UserContext& user_context) {
@@ -133,13 +119,13 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
 }
 
 void LoginManagerTest::LoginUser(const AccountId& account_id) {
-  const UserContext user_context = CreateUserContext(account_id);
+  const UserContext user_context = CreateUserContext(account_id, kPassword);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(TryToLogin(user_context));
 }
 
 void LoginManagerTest::AddUser(const AccountId& account_id) {
-  const UserContext user_context = CreateUserContext(account_id);
+  const UserContext user_context = CreateUserContext(account_id, kPassword);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
 }

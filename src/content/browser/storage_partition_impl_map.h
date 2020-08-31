@@ -48,7 +48,7 @@ class CONTENT_EXPORT StoragePartitionImplMap
   // fully clean the on-disk storage requiring a call to GarbageCollect() on
   // the next browser start.
   void AsyncObliterate(const std::string& partition_domain,
-                       const base::Closure& on_gc_required);
+                       base::OnceClosure on_gc_required);
 
   // Examines the on-disk storage and removes any entires that are not listed
   // in the |active_paths|, or in use by current entries in the storage
@@ -58,9 +58,11 @@ class CONTENT_EXPORT StoragePartitionImplMap
   // collection is complete.
   void GarbageCollect(
       std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-      const base::Closure& done);
+      base::OnceClosure done);
 
-  void ForEach(const BrowserContext::StoragePartitionCallback& callback);
+  void ForEach(BrowserContext::StoragePartitionCallback callback);
+
+  size_t size() const { return partitions_.size(); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);

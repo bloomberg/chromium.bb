@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/chromeos/ime/candidate_view.h"
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/candidate_window.h"
-#include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -23,11 +26,10 @@ namespace {
 // the vertical candidate window.
 class VerticalCandidateLabel : public views::Label {
  public:
-  VerticalCandidateLabel() {}
+  VerticalCandidateLabel() = default;
+  ~VerticalCandidateLabel() override = default;
 
  private:
-  ~VerticalCandidateLabel() override {}
-
   // views::Label:
   // Returns the preferred size, but guarantees that the width has at
   // least kMinCandidateLabelWidth pixels.
@@ -43,15 +45,12 @@ class VerticalCandidateLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(VerticalCandidateLabel);
 };
 
-// Creates the shortcut label, and returns it (never returns NULL).
+// Creates the shortcut label, and returns it (never returns nullptr).
 // The label text is not set in this function.
-views::Label* CreateShortcutLabel(
+std::unique_ptr<views::Label> CreateShortcutLabel(
     ui::CandidateWindow::Orientation orientation,
     const ui::NativeTheme& theme) {
-  // Create the shortcut label. The label will be owned by
-  // |wrapped_shortcut_label|, hence it's deleted when
-  // |wrapped_shortcut_label| is deleted.
-  views::Label* shortcut_label = new views::Label;
+  auto shortcut_label = std::make_unique<views::Label>();
 
   // TODO(tapted): Get this FontList from views::style.
   if (orientation == ui::CandidateWindow::VERTICAL) {
@@ -91,16 +90,14 @@ views::Label* CreateShortcutLabel(
 
 // Creates the candidate label, and returns it (never returns NULL).
 // The label text is not set in this function.
-views::Label* CreateCandidateLabel(
+std::unique_ptr<views::Label> CreateCandidateLabel(
     ui::CandidateWindow::Orientation orientation) {
-  views::Label* candidate_label = NULL;
+  std::unique_ptr<views::Label> candidate_label;
 
-  // Create the candidate label. The label will be added to |this| as a
-  // child view, hence it's deleted when |this| is deleted.
   if (orientation == ui::CandidateWindow::VERTICAL) {
-    candidate_label = new VerticalCandidateLabel;
+    candidate_label = std::make_unique<VerticalCandidateLabel>();
   } else {
-    candidate_label = new views::Label;
+    candidate_label = std::make_unique<views::Label>();
   }
 
   // Change the font size.
@@ -114,11 +111,10 @@ views::Label* CreateCandidateLabel(
 
 // Creates the annotation label, and return it (never returns NULL).
 // The label text is not set in this function.
-views::Label* CreateAnnotationLabel(
+std::unique_ptr<views::Label> CreateAnnotationLabel(
     ui::CandidateWindow::Orientation orientation,
     const ui::NativeTheme& theme) {
-  // Create the annotation label.
-  views::Label* annotation_label = new views::Label;
+  auto annotation_label = std::make_unique<views::Label>();
 
   // Change the font size and color.
   annotation_label->SetFontList(
@@ -135,31 +131,19 @@ views::Label* CreateAnnotationLabel(
 
 CandidateView::CandidateView(views::ButtonListener* listener,
                              ui::CandidateWindow::Orientation orientation)
-    : views::Button(listener),
-      orientation_(orientation),
-      shortcut_label_(NULL),
-      candidate_label_(NULL),
-      annotation_label_(NULL),
-      infolist_icon_(NULL),
-      shortcut_width_(0),
-      candidate_width_(0),
-      highlighted_(false) {
+    : views::Button(listener), orientation_(orientation) {
   SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
 
   const ui::NativeTheme& theme = *GetNativeTheme();
-  shortcut_label_ = CreateShortcutLabel(orientation, theme);
-  candidate_label_ = CreateCandidateLabel(orientation);
-  annotation_label_ = CreateAnnotationLabel(orientation, theme);
-
-  AddChildView(shortcut_label_);
-  AddChildView(candidate_label_);
-  AddChildView(annotation_label_);
+  shortcut_label_ = AddChildView(CreateShortcutLabel(orientation, theme));
+  candidate_label_ = AddChildView(CreateCandidateLabel(orientation));
+  annotation_label_ = AddChildView(CreateAnnotationLabel(orientation, theme));
 
   if (orientation == ui::CandidateWindow::VERTICAL) {
-    infolist_icon_ = new views::View;
-    infolist_icon_->SetBackground(views::CreateSolidBackground(
+    auto infolist_icon = std::make_unique<views::View>();
+    infolist_icon->SetBackground(views::CreateSolidBackground(
         theme.GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
-    AddChildView(infolist_icon_);
+    infolist_icon_ = AddChildView(std::move(infolist_icon));
   }
 }
 
@@ -196,6 +180,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
 
   highlighted_ = highlighted;
   if (highlighted) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, false);
     ui::NativeTheme* theme = GetNativeTheme();
     SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
         ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
@@ -297,6 +282,21 @@ gfx::Size CandidateView::CalculatePreferredSize() const {
   size.Enlarge(
       kInfolistIndicatorIconWidth + kInfolistIndicatorIconPadding * 2, 0);
   return size;
+}
+
+void CandidateView::SetPositionData(int index, int total) {
+  candidate_index_ = index;
+  total_candidates_ = total;
+}
+
+void CandidateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(candidate_label_->GetText());
+  node_data->role = ax::mojom::Role::kImeCandidate;
+  // PosInSet needs to be incremented since |candidate_index_| is 0-based.
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                             candidate_index_ + 1);
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                             total_candidates_);
 }
 
 }  // namespace ime

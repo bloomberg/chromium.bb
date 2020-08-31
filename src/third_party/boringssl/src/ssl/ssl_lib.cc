@@ -564,8 +564,6 @@ ssl_ctx_st::ssl_ctx_st(const SSL_METHOD *ssl_method)
       channel_id_enabled(false),
       grease_enabled(false),
       allow_unknown_alpn_protos(false),
-      ed25519_enabled(false),
-      rsa_pss_rsae_certs_enabled(true),
       false_start_allowed_without_alpn(false),
       ignore_tls13_downgrade(false),
       handoff(false),
@@ -1248,6 +1246,12 @@ void SSL_get_peer_quic_transport_params(const SSL *ssl,
                                         size_t *out_params_len) {
   *out_params = ssl->s3->peer_quic_transport_params.data();
   *out_params_len = ssl->s3->peer_quic_transport_params.size();
+}
+
+int SSL_set_quic_early_data_context(SSL *ssl, const uint8_t *context,
+                                    size_t context_len) {
+  return ssl->config && ssl->config->quic_early_data_context.CopyFrom(
+                            MakeConstSpan(context, context_len));
 }
 
 void SSL_CTX_set_early_data_enabled(SSL_CTX *ctx, int enabled) {

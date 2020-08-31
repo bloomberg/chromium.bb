@@ -15,7 +15,9 @@
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -36,7 +38,7 @@ const float kEpsilon = 0.00001;
 
 }  // namespace
 
-class SVGImageTest : public testing::Test {
+class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
  public:
   SVGImage& GetImage() { return *image_; }
 
@@ -44,6 +46,7 @@ class SVGImageTest : public testing::Test {
     observer_ = MakeGarbageCollected<PauseControlImageObserver>(should_pause);
     image_ = SVGImage::Create(observer_);
     image_->SetData(SharedBuffer::Create(data, strlen(data)), true);
+    test::RunPendingTasks();
   }
 
   void LoadUsingFileName(const String& file_name) {
@@ -54,6 +57,7 @@ class SVGImageTest : public testing::Test {
     observer_ = MakeGarbageCollected<PauseControlImageObserver>(true);
     image_ = SVGImage::Create(observer_);
     image_->SetData(image_data, true);
+    test::RunPendingTasks();
   }
 
   void PumpFrame() {
@@ -63,8 +67,8 @@ class SVGImageTest : public testing::Test {
     PaintFlags flags;
     FloatRect dummy_rect(0, 0, 100, 100);
     image->Draw(&canvas, flags, dummy_rect, dummy_rect,
-                kDoNotRespectImageOrientation,
-                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+                kRespectImageOrientation, Image::kDoNotClampImageToSourceRect,
+                Image::kSyncDecode);
   }
 
   // Loads the image from |file_name|, computes features into |features|,
@@ -109,9 +113,7 @@ class SVGImageTest : public testing::Test {
 
     void AsyncLoadCompleted(const blink::Image*) override {}
 
-    void Trace(blink::Visitor* visitor) override {
-      ImageObserver::Trace(visitor);
-    }
+    void Trace(Visitor* visitor) override { ImageObserver::Trace(visitor); }
 
    private:
     bool should_pause_;
@@ -252,6 +254,18 @@ TEST_F(SVGImageTest, IsSizeAvailable) {
   EXPECT_FALSE(GetImage().IsSizeAvailable());
 }
 
+TEST_F(SVGImageTest, DisablesSMILEvents) {
+  const bool kShouldPause = true;
+  Load(kAnimatedDocument, kShouldPause);
+  LocalFrame* local_frame =
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
+  EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
+  SMILTimeContainer* time_container =
+      To<SVGSVGElement>(local_frame->GetDocument()->documentElement())
+          ->TimeContainer();
+  EXPECT_TRUE(time_container->EventsDisabled());
+}
+
 TEST_F(SVGImageTest, DarkModeClassification) {
   DarkModeImageClassifier::Features features;
 
@@ -316,7 +330,7 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   EXPECT_NEAR(0.11f, features.background_ratio, kEpsilon);
 }
 
-class SVGImageSimTest : public SimTest {};
+class SVGImageSimTest : public SimTest, private ScopedMockOverlayScrollbars {};
 
 TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");
@@ -338,9 +352,9 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   ASSERT_TRUE(image_content->IsLoaded());
   ASSERT_TRUE(image_content->HasImage());
   Image* image = image_content->GetImage();
-  ASSERT_TRUE(image->IsSVGImage());
+  ASSERT_TRUE(IsA<SVGImage>(image));
   SVGImageChromeClient& svg_image_chrome_client =
-      ToSVGImage(*image).ChromeClientForTesting();
+      To<SVGImage>(*image).ChromeClientForTesting();
   TimerBase* timer = svg_image_chrome_client.GetTimerForTesting();
 
   // Wait for the next animation frame to be triggered, and then trigger a new
@@ -354,7 +368,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // Set page visibility to 'hidden', and then wait for the animation timer to
   // fire. This should suspend the image animation. (Suspend the image's
   // animation timeline.)
-  WebView().SetVisibilityState(PageVisibilityState::kHidden,
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
@@ -363,7 +377,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
 
   // Set page visibility to 'visible' - this should schedule a new animation
   // frame and resume the image animation.
-  WebView().SetVisibilityState(PageVisibilityState::kVisible,
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());

@@ -21,8 +21,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/audio/stream_monitor_coordinator.h"
-#include "services/audio/traced_service_ref.h"
 
 namespace base {
 class UnguessableToken;
@@ -49,8 +47,7 @@ class StreamFactory final : public mojom::StreamFactory {
   explicit StreamFactory(media::AudioManager* audio_manager);
   ~StreamFactory() final;
 
-  void Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver,
-            TracedServiceRef context_ref);
+  void Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver);
 
   // StreamFactory implementation.
   void CreateInputStream(
@@ -62,8 +59,7 @@ class StreamFactory final : public mojom::StreamFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
-      mojo::ScopedSharedBufferHandle key_press_count_buffer,
-      mojom::AudioProcessingConfigPtr processing_config,
+      base::ReadOnlySharedMemoryRegion key_press_count_buffer,
       CreateInputStreamCallback created_callback) final;
 
   void AssociateInputAndOutputForAec(
@@ -78,7 +74,6 @@ class StreamFactory final : public mojom::StreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
-      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final;
   void BindMuter(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
                  const base::UnguessableToken& group_id) final;
@@ -102,29 +97,21 @@ class StreamFactory final : public mojom::StreamFactory {
   void DestroyMuter(LocalMuter* muter);
   void DestroyLoopbackStream(LoopbackStream* stream);
 
-  // TODO(crbug.com/888478): Remove this after diagnosis.
-  void SetStateForCrashing(const char* state);
-
   SEQUENCE_CHECKER(owning_sequence_);
 
   media::AudioManager* const audio_manager_;
 
-  mojo::ReceiverSet<mojom::StreamFactory, TracedServiceRef> receivers_;
+  mojo::ReceiverSet<mojom::StreamFactory> receivers_;
 
   // Order of the following members is important for a clean shutdown.
   LoopbackCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
   base::Thread loopback_worker_thread_;
   std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
-  StreamMonitorCoordinator stream_monitor_coordinator_;
   InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 
-  // TODO(crbug.com/888478): Remove this after diagnosis.
-  volatile uint32_t magic_bytes_;
-
   base::WeakPtrFactory<StreamFactory> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
 };
 

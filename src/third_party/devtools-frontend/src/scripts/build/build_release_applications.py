@@ -38,7 +38,18 @@ try:
 finally:
     sys.path = original_sys_path
 
-ROLLUP_ARGS = ['--no-treeshake', '--format', 'iife', '--context', 'self']
+FRONT_END_DIRECTORY = path.join(os.path.dirname(path.abspath(__file__)), '..', '..', 'front_end')
+
+MODULE_LIST = [
+    path.join(FRONT_END_DIRECTORY, subfolder, subfolder + '.js')
+    for subfolder in os.listdir(FRONT_END_DIRECTORY)
+    if path.isdir(os.path.join(FRONT_END_DIRECTORY, subfolder))
+]
+
+ROLLUP_ARGS = [
+    '--no-treeshake', '--format', 'esm', '--context', 'self', '--external',
+    ','.join([path.abspath(module) for module in MODULE_LIST])
+]
 
 
 def main(argv):
@@ -48,15 +59,23 @@ def main(argv):
         output_path_flag_index = argv.index('--output_path')
         output_path = argv[output_path_flag_index + 1]
         application_names = argv[1:input_path_flag_index]
+        use_rollup = '--rollup' in argv
     except:
-        print('Usage: %s app_1 app_2 ... app_N --input_path <input_path> --output_path <output_path>' % argv[0])
+        print('Usage: %s app_1 app_2 ... app_N --input_path <input_path> --output_path <output_path> --rollup true' % argv[0])
         raise
 
     loader = modular_build.DescriptorLoader(input_path)
     for app in application_names:
         descriptors = loader.load_application(app)
-        builder = ReleaseBuilder(app, descriptors, input_path, output_path)
+        builder = ReleaseBuilder(app, descriptors, input_path, output_path, use_rollup)
         builder.build_app()
+
+    def copy_file(file_name):
+        write_file(join(output_path, file_name), minify_js(read_file(join(input_path, file_name))))
+
+    copy_file('root.js')
+    copy_file('RuntimeInstantiator.js')
+
 
 
 def resource_source_url(url):
@@ -71,39 +90,18 @@ def concatenated_module_filename(module_name, output_dir):
     return join(output_dir, module_name + '/' + module_name + '_module.js')
 
 
-def symlink_or_copy_file(src, dest, safe=False):
-    if safe and path.exists(dest):
-        os.remove(dest)
-    if hasattr(os, 'symlink'):
-        os.symlink(src, dest)
-    else:
-        shutil.copy(src, dest)
-
-
-def symlink_or_copy_dir(src, dest):
-    if path.exists(dest):
-        shutil.rmtree(dest)
-    for src_dir, dirs, files in os.walk(src):
-        subpath = path.relpath(src_dir, src)
-        dest_dir = path.normpath(join(dest, subpath))
-        os.mkdir(dest_dir)
-        for name in files:
-            src_name = join(os.getcwd(), src_dir, name)
-            dest_name = join(dest_dir, name)
-            symlink_or_copy_file(src_name, dest_name)
-
-
 # Outputs:
 #   <app_name>.html
 #   <app_name>.js
 #   <module_name>_module.js
 class ReleaseBuilder(object):
 
-    def __init__(self, application_name, descriptors, application_dir, output_dir):
+    def __init__(self, application_name, descriptors, application_dir, output_dir, use_rollup):
         self.application_name = application_name
         self.descriptors = descriptors
         self.application_dir = application_dir
         self.output_dir = output_dir
+        self.use_rollup = use_rollup
         self._special_case_namespaces = special_case_namespaces.special_case_namespaces
 
     def app_file(self, extension):
@@ -124,33 +122,12 @@ class ReleaseBuilder(object):
 
     def build_app(self):
         if self.descriptors.has_html:
-            self._build_html()
+            html_entrypoint = self.app_file('html')
+            write_file(join(self.output_dir, html_entrypoint), read_file(join(self.application_dir, html_entrypoint)))
         self._build_app_script()
         for module in filter(lambda desc: (not desc.get('type') or desc.get('type') == 'remote'),
                              self.descriptors.application.values()):
             self._concatenate_dynamic_module(module['name'])
-
-    def _write_include_tags(self, descriptors, output):
-        if descriptors.extends:
-            self._write_include_tags(descriptors.extends, output)
-        output.write(self._generate_include_tag(descriptors.application_name + '.js'))
-
-    def _build_html(self):
-        html_name = self.app_file('html')
-        output = StringIO()
-        with open(join(self.application_dir, html_name), 'r') as app_input_html:
-            for line in app_input_html:
-                if ('<script ' in line and 'type="module"' not in line) or '<link ' in line:
-                    continue
-                if '</head>' in line:
-                    self._write_include_tags(self.descriptors, output)
-                    js_file = join(self.application_dir, self.app_file('js'))
-                    if path.exists(js_file):
-                        output.write('    <script type="module">%s</script>\n' % minify_js(read_file(js_file)))
-                output.write(line)
-
-        write_file(join(self.output_dir, html_name), output.getvalue())
-        output.close()
 
     def _build_app_script(self):
         script_name = self.app_file('js')
@@ -158,12 +135,6 @@ class ReleaseBuilder(object):
         self._concatenate_application_script(output)
         write_file(join(self.output_dir, script_name), minify_js(output.getvalue()))
         output.close()
-
-    def _generate_include_tag(self, resource_path):
-        if resource_path.endswith('.js'):
-            return '    <script defer src="%s"></script>\n' % resource_path
-        else:
-            assert resource_path
 
     def _release_module_descriptors(self):
         module_descriptors = self.descriptors.modules
@@ -191,7 +162,7 @@ class ReleaseBuilder(object):
     def _write_module_resources(self, resource_names, output):
         for resource_name in resource_names:
             resource_name = path.normpath(resource_name).replace('\\', '/')
-            output.write('Root.Runtime.cachedResources["%s"] = "' % resource_name)
+            output.write('self.Runtime.cachedResources["%s"] = "' % resource_name)
             resource_content = read_file(path.join(self.application_dir, resource_name))
             resource_content += resource_source_url(resource_name).encode('utf-8')
             resource_content = resource_content.replace('\\', '\\\\')
@@ -213,62 +184,26 @@ class ReleaseBuilder(object):
                 if len(non_autostart_deps):
                     bail_error(
                         'Non-autostart dependencies specified for the autostarted module "%s": %s' % (name, non_autostart_deps))
-                namespace = self._map_module_to_namespace(name)
-                output.write('\n/* Module %s */\n' % name)
-                output.write('\nself[\'%s\'] = self[\'%s\'] || {};\n' % (namespace, namespace))
-                modular_build.concatenate_scripts(desc.get('scripts'), join(self.application_dir, name), self.output_dir, output)
+                self._rollup_module(name, desc.get('modules', []))
             else:
                 non_autostart.add(name)
 
-    def _map_module_to_namespace(self, module):
-        camel_case_namespace = "".join(map(lambda x: x[0].upper() + x[1:], module.split('_')))
-        return self._special_case_namespaces.get(module, camel_case_namespace)
-
     def _concatenate_application_script(self, output):
-        if not self.descriptors.extends:
-            runtime_contents = read_file(join(self.application_dir, 'Runtime.js'))
-            output.write('/* Runtime.js */\n')
-            output.write(runtime_contents)
-            output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
-            output.write('/* Application descriptor %s */\n' % self.app_file('json'))
-            output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
-        else:
-            output.write('/* Additional descriptors */\n')
-            output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
-            output.write('/* Additional descriptors %s */\n' % self.app_file('json'))
+        output.write('Root.allDescriptors.push(...%s);' % self._release_module_descriptors())
+        if self.descriptors.extends:
             output.write('Root.applicationDescriptor.modules.push(...%s);' % json.dumps(self.descriptors.application.values()))
-
-        output.write('\n/* Autostart modules */\n')
-        if (self.descriptors.worker):
-            self._rollup_worker(output)
         else:
-            self._concatenate_autostart_modules(output)
-        output.write(';\n/* Autostart resources */\n')
+            output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
+
+        output.write(minify_js(read_file(join(self.application_dir, self.app_file('js')))))
+        self._concatenate_autostart_modules(output)
+
         self._write_module_resources(self.autorun_resource_names(), output)
-        if not self.descriptors.has_html and not self.descriptors.worker:
-            js_file = join(self.application_dir, self.app_file('js'))
-            if path.exists(js_file):
-                output.write(';\n/* Autostart script for worker */\n')
-                output.write(read_file(js_file))
-
-    def _rollup_worker(self, output):
-        js_entrypoint = join(self.application_dir, self.app_file('unbundled.js'))
-        rollup_process = subprocess.Popen(
-            [devtools_paths.node_path(), devtools_paths.rollup_path()] + ROLLUP_ARGS + ['--input', js_entrypoint],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        out, error = rollup_process.communicate()
-
-        if rollup_process.returncode != 0:
-            print('Error while running rollup:')
-            print(error)
-            sys.exit(1)
-
-        output.write(minify_js(out))
 
     def _concatenate_dynamic_module(self, module_name):
         module = self.descriptors.modules[module_name]
         scripts = module.get('scripts')
+        modules = module.get('modules')
         resources = self.descriptors.module_resources(module_name)
         module_dir = join(self.application_dir, module_name)
         output = StringIO()
@@ -276,9 +211,30 @@ class ReleaseBuilder(object):
             modular_build.concatenate_scripts(scripts, module_dir, self.output_dir, output)
         if resources:
             self._write_module_resources(resources, output)
+        if modules:
+            self._rollup_module(module_name, modules)
         output_file_path = concatenated_module_filename(module_name, self.output_dir)
         write_file(output_file_path, minify_js(output.getvalue()))
         output.close()
+
+    def _rollup_module(self, module_name, modules):
+        js_entrypoint = join(self.application_dir, module_name, module_name + '.js')
+        out = ''
+        if self.use_rollup:
+            rollup_process = subprocess.Popen(
+                [devtools_paths.node_path(), devtools_paths.rollup_path()] + ROLLUP_ARGS + ['--input', js_entrypoint],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            out, error = rollup_process.communicate()
+        else:
+            out = read_file(js_entrypoint)
+        write_file(join(self.output_dir, module_name, module_name + '.js'), minify_js(out))
+
+        legacyFileName = module_name + '-legacy.js'
+        if legacyFileName in modules:
+            write_file(
+                join(self.output_dir, module_name, legacyFileName),
+                minify_js(read_file(join(self.application_dir, module_name, legacyFileName))))
 
 
 if __name__ == '__main__':

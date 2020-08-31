@@ -8,14 +8,12 @@
 #include "platform/impl/socket_handle.h"
 
 namespace openscreen {
-namespace platform {
 
 struct SocketHandle {
   explicit SocketHandle(int descriptor);
   int fd;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_HANDLE_POSIX_H_

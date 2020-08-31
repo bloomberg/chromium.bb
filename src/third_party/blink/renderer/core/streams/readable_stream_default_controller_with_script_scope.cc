@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -34,7 +35,9 @@ void ReadableStreamDefaultControllerWithScriptScope::Close() {
 
   ScriptState::Scope scope(script_state_);
 
-  ReadableStreamDefaultController::Close(script_state_, controller_);
+  if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+    ReadableStreamDefaultController::Close(script_state_, controller_);
+  }
   controller_ = nullptr;
 }
 
@@ -51,6 +54,10 @@ void ReadableStreamDefaultControllerWithScriptScope::Enqueue(
     v8::Local<v8::Value> js_chunk) const {
   if (!controller_)
     return;
+
+  if (!ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+    return;
+  }
 
   ScriptState::Scope scope(script_state_);
 

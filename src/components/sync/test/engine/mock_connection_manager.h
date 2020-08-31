@@ -43,13 +43,15 @@ class MockConnectionManager : public ServerConnectionManager {
   ~MockConnectionManager() override;
 
   // Overridden ServerConnectionManager functions.
-  bool PostBufferToPath(PostBufferParams*,
+  bool PostBufferToPath(const std::string& buffer_in,
                         const std::string& path,
-                        const std::string& access_token) override;
+                        const std::string& access_token,
+                        std::string* buffer_out,
+                        HttpResponse* http_response) override;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.
-  void SetMidCommitCallback(const base::Closure& callback);
+  void SetMidCommitCallback(base::OnceClosure callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
 
   // Set this if you want commit to perform commit time rename. Will request
@@ -365,7 +367,7 @@ class MockConnectionManager : public ServerConnectionManager {
 
   // The updates we'll return to the next request.
   std::list<sync_pb::GetUpdatesResponse> update_queue_;
-  base::Closure mid_commit_callback_;
+  base::OnceClosure mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
   // The keystore key we return for a GetUpdates with need_encryption_key set.

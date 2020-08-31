@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Жаю</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, орнатылған қолданба</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> бөлісу мүмкін емес</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> және <ph name="SECOND_ITEM_TITLE" /> өзара ауыстырылды.</translation>
 <translation id="1498028757988366001">Оны бұған дейін іздегенсіз. Тарихтан "<ph name="QUERY" />" сұрауын жойып тастасаңыз, ол барлық құрылғыңыздағы есептік жазбаңыздан өшіп қалады.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут және }other{# минут және }}</translation>
 <translation id="1643823602425662293">Хабарландыру</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Барлығын &amp;таңдау</translation>
-<translation id="1938451708255335766">Терезенің көрсетілу тығыздығын реттеу үшін қолданбаны қайта қосыңыз.</translation>
 <translation id="2006524834898217237">Бұл құрылғы интернетке қосулы екеніне көз жеткізіңіз.</translation>
 <translation id="208586643495776849">Қайталап көріңіз</translation>
 <translation id="2090963878406559571">Нөмірді <ph name="ORIGIN" /> сайтынан Android телефонына жібергіңіз келсе, екі құрылғы үшін де параметрлерден <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -58,7 +58,7 @@
 <translation id="2388990488038464401">Осы нөмірге телефоныңыздан қоңырау шалынсын ба?</translation>
 <translation id="24452542372838207">Хабарландыруды жаю</translation>
 <translation id="2445449901874883781">Жоғары тығыздықты пайдалану</translation>
-<translation id="2482878487686419369">Хабарламалар</translation>
+<translation id="2482878487686419369">Хабарландырулар</translation>
 <translation id="2497284189126895209">Барлық файлдар</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Калибрлеу аяқталды</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Төмен көрсеткісі</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 күн}other{# күн}}</translation>
 <translation id="3295886253693811851">Қоңырау шалу құрылғысы:</translation>
+<translation id="3306688585798492231">Ендірілген дисплей</translation>
 <translation id="335581015389089642">Сөйлеу</translation>
 <translation id="3389286852084373014">Мәтін өте үлкен</translation>
-<translation id="3479552764303398839">Қазір емес</translation>
 <translation id="348799646910989694">Сөре автоматты түрде жасырылған.</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> бекітілді</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 күн қалды}other{# күн қалды}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783"><ph name="TITLE" /> мобильдік құрылғысынан оқи беру</translation>
 <translation id="385051799172605136">Артқа</translation>
 <translation id="3889424535448813030">Оң жақ көрсеткісі</translation>
-<translation id="3892641579809465218">Ішкі дисплей</translation>
 <translation id="3897092660631435901">Мәзір</translation>
 <translation id="3909791450649380159">Қи&amp;ып алу</translation>
 <translation id="3990502903496589789">Оң жақ шеті</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Бүгін қосылды.}=1{1 күн бұрын қосылды.}other{# күн бұрын қосылды.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 күн және }other{# күн және }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 жылда}other{# жылда}}</translation>
-<translation id="5895138241574237353">Қайта іске қосу</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 секунд қалды}other{# секунд қалды}}</translation>
 <translation id="5941711191222866238">Жию</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 сағат}other{# сағат}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Оңнан солға</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ЕҢ ЫҚТИМАЛ</translation>
+<translation id="7170202025028120564">Қолданбаңыз келесі рет іске қосылғанда, оның дисплей параметрлері күшіне енеді.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 мин қалды}other{# мин қалды}}</translation>
 <translation id="7319740667687257810">Launcher, жартылай көрініс</translation>

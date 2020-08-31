@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -17,6 +18,9 @@ from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 DEFAULT_CHROME_BRANCH = '27'
 
@@ -30,26 +34,6 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
     self._overlays = ['%s/src/third_party/chromiumos-overlay' % self._buildroot]
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
-
-  def testUploadPrebuilts(self,
-                          builder_type=constants.POSTSUBMIT_TYPE,
-                          private=False,
-                          chrome_rev=None,
-                          version=None):
-    """Test UploadPrebuilts with a public location."""
-    prebuilts.UploadPrebuilts(builder_type, chrome_rev, private,
-                              buildroot=self._buildroot, board=self._board,
-                              version=version)
-    self.assertCommandContains([builder_type, 'gs://chromeos-prebuilt'])
-
-  def testUploadPrivatePrebuilts(self):
-    """Test UploadPrebuilts with a private location."""
-    self.testUploadPrebuilts(private=True)
-
-  def testChromePrebuilts(self):
-    """Test UploadPrebuilts for Chrome prebuilts."""
-    self.testUploadPrebuilts(builder_type=constants.CHROME_PFQ_TYPE,
-                             chrome_rev='tot')
 
   def testSdkPrebuilts(self):
     """Test UploadPrebuilts for SDK builds."""
@@ -88,8 +72,12 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
       tarball_arg = '%s:%s' % (tarball_base, tarball_path)
       toolchain_tarball_args.append(['--toolchain-tarball', tarball_arg])
 
-    self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE,
-                             version=version)
+    prebuilts.UploadPrebuilts(constants.CHROOT_BUILDER_TYPE, False,
+                              buildroot=self._buildroot, board=self._board,
+                              version=version)
+    self.assertCommandContains(
+        [constants.CHROOT_BUILDER_TYPE, 'gs://chromeos-prebuilt'])
+
     self.assertCommandContains([
         '--toolchains-overlay-upload-path',
         '1994/04/cros-sdk-overlay-toolchains-%%(toolchains)s-'

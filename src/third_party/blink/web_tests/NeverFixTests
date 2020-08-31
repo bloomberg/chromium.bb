@@ -1,3 +1,16 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Skip Pass ]
+
+# Most entries should have only [ Skip ] as the expected result. [ Pass ] is
+# used to override the inherited [ Skip ] for virtual tests or a subdirectory,
+# e.g.:
+# # These tests only work under virtual/suite, except for those under foo/bar.
+# foo/* [ Skip ]
+# foo/bar/* [ Pass ]
+# virtual/suite/foo/* [ Pass ]
+
 # This file should only include tests that we never want to run.
 # There should only be the following categories of tests here:
 #   1. Tests of the test harness (run_web_tests.py) itself.
@@ -10,71 +23,58 @@
 #   8. Tests that are automatically imported but not intended to be run.
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
-# FIXME: Remove the Skip keyword and have that be implied for tests in this file.
-
 # Perf tests are really slow in debug builds and there are few benefits in running them.
-[ Debug ] http/tests/perf [ Skip ]
+[ Debug ] http/tests/perf/* [ Skip ]
 
-# This test verifies that a mismatch reftest will fail if both results are the
-# same.  Because the whole point is that this test should fail when run, it's
-# not SKIP, just WONTFIX.
-fast/harness/sample-fail-mismatch-reftest.html [ Skip ]
 # Not intended to be run as a test.
 fast/harness/results.html [ Skip ]
 
 # Chrome Win/Linux doesn't support emacs key-bindings.
- [ Win ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
- [ Linux ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
- [ Win ] editing/pasteboard/emacs-ctrl-a-k-y.html [ Skip ]
- [ Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ Skip ]
- [ Win ] editing/pasteboard/emacs-ctrl-k-with-move.html [ Skip ]
- [ Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ Skip ]
- [ Win ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Skip ]
- [ Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Skip ]
- [ Win ] editing/input/emacs-ctrl-o.html [ Skip ]
- [ Linux ] editing/input/emacs-ctrl-o.html [ Skip ]
- [ Win ] fast/events/inputevents/inputevent-yank.html [ Skip ]
- [ Linux ] fast/events/inputevents/inputevent-yank.html [ Skip ]
- [ Win ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ Skip ]
- [ Linux ] virtual/mouseevent_fractional/fast/events/inputevents/inputevent-yank.html [ Skip ]
+[ Win ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
+[ Linux ] editing/pasteboard/emacs-cntl-y-001.html [ Skip ]
+[ Win ] editing/pasteboard/emacs-ctrl-a-k-y.html [ Skip ]
+[ Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ Skip ]
+[ Win ] editing/pasteboard/emacs-ctrl-k-with-move.html [ Skip ]
+[ Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ Skip ]
+[ Win ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Skip ]
+[ Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Skip ]
+[ Win ] editing/input/emacs-ctrl-o.html [ Skip ]
+[ Linux ] editing/input/emacs-ctrl-o.html [ Skip ]
+[ Win ] fast/events/inputevents/inputevent-yank.html [ Skip ]
+[ Linux ] fast/events/inputevents/inputevent-yank.html [ Skip ]
 
 # Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
 [ Mac ] editing/input/ctrl-up-down.html [ Skip ]
 
 # Chrome uses different keyboard accelerators from those used by Safari, so
 # this test will always fail.
- [ Linux ] fast/events/option-tab.html [ Skip ]
- [ Win ] fast/events/option-tab.html [ Skip ]
- [ Linux ] virtual/mouseevent_fractional/fast/events/option-tab.html [ Skip ]
- [ Win ] virtual/mouseevent_fractional/fast/events/option-tab.html [ Skip ]
+[ Linux ] fast/events/option-tab.html [ Skip ]
+[ Win ] fast/events/option-tab.html [ Skip ]
 
 # This test only applies to overlay scrollbar platforms.
- [ Win ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
- [ Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
+[ Win ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
+[ Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ Skip ]
 
 # Tests trak table support / letter spacing specific to Mac system font
 # Only maintain this for the latest macOS (and Retina is currently 10.12).
- [ Win ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
- [ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
- [ Mac10.10 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
- [ Mac10.11 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
- [ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
- [ Retina ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Win ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Mac10.10 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Mac10.11 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
+[ Retina ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
 [ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
-[ Mac ] fast/forms/select-popup [ Skip ]
+[ Mac ] fast/forms/select-popup/* [ Skip ]
+[ Mac ] virtual/cascade/fast/forms/select-popup/* [ Skip ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Skip ]
 [ Mac ] fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ Skip ]
 [ Mac ] fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ Skip ]
 [ Mac ] fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ Skip ]
-
-# These tests are specific to Windows.
-crbug.com/1012590 [ Mac ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip ]
-crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip ]
 
 # Mac does not have menu key.
 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Skip ]
@@ -85,56 +85,43 @@ crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip 
 [ Mac ] fast/events/menu-key-context-menu-position.html [ Skip ]
 [ Mac ] fast/events/menu-key-context-menu-reveal-focus.html [ Skip ]
 [ Mac ] fast/events/menu-key-context-menu.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/context-menu-key-shift-f10-modifiers.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/context-menu-key-shift-f10-prevent-default.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/contextmenu-follows-focus.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-document.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-position.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-reveal-focus.html [ Skip ]
-[ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu.html [ Skip ]
 
 # Thumb snapping is not supported on Linux and Mac.
 [ Linux ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Linux ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-[ Mac ]   virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
-
+[ Mac ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Skip ]
 
 # These tests are specific to Linux.
- [ Mac ] editing/input/linux_ltr_composition_underline.html [ Skip ]
- [ Win ] editing/input/linux_ltr_composition_underline.html [ Skip ]
- [ Mac ] editing/input/linux_rtl_composition_underline.html [ Skip ]
- [ Win ] editing/input/linux_rtl_composition_underline.html [ Skip ]
- [ Mac ] editing/selection/linux_selection_color.html [ Skip ]
- [ Win ] editing/selection/linux_selection_color.html [ Skip ]
- [ Mac ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ Skip ]
- [ Win ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ Skip ]
- [ Mac ] virtual/text-antialias/international/arabic-vertical-offset.html [ Skip ]
- [ Win ] virtual/text-antialias/international/arabic-vertical-offset.html [ Skip ]
- [ Mac ] virtual/text-antialias/international/complex-joining-using-gpos.html [ Skip ]
- [ Win ] virtual/text-antialias/international/complex-joining-using-gpos.html [ Skip ]
- [ Mac ] virtual/text-antialias/international/draw-complex-text-from-to.html [ Skip ]
- [ Win ] virtual/text-antialias/international/draw-complex-text-from-to.html [ Skip ]
- [ Mac ] svg/text/text-with-geometric-precision.svg [ Skip ]
- [ Win ] svg/text/text-with-geometric-precision.svg [ Skip ]
+[ Mac ] editing/input/linux_ltr_composition_underline.html [ Skip ]
+[ Win ] editing/input/linux_ltr_composition_underline.html [ Skip ]
+[ Mac ] editing/input/linux_rtl_composition_underline.html [ Skip ]
+[ Win ] editing/input/linux_rtl_composition_underline.html [ Skip ]
+[ Mac ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ Skip ]
+[ Win ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ Skip ]
+[ Mac ] virtual/text-antialias/international/arabic-vertical-offset.html [ Skip ]
+[ Win ] virtual/text-antialias/international/arabic-vertical-offset.html [ Skip ]
+[ Mac ] virtual/text-antialias/international/complex-joining-using-gpos.html [ Skip ]
+[ Win ] virtual/text-antialias/international/complex-joining-using-gpos.html [ Skip ]
+[ Mac ] virtual/text-antialias/international/draw-complex-text-from-to.html [ Skip ]
+[ Win ] virtual/text-antialias/international/draw-complex-text-from-to.html [ Skip ]
+[ Mac ] svg/text/text-with-geometric-precision.svg [ Skip ]
+[ Win ] svg/text/text-with-geometric-precision.svg [ Skip ]
 
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] virtual/text-antialias/font-cachekey.html [ Skip ]
 
 # AAT/mortx shaping not supported on platforms other than Mac
- [ Linux ] virtual/text-antialias/aat-morx.html [ Skip ]
- [ Win ] virtual/text-antialias/aat-morx.html [ Skip ]
+[ Linux ] virtual/text-antialias/aat-morx.html [ Skip ]
+[ Win ] virtual/text-antialias/aat-morx.html [ Skip ]
+
+[ Linux ] virtual/text-antialias/mac-system-ui-weight.html [ Skip ]
+[ Win ] virtual/text-antialias/mac-system-ui-weight.html [ Skip ]
 
 # AAT Small Caps test not supported on platforms other than Mac 10.13.
- [ Linux ] virtual/text-antialias/small-caps-aat.html [ Skip ]
- [ Win ] virtual/text-antialias/small-caps-aat.html [ Skip ]
- [ Mac10.10 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
- [ Mac10.11 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
- [ Mac10.12 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+[ Linux ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+[ Win ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+[ Mac10.10 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+[ Mac10.11 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+[ Mac10.12 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ Skip ]
@@ -157,15 +144,16 @@ crbug.com/1004945 [ Win ] fast/text/mac-aat-morx-kern.html [ Skip ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
-media/stable [ Skip ]
+media/stable/* [ Skip ]
+virtual/stable/media/stable/* [ Pass ]
 
 # This test requires a compositor, so only the virtual/threaded/ version is run.
 external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
-virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
+[ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
 
 # Only run fake-Android tests on Linux
- [ Mac ] virtual/android/ [ Skip ]
- [ Win ] virtual/android/ [ Skip ]
+[ Mac ] virtual/android/* [ Skip ]
+[ Win ] virtual/android/* [ Skip ]
 
 # Android doesn't support plugins
 virtual/android/fullscreen/rendering/backdrop-object.html [ Skip ]
@@ -211,16 +199,16 @@ crbug.com/759914 external/wpt/css/css-values/ch-unit-002.html [ Skip ]
 
 # CSS2 tests that rely on undefined behaviors (height of line-height: normal).
 external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ Skip ]
- [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ Skip ]
- [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ Skip ]
- [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ Skip ]
- [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ Skip ]
- [ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ Skip ]
+[ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ Skip ]
+[ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ Skip ]
+[ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ Skip ]
+[ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ Skip ]
+[ Linux ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ Skip ]
 
 # CSS allows justification (text-align: justify) to hang trailing preserved spaces.
 external/wpt/css/CSS2/text/text-align-white-space-003.xht [ Skip ]
@@ -233,8 +221,8 @@ external/wpt/css/CSS2/normal-flow/blocks-017.xht [ Skip ]
 # CSS2 tests that have 1px diff due to font hinting.
 external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ Skip ]
 external/wpt/css/CSS2/linebox/line-height-126.xht [ Skip ]
- [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ Skip ]
- [ Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ Skip ]
+[ Mac ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ Skip ]
+[ Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ Skip ]
 [ Linux ] external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Skip ]
 [ Linux ] external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Skip ]
 [ Linux ] external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ Skip ]
@@ -255,8 +243,8 @@ external/wpt/css/CSS2/linebox/line-height-126.xht [ Skip ]
 [ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ Skip ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ Skip ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ Skip ]
- [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ Skip ]
- [ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ Skip ]
+[ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ Skip ]
+[ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ Skip ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ Skip ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ Skip ]
 [ Mac ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ Skip ]
@@ -315,12 +303,10 @@ crbug.com/627953 [ Mac ] virtual/text-antialias/symbol-cmap.html [ Skip ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skipped=ignore.
-webaudio/codec-tests/aac [ Skip ]
+webaudio/codec-tests/aac/* [ Skip ]
 
 # WPT for CSS cascade
-crbug.com/763610 external/wpt/css/CSS2/cascade [ Skip ]
-# The revert keyword is not yet supported.
-external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
+crbug.com/763610 external/wpt/css/CSS2/cascade/* [ Skip ]
 
 # These tests require a DRM system that is not available with content_shell.
 external/wpt/encrypted-media/drm-check-encryption-scheme.https.html [ Skip ]
@@ -419,7 +405,22 @@ external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ S
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ Skip ]
 external/wpt/media-source/mediasource-invalid-codec.html [ Skip ]
 
+# The hyphen character renders slightly differently from U+002D HYPHEN-MINUS.
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-auto-inline-010.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-011.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-012.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-013.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-011.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-012.html [ Skip ]
+[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-none-013.html [ Skip ]
+
 # CSS Text features that are not planned to implement.
+external/wpt/css/css-text/parsing/word-boundary-detection-computed.html [ Skip ]
+external/wpt/css/css-text/parsing/word-boundary-detection-invalid.html [ Skip ]
+external/wpt/css/css-text/parsing/word-boundary-detection-valid.html [ Skip ]
+external/wpt/css/css-text/parsing/word-boundary-expansion-computed.html [ Skip ]
+external/wpt/css/css-text/parsing/word-boundary-expansion-invalid.html [ Skip ]
+external/wpt/css/css-text/parsing/word-boundary-expansion-valid.html [ Skip ]
 external/wpt/css/css-text/text-justify/text-justify-006.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-002.html [ Skip ]
@@ -430,12 +431,29 @@ external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html 
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-008.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-009.html [ Skip ]
+external/wpt/css/css-text/word-boundary/* [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Skip ]
 
+# Tests without any implementations.
+# https://github.com/w3c/csswg-drafts/issues/4576
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-003.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-004.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-005.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-atomic-006.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-replaced-002.html [ Skip ]
+external/wpt/css/css-text/line-breaking/line-breaking-replaced-003.html [ Skip ]
+
 # Undefined behavior without any implementations.
 external/wpt/css/css-text/white-space/seg-break-transformation-019.html [ Skip ]
+
+# No browsers implemented the spec behavior, not web compatible, no consensus.
+# https://github.com/w3c/csswg-drafts/issues/1518
+external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-003.xht [ Skip ]
+external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-004.xht [ Skip ]
+external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-005.xht [ Skip ]
+external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Skip ]
 
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ Skip ]
 external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ Skip ]
@@ -801,29 +819,6 @@ external/wpt/css/css-writing-modes/page-flow-direction-003.xht [ Skip ]
 external/wpt/css/css-writing-modes/tcy-white-space-processing-001.html [ Skip ]
 external/wpt/css/css-writing-modes/tcy-white-space-processing-003.html [ Skip ]
 external/wpt/html/interaction/focus/focus-02.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/css-flexbox-height-animation-stretch.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-column-item.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-column-lastitem.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-container.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-item.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-line-order.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-line.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-after-multiline.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-before-column-firstitem.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-before-column-item.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-before-container.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-before-item.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-before-multiline.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_break-natural.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_flex-basis-transitions.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_flex-grow-transitions.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_flex-shrink-transitions-invalid.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_flex-shrink-transitions.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_flex-transitions.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_order-transitions-2.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_order-transitions.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_paged-overflow-2.html [ Skip ]
-virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/interactive/flexbox_interactive_paged-overflow.html [ Skip ]
 
 # CSS tests that were imported with the big directory rename and initially
 # failing. Some are probably for features not supported, while some represent
@@ -985,7 +980,6 @@ external/wpt/css/css-backgrounds/css3-border-image-repeat-stretch.html [ Skip ]
 external/wpt/css/css-backgrounds/first-letter-space-not-selected.html [ Skip ]
 external/wpt/css/css-transforms/2d-rotate-001.html [ Skip ]
 external/wpt/css/css-transforms/css-skew-002.html [ Skip ]
-external/wpt/css/css-transforms/css-transform-scale-001.html [ Skip ]
 external/wpt/css/css-transforms/css-transforms-transformlist.html [ Skip ]
 external/wpt/css/css-transforms/document-styles/svg-document-styles-003.html [ Skip ]
 external/wpt/css/css-transforms/document-styles/svg-document-styles-004.html [ Skip ]
@@ -1356,11 +1350,11 @@ crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Skip ]
-virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Skip ]
+virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass ]
 
 # These directories have manual tests that don't have to run with
 # run_web_tests.py; see https://crbug.com/359838.
-http/tests/ManualTests/ [ Skip ]
+http/tests/ManualTests/* [ Skip ]
 
 # These test produce invisible different pixels on Win7 Debug.
 [ Win7 Debug ] fast/table/backgr_border-table-column-group-collapsed-border.html [ Skip ]
@@ -1375,29 +1369,24 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 http/tests/cachestorage/large-put.html [ Skip ]
 
 # Tests that work only when LazyImageLoading feature is enabled.
-crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
-crbug.com/846170 http/tests/lazyload/attribute.html [ Skip ]
-crbug.com/846170 http/tests/lazyload/fixed-dimension.html [ Skip ]
-crbug.com/846170 http/tests/lazyload/style-dimension.html [ Skip ]
-crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ Skip ]
-crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ Skip ]
-crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ Skip ]
-crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ Skip ]
+crbug.com/846170 http/tests/lazyload/* [ Skip ]
+virtual/lazyload-image/http/tests/lazyload/* [ Pass ]
 crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ Skip ]
-crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ Skip ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-loading-lazy-tentative.sub.html [ Skip ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ Skip ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ Skip ]
-crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ Skip ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-loading-lazy-tentative.sub.html [ Skip ]
 
 # Tests that only work when the mixed content autoupgrade feature is enabled.
 # Covered in virtual test suite.
-http/tests/mixed-autoupgrade [ Skip ]
+http/tests/mixed-autoupgrade/* [ Skip ]
 
 # Not expected to pass in default configuration, only virtual test suite.
 crbug.com/830901 fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Skip ]
+virtual/webgl-extra-video-texture-metadata/fast/webgl/video-metadata/* [ Pass ]
 
 # Below are manual tests from web-platform-tests without automation.
-external/wpt/2dcontext/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ Skip ]
+external/wpt/html/canvas/element/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
@@ -1407,15 +1396,11 @@ external/wpt/battery-status/battery-charging-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-plugging-in-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ Skip ]
 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ Skip ]
-external/wpt/clipboard-apis/async-write-blobs-read-blobs-manual.https.html [ Skip ]
-external/wpt/clipboard-apis/async-write-image-read-image-manual.https.html [ Skip ]
+external/wpt/clipboard-apis/async-platform-specific-write-read.tentative.https.html [ Skip ]
+external/wpt/clipboard-apis/async-raw-write-read.tentative.https.html [ Skip ]
 external/wpt/clipboard-apis/events/copy-event-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/cut-event-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/paste-event-manual.html [ Skip ]
-external/wpt/clipboard-apis/text-write-read/async-write-read-manual.https.html [ Skip ]
-external/wpt/clipboard-apis/text-write-read/async-write-readText-manual.https.html [ Skip ]
-external/wpt/clipboard-apis/text-write-read/async-writeText-read-manual.https.html [ Skip ]
-external/wpt/clipboard-apis/text-write-read/async-writeText-readText-manual.https.html [ Skip ]
 external/wpt/console/console-count-logging-manual.html [ Skip ]
 external/wpt/console/console-countReset-logging-manual.html [ Skip ]
 external/wpt/console/console-number-format-specifiers-symbol-manual.html [ Skip ]
@@ -1487,72 +1472,6 @@ external/wpt/css/css-animations/animation-timing-function-010-manual.html [ Skip
 external/wpt/css/css-animations/animation-timing-function-011-manual.html [ Skip ]
 external/wpt/css/css-animations/animation-timing-function-012-manual.html [ Skip ]
 external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-delay-007-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-direction-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-display-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-007-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-duration-008-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-007-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-008-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-iteration-event-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-keyframes-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-keyframes-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-keyframes-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-name-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-play-state-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-play-state-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-play-state-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-play-state-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-shorthand-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-shorthand-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-shorthand-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-001-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-002-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-003-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-004-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-005-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-006-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-007-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-008-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-009-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-010-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-011-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animation-timing-function-012-manual.html [ Skip ]
-virtual/threaded/external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-000-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-002-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-003-manual.html [ Skip ]
@@ -1619,6 +1538,7 @@ external/wpt/css/css-ui/cursor-pointer-links-002-manual.html [ Skip ]
 external/wpt/css/css-ui/cursor-pointer-links-003-manual.html [ Skip ]
 external/wpt/css/css-ui/select-cursor-001-manual.html [ Skip ]
 external/wpt/css/selectors/hover-001-manual.html [ Skip ]
+external/wpt/dom/events/document-level-wheel-event-listener-passive-by-default-manual.html [ Skip ]
 external/wpt/editing/manual/delete-manual.html [ Skip ]
 external/wpt/editing/manual/forwarddelete-manual.html [ Skip ]
 external/wpt/editing/manual/insertlinebreak-manual.html [ Skip ]
@@ -1639,7 +1559,7 @@ external/wpt/entries-api/filesystementry-getParent-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-attributes-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-file-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-getParent-manual.html [ Skip ]
-external/wpt/entries-api/interfaces-manual.html [ Skip ]
+external/wpt/entries-api/idlharness-manual.html [ Skip ]
 external/wpt/geolocation-API/getCurrentPosition_permission-manual.html [ Skip ]
 external/wpt/geolocation-API/getCurrentPosition_permission_allow-manual.html [ Skip ]
 external/wpt/geolocation-API/getCurrentPosition_permission_deny-manual.html [ Skip ]
@@ -1781,26 +1701,22 @@ external/wpt/notifications/icon-empty-manual.html [ Skip ]
 external/wpt/notifications/requestPermission-granted-manual.html [ Skip ]
 external/wpt/notifications/tag-different-manual.html [ Skip ]
 external/wpt/notifications/tag-same-manual.html [ Skip ]
-external/wpt/offscreen-canvas/text/2d.text.draw.fill.basic-manual.worker.js [ Skip ]
-external/wpt/offscreen-canvas/text/2d.text.draw.fill.maxWidth.large-manual.worker.js [ Skip ]
-external/wpt/offscreen-canvas/text/2d.text.draw.fill.rtl-manual.worker.js [ Skip ]
-external/wpt/offscreen-canvas/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
-external/wpt/offscreen-canvas/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
-external/wpt/orientation-event/free-fall-manual.https.html [ Skip ]
-external/wpt/orientation-event/screen-upmost-manual.https.html [ Skip ]
-external/wpt/orientation-event/screen-upright-manual.https.html [ Skip ]
-external/wpt/orientation-event/t001-manual.https.html [ Skip ]
-external/wpt/orientation-event/t002-manual.https.html [ Skip ]
-external/wpt/orientation-event/t003-manual.https.html [ Skip ]
-external/wpt/orientation-event/t006-manual.https.html [ Skip ]
-external/wpt/orientation-event/t009-manual.https.html [ Skip ]
-external/wpt/orientation-event/t010-manual.https.html [ Skip ]
-external/wpt/orientation-event/t012-manual.https.html [ Skip ]
-external/wpt/orientation-event/t021-manual.https.html [ Skip ]
-external/wpt/orientation-event/t022-manual.https.html [ Skip ]
-external/wpt/orientation-event/t023-manual.https.html [ Skip ]
-external/wpt/orientation-event/t025-manual.https.html [ Skip ]
-external/wpt/orientation-event/t028-manual.https.html [ Skip ]
+external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.basic-manual.worker.js [ Skip ]
+external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.large-manual.worker.js [ Skip ]
+external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.rtl-manual.worker.js [ Skip ]
+external/wpt/html/canvas/offscreen/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
+external/wpt/html/canvas/offscreen/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
+external/wpt/orientation-event/motion/page-visibility-manual.https.html [ Skip ]
+external/wpt/orientation-event/motion/t025-manual.https.html [ Skip ]
+external/wpt/orientation-event/motion/t028-manual.https.html [ Skip ]
+external/wpt/orientation-event/motion/free-fall-manual.https.html [ Skip ]
+external/wpt/orientation-event/motion/screen-upmost-manual.https.html [ Skip ]
+external/wpt/orientation-event/motion/screen-upright-manual.https.html [ Skip ]
+external/wpt/orientation-event/orientation/page-visibility-manual.https.html [ Skip ]
+external/wpt/orientation-event/orientation/t006-manual.https.html [ Skip ]
+external/wpt/orientation-event/orientation/t009-manual.https.html [ Skip ]
+external/wpt/orientation-event/orientation/t010-manual.https.html [ Skip ]
+external/wpt/orientation-event/orientation/t012-manual.https.html [ Skip ]
 external/wpt/page-visibility/test_minimize-manual.html [ Skip ]
 external/wpt/page-visibility/test_tab_state_change-manual.html [ Skip ]
 external/wpt/payment-method-basic-card/empty-data-manual.https.html [ Skip ]
@@ -1903,7 +1819,7 @@ external/wpt/visual-viewport/viewport-scale-iframe-manual.html [ Skip ]
 external/wpt/visual-viewport/viewport-scale-manual.html [ Skip ]
 external/wpt/visual-viewport/viewport-scroll-event-manual.html [ Skip ]
 external/wpt/visual-viewport/viewport-url-bar-changes-height-manual.html [ Skip ]
-external/wpt/wake-lock/wakelock-document-hidden-manual.https.html [ Skip ]
+external/wpt/screen-wake-lock/wakelock-document-hidden-manual.https.html [ Skip ]
 external/wpt/web-share/share-cancel-manual.https.html [ Skip ]
 external/wpt/web-share/share-extra-argument-manual.https.html [ Skip ]
 external/wpt/web-share/share-extra-field-manual.https.html [ Skip ]
@@ -1922,31 +1838,6 @@ external/wpt/webstorage/storage_local-manual.html [ Skip ]
 external/wpt/webstorage/storage_session-manual.html [ Skip ]
 external/wpt/xhr/send-authentication-existing-session-manual.htm [ Skip ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Skip ]
-virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
-virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Skip ]
-virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
-virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Skip ]
-virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
-virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
-virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
-virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
-virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Skip ]
-virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Skip ]
-virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
-virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
-virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-abort-manual.https.html [ Skip ]
-virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ Skip ]
-virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ Skip ]
-virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ Skip ]
 
 # ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
 # The section below lists web tests that are incompatible with the WPT Origin
@@ -1974,20 +1865,20 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 # Skip below.  Note that by default Site Isolation isolates *sites* rather
 # than *origin* and therefore avoids problems related to document.domain
 # compatibility.
-Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
-Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
-Bug(none) http/tests/dom/EventListener-incumbent-global-1.html [ Skip ]
-Bug(none) http/tests/dom/EventListener-incumbent-global-2.html [ Skip ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
-Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
-Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.https.sub.html [ Skip ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.https.sub.html [ Skip ]
-Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
-Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
+external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Skip ]
+external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
+external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
+external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
+http/tests/dom/EventListener-incumbent-global-1.html [ Skip ]
+http/tests/dom/EventListener-incumbent-global-2.html [ Skip ]
+external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
+external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
+external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
+external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
+external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.https.sub.html [ Skip ]
+external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.https.sub.html [ Skip ]
+external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
+external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
 # -------------------- origin-vs-url in console messages -----------------
 # Process hosting https://foo.example.com should not get any data from
 # https://bar.other-site-example.com.  This includes things like cookies
@@ -2008,7 +1899,18 @@ crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-w
 # but don't make sense if
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
-Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
+http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
+# ----------------------- origin isolation ------------------------------
+# Origin isolation web platform tests are for the opt-in Origin Isolation
+# feature at https://github.com/WICG/origin-isolation. It doesn't make sense to
+# test that feature when web-platform.test domains are being forced into
+# origin-isolation mode. Note that since we also want coverage of this feature
+# with site isolation enabled, we use a different virtual test suite than
+# not-site-per-process, named no-auto-web-platform-test-origin-isolation.
+external/wpt/origin-isolation/* [ Skip ]
+wpt_internal/origin-isolation/* [ Skip ]
+virtual/no-auto-wpt-origin-isolation/* [ Pass ]
+virtual/not-site-per-process/* [ Pass ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,
@@ -2033,17 +1935,13 @@ crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ S
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ Skip ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ Skip ]
 crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ Skip ]
-crbug.com/946022 [ Win7 ] virtual/audio-service/media/controls/overflow-menu-hide-on-resize.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
-crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ Skip ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/* [ Skip ]
 
 # We don't plan to support this use-case in the near future.
 crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
-crbug.com/940797 virtual/sxg-with-network-service/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
-crbug.com/940797 virtual/sxg-subresource/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 
-external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ Skip ]
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ Skip ]
 external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ Skip ]
 external/wpt/payment-request/billing-address-changed-manual.https.html [ Skip ]
@@ -2062,31 +1960,8 @@ external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ Ski
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ Skip ]
 external/wpt/html/webappapis/user-prompts/print-manual.html [ Skip ]
 
-# Tests that do not pass with the Blink CORS, but pass with OOR-CORS.
-# We maintain the Blink CORS for a while, and keep it work without regressions.
-# But will not change the existing behavior for Blink CORS when expectations are
-# changed for the spec update, other features side-effects, and so on.
-# TODO(cbur.com/870173): Double check following failed tests later.
-crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
-crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
-crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ Skip ]
-crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ Skip ]
-crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ Skip ]
-crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ Skip ]
-crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Skip ]
-crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Skip ]
-crbug.com/870173 http/tests/preload/warning/request-mode.html [ Skip ]
-crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
-crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
-crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
-crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
-crbug.com/870173 mhtml/cid_in_html_resource.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
-crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
-
 # Windows doesn't have native overlay scrollbar
-[ Win ] virtual/overlay-scrollbar [ Skip ]
+[ Win ] virtual/overlay-scrollbar/* [ Skip ]
 
 # Blink implements additional privacy measures that cause the regular test in
 # WPT to time out.
@@ -2097,17 +1972,104 @@ crbug.com/626703 [ Linux ] external/wpt/payment-method-basic-card/billing-addres
 crbug.com/626703 [ Mac ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
 crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
 
-# Chrome Win/Linux/Mac don't support SMS Receiver origin trial yet
-[ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/sms-receiver-origin-trial-interfaces.html [ Skip ]
-[ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/sms-receiver-origin-trial-interfaces.html [ Skip ]
-[ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/sms-receiver-origin-trial-interfaces.html [ Skip ]
+# Chrome Win/Linux/Mac don't support WebNFC origin trial
+[ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/web-nfc-origin-trial-interfaces.html [ Skip ]
+[ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/web-nfc-origin-trial-interfaces.html [ Skip ]
+[ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/web-nfc-origin-trial-interfaces.html [ Skip ]
 
-# Chrome Win/Linux/Mac don't support Contacts Picker API yet.
-[ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
-[ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
-[ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
+crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_fractional_coordinates-manual.html [ Skip ]
 
-# Chrome Win/Linux/Mac don't support Content Index origin trial yet
-[ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
-[ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
-[ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
+# These tests require a preferred dark color-scheme and are only run as virtual tests
+external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Skip ]
+virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Pass ]
+
+crbug.com/626703 [ Linux ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
+crbug.com/626703 [ Mac ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
+crbug.com/626703 [ Win ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
+
+# Ctrl and mouse wheel scroll will not make page zoom on Mac
+crbug.com/1047176 [ Mac ] fast/events/wheel/wheelevent-ctrl.html [ Skip ]
+
+# These tests will pass once the --enable-features=TrustTokens flag is on by
+# default. A virtual test suite runs the same tests with the flag enabled.
+crbug.com/1061765 http/tests/loading/trust-tokens/* [ Skip ]
+crbug.com/1061765 external/wpt/trust-tokens/end-to-end/* [ Skip ]
+virtual/trust-tokens/http/tests/loading/trust-tokens/* [ Pass ]
+virtual/trust-tokens/external/wpt/trust-tokens/end-to-end/* [ Pass ]
+
+# Run these tests with under virtual/scalefactor... only.
+crbug.com/567837 fast/hidpi/static/* [ Skip ]
+virtual/scalefactor150/fast/hidpi/static/* [ Pass ]
+virtual/scalefactor200/fast/hidpi/static/* [ Pass ]
+virtual/scalefactor200withzoom/fast/hidpi/static/* [ Pass ]
+
+# Skip the non-virtualized CORS-RFC1918 blocking tests (`.addressSpace` tests are fine):
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
+virtual/cors-rfc1918/http/tests/security/cors-rfc1918/* [ Pass ]
+virtual/omt-worker-fetch-cors-rfc1918/http/tests/security/cors-rfc1918/* [ Pass ]
+
+# Memory measurement tests are run as virtual tests.
+external/wpt/measure-memory/* [ Skip ]
+virtual/force-eager/external/wpt/measure-memory/* [ Pass ]
+
+# Legacy SameSite cookie tests do not apply when non-legacy behavior is in effect.
+crbug.com/961439 external/wpt/cookies/samesite/fetch.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-get-blank-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-get-blank.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-post-blank-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-post-blank.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/iframe-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/iframe.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/img.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/setcookie-lax.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/setcookie-navigation.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/window-open.https.html?legacy-samesite [ Skip ]
+# Unskip the above tests for virtual/legacy-samesite.
+virtual/legacy-samesite/external/wpt/cookies/samesite/* [ Pass ]
+
+# Non-legacy SameSite cookie tests do not apply when legacy SameSite behavior is in effect.
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/fetch.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/img.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-lax.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-navigation.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open.https.html [ Skip ]
+
+# Remove these from virtual tests when Network Error Logging is turned on by default
+crbug.com/748549 external/wpt/network-error-logging/* [ Skip ]
+virtual/network-error-logging/external/wpt/network-error-logging/* [ Pass ]
+
+# WeakRefs are under development and run in a virtual test suite
+crbug.com/1016767 js/weakrefs/* [ Skip ]
+virtual/weakrefs/js/weakrefs/* [ Pass ]
+
+# The Wasm code cache requires disabling the baseline compiler, so only the
+# virtual test should be run.
+http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
+virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass ]
+virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
+virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
+virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
+
+# This test run under virtual suites only.
+crbug.com/981970 external/wpt/fetch/http-cache/split-cache.tentative.html [ Skip ]
+virtual/not-split-http-cache/external/wpt/fetch/http-cache/split-cache.tentative.html [ Pass ]
+virtual/split-http-cache/external/wpt/fetch/http-cache/split-cache.tentative.html [ Pass ]
+
+# Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
+# with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
+crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
+crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
+virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Pass ]
+
+# Remove from virtual tests when FreezeUserAgent is turned on by default.
+crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
+virtual/passive-fingerprinting/http/tests/navigation/frozen-useragent.html [ Pass ]

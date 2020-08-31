@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_png_rep.h"
 
@@ -79,10 +80,10 @@ Response BrowserHandler::GetWindowForTarget(
   auto host =
       content::DevToolsAgentHost::GetForId(target_id.fromMaybe(target_id_));
   if (!host)
-    return Response::Error("No target with given id");
+    return Response::ServerError("No target with given id");
   content::WebContents* web_contents = host->GetWebContents();
   if (!web_contents)
-    return Response::Error("No web contents in the target");
+    return Response::ServerError("No web contents in the target");
 
   Browser* browser = nullptr;
   for (auto* b : *BrowserList::GetInstance()) {
@@ -91,12 +92,12 @@ Response BrowserHandler::GetWindowForTarget(
       browser = b;
   }
   if (!browser)
-    return Response::Error("Browser window not found");
+    return Response::ServerError("Browser window not found");
 
   BrowserWindow* window = browser->window();
   *out_window_id = browser->session_id().id();
   *out_bounds = GetBrowserWindowBounds(window);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::GetWindowBounds(
@@ -104,16 +105,20 @@ Response BrowserHandler::GetWindowBounds(
     std::unique_ptr<protocol::Browser::Bounds>* out_bounds) {
   BrowserWindow* window = GetBrowserWindow(window_id);
   if (!window)
-    return Response::Error("Browser window not found");
+    return Response::ServerError("Browser window not found");
 
   *out_bounds = GetBrowserWindowBounds(window);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::Close() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce([]() { chrome::ExitIgnoreUnloadHandlers(); }));
-  return Response::OK();
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce([]() {
+        if (ChromeDevToolsManagerDelegate::GetInstance())
+          ChromeDevToolsManagerDelegate::GetInstance()->BrowserCloseRequested();
+        chrome::ExitIgnoreUnloadHandlers();
+      }));
+  return Response::Success();
 }
 
 Response BrowserHandler::SetWindowBounds(
@@ -121,7 +126,7 @@ Response BrowserHandler::SetWindowBounds(
     std::unique_ptr<protocol::Browser::Bounds> window_bounds) {
   BrowserWindow* window = GetBrowserWindow(window_id);
   if (!window)
-    return Response::Error("Browser window not found");
+    return Response::ServerError("Browser window not found");
   gfx::Rect bounds = window->GetBounds();
   const bool set_bounds = window_bounds->HasLeft() || window_bounds->HasTop() ||
                           window_bounds->HasWidth() ||
@@ -135,29 +140,29 @@ Response BrowserHandler::SetWindowBounds(
 
   const std::string window_state = window_bounds->GetWindowState("normal");
   if (set_bounds && window_state != "normal") {
-    return Response::Error(
+    return Response::ServerError(
         "The 'minimized', 'maximized' and 'fullscreen' states cannot be "
         "combined with 'left', 'top', 'width' or 'height'");
   }
 
   if (window_state == "fullscreen") {
     if (window->IsMinimized()) {
-      return Response::Error(
+      return Response::ServerError(
           "To make minimized window fullscreen, "
           "restore it to normal state first.");
     }
     window->GetExclusiveAccessContext()->EnterFullscreen(
-        GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+        GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, display::kInvalidDisplayId);
   } else if (window_state == "maximized") {
     if (window->IsMinimized() || window->IsFullscreen()) {
-      return Response::Error(
+      return Response::ServerError(
           "To maximize a minimized or fullscreen "
           "window, restore it to normal state first.");
     }
     window->Maximize();
   } else if (window_state == "minimized") {
     if (window->IsFullscreen()) {
-      return Response::Error(
+      return Response::ServerError(
           "To minimize a fullscreen window, restore it to normal "
           "state first.");
     }
@@ -175,7 +180,7 @@ Response BrowserHandler::SetWindowBounds(
     NOTREACHED();
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response BrowserHandler::SetDockTile(
@@ -186,5 +191,5 @@ protocol::Response BrowserHandler::SetDockTile(
     reps.emplace_back(image.fromJust().bytes(), 1);
   DevToolsDockTile::Update(label.fromMaybe(std::string()),
                            !reps.empty() ? gfx::Image(reps) : gfx::Image());
-  return Response::OK();
+  return Response::Success();
 }

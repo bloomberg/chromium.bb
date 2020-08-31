@@ -308,5 +308,5 @@ sk{
         CZ{"Česká republika"}
         SZ{"Svazijsko"}
     }
-    Version{"36"}
+    Version{"37"}
 }

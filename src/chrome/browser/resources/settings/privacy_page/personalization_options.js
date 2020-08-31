@@ -24,21 +24,15 @@ Polymer({
     },
 
     /**
+     * TODO(dpapad): Restore actual type !PrivacyPageVisibility after this file
+     * is no longer reused by chrome://os-settings.
      * Dictionary defining page visibility.
-     * @type {!PrivacyPageVisibility}
+     * @type {!Object}
      */
     pageVisibility: Object,
 
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
-
-    /** @private */
-    passwordsLeakDetectionEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
-      },
-    },
 
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
@@ -46,17 +40,9 @@ Polymer({
     /** @private {chrome.settingsPrivate.PrefObject} */
     metricsReportingPref_: {
       type: Object,
-      value: function() {
+      value() {
         // TODO(dbeam): this is basically only to appease PrefControlBehavior.
         // Maybe add a no-validate attribute instead? This makes little sense.
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
-      },
-    },
-
-    /** @private {chrome.settingsPrivate.PrefObject} */
-    safeBrowsingReportingPref_: {
-      type: Object,
-      value: function() {
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
@@ -87,20 +73,19 @@ Polymer({
     },
   },
 
-  observers: [
-    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
-  ],
+  /** @private {?settings.PrivacyPageBrowserProxy} */
+  browserProxy_: null,
 
   /**
    * @return {boolean}
    * @private
    */
-  computeSyncFirstSetupInProgress_: function() {
+  computeSyncFirstSetupInProgress_() {
     return !!this.syncStatus && !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
 
     // <if expr="_google_chrome and not chromeos">
@@ -110,51 +95,18 @@ Polymer({
     // </if>
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getDisabledExtendedSafeBrowsing_: function() {
-    return !this.getPref('safebrowsing.enabled').value;
-  },
-
-  /** @private */
-  onSafeBrowsingReportingToggleChange_: function() {
-    this.setPrefValue(
-        'safebrowsing.scout_reporting_enabled',
-        this.$$('#safeBrowsingReportingToggle').checked);
-  },
-
-  /** @private */
-  onSafeBrowsingReportingPrefChange_: function() {
-    if (this.prefs == undefined) {
-      return;
-    }
-    const safeBrowsingScoutPref =
-        this.getPref('safebrowsing.scout_reporting_enabled');
-    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
-        !!safeBrowsingScoutPref.value;
-    this.safeBrowsingReportingPref_ = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: prefValue,
-      enforcement: safeBrowsingScoutPref.enforcement,
-      controlledBy: safeBrowsingScoutPref.controlledBy,
-    };
-  },
-
   // <if expr="_google_chrome and not chromeos">
   /** @private */
-  onMetricsReportingChange_: function() {
+  onMetricsReportingChange_() {
     const enabled = this.$.metricsReportingControl.checked;
     this.browserProxy_.setMetricsReportingEnabled(enabled);
   },
 
   /**
-   * @param {!MetricsReporting} metricsReporting
+   * @param {!settings.MetricsReporting} metricsReporting
    * @private
    */
-  setMetricsReportingPref_: function(metricsReporting) {
+  setMetricsReportingPref_(metricsReporting) {
     const hadPreviousPref = this.metricsReportingPref_.value !== undefined;
     const pref = {
       key: '',
@@ -177,7 +129,6 @@ Polymer({
       this.showRestart_ = true;
     }
   },
-
   // </if>
 
   // <if expr="_google_chrome">
@@ -185,7 +136,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onUseSpellingServiceToggle_: function(event) {
+  onUseSpellingServiceToggle_(event) {
     // If turning on using the spelling service, automatically turn on
     // spellcheck so that the spelling service can run.
     if (event.target.checked) {
@@ -198,7 +149,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSpellCheckControl_: function() {
+  showSpellCheckControl_() {
     return (
         !!this.prefs.spellcheck &&
         /** @type {!Array<string>} */
@@ -209,14 +160,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowDriveSuggest_: function() {
+  shouldShowDriveSuggest_() {
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
         !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
   },
 
   /** @private */
-  onSigninAllowedChange_: function() {
+  onSigninAllowedChange_() {
     if (this.syncStatus.signedIn && !this.$$('#signinAllowedToggle').checked) {
       // Switch the toggle back on and show the signout dialog.
       this.$$('#signinAllowedToggle').checked = true;
@@ -227,13 +178,10 @@ Polymer({
           .sendPrefChange();
       this.showRestartToast_ = true;
     }
-
-    this.browserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
   },
 
   /** @private */
-  onSignoutDialogClosed_: function() {
+  onSignoutDialogClosed_() {
     if (/** @type {!SettingsSignoutDialogElement} */ (
             this.$$('settings-signout-dialog'))
             .wasConfirmed()) {
@@ -250,7 +198,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onRestartTap_: function(e) {
+  onRestartTap_(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },

@@ -91,12 +91,9 @@ ASH_EXPORT bool ShouldExcludeForOverview(const aura::Window* window);
 ASH_EXPORT void RemoveTransientDescendants(
     std::vector<aura::Window*>* out_window_list);
 
-// Hides a list of |windows| without any animations, in case users wants to hide
-// them right away or apply their own animations. Setting |minimize| to true
-// will result in also setting the window states to minimized.
-ASH_EXPORT void HideAndMaybeMinimizeWithoutAnimation(
-    std::vector<aura::Window*> windows,
-    bool minimize);
+// Minimizes a hides list of |windows| without any animations.
+ASH_EXPORT void MinimizeAndHideWithoutAnimation(
+    const std::vector<aura::Window*>& windows);
 
 // Returns the RootWindow at |point_in_screen| in virtual screen coordinates.
 // Returns nullptr if the root window does not exist at the given point.
@@ -111,6 +108,23 @@ ASH_EXPORT bool IsArcWindow(const aura::Window* window);
 
 // Returns true if |window| is an ARC PIP window.
 ASH_EXPORT bool IsArcPipWindow(const aura::Window* window);
+
+// Expands the Android PIP window.
+ASH_EXPORT void ExpandArcPipWindow();
+
+// Returns true if any window is being dragged, or we are in overview mode and
+// an item is being dragged around.
+bool IsAnyWindowDragged();
+
+// Returns the top window on MRU window list, or null if the list is empty.
+aura::Window* GetTopWindow();
+
+// Returns whether the top window should be minimized on back action.
+ASH_EXPORT bool ShouldMinimizeTopWindowOnBack();
+
+// Sends |ui::VKEY_BROWSER_BACK| key press and key release event to the
+// WindowTreeHost associated with |root_window|.
+void SendBackKeyEvent(aura::Window* root_window);
 
 }  // namespace window_util
 }  // namespace ash

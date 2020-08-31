@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_native_file_system_directory_iterator_entry.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator_entry.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -18,8 +18,11 @@ namespace blink {
 NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
     NativeFileSystemDirectoryHandle* directory,
     ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context), directory_(directory) {
-  directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote());
+    : ExecutionContextClient(execution_context),
+      directory_(directory),
+      receiver_(this, execution_context) {
+  directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote(
+      execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
 ScriptPromise NativeFileSystemDirectoryIterator::next(
@@ -52,7 +55,8 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
 
 void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
+  visitor->Trace(receiver_);
   visitor->Trace(entries_);
   visitor->Trace(pending_next_);
   visitor->Trace(directory_);
@@ -83,10 +87,6 @@ void NativeFileSystemDirectoryIterator::DidReadDirectory(
         next(pending_next_->GetScriptState()).GetScriptValue());
     pending_next_ = nullptr;
   }
-}
-
-void NativeFileSystemDirectoryIterator::Dispose() {
-  receiver_.reset();
 }
 
 }  // namespace blink

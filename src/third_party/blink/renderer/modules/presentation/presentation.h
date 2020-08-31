@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_H_
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
-class LocalFrame;
+class LocalDOMWindow;
 class PresentationReceiver;
 class PresentationRequest;
 
@@ -20,16 +20,17 @@ class PresentationRequest;
 // Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for
 // details.
-class Presentation final : public ScriptWrappable, public ContextClient {
+class Presentation final : public ScriptWrappable,
+                           public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(Presentation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Presentation* Create(LocalFrame*);
+  static Presentation* Create(LocalDOMWindow*);
 
-  explicit Presentation(LocalFrame*);
+  explicit Presentation(LocalDOMWindow*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   PresentationRequest* defaultRequest() const;
   void setDefaultRequest(PresentationRequest*);

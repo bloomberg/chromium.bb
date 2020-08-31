@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -42,8 +42,8 @@ void PreloadCheckRunner::WaitForIdle() {
 }
 
 PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
-  return base::Bind(&PreloadCheckRunner::OnCheckComplete,
-                    base::Unretained(this));
+  return base::BindOnce(&PreloadCheckRunner::OnCheckComplete,
+                        base::Unretained(this));
 }
 
 void PreloadCheckRunner::OnCheckComplete(const PreloadCheck::Errors& errors) {

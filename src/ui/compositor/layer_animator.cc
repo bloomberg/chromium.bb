@@ -8,14 +8,14 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -56,8 +56,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       disable_timer_for_test_(false),
       adding_animations_(false),
       animation_metrics_reporter_(nullptr) {
-  animation_ = cc::SingleKeyframeEffectAnimation::Create(
-      cc::AnimationIdProvider::NextAnimationId());
+  animation_ =
+      cc::Animation::Create(cc::AnimationIdProvider::NextAnimationId());
 }
 
 LayerAnimator::~LayerAnimator() {
@@ -164,6 +164,9 @@ void LayerAnimator::AttachLayerAndTimeline(Compositor* compositor) {
 
   DCHECK(delegate_->GetCcLayer());
   AttachLayerToAnimation(delegate_->GetCcLayer()->id());
+
+  for (auto& layer_animation_sequence : animation_queue_)
+    layer_animation_sequence->OnAnimatorAttached(delegate());
 }
 
 void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
@@ -174,6 +177,9 @@ void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
 
   DetachLayerFromAnimation();
   timeline->DetachAnimation(animation_);
+
+  for (auto& layer_animation_sequence : animation_queue_)
+    layer_animation_sequence->OnAnimatorDetached();
 }
 
 void LayerAnimator::AttachLayerToAnimation(int layer_id) {
@@ -203,8 +209,7 @@ void LayerAnimator::RemoveThreadedAnimation(int keyframe_model_id) {
   animation_->RemoveKeyframeModel(keyframe_model_id);
 }
 
-cc::SingleKeyframeEffectAnimation* LayerAnimator::GetAnimationForTesting()
-    const {
+cc::Animation* LayerAnimator::GetAnimationForTesting() const {
   return animation_.get();
 }
 

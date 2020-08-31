@@ -56,7 +56,10 @@ public class AssistantChip {
     private final String mText;
 
     /** Whether this chip is enabled or not. */
-    private final boolean mDisabled;
+    private boolean mDisabled;
+
+    /** Whether this chip is visible or not. */
+    private boolean mVisible;
 
     /**
      * Whether this chip is sticky. A sticky chip will be a candidate to be displayed in the header
@@ -64,17 +67,32 @@ public class AssistantChip {
      */
     private final boolean mSticky;
 
+    private final String mIdentifier;
+
     /** The callback that will be triggered when this chip is clicked. */
     private final Runnable mSelectedListener;
 
     public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
-            boolean sticky, Runnable selectedListener) {
+            boolean sticky, String identifier, Runnable selectedListener) {
         mType = type;
         mIcon = icon;
         mText = text;
         mDisabled = disabled;
+        mVisible = true;
         mSticky = sticky;
+        mIdentifier = identifier;
         mSelectedListener = selectedListener;
+    }
+
+    public AssistantChip(AssistantChip other) {
+        mType = other.mType;
+        mIcon = other.mIcon;
+        mText = other.mText;
+        mDisabled = other.mDisabled;
+        mVisible = other.mVisible;
+        mSticky = other.mSticky;
+        mIdentifier = other.mIdentifier;
+        mSelectedListener = other.mSelectedListener;
     }
 
     public int getType() {
@@ -93,11 +111,40 @@ public class AssistantChip {
         return mDisabled;
     }
 
+    public boolean isVisible() {
+        return mVisible;
+    }
+
+    public void setDisabled(boolean disabled) {
+        mDisabled = disabled;
+    }
+
+    public void setVisible(boolean visible) {
+        mVisible = visible;
+    }
+
     public boolean isSticky() {
         return mSticky;
     }
 
+    public String getIdentifier() {
+        return mIdentifier;
+    }
+
     public Runnable getSelectedListener() {
         return mSelectedListener;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof AssistantChip)) {
+            return false;
+        }
+
+        AssistantChip that = (AssistantChip) other;
+        return this.getType() == that.getType() && this.getText().equals(that.getText())
+                && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky()
+                && this.getIdentifier().equals(that.getIdentifier())
+                && this.isDisabled() == that.isDisabled() && this.isVisible() == that.isVisible();
     }
 }

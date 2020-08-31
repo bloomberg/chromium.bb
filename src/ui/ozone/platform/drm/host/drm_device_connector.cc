@@ -21,14 +21,6 @@ DrmDeviceConnector::DrmDeviceConnector(
 
 DrmDeviceConnector::~DrmDeviceConnector() = default;
 
-void DrmDeviceConnector::OnGpuProcessLaunched(
-    int host_id,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
-  NOTREACHED();
-}
-
 void DrmDeviceConnector::OnChannelDestroyed(int host_id) {
   if (host_id != host_id_)
     return;
@@ -41,11 +33,6 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,
     GpuHostTerminateCallback terminate_callback) {
-  // We can get into this state if a new instance of GpuProcessHost is created
-  // before the old one is destroyed.
-  if (host_drm_device_->IsConnected())
-    host_drm_device_->OnGpuServiceLost();
-
   // We need to preserve |binder| to let us bind interfaces later.
   binder_callback_ = std::move(binder);
   host_id_ = host_id;
@@ -55,11 +42,6 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
 
   host_drm_device_->OnGpuServiceLaunchedOnIOThread(std::move(drm_device),
                                                    ui_runner);
-}
-
-void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
-  NOTREACHED() << "This class should only be used with mojo transport but here "
-                  "we're wrongly getting invoked to handle IPC communication.";
 }
 
 void DrmDeviceConnector::BindInterfaceDrmDevice(

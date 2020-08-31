@@ -63,6 +63,7 @@ class AppDelegate {
   virtual void AddNewContents(
       content::BrowserContext* context,
       std::unique_ptr<content::WebContents> new_contents,
+      const GURL& target_url,
       WindowOpenDisposition disposition,
       const gfx::Rect& initial_rect,
       bool user_gesture) = 0;
@@ -93,7 +94,7 @@ class AppDelegate {
   virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
 
   // |callback| will be called when the process is about to terminate.
-  virtual void SetTerminatingCallback(const base::Closure& callback) = 0;
+  virtual void SetTerminatingCallback(base::OnceClosure callback) = 0;
 
   // Called when the app is hidden or shown.
   virtual void OnHide() = 0;

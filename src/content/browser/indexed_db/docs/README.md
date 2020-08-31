@@ -28,7 +28,8 @@ IndexedDB databases are identified by a unique auto-incrementing `int64_t`
 ## Blob Storage
 Blob are supported in IndexedDB to allow large values to be stored in IndexedDB
 without needing to save them directly into leveldb (which doesn't work well
-with large values).
+with large values). Blobs are a special type of "External Object", i.e. objects
+where some other subsystem in chrome is involved in managing them.
 
 
 ### Blob States
@@ -78,7 +79,7 @@ database.
 #### Blob Key
 A blob key is a `int64_t` `database_id` and a unique auto-incrementing
 `int64_t` `blob_number`. The database metadata contains a
-`BlobKeyGeneratorCurrentNumber` which is used to save the next blob key number
+`BlobNumberGeneratorCurrentNumber` which is used to save the next blob key number
 to use.
 
 A blob key uniquely identifies a blob in an backing store.
@@ -105,7 +106,8 @@ Blob handles basically hold a reference to the given blob, which allows
 IndexedDB (or a client) to keep the blob alive and/or read the blob.
 
 #### Blob Info
-A  blob info usually is-a [IndexedDBBlobInfo](../indexed_db_blob_info.h), and
+A  blob info is one version of-a
+[IndexedDBExternalObject](../indexed_db_external_object.h), and
 basically contains all of the information needed to read a blob. This means it
 has a blob handle if it is a **pending** blob, and/or the file information if
 it is a **persisted** blob.

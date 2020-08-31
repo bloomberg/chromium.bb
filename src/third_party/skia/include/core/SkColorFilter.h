@@ -16,6 +16,7 @@
 class GrColorInfo;
 class GrFragmentProcessor;
 class GrRecordingContext;
+class SkArenaAlloc;
 class SkBitmap;
 class SkColorMatrix;
 class SkColorSpace;
@@ -25,6 +26,7 @@ namespace skvm {
     class Builder;
     struct F32;
     struct Uniforms;
+    struct Color;
 }
 
 /**
@@ -61,10 +63,8 @@ public:
 
     bool appendStages(const SkStageRec& rec, bool shaderIsOpaque) const;
 
-    virtual bool program(skvm::Builder*,
-                         SkColorSpace* dstCS,
-                         skvm::Uniforms* uniforms,
-                         skvm::F32* r, skvm::F32* g, skvm::F32* b, skvm::F32* a) const;
+    skvm::Color program(skvm::Builder*, skvm::Color,
+                        SkColorSpace* dstCS, skvm::Uniforms*, SkArenaAlloc*) const;
 
     enum Flags {
         /** If set the filter methods will not change the alpha channel of the colors.
@@ -89,9 +89,6 @@ public:
      *  this filter, applied to the output of the inner filter.
      *
      *  result = this(inner(...))
-     *
-     *  Due to internal limits, it is possible that this will return NULL, so the caller must
-     *  always check.
      */
     sk_sp<SkColorFilter> makeComposed(sk_sp<SkColorFilter> inner) const;
 
@@ -137,18 +134,10 @@ protected:
     virtual bool onAsAColorMode(SkColor* color, SkBlendMode* bmode) const;
 
 private:
-    /*
-     *  Returns 1 if this is a single filter (not a composition of other filters), otherwise it
-     *  reutrns the number of leaf-node filters in a composition. This should be the same value
-     *  as the number of GrFragmentProcessors returned by asFragmentProcessors's array parameter.
-     *
-     *  e.g. compose(filter, compose(compose(filter, filter), filter)) --> 4
-     */
-    virtual int privateComposedFilterCount() const { return 1; }
-
     virtual bool onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const = 0;
 
-    friend class SkComposeColorFilter;
+    virtual skvm::Color onProgram(skvm::Builder*, skvm::Color,
+                                  SkColorSpace* dstCS, skvm::Uniforms*, SkArenaAlloc*) const = 0;
 
     typedef SkFlattenable INHERITED;
 };

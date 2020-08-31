@@ -6,6 +6,7 @@
 
 #include "content/browser/isolated_origin_util.h"
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -137,6 +138,14 @@ bool IsolatedOriginUtil::IsValidIsolatedOrigin(const url::Origin& origin) {
     return false;
 
   return true;
+}
+
+// static
+bool IsolatedOriginUtil::IsStrictSubdomain(const url::Origin& sub_origin,
+                                           const url::Origin& base_origin) {
+  return sub_origin.scheme() == base_origin.scheme() &&
+         sub_origin.port() == base_origin.port() && sub_origin != base_origin &&
+         sub_origin.DomainIs(base_origin.host());
 }
 
 }  // namespace content

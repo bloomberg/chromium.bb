@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "extensions/browser/component_extension_resource_manager.h"
@@ -30,6 +31,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -97,9 +99,11 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   }
 
   // mojom::URLLoader implementation:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {
     NOTREACHED() << "No redirects for local file loads.";
   }
   // Current implementation reads all resource data at start of resource
@@ -132,8 +136,8 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
     auto data = GetResource(resource_id, request.url.host());
 
     std::string* read_mime_type = new std::string;
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&net::GetMimeTypeFromFile, filename,
                        base::Unretained(read_mime_type)),
         base::BindOnce(&ResourceBundleFileLoader::OnMimeTypeRead,
@@ -158,13 +162,11 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
       return;
     }
     head->headers = response_headers_;
-    head->headers->AddHeader(
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                           base::NumberToString(head->content_length).c_str()));
+    head->headers->AddHeader(net::HttpRequestHeaders::kContentLength,
+                             base::NumberToString(head->content_length));
     if (!head->mime_type.empty()) {
-      head->headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head->mime_type.c_str()));
+      head->headers->AddHeader(net::HttpRequestHeaders::kContentType,
+                               head->mime_type.c_str());
     }
     client_->OnReceiveResponse(std::move(head));
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
@@ -215,7 +217,7 @@ namespace extensions {
 namespace chrome_url_request_util {
 
 bool AllowCrossRendererResourceLoad(const GURL& url,
-                                    content::ResourceType resource_type,
+                                    blink::mojom::ResourceType resource_type,
                                     ui::PageTransition page_transition,
                                     int child_id,
                                     bool is_incognito,

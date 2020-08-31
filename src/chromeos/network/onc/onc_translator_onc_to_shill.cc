@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -29,6 +30,7 @@
 #include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -212,6 +214,14 @@ void LocalTranslator::TranslateOpenVPN() {
   SetClientCertProperties(client_cert::CONFIG_TYPE_OPENVPN, onc_object_,
                           shill_dictionary_);
 
+  const std::string* compression_algorithm =
+      onc_object_->FindStringKey(::onc::openvpn::kCompressionAlgorithm);
+  if (compression_algorithm) {
+    TranslateWithTableAndSet(*compression_algorithm,
+                             kOpenVpnCompressionAlgorithmTable,
+                             shill::kOpenVPNCompressProperty);
+  }
+
   // Modified CopyFieldsAccordingToSignature to handle RemoteCertKU and
   // ServerCAPEMs and handle all other fields as strings.
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
@@ -346,6 +356,23 @@ void LocalTranslator::TranslateEAP() {
                             ::onc::substitutes::kPasswordPlaceholderVerbatim) {
     shill_dictionary_->SetKey(shill::kEapUseLoginPasswordProperty,
                               base::Value(true));
+  }
+
+  // Set shill::kEapSubjectAlternativeNameMatchProperty to the serialized form
+  // of the subject alternative name match list of dictionaries.
+  const base::ListValue* subject_alternative_name_match;
+  if (onc_object_->GetList(::onc::eap::kSubjectAlternativeNameMatch,
+                           &subject_alternative_name_match)) {
+    base::Value serialized_dicts(base::Value::Type::LIST);
+    std::string serialized_dict;
+    JSONStringValueSerializer serializer(&serialized_dict);
+    for (const base::Value& v : subject_alternative_name_match->GetList()) {
+      if (serializer.Serialize(v)) {
+        serialized_dicts.Append(serialized_dict);
+      }
+    }
+    shill_dictionary_->SetKey(shill::kEapSubjectAlternativeNameMatchProperty,
+                              std::move(serialized_dicts));
   }
 
   CopyFieldsAccordingToSignature();

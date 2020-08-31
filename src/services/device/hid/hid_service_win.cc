@@ -23,7 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_connection_win.h"
@@ -34,7 +34,7 @@ namespace device {
 HidServiceWin::HidServiceWin()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(
-          base::CreateSequencedTaskRunner(kBlockingTaskTraits)),
+          base::ThreadPool::CreateSequencedTaskRunner(kBlockingTaskTraits)),
       device_observer_(this) {
   DeviceMonitorWin* device_monitor =
       DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_HID);
@@ -49,11 +49,12 @@ HidServiceWin::HidServiceWin()
 HidServiceWin::~HidServiceWin() {}
 
 void HidServiceWin::Connect(const std::string& device_guid,
-                            const ConnectCallback& callback) {
+                            ConnectCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), nullptr));
     return;
   }
   scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
@@ -61,13 +62,15 @@ void HidServiceWin::Connect(const std::string& device_guid,
   base::win::ScopedHandle file(OpenDevice(device_info->platform_device_id()));
   if (!file.IsValid()) {
     HID_PLOG(EVENT) << "Failed to open device";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), nullptr));
     return;
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(callback, HidConnectionWin::Create(
-                                              device_info, std::move(file))));
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     HidConnectionWin::Create(device_info, std::move(file))));
 }
 
 base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {
@@ -110,8 +113,7 @@ void HidServiceWin::EnumerateBlocking(
         continue;
       }
 
-      std::string device_path(
-          base::SysWideToUTF8(device_interface_detail_data->DevicePath));
+      base::string16 device_path(device_interface_detail_data->DevicePath);
       DCHECK(base::IsStringASCII(device_path));
       AddDeviceBlocking(service, task_runner, base::ToLowerASCII(device_path));
     }
@@ -168,7 +170,7 @@ void HidServiceWin::CollectInfoFromValueCaps(
 void HidServiceWin::AddDeviceBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const std::string& device_path) {
+    const base::string16& device_path) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
     return;
@@ -252,8 +254,8 @@ void HidServiceWin::AddDeviceBlocking(
   // The descriptor is unavailable on Windows because HID devices are exposed to
   // user-space as individual top-level collections.
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      device_path, attrib.VendorID, attrib.ProductID, product_name,
-      serial_number,
+      device_path, /*physical_device_id=*/"", attrib.VendorID, attrib.ProductID,
+      product_name, serial_number,
       // TODO(reillyg): Detect Bluetooth. crbug.com/443335
       mojom::HidBusType::kHIDBusTypeUSB, std::move(collection_info),
       max_input_report_size, max_output_report_size, max_feature_report_size));
@@ -264,7 +266,7 @@ void HidServiceWin::AddDeviceBlocking(
 }
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
-                                  const std::string& device_path) {
+                                  const base::string16& device_path) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&HidServiceWin::AddDeviceBlocking,
@@ -272,7 +274,7 @@ void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
-                                    const std::string& device_path) {
+                                    const base::string16& device_path) {
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   blocking_task_runner_->PostTaskAndReply(
@@ -283,14 +285,14 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
 
 // static
 base::win::ScopedHandle HidServiceWin::OpenDevice(
-    const std::string& device_path) {
+    const base::string16& device_path) {
   base::win::ScopedHandle file(
-      CreateFileA(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                  FILE_FLAG_OVERLAPPED, NULL));
+      CreateFile(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                 FILE_FLAG_OVERLAPPED, nullptr));
   if (!file.IsValid() && GetLastError() == ERROR_ACCESS_DENIED) {
-    file.Set(CreateFileA(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
-                         NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
+    file.Set(CreateFile(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                        nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr));
   }
   return file;
 }

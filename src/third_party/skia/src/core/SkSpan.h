@@ -31,11 +31,31 @@ public:
     constexpr T* end() const { return fPtr + fSize; }
     constexpr const T* cbegin() const { return fPtr; }
     constexpr const T* cend() const { return fPtr + fSize; }
+    constexpr auto rbegin() const { return std::make_reverse_iterator(this->end()); }
+    constexpr auto rend() const { return std::make_reverse_iterator(this->begin()); }
+    constexpr auto crbegin() const { return std::make_reverse_iterator(this->cend()); }
+    constexpr auto crend() const { return std::make_reverse_iterator(this->cbegin()); }
     constexpr T* data() const { return fPtr; }
+    constexpr int count() const { return SkTo<int>(fSize); }
     constexpr size_t size() const { return fSize; }
     constexpr bool empty() const { return fSize == 0; }
     constexpr size_t size_bytes() const { return fSize * sizeof(T); }
-    constexpr SkSpan<T> first(size_t prefixLen) { return SkSpan<T>{fPtr, prefixLen}; }
+    constexpr SkSpan<T> first(size_t prefixLen) const {
+        SkASSERT(prefixLen <= this->size());
+        if (prefixLen == 0) { return SkSpan{}; }
+        return SkSpan{fPtr, prefixLen};
+    }
+    constexpr SkSpan<T> last(size_t postfixLen) const {
+        SkASSERT(postfixLen <= this->size());
+        if (postfixLen == 0) { return SkSpan{}; }
+        return SkSpan{fPtr + (this->size() - postfixLen), postfixLen};
+    }
+    constexpr SkSpan<T> subspan(size_t offset, size_t count) const {
+        SkASSERT(offset <= this->size());
+        SkASSERT(count <= this->size() - offset);
+        if (count == 0) { return SkSpan{}; }
+        return SkSpan{fPtr + offset, count};
+    }
 
 private:
     T* fPtr;

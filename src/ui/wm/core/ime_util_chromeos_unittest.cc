@@ -12,32 +12,10 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 namespace wm {
 
-class ImeUtilChromeosTest : public aura::test::AuraTestBase {
- public:
-  ImeUtilChromeosTest() = default;
-  ~ImeUtilChromeosTest() override = default;
-
-  void SetUp() override {
-    AuraTestBase::SetUp();
-    screen_position_client_ = std::make_unique<DefaultScreenPositionClient>();
-    aura::client::SetScreenPositionClient(root_window(),
-                                          screen_position_client_.get());
-  }
-
-  void TearDown() override {
-    aura::client::SetScreenPositionClient(root_window(), nullptr);
-    AuraTestBase::TearDown();
-  }
-
- private:
-  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImeUtilChromeosTest);
-};
+using ImeUtilChromeosTest = aura::test::AuraTestBase;
 
 TEST_F(ImeUtilChromeosTest, RestoreWindowBounds) {
   const gfx::Rect bounds(10, 20, 100, 200);

@@ -28,13 +28,12 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif  // defined(OS_ANDROID)
-
-class MediaSessionImplBrowserTest;
 
 namespace media {
 enum class MediaContentType;
@@ -139,7 +138,9 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsFocused(RenderWidgetHost*) override;
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
-  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override;
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
   // MediaSessionService-related methods
 
@@ -248,6 +249,12 @@ class MediaSessionImpl : public MediaSession,
   // Scrub ("fast seek") the media session to a specific time.
   void ScrubTo(base::TimeDelta seek_time) override;
 
+  // Enter picture-in-picture.
+  void EnterPictureInPicture() override;
+
+  // Exit picture-in-picture.
+  void ExitPictureInPicture() override;
+
   // Downloads the bitmap version of a MediaImage at least |minimum_size_px|
   // and closest to |desired_size_px|. If the download failed, was too small or
   // the image did not come from the media session then returns a null image.
@@ -261,6 +268,8 @@ class MediaSessionImpl : public MediaSession,
     return audio_focus_group_id_;
   }
 
+  void OnPictureInPictureAvailabilityChanged();
+
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
@@ -273,7 +282,7 @@ class MediaSessionImpl : public MediaSession,
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
-  friend class ::MediaSessionImplBrowserTest;
+  friend class MediaSessionImplBrowserTest;
   friend class content::MediaSessionImplVisibilityBrowserTest;
   friend class content::AudioFocusManagerTest;
   friend class content::MediaSessionImplServiceRoutingTest;
@@ -306,7 +315,6 @@ class MediaSessionImpl : public MediaSession,
   };
   using PlayersMap =
       std::unordered_set<PlayerIdentifier, PlayerIdentifier::Hash>;
-  using StateChangedCallback = base::Callback<void(State)>;
 
   CONTENT_EXPORT explicit MediaSessionImpl(WebContents* web_contents);
 
@@ -376,10 +384,22 @@ class MediaSessionImpl : public MediaSession,
   // changed.
   void RebuildAndNotifyMetadataChanged();
 
+  bool IsPictureInPictureAvailable() const;
+
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.
   void DidReceiveAction(media_session::mojom::MediaSessionAction action,
                         blink::mojom::MediaSessionActionDetailsPtr details);
+
+  // Returns the media audio video state. This is whether the players associated
+  // with the media session are audio-only or have audio and video. If we have
+  // a |routed_service_| then we limit to players on that frame because this
+  // should align with the metadata.
+  media_session::mojom::MediaAudioVideoState GetMediaAudioVideoState();
+
+  // Calls the callback with each |PlayerIdentifier| for every player associated
+  // with this media session.
+  void ForAllPlayers(base::RepeatingCallback<void(const PlayerIdentifier&)>);
 
   // A set of actions supported by |routed_service_| and the current media
   // session.

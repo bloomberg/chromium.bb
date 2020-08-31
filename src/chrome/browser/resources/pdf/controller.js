@@ -91,6 +91,9 @@ export class ContentController {
   /** @abstract */
   rotateCounterclockwise() {}
 
+  /** @abstract */
+  setTwoUpView(enableTwoUpView) {}
+
   /** Triggers printing of the current document. */
   print() {}
 
@@ -172,6 +175,11 @@ export class InkController extends ContentController {
   /** @override */
   rotateCounterclockwise() {
     // TODO(dstockwell): implement rotation
+  }
+
+  /** @override */
+  setTwoUpView(enableTwoUpView) {
+    // TODO(dstockwell): Implement two up view.
   }
 
   /** @override */
@@ -268,7 +276,7 @@ export class PluginController extends ContentController {
   beforeZoom() {
     this.postMessage_({type: 'stopScrolling'});
 
-    if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
+    if (this.viewport_.pinchPhase === Viewport.PinchPhase.PINCH_START) {
       const position = this.viewport_.position;
       const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
@@ -331,6 +339,14 @@ export class PluginController extends ContentController {
   /** @override */
   rotateCounterclockwise() {
     this.postMessage_({type: 'rotateCounterclockwise'});
+  }
+
+  /** @override */
+  setTwoUpView(enableTwoUpView) {
+    this.postMessage_({
+      type: 'setTwoUpView',
+      enableTwoUpView: enableTwoUpView,
+    });
   }
 
   /** @override */
@@ -492,7 +508,7 @@ export class PluginController extends ContentController {
         `File too large to be saved: ${bufView.length} bytes.`);
     assert(bufView.length >= MIN_FILE_SIZE);
     assert(
-        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) ==
+        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) ===
         '%PDF');
 
     resolver.resolve(messageData);

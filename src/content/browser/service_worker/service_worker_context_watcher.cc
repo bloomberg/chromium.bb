@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -289,7 +290,7 @@ void ServiceWorkerContextWatcher::OnVersionDevToolsRoutingIdChanged(
     version_info_map_.erase(version_id);
 }
 
-void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
+void ServiceWorkerContextWatcher::OnMainScriptResponseSet(
     int64_t version_id,
     base::Time script_response_time,
     base::Time script_last_modified) {
@@ -347,7 +348,9 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
   if (it == version_info_map_.end())
     return;
   ServiceWorkerVersionInfo* version = it->second.get();
-  version->clients[uuid] = info;
+
+  base::InsertOrAssign(version->clients, uuid, info);
+
   SendVersionInfo(*version);
 }
 

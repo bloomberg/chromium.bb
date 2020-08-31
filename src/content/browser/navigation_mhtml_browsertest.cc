@@ -11,6 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -85,7 +86,7 @@ class MhtmlArchive {
     base::ScopedAllowBlockingForTesting allow_blocking_;
     EXPECT_TRUE(file_directory_.CreateUniqueTempDir());
     base::FilePath file_path = file_directory_.GetPath().AppendASCII(file);
-    EXPECT_NE(-1, base::WriteFile(file_path, document.data(), document.size()));
+    EXPECT_TRUE(base::WriteFile(file_path, document));
     return net::FilePathToFileURL(file_path);
   }
 
@@ -315,16 +316,14 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
       "<iframe src=\"javascript:console.log('test')\"></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      web_contents(),
-      base::StringPrintf(
-          "Blocked script execution in '%s' because the document's frame "
-          "is sandboxed and the 'allow-scripts' permission is not set.",
-          mhtml_url.spec().c_str()));
-  web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(base::StringPrintf(
+      "Blocked script execution in '%s' because the document's frame "
+      "is sandboxed and the 'allow-scripts' permission is not set.",
+      mhtml_url.spec().c_str()));
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   RenderFrameHostImpl* main_document = main_frame_host();
   ASSERT_EQ(1u, main_document->child_count());
@@ -343,16 +342,14 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeJavascriptUrlFound) {
                                 "<iframe></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      web_contents(),
-      base::StringPrintf(
-          "Blocked script execution in '%s' because the document's frame "
-          "is sandboxed and the 'allow-scripts' permission is not set.",
-          mhtml_url.spec().c_str()));
-  web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(base::StringPrintf(
+      "Blocked script execution in '%s' because the document's frame "
+      "is sandboxed and the 'allow-scripts' permission is not set.",
+      mhtml_url.spec().c_str()));
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   RenderFrameHostImpl* main_document = main_frame_host();
   ASSERT_EQ(1u, main_document->child_count());

@@ -22,6 +22,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -38,7 +39,6 @@ public class WebappDataStorage {
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
     static final String KEY_LAST_USED = "last_used";
-    static final String KEY_HAS_BEEN_LAUNCHED = "has_been_launched";
     static final String KEY_URL = "url";
     static final String KEY_SCOPE = "scope";
     static final String KEY_ICON = "icon";
@@ -232,11 +232,14 @@ public class WebappDataStorage {
     }
 
     /**
-     * Updates the data stored in this object to match that in the supplied {@link WebappInfo}.
+     * Updates the data stored in this object to match that in the supplied
+     * {@link BrowserServicesIntentDataProvider}.
      * @param info The WebappInfo to pull web app data from.
      */
-    public void updateFromWebappInfo(WebappInfo info) {
-        if (info == null) return;
+    public void updateFromWebappIntentDataProvider(
+            BrowserServicesIntentDataProvider intentDataProvider) {
+        if (intentDataProvider == null) return;
+        WebappInfo info = WebappInfo.create(intentDataProvider);
 
         SharedPreferences.Editor editor = mPreferences.edit();
         boolean updated = false;
@@ -264,12 +267,11 @@ public class WebappDataStorage {
             editor.putInt(KEY_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
 
             if (info.isForWebApk()) {
-                WebApkInfo webApkInfo = (WebApkInfo) info;
-                editor.putString(KEY_WEBAPK_PACKAGE_NAME, webApkInfo.webApkPackageName());
-                editor.putString(KEY_WEBAPK_MANIFEST_URL, webApkInfo.manifestUrl());
-                editor.putInt(KEY_WEBAPK_VERSION_CODE, webApkInfo.webApkVersionCode());
+                editor.putString(KEY_WEBAPK_PACKAGE_NAME, info.webApkPackageName());
+                editor.putString(KEY_WEBAPK_MANIFEST_URL, info.manifestUrl());
+                editor.putInt(KEY_WEBAPK_VERSION_CODE, info.webApkVersionCode());
                 editor.putLong(KEY_WEBAPK_INSTALL_TIMESTAMP,
-                        fetchWebApkInstallTimestamp(webApkInfo.webApkPackageName()));
+                        fetchWebApkInstallTimestamp(info.webApkPackageName()));
             } else {
                 editor.putString(KEY_NAME, info.name());
                 editor.putString(KEY_SHORT_NAME, info.shortName());
@@ -317,7 +319,6 @@ public class WebappDataStorage {
         SharedPreferences.Editor editor = mPreferences.edit();
 
         editor.remove(KEY_LAST_USED);
-        editor.remove(KEY_HAS_BEEN_LAUNCHED);
         editor.remove(KEY_URL);
         editor.remove(KEY_SCOPE);
         editor.remove(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME);
@@ -392,16 +393,6 @@ public class WebappDataStorage {
      */
     void updateLastUsedTime() {
         mPreferences.edit().putLong(KEY_LAST_USED, sClock.currentTimeMillis()).apply();
-    }
-
-    /** Returns true if the web app has been launched at least once from the home screen. */
-    boolean hasBeenLaunched() {
-        return mPreferences.getBoolean(KEY_HAS_BEEN_LAUNCHED, false);
-    }
-
-    /** Sets whether the web app was launched at least once from the home screen. */
-    void setHasBeenLaunched() {
-        mPreferences.edit().putBoolean(KEY_HAS_BEEN_LAUNCHED, true).apply();
     }
 
     /**
@@ -559,7 +550,7 @@ public class WebappDataStorage {
      * Returns file where WebAPK update data should be stored and stores the file name in
      * SharedPreferences.
      */
-    String createAndSetUpdateRequestFilePath(WebApkInfo info) {
+    String createAndSetUpdateRequestFilePath(WebappInfo info) {
         String filePath = WebappDirectoryManager.getWebApkUpdateFilePathForStorage(this).getPath();
         mPreferences.edit().putString(KEY_PENDING_UPDATE_FILE_PATH, filePath).apply();
         return filePath;

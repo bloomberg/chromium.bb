@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
       `Verify that a network file tab gets substituted with filesystem tab when persistence binding comes.\n`);
   await TestRunner.loadModule('sources_test_runner');
@@ -39,10 +40,10 @@
 
   function dumpEditorTabs() {
     var editorContainer = UI.panels.sources._sourcesView._editorContainer;
-    var openedUISourceCodes = editorContainer._tabIds.keysArray();
+    var openedUISourceCodes = [...editorContainer._tabIds.keys()];
     openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
     TestRunner.addResult('Opened tabs: ');
-    for (code of openedUISourceCodes)
+    for (const code of openedUISourceCodes)
       TestRunner.addResult('    ' + code.url());
   }
 })();

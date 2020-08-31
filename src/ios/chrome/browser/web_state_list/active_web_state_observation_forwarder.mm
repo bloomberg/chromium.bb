@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,12 +31,15 @@ void ActiveWebStateObservationForwarder::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    int reason) {
-  if (old_web_state) {
+    ActiveWebStateChangeReason reason) {
+  // If this class is created inside a |WebStateActivatedAt| callback, then it
+  // will be initialized already observing |new_web_state|, so it doesn't need
+  // to start or stop observing anything.
+  if (old_web_state && web_state_observer_.IsObserving(old_web_state)) {
     web_state_observer_.Remove(old_web_state);
   }
 
-  if (new_web_state) {
+  if (new_web_state && !web_state_observer_.IsObserving(new_web_state)) {
     web_state_observer_.Add(new_web_state);
   }
 }

@@ -21,6 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -54,8 +55,10 @@ enum class SetAccountsInCookieResult;
 // Also checks the External CC result to ensure no services that consume the
 // GAIA cookie are blocked (such as youtube). This is executed once for the
 // lifetime of this object, when the first call is made to AddAccountToCookie.
-class GaiaCookieManagerService : public GaiaAuthConsumer,
-                                 public network::mojom::CookieChangeListener {
+class GaiaCookieManagerService
+    : public GaiaAuthConsumer,
+      public signin::AccountsCookieMutator::PartitionDelegate,
+      public network::mojom::CookieChangeListener {
  public:
   using AccountIdGaiaIdPair = std::pair<CoreAccountId, std::string>;
 
@@ -71,6 +74,8 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   typedef base::OnceCallback<void(const CoreAccountId&,
                                   const GoogleServiceAuthError&)>
       AddAccountToCookieCompletedCallback;
+  typedef base::OnceCallback<void(const GoogleServiceAuthError&)>
+      LogOutFromCookieCompletedCallback;
 
   typedef base::RepeatingCallback<void(const std::vector<gaia::ListedAccount>&,
                                        const std::vector<gaia::ListedAccount>&,
@@ -103,12 +108,16 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     void RunAddAccountToCookieCompletedCallback(
         const CoreAccountId& account_id,
         const GoogleServiceAuthError& error);
+    void RunLogOutFromCookieCompletedCallback(
+        const GoogleServiceAuthError& error);
 
     static GaiaCookieRequest CreateAddAccountRequest(
         const CoreAccountId& account_id,
         gaia::GaiaSource source,
         AddAccountToCookieCompletedCallback callback);
-    static GaiaCookieRequest CreateLogOutRequest(gaia::GaiaSource source);
+    static GaiaCookieRequest CreateLogOutRequest(
+        gaia::GaiaSource source,
+        LogOutFromCookieCompletedCallback callback);
     static GaiaCookieRequest CreateListAccountsRequest();
     static GaiaCookieRequest CreateSetAccountsRequest(
         gaia::MultiloginMode mode,
@@ -142,6 +151,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
         set_accounts_in_cookie_completed_callback_;
     AddAccountToCookieCompletedCallback
         add_account_to_cookie_completed_callback_;
+    LogOutFromCookieCompletedCallback log_out_from_cookie_completed_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(GaiaCookieRequest);
   };
@@ -256,7 +266,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void CancelAll();
 
   // Signout all accounts.
-  void LogOutAllAccounts(gaia::GaiaSource source);
+  // Note: this only clears the Gaia cookies. Other cookies such as the SAML
+  // provider cookies are not cleared. To cleanly remove an account from the
+  // web, the Gaia logout page should be loaded as a navigation.
+  void LogOutAllAccounts(gaia::GaiaSource source,
+                         LogOutFromCookieCompletedCallback callback);
 
   // Call observers when setting accounts in cookie completes.
   void SignalSetAccountsComplete(signin::SetAccountsInCookieResult result);
@@ -313,6 +327,9 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
       const base::circular_deque<GaiaCookieRequest>::iterator& request,
       const GoogleServiceAuthError& error);
 
+  // Calls the LogOutFromCookie completion callback.
+  void SignalLogOutComplete(const GoogleServiceAuthError& error);
+
   // Marks the list account being staled, and for iOS only, it triggers to fetch
   // the list of accounts (on iOS there is no OnCookieChange() notification).
   void MarkListAccountsStale();
@@ -330,6 +347,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
+
+  // Overridden from signin::AccountsCookieMutator::PartitionDelegate.
+  std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcherForPartition(
+      GaiaAuthConsumer* consumer) override;
+  network::mojom::CookieManager* GetCookieManagerForPartition() override;
 
   // Helper method to initialize listed accounts ids.
   void InitializeListedAccountsIds();

@@ -8,9 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -116,11 +115,9 @@ class StringListPolicyHandler : public ListPolicyHandler {
       : ListPolicyHandler(kPolicyName, base::Value::Type::STRING) {}
 
  protected:
-  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                 PrefValueMap* prefs) override {
-    DCHECK(filtered_list);
-    prefs->SetValue(kTestPref,
-                    base::Value::FromUniquePtrValue(std::move(filtered_list)));
+  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override {
+    DCHECK(filtered_list.is_list());
+    prefs->SetValue(kTestPref, std::move(filtered_list));
   }
 };
 
@@ -228,9 +225,7 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   PolicyMap policy_map;
   PolicyErrorMap errors;
   StringMappingListPolicyHandler handler(
-      kTestPolicy,
-      kTestPref,
-      base::Bind(GetIntegerTypeMap));
+      kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
@@ -269,9 +264,7 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
   PrefValueMap prefs;
   base::Value* value;
   StringMappingListPolicyHandler handler(
-      kTestPolicy,
-      kTestPref,
-      base::Bind(GetIntegerTypeMap));
+      kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
@@ -720,7 +713,6 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
-  base::HistogramTester histogram_tester;
   std::string error;
   static const char kSchemaJson[] =
       "{"
@@ -759,25 +751,12 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
   policy_map.LoadFrom(policy_map_dict, POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
-  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
+  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
   std::unique_ptr<base::Value> output_value;
-  ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
-  ASSERT_TRUE(output_value);
-
-  base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(output_value->GetAsDictionary(&dict));
-
-  // Test that CheckAndGetValue() actually dropped invalid properties.
-  int int_value = -1;
-  EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
-  EXPECT_EQ(2, int_value);
-  EXPECT_FALSE(dict->HasKey("Colors"));
-  histogram_tester.ExpectUniqueSample("Enterprise.SchemaMismatchedValueIgnored",
-                                      /*ignored=*/true, /*amount=*/1);
+  EXPECT_FALSE(handler.CheckAndGetValueForTest(policy_map, &output_value));
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
-  base::HistogramTester histogram_tester;
   std::string error;
   static const char kSchemaJson[] =
       "{"
@@ -816,7 +795,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
   policy_map.LoadFrom(policy_map_dict, POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
-  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
+  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
   std::unique_ptr<base::Value> output_value;
   ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
   ASSERT_TRUE(output_value);
@@ -829,8 +808,6 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
   EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
   EXPECT_EQ(2, int_value);
   EXPECT_FALSE(dict->HasKey("Apples"));
-  histogram_tester.ExpectUniqueSample("Enterprise.SchemaMismatchedValueIgnored",
-                                      /*ignored=*/false, /*amount=*/1);
 }
 
 TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {

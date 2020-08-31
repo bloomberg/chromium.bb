@@ -28,7 +28,7 @@ void InitDawnPerfTestEnvironment(int argc, char** argv);
 class DawnPerfTestEnvironment : public DawnTestEnvironment {
   public:
     DawnPerfTestEnvironment(int argc, char** argv);
-    ~DawnPerfTestEnvironment();
+    ~DawnPerfTestEnvironment() override;
 
     void SetUp() override;
     void TearDown() override;
@@ -39,6 +39,8 @@ class DawnPerfTestEnvironment : public DawnTestEnvironment {
     // Returns the path to the trace file, or nullptr if traces should
     // not be written to a json file.
     const char* GetTraceFile() const;
+
+    DawnPerfTestPlatform* GetPlatform() const;
 
   private:
     // Only run calibration which allows the perf test runner to save time.
@@ -88,6 +90,11 @@ class DawnPerfTestBase {
   private:
     void DoRunLoop(double maxRunTime);
     void OutputResults();
+
+    void PrintResultImpl(const std::string& trace,
+                         const std::string& value,
+                         const std::string& units,
+                         bool important) const;
 
     virtual void Step() = 0;
 

@@ -13,9 +13,12 @@
 #include <netinet/in.h>
 #endif
 
+#include <string.h>
+
 #include <tuple>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "net/base/ip_address.h"

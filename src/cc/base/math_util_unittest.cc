@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <limits>
 
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,12 +47,12 @@ TEST(MathUtilTest, ProjectionOfAlmostPerpendicularPlane) {
   //   +16331238407143424.0000 +0.0000 -0.0000 +51346917453137000267776.0000
   //   +0.0000 +0.0000 +0.0000 +1.0000 ]
   transform.MakeIdentity();
-  transform.matrix().set(0, 2, static_cast<SkMScalar>(-1));
-  transform.matrix().set(0, 3, static_cast<SkMScalar>(3144132.0));
-  transform.matrix().set(2, 0, static_cast<SkMScalar>(16331238407143424.0));
-  transform.matrix().set(2, 2, static_cast<SkMScalar>(-1e-33));
+  transform.matrix().set(0, 2, static_cast<SkScalar>(-1));
+  transform.matrix().set(0, 3, static_cast<SkScalar>(3144132.0));
+  transform.matrix().set(2, 0, static_cast<SkScalar>(16331238407143424.0));
+  transform.matrix().set(2, 2, static_cast<SkScalar>(-1e-33));
   transform.matrix().set(2, 3,
-                         static_cast<SkMScalar>(51346917453137000267776.0));
+                         static_cast<SkScalar>(51346917453137000267776.0));
 
   gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
   gfx::RectF projected_rect = MathUtil::ProjectClippedRect(transform, rect);
@@ -146,6 +147,42 @@ TEST(MathUtilTest, EnclosingClippedRectUsesCorrectInitialBounds) {
   // is fairly imprecise.  0.15f was empirically determined.
   EXPECT_RECT_NEAR(
       gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)), result, 0.15f);
+}
+
+TEST(MathUtilTest, EnclosingClippedRectHandlesSmallPositiveW) {
+  // When all homogeneous coordinates have w > 0, no clipping against the w = 0
+  // plane is performed and the projected points are sent to gfx::QuadF's
+  // bounding box function. w can be made arbitrarily close to 0 on the positive
+  // side and cause precision problems later on unless it's handled properly.
+
+  // Coordinates inspired by a real test page. One edge maps to approximately
+  // negative infinity, and the other is at x~109.
+  HomogeneousCoordinate h1(-154.0f, -109.0f, 0.0f, 6e-8f);
+  HomogeneousCoordinate h2(152.0f, 44.0f, 0.0f, 1.4f);
+  HomogeneousCoordinate h3(152.0f, 261.0f, 0.0f, 1.4f);
+  HomogeneousCoordinate h4(-154.0f, 108.0f, 0.0f, 6e-8f);
+
+  // Confirm original behavior is problematic if we just divide by w.
+  gfx::QuadF naiveQuad = {{h1.x() / h1.w(), h1.y() / h1.w()},
+                          {h2.x() / h2.w(), h2.y() / h2.w()},
+                          {h3.x() / h3.w(), h3.y() / h3.w()},
+                          {h4.x() / h4.w(), h4.y() / h4.w()}};
+  // The calculated min and max coordinates differ by ~2^31, well outside a
+  // floats ability to represent onscreen pixel coordinates and in this case,
+  // the projected bounds fail to represent that one edge is still on screen.
+  gfx::RectF naiveBounds = naiveQuad.BoundingBox();
+  EXPECT_TRUE(naiveBounds.right() <= 0.0f);
+
+  // The bounds of the enclosing clipped rect should be neg. infinity to ~109
+  // for x, and neg. infinity to pos. infinity for y.
+  gfx::RectF goodBounds = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
+  EXPECT_FALSE(goodBounds.IsEmpty());
+  EXPECT_FLOAT_EQ(-HomogeneousCoordinate::kInfiniteCoordinate, goodBounds.y());
+  EXPECT_FLOAT_EQ(HomogeneousCoordinate::kInfiniteCoordinate,
+                  goodBounds.bottom());
+  EXPECT_FLOAT_EQ(-HomogeneousCoordinate::kInfiniteCoordinate, goodBounds.x());
+  // 0.01f was empirically determined.
+  EXPECT_NEAR(152.0f / 1.4f, goodBounds.right(), 0.01f);
 }
 
 TEST(MathUtilTest, EnclosingRectOfVerticesUsesCorrectInitialBounds) {
@@ -296,13 +333,13 @@ TEST(MathUtilTest, MapEnclosingRectWithLargeTransforms) {
   gfx::Rect output;
 
   gfx::Transform large_x_scale;
-  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+  large_x_scale.Scale(SkDoubleToScalar(1e37), 1.0);
 
   gfx::Transform infinite_x_scale;
   infinite_x_scale = large_x_scale * large_x_scale;
 
   gfx::Transform large_y_scale;
-  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+  large_y_scale.Scale(1.0, SkDoubleToScalar(1e37));
 
   gfx::Transform infinite_y_scale;
   infinite_y_scale = large_y_scale * large_y_scale;
@@ -339,18 +376,38 @@ TEST(MathUtilTest, MapEnclosingRectWithLargeTransforms) {
   EXPECT_EQ(gfx::Rect(), output);
 }
 
+TEST(MathUtilTest, MapEnclosingRectIgnoringError) {
+  float scale = 2.00001;
+  gfx::Rect input(0, 0, 1000, 500);
+  gfx::Rect output;
+
+  gfx::Transform transform;
+  transform.Scale(SkDoubleToScalar(scale), SkDoubleToScalar(scale));
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2001, 1001), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.002f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2001, 1001), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRectIgnoringError(transform, input, 0.02f);
+  EXPECT_EQ(gfx::Rect(0, 0, 2000, 1000), output);
+}
+
 TEST(MathUtilTest, ProjectEnclosingRectWithLargeTransforms) {
   gfx::Rect input(1, 2, 100, 200);
   gfx::Rect output;
 
   gfx::Transform large_x_scale;
-  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+  large_x_scale.Scale(SkDoubleToScalar(1e37), 1.0);
 
   gfx::Transform infinite_x_scale;
   infinite_x_scale = large_x_scale * large_x_scale;
 
   gfx::Transform large_y_scale;
-  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+  large_y_scale.Scale(1.0, SkDoubleToScalar(1e37));
 
   gfx::Transform infinite_y_scale;
   infinite_y_scale = large_y_scale * large_y_scale;

@@ -28,11 +28,13 @@ class EphemeralProvider : public UserModifiableProvider {
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
-  bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
-                         const ContentSettingsPattern& secondary_pattern,
-                         ContentSettingsType content_type,
-                         const ResourceIdentifier& resource_identifier,
-                         std::unique_ptr<base::Value>&& value) override;
+  bool SetWebsiteSetting(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      std::unique_ptr<base::Value>&& value,
+      const ContentSettingConstraints& constraints = {}) override;
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
   base::Time GetWebsiteSettingLastModified(
@@ -40,8 +42,8 @@ class EphemeralProvider : public UserModifiableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
-  void SetClockForTesting(base::Clock* clock);
   void SetSupportedTypesForTesting(
       std::set<ContentSettingsType>& supported_types) {
     supported_types_ = supported_types;

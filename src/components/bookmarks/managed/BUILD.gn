@@ -12,6 +12,13 @@ static_library("managed") {
     "managed_bookmarks_tracker.h",
   ]
 
+  if (!is_ios) {
+    sources += [
+      "managed_bookmarks_policy_handler.cc",
+      "managed_bookmarks_policy_handler.h",
+    ]
+  }
+
   deps = [
     "//base",
     "//components/bookmarks/browser",
@@ -22,13 +29,23 @@ static_library("managed") {
     "//ui/base",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [
+      "//components/policy/core/browser",
+      "//components/policy/core/common",
+      "//components/url_formatter",
+    ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "managed_bookmarks_tracker_unittest.cc",
-  ]
+  sources = [ "managed_bookmarks_tracker_unittest.cc" ]
+
+  if (!is_ios) {
+    sources += [ "managed_bookmarks_policy_handler_unittest.cc" ]
+  }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -46,4 +63,11 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [
+      "//components/policy/core/browser:test_support",
+      "//components/policy/core/common",
+    ]
+  }
 }

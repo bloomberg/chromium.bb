@@ -41,13 +41,21 @@ constexpr size_t kMinBytes = 4;
 // accept.
 constexpr size_t kMaxBytes = 63;
 
-// RetriesRequest asks an authenticator for the number of remaining PIN attempts
-// before the device is locked.
-struct RetriesRequest {};
+// PinRetriesRequest asks an authenticator for the number of remaining PIN
+// attempts before the device is locked.
+struct PinRetriesRequest {};
 
-// RetriesResponse reflects an authenticator's response to a |RetriesRequest|.
+// UVRetriesRequest asks an authenticator for the number of internal user
+// verification attempts before the feature is locked.
+struct UvRetriesRequest {};
+
+// RetriesResponse reflects an authenticator's response to a |PinRetriesRequest|
+// or a |UvRetriesRequest|.
 struct RetriesResponse {
-  static base::Optional<RetriesResponse> Parse(
+  static base::Optional<RetriesResponse> ParsePinRetries(
+      const base::Optional<cbor::Value>& cbor);
+
+  static base::Optional<RetriesResponse> ParseUvRetries(
       const base::Optional<cbor::Value>& cbor);
 
   // retries is the number of PIN attempts remaining before the authenticator
@@ -55,6 +63,10 @@ struct RetriesResponse {
   int retries;
 
  private:
+  static base::Optional<RetriesResponse> Parse(
+      const base::Optional<cbor::Value>& cbor,
+      const int retries_key);
+
   RetriesResponse();
 };
 
@@ -130,22 +142,43 @@ using ResetResponse = EmptyResponse;
 // assertion.
 class TokenRequest {
  public:
-  TokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
-  ~TokenRequest();
-  TokenRequest(TokenRequest&&);
   TokenRequest(const TokenRequest&) = delete;
 
   // shared_key returns the shared ECDH key that was used to encrypt the PIN.
   // This is needed to decrypt the response.
   const std::array<uint8_t, 32>& shared_key() const;
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  AsCTAPRequestValuePair(const TokenRequest&);
-
- private:
+ protected:
+  TokenRequest(TokenRequest&&);
+  explicit TokenRequest(const KeyAgreementResponse& peer_key);
+  ~TokenRequest();
   std::array<uint8_t, 32> shared_key_;
   cbor::Value::MapValue cose_key_;
+};
+
+class PinTokenRequest : public TokenRequest {
+ public:
+  PinTokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
+  PinTokenRequest(PinTokenRequest&&);
+  PinTokenRequest(const PinTokenRequest&) = delete;
+  virtual ~PinTokenRequest();
+
+  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  AsCTAPRequestValuePair(const PinTokenRequest&);
+
+ private:
   uint8_t pin_hash_[16];
+};
+
+class UvTokenRequest : public TokenRequest {
+ public:
+  explicit UvTokenRequest(const KeyAgreementResponse& peer_key);
+  UvTokenRequest(UvTokenRequest&&);
+  UvTokenRequest(const UvTokenRequest&) = delete;
+  virtual ~UvTokenRequest();
+
+  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  AsCTAPRequestValuePair(const UvTokenRequest&);
 };
 
 // TokenResponse represents the response to a pin-token request. In order to
@@ -175,7 +208,10 @@ class TokenResponse {
 };
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-AsCTAPRequestValuePair(const RetriesRequest&);
+AsCTAPRequestValuePair(const PinRetriesRequest&);
+
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const UvRetriesRequest&);
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
 AsCTAPRequestValuePair(const KeyAgreementRequest&);

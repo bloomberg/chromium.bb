@@ -18,7 +18,8 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 
 namespace content {
@@ -132,34 +133,32 @@ void FontLoader::LoadFont(const base::string16& font_name,
   // a user installing a third-party font manager. See crbug.com/72727. Web page
   // rendering can't continue until a font is returned.
   constexpr base::TaskTraits kTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTraits,
       base::BindOnce(&LoadFontOnFileThread, font_name, font_point_size),
       base::BindOnce(&ReplyOnUIThread, std::move(callback)));
 }
 
 // static
-bool FontLoader::CGFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
-                                     uint32_t font_data_size,
-                                     CGFontRef* out) {
-  *out = NULL;
+bool FontLoader::CTFontDescriptorFromBuffer(
+    mojo::ScopedSharedBufferHandle font_data,
+    uint32_t font_data_size,
+    base::ScopedCFTypeRef<CTFontDescriptorRef>* out_descriptor) {
+  out_descriptor->reset();
   mojo::ScopedSharedBufferMapping mapping = font_data->Map(font_data_size);
   if (!mapping)
     return false;
 
   NSData* data = [NSData dataWithBytes:mapping.get() length:font_data_size];
-  base::ScopedCFTypeRef<CGDataProviderRef> provider(
-      CGDataProviderCreateWithCFData(base::mac::NSToCFCast(data)));
-  if (!provider)
+  base::ScopedCFTypeRef<CTFontDescriptorRef> data_descriptor(
+      CTFontManagerCreateFontDescriptorFromData(base::mac::NSToCFCast(data)));
+
+  if (!data_descriptor)
     return false;
 
-  *out = CGFontCreateWithDataProvider(provider.get());
-
-  if (*out == NULL)
-    return false;
-
+  *out_descriptor = std::move(data_descriptor);
   return true;
 }
 

@@ -16,7 +16,8 @@
           name="IDR_TAB_STRIP_HTML"
           file="tab_strip.html"
           type="chrome_html"
-          compress="gzip"/>
+          compress="gzip"
+          preprocess="true"/>
       <structure
           name="IDR_TAB_STRIP_TABS_API_PROXY_JS"
           file="tabs_api_proxy.js"
@@ -28,11 +29,18 @@
           type="chrome_html"
           compress="gzip"/>
       <structure
+          name="IDR_TAB_STRIP_TAB_GROUP_JS"
+          file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab_group.js"
+          use_base_dir="false"
+          type="chrome_html"
+          compress="gzip"/>
+      <structure
           name="IDR_TAB_STRIP_TAB_LIST_JS"
           file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab_list.js"
           use_base_dir="false"
           type="chrome_html"
-          compress="gzip"/>
+          compress="gzip"
+          preprocess="true"/>
       <structure
           name="IDR_TAB_STRIP_TAB_JS"
           file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab.js"
@@ -66,6 +74,12 @@
           file="tab_swiper.js"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_DRAG_MANAGER_JS"
+          file="drag_manager.js"
+          type="chrome_html"
+          compress="gzip"
+          preprocess="true"/>
     </structures>
 
     <includes>
@@ -93,6 +107,11 @@
       <include
           name="IDR_TAB_STRIP_TAB_BLUETOOTH_CONNECTED_SVG"
           file="alert_indicators/tab_bluetooth_connected.svg"
+          type="BINDATA"
+          compress="gzip" />
+      <include
+          name="IDR_TAB_STRIP_TAB_HID_CONNECTED_SVG"
+          file="alert_indicators/tab_hid_connected.svg"
           type="BINDATA"
           compress="gzip" />
       <include

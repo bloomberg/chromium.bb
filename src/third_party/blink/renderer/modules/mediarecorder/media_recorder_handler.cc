@@ -239,6 +239,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
   DCHECK(timeslice_.is_zero());
   DCHECK(!webm_muxer_);
 
+  invalidated_ = false;
+
   timeslice_ = base::TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = base::TimeTicks::Now();
 
@@ -282,6 +284,9 @@ bool MediaRecorderHandler::Start(int timeslice) {
         static_cast<MediaStreamVideoTrack*>(
             video_tracks_[0]->GetPlatformTrack());
     DCHECK(video_track->source());
+    base::OnceClosure on_track_source_changed_cb = media::BindToCurrentLoop(
+        WTF::Bind(&MediaRecorderHandler::OnSourceReadyStateChanged,
+                  WrapWeakPersistent(this)));
     const bool use_encoded_source_output =
         video_track->source()->SupportsEncodedOutput();
     if (passthrough_enabled_ && use_encoded_source_output) {
@@ -290,16 +295,17 @@ bool MediaRecorderHandler::Start(int timeslice) {
               WTF::BindRepeating(&MediaRecorderHandler::OnPassthroughVideo,
                                  WrapWeakPersistent(this)));
       video_recorders_.emplace_back(
-          MakeGarbageCollected<VideoTrackRecorderPassthrough>(
-              video_tracks_[0], on_passthrough_video_cb, task_runner_));
+          std::make_unique<VideoTrackRecorderPassthrough>(
+              video_tracks_[0], std::move(on_passthrough_video_cb),
+              std::move(on_track_source_changed_cb), task_runner_));
     } else {
       const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
           media::BindToCurrentLoop(WTF::BindRepeating(
               &MediaRecorderHandler::OnEncodedVideo, WrapWeakPersistent(this)));
-      video_recorders_.emplace_back(
-          MakeGarbageCollected<VideoTrackRecorderImpl>(
-              video_codec_id_, video_tracks_[0], on_encoded_video_cb,
-              video_bits_per_second_, task_runner_));
+      video_recorders_.emplace_back(std::make_unique<VideoTrackRecorderImpl>(
+          video_codec_id_, video_tracks_[0], std::move(on_encoded_video_cb),
+          std::move(on_track_source_changed_cb), video_bits_per_second_,
+          task_runner_));
     }
   }
 
@@ -313,12 +319,14 @@ bool MediaRecorderHandler::Start(int timeslice) {
       return false;
 
     const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
-        media::BindToCurrentLoop(base::Bind(
+        media::BindToCurrentLoop(WTF::BindRepeating(
             &MediaRecorderHandler::OnEncodedAudio, WrapWeakPersistent(this)));
-
-    audio_recorders_.emplace_back(MakeGarbageCollected<AudioTrackRecorder>(
+    base::OnceClosure on_track_source_changed_cb = media::BindToCurrentLoop(
+        WTF::Bind(&MediaRecorderHandler::OnSourceReadyStateChanged,
+                  WrapWeakPersistent(this)));
+    audio_recorders_.emplace_back(std::make_unique<AudioTrackRecorder>(
         audio_codec_id_, audio_tracks_[0], std::move(on_encoded_audio_cb),
-        audio_bits_per_second_));
+        std::move(on_track_source_changed_cb), audio_bits_per_second_));
   }
 
   recording_ = true;
@@ -329,8 +337,7 @@ void MediaRecorderHandler::Stop() {
   DCHECK(IsMainThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
-  if (recording_)
-    Pause();
+  invalidated_ = true;
 
   recording_ = false;
   timeslice_ = base::TimeDelta::FromMilliseconds(0);
@@ -490,6 +497,10 @@ void MediaRecorderHandler::OnEncodedVideo(
     base::TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(IsMainThread());
+
+  if (invalidated_)
+    return;
+
   auto params_with_codec = params;
   params_with_codec.codec = MediaVideoCodecFromCodecId(video_codec_id_);
   HandleEncodedVideo(params_with_codec, std::move(encoded_data),
@@ -518,13 +529,21 @@ void MediaRecorderHandler::HandleEncodedVideo(
     bool is_key_frame) {
   DCHECK(IsMainThread());
 
-  if (video_recorders_.IsEmpty())
-    return;
-
   if (UpdateTracksAndCheckIfChanged()) {
     recorder_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
+
+  if (!last_seen_codec_.has_value())
+    last_seen_codec_ = params.codec;
+  if (*last_seen_codec_ != params.codec) {
+    recorder_->OnError(
+        String::Format("Video codec changed from %s to %s",
+                       media::GetCodecName(*last_seen_codec_).c_str(),
+                       media::GetCodecName(params.codec).c_str()));
+    return;
+  }
+
   if (!webm_muxer_)
     return;
   if (!webm_muxer_->OnEncodedVideo(params, std::move(encoded_data),
@@ -540,7 +559,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
                                           base::TimeTicks timestamp) {
   DCHECK(IsMainThread());
 
-  if (audio_recorders_.IsEmpty())
+  if (invalidated_)
     return;
 
   if (UpdateTracksAndCheckIfChanged()) {
@@ -559,7 +578,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(IsMainThread());
 
-  if (!recording_)
+  if (invalidated_)
     return;
 
   const base::TimeTicks now = base::TimeTicks::Now();
@@ -613,6 +632,26 @@ bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
   return video_tracks_changed || audio_tracks_changed;
 }
 
+void MediaRecorderHandler::OnSourceReadyStateChanged() {
+  for (const auto& track : video_tracks_) {
+    DCHECK(track->Source());
+    if (track->Source()->GetReadyState() !=
+        MediaStreamSource::kReadyStateEnded) {
+      return;
+    }
+  }
+  for (const auto& track : audio_tracks_) {
+    DCHECK(track->Source());
+    if (track->Source()->GetReadyState() !=
+        MediaStreamSource::kReadyStateEnded) {
+      return;
+    }
+  }
+  // All tracks are ended, so stop the recorder in accordance with
+  // https://www.w3.org/TR/mediastream-recording/#mediarecorder-methods.
+  recorder_->OnAllTracksEnded();
+}
+
 void MediaRecorderHandler::OnVideoFrameForTesting(
     scoped_refptr<media::VideoFrame> frame,
     const TimeTicks& timestamp) {
@@ -640,13 +679,11 @@ void MediaRecorderHandler::SetAudioFormatForTesting(
     recorder->OnSetFormat(params);
 }
 
-void MediaRecorderHandler::Trace(blink::Visitor* visitor) {
+void MediaRecorderHandler::Trace(Visitor* visitor) {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);
   visitor->Trace(recorder_);
-  visitor->Trace(video_recorders_);
-  visitor->Trace(audio_recorders_);
 }
 
 }  // namespace blink

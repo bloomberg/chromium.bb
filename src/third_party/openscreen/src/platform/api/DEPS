@@ -3,7 +3,20 @@
 # found in the LICENSE file.
 
 include_rules = [
+    # Platform API code should depend on no outside code/libraries, other than
+    # the standard toolchain libraries (C, STL) and platform/base.
+    '-absl',
+    '-platform',
+    '+platform/api',
     '+platform/base',
     '-util',
     '-third_party',
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    '+platform/test',
+    '+util',
+    '+third_party',
+  ],
+}

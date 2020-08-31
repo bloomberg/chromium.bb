@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
@@ -52,18 +51,6 @@ class CONTENT_EXPORT SSLManager {
       bool is_main_frame_request,
       const GURL& url,
       WebContents* web_contents,
-      int net_error,
-      const net::SSLInfo& ssl_info,
-      bool fatal);
-
-  // Same as the above, and only works for subresources. Prefer using
-  // OnSSLCertificateError whenever possible (ie when you have access to the
-  // WebContents).
-  static void OnSSLCertificateSubresourceError(
-      const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-      const GURL& url,
-      int render_process_id,
-      int render_frame_id,
       int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal);

@@ -73,10 +73,10 @@ ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
   ShadowRoot& shadow_root =
       scope.getElementById(AtomicString::FromUTF8(host_element_id))
           ->CreateV0ShadowRootForTesting();
-  shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_root_content),
-                                     ASSERT_NO_EXCEPTION);
+  shadow_root.setInnerHTML(String::FromUTF8(shadow_root_content),
+                           ASSERT_NO_EXCEPTION);
   scope.GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+      DocumentUpdateReason::kTest);
   return &shadow_root;
 }
 

@@ -2,52 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings', function() {
-  /** @interface */
-  class DownloadsBrowserProxy {
-    initializeDownloads() {}
-    selectDownloadLocation() {}
-    resetAutoOpenFileTypes() {}
-    // <if expr="chromeos">
-    /**
-     * @param {string} path path to sanitze.
-     * @return {!Promise<string>} string to display in UI.
-     */
-    getDownloadLocationText(path) {}
-    // </if>
-  }
+// clang-format off
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
+/** @interface */
+export class DownloadsBrowserProxy {
+  initializeDownloads() {}
+  selectDownloadLocation() {}
+  resetAutoOpenFileTypes() {}
+  // <if expr="chromeos">
   /**
-   * @implements {settings.DownloadsBrowserProxy}
+   * @param {string} path path to sanitze.
+   * @return {!Promise<string>} string to display in UI.
    */
-  class DownloadsBrowserProxyImpl {
-    /** @override */
-    initializeDownloads() {
-      chrome.send('initializeDownloads');
-    }
+  getDownloadLocationText(path) {}
+  // </if>
+}
 
-    /** @override */
-    selectDownloadLocation() {
-      chrome.send('selectDownloadLocation');
-    }
-
-    /** @override */
-    resetAutoOpenFileTypes() {
-      chrome.send('resetAutoOpenFileTypes');
-    }
-
-    // <if expr="chromeos">
-    /** @override */
-    getDownloadLocationText(path) {
-      return cr.sendWithPromise('getDownloadLocationText', path);
-    }
-    // </if>
+/**
+ * @implements {DownloadsBrowserProxy}
+ */
+export class DownloadsBrowserProxyImpl {
+  /** @override */
+  initializeDownloads() {
+    chrome.send('initializeDownloads');
   }
 
-  cr.addSingletonGetter(DownloadsBrowserProxyImpl);
+  /** @override */
+  selectDownloadLocation() {
+    chrome.send('selectDownloadLocation');
+  }
 
-  return {
-    DownloadsBrowserProxy: DownloadsBrowserProxy,
-    DownloadsBrowserProxyImpl: DownloadsBrowserProxyImpl,
-  };
-});
+  /** @override */
+  resetAutoOpenFileTypes() {
+    chrome.send('resetAutoOpenFileTypes');
+  }
+
+  // <if expr="chromeos">
+  /** @override */
+  getDownloadLocationText(path) {
+    return sendWithPromise('getDownloadLocationText', path);
+  }
+  // </if>
+}
+
+addSingletonGetter(DownloadsBrowserProxyImpl);

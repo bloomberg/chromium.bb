@@ -15,11 +15,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,12 +54,9 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   explicit DesktopMediaPickerViewsTest(
       const std::vector<DesktopMediaID::Type>& source_types)
       : source_types_(source_types) {}
-  ~DesktopMediaPickerViewsTest() override {}
+  ~DesktopMediaPickerViewsTest() override = default;
 
   void SetUp() override {
-    test_helper_.test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
-
 #if defined(OS_MACOSX)
     // These tests create actual child Widgets, which normally have a closure
     // animation on Mac; inhibit it here to avoid the tests flakily hanging.
@@ -108,7 +105,8 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  views::ScopedViewsTestHelper test_helper_;
+  views::ScopedViewsTestHelper test_helper_{
+      std::make_unique<ChromeTestViewsDelegate<>>()};
   std::map<DesktopMediaID::Type, FakeDesktopMediaList*> media_lists_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
   DesktopMediaPickerViewsTestApi test_api_;
@@ -166,9 +164,10 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
   }
 }
 
-TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
+// Regression test for https://crbug.com/1102153
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackNotCalledOnDoubleClick) {
   const DesktopMediaID kFakeId(DesktopMediaID::TYPE_WEB_CONTENTS, 222);
-  EXPECT_CALL(*this, OnPickerDone(kFakeId));
+  EXPECT_CALL(*this, OnPickerDone(kFakeId)).Times(0);
 
   media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
       kFakeId);
@@ -179,9 +178,10 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
+// Regression test for https://crbug.com/1102153
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackNotCalledOnDoubleTap) {
   const DesktopMediaID kFakeId(DesktopMediaID::TYPE_SCREEN, 222);
-  EXPECT_CALL(*this, OnPickerDone(kFakeId));
+  EXPECT_CALL(*this, OnPickerDone(kFakeId)).Times(0);
 
   test_api_.SelectTabForSourceType(DesktopMediaID::TYPE_SCREEN);
   test_api_.GetAudioShareCheckbox()->SetChecked(false);
@@ -246,6 +246,8 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
     test_api_.SelectTabForSourceType(source_type);
     media_lists_[source_type]->AddSourceByFullMediaID(
         DesktopMediaID(source_type, 111));
+    EXPECT_FALSE(
+        GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
     test_api_.FocusSourceAtIndex(0);
     EXPECT_TRUE(
@@ -301,7 +303,13 @@ class DesktopMediaPickerViewsSingleTabPaneTest
  public:
   DesktopMediaPickerViewsSingleTabPaneTest()
       : DesktopMediaPickerViewsTest({DesktopMediaID::TYPE_WEB_CONTENTS}) {}
-  ~DesktopMediaPickerViewsSingleTabPaneTest() override {}
+  ~DesktopMediaPickerViewsSingleTabPaneTest() override = default;
+
+ protected:
+  void AddTabSource() {
+    media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
+        DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 0));
+  }
 };
 
 // Validates that the tab list's preferred size is not zero
@@ -312,11 +320,6 @@ TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListPreferredSizeNotZero) {
 
 // Validates that the tab list has a fixed height (https://crbug.com/998485).
 TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListHasFixedHeight) {
-  auto AddTabSource = [&]() {
-    media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
-        DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 0));
-  };
-
   auto GetDialogHeight = [&]() {
     return GetPickerDialogView()->GetPreferredSize().height();
   };
@@ -347,6 +350,25 @@ TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListHasFixedHeight) {
   for (int i = 0; i < 50; i++)
     AddTabSource();
   EXPECT_EQ(GetDialogHeight(), initial_size);
+}
+
+// Regression test for https://crbug.com/1042976.
+TEST_F(DesktopMediaPickerViewsSingleTabPaneTest,
+       CannotAcceptTabWithoutSelection) {
+  AddTabSource();
+  AddTabSource();
+  AddTabSource();
+
+  test_api_.FocusSourceAtIndex(0, false);
+  EXPECT_EQ(base::nullopt, test_api_.GetSelectedSourceId());
+  EXPECT_FALSE(
+      GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Send the tab list a Return key press, to make sure it doesn't try to accept
+  // with no selected source. If the fix to https://crbug.com/1042976 regresses,
+  // this test will crash here.
+  test_api_.PressKeyOnSourceAtIndex(
+      0, ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0));
 }
 
 }  // namespace views

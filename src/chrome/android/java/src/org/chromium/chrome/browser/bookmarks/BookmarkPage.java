@@ -4,16 +4,13 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.view.View;
-
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.native_page.BasicNativePage;
-import org.chromium.chrome.browser.native_page.NativePageHost;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * A native page holding a {@link BookmarkManager} on _tablet_.
@@ -28,21 +25,13 @@ public class BookmarkPage extends BasicNativePage {
      * @param host A NativePageHost to load urls.
      */
     public BookmarkPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host);
-    }
+        super(host);
 
-    @Override
-    protected void initialize(ChromeActivity activity, NativePageHost host) {
-        mManager = new BookmarkManager(
-                activity, false, ((SnackbarManageable) activity).getSnackbarManager());
+        mManager = new BookmarkManager(activity, false, activity.getSnackbarManager());
         mManager.setBasicNativePage(this);
-        mManager.setHistoryNavigationDelegate(host.createHistoryNavigationDelegate());
-        mTitle = activity.getString(R.string.bookmarks);
-    }
+        mTitle = host.getContext().getResources().getString(R.string.bookmarks);
 
-    @Override
-    public View getView() {
-        return mManager.getView();
+        initWithView(mManager.getView());
     }
 
     @Override

@@ -491,7 +491,7 @@ private:
 
 ExternalDependencyTestInstance::ExternalDependencyTestInstance (Context& context, ExternalTestConfig testConfig)
 	: TestInstance					(context)
-	, m_extensionSupported			((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_extensionSupported			((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceFunctionality("VK_KHR_create_renderpass2"))
 	, m_renderPassType				(testConfig.renderPassType)
 	, m_width						(testConfig.imageSize.x())
 	, m_height						(testConfig.imageSize.y())
@@ -1086,7 +1086,7 @@ private:
 
 SubpassDependencyTestInstance::SubpassDependencyTestInstance (Context& context, SubpassTestConfig testConfig)
 	: TestInstance					(context)
-	, m_extensionSupported			((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_extensionSupported			((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceFunctionality("VK_KHR_create_renderpass2"))
 	, m_renderPassInfo				(testConfig.renderPass)
 	, m_renderPassType				(testConfig.renderPassType)
 	, m_width						(testConfig.imageSize.x())
@@ -1455,6 +1455,39 @@ tcu::TestStatus SubpassDependencyTestInstance::iterateInternal (void)
 
 	beginCommandBuffer(vkd, *commandBuffer);
 
+	// Transition stencil aspects to the final layout directly.
+	if (isDepthStencilFormat(m_format))
+	{
+		const VkImageSubresourceRange imageSubresourceRange =
+		{
+			VK_IMAGE_ASPECT_STENCIL_BIT,	// VkImageAspectFlags	aspectMask
+			0u,								// uint32_t				baseMipLevel
+			1u,								// uint32_t				levelCount
+			0u,								// uint32_t				baseArrayLayer
+			1u								// uint32_t				layerCount
+		};
+
+		VkImageMemoryBarrier barrier =
+		{
+			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,				// VkStructureType			sType
+			DE_NULL,											// const void*				pNext
+			0u,													// VkAccessFlags			srcAccessMask
+			VK_ACCESS_TRANSFER_READ_BIT,						// VkAccessFlags			dstAccessMask
+			VK_IMAGE_LAYOUT_UNDEFINED,							// VkImageLayout			oldLayout
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,	// VkImageLayout			newLayout
+			VK_QUEUE_FAMILY_IGNORED,							// uint32_t					srcQueueFamilyIndex
+			VK_QUEUE_FAMILY_IGNORED,							// uint32_t					dstQueueFamilyIndex
+			DE_NULL,											// VkImage					image
+			imageSubresourceRange								// VkImageSubresourceRange	subresourceRange
+		};
+
+		for (deUint32 attachmentNdx = 0; attachmentNdx < attachmentCount; ++attachmentNdx)
+		{
+			barrier.image = **m_images[attachmentNdx];
+			vkd.cmdPipelineBarrier(*commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &barrier);
+		}
+	}
+
 	// Begin render pass
 	{
 		VkRect2D					renderArea			=
@@ -1805,7 +1838,7 @@ private:
 
 SubpassSelfDependencyBackwardsTestInstance::SubpassSelfDependencyBackwardsTestInstance (Context& context, SubpassSelfDependencyBackwardsTestConfig testConfig)
 	: TestInstance			(context)
-	, m_extensionSupported	((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_extensionSupported	((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceFunctionality("VK_KHR_create_renderpass2"))
 	, m_featuresSupported	(context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER))
 	, m_renderPassType		(testConfig.renderPassType)
 	, m_width				(testConfig.imageSize.x())
@@ -2264,7 +2297,7 @@ private:
 
 SeparateChannelsTestInstance::SeparateChannelsTestInstance (Context& context, SeparateChannelsTestConfig testConfig)
 	: TestInstance			(context)
-	, m_extensionSupported	((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_extensionSupported	((testConfig.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceFunctionality("VK_KHR_create_renderpass2"))
 	, m_renderPassType		(testConfig.renderPassType)
 	, m_width				(256u)
 	, m_height				(256u)
@@ -2968,6 +3001,9 @@ struct SubpassSelfDependencyBackwardsPrograms
 		dst.glslSources.add("vert") << glu::VertexSource(
 				"#version 450\n"
 				"layout(location = 0) in highp vec4 position;\n"
+				"out gl_PerVertex {\n"
+				"    vec4 gl_Position;\n"
+				"};\n"
 				"void main (void)\n"
 				"{\n"
 				"    gl_Position = position;\n"

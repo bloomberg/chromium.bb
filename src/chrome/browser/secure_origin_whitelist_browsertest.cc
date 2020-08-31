@@ -15,6 +15,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/security_state/core/features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -183,6 +184,20 @@ class SecureOriginWhitelistBrowsertestWithMarkHttpDangerous
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SecureOriginWhitelistBrowsertestWithMarkHttpDangerous,
+                         testing::Values(TestVariant::kNone,
+                                         TestVariant::kCommandline,
+// The legacy policy isn't defined on ChromeOS or Android, so skip tests that
+// use it on those platforms.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+                                         TestVariant::kPolicyOld,
+                                         TestVariant::kPolicyOldAndNew,
+#endif
+                                         TestVariant::kPolicy,
+                                         TestVariant::kPolicy2,
+                                         TestVariant::kPolicy3));
 
 // Tests that whitelisted insecure origins are correctly set as security level
 // NONE instead of the default level DANGEROUS.

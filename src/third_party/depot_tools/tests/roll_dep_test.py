@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -32,19 +32,20 @@ class FakeRepos(fake_repos.FakeReposBase):
         'origin': 'git/repo_2@3',
     })
 
-    self._commit_git('repo_1', {
-        'DEPS': '\n'.join([
-            'deps = {',
-            ' "src/foo": "%(git_base)srepo_2@%(repo_2_revision)s",',
-            '}',
-            'hooks = [',
-            '  {"action": ["foo", "--android", "{checkout_android}"]}',
-            ']',
-        ]) % {
-            'git_base': self.git_base,
-            'repo_2_revision': self.git_hashes['repo_2'][1][0],
-        },
-    })
+    self._commit_git(
+        'repo_1', {
+            'DEPS': '\n'.join([
+                'deps = {',
+                ' "src/foo": "file:///%(git_base)srepo_2@%(repo_2_revision)s",',
+                '}',
+                'hooks = [',
+                '  {"action": ["foo", "--android", "{checkout_android}"]}',
+                ']',
+            ]) % {
+                'git_base': self.git_base.replace('\\', '\\\\'),
+                'repo_2_revision': self.git_hashes['repo_2'][1][0],
+            },
+        })
 
 
 class RollDepTest(fake_repos.FakeReposTestBase):
@@ -97,7 +98,8 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.gitrevparse(self.foo_dir), expected_revision)
     self.assertEqual([
         'deps = {',
-        ' "src/foo": "' + self.git_base + 'repo_2@' + expected_revision + '",',
+        ' "src/foo": "file:///' + self.git_base.replace('\\', '\\\\') +
+        'repo_2@' + expected_revision + '",',
         '}',
         'hooks = [',
         '  {"action": ["foo", "--android", "{checkout_android}"]}',
@@ -128,7 +130,8 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.gitrevparse(self.foo_dir), expected_revision)
     self.assertEqual([
         'deps = {',
-        ' "src/foo": "' + self.git_base + 'repo_2@' + expected_revision + '",',
+        ' "src/foo": "file:///' + self.git_base.replace('\\', '\\\\') +
+        'repo_2@' + expected_revision + '",',
         '}',
         'hooks = [',
         '  {"action": ["foo", "--android", "{checkout_android}"]}',
@@ -139,6 +142,38 @@ class RollDepTest(fake_repos.FakeReposTestBase):
 
     expected_message = 'Roll src/foo/ %s..%s (1 commit)' % (
         self.githash('repo_2', 1)[:9], self.githash('repo_2', 2)[:9])
+
+    self.assertIn(expected_message, stdout)
+    self.assertIn(expected_message, commit_message)
+
+  def testRollsDepLogLimit(self):
+    if not self.enabled:
+      return
+    stdout, stderr, returncode = self.call(
+        [ROLL_DEP, 'src/foo', '--log-limit', '1'])
+    expected_revision = self.githash('repo_2', 3)
+
+    self.assertEqual(stderr, '')
+    self.assertEqual(returncode, 0)
+
+    with open(os.path.join(self.src_dir, 'DEPS')) as f:
+      contents = f.read()
+
+    self.assertEqual(self.gitrevparse(self.foo_dir), expected_revision)
+    self.assertEqual([
+        'deps = {',
+        ' "src/foo": "file:///' + self.git_base.replace('\\', '\\\\') +
+        'repo_2@' + expected_revision + '",',
+        '}',
+        'hooks = [',
+        '  {"action": ["foo", "--android", "{checkout_android}"]}',
+        ']',
+    ], contents.splitlines())
+
+    commit_message = self.call(['git', 'log', '-n', '1'])[0]
+
+    expected_message = 'Roll src/foo/ %s..%s (2 commits)' % (
+        self.githash('repo_2', 1)[:9], self.githash('repo_2', 3)[:9])
 
     self.assertIn(expected_message, stdout)
     self.assertIn(expected_message, commit_message)

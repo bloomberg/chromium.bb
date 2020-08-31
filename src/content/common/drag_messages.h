@@ -14,7 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 #define IPC_MESSAGE_START DragMsgStart
@@ -49,9 +49,6 @@ IPC_MESSAGE_ROUTED3(DragMsg_SourceEnded,
                     gfx::PointF /* client_pt */,
                     gfx::PointF /* screen_pt */,
                     blink::WebDragOperation /* drag_operation */)
-
-// Notifies the renderer that the system DoDragDrop call has ended.
-IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
 
 // Messages sent from the renderer to the browser.
 

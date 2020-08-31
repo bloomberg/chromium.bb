@@ -69,11 +69,10 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       int request_id,
       int acc_obj_id,
       const base::string16& query,
-      const extensions::AutomationInternalQuerySelectorFunction::Callback&
-          callback)
+      extensions::AutomationInternalQuerySelectorFunction::Callback callback)
       : content::WebContentsObserver(web_contents),
         request_id_(request_id),
-        callback_(callback) {
+        callback_(std::move(callback)) {
     content::RenderFrameHost* rfh = web_contents->GetMainFrame();
 
     rfh->Send(new ExtensionMsg_AutomationQuerySelector(
@@ -104,7 +103,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
   }
 
   void WebContentsDestroyed() override {
-    callback_.Run(kRendererDestroyed, 0);
+    std::move(callback_).Run(kRendererDestroyed, 0);
     delete this;
   }
 
@@ -123,12 +122,12 @@ class QuerySelectorHandler : public content::WebContentsObserver {
         error_string = kNodeDestroyed;
         break;
     }
-    callback_.Run(error_string, result_acc_obj_id);
+    std::move(callback_).Run(error_string, result_acc_obj_id);
     delete this;
   }
 
   int request_id_;
-  const extensions::AutomationInternalQuerySelectorFunction::Callback callback_;
+  extensions::AutomationInternalQuerySelectorFunction::Callback callback_;
 };
 
 }  // namespace
@@ -292,9 +291,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
           ax_tree_id.ToString(), tab_id)));
 }
 
-ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
-  // TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
-  using api::automation_internal::EnableFrame::Params;
+ExtensionFunction::ResponseAction AutomationInternalEnableTreeFunction::Run() {
+  using api::automation_internal::EnableTree::Params;
 
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -312,6 +310,11 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
     action.action = ax::mojom::Action::kInternalInvalidateTree;
     action_handler->PerformAction(action);
   }
+
+  AutomationInternalApiDelegate* automation_api_delegate =
+      ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
+  if (automation_api_delegate->EnableTree(ax_tree_id))
+    return RespondNow(NoArguments());
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromAXTreeID(ax_tree_id);
@@ -495,6 +498,12 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_HIDETOOLTIP:
       action->action = ax::mojom::Action::kHideTooltip;
       break;
+    case api::automation::ACTION_TYPE_COLLAPSE:
+      action->action = ax::mojom::Action::kCollapse;
+      break;
+    case api::automation::ACTION_TYPE_EXPAND:
+      action->action = ax::mojom::Action::kExpand;
+      break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
     case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
@@ -614,7 +623,8 @@ AutomationInternalQuerySelectorFunction::Run() {
   // QuerySelectorHandler handles IPCs and deletes itself on completion.
   new QuerySelectorHandler(
       contents, request_id, params->args.automation_node_id, selector,
-      base::Bind(&AutomationInternalQuerySelectorFunction::OnResponse, this));
+      base::BindOnce(&AutomationInternalQuerySelectorFunction::OnResponse,
+                     this));
 
   return RespondLater();
 }

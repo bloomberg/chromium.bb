@@ -5,11 +5,11 @@
 #ifndef SERVICES_SHAPE_DETECTION_FACE_DETECTION_IMPL_MAC_VISION_H_
 #define SERVICES_SHAPE_DETECTION_FACE_DETECTION_IMPL_MAC_VISION_H_
 
+#include <os/availability.h>
+
 #include <memory>
 #include <utility>
 
-#include "base/mac/availability.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"

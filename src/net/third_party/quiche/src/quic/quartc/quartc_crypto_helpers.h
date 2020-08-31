@@ -13,11 +13,11 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -44,22 +44,27 @@ class DummyProofSource : public ProofSource {
 
   // ProofSource overrides.
   void GetProof(const QuicSocketAddress& server_address,
+                const QuicSocketAddress& client_address,
                 const std::string& hostname,
                 const std::string& server_config,
                 QuicTransportVersion transport_version,
-                QuicStringPiece chlo_hash,
+                quiche::QuicheStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override;
 
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
+      const QuicSocketAddress& client_address,
       const std::string& hostname) override;
 
   void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
+      const QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      QuicStringPiece in,
+      quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override;
+
+  TicketCrypter* GetTicketCrypter() override { return nullptr; }
 };
 
 // Used by QuicCryptoClientConfig to ignore the peer's credentials
@@ -76,7 +81,7 @@ class InsecureProofVerifier : public ProofVerifier {
       const uint16_t port,
       const std::string& server_config,
       QuicTransportVersion transport_version,
-      QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
@@ -87,6 +92,7 @@ class InsecureProofVerifier : public ProofVerifier {
 
   QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
+      const uint16_t port,
       const std::vector<std::string>& certs,
       const std::string& ocsp_response,
       const std::string& cert_sct,
@@ -99,7 +105,8 @@ class InsecureProofVerifier : public ProofVerifier {
 };
 
 // Implementation of the server-side crypto stream helper.
-class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
+class QuartcCryptoServerStreamHelper
+    : public QuicCryptoServerStreamBase::Helper {
  public:
   bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
                             const QuicSocketAddress& client_address,
@@ -109,11 +116,12 @@ class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
 };
 
 std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
-    QuicStringPiece pre_shared_key);
+    quiche::QuicheStringPiece pre_shared_key);
 
-CryptoServerConfig CreateCryptoServerConfig(QuicRandom* random,
-                                            const QuicClock* clock,
-                                            QuicStringPiece pre_shared_key);
+CryptoServerConfig CreateCryptoServerConfig(
+    QuicRandom* random,
+    const QuicClock* clock,
+    quiche::QuicheStringPiece pre_shared_key);
 
 }  // namespace quic
 

@@ -1,18 +1,6 @@
-//
-// Copyright (C) 2015 The Android Open Source Project
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2015 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 syntax = "proto2";
 
@@ -259,6 +247,21 @@ message FinishEnrollReply {
   optional AttestationStatus status = 1;
 }
 
+// Goes through the entire enrollment process, including creating enroll
+// request, sending the request to the corresponding PCA server, and storing the
+// response from PCA server if success. The message field is identical to
+// |CreateEnrollRequestRequest|.
+message EnrollRequest {
+  // What kind of ACA to use.
+  optional ACAType aca_type = 1;
+  // No matter is the device is enrolled, (re-)enroll the device.
+  optional bool forced = 2;
+}
+
+message EnrollReply {
+  optional AttestationStatus status = 1;
+}
+
 // Create an attestation certificate request to be sent to the Privacy CA.
 // The request is a serialized AttestationCertificateRequest protobuf. The
 // certificate request process generates and certifies a key in the TPM and
@@ -304,6 +307,42 @@ message FinishCertificateRequestRequest {
 message FinishCertificateRequestReply {
   optional AttestationStatus status = 1;
   // The PCA issued certificate chain in PEM format.  By
+  // convention the certified key certificate is listed
+  // first followed by intermediate CA certificate(s).
+  // The PCA root certificate is not included.
+  optional bytes certificate = 2;
+}
+
+// Goes through the entire cert process, including creating cert, sending the
+// request to the corresponding PCA server, and storing the response from PCA
+// server if success. The message fields are basically the union of
+// |CreateCertificateRequestRequest| and |FinishCertificateRequestRequest|.
+message GetCertificateRequest {
+  // Type of certificate to be requested.
+  optional CertificateProfile certificate_profile = 1;
+  // The canonical username of the active user profile. Leave blank
+  // if not associated with the current user.
+  optional string username = 2;
+  // Some certificate requests require information about the origin
+  // of the request.  If no origin is needed, this can be empty.
+  optional string request_origin = 3;
+  // What kind of ACA to use.
+  optional ACAType aca_type = 4;
+  // The key algorithm of certified key.
+  optional KeyType key_type = 5;
+  // A name for the key.  If a key already exists with this name it
+  // will be destroyed and replaced with this one.
+  optional string key_label = 6;
+  // Ignores the current certificate if any and gets the new certificate.
+  optional bool forced = 7;
+  // If set to |true|, this request also triggers enrollment process if the
+  // device is not enrolled yet.
+  optional bool shall_trigger_enrollment = 8;
+}
+
+message GetCertificateReply {
+  optional AttestationStatus status = 1;
+  // The PCA issued certificate chain in PEM format. By
   // convention the certified key certificate is listed
   // first followed by intermediate CA certificate(s).
   // The PCA root certificate is not included.
@@ -379,13 +418,29 @@ message SetKeyPayloadReply {
   optional AttestationStatus status = 1;
 }
 
-// Delete all keys where the key name has the given |key_prefix|.
+// Delete keys either by key label prefix or by exact key label.
 message DeleteKeysRequest {
-  // The key name prefix.
-  optional string key_prefix = 1;
+  enum MatchBehavior {
+    // Match type not specified. Behavior defaults to |MATCH_TYPE_PREFIX|.
+    MATCH_BEHAVIOR_UNSPECIFIED = 0;
+
+    // Will delete all keys that start with |key_label_match|.
+    // If no such key exists, the operation still succeeds.
+    MATCH_BEHAVIOR_PREFIX = 1;
+
+    // Will delete the key which has a key_label exactly matching
+    // |key_label_match|.
+    // If no such key exists, the operation still succeeds.
+    MATCH_BEHAVIOR_EXACT = 2;
+  }
+  // The key label prefix or the exact key label (depends on |match_behavior|).
+  optional string key_label_match = 1;
   // The canonical username of the active user profile. Leave blank
   // if not associated with the current user.
   optional string username = 2;
+  // The matching behavior - see comments on the enum values. If omitted,
+  // defaults to MATCH_BEHAVIOR_PREFIX for backwards compatibility.
+  optional MatchBehavior match_behavior = 3;
 }
 
 message DeleteKeysReply {
@@ -403,18 +458,6 @@ message ResetIdentityReply {
   optional AttestationStatus status = 1;
   // Request to be sent to the CA.
   optional bytes reset_request = 2;
-}
-
-// Set system salt.
-// TODO(http://crosbug.com/p/58299): remove after cryptohomed calls to
-// attestationd become non-blocking. Until then, we need to pass the system
-// salt this way, since we can't query cryptohomed from attestationd.
-message SetSystemSaltRequest {
-  optional string system_salt = 1;
-}
-
-message SetSystemSaltReply {
-  optional AttestationStatus status = 1;
 }
 
 message GetEnrollmentIdRequest {

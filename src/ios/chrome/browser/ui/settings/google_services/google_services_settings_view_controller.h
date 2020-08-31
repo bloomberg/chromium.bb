@@ -13,8 +13,6 @@
 @protocol GoogleServicesSettingsServiceDelegate;
 @protocol GoogleServicesSettingsViewControllerModelDelegate;
 
-extern NSString* const kGoogleServicesSettingsViewIdentifier;
-
 // Delegate for presentation events related to
 // GoogleServicesSettingsViewController.
 @protocol GoogleServicesSettingsViewControllerPresentationDelegate <NSObject>

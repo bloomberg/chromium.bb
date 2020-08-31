@@ -7,14 +7,12 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class UdpSocket;
 
@@ -25,13 +23,9 @@ class UdpPacket : public std::vector<uint8_t> {
  public:
   // C++14 vector constructors, sans Allocator foo, and no copy ctor.
   UdpPacket();
-  explicit UdpPacket(size_type size);
-  explicit UdpPacket(size_type size, uint8_t fill_value);
+  explicit UdpPacket(size_type size, uint8_t fill_value = {});
   template <typename InputIt>
-  UdpPacket(InputIt first, InputIt last)
-      : UdpPacket(std::distance(first, last)) {
-    std::copy(first, last, begin());
-  }
+  UdpPacket(InputIt first, InputIt last) : std::vector<uint8_t>(first, last) {}
   UdpPacket(UdpPacket&& other);
   UdpPacket(std::initializer_list<uint8_t> init);
 
@@ -60,7 +54,6 @@ class UdpPacket : public std::vector<uint8_t> {
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpPacket);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_UDP_PACKET_H_

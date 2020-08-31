@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -21,7 +22,6 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
-struct HttpResponseInfoIOBuffer;
 class ServiceWorkerCacheWriter;
 
 // Executes byte-for-byte update check of one script. This loads the script from
@@ -144,13 +144,17 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   bool network_accessed() const { return network_accessed_; }
+  const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
+      const {
+    return cross_origin_embedder_policy_;
+  }
 
   static const char* ResultToString(Result result);
 
  private:
   class WrappedIOBuffer;
 
-  void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
+  void WriteHeaders(network::mojom::URLResponseHeadPtr response_head);
   void OnWriteHeadersComplete(net::Error error);
 
   void MaybeStartNetworkConsumerHandleWatcher();
@@ -183,6 +187,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
   bool network_accessed_ = false;
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   std::unique_ptr<
       ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>

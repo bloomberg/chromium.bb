@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 
 namespace blink {
@@ -95,18 +96,13 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
 FloatSize StyleFetchedImageSet::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size) const {
+    const LayoutSize& default_object_size,
+    RespectImageOrientationEnum respect_orientation) const {
   Image* image = best_fit_image_->GetImage();
-  if (image->IsSVGImage()) {
-    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
-                                default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
   }
-  // Image orientation should only be respected for content images,
-  // not decorative ones such as StyleImage (backgrounds,
-  // border-image, etc.)
-  //
-  // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  FloatSize natural_size(image->Size());
+  FloatSize natural_size(image->Size(respect_orientation));
   FloatSize scaled_image_size(ApplyZoom(natural_size, multiplier));
   scaled_image_size.Scale(1 / image_scale_factor_);
   return scaled_image_size;
@@ -135,9 +131,10 @@ scoped_refptr<Image> StyleFetchedImageSet::GetImage(
         style.EffectiveZoom());
   }
 
-  if (!image->IsSVGImage())
+  auto* svg_image = DynamicTo<SVGImage>(image);
+  if (!svg_image)
     return image;
-  return SVGImageForContainer::Create(ToSVGImage(image), target_size,
+  return SVGImageForContainer::Create(svg_image, target_size,
                                       style.EffectiveZoom(), url_);
 }
 
@@ -146,7 +143,7 @@ bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,
   return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 
-void StyleFetchedImageSet::Trace(blink::Visitor* visitor) {
+void StyleFetchedImageSet::Trace(Visitor* visitor) {
   visitor->Trace(best_fit_image_);
   visitor->Trace(image_set_value_);
   StyleImage::Trace(visitor);

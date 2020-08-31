@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -64,10 +63,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // across the row up to the amount label. This way the first label elides as
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     kAmountSectionWidth, kAmountSectionWidth);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, kAmountSectionWidth,
+                     kAmountSectionWidth);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::Label> label_text;
@@ -99,10 +99,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
   wrapper_columns->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
-  wrapper_columns->AddColumn(views::GridLayout::TRAILING,
-                             views::GridLayout::CENTER, 1.0,
-                             views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  wrapper_columns->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::CENTER, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   wrapper_layout->StartRow(views::GridLayout::kFixedSize, 0);
   currency_text->SetID(static_cast<int>(currency_label_id));
@@ -141,9 +142,12 @@ void OrderSummaryViewController::OnSelectedInformationChanged() {
 
 std::unique_ptr<views::Button>
 OrderSummaryViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
+  auto button = views::MdTextButton::Create(
+      this, state()->selected_app() && state()->selected_app()->type() !=
+                                           PaymentApp::Type::AUTOFILL
+                ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)
+                : l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON));
+  button->SetProminent(true);
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));
   pay_button_ = button.get();

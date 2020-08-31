@@ -20,9 +20,6 @@ class GPUComputePassEncoder : public DawnObject<WGPUComputePassEncoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUComputePassEncoder* Create(
-      GPUDevice* device,
-      WGPUComputePassEncoder compute_pass_encoder);
   explicit GPUComputePassEncoder(GPUDevice* device,
                                  WGPUComputePassEncoder compute_pass_encoder);
   ~GPUComputePassEncoder() override;
@@ -33,7 +30,7 @@ class GPUComputePassEncoder : public DawnObject<WGPUComputePassEncoder>,
                     const Vector<uint32_t>& dynamicOffsets);
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bind_group,
-                    const FlexibleUint32ArrayView& dynamic_offsets_data,
+                    const FlexibleUint32Array& dynamic_offsets_data,
                     uint64_t dynamic_offsets_data_start,
                     uint32_t dynamic_offsets_data_length,
                     ExceptionState& exception_state);

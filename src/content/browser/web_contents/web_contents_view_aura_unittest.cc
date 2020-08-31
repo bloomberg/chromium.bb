@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +27,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/display_switches.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
@@ -37,7 +39,30 @@ namespace content {
 namespace {
 constexpr gfx::Rect kBounds = gfx::Rect(0, 0, 20, 20);
 constexpr gfx::PointF kClientPt = {5, 10};
+
+#if !defined(USE_OZONE) || defined(OS_WIN) || defined(USE_X11)
 constexpr gfx::PointF kScreenPt = {17, 3};
+#endif
+
+// Runs a specified callback when a ui::MouseEvent is received.
+class RunCallbackOnActivation : public WebContentsDelegate {
+ public:
+  explicit RunCallbackOnActivation(base::OnceClosure closure)
+      : closure_(std::move(closure)) {}
+
+  ~RunCallbackOnActivation() override = default;
+
+  // WebContentsDelegate:
+  void ActivateContents(WebContents* contents) override {
+    std::move(closure_).Run();
+  }
+
+ private:
+  base::OnceClosure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunCallbackOnActivation);
+};
+
 }  // namespace
 
 class WebContentsViewAuraTest : public RenderViewHostTestHarness {
@@ -145,6 +170,26 @@ TEST_F(WebContentsViewAuraTest, ShowHideParent) {
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
 }
 
+TEST_F(WebContentsViewAuraTest, WebContentsDestroyedDuringClick) {
+  RunCallbackOnActivation delegate(base::BindOnce(
+      &RenderViewHostTestHarness::DeleteContents, base::Unretained(this)));
+  web_contents()->SetDelegate(&delegate);
+
+  // Simulates the mouse press.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             0);
+  ui::EventHandler* event_handler = GetView();
+  event_handler->OnMouseEvent(&mouse_event);
+#if defined(USE_X11)
+  // The web-content is not activated during mouse-press on X11.
+  // See comment in WebContentsViewAura::OnMouseEvent() for more details.
+  EXPECT_NE(web_contents(), nullptr);
+#else
+  EXPECT_EQ(web_contents(), nullptr);
+#endif
+}
+
 TEST_F(WebContentsViewAuraTest, OccludeView) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
@@ -156,6 +201,20 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
 }
 
+#if !defined(USE_OZONE) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1070483): Enable this test on Ozone.
+//
+// The expectations for the X11 implementation differ from other ones because
+// the GetString() method of the X11 data provider returns an empty string
+// if file data is also present, which is not the same for other
+// implementations.  (See the code under USE_X11 in the body of the test.)
+//
+// Ozone spawns the platform at run time, which would require this test to query
+// Ozone about the current platform, which would pull the Ozone platform as the
+// dependency here.
+//
+// Another solution could be fixing the X11 platform implementation so it
+// would behave the same way as other Ozone platforms do.
 TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
@@ -192,7 +251,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   ASSERT_NE(nullptr, view->current_drop_data_);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(view->current_drop_data_->text.string().empty());
 #else
@@ -222,7 +281,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   CheckDropData(view);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(drop_complete_data_->drop_data.text.string().empty());
 #else
@@ -237,6 +296,8 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
               retrieved_file_infos[i].display_name);
   }
 }
+
+#endif  // !defined(USE_OZONE) && !defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(USE_X11)
 TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
@@ -279,7 +340,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   ASSERT_NE(nullptr, view->current_drop_data_);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(view->current_drop_data_->text.string().empty());
 #else
@@ -302,7 +363,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   CheckDropData(view);
 
 #if defined(USE_X11)
-  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
   EXPECT_TRUE(drop_complete_data_->drop_data.text.string().empty());
 #else
@@ -315,13 +376,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
 
 #if defined(OS_WIN)
 
-// Flaky crash on ASan: http://crbug.com/1020136
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DragDropVirtualFiles DISABLED_DragDropVirtualFiles
-#else
-#define MAYBE_DragDropVirtualFiles DragDropVirtualFiles
-#endif
-TEST_F(WebContentsViewAuraTest, MAYBE_DragDropVirtualFiles) {
+TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 

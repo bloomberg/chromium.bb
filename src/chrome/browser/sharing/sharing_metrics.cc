@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 const char* GetEnumStringValue(SharingFeatureName feature) {
@@ -25,8 +26,25 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
   }
 }
 
-// These value are mapped to histogram suffixes. Please keep in sync with
-// "SharingDevicePlatform" in src/tools/metrics/histograms/enums.xml.
+// Maps SharingChannelType enum values to strings used as histogram
+// suffixes. Keep in sync with "SharingChannelType" in histograms.xml.
+std::string SharingChannelTypeToString(SharingChannelType channel_type) {
+  switch (channel_type) {
+    case SharingChannelType::kUnknown:
+      return "Unknown";
+    case SharingChannelType::kFcmVapid:
+      return "FcmVapid";
+    case SharingChannelType::kFcmSenderId:
+      return "FcmSenderId";
+    case SharingChannelType::kServer:
+      return "Server";
+    case SharingChannelType::kWebRtc:
+      return "WebRTC";
+  }
+}
+
+// Maps SharingDevicePlatform enum values to strings used as histogram
+// suffixes. Keep in sync with "SharingDevicePlatform" in histograms.xml.
 std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
   switch (device_platform) {
     case SharingDevicePlatform::kAndroid:
@@ -41,22 +59,21 @@ std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
       return "Mac";
     case SharingDevicePlatform::kWindows:
       return "Windows";
+    case SharingDevicePlatform::kServer:
+      return "Server";
     case SharingDevicePlatform::kUnknown:
       return "Unknown";
   }
 }
 
-const std::string& MessageTypeToMessageSuffix(
-    chrome_browser_sharing::MessageType message_type) {
-  // For proto3 enums unrecognized enum values are kept when parsing and their
-  // name is an empty string. We don't want to use that as a histogram suffix.
-  // The returned values must match the values of the SharingMessage suffixes
-  // defined in histograms.xml.
-  if (!chrome_browser_sharing::MessageType_IsValid(message_type)) {
-    return chrome_browser_sharing::MessageType_Name(
-        chrome_browser_sharing::UNKNOWN_MESSAGE);
-  }
-  return chrome_browser_sharing::MessageType_Name(message_type);
+// Maps pulse intervals to strings used as histogram suffixes. Keep in sync with
+// "SharingPulseInterval" in histograms.xml.
+std::string PulseIntervalToString(base::TimeDelta pulse_interval) {
+  if (pulse_interval < base::TimeDelta::FromHours(4))
+    return "PulseIntervalShort";
+  if (pulse_interval > base::TimeDelta::FromHours(12))
+    return "PulseIntervalLong";
+  return "PulseIntervalMedium";
 }
 
 // Major Chrome version comparison with the receiver device.
@@ -71,6 +88,27 @@ enum class SharingMajorVersionComparison {
   kMaxValue = kSenderIsHigher,
 };
 }  // namespace
+
+std::string SharingSendMessageResultToString(SharingSendMessageResult result) {
+  switch (result) {
+    case SharingSendMessageResult::kSuccessful:
+      return "Successful";
+    case SharingSendMessageResult::kDeviceNotFound:
+      return "DeviceNotFound";
+    case SharingSendMessageResult::kNetworkError:
+      return "NetworkError";
+    case SharingSendMessageResult::kPayloadTooLarge:
+      return "PayloadTooLarge";
+    case SharingSendMessageResult::kAckTimeout:
+      return "AckTimeout";
+    case SharingSendMessageResult::kInternalError:
+      return "InternalError";
+    case SharingSendMessageResult::kEncryptionError:
+      return "EncryptionError";
+    case SharingSendMessageResult::kCommitTimeout:
+      return "CommitTimeout";
+  }
+}
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
@@ -89,10 +127,15 @@ chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
       return chrome_browser_sharing::SMS_FETCH_REQUEST;
     case chrome_browser_sharing::SharingMessage::kRemoteCopyMessage:
       return chrome_browser_sharing::REMOTE_COPY_MESSAGE;
-    case chrome_browser_sharing::SharingMessage::kSignallingMessage:
-      return chrome_browser_sharing::SIGNALLING_MESSAGE;
-    case chrome_browser_sharing::SharingMessage::kIceCandidateMessage:
-      return chrome_browser_sharing::ICE_CANDIDATE_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kPeerConnectionOfferMessage:
+      return chrome_browser_sharing::PEER_CONNECTION_OFFER_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::
+        kPeerConnectionIceCandidatesMessage:
+      return chrome_browser_sharing::PEER_CONNECTION_ICE_CANDIDATES_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kDiscoveryRequest:
+      return chrome_browser_sharing::DISCOVERY_REQUEST;
+    case chrome_browser_sharing::SharingMessage::kWebRtcSignalingFrame:
+      return chrome_browser_sharing::WEB_RTC_SIGNALING_FRAME;
   }
   // For proto3 enums unrecognized enum values are kept when parsing, and a new
   // payload case received over the network would not default to
@@ -101,18 +144,28 @@ chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
   return chrome_browser_sharing::UNKNOWN_MESSAGE;
 }
 
+const std::string& SharingMessageTypeToString(
+    chrome_browser_sharing::MessageType message_type) {
+  // For proto3 enums unrecognized enum values are kept when parsing and their
+  // name is an empty string. We don't want to use that as a histogram suffix.
+  if (!chrome_browser_sharing::MessageType_IsValid(message_type)) {
+    return chrome_browser_sharing::MessageType_Name(
+        chrome_browser_sharing::UNKNOWN_MESSAGE);
+  }
+  return chrome_browser_sharing::MessageType_Name(message_type);
+}
+
+int GenerateSharingTraceId() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  static int next_id = 0;
+  return next_id++;
+}
+
 void LogSharingMessageReceived(
-    chrome_browser_sharing::MessageType original_message_type,
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
-  chrome_browser_sharing::MessageType actual_message_type =
-      SharingPayloadCaseToMessageType(payload_case);
   base::UmaHistogramExactLinear("Sharing.MessageReceivedType",
-                                actual_message_type,
+                                SharingPayloadCaseToMessageType(payload_case),
                                 chrome_browser_sharing::MessageType_ARRAYSIZE);
-  base::UmaHistogramExactLinear(
-      base::StrCat({"Sharing.MessageReceivedType.",
-                    MessageTypeToMessageSuffix(original_message_type)}),
-      actual_message_type, chrome_browser_sharing::MessageType_ARRAYSIZE);
 }
 
 void LogSharingRegistrationResult(SharingDeviceRegistrationResult result) {
@@ -199,19 +252,43 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 }
 
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
+                              SharingDevicePlatform receiver_device_platform,
+                              SharingChannelType channel_type,
                               base::TimeDelta time) {
-  std::string suffixed_name = base::StrCat(
-      {"Sharing.MessageAckTime.", MessageTypeToMessageSuffix(message_type)});
+  std::string type_suffixed_name = base::StrCat(
+      {"Sharing.MessageAckTime.", SharingMessageTypeToString(message_type)});
+  std::string platform_suffixed_name =
+      base::StrCat({"Sharing.MessageAckTime.",
+                    DevicePlatformToString(receiver_device_platform), ".",
+                    SharingMessageTypeToString(message_type)});
+  std::string channel_suffixed_name = base::StrCat(
+      {"Sharing.MessageAckTime.", SharingChannelTypeToString(channel_type)});
   switch (message_type) {
     case chrome_browser_sharing::MessageType::UNKNOWN_MESSAGE:
     case chrome_browser_sharing::MessageType::PING_MESSAGE:
     case chrome_browser_sharing::MessageType::CLICK_TO_CALL_MESSAGE:
     case chrome_browser_sharing::MessageType::SHARED_CLIPBOARD_MESSAGE:
-      base::UmaHistogramMediumTimes(suffixed_name, time);
+    case chrome_browser_sharing::MessageType::PEER_CONNECTION_OFFER_MESSAGE:
+    case chrome_browser_sharing::MessageType::
+        PEER_CONNECTION_ICE_CANDIDATES_MESSAGE:
+      base::UmaHistogramMediumTimes(type_suffixed_name, time);
+      base::UmaHistogramMediumTimes(platform_suffixed_name, time);
+      base::UmaHistogramMediumTimes(channel_suffixed_name, time);
       break;
     case chrome_browser_sharing::MessageType::SMS_FETCH_REQUEST:
+    case chrome_browser_sharing::MessageType::DISCOVERY_REQUEST:
+    case chrome_browser_sharing::MessageType::WEB_RTC_SIGNALING_FRAME:
       base::UmaHistogramCustomTimes(
-          suffixed_name, time, /*min=*/base::TimeDelta::FromMilliseconds(1),
+          type_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
+          /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
+      base::UmaHistogramCustomTimes(
+          platform_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
+          /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
+      base::UmaHistogramCustomTimes(
+          channel_suffixed_name, time,
+          /*min=*/base::TimeDelta::FromMilliseconds(1),
           /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
       break;
     case chrome_browser_sharing::MessageType::ACK_MESSAGE:
@@ -223,6 +300,15 @@ void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
   }
 }
 
+void LogSharingMessageHandlerTime(
+    chrome_browser_sharing::MessageType message_type,
+    base::TimeDelta time_taken) {
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"Sharing.MessageHandlerTime.",
+                    SharingMessageTypeToString(message_type)}),
+      time_taken);
+}
+
 void LogSharingDeviceLastUpdatedAge(
     chrome_browser_sharing::MessageType message_type,
     base::TimeDelta age) {
@@ -230,8 +316,16 @@ void LogSharingDeviceLastUpdatedAge(
   int hours = age.InHours();
   base::UmaHistogramCounts1000(kBase, hours);
   base::UmaHistogramCounts1000(
-      base::StrCat({kBase, ".", MessageTypeToMessageSuffix(message_type)}),
+      base::StrCat({kBase, ".", SharingMessageTypeToString(message_type)}),
       hours);
+}
+
+void LogSharingDeviceLastUpdatedAgeWithResult(SharingSendMessageResult result,
+                                              base::TimeDelta age) {
+  base::UmaHistogramCounts1000(
+      base::StrCat({"Sharing.DeviceLastUpdatedAgeWithResult.",
+                    SharingSendMessageResultToString(result)}),
+      age.InHours());
 }
 
 void LogSharingVersionComparison(
@@ -260,7 +354,7 @@ void LogSharingVersionComparison(
   constexpr char kBase[] = "Sharing.MajorVersionComparison";
   base::UmaHistogramEnumeration(kBase, result);
   base::UmaHistogramEnumeration(
-      base::StrCat({kBase, ".", MessageTypeToMessageSuffix(message_type)}),
+      base::StrCat({kBase, ".", SharingMessageTypeToString(message_type)}),
       result);
 }
 
@@ -273,52 +367,91 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform receiving_device_platform,
+    SharingChannelType channel_type,
+    base::TimeDelta pulse_interval,
     SharingSendMessageResult result) {
   const std::string metric_prefix = "Sharing.SendMessageResult";
 
   base::UmaHistogramEnumeration(metric_prefix, result);
+
   base::UmaHistogramEnumeration(
       base::StrCat(
-          {metric_prefix, ".", MessageTypeToMessageSuffix(message_type)}),
+          {metric_prefix, ".", SharingMessageTypeToString(message_type)}),
       result);
 
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(receiving_device_platform)}),
       result);
+
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(receiving_device_platform), ".",
-                    MessageTypeToMessageSuffix(message_type)}),
+                    SharingMessageTypeToString(message_type)}),
       result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
+      result);
+
+  // There is no "invalid" bucket so only log valid pulse intervals.
+  if (!pulse_interval.is_zero()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {metric_prefix, ".", PulseIntervalToString(pulse_interval)}),
+        result);
+    base::UmaHistogramEnumeration(
+        base::StrCat({metric_prefix, ".",
+                      DevicePlatformToString(receiving_device_platform), ".",
+                      PulseIntervalToString(pulse_interval)}),
+        result);
+  }
 }
 
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingDevicePlatform ack_receiver_device_type,
+    SharingChannelType channel_type,
     SharingSendMessageResult result) {
   const std::string metric_prefix = "Sharing.SendAckMessageResult";
 
   base::UmaHistogramEnumeration(metric_prefix, result);
+
   base::UmaHistogramEnumeration(
       base::StrCat(
-          {metric_prefix, ".", MessageTypeToMessageSuffix(message_type)}),
+          {metric_prefix, ".", SharingMessageTypeToString(message_type)}),
       result);
 
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(ack_receiver_device_type)}),
       result);
+
   base::UmaHistogramEnumeration(
       base::StrCat({metric_prefix, ".",
                     DevicePlatformToString(ack_receiver_device_type), ".",
-                    MessageTypeToMessageSuffix(message_type)}),
+                    SharingMessageTypeToString(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
       result);
 }
 
 void LogSharedClipboardSelectedTextSize(size_t size) {
   base::UmaHistogramCounts100000("Sharing.SharedClipboardSelectedTextSize",
                                  size);
+}
+
+void LogSharedClipboardRetries(int retries, SharingSendMessageResult result) {
+  constexpr char kBase[] = "Sharing.SharedClipboardRetries";
+  base::UmaHistogramExactLinear(kBase, retries, /*value_max=*/20);
+  base::UmaHistogramExactLinear(
+      base::StrCat({kBase, ".", SharingSendMessageResultToString(result)}),
+      retries,
+      /*value_max=*/20);
 }
 
 void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result) {
@@ -354,4 +487,22 @@ void LogRemoteCopyDecodeImageTime(base::TimeDelta time) {
 
 void LogRemoteCopyResizeImageTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.RemoteCopyResizeImageTime", time);
+}
+
+void LogRemoteCopyWriteTime(base::TimeDelta time, bool is_image) {
+  if (is_image)
+    base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteImageTime", time);
+  else
+    base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteTextTime", time);
+}
+
+void LogRemoteCopyWriteDetectionTime(base::TimeDelta time, bool is_image) {
+  if (is_image)
+    base::UmaHistogramTimes("Sharing.RemoteCopyWriteImageDetectionTime", time);
+  else
+    base::UmaHistogramTimes("Sharing.RemoteCopyWriteTextDetectionTime", time);
+}
+
+void LogSharingDeviceInfoAvailable(bool available) {
+  base::UmaHistogramBoolean("Sharing.DeviceInfoAvailable", available);
 }

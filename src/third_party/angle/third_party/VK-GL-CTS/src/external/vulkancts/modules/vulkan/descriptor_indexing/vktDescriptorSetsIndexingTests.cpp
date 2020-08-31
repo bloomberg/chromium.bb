@@ -346,11 +346,19 @@ public:
 																 const IterateCommonVariables&				variables,
 																 bool										fromTest);
 
+	void						iterateCommandSetup				(IterateCommonVariables&					variables);
 
-	void						iterateCommandBegin				(IterateCommonVariables&					variables);
+	void						iterateCommandBegin				(IterateCommonVariables&					variables,
+																bool										firstPass = true);
 
-	bool						iterateCommandEnd				(IterateCommonVariables&					variables,
+	void						iterateCommandEnd				(IterateCommonVariables&					variables,
+																ut::UpdatablePixelBufferAccessPtr&	programResult,
+																ut::UpdatablePixelBufferAccessPtr&	referenceResult,
 																 bool										collectBeforeSubmit = true);
+
+	bool						iterateVerifyResults			(IterateCommonVariables&					variables,
+																	 ut::UpdatablePixelBufferAccessPtr	programResult,
+																	 ut::UpdatablePixelBufferAccessPtr	referenceResult);
 
 	Move<VkCommandBuffer>		createCmdBuffer					(void);
 
@@ -552,30 +560,30 @@ Move<VkDescriptorSetLayout>	CommonDescriptorInstance::createDescriptorSetLayout 
 		}
 	};
 
-	const VkDescriptorBindingFlagsEXT	bindingFlagUpdateAfterBind =
-		m_testParams.updateAfterBind ? VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT : 0;
+	const VkDescriptorBindingFlags	bindingFlagUpdateAfterBind =
+		m_testParams.updateAfterBind ? VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT : 0;
 
-	const VkDescriptorBindingFlagsEXT bindingFlagsExt[] =
+	const VkDescriptorBindingFlags bindingFlags[] =
 	{
-		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT | bindingFlagUpdateAfterBind,
-		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT | bindingFlagUpdateAfterBind
+		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | bindingFlagUpdateAfterBind,
+		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | bindingFlagUpdateAfterBind
 	};
 
-	const VkDescriptorSetLayoutBindingFlagsCreateInfoEXT	bindingCreateInfoExt =
+	const VkDescriptorSetLayoutBindingFlagsCreateInfo	bindingCreateInfo =
 	{
-		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
+		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
 		DE_NULL,
 		optional ? 2u : 1u,	// bindingCount
-		bindingFlagsExt,	// pBindingFlags
+		bindingFlags,		// pBindingFlags
 	};
 
 	const VkDescriptorSetLayoutCreateFlags	layoutCreateFlags =
-		m_testParams.updateAfterBind ? VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT : 0;
+		m_testParams.updateAfterBind ? VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT : 0;
 
 	const VkDescriptorSetLayoutCreateInfo	layoutCreateInfo =
 	{
 		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		&bindingCreateInfoExt,	// pNext
+		&bindingCreateInfo,		// pNext
 		layoutCreateFlags,		// flags
 		optional ? 2u : 1u,		// bindingCount
 		bindings,				// pBindings
@@ -586,7 +594,7 @@ Move<VkDescriptorSetLayout>	CommonDescriptorInstance::createDescriptorSetLayout 
 
 Move<VkDescriptorPool>	CommonDescriptorInstance::createDescriptorPool (deUint32							descriptorCount) const
 {
-	const VkDescriptorPoolCreateFlags pcf = m_testParams.updateAfterBind ? VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT : 0;
+	const VkDescriptorPoolCreateFlags pcf = m_testParams.updateAfterBind ? VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT : 0;
 
 	DescriptorPoolBuilder builder;
 
@@ -752,7 +760,8 @@ Move<VkRenderPass> CommonDescriptorInstance::createRenderPass		(const IterateCom
 	DE_UNREF(variables);
 	if ((m_testParams.stageFlags & VK_SHADER_STAGE_VERTEX_BIT) || (m_testParams.stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT))
 	{
-		return vk::makeRenderPass(m_vki, m_vkd, m_colorFormat);
+		// Use VK_ATTACHMENT_LOAD_OP_LOAD to make the utility function select initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		return vk::makeRenderPass(m_vki, m_vkd, m_colorFormat, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	}
 	return Move<VkRenderPass>();
 }
@@ -877,8 +886,22 @@ Move<VkPipeline> CommonDescriptorInstance::createGraphicsPipeline	(VkPipelineLay
 		attributeDescriptions						// pVertexAttributeDescriptions
 	};
 
+	const	VkDynamicState							dynamicStates[]				=
+	{
+		VK_DYNAMIC_STATE_SCISSOR
+	};
+
+	const VkPipelineDynamicStateCreateInfo			dynamicStateCreateInfo =
+	{
+		VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,  // sType
+		DE_NULL,											   // pNext
+		0u,													   // flags
+		DE_LENGTH_OF_ARRAY(dynamicStates),					   // dynamicStateCount
+		dynamicStates										   // pDynamicStates
+	};
+
 	const std::vector<VkViewport>	viewports	(1, makeViewport(m_testParams.frameResolution.width, m_testParams.frameResolution.height));
-	const std::vector<VkRect2D>		scissors	(1, makeRect2D(m_testParams.frameResolution.width, m_testParams.frameResolution.height));
+	const std::vector<VkRect2D>		scissors	(1, makeRect2D(0u, 0u));
 
 	DE_ASSERT(m_vertexModule && m_fragmentModule);
 
@@ -897,7 +920,12 @@ Move<VkPipeline> CommonDescriptorInstance::createGraphicsPipeline	(VkPipelineLay
 		VK_PRIMITIVE_TOPOLOGY_POINT_LIST,				// topology
 		0U,												// subpass
 		0U,												// patchControlPoints
-		&vertexInputStateCreateInfo);					// vertexInputStateCreateInfo
+		&vertexInputStateCreateInfo,					// vertexInputStateCreateInfo
+		nullptr,										// rasterizationStateCreateInfo
+		nullptr,										// multisampleStateCreateInfo
+		nullptr,										// depthStencilStateCreateInfo
+		nullptr,										// colorBlendStateCreateInfo
+		&dynamicStateCreateInfo);						// dynamicStateCreateInfo
 }
 
 VkDeviceSize CommonDescriptorInstance::createBuffers				(std::vector<VkDescriptorBufferInfo>&		bufferInfos,
@@ -1072,7 +1100,6 @@ PixelBufferAccess CommonDescriptorInstance::getPixelAccess			(deUint32									i
 	return tcu::PixelBufferAccess(vk::mapVkFormat(imageFormat), (imageExtent.width >> mipLevel), (imageExtent.height >> mipLevel), imageExtent.depth, data);
 }
 
-
 void CommonDescriptorInstance::updateDescriptors					(IterateCommonVariables&					variables)
 {
 	const std::vector<deUint32>	primes = ut::generatePrimes(variables.availableDescriptorCount);
@@ -1083,7 +1110,6 @@ void CommonDescriptorInstance::updateDescriptors					(IterateCommonVariables&			
 		const VkDescriptorBufferInfo*	pBufferInfo			= DE_NULL;
 		const VkDescriptorImageInfo*	pImageInfo			= DE_NULL;
 		const VkBufferView*				pTexelBufferView	= DE_NULL;
-
 
 		VkDescriptorImageInfo		imageInfo =
 		{
@@ -1147,7 +1173,7 @@ void CommonDescriptorInstance::updateDescriptors					(IterateCommonVariables&			
 	}
 }
 
-void CommonDescriptorInstance::iterateCommandBegin					(IterateCommonVariables&					variables)
+void CommonDescriptorInstance::iterateCommandSetup					(IterateCommonVariables&					variables)
 {
 	variables.dataAlignment				= 0;
 
@@ -1199,7 +1225,75 @@ void CommonDescriptorInstance::iterateCommandBegin					(IterateCommonVariables&	
 		updateDescriptors				(variables);
 	}
 
+}
+
+void CommonDescriptorInstance::iterateCommandBegin					(IterateCommonVariables&					variables,	bool firstPass)
+{
 	vk::beginCommandBuffer				(m_vki, *variables.commandBuffer);
+
+	// Clear color attachment, and transition it to VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	if ((m_testParams.stageFlags & VK_SHADER_STAGE_VERTEX_BIT) || (m_testParams.stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT))
+	{
+		if (firstPass)
+		{
+			const VkImageMemoryBarrier preImageBarrier =
+			{
+				VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,				// VkStructureType		sType
+				DE_NULL,											// const void*			pNext
+				0u,													// VkAccessFlags		srcAccessMask
+				VK_ACCESS_TRANSFER_WRITE_BIT,						// VkAccessFlags		dstAccessMask
+				VK_IMAGE_LAYOUT_UNDEFINED,							// VkImageLayout		oldLayout
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,				// VkImageLayout		newLayout
+				VK_QUEUE_FAMILY_IGNORED,							// uint32_t				srcQueueFamilyIndex
+				VK_QUEUE_FAMILY_IGNORED,							// uint32_t				dstQueueFamilyIndex
+				*variables.frameBuffer->image->image,				// VkImage				image
+				{
+					VK_IMAGE_ASPECT_COLOR_BIT,				// VkImageAspectFlags	aspectMask
+					0u,										// uint32_t				baseMipLevel
+					VK_REMAINING_MIP_LEVELS,				// uint32_t				mipLevels,
+					0u,										// uint32_t				baseArray
+					VK_REMAINING_ARRAY_LAYERS,				// uint32_t				arraySize
+				}
+			};
+
+			m_vki.cmdPipelineBarrier(*variables.commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+									(VkDependencyFlags)0,
+									0, (const VkMemoryBarrier*)DE_NULL,
+									0, (const VkBufferMemoryBarrier*)DE_NULL,
+									1, &preImageBarrier);
+
+			const VkClearColorValue	clearColorValue		= makeClearValueColor(m_clearColor).color;
+
+			m_vki.cmdClearColorImage(*variables.commandBuffer, *variables.frameBuffer->image->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColorValue, 1, &preImageBarrier.subresourceRange);
+
+			const VkImageMemoryBarrier postImageBarrier =
+			{
+				VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,				// VkStructureType		sType
+				DE_NULL,											// const void*			pNext
+				VK_ACCESS_TRANSFER_WRITE_BIT,						// VkAccessFlags		srcAccessMask
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,				// VkAccessFlags		dstAccessMask
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,				// VkImageLayout		oldLayout
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,			// VkImageLayout		newLayout
+				VK_QUEUE_FAMILY_IGNORED,							// uint32_t				srcQueueFamilyIndex
+				VK_QUEUE_FAMILY_IGNORED,							// uint32_t				dstQueueFamilyIndex
+				*variables.frameBuffer->image->image,				// VkImage				image
+				{
+					VK_IMAGE_ASPECT_COLOR_BIT,				// VkImageAspectFlags	aspectMask
+					0u,										// uint32_t				baseMipLevel
+					VK_REMAINING_MIP_LEVELS,				// uint32_t				mipLevels,
+					0u,										// uint32_t				baseArray
+					VK_REMAINING_ARRAY_LAYERS,				// uint32_t				arraySize
+				}
+			};
+
+			m_vki.cmdPipelineBarrier(*variables.commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+									(VkDependencyFlags)0,
+									0, (const VkMemoryBarrier*)DE_NULL,
+									0, (const VkBufferMemoryBarrier*)DE_NULL,
+									1, &postImageBarrier);
+
+		}
+	}
 
 	if (m_testParams.calculateInLoop)
 	{
@@ -1240,31 +1334,47 @@ void CommonDescriptorInstance::iterateCommandBegin					(IterateCommonVariables&	
 tcu::TestStatus	CommonDescriptorInstance::iterate					(void)
 {
 	IterateCommonVariables	v;
-	iterateCommandBegin		(v);
+	ut::UpdatablePixelBufferAccessPtr	programResult;
+	ut::UpdatablePixelBufferAccessPtr	referenceResult;
 
-	if (true == m_testParams.copyBuffersToImages)
-	{
-		copyBuffersToImages	(v);
-	}
+	bool firstPass = true;
 
-	if (true == m_testParams.updateAfterBind)
-	{
-		updateDescriptors	(v);
-	}
+	iterateCommandSetup		(v);
 
-	v.renderArea.extent.width	= m_testParams.frameResolution.width/2;
-	v.renderArea.extent.height	= m_testParams.frameResolution.height/2;
-	for (int x = 0; x < 2; x++)
-		for (int y= 0; y < 2; y++)
+	v.renderArea.extent.width	= m_testParams.frameResolution.width/4;
+	v.renderArea.extent.height	= m_testParams.frameResolution.height/4;
+
+	for (int x = 0; x < 4; x++)
+		for (int y= 0; y < 4; y++)
 		{
-			v.renderArea.offset.x		= x * m_testParams.frameResolution.width/2;
-			v.renderArea.offset.y		= y * m_testParams.frameResolution.height/2;
+			iterateCommandBegin		(v, firstPass);
+
+			if (true == firstPass && true == m_testParams.copyBuffersToImages)
+			{
+				copyBuffersToImages	(v);
+			}
+
+			firstPass = false;
+
+			if (true == m_testParams.updateAfterBind)
+			{
+				updateDescriptors	(v);
+			}
+
+			v.renderArea.offset.x		= x * m_testParams.frameResolution.width/4;
+			v.renderArea.offset.y		= y * m_testParams.frameResolution.height/4;
+
+			vk::VkRect2D scissor = makeRect2D(v.renderArea.offset.x, v.renderArea.offset.y, v.renderArea.extent.width, v.renderArea.extent.height);
+			m_vki.cmdSetScissor(*v.commandBuffer, 0u, 1u, &scissor);
+
 			vk::beginRenderPass		(m_vki, *v.commandBuffer, *v.renderPass, *v.frameBuffer->buffer, v.renderArea, m_clearColor);
 			m_vki.cmdDraw			(*v.commandBuffer, v.vertexCount, 1u, 0u, 0u);
 			vk::endRenderPass		(m_vki, *v.commandBuffer);
+
+			iterateCommandEnd(v, programResult, referenceResult);
 		}
 
-	return (iterateCommandEnd(v) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
+	return ( iterateVerifyResults(v, programResult, referenceResult) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
 }
 
 std::vector<float> CommonDescriptorInstance::createColorScheme		(void)
@@ -1279,12 +1389,11 @@ std::vector<float> CommonDescriptorInstance::createColorScheme		(void)
 	return cs;
 }
 
-bool CommonDescriptorInstance::iterateCommandEnd					(IterateCommonVariables&					variables,
+void CommonDescriptorInstance::iterateCommandEnd					(IterateCommonVariables&					variables,
+																	 ut::UpdatablePixelBufferAccessPtr&	programResult,
+																	 ut::UpdatablePixelBufferAccessPtr&	referenceResult,
 																	 bool										collectBeforeSubmit)
 {
-	ut::UpdatablePixelBufferAccessPtr	programResult;
-	ut::UpdatablePixelBufferAccessPtr	referenceResult;
-
 	if (collectBeforeSubmit)
 	{
 		iterateCollectResults(programResult, variables, true);
@@ -1300,7 +1409,12 @@ bool CommonDescriptorInstance::iterateCommandEnd					(IterateCommonVariables&			
 		iterateCollectResults(programResult, variables, true);
 		iterateCollectResults(referenceResult, variables, false);
 	}
+}
 
+bool CommonDescriptorInstance::iterateVerifyResults			(IterateCommonVariables&					variables,
+																	 ut::UpdatablePixelBufferAccessPtr	programResult,
+																	 ut::UpdatablePixelBufferAccessPtr	referenceResult)
+{
 	bool result = false;
 	if (m_testParams.fuzzyComparison)
 	{
@@ -1559,13 +1673,13 @@ std::string CommonDescriptorInstance::getColorAccess				(VkDescriptorType							
 		break;
 	case VK_DESCRIPTOR_TYPE_SAMPLER:
 		text = usesMipMaps
-			? "textureLod(sampler2D(tex[0], data[nonuniformEXT(${INDEX})]), normalpos, 1)"
-			: "texture(   sampler2D(tex[0], data[nonuniformEXT(${INDEX})]), normalpos   )";
+			? "textureLod(nonuniformEXT(sampler2D(tex[0], data[${INDEX}])), normalpos, 1)"
+			: "texture(   nonuniformEXT(sampler2D(tex[0], data[${INDEX}])), normalpos   )";
 		break;
 	case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
 		text = usesMipMaps
-			? "textureLod( sampler2D(data[nonuniformEXT(${INDEX})], samp[0]), vec2(0,0), textureQueryLevels(sampler2D(data[nonuniformEXT(${INDEX})], samp[0]))-1)"
-			: "texture(    sampler2D(data[nonuniformEXT(${INDEX})], samp[0]), vec2(0,0)   )";
+			? "textureLod( nonuniformEXT(sampler2D(data[${INDEX}], samp[0])), vec2(0,0), textureQueryLevels(nonuniformEXT(sampler2D(data[${INDEX}], samp[0])))-1)"
+			: "texture(    nonuniformEXT(sampler2D(data[${INDEX}], samp[0])), vec2(0,0)   )";
 		break;
 	case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
 		text = usesMipMaps
@@ -2108,7 +2222,11 @@ void DynamicBuffersInstance::updateDescriptors						(IterateCommonVariables&				
 tcu::TestStatus	DynamicBuffersInstance::iterate						(void)
 {
 	IterateCommonVariables	v;
-	iterateCommandBegin		(v);
+	iterateCommandSetup		(v);
+
+	ut::UpdatablePixelBufferAccessPtr	programResult;
+	ut::UpdatablePixelBufferAccessPtr	referenceResult;
+	bool firstPass = true;
 
 	DE_ASSERT(v.dataAlignment);
 
@@ -2137,6 +2255,19 @@ tcu::TestStatus	DynamicBuffersInstance::iterate						(void)
 
 	const VkDescriptorSet	descriptorSets[] = { *v.descriptorSet };
 
+	v.renderArea.extent.width	= m_testParams.frameResolution.width/4;
+	v.renderArea.extent.height	= m_testParams.frameResolution.height/4;
+
+	for (int x = 0; x < 4; x++)
+		for (int y= 0; y < 4; y++)
+		{
+
+			v.renderArea.offset.x		= x * m_testParams.frameResolution.width/4;
+			v.renderArea.offset.y		= y * m_testParams.frameResolution.height/4;
+
+			iterateCommandBegin		(v, firstPass);
+			firstPass = false;
+
 	m_vki.cmdBindDescriptorSets(
 		*v.commandBuffer,						// commandBuffer
 		VK_PIPELINE_BIND_POINT_GRAPHICS,		// pipelineBindPoint
@@ -2147,11 +2278,17 @@ tcu::TestStatus	DynamicBuffersInstance::iterate						(void)
 		v.availableDescriptorCount,				// dynamicOffsetCount
 		dynamicOffsets.data());					// pDynamicOffsets
 
+			vk::VkRect2D scissor = makeRect2D(v.renderArea.offset.x, v.renderArea.offset.y, v.renderArea.extent.width, v.renderArea.extent.height);
+	m_vki.cmdSetScissor(*v.commandBuffer, 0u, 1u, &scissor);
+
 	vk::beginRenderPass	(m_vki, *v.commandBuffer, *v.renderPass, *v.frameBuffer->buffer, v.renderArea, m_clearColor);
-	m_vki.cmdDraw		(*v.commandBuffer, v.vertexCount, 1, 0, 0);
+			m_vki.cmdDraw			(*v.commandBuffer, v.vertexCount, 1u, 0u, 0u);
 	vk::endRenderPass	(m_vki, *v.commandBuffer);
 
-	return (iterateCommandEnd(v) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
+			iterateCommandEnd(v, programResult, referenceResult);
+		}
+
+	return (iterateVerifyResults(v, programResult, referenceResult) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
 }
 
 class DynamicStorageBufferInstance : public DynamicBuffersInstance, public StorageBufferInstance
@@ -2296,7 +2433,7 @@ Move<VkRenderPass> InputAttachmentInstance::createRenderPass		(const IterateComm
 		VK_ATTACHMENT_STORE_OP_STORE,				// VkAttachmentStoreOp				storeOp;
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE,			// VkAttachmentLoadOp				stencilLoadOp;
 		VK_ATTACHMENT_STORE_OP_DONT_CARE,			// VkAttachmentStoreOp				stencilStoreOp;
-		VK_IMAGE_LAYOUT_UNDEFINED,					// VkImageLayout					initialLayout;
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,	// VkImageLayout					initialLayout;
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,	// VkImageLayout					finalLayout;
 	};
 	const VkAttachmentReference		colorAttachmentRef =
@@ -2308,9 +2445,25 @@ Move<VkRenderPass> InputAttachmentInstance::createRenderPass		(const IterateComm
 
 	// build input atachments
 	{
+		const std::vector<deUint32>	primes = ut::generatePrimes(variables.availableDescriptorCount);
 		const deUint32 inputCount = static_cast<deUint32>(variables.descriptorImageViews.size());
 		for (deUint32 inputIdx = 0; inputIdx < inputCount; ++inputIdx)
 		{
+			// primes holds the indices of input attachments for shader binding 10 which has input_attachment_index=1
+			deUint32 nextInputAttachmentIndex = primes[inputIdx] + 1;
+
+			// Fill up the subpass description's input attachments with unused attachments forming gaps to the next referenced attachment
+			for (deUint32 unusedIdx = static_cast<deUint32>(inputAttachmentRefs.size()); unusedIdx < nextInputAttachmentIndex; ++unusedIdx)
+			{
+				const VkAttachmentReference		inputAttachmentRef =
+				{
+					VK_ATTACHMENT_UNUSED,						// deUint32							attachment;
+					VK_IMAGE_LAYOUT_GENERAL						// VkImageLayout					layout;
+				};
+
+				inputAttachmentRefs.push_back(inputAttachmentRef);
+			}
+
 			const VkAttachmentDescription	inputAttachmentDescription =
 			{
 				VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT,		// VkAttachmentDescriptionFlags		flags;
@@ -2833,7 +2986,11 @@ void StorageImageInstance::createAndPopulateDescriptors				(IterateCommonVariabl
 tcu::TestStatus StorageImageInstance::iterate						(void)
 {
 	IterateCommonVariables	v;
+	iterateCommandSetup		(v);
 	iterateCommandBegin		(v);
+
+	ut::UpdatablePixelBufferAccessPtr	programResult;
+	ut::UpdatablePixelBufferAccessPtr	referenceResult;
 
 	if (m_testParams.updateAfterBind)
 	{
@@ -2849,7 +3006,9 @@ tcu::TestStatus StorageImageInstance::iterate						(void)
 
 	copyImagesToBuffers		(v);
 
-	return (iterateCommandEnd(v, false) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
+	iterateCommandEnd(v, programResult, referenceResult, false);
+
+	return ( iterateVerifyResults(v, programResult, referenceResult) ? tcu::TestStatus::pass : tcu::TestStatus::fail)("");
 }
 
 void StorageImageInstance::iterateCollectResults					(ut::UpdatablePixelBufferAccessPtr&			result,
@@ -2938,7 +3097,7 @@ public:
 
 	virtual void checkSupport (vkt::Context& context) const
 	{
-		context.requireDeviceExtension("VK_EXT_descriptor_indexing");
+		context.requireDeviceFunctionality("VK_EXT_descriptor_indexing");
 
 		const vk::VkPhysicalDeviceDescriptorIndexingFeaturesEXT& feats = context.getDescriptorIndexingFeatures();
 

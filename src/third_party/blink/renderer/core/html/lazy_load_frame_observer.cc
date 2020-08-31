@@ -93,11 +93,12 @@ int GetLazyFrameLoadingViewportDistanceThresholdPx(const Document& document) {
 }  // namespace
 
 struct LazyLoadFrameObserver::LazyLoadRequestInfo {
-  LazyLoadRequestInfo(const ResourceRequest& resource_request,
+  LazyLoadRequestInfo(const ResourceRequestHead& passed_resource_request,
                       WebFrameLoadType frame_load_type)
-      : resource_request(resource_request), frame_load_type(frame_load_type) {}
+      : resource_request(passed_resource_request),
+        frame_load_type(frame_load_type) {}
 
-  const ResourceRequest resource_request;
+  ResourceRequestHead resource_request;
   const WebFrameLoadType frame_load_type;
 };
 
@@ -107,7 +108,7 @@ LazyLoadFrameObserver::LazyLoadFrameObserver(HTMLFrameOwnerElement& element)
 LazyLoadFrameObserver::~LazyLoadFrameObserver() = default;
 
 void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
-    const ResourceRequest& resource_request,
+    const ResourceRequestHead& resource_request,
     WebFrameLoadType frame_load_type) {
   DCHECK(!lazy_load_intersection_observer_);
   DCHECK(!lazy_load_request_info_);
@@ -179,11 +180,11 @@ void LazyLoadFrameObserver::LoadImmediately() {
 
   // Note that calling FrameLoader::StartNavigation() causes the
   // |lazy_load_intersection_observer_| to be disconnected.
+  FrameLoadRequest request(&element_->GetDocument(),
+                           scoped_request_info->resource_request);
   To<LocalFrame>(element_->ContentFrame())
       ->Loader()
-      .StartNavigation(FrameLoadRequest(&element_->GetDocument(),
-                                        scoped_request_info->resource_request),
-                       scoped_request_info->frame_load_type);
+      .StartNavigation(request, scoped_request_info->frame_load_type);
 
   DCHECK(!IsLazyLoadPending());
 }

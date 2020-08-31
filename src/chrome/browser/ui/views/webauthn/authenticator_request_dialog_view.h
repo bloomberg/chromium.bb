@@ -68,8 +68,6 @@ class AuthenticatorRequestDialogView
   gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;
-  bool Close() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   ui::ModalType GetModalType() const override;
@@ -100,6 +98,8 @@ class AuthenticatorRequestDialogView
 
   // Shows the dialog after creation or after being hidden.
   void Show();
+
+  void OnDialogClosing();
 
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
 

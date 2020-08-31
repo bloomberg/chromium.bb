@@ -25,14 +25,13 @@ class HTMLContentElementTest : public testing::Test {
 };
 
 TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <div id='host'></div>
   )HTML");
 
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = host->CreateV0ShadowRootForTesting();
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   auto* content = GetDocument().CreateRawElement(html_names::kContentTag);
   auto* fallback = GetDocument().CreateRawElement(html_names::kSpanTag);

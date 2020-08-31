@@ -69,7 +69,7 @@ DOMUint8Array* ConvertUnsignedDataToUint8Array(
 base::TimeTicks GetTimeOrigin(ExecutionContext* context) {
   DCHECK(context);
   Performance* performance = nullptr;
-  if (LocalDOMWindow* window = context->ExecutingWindow()) {
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
     performance = DOMWindowPerformance::performance(*window);
   } else {
     DCHECK(context->IsWorkerGlobalScope());
@@ -98,6 +98,13 @@ class MessageValidator {
       : data_(array->Data()), length_(array->lengthAsSizeT()), offset_(0) {}
 
   bool Process(ExceptionState& exception_state, bool sysex_enabled) {
+    // data_ is put into a WTF::Vector eventually, which only has wtf_size_t
+    // space.
+    if (!base::CheckedNumeric<wtf_size_t>(length_).IsValid()) {
+      exception_state.ThrowRangeError(
+          "Data exceeds the maximum supported length");
+      return false;
+    }
     while (!IsEndOfData() && AcceptRealTimeMessages()) {
       if (!IsStatusByte()) {
         exception_state.ThrowTypeError("Running status is not allowed " +
@@ -300,21 +307,22 @@ void MIDIOutput::send(Vector<unsigned> unsigned_data,
 }
 
 void MIDIOutput::DidOpen(bool opened) {
-  if (!opened) {
+  if (!opened)
     pending_data_.clear();
-    return;
-  }
 
-  while (!pending_data_.empty()) {
-    auto& front = pending_data_.front();
-    midiAccess()->SendMIDIData(port_index_, front.first->Data(),
-                               front.first->deprecatedLengthAsUnsigned(),
-                               front.second);
-    pending_data_.TakeFirst();
+  HeapVector<std::pair<Member<DOMUint8Array>, base::TimeTicks>> queued_data;
+  queued_data.swap(pending_data_);
+  for (auto& data : queued_data) {
+    midiAccess()->SendMIDIData(
+        port_index_, data.first->Data(),
+        base::checked_cast<wtf_size_t>(data.first->lengthAsSizeT()),
+        data.second);
   }
+  queued_data.clear();
+  DCHECK(pending_data_.IsEmpty());
 }
 
-void MIDIOutput::Trace(blink::Visitor* visitor) {
+void MIDIOutput::Trace(Visitor* visitor) {
   MIDIPort::Trace(visitor);
   visitor->Trace(pending_data_);
 }
@@ -338,8 +346,9 @@ void MIDIOutput::SendInternal(DOMUint8Array* array,
   if (IsOpening()) {
     pending_data_.emplace_back(array, timestamp);
   } else {
-    midiAccess()->SendMIDIData(port_index_, array->Data(),
-                               array->deprecatedLengthAsUnsigned(), timestamp);
+    midiAccess()->SendMIDIData(
+        port_index_, array->Data(),
+        base::checked_cast<wtf_size_t>(array->lengthAsSizeT()), timestamp);
   }
 }
 

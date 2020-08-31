@@ -62,7 +62,7 @@ class StreamParams(_StreamParamsBase):
     if self.tags is not None:
       if not isinstance(self.tags, collections.Mapping):
         raise ValueError('Invalid tags type (%s)' % (self.tags,))
-      for k, v in self.tags.iteritems():
+      for k, v in self.tags.items():
         streamname.validate_tag(k, v)
 
     if self.tee not in (None, self.TEE_STDOUT, self.TEE_STDERR):

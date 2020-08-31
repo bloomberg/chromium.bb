@@ -22,12 +22,9 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v7.media.MediaRouter;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -35,22 +32,25 @@ import android.view.KeyEvent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.mediarouter.media.MediaRouter;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.ChromeNotification;
-import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
-import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaMetadata;
 
@@ -296,8 +296,8 @@ public class MediaNotificationManager {
                         null /* notificationTag */, s.getNotificationId());
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        ChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
-                        metadata);
+                        ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
+                        null /* remoteAppPackageName */, metadata);
         ForegroundServiceUtils.getInstance().startForeground(s, s.getNotificationId(),
                 builder.buildChromeNotification().getNotification(), 0 /* foregroundServiceType */);
     }
@@ -627,17 +627,6 @@ public class MediaNotificationManager {
     }
 
     /**
-     * Hides notifications with all known ids for all tabs if shown.
-     */
-    public static void clearAll() {
-        for (int i = 0; i < sManagers.size(); ++i) {
-            MediaNotificationManager manager = sManagers.valueAt(i);
-            manager.clearNotification();
-        }
-        sManagers.clear();
-    }
-
-    /**
      * Activates the Android MediaSession. This method is used to activate Android MediaSession more
      * often because some old version of Android might send events to the latest active session
      * based on when setActive(true) was called and regardless of the current playback state.
@@ -875,6 +864,9 @@ public class MediaNotificationManager {
 
     private static boolean shouldIgnoreMediaNotificationInfo(
             MediaNotificationInfo oldInfo, MediaNotificationInfo newInfo) {
+        // If we don't have actions then we shouldn't display the notification.
+        if (newInfo.mediaSessionActions.isEmpty()) return true;
+
         return newInfo.equals(oldInfo)
                 || ((newInfo.isPaused && oldInfo != null && newInfo.tabId != oldInfo.tabId));
     }
@@ -996,7 +988,7 @@ public class MediaNotificationManager {
                 new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
                         null /* notificationTag */, mMediaNotificationInfo.id);
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA,
+                true /* preferCompat */, ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
                 null /* remoteAppPackageName*/, metadata);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 

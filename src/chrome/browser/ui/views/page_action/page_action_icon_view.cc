@@ -30,13 +30,16 @@ float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
   return GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
 }
 
-std::unique_ptr<views::Border>
-PageActionIconView::Delegate::CreatePageActionIconBorder() const {
-  return views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
+int PageActionIconView::Delegate::GetPageActionIconSize() const {
+  return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 }
 
-bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
+gfx::Insets PageActionIconView::Delegate::GetPageActionIconInsets(
+    const PageActionIconView* icon_view) const {
+  return GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING);
+}
+
+bool PageActionIconView::Delegate::ShouldHidePageActionIcons() const {
   return false;
 }
 
@@ -46,11 +49,13 @@ const OmniboxView* PageActionIconView::Delegate::GetOmniboxView() const {
   return nullptr;
 }
 
-PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
-                                       int command_id,
-                                       PageActionIconView::Delegate* delegate,
-                                       const gfx::FontList& font_list)
-    : IconLabelBubbleView(font_list),
+PageActionIconView::PageActionIconView(
+    CommandUpdater* command_updater,
+    int command_id,
+    IconLabelBubbleView::Delegate* parent_delegate,
+    PageActionIconView::Delegate* delegate,
+    const gfx::FontList& font_list)
+    : IconLabelBubbleView(font_list, parent_delegate),
       command_updater_(command_updater),
       delegate_(delegate),
       command_id_(command_id) {
@@ -88,14 +93,10 @@ void PageActionIconView::ExecuteForTesting() {
   OnExecuting(EXECUTE_SOURCE_MOUSE);
 }
 
-SkColor PageActionIconView::GetTextColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-}
-
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(GetTextForTooltipAndAccessibleName());
+  const base::string16 name_text = GetTextForTooltipAndAccessibleName();
+  node_data->SetName(name_text);
 }
 
 base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
@@ -106,17 +107,15 @@ base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
 void PageActionIconView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
-  if (details.is_add && details.child == this && GetNativeTheme())
+  if (details.is_add && details.child == this && GetNativeTheme()) {
     UpdateIconImage();
+    UpdateBorder();
+  }
 }
 
 void PageActionIconView::OnThemeChanged() {
   IconLabelBubbleView::OnThemeChanged();
   UpdateIconImage();
-}
-
-SkColor PageActionIconView::GetInkDropBaseColor() const {
-  return delegate_->GetPageActionInkDropColor();
 }
 
 bool PageActionIconView::ShouldShowSeparator() const {
@@ -177,20 +176,13 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
   return gfx::kNoneIcon;
 }
 
-void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  views::BubbleDialogDelegateView* bubble = GetBubble();
-  // TODO(crbug.com/1016968): Remove OnAnchorBoundsChanged after fixing.
-  if (bubble && bubble->GetAnchorView())
-    bubble->OnAnchorBoundsChanged();
-  IconLabelBubbleView::OnBoundsChanged(previous_bounds);
+void PageActionIconView::OnTouchUiChanged() {
+  UpdateIconImage();
+  IconLabelBubbleView::OnTouchUiChanged();
 }
 
-void PageActionIconView::OnTouchUiChanged() {
-  icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  UpdateIconImage();
-  UpdateBorder();
-  if (GetVisible())
-    PreferredSizeChanged();
+const char* PageActionIconView::GetClassName() const {
+  return "PageActionIconView";
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {
@@ -208,7 +200,8 @@ void PageActionIconView::SetActive(bool active) {
 void PageActionIconView::Update() {
   // Currently no page action icon should be visible during user input.
   // A future subclass may need a hook here if that changes.
-  if (delegate_->IsLocationBarUserInputInProgress()) {
+  if (delegate_->ShouldHidePageActionIcons()) {
+    ResetSlideAnimation(/*show_label=*/false);
     SetVisible(false);
   } else {
     UpdateImpl();
@@ -217,12 +210,15 @@ void PageActionIconView::Update() {
 
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
-  SkColor icon_color = active_
-                           ? theme->GetSystemColor(
-                                 ui::NativeTheme::kColorId_ProminentButtonColor)
-                           : icon_color_;
-  SetImage(gfx::CreateVectorIconWithBadge(GetVectorIcon(), icon_size_,
-                                          icon_color, GetVectorIconBadge()));
+  const SkColor icon_color =
+      active_ ? theme->GetSystemColor(
+                    ui::NativeTheme::kColorId_ProminentButtonColor)
+              : icon_color_;
+  const int icon_size = delegate_->GetPageActionIconSize();
+  const gfx::ImageSkia image = gfx::CreateVectorIconWithBadge(
+      GetVectorIcon(), icon_size, icon_color, GetVectorIconBadge());
+  if (!image.isNull())
+    SetImage(image);
 }
 
 void PageActionIconView::InstallLoadingIndicator() {
@@ -247,5 +243,7 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(delegate_->CreatePageActionIconBorder());
+  const gfx::Insets new_insets = delegate_->GetPageActionIconInsets(this);
+  if (new_insets != GetInsets())
+    SetBorder(views::CreateEmptyBorder(new_insets));
 }

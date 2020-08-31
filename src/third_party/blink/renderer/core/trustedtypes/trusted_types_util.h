@@ -6,76 +6,63 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TRUSTEDTYPES_TRUSTED_TYPES_UTIL_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class Document;
 class ExecutionContext;
 class ExceptionState;
-class Node;
-class StringOrTrustedHTML;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StringOrTrustedScript;
-class StringOrTrustedScriptURL;
 
 enum class SpecificTrustedType {
   kNone,
-  kTrustedHTML,
-  kTrustedScript,
-  kTrustedScriptURL,
+  kHTML,
+  kScript,
+  kScriptURL,
 };
 
-String CORE_EXPORT GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-    const ExecutionContext*,
-    ExceptionState&);
-
-String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&);
-
-String CORE_EXPORT GetStringFromSpecificTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
+// Perform Trusted Type checks, with the IDL union types as input. All of these
+// will call String& versions below to do the heavy lifting.
+CORE_EXPORT String TrustedTypesCheckFor(
     SpecificTrustedType,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
     const ExecutionContext*,
-    ExceptionState&);
-
-String CORE_EXPORT GetStringFromSpecificTrustedType(const String&,
-                                                    SpecificTrustedType,
-                                                    const ExecutionContext*,
-                                                    ExceptionState&);
-
-String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
-                                            const ExecutionContext*,
-                                            ExceptionState&);
-
-String GetStringFromTrustedHTML(const String&,
-                                const ExecutionContext*,
-                                ExceptionState&);
-
-String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
+    ExceptionState&) WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForScript(StringOrTrustedScript,
                                               const ExecutionContext*,
-                                              ExceptionState&);
+                                              ExceptionState&)
+    WARN_UNUSED_RESULT;
 
-String GetStringFromTrustedScript(const String&,
-                                  const ExecutionContext*,
-                                  ExceptionState&);
-
-String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
+// Perform Trusted Type checks, for a dynamically or statically determined
+// type.
+// Returns the effective value (which may have been modified by the "default"
+// policy. We use WARN_UNUSED_RESULT to prevent erroneous usage.
+String TrustedTypesCheckFor(SpecificTrustedType,
+                            const String&,
+                            const ExecutionContext*,
+                            ExceptionState&) WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForHTML(const String&,
+                                            const ExecutionContext*,
+                                            ExceptionState&) WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForScript(const String&,
+                                              const ExecutionContext*,
+                                              ExceptionState&)
+    WARN_UNUSED_RESULT;
+CORE_EXPORT String TrustedTypesCheckForScriptURL(const String&,
                                                  const ExecutionContext*,
-                                                 ExceptionState&);
+                                                 ExceptionState&)
+    WARN_UNUSED_RESULT;
 
-// For <script> elements, we need to treat insertion of DOM text nodes
-// as equivalent to string assignment. This checks the child-node to be
-// inserted and runs all of the Trusted Types checks if it's a text node.
-//
-// Returns nullptr if the check failed, or the node to use (possibly child)
-//         if they succeeded.
-Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
-                                            Document*,
-                                            ExceptionState&);
-
-String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
+// Functionally equivalent to TrustedTypesCheckForScript(const String&, ...),
+// but with setup & error handling suitable for the asynchronous execution
+// cases.
+String TrustedTypesCheckForJavascriptURLinNavigation(const String&,
+                                                     ExecutionContext*);
+CORE_EXPORT String GetStringForScriptExecution(const String&,
+                                               ScriptElementBase::Type,
+                                               ExecutionContext*);
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //
@@ -84,7 +71,7 @@ String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
 // immediately imply "okay" this method can be used.
 // Example: To determine whether 'eval' may pass, one needs to also take CSP
 // into account.
-bool CORE_EXPORT RequireTrustedTypesCheck(const ExecutionContext*);
+CORE_EXPORT bool RequireTrustedTypesCheck(const ExecutionContext*);
 
 }  // namespace blink
 

@@ -4,15 +4,24 @@
 
 package org.chromium.weblayer_private;
 
+import android.content.Intent;
+import android.webkit.ValueCallback;
+
 import androidx.annotation.NonNull;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.weblayer_private.interfaces.BrowsingDataType;
+import org.chromium.weblayer_private.interfaces.ICookieManager;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.SettingType;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
@@ -22,42 +31,146 @@ import java.util.List;
  * Implementation of IProfile.
  */
 @JNINamespace("weblayer")
-public final class ProfileImpl extends IProfile.Stub {
+public final class ProfileImpl extends IProfile.Stub implements BrowserContextHandle {
     private final String mName;
     private long mNativeProfile;
+    private CookieManagerImpl mCookieManager;
     private Runnable mOnDestroyCallback;
+    private boolean mBeingDeleted;
+    private boolean mDownloadsInitialized;
+    private DownloadCallbackProxy mDownloadCallbackProxy;
+    private List<Intent> mDownloadNotificationIntents = new ArrayList<>();
+
+    public static void enumerateAllProfileNames(ValueCallback<String[]> callback) {
+        final Callback<String[]> baseCallback = (String[] names) -> callback.onReceiveValue(names);
+        ProfileImplJni.get().enumerateAllProfileNames(baseCallback);
+    }
 
     ProfileImpl(String name, Runnable onDestroyCallback) {
         if (!name.matches("^\\w*$")) {
             throw new IllegalArgumentException("Name can only contain words: " + name);
         }
         mName = name;
-        mNativeProfile = ProfileImplJni.get().createProfile(name);
+        mNativeProfile = ProfileImplJni.get().createProfile(name, ProfileImpl.this);
+        mCookieManager =
+                new CookieManagerImpl(ProfileImplJni.get().getCookieManager(mNativeProfile));
         mOnDestroyCallback = onDestroyCallback;
+        mDownloadCallbackProxy = new DownloadCallbackProxy(mName, mNativeProfile);
+    }
+
+    private void destroyDependentJavaObjects() {
+        if (mDownloadCallbackProxy != null) {
+            mDownloadCallbackProxy.destroy();
+            mDownloadCallbackProxy = null;
+        }
+
+        if (mCookieManager != null) {
+            mCookieManager.destroy();
+            mCookieManager = null;
+        }
     }
 
     @Override
     public void destroy() {
         StrictModeWorkaround.apply();
+        if (mBeingDeleted) return;
+
+        destroyDependentJavaObjects();
+        deleteNativeProfile();
+        maybeRunDestroyCallback();
+    }
+
+    private void deleteNativeProfile() {
         ProfileImplJni.get().deleteProfile(mNativeProfile);
         mNativeProfile = 0;
+    }
+
+    private void maybeRunDestroyCallback() {
+        if (mOnDestroyCallback == null) return;
         mOnDestroyCallback.run();
         mOnDestroyCallback = null;
     }
 
     @Override
+    public void destroyAndDeleteDataFromDisk(IObjectWrapper completionCallback) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        assert mNativeProfile != 0;
+        if (ProfileImplJni.get().getNumBrowserImpl(mNativeProfile) > 0) {
+            throw new IllegalStateException("Profile still in use: " + mName);
+        }
+
+        final Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
+
+        mBeingDeleted = true;
+        destroyDependentJavaObjects();
+        ProfileImplJni.get().destroyAndDeleteDataFromDisk(mNativeProfile, () -> {
+            if (callback != null) callback.run();
+        });
+        mNativeProfile = 0;
+        maybeRunDestroyCallback();
+    }
+
+    @Override
     public String getName() {
         StrictModeWorkaround.apply();
+        checkNotDestroyed();
         return mName;
+    }
+
+    @Override
+    public long getNativeBrowserContextPointer() {
+        if (mNativeProfile == 0) {
+            return 0;
+        }
+        return ProfileImplJni.get().getBrowserContext(mNativeProfile);
+    }
+
+    public boolean isIncognito() {
+        return mName.isEmpty();
+    }
+
+    public boolean areDownloadsInitialized() {
+        return mDownloadsInitialized;
+    }
+
+    public void addDownloadNotificationIntent(Intent intent) {
+        mDownloadNotificationIntents.add(intent);
+        ProfileImplJni.get().ensureBrowserContextInitialized(mNativeProfile);
     }
 
     @Override
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
             long toMillis, @NonNull IObjectWrapper completionCallback) {
         StrictModeWorkaround.apply();
+        checkNotDestroyed();
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
         ProfileImplJni.get().clearBrowsingData(
                 mNativeProfile, mapBrowsingDataTypes(dataTypes), fromMillis, toMillis, callback);
+    }
+
+    @Override
+    public void setDownloadDirectory(String directory) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        ProfileImplJni.get().setDownloadDirectory(mNativeProfile, directory);
+    }
+
+    @Override
+    public void setDownloadCallbackClient(IDownloadCallbackClient client) {
+        mDownloadCallbackProxy.setClient(client);
+    }
+
+    @Override
+    public ICookieManager getCookieManager() {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        return mCookieManager;
+    }
+
+    void checkNotDestroyed() {
+        if (!mBeingDeleted) return;
+        throw new IllegalArgumentException("Profile being destroyed: " + mName);
     }
 
     private static @ImplBrowsingDataType int[] mapBrowsingDataTypes(
@@ -84,11 +197,40 @@ public final class ProfileImpl extends IProfile.Stub {
         return mNativeProfile;
     }
 
+    @CalledByNative
+    public void downloadsInitialized() {
+        mDownloadsInitialized = true;
+
+        for (Intent intent : mDownloadNotificationIntents) {
+            DownloadImpl.handleIntent(intent);
+        }
+        mDownloadNotificationIntents.clear();
+    }
+
+    @Override
+    public void setBooleanSetting(@SettingType int type, boolean value) {
+        ProfileImplJni.get().setBooleanSetting(mNativeProfile, type, value);
+    }
+
+    @Override
+    public boolean getBooleanSetting(@SettingType int type) {
+        return ProfileImplJni.get().getBooleanSetting(mNativeProfile, type);
+    }
+
     @NativeMethods
     interface Natives {
-        long createProfile(String name);
+        void enumerateAllProfileNames(Callback<String[]> callback);
+        long createProfile(String name, ProfileImpl caller);
         void deleteProfile(long profile);
+        long getBrowserContext(long nativeProfileImpl);
+        int getNumBrowserImpl(long nativeProfileImpl);
+        void destroyAndDeleteDataFromDisk(long nativeProfileImpl, Runnable completionCallback);
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
                 long fromMillis, long toMillis, Runnable callback);
+        void setDownloadDirectory(long nativeProfileImpl, String directory);
+        long getCookieManager(long nativeProfileImpl);
+        void ensureBrowserContextInitialized(long nativeProfileImpl);
+        void setBooleanSetting(long nativeProfileImpl, int type, boolean value);
+        boolean getBooleanSetting(long nativeProfileImpl, int type);
     }
 }

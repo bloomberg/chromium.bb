@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "core/fpdfapi/cmaps/cmap_int.h"
+#include "core/fpdfapi/cmaps/fpdf_cmaps.h"
 #include "core/fpdfapi/font/cfx_cttgsubtable.h"
 #include "core/fpdfapi/font/cpdf_cid2unicodemap.h"
 #include "core/fpdfapi/font/cpdf_cmap.h"
@@ -21,8 +21,8 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/fx_font.h"
-#include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
@@ -360,7 +360,8 @@ bool CPDF_CIDFont::Load() {
   } else if (CPDF_Stream* pStream = pEncoding->AsStream()) {
     auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
     pAcc->LoadAllDataFiltered();
-    m_pCMap = pdfium::MakeRetain<CPDF_CMap>(pAcc->GetSpan());
+    pdfium::span<const uint8_t> span = pAcc->GetSpan();
+    m_pCMap = pdfium::MakeRetain<CPDF_CMap>(span);
   } else {
     return false;
   }
@@ -752,7 +753,7 @@ bool CPDF_CIDFont::IsUnicodeCompatible() const {
 }
 
 void CPDF_CIDFont::LoadSubstFont() {
-  pdfium::base::CheckedNumeric<int> safeStemV(m_StemV);
+  FX_SAFE_INT32 safeStemV(m_StemV);
   safeStemV *= 5;
   m_Font.LoadSubst(m_BaseFontName, !m_bType1, m_Flags,
                    safeStemV.ValueOrDefault(FXFONT_FW_NORMAL), m_ItalicAngle,

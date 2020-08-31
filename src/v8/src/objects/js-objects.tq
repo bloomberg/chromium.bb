@@ -38,11 +38,7 @@ macro NewJSObject(implicit context: Context)(): JSObject {
   const objectFunction: JSFunction = GetObjectFunction();
   const map: Map = Cast<Map>(objectFunction.prototype_or_initial_map)
       otherwise unreachable;
-  return new JSObject{
-    map,
-    properties_or_hash: kEmptyFixedArray,
-    elements: kEmptyFixedArray
-  };
+  return AllocateJSObjectFromMap(map);
 }
 
 @abstract
@@ -83,8 +79,7 @@ macro GetDerivedMap(implicit context: Context)(
     }
 
     return map;
-  }
-  label SlowPath {
+  } label SlowPath {
     return runtime::GetDerivedMap(context, target, newTarget);
   }
 }
@@ -96,7 +91,8 @@ macro AllocateFastOrSlowJSObjectFromMap(implicit context: Context)(map: Map):
     properties = AllocateNameDictionary(kNameDictionaryInitialCapacity);
   }
   return AllocateJSObjectFromMap(
-      map, properties, kEmptyFixedArray, kNone, kWithSlackTracking);
+      map, properties, kEmptyFixedArray, AllocationFlag::kNone,
+      SlackTrackingMode::kWithSlackTracking);
 }
 
 @generateCppClass
@@ -192,4 +188,4 @@ extern macro AllocateJSObjectFromMap(
     Map, NameDictionary | EmptyFixedArray | PropertyArray): JSObject;
 extern macro AllocateJSObjectFromMap(
     Map, NameDictionary | EmptyFixedArray | PropertyArray, FixedArray,
-    constexpr AllocationFlags, constexpr SlackTrackingMode): JSObject;
+    constexpr AllocationFlag, constexpr SlackTrackingMode): JSObject;

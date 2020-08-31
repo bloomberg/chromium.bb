@@ -8,27 +8,25 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 
   generate_jni("jni_headers") {
-    sources = [
-      "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/TestRulesetPublisher.java",
-    ]
+    sources = [ "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/TestRulesetPublisher.java" ]
   }
 
   android_library("subresource_filter_java_test_support") {
     testonly = true
-    java_files = [ "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/TestRulesetPublisher.java" ]
-    deps = [
-      "//base:base_java",
-    ]
+    sources = [ "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/TestRulesetPublisher.java" ]
+    deps = [ "//base:base_java" ]
   }
 
   android_library("subresource_filter_javatests") {
     testonly = true
-    java_files = [ "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/SubresourceFilterTest.java" ]
+    sources = [ "../../android/javatests/src/org/chromium/chrome/browser/subresource_filter/SubresourceFilterTest.java" ]
     deps = [
       ":subresource_filter_java_test_support",
       "//base:base_java_test_support",
       "//chrome/android:chrome_java",
       "//chrome/android:chrome_test_java",
+      "//chrome/browser/tab:java",
+      "//chrome/browser/ui/messages/android:java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/safe_browsing/android:safe_browsing_java",
       "//content/public/test/android:content_java_test_support",

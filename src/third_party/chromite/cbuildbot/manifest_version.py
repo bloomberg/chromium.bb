@@ -13,6 +13,7 @@ import glob
 import os
 import re
 import shutil
+import sys
 import tempfile
 from xml.dom import minidom
 
@@ -27,6 +28,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 PUSH_BRANCH = 'temp_auto_checkin_branch'
@@ -134,7 +138,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
-                        error_code_ok=True)
+                        check=False)
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
@@ -431,37 +435,6 @@ def OfficialBuildSpecPath(version_info):
       '%s.xml' % version_info.VersionString())
 
 
-def CandidateBuildSpecPath(version_info,
-                           category,
-                           manifest_versions):
-  """Generate a unique candidate build spec path.
-
-  This probes manifest versions for previously created buildspec candidates,
-  and creates a new name for a unique one.
-
-  Args:
-    version_info: VersionInfo instance describing the current version.
-    category: String, manifest_versions subdir specific to a build group.
-              Ex: 'full', 'paladin', etc.
-    manifest_versions: Directory that holds a manifest-version
-                       checkout of previous buildspecs for the category.
-
-  Returns:
-    Path for buildspec, relative to manifest_versions root.
-  """
-  rc_version = 0
-  while True:
-    rc_version += 1
-    spec_path = os.path.join(
-        category,
-        'buildspecs',
-        str(version_info.chrome_branch),
-        '%s-rc%d.xml' % (version_info.VersionString(), rc_version))
-
-    if not os.path.exists(os.path.join(manifest_versions, spec_path)):
-      return spec_path
-
-
 @retry_util.WithRetry(max_retry=20)
 def _CommitAndPush(manifest_repo, git_url, buildspec, contents, dryrun):
   """Helper for committing and pushing buildspecs.
@@ -573,45 +546,6 @@ def GenerateAndPublishOfficialBuildSpec(
   version_info.UpdateVersionFile(msg, dryrun)
 
   build_spec_path = OfficialBuildSpecPath(version_info)
-
-  logging.info('Creating buildspec: %s', build_spec_path)
-  PopulateAndPublishBuildSpec(
-      build_spec_path,
-      repo.ExportManifest(mark_revision=True),
-      manifest_versions_int,
-      manifest_versions_ext,
-      dryrun)
-
-  return build_spec_path
-
-def GenerateAndPublishReleaseCandidateBuildSpec(
-    repo,
-    category,
-    manifest_versions_int,
-    manifest_versions_ext=None,
-    dryrun=True):
-  """Create build spec based on current source checkout.
-
-  This assumes that the current checkout is 100% clean, and that local SHAs
-  exist in GoB.
-
-  The new buildspec is created in manifest_versions and pushed remotely.
-
-  Args:
-    repo: Repository.RepoRepository instance.
-    category: String, manifest_versions subdir specific to a build group.
-              Ex: 'full', 'paladin', etc.
-    manifest_versions_int: Path to manifest-versions-internal checkout.
-    manifest_versions_ext: Path to manifest-versions checkout (public).
-    dryrun: Git push --dry-run if set to True.
-
-  Returns:
-    Path for buildspec, relative to manifest_versions root.
-  """
-  version_info = VersionInfo.from_repo(repo.directory)
-
-  build_spec_path = CandidateBuildSpecPath(
-      version_info, category, manifest_versions_int)
 
   logging.info('Creating buildspec: %s', build_spec_path)
   PopulateAndPublishBuildSpec(
@@ -770,18 +704,6 @@ class BuildSpecsManager(object):
           self._latest_build = latest_builds[0]
 
     return True
-
-  def GetBuildSpecFilePath(self, milestone, platform):
-    """Get the file path given milestone and platform versions.
-
-    Args:
-      milestone: a string representing milestone, e.g. '44'
-      platform: a string representing platform version, e.g. '7072.0.0-rc4'
-
-    Returns:
-      A string, representing the path to its spec file.
-    """
-    return os.path.join(self.buildspecs_dir, milestone, platform + '.xml')
 
   def GetCurrentVersionInfo(self):
     """Returns the current version info from the version file."""
@@ -1185,7 +1107,8 @@ def FilterManifest(manifest, whitelisted_remotes=None, whitelisted_groups=None):
 
   with os.fdopen(temp_fd, 'w') as manifest_file:
     # Filter out empty lines.
-    stripped = [x.strip() for x in manifest_dom.toxml('utf-8').splitlines()]
+    lines = manifest_dom.toxml('utf-8').decode('utf-8').splitlines()
+    stripped = [x.strip() for x in lines]
     filtered_manifest_noempty = [x for x in stripped if x]
     manifest_file.write(os.linesep.join(filtered_manifest_noempty))
 

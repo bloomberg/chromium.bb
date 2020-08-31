@@ -10,7 +10,6 @@
 #include "platform/base/interface_info.h"
 
 namespace openscreen {
-namespace platform {
 
 // Returns an InterfaceInfo for each currently active network interface on the
 // system. No two entries in this vector can have the same NetworkInterfaceIndex
@@ -22,7 +21,6 @@ namespace platform {
 // discovery) are not being used.
 std::vector<InterfaceInfo> GetNetworkInterfaces();
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_NETWORK_INTERFACE_H_

@@ -18,11 +18,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/base_ui_manager.h"
-#include "components/safe_browsing/browser/safe_browsing_network_context.h"
-#include "components/safe_browsing/common/safebrowsing_constants.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/ping_manager.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
+#include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/ping_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -82,16 +82,12 @@ void AwSafeBrowsingUIManager::DisplayBlockingPage(
   if (!client || !client->CanShowInterstitial()) {
     RecordIsWebViewViewable(false);
     OnBlockingPageDone(std::vector<UnsafeResource>{resource}, false,
-                       web_contents, resource.url.GetWithEmptyPath());
+                       web_contents, resource.url.GetWithEmptyPath(),
+                       false /* showed_interstitial */);
     return;
   }
   RecordIsWebViewViewable(true);
   safe_browsing::BaseUIManager::DisplayBlockingPage(resource);
-}
-
-void AwSafeBrowsingUIManager::ShowBlockingPageForResource(
-    const UnsafeResource& resource) {
-  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -143,7 +139,7 @@ AwSafeBrowsingUIManager::CreateBlockingPageForSubresource(
   AwSafeBrowsingSubresourceHelper::CreateForWebContents(contents);
   AwSafeBrowsingBlockingPage* blocking_page =
       AwSafeBrowsingBlockingPage::CreateBlockingPage(
-          this, contents, blocked_url, unsafe_resource);
+          this, contents, blocked_url, unsafe_resource, nullptr);
   return blocking_page;
 }
 

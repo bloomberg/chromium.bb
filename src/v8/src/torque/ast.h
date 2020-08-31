@@ -5,6 +5,7 @@
 #ifndef V8_TORQUE_AST_H_
 #define V8_TORQUE_AST_H_
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -66,6 +67,7 @@ namespace torque {
 #define AST_TYPE_DECLARATION_NODE_KIND_LIST(V) \
   V(AbstractTypeDeclaration)                   \
   V(TypeAliasDeclaration)                      \
+  V(BitFieldStructDeclaration)                 \
   V(ClassDeclaration)                          \
   V(StructDeclaration)
 
@@ -91,7 +93,7 @@ namespace torque {
   AST_STATEMENT_NODE_KIND_LIST(V)       \
   AST_DECLARATION_NODE_KIND_LIST(V)     \
   V(Identifier)                         \
-  V(LabelBlock)                         \
+  V(TryHandler)                         \
   V(ClassBody)
 
 struct AstNode {
@@ -183,9 +185,26 @@ struct NamespaceDeclaration : Declaration {
   std::string name;
 };
 
+struct EnumDescription {
+  SourcePosition pos;
+  std::string name;
+  std::string constexpr_generates;
+  bool is_open;
+  std::vector<std::string> entries;
+
+  EnumDescription(SourcePosition pos, std::string name,
+                  std::string constexpr_generates, bool is_open,
+                  std::vector<std::string> entries = {})
+      : pos(std::move(pos)),
+        name(std::move(name)),
+        constexpr_generates(std::move(constexpr_generates)),
+        is_open(is_open),
+        entries(std::move(entries)) {}
+};
+
 class Ast {
  public:
-  Ast() {}
+  Ast() = default;
 
   std::vector<Declaration*>& declarations() { return declarations_; }
   const std::vector<Declaration*>& declarations() const {
@@ -202,10 +221,26 @@ class Ast {
     declared_imports_[CurrentSourcePosition::Get().source].insert(import_id);
   }
 
+  void AddEnumDescription(EnumDescription description) {
+    std::string name = description.name;
+    DCHECK(!name.empty());
+    auto f = [&](const auto& d) { return d.name == name; };
+    USE(f);  // Suppress unused in release.
+    DCHECK_EQ(
+        std::find_if(enum_descriptions_.begin(), enum_descriptions_.end(), f),
+        enum_descriptions_.end());
+    enum_descriptions_.push_back(std::move(description));
+  }
+
+  std::vector<EnumDescription>& EnumDescriptions() {
+    return enum_descriptions_;
+  }
+
  private:
   std::vector<Declaration*> declarations_;
   std::vector<std::unique_ptr<AstNode>> nodes_;
   std::map<SourceId, std::set<SourceId>> declared_imports_;
+  std::vector<EnumDescription> enum_descriptions_;
 };
 
 static const char* const kThisParameterName = "this";
@@ -425,14 +460,14 @@ struct StringLiteralExpression : Expression {
 
 struct NumberLiteralExpression : Expression {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(NumberLiteralExpression)
-  NumberLiteralExpression(SourcePosition pos, std::string name)
-      : Expression(kKind, pos), number(std::move(name)) {}
+  NumberLiteralExpression(SourcePosition pos, double number)
+      : Expression(kKind, pos), number(number) {}
 
   void VisitAllSubExpressions(VisitCallback callback) override {
     callback(this);
   }
 
-  std::string number;
+  double number;
 };
 
 struct ElementAccessExpression : LocationExpression {
@@ -594,6 +629,8 @@ struct BasicTypeExpression : TypeExpression {
         is_constexpr(IsConstexprName(name)),
         name(std::move(name)),
         generic_arguments(std::move(generic_arguments)) {}
+  BasicTypeExpression(SourcePosition pos, std::string name)
+      : BasicTypeExpression(pos, {}, std::move(name), {}) {}
   std::vector<std::string> namespace_qualification;
   bool is_constexpr;
   std::string name;
@@ -743,14 +780,17 @@ struct ForLoopStatement : Statement {
   Statement* body;
 };
 
-struct LabelBlock : AstNode {
-  DEFINE_AST_NODE_LEAF_BOILERPLATE(LabelBlock)
-  LabelBlock(SourcePosition pos, Identifier* label,
+struct TryHandler : AstNode {
+  DEFINE_AST_NODE_LEAF_BOILERPLATE(TryHandler)
+  enum class HandlerKind { kCatch, kLabel };
+  TryHandler(SourcePosition pos, HandlerKind handler_kind, Identifier* label,
              const ParameterList& parameters, Statement* body)
       : AstNode(kKind, pos),
+        handler_kind(handler_kind),
         label(label),
         parameters(parameters),
         body(std::move(body)) {}
+  HandlerKind handler_kind;
   Identifier* label;
   ParameterList parameters;
   Statement* body;
@@ -765,15 +805,13 @@ struct StatementExpression : Expression {
 
 struct TryLabelExpression : Expression {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(TryLabelExpression)
-  TryLabelExpression(SourcePosition pos, bool catch_exceptions,
-                     Expression* try_expression, LabelBlock* label_block)
+  TryLabelExpression(SourcePosition pos, Expression* try_expression,
+                     TryHandler* label_block)
       : Expression(kKind, pos),
-        catch_exceptions(catch_exceptions),
         try_expression(try_expression),
         label_block(label_block) {}
-  bool catch_exceptions;
   Expression* try_expression;
-  LabelBlock* label_block;
+  TryHandler* label_block;
 };
 
 struct BlockStatement : Statement {
@@ -803,7 +841,7 @@ struct InstanceTypeConstraints {
 struct AbstractTypeDeclaration : TypeDeclaration {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(AbstractTypeDeclaration)
   AbstractTypeDeclaration(SourcePosition pos, Identifier* name, bool transient,
-                          base::Optional<Identifier*> extends,
+                          base::Optional<TypeExpression*> extends,
                           base::Optional<std::string> generates)
       : TypeDeclaration(kKind, pos, name),
         is_constexpr(IsConstexprName(name->value)),
@@ -812,7 +850,7 @@ struct AbstractTypeDeclaration : TypeDeclaration {
         generates(std::move(generates)) {}
   bool is_constexpr;
   bool transient;
-  base::Optional<Identifier*> extends;
+  base::Optional<TypeExpression*> extends;
   base::Optional<std::string> generates;
 };
 
@@ -839,6 +877,11 @@ struct StructFieldExpression {
   bool const_qualified;
 };
 
+struct BitFieldDeclaration {
+  NameAndTypeExpression name_and_type;
+  int num_bits;
+};
+
 enum class ConditionalAnnotationType {
   kPositive,
   kNegative,
@@ -849,14 +892,20 @@ struct ConditionalAnnotation {
   ConditionalAnnotationType type;
 };
 
+struct AnnotationParameter {
+  std::string string_value;
+  int int_value;
+  bool is_int;
+};
+
 struct Annotation {
   Identifier* name;
-  base::Optional<std::string> param;
+  base::Optional<AnnotationParameter> param;
 };
 
 struct ClassFieldExpression {
   NameAndTypeExpression name_and_type;
-  base::Optional<std::string> index;
+  base::Optional<Expression*> index;
   std::vector<ConditionalAnnotation> conditions;
   bool weak;
   bool const_qualified;
@@ -1101,6 +1150,18 @@ struct StructDeclaration : TypeDeclaration {
   std::vector<StructFieldExpression> fields;
 };
 
+struct BitFieldStructDeclaration : TypeDeclaration {
+  DEFINE_AST_NODE_LEAF_BOILERPLATE(BitFieldStructDeclaration)
+  BitFieldStructDeclaration(SourcePosition pos, Identifier* name,
+                            TypeExpression* parent,
+                            std::vector<BitFieldDeclaration> fields)
+      : TypeDeclaration(kKind, pos, name),
+        parent(parent),
+        fields(std::move(fields)) {}
+  TypeExpression* parent;
+  std::vector<BitFieldDeclaration> fields;
+};
+
 struct ClassBody : AstNode {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(ClassBody)
   ClassBody(SourcePosition pos, std::vector<Declaration*> methods,
@@ -1115,8 +1176,7 @@ struct ClassBody : AstNode {
 struct ClassDeclaration : TypeDeclaration {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(ClassDeclaration)
   ClassDeclaration(SourcePosition pos, Identifier* name, ClassFlags flags,
-                   base::Optional<TypeExpression*> super,
-                   base::Optional<std::string> generates,
+                   TypeExpression* super, base::Optional<std::string> generates,
                    std::vector<Declaration*> methods,
                    std::vector<ClassFieldExpression> fields,
                    InstanceTypeConstraints instance_type_constraints)
@@ -1128,7 +1188,7 @@ struct ClassDeclaration : TypeDeclaration {
         fields(std::move(fields)),
         instance_type_constraints(std::move(instance_type_constraints)) {}
   ClassFlags flags;
-  base::Optional<TypeExpression*> super;
+  TypeExpression* super;
   base::Optional<std::string> generates;
   std::vector<Declaration*> methods;
   std::vector<ClassFieldExpression> fields;

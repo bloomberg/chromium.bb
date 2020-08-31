@@ -85,6 +85,9 @@ enum {
   NV12,   // Tile output in NV12 format.
 } UENUM1BYTE(OUTPUT_FORMAT);
 
+// The fourcc for large_scale_tile encoding is "LSTC".
+#define LST_FOURCC 0x4354534c
+
 struct FileTypeDetectionBuffer {
   char buf[4];
   size_t buf_read;
@@ -139,22 +142,26 @@ void usage_exit(void) AOM_NO_RETURN;
 
 #undef AOM_NO_RETURN
 
+// The AOM library can support different encoders / decoders. These
+// functions provide different ways to lookup / iterate through them.
+// The return result may be NULL to indicate no codec was found.
+int get_aom_encoder_count();
+aom_codec_iface_t *get_aom_encoder_by_index(int i);
+aom_codec_iface_t *get_aom_encoder_by_short_name(const char *name);
+// If the interface is unknown, returns NULL.
+const char *get_short_name_by_aom_encoder(aom_codec_iface_t *encoder);
+// If the interface is unknown, returns 0.
+uint32_t get_fourcc_by_aom_encoder(aom_codec_iface_t *iface);
+
+int get_aom_decoder_count();
+aom_codec_iface_t *get_aom_decoder_by_index(int i);
+aom_codec_iface_t *get_aom_decoder_by_short_name(const char *name);
+aom_codec_iface_t *get_aom_decoder_by_fourcc(uint32_t fourcc);
+const char *get_short_name_by_aom_decoder(aom_codec_iface_t *decoder);
+// If the interface is unknown, returns 0.
+uint32_t get_fourcc_by_aom_decoder(aom_codec_iface_t *iface);
+
 int read_yuv_frame(struct AvxInputContext *input_ctx, aom_image_t *yuv_frame);
-
-typedef struct AvxInterface {
-  const char *const name;
-  const uint32_t fourcc;
-  aom_codec_iface_t *(*const codec_interface)();
-} AvxInterface;
-
-int get_aom_encoder_count(void);
-const AvxInterface *get_aom_encoder_by_index(int i);
-const AvxInterface *get_aom_encoder_by_name(const char *name);
-
-int get_aom_decoder_count(void);
-const AvxInterface *get_aom_decoder_by_index(int i);
-const AvxInterface *get_aom_decoder_by_name(const char *name);
-const AvxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc);
 
 void aom_img_write(const aom_image_t *img, FILE *file);
 int aom_img_read(aom_image_t *img, FILE *file);

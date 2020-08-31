@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, אפליקציה מותקנת</translation>
 <translation id="1450753235335490080">לא ניתן לשתף את ה<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">הפריט <ph name="SECOND_ITEM_TITLE" /> החליף את <ph name="FIRST_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">חיפשת את השאילתה הזו בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה באופן סופי מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">בחר &amp;הכל</translation>
-<translation id="1938451708255335766">כדי להתאים את דחיסות התצוגה של החלון, צריך להפעיל מחדש את האפליקציה.</translation>
 <translation id="2006524834898217237">יש לוודא שהמכשיר הזה מחובר לאינטרנט.</translation>
 <translation id="208586643495776849">יש לנסות שוב</translation>
 <translation id="2090963878406559571">‏כדי לשלוח מספר מ-<ph name="ORIGIN" /> לטלפון ה-Android שלך, צריך <ph name="TROUBLESHOOT_LINK" /> בהגדרות של שני המכשירים.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">חץ למטה</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{יום אחד}two{יומיים}many{# ימים}other{# ימים}}</translation>
 <translation id="3295886253693811851">התקשרות באמצעות</translation>
+<translation id="3306688585798492231">מסך מובנה</translation>
 <translation id="335581015389089642">דיבור</translation>
 <translation id="3389286852084373014">הטקסט ארוך מדי</translation>
-<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
 <translation id="3554637740840164787">הפריט <ph name="ITEM_TITLE" /> הוצמד</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">אפשר להמשיך לקרוא מהמכשיר הנייד <ph name="TITLE" /></translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3889424535448813030">חץ לימין</translation>
-<translation id="3892641579809465218">תצוגה פנימית</translation>
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3909791450649380159">גז&amp;ור</translation>
 <translation id="3990502903496589789">קצה ימני</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{דק‘ אחת}two{# דק‘}many{# דק‘}other{# דק‘}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{פעילות אחרונה: היום}=1{פעילות אחרונה: אתמול}two{פעילות אחרונה: לפני יומיים}many{פעילות אחרונה: לפני # ימים}other{פעילות אחרונה: לפני # ימים}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{יום אחד ו }two{יומיים ו }many{# ימים ו }other{# ימים ו }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{עוד שנה אחת}two{עוד 2 שנים}many{עוד # שנים}other{עוד # שנים}}</translation>
-<translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{נותרה שנייה אחת}two{נותרו # שניות}many{נותרו # שניות}other{נותרו # שניות}}</translation>
 <translation id="5941711191222866238">מזער</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{שעה אחת}two{שעתיים}many{# שעות}other{# שעות}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">מימין לשמאל</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">סבירות גבוהה</translation>
+<translation id="7170202025028120564">הגדרות התצוגה של האפליקציה ייכנסו לתוקף בפעם הבאה שהיא תופעל מחדש.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{נותרה דק‘ אחת}two{נותרו # דק‘}many{נותרו # דק‘}other{נותרו # דק‘}}</translation>
 <translation id="7319740667687257810">מרכז האפליקציות, תצוגה חלקית</translation>

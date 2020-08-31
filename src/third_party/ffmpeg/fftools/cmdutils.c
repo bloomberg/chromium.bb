@@ -119,7 +119,7 @@ static void log_callback_report(void *ptr, int level, const char *fmt, va_list v
 
 void init_dynload(void)
 {
-#ifdef _WIN32
+#if HAVE_SETDLLDIRECTORY && defined(_WIN32)
     /* Calling SetDllDirectory with the empty string (but not NULL) removes the
      * current working directory from the DLL search path as a security pre-caution. */
     SetDllDirectory("");
@@ -182,7 +182,7 @@ void show_help_options(const OptionDef *options, const char *msg, int req_flags,
 
     first = 1;
     for (po = options; po->name; po++) {
-        char buf[64];
+        char buf[128];
 
         if (((po->flags & req_flags) != req_flags) ||
             (alt_flags && !(po->flags & alt_flags)) ||
@@ -1500,13 +1500,14 @@ static char get_media_type_char(enum AVMediaType type)
     }
 }
 
-static const AVCodec *next_codec_for_id(enum AVCodecID id, const AVCodec *prev,
+static const AVCodec *next_codec_for_id(enum AVCodecID id, void **iter,
                                         int encoder)
 {
-    while ((prev = av_codec_next(prev))) {
-        if (prev->id == id &&
-            (encoder ? av_codec_is_encoder(prev) : av_codec_is_decoder(prev)))
-            return prev;
+    const AVCodec *c;
+    while ((c = av_codec_iterate(iter))) {
+        if (c->id == id &&
+            (encoder ? av_codec_is_encoder(c) : av_codec_is_decoder(c)))
+            return c;
     }
     return NULL;
 }
@@ -1543,11 +1544,12 @@ static unsigned get_codecs_sorted(const AVCodecDescriptor ***rcodecs)
 
 static void print_codecs_for_id(enum AVCodecID id, int encoder)
 {
-    const AVCodec *codec = NULL;
+    void *iter = NULL;
+    const AVCodec *codec;
 
     printf(" (%s: ", encoder ? "encoders" : "decoders");
 
-    while ((codec = next_codec_for_id(id, codec, encoder)))
+    while ((codec = next_codec_for_id(id, &iter, encoder)))
         printf("%s ", codec->name);
 
     printf(")");
@@ -1570,7 +1572,8 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
            " -------\n");
     for (i = 0; i < nb_codecs; i++) {
         const AVCodecDescriptor *desc = codecs[i];
-        const AVCodec *codec = NULL;
+        const AVCodec *codec;
+        void *iter = NULL;
 
         if (strstr(desc->name, "_deprecated"))
             continue;
@@ -1588,14 +1591,14 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
 
         /* print decoders/encoders when there's more than one or their
          * names are different from codec name */
-        while ((codec = next_codec_for_id(desc->id, codec, 0))) {
+        while ((codec = next_codec_for_id(desc->id, &iter, 0))) {
             if (strcmp(codec->name, desc->name)) {
                 print_codecs_for_id(desc->id, 0);
                 break;
             }
         }
-        codec = NULL;
-        while ((codec = next_codec_for_id(desc->id, codec, 1))) {
+        iter = NULL;
+        while ((codec = next_codec_for_id(desc->id, &iter, 1))) {
             if (strcmp(codec->name, desc->name)) {
                 print_codecs_for_id(desc->id, 1);
                 break;
@@ -1626,9 +1629,10 @@ static void print_codecs(int encoder)
            encoder ? "Encoders" : "Decoders");
     for (i = 0; i < nb_codecs; i++) {
         const AVCodecDescriptor *desc = codecs[i];
-        const AVCodec *codec = NULL;
+        const AVCodec *codec;
+        void *iter = NULL;
 
-        while ((codec = next_codec_for_id(desc->id, codec, encoder))) {
+        while ((codec = next_codec_for_id(desc->id, &iter, encoder))) {
             printf(" %c", get_media_type_char(desc->type));
             printf((codec->capabilities & AV_CODEC_CAP_FRAME_THREADS) ? "F" : ".");
             printf((codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) ? "S" : ".");
@@ -1833,9 +1837,10 @@ static void show_help_codec(const char *name, int encoder)
     if (codec)
         print_codec(codec);
     else if ((desc = avcodec_descriptor_get_by_name(name))) {
+        void *iter = NULL;
         int printed = 0;
 
-        while ((codec = next_codec_for_id(desc->id, codec, encoder))) {
+        while ((codec = next_codec_for_id(desc->id, &iter, encoder))) {
             printed = 1;
             print_codec(codec);
         }
@@ -1868,6 +1873,24 @@ static void show_help_demuxer(const char *name)
 
     if (fmt->priv_class)
         show_help_children(fmt->priv_class, AV_OPT_FLAG_DECODING_PARAM);
+}
+
+static void show_help_protocol(const char *name)
+{
+    const AVClass *proto_class;
+
+    if (!name) {
+        av_log(NULL, AV_LOG_ERROR, "No protocol name specified.\n");
+        return;
+    }
+
+    proto_class = avio_protocol_get_class(name);
+    if (!proto_class) {
+        av_log(NULL, AV_LOG_ERROR, "Unknown protocol '%s'.\n", name);
+        return;
+    }
+
+    show_help_children(proto_class, AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_ENCODING_PARAM);
 }
 
 static void show_help_muxer(const char *name)
@@ -2000,6 +2023,8 @@ int show_help(void *optctx, const char *opt, const char *arg)
         show_help_demuxer(par);
     } else if (!strcmp(topic, "muxer")) {
         show_help_muxer(par);
+    } else if (!strcmp(topic, "protocol")) {
+        show_help_protocol(par);
 #if CONFIG_AVFILTER
     } else if (!strcmp(topic, "filter")) {
         show_help_filter(par);
@@ -2039,7 +2064,7 @@ FILE *get_preset_file(char *filename, size_t filename_size,
         av_strlcpy(filename, preset_name, filename_size);
         f = fopen(filename, "r");
     } else {
-#ifdef _WIN32
+#if HAVE_GETMODULEHANDLE && defined(_WIN32)
         char datadir[MAX_PATH], *ls;
         base[2] = NULL;
 

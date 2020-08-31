@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "components/page_info/page_info_ui.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/buildflags.h"
@@ -49,7 +49,7 @@ PageInfoBubbleViewBase::PageInfoBubbleViewBase(
   g_shown_bubble_type = type;
   g_page_info_bubble = this;
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_parent_window(parent_window);
   if (!anchor_view)

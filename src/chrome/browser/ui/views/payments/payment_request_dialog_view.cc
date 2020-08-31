@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/payments/contact_info_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
@@ -30,6 +32,7 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/payments_experimental_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -38,6 +41,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace payments {
 
@@ -57,48 +61,13 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 
 }  // namespace
 
-PaymentRequestDialogView::PaymentRequestDialogView(
+// static
+base::WeakPtr<PaymentRequestDialogView> PaymentRequestDialogView::Create(
     PaymentRequest* request,
-    PaymentRequestDialogView::ObserverForTest* observer)
-    : request_(request), observer_for_testing_(observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
-
-  request->spec()->AddObserver(this);
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  view_stack_ = std::make_unique<ViewStack>();
-  view_stack_->set_owned_by_client();
-  AddChildView(view_stack_.get());
-
-  SetupSpinnerOverlay();
-
-  if (!request->state()->IsInitialized()) {
-    request->state()->AddInitializationObserver(this);
-    ++number_of_initialization_tasks_;
-  }
-
-  if (!request->spec()->IsInitialized()) {
-    request->spec()->AddInitializationObserver(this);
-    ++number_of_initialization_tasks_;
-  }
-
-  if (number_of_initialization_tasks_ > 0) {
-    ShowProcessingSpinner();
-  } else if (observer_for_testing_) {
-    // When testing, signal that the processing spinner events have passed, even
-    // though the UI does not need to show it.
-    observer_for_testing_->OnProcessingSpinnerShown();
-    observer_for_testing_->OnProcessingSpinnerHidden();
-  }
-
-  ShowInitialPaymentSheet();
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
+    PaymentRequestDialogView::ObserverForTest* observer) {
+  return (new PaymentRequestDialogView(request, observer))
+      ->weak_ptr_factory_.GetWeakPtr();
 }
-
-PaymentRequestDialogView::~PaymentRequestDialogView() {}
 
 void PaymentRequestDialogView::RequestFocus() {
   view_stack_->RequestFocus();
@@ -109,10 +78,10 @@ ui::ModalType PaymentRequestDialogView::GetModalType() const {
 }
 
 views::View* PaymentRequestDialogView::GetInitiallyFocusedView() {
-  return view_stack_.get();
+  return view_stack_;
 }
 
-bool PaymentRequestDialogView::Cancel() {
+void PaymentRequestDialogView::OnDialogClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Called when the widget is about to close. We send a message to the
   // PaymentRequest object to signal user cancellation.
@@ -125,10 +94,9 @@ bool PaymentRequestDialogView::Cancel() {
   for (const auto& controller : controller_map_) {
     controller.second->Stop();
   }
-  view_stack_.reset();
+  RemoveChildViewT(view_stack_);
   controller_map_.clear();
   request_->UserCancelled();
-  return true;
 }
 
 bool PaymentRequestDialogView::ShouldShowCloseButton() const {
@@ -177,14 +145,35 @@ bool PaymentRequestDialogView::IsInteractive() const {
 void PaymentRequestDialogView::ShowPaymentHandlerScreen(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {
+  if (PaymentsExperimentalFeatures::IsEnabled(
+          features::kPaymentHandlerPopUpSizeWindow)) {
+    is_showing_large_payment_handler_window_ = true;
+
+    // Calculate |payment_handler_window_height_|
+    auto* browser =
+        chrome::FindBrowserWithWebContents(request_->web_contents());
+    int browser_window_content_height =
+        browser->window()->GetContentsSize().height();
+    payment_handler_window_height_ =
+        std::max(kDialogHeight, std::min(kPreferredPaymentHandlerDialogHeight,
+                                         browser_window_content_height));
+
+    ResizeDialogWindow();
+  }
   view_stack_->Push(
       CreateViewAndInstallController(
           std::make_unique<PaymentHandlerWebFlowViewController>(
               request_->spec(), request_->state(), this,
               request_->web_contents(), GetProfile(), url, std::move(callback)),
           &controller_map_),
-      /* animate = */ !request_->skipped_payment_request_ui());
+      // Do not animate the view when the dialog size changes or payment sheet
+      // is skipped.
+      /* animate = */ !is_showing_large_payment_handler_window_ &&
+          !request_->skipped_payment_request_ui());
+  request_->OnPaymentHandlerOpenWindowCalled();
   HideProcessingSpinner();
+  if (observer_for_testing_)
+    observer_for_testing_->OnPaymentHandlerWindowOpened();
 }
 
 void PaymentRequestDialogView::RetryDialog() {
@@ -260,8 +249,14 @@ void PaymentRequestDialogView::GoBack() {
     return;
   }
 
-  view_stack_->Pop();
+  // Do not animate views when the dialog size changes.
+  view_stack_->Pop(!is_showing_large_payment_handler_window_ /* = animate */);
 
+  // Back navigation from payment handler window should resize the dialog;
+  if (is_showing_large_payment_handler_window_) {
+    is_showing_large_payment_handler_window_ = false;
+    ResizeDialogWindow();
+  }
   if (observer_for_testing_)
     observer_for_testing_->OnBackNavigation();
 }
@@ -269,9 +264,17 @@ void PaymentRequestDialogView::GoBack() {
 void PaymentRequestDialogView::GoBackToPaymentSheet(bool animate) {
   // This assumes that the Payment Sheet is the first view in the stack. Thus if
   // there is only one view, we are already showing the payment sheet.
-  if (view_stack_->size() > 1)
-    view_stack_->PopMany(view_stack_->size() - 1, animate);
+  if (view_stack_->size() > 1) {
+    // Do not animate views when the dialog size changes.
+    view_stack_->PopMany(view_stack_->size() - 1,
+                         animate && !is_showing_large_payment_handler_window_);
 
+    // Back navigation from payment handler window should resize the dialog;
+    if (is_showing_large_payment_handler_window_) {
+      ResizeDialogWindow();
+      is_showing_large_payment_handler_window_ = false;
+    }
+  }
   if (observer_for_testing_)
     observer_for_testing_->OnBackToPaymentSheetNavigation();
 }
@@ -412,6 +415,50 @@ Profile* PaymentRequestDialogView::GetProfile() {
       request_->web_contents()->GetBrowserContext());
 }
 
+PaymentRequestDialogView::PaymentRequestDialogView(
+    PaymentRequest* request,
+    PaymentRequestDialogView::ObserverForTest* observer)
+    : request_(request), observer_for_testing_(observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  SetCloseCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
+                                  base::Unretained(this)));
+
+  request->spec()->AddObserver(this);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  view_stack_ = AddChildView(std::make_unique<ViewStack>());
+
+  SetupSpinnerOverlay();
+
+  if (!request->state()->IsInitialized()) {
+    request->state()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
+  if (!request->spec()->IsInitialized()) {
+    request->spec()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
+  if (number_of_initialization_tasks_ > 0) {
+    ShowProcessingSpinner();
+  } else if (observer_for_testing_) {
+    // When testing, signal that the processing spinner events have passed, even
+    // though the UI does not need to show it.
+    observer_for_testing_->OnProcessingSpinnerShown();
+    observer_for_testing_->OnProcessingSpinnerHidden();
+  }
+
+  ShowInitialPaymentSheet();
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
+}
+
+PaymentRequestDialogView::~PaymentRequestDialogView() = default;
+
 void PaymentRequestDialogView::OnDialogOpened() {
   if (request_->spec()->request_shipping() &&
       !request_->state()->selected_shipping_profile() &&
@@ -458,10 +505,10 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
       throbber_overlay->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
   throbber_columns->AddPaddingColumn(0.5, 0);
-  throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                              views::GridLayout::Alignment::TRAILING,
-                              views::GridLayout::kFixedSize,
-                              views::GridLayout::SizeType::USE_PREF, 0, 0);
+  throbber_columns->AddColumn(
+      views::GridLayout::Alignment::CENTER,
+      views::GridLayout::Alignment::TRAILING, views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   throbber_columns->AddPaddingColumn(0.5, 0);
 
   views::ColumnSet* label_columns = layout->AddColumnSet(1);
@@ -469,7 +516,7 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   label_columns->AddColumn(views::GridLayout::Alignment::CENTER,
                            views::GridLayout::Alignment::LEADING,
                            views::GridLayout::kFixedSize,
-                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+                           views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   label_columns->AddPaddingColumn(0.5, 0);
 
   layout->StartRow(0.5, 0);
@@ -483,7 +530,30 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
 }
 
 gfx::Size PaymentRequestDialogView::CalculatePreferredSize() const {
+  if (is_showing_large_payment_handler_window_) {
+    return gfx::Size(GetActualDialogWidth(),
+                     GetActualPaymentHandlerDialogHeight());
+  }
   return gfx::Size(GetActualDialogWidth(), kDialogHeight);
+}
+
+int PaymentRequestDialogView::GetActualPaymentHandlerDialogHeight() const {
+  if (!PaymentsExperimentalFeatures::IsEnabled(
+          features::kPaymentHandlerPopUpSizeWindow)) {
+    return kDialogHeight;
+  }
+
+  DCHECK_NE(0, payment_handler_window_height_);
+  return payment_handler_window_height_ > 0 ? payment_handler_window_height_
+                                            : kDialogHeight;
+}
+
+int PaymentRequestDialogView::GetActualDialogWidth() const {
+  int actual_width = views::LayoutProvider::Get()->GetSnappedDialogWidth(
+      is_showing_large_payment_handler_window_
+          ? kPreferredPaymentHandlerDialogWidth
+          : kDialogMinWidth);
+  return actual_width;
 }
 
 void PaymentRequestDialogView::ViewHierarchyChanged(
@@ -497,6 +567,16 @@ void PaymentRequestDialogView::ViewHierarchyChanged(
       controller_map_.find(details.child) != controller_map_.end()) {
     DCHECK(!details.move_view);
     controller_map_.erase(details.child);
+  }
+}
+
+void PaymentRequestDialogView::ResizeDialogWindow() {
+  if (GetWidget() && request_->web_contents()) {
+    constrained_window::UpdateWebContentsModalDialogPosition(
+        GetWidget(), web_modal::WebContentsModalDialogManager::FromWebContents(
+                         request_->web_contents())
+                         ->delegate()
+                         ->GetWebContentsModalDialogHost());
   }
 }
 

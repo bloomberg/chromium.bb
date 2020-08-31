@@ -75,6 +75,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
         AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
         AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
         AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
         AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
         AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
@@ -177,12 +178,8 @@ static void maskedclamp##name(const uint8_t *bbsrc, uint8_t *ddst,              
     type *dst = (type *)ddst;                                                     \
                                                                                   \
     for (int x = 0; x < w; x++) {                                                 \
-        if (bsrc[x] < darksrc[x] - undershoot)                                    \
-            dst[x] = darksrc[x] - undershoot;                                     \
-        else if (bsrc[x] > brightsrc[x] + overshoot)                              \
-            dst[x] = brightsrc[x] + overshoot;                                    \
-        else                                                                      \
-            dst[x] = bsrc[x];                                                     \
+        dst[x] = FFMAX(bsrc[x], darksrc[x] - undershoot);                         \
+        dst[x] = FFMIN(dst[x], brightsrc[x] + overshoot);                         \
     }                                                                             \
 }
 

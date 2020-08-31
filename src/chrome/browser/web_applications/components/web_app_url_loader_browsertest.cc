@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -140,13 +141,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithPathChangeIgnored) {
             LoadUrlAndWait(UrlComparison::kSameOrigin, "/test-redirect"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithRefChange) {
-  SetupRedirect("/test-redirect", "/test-redirect#ref");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(UrlComparison::kExact, "/test-redirect"));
-}
-
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithParamChange) {
   SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -255,6 +249,13 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, MultipleLoadUrlCalls) {
   run_loop.Run();
   EXPECT_EQ(Result::kUrlLoaded, title1_result.value());
   EXPECT_EQ(Result::kUrlLoaded, title2_result.value());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, NetworkError) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(
+      Result::kFailedErrorPageLoaded,
+      LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef, "/close-socket"));
 }
 
 }  // namespace web_app

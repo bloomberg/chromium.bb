@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/widget/widget_observer.h"
 
-class TabGroupVisualData;
 class TabStrip;
 struct TabSizeInfo;
 
@@ -21,27 +22,39 @@ class View;
 // View for tab group headers in the tab strip, which are markers of group
 // boundaries. There is one header for each group, which is included in the tab
 // strip flow and positioned left of the leftmost tab in the group.
-class TabGroupHeader : public TabSlotView {
+class TabGroupHeader : public TabSlotView, public views::ContextMenuController {
  public:
-  TabGroupHeader(TabStrip* tab_strip, TabGroupId group);
-  ~TabGroupHeader() override = default;
+  TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
+  ~TabGroupHeader() override;
 
   // TabSlotView:
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnFocus() override;
+  void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
 
-  // Updates our visual state according to the TabGroupVisualData for our group.
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
+  // Updates our visual state according to the tab_groups::TabGroupVisualData
+  // for our group.
   void VisualsChanged();
 
   // Removes {editor_bubble_tracker_} from observing the widget.
   void RemoveObserverFromWidget(views::Widget* widget);
 
  private:
+  friend class TabGroupEditorBubbleViewDialogBrowserTest;
+
   // Calculate the width for this View.
   int CalculateWidth() const;
 
@@ -49,6 +62,9 @@ class TabGroupHeader : public TabSlotView {
 
   views::View* title_chip_;
   views::Label* title_;
+
+  // Focus ring for accessibility.
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   // Tracks whether our editor bubble is open. At most one can be open
   // at once.
@@ -59,6 +75,7 @@ class TabGroupHeader : public TabSlotView {
 
     void Opened(views::Widget* bubble_widget);
     bool is_open() const { return is_open_; }
+    views::Widget* widget() const { return widget_; }
 
     // views::WidgetObserver:
     void OnWidgetDestroyed(views::Widget* widget) override;

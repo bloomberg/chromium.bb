@@ -166,6 +166,10 @@ void PurgeExtensionDataFromUnsentLogStore(
 
 }  // namespace
 
+// static
+const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
+    "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_ENABLED_BY_DEFAULT};
+
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client,
                        bool restrict_to_whitelist_entries,
@@ -211,8 +215,13 @@ void UkmService::Initialize() {
   initialize_started_ = true;
 
   DCHECK_EQ(0, report_count_);
-  client_id_ = LoadOrGenerateAndStoreClientId(pref_service_);
-  session_id_ = LoadAndIncrementSessionId(pref_service_);
+  if (client_->ShouldResetClientIdsOnClonedInstall()) {
+    ResetClientState(ResetReason::kClonedInstall);
+  } else {
+    client_id_ = LoadOrGenerateAndStoreClientId(pref_service_);
+    session_id_ = LoadAndIncrementSessionId(pref_service_);
+  }
+
   metrics_providers_.Init();
 
   StartInitTask();
@@ -314,6 +323,10 @@ void UkmService::RegisterMetricsProvider(
   metrics_providers_.RegisterMetricsProvider(std::move(provider));
 }
 
+void UkmService::RegisterEventFilter(std::unique_ptr<UkmEntryFilter> filter) {
+  SetEntryFilter(std::move(filter));
+}
+
 // static
 void UkmService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterUint64Pref(prefs::kUkmClientId, 0);
@@ -389,7 +402,8 @@ bool UkmService::ShouldRestrictToWhitelistedEntries() const {
   return restrict_to_whitelist_entries_;
 }
 
-void UkmService::SetInitializationCompleteCallbackForTesting(base::OnceClosure callback) {
+void UkmService::SetInitializationCompleteCallbackForTesting(
+    base::OnceClosure callback) {
   if (initialize_complete_) {
     std::move(callback).Run();
   } else {
@@ -397,8 +411,5 @@ void UkmService::SetInitializationCompleteCallbackForTesting(base::OnceClosure c
     initialization_complete_callback_ = std::move(callback);
   }
 }
-
-const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
-    "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ukm

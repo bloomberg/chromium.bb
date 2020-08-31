@@ -7,15 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/image_thumbnail_request.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/thumbnail/generator/image_thumbnail_request.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -188,13 +189,13 @@ void DownloadOfflineContentProvider::OnDownloadsInitialized(
 }
 
 // TODO(shaktisahu) : Pass DownloadOpenSource.
-void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
+void DownloadOfflineContentProvider::OpenItem(const OpenParams& open_params,
                                               const ContentId& id) {
   EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(
         base::BindOnce(&DownloadOfflineContentProvider::OpenItem,
-                       weak_ptr_factory_.GetWeakPtr(), location, id));
+                       weak_ptr_factory_.GetWeakPtr(), open_params, id));
     return;
   }
 

@@ -2,17 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as ObjectUI from '../object_ui/object_ui.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {frameworkEventListeners, FrameworkEventListenersObject} from './EventListenersUtils.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export class EventListenersView extends UI.VBox {
+export class EventListenersView extends UI.Widget.VBox {
   /**
    * @param {function()} changeCallback
    */
   constructor(changeCallback) {
     super();
     this._changeCallback = changeCallback;
-    this._treeOutline = new UI.TreeOutlineInShadow();
+    this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.hideOverflow();
     this._treeOutline.registerRequiredCSS('object_ui/objectValue.css');
     this._treeOutline.registerRequiredCSS('event_listeners/eventListenersView.css');
@@ -21,10 +29,11 @@ export class EventListenersView extends UI.VBox {
     this._treeOutline.setShowSelectionOnKeyboardFocus(true);
     this._treeOutline.setFocusable(true);
     this.element.appendChild(this._treeOutline.element);
-    this._emptyHolder = createElementWithClass('div', 'gray-info-message');
-    this._emptyHolder.textContent = Common.UIString('No event listeners');
+    this._emptyHolder = document.createElement('div');
+    this._emptyHolder.classList.add('gray-info-message');
+    this._emptyHolder.textContent = Common.UIString.UIString('No event listeners');
     this._emptyHolder.tabIndex = -1;
-    this._linkifier = new Components.Linkifier();
+    this._linkifier = new Components.Linkifier.Linkifier();
     /** @type {!Map<string, !EventListenersTreeElement>} */
     this._treeItemMap = new Map();
   }
@@ -41,7 +50,7 @@ export class EventListenersView extends UI.VBox {
   }
 
   /**
-   * @param {!Array<?SDK.RemoteObject>} objects
+   * @param {!Array<?SDK.RemoteObject.RemoteObject>} objects
    * @return {!Promise<undefined>}
    */
   async addObjects(objects) {
@@ -52,33 +61,33 @@ export class EventListenersView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @return {!Promise<undefined>}
    */
   _addObject(object) {
-    /** @type {!Array<!SDK.EventListener>} */
+    /** @type {!Array<!SDK.DOMDebuggerModel.EventListener>} */
     let eventListeners;
-    /** @type {?EventListeners.FrameworkEventListenersObject}*/
+    /** @type {?FrameworkEventListenersObject}*/
     let frameworkEventListenersObject = null;
 
     const promises = [];
-    const domDebuggerModel = object.runtimeModel().target().model(SDK.DOMDebuggerModel);
+    const domDebuggerModel = object.runtimeModel().target().model(SDK.DOMDebuggerModel.DOMDebuggerModel);
     // TODO(kozyatinskiy): figure out how this should work for |window| when there is no DOMDebugger.
     if (domDebuggerModel) {
       promises.push(domDebuggerModel.eventListeners(object).then(storeEventListeners));
     }
-    promises.push(EventListeners.frameworkEventListeners(object).then(storeFrameworkEventListenersObject));
+    promises.push(frameworkEventListeners(object).then(storeFrameworkEventListenersObject));
     return Promise.all(promises).then(markInternalEventListeners).then(addEventListeners.bind(this));
 
     /**
-     * @param {!Array<!SDK.EventListener>} result
+     * @param {!Array<!SDK.DOMDebuggerModel.EventListener>} result
      */
     function storeEventListeners(result) {
       eventListeners = result;
     }
 
     /**
-     * @param {?EventListeners.FrameworkEventListenersObject} result
+     * @param {?FrameworkEventListenersObject} result
      */
     function storeFrameworkEventListenersObject(result) {
       frameworkEventListenersObject = result;
@@ -96,11 +105,11 @@ export class EventListenersView extends UI.VBox {
           .then(setIsInternal);
 
       /**
-       * @param {!SDK.EventListener} listener
+       * @param {!SDK.DOMDebuggerModel.EventListener} listener
        * @return {!Protocol.Runtime.CallArgument}
        */
       function handlerArgument(listener) {
-        return SDK.RemoteObject.toCallArgument(listener.handler());
+        return SDK.RemoteObject.RemoteObject.toCallArgument(listener.handler());
       }
 
       /**
@@ -139,8 +148,8 @@ export class EventListenersView extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
-   * @param {?Array<!SDK.EventListener>} eventListeners
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {?Array<!SDK.DOMDebuggerModel.EventListener>} eventListeners
    */
   _addObjectEventListeners(object, eventListeners) {
     if (!eventListeners) {
@@ -164,10 +173,10 @@ export class EventListenersView extends UI.VBox {
       for (const listenerElement of eventType.children()) {
         const listenerOrigin = listenerElement.eventListener().origin();
         let hidden = false;
-        if (listenerOrigin === SDK.EventListener.Origin.FrameworkUser && !showFramework) {
+        if (listenerOrigin === SDK.DOMDebuggerModel.EventListener.Origin.FrameworkUser && !showFramework) {
           hidden = true;
         }
-        if (listenerOrigin === SDK.EventListener.Origin.Framework && showFramework) {
+        if (listenerOrigin === SDK.DOMDebuggerModel.EventListener.Origin.Framework && showFramework) {
           hidden = true;
         }
         if (!showPassive && listenerElement.eventListener().passive()) {
@@ -232,10 +241,10 @@ export class EventListenersView extends UI.VBox {
 /**
  * @unrestricted
  */
-export class EventListenersTreeElement extends UI.TreeElement {
+export class EventListenersTreeElement extends UI.TreeOutline.TreeElement {
   /**
    * @param {string} type
-   * @param {!Components.Linkifier} linkifier
+   * @param {!Components.Linkifier.Linkifier} linkifier
    * @param {function()} changeCallback
    */
   constructor(type, linkifier, changeCallback) {
@@ -243,11 +252,12 @@ export class EventListenersTreeElement extends UI.TreeElement {
     this.toggleOnClick = true;
     this._linkifier = linkifier;
     this._changeCallback = changeCallback;
+    UI.ARIAUtils.setAccessibleName(this.listItemElement, `${type}, event listener`);
   }
 
   /**
-   * @param {!UI.TreeElement} element1
-   * @param {!UI.TreeElement} element2
+   * @param {!UI.TreeOutline.TreeElement} element1
+   * @param {!UI.TreeOutline.TreeElement} element2
    * @return {number}
    */
   static comparator(element1, element2) {
@@ -258,12 +268,12 @@ export class EventListenersTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!SDK.EventListener} eventListener
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.DOMDebuggerModel.EventListener} eventListener
+   * @param {!SDK.RemoteObject.RemoteObject} object
    */
   addObjectEventListener(eventListener, object) {
     const treeElement = new ObjectEventListenerBar(eventListener, object, this._linkifier, this._changeCallback);
-    this.appendChild(/** @type {!UI.TreeElement} */ (treeElement));
+    this.appendChild(/** @type {!UI.TreeOutline.TreeElement} */ (treeElement));
   }
 }
 
@@ -271,11 +281,11 @@ export class EventListenersTreeElement extends UI.TreeElement {
 /**
  * @unrestricted
  */
-export class ObjectEventListenerBar extends UI.TreeElement {
+export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!SDK.EventListener} eventListener
-   * @param {!SDK.RemoteObject} object
-   * @param {!Components.Linkifier} linkifier
+   * @param {!SDK.DOMDebuggerModel.EventListener} eventListener
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {!Components.Linkifier.Linkifier} linkifier
    * @param {function()} changeCallback
    */
   constructor(eventListener, object, linkifier, changeCallback) {
@@ -298,14 +308,14 @@ export class ObjectEventListenerBar extends UI.TreeElement {
     properties.push(runtimeModel.createRemotePropertyFromPrimitiveValue('passive', eventListener.passive()));
     properties.push(runtimeModel.createRemotePropertyFromPrimitiveValue('once', eventListener.once()));
     if (typeof eventListener.handler() !== 'undefined') {
-      properties.push(new SDK.RemoteObjectProperty('handler', eventListener.handler()));
+      properties.push(new SDK.RemoteObject.RemoteObjectProperty('handler', eventListener.handler()));
     }
-    ObjectUI.ObjectPropertyTreeElement.populateWithProperties(this, properties, [], true, null);
+    ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(this, properties, [], true, null);
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
-   * @param {!Components.Linkifier} linkifier
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {!Components.Linkifier.Linkifier} linkifier
    */
   _setTitle(object, linkifier) {
     const title = this.listItemElement.createChild('span', 'event-listener-details');
@@ -313,14 +323,15 @@ export class ObjectEventListenerBar extends UI.TreeElement {
     const linkElement = linkifier.linkifyRawLocation(this._eventListener.location(), this._eventListener.sourceURL());
     subtitle.appendChild(linkElement);
 
-    this._valueTitle =
-        ObjectUI.ObjectPropertiesSection.createValueElement(object, false /* wasThrown */, false /* showPreview */);
+    const propertyValue = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(
+        object, /* wasThrown */ false, /* showPreview */ false);
+    this._valueTitle = propertyValue.element;
     title.appendChild(this._valueTitle);
 
     if (this._eventListener.canRemove()) {
       const deleteButton = title.createChild('span', 'event-listener-button');
-      deleteButton.textContent = Common.UIString('Remove');
-      deleteButton.title = Common.UIString('Delete event listener');
+      deleteButton.textContent = Common.UIString.UIString('Remove');
+      deleteButton.title = Common.UIString.UIString('Delete event listener');
       deleteButton.addEventListener('click', event => {
         this._removeListener();
         event.consume();
@@ -330,8 +341,8 @@ export class ObjectEventListenerBar extends UI.TreeElement {
 
     if (this._eventListener.isScrollBlockingType() && this._eventListener.canTogglePassive()) {
       const passiveButton = title.createChild('span', 'event-listener-button');
-      passiveButton.textContent = Common.UIString('Toggle Passive');
-      passiveButton.title = Common.UIString('Toggle whether event listener is passive or blocking');
+      passiveButton.textContent = Common.UIString.UIString('Toggle Passive');
+      passiveButton.title = Common.UIString.UIString('Toggle whether event listener is passive or blocking');
       passiveButton.addEventListener('click', event => {
         this._togglePassiveListener();
         event.consume();
@@ -340,9 +351,12 @@ export class ObjectEventListenerBar extends UI.TreeElement {
     }
 
     this.listItemElement.addEventListener('contextmenu', event => {
-      const menu = new UI.ContextMenu(event);
+      const menu = new UI.ContextMenu.ContextMenu(event);
       if (event.target !== linkElement) {
         menu.appendApplicableItems(linkElement);
+      }
+      if (object.subtype === 'node') {
+        menu.defaultSection().appendItem(ls`Reveal in Elements panel`, () => Common.Revealer.reveal(object));
       }
       menu.defaultSection().appendItem(
           ls`Delete event listener`, this._removeListener.bind(this), !this._eventListener.canRemove());
@@ -378,7 +392,7 @@ export class ObjectEventListenerBar extends UI.TreeElement {
   }
 
   /**
-   * @return {!SDK.EventListener}
+   * @return {!SDK.DOMDebuggerModel.EventListener}
    */
   eventListener() {
     return this._eventListener;
@@ -396,23 +410,3 @@ export class ObjectEventListenerBar extends UI.TreeElement {
     return false;
   }
 }
-
-/* Legacy exported object */
-self.EventListeners = self.EventListeners || {};
-
-/* Legacy exported object */
-EventListeners = EventListeners || {};
-
-/** @constructor */
-EventListeners.EventListenersView = EventListenersView;
-
-/** @constructor */
-EventListeners.EventListenersTreeElement = EventListenersTreeElement;
-
-/** @constructor */
-EventListeners.ObjectEventListenerBar = ObjectEventListenerBar;
-
-/**
- * @typedef {Array<{object: !SDK.RemoteObject, eventListeners: ?Array<!SDK.EventListener>, frameworkEventListeners: ?{eventListeners: ?Array<!SDK.EventListener>, internalHandlers: ?SDK.RemoteArray}, isInternal: ?Array<boolean>}>}
- */
-EventListeners.EventListenersResult;

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -12,9 +11,14 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
+import androidx.appcompat.widget.SwitchCompat;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -34,10 +38,10 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
     private ButtonCompat mButton;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, String message, String oKButtonText,
+    private static InfoBar show(int iconId, String message, String oKButtonText,
             String reloadButtonText, String toggleText, String followUpMessage) {
-        return new AdsBlockedInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
-                oKButtonText, reloadButtonText, toggleText, followUpMessage);
+        return new AdsBlockedInfoBar(
+                iconId, message, oKButtonText, reloadButtonText, toggleText, followUpMessage);
     }
 
     private AdsBlockedInfoBar(int iconDrawbleId, String message, String oKButtonText,

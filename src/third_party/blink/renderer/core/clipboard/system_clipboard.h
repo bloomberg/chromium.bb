@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -17,18 +19,20 @@ namespace blink {
 class DataObject;
 class Image;
 class KURL;
+class LocalFrame;
 
-// This singleton provides read/write access to the system clipboard,
-// mediating between core classes and mojom::ClipboardHost.
+// SystemClipboard:
+// - is a singleton.
+// - provides sanitized, platform-neutral read/write access to the clipboard.
+// - mediates between core classes and mojom::ClipboardHost.
+//
 // All calls to write functions must be followed by a call to CommitWrite().
-class CORE_EXPORT SystemClipboard {
-  USING_FAST_MALLOC(SystemClipboard);
-
+class CORE_EXPORT SystemClipboard final
+    : public GarbageCollected<SystemClipboard> {
  public:
-  static SystemClipboard& GetInstance();
-
   enum SmartReplaceOption { kCanSmartReplace, kCannotSmartReplace };
 
+  explicit SystemClipboard(LocalFrame* frame);
   uint64_t SequenceNumber();
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
@@ -55,6 +59,7 @@ class CORE_EXPORT SystemClipboard {
   String ReadRTF();
 
   SkBitmap ReadImage(mojom::ClipboardBuffer);
+  String ReadImageAsImageMarkup(mojom::blink::ClipboardBuffer);
 
   // Write the image and its associated tag (bookmark/HTML types).
   void WriteImageWithTag(Image*, const KURL&, const String& title);
@@ -68,11 +73,14 @@ class CORE_EXPORT SystemClipboard {
   // the OS clipboard.
   void CommitWrite();
 
+  void Trace(Visitor*);
+
  private:
-  SystemClipboard();
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
-  mojo::Remote<mojom::blink::ClipboardHost> clipboard_;
+  HeapMojoRemote<mojom::blink::ClipboardHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      clipboard_;
   // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
   // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;

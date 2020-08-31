@@ -83,16 +83,23 @@
 
 namespace {
 
-base::Value CookieExcludedNetLogParams(const std::string& operation,
-                                       const std::string& cookie_name,
-                                       const std::string& exclusion_reason,
-                                       net::NetLogCaptureMode capture_mode) {
+base::Value CookieInclusionStatusNetLogParams(
+    const std::string& operation,
+    const std::string& cookie_name,
+    const std::string& cookie_domain,
+    const std::string& cookie_path,
+    const net::CanonicalCookie::CookieInclusionStatus& status,
+    net::NetLogCaptureMode capture_mode) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("operation", operation);
-  dict.SetStringKey("exclusion_reason", exclusion_reason);
-  if (net::NetLogCaptureIncludesSensitive(capture_mode) &&
-      !cookie_name.empty()) {
-    dict.SetStringKey("name", cookie_name);
+  dict.SetStringKey("status", status.GetDebugString());
+  if (net::NetLogCaptureIncludesSensitive(capture_mode)) {
+    if (!cookie_name.empty())
+      dict.SetStringKey("name", cookie_name);
+    if (!cookie_domain.empty())
+      dict.SetStringKey("domain", cookie_domain);
+    if (!cookie_path.empty())
+      dict.SetStringKey("path", cookie_path);
   }
   return dict;
 }
@@ -252,7 +259,8 @@ void URLRequestHttpJob::Start() {
   request_info_.url = request_->url();
   request_info_.method = request_->method();
 
-  request_info_.network_isolation_key = request_->network_isolation_key();
+  request_info_.network_isolation_key =
+      request_->isolation_info().network_isolation_key();
   request_info_.load_flags = request_->load_flags();
   request_info_.disable_secure_dns = request_->disable_secure_dns();
   request_info_.traffic_annotation =
@@ -308,24 +316,6 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     transaction_->GetConnectionAttempts(out);
   else
     out->clear();
-}
-
-void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
-    const ProxyInfo& proxy_info,
-    HttpRequestHeaders* request_headers) {
-  DCHECK(request_headers);
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
-  if (proxy_info.is_empty()) {
-    SetProxyServer(ProxyServer::Direct());
-  } else {
-    SetProxyServer(proxy_info.proxy_server());
-  }
-  if (network_delegate()) {
-    network_delegate()->NotifyBeforeSendHeaders(
-        request_, proxy_info,
-        request_->context()->proxy_resolution_service()->proxy_retry_info(),
-        request_headers);
-  }
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {
@@ -400,8 +390,8 @@ void URLRequestHttpJob::StartTransaction() {
 }
 
 void URLRequestHttpJob::NotifyBeforeStartTransactionCallback(int result) {
-  // Check that there are no callbacks to already canceled requests.
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
+  // The request should not have been cancelled or have already completed.
+  DCHECK(!is_done());
 
   MaybeStartTransactionInternal(result);
 }
@@ -415,16 +405,12 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
                                                  "source", "delegate");
     // Don't call back synchronously to the delegate.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&URLRequestHttpJob::NotifyStartError,
-                       weak_factory_.GetWeakPtr(),
-                       URLRequestStatus(URLRequestStatus::FAILED, result)));
+        FROM_HERE, base::BindOnce(&URLRequestHttpJob::NotifyStartError,
+                                  weak_factory_.GetWeakPtr(), result));
   }
 }
 
 void URLRequestHttpJob::StartTransactionInternal() {
-  // This should only be called while the request's status is IO_PENDING.
-  DCHECK_EQ(URLRequestStatus::IO_PENDING, request_->status().status());
   DCHECK(!override_response_headers_);
 
   // NOTE: This method assumes that request_info_ is already setup properly.
@@ -463,9 +449,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
     }
 
     if (rv == OK) {
-      transaction_->SetBeforeHeadersSentCallback(
-          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
-                     base::Unretained(this)));
       transaction_->SetRequestHeadersCallback(request_headers_callback_);
       transaction_->SetResponseHeadersCallback(response_headers_callback_);
 
@@ -546,17 +529,18 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     CookieOptions options;
     options.set_return_excluded_cookies();
     options.set_include_httponly();
-    bool attach_same_site_cookies = request_->attach_same_site_cookies();
+    bool force_ignore_site_for_cookies =
+        request_->force_ignore_site_for_cookies();
     if (cookie_store->cookie_access_delegate() &&
         cookie_store->cookie_access_delegate()
             ->ShouldIgnoreSameSiteRestrictions(request_->url(),
                                                request_->site_for_cookies())) {
-      attach_same_site_cookies = true;
+      force_ignore_site_for_cookies = true;
     }
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForRequest(
             request_->method(), request_->url(), request_->site_for_cookies(),
-            request_->initiator(), attach_same_site_cookies));
+            request_->initiator(), force_ignore_site_for_cookies));
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
         base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
@@ -647,15 +631,15 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
   if (request_->net_log().IsCapturing()) {
     for (const auto& cookie_and_status : maybe_sent_cookies) {
-      if (!cookie_and_status.status.IsInclude()) {
-        request_->net_log().AddEvent(
-            NetLogEventType::COOKIE_INCLUSION_STATUS,
-            [&](NetLogCaptureMode capture_mode) {
-              return CookieExcludedNetLogParams(
-                  "send", cookie_and_status.cookie.Name(),
-                  cookie_and_status.status.GetDebugString(), capture_mode);
-            });
-      }
+      request_->net_log().AddEvent(
+          NetLogEventType::COOKIE_INCLUSION_STATUS,
+          [&](NetLogCaptureMode capture_mode) {
+            return CookieInclusionStatusNetLogParams(
+                "send", cookie_and_status.cookie.Name(),
+                cookie_and_status.cookie.Domain(),
+                cookie_and_status.cookie.Path(), cookie_and_status.status,
+                capture_mode);
+          });
     }
   }
 
@@ -674,7 +658,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   if (result != OK) {
     request_->net_log().AddEventWithStringParams(NetLogEventType::CANCELLED,
                                                  "source", "delegate");
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
     return;
   }
 
@@ -692,16 +676,17 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
   CookieOptions options;
   options.set_include_httponly();
-  bool attach_same_site_cookies = request_->attach_same_site_cookies();
+  bool force_ignore_site_for_cookies =
+      request_->force_ignore_site_for_cookies();
   if (cookie_store->cookie_access_delegate() &&
       cookie_store->cookie_access_delegate()->ShouldIgnoreSameSiteRestrictions(
           request_->url(), request_->site_for_cookies())) {
-    attach_same_site_cookies = true;
+    force_ignore_site_for_cookies = true;
   }
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url(), request_->site_for_cookies(), request_->initiator(),
-          attach_same_site_cookies));
+          force_ignore_site_for_cookies));
 
   options.set_return_excluded_cookies();
 
@@ -747,7 +732,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
 
     request_->context()->cookie_store()->SetCanonicalCookieAsync(
-        std::move(cookie), request_->url().scheme(), options,
+        std::move(cookie), request_->url(), options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options, cookie_to_return,
                        cookie_string));
@@ -765,14 +750,15 @@ void URLRequestHttpJob::OnSetCookieResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  if (!status.IsInclude() && request_->net_log().IsCapturing()) {
-    request_->net_log().AddEvent(NetLogEventType::COOKIE_INCLUSION_STATUS,
-                                 [&](NetLogCaptureMode capture_mode) {
-                                   return CookieExcludedNetLogParams(
-                                       "store",
-                                       cookie ? cookie.value().Name() : "",
-                                       status.GetDebugString(), capture_mode);
-                                 });
+  if (request_->net_log().IsCapturing()) {
+    request_->net_log().AddEvent(
+        NetLogEventType::COOKIE_INCLUSION_STATUS,
+        [&](NetLogCaptureMode capture_mode) {
+          return CookieInclusionStatusNetLogParams(
+              "store", cookie ? cookie.value().Name() : "",
+              cookie ? cookie.value().Domain() : "",
+              cookie ? cookie.value().Path() : "", status, capture_mode);
+        });
   }
   set_cookie_status_list_.emplace_back(std::move(cookie),
                                        std::move(cookie_string), status);
@@ -890,7 +876,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
           request_->net_log().AddEventWithStringParams(
               NetLogEventType::CANCELLED, "source", "delegate");
           OnCallToDelegateComplete();
-          NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error));
+          NotifyStartError(error);
         }
         return;
       }
@@ -913,15 +899,15 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     // info (e.g. whether there's a cached copy).
     if (transaction_.get())
       response_info_ = transaction_->GetResponseInfo();
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
   }
 }
 
 void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
-  awaiting_callback_ = false;
+  // The request should not have been cancelled or have already completed.
+  DCHECK(!is_done());
 
-  // Check that there are no callbacks to already canceled requests.
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
+  awaiting_callback_ = false;
 
   SaveCookiesAndNotifyHeadersComplete(result);
 }
@@ -1456,8 +1442,7 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
   NetworkQualityEstimator* network_quality_estimator =
       request()->context()->network_quality_estimator();
   if (network_quality_estimator) {
-    network_quality_estimator->NotifyRequestCompleted(
-        *request(), request_->status().error());
+    network_quality_estimator->NotifyRequestCompleted(*request());
   }
 
   RecordPerfHistograms(reason);

@@ -10,12 +10,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -23,7 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/permissions/permission_request_manager.h"
+#include "components/permissions/permission_request_manager.h"
 #endif
 
 namespace {
@@ -106,7 +106,7 @@ class MediaStreamDevicePermissionContextTests
 #if defined(OS_ANDROID)
     InfoBarService::CreateForWebContents(web_contents());
 #else
-    PermissionRequestManager::CreateForWebContents(web_contents());
+    permissions::PermissionRequestManager::CreateForWebContents(web_contents());
 #endif
   }
 

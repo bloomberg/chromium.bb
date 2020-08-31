@@ -28,13 +28,13 @@ class MockClientHintsControllerDelegate
 
   bool IsJavaScriptAllowed(const GURL& url) override;
 
-  std::string GetAcceptLanguageString() override;
+  bool UserAgentClientHintEnabled() override;
 
   blink::UserAgentMetadata GetUserAgentMetadata() override;
   // mojom::ClientHints implementation.
   void PersistClientHints(
       const url::Origin& primary_origin,
-      const std::vector<::blink::mojom::WebClientHintsType>& client_hints,
+      const std::vector<::network::mojom::WebClientHintsType>& client_hints,
       base::TimeDelta expiration_duration) override;
 
   void Bind(mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver)

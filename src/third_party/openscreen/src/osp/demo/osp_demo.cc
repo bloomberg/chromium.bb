@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <getopt.h>
 #include <poll.h>
 #include <signal.h>
 #include <unistd.h>
@@ -35,9 +36,6 @@
 #include "platform/impl/udp_socket_reader_posix.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 #include "util/trace_logging.h"
-
-using openscreen::platform::Clock;
-using openscreen::platform::PlatformClientPosix;
 
 namespace {
 
@@ -384,7 +382,7 @@ void RunControllerPollLoop(Controller* controller) {
 
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
   while (true) {
-    write(STDOUT_FILENO, "$ ", 2);
+    OSP_CHECK_EQ(write(STDOUT_FILENO, "$ ", 2), 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
     if (command_result.done) {
@@ -431,8 +429,7 @@ void ListenerDemo() {
       listener_config, &listener_observer,
       PlatformClientPosix::GetInstance()->GetTaskRunner());
 
-  MessageDemuxer demuxer(platform::Clock::now,
-                         MessageDemuxer::kDefaultBufferLimit);
+  MessageDemuxer demuxer(Clock::now, MessageDemuxer::kDefaultBufferLimit);
   DemoConnectionClientObserver client_observer;
   auto connection_client = ProtocolConnectionClientFactory::Create(
       &demuxer, &client_observer,
@@ -440,7 +437,7 @@ void ListenerDemo() {
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
-  auto controller = std::make_unique<Controller>(platform::Clock::now);
+  auto controller = std::make_unique<Controller>(Clock::now);
 
   network_service->GetMdnsServiceListener()->Start();
   network_service->GetProtocolConnectionClient()->Start();
@@ -484,7 +481,7 @@ void RunReceiverPollLoop(pollfd& file_descriptor,
                          DemoReceiverDelegate& delegate) {
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
   while (true) {
-    write(STDOUT_FILENO, "$ ", 2);
+    OSP_CHECK_EQ(write(STDOUT_FILENO, "$ ", 2), 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
     if (command_result.done) {
@@ -524,8 +521,7 @@ void PublisherDemo(absl::string_view friendly_name) {
       PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   ServerConfig server_config;
-  for (const platform::InterfaceInfo& interface :
-       platform::GetNetworkInterfaces()) {
+  for (const InterfaceInfo& interface : GetNetworkInterfaces()) {
     OSP_VLOG << "Found interface: " << interface;
     if (!interface.addresses.empty()) {
       server_config.connection_endpoints.push_back(
@@ -535,8 +531,7 @@ void PublisherDemo(absl::string_view friendly_name) {
   OSP_LOG_IF(WARN, server_config.connection_endpoints.empty())
       << "No network interfaces had usable addresses for mDNS publishing.";
 
-  MessageDemuxer demuxer(platform::Clock::now,
-                         MessageDemuxer::kDefaultBufferLimit);
+  MessageDemuxer demuxer(Clock::now, MessageDemuxer::kDefaultBufferLimit);
   DemoConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
       server_config, &demuxer, &server_observer,
@@ -566,16 +561,52 @@ void PublisherDemo(absl::string_view friendly_name) {
 struct InputArgs {
   absl::string_view friendly_server_name;
   bool is_verbose;
+  bool is_help;
+  bool tracing_enabled;
 };
 
-InputArgs GetInputArgs(int argc, char** argv) {
-  InputArgs args = {};
+void LogUsage(const char* argv0) {
+  std::cerr << R"(
+usage: )" << argv0
+            << R"( <options> <friendly_name>
 
-  int c;
-  while ((c = getopt(argc, argv, "v")) != -1) {
-    switch (c) {
+    friendly_name
+        Server name, runs the publisher demo. Omission runs the listener demo.
+
+    -t, --tracing: Enable performance trace logging.
+
+    -v, --verbose: Enable verbose logging.
+
+    -h, --help: Show this help message.
+  )";
+}
+
+InputArgs GetInputArgs(int argc, char** argv) {
+  // A note about modifying command line arguments: consider uniformity
+  // between all Open Screen executables. If it is a platform feature
+  // being exposed, consider if it applies to the standalone receiver,
+  // standalone sender, osp demo, and test_main argument options.
+  const struct option kArgumentOptions[] = {
+      {"tracing", no_argument, nullptr, 't'},
+      {"verbose", no_argument, nullptr, 'v'},
+      {"help", no_argument, nullptr, 'h'},
+      {nullptr, 0, nullptr, 0}};
+
+  InputArgs args = {};
+  int ch = -1;
+  while ((ch = getopt_long(argc, argv, "tvh", kArgumentOptions, nullptr)) !=
+         -1) {
+    switch (ch) {
+      case 't':
+        args.tracing_enabled = true;
+        break;
+
       case 'v':
         args.is_verbose = true;
+        break;
+
+      case 'h':
+        args.is_help = true;
         break;
     }
   }
@@ -588,31 +619,38 @@ InputArgs GetInputArgs(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  using openscreen::platform::LogLevel;
-
-  std::cout << "Usage: osp_demo [-v] [friendly_name]" << std::endl
-            << "-v: enable more verbose logging" << std::endl
-            << "friendly_name: server name, runs the publisher demo."
-            << std::endl
-            << "               omitting runs the listener demo." << std::endl
-            << std::endl;
+  using openscreen::Clock;
+  using openscreen::LogLevel;
+  using openscreen::PlatformClientPosix;
 
   InputArgs args = GetInputArgs(argc, argv);
+  if (args.is_help) {
+    LogUsage(argv[0]);
+    return 1;
+  }
+
+  std::unique_ptr<openscreen::TextTraceLoggingPlatform> trace_logging_platform;
+  if (args.tracing_enabled) {
+    trace_logging_platform =
+        std::make_unique<openscreen::TextTraceLoggingPlatform>();
+  }
+
+  const LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
+  openscreen::SetLogLevel(level);
 
   const bool is_receiver_demo = !args.friendly_server_name.empty();
   const char* log_filename =
       is_receiver_demo ? kReceiverLogFilename : kControllerLogFilename;
-  openscreen::platform::SetLogFifoOrDie(log_filename);
-
-  LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
-  openscreen::platform::SetLogLevel(level);
-  openscreen::platform::TextTraceLoggingPlatform text_logging_platform;
+  // TODO(jophba): Mac on Mojave hangs on this command forever.
+  openscreen::SetLogFifoOrDie(log_filename);
 
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
 
   if (is_receiver_demo) {
+    OSP_LOG_INFO << "Running publisher demo...";
     openscreen::osp::PublisherDemo(args.friendly_server_name);
   } else {
+    OSP_LOG_INFO << "Running listener demo...";
     openscreen::osp::ListenerDemo();
   }
 

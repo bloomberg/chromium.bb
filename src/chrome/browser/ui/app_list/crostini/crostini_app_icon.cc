@@ -16,10 +16,11 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -194,7 +195,7 @@ CrostiniAppIcon::CrostiniAppIcon(Profile* profile,
                                  int resource_size_in_dip,
                                  Observer* observer)
     : registry_service_(
-          crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)
+          guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
               ->GetWeakPtr()),
       app_id_(app_id),
       resource_size_in_dip_(resource_size_in_dip),
@@ -215,9 +216,8 @@ void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       registry_service_->GetIconPath(app_id_, scale_factor);
   DCHECK(!path.empty());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&CrostiniAppIcon::ReadOnFileThread, scale_factor, path),
       base::BindOnce(&CrostiniAppIcon::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -238,7 +238,7 @@ void CrostiniAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
     return;
   already_requested_icons_.insert(scale_factor);
 
-  // CrostiniRegistryService notifies CrostiniAppModelBuilder via Observer when
+  // GuestOsRegistryService notifies CrostiniAppModelBuilder via Observer when
   // icon is ready and CrostiniAppModelBuilder refreshes the icon of the
   // corresponding item by calling LoadScaleFactor.
   registry_service_->MaybeRequestIcon(app_id_, scale_factor);

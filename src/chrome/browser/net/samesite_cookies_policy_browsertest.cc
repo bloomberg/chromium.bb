@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/features.h"
@@ -67,9 +68,10 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // Set a cookie from a same-site context. The cookie does not specify
   // SameSite, so it may default to Lax if the SameSite features are enabled.
   // Since the context used is same-site, it should always work.
-  EXPECT_TRUE(content::SetCookie(
-      profile, url, "samesite-unspecified=1",
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX));
+  EXPECT_TRUE(content::SetCookie(profile, url, "samesite-unspecified=1",
+                                 net::CookieOptions::SameSiteCookieContext(
+                                     net::CookieOptions::SameSiteCookieContext::
+                                         ContextType::SAME_SITE_LAX)));
   EXPECT_EQ("samesite-unspecified=1", content::GetCookies(profile, url));
 
   // Overwrite the cookie from a cross-site context. Because we have a policy
@@ -77,15 +79,17 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // SameSite features are enabled. (It works regardless, if they are disabled.)
   EXPECT_TRUE(content::SetCookie(
       profile, url, "samesite-unspecified=2",
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE)));
   // Cookie has the new value because we were able to successfully overwrite it.
   EXPECT_EQ("samesite-unspecified=2", content::GetCookies(profile, url));
   // Fetching the cookies from a cross-site context also works because of the
   // policy.
-  EXPECT_EQ(
-      "samesite-unspecified=2",
-      content::GetCookies(
-          profile, url, net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+  EXPECT_EQ("samesite-unspecified=2",
+            content::GetCookies(profile, url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
 }
 
 IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
@@ -105,9 +109,10 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // Set a cookie from a same-site context. The cookie does not specify
   // SameSite, so it may default to Lax if the SameSite features are enabled.
   // Since the context used is same-site, it should always work.
-  EXPECT_TRUE(content::SetCookie(
-      profile, url, "samesite-unspecified=1",
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX));
+  EXPECT_TRUE(content::SetCookie(profile, url, "samesite-unspecified=1",
+                                 net::CookieOptions::SameSiteCookieContext(
+                                     net::CookieOptions::SameSiteCookieContext::
+                                         ContextType::SAME_SITE_LAX)));
   EXPECT_EQ("samesite-unspecified=1", content::GetCookies(profile, url));
 
   // Overwrite the cookie from a cross-site context. Because we have a policy
@@ -116,14 +121,17 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // enabled.)
   EXPECT_FALSE(content::SetCookie(
       profile, url, "samesite-unspecified=2",
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE)));
   // Cookie still has the previous value because re-setting it failed.
   EXPECT_EQ("samesite-unspecified=1", content::GetCookies(profile, url));
   // Fetching the unspecified-samesite cookie from a cross-site context does not
   // work because of the policy.
-  EXPECT_EQ("", content::GetCookies(
-                    profile, url,
-                    net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+  EXPECT_EQ("",
+            content::GetCookies(profile, url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
 }
 
 IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
@@ -150,15 +158,19 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // Set a cookie from a same-site context. The cookie does not specify
   // SameSite, so it may default to Lax if the SameSite features are enabled.
   // Since the context used is same-site, it should always work.
-  EXPECT_TRUE(content::SetCookie(
-      profile, legacy_allowed_domain_url, "samesite-unspecified=1",
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX));
+  EXPECT_TRUE(content::SetCookie(profile, legacy_allowed_domain_url,
+                                 "samesite-unspecified=1",
+                                 net::CookieOptions::SameSiteCookieContext(
+                                     net::CookieOptions::SameSiteCookieContext::
+                                         ContextType::SAME_SITE_LAX)));
   EXPECT_EQ("samesite-unspecified=1",
             content::GetCookies(profile, legacy_allowed_domain_url));
   // Do the same on the other domain...
-  EXPECT_TRUE(content::SetCookie(
-      profile, other_domain_url, "samesite-unspecified=1",
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX));
+  EXPECT_TRUE(content::SetCookie(profile, other_domain_url,
+                                 "samesite-unspecified=1",
+                                 net::CookieOptions::SameSiteCookieContext(
+                                     net::CookieOptions::SameSiteCookieContext::
+                                         ContextType::SAME_SITE_LAX)));
   EXPECT_EQ("samesite-unspecified=1",
             content::GetCookies(profile, other_domain_url));
 
@@ -169,38 +181,48 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   // disabled.)
   EXPECT_TRUE(content::SetCookie(
       profile, legacy_allowed_domain_url, "samesite-unspecified=2",
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE)));
   EXPECT_EQ("samesite-unspecified=2",
             content::GetCookies(profile, legacy_allowed_domain_url));
   EXPECT_EQ("samesite-unspecified=2",
-            content::GetCookies(
-                profile, legacy_allowed_domain_url,
-                net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+            content::GetCookies(profile, legacy_allowed_domain_url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
   // For the domain that is not Legacy by policy, we expect it to work only if
   // the SameSite features are disabled.
   if (AreSameSiteFeaturesEnabled()) {
-    EXPECT_FALSE(content::SetCookie(
-        profile, other_domain_url, "samesite-unspecified=2",
-        net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+    EXPECT_FALSE(
+        content::SetCookie(profile, other_domain_url, "samesite-unspecified=2",
+                           net::CookieOptions::SameSiteCookieContext(
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::CROSS_SITE)));
     EXPECT_EQ("samesite-unspecified=1",
               content::GetCookies(profile, other_domain_url));
-    EXPECT_EQ("", content::GetCookies(
-                      profile, other_domain_url,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+    EXPECT_EQ(
+        "", content::GetCookies(profile, other_domain_url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
   } else {
-    EXPECT_TRUE(content::SetCookie(
-        profile, other_domain_url, "samesite-unspecified=2",
-        net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+    EXPECT_TRUE(
+        content::SetCookie(profile, other_domain_url, "samesite-unspecified=2",
+                           net::CookieOptions::SameSiteCookieContext(
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::CROSS_SITE)));
     EXPECT_EQ("samesite-unspecified=2",
               content::GetCookies(profile, other_domain_url));
-    EXPECT_EQ("samesite-unspecified=2",
-              content::GetCookies(
-                  profile, other_domain_url,
-                  net::CookieOptions::SameSiteCookieContext::CROSS_SITE));
+    EXPECT_EQ(
+        "samesite-unspecified=2",
+        content::GetCookies(profile, other_domain_url,
+                            net::CookieOptions::SameSiteCookieContext(
+                                net::CookieOptions::SameSiteCookieContext::
+                                    ContextType::CROSS_SITE)));
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no label */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SameSiteCookiesPolicyTest,
                          ::testing::Bool());
 

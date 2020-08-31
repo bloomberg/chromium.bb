@@ -76,6 +76,11 @@ class ReputationService : public KeyedService {
                      const GURL& url,
                      SafetyTipInteraction interaction);
 
+  // Tells the service that the user has the UI disabled, and thus the warning
+  // should be ignored.  This ensures that subsequent loads of the page are not
+  // seen as flagged in metrics. This only impacts metrics for control groups.
+  void OnUIDisabledFirstVisit(const GURL& url);
+
   // Used to help mock the generated keywords for the sensitive keywords
   // heuristic for testing. The keywords passed to this function MUST be in
   // sorted order, and must have a lifetime at least as long as this service.
@@ -107,11 +112,5 @@ class ReputationService : public KeyedService {
   base::WeakPtrFactory<ReputationService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ReputationService);
 };
-
-// Checks SafeBrowsing-style permutations of |url| against the component updater
-// blocklist and returns the match type. kNone means the URL is not blocked.
-// This method assumes that the flagged pages in the safety tip config proto are
-// in sorted order.
-security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url);
 
 #endif  // CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_

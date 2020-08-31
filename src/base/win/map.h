@@ -10,6 +10,7 @@
 
 #include <map>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/win/vector.h"
 #include "base/win/winrt_foundation_helpers.h"
@@ -246,7 +247,7 @@ class Map
       map_->add_MapChanged(this, &map_changed_token_);
     }
 
-    ~MapView() {
+    ~MapView() override {
       if (map_)
         map_->remove_MapChanged(map_changed_token_);
     }
@@ -363,7 +364,8 @@ class Map
   IFACEMETHODIMP Clear() override {
     map_.clear();
     NotifyMapChanged(
-        ABI::Windows::Foundation::Collections::CollectionChange_Reset, 0);
+        ABI::Windows::Foundation::Collections::CollectionChange_Reset,
+        0);  // NOLINT(modernize-use-nullptr): AbiK may not be a pointer.
     return S_OK;
   }
 

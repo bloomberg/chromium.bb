@@ -140,10 +140,14 @@ CXFA_FFBarcode::~CXFA_FFBarcode() = default;
 
 bool CXFA_FFBarcode::LoadWidget() {
   ASSERT(!IsLoaded());
+
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   auto pNew = pdfium::MakeUnique<CFWL_Barcode>(GetFWLApp());
   CFWL_Barcode* pFWLBarcode = pNew.get();
   SetNormalWidget(std::move(pNew));
-  pFWLBarcode->SetFFWidget(this);
+  pFWLBarcode->SetAdapterIface(this);
 
   CFWL_NoteDriver* pNoteDriver = pFWLBarcode->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->RegisterEventTarget(pFWLBarcode, pFWLBarcode);
@@ -169,7 +173,7 @@ void CXFA_FFBarcode::RenderWidget(CXFA_Graphics* pGS,
   mtRotate.Concat(matrix);
 
   CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
-  DrawBorder(pGS, m_pNode->GetUIBorder(), m_rtUI, mtRotate);
+  DrawBorder(pGS, m_pNode->GetUIBorder(), m_UIRect, mtRotate);
   RenderCaption(pGS, &mtRotate);
   CFX_RectF rtWidget = GetNormalWidget()->GetWidgetRect();
 

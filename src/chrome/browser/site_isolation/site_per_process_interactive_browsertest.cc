@@ -37,6 +37,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -1104,8 +1105,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
 // Test that deleting a RenderWidgetHost that holds the mouse lock won't cause a
 // crash. https://crbug.com/619571.
+
+// Flaky on multiple builders. https://crbug.com/1059632
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       RenderWidgetHostDeletedWhileMouseLocked) {
+                       DISABLED_RenderWidgetHostDeletedWhileMouseLocked) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -1251,9 +1254,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   };
 
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::kMouseDown);
+                         blink::WebInputEvent::Type::kMouseDown);
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::kMouseUp);
+                         blink::WebInputEvent::Type::kMouseUp);
   menu_waiter.WaitForMenuOpenAndClose();
 
   gfx::Point point_in_root_window =
@@ -1557,7 +1560,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     event.button = blink::WebMouseEvent::Button::kLeft;
 
     // Send a mouse down event.
-    event.SetType(blink::WebInputEvent::kMouseDown);
+    event.SetType(blink::WebInputEvent::Type::kMouseDown);
     child_widget_host->ForwardMouseEvent(event);
 
     base::RunLoop run_loop;
@@ -1566,7 +1569,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
     run_loop.Run();
 
     // Now send a mouse up event.
-    event.SetType(blink::WebMouseEvent::kMouseUp);
+    event.SetType(blink::WebMouseEvent::Type::kMouseUp);
     child_widget_host->ForwardMouseEvent(event);
 
     // Wait until the popup disappears and we go back to the normal

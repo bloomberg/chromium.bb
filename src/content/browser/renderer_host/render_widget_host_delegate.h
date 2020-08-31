@@ -18,10 +18,10 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
@@ -148,9 +148,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void ExecuteEditCommand(
       const std::string& command,
       const base::Optional<base::string16>& value) = 0;
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
   virtual void Cut() = 0;
   virtual void Copy() = 0;
   virtual void Paste() = 0;
+  virtual void PasteAndMatchStyle() = 0;
   virtual void SelectAll() = 0;
 
   // Requests the renderer to move the selection extent to a new position.
@@ -208,6 +211,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                   bool last_unlocked_by_target,
                                   bool privileged) {}
 
+  virtual void UnlockMouse(RenderWidgetHostImpl* render_widget_host) {}
+
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab();
 
@@ -216,9 +221,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // solid color is displayed instead.
   virtual bool ShouldShowStaleContentOnEviction();
 
-  // Returns the display mode for the view.
-  virtual blink::mojom::DisplayMode GetDisplayMode(
-      RenderWidgetHostImpl* render_widget_host) const;
+  // Returns the display mode for all widgets in the frame tree. Only applies
+  // to frame-based widgets. Other widgets are always kBrowser.
+  virtual blink::mojom::DisplayMode GetDisplayMode() const;
 
   // Notification that the widget has lost capture.
   virtual void LostCapture(RenderWidgetHostImpl* render_widget_host) {}
@@ -302,32 +307,18 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // if the eTLD+1 is not known for |render_widget_host|.
   virtual bool AddDomainInfoToRapporSample(rappor::Sample* sample);
 
-  // Get the UKM source ID for current content. This is used for providing
-  // data about the content to the URL-keyed metrics service.
-  // Note: This is also exposed by the RenderFrameHostDelegate.
-  virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
-
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();
 
-  // Gets the size set by a top-level frame with auto-resize enabled.
-  virtual gfx::Size GetAutoResizeSize();
-
-  // Reset the auto-size value, to indicate that auto-size is no longer active.
-  virtual void ResetAutoResizeSize() {}
+  // Get the UKM source ID for current content. This is used for providing
+  // data about the content to the URL-keyed metrics service.
+  // Note: Prefer using RenderFrameHost::GetPageUkmSourceId wherever
+  // possible.
+  virtual ukm::SourceId GetCurrentPageUkmSourceId();
 
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;
-
-  // Returns an object that will override handling of Text Input and Mouse
-  // Lock events from the renderer.
-  virtual InputEventShim* GetInputEventShim() const;
-
-  // Notifies all renderers in a page about changes to the size of the visible
-  // viewport.
-  virtual void NotifyVisibleViewportSizeChanged(
-      const gfx::Size& visible_viewport_size) {}
 
   // Returns the focused frame across all delegates, or nullptr if none.
   virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
@@ -340,6 +331,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // indicate the absence of a vertical scroll direction.
   virtual void OnVerticalScrollDirectionChanged(
       viz::VerticalScrollDirection scroll_direction) {}
+
+  // Returns true if the delegate is a portal.
+  virtual bool IsPortal();
+
+  // Notify the delegate that the screen orientation has been changed.
+  virtual void DidChangeScreenOrientation() {}
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

@@ -23,7 +23,7 @@
 #include "chrome/renderer/safe_browsing/phishing_term_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/phishing_url_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "crypto/sha2.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -179,7 +179,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     }
     float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
     verdict.set_client_score(score);
-    verdict.set_is_phishing(score >= kPhishyThreshold);
+    verdict.set_is_phishing(score >= scorer_->threshold_probability());
     RunCallback(verdict);
   } else {
     RunFailureCallback();

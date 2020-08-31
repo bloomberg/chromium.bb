@@ -28,6 +28,10 @@ const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
 #if defined(OS_CHROMEOS)
+// Boolean pref that records whether OS sync preferences were migrated due to
+// SplitSettingsSync rollout.
+const char kOsSyncPrefsMigrated[] = "sync.os_sync_prefs_migrated";
+
 // Boolean indicating that the user has enabled the Chrome OS system-setting
 // sync feature.
 const char kOsSyncFeatureEnabled[] = "sync.os_sync_feature_enabled";
@@ -41,7 +45,6 @@ const char kSyncAllOsTypes[] = "sync.all_os_types";
 // OS user selectable types.
 const char kSyncOsApps[] = "sync.os_apps";
 const char kSyncOsPreferences[] = "sync.os_preferences";
-const char kSyncOsPrinters[] = "sync.os_printers";
 #endif
 
 // Booleans specifying whether the user has selected to sync the following
@@ -78,6 +81,7 @@ const char kSyncEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
 const char kSyncKeystoreEncryptionBootstrapToken[] =
     "sync.keystore_encryption_bootstrap_token";
 
+const char kSyncGaiaId[] = "sync.gaia_id";
 const char kSyncCacheGuid[] = "sync.cache_guid";
 const char kSyncBirthday[] = "sync.birthday";
 const char kSyncBagOfChips[] = "sync.bag_of_chips";

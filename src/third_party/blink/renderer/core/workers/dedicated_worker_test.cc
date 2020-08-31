@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -125,14 +126,14 @@ class DedicatedWorkerMessagingProxyForTest
     KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
     Vector<CSPHeaderAndType> headers{
-        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+        {"contentSecurityPolicy",
+         network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
-        To<Document>(GetExecutionContext())->GetSettings());
+        To<LocalDOMWindow>(GetExecutionContext())->GetFrame()->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, mojom::ScriptType::kClassic,
-            OffMainThreadWorkerScriptFetchOption::kDisabled,
-            "fake global scope name", "fake user agent",
+            script_url, mojom::ScriptType::kClassic, "fake global scope name",
+            "fake user agent", UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */, headers,
             network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
             false /* starter_secure_context */,
@@ -154,7 +155,7 @@ class DedicatedWorkerMessagingProxyForTest
     return static_cast<DedicatedWorkerThreadForTest*>(GetWorkerThread());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     DedicatedWorkerMessagingProxy::Trace(visitor);
   }
 
@@ -175,7 +176,7 @@ class DedicatedWorkerTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
         MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
-            &GetDocument());
+            GetFrame().DomWindow());
   }
 
   void TearDown() override {

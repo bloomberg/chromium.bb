@@ -7,9 +7,9 @@
 
 #include "src/gpu/ccpr/GrCCPathProcessor.h"
 
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrOpsRenderPass.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTexturePriv.h"
 #include "src/gpu/ccpr/GrCCPerFlushResources.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -84,7 +84,7 @@ GrCCPathProcessor::GrCCPathProcessor(CoverageMode coverageMode, const GrTexture*
                                      const SkMatrix& viewMatrixIfUsingLocalCoords)
         : INHERITED(kGrCCPathProcessor_ClassID)
         , fCoverageMode(coverageMode)
-        , fAtlasAccess(GrSamplerState::ClampNearest(), atlasTexture->backendFormat(), swizzle)
+        , fAtlasAccess(GrSamplerState::Filter::kNearest, atlasTexture->backendFormat(), swizzle)
         , fAtlasDimensions(atlasTexture->dimensions())
         , fAtlasOrigin(atlasOrigin) {
     // TODO: Can we just assert that atlas has GrCCAtlas::kTextureOrigin and remove fAtlasOrigin?
@@ -123,7 +123,7 @@ GrGLSLPrimitiveProcessor* GrCCPathProcessor::createGLSLInstance(const GrShaderCa
 }
 
 void GrCCPathProcessor::drawPaths(GrOpFlushState* flushState, const GrPipeline& pipeline,
-                                  const GrPipeline::FixedDynamicState* fixedDynamicState,
+                                  const GrSurfaceProxy& atlasProxy,
                                   const GrCCPerFlushResources& resources, int baseInstance,
                                   int endInstance, const SkRect& bounds) const {
     const GrCaps& caps = flushState->caps();
@@ -133,24 +133,19 @@ void GrCCPathProcessor::drawPaths(GrOpFlushState* flushState, const GrPipeline& 
     int numIndicesPerInstance = caps.usePrimitiveRestart()
                                         ? SK_ARRAY_COUNT(kOctoIndicesAsStrips)
                                         : SK_ARRAY_COUNT(kOctoIndicesAsTris);
-    GrMesh mesh(primitiveType);
     auto enablePrimitiveRestart = GrPrimitiveRestart(flushState->caps().usePrimitiveRestart());
 
-    mesh.setIndexedInstanced(resources.refIndexBuffer(), numIndicesPerInstance,
-                             resources.refInstanceBuffer(), endInstance - baseInstance,
-                             baseInstance, enablePrimitiveRestart);
-    mesh.setVertexData(resources.refVertexBuffer());
+    GrRenderTargetProxy* rtProxy = flushState->proxy();
+    GrProgramInfo programInfo(rtProxy->numSamples(), rtProxy->numStencilSamples(),
+                              rtProxy->backendFormat(), flushState->writeView()->origin(),
+                              &pipeline, this, primitiveType);
 
-    GrProgramInfo programInfo(flushState->proxy()->numSamples(),
-                              flushState->proxy()->numStencilSamples(),
-                              flushState->proxy()->backendFormat(),
-                              flushState->view()->origin(),
-                              &pipeline,
-                              this,
-                              fixedDynamicState,
-                              nullptr, 0, primitiveType);
-
-    flushState->opsRenderPass()->draw(programInfo, &mesh, 1, bounds);
+    flushState->bindPipelineAndScissorClip(programInfo, bounds);
+    flushState->bindTextures(*this, atlasProxy, pipeline);
+    flushState->bindBuffers(resources.indexBuffer(), resources.instanceBuffer(),
+                            resources.vertexBuffer(), enablePrimitiveRestart);
+    flushState->drawIndexedInstanced(numIndicesPerInstance, 0, endInstance - baseInstance,
+                                     baseInstance, 0);
 }
 
 void GrCCPathProcessor::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
@@ -163,7 +158,7 @@ void GrCCPathProcessor::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 
     const char* atlasAdjust;
     fAtlasAdjustUniform = uniHandler->addUniform(
-            kVertex_GrShaderFlag, kFloat2_GrSLType, "atlas_adjust", &atlasAdjust);
+            nullptr, kVertex_GrShaderFlag, kFloat2_GrSLType, "atlas_adjust", &atlasAdjust);
 
     varyingHandler->emitAttributes(proc);
 
@@ -231,8 +226,7 @@ void GrCCPathProcessor::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 
     // Look up coverage in the atlas.
     f->codeAppendf("half coverage = ");
-    f->appendTextureLookup(args.fTexSamplers[0], SkStringPrintf("%s.xy", texcoord.fsIn()).c_str(),
-                           kFloat2_GrSLType);
+    f->appendTextureLookup(args.fTexSamplers[0], SkStringPrintf("%s.xy", texcoord.fsIn()).c_str());
     f->codeAppendf(".a;");
 
     if (isCoverageCount) {

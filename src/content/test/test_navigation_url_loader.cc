@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,6 +33,7 @@ TestNavigationURLLoader::TestNavigationURLLoader(
 void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     PreviewsState new_previews_state) {
   DCHECK(!is_served_from_back_forward_cache_);
   redirect_count_++;
@@ -45,7 +45,8 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   redirect_info.status_code = 302;
   redirect_info.new_method = "GET";
   redirect_info.new_url = redirect_url;
-  redirect_info.new_site_for_cookies = redirect_url;
+  redirect_info.new_site_for_cookies =
+      net::SiteForCookies::FromUrl(redirect_url);
   auto response_head = network::mojom::URLResponseHead::New();
   CallOnRequestRedirected(redirect_info, std::move(response_head));
 }
@@ -65,11 +66,13 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK(!is_served_from_back_forward_cache_);
+  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   delegate_->OnRequestRedirected(redirect_info, std::move(response_head));
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
     network::mojom::URLResponseHeadPtr response_head) {
+  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.
@@ -81,11 +84,11 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           std::move(url_loader_remote),
           url_loader_client_remote.InitWithNewPipeAndPassReceiver());
 
-  delegate_->OnResponseStarted(
-      std::move(url_loader_client_endpoints), std::move(response_head),
-      mojo::ScopedDataPipeConsumerHandle(),
-      NavigationURLLoaderImpl::MakeGlobalRequestID(), false,
-      NavigationDownloadPolicy(), base::nullopt);
+  delegate_->OnResponseStarted(std::move(url_loader_client_endpoints),
+                               std::move(response_head),
+                               mojo::ScopedDataPipeConsumerHandle(),
+                               GlobalRequestID::MakeBrowserInitiated(), false,
+                               NavigationDownloadPolicy(), base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

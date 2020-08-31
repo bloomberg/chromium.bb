@@ -164,7 +164,10 @@ TEST(LoginHandlerTest, DialogStringsAndRealm) {
 TEST_F(LoginHandlerWithWebContentsTest, NoPendingEntryDoesNotCrash) {
   LoginTabHelper::CreateForWebContents(web_contents());
   LoginTabHelper* helper = LoginTabHelper::FromWebContents(web_contents());
+  net::AuthChallengeInfo challenge;
   content::MockNavigationHandle handle;
+  handle.SetAuthChallengeInfo(challenge);
+  handle.set_global_request_id({0, 1});
   content::NavigationThrottle::ThrottleCheckResult result =
       helper->WillProcessMainFrameUnauthorizedResponse(&handle);
   EXPECT_EQ(content::NavigationThrottle::CANCEL, result.action());

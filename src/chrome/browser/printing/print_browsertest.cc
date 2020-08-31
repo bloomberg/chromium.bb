@@ -25,20 +25,25 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace printing {
 
@@ -260,11 +265,16 @@ class PrintBrowserTest : public InProcessBrowserTest {
     frame_host->GetProcess()->AddFilter(filter.get());
   }
 
-  static PrintMsg_PrintFrame_Params GetDefaultPrintFrameParams() {
-    PrintMsg_PrintFrame_Params params;
-    params.printable_area = gfx::Rect(800, 600);
-    params.document_cookie = kDefaultDocumentCookie;
-    return params;
+  static mojom::PrintFrameContentParamsPtr GetDefaultPrintFrameParams() {
+    return mojom::PrintFrameContentParams::New(gfx::Rect(800, 600),
+                                               kDefaultDocumentCookie);
+  }
+
+  static const mojo::AssociatedRemote<mojom::PrintRenderFrame>
+  GetPrintRenderFrame(content::RenderFrameHost* rfh) {
+    mojo::AssociatedRemote<mojom::PrintRenderFrame> remote;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+    return remote;
   }
 
  private:
@@ -303,6 +313,74 @@ class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+};
+
+class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
+ public:
+  BackForwardCachePrintBrowserTest() = default;
+  ~BackForwardCachePrintBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        ::features::kBackForwardCache,
+        {
+            // Set a very long TTL before expiration (longer than the test
+            // timeout) so tests that are expecting deletion don't pass when
+            // they shouldn't.
+            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+        });
+
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  content::WebContents* web_contents() const {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::RenderFrameHost* current_frame_host() {
+    return web_contents()->GetMainFrame();
+  }
+
+  void ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature feature,
+      base::Location location) {
+    base::HistogramBase::Sample sample = base::HistogramBase::Sample(feature);
+    AddSampleToBuckets(&expected_blocklisted_features_, sample);
+
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            "BackForwardCache.HistoryNavigationOutcome."
+            "BlocklistedFeature"),
+        testing::UnorderedElementsAreArray(expected_blocklisted_features_))
+        << location.ToString();
+
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            "BackForwardCache.AllSites.HistoryNavigationOutcome."
+            "BlocklistedFeature"),
+        testing::UnorderedElementsAreArray(expected_blocklisted_features_))
+        << location.ToString();
+  }
+
+  base::HistogramTester histogram_tester_;
+
+ private:
+  void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
+                          base::HistogramBase::Sample sample) {
+    auto it = std::find_if(
+        buckets->begin(), buckets->end(),
+        [sample](const base::Bucket& bucket) { return bucket.min == sample; });
+    if (it == buckets->end()) {
+      buckets->push_back(base::Bucket(sample, 1));
+    } else {
+      it->count++;
+    }
+  }
+
+  std::vector<base::Bucket> expected_blocklisted_features_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackForwardCachePrintBrowserTest);
 };
 
 constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
@@ -377,8 +455,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   content::RenderFrameHost* rfh = original_contents->GetMainFrame();
   AddFilterForFrame(rfh);
 
-  rfh->Send(new PrintMsg_PrintFrameContent(rfh->GetRoutingID(),
-                                           GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(rfh)->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -402,8 +479,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
 
   AddFilterForFrame(test_frame);
 
-  test_frame->Send(new PrintMsg_PrintFrameContent(
-      test_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(test_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -447,8 +524,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
     AddFilterForFrame(grandchild_frame);
   }
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(
-      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(main_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -491,8 +568,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   if (oopif_enabled)
     AddFilterForFrame(child_frame);
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(
-      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
+  GetPrintRenderFrame(main_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams());
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -608,6 +685,29 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, OopifPrinting) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(IsOopifEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCachePrintBrowserTest, DisableCaching) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+
+  // 1) Navigate to A and trigger printing.
+  GURL url(embedded_test_server()->GetURL("a.com", "/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::RenderFrameHost* rfh_a = current_frame_host();
+  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+
+  // 2) Navigate to B.
+  // The first page is not cached because printing preview was open.
+  GURL url_2(embedded_test_server()->GetURL("b.com", "/printing/test2.html"));
+  ui_test_utils::NavigateToURL(browser(), url_2);
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 3) Navigate back and checks the blocklisted feature is recorded in UMA.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kPrinting, FROM_HERE);
 }
 
 // Printing an extension option page.

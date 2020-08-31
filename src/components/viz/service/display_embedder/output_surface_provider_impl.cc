@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromecast_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -127,7 +128,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           renderer_settings);
     }
     if (!output_surface) {
-#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
       // GPU compositing is expected to always work on Chrome OS so we should
       // never encounter fatal context error. This could be an unrecoverable
       // hardware error or a bug.
@@ -165,7 +166,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
 
       if (IsFatalOrSurfaceFailure(context_result)) {
-#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
         // GL compositing is expected to always work on Chrome OS so we should
         // never encounter fatal context error. This could be an unrecoverable
         // hardware error or a bug.
@@ -181,22 +182,11 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
           std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_ANDROID)
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(),
-          display::DisplaySnapshot::PrimaryFormat());
-#elif defined(OS_MACOSX)
-      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
-          std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), gfx::BufferFormat::RGBA_8888);
-#elif defined(OS_ANDROID)
-      auto buffer_format = context_provider->UseRGB565PixelFormat()
-                               ? gfx::BufferFormat::BGR_565
-                               : gfx::BufferFormat::RGBA_8888;
-      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
-          std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), buffer_format);
+          std::make_unique<BufferQueue>(
+              context_provider->SharedImageInterface(), surface_handle));
 #else
       NOTREACHED();
 #endif
@@ -218,6 +208,13 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
   }
 
   return output_surface;
+}
+
+gpu::SharedImageManager* OutputSurfaceProviderImpl::GetSharedImageManager() {
+  if (!gpu_service_impl_)
+    return nullptr;
+
+  return gpu_service_impl_->shared_image_manager();
 }
 
 std::unique_ptr<SoftwareOutputDevice>

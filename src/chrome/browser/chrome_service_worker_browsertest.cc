@@ -19,7 +19,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -29,6 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -42,6 +42,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -135,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
-      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
   // Leave the Service Worker registered, and make sure that the browser can
@@ -161,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
-      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
   ui_test_utils::NavigateToURL(incognito,
@@ -187,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
-      base::Bind(&ExpectResultAndRun<bool>, false, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun<bool>, false, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -220,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+  EXPECT_TRUE(content_settings::TabSpecificContentSettings::FromWebContents(
+                  web_contents)
                   ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
@@ -457,7 +459,7 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
   std::string GetManifestAndIssuedRequests() {
     base::RunLoop run_loop;
     browser()->tab_strip_model()->GetActiveWebContents()->GetManifest(
-        base::Bind(&ManifestCallbackAndRun, run_loop.QuitClosure()));
+        base::BindOnce(&ManifestCallbackAndRun, run_loop.QuitClosure()));
     run_loop.Run();
     return ExecuteScriptAndExtractString(
         "if (issuedRequests.length != 0) reportRequests();"
@@ -667,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/sw.js"), options,
-      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
   RunNavigationHintTest("/scope/",
                         content::StartServiceWorkerForNavigationHintResult::

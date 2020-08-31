@@ -737,7 +737,7 @@ virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
 virtual void ResizeCHROMIUM(GLuint width,
                             GLuint height,
                             GLfloat scale_factor,
-                            GLenum color_space,
+                            GLcolorSpace color_space,
                             GLboolean alpha) = 0;
 virtual const GLchar* GetRequestableExtensionsCHROMIUM() = 0;
 virtual void RequestExtensionCHROMIUM(const char* extension) = 0;
@@ -901,99 +901,6 @@ virtual void ScheduleDCLayerCHROMIUM(GLuint texture_0,
                                      GLint clip_height,
                                      GLuint protected_video_type) = 0;
 virtual void SetActiveURLCHROMIUM(const char* url) = 0;
-virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
-virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
-virtual GLuint GenPathsCHROMIUM(GLsizei range) = 0;
-virtual void DeletePathsCHROMIUM(GLuint path, GLsizei range) = 0;
-virtual GLboolean IsPathCHROMIUM(GLuint path) = 0;
-virtual void PathCommandsCHROMIUM(GLuint path,
-                                  GLsizei numCommands,
-                                  const GLubyte* commands,
-                                  GLsizei numCoords,
-                                  GLenum coordType,
-                                  const GLvoid* coords) = 0;
-virtual void PathParameterfCHROMIUM(GLuint path,
-                                    GLenum pname,
-                                    GLfloat value) = 0;
-virtual void PathParameteriCHROMIUM(GLuint path, GLenum pname, GLint value) = 0;
-virtual void PathStencilFuncCHROMIUM(GLenum func, GLint ref, GLuint mask) = 0;
-virtual void StencilFillPathCHROMIUM(GLuint path,
-                                     GLenum fillMode,
-                                     GLuint mask) = 0;
-virtual void StencilStrokePathCHROMIUM(GLuint path,
-                                       GLint reference,
-                                       GLuint mask) = 0;
-virtual void CoverFillPathCHROMIUM(GLuint path, GLenum coverMode) = 0;
-virtual void CoverStrokePathCHROMIUM(GLuint path, GLenum coverMode) = 0;
-virtual void StencilThenCoverFillPathCHROMIUM(GLuint path,
-                                              GLenum fillMode,
-                                              GLuint mask,
-                                              GLenum coverMode) = 0;
-virtual void StencilThenCoverStrokePathCHROMIUM(GLuint path,
-                                                GLint reference,
-                                                GLuint mask,
-                                                GLenum coverMode) = 0;
-virtual void StencilFillPathInstancedCHROMIUM(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const GLvoid* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) = 0;
-virtual void StencilStrokePathInstancedCHROMIUM(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const GLvoid* paths,
-    GLuint pathBase,
-    GLint reference,
-    GLuint mask,
-    GLenum transformType,
-    const GLfloat* transformValues) = 0;
-virtual void CoverFillPathInstancedCHROMIUM(GLsizei numPaths,
-                                            GLenum pathNameType,
-                                            const GLvoid* paths,
-                                            GLuint pathBase,
-                                            GLenum coverMode,
-                                            GLenum transformType,
-                                            const GLfloat* transformValues) = 0;
-virtual void CoverStrokePathInstancedCHROMIUM(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const GLvoid* paths,
-    GLuint pathBase,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) = 0;
-virtual void StencilThenCoverFillPathInstancedCHROMIUM(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const GLvoid* paths,
-    GLuint pathBase,
-    GLenum fillMode,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) = 0;
-virtual void StencilThenCoverStrokePathInstancedCHROMIUM(
-    GLsizei numPaths,
-    GLenum pathNameType,
-    const GLvoid* paths,
-    GLuint pathBase,
-    GLint reference,
-    GLuint mask,
-    GLenum coverMode,
-    GLenum transformType,
-    const GLfloat* transformValues) = 0;
-virtual void BindFragmentInputLocationCHROMIUM(GLuint program,
-                                               GLint location,
-                                               const char* name) = 0;
-virtual void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
-                                                 GLint location,
-                                                 GLenum genMode,
-                                                 GLint components,
-                                                 const GLfloat* coeffs) = 0;
 virtual void ContextVisibilityHintCHROMIUM(GLboolean visibility) = 0;
 virtual void CoverageModulationCHROMIUM(GLenum components) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
@@ -1034,7 +941,7 @@ virtual void TexStorage2DImageCHROMIUM(GLenum target,
                                        GLsizei width,
                                        GLsizei height) = 0;
 virtual void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                           GLColorSpace color_space) = 0;
+                                           GLcolorSpace color_space) = 0;
 virtual void WindowRectanglesEXT(GLenum mode,
                                  GLsizei count,
                                  const GLint* box) = 0;
@@ -1058,4 +965,6 @@ virtual GLuint CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
 virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
                                                   GLenum mode) = 0;
 virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
+virtual void BeginBatchReadAccessSharedImageCHROMIUM() = 0;
+virtual void EndBatchReadAccessSharedImageCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

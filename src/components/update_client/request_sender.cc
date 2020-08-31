@@ -24,10 +24,10 @@ namespace update_client {
 namespace {
 
 // This is an ECDSA prime256v1 named-curve key.
-constexpr int kKeyVersion = 9;
+constexpr int kKeyVersion = 10;
 const char kKeyPubBytesBase64[] =
-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsVwVMmIJaWBjktSx9m1JrZWYBvMm"
-    "bsrGGQPhScDtao+DloD871YmEeunAaQvRMZgDh1nCaWkVG6wo75+yDbKDA==";
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzOqC8cKNUYIi0UkNu0smZKDW8w5/"
+    "0EmEw1KQ6Aj/5JWBMdUVm13EIVwFwPlkO/U6vXa+iu4wyUB89GFaldJ7Bg==";
 
 }  // namespace
 
@@ -84,7 +84,7 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
-  DVLOG(2) << "Sending Omaha request: " << request_body_;
+  VLOG(2) << "Sending Omaha request: " << request_body_;
 
   network_fetcher_ = config_->GetNetworkFetcherFactory()->Create();
   if (!network_fetcher_) {
@@ -107,6 +107,8 @@ void RequestSender::SendInternalComplete(int error,
                                          const std::string& response_body,
                                          const std::string& response_etag,
                                          int retry_after_sec) {
+  VLOG(2) << "Omaha response received: " << response_body;
+
   if (!error) {
     if (!use_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -138,6 +140,7 @@ void RequestSender::SendInternalComplete(int error,
     return;
   }
 
+  VLOG(2) << "Omaha send error: " << response_body;
   HandleSendError(error, retry_after_sec);
 }
 
@@ -154,7 +157,7 @@ void RequestSender::OnNetworkFetcherComplete(
     int64_t xheader_retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  VLOG(1) << "request completed from url: " << original_url.spec();
+  VLOG(1) << "Request completed from url: " << original_url.spec();
 
   int error = -1;
   if (!net_error && response_code_ == 200)

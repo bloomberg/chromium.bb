@@ -26,7 +26,8 @@ source_set("autofill") {
     "//components/prefs",
     "//components/security_state/ios",
     "//components/strings",
-    "//components/translate/core/browser:browser",
+    "//components/translate/core/browser",
+    "//components/variations/service",
     "//google_apis",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -62,9 +63,7 @@ source_set("autofill") {
     "//ios/web/public/js_messaging",
     "//ui/base",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -89,14 +88,12 @@ source_set("bridges") {
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ui/base",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -128,8 +125,8 @@ source_set("autofill_ui") {
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
-    "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
@@ -142,9 +139,16 @@ source_set("autofill_message") {
     "save_card_message_with_links.h",
     "save_card_message_with_links.mm",
   ]
-  deps = [
-    "//url:url",
+  deps = [ "//url:url" ]
+}
+
+source_set("autofill_metrics") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "save_card_infobar_metrics_recorder.h",
+    "save_card_infobar_metrics_recorder.mm",
   ]
+  deps = [ "//base" ]
 }
 
 source_set("eg_tests") {

@@ -22,7 +22,7 @@ source_set("table_view") {
     "//base",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/material_components",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
   ]
   public_deps = [
@@ -49,7 +49,7 @@ source_set("styler") {
   ]
   public_deps = [
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
   ]
 }
 
@@ -67,7 +67,7 @@ source_set("presentation") {
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/resources:menu_shadow",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
 }
 
@@ -85,7 +85,7 @@ source_set("views") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
   ]
 }
@@ -96,9 +96,7 @@ source_set("feature_flags") {
     "feature_flags.h",
     "feature_flags.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {
@@ -121,9 +119,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "chrome_table_view_controller_unittest.mm",
-  ]
+  sources = [ "chrome_table_view_controller_unittest.mm" ]
   deps = [
     ":table_view",
     ":test_support",

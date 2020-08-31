@@ -4,6 +4,9 @@
 
 #include "weblayer/test/interstitial_utils.h"
 
+#include "components/security_interstitials/content/bad_clock_blocking_page.h"
+#include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
@@ -28,6 +31,19 @@ GetCurrentlyShowingInterstitial(Tab* tab) {
              : nullptr;
 }
 
+// Returns true if a security interstitial of type |type| is currently showing
+// in |tab|.
+bool IsShowingInterstitialOfType(
+    Tab* tab,
+    security_interstitials::SecurityInterstitialPage::TypeID type) {
+  auto* blocking_page = GetCurrentlyShowingInterstitial(tab);
+
+  if (!blocking_page)
+    return false;
+
+  return blocking_page->GetTypeForTesting() == type;
+}
+
 }  // namespace
 
 bool IsShowingSecurityInterstitial(Tab* tab) {
@@ -35,12 +51,17 @@ bool IsShowingSecurityInterstitial(Tab* tab) {
 }
 
 bool IsShowingSSLInterstitial(Tab* tab) {
-  auto* blocking_page = GetCurrentlyShowingInterstitial(tab);
+  return IsShowingInterstitialOfType(tab, SSLBlockingPage::kTypeForTesting);
+}
 
-  if (!blocking_page)
-    return false;
+bool IsShowingCaptivePortalInterstitial(Tab* tab) {
+  return IsShowingInterstitialOfType(
+      tab, CaptivePortalBlockingPage::kTypeForTesting);
+}
 
-  return blocking_page->GetTypeForTesting() == SSLBlockingPage::kTypeForTesting;
+bool IsShowingBadClockInterstitial(Tab* tab) {
+  return IsShowingInterstitialOfType(tab,
+                                     BadClockBlockingPage::kTypeForTesting);
 }
 
 }  // namespace weblayer

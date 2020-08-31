@@ -8,10 +8,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_float_size.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/fixed_velocity_curve.h"
 #include "ui/events/gestures/fling_curve.h"
@@ -34,7 +32,8 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     const gfx::Vector2dF& initial_velocity,
     bool use_mobile_fling_curve,
     const gfx::PointF& position_in_screen,
-    const gfx::Size& viewport_size) {
+    const float boost_multiplier,
+    const gfx::Size& bounding_size) {
   if (device_source == blink::WebGestureDevice::kSyntheticAutoscroll) {
     return std::make_unique<FixedVelocityCurve>(initial_velocity,
                                                 base::TimeTicks());
@@ -63,7 +62,8 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
         display::win::ScreenWin::GetPixelsPerInch(position_in_screen);
 #endif  // define(OS_WIN)
     return std::make_unique<PhysicsBasedFlingCurve>(
-        initial_velocity, base::TimeTicks(), pixels_per_inch, viewport_size);
+        initial_velocity, base::TimeTicks(), pixels_per_inch, boost_multiplier,
+        bounding_size);
   }
 
   return std::make_unique<FlingCurve>(initial_velocity, base::TimeTicks());
@@ -80,11 +80,12 @@ WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
     bool on_main_thread,
     bool use_mobile_fling_curve,
     const gfx::PointF& position_in_screen,
+    const float boost_multiplier,
     const gfx::Size& viewport_size) {
   return std::unique_ptr<WebGestureCurve>(new WebGestureCurveImpl(
       CreateDefaultPlatformCurve(device_source, initial_velocity,
                                  use_mobile_fling_curve, position_in_screen,
-                                 viewport_size),
+                                 boost_multiplier, viewport_size),
       initial_offset, on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
 }
 

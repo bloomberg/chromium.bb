@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,20 @@ chrome.inputMethodPrivate.FocusReason = {
 /**
  * @enum {string}
  */
+chrome.inputMethodPrivate.InputModeType = {
+  NO_KEYBOARD: 'noKeyboard',
+  TEXT: 'text',
+  TEL: 'tel',
+  URL: 'url',
+  EMAIL: 'email',
+  NUMERIC: 'numeric',
+  DECIMAL: 'decimal',
+  SEARCH: 'search',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.inputMethodPrivate.InputContextType = {
   TEXT: 'text',
   SEARCH: 'search',
@@ -68,6 +82,7 @@ chrome.inputMethodPrivate.InputContextType = {
   EMAIL: 'email',
   NUMBER: 'number',
   PASSWORD: 'password',
+  NULL: 'null',
 };
 
 /**
@@ -85,6 +100,7 @@ chrome.inputMethodPrivate.AutoCapitalizeType = {
  * @typedef {{
  *   contextID: number,
  *   type: !chrome.inputMethodPrivate.InputContextType,
+ *   mode: !chrome.inputMethodPrivate.InputModeType,
  *   autoCorrect: boolean,
  *   autoComplete: boolean,
  *   autoCapitalize: !chrome.inputMethodPrivate.AutoCapitalizeType,
@@ -95,6 +111,49 @@ chrome.inputMethodPrivate.AutoCapitalizeType = {
  * }}
  */
 chrome.inputMethodPrivate.InputContext;
+
+/**
+ * User preference settings for a specific input method. Japanese input methods are not included because they are managed separately by Mozc module.
+ * @typedef {{
+ *   enableCompletion: (boolean|undefined),
+ *   enableDoubleSpacePeriod: (boolean|undefined),
+ *   enableGestureTyping: (boolean|undefined),
+ *   enablePrediction: (boolean|undefined),
+ *   enableSoundOnKeypress: (boolean|undefined),
+ *   physicalKeyboardAutoCorrectionLevel: (number|undefined),
+ *   physicalKeyboardEnableCapitalization: (boolean|undefined),
+ *   virtualKeyboardAutoCorrectionLevel: (number|undefined),
+ *   virtualKeyboardEnableCapitalization: (boolean|undefined),
+ *   xkbLayout: (string|undefined),
+ *   koreanEnableSyllableInput: (boolean|undefined),
+ *   koreanKeyboardLayout: (string|undefined),
+ *   koreanShowHangulCandidate: (boolean|undefined),
+ *   pinyinChinesePunctuation: (boolean|undefined),
+ *   pinyinDefaultChinese: (boolean|undefined),
+ *   pinyinEnableFuzzy: (boolean|undefined),
+ *   pinyinEnableLowerPaging: (boolean|undefined),
+ *   pinyinEnableUpperPaging: (boolean|undefined),
+ *   pinyinFullWidthCharacter: (boolean|undefined),
+ *   pinyinFuzzyConfig: ({
+ *     an_ang: (boolean|undefined),
+ *     c_ch: (boolean|undefined),
+ *     en_eng: (boolean|undefined),
+ *     f_h: (boolean|undefined),
+ *     ian_iang: (boolean|undefined),
+ *     in_ing: (boolean|undefined),
+ *     k_g: (boolean|undefined),
+ *     l_n: (boolean|undefined),
+ *     r_l: (boolean|undefined),
+ *     s_sh: (boolean|undefined),
+ *     uan_uang: (boolean|undefined),
+ *     z_zh: (boolean|undefined)
+ *   }|undefined),
+ *   zhuyinKeyboardLayout: (string|undefined),
+ *   zhuyinPageSize: (number|undefined),
+ *   zhuyinSelectKeys: (string|undefined)
+ * }}
+ */
+chrome.inputMethodPrivate.InputMethodSettings;
 
 /**
  * Gets configurations for input methods.
@@ -198,6 +257,13 @@ chrome.inputMethodPrivate.notifyImeMenuItemActivated = function(engineID, name) 
 chrome.inputMethodPrivate.showInputView = function(callback) {};
 
 /**
+ * Hides the input view window. If the input view window is already hidden, this
+ * function will do nothing.
+ * @param {function():void=} callback Called when the operation completes.
+ */
+chrome.inputMethodPrivate.hideInputView = function(callback) {};
+
+/**
  * Opens the options page for the input method extension. If the input method
  * does not have options, this function will do nothing.
  * @param {string} inputMethodId ID of the input method to open options for.
@@ -230,25 +296,24 @@ chrome.inputMethodPrivate.getCompositionBounds = function(callback) {};
 chrome.inputMethodPrivate.getSurroundingText = function(beforeLength, afterLength, callback) {};
 
 /**
- * Gets the current value of a setting for a particular input method
+ * Gets the current values of all settings for a particular input method
  * @param {string} engineID The ID of the engine (e.g. 'zh-t-i0-pinyin',
  *     'xkb:us::eng')
- * @param {string} key The setting to get
- * @param {function((*|undefined)):void} callback Callback to receive the
- *     setting
+ * @param {function((!chrome.inputMethodPrivate.InputMethodSettings|undefined)):void}
+ *     callback Callback to receive the settings
  */
-chrome.inputMethodPrivate.getSetting = function(engineID, key, callback) {};
+chrome.inputMethodPrivate.getSettings = function(engineID, callback) {};
 
 /**
- * Sets the value of a setting for a particular input method
+ * Sets the value of all settings for a particular input method
  * @param {string} engineID The ID of the engine (e.g. 'zh-t-i0-pinyin',
  *     'xkb:us::eng')
- * @param {string} key The setting to set
- * @param {*} value The new value of the setting
+ * @param {!chrome.inputMethodPrivate.InputMethodSettings} settings The settings
+ *     to set
  * @param {function():void=} callback Callback to notify that the new value has
  *     been set
  */
-chrome.inputMethodPrivate.setSetting = function(engineID, key, value, callback) {};
+chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {};
 
 /**
  * Set the composition range. If this extension does not own the active IME,
@@ -268,6 +333,11 @@ chrome.inputMethodPrivate.setSetting = function(engineID, key, value, callback) 
  *     chrome.runtime.lastError is set.
  */
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
+
+/**
+ * Resets the current engine to its initial state. Fires an OnReset event.
+ */
+chrome.inputMethodPrivate.reset = function() {};
 
 /**
  * Fired when the input method is changed.

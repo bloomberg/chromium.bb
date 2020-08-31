@@ -19,12 +19,16 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "BACKGROUND_MODE_MANAGER";
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP:
       return out << "BACKGROUND_MODE_MANAGER_STARTUP";
+    case KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS:
+      return out << "BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS";
     case KeepAliveOrigin::BACKGROUND_SYNC:
       return out << "BACKGROUND_SYNC";
     case KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI:
       return out << "LOGIN_DISPLAY_HOST_WEBUI";
     case KeepAliveOrigin::PIN_MIGRATION:
       return out << "PIN_MIGRATION";
+    case KeepAliveOrigin::REMOTE_DEBUGGING:
+      return out << "REMOTE_DEBUGGING";
     case KeepAliveOrigin::NOTIFICATION:
       return out << "NOTIFICATION";
     case KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT:

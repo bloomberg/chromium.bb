@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,6 +24,7 @@
 
 using ::base::test::RunCallback;
 using ::base::test::RunClosure;
+using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::DoAll;
@@ -33,17 +35,6 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::WithArgs;
-
-namespace {
-
-// Helper used to create an action for gmock that moves the argument to the
-// destination specified by |dst|.
-template <typename T>
-testing::Action<void(T arg)> MoveArg(T* dst) {
-  return testing::Action<void(T arg)>([dst](T arg) { *dst = std::move(arg); });
-}
-
-}  // namespace
 
 namespace media {
 
@@ -123,16 +114,16 @@ class RendererImplTest : public ::testing::Test {
 
   // Sets up expectations to allow the audio renderer to initialize.
   void SetAudioRendererInitializeExpectations(PipelineStatus status) {
-    EXPECT_CALL(*audio_renderer_, Initialize(audio_stream_.get(), _, _, _))
-        .WillOnce(
-            DoAll(SaveArg<2>(&audio_renderer_client_), RunCallback<3>(status)));
+    EXPECT_CALL(*audio_renderer_, OnInitialize(audio_stream_.get(), _, _, _))
+        .WillOnce(DoAll(SaveArg<2>(&audio_renderer_client_),
+                        RunOnceCallback<3>(status)));
   }
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetVideoRendererInitializeExpectations(PipelineStatus status) {
-    EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _))
-        .WillOnce(
-            DoAll(SaveArg<2>(&video_renderer_client_), RunCallback<4>(status)));
+    EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _))
+        .WillOnce(DoAll(SaveArg<2>(&video_renderer_client_),
+                        RunOnceCallback<4>(status)));
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
@@ -322,8 +313,8 @@ class RendererImplTest : public ::testing::Test {
     EXPECT_CALL(callbacks_, OnCdmAttached(expected_result))
         .WillOnce(SaveArg<0>(&is_cdm_set_));
     renderer_impl_->SetCdm(cdm_context_.get(),
-                           base::BindRepeating(&CallbackHelper::OnCdmAttached,
-                                               base::Unretained(&callbacks_)));
+                           base::BindOnce(&CallbackHelper::OnCdmAttached,
+                                          base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -397,7 +388,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitialize) {
 
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   // Not returning the video initialization callback.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _));
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _));
 
   InitializeAndExpect(PIPELINE_ERROR_ABORT);
   EXPECT_EQ(PIPELINE_OK, initialization_status_);
@@ -431,7 +422,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   // Not returning the video initialization callback. So initialization will
   // be pending.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _));
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _));
 
   // SetCdm() will trigger the initialization to start. But it will not complete
   // because the |video_renderer_| is not returning the initialization callback.
@@ -697,10 +688,10 @@ TEST_F(RendererImplTest, ErrorDuringInitialize) {
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
 
   // Force an audio error to occur during video renderer initialization.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _))
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _))
       .WillOnce(DoAll(SetError(&audio_renderer_client_, PIPELINE_ERROR_DECODE),
                       SaveArg<2>(&video_renderer_client_),
-                      RunCallback<4>(PIPELINE_OK)));
+                      RunOnceCallback<4>(PIPELINE_OK)));
 
   InitializeAndExpect(PIPELINE_ERROR_DECODE);
 }

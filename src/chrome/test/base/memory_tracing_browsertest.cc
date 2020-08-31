@@ -20,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,7 @@ void OnStartTracingDoneCallback(
       ->RequestGlobalDumpAndAppendToTrace(
           MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
           MemoryDumpDeterminism::NONE,
-          Bind(&RequestGlobalDumpCallback, quit_closure));
+          BindOnce(&RequestGlobalDumpCallback, quit_closure));
 }
 
 class MemoryTracingBrowserTest : public InProcessBrowserTest {
@@ -73,7 +74,7 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
     GURL url1("about:blank");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
     // Begin tracing and trigger dump once start is broadcasted to all
@@ -87,7 +88,7 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
     GURL url2("chrome://credits");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
     // Close the current tab.
@@ -96,7 +97,7 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
     GURL url3("chrome://chrome-urls");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url3, WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
     run_loop.Run();

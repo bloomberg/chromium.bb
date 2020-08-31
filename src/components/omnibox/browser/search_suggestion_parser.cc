@@ -9,11 +9,11 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/check.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -31,7 +31,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/device_form_factor.h"
 #include "url/url_constants.h"
@@ -57,6 +56,9 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
 }
 
 }  // namespace
+
+// Value chosen based on SuggestionGroupIds::INVALID in suggestion_config.proto.
+const int SearchSuggestionParser::kNoSuggestionGroupId = -1;
 
 // SearchSuggestionParser::Result ----------------------------------------------
 
@@ -131,7 +133,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       annotation_(annotation),
       additional_query_params_(additional_query_params),
       image_dominant_color_(image_dominant_color),
-      image_url_(image_url),
+      image_url_(GURL(image_url)),
       should_prefetch_(should_prefetch) {
   match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());
@@ -149,10 +151,12 @@ operator=(const SuggestResult& rhs) = default;
 void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
     const base::string16& input_text) {
+  DCHECK(!match_contents_.empty());
+
+  // In case of zero-suggest results, do not highlight matches.
   if (input_text.empty()) {
-    // In case of zero-suggest results, do not highlight matches.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
+    match_contents_class_ = {
+        ACMatchClassification(0, ACMatchClassification::NONE)};
     return;
   }
 
@@ -181,6 +185,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     return;
   }
 
+  // Note we discard our existing match_contents_class_ with this call.
   match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
       input_text, match_contents_, true);
 }
@@ -244,10 +249,17 @@ void
 SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
     const bool allow_bolding_nothing,
     const base::string16& input_text) {
+  // Start with the trivial nothing-bolded classification.
+  DCHECK(url_.is_valid());
+
+  // In case of zero-suggest results, do not highlight matches.
   if (input_text.empty()) {
-    // In case of zero-suggest results, do not highlight matches.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
+    // TODO(tommycli): Maybe this should actually return
+    // ACMatchClassification::URL. I'm not changing this now because this CL
+    // is meant to fix a regression only, but we should consider this for
+    // consistency with other |input_text| that matches nothing.
+    match_contents_class_ = {
+        ACMatchClassification(0, ACMatchClassification::NONE)};
     return;
   }
 
@@ -409,7 +421,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // 5th element: Optional key-value pairs from the Suggest server.
   const base::ListValue* types = nullptr;
   const base::ListValue* relevances = nullptr;
+  const base::ListValue* experiment_stats = nullptr;
   const base::ListValue* suggestion_details = nullptr;
+  const base::DictionaryValue* headers = nullptr;
   const base::ListValue* subtype_identifiers = nullptr;
   const base::DictionaryValue* extras = nullptr;
   int prefetch_index = -1;
@@ -428,6 +442,28 @@ bool SearchSuggestionParser::ParseSuggestResults(
     results->field_trial_triggered = false;
     extras->GetBoolean("google:fieldtrialtriggered",
                        &results->field_trial_triggered);
+
+    results->experiment_stats.clear();
+    if (extras->GetList("google:experimentstats", &experiment_stats) &&
+        experiment_stats) {
+      for (size_t index = 0; index < experiment_stats->GetSize(); index++) {
+        const base::Value* experiment_stat = nullptr;
+        if (experiment_stats->Get(index, &experiment_stat) && experiment_stat) {
+          results->experiment_stats.push_back(experiment_stat->Clone());
+        }
+      }
+    }
+
+    const base::DictionaryValue* wrapper_dict = nullptr;
+    if (extras->GetDictionary("google:headertexts", &wrapper_dict) &&
+        wrapper_dict && wrapper_dict->GetDictionary("a", &headers) && headers) {
+      for (const auto& it : headers->DictItems()) {
+        int suggestion_group_id;
+        base::StringToInt(it.first, &suggestion_group_id);
+        results->headers_map[suggestion_group_id] =
+            base::UTF8ToUTF16(it.second.GetString());
+      }
+    }
 
     const base::DictionaryValue* client_data = nullptr;
     if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
@@ -461,6 +497,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
+    suggestion = base::CollapseWhitespace(suggestion, false);
     if (suggestion.empty())
       continue;
 
@@ -507,6 +544,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
           // Calculator results include a "= " prefix but we don't want to
           // include this in the search terms.
           suggestion.erase(0, 2);
+          // Unlikely to happen, but better to be safe.
+          if (base::CollapseWhitespace(suggestion, false).empty())
+            continue;
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
           annotation = has_equals_prefix ? suggestion : match_contents;
@@ -520,6 +560,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       std::string image_dominant_color;
       std::string image_url;
       std::string additional_query_params;
+      base::Optional<int> suggestion_group_id;
 
       if (suggestion_details) {
         suggestion_details->GetDictionary(index, &suggestion_detail);
@@ -533,6 +574,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("dc", &image_dominant_color);
           suggestion_detail->GetString("i", &image_url);
           suggestion_detail->GetString("q", &additional_query_params);
+
+          // Suggestion group Id.
+          suggestion_group_id = suggestion_detail->FindIntPath("zl");
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
@@ -553,7 +597,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
-          base::CollapseWhitespace(suggestion, false),
+          suggestion,
           match_type,
           subtype_identifier,
           base::CollapseWhitespace(match_contents, false),
@@ -568,6 +612,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
+
+      if (suggestion_group_id) {
+        results->suggest_results.back().set_suggestion_group_id(
+            *suggestion_group_id);
+      }
       if (answer_parsed_successfully)
         results->suggest_results.back().SetAnswer(answer);
     }

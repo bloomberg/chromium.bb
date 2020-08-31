@@ -46,7 +46,7 @@ class MEDIA_EXPORT Decryptor {
 
   // Indicates that a new key has been added to the ContentDecryptionModule
   // object associated with the Decryptor.
-  typedef base::Callback<void()> NewKeyCB;
+  using NewKeyCB = base::RepeatingClosure;
 
   // Registers a NewKeyCB which should be called when a new key is added to the
   // decryptor. Only one NewKeyCB can be registered for one |stream_type|.
@@ -55,7 +55,7 @@ class MEDIA_EXPORT Decryptor {
   // registering a null callback cancels the originally registered callback.
   // TODO(crbug.com/821288): Replace this with CdmContext::RegisterEventCB().
   virtual void RegisterNewKeyCB(StreamType stream_type,
-                                const NewKeyCB& key_added_cb) = 0;
+                                NewKeyCB key_added_cb) = 0;
 
   // Indicates completion of a decryption operation.
   //
@@ -71,7 +71,8 @@ class MEDIA_EXPORT Decryptor {
   // - Only |data|, |data_size| and |timestamp| are set in the returned
   //   DecoderBuffer. The callback handler is responsible for setting other
   //   fields as appropriate.
-  typedef base::Callback<void(Status, scoped_refptr<DecoderBuffer>)> DecryptCB;
+  using DecryptCB =
+      base::OnceCallback<void(Status, scoped_refptr<DecoderBuffer>)>;
 
   // Decrypts the |encrypted| buffer. The decrypt status and decrypted buffer
   // are returned via the provided callback |decrypt_cb|. The |encrypted| buffer
@@ -81,7 +82,7 @@ class MEDIA_EXPORT Decryptor {
   // a time for a given |stream_type|.
   virtual void Decrypt(StreamType stream_type,
                        scoped_refptr<DecoderBuffer> encrypted,
-                       const DecryptCB& decrypt_cb) = 0;
+                       DecryptCB decrypt_cb) = 0;
 
   // Cancels the scheduled decryption operation for |stream_type| and fires the
   // pending DecryptCB immediately with kSuccess and NULL.
@@ -93,14 +94,14 @@ class MEDIA_EXPORT Decryptor {
   //
   // First Parameter: Indicates initialization success.
   // - Set to true if initialization was successful. False if an error occurred.
-  typedef base::Callback<void(bool)> DecoderInitCB;
+  using DecoderInitCB = base::OnceCallback<void(bool)>;
 
   // Initializes a decoder with the given |config|, executing the |init_cb|
   // upon completion.
   virtual void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) = 0;
+                                      DecoderInitCB init_cb) = 0;
   virtual void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) = 0;
+                                      DecoderInitCB init_cb) = 0;
 
   // Helper structure for managing multiple decoded audio buffers per input.
   typedef std::list<scoped_refptr<AudioBuffer> > AudioFrames;

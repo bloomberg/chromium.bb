@@ -16,8 +16,16 @@ EXTRA_DIST += \
 	expected/layout.gpos \
 	expected/layout.gpos2 \
 	expected/layout.gpos3 \
+	expected/layout.gpos4 \
+	expected/layout.gpos6 \
+	expected/layout.gsub3 \
 	expected/layout.gsub6 \
+	expected/layout.gdef \
+	expected/cmap \
 	expected/cmap14 \
+	expected/sbix \
+	expected/colr \
+	expected/cbdt \
 	fonts \
 	profiles \
 	$(NULL)

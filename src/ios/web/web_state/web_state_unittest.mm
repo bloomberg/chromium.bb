@@ -14,6 +14,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
@@ -53,40 +54,25 @@ const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
 // A test page HTML containing |kTextInTestPageHTML|.
 const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
+
+// Returns the NSURLErrorUnsupportedURL error expected for tests.
+NSError* CreateUnsupportedURLError() {
+  return web::testing::CreateErrorWithUnderlyingErrorChain(
+      {{NSURLErrorDomain, NSURLErrorUnsupportedURL},
+       {net::kNSErrorDomain, net::ERR_INVALID_URL}});
+}
 }  // namespace
 
 using wk_navigation_util::IsWKInternalUrl;
 
-// WebStateTest is parameterized on this enum to test both the legacy
-// implementation of navigation manager and the experimental implementation.
-enum NavigationManagerChoice {
-  TEST_LEGACY_NAVIGATION_MANAGER,
-  TEST_WK_BASED_NAVIGATION_MANAGER,
-};
-
 // Test fixture for web::WebTest class.
-class WebStateTest
-    : public TestWebClient,
-      public WebTestWithWebState,
-      public ::testing::WithParamInterface<NavigationManagerChoice> {
+class WebStateTest : public TestWebClient, public WebTestWithWebState {
  protected:
-  WebStateTest() {
-    if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
-      feature_list_.InitAndDisableFeature(
-          web::features::kSlimNavigationManager);
-    } else {
-      feature_list_.InitAndEnableFeature(web::features::kSlimNavigationManager);
-    }
-  }
-
   base::HistogramTester histogram_tester_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests script execution with and without callback.
-TEST_P(WebStateTest, ScriptExecution) {
+TEST_F(WebStateTest, ScriptExecution) {
   ASSERT_TRUE(LoadHtml("<html></html>"));
 
   // Execute script without callback.
@@ -111,7 +97,7 @@ TEST_P(WebStateTest, ScriptExecution) {
 }
 
 // Tests that executing user JavaScript registers user interaction.
-TEST_P(WebStateTest, UserScriptExecution) {
+TEST_F(WebStateTest, UserScriptExecution) {
   web::TestWebStateDelegate delegate;
   web_state()->SetDelegate(&delegate);
   ASSERT_TRUE(delegate.child_windows().empty());
@@ -130,7 +116,7 @@ TEST_P(WebStateTest, UserScriptExecution) {
 }
 
 // Tests loading progress.
-TEST_P(WebStateTest, LoadingProgress) {
+TEST_F(WebStateTest, LoadingProgress) {
   EXPECT_FLOAT_EQ(0.0, web_state()->GetLoadingProgress());
   ASSERT_TRUE(LoadHtml("<html></html>"));
   WaitForCondition(^bool() {
@@ -140,7 +126,7 @@ TEST_P(WebStateTest, LoadingProgress) {
 
 // Tests that page which overrides window.webkit object does not break the
 // messaging system.
-TEST_P(WebStateTest, OverridingWebKitObject) {
+TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
   const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
@@ -165,7 +151,7 @@ TEST_P(WebStateTest, OverridingWebKitObject) {
 
 // Tests that reload with web::ReloadType::NORMAL is no-op when navigation
 // manager is empty.
-TEST_P(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
+TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
   ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
@@ -181,7 +167,7 @@ TEST_P(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
 
 // Tests that reload with web::ReloadType::ORIGINAL_REQUEST_URL is no-op when
 // navigation manager is empty.
-TEST_P(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
+TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
   ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
@@ -196,7 +182,7 @@ TEST_P(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
 }
 
 // Tests that the snapshot method returns an image of a rendered html page.
-TEST_P(WebStateTest, Snapshot) {
+TEST_F(WebStateTest, Snapshot) {
   ASSERT_TRUE(
       LoadHtml("<html><div style='background-color:#FF0000; width:50%; "
                "height:100%;'></div></html>"));
@@ -233,7 +219,7 @@ TEST_P(WebStateTest, Snapshot) {
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = true.
-TEST_P(WebStateTest, MessageFromMainFrame) {
+TEST_F(WebStateTest, MessageFromMainFrame) {
   // Add a script command handler.
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
@@ -266,7 +252,7 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = false.
-TEST_P(WebStateTest, MessageFromIFrame) {
+TEST_F(WebStateTest, MessageFromIFrame) {
   // Add a script command handler.
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
@@ -300,22 +286,22 @@ TEST_P(WebStateTest, MessageFromIFrame) {
 }
 
 // Tests that the web state has an opener after calling SetHasOpener().
-TEST_P(WebStateTest, SetHasOpener) {
+TEST_F(WebStateTest, SetHasOpener) {
   ASSERT_FALSE(web_state()->HasOpener());
   web_state()->SetHasOpener(true);
   EXPECT_TRUE(web_state()->HasOpener());
 }
 
-// Verifies that large session can be restored. SlimNavigationManagder has max
-// session size limit of |wk_navigation_util::kMaxSessionSize|.
-TEST_P(WebStateTest, RestoreLargeSession) {
+// Verifies that large session can be restored with max session size limit
+// equals to |wk_navigation_util::kMaxSessionSize|.
+TEST_F(WebStateTest, RestoreLargeSession) {
   // Create session storage with large number of items.
   const int kItemCount = 150;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
       [NSMutableArray arrayWithCapacity:kItemCount];
   for (unsigned int i = 0; i < kItemCount; i++) {
     CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    item.URL = GURL(base::StringPrintf("http://www.%u.com", i));
     item.title = base::ASCIIToUTF16(base::StringPrintf("Test%u", i));
     [item_storages addObject:item];
   }
@@ -333,11 +319,9 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   navigation_manager->LoadIfNecessary();
 
   // Verify that session was fully restored.
-  int kExpectedItemCount = web::GetWebClient()->IsSlimNavigationManagerEnabled()
-                               ? wk_navigation_util::kMaxSessionSize
-                               : kItemCount;
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    bool restored = navigation_manager->GetItemCount() == kExpectedItemCount &&
+    bool restored = navigation_manager->GetItemCount() ==
+                        wk_navigation_util::kMaxSessionSize &&
                     navigation_manager->CanGoForward();
     EXPECT_EQ(restored, !navigation_manager->IsRestoreSessionInProgress());
     if (!restored) {
@@ -389,14 +373,13 @@ TEST_P(WebStateTest, RestoreLargeSession) {
 
     return restored;
   }));
-  EXPECT_EQ(kExpectedItemCount, navigation_manager->GetItemCount());
+  EXPECT_EQ(wk_navigation_util::kMaxSessionSize,
+            navigation_manager->GetItemCount());
   EXPECT_TRUE(navigation_manager->CanGoForward());
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
   histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 100, 1);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    histogram_tester_.ExpectTotalCount(kRestoreNavigationTime, 1);
-  }
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationTime, 1);
 
   // Now wait until the last committed item is fully loaded.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
@@ -415,7 +398,7 @@ TEST_P(WebStateTest, RestoreLargeSession) {
 // Verifies that calling WebState::Stop() does not stop the session restoration.
 // Session restoration should be opaque to the user and embedder, so calling
 // Stop() is no-op.
-TEST_P(WebStateTest, CallStopDuringSessionRestore) {
+TEST_F(WebStateTest, CallStopDuringSessionRestore) {
   // Create session storage with large number of items.
   const int kItemCount = 10;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
@@ -458,7 +441,7 @@ TEST_P(WebStateTest, CallStopDuringSessionRestore) {
 
 // Verifies that calling NavigationManager::LoadURLWithParams() does not stop
 // the session restoration and eventually loads the requested URL.
-TEST_P(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
+TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   // Create session storage with large number of items.
   const int kItemCount = 10;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
@@ -513,7 +496,7 @@ TEST_P(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
 // Verifies that calling NavigationManager::Reload() does not stop the session
 // restoration. Session restoration should be opaque to the user and embedder,
 // so calling Reload() is no-op.
-TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
+TEST_F(WebStateTest, CallReloadDuringSessionRestore) {
   // Create session storage with large number of items.
   const int kItemCount = 10;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
@@ -557,14 +540,14 @@ TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
 }
 
 // Verifies that each page title is restored.
-TEST_P(WebStateTest, RestorePageTitles) {
+TEST_F(WebStateTest, RestorePageTitles) {
   // Create session storage.
   const int kItemCount = 3;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
       [NSMutableArray arrayWithCapacity:kItemCount];
   for (unsigned int i = 0; i < kItemCount; i++) {
     CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    item.URL = GURL(base::StringPrintf("http://www.%u.com", i));
     item.title = base::ASCIIToUTF16(base::StringPrintf("Test%u", i));
     [item_storages addObject:item];
   }
@@ -594,7 +577,7 @@ TEST_P(WebStateTest, RestorePageTitles) {
 }
 
 // Tests that loading an HTML page after a failed navigation works.
-TEST_P(WebStateTest, LoadChromeThenHTML) {
+TEST_F(WebStateTest, LoadChromeThenHTML) {
   GURL app_specific_url(
       base::StringPrintf("%s://app_specific_url", kTestAppSpecificScheme));
   web::NavigationManager::WebLoadParams load_params(app_specific_url);
@@ -605,11 +588,10 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
   // Wait for the error loading and check that it corresponds with
   // kUnsupportedUrlErrorPage.
   EXPECT_TRUE(test::WaitForWebViewContainingText(
-      web_state(),
-      testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/false)));
+      web_state(), testing::GetErrorText(web_state(), app_specific_url,
+                                         CreateUnsupportedURLError(),
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -618,7 +600,7 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
 }
 
 // Tests that loading an arbitrary file URL is a no-op.
-TEST_P(WebStateTest, LoadFileURL) {
+TEST_F(WebStateTest, LoadFileURL) {
   GURL file_url("file:///path/to/file.html");
   web::NavigationManager::WebLoadParams load_params(file_url);
   web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
@@ -626,7 +608,7 @@ TEST_P(WebStateTest, LoadFileURL) {
 }
 
 // Tests that reloading after loading HTML page will load the online page.
-TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
+TEST_F(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   net::EmbeddedTestServer server;
   net::test_server::RegisterDefaultHandlers(&server);
   ASSERT_TRUE(server.Start());
@@ -641,11 +623,10 @@ TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
     return !web_state()->IsLoading();
   }));
   EXPECT_TRUE(test::WaitForWebViewContainingText(
-      web_state(),
-      testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/false)));
+      web_state(), testing::GetErrorText(web_state(), app_specific_url,
+                                         CreateUnsupportedURLError(),
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);
@@ -667,12 +648,5 @@ TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   }));
   EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    ProgrammaticWebStateTest,
-    WebStateTest,
-    ::testing::Values(
-        NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER,
-        NavigationManagerChoice::TEST_WK_BASED_NAVIGATION_MANAGER));
 
 }  // namespace web

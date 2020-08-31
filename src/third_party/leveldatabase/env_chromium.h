@@ -18,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
 #include "base/synchronization/condition_variable.h"
 #include "build/build_config.h"
 #include "leveldb/cache.h"
@@ -28,18 +27,16 @@
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
 
-#if defined(OS_WIN) && defined(DeleteFile)
-// See comment in env.h.
-#undef DeleteFile
-#define ENV_CHROMIUM_DELETEFILE_UNDEFINED
-#endif  // defined(OS_WIN) && defined(DeleteFile)
-
 namespace base {
 namespace trace_event {
 class MemoryAllocatorDump;
 class ProcessMemoryDump;
 }  // namespace trace_event
 }  // namespace base
+
+namespace storage {
+class FilesystemProxy;
+}
 
 namespace leveldb_env {
 
@@ -56,9 +53,9 @@ enum MethodID {
   kNewSequentialFile,
   kNewRandomAccessFile,
   kNewWritableFile,
-  kDeleteFile,
+  kObsoleteDeleteFile,
   kCreateDir,
-  kDeleteDir,
+  kObsoleteDeleteDir,
   kGetFileSize,
   kRenameFile,
   kLockFile,
@@ -68,6 +65,8 @@ enum MethodID {
   kSyncParent,
   kGetChildren,
   kNewAppendableFile,
+  kRemoveFile,
+  kRemoveDir,
   kNumEntries
 };
 
@@ -140,39 +139,25 @@ LEVELDB_EXPORT std::string DatabaseNameForRewriteDB(
 // space. A value of -1 will return leveldb's default write buffer size.
 LEVELDB_EXPORT extern size_t WriteBufferSize(int64_t disk_space);
 
-class LEVELDB_EXPORT UMALogger {
+class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env {
  public:
-  virtual void RecordErrorAt(MethodID method) const = 0;
-  virtual void RecordOSError(MethodID method,
-                             base::File::Error error) const = 0;
-  virtual void RecordBytesRead(int amount) const = 0;
-  virtual void RecordBytesWritten(int amount) const = 0;
-};
+  using ScheduleFunc = void(void*);
 
-class LEVELDB_EXPORT RetrierProvider {
- public:
-  virtual int MaxRetryTimeMillis() const = 0;
-  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
-  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const = 0;
-};
-
-class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
-                                   public UMALogger,
-                                   public RetrierProvider {
- public:
+  // Constructs a ChromiumEnv instance with an unrestricted FilesystemProxy
+  // instance that performs direct filesystem access.
   ChromiumEnv();
 
-  typedef void(ScheduleFunc)(void*);
+  // Constructs a ChromiumEnv instance with a custom FilesystemProxy instance.
+  explicit ChromiumEnv(std::unique_ptr<storage::FilesystemProxy> filesystem);
 
-  virtual ~ChromiumEnv();
+  ~ChromiumEnv() override;
 
   bool FileExists(const std::string& fname) override;
   leveldb::Status GetChildren(const std::string& dir,
                               std::vector<std::string>* result) override;
-  leveldb::Status DeleteFile(const std::string& fname) override;
+  leveldb::Status RemoveFile(const std::string& fname) override;
   leveldb::Status CreateDir(const std::string& name) override;
-  leveldb::Status DeleteDir(const std::string& name) override;
+  leveldb::Status RemoveDir(const std::string& name) override;
   leveldb::Status GetFileSize(const std::string& fname,
                               uint64_t* size) override;
   leveldb::Status RenameFile(const std::string& src,
@@ -199,54 +184,31 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   void SetReadOnlyFileLimitForTesting(int max_open_files);
 
  protected:
+  // Constructs a ChromiumEnv instance with a local unrestricted FilesystemProxy
+  // instance that performs direct filesystem access.
   explicit ChromiumEnv(const std::string& name);
+
+  // Constructs a ChromiumEnv instance with a custom FilesystemProxy instance.
+  ChromiumEnv(const std::string& name,
+              std::unique_ptr<storage::FilesystemProxy> filesystem);
 
   static const char* FileErrorString(base::File::Error error);
 
  private:
-  void RecordErrorAt(MethodID method) const override;
-  void RecordOSError(MethodID method, base::File::Error error) const override;
-  void RecordBytesRead(int amount) const override;
-  void RecordBytesWritten(int amount) const override;
-  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
-  void DeleteBackupFiles(const base::FilePath& dir);
+  void RemoveBackupFiles(const base::FilePath& dir);
 
-  // File locks may not be exclusive within a process (e.g. on POSIX). Track
-  // locks held by the ChromiumEnv to prevent access within the process.
-  class LockTable {
-   public:
-    bool Insert(const std::string& fname) {
-      leveldb::MutexLock l(&mu_);
-      return locked_files_.insert(fname).second;
-    }
-    bool Remove(const std::string& fname) {
-      leveldb::MutexLock l(&mu_);
-      return locked_files_.erase(fname) == 1;
-    }
-   private:
-    leveldb::port::Mutex mu_;
-    std::set<std::string> locked_files_;
-  };
-
-  const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread
   void BGThread();
   static void BGThreadWrapper(void* arg) {
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  base::HistogramBase* GetMethodIOErrorHistogram() const;
 
-  // RetrierProvider implementation.
-  int MaxRetryTimeMillis() const override { return kMaxRetryTimeMillis; }
-  base::HistogramBase* GetRetryTimeHistogram(MethodID method) const override;
-  base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const override;
+  const std::unique_ptr<storage::FilesystemProxy> filesystem_;
 
   base::FilePath test_directory_;
 
   std::string name_;
-  std::string uma_ioerror_base_name_;
 
   base::Lock mu_;
   base::ConditionVariable bgsignal_;
@@ -259,7 +221,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   };
   using BGQueue = base::circular_deque<BGItem>;
   BGQueue queue_;
-  LockTable locks_;
   std::unique_ptr<leveldb::Cache> file_cache_;
 };
 
@@ -298,9 +259,6 @@ class LEVELDB_EXPORT DBTracker {
   static base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
       base::trace_event::ProcessMemoryDump* pmd,
       leveldb::Env* tracked_memenv);
-
-  // Report counts to UMA.
-  void UpdateHistograms();
 
   // Provides extra information about a tracked database.
   class TrackedDB : public leveldb::DB {
@@ -385,10 +343,5 @@ LEVELDB_EXPORT leveldb::Slice MakeSlice(const base::StringPiece& s);
 LEVELDB_EXPORT leveldb::Slice MakeSlice(base::span<const uint8_t> s);
 
 }  // namespace leveldb_env
-
-// Redefine DeleteFile if necessary.
-#if defined(OS_WIN) && defined(ENV_CHROMIUM_DELETEFILE_UNDEFINED)
-#define DeleteFile DeleteFileW
-#endif
 
 #endif  // THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_

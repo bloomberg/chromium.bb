@@ -22,6 +22,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "url/gurl.h"
@@ -165,18 +166,10 @@ IN_PROC_BROWSER_TEST_F(
                           ui::PageTransition::PAGE_TRANSITION_TYPED));
 }
 
-// Timeouts on ChromeOS. http://crbug.com/1029034
-#if defined(OS_CHROMEOS)
-#define MAYBE_PasswordsWithGPMAndSyncUserClickedLink \
-  DISABLED_PasswordsWithGPMAndSyncUserClickedLink
-#else
-#define MAYBE_PasswordsWithGPMAndSyncUserClickedLink \
-  PasswordsWithGPMAndSyncUserClickedLink
-#endif
-
+// Timeouts on all platforms. http://crbug.com/1029034
 IN_PROC_BROWSER_TEST_F(
     GooglePasswordManagerNavigationThrottleTestWithPasswordManager,
-    MAYBE_PasswordsWithGPMAndSyncUserClickedLink) {
+    DISABLED_PasswordsWithGPMAndSyncUserClickedLink) {
   base::HistogramTester tester;
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSync(browser()->profile());

@@ -10,18 +10,39 @@
  *
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
-cr.exportPath('settings');
-assert(
-    !settings.defaultResourceLoaded,
-    'settings_ui.js run twice. You probably have an invalid import.');
-/** Global defined when the main Settings script runs. */
-settings.defaultResourceLoaded = true;
+import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import '../icons.m.js';
+import '../settings_main/settings_main.js';
+import '../settings_menu/settings_menu.js';
+import '../settings_shared_css.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_vars_css.m.js';
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {resetGlobalScrollTargetForTesting, setGlobalScrollTarget} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {PageVisibility, pageVisibility} from '../page_visibility.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
 Polymer({
   is: 'settings-ui',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     CrContainerShadowBehavior,
     FindShortcutBehavior,
   ],
@@ -63,22 +84,7 @@ Polymer({
     /**
      * @private {!PageVisibility}
      */
-    pageVisibility_: {type: Object, value: settings.pageVisibility},
-
-    /** @private */
-    showAndroidApps_: Boolean,
-
-    /** @private */
-    showCrostini_: Boolean,
-
-    /** @private */
-    showParentalControls_: Boolean,
-
-    /** @private */
-    showPluginVm_: Boolean,
-
-    /** @private */
-    havePlayStoreApp_: Boolean,
+    pageVisibility_: {type: Object, value: pageVisibility},
 
     /** @private */
     lastSearchQuery_: {
@@ -92,16 +98,16 @@ Polymer({
   },
 
   /** @override */
-  created: function() {
-    settings.initializeRouteFromUrl();
+  created() {
+    Router.getInstance().initializeRouteFromUrl();
   },
 
   /**
    * @override
-   * @suppress {es5Strict} Object literals cannot contain duplicate keys in ES5
-   *     strict mode.
+   * @suppress {es5Strict} Object literals cannot contain duplicate keys in
+   * ES5 strict mode.
    */
-  ready: function() {
+  ready() {
     // Lazy-create the drawer the first time it is opened or swiped into view.
     listenOnce(this.$.drawer, 'cr-drawer-opening', () => {
       this.$.drawerTemplate.if = true;
@@ -111,7 +117,7 @@ Polymer({
       this.$.drawer.cancel();
     });
 
-    CrPolicyStrings = {
+    window.CrPolicyStrings = {
       controlledSettingExtension:
           loadTimeData.getString('controlledSettingExtension'),
       controlledSettingExtensionWithoutName:
@@ -136,25 +142,6 @@ Polymer({
       // </if>
     };
 
-    // The SplitSettings feature hides OS settings in the browser settings page.
-    // https://crbug.com/950007
-    const showOSSettings = loadTimeData.getBoolean('showOSSettings');
-    this.showAndroidApps_ = showOSSettings &&
-        loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible');
-    this.showCrostini_ = showOSSettings &&
-        loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini');
-    this.showParentalControls_ = showOSSettings &&
-        loadTimeData.valueExists('showParentalControls') &&
-        loadTimeData.getBoolean('showParentalControls');
-    this.showPluginVm_ = showOSSettings &&
-        loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = showOSSettings &&
-        loadTimeData.valueExists('havePlayStoreApp') &&
-        loadTimeData.getBoolean('havePlayStoreApp');
-
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';
     });
@@ -165,7 +152,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     document.documentElement.classList.remove('loading');
 
     setTimeout(function() {
@@ -176,7 +163,8 @@ Polymer({
 
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
-    settings.setGlobalScrollTarget(this.$.container);
+    setGlobalScrollTarget(
+        /** @type {HTMLElement} */ (this.$.container));
 
     const scrollToTop = top => new Promise(resolve => {
       if (this.$.container.scrollTop === top) {
@@ -184,11 +172,11 @@ Polymer({
         return;
       }
 
-      // When transitioning  back to main page from a subpage on ChromeOS, using
-      // 'smooth' scroll here results in the scroll changing to whatever is last
-      // value of |top|. This happens even after setting the scroll position the
-      // UI or programmatically.
-      const behavior = cr.isChromeOS ? 'auto' : 'smooth';
+      // When transitioning  back to main page from a subpage on ChromeOS,
+      // using 'smooth' scroll here results in the scroll changing to whatever
+      // is last value of |top|. This happens even after setting the scroll
+      // position the UI or programmatically.
+      const behavior = isChromeOS ? 'auto' : 'smooth';
       this.$.container.scrollTo({top: top, behavior: behavior});
       const onScroll = () => {
         this.debounce('scrollEnd', () => {
@@ -208,13 +196,15 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
-    settings.resetRouteForTesting();
+  detached() {
+    Router.getInstance().resetRouteForTesting();
+    resetGlobalScrollTargetForTesting();
   },
 
-  /** @param {!settings.Route} route */
-  currentRouteChanged: function(route) {
-    const urlSearchQuery = settings.getQueryParameters().get('search') || '';
+  /** @param {!Route} route */
+  currentRouteChanged(route) {
+    const urlSearchQuery =
+        Router.getInstance().getQueryParameters().get('search') || '';
     if (urlSearchQuery == this.lastSearchQuery_) {
       return;
     }
@@ -237,7 +227,7 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  handleFindShortcut: function(modalContextOpen) {
+  handleFindShortcut(modalContextOpen) {
     if (modalContextOpen) {
       return false;
     }
@@ -246,7 +236,7 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  searchInputHasFocus: function() {
+  searchInputHasFocus() {
     return this.$$('cr-toolbar').getSearchField().isSearchFocused();
   },
 
@@ -254,7 +244,7 @@ Polymer({
    * @param {!CustomEvent<string>} e
    * @private
    */
-  onRefreshPref_: function(e) {
+  onRefreshPref_(e) {
     return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(e.detail);
   },
 
@@ -263,10 +253,10 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     const query = e.detail;
-    settings.navigateTo(
-        settings.routes.BASIC,
+    Router.getInstance().navigateTo(
+        routes.BASIC,
         query.length > 0 ?
             new URLSearchParams('search=' + encodeURIComponent(query)) :
             undefined,
@@ -277,27 +267,28 @@ Polymer({
    * Called when a section is selected.
    * @private
    */
-  onIronActivate_: function() {
+  onIronActivate_() {
     this.$.drawer.close();
   },
 
   /** @private */
-  onMenuButtonTap_: function() {
+  onMenuButtonTap_() {
     this.$.drawer.toggle();
   },
 
   /**
    * When this is called, The drawer animation is finished, and the dialog no
-   * longer has focus. The selected section will gain focus if one was selected.
-   * Otherwise, the drawer was closed due being canceled, and the main settings
-   * container is given focus. That way the arrow keys can be used to scroll
-   * the container, and pressing tab focuses a component in settings.
+   * longer has focus. The selected section will gain focus if one was
+   * selected. Otherwise, the drawer was closed due being canceled, and the
+   * main settings container is given focus. That way the arrow keys can be
+   * used to scroll the container, and pressing tab focuses a component in
+   * settings.
    * @private
    */
-  onMenuClose_: function() {
+  onMenuClose_() {
     if (!this.$.drawer.wasCanceled()) {
-      // If a navigation happened, MainPageBehavior#currentRouteChanged handles
-      // focusing the corresponding section.
+      // If a navigation happened, MainPageBehavior#currentRouteChanged
+      // handles focusing the corresponding section.
       return;
     }
 
@@ -311,21 +302,21 @@ Polymer({
   },
 
   /** @private */
-  onAdvancedOpenedInMainChanged_: function() {
+  onAdvancedOpenedInMainChanged_() {
     if (this.advancedOpenedInMain_) {
       this.advancedOpenedInMenu_ = true;
     }
   },
 
   /** @private */
-  onAdvancedOpenedInMenuChanged_: function() {
+  onAdvancedOpenedInMenuChanged_() {
     if (this.advancedOpenedInMenu_) {
       this.advancedOpenedInMain_ = true;
     }
   },
 
   /** @private */
-  onNarrowChanged_: function() {
+  onNarrowChanged_() {
     if (this.$.drawer.open && !this.narrow_) {
       this.$.drawer.close();
     }

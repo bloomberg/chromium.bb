@@ -17,20 +17,22 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -38,10 +40,43 @@ namespace chromeos {
 namespace {
 
 const char kStubWifiGuid[] = "wlan0";
+const std::initializer_list<base::StringPiece> kCheckingForUpdatesDialogPath = {
+    "oobe-update-md", "checking-downloading-update",
+    "checking-for-updates-dialog"};
+const std::initializer_list<base::StringPiece> kUpdatingDialogPath = {
+    "oobe-update-md", "checking-downloading-update", "updating-dialog"};
+const std::initializer_list<base::StringPiece> kUpdatingProgressPath = {
+    "oobe-update-md", "checking-downloading-update", "updating-progress"};
+const std::initializer_list<base::StringPiece> kProgressMessagePath = {
+    "oobe-update-md", "checking-downloading-update", "progress-message"};
+const std::initializer_list<base::StringPiece> kUpdateCompletedDialog = {
+    "oobe-update-md", "checking-downloading-update", "update-complete-dialog"};
+const std::initializer_list<base::StringPiece> kCellularPermissionDialog = {
+    "oobe-update-md", "cellular-permission-dialog"};
+
+// These values should be kept in sync with the progress bar values in
+// chrome/browser/chromeos/login/version_updater/version_updater.cc.
+const int kUpdateCheckProgress = 14;
+const int kVerifyingProgress = 74;
+const int kFinalizingProgress = 81;
+const int kUpdateCompleteProgress = 100;
+
+// Defines what part of update progress does download part takes.
+const int kDownloadProgressIncrement = 60;
+
+constexpr base::TimeDelta kTimeAdvanceSeconds10 =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kTimeAdvanceSeconds60 =
+    base::TimeDelta::FromSeconds(60);
 
 std::string GetDownloadingString(int status_resource_id) {
   return l10n_util::GetStringFUTF8(
       IDS_DOWNLOADING, l10n_util::GetStringUTF16(status_resource_id));
+}
+
+int GetDownloadingProgress(double progress) {
+  return kUpdateCheckProgress +
+         static_cast<int>(progress * kDownloadProgressIncrement);
 }
 
 chromeos::OobeUI* GetOobeUI() {
@@ -51,44 +86,30 @@ chromeos::OobeUI* GetOobeUI() {
 
 }  // namespace
 
-class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
+class UpdateScreenTest : public OobeBaseTest {
  public:
   UpdateScreenTest() = default;
   ~UpdateScreenTest() override = default;
 
-  // InProcessBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    fake_update_engine_client_ = new FakeUpdateEngineClient();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
-        std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
+  void CheckPathVisiblity(std::initializer_list<base::StringPiece> element_ids,
+                          bool visibility);
+  void CheckUpdatingDialogComponents(const int updating_progress_value,
+                                     const std::string& progress_message_value);
 
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
+  // OobeBaseTest:
   void SetUpOnMainThread() override {
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    OobeBaseTest::SetUpOnMainThread();
 
-    tick_clock_.Advance(base::TimeDelta::FromMinutes(1));
+    tick_clock_.Advance(kTimeAdvanceSeconds60);
 
     error_screen_ = GetOobeUI()->GetErrorScreen();
-    update_screen_ = std::make_unique<UpdateScreen>(
-        GetOobeUI()->GetView<UpdateScreenHandler>(), error_screen_,
-        base::BindRepeating(&UpdateScreenTest::HandleScreenExit,
-                            base::Unretained(this)));
+    update_screen_ = UpdateScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    update_screen_->set_exit_callback_for_testing(base::BindRepeating(
+        &UpdateScreenTest::HandleScreenExit, base::Unretained(this)));
     version_updater_ = update_screen_->GetVersionUpdaterForTesting();
     version_updater_->set_tick_clock_for_testing(&tick_clock_);
-
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-  }
-
-  void TearDownOnMainThread() override {
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-
-    update_screen_.reset();
-
-    base::RunLoop run_loop;
-    LoginDisplayHost::default_host()->Finalize(run_loop.QuitClosure());
-    run_loop.Run();
+    update_screen_->set_tick_clock_for_testing(&tick_clock_);
   }
 
  protected:
@@ -101,17 +122,22 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
     run_loop.Run();
   }
 
+  void ShowUpdateScreen() {
+    WizardController::default_controller()->AdvanceToScreen(
+        UpdateView::kScreenId);
+  }
+
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
-  std::unique_ptr<UpdateScreen> update_screen_;
+  UpdateScreen* update_screen_ = nullptr;
   // Version updater - owned by |update_screen_|.
   VersionUpdater* version_updater_ = nullptr;
   // Error screen - owned by OobeUI.
   ErrorScreen* error_screen_ = nullptr;
 
-  FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
-
   base::SimpleTestTickClock tick_clock_;
+
+  base::HistogramTester histogram_tester_;
 
   base::Optional<UpdateScreen::Result> last_screen_result_;
 
@@ -129,8 +155,28 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);
 };
 
+void UpdateScreenTest::CheckPathVisiblity(
+    std::initializer_list<base::StringPiece> element_ids,
+    bool visibility) {
+  if (visibility)
+    test::OobeJS().ExpectVisiblePath(element_ids);
+  else
+    test::OobeJS().ExpectHiddenPath(element_ids);
+}
+
+void UpdateScreenTest::CheckUpdatingDialogComponents(
+    const int updating_progress_value,
+    const std::string& progress_message_value) {
+  CheckPathVisiblity(kUpdatingDialogPath, true);
+  test::OobeJS().ExpectEQ(
+      test::GetOobeElementPath(kUpdatingProgressPath) + ".value",
+      updating_progress_value);
+  test::OobeJS().ExpectElementText(progress_message_value,
+                                   kProgressMessagePath);
+}
+
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
-  update_screen_->Show();
+  ShowUpdateScreen();
   // For this test, the show timer is expected not to fire - cancel it
   // immediately.
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
@@ -138,16 +184,16 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -160,20 +206,22 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
   OobeScreenWaiter network_screen_waiter(NetworkScreenView::kScreenId);
   network_screen_waiter.set_assert_next_screen();
   network_screen_waiter.Wait();
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
-  update_screen_->Show();
+  ShowUpdateScreen();
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   update_screen_->GetShowTimerForTesting()->FireNow();
 
@@ -182,33 +230,34 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
   update_screen_waiter.Wait();
 
   test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "cellular-permission-dialog"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
 
   status.set_current_operation(update_engine::Operation::IDLE);
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
+
   update_screen_->set_ignore_update_deadlines_for_testing(true);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   status.set_new_version("latest and greatest");
-  status.set_new_size(1000000000);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  status.set_new_size(1'000'000'000);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   update_screen_->GetShowTimerForTesting()->FireNow();
 
@@ -217,165 +266,112 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   update_screen_waiter.Wait();
 
   test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "cellular-permission-dialog"});
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
   status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
   status.set_progress(0.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_progress(0.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS()
-      .CreateWaiter("!$('oobe-update-md').$$('#updating-dialog').hidden")
-      ->Wait();
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "cellular-permission-dialog"});
+  test::OobeJS().CreateVisibilityWaiter(true, kUpdatingDialogPath)->Wait();
+  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          14);
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#progress-message').textContent.trim()",
-      l10n_util::GetStringUTF8(IDS_INSTALLING_UPDATE));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
+  CheckUpdatingDialogComponents(
+      kUpdateCheckProgress, l10n_util::GetStringUTF8(IDS_INSTALLING_UPDATE));
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(60));
+  tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.01);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          14);
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#estimated-time-left').textContent.trim()",
+  CheckUpdatingDialogComponents(
+      kUpdateCheckProgress,
       GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_LONG));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(60));
+  tick_clock_.Advance(kTimeAdvanceSeconds60);
   status.set_progress(0.08);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          18);
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#estimated-time-left').textContent.trim()",
+  CheckUpdatingDialogComponents(
+      GetDownloadingProgress(0.08),
       GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.7);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          56);
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#estimated-time-left').textContent.trim()",
+  CheckUpdatingDialogComponents(
+      GetDownloadingProgress(0.7),
       GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_progress(0.9);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          68);
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#estimated-time-left').textContent.trim()",
+  CheckUpdatingDialogComponents(
+      GetDownloadingProgress(0.9),
       GetDownloadingString(IDS_DOWNLOADING_TIME_LEFT_SMALL));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::VERIFYING);
   status.set_progress(1.0);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          74);
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#progress-message').textContent.trim()",
-      l10n_util::GetStringUTF8(IDS_UPDATE_VERIFYING));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
+  CheckUpdatingDialogComponents(kVerifyingProgress,
+                                l10n_util::GetStringUTF8(IDS_UPDATE_VERIFYING));
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::FINALIZING);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          81);
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#progress-message').textContent.trim()",
-      l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
+  CheckUpdatingDialogComponents(
+      kFinalizingProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          100);
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectEQ(
-      "$('oobe-update-md').$$('#progress-message').textContent.trim()",
-      l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "update-complete-msg"});
+  CheckUpdatingDialogComponents(
+      kUpdateCompleteProgress, l10n_util::GetStringUTF8(IDS_UPDATE_FINALIZING));
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
+
+  // Expect proper metric recorded.
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "OOBE.UpdateScreen.UpdateDownloadingTime",
+      2 * kTimeAdvanceSeconds60 + 5 * kTimeAdvanceSeconds10, 1);
 
   // Simulate the situation where reboot does not happen in time.
   ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
   version_updater_->GetRebootTimerForTesting()->FireNow();
 
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-progress"});
-  test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
-                          100);
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "estimated-time-left"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "progress-message"});
-  test::OobeJS().ExpectVisiblePath({"oobe-update-md", "update-complete-msg"});
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectVisiblePath(kUpdateCompletedDialog);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
-  fake_update_engine_client_->set_update_check_result(
+  update_engine_client()->set_update_check_result(
       chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -385,13 +381,13 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::ERROR);
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
-  fake_update_engine_client_->set_default_status(status);
+  update_engine_client()->set_default_status(status);
   version_updater_->UpdateStatusChangedForTesting(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
@@ -399,23 +395,27 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
             last_screen_result_.value());
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::ERROR);
   status.set_new_version("latest and greatest");
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // If the network is a captive portal network, error message is shown with a
   // delay.
@@ -438,14 +438,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
 
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
   status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
@@ -455,26 +455,26 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   update_screen_waiter.Wait();
 
   test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "cellular-permission-dialog"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
 
   status.set_current_operation(update_engine::Operation::IDLE);
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   // Change ethernet state to portal.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // Update screen will delay error message about portal state because
   // ethernet is behind captive portal. Simulate the delay timing out.
@@ -506,6 +506,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
       ->Wait();
 
   EXPECT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
@@ -513,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
 
   // First portal detection attempt returns NULL network and undefined
   // results, so detection is restarted.
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
@@ -538,13 +540,15 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
       "$('error-message').classList.contains('error-state-offline')");
 
   EXPECT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
   // Force timer expiration.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
@@ -570,6 +574,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   update_screen_waiter.Wait();
 
   ASSERT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
@@ -580,10 +586,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
@@ -592,28 +598,28 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
   update_screen_waiter.Wait();
 
   test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-update-md", "cellular-permission-dialog"});
+  test::OobeJS().ExpectVisiblePath(kCellularPermissionDialog);
   test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
+      {"oobe-update-md", "checking-downloading-update"});
 
   test::OobeJS().TapOnPath({"oobe-update-md", "cellular-permission-next"});
 
   test::OobeJS()
-      .CreateWaiter("!$('oobe-update-md').$$('#updating-dialog').hidden")
+      .CreateVisibilityWaiter(true,
+                              {"oobe-update-md", "checking-downloading-update"})
       ->Wait();
 
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "cellular-permission-dialog"});
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
+  test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
+  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectVisiblePath(kUpdatingDialogPath);
 
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
   version_updater_->UpdateStatusChangedForTesting(status);
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
-  EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
+  EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     1);
   ASSERT_FALSE(last_screen_result_.has_value());
 }
 
@@ -625,10 +631,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
 
-  update_screen_->Show();
+  ShowUpdateScreen();
 
-  fake_update_engine_client_->set_default_status(status);
-  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
 
@@ -637,16 +643,16 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
   update_screen_waiter.Wait();
 
   test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-update-md", "cellular-permission-dialog"});
+  test::OobeJS().ExpectVisiblePath(kCellularPermissionDialog);
   test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-for-updates-dialog"});
-  test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
+      {"oobe-update-md", "checking-downloading-update"});
 
   test::OobeJS().ClickOnPath({"oobe-update-md", "cellular-permission-back"});
 
   WaitForScreenResult();
   EXPECT_EQ(UpdateScreen::Result::UPDATE_ERROR, last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 }  // namespace chromeos

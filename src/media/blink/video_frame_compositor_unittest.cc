@@ -34,11 +34,12 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool(void));
-  MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
+  MOCK_METHOD2(Initialize, void(cc::VideoFrameProvider*, bool));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
+  MOCK_METHOD1(SetForceBeginFrames, void(bool));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
   int did_receive_frame_count() { return did_receive_frame_count_; }
@@ -69,7 +70,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
           base::ThreadTaskRunnerHandle::Get(), nullptr);
       compositor_->SetVideoFrameProviderClient(client_.get());
     } else {
-      EXPECT_CALL(*submitter_, Initialize(_));
+      EXPECT_CALL(*submitter_, Initialize(_, _));
       compositor_ = std::make_unique<VideoFrameCompositor>(
           base::ThreadTaskRunnerHandle::Get(), std::move(client_));
       base::RunLoop().RunUntilIdle();
@@ -92,7 +93,11 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
   }
 
   scoped_refptr<VideoFrame> CreateOpaqueFrame() {
-    gfx::Size size(8, 8);
+    return CreateOpaqueFrame(8, 8);
+  }
+
+  scoped_refptr<VideoFrame> CreateOpaqueFrame(int width, int height) {
+    gfx::Size size(width, height);
     return VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
                                    size, base::TimeDelta());
   }
@@ -113,6 +118,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
                                          base::TimeTicks,
                                          bool));
   MOCK_METHOD0(OnFrameDropped, void());
+  MOCK_METHOD0(OnNewFramePresented, void());
 
   base::TimeDelta GetPreferredRenderInterval() override {
     return preferred_render_interval_;
@@ -141,19 +147,6 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
     compositor()->GetCurrentFrame();
     compositor()->PutCurrentFrame();
   }
-
-  void OnNewFramePresented(scoped_refptr<VideoFrame> presented_frame,
-                           base::TimeTicks presentation_time,
-                           base::TimeTicks expected_presentation_time,
-                           uint32_t presentation_counter) {
-    last_presentation_counter_ = presentation_counter;
-    last_presented_frame_ = presented_frame;
-    EXPECT_NE(presentation_time, base::TimeTicks());
-    EXPECT_NE(expected_presentation_time, base::TimeTicks());
-  }
-
-  uint32_t last_presentation_counter_ = 0u;
-  scoped_refptr<VideoFrame> last_presented_frame_;
 
   base::TimeDelta preferred_render_interval_;
   base::SimpleTestTickClock tick_clock_;
@@ -208,17 +201,42 @@ TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {
   EXPECT_EQ(1, submitter_->did_receive_frame_count());
 }
 
-TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
+TEST_P(VideoFrameCompositorTest, RenderFiresPresentationCallback) {
   // Advance the clock so we can differentiate between base::TimeTicks::Now()
   // and base::TimeTicks().
   tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   EXPECT_CALL(*this, Render(_, _, true)).WillRepeatedly(Return(opaque_frame));
+  EXPECT_CALL(*this, OnNewFramePresented());
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(true)).Times(AnyNumber());
   compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
   StartVideoRendererSink();
   StopVideoRendererSink(true);
-  EXPECT_EQ(last_presented_frame_, opaque_frame);
+
+  auto metadata = compositor()->GetLastPresentedFrameMetadata();
+  EXPECT_NE(base::TimeTicks(), metadata->presentation_time);
+  EXPECT_NE(base::TimeTicks(), metadata->expected_display_time);
+}
+
+TEST_P(VideoFrameCompositorTest, PresentationCallbackForcesBeginFrames) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  // A call to the requestVideoFrameCallback() API should set ForceBeginFrames.
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(true));
+  compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
+  base::RunLoop().RunUntilIdle();
+
+  testing::Mock::VerifyAndClear(submitter_);
+
+  // The flag should be un-set when stop receiving callbacks.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(false))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  testing::Mock::VerifyAndClear(submitter_);
 }
 
 TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {
@@ -226,28 +244,40 @@ TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {
   // and base::TimeTicks().
   tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
-  scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame();
-  scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame();
-  scoped_refptr<VideoFrame> opaque_frame_3 = CreateOpaqueFrame();
+  // Create frames of different sizes so we can differentiate them.
+  constexpr int kSize1 = 8;
+  constexpr int kSize2 = 16;
+  constexpr int kSize3 = 24;
+  scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame(kSize1, kSize1);
+  scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame(kSize2, kSize2);
+  scoped_refptr<VideoFrame> opaque_frame_3 = CreateOpaqueFrame(kSize3, kSize3);
 
-  // Set a dummy value to be overriden.
-  constexpr uint32_t kStartValue = 12345;
-  last_presentation_counter_ = kStartValue;
+  EXPECT_CALL(*this, OnNewFramePresented()).Times(1);
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(_)).Times(AnyNumber());
   compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
   compositor()->PaintSingleFrame(opaque_frame_1);
-  EXPECT_NE(last_presentation_counter_, kStartValue);
-  EXPECT_EQ(last_presented_frame_, opaque_frame_1);
 
-  // Callbacks are one-shot, and shouldn't change the values we last received.
+  auto metadata = compositor()->GetLastPresentedFrameMetadata();
+  EXPECT_EQ(metadata->width, kSize1);
+  uint32_t first_presented_frames = metadata->presented_frames;
+
+  // Callbacks are one-shot, and shouldn't fire if they are not re-queued.
+  EXPECT_CALL(*this, OnNewFramePresented()).Times(0);
   compositor()->PaintSingleFrame(opaque_frame_2);
-  EXPECT_EQ(last_presented_frame_, opaque_frame_1);
 
-  // The presentation counter should have gone up twice.
-  uint32_t temp_counter = last_presentation_counter_;
+  // We should get the 2nd frame's metadata when we query for it.
+  metadata = compositor()->GetLastPresentedFrameMetadata();
+  EXPECT_EQ(first_presented_frames + 1, metadata->presented_frames);
+  EXPECT_EQ(metadata->width, kSize2);
+
+  EXPECT_CALL(*this, OnNewFramePresented()).Times(1);
   compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
   compositor()->PaintSingleFrame(opaque_frame_3);
-  EXPECT_EQ(last_presented_frame_, opaque_frame_3);
-  EXPECT_EQ(last_presentation_counter_, temp_counter + 2);
+
+  // The presentated frames counter should have gone up twice by now.
+  metadata = compositor()->GetLastPresentedFrameMetadata();
+  EXPECT_EQ(first_presented_frames + 2, metadata->presented_frames);
+  EXPECT_EQ(metadata->width, kSize3);
 }
 
 TEST_P(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {

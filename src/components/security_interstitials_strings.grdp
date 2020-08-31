@@ -64,10 +64,6 @@
     Applications that can cause this error include antivirus, firewall, and web-filtering or proxy software.
   </message>
 
-  <message name="IDS_BLOCKED_INTERCEPTION_HEADING" desc="Large heading of the known interception interstitial.">
-    Your activity on <ph name="HOSTNAME">$1<ex>example.com</ex></ph> is being monitored
-  </message>
-
   <!-- Lookalike URL warning -->
   <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
     Safety warning
@@ -143,6 +139,9 @@
   <!-- SSL error page: overridable -->
   <message name="IDS_SSL_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
     Back to safety
+  </message>
+  <message name="IDS_SSL_OVERRIDABLE_CLOSE_PAGE_BUTTON" desc="The text for the button that closes the page.">
+    Close page
   </message>
   <message name="IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH" desc="The text for the paragraph at the bottom with the proceed link.">
     <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Proceed to <ph name="SITE">$1<ex>example.com</ex></ph> (unsafe)<ph name="END_LINK">&lt;/a&gt;</ph>
@@ -419,7 +418,7 @@
     The site <ph name="ORIGIN">$2</ph> has requested that an origin policy
     will apply to all its request, but this policy cannot presently be applied.
   </message>
-  <message name="IDS_ORIGIN_POLICY_INFO2" desc="The second paragrpah of the text of the Origin Policy Error Interstitial. (Presently intentionally left blank.)" />
+  <message name="IDS_ORIGIN_POLICY_INFO2" desc="The second paragraph of the text of the Origin Policy Error Interstitial. (Presently intentionally left blank.)" />
   <message name="IDS_ORIGIN_POLICY_BUTTON"
     desc="The text for the Origin Policy Error Interstitial button that takes the user back to the previous page">
     Back to safety.
@@ -428,26 +427,18 @@
     desc="The text for the Origin Policy Error Interstitial button that contains additional information.">
     Advanced
   </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy could not be loaded.">
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy was requested but could not be loaded.">
     The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
     an origin policy will be applied to all requests to it. But it has now
     failed to deliver a policy, which prevents the browser from fulfilling
     your request for <ph name="SITE">$1</ph>. Origin policies can be used by
     site operators to configure security and other properties for a site.
   </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_SHOULD_NOT_REDIRECT" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy request was met with a 'redirect' response.">
-    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
-    an origin policy will be applied to all requests to it. But instead of
-    delivering a policy it has redirected the browser elsewhere, which prevents
-    the browser from fulfilling your request for <ph name="SITE">$1</ph>. Origin
-    policies can be used by site operators to configure security and other
-    properties for a site.
-  </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_OTHER" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for cases other than redirect or load error.">
-    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
-    an origin policy will be applied to all requests to it. But it has now
-    delivered an invalid policy, which means the browser cannot fullfil your
-    request for <ph name="SITE">$1</ph>. Origin policies can be used by
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_PARSE_HEADER" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy header could not be parsed.">
+    The server you are going to, <ph name="ORIGIN">$2</ph>, has set a header
+    requiring that an origin policy will be applied to all requests to it. But
+    the header is malformed, which prevents the browser from fulfilling
+    your request for <ph name="SITE">$1</ph>. Origin policies can be used by
     site operators to configure security and other properties for a site.
   </message>
   <message name="IDS_ORIGIN_POLICY_FINAL_PARAGRAPH"
@@ -469,37 +460,55 @@
     <ph name='LOOKALIKE_DOMAIN'>$1<ex>fake-google.com</ex></ph> looks similar to <ph name='SUGGESTED_DOMAIN'>$2<ex>google.com</ex></ph>. Attackers sometimes mimic sites by using similar URLs.
   </message>
 
-  <!-- Known interception disclosure WebUI strings -->
-  <!-- Title of the tab -->
-  <message name="IDS_KNOWN_INTERCEPTION_TITLE" desc="Title of network interception disclosure page.">
-    Monitoring Detected
-  </message>
+  <if expr="not is_ios">
+    <!-- Blocked interception interstitial strings -->
+    <message name="IDS_BLOCKED_INTERCEPTION_HEADING" desc="Large heading of the known interception interstitial.">
+      Your activity on <ph name="HOSTNAME">$1<ex>example.com</ex></ph> is being monitored
+    </message>
 
-  <!-- Main message title -->
-  <message name="IDS_KNOWN_INTERCEPTION_HEADER" desc="Title of chrome://connection-monitoring-detected/ page, shows when Chrome has detected known network monitoring activity">
-    Your activity on the web is being monitored
-  </message>
+    <!-- Known interception disclosure WebUI strings -->
+    <!-- Title of the tab -->
+    <message name="IDS_KNOWN_INTERCEPTION_TITLE" desc="Title of network interception disclosure page.">
+      Monitoring Detected
+    </message>
 
-  <message name="IDS_KNOWN_INTERCEPTION_BODY1" desc="First body text for the chrome://connection-monitoring-detected/ page">
-    Anything you type, any pages you view, or any other activity on the web is being watched. Content on sites may be changed without your knowledge.
-  </message>
+    <!-- Main message title -->
+    <message name="IDS_KNOWN_INTERCEPTION_HEADER" desc="Title of chrome://connection-monitoring-detected/ page, shows when Chrome has detected known network monitoring activity">
+      Your activity on the web is being monitored
+    </message>
 
-  <if expr="_google_chrome">
-    <message name="IDS_KNOWN_INTERCEPTION_BODY2" desc="Second body text for the chrome://connection-monitoring-detected/ page with more details">
-      This problem happens because of a certificate you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chrome. While some legitimate cases for monitoring do exist, like on a school or company network, Chrome wants to make sure you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.
+    <message name="IDS_KNOWN_INTERCEPTION_BODY1" desc="First body text for the chrome://connection-monitoring-detected/ page">
+      Anything you type, any pages you view, or any other activity on the web is being watched. Content on sites may be changed without your knowledge.
+    </message>
+
+    <if expr="_google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_BODY2" desc="Second body text for the chrome://connection-monitoring-detected/ page with more details">
+        This problem happens because of a certificate you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chrome. While some legitimate cases for monitoring do exist, like on a school or company network, Chrome wants to make sure you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_BODY2" desc="Second body text for the chrome://connection-monitoring-detected/ page with more details">
+        This problem happens because of a certificate you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chromium. While some legitimate cases for monitoring do exist, like on a school or company network, Chromium wants to make sure you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.
+      </message>
+    </if>
+
+    <!-- Known interception disclosure infobar strings -->
+    <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_HEADING" desc="Text of the heading used to alert the user that Chrome has detected that their network connnection is being intercepted.">
+      Your activity on the web is being monitored
+    </message>
+    <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_BUTTON_TEXT" desc="Text of the button to close the disclosure infobar and continue using Chrome.">
+      OK
     </message>
   </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_KNOWN_INTERCEPTION_BODY2" desc="Second body text for the chrome://connection-monitoring-detected/ page with more details">
-      This problem happens because of a certificate you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chromium. While some legitimate cases for monitoring do exist, like on a school or company network, Chromium wants to make sure you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.
-    </message>
-  </if>
 
-  <!-- Known interception disclosure infobar strings -->
-  <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_HEADING" desc="Text of the heading used to alert the user that Chrome has detected that their network connnection is being intercepted.">
-    Your activity on the web is being monitored
+  <!-- Legacy TLS interstitial -->
+  <message name="IDS_LEGACY_TLS_HEADING" desc="Large heading of the legacy TLS interstitial.">
+    Your connection is not fully secure
   </message>
-  <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_BUTTON_TEXT" desc="Text of the button to close the disclosure infobar and continue using Chrome.">
-    OK
+  <message name="IDS_LEGACY_TLS_PRIMARY_PARAGRAPH" desc="Main paragraph of the legacy TLS interstitial. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
+    This site uses an outdated security configuration, which may expose your information (for example, passwords, messages, or credit cards) when it is sent to this site.
+  </message>
+  <message name="IDS_LEGACY_TLS_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
+    The connection used to load this site used TLS 1.0 or TLS 1.1, which are deprecated and will be disabled in the future. Once disabled, users will be prevented from loading this site. The server should enable TLS 1.2 or later.
   </message>
 </grit-part>

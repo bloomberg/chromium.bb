@@ -222,8 +222,9 @@ EventFactoryEvdev::CreateSystemInputInjector() {
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchKeyEvent", "device",
                params.device_id);
-  keyboard_.OnKeyChange(params.code, params.down, params.suppress_auto_repeat,
-                        params.timestamp, params.device_id);
+  keyboard_.OnKeyChange(params.code, params.scan_code, params.down,
+                        params.suppress_auto_repeat, params.timestamp,
+                        params.device_id, params.flags);
 }
 
 void EventFactoryEvdev::DispatchMouseMoveEvent(
@@ -465,12 +466,12 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&EventFactoryEvdev::DispatchMouseMoveEvent,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     MouseMoveEventParams(
-                         -1 /* device_id */, EF_NONE, cursor_->GetLocation(),
-                         PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-                         EventTimeForNow())));
+      base::BindOnce(
+          &EventFactoryEvdev::DispatchMouseMoveEvent,
+          weak_ptr_factory_.GetWeakPtr(),
+          MouseMoveEventParams(
+              -1 /* device_id */, EF_NONE, cursor_->GetLocation(),
+              PointerDetails(EventPointerType::kMouse), EventTimeForNow())));
 }
 
 int EventFactoryEvdev::NextDeviceId() {

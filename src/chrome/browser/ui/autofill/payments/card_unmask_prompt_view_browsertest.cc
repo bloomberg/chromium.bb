@@ -24,6 +24,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
 namespace autofill {
@@ -47,6 +48,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
     details_ = details;
   }
   void OnUnmaskPromptClosed() override {}
+  bool ShouldOfferFidoAuth() const override { return false; }
 
   base::WeakPtr<TestCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -162,10 +164,11 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
     if (name == kExpiryExpired)
       card.SetExpirationYear(2016);
 
-    controller()->ShowPrompt(
-        base::Bind(&CreateCardUnmaskPromptView, base::Unretained(controller()),
-                   base::Unretained(contents())),
-        card, AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->GetWeakPtr());
+    controller()->ShowPrompt(base::BindOnce(&CreateCardUnmaskPromptView,
+                                            base::Unretained(controller()),
+                                            base::Unretained(contents())),
+                             card, AutofillClient::UNMASK_FOR_AUTOFILL,
+                             delegate()->GetWeakPtr());
     // Setting error expectations and confirming the dialogs for some test
     // cases.
     if (name == kExpiryValidPermanentError ||

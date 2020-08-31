@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
 #include <iterator>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/test/mock_callback.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -278,8 +280,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSaved) {
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(saved_match())));
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE,
-            passwords_data().state());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(kTestOrigin, passwords_data().origin());
   TestAllUpdates();
 }
@@ -510,7 +511,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
-  std::vector<const PasswordForm*> best_matches;
+  std::vector<const PasswordForm*> best_matches = {&saved_match()};
   std::unique_ptr<MockPasswordFormManagerForUI> test_form_manager(
       CreateFormManager(&best_matches, {}));
   passwords_data().OnUpdatePassword(std::move(test_form_manager));
@@ -626,6 +627,35 @@ TEST_F(ManagePasswordsStateTest, AutofillCausedByInternalFormManager) {
               UnorderedElementsAre(Pointee(local_federated_form()),
                                    Pointee(saved_match())));
   EXPECT_EQ(saved_match().origin, passwords_data().origin());
+}
+
+TEST_F(ManagePasswordsStateTest, ProcessUnsyncedCredentialsWillBeDeleted) {
+  std::vector<PasswordForm> unsynced_credentials(1);
+  unsynced_credentials[0].username_value = ASCIIToUTF16("user");
+  unsynced_credentials[0].password_value = ASCIIToUTF16("password");
+  passwords_data().ProcessUnsyncedCredentialsWillBeDeleted(
+      unsynced_credentials);
+  EXPECT_EQ(passwords_data().state(),
+            password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
+  EXPECT_EQ(passwords_data().unsynced_credentials(), unsynced_credentials);
+}
+
+TEST_F(ManagePasswordsStateTest, OnMovablePasswordSubmitted) {
+  std::vector<const PasswordForm*> password_forms = {&saved_match()};
+  std::vector<const PasswordForm*> federated_matches = {
+      &local_federated_form()};
+
+  passwords_data().OnPasswordMovable(
+      CreateFormManager(&password_forms, federated_matches));
+
+  EXPECT_THAT(
+      passwords_data().GetCurrentForms(),
+      ElementsAre(Pointee(saved_match()), Pointee(local_federated_form())));
+  EXPECT_EQ(passwords_data().state(),
+            password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
+  EXPECT_EQ(passwords_data().origin(), GURL(kTestOrigin));
+
+  TestAllUpdates();
 }
 
 }  // namespace

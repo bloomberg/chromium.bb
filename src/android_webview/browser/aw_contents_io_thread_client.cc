@@ -43,7 +43,6 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using content::BrowserThread;
 using content::RenderFrameHost;
-using content::ResourceType;
 using content::WebContents;
 using std::map;
 using std::pair;
@@ -344,7 +343,7 @@ namespace {
 // Used to specify what kind of url was intercepted by the embedded
 // using shouldIntercepterRequest callback.
 // Note: these values are persisted in UMA logs, so they should never be
-// renumbered nor reused.
+// renumbered or reused.
 enum class InterceptionType {
   kNoIntercept,
   kOther,

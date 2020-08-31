@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 /**
  * @unrestricted
  */
@@ -11,6 +12,7 @@ export class FormattedContentBuilder {
   constructor(indentString) {
     this._lastOriginalPosition = 0;
 
+    /** @type {!Array.<string>} */
     this._formattedContent = [];
     this._formattedContentLength = 0;
     this._lastFormattedPosition = 0;
@@ -23,6 +25,7 @@ export class FormattedContentBuilder {
     /** @type {!Map<number, string>} */
     this._cachedIndents = new Map();
 
+    /** @type {number} */
     this._newLines = 0;
     this._softSpace = false;
     this._hardSpaces = 0;
@@ -167,12 +170,3 @@ export class FormattedContentBuilder {
     this._lastFormattedPosition = this._formattedContentLength;
   }
 }
-
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-/** @constructor */
-FormatterWorker.FormattedContentBuilder = FormattedContentBuilder;

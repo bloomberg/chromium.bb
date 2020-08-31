@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "crypto/hmac.h"
 #include "remoting/base/session_options.h"
+#include "remoting/protocol/session_options_provider.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
@@ -30,7 +31,7 @@ class TransportContext;
 class MessagePipe;
 class WebrtcAudioModule;
 
-class WebrtcTransport : public Transport {
+class WebrtcTransport : public Transport, public SessionOptionsProvider {
  public:
   class EventHandler {
    public:
@@ -49,6 +50,10 @@ class WebrtcTransport : public Transport {
 
     // Called when there is an error connecting the session.
     virtual void OnWebrtcTransportError(ErrorCode error) = 0;
+
+    // Called when the transport protocol has been changed. Note that this might
+    // be called before the channels become ready.
+    virtual void OnWebrtcTransportProtocolChanged() = 0;
 
     // Called when a new data channel is created by the peer.
     virtual void OnWebrtcTransportIncomingDataChannel(
@@ -79,10 +84,14 @@ class WebrtcTransport : public Transport {
   // any messages.
   std::unique_ptr<MessagePipe> CreateOutgoingChannel(const std::string& name);
 
-  // Transport interface.
+  // Transport implementations.
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
   bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override;
+
+  // SessionOptionsProvider implementations.
+  const SessionOptions& session_options() const override;
+
   void Close(ErrorCode error);
 
   void ApplySessionOptions(const SessionOptions& options);
@@ -94,6 +103,20 @@ class WebrtcTransport : public Transport {
   // Called when a new video transceiver has been created by the PeerConnection.
   void OnVideoTransceiverCreated(
       rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver);
+
+  // Transport layer protocol used to connect to the relay server or the peer.
+  // Possible values are those defined in the protocol and relayProtocol fields
+  // in the RTCIceCandidateStats dictionary.  Empty if the protocol is not known
+  // yet, "api-error" if failed to get the current protocol.
+  const std::string& transport_protocol() const { return transport_protocol_; }
+
+  // Since WebRTC uses its own threads, it is difficult to control its behavior
+  // using the standard Chromium threading test classes.  For higher-level tests
+  // which do not want to mock out WebRTC, we provide this mechanism to allow
+  // for polling faster (which should mean the teardown work completing faster)
+  // or to zero out the interval and prevent hangs due to PostDelayedTask.
+  static void SetDataChannelPollingIntervalForTests(
+      base::TimeDelta data_channel_state_polling_interval);
 
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
@@ -150,6 +173,15 @@ class WebrtcTransport : public Transport {
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
 
+  // Closes the PeerConnection after |control_data_channel| and
+  // |event_data_channel| have closed.  Note that |peer_connection_wrapper| is
+  // always destroyed asynchronously to allow the callstack to unwind first.
+  static void ClosePeerConnection(
+      rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel,
+      rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel,
+      std::unique_ptr<PeerConnectionWrapper> peer_connection_wrapper,
+      base::Time start_time);
+
   // Returns the VideoSender for this connection, or nullptr if it hasn't
   // been created yet.
   rtc::scoped_refptr<webrtc::RtpSenderInterface> GetVideoSender();
@@ -172,6 +204,8 @@ class WebrtcTransport : public Transport {
 
   base::Optional<bool> connection_relayed_;
 
+  std::string transport_protocol_;
+
   bool want_ice_restart_ = false;
 
   std::unique_ptr<jingle_xmpp::XmlElement> pending_transport_info_message_;
@@ -182,7 +216,15 @@ class WebrtcTransport : public Transport {
 
   std::string preferred_video_codec_;
 
+  SessionOptions session_options_;
+
   rtc::scoped_refptr<webrtc::RtpTransceiverInterface> video_transceiver_;
+
+  // Track the data channels so we can make sure they are closed before we
+  // close the peer connection.  This prevents RTCErrors being thrown on the
+  // other side of the WebRTC connection.
+  rtc::scoped_refptr<webrtc::DataChannelInterface> control_data_channel_;
+  rtc::scoped_refptr<webrtc::DataChannelInterface> event_data_channel_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_{this};
 

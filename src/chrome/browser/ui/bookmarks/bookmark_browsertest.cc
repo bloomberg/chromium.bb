@@ -30,9 +30,9 @@
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -237,8 +237,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
         GURL url;
         base::string16 title;
         EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
-            ui::OSExchangeData::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
-            &url, &title));
+            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
         EXPECT_EQ(page_url, url);
         EXPECT_EQ(page_title, title);
 #if !defined(OS_WIN)
@@ -289,8 +288,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.
         // See https://crbug.com/893432.
         EXPECT_FALSE(drag_data->provider().GetURLAndTitle(
-            ui::OSExchangeData::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
-            &url, &title));
+            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
 #endif
 #if !defined(OS_WIN)
         // On Windows, GetDragImage() is a NOTREACHED() as the Windows

@@ -41,7 +41,6 @@
 #include "src/execution/isolate.h"
 #include "src/heap/heap-inl.h"  // For MemoryAllocator. TODO(jkummerow): Drop.
 #include "src/snapshot/embedded/embedded-data.h"
-#include "src/snapshot/serializer-common.h"
 #include "src/snapshot/snapshot.h"
 #include "src/utils/ostreams.h"
 #include "src/utils/vector.h"
@@ -49,25 +48,28 @@
 namespace v8 {
 namespace internal {
 
-AssemblerOptions AssemblerOptions::Default(
-    Isolate* isolate, bool explicitly_support_serialization) {
+AssemblerOptions AssemblerOptions::Default(Isolate* isolate) {
   AssemblerOptions options;
-  const bool serializer =
-      isolate->serializer_enabled() || explicitly_support_serialization;
+  const bool serializer = isolate->serializer_enabled();
   const bool generating_embedded_builtin =
       isolate->IsGeneratingEmbeddedBuiltins();
   options.record_reloc_info_for_serialization = serializer;
   options.enable_root_array_delta_access =
       !serializer && !generating_embedded_builtin;
 #ifdef USE_SIMULATOR
-  // Don't generate simulator specific code if we are building a snapshot, which
-  // might be run on real hardware.
-  options.enable_simulator_code = !serializer;
+  // Even though the simulator is enabled, we may still need to generate code
+  // that may need to run on both the simulator and real hardware. For example,
+  // if we are cross-compiling and embedding a script into the snapshot, the
+  // script will need to run on the host causing the embedded builtins to run in
+  // the simulator. While the final cross-compiled V8 will not have a simulator.
+
+  // So here we enable simulator specific code if not generating the snapshot or
+  // if we are but we are targetting the simulator *only*.
+  options.enable_simulator_code = !serializer || FLAG_target_is_simulator;
 #endif
   options.inline_offheap_trampolines &= !generating_embedded_builtin;
 #if V8_TARGET_ARCH_X64 || V8_TARGET_ARCH_ARM64
-  const base::AddressRegion& code_range =
-      isolate->heap()->memory_allocator()->code_range();
+  const base::AddressRegion& code_range = isolate->heap()->code_range();
   DCHECK_IMPLIES(code_range.begin() != kNullAddress, !code_range.is_empty());
   options.code_range_start = code_range.begin();
 #endif

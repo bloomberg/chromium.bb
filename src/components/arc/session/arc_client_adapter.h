@@ -13,7 +13,10 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/arc/session/arc_start_params.h"
 #include "components/arc/session/arc_upgrade_params.h"
-#include "components/version_info/channel.h"
+
+namespace cryptohome {
+class Identification;
+}  // namespace cryptohome
 
 namespace arc {
 
@@ -27,8 +30,7 @@ class ArcClientAdapter {
   };
 
   // Creates a default instance of ArcClientAdapter.
-  static std::unique_ptr<ArcClientAdapter> Create(
-      version_info::Channel channel);
+  static std::unique_ptr<ArcClientAdapter> Create();
   virtual ~ArcClientAdapter();
 
   // StartMiniArc starts ARC with only a handful of ARC processes for Chrome OS
@@ -41,12 +43,14 @@ class ArcClientAdapter {
                           chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance. |on_shutdown| is true if the method
-  // is called due to the browser being shut down.
-  virtual void StopArcInstance(bool on_shutdown) = 0;
+  // is called due to the browser being shut down. Also backs up the ARC
+  // bug report if |should_backup_log| is set to true.
+  virtual void StopArcInstance(bool on_shutdown, bool should_backup_log) = 0;
 
-  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // Sets a hash string of the profile user IDs and an ARC serial number for the
   // user.
-  virtual void SetUserInfo(const std::string& hash,
+  virtual void SetUserInfo(const cryptohome::Identification& cryptohome_id,
+                           const std::string& hash,
                            const std::string& serial_number) = 0;
 
   void AddObserver(Observer* observer);

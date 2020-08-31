@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -160,7 +161,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   }
 
   // Construct a bad accessibility message that BrowserAccessibilityManager
-  // will reject.
+  // will reject.  Note that BrowserAccessibilityManager is hosted in a
+  // renderer process - the test verifies that the renderer process will crash
+  // (i.e. the scenario under test does not involve mojo::ReportBadMessage
+  // or content::bad_message::ReceivedBadMessage).
   AXEventNotificationDetails bad_accessibility_event;
   bad_accessibility_event.updates.resize(1);
   bad_accessibility_event.updates[0].root_id = 1;

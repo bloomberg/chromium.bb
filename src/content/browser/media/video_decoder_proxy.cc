@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/public/browser/system_connector.h"
-#include "media/mojo/mojom/constants.mojom.h"
+#include "content/public/browser/media_service.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -72,16 +70,6 @@ void VideoDecoderProxy::CreateCdm(
     const std::string& key_system,
     mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {}
 
-void VideoDecoderProxy::CreateDecryptor(
-    int cdm_id,
-    mojo::PendingReceiver<media::mojom::Decryptor> receiver) {}
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-void VideoDecoderProxy::CreateCdmProxy(
-    const base::Token& cdm_guid,
-    mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
-
 media::mojom::InterfaceFactory* VideoDecoderProxy::GetMediaInterfaceFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -96,19 +84,12 @@ void VideoDecoderProxy::ConnectToMediaService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!interface_factory_remote_);
 
-  mojo::Remote<media::mojom::MediaService> media_service;
-  // TODO(slan): Use the BrowserContext Connector instead.
-  // See https://crbug.com/638950.
-  GetSystemConnector()->BindInterface(
-      media::mojom::kMediaServiceName,
-      media_service.BindNewPipeAndPassReceiver());
-
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
+  mojo::PendingRemote<media::mojom::FrameInterfaceFactory> interfaces;
   ignore_result(interfaces.InitWithNewPipeAndPassReceiver());
-  media_service->CreateInterfaceFactory(
+
+  GetMediaService().CreateInterfaceFactory(
       interface_factory_remote_.BindNewPipeAndPassReceiver(),
       std::move(interfaces));
-
   interface_factory_remote_.set_disconnect_handler(
       base::BindOnce(&VideoDecoderProxy::OnMediaServiceConnectionError,
                      base::Unretained(this)));

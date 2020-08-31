@@ -4,12 +4,15 @@
 
 package org.chromium.chromecast.shell;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.audiopolicy.AudioPolicy;
 import android.os.Build;
-import android.support.annotation.Nullable;
+import android.os.Build.VERSION_CODES;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
@@ -65,7 +68,7 @@ public class CastAudioManager {
     public Observable<AudioFocusLoss> requestAudioFocusWhen(
             Observable<CastAudioFocusRequest> event) {
         Controller<AudioFocusLoss> audioFocusLossState = new Controller<>();
-        audioFocusLossState.set(AudioFocusLoss.NORMAL);
+        audioFocusLossState.set(AudioFocusLoss.NOT_REQUESTED);
         event.subscribe(focusRequest -> {
             focusRequest.setAudioFocusChangeListener((int focusChange) -> {
                 audioFocusLossState.set(AudioFocusLoss.from(focusChange));
@@ -126,6 +129,11 @@ public class CastAudioManager {
         mInternal.unregisterAudioPolicyAsync(audioPolicy);
     }
 
+    @TargetApi(VERSION_CODES.M)
+    public AudioDeviceInfo[] getDevices(int flags) {
+        return mInternal.getDevices(flags);
+    }
+
     // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with
     // CastAudioManager.
     public AudioManager getInternal() {
@@ -139,7 +147,8 @@ public class CastAudioManager {
     public enum AudioFocusLoss {
         NORMAL,
         TRANSIENT,
-        TRANSIENT_CAN_DUCK;
+        TRANSIENT_CAN_DUCK,
+        NOT_REQUESTED;
 
         private static @Nullable AudioFocusLoss from(int focusChange) {
             switch (focusChange) {

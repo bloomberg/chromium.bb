@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <memory>
 #include <sstream>
@@ -142,6 +143,12 @@ void AddV4L2GpuWhitelist(
   // Device node for V4L2 JPEG encode accelerator drivers.
   static const char kDevJpegEncPath[] = "/dev/jpeg-enc";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegEncPath));
+
+  if (UseChromecastSandboxWhitelist()) {
+    static const char kAmlogicAvcEncoderPath[] = "/dev/amvenc_avc";
+    permissions->push_back(
+        BrokerFilePermission::ReadWrite(kAmlogicAvcEncoderPath));
+  }
 }
 
 void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
@@ -196,6 +203,29 @@ void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   }
 }
 
+void AddIntelGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  static const char* const kReadOnlyList[] = {
+      "/dev/dri",
+      "/usr/share/vulkan/icd.d",
+      "/usr/share/vulkan/icd.d/intel_icd.x86_64.json"};
+  for (const char* item : kReadOnlyList)
+    permissions->push_back(BrokerFilePermission::ReadOnly(item));
+
+  // TODO(hob): Whitelist all valid render node paths.
+  static const char kRenderNodePath[] = "/dev/dri/renderD128";
+  struct stat st;
+  if (stat(kRenderNodePath, &st) == 0) {
+    permissions->push_back(BrokerFilePermission::ReadWrite(kRenderNodePath));
+
+    uint32_t major = (static_cast<uint32_t>(st.st_rdev) >> 8) & 0xff;
+    uint32_t minor = static_cast<uint32_t>(st.st_rdev) & 0xff;
+    std::string char_device_path =
+        base::StringPrintf("/sys/dev/char/%u:%u/", major, minor);
+    permissions->push_back(
+        BrokerFilePermission::ReadOnlyRecursive(char_device_path));
+  }
+}
+
 void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // On ARM we're enabling the sandbox before the X connection is made,
   // so we need to allow access to |.Xauthority|.
@@ -243,6 +273,9 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
   static const char kNvidiaDeviceModeSetPath[] = "/dev/nvidia-modeset";
   static const char kNvidiaParamsPath[] = "/proc/driver/nvidia/params";
   static const char kDevShm[] = "/dev/shm/";
+  static const char kVulkanIcdPath[] = "/usr/share/vulkan/icd.d";
+  static const char kNvidiaVulkanIcd[] =
+      "/usr/share/vulkan/icd.d/nvidia_icd.json";
 
   // For shared memory.
   permissions->push_back(
@@ -263,6 +296,9 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
   permissions->push_back(
       BrokerFilePermission::ReadWrite(kNvidiaDeviceModeSetPath));
   permissions->push_back(BrokerFilePermission::ReadOnly(kNvidiaParamsPath));
+
+  permissions->push_back(BrokerFilePermission::ReadOnly(kVulkanIcdPath));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kNvidiaVulkanIcd));
 }
 
 std::vector<BrokerFilePermission> FilePermissionsForGpu(
@@ -282,6 +318,10 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     }
     if (options.use_amd_specific_policies) {
       AddAmdGpuWhitelist(&permissions);
+      return permissions;
+    }
+    if (options.use_intel_specific_policies) {
+      AddIntelGpuWhitelist(&permissions);
       return permissions;
     }
   }
@@ -353,6 +393,15 @@ void LoadV4L2Libraries(
   }
 }
 
+void LoadChromecastV4L2Libraries() {
+  for (const char* path : kWhitelistedChromecastPaths) {
+    const std::string library_path(std::string(path) +
+                                   std::string("libvpcodec.so"));
+    if (dlopen(library_path.c_str(), dlopen_flag))
+      break;
+  }
+}
+
 bool LoadLibrariesForGpu(
     const service_manager::SandboxSeccompBPF::Options& options) {
   if (IsChromeOS()) {
@@ -366,6 +415,8 @@ bool LoadLibrariesForGpu(
       return LoadAmdGpuLibraries();
   } else if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
     LoadArmGpuLibraries();
+    if (UseV4L2Codec())
+      LoadChromecastV4L2Libraries();
   }
   return true;
 }
@@ -376,7 +427,8 @@ sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
   command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
   command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
   command_set.set(sandbox::syscall_broker::COMMAND_STAT);
-  if (IsChromeOS() && options.use_amd_specific_policies) {
+  if (IsChromeOS() && (options.use_amd_specific_policies ||
+                       options.use_intel_specific_policies)) {
     command_set.set(sandbox::syscall_broker::COMMAND_READLINK);
   }
   return command_set;

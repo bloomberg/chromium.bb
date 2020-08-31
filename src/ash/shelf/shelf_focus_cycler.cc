@@ -32,18 +32,8 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         FocusShelf(reverse);
       break;
     case SourceView::kShelfView:
-      if (reverse) {
-        FocusNavigation(reverse);
-      } else {
-        if (shelf_->shelf_widget()->hotseat_widget()->IsShowingOverflowBubble())
-          FocusOverflowShelf(reverse);
-        else
-          FocusStatusArea(reverse);
-      }
-      break;
-    case SourceView::kShelfOverflowView:
       if (reverse)
-        FocusShelf(reverse);
+        FocusNavigation(reverse);
       else
         FocusStatusArea(reverse);
       break;
@@ -59,10 +49,7 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         // Login/lock screen or OOBE.
         Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
       } else if (reverse) {
-        if (shelf_->shelf_widget()->hotseat_widget()->IsShowingOverflowBubble())
-          FocusOverflowShelf(reverse);
-        else
-          FocusShelf(reverse);
+        FocusShelf(reverse);
       } else {
         FocusNavigation(reverse);
       }
@@ -72,8 +59,12 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
 }
 
 void ShelfFocusCycler::FocusNavigation(bool last_element) {
-  ShelfNavigationWidget* navigation_widget =
-      shelf_->shelf_widget()->navigation_widget();
+  ShelfNavigationWidget* navigation_widget = shelf_->navigation_widget();
+  if (!navigation_widget->GetHomeButton() &&
+      !navigation_widget->GetBackButton()) {
+    FocusOut(last_element, SourceView::kShelfNavigationView);
+    return;
+  }
   navigation_widget->SetDefaultLastFocusableChild(last_element);
   Shell::Get()->focus_cycler()->FocusWidget(navigation_widget);
 }
@@ -84,20 +75,11 @@ void ShelfFocusCycler::FocusShelf(bool last_element) {
     shelf_widget->set_default_last_focusable_child(last_element);
     Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
   } else {
-    HotseatWidget* hotseat_widget = shelf_->shelf_widget()->hotseat_widget();
-    if (chromeos::switches::ShouldShowScrollableShelf()) {
-      hotseat_widget->scrollable_shelf_view()->set_default_last_focusable_child(
-          last_element);
-    } else {
-      hotseat_widget->GetShelfView()->set_default_last_focusable_child(
-          last_element);
-    }
+    HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
+    hotseat_widget->scrollable_shelf_view()->set_default_last_focusable_child(
+        last_element);
     Shell::Get()->focus_cycler()->FocusWidget(hotseat_widget);
   }
-}
-
-void ShelfFocusCycler::FocusOverflowShelf(bool last_element) {
-  shelf_->shelf_widget()->hotseat_widget()->FocusOverflowShelf(last_element);
 }
 
 void ShelfFocusCycler::FocusStatusArea(bool last_element) {

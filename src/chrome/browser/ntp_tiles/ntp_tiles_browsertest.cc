@@ -15,6 +15,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -102,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(NTPTilesTest, LoadURL) {
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   MostVisitedSitesWaiter waiter;
 
@@ -125,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(NTPTilesTest, ServerRedirect) {
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), first_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   MostVisitedSitesWaiter waiter;
   most_visited_sites_->SetMostVisitedURLsObserver(&waiter, /*num_sites=*/8);
 
@@ -151,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(NTPTilesTest, NavigateAfterSettingObserver) {
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   most_visited_sites_->Refresh();
   NTPTilesVector tiles = waiter.WaitForTiles();

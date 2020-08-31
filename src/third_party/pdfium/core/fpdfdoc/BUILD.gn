@@ -15,8 +15,6 @@ source_set("fpdfdoc") {
     "cpdf_aaction.h",
     "cpdf_action.cpp",
     "cpdf_action.h",
-    "cpdf_actionfields.cpp",
-    "cpdf_actionfields.h",
     "cpdf_annot.cpp",
     "cpdf_annot.h",
     "cpdf_annotlist.cpp",
@@ -33,14 +31,14 @@ source_set("fpdfdoc") {
     "cpdf_defaultappearance.h",
     "cpdf_dest.cpp",
     "cpdf_dest.h",
-    "cpdf_docjsactions.cpp",
-    "cpdf_docjsactions.h",
     "cpdf_filespec.cpp",
     "cpdf_filespec.h",
     "cpdf_formcontrol.cpp",
     "cpdf_formcontrol.h",
     "cpdf_formfield.cpp",
     "cpdf_formfield.h",
+    "cpdf_icon.cpp",
+    "cpdf_icon.h",
     "cpdf_iconfit.cpp",
     "cpdf_iconfit.h",
     "cpdf_interactiveform.cpp",
@@ -108,7 +106,10 @@ pdfium_unittest_source_set("unittests") {
   ]
   deps = [
     ":fpdfdoc",
+    "../../constants",
+    "../fpdfapi/page",
     "../fpdfapi/parser",
+    "../fpdfapi/render",
   ]
   pdfium_root_dir = "../../"
 }

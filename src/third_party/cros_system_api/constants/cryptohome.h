@@ -15,6 +15,8 @@ const int64_t kMinFreeSpaceInBytes = 512 * 1LL << 20;
 // is locked to be able to access only a single user data, until reboot.
 constexpr char kLockedToSingleUserFile[] =
     "/run/cryptohome/locked_to_single_user";
+// Path to the mount namespace to run user sessions in.
+constexpr char kUserSessionMountNamespacePath[] = "/run/namespaces/mnt_chrome";
 
 }  // namespace cryptohome
 

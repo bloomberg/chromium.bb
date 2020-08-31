@@ -23,12 +23,15 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/service_worker_task_queue.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/origin.h"
@@ -54,6 +57,18 @@ bool IsExtensionVisibleToContext(const Extension& extension,
   return !browser_context->IsOffTheRecord() ||
          !util::CanBeIncognitoEnabled(&extension) ||
          util::IsIncognitoEnabled(extension.id(), browser_context);
+}
+
+// Returns the current ActivationSequence of |extension| if the extension is
+// Service Worker-based, otherwise returns base::nullopt.
+base::Optional<ActivationSequence> GetWorkerActivationSequence(
+    BrowserContext* browser_context,
+    const Extension& extension) {
+  if (BackgroundInfo::IsServiceWorkerBased(&extension)) {
+    return ServiceWorkerTaskQueue::Get(browser_context)
+        ->GetCurrentSequence(extension.id());
+  }
+  return base::nullopt;
 }
 
 }  // namespace
@@ -126,18 +141,20 @@ void RendererStartupHelper::InitializeProcess(
         WebViewGuest::GetPartitionID(process)));
   }
 
+  BrowserContext* renderer_context = process->GetBrowserContext();
+
   // Load default policy_blocked_hosts and policy_allowed_hosts settings, part
   // of the ExtensionSettings policy.
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
+  int context_id = util::GetBrowserContextId(renderer_context);
   params.default_policy_blocked_hosts =
-      PermissionsData::default_policy_blocked_hosts();
+      PermissionsData::GetDefaultPolicyBlockedHosts(context_id);
   params.default_policy_allowed_hosts =
-      PermissionsData::default_policy_allowed_hosts();
+      PermissionsData::GetDefaultPolicyAllowedHosts(context_id);
   process->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
 
   // Loaded extensions.
   std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
-  BrowserContext* renderer_context = process->GetBrowserContext();
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& ext : extensions) {
@@ -153,8 +170,9 @@ void RendererStartupHelper::InitializeProcess(
     // I am not sure this is possible to know this here, at such a low
     // level of the stack. Perhaps site isolation can help.
     bool include_tab_permissions = true;
-    loaded_extensions.push_back(
-        ExtensionMsg_Loaded_Params(ext.get(), include_tab_permissions));
+    loaded_extensions.push_back(ExtensionMsg_Loaded_Params(
+        ext.get(), include_tab_permissions,
+        GetWorkerActivationSequence(renderer_context, *ext)));
     extension_process_map_[ext->id()].insert(process);
   }
 
@@ -248,7 +266,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   // Uninitialized renderers will be informed of the extension load during the
   // first batch of messages.
   std::vector<ExtensionMsg_Loaded_Params> params;
-  params.emplace_back(&extension, false /* no tab permissions */);
+  params.emplace_back(&extension, false /* no tab permissions */,
+                      GetWorkerActivationSequence(browser_context_, extension));
 
   for (content::RenderProcessHost* process : initialized_processes_) {
     if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))

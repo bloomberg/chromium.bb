@@ -15,14 +15,6 @@
 
 namespace blink {
 
-// static
-GPURenderPassEncoder* GPURenderPassEncoder::Create(
-    GPUDevice* device,
-    WGPURenderPassEncoder render_pass_encoder) {
-  return MakeGarbageCollected<GPURenderPassEncoder>(device,
-                                                    render_pass_encoder);
-}
-
 GPURenderPassEncoder::GPURenderPassEncoder(
     GPUDevice* device,
     WGPURenderPassEncoder render_pass_encoder)
@@ -47,7 +39,7 @@ void GPURenderPassEncoder::setBindGroup(
 void GPURenderPassEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bind_group,
-    const FlexibleUint32ArrayView& dynamic_offsets_data,
+    const FlexibleUint32Array& dynamic_offsets_data,
     uint64_t dynamic_offsets_data_start,
     uint32_t dynamic_offsets_data_length,
     ExceptionState& exception_state) {
@@ -115,16 +107,19 @@ void GPURenderPassEncoder::setScissorRect(uint32_t x,
   GetProcs().renderPassEncoderSetScissorRect(GetHandle(), x, y, width, height);
 }
 
-void GPURenderPassEncoder::setIndexBuffer(GPUBuffer* buffer, uint64_t offset) {
+void GPURenderPassEncoder::setIndexBuffer(GPUBuffer* buffer,
+                                          uint64_t offset,
+                                          uint64_t size) {
   GetProcs().renderPassEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
-                                             offset);
+                                             offset, size);
 }
 
 void GPURenderPassEncoder::setVertexBuffer(uint32_t slot,
                                            const GPUBuffer* buffer,
-                                           const uint64_t offset) {
-  GetProcs().renderPassEncoderSetVertexBuffer(GetHandle(), slot,
-                                              buffer->GetHandle(), offset);
+                                           const uint64_t offset,
+                                           const uint64_t size) {
+  GetProcs().renderPassEncoderSetVertexBuffer(
+      GetHandle(), slot, buffer->GetHandle(), offset, size);
 }
 
 void GPURenderPassEncoder::draw(uint32_t vertexCount,

@@ -310,7 +310,6 @@ Date:   Tue Oct 25 16:38:27 2016 -0700
 
 Affects:
     libavcodec/dnxhddec.c
-    libavcodec/h264dec.c
 
 ------------------------------------------------------------------
 commit b281073a7b1ccff67b2cd8ec636facceeeb82327
@@ -620,25 +619,6 @@ Affects:
     libavcodec/mpegaudio_parser.c
 
 ------------------------------------------------------------------
-commit 4468d4967f5dd6a733860af355ef61095b5cd5b1
-Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Mon Mar 5 12:36:28 2018 -0800
-
-    lavf/oggparseflac: Free flac extradata before reallocating.
-
-    Otherwise ff_alloc_extradata() just leaks any existing allocated
-    memory.
-
-    BUG=789835
-
-    Change-Id: I8e1c21a16749d28c7f050f5f5d8bffda3b419638
-    Reviewed-on: https://chromium-review.googlesource.com/949415
-    Reviewed-by: Xiaohan Wang <xhwang@chromium.org>
-
-Affects:
-    libavformat/oggparseflac.c
-
-------------------------------------------------------------------
 commit 24bf13b3c13a22c5d1ae4295badc9b79f94e6398
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Tue Apr 17 11:14:57 2018 -0700
@@ -740,25 +720,6 @@ Affects:
     libavutil/avsscanf.c
 
 ------------------------------------------------------------------
-commit 7262141e8c14462f47e79ed6ba457321dea9cc5d
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Thu Feb 28 13:51:30 2019 -0800
-
-    Don't trigger errors for multiple id3 tags.
-
-    Such errors may make sense for specific formats, but general parsing
-    logic shouldn't be treating these as errors regardless of the error
-    recognition mode.
-
-    Fixes loading of the following wave when using -err_detect explode:
-    https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webaudio/resources/4ch-440.wav
-
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-
-Affects:
-    libavformat/utils.c
-
-------------------------------------------------------------------
 commit b62555c76193045c2e3643c626e8e8d7a8f4b93f
 Author: liberato@chromium.org <liberato@chromium.org>
 Date:   Mon Mar 4 14:01:22 2019 -0800
@@ -810,4 +771,78 @@ Date:   Thu Aug 22 10:52:09 2019 -0700
 
 Affects:
     libavformat/matroskadec.c
+
+------------------------------------------------------------------
+commit e30ef377648b2f6bb9a96353b42cfe9d9fdec09d
+Author: Thomas Guilbert <tguilbert@chromium.org>
+Date:   Fri Dec 6 17:25:16 2019 -0800
+
+    Fix null pointer arithmetic
+
+    Clusterfuzz has uncovered scenarios where we add 0 to a null pointer,
+    which is undefined behavior. It doesn't seem like anything else is
+    inherently wrong with the code, so this CL applies the simplest fix
+    to avoid the issue.
+
+    This will be reported upstream, and a better fix might come out.
+
+    Bug: 1027044, 1028506, 1028511
+    Change-Id: I838282097e69f08bb14d8da1d931f01add438066
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1956356
+    Reviewed-by: Ted Meyer <tmathmeyer@chromium.org>
+
+Affects:
+    libavcodec/h264dec.c
+
+------------------------------------------------------------------
+commit 252792a1ff65deadc4e627e59ce80b8811c5a5de
+Author: Thomas Guilbert <tguilbert@chromium.org>
+Date:   Mon Dec 9 17:09:54 2019 -0800
+
+    Fix null pointer addition error
+
+    Clusterfuzz uncovered a scenario in which 0 is added to a null pointer,
+    which is undefined behavior. This CL fixes the issue by checking the
+    pointer is null before incrementing it.
+
+    BUG= 1027047, 1028812
+
+    Change-Id: I160c7e36134687a7d2ef4099078d89a714c8cfe4
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1958714
+    Reviewed-by: Ted Meyer <tmathmeyer@chromium.org>
+
+Affects:
+    libavformat/utils.c
+
+------------------------------------------------------------------
+commit 6a44f89787a6103bf85825aac5b7bcfdba0dde5f
+Merge: c5003c8e13 acbd950ed2
+Author: John Rummell <jrummell@chromium.org>
+Date:   Wed Feb 19 15:20:41 2020 -0800
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2020-02-19-14-22-27
+
+    Conflicts:
+      libavcodec/codec_desc.c
+      libavcodec/version.h
+      libavformat/mov.c
+      libavformat/movenc.c
+      libavformat/oggparseflac.c
+      libavformat/utils.c
+      libavutil/log.c
+      libavutil/log.h
+
+Affects:
+    libavutil/log.c
+    libavutil/log.h
+
+------------------------------------------------------------------
+commit 89875d230f63fa5eb5dc17dfaebfcbe3dc95c0c4
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Tue Apr 28 15:36:52 2020 -0700
+
+    Fix mismerge in MIPS code.
+
+Affects:
+    libavcodec/mips/aacdec_mips.c
 

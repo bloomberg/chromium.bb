@@ -5,7 +5,6 @@
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 
 #include "base/bind.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -212,6 +211,13 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   params.overlay = false;
   CocoaScrollbarPainter::PaintTrack(
       canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
+}
+
+bool CocoaScrollBar::CanProcessEventsWithinSubtree() const {
+  // If using overlay scrollbars, do not process events when fully hidden.
+  return scroller_style_ == NSScrollerStyleOverlay
+             ? !IsScrollbarFullyHidden()
+             : ScrollBar::CanProcessEventsWithinSubtree();
 }
 
 bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
 #include "content/public/renderer/render_thread.h"
@@ -18,7 +19,6 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ void CreateVideoEncodeMemory(
   DCHECK(content::RenderThread::Get());
 
   base::UnsafeSharedMemoryRegion shm =
-      mojo::CreateUnsafeSharedMemoryRegion(size);
+      base::UnsafeSharedMemoryRegion::Create(size);
   DCHECK(shm.IsValid()) << "Failed to allocate shared memory";
   callback.Run(std::move(shm));
 }
@@ -87,15 +87,15 @@ void CastSession::StartVideo(const media::cast::FrameSenderConfig& config,
 void CastSession::StartRemotingStream(
     int32_t stream_id,
     const media::cast::FrameSenderConfig& config,
-    const ErrorCallback& error_callback) {
+    ErrorOnceCallback error_callback) {
   DCHECK(content::RenderThread::Get());
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CastSessionDelegate::StartRemotingStream,
-          base::Unretained(delegate_.get()), stream_id, config,
-          media::BindToLoop(main_thread_task_runner_, error_callback)));
+      base::BindOnce(&CastSessionDelegate::StartRemotingStream,
+                     base::Unretained(delegate_.get()), stream_id, config,
+                     media::BindToLoop(main_thread_task_runner_,
+                                       std::move(error_callback))));
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,

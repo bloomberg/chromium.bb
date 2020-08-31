@@ -65,6 +65,12 @@ chrome.fileManagerPrivate = {
     ANY_SOURCE: 'any_source',
     NATIVE_SOURCE: 'native_source',
   },
+  RecentFileType: {
+    ALL: 'all',
+    AUDIO: 'audio',
+    IMAGE: 'image',
+    VIDEO: 'video',
+  },
   addFileWatch: (entry, callback) => {
     // Returns success.
     setTimeout(callback, 0, true);
@@ -79,9 +85,9 @@ chrome.fileManagerPrivate = {
   },
   getEntryProperties: (entries, names, callback) => {
     // Returns chrome.fileManagerPrivate.EntryProperties[].
-    var results = [];
+    const results = [];
     entries.forEach(entry => {
-      var props = {};
+      const props = {};
       names.forEach(name => {
         props[name] = entry.metadata[name];
       });
@@ -91,7 +97,7 @@ chrome.fileManagerPrivate = {
   },
   getFileTasks: (entries, callback) => {
     // Returns chrome.fileManagerPrivate.FileTask[].
-    var results = [];
+    const results = [];
     // Support for view-in-browser on single text file used by QuickView.
     if (entries.length == 1 && entries[0].metadata &&
         entries[0].metadata.contentMimeType == 'text/plain') {
@@ -128,7 +134,7 @@ chrome.fileManagerPrivate = {
     // Returns chrome.fileManagerPrivate.Provider[].
     setTimeout(callback, 0, []);
   },
-  getRecentFiles: (restriction, callback) => {
+  getRecentFiles: (restriction, fileType, callback) => {
     // Returns Entry[].
     setTimeout(callback, 0, []);
   },
@@ -142,8 +148,8 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, loadTimeData.data_);
   },
   getVolumeMetadataList: (callback) => {
-    var list = [];
-    for (var i = 0; i < mockVolumeManager.volumeInfoList.length; i++) {
+    const list = [];
+    for (let i = 0; i < mockVolumeManager.volumeInfoList.length; i++) {
       list.push(mockVolumeManager.volumeInfoList.item(i));
     }
     setTimeout(callback, 0, list);
@@ -205,7 +211,7 @@ chrome.fileManagerPrivate = {
   nextCopyId_: 0,
   startCopy: (entry, parentEntry, newName, callback) => {
     // Returns copyId immediately.
-    var copyId = chrome.fileManagerPrivate.nextCopyId_++;
+    const copyId = chrome.fileManagerPrivate.nextCopyId_++;
     callback(copyId);
     chrome.fileManagerPrivate.onCopyProgress.listeners_.forEach(l => {
       l(copyId, {type: 'begin_copy_entry', sourceUrl: entry.toURL()});
@@ -280,16 +286,17 @@ chrome.fileSystem = {
  * @param {function(!MockEntry)} successCallback Success callback.
  * @param {function(!Error)} errorCallback Error callback.
  */
+// eslint-disable-next-line
 var webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
-  var match = url.match(/^filesystem:(\w+)(\/.*)/);
+  const match = url.match(/^filesystem:(\w+)(\/.*)/);
   if (match) {
-    var volumeType = /** @type {VolumeManagerCommon.VolumeType} */ (match[1]);
-    var path = match[2];
-    var volume = mockVolumeManager.getCurrentProfileVolumeInfo(volumeType);
+    const volumeType = /** @type {VolumeManagerCommon.VolumeType} */ (match[1]);
+    let path = match[2];
+    const volume = mockVolumeManager.getCurrentProfileVolumeInfo(volumeType);
     if (volume) {
       // Decode URI in file paths.
       path = path.split('/').map(decodeURIComponent).join('/');
-      var entry = volume.fileSystem.entries[path];
+      const entry = volume.fileSystem.entries[path];
       if (entry) {
         setTimeout(successCallback, 0, entry);
         return;

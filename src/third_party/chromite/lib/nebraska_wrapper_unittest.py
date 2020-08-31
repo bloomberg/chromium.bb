@@ -8,17 +8,23 @@
 from __future__ import print_function
 
 import multiprocessing
+import os
+import subprocess
+
+import mock
 
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
+from chromite.lib import gob_util
 from chromite.lib import nebraska_wrapper
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
 
-# We access a ton of private members.
-# pylint: disable=protected-access
 
-class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
+# pylint: disable=protected-access
+class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
   """A class for testing RemoteNebraskaWrapper."""
 
   def setUp(self):
@@ -56,8 +62,8 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     run_command_mock = self._PatchRemoteCommand()
     self.assertTrue(self._nebraska.IsReady())
     run_command_mock.assert_called_once_with(
-        ['curl', 'http://127.0.0.1:10/check_health', '-o', '/dev/null'],
-        error_code_ok=True)
+        ['curl', 'http://127.0.0.1:10/health_check', '-o', '/dev/null'],
+        check=False)
 
   def test_ReadPortNumber(self):
     """Tests ReadPortNumber."""
@@ -89,7 +95,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     self.assertTrue(self._nebraska._PortFileExists())
     run_command_mock.assert_called_once_with(
         ['test', '-f', '/run/nebraska/port'],
-        error_code_ok=True)
+        check=False)
 
     # Failure to run the command case.
     run_command_mock = self._PatchRemoteCommand(return_code=1)
@@ -97,7 +103,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
 
   def test_WaitUntilStarted(self):
     """Tests _WaitUntilStarted."""
-    read_port_number_mock = self.PatchObject(
+    _read_port_number_mock = self.PatchObject(
         nebraska_wrapper.RemoteNebraskaWrapper, '_ReadPortNumber')
 
     # It should fail if we couldn't read the PID file.
@@ -110,7 +116,8 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     self.PatchObject(timeout_util, 'WaitForReturnTrue')
     run_command_mock = self._PatchRemoteCommand(output='10')
     self._nebraska._WaitUntilStarted()
-    read_port_number_mock.assert_called_once()
+    # TODO(crbug/1065172): Invalid assertion that had previously been mocked.
+    # read_port_number_mock.assert_called_once()
     self.assertEqual(self._nebraska._pid, 10)
     run_command_mock.assert_called_once_with(['cat', '/run/nebraska/pid'],
                                              capture_output=True)
@@ -121,7 +128,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
                                                 return_code=1)
     log = self._nebraska.PrintLog()
     run_command_mock.assert_called_once_with(
-        ['test', '-f', '/tmp/nebraska.log'], error_code_ok=True)
+        ['test', '-f', '/tmp/nebraska.log'], check=False)
     self.assertIsNone(log)
 
     run_command_mock = self._PatchRemoteCommand(output='blah blah')
@@ -154,7 +161,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     run_command_mock.assert_called_once_with(
         ['python', nebraska_wrapper.RemoteNebraskaWrapper.NEBRASKA_PATH,
          '--update-metadata', '/path/to/dir'],
-        redirect_stdout=True, combine_stdout_stderr=True)
+        stdout=True, stderr=subprocess.STDOUT)
 
   def testGetURL(self):
     """Tests different configurations of the GetURL function."""
@@ -165,3 +172,58 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTestCase):
     self._nebraska._port = 11
     self.assertEqual(self._nebraska.GetURL(no_update=True),
                      'http://127.0.0.1:11/update/?no_update=True')
+
+  def testGetNebraskaSrcLocal(self):
+    """Tests GetNebraskaSrcFile local copy."""
+    self.assertEqual(path_util.DetermineCheckout().type,
+                     path_util.CHECKOUT_TYPE_REPO)
+    src_file = os.path.abspath(
+        os.path.join(os.path.dirname(__file__),
+                     '../../src/platform/dev/nebraska/nebraska.py'))
+
+    copy_dir = os.path.join(self.tempdir, 'copy')
+    osutils.SafeMakedirs(copy_dir)
+    expected_copy = os.path.join(copy_dir, 'nebraska.py')
+    self.assertNotExists(expected_copy)
+
+    copy_file = nebraska_wrapper.RemoteNebraskaWrapper.GetNebraskaSrcFile(
+        copy_dir)
+    self.assertEqual(copy_file, expected_copy)
+    self.assertEqual(osutils.ReadFile(src_file), osutils.ReadFile(copy_file))
+
+  @mock.patch.object(path_util, 'DetermineCheckout',
+                     return_value=path_util.CheckoutInfo(
+                         path_util.CHECKOUT_TYPE_GCLIENT, None, None))
+  @mock.patch.object(gob_util, 'FetchUrl', return_value='')
+  def testGetNebraskaSrcDownloadURL(self, fetch_mock, _):
+    """Tests GetNebraskaSrcFile download url."""
+    download_dir = os.path.join(self.tempdir, 'download')
+    osutils.SafeMakedirs(download_dir)
+    nebraska_wrapper.RemoteNebraskaWrapper.GetNebraskaSrcFile(download_dir)
+    fetch_mock.assert_called_with(
+        'chromium.googlesource.com',
+        'chromiumos/platform/dev-util/+/'
+        'refs/heads/master/nebraska/nebraska.py?format=text')
+
+  @cros_test_lib.NetworkTest()
+  @mock.patch.object(path_util, 'DetermineCheckout',
+                     return_value=path_util.CheckoutInfo(
+                         path_util.CHECKOUT_TYPE_GCLIENT, None, None))
+  def testGetNebraskaSrcDownload(self, _):
+    """Verifies GetNebraskaSrcFile downloaded copy."""
+    # nebraska.py from src repo. This test only works in cros repo.
+    src_file = os.path.abspath(
+        os.path.join(os.path.dirname(__file__),
+                     '../../src/platform/dev/nebraska/nebraska.py'))
+
+    # Download nebraska.py.
+    download_dir = os.path.join(self.tempdir, 'download')
+    osutils.SafeMakedirs(download_dir)
+    expected_download = os.path.join(download_dir, 'nebraska.py')
+    self.assertNotExists(expected_download)
+
+    download_copy = nebraska_wrapper.RemoteNebraskaWrapper.GetNebraskaSrcFile(
+        download_dir)
+    self.assertEqual(download_copy, expected_download)
+    self.assertEqual(osutils.ReadFile(src_file),
+                     osutils.ReadFile(download_copy))

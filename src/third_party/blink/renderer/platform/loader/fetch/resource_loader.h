@@ -75,9 +75,10 @@ class PLATFORM_EXPORT ResourceLoader final
   ResourceLoader(ResourceFetcher*,
                  ResourceLoadScheduler*,
                  Resource*,
+                 ResourceRequestBody request_body = ResourceRequestBody(),
                  uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Start();
 
@@ -90,7 +91,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // Called before start() to activate cache-aware loading if enabled in
   // |m_resource->options()| and applicable.
-  void ActivateCacheAwareLoadingIfNeeded(const ResourceRequest&);
+  void ActivateCacheAwareLoadingIfNeeded(const ResourceRequestHead&);
 
   bool IsCacheAwareLoadingActivated() const {
     return is_cache_aware_loading_activated_;
@@ -113,14 +114,14 @@ class PLATFORM_EXPORT ResourceLoader final
   // A failed load is indicated by 1 DidFail(), which can occur at any time
   // before DidFinishLoading(), including synchronous inside one of the other
   // callbacks via ResourceLoader::cancel()
-  bool WillFollowRedirect(
-      const WebURL& new_url,
-      const WebURL& new_site_for_cookies,
-      const WebString& new_referrer,
-      network::mojom::ReferrerPolicy new_referrer_policy,
-      const WebString& new_method,
-      const WebURLResponse& passed_redirect_response,
-      bool& report_raw_headers) override;
+  bool WillFollowRedirect(const WebURL& new_url,
+                          const net::SiteForCookies& new_site_for_cookies,
+                          const WebString& new_referrer,
+                          network::mojom::ReferrerPolicy new_referrer_policy,
+                          const WebString& new_method,
+                          const WebURLResponse& passed_redirect_response,
+                          bool& report_raw_headers,
+                          std::vector<std::string>* removed_headers) override;
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;
@@ -166,7 +167,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidCancelLoadingBody() override;
 
   bool ShouldFetchCodeCache();
-  void StartWith(const ResourceRequest&);
+  void StartWith(const ResourceRequestHead&);
 
   void Release(ResourceLoadScheduler::ReleaseOption,
                const ResourceLoadScheduler::TrafficReportHints&);
@@ -174,7 +175,7 @@ class PLATFORM_EXPORT ResourceLoader final
   // This method is currently only used for service worker fallback request and
   // cache-aware loading, other users should be careful not to break
   // ResourceLoader state.
-  void Restart(const ResourceRequest&);
+  void Restart(const ResourceRequestHead&);
 
   FetchContext& Context() const;
 
@@ -184,8 +185,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void CancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);
-  void RequestSynchronously(const ResourceRequest&);
-  void RequestAsynchronously(const ResourceRequest&);
+  void RequestSynchronously(const ResourceRequestHead&);
+  void RequestAsynchronously(const ResourceRequestHead&);
   void Dispose();
 
   void DidReceiveResponseInternal(const ResourceResponse&);
@@ -211,6 +212,7 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
+  ResourceRequestBody request_body_;
   Member<ResponseBodyLoader> response_body_loader_;
   Member<DataPipeBytesConsumer::CompletionNotifier>
       data_pipe_completion_notifier_;

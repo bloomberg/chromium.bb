@@ -7,6 +7,8 @@
       "[CACHE]/osx_sdk",
       "-ensure-file",
       "infra/tools/mac_toolchain/${platform} git_revision:9a1adc55bf4a1173784da3ba2f8cb06421606748",
+      "-max-threads",
+      "0",
       "-json-output",
       "/path/to/tmp/json"
     ],

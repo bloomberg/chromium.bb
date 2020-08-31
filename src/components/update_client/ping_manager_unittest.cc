@@ -36,7 +36,7 @@ class PingManagerTest : public testing::Test,
                         public testing::WithParamInterface<bool> {
  public:
   PingManagerTest();
-  ~PingManagerTest() override {}
+  ~PingManagerTest() override = default;
 
   PingManager::Callback MakePingCallback();
   scoped_refptr<UpdateContext> MakeMockUpdateContext() const;
@@ -103,8 +103,9 @@ void PingManagerTest::PingSentCallback(int error, const std::string& response) {
 scoped_refptr<UpdateContext> PingManagerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
-      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      UpdateEngine::Callback(), nullptr);
+      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
+      nullptr, nullptr);
 }
 
 // This test is parameterized for using JSON or XML serialization. |true| means

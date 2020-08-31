@@ -8,8 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -37,7 +39,21 @@ struct NET_EXPORT ReportingReport {
     MAX
   };
 
-  ReportingReport(const GURL& url,
+  enum class Status {
+    // Report has been queued but no attempt has been made to deliver it yet.
+    QUEUED,
+
+    // There is an ongoing attempt to upload this report.
+    PENDING,
+
+    // Deletion of this report was requested while it was pending, so it should
+    // be removed after the attempted upload completes.
+    DOOMED,
+  };
+
+  // TODO(chlily): Remove |attempts| argument as it is (almost?) always 0.
+  ReportingReport(const NetworkIsolationKey& network_isolation_key,
+                  const GURL& url,
                   const std::string& user_agent,
                   const std::string& group,
                   const std::string& type,
@@ -45,12 +61,19 @@ struct NET_EXPORT ReportingReport {
                   int depth,
                   base::TimeTicks queued,
                   int attempts);
+
+  // Records metrics about report outcome.
   ~ReportingReport();
 
   static void RecordReportDiscardedForNoURLRequestContext();
   static void RecordReportDiscardedForNoReportingService();
 
-  void RecordOutcome(base::TimeTicks now);
+  // Whether the report is part of an ongoing delivery attempt.
+  bool IsUploadPending() const;
+
+  // The NIK of the request that triggered this report. (Not included in the
+  // delivered report.)
+  NetworkIsolationKey network_isolation_key;
 
   // The URL of the document that triggered the report. (Included in the
   // delivered report.)
@@ -78,14 +101,17 @@ struct NET_EXPORT ReportingReport {
   // relative to the time of the delivery attempt.)
   base::TimeTicks queued;
 
+  // Time when report was delivered, if it was delivered successfully.
+  // The destructor assumes that this has a value if the outcome is DELIVERED.
+  base::Optional<base::TimeTicks> delivered = base::nullopt;
+
   // The number of delivery attempts made so far, not including an active
   // attempt. (Not included in the delivered report.)
   int attempts = 0;
 
-  Outcome outcome;
+  Outcome outcome = Outcome::UNKNOWN;
 
- private:
-  bool recorded_outcome;
+  Status status = Status::QUEUED;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingReport);
 };

@@ -48,6 +48,10 @@ config("inside_blink") {
       "-Wno-implicit-float-conversion",
       "-Wno-implicit-int-conversion",
     ]
+
+    if (!is_chromeos || default_toolchain != "//build/toolchain/cros:target") {
+      cflags += [ "-Wno-enum-float-conversion" ]
+    }
   }
 }
 
@@ -112,12 +116,13 @@ config("config") {
       "blink-gc-plugin",
     ]
 
-    # Don't perform checks for GarbageCollectedFinalized.
+    # TODO(bikineev): Remove when clang pre-built has been updated.
+    # Disallow members in stack allocated classes.
     cflags += [
       "-Xclang",
       "-plugin-arg-blink-gc-plugin",
       "-Xclang",
-      "no-gc-finalized",
+      "no-members-in-stack-allocated",
     ]
 
     # Add arguments for enabled GC plugin options:
@@ -127,14 +132,6 @@ config("config") {
         "-plugin-arg-blink-gc-plugin",
         "-Xclang",
         "dump-graph",
-      ]
-    }
-    if (blink_gc_plugin_option_warn_unneeded_finalizer) {
-      cflags += [
-        "-Xclang",
-        "-plugin-arg-blink-gc-plugin",
-        "-Xclang",
-        "warn-unneeded-finalizer",
       ]
     }
   }

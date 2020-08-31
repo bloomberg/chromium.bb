@@ -4,13 +4,14 @@
 
 #include "ui/events/blink/web_input_event_traits.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_pointer_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 
 using base::StringAppendF;
 using base::SStringPrintf;
@@ -39,10 +40,10 @@ void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Button: %d\n Pos: (%f, %f)\n"
                 " GlobalPos: (%f, %f)\n Movement: (%d, %d)\n Clicks: %d\n}",
-                static_cast<int>(event.button), event.PositionInWidget().x,
-                event.PositionInWidget().y, event.PositionInScreen().x,
-                event.PositionInScreen().y, event.movement_x, event.movement_y,
-                event.click_count);
+                static_cast<int>(event.button), event.PositionInWidget().x(),
+                event.PositionInWidget().y(), event.PositionInScreen().x(),
+                event.PositionInScreen().y(), event.movement_x,
+                event.movement_y, event.click_count);
 }
 
 void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
@@ -59,8 +60,8 @@ void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Pos: (%f, %f)\n GlobalPos: (%f, %f)\n SourceDevice: %d\n"
                 " RawData: (%f, %f, %f, %f)\n}",
-                event.PositionInWidget().x, event.PositionInWidget().y,
-                event.PositionInScreen().x, event.PositionInScreen().y,
+                event.PositionInWidget().x(), event.PositionInWidget().y(),
+                event.PositionInScreen().x(), event.PositionInScreen().y(),
                 event.SourceDevice(), event.data.scroll_update.delta_x,
                 event.data.scroll_update.delta_y,
                 event.data.scroll_update.velocity_x,
@@ -72,9 +73,9 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
                 "  (ID: %d, State: %d, ScreenPos: (%f, %f), Pos: (%f, %f),"
                 " Radius: (%f, %f), Rot: %f, Force: %f,"
                 " Tilt: (%d, %d), Twist: %d, TangentialPressure: %f),\n",
-                point.id, point.state, point.PositionInScreen().x,
-                point.PositionInScreen().y, point.PositionInWidget().x,
-                point.PositionInWidget().y, point.radius_x, point.radius_y,
+                point.id, point.state, point.PositionInScreen().x(),
+                point.PositionInScreen().y(), point.PositionInWidget().x(),
+                point.PositionInWidget().y(), point.radius_x, point.radius_y,
                 point.rotation_angle, point.force, point.tilt_x, point.tilt_y,
                 point.twist, point.tangential_pressure);
 }
@@ -98,23 +99,12 @@ void ApppendEventDetails(const WebPointerEvent& event, std::string* result) {
       " GlobalPos: (%f, %f)\n Movement: (%d, %d)\n width: %f\n height: "
       "%f\n Pressure: %f\n TangentialPressure: %f\n Rotation: %f\n Tilt: "
       "(%d, %d)\n}",
-      event.id, static_cast<int>(event.button), event.PositionInWidget().x,
-      event.PositionInWidget().y, event.PositionInScreen().x,
-      event.PositionInScreen().y, event.movement_x, event.movement_y,
+      event.id, static_cast<int>(event.button), event.PositionInWidget().x(),
+      event.PositionInWidget().y(), event.PositionInScreen().x(),
+      event.PositionInScreen().y(), event.movement_x, event.movement_y,
       event.width, event.height, event.force, event.tangential_pressure,
       event.rotation_angle, event.tilt_x, event.tilt_y);
 }
-
-struct WebInputEventDelete {
-  template <class EventType>
-  bool Execute(WebInputEvent* event, void*) const {
-    if (!event)
-      return false;
-    DCHECK_EQ(sizeof(EventType), event->size());
-    delete static_cast<EventType*>(event);
-    return true;
-  }
-};
 
 struct WebInputEventToString {
   template <class EventType>
@@ -129,17 +119,6 @@ struct WebInputEventToString {
   }
 };
 
-struct WebInputEventClone {
-  template <class EventType>
-  bool Execute(const WebInputEvent& event,
-               WebScopedInputEvent* scoped_event) const {
-    DCHECK_EQ(sizeof(EventType), event.size());
-    *scoped_event = WebScopedInputEvent(
-        new EventType(static_cast<const EventType&>(event)));
-    return true;
-  }
-};
-
 template <typename Operator, typename ArgIn, typename ArgOut>
 bool Apply(Operator op,
            WebInputEvent::Type type,
@@ -149,7 +128,7 @@ bool Apply(Operator op,
     return op.template Execute<WebPointerEvent>(arg_in, arg_out);
   else if (WebInputEvent::IsMouseEventType(type))
     return op.template Execute<WebMouseEvent>(arg_in, arg_out);
-  else if (type == WebInputEvent::kMouseWheel)
+  else if (type == WebInputEvent::Type::kMouseWheel)
     return op.template Execute<WebMouseWheelEvent>(arg_in, arg_out);
   else if (WebInputEvent::IsKeyboardEventType(type))
     return op.template Execute<WebKeyboardEvent>(arg_in, arg_out);
@@ -164,63 +143,50 @@ bool Apply(Operator op,
 
 }  // namespace
 
-void WebInputEventDeleter::operator()(WebInputEvent* event) const {
-  if (!event)
-    return;
-  void* temp = nullptr;
-  Apply(WebInputEventDelete(), event->GetType(), event, temp);
-}
-
 std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
   Apply(WebInputEventToString(), event.GetType(), event, &result);
   return result;
 }
 
-WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
-  WebScopedInputEvent scoped_event;
-  Apply(WebInputEventClone(), event.GetType(), event, &scoped_event);
-  return scoped_event;
-}
-
 bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
   switch (event.GetType()) {
-    case WebInputEvent::kContextMenu:
-    case WebInputEvent::kGestureScrollEnd:
-    case WebInputEvent::kGestureShowPress:
-    case WebInputEvent::kGestureTapUnconfirmed:
-    case WebInputEvent::kGestureTapDown:
-    case WebInputEvent::kGestureTapCancel:
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchUpdate:
-    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::Type::kContextMenu:
+    case WebInputEvent::Type::kGestureScrollEnd:
+    case WebInputEvent::Type::kGestureShowPress:
+    case WebInputEvent::Type::kGestureTapUnconfirmed:
+    case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureTapCancel:
+    case WebInputEvent::Type::kGesturePinchBegin:
+    case WebInputEvent::Type::kGesturePinchUpdate:
+    case WebInputEvent::Type::kGesturePinchEnd:
       return false;
 
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::Type::kGestureScrollBegin:
       return true;
 
     // TouchCancel and TouchScrollStarted should always be non-blocking.
-    case WebInputEvent::kTouchCancel:
-    case WebInputEvent::kTouchScrollStarted:
-      DCHECK_NE(WebInputEvent::kBlocking,
+    case WebInputEvent::Type::kTouchCancel:
+    case WebInputEvent::Type::kTouchScrollStarted:
+      DCHECK_NE(WebInputEvent::DispatchType::kBlocking,
                 static_cast<const WebTouchEvent&>(event).dispatch_type);
       return false;
 
     // Touch start and touch end indicate whether they are non-blocking
     // (aka uncancelable) on the event.
-    case WebInputEvent::kTouchStart:
-    case WebInputEvent::kTouchEnd:
+    case WebInputEvent::Type::kTouchStart:
+    case WebInputEvent::Type::kTouchEnd:
       return static_cast<const WebTouchEvent&>(event).dispatch_type ==
-             WebInputEvent::kBlocking;
+             WebInputEvent::DispatchType::kBlocking;
 
-    case WebInputEvent::kTouchMove:
+    case WebInputEvent::Type::kTouchMove:
       // Non-blocking touch moves can be ack'd right away.
       return static_cast<const WebTouchEvent&>(event).dispatch_type ==
-             WebInputEvent::kBlocking;
+             WebInputEvent::DispatchType::kBlocking;
 
-    case WebInputEvent::kMouseWheel:
+    case WebInputEvent::Type::kMouseWheel:
       return static_cast<const WebMouseWheelEvent&>(event).dispatch_type ==
-             WebInputEvent::kBlocking;
+             WebInputEvent::DispatchType::kBlocking;
 
     default:
       return true;
@@ -241,8 +207,8 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
   SourceEventType source_event_type = SourceEventType::UNKNOWN;
   if (event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
     source_event_type = SourceEventType::WHEEL;
-    if (event.GetType() >= blink::WebInputEvent::kGesturePinchTypeFirst &&
-        event.GetType() <= blink::WebInputEvent::kGesturePinchTypeLast) {
+    if (event.GetType() >= blink::WebInputEvent::Type::kGesturePinchTypeFirst &&
+        event.GetType() <= blink::WebInputEvent::Type::kGesturePinchTypeLast) {
       source_event_type = SourceEventType::TOUCHPAD;
     }
   } else if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
@@ -250,13 +216,13 @@ LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
         blink::WebGestureEvent::InertialPhaseState::kUnknownMomentum;
 
     switch (event.GetType()) {
-      case blink::WebInputEvent::kGestureScrollBegin:
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
         inertial_phase_state = event.data.scroll_begin.inertial_phase;
         break;
-      case blink::WebInputEvent::kGestureScrollUpdate:
+      case blink::WebInputEvent::Type::kGestureScrollUpdate:
         inertial_phase_state = event.data.scroll_update.inertial_phase;
         break;
-      case blink::WebInputEvent::kGestureScrollEnd:
+      case blink::WebInputEvent::Type::kGestureScrollEnd:
         inertial_phase_state = event.data.scroll_end.inertial_phase;
         break;
       default:

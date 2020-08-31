@@ -30,7 +30,11 @@ const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 const char kMirrorAction[] = "action=ADDSESSION";
 #endif
 
-const GURL kGaiaUrl("https://accounts.google.com");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL GaiaUrl() {
+  return GURL("https://accounts.google.com");
+}
 
 // URLRequestInterceptor adding a account consistency response header to Gaia
 // responses.
@@ -64,7 +68,7 @@ class TestResponseAdapter : public signin::ResponseAdapter,
                       bool is_main_frame)
       : is_main_frame_(is_main_frame),
         headers_(new net::HttpResponseHeaders(std::string())) {
-    headers_->AddHeader(header_name + ": " + header_value);
+    headers_->SetHeader(header_name, header_value);
   }
 
   ~TestResponseAdapter() override {}
@@ -74,7 +78,7 @@ class TestResponseAdapter : public signin::ResponseAdapter,
         []() -> content::WebContents* { return nullptr; });
   }
   bool IsMainFrame() const override { return is_main_frame_; }
-  GURL GetOrigin() const override { return GURL(kGaiaUrl); }
+  GURL GetOrigin() const override { return GaiaUrl(); }
   const net::HttpResponseHeaders* GetHeaders() const override {
     return headers_.get();
   }

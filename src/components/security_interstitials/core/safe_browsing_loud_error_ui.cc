@@ -27,7 +27,7 @@ const char kSbDiagnosticUrl[] =
 
 // Constants for the V4 phishing string upgrades.
 const char kReportPhishingErrorUrl[] =
-    "https://www.google.com/safebrowsing/report_error/";
+    "https://safebrowsing.google.com/safebrowsing/report_error/?url=%s";
 
 void RecordExtendedReportingPrefChanged(bool report) {
   UMA_HISTOGRAM_BOOLEAN(
@@ -43,14 +43,16 @@ SafeBrowsingLoudErrorUI::SafeBrowsingLoudErrorUI(
     const SBErrorDisplayOptions& display_options,
     const std::string& app_locale,
     const base::Time& time_triggered,
-    ControllerClient* controller)
+    ControllerClient* controller,
+    bool created_prior_to_navigation)
     : BaseSafeBrowsingErrorUI(request_url,
                               main_frame_url,
                               reason,
                               display_options,
                               app_locale,
                               time_triggered,
-                              controller) {
+                              controller),
+      created_prior_to_navigation_(created_prior_to_navigation) {
   controller->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
   controller->metrics_helper()->RecordUserInteraction(
       MetricsHelper::TOTAL_VISITS);
@@ -82,9 +84,14 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       l10n_util::GetStringUTF16(IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON));
   load_time_data->SetBoolean("overridable", !is_proceed_anyway_disabled());
 
-  load_time_data->SetBoolean(
-      "hide_primary_button",
-      always_show_back_to_safety() ? false : !controller()->CanGoBack());
+  if (always_show_back_to_safety()) {
+    load_time_data->SetBoolean("hide_primary_button", false);
+  } else {
+    load_time_data->SetBoolean("hide_primary_button",
+                               created_prior_to_navigation_
+                                   ? !controller()->CanGoBackBeforeNavigation()
+                                   : !controller()->CanGoBack());
+  }
 
   load_time_data->SetBoolean(
       "billing",
@@ -206,7 +213,10 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
     case CMD_REPORT_PHISHING_ERROR: {
       controller()->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::REPORT_PHISHING_ERROR);
-      GURL phishing_error_url(kReportPhishingErrorUrl);
+      std::string phishing_error = base::StringPrintf(
+          kReportPhishingErrorUrl,
+          net::EscapeQueryParamValue(request_url().spec(), true).c_str());
+      GURL phishing_error_url(phishing_error);
       phishing_error_url = google_util::AppendGoogleLocaleParam(
           phishing_error_url, app_locale());
       controller()->OpenURL(should_open_links_in_new_tab(), phishing_error_url);
@@ -309,8 +319,6 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
 
 void SafeBrowsingLoudErrorUI::PopulateBillingLoadTimeData(
     base::DictionaryValue* load_time_data) {
-  common_string_util::PopulateDarkModeDisplaySetting(load_time_data);
-
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetBoolean("overridable", true);
 

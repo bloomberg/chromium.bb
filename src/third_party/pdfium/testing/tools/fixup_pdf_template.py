@@ -11,6 +11,7 @@ script replaces {{name}}-style variables in the input with calculated results
   {{header}} - expands to the header comment required for PDF files.
   {{xref}} - expands to a generated xref table, noting the offset.
   {{trailer}} - expands to a standard trailer with "1 0 R" as the /Root.
+  {{trailersize}} - expands to |/Size n|, to be used in non-standard trailers.
   {{startxref} - expands to a startxref directive followed by correct offset.
   {{object x y}} - expands to |x y obj| declaration, noting the offset.
   {{streamlen}} - expands to |/Length n|.
@@ -21,6 +22,18 @@ import optparse
 import os
 import re
 import sys
+
+# Line Endings.
+WINDOWS_LINE_ENDING = b'\r\n'
+UNIX_LINE_ENDING = b'\n'
+
+# List of extensions whose line endings should be modified after parsing.
+EXTENSION_OVERRIDE_LINE_ENDINGS = [
+    '.js',
+    '.fragment',
+    '.in',
+    '.xml',
+]
 
 
 class StreamLenState:
@@ -43,6 +56,9 @@ class TemplateProcessor:
 
   TRAILER_TOKEN = '{{trailer}}'
   TRAILER_REPLACEMENT = 'trailer <<\n  /Root 1 0 R\n  /Size %d\n>>'
+
+  TRAILERSIZE_TOKEN = '{{trailersize}}'
+  TRAILERSIZE_REPLACEMENT = '/Size %d'
 
   STARTXREF_TOKEN = '{{startxref}}'
   STARTXREF_REPLACEMENT = 'startxref\n%d'
@@ -104,6 +120,9 @@ class TemplateProcessor:
     if self.TRAILER_TOKEN in line:
       replacement = self.TRAILER_REPLACEMENT % (self.max_object_number + 1)
       line = line.replace(self.TRAILER_TOKEN, replacement)
+    if self.TRAILERSIZE_TOKEN in line:
+      replacement = self.TRAILERSIZE_REPLACEMENT % (self.max_object_number + 1)
+      line = line.replace(self.TRAILERSIZE_TOKEN, replacement)
     if self.STARTXREF_TOKEN in line:
       replacement = self.STARTXREF_REPLACEMENT % self.xref_offset
       line = line.replace(self.STARTXREF_TOKEN, replacement)
@@ -145,6 +164,10 @@ def insert_includes(input_path, output_file, visited_set):
               os.path.join(os.path.dirname(input_path), match.group(1)),
               output_file, visited_set)
         else:
+          # Replace CRLF with LF line endings for .in files.
+          _, file_extension = os.path.splitext(input_path)
+          if file_extension in EXTENSION_OVERRIDE_LINE_ENDINGS:
+            line = line.replace(WINDOWS_LINE_ENDING, UNIX_LINE_ENDING)
           output_file.write(line)
   except IOError:
     print >> sys.stderr, 'failed to include %s' % input_path

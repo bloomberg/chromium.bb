@@ -12,22 +12,11 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 
 namespace ash {
 
 namespace {
-
-int CalculateAnimationSmoothness(int actual_frames,
-                                 base::TimeDelta ideal_duration,
-                                 float refresh_rate) {
-  int smoothness = 100;
-  const int ideal_frames = refresh_rate * ideal_duration.InSecondsF();
-  if (ideal_frames > actual_frames)
-    smoothness = 100 * actual_frames / ideal_frames;
-  return smoothness;
-}
 
 // These constants affect logging, and  should not be changed without
 // deprecating the following UMA histograms:
@@ -104,31 +93,6 @@ enum class ApplistSearchResultOpenedSource {
   kMaxApplistSearchResultOpenedSource = 3,
 };
 
-void RecordFolderShowHideAnimationSmoothness(int actual_frames,
-                                             base::TimeDelta ideal_duration,
-                                             float refresh_rate) {
-  const int smoothness =
-      CalculateAnimationSmoothness(actual_frames, ideal_duration, refresh_rate);
-  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, smoothness);
-}
-
-void RecordPaginationAnimationSmoothness(int actual_frames,
-                                         base::TimeDelta ideal_duration,
-                                         float refresh_rate,
-                                         bool is_tablet_mode) {
-  const int smoothness =
-      CalculateAnimationSmoothness(actual_frames, ideal_duration, refresh_rate);
-  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
-                           smoothness);
-  if (is_tablet_mode) {
-    UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
-                             smoothness);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
-  }
-}
-
 void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
                                                 bool is_tablet_mode) {
   AppListPageSwitcherSource source;
@@ -174,15 +138,15 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const AppListModel* model,
     const SearchModel* search_model) {
   // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() == ash::SearchResultDisplayType::kRecommendation)
+  if (result->is_recommendation())
     return;
 
   ApplistSearchResultOpenedSource source;
-  ash::AppListViewState state = model->state_fullscreen();
+  AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == ash::AppListViewState::kHalf
+    source = state == AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -208,9 +172,7 @@ void RecordSearchLaunchIndexAndQueryLength(
   if (launch_location == SearchResultLaunchLocation::kResultList) {
     UMA_HISTOGRAM_EXACT_LINEAR(kAppListResultLaunchIndexAndQueryLength,
                                logged_value, kMaxLoggedHistogramValue);
-  } else if (launch_location == SearchResultLaunchLocation::kTileList) {
-    UMA_HISTOGRAM_EXACT_LINEAR(kAppListTileLaunchIndexAndQueryLength,
-                               logged_value, kMaxLoggedHistogramValue);
+    UMA_HISTOGRAM_BOOLEAN(kAppListResultLaunchIsEmptyQuery, query_length == 0);
   }
 }
 
@@ -232,22 +194,22 @@ void RecordZeroStateSearchResultRemovalHistogram(
                             removal_decision);
 }
 
-void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
-                              ash::AppListViewState app_list_state,
+void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
+                              AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {
   UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
   switch (app_list_state) {
-    case ash::AppListViewState::kClosed:
+    case AppListViewState::kClosed:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
       break;
-    case ash::AppListViewState::kPeeking:
+    case AppListViewState::kPeeking:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
       break;
-    case ash::AppListViewState::kHalf:
+    case AppListViewState::kHalf:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
       break;
-    case ash::AppListViewState::kFullscreenAllApps:
+    case AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherAllApps,
@@ -261,7 +223,7 @@ void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
                                   launched_from);
       }
       break;
-    case ash::AppListViewState::kFullscreenSearch:
+    case AppListViewState::kFullscreenSearch:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherSearch,
@@ -281,66 +243,128 @@ void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
 }
 
 bool IsCommandIdAnAppLaunch(int command_id_number) {
-  ash::CommandId command_id = static_cast<ash::CommandId>(command_id_number);
+  CommandId command_id = static_cast<CommandId>(command_id_number);
 
   // Consider all platform app menu options as launches.
-  if (command_id >= ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id < ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (command_id >= CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id < CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return true;
   }
 
   // Consider all arc app shortcut options as launches.
-  if (command_id >= ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST &&
-      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_LAST) {
+  if (command_id >= CommandId::LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id < CommandId::LAUNCH_APP_SHORTCUT_LAST) {
     return true;
   }
 
   switch (command_id) {
     // Used by ShelfContextMenu (shelf).
-    case ash::CommandId::MENU_OPEN_NEW:
-    case ash::CommandId::MENU_NEW_WINDOW:
-    case ash::CommandId::MENU_NEW_INCOGNITO_WINDOW:
-    // Used by AppContextMenu.
-    case ash::CommandId::LAUNCH_NEW:
-    case ash::CommandId::SHOW_APP_INFO:
-    case ash::CommandId::OPTIONS:
-    case ash::CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
-    case ash::CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
+    case CommandId::MENU_OPEN_NEW:
+    case CommandId::MENU_NEW_WINDOW:
+    case CommandId::MENU_NEW_INCOGNITO_WINDOW:
+    // Used by AppContextMenu and/or ShelfContextMenu.
+    case CommandId::LAUNCH_NEW:
+    case CommandId::SHOW_APP_INFO:
+    case CommandId::OPTIONS:
+    case CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
+    case CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
+    case CommandId::SETTINGS:
     // Used by both AppContextMenu and ShelfContextMenu for app shortcuts.
-    case ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST:
-    case ash::CommandId::LAUNCH_APP_SHORTCUT_LAST:
+    case CommandId::LAUNCH_APP_SHORTCUT_FIRST:
+    case CommandId::LAUNCH_APP_SHORTCUT_LAST:
       return true;
 
     // Used by ShelfContextMenu (shelf).
-    case ash::CommandId::MENU_CLOSE:
-    case ash::CommandId::MENU_PIN:
-    case ash::CommandId::LAUNCH_TYPE_PINNED_TAB:
-    case ash::CommandId::LAUNCH_TYPE_REGULAR_TAB:
-    case ash::CommandId::LAUNCH_TYPE_FULLSCREEN:
-    case ash::CommandId::LAUNCH_TYPE_WINDOW:
+    case CommandId::MENU_CLOSE:
+    case CommandId::MENU_PIN:
+    case CommandId::LAUNCH_TYPE_PINNED_TAB:
+    case CommandId::LAUNCH_TYPE_REGULAR_TAB:
+    case CommandId::LAUNCH_TYPE_FULLSCREEN:
+    case CommandId::LAUNCH_TYPE_WINDOW:
+    case CommandId::LAUNCH_TYPE_TABBED_WINDOW:
+    case CommandId::SWAP_WITH_NEXT:
+    case CommandId::SWAP_WITH_PREVIOUS:
     // Used by AppMenuModelAdapter
-    case ash::CommandId::NOTIFICATION_CONTAINER:
+    case CommandId::NOTIFICATION_CONTAINER:
     // Used by CrostiniShelfContextMenu.
-    case ash::CommandId::CROSTINI_USE_LOW_DENSITY:
-    case ash::CommandId::CROSTINI_USE_HIGH_DENSITY:
+    case CommandId::CROSTINI_USE_LOW_DENSITY:
+    case CommandId::CROSTINI_USE_HIGH_DENSITY:
     // Used by AppContextMenu.
-    case ash::CommandId::TOGGLE_PIN:
-    case ash::CommandId::UNINSTALL:
-    case ash::CommandId::REMOVE_FROM_FOLDER:
-    case ash::CommandId::INSTALL:
-    case ash::CommandId::USE_LAUNCH_TYPE_PINNED:
-    case ash::CommandId::USE_LAUNCH_TYPE_REGULAR:
-    case ash::CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
-    case ash::CommandId::USE_LAUNCH_TYPE_WINDOW:
-    case ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END:
-    case ash::CommandId::STOP_APP:
-    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
-    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
-    case ash::CommandId::COMMAND_ID_COUNT:
+    case CommandId::TOGGLE_PIN:
+    case CommandId::UNINSTALL:
+    case CommandId::REMOVE_FROM_FOLDER:
+    case CommandId::INSTALL:
+    case CommandId::USE_LAUNCH_TYPE_PINNED:
+    case CommandId::USE_LAUNCH_TYPE_REGULAR:
+    case CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
+    case CommandId::USE_LAUNCH_TYPE_WINDOW:
+    case CommandId::USE_LAUNCH_TYPE_TABBED_WINDOW:
+    case CommandId::USE_LAUNCH_TYPE_COMMAND_END:
+    case CommandId::SHUTDOWN_GUEST_OS:
+    case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
+    case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
+    case CommandId::COMMAND_ID_COUNT:
       return false;
   }
   NOTREACHED();
   return false;
+}
+
+FolderShowHideAnimationReporter::FolderShowHideAnimationReporter() = default;
+
+FolderShowHideAnimationReporter::~FolderShowHideAnimationReporter() = default;
+
+void FolderShowHideAnimationReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, value);
+}
+
+PaginationTransitionAnimationReporter::PaginationTransitionAnimationReporter() =
+    default;
+
+PaginationTransitionAnimationReporter::
+    ~PaginationTransitionAnimationReporter() = default;
+
+void PaginationTransitionAnimationReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness, value);
+
+  if (is_tablet_mode_) {
+    UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
+                             value);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        kPaginationTransitionAnimationSmoothnessInClamshell, value);
+  }
+}
+
+AppListAnimationMetricsRecorder::AppListAnimationMetricsRecorder(
+    ui::AnimationMetricsReporter* reporter)
+    : ui::AnimationMetricsRecorder(reporter) {}
+
+AppListAnimationMetricsRecorder::~AppListAnimationMetricsRecorder() = default;
+
+void AppListAnimationMetricsRecorder::OnAnimationStart(
+    base::TimeDelta expected_duration,
+    ui::Compositor* compositor) {
+  if (!compositor)
+    return;
+
+  animation_started_ = true;
+  ui::AnimationMetricsRecorder::OnAnimationStart(
+      compositor->activated_frame_count(), base::TimeTicks::Now(),
+      expected_duration);
+}
+
+void AppListAnimationMetricsRecorder::OnAnimationEnd(
+    ui::Compositor* compositor) {
+  if (!animation_started_)
+    return;
+
+  animation_started_ = false;
+
+  if (!compositor)
+    return;
+  ui::AnimationMetricsRecorder::OnAnimationEnd(
+      compositor->activated_frame_count(), compositor->refresh_rate());
 }
 
 }  // namespace ash

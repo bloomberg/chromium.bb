@@ -290,8 +290,8 @@ void SharedSampler::Refresh(base::ProcessId process_id, int64_t refresh_flags) {
   if (refresh_flags_ == 0) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(), FROM_HERE,
-        base::Bind(&SharedSampler::RefreshOnWorkerThread, this),
-        base::Bind(&SharedSampler::OnRefreshDone, this));
+        base::BindOnce(&SharedSampler::RefreshOnWorkerThread, this),
+        base::BindOnce(&SharedSampler::OnRefreshDone, this));
   } else {
     // http://crbug.com/678471
     // A group of consecutive Refresh calls should all specify the same refresh
@@ -352,7 +352,7 @@ std::vector<base::FilePath> SharedSampler::GetSupportedImageNames() {
 
 bool SharedSampler::IsSupportedImageName(
     base::FilePath::StringPieceType image_name) const {
-  for (const base::FilePath supported_name : supported_image_names_) {
+  for (const base::FilePath& supported_name : supported_image_names_) {
     if (base::FilePath::CompareEqualIgnoreCase(image_name,
                                                supported_name.value()))
       return true;

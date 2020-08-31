@@ -21,7 +21,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_NAVIGATOR_VIBRATION_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -35,20 +35,22 @@ class LocalFrame;
 class Navigator;
 class VibrationController;
 
-enum NavigatorVibrationType {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NavigatorVibrationType {
   kMainFrameNoUserGesture = 0,
   kMainFrameWithUserGesture = 1,
   kSameOriginSubFrameNoUserGesture = 2,
   kSameOriginSubFrameWithUserGesture = 3,
   kCrossOriginSubFrameNoUserGesture = 4,
   kCrossOriginSubFrameWithUserGesture = 5,
-  kEnumMax = 6
+  kMaxValue = kCrossOriginSubFrameWithUserGesture,
 };
 
 class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollected<NavigatorVibration>,
       public Supplement<Navigator>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
 
  public:
@@ -66,11 +68,11 @@ class MODULES_EXPORT NavigatorVibration final
 
   VibrationController* Controller(LocalFrame&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  // Inherited from ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  // Inherited from ExecutionContextLifecycleObserver.
+  void ContextDestroyed() override;
 
   static void CollectHistogramMetrics(const Navigator&);
 

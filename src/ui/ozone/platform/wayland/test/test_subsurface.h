@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_SUBSURFACE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_SUBSURFACE_H_
 
-#include <wayland-server-protocol-core.h>
+#include <wayland-server-protocol.h>
 
 #include <memory>
 #include <utility>
@@ -22,7 +22,9 @@ extern const struct wl_subsurface_interface kTestSubSurfaceImpl;
 
 class TestSubSurface : public ServerObject {
  public:
-  explicit TestSubSurface(wl_resource* resource);
+  explicit TestSubSurface(wl_resource* resource,
+                          wl_resource* surface,
+                          wl_resource* parent_resource);
   ~TestSubSurface() override;
   TestSubSurface(const TestSubSurface& rhs) = delete;
   TestSubSurface& operator=(const TestSubSurface& rhs) = delete;
@@ -33,9 +35,17 @@ class TestSubSurface : public ServerObject {
   void set_sync(bool sync) { sync_ = sync; }
   bool sync() const { return sync_; }
 
+  wl_resource* parent_resource() const { return parent_resource_; }
+
  private:
   gfx::Point position_;
   bool sync_ = false;
+
+  // Surface resource that is the ground for this subsurface.
+  wl_resource* surface_ = nullptr;
+
+  // Parent surface resource.
+  wl_resource* parent_resource_ = nullptr;
 };
 
 }  // namespace wl

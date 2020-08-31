@@ -152,6 +152,8 @@ void PaintImage::CreateSkImage() {
         SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
             paint_image_generator_, kDefaultFrameIndex,
             kDefaultGeneratorClientId));
+  } else if (texture_backing_) {
+    cached_sk_image_ = texture_backing_->GetAcceleratedSkImage();
   }
 
   if (!subset_rect_.IsEmpty() && cached_sk_image_) {
@@ -258,16 +260,16 @@ bool PaintImage::ShouldAnimate() const {
 PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
   DCHECK_LT(frame_index, FrameCount());
 
-  // Query the content id that uniquely identifies the content for this frame
-  // from the content provider.
-  ContentId content_id = kInvalidContentId;
-  if (paint_image_generator_)
-    content_id = paint_image_generator_->GetContentIdForFrame(frame_index);
-  else if (paint_record_ || sk_image_)
-    content_id = content_id_;
+  return FrameKey(GetContentIdForFrame(frame_index), frame_index, subset_rect_);
+}
 
-  DCHECK_NE(content_id, kInvalidContentId);
-  return FrameKey(content_id, frame_index, subset_rect_);
+PaintImage::ContentId PaintImage::GetContentIdForFrame(
+    size_t frame_index) const {
+  if (paint_image_generator_)
+    return paint_image_generator_->GetContentIdForFrame(frame_index);
+
+  DCHECK_NE(content_id_, kInvalidContentId);
+  return content_id_;
 }
 
 SkColorType PaintImage::GetColorType() const {
@@ -276,6 +278,14 @@ SkColorType PaintImage::GetColorType() const {
   if (GetSkImage())
     return GetSkImage()->colorType();
   return kUnknown_SkColorType;
+}
+
+SkAlphaType PaintImage::GetAlphaType() const {
+  if (paint_image_generator_)
+    return paint_image_generator_->GetSkImageInfo().alphaType();
+  if (GetSkImage())
+    return GetSkImage()->alphaType();
+  return kUnknown_SkAlphaType;
 }
 
 int PaintImage::width() const {
@@ -288,6 +298,20 @@ int PaintImage::height() const {
   return paint_worklet_input_
              ? static_cast<int>(paint_worklet_input_->GetSize().height())
              : GetSkImage()->height();
+}
+
+bool PaintImage::isSRGB() const {
+  // Right now, JS paint worklets can only be in sRGB
+  if (paint_worklet_input_)
+    return true;
+
+  auto* color_space = GetSkImage()->colorSpace();
+  if (!color_space) {
+    // Assume the image will be sRGB if we don't know yet.
+    return true;
+  }
+
+  return color_space->isSRGB();
 }
 
 const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {

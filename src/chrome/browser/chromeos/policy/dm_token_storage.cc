@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -34,7 +35,7 @@ namespace policy {
 DMTokenStorage::DMTokenStorage(PrefService* local_state)
     : local_state_(local_state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &DMTokenStorage::OnSystemSaltRecevied, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -127,12 +128,11 @@ void DMTokenStorage::EncryptAndStoreToken() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!system_salt_.empty());
   DCHECK(!dm_token_.empty());
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&EncryptToken, system_salt_, dm_token_),
-      base::Bind(&DMTokenStorage::OnTokenEncrypted,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&EncryptToken, system_salt_, dm_token_),
+      base::BindOnce(&DMTokenStorage::OnTokenEncrypted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DMTokenStorage::OnTokenEncrypted(const std::string& encrypted_dm_token) {
@@ -151,12 +151,11 @@ void DMTokenStorage::LoadAndDecryptToken() {
   std::string encrypted_dm_token =
       local_state_->GetString(prefs::kDeviceDMToken);
   if (!encrypted_dm_token.empty()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&DecryptToken, system_salt_, encrypted_dm_token),
-        base::Bind(&DMTokenStorage::FlushRetrieveTokenCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&DecryptToken, system_salt_, encrypted_dm_token),
+        base::BindOnce(&DMTokenStorage::FlushRetrieveTokenCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     DLOG(ERROR) << "No DM token in the local state.";
     FlushRetrieveTokenCallback(std::string());

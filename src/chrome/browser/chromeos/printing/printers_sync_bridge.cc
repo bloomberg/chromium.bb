@@ -42,28 +42,39 @@ std::unique_ptr<EntityData> CopyToEntityData(
   return entity_data;
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class MakeAndModelMigrationState {
-  kNotMigrated = 0,
-  kMigrated = 1,
-  kMaxValue = kMigrated,
-};
-
 // Computes the make_and_model field for old |specifics| where it is missing.
 // Returns true if an update was made.  make_and_model is computed from the
 // manufacturer and model strings.
 bool MigrateMakeAndModel(sync_pb::PrinterSpecifics* specifics) {
   if (specifics->has_make_and_model()) {
-    base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
-                                  MakeAndModelMigrationState::kNotMigrated);
+    base::UmaHistogramBoolean("Printing.CUPS.MigratedMakeAndModel", false);
     return false;
   }
 
   specifics->set_make_and_model(
       chromeos::MakeAndModel(specifics->manufacturer(), specifics->model()));
-  base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
-                                MakeAndModelMigrationState::kMigrated);
+  base::UmaHistogramBoolean("Printing.CUPS.MigratedMakeAndModel", true);
+  return true;
+}
+
+// If |specifics|'s PPD reference has both autoconf and another option selected,
+// we strip the autoconf flag and return true, false otherwise.
+bool ResolveInvalidPpdReference(sync_pb::PrinterSpecifics* specifics) {
+  auto* ppd_ref = specifics->mutable_ppd_reference();
+
+  if (!ppd_ref->autoconf()) {
+    base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", false);
+    return false;
+  }
+
+  if (!ppd_ref->has_user_supplied_ppd_url() &&
+      !ppd_ref->has_effective_make_and_model()) {
+    base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", false);
+    return false;
+  }
+
+  ppd_ref->clear_autoconf();
+  base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", true);
   return true;
 }
 
@@ -218,7 +229,13 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
       // TODO(crbug.com/737809): Remove when all data is expected to have been
       // migrated.
       bool migrated = MigrateMakeAndModel(entry.second.get());
-      if (!base::Contains(sync_entity_ids, local_entity_id) || migrated) {
+
+      // TODO(crbug.com/987869): Remove when all data is expected to have been
+      // resolved.
+      bool resolved = ResolveInvalidPpdReference(entry.second.get());
+
+      if (migrated || resolved ||
+          !base::Contains(sync_entity_ids, local_entity_id)) {
         // Only local objects which were not updated are uploaded.  Objects for
         // which there was a remote copy are overwritten.
         change_processor()->Put(local_entity_id,

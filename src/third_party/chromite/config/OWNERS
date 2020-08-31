@@ -1,6 +1,9 @@
 # CI Team
 include ../OWNERS.ci
 
+# Release TPgM lead
+bhthompson@chromium.org
+
 # APAC Config Reviewers
 chavey@google.com
 cywang@chromium.org

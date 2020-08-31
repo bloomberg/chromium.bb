@@ -11,16 +11,13 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 
-class WebOmniboxEditController;
-
-namespace ios {
 class ChromeBrowserState;
-}
+class WebOmniboxEditController;
 
 class ChromeOmniboxClientIOS : public OmniboxClient {
  public:
   ChromeOmniboxClientIOS(WebOmniboxEditController* controller,
-                         ios::ChromeBrowserState* browser_state);
+                         ChromeBrowserState* browser_state);
   ~ChromeOmniboxClientIOS() override;
 
   // OmniboxClient.
@@ -53,14 +50,13 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
       bool default_match_changed,
       const base::Callback<void(int result_index, const SkBitmap& bitmap)>&
           on_bitmap_fetched) override;
-  void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
   const base::string16& GetTitle() const override;
   gfx::Image GetFavicon() const override;
 
  private:
   WebOmniboxEditController* controller_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   AutocompleteSchemeClassifierImpl scheme_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClientIOS);

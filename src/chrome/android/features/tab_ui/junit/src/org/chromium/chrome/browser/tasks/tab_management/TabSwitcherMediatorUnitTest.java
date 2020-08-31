@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +27,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,25 +40,22 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -72,17 +70,19 @@ import java.util.List;
 /**
  * Tests for {@link TabSwitcherMediator}.
  */
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ArraysAsListWithZeroOrOneArgument", "unchecked"})
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @DisableFeatures(
         {ChromeFeatureList.TAB_SWITCHER_ON_RETURN, ChromeFeatureList.START_SURFACE_ANDROID})
-@EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ChromeFeatureList.TAB_TO_GTS_ANIMATION})
 public class TabSwitcherMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final int CONTROL_HEIGHT_DEFAULT = 56;
     private static final int CONTROL_HEIGHT_MODIFIED = 0;
+    private static final int CONTROL_HEIGHT_INCREASED = 76;
 
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
@@ -110,7 +110,7 @@ public class TabSwitcherMediatorUnitTest {
     @Mock
     Resources mResources;
     @Mock
-    ChromeFullscreenManager mFullscreenManager;
+    BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock
     PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     @Mock
@@ -121,26 +121,26 @@ public class TabSwitcherMediatorUnitTest {
     Layout mLayout;
     @Mock
     TabGridDialogMediator.DialogController mTabGridDialogController;
+    @Mock
+    TabSwitcherMediator.MessageItemsController mMessageItemsController;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
     ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
-    ArgumentCaptor<ChromeFullscreenManager.FullscreenListener> mFullscreenListenerCaptor;
+    private ArgumentCaptor<BrowserControlsStateProvider.Observer>
+            mBrowserControlsStateProviderObserverCaptor;
 
-    private TabImpl mTab1;
-    private TabImpl mTab2;
-    private TabImpl mTab3;
+    private Tab mTab1;
+    private Tab mTab2;
+    private Tab mTab3;
     private TabSwitcherMediator mMediator;
     private PropertyModel mModel;
 
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
-        RecordUserAction.setDisabledForTests(true);
-        RecordHistogram.setDisabledForTests(true);
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -153,7 +153,7 @@ public class TabSwitcherMediatorUnitTest {
 
         doNothing()
                 .when(mTabContentManager)
-                .getTabThumbnailWithCallback(any(), any(), anyBoolean(), anyBoolean());
+                .getTabThumbnailWithCallback(anyInt(), any(), anyBoolean(), anyBoolean());
         doReturn(mResources).when(mContext).getResources();
 
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
@@ -178,24 +178,22 @@ public class TabSwitcherMediatorUnitTest {
         doReturn(mTab2).when(mTabModel).getTabAt(1);
         doReturn(mTab3).when(mTabModel).getTabAt(2);
 
-        doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getBottomControlsHeight();
-        doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getTopControlsHeight();
-        doNothing().when(mFullscreenManager).addListener(mFullscreenListenerCaptor.capture());
+        doReturn(CONTROL_HEIGHT_DEFAULT)
+                .when(mBrowserControlsStateProvider)
+                .getBottomControlsHeight();
+        doReturn(CONTROL_HEIGHT_DEFAULT).when(mBrowserControlsStateProvider).getTopControlsHeight();
+        doNothing()
+                .when(mBrowserControlsStateProvider)
+                .addObserver(mBrowserControlsStateProviderObserverCaptor.capture());
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null, null,
+                mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
                 TabListCoordinator.TabListMode.GRID);
+        mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
-    }
-
-    @After
-    public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
-        RecordHistogram.setDisabledForTests(false);
-        FeatureUtilities.setGridTabSwitcherEnabledForTesting(false);
     }
 
     @Test
@@ -216,6 +214,7 @@ public class TabSwitcherMediatorUnitTest {
 
     @Test
     public void showsWithoutAnimation() {
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
         initAndAssertAllProperties();
         mMediator.showOverview(false);
 
@@ -243,6 +242,7 @@ public class TabSwitcherMediatorUnitTest {
     @Test
     public void showsWithoutAnimation_withTabGroups() {
         doReturn(2).when(mTabModelFilter).getCount();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
 
         initAndAssertAllProperties();
         mMediator.showOverview(false);
@@ -404,13 +404,45 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void hidesPreviouslySelectedTabAfterNewTabModelSelected_regularToEmptyIncognito() {
+        initAndAssertAllProperties();
+        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
+
+        TabModel incognitoTabModel = mock(TabModel.class);
+        doReturn(0).when(incognitoTabModel).getCount();
+        doReturn(true).when(incognitoTabModel).isIncognito();
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        verify(/* mTab3 is the current tab. */ mTab3).hide(TabHidingType.CHANGED_TABS);
+    }
+
+    @Test
+    public void noHidesPreviouslySelectedTabAfterNewTabModelSelected_incognitoToEmptyRegular() {
+        // The tab shouldn't be hidden when moving from incognito to the regular tab switcher.
+        initAndAssertAllProperties();
+        mModel.set(TabListContainerProperties.IS_VISIBLE, true);
+
+        Tab tab = mock(Tab.class);
+        TabModel incognitoTabModel = mock(TabModel.class);
+        doReturn(0).when(mTabModel).getCount();
+        doReturn(0).when(mTabModel).index();
+        doReturn(1).when(incognitoTabModel).getCount();
+        doReturn(0).when(mTabModel).index();
+        doReturn(true).when(incognitoTabModel).isIncognito();
+        doReturn(tab).when(incognitoTabModel).getTabAt(0);
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(incognitoTabModel, mTabModel);
+        verify(/* mTab3 is the current tab. */ mTab3, times(0)).hide(TabHidingType.CHANGED_TABS);
+    }
+
+    @Test
     public void updatesMarginWithBottomBarChanges() {
         initAndAssertAllProperties();
 
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_DEFAULT));
 
-        mFullscreenListenerCaptor.getValue().onBottomControlsHeightChanged(
+        mBrowserControlsStateProviderObserverCaptor.getValue().onBottomControlsHeightChanged(
                 CONTROL_HEIGHT_MODIFIED, 0);
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_MODIFIED));
@@ -421,6 +453,7 @@ public class TabSwitcherMediatorUnitTest {
         initAndAssertAllProperties();
         mMediator.showOverview(true);
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
 
@@ -429,6 +462,7 @@ public class TabSwitcherMediatorUnitTest {
 
     @Test
     public void doesNotHideWhenSelectedTabChangedDueToTabClosure() {
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
         initAndAssertAllProperties();
         mMediator.showOverview(true);
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
@@ -444,6 +478,7 @@ public class TabSwitcherMediatorUnitTest {
 
     @Test
     public void doesNotHideWhenSelectedTabChangedDueToModelChange() {
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
         initAndAssertAllProperties();
         mMediator.showOverview(true);
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
@@ -478,6 +513,35 @@ public class TabSwitcherMediatorUnitTest {
 
         mTabModelObserverCaptor.getValue().restoreCompleted();
         assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+    }
+
+    @Test
+    public void removeMessageItemsWhenCloseLastTab() {
+        initAndAssertAllProperties();
+        // Mock that mTab1 is not the only tab in the current tab model and it will be closed.
+        doReturn(2).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mMessageItemsController, never()).removeAllAppendedMessage();
+
+        // Mock that mTab1 is the only tab in the current tab model and it will be closed.
+        doReturn(1).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        verify(mMessageItemsController).removeAllAppendedMessage();
+    }
+
+    @Test
+    public void restoreMessageItemsWhenUndoLastTabClosure() {
+        initAndAssertAllProperties();
+        // Mock that mTab1 was not the only tab in the current tab model and its closure will be
+        // undone.
+        doReturn(2).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mMessageItemsController, never()).restoreAllAppendedMessage();
+
+        // Mock that mTab1 was the only tab in the current tab model and its closure will be undone.
+        doReturn(1).when(mTabModel).getCount();
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
+        verify(mMessageItemsController).restoreAllAppendedMessage();
     }
 
     @Test
@@ -534,22 +598,8 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
-    public void openDialogButton_FlagDisabled() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
-        // Set up a tab group.
-        TabImpl newTab = prepareTab(TAB4_ID, TAB4_TITLE);
-        doReturn(new ArrayList<>(Arrays.asList(mTab1, newTab)))
-                .when(mTabModelFilter)
-                .getRelatedTabList(TAB1_ID);
-
-        assertThat(mMediator.openTabGridDialog(mTab1), equalTo(null));
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_SingleTab() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Mock that tab 1 is a single tab.
         doReturn(new ArrayList<>(Arrays.asList(mTab1)))
@@ -559,12 +609,11 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_NotEmpty() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Set up a tab group.
-        TabImpl newTab = prepareTab(TAB4_ID, TAB4_TITLE);
+        Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, newTab));
         doReturn(tabs).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
 
@@ -576,9 +625,8 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_Empty() {
-        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Assume that due to tab model change, current group becomes empty in current model.
         doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
@@ -588,6 +636,45 @@ public class TabSwitcherMediatorUnitTest {
 
         listener.run(TAB1_ID);
         verify(mTabGridDialogController).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void updatesPropertiesWithTopControlsChanges() {
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_INCREASED, 0);
+        assertEquals(CONTROL_HEIGHT_INCREASED,
+                mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_INCREASED, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_DEFAULT, 0);
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
+    public void updatesPropertiesWithTopControlsChanges_StartSurface() {
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_INCREASED, 0);
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mBrowserControlsStateProviderObserverCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_DEFAULT, 0);
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
     }
 
     private void initAndAssertAllProperties() {
@@ -604,12 +691,12 @@ public class TabSwitcherMediatorUnitTest {
                 equalTo(CONTROL_HEIGHT_DEFAULT));
     }
 
-    private TabImpl prepareTab(int id, String title) {
-        TabImpl tab = mock(TabImpl.class);
+    private Tab prepareTab(int id, String title) {
+        Tab tab = mock(Tab.class);
         when(tab.getView()).thenReturn(mock(View.class));
         when(tab.getUserDataHost()).thenReturn(new UserDataHost());
         doReturn(id).when(tab).getId();
-        doReturn("").when(tab).getUrl();
+        doReturn("").when(tab).getUrlString();
         doReturn(title).when(tab).getTitle();
         doReturn(false).when(tab).isClosing();
         return tab;

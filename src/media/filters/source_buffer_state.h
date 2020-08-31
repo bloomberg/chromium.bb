@@ -31,15 +31,15 @@ class FrameProcessor;
 class MEDIA_EXPORT SourceBufferState {
  public:
   // Callback signature used to create ChunkDemuxerStreams.
-  typedef base::Callback<ChunkDemuxerStream*(DemuxerStream::Type)>
-      CreateDemuxerStreamCB;
+  using CreateDemuxerStreamCB =
+      base::RepeatingCallback<ChunkDemuxerStream*(DemuxerStream::Type)>;
 
-  typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
-      NewTextTrackCB;
+  using NewTextTrackCB = base::RepeatingCallback<void(ChunkDemuxerStream*,
+                                                      const TextTrackConfig&)>;
 
   SourceBufferState(std::unique_ptr<StreamParser> stream_parser,
                     std::unique_ptr<FrameProcessor> frame_processor,
-                    const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+                    CreateDemuxerStreamCB create_demuxer_stream_cb,
                     MediaLog* media_log);
 
   ~SourceBufferState();
@@ -48,7 +48,7 @@ class MEDIA_EXPORT SourceBufferState {
             const std::string& expected_codecs,
             const StreamParser::EncryptedMediaInitDataCB&
                 encrypted_media_init_data_cb,
-            const NewTextTrackCB& new_text_track_cb);
+            NewTextTrackCB new_text_track_cb);
 
   // Reconfigures this source buffer to use |new_stream_parser|. Caller must
   // first ensure that ResetParserState() was done to flush any pending frames
@@ -147,8 +147,7 @@ class MEDIA_EXPORT SourceBufferState {
 
   void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);
 
-  void SetParseWarningCallback(
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(SourceBufferParseWarningCB parse_warning_cb);
 
  private:
   // State advances through this list to PARSER_INITIALIZED.
@@ -240,7 +239,7 @@ class MEDIA_EXPORT SourceBufferState {
   DemuxerStreamMap text_streams_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
-  CreateDemuxerStreamCB create_demuxer_stream_cb_;
+  const CreateDemuxerStreamCB create_demuxer_stream_cb_;
   MediaLog* media_log_;
 
   StreamParser::InitCB init_cb_;

@@ -5,20 +5,20 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
-import android.os.Build;
 
 import com.google.android.gms.common.ConnectionResult;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.password.SavePasswordsPreferences;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -61,7 +61,8 @@ public class PasswordManagerLauncher {
             }
         }
 
-        PreferencesLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(activity, PasswordSettings.class);
     }
 
     @CalledByNative
@@ -74,8 +75,7 @@ public class PasswordManagerLauncher {
     }
 
     public static boolean isSyncingPasswordsWithoutCustomPassphrase() {
-        ChromeSigninController signInController = ChromeSigninController.get();
-        if (signInController == null || !signInController.isSignedIn()) return false;
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return false;
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null
@@ -92,8 +92,6 @@ public class PasswordManagerLauncher {
         GooglePasswordManagerUIProvider googlePasswordManagerUIProvider =
                 AppHooks.get().createGooglePasswordManagerUIProvider();
         if (googlePasswordManagerUIProvider == null) return false;
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         int minGooglePlayServicesVersion = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 GOOGLE_ACCOUNT_PWM_UI, MIN_GOOGLE_PLAY_SERVICES_VERSION_PARAM,

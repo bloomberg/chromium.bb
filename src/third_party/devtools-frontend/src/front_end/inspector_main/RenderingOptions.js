@@ -28,7 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export class RenderingOptionsView extends UI.VBox {
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
+export class RenderingOptionsView extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('inspector_main/renderingOptions.css');
@@ -37,55 +40,61 @@ export class RenderingOptionsView extends UI.VBox {
         ls`Paint flashing`,
         ls
         `Highlights areas of the page (green) that need to be repainted. May not be suitable for people prone to photosensitive epilepsy.`,
-        Common.moduleSetting('showPaintRects'));
+        Common.Settings.Settings.instance().moduleSetting('showPaintRects'));
     this._appendCheckbox(
         ls`Layout Shift Regions`,
         ls
         `Highlights areas of the page (blue) that were shifted. May not be suitable for people prone to photosensitive epilepsy.`,
-        Common.moduleSetting('showLayoutShiftRegions'));
+        Common.Settings.Settings.instance().moduleSetting('showLayoutShiftRegions'));
         this._appendCheckbox(
             ls`Layer borders`, ls`Shows layer borders (orange/olive) and tiles (cyan).`,
-            Common.moduleSetting('showDebugBorders'));
+            Common.Settings.Settings.instance().moduleSetting('showDebugBorders'));
         this._appendCheckbox(
             ls`FPS meter`, ls`Plots frames per second, frame rate distribution, and GPU memory.`,
-            Common.moduleSetting('showFPSCounter'));
+            Common.Settings.Settings.instance().moduleSetting('showFPSCounter'));
     this._appendCheckbox(
         ls`Scrolling performance issues`,
         ls
         `Highlights elements (teal) that can slow down scrolling, including touch & wheel event handlers and other main-thread scrolling situations.`,
-        Common.moduleSetting('showScrollBottleneckRects'));
+        Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects'));
         this._appendCheckbox(
             ls`Highlight ad frames`, ls`Highlights frames (red) detected to be ads.`,
-            Common.moduleSetting('showAdHighlights'));
+            Common.Settings.Settings.instance().moduleSetting('showAdHighlights'));
         this._appendCheckbox(
             ls`Hit-test borders`, ls`Shows borders around hit-test regions.`,
-            Common.moduleSetting('showHitTestBorders'));
+            Common.Settings.Settings.instance().moduleSetting('showHitTestBorders'));
         this.contentElement.createChild('div').classList.add('panel-section-separator');
 
         this._appendSelect(
-            ls`Forces media type for testing print and screen styles`, Common.moduleSetting('emulatedCSSMedia'));
+            ls`Forces media type for testing print and screen styles`,
+            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMedia'));
         this._appendSelect(
             ls`Forces CSS prefers-color-scheme media feature`,
-            Common.moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme'));
+            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme'));
         this._appendSelect(
             ls`Forces CSS prefers-reduced-motion media feature`,
-            Common.moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
+            Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
+        this.contentElement.createChild('div').classList.add('panel-section-separator');
+
+        this._appendSelect(
+            ls`Forces vision deficiency emulation`,
+            Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency'));
   }
 
   /**
    * @param {string} label
    * @param {string} subtitle
-   * @param {!Common.Setting} setting
+   * @param {!Common.Settings.Setting} setting
    */
   _appendCheckbox(label, subtitle, setting) {
-    const checkboxLabel = UI.CheckboxLabel.create(label, false, subtitle);
+    const checkboxLabel = UI.UIUtils.CheckboxLabel.create(label, false, subtitle);
     UI.SettingsUI.bindCheckbox(checkboxLabel.checkboxElement, setting);
     this.contentElement.appendChild(checkboxLabel);
   }
 
   /**
    * @param {string} label
-   * @param {!Common.Setting} setting
+   * @param {!Common.Settings.Setting} setting
    */
   _appendSelect(label, setting) {
     const control = UI.SettingsUI.createControlForSetting(setting, label);
@@ -94,14 +103,3 @@ export class RenderingOptionsView extends UI.VBox {
     }
   }
 }
-
-/* Legacy exported object */
-self.InspectorMain = self.InspectorMain || {};
-
-/* Legacy exported object */
-InspectorMain = InspectorMain || {};
-
-/**
- * @constructor
- */
-InspectorMain.RenderingOptionsView = RenderingOptionsView;

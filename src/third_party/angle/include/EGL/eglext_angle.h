@@ -25,6 +25,8 @@
 #ifndef EGL_ANGLE_d3d_texture_client_buffer
 #define EGL_ANGLE_d3d_texture_client_buffer 1
 #define EGL_D3D_TEXTURE_ANGLE             0x33A3
+#define EGL_TEXTURE_OFFSET_X_ANGLE        0x3490
+#define EGL_TEXTURE_OFFSET_Y_ANGLE        0x3491
 #endif /* EGL_ANGLE_d3d_texture_client_buffer */
 
 #ifndef EGL_ANGLE_software_display
@@ -65,6 +67,12 @@
 #define EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE 0x320F
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
+#ifndef EGL_ANGLE_platform_angle_d3d_luid
+#define EGL_ANGLE_platform_angle_d3d_luid 1
+#define EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE 0x34A0
+#define EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE 0x34A1
+#endif /* EGL_ANGLE_platform_angle_d3d_luid */
+
 #ifndef EGL_ANGLE_platform_angle_d3d11on12
 #define EGL_ANGLE_platform_angle_d3d11on12 1
 #define EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE 0x3488
@@ -96,6 +104,11 @@
 #define EGL_ANGLE_platform_angle_device_type_swiftshader
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE 0x3487
 #endif /* EGL_ANGLE_platform_angle_device_type_swiftshader */
+
+#ifndef EGL_ANGLE_platform_angle_device_type_egl_angle
+#define EGL_ANGLE_platform_angle_device_type_egl_angle
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE 0x348E
+#endif /* EGL_ANGLE_platform_angle_device_type_egl_angle */
 
 #ifndef EGL_ANGLE_platform_angle_context_virtualization
 #define EGL_ANGLE_platform_angle_context_virtualization 1
@@ -194,6 +207,10 @@ EGLAPI EGLint EGLAPIENTRY eglProgramCacheResizeANGLE(EGLDisplay dpy, EGLint limi
 #define EGL_TEXTURE_RECTANGLE_ANGLE 0x345B
 #define EGL_TEXTURE_TYPE_ANGLE 0x345C
 #define EGL_TEXTURE_INTERNAL_FORMAT_ANGLE 0x345D
+#define EGL_IOSURFACE_USAGE_HINT_ANGLE 0x348A
+#define EGL_IOSURFACE_READ_HINT_ANGLE 0x0001
+#define EGL_IOSURFACE_WRITE_HINT_ANGLE 0x0002
+#define EGL_BIND_TO_TEXTURE_TARGET_ANGLE 0x348D
 #endif /* EGL_ANGLE_iosurface_client_buffer */
 
 #ifndef EGL_ANGLE_create_context_extensions_enabled
@@ -201,8 +218,8 @@ EGLAPI EGLint EGLAPIENTRY eglProgramCacheResizeANGLE(EGLDisplay dpy, EGLint limi
 #define EGL_EXTENSIONS_ENABLED_ANGLE 0x345F
 #endif /* EGL_ANGLE_create_context_extensions_enabled */
 
-#ifndef EGL_CHROMIUM_get_sync_values
-#define EGL_CHROMIUM_get_sync_values 1
+#ifndef EGL_CHROMIUM_sync_control
+#define EGL_CHROMIUM_sync_control 1
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETSYNCVALUESCHROMIUMPROC) (EGLDisplay dpy,
                                                              EGLSurface surface,
                                                              EGLuint64KHR *ust,
@@ -215,7 +232,21 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
                                                              EGLuint64KHR *msc,
                                                              EGLuint64KHR *sbc);
 #endif
-#endif /* EGL_CHROMIUM_get_sync_values */
+#endif /* EGL_CHROMIUM_sync_control */
+
+#ifndef EGL_ANGLE_sync_control_rate
+#define EGL_ANGLE_sync_control_rate 1
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETMSCRATEANGLEPROC) (EGLDisplay dpy,
+                                                             EGLSurface surface,
+                                                             EGLint *numerator,
+                                                             EGLint *denominator);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglGetMscRateANGLE(EGLDisplay dpy,
+                                                             EGLSurface surface,
+                                                             EGLint *numerator,
+                                                             EGLint *denominator);
+#endif
+#endif /* EGL_ANGLE_sync_control_rate */
 
 #ifndef EGL_ANGLE_power_preference
 #define EGL_ANGLE_power_preference 1
@@ -273,6 +304,11 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHFRAMETOKENANGLEPROC)(EGLDi
 EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithFrameTokenANGLE(EGLDisplay dpy, EGLSurface surface, EGLFrameTokenANGLE frametoken);
 #endif
 #endif /* EGL_ANGLE_swap_with_frame_token */
+
+#ifndef EGL_ANGLE_device_eagl
+#define EGL_ANGLE_device_eagl 1
+#define EGL_EAGL_CONTEXT_ANGLE 0x348C
+#endif
 
 // clang-format on
 

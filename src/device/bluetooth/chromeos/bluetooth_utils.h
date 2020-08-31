@@ -5,8 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_CHROMEOS_BLUETOOTH_UTILS_H_
 #define DEVICE_BLUETOOTH_CHROMEOS_BLUETOOTH_UTILS_H_
 
-#include <vector>
-
+#include "base/optional.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -31,22 +30,45 @@ enum class BluetoothUiSurface {
   kSystemTray,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
+enum class ConnectionFailureReason {
+  kUnknownError = 0,
+  kSystemError = 1,
+  kAuthFailed = 2,
+  kAuthTimeout = 3,
+  kFailed = 4,
+  kUnknownConnectionError = 5,
+  kUnsupportedDevice = 6,
+  kNotConnectable = 7,
+  kMaxValue = kNotConnectable
+};
+
 // Return filtered devices based on the filter type and max number of devices.
-device::BluetoothAdapter::DeviceList DEVICE_BLUETOOTH_EXPORT
+DEVICE_BLUETOOTH_EXPORT device::BluetoothAdapter::DeviceList
 FilterBluetoothDeviceList(const BluetoothAdapter::DeviceList& devices,
                           BluetoothFilterType filter_type,
                           int max_devices);
 
-std::vector<std::vector<uint8_t>> DEVICE_BLUETOOTH_EXPORT
-GetBlockedLongTermKeys();
+// Record outcome of user attempting to pair to a device.
+DEVICE_BLUETOOTH_EXPORT void RecordPairingResult(
+    base::Optional<ConnectionFailureReason> failure_reason,
+    BluetoothTransport transport,
+    base::TimeDelta duration);
+
+// Record outcome of user attempting to reconnect to a previously paired device.
+DEVICE_BLUETOOTH_EXPORT void RecordUserInitiatedReconnectionAttemptResult(
+    base::Optional<ConnectionFailureReason> failure_reason,
+    BluetoothUiSurface surface);
 
 // Record how long it took for a user to find and select the device they wished
 // to connect to.
-void DEVICE_BLUETOOTH_EXPORT
-RecordDeviceSelectionDuration(base::TimeDelta duration,
-                              BluetoothUiSurface surface,
-                              bool was_paired,
-                              BluetoothTransport transport);
+DEVICE_BLUETOOTH_EXPORT void RecordDeviceSelectionDuration(
+    base::TimeDelta duration,
+    BluetoothUiSurface surface,
+    bool was_paired,
+    BluetoothTransport transport);
 
 }  // namespace device
 

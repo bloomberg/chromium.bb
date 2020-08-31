@@ -6,9 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/events/pointer_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
+
+class PointerEventInit;
 
 class CORE_EXPORT PointerEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -58,8 +60,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   double pageX() const override { return page_location_.X(); }
   double pageY() const override { return page_location_.Y(); }
 
-  double offsetX() override;
-  double offsetY() override;
+  double offsetX() const override;
+  double offsetY() const override;
 
   void ReceivedTarget() override;
 
@@ -74,7 +76,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   PointerId pointer_id_;
@@ -96,7 +98,10 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   HeapVector<Member<PointerEvent>> predicted_events_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(PointerEvent);
+template <>
+struct DowncastTraits<PointerEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsPointerEvent(); }
+};
 
 }  // namespace blink
 

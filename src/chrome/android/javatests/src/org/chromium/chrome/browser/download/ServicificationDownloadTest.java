@@ -8,19 +8,17 @@ import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -101,16 +99,10 @@ public final class ServicificationDownloadTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNotificationService = new MockDownloadNotificationService();
             mDownloadUpdateObserver = new DownloadUpdateObserver();
         });
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     private static boolean useDownloadOfflineContentProvider() {

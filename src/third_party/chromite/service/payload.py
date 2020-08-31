@@ -17,7 +17,6 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import payload_pb2
 
 
-
 class Error(Exception):
   """Base module error."""
 
@@ -33,8 +32,13 @@ class ImageMismatchError(Error):
 class PayloadConfig(object):
   """Value object to hold the GeneratePayload configuration options."""
 
-  def __init__(self, tgt_image=None, src_image=None,
-               dest_bucket=None, verify=True, keyset=None):
+  def __init__(self,
+               tgt_image=None,
+               src_image=None,
+               dest_bucket=None,
+               verify=True,
+               keyset=None,
+               upload=True):
     """Init method, sets up all the paths and configuration.
 
     Args:
@@ -43,6 +47,7 @@ class PayloadConfig(object):
       dest_bucket (str): Destination bucket to place the final artifacts in.
       verify (bool): If delta is made, verify the integrity of the payload.
       keyset (str): The key to sign the image with.
+      upload (bool): Whether the payload generation results should be uploaded.
     """
 
     # Set when we call GeneratePayload on this object.
@@ -52,6 +57,7 @@ class PayloadConfig(object):
     self.dest_bucket = dest_bucket
     self.verify = verify
     self.keyset = keyset
+    self.upload = upload
     self.delta_type = 'delta' if self.src_image else 'full'
     self.image_type = _ImageTypeToStr(tgt_image.image_type)
 
@@ -70,12 +76,17 @@ class PayloadConfig(object):
       src_image_path = None
 
     # Set your output location.
-    payload_build = deepcopy(tgt_image_path.build)
-    payload_build.bucket = dest_bucket
-    payload_output_uri = gspaths.ChromeosReleases.PayloadUri(
-        build=payload_build, random_str=None, key=self.keyset,
-        src_version=src_image_path.build.version if src_image else None,
-    )
+    if self.upload:
+      payload_build = deepcopy(tgt_image_path.build)
+      payload_build.bucket = dest_bucket
+      payload_output_uri = gspaths.ChromeosReleases.PayloadUri(
+          build=payload_build,
+          random_str=None,
+          key=self.keyset,
+          src_version=src_image_path.build.version if src_image else None,
+      )
+    else:
+      payload_output_uri = None
 
     self.payload = gspaths.Payload(
         tgt_image=tgt_image_path, src_image=src_image_path,
@@ -91,9 +102,12 @@ class PayloadConfig(object):
     should_sign = True if self.keyset != '' else False
 
     with chroot_util.TempDirInChroot() as temp_dir:
-      self.paygen = paygen_payload_lib.PaygenPayload(self.payload, temp_dir,
-                                                     sign=should_sign,
-                                                     verify=self.verify)
+      self.paygen = paygen_payload_lib.PaygenPayload(
+          self.payload,
+          temp_dir,
+          sign=should_sign,
+          verify=self.verify,
+          upload=self.upload)
       self.paygen.Run()
 
     return True

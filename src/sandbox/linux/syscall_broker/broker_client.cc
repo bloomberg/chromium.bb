@@ -8,12 +8,13 @@
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/posix/unix_domain_socket.h"
 #include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"

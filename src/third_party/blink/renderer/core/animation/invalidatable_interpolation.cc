@@ -200,13 +200,13 @@ void InvalidatableInterpolation::SetFlagIfInheritUsed(
   if (!property_.IsCSSProperty() && !property_.IsPresentationAttribute())
     return;
   StyleResolverState& state =
-      ToCSSInterpolationEnvironment(environment).GetState();
+      To<CSSInterpolationEnvironment>(environment).GetState();
   if (!state.ParentStyle())
     return;
   const CSSValue* start_value =
-      ToCSSPropertySpecificKeyframe(*start_keyframe_).Value();
+      To<CSSPropertySpecificKeyframe>(*start_keyframe_).Value();
   const CSSValue* end_value =
-      ToCSSPropertySpecificKeyframe(*end_keyframe_).Value();
+      To<CSSPropertySpecificKeyframe>(*end_keyframe_).Value();
   if ((start_value && start_value->IsInheritedValue()) ||
       (end_value && end_value->IsInheritedValue())) {
     state.ParentStyle()->SetHasExplicitlyInheritedProperties();
@@ -231,8 +231,8 @@ void InvalidatableInterpolation::ApplyStack(
 
   // Compute the underlying value to composite onto.
   UnderlyingValueOwner underlying_value_owner;
-  const InvalidatableInterpolation& first_interpolation =
-      ToInvalidatableInterpolation(*interpolations.at(starting_index));
+  const auto& first_interpolation =
+      To<InvalidatableInterpolation>(*interpolations.at(starting_index));
   first_interpolation.EnsureValidInterpolationTypes(environment);
   if (first_interpolation.DependsOnUnderlyingValue()) {
     underlying_value_owner.Set(
@@ -258,8 +258,8 @@ void InvalidatableInterpolation::ApplyStack(
   // Composite interpolations onto the underlying value.
   bool should_apply = false;
   for (wtf_size_t i = starting_index; i < interpolations.size(); i++) {
-    const InvalidatableInterpolation& current_interpolation =
-        ToInvalidatableInterpolation(*interpolations.at(i));
+    const auto& current_interpolation =
+        To<InvalidatableInterpolation>(*interpolations.at(i));
     DCHECK(current_interpolation.DependsOnUnderlyingValue());
     current_interpolation.EnsureValidInterpolationTypes(environment);
     const TypedInterpolationValue* current_value =

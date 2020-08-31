@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
@@ -95,7 +97,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseBasicType) {
 TEST_F(FetchResponseDataTest, CorsFilter) {
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(HTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -130,7 +132,7 @@ TEST_F(FetchResponseDataTest,
 TEST_F(FetchResponseDataTest, CorsFilterWithEmptyHeaderSet) {
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(HTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -151,7 +153,7 @@ TEST_F(FetchResponseDataTest,
                                           "set-cookie, bar");
 
   FetchResponseData* cors_response_data =
-      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(HTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -167,7 +169,7 @@ TEST_F(FetchResponseDataTest,
 
 TEST_F(FetchResponseDataTest, CorsFilterWithExplicitHeaderSet) {
   FetchResponseData* internal_response = CreateInternalResponse();
-  WebHTTPHeaderSet exposed_headers;
+  HTTPHeaderSet exposed_headers;
   exposed_headers.insert("set-cookie");
   exposed_headers.insert("bar");
 
@@ -186,7 +188,7 @@ TEST_F(FetchResponseDataTest, CorsFilterWithExplicitHeaderSet) {
 TEST_F(FetchResponseDataTest, ToFetchAPIResponseCorsType) {
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(HTTPHeaderSet());
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
       cors_response_data->PopulateFetchAPIResponse(KURL());
@@ -261,6 +263,27 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseOpaqueRedirectType) {
 TEST_F(FetchResponseDataTest, DefaultResponseTime) {
   FetchResponseData* internal_response = CreateInternalResponse();
   EXPECT_FALSE(internal_response->ResponseTime().is_null());
+}
+
+TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      network::features::kOutOfBlinkFrameAncestors);
+  FetchResponseData* internal_response = CreateInternalResponse();
+  internal_response->HeaderList()->Append("content-security-policy",
+                                          "frame-ancestors 'none'");
+  internal_response->HeaderList()->Append("content-security-policy-report-only",
+                                          "frame-ancestors 'none'");
+
+  mojom::blink::FetchAPIResponsePtr fetch_api_response =
+      internal_response->PopulateFetchAPIResponse(KURL());
+  auto& csp = fetch_api_response->parsed_headers->content_security_policy;
+
+  EXPECT_EQ(csp.size(), 2U);
+  EXPECT_EQ(csp[0]->header->type,
+            network::mojom::ContentSecurityPolicyType::kEnforce);
+  EXPECT_EQ(csp[1]->header->type,
+            network::mojom::ContentSecurityPolicyType::kReport);
 }
 
 }  // namespace blink

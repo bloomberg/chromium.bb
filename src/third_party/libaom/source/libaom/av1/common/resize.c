@@ -431,7 +431,6 @@ static int32_t get_upscale_convolve_x0(int in_length, int out_length,
   return (int32_t)((uint32_t)x0 & RS_SCALE_SUBPEL_MASK);
 }
 
-#ifndef __clang_analyzer__
 static void down2_symeven(const uint8_t *const input, int length,
                           uint8_t *output) {
   // Actual filter len = 2 * filter_len_half.
@@ -486,7 +485,6 @@ static void down2_symeven(const uint8_t *const input, int length,
     }
   }
 }
-#endif
 
 static void down2_symodd(const uint8_t *const input, int length,
                          uint8_t *output) {
@@ -760,6 +758,7 @@ static void upscale_normative_rect(const uint8_t *const input, int height,
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static void highbd_interpolate_core(const uint16_t *const input, int in_length,
                                     uint16_t *output, int out_length, int bd,
                                     const int16_t *interp_filters,
@@ -852,7 +851,6 @@ static void highbd_interpolate(const uint16_t *const input, int in_length,
                           &interp_filters[0][0], SUBPEL_TAPS);
 }
 
-#ifndef __clang_analyzer__
 static void highbd_down2_symeven(const uint16_t *const input, int length,
                                  uint16_t *output, int bd) {
   // Actual filter len = 2 * filter_len_half.
@@ -960,7 +958,6 @@ static void highbd_down2_symodd(const uint16_t *const input, int length,
     }
   }
 }
-#endif
 
 static void highbd_resize_multistep(const uint16_t *const input, int length,
                                     uint16_t *output, int olength,
@@ -1109,6 +1106,7 @@ static void highbd_upscale_normative_rect(const uint8_t *const input,
     aom_free(tmp_right);
   }
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 void av1_resize_frame420(const uint8_t *const y, int y_stride,
                          const uint8_t *const u, const uint8_t *const v,
@@ -1146,6 +1144,7 @@ void av1_resize_frame444(const uint8_t *const y, int y_stride,
                    ouv_stride);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 void av1_highbd_resize_frame420(const uint8_t *const y, int y_stride,
                                 const uint8_t *const u, const uint8_t *const v,
                                 int uv_stride, int height, int width,
@@ -1187,6 +1186,7 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
   av1_highbd_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
                           ouv_stride, bd);
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst, int bd,
@@ -1197,6 +1197,7 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   // the static analysis warnings.
   for (int i = 0; i < AOMMIN(num_planes, MAX_MB_PLANE); ++i) {
     const int is_uv = i > 0;
+#if CONFIG_AV1_HIGHBITDEPTH
     if (src->flags & YV12_FLAG_HIGHBITDEPTH)
       av1_highbd_resize_plane(src->buffers[i], src->crop_heights[is_uv],
                               src->crop_widths[is_uv], src->strides[is_uv],
@@ -1207,6 +1208,13 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                        src->crop_widths[is_uv], src->strides[is_uv],
                        dst->buffers[i], dst->crop_heights[is_uv],
                        dst->crop_widths[is_uv], dst->strides[is_uv]);
+#else
+    (void)bd;
+    av1_resize_plane(src->buffers[i], src->crop_heights[is_uv],
+                     src->crop_widths[is_uv], src->strides[is_uv],
+                     dst->buffers[i], dst->crop_heights[is_uv],
+                     dst->crop_widths[is_uv], dst->strides[is_uv]);
+#endif
   }
   aom_extend_frame_borders(dst, num_planes);
 }
@@ -1227,7 +1235,7 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
   int32_t x0_qn = get_upscale_convolve_x0(downscaled_plane_width,
                                           upscaled_plane_width, x_step_qn);
 
-  for (int j = 0; j < cm->tile_cols; j++) {
+  for (int j = 0; j < cm->tiles.cols; j++) {
     av1_tile_set_col(&tile_col, cm, j);
     // Determine the limits of this tile column in both the source
     // and destination images.
@@ -1240,7 +1248,7 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
 
     const int upscaled_x0 = (downscaled_x0 * superres_denom) / SCALE_NUMERATOR;
     int upscaled_x1;
-    if (j == cm->tile_cols - 1) {
+    if (j == cm->tiles.cols - 1) {
       // Note that we can't just use AOMMIN here - due to rounding,
       // (downscaled_x1 * superres_denom) / SCALE_NUMERATOR may be less than
       // upscaled_plane_width.
@@ -1254,8 +1262,9 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
     const int dst_width = upscaled_x1 - upscaled_x0;
 
     const int pad_left = (j == 0);
-    const int pad_right = (j == cm->tile_cols - 1);
+    const int pad_right = (j == cm->tiles.cols - 1);
 
+#if CONFIG_AV1_HIGHBITDEPTH
     if (cm->seq_params.use_highbitdepth)
       highbd_upscale_normative_rect(src_ptr, rows, src_width, src_stride,
                                     dst_ptr, rows, dst_width, dst_stride,
@@ -1265,7 +1274,11 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
       upscale_normative_rect(src_ptr, rows, src_width, src_stride, dst_ptr,
                              rows, dst_width, dst_stride, x_step_qn, x0_qn,
                              pad_left, pad_right);
-
+#else
+    upscale_normative_rect(src_ptr, rows, src_width, src_stride, dst_ptr, rows,
+                           dst_width, dst_stride, x_step_qn, x0_qn, pad_left,
+                           pad_right);
+#endif
     // Update the fractional pixel offset to prepare for the next tile column.
     x0_qn += (dst_width * x_step_qn) - (src_width << RS_SCALE_SUBPEL_BITS);
   }
@@ -1358,6 +1371,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   const int num_planes = av1_num_planes(cm);
   if (!av1_superres_scaled(cm)) return;
   const SequenceHeader *const seq_params = &cm->seq_params;
+  const int byte_alignment = cm->features.byte_alignment;
 
   YV12_BUFFER_CONFIG copy_buffer;
   memset(&copy_buffer, 0, sizeof(copy_buffer));
@@ -1368,7 +1382,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   if (aom_alloc_frame_buffer(
           &copy_buffer, aligned_width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment))
+          AOM_BORDER_IN_PIXELS, byte_alignment))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate copy buffer for superres upscaling");
 
@@ -1387,21 +1401,26 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
     aom_get_frame_buffer_cb_fn_t cb = pool->get_fb_cb;
     void *cb_priv = pool->cb_priv;
 
+    lock_buffer_pool(pool);
     // Realloc with callback does not release the frame buffer - release first.
-    if (release_fb_cb(cb_priv, fb))
+    if (release_fb_cb(cb_priv, fb)) {
+      unlock_buffer_pool(pool);
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to free current frame buffer before superres upscaling");
-
+    }
     // aom_realloc_frame_buffer() leaves config data for frame_to_show intact
     if (aom_realloc_frame_buffer(
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment, fb, cb, cb_priv))
+            AOM_BORDER_IN_PIXELS, byte_alignment, fb, cb, cb_priv)) {
+      unlock_buffer_pool(pool);
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to allocate current frame buffer for superres upscaling");
+    }
+    unlock_buffer_pool(pool);
   } else {
     // Make a copy of the config data for frame_to_show in copy_buffer
     copy_buffer_config(frame_to_show, &copy_buffer);
@@ -1412,7 +1431,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment))
+            AOM_BORDER_IN_PIXELS, byte_alignment))
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate current frame buffer for superres upscaling");

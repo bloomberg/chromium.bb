@@ -28,8 +28,6 @@ UnifiedHeapMarkingVisitorBase::UnifiedHeapMarkingVisitorBase(
 
 void UnifiedHeapMarkingVisitorBase::VisitImpl(
     const TraceWrapperV8Reference<v8::Value>& v8_reference) {
-  if (v8_reference.Get().IsEmpty())
-    return;
   DCHECK(isolate_);
   if (task_id_ != WorklistTaskId::MutatorThread) {
     // This is a temporary solution. Pushing directly from concurrent threads
@@ -40,6 +38,8 @@ void UnifiedHeapMarkingVisitorBase::VisitImpl(
     v8_references_worklist_.Push(&v8_reference);
     return;
   }
+  if (v8_reference.Get().IsEmpty())
+    return;
   controller_->RegisterEmbedderReference(
       v8_reference.template Cast<v8::Data>().Get());
 }
@@ -69,7 +69,7 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,
-    void* object) {
+    const void* object) {
   // |object| here is either ScriptWrappable or CustomWrappable.
 
   if (!ThreadState::IsAnyIncrementalMarking())

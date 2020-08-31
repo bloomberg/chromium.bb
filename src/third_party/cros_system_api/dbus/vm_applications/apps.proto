@@ -9,6 +9,9 @@ package vm_tools.apps;
 
 // Corresponds to a .desktop file from the Desktop Entry Spec:
 // https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
+// with some additional parameters to support broader compatibility.
+// This message is replicated in vm_tools/proto/container_host.proto, and the
+// two definitions should be kept in sync.
 message App {
   // A "localestring". Entries with a locale should set the |locale| field to
   // the value inside the [] and the default entry should leave it empty. The
@@ -48,9 +51,17 @@ message App {
   // If set, the package_id of the installed package that owns this .desktop
   // file. If not set, the .desktop file is not owned by an installed package.
   string package_id = 8;
+
+  // Similar to |mime_types| for applications that do not support mime types.
+  repeated string extensions = 11;
 }
 
 message ApplicationList {
+  enum VmType {
+    TERMINA = 0;
+    PLUGIN_VM = 1;
+  }
+
   repeated App apps = 1;
 
   string vm_name = 2;
@@ -58,6 +69,8 @@ message ApplicationList {
 
   // The owner of the vm and container.
   string owner_id = 4;
+
+  VmType vm_type = 5;
 }
 
 // Used by the container to request that the host launches a new Terminal

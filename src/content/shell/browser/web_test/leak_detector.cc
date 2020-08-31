@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -30,7 +29,9 @@ const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 const int kInitialNumberOfLiveResourceFetchers = 1;
-const int kInitialNumberOfLiveContextLifecycleStateObservers = 0;
+// Each Document has a ScriptRunner and a ScriptedAnimationController,
+// which are ContextLifecycleStateObservers.
+const int kInitialNumberOfLiveContextLifecycleStateObservers = 2;
 
 // This includes not only about:blank's context but also ScriptRegexp (e.g.
 // created by isValidEmailAddress in EmailInputType.cpp). The leak detector

@@ -12,7 +12,7 @@
 
 #include "absl/strings/string_view.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

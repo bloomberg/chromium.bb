@@ -301,6 +301,15 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   return true;
 }
 
+// static
+bool CRLSet::ParseAndStoreUnparsedData(std::string data,
+                                       scoped_refptr<CRLSet>* out_crl_set) {
+  if (!Parse(data, out_crl_set))
+    return false;
+  (*out_crl_set)->unparsed_crl_set_ = std::move(data);
+  return true;
+}
+
 CRLSet::Result CRLSet::CheckSPKI(const base::StringPiece& spki_hash) const {
   if (std::binary_search(blocked_spkis_.begin(), blocked_spkis_.end(),
                          spki_hash))
@@ -369,6 +378,10 @@ uint32_t CRLSet::sequence() const {
   return sequence_;
 }
 
+const std::string& CRLSet::unparsed_crl_set() const {
+  return unparsed_crl_set_;
+}
+
 const CRLSet::CRLList& CRLSet::CrlsForTesting() const {
   return crls_;
 }
@@ -398,10 +411,10 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
     bool is_expired,
     const SHA256HashValue* issuer_spki,
     const std::string& serial_number,
-    const std::string common_name,
+    const std::string utf8_common_name,
     const std::vector<std::string> acceptable_spki_hashes_for_cn) {
   std::string subject_hash;
-  if (!common_name.empty()) {
+  if (!utf8_common_name.empty()) {
     CBB cbb, top_level, set, inner_seq, oid, cn;
     uint8_t* x501_data;
     size_t x501_len;
@@ -415,10 +428,10 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
         !CBB_add_asn1(&set, &inner_seq, CBS_ASN1_SEQUENCE) ||
         !CBB_add_asn1(&inner_seq, &oid, CBS_ASN1_OBJECT) ||
         !CBB_add_bytes(&oid, kCommonNameOID, sizeof(kCommonNameOID)) ||
-        !CBB_add_asn1(&inner_seq, &cn, CBS_ASN1_PRINTABLESTRING) ||
-        !CBB_add_bytes(&cn,
-                       reinterpret_cast<const uint8_t*>(common_name.data()),
-                       common_name.size()) ||
+        !CBB_add_asn1(&inner_seq, &cn, CBS_ASN1_UTF8STRING) ||
+        !CBB_add_bytes(
+            &cn, reinterpret_cast<const uint8_t*>(utf8_common_name.data()),
+            utf8_common_name.size()) ||
         !CBB_finish(&cbb, &x501_data, &x501_len)) {
       CBB_cleanup(&cbb);
       return nullptr;
@@ -438,8 +451,22 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
     const std::string spki(reinterpret_cast<const char*>(issuer_spki->data),
                            sizeof(issuer_spki->data));
     std::vector<std::string> serials;
-    if (!serial_number.empty())
+    if (!serial_number.empty()) {
       serials.push_back(serial_number);
+      // |serial_number| is in DER-encoded form, which means it may have a
+      // leading 0x00 to indicate it is a positive INTEGER. CRLSets are stored
+      // without these leading 0x00, as handled in CheckSerial(), so remove
+      // that here. As DER-encoding means that any sequences of leading zeroes
+      // should be omitted, except to indicate sign, there should only ever
+      // be one, and the next byte should have the high bit set.
+      DCHECK_EQ(serials[0][0] & 0x80, 0);  // Negative serials are not allowed.
+      if (serials[0][0] == 0x00) {
+        serials[0].erase(0, 1);
+        // If there was a leading 0x00, then the high-bit of the next byte
+        // should have been set.
+        DCHECK(!serials[0].empty() && serials[0][0] & 0x80);
+      }
+    }
 
     crl_set->crls_.emplace(std::move(spki), std::move(serials));
   }

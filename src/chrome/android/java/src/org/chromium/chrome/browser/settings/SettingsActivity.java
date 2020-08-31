@@ -4,39 +4,38 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
-import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Process;
-import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v4.app.Fragment;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.ListFragment;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsClient;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * The Chrome settings activity.
@@ -46,9 +45,9 @@ import org.chromium.ui.UiUtils;
  * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
  * behavior of {@link android.preference.PreferenceActivity}.
  *
- * If the main fragment is not an instance of {@link PreferenceFragmentCompat} (e.g. {@link
- * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
- * 1) preferences_action_bar_shadow.xml to the custom XML hierarchy and
+ * If the main fragment does not use the default layout for {@link PreferenceFragmentCompat} or
+ * {@link ListFragment}, add the following:
+ * 1) settings_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    {@link SettingsUtils#getShowShadowOnScrollListener(View, View)}.
  */
@@ -87,7 +86,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // from Android notifications, when Android is restoring Settings after Chrome was
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
-        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         super.onCreate(savedInstanceState);
 
@@ -102,22 +101,13 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // If savedInstanceState is non-null, then the activity is being
         // recreated and super.onCreate() has already recreated the fragment.
         if (savedInstanceState == null) {
-            if (initialFragment == null) initialFragment = MainPreferences.class.getName();
+            if (initialFragment == null) initialFragment = MainSettings.class.getName();
 
             Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(android.R.id.content, fragment)
                     .commit();
-        }
-
-        if (ApiCompatibilityUtils.checkPermission(
-                    this, Manifest.permission.NFC, Process.myPid(), Process.myUid())
-                == PackageManager.PERMISSION_GRANTED) {
-            // Disable Android Beam on JB and later devices.
-            // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.
-            NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-            if (nfcAdapter != null) nfcAdapter.setNdefPushMessage(null, this);
         }
 
         Resources res = getResources();
@@ -156,23 +146,24 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         super.onAttachedToWindow();
 
         Fragment fragment = getMainFragment();
-        if (!(fragment instanceof PreferenceFragmentCompat)) {
-            return;
+
+        ViewGroup listView = null;
+        if (fragment instanceof PreferenceFragmentCompat) {
+            listView = ((PreferenceFragmentCompat) fragment).getListView();
+        } else if (fragment instanceof ListFragment) {
+            listView = ((ListFragment) fragment).getListView();
         }
 
-        RecyclerView recyclerView = ((PreferenceFragmentCompat) fragment).getListView();
-        if (recyclerView == null) {
-            return;
-        }
+        if (listView == null) return;
 
         // Append action bar shadow to layout.
         View inflatedView = getLayoutInflater().inflate(
-                R.layout.preferences_action_bar_shadow, findViewById(android.R.id.content));
+                R.layout.settings_action_bar_shadow, findViewById(android.R.id.content));
 
         // Display shadow on scroll.
-        recyclerView.getViewTreeObserver().addOnScrollChangedListener(
+        listView.getViewTreeObserver().addOnScrollChangedListener(
                 SettingsUtils.getShowShadowOnScrollListener(
-                        recyclerView, inflatedView.findViewById(R.id.shadow)));
+                        listView, inflatedView.findViewById(R.id.shadow)));
     }
 
     @Override
@@ -251,7 +242,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             return true;
         } else if (item.getItemId() == R.id.menu_id_general_help) {
             HelpAndFeedback.getInstance().show(this, getString(R.string.help_context_settings),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -268,6 +259,14 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (!listener.onBackPressed()) {
             // Fragment hasn't handled this event, fall back to AppCompatActivity handling.
             super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        if (fragment instanceof SiteSettingsPreferenceFragment) {
+            ((SiteSettingsPreferenceFragment) fragment)
+                    .setSiteSettingsClient(new ChromeSiteSettingsClient(this));
         }
     }
 
@@ -295,10 +294,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // On P+, the status bar color is set via the XML theme.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return;
 
-        // Kill switch included due to past crashes when programmatically setting status bar color:
-        // https://crbug.com/880694.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SETTINGS_MODERN_STATUS_BAR)) return;
-
         if (UiUtils.isSystemUiThemingDisabled()) return;
 
         // Dark status icons only supported on M+.
@@ -306,7 +301,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         // Use background color as status bar color.
         int statusBarColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_bg_color);
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
 
         // Set status bar icon color according to background color.

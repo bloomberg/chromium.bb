@@ -30,7 +30,8 @@
 
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -65,7 +66,7 @@ static void AppendMailtoPostFormDataToURL(KURL& url,
                                           const String& encoding_type) {
   String body = data.FlattenToString();
 
-  if (DeprecatedEqualIgnoringCase(encoding_type, "text/plain")) {
+  if (EqualIgnoringASCIICase(encoding_type, "text/plain")) {
     // Convention seems to be to decode, and s/&/\r\n/. Also, spaces are encoded
     // as %20.
     body = DecodeURLEscapeSequences(
@@ -93,9 +94,9 @@ void FormSubmission::Attributes::ParseAction(const String& action) {
 }
 
 AtomicString FormSubmission::Attributes::ParseEncodingType(const String& type) {
-  if (DeprecatedEqualIgnoringCase(type, "multipart/form-data"))
+  if (EqualIgnoringASCIICase(type, "multipart/form-data"))
     return AtomicString("multipart/form-data");
-  if (DeprecatedEqualIgnoringCase(type, "text/plain"))
+  if (EqualIgnoringASCIICase(type, "text/plain"))
     return AtomicString("text/plain");
   return AtomicString("application/x-www-form-urlencoded");
 }
@@ -107,9 +108,9 @@ void FormSubmission::Attributes::UpdateEncodingType(const String& type) {
 
 FormSubmission::SubmitMethod FormSubmission::Attributes::ParseMethodType(
     const String& type) {
-  if (DeprecatedEqualIgnoringCase(type, "post"))
+  if (EqualIgnoringASCIICase(type, "post"))
     return FormSubmission::kPostMethod;
-  if (DeprecatedEqualIgnoringCase(type, "dialog"))
+  if (EqualIgnoringASCIICase(type, "dialog"))
     return FormSubmission::kDialogMethod;
   return FormSubmission::kGetMethod;
 }
@@ -141,39 +142,41 @@ void FormSubmission::Attributes::CopyFrom(const Attributes& other) {
   accept_charset_ = other.accept_charset_;
 }
 
-inline FormSubmission::FormSubmission(SubmitMethod method,
-                                      const KURL& action,
-                                      const AtomicString& target,
-                                      const AtomicString& content_type,
-                                      HTMLFormElement* form,
-                                      scoped_refptr<EncodedFormData> data,
-                                      const String& boundary,
-                                      Event* event)
+inline FormSubmission::FormSubmission(
+    SubmitMethod method,
+    const KURL& action,
+    const AtomicString& target,
+    const AtomicString& content_type,
+    HTMLFormElement* form,
+    scoped_refptr<EncodedFormData> data,
+    const Event* event,
+    NavigationPolicy navigation_policy,
+    TriggeringEventInfo triggering_event_info,
+    ClientNavigationReason reason,
+    std::unique_ptr<ResourceRequest> resource_request,
+    Frame* target_frame,
+    WebFrameLoadType load_type,
+    Document* origin_document)
     : method_(method),
       action_(action),
       target_(target),
       content_type_(content_type),
       form_(form),
       form_data_(std::move(data)),
-      boundary_(boundary) {
-  if (event) {
-    triggering_event_info_ = event->isTrusted()
-                                 ? TriggeringEventInfo::kFromTrustedEvent
-                                 : TriggeringEventInfo::kFromUntrustedEvent;
-    if (event->UnderlyingEvent())
-      event = event->UnderlyingEvent();
-  } else {
-    triggering_event_info_ = TriggeringEventInfo::kNotFromEvent;
-  }
-  navigation_policy_ = NavigationPolicyFromEvent(event);
-}
+      navigation_policy_(navigation_policy),
+      triggering_event_info_(triggering_event_info),
+      reason_(reason),
+      resource_request_(std::move(resource_request)),
+      target_frame_(target_frame),
+      load_type_(load_type),
+      origin_document_(origin_document) {}
 
 inline FormSubmission::FormSubmission(const String& result)
     : method_(kDialogMethod), result_(result) {}
 
 FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                        const Attributes& attributes,
-                                       Event* event,
+                                       const Event* event,
                                        HTMLFormControlElement* submit_button) {
   DCHECK(form);
 
@@ -212,7 +215,9 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                              ? document.Url().GetString()
                                              : copied_attributes.Action());
 
-  if (document.GetInsecureRequestPolicy() & kUpgradeInsecureRequests &&
+  if ((document.GetSecurityContext().GetInsecureRequestPolicy() &
+       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone &&
       action_url.ProtocolIs("http") &&
       !SecurityOrigin::Create(action_url)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(document,
@@ -265,59 +270,89 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
   AtomicString target_or_base_target = copied_attributes.Target().IsEmpty()
                                            ? document.BaseTarget()
                                            : copied_attributes.Target();
-  return MakeGarbageCollected<FormSubmission>(
-      copied_attributes.Method(), action_url, target_or_base_target,
-      encoding_type, form, std::move(form_data), boundary, event);
-}
 
-void FormSubmission::Trace(blink::Visitor* visitor) {
-  visitor->Trace(form_);
-}
+  std::unique_ptr<ResourceRequest> resource_request =
+      std::make_unique<ResourceRequest>(action_url);
+  ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
+  if (copied_attributes.Method() == FormSubmission::kPostMethod) {
+    reason = ClientNavigationReason::kFormSubmissionPost;
+    resource_request->SetHttpMethod(http_names::kPOST);
+    resource_request->SetHttpBody(form_data);
 
-KURL FormSubmission::RequestURL() const {
-  if (method_ == FormSubmission::kPostMethod ||
-      action_.ProtocolIsJavaScript()) {
-    return action_;
+    // construct some user headers if necessary
+    if (boundary.IsEmpty()) {
+      resource_request->SetHTTPContentType(encoding_type);
+    } else {
+      resource_request->SetHTTPContentType(encoding_type +
+                                           "; boundary=" + boundary);
+    }
+  }
+  resource_request->SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(form->GetDocument().GetFrame()));
+
+  TriggeringEventInfo triggering_event_info;
+  if (event) {
+    triggering_event_info = event->isTrusted()
+                                ? TriggeringEventInfo::kFromTrustedEvent
+                                : TriggeringEventInfo::kFromUntrustedEvent;
+    if (event->UnderlyingEvent())
+      event = event->UnderlyingEvent();
+  } else {
+    triggering_event_info = TriggeringEventInfo::kNotFromEvent;
   }
 
-  KURL request_url(action_);
-  request_url.SetQuery(form_data_->FlattenToString());
-  return request_url;
+  FrameLoadRequest frame_request(&form->GetDocument(), *resource_request);
+  frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(event));
+  frame_request.SetClientRedirectReason(reason);
+  frame_request.SetForm(form);
+  frame_request.SetTriggeringEventInfo(triggering_event_info);
+  Frame* target_frame =
+      form->GetDocument()
+          .GetFrame()
+          ->Tree()
+          .FindOrCreateFrameForNavigation(frame_request, target_or_base_target)
+          .frame;
+
+  WebFrameLoadType load_type = WebFrameLoadType::kStandard;
+  LocalFrame* target_local_frame = DynamicTo<LocalFrame>(target_frame);
+  if (target_local_frame &&
+      !target_local_frame->GetDocument()->LoadEventFinished() &&
+      !LocalFrame::HasTransientUserActivation(target_local_frame))
+    load_type = WebFrameLoadType::kReplaceCurrentItem;
+
+  return MakeGarbageCollected<FormSubmission>(
+      copied_attributes.Method(), action_url, target_or_base_target,
+      encoding_type, form, std::move(form_data), event,
+      frame_request.GetNavigationPolicy(), triggering_event_info, reason,
+      std::move(resource_request), target_frame, load_type,
+      frame_request.OriginDocument());
+}
+
+void FormSubmission::Trace(Visitor* visitor) {
+  visitor->Trace(form_);
+  visitor->Trace(target_frame_);
+  visitor->Trace(origin_document_);
 }
 
 void FormSubmission::Navigate() {
-  ResourceRequest resource_request(RequestURL());
-  ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
-  if (method_ == FormSubmission::kPostMethod) {
-    reason = ClientNavigationReason::kFormSubmissionPost;
-    resource_request.SetHttpMethod(http_names::kPOST);
-    resource_request.SetHttpBody(form_data_);
-
-    // construct some user headers if necessary
-    if (boundary_.IsEmpty()) {
-      resource_request.SetHTTPContentType(content_type_);
-    } else {
-      resource_request.SetHTTPContentType(content_type_ +
-                                          "; boundary=" + boundary_);
-    }
+  KURL request_url = action_;
+  if (method_ != FormSubmission::kPostMethod &&
+      !action_.ProtocolIsJavaScript()) {
+    request_url.SetQuery(form_data_->FlattenToString());
   }
-  resource_request.SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(form_->GetDocument().GetFrame()));
+  resource_request_->SetUrl(request_url);
 
-  FrameLoadRequest frame_request(&form_->GetDocument(), resource_request);
+  FrameLoadRequest frame_request(origin_document_.Get(), *resource_request_);
   frame_request.SetNavigationPolicy(navigation_policy_);
-  frame_request.SetClientRedirectReason(reason);
+  frame_request.SetClientRedirectReason(reason_);
   frame_request.SetForm(form_);
   frame_request.SetTriggeringEventInfo(triggering_event_info_);
 
-  Frame* target_frame =
-      form_->GetDocument()
-          .GetFrame()
-          ->Tree()
-          .FindOrCreateFrameForNavigation(frame_request, target_)
-          .frame;
-  if (target_frame)
-    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+  if (target_frame_ && !target_frame_->GetPage())
+    return;
+
+  if (target_frame_)
+    target_frame_->Navigate(frame_request, load_type_);
 }
 
 }  // namespace blink

@@ -18,19 +18,12 @@
 namespace v8 {
 namespace internal {
 
-OBJECT_CONSTRUCTORS_IMPL(BreakPoint, Tuple2)
-OBJECT_CONSTRUCTORS_IMPL(BreakPointInfo, Tuple2)
-OBJECT_CONSTRUCTORS_IMPL(CoverageInfo, FixedArray)
+TQ_OBJECT_CONSTRUCTORS_IMPL(BreakPoint)
+TQ_OBJECT_CONSTRUCTORS_IMPL(BreakPointInfo)
+TQ_OBJECT_CONSTRUCTORS_IMPL(CoverageInfo)
 TQ_OBJECT_CONSTRUCTORS_IMPL(DebugInfo)
 
 NEVER_READ_ONLY_SPACE_IMPL(DebugInfo)
-
-CAST_ACCESSOR(BreakPointInfo)
-CAST_ACCESSOR(CoverageInfo)
-CAST_ACCESSOR(BreakPoint)
-
-TQ_SMI_ACCESSORS(DebugInfo, flags)
-TQ_SMI_ACCESSORS(DebugInfo, debugger_hints)
 
 BIT_FIELD_ACCESSORS(DebugInfo, debugger_hints, side_effect_state,
                     DebugInfo::SideEffectStateBits)
@@ -40,12 +33,6 @@ BIT_FIELD_ACCESSORS(DebugInfo, debugger_hints, computed_debug_is_blackboxed,
                     DebugInfo::ComputedDebugIsBlackboxedBit)
 BIT_FIELD_ACCESSORS(DebugInfo, debugger_hints, debugging_id,
                     DebugInfo::DebuggingIdBits)
-
-SMI_ACCESSORS(BreakPointInfo, source_position, kSourcePositionOffset)
-ACCESSORS(BreakPointInfo, break_points, Object, kBreakPointsOffset)
-
-SMI_ACCESSORS(BreakPoint, id, kIdOffset)
-ACCESSORS(BreakPoint, condition, String, kConditionOffset)
 
 bool DebugInfo::HasInstrumentedBytecodeArray() {
   DCHECK_EQ(debug_bytecode_array().IsBytecodeArray(),
@@ -63,6 +50,9 @@ BytecodeArray DebugInfo::DebugBytecodeArray() {
   DCHECK_EQ(shared().GetDebugBytecodeArray(), debug_bytecode_array());
   return BytecodeArray::cast(debug_bytecode_array());
 }
+
+TQ_OBJECT_CONSTRUCTORS_IMPL(WasmValue)
+NEVER_READ_ONLY_SPACE_IMPL(WasmValue)
 
 }  // namespace internal
 }  // namespace v8

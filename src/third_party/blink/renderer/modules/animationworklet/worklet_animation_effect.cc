@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_effect.h"
-#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 
 namespace blink {
@@ -44,12 +44,18 @@ ComputedEffectTiming* WorkletAnimationEffect::getComputedTiming() const {
                                              /*is_keyframe_effect*/ false);
 }
 
-void WorkletAnimationEffect::setLocalTime(double time_ms, bool is_null) {
-  if (is_null) {
+base::Optional<double> WorkletAnimationEffect::localTime() const {
+  if (!local_time_)
+    return base::nullopt;
+  return local_time_.value().InMillisecondsF();
+}
+
+void WorkletAnimationEffect::setLocalTime(base::Optional<double> time_ms) {
+  if (!time_ms) {
     local_time_.reset();
     return;
   }
-  DCHECK(!std::isnan(time_ms));
+  DCHECK(!std::isnan(time_ms.value()));
   // Convert double to base::TimeDelta because cc/animation expects
   // base::TimeDelta.
   //
@@ -60,15 +66,11 @@ void WorkletAnimationEffect::setLocalTime(double time_ms, bool is_null) {
   // value back provides the actual value we use in further computation which
   // is the least surprising path.
   // [1] https://drafts.csswg.org/web-animations/#precision-of-time-values
-  local_time_ = base::TimeDelta::FromMillisecondsD(time_ms);
-}
-
-double WorkletAnimationEffect::localTime(bool& is_null) const {
-  is_null = !local_time_.has_value();
-  return local_time_.value_or(base::TimeDelta()).InMillisecondsF();
+  local_time_ = base::TimeDelta::FromMillisecondsD(time_ms.value());
 }
 
 base::Optional<base::TimeDelta> WorkletAnimationEffect::local_time() const {
   return local_time_;
 }
+
 }  // namespace blink

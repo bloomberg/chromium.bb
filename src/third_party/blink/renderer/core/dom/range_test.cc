@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/core/css/font_face_descriptors.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_font_face_descriptors.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
@@ -37,7 +37,7 @@ namespace blink {
 class RangeTest : public EditingTestBase {};
 
 TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
-  GetDocument().body()->SetInnerHTMLFromString("<span><b>abc</b>def</span>");
+  GetDocument().body()->setInnerHTML("<span><b>abc</b>def</span>");
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* const script_element =
       GetDocument().CreateRawElement(html_names::kScriptTag);
@@ -57,9 +57,9 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   Element* const result = GetDocument().CreateRawElement(html_names::kDivTag);
   result->AppendChild(range->extractContents(ASSERT_NO_EXCEPTION));
 
-  EXPECT_EQ("<b>abc</b>", result->InnerHTMLAsString())
+  EXPECT_EQ("<b>abc</b>", result->innerHTML())
       << "DOM mutation event handler should not affect result.";
-  EXPECT_EQ("<span>DEF</span>", span_element->OuterHTMLAsString())
+  EXPECT_EQ("<span>DEF</span>", span_element->outerHTML())
       << "DOM mutation event handler should be executed.";
 }
 
@@ -102,7 +102,7 @@ TEST_F(RangeTest, IntersectsNode) {
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
 
-  GetDocument().body()->SetInnerHTMLFromString("1234");
+  GetDocument().body()->setInnerHTML("1234");
   auto* old_text = To<Text>(GetDocument().body()->firstChild());
 
   auto* range04 =
@@ -147,7 +147,7 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
 TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
   V8TestingScope scope;
 
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
       "id=\"inner-right\">2</span>3</span>");
 
@@ -233,7 +233,7 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
 
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div><span id=span1>foo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = GetDocument().QuerySelector("div");
@@ -255,7 +255,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
 
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div><span id=span1>foofoo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = GetDocument().QuerySelector("div");
@@ -294,7 +294,7 @@ TEST_F(RangeTest, ToPosition) {
 
 TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
   LoadAhem();
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div style='font: Ahem; width: 2em;letter-spacing: 5px;'>xx xx </div>");
   Node* const div = GetDocument().QuerySelector("div");
   // "x^x
@@ -316,9 +316,8 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
 
 // Regression test for crbug.com/681536
 TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div>foo <u><input> bar</u></div>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("<div>foo <u><input> bar</u></div>");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Node* foo = GetDocument().QuerySelector("div")->firstChild();
   Node* bar = GetDocument().QuerySelector("u")->lastChild();
@@ -349,7 +348,7 @@ static Vector<IntSize> ComputeSizesOfQuads(const Vector<FloatQuad>& quads) {
 }
 
 TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body { font-size: 20px; }
       #sample::first-letter { font-size: 500%; }
@@ -357,7 +356,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
     <p id=sample>abc</p>
     <p id=expected><span style='font-size: 500%'>a</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");
@@ -394,7 +393,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
 }
 
 TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body { font-size: 20px; }
       #sample::first-letter { font-size: 500%; }
@@ -402,7 +401,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
     <p id=sample>(a)bc</p>
     <p id=expected><span style='font-size: 500%'>(a)</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");
@@ -455,7 +454,7 @@ TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
 }
 
 TEST_F(RangeTest, CollapsedRangeGetBorderAndTextQuadsWithFirstLetter) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body { font-size: 20px; }
       #sample::first-letter { font-size: 500%; }
@@ -463,7 +462,7 @@ TEST_F(RangeTest, CollapsedRangeGetBorderAndTextQuadsWithFirstLetter) {
     <p id=sample>abc</p>
     <p id=expected><span style='font-size: 500%'>a</span>bc</p>
   )HTML");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   Element* const expected = GetDocument().getElementById("expected");
   Element* const sample = GetDocument().getElementById("sample");

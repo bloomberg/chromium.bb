@@ -16,9 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -28,6 +28,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/test/frame_load_waiter.h"
+#include "content/public/test/local_frame_host_interceptor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -47,16 +48,18 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/native_theme/native_theme_features.h"
 
-using blink::WebString;
 using blink::WebURLRequest;
 
 namespace content {
@@ -78,7 +81,13 @@ const char kAutoplayTestOrigin[] = "https://www.google.com";
 // of process frame even though it is in the same process as its parent.
 class RenderFrameImplTest : public RenderViewTest {
  public:
-  ~RenderFrameImplTest() override {}
+  explicit RenderFrameImplTest(
+      RenderFrameImpl::CreateRenderFrameImplFunction hook_function = nullptr)
+      : RenderViewTest(/*hook_render_frame_creation=*/!hook_function) {
+    if (hook_function)
+      RenderFrameImpl::InstallCreateHook(hook_function);
+  }
+  ~RenderFrameImplTest() override = default;
 
   void SetUp() override {
     blink::WebRuntimeFeatures::EnableOverlayScrollbars(
@@ -93,9 +102,10 @@ class RenderFrameImplTest : public RenderViewTest {
   }
 
   void LoadChildFrame() {
-    mojom::CreateFrameWidgetParams widget_params;
-    widget_params.routing_id = kSubframeWidgetRouteId;
-    widget_params.visual_properties.new_size = gfx::Size(100, 100);
+    mojom::CreateFrameWidgetParamsPtr widget_params =
+        mojom::CreateFrameWidgetParams::New();
+    widget_params->routing_id = kSubframeWidgetRouteId;
+    widget_params->visual_properties.new_size = gfx::Size(100, 100);
 
     FrameReplicationState frame_replication_state;
     frame_replication_state.name = "frame";
@@ -103,7 +113,8 @@ class RenderFrameImplTest : public RenderViewTest {
 
     RenderFrameImpl::FromWebFrame(
         view_->GetMainRenderFrame()->GetWebFrame()->FirstChild())
-        ->OnSwapOut(kFrameProxyRouteId, false, frame_replication_state);
+        ->OnUnload(kFrameProxyRouteId, false, frame_replication_state,
+                   base::UnguessableToken::Create());
 
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         stub_interface_provider;
@@ -118,8 +129,9 @@ class RenderFrameImplTest : public RenderViewTest {
         kSubframeRouteId, std::move(stub_interface_provider),
         std::move(stub_browser_interface_broker), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
-        base::UnguessableToken::Create(), frame_replication_state,
-        &compositor_deps_, &widget_params, FrameOwnerProperties(),
+        base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+        frame_replication_state, &compositor_deps_, std::move(widget_params),
+        blink::mojom::FrameOwnerProperties::New(),
         /*has_committed_real_load=*/true);
 
     frame_ = static_cast<TestRenderFrame*>(
@@ -149,7 +161,7 @@ class RenderFrameImplTest : public RenderViewTest {
   }
 
   static int32_t AutoplayFlagsForFrame(TestRenderFrame* frame) {
-    return frame->render_view()->webview()->AutoplayFlagsForTest();
+    return frame->render_view()->GetWebView()->AutoplayFlagsForTest();
   }
 
 #if defined(OS_ANDROID)
@@ -168,7 +180,9 @@ class RenderFrameImplTest : public RenderViewTest {
 class RenderFrameTestObserver : public RenderFrameObserver {
  public:
   explicit RenderFrameTestObserver(RenderFrame* render_frame)
-      : RenderFrameObserver(render_frame), visible_(false) {}
+      : RenderFrameObserver(render_frame),
+        visible_(false),
+        last_intersection_rect_(-1, -1, -1, -1) {}
 
   ~RenderFrameTestObserver() override {}
 
@@ -176,48 +190,71 @@ class RenderFrameTestObserver : public RenderFrameObserver {
   void WasShown() override { visible_ = true; }
   void WasHidden() override { visible_ = false; }
   void OnDestruct() override { delete this; }
+  void OnMainFrameDocumentIntersectionChanged(
+      const blink::WebRect& intersection_rect) override {
+    last_intersection_rect_ = intersection_rect;
+  }
 
   bool visible() { return visible_; }
+  blink::WebRect last_intersection_rect() { return last_intersection_rect_; }
 
  private:
   bool visible_;
+  blink::WebRect last_intersection_rect_;
 };
 
 // Verify that a frame with a RenderFrameProxy as a parent has its own
 // RenderWidget.
 TEST_F(RenderFrameImplTest, SubframeWidget) {
   EXPECT_TRUE(frame_widget());
-  EXPECT_NE(frame_widget(), static_cast<RenderViewImpl*>(view_)->GetWidget());
+
+  RenderFrameImpl* main_frame =
+      static_cast<RenderViewImpl*>(view_)->GetMainRenderFrame();
+  RenderWidget* main_frame_widget = main_frame->GetLocalRootRenderWidget();
+  EXPECT_NE(frame_widget(), main_frame_widget);
 }
 
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
 TEST_F(RenderFrameImplTest, FrameResize) {
+  // Make an update where the widget's size and the visible_viewport_size
+  // are not the same.
   VisualProperties visual_properties;
-  gfx::Size size(200, 200);
-  visual_properties.screen_info = ScreenInfo();
-  visual_properties.new_size = size;
-  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(size);
-  visual_properties.visible_viewport_size = size;
-  visual_properties.is_fullscreen_granted = false;
+  gfx::Size widget_size(400, 200);
+  gfx::Size visible_size(350, 170);
+  visual_properties.new_size = widget_size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(widget_size);
+  visual_properties.visible_viewport_size = visible_size;
+
+  RenderWidget* main_frame_widget =
+      GetMainRenderFrame()->GetLocalRootRenderWidget();
 
   // The main frame's widget will receive the resize message before the
   // subframe's widget, and it will set the size for the WebView.
-  RenderWidget* main_frame_widget =
-      GetMainRenderFrame()->GetLocalRootRenderWidget();
-  WidgetMsg_UpdateVisualProperties resize_message(
-      main_frame_widget->routing_id(), visual_properties);
+  {
+    WidgetMsg_UpdateVisualProperties resize_message(
+        main_frame_widget->routing_id(), visual_properties);
+    main_frame_widget->OnMessageReceived(resize_message);
+  }
+  // The main frame widget's size is the "widget size", not the visible viewport
+  // size, which is given to blink separately.
+  EXPECT_EQ(gfx::Size(view_->GetWebView()->MainFrameWidget()->Size()),
+            widget_size);
+  EXPECT_EQ(gfx::SizeF(view_->GetWebView()->VisualViewportSize()),
+            gfx::SizeF(visible_size));
+  // The main frame doesn't change other local roots directly.
+  EXPECT_NE(gfx::Size(frame_widget()->GetWebWidget()->Size()), visible_size);
 
-  main_frame_widget->OnMessageReceived(resize_message);
-  EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
-            blink::WebSize(size));
-  EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // A subframe in the same process does not modify the WebView.
+  {
+    WidgetMsg_UpdateVisualProperties resize_message_subframe(
+        frame_widget()->routing_id(), visual_properties);
+    frame_widget()->OnMessageReceived(resize_message_subframe);
+  }
+  EXPECT_EQ(gfx::Size(frame_widget()->GetWebWidget()->Size()), widget_size);
 
-  // The subframe sets the size only for itself.
-  WidgetMsg_UpdateVisualProperties resize_message_subframe(
-      frame_widget()->routing_id(), visual_properties);
-  frame_widget()->OnMessageReceived(resize_message_subframe);
-  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // A subframe in another process would use the |visible_viewport_size| as its
+  // size.
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
@@ -253,8 +290,9 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   blink::WebLocalFrame* parent_web_frame = frame()->GetWebFrame();
 
   parent_web_frame->CreateLocalChild(
-      blink::WebTreeScopeType::kDocument, grandchild,
-      grandchild->blink_interface_registry_.get());
+      blink::mojom::TreeScopeType::kDocument, grandchild,
+      grandchild->blink_interface_registry_.get(),
+      base::UnguessableToken::Create());
   grandchild->in_frame_tree_ = true;
   grandchild->Initialize();
 
@@ -272,73 +310,87 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   EXPECT_TRUE(observer.visible());
 }
 
-TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg1);
-  render_thread_->sink().ClearMessages();
+namespace {
+class DownloadURLMockLocalFrameHost : public LocalFrameHostInterceptor {
+ public:
+  explicit DownloadURLMockLocalFrameHost(
+      blink::AssociatedInterfaceProvider* provider)
+      : LocalFrameHostInterceptor(provider) {}
 
-  const std::string image_data_url =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+  MOCK_METHOD2(RunModalAlertDialog,
+               void(const base::string16& alert_message,
+                    RunModalAlertDialogCallback callback));
+  MOCK_METHOD1(DownloadURL, void(blink::mojom::DownloadURLParamsPtr params));
+};
 
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_TRUE(msg2);
+class DownloadURLTestRenderFrame : public TestRenderFrame {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(
+      RenderFrameImpl::CreateParams params) {
+    return new DownloadURLTestRenderFrame(std::move(params));
+  }
 
-  FrameHostMsg_DownloadUrl::Param param1;
-  FrameHostMsg_DownloadUrl::Read(msg2, &param1);
-  EXPECT_EQ(std::get<0>(param1).url, GURL());
+  ~DownloadURLTestRenderFrame() override = default;
 
-  base::RunLoop().RunUntilIdle();
-  render_thread_->sink().ClearMessages();
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
+    blink::AssociatedInterfaceProvider* associated_interface_provider =
+        RenderFrameImpl::GetRemoteAssociatedInterfaces();
 
-  const std::string large_data_url(1024 * 1024 * 20, 'd');
+    // Attach our fake local frame host at the very first call to
+    // GetRemoteAssociatedInterfaces.
+    if (!local_frame_host_) {
+      local_frame_host_ = std::make_unique<DownloadURLMockLocalFrameHost>(
+          associated_interface_provider);
+    }
+    return associated_interface_provider;
+  }
 
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_TRUE(msg3);
+  DownloadURLMockLocalFrameHost* download_url_mock_local_frame_host() {
+    return local_frame_host_.get();
+  }
 
-  FrameHostMsg_DownloadUrl::Param param2;
-  FrameHostMsg_DownloadUrl::Read(msg3, &param2);
-  EXPECT_EQ(std::get<0>(param2).url, GURL());
+ private:
+  explicit DownloadURLTestRenderFrame(RenderFrameImpl::CreateParams params)
+      : TestRenderFrame(std::move(params)) {}
 
-  base::RunLoop().RunUntilIdle();
-  render_thread_->sink().ClearMessages();
-}
+  std::unique_ptr<DownloadURLMockLocalFrameHost> local_frame_host_;
+};
+}  // namespace
+
+class RenderViewImplDownloadURLTest : public RenderFrameImplTest {
+ public:
+  RenderViewImplDownloadURLTest()
+      : RenderFrameImplTest(
+            &DownloadURLTestRenderFrame::CreateTestRenderFrame) {}
+
+  DownloadURLMockLocalFrameHost* download_url_mock_local_frame_host() {
+    return static_cast<DownloadURLTestRenderFrame*>(frame())
+        ->download_url_mock_local_frame_host();
+  }
+};
 
 // Tests that url download are throttled when reaching the limit.
-TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg1);
-  render_thread_->sink().ClearMessages();
-
+TEST_F(RenderViewImplDownloadURLTest, DownloadUrlLimit) {
   WebURLRequest request;
   request.SetUrl(GURL("http://test/test.pdf"));
   request.SetRequestorOrigin(
       blink::WebSecurityOrigin::Create(GURL("http://test")));
 
+  EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
+      .Times(10);
   for (int i = 0; i < 10; ++i) {
-    frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
-                         mojo::ScopedMessagePipeHandle());
+    frame()->GetWebFrame()->DownloadURL(request,
+                                        network::mojom::RedirectMode::kManual,
+                                        mojo::ScopedMessagePipeHandle());
     base::RunLoop().RunUntilIdle();
-    const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-        FrameHostMsg_DownloadUrl::ID);
-    EXPECT_TRUE(msg2);
-    base::RunLoop().RunUntilIdle();
-    render_thread_->sink().ClearMessages();
   }
 
-  frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
-                       mojo::ScopedMessagePipeHandle());
+  EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
+      .Times(0);
+  frame()->GetWebFrame()->DownloadURL(request,
+                                      network::mojom::RedirectMode::kManual,
+                                      mojo::ScopedMessagePipeHandle());
   base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg3);
 }
 
 // Regression test for crbug.com/692557. It shouldn't crash if we inititate a
@@ -365,16 +417,15 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
   ASSERT_FALSE(overlay_routing_token_.has_value());
 
   // The host should receive a request for it sent to the frame.
-  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_RequestOverlayRoutingToken::ID);
-  EXPECT_TRUE(msg);
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
 
-  // Send a token.
+  // Create a token in the browser.
   base::UnguessableToken token = base::UnguessableToken::Create();
-  FrameMsg_SetOverlayRoutingToken token_message(0, token);
-  frame()->OnMessageReceived(token_message);
+  frame()->SetOverlayRoutingToken(token);
 
-  base::RunLoop().RunUntilIdle();
+  frame()->RequestOverlayRoutingToken(
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
 }
@@ -383,22 +434,24 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
 TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
   ASSERT_FALSE(overlay_routing_token_.has_value());
   base::UnguessableToken token = base::UnguessableToken::Create();
-  FrameMsg_SetOverlayRoutingToken token_message(0, token);
-  frame()->OnMessageReceived(token_message);
+  frame()->SetOverlayRoutingToken(token);
 
-  // The frame now has a token.  We don't care if it sends the token before
-  // returning or posts a message.
-  base::RunLoop().RunUntilIdle();
+  // The frame should receive the token.
+  frame()->RequestOverlayRoutingToken(
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
+  ASSERT_TRUE(overlay_routing_token_.has_value());
+  ASSERT_EQ(overlay_routing_token_.value(), token);
+
+  // Since the token already arrived, a new request for it shouldn't be sent.
+  overlay_routing_token_ = base::nullopt;
   frame()->RequestOverlayRoutingToken(
       base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
                      base::Unretained(this)));
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
-
-  // Since the token already arrived, a request for it shouldn't be sent.
-  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_RequestOverlayRoutingToken::ID);
-  EXPECT_FALSE(msg);
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
 }
 #endif
 
@@ -468,6 +521,26 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
     GetMainRenderFrame()->WillSendRequest(request);
     EXPECT_EQ(test_case.transformed, request.Url().GetString().Utf8());
   }
+}
+
+// TODO(https://crbug/1085175): Mainframe document intersections need to be
+// transformed into the main frame document's coordinate system from the
+// child frame's.
+TEST_F(RenderFrameImplTest, DISABLED_MainFrameDocumentIntersectionRecorded) {
+  RenderFrameTestObserver observer(frame());
+  gfx::Point viewport_offset(7, -11);
+  blink::WebRect viewport_intersection(0, 11, 200, 89);
+
+  blink::WebRect mainframe_intersection(0, 0, 200, 140);
+  blink::FrameOcclusionState occlusion_state =
+      blink::FrameOcclusionState::kUnknown;
+  WidgetMsg_SetViewportIntersection set_viewport_intersection_message(
+      0, {viewport_offset, viewport_intersection, mainframe_intersection,
+          blink::WebRect(), occlusion_state});
+  frame_widget()->OnMessageReceived(set_viewport_intersection_message);
+  // Setting a new frame intersection in a local frame triggers the render frame
+  // observer call.
+  EXPECT_EQ(observer.last_intersection_rect(), blink::WebRect(0, 0, 200, 140));
 }
 
 // Used to annotate the source of an interface request.

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/scoped_blocking_call.h"
 
@@ -14,9 +15,9 @@ namespace device {
 
 UdevWatcher::Filter::Filter(base::StringPiece subsystem_in,
                             base::StringPiece devtype_in) {
-  if (subsystem_in.data())
+  if (!subsystem_in.empty())
     subsystem_ = subsystem_in.as_string();
-  if (devtype_in.data())
+  if (!devtype_in.empty())
     devtype_ = devtype_in.as_string();
 }
 

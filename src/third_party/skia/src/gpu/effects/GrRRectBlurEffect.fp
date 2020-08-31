@@ -13,7 +13,6 @@ layout(ctype=SkRect) uniform float4 proxyRect;
 uniform half blurRadius;
 
 @header {
-    #include "include/effects/SkBlurMaskFilter.h"
     #include "include/gpu/GrContext.h"
     #include "include/private/GrRecordingContext.h"
     #include "src/core/SkBlurPriv.h"
@@ -29,10 +28,10 @@ uniform half blurRadius;
 }
 
 @class {
-    static sk_sp<GrTextureProxy> find_or_create_rrect_blur_mask(GrRecordingContext* context,
-                                                                const SkRRect& rrectToDraw,
-                                                                const SkISize& dimensions,
-                                                                float xformedSigma) {
+    static GrSurfaceProxyView find_or_create_rrect_blur_mask(GrRecordingContext* context,
+                                                             const SkRRect& rrectToDraw,
+                                                             const SkISize& dimensions,
+                                                             float xformedSigma) {
         static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
         GrUniqueKey key;
         GrUniqueKey::Builder builder(&key, kDomain, 9, "RoundRect Blur Mask");
@@ -48,56 +47,55 @@ uniform half blurRadius;
         }
         builder.finish();
 
+        static constexpr auto kMaskOrigin = kBottomLeft_GrSurfaceOrigin;
         GrProxyProvider* proxyProvider = context->priv().proxyProvider();
 
-        sk_sp<GrTextureProxy> mask(proxyProvider->findOrCreateProxyByUniqueKey(
-                key, GrColorType::kAlpha_8, kBottomLeft_GrSurfaceOrigin));
-        if (!mask) {
-            // TODO: this could be SkBackingFit::kApprox, but:
-            //   1) The texture coords would need to be updated.
-            //   2) We would have to use GrTextureDomain::kClamp_Mode for the GaussianBlur.
-            auto rtc = context->priv().makeDeferredRenderTargetContextWithFallback(
-                    SkBackingFit::kExact, dimensions.fWidth, dimensions.fHeight,
-                    GrColorType::kAlpha_8, nullptr);
-            if (!rtc) {
-                return nullptr;
-            }
-
-            GrPaint paint;
-
-            rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
-                       GrRenderTargetContext::CanClearFullscreen::kYes);
-            rtc->drawRRect(GrNoClip(), std::move(paint), GrAA::kYes, SkMatrix::I(), rrectToDraw,
-                           GrStyle::SimpleFill());
-
-            sk_sp<GrTextureProxy> srcProxy(rtc->asTextureProxyRef());
-            if (!srcProxy) {
-                return nullptr;
-            }
-            auto rtc2 =
-                      SkGpuBlurUtils::GaussianBlur(context,
-                                                   std::move(srcProxy),
-                                                   rtc->colorInfo().colorType(),
-                                                   rtc->colorInfo().alphaType(),
-                                                   SkIPoint::Make(0, 0),
-                                                   nullptr,
-                                                   SkIRect::MakeSize(dimensions),
-                                                   SkIRect::EmptyIRect(),
-                                                   xformedSigma,
-                                                   xformedSigma,
-                                                   GrTextureDomain::kIgnore_Mode,
-                                                   SkBackingFit::kExact);
-            if (!rtc2) {
-                return nullptr;
-            }
-
-            mask = rtc2->asTextureProxyRef();
-            if (!mask) {
-                return nullptr;
-            }
-            SkASSERT(mask->origin() == kBottomLeft_GrSurfaceOrigin);
-            proxyProvider->assignUniqueKeyToProxy(key, mask.get());
+        if (auto view = proxyProvider->findCachedProxyWithColorTypeFallback(
+                key, kMaskOrigin, GrColorType::kAlpha_8, 1)) {
+            return view;
         }
+
+        auto rtc = GrRenderTargetContext::MakeWithFallback(
+                context, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions, 1,
+                GrMipMapped::kNo, GrProtected::kNo, kMaskOrigin);
+        if (!rtc) {
+            return {};
+        }
+
+        GrPaint paint;
+
+        rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                   GrRenderTargetContext::CanClearFullscreen::kYes);
+        rtc->drawRRect(GrNoClip(), std::move(paint), GrAA::kYes, SkMatrix::I(), rrectToDraw,
+                       GrStyle::SimpleFill());
+
+        GrSurfaceProxyView srcView = rtc->readSurfaceView();
+        if (!srcView) {
+            return {};
+        }
+        SkASSERT(srcView.asTextureProxy());
+        auto rtc2 = SkGpuBlurUtils::GaussianBlur(context,
+                                                 std::move(srcView),
+                                                 rtc->colorInfo().colorType(),
+                                                 rtc->colorInfo().alphaType(),
+                                                 nullptr,
+                                                 SkIRect::MakeSize(dimensions),
+                                                 SkIRect::MakeSize(dimensions),
+                                                 xformedSigma,
+                                                 xformedSigma,
+                                                 SkTileMode::kClamp,
+                                                 SkBackingFit::kExact);
+        if (!rtc2) {
+            return {};
+        }
+
+        GrSurfaceProxyView mask = rtc2->readSurfaceView();
+        if (!mask) {
+            return {};
+        }
+        SkASSERT(mask.asTextureProxy());
+        SkASSERT(mask.origin() == kBottomLeft_GrSurfaceOrigin);
+        proxyProvider->assignUniqueKeyToProxy(key, mask.asTextureProxy());
 
         return mask;
     }
@@ -149,8 +147,8 @@ uniform half blurRadius;
             return nullptr;
         }
 
-        sk_sp<GrTextureProxy> mask(find_or_create_rrect_blur_mask(context, rrectToDraw,
-                                                                  dimensions, xformedSigma));
+        GrSurfaceProxyView mask = find_or_create_rrect_blur_mask(context, rrectToDraw, dimensions,
+                                                                 xformedSigma);
         if (!mask) {
             return nullptr;
         }

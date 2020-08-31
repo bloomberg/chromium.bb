@@ -156,6 +156,10 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   EXPECT_EQ(2u, table_info->cell_id_to_index[6]);
   EXPECT_EQ(3u, table_info->cell_id_to_index[7]);
 
+  EXPECT_EQ(2u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
+  EXPECT_EQ(3, table_info->row_nodes[1]->data().id);
+
   EXPECT_EQ(0U, table_info->extra_mac_nodes.size());
 
   //
@@ -223,6 +227,22 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   std::vector<AXNode*> row_headers;
   cell_1_1->GetTableCellRowHeaders(&row_headers);
   EXPECT_EQ(0U, row_headers.size());
+
+  EXPECT_EQ(2u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
+  EXPECT_EQ(2u, row_0->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, row_0->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, row_0->GetTableRowNodeIds()[1]);
+  EXPECT_EQ(2u, row_1->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, row_1->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, row_1->GetTableRowNodeIds()[1]);
+  EXPECT_EQ(2u, cell_0_0->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, cell_0_0->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, cell_0_0->GetTableRowNodeIds()[1]);
+  EXPECT_EQ(2u, cell_1_1->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, cell_1_1->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, cell_1_1->GetTableRowNodeIds()[1]);
 }
 
 TEST_F(AXTableInfoTest, ComputedTableSizeIncludesSpans) {
@@ -246,6 +266,10 @@ TEST_F(AXTableInfoTest, ComputedTableSizeIncludesSpans) {
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
   EXPECT_EQ(4u, table_info->row_count);
   EXPECT_EQ(6u, table_info->col_count);
+
+  EXPECT_EQ(2u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
+  EXPECT_EQ(3, table_info->row_nodes[1]->data().id);
 }
 
 TEST_F(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
@@ -264,6 +288,9 @@ TEST_F(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
   EXPECT_EQ(8u, table_info->row_count);
   EXPECT_EQ(9u, table_info->col_count);
+
+  EXPECT_EQ(1u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
 }
 
 TEST_F(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
@@ -294,6 +321,9 @@ TEST_F(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
   AXTableInfo* table_info_3 = GetTableInfo(&tree, tree.root());
   EXPECT_EQ(1u, table_info_3->row_count);
   EXPECT_EQ(2u, table_info_3->col_count);
+
+  EXPECT_EQ(1u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
 }
 
 TEST_F(AXTableInfoTest, CellIdsHandlesSpansAndMissingCells) {
@@ -334,6 +364,10 @@ TEST_F(AXTableInfoTest, CellIdsHandlesSpansAndMissingCells) {
   EXPECT_EQ(0u, table_info->cell_id_to_index[4]);
   EXPECT_EQ(1u, table_info->cell_id_to_index[5]);
   EXPECT_EQ(2u, table_info->cell_id_to_index[6]);
+
+  EXPECT_EQ(2u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
+  EXPECT_EQ(3, table_info->row_nodes[1]->data().id);
 }
 
 TEST_F(AXTableInfoTest, SkipsGenericAndIgnoredNodes) {
@@ -388,6 +422,10 @@ TEST_F(AXTableInfoTest, SkipsGenericAndIgnoredNodes) {
   EXPECT_EQ(6, table_info->cell_ids[0][1]);
   EXPECT_EQ(9, table_info->cell_ids[1][0]);
   EXPECT_EQ(10, table_info->cell_ids[1][1]);
+
+  EXPECT_EQ(2u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
+  EXPECT_EQ(8, table_info->row_nodes[1]->data().id);
 }
 
 TEST_F(AXTableInfoTest, HeadersWithSpans) {
@@ -447,6 +485,11 @@ TEST_F(AXTableInfoTest, HeadersWithSpans) {
   EXPECT_EQ(6, table_info->cell_ids[2][0]);
   EXPECT_EQ(0, table_info->cell_ids[2][1]);
   EXPECT_EQ(8, table_info->cell_ids[2][2]);
+
+  EXPECT_EQ(3u, table_info->row_nodes.size());
+  EXPECT_EQ(2, table_info->row_nodes[0]->data().id);
+  EXPECT_EQ(3, table_info->row_nodes[1]->data().id);
+  EXPECT_EQ(4, table_info->row_nodes[2]->data().id);
 }
 
 TEST_F(AXTableInfoTest, ExtraMacNodes) {
@@ -558,6 +601,10 @@ TEST_F(AXTableInfoTest, TableWithNoIndices) {
   EXPECT_EQ(2, table->GetTableColCount());
   EXPECT_EQ(2, table->GetTableRowCount());
 
+  EXPECT_EQ(2u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
+
   EXPECT_EQ(4, table->GetTableCellFromCoords(0, 0)->id());
   EXPECT_EQ(5, table->GetTableCellFromCoords(0, 1)->id());
   EXPECT_EQ(6, table->GetTableCellFromCoords(1, 0)->id());
@@ -650,6 +697,10 @@ TEST_F(AXTableInfoTest, TableWithPartialIndices) {
   // last row has an index of 2, so the correct row count is 3.
   EXPECT_EQ(3, table->GetTableRowCount());
 
+  EXPECT_EQ(2u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
+
   // All of the specified row and cell indices are legal
   // so they're respected.
   EXPECT_EQ(0, cell_0_0->GetTableCellRowIndex());
@@ -699,6 +750,10 @@ TEST_F(AXTableInfoTest, BadRowIndicesIgnored) {
   EXPECT_EQ(2, table->GetTableColCount());
   EXPECT_EQ(4, table->GetTableRowCount());
 
+  EXPECT_EQ(2u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
+
   AXNode* cell_id_4 = tree.GetFromId(4);
   EXPECT_EQ(2, cell_id_4->GetTableCellRowIndex());
   EXPECT_EQ(0, cell_id_4->GetTableCellColIndex());
@@ -735,6 +790,10 @@ TEST_F(AXTableInfoTest, BadColIndicesIgnored) {
 
   EXPECT_EQ(4, table->GetTableColCount());
   EXPECT_EQ(2, table->GetTableRowCount());
+
+  EXPECT_EQ(2u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
 
   AXNode* cell_id_4 = tree.GetFromId(4);
   EXPECT_EQ(0, cell_id_4->GetTableCellRowIndex());
@@ -796,6 +855,11 @@ TEST_F(AXTableInfoTest, AriaIndicesInferred) {
 
   EXPECT_EQ(5, table->GetTableAriaColCount());
   EXPECT_EQ(5, table->GetTableAriaRowCount());
+
+  EXPECT_EQ(3u, table->GetTableRowNodeIds().size());
+  EXPECT_EQ(2, table->GetTableRowNodeIds()[0]);
+  EXPECT_EQ(3, table->GetTableRowNodeIds()[1]);
+  EXPECT_EQ(4, table->GetTableRowNodeIds()[2]);
 
   // The first row has the first cell ARIA row and column index
   // specified as (2, 2). The rest of the row is inferred.
@@ -1012,6 +1076,104 @@ TEST_F(AXTableInfoTest, ExtraMacNodesChanges) {
                         &indirect_child_ids));
     EXPECT_EQ(0U, indirect_child_ids.size());
   }
+}
+
+TEST_F(AXTableInfoTest, RowColumnSpanChanges) {
+  // Simple 2 col x 1 row table
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(4);
+  MakeTable(&update.nodes[0], 1, 0, 0);
+  update.nodes[0].child_ids = {2};
+  MakeRow(&update.nodes[1], 2, 0);
+  update.nodes[1].child_ids = {3, 10};
+  MakeCell(&update.nodes[2], 3, 0, 0);
+  MakeCell(&update.nodes[3], 10, 0, 1);
+  AXTree tree(update);
+
+  AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+
+  EXPECT_EQ(1u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+
+  EXPECT_EQ("|3 |10|\n", table_info->ToString());
+
+  // Add a row to the table.
+  update.nodes.resize(6);
+  update.nodes[0].child_ids = {2, 4};
+  MakeRow(&update.nodes[4], 4, 0);
+  update.nodes[4].child_ids = {5};
+  MakeCell(&update.nodes[5], 5, -1, -1);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(2u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|\n"
+      "|5 |0 |\n",
+      table_info->ToString());
+
+  // Add a row to the middle of the table, with a span. Intentionally omit other
+  // rows from the update.
+  update.nodes.resize(3);
+  update.nodes[0].child_ids = {2, 6, 4};
+  MakeRow(&update.nodes[1], 6, 0);
+  update.nodes[1].child_ids = {7};
+  MakeCell(&update.nodes[2], 7, -1, -1, 1, 2);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(3u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|\n"
+      "|7 |7 |\n"
+      "|5 |0 |\n",
+      table_info->ToString());
+
+  // Add a row to the end of the table, with a span. Intentionally omit other
+  // rows from the update.
+  update.nodes.resize(3);
+  update.nodes[0].child_ids = {2, 6, 4, 8};
+  MakeRow(&update.nodes[1], 8, 0);
+  update.nodes[1].child_ids = {9};
+  MakeCell(&update.nodes[2], 9, -1, -1, 2, 3);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(5u, table_info->row_count);
+  EXPECT_EQ(3u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|0 |\n"
+      "|7 |7 |0 |\n"
+      "|5 |0 |0 |\n"
+      "|9 |9 |9 |\n"
+      "|9 |9 |9 |\n",
+      table_info->ToString());
+
+  // Finally, delete a few rows.
+  update.nodes.resize(1);
+  update.nodes[0].child_ids = {6, 8};
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(3u, table_info->row_count);
+  EXPECT_EQ(3u, table_info->col_count);
+  EXPECT_EQ(
+      "|7|7|0|\n"
+      "|9|9|9|\n"
+      "|9|9|9|\n",
+      table_info->ToString());
 }
 
 }  // namespace ui

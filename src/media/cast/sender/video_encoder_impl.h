@@ -32,15 +32,14 @@ class VideoEncoderImpl : public VideoEncoder {
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const FrameSenderConfig& video_config,
-                   const StatusChangeCallback& status_change_cb);
+                   StatusChangeCallback status_change_cb);
 
   ~VideoEncoderImpl() final;
 
   // VideoEncoder implementation.
-  bool EncodeVideoFrame(
-      scoped_refptr<media::VideoFrame> video_frame,
-      const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) final;
+  bool EncodeVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                        base::TimeTicks reference_time,
+                        FrameEncodedCallback frame_encoded_callback) final;
   void SetBitRate(int new_bit_rate) final;
   void GenerateKeyFrame() final;
 

@@ -6,4 +6,11 @@ specific_include_rules = {
     "+sql",
     "+third_party/sqlite",
   ],
+  "local_storage_impl\.cc": [
+    "+sql",
+    "+storage/common/database",
+  ],
+  "session_storage_impl_unittest\.cc": [
+    "+mojo/core",
+  ],
 }

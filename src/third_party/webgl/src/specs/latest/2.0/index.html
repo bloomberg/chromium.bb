@@ -14,14 +14,14 @@
         <div class="left">
             <p>
                 <a href="http://webgl.org/">
-                    <img alt="WebGL" width="240" height="100" src="../../../resources/WebGL-Logo.png"/>
+                    <img alt=WebGL width=240 height=100 src="../../../resources/WebGL-Logo.png"/>
                 </a>
             </p>
         </div>
         <div class="right">
             <p>
                 <a href="http://khronos.org/">
-                    <img alt=Khronos height=60 src="../../../resources/KhronosGroup-3D.png" width=220>
+                    <img alt=Khronos width=336 height=80  src="../../../resources/Khronos_100px_June18.png"/>
                 </a>
             </p>
         </div>
@@ -1533,6 +1533,7 @@ WebGL2RenderingContext includes WebGL2RenderingContextOverloads;
             <a href="http://www.khronos.org/opengles/sdk/docs/man3/html/glRenderbufferStorageMultisample.xhtml" class="nonnormative">man page</a>)
           </span>
         </p>
+        <p>Generates <code>INVALID_OPERATION</code> when `internalFormat == DEPTH_STENCIL && samples > 0`.</p>
       </dt>
     </dl>
 
@@ -4180,6 +4181,20 @@ WebGL2RenderingContext includes WebGL2RenderingContextOverloads;
         power of two), this is an easy restriction to add.
         Further, GenerateMipmap would otherwise be the only entrypoint that has to operate on
         undefined texture images, skipping an otherwise-common validation.
+    </div>
+
+
+    <h3><code>deleteQuery</code> implicitly calls <code>endQuery</code> if the query is active</h3>
+    <p>
+      In GLES, <code>DeleteQueries</code> does not implicitly end queries, even if they are active.
+    </p>
+
+    <div class="note rationale">
+      This deviation was not originally specified, but was implicitly standardized across
+      browsers by conformance tests.
+      Some implementations found this behavior simpler to implement.
+      Reverting this behavior to match the GLES specs could break content, and at this
+      point it's better to spec what we implemented.
     </div>
 
 <!-- ======================================================================================================= -->

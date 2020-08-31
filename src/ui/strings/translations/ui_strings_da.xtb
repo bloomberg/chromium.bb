@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installeret app</translation>
 <translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> blev udskiftet med <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Du har tidligere søgt efter dette. Hvis du sletter "<ph name="QUERY" />" fra din historik, fjernes den permanent på fra din konto på alle dine enheder.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut og }one{# minutter og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Notifikation</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Vælg &amp;alle</translation>
-<translation id="1938451708255335766">Genstart appen for at justere visningstætheden i vinduet.</translation>
 <translation id="2006524834898217237">Sørg for, at denne enhed har forbindelse til internettet.</translation>
 <translation id="208586643495776849">Prøv igen</translation>
 <translation id="2090963878406559571"><ph name="TROUBLESHOOT_LINK" /> for begge enheder i indstillingerne, hvis du vil sende et nummer fra <ph name="ORIGIN" /> til din Android-telefon.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Pil nedad</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}one{# dage}other{# dage}}</translation>
 <translation id="3295886253693811851">Ring op fra</translation>
+<translation id="3306688585798492231">Indbygget skærm</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3389286852084373014">Teksten er for lang</translation>
-<translation id="3479552764303398839">Ikke nu</translation>
 <translation id="348799646910989694">Hylden skjules automatisk</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> blev fastgjort</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag tilbage}one{# dage tilbage}other{# dage tilbage}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Fortsæt med at læse via din mobilenhed <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3889424535448813030">Højrepil</translation>
-<translation id="3892641579809465218">Intern skærm</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Kli&amp;p</translation>
 <translation id="3990502903496589789">Højre kant</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}one{# min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktiv i dag}=1{Aktiv for 1 dag siden}one{Aktiv for # dag siden}other{Aktiv for # dage siden}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }one{# dage og }other{# dage og }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}one{om # år}other{om # år}}</translation>
-<translation id="5895138241574237353">Genstart</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund tilbage}one{# sekunder tilbage}other{# sekunder tilbage}}</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 time}one{# timer}other{# timer}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Højre til venstre</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">HØJST SANDSYNLIGT</translation>
+<translation id="7170202025028120564">Din apps skærmindstillinger træder i kraft efter den næste genstart.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. tilbage}one{# min. tilbage}other{# min. tilbage}}</translation>
 <translation id="7319740667687257810">Appliste, delvis visning</translation>
@@ -218,7 +218,7 @@
 <translation id="815598010540052116">Scroll Down</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Side ned</translation>
-<translation id="8245914219290430011">Tab-tast</translation>
+<translation id="8245914219290430011">Tab</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Hex-farveværdi</translation>
 <translation id="8328145009876646418">Venstre kant</translation>

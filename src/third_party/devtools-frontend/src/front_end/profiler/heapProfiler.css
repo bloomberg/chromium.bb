@@ -163,6 +163,7 @@
 
 #heap-recording-overview-container {
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 }
 
 .heap-recording-overview-canvas {
@@ -212,4 +213,15 @@
 
 .no-heap-allocation-stack {
     padding: 5px;
+}
+
+@media (forced-colors: active) {
+    .cycled-ancessor-node {
+        opacity: 1;
+    }
+    .heap-snapshot-view td.object-column .objects-count,
+    .heap-snapshot-view tr:not(.selected) td.object-column span.heap-object-tag,
+    .heap-snapshot-view tr:not(.selected) .object-value-id {
+        color: ButtonText;
+    }
 }

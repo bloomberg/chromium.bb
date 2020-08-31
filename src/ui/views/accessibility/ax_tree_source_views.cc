@@ -4,6 +4,7 @@
 
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
+#include <string>
 #include <vector>
 
 #include "ui/accessibility/ax_action_data.h"
@@ -114,6 +115,10 @@ bool AXTreeSourceViews::IsEqual(AXAuraObjWrapper* node1,
 
 AXAuraObjWrapper* AXTreeSourceViews::GetNull() const {
   return nullptr;
+}
+
+std::string AXTreeSourceViews::GetDebugString(AXAuraObjWrapper* node) const {
+  return node->ToString();
 }
 
 void AXTreeSourceViews::SerializeNode(AXAuraObjWrapper* node,

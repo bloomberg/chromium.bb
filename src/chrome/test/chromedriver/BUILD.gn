@@ -6,6 +6,7 @@ import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//build/util/lastchange.gni")
 import("//testing/test.gni")
+import("//third_party/ffmpeg/ffmpeg_options.gni")
 
 action("embed_js_in_cpp") {
   script = "embed_js_in_cpp.py"
@@ -153,8 +154,6 @@ source_set("automation_client_lib") {
     "chrome/ui_events.h",
     "chrome/util.cc",
     "chrome/util.h",
-    "chrome/version.cc",
-    "chrome/version.h",
     "chrome/web_view.h",
     "chrome/web_view_impl.cc",
     "chrome/web_view_impl.h",
@@ -283,6 +282,7 @@ source_set("lib") {
     "//chrome/common:version_header",
     "//chrome/test/chromedriver/constants:version_header",
     "//components/crx_file",
+    "//components/embedder_support",
     "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
@@ -305,7 +305,6 @@ source_set("lib") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
 
@@ -316,9 +315,7 @@ source_set("lib") {
 
 executable("chromedriver") {
   testonly = true
-  sources = [
-    "server/chromedriver_server.cc",
-  ]
+  sources = [ "server/chromedriver_server.cc" ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -331,6 +328,13 @@ executable("chromedriver") {
     "//net/traffic_annotation:test_support",
     "//services/network/public/mojom",
   ]
+
+  if (is_mac && is_component_ffmpeg) {
+    ldflags = [
+      "-rpath",
+      "@executable_path/.",
+    ]
+  }
 }
 
 python_library("chromedriver_py_tests") {
@@ -343,14 +347,13 @@ python_library("chromedriver_py_tests") {
   pydeps_file = "test/run_py_tests.pydeps"
   data = [
     "//chrome/test/data/chromedriver/",
+    "//chrome/test/chromedriver/js/",
     "//testing/scripts/run_chromedriver_tests.py",
     "//testing/scripts/common.py",
     "//testing/xvfb.py",
   ]
 
-  data_deps = [
-    "//chrome/test/chromedriver",
-  ]
+  data_deps = [ "//chrome/test/chromedriver" ]
   if (is_component_build && is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
   }
@@ -363,9 +366,7 @@ python_library("chromedriver_py_tests") {
 
 python_library("chromedriver_replay_unittests") {
   testonly = true
-  deps = [
-    ":chromedriver",
-  ]
+  deps = [ ":chromedriver" ]
 
   pydeps_file = "log_replay/client_replay_unittest.pydeps"
 }
@@ -403,6 +404,7 @@ test("chromedriver_unittests") {
     "chrome_launcher_unittest.cc",
     "command_listener_proxy_unittest.cc",
     "commands_unittest.cc",
+    "element_commands_unittest.cc",
     "key_converter_unittest.cc",
     "keycode_text_conversion_unittest.cc",
     "log_replay/devtools_log_reader_unittest.cc",

@@ -8,11 +8,12 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #import "ios/web/public/web_client.h"
@@ -29,8 +30,8 @@
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service_ios.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -80,8 +81,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         std::make_unique<net::StaticHttpUserAgentSettings>("en-us,en",
                                                            user_agent));
     storage_->set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateUsingSystemProxyResolver(
-            std::move(proxy_config_service_), url_request_context_->net_log()));
+        net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
+            std::move(proxy_config_service_), url_request_context_->net_log(),
+            /*quick_check_enabled=*/true));
     storage_->set_ssl_config_service(
         std::make_unique<net::SSLConfigServiceDefaults>());
     storage_->set_cert_verifier(
@@ -97,9 +99,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,
-            base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                             base::MayBlock(),
-                                             base::TaskPriority::BEST_EFFORT}));
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     storage_->set_http_server_properties(
         std::make_unique<net::HttpServerProperties>());
 
@@ -135,7 +136,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(
-            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path, 0));
+            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path,
+            /*max_bytes=*/0, /*hard_reset=*/false));
 
     storage_->set_http_network_session(
         std::make_unique<net::HttpNetworkSession>(

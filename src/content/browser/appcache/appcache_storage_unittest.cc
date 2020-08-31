@@ -6,7 +6,7 @@
 
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -68,7 +68,8 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   scoped_refptr<AppCacheResponseInfo> info =
       base::MakeRefCounted<AppCacheResponseInfo>(
           service.storage()->GetWeakPtr(), kManifestUrl, 111,
-          std::make_unique<net::HttpResponseInfo>(), kUnknownResponseDataSize);
+          std::make_unique<net::HttpResponseInfo>(),
+          HttpResponseInfoIOBuffer::kUnknownResponseDataSize);
 
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));
@@ -89,7 +90,8 @@ TEST_F(AppCacheStorageTest, ResponseInfoLifetime) {
     const GURL kManifestUrl("http://origin/");
     info = base::MakeRefCounted<AppCacheResponseInfo>(
         service.storage()->GetWeakPtr(), kManifestUrl, 111,
-        std::make_unique<net::HttpResponseInfo>(), kUnknownResponseDataSize);
+        std::make_unique<net::HttpResponseInfo>(),
+        HttpResponseInfoIOBuffer::kUnknownResponseDataSize);
 
     EXPECT_EQ(info.get(),
               service.storage()->working_set()->GetResponseInfo(111));
@@ -142,8 +144,8 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   const url::Origin kOrigin2(url::Origin::Create(GURL("http://origin2/")));
 
   MockAppCacheService service;
-  scoped_refptr<MockQuotaManagerProxy> mock_proxy =
-      base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr);
+  scoped_refptr<storage::MockQuotaManagerProxy> mock_proxy =
+      base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr, nullptr);
   service.set_quota_manager_proxy(mock_proxy.get());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);

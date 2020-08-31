@@ -10,11 +10,11 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
-#include "chrome/common/prerender.mojom.h"
+#include "chrome/common/prerender_canceler.mojom.h"
 #include "chrome/common/prerender_types.h"
-#include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace prerender {
 
@@ -22,15 +22,10 @@ class PrerenderURLLoaderThrottle
     : public blink::URLLoaderThrottle,
       public base::SupportsWeakPtr<PrerenderURLLoaderThrottle> {
  public:
-  // If the throttle needs to cancel the prerender, it will run
-  // |canceler_getter| on |canceler_getter_task_runner| to do so.
-  using CancelerGetterCallback =
-      base::OnceCallback<chrome::mojom::PrerenderCanceler*()>;
   PrerenderURLLoaderThrottle(
       PrerenderMode mode,
       const std::string& histogram_prefix,
-      CancelerGetterCallback canceler_getter,
-      scoped_refptr<base::SequencedTaskRunner> canceler_getter_task_runner);
+      mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler);
   ~PrerenderURLLoaderThrottle() override;
 
   // Called when the prerender is used. This will unpaused requests and set the
@@ -46,11 +41,13 @@ class PrerenderURLLoaderThrottle
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::mojom::URLResponseHead& response_head,
-                           bool* defer,
-                           std::vector<std::string>* to_be_removed_headers,
-                           net::HttpRequestHeaders* modified_headers) override;
+  void WillRedirectRequest(
+      net::RedirectInfo* redirect_info,
+      const network::mojom::URLResponseHead& response_head,
+      bool* defer,
+      std::vector<std::string>* to_be_removed_headers,
+      net::HttpRequestHeaders* modified_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_headers) override;
   void WillProcessResponse(const GURL& response_url,
                            network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
@@ -61,12 +58,10 @@ class PrerenderURLLoaderThrottle
   std::string histogram_prefix_;
 
   bool deferred_ = false;
-  bool sync_xhr_ = false;
   int redirect_count_ = 0;
-  content::ResourceType resource_type_;
+  blink::mojom::ResourceType resource_type_;
 
-  CancelerGetterCallback canceler_getter_;
-  scoped_refptr<base::SequencedTaskRunner> canceler_getter_task_runner_;
+  mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler_;
 
   // The throttle changes most request priorities to IDLE during prerendering.
   // The priority is reset back to the original priority when prerendering is

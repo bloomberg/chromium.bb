@@ -17,6 +17,7 @@ from chromite.lib import cros_test_lib
 from chromite.scripts import cros_generate_sysroot as cros_gen
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import sudo
 
 
 Dir = cros_test_lib.Directory
@@ -57,6 +58,7 @@ class OverallTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.cg_mock = self.StartPatcher(CrosGenMock())
+    self.PatchObject(sudo.SudoKeepAlive, '_IdentifyTTY', return_value='unknown')
 
   def testTarballGeneration(self):
     """End-to-end test of tarball generation."""

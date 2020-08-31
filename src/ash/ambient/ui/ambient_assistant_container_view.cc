@@ -9,6 +9,7 @@
 
 #include "ash/ambient/ui/ambient_assistant_dialog_plate.h"
 #include "ash/ambient/ui/assistant_response_container_view.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -38,18 +39,15 @@ base::string16 GetGreetingMessage(const UserSession* user_session) {
 
 }  // namespace
 
-AmbientAssistantContainerView::AmbientAssistantContainerView(
-    AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+AmbientAssistantContainerView::AmbientAssistantContainerView()
+    : delegate_(Shell::Get()->assistant_controller()->view_delegate()) {
+  DCHECK(delegate_);
   InitLayout();
 
-  // The AssistantViewDelegate should outlive AmbientAssistantContainerView.
-  delegate_->AddUiModelObserver(this);
+  assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AmbientAssistantContainerView::~AmbientAssistantContainerView() {
-  delegate_->RemoveUiModelObserver(this);
-}
+AmbientAssistantContainerView::~AmbientAssistantContainerView() = default;
 
 const char* AmbientAssistantContainerView::GetClassName() const {
   return "AmbientAssistantContainerView";
@@ -98,7 +96,7 @@ void AmbientAssistantContainerView::InitLayout() {
       std::make_unique<views::Label>(GetGreetingMessage(active_user_session)));
   greeting_label_->SetEnabledColor(kTextColorSecondary);
   greeting_label_->SetFontList(
-      ash::assistant::ui::GetDefaultFontList()
+      assistant::ui::GetDefaultFontList()
           .DeriveWithSizeDelta(8)
           .DeriveWithWeight(gfx::Font::Weight::NORMAL));
   greeting_label_->SetHorizontalAlignment(
@@ -123,7 +121,7 @@ void AmbientAssistantContainerView::InitLayout() {
   constexpr int kClipCircleRadius = kAvatarImageSizeDip / 2;
   circular_mask.addCircle(kClipCircleRadius, kClipCircleRadius,
                           kClipCircleRadius);
-  avatar_view_->set_clip_path(circular_mask);
+  avatar_view_->SetClipPath(circular_mask);
 }
 
 }  // namespace ash

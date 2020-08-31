@@ -2,7 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.DownloadsBrowserProxy} */
+// clang-format off
+import 'chrome://settings/settings.js';
+
+import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DownloadsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
+/** @implements {DownloadsBrowserProxy} */
 class TestDownloadsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -29,15 +38,13 @@ class TestDownloadsBrowserProxy extends TestBrowserProxy {
   }
 }
 
-let downloadsPage = null;
-
-/** @type {?TestDownloadsBrowserProxy} */
-const DownloadsBrowserProxy = null;
-
 suite('DownloadsHandler', function() {
+  let downloadsBrowserProxy = null;
+  let downloadsPage = null;
+
   setup(function() {
     downloadsBrowserProxy = new TestDownloadsBrowserProxy();
-    settings.DownloadsBrowserProxyImpl.instance_ = downloadsBrowserProxy;
+    DownloadsBrowserProxyImpl.instance_ = downloadsBrowserProxy;
 
     PolymerTest.clearBody();
 
@@ -64,22 +71,22 @@ suite('DownloadsHandler', function() {
     let button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!button);
 
-    cr.webUIListenerCallback('auto-open-downloads-changed', true);
-    Polymer.dom.flush();
+    webUIListenerCallback('auto-open-downloads-changed', true);
+    flush();
     button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!!button);
 
     button.click();
     return downloadsBrowserProxy.whenCalled('resetAutoOpenFileTypes')
         .then(function() {
-          cr.webUIListenerCallback('auto-open-downloads-changed', false);
-          Polymer.dom.flush();
+          webUIListenerCallback('auto-open-downloads-changed', false);
+          flush();
           const button = downloadsPage.$$('#resetAutoOpenFileTypes');
           assertTrue(!button);
         });
   });
 
-  if (cr.isChromeOS) {
+  if (isChromeOS) {
     /** @override */
     TestDownloadsBrowserProxy.prototype.getDownloadLocationText = function(
         path) {
@@ -110,7 +117,7 @@ suite('DownloadsHandler', function() {
       return downloadsBrowserProxy.whenCalled('getDownloadLocationText')
           .then(path => {
             assertEquals('downloads-path', path);
-            Polymer.dom.flush();
+            flush();
             assertEquals('downloads-text', getDefaultDownloadPathString());
           });
     });

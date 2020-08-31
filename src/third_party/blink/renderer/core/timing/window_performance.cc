@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -59,11 +60,6 @@ static constexpr base::TimeDelta kLongTaskObserverThreshold =
 namespace blink {
 
 namespace {
-
-// Events taking longer than this threshold to finish being processed are
-// regarded as long-latency events by event-timing. Shorter-latency events are
-// ignored to reduce performance impact.
-constexpr int kEventTimingDurationThresholdInMs = 104;
 
 String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
                          const QualifiedName& attr_name,
@@ -79,17 +75,17 @@ String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
 
 AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
   switch (frame_owner->OwnerType()) {
-    case FrameOwnerElementType::kNone:
+    case mojom::blink::FrameOwnerElementType::kNone:
       return "window";
-    case FrameOwnerElementType::kIframe:
+    case mojom::blink::FrameOwnerElementType::kIframe:
       return "iframe";
-    case FrameOwnerElementType::kObject:
+    case mojom::blink::FrameOwnerElementType::kObject:
       return "object";
-    case FrameOwnerElementType::kEmbed:
+    case mojom::blink::FrameOwnerElementType::kEmbed:
       return "embed";
-    case FrameOwnerElementType::kFrame:
+    case mojom::blink::FrameOwnerElementType::kFrame:
       return "frame";
-    case FrameOwnerElementType::kPortal:
+    case mojom::blink::FrameOwnerElementType::kPortal:
       return "portal";
   }
   NOTREACHED();
@@ -98,7 +94,7 @@ AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
 
 String GetFrameSrc(HTMLFrameOwnerElement* frame_owner) {
   switch (frame_owner->OwnerType()) {
-    case FrameOwnerElementType::kObject:
+    case mojom::blink::FrameOwnerElementType::kObject:
       return GetFrameAttribute(frame_owner, html_names::kDataAttr, false);
     default:
       return GetFrameAttribute(frame_owner, html_names::kSrcAttr, false);
@@ -158,14 +154,19 @@ WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(
           ToTimeOrigin(window),
           window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
-      DOMWindowClient(window) {}
+      ExecutionContextClient(window) {
+  DCHECK(GetFrame());
+  DCHECK(GetFrame()->GetPerformanceMonitor());
+  GetFrame()->GetPerformanceMonitor()->Subscribe(
+      PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
+}
 
 WindowPerformance::~WindowPerformance() = default;
 
 ExecutionContext* WindowPerformance::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
-  return GetFrame()->GetDocument();
+  return GetFrame()->DomWindow();
 }
 
 PerformanceTiming* WindowPerformance::timing() const {
@@ -204,43 +205,30 @@ WindowPerformance::CreateNavigationTimingInstance() {
   ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
   if (!info)
     return nullptr;
-  WebVector<WebServerTimingInfo> server_timing =
+  HeapVector<Member<PerformanceServerTiming>> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.empty())
+  if (!server_timing.IsEmpty())
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
-      GetFrame(), info, time_origin_, server_timing);
-}
-
-void WindowPerformance::UpdateLongTaskInstrumentation() {
-  if (!GetFrame() || !GetFrame()->GetDocument())
-    return;
-
-  if (HasObserverFor(PerformanceEntry::kLongTask)) {
-    UseCounter::Count(GetFrame()->GetDocument(), WebFeature::kLongTaskObserver);
-    GetFrame()->GetPerformanceMonitor()->Subscribe(
-        PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
-  } else {
-    GetFrame()->GetPerformanceMonitor()->UnsubscribeAll(this);
-  }
+      GetFrame(), info, time_origin_, std::move(server_timing));
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
   Performance::BuildJSONValue(builder);
-  builder.Add("timing", timing()->toJSONForBinding(builder.GetScriptState()));
-  builder.Add("navigation",
-              navigation()->toJSONForBinding(builder.GetScriptState()));
+  builder.Add("timing", timing());
+  builder.Add("navigation", navigation());
 }
 
-void WindowPerformance::Trace(blink::Visitor* visitor) {
+void WindowPerformance::Trace(Visitor* visitor) {
   visitor->Trace(event_timings_);
   visitor->Trace(first_pointer_down_event_timing_);
+  visitor->Trace(event_counts_);
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
   Performance::Trace(visitor);
   PerformanceMonitor::Client::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
@@ -268,15 +256,15 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
-  Document* document = DynamicTo<Document>(task_context);
-  if (!document || !document->GetFrame()) {
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(task_context);
+  if (!window || !window->GetFrame()) {
     // Unable to attribute as no script was involved.
     DEFINE_STATIC_LOCAL(const AtomicString, kUnknownAttribution, ("unknown"));
     return std::make_pair(kUnknownAttribution, nullptr);
   }
 
   // Exactly one culprit location, attribute based on origin boundary.
-  Frame* culprit_frame = document->GetFrame();
+  Frame* culprit_frame = window->GetFrame();
   DCHECK(culprit_frame);
   if (CanAccessOrigin(observer_frame, culprit_frame)) {
     // From accessible frames or same origin, return culprit location URL.
@@ -342,7 +330,8 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             base::TimeTicks start_time,
                                             base::TimeTicks processing_start,
                                             base::TimeTicks processing_end,
-                                            bool cancelable) {
+                                            bool cancelable,
+                                            Node* target) {
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
   DCHECK(!processing_end.is_null());
@@ -350,10 +339,13 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   if (!GetFrame())
     return;
 
+  if (!event_counts_)
+    event_counts_ = MakeGarbageCollected<EventCounts>();
+  event_counts_->Add(event_type);
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
-      MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable);
+      MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable, target);
   event_timings_.push_back(entry);
   // Only queue a swap promise when |event_timings_| was empty. All of the
   // elements in |event_timings_| will be processed in a single call of
@@ -367,7 +359,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   }
 }
 
-void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
+void WindowPerformance::ReportEventTimings(WebSwapResult result,
                                            base::TimeTicks timestamp) {
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   bool event_timing_enabled =
@@ -387,8 +379,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
             PerformanceEventTiming::CreateFirstInputTiming(entry));
       }
     }
-    if (duration_in_ms < kEventTimingDurationThresholdInMs ||
-        !event_timing_enabled)
+    if (!event_timing_enabled)
       continue;
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
@@ -397,8 +388,13 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (!IsEventTimingBufferFull())
+    // Only buffer really slow events to keep memory usage low.
+    // TODO(npm): is 104 a reasonable buffering threshold or should it be
+    // relaxed?
+    if (duration_in_ms >= PerformanceObserver::kDefaultDurationThreshold &&
+        !IsEventTimingBufferFull()) {
       AddEventTimingBuffer(*entry);
+    }
   }
   event_timings_.clear();
 }
@@ -430,6 +426,8 @@ void WindowPerformance::DispatchFirstInputTiming(
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEventTimingExplicitlyRequested);
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kEventTimingFirstInputExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
 
@@ -437,16 +435,17 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutShiftValue(double value,
-                                            bool input_detected,
-                                            base::TimeTicks input_timestamp) {
-  auto* entry = MakeGarbageCollected<LayoutShift>(
-      now(), value, input_detected,
-      input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
-                     : 0.0);
+void WindowPerformance::AddLayoutShiftEntry(LayoutShift* entry) {
   if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
   AddLayoutShiftBuffer(*entry);
+}
+
+EventCounts* WindowPerformance::eventCounts() {
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
+  if (!event_counts_)
+    event_counts_ = MakeGarbageCollected<EventCounts>();
+  return event_counts_;
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(
@@ -456,13 +455,13 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
     const AtomicString& id,
     const String& url,
     Element* element) {
-  double render_timestamp = MonotonicTimeToDOMHighResTimeStamp(paint_time);
-  double load_timestamp = MonotonicTimeToDOMHighResTimeStamp(load_time);
-  double start_timestamp =
-      render_timestamp != 0.0 ? render_timestamp : load_timestamp;
+  base::TimeDelta render_timestamp = MonotonicTimeToTimeDelta(paint_time);
+  base::TimeDelta load_timestamp = MonotonicTimeToTimeDelta(load_time);
+  base::TimeDelta start_timestamp =
+      render_timestamp.is_zero() ? load_timestamp : render_timestamp;
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
-      start_timestamp, render_timestamp, paint_size, load_timestamp, id, url,
-      element);
+      start_timestamp.InMillisecondsF(), render_timestamp, paint_size,
+      load_timestamp, id, url, element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

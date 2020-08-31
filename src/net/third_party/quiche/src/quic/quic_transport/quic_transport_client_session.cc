@@ -7,9 +7,11 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "url/gurl.h"
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
@@ -18,10 +20,9 @@
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -36,6 +37,7 @@ class DummyProofHandler : public QuicCryptoClientStream::ProofHandler {
   void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& /*verify_details*/) override {}
 };
+
 }  // namespace
 
 QuicTransportClientSession::QuicTransportClientSession(
@@ -64,7 +66,21 @@ QuicTransportClientSession::QuicTransportClientSession(
   crypto_stream_ = std::make_unique<QuicCryptoClientStream>(
       QuicServerId(url.host(), url.EffectiveIntPort()), this,
       crypto_config->proof_verifier()->CreateDefaultContext(), crypto_config,
-      proof_handler);
+      proof_handler, /*has_application_state = */ true);
+}
+
+void QuicTransportClientSession::OnAlpnSelected(
+    quiche::QuicheStringPiece alpn) {
+  // Defense in-depth: ensure the ALPN selected is the desired one.
+  if (alpn != QuicTransportAlpn()) {
+    QUIC_BUG << "QuicTransport negotiated non-QuicTransport ALPN: " << alpn;
+    connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR, "QuicTransport negotiated non-QuicTransport ALPN",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
+  alpn_received_ = true;
 }
 
 QuicStream* QuicTransportClientSession::CreateIncomingStream(QuicStreamId id) {
@@ -80,22 +96,17 @@ QuicStream* QuicTransportClientSession::CreateIncomingStream(QuicStreamId id) {
   return stream;
 }
 
-void QuicTransportClientSession::OnCryptoHandshakeEvent(
-    CryptoHandshakeEvent event) {
-  QuicSession::OnCryptoHandshakeEvent(event);
-  if (event != HANDSHAKE_CONFIRMED) {
-    return;
-  }
-
-  SendClientIndication();
-}
-
 void QuicTransportClientSession::SetDefaultEncryptionLevel(
     EncryptionLevel level) {
   QuicSession::SetDefaultEncryptionLevel(level);
   if (level == ENCRYPTION_FORWARD_SECURE) {
     SendClientIndication();
   }
+}
+
+void QuicTransportClientSession::OnOneRttKeysAvailable() {
+  QuicSession::OnOneRttKeysAvailable();
+  SendClientIndication();
 }
 
 QuicTransportStream*
@@ -222,12 +233,38 @@ void QuicTransportClientSession::SendClientIndication() {
                                        /*fin=*/true, nullptr);
   client_indication_sent_ = true;
 
+  // Defense in depth: never set the ready bit unless ALPN has been confirmed.
+  if (!alpn_received_) {
+    QUIC_BUG << "ALPN confirmation missing after handshake complete";
+    connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR,
+        "ALPN confirmation missing after handshake complete",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
   // Don't set the ready bit if we closed the connection due to any error
   // beforehand.
   if (!connection()->connected()) {
     return;
   }
+
   ready_ = true;
+  visitor_->OnSessionReady();
+}
+
+void QuicTransportClientSession::OnMessageReceived(
+    quiche::QuicheStringPiece message) {
+  visitor_->OnDatagramReceived(message);
+}
+
+void QuicTransportClientSession::OnCanCreateNewOutgoingStream(
+    bool unidirectional) {
+  if (unidirectional) {
+    visitor_->OnCanCreateNewOutgoingUnidirectionalStream();
+  } else {
+    visitor_->OnCanCreateNewOutgoingBidirectionalStream();
+  }
 }
 
 }  // namespace quic

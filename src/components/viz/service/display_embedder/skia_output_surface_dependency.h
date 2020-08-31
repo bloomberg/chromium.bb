@@ -15,7 +15,9 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/sequence_id.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "ui/gl/gl_surface_format.h"
 
 class GURL;
 
@@ -35,7 +37,6 @@ class SharedImageManager;
 class SingleTaskSequence;
 class SyncPointManager;
 struct GpuFeatureInfo;
-struct GpuPreferences;
 
 namespace raster {
 class GrShaderCache;
@@ -58,10 +59,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
  public:
   virtual ~SkiaOutputSurfaceDependency() = default;
 
-  // These are client thread methods. All other methods should be called on
-  // the GPU thread only.
-  virtual bool IsUsingVulkan() = 0;
-  virtual bool IsUsingDawn() = 0;
   // Returns a new task execution sequence. Sequences should not outlive the
   // task executor.
   virtual std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() = 0;
@@ -76,7 +73,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual VulkanContextProvider* GetVulkanContextProvider() = 0;
   // May return null.
   virtual DawnContextProvider* GetDawnContextProvider() = 0;
-  virtual const gpu::GpuPreferences& GetGpuPreferences() = 0;
+  virtual const gpu::GpuPreferences& GetGpuPreferences() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
   virtual gpu::MailboxManager* GetMailboxManager() = 0;
   // May return null.
@@ -86,11 +83,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual bool IsOffscreen() = 0;
   virtual gpu::SurfaceHandle GetSurfaceHandle() = 0;
   virtual scoped_refptr<gl::GLSurface> CreateGLSurface(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) = 0;
+      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
+      gl::GLSurfaceFormat format) = 0;
   // Hold a ref of the given surface until the returned closure is fired.
   virtual base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) = 0;
   virtual void PostTaskToClientThread(base::OnceClosure closure) = 0;
   virtual void ScheduleGrContextCleanup() = 0;
+
+  // This function schedules delayed task to be run on GPUThread. It can be
+  // called only from GPU Thread.
+  virtual void ScheduleDelayedGPUTaskFromGPUThread(base::OnceClosure task) = 0;
 
 #if defined(OS_WIN)
   virtual void DidCreateAcceleratedSurfaceChildWindow(
@@ -101,11 +103,23 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void RegisterDisplayContext(gpu::DisplayContext* display_context) = 0;
   virtual void UnregisterDisplayContext(
       gpu::DisplayContext* display_context) = 0;
-  virtual void DidLoseContext(bool offscreen,
-                              gpu::error::ContextLostReason reason,
+  virtual void DidLoseContext(gpu::error::ContextLostReason reason,
                               const GURL& active_url) = 0;
 
   virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;
+  virtual bool NeedsSupportForExternalStencil() = 0;
+
+  gpu::GrContextType gr_context_type() const {
+    return GetGpuPreferences().gr_context_type;
+  }
+
+  bool IsUsingVulkan() const {
+    return gr_context_type() == gpu::GrContextType::kVulkan;
+  }
+
+  bool IsUsingDawn() const {
+    return gr_context_type() == gpu::GrContextType::kDawn;
+  }
 };
 
 }  // namespace viz

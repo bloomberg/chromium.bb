@@ -9,9 +9,10 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -163,7 +164,7 @@ TranslateLanguageList::TranslateLanguageList()
   if (update_is_disabled)
     return;
 
-  language_list_fetcher_.reset(new TranslateURLFetcher);
+  language_list_fetcher_ = std::make_unique<TranslateURLFetcher>();
   language_list_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
 }
 

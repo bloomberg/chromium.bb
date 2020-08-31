@@ -44,12 +44,12 @@ TestOptionsProvider::TestOptionsProvider()
                          can_use_lcd_text_,
                          context_supports_distance_field_text_,
                          max_texture_size_,
-                         max_texture_bytes_,
                          SkMatrix::I()),
       deserialize_options_(this,
                            &service_paint_cache_,
                            &strike_client_,
-                           &scratch_buffer_) {}
+                           &scratch_buffer_,
+                           true) {}
 
 TestOptionsProvider::~TestOptionsProvider() = default;
 

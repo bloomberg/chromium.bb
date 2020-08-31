@@ -11,8 +11,8 @@
 
 #include "platform/base/error.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 
 struct TrustStore {
   std::vector<bssl::UniquePtr<X509>> certs;
@@ -24,6 +24,11 @@ template <size_t N>
 bssl::UniquePtr<X509> MakeTrustAnchor(const uint8_t (&data)[N]) {
   const uint8_t* dptr = data;
   return bssl::UniquePtr<X509>{d2i_X509(nullptr, &dptr, N)};
+}
+
+inline bssl::UniquePtr<X509> MakeTrustAnchor(const std::vector<uint8_t>& data) {
+  const uint8_t* dptr = data.data();
+  return bssl::UniquePtr<X509>{d2i_X509(nullptr, &dptr, data.size())};
 }
 
 struct ConstDataSpan;
@@ -47,12 +52,12 @@ struct CertificatePathResult {
   std::vector<X509*> path;
 };
 
-openscreen::Error FindCertificatePath(const std::vector<std::string>& der_certs,
-                                      const DateTime& time,
-                                      CertificatePathResult* result_path,
-                                      TrustStore* trust_store);
+Error FindCertificatePath(const std::vector<std::string>& der_certs,
+                          const DateTime& time,
+                          CertificatePathResult* result_path,
+                          TrustStore* trust_store);
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_CAST_CERT_VALIDATOR_INTERNAL_H_

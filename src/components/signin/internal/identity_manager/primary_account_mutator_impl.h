@@ -27,9 +27,8 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   // PrimaryAccountMutator implementation.
   bool SetPrimaryAccount(const CoreAccountId& account_id) override;
 #if defined(OS_CHROMEOS)
-  bool DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
-      const std::string& gaia_id,
-      const std::string& email) override;
+  void RevokeSyncConsent() override;
+  void SetUnconsentedPrimaryAccount(const CoreAccountId& account_id) override;
 #endif
 #if !defined(OS_CHROMEOS)
   bool ClearPrimaryAccount(

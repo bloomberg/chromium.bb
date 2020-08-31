@@ -8,12 +8,13 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_content_icon_definition.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
-#include "third_party/blink/renderer/modules/content_index/content_icon_definition.h"
 #include "third_party/blink/renderer/modules/content_index/content_index_icon_loader.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -37,7 +38,7 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.description().IsEmpty())
     return "Description cannot be empty";
 
-  if (description.launchUrl().IsEmpty())
+  if (description.url().IsEmpty())
     return "Invalid launch URL provided";
 
   for (const auto& icon : description.icons()) {
@@ -50,7 +51,7 @@ WTF::String ValidateDescription(const ContentDescription& description,
   }
 
   KURL launch_url =
-      registration->GetExecutionContext()->CompleteURL(description.launchUrl());
+      registration->GetExecutionContext()->CompleteURL(description.url());
   auto* security_origin =
       registration->GetExecutionContext()->GetSecurityOrigin();
   if (!security_origin->CanRequest(launch_url))
@@ -66,28 +67,28 @@ WTF::String ValidateDescription(const ContentDescription& description,
 
 ContentIndex::ContentIndex(ServiceWorkerRegistration* registration,
                            scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registration_(registration), task_runner_(std::move(task_runner)) {
+    : registration_(registration),
+      task_runner_(std::move(task_runner)),
+      content_index_service_(registration->GetExecutionContext()) {
   DCHECK(registration_);
 }
 
 ContentIndex::~ContentIndex() = default;
 
 ScriptPromise ContentIndex::add(ScriptState* script_state,
-                                const ContentDescription* description) {
+                                const ContentDescription* description,
+                                ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
+    exception_state.ThrowTypeError(
+        "No active registration available on the ServiceWorkerRegistration.");
+    return ScriptPromise();
   }
 
   WTF::String description_error =
       ValidateDescription(*description, registration_.Get());
   if (!description_error.IsNull()) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), description_error));
+    exception_state.ThrowTypeError(description_error);
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -106,7 +107,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
 void ContentIndex::DidGetIconSizes(
     ScriptPromiseResolver* resolver,
     mojom::blink::ContentDescriptionPtr description,
-    const Vector<WebSize>& icon_sizes) {
+    const Vector<gfx::Size>& icon_sizes) {
   if (!icon_sizes.IsEmpty() && description->icons.IsEmpty()) {
     ScriptState* script_state = resolver->GetScriptState();
     ScriptState::Scope scope(script_state);
@@ -176,13 +177,12 @@ void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
 }
 
 ScriptPromise ContentIndex::deleteDescription(ScriptState* script_state,
-                                              const String& id) {
+                                              const String& id,
+                                              ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
+    exception_state.ThrowTypeError(
+        "No active registration available on the ServiceWorkerRegistration.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -221,13 +221,12 @@ void ContentIndex::DidDeleteDescription(ScriptPromiseResolver* resolver,
   }
 }
 
-ScriptPromise ContentIndex::getDescriptions(ScriptState* script_state) {
+ScriptPromise ContentIndex::getDescriptions(ScriptState* script_state,
+                                            ExceptionState& exception_state) {
   if (!registration_->active()) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "No active registration available on "
-                                          "the ServiceWorkerRegistration."));
+    exception_state.ThrowTypeError(
+        "No active registration available on the ServiceWorkerRegistration.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -273,13 +272,14 @@ void ContentIndex::DidGetDescriptions(
   }
 }
 
-void ContentIndex::Trace(blink::Visitor* visitor) {
+void ContentIndex::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(content_index_service_);
   ScriptWrappable::Trace(visitor);
 }
 
 mojom::blink::ContentIndexService* ContentIndex::GetService() {
-  if (!content_index_service_) {
+  if (!content_index_service_.is_bound()) {
     registration_->GetExecutionContext()
         ->GetBrowserInterfaceBroker()
         .GetInterface(

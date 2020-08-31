@@ -35,7 +35,6 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CloudPrintInterface} from '../cloud_print_interface.js';
 import {DarkModeBehavior} from '../dark_mode_behavior.js';
 import {Destination} from '../data/destination.js';
 import {Error, State} from '../data/state.js';
@@ -64,9 +63,6 @@ Polymer({
 
   properties: {
     cloudPrintErrorMessage: String,
-
-    /** @type {CloudPrintInterface} */
-    cloudPrintInterface: Object,
 
     controlsManaged: Boolean,
 
@@ -102,6 +98,15 @@ Polymer({
     controlsDisabled_: {
       type: Boolean,
       computed: 'computeControlsDisabled_(state)',
+    },
+
+    maxSheets: Number,
+
+    /** @private {number} */
+    sheetCount_: {
+      type: Number,
+      computed: 'computeSheetCount_(' +
+          'settings.pages.*, settings.duplex.*, settings.copies.*)',
     },
 
     /** @private {boolean} */
@@ -144,7 +149,7 @@ Polymer({
    * @param {boolean} syncAvailable
    * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
    */
-  init: function(
+  init(
       appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
       userAccounts, syncAvailable, pdfPrinterDisabled) {
     this.isInAppKioskMode_ = appKioskMode;
@@ -158,15 +163,27 @@ Polymer({
    * @return {boolean} Whether the controls should be disabled.
    * @private
    */
-  computeControlsDisabled_: function() {
-    return this.state != State.READY;
+  computeControlsDisabled_() {
+    return this.state !== State.READY;
+  },
+
+  /**
+   * @return {number} The number of sheets that will be printed.
+   * @private
+   */
+  computeSheetCount_() {
+    let sheets = this.getSettingValue('pages').length;
+    if (this.getSettingValue('duplex')) {
+      sheets = Math.ceil(sheets / 2);
+    }
+    return sheets * /** @type {number} */ (this.getSettingValue('copies'));
   },
 
   /**
    * @return {boolean} Whether to show the "More settings" link.
    * @private
    */
-  computeShouldShowMoreSettings_: function() {
+  computeShouldShowMoreSettings_() {
     // Destination settings is always available. See if the total number of
     // available sections exceeds the maximum number to show.
     return [
@@ -181,7 +198,7 @@ Polymer({
    * @return {boolean} Whether the "more settings" collapse should be expanded.
    * @private
    */
-  shouldExpandSettings_: function() {
+  shouldExpandSettings_() {
     if (this.settingsExpandedByUser_ === undefined ||
         this.shouldShowMoreSettings_ === undefined) {
       return false;
@@ -193,11 +210,11 @@ Polymer({
   },
 
   /** @private */
-  onPrintButtonFocused_: function() {
+  onPrintButtonFocused_() {
     this.firstLoad_ = false;
   },
 
-  onStateChanged_: function() {
+  onStateChanged_() {
     if (this.state !== State.PRINTING) {
       return;
     }
@@ -211,7 +228,7 @@ Polymer({
   },
 
   /** @return {boolean} Whether the system dialog link is available. */
-  systemDialogLinkAvailable: function() {
+  systemDialogLinkAvailable() {
     const linkContainer = this.$$('print-preview-link-container');
     return !!linkContainer && linkContainer.systemDialogLinkAvailable();
   },

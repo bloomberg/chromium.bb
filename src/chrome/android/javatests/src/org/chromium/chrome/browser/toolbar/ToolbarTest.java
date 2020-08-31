@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -13,20 +18,22 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.findinpage.FindToolbar;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -81,6 +88,32 @@ public class ToolbarTest {
 
     @Test
     @MediumTest
+    public void testOmniboxScrim() {
+        ChromeActivity activity = mActivityTestRule.getActivity();
+        ToolbarManager toolbarManager = activity.getToolbarManager();
+        ScrimCoordinator scrimCoordinator =
+                activity.getRootUiCoordinatorForTesting().getScrimCoordinatorForTesting();
+        scrimCoordinator.disableAnimationForTesting(true);
+
+        assertNull("The scrim should be null.", scrimCoordinator.getViewForTesting());
+        assertFalse("All tabs should not currently be obscured.",
+                activity.getTabObscuringHandler().areAllTabsObscured());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(true, 0));
+
+        assertNotNull("The scrim should not be null.", scrimCoordinator.getViewForTesting());
+        assertTrue("All tabs should currently be obscured.",
+                activity.getTabObscuringHandler().areAllTabsObscured());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(false, 0));
+
+        assertNull("The scrim should be null.", scrimCoordinator.getViewForTesting());
+        assertFalse("All tabs should not currently be obscured.",
+                activity.getTabObscuringHandler().areAllTabsObscured());
+    }
+
+    @Test
+    @MediumTest
     public void testNTPNavigatesToErrorPageOnDisconnectedNetwork() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -90,8 +123,8 @@ public class ToolbarTest {
 
         // Load new tab page.
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
-        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrl());
-        Assert.assertFalse(isErrorPage(tab));
+        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrlString());
+        assertFalse(isErrorPage(tab));
 
         // Stop the server and also disconnect the network.
         testServer.stopAndDestroyServer();
@@ -99,8 +132,8 @@ public class ToolbarTest {
                 () -> NetworkChangeNotifier.forceConnectivityState(false));
 
         mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(testUrl, tab.getUrl());
-        Assert.assertTrue(isErrorPage(tab));
+        Assert.assertEquals(testUrl, tab.getUrlString());
+        assertTrue(isErrorPage(tab));
     }
 
     @Test

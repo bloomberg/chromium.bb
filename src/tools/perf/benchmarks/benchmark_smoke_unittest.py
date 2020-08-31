@@ -54,7 +54,6 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
   # failing or flaky benchmark would disable a much wider swath of coverage
   # than is usually intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
-  @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
     # Some benchmarks are running multiple iterations
@@ -71,6 +70,8 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
       options.pageset_repeat = 1  # For smoke testing only run the page once.
       options.output_formats = ['histograms']
       options.max_values_per_test_case = MAX_VALUES_PER_TEST_CASE
+      results_processor.ProcessOptions(options)
+
       return_code = benchmark_class().Run(options)
       # TODO(crbug.com/1019139): Make 111 be the exit code that means
       # "no stories were run.".
@@ -99,11 +100,12 @@ _BLACK_LIST_TEST_MODULES = {
 
 # The list of benchmark names to be excluded from our smoke tests.
 _BLACK_LIST_TEST_NAMES = [
-   'memory.long_running_idle_gmail_background_tbmv2',
-   'tab_switching.typical_25',
-   'UNSCHEDULED_oortonline_tbmv2',
-   'webrtc',  # crbug.com/932036
-   'speedometer2-future' # Flaky on mac, crbug.com/1003776
+    'memory.long_running_idle_gmail_background_tbmv2',
+    'tab_switching.typical_25',
+    'UNSCHEDULED_oortonline_tbmv2',
+    'webrtc',  # crbug.com/932036
+    'speedometer2-future',  # Flaky on mac, crbug.com/1003776
+    'v8.runtime_stats.top_25'  # Fails in Windows, crbug.com/1043048
 ]
 
 

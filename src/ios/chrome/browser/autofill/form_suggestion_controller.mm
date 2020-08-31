@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
@@ -29,18 +28,27 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 namespace {
 
 // Struct that describes suggestion state.
 struct AutofillSuggestionState {
   AutofillSuggestionState(const std::string& form_name,
+                          FormRendererId unique_form_id,
                           const std::string& field_identifier,
+                          FieldRendererId unique_field_id,
                           const std::string& frame_identifier,
                           const std::string& typed_value);
   // The name of the form for autofill.
   std::string form_name;
+  // The unique numeric identifier of the form for autofill.
+  FormRendererId unique_form_id;
   // The identifier of the field for autofill.
   std::string field_identifier;
+  // The unique numeric identifier of the field for autofill.
+  FieldRendererId unique_field_id;
   // The identifier of the frame for autofill.
   std::string frame_identifier;
   // The user-typed value in the field.
@@ -51,11 +59,15 @@ struct AutofillSuggestionState {
 
 AutofillSuggestionState::AutofillSuggestionState(
     const std::string& form_name,
+    FormRendererId unique_form_id,
     const std::string& field_identifier,
+    FieldRendererId unique_field_id,
     const std::string& frame_identifier,
     const std::string& typed_value)
     : form_name(form_name),
+      unique_form_id(unique_form_id),
       field_identifier(field_identifier),
+      unique_field_id(unique_field_id),
       frame_identifier(frame_identifier),
       typed_value(typed_value) {}
 
@@ -63,7 +75,7 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 @interface FormSuggestionController () {
   // Callback to update the accessory view.
-  FormSuggestionsReadyCompletion accessoryViewUpdateBlock_;
+  FormSuggestionsReadyCompletion _accessoryViewUpdateBlock;
 
   // Autofill suggestion state.
   std::unique_ptr<AutofillSuggestionState> _suggestionState;
@@ -179,16 +191,20 @@ AutofillSuggestionState::AutofillSuggestionState(
   NSUInteger requestIdentifier = self.requestIdentifier;
 
   __weak FormSuggestionController* weakSelf = self;
-  NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
-  NSString* strongFieldIdentifier =
-      base::SysUTF8ToNSString(params.field_identifier);
-  NSString* strongFrameId = base::SysUTF8ToNSString(params.frame_id);
-  NSString* strongFieldType = base::SysUTF8ToNSString(params.field_type);
-  NSString* strongType = base::SysUTF8ToNSString(params.type);
-  NSString* strongValue =
-      base::SysUTF8ToNSString(_suggestionState.get()->typed_value);
-  BOOL is_main_frame = params.is_main_frame;
-  BOOL has_user_gesture = params.has_user_gesture;
+
+  FormSuggestionProviderQuery* formQuery = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:base::SysUTF8ToNSString(params.form_name)
+          uniqueFormID:FormRendererId(params.unique_form_id)
+       fieldIdentifier:base::SysUTF8ToNSString(params.field_identifier)
+         uniqueFieldID:FieldRendererId(params.unique_field_id)
+             fieldType:base::SysUTF8ToNSString(params.field_type)
+                  type:base::SysUTF8ToNSString(params.type)
+            typedValue:base::SysUTF8ToNSString(
+                           _suggestionState.get()->typed_value)
+               frameID:base::SysUTF8ToNSString(params.frame_id)];
+
+  BOOL isMainFrame = params.is_main_frame;
+  BOOL hasUserGesture = params.has_user_gesture;
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide suggestions for the specified form/field/type
@@ -206,14 +222,9 @@ AutofillSuggestionState::AutofillSuggestionState(
             return;
           id<FormSuggestionProvider> provider =
               strongSelf->_suggestionProviders[i];
-          [provider checkIfSuggestionsAvailableForForm:strongFormName
-                                       fieldIdentifier:strongFieldIdentifier
-                                             fieldType:strongFieldType
-                                                  type:strongType
-                                            typedValue:strongValue
-                                               frameID:strongFrameId
-                                           isMainFrame:is_main_frame
-                                        hasUserGesture:has_user_gesture
+          [provider checkIfSuggestionsAvailableForForm:formQuery
+                                           isMainFrame:isMainFrame
+                                        hasUserGesture:hasUserGesture
                                               webState:webState
                                      completionHandler:completion];
         };
@@ -242,12 +253,7 @@ AutofillSuggestionState::AutofillSuggestionState(
       return;
     id<FormSuggestionProvider> provider =
         strongSelf->_suggestionProviders[providerIndex];
-    [provider retrieveSuggestionsForForm:strongFormName
-                         fieldIdentifier:strongFieldIdentifier
-                               fieldType:strongFieldType
-                                    type:strongType
-                              typedValue:strongValue
-                                 frameID:strongFrameId
+    [provider retrieveSuggestionsForForm:formQuery
                                 webState:webState
                        completionHandler:readyCompletion];
   };
@@ -260,10 +266,10 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 - (void)onNoSuggestionsAvailable {
   // Check the update block hasn't been reset while waiting for suggestions.
-  if (!accessoryViewUpdateBlock_) {
+  if (!_accessoryViewUpdateBlock) {
     return;
   }
-  accessoryViewUpdateBlock_(@[], self);
+  _accessoryViewUpdateBlock(@[], self);
 }
 
 - (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
@@ -298,16 +304,16 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState {
   if (!suggestionState) {
-    if (accessoryViewUpdateBlock_)
-      accessoryViewUpdateBlock_(nil, self);
+    if (_accessoryViewUpdateBlock)
+      _accessoryViewUpdateBlock(nil, self);
   } else {
     [self updateKeyboardWithSuggestions:suggestionState->suggestions];
   }
 }
 
 - (void)updateKeyboardWithSuggestions:(NSArray<FormSuggestion*>*)suggestions {
-  if (accessoryViewUpdateBlock_) {
-    accessoryViewUpdateBlock_(suggestions, self);
+  if (_accessoryViewUpdateBlock) {
+    _accessoryViewUpdateBlock(suggestions, self);
   }
 }
 
@@ -321,8 +327,10 @@ AutofillSuggestionState::AutofillSuggestionState(
   [_provider
       didSelectSuggestion:suggestion
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
+             uniqueFormID:_suggestionState->unique_form_id
           fieldIdentifier:base::SysUTF8ToNSString(
                               _suggestionState->field_identifier)
+            uniqueFieldID:_suggestionState->unique_field_id
                   frameID:base::SysUTF8ToNSString(
                               _suggestionState->frame_identifier)
         completionHandler:^{
@@ -337,15 +345,16 @@ AutofillSuggestionState::AutofillSuggestionState(
           accessoryViewUpdateBlock:
               (FormSuggestionsReadyCompletion)accessoryViewUpdateBlock {
   [self processPage:webState];
-  _suggestionState.reset(
-      new AutofillSuggestionState(params.form_name, params.field_identifier,
-                                  params.frame_id, params.value));
-  accessoryViewUpdateBlock_ = [accessoryViewUpdateBlock copy];
+  _suggestionState.reset(new AutofillSuggestionState(
+      params.form_name, FormRendererId(params.unique_form_id),
+      params.field_identifier, FieldRendererId(params.unique_field_id),
+      params.frame_id, params.value));
+  _accessoryViewUpdateBlock = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
 - (void)inputAccessoryViewControllerDidReset {
-  accessoryViewUpdateBlock_ = nil;
+  _accessoryViewUpdateBlock = nil;
   [self resetSuggestionState];
 }
 

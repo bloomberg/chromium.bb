@@ -11,7 +11,6 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "ui/gfx/text_constants.h"
 
 class GURL;
 
@@ -53,6 +52,7 @@ base::string16 ElideHost(const GURL& host_url,
                          float available_pixel_width);
 #endif  // !defined(OS_ANDROID)
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.url_formatter
 enum class SchemeDisplay {
   SHOW,
   OMIT_HTTP_AND_HTTPS,

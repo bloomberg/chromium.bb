@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
@@ -51,13 +52,10 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     return;
   }
 
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
 
-  bool clear_profile =
-      account_info.IsEmpty() ||
-      (!base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache) &&
-       !identity_manager_->HasPrimaryAccount());
+  bool clear_profile = account_info.IsEmpty();
 
   if (account_info.gaia != entry->GetGAIAId() ||
       !gaia::AreEmailsSame(account_info.email,
@@ -65,22 +63,6 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     // Reset prefs. Note: this will also update the |ProfileAttributesEntry|.
     prefs_->ClearPref(prefs::kProfileUsingDefaultAvatar);
     prefs_->ClearPref(prefs::kProfileUsingGAIAAvatar);
-
-    // If the concatenation is not enabled, we either show the GAIA name or
-    // the local profile name based on |prefs::kProfileUsingDefaultName|.
-    // If the profile has been created with a custom name, we need to reset
-    // |prefs::kProfileUsingDefaultName| on sign in/sync events for the display
-    // name to be the GAIA name otherwise it will be the custom local profile
-    // name.
-    if (!clear_profile &&
-        !ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()) {
-      prefs_->SetString(
-          prefs::kProfileName,
-          base::UTF16ToUTF8(
-              profile_attributes_storage_->ChooseNameForNewProfile(
-                  entry->GetAvatarIconIndex())));
-      prefs_->ClearPref(prefs::kProfileUsingDefaultName);
-    }
   }
 
   if (clear_profile) {
@@ -116,10 +98,8 @@ void SigninProfileAttributesUpdater::OnPrimaryAccountCleared(
 
 void SigninProfileAttributesUpdater::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  if (identity_manager_->HasPrimaryAccount() ||
-      !base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache)) {
+  if (identity_manager_->HasPrimaryAccount())
     return;
-  }
 
   UpdateProfileAttributes();
 }

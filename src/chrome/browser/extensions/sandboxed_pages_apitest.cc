@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "content/public/test/browser_test.h"
 
 namespace extensions {
 
@@ -17,7 +18,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPagesCSP) {
   // Loading web content will fail because of CSP. In addition to that we will
   // show manifest warnings, hence the kFlagIgnoreManifestWarnings.
   EXPECT_TRUE(RunExtensionSubtest("sandboxed_pages_csp", "main.html",
-                                  kFlagIgnoreManifestWarnings))
+                                  kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 

@@ -19,27 +19,25 @@ class CXFA_FFSignature final : public CXFA_FFField {
                     const CFX_Matrix& matrix,
                     HighlightOption highlight) override;
   bool LoadWidget() override;
-  bool OnMouseEnter() override;
-  bool OnMouseExit() override;
   bool AcceptsFocusOnButtonDown(uint32_t dwFlags,
                                 const CFX_PointF& point,
                                 FWL_MouseCommand command) override;
-  void OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) override;
+  bool OnMouseEnter() override;
+  bool OnMouseExit() override;
+  bool OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnLButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnMouseWheel(uint32_t dwFlags,
-                    int16_t zDelta,
-                    const CFX_PointF& pointy) override;
-  void OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) override;
+                    const CFX_PointF& point,
+                    const CFX_Vector& delta) override;
+  bool OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) override;
   bool OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) override;
-
   bool OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) override;
   bool OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags) override;
   bool OnChar(uint32_t dwChar, uint32_t dwFlags) override;
-  FWL_WidgetHit OnHitTest(const CFX_PointF& point) override;
-  bool OnSetCursor(const CFX_PointF& point) override;
+  FWL_WidgetHit HitTest(const CFX_PointF& point) override;
   FormFieldType GetFormFieldType() override;
 };
 

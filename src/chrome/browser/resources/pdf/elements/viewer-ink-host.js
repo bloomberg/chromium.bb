@@ -84,14 +84,14 @@ Polymer({
   /** @param {AnnotationTool} tool */
   setAnnotationTool(tool) {
     this.tool_ = tool;
-    if (this.state_ == State.ACTIVE) {
+    if (this.state_ === State.ACTIVE) {
       this.ink_.setAnnotationTool(tool);
     }
   },
 
   /** @param {PointerEvent} e */
-  isActivePointer_: function(e) {
-    return this.activePointer_ && this.activePointer_.pointerId == e.pointerId;
+  isActivePointer_(e) {
+    return this.activePointer_ && this.activePointer_.pointerId === e.pointerId;
   },
 
   /**
@@ -99,7 +99,7 @@ Polymer({
    *
    * @param {PointerEvent} e
    */
-  dispatchPointerEvent_: function(e) {
+  dispatchPointerEvent_(e) {
     // TODO(dstockwell) come up with a solution to propagate e.timeStamp.
     this.ink_.dispatchPointerEvent(e.type, {
       pointerId: e.pointerId,
@@ -112,7 +112,7 @@ Polymer({
   },
 
   /** @param {TouchEvent} e */
-  onTouchStart_: function(e) {
+  onTouchStart_(e) {
     if (e.timeStamp !== this.allowTouchStartTimeStamp_) {
       e.preventDefault();
     }
@@ -120,18 +120,18 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerDown_: function(e) {
-    if (e.pointerType == 'mouse' && e.buttons != 1 || this.pointerGesture_) {
+  onPointerDown_(e) {
+    if (e.pointerType === 'mouse' && e.buttons !== 1 || this.pointerGesture_) {
       return;
     }
 
-    if (e.pointerType == 'pen') {
+    if (e.pointerType === 'pen') {
       this.penMode_ = true;
     }
 
     if (this.activePointer_) {
-      if (this.activePointer_.pointerType == 'touch' &&
-          e.pointerType == 'touch') {
+      if (this.activePointer_.pointerType === 'touch' &&
+          e.pointerType === 'touch') {
         // A multi-touch gesture has started with the active pointer. Cancel
         // the active pointer and suppress further events until it is released.
         this.pointerGesture_ = true;
@@ -144,13 +144,13 @@ Polymer({
     }
 
     if (!this.viewport.isPointInsidePage({x: e.clientX, y: e.clientY}) &&
-        (e.pointerType == 'touch' || e.pointerType == 'pen')) {
+        (e.pointerType === 'touch' || e.pointerType === 'pen')) {
       // If a touch or pen is outside the page, we allow pan gestures to start.
       this.allowTouchStartTimeStamp_ = e.timeStamp;
       return;
     }
 
-    if (e.pointerType == 'touch' && this.penMode_) {
+    if (e.pointerType === 'touch' && this.penMode_) {
       // If we see a touch after having seen a pen, we allow touches to start
       // pan gestures anywhere and suppress all touches from drawing.
       this.allowTouchStartTimeStamp_ = e.timeStamp;
@@ -162,37 +162,37 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerLeave_: function(e) {
-    if (e.pointerType != 'mouse' || !this.isActivePointer_(e)) {
+  onPointerLeave_(e) {
+    if (e.pointerType !== 'mouse' || !this.isActivePointer_(e)) {
       return;
     }
     this.onPointerUpOrCancel_(new PointerEvent('pointerup', e));
   },
 
   /** @param {PointerEvent} e */
-  onPointerUpOrCancel_: function(e) {
+  onPointerUpOrCancel_(e) {
     if (!this.isActivePointer_(e)) {
       return;
     }
     this.activePointer_ = null;
     if (!this.pointerGesture_) {
       this.dispatchPointerEvent_(e);
-      // If the stroke was not cancelled (type == pointercanel),
+      // If the stroke was not cancelled (type === pointercanel),
       // notify about mutation and record metrics.
-      if (e.type == 'pointerup') {
+      if (e.type === 'pointerup') {
         this.dispatchEvent(new CustomEvent('stroke-added'));
-        if (e.pointerType == 'mouse') {
+        if (e.pointerType === 'mouse') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_MOUSE);
-        } else if (e.pointerType == 'pen') {
+        } else if (e.pointerType === 'pen') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_PEN);
-        } else if (e.pointerType == 'touch') {
+        } else if (e.pointerType === 'touch') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_TOUCH);
         }
-        if (this.tool_.tool == 'eraser') {
+        if (this.tool_.tool === 'eraser') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_ERASER);
-        } else if (this.tool_.tool == 'pen') {
+        } else if (this.tool_.tool === 'pen') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_PEN);
-        } else if (this.tool_.tool == 'highlighter') {
+        } else if (this.tool_.tool === 'highlighter') {
           PDFMetrics.record(
               PDFMetrics.UserAction.ANNOTATE_STROKE_TOOL_HIGHLIGHTER);
         }
@@ -202,13 +202,13 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerMove_: function(e) {
+  onPointerMove_(e) {
     if (!this.isActivePointer_(e) || this.pointerGesture_) {
       return;
     }
 
     let events = e.getCoalescedEvents();
-    if (events.length == 0) {
+    if (events.length === 0) {
       events = [e];
     }
     for (const event of events) {
@@ -246,8 +246,8 @@ Polymer({
     this.style.visibility = 'visible';
   },
 
-  viewportChanged: function() {
-    if (this.state_ != State.ACTIVE) {
+  viewportChanged() {
+    if (this.state_ !== State.ACTIVE) {
       return;
     }
     const viewport = this.viewport;
@@ -295,7 +295,7 @@ Polymer({
    *     The serialized PDF document including any annotations that were made.
    */
   saveDocument: async function() {
-    if (this.state_ == State.ACTIVE) {
+    if (this.state_ === State.ACTIVE) {
       this.buffer_ = await this.ink_.getPDFDestructive().buffer;
       this.state_ = State.IDLE;
     }

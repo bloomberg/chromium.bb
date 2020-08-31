@@ -14,7 +14,6 @@
 #include "ash/drag_drop/drag_drop_controller_test_api.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -37,10 +36,8 @@
 #include "base/containers/flat_set.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/testing_pref_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -114,10 +111,6 @@ void ExpectAllContainers() {
       Shell::GetContainer(root_window, kShellWindowId_LockScreenContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_LockSystemModalContainer));
-  EXPECT_TRUE(
-      Shell::GetContainer(root_window, kShellWindowId_ShelfControlContainer));
-  EXPECT_TRUE(
-      Shell::GetContainer(root_window, kShellWindowId_OverviewFocusContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_MenuContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_DragImageAndTooltipContainer));
@@ -139,14 +132,11 @@ void ExpectAllContainers() {
 
 class ModalWindow : public views::WidgetDelegateView {
  public:
-  ModalWindow() = default;
+  ModalWindow() { SetTitle(base::ASCIIToUTF16("Modal Window")); }
   ~ModalWindow() override = default;
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override { return true; }
-  base::string16 GetWindowTitle() const override {
-    return base::ASCIIToUTF16("Modal Window");
-  }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:
@@ -189,7 +179,7 @@ class ShellTest : public AshTestBase {
   // TODO(jamescook): Convert to AshTestBase::CreateTestWidget().
   views::Widget* CreateTestWindow(views::Widget::InitParams params) {
     views::Widget* widget = new views::Widget;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     return widget;
   }
@@ -276,7 +266,7 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   // Don't specify bounds, parent or context.
   params.delegate = new WindowWithPreferredSize;
   views::Widget widget;
-  params.context = CurrentContext();
+  params.context = GetContext();
   widget.Init(std::move(params));
 
   // Widget is centered on secondary display.
@@ -406,7 +396,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Modal dialog without parent, caused crash see crbug.com/226141
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-      new TestModalDialogDelegate(), CurrentContext(), nullptr);
+      new TestModalDialogDelegate(), GetContext(), nullptr);
 
   modal_dialog->Show();
   EXPECT_FALSE(modal_dialog->GetNativeView()->HasFocus());
@@ -521,20 +511,20 @@ TEST_F(ShellTest, ToggleAutoHide) {
   wm::ActivateWindow(window.get());
 
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  EXPECT_EQ(ShelfAutoHideBehavior::kNever, shelf->auto_hide_behavior());
 
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(ShelfAutoHideBehavior::kNever, shelf->auto_hide_behavior());
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
 
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  EXPECT_EQ(ShelfAutoHideBehavior::kNever, shelf->auto_hide_behavior());
 }
 
 // Tests that the cursor-filter is ahead of the drag-drop controller in the
@@ -589,15 +579,6 @@ TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
   window_->Init(ui::LAYER_NOT_DRAWN);
 }
 
-// Tests the local state code path.
-class ShellLocalStateTest : public AshTestBase {
- public:
-  ShellLocalStateTest() { disable_provide_local_state(); }
-
- protected:
-  std::unique_ptr<TestingPrefServiceSimple> local_state_;
-};
-
 using ShellLoginTest = NoSessionAshTestBase;
 
 TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
@@ -610,38 +591,10 @@ TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
   EXPECT_TRUE(drag_drop_controller_test_api.enabled());
 }
 
-// Defines a parameterized test fixture to validate that there are no duplicate
-// containers IDs in both cases when the Virtual Desks feature is enabled or
-// disabled.
-class NoDuplicateShellContainerIdsTest
-    : public AshTestBase,
-      public ::testing::WithParamInterface<bool> {
- public:
-  NoDuplicateShellContainerIdsTest() = default;
-  ~NoDuplicateShellContainerIdsTest() override = default;
+using NoDuplicateShellContainerIdsTest = AshTestBase;
 
-  // AshTestBase:
-  void SetUp() override {
-    if (GetParam())
-      scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kVirtualDesks);
-
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoDuplicateShellContainerIdsTest);
-};
-
-TEST_P(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
+TEST_F(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
   ExpectAllContainers();
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         NoDuplicateShellContainerIdsTest,
-                         ::testing::Values(false, true));
 
 }  // namespace ash

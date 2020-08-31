@@ -14,15 +14,12 @@
 #include "base/message_loop/message_pump_type.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace display {
 class NativeDisplayDelegate;
-}
-
-namespace IPC {
-class MessageFilter;
 }
 
 namespace ui {
@@ -35,6 +32,7 @@ class PlatformScreen;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
 class PlatformClipboard;
+class PlatformGLEGLUtility;
 
 namespace internal {
 class InputMethodDelegate;
@@ -69,23 +67,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // operate as a single process for platforms (i.e. drm) that are usually
     // split between a host and viz specific portion.
     bool single_process = false;
-
-    // Setting this to true indicates that the platform implementation should
-    // use mojo. Setting this to true requires calling |AddInterfaces|
-    // afterwards in the Viz process. Note that this param is only checked in
-    // Ozone DRM. Other platforms either never use mojo or always use mojo
-    // regardless of this param.
-    // TODO(crbug.com/806092): Remove after legacy IPC-based Ozone is removed.
-    bool using_mojo = false;
-
-    // Setting this to true indicates the display compositor will run in the GPU
-    // process (as part of the viz service). Note this param is currently only
-    // checked in Ozone DRM for overlay support. Other Ozone platforms either
-    // don't need to change anything or assume that VizDisplayCompositor is
-    // always enabled.
-    // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature
-    // launches.
-    bool viz_display_compositor = false;
   };
 
   // Struct used to indicate platform properties.
@@ -102,14 +83,17 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // supported.
     bool use_system_title_bar = false;
 
-    // Determines if the platform requires mojo communication for the IPC.
-    // Currently used only by the Ozone/Wayland platform.
-    bool requires_mojo = false;
-
     // Determines the type of message pump that should be used for GPU main
     // thread.
     base::MessagePumpType message_pump_type_for_gpu =
         base::MessagePumpType::DEFAULT;
+
+    // Determines if the platform supports vulkan swap chain.
+    bool supports_vulkan_swap_chain = false;
+
+    // Wayland only: determines if the client must ignore the screen bounds when
+    // calculating bounds of menu windows.
+    bool ignore_screen_bounds_for_menus = false;
   };
 
   // Properties available in the host process after initialization.
@@ -147,7 +131,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual ui::OverlayManagerOzone* GetOverlayManager() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
   virtual ui::InputController* GetInputController() = 0;
-  virtual IPC::MessageFilter* GetGpuMessageFilter();
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
@@ -158,7 +141,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   virtual std::unique_ptr<PlatformScreen> CreateScreen() = 0;
   virtual PlatformClipboard* GetPlatformClipboard();
   virtual std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) = 0;
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget widget) = 0;
+  virtual PlatformGLEGLUtility* GetPlatformGLEGLUtility();
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

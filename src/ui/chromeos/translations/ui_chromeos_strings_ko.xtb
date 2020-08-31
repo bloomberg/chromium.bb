@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1249250836236328755">장르</translation>
 <translation id="1278813325885878377">헝가리어 QWERTY 키보드</translation>
+<translation id="1293556467332435079">파일</translation>
 <translation id="1297922636971898492">현재 Google 드라이브를 사용할 수 없습니다. Google 드라이브를 다시 사용할 수 있게 되면 자동으로 업로드가 다시 시작됩니다.</translation>
 <translation id="1307931752636661898">Linux 파일을 볼 수 없음</translation>
 <translation id="1310751437842832374">음역(mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">저장됨</translation>
 <translation id="1864756863218646478">파일을 찾지 못했습니다.</translation>
 <translation id="1921986354447415460">터키어-F 키보드</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" />이(가) 포맷되었습니다.</translation>
 <translation id="1931134289871235022">슬로바키아어</translation>
 <translation id="1933345018156373194">이동에 실패했습니다. 예상치 못한 오류: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">핀란드어</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">독일어 키보드</translation>
 <translation id="1972984168337863910">파일 의견 패널 펼치기</translation>
 <translation id="1984603991036629094">Armenian Phonetic 키보드</translation>
+<translation id="1995337122023280937">파일 위치로 이동</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
 <translation id="2009067268969781306">드라이브를 포맷하면 드라이브에 저장된 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
 <translation id="2028997212275086731">RAR 압축 파일</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Google 드라이브에 연결할 수 없습니다. <ph name="BEGIN_LINK" />로그아웃<ph name="END_LINK" />한 후 다시 로그인하세요.</translation>
 <translation id="2649120831653069427">구피</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">파일 위치</translation>
 <translation id="2672394958563893062">오류가 발생했습니다. 클릭하여 처음부터 다시 시작하세요.</translation>
 <translation id="2676946222714718093">재생 중:</translation>
 <translation id="2735698359135166290">루마니아 표준 키보드</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">독일어 NEO 2 키보드</translation>
 <translation id="2943400156390503548">프레젠테이션</translation>
 <translation id="2943503720238418293">더 짧은 이름을 입력해 주세요.</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" />을(를) 포맷 중...</translation>
 <translation id="2951236788251446349">해파리</translation>
 <translation id="2963783323012015985">터키어 키보드</translation>
 <translation id="2966459079597787514">스웨덴어 키보드</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
+<translation id="3524311639100184459">주의: 이 파일은 임시 파일이며 디스크 여유 공간을 확보하기 위해 자동으로 삭제될 수 있습니다.  <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549797760399244642">drive.google.com 사이트로 이동...</translation>
 <translation id="357479282490346887">리투아니아어</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">키위</translation>
 <translation id="3966388904776714213">오디오 플레이어</translation>
 <translation id="4002066346123236978">제목</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> 앱으로 파일을 열려면 파일을 <ph name="SHARED_DIRECTORY_LABEL" /> 폴더로 이동하세요.</translation>
 <translation id="4070370845051020638">광둥어 입력 방법</translation>
 <translation id="4072248638558688893">타밀어 키보드(음역)</translation>
 <translation id="4124935795427217608">유니콘</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">복사 작업에 실패했습니다. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">멜론</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">외부 링크</translation>
 <translation id="4425149324548788773">내 드라이브</translation>
 <translation id="4465830120256509958">브라질어 키보드</translation>
 <translation id="4470564870223067757">한글 두벌식</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">자동 보정</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4886021172213954916">타밀어 키보드(타자기)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" />(으)로 열 수 없음</translation>
 <translation id="4905417359854579806">파일 <ph name="FILE_COUNT" />개 백업 준비 완료</translation>
 <translation id="4924638091161556692">보정 완료</translation>
 <translation id="4935975195727477204">꽃</translation>
@@ -359,7 +368,7 @@
 <translation id="5177526793333269655">미리보기 이미지 보기</translation>
 <translation id="5194713942430106590">열을 오름차순으로 정렬하려면 클릭하세요.</translation>
 <translation id="5218183485292899140">프랑스어(스위스)</translation>
-<translation id="5234764350956374838">숨기기</translation>
+<translation id="5234764350956374838">닫기</translation>
 <translation id="5241298539944515331">베트남어 키보드(VIQR)</translation>
 <translation id="5253070652067921974">만든 사람</translation>
 <translation id="5257456363153333584">잠자리</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Linux 공유 관리</translation>
 <translation id="6808193438228982088">여우</translation>
 <translation id="6820687829547641339">Gzip으로 압축된 tar 압축 파일</translation>
+<translation id="6823166707458800069">이 폴더에 저장된 모든 파일은 온라인으로 자동 백업됩니다.</translation>
 <translation id="6825883775269213504">러시아어</translation>
 <translation id="6827236167376090743">이 동영상이 계속 반복 재생됩니다.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> 항목이 선택 해제되었습니다.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">데바나가리 키보드(음역)</translation>
 <translation id="6885780034956018177">달팽이</translation>
 <translation id="6896758677409633944">복사</translation>
+<translation id="6898028766943174120">하위 폴더 더보기...</translation>
 <translation id="691516599546977041"><ph name="FOLDER_NAME" />에 저장할 수 없습니다. 수정한 이미지는 다운로드 폴더에 저장됩니다.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">미국 워크맨</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">모바일 데이터를 이용한 동기화 사용 설정</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6970230597523682626">불가리아어</translation>
+<translation id="6973630695168034713">폴더</translation>
 <translation id="6978611942794658017">이 파일은 Windows 소프트웨어를 사용하는 PC용으로 설계되었으며 Chrome OS를 실행하는 기기와 호환되지 않습니다. 적합한 대체 앱을 찾으려면 Chrome 웹 스토어를 검색하세요.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6990081529015358884">저장 공간이 부족합니다.</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Google 지도</translation>
 <translation id="7419631653042041064">카탈로니아어 키보드</translation>
 <translation id="7434823369735508263">영어(영국식) 드보락 키보드</translation>
+<translation id="7447678886297481665">이 폴더의 파일은 읽기 전용입니다. 일부 활동이 지원되지 않습니다.</translation>
 <translation id="7460898608667578234">우크라이나어</translation>
 <translation id="7474889694310679759">캐나다 영어 키보드</translation>
 <translation id="7489215562877293245">파일 <ph name="FILE_COUNT" />개 있음
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7654209398114106148">항목 <ph name="NUMBER_OF_ITEMS" />개 이동 중...</translation>
 <translation id="7658239707568436148">취소</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" />을(를) 포맷할 수 없습니다.</translation>
 <translation id="770015031906360009">그리스어</translation>
 <translation id="7706319470528945664">포르투갈어 키보드</translation>
 <translation id="7711920809702896782">이미지 정보</translation>

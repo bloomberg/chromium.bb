@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/crx_file/id_util.h"
@@ -248,8 +249,8 @@ void KioskAppsHandler::HandleInitializeKioskAppSettings(
 
   AllowJavascript();
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
-      base::Bind(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {

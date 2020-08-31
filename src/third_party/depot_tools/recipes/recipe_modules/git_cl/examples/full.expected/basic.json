@@ -26,7 +26,6 @@
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d",
-      "--rietveld",
       "https://code.review/123"
     ],
     "name": "git_cl description (build)"
@@ -39,8 +38,7 @@
       "description",
       "-n",
       "-",
-      "https://code.review/123",
-      "--rietveld"
+      "https://code.review/123"
     ],
     "name": "git_cl set description",
     "stdin": "bammmm"

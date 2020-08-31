@@ -22,7 +22,7 @@ class MockMessageCallback final : public MessageDemuxer::MessageCallback {
                                msgs::Type message_type,
                                const uint8_t* buffer,
                                size_t buffer_size,
-                               platform::Clock::time_point now));
+                               Clock::time_point now));
 };
 
 }  // namespace osp

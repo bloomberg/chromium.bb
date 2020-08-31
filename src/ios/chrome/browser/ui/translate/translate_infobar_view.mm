@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"
@@ -15,13 +16,15 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view_delegate.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_view_constants.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view_delegate.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/uikit_util.h"
@@ -29,10 +32,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-const CGFloat kInfobarHeight = 54;
-
-NSString* const kTranslateInfobarViewId = @"kTranslateInfobarViewId";
 
 namespace {
 
@@ -175,7 +174,8 @@ const CGFloat kIconTrailingMargin = 12;
   // in fullscreen mode (i.e., progress == 0), thus hiding the infobar, to the
   // maximum bottom padding calculated above.
   CGFloat bottomPadding =
-      progress * (maxBottomPadding + kInfobarHeight) - kInfobarHeight;
+      progress * (maxBottomPadding + kTranslateInfobarHeight) -
+      kTranslateInfobarHeight;
 
   // If the fullscreen progress is greater than the previous progress, i.e., we
   // are exiting the fullscreen mode, update the bottom padding only if the
@@ -288,6 +288,15 @@ const CGFloat kIconTrailingMargin = 12;
   self.dismissButton = dismissButton;
   [contentView addSubview:self.dismissButton];
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.optionsButton.pointerInteractionEnabled = YES;
+      self.dismissButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   ApplyVisualConstraintsWithMetrics(
       @[
         @"H:|-(iconLeadingMargin)-[icon(iconSize)]-(iconTrailingMargin)-[languages][options(buttonSize)][dismiss(buttonSize)]|",
@@ -306,7 +315,7 @@ const CGFloat kIconTrailingMargin = 12;
         @"iconSize" : @(kIconSize),
         @"iconLeadingMargin" : @(kIconLeadingMargin),
         @"iconTrailingMargin" : @(kIconTrailingMargin),
-        @"infobarHeight" : @(kInfobarHeight),
+        @"infobarHeight" : @(kTranslateInfobarHeight),
         @"buttonSize" : @(kButtonSize),
       });
   AddSameCenterYConstraint(contentView, self.iconView);

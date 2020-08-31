@@ -21,9 +21,9 @@ struct StructTraits<gpu::mojom::VulkanPhysicalDeviceInfoDataView,
     return input.properties;
   }
 
-  static const std::vector<VkLayerProperties>& layers(
+  static const std::vector<VkExtensionProperties>& extensions(
       const gpu::VulkanPhysicalDeviceInfo& input) {
-    return input.layers;
+    return input.extensions;
   }
 
   static const VkPhysicalDeviceFeatures& features(
@@ -50,7 +50,7 @@ struct StructTraits<gpu::mojom::VulkanPhysicalDeviceInfoDataView,
                    gpu::VulkanPhysicalDeviceInfo* out) {
     if (!data.ReadProperties(&out->properties))
       return false;
-    if (!data.ReadLayers(&out->layers))
+    if (!data.ReadExtensions(&out->extensions))
       return false;
     if (!data.ReadFeatures(&out->features))
       return false;

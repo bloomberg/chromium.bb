@@ -5,17 +5,19 @@
 #include "ui/views/focus/focus_manager.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/widget_focus_manager.h"
@@ -154,7 +156,7 @@ void FocusManager::ClearNativeFocus() {
 }
 
 bool FocusManager::RotatePaneFocus(Direction direction,
-                                   FocusCycleWrappingBehavior wrap) {
+                                   FocusCycleWrapping wrapping) {
   // Get the list of all accessible panes.
   std::vector<View*> panes;
   widget_->widget_delegate()->GetAccessiblePanes(&panes);
@@ -188,7 +190,8 @@ bool FocusManager::RotatePaneFocus(Direction direction,
     else
       index++;
 
-    if (wrap == kNoWrap && (index >= count || index < 0))
+    if (wrapping == FocusCycleWrapping::kDisabled &&
+        (index >= count || index < 0))
       return false;
     index = (index + count) % count;
 
@@ -310,7 +313,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   // the starting views widget or |widget_|.
   Widget* widget = starting_view ? starting_view->GetWidget()
                                  : original_starting_view->GetWidget();
-  if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
+  if (widget->widget_delegate()->focus_traverses_out())
     widget = widget_;
   return GetNextFocusableView(nullptr, widget, reverse, true);
 }
@@ -520,7 +523,22 @@ void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   if (accelerator_manager_.Process(accelerator))
     return true;
-  return delegate_ && delegate_->ProcessAccelerator(accelerator);
+  if (delegate_ && delegate_->ProcessAccelerator(accelerator))
+    return true;
+
+#if defined(OS_MACOSX)
+  // On MacOS accelerators are processed when a bubble is opened without
+  // manual redirection to bubble anchor widget. Including redirect on MacOS
+  // breaks processing accelerators by the bubble itself.
+  return false;
+#else
+  return RedirectAcceleratorToBubbleAnchorWidget(accelerator);
+#endif
+}
+
+bool FocusManager::IsAcceleratorRegistered(
+    const ui::Accelerator& accelerator) const {
+  return accelerator_manager_.IsRegistered(accelerator);
 }
 
 bool FocusManager::HasPriorityHandler(
@@ -553,7 +571,8 @@ void FocusManager::RemoveFocusChangeListener(FocusChangeListener* listener) {
 }
 
 bool FocusManager::ProcessArrowKeyTraversal(const ui::KeyEvent& event) {
-  if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown())
+  if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown() ||
+      event.IsAltGrDown())
     return false;
 
   const ui::KeyboardCode key = event.key_code();
@@ -586,6 +605,27 @@ void FocusManager::OnViewIsDeleting(View* view) {
   // such that ViewRemoved() is never called.
   CHECK_EQ(view, focused_view_);
   SetFocusedView(nullptr);
+}
+
+bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
+    const ui::Accelerator& accelerator) {
+  Widget* anchor_widget = GetBubbleAnchorWidget();
+  if (!anchor_widget)
+    return false;
+
+  FocusManager* focus_manager = anchor_widget->GetFocusManager();
+  if (!focus_manager->IsAcceleratorRegistered(accelerator))
+    return false;
+
+  // The parent view must be focused for it to process events.
+  focus_manager->SetFocusedView(anchor_widget->GetRootView());
+  return focus_manager->ProcessAccelerator(accelerator);
+}
+
+Widget* FocusManager::GetBubbleAnchorWidget() {
+  BubbleDialogDelegateView* widget_delegate =
+      widget_->widget_delegate()->AsBubbleDialogDelegate();
+  return widget_delegate ? widget_delegate->anchor_widget() : nullptr;
 }
 
 }  // namespace views

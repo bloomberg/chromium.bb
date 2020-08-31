@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/test/scoped_feature_list.h"
@@ -111,7 +112,8 @@ TEST_F(TabManagerDelegateTest, SortLifecycleUnitWithTabRanker) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
       features::kTabRanker,
-      {{"number_of_oldest_tabs_to_score_with_TabRanker", "20"}});
+      {{"number_of_oldest_tabs_to_score_with_TabRanker", "20"},
+       {"process_type_of_tabs_to_score_with_TabRanker", "4"}});
   std::vector<arc::ArcProcess> arc_processes;
   arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 99);
@@ -473,7 +475,7 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   memory_stat->SetProcessPss(10, 100000);
 
   tab_manager_delegate.LowMemoryKillImpl(
-      base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
+      base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::EXTERNAL,
       TabManager::TabDiscardDoneCB(base::DoNothing()),
       std::move(arc_processes));
 

@@ -37,9 +37,9 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -48,6 +48,7 @@
 
 namespace blink {
 
+struct BlinkTransferableMessage;
 class ConsoleMessage;
 class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
@@ -55,7 +56,6 @@ class FontFaceSet;
 class InstalledScriptsManager;
 class OffscreenFontSelector;
 class WorkerResourceTimingNotifier;
-class StringOrTrustedScriptURL;
 class TrustedTypePolicyFactory;
 class V8VoidFunction;
 class WorkerLocation;
@@ -100,11 +100,11 @@ class CORE_EXPORT WorkerGlobalScope
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(languagechange, kLanguagechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled, kRejectionhandled)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(timezonechange, kTimezonechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection)
 
   // WorkerUtils
-  virtual void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
-                             ExceptionState&);
+  virtual void importScripts(const Vector<String>& urls, ExceptionState&);
 
   // ExecutionContext
   const KURL& Url() const final;
@@ -113,13 +113,11 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
+  const UserAgentMetadata& GetUserAgentMetadata() const { return ua_metadata_; }
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
 
-  SecurityContext& GetSecurityContext() final { return *this; }
-  const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
-  bool IsSecureContext(String& error_message) const override;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
@@ -174,13 +172,14 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) = 0;
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) = 0;
 
   void ReceiveMessage(BlinkTransferableMessage);
   base::TimeTicks TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual InstalledScriptsManager* GetInstalledScriptsManager() {
     return nullptr;
@@ -195,6 +194,10 @@ class CORE_EXPORT WorkerGlobalScope
 
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
   TrustedTypePolicyFactory* trustedTypes() const { return GetTrustedTypes(); }
+
+  // TODO(https://crbug.com/835717): Remove this function after dedicated
+  // workers support off-the-main-thread script fetch by default.
+  virtual bool IsOffMainThreadScriptFetchDisabled() { return false; }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -229,11 +232,13 @@ class CORE_EXPORT WorkerGlobalScope
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
   // ExecutionContext
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
   EventTarget* ErrorEventTarget() final { return this; }
 
   KURL url_;
   const mojom::ScriptType script_type_;
   const String user_agent_;
+  const UserAgentMetadata ua_metadata_;
   std::unique_ptr<WorkerSettings> worker_settings_;
 
   mutable Member<WorkerLocation> location_;

@@ -14,6 +14,7 @@ import glob
 import json
 import os
 import shlex
+import sys
 import tempfile
 
 from chromite.lib import cros_build_lib
@@ -21,6 +22,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _GOMA_COMPILER_PROXY_LOG_URL_TEMPLATE = (
@@ -33,6 +37,7 @@ GomaApproach = collections.namedtuple(
                      'arbitrary_toolchain_support'])
 
 
+# TODO(crbug.com/1035114) Refactor.
 class Goma(object):
   """Interface to use goma on bots."""
 
@@ -79,7 +84,8 @@ class Goma(object):
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
                stage_name=None, chromeos_goma_dir=None, chroot_dir=None,
-               goma_approach=None):
+               goma_approach=None, log_dir=None, stats_filename=None,
+               counterz_filename=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
@@ -105,6 +111,15 @@ class Goma(object):
         the default location.
       goma_approach: Indicates some extra environment variables to set when
         testing alternative goma approaches.
+      log_dir: Allows explicitly setting the log directory. Used for the
+        Build API for extracting the logs afterwords. Should be the log
+        directory inside the chroot, based on the chroot path when
+        outside the chroot.
+      stats_filename: The name of the file to use for the GOMA_DUMP_STATS_FILE
+        setting. The file will be created in the log directory.
+      counterz_filename: The name of the file to use for the
+        GOMA_DUMP_COUNTERZ_FILE setting. The file will be created in the log
+        directory.
 
     Raises:
       ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -177,20 +192,40 @@ class Goma(object):
     else:
       self.chroot_goma_tmp_dir = path_util.ToChrootPath(self.goma_tmp_dir)
 
+    self._log_dir = log_dir
     # Create log directory if not exist.
     if not os.path.isdir(self.goma_log_dir):
       os.mkdir(self.goma_log_dir)
 
+    self._stats_file = None
+    self._chroot_stats_file = None
+    self._counterz_file = None
+    self._chroot_counterz_file = None
+    if stats_filename:
+      self._stats_file = os.path.join(self.goma_log_dir, stats_filename)
+    if counterz_filename:
+      self._counterz_file = os.path.join(self.goma_log_dir, counterz_filename)
+
     if chroot_dir:
       self.chroot_goma_log_dir = os.path.join(
           '/', os.path.relpath(self.goma_log_dir, chroot_dir))
+      if self._stats_file:
+        self._chroot_stats_file = os.path.join(
+            '/', os.path.relpath(self._stats_file, chroot_dir))
+      if self._counterz_file:
+        self._chroot_counterz_file = os.path.join(
+            '/', os.path.relpath(self._counterz_file, chroot_dir))
     else:
       self.chroot_goma_log_dir = path_util.ToChrootPath(self.goma_log_dir)
+      if self._stats_file:
+        self._chroot_stats_file = path_util.ToChrootPath(self._stats_file)
+      if self._counterz_file:
+        self._chroot_counterz_file = path_util.ToChrootPath(self._counterz_file)
 
   @property
   def goma_log_dir(self):
     """Path to goma's log directory."""
-    return os.path.join(self.goma_tmp_dir, 'log_dir')
+    return self._log_dir or os.path.join(self.goma_tmp_dir, 'log_dir')
 
   def GetExtraEnv(self):
     """Extra env vars set to use goma."""
@@ -199,15 +234,21 @@ class Goma(object):
         GOMA_DIR=self.linux_goma_dir,
         GOMA_TMP_DIR=self.goma_tmp_dir,
         GLOG_log_dir=self.goma_log_dir)
+
+    self._AddCommonExtraEnv(result)
+
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
+
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = self.goma_cache
-    if self.goma_approach:
-      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
-      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
-      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
-          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
+
+    if self._stats_file:
+      result['GOMA_DUMP_STATS_FILE'] = self._stats_file
+    if self._counterz_file:
+      result['GOMA_DUMP_COUNTERZ_FILE'] = self._counterz_file
+      result['GOMA_ENABLE_COUNTERZ'] = 'true'
+
     return result
 
   def GetChrootExtraEnv(self):
@@ -220,6 +261,9 @@ class Goma(object):
         GOMA_DIR=goma_dir,
         GOMA_TMP_DIR=self.chroot_goma_tmp_dir,
         GLOG_log_dir=self.chroot_goma_log_dir)
+
+    self._AddCommonExtraEnv(result)
+
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
@@ -227,7 +271,22 @@ class Goma(object):
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = os.path.join(
           goma_dir, os.path.relpath(self.goma_cache, self.chromeos_goma_dir))
+
+    if self._chroot_stats_file:
+      result['GOMA_DUMP_STATS_FILE'] = self._chroot_stats_file
+    if self._chroot_counterz_file:
+      result['GOMA_DUMP_COUNTERZ_FILE'] = self._chroot_counterz_file
+      result['GOMA_ENABLE_COUNTERZ'] = 'true'
+
     return result
+
+  def _AddCommonExtraEnv(self, result):
+    """Sets extra env vars to use goma common to in / out chroot."""
+    if self.goma_approach:
+      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
+      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
+      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
+          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
 
   def _RunGomaCtl(self, command):
     goma_ctl = os.path.join(self.linux_goma_dir, 'goma_ctl.py')

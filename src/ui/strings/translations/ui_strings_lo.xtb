@@ -17,10 +17,11 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ແອັບທີ່ແນະນຳ</translation>
 <translation id="1368832886055348810">ຊ້າຍຫາຂວາ</translation>
-<translation id="1383876407941801731">ຄົ້ນຫາ</translation>
+<translation id="1383876407941801731">ຊອກຫາ</translation>
 <translation id="1398853756734560583">ຂະຫຍາຍໃຫຍ່</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ແອັບທີ່ຕິດຕັ້ງແລ້ວ</translation>
 <translation id="1450753235335490080">ບໍ່ສາມາດແບ່ງປັນ <ph name="CONTENT_TYPE" /> ໄດ້</translation>
+<translation id="1487931858675166540">ສະຫຼັບ <ph name="FIRST_ITEM_TITLE" /> ກັບ <ph name="SECOND_ITEM_TITLE" /> ແລ້ວ</translation>
 <translation id="1498028757988366001">ທ່ານໄດ້ຊອກຫາສິ່ງນີ້ມາກ່ອນແລ້ວ. ການລຶບ "<ph name="QUERY" />" ອອກຈາກປະຫວັດຂອທ່ານຈະລຶບມັນອອກຈາກບັນຊີຂອງທ່ານຢ່າງຖາວອນໃນທົ່ວທຸກອຸປະກອນຂອງທ່ານ.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ນາ​ທີ​ ແລະ }other{# ນາ​ທີ ​ແລະ }}</translation>
 <translation id="1643823602425662293">ການແຈ້ງເຕືອນ</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">ແຊກເຂົ້າ</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">ເລືອກ​ທັງ​ຫມົດ</translation>
-<translation id="1938451708255335766">ເພື່ອປັບຄວາມເຂັ້ມການສະແດງຜົນຂອງໜ້າຈໍ, ກະລຸນາປິດເປີດແອັບຄືນໃໝ່.</translation>
 <translation id="2006524834898217237">ກວດໃຫ້ແນ່ໃຈວ່າອຸປະກອນນີ້ເຊື່ອມຕໍ່ກັບອິນເຕີເນັດ.</translation>
 <translation id="208586643495776849">ກະລຸນາລອງໃໝ່</translation>
 <translation id="2090963878406559571">ບໍ່ສາມາດສົ່ງເບີຈາກ <ph name="ORIGIN" /> ຫາໂທລະສັບ Android ຂອງທ່ານໄດ້, <ph name="TROUBLESHOOT_LINK" /> ສຳລັບທັງສອງອຸປະກອນໃນການຕັ້ງຄ່າ.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">ລູກສອນລົງ</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ວັນ}other{# ວັນ}}</translation>
 <translation id="3295886253693811851">ໂທອອກຈາກ</translation>
+<translation id="3306688585798492231">ຈໍສະແດງຜົນໃນຕົວ</translation>
 <translation id="335581015389089642">ການເວົ້າ</translation>
 <translation id="3389286852084373014">ຂໍ້ຄວາມໃຫຍ່ເກີນໄປ</translation>
-<translation id="3479552764303398839">ບໍ່ແມ່ນດຽວນີ້</translation>
 <translation id="348799646910989694">ເຊື່ອງຊັ້ນວາງໂດຍອັດຕະໂນມັດແລ້ວ</translation>
 <translation id="3554637740840164787">ປັກໝຸດ <ph name="ITEM_TITLE" /> ແລ້ວ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ຍັງ​ເຫຼືອ 1 ວັນ}other{ຍັງ​ເຫຼືອ # ວັນ}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">ສືບຕໍ່ອ່ານຈາກອຸປະກອນມືຖືຂອງທ່ານ <ph name="TITLE" /></translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
 <translation id="3889424535448813030">ລູກ​ສອນ​ເບື້ອງຂວາ</translation>
-<translation id="3892641579809465218">ສະ​ແດງ​ພາຍ​ໃນ​</translation>
 <translation id="3897092660631435901">ເມ​ນູ</translation>
 <translation id="3909791450649380159">ຕັດ</translation>
 <translation id="3990502903496589789">ຮີມເບື້ອງຂວາ</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ນາ​ທີ}other{# ນາ​ທີ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ເປີດນຳໃຊ້ມື້ນີ້}=1{ເປີດນຳໃຊ້ເມື່ອ 1 ມື້ກ່ອນ}other{ເປີດນຳໃຊ້ເມື່ອ # ມື້ກ່ອນ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ວັນ​ ແລະ }other{# ວັນ ແລະ }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{ໃນ 1 ປີ}other{ໃນ # ປີ}}</translation>
-<translation id="5895138241574237353">ເລີ່ມຕົ້ນໃໝ່</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{ຍັງ​ເຫຼືອ 1 ວິ​ນາ​ທີ}other{ຍັງ​ເຫຼືອ # ວິ​ນາ​ທີ}}</translation>
 <translation id="5941711191222866238">ຫຍໍ້ລົງ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ຊົ່ວ​ໂມງ}other{# ຊົ່ວ​ໂມງ}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">ຂວາຫາຊ້າຍ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ເປັນໄປໄດ້ທີ່ສຸດ</translation>
+<translation id="7170202025028120564">ການຕັ້ງຄ່າການສະແດງຜົນຂອງແອັບພລິເຄຊັນຂອງທ່ານຈະມີຜົນເມື່ອຣິສະຕາດມັນໃນຄັ້ງຕໍ່ໄປ.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{ຍັ​ງ​ເຫຼືອ 1 ນາ​ທີ}other{ຍັງ​ເຫຼືອ # ນາ​ທີ}}</translation>
 <translation id="7319740667687257810">ຕົວເປີດນຳໃຊ້, ມຸມມອງບາງສ່ວນ</translation>

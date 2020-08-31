@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.junit.Assert.assertEquals;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -25,10 +24,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -38,6 +38,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests for {@link CustomTabTaskDescriptionHelper}.
@@ -76,6 +77,7 @@ public class CustomTabTaskDescriptionHelperTest {
      */
     @Test
     @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testPageHasThemeColorThemeColorInIntent() throws Exception {
         final int intentThemeColor = Color.GREEN;
 
@@ -92,6 +94,7 @@ public class CustomTabTaskDescriptionHelperTest {
      */
     @Test
     @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testPageNoThemeColorThemeColorInIntent() throws Exception {
         final int intentThemeColor = Color.GREEN;
         final String pageWithoutThemeColorUrl =
@@ -113,6 +116,7 @@ public class CustomTabTaskDescriptionHelperTest {
      */
     @Test
     @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testPageNorLaunchIntentProvidesThemeColor() throws Exception {
         final String pageWithoutThemeColorUrl =
                 mTestServer.getURL("/chrome/test/data/android/simple.html");
@@ -135,6 +139,7 @@ public class CustomTabTaskDescriptionHelperTest {
      */
     @Test
     @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testLaunchIntentThemeColorMadeOpaque() throws Exception {
         final int intentThemeColor = Color.argb(100, 0, 255, 0);
         final int opaqueIntentThemeColor = Color.GREEN;
@@ -213,7 +218,6 @@ public class CustomTabTaskDescriptionHelperTest {
     /**
      * Fetches the task description color from the ActivityManager.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static int fetchTaskDescriptionColor(Activity activity) throws Exception {
         ActivityManager.TaskDescription taskDescription =
                 (ActivityManager.TaskDescription) fetchTaskDescription(activity);
@@ -223,14 +227,12 @@ public class CustomTabTaskDescriptionHelperTest {
     /**
      * Fetches the task description label from the ActivityManager.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String fetchTaskDescriptionLabel(Activity activity) throws Exception {
         ActivityManager.TaskDescription taskDescription =
                 (ActivityManager.TaskDescription) fetchTaskDescription(activity);
         return (taskDescription == null) ? null : taskDescription.getLabel();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static Object fetchTaskDescription(Activity activity) throws Exception {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {

@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -42,12 +42,13 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
   return bookmark_model;
 }
 
-void TestBookmarkClient::SetManagedNodeToLoad(
-    std::unique_ptr<BookmarkPermanentNode> managed_node) {
-  managed_node_ = std::move(managed_node);
+BookmarkPermanentNode* TestBookmarkClient::EnableManagedNode() {
+  managed_node_ = std::make_unique<BookmarkPermanentNode>(
+      100, BookmarkNode::FOLDER, /*visible_when_empty=*/false);
   // Keep a copy of the node in |unowned_managed_node_| for the accessor
   // functions.
   unowned_managed_node_ = managed_node_.get();
+  return unowned_managed_node_;
 }
 
 bool TestBookmarkClient::IsManagedNodeRoot(const BookmarkNode* node) {
@@ -58,12 +59,22 @@ bool TestBookmarkClient::IsAManagedNode(const BookmarkNode* node) {
   return node && node->HasAncestor(unowned_managed_node_);
 }
 
-bool TestBookmarkClient::IsPermanentNodeVisible(
-    const BookmarkPermanentNode* node) {
-  DCHECK(node->type() == BookmarkNode::BOOKMARK_BAR ||
-         node->type() == BookmarkNode::OTHER_NODE ||
-         node->type() == BookmarkNode::MOBILE || IsManagedNodeRoot(node));
-  return node->type() != BookmarkNode::MOBILE && !IsManagedNodeRoot(node);
+bool TestBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
+    BookmarkNode::Type type) {
+  switch (type) {
+    case bookmarks::BookmarkNode::URL:
+      NOTREACHED();
+      return false;
+    case bookmarks::BookmarkNode::BOOKMARK_BAR:
+    case bookmarks::BookmarkNode::OTHER_NODE:
+      return true;
+    case bookmarks::BookmarkNode::FOLDER:
+    case bookmarks::BookmarkNode::MOBILE:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {

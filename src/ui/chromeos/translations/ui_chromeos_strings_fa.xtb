@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">بارگذاری</translation>
 <translation id="1249250836236328755">ژانر</translation>
 <translation id="1278813325885878377">‏صفحه‌کلید QWERTY مجارستانی</translation>
+<translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">‏Google Drive در حال حاضر در دسترس نیست. به محض در دسترس قرار گرفتن Google Drive بارگذاری کردن به صورت خودکار دوباره شروع می‌شود.</translation>
 <translation id="1307931752636661898">‏نمی‌توان فایل‌های Linux را مشاهده کرد</translation>
 <translation id="1310751437842832374">‏نویسه‌گردانی (mausam ← ‏ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">ذخیره شد</translation>
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
 <translation id="1921986354447415460">‏صفحه‌کلید ترکی F</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> قالب‌بندی شد</translation>
 <translation id="1931134289871235022">اسلواکی</translation>
 <translation id="1933345018156373194">انتقال انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">فنلاندی</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">صفحه‌کلید آلمانی</translation>
 <translation id="1972984168337863910">بزرگ کردن پانل‌های بازخورد فایل‌ها</translation>
 <translation id="1984603991036629094">صفحه‌کلید آوایی ارمنی</translation>
+<translation id="1995337122023280937">رفتن به محل فایل</translation>
 <translation id="2001796770603320721">مدیریت در درایو</translation>
 <translation id="2009067268969781306">با قالب‌بندی درایو همه داده‌های ذخیره‌شده در آن حذف خواهد شد. این کنش واگردشدنی نیست.</translation>
 <translation id="2028997212275086731">‏بایگانی RAR</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">‏دسترسی به Google Drive امکان‌پذیر نیست. لطفاً <ph name="BEGIN_LINK" />از سیستم خارج شوید<ph name="END_LINK" /> و دوباره وارد شوید.</translation>
 <translation id="2649120831653069427">ماهی رنگین‌مکان</translation>
 <translation id="2661146741306740526">۱۶x۹</translation>
+<translation id="2664412712123763093">محل فایل</translation>
 <translation id="2672394958563893062">خطایی رخ داده است. برای شروع مجدد از ابتدا، کلیک کنید.</translation>
 <translation id="2676946222714718093">در حال پخش در</translation>
 <translation id="2735698359135166290">صفحه‌کلید استاندارد رومانیایی</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">‏صفحه‌کلید آلمانی NEO 2</translation>
 <translation id="2943400156390503548">اسلایدها</translation>
 <translation id="2943503720238418293">از نام کوتاه‌تری استفاده کنید</translation>
+<translation id="2949781154072577687">درحال قالب‌بندی <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">عروس دریایی</translation>
 <translation id="2963783323012015985">صفحه‌کلید ترکی</translation>
 <translation id="2966459079597787514">صفحه‌کلید سوئدی</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
+<translation id="3524311639100184459">احتیاط: این فایل‌ها موقتی هستند و ممکن است برای آزادسازی فضای دیسک به‌طور خودکار حذف شوند.  <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3549797760399244642">‏رفتن به drive.google.com…</translation>
 <translation id="357479282490346887">لیتوانیایی</translation>
@@ -222,7 +228,7 @@
 <translation id="3644896802912593514">عرض</translation>
 <translation id="3645531960514756307">برداشتن پین پوشه</translation>
 <translation id="3678559383040232393">صفحه‌کلید مالتی</translation>
-<translation id="3685122418104378273">‏هنگام استفاده از داده‌های شبکه همراه، همگام‌سازی Google Drive به صورت پیش‌فرض غیرفعال است.</translation>
+<translation id="3685122418104378273">‏هنگام استفاده از داده‌های شبکه همراه، همگام‌سازی Google Drive به‌صورت پیش‌فرض غیرفعال است.</translation>
 <translation id="3689865792480713551">لغو <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">این دستگاه باز نمی‌شود زیرا سیستم فایل آن پشتیبانی نمی‌شود.</translation>
 <translation id="3741243925913727067">‏از عکس‌ها و ویدیوهای دستگاه رسانه‌تان در Google Drive پشتیبان بگیرید.</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3966388904776714213">پخش‌کننده صوتی</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4065397611279318371">برای باز کردن فایل‌ها با برنامه‌های <ph name="APP_NAME" />، ابتدا آن‌ها را به پوشه <ph name="SHARED_DIRECTORY_LABEL" /> منتقل کنید.</translation>
 <translation id="4070370845051020638">روش ورودی کانتونی</translation>
 <translation id="4072248638558688893">صفحه‌‌کلید تامیل (آوایی)</translation>
 <translation id="4124935795427217608">تک‌شاخ</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">فرایند رونوشت‌برداری انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">خربزه</translation>
 <translation id="4372884569765913867">۱x۱</translation>
+<translation id="4394214039309501350">پیوند خارجی</translation>
 <translation id="4425149324548788773">My Drive</translation>
 <translation id="4465830120256509958">صفحه‌کلید برزیلی</translation>
 <translation id="4470564870223067757">مجموعه هانگول ۲</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">تصحیح خودکار</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4886021172213954916">صفحه‌کلید تامیل (ماشین تحریر)</translation>
+<translation id="4892969127351273348">با <ph name="APP_NAME" /> باز نشد</translation>
 <translation id="4905417359854579806">آماده پشتیبان گرفتن از <ph name="FILE_COUNT" /> مورد</translation>
 <translation id="4924638091161556692">تصحیح شد</translation>
 <translation id="4935975195727477204">گل میخک</translation>
@@ -359,7 +368,7 @@
 <translation id="5177526793333269655">نمای تصویر کوچک</translation>
 <translation id="5194713942430106590">کلیک کنید تا ستون به‌صورت صعودی مرتب شود.</translation>
 <translation id="5218183485292899140">فرانسوی سوئیس</translation>
-<translation id="5234764350956374838">لغو کردن</translation>
+<translation id="5234764350956374838">رد کردن</translation>
 <translation id="5241298539944515331">‏صفحه‌کلید ویتنامی (VIQR)</translation>
 <translation id="5253070652067921974">ایجاد شده توسط</translation>
 <translation id="5257456363153333584">سنجاقک</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">‏مدیریت هم‌رسانی با Linux</translation>
 <translation id="6808193438228982088">روباه</translation>
 <translation id="6820687829547641339">‏بایگانی نوار فشرده Gzip</translation>
+<translation id="6823166707458800069">از همه فایل‌های ذخیره‌شده در این پوشه به‌طور خودکار و آنلاین پشتیبان‌گیری شده است.</translation>
 <translation id="6825883775269213504">روسی</translation>
 <translation id="6827236167376090743">پخش این ویدئو ادامه می‌یابد و تکرار می‌شود.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> از موارد انتخابی برداشته شد.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">صفحه‌کلید دواناگری (آوایی)</translation>
 <translation id="6885780034956018177">حلزون</translation>
 <translation id="6896758677409633944">کپی</translation>
+<translation id="6898028766943174120">پوشه‌های فرعی بیشتر...</translation>
 <translation id="691516599546977041">در <ph name="FOLDER_NAME" /> ذخیره نشد. تصاویر ویرایش‌شده در پوشه بارگیری‌ها ذخیره خواهند شد.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">فعال کردن همگام‌سازی از طریق داده تلفن همراه</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6970230597523682626">بلغاری</translation>
+<translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6978611942794658017">‏این فایل برای رایانه‌ای که از نرم‌افزار Windows استفاده می‌کند طراحی شده است. این فایل با دستگاه شما که سیستم عامل Chrome را اجرا می‌کند، سازگار نیست. لطفاً «نت‌بازار Chrome» را برای یک برنامه جایگزین مناسب جستجو کنید.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">فضای شما تمام شده است</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">‏نقشه Google</translation>
 <translation id="7419631653042041064">صفحه‌کلید کاتالان</translation>
 <translation id="7434823369735508263">صفحه‌کلید دووراک انگلیسی</translation>
+<translation id="7447678886297481665">فایل‌های این پوشه فقط خواندنی هستند. برخی از فعالیت‌ها پشتیبانی نمی‌شوند.</translation>
 <translation id="7460898608667578234">اوکراینی</translation>
 <translation id="7474889694310679759">صفحه‌کلید کانادایی انگلیسی</translation>
 <translation id="7489215562877293245">‏<ph name="FILE_COUNT" /> مورد پیدا شد
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7654209398114106148">درحال انتقال <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
 <translation id="7658239707568436148">لغو</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> قالب‌بندی نشد</translation>
 <translation id="770015031906360009">یونانی</translation>
 <translation id="7706319470528945664">صفحه‌کلید پرتغالی</translation>
 <translation id="7711920809702896782">اطلاعات تصویر</translation>

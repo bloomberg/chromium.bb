@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrTiledGradientEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -29,8 +29,8 @@ public:
         (void)makePremul;
         auto colorsAreOpaque = _outer.colorsAreOpaque;
         (void)colorsAreOpaque;
-        SkString _sample453("_sample453");
-        this->invokeChild(_outer.gradLayout_index, &_sample453, args);
+        SkString _sample453;
+        _sample453 = this->invokeChild(_outer.gradLayout_index, args);
         fragBuilder->codeAppendf(
                 "half4 t = %s;\nif (!%s && t.y < 0.0) {\n    %s = half4(0.0);\n} else {\n    @if "
                 "(%s) {\n        half t_1 = t.x - 1.0;\n        half tiled_t = (t_1 - 2.0 * "
@@ -42,8 +42,8 @@ public:
                                                                                        : "false"),
                 args.fOutputColor, (_outer.mirror ? "true" : "false"));
         SkString _input1464("t");
-        SkString _sample1464("_sample1464");
-        this->invokeChild(_outer.colorizer_index, _input1464.c_str(), &_sample1464, args);
+        SkString _sample1464;
+        _sample1464 = this->invokeChild(_outer.colorizer_index, _input1464.c_str(), args);
         fragBuilder->codeAppendf("\n    %s = %s;\n}\n@if (%s) {\n    %s.xyz *= %s.w;\n}\n",
                                  args.fOutputColor, _sample1464.c_str(),
                                  (_outer.makePremul ? "true" : "false"), args.fOutputColor,
@@ -77,8 +77,20 @@ GrTiledGradientEffect::GrTiledGradientEffect(const GrTiledGradientEffect& src)
         , mirror(src.mirror)
         , makePremul(src.makePremul)
         , colorsAreOpaque(src.colorsAreOpaque) {
-    this->registerChildProcessor(src.childProcessor(colorizer_index).clone());
-    this->registerChildProcessor(src.childProcessor(gradLayout_index).clone());
+    {
+        auto clone = src.childProcessor(colorizer_index).clone();
+        if (src.childProcessor(colorizer_index).isSampledWithExplicitCoords()) {
+            clone->setSampledWithExplicitCoords();
+        }
+        this->registerChildProcessor(std::move(clone));
+    }
+    {
+        auto clone = src.childProcessor(gradLayout_index).clone();
+        if (src.childProcessor(gradLayout_index).isSampledWithExplicitCoords()) {
+            clone->setSampledWithExplicitCoords();
+        }
+        this->registerChildProcessor(std::move(clone));
+    }
 }
 std::unique_ptr<GrFragmentProcessor> GrTiledGradientEffect::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new GrTiledGradientEffect(*this));

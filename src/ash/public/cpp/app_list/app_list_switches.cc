@@ -24,10 +24,17 @@ const char kEnableAppList[] = "enable-app-list";
 // If set, the CrOSActionRecorder will be enabled which will record some user
 // actions on device.
 const char kEnableCrOSActionRecorder[] = "enable-cros-action-recorder";
+// Copy user action data to download directory.
+const char kCrOSActionRecorderCopyToDownloadDir[] = "copy-to-download-dir";
+// Disable cros action logging.
+const char kCrOSActionRecorderDisabled[] = "disable-and-delete-previous-log";
 // Log user actions with action name hashed.
 const char kCrOSActionRecorderWithHash[] = "log-with-hash";
 // Log user actions with action name unhashed.
 const char kCrOSActionRecorderWithoutHash[] = "log-without-hash";
+// Disable structured metrics logging of cros actions.
+const char kCrOSActionRecorderStructuredDisabled[] =
+    "structured-metrics-disabled";
 
 bool ShouldNotDismissOnBlur() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

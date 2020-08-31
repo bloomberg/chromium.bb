@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
 
 struct pa_context;
@@ -41,7 +42,8 @@ class PulseAudioOutputStream : public AudioOutputStream {
  public:
   PulseAudioOutputStream(const AudioParameters& params,
                          const std::string& device_id,
-                         AudioManagerBase* manager);
+                         AudioManagerBase* manager,
+                         AudioManager::LogCallback log_callback);
 
   ~PulseAudioOutputStream() override;
 
@@ -55,6 +57,9 @@ class PulseAudioOutputStream : public AudioOutputStream {
   void GetVolume(double* volume) override;
 
  private:
+  // Helper method used for sending native logs to the registered client.
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
+
   // Called by PulseAudio when |pa_stream_| change state.  If an unexpected
   // failure state change happens and |source_callback_| is set
   // this method will forward the error via OnError().
@@ -78,6 +83,9 @@ class PulseAudioOutputStream : public AudioOutputStream {
 
   // Audio manager that created us.  Used to report that we've closed.
   AudioManagerBase* manager_;
+
+  // Callback to send log messages to registered clients.
+  AudioManager::LogCallback log_callback_;
 
   // PulseAudio API structs.
   pa_context* pa_context_;

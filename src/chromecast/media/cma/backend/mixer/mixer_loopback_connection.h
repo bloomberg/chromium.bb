@@ -20,6 +20,7 @@ class IOBuffer;
 
 namespace chromecast {
 namespace media {
+enum class LoopbackInterruptReason;
 
 namespace mixer_service {
 class Generic;
@@ -42,10 +43,12 @@ class MixerLoopbackConnection : public mixer_service::MixerSocket::Delegate {
                  int data_size_bytes,
                  int64_t timestamp);
 
+  void SendInterrupt(LoopbackInterruptReason reason);
+
  private:
   // mixer_service::MixerSocket::Delegate implementation:
   bool HandleMetadata(const mixer_service::Generic& message) override;
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override;
+  bool HandleAudioData(char* data, size_t size, int64_t timestamp) override;
   void OnConnectionError() override;
 
   const std::unique_ptr<mixer_service::MixerSocket> socket_;

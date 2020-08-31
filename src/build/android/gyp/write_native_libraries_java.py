@@ -15,6 +15,14 @@ from native_libraries_template import NATIVE_LIBRARIES_TEMPLATE
 from util import build_utils
 
 
+def _FormatLibraryName(library_name):
+  filename = os.path.split(library_name)[1]
+  assert filename.startswith('lib')
+  assert filename.endswith('.so')
+  # Remove lib prefix and .so suffix.
+  return '"%s"' % filename[3:-3]
+
+
 def main():
   parser = argparse.ArgumentParser()
 
@@ -27,8 +35,6 @@ def main():
       '--load-library-from-apk',
       action='store_true',
       help='Load libaries from APK without uncompressing.')
-  parser.add_argument(
-      '--enable-chromium-linker-tests', action='store_true', help='Run tests.')
   parser.add_argument(
       '--use-modern-linker', action='store_true', help='To use ModernLinker.')
   parser.add_argument(
@@ -46,26 +52,27 @@ def main():
       required=True,
       default='CPU_FAMILY_UNKNOWN',
       help='CPU family.')
+  parser.add_argument(
+      '--main-component-library',
+      help='If used, the list of native libraries will only contain this '
+      'library. Dependencies are found in the library\'s "NEEDED" section.')
 
   parser.add_argument(
       '--output', required=True, help='Path to the generated srcjar file.')
 
   options = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
-  assert (options.enable_chromium_linker
-          or not options.load_library_from_apk), (
-              'Must set --enable-chromium-linker to load library from APK.')
+  assert (options.enable_chromium_linker or not options.load_library_from_apk)
 
   native_libraries_list = []
-  if options.native_libraries_list:
+  if options.main_component_library:
+    native_libraries_list.append(
+        _FormatLibraryName(options.main_component_library))
+  elif options.native_libraries_list:
     with open(options.native_libraries_list) as f:
       for path in f:
         path = path.strip()
-        filename = os.path.split(path)[1]
-        assert filename.startswith('lib')
-        assert filename.endswith('.so')
-        # Remove lib prefix and .so suffix.
-        native_libraries_list.append('"%s"' % filename[3:-3])
+        native_libraries_list.append(_FormatLibraryName(path))
 
   def bool_str(value):
     if value:
@@ -78,7 +85,6 @@ def main():
       'MAYBE_FINAL': 'final ' if options.final else '',
       'USE_LINKER': bool_str(options.enable_chromium_linker),
       'USE_LIBRARY_IN_ZIP_FILE': bool_str(options.load_library_from_apk),
-      'ENABLE_LINKER_TESTS': bool_str(options.enable_chromium_linker_tests),
       'USE_MODERN_LINKER': bool_str(options.use_modern_linker),
       'LIBRARIES': ','.join(native_libraries_list),
       'VERSION_NUMBER': options.version_number,

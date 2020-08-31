@@ -7,15 +7,32 @@
 namespace openscreen {
 
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::duration& d) {
-  constexpr char kUnits[] = "\u03BCs";  // Greek Mu + "s"
+                         const TrivialClockTraits::duration& d) {
+  constexpr char kUnits[] = " \u03BCs";  // Greek Mu + "s"
   return os << d.count() << kUnits;
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::time_point& tp) {
-  constexpr char kUnits[] = "\u03BCs-ticks";  // Greek Mu + "s-ticks"
+                         const TrivialClockTraits::time_point& tp) {
+  constexpr char kUnits[] = " \u03BCs-ticks";  // Greek Mu + "s-ticks"
   return os << tp.time_since_epoch().count() << kUnits;
+}
+
+std::ostream& operator<<(std::ostream& out, const std::chrono::hours& hrs) {
+  return (out << hrs.count() << " hours");
+}
+
+std::ostream& operator<<(std::ostream& out, const std::chrono::minutes& mins) {
+  return (out << mins.count() << " minutes");
+}
+
+std::ostream& operator<<(std::ostream& out, const std::chrono::seconds& secs) {
+  return (out << secs.count() << " seconds");
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const std::chrono::milliseconds& millis) {
+  return (out << millis.count() << " ms");
 }
 
 }  // namespace openscreen

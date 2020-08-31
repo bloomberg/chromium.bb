@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {cookieInfo, LocalDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {Router,routes} from 'chrome://settings/settings.js';
+import {TestLocalDataBrowserProxy} from 'chrome://test/settings/test_local_data_browser_proxy.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for site-data-details-subpage. */
 suite('SiteDataDetailsSubpage', function() {
   /** @type {?SiteDataDetailsSubpageElement} */
@@ -38,18 +45,17 @@ suite('SiteDataDetailsSubpage', function() {
   setup(function() {
     browserProxy = new TestLocalDataBrowserProxy();
     browserProxy.setCookieDetails(cookieList);
-    settings.LocalDataBrowserProxyImpl.instance_ = browserProxy;
+    LocalDataBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     page = document.createElement('site-data-details-subpage');
-    settings.navigateTo(
-        settings.routes.SITE_SETTINGS_DATA_DETAILS,
-        new URLSearchParams('site=' + site));
+    Router.getInstance().navigateTo(
+        routes.SITE_SETTINGS_DATA_DETAILS, new URLSearchParams('site=' + site));
 
     document.body.appendChild(page);
   });
 
   teardown(function() {
-    settings.resetRouteForTesting();
+    Router.getInstance().resetRouteForTesting();
   });
 
   test('DetailsShownForCookie', function() {
@@ -57,8 +63,8 @@ suite('SiteDataDetailsSubpage', function() {
         .then(function(actualSite) {
           assertEquals(site, actualSite);
 
-          Polymer.dom.flush();
-          const entries = page.root.querySelectorAll('.settings-box');
+          flush();
+          const entries = page.root.querySelectorAll('.cr-row');
           assertEquals(1, entries.length);
 
           const listItems = page.root.querySelectorAll('.list-item');

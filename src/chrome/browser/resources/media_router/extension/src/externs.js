@@ -291,10 +291,6 @@ chrome.cast.channel.onError.addListener = function(listener) {};
 chrome.cast.channel.onError.removeListener = function(listener) {};
 
 
-/** @const */
-chrome.cast.media = {};
-
-
 /**
  * @param {function(ChromeWindow)} callback
  */

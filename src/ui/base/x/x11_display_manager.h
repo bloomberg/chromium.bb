@@ -10,6 +10,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
+#include "ui/base/x/x11_workspace_handler.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/geometry/point.h"
@@ -36,12 +37,13 @@ class X11ScreenOzoneTest;
 // and feed |XDisplayManager| with |XEvent|s.
 //
 // All bounds and size values are assumed to be expressed in pixels.
-class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager {
+class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
+    : public X11WorkspaceHandler::Delegate {
  public:
   class Delegate;
 
   explicit XDisplayManager(Delegate* delegate);
-  virtual ~XDisplayManager();
+  ~XDisplayManager() override;
 
   void Init();
   bool IsXrandrAvailable() const;
@@ -57,12 +59,18 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager {
   const std::vector<display::Display>& displays() const { return displays_; }
   gfx::Point GetCursorLocation() const;
 
+  // Returns current workspace.
+  std::string GetCurrentWorkspace();
+
  private:
   friend class ui::X11ScreenOzoneTest;
   friend class views::DesktopScreenX11Test;
 
   void SetDisplayList(std::vector<display::Display> displays);
   void FetchDisplayList();
+
+  // X11WorkspaceHandler override:
+  void OnCurrentWorkspaceChanged(const std::string& new_workspace) override;
 
   Delegate* const delegate_;
   std::vector<display::Display> displays_;
@@ -82,6 +90,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager {
   // The task which fetches/updates display list info asynchronously.
   base::CancelableOnceClosure update_task_;
 
+  X11WorkspaceHandler workspace_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(XDisplayManager);
 };
 
@@ -89,7 +99,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager::Delegate {
  public:
   virtual ~Delegate() = default;
   virtual void OnXDisplayListUpdated() = 0;
-  virtual float GetXDisplayScaleFactor() = 0;
+  virtual float GetXDisplayScaleFactor() const = 0;
 };
 
 }  // namespace ui

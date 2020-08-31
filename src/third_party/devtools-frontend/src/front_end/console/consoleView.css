@@ -80,7 +80,7 @@
     flex: 1 1;
     overflow-y: auto;
     word-wrap: break-word;
-    -webkit-user-select: text;
+    user-select: text;
     transform: translateZ(0);
     overflow-anchor: none;  /* Chrome-specific scroll-anchoring opt-out */
 }
@@ -112,7 +112,7 @@
 
 .console-timestamp {
     color: gray;
-    -webkit-user-select: none;
+    user-select: none;
     flex: none;
     margin-right: 5px;
 }
@@ -121,7 +121,7 @@
     position: absolute;
     left: -17px;
     top: 4px;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .console-message-repeat-count {
@@ -168,7 +168,7 @@
 }
 
 .expand-group-icon {
-    -webkit-user-select: none;
+    user-select: none;
     flex: none;
     background-color: rgb(110, 110, 110);
     position: relative;
@@ -491,4 +491,41 @@
 .console-view-pinpane {
     flex: none;
     max-height: 50%;
+}
+
+@media (forced-colors: active) {
+    .console-message-expand-icon,
+    .console-warning-level [is=ui-icon].icon-mask.expand-group-icon {
+        forced-color-adjust: none;
+        background-color: ButtonText;
+    }
+    .console-message-wrapper:focus,
+    .console-message-wrapper:focus:last-of-type {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        border-top-color: Highlight;
+        border-bottom-color: Highlight;
+    }
+    .console-message-wrapper:focus *,
+    .console-message-wrapper:focus:last-of-type *,
+    .console-message-wrapper:focus .devtools-link,
+    .console-message-wrapper:focus:last-of-type .devtools-link {
+        color: HighlightText !important;
+    }
+    #console-messages .link[data-keyboard-focus="true"]:focus,
+    #console-messages .devtools-link[data-keyboard-focus="true"]:focus {
+        background: Highlight;
+        color: HighlightText;
+    }
+    .console-message-wrapper:focus [is=ui-icon].icon-mask {
+        background-color: HighlightText;
+    }
+    .console-message-wrapper.console-error-level:focus,
+    .console-message-wrapper.console-error-level:focus:last-of-type {
+        --error-text-color: HighlightText;
+    }
+    #console-messages .devtools-link,
+    #console-messages .devtools-link:hover {
+        color: LinkText;
+    }
 }

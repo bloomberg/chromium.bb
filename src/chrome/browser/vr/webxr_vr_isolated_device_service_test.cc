@@ -6,11 +6,11 @@
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/service/xr_device_service.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/xr_test_utils.h"
 
 namespace vr {
 
@@ -20,11 +20,10 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
   // a new local hook before the IsolatedDeviceProvider has a chance to issue
   // any enumeration requests.
   base::Optional<MockXRDeviceHookBase> device_hook(base::in_place);
-  vr::SetXRDeviceServiceStartupCallbackForTesting(
+  content::SetXRDeviceServiceStartupCallbackForTesting(
       base::BindLambdaForTesting([&] { device_hook.emplace(); }));
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_isolated_device_service_disconnect"));
+  t->LoadFileAndAwaitInitialization("test_isolated_device_service_disconnect");
 
   t->EnterSessionWithUserGestureOrFail();
 
@@ -49,6 +48,6 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
   // still enter an immersive session.
   t->EnterSessionWithUserGestureOrFail();
 
-  vr::SetXRDeviceServiceStartupCallbackForTesting(base::NullCallback());
+  content::SetXRDeviceServiceStartupCallbackForTesting(base::NullCallback());
 }
 }  // namespace vr

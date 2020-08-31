@@ -172,12 +172,13 @@ bool PathProviderWin(int key, FilePath* result) {
                 .Append(FILE_PATH_LITERAL("Internet Explorer"))
                 .Append(FILE_PATH_LITERAL("Quick Launch"));
       break;
-    case base::DIR_TASKBAR_PINS:
+    case base::DIR_TASKBAR_PINS: {
       if (!PathService::Get(base::DIR_USER_QUICK_LAUNCH, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("User Pinned"))
                 .Append(FILE_PATH_LITERAL("TaskBar"));
       break;
+    }
     case base::DIR_IMPLICIT_APP_SHORTCUTS:
       if (!PathService::Get(base::DIR_USER_QUICK_LAUNCH, &cur))
         return false;

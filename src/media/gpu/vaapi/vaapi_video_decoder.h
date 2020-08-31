@@ -33,6 +33,7 @@
 namespace media {
 
 class AcceleratedVideoDecoder;
+class VaapiVideoDecoderDelegate;
 class DmabufVideoFramePool;
 class VaapiWrapper;
 class VideoFrame;
@@ -53,11 +54,11 @@ class VaapiVideoDecoder : public DecoderInterface,
                   const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
-  void OnPipelineFlushed() override;
+  void ApplyResolutionChange() override;
 
   // DecodeSurfaceHandler<VASurface> implementation.
   scoped_refptr<VASurface> CreateSurface() override;
-  void SurfaceReady(const scoped_refptr<VASurface>& va_surface,
+  void SurfaceReady(scoped_refptr<VASurface> va_surface,
                     int32_t buffer_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& color_space) override;
@@ -78,12 +79,14 @@ class VaapiVideoDecoder : public DecoderInterface,
   };
 
   enum class State {
-    kUninitialized,     // not initialized yet or initialization failed.
-    kWaitingForInput,   // waiting for input buffers.
-    kWaitingForOutput,  // waiting for output buffers.
-    kDecoding,          // decoding buffers.
-    kResetting,         // resetting decoder.
-    kError,             // decoder encountered an error.
+    kUninitialized,       // not initialized yet or initialization failed.
+    kWaitingForInput,     // waiting for input buffers.
+    kWaitingForOutput,    // waiting for output buffers.
+    kDecoding,            // decoding buffers.
+    kChangingResolution,  // need to change resolution, waiting for pipeline to
+                          // be flushed.
+    kResetting,           // resetting decoder.
+    kError,               // decoder encountered an error.
   };
 
   VaapiVideoDecoder(
@@ -123,6 +126,9 @@ class VaapiVideoDecoder : public DecoderInterface,
   // Called when resetting the decoder is done, executes |reset_cb|.
   void ResetDoneTask(base::OnceClosure reset_cb);
 
+  // Create codec-specific AcceleratedVideoDecoder and reset related variables.
+  bool CreateAcceleratedVideoDecoder();
+
   // Change the current |state_| to the specified |state| on the decoder thread.
   void SetState(State state);
 
@@ -134,6 +140,8 @@ class VaapiVideoDecoder : public DecoderInterface,
 
   // The video stream's profile.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+  // Color space of the video frame.
+  VideoColorSpace color_space_;
 
   // The video coded size.
   gfx::Size pic_size_;
@@ -163,6 +171,9 @@ class VaapiVideoDecoder : public DecoderInterface,
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  // TODO(crbug.com/1022246): Instead of having the raw pointer here, getting
+  // the pointer from AcceleratedVideoDecoder.
+  VaapiVideoDecoderDelegate* decoder_delegate_ = nullptr;
 
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 

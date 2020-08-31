@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedstore.internal;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableActionMutation;
 import org.chromium.chrome.browser.feed.library.common.functional.Committer;
@@ -29,25 +31,27 @@ public final class FeedUploadableActionMutation implements UploadableActionMutat
 
     @Override
     public UploadableActionMutation upsert(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
+        @Nullable
+        FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }
         actionsForId.upsertAction(action);
         mActions.put(contentId, actionsForId);
-        Logger.i(TAG, "Added action %d", action);
+        Logger.i(TAG, "Adding action %d", action);
         return this;
     }
 
     @Override
     public UploadableActionMutation remove(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
+        @Nullable
+        FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }
         actionsForId.removeAction(action);
         mActions.put(contentId, actionsForId);
-        Logger.i(TAG, "Added action %d", action);
+        Logger.i(TAG, "Removing action %d", action);
         return this;
     }
 

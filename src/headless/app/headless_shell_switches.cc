@@ -22,6 +22,11 @@ const char kEnableBeginFrameControl[] = "enable-begin-frame-control";
 // Enable crash reporter for headless.
 const char kEnableCrashReporter[] = "enable-crash-reporter";
 
+// If enabled, generate a tagged (accessible) file when printing to PDF.
+// The plan is for this to go away once tagged PDFs become the default.
+// See https://crbug.com/607777
+const char kExportTaggedPDF[] = "export-tagged-pdf";
+
 // Disable crash reporter for headless. It is enabled by default in official
 // builds.
 const char kDisableCrashReporter[] = "disable-crash-reporter";
@@ -56,6 +61,9 @@ const char kPasswordStore[] = "password-store";
 
 // Save a pdf file of the loaded page.
 const char kPrintToPDF[] = "print-to-pdf";
+
+// Do not display header and footer in the pdf file.
+const char kPrintToPDFNoHeader[] = "print-to-pdf-no-header";
 
 // Specifies a list of hosts for whom we bypass proxy settings and use direct
 // connections. Ignored unless --proxy-server is also specified. This is a

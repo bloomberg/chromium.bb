@@ -90,16 +90,15 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   if (AppIsolationInfo::HasIsolatedStorage(extension)) {
     BrowserContext::AsyncObliterateStoragePartition(
         profile, util::GetPartitionDomainForExtension(extension),
-        base::Bind(
+        base::BindOnce(
             &OnNeedsToGarbageCollectIsolatedStorage,
             ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr()));
   } else {
     GURL launch_web_url_origin(
         AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
 
-    StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
-        profile,
-        Extension::GetBaseURLFromExtensionId(extension->id()));
+    StoragePartition* partition =
+        util::GetStoragePartitionForExtensionId(extension->id(), profile);
 
     ExtensionSpecialStoragePolicy* storage_policy =
         profile->GetExtensionSpecialStoragePolicy();

@@ -34,7 +34,9 @@
 namespace blink {
 
 class LayoutBlockFlow;
+class NGInlineCursor;
 class NGPaintFragment;
+
 // LayoutInline is the LayoutObject associated with display: inline.
 // This is called an "inline box" in CSS 2.1.
 // http://www.w3.org/TR/CSS2/visuren.html#inline-boxes
@@ -172,15 +174,12 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return AlwaysCreateLineBoxes() ? LastLineBox() : CulledInlineLastLineBox();
   }
 
+  bool HasInlineFragments() const final;
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
-
-  // Return true if this inline doesn't occur on any lines, i.e. when it creates
-  // no fragments.
-  bool IsEmpty() const { return !FirstLineBox() && !FirstInlineFragment(); }
 
   LayoutBoxModelObject* VirtualContinuation() const final {
     return Continuation();
@@ -238,7 +237,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   bool HitTestCulledInline(HitTestResult&,
                            const HitTestLocation&,
                            const PhysicalOffset& accumulated_offset,
-                           const NGPaintFragment* parent_fragment = nullptr);
+                           const NGInlineCursor* parent_cursor = nullptr);
 
   PhysicalOffset FirstLineBoxTopLeft() const {
     return FirstLineBoxTopLeftInternal().value_or(PhysicalOffset());
@@ -432,6 +431,7 @@ inline NGPaintFragment* LayoutInline::FirstInlineFragment() const {
     return nullptr;
   // TODO(yosin): Once we replace all usage of |FirstInlineFragment()| to
   // |NGInlineCursor|, we should change this to |DCHECK()|.
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
     return nullptr;
   return first_paint_fragment_;

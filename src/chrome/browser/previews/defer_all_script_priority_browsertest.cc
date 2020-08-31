@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -56,17 +55,13 @@ class DeferAllScriptPriorityBrowserTest
           {previews::features::kPreviews,
            previews::features::kDeferAllScriptPreviews,
            blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
-           optimization_guide::features::kOptimizationHints,
-           data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
+           optimization_guide::features::kOptimizationHints},
           {});
     } else {
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
            blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
-           optimization_guide::features::kOptimizationHints,
-           data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
+           optimization_guide::features::kOptimizationHints},
           {});
     }
 

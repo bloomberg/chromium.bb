@@ -47,7 +47,8 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     const CreateAudioDecodersCB& create_audio_decoders_cb,
-    MediaLog* media_log)
+    MediaLog* media_log,
+    const TranscribeAudioCallback& transcribe_audio_callback)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
@@ -69,7 +70,8 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       is_suspending_(false),
-      is_passthrough_(false) {
+      is_passthrough_(false),
+      transcribe_audio_callback_(transcribe_audio_callback) {
   DCHECK(create_audio_decoders_cb_);
 
   // PowerObserver's must be added and removed from the same thread, but we
@@ -338,7 +340,7 @@ void AudioRendererImpl::StartPlaying() {
 void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    CdmContext* cdm_context,
                                    RendererClient* client,
-                                   const PipelineStatusCB& init_cb) {
+                                   PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(client);
@@ -360,7 +362,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
   // failed.
-  init_cb_ = BindToCurrentLoop(init_cb);
+  init_cb_ = BindToCurrentLoop(std::move(init_cb));
 
   // Retrieve hardware device parameters asynchronously so we don't block the
   // media thread on synchronous IPC.
@@ -609,11 +611,14 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
                           audio_parameters_)
                     : base::nullopt);
   if (params && !client_->IsVideoStreamAvailable()) {
-    algorithm_ = std::make_unique<AudioRendererAlgorithm>(params.value());
+    algorithm_ =
+        std::make_unique<AudioRendererAlgorithm>(media_log_, params.value());
   } else {
-    algorithm_ = std::make_unique<AudioRendererAlgorithm>();
+    algorithm_ = std::make_unique<AudioRendererAlgorithm>(media_log_);
   }
   algorithm_->Initialize(audio_parameters_, is_encrypted_);
+  if (latency_hint_)
+    algorithm_->SetLatencyHint(latency_hint_);
   ConfigureChannelMask();
 
   ChangeState_Locked(kFlushed);
@@ -670,8 +675,9 @@ void AudioRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
                                               : DECODER_UNDERFLOW;
   }
 
-  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
-      "audio_buffering_state", buffering_state, reason));
+  media_log_->AddEvent<MediaLogEvent::kBufferingStateChanged>(
+      SerializableBufferingState<SerializableBufferingStateType::kAudio>{
+          buffering_state, reason});
 
   client_->OnBufferingStateChange(buffering_state, reason);
 }
@@ -685,6 +691,21 @@ void AudioRendererImpl::SetVolume(float volume) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(sink_.get());
   sink_->SetVolume(volume);
+}
+
+void AudioRendererImpl::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  base::AutoLock auto_lock(lock_);
+
+  latency_hint_ = latency_hint;
+
+  if (algorithm_) {
+    algorithm_->SetLatencyHint(latency_hint);
+
+    // See if we need further reads to fill up to the new playback threshold.
+    // This may be needed if rendering isn't active to schedule regular reads.
+    AttemptRead_Locked();
+  }
 }
 
 void AudioRendererImpl::OnSuspend() {
@@ -702,7 +723,7 @@ void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
   play_delay_cb_for_testing_ = std::move(cb);
 }
 
-void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::Status status,
+void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::ReadStatus status,
                                           scoped_refptr<AudioBuffer> buffer) {
   DVLOG(2) << __func__ << "(" << status << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -803,9 +824,14 @@ void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::Status status,
 bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     scoped_refptr<AudioBuffer> buffer) {
   lock_.AssertAcquired();
+  bool should_render_end_of_stream = false;
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
     algorithm_->MarkEndOfStream();
+
+    // We received no audio to play before EOS, so enter the ended state.
+    if (first_packet_timestamp_ == kNoTimestamp)
+      should_render_end_of_stream = true;
   } else {
     if (buffer->IsBitstreamFormat() && state_ == kPlaying) {
       if (IsBeforeStartTime(*buffer))
@@ -845,6 +871,9 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     if (first_packet_timestamp_ == kNoTimestamp)
       first_packet_timestamp_ = buffer->timestamp();
 
+    if (!transcribe_audio_callback_.is_null())
+      transcribe_audio_callback_.Run(buffer);
+
     if (state_ != kUninitialized)
       algorithm_->EnqueueBuffer(std::move(buffer));
   }
@@ -869,9 +898,16 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       return false;
 
     case kPlaying:
-      if (received_end_of_stream_ || algorithm_->IsQueueFull()) {
+      if (received_end_of_stream_ || algorithm_->IsQueueAdequateForPlayback()) {
         if (buffering_state_ == BUFFERING_HAVE_NOTHING)
           SetBufferingState_Locked(BUFFERING_HAVE_ENOUGH);
+        // This must be done after SetBufferingState_Locked() to ensure the
+        // proper state transitions for higher levels.
+        if (should_render_end_of_stream) {
+          task_runner_->PostTask(
+              FROM_HERE, base::BindOnce(&AudioRendererImpl::OnPlaybackEnded,
+                                        weak_factory_.GetWeakPtr()));
+        }
         return false;
       }
       return true;
@@ -1009,7 +1045,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       return 0;
     }
 
-    if (is_passthrough_ && algorithm_->frames_buffered() > 0) {
+    if (is_passthrough_ && algorithm_->BufferedFrames() > 0) {
       // TODO(tsunghung): For compressed bitstream formats, play zeroed buffer
       // won't generate delay. It could be discarded immediately. Need another
       // way to generate audio delay.
@@ -1028,7 +1064,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       // bitstream cases. Fix |frames_requested| to avoid incorrent time
       // calculation of |audio_clock_| below.
       frames_requested = frames_written;
-    } else if (algorithm_->frames_buffered() > 0) {
+    } else if (algorithm_->BufferedFrames() > 0) {
       // Delay playback by writing silence if we haven't reached the first
       // timestamp yet; this can occur if the video starts before the audio.
       CHECK_NE(first_packet_timestamp_, kNoTimestamp);
@@ -1093,7 +1129,11 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
         frames_after_end_of_stream = frames_requested;
       } else if (state_ == kPlaying &&
                  buffering_state_ != BUFFERING_HAVE_NOTHING) {
-        algorithm_->IncreaseQueueCapacity();
+        // Don't increase queue capacity if the queue latency is explicitly
+        // specified.
+        if (!latency_hint_)
+          algorithm_->IncreasePlaybackThreshold();
+
         SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
       }
     } else if (frames_written < frames_requested && !received_end_of_stream_ &&
@@ -1102,7 +1142,13 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       // If we only partially filled the request and should have more data, go
       // ahead and increase queue capacity to try and meet the next request.
       // Trigger underflow to give us a chance to refill up to the new cap.
-      algorithm_->IncreaseQueueCapacity();
+      // When a latency hint is present, don't override the user's preference
+      // with a queue increase, but still signal HAVE_NOTHING for them to take
+      // action if they choose.
+
+      if (!latency_hint_)
+        algorithm_->IncreasePlaybackThreshold();
+
       SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
     }
 

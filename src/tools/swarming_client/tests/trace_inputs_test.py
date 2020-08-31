@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # coding=utf-8
 # Copyright 2012 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import StringIO
+import io
 import os
 import sys
 import unittest
@@ -100,8 +100,8 @@ class TraceInputs(unittest.TestCase):
       u'"cmd.exe", ""C:\\\\Winz\\\\cmd.exe" /k ""C:\\\\MSVS\\\\vc.bat"" x86"':
         [u'cmd.exe', u'"C:\\\\Winz\\\\cmd.exe" /k "C:\\\\MSVS\\\\vc.bat" x86'],
     }
-    for data, expected in test_cases.iteritems():
-      csv = trace_inputs.LogmanTrace.Tracer.CsvReader(StringIO.StringIO(data))
+    for data, expected in test_cases.items():
+      csv = trace_inputs.LogmanTrace.Tracer.CsvReader(io.StringIO(data))
       actual = [i for i in csv]
       self.assertEqual(1, len(actual))
       self.assertEqual(expected, actual[0])
@@ -119,7 +119,7 @@ if sys.platform != 'win32':
       context = trace_inputs.Strace.Context(lambda _: False, None, initial_cwd)
       for line in lines:
         context.on_line(*line)
-      done = any(p._done for p in context._process_lookup.itervalues())
+      done = any(p._done for p in context._process_lookup.values())
       return context.to_results().flatten(), done
 
     def assertContext(self, lines, initial_cwd, expected, expected_done):
@@ -176,7 +176,7 @@ if sys.platform != 'win32':
       try:
         self._load_context([], None)
         self.fail()
-      except trace_inputs.TracingFailure, e:
+      except trace_inputs.TracingFailure as e:
         expected = (
           'Found internal inconsitency in process lifetime detection '
           'while finding the root process',

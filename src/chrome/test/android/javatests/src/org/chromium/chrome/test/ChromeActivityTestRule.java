@@ -7,7 +7,6 @@ package org.chromium.chrome.test;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,26 +29,24 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -68,7 +65,6 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.PageTransition;
 
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.List;
@@ -194,9 +190,9 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      * @param activity The {@link ChromeActivity} to wait for.
      */
     public static void waitForActivityNativeInitializationComplete(ChromeActivity activity) {
-        CriteriaHelper.pollUiThread(()
-                                            -> ChromeBrowserInitializer.getInstance(activity)
-                                                       .hasNativeInitializationCompleted(),
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> ChromeBrowserInitializer.getInstance().isFullBrowserInitialized(),
                 "Native initialization never finished",
                 20 * CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
@@ -434,7 +430,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
 
-        if (tab != null && NewTabPage.isNTPUrl(tab.getUrl()) && !getActivity().isInOverviewMode()) {
+        if (tab != null && NewTabPage.isNTPUrl(tab.getUrlString())
+                && !getActivity().isInOverviewMode()) {
             NewTabPageTestUtils.waitForNtpLoaded(tab);
         }
 
@@ -465,7 +462,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
         try {
             Method method = getClass().getMethod(mCurrentTestName, (Class[]) null);
-            if (((AnnotatedElement) method).isAnnotationPresent(RenderProcessLimit.class)) {
+            if (method.isAnnotationPresent(RenderProcessLimit.class)) {
                 RenderProcessLimit limit = method.getAnnotation(RenderProcessLimit.class);
                 intent.putExtra(
                         ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT, limit.value());
@@ -489,9 +486,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         final CallbackHelper selectedCallback = new CallbackHelper();
 
         TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(true);
-        TabModelObserver observer = new EmptyTabModelObserver() {
+        TabModelObserver observer = new TabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(
+                    Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                 createdCallback.notifyCalled();
             }
 
@@ -596,21 +594,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 return InfoBarContainer.get(currentTab).getInfoBarsForTesting();
             }
         });
-    }
-
-    /**
-     * Launches the settings activity with the specified fragment.
-     * Returns the activity that was started.
-     *
-     * TODO(chouinard): This seems like mostly a duplicate of {@link
-     * SettingsActivityTest#startSettingsActivity}, try to consolidate to one.
-     */
-    public SettingsActivity startSettingsActivity(String fragmentName) {
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(context, fragmentName);
-        Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-        Assert.assertTrue(activity instanceof SettingsActivity);
-        return (SettingsActivity) activity;
     }
 
     /**

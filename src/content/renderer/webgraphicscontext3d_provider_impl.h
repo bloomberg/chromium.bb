@@ -21,8 +21,11 @@ class ImageDecodeCache;
 
 namespace viz {
 class ContextProviderCommandBuffer;
-class GLHelper;
 }  // namespace viz
+
+namespace gpu {
+class GLHelper;
+}  // namespace gpu
 
 namespace content {
 
@@ -40,11 +43,12 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
+  bool IsContextLost() override;
   GrContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   const blink::WebglPreferences& GetWebglPreferences() const override;
-  viz::GLHelper* GetGLHelper() override;
+  gpu::GLHelper* GetGLHelper() override;
   void SetLostContextCallback(base::RepeatingClosure) override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
@@ -63,7 +67,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void OnContextLost() override;
 
   scoped_refptr<viz::ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<viz::GLHelper> gl_helper_;
+  std::unique_ptr<gpu::GLHelper> gl_helper_;
   base::RepeatingClosure context_lost_callback_;
   base::flat_map<SkColorType, std::unique_ptr<cc::ImageDecodeCache>>
       image_decode_cache_map_;

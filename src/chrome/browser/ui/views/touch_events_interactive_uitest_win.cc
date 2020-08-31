@@ -129,25 +129,23 @@ class TestingGestureRecognizer : public ui::GestureRecognizerImpl {
 
 class TouchEventsViewTest : public ViewEventTestBase {
  public:
-  TouchEventsViewTest() : ViewEventTestBase(), touch_view_(nullptr) {}
+  TouchEventsViewTest() = default;
 
   // ViewEventTestBase:
   void SetUp() override {
-    touch_view_ = new views::View();
     ViewEventTestBase::SetUp();
+
+    auto gesture_recognizer = std::make_unique<TestingGestureRecognizer>();
+    gesture_recognizer_ = gesture_recognizer.get();
     aura::test::EnvTestHelper().SetGestureRecognizer(
-        std::make_unique<TestingGestureRecognizer>());
-    gesture_recognizer_ = static_cast<TestingGestureRecognizer*>(
-        aura::Env::GetInstance()->gesture_recognizer());
+        std::move(gesture_recognizer));
   }
 
-  void TearDown() override {
-    touch_view_ = nullptr;
-    gesture_recognizer_ = nullptr;
-    ViewEventTestBase::TearDown();
+  std::unique_ptr<views::View> CreateContentsView() override {
+    auto touch_view = std::make_unique<views::View>();
+    touch_view_ = touch_view.get();
+    return touch_view;
   }
-
-  views::View* CreateContentsView() override { return touch_view_; }
 
   gfx::Size GetPreferredSizeForContents() const override {
     return gfx::Size(600, 600);
@@ -163,7 +161,7 @@ class TouchEventsViewTest : public ViewEventTestBase {
 
     const int touch_pointer_count = 3;
     TouchEventHandler touch_event_handler;
-    GetWidget()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
         &touch_event_handler);
     gfx::Point in_content(touch_view_->width() / 2, touch_view_->height() / 2);
     views::View::ConvertPointToScreen(touch_view_, &in_content);
@@ -181,7 +179,7 @@ class TouchEventsViewTest : public ViewEventTestBase {
     EXPECT_EQ(touch_pointer_count,
               gesture_recognizer_->num_touch_release_events());
 
-    GetWidget()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
         &touch_event_handler);
     Done();
   }
@@ -210,7 +208,7 @@ class TouchEventsRecursiveViewTest : public TouchEventsViewTest {
 
     const int touch_pointer_count = 1;
     TouchEventHandler touch_event_handler;
-    GetWidget()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(
         &touch_event_handler);
     gfx::Point in_content(touch_view_->width() / 2, touch_view_->height() / 2);
     views::View::ConvertPointToScreen(touch_view_, &in_content);
@@ -224,7 +222,7 @@ class TouchEventsRecursiveViewTest : public TouchEventsViewTest {
     EXPECT_EQ(touch_pointer_count + 1, touch_event_handler.num_touch_presses());
     EXPECT_EQ(0, touch_event_handler.num_pointers_down());
     EXPECT_EQ(2, touch_event_handler.max_call_depth());
-    GetWidget()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
+    window()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
         &touch_event_handler);
     Done();
   }

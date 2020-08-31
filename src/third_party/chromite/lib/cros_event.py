@@ -12,6 +12,10 @@ from time import time
 import atexit
 import json
 import multiprocessing
+import sys
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Static Keys and Strings

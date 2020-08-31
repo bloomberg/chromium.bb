@@ -6,8 +6,8 @@
 
 #include "ios/chrome/browser/prerender/preload_controller.h"
 
+#include "base/check_op.h"
 #include "base/ios/device_util.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -24,9 +24,6 @@
 #include "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/deprecated/crw_native_content_holder.h"
-#import "ios/web/public/deprecated/crw_web_controller_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
@@ -35,7 +32,6 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 
@@ -79,8 +75,10 @@ const char kPrerenderFinalStatusHistogramName[] = "Prerender.FinalStatus";
 const char kPrerendersPerSessionCountHistogramName[] =
     "Prerender.PrerendersPerSessionCount";
 // The name of the histogram for recording time until a successful prerender.
-const char kPrerenderStartToReleaseContentsTime[] =
-    "Prerender.PrerenderStartToReleaseContentsTime";
+const char kPrerenderPrerenderTimeSaved[] = "Prerender.PrerenderTimeSaved";
+// Histogram to record that the load was complete when the prerender was used.
+// Not recorded if the pre-render isn't used.
+const char kPrerenderLoadComplete[] = "Prerender.PrerenderLoadComplete";
 
 // Is this install selected for this particular experiment.
 bool IsPrerenderTabEvictionExperimentalGroup() {
@@ -170,7 +168,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 }
 
 // The ChromeBrowserState passed on initialization.
-@property(nonatomic) ios::ChromeBrowserState* browserState;
+@property(nonatomic) ChromeBrowserState* browserState;
 
 // Redefine property as readwrite.  The URL that is prerendered in |_webState|.
 // This can be different from the value returned by WebState last committed
@@ -204,6 +202,12 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 // reporting of load durations.
 @property(nonatomic) base::TimeTicks startTime;
 
+// Whether the load was completed or not.
+@property(nonatomic, assign) BOOL loadCompleted;
+// The time between the start of the load and the completion (only valid if the
+// load completed).
+@property(nonatomic) base::TimeDelta completionTime;
+
 // Called to start any scheduled prerendering requests.
 - (void)startPrerender;
 
@@ -221,7 +225,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
 @implementation PreloadController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if ((self = [super init])) {
@@ -274,6 +278,19 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
          ios::device_util::RamIsAtLeast512Mb() &&
          !net::NetworkChangeNotifier::IsOffline() &&
          (!self.wifiOnly || !self.usingWWAN);
+}
+
+- (void)setLoadCompleted:(BOOL)loadCompleted {
+  if (_loadCompleted == loadCompleted)
+    return;
+
+  _loadCompleted = loadCompleted;
+
+  if (loadCompleted) {
+    self.completionTime = base::TimeTicks::Now() - self.startTime;
+  } else {
+    self.completionTime = base::TimeDelta();
+  }
 }
 
 #pragma mark - Public
@@ -333,6 +350,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   [self removeScheduledPrerenderRequests];
   self.prerenderedURL = GURL();
   self.startTime = base::TimeTicks();
+  self.loadCompleted = NO;
 
   // Move the pre-rendered WebState to a local variable so that it will no
   // longer be considered as pre-rendering (otherwise tab helpers may early
@@ -340,7 +358,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   std::unique_ptr<web::WebState> webState = std::move(_webState);
   DCHECK(![self isWebStatePrerendered:webState.get()]);
 
-  web_deprecated::SetNativeProvider(webState.get(), nil);
   webState->RemoveObserver(_webStateObserver.get());
   breakpad::StopMonitoringURLsForWebState(webState.get());
   webState->SetDelegate(nullptr);
@@ -415,23 +432,27 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   DCHECK_EQ(webState, _webState.get());
   // The load should have been cancelled when the navigation finishes, but this
   // makes sure that we didn't miss one.
-  if ([self shouldCancelPreloadForMimeType:webState->GetContentsMimeType()])
+  if ([self shouldCancelPreloadForMimeType:webState->GetContentsMimeType()]) {
     [self schedulePrerenderCancel];
+  } else if (loadSuccess) {
+    self.loadCompleted = YES;
+  }
 }
 
 #pragma mark - CRWWebStatePolicyDecider
 
-- (BOOL)shouldAllowRequest:(NSURLRequest*)request
-               requestInfo:(const WebStatePolicyDecider::RequestInfo&)info {
+- (WebStatePolicyDecider::PolicyDecision)
+    shouldAllowRequest:(NSURLRequest*)request
+           requestInfo:(const WebStatePolicyDecider::RequestInfo&)info {
   GURL requestURL = net::GURLWithNSURL(request.URL);
   // Don't allow preloading for requests that are handled by opening another
   // application or by presenting a native UI.
   if (AppLauncherTabHelper::IsAppUrl(requestURL) ||
       ITunesUrlsHandlerTabHelper::CanHandleUrl(requestURL)) {
     [self schedulePrerenderCancel];
-    return NO;
+    return WebStatePolicyDecider::PolicyDecision::Cancel();
   }
-  return YES;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
 #pragma mark - ManageAccountsDelegate
@@ -520,12 +541,8 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   }
 
   web::WebState::CreateParams createParams(self.browserState);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    _webState = web::WebState::CreateWithStorageSession(
-        createParams, webStateToReplace->BuildSessionStorage());
-  } else {
-    _webState = web::WebState::Create(createParams);
-  }
+  _webState = web::WebState::CreateWithStorageSession(
+      createParams, webStateToReplace->BuildSessionStorage());
 
   // Add the preload controller as a policyDecider before other tab helpers, so
   // that it can block the navigation if needed before other policy deciders
@@ -533,8 +550,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   _policyDeciderBridge =
       std::make_unique<web::WebStatePolicyDeciderBridge>(_webState.get(), self);
   AttachTabHelpers(_webState.get(), /*for_prerender=*/true);
-
-  web_deprecated::SetNativeProvider(_webState.get(), nil);
 
   _webState->SetDelegate(_webStateDelegate.get());
   _webState->AddObserver(_webStateObserver.get());
@@ -565,6 +580,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   _webState->GetNavigationManager()->LoadIfNecessary();
 
   self.startTime = base::TimeTicks::Now();
+  self.loadCompleted = NO;
 }
 
 #pragma mark - Teardown Helpers
@@ -580,7 +596,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   UMA_HISTOGRAM_ENUMERATION(kPrerenderFinalStatusHistogramName, reason,
                             PRERENDER_FINAL_STATUS_MAX);
 
-  web_deprecated::SetNativeProvider(_webState.get(), nil);
   _webState->RemoveObserver(_webStateObserver.get());
   breakpad::StopMonitoringURLsForWebState(_webState.get());
   _webState->SetDelegate(nullptr);
@@ -588,6 +603,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
   self.prerenderedURL = GURL();
   self.startTime = base::TimeTicks();
+  self.loadCompleted = NO;
 }
 
 #pragma mark - Notification Helpers
@@ -603,9 +619,16 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
                             PRERENDER_FINAL_STATUS_USED,
                             PRERENDER_FINAL_STATUS_MAX);
 
-  DCHECK_NE(base::TimeTicks(), self.startTime);
-  UMA_HISTOGRAM_TIMES(kPrerenderStartToReleaseContentsTime,
-                      base::TimeTicks::Now() - self.startTime);
+  UMA_HISTOGRAM_BOOLEAN(kPrerenderLoadComplete, self.loadCompleted);
+
+  if (self.loadCompleted) {
+    DCHECK_NE(base::TimeDelta(), self.completionTime);
+    UMA_HISTOGRAM_TIMES(kPrerenderPrerenderTimeSaved, self.completionTime);
+  } else {
+    DCHECK_NE(base::TimeTicks(), self.startTime);
+    UMA_HISTOGRAM_TIMES(kPrerenderPrerenderTimeSaved,
+                        base::TimeTicks::Now() - self.startTime);
+  }
 }
 
 @end

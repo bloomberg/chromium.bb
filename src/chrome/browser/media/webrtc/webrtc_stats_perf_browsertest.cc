@@ -13,6 +13,7 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/blink/public/common/features.h"
@@ -85,7 +86,6 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    input_video);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
   void StartCall(const std::string& audio_codec,

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/module_test_base.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -108,11 +109,11 @@ class ModuleMapTestModulator final : public DummyModulator {
     USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
 
    public:
-    explicit TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
-        : modulator_(modulator) {}
+    TestModuleScriptFetcher(ModuleMapTestModulator* modulator,
+                            util::PassKey<ModuleScriptLoader> pass_key)
+        : ModuleScriptFetcher(pass_key), modulator_(modulator) {}
     void Fetch(FetchParameters& request,
                ResourceFetcher*,
-               const Modulator* modulator_for_built_in_modules,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
@@ -135,8 +136,9 @@ class ModuleMapTestModulator final : public DummyModulator {
   };
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) override {
-    return MakeGarbageCollected<TestModuleScriptFetcher>(this);
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader> pass_key) override {
+    return MakeGarbageCollected<TestModuleScriptFetcher>(this, pass_key);
   }
 
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
@@ -188,9 +190,10 @@ void ModuleMapTestModulator::ResolveFetches() {
   test_requests_.clear();
 }
 
-class ModuleMapTest : public PageTestBase {
+class ModuleMapTest : public PageTestBase, public ParametrizedModuleTest {
  public:
   void SetUp() override;
+  void TearDown() override;
 
   ModuleMapTestModulator* Modulator() { return modulator_.Get(); }
   ModuleMap* Map() { return map_; }
@@ -201,6 +204,7 @@ class ModuleMapTest : public PageTestBase {
 };
 
 void ModuleMapTest::SetUp() {
+  ParametrizedModuleTest::SetUp();
   PageTestBase::SetUp(IntSize(500, 500));
   NavigateTo(KURL("https://example.com"));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
@@ -208,7 +212,12 @@ void ModuleMapTest::SetUp() {
   map_ = MakeGarbageCollected<ModuleMap>(modulator_);
 }
 
-TEST_F(ModuleMapTest, sequentialRequests) {
+void ModuleMapTest::TearDown() {
+  ParametrizedModuleTest::TearDown();
+  PageTestBase::TearDown();
+}
+
+TEST_P(ModuleMapTest, sequentialRequests) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
@@ -255,7 +264,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   EXPECT_TRUE(client2->GetModuleScript());
 }
 
-TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
+TEST_P(ModuleMapTest, concurrentRequestsShouldJoin) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
@@ -295,5 +304,10 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   EXPECT_TRUE(client2->WasNotifyFinished());
   EXPECT_TRUE(client2->GetModuleScript());
 }
+// Instantiate tests once with TLA and once without:
+INSTANTIATE_TEST_SUITE_P(ModuleMapTestGroup,
+                         ModuleMapTest,
+                         testing::Bool(),
+                         ParametrizedModuleTestParamName());
 
 }  // namespace blink

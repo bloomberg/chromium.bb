@@ -10,6 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
@@ -190,12 +192,12 @@ leveldb::Status LevelDBScopes::StartRecoveryAndCleanupTasks(
   // reasonably soon.
   switch (mode) {
     case TaskRunnerMode::kNewCleanupAndRevertSequences:
-      revert_runner_ = base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+      revert_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_BLOCKING});
-      cleanup_runner_ = base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+      cleanup_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_VISIBLE});
       break;

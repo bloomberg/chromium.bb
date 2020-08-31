@@ -53,20 +53,16 @@ class UprevAndroidStage(generic_stages.BuilderStage,
     android_package = self._run.config.android_package
     android_build_branch = self._run.config.android_import_branch
     android_version = _GetAndroidVersionFromMetadata(self._run.attrs.metadata)
-    android_gts_build_branch = self._run.config.android_gts_build_branch
 
     assert android_package
     assert android_build_branch
     # |android_version| is usually set by MasterSlaveLKGMSyncStage, but we allow
     # it to be unset to indicate uprev'ing to the latest version. In fact, it is
     # not set in trybots.
-    # |android_gts_build_branch| is not set if this builder is not supposed to
-    # upload GTS bundles.
 
     logging.info('Android package: %s', android_package)
     logging.info('Android branch: %s', android_build_branch)
     logging.info('Android version: %s', android_version or 'LATEST')
-    logging.info('Android GTS branch: %s', android_gts_build_branch or 'N/A')
 
     try:
       android_atom_to_build = commands.MarkAndroidAsStable(
@@ -75,8 +71,7 @@ class UprevAndroidStage(generic_stages.BuilderStage,
           android_package=android_package,
           android_build_branch=android_build_branch,
           boards=self._boards,
-          android_version=android_version,
-          android_gts_build_branch=android_gts_build_branch)
+          android_version=android_version)
     except commands.AndroidIsPinnedUprevError as e:
       # If uprev failed due to a pin, record that failure (so that the
       # build ultimately fails) but try again without the pin, to allow the
@@ -187,8 +182,10 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
       branches.add(uprev_branch)
 
       # If we uprev Android, branch/version must be consistent.
-      assert len(versions) <= 1, 'Multiple Android versions: %r' % versions
-      assert len(branches) <= 1, 'Multiple Android branches: %r' % branches
+      # TODO(b/152768977): Provide assertion that awares about ARCVM PFQ for
+      # union builds. In last case, there are 2 versions and branches.
+      # assert len(versions) <= 1, 'Multiple Android versions: %r' % versions
+      # assert len(branches) <= 1, 'Multiple Android branches: %r' % branches
 
     # If there is a unique one across all the boards, treat it as the version
     # for the build.

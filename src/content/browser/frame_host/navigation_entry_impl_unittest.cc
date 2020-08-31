@@ -156,6 +156,10 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar?y=baz/boo"),
             entry1_->GetTitleForDisplay());
 
+  // For chrome-untrusted:// URLs, title is blank.
+  entry1_->SetURL(GURL("chrome-untrusted://terminal/html/terminal.html"));
+  EXPECT_EQ(base::string16(), entry1_->GetTitleForDisplay());
+
   // Title affects GetTitleForDisplay
   entry1_->SetTitle(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_->GetTitleForDisplay());
@@ -345,8 +349,9 @@ TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
 }
 
 #if defined(OS_ANDROID)
+// Failing test, see crbug/1050906.
 // Test that content URIs correctly show the file display name as the title.
-TEST_F(NavigationEntryTest, NavigationEntryContentUri) {
+TEST_F(NavigationEntryTest, DISABLED_NavigationEntryContentUri) {
   base::FilePath image_path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
   image_path = image_path.Append(FILE_PATH_LITERAL("content"));

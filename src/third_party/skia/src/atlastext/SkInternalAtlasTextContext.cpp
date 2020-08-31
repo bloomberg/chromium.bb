@@ -10,6 +10,7 @@
 #include "include/gpu/GrContext.h"
 #include "src/atlastext/SkInternalAtlasTextContext.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/text/GrAtlasManager.h"
 #include "src/gpu/text/GrStrikeCache.h"
 
 SkAtlasTextRenderer* SkGetAtlasTextRendererFromInternalContext(
@@ -41,16 +42,12 @@ SkInternalAtlasTextContext::~SkInternalAtlasTextContext() {
         auto atlasManager = fGrContext->priv().getAtlasManager();
         if (atlasManager) {
             unsigned int numProxies;
-            atlasManager->getProxies(kA8_GrMaskFormat, &numProxies);
+            atlasManager->getViews(kA8_GrMaskFormat, &numProxies);
             SkASSERT(1 == numProxies);
         }
 #endif
         fRenderer->deleteTexture(fDistanceFieldAtlas.fTextureHandle);
     }
-}
-
-GrStrikeCache* SkInternalAtlasTextContext::glyphCache() {
-    return fGrContext->priv().getGrStrikeCache();
 }
 
 GrTextBlobCache* SkInternalAtlasTextContext::textBlobCache() {
@@ -91,7 +88,8 @@ void SkInternalAtlasTextContext::flush() {
     auto* atlasManager = fGrContext->priv().getAtlasManager();
     if (!fDistanceFieldAtlas.fProxy) {
         unsigned int numProxies;
-        fDistanceFieldAtlas.fProxy = atlasManager->getProxies(kA8_GrMaskFormat, &numProxies)->get();
+        fDistanceFieldAtlas.fProxy =
+                atlasManager->getViews(kA8_GrMaskFormat, &numProxies)->asTextureProxy();
         SkASSERT(1 == numProxies);
         fDistanceFieldAtlas.fTextureHandle =
                 fRenderer->createTexture(SkAtlasTextRenderer::AtlasFormat::kA8,

@@ -6,9 +6,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_mac.h"
@@ -110,8 +110,9 @@ static char** g_argv;
   // test result parser analyzes console output.
   return !base::ShouldRunIOSUnittestsWithXCTest() &&
          !base::debug::BeingDebugged();
-#endif  // TARGET_IPHONE_SIMULATOR
+#else
   return NO;
+#endif  // TARGET_IPHONE_SIMULATOR
 }
 
 // Returns the path to the directory to store gtest output files.

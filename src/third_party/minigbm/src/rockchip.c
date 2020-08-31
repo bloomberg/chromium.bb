@@ -7,6 +7,7 @@
 #ifdef DRV_ROCKCHIP
 
 #include <errno.h>
+#include <inttypes.h>
 #include <rockchip_drm.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,12 +23,12 @@ struct rockchip_private_map_data {
 	void *gem_addr;
 };
 
-static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
+static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
+						   DRM_FORMAT_BGR888,	DRM_FORMAT_RGB565,
+						   DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
 
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12,
-						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_only_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_YVU420,
+						 DRM_FORMAT_YVU420_ANDROID };
 
 static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, uint32_t format)
 {
@@ -62,98 +63,50 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 	const uint32_t body_plane_offset = ALIGN(header_plane_size, body_plane_alignment);
 	const uint32_t total_size = body_plane_offset + body_plane_size;
 
-	bo->strides[0] = width_in_blocks * block_width * pixel_size;
-	bo->sizes[0] = total_size;
-	bo->offsets[0] = 0;
+	bo->meta.strides[0] = width_in_blocks * block_width * pixel_size;
+	bo->meta.sizes[0] = total_size;
+	bo->meta.offsets[0] = 0;
 
-	bo->total_size = total_size;
+	bo->meta.total_size = total_size;
 
-	bo->format_modifiers[0] = DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC;
-
-	return 0;
-}
-
-static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item)
-{
-	uint32_t i, j;
-	uint64_t use_flags;
-	struct combination *combo;
-	struct format_metadata metadata;
-
-	for (i = 0; i < drv_array_size(drv->combos); i++) {
-		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
-		if (combo->format == item->format) {
-			if (item->modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
-				use_flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;
-				metadata.modifier = item->modifier;
-				metadata.tiling = 0;
-				metadata.priority = 2;
-
-				for (j = 0; j < ARRAY_SIZE(texture_source_formats); j++) {
-					if (item->format == texture_source_formats[j])
-						use_flags &= ~BO_USE_RENDERING;
-				}
-
-				drv_add_combinations(drv, &item->format, 1, &metadata, use_flags);
-			} else {
-				combo->use_flags |= item->use_flags;
-			}
-		}
-	}
+	bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC;
 
 	return 0;
 }
 
 static int rockchip_init(struct driver *drv)
 {
-	int ret;
-	uint32_t i;
-	struct drv_array *kms_items;
 	struct format_metadata metadata;
 
 	metadata.tiling = 0;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &metadata, BO_USE_RENDER_MASK);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &metadata, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
-	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-			     &metadata, BO_USE_TEXTURE_MASK);
+	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats), &metadata,
+			     BO_USE_TEXTURE_MASK);
 
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
-	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
-
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-
 	/* Camera ISP supports only NV12 output. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER |
+				   BO_USE_HW_VIDEO_ENCODER | BO_USE_SCANOUT);
+
+	drv_modify_linear_combinations(drv);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
 	 */
-	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_add_combination(drv, DRM_FORMAT_R8, &metadata,
+			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK |
+				BO_USE_LINEAR | BO_USE_PROTECTED);
 
-	kms_items = drv_query_kms(drv);
-	if (!kms_items)
-		return 0;
-
-	for (i = 0; i < drv_array_size(kms_items); i++) {
-		ret = rockchip_add_kms_item(drv, (struct kms_item *)drv_array_at_idx(kms_items, i));
-		if (ret) {
-			drv_array_destroy(kms_items);
-			return ret;
-		}
-	}
-
-	drv_array_destroy(kms_items);
 	return 0;
 }
 
@@ -177,7 +130,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		 * drv_bo_from_format updates total_size. Add an extra data space for rockchip video
 		 * driver to store motion vectors.
 		 */
-		bo->total_size += w_mbs * h_mbs * 128;
+		bo->meta.total_size += w_mbs * h_mbs * 128;
 	} else if (width <= 2560 &&
 		   drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
@@ -207,17 +160,17 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->total_size;
+	gem_create.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE, &gem_create);
 
 	if (ret) {
-		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n",
-			(unsigned long long)gem_create.size);
+		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%" PRIu64 ")\n",
+			gem_create.size);
 		return -errno;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
@@ -239,7 +192,7 @@ static void *rockchip_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 
 	/* We can only map buffers created with SW access flags, which should
 	 * have no modifiers (ie, not AFBC). */
-	if (bo->format_modifiers[0] == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)
+	if (bo->meta.format_modifiers[0] == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)
 		return MAP_FAILED;
 
 	memset(&gem_map, 0, sizeof(gem_map));
@@ -251,14 +204,14 @@ static void *rockchip_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	void *addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
-	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
+	if (bo->meta.use_flags & BO_USE_RENDERSCRIPT) {
 		priv = calloc(1, sizeof(*priv));
-		priv->cached_addr = calloc(1, bo->total_size);
+		priv->cached_addr = calloc(1, bo->meta.total_size);
 		priv->gem_addr = addr;
 		vma->priv = priv;
 		addr = priv->cached_addr;
@@ -284,7 +237,7 @@ static int rockchip_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	if (mapping->vma->priv) {
 		struct rockchip_private_map_data *priv = mapping->vma->priv;
-		memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
+		memcpy(priv->cached_addr, priv->gem_addr, bo->meta.total_size);
 	}
 
 	return 0;
@@ -294,7 +247,7 @@ static int rockchip_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct rockchip_private_map_data *priv = mapping->vma->priv;
 	if (priv && (mapping->vma->map_flags & BO_MAP_WRITE))
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+		memcpy(priv->gem_addr, priv->cached_addr, bo->meta.total_size);
 
 	return 0;
 }

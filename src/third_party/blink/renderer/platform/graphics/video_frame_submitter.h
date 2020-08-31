@@ -13,7 +13,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
+#include "cc/metrics/video_playback_roughness_reporter.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
@@ -44,6 +45,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
   VideoFrameSubmitter(WebContextProviderCallback,
+                      cc::PlaybackRoughnessReportingCallback,
                       std::unique_ptr<VideoFrameResourceProvider>);
   ~VideoFrameSubmitter() override;
 
@@ -55,13 +57,14 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool IsDrivingFrameUpdates() const override;
 
   // WebVideoFrameSubmitter implementation.
-  void Initialize(cc::VideoFrameProvider*) override;
+  void Initialize(cc::VideoFrameProvider*, bool is_media_stream) override;
   void SetRotation(media::VideoRotation) override;
   void EnableSubmission(
       viz::SurfaceId,
       base::TimeTicks local_surface_id_allocation_time) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
+  void SetForceBeginFrames(bool force_begin_frames) override;
   void SetForceSubmit(bool) override;
 
   // viz::ContextLostObserver implementation.
@@ -127,10 +130,12 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Helper method for creating viz::CompositorFrame. If |video_frame| is null
   // then the frame will be empty.
   viz::CompositorFrame CreateCompositorFrame(
+      uint32_t frame_token,
       const viz::BeginFrameAck& begin_frame_ack,
       scoped_refptr<media::VideoFrame> video_frame);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
+  bool is_media_stream_ = false;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
   mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;
@@ -150,6 +155,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // submitting in the background causes the VideoFrameProvider to enter a
   // background rendering mode using lower frequency artificial BeginFrames.
   bool is_page_visible_ = true;
+
+  // Whether BeginFrames should be generated regardless of visibility. Does not
+  // submit unless submission is expected.
+  bool force_begin_frames_ = false;
 
   // Whether frames should always be submitted, even if we're not visible. Used
   // by Picture-in-Picture mode to ensure submission occurs even off-screen.
@@ -172,9 +181,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   viz::FrameTokenGenerator next_frame_token_;
 
-  // Timestamps indexed by frame token for histogram purposes.
-  using FrameTokenType = decltype(*std::declval<viz::FrameTokenGenerator>());
-  base::flat_map<FrameTokenType, base::TimeTicks> frame_token_to_timestamp_map_;
+  std::unique_ptr<cc::VideoPlaybackRoughnessReporter> roughness_reporter_;
 
   base::OneShotTimer empty_frame_timer_;
 

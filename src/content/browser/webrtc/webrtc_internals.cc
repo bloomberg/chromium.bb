@@ -18,10 +18,11 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/webrtc/webrtc_internals_connections_observer.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_client.h"
@@ -32,9 +33,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/audio/public/cpp/debug_recording_session_factory.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 using base::ProcessId;
@@ -567,8 +566,11 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
 void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!audio_debug_recording_session_);
+  mojo::PendingRemote<audio::mojom::DebugRecording> debug_recording;
+  content::GetAudioService().BindDebugRecording(
+      debug_recording.InitWithNewPipeAndPassReceiver());
   audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
-      audio_debug_recordings_file_path_, GetSystemConnector()->Clone());
+      audio_debug_recordings_file_path_, std::move(debug_recording));
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
@@ -637,19 +639,14 @@ void WebRTCInternals::UpdateWakeLock() {
 device::mojom::WakeLock* WebRTCInternals::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
-        wake_lock_.BindNewPipeAndPassReceiver();
-    // In some testing environments, the system Connector isn't initialized.
-    service_manager::Connector* connector = GetSystemConnector();
-    if (connector) {
-      mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-      connector->Connect(device::mojom::kServiceName,
-                         wake_lock_provider.BindNewPipeAndPassReceiver());
-      wake_lock_provider->GetWakeLockWithoutContext(
-          device::mojom::WakeLockType::kPreventAppSuspension,
-          device::mojom::WakeLockReason::kOther,
-          "WebRTC has active PeerConnections", std::move(receiver));
-    }
+    mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+    GetDeviceService().BindWakeLockProvider(
+        wake_lock_provider.BindNewPipeAndPassReceiver());
+    wake_lock_provider->GetWakeLockWithoutContext(
+        device::mojom::WakeLockType::kPreventAppSuspension,
+        device::mojom::WakeLockReason::kOther,
+        "WebRTC has active PeerConnections",
+        wake_lock_.BindNewPipeAndPassReceiver());
   }
   return wake_lock_.get();
 }

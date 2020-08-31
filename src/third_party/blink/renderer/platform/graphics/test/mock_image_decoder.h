@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
@@ -154,7 +155,8 @@ class MockImageDecoderFactory : public ImageDecoderFactory {
 
   std::unique_ptr<ImageDecoder> Create() override {
     auto decoder = std::make_unique<MockImageDecoder>(client_);
-    decoder->SetSize(decoded_size_.Width(), decoded_size_.Height());
+    decoder->SetSize(static_cast<unsigned>(decoded_size_.Width()),
+                     static_cast<unsigned>(decoded_size_.Height()));
     return std::move(decoder);
   }
 

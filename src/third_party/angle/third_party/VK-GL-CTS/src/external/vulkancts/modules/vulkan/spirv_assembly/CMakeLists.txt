@@ -59,8 +59,14 @@ set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
 	vktSpvAsmVaryingNameTests.hpp
 	vktSpvAsmWorkgroupMemoryTests.cpp
 	vktSpvAsmWorkgroupMemoryTests.hpp
+	vktSpvAsmNonSemanticInfoTests.cpp
+	vktSpvAsmNonSemanticInfoTests.hpp
 	vktSpvAsmPtrAccessChainTests.cpp
 	vktSpvAsmPtrAccessChainTests.hpp
+	vktSpvAsmFloatControlsExtensionlessTests.cpp
+	vktSpvAsmFloatControlsExtensionlessTests.hpp
+	vktSpvAsmTrinaryMinMaxTests.cpp
+	vktSpvAsmTrinaryMinMaxTests.hpp
 	)
 
 set(DEQP_VK_SPIRV_ASSEMBLY_LIBS

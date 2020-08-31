@@ -42,6 +42,8 @@ class EXTFloatBlend;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
+class EXTTextureCompressionBPTC;
+class EXTTextureCompressionRGTC;
 class EXTTextureFilterAnisotropic;
 class KHRParallelShaderCompile;
 class OESElementIndexUint;
@@ -94,7 +96,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Enabled extension objects.
@@ -105,6 +107,8 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<EXTFloatBlend> ext_float_blend_;
   Member<EXTFragDepth> ext_frag_depth_;
   Member<EXTShaderTextureLOD> ext_shader_texture_lod_;
+  Member<EXTTextureCompressionBPTC> ext_texture_compression_bptc_;
+  Member<EXTTextureCompressionRGTC> ext_texture_compression_rgtc_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<EXTsRGB> exts_rgb_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
@@ -131,16 +135,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLMultiDraw> webgl_multi_draw_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
-
-DEFINE_TYPE_CASTS(WebGLRenderingContext,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
-                          Platform::kWebGL1ContextType,
-                  context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          Platform::kWebGL1ContextType);
 
 }  // namespace blink
 

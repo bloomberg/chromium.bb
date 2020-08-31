@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_NAVIGATOR_NETWORK_INFORMATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_NAVIGATOR_NETWORK_INFORMATION_H_
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -17,7 +17,7 @@ class NetworkInformation;
 class NavigatorNetworkInformation final
     : public GarbageCollected<NavigatorNetworkInformation>,
       public Supplement<Navigator>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 
  public:
@@ -29,7 +29,7 @@ class NavigatorNetworkInformation final
 
   explicit NavigatorNetworkInformation(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   NetworkInformation* connection();

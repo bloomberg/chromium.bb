@@ -12,14 +12,14 @@ android_library("sync_java") {
     "//components/signin/core/browser/android:java",
     "//net/android:net_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_sdk:android_gcm_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
-    "//third_party/jsr-305:jsr_305_javalib",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums" ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/sync/AndroidSyncSettings.java",
     "java/src/org/chromium/components/sync/ModelTypeHelper.java",
     "java/src/org/chromium/components/sync/Passphrase.java",
@@ -43,13 +43,13 @@ android_library("sync_javatests") {
     "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/sync:sync_java_test_support",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
-    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
   ]
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/components/sync/AndroidSyncSettingsTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationClientNameProviderTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationPreferencesTest.java",
@@ -66,7 +66,5 @@ java_cpp_enum("java_enums") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/sync/ModelTypeHelper.java",
-  ]
+  sources = [ "java/src/org/chromium/components/sync/ModelTypeHelper.java" ]
 }

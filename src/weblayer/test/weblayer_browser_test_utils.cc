@@ -11,31 +11,42 @@
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
+#include "weblayer/test/stub_autofill_provider.h"
 #include "weblayer/test/test_navigation_observer.h"
 
 namespace weblayer {
 
 namespace {
 
-// Navigates to |url| in |shell| and waits for |event| to occur.
+// Navigates to |url| in |tab| and waits for |event| to occur.
 void NavigateAndWaitForEvent(const GURL& url,
-                             Shell* shell,
+                             Tab* tab,
                              TestNavigationObserver::NavigationEvent event) {
-  TestNavigationObserver test_observer(url, event, shell);
-  shell->tab()->GetNavigationController()->Navigate(url);
+  TestNavigationObserver test_observer(url, event, tab);
+  tab->GetNavigationController()->Navigate(url);
   test_observer.Wait();
 }
 
 }  // namespace
 
 void NavigateAndWaitForCompletion(const GURL& url, Shell* shell) {
-  NavigateAndWaitForEvent(url, shell,
-                          TestNavigationObserver::NavigationEvent::Completion);
+  NavigateAndWaitForEvent(url, shell->tab(),
+                          TestNavigationObserver::NavigationEvent::kCompletion);
+}
+
+void NavigateAndWaitForCompletion(const GURL& url, Tab* tab) {
+  NavigateAndWaitForEvent(url, tab,
+                          TestNavigationObserver::NavigationEvent::kCompletion);
 }
 
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
-  NavigateAndWaitForEvent(url, shell,
-                          TestNavigationObserver::NavigationEvent::Failure);
+  NavigateAndWaitForEvent(url, shell->tab(),
+                          TestNavigationObserver::NavigationEvent::kFailure);
+}
+
+void NavigateAndWaitForStart(const GURL& url, Tab* tab) {
+  NavigateAndWaitForEvent(url, tab,
+                          TestNavigationObserver::NavigationEvent::kStart);
 }
 
 base::Value ExecuteScript(Shell* shell,
@@ -54,10 +65,25 @@ base::Value ExecuteScript(Shell* shell,
   return final_result;
 }
 
+void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script) {
+  TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
+  tab_impl->ExecuteScriptWithUserGestureForTests(base::ASCIIToUTF16(script));
+}
+
 const base::string16& GetTitle(Shell* shell) {
   TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
 
   return tab_impl->web_contents()->GetTitle();
+}
+
+void InitializeAutofillWithEventForwarding(
+    Shell* shell,
+    const base::RepeatingCallback<void(const autofill::FormData&)>&
+        on_received_form_data) {
+  TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
+
+  tab_impl->InitializeAutofillForTests(
+      std::make_unique<StubAutofillProvider>(on_received_form_data));
 }
 
 }  // namespace weblayer

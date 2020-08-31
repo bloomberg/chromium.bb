@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -26,12 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+
+import {DebuggerModel, Location} from './DebuggerModel.js';
+import {RuntimeModel} from './RuntimeModel.js';              // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @implements {Protocol.ProfilerDispatcher}
  */
-export default class CPUProfilerModel extends SDK.SDKModel {
+export class CPUProfilerModel extends SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    */
   constructor(target) {
     super(target);
@@ -39,20 +50,22 @@ export default class CPUProfilerModel extends SDK.SDKModel {
     this._nextAnonymousConsoleProfileNumber = 1;
     this._anonymousConsoleProfileIdToTitle = new Map();
     this._profilerAgent = target.profilerAgent();
+    /** @type {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>):void} */
+    this._preciseCoverageDeltaUpdateCallback = null;
     target.registerProfilerDispatcher(this);
     this._profilerAgent.enable();
-    this._debuggerModel = /** @type {!SDK.DebuggerModel} */ (target.model(SDK.DebuggerModel));
+    this._debuggerModel = /** @type {!DebuggerModel} */ (target.model(DebuggerModel));
   }
 
   /**
-   * @return {!SDK.RuntimeModel}
+   * @return {!RuntimeModel}
    */
   runtimeModel() {
     return this._debuggerModel.runtimeModel();
   }
 
   /**
-   * @return {!SDK.DebuggerModel}
+   * @return {!DebuggerModel}
    */
   debuggerModel() {
     return this._debuggerModel;
@@ -66,7 +79,7 @@ export default class CPUProfilerModel extends SDK.SDKModel {
    */
   consoleProfileStarted(id, scriptLocation, title) {
     if (!title) {
-      title = Common.UIString('Profile %d', this._nextAnonymousConsoleProfileNumber++);
+      title = Common.UIString.UIString('Profile %d', this._nextAnonymousConsoleProfileNumber++);
       this._anonymousConsoleProfileIdToTitle.set(id, title);
     }
     this._dispatchProfileEvent(Events.ConsoleProfileStarted, id, scriptLocation, title);
@@ -98,9 +111,9 @@ export default class CPUProfilerModel extends SDK.SDKModel {
    * @param {!Protocol.Profiler.Profile=} cpuProfile
    */
   _dispatchProfileEvent(eventName, id, scriptLocation, title, cpuProfile) {
-    const debuggerLocation = SDK.DebuggerModel.Location.fromPayload(this._debuggerModel, scriptLocation);
+    const debuggerLocation = Location.fromPayload(this._debuggerModel, scriptLocation);
     const globalId = this.target().id() + '.' + id;
-    const data = /** @type {!SDK.CPUProfilerModel.EventData} */ (
+    const data = /** @type {!EventData} */ (
         {id: globalId, scriptLocation: debuggerLocation, cpuProfile: cpuProfile, title: title, cpuProfilerModel: this});
     this.dispatchEventToListeners(eventName, data);
   }
@@ -113,11 +126,12 @@ export default class CPUProfilerModel extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   startRecording() {
     this._isRecording = true;
-    const intervalUs = Common.moduleSetting('highResolutionCpuProfiling').get() ? 100 : 1000;
+    const intervalUs =
+        Common.Settings.Settings.instance().moduleSetting('highResolutionCpuProfiling').get() ? 100 : 1000;
     this._profilerAgent.setSamplingInterval(intervalUs);
     return this._profilerAgent.start();
   }
@@ -132,25 +146,44 @@ export default class CPUProfilerModel extends SDK.SDKModel {
 
   /**
    * @param {boolean} jsCoveragePerBlock - Collect per Block coverage if `true`, per function coverage otherwise.
-   * @return {!Promise}
+   * @param {?function(number, string, !Array<!Protocol.Profiler.ScriptCoverage>):void} preciseCoverageDeltaUpdateCallback - Callback for coverage updates initiated from the back-end
+   * @return {!Promise<?>}
    */
-  startPreciseCoverage(jsCoveragePerBlock) {
+  startPreciseCoverage(jsCoveragePerBlock, preciseCoverageDeltaUpdateCallback) {
     const callCount = false;
-    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock);
+    this._preciseCoverageDeltaUpdateCallback = preciseCoverageDeltaUpdateCallback;
+    const allowUpdatesTriggeredByBackend = true;
+    return this._profilerAgent.startPreciseCoverage(callCount, jsCoveragePerBlock, allowUpdatesTriggeredByBackend);
   }
 
   /**
-   * @return {!Promise<!Array<!Protocol.Profiler.ScriptCoverage>>}
+   * @return {!Promise<{timestamp:number, coverage:!Array<!Protocol.Profiler.ScriptCoverage>}>}
    */
-  takePreciseCoverage() {
-    return this._profilerAgent.takePreciseCoverage().then(result => result || []);
+  async takePreciseCoverage() {
+    const r = await this._profilerAgent.invoke_takePreciseCoverage({});
+    const timestamp = (r && r.timestamp) || 0;
+    const coverage = (r && r.result) || [];
+    return {timestamp, coverage};
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<?>}
    */
   stopPreciseCoverage() {
+    this._preciseCoverageDeltaUpdateCallback = null;
     return this._profilerAgent.stopPreciseCoverage();
+  }
+
+  /**
+   * @suppress {missingOverride}
+   * @param {number} timestampInSeconds
+   * @param {string} occassion
+   * @param {!Array<!Protocol.Profiler.ScriptCoverage>} coverageData
+   */
+  preciseCoverageDeltaUpdate(timestampInSeconds, occassion, coverageData) {
+    if (this._preciseCoverageDeltaUpdateCallback) {
+      this._preciseCoverageDeltaUpdateCallback(timestampInSeconds, occassion, coverageData);
+    }
   }
 }
 
@@ -160,19 +193,7 @@ export const Events = {
   ConsoleProfileFinished: Symbol('ConsoleProfileFinished')
 };
 
-/* Legacy exported object */
-self.SDK = self.SDK || {};
+SDKModel.register(CPUProfilerModel, Capability.JS, true);
 
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.CPUProfilerModel = CPUProfilerModel;
-
-/** @enum {symbol} */
-SDK.CPUProfilerModel.Events = Events;
-
-SDK.SDKModel.register(SDK.CPUProfilerModel, SDK.Target.Capability.JS, true);
-
-/** @typedef {!{id: string, scriptLocation: !SDK.DebuggerModel.Location, title: string, cpuProfile: (!Protocol.Profiler.Profile|undefined), cpuProfilerModel: !SDK.CPUProfilerModel}} */
-SDK.CPUProfilerModel.EventData;
+/** @typedef {!{id: string, scriptLocation: !DebuggerModel.Location, title: string, cpuProfile: (!Protocol.Profiler.Profile|undefined), cpuProfilerModel: !CPUProfilerModel}} */
+export let EventData;

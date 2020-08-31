@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -82,7 +83,6 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE:
       return kDropTargetFade;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       return kOverviewHighlightTransition;
     case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
@@ -194,11 +194,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
-    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
-      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
-      animation_settings_->SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      break;
     case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
@@ -231,6 +226,10 @@ void ScopedOverviewAnimationSettings::DeferPaint() {
 
 void ScopedOverviewAnimationSettings::TrilinearFiltering() {
   animation_settings_->TrilinearFiltering();
+}
+
+ui::LayerAnimator* ScopedOverviewAnimationSettings::GetAnimator() {
+  return animation_settings_->GetAnimator();
 }
 
 }  // namespace ash

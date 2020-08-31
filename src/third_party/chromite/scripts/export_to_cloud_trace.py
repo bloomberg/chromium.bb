@@ -11,6 +11,7 @@ import itertools
 import json
 import os
 import pprint
+import sys
 import time
 
 from googleapiclient import discovery
@@ -18,12 +19,20 @@ import google.protobuf.internal.well_known_types as types
 from oauth2client.client import GoogleCredentials
 
 from infra_libs import ts_mon
-import inotify_simple  # pylint: disable=import-error
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as log
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
+
+try:
+  import pytest  # pylint: disable=import-error
+  inotify_simple = pytest.importorskip('inotify_simple')
+except ImportError:
+  import inotify_simple
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 BATCH_PATIENCE = 10 * 60
@@ -157,11 +166,18 @@ def _ImpatientlyRebatched(batch_sequence, ideal_size, patience):
     the incomplete batch is yielded as-is (possibly empty).
   """
   # TODO(phobbs) this is probably easier to accomplish with rxpy.
-  while True:
+  finished = False
+  while not finished:
     start_time = time.time()
     accum = []
 
-    for batch in batch_sequence:
+    while True:
+      try:
+        batch = next(batch_sequence)
+      except StopIteration:
+        finished = True
+        break
+
       accum.extend(batch)
       if time.time() - start_time > patience:
         break
@@ -202,7 +218,7 @@ def _BatchAndSendSpans(project_id, client, batch_sequence):
     batch_size_metric.add(len(batch))
 
     traces = []
-    groups = _GroupBy(batch, key=lambda span: span.get('traceId'))
+    groups = _GroupBy(batch, key=lambda span: span.get('traceId', '0' * 32))
     for trace_id, spans in groups:
       traces.append({
           'traceId': trace_id,

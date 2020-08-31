@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -16,7 +16,7 @@ namespace signin {
 AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string& oauth_consumer_name,
                                        ProfileOAuth2TokenService* token_service,
-                                       const identity::ScopeSet& scopes,
+                                       const ScopeSet& scopes,
                                        TokenCallback callback,
                                        Mode mode)
     : AccessTokenFetcher(account_id,
@@ -32,7 +32,7 @@ AccessTokenFetcher::AccessTokenFetcher(
     const std::string& oauth_consumer_name,
     ProfileOAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     TokenCallback callback,
     Mode mode)
     : AccessTokenFetcher(account_id,
@@ -50,7 +50,7 @@ AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string client_secret,
                                        const std::string& oauth_consumer_name,
                                        ProfileOAuth2TokenService* token_service,
-                                       const identity::ScopeSet& scopes,
+                                       const ScopeSet& scopes,
                                        TokenCallback callback,
                                        Mode mode)
     : AccessTokenFetcher(account_id,
@@ -70,7 +70,7 @@ AccessTokenFetcher::AccessTokenFetcher(
     const std::string& oauth_consumer_name,
     ProfileOAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     TokenCallback callback,
     Mode mode)
     : OAuth2AccessTokenManager::Consumer(oauth_consumer_name),

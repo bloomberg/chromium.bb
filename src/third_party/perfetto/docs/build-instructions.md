@@ -24,7 +24,7 @@ Prerequisites
 **Standalone checkout**:  
 All dependent libraries are self-hosted and pulled through:
 ```
-$ tools/install-build-deps [--no-android] [--ui]
+$ tools/install-build-deps [--android] [--ui]
 ```
 
 **Android tree**:  
@@ -66,6 +66,20 @@ or
 This will generate artifacts `out/target/product/XXX/system/`.
 Executables and shared libraries are stripped by default by the Android build
 system. The unstripped artifacts are kept into `out/target/product/XXX/symbols`.
+
+IDE setup
+---------
+
+Use a following command in the checkout directory in order to generate the
+compilation database file:
+
+```
+$ tools/ninja -C out/android -t compdb cc cxx > compile_commands.json
+```
+
+After generating, it can be used in CLion (File -> Open -> Open As Project),
+Visual Studio Code with C/C++ extension and any other tool and editor that
+supports the compilation database format.
 
 Build files
 -----------

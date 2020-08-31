@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/permission_type.h"
@@ -41,11 +42,11 @@ class MockManagerWithRequests : public MockPermissionManager {
           const base::OnceCallback<void(
               const std::vector<blink::mojom::PermissionStatus>&)> callback));
   MOCK_METHOD2(SetPermissionOverridesForDevTools,
-               void(const url::Origin& origin,
+               void(const base::Optional<url::Origin>& origin,
                     const PermissionOverrides& overrides));
   MOCK_METHOD0(ResetPermissionOverridesForDevTools, void());
   MOCK_METHOD2(IsPermissionOverridableByDevTools,
-               bool(PermissionType, const url::Origin&));
+               bool(PermissionType, const base::Optional<url::Origin>&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockManagerWithRequests);
@@ -91,7 +92,7 @@ TEST_F(PermissionControllerImplTest, ResettingOverridesForwardsReset) {
 }
 
 TEST_F(PermissionControllerImplTest, SettingOverridesForwardsUpdates) {
-  url::Origin kTestOrigin = url::Origin::Create(GURL(kTestUrl));
+  auto kTestOrigin = base::make_optional(url::Origin::Create(GURL(kTestUrl)));
   EXPECT_CALL(*mock_manager(),
               SetPermissionOverridesForDevTools(
                   kTestOrigin, testing::ElementsAre(testing::Pair(

@@ -175,7 +175,7 @@ class SerialIoHandlerWin::UiThreadHelper final
  private:
   // DeviceMonitorWin::Observer
   void OnDeviceRemoved(const GUID& class_guid,
-                       const std::string& device_path) override {
+                       const base::string16& device_path) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     io_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SerialIoHandlerWin::OnDeviceRemoved,
@@ -192,7 +192,7 @@ class SerialIoHandlerWin::UiThreadHelper final
   DISALLOW_COPY_AND_ASSIGN(UiThreadHelper);
 };
 
-void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
+void SerialIoHandlerWin::OnDeviceRemoved(const base::string16& device_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DeviceInfoQueryWin device_info_query;
@@ -358,9 +358,7 @@ SerialIoHandlerWin::SerialIoHandlerWin(
     const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : SerialIoHandler(port, std::move(ui_thread_task_runner)),
-      event_mask_(0),
-      is_comm_pending_(false),
-      helper_(nullptr) {}
+      base::MessagePumpForIO::IOHandler(FROM_HERE) {}
 
 SerialIoHandlerWin::~SerialIoHandlerWin() {
   ui_thread_task_runner()->DeleteSoon(FROM_HERE, helper_);

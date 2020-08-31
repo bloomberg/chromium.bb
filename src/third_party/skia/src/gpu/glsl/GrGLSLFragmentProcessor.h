@@ -137,33 +137,32 @@ public:
     GrGLSLFragmentProcessor* childProcessor(int index) const { return fChildProcessors[index]; }
 
     // Invoke the child with the default input color (solid white)
-    inline void invokeChild(int childIndex, SkString* outputColor, EmitArgs& parentArgs,
-                            SkSL::String skslCoords = "") {
-        this->invokeChild(childIndex, nullptr, outputColor, parentArgs, skslCoords);
+    inline SkString invokeChild(int childIndex, EmitArgs& parentArgs,
+                                SkSL::String skslCoords = "") {
+        return this->invokeChild(childIndex, nullptr, parentArgs, skslCoords);
+    }
+
+    inline SkString invokeChildWithMatrix(int childIndex, EmitArgs& parentArgs,
+                                          SkSL::String skslMatrix) {
+        return this->invokeChildWithMatrix(childIndex, nullptr, parentArgs, skslMatrix);
     }
 
     /** Invokes a child proc in its own scope. Pass in the parent's EmitArgs and invokeChild will
      *  automatically extract the coords and samplers of that child and pass them on to the child's
      *  emitCode(). Also, any uniforms or functions emitted by the child will have their names
-     *  mangled to prevent redefinitions. The output color name is also mangled therefore in an
-     *  in/out param. It will be declared in mangled form by invokeChild(). It is legal to pass
-     *  nullptr as inputColor, since all fragment processors are required to work without an input
-     *  color.
+     *  mangled to prevent redefinitions. The returned string contains the output color (as a call
+     *  to the child's helper function). It is legal to pass nullptr as inputColor, since all
+     *  fragment processors are required to work without an input color.
      */
-    void invokeChild(int childIndex, const char* inputColor, SkString* outputColor,
-                     EmitArgs& parentArgs, SkSL::String skslCoords = "");
+    SkString invokeChild(int childIndex, const char* inputColor, EmitArgs& parentArgs,
+                         SkSL::String skslCoords = "");
 
-    // Use the parent's output color to hold child's output, and use the
-    // default input color of solid white
-    inline void invokeChild(int childIndex, EmitArgs& args, SkSL::String skslCoords = "") {
-        // null pointer cast required to disambiguate the function call
-        this->invokeChild(childIndex, (const char*) nullptr, args, skslCoords);
-    }
-
-    /** Variation that uses the parent's output color variable to hold the child's output.*/
-    void invokeChild(int childIndex, const char* inputColor, EmitArgs& parentArgs,
-                     SkSL::String skslCoords = "");
-
+    /**
+     * As invokeChild, but transforms the coordinates according to the provided matrix. The matrix
+     * must be a snippet of SkSL code which evaluates to a float3x3.
+     */
+    SkString invokeChildWithMatrix(int childIndex, const char* inputColor, EmitArgs& parentArgs,
+                                   SkSL::String skslMatrix);
     /**
      * Pre-order traversal of a GLSLFP hierarchy, or of multiple trees with roots in an array of
      * GLSLFPS. If initialized with an array color followed by coverage processors installed in a
@@ -196,13 +195,6 @@ protected:
     virtual void onSetData(const GrGLSLProgramDataManager&, const GrFragmentProcessor&) {}
 
 private:
-    void writeChildCall(GrGLSLFPFragmentBuilder* fragBuilder, int childIndex,
-                        TransformedCoordVars coordVars, const char* inputColor,
-                        const char* outputColor, EmitArgs& args,
-                        SkSL::String skslCoords);
-
-    void internalInvokeChild(int, const char*, const char*, EmitArgs&, SkSL::String);
-
     // one per child; either not present or empty string if not yet emitted
     SkTArray<SkString> fFunctionNames;
 

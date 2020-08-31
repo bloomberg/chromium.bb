@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
 class StatusIconLinuxDbus;
@@ -56,7 +57,7 @@ class StatusIconLinuxWrapper : public StatusIcon,
  private:
   enum StatusIconType {
     kTypeDbus,
-    kTypeX11,
+    kTypeWindowed,
     kTypeNone,
   };
 

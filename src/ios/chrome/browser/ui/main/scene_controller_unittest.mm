@@ -16,7 +16,7 @@ namespace {
 class SceneControllerTest : public PlatformTest {
  protected:
   SceneControllerTest() {
-    scene_state_ = [[SceneState alloc] init];
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
     scene_controller_ =
         [[SceneController alloc] initWithSceneState:scene_state_];
   }
@@ -24,5 +24,8 @@ class SceneControllerTest : public PlatformTest {
   SceneController* scene_controller_;
   SceneState* scene_state_;
 };
+
+// TODO(crbug.com/1072366): Add a test for
+// ContentSuggestionsSchedulerNotifications receiving notifyForeground:.
 
 }  // namespace

@@ -12,6 +12,7 @@
 #include "include/private/GrTypesPriv.h"
 
 class GrGpuResource;
+class GrSurfaceProxyView;
 
 extern "C" {
     typedef struct AHardwareBuffer AHardwareBuffer;
@@ -41,15 +42,14 @@ protected:
 
     bool onIsValid(GrContext*) const override;
 
-    TexGenType onCanGenerateTexture() const override { return TexGenType::kCheap; }
-    sk_sp<GrTextureProxy> onGenerateTexture(GrRecordingContext*, const SkImageInfo&,
-                                            const SkIPoint&, bool willNeedMipMaps) override;
+    GrSurfaceProxyView onGenerateTexture(GrRecordingContext*, const SkImageInfo&, const SkIPoint&,
+                                         GrMipMapped, GrImageTexGenPolicy) override;
 
 private:
     GrAHardwareBufferImageGenerator(const SkImageInfo&, AHardwareBuffer*, SkAlphaType,
                                     bool isProtectedContent, uint32_t bufferFormat,
                                     GrSurfaceOrigin surfaceOrigin);
-    sk_sp<GrTextureProxy> makeProxy(GrRecordingContext* context);
+    GrSurfaceProxyView makeView(GrRecordingContext* context);
 
     void releaseTextureRef();
 

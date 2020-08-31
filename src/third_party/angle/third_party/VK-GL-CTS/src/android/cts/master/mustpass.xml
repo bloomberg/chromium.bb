@@ -20,6 +20,7 @@
      -->
 	<TestPackage name="dEQP-EGL">
 		<Configuration caseListFile="egl-master.txt" commandLine="--deqp-gl-config-name=rgba8888d24s8ms0 --deqp-screen-rotation=unspecified --deqp-surface-type=window --deqp-watchdog=enable" name="master"/>
+		<Configuration caseListFile="egl-master-risky.txt" commandLine="--deqp-gl-config-name=rgba8888d24s8ms0 --deqp-screen-rotation=unspecified --deqp-surface-type=window --deqp-watchdog=enable" name="master-risky"/>
 	</TestPackage>
 	<TestPackage name="dEQP-GLES2">
 		<Configuration caseListFile="gles2-master.txt" commandLine="--deqp-gl-config-name=rgba8888d24s8ms0 --deqp-screen-rotation=unspecified --deqp-surface-type=window --deqp-watchdog=enable" name="master"/>
@@ -47,6 +48,7 @@
 	</TestPackage>
 	<TestPackage name="dEQP-VK">
 		<Configuration caseListFile="vk-master.txt" commandLine="--deqp-watchdog=enable" name="master"/>
-		<Configuration caseListFile="vk-master-risky.txt" commandLine="--deqp-watchdog=enable" name="master-risky"/>
+		<Configuration caseListFile="vk-master-2019-03-01.txt" commandLine="--deqp-watchdog=enable" name="master-2019-03-01"/>
+		<Configuration caseListFile="vk-master-2020-03-01.txt" commandLine="--deqp-watchdog=enable" name="master-2020-03-01"/>
 	</TestPackage>
 </Mustpass>

@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.actions;
 
 import android.view.View;
 
-import org.chromium.base.Supplier;
+import androidx.annotation.Nullable;
+
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
@@ -22,6 +24,7 @@ import org.chromium.chrome.browser.feed.library.api.internal.actionparser.Action
 import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdismiss.ClusterPendingDismissHelper;
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.ElementType;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.LabelledFeedActionData;
@@ -48,12 +51,13 @@ public class StreamActionApiImpl implements StreamActionApi {
     private final String mContentId;
     private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private final String mSessionId;
+    @Nullable
+    private final String mSessionId;
 
     public StreamActionApiImpl(ActionApi actionApi, ActionParser actionParser,
             ActionManager actionManager, BasicLoggingApi basicLoggingApi,
             Supplier<ContentLoggingData> contentLoggingData, ContextMenuManager contextMenuManager,
-            /*@Nullable*/ String sessionId, ClusterPendingDismissHelper clusterPendingDismissHelper,
+            @Nullable String sessionId, ClusterPendingDismissHelper clusterPendingDismissHelper,
             ViewElementActionHandler viewElementActionHandler, String contentId,
             TooltipApi tooltipApi) {
         this.mActionApi = actionApi;
@@ -132,6 +136,13 @@ public class StreamActionApiImpl implements StreamActionApi {
                 }
             });
         }
+    }
+
+    @Override
+    public void handleBlockContent(
+            List<StreamDataOperation> dataOperations, ActionPayload payload) {
+        dismiss(dataOperations);
+        mActionManager.createAndUploadAction(mContentId, payload);
     }
 
     @Override
@@ -256,6 +267,11 @@ public class StreamActionApiImpl implements StreamActionApi {
     }
 
     @Override
+    public void sendFeedback(ContentMetadata contentMetadata) {
+        mActionApi.sendFeedback(contentMetadata);
+    }
+
+    @Override
     public void learnMore() {
         mActionApi.learnMore();
     }
@@ -313,5 +329,26 @@ public class StreamActionApiImpl implements StreamActionApi {
                 onElementHide(ElementType.TOOLTIP.getNumber());
             }
         });
+    }
+
+    @Override
+    public void reportClickAction(String contentId, ActionPayload payload) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.createAndUploadAction(contentId, payload);
+        }
+    }
+
+    @Override
+    public void reportViewVisible(View view, String contentId, ActionPayload payload) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.onViewVisible(view, contentId, payload);
+        }
+    }
+
+    @Override
+    public void reportViewHidden(View view, String contentId) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.onViewHidden(view, contentId);
+        }
     }
 }

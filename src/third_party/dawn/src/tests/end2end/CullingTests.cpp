@@ -84,10 +84,9 @@ class CullingTest : public DawnTest {
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder renderPass = commandEncoder.BeginRenderPass(&renderPassDescriptor);
         renderPass.SetPipeline(CreatePipelineForTest(frontFace, cullMode));
-        renderPass.Draw(6, 1, 0, 0);
+        renderPass.Draw(6);
         renderPass.EndPass();
         wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-        wgpu::Queue queue = device.CreateQueue();
         queue.Submit(1, &commandBuffer);
 
         const RGBA8 kBackgroundColor = RGBA8::kBlue;
@@ -129,4 +128,4 @@ TEST_P(CullingTest, CullBackFaceWhenCWIsFrontFace) {
     DoTest(wgpu::FrontFace::CW, wgpu::CullMode::Back, true, false);
 }
 
-DAWN_INSTANTIATE_TEST(CullingTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(CullingTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

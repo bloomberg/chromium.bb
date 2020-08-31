@@ -8,10 +8,9 @@
 
 #include "platform/api/task_runner.h"
 #include "platform/impl/platform_client_posix.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 ScopedWakeLockMac::LockState ScopedWakeLockMac::lock_state_{};
 
@@ -70,5 +69,4 @@ void ScopedWakeLockMac::ReleaseWakeLock() {
   OSP_DCHECK_EQ(result, kIOReturnSuccess);
 }
 
-}  // namespace platform
 }  // namespace openscreen

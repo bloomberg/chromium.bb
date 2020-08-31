@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,9 @@ public class MessageCardProviderCoordinator {
     private final MessageCardProviderMediator mMediator;
     private final List<MessageService> mMessageServices = new ArrayList<>();
 
-    MessageCardProviderCoordinator(MessageCardView.DismissActionProvider uiDismissActionProvider) {
-        mMediator = new MessageCardProviderMediator(uiDismissActionProvider);
+    MessageCardProviderCoordinator(
+            Context context, MessageCardView.DismissActionProvider uiDismissActionProvider) {
+        mMediator = new MessageCardProviderMediator(context, uiDismissActionProvider);
     }
 
     /**

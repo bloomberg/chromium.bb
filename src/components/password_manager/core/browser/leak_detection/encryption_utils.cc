@@ -19,13 +19,30 @@
 
 namespace password_manager {
 
-std::string CanonicalizeUsername(base::StringPiece username) {
-  std::string email_lower = base::ToLowerASCII(username);
+namespace {
+
+template <typename StringT>
+StringT CanonicalizeUsernameT(base::BasicStringPiece<StringT> username) {
+  // String literal containing a single period (i.e. "."). Spelt out explicitly,
+  // because there is no short-form syntax for base::string16.
+  static constexpr typename StringT::value_type kPeriod[] = {'.', '\0'};
+
+  StringT email_lower = base::ToLowerASCII(username);
   // |email_lower| might be an email address. Strip off the mail-address host,
   // remove periods from the username and return the result.
-  std::string user_lower = email_lower.substr(0, email_lower.find_last_of('@'));
-  base::RemoveChars(user_lower, ".", &user_lower);
+  StringT user_lower = email_lower.substr(0, email_lower.find_last_of('@'));
+  base::RemoveChars(user_lower, kPeriod, &user_lower);
   return user_lower;
+}
+
+}  // namespace
+
+std::string CanonicalizeUsername(base::StringPiece username) {
+  return CanonicalizeUsernameT(username);
+}
+
+base::string16 CanonicalizeUsername(base::StringPiece16 username) {
+  return CanonicalizeUsernameT(username);
 }
 
 std::string HashUsername(base::StringPiece canonicalized_username) {
@@ -136,6 +153,13 @@ std::string CipherDecrypt(const std::string& ciphertext,
   if (result.ok())
     return result.ValueOrDie();
   return std::string();
+}
+
+std::string CreateNewKey() {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateWithNewKey(
+      NID_X9_62_prime256v1, ECCommutativeCipher::SHA256);
+  return cipher.ValueOrDie()->GetPrivateKeyBytes();
 }
 
 }  // namespace password_manager

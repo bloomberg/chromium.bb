@@ -108,17 +108,6 @@ viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
-  renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
-  delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
-      renderer_compositor_frame_sink_);
-}
-
-void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
-  delegated_frame_host_->DidNotProduceFrame(ack);
-}
-
 void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
   background_color_ = background_color;
   if (recyclable_compositor_)
@@ -152,29 +141,32 @@ bool BrowserCompositorMac::UpdateSurfaceFromNSView(
   }
 
   if (recyclable_compositor_) {
-    recyclable_compositor_->compositor()->SetDisplayColorSpace(
-        dfh_display_.color_space());
     recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
-                                          dfh_display_.device_scale_factor());
+                                          dfh_display_.device_scale_factor(),
+                                          dfh_display_.color_spaces());
   }
 
   return true;
 }
 
 void BrowserCompositorMac::UpdateSurfaceFromChild(
+    bool auto_resize_enabled,
     float new_device_scale_factor,
     const gfx::Size& new_size_in_pixels,
     const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
   if (dfh_local_surface_id_allocator_.UpdateFromChild(
           child_local_surface_id_allocation)) {
-    dfh_display_.set_device_scale_factor(new_device_scale_factor);
-    dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
-                                          new_size_in_pixels);
-    dfh_size_pixels_ = new_size_in_pixels;
-    root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
-    if (recyclable_compositor_) {
-      recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
-                                            dfh_display_.device_scale_factor());
+    if (auto_resize_enabled) {
+      dfh_display_.set_device_scale_factor(new_device_scale_factor);
+      dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
+                                            new_size_in_pixels);
+      dfh_size_pixels_ = new_size_in_pixels;
+      root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
+      if (recyclable_compositor_) {
+        recyclable_compositor_->UpdateSurface(
+            dfh_size_pixels_, dfh_display_.device_scale_factor(),
+            dfh_display_.color_spaces());
+      }
     }
     delegated_frame_host_->EmbedSurface(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
@@ -276,13 +268,12 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   if (new_state == HasOwnCompositor) {
     recyclable_compositor_ =
         ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-            content::GetContextFactory(), content::GetContextFactoryPrivate());
+            content::GetContextFactory());
     recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
-                                          dfh_display_.device_scale_factor());
+                                          dfh_display_.device_scale_factor(),
+                                          dfh_display_.color_spaces());
     recyclable_compositor_->compositor()->SetRootLayer(root_layer_.get());
     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
-    recyclable_compositor_->compositor()->SetDisplayColorSpace(
-        dfh_display_.color_space());
     recyclable_compositor_->widget()->SetNSView(
         accelerated_widget_mac_ns_view_);
     recyclable_compositor_->Unsuspend();
@@ -311,14 +302,6 @@ void BrowserCompositorMac::DisableRecyclingForShutdown() {
   ui::RecyclableCompositorMacFactory::Get()->DisableRecyclingForShutdown();
 }
 
-void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames);
-}
-
-void BrowserCompositorMac::SetWantsAnimateOnlyBeginFrames() {
-  delegated_frame_host_->SetWantsAnimateOnlyBeginFrames();
-}
-
 void BrowserCompositorMac::TakeFallbackContentFrom(
     BrowserCompositorMac* other) {
   delegated_frame_host_->TakeFallbackContentFrom(
@@ -338,10 +321,6 @@ bool BrowserCompositorMac::DelegatedFrameHostIsVisible() const {
 
 SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
   return client_->BrowserCompositorMacGetGutterColor();
-}
-
-void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
-  client_->BrowserCompositorMacOnBeginFrame(frame_time);
 }
 
 void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {

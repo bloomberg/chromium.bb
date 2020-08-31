@@ -70,22 +70,21 @@ InstanceIDAndroid::~InstanceIDAndroid() {
   Java_InstanceIDBridge_destroy(env, java_ref_);
 }
 
-void InstanceIDAndroid::GetID(const GetIDCallback& callback) {
+void InstanceIDAndroid::GetID(GetIDCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id =
-      get_id_callbacks_.Add(std::make_unique<GetIDCallback>(callback));
+  int32_t request_id = get_id_callbacks_.Add(
+      std::make_unique<GetIDCallback>(std::move(callback)));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getId(env, java_ref_, request_id);
 }
 
-void InstanceIDAndroid::GetCreationTime(
-    const GetCreationTimeCallback& callback) {
+void InstanceIDAndroid::GetCreationTime(GetCreationTimeCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   int32_t request_id = get_creation_time_callbacks_.Add(
-      std::make_unique<GetCreationTimeCallback>(callback));
+      std::make_unique<GetCreationTimeCallback>(std::move(callback)));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getCreationTime(env, java_ref_, request_id);
@@ -94,12 +93,18 @@ void InstanceIDAndroid::GetCreationTime(
 void InstanceIDAndroid::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
+    base::TimeDelta time_to_live,
     const std::map<std::string, std::string>& options,
     std::set<Flags> flags,
     GetTokenCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_COUNTS_100("InstanceID.GetToken.OptionsCount", options.size());
+
+  if (!time_to_live.is_zero()) {
+    LOG(WARNING) << "Non-zero TTL requested for InstanceID token, while TTLs"
+                    " are not supported by Android Firebase IID API.";
+  }
 
   int32_t request_id = get_token_callbacks_.Add(
       std::make_unique<GetTokenCallback>(std::move(callback)));
@@ -165,7 +170,7 @@ void InstanceIDAndroid::DidGetID(
 
   GetIDCallback* callback = get_id_callbacks_.Lookup(request_id);
   DCHECK(callback);
-  callback->Run(ConvertJavaStringToUTF8(jid));
+  std::move(*callback).Run(ConvertJavaStringToUTF8(jid));
   get_id_callbacks_.Remove(request_id);
 }
 
@@ -187,7 +192,7 @@ void InstanceIDAndroid::DidGetCreationTime(
   GetCreationTimeCallback* callback =
       get_creation_time_callbacks_.Lookup(request_id);
   DCHECK(callback);
-  callback->Run(creation_time);
+  std::move(*callback).Run(creation_time);
   get_creation_time_callbacks_.Remove(request_id);
 }
 

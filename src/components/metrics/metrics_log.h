@@ -25,12 +25,11 @@ namespace base {
 class HistogramFlattener;
 class HistogramSamples;
 class HistogramSnapshotManager;
-}
+}  // namespace base
 
 namespace metrics {
 
 class MetricsProvider;
-class MetricsServiceClient;
 class DelegatingProvider;
 
 namespace internal {
@@ -119,7 +118,7 @@ class MetricsLog {
       SystemProfileProto* system_profile);
 
   // Records a user-initiated action.
-  void RecordUserAction(const std::string& key);
+  void RecordUserAction(const std::string& key, base::TimeTicks action_time);
 
   // Record any changes in a given histogram for transmission.
   void RecordHistogramDelta(const std::string& histogram_name,
@@ -166,9 +165,12 @@ class MetricsLog {
 
   LogType log_type() const { return log_type_; }
 
+  // Exposed for the sake of mocking/accessing in test code.
+  ChromeUserMetricsExtension* UmaProtoForTest() { return &uma_proto_; }
+
  protected:
   // Exposed for the sake of mocking/accessing in test code.
-
+  // TODO(1034679): migrate to public UmaProtoForTest() method.
   ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
 
   // Exposed to allow subclass to access to export the uma_proto. Can be used

@@ -9,7 +9,6 @@ import contextlib
 import functools
 import json
 import os
-import subprocess
 import sys
 import tempfile
 import threading
@@ -24,6 +23,7 @@ except ImportError:  # For Py3 compatibility
 import detect_host_arch
 import gclient_utils
 import metrics_utils
+import subprocess2
 
 
 DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -184,13 +184,13 @@ class MetricsCollector(object):
     # We invoke a subprocess, and use stdin.write instead of communicate(),
     # so that we are able to return immediately, leaving the upload running in
     # the background.
-    p = subprocess.Popen([sys.executable, UPLOAD_SCRIPT], stdin=subprocess.PIPE)
+    p = subprocess2.Popen(['vpython3', UPLOAD_SCRIPT], stdin=subprocess2.PIPE)
     p.stdin.write(json.dumps(self._reported_metrics).encode('utf-8'))
 
   def _collect_metrics(self, func, command_name, *args, **kwargs):
     # If we're already collecting metrics, just execute the function.
     # e.g. git-cl split invokes git-cl upload several times to upload each
-    # splitted CL.
+    # split CL.
     if self.collecting_metrics:
       # Don't collect metrics for this function.
       # e.g. Don't record the arguments git-cl split passes to git-cl upload.

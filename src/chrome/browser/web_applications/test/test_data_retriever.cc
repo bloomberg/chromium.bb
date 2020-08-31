@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -34,10 +34,12 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
     content::WebContents* web_contents,
     bool bypass_service_worker_check,
     CheckInstallabilityCallback callback) {
-  DCHECK(manifest_);
+  base::Optional<blink::Manifest> opt_manifest;
+  if (manifest_ && !manifest_->IsEmpty())
+    opt_manifest = *manifest_;
 
   completion_callback_ =
-      base::BindOnce(std::move(callback), *manifest_,
+      base::BindOnce(std::move(callback), opt_manifest,
                      /*valid_manifest_for_web_app=*/true, is_installable_);
   ScheduleCompletionCallback();
 }

@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "pdf_web_contents_helper.cc",
     "pdf_web_contents_helper.h",
@@ -16,10 +15,9 @@ jumbo_static_library("browser") {
     "//base",
     "//components/pdf/common:interfaces",
     "//content/public/browser",
+    "//ui/base",
     "//ui/touch_selection",
   ]
 
-  public_deps = [
-    "//ipc",
-  ]
+  public_deps = [ "//ipc" ]
 }

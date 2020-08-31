@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -25,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -34,6 +32,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -46,7 +45,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestTestResources(
         ServiceWorkerControlleeRequestHandlerTest* test,
         const GURL& url,
-        ResourceType type,
+        blink::mojom::ResourceType type,
         network::mojom::RequestMode request_mode =
             network::mojom::RequestMode::kNoCors)
         : resource_type_(type),
@@ -59,7 +58,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               test->context()->AsWeakPtr(),
               test->container_host_,
               type,
-              /*skip_service_worker=*/false)) {}
+              /*skip_service_worker=*/false,
+              base::DoNothing())) {}
 
     void MaybeCreateLoader() {
       network::ResourceRequest resource_request;
@@ -82,7 +82,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     net::URLRequest* request() const { return request_.get(); }
 
    private:
-    const ResourceType resource_type_;
+    const blink::mojom::ResourceType resource_type_;
     std::unique_ptr<net::URLRequest> request_;
     std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler_;
   };
@@ -107,21 +107,19 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
                                         context()->AsWeakPtr());
     context()->storage()->LazyInitializeForTest();
 
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheSync(
-        context()->storage(), version_->script_url(),
-        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
-        "I'm a meta data"));
+        context()->storage(), version_->script_url(), {} /* headers */,
+        "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
-    version_->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version_->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
 
     // An empty host.
     remote_endpoints_.emplace_back();
-    provider_host_ = CreateProviderHostForWindow(
+    container_host_ = CreateContainerHostForWindow(
         helper_->mock_render_process_id(), is_parent_frame_secure,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
-    container_host_ = provider_host_->container_host()->GetWeakPtr();
   }
 
   void TearDown() override {
@@ -132,12 +130,16 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
   ServiceWorkerContextCore* context() const { return helper_->context(); }
 
+  void CloseRemotes() {
+    for (auto& remote_endpoint : remote_endpoints_)
+      remote_endpoint.host_remote()->reset();
+  }
+
  protected:
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   net::URLRequestContext url_request_context_;
   net::TestDelegate url_request_delegate_;
@@ -148,25 +150,23 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
-  ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorkerOnIO(
+  ServiceWorkerTestContentBrowserClient() = default;
+  AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::ResourceContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::ResourceContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 
-  bool AllowServiceWorkerOnUI(
+  AllowServiceWorkerResult AllowServiceWorkerOnUI(
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
-      content::BrowserContext* context,
-      base::RepeatingCallback<WebContents*()> wc_getter) override {
-    return false;
+      content::BrowserContext* context) override {
+    return AllowServiceWorkerResult::No();
   }
 };
 
@@ -180,7 +180,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Basic) {
   registration_->SetActiveVersion(version_);
   {
     base::RunLoop loop;
-    context()->storage()->StoreRegistration(
+    context()->registry()->StoreRegistration(
         registration_.get(), version_.get(),
         base::BindOnce(
             [](base::OnceClosure closure,
@@ -197,7 +197,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Basic) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
@@ -220,7 +221,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DoesNotExist) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
@@ -241,7 +243,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Error) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
@@ -261,13 +264,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
@@ -289,13 +293,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
@@ -312,13 +317,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
   registration_->SetWaitingVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
@@ -339,11 +345,12 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration_->SetInstallingVersion(version_);
-  context()->storage()->NotifyInstallingRegistration(registration_.get());
+  context()->registry()->NotifyInstallingRegistration(registration_.get());
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
 
   base::RunLoop().RunUntilIdle();
@@ -359,30 +366,31 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 }
 
 // Test to not regress crbug/414118.
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   version_ = nullptr;
   registration_ = nullptr;
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
-  context()->RemoveProviderHost(provider_host_->provider_id());
-  EXPECT_FALSE(container_host_.get());
+  CloseRemotes();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(container_host_);
   EXPECT_FALSE(test_resources.loader());
 }
 
@@ -393,7 +401,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   base::RunLoop loop;
-  context()->storage()->StoreRegistration(
+  context()->registry()->StoreRegistration(
       registration_.get(), version_.get(),
       base::BindLambdaForTesting(
           [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
@@ -401,11 +409,13 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
 
   // Create an interceptor that skips service workers.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.SetHandler(
       std::make_unique<ServiceWorkerControlleeRequestHandler>(
-          context()->AsWeakPtr(), container_host_, ResourceType::kMainFrame,
-          /*skip_service_worker=*/true));
+          context()->AsWeakPtr(), container_host_,
+          blink::mojom::ResourceType::kMainFrame,
+          /*skip_service_worker=*/true, base::DoNothing()));
 
   // Conduct a main resource load.
   test_resources.MaybeCreateLoader();
@@ -432,7 +442,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   base::RunLoop loop;
-  context()->storage()->StoreRegistration(
+  context()->registry()->StoreRegistration(
       registration_.get(), version_.get(),
       base::BindLambdaForTesting(
           [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
@@ -440,11 +450,13 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
 
   // Create an interceptor.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   test_resources.SetHandler(
       std::make_unique<ServiceWorkerControlleeRequestHandler>(
-          context()->AsWeakPtr(), container_host_, ResourceType::kMainFrame,
-          /*skip_service_worker=*/false));
+          context()->AsWeakPtr(), container_host_,
+          blink::mojom::ResourceType::kMainFrame,
+          /*skip_service_worker=*/false, base::DoNothing()));
 
   // Destroy the context and make a new one.
   helper_->context_wrapper()->DeleteAndStartOver();
@@ -471,14 +483,15 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   version_.reset();
   registration_.reset();
 
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   // Sets an offline header to indicate force loading offline page.
   test_resources.request()->SetExtraRequestHeaderByName(
       "X-Chrome-offline", "reason=download", true);
@@ -492,14 +505,15 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
+  context()->registry()->StoreRegistration(registration_.get(), version_.get(),
+                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   version_.reset();
   registration_.reset();
 
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+      this, GURL("https://host/scope/doc"),
+      blink::mojom::ResourceType::kMainFrame);
   // Empty offline header value should not cause fallback.
   test_resources.request()->SetExtraRequestHeaderByName("X-Chrome-offline", "",
                                                         true);

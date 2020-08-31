@@ -96,7 +96,7 @@ class Controller final : public ServiceListener::Observer,
     Controller* controller_;
   };
 
-  explicit Controller(platform::ClockNowFunctionPtr now_function);
+  explicit Controller(ClockNowFunctionPtr now_function);
   ~Controller();
 
   // Requests receivers compatible with all urls in |urls| and registers

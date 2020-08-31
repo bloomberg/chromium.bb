@@ -6,10 +6,9 @@
 
 #include <sstream>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 bool TextTraceLoggingPlatform::IsTraceLoggingEnabled(
     TraceCategory::Value category) {
@@ -19,12 +18,10 @@ bool TextTraceLoggingPlatform::IsTraceLoggingEnabled(
 }
 
 TextTraceLoggingPlatform::TextTraceLoggingPlatform() {
-  OSP_DCHECK(!GetTracingDestination());
   StartTracing(this);
 }
 
 TextTraceLoggingPlatform::~TextTraceLoggingPlatform() {
-  OSP_DCHECK_EQ(GetTracingDestination(), this);
   StopTracing();
 }
 
@@ -69,5 +66,4 @@ void TextTraceLoggingPlatform::LogAsyncEnd(const uint32_t line,
           << timestamp << ") " << error;
 }
 
-}  // namespace platform
 }  // namespace openscreen

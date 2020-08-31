@@ -7,8 +7,11 @@
 #import <UIKit/UIKit.h>
 
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
@@ -23,8 +26,8 @@
 @implementation TestTabSwitcherDelegate
 @synthesize didEndCalled = _didEndCalled;
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel
-                   focusOmnibox:(BOOL)focusOmnibox {
+    shouldFinishWithBrowser:(Browser*)browser
+               focusOmnibox:(BOOL)focusOmnibox {
   // No-op.
 }
 
@@ -38,12 +41,16 @@ namespace {
 class TabGridCoordinatorTest : public BlockCleanupTest {
  public:
   TabGridCoordinatorTest() {
+    browser_ = std::make_unique<TestBrowser>();
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
     coordinator_ = [[TabGridCoordinator alloc]
-                    initWithWindow:window
-        applicationCommandEndpoint:OCMProtocolMock(
-                                       @protocol(ApplicationCommands))];
+                     initWithWindow:window
+         applicationCommandEndpoint:OCMProtocolMock(
+                                        @protocol(ApplicationCommands))
+        browsingDataCommandEndpoint:OCMProtocolMock(
+                                        @protocol(BrowsingDataCommands))];
     coordinator_.animationsDisabledForTesting = YES;
+    coordinator_.regularBrowser = browser_.get();
     // TabGirdCoordinator will make its view controller the root, so stash the
     // original root view controller before starting |coordinator_|.
     original_root_view_controller_ =
@@ -69,9 +76,14 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
           original_root_view_controller_;
       original_root_view_controller_ = nil;
     }
+    [coordinator_ stop];
   }
 
  protected:
+  web::WebTaskEnvironment task_environment_;
+  // Browser for the coordinator.
+  std::unique_ptr<Browser> browser_;
+
   // The TabGridCoordinator that is under test.  The test fixture sets
   // this VC as the root VC for the window.
   TabGridCoordinator* coordinator_;
@@ -104,8 +116,12 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
 
   // Now setting a TabSwitcher will make the switcher active.
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [coordinator_.tabSwitcher viewController] ==
+               coordinator_.activeViewController;
+      });
+  EXPECT_TRUE(tab_switcher_active);
 }
 
 // Tests that it is possible to set a TabViewController after setting a
@@ -121,8 +137,12 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
 
   // Showing the TabSwitcher again will make it active.
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [coordinator_.tabSwitcher viewController] ==
+               coordinator_.activeViewController;
+      });
+  EXPECT_TRUE(tab_switcher_active);
 }
 
 // Tests swapping between two TabViewControllers.
@@ -195,7 +215,6 @@ TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
 // Test that the tab grid coordinator sizes its view controller to the window.
 TEST_F(TabGridCoordinatorTest, SizeTabGridCoordinatorViewController) {
   CGRect rect = [UIScreen mainScreen].bounds;
-  [coordinator_ start];
   EXPECT_TRUE(
       CGRectEqualToRect(rect, coordinator_.baseViewController.view.frame));
 }

@@ -9,6 +9,7 @@ GEN_INCLUDE([
 ]);
 
 GEN('#include "chrome/browser/ui/webui/management_a11y_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test fixture for Accessibility of Chrome Management page.
@@ -53,8 +54,8 @@ var CrManagementA11yTest = class extends PolymerTest {
       },
       'list': function(nodeResult) {
         return nodeResult && nodeResult.element &&
-            nodeResult.element.tagName == 'UL' &&
-            nodeResult.element.getElementsByTagName('DOM-REPEAT').length != 0;
+            nodeResult.element.tagName === 'UL' &&
+            nodeResult.element.getElementsByTagName('DOM-REPEAT').length !== 0;
       },
     };
   }

@@ -25,7 +25,7 @@ suite('TabSwiper', () => {
     tabSwiper.startObserving();
   });
 
-  test('swiping progresses the animation', () => {
+  test('SwipingProgressesAnimation', () => {
     // Set margin top 0 to avoid offsetting the bounding client rect.
     document.body.style.margin = 0;
 
@@ -35,7 +35,7 @@ suite('TabSwiper', () => {
     const tabElStyle = window.getComputedStyle(tabElement);
 
     const startY = 50;
-    const pointerState = {clientY: startY, pointerId: 1};
+    const pointerState = {clientY: startY, pointerId: 1, pointerType: 'touch'};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
     // Swipe was not enough to start any part of the animation.
@@ -73,10 +73,10 @@ suite('TabSwiper', () => {
         tabElement.getBoundingClientRect().top, -SWIPE_FINISH_THRESHOLD_PX);
   });
 
-  test('finishing the swipe animation fires an event', async () => {
+  test('SwipingPastFinishThresholdFiresEvent', async () => {
     const firedEventPromise = eventToPromise('swipe', tabElement);
     const startY = 50;
-    const pointerState = {clientY: startY, pointerId: 1};
+    const pointerState = {clientY: startY, pointerId: 1, pointerType: 'touch'};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
     pointerState.clientY = startY - (SWIPE_FINISH_THRESHOLD_PX + 1);
@@ -86,13 +86,13 @@ suite('TabSwiper', () => {
     await firedEventPromise;
   });
 
-  test('swiping enough and releasing finishes the animation', async () => {
+  test('SwipingPastStartThresholdFinishesAnimation', async () => {
     const firedEventPromise = eventToPromise('swipe', tabElement);
 
     const tabElStyle = window.getComputedStyle(tabElement);
     const startY = 50;
 
-    const pointerState = {clientY: 50, pointerId: 1};
+    const pointerState = {clientY: 50, pointerId: 1, pointerType: 'touch'};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
     pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
@@ -104,12 +104,12 @@ suite('TabSwiper', () => {
     assertEquals(tabElStyle.opacity, '0');
   });
 
-  test('swiping and letting go before resets animation', () => {
+  test('NotCompletingSwipePastThreshold', () => {
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
     const tabElStyle = window.getComputedStyle(tabElement);
     const startY = 50;
 
-    const pointerState = {clientY: 50, pointerId: 1};
+    const pointerState = {clientY: 50, pointerId: 1, pointerType: 'touch'};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
     pointerState.clientY = startY - 1;
@@ -121,11 +121,11 @@ suite('TabSwiper', () => {
     assertEquals(tabElStyle.opacity, '1');
   });
 
-  test('swiping fast enough finishes playing the animation', async () => {
+  test('SwipingAtHighVelocityFinishesAnimation', async () => {
     const tabElStyle = window.getComputedStyle(tabElement);
     const firedEventPromise = eventToPromise('swipe', tabElement);
     const startY = 50;
-    const pointerState = {clientY: 50, pointerId: 1};
+    const pointerState = {clientY: 50, pointerId: 1, pointerType: 'touch'};
 
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
@@ -140,10 +140,10 @@ suite('TabSwiper', () => {
     assertEquals(tabElStyle.opacity, '0');
   });
 
-  test('pointerdown should reset the animation time', async () => {
+  test('PointerDownResetsAnimationTime', async () => {
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
     const tabElStyle = window.getComputedStyle(tabElement);
-    const pointerState = {clientY: 50, pointerId: 1};
+    const pointerState = {clientY: 50, pointerId: 1, pointerType: 'touch'};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
     // Mimic a swipe that turns into a scroll.
@@ -159,5 +159,14 @@ suite('TabSwiper', () => {
     // Style should reset to defaults.
     assertEquals(tabElStyle.maxWidth, '100px');
     assertEquals(tabElStyle.opacity, '1');
+  });
+
+  test('IgnoresNontouchPointers', () => {
+    const pointerState = {clientY: 50, pointerId: 1, pointerType: 'mouse'};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+    pointerState.clientY += SWIPE_FINISH_THRESHOLD_PX;
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    assertFalse(tabSwiper.wasSwiping());
   });
 });

@@ -8,19 +8,6 @@
 
 namespace ui {
 
-namespace {
-
-// Various formats we support.
-const char kURLFormat[] = "url";
-const char kPlainTextFormat[] = "text";
-const char kHTMLFormat[] = "html";
-const char kRTFFormat[] = "rtf";
-const char kBitmapFormat[] = "bitmap";
-const char kWebKitSmartPasteFormat[] = "webkit_smart";
-const char kBookmarkFormat[] = "bookmark";
-
-}  // namespace
-
 // ClipboardFormatType implementation.
 ClipboardFormatType::ClipboardFormatType() = default;
 
@@ -37,6 +24,10 @@ std::string ClipboardFormatType::Serialize() const {
 ClipboardFormatType ClipboardFormatType::Deserialize(
     const std::string& serialization) {
   return ClipboardFormatType(serialization);
+}
+
+std::string ClipboardFormatType::GetName() const {
+  return Serialize();
 }
 
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
@@ -56,44 +47,39 @@ ClipboardFormatType ClipboardFormatType::GetType(
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  static base::NoDestructor<ClipboardFormatType> type(kURLFormat);
+const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeURIList);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
-  static base::NoDestructor<ClipboardFormatType> type(kPlainTextFormat);
-  return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
-  static base::NoDestructor<ClipboardFormatType> type(kPlainTextFormat);
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeText);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetWebKitSmartPasteType() {
-  static base::NoDestructor<ClipboardFormatType> type(kWebKitSmartPasteFormat);
+  static base::NoDestructor<ClipboardFormatType> type(
+      kMimeTypeWebkitSmartPaste);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetHtmlType() {
-  static base::NoDestructor<ClipboardFormatType> type(kHTMLFormat);
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeHTML);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetRtfType() {
-  static base::NoDestructor<ClipboardFormatType> type(kRTFFormat);
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeRTF);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
-  static base::NoDestructor<ClipboardFormatType> type(kBitmapFormat);
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypePNG);
   return *type;
 }
 
@@ -107,12 +93,6 @@ const ClipboardFormatType& ClipboardFormatType::GetWebCustomDataType() {
 const ClipboardFormatType& ClipboardFormatType::GetPepperCustomDataType() {
   static base::NoDestructor<ClipboardFormatType> type(
       kMimeTypePepperCustomData);
-  return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetBookmarkType() {
-  static base::NoDestructor<ClipboardFormatType> type(kBookmarkFormat);
   return *type;
 }
 

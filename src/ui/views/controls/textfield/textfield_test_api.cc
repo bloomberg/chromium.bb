@@ -31,13 +31,17 @@ void TextfieldTestApi::ResetTouchSelectionController() {
 }
 
 void TextfieldTestApi::SetCursorViewRect(gfx::Rect bounds) {
-  textfield_->cursor_view_.SetBoundsRect(bounds);
+  textfield_->cursor_view_->SetBoundsRect(bounds);
 }
 
 bool TextfieldTestApi::IsTextDirectionCheckedInContextMenu(
     base::i18n::TextDirection direction) const {
   return ViewsTextServicesContextMenu::IsTextDirectionCheckedForTesting(
       textfield_->text_services_context_menu_.get(), direction);
+}
+
+bool TextfieldTestApi::ShouldShowCursor() const {
+  return textfield_->ShouldShowCursor();
 }
 
 }  // namespace views

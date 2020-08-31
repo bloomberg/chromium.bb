@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/mhtml_generation_params.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -940,6 +941,9 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLButDelayResponse) {
 // GenerateMHTMLWithResults callback independently.
 INSTANTIATE_TEST_SUITE_P(MHTMLGenerationTest,
                          MHTMLGenerationTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(MHTMLGenerationSitePerProcessTest,
+                         MHTMLGenerationSitePerProcessTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace content

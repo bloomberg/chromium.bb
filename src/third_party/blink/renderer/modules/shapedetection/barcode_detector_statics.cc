@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
+#include "third_party/blink/renderer/modules/shapedetection/barcode_detector.h"
 
 namespace blink {
 
@@ -29,7 +29,7 @@ BarcodeDetectorStatics* BarcodeDetectorStatics::From(
 }
 
 BarcodeDetectorStatics::BarcodeDetectorStatics(ExecutionContext& document)
-    : Supplement<ExecutionContext>(document) {}
+    : Supplement<ExecutionContext>(document), service_(&document) {}
 
 BarcodeDetectorStatics::~BarcodeDetectorStatics() = default;
 
@@ -55,11 +55,12 @@ ScriptPromise BarcodeDetectorStatics::EnumerateSupportedFormats(
 
 void BarcodeDetectorStatics::Trace(Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
+  visitor->Trace(service_);
   visitor->Trace(get_supported_format_requests_);
 }
 
 void BarcodeDetectorStatics::EnsureServiceConnection() {
-  if (service_)
+  if (service_.is_bound())
     return;
 
   ExecutionContext* context = GetSupplementable();
@@ -81,7 +82,7 @@ void BarcodeDetectorStatics::OnEnumerateSupportedFormats(
   Vector<WTF::String> results;
   results.ReserveInitialCapacity(results.size());
   for (const auto& format : formats)
-    results.push_back(DetectedBarcode::BarcodeFormatToString(format));
+    results.push_back(BarcodeDetector::BarcodeFormatToString(format));
   resolver->Resolve(results);
 }
 

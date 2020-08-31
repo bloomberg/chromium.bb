@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 
 namespace extensions {
@@ -63,7 +63,7 @@ bool ShellVirtualKeyboardDelegate::IsLanguageSettingsEnabled() {
 
 bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
-    base::Optional<gfx::Rect> target_bounds,
+    gfx::Rect target_bounds,
     OnSetModeCallback on_set_mode_callback) {
   return false;
 }
@@ -89,6 +89,11 @@ bool ShellVirtualKeyboardDelegate::SetHitTestBounds(
 
 bool ShellVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
     const gfx::Rect& bounds) {
+  return false;
+}
+
+bool ShellVirtualKeyboardDelegate::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
   return false;
 }
 

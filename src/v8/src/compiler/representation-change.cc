@@ -159,9 +159,23 @@ Node* RepresentationChanger::GetRepresentationFor(
     return TypeError(node, output_rep, output_type, use_info.representation());
   }
 
+  // Rematerialize any truncated BigInt if user is not expecting a BigInt.
+  if (output_type.Is(Type::BigInt()) &&
+      output_rep == MachineRepresentation::kWord64 &&
+      use_info.type_check() != TypeCheckKind::kBigInt) {
+    node =
+        InsertConversion(node, simplified()->ChangeUint64ToBigInt(), use_node);
+    output_rep = MachineRepresentation::kTaggedPointer;
+  }
+
   // Handle the no-op shortcuts when no checking is necessary.
   if (use_info.type_check() == TypeCheckKind::kNone ||
-      output_rep != MachineRepresentation::kWord32) {
+      // TODO(nicohartmann@, chromium:1077804): Ignoring {use_info.type_check()}
+      // in case the representation already matches is not correct. For now,
+      // this behavior is disabled only for TypeCheckKind::kBigInt, but should
+      // be fixed for all other type checks.
+      (output_rep != MachineRepresentation::kWord32 &&
+       use_info.type_check() != TypeCheckKind::kBigInt)) {
     if (use_info.representation() == output_rep) {
       // Representations are the same. That's a no-op.
       return node;
@@ -372,6 +386,7 @@ Node* RepresentationChanger::GetTaggedPointerRepresentationFor(
   switch (node->opcode()) {
     case IrOpcode::kHeapConstant:
     case IrOpcode::kDelayedStringConstant:
+      if (use_info.type_check() == TypeCheckKind::kBigInt) break;
       return node;  // No change necessary.
     case IrOpcode::kInt32Constant:
     case IrOpcode::kFloat64Constant:
@@ -880,12 +895,12 @@ Node* RepresentationChanger::GetWord32RepresentationFor(
     if (use_info.type_check() == TypeCheckKind::kSignedSmall ||
         use_info.type_check() == TypeCheckKind::kSigned32 ||
         use_info.type_check() == TypeCheckKind::kArrayIndex) {
-      bool indentify_zeros = use_info.truncation().IdentifiesZeroAndMinusZero();
+      bool identify_zeros = use_info.truncation().IdentifiesZeroAndMinusZero();
       if (output_type.Is(Type::Signed32()) ||
-          (indentify_zeros && output_type.Is(Type::Signed32OrMinusZero()))) {
+          (identify_zeros && output_type.Is(Type::Signed32OrMinusZero()))) {
         return node;
       } else if (output_type.Is(Type::Unsigned32()) ||
-                 (indentify_zeros &&
+                 (identify_zeros &&
                   output_type.Is(Type::Unsigned32OrMinusZero()))) {
         op = simplified()->CheckedUint32ToInt32(use_info.feedback());
       } else {
@@ -1147,6 +1162,14 @@ Node* RepresentationChanger::GetWord64RepresentationFor(
           use_info.feedback());
     } else if (use_info.type_check() == TypeCheckKind::kArrayIndex) {
       op = simplified()->CheckedTaggedToArrayIndex(use_info.feedback());
+    } else {
+      return TypeError(node, output_rep, output_type,
+                       MachineRepresentation::kWord64);
+    }
+  } else if (output_rep == MachineRepresentation::kWord64) {
+    DCHECK_EQ(use_info.type_check(), TypeCheckKind::kBigInt);
+    if (output_type.Is(Type::BigInt())) {
+      return node;
     } else {
       return TypeError(node, output_rep, output_type,
                        MachineRepresentation::kWord64);

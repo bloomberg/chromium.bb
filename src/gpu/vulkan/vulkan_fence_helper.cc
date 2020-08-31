@@ -211,19 +211,19 @@ void VulkanFenceHelper::EnqueueImageCleanupForSubmittedWork(
 
 void VulkanFenceHelper::EnqueueBufferCleanupForSubmittedWork(
     VkBuffer buffer,
-    VkDeviceMemory memory) {
-  if (buffer == VK_NULL_HANDLE && memory == VK_NULL_HANDLE)
+    VmaAllocation allocation) {
+  if (buffer == VK_NULL_HANDLE && allocation == VK_NULL_HANDLE)
     return;
 
+  DCHECK(buffer != VK_NULL_HANDLE);
+  DCHECK(allocation != VK_NULL_HANDLE);
+
   EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](VkBuffer buffer, VkDeviceMemory memory,
+      [](VkBuffer buffer, VmaAllocation allocation,
          VulkanDeviceQueue* device_queue, bool /* is_lost */) {
-        if (buffer != VK_NULL_HANDLE)
-          vkDestroyBuffer(device_queue->GetVulkanDevice(), buffer, nullptr);
-        if (memory != VK_NULL_HANDLE)
-          vkFreeMemory(device_queue->GetVulkanDevice(), memory, nullptr);
+        vma::DestroyBuffer(device_queue->vma_allocator(), buffer, allocation);
       },
-      buffer, memory));
+      buffer, allocation));
 }
 
 void VulkanFenceHelper::PerformImmediateCleanup() {
@@ -241,8 +241,10 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
   // recover from this.
   CHECK(result == VK_SUCCESS || result == VK_ERROR_DEVICE_LOST);
   bool device_lost = result == VK_ERROR_DEVICE_LOST;
-  if (!device_lost)
-    current_generation_ = next_generation_ - 1;
+
+  // We're going to destroy all fences below, so we should consider them as
+  // passed.
+  current_generation_ = next_generation_ - 1;
 
   // Run all cleanup tasks. Create a temporary vector of tasks to run to avoid
   // reentrancy issues.

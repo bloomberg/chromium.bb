@@ -9,6 +9,8 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace system {
@@ -35,12 +37,14 @@ TouchpadSettings::TouchpadSettings(const TouchpadSettings& other) = default;
 
 TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
   if (&other != this) {
+    acceleration_ = other.acceleration_;
+    natural_scroll_ = other.natural_scroll_;
+    scroll_acceleration_ = other.scroll_acceleration_;
+    scroll_sensitivity_ = other.scroll_sensitivity_;
     sensitivity_ = other.sensitivity_;
+    tap_dragging_ = other.tap_dragging_;
     tap_to_click_ = other.tap_to_click_;
     three_finger_click_ = other.three_finger_click_;
-    tap_dragging_ = other.tap_dragging_;
-    natural_scroll_ = other.natural_scroll_;
-    acceleration_ = other.acceleration_;
   }
   return *this;
 }
@@ -67,18 +71,6 @@ bool TouchpadSettings::GetTapToClick() const {
 
 bool TouchpadSettings::IsTapToClickSet() const {
   return tap_to_click_.has_value();
-}
-
-void TouchpadSettings::SetNaturalScroll(bool enabled) {
-  natural_scroll_ = enabled;
-}
-
-bool TouchpadSettings::GetNaturalScroll() const {
-  return *natural_scroll_;
-}
-
-bool TouchpadSettings::IsNaturalScrollSet() const {
-  return natural_scroll_.has_value();
 }
 
 void TouchpadSettings::SetThreeFingerClick(bool enabled) {
@@ -117,9 +109,47 @@ bool TouchpadSettings::IsAccelerationSet() const {
   return acceleration_.has_value();
 }
 
+void TouchpadSettings::SetNaturalScroll(bool enabled) {
+  natural_scroll_ = enabled;
+}
+
+bool TouchpadSettings::GetNaturalScroll() const {
+  return *natural_scroll_;
+}
+
+bool TouchpadSettings::IsNaturalScrollSet() const {
+  return natural_scroll_.has_value();
+}
+
+void TouchpadSettings::SetScrollSensitivity(int value) {
+  scroll_sensitivity_ = value;
+}
+
+int TouchpadSettings::GetScrollSensitivity() const {
+  return *scroll_sensitivity_;
+}
+
+bool TouchpadSettings::IsScrollSensitivitySet() const {
+  return scroll_sensitivity_.has_value();
+}
+
+void TouchpadSettings::SetScrollAcceleration(bool enabled) {
+  scroll_acceleration_ = enabled;
+}
+
+bool TouchpadSettings::GetScrollAcceleration() const {
+  return *scroll_acceleration_;
+}
+
+bool TouchpadSettings::IsScrollAccelerationSet() const {
+  return scroll_acceleration_.has_value();
+}
+
 bool TouchpadSettings::Update(const TouchpadSettings& settings) {
   bool updated = false;
   if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
+    updated = true;
+  if (UpdateIfHasValue(settings.scroll_sensitivity_, &scroll_sensitivity_))
     updated = true;
   if (UpdateIfHasValue(settings.tap_to_click_, &tap_to_click_))
     updated = true;
@@ -128,6 +158,8 @@ bool TouchpadSettings::Update(const TouchpadSettings& settings) {
   if (UpdateIfHasValue(settings.tap_dragging_, &tap_dragging_))
     updated = true;
   if (UpdateIfHasValue(settings.acceleration_, &acceleration_))
+    updated = true;
+  if (UpdateIfHasValue(settings.scroll_acceleration_, &scroll_acceleration_))
     updated = true;
   UpdateIfHasValue(settings.natural_scroll_, &natural_scroll_);
   // Always send natural scrolling to the shell command, as a workaround.
@@ -145,6 +177,10 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
   if (touchpad_settings.sensitivity_.has_value()) {
     input_device_settings->SetTouchpadSensitivity(
         touchpad_settings.sensitivity_.value());
+  }
+  if (touchpad_settings.scroll_sensitivity_.has_value()) {
+    input_device_settings->SetTouchpadScrollSensitivity(
+        touchpad_settings.scroll_sensitivity_.value());
   }
   if (touchpad_settings.tap_to_click_.has_value()) {
     input_device_settings->SetTapToClick(
@@ -166,6 +202,10 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
     input_device_settings->SetTouchpadAcceleration(
         touchpad_settings.acceleration_.value());
   }
+  if (touchpad_settings.scroll_acceleration_.has_value()) {
+    input_device_settings->SetTouchpadScrollAcceleration(
+        touchpad_settings.scroll_acceleration_.value());
+  }
 }
 
 MouseSettings::MouseSettings() = default;
@@ -174,10 +214,12 @@ MouseSettings::MouseSettings(const MouseSettings& other) = default;
 
 MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
   if (&other != this) {
-    sensitivity_ = other.sensitivity_;
-    primary_button_right_ = other.primary_button_right_;
-    reverse_scroll_ = other.reverse_scroll_;
     acceleration_ = other.acceleration_;
+    primary_button_right_ = other.primary_button_right_;
+    scroll_sensitivity_ = other.scroll_sensitivity_;
+    reverse_scroll_ = other.reverse_scroll_;
+    scroll_acceleration_ = other.scroll_acceleration_;
+    sensitivity_ = other.sensitivity_;
   }
   return *this;
 }
@@ -206,18 +248,6 @@ bool MouseSettings::IsPrimaryButtonRightSet() const {
   return primary_button_right_.has_value();
 }
 
-void MouseSettings::SetReverseScroll(bool enabled) {
-  reverse_scroll_ = enabled;
-}
-
-bool MouseSettings::GetReverseScroll() const {
-  return *reverse_scroll_;
-}
-
-bool MouseSettings::IsReverseScrollSet() const {
-  return reverse_scroll_.has_value();
-}
-
 void MouseSettings::SetAcceleration(bool enabled) {
   acceleration_ = enabled;
 }
@@ -230,20 +260,58 @@ bool MouseSettings::IsAccelerationSet() const {
   return acceleration_.has_value();
 }
 
+void MouseSettings::SetReverseScroll(bool enabled) {
+  reverse_scroll_ = enabled;
+}
+
+bool MouseSettings::GetReverseScroll() const {
+  return *reverse_scroll_;
+}
+
+bool MouseSettings::IsReverseScrollSet() const {
+  return reverse_scroll_.has_value();
+}
+
+void MouseSettings::SetScrollSensitivity(int value) {
+  scroll_sensitivity_ = value;
+}
+
+int MouseSettings::GetScrollSensitivity() const {
+  return *scroll_sensitivity_;
+}
+
+bool MouseSettings::IsScrollSensitivitySet() const {
+  return scroll_sensitivity_.has_value();
+}
+
+void MouseSettings::SetScrollAcceleration(bool enabled) {
+  scroll_acceleration_ = enabled;
+}
+
+bool MouseSettings::GetScrollAcceleration() const {
+  return *scroll_acceleration_;
+}
+
+bool MouseSettings::IsScrollAccelerationSet() const {
+  return scroll_acceleration_.has_value();
+}
+
 bool MouseSettings::Update(const MouseSettings& settings) {
   bool updated = false;
   if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
+    updated = true;
+  if (UpdateIfHasValue(settings.scroll_sensitivity_, &scroll_sensitivity_))
     updated = true;
   if (UpdateIfHasValue(settings.primary_button_right_,
                        &primary_button_right_)) {
     updated = true;
   }
-  if (UpdateIfHasValue(settings.reverse_scroll_, &reverse_scroll_)) {
+  if (UpdateIfHasValue(settings.reverse_scroll_, &reverse_scroll_))
     updated = true;
-  }
-  if (UpdateIfHasValue(settings.acceleration_, &acceleration_)) {
+  if (UpdateIfHasValue(settings.acceleration_, &acceleration_))
     updated = true;
-  }
+  if (UpdateIfHasValue(settings.scroll_acceleration_, &scroll_acceleration_))
+    updated = true;
   return updated;
 }
 
@@ -255,6 +323,10 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
   if (mouse_settings.sensitivity_.has_value()) {
     input_device_settings->SetMouseSensitivity(
         mouse_settings.sensitivity_.value());
+  }
+  if (mouse_settings.scroll_sensitivity_.has_value()) {
+    input_device_settings->SetMouseScrollSensitivity(
+        mouse_settings.scroll_sensitivity_.value());
   }
   if (mouse_settings.primary_button_right_.has_value()) {
     input_device_settings->SetPrimaryButtonRight(
@@ -268,12 +340,26 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
     input_device_settings->SetMouseAcceleration(
         mouse_settings.acceleration_.value());
   }
+  if (mouse_settings.scroll_acceleration_.has_value()) {
+    input_device_settings->SetMouseScrollAcceleration(
+        mouse_settings.scroll_acceleration_.value());
+  }
 }
 
 // static
 bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
+  // tests do not have InstallAttributes or LocalState initialized, so getting
+  // browser_policy_connector crashes.
+  if (!InstallAttributes::IsInitialized() ||
+      !g_browser_process->local_state()) {
+    return false;
+  }
+
   policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+      InstallAttributes::IsInitialized()
+          ? g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos()
+          : nullptr;
   if (!connector)
     return false;
 

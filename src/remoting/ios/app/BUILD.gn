@@ -2,15 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/third_party/features.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/ios/app/remoting_ios_tmpl.gni")
 
 group("all") {
   testonly = true
 
-  deps = [
-    ":ios_remoting_app",
-  ]
+  deps = [ ":ios_remoting_app" ]
 }
 
 # source set to be used by both external and internal app.
@@ -98,6 +97,14 @@ source_set("common_source_set") {
     "//ui/resources",
   ]
 
+  libs = [
+    "UIKit.framework",
+    "AVFoundation.framework",
+    "Foundation.framework",
+    "WebKit.framework",
+    "QuartzCore.framework",
+  ]
+
   # TODO(crbug.com/875022) fix for OpenGLES deprecation.
   defines = [ "GLES_SILENCE_DEPRECATION" ]
   foreach(locale, remoting_locales_with_underscores) {
@@ -125,6 +132,7 @@ source_set("app_source_set") {
     ":common_source_set",
     "//base",
   ]
+  libs = [ "UIKit.framework" ]
 
   # TODO(crbug.com/875022) fix for OpenGLES deprecation.
   defines = [ "GLES_SILENCE_DEPRECATION" ]
@@ -140,4 +148,11 @@ ios_remoting_app_tmpl("ios_remoting_app") {
     "//remoting/ios/app/resources:launchscreen_assets",
     "//remoting/ios/app/resources:remoting_icons",
   ]
+
+  if (ios_third_party_material_components_built_as_framework) {
+    deps += [
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
+    bundle_deps = [ "//ios/third_party/material_components_ios:material_components_ios+bundle" ]
+  }
 }

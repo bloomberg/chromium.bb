@@ -60,9 +60,9 @@ namespace dawn_native { namespace vulkan {
 
     // static
     ResultOrError<Sampler*> Sampler::Create(Device* device, const SamplerDescriptor* descriptor) {
-        std::unique_ptr<Sampler> sampler = std::make_unique<Sampler>(device, descriptor);
+        Ref<Sampler> sampler = AcquireRef(new Sampler(device, descriptor));
         DAWN_TRY(sampler->Initialize(descriptor));
-        return sampler.release();
+        return sampler.Detach();
     }
 
     MaybeError Sampler::Initialize(const SamplerDescriptor* descriptor) {
@@ -79,15 +79,21 @@ namespace dawn_native { namespace vulkan {
         createInfo.mipLodBias = 0.0f;
         createInfo.anisotropyEnable = VK_FALSE;
         createInfo.maxAnisotropy = 1.0f;
-        createInfo.compareOp = ToVulkanCompareOp(descriptor->compare);
-        createInfo.compareEnable = createInfo.compareOp == VK_COMPARE_OP_NEVER ? VK_FALSE : VK_TRUE;
+        if (descriptor->compare != wgpu::CompareFunction::Undefined) {
+            createInfo.compareOp = ToVulkanCompareOp(descriptor->compare);
+            createInfo.compareEnable = VK_TRUE;
+        } else {
+            // Still set the compareOp so it's not garbage.
+            createInfo.compareOp = VK_COMPARE_OP_NEVER;
+            createInfo.compareEnable = VK_FALSE;
+        }
         createInfo.minLod = descriptor->lodMinClamp;
         createInfo.maxLod = descriptor->lodMaxClamp;
         createInfo.unnormalizedCoordinates = VK_FALSE;
 
         Device* device = ToBackend(GetDevice());
         return CheckVkSuccess(
-            device->fn.CreateSampler(device->GetVkDevice(), &createInfo, nullptr, &mHandle),
+            device->fn.CreateSampler(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
             "CreateSampler");
     }
 

@@ -288,7 +288,11 @@ func main() {
 	}
 
 	if len(*runFlag) == 0 {
-		runInteractive(server, config)
+		if interactiveModeSupported {
+			runInteractive(server, config)
+		} else {
+			log.Fatalf("no arguments given but interactive mode not supported")
+		}
 		return
 	}
 
@@ -428,6 +432,7 @@ FetchResults:
 		}
 
 		if results.Passed {
+			log.Print("Test passed")
 			break
 		}
 

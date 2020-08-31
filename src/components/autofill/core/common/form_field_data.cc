@@ -232,7 +232,8 @@ bool FormFieldData::IdentityComparator::operator()(
 bool FormFieldData::IsTextInputElement() const {
   return form_control_type == "text" || form_control_type == "password" ||
          form_control_type == "search" || form_control_type == "tel" ||
-         form_control_type == "url" || form_control_type == "email";
+         form_control_type == "url" || form_control_type == "email" ||
+         form_control_type == "number";
 }
 
 bool FormFieldData::IsPasswordInputElement() const {
@@ -240,15 +241,15 @@ bool FormFieldData::IsPasswordInputElement() const {
 }
 
 bool FormFieldData::DidUserType() const {
-  return properties_mask & USER_TYPED;
+  return properties_mask & kUserTyped;
 }
 
 bool FormFieldData::HadFocus() const {
-  return properties_mask & HAD_FOCUS;
+  return properties_mask & kHadFocus;
 }
 
 bool FormFieldData::WasAutofilled() const {
-  return properties_mask & AUTOFILLED;
+  return properties_mask & kAutofilled;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,
@@ -418,13 +419,14 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "is_readonly=" << field.is_readonly << " "
             << "typed_value=" << field.typed_value << " "
             << "properties_mask=" << field.properties_mask << " "
-            << "label_source=" << field.label_source;
+            << "label_source=" << field.label_source << " "
+            << "bounds=" << field.bounds.ToString();
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {
   buffer << Tag{"table"};
   buffer << Tr{} << "Name:" << field.name;
-  buffer << Tr{} << "Unique renderer Id:" << field.unique_renderer_id;
+  buffer << Tr{} << "Unique renderer Id:" << field.unique_renderer_id.value();
   buffer << Tr{} << "Name attribute:" << field.name_attribute;
   buffer << Tr{} << "Id attribute:" << field.id_attribute;
   constexpr size_t kMaxLabelSize = 100;

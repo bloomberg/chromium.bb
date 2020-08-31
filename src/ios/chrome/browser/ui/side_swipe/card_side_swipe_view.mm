@@ -11,7 +11,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -22,7 +21,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
@@ -70,10 +69,10 @@ const CGFloat kResizeFactor = 4;
   SwipeView* _rightCard;
 
   // Most recent touch location.
-  CGPoint currentPoint_;
+  CGPoint _currentPoint;
 
-  // Tab model.
-  __weak TabModel* model_;
+  // WebStateList provided from the initializer.
+  WebStateList* _webStateList;
 }
 
 @synthesize backgroundTopConstraint = _backgroundTopConstraint;
@@ -84,11 +83,11 @@ const CGFloat kResizeFactor = 4;
 
 - (instancetype)initWithFrame:(CGRect)frame
                     topMargin:(CGFloat)topMargin
-                        model:(TabModel*)model {
+                 webStateList:(WebStateList*)webStateList {
   self = [super initWithFrame:frame];
   if (self) {
-    model_ = model;
-    currentPoint_ = CGPointZero;
+    _webStateList = webStateList;
+    _currentPoint = CGPointZero;
     _topMargin = topMargin;
 
     UIView* background = [[UIView alloc] initWithFrame:CGRectZero];
@@ -142,7 +141,7 @@ const CGFloat kResizeFactor = 4;
 // direction.
 - (void)updateViewsForDirection:(UISwipeGestureRecognizerDirection)direction {
   _direction = direction;
-  int currentIndex = model_.webStateList->active_index();
+  int currentIndex = _webStateList->active_index();
   CGFloat offset = UseRTLLayout() ? -1 : 1;
   if (_direction == UISwipeGestureRecognizerDirectionRight) {
     [self setupCard:_rightCard withIndex:currentIndex];
@@ -165,15 +164,15 @@ const CGFloat kResizeFactor = 4;
   return greyImage;
 }
 
-// Create card view based on TabModel's WebStateList index.
+// Create card view based on |_webStateList|'s index.
 - (void)setupCard:(SwipeView*)card withIndex:(int)index {
-  if (index < 0 || index >= (NSInteger)[model_ count]) {
+  if (index < 0 || index >= _webStateList->count()) {
     [card setHidden:YES];
     return;
   }
   [card setHidden:NO];
 
-  web::WebState* webState = model_.webStateList->GetWebStateAt(index);
+  web::WebState* webState = _webStateList->GetWebStateAt(index);
   UIImage* topToolbarSnapshot = [self.topToolbarSnapshotProvider
       toolbarSideSwipeSnapshotForWebState:webState];
   [card setTopToolbarImage:topToolbarSnapshot];
@@ -213,42 +212,42 @@ const CGFloat kResizeFactor = 4;
     // If an edge card, don't allow the card to be dragged across the screen.
     // Instead, drag across |kEdgeCardDragPercentage| of the screen.
     _rightCard.transform = CGAffineTransformMakeTranslation(
-        (currentPoint_.x) * kEdgeCardDragPercentage, 0);
+        (_currentPoint.x) * kEdgeCardDragPercentage, 0);
     _leftCard.transform = CGAffineTransformMakeTranslation(
-        (currentPoint_.x - width) * kEdgeCardDragPercentage, 0);
+        (_currentPoint.x - width) * kEdgeCardDragPercentage, 0);
   } else {
-    CGFloat rightXBuffer = kCardHorizontalSpacing * currentPoint_.x / width;
+    CGFloat rightXBuffer = kCardHorizontalSpacing * _currentPoint.x / width;
     CGFloat leftXBuffer = kCardHorizontalSpacing - rightXBuffer;
 
     _rightCard.transform =
-        CGAffineTransformMakeTranslation(currentPoint_.x + rightXBuffer, 0);
+        CGAffineTransformMakeTranslation(_currentPoint.x + rightXBuffer, 0);
     _leftCard.transform = CGAffineTransformMakeTranslation(
-        -width + currentPoint_.x - leftXBuffer, 0);
+        -width + _currentPoint.x - leftXBuffer, 0);
   }
 }
 
 // Update layout with new touch event.
 - (void)handleHorizontalPan:(SideSwipeGestureRecognizer*)gesture {
-  currentPoint_ = [gesture locationInView:self];
-  currentPoint_.x -= gesture.swipeOffset;
+  _currentPoint = [gesture locationInView:self];
+  _currentPoint.x -= gesture.swipeOffset;
 
   // Since it's difficult to touch the very edge of the screen (touches tend to
   // sit near x ~ 4), push the touch towards the edge.
   CGFloat width = [self cardWidth];
   CGFloat half = floor(width / 2);
-  CGFloat padding = floor(std::abs(currentPoint_.x - half) / half);
+  CGFloat padding = floor(std::abs(_currentPoint.x - half) / half);
 
   // Push towards the edges.
-  if (currentPoint_.x > half)
-    currentPoint_.x += padding;
+  if (_currentPoint.x > half)
+    _currentPoint.x += padding;
   else
-    currentPoint_.x -= padding;
+    _currentPoint.x -= padding;
 
   // But don't go past the edges.
-  if (currentPoint_.x < 0)
-    currentPoint_.x = 0;
-  else if (currentPoint_.x > width)
-    currentPoint_.x = width;
+  if (_currentPoint.x < 0)
+    _currentPoint.x = 0;
+  else if (_currentPoint.x > width)
+    _currentPoint.x = width;
 
   [self updateCardPositions];
 
@@ -260,17 +259,16 @@ const CGFloat kResizeFactor = 4;
 }
 
 - (BOOL)isEdgeSwipe {
-  int currentIndex = model_.webStateList->active_index();
+  int currentIndex = _webStateList->active_index();
   return (IsSwipingBack(_direction) && currentIndex == 0) ||
          (IsSwipingForward(_direction) &&
-          currentIndex == model_.webStateList->count() - 1);
+          currentIndex == _webStateList->count() - 1);
 }
 
 // Update the current WebState and animate the proper card view if the
 // |currentPoint_| is past the center of |bounds|.
 - (void)finishPan {
-  WebStateList* webStateList = model_.webStateList;
-  int currentIndex = webStateList->active_index();
+  int currentIndex = _webStateList->active_index();
   // Something happened and now there is not active WebState.  End card side let
   // swipe and BVC show no tabs UI.
   if (currentIndex == WebStateList::kInvalidIndex)
@@ -283,7 +281,7 @@ const CGFloat kResizeFactor = 4;
   CGFloat offset = UseRTLLayout() ? -1 : 1;
   if (_direction == UISwipeGestureRecognizerDirectionRight) {
     // If swipe is right and |currentPoint_.x| is over the first 1/3, move left.
-    if (currentPoint_.x > width / 3.0 && ![self isEdgeSwipe]) {
+    if (_currentPoint.x > width / 3.0 && ![self isEdgeSwipe]) {
       rightTransform =
           CGAffineTransformMakeTranslation(width + kCardHorizontalSpacing, 0);
       leftTransform = CGAffineTransformIdentity;
@@ -299,7 +297,7 @@ const CGFloat kResizeFactor = 4;
     }
   } else {
     // If swipe is left and |currentPoint_.x| is over the first 1/3, move right.
-    if (currentPoint_.x < (width / 3.0) * 2.0 && ![self isEdgeSwipe]) {
+    if (_currentPoint.x < (width / 3.0) * 2.0 && ![self isEdgeSwipe]) {
       leftTransform =
           CGAffineTransformMakeTranslation(-width - kCardHorizontalSpacing, 0);
       rightTransform = CGAffineTransformIdentity;
@@ -318,7 +316,7 @@ const CGFloat kResizeFactor = 4;
   if (destinationWebStateIndex != currentIndex) {
     // The old webstate is now hidden. The new WebState will be inserted once
     // the animation is complete.
-    webStateList->GetActiveWebState()->WasHidden();
+    _webStateList->GetActiveWebState()->WasHidden();
   }
 
   // Make sure the dominant card animates on top.
@@ -342,7 +340,7 @@ const CGFloat kResizeFactor = 4;
         // because ActivateWebStateAt triggers behavior that depends on the view
         // hierarchy being reassembled, which happens in
         // sideSwipeViewDismissAnimationDidEnd.
-        webStateList->ActivateWebStateAt(destinationWebStateIndex);
+        _webStateList->ActivateWebStateAt(destinationWebStateIndex);
       }];
 }
 

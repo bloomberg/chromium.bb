@@ -40,9 +40,7 @@ class CachedPolicyKeyLoaderTest : public testing::Test {
 
   void StoreUserPolicyKey(const std::string& public_key) {
     ASSERT_TRUE(base::CreateDirectory(user_policy_key_file().DirName()));
-    ASSERT_EQ(static_cast<int>(public_key.size()),
-              base::WriteFile(user_policy_key_file(), public_key.data(),
-                              public_key.size()));
+    ASSERT_TRUE(base::WriteFile(user_policy_key_file(), public_key));
   }
 
   base::FilePath user_policy_keys_dir() const {
@@ -60,12 +58,12 @@ class CachedPolicyKeyLoaderTest : public testing::Test {
   void OnPolicyKeyLoaded() { ++policy_key_loaded_callback_invocations_; }
 
   void CallEnsurePolicyKeyLoaded() {
-    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::Bind(
+    cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::BindOnce(
         &CachedPolicyKeyLoaderTest::OnPolicyKeyLoaded, base::Unretained(this)));
   }
 
   void CallReloadPolicyKey() {
-    cached_policy_key_loader_->ReloadPolicyKey(base::Bind(
+    cached_policy_key_loader_->ReloadPolicyKey(base::BindOnce(
         &CachedPolicyKeyLoaderTest::OnPolicyKeyLoaded, base::Unretained(this)));
   }
 

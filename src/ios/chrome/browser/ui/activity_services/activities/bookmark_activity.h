@@ -7,22 +7,26 @@
 
 #import <UIKit/UIKit.h>
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 @protocol BrowserCommands;
 class GURL;
+class PrefService;
 
 // Activity that adds the page to bookmarks.
 @interface BookmarkActivity : UIActivity
 
-// Initialize the bookmark activity with the |URL| to check to know if the page
-// is already bookmarked in the |bookmarkModel|. The |dispatcher| is used to add
-// the page to the bookmarks.
+// Initializes the bookmark activity with the |URL| to check to know if the page
+// is already bookmarked in the |bookmarkModel|. The |handler| is used to add
+// the page to the bookmarks. The |prefService| is used to verify if the user
+// can edit their bookmarks or not.
 - (instancetype)initWithURL:(const GURL&)URL
-                 bookmarked:(BOOL)bookmarked
-                 dispatcher:(id<BrowserCommands>)dispatcher;
+              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                    handler:(id<BrowserCommands>)handler
+                prefService:(PrefService*)prefService;
 - (instancetype)init NS_UNAVAILABLE;
-
-// Identifier for the bookmark activity.
-+ (NSString*)activityIdentifier;
 
 @end
 

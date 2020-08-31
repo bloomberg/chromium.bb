@@ -30,10 +30,10 @@
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_idb_version_change_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -61,14 +61,14 @@ class IDBVersionChangeEvent final : public Event {
                         const IDBVersionChangeEventInit*);
 
   uint64_t oldVersion() const { return old_version_; }
-  uint64_t newVersion(bool& is_null) const;
+  base::Optional<uint64_t> newVersion() const { return new_version_; }
 
   const AtomicString& dataLoss() const;
   const String& dataLossMessage() const { return data_loss_message_; }
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   uint64_t old_version_;

@@ -33,7 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -58,11 +58,12 @@ class TickClock;
 namespace blink {
 
 class PerformanceMarkOptions;
+class EventCounts;
 class ExceptionState;
 class LargestContentfulPaint;
 class LayoutShift;
-class MeasureMemoryOptions;
 class MemoryInfo;
+class Node;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
 class PerformanceMark;
@@ -97,9 +98,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual PerformanceNavigation* navigation() const;
   virtual MemoryInfo* memory() const;
   virtual ScriptPromise measureMemory(ScriptState*,
-                                      MeasureMemoryOptions*) const;
-
-  virtual void UpdateLongTaskInstrumentation() {}
+                                      ExceptionState& exception_state) const;
+  virtual EventCounts* eventCounts();
 
   // Reduce the resolution to prevent timing attacks. See:
   // http://www.w3.org/TR/hr-time-2/#privacy-security
@@ -110,12 +110,23 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       base::TimeTicks monotonic_time,
       bool allow_negative_value);
 
+  static base::TimeDelta MonotonicTimeToTimeDelta(
+      base::TimeTicks time_origin,
+      base::TimeTicks monotonic_time,
+      bool allow_negative_value);
+
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
   // document's time origin and has a time resolution that is safe for
   // exposing to web.
   DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(base::TimeTicks) const;
   DOMHighResTimeStamp now() const;
+
+  // Translate given platform monotonic time in seconds into base::TimeDelta.
+  // The result timestamp is relative to document's time origin and is
+  // equivalent to the timestamp returned by the function
+  // MonotonicTimeToDOMHighResTimeStamp.
+  base::TimeDelta MonotonicTimeToTimeDelta(base::TimeTicks) const;
 
   // High Resolution Time Level 3 timeOrigin.
   // (https://www.w3.org/TR/hr-time-3/#dom-performance-timeorigin)
@@ -161,12 +172,12 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   // Generates timing info suitable for appending to the performance entries of
   // a context with |origin|. This should be rarely used; most callsites should
   // prefer the convenience method |GenerateAndAddResourceTiming()|.
-  static WebResourceTimingInfo GenerateResourceTiming(
+  static mojom::blink::ResourceTimingInfoPtr GenerateResourceTiming(
       const SecurityOrigin& destination_origin,
       const ResourceTimingInfo&,
       ExecutionContext& context_for_use_counter);
   void AddResourceTiming(
-      const WebResourceTimingInfo&,
+      mojom::blink::ResourceTimingInfoPtr,
       const AtomicString& initiator_type,
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
           worker_timing_receiver);
@@ -261,7 +272,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void RegisterPerformanceObserver(PerformanceObserver&);
   void UpdatePerformanceObserverFilterOptions();
   void ActivateObserver(PerformanceObserver&);
-  void ResumeSuspendedObservers();
+  void SuspendObserver(PerformanceObserver&);
 
   bool HasObserverFor(PerformanceEntry::EntryType) const;
 
@@ -288,25 +299,16 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                    const SecurityOrigin&,
                                    ExecutionContext*);
 
+  // Determine whether a given Node can be exposed via a Web Perf API.
+  static bool CanExposeNode(Node*);
+
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
-
-  class UnifiedClock {
-   public:
-    UnifiedClock(const base::Clock* clock, const base::TickClock* tick_clock)
-        : clock_(clock), tick_clock_(tick_clock) {}
-    DOMHighResTimeStamp GetUnixAtZeroMonotonic() const;
-    base::TimeTicks NowTicks() const;
-
-   private:
-    const base::Clock* clock_;
-    const base::TickClock* tick_clock_;
-    mutable base::Optional<DOMHighResTimeStamp> unix_at_zero_monotonic_;
-  };
+  void Trace(Visitor*) override;
 
   // The caller owns the |clock|.
-  void SetClocksForTesting(const UnifiedClock* clock);
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
   void ResetTimeOriginForTesting(base::TimeTicks time_origin);
 
  private:
@@ -346,7 +348,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void FireResourceTimingBufferFull(TimerBase*);
 
   void NotifyObserversOfEntry(PerformanceEntry&) const;
-  void NotifyObserversOfEntries(PerformanceEntryVector&);
 
   void DeliverObservationsTimerFired(TimerBase*);
 
@@ -366,6 +367,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned element_timing_buffer_max_size_;
   PerformanceEntryVector layout_shift_buffer_;
   PerformanceEntryVector largest_contentful_paint_buffer_;
+  PerformanceEntryVector longtask_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;
@@ -373,7 +375,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   base::TimeTicks time_origin_;
-  const UnifiedClock* unified_clock_;
+  DOMHighResTimeStamp unix_at_zero_monotonic_;
+  const base::TickClock* tick_clock_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<Member<PerformanceObserver>> observers_;

@@ -98,15 +98,26 @@ class ControllerObserver : public base::CheckedObserver {
   virtual void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
 
+  // Called when the bottom sheet should be expanded.
+  virtual void OnExpandBottomSheet() = 0;
+
+  // Called when the bottom sheet should be collapsed.
+  virtual void OnCollapseBottomSheet() = 0;
+
   // Called when the overlay colors have changed.
   virtual void OnOverlayColorsChanged(
       const UiDelegate::OverlayColors& colors) = 0;
 
   // Called when the form has changed.
-  virtual void OnFormChanged(const FormProto* form) = 0;
+  virtual void OnFormChanged(const FormProto* form,
+                             const FormProto::Result* result) = 0;
 
   // Called when client settings have changed.
   virtual void OnClientSettingsChanged(const ClientSettings& settings) = 0;
+
+  // Called when the generic user interface to show has been changed or cleared.
+  virtual void OnGenericUserInterfaceChanged(
+      const GenericUserInterfaceProto* generic_ui) = 0;
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_

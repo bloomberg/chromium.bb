@@ -6,6 +6,7 @@
 #define ASH_WALLPAPER_WALLPAPER_VIEW_H_
 
 #include "ash/wallpaper/wallpaper_base_view.h"
+#include "ash/wallpaper/wallpaper_property.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace aura {
@@ -19,21 +20,25 @@ namespace ash {
 class WallpaperView : public WallpaperBaseView,
                       public views::ContextMenuController {
  public:
-  WallpaperView(int blur, float opacity);
+  explicit WallpaperView(const WallpaperProperty& property);
   ~WallpaperView() override;
 
-  // Schedules a repaint of the wallpaper with blur and opacity changes.
-  void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
+  // Clears cached image. Must be called when wallpaper image is changed.
+  void ClearCachedImage();
 
-  int repaint_blur() const { return repaint_blur_; }
-  float repaint_opacity() const { return repaint_opacity_; }
+  // Enables/Disables the lock shield layer.
+  void SetLockShieldEnabled(bool enabled);
+
+  void set_wallpaper_property(const WallpaperProperty& property) {
+    property_ = property;
+  }
+  const WallpaperProperty& property() const { return property_; }
 
  private:
-  friend class WallpaperControllerTest;
-
   // views::View:
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -47,12 +52,12 @@ class WallpaperView : public WallpaperBaseView,
                      const cc::PaintFlags& flags,
                      gfx::Canvas* canvas) override;
 
-  // These are used by overview mode to animate the blur and opacity on the
-  // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the
-  // wallpaper will be downsampled and a blur and brightness filter will be
-  // applied. It is downsampled to increase performance.
-  int repaint_blur_;
-  float repaint_opacity_;
+  // Paint parameters (blur sigma and opacity) to draw wallpaper.
+  WallpaperProperty property_{wallpaper_constants::kClear};
+
+  // A view to hold solid color layer to hide desktop, in case compositor
+  // failed to draw its content due to memory shortage.
+  views::View* shield_view_ = nullptr;
 
   // A cached downsampled image of the wallpaper image. It will help wallpaper
   // blur/brightness animations be more performant.
@@ -61,11 +66,11 @@ class WallpaperView : public WallpaperBaseView,
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
-views::Widget* CreateWallpaperWidget(aura::Window* root_window,
-                                     int container_id,
-                                     int blur,
-                                     float opacity,
-                                     WallpaperView** out_wallpaper_view);
+std::unique_ptr<views::Widget> CreateWallpaperWidget(
+    aura::Window* root_window,
+    int container_id,
+    const WallpaperProperty& property,
+    WallpaperView** out_wallpaper_view);
 
 }  // namespace ash
 

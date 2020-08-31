@@ -5,19 +5,21 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- * 1. Redistributions of source code must retain the above copyright
+ *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. AND ITS CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GOOGLE INC.
- * OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -25,26 +27,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Search from '../search/search.js';  // eslint-disable-line no-unused-vars
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as Workspace from '../workspace/workspace.js';
+
 /**
- * @implements {Search.SearchScope}
+ * @implements {Search.SearchConfig.SearchScope}
  */
-Sources.SourcesSearchScope = class {
+export class SourcesSearchScope {
   constructor() {
     // FIXME: Add title once it is used by search controller.
     this._searchId = 0;
-    /** @type {!Array<!Workspace.UISourceCode>} */
+    /** @type {!Array<!Workspace.UISourceCode.UISourceCode>} */
     this._searchResultCandidates = [];
-    /** @type {?function(!Search.SearchResult)} */
+    /** @type {?function(!Search.SearchConfig.SearchResult)} */
     this._searchResultCallback = null;
     /** @type {?function(boolean)} */
     this._searchFinishedCallback = null;
-    /** @type {?Workspace.ProjectSearchConfig} */
+    /** @type {?Workspace.Workspace.ProjectSearchConfig} */
     this._searchConfig = null;
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode1
-   * @param {!Workspace.UISourceCode} uiSourceCode2
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode1
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode2
    * @return {number}
    */
   static _filesComparator(uiSourceCode1, uiSourceCode2) {
@@ -54,10 +63,10 @@ Sources.SourcesSearchScope = class {
     if (!uiSourceCode1.isDirty() && uiSourceCode2.isDirty()) {
       return 1;
     }
-    const isFileSystem1 = uiSourceCode1.project().type() === Workspace.projectTypes.FileSystem &&
-        !Persistence.persistence.binding(uiSourceCode1);
-    const isFileSystem2 = uiSourceCode2.project().type() === Workspace.projectTypes.FileSystem &&
-        !Persistence.persistence.binding(uiSourceCode2);
+    const isFileSystem1 = uiSourceCode1.project().type() === Workspace.Workspace.projectTypes.FileSystem &&
+        !self.Persistence.persistence.binding(uiSourceCode1);
+    const isFileSystem2 = uiSourceCode2.project().type() === Workspace.Workspace.projectTypes.FileSystem &&
+        !self.Persistence.persistence.binding(uiSourceCode2);
     if (isFileSystem1 !== isFileSystem2) {
       return isFileSystem1 ? 1 : -1;
     }
@@ -74,13 +83,13 @@ Sources.SourcesSearchScope = class {
 
   /**
    * @override
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    */
   performIndexing(progress) {
     this.stopSearch();
 
     const projects = this._projects();
-    const compositeProgress = new Common.CompositeProgress(progress);
+    const compositeProgress = new Common.Progress.CompositeProgress(progress);
     for (let i = 0; i < projects.length; ++i) {
       const project = projects[i];
       const projectProgress = compositeProgress.createSubProgress(project.uiSourceCodes().length);
@@ -89,19 +98,20 @@ Sources.SourcesSearchScope = class {
   }
 
   /**
-   * @return {!Array.<!Workspace.Project>}
+   * @return {!Array.<!Workspace.Workspace.Project>}
    */
   _projects() {
-    const searchInAnonymousAndContentScripts = Common.moduleSetting('searchInAnonymousAndContentScripts').get();
+    const searchInAnonymousAndContentScripts =
+        Common.Settings.Settings.instance().moduleSetting('searchInAnonymousAndContentScripts').get();
 
-    return Workspace.workspace.projects().filter(project => {
-      if (project.type() === Workspace.projectTypes.Service) {
+    return Workspace.Workspace.WorkspaceImpl.instance().projects().filter(project => {
+      if (project.type() === Workspace.Workspace.projectTypes.Service) {
         return false;
       }
       if (!searchInAnonymousAndContentScripts && project.isServiceProject()) {
         return false;
       }
-      if (!searchInAnonymousAndContentScripts && project.type() === Workspace.projectTypes.ContentScripts) {
+      if (!searchInAnonymousAndContentScripts && project.type() === Workspace.Workspace.projectTypes.ContentScripts) {
         return false;
       }
       return true;
@@ -110,9 +120,9 @@ Sources.SourcesSearchScope = class {
 
   /**
    * @override
-   * @param {!Workspace.ProjectSearchConfig} searchConfig
-   * @param {!Common.Progress} progress
-   * @param {function(!Search.SearchResult)} searchResultCallback
+   * @param {!Workspace.Workspace.ProjectSearchConfig} searchConfig
+   * @param {!Common.Progress.Progress} progress
+   * @param {function(!Search.SearchConfig.SearchResult)} searchResultCallback
    * @param {function(boolean)} searchFinishedCallback
    */
   performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback) {
@@ -123,9 +133,9 @@ Sources.SourcesSearchScope = class {
     this._searchConfig = searchConfig;
 
     const promises = [];
-    const compositeProgress = new Common.CompositeProgress(progress);
+    const compositeProgress = new Common.Progress.CompositeProgress(progress);
     const searchContentProgress = compositeProgress.createSubProgress();
-    const findMatchingFilesProgress = new Common.CompositeProgress(compositeProgress.createSubProgress());
+    const findMatchingFilesProgress = new Common.Progress.CompositeProgress(compositeProgress.createSubProgress());
     for (const project of this._projects()) {
       const weight = project.uiSourceCodes().length;
       const findMatchingFilesInProjectProgress = findMatchingFilesProgress.createSubProgress(weight);
@@ -143,8 +153,8 @@ Sources.SourcesSearchScope = class {
   }
 
   /**
-   * @param {!Workspace.Project} project
-   * @param {!Workspace.ProjectSearchConfig} searchConfig
+   * @param {!Workspace.Workspace.Project} project
+   * @param {!Workspace.Workspace.ProjectSearchConfig} searchConfig
    * @param {boolean=} dirtyOnly
    * @return {!Array.<string>}
    */
@@ -156,7 +166,7 @@ Sources.SourcesSearchScope = class {
       if (!uiSourceCode.contentType().isTextType()) {
         continue;
       }
-      const binding = Persistence.persistence.binding(uiSourceCode);
+      const binding = self.Persistence.persistence.binding(uiSourceCode);
       if (binding && binding.network === uiSourceCode) {
         continue;
       }
@@ -173,8 +183,8 @@ Sources.SourcesSearchScope = class {
 
   /**
    * @param {number} searchId
-   * @param {!Workspace.Project} project
-   * @param {!Workspace.ProjectSearchConfig} searchConfig
+   * @param {!Workspace.Workspace.Project} project
+   * @param {!Workspace.Workspace.ProjectSearchConfig} searchConfig
    * @param {!Array<string>} filesMathingFileQuery
    * @param {!Array<string>} files
    */
@@ -195,20 +205,20 @@ Sources.SourcesSearchScope = class {
       if (!uiSourceCode) {
         continue;
       }
-      const script = Bindings.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode);
+      const script = Bindings.DefaultScriptMapping.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode);
       if (script && !script.isAnonymousScript()) {
         continue;
       }
       uiSourceCodes.push(uiSourceCode);
     }
-    uiSourceCodes.sort(Sources.SourcesSearchScope._filesComparator);
+    uiSourceCodes.sort(SourcesSearchScope._filesComparator);
     this._searchResultCandidates =
-        this._searchResultCandidates.mergeOrdered(uiSourceCodes, Sources.SourcesSearchScope._filesComparator);
+        this._searchResultCandidates.mergeOrdered(uiSourceCodes, SourcesSearchScope._filesComparator);
   }
 
   /**
    * @param {number} searchId
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    * @param {function()} callback
    */
   _processMatchingFiles(searchId, progress, callback) {
@@ -235,8 +245,8 @@ Sources.SourcesSearchScope = class {
     }
 
     /**
-     * @param {!Workspace.UISourceCode} uiSourceCode
-     * @this {Sources.SourcesSearchScope}
+     * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+     * @this {SourcesSearchScope}
      */
     function searchInNextFile(uiSourceCode) {
       if (uiSourceCode.isDirty()) {
@@ -249,7 +259,7 @@ Sources.SourcesSearchScope = class {
     }
 
     /**
-     * @this {Sources.SourcesSearchScope}
+     * @this {SourcesSearchScope}
      */
     function scheduleSearchInNextFileOrFinish() {
       if (fileIndex >= files.length) {
@@ -267,14 +277,14 @@ Sources.SourcesSearchScope = class {
     }
 
     /**
-     * @param {!Workspace.UISourceCode} uiSourceCode
+     * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
      * @param {string} content
-     * @this {Sources.SourcesSearchScope}
+     * @this {SourcesSearchScope}
      */
     function contentLoaded(uiSourceCode, content) {
       /**
-       * @param {!Common.ContentProvider.SearchMatch} a
-       * @param {!Common.ContentProvider.SearchMatch} b
+       * @param {!TextUtils.ContentProvider.SearchMatch} a
+       * @param {!TextUtils.ContentProvider.SearchMatch} b
        */
       function matchesComparator(a, b) {
         return a.lineNumber - b.lineNumber;
@@ -285,13 +295,13 @@ Sources.SourcesSearchScope = class {
       const queries = this._searchConfig.queries();
       if (content !== null) {
         for (let i = 0; i < queries.length; ++i) {
-          const nextMatches = Common.ContentProvider.performSearchInContent(
+          const nextMatches = TextUtils.TextUtils.performSearchInContent(
               content, queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex());
           matches = matches.mergeOrdered(nextMatches, matchesComparator);
         }
       }
       if (matches) {
-        const searchResult = new Sources.FileBasedSearchResult(uiSourceCode, matches);
+        const searchResult = new FileBasedSearchResult(uiSourceCode, matches);
         this._searchResultCallback(searchResult);
       }
 
@@ -306,16 +316,15 @@ Sources.SourcesSearchScope = class {
   stopSearch() {
     ++this._searchId;
   }
-};
-
+}
 
 /**
- * @implements {Search.SearchResult}
+ * @implements {Search.SearchConfig.SearchResult}
  */
-Sources.FileBasedSearchResult = class {
+export class FileBasedSearchResult {
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {!Array.<!Common.ContentProvider.SearchMatch>} searchMatches
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {!Array.<!TextUtils.ContentProvider.SearchMatch>} searchMatches
    */
   constructor(uiSourceCode, searchMatches) {
     this._uiSourceCode = uiSourceCode;
@@ -373,4 +382,4 @@ Sources.FileBasedSearchResult = class {
   matchLabel(index) {
     return this._searchMatches[index].lineNumber + 1;
   }
-};
+}

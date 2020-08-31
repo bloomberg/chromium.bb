@@ -6,12 +6,16 @@ module content.mojom;
 
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
+import "content/public/common/web_preferences.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
+import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
 import "third_party/blink/public/mojom/manifest/manifest.mojom";
+import "third_party/blink/public/mojom/page/page.mojom";
+import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -28,15 +32,24 @@ struct CreateViewParams {
 
   // The ID of the main frame hosted in the view, or None if creating a view to
   // host a main frame proxy. If this is None, then |proxy_routing_id| should be
-  // set to something other than None.
+  // set to something other than None. The |main_frame_widget_routing_id| is
+  // None if this is None.
   int32 main_frame_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The ID of the widget for the main frame. The |main_frame_routing_id| is
+  // None if this is None.
+  int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
 
   // This is null precisely when |main_frame_routing_id| is MSG_ROUTING_NONE,
   // that is, when creating a RenderView for a remote main frame.
   DocumentScopedInterfaceBundle? main_frame_interface_bundle;
 
-  // The ID of the widget for the main frame.
-  int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
+  // The communication interfaces for the WebFrameWidget in blink. All should
+  // be set if there is a |main_frame_routing_id|.
+  pending_associated_remote<blink.mojom.FrameWidgetHost>? frame_widget_host;
+  pending_associated_receiver<blink.mojom.FrameWidget>? frame_widget;
+  pending_associated_remote<blink.mojom.WidgetHost>? widget_host;
+  pending_associated_receiver<blink.mojom.Widget>? widget;
 
   // The session storage namespace ID this view should use.
   string session_storage_namespace_id;
@@ -49,6 +62,13 @@ struct CreateViewParams {
   // this view's main frame, which will be a proxy when |main_frame_routing_id|
   // is None (due to site isolation), or a RenderFrame in all other cases.
   FrameReplicationState replicated_frame_state;
+
+  // This represents the frame token for the MainFrame. It will be always set.
+  // If |main_frame_routing_id| is set, it will store a unique identifier for
+  // the  LocalFrame<-->RenderFrameHostImpl mapping.
+  // If |proxy_routing_id| is set, it will store a unique identifier for
+  // the RemoteFrame<-->RenderFrameProxyHost mapping.
+  mojo_base.mojom.UnguessableToken main_frame_frame_token;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/
@@ -66,8 +86,11 @@ struct CreateViewParams {
   // Whether the RenderView should initially be hidden.
   bool hidden;
 
-  // Whether the RenderView will never be visible.
-  bool never_visible;
+  // When true, all RenderWidgets under this RenderView will never be shown to
+  // the user, and thus never composited, and will not need to produce pixels
+  // for display. This allows the renderer to optimize and avoid resources used
+  // for displaying graphical output.
+  bool never_composited;
 
   // Whether the window associated with this view was created with an opener.
   bool window_was_created_with_opener;
@@ -87,12 +110,21 @@ struct CreateViewParams {
 
   // Set this to true when creating a RenderView inside a portal.
   bool inside_portal;
+
+  // Endpoint for any messages that are broadcast to all views in a WebContents.
+  pending_associated_receiver<blink.mojom.PageBroadcast> blink_page_broadcast;
 };
 
 struct CreateFrameWidgetParams {
   // Gives the routing ID for the RenderWidget that will be attached to the
   // new RenderFrame.
   int32 routing_id;
+
+  // The communication interfaces for the WebFrameWidget in blink.
+  pending_associated_remote<blink.mojom.FrameWidgetHost> frame_widget_host;
+  pending_associated_receiver<blink.mojom.FrameWidget> frame_widget;
+  pending_associated_remote<blink.mojom.WidgetHost> widget_host;
+  pending_associated_receiver<blink.mojom.Widget> widget;
 
   // The initial visual properties of the widget.
   VisualProperties visual_properties;
@@ -106,6 +138,10 @@ struct CreateFrameParams {
   // configured to replace either the previous frame or the previous proxy on
   // commit.
   int32 previous_routing_id;
+
+  // The frame token. It is a unique identifier for
+  // the LocalFrame<-->RenderFrameHostImpl mapping.
+  mojo_base.mojom.UnguessableToken frame_token;
 
   // Specifies the new frame's opener.  The opener will be null if this is
   // MSG_ROUTING_NONE.
@@ -141,7 +177,7 @@ struct CreateFrameParams {
   // properties of the HTMLFrameOwnerElement from the parent process.
   // Note that unlike FrameReplicationState, this is not replicated for remote
   // frames.
-  FrameOwnerProperties frame_owner_properties;
+  blink.mojom.FrameOwnerProperties frame_owner_properties;
 
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
@@ -169,7 +205,6 @@ struct UpdateScrollbarThemeParams {
 struct UpdateSystemColorInfoParams {
   bool is_dark_mode;
   bool is_high_contrast;
-  PreferredColorScheme preferred_color_scheme;
   // uint32 represents a SkColor in the map.
   map<SystemThemeColor, uint32> colors;
 };
@@ -216,12 +251,15 @@ interface Renderer {
   // is MSG_ROUTING_NONE.  The new proxy should be created as a child of the
   // object identified by |parent_routing_id| or as top level if that is
   // MSG_ROUTING_NONE.
+  // |proxy_frame_token| is used uniquely identify the
+  // RemoteFrame <--> RenderFrameProxyHost mapping.
   // |devtools_frame_token| is used for devtools instrumentation
   // and trace-ability. It is defined by the browser and is never
   // sent back from the renderer in the control calls.
   CreateFrameProxy(int32 routing_id, int32 render_view_routing_id,
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state,
+                   mojo_base.mojom.UnguessableToken proxy_frame_token,
                    mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Tells the renderer that the network type has changed so that
@@ -292,4 +330,9 @@ interface Renderer {
   // If a main frame exists or is created, the low memory mode will
   // be disabled.
   EnableV8LowMemoryMode();
+
+  // Write out the accumulated code profiling profile to the configured file.
+  // The callback is invoked once the profile has been flushed to disk.
+  [EnableIf=clang_profiling_inside_sandbox]
+  WriteClangProfilingProfile() => ();
 };

@@ -23,6 +23,7 @@
 #include "base/observer_list.h"
 #include "base/win/atl.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
@@ -309,24 +310,24 @@ namespace ui {
 class AXPlatformNodeWin;
 class AXPlatformRelationWin;
 
-// A simple interface for a class that wants to be notified when IAccessible2
-// is used by a client, a strong indication that full accessibility support
-// should be enabled.
-//
-// TODO(dmazzoni): Rename this to something more general.
-class AX_EXPORT IAccessible2UsageObserver {
+// A simple interface for a class that wants to be notified when Windows
+// accessibility APIs are used by a client, a strong indication that full
+// accessibility support should be enabled.
+class AX_EXPORT WinAccessibilityAPIUsageObserver {
  public:
-  IAccessible2UsageObserver();
-  virtual ~IAccessible2UsageObserver();
+  WinAccessibilityAPIUsageObserver();
+  virtual ~WinAccessibilityAPIUsageObserver();
   virtual void OnIAccessible2Used() = 0;
   virtual void OnScreenReaderHoneyPotQueried() = 0;
   virtual void OnAccNameCalled() = 0;
+  virtual void OnUIAutomationUsed() = 0;
 };
 
 // Get an observer list that allows modules across the codebase to
-// listen to when usage of IAccessible2 is detected.
-extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>::Unchecked&
-GetIAccessible2UsageObserverList();
+// listen to when usage of Windows accessibility APIs is detected.
+extern AX_EXPORT
+    base::ObserverList<WinAccessibilityAPIUsageObserver>::Unchecked&
+    GetWinAccessibilityAPIUsageObserverList();
 
 // TODO(nektar): Remove multithread superclass since we don't support it.
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
@@ -335,10 +336,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                              &IID_IAccessible2_4,
                                              &LIBID_IAccessible2Lib>,
                         public IAccessibleEx,
-                        public IAccessibleText,
+                        public IAccessibleHypertext,
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
+                        public IAccessibleValue,
                         public IExpandCollapseProvider,
                         public IGridItemProvider,
                         public IGridProvider,
@@ -374,9 +376,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessible2_4)
     COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleText)
+    COM_INTERFACE_ENTRY(IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IAccessibleValue)
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
@@ -412,23 +416,23 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // AXPlatformNodeBase overrides.
   void Destroy() override;
-  int GetIndexInParent() override;
   base::string16 GetValue() const override;
-  base::string16 GetHypertext() const override;
 
   //
   // IAccessible methods.
   //
 
   // Retrieves the child element or child object at a given point on the screen.
-  IFACEMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child) override;
+  IFACEMETHODIMP accHitTest(LONG screen_physical_pixel_x,
+                            LONG screen_physical_pixel_y,
+                            VARIANT* child) override;
 
   // Performs the object's default action.
   IFACEMETHODIMP accDoDefaultAction(VARIANT var_id) override;
 
   // Retrieves the specified object's current screen location.
-  IFACEMETHODIMP accLocation(LONG* x_left,
-                             LONG* y_top,
+  IFACEMETHODIMP accLocation(LONG* physical_pixel_left,
+                             LONG* physical_pixel_top,
                              LONG* width,
                              LONG* height,
                              VARIANT var_id) override;
@@ -926,6 +930,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_table(IUnknown** table) override;
 
   //
+  // IAccessibleHypertext methods not implemented.
+  //
+
+  IFACEMETHODIMP get_nHyperlinks(LONG* hyperlink_count) override;
+
+  IFACEMETHODIMP
+  get_hyperlink(LONG index, IAccessibleHyperlink** hyperlink) override;
+
+  IFACEMETHODIMP
+  get_hyperlinkIndex(LONG char_index, LONG* hyperlink_index) override;
+
+  //
   // IAccessibleText methods not implemented.
   //
 
@@ -957,6 +973,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                         LONG y) override;
 
   //
+  // IAccessibleValue methods.
+  //
+
+  IFACEMETHODIMP get_currentValue(VARIANT* value) override;
+
+  IFACEMETHODIMP get_minimumValue(VARIANT* value) override;
+
+  IFACEMETHODIMP get_maximumValue(VARIANT* value) override;
+
+  IFACEMETHODIMP setCurrentValue(VARIANT new_value) override;
+
+  //
   // IRawElementProviderFragment methods.
   //
 
@@ -964,7 +992,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       NavigateDirection direction,
       IRawElementProviderFragment** element_provider) override;
   IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
-  IFACEMETHODIMP get_BoundingRectangle(UiaRect* bounding_rectangle) override;
+  IFACEMETHODIMP get_BoundingRectangle(
+      UiaRect* screen_physical_pixel_bounds) override;
   IFACEMETHODIMP GetEmbeddedFragmentRoots(
       SAFEARRAY** embedded_fragment_roots) override;
   IFACEMETHODIMP SetFocus() override;
@@ -1058,7 +1087,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   int MSAAState() const;
 
   int MSAARole();
-  std::string StringOverrideForMSAARole();
 
   int32_t ComputeIA2State();
 
@@ -1072,6 +1100,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   LONG ComputeUIAControlType();
 
+  AXPlatformNodeWin* ComputeUIALabeledBy();
+
+  bool CanHaveUIALabeledBy();
+
   bool IsNameExposed() const;
 
   bool IsUIAControl() const;
@@ -1080,7 +1112,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   bool IsInaccessibleDueToAncestor() const;
 
-  bool ShouldHideChildren() const;
+  bool ShouldHideChildrenForUIA() const;
+
+  ExpandCollapseState ComputeExpandCollapseState() const;
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;
@@ -1124,7 +1158,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   static void SanitizeStringAttributeForIA2(const std::string& input,
                                             std::string* output);
   FRIEND_TEST_ALL_PREFIXES(AXPlatformNodeWinTest,
-                           TestSanitizeStringAttributeForIA2);
+                           SanitizeStringAttributeForIA2);
 
  private:
   bool IsWebAreaForPresentationalIframe();
@@ -1136,6 +1170,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr) const;
+
+  HRESULT GetNameAsBstr(BSTR* value_bstr) const;
 
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
@@ -1228,16 +1264,24 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void AddAlertTarget();
   void RemoveAlertTarget();
 
-  // Return the text to use for IAccessibleText.
-  base::string16 TextForIAccessibleText();
+  // Enum used to specify whether IAccessibleText is requesting text
+  // At, Before, or After a specified offset.
+  enum class TextOffsetType { kAtOffset, kBeforeOffset, kAfterOffset };
 
-  // Search forwards (direction == 1) or backwards (direction == -1)
-  // from the given offset until the given boundary is found, and
-  // return the offset of that boundary.
-  LONG FindBoundary(const base::string16& text,
-                    IA2TextBoundaryType ia2_boundary,
+  // Helper for implementing IAccessibleText::get_text{At|Before|After}Offset.
+  HRESULT IAccessibleTextGetTextForOffsetType(
+      TextOffsetType text_offset_type,
+      LONG offset,
+      enum IA2TextBoundaryType boundary_type,
+      LONG* start_offset,
+      LONG* end_offset,
+      BSTR* text);
+
+  // Search forwards or backwards from the given offset until the given IA2
+  // text boundary is found, and return the offset of that boundary.
+  LONG FindBoundary(IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
-                    AXTextBoundaryDirection direction);
+                    ax::mojom::MoveDirection direction);
 
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
@@ -1257,7 +1301,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                      LONG* n_selected);
 
   // Helper method for mutating the ISelectionItemProvider selected state
-  HRESULT ISelectionItemProviderSetSelected(bool selected);
+  HRESULT ISelectionItemProviderSetSelected(bool selected) const;
+
+  // Helper method getting the selected status.
+  bool ISelectionItemProviderIsSelected() const;
 
   //
   // Getters for UIA GetTextAttributeValue

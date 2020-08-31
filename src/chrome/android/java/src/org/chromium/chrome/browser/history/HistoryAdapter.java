@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.res.Resources;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -18,19 +16,21 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
-import org.chromium.chrome.browser.ui.widget.MoreProgressButton.State;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
+import org.chromium.components.browser_ui.widget.MoreProgressButton;
+import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -273,6 +273,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {
         mHasOtherFormsOfBrowsingData = hasOtherForms;
         setPrivacyDisclaimer();
+        mHistoryManager.onHasPrivacyDisclaimersChanged();
     }
 
     @Override

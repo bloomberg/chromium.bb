@@ -8,7 +8,6 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
-namespace platform {
 
 TEST(SocketAddressPosixTest, IPv4SocketAddressConvertsSuccessfully) {
   const SocketAddressPosix address(IPEndpoint{{1, 2, 3, 4}, 80});
@@ -26,8 +25,8 @@ TEST(SocketAddressPosixTest, IPv4SocketAddressConvertsSuccessfully) {
 }
 
 TEST(SocketAddressPosixTest, IPv6SocketAddressConvertsSuccessfully) {
-  const SocketAddressPosix address(
-      IPEndpoint{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, 80});
+  const SocketAddressPosix address(IPEndpoint{
+      {0x0102, 0x0304, 0x0506, 0x0708, 0x090a, 0x0b0c, 0x0d0e, 0x0f10}, 80});
 
   const sockaddr_in6* v6_address =
       reinterpret_cast<const sockaddr_in6*>(address.address());
@@ -85,9 +84,8 @@ TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
   EXPECT_THAT(v6_address->sin6_addr.s6_addr,
               testing::ElementsAreArray(kExpectedAddress));
   IPEndpoint expected_address{
-      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, 80};
+      {0x0102, 0x0304, 0x0506, 0x0708, 0x090a, 0x0b0c, 0x0d0e, 0x0f10}, 80};
   EXPECT_EQ(address_posix.endpoint(), expected_address);
 }
 
-}  // namespace platform
 }  // namespace openscreen

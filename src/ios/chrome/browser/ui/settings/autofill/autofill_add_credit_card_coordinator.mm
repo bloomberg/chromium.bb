@@ -8,6 +8,7 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator.h"
@@ -52,7 +53,7 @@
   // one so the user can add credit cards.
   autofill::PersonalDataManager* personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
-          self.browserState->GetOriginalChromeBrowserState());
+          self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
 
   self.mediator = [[AutofillAddCreditCardMediator alloc]
          initWithDelegate:self
@@ -109,6 +110,7 @@
     API_AVAILABLE(ios(13.0)) {
   self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
               creditCardConsumer:self.addCreditCardViewController];
 
   [self.creditCardScannerCoordinator start];
@@ -132,6 +134,7 @@
 - (void)showActionSheetAlert {
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
                            title:
                                l10n_util::GetNSString(
                                    IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE)
@@ -163,6 +166,7 @@
 - (void)showAlertWithMessage:(NSString*)message {
   self.alertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
                            title:message
                          message:nil];
 

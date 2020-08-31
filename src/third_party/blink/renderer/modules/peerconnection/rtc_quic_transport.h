@@ -6,13 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_QUIC_TRANSPORT_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_quic_parameters.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_parameters.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ const uint32_t kMaxBufferedRecvDatagrams = 5000;
 // long as it is alive.
 class MODULES_EXPORT RTCQuicTransport final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public QuicTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCQuicTransport);
@@ -117,9 +117,8 @@ class MODULES_EXPORT RTCQuicTransport final
 
   // The maximum datagram size in bytes allowed with sendDatagram.
   // Before the transport has become connected this will be 0.
-  uint16_t maxDatagramLength(bool& is_null) const {
-    is_null = !max_datagram_length_.has_value();
-    return max_datagram_length_.value_or(0);
+  base::Optional<uint16_t> maxDatagramLength() const {
+    return max_datagram_length_;
   }
 
   String state() const;
@@ -188,7 +187,7 @@ class MODULES_EXPORT RTCQuicTransport final
   ExecutionContext* GetExecutionContext() const override;
 
   // For garbage collection.
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   enum class StartReason {

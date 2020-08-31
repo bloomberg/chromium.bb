@@ -27,7 +27,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Compute global interface information, including public information, dependencies, and inheritance.
 
 Computed data is stored in a global variable, |interfaces_info|, and written as
@@ -104,10 +103,11 @@ interfaces_info = {}
 # Auxiliary variables (not visible to future build steps)
 partial_interface_files = defaultdict(lambda: {
     'full_paths': [],
-    'include_paths': [],
-})
+    'include_paths': [], })
 parent_interfaces = {}
-inherited_extended_attributes_by_interface = {}  # interface name -> extended attributes
+
+# interface name -> extended attributes
+inherited_extended_attributes_by_interface = {}
 
 
 class IdlInterfaceFileNotFoundError(Exception):
@@ -127,12 +127,12 @@ def dict_of_dicts_of_lists_update_or_append(existing, other):
 
     Needed for merging partial_interface_files across components.
     """
-    for key, value in other.iteritems():
+    for key, value in other.items():
         if key not in existing:
             existing[key] = value
             continue
         existing_value = existing[key]
-        for inner_key, inner_value in value.iteritems():
+        for inner_key, inner_value in value.items():
             existing_value[inner_key].extend(inner_value)
 
 
@@ -140,25 +140,33 @@ def dict_of_dicts_of_lists_update_or_append(existing, other):
 # Computations
 ################################################################################
 
+
 def compute_inheritance_info(interface_name):
-    """Compute inheritance information, namely ancestors and inherited extended attributes."""
+    """Compute inheritance information, namely ancestors and inherited
+    extended attributes.
+    """
+
     def generate_ancestors(interface_name):
         while interface_name in parent_interfaces:
             interface_name = parent_interfaces[interface_name]
             yield interface_name
 
     ancestors = list(generate_ancestors(interface_name))
-    inherited_extended_attributes = inherited_extended_attributes_by_interface[interface_name]
+    inherited_extended_attributes = \
+        inherited_extended_attributes_by_interface[interface_name]
     for ancestor in ancestors:
         # Ancestors may not be present, notably if an ancestor is a generated
         # IDL file and we are running this script from run_bindings_tests.py,
         # where we don't generate these files.
-        ancestor_extended_attributes = inherited_extended_attributes_by_interface.get(ancestor, {})
+        ancestor_extended_attributes = \
+                inherited_extended_attributes_by_interface.get(ancestor, {})
         inherited_extended_attributes.update(ancestor_extended_attributes)
 
     interfaces_info[interface_name].update({
-        'ancestors': ancestors,
-        'inherited_extended_attributes': inherited_extended_attributes,
+        'ancestors':
+        ancestors,
+        'inherited_extended_attributes':
+        inherited_extended_attributes,
     })
 
 
@@ -170,8 +178,9 @@ def compute_global_type_info():
     garbage_collected_interfaces = set()
     callback_interfaces = set()
 
-    for interface_name, interface_info in interfaces_info.iteritems():
-        component_dirs[interface_name] = idl_filename_to_component(interface_info['full_path'])
+    for interface_name, interface_info in interfaces_info.items():
+        component_dirs[interface_name] = idl_filename_to_component(
+            interface_info['full_path'])
 
         if interface_info['ancestors']:
             ancestors[interface_name] = interface_info['ancestors']
@@ -180,16 +189,19 @@ def compute_global_type_info():
         if interface_info['is_dictionary']:
             dictionaries[interface_name] = interface_info['is_dictionary']
         if interface_info['implemented_as']:
-            implemented_as_interfaces[interface_name] = interface_info['implemented_as']
+            implemented_as_interfaces[interface_name] = \
+                interface_info['implemented_as']
 
-        inherited_extended_attributes = interface_info['inherited_extended_attributes']
+        inherited_extended_attributes = \
+            interface_info['inherited_extended_attributes']
         garbage_collected_interfaces.add(interface_name)
 
     interfaces_info['ancestors'] = ancestors
     interfaces_info['callback_interfaces'] = callback_interfaces
     interfaces_info['dictionaries'] = dictionaries
     interfaces_info['implemented_as_interfaces'] = implemented_as_interfaces
-    interfaces_info['garbage_collected_interfaces'] = garbage_collected_interfaces
+    interfaces_info['garbage_collected_interfaces'] = \
+        garbage_collected_interfaces
     interfaces_info['component_dirs'] = component_dirs
 
 
@@ -205,15 +217,14 @@ def compute_interfaces_info_overall(info_individuals):
         # partial interfaces are used to *extend* interfaces.
         # We thus need to update or append if already present
         dict_of_dicts_of_lists_update_or_append(
-                partial_interface_files, info['partial_interface_files'])
+            partial_interface_files, info['partial_interface_files'])
 
     # Record inheritance information individually
-    for interface_name, interface_info in interfaces_info.iteritems():
+    for interface_name, interface_info in interfaces_info.items():
         extended_attributes = interface_info['extended_attributes']
         inherited_extended_attributes_by_interface[interface_name] = dict(
-                (key, value)
-                for key, value in extended_attributes.iteritems()
-                if key in INHERITED_EXTENDED_ATTRIBUTES)
+            (key, value) for key, value in extended_attributes.items()
+            if key in INHERITED_EXTENDED_ATTRIBUTES)
         parent = interface_info['parent']
         if parent:
             parent_interfaces[interface_name] = parent
@@ -230,26 +241,32 @@ def compute_interfaces_info_overall(info_individuals):
     # 'includes').
     # Note that moving an 'includes' statement between files does not change the
     # info itself (or hence cause a rebuild)!
-    for mixin_name, interface_info in interfaces_info.iteritems():
+    for mixin_name, interface_info in interfaces_info.items():
         for interface_name in interface_info['included_by_interfaces']:
-            interfaces_info[interface_name]['including_mixins'].append(mixin_name)
+            interfaces_info[interface_name]['including_mixins'].append(
+                mixin_name)
         del interface_info['included_by_interfaces']
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces include.
-    for interface_name, interface_info in interfaces_info.iteritems():
+    for interface_name, interface_info in interfaces_info.items():
         partial_interface_paths = partial_interface_files[interface_name]
         partial_interfaces_full_paths = partial_interface_paths['full_paths']
         # Partial interface definitions each need an include, as they are
         # implemented in separate classes from the main interface.
-        partial_interfaces_include_paths = partial_interface_paths['include_paths']
+        partial_interfaces_include_paths = \
+            partial_interface_paths['include_paths']
 
         mixins = interface_info['including_mixins']
         try:
             mixins_info = [interfaces_info[mixin] for mixin in mixins]
         except KeyError as key_name:
-            raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following mixin is defined: %s' % key_name)
-        mixins_full_paths = [mixin_info['full_path'] for mixin_info in mixins_info]
+            raise IdlInterfaceFileNotFoundError(
+                'Could not find the IDL file where the following mixin is defined: %s'
+                % key_name)
+        mixins_full_paths = [
+            mixin_info['full_path'] for mixin_info in mixins_info
+        ]
         # Mixins don't need include files, as this is handled in the Blink
         # implementation (they are implemented on |impl| itself, hence header
         # declaration is included in the interface class).
@@ -258,7 +275,8 @@ def compute_interfaces_info_overall(info_individuals):
         # https://crbug.com/360435
         mixins_include_paths = [
             mixin_info['include_path'] for mixin_info in mixins_info
-            if mixin_info['is_legacy_treat_as_partial_interface']]
+            if mixin_info['is_legacy_treat_as_partial_interface']
+        ]
 
         dependencies_full_paths = mixins_full_paths
         dependencies_include_paths = mixins_include_paths
@@ -274,23 +292,26 @@ def compute_interfaces_info_overall(info_individuals):
                 dependencies_other_component_full_paths.append(full_path)
 
         for include_path in partial_interfaces_include_paths:
-            partial_interface_component = idl_filename_to_component(include_path)
+            partial_interface_component = idl_filename_to_component(
+                include_path)
             if component == partial_interface_component:
                 dependencies_include_paths.append(include_path)
             else:
                 dependencies_other_component_include_paths.append(include_path)
 
         interface_info.update({
-            'dependencies_full_paths': dependencies_full_paths,
-            'dependencies_include_paths': dependencies_include_paths,
+            'dependencies_full_paths':
+            dependencies_full_paths,
+            'dependencies_include_paths':
+            dependencies_include_paths,
             'dependencies_other_component_full_paths':
-                dependencies_other_component_full_paths,
+            dependencies_other_component_full_paths,
             'dependencies_other_component_include_paths':
-                dependencies_other_component_include_paths,
+            dependencies_other_component_include_paths,
         })
 
     # Clean up temporary private information
-    for interface_info in interfaces_info.itervalues():
+    for interface_info in interfaces_info.values():
         del interface_info['extended_attributes']
         del interface_info['union_types']
         del interface_info['is_legacy_treat_as_partial_interface']
@@ -301,6 +322,7 @@ def compute_interfaces_info_overall(info_individuals):
 
 
 ################################################################################
+
 
 def main():
     _, args = parse_options()

@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -19,6 +18,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using preferences_helper::BooleanPrefMatches;
@@ -75,16 +75,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   EXPECT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }
 
-// Flaky on Windows. https://crbug.com/930482
-#if defined(OS_WIN)
-#define MAYBE_ShouldRemoveBadDataWhenRegistering \
-  DISABLED_ShouldRemoveBadDataWhenRegistering
-#else
-#define MAYBE_ShouldRemoveBadDataWhenRegistering \
-  ShouldRemoveBadDataWhenRegistering
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest,
-                       MAYBE_ShouldRemoveBadDataWhenRegistering) {
+                       ShouldRemoveBadDataWhenRegistering) {
   // Populate the data store with data of type boolean but register as string.
   SetPreexistingPreferencesFileContents(
       0, "{\"testing\":{\"my-test-preference\":true}}");
@@ -166,11 +158,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest,
 
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
-#endif  // defined(CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   // After restart, the last sync cycle snapshot should be empty.

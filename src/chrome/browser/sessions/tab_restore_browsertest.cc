@@ -26,21 +26,22 @@
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/find_in_page/find_notification_details.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -48,9 +49,11 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -59,7 +62,10 @@
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:
-  TabRestoreTest() : active_browser_list_(NULL) {
+  TabRestoreTest()
+      : active_browser_list_(nullptr),
+        animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot1.html"));
@@ -93,7 +99,7 @@ class TabRestoreTest : public InProcessBrowserTest {
     for (int i = 0; i < how_many; ++i) {
       ui_test_utils::NavigateToURLWithDisposition(
           browser, url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     }
     int tab_count = browser->tab_strip_model()->count();
     EXPECT_EQ(starting_tab_count + how_many, tab_count);
@@ -135,7 +141,8 @@ class TabRestoreTest : public InProcessBrowserTest {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     {
-      TabRestoreServiceLoadWaiter waiter(browser);
+      TabRestoreServiceLoadWaiter waiter(
+          TabRestoreServiceFactory::GetForProfile(browser->profile()));
       chrome::RestoreTab(browser);
       waiter.Wait();
     }
@@ -186,6 +193,9 @@ class TabRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 
  private:
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
+
   DISALLOW_COPY_AND_ASSIGN(TabRestoreTest);
 };
 
@@ -356,11 +366,11 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   // Navigate the rightmost one to url2_ for easier identification.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -398,10 +408,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
   // Create a browser window with two tabs.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Create a second browser window.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -412,12 +422,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
 
   // Deliberately change the bounds of the first window to something different.
   gfx::Rect bounds = browser()->window()->GetBounds();
-  bounds.set_width(640);
+  bounds.set_width(700);
   bounds.set_height(480);
   bounds.Offset(20, 20);
   browser()->window()->SetBounds(bounds);
   gfx::Rect bounds2 = browser()->window()->GetBounds();
-  EXPECT_EQ(bounds, bounds2);
+  ASSERT_EQ(bounds, bounds2);
 
   // Close the first window.
   CloseBrowserSynchronously(browser());
@@ -456,10 +466,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -537,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   // Add a tab
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(++tab_count, browser()->tab_strip_model()->count());
 
   // Navigate to another same-site URL.
@@ -560,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   // will already exist when the restore happens.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
@@ -597,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   // Add a tab
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(++tab_count, browser()->tab_strip_model()->count());
 
   // Navigate to more URLs, then a cross-site URL.
@@ -613,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   // the user clicks Back in the restored tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
@@ -646,10 +656,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   int initial_tab_count = browser()->tab_strip_model()->count();
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Close the window.
   CloseBrowserSynchronously(browser());
@@ -679,8 +689,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
 }
 
 // https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) bot and
-// PASS/FAIL flakiness on Linux Chromium OS ASan LSan Tests (1) bot.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || defined(OS_WIN)
+// Mac10.13 Tests (dbg) and PASS/FAIL flakiness on Linux Chromium OS ASan LSan
+// Tests (1) bot.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(OS_WIN) || (defined(OS_MACOSX) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURL DISABLED_RestoreTabWithSpecialURL
 #else
 #define MAYBE_RestoreTabWithSpecialURL RestoreTabWithSpecialURL
@@ -693,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUICreditsURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Close the tab.
   CloseTab(1);
@@ -711,9 +723,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
 }
 
 // https://crbug.com/667932: Flakiness on linux_chromium_asan_rel_ng bot.
-// https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) and
+// Mac10.13 Tests (dbg) bots.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    (defined(OS_WIN) && !defined(NDEBUG))
+    ((defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
 #else
 #define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack
@@ -730,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURLOnBack) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUICreditsURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Then navigate to a normal URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
@@ -854,13 +867,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_GetRestoreTabType) {
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
-  waiter.Wait();
-
-  // When we start, we should get nothing.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(service);
+  TabRestoreServiceLoadWaiter waiter(service);
+  waiter.Wait();
+
+  // When we start, we should get nothing.
   EXPECT_TRUE(service->entries().empty());
 
   // Add a tab and close it
@@ -883,13 +896,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
-  waiter.Wait();
-
-  // When we start this time we should get a Tab.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(service);
+  TabRestoreServiceLoadWaiter waiter(service);
+  waiter.Wait();
+
+  // When we start this time we should get a Tab.
   ASSERT_GE(service->entries().size(), 1u);
   EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
@@ -912,9 +925,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   ASSERT_LE(2, tab_count);
 
   const int grouped_tab_index = tab_count - 1;
-  TabGroupId group_id =
+  tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
-  const TabGroupVisualData visual_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan);
 
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
@@ -931,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
                           ->tab_strip_model()
                           ->GetTabGroupForTab(grouped_tab_index)
                           .value());
-  const TabGroupVisualData* data = group->visual_data();
+  const tab_groups::TabGroupVisualData* data = group->visual_data();
   EXPECT_EQ(data->title(), visual_data.title());
   EXPECT_EQ(data->color(), visual_data.color());
 }
@@ -945,11 +959,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
 
   const int closed_tab_index = 1;
 
-  TabGroupId group_id = browser()->tab_strip_model()->AddToNewGroup({0, 1});
-  const TabGroupVisualData visual_data_1(base::ASCIIToUTF16("Foo1"),
-                                         SK_ColorCYAN);
-  const TabGroupVisualData visual_data_2(base::ASCIIToUTF16("Foo2"),
-                                         SK_ColorCYAN);
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+  const tab_groups::TabGroupVisualData visual_data_1(
+      base::ASCIIToUTF16("Foo1"), tab_groups::TabGroupColorId::kCyan);
+  const tab_groups::TabGroupVisualData visual_data_2(
+      base::ASCIIToUTF16("Foo2"), tab_groups::TabGroupColorId::kCyan);
   TabGroup* group =
       browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
 
@@ -964,7 +979,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
                           ->tab_strip_model()
                           ->GetTabGroupForTab(closed_tab_index)
                           .value());
-  const TabGroupVisualData* data = group->visual_data();
+  const tab_groups::TabGroupVisualData* data = group->visual_data();
   EXPECT_EQ(data->title(), visual_data_2.title());
   EXPECT_EQ(data->color(), visual_data_2.color());
 }
@@ -980,14 +995,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   const int tab_count = AddSomeTabs(browser(), 3);
 
   TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
-  TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
+  tab_groups::TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
-  TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"), SK_ColorRED);
+  tab_groups::TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"),
+                                             tab_groups::TabGroupColorId::kRed);
   group_model->GetTabGroup(group1)->SetVisualData(group1_data);
 
-  TabGroupId group2 =
+  tab_groups::TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
-  TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"), SK_ColorBLUE);
+  tab_groups::TabGroupVisualData group2_data(
+      base::ASCIIToUTF16("Bar"), tab_groups::TabGroupColorId::kBlue);
   group_model->GetTabGroup(group2)->SetVisualData(group2_data);
 
   CloseBrowserSynchronously(browser());

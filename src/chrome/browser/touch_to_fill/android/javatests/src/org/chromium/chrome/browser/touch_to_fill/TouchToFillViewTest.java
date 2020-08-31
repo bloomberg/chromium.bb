@@ -27,10 +27,11 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 import static java.util.Arrays.asList;
 
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +44,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;

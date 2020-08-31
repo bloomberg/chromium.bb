@@ -28,10 +28,12 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/mojom/process.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -66,8 +68,8 @@ base::ProcessId GetArcInitProcessId(
 }
 
 std::vector<ArcProcess> GetArcSystemProcessList() {
+  TRACE_EVENT0("browser", "GetArcSystemProcessList");
   std::vector<ArcProcess> ret_processes;
-
   if (arc::IsArcVmEnabled()) {
     // TODO(b/122992194): Fix this for ARCVM.
     return ret_processes;
@@ -293,9 +295,8 @@ ArcProcessService::ArcProcessService(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service), nspid_to_pid_(new NSPidToPidMap()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE});
   arc_bridge_service_->process()->AddObserver(this);
 }

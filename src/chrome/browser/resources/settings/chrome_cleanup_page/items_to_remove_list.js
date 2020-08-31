@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ChromeCleanupProxyImpl} from './chrome_cleanup_proxy.js';
 
 /**
- * For each line in the item list, the text field will be shown in normal style
- * at front of the line. The highlightSuffix will be appended to the end of line
- * and emphasized with bold font.
+ * For each line in the item list, the text field will be shown in normal
+ * style at front of the line. The highlightSuffix will be appended to the end
+ * of line and emphasized with bold font.
  * @typedef {{
  *   text: string,
  *   highlightSuffix: ?string,
  * }}
  */
-settings.ChromeCleanupRemovalListItem;
+export let ChromeCleanupRemovalListItem;
 
 /**
  * The default number of items to show for files, registry keys and extensions
  * on the detailed view when user-initiated cleanups are enabled.
  */
-settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
+export const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 
 /**
  * @fileoverview
@@ -31,9 +37,9 @@ settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
  * Example:
  *
  *    <!-- Items list initially shows |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
- *         items. If there are more than |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
- *         items on the list, then a "show more" link is shown; tapping on it
- *         expands the list. -->
+ *         items. If there are more than
+ * |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items on the list, then a "show
+ * more" link is shown; tapping on it expands the list. -->
  *    <items-to-remove-list
  *        title="Files and programs:"
  *        items-to-show="[[filesToShow]]">
@@ -42,13 +48,15 @@ settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 Polymer({
   is: 'items-to-remove-list',
 
+  _template: html`{__html_template__}`,
+
   properties: {
     title: {
       type: String,
       value: '',
     },
 
-    /** @type {!Array<settings.ChromeCleanupRemovalListItem>} */
+    /** @type {!Array<ChromeCleanupRemovalListItem>} */
     itemsToShow: {
       type: Array,
       observer: 'updateVisibleState_',
@@ -66,7 +74,7 @@ Polymer({
     /**
      * The first |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items of |itemsToShow|
      * if the list is longer than |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|.
-     * @private {?Array<settings.ChromeCleanupRemovalListItem>}
+     * @private {?Array<ChromeCleanupRemovalListItem>}
      */
     initialItems_: Array,
 
@@ -74,13 +82,13 @@ Polymer({
      * The remaining items to be presented that are not included in
      * |initialItems_|. Items in this list are only shown to the user if
      * |expanded_| is true.
-     * @private {?Array<settings.ChromeCleanupRemovalListItem>}
+     * @private {?Array<ChromeCleanupRemovalListItem>}
      */
     remainingItems_: Array,
 
     /**
-     * The text for the "show more" link available if not all files are visible
-     * in the card.
+     * The text for the "show more" link available if not all files are
+     * visible in the card.
      * @private
      */
     moreItemsLinkText_: {
@@ -90,7 +98,7 @@ Polymer({
   },
 
   /** @private */
-  expandList_: function() {
+  expandList_() {
     this.expanded_ = true;
     this.moreItemsLinkText_ = '';
   },
@@ -102,17 +110,16 @@ Polymer({
    * 1. If size(itemsToShow) < CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, then all
    *    items will be visible.
    * 2. Otherwise, exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1| will be
-   *    visible and the "show more" link will be rendered. The list presented to
-   *    the user will contain exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
+   *    visible and the "show more" link will be rendered. The list presented
+   * to the user will contain exactly |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|
    *    elements, and the last one will be the "show more" link.
    *
-   * @param {!Array<settings.ChromeCleanupRemovalListItem>} itemsToShow
+   * @param {!Array<ChromeCleanupRemovalListItem>} itemsToShow
    */
-  updateVisibleState_: function(itemsToShow) {
+  updateVisibleState_(itemsToShow) {
     // Start expanded if there are less than
-    // |settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
-    this.expanded_ =
-        itemsToShow.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
+    // |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
+    this.expanded_ = itemsToShow.length <= CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
 
     if (this.expanded_) {
       this.initialItems_ = itemsToShow;
@@ -122,11 +129,11 @@ Polymer({
     }
 
     this.initialItems_ =
-        itemsToShow.slice(0, settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
+        itemsToShow.slice(0, CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
     this.remainingItems_ =
-        itemsToShow.slice(settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
+        itemsToShow.slice(CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
 
-    const browserProxy = settings.ChromeCleanupProxyImpl.getInstance();
+    const browserProxy = ChromeCleanupProxyImpl.getInstance();
     browserProxy.getMoreItemsPluralString(this.remainingItems_.length)
         .then(linkText => {
           this.moreItemsLinkText_ = linkText;
@@ -134,20 +141,20 @@ Polymer({
   },
 
   /**
-   * Returns the class for the <li> elements that correspond to the items hidden
-   * in the default view.
+   * Returns the class for the <li> elements that correspond to the items
+   * hidden in the default view.
    * @param {boolean} expanded
    */
-  remainingItemsClass_: function(expanded) {
+  remainingItemsClass_(expanded) {
     return expanded ? 'visible-item' : 'hidden-item';
   },
 
   /**
-   * @param {settings.ChromeCleanupRemovalListItem} item
+   * @param {ChromeCleanupRemovalListItem} item
    * @return {boolean} Whether a highlight suffix exists.
    * @private
    */
-  hasHighlightSuffix_: function(item) {
+  hasHighlightSuffix_(item) {
     return item.highlightSuffix !== null;
   },
 });

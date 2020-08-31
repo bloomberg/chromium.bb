@@ -11,6 +11,7 @@ The image related API endpoints should generally be found here.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -22,6 +23,10 @@ from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
 from chromite.utils import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # The image.proto ImageType enum ids.
 _BASE_ID = common_pb2.BASE
@@ -65,7 +70,7 @@ def _CreateResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_CreateResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.require('build_target.name')
 @validate.validation_complete
 @metrics.collect_metrics
@@ -201,7 +206,7 @@ def _SignerTestResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_SignerTestResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.exists('image.path')
 @validate.validation_complete
 def SignerTest(input_proto, output_proto, _config):
@@ -229,7 +234,7 @@ def _TestResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_TestResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto, config):

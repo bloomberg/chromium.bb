@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +35,6 @@ public class AssistantShippingAddressSection
                         R.dimen.autofill_assistant_payment_request_title_padding),
                 context.getString(R.string.payments_add_address),
                 context.getString(R.string.payments_add_address));
-        setTitle(context.getString(R.string.payments_shipping_address_label));
     }
 
     public void setEditor(AddressEditor editor) {
@@ -109,24 +107,39 @@ public class AssistantShippingAddressSection
         return mContext.getString(R.string.payments_edit_address);
     }
 
-    void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
+    @Override
+    protected boolean areEqual(AutofillAddress optionA, AutofillAddress optionB) {
+        if (optionA == null || optionB == null) {
+            return optionA == optionB;
+        }
+        if (TextUtils.equals(optionA.getIdentifier(), optionB.getIdentifier())) {
+            return true;
+        }
+        if (optionA.getProfile() == null || optionB.getProfile() == null) {
+            return optionA.getProfile() == optionB.getProfile();
+        }
+        // TODO(crbug.com/806868): Implement better check for the case where PDM is disabled, we
+        //  won't have IDs.
+        return TextUtils.equals(optionA.getProfile().getGUID(), optionB.getProfile().getGUID());
+    }
+
+    /**
+     * The Chrome profiles have changed externally. This will rebuild the UI with the new/changed
+     * set of addresses derived from the profiles, while keeping the selected item if possible.
+     */
+    void onAddressesChanged(List<AutofillAddress> addresses) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
-
-        AutofillAddress previouslySelectedAddress = mSelectedOption;
         int selectedAddressIndex = -1;
-        List<AutofillAddress> addresses = new ArrayList<>();
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillAddress autofillAddress = new AutofillAddress(mContext, profiles.get(i));
-            if (previouslySelectedAddress != null
-                    && TextUtils.equals(autofillAddress.getIdentifier(),
-                            previouslySelectedAddress.getIdentifier())) {
-                selectedAddressIndex = i;
+        if (mSelectedOption != null) {
+            for (int i = 0; i < addresses.size(); i++) {
+                if (areEqual(addresses.get(i), mSelectedOption)) {
+                    selectedAddressIndex = i;
+                    break;
+                }
             }
-            addresses.add(autofillAddress);
         }
-
         // Replace current set of items, keep selection if possible.
         setItems(addresses, selectedAddressIndex);
     }

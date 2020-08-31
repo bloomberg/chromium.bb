@@ -54,10 +54,6 @@ namespace ycbcr
 namespace
 {
 
-// \todo [2017-05-24 pyry] Extend:
-// * VK_IMAGE_TILING_LINEAR
-// * Other shader types
-
 using namespace vk;
 using namespace shaderexecutor;
 
@@ -292,7 +288,7 @@ void checkSupport (Context& context, const TestParameters params)
 
 	if (params.useArrayLayers)
 	{
-		if (!isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_EXT_ycbcr_image_arrays"))
+		if (!context.isDeviceFunctionalitySupported("VK_EXT_ycbcr_image_arrays"))
 			TCU_THROW(NotSupportedError, "VK_EXT_ycbcr_image_arrays is not supported");
 
 		VkImageFormatProperties properties = getPhysicalDeviceImageFormatProperties(context.getInstanceInterface(), context.getPhysicalDevice(),

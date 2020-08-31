@@ -28,13 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {Events, NetworkTimeCalculator} from './NetworkTimeCalculator.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-Network.RequestTimingView = class extends UI.VBox {
+export class RequestTimingView extends UI.Widget.VBox {
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!Network.NetworkTimeCalculator} calculator
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!NetworkTimeCalculator} calculator
    */
   constructor(request, calculator) {
     super();
@@ -45,53 +51,53 @@ Network.RequestTimingView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Network.RequestTimeRangeNames} name
+   * @param {!RequestTimeRangeNames} name
    * @return {string}
    */
   static _timeRangeTitle(name) {
     switch (name) {
-      case Network.RequestTimeRangeNames.Push:
-        return Common.UIString('Receiving Push');
-      case Network.RequestTimeRangeNames.Queueing:
-        return Common.UIString('Queueing');
-      case Network.RequestTimeRangeNames.Blocking:
-        return Common.UIString('Stalled');
-      case Network.RequestTimeRangeNames.Connecting:
-        return Common.UIString('Initial connection');
-      case Network.RequestTimeRangeNames.DNS:
-        return Common.UIString('DNS Lookup');
-      case Network.RequestTimeRangeNames.Proxy:
-        return Common.UIString('Proxy negotiation');
-      case Network.RequestTimeRangeNames.ReceivingPush:
-        return Common.UIString('Reading Push');
-      case Network.RequestTimeRangeNames.Receiving:
-        return Common.UIString('Content Download');
-      case Network.RequestTimeRangeNames.Sending:
-        return Common.UIString('Request sent');
-      case Network.RequestTimeRangeNames.ServiceWorker:
-        return Common.UIString('Request to ServiceWorker');
-      case Network.RequestTimeRangeNames.ServiceWorkerPreparation:
-        return Common.UIString('ServiceWorker Preparation');
-      case Network.RequestTimeRangeNames.SSL:
-        return Common.UIString('SSL');
-      case Network.RequestTimeRangeNames.Total:
-        return Common.UIString('Total');
-      case Network.RequestTimeRangeNames.Waiting:
-        return Common.UIString('Waiting (TTFB)');
+      case RequestTimeRangeNames.Push:
+        return Common.UIString.UIString('Receiving Push');
+      case RequestTimeRangeNames.Queueing:
+        return Common.UIString.UIString('Queueing');
+      case RequestTimeRangeNames.Blocking:
+        return Common.UIString.UIString('Stalled');
+      case RequestTimeRangeNames.Connecting:
+        return Common.UIString.UIString('Initial connection');
+      case RequestTimeRangeNames.DNS:
+        return Common.UIString.UIString('DNS Lookup');
+      case RequestTimeRangeNames.Proxy:
+        return Common.UIString.UIString('Proxy negotiation');
+      case RequestTimeRangeNames.ReceivingPush:
+        return Common.UIString.UIString('Reading Push');
+      case RequestTimeRangeNames.Receiving:
+        return Common.UIString.UIString('Content Download');
+      case RequestTimeRangeNames.Sending:
+        return Common.UIString.UIString('Request sent');
+      case RequestTimeRangeNames.ServiceWorker:
+        return Common.UIString.UIString('Request to ServiceWorker');
+      case RequestTimeRangeNames.ServiceWorkerPreparation:
+        return Common.UIString.UIString('ServiceWorker Preparation');
+      case RequestTimeRangeNames.SSL:
+        return Common.UIString.UIString('SSL');
+      case RequestTimeRangeNames.Total:
+        return Common.UIString.UIString('Total');
+      case RequestTimeRangeNames.Waiting:
+        return Common.UIString.UIString('Waiting (TTFB)');
       default:
-        return Common.UIString(name);
+        return Common.UIString.UIString(name);
     }
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {number} navigationStart
-   * @return {!Array.<!Network.RequestTimeRange>}
+   * @return {!Array.<!RequestTimeRange>}
    */
   static calculateRequestTimeRanges(request, navigationStart) {
     const result = [];
     /**
-     * @param {!Network.RequestTimeRangeNames} name
+     * @param {!RequestTimeRangeNames} name
      * @param {number} start
      * @param {number} end
      */
@@ -115,7 +121,7 @@ Network.RequestTimingView = class extends UI.VBox {
     }
 
     /**
-     * @param {!Network.RequestTimeRangeNames} name
+     * @param {!RequestTimeRangeNames} name
      * @param {number} start
      * @param {number} end
      */
@@ -130,9 +136,9 @@ Network.RequestTimingView = class extends UI.VBox {
       const start = request.issueTime() !== -1 ? request.issueTime() : request.startTime !== -1 ? request.startTime : 0;
       const middle = (request.responseReceivedTime === -1) ? Number.MAX_VALUE : request.responseReceivedTime;
       const end = (request.endTime === -1) ? Number.MAX_VALUE : request.endTime;
-      addRange(Network.RequestTimeRangeNames.Total, start, end);
-      addRange(Network.RequestTimeRangeNames.Blocking, start, middle);
-      addRange(Network.RequestTimeRangeNames.Receiving, middle, end);
+      addRange(RequestTimeRangeNames.Total, start, end);
+      addRange(RequestTimeRangeNames.Blocking, start, middle);
+      addRange(RequestTimeRangeNames.Receiving, middle, end);
       return result;
     }
 
@@ -140,42 +146,42 @@ Network.RequestTimingView = class extends UI.VBox {
     const startTime = timing.requestTime;
     const endTime = firstPositive([request.endTime, request.responseReceivedTime]) || startTime;
 
-    addRange(Network.RequestTimeRangeNames.Total, issueTime < startTime ? issueTime : startTime, endTime);
+    addRange(RequestTimeRangeNames.Total, issueTime < startTime ? issueTime : startTime, endTime);
     if (timing.pushStart) {
       const pushEnd = timing.pushEnd || endTime;
       // Only show the part of push that happened after the navigation/reload.
       // Pushes that happened on the same connection before we started main request will not be shown.
       if (pushEnd > navigationStart) {
-        addRange(Network.RequestTimeRangeNames.Push, Math.max(timing.pushStart, navigationStart), pushEnd);
+        addRange(RequestTimeRangeNames.Push, Math.max(timing.pushStart, navigationStart), pushEnd);
       }
     }
     if (issueTime < startTime) {
-      addRange(Network.RequestTimeRangeNames.Queueing, issueTime, startTime);
+      addRange(RequestTimeRangeNames.Queueing, issueTime, startTime);
     }
 
     const responseReceived = (request.responseReceivedTime - startTime) * 1000;
     if (request.fetchedViaServiceWorker) {
-      addOffsetRange(Network.RequestTimeRangeNames.Blocking, 0, timing.workerStart);
-      addOffsetRange(Network.RequestTimeRangeNames.ServiceWorkerPreparation, timing.workerStart, timing.workerReady);
-      addOffsetRange(Network.RequestTimeRangeNames.ServiceWorker, timing.workerReady, timing.sendEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.Waiting, timing.sendEnd, responseReceived);
+      addOffsetRange(RequestTimeRangeNames.Blocking, 0, timing.workerStart);
+      addOffsetRange(RequestTimeRangeNames.ServiceWorkerPreparation, timing.workerStart, timing.workerReady);
+      addOffsetRange(RequestTimeRangeNames.ServiceWorker, timing.workerReady, timing.sendEnd);
+      addOffsetRange(RequestTimeRangeNames.Waiting, timing.sendEnd, responseReceived);
     } else if (!timing.pushStart) {
       const blockingEnd =
           firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart, responseReceived]) || 0;
-      addOffsetRange(Network.RequestTimeRangeNames.Blocking, 0, blockingEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.Proxy, timing.proxyStart, timing.proxyEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.DNS, timing.dnsStart, timing.dnsEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.Connecting, timing.connectStart, timing.connectEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.SSL, timing.sslStart, timing.sslEnd);
-      addOffsetRange(Network.RequestTimeRangeNames.Sending, timing.sendStart, timing.sendEnd);
+      addOffsetRange(RequestTimeRangeNames.Blocking, 0, blockingEnd);
+      addOffsetRange(RequestTimeRangeNames.Proxy, timing.proxyStart, timing.proxyEnd);
+      addOffsetRange(RequestTimeRangeNames.DNS, timing.dnsStart, timing.dnsEnd);
+      addOffsetRange(RequestTimeRangeNames.Connecting, timing.connectStart, timing.connectEnd);
+      addOffsetRange(RequestTimeRangeNames.SSL, timing.sslStart, timing.sslEnd);
+      addOffsetRange(RequestTimeRangeNames.Sending, timing.sendStart, timing.sendEnd);
       addOffsetRange(
-          Network.RequestTimeRangeNames.Waiting,
+          RequestTimeRangeNames.Waiting,
           Math.max(timing.sendEnd, timing.connectEnd, timing.dnsEnd, timing.proxyEnd, blockingEnd), responseReceived);
     }
 
     if (request.endTime !== -1) {
       addRange(
-          timing.pushStart ? Network.RequestTimeRangeNames.ReceivingPush : Network.RequestTimeRangeNames.Receiving,
+          timing.pushStart ? RequestTimeRangeNames.ReceivingPush : RequestTimeRangeNames.Receiving,
           request.responseReceivedTime, endTime);
     }
 
@@ -183,19 +189,20 @@ Network.RequestTimingView = class extends UI.VBox {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!Network.NetworkTimeCalculator} calculator
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!NetworkTimeCalculator} calculator
    * @return {!Element}
    */
   static createTimingTable(request, calculator) {
-    const tableElement = createElementWithClass('table', 'network-timing-table');
-    UI.appendStyle(tableElement, 'network/networkTimingTable.css');
+    const tableElement = document.createElement('table');
+    tableElement.classList.add('network-timing-table');
+    UI.Utils.appendStyle(tableElement, 'network/networkTimingTable.css');
     const colgroup = tableElement.createChild('colgroup');
     colgroup.createChild('col', 'labels');
     colgroup.createChild('col', 'bars');
     colgroup.createChild('col', 'duration');
 
-    const timeRanges = Network.RequestTimingView.calculateRequestTimeRanges(request, calculator.minimumBoundary());
+    const timeRanges = RequestTimingView.calculateRequestTimeRanges(request, calculator.minimumBoundary());
     const startTime = timeRanges.map(r => r.start).reduce((a, b) => Math.min(a, b));
     const endTime = timeRanges.map(r => r.end).reduce((a, b) => Math.max(a, b));
     const scale = 100 / (endTime - startTime);
@@ -220,30 +227,32 @@ Network.RequestTimingView = class extends UI.VBox {
     const queuedCell = startTimeHeader.createChild('tr').createChild('td');
     const startedCell = startTimeHeader.createChild('tr').createChild('td');
     queuedCell.colSpan = startedCell.colSpan = 3;
-    queuedCell.createTextChild(Common.UIString('Queued at %s', calculator.formatValue(request.issueTime(), 2)));
-    startedCell.createTextChild(Common.UIString('Started at %s', calculator.formatValue(request.startTime, 2)));
+    queuedCell.createTextChild(
+        Common.UIString.UIString('Queued at %s', calculator.formatValue(request.issueTime(), 2)));
+    startedCell.createTextChild(
+        Common.UIString.UIString('Started at %s', calculator.formatValue(request.startTime, 2)));
 
     let right;
     for (let i = 0; i < timeRanges.length; ++i) {
       const range = timeRanges[i];
       const rangeName = range.name;
-      if (rangeName === Network.RequestTimeRangeNames.Total) {
+      if (rangeName === RequestTimeRangeNames.Total) {
         totalDuration = range.end - range.start;
         continue;
       }
-      if (rangeName === Network.RequestTimeRangeNames.Push) {
-        createHeader(Common.UIString('Server Push'));
-      } else if (rangeName === Network.RequestTimeRangeNames.Queueing) {
+      if (rangeName === RequestTimeRangeNames.Push) {
+        createHeader(Common.UIString.UIString('Server Push'));
+      } else if (rangeName === RequestTimeRangeNames.Queueing) {
         if (!queueingHeader) {
           queueingHeader = createHeader(ls`Resource Scheduling`);
         }
-      } else if (Network.RequestTimingView.ConnectionSetupRangeNames.has(rangeName)) {
+      } else if (ConnectionSetupRangeNames.has(rangeName)) {
         if (!connectionHeader) {
-          connectionHeader = createHeader(Common.UIString('Connection Start'));
+          connectionHeader = createHeader(Common.UIString.UIString('Connection Start'));
         }
       } else {
         if (!dataHeader) {
-          dataHeader = createHeader(Common.UIString('Request/Response'));
+          dataHeader = createHeader(Common.UIString.UIString('Request/Response'));
         }
       }
 
@@ -252,7 +261,7 @@ Network.RequestTimingView = class extends UI.VBox {
       const duration = range.end - range.start;
 
       const tr = tableElement.createChild('tr');
-      tr.createChild('td').createTextChild(Network.RequestTimingView._timeRangeTitle(rangeName));
+      tr.createChild('td').createTextChild(RequestTimingView._timeRangeTitle(rangeName));
 
       const row = tr.createChild('td').createChild('div', 'network-timing-row');
       const bar = row.createChild('span', 'network-timing-bar ' + rangeName);
@@ -267,21 +276,18 @@ Network.RequestTimingView = class extends UI.VBox {
     if (!request.finished) {
       const cell = tableElement.createChild('tr').createChild('td', 'caution');
       cell.colSpan = 3;
-      cell.createTextChild(Common.UIString('CAUTION: request is not finished yet!'));
+      cell.createTextChild(Common.UIString.UIString('CAUTION: request is not finished yet!'));
     }
 
     const footer = tableElement.createChild('tr', 'network-timing-footer');
     const note = footer.createChild('td');
     note.colSpan = 1;
-    note.appendChild(
-        UI.createDocumentationLink('network-performance/reference#timing-explanation', Common.UIString('Explanation')));
+    note.appendChild(UI.UIUtils.createDocumentationLink(
+        'network-performance/reference#timing-explanation', Common.UIString.UIString('Explanation')));
     footer.createChild('td');
     footer.createChild('td').createTextChild(Number.secondsToString(totalDuration, true));
 
     const serverTimings = request.serverTimings;
-    if (!serverTimings) {
-      return tableElement;
-    }
 
     const lastTimingRightEdge = right === undefined ? 100 : right;
 
@@ -290,9 +296,21 @@ Network.RequestTimingView = class extends UI.VBox {
     breakElement.createChild('hr', 'break');
 
     const serverHeader = tableElement.createChild('tr', 'network-timing-table-header');
-    serverHeader.createChild('td').createTextChild(Common.UIString('Server Timing'));
+    serverHeader.createChild('td').createTextChild(Common.UIString.UIString('Server Timing'));
     serverHeader.createChild('td');
-    serverHeader.createChild('td').createTextChild(Common.UIString('TIME'));
+    serverHeader.createChild('td').createTextChild(Common.UIString.UIString('TIME'));
+
+    if (!serverTimings) {
+      const informationRow = tableElement.createChild('tr');
+      const information = informationRow.createChild('td');
+      information.colSpan = 3;
+
+      const link = UI.XLink.XLink.create('https://web.dev/custom-metrics/#server-timing-api', ls`the Server Timing API`);
+      information.appendChild(UI.UIUtils.formatLocalized(
+          'During development, you can use %s to add insights into the server-side timing of this request.', [link]));
+
+      return tableElement;
+    }
 
     serverTimings.filter(item => item.metric.toLowerCase() !== 'total')
         .forEach(item => addTiming(item, lastTimingRightEdge));
@@ -302,7 +320,7 @@ Network.RequestTimingView = class extends UI.VBox {
     return tableElement;
 
     /**
-     * @param {!SDK.ServerTiming} serverTiming
+     * @param {!SDK.ServerTiming.ServerTiming} serverTiming
      * @param {number} right
      */
     function addTiming(serverTiming, right) {
@@ -353,7 +371,7 @@ Network.RequestTimingView = class extends UI.VBox {
   wasShown() {
     this._request.addEventListener(SDK.NetworkRequest.Events.TimingChanged, this._refresh, this);
     this._request.addEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._refresh, this);
-    this._calculator.addEventListener(Network.NetworkTimeCalculator.Events.BoundariesChanged, this._refresh, this);
+    this._calculator.addEventListener(Events.BoundariesChanged, this._refresh, this);
     this._refresh();
   }
 
@@ -363,7 +381,7 @@ Network.RequestTimingView = class extends UI.VBox {
   willHide() {
     this._request.removeEventListener(SDK.NetworkRequest.Events.TimingChanged, this._refresh, this);
     this._request.removeEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._refresh, this);
-    this._calculator.removeEventListener(Network.NetworkTimeCalculator.Events.BoundariesChanged, this._refresh, this);
+    this._calculator.removeEventListener(Events.BoundariesChanged, this._refresh, this);
   }
 
   _refresh() {
@@ -371,14 +389,14 @@ Network.RequestTimingView = class extends UI.VBox {
       this._tableElement.remove();
     }
 
-    this._tableElement = Network.RequestTimingView.createTimingTable(this._request, this._calculator);
+    this._tableElement = RequestTimingView.createTimingTable(this._request, this._calculator);
     this._tableElement.classList.add('resource-timing-table');
     this.element.appendChild(this._tableElement);
   }
-};
+}
 
 /** @enum {string} */
-Network.RequestTimeRangeNames = {
+export const RequestTimeRangeNames = {
   Push: 'push',
   Queueing: 'queueing',
   Blocking: 'blocking',
@@ -395,11 +413,10 @@ Network.RequestTimeRangeNames = {
   Waiting: 'waiting'
 };
 
-Network.RequestTimingView.ConnectionSetupRangeNames = new Set([
-  Network.RequestTimeRangeNames.Queueing, Network.RequestTimeRangeNames.Blocking,
-  Network.RequestTimeRangeNames.Connecting, Network.RequestTimeRangeNames.DNS, Network.RequestTimeRangeNames.Proxy,
-  Network.RequestTimeRangeNames.SSL
+export const ConnectionSetupRangeNames = new Set([
+  RequestTimeRangeNames.Queueing, RequestTimeRangeNames.Blocking, RequestTimeRangeNames.Connecting,
+  RequestTimeRangeNames.DNS, RequestTimeRangeNames.Proxy, RequestTimeRangeNames.SSL
 ]);
 
-/** @typedef {{name: !Network.RequestTimeRangeNames, start: number, end: number}} */
-Network.RequestTimeRange;
+/** @typedef {{name: !RequestTimeRangeNames, start: number, end: number}} */
+export let RequestTimeRange;

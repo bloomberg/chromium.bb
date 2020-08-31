@@ -83,6 +83,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -217,8 +218,8 @@ class BASE_EXPORT Histogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
-  void WriteHTMLGraph(std::string* output) const override;
   void WriteAscii(std::string* output) const override;
+  base::DictionaryValue ToGraphDict() const override;
 
   // Validates the histogram contents and CHECKs on errors.
   // TODO(bcwhite): Remove this after https://crbug/836875.
@@ -293,7 +294,8 @@ class BASE_EXPORT Histogram : public HistogramBase {
   //----------------------------------------------------------------------------
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
 
-  void WriteAsciiImpl(bool graph_it,
+  void WriteAsciiBody(const SampleVector& snapshot,
+                      bool graph_it,
                       const std::string& newline,
                       std::string* output) const;
 
@@ -302,7 +304,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Write a common header message describing this histogram.
   void WriteAsciiHeader(const SampleVectorBase& samples,
-                        Count sample_count,
                         std::string* output) const;
 
   // Write information about previous, current, and next buckets.

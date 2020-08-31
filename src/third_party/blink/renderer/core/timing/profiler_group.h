@@ -41,7 +41,7 @@ class CORE_EXPORT ProfilerGroup
                            ExceptionState&);
 
   void WillBeDestroyed() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Profiler;
@@ -53,6 +53,10 @@ class CORE_EXPORT ProfilerGroup
 
   // Cancels a profiler, discarding its associated trace.
   void CancelProfiler(Profiler*);
+  // Asynchronously cancels a profiler. Invoked on Profiler descrution.
+  void CancelProfilerAsync(ScriptState*, Profiler*);
+  // Internal implementation of cancel.
+  void CancelProfilerImpl(String profiler_id);
 
   // Generates an unused string identifier to use for a new profiling session.
   String NextProfilerId();

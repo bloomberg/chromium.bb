@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mode.h"
 
 @protocol ApplicationCommands;
-@protocol BrowserCommands;
 @class GoogleServicesSettingsCoordinator;
 
 // Delegate for GoogleServicesSettingsCoordinator.
@@ -32,15 +31,9 @@
 // Delegate.
 @property(nonatomic, weak) id<GoogleServicesSettingsCoordinatorDelegate>
     delegate;
-// Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+// Presenter which can show signin UI.
+@property(nonatomic, strong) id<ApplicationCommands> dispatcher;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
@@ -48,9 +41,11 @@
 // |viewController|: navigation controller.
 // |browser|: browser.
 // |mode|: mode to display the Google services settings.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser
-                                      mode:(GoogleServicesSettingsMode)mode
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
+                                            mode:
+                                                (GoogleServicesSettingsMode)mode
     NS_DESIGNATED_INITIALIZER;
 
 @end

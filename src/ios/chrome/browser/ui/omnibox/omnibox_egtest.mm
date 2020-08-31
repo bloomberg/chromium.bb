@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/variations/variations_http_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -20,7 +18,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/testing/hardware_keyboard_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -29,6 +26,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(OmniboxAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
 
 using base::test::ios::kWaitForUIElementTimeout;
 
@@ -143,17 +150,25 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-- (void)testXClientData {
+#if defined(CHROME_EARL_GREY_1)
+//  Flaky on EG1.
+#define MAYBE_testXClientData DISABLED_testXClientData
+#else
+#define MAYBE_testXClientData testXClientData
+#endif
+- (void)MAYBE_testXClientData {
+// TODO(crbug.com/1067815): Test doesn't pass on iPad device.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"testXClientData doesn't pass on iPad device.");
+  }
+#endif
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 
   // Force variations to send the requests.
-  GREYAssertEqual(
-      variations::VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
-      variations::VariationsHttpHeaderProvider::GetInstance()
-          ->ForceVariationIds(
-              /*variation_ids=*/{"100"}, /*command_line_variation_ids=*/""),
-      @"Variation not enabled.");
+  GREYAssert([OmniboxAppInterface forceVariationID:100],
+             @"Variation not enabled.");
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
@@ -223,7 +238,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
   }
 }
 
-- (void)testCopyPaste {
+// Test is flaky: crbug.com/1056700.
+- (void)DISABLED_testCopyPaste {
   [self openPage1];
 
   // Long pressing should allow copying.
@@ -304,13 +320,15 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Copies and pastes a URL, then performs an undo of the paste, and attempts to
 // perform a second undo.
-- (void)testCopyPasteUndo {
+// TODO(crbug.com/1041478): This test is flaky.
+- (void)FLAKY_testCopyPasteUndo {
   [self openPage1];
 
   [ChromeEarlGreyUI focusOmnibox];
   [self checkLocationBarEditState];
 
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"C");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"C"
+                                          flags:UIKeyModifierCommand];
 
   // Edit menu takes a while to copy, and not waiting here will cause Page 2 to
   // load before the copy happens, so Page 2 URL may be copied.
@@ -338,14 +356,16 @@ id<GREYMatcher> SearchCopiedTextButton() {
   [ChromeEarlGreyUI focusOmnibox];
 
   // Attempt to paste.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"V");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"V"
+                                          flags:UIKeyModifierCommand];
 
   // Verify that paste happened.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage1URL)];
 
   // Attempt to undo.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"Z"
+                                          flags:UIKeyModifierCommand];
 
   // Verify that undo happened.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -353,9 +373,47 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // Attempt to undo again. Nothing should happen. In the past this could lead
   // to a crash.
-  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"Z"
+                                          flags:UIKeyModifierCommand];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage2URL)];
+}
+
+// Focus the omnibox and hit "cmd+X". This should remove all text from the
+// omnibox and put it in the clipboard. This had been broken before because of
+// the preedit state complexity. Paste to verify that the URL was indeed copied.
+// TODO(crbug.com/1049603): Re-enable this test.
+- (void)DISABLED_testCutInPreedit {
+  [self openPage1];
+
+  [ChromeEarlGreyUI focusOmnibox];
+  [self checkLocationBarEditState];
+
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"X"
+                                          flags:UIKeyModifierCommand];
+
+  // It takes a while to copy, and not waiting here will cause the test to fail.
+  GREYCondition* copyCondition = [GREYCondition
+      conditionWithName:@"page1 URL copied condition"
+                  block:^BOOL {
+                    return [UIPasteboard.generalPasteboard.string
+                        hasSuffix:base::SysUTF8ToNSString(kPage1URL)];
+                  }];
+  // Wait for copy to happen or timeout after 5 seconds.
+  GREYAssertTrue([copyCondition waitWithTimeout:5],
+                 @"Copying page 1 URL failed");
+
+  // Verify that the omnibox is empty.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText("")];
+
+  // Attempt to paste.
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"V"
+                                          flags:UIKeyModifierCommand];
+
+  // Verify that paste happened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage1URL)];
 }
 
 #pragma mark - Helpers
@@ -410,6 +468,19 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
+  // TODO(crbug.com/1078784): This is flaky on iOS 13 iPad, probably linked to
+  // Apple help on the keyboard.
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad, iOS 13 and later.");
+  }
+
+// TODO(crbug.com/1046787): Test is failing for EG1.
+#if defined(CHROME_EARL_GREY_1)
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
+  }
+#endif
+
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -555,7 +626,13 @@ id<GREYMatcher> SearchCopiedTextButton() {
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testNoDefaultMatch {
+// TODO(crbug.com/1067815): Test can't pass on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNoDefaultMatch testNoDefaultMatch
+#else
+#define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
+#endif
+- (void)MAYBE_testNoDefaultMatch {
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.
@@ -585,7 +662,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
   // Returns the popup row containing the |url| as suggestion.
   id<GREYMatcher> textYouCopiedMatch =
-      grey_allOf(grey_kindOfClassName(@"OmniboxPopupRow"),
+      grey_allOf(grey_kindOfClassName(@"OmniboxPopupRowCell"),
                  grey_descendant(grey_accessibilityLabel(
                      [NSString stringWithFormat:@"\"%@\"", copiedText])),
                  nil);

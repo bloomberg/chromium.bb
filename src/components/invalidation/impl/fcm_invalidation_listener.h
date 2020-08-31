@@ -12,11 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
-#include "components/invalidation/impl/invalidation_listener.h"
-#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/ack_handler.h"
-#include "components/invalidation/public/invalidation_object_id.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -25,12 +23,18 @@ namespace syncer {
 
 class TopicInvalidationMap;
 
-// By implementing the AckHandler interface it tracks the messages
-// which were passed to InvalidationHandlers.
-class FCMInvalidationListener : public InvalidationListener,
-                                public AckHandler,
-                                FCMSyncNetworkChannel::Observer,
-                                PerUserTopicRegistrationManager::Observer {
+// Receives InstanceID tokens and actual invalidations from FCM via
+// FCMSyncNetworkChannel, and dispatches them to its delegate (in practice, the
+// FCMInvalidationService). Stores invalidations in memory until they were
+// actually acked by the corresponding InvalidationHandler (tracked via the
+// AckHandler interface).
+// Also tracks the set of topics we're interested in (only invalidations for
+// these topics will get dispatched) and passes them to
+// PerUserTopicSubscriptionManager for subscription or unsubscription.
+class FCMInvalidationListener
+    : public AckHandler,
+      public FCMSyncNetworkChannel::Observer,
+      public PerUserTopicSubscriptionManager::Observer {
  public:
   class Delegate {
    public:
@@ -46,32 +50,29 @@ class FCMInvalidationListener : public InvalidationListener,
 
   ~FCMInvalidationListener() override;
 
-  void Start(
-      Delegate* delegate,
-      std::unique_ptr<PerUserTopicRegistrationManager>
-          per_user_topic_registration_manager);
+  void Start(Delegate* delegate,
+             std::unique_ptr<PerUserTopicSubscriptionManager>
+                 per_user_topic_subscription_manager);
 
-  // Update the set of topics that we're interested in getting
-  // notifications for. May be called at any time.
-  void UpdateRegisteredTopics(const Topics& topics);
+  // Update the set of topics for which we want to get invalidations. May be
+  // called at any time.
+  void UpdateInterestedTopics(const Topics& topics);
 
-  // InvalidationListener implementation.
-  void Invalidate(const std::string& payload,
-                  const std::string& private_topic,
-                  const std::string& public_topic,
-                  int64_t version) override;
-  void InformTokenReceived(const std::string& token) override;
+  // Called when the InstanceID token is revoked (usually because the InstanceID
+  // itself was deleted). Note that while this class receives new tokens
+  // internally (via FCMSyncNetworkChannel), the deletion flow is triggered
+  // externally, so it needs to be explicitly notified of token revocations.
+  void ClearInstanceIDToken();
 
   // AckHandler implementation.
-  void Acknowledge(const invalidation::ObjectId& id,
+  void Acknowledge(const Topic& topic,
                    const syncer::AckHandle& handle) override;
-  void Drop(const invalidation::ObjectId& id,
-            const syncer::AckHandle& handle) override;
+  void Drop(const Topic& topic, const syncer::AckHandle& handle) override;
 
   // FCMSyncNetworkChannel::Observer implementation.
   void OnFCMChannelStateChanged(FcmChannelState state) override;
 
-  // PerUserTopicRegistrationManager::Observer implementation.
+  // PerUserTopicSubscriptionManager::Observer implementation.
   void OnSubscriptionChannelStateChanged(
       SubscriptionChannelState state) override;
 
@@ -79,18 +80,26 @@ class FCMInvalidationListener : public InvalidationListener,
       const base::RepeatingCallback<void(const base::DictionaryValue&)>&
           callback) const;
 
-  void StopForTest();
   void StartForTest(Delegate* delegate);
   void EmitStateChangeForTest(InvalidatorState state);
   void EmitSavedInvalidationsForTest(const TopicInvalidationMap& to_emit);
 
-  Topics GetRegisteredTopicsForTest() const;
-
  private:
-  void DoRegistrationUpdate();
+  // Callbacks for the |network_channel_|.
+  void InvalidationReceived(const std::string& payload,
+                            const std::string& private_topic,
+                            const std::string& public_topic,
+                            int64_t version);
+  void TokenReceived(const std::string& instance_id_token);
+
+  // Passes the |interested_topics_| to |per_user_topic_subscription_manager_|
+  // for subscription/unsubscription.
+  void DoSubscriptionUpdate();
 
   void Stop();
 
+  // Derives overall state based on |subscription_channel_state_| and
+  // |fcm_network_state_|.
   InvalidatorState GetState() const;
 
   void EmitStateChange();
@@ -120,25 +129,21 @@ class FCMInvalidationListener : public InvalidationListener,
   UnackedInvalidationsMap unacked_invalidations_map_;
   Delegate* delegate_ = nullptr;
 
-  // Stores all topics which are registered (or subscribed?).
-  // TODO(crbug.com/1029698,crbug.com/1020117): We should get this information
-  // from |per_user_topic_registration_manager_| instead of keeping another copy
-  // here. Also, figure out whether this refers to registered topics (i.e. have
-  // a handler in Chrome) or subscribed topics (i.e. we're subscribed on the
-  // server).
-  Topics registered_topics_;
+  // The set of topics for which we want to receive invalidations. We'll pass
+  // these to |per_user_topic_subscription_manager_| for (un)subscription.
+  Topics interested_topics_;
 
   // The states of the HTTP and FCM channel.
   SubscriptionChannelState subscription_channel_state_ =
       SubscriptionChannelState::NOT_STARTED;
   FcmChannelState fcm_network_state_ = FcmChannelState::NOT_STARTED;
 
-  std::unique_ptr<PerUserTopicRegistrationManager>
-      per_user_topic_registration_manager_;
+  std::unique_ptr<PerUserTopicSubscriptionManager>
+      per_user_topic_subscription_manager_;
   std::string instance_id_token_;
-  // Prevents call to DoRegistrationUpdate in cases when
-  // UpdateRegisteredTopics wasn't called. For example, InformTokenReceived
-  // can trigger DoRegistrationUpdate before any invalidation handler has
+  // Prevents call to DoSubscriptionUpdate in cases when
+  // UpdateInterestedTopics wasn't called. For example, InformTokenReceived
+  // can trigger DoSubscriptionUpdate before any invalidation handler has
   // requested registration for topics.
   bool topics_update_requested_ = false;
 

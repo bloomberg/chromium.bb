@@ -59,6 +59,10 @@ class PasswordsModelDelegate {
   // the returned credential in AUTO_SIGNIN_STATE.
   virtual const autofill::PasswordForm& GetPendingPassword() const = 0;
 
+  // Returns unsynced credentials being deleted upon signout.
+  virtual const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials()
+      const = 0;
+
   // Returns the source of the credential to be saved.
   virtual password_manager::metrics_util::CredentialSourceType
   GetCredentialSource() const = 0;
@@ -99,6 +103,10 @@ class PasswordsModelDelegate {
   virtual void SavePassword(const base::string16& username,
                             const base::string16& password) = 0;
 
+  // Called from the dialog controller when a user confirms moving the recently
+  // used credential to their account store.
+  virtual void MovePasswordToAccountStore() = 0;
+
   // Called from the dialog controller when the user chooses a credential.
   // Controller can be destroyed inside the method.
   virtual void ChooseCredential(
@@ -119,13 +127,21 @@ class PasswordsModelDelegate {
   // Called from the dialog controller when the dialog is hidden.
   virtual void OnDialogHidden() = 0;
 
-  // Called from the model when re-auth is needed to show passwords. Returns
-  // true immediately if user authentication is not available for the given
-  // platform. Otherwise, the method schedules a task to show an authentication
-  // dialog and reopens the bubble afterwards, then the method returns false.
-  // The password in the reopened bubble will be revealed if the authentication
-  // was successful.
+  // Called from the Save/Update bubble controller when OS re-auth is needed to
+  // show passwords. Returns true immediately if user authentication is not
+  // available for the given platform. Otherwise, the method schedules a task to
+  // show an authentication dialog and reopens the bubble afterwards, then the
+  // method returns false. The password in the reopened bubble will be revealed
+  // if the authentication was successful.
   virtual bool AuthenticateUser() = 0;
+
+  // Called from the Save/Update bubble controller when gaia re-auth is needed
+  // to save passwords. This method triggers the reauth flow. Upon successful
+  // reauth, it saves the password if it's still relevant. Otherwise, it changes
+  // the default destination to local and reopens the save bubble.
+  virtual void AuthenticateUserForAccountStoreOptInAndSavePassword(
+      const base::string16& username,
+      const base::string16& password) = 0;
 
   // Returns true if the password values should be revealed when the bubble is
   // opened.

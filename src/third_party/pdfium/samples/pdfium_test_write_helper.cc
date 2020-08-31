@@ -25,7 +25,7 @@ namespace {
 bool CheckDimensions(int stride, int width, int height) {
   if (stride < 0 || width < 0 || height < 0)
     return false;
-  if (height > 0 && width > INT_MAX / height)
+  if (height > 0 && stride > INT_MAX / height)
     return false;
   return true;
 }
@@ -133,27 +133,27 @@ const char* PageObjectTypeToCString(int type) {
   return "";
 }
 
-std::vector<unsigned char> EncodePng(const unsigned char* buffer,
-                                     int width,
-                                     int height,
-                                     int stride,
-                                     int format) {
-  std::vector<unsigned char> png;
+std::vector<uint8_t> EncodePng(pdfium::span<const uint8_t> input,
+                               int width,
+                               int height,
+                               int stride,
+                               int format) {
+  std::vector<uint8_t> png;
   switch (format) {
     case FPDFBitmap_Unknown:
       break;
     case FPDFBitmap_Gray:
-      png = image_diff_png::EncodeGrayPNG(buffer, width, height, stride);
+      png = image_diff_png::EncodeGrayPNG(input, width, height, stride);
       break;
     case FPDFBitmap_BGR:
-      png = image_diff_png::EncodeBGRPNG(buffer, width, height, stride);
+      png = image_diff_png::EncodeBGRPNG(input, width, height, stride);
       break;
     case FPDFBitmap_BGRx:
-      png = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride,
+      png = image_diff_png::EncodeBGRAPNG(input, width, height, stride,
                                           /*discard_transparency=*/true);
       break;
     case FPDFBitmap_BGRA:
-      png = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride,
+      png = image_diff_png::EncodeBGRAPNG(input, width, height, stride,
                                           /*discard_transparency=*/false);
       break;
     default:
@@ -179,12 +179,10 @@ int CALLBACK EnhMetaFileProc(HDC hdc,
 
 std::string WritePpm(const char* pdf_name,
                      int num,
-                     const void* buffer_void,
+                     void* buffer_void,
                      int stride,
                      int width,
                      int height) {
-  const auto* buffer = reinterpret_cast<const char*>(buffer_void);
-
   if (!CheckDimensions(stride, width, height))
     return "";
 
@@ -203,10 +201,11 @@ std::string WritePpm(const char* pdf_name,
   fprintf(fp, "P6\n# PDF test render\n%d %d\n255\n", width, height);
   // Source data is B, G, R, unused.
   // Dest data is R, G, B.
-  std::vector<char> result(out_len);
+  const uint8_t* buffer = reinterpret_cast<const uint8_t*>(buffer_void);
+  std::vector<uint8_t> result(out_len);
   for (int h = 0; h < height; ++h) {
-    const char* src_line = buffer + (stride * h);
-    char* dest_line = result.data() + (width * h * 3);
+    const uint8_t* src_line = buffer + (stride * h);
+    uint8_t* dest_line = result.data() + (width * h * 3);
     for (int w = 0; w < width; ++w) {
       // R
       dest_line[w * 3] = src_line[(w * 4) + 2];
@@ -377,17 +376,17 @@ void WriteAnnot(FPDF_PAGE page, const char* pdf_name, int num) {
 
 std::string WritePng(const char* pdf_name,
                      int num,
-                     const void* buffer_void,
+                     void* buffer,
                      int stride,
                      int width,
                      int height) {
   if (!CheckDimensions(stride, width, height))
     return "";
 
-  const auto* buffer = static_cast<const unsigned char*>(buffer_void);
-
-  std::vector<unsigned char> png_encoding =
-      EncodePng(buffer, width, height, stride, FPDFBitmap_BGRA);
+  auto input =
+      pdfium::make_span(static_cast<uint8_t*>(buffer), stride * height);
+  std::vector<uint8_t> png_encoding =
+      EncodePng(input, width, height, stride, FPDFBitmap_BGRA);
   if (png_encoding.empty()) {
     fprintf(stderr, "Failed to convert bitmap to PNG\n");
     return "";
@@ -420,7 +419,7 @@ std::string WritePng(const char* pdf_name,
 #ifdef _WIN32
 std::string WriteBmp(const char* pdf_name,
                      int num,
-                     const void* buffer,
+                     void* buffer,
                      int stride,
                      int width,
                      int height) {
@@ -466,8 +465,8 @@ void WriteEmf(FPDF_PAGE page, const char* pdf_name, int num) {
 
   HDC dc = CreateEnhMetaFileA(nullptr, filename, nullptr, nullptr);
 
-  int width = static_cast<int>(FPDF_GetPageWidth(page));
-  int height = static_cast<int>(FPDF_GetPageHeight(page));
+  int width = static_cast<int>(FPDF_GetPageWidthF(page));
+  int height = static_cast<int>(FPDF_GetPageHeightF(page));
   HRGN rgn = CreateRectRgn(0, 0, width, height);
   SelectClipRgn(dc, rgn);
   DeleteObject(rgn);
@@ -491,8 +490,8 @@ void WritePS(FPDF_PAGE page, const char* pdf_name, int num) {
 
   HDC dc = CreateEnhMetaFileA(nullptr, nullptr, nullptr, nullptr);
 
-  int width = static_cast<int>(FPDF_GetPageWidth(page));
-  int height = static_cast<int>(FPDF_GetPageHeight(page));
+  int width = static_cast<int>(FPDF_GetPageWidthF(page));
+  int height = static_cast<int>(FPDF_GetPageHeightF(page));
   FPDF_RenderPage(dc, page, 0, 0, width, height, 0, FPDF_ANNOT | FPDF_PRINTING);
 
   HENHMETAFILE emf = CloseEnhMetaFile(dc);
@@ -585,20 +584,23 @@ void WriteBufferToFile(const void* buf,
   fclose(fp);
 }
 
-std::vector<unsigned char> EncodeBitmapToPng(ScopedFPDFBitmap bitmap) {
-  std::vector<unsigned char> png_encoding;
+std::vector<uint8_t> EncodeBitmapToPng(ScopedFPDFBitmap bitmap) {
+  std::vector<uint8_t> png_encoding;
   int format = FPDFBitmap_GetFormat(bitmap.get());
   if (format == FPDFBitmap_Unknown)
     return png_encoding;
 
-  const unsigned char* buffer =
-      static_cast<const unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
-
   int width = FPDFBitmap_GetWidth(bitmap.get());
   int height = FPDFBitmap_GetHeight(bitmap.get());
   int stride = FPDFBitmap_GetStride(bitmap.get());
+  if (!CheckDimensions(stride, width, height))
+    return png_encoding;
 
-  png_encoding = EncodePng(buffer, width, height, stride, format);
+  auto input = pdfium::make_span(
+      static_cast<const uint8_t*>(FPDFBitmap_GetBuffer(bitmap.get())),
+      stride * height);
+
+  png_encoding = EncodePng(input, width, height, stride, format);
   return png_encoding;
 }
 
@@ -673,8 +675,7 @@ void WriteImages(FPDF_PAGE page, const char* pdf_name, int page_num) {
       continue;
     }
 
-    std::vector<unsigned char> png_encoding =
-        EncodeBitmapToPng(std::move(bitmap));
+    std::vector<uint8_t> png_encoding = EncodeBitmapToPng(std::move(bitmap));
     if (png_encoding.empty()) {
       fprintf(stderr,
               "Failed to convert image object #%d, on page #%d to png.\n",
@@ -759,7 +760,7 @@ void WriteThumbnail(FPDF_PAGE page, const char* pdf_name, int page_num) {
     return;
   }
 
-  std::vector<unsigned char> png_encoding =
+  std::vector<uint8_t> png_encoding =
       EncodeBitmapToPng(std::move(thumb_bitmap));
   if (png_encoding.empty()) {
     fprintf(stderr, "Failed to convert thumbnail of page #%d to png.\n",

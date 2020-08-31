@@ -48,7 +48,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
   content::WebContents* web_contents() { return web_contents_.get(); }
 
   // content::WebContentsDelegate implementation:
-  bool IsNeverVisible(content::WebContents* web_contents) override;
+  bool IsNeverComposited(content::WebContents* web_contents) override;
   void CloseContents(content::WebContents* source) override;
   bool ShouldSuppressDialogs(content::WebContents* source) override;
   bool ShouldFocusPageAfterCrash() override;
@@ -65,6 +65,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
 
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

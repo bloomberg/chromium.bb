@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright 2017 The Dawn Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,14 @@ from generator_lib import Generator, run_generator, FileRender
 class Name:
     def __init__(self, name, native=False):
         self.native = native
+        self.name = name
         if native:
             self.chunks = [name]
         else:
             self.chunks = name.split(' ')
+
+    def get(self):
+        return self.name
 
     def CamelChunk(self, chunk):
         return chunk[0].upper() + chunk[1:]
@@ -51,6 +55,14 @@ class Name:
     def snake_case(self):
         return '_'.join(self.chunks)
 
+    def js_enum_case(self):
+        result = self.chunks[0].lower()
+        for chunk in self.chunks[1:]:
+            if not result[-1].isdigit():
+                result += '-'
+            result += chunk.lower()
+        return result
+
 def concat_names(*names):
     return ' '.join([name.canonical_case() for name in names])
 
@@ -60,12 +72,26 @@ class Type:
         self.dict_name = name
         self.name = Name(name, native=native)
         self.category = json_data['category']
+        self.javascript = self.json_data.get('javascript', True)
 
-EnumValue = namedtuple('EnumValue', ['name', 'value', 'valid'])
+EnumValue = namedtuple('EnumValue', ['name', 'value', 'valid', 'jsrepr'])
 class EnumType(Type):
     def __init__(self, name, json_data):
         Type.__init__(self, name, json_data)
-        self.values = [EnumValue(Name(m['name']), m['value'], m.get('valid', True)) for m in self.json_data['values']]
+
+        self.values = []
+        self.contiguousFromZero = True
+        lastValue = -1
+        for m in self.json_data['values']:
+            value = m['value']
+            if value != lastValue + 1:
+                self.contiguousFromZero = False
+            lastValue = value
+            self.values.append(EnumValue(
+                Name(m['name']),
+                value,
+                m.get('valid', True),
+                m.get('jsrepr', None)))
 
         # Assert that all values are unique in enums
         all_values = set()
@@ -123,24 +149,33 @@ class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.members = []
-        self.has_dawn_object = False
+        self.may_have_dawn_object = False
 
     def update_metadata(self):
-        def has_dawn_object(member):
+        def may_have_dawn_object(member):
             if isinstance(member.type, ObjectType):
                 return True
             elif isinstance(member.type, StructureType):
-                return member.type.has_dawn_object
+                return member.type.may_have_dawn_object
             else:
                 return False
 
-        self.has_dawn_object = any(has_dawn_object(member) for member in self.members)
+        self.may_have_dawn_object = any(may_have_dawn_object(member) for member in self.members)
+
+        # set may_have_dawn_object to true if the type is chained or extensible. Chained structs
+        # may contain a Dawn object.
+        if isinstance(self, StructureType):
+            self.may_have_dawn_object = self.may_have_dawn_object or self.chained or self.extensible
 
 class StructureType(Record, Type):
     def __init__(self, name, json_data):
         Record.__init__(self, name)
         Type.__init__(self, name, json_data)
+        self.chained = json_data.get("chained", False)
         self.extensible = json_data.get("extensible", False)
+        # Chained structs inherit from wgpu::ChainedStruct which has nextInChain so setting
+        # both extensible and chained would result in two nextInChain members.
+        assert(not (self.extensible and self.chained))
 
 class Command(Record):
     def __init__(self, name, members=None):
@@ -373,6 +408,10 @@ def as_cppType(name):
     else:
         return name.CamelCase()
 
+def as_jsEnumValue(value):
+    if value.jsrepr: return value.jsrepr
+    return "'" + value.name.js_enum_case() + "'"
+
 def convert_cType_to_cppType(typ, annotation, arg, indent=0):
     if typ.category == 'native':
         return arg
@@ -518,6 +557,7 @@ class MultiGeneratorFromDawnJSON(Generator):
             'as_cType': as_cType,
             'as_cTypeDawn': as_cTypeDawn,
             'as_cppType': as_cppType,
+            'as_jsEnumValue': as_jsEnumValue,
             'convert_cType_to_cppType': convert_cType_to_cppType,
             'as_varName': as_varName,
             'decorate': decorate,
@@ -529,18 +569,20 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         if 'dawn_headers' in targets:
             renders.append(FileRender('webgpu.h', 'src/include/dawn/webgpu.h', [base_params, api_params]))
-            renders.append(FileRender('dawn.h', 'src/include/dawn/dawn.h', [base_params, api_params]))
             renders.append(FileRender('dawn_proc_table.h', 'src/include/dawn/dawn_proc_table.h', [base_params, api_params]))
 
         if 'dawncpp_headers' in targets:
             renders.append(FileRender('webgpu_cpp.h', 'src/include/dawn/webgpu_cpp.h', [base_params, api_params]))
-            renders.append(FileRender('dawncpp.h', 'src/include/dawn/dawncpp.h', [base_params, api_params]))
 
         if 'dawn_proc' in targets:
             renders.append(FileRender('dawn_proc.c', 'src/dawn/dawn_proc.c', [base_params, api_params]))
 
         if 'dawncpp' in targets:
             renders.append(FileRender('webgpu_cpp.cpp', 'src/dawn/webgpu_cpp.cpp', [base_params, api_params]))
+
+        if 'emscripten_bits' in targets:
+            renders.append(FileRender('webgpu_struct_info.json', 'src/dawn/webgpu_struct_info.json', [base_params, api_params]))
+            renders.append(FileRender('library_webgpu_enum_tables.js', 'src/dawn/library_webgpu_enum_tables.js', [base_params, api_params]))
 
         if 'mock_webgpu' in targets:
             mock_params = [

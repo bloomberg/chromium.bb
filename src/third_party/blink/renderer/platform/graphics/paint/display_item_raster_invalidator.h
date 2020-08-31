@@ -15,13 +15,16 @@ class DisplayItemRasterInvalidator {
   STACK_ALLOCATED();
 
  public:
-  DisplayItemRasterInvalidator(RasterInvalidator& invalidator,
-                               const PaintArtifact& old_paint_artifact,
-                               const PaintArtifact& new_paint_artifact,
-                               const PaintChunk& old_chunk,
-                               const PaintChunk& new_chunk,
-                               const ChunkToLayerMapper& mapper)
+  DisplayItemRasterInvalidator(
+      RasterInvalidator& invalidator,
+      RasterInvalidator::RasterInvalidationFunction function,
+      const PaintArtifact& old_paint_artifact,
+      const PaintArtifact& new_paint_artifact,
+      const PaintChunk& old_chunk,
+      const PaintChunk& new_chunk,
+      const ChunkToLayerMapper& mapper)
       : invalidator_(invalidator),
+        raster_invalidation_function_(function),
         old_paint_artifact_(old_paint_artifact),
         new_paint_artifact_(new_paint_artifact),
         old_chunk_(old_chunk),
@@ -40,9 +43,9 @@ class DisplayItemRasterInvalidator {
                                            const IntRect&,
                                            PaintInvalidationReason,
                                            RasterInvalidator::ClientIsOldOrNew);
-  ALWAYS_INLINE size_t
+  ALWAYS_INLINE wtf_size_t
   MatchNewDisplayItemInOldChunk(const DisplayItem& new_item,
-                                size_t& next_old_item_to_match);
+                                wtf_size_t& next_old_item_to_match);
   ALWAYS_INLINE void GenerateRasterInvalidation(const DisplayItemClient&,
                                                 const IntRect* old_visual_rect,
                                                 const IntRect* new_visual_rect,
@@ -58,13 +61,15 @@ class DisplayItemRasterInvalidator {
       PaintInvalidationReason reason);
 
   RasterInvalidator& invalidator_;
+  RasterInvalidator::RasterInvalidationFunction raster_invalidation_function_;
   const PaintArtifact& old_paint_artifact_;
   const PaintArtifact& new_paint_artifact_;
   const PaintChunk& old_chunk_;
   const PaintChunk& new_chunk_;
   const ChunkToLayerMapper& mapper_;
   // Maps clients to indices of display items in old_chunk_.
-  HashMap<const DisplayItemClient*, Vector<size_t>> old_display_items_index_;
+  HashMap<const DisplayItemClient*, Vector<wtf_size_t>>
+      old_display_items_index_;
 };
 
 }  // namespace blink

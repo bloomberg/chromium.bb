@@ -18,9 +18,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeImpl;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Unit Test for {@link FirstRunUtils}.
@@ -32,7 +35,7 @@ public class FirstRunUtilsTest {
     private Account mTestAccount;
 
     public FirstRunUtilsTest() {
-        mTestAccount = AccountManagerFacade.createAccountFromName("Dummy");
+        mTestAccount = AccountUtils.createAccountFromName("Dummy");
     }
 
     @Before
@@ -46,7 +49,7 @@ public class FirstRunUtilsTest {
     private static class FakeAuthenticationAccountManager extends FakeAccountManagerDelegate {
         private final String mAccountType;
 
-        public FakeAuthenticationAccountManager(String accountType) {
+        FakeAuthenticationAccountManager(String accountType) {
             super(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
             mAccountType = accountType;
         }
@@ -62,7 +65,10 @@ public class FirstRunUtilsTest {
 
     private void setUpAccountManager(String accountType) {
         mAccountManager = new FakeAuthenticationAccountManager(accountType);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccountManagerFacadeProvider.setInstanceForTests(
+                    new AccountManagerFacadeImpl(mAccountManager));
+        });
     }
 
     private void addTestAccount() {
@@ -70,50 +76,30 @@ public class FirstRunUtilsTest {
                 AccountHolder.builder(mTestAccount).alwaysAccept(true).build());
     }
 
-    // This test previously flaked on the try bot: http://crbug.com/543160.
-    // Re-enabling this test since there has been related cleanup/refactoring
-    // during the time the test was disabled. If the test starts flaking again,
-    // re-open the bug.
-    // TODO(nyquist): Remove this if the test is not flaky anymore.
     @Test
     @SmallTest
-    @Feature({"FeatureUtilities", "GoogleAccounts"})
+    @Feature({"GoogleAccounts"})
     public void testHasGoogleAccountCorrectlyDetected() {
         // Set up an account manager mock that returns Google account types
         // when queried.
-        setUpAccountManager(AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
+        setUpAccountManager(AccountUtils.GOOGLE_ACCOUNT_TYPE);
         addTestAccount();
 
         ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        boolean hasAccounts = FirstRunUtils.hasGoogleAccounts();
-
-        Assert.assertTrue(hasAccounts);
-
-        boolean hasAuthenticator = FirstRunUtils.hasGoogleAccountAuthenticator();
-
-        Assert.assertTrue(hasAuthenticator);
+        Assert.assertTrue(FirstRunUtils.hasGoogleAccounts());
+        Assert.assertTrue(FirstRunUtils.hasGoogleAccountAuthenticator());
     }
 
-    // This test previously flaked on the try bot: http://crbug.com/543160.
-    // Re-enabling this test since there has been related cleanup/refactoring
-    // during the time the test was disabled. If the test starts flaking again,
-    // re-open the bug.
-    // TODO(nyquist): Remove this if the test is not flaky anymore.
     @Test
     @SmallTest
-    @Feature({"FeatureUtilities", "GoogleAccounts"})
+    @Feature({"GoogleAccounts"})
     public void testHasNoGoogleAccountCorrectlyDetected() {
         // Set up an account manager mock that doesn't have any accounts and doesn't have Google
         // account authenticator.
         setUpAccountManager("Not A Google Account");
 
         ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        boolean hasAccounts = FirstRunUtils.hasGoogleAccounts();
-
-        Assert.assertFalse(hasAccounts);
-
-        boolean hasAuthenticator = FirstRunUtils.hasGoogleAccountAuthenticator();
-
-        Assert.assertFalse(hasAuthenticator);
+        Assert.assertFalse(FirstRunUtils.hasGoogleAccounts());
+        Assert.assertFalse(FirstRunUtils.hasGoogleAccountAuthenticator());
     }
 }

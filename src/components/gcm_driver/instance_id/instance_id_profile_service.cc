@@ -4,20 +4,15 @@
 
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/prefs/pref_service.h"
 
 namespace instance_id {
 
 // static
-bool InstanceIDProfileService::IsInstanceIDEnabled(PrefService* prefs) {
-  // Instance ID depends on GCM which has to been enabled.
-  if (!gcm::GCMProfileService::IsGCMEnabled(prefs))
-    return false;
-
+bool InstanceIDProfileService::IsInstanceIDEnabled() {
   return InstanceIDDriver::IsInstanceIDEnabled();
 }
 

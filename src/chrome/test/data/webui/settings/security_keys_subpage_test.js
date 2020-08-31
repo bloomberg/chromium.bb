@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BioEnrollDialogPage, CredentialManagementDialogPage, Ctap2Status, ResetDialogPage, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl,SecurityKeysResetBrowserProxyImpl, SetPINDialogPage} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 /**
  * A base class for all security key subpage test browser proxies to
  * inherit from. Provides a |promiseMap_| that proxies can be used to
@@ -37,7 +46,7 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   handleMethod(methodName, opt_arg) {
     this.methodCalled(methodName, opt_arg);
     const promise = this.promiseMap_.get(methodName);
-    if (promise != undefined) {
+    if (promise !== undefined) {
       this.promiseMap_.delete(methodName);
       return promise;
     }
@@ -47,7 +56,7 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   }
 }
 
-/** @implements {settings.SecurityKeysPINBrowserProxy} */
+/** @implements {SecurityKeysPINBrowserProxy} */
 class TestSecurityKeysPINBrowserProxy extends TestSecurityKeysBrowserProxy {
   constructor() {
     super([
@@ -73,7 +82,7 @@ class TestSecurityKeysPINBrowserProxy extends TestSecurityKeysBrowserProxy {
   }
 }
 
-/** @implements {settings.SecurityKeysResetBrowserProxy} */
+/** @implements {SecurityKeysResetBrowserProxy} */
 class TestSecurityKeysResetBrowserProxy extends TestSecurityKeysBrowserProxy {
   constructor() {
     super([
@@ -99,7 +108,7 @@ class TestSecurityKeysResetBrowserProxy extends TestSecurityKeysBrowserProxy {
   }
 }
 
-/** @implements {settings.SecurityKeysCredentialBrowserProxy} */
+/** @implements {SecurityKeysCredentialBrowserProxy} */
 class TestSecurityKeysCredentialBrowserProxy extends
     TestSecurityKeysBrowserProxy {
   constructor() {
@@ -138,7 +147,7 @@ class TestSecurityKeysCredentialBrowserProxy extends
   }
 }
 
-/** @implements {settings.SecurityKeysBioEnrollProxy} */
+/** @implements {SecurityKeysBioEnrollProxy} */
 class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
   constructor() {
     super([
@@ -198,7 +207,7 @@ function assertShown(allDivs, dialog, expectedID) {
   assertTrue(allDivs.includes(expectedID));
 
   const allShown =
-      allDivs.filter(id => dialog.$[id].className == 'iron-selected');
+      allDivs.filter(id => dialog.$[id].className === 'iron-selected');
   assertEquals(allShown.length, 1);
   assertEquals(allShown[0], expectedID);
 }
@@ -207,13 +216,14 @@ function assertShown(allDivs, dialog, expectedID) {
 suite('SecurityKeysResetDialog', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysResetBrowserProxy();
-    settings.SecurityKeysResetBrowserProxyImpl.instance_ = browserProxy;
+    SecurityKeysResetBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-reset-dialog');
-    allDivs = Object.values(settings.ResetDialogPage);
+    allDivs = Object.values(ResetDialogPage);
   });
 
   function assertComplete() {
@@ -315,13 +325,14 @@ suite('SecurityKeysResetDialog', function() {
 suite('SecurityKeysSetPINDialog', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysPINBrowserProxy();
-    settings.SecurityKeysPINBrowserProxyImpl.instance_ = browserProxy;
+    SecurityKeysPINBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
-    allDivs = Object.values(settings.SetPINDialogPage);
+    allDivs = Object.values(SetPINDialogPage);
   });
 
   function assertComplete() {
@@ -358,7 +369,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('close');
       assertComplete();
       assertShown(allDivs, dialog, testCase[1]);
-      if (testCase[1] == 'error') {
+      if (testCase[1] === 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
             dialog.$.error.textContent.trim().includes(testCase[0].toString()));
@@ -394,7 +405,7 @@ suite('SecurityKeysSetPINDialog', function() {
   function setNewPINEntries(pinValue, confirmPINValue) {
     setPINEntry(dialog.$.newPIN, pinValue);
     setPINEntry(dialog.$.confirmPIN, confirmPINValue);
-    const ret = test_util.eventToPromise('ui-ready', dialog);
+    const ret = eventToPromise('ui-ready', dialog);
     dialog.$.pinSubmit.click();
     return ret;
   }
@@ -403,7 +414,7 @@ suite('SecurityKeysSetPINDialog', function() {
     setPINEntry(dialog.$.newPIN, pinValue);
     setPINEntry(dialog.$.confirmPIN, confirmPINValue);
     setPINEntry(dialog.$.currentPIN, currentPINValue);
-    const ret = test_util.eventToPromise('ui-ready', dialog);
+    const ret = eventToPromise('ui-ready', dialog);
     dialog.$.pinSubmit.click();
     return ret;
   }
@@ -412,7 +423,7 @@ suite('SecurityKeysSetPINDialog', function() {
     const startSetPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('startSetPIN', startSetPINResolver.promise);
     document.body.appendChild(dialog);
-    const uiReady = test_util.eventToPromise('ui-ready', dialog);
+    const uiReady = eventToPromise('ui-ready', dialog);
 
     await browserProxy.whenCalled('startSetPIN');
     startSetPINResolver.resolve(
@@ -437,7 +448,7 @@ suite('SecurityKeysSetPINDialog', function() {
     const setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
     setNewPINEntries('1234', '1234');
-    ({oldPIN, newPIN} = await browserProxy.whenCalled('setPIN'));
+    const {oldPIN, newPIN} = await browserProxy.whenCalled('setPIN');
     assertTrue(dialog.$.pinSubmit.disabled);
     assertEquals(oldPIN, '');
     assertEquals(newPIN, '1234');
@@ -456,7 +467,7 @@ suite('SecurityKeysSetPINDialog', function() {
       const startSetPINResolver = new PromiseResolver();
       browserProxy.setResponseFor('startSetPIN', startSetPINResolver.promise);
       document.body.appendChild(dialog);
-      const uiReady = test_util.eventToPromise('ui-ready', dialog);
+      const uiReady = eventToPromise('ui-ready', dialog);
 
       await browserProxy.whenCalled('startSetPIN');
       startSetPINResolver.resolve(
@@ -470,7 +481,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('close');
       assertComplete();
       assertShown(allDivs, dialog, testCase[1]);
-      if (testCase[1] == 'error') {
+      if (testCase[1] === 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
             dialog.$.error.textContent.trim().includes(testCase[0].toString()));
@@ -482,7 +493,7 @@ suite('SecurityKeysSetPINDialog', function() {
     const startSetPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('startSetPIN', startSetPINResolver.promise);
     document.body.appendChild(dialog);
-    let uiReady = test_util.eventToPromise('ui-ready', dialog);
+    let uiReady = eventToPromise('ui-ready', dialog);
 
     await browserProxy.whenCalled('startSetPIN');
     startSetPINResolver.resolve(
@@ -526,7 +537,7 @@ suite('SecurityKeysSetPINDialog', function() {
     assertEquals(newPIN, '1234');
 
     // Simulate an incorrect PIN.
-    uiReady = test_util.eventToPromise('ui-ready', dialog);
+    uiReady = eventToPromise('ui-ready', dialog);
     setPINResolver.resolve([1 /* complete */, 49 /* incorrect PIN */]);
     await uiReady;
     assertTrue(dialog.$.currentPIN.invalid);
@@ -554,14 +565,15 @@ suite('SecurityKeysSetPINDialog', function() {
 suite('SecurityKeysCredentialManagement', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysCredentialBrowserProxy();
-    settings.SecurityKeysCredentialBrowserProxyImpl.instance_ = browserProxy;
+    SecurityKeysCredentialBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement(
         'settings-security-keys-credential-management-dialog');
-    allDivs = Object.values(settings.CredentialManagementDialogPage);
+    allDivs = Object.values(CredentialManagementDialogPage);
   });
 
   test('Initialization', async function() {
@@ -590,7 +602,7 @@ suite('SecurityKeysCredentialManagement', function() {
     startResolver.resolve();
 
     const errorString = 'foo bar baz';
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'security-keys-credential-management-finished', errorString);
     assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
@@ -613,7 +625,7 @@ suite('SecurityKeysCredentialManagement', function() {
     assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
-    let uiReady = test_util.eventToPromise(
+    let uiReady = eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);
     startCredentialManagementResolver.resolve();
     await uiReady;
@@ -626,7 +638,7 @@ suite('SecurityKeysCredentialManagement', function() {
     // Show a list of three credentials.
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateCredentials');
-    uiReady = test_util.eventToPromise(
+    uiReady = eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);
     const credentials = [
       {
@@ -654,10 +666,10 @@ suite('SecurityKeysCredentialManagement', function() {
     assertEquals(dialog.$.credentialList.items, credentials);
 
     // Select two of the credentials and delete them.
-    Polymer.flush();
+    flush();
     assertTrue(dialog.$.confirmButton.disabled);
-    const checkboxes = Array.from(
-        Polymer.dom(dialog.$.credentialList).querySelectorAll('cr-checkbox'));
+    const checkboxes =
+        Array.from(dialog.$.credentialList.querySelectorAll('cr-checkbox'));
     assertEquals(checkboxes.length, 3);
     assertEquals(checkboxes.filter(el => el.checked).length, 0);
     checkboxes[1].click();
@@ -667,7 +679,7 @@ suite('SecurityKeysCredentialManagement', function() {
     dialog.$.confirmButton.click();
     const credentialIds = await browserProxy.whenCalled('deleteCredentials');
     assertDeepEquals(credentialIds, ['bbbbbb', 'cccccc']);
-    uiReady = test_util.eventToPromise(
+    uiReady = eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);
     deleteResolver.resolve('foobar' /* localized response message */);
     await uiReady;
@@ -679,13 +691,14 @@ suite('SecurityKeysCredentialManagement', function() {
 suite('SecurityKeysBioEnrollment', function() {
   let dialog = null;
   let allDivs = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysBioEnrollProxy();
-    settings.SecurityKeysBioEnrollProxyImpl.instance_ = browserProxy;
+    SecurityKeysBioEnrollProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-bio-enroll-dialog');
-    allDivs = Object.values(settings.BioEnrollDialogPage);
+    allDivs = Object.values(BioEnrollDialogPage);
   });
 
   test('Initialization', async function() {
@@ -714,7 +727,7 @@ suite('SecurityKeysBioEnrollment', function() {
     resolver.resolve();
 
     const errorString = 'foo bar baz';
-    cr.webUIListenerCallback('security-keys-bio-enroll-error', errorString);
+    webUIListenerCallback('security-keys-bio-enroll-error', errorString);
     assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
   });
@@ -735,8 +748,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
-    let uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
@@ -748,39 +760,38 @@ suite('SecurityKeysBioEnrollment', function() {
     // Show a list of three enrollments.
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateEnrollments');
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
-    const enrollments = [
-      {
-        name: 'Fingerprint00',
-        id: '0000',
-      },
-      {
-        name: 'FingerprintAF',
-        id: '4321',
-      },
-      {
-        name: 'FingerprintFA',
-        id: '1234',
-      },
-    ];
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+
+    const fingerprintA = {
+      name: 'FingerprintA',
+      id: '1234',
+    };
+    const fingerprintB = {
+      name: 'FingerprintB',
+      id: '4321',
+    };
+    const fingerprintC = {
+      name: 'FingerprintC',
+      id: '0000',
+    };
+    const enrollments = [fingerprintC, fingerprintB, fingerprintA];
+    const sortedEnrollments = [fingerprintA, fingerprintB, fingerprintC];
     enumerateResolver.resolve(enrollments);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
-    assertEquals(dialog.$.enrollmentList.items, enrollments);
+    assertDeepEquals(dialog.$.enrollmentList.items, sortedEnrollments);
 
     // Delete the second enrollments and refresh the list.
-    Polymer.flush();
-    Polymer.dom(dialog.$.enrollmentList)
-        .querySelectorAll('cr-icon-button')[1]
-        .click();
+    flush();
+    dialog.$.enrollmentList.querySelectorAll('cr-icon-button')[1].click();
     const id = await browserProxy.whenCalled('deleteEnrollment');
-    assertEquals(enrollments[1].id, id);
+    assertEquals(sortedEnrollments[1].id, id);
+    sortedEnrollments.splice(1, 1);
     enrollments.splice(1, 1);
     deleteResolver.resolve(enrollments);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
-    assertEquals(dialog.$.enrollmentList.items, enrollments);
+    assertDeepEquals(dialog.$.enrollmentList.items, sortedEnrollments);
   });
 
   test('AddEnrollment', async function() {
@@ -799,8 +810,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
-    let uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
@@ -812,8 +822,7 @@ suite('SecurityKeysBioEnrollment', function() {
     // Ensure no enrollments exist.
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateEnrollments');
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     enumerateResolver.resolve([]);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
@@ -821,42 +830,37 @@ suite('SecurityKeysBioEnrollment', function() {
 
     // Simulate add enrollment.
     assertFalse(dialog.$.addButton.hidden);
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.addButton.click();
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
 
     assertShown(allDivs, dialog, 'enroll');
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
-    cr.webUIListenerCallback(
-        'security-keys-bio-enroll-status', {status: 0, remaining: 1});
-    await uiReady;
+    webUIListenerCallback(
+        'security-keys-bio-enroll-status',
+        {status: SampleStatus.OK, remaining: 1});
+    flush();
     assertFalse(dialog.$.arc.isComplete());
     assertFalse(dialog.$.cancelButton.hidden);
-    assert(dialog.$.confirmButton.hidden);
+    assertTrue(dialog.$.confirmButton.hidden);
 
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     const enrollmentId = 'someId';
     const enrollmentName = 'New Fingerprint';
     enrollingResolver.resolve({
       code: 0,
-      remaining: 0,
       enrollment: {
         id: enrollmentId,
         name: enrollmentName,
       },
     });
     await uiReady;
-    assert(dialog.$.arc.isComplete());
-    assert(dialog.$.cancelButton.hidden);
+    assertTrue(dialog.$.arc.isComplete());
+    assertTrue(dialog.$.cancelButton.hidden);
     assertFalse(dialog.$.confirmButton.hidden);
 
     // Proceeding brings up rename dialog page.
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.confirmButton.click();
     await uiReady;
 
@@ -868,8 +872,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertFalse(dialog.$.confirmButton.disabled);
 
     // Proceeding renames the enrollment and returns to the enrollment overview.
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     const renameEnrollmentResolver = new PromiseResolver();
     browserProxy.setResponseFor(
         'renameEnrollment', renameEnrollmentResolver.promise);
@@ -898,18 +901,16 @@ suite('SecurityKeysBioEnrollment', function() {
     dialog.cancelButtonDisabled_ = true;
     dialog.cancelButtonVisible_ = false;
 
-    let uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.addButton.click();
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
 
     assertShown(allDivs, dialog, 'enroll');
-    assert(dialog.$.cancelButton.disabled == false);
-    assert(dialog.$.cancelButton.hidden == false);
+    assertFalse(dialog.$.cancelButton.disabled);
+    assertFalse(dialog.$.cancelButton.hidden);
 
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.cancelButton.click();
     await browserProxy.whenCalled('cancelEnrollment');
     enrollResolver.resolve({code: Ctap2Status.ERR_KEEPALIVE_CANCEL});
@@ -917,5 +918,29 @@ suite('SecurityKeysBioEnrollment', function() {
 
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
+  });
+
+  test('EnrollError', async function() {
+    // Test that resolving the startEnrolling promise with a CTAP error brings
+    // up the error page.
+    const enrollResolver = new PromiseResolver;
+    browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startBioEnroll');
+
+    dialog.dialogPage_ = 'enrollments';
+
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    dialog.$.addButton.click();
+    await browserProxy.whenCalled('startEnrolling');
+    await uiReady;
+
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+
+    enrollResolver.resolve({code: Ctap2Status.ERR_INVALID_OPTION});
+
+    await uiReady;
+    assertShown(allDivs, dialog, 'error');
   });
 });

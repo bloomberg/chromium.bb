@@ -7,12 +7,29 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/default_style.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font.h"
 
 int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
                                              int desired_font_size) {
+  int size_delta =
+      GetFontSizeDeltaIgnoringUserOrLocaleSettings(desired_font_size);
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  gfx::FontList base_font = bundle.GetFontListWithDelta(size_delta);
+
+  // Shrink large fonts to ensure they fit. Default fonts should fit already.
+  // TODO(tapted): Move DeriveWithHeightUpperBound() to ui::ResourceBundle to
+  // take advantage of the font cache.
+  int user_or_locale_delta =
+      size_delta + gfx::PlatformFont::kDefaultBaseFontSize - desired_font_size;
+  base_font = base_font.DeriveWithHeightUpperBound(available_height);
+
+  return base_font.GetFontSize() - gfx::PlatformFont::kDefaultBaseFontSize +
+         user_or_locale_delta;
+}
+
+int GetFontSizeDeltaIgnoringUserOrLocaleSettings(int desired_font_size) {
   int size_delta = desired_font_size - gfx::PlatformFont::kDefaultBaseFontSize;
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList base_font = bundle.GetFontListWithDelta(size_delta);
@@ -28,11 +45,6 @@ int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
   }
   DCHECK_EQ(desired_font_size, base_font.GetFontSize());
 
-  // Shrink large fonts to ensure they fit. Default fonts should fit already.
-  // TODO(tapted): Move DeriveWithHeightUpperBound() to ui::ResourceBundle to
-  // take advantage of the font cache.
-  base_font = base_font.DeriveWithHeightUpperBound(available_height);
-
   // To ensure a subsequent request from the ResourceBundle ignores the delta
   // due to user or locale settings, include it here.
   return base_font.GetFontSize() - gfx::PlatformFont::kDefaultBaseFontSize +
@@ -45,13 +57,17 @@ void ApplyCommonFontStyles(int context,
                            gfx::Font::Weight* weight) {
   switch (context) {
     case CONTEXT_TOOLBAR_BUTTON: {
-      // TODO(pbos): Instead of fixing the toolbar button height this way
-      // consider dynamically resizing all of the toolbar based on the actual
-      // final item height.
-      const int height = ui::MaterialDesignController::touch_ui() ? 22 : 17;
-      static const int toolbar_button_delta =
-          GetFontSizeDeltaBoundedByAvailableHeight(height, height);
-      *size_delta = toolbar_button_delta;
+      int height = ui::TouchUiController::Get()->touch_ui() ? 22 : 17;
+      // We only want the font size to be constrained by available height, and
+      // don't actually have a target font size, so we just need to supply any
+      // sufficiently-large value for the second argument here. |height| will
+      // always be sufficiently large, since dips are smaller than pts.
+      *size_delta = GetFontSizeDeltaBoundedByAvailableHeight(height, height);
+      break;
+    }
+    case CONTEXT_WEB_UI_TAB_COUNTER: {
+      *size_delta = GetFontSizeDeltaIgnoringUserOrLocaleSettings(14);
+      *weight = gfx::Font::Weight::BOLD;
       break;
     }
     case CONTEXT_OMNIBOX_PRIMARY:
@@ -59,7 +75,7 @@ void ApplyCommonFontStyles(int context,
       const int omnibox_primary_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(
               LocationBarView::GetAvailableTextHeight(),
-              ui::MaterialDesignController::touch_ui() ? 15 : 14);
+              ui::TouchUiController::Get()->touch_ui() ? 15 : 14);
       *size_delta = omnibox_primary_delta;
       if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
         (*size_delta)--;

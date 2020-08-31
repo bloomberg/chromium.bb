@@ -4,11 +4,12 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
-import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 
 /**
  * {@link DefaultItemAnimator} implementation that notifies the given {@link ContentChangedListener}
@@ -16,16 +17,20 @@ import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.Content
  */
 public class StreamItemAnimator extends DefaultItemAnimator {
     private final ContentChangedListener mContentChangedListener;
+    private final ViewActionManager mViewActionManager;
     private boolean mIsStreamContentVisible;
 
-    public StreamItemAnimator(ContentChangedListener contentChangedListener) {
+    public StreamItemAnimator(
+            ContentChangedListener contentChangedListener, ViewActionManager viewActionManager) {
         this.mContentChangedListener = contentChangedListener;
+        this.mViewActionManager = viewActionManager;
     }
 
     @Override
     public void onAnimationFinished(RecyclerView.ViewHolder viewHolder) {
         super.onAnimationFinished(viewHolder);
         mContentChangedListener.onContentChanged();
+        if (this.mIsStreamContentVisible) mViewActionManager.onAnimationFinished();
     }
 
     public void setStreamVisibility(boolean isStreamContentVisible) {

@@ -7,10 +7,11 @@
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_action.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
-#include "third_party/blink/renderer/modules/notifications/notification_action.h"
-#include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -125,7 +126,7 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
     else
       NOTREACHED() << "Unknown action type: " << action->type();
 
-    if (action->hasPlaceholder() &&
+    if (!action->placeholder().IsNull() &&
         notification_action->type ==
             mojom::blink::NotificationActionType::BUTTON) {
       exception_state.ThrowTypeError(

@@ -52,7 +52,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
   """Run the ebuild unit tests for the target.
 
   Args:
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     chroot (chroot_lib.Chroot): The chroot where the tests are running.
     blacklist (list[str]|None): Tests to skip.
     was_built (bool): Whether packages were built.
@@ -78,7 +78,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
     result = cros_build_lib.run(cmd, enter_chroot=True,
                                 extra_env=extra_env,
                                 chroot_args=chroot.get_enter_args(),
-                                error_code_ok=True)
+                                check=False)
 
     failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
 
@@ -101,7 +101,7 @@ def BuildTargetUnitTestTarball(chroot, sysroot, result_path):
 
   result = cros_build_lib.CreateTarball(tarball_path, cwd, chroot=chroot.path,
                                         compression=cros_build_lib.COMP_NONE,
-                                        error_code_ok=True)
+                                        check=False)
 
   return tarball_path if result.returncode == 0 else None
 
@@ -116,8 +116,22 @@ def DebugInfoTest(sysroot_path):
     bool: True iff all tests passed, False otherwise.
   """
   cmd = ['debug_info_test', os.path.join(sysroot_path, 'usr/lib/debug')]
-  result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
+  result = cros_build_lib.run(cmd, enter_chroot=True, check=False)
 
+  return result.returncode == 0
+
+
+def ChromitePytest():
+  """Run Pytest tests in Chromite.
+
+  Returns:
+    bool: True iff all tests passed, False otherwise.
+  """
+  cmd = [
+      os.path.join(constants.CHROMITE_SCRIPTS_DIR, 'run_pytest'),
+      constants.CHROMITE_DIR,
+  ]
+  result = cros_build_lib.run(cmd, check=False)
   return result.returncode == 0
 
 
@@ -215,7 +229,7 @@ def SimpleChromeWorkflowTest(sysroot_path, build_target_name, chrome_root,
   board_dir = 'out_%s' % build_target_name
 
   out_board_dir = os.path.join(chrome_root, board_dir, 'Release')
-  use_goma = goma != None
+  use_goma = goma is not None
   extra_args = []
 
   with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
@@ -294,7 +308,7 @@ def _BuildChrome(sdk_cmd, chrome_root, out_board_dir, goma):
     ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
     sdk_cmd.Run(['env', '--null'],
                 run_args={'extra_env': extra_env,
-                          'log_stdout_to_file': ninja_env_path})
+                          'stdout': ninja_env_path})
     osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
                       sdk_cmd.cwd)
     osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),

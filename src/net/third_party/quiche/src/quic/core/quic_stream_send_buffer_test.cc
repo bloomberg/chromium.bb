@@ -15,12 +15,13 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
 namespace {
 
-struct iovec MakeIovec(QuicStringPiece data) {
+struct iovec MakeIovec(quiche::QuicheStringPiece data) {
   struct iovec iov = {const_cast<char*>(data.data()),
                       static_cast<size_t>(data.size())};
   return iov;
@@ -35,17 +36,18 @@ class QuicStreamSendBufferTest : public QuicTest {
     std::string data1(1536, 'a');
     std::string data2 = std::string(256, 'b') + std::string(256, 'c');
     struct iovec iov[2];
-    iov[0] = MakeIovec(QuicStringPiece(data1));
-    iov[1] = MakeIovec(QuicStringPiece(data2));
+    iov[0] = MakeIovec(quiche::QuicheStringPiece(data1));
+    iov[1] = MakeIovec(quiche::QuicheStringPiece(data2));
 
-    QuicMemSlice slice1(&allocator_, 1024);
-    memset(const_cast<char*>(slice1.data()), 'c', 1024);
-    QuicMemSlice slice2(&allocator_, 768);
-    memset(const_cast<char*>(slice2.data()), 'd', 768);
+    QuicUniqueBufferPtr buffer1 = MakeUniqueBuffer(&allocator_, 1024);
+    memset(buffer1.get(), 'c', 1024);
+    QuicMemSlice slice1(std::move(buffer1), 1024);
+    QuicUniqueBufferPtr buffer2 = MakeUniqueBuffer(&allocator_, 768);
+    memset(buffer2.get(), 'd', 768);
+    QuicMemSlice slice2(std::move(buffer2), 768);
 
-    // Index starts from not pointing to any slice.
-    EXPECT_EQ(nullptr,
-              QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_));
+    // The stream offset should be 0 since nothing is written.
+    EXPECT_EQ(0u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
 
     // Save all data.
     SetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size, 1024);
@@ -86,23 +88,23 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   std::string copy4(768, 'd');
 
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
-  EXPECT_EQ(copy1, QuicStringPiece(buf, 1024));
+  EXPECT_EQ(copy1, quiche::QuicheStringPiece(buf, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(1024, 1024, &writer));
-  EXPECT_EQ(copy2, QuicStringPiece(buf + 1024, 1024));
+  EXPECT_EQ(copy2, quiche::QuicheStringPiece(buf + 1024, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 1024, &writer));
-  EXPECT_EQ(copy3, QuicStringPiece(buf + 2048, 1024));
+  EXPECT_EQ(copy3, quiche::QuicheStringPiece(buf + 2048, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(3072, 768, &writer));
-  EXPECT_EQ(copy4, QuicStringPiece(buf + 3072, 768));
+  EXPECT_EQ(copy4, quiche::QuicheStringPiece(buf + 3072, 768));
 
   // Test data piece across boundries.
   QuicDataWriter writer2(4000, buf, quiche::HOST_BYTE_ORDER);
   std::string copy5 =
       std::string(536, 'a') + std::string(256, 'b') + std::string(232, 'c');
   ASSERT_TRUE(send_buffer_.WriteStreamData(1000, 1024, &writer2));
-  EXPECT_EQ(copy5, QuicStringPiece(buf, 1024));
+  EXPECT_EQ(copy5, quiche::QuicheStringPiece(buf, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(2500, 1024, &writer2));
   std::string copy6 = std::string(572, 'c') + std::string(452, 'd');
-  EXPECT_EQ(copy6, QuicStringPiece(buf + 1024, 1024));
+  EXPECT_EQ(copy6, quiche::QuicheStringPiece(buf + 1024, 1024));
 
   // Invalid data copy.
   QuicDataWriter writer3(4000, buf, quiche::HOST_BYTE_ORDER);
@@ -127,27 +129,22 @@ TEST_F(QuicStreamSendBufferTest,
   // Write more than one slice.
   EXPECT_EQ(0, QuicStreamSendBufferPeer::write_index(&send_buffer_));
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
-  EXPECT_EQ(copy1, QuicStringPiece(buf, 1024));
+  EXPECT_EQ(copy1, quiche::QuicheStringPiece(buf, 1024));
   EXPECT_EQ(1, QuicStreamSendBufferPeer::write_index(&send_buffer_));
 
   // Retransmit the first frame and also send new data.
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 2048, &writer));
-  EXPECT_EQ(copy1 + copy2, QuicStringPiece(buf + 1024, 2048));
+  EXPECT_EQ(copy1 + copy2, quiche::QuicheStringPiece(buf + 1024, 2048));
 
   // Write new data.
-  if (!GetQuicRestartFlag(quic_coalesce_stream_frames_2)) {
-    EXPECT_EQ(1, QuicStreamSendBufferPeer::write_index(&send_buffer_));
-    EXPECT_QUIC_DEBUG_DEATH(send_buffer_.WriteStreamData(2048, 50, &writer),
-                            "Tried to write data out of sequence.");
-  } else {
-    EXPECT_EQ(2, QuicStreamSendBufferPeer::write_index(&send_buffer_));
-    ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 50, &writer));
-    EXPECT_EQ(std::string(50, 'c'), QuicStringPiece(buf + 1024 + 2048, 50));
-    EXPECT_EQ(2, QuicStreamSendBufferPeer::write_index(&send_buffer_));
-    ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 1124, &writer));
-    EXPECT_EQ(copy3, QuicStringPiece(buf + 1024 + 2048 + 50, 1124));
-    EXPECT_EQ(3, QuicStreamSendBufferPeer::write_index(&send_buffer_));
-  }
+  EXPECT_EQ(2048u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
+  ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 50, &writer));
+  EXPECT_EQ(std::string(50, 'c'),
+            quiche::QuicheStringPiece(buf + 1024 + 2048, 50));
+  EXPECT_EQ(3072u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
+  ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 1124, &writer));
+  EXPECT_EQ(copy3, quiche::QuicheStringPiece(buf + 1024 + 2048 + 50, 1124));
+  EXPECT_EQ(3840u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrame) {
@@ -288,39 +285,37 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
   EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(400, 800));
 }
 
-TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
+TEST_F(QuicStreamSendBufferTest, EndOffset) {
   char buf[4000];
   QuicDataWriter writer(4000, buf, quiche::HOST_BYTE_ORDER);
-  // With data buffered, index points to the 1st slice of data.
-  EXPECT_EQ(0u,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+
+  EXPECT_EQ(1024u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
-  // Wrote all data on 1st slice, index points to next slice.
-  EXPECT_EQ(1024u,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  // Last offset we've seen is 1024
+  EXPECT_EQ(1024u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
+
   ASSERT_TRUE(send_buffer_.WriteStreamData(1024, 512, &writer));
-  // Last write didn't finish a whole slice. Index remains.
-  EXPECT_EQ(1024u,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  // Last offset is now 2048 as that's the end of the next slice.
+  EXPECT_EQ(2048u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
   send_buffer_.OnStreamDataConsumed(1024);
 
   // If data in 1st slice gets ACK'ed, it shouldn't change the indexed slice
   QuicByteCount newly_acked_length;
   EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 1024, &newly_acked_length));
-  EXPECT_EQ(1024u,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  // Last offset is still 2048.
+  EXPECT_EQ(2048u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
 
   ASSERT_TRUE(
       send_buffer_.WriteStreamData(1024 + 512, 3840 - 1024 - 512, &writer));
-  // After writing all buffered data, index become invalid again.
-  EXPECT_EQ(nullptr,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_));
-  QuicMemSlice slice(&allocator_, 60);
-  memset(const_cast<char*>(slice.data()), 'e', 60);
+
+  // Last offset is end offset of last slice.
+  EXPECT_EQ(3840u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
+  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(&allocator_, 60);
+  memset(buffer.get(), 'e', 60);
+  QuicMemSlice slice(std::move(buffer), 60);
   send_buffer_.SaveMemSlice(std::move(slice));
-  // With new data, index points to the new data.
-  EXPECT_EQ(3840u,
-            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+
+  EXPECT_EQ(3840u, QuicStreamSendBufferPeer::EndOffset(&send_buffer_));
 }
 
 TEST_F(QuicStreamSendBufferTest, SaveMemSliceSpan) {

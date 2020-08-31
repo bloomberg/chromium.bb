@@ -106,10 +106,10 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
 
     # This --global will use our tempdir $HOME we set above, not the real ~/.
     cros_build_lib.run(
-        ['git', 'config', '--global', 'http.cookiefile', self.cookies_path],
+        ['git', 'config', '--global', 'http.cookiefile', gi.cookies_path],
         quiet=True)
 
-    jar = cookielib.MozillaCookieJar(self.cookies_path)
+    jar = cookielib.MozillaCookieJar(gi.cookies_path)
     jar.load(ignore_expires=True)
 
     def GetCookies(host, _path):

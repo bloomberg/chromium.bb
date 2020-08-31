@@ -296,12 +296,12 @@ Example usage:
 --passthrough`
 
 If, for some reason, the local run code is unable to determine what the git
-revision is, simply pass '--build-revision aabbccdd'. Note that `aabbccdd` must
+revision is, simply pass `--git-revision aabbccdd`. Note that `aabbccdd` must
 be replaced with an actual Chromium src revision (typically whatever revision
 origin/master is currently synced to) in order for the tests to work. This can
 be done automatically using:
 ``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
---passthrough --build-revision `git rev-parse origin/master` ``
+--passthrough --git-revision `git rev-parse origin/master` ``
 
 ## Running Binaries from the Bots Locally
 
@@ -561,6 +561,13 @@ All untriaged images for your test can be found by substituting your test name
 into:
 
 `https://chrome-gpu-gold.skia.org/search?query=name%3D<test name>`
+
+**NOTE** If you have a grace period active for your test, then Gold will be told
+to ignore results for the test. This is so that it does not comment on unrelated
+CLs about untriaged images if your test is noisy. Images will still be uploaded
+to Gold and can be triaged, but will not show up on the main page's untriaged
+image list, and you will need to enable the "Ignored" toggle at the top of the
+page when looking at the triage page specific to your test.
 
 ## Stamping out Flakiness
 

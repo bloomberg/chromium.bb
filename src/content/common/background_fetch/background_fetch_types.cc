@@ -37,7 +37,8 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
       response->cors_exposed_header_names,
       CloneSerializedBlob(response->side_data_blob),
       CloneSerializedBlob(response->side_data_blob_for_cache_put),
-      response->content_security_policy.Clone());
+      mojo::Clone(response->parsed_headers),
+      response->loaded_with_credentials);
 }
 
 // static
@@ -46,13 +47,13 @@ blink::mojom::FetchAPIRequestPtr BackgroundFetchSettledFetch::CloneRequest(
   if (request.is_null())
     return nullptr;
   return blink::mojom::FetchAPIRequest::New(
-      request->mode, request->is_main_resource_load,
-      request->request_context_type, request->frame_type, request->url,
-      request->method, request->headers, CloneSerializedBlob(request->blob),
-      request->body, request->referrer.Clone(), request->credentials_mode,
-      request->cache_mode, request->redirect_mode, request->integrity,
-      request->priority, request->fetch_window_id, request->keepalive,
-      request->is_reload, request->is_history_navigation);
+      request->mode, request->is_main_resource_load, request->destination,
+      request->frame_type, request->url, request->method, request->headers,
+      CloneSerializedBlob(request->blob), request->body,
+      request->referrer.Clone(), request->credentials_mode, request->cache_mode,
+      request->redirect_mode, request->integrity, request->priority,
+      request->fetch_window_id, request->keepalive, request->is_reload,
+      request->is_history_navigation);
 }
 
 }  // namespace content

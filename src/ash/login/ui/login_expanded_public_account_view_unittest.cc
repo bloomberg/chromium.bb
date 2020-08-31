@@ -26,7 +26,7 @@ namespace ash {
 namespace {
 
 // Total width of the expanded view.
-constexpr int kBubbleTotalWidthDp = 600;
+constexpr int kBubbleTotalWidthDp = 628;
 // Total height of the expanded view.
 constexpr int kBubbleTotalHeightDp = 324;
 
@@ -308,7 +308,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeWarningLabel) {
   public_account_->SetShowFullManagementDisclosure(false);
   EXPECT_EQ(label->GetText(), default_warning);
   const std::string domain =
-      user_.public_account_info->enterprise_domain.value();
+      user_.public_account_info->device_enterprise_domain.value();
   public_account_->UpdateForUser(user_);
   const base::string16 soft_warning = l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING,

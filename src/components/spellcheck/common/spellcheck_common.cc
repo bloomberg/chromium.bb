@@ -4,9 +4,9 @@
 
 #include "components/spellcheck/common/spellcheck_common.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -117,24 +117,25 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
       // Mar 4, 2014: Add Tajik dictionary.
       {"tg-TG", "-5-0"},
 
-      // October 2017: Update from upstream.
-      {"en-AU", "-8-0"},
-      {"en-CA", "-8-0"},
-      {"en-GB", "-8-0"},
-      {"en-US", "-8-0"},
-
       // Feb 2019: Initial check-in of Welsh.
       {"cy-GB", "-1-0"},
 
       // April 2019: Initial check-in of Armenian.
       {"hy", "-1-0"},
 
-      // April 2019: Update Persian
-      {"fa-IR", "-8-0"},
-
       // November 2019: Update Serbian-Latin and Serbian-Cyrillic
       {"sh", "-4-0"},
       {"sr", "-4-0"},
+
+      // January 2020: Update en-* and fa-IR dictionaries from upstream.
+      {"en-AU", "-9-0"},
+      {"en-CA", "-9-0"},
+      {"en-GB", "-9-0"},
+      {"en-US", "-9-0"},
+      {"fa-IR", "-9-0"},
+
+      // March 2020: Update uk-UA dictionary from upstream.
+      {"uk-UA", "-4-0"},
   };
 
   // Generate the bdict file name using default version string or special

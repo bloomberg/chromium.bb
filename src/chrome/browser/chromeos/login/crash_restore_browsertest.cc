@@ -41,6 +41,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -195,12 +196,14 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
     ASSERT_TRUE(
         base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file));
     local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
-    ASSERT_NE(-1, base::WriteFile(local_state_file, local_state_json.data(),
-                                  local_state_json.size()));
+    ASSERT_TRUE(base::WriteFile(local_state_file, local_state_json));
   }
 
   // Creates user profiles with open user sessions to simulate crashes.
   void CreateUserProfiles() {
+    // NOTE: This does not include IdentityManager prefs like
+    // kGoogleServicesAccountId, so the IdentityManager will not initialize
+    // itself with a primary account.
     base::DictionaryValue prefs;
     prefs.SetString(prefs::kSessionExitType, "Crashed");
     std::string prefs_json;
@@ -217,8 +220,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
           user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
       ASSERT_TRUE(base::CreateDirectory(user_profile_path));
 
-      ASSERT_NE(-1, base::WriteFile(user_profile_path.Append("Preferences"),
-                                    prefs_json.data(), prefs_json.size()));
+      ASSERT_TRUE(
+          base::WriteFile(user_profile_path.Append("Preferences"), prefs_json));
     }
   }
 };

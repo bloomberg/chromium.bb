@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -583,9 +584,10 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Now drop the Service Worker registration which owns that notification.
   embedded_worker_test_helper->context()->UnregisterServiceWorker(
-      origin, base::BindOnce(
-                  &PlatformNotificationContextTest::DidUnregisterServiceWorker,
-                  base::Unretained(this), &unregister_status));
+      origin, /*is_immediate=*/false,
+      base::BindOnce(
+          &PlatformNotificationContextTest::DidUnregisterServiceWorker,
+          base::Unretained(this), &unregister_status));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, unregister_status);

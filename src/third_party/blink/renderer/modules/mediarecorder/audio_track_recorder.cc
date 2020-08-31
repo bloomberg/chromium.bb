@@ -8,10 +8,10 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_opus_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_pcm_encoder.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -43,11 +43,14 @@ AudioTrackRecorder::CodecId AudioTrackRecorder::GetPreferredCodecId() {
   return CodecId::OPUS;
 }
 
-AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
-                                       MediaStreamComponent* track,
-                                       OnEncodedAudioCB on_encoded_audio_cb,
-                                       int32_t bits_per_second)
-    : track_(track),
+AudioTrackRecorder::AudioTrackRecorder(
+    CodecId codec,
+    MediaStreamComponent* track,
+    OnEncodedAudioCB on_encoded_audio_cb,
+    base::OnceClosure on_track_source_ended_cb,
+    int32_t bits_per_second)
+    : TrackRecorder(std::move(on_track_source_ended_cb)),
+      track_(track),
       encoder_(CreateAudioEncoder(codec,
                                   std::move(on_encoded_audio_cb),
                                   bits_per_second)),
@@ -62,7 +65,10 @@ AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
   ConnectToTrack();
 }
 
-AudioTrackRecorder::~AudioTrackRecorder() = default;
+AudioTrackRecorder::~AudioTrackRecorder() {
+  DCHECK(IsMainThread());
+  DisconnectFromTrack();
+}
 
 // Creates an audio encoder from the codec. Returns nullptr if the codec is
 // invalid.
@@ -133,18 +139,6 @@ void AudioTrackRecorder::DisconnectFromTrack() {
       static_cast<MediaStreamAudioTrack*>(track_->GetPlatformTrack());
   DCHECK(audio_track);
   audio_track->RemoveSink(this);
-}
-
-void AudioTrackRecorder::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
-}
-
-void AudioTrackRecorder::Prefinalize() {
-  // TODO(crbug.com/704136) : Remove this method when moving
-  // MediaStreamAudioTrack to Oilpan's heap.
-  DCHECK(IsMainThread());
-  DisconnectFromTrack();
-  track_ = nullptr;
 }
 
 }  // namespace blink

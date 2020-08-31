@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
 import org.chromium.base.Consumer;
-import org.chromium.chrome.browser.feed.library.common.functional.Function;
+import org.chromium.base.Function;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  * addition, the {@code Consumer} is called before the change operation.
  */
 public final class RemoveTracking<T> {
-    private final Function<StreamFeature, /*@Nullable*/ T> mFilterPredicate;
+    private final Function<StreamFeature, T> mFilterPredicate;
     private final Consumer<List<T>> mConsumer;
     private final List<T> mMatchingItems = new ArrayList<>();
 
@@ -32,8 +32,7 @@ public final class RemoveTracking<T> {
      * the
      * {@link Consumer}.
      */
-    public RemoveTracking(
-            Function<StreamFeature, /*@Nullable*/ T> filterPredicate, Consumer<List<T>> consumer) {
+    public RemoveTracking(Function<StreamFeature, T> filterPredicate, Consumer<List<T>> consumer) {
         this.mFilterPredicate = filterPredicate;
         this.mConsumer = consumer;
     }

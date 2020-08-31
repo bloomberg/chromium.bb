@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/bin/sh
+
+set -u
 
 # The following symbols (past the first five) are taken from the public headers.
 # A list of the latter should be available Makefile.sources/LIBKMS_H_FILES
 
-FUNCS=$(nm -D --format=bsd --defined-only ${1-.libs/libkms.so} | awk '{print $3}'| while read func; do
+FUNCS=$($NM -D --format=bsd --defined-only ${1-.libs/libkms.so} | awk '{print $3}'| while read func; do
 ( grep -q "^$func$" || echo $func )  <<EOF
 __bss_start
 _edata

@@ -13,7 +13,10 @@ constexpr char kDlcServiceServiceName[] = "org.chromium.DlcService";
 
 constexpr char kGetInstalledMethod[] = "GetInstalled";
 constexpr char kInstallMethod[] = "Install";
+constexpr char kInstallDlcMethod[] = "InstallDlc";
 constexpr char kUninstallMethod[] = "Uninstall";
+constexpr char kPurgeMethod[] = "Purge";
+constexpr char kGetExistingDlcsMethod[] = "GetExistingDlcs";
 constexpr char kOnInstallStatusSignal[] = "OnInstallStatus";
 
 // Error Codes from dlcservice.
@@ -24,6 +27,8 @@ constexpr char kErrorNeedReboot[] =
     "org.chromium.DlcServiceInterface.NEED_REBOOT";
 constexpr char kErrorInvalidDlc[] =
     "org.chromium.DlcServiceInterface.INVALID_DLC";
+constexpr char kErrorAllocation[] =
+    "org.chromium.DlcServiceInterface.ALLOCATION";
 
 }  // namespace dlcservice
 

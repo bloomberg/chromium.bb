@@ -48,6 +48,22 @@ type Group struct {
 	Tests []string
 }
 
+// Load loads the test list file and appends all tests to the Group.
+func (g *Group) Load() error {
+	tests, err := ioutil.ReadFile(g.File)
+	if err != nil {
+		return cause.Wrap(err, "Couldn't read '%s'", tests)
+	}
+	for _, line := range strings.Split(string(tests), "\n") {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			g.Tests = append(g.Tests, line)
+		}
+	}
+	sort.Strings(g.Tests)
+	return nil
+}
+
 // Filter returns a new Group that contains only tests that match the predicate.
 func (g Group) Filter(pred func(string) bool) Group {
 	out := Group{
@@ -59,6 +75,20 @@ func (g Group) Filter(pred func(string) bool) Group {
 		if pred(test) {
 			out.Tests = append(out.Tests, test)
 		}
+	}
+	return out
+}
+
+// Limit returns a new Group that contains a maximum of limit tests.
+func (g Group) Limit(limit int) Group {
+	out := Group{
+		Name:  g.Name,
+		File:  g.File,
+		API:   g.API,
+		Tests: g.Tests,
+	}
+	if len(g.Tests) > limit {
+		out.Tests = g.Tests[:limit]
 	}
 	return out
 }
@@ -117,27 +147,22 @@ func Load(root, jsonPath string) (Lists, error) {
 
 	out := make(Lists, len(jsonGroups))
 	for i, jsonGroup := range jsonGroups {
-		path := filepath.Join(dir, jsonGroup.TestFile)
-		tests, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, cause.Wrap(err, "Couldn't read '%s'", tests)
-		}
-		relPath, err := filepath.Rel(root, path)
-		if err != nil {
-			return nil, cause.Wrap(err, "Couldn't get relative path for '%s'", path)
-		}
 		group := Group{
 			Name: jsonGroup.Name,
-			File: relPath,
+			File: filepath.Join(dir, jsonGroup.TestFile),
 			API:  API(jsonGroup.API),
 		}
-		for _, line := range strings.Split(string(tests), "\n") {
-			line = strings.TrimSpace(line)
-			if line != "" && !strings.HasPrefix(line, "#") {
-				group.Tests = append(group.Tests, line)
-			}
+		if err := group.Load(); err != nil {
+			return nil, err
 		}
-		sort.Strings(group.Tests)
+
+		// Make the path relative before displaying it to the world.
+		relPath, err := filepath.Rel(root, group.File)
+		if err != nil {
+			return nil, cause.Wrap(err, "Couldn't get relative path for '%s'", group.File)
+		}
+		group.File = relPath
+
 		out[i] = group
 	}
 

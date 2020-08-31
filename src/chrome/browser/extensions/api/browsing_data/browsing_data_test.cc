@@ -24,6 +24,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -71,7 +72,7 @@ bool SetGaiaCookieForProfile(Profile* profile) {
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
   cookie_manager->SetCanonicalCookie(
-      cookie, google_url.scheme(), net::CookieOptions::MakeAllInclusive(),
+      cookie, google_url, net::CookieOptions::MakeAllInclusive(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           std::move(callback), net::CanonicalCookie::CookieInclusionStatus(
                                    net::CanonicalCookie::CookieInclusionStatus::

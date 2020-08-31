@@ -24,10 +24,11 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -117,15 +118,17 @@ class ProxyServiceMojoTest : public testing::Test {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new net::MockPacFileFetcher;
-    proxy_resolution_service_ = CreateProxyResolutionServiceUsingMojoFactory(
-        test_mojo_proxy_resolver_factory_.CreateFactoryRemote(),
-        std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfigWithAnnotation(
-                net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
-                TRAFFIC_ANNOTATION_FOR_TESTS)),
-        base::WrapUnique(fetcher_),
-        std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
-        &mock_host_resolver_, &net_log_, &network_delegate_);
+    proxy_resolution_service_ =
+        CreateConfiguredProxyResolutionServiceUsingMojoFactory(
+            test_mojo_proxy_resolver_factory_.CreateFactoryRemote(),
+            std::make_unique<net::ProxyConfigServiceFixed>(
+                net::ProxyConfigWithAnnotation(
+                    net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
+                    TRAFFIC_ANNOTATION_FOR_TESTS)),
+            base::WrapUnique(fetcher_),
+            std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
+            &mock_host_resolver_, &net_log_, true /* pac_quick_check_enabled */,
+            &network_delegate_);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -135,13 +138,14 @@ class ProxyServiceMojoTest : public testing::Test {
   // Owned by |proxy_resolution_service_|.
   net::MockPacFileFetcher* fetcher_;
   net::RecordingTestNetLog net_log_;
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<net::ConfiguredProxyResolutionService>
+      proxy_resolution_service_;
 };
 
 TEST_F(ProxyServiceMojoTest, Basic) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ProxyResolutionRequest> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -162,7 +166,7 @@ TEST_F(ProxyServiceMojoTest, Basic) {
 TEST_F(ProxyServiceMojoTest, DnsResolution) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ProxyResolutionRequest> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -185,7 +189,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
   net::RecordingBoundTestNetLog test_net_log;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ProxyResolutionRequest> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -211,7 +215,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
 TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ProxyResolutionRequest> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),

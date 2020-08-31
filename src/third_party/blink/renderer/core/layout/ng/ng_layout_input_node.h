@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -24,16 +24,13 @@ class LayoutObject;
 class LayoutBox;
 class NGConstraintSpace;
 class NGPaintFragment;
-struct MinMaxSize;
-struct LogicalSize;
+struct MinMaxSizes;
 struct PhysicalSize;
 
-enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
-
-// Input to the min/max inline size calculation algorithm for child nodes. Child
-// nodes within the same formatting context need to know which floats are beside
-// them.
-struct MinMaxSizeInput {
+// The input to the min/max inline size calculation algorithm for child nodes.
+// Child nodes within the same formatting context need to know which floats are
+// beside them.
+struct MinMaxSizesInput {
   // The min-max size calculation (un-intuitively) requires a percentage
   // resolution size!
   // This occurs when a replaced element has an intrinsic size. E.g.
@@ -44,14 +41,19 @@ struct MinMaxSizeInput {
   //
   // As we don't perform any tree walking, we need to pass the percentage
   // resolution block-size for min/max down the min/max size calculation.
-  explicit MinMaxSizeInput(LayoutUnit percentage_resolution_block_size)
+  explicit MinMaxSizesInput(LayoutUnit percentage_resolution_block_size)
       : percentage_resolution_block_size(percentage_resolution_block_size) {}
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
   LayoutUnit percentage_resolution_block_size;
+};
 
-  // Whether to return the size as a content-box size or border-box size.
-  NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;
+// The output of the min/max inline size calculation algorithm. Contains the
+// min/max sizes, and if this calculation will change if the
+// |MinMaxSizesInput::percentage_resolution_block_size| value changes.
+struct MinMaxSizesResult {
+  MinMaxSizes sizes;
+  bool depends_on_percentage_block_size = false;
 };
 
 // Represents the input to a layout algorithm for a given node. The layout
@@ -108,21 +110,26 @@ class CORE_EXPORT NGLayoutInputNode {
   }
   bool IsListItem() const { return IsBlock() && box_->IsLayoutNGListItem(); }
   bool IsListMarker() const {
-    return IsBlock() && box_->IsLayoutNGListMarker();
+    return IsBlock() && box_->IsLayoutNGOutsideListMarker();
   }
   bool ListMarkerOccupiesWholeLine() const {
     DCHECK(IsListMarker());
-    return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
+    return ToLayoutNGOutsideListMarker(box_)->NeedsOccupyWholeLine();
   }
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();
   }
+  bool IsRubyRun() const { return IsBlock() && box_->IsRubyRun(); }
+  bool IsRubyText() const { return IsBlock() && box_->IsRubyText(); }
 
   // Return true if this is the legend child of a fieldset that gets special
   // treatment (i.e. placed over the block-start border).
   bool IsRenderedLegend() const {
     return IsBlock() && box_->IsRenderedLegend();
   }
+  bool IsTable() const { return IsBlock() && box_->IsTable(); }
+
+  bool IsMathRoot() const { return box_->IsMathMLRoot(); }
 
   bool IsAnonymousBlock() const { return box_->IsAnonymousBlock(); }
 
@@ -158,17 +165,17 @@ class CORE_EXPORT NGLayoutInputNode {
     return false;
   }
 
-  // Returns border box.
-  MinMaxSize ComputeMinMaxSize(WritingMode,
-                               const MinMaxSizeInput&,
-                               const NGConstraintSpace* = nullptr);
+  // Returns the border-box min/max content sizes for the node.
+  MinMaxSizesResult ComputeMinMaxSizes(WritingMode,
+                                       const MinMaxSizesInput&,
+                                       const NGConstraintSpace* = nullptr);
 
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.
   // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
+  // Use NGBlockNode::GetAspectRatio to get the aspect ratio.
   void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
-                     base::Optional<LayoutUnit>* computed_block_size,
-                     LogicalSize* aspect_ratio) const;
+                     base::Optional<LayoutUnit>* computed_block_size) const;
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
@@ -186,6 +193,14 @@ class CORE_EXPORT NGLayoutInputNode {
     return box_->ShouldApplySizeContainment();
   }
 
+  // CSS defines certain cases to synthesize inline block baselines from box.
+  // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
+  bool UseBlockEndMarginEdgeForInlineBlockBaseline() const {
+    if (auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox()))
+      return layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+    return false;
+  }
+
   // CSS intrinsic sizing getters.
   // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
   // Note that this returns kIndefiniteSize if the override was not specified.
@@ -199,6 +214,13 @@ class CORE_EXPORT NGLayoutInputNode {
     if (box_->HasOverrideIntrinsicContentLogicalHeight())
       return box_->OverrideIntrinsicContentLogicalHeight();
     return kIndefiniteSize;
+  }
+
+  LayoutUnit DefaultIntrinsicContentInlineSize() const {
+    return box_->DefaultIntrinsicContentInlineSize();
+  }
+  LayoutUnit DefaultIntrinsicContentBlockSize() const {
+    return box_->DefaultIntrinsicContentBlockSize();
   }
 
   // Display locking functionality.
@@ -239,6 +261,10 @@ class CORE_EXPORT NGLayoutInputNode {
  protected:
   NGLayoutInputNode(LayoutBox* box, NGLayoutInputNodeType type)
       : box_(box), type_(type) {}
+
+  void GetOverrideIntrinsicSize(
+      base::Optional<LayoutUnit>* computed_inline_size,
+      base::Optional<LayoutUnit>* computed_block_size) const;
 
   LayoutBox* box_;
 

@@ -10,6 +10,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 
@@ -110,7 +111,7 @@ bool SwitchAccessEventHandler::ShouldCancelEvent(
     auto* properties = event.properties();
     bool is_linux_xevent =
         properties &&
-        properties->find(ui::kPropertyKeyboardIBusFlag) != properties->end();
+        properties->find(ui::kPropertyKeyboardHwKeyCode) != properties->end();
     if (!is_linux_xevent)
       return false;
   }

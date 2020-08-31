@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.cbuildbot import archive_lib
@@ -15,6 +17,9 @@ from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 DEFAULT_ARCHIVE_PREFIX = 'bogus_bucket/TheArchiveBase'

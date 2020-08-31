@@ -1,15 +1,23 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import {elementDragStart} from './UIUtils.js';
+
 /**
  * @unrestricted
  */
-export default class ResizerWidget extends Common.Object {
+export class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
 
     this._isEnabled = true;
-    this._elements = [];
+    /** @type {!Set<!Element>} */
+    this._elements = new Set();
     this._installDragOnMouseDownBound = this._installDragOnMouseDown.bind(this);
     this._cursor = 'nwse-resize';
   }
@@ -33,33 +41,29 @@ export default class ResizerWidget extends Common.Object {
    * @return {!Array.<!Element>}
    */
   elements() {
-    return this._elements.slice();
+    return [...this._elements];
   }
 
   /**
    * @param {!Element} element
    */
   addElement(element) {
-    if (this._elements.indexOf(element) !== -1) {
-      return;
+    if (!this._elements.has(element)) {
+      this._elements.add(element);
+      element.addEventListener('mousedown', this._installDragOnMouseDownBound, false);
+      this._updateElementCursor(element);
     }
-
-    this._elements.push(element);
-    element.addEventListener('mousedown', this._installDragOnMouseDownBound, false);
-    this._updateElementCursor(element);
   }
 
   /**
    * @param {!Element} element
    */
   removeElement(element) {
-    if (this._elements.indexOf(element) === -1) {
-      return;
+    if (this._elements.has(element)) {
+      this._elements.delete(element);
+      element.removeEventListener('mousedown', this._installDragOnMouseDownBound, false);
+      element.style.removeProperty('cursor');
     }
-
-    this._elements.remove(element);
-    element.removeEventListener('mousedown', this._installDragOnMouseDownBound, false);
-    element.style.removeProperty('cursor');
   }
 
   updateElementCursors() {
@@ -96,13 +100,14 @@ export default class ResizerWidget extends Common.Object {
    * @param {!Event} event
    */
   _installDragOnMouseDown(event) {
+    const element = /** @type {!Element} */ (event.target);
     // Only handle drags of the nodes specified.
-    if (this._elements.indexOf(event.target) === -1) {
+    if (!this._elements.has(element)) {
       return false;
     }
-    UI.elementDragStart(
-        /** @type {!Element} */ (event.target), this._dragStart.bind(this), this._drag.bind(this),
-        this._dragEnd.bind(this), this.cursor(), event);
+    elementDragStart(element, this._dragStart.bind(this), event => {
+      this._drag(event);
+    }, this._dragEnd.bind(this), this.cursor(), event);
   }
 
   /**
@@ -233,18 +238,3 @@ export class SimpleResizerWidget extends ResizerWidget {
     }
   }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ResizerWidget = ResizerWidget;
-
-/** @enum {symbol} */
-UI.ResizerWidget.Events = Events;
-
-/** @constructor */
-UI.SimpleResizerWidget = SimpleResizerWidget;

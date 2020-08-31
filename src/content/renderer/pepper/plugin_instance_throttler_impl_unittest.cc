@@ -7,16 +7,16 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
@@ -54,9 +54,9 @@ class PluginInstanceThrottlerImplTest
     return throttler_.get();
   }
 
-  void DisablePowerSaverByRetroactiveWhitelist() {
+  void DisablePowerSaverByRetroactiveAllowlist() {
     throttler()->MarkPluginEssential(
-        PluginInstanceThrottlerImpl::UNTHROTTLE_METHOD_BY_WHITELIST);
+        PluginInstanceThrottlerImpl::UNTHROTTLE_METHOD_BY_ALLOWLIST);
   }
 
   int change_callback_calls() { return change_callback_calls_; }
@@ -145,18 +145,18 @@ TEST_F(PluginInstanceThrottlerImplTest, IgnoreThrottlingAfterMouseUp) {
   EXPECT_EQ(0, change_callback_calls());
 }
 
-TEST_F(PluginInstanceThrottlerImplTest, FastWhitelisting) {
+TEST_F(PluginInstanceThrottlerImplTest, FastAllowlisting) {
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
-  DisablePowerSaverByRetroactiveWhitelist();
+  DisablePowerSaverByRetroactiveAllowlist();
 
   EngageThrottle();
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 }
 
-TEST_F(PluginInstanceThrottlerImplTest, SlowWhitelisting) {
+TEST_F(PluginInstanceThrottlerImplTest, SlowAllowlisting) {
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
@@ -164,7 +164,7 @@ TEST_F(PluginInstanceThrottlerImplTest, SlowWhitelisting) {
   EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
-  DisablePowerSaverByRetroactiveWhitelist();
+  DisablePowerSaverByRetroactiveAllowlist();
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(2, change_callback_calls());
 }

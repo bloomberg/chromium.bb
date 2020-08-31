@@ -14,11 +14,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
-#include "chrome/browser/permissions/chooser_context_base.h"
+#include "components/permissions/chooser_context_base.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "url/origin.h"
+
+class Profile;
 
 namespace base {
 class Value;
@@ -26,14 +28,10 @@ class Value;
 
 // Manages the internal state and connection to the device service for the
 // Human Interface Device (HID) chooser UI.
-class HidChooserContext : public ChooserContextBase {
+class HidChooserContext : public permissions::ChooserContextBase {
  public:
   explicit HidChooserContext(Profile* profile);
   ~HidChooserContext() override;
-
-  // Given a chooser item |object|, returns a human-readable string
-  // representing the object.
-  static std::string GetObjectName(const base::Value& object);
 
   // ChooserContextBase:
   bool IsValidObject(const base::Value& object) override;
@@ -46,6 +44,7 @@ class HidChooserContext : public ChooserContextBase {
   void RevokeObjectPermission(const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin,
                               const base::Value& object) override;
+  base::string16 GetObjectDisplayName(const base::Value& object) override;
 
   // HID-specific interface for granting and checking permissions.
   void GrantDevicePermission(const url::Origin& requesting_origin,

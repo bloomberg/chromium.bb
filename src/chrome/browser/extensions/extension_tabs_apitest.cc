@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 
 #if defined(OS_WIN)
@@ -308,8 +309,7 @@ IN_PROC_BROWSER_TEST_P(IncognitoExtensionApiTabTest, Tabs) {
 
   EXPECT_TRUE(RunExtensionSubtestWithArgAndFlags(
       "tabs/basics", "incognito.html", args.data(),
-      is_incognito_enabled ? extensions::ExtensionApiTest::kFlagEnableIncognito
-                           : extensions::ExtensionApiTest::kFlagNone))
+      is_incognito_enabled ? kFlagEnableIncognito : kFlagNone, kFlagNone))
       << message_;
 }
 

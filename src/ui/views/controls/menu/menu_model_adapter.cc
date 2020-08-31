@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -71,47 +72,51 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
   switch (menu_type) {
     case ui::MenuModel::TYPE_TITLE:
-      type = MenuItemView::TITLE;
+      type = MenuItemView::Type::kTitle;
       break;
     case ui::MenuModel::TYPE_COMMAND:
     case ui::MenuModel::TYPE_BUTTON_ITEM:
-      type = MenuItemView::NORMAL;
+      type = MenuItemView::Type::kNormal;
       break;
     case ui::MenuModel::TYPE_CHECK:
-      type = MenuItemView::CHECKBOX;
+      type = MenuItemView::Type::kCheckbox;
       break;
     case ui::MenuModel::TYPE_RADIO:
-      type = MenuItemView::RADIO;
+      type = MenuItemView::Type::kRadio;
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
-      type = MenuItemView::SEPARATOR;
+      type = MenuItemView::Type::kSeparator;
       break;
     case ui::MenuModel::TYPE_SUBMENU:
-      type = MenuItemView::SUBMENU;
+      type = MenuItemView::Type::kSubMenu;
       break;
     case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
-      type = MenuItemView::ACTIONABLE_SUBMENU;
+      type = MenuItemView::Type::kActionableSubMenu;
       break;
     case ui::MenuModel::TYPE_HIGHLIGHTED:
-      type = MenuItemView::HIGHLIGHTED;
+      type = MenuItemView::Type::kHighlighted;
       break;
   }
 
-  if (*type == MenuItemView::SEPARATOR) {
+  if (*type == MenuItemView::Type::kSeparator) {
     return menu->AddMenuItemAt(menu_index, item_id, base::string16(),
-                               base::string16(), nullptr, gfx::ImageSkia(),
-                               nullptr, *type,
+                               base::string16(), ui::ThemedVectorIcon(),
+                               gfx::ImageSkia(), ui::ThemedVectorIcon(), *type,
                                model->GetSeparatorTypeAt(model_index));
   }
 
-  gfx::Image icon;
-  model->GetIconAt(model_index, &icon);
+  ui::ImageModel icon = model->GetIconAt(model_index);
+  ui::ImageModel minor_icon = model->GetMinorIconAt(model_index);
   return menu->AddMenuItemAt(
       menu_index, item_id, model->GetLabelAt(model_index),
-      model->GetMinorTextAt(model_index), model->GetMinorIconAt(model_index),
-      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
-      icon.IsEmpty() ? model->GetVectorIconAt(model_index) : nullptr, *type,
-      ui::NORMAL_SEPARATOR);
+      model->GetMinorTextAt(model_index),
+      minor_icon.IsVectorIcon()
+          ? ui::ThemedVectorIcon(minor_icon.GetVectorIcon())
+          : ui::ThemedVectorIcon(),
+      icon.IsImage() ? *icon.GetImage().ToImageSkia() : gfx::ImageSkia(),
+      icon.IsVectorIcon() ? ui::ThemedVectorIcon(icon.GetVectorIcon())
+                          : ui::ThemedVectorIcon(),
+      *type, ui::NORMAL_SEPARATOR);
 }
 
 // Static.
@@ -123,7 +128,6 @@ MenuItemView* MenuModelAdapter::AppendMenuItemFromModel(ui::MenuModel* model,
       menu->HasSubmenu() ? int{menu->GetSubmenu()->children().size()} : 0;
   return AddMenuItemFromModelAt(model, model_index, menu, menu_index, item_id);
 }
-
 
 MenuItemView* MenuModelAdapter::AppendMenuItem(MenuItemView* menu,
                                                ui::MenuModel* model,
@@ -289,8 +293,8 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
     if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
         model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
       DCHECK(item);
-      DCHECK(item->GetType() == MenuItemView::SUBMENU ||
-             item->GetType() == MenuItemView::ACTIONABLE_SUBMENU);
+      DCHECK(item->GetType() == MenuItemView::Type::kSubMenu ||
+             item->GetType() == MenuItemView::Type::kActionableSubMenu);
       ui::MenuModel* submodel = model->GetSubmenuModelAt(i);
       DCHECK(submodel);
       BuildMenuImpl(item, submodel);

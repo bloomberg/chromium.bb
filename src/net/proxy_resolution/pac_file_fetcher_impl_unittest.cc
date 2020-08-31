@@ -35,6 +35,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
 #include "net/net_buildflags.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -86,8 +87,9 @@ class RequestContext : public URLRequestContext {
         std::make_unique<MultiLogCTVerifier>());
     storage_.set_ct_policy_enforcer(
         std::make_unique<DefaultCTPolicyEnforcer>());
-    storage_.set_proxy_resolution_service(ProxyResolutionService::CreateFixed(
-        ProxyConfigWithAnnotation(no_proxy, TRAFFIC_ANNOTATION_FOR_TESTS)));
+    storage_.set_proxy_resolution_service(
+        ConfiguredProxyResolutionService::CreateFixed(
+            ProxyConfigWithAnnotation(no_proxy, TRAFFIC_ANNOTATION_FOR_TESTS)));
     storage_.set_ssl_config_service(
         std::make_unique<SSLConfigServiceDefaults>());
     storage_.set_http_server_properties(

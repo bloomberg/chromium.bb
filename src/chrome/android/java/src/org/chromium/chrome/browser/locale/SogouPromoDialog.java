@@ -18,12 +18,14 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.SearchEnginePreference;
-import org.chromium.chrome.browser.ui.widget.PromoDialog;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.browser_ui.widget.PromoDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -66,7 +68,8 @@ public class SogouPromoDialog extends PromoDialog {
         mLocaleManager = localeManager;
         mSpan = new NoUnderlineClickableSpan(activity.getResources(), (widget) -> {
             mChoice = UserChoice.SETTINGS;
-            PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(getContext(), SearchEngineSettings.class);
             dismiss();
         });
         setOnDismissListener(this);
@@ -141,10 +144,8 @@ public class SogouPromoDialog extends PromoDialog {
             default:
                 assert false : "Unexpected choice";
         }
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(LocaleManager.PREF_PROMO_SHOWN, true)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.LOCALE_MANAGER_PROMO_SHOWN, true);
         RecordHistogram.recordEnumeratedHistogram(
                 "SpecialLocale.PromotionDialog", mChoice, UserChoice.NUM_ENTRIES);
 

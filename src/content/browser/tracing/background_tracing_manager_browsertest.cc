@@ -9,18 +9,23 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
+#include "base/profiler/module_cache.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
@@ -31,14 +36,17 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "services/tracing/perfetto/privacy_filtering_check.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "third_party/zlib/zlib.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 // Used by PerfettoSystemBackgroundScenario, nogncheck is required because this
 // is only included and used on Android.
 #include "services/tracing/perfetto/system_test_utils.h"  // nogncheck
@@ -65,7 +73,7 @@ perfetto::TraceConfig StopTracingTriggerConfig(
 }
 
 void SetSystemProducerSocketAndChecksAsync(const std::string& producer_socket) {
-  // We need to let the AndroidSystemProducer know the MockSystemService socket
+  // We need to let the PosixSystemProducer know the MockSystemService socket
   // address and that if we're running on Android devices older then Pie to
   // still connect.
   tracing::PerfettoTracedProcess::GetTaskRunner()
@@ -75,14 +83,13 @@ void SetSystemProducerSocketAndChecksAsync(const std::string& producer_socket) {
           base::BindOnce(
               [](const std::string& producer_socket) {
                 // The only other type of system producer is
-                // AndroidSystemProducer so this assert ensures that the
+                // PosixSystemProducer so this assert ensures that the
                 // static_cast below is safe.
                 ASSERT_FALSE(tracing::PerfettoTracedProcess::Get()
-                                 ->SystemProducerForTesting()
+                                 ->system_producer()
                                  ->IsDummySystemProducerForTesting());
-                auto* producer = static_cast<tracing::AndroidSystemProducer*>(
-                    tracing::PerfettoTracedProcess::Get()
-                        ->SystemProducerForTesting());
+                auto* producer = static_cast<tracing::PosixSystemProducer*>(
+                    tracing::PerfettoTracedProcess::Get()->system_producer());
                 producer->SetNewSocketForTesting(producer_socket.c_str());
                 producer->SetDisallowPreAndroidPieForTesting(false);
               },
@@ -104,7 +111,7 @@ std::unique_ptr<tracing::MockConsumer> CreateDefaultConsumer(
 }
 }  // namespace
 }  // namespace content
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 using base::trace_event::TraceLog;
 
@@ -345,8 +352,8 @@ class TestTriggerHelper {
  public:
   BackgroundTracingManager::StartedFinalizingCallback receive_closure(
       bool expected) {
-    return base::BindRepeating(&TestTriggerHelper::OnTriggerReceive,
-                               base::Unretained(this), expected);
+    return base::BindOnce(&TestTriggerHelper::OnTriggerReceive,
+                          base::Unretained(this), expected);
   }
 
   void WaitForTriggerReceived() { wait_for_trigger_received_.Run(); }
@@ -1087,6 +1094,120 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, CustomConfig) {
       << *trace_config;
 }
 
+// Used as a known symbol to look up the current module.
+void DummyFunc() {}
+
+// Test that the tracing sampler profiler running in background tracing mode,
+// produces stack frames in the expected JSON format.
+// TODO(https://crbug.com/1062581) Disabled for being flaky.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       DISABLED_EndToEndStackSampling) {
+  // In the browser process, the tracing sampler profiler gets constructed by
+  // the chrome/ layer, so we need to do the same manually for testing purposes.
+  auto tracing_sampler_profiler =
+      tracing::TracingSamplerProfiler::CreateOnMainThread();
+
+  // There won't be any samples if stack unwinding isn't supported.
+  if (!tracing::TracingSamplerProfiler::IsStackUnwindingSupported()) {
+    return;
+  }
+
+  base::RunLoop wait_for_sample;
+  tracing_sampler_profiler->SetSampleCallbackForTesting(
+      wait_for_sample.QuitClosure());
+
+  TestBackgroundTracingHelper background_tracing_helper;
+  TestTraceReceiverHelper trace_receiver_helper;
+
+  base::DictionaryValue dict;
+  dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+  dict.SetString("category", "CUSTOM");
+  dict.SetString("custom_categories", "disabled-by-default-cpu_profiler,-*");
+
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    rules_dict->SetString("trigger_name", "preemptive_test");
+    rules_list->Append(std::move(rules_dict));
+  }
+
+  dict.Set("configs", std::move(rules_list));
+
+  std::unique_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::FromDict(&dict));
+  EXPECT_TRUE(config);
+
+  content::BackgroundTracingManager::TriggerHandle handle =
+      content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+          "preemptive_test");
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), trace_receiver_helper.get_receive_callback(),
+      BackgroundTracingManager::ANONYMIZE_DATA));
+
+  background_tracing_helper.WaitForTracingEnabled();
+
+  wait_for_sample.Run();
+
+  TestTriggerHelper trigger_helper;
+  BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+      handle, trigger_helper.receive_closure(true));
+
+  trace_receiver_helper.WaitForTraceReceived();
+  BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
+  background_tracing_helper.WaitForScenarioAborted();
+
+  EXPECT_TRUE(trace_receiver_helper.trace_received());
+
+  trace_analyzer::TraceEventVector events;
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer(
+      trace_analyzer::TraceAnalyzer::Create(
+          trace_receiver_helper.file_contents()));
+  ASSERT_TRUE(analyzer);
+
+  base::ModuleCache module_cache;
+  const base::ModuleCache::Module* this_module =
+      module_cache.GetModuleForAddress(reinterpret_cast<uintptr_t>(&DummyFunc));
+  ASSERT_TRUE(this_module);
+
+  std::string module_id = this_module->GetId();
+  tracing::TracingSamplerProfiler::MangleModuleIDIfNeeded(&module_id);
+
+  std::string desired_frame_pattern = base::StrCat(
+      {"0x[[:xdigit:]]+ - /?", this_module->GetDebugBasename().MaybeAsASCII(),
+       " \\[", module_id, "\\]"});
+
+  analyzer->FindEvents(trace_analyzer::Query::EventName() ==
+                           trace_analyzer::Query::String("StackCpuSampling"),
+                       &events);
+  EXPECT_GT(events.size(), 0u);
+
+  bool found_match = false;
+  for (const trace_analyzer::TraceEvent* event : events) {
+    if (found_match) {
+      break;
+    }
+
+    std::string frames = event->GetKnownArgAsString("frames");
+    EXPECT_FALSE(frames.empty());
+    base::StringTokenizer values_tokenizer(frames, "\n");
+    while (values_tokenizer.GetNext()) {
+      if (values_tokenizer.token_is_delim()) {
+        continue;
+      }
+
+      if (RE2::FullMatch(values_tokenizer.token(), desired_frame_pattern)) {
+        found_match = true;
+        break;
+      }
+    }
+  }
+
+  EXPECT_TRUE(found_match);
+}
+
 // This tests that histogram triggers for reactive mode configs.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        ReceiveReactiveTraceSucceedsOnHigherHistogramSample) {
@@ -1655,7 +1776,9 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
   background_tracing_helper.WaitForScenarioAborted();
 }
 
-IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
+// TODO(1008387): Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
+                       DISABLED_ProtoTraceReceived) {
   TestBackgroundTracingHelper background_tracing_helper;
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
@@ -1698,7 +1821,7 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   EXPECT_TRUE(checker.stats().has_interned_source_locations);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        PerfettoSystemBackgroundScenarioDefaultName) {
   // This test will ensure that a BackgroundTracing scenario set to SYSTEM mode
@@ -1832,6 +1955,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   // received we won't see any packets and |received_packets()| will be 0.
   EXPECT_LT(0u, system_consumer->received_packets());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 }  // namespace content

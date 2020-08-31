@@ -26,10 +26,9 @@
 
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
 namespace blink {
-
-class LayoutListMarker;
 
 class LayoutListItem final : public LayoutBlockFlow {
  public:
@@ -41,7 +40,16 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   bool IsEmpty() const;
 
-  LayoutListMarker* Marker() const { return marker_; }
+  LayoutListMarker* Marker() const {
+    Element* list_item = To<Element>(GetNode());
+    if (LayoutObject* marker =
+            list_item->PseudoElementLayoutObject(kPseudoIdMarker)) {
+      if (marker->IsListMarker())
+        return ToLayoutListMarker(marker);
+      NOTREACHED();
+    }
+    return nullptr;
+  }
 
   ListItemOrdinal& Ordinal() { return ordinal_; }
   void OrdinalValueChanged();
@@ -80,7 +88,6 @@ class LayoutListItem final : public LayoutBlockFlow {
   bool PrepareForBlockDirectionAlign(const LayoutObject*);
 
   ListItemOrdinal ordinal_;
-  LayoutListMarker* marker_;
   bool need_block_direction_align_;
 };
 

@@ -59,14 +59,12 @@
 
 // Invoked after |newWebState| was activated at the specified index. Both
 // WebState are either valid or null (if there was no selection or there is
-// no selection). If |reason| has CHANGE_REASON_USER_ACTION set then the
-// change is due to an user action. If |reason| has CHANGE_REASON_REPLACED
-// set then the change is caused because the WebState was replaced.
+// no selection). See ChangeReason enum for possible values for |reason|.
 - (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                     reason:(int)reason;
+                     reason:(ActiveWebStateChangeReason)reason;
 
 // Invoked before a batched operations begins. The observer can use this
 // notification if it is interested in considering all those individual
@@ -117,7 +115,7 @@ class WebStateListObserverBridge final : public WebStateListObserver {
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
                            int active_index,
-                           int reason) final;
+                           ActiveWebStateChangeReason reason) final;
   void WillBeginBatchOperation(WebStateList* web_state_list) final;
   void BatchOperationEnded(WebStateList* web_state_list) final;
 

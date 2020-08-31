@@ -80,12 +80,17 @@ GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                      int icon_size,
                                      ExtensionIconSet::MatchType match,
                                      bool grayscale) {
-  GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
-                                   chrome::kChromeUIExtensionIconURL,
-                                   extension->id().c_str(),
-                                   icon_size,
-                                   match,
-                                   grayscale ? "?grayscale=true" : ""));
+  return GetIconURL(extension->id(), icon_size, match, grayscale);
+}
+
+// static
+GURL ExtensionIconSource::GetIconURL(const std::string& extension_id,
+                                     int icon_size,
+                                     ExtensionIconSet::MatchType match,
+                                     bool grayscale) {
+  GURL icon_url(base::StringPrintf(
+      "%s%s/%d/%d%s", chrome::kChromeUIExtensionIconURL, extension_id.c_str(),
+      icon_size, match, grayscale ? "?grayscale=true" : ""));
   CHECK(icon_url.is_valid());
   return icon_url;
 }
@@ -224,8 +229,8 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   favicon_service->GetRawFaviconForPageURL(
       favicon_url, {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
       /*fallback_to_host=*/false,
-      base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
-                 base::Unretained(this), request_id),
+      base::BindOnce(&ExtensionIconSource::OnFaviconDataAvailable,
+                     base::Unretained(this), request_id),
       &cancelable_task_tracker_);
 }
 

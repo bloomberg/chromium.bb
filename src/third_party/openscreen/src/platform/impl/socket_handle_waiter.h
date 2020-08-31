@@ -18,7 +18,6 @@
 #include "platform/impl/socket_handle.h"
 
 namespace openscreen {
-namespace platform {
 
 // The class responsible for calling platform-level method to watch UDP sockets
 // for available read data. Reading from these sockets is handled at a higher
@@ -27,16 +26,21 @@ class SocketHandleWaiter {
  public:
   using SocketHandleRef = std::reference_wrapper<const SocketHandle>;
 
+  enum Flags {
+    kReadable = 1,
+    kWriteable = 2,
+  };
+
   class Subscriber {
    public:
     virtual ~Subscriber() = default;
 
     // Provides a socket handle to the subscriber which has data waiting to be
     // processed.
-    virtual void ProcessReadyHandle(SocketHandleRef handle) = 0;
+    virtual void ProcessReadyHandle(SocketHandleRef handle, uint32_t flags) = 0;
   };
 
-  SocketHandleWaiter() = default;
+  explicit SocketHandleWaiter(ClockNowFunctionPtr now_function);
   virtual ~SocketHandleWaiter() = default;
 
   // Start notifying |subscriber| whenever |handle| has an event. May be called
@@ -65,16 +69,35 @@ class SocketHandleWaiter {
   Error ProcessHandles(Clock::duration timeout);
 
  protected:
+  struct ReadyHandle {
+    SocketHandleRef handle;
+    uint32_t flags;
+  };
+
   // Waits until data is available in one of the provided sockets or the
   // provided timeout has passed - whichever is first. If any sockets have data
   // available, they are returned.
-  virtual ErrorOr<std::vector<SocketHandleRef>> AwaitSocketsReadable(
+  virtual ErrorOr<std::vector<ReadyHandle>> AwaitSocketsReadable(
       const std::vector<SocketHandleRef>& socket_fds,
       const Clock::duration& timeout) = 0;
 
  private:
-  // Call the subscriber associated with each changed handle.
-  void ProcessReadyHandles(const std::vector<SocketHandleRef>& handles);
+  struct SocketSubscription {
+    Subscriber* subscriber = nullptr;
+    Clock::time_point last_updated = Clock::time_point::min();
+  };
+
+  struct HandleWithSubscription {
+    ReadyHandle ready_handle;
+    // Reference to the original subscription in the unordered map, so
+    // we can keep track of when we updated this socket handle.
+    SocketSubscription* subscription;
+  };
+
+  // Call the subscriber associated with each changed handle.  Handles are only
+  // processed until |timeout| is exceeded.  Must be called with |mutex_| held.
+  void ProcessReadyHandles(std::vector<HandleWithSubscription>* handles,
+                           Clock::duration timeout);
 
   // Guards against concurrent access to all other class data members.
   std::mutex mutex_;
@@ -88,11 +111,12 @@ class SocketHandleWaiter {
 
   // Set of all socket handles currently being watched, mapped to the subscriber
   // that is watching them.
-  std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
+  std::unordered_map<SocketHandleRef, SocketSubscription, SocketHandleHash>
       handle_mappings_;
+
+  const ClockNowFunctionPtr now_function_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_HANDLE_WAITER_H_

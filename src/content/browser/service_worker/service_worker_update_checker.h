@@ -80,7 +80,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
           failure_info)>;
 
   ServiceWorkerUpdateChecker(
-      std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+          scripts_to_compare,
       const GURL& main_script_url,
       int64_t main_script_resource_id,
       scoped_refptr<ServiceWorkerVersion> version_to_update,
@@ -110,9 +111,15 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   const GURL& updated_script_url() const { return updated_script_url_; }
   bool network_accessed() const { return network_accessed_; }
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy() const {
+    return cross_origin_embedder_policy_;
+  }
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
+  void OnResourceIdAssignedForOneScriptCheck(const GURL& url,
+                                             const int64_t resource_id,
+                                             const int64_t new_resource_id);
   void DidSetUpOnUI(net::HttpRequestHeaders header,
                     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
                         browser_context_getter);
@@ -120,7 +127,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   const GURL main_script_url_;
   const int64_t main_script_resource_id_;
 
-  std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+      scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
   std::map<GURL, ComparedScriptInfo> script_check_results_;
 
@@ -149,6 +157,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;
+
+  // The Cross-Origin-Embedder-Policy header for the updated main script.
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   // |context_| outlives |this| because it owns |this| through
   // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.

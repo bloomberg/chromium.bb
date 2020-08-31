@@ -636,17 +636,21 @@ FilePath GetHomeDir() {
 }
 #endif  // !defined(OS_MACOSX)
 
-bool CreateTemporaryFile(FilePath* path) {
+File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // For call to close() inside ScopedFD.
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  FilePath directory;
-  if (!GetTempDir(&directory))
-    return false;
-  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(directory, path);
+  return File(CreateAndOpenFdForTemporaryFileInDir(dir, temp_file));
+}
+
+bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
+  // For call to close() inside ScopedFD.
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
   return fd.is_valid();
 }
 
-FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
+ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                             FilePath* path) {
   ScopedFD scoped_fd = CreateAndOpenFdForTemporaryFileInDir(dir, path);
   if (!scoped_fd.is_valid())
     return nullptr;
@@ -655,14 +659,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
   FILE* file = fdopen(fd, "a+");
   if (!file)
     close(fd);
-  return file;
-}
-
-bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
-  // For call to close() inside ScopedFD.
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
-  return fd.is_valid();
+  return ScopedFILE(file);
 }
 
 static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
@@ -819,6 +816,18 @@ FILE* FileToFILE(File file, const char* mode) {
   if (stream)
     file.TakePlatformFile();
   return stream;
+}
+
+File FILEToFile(FILE* file_stream) {
+  if (!file_stream)
+    return File();
+
+  PlatformFile fd = fileno(file_stream);
+  DCHECK_NE(fd, -1);
+  ScopedPlatformFile other_fd(HANDLE_EINTR(dup(fd)));
+  if (!other_fd.is_valid())
+    return File(File::GetLastFileError());
+  return File(std::move(other_fd));
 }
 #endif  // !defined(OS_NACL)
 

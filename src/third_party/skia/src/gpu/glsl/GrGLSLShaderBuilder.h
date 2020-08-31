@@ -9,8 +9,8 @@
 #define GrGLSLShaderBuilder_DEFINED
 
 #include "include/private/SkTDArray.h"
-#include "src/gpu/GrAllocator.h"
 #include "src/gpu/GrShaderVar.h"
+#include "src/gpu/GrTAllocator.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/sksl/SkSLString.h"
 
@@ -28,32 +28,25 @@ public:
 
     using SamplerHandle      = GrGLSLUniformHandler::SamplerHandle;
 
-    /** Appends a 2D texture sample with projection if necessary. coordType must either be Vec2f or
-        Vec3f. The latter is interpreted as projective texture coords. The vec length and swizzle
+    /** Appends a 2D texture sample with projection if necessary. The vec length and swizzle
         order of the result depends on the GrProcessor::TextureSampler associated with the
         SamplerHandle.
         */
-    void appendTextureLookup(SkString* out,
-                             SamplerHandle,
-                             const char* coordName,
-                             GrSLType coordType = kHalf2_GrSLType) const;
+    void appendTextureLookup(SkString* out, SamplerHandle, const char* coordName) const;
 
     /** Version of above that appends the result to the shader code instead.*/
     void appendTextureLookup(SamplerHandle,
                              const char* coordName,
-                             GrSLType coordType = kHalf2_GrSLType,
                              GrGLSLColorSpaceXformHelper* colorXformHelper = nullptr);
 
-
-    /** Does the work of appendTextureLookup and modulates the result by modulation. The result is
-        always a half4. modulation and the swizzle specified by SamplerHandle must both be
-        half4 or half. If modulation is "" or nullptr it this function acts as though
-        appendTextureLookup were called. */
-    void appendTextureLookupAndModulate(const char* modulation,
-                                        SamplerHandle,
-                                        const char* coordName,
-                                        GrSLType coordType = kHalf2_GrSLType,
-                                        GrGLSLColorSpaceXformHelper* colorXformHelper = nullptr);
+    /** Does the work of appendTextureLookup and blends the result by dst, treating the texture
+        lookup a the src input to the blend. The dst is assumed to be half4 and the result is always
+        a half4. If dst is nullptr we use half4(1) as the blend dst. */
+    void appendTextureLookupAndBlend(const char* dst,
+                                     SkBlendMode,
+                                     SamplerHandle,
+                                     const char* coordName,
+                                     GrGLSLColorSpaceXformHelper* colorXformHelper = nullptr);
 
     /** Adds a helper function to facilitate color gamut transformation, and produces code that
         returns the srcColor transformed into a new gamut (via multiplication by the xform from
@@ -248,6 +241,7 @@ protected:
     friend class GrCCCoverageProcessor; // to access code().
     friend class GrGLSLProgramBuilder;
     friend class GrGLProgramBuilder;
+    friend class GrD3DPipelineStateBuilder;
     friend class GrDawnProgramBuilder;
     friend class GrGLSLVaryingHandler; // to access noperspective interpolation feature.
     friend class GrGLPathProgramBuilder; // to access fInputs.

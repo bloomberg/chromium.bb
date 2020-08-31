@@ -46,6 +46,7 @@
 
 #include <sstream>
 #include <vector>
+#include <set>
 #include <cctype>
 #include <locale>
 #include <limits>
@@ -703,7 +704,7 @@ void TimestampTest::checkSupport (Context& context) const
 	if (m_hostQueryReset)
 	{
 		// Check VK_EXT_host_query_reset is supported
-		context.requireDeviceExtension("VK_EXT_host_query_reset");
+		context.requireDeviceFunctionality("VK_EXT_host_query_reset");
 
 		if(context.getHostQueryResetFeatures().hostQueryReset == VK_FALSE)
 			throw tcu::NotSupportedError("Implementation doesn't support resetting queries from the host");
@@ -797,7 +798,7 @@ tcu::TestStatus TimestampTestInstance::iterate (void)
 	configCommandBuffer();
 	if (m_hostQueryReset)
 	{
-		vk.resetQueryPoolEXT(vkDevice, *m_queryPool, 0u, TimestampTest::ENTRY_COUNT);
+		vk.resetQueryPool(vkDevice, *m_queryPool, 0u, TimestampTest::ENTRY_COUNT);
 	}
 	submitCommandsAndWait(vk, vkDevice, queue, m_cmdBuffer.get());
 
@@ -820,7 +821,7 @@ tcu::TestStatus TimestampTestInstance::iterate (void)
 		}
 
 		// Host resets the query pool
-		vk.resetQueryPoolEXT(vkDevice, *m_queryPool, 0u, stageSize);
+		vk.resetQueryPool(vkDevice, *m_queryPool, 0u, stageSize);
 		// Get timestamp value from query pool
 		vk::VkResult res = vk.getQueryPoolResults(vkDevice, *m_queryPool, 0u, stageSize, sizeof(deUint64) * stageSize * 2, (void*)m_timestampValuesHostQueryReset, sizeof(deUint64) * 2, VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
 
@@ -1069,7 +1070,7 @@ vkt::TestInstance* CalibratedTimestampTest<T>::createInstance (Context& context)
 template <class T>
 void CalibratedTimestampTest<T>::checkSupport (Context& context) const
 {
-	context.requireDeviceExtension("VK_EXT_calibrated_timestamps");
+	context.requireDeviceFunctionality("VK_EXT_calibrated_timestamps");
 }
 
 CalibratedTimestampTestInstance::CalibratedTimestampTestInstance (Context& context)
@@ -1150,8 +1151,11 @@ CalibratedTimestampTestInstance::CalibratedTimestampTestInstance (Context& conte
 
 std::vector<VkTimeDomainEXT> CalibratedTimestampTestInstance::getDomainSubset (const std::vector<VkTimeDomainEXT>& available, const std::vector<VkTimeDomainEXT>& interesting) const
 {
+	const std::set<VkTimeDomainEXT> availableSet	(begin(available),		end(available));
+	const std::set<VkTimeDomainEXT> interestingSet	(begin(interesting),	end(interesting));
+
 	std::vector<VkTimeDomainEXT> subset;
-	std::set_intersection(begin(available), end(available), begin(interesting), end(interesting), std::back_inserter(subset));
+	std::set_intersection(begin(availableSet), end(availableSet), begin(interestingSet), end(interestingSet), std::back_inserter(subset));
 	return subset;
 }
 
@@ -2881,7 +2885,7 @@ tcu::TestStatus TwoCmdBuffersTestInstance::iterate (void)
 	if (m_hostQueryReset)
 	{
 		// Only reset the pool for the primary command buffer, the secondary command buffer will reset the pool by itself.
-		vk.resetQueryPoolEXT(m_context.getDevice(), *m_queryPool, 0u, TimestampTest::ENTRY_COUNT);
+		vk.resetQueryPool(m_context.getDevice(), *m_queryPool, 0u, TimestampTest::ENTRY_COUNT);
 	}
 
 	VK_CHECK(vk.queueSubmit(queue, 1u, &submitInfo, DE_NULL));

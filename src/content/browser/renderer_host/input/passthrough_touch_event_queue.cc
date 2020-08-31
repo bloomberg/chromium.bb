@@ -45,14 +45,14 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 // static
 const base::FeatureParam<std::string>
     PassthroughTouchEventQueue::kSkipTouchEventFilterType{
-        &features::kSkipTouchEventFilter,
-        features::kSkipTouchEventFilterTypeParamName,
-        features::kSkipTouchEventFilterTypeParamValueDiscrete};
+        &blink::features::kSkipTouchEventFilter,
+        blink::features::kSkipTouchEventFilterTypeParamName,
+        blink::features::kSkipTouchEventFilterTypeParamValueDiscrete};
 
 PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo& event)
     : TouchEventWithLatencyInfo(event),
-      ack_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+      ack_state_(blink::mojom::InputEventResultState::kUnknown) {}
 
 bool PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
 operator<(const TouchEventWithLatencyInfoAndAckState& other) const {
@@ -83,7 +83,7 @@ void PassthroughTouchEventQueue::SendTouchCancelEventForTouchEvent(
     const TouchEventWithLatencyInfo& event_to_cancel) {
   TouchEventWithLatencyInfo event = event_to_cancel;
   WebTouchEventTraits::ResetTypeAndTouchStates(
-      WebInputEvent::kTouchCancel,
+      WebInputEvent::Type::kTouchCancel,
       // TODO(rbyers): Shouldn't we use a fresh timestamp?
       event.event.TimeStamp(), &event.event);
   SendTouchEventImmediately(&event, false);
@@ -102,8 +102,9 @@ void PassthroughTouchEventQueue::QueueEvent(
     client_->OnFilteringTouchEvent(event.event);
 
     TouchEventWithLatencyInfoAndAckState event_with_ack_state = event;
-    event_with_ack_state.set_ack_info(InputEventAckSource::BROWSER,
-                                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    event_with_ack_state.set_ack_info(
+        blink::mojom::InputEventResultSource::kBrowser,
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     outstanding_touches_.insert(event_with_ack_state);
     AckCompletedEvents();
     return;
@@ -116,16 +117,16 @@ void PassthroughTouchEventQueue::PrependTouchScrollNotification() {
   TRACE_EVENT0("input",
                "PassthroughTouchEventQueue::PrependTouchScrollNotification");
 
-  TouchEventWithLatencyInfo touch(WebInputEvent::kTouchScrollStarted,
+  TouchEventWithLatencyInfo touch(WebInputEvent::Type::kTouchScrollStarted,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow(), LatencyInfo());
-  touch.event.dispatch_type = WebInputEvent::kEventNonBlocking;
+  touch.event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
   SendTouchEventImmediately(&touch, true);
 }
 
 void PassthroughTouchEventQueue::ProcessTouchAck(
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result,
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result,
     const LatencyInfo& latency_info,
     const uint32_t unique_touch_event_id,
     bool should_stop_timeout_monitor) {
@@ -156,17 +157,19 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
 void PassthroughTouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.GetType() ==
-      blink::WebInputEvent::kGestureScrollUpdate) {
+      blink::WebInputEvent::Type::kGestureScrollUpdate) {
     send_touch_events_async_ = true;
   }
 }
 
 void PassthroughTouchEventQueue::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   // Turn events sent during gesture scrolls to be async.
-  if (event.event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
-    send_touch_events_async_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
+  if (event.event.GetType() ==
+      blink::WebInputEvent::Type::kGestureScrollUpdate) {
+    send_touch_events_async_ =
+        (ack_result == blink::mojom::InputEventResultState::kConsumed);
   }
 }
 
@@ -179,7 +182,7 @@ bool PassthroughTouchEventQueue::IsPendingAckTouchStart() const {
     return false;
 
   for (auto& iter : outstanding_touches_) {
-    if (iter.event.GetType() == WebInputEvent::kTouchStart)
+    if (iter.event.GetType() == WebInputEvent::Type::kTouchStart)
       return true;
   }
   return false;
@@ -214,9 +217,10 @@ void PassthroughTouchEventQueue::FlushQueue() {
     auto iter = outstanding_touches_.begin();
     TouchEventWithLatencyInfoAndAckState event = *iter;
     outstanding_touches_.erase(iter);
-    if (event.ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
-      event.set_ack_info(InputEventAckSource::BROWSER,
-                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    if (event.ack_state() == blink::mojom::InputEventResultState::kUnknown)
+      event.set_ack_info(
+          blink::mojom::InputEventResultSource::kBrowser,
+          blink::mojom::InputEventResultState::kNoConsumerExists);
     AckTouchEventToClient(event, event.ack_source(), event.ack_state());
   }
 }
@@ -234,7 +238,7 @@ void PassthroughTouchEventQueue::AckCompletedEvents() {
   base::AutoReset<bool> process_acks(&processing_acks_, true);
   while (!outstanding_touches_.empty()) {
     auto iter = outstanding_touches_.begin();
-    if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
+    if (iter->ack_state() == blink::mojom::InputEventResultState::kUnknown)
       break;
     TouchEventWithLatencyInfoAndAckState event = *iter;
     outstanding_touches_.erase(iter);
@@ -244,12 +248,12 @@ void PassthroughTouchEventQueue::AckCompletedEvents() {
 
 void PassthroughTouchEventQueue::AckTouchEventToClient(
     const TouchEventWithLatencyInfo& acked_event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   UpdateTouchConsumerStates(acked_event.event, ack_result);
 
   // Skip ack for TouchScrollStarted since it was synthesized within the queue.
-  if (acked_event.event.GetType() != WebInputEvent::kTouchScrollStarted) {
+  if (acked_event.event.GetType() != WebInputEvent::Type::kTouchScrollStarted) {
     client_->OnTouchEventAck(acked_event, ack_source, ack_result);
   }
 }
@@ -261,17 +265,17 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
   // platform scrolling and JS pinching. Touchend events, however, remain
   // uncancelable, mitigating the risk of jank when transitioning to a fling.
   if (send_touch_events_async_ &&
-      touch->event.GetType() != WebInputEvent::kTouchStart)
-    touch->event.dispatch_type = WebInputEvent::kEventNonBlocking;
+      touch->event.GetType() != WebInputEvent::Type::kTouchStart)
+    touch->event.dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 
-  if (touch->event.GetType() == WebInputEvent::kTouchStart)
+  if (touch->event.GetType() == WebInputEvent::Type::kTouchStart)
     touch->event.touch_start_or_first_touch_move = true;
 
   // For touchmove events, compare touch points position from current event
   // to last sent event and update touch points state.
-  if (touch->event.GetType() == WebInputEvent::kTouchMove) {
+  if (touch->event.GetType() == WebInputEvent::Type::kTouchMove) {
     CHECK(last_sent_touchevent_);
-    if (last_sent_touchevent_->GetType() == WebInputEvent::kTouchStart)
+    if (last_sent_touchevent_->GetType() == WebInputEvent::Type::kTouchStart)
       touch->event.touch_start_or_first_touch_move = true;
     for (unsigned int i = 0; i < last_sent_touchevent_->touches_length; ++i) {
       const WebTouchPoint& last_touch_point = last_sent_touchevent_->touches[i];
@@ -282,14 +286,15 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
           continue;
 
         if (!HasPointChanged(last_touch_point, current_touchmove_point))
-          touch->event.touches[j].state = WebTouchPoint::kStateStationary;
+          touch->event.touches[j].state =
+              WebTouchPoint::State::kStateStationary;
 
         break;
       }
     }
   }
 
-  if (touch->event.GetType() != WebInputEvent::kTouchScrollStarted) {
+  if (touch->event.GetType() != WebInputEvent::Type::kTouchScrollStarted) {
     if (last_sent_touchevent_)
       *last_sent_touchevent_ = touch->event;
     else
@@ -329,11 +334,11 @@ bool PassthroughTouchEventQueue::ShouldFilterForEvent(
   // If the experiment is enabled and all events are forwarded, always skip
   // filtering.
   if (events_to_always_forward_ ==
-      features::kSkipTouchEventFilterTypeParamValueAll)
+      blink::features::kSkipTouchEventFilterTypeParamValueAll)
     return false;
   // If the experiment is enabled and only discrete events are forwarded,
   // always run filtering for touchmove events only.
-  return event.GetType() == WebInputEvent::kTouchMove;
+  return event.GetType() == WebInputEvent::Type::kTouchMove;
 }
 
 PassthroughTouchEventQueue::PreFilterResult
@@ -344,7 +349,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
   if (timeout_handler_ && timeout_handler_->FilterEvent(event))
     return PreFilterResult::kFilteredTimeout;
 
-  if (event.GetType() == WebInputEvent::kTouchScrollStarted)
+  if (event.GetType() == WebInputEvent::Type::kTouchScrollStarted)
     return PreFilterResult::kUnfiltered;
 
   if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
@@ -365,13 +370,13 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
   }
 
   if (drop_remaining_touches_in_sequence_ &&
-      event.GetType() != WebInputEvent::kTouchCancel &&
+      event.GetType() != WebInputEvent::Type::kTouchCancel &&
       // If the SkipTouchEventFilter experiment is running, drop through to
       // the loop that filters events with no nonstationary pointers below.
       ShouldFilterForEvent(event))
     return PreFilterResult::kFilteredNoPageHandlers;
 
-  if (event.GetType() == WebInputEvent::kTouchStart) {
+  if (event.GetType() == WebInputEvent::Type::kTouchStart) {
     if (has_handlers_ || maybe_has_handler_for_current_sequence_)
       return PreFilterResult::kUnfiltered;
     // If the SkipTouchEventFilter experiment is running, drop through to
@@ -389,7 +394,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
   // in the current touch sequence.
   for (size_t i = 0; i < event.touches_length; ++i) {
     const WebTouchPoint& point = event.touches[i];
-    if (point.state == WebTouchPoint::kStateStationary)
+    if (point.state == WebTouchPoint::State::kStateStationary)
       continue;
 
     // |last_sent_touchevent_| will be non-null as long as there is an
@@ -401,7 +406,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
       if (point.id != last_sent_touchevent_->touches[j].id)
         continue;
 
-      if (event.GetType() != WebInputEvent::kTouchMove)
+      if (event.GetType() != WebInputEvent::Type::kTouchMove)
         return PreFilterResult::kUnfiltered;
 
       // All pointers in TouchMove events may have state as StateMoved,
@@ -422,9 +427,9 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
 
 void PassthroughTouchEventQueue::UpdateTouchConsumerStates(
     const WebTouchEvent& event,
-    InputEventAckState ack_result) {
-  if (event.GetType() == WebInputEvent::kTouchStart) {
-    if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
+    blink::mojom::InputEventResultState ack_result) {
+  if (event.GetType() == WebInputEvent::Type::kTouchStart) {
+    if (ack_result == blink::mojom::InputEventResultState::kConsumed)
       send_touch_events_async_ = false;
 
     // Once we have the ack back for the sequence we know if there
@@ -432,10 +437,10 @@ void PassthroughTouchEventQueue::UpdateTouchConsumerStates(
     // whether we have a handler or not as well.
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
       maybe_has_handler_for_current_sequence_ =
-          ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+          ack_result != blink::mojom::InputEventResultState::kNoConsumerExists;
     } else {
       maybe_has_handler_for_current_sequence_ |=
-          ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+          ack_result != blink::mojom::InputEventResultState::kNoConsumerExists;
     }
   } else if (WebTouchEventTraits::IsTouchSequenceEnd(event)) {
     maybe_has_handler_for_current_sequence_ = false;

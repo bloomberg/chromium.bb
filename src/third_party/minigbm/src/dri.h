@@ -6,11 +6,11 @@
 
 #ifdef DRV_AMDGPU
 
-typedef int GLint;
-typedef unsigned int GLuint;
-typedef unsigned char GLboolean;
-
+// Avoid transitively including a bunch of unnecessary headers.
+#define GL_GLEXT_LEGACY
 #include "GL/internal/dri_interface.h"
+#undef GL_GLEXT_LEGACY
+
 #include "drv.h"
 
 struct dri_driver {
@@ -30,9 +30,12 @@ int dri_init(struct driver *drv, const char *dri_so_path, const char *driver_suf
 void dri_close(struct driver *drv);
 int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 		  uint64_t use_flags);
+int dri_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				 const uint64_t *modifiers, uint32_t modifier_count);
 int dri_bo_import(struct bo *bo, struct drv_import_fd_data *data);
 int dri_bo_destroy(struct bo *bo);
 void *dri_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags);
 int dri_bo_unmap(struct bo *bo, struct vma *vma);
+size_t dri_num_planes_from_modifier(struct driver *drv, uint32_t format, uint64_t modifier);
 
 #endif

@@ -13,7 +13,6 @@
 #include "base/containers/flat_set.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -21,6 +20,8 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/chooser_context_base.h"
+#include "components/prefs/pref_store.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -33,11 +34,12 @@ class ListValue;
 namespace settings {
 
 // Chrome "ContentSettings" settings page UI handler.
-class SiteSettingsHandler : public SettingsPageUIHandler,
-                            public content_settings::Observer,
-                            public ProfileObserver,
-                            public ChooserContextBase::PermissionObserver,
-                            public CookiesTreeModel::Observer {
+class SiteSettingsHandler
+    : public SettingsPageUIHandler,
+      public content_settings::Observer,
+      public ProfileObserver,
+      public permissions::ChooserContextBase::PermissionObserver,
+      public CookiesTreeModel::Observer {
  public:
   explicit SiteSettingsHandler(Profile* profile,
                                web_app::AppRegistrar& web_app_registrar);
@@ -110,11 +112,15 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSites);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetRecentSitePermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, OnStorageFetched);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, IncognitoExceptions);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           ResetCategoryPermissionForEmbargoedOrigins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, PatternsAndContentType);
@@ -122,6 +128,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieControlsManagedState);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            NotificationPermissionRevokeUkm);
@@ -162,6 +170,20 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // data, which will send the list of sites with cookies or usage data to
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
+
+  // Returns whether each of the cookie controls is managed and if so what
+  // the source of that management is.
+  void HandleGetCookieControlsManagedState(const base::ListValue* args);
+
+  // Returns a string for display describing the current cookie settings.
+  void HandleGetCookieSettingDescription(const base::ListValue* args);
+
+  // Returns a list containing the most recent permission changes for the
+  // provided content types grouped by origin/profile (incognito, regular)
+  // combinations, limited to N origin/profile pairings. This includes
+  // permission changes made by embargo, but does not include permissions
+  // enforced via policy.
+  void HandleGetRecentSitePermissions(const base::ListValue* args);
 
   // Called when the list of origins using storage has been fetched, and sends
   // this list back to the front end.
@@ -240,6 +262,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   void ClearAllSitesMapForTesting();
 
+  // Notifies the JS side the effective cookies setting has changed and
+  // provides the updated description label for display.
+  void SendCookieSettingDescription();
+
   Profile* profile_;
   web_app::AppRegistrar& app_registrar_;
 
@@ -260,7 +286,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
       this};
 
   // Change observer for chooser permissions.
-  ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
+  ScopedObserver<permissions::ChooserContextBase,
+                 permissions::ChooserContextBase::PermissionObserver>
       chooser_observer_{this};
 
   // Change observer for prefs.

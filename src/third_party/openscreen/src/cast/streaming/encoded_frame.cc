@@ -4,8 +4,8 @@
 
 #include "cast/streaming/encoded_frame.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 EncodedFrame::EncodedFrame() = default;
 EncodedFrame::~EncodedFrame() = default;
@@ -22,5 +22,5 @@ void EncodedFrame::CopyMetadataTo(EncodedFrame* dest) const {
   dest->new_playout_delay = this->new_playout_delay;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

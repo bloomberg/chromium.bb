@@ -34,6 +34,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
@@ -560,7 +561,7 @@ TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsReprioritized) {
 }
 
 TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
-  session_deps_.host_resolver->rules()->AddSimulatedFailure(
+  session_deps_.host_resolver->rules()->AddSimulatedTimeoutFailure(
       group_id_.destination().host());
   TestCompletionCallback callback;
   ClientSocketHandle handle;
@@ -572,6 +573,7 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
                   ClientSocketPool::ProxyAuthCallback(), pool_.get(),
                   NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(handle.resolve_error_info().error, IsError(ERR_DNS_TIMED_OUT));
   ASSERT_EQ(1u, handle.connection_attempts().size());
   EXPECT_TRUE(handle.connection_attempts()[0].endpoint.address().empty());
   EXPECT_THAT(handle.connection_attempts()[0].result,
@@ -1155,7 +1157,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
     handle.Reset();
 
     // Close all pending connect jobs and existing sockets.
-    pool_->FlushWithError(ERR_NETWORK_CHANGED);
+    pool_->FlushWithError(ERR_NETWORK_CHANGED, "Network changed");
   }
 }
 
@@ -2515,7 +2517,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
 
   for (const auto& test : kTests) {
     SpdySessionDependencies session_deps(
-        ProxyResolutionService::CreateDirect());
+        ConfiguredProxyResolutionService::CreateDirect());
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
 

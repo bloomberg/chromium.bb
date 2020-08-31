@@ -39,7 +39,6 @@ source_set("common") {
   ]
 
   sources = [
-    "accessibility_messages.h",
     "all_messages.h",
     "android/gin_java_bridge_errors.cc",
     "android/gin_java_bridge_errors.h",
@@ -56,11 +55,12 @@ source_set("common") {
     "appcache_interfaces.h",
     "ax_content_node_data.cc",
     "ax_content_node_data.h",
+    "ax_serialization_utils.cc",
+    "ax_serialization_utils.h",
     "background_fetch/background_fetch_types.cc",
     "background_fetch/background_fetch_types.h",
     "browser_plugin/browser_plugin_constants.cc",
     "browser_plugin/browser_plugin_constants.h",
-    "browser_plugin/browser_plugin_messages.h",
     "child_process_host_impl.cc",
     "child_process_host_impl.h",
     "common_param_traits.cc",
@@ -73,25 +73,16 @@ source_set("common") {
     "content_ipc_logging.cc",
     "content_message_generator.cc",
     "content_message_generator.h",
+    "content_navigation_policy.cc",
+    "content_navigation_policy.h",
     "content_param_traits.cc",
     "content_param_traits.h",
     "content_param_traits_macros.h",
     "content_paths.cc",
-    "content_security_policy/content_security_policy.cc",
-    "content_security_policy/content_security_policy.h",
-    "content_security_policy/csp_context.cc",
-    "content_security_policy/csp_context.h",
-    "content_security_policy/csp_directive.cc",
-    "content_security_policy/csp_directive.h",
-    "content_security_policy/csp_disposition_enum.h",
-    "content_security_policy/csp_source.cc",
-    "content_security_policy/csp_source.h",
-    "content_security_policy/csp_source_list.cc",
-    "content_security_policy/csp_source_list.h",
-    "content_security_policy_header.cc",
-    "content_security_policy_header.h",
     "content_switches_internal.cc",
     "content_switches_internal.h",
+    "content_to_visible_time_reporter.cc",
+    "content_to_visible_time_reporter.h",
     "cursors/webcursor.cc",
     "cursors/webcursor.h",
     "cursors/webcursor_android.cc",
@@ -103,7 +94,6 @@ source_set("common") {
     "drag_event_source_info.h",
     "drag_messages.h",
     "drag_traits.h",
-    "edit_command.h",
     "fetch/fetch_api_request_proto.cc",
     "fetch/fetch_api_request_proto.h",
     "fetch/fetch_request_type_converters.cc",
@@ -116,12 +106,8 @@ source_set("common") {
     "font_list_mac.mm",
     "font_list_win.cc",
     "frame_delete_intention.h",
-    "frame_message_structs.cc",
-    "frame_message_structs.h",
     "frame_messages.h",
     "frame_messages_forward.h",
-    "frame_owner_properties.cc",
-    "frame_owner_properties.h",
     "frame_replication_state.cc",
     "frame_replication_state.h",
     "frame_visual_properties.cc",
@@ -138,16 +124,12 @@ source_set("common") {
     "input/ime_text_span_conversions.h",
     "input/input_event.cc",
     "input/input_event.h",
-    "input/input_event_ack.cc",
-    "input/input_event_ack.h",
     "input/input_event_ack_state.cc",
     "input/input_event_dispatch_type.h",
     "input/input_event_mojom_traits.cc",
     "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
-    "input/sync_compositor_messages.cc",
-    "input/sync_compositor_messages.h",
     "input/synthetic_gesture_params.cc",
     "input/synthetic_gesture_params.h",
     "input/synthetic_pinch_gesture_params.cc",
@@ -164,8 +146,6 @@ source_set("common") {
     "input/synthetic_tap_gesture_params.h",
     "input/synthetic_web_input_event_builders.cc",
     "input/synthetic_web_input_event_builders.h",
-    "input/touch_action_optional_mojom_traits.cc",
-    "input/touch_action_optional_mojom_traits.h",
     "input/touch_event_stream_validator.cc",
     "input/touch_event_stream_validator.h",
     "input/web_mouse_wheel_event_traits.cc",
@@ -200,8 +180,6 @@ source_set("common") {
     "pepper_renderer_instance_data.h",
     "process_type.cc",
     "resource_messages.h",
-    "resource_timing_info.cc",
-    "resource_timing_info.h",
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",
@@ -214,10 +192,6 @@ source_set("common") {
     "service_worker/service_worker_utils.h",
     "skia_utils.cc",
     "skia_utils.h",
-    "swapped_out_messages.cc",
-    "swapped_out_messages.h",
-    "tab_switch_time_recorder.cc",
-    "tab_switch_time_recorder.h",
     "text_input_client_messages.h",
     "text_input_state.cc",
     "text_input_state.h",
@@ -255,6 +229,10 @@ source_set("common") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
     "//ui/accessibility",
+    "//ui/accessibility/mojom",
+    "//ui/base/cursor",
+    "//ui/base/cursor/mojom:cursor_type",
+    "//ui/events/ipc",
   ]
   deps = [
     ":buildflags",
@@ -264,10 +242,9 @@ source_set("common") {
     "//build/util:webkit_version",
     "//components/discardable_memory/common",
     "//components/services/filesystem/public/mojom",
-    "//components/tracing",
     "//components/tracing:startup_tracing",
-    "//components/viz/service",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/app/resources",
     "//content/common/fetch:fetch_api_request_proto",
     "//content/public/common:interfaces",
@@ -382,6 +359,8 @@ source_set("common") {
 
   if (!use_aura || !use_x11) {
     sources -= [ "cursors/webcursor_aurax11.cc" ]
+  } else {
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (is_linux) {
@@ -426,14 +405,11 @@ source_set("common") {
 
   if (is_fuchsia) {
     sources += [ "font_list_fuchsia.cc" ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk/pkg/fdio" ]
   }
 
-  if (use_clang_coverage) {
-    sources += [
-      "coverage_utils.cc",
-      "coverage_utils.h",
-    ]
+  if (use_clang_profiling_inside_sandbox) {
+    sources += [ "profiling_utils.cc" ]
   }
 }
 
@@ -441,9 +417,7 @@ source_set("common") {
 group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":common",
-    ]
+    public_deps = [ ":common" ]
   }
 }
 
@@ -460,8 +434,12 @@ mojom("mojo_bindings") {
 
   sources = [
     "associated_interfaces.mojom",
+    "ax_content_node_data.mojom",
+    "ax_content_tree_data.mojom",
+    "ax_content_tree_update.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
+    "dom_automation_controller.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
@@ -472,6 +450,7 @@ mojom("mojo_bindings") {
     "input/input_handler.mojom",
     "input/input_injector.mojom",
     "input/synchronous_compositor.mojom",
+    "media/media_log_records.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "native_types.mojom",
@@ -479,10 +458,12 @@ mojom("mojo_bindings") {
     "navigation_params.mojom",
     "page_state.mojom",
     "prefetched_signed_exchange_info.mojom",
+    "render_accessibility.mojom",
     "render_frame_metadata.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",
     "renderer_host.mojom",
+    "renderer_variations_configuration.mojom",
     "widget.mojom",
   ]
 
@@ -493,17 +474,256 @@ mojom("mojo_bindings") {
   if (is_linux || is_chromeos) {
     enabled_features += [ "supports_thread_priorities" ]
   }
-  if (use_clang_coverage) {
-    enabled_features += [ "clang_coverage" ]
+  if (use_clang_profiling_inside_sandbox) {
+    enabled_features += [ "clang_profiling_inside_sandbox" ]
   }
 
-  import_dirs = [ "//mojo/services" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentNodeData"
+          cpp = "::content::AXContentNodeData"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_node_data_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_node_data_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentTreeData"
+          cpp = "::content::AXContentTreeData"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_tree_data_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_tree_data_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentTreeUpdate"
+          cpp = "::content::AXContentTreeUpdate"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_tree_update_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_tree_update_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.DidCommitProvisionalLoadParams"
+          cpp = "::std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params>"
+          move_only = true
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "//content/common/frame_messages_forward.h" ]
+      traits_private_headers = [ "//content/common/frame_messages.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.ContentSecurityPolicy"
+          cpp = "::content::ContentSecurityPolicy"
+        },
+        {
+          mojom = "content.mojom.Event"
+          cpp = "::std::unique_ptr<::content::InputEvent>"
+          move_only = true
+        },
+        {
+          mojom = "content.mojom.FrameReplicationState"
+          cpp = "::content::FrameReplicationState"
+        },
+        {
+          mojom = "content.mojom.NetworkConnectionType"
+          cpp = "::net::NetworkChangeNotifier::ConnectionType"
+        },
+        {
+          mojom = "content.mojom.ScrollGranularity"
+          cpp = "::ui::ScrollGranularity"
+        },
+        {
+          mojom = "content.mojom.SyntheticPinch"
+          cpp = "::content::SyntheticPinchGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticPointerAction"
+          cpp = "::content::SyntheticPointerActionListParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticSmoothDrag"
+          cpp = "::content::SyntheticSmoothDragGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticSmoothScroll"
+          cpp = "::content::SyntheticSmoothScrollGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticTap"
+          cpp = "::content::SyntheticTapGestureParams"
+        },
+        {
+          mojom = "content.mojom.SystemThemeColor"
+          cpp = "::ui::NativeTheme::SystemThemeColor"
+        },
+        {
+          mojom = "content.mojom.VisualProperties"
+          cpp = "::content::VisualProperties"
+        },
+        {
+          mojom = "content.mojom.WebCursor"
+          cpp = "::content::WebCursor"
+        },
+        {
+          mojom = "content.mojom.WebPopupType"
+          cpp = "::blink::WebPopupType"
+        },
+      ]
+
+      traits_headers = [
+        "//cc/input/touch_action.h",
+        "//content/common/cursors/webcursor.h",
+        "//content/common/frame_replication_state.h",
+        "//content/common/input/input_event.h",
+        "//content/common/input/synthetic_pinch_gesture_params.h",
+        "//content/common/input/synthetic_pointer_action_list_params.h",
+        "//content/common/input/synthetic_smooth_drag_gesture_params.h",
+        "//content/common/input/synthetic_smooth_scroll_gesture_params.h",
+        "//content/common/input/synthetic_tap_gesture_params.h",
+        "//content/common/visual_properties.h",
+        "//content/public/common/web_preferences.h",
+        "//net/base/network_change_notifier.h",
+        "//third_party/blink/public/common/input/web_input_event.h",
+        "//third_party/blink/public/common/input/web_mouse_wheel_event.h",
+        "//third_party/blink/public/common/input/web_pointer_properties.h",
+        "//third_party/blink/public/common/input/web_touch_point.h",
+        "//ui/events/blink/did_overscroll_params.h",
+        "//ui/events/blink/web_input_event_traits.h",
+        "//ui/latency/ipc/latency_info_param_traits.h",
+        "//ui/native_theme/native_theme.h",
+      ]
+
+      traits_private_headers = [
+        "//content/common/frame_messages.h",
+        "//content/common/input/input_event_mojom_traits.h",
+        "//content/common/input_messages.h",
+        "//content/common/view_messages.h",
+        "//content/common/widget_messages.h",
+        "//content/public/common/common_param_traits.h",
+        "//services/network/public/cpp/p2p_param_traits.h",
+      ]
+
+      traits_public_deps = [
+        # NOTE: These dependencies are here to satisfy gn check because
+        # common_param_traits_macros.h and/or view_messages.h include their headers.
+        # Although the mojo bindings target is configured to allow direct circular
+        # includes from //content/common and //content/public/common, this isn't a
+        # transitive allowance, so those targets' own public_deps aren't included in
+        # the set of implied dependencies.
+        "//content/common:buildflags",
+        "//media",
+        "//media/base/ipc",
+        "//net",
+        "//ppapi/buildflags",
+        "//services/network/public/cpp",
+        "//third_party/blink/public/common",
+        "//ui/accessibility",
+        "//ui/base/cursor",
+        "//ui/base/ime:text_input_types",
+        "//ui/events/blink",
+        "//ui/gfx/ipc",
+        "//ui/gfx/ipc/color",
+        "//ui/gfx/ipc/skia",
+        "//ui/surface",
+        "//url/ipc:url_ipc",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.Impression"
+          cpp = "::content::Impression"
+        },
+        {
+          mojom = "content.mojom.MixedContentContextType"
+          cpp = "::blink::WebMixedContentContextType"
+        },
+        {
+          mojom = "content.mojom.NavigationDownloadPolicy"
+          cpp = "::content::NavigationDownloadPolicy"
+        },
+        {
+          mojom = "content.mojom.PageState"
+          cpp = "::content::PageState"
+        },
+        {
+          mojom = "content.mojom.PageTransition"
+          cpp = "::ui::PageTransition"
+        },
+        {
+          mojom = "content.mojom.SHA256HashValue"
+          cpp = "::net::SHA256HashValue"
+        },
+      ]
+      traits_headers = [
+        "//content/common/content_param_traits.h",
+        "//content/common/navigation_params.h",
+        "//content/public/common/impression.h",
+        "//content/public/common/navigation_policy.h",
+        "//content/public/common/page_state.h",
+        "//third_party/blink/public/platform/web_mixed_content_context_type.h",
+        "//ui/base/page_transition_types.h",
+      ]
+      traits_private_headers = [
+        "//content/common/frame_messages.h",
+        "//content/common/resource_messages.h",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.RenderFrameMetadata"
+          cpp = "::cc::RenderFrameMetadata"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/render_frame_metadata_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/render_frame_metadata_mojom_traits.cc" ]
+      traits_deps = [
+        "//cc",
+        "//ui/gfx/geometry/mojom:mojom_traits",
+      ]
+    },
+  ]
 
   public_deps = [
     "//cc/mojom",
-    "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
-    "//content/public/common:resource_type_bindings",
+    "//content/public/common:web_preferences_mojom",
     "//ipc:mojom",
     "//ipc:mojom_constants",
     "//media/capture/mojom:video_capture",
@@ -512,11 +732,14 @@ mojom("mojo_bindings") {
     "//services/audio/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
+    "//services/tracing/public/mojom",
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
+    "//ui/accessibility:ax_enums_mojo",
+    "//ui/accessibility/mojom",
     "//ui/base/ime/mojom",
     "//ui/base/mojom",
     "//ui/events/mojom",
@@ -536,6 +759,26 @@ mojom("mojo_bindings") {
       "web_contents_ns_view_bridge.mojom",
     ]
     public_deps += [ "//ui/display/mojom" ]
+    cpp_typemaps += [
+      {
+        types = [
+          {
+            mojom = "content.mojom.EncodedAttributedString"
+            cpp = "::mac::AttributedStringCoder::EncodedString"
+          },
+          {
+            mojom = "content.mojom.ScrollerStyle"
+            cpp = "::blink::ScrollerStyle"
+          },
+        ]
+        traits_headers = [
+          "//content/common/mac/attributed_string_coder.h",
+          "//third_party/blink/public/platform/mac/web_scrollbar_theme.h",
+        ]
+        traits_private_headers = [ "//content/common/view_messages.h" ]
+        traits_public_deps = [ "//third_party/blink/public:blink_headers" ]
+      },
+    ]
   }
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
@@ -573,8 +816,6 @@ if (is_mac) {
 
     write_file(_file, _lines)
 
-    sources = [
-      _file,
-    ]
+    sources = [ _file ]
   }
 }

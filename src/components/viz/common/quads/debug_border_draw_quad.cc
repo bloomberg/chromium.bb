@@ -4,9 +4,9 @@
 
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/traced_value.h"
-#include "base/values.h"
+#include "ui/gfx/color_utils.h"
 
 namespace viz {
 
@@ -44,7 +44,7 @@ const DebugBorderDrawQuad* DebugBorderDrawQuad::MaterialCast(
 
 void DebugBorderDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  value->SetInteger("color", color);
+  value->SetString("color", color_utils::SkColorToRgbaString(color));
   value->SetInteger("width", width);
 }
 

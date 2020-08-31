@@ -7,6 +7,7 @@
 #ifndef CC_BASE_SWITCHES_H_
 #define CC_BASE_SWITCHES_H_
 
+#include "base/logging.h"
 #include "cc/base/base_export.h"
 
 // Since cc is used from the render process, anything that goes here also needs
@@ -30,6 +31,9 @@ CC_BASE_EXPORT extern const char kCheckDamageEarly[];
 // Switches for both the renderer and ui compositors.
 CC_BASE_EXPORT extern const char kEnableGpuBenchmarking[];
 
+// Switches for LayerTreeHost.
+CC_BASE_EXPORT extern const char kDisableLayerTreeHostMemoryPressure[];
+
 // Debug visualizations.
 CC_BASE_EXPORT extern const char kShowCompositedLayerBorders[];
 CC_BASE_EXPORT extern const char kUIShowCompositedLayerBorders[];
@@ -43,10 +47,17 @@ CC_BASE_EXPORT extern const char kShowSurfaceDamageRects[];
 CC_BASE_EXPORT extern const char kUIShowSurfaceDamageRects[];
 CC_BASE_EXPORT extern const char kShowScreenSpaceRects[];
 CC_BASE_EXPORT extern const char kUIShowScreenSpaceRects[];
-CC_BASE_EXPORT extern const char kUIEnableLayerLists[];
+CC_BASE_EXPORT extern const char kHighlightNonLCDTextLayers[];
+#if DCHECK_IS_ON()
+CC_BASE_EXPORT extern const char kLogOnUIDoubleBackgroundBlur[];
+#endif
+
+// Parameters for kUIShowCompositedLayerBorders.
 CC_BASE_EXPORT extern const char kCompositedRenderPassBorders[];
 CC_BASE_EXPORT extern const char kCompositedSurfaceBorders[];
 CC_BASE_EXPORT extern const char kCompositedLayerBorders[];
+
+CC_BASE_EXPORT extern const char kUIEnableLayerLists[];
 
 // Test related.
 CC_BASE_EXPORT extern const char kCCLayerTreeTestNoTimeout[];

@@ -7,7 +7,7 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -16,6 +16,7 @@
 #include "chrome/test/base/perf/performance_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/test/ui_controls.h"
@@ -95,8 +96,9 @@ class OverviewWindowDragTest
     int wait_seconds = (base::SysInfo::IsRunningOnChromeOS() ? 5 : 0) +
                        additional_browsers * cost_per_browser;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromSeconds(wait_seconds));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromSeconds(wait_seconds));
     run_loop.Run();
   }
 
@@ -143,9 +145,13 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
   generator->Wait();
 }
 
-// The test is flaky because close notification is not the right singal.
-// crbug.com/953355
-IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
+// TODO(crbug/1065345): This test is flaky on dbg builds.
+#if !defined(NDEBUG)
+#define MAYBE_DragToClose DISABLED_DragToClose
+#else
+#define MAYBE_DragToClose DragToClose
+#endif
+IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, MAYBE_DragToClose) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,
@@ -163,19 +169,13 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(500),
-          gfx::Tween::EASE_IN_2));
+          gfx::Tween::FAST_OUT_LINEAR_IN));
   generator->Wait();
 
   ui_test_utils::WaitForBrowserToClose(chrome::FindLastActive());
 }
 
-// Disable for ChromeOS crbug.com/1021005.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DragToSnap DISABLED_DragToSnap
-#else
-#define MAYBE_DragToSnap DragToSnap
-#endif
-IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, MAYBE_DragToSnap) {
+IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,

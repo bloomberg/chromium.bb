@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/chrome_cleaner/crash/crash_keys.h"
 #include "chrome/chrome_cleaner/engines/target/cleaner_engine_requests_proxy.h"
@@ -73,7 +72,7 @@ void EngineCommandsImpl::Initialize(
   engine_delegate_->Initialize(
       log_directory_path, file_requests_proxy,
       base::BindOnce(&EngineCommandsImpl::PostInitializeCallback,
-                     base::Unretained(this), base::Passed(&callback)));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void EngineCommandsImpl::StartScan(

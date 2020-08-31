@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
-#include "gpu/command_buffer/common/skia_utils.h"
+#include "gpu/config/skia_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/ipc/raster_in_process_context.h"
 #include "gpu/ipc/test_gpu_thread_holder.h"
@@ -68,11 +68,13 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 }
 
 TestInProcessContextProvider::TestInProcessContextProvider(
+    bool enable_gpu_rasterization,
     bool enable_oop_rasterization,
     bool support_locking,
     gpu::raster::GrShaderCache* gr_shader_cache,
     gpu::GpuProcessActivityFlags* activity_flags)
-    : enable_oop_rasterization_(enable_oop_rasterization),
+    : enable_gpu_rasterization_(enable_gpu_rasterization),
+      enable_oop_rasterization_(enable_oop_rasterization),
       activity_flags_(activity_flags) {
   if (support_locking)
     context_lock_.emplace();
@@ -108,6 +110,8 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     cache_controller_.reset(
         new ContextCacheController(raster_context_->GetContextSupport(),
                                    base::ThreadTaskRunnerHandle::Get()));
+
+    caps_ = raster_context_->GetCapabilities();
   } else {
     gles2_context_ = CreateGLInProcessContext(
         &gpu_memory_buffer_manager_, &image_factory_,
@@ -117,8 +121,15 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
                                    base::ThreadTaskRunnerHandle::Get()));
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation());
+            gles2_context_->GetImplementation(), ContextSupport());
+
+    caps_ = gles2_context_->GetCapabilities();
   }
+
+  // We don't have a good way for tests to change what the in process gpu
+  // service will return for this capability. But we want to use gpu
+  // rasterization if and only if the test requests it.
+  caps_.gpu_rasterization = enable_gpu_rasterization_;
 
   cache_controller_->SetLock(GetLock());
   return gpu::ContextResult::kSuccess;
@@ -154,8 +165,8 @@ class GrContext* TestInProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::raster::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
-                                            &max_glyph_cache_texture_bytes);
+  gpu::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
+                                    &max_glyph_cache_texture_bytes);
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
       ContextGL(), ContextSupport(), ContextCapabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes));
@@ -182,11 +193,7 @@ base::Lock* TestInProcessContextProvider::GetLock() {
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
     const {
-  if (gles2_context_) {
-    return gles2_context_->GetCapabilities();
-  } else {
-    return raster_context_->GetCapabilities();
-  }
+  return caps_;
 }
 
 const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.qrcode.scan_tab;
 import android.content.Context;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialogTab;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -20,13 +21,15 @@ public class QrCodeScanCoordinator implements QrCodeDialogTab {
 
     /**
      * The QrCodeScanCoordinator constructor.
+     *
      * @param context The context to use for user permissions.
      */
-    public QrCodeScanCoordinator(Context context) {
+    public QrCodeScanCoordinator(Context context, QrCodeScanMediator.NavigationObserver observer) {
         PropertyModel scanViewModel = new PropertyModel(QrCodeScanViewProperties.ALL_KEYS);
-        mMediator = new QrCodeScanMediator(context, scanViewModel);
+        mMediator = new QrCodeScanMediator(context, scanViewModel, observer);
 
-        mScanView = new QrCodeScanView(context);
+        mScanView = new QrCodeScanView(
+                context, mMediator::onPreviewFrame, mMediator::promptForCameraPermission);
         PropertyModelChangeProcessor.create(scanViewModel, mScanView, new QrCodeScanViewBinder());
     }
 
@@ -38,11 +41,17 @@ public class QrCodeScanCoordinator implements QrCodeDialogTab {
 
     @Override
     public void onResume() {
+        RecordUserAction.record("SharingQRCode.TabVisible.Scan");
         mMediator.setIsOnForeground(true);
     }
 
     @Override
     public void onPause() {
         mMediator.setIsOnForeground(false);
+    }
+
+    @Override
+    public void onDestroy() {
+        mScanView.stopCamera();
     }
 }

@@ -28,10 +28,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';             // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-Network.NetworkTimeBoundary = class {
+export class NetworkTimeBoundary {
   /**
    * @param {number} minimum
    * @param {number} maximum
@@ -42,31 +46,31 @@ Network.NetworkTimeBoundary = class {
   }
 
   /**
-   * @param {!Network.NetworkTimeBoundary} other
+   * @param {!NetworkTimeBoundary} other
    * @return {boolean}
    */
   equals(other) {
     return (this.minimum === other.minimum) && (this.maximum === other.maximum);
   }
-};
+}
 
 /**
  * @implements {PerfUI.TimelineGrid.Calculator}
  * @unrestricted
  */
-Network.NetworkTimeCalculator = class extends Common.Object {
+export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
   constructor(startAtZero) {
     super();
     this.startAtZero = startAtZero;
     this._minimumBoundary = -1;
     this._maximumBoundary = -1;
-    this._boundryChangedEventThrottler = new Common.Throttler(0);
-    /** @type {?Network.NetworkTimeBoundary} */
+    this._boundryChangedEventThrottler = new Common.Throttler.Throttler(0);
+    /** @type {?NetworkTimeBoundary} */
     this._window = null;
   }
 
   /**
-   * @param {?Network.NetworkTimeBoundary} window
+   * @param {?NetworkTimeBoundary} window
    */
   setWindow(window) {
     this._window = window;
@@ -122,10 +126,10 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   }
 
   /**
-   * @return {!Network.NetworkTimeBoundary}
+   * @return {!NetworkTimeBoundary}
    */
   boundary() {
-    return new Network.NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
+    return new NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
   }
 
   /**
@@ -157,7 +161,7 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {!{start: number, middle: number, end: number}}
    */
   computeBarGraphPercentages(request) {
@@ -219,10 +223,10 @@ Network.NetworkTimeCalculator = class extends Common.Object {
 
     /**
      * @return {!Promise.<undefined>}
-     * @this {Network.NetworkTimeCalculator}
+     * @this {NetworkTimeCalculator}
      */
     function dispatchEvent() {
-      this.dispatchEventToListeners(Network.NetworkTimeCalculator.Events.BoundariesChanged);
+      this.dispatchEventToListeners(Events.BoundariesChanged);
       return Promise.resolve();
     }
   }
@@ -242,7 +246,7 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {!{left: string, right: string, tooltip: (string|undefined)}}
    */
   computeBarGraphLabels(request) {
@@ -261,23 +265,23 @@ Network.NetworkTimeCalculator = class extends Common.Object {
     let tooltip;
     if (hasLatency && rightLabel) {
       const total = Number.secondsToString(request.duration);
-      tooltip = Network.NetworkTimeCalculator._latencyDownloadTotalFormat.format(leftLabel, rightLabel, total);
+      tooltip = _latencyDownloadTotalFormat.format(leftLabel, rightLabel, total);
     } else if (hasLatency) {
-      tooltip = Network.NetworkTimeCalculator._latencyFormat.format(leftLabel);
+      tooltip = _latencyFormat.format(leftLabel);
     } else if (rightLabel) {
-      tooltip = Network.NetworkTimeCalculator._downloadFormat.format(rightLabel);
+      tooltip = _downloadFormat.format(rightLabel);
     }
 
     if (request.fetchedViaServiceWorker) {
-      tooltip = Network.NetworkTimeCalculator._fromServiceWorkerFormat.format(tooltip);
+      tooltip = _fromServiceWorkerFormat.format(tooltip);
     } else if (request.cached()) {
-      tooltip = Network.NetworkTimeCalculator._fromCacheFormat.format(tooltip);
+      tooltip = _fromCacheFormat.format(tooltip);
     }
     return {left: leftLabel, right: rightLabel, tooltip: tooltip};
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   updateBoundaries(request) {
     const lowerBound = this._lowerBound(request);
@@ -301,7 +305,7 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   _extendBoundariesToIncludeTimestamp(timestamp) {
     const previousMinimumBoundary = this._minimumBoundary;
     const previousMaximumBoundary = this._maximumBoundary;
-    const minOffset = Network.NetworkTimeCalculator._minimumSpread;
+    const minOffset = _minimumSpread;
     if (this._minimumBoundary === -1 || this._maximumBoundary === -1) {
       this._minimumBoundary = timestamp;
       this._maximumBoundary = timestamp + minOffset;
@@ -313,7 +317,7 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {number}
    */
   _lowerBound(request) {
@@ -321,41 +325,40 @@ Network.NetworkTimeCalculator = class extends Common.Object {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {number}
    */
   _upperBound(request) {
     return 0;
   }
-};
+}
 
-Network.NetworkTimeCalculator._minimumSpread = 0.1;
+export const _minimumSpread = 0.1;
 
 /** @enum {symbol} */
-Network.NetworkTimeCalculator.Events = {
+export const Events = {
   BoundariesChanged: Symbol('BoundariesChanged')
 };
 
-/** @type {!Common.UIStringFormat} */
-Network.NetworkTimeCalculator._latencyDownloadTotalFormat =
-    new Common.UIStringFormat('%s latency, %s download (%s total)');
+/** @type {!Common.UIString.UIStringFormat} */
+export const _latencyDownloadTotalFormat = new Common.UIString.UIStringFormat('%s latency, %s download (%s total)');
 
-/** @type {!Common.UIStringFormat} */
-Network.NetworkTimeCalculator._latencyFormat = new Common.UIStringFormat('%s latency');
+/** @type {!Common.UIString.UIStringFormat} */
+export const _latencyFormat = new Common.UIString.UIStringFormat('%s latency');
 
-/** @type {!Common.UIStringFormat} */
-Network.NetworkTimeCalculator._downloadFormat = new Common.UIStringFormat('%s download');
+/** @type {!Common.UIString.UIStringFormat} */
+export const _downloadFormat = new Common.UIString.UIStringFormat('%s download');
 
-/** @type {!Common.UIStringFormat} */
-Network.NetworkTimeCalculator._fromServiceWorkerFormat = new Common.UIStringFormat('%s (from ServiceWorker)');
+/** @type {!Common.UIString.UIStringFormat} */
+export const _fromServiceWorkerFormat = new Common.UIString.UIStringFormat('%s (from ServiceWorker)');
 
-/** @type {!Common.UIStringFormat} */
-Network.NetworkTimeCalculator._fromCacheFormat = new Common.UIStringFormat('%s (from cache)');
+/** @type {!Common.UIString.UIStringFormat} */
+export const _fromCacheFormat = new Common.UIString.UIStringFormat('%s (from cache)');
 
 /**
  * @unrestricted
  */
-Network.NetworkTransferTimeCalculator = class extends Network.NetworkTimeCalculator {
+export class NetworkTransferTimeCalculator extends NetworkTimeCalculator {
   constructor() {
     super(false);
   }
@@ -372,7 +375,7 @@ Network.NetworkTransferTimeCalculator = class extends Network.NetworkTimeCalcula
 
   /**
    * @override
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {number}
    */
   _lowerBound(request) {
@@ -381,18 +384,18 @@ Network.NetworkTransferTimeCalculator = class extends Network.NetworkTimeCalcula
 
   /**
    * @override
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {number}
    */
   _upperBound(request) {
     return request.endTime;
   }
-};
+}
 
 /**
  * @unrestricted
  */
-Network.NetworkTransferDurationCalculator = class extends Network.NetworkTimeCalculator {
+export class NetworkTransferDurationCalculator extends NetworkTimeCalculator {
   constructor() {
     super(true);
   }
@@ -409,10 +412,10 @@ Network.NetworkTransferDurationCalculator = class extends Network.NetworkTimeCal
 
   /**
    * @override
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @return {number}
    */
   _upperBound(request) {
     return request.duration;
   }
-};
+}

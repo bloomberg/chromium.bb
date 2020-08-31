@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 class TabGroupController;
 
@@ -26,18 +26,26 @@ class TabGroupController;
 class TabGroup {
  public:
   TabGroup(TabGroupController* controller,
-           TabGroupId id,
-           TabGroupVisualData visual_data);
+           const tab_groups::TabGroupId& id,
+           const tab_groups::TabGroupVisualData& visual_data);
   ~TabGroup();
 
-  TabGroupId id() const { return id_; }
-  TabGroupVisualData* visual_data() const { return visual_data_.get(); }
-  void SetVisualData(TabGroupVisualData visual_data);
+  const tab_groups::TabGroupId& id() const { return id_; }
+  const tab_groups::TabGroupVisualData* visual_data() const {
+    return visual_data_.get();
+  }
 
-  // Returns the user-visible group title that will be displayed in context
-  // menus and tooltips. Generates a descriptive placeholder if the user has
-  // not yet named the group, otherwise uses the group's name.
-  base::string16 GetDisplayedTitle() const;
+  // Sets the visual data of the tab group. |is_customized| is true when this
+  // method is called from the user explicitly setting the data and defaults to
+  // false for callsites that may set the data such as tab restore.
+  void SetVisualData(const tab_groups::TabGroupVisualData& visual_data,
+                     bool is_customized = false);
+
+  // Returns a user-visible string describing the contents of the group, such as
+  // "Google Search and 3 other tabs". Used for accessibly describing the group,
+  // as well as for displaying in context menu items and tooltips when the group
+  // is unnamed.
+  base::string16 GetContentString() const;
 
   // Updates internal bookkeeping for group contents, and notifies the
   // controller that contents changed when a tab is added.
@@ -50,6 +58,9 @@ class TabGroup {
   // Returns whether the group has no tabs.
   bool IsEmpty() const;
 
+  // Returns whether the user has explicitly set the visual data themselves.
+  bool IsCustomized() const;
+
   // Returns the model indices of all tabs in this group. Notably does not rely
   // on the TabGroup's internal metadata, but rather traverses directly through
   // the tabs in TabStripModel.
@@ -58,10 +69,12 @@ class TabGroup {
  private:
   TabGroupController* controller_;
 
-  TabGroupId id_;
-  std::unique_ptr<TabGroupVisualData> visual_data_;
+  tab_groups::TabGroupId id_;
+  std::unique_ptr<tab_groups::TabGroupVisualData> visual_data_;
 
   int tab_count_ = 0;
+
+  bool is_customized_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_H_

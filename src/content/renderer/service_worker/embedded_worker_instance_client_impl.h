@@ -12,8 +12,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-forward.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 
 namespace content {
@@ -50,7 +50,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
           receiver);
 
   // TODO(https://crbug.com/955171): Remove this method and use Create once
-  // RenderFrameHostImpl uses service_manager::BinderMap instead of
+  // RenderFrameHostImpl uses mojo::BinderMap instead of
   // service_manager::BinderRegistry.
   static void CreateForRequest(
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
@@ -76,7 +76,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
 
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
-  void ResumeAfterDownload() override;
 
   // Handler of connection error bound to |receiver_|.
   void OnError();

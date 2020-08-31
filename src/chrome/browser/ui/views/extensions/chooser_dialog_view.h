@@ -31,9 +31,6 @@ class ChooserDialogView : public views::DialogDelegateView,
   // views::DialogDelegate:
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
@@ -43,7 +40,9 @@ class ChooserDialogView : public views::DialogDelegateView,
   // views::TableViewObserver:
   void OnSelectionChanged() override;
 
-  DeviceChooserContentView* device_chooser_content_view_for_test() const;
+  DeviceChooserContentView* device_chooser_content_view_for_test() const {
+    return device_chooser_content_view_;
+  }
 
  private:
   DeviceChooserContentView* device_chooser_content_view_;

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, asennettu sovellus</translation>
 <translation id="1450753235335490080">Jakaminen ei onnistu: <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> vaihdettiin: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Hait tätä aiemmin. Jos <ph name="QUERY" /> poistetaan historiastasi, se poistetaan pysyvästi tililtäsi kaikilla laitteillasi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
 <translation id="1643823602425662293">Ilmoitus</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Valitse &amp;kaikki</translation>
-<translation id="1938451708255335766">Muuta ikkunoiden näyttötiheyttä käynnistämällä sovellus uudelleen.</translation>
 <translation id="2006524834898217237">Varmista, että laite on yhteydessä internetiin.</translation>
 <translation id="208586643495776849">Yritä uudelleen</translation>
 <translation id="2090963878406559571">Jos haluat lähettää numeron (<ph name="ORIGIN" />) Android-puhelimellesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksista.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Nuoli al.</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 päivä}other{# päivää}}</translation>
 <translation id="3295886253693811851">Soita puhelu:</translation>
+<translation id="3306688585798492231">Sisäänrakennettu näyttö</translation>
 <translation id="335581015389089642">Puhe</translation>
 <translation id="3389286852084373014">Teksti on liian suuri</translation>
-<translation id="3479552764303398839">Ei nyt</translation>
 <translation id="348799646910989694">Hylly piilotettu automaattisesti</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> kiinnitettiin</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 päivä jäljellä}other{# päivää jäljellä}}</translation>
@@ -100,9 +100,8 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> Gt/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> Gt</translation>
 <translation id="3842239759367498783">Jatka lukemista mobiililaitteella <ph name="TITLE" /></translation>
-<translation id="385051799172605136">Edellinen</translation>
+<translation id="385051799172605136">Takaisin</translation>
 <translation id="3889424535448813030">Nuoli oik.</translation>
-<translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3909791450649380159">L&amp;eikkaa</translation>
 <translation id="3990502903496589789">Oikea reuna</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktiivinen tänään}=1{Aktiivinen 1 päivä sitten}other{Aktiivinen # päivää sitten}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 päivä ja }other{# päivää ja }}</translation>
+<translation id="5789643057113097023">,</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 v:n päästä}other{# v:n päästä}}</translation>
-<translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekunti jäljellä}other{# sekuntia jäljellä}}</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 tunti}other{# tuntia}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Oikealta vasemmalle</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">TODENNÄKÖISIMMÄT</translation>
+<translation id="7170202025028120564">Sovelluksen näyttöasetukset tulevat voimaan, kun käynnistät sen seuraavan kerran uudelleen.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min jäljellä}other{# min jäljellä}}</translation>
 <translation id="7319740667687257810">Käynnistysohjelma, osittainen näkymä</translation>

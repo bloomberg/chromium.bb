@@ -10,9 +10,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -134,7 +135,8 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
         ContentSettingsPattern::FromURLNoWildcard(
             GURL(channels_[index_].origin)),
         ContentSettingsPattern::Wildcard(),
-        base::Value(ChannelStatusToContentSetting(channels_[index_].status)));
+        base::Value(ChannelStatusToContentSetting(channels_[index_].status)),
+        base::Time(), content_settings::SessionModel::Durable);
     index_++;
     return rule;
   }
@@ -187,15 +189,13 @@ NotificationChannel::NotificationChannel(const NotificationChannel& other) =
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid()
     : NotificationChannelsProviderAndroid(
-          std::make_unique<NotificationChannelsBridgeImpl>(),
-          std::make_unique<base::DefaultClock>()) {}
+          std::make_unique<NotificationChannelsBridgeImpl>()) {}
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid(
-    std::unique_ptr<NotificationChannelsBridge> bridge,
-    std::unique_ptr<base::Clock> clock)
+    std::unique_ptr<NotificationChannelsBridge> bridge)
     : bridge_(std::move(bridge)),
       platform_supports_channels_(bridge_->ShouldUseChannelSettings()),
-      clock_(std::move(clock)),
+      clock_(base::DefaultClock::GetInstance()),
       initialized_cached_channels_(false) {}
 
 NotificationChannelsProviderAndroid::~NotificationChannelsProviderAndroid() =
@@ -230,7 +230,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
     pref_provider->SetWebsiteSetting(
         rule.primary_pattern, rule.secondary_pattern,
         ContentSettingsType::NOTIFICATIONS,
-        content_settings::ResourceIdentifier(), nullptr);
+        content_settings::ResourceIdentifier(), nullptr, {});
   }
 
   prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, true);
@@ -306,7 +306,8 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& value) {
+    std::unique_ptr<base::Value>&& value,
+    const content_settings::ContentSettingConstraints& constraints) {
   if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return false;
@@ -392,6 +393,11 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     return base::Time();
 
   return channel_entry->second.timestamp;
+}
+
+void NotificationChannelsProviderAndroid::SetClockForTesting(
+    base::Clock* clock) {
+  clock_ = clock;
 }
 
 // InitCachedChannels() must be called prior to calling this method.

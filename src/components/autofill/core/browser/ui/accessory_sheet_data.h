@@ -8,8 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
+
+namespace password_manager {
+class IsPublicSuffixMatchTag;
+}  // namespace password_manager
 
 namespace autofill {
 
@@ -58,8 +64,12 @@ class UserInfo {
     bool selectable_;
   };
 
+  using IsPslMatch =
+      util::StrongAlias<password_manager::IsPublicSuffixMatchTag, bool>;
+
   UserInfo();
   explicit UserInfo(std::string origin);
+  UserInfo(std::string origin, IsPslMatch is_psl_match);
   UserInfo(const UserInfo& user_info);
   UserInfo(UserInfo&& field);
 
@@ -72,11 +82,13 @@ class UserInfo {
 
   const std::vector<Field>& fields() const { return fields_; }
   const std::string& origin() const { return origin_; }
+  IsPslMatch is_psl_match() const { return is_psl_match_; }
 
   bool operator==(const UserInfo& user_info) const;
 
  private:
   std::string origin_;
+  IsPslMatch is_psl_match_{false};
   std::vector<Field> fields_;
 };
 
@@ -112,6 +124,35 @@ std::ostream& operator<<(std::ostream& out, const FooterCommand& fc);
 
 std::ostream& operator<<(std::ostream& out, const AccessoryTabType& type);
 
+// Toggle to be displayed above the suggestions. One such toggle can be used,
+// for example, to turn password saving on for the current origin.
+class OptionToggle {
+ public:
+  OptionToggle(base::string16 display_text,
+               bool enabled,
+               AccessoryAction accessory_action);
+  OptionToggle(const OptionToggle& option_toggle);
+  OptionToggle(OptionToggle&& option_toggle);
+
+  ~OptionToggle();
+
+  OptionToggle& operator=(const OptionToggle& option_toggle);
+  OptionToggle& operator=(OptionToggle&& option_toggle);
+
+  const base::string16& display_text() const { return display_text_; }
+
+  bool is_enabled() const { return enabled_; }
+
+  AccessoryAction accessory_action() const { return accessory_action_; }
+
+  bool operator==(const OptionToggle& option_toggle) const;
+
+ private:
+  base::string16 display_text_;
+  bool enabled_;
+  autofill::AccessoryAction accessory_action_;
+};
+
 // Represents the contents of a bottom sheet tab below the keyboard accessory,
 // which can correspond to passwords, credit cards, or profiles data.
 class AccessorySheetData {
@@ -135,6 +176,13 @@ class AccessorySheetData {
 
   const base::string16& warning() const { return warning_; }
   void set_warning(base::string16 warning) { warning_ = std::move(warning); }
+
+  void set_option_toggle(OptionToggle toggle) {
+    option_toggle_ = std::move(toggle);
+  }
+  const base::Optional<OptionToggle>& option_toggle() const {
+    return option_toggle_;
+  }
 
   void add_user_info(UserInfo user_info) {
     user_info_list_.emplace_back(std::move(user_info));
@@ -160,6 +208,7 @@ class AccessorySheetData {
   AccessoryTabType sheet_type_;
   base::string16 title_;
   base::string16 warning_;
+  base::Optional<OptionToggle> option_toggle_;
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;
 };
@@ -188,9 +237,21 @@ class AccessorySheetData::Builder {
   Builder&& SetWarning(base::string16 warning) &&;
   Builder& SetWarning(base::string16 warning) &;
 
+  // Sets the option toggle in the accessory sheet.
+  Builder&& SetOptionToggle(base::string16 display_text,
+                            bool enabled,
+                            autofill::AccessoryAction action) &&;
+  Builder& SetOptionToggle(base::string16 display_text,
+                           bool enabled,
+                           autofill::AccessoryAction action) &;
+
   // Adds a new UserInfo object to |accessory_sheet_data_|.
-  Builder&& AddUserInfo(std::string origin = std::string()) &&;
-  Builder& AddUserInfo(std::string origin = std::string()) &;
+  Builder&& AddUserInfo(
+      std::string origin = std::string(),
+      UserInfo::IsPslMatch is_psl_match = UserInfo::IsPslMatch(false)) &&;
+  Builder& AddUserInfo(
+      std::string origin = std::string(),
+      UserInfo::IsPslMatch is_psl_match = UserInfo::IsPslMatch(false)) &;
 
   // Appends a selectable, non-obfuscated field to the last UserInfo object.
   Builder&& AppendSimpleField(base::string16 text) &&;

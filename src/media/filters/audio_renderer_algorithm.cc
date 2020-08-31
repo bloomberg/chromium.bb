@@ -13,7 +13,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
-#include "media/base/multi_channel_resampler.h"
 #include "media/filters/wsola_internals.h"
 
 namespace media {
@@ -73,13 +72,16 @@ constexpr base::TimeDelta kStartingCapacity =
 constexpr base::TimeDelta kStartingCapacityForEncrypted =
     base::TimeDelta::FromMilliseconds(500);
 
-AudioRendererAlgorithm::AudioRendererAlgorithm()
+AudioRendererAlgorithm::AudioRendererAlgorithm(MediaLog* media_log)
     : AudioRendererAlgorithm(
+          media_log,
           {kMaxCapacity, kStartingCapacity, kStartingCapacityForEncrypted}) {}
 
 AudioRendererAlgorithm::AudioRendererAlgorithm(
+    MediaLog* media_log,
     AudioRendererAlgorithmParameters params)
-    : audio_renderer_algorithm_params_(std::move(params)),
+    : media_log_(media_log),
+      audio_renderer_algorithm_params_(std::move(params)),
       channels_(0),
       samples_per_second_(0),
       is_bitstream_format_(false),
@@ -104,8 +106,9 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
   is_bitstream_format_ = params.IsBitstreamFormat();
-  initial_capacity_ = capacity_ = std::max(
-      static_cast<int64_t>(params.frames_per_buffer()) * 2,
+  min_playback_threshold_ = params.frames_per_buffer() * 2;
+  initial_capacity_ = capacity_ = playback_threshold_ = std::max(
+      min_playback_threshold_,
       AudioTimestampHelper::TimeToFrames(
           is_encrypted
               ? audio_renderer_algorithm_params_.starting_capacity_for_encrypted
@@ -187,17 +190,13 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
-  const int num_chunks = static_cast<int>(std::ceil(
-      static_cast<float>(requested_frames) / resampler_->ChunkSize()));
-
   // |resampler_| can request more than |requested_frames|, due to the
   // requests size not being aligned. To prevent having to fill it with silence,
   // we find the max number of reads it could request, and make sure we have
   // enough data to satisfy all of those reads.
-  const int min_frames_required =
-      num_chunks * SincResampler::kDefaultRequestSize;
-
-  if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
+  if (!reached_end_of_stream_ &&
+      audio_buffer_.frames() <
+          resampler_->GetMaxInputFramesRequested(requested_frames)) {
     // Exit early, forgoing at most a total of |audio_buffer_.frames()| +
     // |resampler_->BufferedFrames()|.
     // If we have reached the end of stream, |resampler_| will output silence
@@ -263,6 +262,12 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
   }
 
+  // Destroy the resampler if it was used before, but it's no longer needed
+  // (e.g. before playback rate has changed). This ensures that we don't try to
+  // play later any samples still buffered in the resampler.
+  if (resampler_)
+    resampler_.reset();
+
   // Allocate structures on first non-1.0 playback rate; these can eat a fair
   // chunk of memory. ~56kB for stereo 48kHz, up to ~765kB for 7.1 192kHz.
   if (!ola_window_) {
@@ -316,9 +321,12 @@ void AudioRendererAlgorithm::FlushBuffers() {
   resampler_.reset();
   reached_end_of_stream_ = false;
 
-  // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
-  // time.
-  capacity_ = initial_capacity_;
+  // Reset |capacity_| and |playback_threshold_| so growth triggered by
+  // underflows doesn't penalize seek time. When |latency_hint_| is set we don't
+  // increase the queue for underflow, so avoid resetting it on flush.
+  if (!latency_hint_) {
+    capacity_ = playback_threshold_ = initial_capacity_;
+  }
 }
 
 void AudioRendererAlgorithm::EnqueueBuffer(
@@ -327,17 +335,80 @@ void AudioRendererAlgorithm::EnqueueBuffer(
   audio_buffer_.Append(std::move(buffer_in));
 }
 
+void AudioRendererAlgorithm::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DCHECK_GE(playback_threshold_, min_playback_threshold_);
+  DCHECK_LE(playback_threshold_, capacity_);
+  DCHECK_LE(capacity_, max_capacity_);
+
+  latency_hint_ = latency_hint;
+
+  if (!latency_hint) {
+    // Restore default values.
+    playback_threshold_ = capacity_ = initial_capacity_;
+
+    MEDIA_LOG(DEBUG, media_log_)
+        << "Audio latency hint cleared. Default buffer size ("
+        << AudioTimestampHelper::FramesToTime(playback_threshold_,
+                                              samples_per_second_)
+        << ") restored";
+    return;
+  }
+
+  int latency_hint_frames =
+      AudioTimestampHelper::TimeToFrames(*latency_hint_, samples_per_second_);
+
+  // Set |plabyack_threshold_| using hint, clamped between
+  // [min_playback_threshold_, max_capacity_].
+  std::string clamp_string;
+  if (latency_hint_frames > max_capacity_) {
+    playback_threshold_ = max_capacity_;
+    clamp_string = " (clamped to max)";
+  } else if (latency_hint_frames < min_playback_threshold_) {
+    playback_threshold_ = min_playback_threshold_;
+    clamp_string = " (clamped to min)";
+  } else {
+    playback_threshold_ = latency_hint_frames;
+  }
+
+  // Use |initial_capacity_| if possible. Increase if needed.
+  capacity_ = std::max(playback_threshold_, initial_capacity_);
+
+  MEDIA_LOG(DEBUG, media_log_)
+      << "Audio latency hint set:" << *latency_hint << ". "
+      << "Effective buffering latency:"
+      << AudioTimestampHelper::FramesToTime(playback_threshold_,
+                                            samples_per_second_)
+      << clamp_string;
+
+  DCHECK_GE(playback_threshold_, min_playback_threshold_);
+  DCHECK_LE(playback_threshold_, capacity_);
+  DCHECK_LE(capacity_, max_capacity_);
+}
+
+bool AudioRendererAlgorithm::IsQueueAdequateForPlayback() {
+  return audio_buffer_.frames() >= playback_threshold_;
+}
+
 bool AudioRendererAlgorithm::IsQueueFull() {
   return audio_buffer_.frames() >= capacity_;
 }
 
-void AudioRendererAlgorithm::IncreaseQueueCapacity() {
+void AudioRendererAlgorithm::IncreasePlaybackThreshold() {
+  DCHECK(!latency_hint_) << "Don't override the user specified latency";
+  DCHECK_EQ(playback_threshold_, capacity_);
   DCHECK_LE(capacity_, max_capacity_);
-  capacity_ = std::min(2 * capacity_, max_capacity_);
+
+  playback_threshold_ = capacity_ = std::min(2 * capacity_, max_capacity_);
 }
 
 int64_t AudioRendererAlgorithm::GetMemoryUsage() const {
-  return audio_buffer_.frames() * channels_ * sizeof(float);
+  return BufferedFrames() * channels_ * sizeof(float);
+}
+
+int AudioRendererAlgorithm::BufferedFrames() const {
+  return audio_buffer_.frames() +
+         (resampler_ ? static_cast<int>(resampler_->BufferedFrames()) : 0);
 }
 
 bool AudioRendererAlgorithm::CanPerformWsola() const {

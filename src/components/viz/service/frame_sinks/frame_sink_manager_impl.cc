@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -58,7 +59,8 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
       hit_test_manager_(surface_manager()),
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
-          params.run_all_compositor_stages_before_draw) {
+          params.run_all_compositor_stages_before_draw),
+      log_capture_pipeline_in_webrtc_(params.log_capture_pipeline_in_webrtc) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
@@ -146,15 +148,6 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
 
   for (auto& observer : observer_list_)
     observer.OnInvalidatedFrameSinkId(frame_sink_id);
-}
-
-void FrameSinkManagerImpl::EnableSynchronizationReporting(
-    const FrameSinkId& frame_sink_id,
-    const std::string& reporting_label) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = frame_sink_data_.find(frame_sink_id);
-  if (it != frame_sink_data_.end())
-    it->second.synchronization_label = reporting_label;
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
@@ -282,7 +275,8 @@ void FrameSinkManagerImpl::CreateVideoCapturer(
   video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
       this, std::move(receiver),
       std::make_unique<media::VideoCaptureOracle>(
-          true /* enable_auto_throttling */)));
+          true /* enable_auto_throttling */),
+      log_capture_pipeline_in_webrtc_));
 }
 
 void FrameSinkManagerImpl::EvictSurfaces(
@@ -298,6 +292,7 @@ void FrameSinkManagerImpl::EvictSurfaces(
 void FrameSinkManagerImpl::RequestCopyOfOutput(
     const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> request) {
+  TRACE_EVENT0("viz", "FrameSinkManagerImpl::RequestCopyOfOutput");
   auto it = support_map_.find(surface_id.frame_sink_id());
   if (it == support_map_.end()) {
     // |request| will send an empty result when it goes out of scope.
@@ -331,43 +326,6 @@ void FrameSinkManagerImpl::OnFirstSurfaceActivation(
     client_->OnFirstSurfaceActivation(surface_info);
 }
 
-void FrameSinkManagerImpl::OnSurfaceActivated(
-    const SurfaceId& surface_id,
-    base::Optional<base::TimeDelta> duration) {
-  if (!duration || !client_)
-    return;
-
-  // If |duration| is populated then there was a synchronization event prior
-  // to this activation.
-  auto it = frame_sink_data_.find(surface_id.frame_sink_id());
-  if (it == frame_sink_data_.end())
-    return;
-
-  std::string& synchronization_label = it->second.synchronization_label;
-  if (!synchronization_label.empty()) {
-    TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
-                         TRACE_EVENT_SCOPE_THREAD, "duration_ms",
-                         duration->InMilliseconds(), "client_label",
-                         synchronization_label);
-    base::UmaHistogramCustomCounts(synchronization_label,
-                                   duration->InMilliseconds(), 1, 10000, 50);
-  }
-}
-
-bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                            const BeginFrameAck& ack) {
-  return false;
-}
-
-void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceMarkedForDestruction(
-    const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                                                   const BeginFrameArgs& args) {
-}
-
 void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
     const FrameSinkId& frame_sink_id,
     const std::vector<AggregatedHitTestRegion>& hit_test_data) {
@@ -383,6 +341,10 @@ base::StringPiece FrameSinkManagerImpl::GetFrameSinkDebugLabel(
   if (it != frame_sink_data_.end())
     return it->second.debug_label;
   return base::StringPiece();
+}
+
+void FrameSinkManagerImpl::AggregatedFrameSinksChanged() {
+  hit_test_manager_.SetNeedsSubmit();
 }
 
 void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
@@ -609,21 +571,32 @@ const CompositorFrameSinkSupport* FrameSinkManagerImpl::GetFrameSinkForId(
   return nullptr;
 }
 
-void FrameSinkManagerImpl::SetPreferredFrameIntervalForFrameSinkId(
+base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
     const FrameSinkId& id,
-    base::TimeDelta interval) {
-  auto it = frame_sink_data_.find(id);
-  DCHECK(it != frame_sink_data_.end());
-  it->second.preferred_frame_interval = interval;
+    mojom::CompositorFrameSinkType* type) const {
+  auto it = support_map_.find(id);
+  if (it != support_map_.end())
+    return it->second->GetPreferredFrameInterval(type);
+
+  if (type)
+    *type = mojom::CompositorFrameSinkType::kUnspecified;
+  return BeginFrameArgs::MinInterval();
 }
 
-base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
-    const FrameSinkId& id) const {
-  auto it = frame_sink_data_.find(id);
-  if (it == frame_sink_data_.end())
-    return BeginFrameArgs::MinInterval();
-
-  return it->second.preferred_frame_interval;
+void FrameSinkManagerImpl::DiscardPendingCopyOfOutputRequests(
+    const BeginFrameSource* source) {
+  const auto& root_sink = registered_sources_.at(source);
+  base::queue<FrameSinkId> queue;
+  for (queue.push(root_sink); !queue.empty(); queue.pop()) {
+    auto& frame_sink_id = queue.front();
+    auto support = support_map_.find(frame_sink_id);
+    // The returned copy requests are destroyed upon going out of scope, which
+    // invokes the pending callbacks.
+    if (support != support_map_.end())
+      support->second->TakeCopyOutputRequests(LocalSurfaceId::MaxSequenceId());
+    for (auto child : GetChildrenByParent(frame_sink_id))
+      queue.push(child);
+  }
 }
 
 void FrameSinkManagerImpl::CacheBackBuffer(
@@ -642,7 +615,6 @@ void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
   auto it = cached_back_buffers_.find(cache_id);
   DCHECK(it != cached_back_buffers_.end());
 
-  it->second.RunAndReset();
   cached_back_buffers_.erase(it);
   std::move(callback).Run();
 }

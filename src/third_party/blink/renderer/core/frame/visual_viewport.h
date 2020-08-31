@@ -34,8 +34,10 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -92,16 +94,15 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //  +- horizontal_scrollbar_effect_node_
 //  +- vertical_scrollbar_effect_node_
 //
-class CORE_EXPORT VisualViewport final
-    : public GarbageCollected<VisualViewport>,
-      public ScrollableArea {
+class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
+                                   public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void InitializeScrollbars();
 
@@ -175,11 +176,16 @@ class CORE_EXPORT VisualViewport final
   ChromeClient* GetChromeClient() const override;
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
   void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
-                       ScrollBehavior,
+                       mojom::blink::ScrollType,
+                       mojom::blink::ScrollBehavior,
                        ScrollCallback on_finish) override;
-  PhysicalRect ScrollIntoView(const PhysicalRect&,
-                              const WebScrollIntoViewParams&) override;
+  void SetScrollOffset(const ScrollOffset&,
+                       mojom::blink::ScrollType,
+                       mojom::blink::ScrollBehavior =
+                           mojom::blink::ScrollBehavior::kInstant) override;
+  PhysicalRect ScrollIntoView(
+      const PhysicalRect&,
+      const mojom::blink::ScrollIntoViewParamsPtr&) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.
@@ -204,7 +210,8 @@ class CORE_EXPORT VisualViewport final
   CompositorElementId GetScrollElementId() const override;
   bool ScrollAnimatorEnabled() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
+  void UpdateScrollOffset(const ScrollOffset&,
+                          mojom::blink::ScrollType) override;
   cc::Layer* LayerForScrolling() const override;
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;
@@ -213,7 +220,8 @@ class CORE_EXPORT VisualViewport final
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner()
+      const override;
   WebColorScheme UsedColorScheme() const override;
 
   // VisualViewport scrolling may involve pinch zoom and gets routed through
@@ -271,7 +279,7 @@ class CORE_EXPORT VisualViewport final
                              const FloatPoint& location);
 
   void CreateLayers();
-  void UpdateStyleAndLayout() const;
+  void UpdateStyleAndLayout(DocumentUpdateReason) const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();

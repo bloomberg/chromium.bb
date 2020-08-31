@@ -84,9 +84,6 @@ DownloadResponseHandler::DownloadResponseHandler(
   }
   if (resource_request->request_initiator.has_value())
     request_initiator_ = resource_request->request_initiator;
-  if (resource_request->trusted_params.has_value())
-    network_isolation_key_ =
-        resource_request->trusted_params->network_isolation_key;
 }
 
 DownloadResponseHandler::~DownloadResponseHandler() = default;
@@ -103,7 +100,6 @@ void DownloadResponseHandler::OnReceiveResponse(
     has_strong_validators_ = head->headers->HasStrongValidators();
     RecordDownloadHttpResponseCode(head->headers->response_code(),
                                    is_background_mode_);
-    RecordDownloadContentDisposition(create_info_->content_disposition);
   }
 
   // Blink verifies that the requester of this download is allowed to set a
@@ -153,7 +149,6 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->request_origin = request_origin_;
   create_info->download_source = download_source_;
   create_info->request_initiator = request_initiator_;
-  create_info->network_isolation_key = network_isolation_key_;
 
   HandleResponseHeaders(head.headers.get(), create_info.get());
   return create_info;

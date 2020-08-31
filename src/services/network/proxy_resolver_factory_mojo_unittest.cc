@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -209,7 +210,7 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
 
   base::queue<GetProxyForUrlAction> get_proxy_actions_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   std::vector<mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient>>
       blocked_clients_;
@@ -235,8 +236,7 @@ void MockMojoProxyResolver::WaitForNextRequest() {
 
 void MockMojoProxyResolver::WakeWaiter() {
   if (!quit_closure_.is_null())
-    quit_closure_.Run();
-  quit_closure_.Reset();
+    std::move(quit_closure_).Run();
 }
 
 void MockMojoProxyResolver::ClearBlockedClients() {
@@ -378,7 +378,7 @@ class MockMojoProxyResolverFactory
   MockMojoProxyResolver* resolver_;
   base::queue<CreateProxyResolverAction> create_resolver_actions_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   std::vector<
       mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>>
@@ -411,8 +411,7 @@ void MockMojoProxyResolverFactory::WaitForNextRequest() {
 
 void MockMojoProxyResolverFactory::WakeWaiter() {
   if (!quit_closure_.is_null())
-    quit_closure_.Run();
-  quit_closure_.Reset();
+    std::move(quit_closure_).Run();
 }
 
 void MockMojoProxyResolverFactory::ClearBlockedClients() {
@@ -516,10 +515,9 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
     mock_proxy_resolver_factory_.reset(new MockMojoProxyResolverFactory(
         &mock_proxy_resolver_,
         factory_remote.InitWithNewPipeAndPassReceiver()));
-    proxy_resolver_factory_mojo_.reset(new ProxyResolverFactoryMojo(
-        std::move(factory_remote), &host_resolver_,
-        base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>(),
-        &net_log_));
+    proxy_resolver_factory_mojo_.reset(
+        new ProxyResolverFactoryMojo(std::move(factory_remote), &host_resolver_,
+                                     base::NullCallback(), &net_log_));
   }
 
   std::unique_ptr<Request> MakeRequest(

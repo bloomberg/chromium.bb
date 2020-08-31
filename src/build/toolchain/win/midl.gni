@@ -32,6 +32,10 @@ import("//build/config/win/visual_studio_version.gni")
 #       Whether a .tlb file should be added to outputs. Defaults to false.
 #
 #   deps (optional)
+#
+#   defines (optional)
+#       Build time defines to be passed to midl.exe as /D parameter.
+#
 #   visibility (optional)
 
 template("midl") {
@@ -127,6 +131,12 @@ template("midl") {
       "/Oicf",
     ]
 
+    if (defined(invoker.defines)) {
+      foreach(define, invoker.defines) {
+        args += [ "/D" + define ]
+      }
+    }
+
     forward_variables_from(invoker, [ "deps" ])
   }
 
@@ -137,8 +147,6 @@ template("midl") {
     sources = process_file_template(invoker.sources,
                                     [ "$out_dir/$interface_identifier_file" ])
 
-    public_deps = [
-      ":$action_name",
-    ]
+    public_deps = [ ":$action_name" ]
   }
 }

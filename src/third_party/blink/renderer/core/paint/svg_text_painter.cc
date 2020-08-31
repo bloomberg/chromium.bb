@@ -8,14 +8,14 @@
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 
 namespace blink {
 
 void SVGTextPainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
-      paint_info.phase != PaintPhase::kSelection)
+      paint_info.phase != PaintPhase::kSelectionDragImage)
     return;
 
   PaintInfo block_info(paint_info);
@@ -28,32 +28,16 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
       block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
-  RecordHitTestData(paint_info);
+  if (block_info.phase == PaintPhase::kForeground)
+    SVGModelObjectPainter::RecordHitTestData(layout_svg_text_, block_info);
+
   BlockPainter(layout_svg_text_).Paint(block_info);
 
   // Paint the outlines, if any
-  if (paint_info.phase == PaintPhase::kForeground) {
+  if (block_info.phase == PaintPhase::kForeground) {
     block_info.phase = PaintPhase::kOutline;
     BlockPainter(layout_svg_text_).Paint(block_info);
   }
-}
-
-void SVGTextPainter::RecordHitTestData(const PaintInfo& paint_info) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return;
-
-  if (paint_info.phase != PaintPhase::kForeground)
-    return;
-
-  auto touch_action = layout_svg_text_.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
-    return;
-
-  auto rect = LayoutRect(layout_svg_text_.VisualRectInLocalSVGCoordinates());
-  HitTestDisplayItem::Record(paint_info.context, layout_svg_text_,
-                             HitTestRect(rect, touch_action));
 }
 
 }  // namespace blink

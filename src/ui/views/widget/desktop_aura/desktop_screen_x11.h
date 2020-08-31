@@ -5,15 +5,15 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 
-#include <stdint.h>
-
 #include <memory>
+#include <vector>
 
-#include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -25,9 +25,9 @@ class DesktopScreenX11TestApi;
 
 // Screen implementation that talks to XRandR
 class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
-                                      public ui::PlatformEventDispatcher,
+                                      public ui::XEventDispatcher,
                                       public ui::XDisplayManager::Delegate,
-                                      public views::DeviceScaleFactorObserver {
+                                      public DeviceScaleFactorObserver {
  public:
   DesktopScreenX11();
   ~DesktopScreenX11() override;
@@ -36,10 +36,13 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   // fetching might not be desirable in some scenarios (e.g: unit tests)
   void Init();
 
-  // Overridden from display::Screen:
+  // display::Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override;
   int GetNumDisplays() const override;
   const std::vector<display::Display>& GetAllDisplays() const override;
   display::Display GetDisplayNearestWindow(
@@ -51,12 +54,12 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   display::Display GetPrimaryDisplay() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
+  std::string GetCurrentWorkspace() override;
 
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  // ui::XEventDispatcher:
+  bool DispatchXEvent(XEvent* event) override;
 
-  // views::DeviceScaleFactorObserver:
+  // DeviceScaleFactorObserver:
   void OnDeviceScaleFactorChanged() override;
 
   static void UpdateDeviceScaleFactorForTest();
@@ -65,13 +68,22 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   friend class DesktopScreenX11Test;
   friend class test::DesktopScreenX11TestApi;
 
-  // ui::XDisplayManager::Delegate
+  // ui::XDisplayManager::Delegate:
   void OnXDisplayListUpdated() override;
-  float GetXDisplayScaleFactor() override;
+  float GetXDisplayScaleFactor() const override;
 
-  std::unique_ptr<ui::XDisplayManager> x11_display_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
+  std::unique_ptr<ui::XDisplayManager> x11_display_manager_ =
+      std::make_unique<ui::XDisplayManager>(this);
+  ScopedObserver<LinuxUI,
+                 DeviceScaleFactorObserver,
+                 &LinuxUI::AddDeviceScaleFactorObserver,
+                 &LinuxUI::RemoveDeviceScaleFactorObserver>
+      display_scale_factor_observer_{this};
+  ScopedObserver<ui::X11EventSource,
+                 XEventDispatcher,
+                 &ui::X11EventSource::AddXEventDispatcher,
+                 &ui::X11EventSource::RemoveXEventDispatcher>
+      event_source_observer_{this};
 };
 
 }  // namespace views

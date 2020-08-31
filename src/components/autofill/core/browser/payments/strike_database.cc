@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -24,14 +25,17 @@ namespace {
 const int kMaxInitAttempts = 3;
 }  // namespace
 
+const base::FilePath::StringPieceType kStrikeDatabaseFileName =
+    FILE_PATH_LITERAL("AutofillStrikeDatabase");
+
 StrikeDatabase::StrikeDatabase(
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     base::FilePath profile_path) {
-  auto strike_database_path =
-      profile_path.Append(FILE_PATH_LITERAL("AutofillStrikeDatabase"));
+  const auto strike_database_path =
+      profile_path.Append(kStrikeDatabaseFileName);
 
-  auto database_task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  const auto database_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   db_ = db_provider->GetDB<StrikeData>(

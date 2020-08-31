@@ -4,6 +4,8 @@
 
 #include "base/hash/hash.h"
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/third_party/cityhash/city.h"
 #include "build/build_config.h"

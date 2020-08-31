@@ -4,6 +4,8 @@
 
 """Utility relating to logging."""
 
+from __future__ import print_function
+
 import argparse
 import codecs
 import ctypes
@@ -14,6 +16,8 @@ import os
 import sys
 import tempfile
 import time
+
+import six
 
 from utils import file_path
 
@@ -51,7 +55,7 @@ if sys.platform == 'win32':
 
     See https://bugs.python.org/issue15244 for inspiration.
     """
-    path = unicode(path)
+    path = six.text_type(path)
     handle = ctypes.windll.kernel32.CreateFileW(
         path,
         GENERIC_READ|GENERIC_WRITE,
@@ -186,7 +190,7 @@ def prepare_logging(filename, root=None):
   logger = root or logging.getLogger()
   if not logger:
     # Better print insanity than crash.
-    print >> sys.stderr, 'OMG NO ROOT'
+    print('OMG NO ROOT', file=sys.stderr)
     return
   logger.setLevel(logging.DEBUG)
 
@@ -200,7 +204,8 @@ def prepare_logging(filename, root=None):
   # Setup up logging to a constant file so we can debug issues where
   # the results aren't properly sent to the result URL.
   if filename:
-    file_path.ensure_tree(os.path.dirname(os.path.abspath(unicode(filename))))
+    file_path.ensure_tree(
+        os.path.dirname(os.path.abspath(six.text_type(filename))))
     try:
       rotating_file = NoInheritRotatingFileHandler(
           filename, maxBytes=10 * 1024 * 1024, backupCount=5,
@@ -219,7 +224,7 @@ def set_console_level(level, root=None):
   handler = find_stderr(root)
   if not handler:
     # Better print insanity than crash.
-    print >> sys.stderr, 'OMG NO STDERR'
+    print('OMG NO STDERR', file=sys.stderr)
     return
   handler.setLevel(level)
 

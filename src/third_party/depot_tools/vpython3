@@ -41,13 +41,15 @@ cipd_bin_setup &> /dev/null
 
 # If Python bootstrapping is not disabled, make sure Python has been
 # bootstrapped and add it to the front of PATH.
-if [[ $MINGW != 0 && $DEPOT_TOOLS_BOOTSTRAP_PYTHON3 != 0 ]]; then
-  if [[ ! -e $base_dir/python3_bin_reldir.txt ]]; then
+if [[ $(uname -s) = MINGW* || $(uname -s) = CYGWIN* ]]; then
+  cmd.exe //c $0.bat "$@"
+elif [[ $DEPOT_TOOLS_BOOTSTRAP_PYTHON3 != 0 ]]; then
+  if [[ ! -e "$base_dir/python3_bin_reldir.txt" ]]; then
     source "$base_dir/bootstrap_python3"
     bootstrap_python3
   fi
-  PYTHON3_BIN_RELDIR="$base_dir/$(cat $base_dir/python3_bin_reldir.txt | xargs echo)"
-  PATH="$PYTHON3_BIN_RELDIR":"$PYTHON3_BIN_RELDIR/Scripts":"$PATH"
+  PYTHON3_BIN_RELDIR="$base_dir/$(cat "$base_dir/python3_bin_reldir.txt" | xargs echo)"
+  exec "$base_dir/.cipd_bin/vpython3" -vpython-interpreter  "$PYTHON3_BIN_RELDIR/python3" "$@"
+else
+  exec "$base_dir/.cipd_bin/vpython3" "$@"
 fi
-
-exec "$base_dir/.cipd_bin/vpython3" "$@"

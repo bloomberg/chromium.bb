@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
@@ -15,15 +16,16 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -31,20 +33,21 @@ import org.chromium.ui.modelutil.PropertyModel;
 /**
  * Contains the controller logic of the Status component.
  */
-class StatusMediator {
+class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     @VisibleForTesting
     class StatusMediatorDelegate {
         /** @see {@link AutocompleteCoordinatorFactory#qualifyPartialURLQuery} */
         boolean isUrlValid(String partialUrl) {
-            return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                           .isFullBrowserStarted()
+            if (TextUtils.isEmpty(partialUrl)) return false;
+
+            return BrowserStartupController.getInstance().isFullBrowserStarted()
                     && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(partialUrl) != null;
         }
 
         /** @see {@link SearchEngineLogoUtils#getSearchEngineLogoFavicon} */
         void getSearchEngineLogoFavicon(Resources res, Callback<Bitmap> callback) {
             SearchEngineLogoUtils.getSearchEngineLogoFavicon(
-                    Profile.getLastUsedProfile().getOriginalProfile(), res, callback);
+                    Profile.getLastUsedRegularProfile(), res, callback);
         }
 
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
@@ -75,6 +78,7 @@ class StatusMediator {
     private boolean mIsSearchEngineStateSetup;
     private boolean mIsSearchEngineGoogle;
     private boolean mShouldCancelCustomFavicon;
+    private boolean mIsTablet;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -89,11 +93,20 @@ class StatusMediator {
 
     private StatusMediatorDelegate mDelegate;
     private Resources mResources;
+    private Context mContext;
+
     private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
     private UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
+
     private String mUrlBarTextWithAutocomplete = "";
     private boolean mUrlBarTextIsValidUrl;
+
     private float mUrlFocusPercent;
+    private String mSearchEngineLogoUrl;
+
+    private boolean mIsIncognito;
+    private Runnable mForceModelViewReconciliationRunnable;
+
     // Factors used to offset the animation of the status icon's alpha adjustment. The full formula
     // used: alpha = (focusAnimationProgress - mTextOffsetThreshold) / (1 - mTextOffsetThreshold)
     // mTextOffsetThreshold will be the % space that the icon takes up during the focus animation.
@@ -102,13 +115,15 @@ class StatusMediator {
     // The denominator for the above formula, which will adjust the scale for the alpha.
     private final float mTextOffsetAdjustedScale;
 
-    StatusMediator(PropertyModel model, Resources resources,
-            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
+    StatusMediator(PropertyModel model, Resources resources, Context context,
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider, boolean isTablet,
+            Runnable forceModelViewReconciliationRunnable) {
         mModel = model;
         mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
 
         mResources = resources;
+        mContext = context;
         mUrlBarEditingTextStateProvider = urlBarEditingTextStateProvider;
 
         int iconWidth = resources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
@@ -119,6 +134,9 @@ class StatusMediator {
                         - resources.getDimensionPixelSize(
                                 R.dimen.sei_location_bar_icon_end_padding));
         mTextOffsetAdjustedScale = mTextOffsetThreshold == 1 ? 1 : (1 - mTextOffsetThreshold);
+
+        mIsTablet = isTablet;
+        mForceModelViewReconciliationRunnable = forceModelViewReconciliationRunnable;
     }
 
     /**
@@ -247,10 +265,19 @@ class StatusMediator {
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
         updateLocationBarIcon();
+
+        // Set the autocomplete text to be empty on an unfocus event to avoid the globe sticking
+        // around for subsequent focus events.
+        if (!mUrlHasFocus) updateLocationBarIconForUrlBarAutocompleteText("");
     }
 
+    // Extra logic to support extra NTP use cases which show the status icon when animating and when
+    // focused, but hide it when unfocused.
     void setUrlAnimationFinished(boolean urlHasFocus) {
-        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
+        // On tablets, the status icon should always be shown so the following logic doesn't apply.
+        assert !mIsTablet : "This logic shouldn't be called on tablets";
+
+        if (!mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
             return;
         }
 
@@ -273,7 +300,10 @@ class StatusMediator {
      */
     void setUrlFocusChangePercent(float percent) {
         mUrlFocusPercent = percent;
-        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
+        // On tablets, the status icon should always be shown so the following logic doesn't apply.
+        assert !mIsTablet : "This logic shouldn't be called on tablets";
+
+        if (!mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
             return;
         }
 
@@ -290,9 +320,9 @@ class StatusMediator {
                 focusAnimationProgress = MathUtils.clamp(
                         (percent - mTextOffsetThreshold) / mTextOffsetAdjustedScale, 0f, 1f);
             }
-            mModel.set(StatusProperties.STATUS_ALPHA, focusAnimationProgress);
+            mModel.set(StatusProperties.STATUS_ICON_ALPHA, focusAnimationProgress);
         } else {
-            mModel.set(StatusProperties.STATUS_ALPHA, 1f);
+            mModel.set(StatusProperties.STATUS_ICON_ALPHA, 1f);
         }
 
         updateLocationBarIcon();
@@ -369,7 +399,7 @@ class StatusMediator {
     private void updateColorTheme() {
         @ColorRes
         int separatorColor =
-                mDarkTheme ? R.color.divider_bg_color_dark : R.color.divider_bg_color_light;
+                mDarkTheme ? R.color.divider_line_bg_color_dark : R.color.divider_line_bg_color_light;
 
         @ColorRes
         int textColor = 0;
@@ -418,6 +448,7 @@ class StatusMediator {
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         mIsSearchEngineStateSetup = true;
         mIsSearchEngineGoogle = isSearchEngineGoogle;
+        mSearchEngineLogoUrl = searchEngineUrl;
         updateLocationBarIcon();
     }
 
@@ -446,8 +477,8 @@ class StatusMediator {
         mIsSecurityButtonShown = false;
         if (mUrlHasFocus) {
             if (mShowStatusIconWhenUrlFocused) {
-                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
-                                                     : R.drawable.ic_omnibox_page;
+                icon = mFirstSuggestionIsSearchQuery ? R.drawable.ic_suggestion_magnifier
+                                                     : R.drawable.ic_globe_24dp;
                 tint = mNavigationIconTintRes;
             }
         } else if (mSecurityIconRes != 0) {
@@ -462,18 +493,19 @@ class StatusMediator {
                               : R.color.locationbar_status_preview_color_light;
         }
 
-        mModel.set(StatusProperties.STATUS_ICON_RES, icon);
-        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
+        mModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                icon == 0 ? null : new StatusIconResource(icon, tint));
         mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
     }
 
     /** @return True if the security icon has been set for the search engine icon. */
     @VisibleForTesting
     boolean maybeUpdateStatusIconForSearchEngineIcon() {
-        // When the search engine logo should be shown, but the engine isn't Google. In this case,
-        // we download the icon on the fly.
-        boolean showFocused =
-                (mUrlHasFocus || mUrlFocusPercent > 0) && mShowStatusIconWhenUrlFocused;
+        boolean showIconWhenFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
+        boolean showIconWhenScrollingOnNTP =
+                SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)
+                && mUrlFocusPercent > 0 && !mUrlHasFocus
+                && !mToolbarCommonPropertiesModel.isLoading() && mShowStatusIconWhenUrlFocused;
         // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
         // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
         // changed your default search engine.The included workaround below
@@ -485,13 +517,11 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
                 && mDelegate.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        boolean isIncognito = mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.isIncognito();
-        if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
-                && (showFocused || showUnfocusedSearchResultsPage)) {
-            setSecurityIconResourceForSearchEngineIcon(isIncognito, (icon) -> {
-                mModel.set(StatusProperties.STATUS_ICON_TINT_RES,
-                        getSecurityIconTintForSearchEngineIcon(icon));
+        if (mDelegate.shouldShowSearchEngineLogo(mIsIncognito) && mIsSearchEngineStateSetup
+                && (showIconWhenFocused || showIconWhenScrollingOnNTP
+                        || showUnfocusedSearchResultsPage)) {
+            getStatusIconResourceForSearchEngineIcon(mIsIncognito, (statusIconRes) -> {
+                mModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconRes);
             });
             return true;
         } else {
@@ -505,33 +535,46 @@ class StatusMediator {
      * the caller which resource has been set.
      *
      * @param isIncognito True if the user is incognito.
-     * @param callback Called when the final value is set for the security icon resource. Meant to
-     *                 give the caller a chance to set the tint for the given resource.
+     * @param resourceCallback Called when the final value is set for the security icon resource.
+     *                         Meant to give the caller a chance to set the tint for the given
+     *                         resource.
      */
-    private void setSecurityIconResourceForSearchEngineIcon(
-            boolean isIncognito, Callback<Integer> callback) {
+    private void getStatusIconResourceForSearchEngineIcon(
+            boolean isIncognito, Callback<StatusIconResource> resourceCallback) {
         mShouldCancelCustomFavicon = false;
         // If the current url text is a valid url, then swap the dse icon for a globe.
         if (mUrlBarTextIsValidUrl) {
-            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
-            callback.onResult(R.drawable.ic_globe_24dp);
+            resourceCallback.onResult(new StatusIconResource(R.drawable.ic_globe_24dp,
+                    getSecurityIconTintForSearchEngineIcon(R.drawable.ic_globe_24dp)));
         } else if (mIsSearchEngineGoogle) {
-            int icon = mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
-                    ? R.drawable.ic_search
-                    : R.drawable.ic_logo_googleg_20dp;
-            mModel.set(StatusProperties.STATUS_ICON_RES, icon);
-            callback.onResult(icon);
+            if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                resourceCallback.onResult(new StatusIconResource(R.drawable.ic_search,
+                        getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
+            } else {
+                resourceCallback.onResult(
+                        new StatusIconResource(R.drawable.ic_logo_googleg_20dp, 0));
+            }
         } else {
-            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-            callback.onResult(R.drawable.ic_search);
-            if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
-                mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
-                    if (favicon == null || mShouldCancelCustomFavicon) return;
-                    mModel.set(StatusProperties.STATUS_ICON, favicon);
-                    callback.onResult(0);
-                });
+            if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                resourceCallback.onResult(new StatusIconResource(R.drawable.ic_search,
+                        getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
+            } else {
+                getNonGoogleSearchEngineIconBitmap(
+                        statusIconResource -> { resourceCallback.onResult(statusIconResource); });
             }
         }
+    }
+
+    /** @return The non-Google search engine icon {@link Bitmap}. */
+    private void getNonGoogleSearchEngineIconBitmap(final Callback<StatusIconResource> callback) {
+        mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
+            if (favicon == null || mShouldCancelCustomFavicon) {
+                callback.onResult(new StatusIconResource(R.drawable.ic_search, 0));
+                return;
+            }
+
+            callback.onResult(new StatusIconResource(mSearchEngineLogoUrl, favicon, 0));
+        });
     }
 
     /**
@@ -545,7 +588,7 @@ class StatusMediator {
         if (icon == 0 || icon == R.drawable.ic_logo_googleg_20dp) {
             tint = 0;
         } else {
-            tint = mDarkTheme ? R.color.default_icon_color_secondary_list
+            tint = mDarkTheme ? R.color.default_icon_color_secondary_tint_list
                               : ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
         }
 
@@ -555,8 +598,7 @@ class StatusMediator {
     /** Return the resource id for the accessibility description or 0 if none apply. */
     private int getAccessibilityDescriptionRes() {
         if (mUrlHasFocus) {
-            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())) {
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mIsIncognito)) {
                 return 0;
             } else if (mShowStatusIconWhenUrlFocused) {
                 return R.string.accessibility_toolbar_btn_site_info;
@@ -568,8 +610,29 @@ class StatusMediator {
         return 0;
     }
 
-    /** @see android.text.TextWatcher#onTextChanged */
+    /** @see org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener */
     void onTextChanged(CharSequence urlBarText) {
+        updateLocationBarIconForUrlBarAutocompleteText(
+                resolveUrlBarTextWithAutocomplete(urlBarText));
+    }
+
+    /**
+     * Updates variables and possibly the status icon based on the given urlBarTextWithAutocomplete.
+     */
+    private void updateLocationBarIconForUrlBarAutocompleteText(String urlBarTextWithAutocomplete) {
+        // Ignore text we've already seen to avoid unnecessary updates to the drawable resource.
+        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlBarTextWithAutocomplete)) return;
+
+        mUrlBarTextWithAutocomplete = urlBarTextWithAutocomplete;
+        boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
+        if (isValid != mUrlBarTextIsValidUrl) {
+            mUrlBarTextIsValidUrl = isValid;
+            updateLocationBarIcon();
+        }
+    }
+
+    @VisibleForTesting
+    protected String resolveUrlBarTextWithAutocomplete(CharSequence urlBarText) {
         String currentAutocompleteText = mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
         String urlTextWithAutocomplete;
         if (TextUtils.isEmpty(urlBarText)) {
@@ -585,14 +648,43 @@ class StatusMediator {
             urlTextWithAutocomplete = urlBarText.toString();
         }
 
-        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) return;
+        return urlTextWithAutocomplete;
+    }
 
-        mUrlBarTextWithAutocomplete = urlTextWithAutocomplete;
-        boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
-        if (isValid != mUrlBarTextIsValidUrl) {
-            mUrlBarTextIsValidUrl = isValid;
-            updateLocationBarIcon();
+    public void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
+        if (incognitoStateProvider == null) return;
+        incognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
+    }
+
+    @Override
+    public void onIncognitoStateChanged(boolean isIncognito) {
+        boolean previousIsIcognito = mIsIncognito;
+        mIsIncognito = isIncognito;
+        if (previousIsIcognito != isIncognito) reconcileVisualState();
+    }
+
+    /**
+     * Temporary workaround for the divergent logic for status icon visibility changes for the dse
+     * icon experiment. Should be removed when the dse icon launches (crbug.com/1019488).
+     *
+     * When transitioning to incognito, the first visible view when focused will be assigned to
+     * UrlBar. When the UrlBar is the first visible view when focused, the StatusView's alpha
+     * will be set to 0 in LocationBarPhone#populateFadeAnimations. When transitioning back from
+     * incognito, StatusView's state needs to be reset to match the current state of the status view
+     * {@link org.chromium.chrome.browser.omnibox.LocationBarPhone#updateVisualsForState}.
+     * property model.
+     **/
+    private void reconcileVisualState() {
+        // No reconciliation is needed on tablet because the status icon is always shown.
+        if (mIsTablet) return;
+
+        if (!mShowStatusIconWhenUrlFocused || mIsIncognito
+                || !mDelegate.shouldShowSearchEngineLogo(mIsIncognito)) {
+            return;
         }
+
+        assert mForceModelViewReconciliationRunnable != null;
+        mForceModelViewReconciliationRunnable.run();
     }
 
     void setDelegateForTesting(StatusMediatorDelegate delegate) {

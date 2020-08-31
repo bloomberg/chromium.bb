@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
@@ -91,16 +92,6 @@ TestUint8ClampedArray* V8Uint8ClampedArray::ToImpl(v8::Local<v8::Object> object)
 TestUint8ClampedArray* V8Uint8ClampedArray::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsUint8ClampedArray() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestUint8ClampedArray* native_value = V8Uint8ClampedArray::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "Uint8ClampedArray"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

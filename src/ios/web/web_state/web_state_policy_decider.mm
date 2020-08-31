@@ -13,6 +13,45 @@
 
 namespace web {
 
+// static
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDecider::PolicyDecision::Allow() {
+  return WebStatePolicyDecider::PolicyDecision(
+      WebStatePolicyDecider::PolicyDecision::Decision::kAllow, /*error=*/nil);
+}
+
+// static
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDecider::PolicyDecision::Cancel() {
+  return WebStatePolicyDecider::PolicyDecision(
+      WebStatePolicyDecider::PolicyDecision::Decision::kCancel, /*error=*/nil);
+}
+
+// static
+WebStatePolicyDecider::PolicyDecision
+WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(NSError* error) {
+  return WebStatePolicyDecider::PolicyDecision(
+      WebStatePolicyDecider::PolicyDecision::Decision::kCancelAndDisplayError,
+      error);
+}
+
+bool WebStatePolicyDecider::PolicyDecision::ShouldAllowNavigation() const {
+  return decision == WebStatePolicyDecider::PolicyDecision::Decision::kAllow;
+}
+
+bool WebStatePolicyDecider::PolicyDecision::ShouldCancelNavigation() const {
+  return !ShouldAllowNavigation();
+}
+
+bool WebStatePolicyDecider::PolicyDecision::ShouldDisplayError() const {
+  return decision == WebStatePolicyDecider::PolicyDecision::Decision::
+                         kCancelAndDisplayError;
+}
+
+NSError* WebStatePolicyDecider::PolicyDecision::GetDisplayError() const {
+  return error;
+}
+
 WebStatePolicyDecider::WebStatePolicyDecider(WebState* web_state)
     : web_state_(web_state) {
   DCHECK(web_state_);
@@ -25,15 +64,17 @@ WebStatePolicyDecider::~WebStatePolicyDecider() {
   }
 }
 
-bool WebStatePolicyDecider::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision WebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool WebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
-                                                bool for_main_frame) {
-  return true;
+void WebStatePolicyDecider::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 void WebStatePolicyDecider::ResetWebState() {

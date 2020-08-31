@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/task_traits.h"
 #include "base/threading/sequence_bound.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -43,7 +45,6 @@ class PerfettoFileTracer : public tracing::mojom::TracingSessionClient {
 
   void OnTracingSessionEnded();
 
-  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   base::SequenceBound<BackgroundDrainer> background_drainer_;
   mojo::Receiver<tracing::mojom::TracingSessionClient> receiver_{this};
   mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;

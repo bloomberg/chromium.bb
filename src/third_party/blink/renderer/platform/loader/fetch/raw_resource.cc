@@ -55,6 +55,7 @@ RawResource* RawResource::FetchImport(FetchParameters& params,
                                       ResourceFetcher* fetcher,
                                       RawResourceClient* client) {
   params.SetRequestContext(mojom::RequestContextType::IMPORT);
+  params.SetRequestDestination(network::mojom::RequestDestination::kEmpty);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kImportResource), client));
 }
@@ -85,6 +86,7 @@ RawResource* RawResource::FetchTextTrack(FetchParameters& params,
                                          ResourceFetcher* fetcher,
                                          RawResourceClient* client) {
   params.SetRequestContext(mojom::RequestContextType::TRACK);
+  params.SetRequestDestination(network::mojom::RequestDestination::kTrack);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kTextTrack), client));
 }
@@ -171,8 +173,8 @@ void RawResource::DidAddClient(ResourceClient* c) {
   RevalidationStartForbiddenScope revalidation_start_forbidden_scope(this);
   RawResourceClient* client = static_cast<RawResourceClient*>(c);
   for (const auto& redirect : RedirectChain()) {
-    ResourceRequest request(redirect.request_);
-    client->RedirectReceived(this, request, redirect.redirect_response_);
+    client->RedirectReceived(this, ResourceRequest(redirect.request_),
+                             redirect.redirect_response_);
     if (!HasClient(c))
       return;
   }
@@ -348,15 +350,10 @@ void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     c->DidDownloadToBlob(this, blob);
 }
 
-bool RawResource::MatchPreload(const FetchParameters& params,
-                               base::SingleThreadTaskRunner* task_runner) {
-  if (!Resource::MatchPreload(params, task_runner))
-    return false;
-
+void RawResource::MatchPreload(const FetchParameters& params) {
+  Resource::MatchPreload(params);
   matched_with_non_streaming_destination_ =
       !params.GetResourceRequest().UseStreamOnResponse();
-
-  return true;
 }
 
 static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
@@ -405,8 +402,6 @@ void RawResourceClient::DidDownloadToBlob(Resource*,
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()
     : state_(kNotAddedAsClient) {}
-
-RawResourceClientStateChecker::~RawResourceClientStateChecker() = default;
 
 NOINLINE void RawResourceClientStateChecker::WillAddClient() {
   SECURITY_CHECK(state_ == kNotAddedAsClient);

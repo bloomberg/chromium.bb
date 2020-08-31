@@ -9,7 +9,7 @@
 #include "osp/impl/quic/quic_connection.h"
 #include "platform/base/error.h"
 #include "util/big_endian.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {
@@ -116,7 +116,7 @@ MessageDemuxer::MessageWatch& MessageDemuxer::MessageWatch::operator=(
   return *this;
 }
 
-MessageDemuxer::MessageDemuxer(platform::ClockNowFunctionPtr now_function,
+MessageDemuxer::MessageDemuxer(ClockNowFunctionPtr now_function,
                                size_t buffer_limit = kDefaultBufferLimit)
     : now_function_(now_function), buffer_limit_(buffer_limit) {
   OSP_DCHECK(now_function_);

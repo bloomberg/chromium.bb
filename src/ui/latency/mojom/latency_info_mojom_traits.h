@@ -44,7 +44,6 @@ struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
 
 template <>
 struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
-  static const std::string& trace_name(const ui::LatencyInfo& info);
   static const ui::LatencyInfo::LatencyMap& latency_components(
       const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);
@@ -56,6 +55,7 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
       const ui::LatencyInfo& info);
   static float scroll_update_delta(const ui::LatencyInfo& info);
   static float predicted_scroll_update_delta(const ui::LatencyInfo& info);
+  static int64_t gesture_scroll_id(const ui::LatencyInfo& info);
   static bool Read(ui::mojom::LatencyInfoDataView data, ui::LatencyInfo* out);
 };
 

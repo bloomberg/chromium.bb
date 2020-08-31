@@ -16,9 +16,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "build/build_config.h"
+#include "chrome/browser/extensions/install_prompt_permissions.h"
+#include "chrome/common/buildflags.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -67,17 +70,28 @@ class ExtensionInstallPrompt {
     DELEGATED_PERMISSIONS_PROMPT = 10,
     // DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED = 11,
     WEBSTORE_WIDGET_PROMPT = 12,
-    NUM_PROMPT_TYPES = 13,
+    EXTENSION_REQUEST_PROMPT = 13,
+    EXTENSION_PENDING_REQUEST_PROMPT = 14,
+    NUM_PROMPT_TYPES = 15,
+    // WAIT! Are you adding a new prompt type? Does it *install an extension*?
+    // If not, please create a new dialog, rather than adding more functionality
+    // to this class - it's already too full.
   };
 
   // The last prompt type to display; only used for testing.
   static PromptType g_last_prompt_type_for_tests;
 
-  // Enumeration for permissions and retained files details.
-  enum DetailsType {
-    PERMISSIONS_DETAILS = 0,
-    RETAINED_FILES_DETAILS,
-    RETAINED_DEVICES_DETAILS,
+  // Interface for observing events on the prompt.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called right before the dialog is about to show.
+    virtual void OnDialogOpened() = 0;
+
+    // Called when the user clicks accept on the dialog.
+    virtual void OnDialogAccepted() = 0;
+
+    // Called when the user clicks cancel on the dialog, presses 'x' or escape.
+    virtual void OnDialogCanceled() = 0;
   };
 
   // Extra information needed to display an installation or uninstallation
@@ -89,10 +103,9 @@ class ExtensionInstallPrompt {
     explicit Prompt(PromptType type);
     ~Prompt();
 
-    void AddPermissions(const extensions::PermissionMessages& permissions);
-    void SetIsShowingDetails(DetailsType type,
-                             size_t index,
-                             bool is_showing_details);
+    void AddPermissionSet(const extensions::PermissionSet& permissions);
+    void AddPermissionMessages(
+        const extensions::PermissionMessages& permissions);
     void SetWebstoreData(const std::string& localized_user_count,
                          bool show_user_count,
                          double average_rating,
@@ -110,7 +123,18 @@ class ExtensionInstallPrompt {
     base::string16 GetRetainedFilesHeading() const;
     base::string16 GetRetainedDevicesHeading() const;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    void set_requires_parent_permission(bool requires_parent_permission) {
+      requires_parent_permission_ = requires_parent_permission;
+    }
+
+    bool requires_parent_permission() const {
+      return requires_parent_permission_;
+    }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
     bool ShouldShowPermissions() const;
+    bool ShouldDisplayWithholdingUI() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT, EXTERNAL_INSTALL_PROMPT, or REPAIR_PROMPT.
@@ -124,10 +148,8 @@ class ExtensionInstallPrompt {
     base::string16 GetRatingCount() const;
     base::string16 GetUserCount() const;
     size_t GetPermissionCount() const;
-    size_t GetPermissionsDetailsCount() const;
     base::string16 GetPermission(size_t index) const;
     base::string16 GetPermissionsDetails(size_t index) const;
-    bool GetIsShowingDetails(DetailsType type, size_t index) const;
     size_t GetRetainedFileCount() const;
     base::string16 GetRetainedFile(size_t index) const;
     size_t GetRetainedDeviceCount() const;
@@ -162,30 +184,33 @@ class ExtensionInstallPrompt {
 
     bool has_webstore_data() const { return has_webstore_data_; }
 
+    void AddObserver(Observer* observer);
+    void RemoveObserver(Observer* observer);
+
+    // Called right before the dialog is about to show.
+    void OnDialogOpened();
+
+    // Called when the user clicks accept on the dialog.
+    void OnDialogAccepted();
+
+    // Called when the user clicks cancel on the dialog, presses 'x' or escape.
+    void OnDialogCanceled();
+
    private:
-    friend class base::RefCountedThreadSafe<Prompt>;
-
-    struct InstallPromptPermissions {
-      InstallPromptPermissions();
-      ~InstallPromptPermissions();
-
-      std::vector<base::string16> permissions;
-      std::vector<base::string16> details;
-      std::vector<bool> is_showing_details;
-    };
-
     bool ShouldDisplayRevokeButton() const;
-
-    bool ShouldDisplayRevokeFilesButton() const;
 
     const PromptType type_;
 
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
-    InstallPromptPermissions prompt_permissions_;
+    extensions::InstallPromptPermissions prompt_permissions_;
 
-    bool is_showing_details_for_retained_files_;
-    bool is_showing_details_for_retained_devices_;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    // True if the current user is a child.
+    bool requires_parent_permission_ = false;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+    bool is_requesting_host_permissions_;
 
     // The extension being installed.
     const extensions::Extension* extension_;
@@ -214,6 +239,8 @@ class ExtensionInstallPrompt {
     std::vector<base::FilePath> retained_files_;
     std::vector<base::string16> retained_device_messages_;
 
+    base::ObserverList<Observer> observers_;
+
     DISALLOW_COPY_AND_ASSIGN(Prompt);
   };
 
@@ -222,6 +249,7 @@ class ExtensionInstallPrompt {
 
   enum class Result {
     ACCEPTED,
+    ACCEPTED_AND_OPTION_CHECKED,
     USER_CANCELED,
     ABORTED,
   };
@@ -309,6 +337,8 @@ class ExtensionInstallPrompt {
   virtual void OnInstallFailure(const extensions::CrxInstallError& error);
 
   bool did_call_show_dialog() const { return did_call_show_dialog_; }
+
+  std::unique_ptr<Prompt> GetPromptForTesting();
 
  private:
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains

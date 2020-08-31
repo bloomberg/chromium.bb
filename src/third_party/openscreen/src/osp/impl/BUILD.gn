@@ -43,6 +43,7 @@ source_set("impl") {
   ]
   deps = [
     "../../platform",
+    "../../third_party/abseil",
     "../../util",
     "quic",
   ]
@@ -64,6 +65,7 @@ if (use_chromium_quic) {
     deps = [
       "../../osp/msgs",
       "../../platform",
+      "../../third_party/abseil",
       "../../third_party/chromium_quic",
       "../../util",
       "quic",

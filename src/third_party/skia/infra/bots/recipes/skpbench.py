@@ -62,12 +62,9 @@ def skpbench_steps(api):
         # TODO(dogben): Track down what's causing bots to die.
         '-v5']
   if 'DDL' in api.vars.builder_name:
-    # This adds the "--ddl" flag for both DDLTotal and DDLRecord
     skpbench_args += ['--ddl']
     # disable the mask generation threads for sanity's sake in DDL mode
     skpbench_args += ['--gpuThreads', '0']
-  if 'DDLRecord' in api.vars.builder_name:
-    skpbench_args += ['--ddlRecord']
   if '9x9' in api.vars.builder_name:
     skpbench_args += [
         '--ddlNumAdditionalThreads', 9,
@@ -129,7 +126,11 @@ def skpbench_steps(api):
 def RunSteps(api):
   api.vars.setup()
   api.file.ensure_directory('makedirs tmp_dir', api.vars.tmp_dir)
-  api.flavor.setup()
+
+  # The app_name passed to api.flavor.setup() is used to determine which app
+  # to install on an attached device. That work is done in skpbench_steps, so
+  # we pass None here.
+  api.flavor.setup(None)
 
   try:
     mksp_mode = ('Mskp' in api.vars.builder_name)
@@ -148,8 +149,6 @@ TEST_BUILDERS = [
   'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-Vulkan_Skpbench',
   ('Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-'
    'Vulkan_Skpbench_DDLTotal_9x9'),
-  ('Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-'
-   'Vulkan_Skpbench_DDLRecord_9x9'),
 ]
 
 

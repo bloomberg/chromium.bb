@@ -50,14 +50,16 @@
 namespace extensions {
 
 ExtensionManagement::ExtensionManagement(Profile* profile)
-    : profile_(profile), pref_service_(profile_->GetPrefs()) {
+    : profile_(profile),
+      pref_service_(profile_->GetPrefs()),
+      is_child_(profile_->IsChild()) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
 #if defined(OS_CHROMEOS)
   is_signin_profile_ = chromeos::ProfileHelper::IsSigninProfile(profile);
 #endif
   pref_change_registrar_.Init(pref_service_);
-  base::Closure pref_change_callback = base::Bind(
+  base::Closure pref_change_callback = base::BindRepeating(
       &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
   pref_change_registrar_.Add(pref_names::kInstallAllowList,
                              pref_change_callback);
@@ -206,11 +208,6 @@ bool ExtensionManagement::IsOffstoreInstallAllowed(
 bool ExtensionManagement::IsAllowedManifestType(
     Manifest::Type manifest_type,
     const std::string& extension_id) const {
-  if (extension_id == extension_misc::kCloudReportingExtensionId &&
-      IsCloudReportingPolicyEnabled()) {
-    return true;
-  }
-
   if (!global_settings_->has_restricted_allowed_types)
     return true;
   const std::vector<Manifest::Type>& allowed_types =
@@ -220,13 +217,6 @@ bool ExtensionManagement::IsAllowedManifestType(
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
     const Extension* extension) const {
-  // The Chrome Reporting extension is sideloaded via the CloudReportingEnabled
-  // policy and is not subject to permission withholding.
-  if (extension->id() == extension_misc::kCloudReportingExtensionId &&
-      IsCloudReportingPolicyEnabled()) {
-    return APIPermissionSet();
-  }
-
   // Fetch per-extension blocked permissions setting.
   auto iter_id = settings_by_id_.find(extension->id());
 
@@ -506,8 +496,6 @@ void ExtensionManagement::Refresh() {
       }
     }
   }
-
-  UpdateForcedCloudReportingExtension();
 }
 
 const base::Value* ExtensionManagement::LoadPreference(
@@ -591,34 +579,6 @@ void ExtensionManagement::UpdateForcedExtensions(
           it.key(), InstallationReporter::FailureReason::NO_UPDATE_URL);
     }
   }
-}
-
-void ExtensionManagement::UpdateForcedCloudReportingExtension() {
-  if (!IsCloudReportingPolicyEnabled())
-    return;
-
-  // Adds the Chrome Reporting extension to the force install list if
-  // CloudReportingEnabled policy is set to True. Overrides any existing setting
-  // for that extension from other policies.
-  internal::IndividualSettings* settings =
-      AccessById(extension_misc::kCloudReportingExtensionId);
-  settings->Reset();
-  settings->minimum_version_required.reset();
-  settings->installation_mode = INSTALLATION_FORCED;
-  settings->update_url = extension_urls::kChromeWebstoreUpdateURL;
-}
-
-bool ExtensionManagement::IsCloudReportingPolicyEnabled() const {
-#if !defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
-    return false;
-  const base::Value* policy_value =
-      LoadPreference(prefs::kCloudReportingEnabled,
-                     /* force_managed = */ true, base::Value::Type::BOOLEAN);
-  return policy_value && policy_value->GetBool();
-#else
-  return false;
-#endif
 }
 
 internal::IndividualSettings* ExtensionManagement::AccessById(

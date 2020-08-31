@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/chrome_features.h"
-#include "components/ntp_snippets/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -239,9 +239,12 @@ void AvailableOfflineContentProvider::LaunchItem(
     const std::string& name_space) {
   offline_items_collection::OfflineContentAggregator* aggregator =
       OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
+
+  offline_items_collection::OpenParams open_params(
+      offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION);
+  open_params.open_in_incognito = profile_->IsOffTheRecord();
   aggregator->OpenItem(
-      offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION,
-      offline_items_collection::ContentId(name_space, item_id));
+      open_params, offline_items_collection::ContentId(name_space, item_id));
 }
 
 void AvailableOfflineContentProvider::LaunchDownloadsPage(
@@ -252,7 +255,7 @@ void AvailableOfflineContentProvider::LaunchDownloadsPage(
 }
 
 void AvailableOfflineContentProvider::ListVisibilityChanged(bool is_visible) {
-  profile_->GetPrefs()->SetBoolean(ntp_snippets::prefs::kArticlesListVisible,
+  profile_->GetPrefs()->SetBoolean(feed::prefs::kArticlesListVisible,
                                    is_visible);
 }
 
@@ -293,8 +296,8 @@ void AvailableOfflineContentProvider::ListFinalize(
   for (const OfflineItem& item : selected)
     selected_ids.push_back(item.id);
 
-  bool list_visible_by_prefs = profile_->GetPrefs()->GetBoolean(
-      ntp_snippets::prefs::kArticlesListVisible);
+  bool list_visible_by_prefs =
+      profile_->GetPrefs()->GetBoolean(feed::prefs::kArticlesListVisible);
 
   auto complete =
       [](AvailableOfflineContentProvider::ListCallback callback,

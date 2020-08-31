@@ -30,7 +30,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_PFFFT)
 
 #include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
@@ -131,8 +131,8 @@ FFTFrame::FFTFrame(const FFTFrame& frame)
 
   // Copy/setup frame data
   unsigned nbytes = sizeof(float) * fft_size_;
-  memcpy(RealData(), frame.frame_.realp, nbytes);
-  memcpy(ImagData(), frame.frame_.imagp, nbytes);
+  memcpy(RealData().Data(), frame.frame_.realp, nbytes);
+  memcpy(ImagData().Data(), frame.frame_.imagp, nbytes);
 }
 
 FFTFrame::~FFTFrame() {}
@@ -201,4 +201,4 @@ void FFTFrame::Cleanup() {
 
 }  // namespace blink
 
-#endif  // #if defined(OS_MACOSX)
+#endif  // #if defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_PFFFT)

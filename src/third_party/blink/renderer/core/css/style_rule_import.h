@@ -57,7 +57,7 @@ class StyleRuleImport : public StyleRuleBase {
 
   void RequestStyleSheet();
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   // FIXME: inherit from ResourceClient directly to eliminate back
@@ -80,7 +80,7 @@ class StyleRuleImport : public StyleRuleBase {
 
     String DebugName() const override { return "ImportedStyleSheetClient"; }
 
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       visitor->Trace(owner_rule_);
       ResourceClient::Trace(visitor);
     }

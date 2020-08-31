@@ -33,25 +33,35 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_content_index_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_request_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -66,30 +76,27 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.h"
 #include "third_party/blink/renderer/modules/background_sync/periodic_sync_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
 #include "third_party/blink/renderer/modules/content_index/content_index_event.h"
-#include "third_party/blink/renderer/modules/content_index/content_index_event_init.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_event.h"
-#include "third_party/blink/renderer/modules/notifications/notification_event_init.h"
 #include "third_party/blink/renderer/modules/payments/abort_payment_event.h"
 #include "third_party/blink/renderer/modules/payments/abort_payment_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/payments/payment_event_data_conversion.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event.h"
-#include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event.h"
+#include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_message_event.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
@@ -108,7 +115,7 @@
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -185,9 +192,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin) {
-  DCHECK_EQ(creation_params->off_main_thread_fetch_option,
-            OffMainThreadWorkerScriptFetchOption::kEnabled);
-
 #if DCHECK_IS_ON()
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
@@ -217,10 +221,21 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)) {
-  // Create the event queue. At this point the timer is not started. It will be
+  // Create the event queue. At this point its timer is not started. It will be
   // started by DidEvaluateScript().
-  event_queue_ = std::make_unique<ServiceWorkerEventQueue>(WTF::BindRepeating(
-      &ServiceWorkerGlobalScope::OnIdleTimeout, WrapWeakPersistent(this)));
+  //
+  // We are using TaskType::kInternalDefault for the idle callback, and it can
+  // be paused or throttled. This should work for now because we don't throttle
+  // or pause service worker threads, while it may cause not calling idle
+  // callback. We need to revisit this once we want to implement pausing
+  // service workers, but basically that won't be big problem because we have
+  // ping-pong timer and that will kill paused service workers.
+  event_queue_ = std::make_unique<ServiceWorkerEventQueue>(
+      WTF::BindRepeating(&ServiceWorkerGlobalScope::OnBeforeStartEvent,
+                         WrapWeakPersistent(this)),
+      WTF::BindRepeating(&ServiceWorkerGlobalScope::OnIdleTimeout,
+                         WrapWeakPersistent(this)),
+      GetTaskRunner(TaskType::kInternalDefault));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;
@@ -249,7 +264,8 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
   // "classic: Fetch a classic worker script given job's serialized script url,
   // job's client, "serviceworker", and the to-be-created environment settings
   // object for this service worker."
-  auto destination = mojom::RequestContextType::SERVICE_WORKER;
+  auto context_type = mojom::RequestContextType::SERVICE_WORKER;
+  auto destination = network::mojom::RequestDestination::kServiceWorker;
 
   // "To perform the fetch given request, run the following steps:"
   // Step 9.1. "Append `Service-Worker`/`script` to request's header list."
@@ -274,7 +290,8 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      script_url, context_type, destination,
+      network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
@@ -288,17 +305,19 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::CredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsContextThread());
-
+  DCHECK(!reject_coep_unsafe_none);
   ModuleScriptCustomFetchType fetch_type =
       installed_scripts_manager_
           ? ModuleScriptCustomFetchType::kInstalledServiceWorker
           : ModuleScriptCustomFetchType::kWorkerConstructor;
   FetchModuleScript(module_url_record, outside_settings_object,
                     outside_resource_timing_notifier,
-                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    fetch_type,
+                    mojom::RequestContextType::SERVICE_WORKER,
+                    network::mojom::RequestDestination::kServiceWorker,
+                    credentials_mode, fetch_type,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
                         ScriptController()->GetScriptState()));
 }
@@ -320,18 +339,16 @@ ServiceWorkerGlobalScope::GetInstalledScriptsManager() {
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
   DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_size_histogram,
-      ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
-  script_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_size));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.ScriptSize",
+      base::saturated_cast<base::Histogram::Sample>(script_size), 1000, 5000000,
+      50);
 
   if (cached_metadata_size) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, script_cached_metadata_size_histogram,
-        ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
-    script_cached_metadata_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size));
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.ScriptCachedMetadataSize",
+        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size),
+        1000, 50000000, 50);
   }
 
   CountScriptInternal(script_size, cached_metadata_size);
@@ -359,22 +376,19 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
 
   // TODO(asamidoi,nhiroki): Record the UMAs for module scripts, or remove them
   // if they're no longer used.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, script_count_histogram,
-                                  ("ServiceWorker.ScriptCount", 1, 1000, 50));
-  script_count_histogram.Count(
+  base::UmaHistogramCounts1000(
+      "ServiceWorker.ScriptCount",
       base::saturated_cast<base::Histogram::Sample>(script_count_));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_total_size_histogram,
-      ("ServiceWorker.ScriptTotalSize", 1000, 5000000, 50));
-  script_total_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_total_size_));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.ScriptTotalSize",
+      base::saturated_cast<base::Histogram::Sample>(script_total_size_), 1000,
+      5000000, 50);
   if (script_cached_metadata_total_size_) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, cached_metadata_histogram,
-        ("ServiceWorker.ScriptCachedMetadataTotalSize", 1000, 50000000, 50));
-    cached_metadata_histogram.Count(
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.ScriptCachedMetadataTotalSize",
         base::saturated_cast<base::Histogram::Sample>(
-            script_cached_metadata_total_size_));
+            script_cached_metadata_total_size_),
+        1000, 50000000, 50);
   }
 }
 
@@ -463,7 +477,7 @@ void ServiceWorkerGlobalScope::Initialize(
   SetReferrerPolicy(response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
-  SetAddressSpace(response_address_space);
+  GetSecurityContext().SetAddressSpace(response_address_space);
 
   // This is quoted from the "Content Security Policy" algorithm in the service
   // workers spec:
@@ -615,8 +629,7 @@ void ServiceWorkerGlobalScope::BindControllerServiceWorker(
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
   controller_receivers_.Add(
-      this, std::move(receiver),
-      network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+      this, std::move(receiver), /*context=*/nullptr,
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -646,7 +659,7 @@ void ServiceWorkerGlobalScope::OnNavigationPreloadError(
                                        ? error->message
                                        : error->unsanitized_message;
   if (!error_message.IsEmpty()) {
-    AddConsoleMessage(ConsoleMessage::Create(
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kWorker,
         mojom::ConsoleMessageLevel::kError, error_message));
   }
@@ -695,9 +708,9 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
         event_type.Utf8().c_str());
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
@@ -730,6 +743,16 @@ bool ServiceWorkerGlobalScope::FetchClassicImportedScript(
       script_url, out_response_url, out_source_code, out_cached_meta_data);
 }
 
+ResourceLoadScheduler::ThrottleOptionOverride
+ServiceWorkerGlobalScope::GetThrottleOptionOverride() const {
+  if (is_installing_ && base::FeatureList::IsEnabled(
+                            features::kThrottleInstallingServiceWorker)) {
+    return ResourceLoadScheduler::ThrottleOptionOverride::
+        kStoppableAsThrottleable;
+  }
+  return ResourceLoadScheduler::ThrottleOptionOverride::kNone;
+}
+
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kServiceWorkerGlobalScope;
 }
@@ -758,7 +781,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
   wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
 }
 
-void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+void ServiceWorkerGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(clients_);
   visitor->Trace(registration_);
   visitor->Trace(service_worker_);
@@ -773,14 +796,13 @@ bool ServiceWorkerGlobalScope::HasRelatedFetchEvent(
   return it != unresponded_fetch_event_counts_.end();
 }
 
-void ServiceWorkerGlobalScope::importScripts(
-    const HeapVector<StringOrTrustedScriptURL>& urls,
-    ExceptionState& exception_state) {
-  for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
-    String string_url = stringOrUrl.IsString()
-                            ? stringOrUrl.GetAsString()
-                            : stringOrUrl.GetAsTrustedScriptURL()->toString();
+int ServiceWorkerGlobalScope::GetOutstandingThrottledLimit() const {
+  return features::kInstallingServiceWorkerOutstandingThrottledLimit.Get();
+}
 
+void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
+                                             ExceptionState& exception_state) {
+  for (const String& string_url : urls) {
     KURL completed_url = CompleteURL(string_url);
     if (installed_scripts_manager_ &&
         !installed_scripts_manager_->IsScriptInstalled(completed_url)) {
@@ -800,8 +822,8 @@ SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
     std::unique_ptr<Vector<uint8_t>> meta_data) {
-  return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
-                                                          std::move(meta_data));
+  return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
+      this, script_url, std::move(meta_data));
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
@@ -825,20 +847,16 @@ void ServiceWorkerGlobalScope::CountCacheStorageInstalledScript(
   cache_storage_installed_script_total_size_ += script_size;
   cache_storage_installed_script_metadata_total_size_ += script_metadata_size;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_size_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.ScriptSize", 1000, 5000000,
-       50));
-  script_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_size));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.CacheStorageInstalledScript.ScriptSize",
+      base::saturated_cast<base::Histogram::Sample>(script_size), 1000, 5000000,
+      50);
 
   if (script_metadata_size) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, script_metadata_size_histogram,
-        ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize", 1000,
-         50000000, 50));
-    script_metadata_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(script_metadata_size));
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize",
+        base::saturated_cast<base::Histogram::Sample>(script_metadata_size),
+        1000, 50000000, 50);
   }
 }
 
@@ -855,8 +873,7 @@ void ServiceWorkerGlobalScope::DidHandleInstallEvent(
                           TRACE_ID_LOCAL(install_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN, "status", MojoEnumToString(status));
   RunEventCallback(&install_event_callbacks_, event_queue_.get(),
-                   install_event_id, status,
-                   HasEventListeners(event_type_names::kFetch));
+                   install_event_id, status);
 }
 
 void ServiceWorkerGlobalScope::DidHandleActivateEvent(
@@ -1156,7 +1173,7 @@ void ServiceWorkerGlobalScope::DidHandleAbortPaymentEvent(
 
 void ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent(
     int event_id,
-    bool can_make_payment) {
+    payments::mojom::blink::CanMakePaymentResponsePtr response) {
   DCHECK(IsContextThread());
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent",
@@ -1166,7 +1183,7 @@ void ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent(
   DCHECK(can_make_payment_result_callbacks_.Contains(event_id));
   mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>
       result_callback = can_make_payment_result_callbacks_.Take(event_id);
-  result_callback->OnResponseForCanMakePayment(can_make_payment);
+  result_callback->OnResponseForCanMakePayment(std::move(response));
 }
 
 void ServiceWorkerGlobalScope::DidHandleCanMakePaymentEvent(
@@ -1242,34 +1259,44 @@ void ServiceWorkerGlobalScope::DidHandleContentDeleteEvent(
 
 void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
   is_installing_ = is_installing;
-  if (is_installing)
+  UpdateFetcherThrottleOptionOverride();
+  if (is_installing) {
+    // Mark the scheduler as "hidden" to enable network throttling while the
+    // service worker is installing.
+    if (base::FeatureList::IsEnabled(
+            features::kThrottleInstallingServiceWorker)) {
+      GetThread()->GetScheduler()->OnLifecycleStateChanged(
+          scheduler::SchedulingLifecycleState::kHidden);
+    }
     return;
+  }
+
+  // Disable any network throttling that was enabled while the service worker
+  // was in the installing state.
+  if (base::FeatureList::IsEnabled(
+          features::kThrottleInstallingServiceWorker)) {
+    GetThread()->GetScheduler()->OnLifecycleStateChanged(
+        scheduler::SchedulingLifecycleState::kNotThrottled);
+  }
 
   // Installing phase is finished; record the stats for the scripts that are
   // stored in Cache storage during installation.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, cache_storage_installed_script_count_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.Count", 1, 1000, 50));
-  cache_storage_installed_script_count_histogram.Count(
+  base::UmaHistogramCounts1000(
+      "ServiceWorker.CacheStorageInstalledScript.Count",
       base::saturated_cast<base::Histogram::Sample>(
           cache_storage_installed_script_count_));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, cache_storage_installed_script_total_size_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize", 1000,
-       50000000, 50));
-  cache_storage_installed_script_total_size_histogram.Count(
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize",
       base::saturated_cast<base::Histogram::Sample>(
-          cache_storage_installed_script_total_size_));
+          cache_storage_installed_script_total_size_),
+      1000, 50000000, 50);
 
   if (cache_storage_installed_script_metadata_total_size_) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram,
-        cache_storage_installed_script_metadata_total_size_histogram,
-        ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize",
-         1000, 50000000, 50));
-    cache_storage_installed_script_metadata_total_size_histogram.Count(
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize",
         base::saturated_cast<base::Histogram::Sample>(
-            cache_storage_installed_script_metadata_total_size_));
+            cache_storage_installed_script_metadata_total_size_),
+        1000, 50000000, 50);
   }
 }
 
@@ -1282,6 +1309,11 @@ mojom::blink::ServiceWorkerHost*
 ServiceWorkerGlobalScope::GetServiceWorkerHost() {
   DCHECK(service_worker_host_);
   return service_worker_host_.get();
+}
+
+void ServiceWorkerGlobalScope::OnBeforeStartEvent(bool is_offline_event) {
+  DCHECK(IsContextThread());
+  SetIsOfflineMode(is_offline_event);
 }
 
 void ServiceWorkerGlobalScope::OnIdleTimeout() {
@@ -1324,8 +1356,8 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
   String origin;
   if (!event->source_origin->IsOpaque())
     origin = event->source_origin->ToString();
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kMessage, event_id);
+  WaitUntilObserver* observer = nullptr;
+  Event* event_to_dispatch = nullptr;
 
   if (event->source_info_for_client) {
     mojom::blink::ServiceWorkerClientInfoPtr client_info =
@@ -1333,11 +1365,37 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
     DCHECK(!client_info->client_uuid.IsEmpty());
     ServiceWorkerClient* source = nullptr;
     if (client_info->client_type == mojom::ServiceWorkerClientType::kWindow)
-      source = ServiceWorkerWindowClient::Create(*client_info);
+      source = MakeGarbageCollected<ServiceWorkerWindowClient>(*client_info);
     else
-      source = ServiceWorkerClient::Create(*client_info);
-    Event* event_to_dispatch = ExtendableMessageEvent::Create(
-        std::move(msg.message), origin, ports, source, observer);
+      source = MakeGarbageCollected<ServiceWorkerClient>(*client_info);
+    // TODO(crbug.com/1018092): Factor out these security checks so they aren't
+    // duplicated in so many places.
+    if (msg.message->IsOriginCheckRequired()) {
+      const SecurityOrigin* target_origin =
+          GetExecutionContext()->GetSecurityOrigin();
+      if (!msg.sender_origin ||
+          !msg.sender_origin->IsSameOriginWith(target_origin)) {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessageerror, event_id);
+        event_to_dispatch = ExtendableMessageEvent::CreateError(
+            origin, ports, source, observer);
+      }
+    }
+    if (!event_to_dispatch) {
+      if (!msg.locked_agent_cluster_id ||
+          GetExecutionContext()->IsSameAgentCluster(
+              *msg.locked_agent_cluster_id)) {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessage, event_id);
+        event_to_dispatch = ExtendableMessageEvent::Create(
+            std::move(msg.message), origin, ports, source, observer);
+      } else {
+        observer = MakeGarbageCollected<WaitUntilObserver>(
+            this, WaitUntilObserver::kMessageerror, event_id);
+        event_to_dispatch = ExtendableMessageEvent::CreateError(
+            origin, ports, source, observer);
+      }
+    }
     DispatchExtendableEvent(event_to_dispatch, observer);
     return;
   }
@@ -1346,14 +1404,40 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
             mojom::blink::kInvalidServiceWorkerVersionId);
   ::blink::ServiceWorker* source = ::blink::ServiceWorker::From(
       GetExecutionContext(), std::move(event->source_info_for_service_worker));
-  Event* event_to_dispatch = ExtendableMessageEvent::Create(
-      std::move(msg.message), origin, ports, source, observer);
+  // TODO(crbug.com/1018092): Factor out these security checks so they aren't
+  // duplicated in so many places.
+  if (msg.message->IsOriginCheckRequired()) {
+    const SecurityOrigin* target_origin =
+        GetExecutionContext()->GetSecurityOrigin();
+    if (!msg.sender_origin ||
+        !msg.sender_origin->IsSameOriginWith(target_origin)) {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessageerror, event_id);
+      event_to_dispatch =
+          ExtendableMessageEvent::CreateError(origin, ports, source, observer);
+    }
+  }
+  if (!event_to_dispatch) {
+    if (!msg.locked_agent_cluster_id ||
+        GetExecutionContext()->IsSameAgentCluster(
+            *msg.locked_agent_cluster_id)) {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessage, event_id);
+      event_to_dispatch = ExtendableMessageEvent::Create(
+          std::move(msg.message), origin, ports, source, observer);
+    } else {
+      observer = MakeGarbageCollected<WaitUntilObserver>(
+          this, WaitUntilObserver::kMessageerror, event_id);
+      event_to_dispatch =
+          ExtendableMessageEvent::CreateError(origin, ports, source, observer);
+    }
+  }
   DispatchExtendableEvent(event_to_dispatch, observer);
 }
 
 void ServiceWorkerGlobalScope::StartFetchEvent(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
+    base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
     mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
         response_callback,
     DispatchFetchEventInternalCallback callback,
@@ -1383,11 +1467,11 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
 
   mojom::blink::FetchAPIRequest& fetch_request = *params->request;
   ScriptState::Scope scope(ScriptController()->GetScriptState());
-  WaitUntilObserver* wait_until_observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kFetch, event_id);
-  FetchRespondWithObserver* respond_with_observer =
-      FetchRespondWithObserver::Create(this, event_id, requestor_coep,
-                                       fetch_request, wait_until_observer);
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kFetch, event_id);
+  auto* respond_with_observer = MakeGarbageCollected<FetchRespondWithObserver>(
+      this, event_id, std::move(corp_checker), fetch_request,
+      wait_until_observer);
   Request* request =
       Request::Create(ScriptController()->GetScriptState(), fetch_request,
                       Request::ForServiceWorkerFetchEvent::kTrue);
@@ -1436,20 +1520,20 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
                "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
                "url", params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
-  network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep =
-      controller_receivers_.current_context();
+  base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker =
+      controller_receivers_.current_context()->GetWeakPtr();
   if (RequestedTermination()) {
     event_queue_->EnqueuePending(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  std::move(requestor_coep), std::move(response_callback),
+                  std::move(corp_checker), std::move(response_callback),
                   std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   } else {
     event_queue_->EnqueueNormal(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  std::move(requestor_coep), std::move(response_callback),
+                  std::move(corp_checker), std::move(response_callback),
                   std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   }
@@ -1457,11 +1541,16 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
 
 void ServiceWorkerGlobalScope::Clone(
     mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
-    network::mojom::blink::CrossOriginEmbedderPolicy
-        cross_origin_embedder_policy) {
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    mojo::PendingRemote<
+        network::mojom::blink::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
   DCHECK(IsContextThread());
+  auto checker = std::make_unique<CrossOriginResourcePolicyChecker>(
+      cross_origin_embedder_policy, std::move(coep_reporter));
+
   controller_receivers_.Add(
-      this, std::move(receiver), cross_origin_embedder_policy,
+      this, std::move(receiver), std::move(checker),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1470,7 +1559,10 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
         service_worker_host,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
-    mojom::blink::FetchHandlerExistence fetch_hander_existence) {
+    mojom::blink::FetchHandlerExistence fetch_hander_existence,
+    std::unique_ptr<PendingURLLoaderFactoryBundle> subresource_loader_factories,
+    mojo::PendingReceiver<mojom::blink::ReportingObserver>
+        reporting_observer_receiver) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
 
@@ -1478,6 +1570,13 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
   DCHECK(!service_worker_host_);
   service_worker_host_.Bind(std::move(service_worker_host),
                             GetTaskRunner(TaskType::kInternalDefault));
+
+  if (subresource_loader_factories) {
+    static_cast<WebServiceWorkerFetchContext*>(web_worker_fetch_context())
+        ->GetSubresourceLoaderUpdater()
+        ->UpdateSubresourceLoaderFactories(
+            std::move(subresource_loader_factories));
+  }
 
   // Set ServiceWorkerGlobalScope#registration.
   DCHECK_NE(registration_info->registration_id,
@@ -1496,6 +1595,10 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
       GetExecutionContext(), std::move(service_worker_info));
 
   SetFetchHandlerExistence(fetch_hander_existence);
+
+  if (reporting_observer_receiver) {
+    ReportingContext::From(this)->Bind(std::move(reporting_observer_receiver));
+  }
 
   global_scope_initialized_ = true;
   if (!pause_evaluation_)
@@ -1523,9 +1626,7 @@ void ServiceWorkerGlobalScope::DispatchInstallEvent(
   event_queue_->EnqueueNormal(
       WTF::Bind(&ServiceWorkerGlobalScope::StartInstallEvent,
                 WrapWeakPersistent(this), std::move(callback)),
-      CreateAbortCallback(&install_event_callbacks_,
-                          false /* has_fetch_handler */),
-      base::nullopt);
+      CreateAbortCallback(&install_event_callbacks_), base::nullopt);
 }
 
 void ServiceWorkerGlobalScope::StartInstallEvent(
@@ -1539,8 +1640,8 @@ void ServiceWorkerGlobalScope::StartInstallEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kInstall, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kInstall, event_id);
   Event* event =
       InstallEvent::Create(event_type_names::kInstall,
                            ExtendableEventInit::Create(), event_id, observer);
@@ -1568,8 +1669,8 @@ void ServiceWorkerGlobalScope::StartActivateEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kActivate, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kActivate, event_id);
   Event* event = ExtendableEvent::Create(
       event_type_names::kActivate, ExtendableEventInit::Create(), observer);
   DispatchExtendableEvent(event, observer);
@@ -1600,7 +1701,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchAbortEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchAbort, event_id);
   ScriptState* script_state = ScriptController()->GetScriptState();
 
@@ -1643,7 +1744,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchClickEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchClick, event_id);
 
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
@@ -1681,7 +1782,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchFailEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchFail, event_id);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -1724,7 +1825,7 @@ void ServiceWorkerGlobalScope::StartBackgroundFetchSuccessEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kBackgroundFetchSuccess, event_id);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -1775,14 +1876,24 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
         response_callback,
     DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
-  // We can use kNone as a |requestor_coep| for the main resource because it
+
+  // We can use nullptr as a |corp_checker| for the main resource because it
   // must be the same origin.
-  event_queue_->EnqueueNormal(
-      WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
-                WrapWeakPersistent(this), std::move(params),
-                network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
-                std::move(response_callback), std::move(callback)),
-      CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  if (params->is_offline_capability_check) {
+    event_queue_->EnqueueOffline(
+        WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
+                  WrapWeakPersistent(this), std::move(params),
+                  /*corp_checker=*/nullptr, std::move(response_callback),
+                  std::move(callback)),
+        CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  } else {
+    event_queue_->EnqueueNormal(
+        WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
+                  WrapWeakPersistent(this), std::move(params),
+                  /*corp_checker=*/nullptr, std::move(response_callback),
+                  std::move(callback)),
+        CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  }
 }
 
 void ServiceWorkerGlobalScope::DispatchNotificationClickEvent(
@@ -1815,7 +1926,7 @@ void ServiceWorkerGlobalScope::StartNotificationClickEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kNotificationClick, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
   if (notification_data->actions.has_value() && 0 <= action_index &&
@@ -1855,7 +1966,7 @@ void ServiceWorkerGlobalScope::StartNotificationCloseEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kNotificationClose, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
   event_init->setAction(WTF::String());  // initialize as null.
@@ -1891,8 +2002,8 @@ void ServiceWorkerGlobalScope::StartPushEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kPush, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kPush, event_id);
   Event* event = PushEvent::Create(event_type_names::kPush,
                                    PushMessageData::Create(payload), observer);
   DispatchExtendableEvent(event, observer);
@@ -1925,7 +2036,7 @@ void ServiceWorkerGlobalScope::StartPushSubscriptionChangeEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPushSubscriptionChange, event_id);
   Event* event = PushSubscriptionChangeEvent::Create(
       event_type_names::kPushsubscriptionchange, nullptr /* new_subscription */,
@@ -1959,8 +2070,8 @@ void ServiceWorkerGlobalScope::StartSyncEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kSync, event_id);
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
+      this, WaitUntilObserver::kSync, event_id);
   Event* event =
       SyncEvent::Create(event_type_names::kSync, tag, last_chance, observer);
   DispatchExtendableEvent(event, observer);
@@ -1989,7 +2100,7 @@ void ServiceWorkerGlobalScope::StartPeriodicSyncEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPeriodicSync, event_id);
   Event* event =
       PeriodicSyncEvent::Create(event_type_names::kPeriodicsync, tag, observer);
@@ -2025,7 +2136,7 @@ void ServiceWorkerGlobalScope::StartAbortPaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kAbortPayment, event_id);
   AbortPaymentRespondWithObserver* respond_with_observer =
       MakeGarbageCollected<AbortPaymentRespondWithObserver>(
@@ -2070,7 +2181,7 @@ void ServiceWorkerGlobalScope::StartCanMakePaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kCanMakePayment, event_id);
   CanMakePaymentRespondWithObserver* respond_with_observer =
       MakeGarbageCollected<CanMakePaymentRespondWithObserver>(
@@ -2117,7 +2228,7 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+  auto* wait_until_observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kPaymentRequest, event_id);
   PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(this, event_id,
@@ -2143,7 +2254,8 @@ void ServiceWorkerGlobalScope::StartPaymentRequestEvent(
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           ScriptController()->GetScriptState(), std::move(event_data)),
       std::move(payment_handler_host), respond_with_observer,
-      wait_until_observer);
+      wait_until_observer,
+      ExecutionContext::From(ScriptController()->GetScriptState()));
 
   DispatchExtendableEventWithRespondWith(event, wait_until_observer,
                                          respond_with_observer);
@@ -2171,7 +2283,7 @@ void ServiceWorkerGlobalScope::StartCookieChangeEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kCookieChange, event_id);
 
   HeapVector<Member<CookieListItem>> changed;
@@ -2210,7 +2322,7 @@ void ServiceWorkerGlobalScope::StartContentDeleteEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  WaitUntilObserver* observer = WaitUntilObserver::Create(
+  auto* observer = MakeGarbageCollected<WaitUntilObserver>(
       this, WaitUntilObserver::kContentDelete, event_id);
 
   auto* init = ContentIndexEventInit::Create();
@@ -2227,16 +2339,16 @@ void ServiceWorkerGlobalScope::Ping(PingCallback callback) {
   std::move(callback).Run();
 }
 
-void ServiceWorkerGlobalScope::SetIdleTimerDelayToZero() {
+void ServiceWorkerGlobalScope::SetIdleDelay(base::TimeDelta delay) {
   DCHECK(IsContextThread());
   DCHECK(event_queue_);
-  event_queue_->SetIdleTimerDelayToZero();
+  event_queue_->SetIdleDelay(delay);
 }
 
 void ServiceWorkerGlobalScope::AddMessageToConsole(
     mojom::blink::ConsoleMessageLevel level,
     const String& message) {
-  AddConsoleMessage(ConsoleMessage::Create(
+  AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, level, message,
       SourceLocation::Capture(/* url= */ "", /* line_number= */ 0,
                               /* column_number= */ 0)));

@@ -21,13 +21,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -63,6 +64,7 @@ public class DirectActionsInActivityTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
+    @DisabledTest(message = "crbug.com/1034712")
     public void testDirectActionsDisabled() throws Exception {
         // disableDirectActions() makes AppHooks.createDirectActionCoordinator return null. This
         // should mean that direct actions are not available.

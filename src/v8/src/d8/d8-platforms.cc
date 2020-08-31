@@ -43,29 +43,22 @@ class PredictablePlatform : public Platform {
   int NumberOfWorkerThreads() override { return 0; }
 
   void CallOnWorkerThread(std::unique_ptr<Task> task) override {
-    // It's not defined when background tasks are being executed, so we can just
-    // execute them right away.
-    task->Run();
+    // We post worker tasks on the foreground task runner of the
+    // {kProcessGlobalPredictablePlatformWorkerTaskQueue} isolate. The task
+    // queue of the {kProcessGlobalPredictablePlatformWorkerTaskQueue} isolate
+    // is then executed on the main thread to achieve predictable behavior.
+    //
+    // In this context here it is okay to call {GetForegroundTaskRunner} from a
+    // background thread. The reason is that code is executed sequentially with
+    // the PredictablePlatform, and that the {DefaultPlatform} does not access
+    // the isolate but only uses it as the key in a HashMap.
+    GetForegroundTaskRunner(kProcessGlobalPredictablePlatformWorkerTaskQueue)
+        ->PostTask(std::move(task));
   }
 
   void CallDelayedOnWorkerThread(std::unique_ptr<Task> task,
                                  double delay_in_seconds) override {
     // Never run delayed tasks.
-  }
-
-  void CallOnForegroundThread(v8::Isolate* isolate, Task* task) override {
-    // This is a deprecated function and should not be called anymore.
-    UNREACHABLE();
-  }
-
-  void CallDelayedOnForegroundThread(v8::Isolate* isolate, Task* task,
-                                     double delay_in_seconds) override {
-    // This is a deprecated function and should not be called anymore.
-    UNREACHABLE();
-  }
-
-  void CallIdleOnForegroundThread(Isolate* isolate, IdleTask* task) override {
-    UNREACHABLE();
   }
 
   bool IdleTasksEnabled(Isolate* isolate) override { return false; }
@@ -162,22 +155,6 @@ class DelayedTasksPlatform : public Platform {
                                          delay_in_seconds);
   }
 
-  void CallOnForegroundThread(v8::Isolate* isolate, Task* task) override {
-    // This is a deprecated function and should not be called anymore.
-    UNREACHABLE();
-  }
-
-  void CallDelayedOnForegroundThread(v8::Isolate* isolate, Task* task,
-                                     double delay_in_seconds) override {
-    // This is a deprecated function and should not be called anymore.
-    UNREACHABLE();
-  }
-
-  void CallIdleOnForegroundThread(Isolate* isolate, IdleTask* task) override {
-    // This is a deprecated function and should not be called anymore.
-    UNREACHABLE();
-  }
-
   bool IdleTasksEnabled(Isolate* isolate) override {
     return platform_->IdleTasksEnabled(isolate);
   }
@@ -206,6 +183,11 @@ class DelayedTasksPlatform : public Platform {
       task_runner_->PostTask(platform_->MakeDelayedTask(std::move(task)));
     }
 
+    void PostNonNestableTask(std::unique_ptr<Task> task) final {
+      task_runner_->PostNonNestableTask(
+          platform_->MakeDelayedTask(std::move(task)));
+    }
+
     void PostDelayedTask(std::unique_ptr<Task> task,
                          double delay_in_seconds) final {
       task_runner_->PostDelayedTask(platform_->MakeDelayedTask(std::move(task)),
@@ -218,6 +200,10 @@ class DelayedTasksPlatform : public Platform {
     }
 
     bool IdleTasksEnabled() final { return task_runner_->IdleTasksEnabled(); }
+
+    bool NonNestableTasksEnabled() const final {
+      return task_runner_->NonNestableTasksEnabled();
+    }
 
    private:
     friend class DelayedTaskRunnerDeleter;

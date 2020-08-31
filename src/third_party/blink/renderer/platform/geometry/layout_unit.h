@@ -723,6 +723,16 @@ inline float& operator/=(float& a, const LayoutUnit& b) {
 
 inline int SnapSizeToPixel(LayoutUnit size, LayoutUnit location) {
   LayoutUnit fraction = location.Fraction();
+  int result = (fraction + size).Round() - fraction.Round();
+  if (UNLIKELY(result == 0 &&
+               std::abs(size.ToFloat()) > LayoutUnit::Epsilon() * 4)) {
+    return size > 0 ? 1 : -1;
+  }
+  return result;
+}
+
+inline int SnapSizeToPixelAllowingZero(LayoutUnit size, LayoutUnit location) {
+  LayoutUnit fraction = location.Fraction();
   return (fraction + size).Round() - fraction.Round();
 }
 

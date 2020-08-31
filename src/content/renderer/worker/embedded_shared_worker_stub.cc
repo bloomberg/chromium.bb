@@ -13,11 +13,15 @@
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
 #include "url/origin.h"
@@ -26,7 +30,9 @@ namespace content {
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::SharedWorkerInfoPtr info,
+    const url::Origin& constructor_origin,
     const std::string& user_agent,
+    const blink::UserAgentMetadata& ua_metadata,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     const blink::mojom::RendererPreferences& renderer_preferences,
@@ -90,7 +96,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   if (service_worker_provider_info) {
     service_worker_provider_context_ =
         base::MakeRefCounted<ServiceWorkerProviderContext>(
-            blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+            blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker,
             std::move(service_worker_provider_info->client_receiver),
             std::move(service_worker_provider_info->host_remote),
             std::move(controller_info), subresource_loader_factory_bundle_);
@@ -98,10 +104,14 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
   impl_ = blink::WebSharedWorker::Create(this);
   impl_->StartWorkerContext(
-      url_, blink::WebString::FromUTF8(info->name),
-      blink::WebString::FromUTF8(user_agent),
+      url_, info->options->type, info->options->credentials,
+      blink::WebString::FromUTF8(info->options->name),
+      blink::WebSecurityOrigin(constructor_origin),
+      blink::WebString::FromUTF8(user_agent), ua_metadata,
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
+      FetchClientSettingsObjectFromMojomToWeb(
+          info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
       browser_interface_broker.PassPipe(), pause_on_start);
 
@@ -126,8 +136,9 @@ void EmbeddedSharedWorkerStub::WorkerReadyForInspection(
   host_->OnReadyForInspection(std::move(remote), std::move(receiver));
 }
 
-void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
-  host_->OnScriptLoadFailed();
+void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed(
+    const std::string& error_message) {
+  host_->OnScriptLoadFailed(error_message);
   pending_channels_.clear();
 }
 
@@ -173,8 +184,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   // worker, we need to check the all documents bounded by the shared worker.
   // (crbug.com/723553)
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
-  worker_fetch_context->set_site_for_cookies(url_);
-  worker_fetch_context->set_origin_url(url_.GetOrigin());
+  worker_fetch_context->set_site_for_cookies(
+      net::SiteForCookies::FromUrl(url_));
 
   DCHECK(response_override_);
   worker_fetch_context->SetResponseOverrideForMainScript(
@@ -191,7 +202,7 @@ void EmbeddedSharedWorkerStub::ConnectToChannel(
 }
 
 void EmbeddedSharedWorkerStub::Connect(int connection_request_id,
-                                       mojo::ScopedMessagePipeHandle port) {
+                                       blink::MessagePortDescriptor port) {
   blink::MessagePortChannel channel(std::move(port));
   if (running_) {
     ConnectToChannel(connection_request_id, std::move(channel));

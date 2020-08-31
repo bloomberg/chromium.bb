@@ -29,8 +29,9 @@ class HeadlessClipboard : public ui::Clipboard {
                          ui::ClipboardBuffer buffer) const override;
   void Clear(ui::ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ui::ClipboardBuffer buffer,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const override;
+                          std::vector<base::string16>* types) const override;
+  std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
+      ui::ClipboardBuffer buffer) const override;
   void ReadText(ui::ClipboardBuffer buffer,
                 base::string16* result) const override;
   void ReadAsciiText(ui::ClipboardBuffer buffer,
@@ -41,7 +42,8 @@ class HeadlessClipboard : public ui::Clipboard {
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
   void ReadRTF(ui::ClipboardBuffer buffer, std::string* result) const override;
-  SkBitmap ReadImage(ui::ClipboardBuffer buffer) const override;
+  void ReadImage(ui::ClipboardBuffer buffer,
+                 ReadImageCallback callback) const override;
   void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const base::string16& type,
                       base::string16* result) const override;

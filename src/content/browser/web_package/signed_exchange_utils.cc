@@ -28,6 +28,8 @@ namespace content {
 namespace signed_exchange_utils {
 
 namespace {
+constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
+constexpr char kNoSniffHeaderValue[] = "nosniff";
 base::Optional<base::Time> g_verification_time_for_testing;
 }  // namespace
 
@@ -46,17 +48,13 @@ bool IsSignedExchangeHandlingEnabled(BrowserContext* context) {
   if (!GetContentClient()->browser()->AllowSignedExchange(context))
     return false;
 
-  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
+  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
 }
 
 bool IsSignedExchangeReportingForDistributorsEnabled() {
   return base::FeatureList::IsEnabled(network::features::kReporting) &&
-         (base::FeatureList::IsEnabled(
-              features::kSignedExchangeReportingForDistributors) ||
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures));
+         base::FeatureList::IsEnabled(
+             features::kSignedExchangeReportingForDistributors);
 }
 
 bool ShouldHandleAsSignedHTTPExchange(
@@ -78,6 +76,13 @@ bool ShouldHandleAsSignedHTTPExchange(
     return false;
   }
   return true;
+}
+
+bool HasNoSniffHeader(const network::mojom::URLResponseHead& response) {
+  std::string content_type_options;
+  response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
+                                    &content_type_options);
+  return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
 }
 
 base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(

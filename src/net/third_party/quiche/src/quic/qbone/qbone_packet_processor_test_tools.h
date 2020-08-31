@@ -7,6 +7,7 @@
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -14,23 +15,43 @@ class MockPacketProcessorOutput : public QbonePacketProcessor::OutputInterface {
  public:
   MockPacketProcessorOutput() {}
 
-  MOCK_METHOD1(SendPacketToClient, void(QuicStringPiece));
-  MOCK_METHOD1(SendPacketToNetwork, void(QuicStringPiece));
+  MOCK_METHOD(void,
+              SendPacketToClient,
+              (quiche::QuicheStringPiece),
+              (override));
+  MOCK_METHOD(void,
+              SendPacketToNetwork,
+              (quiche::QuicheStringPiece),
+              (override));
 };
 
 class MockPacketProcessorStats : public QbonePacketProcessor::StatsInterface {
  public:
   MockPacketProcessorStats() {}
 
-  MOCK_METHOD1(OnPacketForwarded, void(QbonePacketProcessor::Direction));
-  MOCK_METHOD1(OnPacketDroppedSilently, void(QbonePacketProcessor::Direction));
-  MOCK_METHOD1(OnPacketDroppedWithIcmp, void(QbonePacketProcessor::Direction));
-  MOCK_METHOD1(OnPacketDroppedWithTcpReset,
-               void(QbonePacketProcessor::Direction));
-  MOCK_METHOD1(OnPacketDeferred, void(QbonePacketProcessor::Direction));
+  MOCK_METHOD(void,
+              OnPacketForwarded,
+              (QbonePacketProcessor::Direction),
+              (override));
+  MOCK_METHOD(void,
+              OnPacketDroppedSilently,
+              (QbonePacketProcessor::Direction),
+              (override));
+  MOCK_METHOD(void,
+              OnPacketDroppedWithIcmp,
+              (QbonePacketProcessor::Direction),
+              (override));
+  MOCK_METHOD(void,
+              OnPacketDroppedWithTcpReset,
+              (QbonePacketProcessor::Direction),
+              (override));
+  MOCK_METHOD(void,
+              OnPacketDeferred,
+              (QbonePacketProcessor::Direction),
+              (override));
 };
 
-string PrependIPv6HeaderForTest(const string& body, int hops);
+std::string PrependIPv6HeaderForTest(const std::string& body, int hops);
 
 }  // namespace quic
 

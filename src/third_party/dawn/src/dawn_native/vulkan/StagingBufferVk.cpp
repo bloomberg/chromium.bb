@@ -36,7 +36,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.pQueueFamilyIndices = 0;
 
         DAWN_TRY(CheckVkSuccess(
-            mDevice->fn.CreateBuffer(mDevice->GetVkDevice(), &createInfo, nullptr, &mBuffer),
+            mDevice->fn.CreateBuffer(mDevice->GetVkDevice(), &createInfo, nullptr, &*mBuffer),
             "vkCreateBuffer"));
 
         VkMemoryRequirements requirements;
@@ -52,7 +52,7 @@ namespace dawn_native { namespace vulkan {
 
         mMappedPointer = mAllocation.GetMappedPointer();
         if (mMappedPointer == nullptr) {
-            return DAWN_DEVICE_LOST_ERROR("Unable to map staging buffer.");
+            return DAWN_INTERNAL_ERROR("Unable to map staging buffer.");
         }
 
         return {};

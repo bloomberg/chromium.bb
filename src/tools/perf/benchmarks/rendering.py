@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import sys
 from core import perf_benchmark
+from core import platforms as core_platforms
 
 import page_sets
 from page_sets.system_health import platforms
@@ -13,6 +14,7 @@ from telemetry.web_perf import timeline_based_measurement
 
 
 RENDERING_BENCHMARK_UMA = [
+    'Compositing.Display.DrawToSwapUs',
     'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
@@ -24,15 +26,23 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.Checkerboarding.TouchScroll',
     'Graphics.Smoothness.Checkerboarding.Video',
     'Graphics.Smoothness.Checkerboarding.WheelScroll',
-    'Graphics.Smoothness.Throughput.MainThread.MainThreadAnimation',
-    'Graphics.Smoothness.Throughput.MainThread.PinchZoom',
-    'Graphics.Smoothness.Throughput.MainThread.RAF',
-    'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
-    'Graphics.Smoothness.Throughput.MainThread.WheelScroll',
-    'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
-    'Graphics.Smoothness.Throughput.CompositorThread.PinchZoom',
-    'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll',
-    'Graphics.Smoothness.Throughput.CompositorThread.WheelScroll',
+    'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
+    'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
+    'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
+    'Graphics.Smoothness.PercentDroppedFrames.MainThread.MainThreadAnimation',
+    'Graphics.Smoothness.PercentDroppedFrames.MainThread.RAF',
+    'Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll',
+    'Graphics.Smoothness.PercentDroppedFrames.MainThread.WheelScroll',
+    ('Graphics.Smoothness.PercentDroppedFrames'
+     '.CompositorThread.CompositorAnimation'),
+    'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.PinchZoom',
+    'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll',
+    'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.WheelScroll',
+    'Graphics.Smoothness.PercentDroppedFrames.MainThread.Universal',
+    'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.Universal',
+    'Graphics.Smoothness.PercentDroppedFrames.SlowerThread.Universal',
+    'Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.TouchScroll',
+    'Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.WheelScroll',
     'Memory.GPU.PeakMemoryUsage.Scroll',
     'Memory.GPU.PeakMemoryUsage.PageLoad',
 ]
@@ -67,7 +77,11 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingDesktop(_RenderingBenchmark):
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
+  SUPPORTED_PLATFORM_TAGS = [core_platforms.DESKTOP]
   PLATFORM_NAME = platforms.DESKTOP
 
   @classmethod
@@ -90,7 +104,11 @@ class RenderingDesktop(_RenderingBenchmark):
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingMobile(_RenderingBenchmark):
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
+  SUPPORTED_PLATFORM_TAGS = [core_platforms.MOBILE]
   PLATFORM_NAME = platforms.MOBILE
 
   @classmethod

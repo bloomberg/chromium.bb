@@ -22,7 +22,6 @@ public:
     virtual GrBackendApi backend() override { return GrBackendApi::kMock; }
 
     void testAbandon() override {}
-    void submit() override {}
     void finish() override {}
 
     sk_sp<GrContext> makeGrContext(const GrContextOptions& options) override {
@@ -31,9 +30,9 @@ public:
 
 protected:
     void teardown() override {}
+    void onPlatformMakeNotCurrent() const override {}
     void onPlatformMakeCurrent() const override {}
     std::function<void()> onPlatformGetAutoContextRestore() const override { return nullptr; }
-    void onPlatformSwapBuffers() const override {}
 
 private:
     typedef sk_gpu_test::TestContext INHERITED;

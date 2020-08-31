@@ -38,6 +38,7 @@ ios_appex_bundle("content_widget_extension") {
 
   entitlements_target = ":entitlements"
   info_plist_target = ":tweak_info_plist"
+  xcode_product_bundle_id = "$chromium_bundle_id.ContentTodayExtension"
 }
 
 source_set("content_widget") {
@@ -52,12 +53,12 @@ source_set("content_widget") {
 
   deps = [
     "//base",
-    "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:command",
-    "//ios/chrome/common/favicon",
     "//ios/chrome/common/ntp_tile",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/elements",
+    "//ios/chrome/common/ui/favicon",
+    "//ios/chrome/common/ui/util",
   ]
 
   libs = [
@@ -73,9 +74,7 @@ source_set("content_widget") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "content_widget_view_controller_unittest.mm",
-  ]
+  sources = [ "content_widget_view_controller_unittest.mm" ]
   deps = [
     ":content_widget",
     "//testing/gtest",
@@ -89,9 +88,7 @@ repack_locales("packed_resources") {
 
   source_patterns = [ "$root_gen_dir/ios/content_widget_extension/ios_content_widget_extension_${branding_path_component}_strings_" ]
 
-  deps = [
-    "//ios/chrome/content_widget_extension/strings:ios_content_widget_extension_${branding_path_component}_strings",
-  ]
+  deps = [ "//ios/chrome/content_widget_extension/strings:ios_content_widget_extension_${branding_path_component}_strings" ]
 }
 
 generate_localizable_strings("system_strings") {

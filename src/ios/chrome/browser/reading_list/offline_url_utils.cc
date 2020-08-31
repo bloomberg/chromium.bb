@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,6 +12,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #include "net/base/url_util.h"
 
 namespace {
@@ -84,23 +85,4 @@ bool IsOfflineURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
 }
 
-bool IsOfflineURLValid(const GURL& url, ReadingListModel* model) {
-  if (!IsOfflineURL(url)) {
-    return false;
-  }
-  GURL entry_url = EntryURLForOfflineURL(url);
-  if (!entry_url.is_valid() || !model || !model->loaded()) {
-    return false;
-  }
-  const ReadingListEntry* entry = model->GetEntryByURL(entry_url);
-  if (!entry || entry->DistilledState() != ReadingListEntry::PROCESSED) {
-    return false;
-  }
-  // It is possible (unlikely) for a user to type directly a URL that passes all
-  // the tests above but still is not exactly the one returned by
-  // |OfflineURLForPath|. Make a final test to check it.
-  return url == reading_list::OfflineURLForPath(entry->DistilledPath(),
-                                                entry->URL(),
-                                                entry->DistilledURL());
-}
 }

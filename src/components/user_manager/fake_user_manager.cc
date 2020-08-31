@@ -9,21 +9,27 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
-#include "base/task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
 namespace {
 
-class FakeTaskRunner : public base::TaskRunner {
+class FakeTaskRunner : public base::SingleThreadTaskRunner {
  public:
+  // base::SingleThreadTaskRunner:
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     std::move(task).Run();
     return true;
+  }
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    return PostDelayedTask(from_here, std::move(task), delay);
   }
   bool RunsTasksInCurrentSequence() const override { return true; }
 
@@ -61,6 +67,8 @@ const User* FakeUserManager::AddUserWithAffiliation(const AccountId& account_id,
                                                     bool is_affiliated) {
   User* user = User::CreateRegularUser(account_id, USER_TYPE_REGULAR);
   user->SetAffiliation(is_affiliated);
+  // TODO: Merge with ProfileHelper::GetUserIdHashByUserIdForTesting.
+  user->set_username_hash(account_id.GetUserEmail() + "-hash");
   users_.push_back(user);
   return user;
 }
@@ -159,7 +167,15 @@ User* FakeUserManager::GetActiveUser() {
   return GetActiveUserInternal();
 }
 
-void FakeUserManager::SwitchActiveUser(const AccountId& account_id) {}
+void FakeUserManager::SwitchActiveUser(const AccountId& account_id) {
+  for (UserList::const_iterator it = logged_in_users_.begin();
+       it != logged_in_users_.end(); ++it) {
+    if ((*it)->GetAccountId() == account_id) {
+      active_user_ = *it;
+      break;
+    }
+  }
+}
 
 void FakeUserManager::SaveUserDisplayName(const AccountId& account_id,
                                           const base::string16& display_name) {

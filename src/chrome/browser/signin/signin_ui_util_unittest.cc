@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
@@ -76,8 +77,7 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
     ASSERT_TRUE(browser_);
     // Simulate what |BrowserView| does for a regular Chrome sign-in flow.
     browser_->signin_view_controller()->ShowSignin(
-        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser_,
-        access_point);
+        profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN, access_point);
   }
 
  private:
@@ -90,9 +90,7 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
 class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
-  DiceSigninUiUtilTest()
-      : BrowserWithTestWindowTest(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  DiceSigninUiUtilTest() : BrowserWithTestWindowTest() {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {
@@ -527,26 +525,45 @@ TEST_F(
       *profile_manager()->profile_attributes_storage(), profile()));
 }
 
-TEST_F(DiceSigninUiUtilTest,
-       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForNewWindow) {
-  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+// This test does not use the DiceSigninUiUtilTest test fixture, because it
+// needs a mock time environment, and BrowserWithTestWindowTest may be flaky
+// when used with mock time (see https://crbug.com/1014790).
+TEST(ShouldShowAnimatedIdentityOnOpeningWindow, ReturnsFalseForNewWindow) {
+  // Setup a testing profile manager with mock time.
+  content::BrowserTaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal(),
+                                        &local_state);
+  ASSERT_TRUE(profile_manager.SetUp());
+  std::string name("testing_profile");
+  TestingProfile* profile = profile_manager.CreateTestingProfile(
+      name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+      base::UTF8ToUTF16(name), 0, std::string(),
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactories());
+
+  // Setup accounts.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
-  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       kSecondaryGaiaID, kSecondaryEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
-      *profile_manager()->profile_attributes_storage(), profile()));
+      *profile_manager.profile_attributes_storage(), profile));
 
   // Animation is shown once.
-  RecordAnimatedIdentityTriggered(profile());
+  RecordAnimatedIdentityTriggered(profile);
 
   // Wait a few seconds.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(6));
+  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(6));
 
   // Animation is not shown again in a new window.
   EXPECT_FALSE(ShouldShowAnimatedIdentityOnOpeningWindow(
-      *profile_manager()->profile_attributes_storage(), profile()));
+      *profile_manager.profile_attributes_storage(), profile));
 }
 
 }  // namespace signin_ui_util

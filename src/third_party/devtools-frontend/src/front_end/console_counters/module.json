@@ -8,13 +8,16 @@
     }
   ],
   "dependencies": [
+    "browser_sdk",
     "common",
-    "ui",
-    "sdk"
+    "host",
+    "sdk",
+    "ui"
   ],
   "scripts": [],
   "modules": [
     "console_counters.js",
+    "console_counters-legacy.js",
     "WarningErrorCounter.js"
   ],
   "resources": [

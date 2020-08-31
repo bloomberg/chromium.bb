@@ -7,8 +7,19 @@
  * the settings page.
  */
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../i18n_setup.js';
+import '../settings_shared_css.m.js';
+import './passwords_shared_css.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 Polymer({
   is: 'settings-credit-card-list-entry',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     I18nBehavior,
@@ -17,7 +28,7 @@ Polymer({
   properties: {
     /**
      * A saved credit card.
-     * @type {!PaymentsManager.CreditCardEntry}
+     * @type {!chrome.autofillPrivate.CreditCardEntry}
      */
     creditCard: Object,
   },
@@ -26,7 +37,7 @@ Polymer({
    * Opens the credit card action menu.
    * @private
    */
-  onDotsMenuClick_: function() {
+  onDotsMenuClick_() {
     this.fire('dots-card-menu-click', {
       creditCard: this.creditCard,
       anchorElement: this.$$('#creditCardMenu'),
@@ -34,7 +45,7 @@ Polymer({
   },
 
   /** @private */
-  onRemoteEditClick_: function() {
+  onRemoteEditClick_() {
     this.fire('remote-card-menu-click');
   },
 
@@ -43,7 +54,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDots_: function() {
+  showDots_() {
     return !!(
         this.creditCard.metadata.isLocal || this.creditCard.metadata.isCached);
   },

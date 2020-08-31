@@ -23,6 +23,12 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 // instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
+// Under this feature, best effort capacity is never increased.
+// While it's unlikely we'd ship this as-is, this experiment allows us to
+// determine whether blocked worker replacement logic on best-effort tasks has
+// any impact on guardian metrics.
+extern const BASE_EXPORT Feature kFixedMaxBestEffortTasks;
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define HAS_NATIVE_THREAD_POOL() 1
 #else
@@ -39,12 +45,6 @@ extern const BASE_EXPORT Feature kUseNativeThreadPool;
 // Whether threads in the ThreadPool should be reclaimed after being idle for 5
 // minutes, instead of 30 seconds.
 extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
-
-// Under this feature, the current default of inheriting priority when posting
-// from the ThreadPool is disabled.
-// Details @
-// https://docs.google.com/document/d/13PIBPuSPJbrgHAgyRbY22EWAfH2narnxpa_CgBmZbSY
-extern const BASE_EXPORT Feature kNoPriorityInheritanceFromThreadPool;
 
 }  // namespace base
 

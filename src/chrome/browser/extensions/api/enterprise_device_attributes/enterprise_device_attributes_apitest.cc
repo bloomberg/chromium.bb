@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -40,6 +41,7 @@ constexpr char kDeviceId[] = "device_id";
 constexpr char kSerialNumber[] = "serial_number";
 constexpr char kAssetId[] = "asset_id";
 constexpr char kAnnotatedLocation[] = "annotated_location";
+constexpr char kHostname[] = "hostname";
 constexpr char kUpdateManifestPath[] =
     "/extensions/api_test/enterprise_device_attributes/update_manifest.xml";
 
@@ -68,7 +70,8 @@ std::string PrintParam(testing::TestParamInfo<Params> param_info) {
 base::Value BuildCustomArg(const std::string& expected_directory_device_id,
                            const std::string& expected_serial_number,
                            const std::string& expected_asset_id,
-                           const std::string& expected_annotated_location) {
+                           const std::string& expected_annotated_location,
+                           const std::string& expected_hostname) {
   base::Value custom_arg(base::Value::Type::DICTIONARY);
   custom_arg.SetKey("expectedDirectoryDeviceId",
                     base::Value(expected_directory_device_id));
@@ -77,6 +80,7 @@ base::Value BuildCustomArg(const std::string& expected_directory_device_id,
   custom_arg.SetKey("expectedAssetId", base::Value(expected_asset_id));
   custom_arg.SetKey("expectedAnnotatedLocation",
                     base::Value(expected_annotated_location));
+  custom_arg.SetKey("expectedHostname", base::Value(expected_hostname));
   return custom_arg;
 }
 
@@ -134,6 +138,9 @@ class EnterpriseDeviceAttributesTest
     device_policy->policy_data().set_directory_api_id(kDeviceId);
     device_policy->policy_data().set_annotated_asset_id(kAssetId);
     device_policy->policy_data().set_annotated_location(kAnnotatedLocation);
+    enterprise_management::NetworkHostnameProto* proto =
+        device_policy->payload().mutable_network_hostname();
+    proto->set_device_hostname_template(kHostname);
     device_policy->Build();
 
     chromeos::FakeSessionManagerClient::Get()->set_device_policy(
@@ -226,13 +233,15 @@ IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
   std::string expected_asset_id = GetParam().affiliated ? kAssetId : "";
   std::string expected_annotated_location =
       GetParam().affiliated ? kAnnotatedLocation : "";
+  std::string expected_hostname = GetParam().affiliated ? kHostname : "";
 
   // Pass the expected value (device_id) to test.
   ASSERT_TRUE(TestExtension(
       CreateBrowser(profile()),
       base::StringPrintf("chrome-extension://%s/basic.html", kTestExtensionID),
       BuildCustomArg(expected_directory_device_id, expected_serial_number,
-                     expected_asset_id, expected_annotated_location)))
+                     expected_asset_id, expected_annotated_location,
+                     expected_hostname)))
       << message_;
 }
 
@@ -245,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(
     EnterpriseDeviceAttributesIsRestrictedToPolicyExtension) {
   ASSERT_TRUE(RunExtensionSubtest("enterprise_device_attributes",
                                   "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings));
+                                  kFlagIgnoreManifestWarnings, kFlagNone));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_device_attributes");

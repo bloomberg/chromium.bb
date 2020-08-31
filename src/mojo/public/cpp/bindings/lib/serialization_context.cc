@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -59,6 +59,8 @@ void SerializationContext::AddAssociatedInterfaceInfo(
 }
 
 void SerializationContext::TakeHandlesFromMessage(Message* message) {
+  if (!message->is_serialized())
+    return;
   receiver_connection_group_ = message->receiver_connection_group();
   handles_.swap(*message->mutable_handles());
   associated_endpoint_handles_.swap(

@@ -17,6 +17,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/test_context_provider.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace viz {
 
@@ -69,7 +70,7 @@ class FakeOutputSurface : public OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
@@ -77,16 +78,18 @@ class FakeOutputSurface : public OutputSurface {
   void ApplyExternalStencil() override {}
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
-  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   gfx::OverlayTransform GetDisplayTransform() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
+  gpu::MemoryTracker* GetMemoryTracker() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;
@@ -111,6 +114,10 @@ class FakeOutputSurface : public OutputSurface {
     return last_set_draw_rectangle_;
   }
 
+  void set_support_display_transform_hint(bool support) {
+    support_display_transform_hint_ = support;
+  }
+
  protected:
   explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);
   explicit FakeOutputSurface(
@@ -126,6 +133,9 @@ class FakeOutputSurface : public OutputSurface {
   unsigned overlay_texture_id_ = 0;
   gfx::ColorSpace last_reshape_color_space_;
   gfx::Rect last_set_draw_rectangle_;
+
+  bool support_display_transform_hint_ = false;
+  gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
  private:
   void SwapBuffersAck();

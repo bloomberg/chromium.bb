@@ -36,6 +36,7 @@ class BrowserContextDependencyManager;
 class SimpleDependencyManager;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
+class TestingPrefStore;
 
 namespace content {
 class MockResourceContext;
@@ -155,6 +156,9 @@ class TestingProfile : public Profile {
     // Build an incognito profile, owned by |original_profile|. Note: unless you
     // need to customize the Builder, or access TestingProfile member functions,
     // you can use original_profile->GetOffTheRecordProfile().
+    //
+    // TODO(https://crbug.com/1033903): Add BuildOffTheRecord to add possibility
+    // of creating non-primary OTRs.
     TestingProfile* BuildIncognito(TestingProfile* original_profile);
 
    private:
@@ -263,14 +267,10 @@ class TestingProfile : public Profile {
 
   sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
-  // Sets the Profile's NetworkContext.
-  void SetNetworkContext(
-      std::unique_ptr<network::mojom::NetworkContext> network_context);
-
-  // Called on the parent of an incognito |profile|. Usually called from the
-  // constructor of an incognito TestingProfile, but can also be used by tests
-  // to provide an OffTheRecordProfileImpl instance.
-  void SetOffTheRecordProfile(std::unique_ptr<Profile> profile);
+  // Called on the parent of an OffTheRecord |otr_profile|. Usually called from
+  // the constructor of an OffTheRecord TestingProfile, but can also be used by
+  // tests to provide an OffTheRecordProfileImpl instance.
+  void SetOffTheRecordProfile(std::unique_ptr<Profile> otr_profile);
 
   void SetSupervisedUserId(const std::string& id);
 
@@ -287,6 +287,7 @@ class TestingProfile : public Profile {
   // profile dynamically.
   bool IsOffTheRecord() final;
   bool IsOffTheRecord() const final;
+  const OTRProfileID& GetOTRProfileID() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -314,15 +315,24 @@ class TestingProfile : public Profile {
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
 
-  Profile* GetOffTheRecordProfile() override;
-  void DestroyOffTheRecordProfile() override;
-  bool HasOffTheRecordProfile() override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  Profile* GetOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  std::vector<Profile*> GetAllOffTheRecordProfiles() override;
+  void DestroyOffTheRecordProfile(Profile* otr_profile) override;
+  // TODO(https://crbug.com/1033903): Remove this function when all the use
+  // cases are migrated to above version. The parameter-less version destroys
+  // the primary off the record profile.
+  void DestroyOffTheRecordProfile();
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  bool HasOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
-  bool IsIndependentOffTheRecordProfile() override;
   bool AllowsBrowserWindows() const override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
@@ -362,9 +372,12 @@ class TestingProfile : public Profile {
   bool IsNewProfile() override;
   void SetExitType(ExitType exit_type) override {}
   ExitType GetLastSessionExitType() override;
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+      override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
@@ -439,9 +452,6 @@ class TestingProfile : public Profile {
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
       extensions_cookie_store_;
 
-  std::unique_ptr<network::mojom::NetworkContext> network_context_;
-  mojo::ReceiverSet<network::mojom::NetworkContext> network_context_receivers_;
-
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;
 
@@ -500,6 +510,10 @@ class TestingProfile : public Profile {
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<policy::PolicyService> policy_service_;
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  TestingPrefStore* supervised_user_pref_store_ = nullptr;
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

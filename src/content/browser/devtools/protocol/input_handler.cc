@@ -116,7 +116,7 @@ base::TimeTicks GetEventTimeTicks(const Maybe<double>& timestamp) {
              : base::TimeTicks::Now();
 }
 
-bool SetKeyboardEventText(blink::WebUChar* to, Maybe<std::string> from) {
+bool SetKeyboardEventText(base::char16* to, Maybe<std::string> from) {
   if (!from.isJust())
     return true;
 
@@ -135,21 +135,21 @@ bool GetMouseEventButton(const std::string& button,
   if (button.empty())
     return true;
 
-  if (button == Input::DispatchMouseEvent::ButtonEnum::None) {
+  if (button == Input::MouseButtonEnum::None) {
     *event_button = blink::WebMouseEvent::Button::kNoButton;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Left) {
+  } else if (button == Input::MouseButtonEnum::Left) {
     *event_button = blink::WebMouseEvent::Button::kLeft;
     *event_modifiers = blink::WebInputEvent::kLeftButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Middle) {
+  } else if (button == Input::MouseButtonEnum::Middle) {
     *event_button = blink::WebMouseEvent::Button::kMiddle;
     *event_modifiers = blink::WebInputEvent::kMiddleButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Right) {
+  } else if (button == Input::MouseButtonEnum::Right) {
     *event_button = blink::WebMouseEvent::Button::kRight;
     *event_modifiers = blink::WebInputEvent::kRightButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Back) {
+  } else if (button == Input::MouseButtonEnum::Back) {
     *event_button = blink::WebMouseEvent::Button::kBack;
     *event_modifiers = blink::WebInputEvent::kBackButtonDown;
-  } else if (button == Input::DispatchMouseEvent::ButtonEnum::Forward) {
+  } else if (button == Input::MouseButtonEnum::Forward) {
     *event_button = blink::WebMouseEvent::Button::kForward;
     *event_modifiers = blink::WebInputEvent::kForwardButtonDown;
   } else {
@@ -160,26 +160,26 @@ bool GetMouseEventButton(const std::string& button,
 
 blink::WebInputEvent::Type GetMouseEventType(const std::string& type) {
   if (type == Input::DispatchMouseEvent::TypeEnum::MousePressed)
-    return blink::WebInputEvent::kMouseDown;
+    return blink::WebInputEvent::Type::kMouseDown;
   if (type == Input::DispatchMouseEvent::TypeEnum::MouseReleased)
-    return blink::WebInputEvent::kMouseUp;
+    return blink::WebInputEvent::Type::kMouseUp;
   if (type == Input::DispatchMouseEvent::TypeEnum::MouseMoved)
-    return blink::WebInputEvent::kMouseMove;
+    return blink::WebInputEvent::Type::kMouseMove;
   if (type == Input::DispatchMouseEvent::TypeEnum::MouseWheel)
-    return blink::WebInputEvent::kMouseWheel;
-  return blink::WebInputEvent::kUndefined;
+    return blink::WebInputEvent::Type::kMouseWheel;
+  return blink::WebInputEvent::Type::kUndefined;
 }
 
 blink::WebInputEvent::Type GetTouchEventType(const std::string& type) {
   if (type == Input::DispatchTouchEvent::TypeEnum::TouchStart)
-    return blink::WebInputEvent::kTouchStart;
+    return blink::WebInputEvent::Type::kTouchStart;
   if (type == Input::DispatchTouchEvent::TypeEnum::TouchEnd)
-    return blink::WebInputEvent::kTouchEnd;
+    return blink::WebInputEvent::Type::kTouchEnd;
   if (type == Input::DispatchTouchEvent::TypeEnum::TouchMove)
-    return blink::WebInputEvent::kTouchMove;
+    return blink::WebInputEvent::Type::kTouchMove;
   if (type == Input::DispatchTouchEvent::TypeEnum::TouchCancel)
-    return blink::WebInputEvent::kTouchCancel;
-  return blink::WebInputEvent::kUndefined;
+    return blink::WebInputEvent::Type::kTouchCancel;
+  return blink::WebInputEvent::Type::kUndefined;
 }
 
 blink::WebPointerProperties::PointerType GetPointerType(
@@ -204,21 +204,6 @@ SyntheticPointerActionParams::PointerActionType GetTouchPointerActionType(
   return SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED;
 }
 
-SyntheticPointerActionParams::Button GetPointerActionParamsButton(
-    const std::string& button) {
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Left)
-    return SyntheticPointerActionParams::Button::LEFT;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Middle)
-    return SyntheticPointerActionParams::Button::MIDDLE;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Right)
-    return SyntheticPointerActionParams::Button::RIGHT;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Back)
-    return SyntheticPointerActionParams::Button::BACK;
-  if (button == Input::DispatchMouseEvent::ButtonEnum::Forward)
-    return SyntheticPointerActionParams::Button::FORWARD;
-  return SyntheticPointerActionParams::Button::NO_BUTTON;
-}
-
 bool GenerateTouchPoints(
     blink::WebTouchEvent* event,
     blink::WebInputEvent::Type type,
@@ -233,20 +218,23 @@ bool GenerateTouchPoints(
       return false;
     event->touches[event->touches_length] = it.second;
     event->touches[event->touches_length].state =
-        blink::WebTouchPoint::kStateStationary;
+        type == blink::WebInputEvent::Type::kTouchCancel
+            ? blink::WebTouchPoint::State::kStateCancelled
+            : blink::WebTouchPoint::State::kStateStationary;
     event->touches_length++;
   }
-  if (type != blink::WebInputEvent::kUndefined) {
-    event->touches[0].state = type == blink::WebInputEvent::kTouchCancel
-                                  ? blink::WebTouchPoint::kStateCancelled
-                                  : blink::WebTouchPoint::kStateReleased;
+  if (type == blink::WebInputEvent::Type::kTouchCancel ||
+      type == blink::WebInputEvent::Type::kTouchEnd) {
+    event->touches[0].state = type == blink::WebInputEvent::Type::kTouchCancel
+                                  ? blink::WebTouchPoint::State::kStateCancelled
+                                  : blink::WebTouchPoint::State::kStateReleased;
     event->SetType(type);
   } else if (points.find(changing.id) == points.end()) {
-    event->touches[0].state = blink::WebTouchPoint::kStatePressed;
-    event->SetType(blink::WebInputEvent::kTouchStart);
+    event->touches[0].state = blink::WebTouchPoint::State::kStatePressed;
+    event->SetType(blink::WebInputEvent::Type::kTouchStart);
   } else {
-    event->touches[0].state = blink::WebTouchPoint::kStateMoved;
-    event->SetType(blink::WebInputEvent::kTouchMove);
+    event->touches[0].state = blink::WebTouchPoint::State::kStateMoved;
+    event->SetType(blink::WebInputEvent::Type::kTouchMove);
   }
   return true;
 }
@@ -257,7 +245,7 @@ void SendSynthesizePinchGestureResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Synthetic pinch failed, result was %d", result)));
   }
 }
@@ -280,7 +268,7 @@ class TapGestureResponse {
       if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
         callback_->sendSuccess();
       } else {
-        callback_->sendFailure(Response::Error(
+        callback_->sendFailure(Response::ServerError(
             base::StringPrintf("Synthetic tap failed, result was %d", result)));
       }
       callback_.reset();
@@ -300,7 +288,7 @@ void SendSynthesizeScrollGestureResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Synthetic scroll failed, result was %d", result)));
   }
 }
@@ -311,7 +299,7 @@ void DispatchPointerActionsResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Action sequence failed, result was %d", result)));
   }
 }
@@ -362,7 +350,8 @@ class InputHandler::InputInjector
     wheel_event->delta_x = 0;
     wheel_event->delta_y = 0;
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    wheel_event->dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
     widget_host_->ForwardWheelEvent(*wheel_event);
   }
 
@@ -428,8 +417,8 @@ class InputHandler::InputInjector
     input_queued_ = true;
   }
 
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
+  void OnInputEventAck(blink::mojom::InputEventResultSource source,
+                       blink::mojom::InputEventResultState state,
                        const blink::WebInputEvent& event) override {
     if ((event.GetModifiers() & blink::WebInputEvent::kFromDebugger) == 0)
       return;
@@ -443,7 +432,7 @@ class InputHandler::InputInjector
     }
 
     if ((blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-         event.GetType() == blink::WebInputEvent::kMouseWheel) &&
+         event.GetType() == blink::WebInputEvent::Type::kMouseWheel) &&
         !pending_mouse_callbacks_.empty()) {
       pending_mouse_callbacks_.front()->sendSuccess();
       pending_mouse_callbacks_.pop_front();
@@ -531,7 +520,7 @@ Response InputHandler::Disable() {
   ignore_input_events_ = false;
   pointer_ids_.clear();
   touch_points_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 void InputHandler::DispatchKeyEvent(
@@ -553,13 +542,13 @@ void InputHandler::DispatchKeyEvent(
   blink::WebInputEvent::Type web_event_type;
 
   if (type == Input::DispatchKeyEvent::TypeEnum::KeyDown) {
-    web_event_type = blink::WebInputEvent::kKeyDown;
+    web_event_type = blink::WebInputEvent::Type::kKeyDown;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::KeyUp) {
-    web_event_type = blink::WebInputEvent::kKeyUp;
+    web_event_type = blink::WebInputEvent::Type::kKeyUp;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::Char) {
-    web_event_type = blink::WebInputEvent::kChar;
+    web_event_type = blink::WebInputEvent::Type::kChar;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::RawKeyDown) {
-    web_event_type = blink::WebInputEvent::kRawKeyDown;
+    web_event_type = blink::WebInputEvent::Type::kRawKeyDown;
   } else {
     callback->sendFailure(Response::InvalidParams(
         base::StringPrintf("Unexpected event type '%s'", type.c_str())));
@@ -627,9 +616,6 @@ void InputHandler::DispatchKeyEvent(
 void InputHandler::InsertText(const std::string& text,
                               std::unique_ptr<InsertTextCallback> callback) {
   base::string16 text16 = base::UTF8ToUTF16(text);
-  base::OnceClosure closure =
-      base::BindOnce(&InsertTextCallback::sendSuccess, std::move(callback));
-
   if (!host_ || !host_->GetRenderWidgetHost()) {
     callback->sendFailure(Response::InternalError());
     return;
@@ -642,6 +628,9 @@ void InputHandler::InsertText(const std::string& text,
     if (target_host)
       widget_host = target_host;
   }
+
+  base::OnceClosure closure =
+      base::BindOnce(&InsertTextCallback::sendSuccess, std::move(callback));
 
   widget_host->Focus();
   widget_host->GetWidgetInputHandler()->ImeCommitText(
@@ -663,7 +652,7 @@ void InputHandler::DispatchMouseEvent(
     Maybe<std::string> pointer_type,
     std::unique_ptr<DispatchMouseEventCallback> callback) {
   blink::WebInputEvent::Type type = GetMouseEventType(event_type);
-  if (type == blink::WebInputEvent::kUndefined) {
+  if (type == blink::WebInputEvent::Type::kUndefined) {
     callback->sendFailure(Response::InvalidParams(
         base::StringPrintf("Unexpected event type '%s'", event_type.c_str())));
     return;
@@ -684,10 +673,10 @@ void InputHandler::DispatchMouseEvent(
   modifiers |= button_modifiers;
   base::TimeTicks timestamp = GetEventTimeTicks(maybe_timestamp);
 
-  std::unique_ptr<blink::WebMouseEvent, ui::WebInputEventDeleter> mouse_event;
+  std::unique_ptr<blink::WebMouseEvent> mouse_event;
   blink::WebMouseWheelEvent* wheel_event = nullptr;
 
-  if (type == blink::WebInputEvent::kMouseWheel) {
+  if (type == blink::WebInputEvent::Type::kMouseWheel) {
     wheel_event = new blink::WebMouseWheelEvent(type, modifiers, timestamp);
     mouse_event.reset(wheel_event);
     if (!delta_x.isJust() || !delta_y.isJust()) {
@@ -698,7 +687,7 @@ void InputHandler::DispatchMouseEvent(
     wheel_event->delta_x = static_cast<float>(-delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(-delta_y.fromJust());
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
-    wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
+    wheel_event->dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
   } else {
     mouse_event.reset(new blink::WebMouseEvent(type, modifiers, timestamp));
   }
@@ -707,16 +696,38 @@ void InputHandler::DispatchMouseEvent(
   mouse_event->click_count = click_count.fromMaybe(0);
   mouse_event->pointer_type = GetPointerType(pointer_type.fromMaybe(""));
 
-  gfx::PointF point;
   RenderWidgetHostImpl* widget_host =
-      FindTargetWidgetHost(CssPixelsToPointF(x, y, page_scale_factor_), &point);
-  if (!widget_host) {
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host || !widget_host->delegate() ||
+      !widget_host->delegate()->GetInputEventRouter() ||
+      !widget_host->GetView()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
+  widget_host->delegate()
+      ->GetInputEventRouter()
+      ->GetRenderWidgetHostAtPointAsynchronously(
+          widget_host->GetView(), CssPixelsToPointF(x, y, page_scale_factor_),
+          base::BindOnce(&InputHandler::OnWidgetForDispatchMouseEvent,
+                         weak_factory_.GetWeakPtr(), std::move(callback),
+                         std::move(mouse_event), wheel_event));
+}
 
-  mouse_event->SetPositionInWidget(point.x(), point.y());
-  mouse_event->SetPositionInScreen(point.x(), point.y());
+void InputHandler::OnWidgetForDispatchMouseEvent(
+    std::unique_ptr<DispatchMouseEventCallback> callback,
+    std::unique_ptr<blink::WebMouseEvent> mouse_event,
+    blink::WebMouseWheelEvent* wheel_event,
+    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::Optional<gfx::PointF> point) {
+  if (!target || !point.has_value()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(target->GetRenderWidgetHost());
+
+  mouse_event->SetPositionInWidget(point->x(), point->y());
+  mouse_event->SetPositionInScreen(point->x(), point->y());
   if (wheel_event) {
     EnsureInjector(widget_host)
         ->InjectWheelEvent(wheel_event, std::move(callback));
@@ -751,7 +762,7 @@ void InputHandler::DispatchWebTouchEvent(
     protocol::Maybe<double> maybe_timestamp,
     std::unique_ptr<DispatchTouchEventCallback> callback) {
   blink::WebInputEvent::Type type = GetTouchEventType(event_type);
-  if (type == blink::WebInputEvent::kUndefined) {
+  if (type == blink::WebInputEvent::Type::kUndefined) {
     callback->sendFailure(Response::InvalidParams(
         base::StringPrintf("Unexpected event type '%s'", event_type.c_str())));
     return;
@@ -762,21 +773,21 @@ void InputHandler::DispatchWebTouchEvent(
       false, 0, 0);
   base::TimeTicks timestamp = GetEventTimeTicks(maybe_timestamp);
 
-  if ((type == blink::WebInputEvent::kTouchStart ||
-       type == blink::WebInputEvent::kTouchMove) &&
+  if ((type == blink::WebInputEvent::Type::kTouchStart ||
+       type == blink::WebInputEvent::Type::kTouchMove) &&
       touch_points->empty()) {
     callback->sendFailure(Response::InvalidParams(
         "TouchStart and TouchMove must have at least one touch point."));
     return;
   }
-  if ((type == blink::WebInputEvent::kTouchEnd ||
-       type == blink::WebInputEvent::kTouchCancel) &&
+  if (type == blink::WebInputEvent::Type::kTouchCancel &&
       !touch_points->empty()) {
-    callback->sendFailure(Response::InvalidParams(
-        "TouchEnd and TouchCancel must not have any touch points."));
+    callback->sendFailure(
+        Response::InvalidParams("TouchCancel must not have any touch points."));
     return;
   }
-  if (type != blink::WebInputEvent::kTouchStart && touch_points_.empty()) {
+  if (type != blink::WebInputEvent::Type::kTouchStart &&
+      touch_points_.empty()) {
     callback->sendFailure(Response::InvalidParams(
         "Must send a TouchStart first to start a new touch."));
     return;
@@ -810,30 +821,40 @@ void InputHandler::DispatchWebTouchEvent(
   bool ok = true;
   for (auto& id_point : points) {
     if (touch_points_.find(id_point.first) != touch_points_.end() &&
+        type == blink::WebInputEvent::Type::kTouchMove &&
         touch_points_[id_point.first].PositionInWidget() ==
             id_point.second.PositionInWidget()) {
       continue;
     }
 
     events.emplace_back(type, modifiers, timestamp);
-    ok &= GenerateTouchPoints(&events.back(), blink::WebInputEvent::kUndefined,
-                              touch_points_, id_point.second);
-    touch_points_[id_point.first] = id_point.second;
+    ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                              id_point.second);
+    if (type == blink::WebInputEvent::Type::kTouchStart ||
+        type == blink::WebInputEvent::Type::kTouchMove) {
+      touch_points_[id_point.first] = id_point.second;
+    } else if (type == blink::WebInputEvent::Type::kTouchEnd) {
+      touch_points_.erase(id_point.first);
+    }
   }
 
-  if (type != blink::WebInputEvent::kTouchCancel)
-    type = blink::WebInputEvent::kTouchEnd;
-  for (auto it = touch_points_.begin(); it != touch_points_.end();) {
-    if (points.find(it->first) != points.end()) {
-      it++;
-      continue;
+  if (touch_points->size() == 0 && touch_points_.size() > 0) {
+    if (type == blink::WebInputEvent::Type::kTouchCancel) {
+      events.emplace_back(type, modifiers, timestamp);
+      ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                                touch_points_.begin()->second);
+      touch_points_.clear();
+    } else if (type == blink::WebInputEvent::Type::kTouchEnd) {
+      for (auto it = touch_points_.begin(); it != touch_points_.end();) {
+        events.emplace_back(type, modifiers, timestamp);
+        ok &= GenerateTouchPoints(&events.back(), type, touch_points_,
+                                  it->second);
+        it = touch_points_.erase(it);
+      }
     }
-    events.emplace_back(type, modifiers, timestamp);
-    ok &= GenerateTouchPoints(&events.back(), type, touch_points_, it->second);
-    it = touch_points_.erase(it);
   }
   if (!ok) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Exceeded maximum touch points limit of %d",
                            blink::WebTouchEvent::kTouchesLengthCap)));
     return;
@@ -844,30 +865,53 @@ void InputHandler::DispatchWebTouchEvent(
     return;
   }
 
-  gfx::PointF original(events[0].touches[0].PositionInWidget().x,
-                       events[0].touches[0].PositionInWidget().y);
-  gfx::PointF transformed;
   RenderWidgetHostImpl* widget_host =
-      FindTargetWidgetHost(original, &transformed);
-  if (!widget_host) {
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host || !widget_host->delegate() ||
+      !widget_host->delegate()->GetInputEventRouter() ||
+      !widget_host->GetView()) {
     callback->sendFailure(Response::InternalError());
     return;
   }
-  gfx::Vector2dF delta = transformed - original;
+
+  gfx::PointF original(events[0].touches[0].PositionInWidget());
+  widget_host->delegate()
+      ->GetInputEventRouter()
+      ->GetRenderWidgetHostAtPointAsynchronously(
+          widget_host->GetView(), original,
+          base::BindOnce(&InputHandler::OnWidgetForDispatchWebTouchEvent,
+                         weak_factory_.GetWeakPtr(), std::move(callback),
+                         std::move(events)));
+}
+
+void InputHandler::OnWidgetForDispatchWebTouchEvent(
+    std::unique_ptr<DispatchTouchEventCallback> callback,
+    std::vector<blink::WebTouchEvent> events,
+    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::Optional<gfx::PointF> transformed) {
+  if (!target || !transformed.has_value()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(target->GetRenderWidgetHost());
+
+  gfx::PointF original(events[0].touches[0].PositionInWidget());
+  gfx::Vector2dF delta = *transformed - original;
   for (size_t i = 0; i < events.size(); i++) {
     events[i].dispatch_type =
-        events[i].GetType() == blink::WebInputEvent::kTouchCancel
-            ? blink::WebInputEvent::kEventNonBlocking
-            : blink::WebInputEvent::kBlocking;
+        events[i].GetType() == blink::WebInputEvent::Type::kTouchCancel
+            ? blink::WebInputEvent::DispatchType::kEventNonBlocking
+            : blink::WebInputEvent::DispatchType::kBlocking;
     events[i].moved_beyond_slop_region = true;
     events[i].unique_touch_event_id = ui::GetNextTouchEventId();
     for (unsigned j = 0; j < events[i].touches_length; j++) {
-      blink::WebFloatPoint point = events[i].touches[j].PositionInWidget();
-      events[i].touches[j].SetPositionInWidget(point.x + delta.x(),
-                                               point.y + delta.y());
+      gfx::PointF point = events[i].touches[j].PositionInWidget();
+      events[i].touches[j].SetPositionInWidget(point.x() + delta.x(),
+                                               point.y() + delta.y());
       point = events[i].touches[j].PositionInScreen();
-      events[i].touches[j].SetPositionInScreen(point.x + delta.x(),
-                                               point.y + delta.y());
+      events[i].touches[j].SetPositionInScreen(point.x() + delta.x(),
+                                               point.y() + delta.y());
     }
   }
   EnsureInjector(widget_host)->InjectTouchEvents(events, std::move(callback));
@@ -941,8 +985,8 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
           SyntheticPointerActionParams::PointerActionType::CANCEL) {
     for (auto it = pointer_ids_.begin(); it != pointer_ids_.end();) {
       SyntheticPointerActionParams action_params =
-          PrepareSyntheticPointerActionParams(pointer_action_type, *it, "", 0,
-                                              0, modifiers);
+          PrepareSyntheticPointerActionParams(pointer_action_type, *it, 0, 0,
+                                              modifiers);
       param_list.push_back(action_params);
       it = pointer_ids_.erase(it);
     }
@@ -965,7 +1009,7 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
     }
     SyntheticPointerActionParams action_params =
         PrepareSyntheticPointerActionParams(
-            action_type, id, "", point->GetX(), point->GetY(), modifiers,
+            action_type, id, point->GetX(), point->GetY(), modifiers,
             point->GetRadiusX(1.0), point->GetRadiusY(1.0),
             point->GetRotationAngle(0.0), point->GetForce(1.0));
     param_list.push_back(action_params);
@@ -988,8 +1032,8 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
       }
       SyntheticPointerActionParams action_params =
           PrepareSyntheticPointerActionParams(
-              SyntheticPointerActionParams::PointerActionType::RELEASE, *it, "",
-              0, 0, modifiers);
+              SyntheticPointerActionParams::PointerActionType::RELEASE, *it, 0,
+              0, modifiers);
       param_list.push_back(action_params);
       it = pointer_ids_.erase(it);
     }
@@ -1018,7 +1062,6 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
 SyntheticPointerActionParams InputHandler::PrepareSyntheticPointerActionParams(
     SyntheticPointerActionParams::PointerActionType pointer_action_type,
     int id,
-    const std::string& button_name,
     double x,
     double y,
     int key_modifiers,
@@ -1028,8 +1071,8 @@ SyntheticPointerActionParams InputHandler::PrepareSyntheticPointerActionParams(
     float force) {
   SyntheticPointerActionParams action_params(pointer_action_type);
   action_params.set_pointer_id(id);
-  SyntheticPointerActionParams::Button button =
-      GetPointerActionParamsButton(button_name);
+  const SyntheticPointerActionParams::Button button =
+      SyntheticPointerActionParams::Button::NO_BUTTON;
   switch (pointer_action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
       action_params.set_position(
@@ -1075,14 +1118,14 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
                                                   Maybe<int> click_count) {
   blink::WebInputEvent::Type event_type;
   if (type == Input::EmulateTouchFromMouseEvent::TypeEnum::MouseWheel) {
-    event_type = blink::WebInputEvent::kMouseWheel;
+    event_type = blink::WebInputEvent::Type::kMouseWheel;
     if (!delta_x.isJust() || !delta_y.isJust()) {
       return Response::InvalidParams(
           "'deltaX' and 'deltaY' are expected for mouseWheel event");
     }
   } else {
     event_type = GetMouseEventType(type);
-    if (event_type == blink::WebInputEvent::kUndefined) {
+    if (event_type == blink::WebInputEvent::Type::kUndefined) {
       return Response::InvalidParams(
           base::StringPrintf("Unexpected event type '%s'", type.c_str()));
     }
@@ -1136,12 +1179,13 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     wheel_event->delta_x = 0;
     wheel_event->delta_y = 0;
     wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    wheel_event->dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
     host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   } else {
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InputHandler::SetIgnoreInputEvents(bool ignore) {
@@ -1149,7 +1193,7 @@ Response InputHandler::SetIgnoreInputEvents(bool ignore) {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (web_contents)
     web_contents->SetIgnoreInputEvents(ignore);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InputHandler::SynthesizePinchGesture(
@@ -1264,7 +1308,7 @@ void InputHandler::SynthesizeRepeatingScroll(
     std::unique_ptr<SynthesizeScrollGestureCallback> callback) {
   RenderWidgetHostViewBase* root_view = GetRootView();
   if (!root_view) {
-    callback->sendFailure(Response::Error("Frame was detached"));
+    callback->sendFailure(Response::ServerError("Frame was detached"));
     return;
   }
 
@@ -1384,28 +1428,6 @@ InputHandler::InputInjector* InputHandler::EnsureInjector(
   InputInjector* injector = new InputInjector(this, widget_host);
   injectors_.emplace(injector);
   return injector;
-}
-
-RenderWidgetHostImpl* InputHandler::FindTargetWidgetHost(
-    const gfx::PointF& point,
-    gfx::PointF* transformed) {
-  *transformed = point;
-
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
-    return nullptr;
-
-  if (!host_->GetParent() && widget_host->delegate() &&
-      widget_host->delegate()->GetInputEventRouter() &&
-      widget_host->GetView()) {
-    widget_host = widget_host->delegate()
-                      ->GetInputEventRouter()
-                      ->GetRenderWidgetHostAtPoint(widget_host->GetView(),
-                                                   point, transformed);
-  }
-
-  return widget_host;
 }
 
 RenderWidgetHostViewBase* InputHandler::GetRootView() {

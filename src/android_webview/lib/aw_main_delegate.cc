@@ -25,11 +25,11 @@
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -56,6 +56,7 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -75,8 +76,7 @@ AwMainDelegate::AwMainDelegate() = default;
 AwMainDelegate::~AwMainDelegate() = default;
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
-  content::SetContentClient(&content_client_);
-
+  TRACE_EVENT0("startup", "AwMainDelegate::BasicStartupComplete");
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
 
   // WebView uses the Android system's scrollbars and overscroll glow.
@@ -184,13 +184,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // so we can't use FeatureList::IsEnabled. This is necessary if someone
     // enabled feature through command line. Finch experiments will need to set
     // all flags in trial config.
-    if (features.IsEnabled(::features::kVizForWebView)) {
-      cl->AppendSwitch(switches::kWebViewEnableSharedImage);
-      features.EnableIfNotSet(::features::kUseSkiaRenderer);
-    } else {
-      // Disable OOP-D if viz for WebView not enabled.
-      features.DisableIfNotSet(::features::kVizDisplayCompositor);
-
+    if (!features.IsEnabled(::features::kVizForWebView)) {
       // Viz for WebView is required to support embedding CompositorFrameSinks
       // which is needed for UseSurfaceLayerForVideo feature.
       // https://crbug.com/853832
@@ -212,16 +206,30 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(::features::kBackgroundFetch);
 
-    features.DisableIfNotSet(::features::kAndroidSurfaceControl);
+    features.EnableIfNotSet(::features::kDisableSurfaceControlForWebview);
 
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
 
+    // TODO(https://crbug.com/1012899): WebXR is not yet supported on WebView.
     features.DisableIfNotSet(::features::kWebXr);
+
+    features.DisableIfNotSet(::features::kWebXrArModule);
+
+    features.DisableIfNotSet(::features::kWebXrHitTest);
+
+    features.DisableIfNotSet(::features::kDynamicColorGamut);
 
     // De-jelly is never supported on WebView.
     features.EnableIfNotSet(::features::kDisableDeJelly);
+
+    // COEP is not supported on WebView.
+    // See
+    // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/XBKAGb2_7uAi.
+    features.DisableIfNotSet(network::features::kCrossOriginEmbedderPolicy);
+
+    features.DisableIfNotSet(::features::kInstalledApp);
   }
 
   android_webview::RegisterPathProvider();
@@ -250,6 +258,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void AwMainDelegate::PreSandboxStartup() {
+  TRACE_EVENT0("startup", "AwMainDelegate::PreSandboxStartup");
 #if defined(ARCH_CPU_ARM_FAMILY)
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
@@ -349,6 +358,10 @@ void AwMainDelegate::PostFieldTrialInitialization() {
 #endif
 }
 
+content::ContentClient* AwMainDelegate::CreateContentClient() {
+  return &content_client_;
+}
+
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
   DCHECK(!aw_feature_list_creator_);
   aw_feature_list_creator_ = std::make_unique<AwFeatureListCreator>();
@@ -366,8 +379,7 @@ gpu::SyncPointManager* GetSyncPointManager() {
 gpu::SharedImageManager* GetSharedImageManager() {
   DCHECK(GpuServiceWebView::GetInstance());
   const bool enable_shared_image =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableSharedImage);
+      base::FeatureList::IsEnabled(::features::kEnableSharedImageForWebview);
   return enable_shared_image
              ? GpuServiceWebView::GetInstance()->shared_image_manager()
              : nullptr;

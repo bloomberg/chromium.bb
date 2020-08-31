@@ -38,35 +38,13 @@ static const blink::UserAgentMetadata kUserAgentMetadata;
 
 class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
  public:
-  explicit MockRenderMessageFilterImpl(MockRenderThread* thread)
-      : thread_(thread) {}
-  ~MockRenderMessageFilterImpl() override {}
+  MockRenderMessageFilterImpl() = default;
+  ~MockRenderMessageFilterImpl() override = default;
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(GenerateRoutingIDCallback callback) override {
     NOTREACHED();
     std::move(callback).Run(MSG_ROUTING_NONE);
-  }
-
-  void CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       CreateNewWidgetCallback callback) override {
-    // See comment in CreateNewWindow().
-    NOTREACHED();
-  }
-
-  bool CreateNewWidget(int32_t opener_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
-                       int32_t* route_id) override {
-    thread_->OnCreateWidget(opener_id, route_id);
-    return true;
-  }
-
-  void CreateFullscreenWidget(
-      int opener_id,
-      mojo::PendingRemote<mojom::Widget> widget,
-      CreateFullscreenWidgetCallback callback) override {
-    NOTREACHED();
   }
 
   void HasGpuProcess(HasGpuProcessCallback callback) override {
@@ -77,16 +55,13 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
 #endif
-
- private:
-  MockRenderThread* const thread_;
 };
 
 }  // namespace
 
 MockRenderThread::MockRenderThread()
     : next_routing_id_(kFirstGeneratedRoutingId),
-      mock_render_message_filter_(new MockRenderMessageFilterImpl(this)) {
+      mock_render_message_filter_(new MockRenderMessageFilterImpl()) {
   RenderThreadImpl::SetRenderMessageFilterForTesting(
       mock_render_message_filter_.get());
 }
@@ -225,12 +200,12 @@ blink::WebString MockRenderThread::GetUserAgent() {
   return blink::WebString();
 }
 
-bool MockRenderThread::IsUseZoomForDSF() {
-  return zoom_for_dsf_;
-}
-
 const blink::UserAgentMetadata& MockRenderThread::GetUserAgentMetadata() {
   return kUserAgentMetadata;
+}
+
+bool MockRenderThread::IsUseZoomForDSF() {
+  return zoom_for_dsf_;
 }
 
 #if defined(OS_WIN)
@@ -250,12 +225,6 @@ void MockRenderThread::SetUseZoomForDSFEnabled(bool zoom_for_dsf) {
 
 int32_t MockRenderThread::GetNextRoutingID() {
   return next_routing_id_++;
-}
-
-// The Widget expects to be returned a valid route_id.
-void MockRenderThread::OnCreateWidget(int opener_id,
-                                      int* route_id) {
-  *route_id = GetNextRoutingID();
 }
 
 mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
@@ -314,6 +283,7 @@ void MockRenderThread::OnCreateChildFrame(
   params_reply->browser_interface_broker_handle =
       browser_interface_broker.PassPipe().release();
 
+  params_reply->frame_token = base::UnguessableToken::Create();
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 }
 
@@ -357,9 +327,25 @@ void MockRenderThread::OnCreateWindow(
   reply->main_frame_interface_bundle->browser_interface_broker =
       std::move(browser_interface_broker);
 
+  reply->main_frame_frame_token = base::UnguessableToken::Create();
   reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
+      blink_frame_widget_receiver =
+          blink_frame_widget
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver =
+          blink_frame_widget_host
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  reply->frame_widget = std::move(blink_frame_widget_receiver);
+  reply->frame_widget_host = blink_frame_widget_host.Unbind();
 }
 
 }  // namespace content

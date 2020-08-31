@@ -20,6 +20,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteProviderListener;
+class PrefRegistrySimple;
 
 namespace base {
 class Value;
@@ -29,9 +30,6 @@ namespace network {
 class SimpleURLLoader;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 // Autocomplete provider for searches based on the current URL.
 //
@@ -57,7 +55,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                                      AutocompleteProviderListener* listener);
 
   // Registers a preference used to cache zero suggest results.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -74,6 +72,18 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   void SetPageClassificationForTesting(
       metrics::OmniboxEventProto::PageClassification classification) {
     current_page_classification_ = classification;
+  }
+
+  // Returns the list of experiment stats corresponding to the latest |results_|
+  // to be logged to SearchboxStats as part of a GWS experiment, if any.
+  const SearchSuggestionParser::ExperimentStats& experiment_stats() const {
+    return results_.experiment_stats;
+  }
+
+  // Returns the map of suggestion group Ids to headers corresponding to the
+  // latest |results_|.
+  const SearchSuggestionParser::HeadersMap& headers_map() const {
+    return results_.headers_map;
   }
 
  private:
@@ -127,12 +137,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   //
   // The return value is true only when |results_| changed.
   bool UpdateResults(const std::string& json_data);
-
-  // Adds AutocompleteMatches for each of the suggestions in |results| to
-  // |map|.
-  void AddSuggestResultsToMap(
-      const SearchSuggestionParser::SuggestResults& results,
-      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(

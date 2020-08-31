@@ -18,7 +18,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -155,14 +155,14 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 // static
 int OmniboxMatchCellView::GetTextIndent() {
-  return ui::MaterialDesignController::touch_ui() ? 51 : 47;
+  return ui::TouchUiController::Get()->touch_ui() ? 51 : 47;
 }
 
 void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                          const AutocompleteMatch& match) {
   is_rich_suggestion_ = match.answer ||
                         match.type == AutocompleteMatchType::CALCULATOR ||
-                        !match.image_url.empty();
+                        !match.image_url.is_empty();
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
 
   // Decide layout style once before Layout, while match data is available.
@@ -181,6 +181,8 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
 
   const auto apply_vector_icon = [=](const gfx::VectorIcon& vector_icon) {
     const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
+    answer_image_view_->SetImageSize(
+        gfx::Size(kAnswerImageSize, kAnswerImageSize));
     answer_image_view_->SetImage(
         gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
             kAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
@@ -210,7 +212,9 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           apply_vector_icon(omnibox::kAnswerTranslationIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_WEATHER:
-          // Weather icons are downloaded. Do nothing.
+          // Weather icons are downloaded. We just need to set the correct size.
+          answer_image_view_->SetImageSize(
+              gfx::Size(kAnswerImageSize, kAnswerImageSize));
           break;
         case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
           apply_vector_icon(omnibox::kAnswerWhenIsIcon);
@@ -219,10 +223,6 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           apply_vector_icon(omnibox::kAnswerDefaultIcon);
           break;
       }
-      // Always set the image size so that downloaded images get the correct
-      // size (such as Weather answers).
-      answer_image_view_->SetImageSize(
-          gfx::Size(kAnswerImageSize, kAnswerImageSize));
     } else {
       SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
       extensions::image_util::ParseHexColorString(match.image_dominant_color,
@@ -264,8 +264,8 @@ const char* OmniboxMatchCellView::GetClassName() const {
 gfx::Insets OmniboxMatchCellView::GetInsets() const {
   const bool single_line = layout_style_ == LayoutStyle::ONE_LINE_SUGGESTION;
   const int vertical_margin = single_line ? 8 : 4;
-  return gfx::Insets(vertical_margin, 4, vertical_margin,
-                     OmniboxMatchCellView::kMarginRight);
+  return gfx::Insets(vertical_margin, OmniboxMatchCellView::kMarginLeft,
+                     vertical_margin, OmniboxMatchCellView::kMarginRight);
 }
 
 void OmniboxMatchCellView::Layout() {
@@ -278,7 +278,8 @@ void OmniboxMatchCellView::Layout() {
   const int row_height = child_area.height();
   views::ImageView* const image_view =
       (two_line && is_rich_suggestion_) ? answer_image_view_ : icon_view_;
-  image_view->SetBounds(x, y, 40, row_height);
+  image_view->SetBounds(x, y, OmniboxMatchCellView::kImageBoundsWidth,
+                        row_height);
 
   const int text_indent = GetTextIndent() + tail_suggest_common_prefix_width_;
   x += text_indent;

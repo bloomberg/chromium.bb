@@ -25,9 +25,9 @@ class SecurityTokenPinDialogHostAshImpl final
   // SecurityTokenPinDialogHost:
   void ShowSecurityTokenPinDialog(
       const std::string& caller_extension_name,
-      SecurityTokenPinCodeType code_type,
+      security_token_pin::CodeType code_type,
       bool enable_user_input,
-      SecurityTokenPinErrorLabel error_label,
+      security_token_pin::ErrorLabel error_label,
       int attempts_left,
       const base::Optional<AccountId>& authenticating_user_account_id,
       SecurityTokenPinEnteredCallback pin_entered_callback,
@@ -43,7 +43,7 @@ class SecurityTokenPinDialogHostAshImpl final
   // Screen UI.
   void OnUserInputReceived(const std::string& user_input);
   // Called when the PIN UI gets closed.
-  void OnClosed();
+  void OnClosedByUser();
 
   // Resets the internal state and weak pointers associated with the previously
   // started requests.

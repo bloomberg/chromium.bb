@@ -8,8 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,9 +41,10 @@ namespace chromeos {
 
 namespace {
 
-const char kErrorNotActive[] = "IME is not active";
-const char kErrorWrongContext[] = "Context is not active";
-const char kCandidateNotFound[] = "Candidate not found";
+const char kErrorNotActive[] = "IME is not active.";
+const char kErrorWrongContext[] = "Context is not active.";
+const char kCandidateNotFound[] = "Candidate not found.";
+const char kSuggestionNotFound[] = "Suggestion not found.";
 
 // The default entry number of a page in CandidateWindowProperty.
 const int kDefaultPageSize = 9;
@@ -61,10 +63,13 @@ InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
     : page_size(kDefaultPageSize),
       is_cursor_visible(true),
       is_vertical(false),
-      show_window_at_composition(false) {}
+      show_window_at_composition(false),
+      is_auxiliary_text_visible(false) {}
 
 InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() =
     default;
+InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty(
+    const CandidateWindowProperty& other) = default;
 
 InputMethodEngine::InputMethodEngine() = default;
 
@@ -73,6 +78,10 @@ InputMethodEngine::~InputMethodEngine() = default;
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
   EnableInputView();
+  // Resets candidate_window_property_ whenever a new component_id (aka
+  // engine_id) is enabled.
+  candidate_window_property_ = {component_id,
+                                InputMethodEngine::CandidateWindowProperty()};
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -108,11 +117,15 @@ void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
 }
 
 const InputMethodEngine::CandidateWindowProperty&
-InputMethodEngine::GetCandidateWindowProperty() const {
-  return candidate_window_property_;
+InputMethodEngine::GetCandidateWindowProperty(const std::string& engine_id) {
+  if (candidate_window_property_.first != engine_id)
+    candidate_window_property_ = {engine_id,
+                                  InputMethodEngine::CandidateWindowProperty()};
+  return candidate_window_property_.second;
 }
 
 void InputMethodEngine::SetCandidateWindowProperty(
+    const std::string& engine_id,
     const CandidateWindowProperty& property) {
   // Type conversion from InputMethodEngine::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
@@ -126,9 +139,11 @@ void InputMethodEngine::SetCandidateWindowProperty(
       candidate_window_.GetProperty().cursor_position;
   dest_property.auxiliary_text = property.auxiliary_text;
   dest_property.is_auxiliary_text_visible = property.is_auxiliary_text_visible;
+  dest_property.current_candidate_index = property.current_candidate_index;
+  dest_property.total_candidates = property.total_candidates;
 
   candidate_window_.SetProperty(dest_property);
-  candidate_window_property_ = property;
+  candidate_window_property_ = {engine_id, property};
 
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =
@@ -208,7 +223,8 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
   std::map<int, int>::const_iterator position =
       candidate_indexes_.find(candidate_id);
   if (position == candidate_indexes_.end()) {
-    *error = kCandidateNotFound;
+    *error = base::StringPrintf("%s candidate id = %d", kCandidateNotFound,
+                                candidate_id);
     return false;
   }
 
@@ -220,15 +236,112 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
   return true;
 }
 
+bool InputMethodEngine::SetSuggestion(int context_id,
+                                      const base::string16& text,
+                                      const size_t confirmed_length,
+                                      const bool show_tab,
+                                      std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->ShowSuggestion(text, confirmed_length, show_tab);
+  return true;
+}
+
+bool InputMethodEngine::DismissSuggestion(int context_id, std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->HideSuggestion();
+  return true;
+}
+
+bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  FinishComposingText(context_id_, error);
+  if (!error->empty()) {
+    return false;
+  }
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler) {
+    base::string16 suggestion_text = aw_handler->GetSuggestionText();
+    if (suggestion_text.empty()) {
+      *error = kSuggestionNotFound;
+      return false;
+    }
+    size_t confirmed_length = aw_handler->GetConfirmedLength();
+    if (confirmed_length > 0) {
+      DeleteSurroundingText(context_id_, -confirmed_length, confirmed_length,
+                            error);
+    }
+    CommitText(context_id_, (base::UTF16ToUTF8(suggestion_text)).c_str(),
+               error);
+    aw_handler->HideSuggestion();
+  }
+  return true;
+}
+
+bool InputMethodEngine::SetAssistiveWindowProperties(
+    int context_id,
+    const AssistiveWindowProperties& assistive_window,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->SetAssistiveWindowProperties(assistive_window);
+  return true;
+}
+
 bool InputMethodEngine::SetMenuItems(
-    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
-  return UpdateMenuItems(items);
+    const std::vector<input_method::InputMethodManager::MenuItem>& items,
+    std::string* error) {
+  return UpdateMenuItems(items, error);
 }
 
 bool InputMethodEngine::UpdateMenuItems(
-    const std::vector<input_method::InputMethodManager::MenuItem>& items) {
-  if (!IsActive())
+    const std::vector<input_method::InputMethodManager::MenuItem>& items,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
     return false;
+  }
 
   ui::ime::InputMethodMenuItemList menu_item_list;
   for (const auto& item : items) {
@@ -300,7 +413,8 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
 }
 
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
-                                     const std::string& code) {
+                                     const std::string& code,
+                                     std::string* error) {
   DCHECK(event);
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
@@ -319,7 +433,15 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
     input_context->SendKeyEvent(event);
     return true;
   }
+
+  *error = kErrorWrongContext;
   return false;
+}
+
+bool InputMethodEngine::IsValidKeyEvent(const ui::KeyEvent* ui_event) {
+  // TODO(CRBUG/1070517): Update this check to verify that this KeyEvent should
+  // be allowed on this page, instead of assuming that it should be allowed.
+  return true;
 }
 
 void InputMethodEngine::EnableInputView() {

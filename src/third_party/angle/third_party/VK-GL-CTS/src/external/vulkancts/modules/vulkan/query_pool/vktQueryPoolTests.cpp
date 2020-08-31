@@ -27,6 +27,8 @@
 #include "vktTestGroupUtil.hpp"
 #include "vktQueryPoolOcclusionTests.hpp"
 #include "vktQueryPoolStatisticsTests.hpp"
+#include "vktQueryPoolPerformanceTests.hpp"
+#include "vktQueryPoolConcurrentTests.hpp"
 
 namespace vkt
 {
@@ -42,6 +44,8 @@ void createChildren (tcu::TestCaseGroup* queryPoolTests)
 
 	queryPoolTests->addChild(new QueryPoolOcclusionTests(testCtx));
 	queryPoolTests->addChild(new QueryPoolStatisticsTests(testCtx));
+	queryPoolTests->addChild(new QueryPoolPerformanceTests(testCtx));
+	queryPoolTests->addChild(new QueryPoolConcurrentTests(testCtx));
 }
 
 } // anonymous

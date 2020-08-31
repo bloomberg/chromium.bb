@@ -7,6 +7,7 @@
 #include "media/base/media_util.h"
 #include "media/base/win/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_texture_selector.h"
+#include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +22,15 @@ namespace media {
 
 class D3D11TextureSelectorUnittest : public ::testing::Test {
  public:
+  class MockFormatSupportChecker : public FormatSupportChecker {
+   public:
+    MockFormatSupportChecker() : FormatSupportChecker(nullptr) {}
+    ~MockFormatSupportChecker() = default;
+    bool Initialize() override { return true; }
+
+    MOCK_CONST_METHOD1(CheckOutputFormatSupport, bool(DXGI_FORMAT));
+  };
+
   VideoDecoderConfig CreateDecoderConfig(VideoCodecProfile profile,
                                          gfx::Size size,
                                          bool encrypted) {
@@ -34,82 +44,99 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
   }
 
   std::unique_ptr<TextureSelector> CreateWithDefaultGPUInfo(
-      const VideoDecoderConfig& config,
-      bool zero_copy_enabled = true) {
+      DXGI_FORMAT decoder_output_format,
+      bool zero_copy_enabled = true,
+      TextureSelector::HDRMode hdr_mode = TextureSelector::HDRMode::kSDROnly) {
     gpu::GpuPreferences prefs;
     prefs.enable_zero_copy_dxgi_video = zero_copy_enabled;
     gpu::GpuDriverBugWorkarounds workarounds;
     workarounds.disable_dxgi_zero_copy_video = false;
     auto media_log = std::make_unique<NullMediaLog>();
-    return TextureSelector::Create(prefs, workarounds, config, media_log.get());
+    return TextureSelector::Create(prefs, workarounds, decoder_output_format,
+                                   hdr_mode, &format_checker_, media_log.get());
   }
+
+  // Set the format checker to succeed any check, except for |disallowed|.
+  void AllowFormatCheckerSupportExcept(std::vector<DXGI_FORMAT> disallowed) {
+    ON_CALL(format_checker_, CheckOutputFormatSupport(_))
+        .WillByDefault(Return(true));
+    for (auto format : disallowed) {
+      ON_CALL(format_checker_, CheckOutputFormatSupport(format))
+          .WillByDefault(Return(false));
+    }
+  }
+
+  MockFormatSupportChecker format_checker_;
 };
 
-TEST_F(D3D11TextureSelectorUnittest, VP9Profile0RightFormats) {
-  auto tex_sel = CreateWithDefaultGPUInfo(
-      CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
+TEST_F(D3D11TextureSelectorUnittest, NV12BindsToNV12) {
+  // Nothing should ask about VideoProcessor support, since we're binding.
+  EXPECT_CALL(format_checker_, CheckOutputFormatSupport(_)).Times(0);
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_NV12);
 
-  EXPECT_EQ(tex_sel->DecoderGuid(), D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0);
+  // TODO(liberato): check "binds", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
-  EXPECT_EQ(tex_sel->DecoderDescriptor()->OutputFormat, DXGI_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
 }
 
-TEST_F(D3D11TextureSelectorUnittest, VP9Profile2RightFormats) {
-  auto tex_sel = CreateWithDefaultGPUInfo(
-      CreateDecoderConfig(VP9PROFILE_PROFILE2, {0, 0}, false), false);
+TEST_F(D3D11TextureSelectorUnittest, P010CopiesToFP16InHDR) {
+  // Allow all output formats, since it should prefer fp16 if possible.
+  AllowFormatCheckerSupportExcept({});
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROrHDR);
 
-  EXPECT_EQ(tex_sel->DecoderGuid(),
-            D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2);
+  // TODO(liberato): check "copies", somehow.
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+  // TODO(liberato): Check output color space, somehow.
+}
+
+TEST_F(D3D11TextureSelectorUnittest, P010CopiesTo10BitRGBInHDR) {
+  // 10 bit RGB should be the second choice, if fp16 isn't available.
+  AllowFormatCheckerSupportExcept({DXGI_FORMAT_R16G16B16A16_FLOAT});
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROrHDR);
+
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R10G10B10A2_UNORM);
+}
+
+TEST_F(D3D11TextureSelectorUnittest, P010BindsToP010InHDR) {
+  // If none of our output formats is supported by the video processor, then it
+  // should bind P010 directly.
+  AllowFormatCheckerSupportExcept(
+      {DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R10G10B10A2_UNORM});
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROrHDR);
+
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
-  EXPECT_EQ(tex_sel->DecoderDescriptor()->OutputFormat, DXGI_FORMAT_P010);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_P010);
 }
 
-TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceNoProfiles) {
-  auto tex_sel = CreateWithDefaultGPUInfo(
-      CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
+TEST_F(D3D11TextureSelectorUnittest, P010CopiesTo8BitInSDR) {
+  // Should copy to 8 bit RGB if the video processor can do it, if we're not in
+  // HDR mode.
+  AllowFormatCheckerSupportExcept({});
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROnly);
 
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
-      .Times(1)
-      .WillOnce(Return(0));
-
-  EXPECT_FALSE(tex_sel->SupportsDevice(vd_mock));
+  // TODO(liberato): check "copies", somehow.
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
+  // Note that this might also produce 8 bit rgb, but for now always
+  // tries for fp16.
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_B8G8R8A8_UNORM);
+  // TODO(liberato): Check output color space, somehow.
 }
 
-TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceWrongProfiles) {
-  auto tex_sel = CreateWithDefaultGPUInfo(
-      CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
+TEST_F(D3D11TextureSelectorUnittest, P010BindsToP010InSDR) {
+  // Should bind P010 if the video processor can't convert to RGB8, if we're not
+  // int HDR mode.
+  AllowFormatCheckerSupportExcept({DXGI_FORMAT_B8G8R8A8_UNORM});
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROnly);
 
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
-      .Times(1)
-      .WillOnce(Return(2));
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfile(0, _))
-      .Times(1)
-      .WillOnce(DoAll(SetArgPointee<1>(D3D11_DECODER_PROFILE_HEVC_VLD_MAIN),
-                      Return(S_OK)));
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfile(1, _))
-      .Times(1)
-      .WillOnce(
-          DoAll(SetArgPointee<1>(D3D11_DECODER_PROFILE_VC1_VLD), Return(S_OK)));
-
-  EXPECT_FALSE(tex_sel->SupportsDevice(vd_mock));
-}
-
-TEST_F(D3D11TextureSelectorUnittest, SupportsDeviceCorrectProfile) {
-  auto tex_sel = CreateWithDefaultGPUInfo(
-      CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
-
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
-      .Times(1)
-      .WillOnce(Return(5));
-  EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfile(4, _))
-      .Times(1)
-      .WillOnce(DoAll(SetArgPointee<1>(D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0),
-                      Return(S_OK)));
-
-  EXPECT_TRUE(tex_sel->SupportsDevice(vd_mock));
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_P010);
 }
 
 }  // namespace media

@@ -118,9 +118,8 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
     : web_contents_(web_contents) {
   CHECK(web_contents_);
 
-  view_cert_button_ =
-      DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
+  view_cert_button_ = SetExtraView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
@@ -210,7 +209,7 @@ void CertificateSelector::InitWithText(
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   layout->AddView(std::move(text_label));

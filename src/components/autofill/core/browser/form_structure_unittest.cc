@@ -21,10 +21,14 @@
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -134,6 +138,15 @@ class FormStructureTest : public testing::Test {
     field_trial_ = nullptr;
     scoped_feature_list_.Reset();
     scoped_feature_list_.Init();
+  }
+
+  void SetUpForEncoder() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled.
+        {features::kAutofillMetadataUploads},
+        // Disabled.
+        {});
   }
 
  private:
@@ -246,6 +259,14 @@ TEST_F(FormStructureTest, SourceURL) {
   FormStructure form_structure(form);
 
   EXPECT_EQ(form.url, form_structure.source_url());
+}
+
+TEST_F(FormStructureTest, FullSourceURLWithHashAndParam) {
+  FormData form;
+  form.full_url = GURL("https://www.foo.com/?login=asdf#hash");
+  FormStructure form_structure(form);
+
+  EXPECT_EQ(form.full_url, form_structure.full_source_url());
 }
 
 TEST_F(FormStructureTest, IsAutofillable) {
@@ -2334,7 +2355,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 412125936U, "name_on_card",
                        "text");
@@ -2388,7 +2409,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   // Add the second form to the expected proto.
   query_form = query.add_form();
-  query_form->set_signature(form_structure3.form_signature());
+  query_form->set_signature(form_structure3.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 412125936U, "name_on_card",
                        "text");
@@ -2621,7 +2642,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -2700,7 +2721,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   }
 
   // Adjust the expected proto string.
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   // Create an additional 2 fields (total of 7).  Put the appropriate autofill
   // type on the different address fields.
@@ -2816,7 +2837,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithNonMatchingValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -2947,7 +2968,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -3076,7 +3097,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   upload.set_submission(true);
   upload.set_submission_event(AutofillUploadContents::HTML_FORM_SUBMISSION);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -3146,7 +3167,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   }
 
   // Adjust the expected proto string.
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
@@ -3276,7 +3297,7 @@ TEST_F(FormStructureTest,
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440000000000000000802");
   upload.set_action_signature(15724779818122431245U);
@@ -3378,7 +3399,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3428,7 +3449,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.id_attribute = ASCIIToUTF16("first_name");
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
-  field.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  field.properties_mask = FieldPropertiesFlags::kHadFocus;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
@@ -3439,7 +3460,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask =
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
@@ -3451,7 +3472,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask =
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
@@ -3476,7 +3497,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -3486,15 +3507,15 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
                         nullptr, 3U);
-  upload.mutable_field(0)->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS);
+  upload.mutable_field(0)->set_properties_mask(FieldPropertiesFlags::kHadFocus);
   test::FillUploadField(upload.add_field(), 3494530716U, nullptr, nullptr,
                         nullptr, 5U);
   upload.mutable_field(1)->set_properties_mask(
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED);
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped);
   test::FillUploadField(upload.add_field(), 1029417091U, nullptr, nullptr,
                         nullptr, 9U);
   upload.mutable_field(2)->set_properties_mask(
-      FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED);
+      FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -3562,7 +3583,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   AutofillUploadContents upload;
   upload.set_submission(false);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3638,7 +3659,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3710,7 +3731,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3795,7 +3816,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3878,7 +3899,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -3972,7 +3993,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -4047,7 +4068,7 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure.form_signature());
+  upload.set_form_signature(form_structure.form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("");
   upload.set_passwords_revealed(false);
@@ -4330,7 +4351,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("1440000360000008");
   upload.set_passwords_revealed(false);
@@ -4476,6 +4497,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_IsFormTag) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
+  SetUpForEncoder();
   struct FieldMetadata {
     const char *id, *name, *label, *placeholder, *aria_label, *aria_description,
         *css_classes;
@@ -4496,6 +4518,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
   FormData form;
   form.id_attribute = ASCIIToUTF16("form-id");
   form.url = GURL("http://www.foo.com/");
+  form.full_url = GURL("http://www.foo.com/?foo=bar");
   for (const auto& f : kFieldMetadata) {
     FormFieldData field;
     field.id_attribute = ASCIIToUTF16(f.id);
@@ -4508,9 +4531,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     field.css_classes = ASCIIToUTF16(f.css_classes);
     form.fields.push_back(field);
   }
-
   RandomizedEncoder encoder("seed for testing",
-                            AutofillRandomizedValue_EncodingType_ALL_BITS);
+                            AutofillRandomizedValue_EncodingType_ALL_BITS,
+                            /*anonymous_url_collection_is_enabled*/ true);
 
   FormStructure form_structure(form);
   form_structure.set_randomized_encoder(
@@ -4528,17 +4551,24 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_id());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
-              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_ID,
-                             form_structure.id_attribute()));
+              encoder.EncodeForTesting(form_signature, FieldSignature(),
+                                       RandomizedEncoder::FORM_ID,
+                                       form_structure.id_attribute()));
   }
 
   if (form.name_attribute.empty()) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_name());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
-              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_NAME,
-                             form_structure.name_attribute()));
+              encoder.EncodeForTesting(form_signature, FieldSignature(),
+                                       RandomizedEncoder::FORM_NAME,
+                                       form_structure.name_attribute()));
   }
+
+  auto full_url = form_structure.full_source_url().spec();
+  EXPECT_EQ(upload.randomized_form_metadata().url().encoded_bits(),
+            encoder.Encode(form_signature, FieldSignature(),
+                           RandomizedEncoder::FORM_URL, full_url));
   ASSERT_EQ(static_cast<size_t>(upload.field_size()),
             base::size(kFieldMetadata));
   for (int i = 0; i < upload.field_size(); ++i) {
@@ -4548,18 +4578,18 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     if (field.id_attribute.empty()) {
       EXPECT_FALSE(metadata.has_id());
     } else {
-      EXPECT_EQ(
-          metadata.id().encoded_bits(),
-          encoder.Encode(form_signature, field_signature,
-                         RandomizedEncoder::FIELD_ID, field.id_attribute));
+      EXPECT_EQ(metadata.id().encoded_bits(),
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_ID,
+                                         field.id_attribute));
     }
     if (field.name.empty()) {
       EXPECT_FALSE(metadata.has_name());
     } else {
-      EXPECT_EQ(
-          metadata.name().encoded_bits(),
-          encoder.Encode(form_signature, field_signature,
-                         RandomizedEncoder::FIELD_NAME, field.name_attribute));
+      EXPECT_EQ(metadata.name().encoded_bits(),
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_NAME,
+                                         field.name_attribute));
     }
     if (field.form_control_type.empty()) {
       EXPECT_FALSE(metadata.has_type());
@@ -4573,41 +4603,78 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
       EXPECT_FALSE(metadata.has_label());
     } else {
       EXPECT_EQ(metadata.label().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_LABEL, field.label));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_LABEL,
+                                         field.label));
     }
     if (field.aria_label.empty()) {
       EXPECT_FALSE(metadata.has_aria_label());
     } else {
       EXPECT_EQ(metadata.aria_label().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_ARIA_LABEL,
-                               field.aria_label));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_ARIA_LABEL,
+                                         field.aria_label));
     }
     if (field.aria_description.empty()) {
       EXPECT_FALSE(metadata.has_aria_description());
     } else {
-      EXPECT_EQ(metadata.aria_description().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                               field.aria_description));
+      EXPECT_EQ(
+          metadata.aria_description().encoded_bits(),
+          encoder.EncodeForTesting(form_signature, field_signature,
+                                   RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                                   field.aria_description));
     }
     if (field.css_classes.empty()) {
       EXPECT_FALSE(metadata.has_css_class());
     } else {
       EXPECT_EQ(metadata.css_class().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_CSS_CLASS,
-                               field.css_classes));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_CSS_CLASS,
+                                         field.css_classes));
     }
     if (field.placeholder.empty()) {
       EXPECT_FALSE(metadata.has_placeholder());
     } else {
       EXPECT_EQ(metadata.placeholder().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_PLACEHOLDER,
-                               field.placeholder));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_PLACEHOLDER,
+                                         field.placeholder));
     }
+  }
+}
+
+TEST_F(FormStructureTest, Metadata_OnlySendFullUrlWithUserConsent) {
+  for (bool has_consent : {true, false}) {
+    SCOPED_TRACE(testing::Message() << " has_consent=" << has_consent);
+    SetUpForEncoder();
+    FormData form;
+    form.id_attribute = ASCIIToUTF16("form-id");
+    form.url = GURL("http://www.foo.com/");
+    form.full_url = GURL("http://www.foo.com/?foo=bar");
+
+    // One form field needed to be valid form.
+    FormFieldData field;
+    field.form_control_type = "text";
+    field.label = ASCIIToUTF16("email");
+    field.name = ASCIIToUTF16("email");
+    form.fields.push_back(field);
+
+    TestingPrefServiceSimple prefs;
+    prefs.registry()->RegisterBooleanPref(
+        RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
+    prefs.SetBoolean(
+        RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled,
+        has_consent);
+    prefs.registry()->RegisterStringPref(prefs::kAutofillUploadEncodingSeed,
+                                         "default_secret");
+    prefs.SetString(prefs::kAutofillUploadEncodingSeed, "user_secret");
+
+    FormStructure form_structure(form);
+    form_structure.set_randomized_encoder(RandomizedEncoder::Create(&prefs));
+    AutofillUploadContents upload = AutofillUploadContents();
+    form_structure.EncodeUploadRequest({}, true, "", true, &upload);
+
+    EXPECT_EQ(has_consent, upload.randomized_form_metadata().has_url());
   }
 }
 
@@ -4738,7 +4805,7 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4790,7 +4857,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4845,7 +4912,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4894,7 +4961,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 1318412689U, nullptr, "text");
@@ -4945,7 +5012,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, nullptr, nullptr);
   test::FillQueryField(query_form->add_field(), 3654076265U, nullptr, nullptr);
@@ -7130,14 +7197,481 @@ TEST_F(FormStructureTest, OneFieldPasswordFormShouldNotBeUpload) {
 TEST_F(FormStructureTest, CreateForPasswordManagerUpload) {
   std::unique_ptr<FormStructure> form =
       FormStructure::CreateForPasswordManagerUpload(
-          1234 /* form_signature */, {1, 10, 100} /* field_signatures */);
+          FormSignature(1234),
+          {FieldSignature(1), FieldSignature(10), FieldSignature(100)});
   AutofillUploadContents upload;
-  EXPECT_EQ(1234u, form->form_signature());
+  EXPECT_EQ(FormSignature(1234u), form->form_signature());
   ASSERT_EQ(3u, form->field_count());
-  ASSERT_EQ(100u, form->field(2)->GetFieldSignature());
+  ASSERT_EQ(FieldSignature(100u), form->field(2)->GetFieldSignature());
   EXPECT_TRUE(form->EncodeUploadRequest(
       {} /* available_field_types */, false /* form_was_autofilled */,
       "" /*login_form_signature*/, true /*observed_submission*/, &upload));
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME|.
+TEST_F(FormStructureTest, NoAutocompleteSectionNames) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(3, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(4, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(5, PHONE_HOME_NUMBER);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(6U, form_structure.field_count());
+
+  EXPECT_EQ("fullName_1-default", form_structure.field(0)->section);
+  EXPECT_EQ("fullName_1-default", form_structure.field(1)->section);
+  EXPECT_EQ("fullName_1-default", form_structure.field(2)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(3)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(4)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(5)->section);
+}
+
+// Tests that the immediate recurrence of the |PHONE_HOME_NUMBER| type does not
+// lead to a section split.
+TEST_F(FormStructureTest, NoSplitByRecurringPhoneFieldType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Mobile Number");
+  field.name = ASCIIToUTF16("mobileNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.autocomplete_attribute = "section-blue billing tel";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Mobile Number");
+  field.name = ASCIIToUTF16("mobileNumber");
+  field.autocomplete_attribute = "section-blue billing tel";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(2, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(3, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(4, PHONE_BILLING_NUMBER);
+  form_structure.set_overall_field_type_for_testing(5, PHONE_BILLING_NUMBER);
+  form_structure.set_overall_field_type_for_testing(6, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(7U, form_structure.field_count());
+
+  EXPECT_EQ("blue-billing-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(4)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(5)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(6)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |ADDRESS_HOME_COUNTRY|.
+TEST_F(FormStructureTest, SplitByRecurringFieldType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(2)->section);
+  EXPECT_EQ("country_2-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL| and another with the second appearance of a field of
+// type |ADDRESS_HOME_COUNTRY|.
+TEST_F(FormStructureTest, SplitByNewAutocompleteSectionNameAndRecurringType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue billing country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("country_2-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL|.
+TEST_F(FormStructureTest, SplitByNewAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_CITY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_CITY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL|.
+TEST_F(
+    FormStructureTest,
+    FromEmptyAutocompleteSectionToDefinedOneWithSplitByNewAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_CITY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+}
+
+// Tests if all the fields in the form belong to the same section when the
+// second field has the autcomplete-section attribute set.
+TEST_F(FormStructureTest, FromEmptyAutocompleteSectionToDefinedOne) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(2U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+}
+
+// Tests if all the fields in the form belong to the same section when one of
+// the field is ignored.
+TEST_F(FormStructureTest,
+       FromEmptyAutocompleteSectionToDefinedOneWithIgnoredField) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("FullName");
+  field.name = ASCIIToUTF16("fullName");
+  field.is_focusable = true;  // visible
+  field.autocomplete_attribute = "shipping name";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(3U, form_structure.field_count());
+
+  EXPECT_EQ("-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("-shipping-default", form_structure.field(2)->section);
+}
+
+// Tests if the autocomplete section name other than 'shipping' and 'billing'
+// are ignored.
+TEST_F(FormStructureTest, IgnoreAribtraryAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-red ship name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(2U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
 }
 
 }  // namespace autofill

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
@@ -94,6 +93,13 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   void OnDeferredNavigationProcessed(
       std::vector<apps::IntentPickerAppInfo> apps);
+
+  // Whether or not the intent picker UI should be displayed without the user
+  // clicking in the omnibox's icon.
+  bool ShouldAutoDisplayUi(
+      const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
 
   base::WeakPtrFactory<CommonAppsNavigationThrottle> weak_factory_{this};
 

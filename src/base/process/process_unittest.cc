@@ -248,7 +248,6 @@ TEST_F(ProcessTest, WaitForExit) {
   Process process(SpawnChild("FastSleepyChildProcess"));
   ASSERT_TRUE(process.IsValid());
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
@@ -258,7 +257,6 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
   Process process(SpawnChild("SleepyChildProcess"));
   ASSERT_TRUE(process.IsValid());
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   TimeDelta timeout = TestTimeouts::tiny_timeout();
   EXPECT_FALSE(process.WaitForExitWithTimeout(timeout, &exit_code));
@@ -266,6 +264,36 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
 
   process.Terminate(kDummyExitCode, false);
 }
+
+#if defined(OS_WIN)
+TEST_F(ProcessTest, WaitForExitOrEventWithProcessExit) {
+  Process process(SpawnChild("FastSleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  base::win::ScopedHandle stop_watching_handle(
+      CreateEvent(nullptr, TRUE, FALSE, nullptr));
+
+  int exit_code = kDummyExitCode;
+  EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
+            base::Process::WaitExitStatus::PROCESS_EXITED);
+  EXPECT_EQ(0, exit_code);
+}
+
+TEST_F(ProcessTest, WaitForExitOrEventWithEventSet) {
+  Process process(SpawnChild("SleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  base::win::ScopedHandle stop_watching_handle(
+      CreateEvent(nullptr, TRUE, TRUE, nullptr));
+
+  int exit_code = kDummyExitCode;
+  EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
+            base::Process::WaitExitStatus::STOP_EVENT_SIGNALED);
+  EXPECT_EQ(kDummyExitCode, exit_code);
+
+  process.Terminate(kDummyExitCode, false);
+}
+#endif  // OS_WIN
 
 // Ensure that the priority of a process is restored correctly after
 // backgrounding and restoring.
@@ -344,12 +372,20 @@ TEST_F(ProcessTest, PredefinedProcessIsRunning) {
 }
 #endif
 
+// Test is disabled on Windows AMR64 because
+// TerminateWithHeapCorruption() isn't expected to work there.
+// See: https://crbug.com/1054423
 #if defined(OS_WIN)
-TEST_F(ProcessTest, HeapCorruption) {
+#if defined(ARCH_CPU_ARM64)
+#define MAYBE_HeapCorruption DISABLED_HeapCorruption
+#else
+#define MAYBE_HeapCorruption HeapCorruption
+#endif
+TEST_F(ProcessTest, MAYBE_HeapCorruption) {
   EXPECT_EXIT(base::debug::win::TerminateWithHeapCorruption(),
               ::testing::ExitedWithCode(STATUS_HEAP_CORRUPTION), "");
 }
-#endif
+#endif  // OS_WIN
 
 TEST_F(ProcessTest, ChildProcessIsRunning) {
   Process process(SpawnChild("SleepyChildProcess"));

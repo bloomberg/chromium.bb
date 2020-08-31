@@ -47,6 +47,10 @@ namespace component_updater {
 class ComponentUpdateService;
 }
 
+namespace query_tiles {
+class TileService;
+}
+
 class TemplateURLService;
 
 class AutocompleteProviderClient {
@@ -74,6 +78,7 @@ class AutocompleteProviderClient {
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() = 0;
   virtual std::unique_ptr<KeywordExtensionsDelegate>
   GetKeywordExtensionsDelegate(KeywordProvider* keyword_provider) = 0;
+  virtual query_tiles::TileService* GetQueryTileService() const = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.

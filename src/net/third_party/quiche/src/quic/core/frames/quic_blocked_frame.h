@@ -7,6 +7,7 @@
 
 #include <ostream>
 
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 
 namespace quic {
@@ -16,7 +17,7 @@ namespace quic {
 // send data. The BLOCKED frame is purely advisory and optional.
 // Based on SPDY's BLOCKED frame (undocumented as of 2014-01-28).
 struct QUIC_EXPORT_PRIVATE QuicBlockedFrame {
-  QuicBlockedFrame();
+  QuicBlockedFrame() = default;
   QuicBlockedFrame(QuicControlFrameId control_frame_id, QuicStreamId stream_id);
   QuicBlockedFrame(QuicControlFrameId control_frame_id,
                    QuicStreamId stream_id,
@@ -28,22 +29,18 @@ struct QUIC_EXPORT_PRIVATE QuicBlockedFrame {
 
   // A unique identifier of this control frame. 0 when this frame is received,
   // and non-zero when sent.
-  QuicControlFrameId control_frame_id;
+  QuicControlFrameId control_frame_id = kInvalidControlFrameId;
 
-  // The stream this frame applies to.  0 is a special case meaning the overall
-  // connection rather than a specific stream.
-  //
-  // For IETF QUIC, the stream_id controls whether an IETF QUIC
-  // BLOCKED or STREAM_BLOCKED frame is generated.
-  // If stream_id is 0 then a BLOCKED frame is generated and transmitted,
-  // if non-0, a STREAM_BLOCKED.
+  // 0 is a special case meaning the connection is blocked, rather than a
+  // stream.  So stream_id 0 corresponds to a BLOCKED frame and non-0
+  // corresponds to a STREAM_BLOCKED.
   // TODO(fkastenholz): This should be converted to use
   // QuicUtils::GetInvalidStreamId to get the correct invalid stream id value
   // and not rely on 0.
-  QuicStreamId stream_id;
+  QuicStreamId stream_id = 0;
 
   // For Google QUIC, the offset is ignored.
-  QuicStreamOffset offset;
+  QuicStreamOffset offset = 0;
 };
 
 }  // namespace quic

@@ -1,12 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/pin_keyboard.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="pin_keyboard.html">
 
 <!--
 
@@ -81,6 +81,7 @@ Where:
     <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
         on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}"
         has-error="[[hasError_(problemMessageId_, problemClass_)]]"
+        disabled="[[isSetModesCallPending_]]"
         enable-placeholder="[[enablePlaceholder]]" enable-letters>
       <!-- Warning/error; only shown if title is hidden. -->
       <div id="problemDiv" class$="[[problemClass_]]"
@@ -93,7 +94,5 @@ Where:
       </div>
     </pin-keyboard>
   </template>
-  <script
-      src="chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.js">
-  </script>
+  <script src="setup_pin_keyboard.js"></script>
 </dom-module>

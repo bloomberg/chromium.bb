@@ -14,6 +14,8 @@ import json
 import hashlib
 import os
 import struct
+import subprocess
+import sys
 
 import mock
 
@@ -36,6 +38,9 @@ from chromite.lib import sysroot_lib
 from chromite.scripts import pushimage
 
 from chromite.service import artifacts as artifacts_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -260,7 +265,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
-    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
+    self.rc.assertCommandCalled(create_cmd, stdout=True)
     self.assertEqual(self.rc.call_count, 1)
 
   def testCreateSuiteAndWait(self):
@@ -297,8 +302,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
-    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
-    self.rc.assertCommandCalled(wait_cmd, redirect_stdout=True)
+    self.rc.assertCommandCalled(create_cmd, stdout=True)
+    self.rc.assertCommandCalled(wait_cmd, stdout=True)
     self.assertEqual(self.rc.call_count, 2)
 
   def testSuiteFailure(self):
@@ -374,7 +379,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.json_dump_result, None)
 
     self.rc.assertCommandCalled(
-        create_cmd, redirect_stdout=True, input=test_plan)
+        create_cmd, stdout=True, input=test_plan)
     self.assertEqual(self.rc.call_count, 1)
 
 
@@ -593,7 +598,7 @@ The suite job has another 2:39:39.789250 till timeout.
       cmd_result = self.RunHWTestSuite()
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             encoding='utf-8', combine_stdout_stderr=True,
+                             encoding='utf-8', stderr=subprocess.STDOUT,
                              env=mock.ANY)
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
@@ -629,10 +634,10 @@ The suite job has another 2:39:39.789250 till timeout.
                                        suite_min_duts=self._suite_min_duts)
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY,
+                             stderr=subprocess.STDOUT, env=mock.ANY,
                              encoding='utf-8')
     self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY,
+                             stderr=subprocess.STDOUT, env=mock.ANY,
                              encoding='utf-8')
     self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -684,7 +689,7 @@ The suite job has another 2:39:39.789250 till timeout.
       cmd_result = self.RunHWTestSuite(wait_for_results=True)
       self.assertIsInstance(cmd_result.to_raise, failures_lib.TestLabFailure)
       self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY,
+                               stderr=subprocess.STDOUT, env=mock.ANY,
                                encoding='utf-8')
 
   def testRunHWTestBoardNotAvailable(self):
@@ -739,10 +744,10 @@ The suite job has another 2:39:39.789250 till timeout.
     with self.OutputCapturer() as output:
       self.RunHWTestSuite(wait_for_results=self._wait_for_results)
       self.assertCommandCalled(self.create_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY,
+                               stderr=subprocess.STDOUT, env=mock.ANY,
                                encoding='utf-8')
       self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY,
+                               stderr=subprocess.STDOUT, env=mock.ANY,
                                encoding='utf-8')
       self.assertIn(self.WAIT_RETRY_OUTPUT.strip(),
                     '\n'.join(output.GetStdoutLines()))
@@ -756,14 +761,14 @@ The suite job has another 2:39:39.789250 till timeout.
         (self.JOB_ID_OUTPUT, False, None),
         (self.JSON_OUTPUT, False, None),
     ])
-    with (mock.patch.object(commands, '_HWTestWait', return_value=False)):
+    with mock.patch.object(commands, '_HWTestWait', return_value=False):
       with self.OutputCapturer() as output:
         self.RunHWTestSuite(wait_for_results=self._wait_for_results)
         self.assertCommandCalled(self.create_cmd, capture_output=True,
-                                 combine_stdout_stderr=True, env=mock.ANY,
+                                 stderr=subprocess.STDOUT, env=mock.ANY,
                                  encoding='utf-8')
         self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
-                                 combine_stdout_stderr=True, env=mock.ANY,
+                                 stderr=subprocess.STDOUT, env=mock.ANY,
                                  encoding='utf-8')
         self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
         self.assertIn(self.JSON_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -837,14 +842,12 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     """See if we can generate the max cros_mark_as_stable commandline."""
     commands.UprevPush(self._buildroot,
                        dryrun=False,
-                       staging_branch='stage-branch',
                        overlay_type=constants.PUBLIC_OVERLAYS,
                        workspace='/workspace')
     self.assertCommandContains([
         'push',
         '--buildroot', '/workspace',
         '--overlay-type', 'public',
-        '--staging_branch=%s' % 'stage-branch',
     ])
 
   def testVerifyBinpkgMissing(self):
@@ -875,9 +878,6 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     kwargs.setdefault('usepkg', default)
     kwargs.setdefault('skip_chroot_upgrade', default)
 
-    kwargs.setdefault('event_file',
-                      os.path.join(self._buildroot, 'events',
-                                   'build-test-events.json'))
     commands.Build(buildroot=self._buildroot, board='amd64-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 
@@ -1322,7 +1322,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       m.assert_called_once_with(self._buildroot, ['autotest'],
                                 os.path.join(self._tarball_dir,
                                              'autotest.tar.bz2'),
-                                cwd=self._cwd, error_code_ok=True)
+                                cwd=self._cwd, check=False)
 
   def testBuildAutotestPackagesTarball(self):
     """Tests that generating the autotest packages tarball is correct."""
@@ -1374,7 +1374,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tar_mock.assert_called_once_with(
         self._buildroot, expected_files,
         os.path.join(self._tarball_dir, commands.AUTOTEST_SERVER_PACKAGE),
-        cwd=self._cwd, extra_args=mock.ANY, error_code_ok=True)
+        cwd=self._cwd, extra_args=mock.ANY, check=False)
 
   def testBuildTastTarball(self):
     """Tests that generating the Tast private bundles tarball is correct."""
@@ -1477,8 +1477,8 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
             [portage_util.SplitCPV('sys-kernel/kernel-1-r0'),
              portage_util.SplitCPV('sys-kernel/kernel-2-r0')]])
     # Drop "stripped packages".
-    pkg_dir = os.path.join(self._buildroot, 'chroot', 'build', 'test-board',
-                           'stripped-packages')
+    sysroot = os.path.join(self._buildroot, 'chroot', 'build', 'test-board')
+    pkg_dir = os.path.join(sysroot, 'stripped-packages')
     osutils.Touch(os.path.join(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
                   makedirs=True)
     sys_kernel = os.path.join(pkg_dir, 'sys-kernel')
@@ -1486,10 +1486,11 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     osutils.Touch(os.path.join(sys_kernel, 'kernel-1-r01.tbz2'), makedirs=True)
     osutils.Touch(os.path.join(sys_kernel, 'kernel-2-r0.tbz1'), makedirs=True)
     osutils.Touch(os.path.join(sys_kernel, 'kernel-2-r0.tbz2'), makedirs=True)
-    stripped_files_list = [os.path.abspath(x) for x in [
-        os.path.join(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
-        os.path.join(pkg_dir, 'sys-kernel', 'kernel-1-r0.tbz2'),
-        os.path.join(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2')]]
+    stripped_files_list = [
+        os.path.join('stripped-packages', 'chromeos-base', 'chrome-1-r0.tbz2'),
+        os.path.join('stripped-packages', 'sys-kernel', 'kernel-1-r0.tbz2'),
+        os.path.join('stripped-packages', 'sys-kernel', 'kernel-2-r0.tbz2'),
+    ]
 
     tar_mock = self.PatchObject(commands, 'BuildTarball')
     self.PatchObject(cros_build_lib, 'run')
@@ -1500,7 +1501,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tar_mock.assert_called_once_with(
         self._buildroot, stripped_files_list,
         os.path.join(self.tempdir, 'stripped-packages.tar'),
-        compressed=False)
+        cwd=sysroot, compressed=False)
 
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):
@@ -1889,7 +1890,7 @@ class GenerateAFDOArtifactsTests(
 
     self.mock_command.assert_called_once_with(
         self.buildroot, cmd,
-        chromite_cmd=True, redirect_stdout=True)
+        chromite_cmd=True, stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
@@ -1948,7 +1949,7 @@ class VerifyAFDOArtifactsTests(
 
     self.mock_command.assert_called_once_with(
         self.buildroot, cmd,
-        chromite_cmd=True, redirect_stdout=True)
+        chromite_cmd=True, stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
@@ -1972,7 +1973,6 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
     android_build_branch = 'refs/build'
     boards = ['foo', 'bar']
     android_version = '1.0'
-    android_gts_build_branch = 'refs/gts-build'
 
     # Write out the mock response.
     response_package = {'category': 'android', 'package_name': 'android',
@@ -1984,8 +1984,7 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
 
     new_atom = commands.MarkAndroidAsStable(
         buildroot, tracking_branch, android_package, android_build_branch,
-        boards=boards, android_version=android_version,
-        android_gts_build_branch=android_gts_build_branch)
+        boards=boards, android_version=android_version)
 
     # Make sure the atom is rebuilt correctly from the package info.
     self.assertEqual('android/android-1.0-r2', new_atom)
@@ -1995,7 +1994,6 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
         'packageName': android_package,
         'androidBuildBranch': android_build_branch,
         'androidVersion': android_version,
-        'androidGtsBuildBranch': android_gts_build_branch,
         'buildTargets': [{'name': 'foo'}, {'name': 'bar'}],
     }
     call_patch.assert_called_with(

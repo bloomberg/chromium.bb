@@ -28,10 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as PerfUI from '../perf_ui/perf_ui.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export class PaintProfilerView extends UI.HBox {
+export class PaintProfilerView extends UI.Widget.HBox {
   /**
    * @param {function(string=)} showImageCallback
    */
@@ -41,8 +47,8 @@ export class PaintProfilerView extends UI.HBox {
     this.contentElement.classList.add('paint-profiler-overview');
     this._canvasContainer = this.contentElement.createChild('div', 'paint-profiler-canvas-container');
     this._progressBanner = this.contentElement.createChild('div', 'full-widget-dimmed-banner hidden');
-    this._progressBanner.textContent = Common.UIString('Profiling\u2026');
-    this._pieChart = new PerfUI.PieChart(
+    this._progressBanner.textContent = Common.UIString.UIString('Profiling…');
+    this._pieChart = new PerfUI.PieChart.PieChart(
         {chartName: ls`Profiling Results`, size: 55, formatter: this._formatPieChartTime.bind(this)});
     this._pieChart.element.classList.add('paint-profiler-pie-chart');
     this.contentElement.appendChild(this._pieChart.element);
@@ -65,23 +71,23 @@ export class PaintProfilerView extends UI.HBox {
   }
 
   /**
-   * @return {!Object.<string, !LayerViewer.PaintProfilerCategory>}
+   * @return {!Object.<string, !PaintProfilerCategory>}
    */
   static categories() {
     if (PaintProfilerView._categories) {
       return PaintProfilerView._categories;
     }
     PaintProfilerView._categories = {
-      shapes: new PaintProfilerCategory('shapes', Common.UIString('Shapes'), 'rgb(255, 161, 129)'),
-      bitmap: new PaintProfilerCategory('bitmap', Common.UIString('Bitmap'), 'rgb(136, 196, 255)'),
-      text: new PaintProfilerCategory('text', Common.UIString('Text'), 'rgb(180, 255, 137)'),
-      misc: new PaintProfilerCategory('misc', Common.UIString('Misc'), 'rgb(206, 160, 255)')
+      shapes: new PaintProfilerCategory('shapes', Common.UIString.UIString('Shapes'), 'rgb(255, 161, 129)'),
+      bitmap: new PaintProfilerCategory('bitmap', Common.UIString.UIString('Bitmap'), 'rgb(136, 196, 255)'),
+      text: new PaintProfilerCategory('text', Common.UIString.UIString('Text'), 'rgb(180, 255, 137)'),
+      misc: new PaintProfilerCategory('misc', Common.UIString.UIString('Misc'), 'rgb(206, 160, 255)')
     };
     return PaintProfilerView._categories;
   }
 
   /**
-   * @return {!Object.<string, !LayerViewer.PaintProfilerCategory>}
+   * @return {!Object.<string, !PaintProfilerCategory>}
    */
   static _initLogItemCategories() {
     if (PaintProfilerView._logItemCategoriesMap) {
@@ -134,10 +140,10 @@ export class PaintProfilerView extends UI.HBox {
 
   /**
    * @param {!Object} logItem
-   * @return {!LayerViewer.PaintProfilerCategory}
+   * @return {!PaintProfilerCategory}
    */
   static _categoryForLogItem(logItem) {
-    const method = logItem.method.toTitleCase();
+    const method = Platform.StringUtilities.toTitleCase(logItem.method);
 
     const logItemCategories = PaintProfilerView._initLogItemCategories();
     let result = logItemCategories[method];
@@ -156,8 +162,8 @@ export class PaintProfilerView extends UI.HBox {
   }
 
   /**
-   * @param {?SDK.PaintProfilerSnapshot} snapshot
-   * @param {!Array.<!SDK.PaintProfilerLogItem>} log
+   * @param {?SDK.PaintProfiler.PaintProfilerSnapshot} snapshot
+   * @param {!Array.<!SDK.PaintProfiler.PaintProfilerLogItem>} log
    * @param {?Protocol.DOM.Rect} clipRect
    */
   async setSnapshotAndLog(snapshot, log, clipRect) {
@@ -171,7 +177,7 @@ export class PaintProfilerView extends UI.HBox {
 
     if (!this._snapshot) {
       this._update();
-      this._pieChart.setTotal(0);
+      this._pieChart.initializeWithTotal(0);
       this._selectionWindow.setEnabled(false);
       return;
     }
@@ -299,7 +305,7 @@ export class PaintProfilerView extends UI.HBox {
         timeByCategory[category.color] += time;
       }
     }
-    this._pieChart.setTotal(totalTime / this._profiles.length);
+    this._pieChart.initializeWithTotal(totalTime / this._profiles.length);
     for (const color in timeByCategory) {
       this._pieChart.addSlice(timeByCategory[color] / this._profiles.length, color);
     }
@@ -325,8 +331,8 @@ export class PaintProfilerView extends UI.HBox {
     const screenRight = this._selectionWindow.windowRight * this._canvas.width;
     const barLeft = Math.floor(screenLeft / this._outerBarWidth);
     const barRight = Math.floor((screenRight + this._innerBarWidth - this._barPaddingWidth / 2) / this._outerBarWidth);
-    const stepLeft = Number.constrain(barLeft * this._samplesPerBar, 0, this._log.length - 1);
-    const stepRight = Number.constrain(barRight * this._samplesPerBar, 0, this._log.length);
+    const stepLeft = Platform.NumberUtilities.clamp(barLeft * this._samplesPerBar, 0, this._log.length - 1);
+    const stepRight = Platform.NumberUtilities.clamp(barRight * this._samplesPerBar, 0, this._log.length);
 
     return {left: stepLeft, right: stepRight};
   }
@@ -369,31 +375,32 @@ export const Events = {
 /**
  * @unrestricted
  */
-export class PaintProfilerCommandLogView extends UI.ThrottledWidget {
+export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super();
     this.setMinimumSize(100, 25);
     this.element.classList.add('overflow-auto');
 
-    this._treeOutline = new UI.TreeOutlineInShadow();
+    this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     UI.ARIAUtils.setAccessibleName(this._treeOutline.contentElement, ls`Command Log`);
     this.element.appendChild(this._treeOutline.element);
+    this.setDefaultFocusedElement(this._treeOutline.contentElement);
 
     this._log = [];
   }
 
   /**
-   * @param {!Array.<!SDK.PaintProfilerLogItem>} log
+   * @param {!Array.<!SDK.PaintProfiler.PaintProfilerLogItem>} log
    */
   setCommandLog(log) {
     this._log = log;
-    /** @type {!Map<!SDK.PaintProfilerLogItem>} */
+    /** @type {!Map<!SDK.PaintProfiler.PaintProfilerLogItem>} */
     this._treeItemCache = new Map();
     this.updateWindow({left: 0, right: this._log.length});
   }
 
   /**
-   * @param {!SDK.PaintProfilerLogItem} logItem
+   * @param {!SDK.PaintProfiler.PaintProfilerLogItem} logItem
    */
   _appendLogItem(logItem) {
     let treeElement = this._treeItemCache.get(logItem);
@@ -448,10 +455,10 @@ export class PaintProfilerCommandLogView extends UI.ThrottledWidget {
 /**
  * @unrestricted
  */
-export class LogTreeElement extends UI.TreeElement {
+export class LogTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!LayerViewer.PaintProfilerCommandLogView} ownerView
-   * @param {!SDK.PaintProfilerLogItem} logItem
+   * @param {!PaintProfilerCommandLogView} ownerView
+   * @param {!SDK.PaintProfiler.PaintProfilerLogItem} logItem
    */
   constructor(ownerView, logItem) {
     super('', !!logItem.params);
@@ -526,7 +533,7 @@ export class LogTreeElement extends UI.TreeElement {
 /**
  * @unrestricted
  */
-export class LogPropertyTreeElement extends UI.TreeElement {
+export class LogPropertyTreeElement extends UI.TreeOutline.TreeElement {
   /**
    * @param {!{name: string, value}} property
    */
@@ -536,7 +543,7 @@ export class LogPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} element
+   * @param {!UI.TreeOutline.TreeElement} element
    * @param {string} name
    * @param {*} value
    */
@@ -583,36 +590,3 @@ export class PaintProfilerCategory {
     this.color = color;
   }
 }
-
-/* Legacy exported object */
-self.LayerViewer = self.LayerViewer || {};
-
-/* Legacy exported object */
-LayerViewer = LayerViewer || {};
-
-/**
- * @constructor
- */
-LayerViewer.PaintProfilerView = PaintProfilerView;
-
-LayerViewer.PaintProfilerView.Events = Events;
-
-/**
- * @constructor
- */
-LayerViewer.PaintProfilerCommandLogView = PaintProfilerCommandLogView;
-
-/**
- * @constructor
- */
-LayerViewer.LogTreeElement = LogTreeElement;
-
-/**
- * @constructor
- */
-LayerViewer.LogPropertyTreeElement = LogPropertyTreeElement;
-
-/**
- * @constructor
- */
-LayerViewer.PaintProfilerCategory = PaintProfilerCategory;

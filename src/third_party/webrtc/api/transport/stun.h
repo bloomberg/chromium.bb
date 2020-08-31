@@ -34,7 +34,9 @@ enum StunMessageType {
   STUN_BINDING_RESPONSE = 0x0101,
   STUN_BINDING_ERROR_RESPONSE = 0x0111,
 
-  // Method 0x80
+  // Method 0x80, GOOG-PING is a variant of STUN BINDING
+  // that is sent instead of a STUN BINDING if the binding
+  // was identical to the one before.
   GOOG_PING_REQUEST = 0x200,
   GOOG_PING_RESPONSE = 0x300,
   GOOG_PING_ERROR_RESPONSE = 0x310,
@@ -160,6 +162,10 @@ class StunMessage {
 
   void SetType(int type) { type_ = static_cast<uint16_t>(type); }
   bool SetTransactionID(const std::string& str);
+
+  // Get a list of all of the attribute types in the "comprehension required"
+  // range that were not recognized.
+  std::vector<uint16_t> GetNonComprehendedAttributes() const;
 
   // Gets the desired attribute value, or NULL if no such attribute type exists.
   const StunAddressAttribute* GetAddress(int type) const;
@@ -513,6 +519,9 @@ class StunUInt16ListAttribute : public StunAttribute {
   std::vector<uint16_t>* attr_types_;
 };
 
+// Return a string e.g "STUN BINDING request".
+std::string StunMethodToString(int msg_type);
+
 // Returns the (successful) response type for the given request type.
 // Returns -1 if |request_type| is not a valid request type.
 int GetStunSuccessResponseType(int request_type);
@@ -669,11 +678,17 @@ enum IceAttributeType {
 
 // When adding new attributes to STUN_ATTR_GOOG_MISC_INFO
 // (which is a list of uint16_t), append the indices of these attributes below
-// and do NOT change the exisiting indices. The indices of attributes must be
+// and do NOT change the existing indices. The indices of attributes must be
 // consistent with those used in ConnectionRequest::Prepare when forming a STUN
 // message for the ICE connectivity check, and they are used when parsing a
 // received STUN message.
-enum class IceGoogMiscInfoAttributeIndex {};
+enum class IceGoogMiscInfoBindingRequestAttributeIndex {
+  SUPPORT_GOOG_PING_VERSION = 0,
+};
+
+enum class IceGoogMiscInfoBindingResponseAttributeIndex {
+  SUPPORT_GOOG_PING_VERSION = 0,
+};
 
 // RFC 5245-defined errors.
 enum IceErrorCode {

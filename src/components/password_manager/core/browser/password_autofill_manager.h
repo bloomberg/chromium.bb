@@ -12,9 +12,11 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -92,6 +94,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();
 
+  // Called if no suggestions were found. Assumed to be mutually exclusive with
+  // |OnAddPasswordFillData|.
+  void OnNoCredentialsFound();
+
   // A public version of FillSuggestion(), only for use in tests.
   bool FillSuggestionForTest(const base::string16& username);
 
@@ -105,22 +111,52 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 #endif  // defined(UNIT_TEST)
 
  private:
-  // Attempts to fill the password associated with user name |username|, and
-  // returns true if it was successful.
-  bool FillSuggestion(const base::string16& username);
+  using ForPasswordField = util::StrongAlias<class ForPasswordFieldTag, bool>;
+  using OffersGeneration = util::StrongAlias<class OffersGenerationTag, bool>;
+  using ShowAllPasswords = util::StrongAlias<class ShowAllPasswordsTag, bool>;
+  using ShowPasswordSuggestions =
+      util::StrongAlias<class ShowPasswordSuggestionsTag, bool>;
 
-  // Attempts to preview the password associated with user name |username|, and
-  // returns true if it was successful.
-  bool PreviewSuggestion(const base::string16& username);
+  // Builds the suggestions used to show or update the autofill popup.
+  std::vector<autofill::Suggestion> BuildSuggestions(
+      const base::string16& username_filter,
+      ForPasswordField for_password_field,
+      ShowAllPasswords show_all_passwords,
+      OffersGeneration for_generation,
+      ShowPasswordSuggestions show_password_suggestions);
 
-  // If |current_username| matches a username for one of the login mappings in
-  // |fill_data|, returns true and assigns the password and the original signon
+  // Called just before showing a popup to log which |suggestions| were shown.
+  void LogMetricsForSuggestions(
+      const std::vector<autofill::Suggestion>& suggestions) const;
+
+  // Validates and forwards the given objects to the autofill client.
+  bool ShowPopup(const gfx::RectF& bounds,
+                 base::i18n::TextDirection text_direction,
+                 const std::vector<autofill::Suggestion>& suggestions);
+
+  // Validates and forwards the given objects to the autofill client.
+  void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions);
+
+  // Attempts to find and fill the suggestions with the user name |username| and
+  // the |item_id| indicating the store (account-stored or local). Returns true
+  // if it was successful.
+  bool FillSuggestion(const base::string16& username, int item_id);
+
+  // Attempts to find and preview the suggestions with the user name |username|
+  // and the |item_id| indicating the store (account-stored or local). Returns
+  // true if it was successful.
+  bool PreviewSuggestion(const base::string16& username, int item_id);
+
+  // If one of the login mappings in |fill_data| matches |current_username| and
+  // |item_id| (indicating whether a credential is stored in account or
+  // locally), return true and assign the password and the original signon
   // realm to |password_and_meta_data|. Note that if the credential comes from
   // the same realm as the one we're filling to, the |realm| field will be left
   // empty, as this is the behavior of |PasswordFormFillData|.
   // Otherwise, returns false and leaves |password_and_meta_data| untouched.
   bool GetPasswordAndMetadataForUsername(
       const base::string16& current_username,
+      int item_id,
       const autofill::PasswordFormFillData& fill_data,
       autofill::PasswordAndMetadata* password_and_meta_data);
 
@@ -131,6 +167,18 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // unavailable a fallback globe icon is used. The request to the favicon
   // store is canceled on navigation.
   void OnFaviconReady(const favicon_base::FaviconImageResult& result);
+
+  // Replaces |unlock_item| with a loading symbol and triggers a reauth flow to
+  // opt in for passwords account storage, with OnUnlockReauthCompleted as
+  // callback.
+  void OnUnlockItemAccepted(autofill::PopupItemId unlock_item);
+
+  // If reauth failed, resets the suggestions to show the |unlock_item| again.
+  // Otherwise, triggers either generation or filling based on the |unlock_item|
+  // that was clicked.
+  void OnUnlockReauthCompleted(
+      autofill::PopupItemId unlock_item,
+      PasswordManagerClient::ReauthSucceeded reauth_succeeded);
 
   std::unique_ptr<autofill::PasswordFormFillData> fill_data_;
 

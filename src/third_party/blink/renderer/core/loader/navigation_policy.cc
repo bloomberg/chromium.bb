@@ -31,8 +31,8 @@
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
@@ -74,24 +74,21 @@ NavigationPolicy NavigationPolicyFromEventModifiers(int16_t button,
   return kNavigationPolicyCurrentTab;
 }
 
-NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
+NavigationPolicy NavigationPolicyFromEventInternal(const Event* event) {
   if (!event)
     return kNavigationPolicyCurrentTab;
 
-  if (event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
+  if (const auto* mouse_event = DynamicTo<MouseEvent>(event)) {
     return NavigationPolicyFromEventModifiers(
         mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
         mouse_event->altKey(), mouse_event->metaKey());
-  } else if (event->IsKeyboardEvent()) {
+  } else if (const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event)) {
     // The click is simulated when triggering the keypress event.
-    KeyboardEvent* key_event = ToKeyboardEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
         key_event->metaKey());
-  } else if (event->IsGestureEvent()) {
+  } else if (const auto* gesture_event = DynamicTo<GestureEvent>(event)) {
     // The click is simulated when triggering the gesture-tap event
-    GestureEvent* gesture_event = ToGestureEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
         gesture_event->altKey(), gesture_event->metaKey());
@@ -105,7 +102,7 @@ NavigationPolicy NavigationPolicyFromCurrentEvent() {
     return kNavigationPolicyCurrentTab;
 
   int16_t button = 0;
-  if (event->GetType() == WebInputEvent::kMouseUp) {
+  if (event->GetType() == WebInputEvent::Type::kMouseUp) {
     const WebMouseEvent* mouse_event = static_cast<const WebMouseEvent*>(event);
 
     switch (mouse_event->button) {
@@ -140,7 +137,7 @@ NavigationPolicy NavigationPolicyFromCurrentEvent() {
 
 }  // namespace
 
-NavigationPolicy NavigationPolicyFromEvent(Event* event) {
+NavigationPolicy NavigationPolicyFromEvent(const Event* event) {
   NavigationPolicy event_policy = NavigationPolicyFromEventInternal(event);
   NavigationPolicy input_policy = NavigationPolicyFromCurrentEvent();
 

@@ -10,8 +10,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
@@ -61,15 +64,12 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
     case media::AudioLatency::LATENCY_INTERACTIVE:
       return media::AudioLatency::GetInteractiveBufferSize(
           hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_RTC:
       return media::AudioLatency::GetRtcBufferSize(
           hardware_params.sample_rate(), hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_PLAYBACK:
       return media::AudioLatency::GetHighLatencyBufferSize(
           hardware_params.sample_rate(), hardware_params.frames_per_buffer());
-      break;
     case media::AudioLatency::LATENCY_EXACT_MS:
       return media::AudioLatency::GetExactBufferSize(
           base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
@@ -77,7 +77,6 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
           hardware_capabilities.min_frames_per_buffer,
           hardware_capabilities.max_frames_per_buffer,
           media::limits::kMaxWebAudioBufferSize);
-      break;
     default:
       NOTREACHED();
   }
@@ -180,12 +179,12 @@ void RendererWebAudioDeviceImpl::Start() {
       GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
       media::AudioSinkParameters(session_id_, std::string()));
 
-  // Use the media thread instead of the render thread for fake Render() calls
+  // Use a task runner instead of the render thread for fake Render() calls
   // since it has special connotations for Blink and garbage collection. Timeout
   // value chosen to be highly unlikely in the normal case.
   webaudio_suspender_.reset(new media::SilentSinkSuspender(
       this, base::TimeDelta::FromSeconds(30), sink_params_, sink_,
-      GetMediaTaskRunner()));
+      GetSuspenderTaskRunner()));
   sink_->Initialize(sink_params_, webaudio_suspender_.get());
 
   sink_->Start();
@@ -196,6 +195,8 @@ void RendererWebAudioDeviceImpl::Pause() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (sink_)
     sink_->Pause();
+  if (webaudio_suspender_)
+    webaudio_suspender_->OnPaused();
 }
 
 void RendererWebAudioDeviceImpl::Resume() {
@@ -220,6 +221,14 @@ double RendererWebAudioDeviceImpl::SampleRate() {
 
 int RendererWebAudioDeviceImpl::FramesPerBuffer() {
   return sink_params_.frames_per_buffer();
+}
+
+void RendererWebAudioDeviceImpl::SetDetectSilence(
+    bool enable_silence_detection) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (webaudio_suspender_)
+    webaudio_suspender_->SetDetectSilence(enable_silence_detection);
 }
 
 int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
@@ -249,18 +258,19 @@ void RendererWebAudioDeviceImpl::OnRenderError() {
   // TODO(crogers): implement error handling.
 }
 
-void RendererWebAudioDeviceImpl::SetMediaTaskRunnerForTesting(
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner) {
-  media_task_runner_ = media_task_runner;
+void RendererWebAudioDeviceImpl::SetSuspenderTaskRunnerForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  suspender_task_runner_ = std::move(task_runner);
 }
 
-const scoped_refptr<base::SingleThreadTaskRunner>&
-RendererWebAudioDeviceImpl::GetMediaTaskRunner() {
-  if (!media_task_runner_) {
-    media_task_runner_ =
-        RenderThreadImpl::current()->GetMediaThreadTaskRunner();
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererWebAudioDeviceImpl::GetSuspenderTaskRunner() {
+  if (!suspender_task_runner_) {
+    suspender_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskPriority::USER_VISIBLE,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
-  return media_task_runner_;
+  return suspender_task_runner_;
 }
 
 }  // namespace content

@@ -68,6 +68,7 @@ struct NetEqLifetimeStatistics {
   uint64_t concealment_events = 0;
   uint64_t jitter_buffer_delay_ms = 0;
   uint64_t jitter_buffer_emitted_count = 0;
+  uint64_t jitter_buffer_target_delay_ms = 0;
   uint64_t inserted_samples_for_deceleration = 0;
   uint64_t removed_samples_for_acceleration = 0;
   uint64_t silent_concealed_samples = 0;
@@ -194,13 +195,6 @@ class NetEq {
   // Returns 0 on success, -1 on failure.
   virtual int InsertPacket(const RTPHeader& rtp_header,
                            rtc::ArrayView<const uint8_t> payload) = 0;
-
-  // Deprecated. Use the version without the `receive_timestamp` argument.
-  int InsertPacket(const RTPHeader& rtp_header,
-                   rtc::ArrayView<const uint8_t> payload,
-                   uint32_t /*receive_timestamp*/) {
-    return InsertPacket(rtp_header, payload);
-  }
 
   // Lets NetEq know that a packet arrived with an empty payload. This typically
   // happens when empty packets are used for probing the network channel, and

@@ -9,7 +9,7 @@ namespace osp {
 
 QueryEventHeader::QueryEventHeader() = default;
 QueryEventHeader::QueryEventHeader(QueryEventHeader::Type response_type,
-                                   platform::UdpSocket* socket)
+                                   UdpSocket* socket)
     : response_type(response_type), socket(socket) {}
 QueryEventHeader::QueryEventHeader(QueryEventHeader&&) noexcept = default;
 QueryEventHeader::~QueryEventHeader() = default;

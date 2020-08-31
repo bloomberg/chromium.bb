@@ -483,6 +483,10 @@ const char* AdapterTypeToStatsType(rtc::AdapterType type) {
     case rtc::ADAPTER_TYPE_WIFI:
       return STATSREPORT_ADAPTER_TYPE_WIFI;
     case rtc::ADAPTER_TYPE_CELLULAR:
+    case rtc::ADAPTER_TYPE_CELLULAR_2G:
+    case rtc::ADAPTER_TYPE_CELLULAR_3G:
+    case rtc::ADAPTER_TYPE_CELLULAR_4G:
+    case rtc::ADAPTER_TYPE_CELLULAR_5G:
       return STATSREPORT_ADAPTER_TYPE_WWAN;
     case rtc::ADAPTER_TYPE_VPN:
       return STATSREPORT_ADAPTER_TYPE_VPN;
@@ -1024,7 +1028,7 @@ class VideoMediaChannelStatsGatherer final : public MediaChannelStatsGatherer {
 
   void ExtractStats(StatsCollector* collector) const override {
     ExtractSenderReceiverStats(collector, video_media_info.receivers,
-                               video_media_info.senders);
+                               video_media_info.aggregated_senders);
   }
 
   bool HasRemoteAudio() const override { return false; }

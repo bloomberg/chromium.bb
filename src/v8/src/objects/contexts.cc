@@ -36,6 +36,16 @@ Handle<ScriptContextTable> ScriptContextTable::Extend(
   return result;
 }
 
+void Context::Initialize(Isolate* isolate) {
+  ScopeInfo scope_info = this->scope_info();
+  int header = scope_info.ContextHeaderLength();
+  for (int var = 0; var < scope_info.ContextLocalCount(); var++) {
+    if (scope_info.ContextLocalInitFlag(var) == kNeedsInitialization) {
+      set(header + var, ReadOnlyRoots(isolate).the_hole_value());
+    }
+  }
+}
+
 bool ScriptContextTable::Lookup(Isolate* isolate, ScriptContextTable table,
                                 String name, LookupResult* result) {
   DisallowHeapAllocation no_gc;
@@ -246,7 +256,7 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
           DCHECK(context->IsWithContext());
           maybe = Just(ABSENT);
         } else {
-          LookupIterator it(object, name, object);
+          LookupIterator it(isolate, object, name, object);
           Maybe<bool> found = UnscopableLookup(&it, context->IsWithContext());
           if (found.IsNothing()) {
             maybe = Nothing<PropertyAttributes>();
@@ -359,7 +369,7 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       Object ext = context->get(EXTENSION_INDEX);
       if (ext.IsJSReceiver()) {
         Handle<JSReceiver> extension(JSReceiver::cast(ext), isolate);
-        LookupIterator it(extension, name, extension);
+        LookupIterator it(isolate, extension, name, extension);
         Maybe<bool> found = JSReceiver::HasProperty(&it);
         if (found.FromMaybe(false)) {
           *attributes = NONE;
@@ -499,34 +509,6 @@ STATIC_ASSERT(NativeContext::kMicrotaskQueueOffset ==
 STATIC_ASSERT(NativeContext::kSize ==
               (Context::SizeFor(NativeContext::NATIVE_CONTEXT_SLOTS) +
                kSystemPointerSize));
-
-void NativeContext::SetDetachedWindowReason(
-    v8::Context::DetachedWindowReason reason) {
-  set_detached_window_reason(Smi::FromEnum(reason));
-
-  Isolate* isolate = GetIsolate();
-  // kWindowNotDetached is used when initializing. Don't initialize to time
-  // based value due to build artifact inconsistency (see crbug/1029863).
-  // It's safe to use 0, because the value isn't used in the kWindowNotDetached
-  // case.
-  set_detached_window_time_in_seconds(Smi::FromInt(
-      reason == v8::Context::kWindowNotDetached
-          ? 0
-          : static_cast<int>(isolate->time_millis_since_init() / 1000)));
-}
-
-v8::Context::DetachedWindowReason NativeContext::GetDetachedWindowReason()
-    const {
-  return static_cast<v8::Context::DetachedWindowReason>(
-      detached_window_reason().value());
-}
-
-int NativeContext::SecondsSinceDetachedWindow() const {
-  DCHECK(detached_window_reason().value() != v8::Context::kWindowNotDetached);
-  Isolate* isolate = GetIsolate();
-  return static_cast<int>(isolate->time_millis_since_init() / 1000 -
-                          detached_window_time_in_seconds().value());
-}
 
 }  // namespace internal
 }  // namespace v8

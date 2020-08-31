@@ -6,12 +6,13 @@
 <script>
 'use strict';
 
-self.testRunner.setPermission('wake-lock-screen', 'granted', location.origin, location.origin);
+promise_test(async t => {
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
+                                location.origin, location.origin);
 
-promise_test(t => {
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  return promise_rejects(t, "NotAllowedError", navigator.wakeLock.request('screen'));
+  return promise_rejects_dom(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, "navigator.wakeLock.request('screen') fails when the document is hidden");
 
 // This test currently checks for Chromium-specific behavior: WakeLock::request()
@@ -21,16 +22,22 @@ promise_test(t => {
 // A more interoperable test would allow both |screenLock| to reject with
 // NotAllowedError as well as it resolving to a WakeLockSentinel that would fire
 // a "release" event upon page vsibility change.
-promise_test(t => {
+promise_test(async t => {
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
+                                location.origin, location.origin);
+
   window.testRunner.setPageVisibility('visible');
 
   const screenLock = navigator.wakeLock.request('screen');
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  return promise_rejects(t, "NotAllowedError", screenLock);
+  return promise_rejects_dom(t, "NotAllowedError", screenLock);
 }, "navigator.wakeLock.request('screen') aborts when the page is hidden");
 
 promise_test(async t => {
+  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
+                                location.origin, location.origin);
+
   window.testRunner.setPageVisibility('visible');
 
   const screenLock1 = await navigator.wakeLock.request('screen');

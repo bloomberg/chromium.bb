@@ -5,6 +5,9 @@
 source_set("banners") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_banner_accessibility_util.h",
+    "infobar_banner_accessibility_util.mm",
+    "infobar_banner_consumer.h",
     "infobar_banner_delegate.h",
     "infobar_banner_view_controller.h",
     "infobar_banner_view_controller.mm",
@@ -14,8 +17,11 @@ source_set("banners") {
     "//base",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
 }
@@ -25,6 +31,7 @@ source_set("public") {
   sources = [
     "infobar_banner_constants.h",
     "infobar_banner_constants.mm",
+    "infobar_banner_container.h",
     "infobar_banner_interaction_delegate.h",
     "infobar_banner_presentation_state.h",
   ]
@@ -33,9 +40,7 @@ source_set("public") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "infobar_banner_view_controller_unittest.mm",
-  ]
+  sources = [ "infobar_banner_view_controller_unittest.mm" ]
   deps = [
     ":banners",
     "//ios/chrome/browser/infobars:public",

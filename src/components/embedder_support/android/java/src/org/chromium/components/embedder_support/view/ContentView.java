@@ -22,6 +22,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForO;
@@ -52,7 +54,6 @@ public class ContentView extends FrameLayout
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
             new ObserverList<>();
     private ViewEventSink mViewEventSink;
-    private EventForwarder mEventForwarder;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host
@@ -100,6 +101,10 @@ public class ContentView extends FrameLayout
 
         setOnHierarchyChangeListener(this);
         setOnSystemUiVisibilityChangeListener(this);
+    }
+
+    public WebContents getWebContents() {
+        return mWebContents;
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
@@ -253,23 +258,27 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return getEventForwarder().onKeyUp(keyCode, event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onKeyUp(keyCode, event) : false;
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        return isFocused() ? getEventForwarder().dispatchKeyEvent(event)
-                           : super.dispatchKeyEvent(event);
+        if (!isFocused()) return super.dispatchKeyEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.dispatchKeyEvent(event) : false;
     }
 
     @Override
     public boolean onDragEvent(DragEvent event) {
-        return getEventForwarder().onDragEvent(event, this);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onDragEvent(event, this) : false;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return getEventForwarder().onTouchEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onTouchEvent(event) : false;
     }
 
     /**
@@ -279,7 +288,8 @@ public class ContentView extends FrameLayout
      */
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        boolean consumed = getEventForwarder().onHoverEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        boolean consumed = forwarder != null ? forwarder.onHoverEvent(event) : false;
         WebContentsAccessibility wcax = getWebContentsAccessibility();
         if (wcax != null && !wcax.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
@@ -287,14 +297,13 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return getEventForwarder().onGenericMotionEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onGenericMotionEvent(event) : false;
     }
 
+    @Nullable
     private EventForwarder getEventForwarder() {
-        if (mEventForwarder == null) {
-            mEventForwarder = mWebContents.getEventForwarder();
-        }
-        return mEventForwarder;
+        return webContentsAttached() ? mWebContents.getEventForwarder() : null;
     }
 
     private ViewEventSink getViewEventSink() {
@@ -321,12 +330,14 @@ public class ContentView extends FrameLayout
      */
     @Override
     public void scrollBy(int x, int y) {
-        getEventForwarder().scrollBy(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollBy(x, y);
     }
 
     @Override
     public void scrollTo(int x, int y) {
-        getEventForwarder().scrollTo(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollTo(x, y);
     }
 
     @Override
@@ -422,6 +433,14 @@ public class ContentView extends FrameLayout
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                End Implementation of ViewEventSink.InternalAccessDelegate                 //
     ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private boolean hasValidWebContents() {
+        return mWebContents != null && !mWebContents.isDestroyed();
+    }
+
+    private boolean webContentsAttached() {
+        return hasValidWebContents() && mWebContents.getTopLevelNativeWindow() != null;
+    }
 
     private static class ContentViewApi23 extends ContentView {
         public ContentViewApi23(Context context, WebContents webContents) {

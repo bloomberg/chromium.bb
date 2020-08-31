@@ -26,14 +26,17 @@ class ASH_EXPORT DesksBarView : public views::View,
                                 public views::ButtonListener,
                                 public DesksController::Observer {
  public:
-  DesksBarView(OverviewGrid* overview_grid);
+  explicit DesksBarView(OverviewGrid* overview_grid);
   ~DesksBarView() override;
 
   // Returns the height of the desk bar view which is based on the given |width|
-  // and |desks_bar_view|'s content.
+  // of the overview grid that exists on |root| (which is the same as the width
+  // of the bar) and |desks_bar_view|'s content (since they may not fit the
+  // given |width| forcing us to use the compact layout).
   // If |desks_bar_view| is nullptr, the height returned will be solely based on
   // the |width|.
-  static int GetBarHeightForWidth(const DesksBarView* desks_bar_view,
+  static int GetBarHeightForWidth(aura::Window* root,
+                                  const DesksBarView* desks_bar_view,
                                   int width);
 
   // Creates and returns the widget that contains the DeskBarView in overview
@@ -63,6 +66,14 @@ class ASH_EXPORT DesksBarView : public views::View,
   // layout.
   void Init();
 
+  // Returns true if a desk name is being modified using its mini view's
+  // DeskNameView on this bar.
+  bool IsDeskNameBeingModified() const;
+
+  // Returns the scale factor by which a window's size will be scaled down when
+  // it is dragged and hovered on this desks bar.
+  float GetOnHoverWindowSizeScaleFactor() const;
+
   // Updates the visibility state of the close buttons on all the mini_views as
   // a result of mouse and gesture events.
   void OnHoverStateMayHaveChanged();
@@ -77,6 +88,8 @@ class ASH_EXPORT DesksBarView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Returns true if the width of the DesksBarView is below a defined
   // threshold or the contents no longer fit within this object's bounds in
@@ -104,10 +117,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Returns the mini_view associated with |desk| or nullptr if no mini_view
   // has been created for it yet.
   DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
-
-  // Updates the text labels of the existing mini_views. This is called after a
-  // mini_view has been removed.
-  void UpdateMiniViewsLabels();
 
   // Returns the X offset of the first mini_view on the left (if there's one),
   // or the X offset of this view's center point when there are no mini_views.

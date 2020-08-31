@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

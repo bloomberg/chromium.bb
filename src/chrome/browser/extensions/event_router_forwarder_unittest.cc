@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -90,9 +89,6 @@ class EventRouterForwarderTest : public testing::Test {
   EventRouterForwarderTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-#if defined(OS_MACOSX)
-    base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
-#endif
     std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
         new base::PowerMonitorDeviceSource());
     base::PowerMonitor::Initialize(std::move(power_monitor_source));

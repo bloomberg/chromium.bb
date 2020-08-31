@@ -212,7 +212,13 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
   net::SpawnedTestServer proxy_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyConfig) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_SetProxyConfig DISABLED_SetProxyConfig
+#else
+#define MAYBE_SetProxyConfig SetProxyConfig
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, MAYBE_SetProxyConfig) {
   std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
   proxy_config->proxy_rules().ParseFromString(
       proxy_server()->host_port_pair().ToString());
@@ -279,7 +285,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_DefaultSizes DISABLED_DefaultSizes
+#else
+#define MAYBE_DefaultSizes DefaultSizes
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_DefaultSizes) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
@@ -368,11 +380,13 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
     base::ThreadRestrictions::SetIOAllowed(true);
     base::CreateTemporaryFile(&launcher_stamp_);
 
-    FILE* launcher_file = base::CreateAndOpenTemporaryFile(&launcher_script_);
-    fprintf(launcher_file, "#!/bin/sh\n");
-    fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp_.value().c_str());
-    fprintf(launcher_file, "exec $@\n");
-    fclose(launcher_file);
+    base::ScopedFILE launcher_file =
+        base::CreateAndOpenTemporaryStream(&launcher_script_);
+    fprintf(launcher_file.get(), "#!/bin/sh\n");
+    fprintf(launcher_file.get(), "echo $@ > %s\n",
+            launcher_stamp_.value().c_str());
+    fprintf(launcher_file.get(), "exec $@\n");
+    launcher_file.reset();
 #if !defined(OS_FUCHSIA)
     base::SetPosixFilePermissions(launcher_script_,
                                   base::FILE_PERMISSION_READ_BY_USER |
@@ -613,7 +627,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, TraceUsingBrowserDevToolsTarget) {
   EXPECT_LT(0u, tracing_data->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_WindowPrint DISABLED_WindowPrint
+#else
+#define MAYBE_WindowPrint WindowPrint
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_WindowPrint) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -635,8 +655,14 @@ class HeadlessBrowserAllowInsecureLocalhostTest : public HeadlessBrowserTest {
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_AllowInsecureLocalhostFlag DISABLED_AllowInsecureLocalhostFlag
+#else
+#define MAYBE_AllowInsecureLocalhostFlag AllowInsecureLocalhostFlag
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserAllowInsecureLocalhostTest,
-                       AllowInsecureLocalhostFlag) {
+                       MAYBE_AllowInsecureLocalhostFlag) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_server.ServeFilesFromSourceDirectory("headless/test/data");
@@ -704,7 +730,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
   (void)web_contents;
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_ServerWantsClientCertificate DISABLED_ServerWantsClientCertificate
+#else
+#define MAYBE_ServerWantsClientCertificate ServerWantsClientCertificate
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
+                       MAYBE_ServerWantsClientCertificate) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
 
@@ -723,12 +756,18 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, AIAFetching) {
-  net::SpawnedTestServer::SSLOptions ssl_options(
-      net::SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE);
-  net::SpawnedTestServer server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_AIAFetching DISABLED_AIAFetching
+#else
+#define MAYBE_AIAFetching AIAFetching
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_AIAFetching) {
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.intermediate = net::EmbeddedTestServer::IntermediateType::kByAIA;
+  server.SetSSLConfig(cert_config);
+  server.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(server.Start());
 
   HeadlessBrowserContext* browser_context =

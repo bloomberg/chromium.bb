@@ -29,7 +29,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -150,9 +149,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     // ensure that any DRP in the pref is cleared even if the DRP configuration
     // was changed. See http://crbug.com/476610.
     ProxyPrefMigrationResult rv;
-    if (Config()->ContainsDataReductionProxy(proxy_rules))
-      rv = PROXY_PREF_CLEARED_DRP;
-    else if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
+    if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
       rv = PROXY_PREF_CLEARED_GOOGLEZIP;
     else
       return PROXY_PREF_NOT_CLEARED;
@@ -239,10 +236,6 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(profile_prefs, std::move(service));
 
-#if defined(OS_CHROMEOS)
-  data_reduction_proxy_service()->config()->EnableGetNetworkIdAsynchronously();
-#endif
-
   data_reduction_proxy::DataReductionProxySettings::
       SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
           &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
@@ -283,49 +276,16 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
       data_reduction_proxy_service()->GetEffectiveConnectionType());
   data->set_connection_type(net::NetworkChangeNotifier::ConnectionType(
       data_reduction_proxy_service()->GetConnectionType()));
-  data->set_used_data_reduction_proxy(
-      IsConfiguredDataReductionProxy(handle->GetProxyServer()));
+  data->set_used_data_reduction_proxy(false);
 
   if (!headers || headers->IsRedirect(nullptr))
     return data;
 
-  if (handle->WasResponseCached() &&
-      (headers->HasHeader(data_reduction_proxy::chrome_proxy_header()) ||
-       // Check for via header since Chrome-Proxy header maybe missing in
-       // streamed responses.
-       data_reduction_proxy::HasDataReductionProxyViaHeader(*headers,
-                                                            nullptr)) &&
-      !handle->GetURL().SchemeIsCryptographic()) {
-    data->set_was_cached_data_reduction_proxy_response(true);
-  }
-
-  switch (data_reduction_proxy::ParseResponseTransform(*headers)) {
-    case data_reduction_proxy::TRANSFORM_LITE_PAGE:
-      data->set_lite_page_received(true);
-      break;
-    case data_reduction_proxy::TRANSFORM_IDENTITY:
-    case data_reduction_proxy::TRANSFORM_COMPRESSED_VIDEO:
-    case data_reduction_proxy::TRANSFORM_NONE:
-    case data_reduction_proxy::TRANSFORM_UNKNOWN:
-      break;
-  }
-
-  const ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<const ChromeNavigationUIData*>(handle->GetNavigationUIData());
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService() &&
-      base::FeatureList::IsEnabled(
-          data_reduction_proxy::features::
-              kDataReductionProxyPopulatePreviewsPageIDToPingback)) {
-    if (chrome_navigation_ui_data) {
-      data->set_page_id(
-          chrome_navigation_ui_data->data_reduction_proxy_page_id());
-    }
-    const auto session_key =
-        data_reduction_proxy::DataReductionProxyRequestOptions::
-            GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());
-    if (session_key)
-      data->set_session_key(session_key.value());
-  }
+  const auto session_key =
+      data_reduction_proxy::DataReductionProxyRequestOptions::
+          GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());
+  if (session_key)
+    data->set_session_key(session_key.value());
   return data;
 }
 

@@ -51,7 +51,7 @@ WorkerFetchContext::WorkerFetchContext(
   DCHECK(web_context_);
 }
 
-KURL WorkerFetchContext::GetSiteForCookies() const {
+net::SiteForCookies WorkerFetchContext::GetSiteForCookies() const {
   return web_context_->SiteForCookies();
 }
 
@@ -144,9 +144,10 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition,
+    const base::Optional<String>& devtools_id) const {
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      *this, request_context, redirect_status, url, reporting_policy,
+      *this, request_context, redirect_status, url, reporting_disposition,
       global_scope_->IsWorkletGlobalScope());
 }
 
@@ -226,12 +227,14 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   const SecurityOrigin* security_origin = GetResourceFetcherProperties()
                                               .GetFetchClientSettingsObject()
                                               .GetSecurityOrigin();
-  WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
-      *security_origin, info, *global_scope_);
+  mojom::blink::ResourceTimingInfoPtr mojo_info =
+      Performance::GenerateResourceTiming(*security_origin, info,
+                                          *global_scope_);
   // |info| is taken const-ref but this can make destructive changes to
   // WorkerTimingContainer on |info| when a page is controlled by a service
   // worker.
-  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType(),
+  resource_timing_notifier_->AddResourceTiming(std::move(mojo_info),
+                                               info.InitiatorType(),
                                                info.TakeWorkerTimingReceiver());
 }
 
@@ -240,10 +243,12 @@ void WorkerFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
+  if (!GetResourceFetcherProperties().IsDetached())
+    probe::SetDevToolsIds(Probe(), out_request);
   MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
-      global_scope_, network::mojom::RequestContextFrameType::kNone,
+      global_scope_, mojom::RequestContextFrameType::kNone,
       global_scope_->ContentSettingsClient());
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())
@@ -277,7 +282,7 @@ bool WorkerFetchContext::AllowRunningInsecureContent(
       enabled_per_settings, url);
 }
 
-void WorkerFetchContext::Trace(blink::Visitor* visitor) {
+void WorkerFetchContext::Trace(Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(content_security_policy_);

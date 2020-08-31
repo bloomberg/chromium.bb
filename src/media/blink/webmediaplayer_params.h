@@ -14,12 +14,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/layers/surface_layer.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_switches.h"
 #include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
+#include "media/blink/power_status_helper.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -43,6 +44,7 @@ using CreateSurfaceLayerBridgeCB =
         blink::WebSurfaceLayerBridgeObserver*,
         cc::UpdateSubmissionStateCB)>;
 
+class Demuxer;
 class SwitchableAudioRendererSink;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
@@ -51,12 +53,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
  public:
   // Returns true if load will deferred. False if it will run immediately.
   using DeferLoadCB = base::RepeatingCallback<bool(base::OnceClosure)>;
-
-  // Callback to obtain the media ContextProvider.
-  // Requires being called on the media thread.
-  // The argument callback is also called on the media thread as a reply.
-  using ContextProviderCB =
-      base::Callback<void(base::Callback<void(viz::ContextProvider*)>)>;
 
   // Callback to tell V8 about the amount of memory used by the WebMediaPlayer
   // instance.  The input parameter is the delta in bytes since the last call to
@@ -84,11 +80,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool embedded_media_experience_enabled,
       mojo::PendingRemote<mojom::MediaMetricsProvider> metrics_provider,
       CreateSurfaceLayerBridgeCB bridge_callback,
-      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> raster_context_provider,
       blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
       bool is_background_suspend_enabled,
       bool is_background_video_play_enabled,
-      bool is_background_video_track_optimization_supported);
+      bool is_background_video_track_optimization_supported,
+      bool is_remoting_renderer_enabled,
+      std::unique_ptr<Demuxer> demuxer_override,
+      std::unique_ptr<PowerStatusHelper> power_status_helper);
 
   ~WebMediaPlayerParams();
 
@@ -151,8 +150,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return std::move(create_bridge_callback_);
   }
 
-  scoped_refptr<viz::ContextProvider> context_provider() {
-    return context_provider_;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider() {
+    return raster_context_provider_;
   }
 
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video() const {
@@ -169,6 +168,16 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   bool IsBackgroundVideoTrackOptimizationSupported() const {
     return is_background_video_track_optimization_supported_;
+  }
+
+  bool IsRemotingRendererEnabled() const {
+    return is_remoting_renderer_enabled_;
+  }
+
+  std::unique_ptr<Demuxer> TakeDemuxerOverride();
+
+  std::unique_ptr<PowerStatusHelper> TakePowerStatusHelper() {
+    return std::move(power_status_helper_);
   }
 
  private:
@@ -189,7 +198,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   const bool embedded_media_experience_enabled_;
   mojo::PendingRemote<mojom::MediaMetricsProvider> metrics_provider_;
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
-  scoped_refptr<viz::ContextProvider> context_provider_;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video_;
 
   // Whether the renderer should automatically suspend media playback in
@@ -199,6 +208,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool is_background_video_playback_enabled_ = true;
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
+  // Whether the media in this frame is a remoting media.
+  bool is_remoting_renderer_enabled_ = false;
+
+  // Optional custom demuxer to use instead of the standard demuxers.
+  std::unique_ptr<Demuxer> demuxer_override_;
+
+  std::unique_ptr<PowerStatusHelper> power_status_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

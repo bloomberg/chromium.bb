@@ -6,8 +6,8 @@
 
 #include <type_traits>
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 VirtualConnectionManager::VirtualConnectionManager() = default;
 
@@ -15,7 +15,7 @@ VirtualConnectionManager::~VirtualConnectionManager() = default;
 
 void VirtualConnectionManager::AddConnection(
     VirtualConnection virtual_connection,
-    VirtualConnection::AssociatedData&& associated_data) {
+    VirtualConnection::AssociatedData associated_data) {
   auto& socket_map = connections_[virtual_connection.socket_id];
   auto local_entries = socket_map.equal_range(virtual_connection.local_id);
   auto it = std::find_if(
@@ -81,7 +81,7 @@ size_t VirtualConnectionManager::RemoveConnectionsByLocalId(
 }
 
 size_t VirtualConnectionManager::RemoveConnectionsBySocketId(
-    uint32_t socket_id,
+    int socket_id,
     VirtualConnection::CloseReason reason) {
   auto entry = connections_.find(socket_id);
   if (entry == connections_.end()) {
@@ -115,5 +115,5 @@ VirtualConnectionManager::GetConnectionData(
   return absl::nullopt;
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

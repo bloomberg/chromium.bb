@@ -4,7 +4,7 @@
 
 #include "util/alarm.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 
@@ -58,8 +58,7 @@ class Alarm::CancelableFunctor {
   Alarm* alarm_;
 };
 
-Alarm::Alarm(platform::ClockNowFunctionPtr now_function,
-             platform::TaskRunner* task_runner)
+Alarm::Alarm(ClockNowFunctionPtr now_function, TaskRunner* task_runner)
     : now_function_(now_function), task_runner_(task_runner) {
   OSP_DCHECK(now_function_);
   OSP_DCHECK(task_runner_);
@@ -73,29 +72,30 @@ Alarm::~Alarm() {
 }
 
 void Alarm::Cancel() {
-  scheduled_task_ = platform::TaskRunner::Task();
+  scheduled_task_ = TaskRunner::Task();
 }
 
-void Alarm::ScheduleWithTask(platform::TaskRunner::Task task,
-                             platform::Clock::time_point alarm_time) {
+void Alarm::ScheduleWithTask(TaskRunner::Task task,
+                             Clock::time_point desired_alarm_time) {
   OSP_DCHECK(task.valid());
 
   scheduled_task_ = std::move(task);
-  alarm_time_ = alarm_time;
+
+  const Clock::time_point now = now_function_();
+  alarm_time_ = std::max(now, desired_alarm_time);
 
   // Ensure that a later firing will occur, and not too late.
   if (queued_fire_) {
-    if (next_fire_time_ <= alarm_time) {
+    if (next_fire_time_ <= alarm_time_) {
       return;
     }
     queued_fire_->Cancel();
     OSP_DCHECK(!queued_fire_);
   }
-  InvokeLater(now_function_(), alarm_time);
+  InvokeLater(now, alarm_time_);
 }
 
-void Alarm::InvokeLater(platform::Clock::time_point now,
-                        platform::Clock::time_point fire_time) {
+void Alarm::InvokeLater(Clock::time_point now, Clock::time_point fire_time) {
   OSP_DCHECK(!queued_fire_);
   next_fire_time_ = fire_time;
   // Note: Instantiating the CancelableFunctor below sets |this->queued_fire_|.
@@ -109,7 +109,7 @@ void Alarm::TryInvoke() {
 
   // If this is an early firing, re-schedule for later. This happens if
   // Schedule() was called again before this firing had occurred.
-  const platform::Clock::time_point now = now_function_();
+  const Clock::time_point now = now_function_();
   if (now < alarm_time_) {
     InvokeLater(now, alarm_time_);
     return;
@@ -119,8 +119,11 @@ void Alarm::TryInvoke() {
   // itself: a) calls any Alarm methods re-entrantly, or b) causes the
   // destruction of this Alarm instance.
   // WARNING: |this| is not valid after here!
-  platform::TaskRunner::Task task = std::move(scheduled_task_);
+  TaskRunner::Task task = std::move(scheduled_task_);
   task();
 }
+
+// static
+constexpr Clock::time_point Alarm::kImmediately;
 
 }  // namespace openscreen

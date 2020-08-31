@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
@@ -23,7 +24,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom-forward.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class WebContents;
@@ -32,10 +34,6 @@ class WebContents;
 namespace media_message_center {
 class MediaSessionNotificationItem;
 }  // namespace media_message_center
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 class MediaDialogDelegate;
 class MediaNotificationContainerImpl;
@@ -47,8 +45,7 @@ class MediaNotificationService
       public media_message_center::MediaNotificationController,
       public MediaNotificationContainerObserver {
  public:
-  MediaNotificationService(Profile* profile,
-                           service_manager::Connector* connector);
+  explicit MediaNotificationService(Profile* profile);
   MediaNotificationService(const MediaNotificationService&) = delete;
   MediaNotificationService& operator=(const MediaNotificationService&) = delete;
   ~MediaNotificationService() override;
@@ -67,11 +64,14 @@ class MediaNotificationService
   void HideNotification(const std::string& id) override;
   void RemoveItem(const std::string& id) override;
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
-  void LogMediaSessionActionButtonPressed(const std::string& id) override;
+  void LogMediaSessionActionButtonPressed(
+      const std::string& id,
+      media_session::mojom::MediaSessionAction action) override;
 
   // MediaNotificationContainerObserver implementation.
   void OnContainerExpanded(bool expanded) override {}
   void OnContainerMetadataChanged() override {}
+  void OnContainerActionsChanged() override {}
   void OnContainerClicked(const std::string& id) override;
   void OnContainerDismissed(const std::string& id) override;
   void OnContainerDestroyed(const std::string& id) override;
@@ -114,6 +114,8 @@ class MediaNotificationService
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest, DismissesMediaSession);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
                            HidesInactiveNotifications);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
+                           HidingNotification_FeatureDisabled);
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -125,8 +127,10 @@ class MediaNotificationService
     kMaxValue = kMediaSessionStopped,
   };
 
-  class Session : public content::WebContentsObserver,
-                  public media_session::mojom::MediaControllerObserver {
+  class Session
+      : public content::WebContentsObserver,
+        public media_session::mojom::MediaControllerObserver,
+        public media_router::WebContentsPresentationManager::Observer {
    public:
     Session(MediaNotificationService* owner,
             const std::string& id,
@@ -138,7 +142,7 @@ class MediaNotificationService
     Session& operator=(const Session&) = delete;
     ~Session() override;
 
-    // content::WebContentsObserver implementation.
+    // content::WebContentsObserver:
     void WebContentsDestroyed() override;
 
     // media_session::mojom::MediaControllerObserver:
@@ -154,6 +158,10 @@ class MediaNotificationService
         const base::Optional<base::UnguessableToken>& request_id) override {}
     void MediaSessionPositionChanged(
         const base::Optional<media_session::MediaPosition>& position) override;
+
+    // media_router::WebContentsPresentationManager::Observer:
+    void OnMediaRoutesChanged(
+        const std::vector<media_router::MediaRoute>& routes) override;
 
     media_message_center::MediaSessionNotificationItem* item() {
       return item_.get();
@@ -174,6 +182,8 @@ class MediaNotificationService
     // Called when the notification associated with this session is pulled out
     // into an overlay or it's overlay is closed.
     void OnSessionOverlayStateChanged(bool is_in_overlay);
+
+    bool IsPlaying();
 
    private:
     static void RecordDismissReason(GlobalMediaControlsDismissReason reason);
@@ -210,7 +220,12 @@ class MediaNotificationService
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
         observer_receiver_{this};
+
+    base::WeakPtr<media_router::WebContentsPresentationManager>
+        presentation_manager_;
   };
+
+  void OnItemUnfrozen(const std::string& id);
 
   void OnReceivedAudioFocusRequests(
       std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions);
@@ -218,7 +233,6 @@ class MediaNotificationService
   base::WeakPtr<media_message_center::MediaNotificationItem>
   GetNotificationItem(const std::string& id);
 
-  service_manager::Connector* const connector_;
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
   OverlayMediaNotificationsManager overlay_media_notifications_manager_;
@@ -261,6 +275,10 @@ class MediaNotificationService
   std::unique_ptr<CastMediaNotificationProvider> cast_notification_provider_;
 
   base::ObserverList<MediaNotificationServiceObserver> observers_;
+
+  // Tracks the number of times we have recorded an action for a specific
+  // source. We use this to cap the number of UKM recordings per site.
+  std::map<ukm::SourceId, int> actions_recorded_to_ukm_;
 
   base::WeakPtrFactory<MediaNotificationService> weak_ptr_factory_{this};
 };

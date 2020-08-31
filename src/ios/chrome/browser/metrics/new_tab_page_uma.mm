@@ -8,8 +8,6 @@
 #include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
@@ -20,42 +18,40 @@
 
 namespace new_tab_page_uma {
 
-bool IsCurrentlyOnNTP(ios::ChromeBrowserState* browser_state) {
-  WebStateList* webStateList =
-      TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state)
-          .webStateList;
-  return webStateList->GetActiveWebState() &&
-         webStateList->GetActiveWebState()->GetVisibleURL() ==
-             kChromeUINewTabURL;
-}
-
-void RecordAction(ios::ChromeBrowserState* browserState, ActionType type) {
-  DCHECK(browserState);
-  if (!IsCurrentlyOnNTP(browserState) || browserState->IsOffTheRecord())
+void RecordAction(ChromeBrowserState* browser_state,
+                  web::WebState* web_state,
+                  ActionType action) {
+  DCHECK(browser_state);
+  if (browser_state->IsOffTheRecord())
+    return;
+  if (!web_state || web_state->GetVisibleURL() != kChromeUINewTabURL)
     return;
   base::HistogramBase* counter = base::Histogram::FactoryGet(
       "NewTabPage.ActioniOS", 0, NUM_ACTION_TYPES, NUM_ACTION_TYPES + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->Add(type);
+  counter->Add(action);
 }
 
-void RecordActionFromOmnibox(ios::ChromeBrowserState* browserState,
+void RecordActionFromOmnibox(ChromeBrowserState* browser_state,
+                             web::WebState* web_state,
                              const GURL& url,
                              ui::PageTransition transition,
-                             bool isExpectingVoiceSearch) {
-  if (isExpectingVoiceSearch) {
-    RecordAction(browserState, ACTION_NAVIGATED_USING_VOICE_SEARCH);
+                             bool is_expecting_voice_search) {
+  if (is_expecting_voice_search) {
+    RecordAction(browser_state, web_state, ACTION_NAVIGATED_USING_VOICE_SEARCH);
     return;
   }
-  ui::PageTransition coreTransition = static_cast<ui::PageTransition>(
+  ui::PageTransition core_transition = static_cast<ui::PageTransition>(
       transition & ui::PAGE_TRANSITION_CORE_MASK);
-  if (PageTransitionCoreTypeIs(coreTransition, ui::PAGE_TRANSITION_GENERATED)) {
-    RecordAction(browserState, ACTION_SEARCHED_USING_OMNIBOX);
+  if (PageTransitionCoreTypeIs(core_transition,
+                               ui::PAGE_TRANSITION_GENERATED)) {
+    RecordAction(browser_state, web_state, ACTION_SEARCHED_USING_OMNIBOX);
   } else {
     if (google_util::IsGoogleHomePageUrl(GURL(url))) {
-      RecordAction(browserState, ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE);
+      RecordAction(browser_state, web_state,
+                   ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE);
     } else {
-      RecordAction(browserState, ACTION_NAVIGATED_USING_OMNIBOX);
+      RecordAction(browser_state, web_state, ACTION_NAVIGATED_USING_OMNIBOX);
     }
   }
 }

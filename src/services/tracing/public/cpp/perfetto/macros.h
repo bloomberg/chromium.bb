@@ -8,6 +8,11 @@
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/macros_internal.h"
 
+// Needed not for this file but for every user of the TRACE_EVENT macros for the
+// lambda definition. So included here for convenience.
+#include "third_party/perfetto/include/perfetto/tracing/event_context.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
+
 #if defined(TRACE_EVENT_BEGIN)
 #error "Another copy of perfetto tracing macros have been included"
 #endif
@@ -31,6 +36,12 @@ constexpr char kTraceEventEndName[] = "";
 // strings must be static constants. The track event is only recorded if
 // |category| is enabled for a tracing session.
 //
+// Rest of parameters can contain: a perfetto::Track object for asynchronous
+// events and a lambda used to fill typed event. Should be passed in that exact
+// order when both are used.
+//
+// When lambda is passed as an argument, it is executed synchronously.
+//
 // TODO(nuskos): Give a simple example once we have a typed event that doesn't
 // need interning.
 //   TRACE_EVENT_BEGIN("log", "LogMessage",
@@ -43,21 +54,27 @@ constexpr char kTraceEventEndName[] = "";
                                    TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
 
 // End a thread-scoped slice under |category|.
-#define TRACE_EVENT_END(category, ...)                                        \
-  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category,           \
-                                   kTraceEventEndName, TRACE_EVENT_FLAG_NONE, \
-                                   ##__VA_ARGS__)
+#define TRACE_EVENT_END(category, ...)                              \
+  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, \
+                                   tracing::kTraceEventEndName,     \
+                                   TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
 
 // Begin a thread-scoped slice which gets automatically closed when going out
 // of scope.
+//
+// BEWARE: similarly to TRACE_EVENT_BEGIN, this macro does accept a track, but
+// it does not work properly and should not be used.
+// TODO(b/154583431): figure out how to fix or disallow that and update the
+// comment.
+//
+// Similarly to TRACE_EVENT_BEGIN, when lambda is passed as an argument, it is
+// executed synchronously.
 #define TRACE_EVENT(category, name, ...) \
   TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ##__VA_ARGS__)
 
-// Emit a thread-scoped slice which has zero duration.
-// TODO(nuskos): Add support for process-wide and global instant events when
-// perfetto does.
-#define TRACE_EVENT_INSTANT(category, name, ...)                              \
+// Emit a single event called "name" immediately, with zero duration.
+#define TRACE_EVENT_INSTANT(category, name, scope, ...)                       \
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_INSTANT, category, name, \
-                                   TRACE_EVENT_SCOPE_THREAD, ##__VA_ARGS__)
+                                   scope, ##__VA_ARGS__)
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_H_

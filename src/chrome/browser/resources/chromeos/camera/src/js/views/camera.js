@@ -2,85 +2,114 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
+import {assert, assertInstanceof} from '../chrome_util.js';
+import {
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+} from '../device/constraints_preferrer.js';
+// eslint-disable-next-line no-unused-vars
+import {DeviceInfoUpdater} from '../device/device_info_updater.js';
+import * as metrics from '../metrics.js';
+// eslint-disable-next-line no-unused-vars
+import {ResultSaver} from '../models/result_saver.js';
+import {ChromeHelper} from '../mojo/chrome_helper.js';
+import {DeviceOperator} from '../mojo/device_operator.js';
+import * as nav from '../nav.js';
+// eslint-disable-next-line no-unused-vars
+import {PerfLogger} from '../perf.js';
+import * as sound from '../sound.js';
+import * as state from '../state.js';
+import * as toast from '../toast.js';
+import {
+  Facing,
+  Mode,
+  ViewName,
+} from '../type.js';
+import * as util from '../util.js';
 
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * import {Mode} from '../type.js';
- */
-var Mode = Mode || {};
-
-/**
- * import {assert} from '../chrome_util.js';
- */
-var assert = assert || {};
+import {Layout} from './camera/layout.js';
+import {
+  Modes,
+  PhotoResult,  // eslint-disable-line no-unused-vars
+  VideoResult,  // eslint-disable-line no-unused-vars
+} from './camera/modes.js';
+import {Options} from './camera/options.js';
+import {Preview} from './camera/preview.js';
+import * as timertick from './camera/timertick.js';
+import {View} from './view.js';
 
 /**
  * Thrown when app window suspended during stream reconfiguration.
  */
-cca.views.CameraSuspendedError = class extends Error {
+class CameraSuspendedError extends Error {
   /**
    * @param {string=} message Error message.
    */
   constructor(message = 'Camera suspended.') {
     super(message);
-    this.name = 'CameraSuspendedError';
+    this.name = this.constructor.name;
   }
-};
+}
 
 /**
- * Creates the camera-view controller.
+ * Camera-view controller.
  */
-
-cca.views.Camera = class extends cca.views.View {
+export class Camera extends View {
   /**
-   * @param {!cca.models.ResultSaver} resultSaver
-   * @param {!cca.device.DeviceInfoUpdater} infoUpdater
-   * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
-   * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
+   * @param {!ResultSaver} resultSaver
+   * @param {!DeviceInfoUpdater} infoUpdater
+   * @param {!PhotoConstraintsPreferrer} photoPreferrer
+   * @param {!VideoConstraintsPreferrer} videoPreferrer
+   * @param {Mode} defaultMode
+   * @param {!PerfLogger} perfLogger
    */
-  constructor(resultSaver, infoUpdater, photoPreferrer, videoPreferrer) {
-    super('#camera');
+  constructor(
+      resultSaver, infoUpdater, photoPreferrer, videoPreferrer, defaultMode,
+      perfLogger) {
+    super(ViewName.CAMERA);
 
     /**
-     * @type {!cca.device.DeviceInfoUpdater}
+     * @type {!DeviceInfoUpdater}
      * @private
      */
     this.infoUpdater_ = infoUpdater;
 
     /**
-     * Layout handler for the camera view.
-     * @type {!cca.views.camera.Layout}
+     * @type {!Mode}
+     * @protected
+     */
+    this.defaultMode_ = defaultMode;
+
+    /**
+     * @type {!PerfLogger}
      * @private
      */
-    this.layout_ = new cca.views.camera.Layout();
+    this.perfLogger_ = perfLogger;
+
+    /**
+     * Layout handler for the camera view.
+     * @type {!Layout}
+     * @private
+     */
+    this.layout_ = new Layout();
 
     /**
      * Video preview for the camera.
-     * @type {!cca.views.camera.Preview}
+     * @type {!Preview}
      * @private
      */
-    this.preview_ = new cca.views.camera.Preview(this.restart.bind(this));
+    this.preview_ = new Preview(this.start.bind(this));
 
     /**
      * Options for the camera.
-     * @type {!cca.views.camera.Options}
+     * @type {!Options}
      * @private
      */
-    this.options_ =
-        new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
+    this.options_ = new Options(infoUpdater, this.start.bind(this));
 
     /**
-     * @type {!cca.models.ResultSaver}
+     * @type {!ResultSaver}
      * @protected
      */
     this.resultSaver_ = resultSaver;
@@ -96,25 +125,31 @@ cca.views.Camera = class extends cca.views.View {
     const createVideoSaver = async () => resultSaver.startSaveVideo();
 
     const playShutterEffect = () => {
-      cca.sound.play('#sound-shutter');
-      cca.util.animateOnce(this.preview_.video);
+      sound.play('#sound-shutter');
+      util.animateOnce(this.preview_.video);
     };
 
     /**
      * Modes for the camera.
-     * @type {cca.views.camera.Modes}
+     * @type {Modes}
      * @private
      */
-    this.modes_ = new cca.views.camera.Modes(
+    this.modes_ = new Modes(
         this.defaultMode_, photoPreferrer, videoPreferrer,
-        this.restart.bind(this), this.doSavePhoto_.bind(this), createVideoSaver,
+        this.start.bind(this), this.doSavePhoto_.bind(this), createVideoSaver,
         this.doSaveVideo_.bind(this), playShutterEffect);
 
     /**
-     * @type {?string}
+     * @type {!Facing}
      * @protected
      */
-    this.facingMode_ = null;
+    this.facingMode_ = Facing.UNKNOWN;
+
+    /**
+     * @type {!metrics.ShutterType}
+     * @protected
+     */
+    this.shutterType_ = metrics.ShutterType.UNKNOWN;
 
     /**
      * @type {boolean}
@@ -145,47 +180,105 @@ cca.views.Camera = class extends cca.views.View {
      */
     this.take_ = null;
 
-    document.querySelectorAll('#start-takephoto, #start-recordvideo')
-        .forEach(
-            (btn) => btn.addEventListener('click', () => this.beginTake_()));
+    /**
+     * Gets type of ways to trigger shutter from click event.
+     * @param {!MouseEvent} e
+     * @return {!metrics.ShutterType}
+     */
+    const getShutterType = (e) => {
+      if (e.clientX === 0 && e.clientY === 0) {
+        return metrics.ShutterType.KEYBOARD;
+      }
+      return e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents ?
+          metrics.ShutterType.TOUCH :
+          metrics.ShutterType.MOUSE;
+    };
 
-    document.querySelectorAll('#stop-takephoto, #stop-recordvideo')
-        .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
+    document.querySelector('#start-takephoto')
+        .addEventListener('click', (e) => {
+          const mouseEvent = assertInstanceof(e, MouseEvent);
+          this.beginTake_(getShutterType(mouseEvent));
+        });
 
-    // Monitor the states to stop camera when locked/minimized.
-    chrome.idle.onStateChanged.addListener((newState) => {
-      this.locked_ = (newState === 'locked');
-      if (this.locked_) {
-        this.restart();
+    document.querySelector('#stop-takephoto')
+        .addEventListener('click', () => this.endTake_());
+
+    const videoShutter = document.querySelector('#recordvideo');
+    videoShutter.addEventListener('click', (e) => {
+      if (!state.get(state.State.TAKING)) {
+        this.beginTake_(getShutterType(assertInstanceof(e, MouseEvent)));
+      } else {
+        this.endTake_();
       }
     });
-    chrome.app.window.current().onMinimized.addListener(() => this.restart());
 
-    this.configuring_ = this.start_();
+    // TODO(shik): Tune the timing for playing video shutter button
+    // animation. Currently the |TAKING| state is ended when the file is saved.
+    state.addObserver(state.State.TAKING, (taking) => {
+      if (!state.get(Mode.VIDEO)) {
+        return;
+      }
+      const label =
+          taking ? 'record_video_stop_button' : 'record_video_start_button';
+      videoShutter.setAttribute('i18n-label', label);
+      videoShutter.setAttribute(
+          'aria-label', browserProxy.getI18nMessage(label));
+    });
+
+    // Monitor the states to stop camera when locked/minimized.
+    ChromeHelper.getInstance().addOnLockListener((isLocked) => {
+      this.locked_ = isLocked;
+      if (this.locked_) {
+        this.start();
+      }
+    });
+    chrome.app.window.current().onMinimized.addListener(() => this.start());
+
+    document.addEventListener('visibilitychange', () => {
+      const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
+      if (this.isTabletBackground_() && !recording) {
+        this.start();
+      }
+    });
+
+    this.configuring_ = null;
+  }
+
+  /**
+   * Initializes camera view.
+   * @return {!Promise}
+   */
+  async initialize() {
+    const setTablet = (isTablet) => state.set(state.State.TABLET, isTablet);
+    const isTablet =
+        await ChromeHelper.getInstance().initTabletModeMonitor(setTablet);
+    setTablet(isTablet);
+  }
+
+  /**
+   * @return {boolean} Returns if window is fully overlapped by other window in
+   * both window mode or tablet mode.
+   * @private
+   */
+  get isVisible_() {
+    return document.visibilityState !== 'hidden';
+  }
+
+  /**
+   * @return {boolean} Whether window is put to background in tablet mode.
+   * @private
+   */
+  isTabletBackground_() {
+    return state.get(state.State.TABLET) && !this.isVisible_;
   }
 
   /**
    * Whether app window is suspended.
    * @return {boolean}
    */
-  get suspended() {
+  isSuspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
-        cca.state.get('suspend');
-  }
-
-  /**
-   * @return {!Mode}
-   * @protected
-   */
-  get defaultMode_() {
-    switch (window.intent && window.intent.mode) {
-      case cca.intent.Mode.PHOTO:
-        return Mode.PHOTO;
-      case cca.intent.Mode.VIDEO:
-        return Mode.VIDEO;
-      default:
-        return Mode.PHOTO;
-    }
+        state.get(state.State.SUSPEND) || this.isTabletBackground_();
   }
 
   /**
@@ -199,29 +292,35 @@ cca.views.Camera = class extends cca.views.View {
 
   /**
    * Begins to take photo or recording with the current options, e.g. timer.
+   * @param {metrics.ShutterType} shutterType The shutter is triggered by which
+   *     shutter type.
    * @return {?Promise} Promise resolved when take action completes. Returns
    *     null if CCA can't start take action.
    * @protected
    */
-  beginTake_() {
-    if (!cca.state.get('streaming') || cca.state.get('taking')) {
+  beginTake_(shutterType) {
+    if (!state.get(state.State.STREAMING) || state.get(state.State.TAKING)) {
       return null;
     }
 
-    cca.state.set('taking', true);
+    state.set(state.State.TAKING, true);
+    this.shutterType_ = shutterType;
     this.focus();  // Refocus the visible shutter button for ChromeVox.
     this.take_ = (async () => {
+      let hasError = false;
       try {
-        await cca.views.camera.timertick.start();
+        await timertick.start();
         await this.modes_.current.startCapture();
       } catch (e) {
+        hasError = true;
         if (e && e.message === 'cancel') {
           return;
         }
         console.error(e);
       } finally {
         this.take_ = null;
-        cca.state.set('taking', false);
+        state.set(
+            state.State.TAKING, false, {hasError, facing: this.facingMode_});
         this.focus();  // Refocus the visible shutter button for ChromeVox.
       }
     })();
@@ -234,45 +333,46 @@ cca.views.Camera = class extends cca.views.View {
    * @private
    */
   endTake_() {
-    cca.views.camera.timertick.cancel();
+    timertick.cancel();
     this.modes_.current.stopCapture();
     return Promise.resolve(this.take_);
   }
 
   /**
    * Handles captured photo result.
-   * @param {!cca.views.camera.PhotoResult} result Captured photo result.
+   * @param {!PhotoResult} result Captured photo result.
    * @param {string} name Name of the photo result to be saved as.
    * @return {!Promise} Promise for the operation.
    * @protected
    */
   async doSavePhoto_(result, name) {
-    cca.metrics.log(
-        cca.metrics.Type.CAPTURE, this.facingMode_, /* length= */ 0,
-        result.resolution, cca.metrics.IntentResultType.NOT_INTENT);
+    metrics.log(
+        metrics.Type.CAPTURE, this.facingMode_, /* length= */ 0,
+        result.resolution, metrics.IntentResultType.NOT_INTENT,
+        this.shutterType_);
     try {
       await this.resultSaver_.savePhoto(result.blob, name);
     } catch (e) {
-      cca.toast.show('error_msg_save_file_failed');
+      toast.show('error_msg_save_file_failed');
       throw e;
     }
   }
 
   /**
    * Handles captured video result.
-   * @param {!cca.views.camera.VideoResult} result Captured video result.
-   * @param {string} name Name of the video result to be saved as.
+   * @param {!VideoResult} result Captured video result.
    * @return {!Promise} Promise for the operation.
    * @protected
    */
-  async doSaveVideo_(result, name) {
-    cca.metrics.log(
-        cca.metrics.Type.CAPTURE, this.facingMode_, result.duration,
-        result.resolution, cca.metrics.IntentResultType.NOT_INTENT);
+  async doSaveVideo_(result) {
+    metrics.log(
+        metrics.Type.CAPTURE, this.facingMode_, result.duration,
+        result.resolution, metrics.IntentResultType.NOT_INTENT,
+        this.shutterType_);
     try {
-      await this.resultSaver_.finishSaveVideo(result.videoSaver, name);
+      await this.resultSaver_.finishSaveVideo(result.videoSaver);
     } catch (e) {
-      cca.toast.show('error_msg_save_file_failed');
+      toast.show('error_msg_save_file_failed');
       throw e;
     }
   }
@@ -289,7 +389,16 @@ cca.views.Camera = class extends cca.views.View {
    */
   handlingKey(key) {
     if (key === 'Ctrl-R') {
-      cca.toast.show(this.preview_.toString());
+      toast.show(this.preview_.toString());
+      return true;
+    }
+    if ((key === 'AudioVolumeUp' || key === 'AudioVolumeDown') &&
+        state.get(state.State.TABLET) && state.get(state.State.STREAMING)) {
+      if (state.get(state.State.TAKING)) {
+        this.endTake_();
+      } else {
+        this.beginTake_(metrics.ShutterType.VOLUME_KEY);
+      }
       return true;
     }
     return false;
@@ -297,10 +406,10 @@ cca.views.Camera = class extends cca.views.View {
 
   /**
    * Stops camera and tries to start camera stream again if possible.
-   * @return {!Promise<boolean>} Promise resolved to whether restart camera
+   * @return {!Promise<boolean>} Promise resolved to whether start camera
    *     successfully.
    */
-  async restart() {
+  async start() {
     // To prevent multiple callers enter this function at the same time, wait
     // until previous caller resets configuring to null.
     while (this.configuring_ !== null) {
@@ -309,9 +418,10 @@ cca.views.Camera = class extends cca.views.View {
         return false;
       }
     }
+    state.set(state.State.CAMERA_CONFIGURING, true);
     this.configuring_ = (async () => {
       try {
-        if (cca.state.get('taking')) {
+        if (state.get(state.State.TAKING)) {
           await this.endTake_();
         }
       } finally {
@@ -330,7 +440,7 @@ cca.views.Camera = class extends cca.views.View {
    *     successfully.
    */
   async startWithMode_(deviceId, mode) {
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     let resolCandidates = null;
     if (deviceOperator !== null) {
       if (deviceId !== null) {
@@ -344,18 +454,20 @@ cca.views.Camera = class extends cca.views.View {
       }
     }
     if (resolCandidates === null) {
-      resolCandidates =
-          await this.modes_.getResolutionCandidatesV1(mode, deviceId);
+      resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
     }
     for (const {resolution: captureR, previewCandidates} of resolCandidates) {
       for (const constraints of previewCandidates) {
-        if (this.suspended) {
-          throw new cca.views.CameraSuspendedError();
+        if (this.isSuspended()) {
+          throw new CameraSuspendedError();
         }
         try {
           if (deviceOperator !== null) {
             assert(deviceId !== null);
-            await deviceOperator.setFpsRange(deviceId, constraints);
+            const optConfigs =
+                mode === Mode.VIDEO ? {} : {stillCaptureResolution: captureR};
+            await deviceOperator.setStreamConfig(
+                deviceId, constraints, optConfigs);
             await deviceOperator.setCaptureIntent(
                 deviceId, this.modes_.getCaptureIntent(mode));
           }
@@ -363,8 +475,9 @@ cca.views.Camera = class extends cca.views.View {
           await this.preview_.start(stream);
           this.facingMode_ = await this.options_.updateValues(stream);
           await this.modes_.updateModeSelectionUI(deviceId);
-          await this.modes_.updateMode(mode, stream, deviceId, captureR);
-          cca.nav.close('warning', 'no-camera');
+          await this.modes_.updateMode(
+              mode, stream, this.facingMode_, deviceId, captureR);
+          nav.close(ViewName.WARNING, 'no-camera');
           return true;
         } catch (e) {
           this.preview_.stop();
@@ -403,7 +516,7 @@ cca.views.Camera = class extends cca.views.View {
   async start_() {
     try {
       await this.infoUpdater_.lockDeviceInfo(async () => {
-        if (!this.suspended) {
+        if (!this.isSuspended()) {
           for (const id of await this.options_.videoDeviceIds()) {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.
@@ -415,22 +528,24 @@ cca.views.Camera = class extends cca.views.View {
               this.activeDeviceId_ = currentId;
               const info = await this.infoUpdater_.getDeviceInfo(currentId);
               if (info !== null) {
-                cca.toast.speak(chrome.i18n.getMessage(
+                toast.speak(browserProxy.getI18nMessage(
                     'status_msg_camera_switched', info.label));
               }
               return;
             }
           }
         }
-        throw new cca.views.CameraSuspendedError();
+        throw new CameraSuspendedError();
       });
       this.configuring_ = null;
+      state.set(state.State.CAMERA_CONFIGURING, false);
+
       return true;
     } catch (error) {
       this.activeDeviceId_ = null;
-      if (!(error instanceof cca.views.CameraSuspendedError)) {
+      if (!(error instanceof CameraSuspendedError)) {
         console.error(error);
-        cca.nav.open('warning', 'no-camera');
+        nav.open(ViewName.WARNING, 'no-camera');
       }
       // Schedule to retry.
       if (this.retryStartTimeout_) {
@@ -440,7 +555,9 @@ cca.views.Camera = class extends cca.views.View {
       this.retryStartTimeout_ = setTimeout(() => {
         this.configuring_ = this.start_();
       }, 100);
+
+      this.perfLogger_.interrupt();
       return false;
     }
   }
-};
+}

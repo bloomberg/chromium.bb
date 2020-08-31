@@ -64,10 +64,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetShillProperties(
-      const std::string& service_path,
-      const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback);
+  void GetShillProperties(const std::string& service_path,
+                          network_handler::DictionaryResultCallback callback,
+                          const network_handler::ErrorCallback& error_callback);
 
   // Sets the properties of the network with id |service_path|. This means the
   // given properties will be merged with the existing settings, and it won't
@@ -152,6 +151,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // state (NetworkStateHandler) to update before triggering the callback.
   void ConfigurationCompleted(
       const std::string& profile_path,
+      const std::string& guid,
       std::unique_ptr<base::DictionaryValue> configure_properties,
       const network_handler::ServiceResultCallback& callback,
       const dbus::ObjectPath& service_path);
@@ -176,7 +176,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Set the Name and GUID properties correctly and Invoke |callback|.
   void GetPropertiesCallback(
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
       DBusMethodCallStatus call_status,

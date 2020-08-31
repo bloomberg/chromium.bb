@@ -57,8 +57,8 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
                            const CFX_PointF& point);
   virtual bool OnMouseWheel(CPDFSDK_PageView* pPageView,
                             uint32_t nFlags,
-                            short zDelta,
-                            const CFX_PointF& point);
+                            const CFX_PointF& point,
+                            const CFX_Vector& delta);
   virtual bool OnRButtonDown(CPDFSDK_PageView* pPageView,
                              uint32_t nFlags,
                              const CFX_PointF& point);
@@ -98,10 +98,6 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   virtual void SetActionData(CPDFSDK_PageView* pPageView,
                              CPDF_AAction::AActionType type,
                              const CPDFSDK_FieldAction& fa);
-  virtual bool IsActionDataChanged(CPDF_AAction::AActionType type,
-                                   const CPDFSDK_FieldAction& faOld,
-                                   const CPDFSDK_FieldAction& faNew);
-
   virtual CPWL_Wnd::CreateParams GetCreateParam();
   virtual std::unique_ptr<CPWL_Wnd> NewPWLWindow(
       const CPWL_Wnd::CreateParams& cp,
@@ -110,16 +106,13 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
                                    bool bRestoreValue);
   virtual void SaveState(CPDFSDK_PageView* pPageView);
   virtual void RestoreState(CPDFSDK_PageView* pPageView);
-  virtual CFX_FloatRect GetFocusBox(CPDFSDK_PageView* pPageView);
 
   CFX_Matrix GetCurMatrix();
+  CFX_FloatRect GetFocusBox(CPDFSDK_PageView* pPageView);
   CFX_FloatRect FFLtoPWL(const CFX_FloatRect& rect);
   CFX_FloatRect PWLtoFFL(const CFX_FloatRect& rect);
   CFX_PointF FFLtoPWL(const CFX_PointF& point);
   CFX_PointF PWLtoFFL(const CFX_PointF& point);
-  CFX_PointF WndtoPWL(CPDFSDK_PageView* pPageView, const CFX_PointF& pt);
-  CFX_FloatRect FFLtoWnd(CPDFSDK_PageView* pPageView,
-                         const CFX_FloatRect& rect);
 
   bool CommitData(CPDFSDK_PageView* pPageView, uint32_t nFlag);
   virtual bool IsDataChanged(CPDFSDK_PageView* pPageView);
@@ -136,8 +129,7 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   bool IsValid() const;
   CFX_FloatRect GetPDFAnnotRect() const;
 
-  IPWL_SystemHandler* GetSystemHandler() const;
-  CPDFSDK_PageView* GetCurPageView(bool renew);
+  CPDFSDK_PageView* GetCurPageView();
   void SetChangeMark();
 
   CPDFSDK_Annot* GetSDKAnnot() const { return m_pWidget.Get(); }

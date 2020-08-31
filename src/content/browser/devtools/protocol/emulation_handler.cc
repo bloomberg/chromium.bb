@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -54,14 +55,24 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
   return result;
 }
 
+bool ValidateClientHintString(const std::string& s) {
+  // Matches definition in structured headers:
+  // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-17#section-3.3.3
+  for (char c : s) {
+    if (!base::IsAsciiPrintable(c))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 EmulationHandler::EmulationHandler()
     : DevToolsDomainHandler(Emulation::Metainfo::domainName),
       touch_emulation_enabled_(false),
       device_emulation_enabled_(false),
-      host_(nullptr) {
-}
+      focus_emulation_enabled_(false),
+      host_(nullptr) {}
 
 EmulationHandler::~EmulationHandler() {
 }
@@ -98,7 +109,9 @@ Response EmulationHandler::Disable() {
     device_emulation_enabled_ = false;
     UpdateDeviceEmulationState();
   }
-  return Response::OK();
+  if (focus_emulation_enabled_)
+    SetFocusEmulationEnabled(false);
+  return Response::Success();
 }
 
 Response EmulationHandler::SetGeolocationOverride(
@@ -115,14 +128,14 @@ Response EmulationHandler::SetGeolocationOverride(
     geoposition->timestamp = base::Time::Now();
 
     if (!device::ValidateGeoposition(*geoposition))
-      return Response::Error("Invalid geolocation");
+      return Response::ServerError("Invalid geolocation");
 
   } else {
     geoposition->error_code =
         device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   }
   geolocation_context->SetOverride(std::move(geoposition));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::ClearGeolocationOverride() {
@@ -131,7 +144,7 @@ Response EmulationHandler::ClearGeolocationOverride() {
 
   auto* geolocation_context = GetWebContents()->GetGeolocationContext();
   geolocation_context->ClearOverride();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetEmitTouchEventsForMouse(
@@ -140,7 +153,7 @@ Response EmulationHandler::SetEmitTouchEventsForMouse(
   touch_emulation_enabled_ = enabled;
   touch_emulation_configuration_ = configuration.fromMaybe("");
   UpdateTouchEventEmulationState();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::CanEmulate(bool* result) {
@@ -154,7 +167,7 @@ Response EmulationHandler::CanEmulate(bool* result) {
       *result = false;
   }
 #endif  // defined(OS_ANDROID)
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetDeviceMetricsOverride(
@@ -175,7 +188,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   const static int max_orientation_angle = 360;
 
   if (!host_)
-    return Response::Error("Target does not support metrics override");
+    return Response::ServerError("Target does not support metrics override");
 
   if (screen_width.fromMaybe(0) < 0 || screen_height.fromMaybe(0) < 0 ||
       screen_width.fromMaybe(0) > max_size ||
@@ -229,7 +242,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
       blink::WebSize(screen_width.fromMaybe(0), screen_height.fromMaybe(0));
   if (position_x.isJust() && position_y.isJust()) {
     params.view_position =
-        blink::WebPoint(position_x.fromMaybe(0), position_y.fromMaybe(0));
+        gfx::Point(position_x.fromMaybe(0), position_y.fromMaybe(0));
   }
   params.device_scale_factor = device_scale_factor;
   params.view_size = blink::WebSize(width, height);
@@ -238,8 +251,8 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   params.screen_orientation_angle = orientationAngle;
 
   if (viewport.isJust()) {
-    params.viewport_offset.x = viewport.fromJust()->GetX();
-    params.viewport_offset.y = viewport.fromJust()->GetY();
+    params.viewport_offset.SetPoint(viewport.fromJust()->GetX(),
+                                    viewport.fromJust()->GetY());
 
     ScreenInfo screen_info;
     host_->GetRenderWidgetHost()->GetScreenInfo(&screen_info);
@@ -261,7 +274,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
       size_changed =
           GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
     } else {
-      return Response::Error("Can't find the associated web contents");
+      return Response::ServerError("Can't find the associated web contents");
     }
   }
 
@@ -270,7 +283,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     // only sent to the client once updates were applied.
     if (size_changed)
       return Response::FallThrough();
-    return Response::OK();
+    return Response::Success();
   }
 
   device_emulation_enabled_ = true;
@@ -281,15 +294,15 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   // response is only sent to the client once updates were applied.
   // Unless the renderer has crashed.
   if (GetWebContents() && GetWebContents()->IsCrashed())
-    return Response::OK();
+    return Response::Success();
   return Response::FallThrough();
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
   if (!device_emulation_enabled_)
-    return Response::OK();
+    return Response::Success();
   if (!host_)
-    return Response::Error("Can't find the associated web contents");
+    return Response::ServerError("Can't find the associated web contents");
   GetWebContents()->ClearDeviceEmulationSize();
   device_emulation_enabled_ = false;
   device_emulation_params_ = blink::WebDeviceEmulationParams();
@@ -298,7 +311,7 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
   // is only sent to the client once updates were applied.
   // Unless the renderer has crashed.
   if (GetWebContents()->IsCrashed())
-    return Response::OK();
+    return Response::Success();
   return Response::FallThrough();
 }
 
@@ -307,15 +320,16 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
     return Response::InvalidParams("Width and height must be non-negative");
 
   if (!host_)
-    return Response::Error("Can't find the associated web contents");
+    return Response::ServerError("Can't find the associated web contents");
   GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetUserAgentOverride(
     const std::string& user_agent,
     Maybe<std::string> accept_language,
-    Maybe<std::string> platform) {
+    Maybe<std::string> platform,
+    Maybe<Emulation::UserAgentMetadata> ua_metadata_override) {
   if (!user_agent.empty() && !net::HttpUtil::IsValidHeaderValue(user_agent))
     return Response::InvalidParams("Invalid characters found in userAgent");
   std::string accept_lang = accept_language.fromMaybe(std::string());
@@ -326,6 +340,71 @@ Response EmulationHandler::SetUserAgentOverride(
 
   user_agent_ = user_agent;
   accept_language_ = accept_lang;
+
+  user_agent_metadata_ = base::nullopt;
+  if (!ua_metadata_override.isJust())
+    return Response::FallThrough();
+
+  if (user_agent.empty()) {
+    return Response::InvalidParams(
+        "Empty userAgent invalid with userAgentMetadata provided");
+  }
+
+  std::unique_ptr<Emulation::UserAgentMetadata> ua_metadata =
+      ua_metadata_override.takeJust();
+  blink::UserAgentMetadata new_ua_metadata;
+  DCHECK(ua_metadata->GetBrands());
+
+  for (const auto& bv : *ua_metadata->GetBrands()) {
+    blink::UserAgentBrandVersion out_bv;
+    if (!ValidateClientHintString(bv->GetBrand()))
+      return Response::InvalidParams("Invalid brand string");
+    out_bv.brand = bv->GetBrand();
+
+    if (!ValidateClientHintString(bv->GetVersion()))
+      return Response::InvalidParams("Invalid brand version string");
+    out_bv.major_version = bv->GetVersion();
+
+    new_ua_metadata.brand_version_list.push_back(std::move(out_bv));
+  }
+
+  if (!ValidateClientHintString(ua_metadata->GetFullVersion()))
+    return Response::InvalidParams("Invalid full version string");
+  new_ua_metadata.full_version = ua_metadata->GetFullVersion();
+
+  if (!ValidateClientHintString(ua_metadata->GetPlatform()))
+    return Response::InvalidParams("Invalid platform string");
+  new_ua_metadata.platform = ua_metadata->GetPlatform();
+
+  if (!ValidateClientHintString(ua_metadata->GetPlatformVersion()))
+    return Response::InvalidParams("Invalid platform version string");
+  new_ua_metadata.platform_version = ua_metadata->GetPlatformVersion();
+
+  if (!ValidateClientHintString(ua_metadata->GetArchitecture()))
+    return Response::InvalidParams("Invalid architecture string");
+  new_ua_metadata.architecture = ua_metadata->GetArchitecture();
+
+  if (!ValidateClientHintString(ua_metadata->GetModel()))
+    return Response::InvalidParams("Invalid model string");
+  new_ua_metadata.model = ua_metadata->GetModel();
+
+  new_ua_metadata.mobile = ua_metadata->GetMobile();
+
+  // All checks OK, can update user_agent_metadata_.
+  user_agent_metadata_.emplace(std::move(new_ua_metadata));
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetFocusEmulationEnabled(bool enabled) {
+  if (enabled == focus_emulation_enabled_)
+    return Response::FallThrough();
+  focus_emulation_enabled_ = enabled;
+  if (enabled) {
+    GetWebContents()->IncrementCapturerCount(gfx::Size(),
+                                             /* stay_hidden */ false);
+  } else {
+    GetWebContents()->DecrementCapturerCount(/* stay_hidden */ false);
+  }
   return Response::FallThrough();
 }
 
@@ -406,6 +485,16 @@ void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
         net::HttpRequestHeaders::kAcceptLanguage,
         net::HttpUtil::GenerateAcceptLanguageHeader(accept_language_));
   }
+}
+
+bool EmulationHandler::ApplyUserAgentMetadataOverrides(
+    base::Optional<blink::UserAgentMetadata>* override_out) {
+  // This is conditional on basic user agent override being on; this helps us
+  // emulate a device not sending any UA client hints.
+  if (user_agent_.empty())
+    return false;
+  *override_out = user_agent_metadata_;
+  return true;
 }
 
 }  // namespace protocol

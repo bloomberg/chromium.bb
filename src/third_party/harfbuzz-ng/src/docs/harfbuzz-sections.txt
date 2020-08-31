@@ -325,6 +325,7 @@ hb_font_get_scale
 hb_font_get_user_data
 hb_font_get_variation_glyph
 hb_font_get_variation_glyph_func_t
+hb_font_get_var_coords_design
 hb_font_get_var_coords_normalized
 hb_font_glyph_from_string
 hb_font_glyph_to_string
@@ -365,6 +366,8 @@ hb_ft_font_create
 hb_ft_font_create_referenced
 hb_ft_font_changed
 hb_ft_font_get_face
+hb_ft_font_lock_face
+hb_ft_font_unlock_face
 hb_ft_font_set_load_flags
 hb_ft_font_get_load_flags
 hb_ft_font_set_funcs
@@ -549,6 +552,8 @@ HB_OT_TAG_GPOS
 HB_OT_TAG_GSUB
 HB_OT_TAG_JSTF
 hb_ot_layout_baseline_tag_t
+hb_ot_layout_closure_lookups
+hb_ot_layout_closure_features
 hb_ot_layout_collect_lookups
 hb_ot_layout_collect_features
 hb_ot_layout_feature_get_characters

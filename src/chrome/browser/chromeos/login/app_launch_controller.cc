@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -166,18 +165,7 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
 
   RecordKioskLaunchUMA(is_auto_launch);
 
-  // Ensure WebUILoginView is enabled so that bailout shortcut key works.
-  if (ash::features::IsViewsLoginEnabled()) {
-    host_->GetLoginDisplay()->SetUIEnabled(true);
-    login_screen_visible_ = true;
-  } else {
-    host_->GetWebUILoginView()->SetUIEnabled(true);
-    login_screen_visible_ = host_->GetWebUILoginView()->webui_visible();
-    if (!login_screen_visible_) {
-      registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                     content::NotificationService::AllSources());
-    }
-  }
+  host_->GetLoginDisplay()->SetUIEnabled(true);
 
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
@@ -270,17 +258,6 @@ void AppLaunchController::OnOwnerSigninSuccess() {
   signin_screen_.reset();
 }
 
-void AppLaunchController::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE, type);
-  DCHECK(!login_screen_visible_);
-  login_screen_visible_ = true;
-  launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
-  if (launcher_ready_)
-    OnReadyToLaunch();
-}
-
 void AppLaunchController::OnCancelAppLaunch() {
   if (KioskAppManager::Get()->GetDisableBailoutShortcut())
     return;
@@ -297,8 +274,9 @@ void AppLaunchController::OnNetworkConfigRequested() {
 void AppLaunchController::OnNetworkConfigFinished() {
   DCHECK(network_config_requested_);
   network_config_requested_ = false;
+  showing_network_dialog_ = false;
   app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_PROFILE);
   startup_app_launcher_->RestartLauncher();
 }
 
@@ -306,10 +284,12 @@ void AppLaunchController::OnNetworkStateChanged(bool online) {
   if (!waiting_for_network_)
     return;
 
-  if (online && !network_config_requested_)
+  // If the network timed out, we should exit network config dialog as soon as
+  // we are back online.
+  if (online && (network_wait_timedout_ || !showing_network_dialog_)) {
+    ClearNetworkWaitTimer();
     startup_app_launcher_->ContinueWithNetworkReady();
-  else if (network_wait_timedout_)
-    MaybeShowNetworkConfigureUI();
+  }
 }
 
 void AppLaunchController::OnDeletingSplashScreenView() {
@@ -466,10 +446,18 @@ void AppLaunchController::InitializeNetwork() {
       FROM_HERE, base::TimeDelta::FromSeconds(network_wait_time_in_seconds),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 
+  // Regardless of the network state, we should notify the view that network
+  // connection is required.
   app_launch_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
-}
 
+  // If network configure ui was scheduled to be shown, we should display it
+  // before starting to install the app.
+  if (app_launch_splash_screen_view_->IsNetworkReady() &&
+      !show_network_config_ui_after_profile_load_) {
+    OnNetworkStateChanged(/*online*/ true);
+  }
+}
 bool AppLaunchController::IsNetworkReady() {
   return app_launch_splash_screen_view_ &&
          app_launch_splash_screen_view_->IsNetworkReady();
@@ -505,9 +493,6 @@ void AppLaunchController::OnReadyToLaunch() {
     return;
 
   if (network_config_requested_)
-    return;
-
-  if (!login_screen_visible_)
     return;
 
   if (splash_wait_timer_.IsRunning())

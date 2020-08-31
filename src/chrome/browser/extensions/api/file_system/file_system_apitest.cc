@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/api/file_system/saved_file_entry.h"
 #include "extensions/browser/extension_prefs.h"
@@ -432,14 +433,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   CheckStoredDirectoryMatches(base::FilePath());
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_FileSystemApiOpenExistingFileWithWriteTest DISABLED_FileSystemApiOpenExistingFileWithWriteTest
-#else
-#define MAYBE_FileSystemApiOpenExistingFileWithWriteTest FileSystemApiOpenExistingFileWithWriteTest
-#endif
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
-    MAYBE_FileSystemApiOpenExistingFileWithWriteTest) {
+                       FileSystemApiOpenExistingFileWithWriteTest) {
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -677,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, RequestFileSystem_NotChromeOS) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_not_chromeos",
-      kFlagIgnoreManifestWarnings))
+      kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 #endif

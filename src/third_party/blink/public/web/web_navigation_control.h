@@ -36,12 +36,13 @@ class WebNavigationControl : public WebLocalFrame {
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
 
   // Commits a cross-document navigation in the frame. See WebNavigationParams
-  // for details.
+  // for details. Calls WebLocalFrameClient::DidCommitNavigation synchronously
+  // after new document commit, but before loading any content, unless commit
+  // fails.
   // TODO(dgozman): return mojom::CommitResult.
   virtual void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-      base::OnceClosure call_before_attaching_new_document) = 0;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   // Commits a same-document navigation in the frame. For history navigations, a
   // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
@@ -69,11 +70,6 @@ class WebNavigationControl : public WebLocalFrame {
   // On load failure, attempts to make frame's parent render fallback content.
   virtual FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const = 0;
-
-  // When load failure is in a cross-process frame this notifies the frame here
-  // that its owner should render fallback content if any. Only called on owners
-  // that render their own content (i.e., <object>).
-  virtual void RenderFallbackContent() const = 0;
 
   // Override the normal rules for whether a load has successfully committed
   // in this frame. Used to propagate state when this frame has navigated
@@ -104,8 +100,9 @@ class WebNavigationControl : public WebLocalFrame {
   virtual bool IsClientNavigationInitialHistoryLoad() = 0;
 
  protected:
-  explicit WebNavigationControl(WebTreeScopeType scope)
-      : WebLocalFrame(scope) {}
+  explicit WebNavigationControl(mojom::TreeScopeType scope,
+                                const base::UnguessableToken& frame_token)
+      : WebLocalFrame(scope, frame_token) {}
 };
 
 }  // namespace blink

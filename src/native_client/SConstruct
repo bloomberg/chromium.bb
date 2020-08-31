@@ -128,6 +128,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_bootstrap',
     # force irt image used by tests
     'force_irt',
+    # force tls_edit binary used by tests
+    'force_tls_edit',
     # generate_ninja=FILE enables a Ninja backend for SCons.  This writes a
     # .ninja build file to FILE describing all of SCons' build targets.
     'generate_ninja',
@@ -276,6 +278,7 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sz', default=False,
     desc='When using pnacl TC (bitcode=1) use Subzero for fast translation')
 
+  # Setting built_elsewhere means that no trusted or untrusted builds will run.
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc='The programs have already been built by another system')
 
@@ -391,6 +394,12 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'skip_nonstable_bitcode', default=False,
                   desc='Skip tests involving non-stable bitcode')
 
+  # Setting force_sel_ldr means that no trusted builds will run, but (unlike
+  # built_elsewhere), untrusted builds will run.
+  DeclareBit('force_no_trusted_build', 'Prevent use of trusted toolchain')
+  if 'force_sel_ldr' in ARGUMENTS or 'force_tls_edit' in ARGUMENTS:
+    env.SetBits('force_no_trusted_build')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -476,7 +485,7 @@ if breakpad_tools_dir is not None:
 
 # CLANG
 DeclareBit('clang', 'Use clang to build trusted code')
-pre_base_env.SetBitFromOption('clang', False)
+pre_base_env.SetBitFromOption('clang', True)
 
 DeclareBit('asan',
            'Use AddressSanitizer to build trusted code (implies --clang)')
@@ -990,6 +999,8 @@ def MakeArchSpecificEnv(platform=None):
     env.SetBits('build_x86')
   if env.Bit('build_arm_arm'):
     env.SetBits('build_arm')
+  if env.Bit('build_mips32') and env.Bit('clang'):
+    raise UserError('Mips build not supported with clang')
 
   env.Replace(BUILD_ISA_NAME=platform)
 
@@ -1283,7 +1294,11 @@ def ApplyTLSEdit(env, nexe_name, raw_nexe):
   if env.Bit('built_elsewhere'):
     return env.File(nexe_name)
 
-  tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
+  tls_edit_forced = ARGUMENTS.get('force_tls_edit')
+  if tls_edit_forced:
+    tls_edit_exe = env.File(env.SConstructAbsPath(tls_edit_forced))
+  else:
+    tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
   return env.Command(
       nexe_name,
       [tls_edit_exe, raw_nexe],
@@ -2424,8 +2439,9 @@ def MakeMacEnv(platform=None):
       # '-Wno-gnu' is required for the statement expression defining dirfd
       # for OSX -- otherwise, a warning is generated.
       CCFLAGS=[subarch_flag, '-fPIC', '-Wno-gnu'],
+      CXXFLAGS=['-stdlib=libc++'],
       ASFLAGS=[subarch_flag],
-      LINKFLAGS=[subarch_flag, '-fPIC'],
+      LINKFLAGS=[subarch_flag, '-fPIC', '-stdlib=libc++'],
       CPPDEFINES = [# defining _DARWIN_C_SOURCE breaks 10.4
                     #['_DARWIN_C_SOURCE', '1'],
                     #['__STDC_LIMIT_MACROS', '1']
@@ -2445,9 +2461,6 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
-  if env.Bit('clang'):
-    raise UserError('Clang build not supported with ARM '
-                    '(use --no-clang to disable)')
   jail = env.GetToolchainDir(toolchain_name='arm_trusted')
   if not platform.machine().startswith('arm'):
     # Allow emulation on non-ARM hosts.
@@ -2459,21 +2472,29 @@ def SetUpLinuxEnvArm(env):
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
-    env.Replace(CC='arm-linux-gnueabihf-gcc',
-                CXX='arm-linux-gnueabihf-g++',
-                LD='arm-linux-gnueabihf-ld',
+    sysroot=os.path.join('${SOURCE_ROOT}/build/linux/debian_sid_arm-sysroot')
+    env.Prepend(CCFLAGS=['--sysroot='+sysroot],
                 ASFLAGS=[],
                 # The -rpath-link argument is needed on Ubuntu/Precise to
                 # avoid linker warnings about missing ld.linux.so.3.
                 # TODO(sbc): remove this once we stop supporting Precise
                 # as a build environment.
-                LINKFLAGS=['-Wl,-rpath-link=' + jail +
-                           '/lib/arm-linux-gnueabihf']
+                LINKFLAGS=['-fuse-ld=lld',
+                           '--sysroot='+sysroot]
                 )
     # Note we let the compiler choose whether it's -marm or -mthumb by
     # default.  The hope is this will have the best chance of testing
     # the prevailing compilation mode used for Chromium et al.
-    env.Prepend(CCFLAGS=['-march=armv7-a'])
+    # TODO(dschuff): gn seems to use mthumb, try changing later
+    if env.Bit('clang'):
+      env.Prepend(CCFLAGS=['--target=arm-linux-gnueabihf'])
+      env.Prepend(LINKFLAGS=['--target=arm-linux-gnueabihf'])
+    else:
+      env.Replace(CC='arm-linux-gnueabihf-gcc',
+                  CXX='arm-linux-gnueabihf-g++',
+                  LD='arm-linux-gnueabihf-ld')
+    env.Prepend(CCFLAGS=['-march=armv7-a','-mfloat-abi=hard',
+                         '-mtune=generic-armv7-a', '-mfpu=neon'])
 
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])

@@ -23,6 +23,15 @@ template("chrome_bundle") {
   _extra_modules = []
   foreach(_module_desc, invoker.module_descs) {
     assert(_package_id > 2, "Too many modules, ran out of package IDs!")
+
+    # Assert that |load_native_on_get_impl| is defined iff native libraries or
+    # resources are defined.
+    if (defined(_module_desc.native_deps) || defined(_module_desc.paks)) {
+      assert(defined(_module_desc.load_native_on_get_impl))
+    } else {
+      assert(!defined(_module_desc.load_native_on_get_impl))
+    }
+
     chrome_feature_module(
         "${_bundle_target_name}__${_module_desc.name}_bundle_module") {
       forward_variables_from(invoker,
@@ -68,24 +77,32 @@ template("chrome_bundle") {
                              "base_module_target",
                              "bundle_name",
                              "compress_shared_libraries",
-                             "failed_proguard_expectation_file",
                              "keystore_name",
                              "keystore_password",
                              "keystore_path",
+                             "lint_suppressions_file",
+                             "manifest_package",
                              "min_sdk_version",
                              "proguard_android_sdk_dep",
                              "proguard_jar_path",
                              "sign_bundle",
-                             "static_library_proguard_disabled",
                              "static_library_provider",
+                             "static_library_synchronized_proguard",
                              "verify_proguard_flags",
+                             "verify_native_libs_and_assets",
+                             "version_code",
                            ])
     command_line_flags_file = "chrome-command-line"
     proguard_enabled = !is_java_debug
     enable_language_splits = true
     extra_modules = _extra_modules
-    system_image_locale_whitelist = android_non_bundle_locales
+    system_image_locale_allowlist = android_apk_locales
     is_multi_abi = _is_multi_abi
+
+    # List of DFMs that are installed by default by wrapper scripts, to make
+    # testing easier. This removes the need to manually specify, e.g.,
+    # "-m dev_ui" on every install or run.
+    default_modules_for_testing = [ "dev_ui" ]
 
     # NOTE: Only sign bundle for official builds since this is very slow.
     if (enable_chrome_android_internal && use_signing_keys &&

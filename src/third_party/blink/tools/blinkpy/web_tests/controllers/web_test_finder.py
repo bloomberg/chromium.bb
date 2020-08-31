@@ -35,24 +35,31 @@ import re
 
 from blinkpy.web_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from blinkpy.web_tests.models import test_expectations
-
+from blinkpy.web_tests.models.typ_types import ResultType
+from blinkpy.web_tests.port.base import Port
 
 _log = logging.getLogger(__name__)
 
 
 class WebTestFinder(object):
-
     def __init__(self, port, options):
         self._port = port
         self._options = options
         self._filesystem = self._port.host.filesystem
-        self.WEB_TESTS_DIRECTORIES = ('src', 'third_party', 'blink', 'web_tests')
+        self.WEB_TESTS_DIRECTORIES = ('src', 'third_party', 'blink',
+                                      'web_tests')
 
-    def find_tests(self, args, test_list=None, fastest_percentile=None, filters=None):
+    def find_tests(self,
+                   args,
+                   test_list=None,
+                   fastest_percentile=None,
+                   filters=None):
         filters = filters or []
         paths = self._strip_test_dir_prefixes(args)
         if test_list:
-            paths += self._strip_test_dir_prefixes(self._read_test_names_from_file(test_list, self._port.TEST_PATH_SEPARATOR))
+            paths += self._strip_test_dir_prefixes(
+                self._read_test_names_from_file(
+                    test_list, self._port.TEST_PATH_SEPARATOR))
 
         all_tests = []
         if not paths or fastest_percentile:
@@ -67,10 +74,13 @@ class WebTestFinder(object):
         if fastest_percentile:
             times_trie = self._times_trie()
             if times_trie:
-                fastest_tests = self._fastest_tests(times_trie, all_tests, fastest_percentile)
+                fastest_tests = self._fastest_tests(times_trie, all_tests,
+                                                    fastest_percentile)
                 test_files = list(set(fastest_tests).union(path_tests))
             else:
-                _log.warning('Running all the tests the first time to generate timing data.')
+                _log.warning(
+                    'Running all the tests the first time to generate timing data.'
+                )
                 test_files = all_tests
                 running_all_tests = True
         elif paths:
@@ -98,10 +108,12 @@ class WebTestFinder(object):
         times = convert_times_trie_to_flat_paths(times_trie)
 
         # Ignore tests with a time==0 because those are skipped tests.
-        sorted_times = sorted([test for (test, time) in times.iteritems() if time],
-                              key=lambda t: (times[t], t))
+        sorted_times = sorted(
+            [test for (test, time) in times.iteritems() if time],
+            key=lambda t: (times[t], t))
         clamped_percentile = max(0, min(100, fastest_percentile))
-        number_of_tests_to_return = int(len(sorted_times) * clamped_percentile / 100)
+        number_of_tests_to_return = int(
+            len(sorted_times) * clamped_percentile / 100)
         fastest_tests = set(sorted_times[:number_of_tests_to_return])
 
         # Don't try to run tests in the times_trie that no longer exist,
@@ -124,8 +136,10 @@ class WebTestFinder(object):
         for i in range(len(self.WEB_TESTS_DIRECTORIES)):
             # Handle both "web_tests/foo/bar.html" and "web_tests\foo\bar.html" if
             # the filesystem uses '\\' as a directory separator
-            for separator in (self._port.TEST_PATH_SEPARATOR, self._filesystem.sep):
-                directory_prefix = separator.join(self.WEB_TESTS_DIRECTORIES[i:]) + separator
+            for separator in (self._port.TEST_PATH_SEPARATOR,
+                              self._filesystem.sep):
+                directory_prefix = separator.join(
+                    self.WEB_TESTS_DIRECTORIES[i:]) + separator
                 if path.startswith(directory_prefix):
                     return path[len(directory_prefix):]
         return path
@@ -161,16 +175,44 @@ class WebTestFinder(object):
         else:
             return line
 
-    def skip_tests(self, paths, all_tests_list, expectations, http_tests):
+    def skip_tests(self, paths, all_tests_list, expectations):
+        """Given a list of tests, returns the ones that should be skipped.
+
+        A test may be skipped for many reasons, depending on the expectation
+        files and options selected. The most obvious is SKIP entries in
+        TestExpectations, but we also e.g. skip idlharness tests on MSAN/ASAN
+        due to https://crbug.com/856601.
+
+        Args:
+            paths: the paths passed on the command-line to run_web_tests.py
+            all_tests_list: all tests that we are considering running
+            expectations: parsed TestExpectations data
+
+        Returns: a set of tests that should be skipped (not run).
+        """
         all_tests = set(all_tests_list)
+        tests_to_skip = set()
+        for test in all_tests:
+            # We always skip idlharness tests for MSAN/ASAN, even when running
+            # with --no-expectations (https://crbug.com/856601). Note we will
+            # run the test anyway if it is explicitly specified on the command
+            # line; paths are removed from the skip list after this loop.
+            if self._options.enable_sanitizer and Port.is_wpt_idlharness_test(
+                    test):
+                tests_to_skip.update({test})
+                continue
 
-        tests_to_skip = expectations.get_tests_with_result_type(test_expectations.SKIP)
+            if self._options.no_expectations:
+                # do not skip anything from TestExpectations
+                continue
 
-        if self._options.skip_timeouts:
-            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.TIMEOUT))
-        if self._options.skip_failing_tests:
-            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FAIL))
-            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FLAKY))
+            expected_results = expectations.get_expectations(test).results
+            if ResultType.Skip in expected_results:
+                tests_to_skip.update({test})
+            if self._options.skip_timeouts and ResultType.Timeout in expected_results:
+                tests_to_skip.update({test})
+            if self._options.skip_failing_tests and ResultType.Failure in expected_results:
+                tests_to_skip.update({test})
 
         if self._options.skipped == 'only':
             tests_to_skip = all_tests - tests_to_skip
@@ -188,28 +230,33 @@ class WebTestFinder(object):
             return test_names
 
         if self._options.shard_index is None:
-            raise ValueError('Must provide --shard-index or GTEST_SHARD_INDEX when sharding.')
+            raise ValueError(
+                'Must provide --shard-index or GTEST_SHARD_INDEX when sharding.'
+            )
         if self._options.total_shards is None:
-            raise ValueError('Must provide --total-shards or GTEST_TOTAL_SHARDS when sharding.')
+            raise ValueError(
+                'Must provide --total-shards or GTEST_TOTAL_SHARDS when sharding.'
+            )
         if self._options.shard_index >= self._options.total_shards:
-            raise ValueError('Shard index (%d) should be less than total shards (%d)!' % (
-                self._options.shard_index, self._options.total_shards))
+            raise ValueError(
+                'Shard index (%d) should be less than total shards (%d)!' %
+                (self._options.shard_index, self._options.total_shards))
 
-        return self._split_into_chunks(test_names, self._options.shard_index, self._options.total_shards)
+        return self._split_into_chunks(test_names, self._options.shard_index,
+                                       self._options.total_shards)
 
     @staticmethod
     def _split_into_chunks(test_names, index, count):
-        tests_and_indices = [
-            (test_name, hash(test_name) % count)
-            for test_name in test_names]
+        tests_and_indices = [(test_name, hash(test_name) % count)
+                             for test_name in test_names]
 
         tests_to_run = [
-            test_name
-            for test_name, test_index in tests_and_indices
-            if test_index == index]
+            test_name for test_name, test_index in tests_and_indices
+            if test_index == index
+        ]
 
-        _log.debug('chunk %d of %d contains %d tests of %d',
-                   index, count, len(tests_to_run), len(test_names))
+        _log.debug('chunk %d of %d contains %d tests of %d', index, count,
+                   len(tests_to_run), len(test_names))
 
         return tests_to_run
 
@@ -249,11 +296,11 @@ def filter_tests(tests, filters):
             include = include_by_default
             for glob in sorted(globs, key=glob_sort_key):
                 if (glob.startswith('-') and not glob[1:]) or not glob:
-                    raise ValueError('Empty glob filter "%s"' % (filter,))
+                    raise ValueError('Empty glob filter "%s"' % (filter, ))
                 if '*' in glob[:-1]:
-                    raise ValueError('Bad test filter "%s" specified; '
-                                     'wildcards are only allowed at the end'
-                                     % (glob,))
+                    raise ValueError(
+                        'Bad test filter "%s" specified; '
+                        'wildcards are only allowed at the end' % (glob, ))
                 if glob.startswith('-') and glob[1:] in globs:
                     raise ValueError('Both "%s" and "%s" specified in test '
                                      'filter' % (glob, glob[1:]))

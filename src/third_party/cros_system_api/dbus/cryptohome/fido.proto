@@ -12,8 +12,11 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
-
 package cryptohome.fido;
+
+message Url {
+  optional string url = 1;
+}
 
 // Fido authenticator status.
 enum AuthenticatorStatus {
@@ -37,7 +40,10 @@ enum AuthenticatorStatus {
   ANDROID_NOT_SUPPORTED_ERROR = 13;
   PROTECTION_POLICY_INCONSISTENT = 14;
   ABORT_ERROR = 15;
-  UNKNOWN_ERROR = 16;
+  OPAQUE_DOMAIN = 16;
+  INVALID_PROTOCOL = 17;
+  BAD_RELYING_PARTY_ID = 18;
+  UNKNOWN_ERROR = 19;
 }
 
 enum AuthenticatorTransport {
@@ -138,6 +144,12 @@ message PublicKeyCredentialParameters {
   optional int32 algorithm_identifier = 2;
 }
 
+enum UserVerificationRequirement {
+  REQUIRED = 0;
+  PREFERRED = 1;
+  DISCOURAGED = 2;
+}
+
 // Cloud-assisted BLE extension data for getAssertion.
 message CableAuthentication {
   // The caBLE version requested.
@@ -180,11 +192,13 @@ message PublicKeyCredentialRequestOptions {
 
   // A list of credentials the relying party knows about and would
   // accept as the signing credential.
-  optional PublicKeyCredentialDescriptor allow_credentials = 4;
+  repeated PublicKeyCredentialDescriptor allow_credentials = 4;
+  // Indicates the relying party's need for a user-verifying authenticator.
+  optional UserVerificationRequirement user_verification = 5;
 
   // The contents of the appid extension, if any. See
   // https://w3c.github.io/webauthn/#sctn-appid-extension
-  optional string appid = 5;
+  optional string appid = 6;
 
   // The contents of the cloud assisted BLE extension for getAssertion
   // requests, if any. This extension permits browsers and authenticator
@@ -192,7 +206,7 @@ message PublicKeyCredentialRequestOptions {
   // TODO(crbug.com/842371): Add link to spec when available.
   // There may be multiple sets if multiple caBLE credentials have been
   // registered with the relying party.
-  optional CableAuthentication cable_authentication_data = 6;
+  repeated CableAuthentication cable_authentication_data = 7;
 }
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -230,36 +244,10 @@ message AuthenticatorSelectionCriteria {
   // is empty).
   optional bool require_resident_key = 2;
 
-  // Whether the authenticator should store the created key so that the key
-  // can later be selected given only an RP ID (e.g. when |allow_credentials|
-  // is empty).
+  // Indicates the relying party's need for a user-verifying authenticator.
   optional UserVerificationRequirement user_verification = 3;
 }
 
-enum PublicKeyCredentialType {
-  PUBLIC_KEY = 0;
-}
-
-// Describes the credentials that the relying party already knows about for
-// the given account. If any of these are known to the authenticator,
-// it should not create a new credential.
-message PublicKeyCredentialDescriptor {
-  optional PublicKeyCredentialType type = 1;
-  // Blob representing a credential key handle. Up to 255 bytes for
-  // U2F authenticators.
-  optional bytes id = 2;
-  repeated AuthenticatorTransport transports = 3;
-}
-
-enum UserVerificationRequirement {
-  REQUIRED = 0;
-  PREFERRED = 1;
-  DISCOURAGED = 2;
-}
-
-message Url {
-  optional string url = 1;
-}
 
 // Parameters passed into calls to MakeCredential.
 message PublicKeyCredentialCreationOptions {
@@ -284,7 +272,7 @@ message PublicKeyCredentialCreationOptions {
   // A list of credentials the relying party knows about. If an
   // authenticator has one of these credentials, it should not
   // create a new one
-  optional PublicKeyCredentialDescriptor exclude_credentials = 6;
+  repeated PublicKeyCredentialDescriptor exclude_credentials = 6;
 
   // Specify the relying party's authenticator attribute requirements.
   optional AuthenticatorSelectionCriteria authenticator_selection = 7;
@@ -315,4 +303,18 @@ message PublicKeyCredentialCreationOptions {
   // https://w3c.github.io/webauthn/#sctn-appid-exclude-extension
 
   optional string appid_exclude = 13;
+}
+enum PublicKeyCredentialType {
+  PUBLIC_KEY = 0;
+}
+
+// Describes the credentials that the relying party already knows about for
+// the given account. If any of these are known to the authenticator,
+// it should not create a new credential.
+message PublicKeyCredentialDescriptor {
+  optional PublicKeyCredentialType type = 1;
+  // Blob representing a credential key handle. Up to 255 bytes for
+  // U2F authenticators.
+  optional bytes id = 2;
+  repeated AuthenticatorTransport transports = 3;
 }

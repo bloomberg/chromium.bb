@@ -13,6 +13,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -22,16 +23,19 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -65,10 +69,7 @@
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
@@ -96,8 +97,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
@@ -120,7 +120,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/history/core/common/pref_names.h"
@@ -132,10 +131,12 @@
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/permissions/permission_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -160,7 +161,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "services/identity/identity_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -168,6 +168,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -184,6 +186,8 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#else
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -197,10 +201,6 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -211,6 +211,11 @@
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -233,8 +238,9 @@ using content::DownloadManagerDelegate;
 namespace {
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-// Delay, in milliseconds, before we explicitly create the SessionService.
-const int kCreateSessionServiceDelayMS = 500;
+// Delay before we explicitly create the SessionService.
+static constexpr TimeDelta kCreateSessionServiceDelay =
+    TimeDelta::FromMilliseconds(500);
 #endif
 
 // Value written to prefs for EXIT_CRASHED and EXIT_SESSION_ENDED.
@@ -271,11 +277,11 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   DVLOG(1) << "Creating directory " << path.value();
   if (base::CreateDirectory(path)) {
     if (create_readme) {
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskPriority::BEST_EFFORT,
-                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                     base::BindOnce(&CreateProfileReadme, path));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          base::BindOnce(&CreateProfileReadme, path));
     }
     return GetCreationTimeForPath(path);
   }
@@ -329,9 +335,8 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
   // this profile are executed in expected order (what was previously assured by
   // the FILE thread).
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-           base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
   base::Time creation_time = base::Time::Now();
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
@@ -401,6 +406,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+  registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
+#endif
+
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
 #if defined(OS_CHROMEOS)
@@ -411,16 +420,17 @@ void ProfileImpl::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
 #endif  // !defined(OS_ANDROID)
+  registry->RegisterTimePref(prefs::kProfileCreationTime, base::Time());
 }
 
 ProfileImpl::ProfileImpl(
     const base::FilePath& path,
     Delegate* delegate,
     CreateMode create_mode,
-    base::Time creation_time,
+    base::Time path_creation_time,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : path_(path),
-      creation_time_(creation_time),
+      path_creation_time_(path_creation_time),
       io_task_runner_(std::move(io_task_runner)),
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
@@ -452,8 +462,8 @@ ProfileImpl::ProfileImpl(
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   create_session_service_timer_.Start(
-      FROM_HERE, TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS),
-      this, &ProfileImpl::EnsureSessionServiceCreated);
+      FROM_HERE, kCreateSessionServiceDelay, this,
+      &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
@@ -470,8 +480,6 @@ ProfileImpl::ProfileImpl(
 #else
   LoadPrefsForNormalStartup(async_prefs);
 #endif
-
-  content::BrowserContext::Initialize(this, path_);
 
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
@@ -606,6 +614,15 @@ void ProfileImpl::DoFinalInit() {
   TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit")
 
   PrefService* prefs = GetPrefs();
+
+  // Do not override the existing pref in case a profile directory is copied, or
+  // if the file system does not support creation time and the property (i.e.
+  // st_ctim in posix which is actually the last status change time when the
+  // inode was last updated) use to mimic it changes because of some other
+  // modification.
+  if (!prefs->HasPrefPath(prefs::kProfileCreationTime))
+    prefs->SetTime(prefs::kProfileCreationTime, path_creation_time_);
+
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kSupervisedUserId,
@@ -669,11 +686,6 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  // Make sure we initialize the ProfileIOData after everything else has been
-  // initialized that we might be reading from the IO thread.
-
-  io_data_.Init(GetPath());
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
@@ -718,10 +730,19 @@ void ProfileImpl::DoFinalInit() {
                               std::make_unique<PrefsInternalsSource>(this));
 
   if (delegate_) {
-    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
-    delegate_->OnProfileCreated(this, true, IsNewProfile());
+    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated");
+    // Fails if the browser is shutting down. This is done to avoid
+    // launching new UI, finalising profile creation, etc. which
+    // would trigger a crash down the line. See ...
+    const bool shutting_down = g_browser_process->IsShuttingDown();
+    delegate_->OnProfileCreated(this, !shutting_down, IsNewProfile());
+    // The current Profile may be immediately deleted as part of
+    // the call to OnProfileCreated(...) if the initialisation is
+    // reported as a failure, thus no code should be executed past
+    // that point.
+    if (shutting_down)
+      return;
   }
-
   // Ensure that the SharingService is initialized now that io_data_ is
   // initialized. https://crbug.com/171406
   SharingServiceFactory::GetForBrowserContext(this);
@@ -759,22 +780,28 @@ ProfileImpl::~ProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
 
-  // Destroy OTR profile and its profile services first.
-  if (off_the_record_profile_) {
-    ProfileDestroyer::DestroyOffTheRecordProfileNow(
-        off_the_record_profile_.get());
-  } else {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
-        ->ClearAllIncognitoSessionOnlyPreferences();
-#endif
+  // Destroy all OTR profiles and their profile services first.
+  std::vector<Profile*> raw_otr_profiles;
+  bool primary_otr_available = false;
+
+  // Get a list of existing OTR profiles since |off_the_record_profile_| might
+  // be modified after the call to |DestroyOffTheRecordProfileNow|.
+  for (auto& otr_profile : otr_profiles_) {
+    raw_otr_profiles.push_back(otr_profile.second.get());
+    primary_otr_available |= (otr_profile.first == OTRProfileID::PrimaryID());
   }
 
-  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
+  for (Profile* otr_profile : raw_otr_profiles)
+    ProfileDestroyer::DestroyOffTheRecordProfileNow(otr_profile);
 
-  // Must be called before the IdentityManager is destroyed, which will happen
-  // during DependencyManager shutdown below.
-  identity_service_impl_.reset();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!primary_otr_available) {
+    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
+        ->ClearAllIncognitoSessionOnlyPreferences();
+  }
+#endif
+
+  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
@@ -830,7 +857,7 @@ base::FilePath ProfileImpl::GetPath() const {
 }
 
 base::Time ProfileImpl::GetCreationTime() const {
-  return creation_time_;
+  return prefs_->GetTime(prefs::kProfileCreationTime);
 }
 
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
@@ -845,33 +872,62 @@ bool ProfileImpl::IsOffTheRecord() const {
   return false;
 }
 
-bool ProfileImpl::IsIndependentOffTheRecordProfile() {
-  return false;
+const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
+  NOTREACHED();
+  static base::NoDestructor<OTRProfileID> otr_profile_id(
+      "ProfileImp::NoOTRProfileID");
+  return *otr_profile_id;
 }
 
-Profile* ProfileImpl::GetOffTheRecordProfile() {
-  if (!off_the_record_profile_) {
-    std::unique_ptr<Profile> p(CreateOffTheRecordProfile());
-    off_the_record_profile_.swap(p);
+Profile* ProfileImpl::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  if (HasOffTheRecordProfile(otr_profile_id))
+    return otr_profiles_[otr_profile_id].get();
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::Source<Profile>(off_the_record_profile_.get()),
-        content::NotificationService::NoDetails());
-  }
-  return off_the_record_profile_.get();
+  // Create a new OffTheRecordProfile
+  std::unique_ptr<Profile> otr_profile =
+      Profile::CreateOffTheRecordProfile(this, otr_profile_id);
+  Profile* raw_otr_profile = otr_profile.get();
+
+  otr_profiles_[otr_profile_id] = std::move(otr_profile);
+
+  NotifyOffTheRecordProfileCreated(raw_otr_profile);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(raw_otr_profile),
+      content::NotificationService::NoDetails());
+
+  return raw_otr_profile;
 }
 
-void ProfileImpl::DestroyOffTheRecordProfile() {
-  off_the_record_profile_.reset();
+std::vector<Profile*> ProfileImpl::GetAllOffTheRecordProfiles() {
+  std::vector<Profile*> raw_otr_profiles;
+  for (auto& otr : otr_profiles_)
+    raw_otr_profiles.push_back(otr.second.get());
+  return raw_otr_profiles;
+}
+
+void ProfileImpl::DestroyOffTheRecordProfile(Profile* otr_profile) {
+  CHECK(otr_profile);
+  OTRProfileID profile_id = otr_profile->GetOTRProfileID();
+  DCHECK(HasOffTheRecordProfile(profile_id));
+  otr_profiles_.erase(profile_id);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ExtensionPrefValueMapFactory::GetForBrowserContext(this)
-      ->ClearAllIncognitoSessionOnlyPreferences();
+  // Extensions are only supported on primary OTR profile.
+  if (profile_id == OTRProfileID::PrimaryID()) {
+    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
+        ->ClearAllIncognitoSessionOnlyPreferences();
+  }
 #endif
 }
 
-bool ProfileImpl::HasOffTheRecordProfile() {
-  return off_the_record_profile_.get() != NULL;
+bool ProfileImpl::HasOffTheRecordProfile(const OTRProfileID& otr_profile_id) {
+  return base::Contains(otr_profiles_, otr_profile_id);
+}
+
+bool ProfileImpl::HasAnyOffTheRecordProfile() {
+  return !otr_profiles_.empty();
 }
 
 Profile* ProfileImpl::GetOriginalProfile() {
@@ -924,15 +980,22 @@ ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 
 void ProfileImpl::OnLocaleReady() {
   TRACE_EVENT0("browser", "ProfileImpl::OnLocaleReady");
+
   // Migrate obsolete prefs.
-  if (g_browser_process->local_state())
-    MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
   MigrateObsoleteProfilePrefs(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Note: Extension preferences can be keyed off the extension ID, so need to
   // be handled specially (rather than directly as part of
   // MigrateObsoleteProfilePrefs()).
   extensions::ExtensionPrefs::Get(this)->MigrateObsoleteExtensionPrefs();
+#endif
+
+#if defined(OS_CHROMEOS)
+  // If this is a kiosk profile, reset some of its prefs which should not
+  // persist between sessions.
+  if (chrome::IsRunningInForcedAppMode()) {
+    chromeos::ResetEphemeralKioskPreferences(prefs_.get());
+  }
 #endif
 
   // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
@@ -1046,15 +1109,6 @@ bool ProfileImpl::ShouldRestoreOldSessionCookies() {
 
 bool ProfileImpl::ShouldPersistSessionCookies() {
   return true;
-}
-
-identity::mojom::IdentityService* ProfileImpl::GetIdentityService() {
-  if (!identity_service_impl_) {
-    identity_service_impl_ = std::make_unique<identity::IdentityService>(
-        IdentityManagerFactory::GetForProfile(this),
-        remote_identity_service_.BindNewPipeAndPassReceiver());
-  }
-  return remote_identity_service_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {
@@ -1176,11 +1230,15 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::StorageNotificationService*
 ProfileImpl::GetStorageNotificationService() {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
   return StorageNotificationServiceFactory::GetForBrowserContext(this);
+#endif
 }
 
 content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {
-  return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+  return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 content::BrowsingDataRemoverDelegate*
@@ -1262,7 +1320,10 @@ bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
   // NetworkContexts will be initialized based on this returned mode.
   if (!cors_legacy_mode_enabled_.has_value()) {
     cors_legacy_mode_enabled_ =
-        GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
+        base::FeatureList::IsEnabled(
+            features::kHideCorsLegacyModeEnabledPolicySupport)
+            ? false
+            : GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
   }
   if (cors_legacy_mode_enabled_.value())
     return false;
@@ -1286,8 +1347,8 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
 bool ProfileImpl::IsSameProfile(Profile* profile) {
   if (profile == static_cast<Profile*>(this))
     return true;
-  Profile* otr_profile = off_the_record_profile_.get();
-  return otr_profile && profile == otr_profile;
+
+  return profile && profile->GetOriginalProfile() == this;
 }
 
 base::Time ProfileImpl::GetStartTime() const {
@@ -1415,7 +1476,7 @@ void ProfileImpl::InitChromeOSPreferences() {
 #endif  // defined(OS_CHROMEOS)
 
 void ProfileImpl::SetCreationTimeForTesting(base::Time creation_time) {
-  creation_time_ = creation_time;
+  prefs_->SetTime(prefs::kProfileCreationTime, creation_time);
 }
 
 GURL ProfileImpl::GetHomePage() {
@@ -1496,9 +1557,8 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
 
 void ProfileImpl::InitializeDataReductionProxy() {
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<data_reduction_proxy::DataStore> store(
       new data_reduction_proxy::DataStoreImpl(GetPath()));

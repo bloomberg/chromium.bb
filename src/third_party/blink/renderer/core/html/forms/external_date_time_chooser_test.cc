@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -64,7 +65,8 @@ TEST_F(ExternalDateTimeChooserTest, EndChooserShouldNotCrash) {
   auto* document = MakeGarbageCollected<Document>();
   auto* element = document->CreateRawElement(html_names::kInputTag);
   auto* client = MakeGarbageCollected<TestDateTimeChooserClient>(element);
-  auto* external_date_time_chooser = ExternalDateTimeChooser::Create(client);
+  auto* external_date_time_chooser =
+      MakeGarbageCollected<ExternalDateTimeChooser>(client);
   client->SetDateTimeChooser(external_date_time_chooser);
   external_date_time_chooser->ResponseHandler(true, 0);
 }
@@ -77,7 +79,7 @@ TEST_F(ExternalDateTimeChooserTest, EndChooserShouldNotCrash) {
 TEST_F(ExternalDateTimeChooserTest,
        OpenDateTimeChooserShouldNotCrashWhenLabelAndValueIsTheSame) {
   ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
-  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
       <input id=test type="date" list="src" />
         <datalist id="src">
           <option value='2019-12-31'>Hint</option>
@@ -86,8 +88,8 @@ TEST_F(ExternalDateTimeChooserTest,
                                       // value attribute.
         </datalist>
       )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+
   GetDocument().View()->RunPostLifecycleSteps();
   auto* input = To<HTMLInputElement>(GetDocument().getElementById("test"));
   ASSERT_TRUE(input);
@@ -98,7 +100,8 @@ TEST_F(ExternalDateTimeChooserTest,
 
   auto* client = MakeGarbageCollected<TestDateTimeChooserClient>(
       GetDocument().documentElement());
-  auto* external_date_time_chooser = ExternalDateTimeChooser::Create(client);
+  auto* external_date_time_chooser =
+      MakeGarbageCollected<ExternalDateTimeChooser>(client);
   client->SetDateTimeChooser(external_date_time_chooser);
   external_date_time_chooser->OpenDateTimeChooser(GetDocument().GetFrame(),
                                                   params);

@@ -21,9 +21,12 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/host_port_pair.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_identity_mac.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/keychain_test_util_mac.h"
@@ -36,31 +39,58 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-struct TestClientCertificateDelegateResults {
-  bool destroyed = false;
-  bool continue_with_certificate_called = false;
-  scoped_refptr<net::X509Certificate> cert;
-  scoped_refptr<net::SSLPrivateKey> key;
+class TestClientCertificateDelegateResults {
+ public:
+  bool destroyed() const { return destroyed_; }
+  bool continue_with_certificate_called() const {
+    return continue_with_certificate_called_;
+  }
+
+  net::X509Certificate* cert() const { return cert_.get(); }
+  net::SSLPrivateKey* key() const { return key_.get(); }
+
+  void WaitForDelegateDestroyed() {
+    if (!destroyed_)
+      run_loop_.Run();
+    EXPECT_TRUE(destroyed_);
+  }
+
+  void OnDelegateDestroyed() {
+    destroyed_ = true;
+    run_loop_.Quit();
+  }
+
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) {
+    EXPECT_FALSE(continue_with_certificate_called_);
+    cert_ = std::move(cert);
+    key_ = std::move(key);
+    continue_with_certificate_called_ = true;
+  }
+
+ private:
+  bool destroyed_ = false;
+  bool continue_with_certificate_called_ = false;
+  scoped_refptr<net::X509Certificate> cert_;
+  scoped_refptr<net::SSLPrivateKey> key_;
+  base::RunLoop run_loop_;
 };
 
 class TestClientCertificateDelegate
     : public content::ClientCertificateDelegate {
  public:
-  // Creates a ClientCertificateDelegate that sets |*destroyed| to true on
-  // destruction.
+  // Creates a ClientCertificateDelegate that sets |results->destroyed| to true
+  // on destruction. The delegate must not outlive |results|.
   explicit TestClientCertificateDelegate(
       TestClientCertificateDelegateResults* results)
       : results_(results) {}
 
-  ~TestClientCertificateDelegate() override { results_->destroyed = true; }
+  ~TestClientCertificateDelegate() override { results_->OnDelegateDestroyed(); }
 
   // content::ClientCertificateDelegate.
   void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
                                scoped_refptr<net::SSLPrivateKey> key) override {
-    EXPECT_FALSE(results_->continue_with_certificate_called);
-    results_->cert = cert;
-    results_->key = key;
-    results_->continue_with_certificate_called = true;
+    results_->ContinueWithCertificate(std::move(cert), std::move(key));
     // TODO(mattm): Add a test of selecting the 2nd certificate (if possible).
   }
 
@@ -69,6 +99,15 @@ class TestClientCertificateDelegate
 
   DISALLOW_COPY_AND_ASSIGN(TestClientCertificateDelegate);
 };
+
+size_t CountAttachedSheets() {
+  size_t count = 0;
+  for (NSWindow* child in [NSApp windows]) {
+    if ([child attachedSheet])
+      count++;
+  }
+  return count;
+}
 
 }  // namespace
 
@@ -150,14 +189,12 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Basic) {
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
   test_api.CloseAllDialogs();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserCloseTab, 1);
-
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.continue_with_certificate_called());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
@@ -178,20 +215,17 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
+  // Cancel the dialog without selecting a certificate.
   std::move(cancellation_callback).Run();
 
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // The user did not close the tab, so there should be zero samples reported
   // for ClientCertSelectionResult::kUserCloseTab.
+  histograms.ExpectTotalCount(kClientCertSelectHistogramName, 0);
 
-  // The TestClientCertificateDelegate will not be freed (yet) because no
-  // SSLClientAuthObserver methods have been invoked. The SSLClientAuthObserver
-  // owns the ClientCertificateDelegate in a unique_ptr, so it will be freed the
-  // SSLClientAuthObserver is destroyed.
-  EXPECT_FALSE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.continue_with_certificate_called());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
@@ -213,17 +247,16 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   ok_and_cancelable->ClickCancelButton();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserCancel, 1);
 
   // ContinueWithCertificate(nullptr, nullptr) should have been called.
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_TRUE(results.continue_with_certificate_called);
-  EXPECT_FALSE(results.cert);
-  EXPECT_FALSE(results.key);
+  EXPECT_TRUE(results.continue_with_certificate_called());
+  EXPECT_FALSE(results.cert());
+  EXPECT_FALSE(results.key());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
@@ -245,22 +278,21 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   ok_and_cancelable->ClickOkButton();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // The first cert in the list should have been selected.
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_TRUE(results.continue_with_certificate_called);
-  EXPECT_EQ(client_cert1_, results.cert);
-  ASSERT_TRUE(results.key);
+  EXPECT_TRUE(results.continue_with_certificate_called());
+  EXPECT_EQ(client_cert1_, results.cert());
+  ASSERT_TRUE(results.key());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserSelect, 1);
 
   // The test keys are RSA keys.
   EXPECT_EQ(net::SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA, true),
-            results.key->GetAlgorithmPreferences());
-  TestSSLPrivateKeyMatches(results.key.get(), pkcs8_key1_);
+            results.key()->GetAlgorithmPreferences());
+  TestSSLPrivateKeyMatches(results.key(), pkcs8_key1_);
 }
 
 // Test that switching to another tab correctly hides the sheet.
@@ -305,19 +337,206 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, HideShow) {
   EXPECT_EQ(1.0, [sheet_window alphaValue]);
   EXPECT_FALSE([overlay_window ignoresMouseEvents]);
 
-  EXPECT_FALSE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.destroyed());
+  EXPECT_FALSE(results.continue_with_certificate_called());
 
   // Close the tab. Delegate should be destroyed without continuing.
   chrome::CloseTab(browser());
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
+}
+
+// Test that a dialog shown in a background tab does not become a sheet until
+// switching to it.
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
+                       BackgroundActivate) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+  AddBlankTabAndShow(browser());
+
+  TestClientCertificateDelegateResults results;
+  base::OnceClosure cancellation_callback =
+      chrome::ShowSSLClientCertificateSelector(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
+
+  // Although the dialog is active, the sheet is not created.
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(0u, CountAttachedSheets());
+
+  // Activate the tab. Now the sheet is created.
+  chrome::SelectNumberedTab(browser(), 0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, CountAttachedSheets());
+
+  // Close the tab. The delegate should be destroyed without continuing.
+  chrome::CloseTab(browser());
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
+}
+
+// Test that a dialog shown in a background tab can be canceled by the caller
+// (e.g. if the network request is canceled).
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, BackgroundCancel) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+  AddBlankTabAndShow(browser());
+
+  TestClientCertificateDelegateResults results;
+  base::OnceClosure cancellation_callback =
+      chrome::ShowSSLClientCertificateSelector(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
+
+  // Although the dialog is active, the sheet is not created.
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(0u, CountAttachedSheets());
+
+  // Cancel the dialog without selecting a certificate. The delegate should be
+  // destroyed without continuing.
+  std::move(cancellation_callback).Run();
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
+}
+
+// Test for race conditions if a dialog is triggered on a background tab,
+// canceled externally, and then the tab is immediately activate.
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
+                       BackgroundCancelActivate) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+  AddBlankTabAndShow(browser());
+
+  TestClientCertificateDelegateResults results;
+  base::OnceClosure cancellation_callback =
+      chrome::ShowSSLClientCertificateSelector(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
+
+  // Although the dialog is active, the sheet is not created.
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(0u, CountAttachedSheets());
+
+  // Cancel the dialog without selecting a certificate and then immediately
+  // activate the tab.
+  std::move(cancellation_callback).Run();
+  chrome::SelectNumberedTab(browser(), 0);
+
+  // The sheet should never be created.
+  EXPECT_EQ(0u, CountAttachedSheets());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, CountAttachedSheets());
+
+  // The delegate should be destroyed without continuing.
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
+}
+
+// Test that a dialog shown in a background tab is cleanly canceled if the tab
+// is closed.
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, BackgroundClose) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+  AddBlankTabAndShow(browser());
+
+  TestClientCertificateDelegateResults results;
+  base::OnceClosure cancellation_callback =
+      chrome::ShowSSLClientCertificateSelector(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
+
+  // Although the dialog is active, the sheet is not created.
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(0u, CountAttachedSheets());
+
+  // Close the background tab without activating it. The delegate should be
+  // destroyed without continuing.
+  web_contents->Close();
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
+}
+
+// Test that multiple dialogs within a dialog are queued.
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, DialogQueue) {
+  auto request1 = base::MakeRefCounted<net::SSLCertRequestInfo>();
+  request1->host_and_port = net::HostPortPair("foo.test", 443);
+  auto request2 = base::MakeRefCounted<net::SSLCertRequestInfo>();
+  request2->host_and_port = net::HostPortPair("bar.test", 443);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  // Make three requests. The first two use |request1| and the third uses
+  // |request2|.
+  TestClientCertificateDelegateResults results1, results2, results3;
+  chrome::OkAndCancelableForTesting* ok_and_cancelable =
+      chrome::ShowSSLClientCertificateSelectorMacForTesting(
+          web_contents, request1.get(), GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results1),
+          base::DoNothing());
+  chrome::ShowSSLClientCertificateSelector(
+      web_contents, request1.get(), GetTestCertificateList(),
+      std::make_unique<TestClientCertificateDelegate>(&results2));
+  chrome::ShowSSLClientCertificateSelector(
+      web_contents, request2.get(), GetTestCertificateList(),
+      std::make_unique<TestClientCertificateDelegate>(&results3));
+  base::RunLoop().RunUntilIdle();
+
+  // Only one of the dialogs is active.
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(1u, CountAttachedSheets());
+
+  // Select a certificate in the first dialog.
+  ok_and_cancelable->ClickOkButton();
+
+  // This should dismiss the first two dialogs, but not the third.
+  results1.WaitForDelegateDestroyed();
+  EXPECT_TRUE(results1.continue_with_certificate_called());
+  EXPECT_EQ(client_cert1_, results1.cert());
+  results2.WaitForDelegateDestroyed();
+  EXPECT_TRUE(results2.continue_with_certificate_called());
+  EXPECT_EQ(client_cert1_, results2.cert());
+  EXPECT_FALSE(results3.destroyed());
+
+  // The third dialog should be visible.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(1u, CountAttachedSheets());
+
+  // Close the tab. The delegate should be destroyed without continuing.
+  web_contents->Close();
+  results3.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results3.continue_with_certificate_called());
 }
 
 // Test that we can't trigger the crash from https://crbug.com/653093
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
                        WorkaroundTableViewCrash) {
   base::RunLoop run_loop;
+  TestClientCertificateDelegateResults results;
 
   @autoreleasepool {
     content::WebContents* web_contents =
@@ -325,7 +544,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
     chrome::OkAndCancelableForTesting* ok_and_cancelable =
         chrome::ShowSSLClientCertificateSelectorMacForTesting(
             web_contents, auth_requestor_->cert_request_info_.get(),
-            GetTestCertificateList(), nullptr, run_loop.QuitClosure());
+            GetTestCertificateList(),
+            std::make_unique<TestClientCertificateDelegate>(&results),
+            run_loop.QuitClosure());
     base::RunLoop().RunUntilIdle();
 
     ok_and_cancelable->ClickOkButton();
@@ -348,4 +569,6 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
                   userInfo:@{
                     @"NSScrollerStyle" : @(NSScrollerStyleOverlay)
                   }];
+
+  results.WaitForDelegateDestroyed();
 }

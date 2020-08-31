@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -85,7 +86,7 @@ const int kDefaultCacheSize = 80 * 1024 * 1024;
 
 void DeleteCache(const base::FilePath& path, bool remove_folder) {
   if (remove_folder) {
-    if (!base::DeleteFile(path, /* recursive */ true))
+    if (!base::DeleteFileRecursively(path))
       LOG(WARNING) << "Unable to delete cache folder.";
     return;
   }
@@ -96,7 +97,7 @@ void DeleteCache(const base::FilePath& path, bool remove_folder) {
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath file = iter.Next(); !file.value().empty();
        file = iter.Next()) {
-    if (!base::DeleteFile(file, /* recursive */ true)) {
+    if (!base::DeleteFileRecursively(file)) {
       LOG(WARNING) << "Unable to delete cache.";
       return;
     }
@@ -110,9 +111,12 @@ void DeleteCache(const base::FilePath& path, bool remove_folder) {
 // rename the cache directory (for instance due to a sharing violation), and in
 // that case a cache for this profile (on the desired path) cannot be created.
 bool DelayedCacheCleanup(const base::FilePath& full_path) {
-  // GetTempCacheName() and MoveCache() use synchronous file
-  // operations.
+  // GetTempCacheName() and MoveCache() use synchronous file operations.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // We can exit early if nothing was done/the directory is empty.
+  if (base::IsDirectoryEmpty(full_path))
+    return true;
 
   base::FilePath current_path = full_path.StripTrailingSeparators();
 
@@ -137,11 +141,10 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
     return false;
   }
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&CleanupCallback, path, name_str));
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                             base::BindOnce(&CleanupCallback, path, name_str));
   return true;
 }
 

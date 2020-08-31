@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -237,7 +238,12 @@ void URLLoaderClientImpl::Bind(
 
 void URLLoaderClientImpl::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
+  TRACE_EVENT1("loading", "URLLoaderClientImpl::OnReceiveResponse", "url",
+               last_loaded_url_.possibly_invalid_spec());
+
   has_received_response_head_ = true;
+  on_receive_response_time_ = base::TimeTicks::Now();
+
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
         std::make_unique<DeferredOnReceiveResponse>(std::move(response_head)));
@@ -308,6 +314,12 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
   DCHECK(has_received_response_head_);
   DCHECK(!has_received_response_body_);
   has_received_response_body_ = true;
+
+  if (!on_receive_response_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES(
+        "Renderer.OnReceiveResponseToOnStartLoadingResponseBody",
+        base::TimeTicks::Now() - on_receive_response_time_);
+  }
 
   if (NeedsStoringMessage()) {
     StoreAndDispatch(

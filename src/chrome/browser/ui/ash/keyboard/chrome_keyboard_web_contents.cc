@@ -27,9 +27,9 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -105,11 +105,11 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
     switch (event.GetType()) {
       // Scroll events are not suppressed because the menu to select IME should
       // be scrollable.
-      case blink::WebInputEvent::kGestureScrollBegin:
-      case blink::WebInputEvent::kGestureScrollEnd:
-      case blink::WebInputEvent::kGestureScrollUpdate:
-      case blink::WebInputEvent::kGestureFlingStart:
-      case blink::WebInputEvent::kGestureFlingCancel:
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
+      case blink::WebInputEvent::Type::kGestureScrollEnd:
+      case blink::WebInputEvent::Type::kGestureScrollUpdate:
+      case blink::WebInputEvent::Type::kGestureFlingStart:
+      case blink::WebInputEvent::Type::kGestureFlingCancel:
         return false;
       default:
         // Stop gesture events from being passed to renderer to suppress the

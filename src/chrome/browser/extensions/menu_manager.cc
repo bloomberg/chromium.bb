@@ -10,8 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,9 +24,9 @@
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -859,11 +860,9 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
 void MenuManager::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    store_->GetExtensionValue(
-        extension->id(),
-        kContextMenusKey,
-        base::Bind(
-            &MenuManager::ReadFromStorage, AsWeakPtr(), extension->id()));
+    store_->GetExtensionValue(extension->id(), kContextMenusKey,
+                              base::BindOnce(&MenuManager::ReadFromStorage,
+                                             AsWeakPtr(), extension->id()));
   }
 
   if (extension->from_bookmark() && UrlHandlers::GetUrlHandlers(extension)) {

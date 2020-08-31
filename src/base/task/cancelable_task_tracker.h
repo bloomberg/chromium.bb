@@ -81,19 +81,11 @@ class BASE_EXPORT CancelableTaskTracker {
                           OnceClosure task,
                           OnceClosure reply);
 
-  // Though RepeatingCallback is convertible to OnceCallback, we need a
-  // CallbackType template since we can not use template deduction and object
-  // conversion at once on the overload resolution.
-  // TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
-  // to use OnceCallback and remove the CallbackType template.
-  template <template <typename> class CallbackType,
-            typename TaskReturnType,
-            typename ReplyArgType,
-            typename = EnableIfIsBaseCallback<CallbackType>>
+  template <typename TaskReturnType, typename ReplyArgType>
   TaskId PostTaskAndReplyWithResult(TaskRunner* task_runner,
                                     const Location& from_here,
-                                    CallbackType<TaskReturnType()> task,
-                                    CallbackType<void(ReplyArgType)> reply) {
+                                    OnceCallback<TaskReturnType()> task,
+                                    OnceCallback<void(ReplyArgType)> reply) {
     auto* result = new std::unique_ptr<TaskReturnType>();
     return PostTaskAndReply(
         task_runner, from_here,
@@ -138,14 +130,19 @@ class BASE_EXPORT CancelableTaskTracker {
   // See https://crbug.com/918948.
   using TaskCancellationFlag = RefCountedData<AtomicFlag>;
 
-  static void RunIfNotCanceled(const scoped_refptr<TaskCancellationFlag>& flag,
-                               OnceClosure task);
+  static void RunIfNotCanceled(
+      const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
+      const scoped_refptr<TaskCancellationFlag>& flag,
+      OnceClosure task);
   static void RunThenUntrackIfNotCanceled(
+      const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
       const scoped_refptr<TaskCancellationFlag>& flag,
       OnceClosure task,
       OnceClosure untrack);
-  static bool IsCanceled(const scoped_refptr<TaskCancellationFlag>& flag,
-                         const ScopedClosureRunner& cleanup_runner);
+  static bool IsCanceled(
+      const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
+      const scoped_refptr<TaskCancellationFlag>& flag,
+      const ScopedClosureRunner& cleanup_runner);
 
   void Track(TaskId id, scoped_refptr<TaskCancellationFlag> flag);
   void Untrack(TaskId id);

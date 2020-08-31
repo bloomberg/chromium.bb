@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 
 namespace content {
 class WebContents;
@@ -34,22 +35,26 @@ class LocalCardMigrationBubbleViews : public LocalCardMigrationBubble,
   void Hide() override;
 
   // LocationBarBubbleDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
  private:
   friend class LocalCardMigrationBrowserTest;
 
   ~LocalCardMigrationBubbleViews() override;
 
+  void OnDialogAccepted();
+  void OnDialogCancelled();
+
   // views::BubbleDialogDelegateView:
   void Init() override;
+
+  PaymentsBubbleClosedReason closed_reason_ =
+      PaymentsBubbleClosedReason::kUnknown;
 
   LocalCardMigrationBubbleController* controller_;
 

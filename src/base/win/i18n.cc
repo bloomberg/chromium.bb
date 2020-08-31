@@ -6,13 +6,13 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace {
 
-typedef decltype(::GetSystemPreferredUILanguages)* GetPreferredUILanguages_Fn;
+using GetPreferredUILanguages_Fn = decltype(::GetSystemPreferredUILanguages)*;
 
 bool GetPreferredUILanguageList(GetPreferredUILanguages_Fn function,
                                 ULONG flags,

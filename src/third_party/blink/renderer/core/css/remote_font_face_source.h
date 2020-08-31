@@ -13,6 +13,7 @@
 namespace blink {
 
 class CSSFontFace;
+class Document;
 class FontSelector;
 class FontCustomPlatformData;
 
@@ -23,9 +24,6 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
  public:
   enum Phase { kNoLimitExceeded, kShortLimitExceeded, kLongLimitExceeded };
-  // Periods of the Font Display Timeline.
-  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
-  enum DisplayPeriod { kBlockPeriod, kSwapPeriod, kFailurePeriod };
 
   RemoteFontFaceSource(CSSFontFace*, FontSelector*, FontDisplay);
   ~RemoteFontFaceSource() override;
@@ -50,7 +48,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool HadBlankText() override { return histograms_.HadBlankText(); }
   void PaintRequested() override { histograms_.FallbackFontPainted(period_); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   scoped_refptr<SimpleFontData> CreateFontData(
@@ -60,18 +58,31 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
       const FontDescription&);
 
  private:
+  // Periods of the Font Display Timeline.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
+  // Note that kNotApplicablePeriod is an implementation detail indicating that
+  // the font is loaded from memory cache synchronously, and hence, made
+  // immediately available. As we never need to use a fallback for it, using
+  // other DisplayPeriod values seem artificial. So we use a special value.
+  enum DisplayPeriod {
+    kBlockPeriod,
+    kSwapPeriod,
+    kFailurePeriod,
+    kNotApplicablePeriod
+  };
+
   class FontLoadHistograms {
     DISALLOW_NEW();
 
    public:
     // Should not change following order in CacheHitMetrics to be used for
     // metrics values.
-    enum CacheHitMetrics {
+    enum class CacheHitMetrics {
       kMiss,
       kDiskHit,
       kDataUrl,
       kMemoryHit,
-      kCacheHitEnumMax
+      kMaxValue = kMemoryHit,
     };
     enum DataSource {
       kFromUnknown,
@@ -113,7 +124,13 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
     DataSource data_source_;
   };
 
-  void UpdatePeriod();
+  Document* GetDocument() const;
+
+  DisplayPeriod ComputeFontDisplayAutoPeriod() const;
+  bool NeedsInterventionToAlignWithLCPGoal() const;
+
+  DisplayPeriod ComputePeriod() const;
+  bool UpdatePeriod() override;
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
   FontDisplay GetFontDisplayWithFeaturePolicyCheck(FontDisplay,
@@ -132,6 +149,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   DisplayPeriod period_;
   FontLoadHistograms histograms_;
   bool is_intervention_triggered_;
+  bool finished_before_document_rendering_begin_;
+  bool finished_before_lcp_limit_;
 };
 
 }  // namespace blink

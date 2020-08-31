@@ -288,6 +288,7 @@ eu{
         WF{"Wallis eta Futuna"}
         WS{"Samoa"}
         XA{"Sasiazentuak"}
+        XB{"pseudobidia"}
         XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
@@ -303,9 +304,8 @@ eu{
     Countries%variant{
         CD{"Kongo (DR)"}
         CG{"Kongoko Errepublika"}
-        CI{"CI"}
+        CI{"C¨ôte d’Ivore"}
         CZ{"Txekiar Errepublika"}
-        TL{"TL"}
     }
-    Version{"36"}
+    Version{"37"}
 }

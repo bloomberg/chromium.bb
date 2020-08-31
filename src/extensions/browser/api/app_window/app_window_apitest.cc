@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -167,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlphaEnabledInStable) {
       "platform_apps/windows_api_alpha_enabled/in_stable",
       // Ignore manifest warnings because the extension will not load at all
       // in stable.
-      kFlagIgnoreManifestWarnings))
+      kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 
@@ -192,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, ImeWindowHasPermissions) {
 
   EXPECT_TRUE(RunPlatformAppTestWithFlags(
       "platform_apps/windows_api_ime/has_permissions_platform_app",
-      kFlagIgnoreManifestWarnings))
+      kFlagIgnoreManifestWarnings, kFlagNone))
       << message_;
 }
 

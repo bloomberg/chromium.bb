@@ -8,13 +8,16 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/geolocation/geolocation_provider.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/device_service.mojom.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -34,11 +37,7 @@
 #include "services/device/usb/mojo/device_manager_test.h"
 #include "services/device/wake_lock/wake_lock_context.h"
 #include "services/device/wake_lock/wake_lock_provider.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -92,7 +91,7 @@ std::unique_ptr<DeviceService> CreateDeviceService(
     const WakeLockContextCallback& wake_lock_context_callback,
     const CustomLocationProviderCallback& custom_location_provider_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate,
-    service_manager::mojom::ServiceRequest request);
+    mojo::PendingReceiver<mojom::DeviceService> receiver);
 #else
 std::unique_ptr<DeviceService> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -101,10 +100,10 @@ std::unique_ptr<DeviceService> CreateDeviceService(
     network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     const CustomLocationProviderCallback& custom_location_provider_callback,
-    service_manager::mojom::ServiceRequest request);
+    mojo::PendingReceiver<mojom::DeviceService> receiver);
 #endif
 
-class DeviceService : public service_manager::Service {
+class DeviceService : public mojom::DeviceService {
  public:
 #if defined(OS_ANDROID)
   DeviceService(
@@ -115,7 +114,7 @@ class DeviceService : public service_manager::Service {
       const std::string& geolocation_api_key,
       const WakeLockContextCallback& wake_lock_context_callback,
       const base::android::JavaRef<jobject>& java_nfc_delegate,
-      service_manager::mojom::ServiceRequest request);
+      mojo::PendingReceiver<mojom::DeviceService> receiver);
 #else
   DeviceService(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -123,78 +122,86 @@ class DeviceService : public service_manager::Service {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       const std::string& geolocation_api_key,
-      service_manager::mojom::ServiceRequest request);
+      mojo::PendingReceiver<mojom::DeviceService> receiver);
 #endif
   ~DeviceService() override;
+
+  void AddReceiver(mojo::PendingReceiver<mojom::DeviceService> receiver);
 
   void SetPlatformSensorProviderForTesting(
       std::unique_ptr<PlatformSensorProvider> provider);
 
- private:
-  // service_manager::Service:
-  void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  // Supports global override of GeolocationContext binding within the service.
+  using GeolocationContextBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<mojom::GeolocationContext>)>;
+  static void OverrideGeolocationContextBinderForTesting(
+      GeolocationContextBinder binder);
 
-  void BindFingerprintReceiver(
-      mojo::PendingReceiver<mojom::Fingerprint> receiver);
-  void BindGeolocationConfigReceiver(
-      mojo::PendingReceiver<mojom::GeolocationConfig> receiver);
-  void BindGeolocationContextReceiver(
-      mojo::PendingReceiver<mojom::GeolocationContext> receiver);
-  void BindGeolocationControlReceiver(
-      mojo::PendingReceiver<mojom::GeolocationControl> receiver);
+ private:
+  // mojom::DeviceService implementation:
+  void BindFingerprint(
+      mojo::PendingReceiver<mojom::Fingerprint> receiver) override;
+  void BindGeolocationConfig(
+      mojo::PendingReceiver<mojom::GeolocationConfig> receiver) override;
+  void BindGeolocationContext(
+      mojo::PendingReceiver<mojom::GeolocationContext> receiver) override;
+  void BindGeolocationControl(
+      mojo::PendingReceiver<mojom::GeolocationControl> receiver) override;
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  void BindInputDeviceManagerReceiver(
-      mojo::PendingReceiver<mojom::InputDeviceManager> receiver);
+  void BindInputDeviceManager(
+      mojo::PendingReceiver<mojom::InputDeviceManager> receiver) override;
 #endif
 
+  void BindBatteryMonitor(
+      mojo::PendingReceiver<mojom::BatteryMonitor> receiver) override;
+  void BindNFCProvider(
+      mojo::PendingReceiver<mojom::NFCProvider> receiver) override;
+  void BindVibrationManager(
+      mojo::PendingReceiver<mojom::VibrationManager> receiver) override;
+
 #if !defined(OS_ANDROID)
-  void BindBatteryMonitorReceiver(
-      mojo::PendingReceiver<mojom::BatteryMonitor> receiver);
-  void BindHidManagerReceiver(
-      mojo::PendingReceiver<mojom::HidManager> receiver);
-  void BindNFCProviderReceiver(
-      mojo::PendingReceiver<mojom::NFCProvider> receiver);
-  void BindVibrationManagerReceiver(
-      mojo::PendingReceiver<mojom::VibrationManager> receiver);
+  void BindHidManager(
+      mojo::PendingReceiver<mojom::HidManager> receiver) override;
 #endif
 
 #if defined(OS_CHROMEOS)
-  void BindBluetoothSystemFactoryReceiver(
-      mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
-  void BindMtpManagerReceiver(
-      mojo::PendingReceiver<mojom::MtpManager> receiver);
+  void BindBluetoothSystemFactory(
+      mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver) override;
+  void BindMtpManager(
+      mojo::PendingReceiver<mojom::MtpManager> receiver) override;
 #endif
 
-  void BindPowerMonitorReceiver(
-      mojo::PendingReceiver<mojom::PowerMonitor> receiver);
+  void BindPowerMonitor(
+      mojo::PendingReceiver<mojom::PowerMonitor> receiver) override;
 
-  void BindPublicIpAddressGeolocationProviderReceiver(
-      mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
-          receiver);
+  void BindPublicIpAddressGeolocationProvider(
+      mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider> receiver)
+      override;
 
-  void BindScreenOrientationListenerReceiver(
-      mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver);
+  void BindScreenOrientationListener(
+      mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver)
+      override;
 
-  void BindSensorProviderReceiver(
-      mojo::PendingReceiver<mojom::SensorProvider> receiver);
+  void BindSensorProvider(
+      mojo::PendingReceiver<mojom::SensorProvider> receiver) override;
 
-  void BindTimeZoneMonitorReceiver(
-      mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver);
+  void BindSerialPortManager(
+      mojo::PendingReceiver<mojom::SerialPortManager> receiver) override;
 
-  void BindWakeLockProviderReceiver(
-      mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
+  void BindTimeZoneMonitor(
+      mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver) override;
 
-  void BindUsbDeviceManagerReceiver(
-      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
+  void BindWakeLockProvider(
+      mojo::PendingReceiver<mojom::WakeLockProvider> receiver) override;
 
-  void BindUsbDeviceManagerTestReceiver(
-      mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver);
+  void BindUsbDeviceManager(
+      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) override;
 
-  service_manager::ServiceBinding service_binding_;
+  void BindUsbDeviceManagerTest(
+      mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) override;
+
+  mojo::ReceiverSet<mojom::DeviceService> receivers_;
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<PublicIpAddressGeolocationProvider>
@@ -239,8 +246,6 @@ class DeviceService : public service_manager::Service {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<MtpDeviceManager> mtp_device_manager_;
 #endif
-
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceService);
 };

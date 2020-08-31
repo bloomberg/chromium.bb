@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -132,7 +132,7 @@ class ShapePathBuilder : public PathBuilder {
   }
 
  private:
-  Member<LocalFrameView> view_;
+  LocalFrameView* view_;
   LayoutObject& layout_object_;
   const ShapeOutsideInfo& shape_outside_info_;
 };
@@ -278,6 +278,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
       class_names.Append("::before");
     else if (pseudo_element->GetPseudoId() == kPseudoIdAfter)
       class_names.Append("::after");
+    else if (pseudo_element->GetPseudoId() == kPseudoIdMarker)
+      class_names.Append("::marker");
   }
   if (!class_names.IsEmpty())
     element_info->setString("className", class_names.ToString());
@@ -306,6 +308,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   DOMRect* bounding_box = element->getBoundingClientRect();
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
+
+  element_info->setBoolean("showAccessibilityInfo", true);
+  element_info->setBoolean("isKeyboardFocusable",
+                           element->IsKeyboardFocusable());
+  element_info->setString("accessibleName", element->computedName());
+  element_info->setString("accessibleRole", element->computedRole());
   return element_info;
 }
 
@@ -320,13 +328,50 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   text_info->setString("nodeWidth", bounding_box.Width().ToString());
   text_info->setString("nodeHeight", bounding_box.Height().ToString());
   text_info->setString("tagName", "#text");
+  text_info->setBoolean("showAccessibilityInfo", false);
   return text_info;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
+    const InspectorGridHighlightConfig& grid_config) {
+  std::unique_ptr<protocol::DictionaryValue> grid_config_info =
+      protocol::DictionaryValue::create();
+  grid_config_info->setBoolean("gridBorderDash", grid_config.grid_border_dash);
+  grid_config_info->setBoolean("cellBorderDash", grid_config.cell_border_dash);
+  grid_config_info->setBoolean("showGridExtensionLines",
+                               grid_config.show_grid_extension_lines);
+
+  if (grid_config.grid_color != Color::kTransparent) {
+    grid_config_info->setString("gridBorderColor",
+                                grid_config.grid_color.Serialized());
+  }
+  if (grid_config.cell_color != Color::kTransparent) {
+    grid_config_info->setString("cellBorderColor",
+                                grid_config.cell_color.Serialized());
+  }
+  if (grid_config.row_gap_color != Color::kTransparent) {
+    grid_config_info->setString("rowGapColor",
+                                grid_config.row_gap_color.Serialized());
+  }
+  if (grid_config.column_gap_color != Color::kTransparent) {
+    grid_config_info->setString("columnGapColor",
+                                grid_config.column_gap_color.Serialized());
+  }
+  if (grid_config.row_hatch_color != Color::kTransparent) {
+    grid_config_info->setString("rowHatchColor",
+                                grid_config.row_hatch_color.Serialized());
+  }
+  if (grid_config.column_hatch_color != Color::kTransparent) {
+    grid_config_info->setString("columnHatchColor",
+                                grid_config.column_hatch_color.Serialized());
+  }
+  return grid_config_info;
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
-    Color color,
+    const InspectorHighlightConfig& highlight_config,
     float scale,
     bool isPrimary) {
   std::unique_ptr<protocol::DictionaryValue> grid_info =
@@ -335,29 +380,88 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   const auto& rows = layout_grid->RowPositions();
   const auto& columns = layout_grid->ColumnPositions();
 
-  PathBuilder cell_builder;
   auto row_gap =
       layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);
   auto column_gap = layout_grid->GridGap(kForColumns) +
                     layout_grid->GridItemOffset(kForColumns);
 
+  PathBuilder row_builder;
+  PathBuilder row_gap_builder;
+  LayoutUnit row_left = columns.front();
+  LayoutUnit row_width = columns.back() - columns.front();
   for (size_t i = 1; i < rows.size(); ++i) {
-    for (size_t j = 1; j < columns.size(); ++j) {
-      PhysicalOffset position(columns.at(j - 1), rows.at(i - 1));
-      PhysicalSize size(columns.at(j) - columns.at(j - 1),
-                        rows.at(i) - rows.at(i - 1));
-      if (i != rows.size() - 1)
-        size.height -= row_gap;
-      if (j != columns.size() - 1)
-        size.width -= column_gap;
-      PhysicalRect cell(position, size);
-      FloatQuad cell_quad = layout_grid->LocalRectToAbsoluteQuad(cell);
-      FrameQuadToViewport(containing_view, cell_quad);
-      cell_builder.AppendPath(QuadToPath(cell_quad), scale);
+    // Rows
+    PhysicalOffset position(row_left, rows.at(i - 1));
+    PhysicalSize size(row_width, rows.at(i) - rows.at(i - 1));
+    if (i != rows.size() - 1)
+      size.height -= row_gap;
+    PhysicalRect row(position, size);
+    FloatQuad row_quad = layout_grid->LocalRectToAbsoluteQuad(row);
+    FrameQuadToViewport(containing_view, row_quad);
+    row_builder.AppendPath(QuadToPath(row_quad), scale);
+    // Row Gaps
+    if (i != rows.size() - 1) {
+      PhysicalOffset gap_position(row_left, rows.at(i) - row_gap);
+      PhysicalSize gap_size(row_width, row_gap);
+      PhysicalRect gap(gap_position, gap_size);
+      FloatQuad gap_quad = layout_grid->LocalRectToAbsoluteQuad(gap);
+      FrameQuadToViewport(containing_view, gap_quad);
+      row_gap_builder.AppendPath(QuadToPath(gap_quad), scale);
     }
   }
-  grid_info->setValue("cells", cell_builder.Release());
-  grid_info->setString("color", color.Serialized());
+  grid_info->setValue("rows", row_builder.Release());
+  grid_info->setValue("rowGaps", row_gap_builder.Release());
+
+  PathBuilder column_builder;
+  PathBuilder column_gap_builder;
+  LayoutUnit column_top = rows.front();
+  LayoutUnit column_height = rows.back() - rows.front();
+  for (size_t i = 1; i < columns.size(); ++i) {
+    PhysicalOffset position(columns.at(i - 1), column_top);
+    PhysicalSize size(columns.at(i) - columns.at(i - 1), column_height);
+    if (i != columns.size() - 1)
+      size.width -= column_gap;
+    PhysicalRect column(position, size);
+    FloatQuad column_quad = layout_grid->LocalRectToAbsoluteQuad(column);
+    FrameQuadToViewport(containing_view, column_quad);
+    column_builder.AppendPath(QuadToPath(column_quad), scale);
+    // Column Gaps
+    if (i != columns.size() - 1) {
+      PhysicalOffset gap_position(columns.at(i) - column_gap, column_top);
+      PhysicalSize gap_size(column_gap, column_height);
+      PhysicalRect gap(gap_position, gap_size);
+      FloatQuad gap_quad = layout_grid->LocalRectToAbsoluteQuad(gap);
+      FrameQuadToViewport(containing_view, gap_quad);
+      column_gap_builder.AppendPath(QuadToPath(gap_quad), scale);
+    }
+  }
+  grid_info->setValue("columns", column_builder.Release());
+  grid_info->setValue("columnGaps", column_gap_builder.Release());
+
+  // Grid border
+  PathBuilder grid_border_builder;
+  PhysicalOffset grid_position(row_left, column_top);
+  PhysicalSize grid_size(row_width, column_height);
+  PhysicalRect grid_rect(grid_position, grid_size);
+  FloatQuad grid_quad = layout_grid->LocalRectToAbsoluteQuad(grid_rect);
+  FrameQuadToViewport(containing_view, grid_quad);
+  grid_border_builder.AppendPath(QuadToPath(grid_quad), scale);
+  grid_info->setValue("gridBorder", grid_border_builder.Release());
+
+  if (highlight_config.css_grid != Color::kTransparent) {
+    // Legacy support for highlight_config.css_grid
+    std::unique_ptr<protocol::DictionaryValue> grid_config_info =
+        protocol::DictionaryValue::create();
+    grid_config_info->setString("cellBorderColor",
+                                highlight_config.css_grid.Serialized());
+    grid_config_info->setBoolean("cellBorderDash", true);
+    grid_info->setValue("gridHighlightConfig", grid_config_info->clone());
+  } else {
+    grid_info->setValue(
+        "gridHighlightConfig",
+        BuildGridHighlightConfigInfo(*highlight_config.grid_highlight_config));
+  }
+
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;
 }
@@ -423,17 +527,24 @@ PhysicalRect TextFragmentRectInRootFrame(
 
 }  // namespace
 
-InspectorHighlight::InspectorHighlight(float scale)
-    : highlight_paths_(protocol::ListValue::create()),
-      show_rulers_(false),
-      show_extension_lines_(false),
-      scale_(scale) {}
-
 InspectorHighlightConfig::InspectorHighlightConfig()
     : show_info(false),
       show_styles(false),
       show_rulers(false),
-      show_extension_lines(false) {}
+      show_extension_lines(false),
+      color_format(ColorFormat::HEX) {}
+
+InspectorHighlight::InspectorHighlight(float scale)
+    : highlight_paths_(protocol::ListValue::create()),
+      show_rulers_(false),
+      show_extension_lines_(false),
+      scale_(scale),
+      color_format_(ColorFormat::HEX) {}
+
+InspectorGridHighlightConfig::InspectorGridHighlightConfig()
+    : show_grid_extension_lines(false),
+      grid_border_dash(false),
+      cell_border_dash(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -445,7 +556,8 @@ InspectorHighlight::InspectorHighlight(
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
-      scale_(1.f) {
+      scale_(1.f),
+      color_format_(highlight_config.color_format) {
   DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
   LocalFrameView* frame_view = node->GetDocument().View();
   if (frame_view) {
@@ -477,7 +589,8 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   boxes_ = std::make_unique<protocol::Array<protocol::Array<double>>>();
   computed_style_ = protocol::DictionaryValue::create();
 
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
     return;
@@ -486,15 +599,13 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   for (size_t i = 0; i < style->length(); ++i) {
     AtomicString name(style->item(i));
-    const CSSValue* value = style->GetPropertyCSSValue(cssPropertyID(name));
+    const CSSValue* value = style->GetPropertyCSSValue(
+        cssPropertyID(node->GetExecutionContext(), name));
     if (!value)
       continue;
     if (value->IsColorValue()) {
       Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      String hex_color =
-          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
-                         color.Blue(), color.Alpha());
-      computed_style_->setString(name, hex_color);
+      computed_style_->setString(name, ToHEXA(color));
     } else {
       computed_style_->setString(name, value->CssText());
     }
@@ -528,17 +639,17 @@ void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
 
   if (!node->IsContainerNode())
     return;
-  Node* first_child = InspectorDOMSnapshotAgent::FirstChild(*node, false);
-  for (Node* child = first_child; child;
-       child = InspectorDOMSnapshotAgent::NextSibling(*child, false))
+  for (Node* child = blink::dom_traversal_utils::FirstChild(*node, false);
+       child; child = blink::dom_traversal_utils::NextSibling(*child, false)) {
     VisitAndCollectDistanceInfo(child);
+  }
 }
 
 void InspectorHighlight::VisitAndCollectDistanceInfo(
     PseudoId pseudo_id,
     LayoutObject* layout_object) {
   protocol::DOM::PseudoType pseudo_type;
-  if (!InspectorDOMAgent::GetPseudoElementType(pseudo_id, &pseudo_type))
+  if (pseudo_id == kPseudoIdNone)
     return;
   for (LayoutObject* child = layout_object->SlowFirstChild(); child;
        child = child->NextSibling()) {
@@ -649,22 +760,24 @@ void InspectorHighlight::AppendNodeHighlight(
   AppendQuad(border, highlight_config.border, Color::kTransparent, "border");
   AppendQuad(margin, highlight_config.margin, Color::kTransparent, "margin");
 
-  if (highlight_config.css_grid == Color::kTransparent)
+  if (highlight_config.css_grid == Color::kTransparent &&
+      !highlight_config.grid_highlight_config) {
     return;
+  }
   grid_info_ = protocol::ListValue::create();
   if (layout_object->IsLayoutGrid()) {
-    grid_info_->pushValue(
-        BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
-                      highlight_config.css_grid, scale_, true));
+    grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
+                                        ToLayoutGrid(layout_object),
+                                        highlight_config, scale_, true));
   }
   LayoutObject* parent = layout_object->Parent();
   if (!parent || !parent->IsLayoutGrid())
     return;
   if (!BuildNodeQuads(parent->GetNode(), &content, &padding, &border, &margin))
     return;
-  grid_info_->pushValue(
-      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(parent),
-                    highlight_config.css_grid, scale_, false));
+  grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
+                                      ToLayoutGrid(parent), highlight_config,
+                                      scale_, false));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
@@ -674,6 +787,18 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   object->setValue("paths", highlight_paths_->clone());
   object->setBoolean("showRulers", show_rulers_);
   object->setBoolean("showExtensionLines", show_extension_lines_);
+  switch (color_format_) {
+    case ColorFormat::RGB:
+      object->setString("colorFormat", "rgb");
+      break;
+    case ColorFormat::HSL:
+      object->setString("colorFormat", "hsl");
+      break;
+    case ColorFormat::HEX:
+      object->setString("colorFormat", "hex");
+      break;
+  }
+
   if (model_) {
     std::unique_ptr<protocol::DictionaryValue> distance_info =
         protocol::DictionaryValue::create();
@@ -705,7 +830,8 @@ bool InspectorHighlight::GetBoxModel(
     Node* node,
     std::unique_ptr<protocol::DOM::BoxModel>* model,
     bool use_absolute_zoom) {
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   LayoutObject* layout_object = node->GetLayoutObject();
   LocalFrameView* view = node->GetDocument().View();
   if (!layout_object || !view)
@@ -924,7 +1050,25 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   config.show_styles = false;
   config.show_rulers = true;
   config.show_extension_lines = true;
-  config.css_grid = Color(128, 128, 128, 0);
+  config.css_grid = Color::kTransparent;
+  config.color_format = ColorFormat::HEX;
+  config.grid_highlight_config = std::make_unique<InspectorGridHighlightConfig>(
+      InspectorHighlight::DefaultGridConfig());
+  return config;
+}
+
+// static
+InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
+  InspectorGridHighlightConfig config;
+  config.grid_color = Color(255, 0, 0, 0);
+  config.cell_color = Color(128, 0, 0, 0);
+  config.row_gap_color = Color(0, 255, 0, 0);
+  config.column_gap_color = Color(0, 0, 255, 0);
+  config.row_hatch_color = Color(255, 255, 255, 0);
+  config.column_hatch_color = Color(128, 128, 128, 0);
+  config.show_grid_extension_lines = true;
+  config.grid_border_dash = false;
+  config.cell_border_dash = true;
   return config;
 }
 

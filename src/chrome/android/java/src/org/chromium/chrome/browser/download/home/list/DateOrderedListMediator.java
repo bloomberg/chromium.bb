@@ -7,16 +7,17 @@ package org.chromium.chrome.browser.download.home.list;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.v4.util.Pair;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
+import org.chromium.chrome.browser.download.home.LegacyDownloadProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -36,10 +37,10 @@ import org.chromium.chrome.browser.download.home.list.mutator.ListMutationContro
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
-import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProviderImpl;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
@@ -144,21 +145,26 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param provider                The {@link OfflineContentProvider} to visually represent.
-     * @param faviconProvider         The {@link FaviconProvider} to handle favicon requests.
-     * @param deleteController        A class to manage whether or not items can be deleted.
-     * @param shareController         A class responsible for sharing downloaded item {@link
-     *                                Intent}s.
-     * @param selectionDelegate       A class responsible for handling list item selection.
-     * @param config                  A {@link DownloadManagerUiConfig} to provide UI config params.
-     * @param dateOrderedListObserver An observer of the list and recycler view.
-     * @param model                   The {@link ListItemModel} to push {@code provider} into.
+     * @param provider                 The {@link OfflineContentProvider} to visually represent.
+     * @param legacyProvider           A legacy version of a provider for downloads.
+     * @param faviconProvider          The {@link FaviconProvider} to handle favicon requests.
+     * @param deleteController         A class to manage whether or not items can be deleted.
+     * @param shareController          A class responsible for sharing downloaded item {@link
+     *                                 Intent}s.
+     * @param selectionDelegate        A class responsible for handling list item selection.
+     * @param config                   A {@link DownloadManagerUiConfig} to provide UI config
+     *                                 params.
+     * @param dateOrderedListObserver  An observer of the list and recycler view.
+     * @param model                    The {@link ListItemModel} to push {@code provider} into.
+     * @param discardableReferencePool A {@linK DiscardableReferencePool} reference to use for large
+     *                                 objects (e.g. bitmaps) in the UI.
      */
-    public DateOrderedListMediator(OfflineContentProvider provider, FaviconProvider faviconProvider,
+    public DateOrderedListMediator(OfflineContentProvider provider,
+            LegacyDownloadProvider legacyProvider, FaviconProvider faviconProvider,
             ShareController shareController, DeleteController deleteController,
             RenameController renameController, SelectionDelegate<ListItem> selectionDelegate,
             DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
-            ListItemModel model) {
+            ListItemModel model, DiscardableReferencePool discardableReferencePool) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -172,7 +178,7 @@ class DateOrderedListMediator {
         // TODO(shaktisahu): Look into replacing mutator chain by
         // sorter -> label adder -> property setter -> paginator -> model
 
-        mProvider = new OfflineContentProviderGlue(provider, config);
+        mProvider = new OfflineContentProviderGlue(provider, legacyProvider, config);
         mFaviconProvider = faviconProvider;
         mShareController = shareController;
         mModel = model;
@@ -196,10 +202,9 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider =
-                new ThumbnailProviderImpl(GlobalDiscardableReferencePool.getReferencePool(),
-                        config.inMemoryThumbnailCacheSizeBytes,
-                        ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
+        mThumbnailProvider = new ThumbnailProviderImpl(discardableReferencePool,
+                config.inMemoryThumbnailCacheSizeBytes,
+                ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
@@ -212,8 +217,7 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().set(ListProperties.PROVIDER_FAVICON, this::getFavicon);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
-        mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
-                mUiConfig.isRenameEnabled ? this::onRenameItem : null);
+        mModel.getProperties().set(ListProperties.CALLBACK_RENAME, this::onRenameItem);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_PAGINATION_CLICK, mListMutationController::loadMorePages);
         mModel.getProperties().set(ListProperties.CALLBACK_GROUP_PAGINATION_CLICK,

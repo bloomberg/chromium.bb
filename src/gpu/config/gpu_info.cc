@@ -4,8 +4,15 @@
 
 #include <stdint.h>
 
+#include "base/logging.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
+
+#if defined(OS_MACOSX)
+#include <GLES2/gl2.h>
+#include <GLES2/gl2extchromium.h>
+#endif  // OS_MACOSX
 
 namespace {
 
@@ -115,6 +122,18 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
                         gpu::VulkanVersionToString(info.vulkan_version));
   enumerator->EndDx12VulkanVersionInfo();
 }
+
+void EnumerateOverlayInfo(const gpu::OverlayInfo& info,
+                          gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginOverlayInfo();
+  enumerator->AddBool("directComposition", info.direct_composition);
+  enumerator->AddBool("supportsOverlays", info.supports_overlays);
+  enumerator->AddString("yuy2OverlaySupport",
+                        gpu::OverlaySupportToString(info.yuy2_overlay_support));
+  enumerator->AddString("nv12OverlaySupport",
+                        gpu::OverlaySupportToString(info.nv12_overlay_support));
+  enumerator->EndOverlayInfo();
+}
 #endif
 
 }  // namespace
@@ -130,9 +149,24 @@ const char* OverlaySupportToString(gpu::OverlaySupport support) {
       return "DIRECT";
     case gpu::OverlaySupport::kScaling:
       return "SCALING";
+    case gpu::OverlaySupport::kSoftware:
+      return "SOFTWARE";
   }
 }
 #endif  // OS_WIN
+
+#if defined(OS_MACOSX)
+GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return true;
+
+    default:
+      return false;
+  }
+}
+#endif  // OS_MACOSX
 
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}
@@ -183,11 +217,10 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
+#if defined(OS_MACOSX)
+      macos_specific_texture_target(gpu::GetPlatformSpecificTextureTarget()),
+#endif  // OS_MACOSX
       jpeg_decode_accelerator_supported(false),
-#if defined(USE_X11)
-      system_visual(0),
-      rgba_visual(0),
-#endif
       oop_rasterization_supported(false),
       subpixel_font_rendering(true) {
 }
@@ -242,13 +275,13 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
+#if defined(OS_MACOSX)
+    uint32_t macos_specific_texture_target;
+#endif  // OS_MACOSX
 #if defined(OS_WIN)
-    bool direct_composition;
-    bool supports_overlays;
-    OverlaySupport yuy2_overlay_support;
-    OverlaySupport nv12_overlay_support;
     DxDiagNode dx_diagnostics;
     Dx12VulkanVersionInfo dx12_vulkan_version_info;
+    OverlayInfo overlay_info;
 #endif
 
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
@@ -258,11 +291,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 
     ImageDecodeAcceleratorSupportedProfiles
         image_decode_accelerator_supported_profiles;
-
-#if defined(USE_X11)
-    VisualID system_visual;
-    VisualID rgba_visual;
-#endif
 
     bool oop_rasterization_supported;
     bool subpixel_font_rendering;
@@ -311,14 +339,13 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
+#if defined(OS_MACOSX)
+  enumerator->AddInt("macOSSpecificTextureTarget",
+                     macos_specific_texture_target);
+#endif  // OS_MACOSX
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
-  enumerator->AddBool("directComposition", direct_composition);
-  enumerator->AddBool("supportsOverlays", supports_overlays);
-  enumerator->AddString("yuy2OverlaySupport",
-                        OverlaySupportToString(yuy2_overlay_support));
-  enumerator->AddString("nv12OverlaySupport",
-                        OverlaySupportToString(nv12_overlay_support));
+  EnumerateOverlayInfo(overlay_info, enumerator);
   EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
 #endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",
@@ -334,10 +361,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
       jpeg_decode_accelerator_supported);
   for (const auto& profile : image_decode_accelerator_supported_profiles)
     EnumerateImageDecodeAcceleratorSupportedProfile(profile, enumerator);
-#if defined(USE_X11)
-  enumerator->AddInt64("systemVisual", system_visual);
-  enumerator->AddInt64("rgbaVisual", rgba_visual);
-#endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
   enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
 #if BUILDFLAG(ENABLE_VULKAN)

@@ -8,7 +8,7 @@
 namespace prefs {
 
 #if defined(OS_CHROMEOS)
-extern const char kAccountConsistencyMirrorRequired[];
+extern const char kForceLogoutUnauthenticatedUserEnabled[];
 #endif
 extern const char kAccountIdMigrationState[];
 extern const char kAccountInfo[];

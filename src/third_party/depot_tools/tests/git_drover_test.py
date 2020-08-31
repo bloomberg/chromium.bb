@@ -11,9 +11,14 @@ import sys
 import tempfile
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from third_party import mock
+import gclient_utils
 import git_drover
 
 
@@ -35,7 +40,7 @@ class GitDroverTest(unittest.TestCase):
         os.path.join(self._parent_repo, '.git', 'info', 'refs'), 'w') as f:
       f.write('refs')
     mock.patch('tempfile.mkdtemp', self._mkdtemp).start()
-    mock.patch('git_drover._raw_input', self._get_input).start()
+    mock.patch('gclient_utils.AskForData', self._get_input).start()
     mock.patch('subprocess.check_call', self._check_call).start()
     mock.patch('subprocess.check_output', self._check_call).start()
     self.real_popen = subprocess.Popen
@@ -70,7 +75,7 @@ class GitDroverTest(unittest.TestCase):
          self._target_repo),
     ]
     self.LAND_COMMAND = [
-        (['git', 'cl', 'land', '--bypass-hooks'], self._target_repo),
+        (['git', 'cl', 'set-commit'], self._target_repo),
     ]
     if os.name == 'nt':
       self.BRANCH_CLEANUP_COMMANDS = [
@@ -116,13 +121,16 @@ class GitDroverTest(unittest.TestCase):
         self._fail_on_command == len(self._commands)):
       self._fail_on_command = None
       raise subprocess.CalledProcessError(1, args[0])
+    rv = ''
     if args == ['git', 'rev-parse', '--git-dir']:
-      return os.path.join(self._parent_repo, '.git')
+      rv = os.path.join(self._parent_repo, '.git')
     if args == ['git', '-c', 'core.quotePath=false', 'status', '--porcelain']:
-      return ' D foo\nUU baz\n D bar\n'
+      rv = ' D foo\nUU baz\n D bar\n'
     if args == ['git', 'log', '-1', '--format=%ae']:
-      return 'author@domain.org'
-    return ''
+      rv = 'author@domain.org'
+    if sys.version_info.major == 3:
+      return bytes(rv, 'utf-8')
+    return rv
 
   def _Popen(self, args, shell=False, cwd=None, stdin=None, stdout=None,
              stderr=None):

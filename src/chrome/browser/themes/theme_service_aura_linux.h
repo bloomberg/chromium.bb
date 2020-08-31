@@ -14,14 +14,13 @@ class Profile;
 // provides the native Linux theme.
 class ThemeServiceAuraLinux : public ThemeService {
  public:
-  ThemeServiceAuraLinux();
+  using ThemeService::ThemeService;
   ~ThemeServiceAuraLinux() override;
 
   // Overridden from ThemeService:
   bool ShouldInitWithSystemTheme() const override;
   void UseSystemTheme() override;
   bool IsSystemThemeDistinctFromDefaultTheme() const override;
-  bool UsingDefaultTheme() const override;
   bool UsingSystemTheme() const override;
   void FixInconsistentPreferencesIfNeeded() override;
 

@@ -107,7 +107,7 @@ template("chrome_extra_paks") {
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",
-      "//content:resources",
+      "//content:content_resources",
       "//content/browser/tracing:resources",
       "//mojo/public/js:resources",
       "//net:net_resources",
@@ -128,6 +128,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/dev_ui_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
+        "$root_gen_dir/chrome/gaia_auth_host_resources.pak",
         "$root_gen_dir/chrome/history_resources.pak",
         "$root_gen_dir/chrome/local_ntp_resources.pak",
         "$root_gen_dir/chrome/new_tab_page_resources.pak",
@@ -140,6 +141,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:component_extension_resources",
         "//chrome/browser/resources:dev_ui_paks",
         "//chrome/browser/resources:downloads_resources",
+        "//chrome/browser/resources:gaia_auth_host_resources",
         "//chrome/browser/resources:history_resources",
         "//chrome/browser/resources:local_ntp_resources",
         "//chrome/browser/resources:new_tab_page_resources",
@@ -151,6 +153,7 @@ template("chrome_extra_paks") {
     if (is_chromeos) {
       sources += [
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
+        "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
         "$root_gen_dir/chrome/camera_resources.pak",
         "$root_gen_dir/chrome/cellular_setup_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
@@ -159,6 +162,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chromeos/chromeos_help_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_media_app_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_media_app_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_print_management_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/third_party/ink/ink_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
@@ -169,18 +173,33 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos:camera_resources",
         "//chrome/browser/resources/chromeos:cellular_setup_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
+        "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
         "//chromeos/resources",
         "//chromeos/resources:help_app_bundle_resources",
         "//chromeos/resources:help_app_resources",
         "//chromeos/resources:media_app_bundle_resources",
         "//chromeos/resources:media_app_resources",
+        "//chromeos/resources:print_management_resources",
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
+
+      if (!is_official_build) {
+        sources += [
+          "$root_gen_dir/chromeos/chromeos_sample_system_web_app_resources.pak",
+        ]
+        deps += [ "//chromeos/resources:sample_system_web_app_resources" ]
+      }
     }
     if (!is_android && !is_chromeos) {
-      sources += [ "$root_gen_dir/chrome/welcome_resources.pak" ]
-      deps += [ "//chrome/browser/resources:welcome_resources" ]
+      sources += [
+        "$root_gen_dir/chrome/profile_picker_resources.pak",
+        "$root_gen_dir/chrome/welcome_resources.pak",
+      ]
+      deps += [
+        "//chrome/browser/resources:profile_picker_resources",
+        "//chrome/browser/resources:welcome_resources",
+      ]
     }
     if (enable_extensions) {
       sources += [
@@ -302,6 +321,9 @@ template("chrome_paks") {
     ]
     if (enable_hidpi) {
       public_deps += [ ":${target_name}_200_percent" ]
+    }
+    if (!defined(invoker.copy_data_to_bundle) || !invoker.copy_data_to_bundle) {
+      data_deps = public_deps
     }
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps

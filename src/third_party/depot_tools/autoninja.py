@@ -136,7 +136,7 @@ if not j_specified and not t_specified:
 # the whole output is the command.
 # On Linux and Mac, if people put depot_tools in directories with ' ',
 # shell would misunderstand ' ' as a path separation.
-# TODO(yyanagisawa): provide proper quating for Windows.
+# TODO(yyanagisawa): provide proper quoting for Windows.
 # see https://cs.chromium.org/chromium/src/tools/mb/mb.py
 for i in range(len(args)):
   if (i == 0 and sys.platform.startswith('win')) or ' ' in args[i]:

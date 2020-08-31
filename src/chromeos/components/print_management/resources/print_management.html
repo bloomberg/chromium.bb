@@ -1,0 +1,78 @@
+<style include="cr-shared-style print-management-shared">
+  html {
+    background-color: var(--cros-default-bg-color);
+  }
+
+  .main-container {
+    --cr-centered-card-max-width: 960px;
+  }
+
+  #columnHeaders {
+    align-items: center;
+    display: flex;
+    color: var(--google-grey-700);
+    min-height: var(--cr-section-min-height);
+  }
+
+  #headerContainer {
+    border-bottom: var(--cr-separator-line);
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    padding-top: 64px;
+  }
+
+  h1 {
+    font-size: 200%;
+    font-weight: 500;
+    margin-bottom: 0px;
+    margin-top: 0px;
+  }
+</style>
+
+<div class="main-container cr-centered-card-container">
+  <div id="headerContainer">
+    <h1>[[i18n('printJobTitle')]]</h1>
+    <!-- TODO(crbug/1075701): Add an icon to this button when it becomes
+        available -->
+    <cr-button id="clearAllButton" on-click="onClearHistoryClicked_"
+        disabled="[[!printJobs_.length]]">
+      [[i18n('clearAllHistoryLabel')]]
+    </cr-button>
+  </div>
+
+  <template is="dom-if" if="[[showClearAllDialog_]]" restamp>
+    <print-job-clear-history-dialog id="clearHistoryDialog"
+        on-close="onClearHistoryDialogClosed_">
+    </print-job-clear-history-dialog>
+  </template>
+
+  <div id="columnHeaders"
+      aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
+    <div id="fileNameColumn" class="long-text overflow-ellipsis"
+        aria-hidden="true">
+      [[i18n('fileNameColumn')]]
+    </div>
+    <div id="printerNameColumn" class="long-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('printerNameColumn')]]
+    </div>
+    <div id="dateColumn" class="short-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('dateColumn')]]
+    </div>
+    <div id="statusColumn" class="short-text overflow-ellipsis padded-left"
+        aria-hidden="true">
+      [[i18n('statusColumn')]]
+    </div>
+  </div>
+
+  <iron-list id="entryList" items="[[printJobs_]]" role="grid">
+    <template>
+      <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
+          last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
+          focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
+      </print-job-entry>
+    </template>
+  </iron-list>
+</div>

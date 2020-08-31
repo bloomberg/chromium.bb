@@ -108,81 +108,72 @@ size_t TrimExternalBracketsFromWebLink(const WideString& str,
 CPDF_LinkExtract::CPDF_LinkExtract(const CPDF_TextPage* pTextPage)
     : m_pTextPage(pTextPage) {}
 
-CPDF_LinkExtract::~CPDF_LinkExtract() {}
+CPDF_LinkExtract::~CPDF_LinkExtract() = default;
 
 void CPDF_LinkExtract::ExtractLinks() {
   m_LinkArray.clear();
-  if (!m_pTextPage->IsParsed())
-    return;
-
-  m_strPageText = m_pTextPage->GetAllPageText();
-  if (m_strPageText.IsEmpty())
-    return;
-
-  ParseLink();
-}
-
-void CPDF_LinkExtract::ParseLink() {
   int start = 0;
   int pos = 0;
-  int nTotalChar = m_pTextPage->CountChars();
   bool bAfterHyphen = false;
   bool bLineBreak = false;
+  const int nTotalChar = m_pTextPage->CountChars();
+  const WideString page_text = m_pTextPage->GetAllPageText();
   while (pos < nTotalChar) {
-    FPDF_CHAR_INFO pageChar;
-    m_pTextPage->GetCharInfo(pos, &pageChar);
-    if (pageChar.m_Flag == FPDFTEXT_CHAR_GENERATED ||
-        pageChar.m_Unicode == TEXT_SPACE_CHAR || pos == nTotalChar - 1) {
-      int nCount = pos - start;
-      if (pos == nTotalChar - 1) {
-        nCount++;
-      } else if (bAfterHyphen && (pageChar.m_Unicode == TEXT_LINEFEED_CHAR ||
-                                  pageChar.m_Unicode == TEXT_RETURN_CHAR)) {
-        // Handle text breaks with a hyphen to the next line.
-        bLineBreak = true;
-        pos++;
-        continue;
-      }
-      WideString strBeCheck;
-      strBeCheck = m_pTextPage->GetPageText(start, nCount);
-      if (bLineBreak) {
-        strBeCheck.Remove(TEXT_LINEFEED_CHAR);
-        strBeCheck.Remove(TEXT_RETURN_CHAR);
-        bLineBreak = false;
-      }
-      // Replace the generated code with the hyphen char.
-      strBeCheck.Replace(L"\xfffe", TEXT_HYPHEN);
-
-      if (strBeCheck.GetLength() > 5) {
-        while (strBeCheck.GetLength() > 0) {
-          wchar_t ch = strBeCheck[strBeCheck.GetLength() - 1];
-          if (ch == L')' || ch == L',' || ch == L'>' || ch == L'.') {
-            strBeCheck = strBeCheck.Left(strBeCheck.GetLength() - 1);
-            nCount--;
-          } else {
-            break;
-          }
-        }
-        // Check for potential web URLs and email addresses.
-        // Ftp address, file system links, data, blob etc. are not checked.
-        if (nCount > 5) {
-          int32_t nStartOffset;
-          int32_t nCountOverload;
-          if (CheckWebLink(&strBeCheck, &nStartOffset, &nCountOverload)) {
-            m_LinkArray.push_back(
-                {start + nStartOffset, nCountOverload, strBeCheck});
-          } else if (CheckMailLink(&strBeCheck)) {
-            m_LinkArray.push_back({start, nCount, strBeCheck});
-          }
-        }
-      }
-      start = ++pos;
-    } else {
-      bAfterHyphen = (pageChar.m_Flag == FPDFTEXT_CHAR_HYPHEN ||
-                      (pageChar.m_Flag == FPDFTEXT_CHAR_NORMAL &&
-                       pageChar.m_Unicode == TEXT_HYPHEN_CHAR));
-      pos++;
+    const CPDF_TextPage::CharInfo& char_info = m_pTextPage->GetCharInfo(pos);
+    if (char_info.m_CharType != CPDF_TextPage::CharType::kGenerated &&
+        char_info.m_Unicode != L' ' && pos != nTotalChar - 1) {
+      bAfterHyphen =
+          (char_info.m_CharType == CPDF_TextPage::CharType::kHyphen ||
+           (char_info.m_CharType == CPDF_TextPage::CharType::kNormal &&
+            char_info.m_Unicode == L'-'));
+      ++pos;
+      continue;
     }
+
+    int nCount = pos - start;
+    if (pos == nTotalChar - 1) {
+      ++nCount;
+    } else if (bAfterHyphen &&
+               (char_info.m_Unicode == L'\n' || char_info.m_Unicode == L'\r')) {
+      // Handle text breaks with a hyphen to the next line.
+      bLineBreak = true;
+      ++pos;
+      continue;
+    }
+
+    WideString strBeCheck = page_text.Substr(start, nCount);
+    if (bLineBreak) {
+      strBeCheck.Remove(L'\n');
+      strBeCheck.Remove(L'\r');
+      bLineBreak = false;
+    }
+    // Replace the generated code with the hyphen char.
+    strBeCheck.Replace(L"\xfffe", L"-");
+
+    if (strBeCheck.GetLength() > 5) {
+      while (strBeCheck.GetLength() > 0) {
+        wchar_t ch = strBeCheck.Back();
+        if (ch != L')' && ch != L',' && ch != L'>' && ch != L'.')
+          break;
+
+        strBeCheck = strBeCheck.First(strBeCheck.GetLength() - 1);
+        nCount--;
+      }
+
+      // Check for potential web URLs and email addresses.
+      // Ftp address, file system links, data, blob etc. are not checked.
+      if (nCount > 5) {
+        int32_t nStartOffset;
+        int32_t nCountOverload;
+        if (CheckWebLink(&strBeCheck, &nStartOffset, &nCountOverload)) {
+          m_LinkArray.push_back(
+              {start + nStartOffset, nCountOverload, strBeCheck});
+        } else if (CheckMailLink(&strBeCheck)) {
+          m_LinkArray.push_back({start, nCount, strBeCheck});
+        }
+      }
+    }
+    start = ++pos;
   }
 }
 
@@ -203,8 +194,8 @@ bool CPDF_LinkExtract::CheckWebLink(WideString* strBeCheck,
   auto start = str.Find(kHttpScheme);
   if (start.has_value()) {
     size_t off = start.value() + kHttpSchemeLen;  // move after "http".
-    if (len > off + 4) {                      // At least "://<char>" follows.
-      if (str[off] == L's')                   // "https" scheme is accepted.
+    if (len > off + 4) {     // At least "://<char>" follows.
+      if (str[off] == L's')  // "https" scheme is accepted.
         off++;
       if (str[off] == L':' && str[off + 1] == L'/' && str[off + 2] == L'/') {
         off += 3;
@@ -214,7 +205,7 @@ bool CPDF_LinkExtract::CheckWebLink(WideString* strBeCheck,
         if (end > off) {  // Non-empty host name.
           *nStart = start.value();
           *nCount = end - start.value() + 1;
-          *strBeCheck = strBeCheck->Mid(*nStart, *nCount);
+          *strBeCheck = strBeCheck->Substr(*nStart, *nCount);
           return true;
         }
       }
@@ -230,7 +221,7 @@ bool CPDF_LinkExtract::CheckWebLink(WideString* strBeCheck,
     if (end > start.value() + kWWWAddrStartLen) {
       *nStart = start.value();
       *nCount = end - start.value() + 1;
-      *strBeCheck = L"http://" + strBeCheck->Mid(*nStart, *nCount);
+      *strBeCheck = L"http://" + strBeCheck->Substr(*nStart, *nCount);
       return true;
     }
   }
@@ -258,7 +249,7 @@ bool CPDF_LinkExtract::CheckMailLink(WideString* str) {
       // End extracting for other invalid chars, '.' at the beginning, or
       // consecutive '.'.
       size_t removed_len = i == pPos ? i + 1 : i;
-      *str = str->Right(str->GetLength() - removed_len);
+      *str = str->Last(str->GetLength() - removed_len);
       break;
     }
     // Found a valid '.'.
@@ -291,7 +282,7 @@ bool CPDF_LinkExtract::CheckMailLink(WideString* str) {
       size_t host_end = i == pPos + 1 ? i - 2 : i - 1;
       if (pPos > 0 && host_end - aPos.value() >= 3) {
         // Trim the ending invalid chars if there is at least one '.' and name.
-        *str = str->Left(host_end + 1);
+        *str = str->First(host_end + 1);
         break;
       }
       return false;

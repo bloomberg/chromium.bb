@@ -68,16 +68,15 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   int GetCdmId() const override;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) override;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const DecryptCB& decrypt_cb) override;
+               DecryptCB decrypt_cb) override;
   void CancelDecrypt(StreamType stream_type) override;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                              const DecoderInitCB& init_cb) override;
+                              DecoderInitCB init_cb) override;
   void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                              const DecoderInitCB& init_cb) override;
+                              DecoderInitCB init_cb) override;
   void DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                              const AudioDecodeCB& audio_decode_cb) override;
   void DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
@@ -89,7 +88,6 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
  private:
   // Testing classes that needs to manipulate internal states for testing.
   friend class ClearKeyPersistentSessionCdm;
-  friend class ClearKeyCdmProxy;
 
   // Internally this class supports persistent license type sessions so that
   // it can be used by ClearKeyPersistentSessionCdm. The following methods

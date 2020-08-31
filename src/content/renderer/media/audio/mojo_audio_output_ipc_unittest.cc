@@ -63,8 +63,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
   void Acquire(
       const media::AudioParameters& params,
       mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
-          pending_provider_client,
-      const base::Optional<base::UnguessableToken>& processing_id) override {
+          pending_provider_client) override {
     EXPECT_EQ(receiver_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     provider_client_.reset();
@@ -78,7 +77,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
     provider_client_->Created(
         std::move(stream_pending_remote),
         {base::in_place, base::UnsafeSharedMemoryRegion::Create(kMemoryLength),
-         mojo::WrapPlatformFile(foreign_socket.Release())});
+         mojo::PlatformHandle(foreign_socket.Take())});
   }
 
   void SignalErrorToProviderClient() {
@@ -189,13 +188,12 @@ class MockStream : public media::mojom::AudioOutputStream {
 
 class MockDelegate : public media::AudioOutputIPCDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
   void OnStreamCreated(base::UnsafeSharedMemoryRegion mem_handle,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool playing_automatically) override {
-    base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated();
   }
 

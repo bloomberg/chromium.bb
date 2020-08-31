@@ -64,6 +64,11 @@ class PopupOpenerTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
+  // Logs user popup content settings if the last committed URL is valid and
+  // we have not recorded the settings for the opener id of the helper's
+  // web contents at the time the function is called.
+  void MaybeLogPagePopupContentSettings();
+
   // Visible time for this tab until a tab-under is detected. At which point it
   // gets the visible time from the |visibility_tracker_|. Will be unset until a
   // tab-under is detected.
@@ -79,6 +84,9 @@ class PopupOpenerTabHelper
   base::TimeTicks last_popup_open_time_;
 
   bool has_opened_popup_since_last_user_gesture_ = false;
+
+  // The last source id used for logging Popup_Page.
+  ukm::SourceId last_opener_source_id_ = ukm::kInvalidSourceId;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

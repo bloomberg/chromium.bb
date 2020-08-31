@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,6 +20,21 @@ QRCodeGeneratorBubbleController::~QRCodeGeneratorBubbleController() {
 }
 
 // static
+bool QRCodeGeneratorBubbleController::IsGeneratorAvailable(const GURL& url,
+                                                           bool in_incognito) {
+  if (in_incognito)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kSharingQRCodeGenerator))
+    return false;
+
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  return true;
+}
+
+// static
 QRCodeGeneratorBubbleController* QRCodeGeneratorBubbleController::Get(
     content::WebContents* web_contents) {
   QRCodeGeneratorBubbleController::CreateForWebContents(web_contents);
@@ -31,6 +47,8 @@ void QRCodeGeneratorBubbleController::ShowBubble(const GURL& url) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   qrcode_generator_bubble_ =
       browser->window()->ShowQRCodeGeneratorBubble(web_contents_, this, url);
+
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kQRCodeGenerator);
 }
 
 void QRCodeGeneratorBubbleController::HideBubble() {
@@ -47,6 +65,8 @@ QRCodeGeneratorBubbleController::qrcode_generator_bubble_view() const {
 
 void QRCodeGeneratorBubbleController::OnBubbleClosed() {
   qrcode_generator_bubble_ = nullptr;
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kQRCodeGenerator);
 }
 
 QRCodeGeneratorBubbleController::QRCodeGeneratorBubbleController() = default;

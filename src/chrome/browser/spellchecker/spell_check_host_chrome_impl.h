@@ -9,6 +9,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 #if BUILDFLAG(ENABLE_SPELLING_SERVICE)
@@ -82,15 +83,7 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-  void RequestPartialTextCheck(
-      const base::string16& text,
-      int route_id,
-      const std::vector<SpellCheckResult>& partial_results,
-      bool fill_suggestions,
-      RequestPartialTextCheckCallback callback) override;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
-  void QueueRequest(std::unique_ptr<SpellingRequest> request);
 
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);

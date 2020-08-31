@@ -13,9 +13,10 @@
 #include <limits>
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -125,30 +126,48 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
-bool ReadFileToStringWithMaxSize(const FilePath& path,
-                                 std::string* contents,
-                                 size_t max_size) {
+bool ReadStreamToString(FILE* stream, std::string* contents) {
+  return ReadStreamToStringWithMaxSize(
+      stream, std::numeric_limits<size_t>::max(), contents);
+}
+
+bool ReadStreamToStringWithMaxSize(FILE* stream,
+                                   size_t max_size,
+                                   std::string* contents) {
   if (contents)
     contents->clear();
-  if (path.ReferencesParent())
-    return false;
-  FILE* file = OpenFile(path, "rb");
-  if (!file) {
-    return false;
-  }
 
-  // Many files supplied in |path| have incorrect size (proc files etc).
-  // Hence, the file is read sequentially as opposed to a one-shot read, using
-  // file size as a hint for chunk size if available.
+  // Seeking to the beginning is best-effort -- it is expected to fail for
+  // certain non-file stream (e.g., pipes).
+  HANDLE_EINTR(fseek(stream, 0, SEEK_SET));
+
+  // Many files have incorrect size (proc files etc). Hence, the file is read
+  // sequentially as opposed to a one-shot read, using file size as a hint for
+  // chunk size if available.
   constexpr int64_t kDefaultChunkSize = 1 << 16;
-  int64_t chunk_size;
+  int64_t chunk_size = kDefaultChunkSize - 1;
 #if !defined(OS_NACL_NONSFI)
-  if (!GetFileSize(path, &chunk_size) || chunk_size <= 0)
-    chunk_size = kDefaultChunkSize - 1;
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+#if defined(OS_WIN)
+  BY_HANDLE_FILE_INFORMATION file_info = {};
+  if (::GetFileInformationByHandle(
+          reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream))),
+          &file_info)) {
+    LARGE_INTEGER size;
+    size.HighPart = file_info.nFileSizeHigh;
+    size.LowPart = file_info.nFileSizeLow;
+    if (size.QuadPart > 0)
+      chunk_size = size.QuadPart;
+  }
+#else   // defined(OS_WIN)
+  stat_wrapper_t file_info = {};
+  if (!File::Fstat(fileno(stream), &file_info) && file_info.st_size > 0)
+    chunk_size = file_info.st_size;
+#endif  // defined(OS_WIN)
   // We need to attempt to read at EOF for feof flag to be set so here we
   // use |chunk_size| + 1.
   chunk_size = std::min<uint64_t>(chunk_size, max_size) + 1;
-#else
+#else   // !defined(OS_NACL_NONSFI)
   chunk_size = kDefaultChunkSize;
 #endif  // !defined(OS_NACL_NONSFI)
   size_t bytes_read_this_pass;
@@ -157,9 +176,8 @@ bool ReadFileToStringWithMaxSize(const FilePath& path,
   std::string local_contents;
   local_contents.resize(chunk_size);
 
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   while ((bytes_read_this_pass = fread(&local_contents[bytes_read_so_far], 1,
-                                       chunk_size, file)) > 0) {
+                                       chunk_size, stream)) > 0) {
     if ((max_size - bytes_read_so_far) < bytes_read_this_pass) {
       // Read more than max_size bytes, bail out.
       bytes_read_so_far = max_size;
@@ -174,12 +192,11 @@ bool ReadFileToStringWithMaxSize(const FilePath& path,
     bytes_read_so_far += bytes_read_this_pass;
     // Last fread syscall (after EOF) can be avoided via feof, which is just a
     // flag check.
-    if (feof(file))
+    if (feof(stream))
       break;
     local_contents.resize(bytes_read_so_far + chunk_size);
   }
-  read_status = read_status && !ferror(file);
-  CloseFile(file);
+  read_status = read_status && !ferror(stream);
   if (contents) {
     contents->swap(local_contents);
     contents->resize(bytes_read_so_far);
@@ -193,6 +210,19 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
                                      std::numeric_limits<size_t>::max());
 }
 
+bool ReadFileToStringWithMaxSize(const FilePath& path,
+                                 std::string* contents,
+                                 size_t max_size) {
+  if (contents)
+    contents->clear();
+  if (path.ReferencesParent())
+    return false;
+  ScopedFILE file_stream(OpenFile(path, "rb"));
+  if (!file_stream)
+    return false;
+  return ReadStreamToStringWithMaxSize(file_stream.get(), max_size, contents);
+}
+
 #if !defined(OS_NACL_NONSFI)
 bool IsDirectoryEmpty(const FilePath& dir_path) {
   FileEnumerator files(dir_path, false,
@@ -202,12 +232,17 @@ bool IsDirectoryEmpty(const FilePath& dir_path) {
   return false;
 }
 
-FILE* CreateAndOpenTemporaryFile(FilePath* path) {
+bool CreateTemporaryFile(FilePath* path) {
+  FilePath temp_dir;
+  return GetTempDir(&temp_dir) && CreateTemporaryFileInDir(temp_dir, path);
+}
+
+ScopedFILE CreateAndOpenTemporaryStream(FilePath* path) {
   FilePath directory;
   if (!GetTempDir(&directory))
     return nullptr;
 
-  return CreateAndOpenTemporaryFileInDir(directory, path);
+  return CreateAndOpenTemporaryStreamInDir(directory, path);
 }
 
 bool CreateDirectory(const FilePath& full_path) {
@@ -268,6 +303,17 @@ bool TruncateFile(FILE* file) {
     return false;
 #endif
   return true;
+}
+
+bool WriteFile(const FilePath& filename, span<const uint8_t> data) {
+  int size = checked_cast<int>(data.size());
+  return WriteFile(filename, reinterpret_cast<const char*>(data.data()),
+                   size) == size;
+}
+
+bool WriteFile(const FilePath& filename, StringPiece data) {
+  int size = checked_cast<int>(data.size());
+  return WriteFile(filename, data.data(), size) == size;
 }
 
 int GetUniquePathNumber(const FilePath& path) {

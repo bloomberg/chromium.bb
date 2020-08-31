@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import itertools
+import sys
 
 from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
@@ -15,8 +16,13 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 if cros_build_lib.IsInsideChroot():
   from chromite.scripts import cros_list_modified_packages
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ChrootUtilTest(cros_test_lib.RunCommandTempDirTestCase):

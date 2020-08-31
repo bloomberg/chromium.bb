@@ -4,11 +4,12 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -16,10 +17,10 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #include "ios/chrome/browser/sessions/session_util.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -45,17 +46,17 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/favicon/favicon_attributes.h"
-#import "ios/chrome/common/favicon/favicon_view.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
@@ -109,11 +110,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
-// There is no need to update the table view when other view controllers
-// are obscuring the table view. Bookkeeping is based on |-viewWillAppear:|
-// and |-viewWillDisappear methods. Note that the |Did| methods are not reliably
-// called (e.g., edge case in multitasking).
-@property(nonatomic, assign) BOOL updatesTableView;
 // The service that manages the recently closed tabs
 @property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 // The sync state.
@@ -121,8 +117,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // Handles displaying the context menu for all form factors.
 @property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
+// The browser state used for many operations, derived from the one provided by
+// |self.browser|.
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 // YES if this ViewController is being presented on incognito mode.
-@property(nonatomic, assign, getter=isIncognito) BOOL incognito;
+@property(nonatomic, readonly, getter=isIncognito) BOOL incognito;
+// Convenience getter for |self.browser|'s WebStateList
+@property(nonatomic, readonly) WebStateList* webStateList;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -130,12 +131,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 #pragma mark - Public Interface
 
 - (instancetype)init {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
     _restoredTabDisposition = WindowOpenDisposition::CURRENT_TAB;
+    _preventUpdates = YES;
   }
   return self;
 }
@@ -159,28 +160,52 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  self.updatesTableView = YES;
-  // The table view might get stale while hidden, so we need to forcibly refresh
-  // it here.
-  [self loadModel];
-  [self.tableView reloadData];
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    self.preventUpdates = NO;
+  }
+  if (!self.preventUpdates) {
+    // The table view might get stale while hidden, so we need to forcibly
+    // refresh it here.
+    [self loadModel];
+    [self.tableView reloadData];
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.updatesTableView = NO;
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    self.preventUpdates = YES;
+  }
   [super viewWillDisappear:animated];
 }
 
 #pragma mark - Setters & Getters
-// Some RecentTabs services depend on objects not present in the OffTheRecord
-// BrowserState, in order to prevent crashes set |_browserState| to
-// |browserState|->OriginalChromeBrowserState. While doing this check if
-// incognito or not so that pages are loaded accordingly.
-- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
-  if (browserState) {
-    _browserState = browserState->GetOriginalChromeBrowserState();
-    _incognito = browserState->IsOffTheRecord();
-  }
+
+- (void)setBrowser:(Browser*)browser {
+  DCHECK(browser);
+  _browser = browser;
+  ChromeBrowserState* browserState = browser->GetBrowserState();
+  // Some RecentTabs services depend on objects not present in the OffTheRecord
+  // BrowserState, in order to prevent crashes set |_browserState| to
+  // |browserState|->OriginalChromeBrowserState. While doing this check if
+  // incognito or not so that pages are loaded accordingly.
+  _browserState = browserState->GetOriginalChromeBrowserState();
+  _incognito = browserState->IsOffTheRecord();
+}
+
+- (WebStateList*)webStateList {
+  return self.browser->GetWebStateList();
+}
+
+- (void)setPreventUpdates:(BOOL)preventUpdates {
+  if (_preventUpdates == preventUpdates)
+    return;
+
+  _preventUpdates = preventUpdates;
+
+  if (preventUpdates || !base::FeatureList::IsEnabled(kContainedBVC))
+    return;
+  [self loadModel];
+  [self.tableView reloadData];
 }
 
 #pragma mark - TableViewModel
@@ -552,7 +577,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       SessionSyncServiceFactory::GetForBrowserState(self.browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
 
-  if (self.updatesTableView) {
+  if (!self.preventUpdates) {
     // Update the TableView and TableViewModel sections to match the new
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
@@ -576,6 +601,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Table updates must happen before |sessionState| gets updated, since some
   // table updates rely on knowing the previous state.
   self.sessionState = newSessionState;
+
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
     [self.signinPromoViewMediator signinPromoViewIsRemoved];
     self.signinPromoViewMediator.consumer = nil;
@@ -584,7 +610,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)refreshRecentlyClosedTabs {
-  if (!self.updatesTableView)
+  if (self.preventUpdates)
     return;
 
   [self.tableView performBatchUpdates:^{
@@ -621,6 +647,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                              distantTabAtIndexPath:indexPath]];
       break;
     case ItemTypeShowFullHistory:
+      base::RecordAction(
+          base::UserMetricsAction("MobileRecentTabManagerShowFullHistory"));
       [tableView deselectRowAtIndexPath:indexPath animated:NO];
 
       // Tapping "show full history" attempts to dismiss recent tabs to show the
@@ -882,7 +910,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     base::RecordAction(base::UserMetricsAction(
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     new_tab_page_uma::RecordAction(
-        self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
+        self.browserState, self.webStateList->GetActiveWebState(),
+        new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     std::unique_ptr<web::WebState> web_state =
         session_util::CreateWebStateWithNavigationEntries(
             self.browserState, toLoad->current_navigation_index,
@@ -916,11 +945,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     return;
 
   // Only TAB type is handled.
+  // TODO(crbug.com/1056596) : Support WINDOW restoration under multi-window.
   DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
-      self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
+      self.browserState, self.webStateList->GetActiveWebState(),
+      new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
   // If RecentTabs is being displayed from incognito, the resulting tab will
   // open in the corresponding normal BVC. Change the disposition to avoid
@@ -928,7 +959,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   WindowOpenDisposition disposition =
       self.isIncognito ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                        : self.restoredTabDisposition;
-  RestoreTab(entry->id, disposition, self.browserState);
+  RestoreTab(entry->id, disposition, self.browser);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -1032,6 +1063,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Present sheet/popover using controller that is added to view hierarchy.
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self
+                         browser:self.browser
                            title:nil
                           inView:self.tableView
                       atLocation:viewCoordinate];
@@ -1075,7 +1107,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     params.load_strategy = self.loadStrategy;
     params.in_incognito = self.isIncognito;
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   }
   UMA_HISTOGRAM_COUNTS_100(
       "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
@@ -1155,6 +1187,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.handler showGoogleServicesSettingsFromViewController:self];
 }
 
+- (void)showTrustedVaultReauthenticationWithRetrievalTrigger:
+    (syncer::KeyRetrievalTriggerForUMA)retrievalTrigger {
+  [self.handler
+      showTrustedVaultReauthenticationFromViewController:self
+                                        retrievalTrigger:retrievalTrigger];
+}
+
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
@@ -1162,8 +1201,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
+
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  base::RecordAction(base::UserMetricsAction("IOSRecentTabsCloseWithSwipe"));
   // Call dismissRecentTabs so the Coordinator cleans up any state it needs to.
   [self.presentationDelegate dismissRecentTabs];
 }

@@ -19,6 +19,7 @@ namespace blink {
 class Document;
 class DummyPageHolder;
 class ExecutionContext;
+class LocalDOMWindow;
 class LocalFrame;
 class KURL;
 class Page;
@@ -38,6 +39,7 @@ class V8TestingScope {
   ExceptionState& GetExceptionState();
   Page& GetPage();
   LocalFrame& GetFrame();
+  LocalDOMWindow& GetWindow();
   Document& GetDocument();
   ~V8TestingScope();
 
@@ -77,7 +79,10 @@ class BindingTestSupportingGC : public testing::Test {
 
   void RunV8FullGC(v8::EmbedderHeapTracer::EmbedderStackState stack_state =
                        v8::EmbedderHeapTracer::EmbedderStackState::kEmpty) {
-    V8GCController::CollectAllGarbageForTesting(isolate_, stack_state);
+    ThreadState::Current()->CollectAllGarbageForTesting(
+        stack_state == v8::EmbedderHeapTracer::EmbedderStackState::kEmpty
+            ? BlinkGC::kNoHeapPointersOnStack
+            : BlinkGC::kHeapPointersOnStack);
   }
 
  private:

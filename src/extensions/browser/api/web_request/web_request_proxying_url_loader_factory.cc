@@ -24,7 +24,11 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
+#include "net/url_request/redirect_util.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "url/origin.h"
 
@@ -54,6 +58,25 @@ class ShutdownNotifierFactory
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
 };
+
+// Creates simulated net::RedirectInfo when an extension redirects a request,
+// behaving like a redirect response was actually returned by the remote server.
+net::RedirectInfo CreateRedirectInfo(
+    const network::ResourceRequest& original_request,
+    const GURL& new_url,
+    int response_code,
+    const base::Optional<std::string>& referrer_policy_header) {
+  return net::RedirectInfo::ComputeRedirectInfo(
+      original_request.method, original_request.url,
+      original_request.site_for_cookies,
+      original_request.update_first_party_url_on_redirect
+          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL,
+      original_request.referrer_policy, original_request.referrer.spec(),
+      response_code, new_url, referrer_policy_header,
+      false /* insecure_scheme_was_upgraded */, false /* copy_fragment */,
+      false /* is_signed_exchange_fallback_redirect */);
+}
 
 }  // namespace
 
@@ -92,10 +115,10 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
-  proxied_loader_receiver_.set_disconnect_handler(base::BindOnce(
-      &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
-      weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+  proxied_loader_receiver_.set_disconnect_with_reason_handler(
+      base::BindOnce(&WebRequestProxyingURLLoaderFactory::InProgressRequest::
+                         OnLoaderDisconnected,
+                     weak_factory_.GetWeakPtr()));
 }
 
 WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
@@ -163,8 +186,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
   DCHECK_EQ(info_->url, request_.url)
       << "UpdateRequestInfo must have been called first";
-  request_completed_ = false;
-
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
   // send these events before the request starts.
@@ -220,6 +241,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   if (new_url)
     request_.url = new_url.value();
@@ -240,11 +262,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     // headers and if so we'll pass these modifications to FollowRedirect.
     if (current_request_uses_header_client_) {
       target_loader_->FollowRedirect(removed_headers, modified_headers,
-                                     new_url);
+                                     modified_cors_exempt_headers, new_url);
     } else {
       auto params = std::make_unique<FollowRedirectParams>();
       params->removed_headers = removed_headers;
       params->modified_headers = modified_headers;
+      params->modified_cors_exempt_headers = modified_cors_exempt_headers;
       params->new_url = new_url;
       pending_follow_redirect_params_ = std::move(params);
     }
@@ -390,6 +413,14 @@ bool WebRequestProxyingURLLoaderFactory::IsForDownload() const {
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
     mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+  // When CORS is involved there may be multiple network::URLLoader associated
+  // with this InProgressRequest, because CorsURLLoader may create a new
+  // network::URLLoader for the same request id in redirect handling - see
+  // CorsURLLoader::FollowRedirect. In such a case the old network::URLLoader
+  // is going to be detached fairly soon, so we don't need to take care of it.
+  // We need this explicit reset to avoid a DCHECK failure in mojo::Receiver.
+  header_client_receiver_.reset();
+
   header_client_receiver_.Bind(std::move(receiver));
   if (for_cors_preflight_) {
     // In this case we don't have |target_loader_| and
@@ -457,11 +488,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   constexpr int kInternalRedirectStatusCode = 307;
 
-  net::RedirectInfo redirect_info;
-  redirect_info.status_code = kInternalRedirectStatusCode;
-  redirect_info.new_method = request_.method;
-  redirect_info.new_url = redirect_url_;
-  redirect_info.new_site_for_cookies = redirect_url_;
+  net::RedirectInfo redirect_info =
+      CreateRedirectInfo(request_, redirect_url_, kInternalRedirectStatusCode,
+                         base::nullopt /* referrer_policy_header */);
 
   auto head = network::mojom::URLResponseHead::New();
   std::string headers = base::StringPrintf(
@@ -642,6 +671,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       target_loader_->FollowRedirect(
           pending_follow_redirect_params_->removed_headers,
           pending_follow_redirect_params_->modified_headers,
+          pending_follow_redirect_params_->modified_cors_exempt_headers,
           pending_follow_redirect_params_->new_url);
     }
 
@@ -806,11 +836,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     // request to the Network Service. Our client shouldn't know the difference.
     GURL new_url(redirect_location);
 
-    net::RedirectInfo redirect_info;
-    redirect_info.status_code = override_headers_->response_code();
-    redirect_info.new_method = request_.method;
-    redirect_info.new_url = new_url;
-    redirect_info.new_site_for_cookies = new_url;
+    net::RedirectInfo redirect_info = CreateRedirectInfo(
+        request_, new_url, override_headers_->response_code(),
+        net::RedirectUtil::GetReferrerPolicyHeader(override_headers_.get()));
 
     // These will get re-bound if a new request is initiated by
     // |FollowRedirect()|.
@@ -852,13 +880,16 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   request_.site_for_cookies = redirect_info.new_site_for_cookies;
   request_.referrer = GURL(redirect_info.new_referrer);
   request_.referrer_policy = redirect_info.new_referrer_policy;
+  if (request_.trusted_params) {
+    request_.trusted_params->isolation_info =
+        request_.trusted_params->isolation_info.CreateForRedirect(
+            url::Origin::Create(redirect_info.new_url));
+  }
 
   // The request method can be changed to "GET". In this case we need to
   // reset the request body manually.
   if (request_.method == net::HttpRequestHeaders::kGetMethod)
     request_.request_body = nullptr;
-
-  request_completed_ = true;
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -900,16 +931,33 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
-  if (!request_completed_) {
-    if (target_client_)
-      target_client_->OnComplete(status);
-    ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        factory_->browser_context_, &info_.value(), true /* started */,
-        status.error_code);
-  }
+  if (target_client_)
+    target_client_->OnComplete(status);
+  ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
+      factory_->browser_context_, &info_.value(), true /* started */,
+      status.error_code);
 
   // Deletes |this|.
   factory_->RemoveRequest(network_service_request_id_, request_id_);
+}
+
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::
+    OnLoaderDisconnected(uint32_t custom_reason,
+                         const std::string& description) {
+  if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason &&
+      description == blink::ThrottlingURLLoader::kFollowRedirectReason) {
+    // Save the ID here because this request will be restarted with a new
+    // URLLoader instead of continuing with FollowRedirect(). The saved ID will
+    // be retrieved in the restarted request, which will call
+    // RequestIDGenerator::Generate() with the same ID pair.
+    factory_->request_id_generator_->SaveID(
+        routing_id_, network_service_request_id_, request_id_);
+
+    // Deletes |this|.
+    factory_->RemoveRequest(network_service_request_id_, request_id_);
+  } else {
+    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+  }
 }
 
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
@@ -935,7 +983,7 @@ bool WebRequestProxyingURLLoaderFactory::InProgressRequest::IsRedirectSafe(
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     content::BrowserContext* browser_context,
     int render_process_id,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -946,7 +994,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type)
     : browser_context_(browser_context),
       render_process_id_(render_process_id),
-      request_id_generator_(std::move(request_id_generator)),
+      request_id_generator_(request_id_generator),
       navigation_ui_data_(std::move(navigation_ui_data)),
       navigation_id_(std::move(navigation_id)),
       proxies_(proxies),
@@ -976,7 +1024,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
 void WebRequestProxyingURLLoaderFactory::StartProxying(
     content::BrowserContext* browser_context,
     int render_process_id,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
@@ -988,7 +1036,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
-      browser_context, render_process_id, std::move(request_id_generator),
+      browser_context, render_process_id, request_id_generator,
       std::move(navigation_ui_data), std::move(navigation_id),
       std::move(loader_receiver), std::move(target_factory_remote),
       std::move(header_client_receiver), proxies, loader_factory_type);
@@ -1011,11 +1059,14 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
   DCHECK(render_process_id_ != -1 || navigation_ui_data_ ||
          IsForServiceWorkerScript());
 
-  // The request ID doesn't really matter. It just needs to be unique
+  // The |web_request_id| doesn't really matter. It just needs to be unique
   // per-BrowserContext so extensions can make sense of it.  Note that
   // |network_service_request_id_| by contrast is not necessarily unique, so we
-  // don't use it for identity here.
-  const uint64_t web_request_id = request_id_generator_->Generate();
+  // don't use it for identity here. This request ID may be the same as a
+  // previous request if the previous request was redirected to a URL that
+  // required a different loader.
+  const uint64_t web_request_id =
+      request_id_generator_->Generate(routing_id, request_id);
 
   if (request_id) {
     // Only requests with a non-zero request ID can have their proxy associated
@@ -1064,7 +1115,8 @@ void WebRequestProxyingURLLoaderFactory::OnLoaderForCorsPreflightCreated(
   // a connection to the same URL (i.e., the actual request), and distinguishing
   // two connections for the actual request and the preflight request before
   // sending request headers is very difficult.
-  const uint64_t web_request_id = request_id_generator_->Generate();
+  const uint64_t web_request_id =
+      request_id_generator_->Generate(MSG_ROUTING_NONE, 0);
 
   auto result = requests_.insert(std::make_pair(
       web_request_id,

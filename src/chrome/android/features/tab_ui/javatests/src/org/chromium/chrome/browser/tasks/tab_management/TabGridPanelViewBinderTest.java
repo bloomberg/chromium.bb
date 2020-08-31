@@ -12,9 +12,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -25,6 +22,11 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +35,11 @@ import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,26 +64,29 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        FrameLayout parentView = new FrameLayout(getActivity());
-        mContentView = (TabListRecyclerView) LayoutInflater.from(getActivity())
-                               .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
-        mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-        mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
-                               .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
-        mTabGridDialogParent =
-                new TabGridDialogParent(getActivity(), new FrameLayout(getActivity()));
-        mTabGridDialogParentView = mTabGridDialogParent.getTabGridDialogParentViewForTesting();
-        mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
-        mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
-        mTitleTextView = mToolbarView.findViewById(R.id.title);
-        mMainContent = mToolbarView.findViewById(R.id.main_content);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            FrameLayout parentView = new FrameLayout(getActivity());
+            mContentView =
+                    (TabListRecyclerView) LayoutInflater.from(getActivity())
+                            .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
+            mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+            mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
+                                   .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
+            mTabGridDialogParent =
+                    new TabGridDialogParent(getActivity(), new FrameLayout(getActivity()));
+            mTabGridDialogParentView = mTabGridDialogParent.getTabGridDialogParentViewForTesting();
+            mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
+            mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
+            mTitleTextView = mToolbarView.findViewById(R.id.title);
+            mMainContent = mToolbarView.findViewById(R.id.main_content);
 
-        mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
+            mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
-        mMCP = PropertyModelChangeProcessor.create(mModel,
-                new TabGridPanelViewBinder.ViewHolder(
-                        mToolbarView, mContentView, mTabGridDialogParent),
-                TabGridPanelViewBinder::bind);
+            mMCP = PropertyModelChangeProcessor.create(mModel,
+                    new TabGridPanelViewBinder.ViewHolder(
+                            mToolbarView, mContentView, mTabGridDialogParent),
+                    TabGridPanelViewBinder::bind);
+        });
     }
 
     @Test
@@ -226,7 +231,10 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         }
         Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                ()
+                        -> Assert.assertThat(
+                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                Matchers.nullValue()));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false));
@@ -236,7 +244,10 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
             Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
         }
         CriteriaHelper.pollUiThread(
-                () -> mTabGridDialogParent.getCurrentDialogAnimatorForTesting() == null);
+                ()
+                        -> Assert.assertThat(
+                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                Matchers.nullValue()));
         Assert.assertFalse(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
     }
 
@@ -342,8 +353,8 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testSetUngroupbarTextAppearance() {
-        int normalStyleId = R.style.TextAppearance_BlueTitle2;
-        int incognitoStyleId = R.style.TextAppearance_BlueTitle2Incognito;
+        int normalStyleId = R.style.TextAppearance_TextMediumThick_Blue;
+        int incognitoStyleId = R.style.TextAppearance_TextMediumThick_Blue_Light;
         // Default setup is in normal mode.
         Assert.assertEquals(
                 normalStyleId, mTabGridDialogParent.getUngroupBarTextAppearanceForTesting());

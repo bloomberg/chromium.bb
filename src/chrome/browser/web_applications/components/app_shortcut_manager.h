@@ -6,57 +6,82 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_SHORTCUT_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
+#include "chrome/common/web_application_info.h"
 
 class Profile;
 
 namespace web_app {
 
-class AppRegistrar;
-class AppShortcutObserver;
 struct ShortcutInfo;
 
+// This class manages creation/update/deletion of OS shortcuts for web
+// applications.
+//
 // TODO(crbug.com/860581): Migrate functions from
 // web_app_extension_shortcut.(h|cc) and
-// platform_apps/shortcut_manager.(h|cc) to the AppShortcutManager, so web app
-// shortcuts can be managed in an extensions agnostic way.
-// Manages OS shortcuts for web applications.
-class AppShortcutManager {
+// platform_apps/shortcut_manager.(h|cc) to web_app::AppShortcutManager and
+// its subclasses.
+class AppShortcutManager : public AppRegistrarObserver {
  public:
   explicit AppShortcutManager(Profile* profile);
-  virtual ~AppShortcutManager();
+  ~AppShortcutManager() override;
 
   void SetSubsystems(AppRegistrar* registrar);
 
-  void AddObserver(AppShortcutObserver* observer);
-  void RemoveObserver(AppShortcutObserver* observer);
+  void Start();
+  void Shutdown();
+
+  // AppRegistrarObserver:
+  void OnWebAppInstalled(const AppId& app_id) override;
+  void OnWebAppUninstalled(const AppId& app_id) override;
+  void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
   // Tells the AppShortcutManager that no shortcuts should actually be written
   // to the disk.
   void SuppressShortcutsForTesting();
 
+  // virtual for testing.
   virtual bool CanCreateShortcuts() const;
-
   // virtual for testing.
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
 
+  // Registers a shortcuts menu for the web app's icon with the OS.
+  void RegisterShortcutsMenuWithOs(
+      const std::vector<WebApplicationShortcutInfo>& shortcuts,
+      const AppId& app_id);
+
+  // TODO(https://crbug.com/1069306): Implement UnregisterShortcutsMenuWithOS()
+  // to support local offline installs and uninstalls.
+
+  // Builds initial ShortcutInfo without |ShortcutInfo::favicon| being read.
+  virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(
+      const AppId& app_id) = 0;
+
   // The result of a call to GetShortcutInfo.
   using GetShortcutInfoCallback =
       base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>;
   // Asynchronously gets the information required to create a shortcut for
-  // |app_id|.
+  // |app_id| including all the icon bitmaps. Returns nullptr if app_id is
+  // uninstalled or becomes uninstalled during the asynchronous read of icons.
   virtual void GetShortcutInfoForApp(const AppId& app_id,
                                      GetShortcutInfoCallback callback) = 0;
 
  protected:
+  void DeleteSharedAppShims(const AppId& app_id);
   void OnShortcutsCreated(const AppId& app_id,
                           CreateShortcutsCallback callback,
                           bool success);
@@ -70,12 +95,13 @@ class AppShortcutManager {
       CreateShortcutsCallback callback,
       std::unique_ptr<ShortcutInfo> info);
 
+  ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{
+      this};
+
   bool suppress_shortcuts_for_testing_ = false;
 
   AppRegistrar* registrar_ = nullptr;
   Profile* const profile_;
-
-  base::ObserverList<AppShortcutObserver, /*check_empty=*/true> observers_;
 
   base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_{this};
 

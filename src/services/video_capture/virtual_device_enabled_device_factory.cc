@@ -4,8 +4,9 @@
 
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -102,7 +103,7 @@ void VirtualDeviceEnabledDeviceFactory::GetDeviceInfos(
     GetDeviceInfosCallback callback) {
   device_factory_->GetDeviceInfos(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::OnGetDeviceInfos,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void VirtualDeviceEnabledDeviceFactory::CreateDevice(

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -14,8 +14,8 @@
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -47,8 +47,8 @@ const CGFloat kToolsMenuOffset = -7;
 @property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
 // Button to display the tab grid, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarTabGridButton* tabGridButton;
-// Button to focus the omnibox, redefined as readwrite.
-@property(nonatomic, strong, readwrite) ToolbarButton* searchButton;
+// Button to create a new tab, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarButton* openNewTabButton;
 
 @end
 
@@ -60,7 +60,7 @@ const CGFloat kToolsMenuOffset = -7;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
-@synthesize searchButton = _searchButton;
+@synthesize openNewTabButton = _openNewTabButton;
 @synthesize tabGridButton = _tabGridButton;
 
 #pragma mark - Public
@@ -77,7 +77,7 @@ const CGFloat kToolsMenuOffset = -7;
 #pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
+  return CGSizeMake(UIViewNoIntrinsicMetric, kSecondaryToolbarHeight);
 }
 
 - (void)willMoveToWindow:(UIWindow*)newWindow {
@@ -111,7 +111,7 @@ const CGFloat kToolsMenuOffset = -7;
 
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];
-  self.searchButton = [self.buttonFactory searchButton];
+  self.openNewTabButton = [self.buttonFactory openNewTabButton];
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
@@ -122,8 +122,8 @@ const CGFloat kToolsMenuOffset = -7;
       CGAffineTransformMakeTranslation(textDirection * kToolsMenuOffset, 0);
 
   self.allButtons = @[
-    self.backButton, self.forwardButton, self.searchButton, self.tabGridButton,
-    self.toolsMenuButton
+    self.backButton, self.forwardButton, self.openNewTabButton,
+    self.tabGridButton, self.toolsMenuButton
   ];
 
   self.separator = [[UIView alloc] init];

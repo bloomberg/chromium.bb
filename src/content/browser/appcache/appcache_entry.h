@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "base/logging.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-forward.h"
 
 namespace content {
 
@@ -28,28 +29,11 @@ class AppCacheEntry {
     INTERCEPT = 1 << 5,
   };
 
-  AppCacheEntry()
-      : types_(0),
-        response_id_(blink::mojom::kAppCacheNoResponseId),
-        response_size_(0),
-        padding_size_(0) {}
-
-  explicit AppCacheEntry(int type)
-      : types_(type),
-        response_id_(blink::mojom::kAppCacheNoResponseId),
-        response_size_(0),
-        padding_size_(0) {}
-
-  AppCacheEntry(int type, int64_t response_id)
-      : types_(type),
-        response_id_(response_id),
-        response_size_(0),
-        padding_size_(0) {}
-
-  AppCacheEntry(int type,
-                int64_t response_id,
-                int64_t response_size,
-                int64_t padding_size)
+  explicit AppCacheEntry(
+      int type = 0,
+      int64_t response_id = blink::mojom::kAppCacheNoResponseId,
+      int64_t response_size = 0,
+      int64_t padding_size = 0)
       : types_(type),
         response_id_(response_id),
         response_size_(response_size),

@@ -12,10 +12,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 # TODO(crbug.com/731689): Assert that extensions are enabled.
 
 source_set("common_constants") {
-  if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
-  }
-
   sources = [
     "constants.cc",
     "constants.h",
@@ -23,6 +19,7 @@ source_set("common_constants") {
 
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//components/services/app_service/public/mojom",
     "//components/version_info:channel",
     "//ui/base",
@@ -68,6 +65,7 @@ if (enable_extensions) {
   # in. TODO(brettw): This reverse dependency should be fixed.
   jumbo_static_library("common") {
     sources = [
+      "activation_sequence.h",
       "alias.h",
       "api/bluetooth/bluetooth_manifest_data.cc",
       "api/bluetooth/bluetooth_manifest_data.h",
@@ -89,6 +87,8 @@ if (enable_extensions) {
       "api/declarative_net_request/dnr_manifest_handler.h",
       "api/declarative_net_request/utils.cc",
       "api/declarative_net_request/utils.h",
+      "api/extension_action/action_info.cc",
+      "api/extension_action/action_info.h",
       "api/messaging/message.h",
       "api/messaging/messaging_endpoint.cc",
       "api/messaging/messaging_endpoint.h",
@@ -163,6 +163,8 @@ if (enable_extensions) {
       "features/feature.h",
       "features/feature_channel.cc",
       "features/feature_channel.h",
+      "features/feature_flags.cc",
+      "features/feature_flags.h",
       "features/feature_provider.cc",
       "features/feature_provider.h",
       "features/feature_session_type.cc",
@@ -240,6 +242,12 @@ if (enable_extensions) {
       "manifest_handlers/shared_module_info.h",
       "manifest_handlers/web_accessible_resources_info.cc",
       "manifest_handlers/web_accessible_resources_info.h",
+      "manifest_handlers/web_app_file_handler.cc",
+      "manifest_handlers/web_app_file_handler.h",
+      "manifest_handlers/web_app_linked_shortcut_icons.cc",
+      "manifest_handlers/web_app_linked_shortcut_icons.h",
+      "manifest_handlers/web_app_shortcut_icons_handler.cc",
+      "manifest_handlers/web_app_shortcut_icons_handler.h",
       "manifest_handlers/webview_info.cc",
       "manifest_handlers/webview_info.h",
       "manifest_url_handlers.cc",
@@ -341,6 +349,7 @@ if (enable_extensions) {
       "//third_party/icu",
       "//third_party/re2",
       "//third_party/zlib/google:compression_utils",
+      "//tools/json_schema_compiler:generated_api_util",
       "//ui/base",
       "//ui/gfx/geometry",
       "//ui/gfx/ipc",
@@ -397,6 +406,7 @@ if (enable_extensions) {
     deps = [
       ":common",
       "//base",
+      "//extensions/common/api",
     ]
   }
 
@@ -419,6 +429,7 @@ if (enable_extensions) {
       "extension_resource_unittest.cc",
       "extension_set_unittest.cc",
       "extension_unittest.cc",
+      "feature_switch_unittest.cc",
       "features/complex_feature_unittest.cc",
       "features/feature_provider_unittest.cc",
       "features/simple_feature_unittest.cc",
@@ -435,9 +446,13 @@ if (enable_extensions) {
       "manifest_handlers/icons_handler_unittest.cc",
       "manifest_handlers/incognito_manifest_unittest.cc",
       "manifest_handlers/kiosk_mode_info_unittest.cc",
+      "manifest_handlers/manifest_v3_permissions_unittest.cc",
       "manifest_handlers/oauth2_manifest_unittest.cc",
       "manifest_handlers/replacement_apps_unittest.cc",
       "manifest_handlers/shared_module_manifest_unittest.cc",
+      "manifest_handlers/web_app_file_handler_manifest_unittest.cc",
+      "manifest_handlers/web_app_linked_shortcut_icons_unittest.cc",
+      "manifest_handlers/web_app_shortcut_icons_handler_unittest.cc",
       "manifest_unittest.cc",
       "message_bundle_unittest.cc",
       "permissions/api_permission_set_unittest.cc",
@@ -464,6 +479,7 @@ if (enable_extensions) {
       "//components/version_info:version_info",
       "//content/test:test_support",
       "//extensions:extensions_resources",
+      "//extensions/common/api",
 
       # TODO(brettw) these tests should not be including headers from browser.
       "//extensions:test_support",
@@ -490,9 +506,7 @@ if (enable_extensions) {
   }
 
   fuzzer_test("extension_fuzzer") {
-    sources = [
-      "extension_fuzzer.cc",
-    ]
+    sources = [ "extension_fuzzer.cc" ]
     deps = [
       ":common",
       "//base",

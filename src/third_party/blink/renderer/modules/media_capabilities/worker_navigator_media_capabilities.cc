@@ -18,12 +18,14 @@ MediaCapabilities* WorkerNavigatorMediaCapabilities::mediaCapabilities(
     WorkerNavigator& navigator) {
   WorkerNavigatorMediaCapabilities& self =
       WorkerNavigatorMediaCapabilities::From(navigator);
-  if (!self.capabilities_)
-    self.capabilities_ = MakeGarbageCollected<MediaCapabilities>();
+  if (!self.capabilities_) {
+    self.capabilities_ = MakeGarbageCollected<MediaCapabilities>(
+        navigator.GetExecutionContext());
+  }
   return self.capabilities_.Get();
 }
 
-void WorkerNavigatorMediaCapabilities::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorMediaCapabilities::Trace(Visitor* visitor) {
   visitor->Trace(capabilities_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

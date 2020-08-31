@@ -115,6 +115,11 @@ class PresentationFrame {
           receiver_connection_receiver);
   void RemovePresentation(const std::string& presentation_id);
 
+  const base::small_map<std::map<std::string, MediaRoute>>&
+  presentation_id_to_route() const {
+    return presentation_id_to_route_;
+  }
+
  private:
   base::small_map<std::map<std::string, MediaRoute>> presentation_id_to_route_;
   base::small_map<
@@ -444,8 +449,7 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrls(
   DCHECK(!callback.is_null());
   default_presentation_started_callback_ = std::move(callback);
   default_presentation_request_ = request;
-  for (auto& observer : default_presentation_request_observers_)
-    observer.OnDefaultPresentationChanged(*default_presentation_request_);
+  NotifyDefaultPresentationChanged(&request);
 }
 
 void PresentationServiceDelegateImpl::OnJoinRouteResponse(
@@ -503,6 +507,7 @@ void PresentationServiceDelegateImpl::AddPresentation(
     const MediaRoute& route) {
   auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
   presentation_frame->AddPresentation(presentation_info, route);
+  NotifyMediaRoutesChanged();
 }
 
 void PresentationServiceDelegateImpl::RemovePresentation(
@@ -511,6 +516,7 @@ void PresentationServiceDelegateImpl::RemovePresentation(
   const auto it = presentation_frames_.find(render_frame_host_id);
   if (it != presentation_frames_.end())
     it->second->RemovePresentation(presentation_id);
+  NotifyMediaRoutesChanged();
 }
 
 void PresentationServiceDelegateImpl::StartPresentation(
@@ -535,7 +541,8 @@ void PresentationServiceDelegateImpl::StartPresentation(
       request,
       base::BindOnce(
           &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
-          GetWeakPtr(), render_frame_host_id, std::move(success_cb)),
+          weak_factory_.GetWeakPtr(), render_frame_host_id,
+          std::move(success_cb)),
       std::move(error_cb));
   if (start_presentation_cb_) {
     start_presentation_cb_.Run(std::move(presentation_context));
@@ -606,8 +613,8 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
         MediaSource::ForPresentationUrl(presentation_url).id(), presentation_id,
         request.frame_origin, web_contents_,
         base::BindOnce(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
-                       GetWeakPtr(), render_frame_host_id, presentation_url,
-                       presentation_id, std::move(success_cb),
+                       weak_factory_.GetWeakPtr(), render_frame_host_id,
+                       presentation_url, presentation_id, std::move(success_cb),
                        std::move(error_cb)),
         base::TimeDelta(), incognito);
   }
@@ -668,7 +675,27 @@ void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
     it->second->ListenForConnectionStateChange(connection, state_changed_cb);
 }
 
-void PresentationServiceDelegateImpl::OnRouteResponse(
+void PresentationServiceDelegateImpl::AddObserver(
+    WebContentsPresentationManager::Observer* observer) {
+  presentation_observers_.AddObserver(observer);
+}
+
+void PresentationServiceDelegateImpl::RemoveObserver(
+    WebContentsPresentationManager::Observer* observer) {
+  presentation_observers_.RemoveObserver(observer);
+}
+
+bool PresentationServiceDelegateImpl::HasDefaultPresentationRequest() const {
+  return default_presentation_request_.has_value();
+}
+
+const content::PresentationRequest&
+PresentationServiceDelegateImpl::GetDefaultPresentationRequest() const {
+  DCHECK(HasDefaultPresentationRequest());
+  return *default_presentation_request_;
+}
+
+void PresentationServiceDelegateImpl::OnPresentationResponse(
     const content::PresentationRequest& presentation_request,
     mojom::RoutePresentationConnectionPtr connection,
     const RouteRequestResult& result) {
@@ -695,27 +722,7 @@ void PresentationServiceDelegateImpl::OnRouteResponse(
   }
 }
 
-void PresentationServiceDelegateImpl::AddDefaultPresentationRequestObserver(
-    DefaultPresentationRequestObserver* observer) {
-  default_presentation_request_observers_.AddObserver(observer);
-}
-
-void PresentationServiceDelegateImpl::RemoveDefaultPresentationRequestObserver(
-    DefaultPresentationRequestObserver* observer) {
-  default_presentation_request_observers_.RemoveObserver(observer);
-}
-
-const content::PresentationRequest&
-PresentationServiceDelegateImpl::GetDefaultPresentationRequest() const {
-  DCHECK(HasDefaultPresentationRequest());
-  return *default_presentation_request_;
-}
-
-bool PresentationServiceDelegateImpl::HasDefaultPresentationRequest() const {
-  return !!default_presentation_request_;
-}
-
-base::WeakPtr<PresentationServiceDelegateImpl>
+base::WeakPtr<WebContentsPresentationManager>
 PresentationServiceDelegateImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -737,8 +744,7 @@ void PresentationServiceDelegateImpl::ClearDefaultPresentationRequest() {
     return;
 
   default_presentation_request_.reset();
-  for (auto& observer : default_presentation_request_observers_)
-    observer.OnDefaultPresentationRemoved();
+  NotifyDefaultPresentationChanged(nullptr);
 }
 
 std::unique_ptr<media::FlingingController>
@@ -796,6 +802,24 @@ void PresentationServiceDelegateImpl::EnsurePresentationConnection(
         presentation_info, std::move(controller_remote),
         (*connection)->connection_remote.InitWithNewPipeAndPassReceiver());
   }
+}
+
+void PresentationServiceDelegateImpl::NotifyDefaultPresentationChanged(
+    const content::PresentationRequest* request) {
+  for (auto& presentation_observer : presentation_observers_)
+    presentation_observer.OnDefaultPresentationChanged(request);
+}
+
+void PresentationServiceDelegateImpl::NotifyMediaRoutesChanged() {
+  std::vector<MediaRoute> routes;
+  for (const auto& presentation_frame : presentation_frames_) {
+    for (const auto& route :
+         presentation_frame.second->presentation_id_to_route()) {
+      routes.push_back(route.second);
+    }
+  }
+  for (auto& presentation_observer : presentation_observers_)
+    presentation_observer.OnMediaRoutesChanged(routes);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PresentationServiceDelegateImpl)

@@ -8,8 +8,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,6 +81,16 @@ public class PlayerFrameBitmapPainterTest {
         }
     }
 
+    private Bitmap[][] generateMockBitmapMatrix(int rows, int cols) {
+        Bitmap[][] matrix = new Bitmap[rows][cols];
+        for (int row = 0; row < matrix.length; ++row) {
+            for (int col = 0; col < matrix[row].length; ++col) {
+                matrix[row][col] = Mockito.mock(Bitmap.class);
+            }
+        }
+        return matrix;
+    }
+
     /**
      * Verifies no draw operations are performed on the canvas if the view port is invalid.
      */
@@ -87,7 +98,8 @@ public class PlayerFrameBitmapPainterTest {
     public void testDrawFaultyViewPort() {
         PlayerFrameBitmapPainter painter =
                 new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class));
-        painter.updateBitmapMatrix(new Bitmap[2][3]);
+        painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 3));
+        painter.updateTileDimensions(new int[] {10, -5});
         painter.updateViewPort(0, 5, 10, -10);
 
         MockCanvas canvas = new MockCanvas();
@@ -95,6 +107,7 @@ public class PlayerFrameBitmapPainterTest {
         canvas.assertNumberOfBitmapDraws(0);
 
         // Update the view port so it is covered by 2 bitmap tiles.
+        painter.updateTileDimensions(new int[] {10, 10});
         painter.updateViewPort(0, 5, 10, 15);
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(2);
@@ -110,13 +123,14 @@ public class PlayerFrameBitmapPainterTest {
         painter.updateBitmapMatrix(new Bitmap[0][0]);
         // This view port is covered by 2 bitmap tiles, so there should be 2 draw operations on
         // the canvas.
+        painter.updateTileDimensions(new int[] {10, 10});
         painter.updateViewPort(0, 5, 10, 15);
 
         MockCanvas canvas = new MockCanvas();
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(0);
 
-        painter.updateBitmapMatrix(new Bitmap[2][1]);
+        painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 1));
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(2);
     }
@@ -142,6 +156,7 @@ public class PlayerFrameBitmapPainterTest {
         bitmaps[1][1] = bitmap11;
 
         painter.updateBitmapMatrix(bitmaps);
+        painter.updateTileDimensions(new int[] {10, 15});
         painter.updateViewPort(5, 10, 15, 25);
 
         // Make sure the invalidator was called after updating the bitmap matrix and the view port.

@@ -27,7 +27,7 @@ constexpr base::TimeDelta kTargetFrameInterval =
     base::TimeDelta::FromMilliseconds(1000 / kTargetFrameRate);
 
 // Target quantizer at which stop the encoding top-off.
-const int kTargetQuantizerForVp8TopOff = 30;
+const int kTargetQuantizerForTopOff = 10;
 
 // Maximum quantizer at which to encode frames. Lowering this value will
 // improve image quality (in cases of low-bandwidth or large frames) at the
@@ -47,7 +47,7 @@ const int64_t kPixelsPerMegapixel = 1000000;
 const int kBigFrameThresholdPixels = 300000;
 
 // Estimated size (in bytes per megapixel) of encoded frame at target quantizer
-// value (see kTargetQuantizerForVp8TopOff). Compression ratio varies depending
+// value (see kTargetQuantizerForTopOff). Compression ratio varies depending
 // on the image, so this is just a rough estimate. It's used to predict when
 // encoded "big" frame may be too large to be delivered to the client quickly.
 const int kEstimatedBytesPerMegapixel = 100000;
@@ -110,7 +110,7 @@ void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
 
 void WebrtcFrameSchedulerSimple::Start(
     WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-    const base::Closure& capture_callback) {
+    const base::RepeatingClosure& capture_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capture_callback_ = capture_callback;
   video_encoder_factory->SetVideoChannelStateObserver(
@@ -236,8 +236,7 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     processing_time_estimator_.FinishFrame(*encoded_frame);
 
     // Top-off until the target quantizer value is reached.
-    top_off_is_active_ =
-        encoded_frame->quantizer > kTargetQuantizerForVp8TopOff;
+    top_off_is_active_ = encoded_frame->quantizer > kTargetQuantizerForTopOff;
   }
 
   ScheduleNextFrame();
@@ -290,9 +289,10 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
 
   target_capture_time = std::max(target_capture_time, now);
 
-  capture_timer_.Start(FROM_HERE, target_capture_time - now,
-                       base::Bind(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
-                                  base::Unretained(this)));
+  capture_timer_.Start(
+      FROM_HERE, target_capture_time - now,
+      base::BindOnce(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
+                     base::Unretained(this)));
 }
 
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {

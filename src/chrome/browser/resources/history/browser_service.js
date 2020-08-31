@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {RESULTS_PER_PAGE} from './constants.js';
+import {ForeignSession, HistoryEntry, HistoryQuery} from './externs.js';
+
 /**
  * @fileoverview Defines a singleton object, history.BrowserService, which
  * provides access to chrome.send APIs.
  */
 
-cr.define('history', function() {
-  class BrowserService {
-    historyLoaded() {
-      chrome.send('historyLoaded');
+  export class BrowserService {
+    /** @return {!Promise<!Array<!ForeignSession>>} */
+    getForeignSessions() {
+      return sendWithPromise('getForeignSessions');
     }
 
-    /**
-     * @param {!string} url
-     */
+    /** @param {!string} url */
     removeBookmark(url) {
       chrome.send('removeBookmark', [url]);
     }
@@ -26,12 +28,10 @@ cr.define('history', function() {
      *     successfully or rejected when deletion fails.
      */
     removeVisits(removalList) {
-      return cr.sendWithPromise('removeVisits', removalList);
+      return sendWithPromise('removeVisits', removalList);
     }
 
-    /**
-     * @param {string} sessionTag
-     */
+    /** @param {string} sessionTag */
     openForeignSessionAllTabs(sessionTag) {
       chrome.send('openForeignSession', [sessionTag]);
     }
@@ -49,9 +49,7 @@ cr.define('history', function() {
       ]);
     }
 
-    /**
-     * @param {string} sessionTag
-     */
+    /** @param {string} sessionTag */
     deleteForeignSession(sessionTag) {
       chrome.send('deleteForeignSession', [sessionTag]);
     }
@@ -74,7 +72,7 @@ cr.define('history', function() {
      * @param {string} action The name of the action to be logged.
      */
     recordAction(action) {
-      if (action.indexOf('_') == -1) {
+      if (action.indexOf('_') === -1) {
         action = `HistoryPage_${action}`;
       }
       chrome.send('metricsHandler:recordAction', [action]);
@@ -107,13 +105,19 @@ cr.define('history', function() {
       chrome.send('otherDevicesInitialized');
     }
 
+    /**
+     * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
+     */
     queryHistoryContinuation() {
-      chrome.send('queryHistoryContinuation');
+      return sendWithPromise('queryHistoryContinuation');
     }
 
-    /** @param {string} searchTerm */
+    /**
+     * @param {string} searchTerm
+     * @return {!Promise<{info: !HistoryQuery, value: !Array<!HistoryEntry>}>}
+     */
     queryHistory(searchTerm) {
-      chrome.send('queryHistory', [searchTerm, RESULTS_PER_PAGE]);
+      return sendWithPromise('queryHistory', searchTerm, RESULTS_PER_PAGE);
     }
 
     startSignInFlow() {
@@ -121,7 +125,5 @@ cr.define('history', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserService);
+  addSingletonGetter(BrowserService);
 
-  return {BrowserService: BrowserService};
-});

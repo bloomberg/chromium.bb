@@ -32,16 +32,13 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/location_bar_helper.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
-#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -49,10 +46,13 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/vr_web_contents_observer.h"
 #include "chrome/common/url_constants.h"
+#include "components/browser_ui/util/android/url_constants.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/device_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -61,15 +61,12 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
@@ -180,8 +177,8 @@ VrShell::VrShell(JNIEnv* env,
   if (!can_load_new_assets_) {
     waiting_for_assets_component_timer_.Start(
         FROM_HERE, kAssetsComponentWaitDelay,
-        base::BindRepeating(&VrShell::OnAssetsComponentWaitTimeout,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&VrShell::OnAssetsComponentWaitTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
@@ -190,8 +187,7 @@ VrShell::VrShell(JNIEnv* env,
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 
-  content::GetSystemConnector()->Connect(
-      device::mojom::kServiceName,
+  content::GetDeviceService().BindGeolocationConfig(
       geolocation_config_.BindNewPipeAndPassReceiver());
 }
 
@@ -242,14 +238,6 @@ void VrShell::SwapContents(JNIEnv* env,
       web_contents_, ui_, toolbar_.get(),
       base::BindOnce(&VrShell::ContentWebContentsDestroyed,
                      base::Unretained(this)));
-
-  // TODO(https://crbug.com/684661): Make SessionMetricsHelper tab-aware and
-  // able to track multiple tabs.
-  if (web_contents_ && !SessionMetricsHelper::FromWebContents(web_contents_)) {
-    SessionMetricsHelper::CreateForWebContents(
-        web_contents_,
-        webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular);
-  }
 }
 
 void VrShell::SetAndroidGestureTarget(
@@ -316,15 +304,6 @@ void VrShell::PostToGlThread(const base::Location& from_here,
 
 void VrShell::Navigate(GURL url, NavigationMethod method) {
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  // Record metrics.
-  if (method == NavigationMethod::kOmniboxSuggestionSelected ||
-      method == NavigationMethod::kOmniboxUrlEntry) {
-    SessionMetricsHelper* metrics_helper =
-        SessionMetricsHelper::FromWebContents(web_contents_);
-    if (metrics_helper)
-      metrics_helper->RecordUrlRequested(url, method);
-  }
 
   Java_VrShell_loadUrl(env, j_vr_shell_,
                        base::android::ConvertUTF8ToJavaString(env, url.spec()));
@@ -432,13 +411,6 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::OnPause,
                                            gl_thread_->GetBrowserRenderer()));
 
-  // exit vr session
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper)
-    metrics_helper->SetVRActive(false);
-  SetIsInVR(GetNonNativePageWebContents(), false);
-
   poll_capturing_state_task_.Cancel();
 }
 
@@ -452,12 +424,6 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::OnResume,
                                            gl_thread_->GetBrowserRenderer()));
-
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper)
-    metrics_helper->SetVRActive(true);
-  SetIsInVR(GetNonNativePageWebContents(), true);
 
   PollCapturingState();
 }
@@ -477,10 +443,6 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            bool enabled) {
   webvr_mode_ = enabled;
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper)
-    metrics_helper->SetWebVREnabled(enabled);
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&BrowserRenderer::SetWebXrMode,
                                 gl_thread_->GetBrowserRenderer(), enabled));
@@ -748,27 +710,6 @@ void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
   LogUnsupportedModeUserMetric((UiUnsupportedMode)mode);
 }
 
-void VrShell::RecordVrStartAction(VrStartAction action) {
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper) {
-    metrics_helper->RecordVrStartAction(action);
-  }
-}
-
-// TODO(https://crbug.com/965744): Rename below method to better reflect its
-// purpose (recording a start of immersive VR session).
-void VrShell::RecordPresentationStartAction(
-    PresentationStartAction action,
-    const device::mojom::XRRuntimeSessionOptions& options) {
-  DCHECK(options.immersive);
-  DCHECK(!options.environment_integration);
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper)
-    metrics_helper->RecordPresentationStartAction(action, options);
-}
-
 void VrShell::ShowSoftInput(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             bool show) {
@@ -914,10 +855,6 @@ void VrShell::SetVoiceSearchActive(bool active) {
   }
   if (active) {
     speech_recognizer_->Start();
-    SessionMetricsHelper* metrics_helper =
-        SessionMetricsHelper::FromWebContents(web_contents_);
-    if (metrics_helper)
-      metrics_helper->RecordVoiceSearchStarted();
   } else {
     speech_recognizer_->Stop();
   }
@@ -1017,7 +954,7 @@ void VrShell::PollCapturingState() {
     }
   }
 
-  geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
+  geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindOnce(
       [](VrShell* shell, BrowserUiInterface* ui,
          CapturingStateModel* active_capturing,
          CapturingStateModel* background_capturing,
@@ -1076,7 +1013,7 @@ bool VrShell::ShouldDisplayURL() const {
   GURL url = entry->GetVirtualURL();
   // URL is of the form chrome-native://.... This is not useful for the user.
   // Hide it.
-  if (url.SchemeIs(chrome::kChromeUINativeScheme)) {
+  if (url.SchemeIs(browser_ui::kChromeUINativeScheme)) {
     return false;
   }
   // URL is of the form chrome://....
@@ -1092,16 +1029,6 @@ void VrShell::OnVoiceResults(const base::string16& result) {
   bool input_was_url;
   std::tie(url, input_was_url) =
       autocomplete_controller_->GetUrlFromVoiceInput(result);
-
-  // TODO(http://crbug.com/817559): If the user is doing a voice search from the
-  // new tab page, no metrics data is recorded (including voice search started).
-  // Fix this.
-
-  // This should happen before the load to avoid concurency issues.
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents_);
-  if (metrics_helper && input_was_url)
-    metrics_helper->RecordUrlRequested(url, NavigationMethod::kVoiceSearch);
 
   Java_VrShell_loadUrl(env, j_vr_shell_,
                        base::android::ConvertUTF8ToJavaString(env, url.spec()));
@@ -1276,13 +1203,11 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
   if (!entry)
     return nullptr;
 
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents_);
-  return std::make_unique<PageInfo>(
-      this, Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
-      entry->GetVirtualURL(), helper->GetSecurityLevel(),
-      *helper->GetVisibleSecurityState());
+  auto page_info = std::make_unique<PageInfo>(
+      std::make_unique<ChromePageInfoDelegate>(web_contents_), web_contents_,
+      entry->GetVirtualURL());
+  page_info->InitializeUiState(this);
+  return page_info;
 }
 
 gfx::AcceleratedWidget VrShell::GetRenderSurface() {

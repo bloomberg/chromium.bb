@@ -10,9 +10,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/android/chrome_jni_headers/DownloadUtils_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/download/android/jni_headers/MimeUtils_jni.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
@@ -32,15 +32,6 @@ namespace {
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 }  // namespace
-
-static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
-    JNIEnv* env,
-    jint fail_state) {
-  base::string16 message = OfflineItemUtils::GetFailStateMessage(
-      static_cast<offline_items_collection::FailState>(fail_state));
-  l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED, message);
-  return ConvertUTF16ToJavaString(env, message);
-}
 
 static jint JNI_DownloadUtils_GetResumeMode(
     JNIEnv* env,

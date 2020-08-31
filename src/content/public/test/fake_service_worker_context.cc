@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 
@@ -70,6 +70,11 @@ void FakeServiceWorkerContext::PerformStorageCleanup(
 void FakeServiceWorkerContext::CheckHasServiceWorker(
     const GURL& url,
     CheckHasServiceWorkerCallback callback) {
+  NOTREACHED();
+}
+void FakeServiceWorkerContext::CheckOfflineCapability(
+    const GURL& url,
+    const ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
   NOTREACHED();
 }
 void FakeServiceWorkerContext::ClearAllServiceWorkersForTest(

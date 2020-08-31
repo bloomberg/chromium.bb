@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
@@ -134,7 +136,7 @@ class MediaNotificationServiceTest : public testing::Test {
   void SetUp() override {
     media_router::MediaRouterFactory::GetInstance()->SetTestingFactory(
         &profile_, base::BindRepeating(&media_router::MockMediaRouter::Create));
-    service_ = std::make_unique<MediaNotificationService>(&profile_, nullptr);
+    service_ = std::make_unique<MediaNotificationService>(&profile_);
     service_->AddObserver(&observer_);
   }
 
@@ -250,10 +252,11 @@ class MediaNotificationServiceTest : public testing::Test {
     // focus lost here.
     SimulateFocusLost(id);
 
-    // Now, close the tab.
+    // Now, close the tab. The session may have been destroyed with
+    // |SimulateFocusLost()| above.
     auto item_itr = service_->sessions_.find(id.ToString());
-    EXPECT_NE(service_->sessions_.end(), item_itr);
-    item_itr->second.WebContentsDestroyed();
+    if (item_itr != service_->sessions_.end())
+      item_itr->second.WebContentsDestroyed();
   }
 
   void SimulatePlaybackStateChanged(const base::UnguessableToken& id,
@@ -414,10 +417,52 @@ TEST_F(MediaNotificationServiceTest, ShowControllableOnGainAndHideOnLoss) {
 TEST_F(MediaNotificationServiceTest, DoesNotShowUncontrollableSession) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
+  // When focus is gained, we should not show an active session.
   EXPECT_FALSE(HasActiveNotifications());
   SimulateFocusGained(id, false);
   SimulateNecessaryMetadata(id);
   EXPECT_FALSE(HasActiveNotifications());
+
+  // When focus is lost, we should not have a frozen session.
+  SimulateFocusLost(id);
+  EXPECT_FALSE(HasFrozenNotifications());
+
+  // When focus is regained, we should still not have an active session.
+  SimulateFocusGained(id, false);
+  EXPECT_FALSE(HasActiveNotifications());
+}
+
+TEST_F(MediaNotificationServiceTest,
+       DoesNotShowControllableSessionThatBecomesUncontrollable) {
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Lose focus so the item freezes.
+  SimulateFocusLost(id);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // After 1s, the item should still be frozen.
+  AdvanceClockMilliseconds(1000);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // If the item regains focus but is not controllable, it should not become
+  // active.
+  SimulateFocusGained(id, false);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // And the frozen timer should still fire after the initial 2.5 seconds is
+  // finished.
+  AdvanceClockMilliseconds(1400);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  AdvanceClockMilliseconds(200);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_FALSE(HasFrozenNotifications());
 }
 
 TEST_F(MediaNotificationServiceTest, ShowsAllInitialControllableSessions) {
@@ -602,7 +647,13 @@ TEST_F(MediaNotificationServiceTest, DismissesMediaSession) {
       1);
 }
 
-TEST_F(MediaNotificationServiceCastTest, CountCastSessionsAsActive) {
+// TODO(https://crbug.com/1034406) Flaky on Mac10.12, Linux and Win10.
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_CountCastSessionsAsActive DISABLED_CountCastSessionsAsActive
+#else
+#define MAYBE_CountCastSessionsAsActive CountCastSessionsAsActive
+#endif
+TEST_F(MediaNotificationServiceCastTest, MAYBE_CountCastSessionsAsActive) {
   media_router::MediaRoute media_route("id",
                                        media_router::MediaSource("source_id"),
                                        "sink_id", "description", true, true);
@@ -640,8 +691,8 @@ TEST_F(MediaNotificationServiceTest, LoseGainLoseDoesNotCauseRaceCondition) {
   // Simulate regaining focus, but no artwork yet so we wait.
   SimulateFocusGained(id, true);
   SimulateNecessaryMetadata(id);
-  EXPECT_TRUE(HasActiveNotifications());
-  EXPECT_FALSE(HasFrozenNotifications());
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
 
   // Then, lose focus again before getting artwork.
   SimulateFocusLost(id);
@@ -912,4 +963,74 @@ TEST_F(MediaNotificationServiceTest,
   // The notification should become inactive now that it's not in an overlay.
   AdvanceClockMinutes(61);
   EXPECT_TRUE(IsSessionInactive(id));
+}
+
+TEST_F(MediaNotificationServiceTest, HidingNotification_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      media::kGlobalMediaControlsAutoDismiss);
+
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After 61 minutes, the notification should still be there.
+  AdvanceClockMinutes(61);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  ExpectHistogramDismissReasonRecorded(
+      MediaNotificationService::GlobalMediaControlsDismissReason::
+          kInactiveTimeout,
+      0);
+
+  // Since the user never interacted with the media before it was paused, we
+  // should not have recorded any post-pause interactions.
+  ExpectEmptyInteractionHistogram();
+
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(61),
+                                            0);
+  SimulatePlaybackStateChanged(id, true);
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(61),
+                                            1);
+}
+
+TEST_F(MediaNotificationServiceTest, HidingNotification_TimerParams) {
+  const int kTimerInMinutes = 6;
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::FieldTrialParams params;
+  params["timer_in_minutes"] = base::NumberToString(kTimerInMinutes);
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kGlobalMediaControlsAutoDismiss, params);
+
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After (kTimerInMinutes-1) minutes, the notification should still be there.
+  AdvanceClockMinutes(kTimerInMinutes - 1);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we start playing again, we should not hide the notification, even after
+  // kTimerInMinutes.
+  ExpectHistogramInteractionDelayAfterPause(
+      base::TimeDelta::FromMinutes(kTimerInMinutes - 1), 0);
+  SimulatePlaybackStateChanged(id, true);
+  ExpectHistogramInteractionDelayAfterPause(
+      base::TimeDelta::FromMinutes(kTimerInMinutes - 1), 1);
+  AdvanceClockMinutes(2);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we pause again, it should hide after kTimerInMinutes.
+  SimulatePlaybackStateChanged(id, false);
+  AdvanceClockMinutes(kTimerInMinutes + 1);
+  EXPECT_FALSE(HasActiveNotifications());
 }

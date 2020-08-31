@@ -13,6 +13,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -57,6 +58,8 @@ class FakeTabletMode : public ash::TabletMode {
   }
 
   bool InTabletMode() const override { return in_tablet_mode; }
+
+  void ForceUiTabletModeState(base::Optional<bool> enabled) override {}
 
   void SetEnabledForTest(bool enabled) override {
     bool changed = (in_tablet_mode != enabled);
@@ -167,7 +170,7 @@ class TestInputMethodManager : public im::MockInputMethodManager {
 
    private:
     std::vector<std::string> active_input_method_ids_;
-    std::string active_ime_id_ = "";
+    std::string active_ime_id_;
     std::vector<std::string> allowed_input_methods_;
   };
 

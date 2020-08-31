@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_helper.h"
@@ -250,15 +251,15 @@ assist_ranker::RankerExample CreateRankerExample(
         kAppScheme +
         crx_file::id_util::GenerateId(features.arc_package_name()));
   } else {
-    LOG(ERROR) << "Unknown app type: " << features.app_type();
+    // TODO(crbug.com/1027782): Add DCHECK that this branch is not reached.
   }
   return example;
 }
 
 MlAppRankProvider::MlAppRankProvider()
     : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      background_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 MlAppRankProvider::~MlAppRankProvider() = default;

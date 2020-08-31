@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 
@@ -25,9 +26,6 @@ class TwoClientThemesSyncTest : public SyncTest {
 
   ~TwoClientThemesSyncTest() override {}
 
-  // Needed for AwaitQuiescence().
-  bool TestUsesSelfNotifications() override { return true; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientThemesSyncTest);
 };
@@ -39,8 +37,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(DefaultThenSyncCustom)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync());
-  // Wait until sync settles before we override the theme below.
-  AwaitQuiescence();
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
@@ -69,8 +65,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
-  // Wait until sync settles before we override the theme below.
-  AwaitQuiescence();
 
   UseSystemTheme(GetProfile(0));
   ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
@@ -92,8 +86,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
-  // Wait until sync settles before we override the theme below.
-  AwaitQuiescence();
 
   UseDefaultTheme(GetProfile(0));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
@@ -110,8 +102,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  // Wait until sync settles before we override the theme below.
-  AwaitQuiescence();
 
   SetCustomTheme(GetProfile(0));
 

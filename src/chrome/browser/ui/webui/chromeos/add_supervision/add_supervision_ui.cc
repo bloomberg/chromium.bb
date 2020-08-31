@@ -82,9 +82,10 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
 }
 
 // static
-SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
-  return SystemWebDialogDelegate::FindInstance(
-      chrome::kChromeUIAddSupervisionURL);
+AddSupervisionDialog* AddSupervisionDialog::GetInstance() {
+  return static_cast<AddSupervisionDialog*>(
+      SystemWebDialogDelegate::FindInstance(
+          chrome::kChromeUIAddSupervisionURL));
 }
 
 // static
@@ -92,6 +93,14 @@ void AddSupervisionDialog::Close() {
   SystemWebDialogDelegate* current_instance = GetInstance();
   if (current_instance) {
     current_instance->Close();
+  }
+}
+
+// static
+void AddSupervisionDialog::SetCloseOnEscape(bool enabled) {
+  AddSupervisionDialog* current_instance = GetInstance();
+  if (current_instance) {
+    current_instance->should_close_on_escape_ = enabled;
   }
 }
 
@@ -123,6 +132,10 @@ bool AddSupervisionDialog::OnDialogCloseRequested() {
   return true;
 }
 
+bool AddSupervisionDialog::ShouldCloseDialogOnEscape() const {
+  return should_close_on_escape_;
+}
+
 AddSupervisionDialog::AddSupervisionDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAddSupervisionURL),
                               base::string16()) {}
@@ -136,16 +149,15 @@ signin::IdentityManager* AddSupervisionUI::test_identity_manager_ = nullptr;
 
 AddSupervisionUI::AddSupervisionUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
-  // Register the Mojo API handler.
-  AddHandlerToRegistry(base::BindRepeating(
-      &AddSupervisionUI::BindAddSupervisionHandler, base::Unretained(this)));
-
   // Set up the basic page framework.
   SetUpResources();
 }
 
+WEB_UI_CONTROLLER_TYPE_IMPL(AddSupervisionUI)
+
 AddSupervisionUI::~AddSupervisionUI() = default;
 
+// AddSupervisionHandler::Delegate:
 bool AddSupervisionUI::CloseDialog() {
   bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
   if (!showing_confirm_dialog) {
@@ -155,12 +167,17 @@ bool AddSupervisionUI::CloseDialog() {
   return !showing_confirm_dialog;
 }
 
+// AddSupervisionHandler::Delegate:
+void AddSupervisionUI::SetCloseOnEscape(bool enabled) {
+  AddSupervisionDialog::SetCloseOnEscape(enabled);
+}
+
 // static
 void AddSupervisionUI::SetUpForTest(signin::IdentityManager* identity_manager) {
   test_identity_manager_ = identity_manager;
 }
 
-void AddSupervisionUI::BindAddSupervisionHandler(
+void AddSupervisionUI::BindInterface(
     mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
         receiver) {
   signin::IdentityManager* identity_manager =

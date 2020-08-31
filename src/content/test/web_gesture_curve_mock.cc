@@ -4,13 +4,10 @@
 
 #include "content/test/web_gesture_curve_mock.h"
 
-#include "third_party/blink/public/platform/web_float_size.h"
-
-WebGestureCurveMock::WebGestureCurveMock(const blink::WebFloatPoint& velocity,
+WebGestureCurveMock::WebGestureCurveMock(
+    const gfx::Vector2dF& velocity,
     const blink::WebSize& cumulative_scroll)
-    : velocity_(velocity),
-      cumulative_scroll_(cumulative_scroll) {
-}
+    : velocity_(velocity), cumulative_scroll_(cumulative_scroll) {}
 
 WebGestureCurveMock::~WebGestureCurveMock() {
 }
@@ -18,11 +15,11 @@ WebGestureCurveMock::~WebGestureCurveMock() {
 bool WebGestureCurveMock::Advance(double time,
                                   gfx::Vector2dF& out_current_velocity,
                                   gfx::Vector2dF& out_delta_to_scroll) {
-  blink::WebSize displacement(velocity_.x * time, velocity_.y * time);
+  blink::WebSize displacement(velocity_.x() * time, velocity_.y() * time);
   out_delta_to_scroll =
       gfx::Vector2dF(displacement.width - cumulative_scroll_.width,
                      displacement.height - cumulative_scroll_.height);
   cumulative_scroll_ = displacement;
-  out_current_velocity = gfx::Vector2dF(velocity_.x, velocity_.y);
+  out_current_velocity = velocity_;
   return true;
 }

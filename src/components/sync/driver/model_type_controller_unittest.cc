@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -22,7 +23,6 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/data_type_activation_request.h"
-#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,25 +89,6 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     NOTREACHED() << "Not implemented.";
   }
 
-  void RegisterDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void UnregisterDirectoryDataType(ModelType type) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void DeactivateDirectoryDataType(ModelType type) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
   void ActivateNonBlockingDataType(ModelType type,
                                    std::unique_ptr<DataTypeActivationResponse>
                                        activation_response) override {
@@ -123,6 +104,10 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     processor_->DisconnectSync();
     processor_.reset();
   }
+
+  void ActivateProxyDataType(ModelType type) override { NOTREACHED(); }
+
+  void DeactivateProxyDataType(ModelType type) override { NOTREACHED(); }
 
  private:
   std::unique_ptr<ModelTypeProcessor> processor_;
@@ -201,12 +186,6 @@ class ModelTypeControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void StartAssociating() {
-    base::MockCallback<DataTypeController::StartCallback> callback;
-    EXPECT_CALL(callback, Run(DataTypeController::OK, _, _));
-    controller_.StartAssociating(callback.Get());
-  }
-
   void StopAndWait(ShutdownReason shutdown_reason) {
     // ModelTypeProcessorProxy does posting of tasks, so we need a runloop. This
     // also verifies that the completion callback is run.
@@ -263,8 +242,6 @@ TEST_F(ModelTypeControllerTest, Activate) {
   EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
   RegisterWithBackend(/*expect_downloaded=*/false);
   EXPECT_TRUE(processor()->is_connected());
-
-  StartAssociating();
   EXPECT_EQ(DataTypeController::RUNNING, controller()->state());
   histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
 }
@@ -309,9 +286,6 @@ TEST_F(ModelTypeControllerTest, Stop) {
   ASSERT_TRUE(LoadModels());
   RegisterWithBackend(/*expect_downloaded=*/false);
   EXPECT_TRUE(processor()->is_connected());
-
-  StartAssociating();
-
   DeactivateDataTypeAndStop(STOP_SYNC);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 }
@@ -319,7 +293,6 @@ TEST_F(ModelTypeControllerTest, Stop) {
 // Test emulates normal browser shutdown. Ensures that metadata was not cleared.
 TEST_F(ModelTypeControllerTest, StopWhenDatatypeEnabled) {
   ASSERT_TRUE(LoadModels());
-  StartAssociating();
 
   // Ensures that metadata was not cleared.
   EXPECT_CALL(*delegate(), OnSyncStopping(KEEP_METADATA));
@@ -332,7 +305,6 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeEnabled) {
 // cleared.
 TEST_F(ModelTypeControllerTest, StopWhenDatatypeDisabled) {
   ASSERT_TRUE(LoadModels());
-  StartAssociating();
 
   EXPECT_CALL(*delegate(), OnSyncStopping(CLEAR_METADATA));
   DeactivateDataTypeAndStop(DISABLE_SYNC);
@@ -643,7 +615,45 @@ TEST_F(ModelTypeControllerTest, ReportErrorAfterLoaded) {
   std::move(start_callback).Run(std::make_unique<DataTypeActivationResponse>());
   ASSERT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
 
-  StartAssociating();
+  // Now trigger the run-time error.
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
+  histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
+  histogram_tester.ExpectBucketCount(kStartFailuresHistogram,
+                                     ModelTypeHistogramValue(kTestModelType),
+                                     /*count=*/1);
+}
+
+TEST_F(ModelTypeControllerTest, ReportErrorAfterRegisteredWithBackend) {
+  base::HistogramTester histogram_tester;
+  // Capture the callbacks.
+  ModelErrorHandler error_handler;
+  ModelTypeControllerDelegate::StartCallback start_callback;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        error_handler = request.error_handler;
+        start_callback = std::move(callback);
+      });
+  controller()->LoadModels(MakeConfigureContext(), base::DoNothing());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(error_handler);
+  ASSERT_TRUE(start_callback);
+
+  // An activation response with a non-null processor is required for
+  // registering with the backend.
+  auto activation_response = std::make_unique<DataTypeActivationResponse>();
+  activation_response->type_processor =
+      std::make_unique<TestModelTypeProcessor>();
+
+  // Mimic completion for OnSyncStarting().
+  std::move(start_callback).Run(std::move(activation_response));
+  ASSERT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
+
+  RegisterWithBackend(/*expect_downloaded=*/false);
   ASSERT_EQ(DataTypeController::RUNNING, controller()->state());
 
   // Now trigger the run-time error.

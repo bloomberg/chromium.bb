@@ -5,13 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_COORDINATOR_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 class WebOmniboxEditController;
-@class CommandDispatcher;
 @protocol EditViewAnimatee;
 @class OmniboxPopupCoordinator;
 @class OmniboxTextFieldIOS;
@@ -19,14 +15,11 @@ class WebOmniboxEditController;
 @protocol OmniboxPopupPresenterDelegate;
 
 // The coordinator for the omnibox.
-@interface OmniboxCoordinator : NSObject
+@interface OmniboxCoordinator : ChromeCoordinator
+
 // The edit controller interfacing the |textField| and the omnibox components
 // code. Needs to be set before the coordinator is started.
 @property(nonatomic, assign) WebOmniboxEditController* editController;
-// Weak reference to ChromeBrowserState;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// The dispatcher for this view controller.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
 // Returns the animatee for the omnibox focus orchestrator.
 @property(nonatomic, strong, readonly) id<EditViewAnimatee> animatee;
 
@@ -52,8 +45,6 @@ class WebOmniboxEditController;
 - (void)updateOmniboxState;
 // Use this method to make the omnibox first responder.
 - (void)focusOmnibox;
-// Marks the next omnibox focus event source as the search button.
-- (void)setNextFocusSourceAsSearchButton;
 // Use this method to resign |textField| as the first responder.
 - (void)endEditing;
 // Creates a child popup coordinator. The popup coordinator is linked to the

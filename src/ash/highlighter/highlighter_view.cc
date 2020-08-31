@@ -73,7 +73,7 @@ const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
 HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
                                  aura::Window* container)
-    : FastInkView(container, PresentationCallback()),
+    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
       points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay) {}
@@ -124,17 +124,17 @@ void HighlighterView::AddGap() {
 
 void HighlighterView::Animate(const gfx::PointF& pivot,
                               HighlighterGestureType gesture_type,
-                              const base::Closure& done) {
+                              base::OnceClosure done) {
   animation_timer_ = std::make_unique<base::OneShotTimer>();
   animation_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
-      base::BindRepeating(&HighlighterView::FadeOut, base::Unretained(this),
-                          pivot, gesture_type, done));
+      base::BindOnce(&HighlighterView::FadeOut, base::Unretained(this), pivot,
+                     gesture_type, std::move(done)));
 }
 
 void HighlighterView::FadeOut(const gfx::PointF& pivot,
                               HighlighterGestureType gesture_type,
-                              const base::Closure& done) {
+                              base::OnceClosure done) {
   ui::Layer* layer = GetWidget()->GetLayer();
 
   base::TimeDelta duration =
@@ -166,7 +166,7 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
   }
 
   animation_timer_ = std::make_unique<base::OneShotTimer>();
-  animation_timer_->Start(FROM_HERE, duration, done);
+  animation_timer_->Start(FROM_HERE, duration, std::move(done));
 }
 
 void HighlighterView::ScheduleUpdateBuffer() {
@@ -187,8 +187,7 @@ void HighlighterView::UpdateBuffer() {
   pending_update_buffer_ = false;
 
   {
-    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
-                      highlighter_damage_rect_);
+    ScopedPaint paint(this, highlighter_damage_rect_);
 
     Draw(paint.canvas());
   }

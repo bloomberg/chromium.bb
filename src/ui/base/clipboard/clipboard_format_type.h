@@ -29,11 +29,19 @@ namespace ui {
 
 // Platform neutral holder for native data representation of a clipboard type.
 // Copyable and assignable, since this is an opaque value type.
-struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
+ public:
   ClipboardFormatType();
   ~ClipboardFormatType();
 
+#if defined(OS_WIN)
+  explicit ClipboardFormatType(UINT native_format);
+  ClipboardFormatType(UINT native_format, LONG index);
+  ClipboardFormatType(UINT native_format, LONG index, DWORD tymed);
+#endif
+
   // Serializes and deserializes a ClipboardFormatType for use in IPC messages.
+  // The serialized string may not be human-readable.
   std::string Serialize() const;
   static ClipboardFormatType Deserialize(const std::string& serialization);
 
@@ -47,12 +55,9 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 
   // Get format identifiers for various types.
   static const ClipboardFormatType& GetUrlType();
-  static const ClipboardFormatType& GetUrlWType();
   static const ClipboardFormatType& GetMozUrlType();
   static const ClipboardFormatType& GetPlainTextType();
-  static const ClipboardFormatType& GetPlainTextWType();
   static const ClipboardFormatType& GetFilenameType();
-  static const ClipboardFormatType& GetFilenameWType();
   static const ClipboardFormatType& GetWebKitSmartPasteType();
   // Win: MS HTML Format, Other: Generic HTML format
   static const ClipboardFormatType& GetHtmlType();
@@ -64,27 +69,31 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static const ClipboardFormatType& GetPepperCustomDataType();
 
 #if defined(OS_WIN)
+  // ANSI formats. Only Windows differentiates between ANSI and UNICODE formats
+  // in ClipboardFormatType. Reference:
+  // https://docs.microsoft.com/en-us/windows/win32/learnwin32/working-with-strings
+  static const ClipboardFormatType& GetUrlAType();
+  static const ClipboardFormatType& GetPlainTextAType();
+  static const ClipboardFormatType& GetFilenameAType();
+
   // Firefox text/html
   static const ClipboardFormatType& GetTextHtmlType();
   static const ClipboardFormatType& GetCFHDropType();
+  static const ClipboardFormatType& GetFileDescriptorAType();
   static const ClipboardFormatType& GetFileDescriptorType();
-  static const ClipboardFormatType& GetFileDescriptorWType();
   static const ClipboardFormatType& GetFileContentZeroType();
   static const ClipboardFormatType& GetFileContentAtIndexType(LONG index);
   static const ClipboardFormatType& GetIDListType();
 #endif
 
-#if defined(OS_ANDROID)
-  static const ClipboardFormatType& GetBookmarkType();
-#endif
-
   // ClipboardFormatType can be used in a set on some platforms.
   bool operator<(const ClipboardFormatType& other) const;
 
+  // Returns a human-readable format name, or an empty string as an error value
+  // if the format isn't found.
+  std::string GetName() const;
 #if defined(OS_WIN)
   const FORMATETC& ToFormatEtc() const { return data_; }
-#elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-  const std::string& ToString() const { return data_; }
 #elif defined(OS_MACOSX)
   NSString* ToNSString() const { return data_; }
   // Custom copy and assignment constructor to handle NSString.
@@ -96,7 +105,7 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 
  private:
   friend class base::NoDestructor<ClipboardFormatType>;
-  friend struct ClipboardFormatType;
+  friend class Clipboard;
 
   // Platform-specific glue used internally by the ClipboardFormatType struct.
   // Each platform should define at least one of each of the following:
@@ -104,13 +113,12 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   // 2. An accessor to retrieve the wrapped descriptor.
   // 3. A data member to hold the wrapped descriptor.
   //
-  // Note that in some cases, the accessor for the wrapped descriptor may be
-  // public, as these format types can be used by drag and drop code as well.
+  // In some cases, the accessor for the wrapped descriptor may be public, as
+  // these format types can be used by drag and drop code as well.
+  //
+  // In all platforms, format names may be ASCII or UTF8/16.
+  // TODO(huangdarwin): Convert interfaces to base::string16.
 #if defined(OS_WIN)
-  explicit ClipboardFormatType(UINT native_format);
-  ClipboardFormatType(UINT native_format, LONG index);
-  ClipboardFormatType(UINT native_format, LONG index, DWORD tymed);
-
   // When there are multiple files in the data store and they are described
   // using a file group descriptor, the file contents are retrieved by
   // requesting the CFSTR_FILECONTENTS clipboard format type and also providing

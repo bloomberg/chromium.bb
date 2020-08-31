@@ -11,24 +11,27 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -39,7 +42,8 @@ namespace content {
 
 class AppCacheServiceImpl::AsyncHelper : public AppCacheStorage::Delegate {
  public:
-  AsyncHelper(AppCacheServiceImpl* service, OnceCompletionCallback callback)
+  AsyncHelper(AppCacheServiceImpl* service,
+              net::CompletionOnceCallback callback)
       : service_(service), callback_(std::move(callback)) {
     service_->pending_helpers_[this] = base::WrapUnique(this);
   }
@@ -65,7 +69,7 @@ class AppCacheServiceImpl::AsyncHelper : public AppCacheStorage::Delegate {
   }
 
   AppCacheServiceImpl* service_;
-  OnceCompletionCallback callback_;
+  net::CompletionOnceCallback callback_;
 };
 
 void AppCacheServiceImpl::AsyncHelper::Cancel() {
@@ -222,7 +226,7 @@ class AppCacheServiceImpl::GetInfoHelper : AsyncHelper {
  public:
   GetInfoHelper(AppCacheServiceImpl* service,
                 AppCacheInfoCollection* collection,
-                OnceCompletionCallback callback)
+                net::CompletionOnceCallback callback)
       : AsyncHelper(service, std::move(callback)), collection_(collection) {}
 
   void Start() override { service_->storage()->GetAllInfo(this); }
@@ -367,16 +371,15 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
 AppCacheStorageReference::AppCacheStorageReference(
     std::unique_ptr<AppCacheStorage> storage)
     : storage_(std::move(storage)) {}
-AppCacheStorageReference::~AppCacheStorageReference() {}
+AppCacheStorageReference::~AppCacheStorageReference() = default;
 
 // AppCacheServiceImpl -------
 
 AppCacheServiceImpl::AppCacheServiceImpl(
     storage::QuotaManagerProxy* quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
-    : db_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+    : db_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
@@ -458,8 +461,9 @@ void AppCacheServiceImpl::Reinitialize() {
   Initialize(cache_directory_);
 }
 
-void AppCacheServiceImpl::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                                             OnceCompletionCallback callback) {
+void AppCacheServiceImpl::GetAllAppCacheInfo(
+    AppCacheInfoCollection* collection,
+    net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(collection);
   GetInfoHelper* helper =

@@ -3,13 +3,28 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
+#include <memory>
+#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 
 namespace quic {
 namespace test {
 
 void SimpleSessionCache::Insert(const QuicServerId& server_id,
-                                std::unique_ptr<QuicResumptionState> state) {
-  cache_entries_.insert(std::make_pair(server_id, std::move(state)));
+                                bssl::UniquePtr<SSL_SESSION> session,
+                                const TransportParameters& params,
+                                const ApplicationState* application_state) {
+  auto it = cache_entries_.find(server_id);
+  if (it == cache_entries_.end()) {
+    it = cache_entries_.insert(std::make_pair(server_id, Entry())).first;
+  }
+  if (session != nullptr) {
+    it->second.session = std::move(session);
+  }
+  if (application_state != nullptr) {
+    it->second.application_state =
+        std::make_unique<ApplicationState>(*application_state);
+  }
+  it->second.params = std::make_unique<TransportParameters>(params);
 }
 
 std::unique_ptr<QuicResumptionState> SimpleSessionCache::Lookup(
@@ -19,8 +34,10 @@ std::unique_ptr<QuicResumptionState> SimpleSessionCache::Lookup(
   if (it == cache_entries_.end()) {
     return nullptr;
   }
-  std::unique_ptr<QuicResumptionState> state = std::move(it->second);
-  cache_entries_.erase(it);
+  auto state = std::make_unique<QuicResumptionState>();
+  state->tls_session = std::move(it->second.session);
+  state->application_state = it->second.application_state.get();
+  state->transport_params = it->second.params.get();
   return state;
 }
 

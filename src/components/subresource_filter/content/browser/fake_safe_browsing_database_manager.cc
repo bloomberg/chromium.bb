@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,7 +103,7 @@ void FakeSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
   DCHECK_EQ(erased, 1u);
 }
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType /* resource_type */) const {
+    blink::mojom::ResourceType /* resource_type */) const {
   return true;
 }
 

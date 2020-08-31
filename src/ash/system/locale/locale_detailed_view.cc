@@ -15,8 +15,8 @@
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/check.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -53,9 +53,9 @@ class LocaleItem : public ActionableView {
 
     views::Label* iso_code_label = TrayPopupUtils::CreateDefaultLabel();
     iso_code_label->SetEnabledColor(
-        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+        AshColorProvider::Get()->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kTextPrimary,
-            kUnifiedMenuTextColor));
+            AshColorProvider::AshColorMode::kDark));
     iso_code_label->SetAutoColorReadabilityEnabled(false);
     iso_code_label->SetText(base::i18n::ToUpper(
         base::UTF8ToUTF16(l10n_util::GetLanguage(iso_code))));

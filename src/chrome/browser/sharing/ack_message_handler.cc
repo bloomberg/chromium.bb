@@ -5,8 +5,8 @@
 #include "chrome/browser/sharing/ack_message_handler.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 
 AckMessageHandler::AckMessageHandler(
     SharingMessageSender* sharing_message_sender)
@@ -24,8 +24,7 @@ void AckMessageHandler::OnMessage(
   if (ack_message->has_response_message())
     response = base::WrapUnique(ack_message->release_response_message());
 
-  sharing_message_sender_->OnAckReceived(ack_message->original_message_type(),
-                                         ack_message->original_message_id(),
+  sharing_message_sender_->OnAckReceived(ack_message->original_message_id(),
                                          std::move(response));
 
   std::move(done_callback).Run(/*response=*/nullptr);

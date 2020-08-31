@@ -34,7 +34,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
   // This class keeps |endpoints| to keep the ongoing network request.
   WebBundleBlobDataSource(
-      int64_t content_length,
+      uint64_t length_hint,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       BrowserContext::BlobContextGetter blob_context_getter);
@@ -51,7 +51,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
   // This class lives on the IO thread.
   class BlobDataSourceCore : public data_decoder::mojom::BundleDataSource {
    public:
-    BlobDataSourceCore(int64_t content_length,
+    BlobDataSourceCore(uint64_t length_hint,
                        network::mojom::URLLoaderClientEndpointsPtr endpoints,
                        BrowserContext::BlobContextGetter blob_context_getter);
     ~BlobDataSourceCore() override;
@@ -70,7 +70,6 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
    private:
     // Implements data_decoder::mojom::BundleDataSource.
-    void GetSize(GetSizeCallback callback) override;
     void Read(uint64_t offset, uint64_t length, ReadCallback callback) override;
 
     void StreamingBlobDone(storage::BlobBuilderFromStream* builder,
@@ -86,7 +85,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
         mojo::ScopedDataPipeProducerHandle producer_handle,
         CompletionCallback callback);
 
-    const int64_t content_length_;
+    const uint64_t length_hint_;
     // Used to keep the ongoing network request.
     network::mojom::URLLoaderClientEndpointsPtr endpoints_;
     mojo::ReceiverSet<data_decoder::mojom::BundleDataSource> receivers_;
@@ -104,7 +103,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
   static void CreateCoreOnIO(
       base::WeakPtr<WebBundleBlobDataSource> weak_ptr,
-      int64_t content_length,
+      uint64_t length_hint,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       BrowserContext::BlobContextGetter blob_context_getter);

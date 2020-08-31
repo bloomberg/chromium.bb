@@ -59,6 +59,7 @@ rtc_library("remote_bitrate_estimator") {
     "../../system_wrappers",
     "../../system_wrappers:field_trial",
     "../../system_wrappers:metrics",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -82,9 +83,7 @@ if (!build_with_chromium) {
 
   rtc_executable("rtp_to_text") {
     testonly = true
-    sources = [
-      "tools/rtp_to_text.cc",
-    ]
+    sources = [ "tools/rtp_to_text.cc" ]
     deps = [
       ":bwe_rtp",
       "../../modules/rtp_rtcp",

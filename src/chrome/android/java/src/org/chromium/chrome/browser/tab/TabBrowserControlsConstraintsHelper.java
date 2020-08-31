@@ -4,21 +4,27 @@
 
 package org.chromium.chrome.browser.tab;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.base.Callback;
+import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.content_public.browser.ImeAdapter;
-import org.chromium.content_public.browser.ImeEventObserver;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manages the state of tab browser controls.
  */
-public class TabBrowserControlsConstraintsHelper
-        extends TabWebContentsUserData implements ImeEventObserver {
+public class TabBrowserControlsConstraintsHelper implements UserData {
     private static final Class<TabBrowserControlsConstraintsHelper> USER_DATA_KEY =
             TabBrowserControlsConstraintsHelper.class;
 
     private final TabImpl mTab;
+    private final Callback<Integer> mConstraintsChangedCallback;
+
     private long mNativeTabBrowserControlsConstraintsHelper; // Lazily initialized in |update|
     private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
@@ -70,52 +76,57 @@ public class TabBrowserControlsConstraintsHelper
 
     /** Constructor */
     private TabBrowserControlsConstraintsHelper(Tab tab) {
-        super(tab);
         mTab = (TabImpl) tab;
+        mConstraintsChangedCallback = (constraints) -> updateEnabledState();
         mTab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onSSLStateUpdated(Tab tab) {
-                updateEnabledState();
+            public void onInitialized(
+                    Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor) {
+                updateVisibilityDelegate();
             }
 
             @Override
-            public void onInitialized(Tab tab, TabState tabState) {
-                mVisibilityDelegate =
-                        mTab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
-            }
-
-            @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (isAttached) {
-                    mVisibilityDelegate =
-                            mTab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
-                }
-            }
-
-            @Override
-            public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
-                if (mTab.isHidden()) return;
-                if (isResponsive) {
-                    updateEnabledState();
-                } else {
-                    update(BrowserControlsState.SHOWN, false);
-                }
-            }
-
-            @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                updateEnabledState();
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window != null) updateVisibilityDelegate();
             }
 
             @Override
             public void onDestroyed(Tab tab) {
                 tab.removeObserver(this);
             }
+
+            private void updateAfterRendererProcessSwitch(Tab tab, boolean hasCommitted) {
+                int constraints = getConstraints();
+                if (constraints == BrowserControlsState.SHOWN && hasCommitted
+                        && TabBrowserControlsOffsetHelper.get(tab).topControlsOffset() == 0) {
+                    // If the browser controls were already fully visible on the previous page, then
+                    // avoid an animation to keep the controls from jumping around.
+                    update(BrowserControlsState.SHOWN, false);
+                } else {
+                    updateEnabledState();
+                }
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
+                if (!navigationHandle.isInMainFrame()) return;
+
+                // At this point, we might have switched renderer processes, so push the existing
+                // constraints to the new renderer (has the potential to be slightly spammy, but
+                // the renderer has logic to suppress duplicate calls).
+                updateAfterRendererProcessSwitch(tab, navigationHandle.hasCommitted());
+            }
+
+            @Override
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                updateAfterRendererProcessSwitch(tab, true);
+            }
         });
+        if (mTab.isInitialized() && !TabImpl.isDetached(mTab)) updateVisibilityDelegate();
     }
 
     @Override
-    public void destroyInternal() {
+    public void destroy() {
         if (mNativeTabBrowserControlsConstraintsHelper != 0) {
             TabBrowserControlsConstraintsHelperJni.get().onDestroyed(
                     mNativeTabBrowserControlsConstraintsHelper,
@@ -123,13 +134,16 @@ public class TabBrowserControlsConstraintsHelper
         }
     }
 
-    @Override
-    public void initWebContents(WebContents webContents) {
-        ImeAdapter.fromWebContents(webContents).addEventObserver(this);
+    private void updateVisibilityDelegate() {
+        if (mVisibilityDelegate != null) {
+            mVisibilityDelegate.removeObserver(mConstraintsChangedCallback);
+        }
+        mVisibilityDelegate =
+                mTab.getDelegateFactory().createBrowserControlsVisibilityDelegate(mTab);
+        if (mVisibilityDelegate != null) {
+            mVisibilityDelegate.addObserver(mConstraintsChangedCallback);
+        }
     }
-
-    @Override
-    public void cleanupWebContents(WebContents webContents) {}
 
     private void updateEnabledState() {
         if (mTab.isFrozen()) return;
@@ -166,38 +180,9 @@ public class TabBrowserControlsConstraintsHelper
                 current, animate);
     }
 
-    /**
-     * @return Whether hiding browser controls is enabled or not.
-     */
-    private boolean canAutoHide() {
-        return mVisibilityDelegate != null ? mVisibilityDelegate.canAutoHideBrowserControls()
-                                           : false;
-    }
-
-    /**
-     * @return Whether showing browser controls is enabled or not.
-     */
-    public boolean canShow() {
-        return mVisibilityDelegate != null ? mVisibilityDelegate.canShowBrowserControls() : false;
-    }
-
     @BrowserControlsState
     private int getConstraints() {
-        int constraints = BrowserControlsState.BOTH;
-        if (!canShow()) {
-            constraints = BrowserControlsState.HIDDEN;
-        } else if (!canAutoHide()) {
-            constraints = BrowserControlsState.SHOWN;
-        }
-        return constraints;
-    }
-
-    // ImeEventObserver
-
-    @Override
-    public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        if (mTab.isHidden()) return;
-        updateEnabledState();
+        return mVisibilityDelegate == null ? BrowserControlsState.BOTH : mVisibilityDelegate.get();
     }
 
     @NativeMethods

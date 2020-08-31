@@ -13,7 +13,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
 import android.os.Handler;
-import android.support.v4.widget.TextViewCompat;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -76,7 +76,7 @@ public class AutofillUiUtils {
             OffsetProvider offsetProvider, View anchorView, final Runnable dismissAction) {
         TextView textView = new TextView(context);
         textView.setText(text);
-        TextViewCompat.setTextAppearance(textView, R.style.TextAppearance_WhiteBody);
+        TextViewCompat.setTextAppearance(textView, R.style.TextAppearance_TextMedium_Primary_Light);
         Resources resources = context.getResources();
         int hPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_horizontal_padding);
         int vPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_vertical_padding);

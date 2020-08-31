@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -22,10 +23,13 @@ static struct EncodingParameters {
 } const kEncodingParameters[] = {
     {true, "video/webm;codecs=VP8"},
     {true, "video/webm;codecs=VP9"},
-    {true, "video/x-matroska;codecs=AVC1"},
     {false, ""},  // Instructs the platform to choose any accelerated codec.
     {false, "video/webm;codecs=VP8"},
     {false, "video/webm;codecs=VP9"},
+};
+
+static const EncodingParameters kProprietaryEncodingParameters[] = {
+    {true, "video/x-matroska;codecs=AVC1"},
     {false, "video/x-matroska;codecs=AVC1"},
 };
 
@@ -56,9 +60,6 @@ class MAYBE_WebRtcMediaRecorderTest
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
   void MaybeForceDisableEncodeAccelerator(bool disable) {
@@ -233,8 +234,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
+INSTANTIATE_TEST_SUITE_P(OpenCodec,
                          MAYBE_WebRtcMediaRecorderTest,
                          testing::ValuesIn(kEncodingParameters));
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+INSTANTIATE_TEST_SUITE_P(ProprietaryCodec,
+                         MAYBE_WebRtcMediaRecorderTest,
+                         testing::ValuesIn(kProprietaryEncodingParameters));
+
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 }  // namespace content

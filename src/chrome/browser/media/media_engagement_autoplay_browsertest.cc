@@ -20,6 +20,7 @@
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -160,8 +161,7 @@ class MediaEngagementAutoplayBrowserTest
     list.AppendString(origin.Serialize());
     std::string json_data;
     base::JSONWriter::Write(list, &json_data);
-    EXPECT_TRUE(
-        base::WriteFile(input_path, json_data.c_str(), json_data.size()));
+    EXPECT_TRUE(base::WriteFile(input_path, json_data));
 
     // Get the path to the "generator" binary in the module path.
     base::FilePath module_dir;
@@ -385,10 +385,10 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTestHttpsOnly,
   ExpectAutoplayDenied();
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaEngagementAutoplayBrowserTest,
                          testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaEngagementAutoplayBrowserTestHttpsOnly,
                          testing::Bool());

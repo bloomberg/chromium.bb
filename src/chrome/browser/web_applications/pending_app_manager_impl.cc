@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 namespace web_app {
 
@@ -64,7 +65,7 @@ void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
                                           ExternalInstallSource install_source,
                                           const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
-    finalizer()->UninstallExternalWebApp(
+    finalizer()->UninstallExternalWebAppByUrl(
         url, install_source,
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,
@@ -99,8 +100,8 @@ std::unique_ptr<PendingAppInstallTask>
 PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
   return std::make_unique<PendingAppInstallTask>(
-      profile_, registrar(), shortcut_manager(), ui_manager(), finalizer(),
-      std::move(install_options));
+      profile_, registrar(), shortcut_manager(), file_handler_manager(),
+      ui_manager(), finalizer(), std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>
@@ -263,7 +264,10 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
       base::FeatureList::IsEnabled(
           features::kDesktopPWAsCacheDuringDefaultInstall)) {
     const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
-    if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
+    bool is_local_resource =
+        launch_url.scheme() == content::kChromeUIScheme ||
+        launch_url.scheme() == content::kChromeUIUntrustedScheme;
+    if (!launch_url.is_empty() && !is_local_resource)
       pending_registrations_.push_back(launch_url);
   }
 

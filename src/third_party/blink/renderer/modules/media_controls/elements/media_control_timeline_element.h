@@ -24,7 +24,7 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
 
   // FIXME: An "earliest possible position" will be needed once that concept
   // is supported by HTMLMediaElement, see https://crbug.com/137275
-  void SetPosition(double);
+  void SetPosition(double, bool suppress_aria = false);
   void SetDuration(double);
 
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(*event); }
@@ -35,7 +35,7 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
   void OnControlsShown();
   void OnControlsHidden();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   const char* GetNameForHistograms() const override;
@@ -50,6 +50,8 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
   // ended when the touch has ended.
   bool BeginScrubbingEvent(Event&);
   bool EndScrubbingEvent(Event&);
+
+  void UpdateAria();
 
   MediaControlTimelineMetrics metrics_;
 

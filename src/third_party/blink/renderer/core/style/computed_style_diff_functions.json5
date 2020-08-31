@@ -35,7 +35,7 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
                   "padding-left", "padding-right", "padding-bottom",
-                  "intrinsic-width", "intrinsic-height"],
+                  "contain-intrinsic-size"],
         methods_to_diff: [
           {
             method: "GetPosition()",
@@ -81,11 +81,9 @@
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom", "-webkit-appearance",
-                "-webkit-margin-before-collapse",
-                "-webkit-margin-after-collapse", "-webkit-line-clamp",
+                "padding-bottom", "appearance", "-webkit-line-clamp",
                 "text-overflow", "shape-margin", "order", "-webkit-highlight",
-                "text-indent", "text-align-last", "TextIndentLine", "-internal-effective-zoom",
+                "text-indent", "text-align-last", "TextIndentLine", "EffectiveZoom",
                 "word-break", "overflow-wrap", "-webkit-line-break", 
                 "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
                 "HyphenationLimitAfter", "-webkit-hyphenate-character", 
@@ -100,7 +98,8 @@
                 "NamedGridColumnLines", "NamedGridRowLines", "OrderedNamedGridColumnLines", 
                 "OrderedNamedGridRowLines", "AutoRepeatNamedGridColumnLines", 
                 "AutoRepeatNamedGridRowLines", "AutoRepeatOrderedNamedGridColumnLines", 
-                "AutoRepeatOrderedNamedGridRowLines", "NamedGridArea", "grid-auto-rows", 
+                "AutoRepeatOrderedNamedGridRowLines", "ImplicitNamedGridColumnLines", 
+                "ImplicitNamedGridRowLines", "NamedGridArea", "grid-auto-rows", 
                 "grid-template-rows", "grid-template-columns", "grid-auto-columns", "row-gap",
                 "NamedGridAreaRowCount", "NamedGridAreaColumnCount", 
                 "GridAutoRepeatColumns", "GridAutoRepeatRows", "GridAutoRepeatColumnsInsertionPoint", 
@@ -129,10 +128,6 @@
           {
             method: "BorderRightWidth()",
             field_dependencies: ["border-right-width"]
-          },
-          {
-            method: "HasFilters()",
-            field_dependencies: ["filter"]
           },
           {
             method: "HasPseudoElementStyle(kPseudoIdScrollbar)",
@@ -233,7 +228,7 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height",
                 "max-height", "VerticalAlignLength", "box-sizing", "align-content",
                 "align-items", "align-self", "justify-content", "justify-items",
-                "justify-self", "contain", "intrinsic-width", "intrinsic-height"],
+                "justify-self", "contain", "contain-intrinsic-size", "aspect-ratio"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",
@@ -246,13 +241,10 @@
         ]
     },
     {
-        name: "DiffNeedsPaintInvalidationSubtree",
-        fields_to_diff: ["mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
-    },
-    {
-        name: "DiffNeedsPaintInvalidationObject",
+        name: "DiffNeedsPaintInvalidation",
         fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering",
-                "-webkit-user-drag", "object-fit", "object-position"],
+                "-webkit-user-drag", "object-fit", "object-position",
+                "mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
         methods_to_diff: [
           {
             method: "Visibility()",
@@ -273,6 +265,10 @@
           {
             method: "Resize()",
             field_dependencies: ["resize"]
+          },
+          {
+            method: "UsedColorScheme()",
+            field_dependencies: ["color-scheme"]
           },
         ],
         predicates_to_test: [
@@ -390,7 +386,7 @@
         fields_to_diff: ["Mask", "MaskBoxImage"],
     },
     {
-        name: "UpdatePropertySpecificDifferencesNeedsRecomputeOverflow",
+        name: "UpdatePropertySpecificDifferencesNeedsRecomputeVisualOverflow",
         predicates_to_test: [
           {
             predicate: "a.BoxShadowDataEquivalent(b)",

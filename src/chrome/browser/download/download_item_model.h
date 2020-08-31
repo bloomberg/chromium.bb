@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/proto/download_file_types.pb.h"
 
 // Implementation of DownloadUIModel that wrappers around a |DownloadItem*|. As
 // such, the caller is expected to ensure that the |download| passed into the
@@ -39,6 +39,7 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsDangerous() const override;
   bool MightBeMalicious() const override;
   bool IsMalicious() const override;
+  bool IsMixedContent() const override;
   bool ShouldAllowDownloadFeedback() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
   bool ShouldShowDownloadStartedAnimation() const override;
@@ -52,6 +53,8 @@ class DownloadItemModel : public DownloadUIModel,
   safe_browsing::DownloadFileType::DangerLevel GetDangerLevel() const override;
   void SetDangerLevel(
       safe_browsing::DownloadFileType::DangerLevel danger_level) override;
+  download::DownloadItem::MixedContentStatus GetMixedContentStatus()
+      const override;
   void OpenUsingPlatformHandler() override;
   bool IsBeingRevived() const override;
   void SetIsBeingRevived(bool is_being_revived) override;
@@ -63,6 +66,7 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsPaused() const override;
   download::DownloadDangerType GetDangerType() const override;
   bool GetOpenWhenComplete() const override;
+  bool IsOpenWhenCompleteByPolicy() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   bool GetOpened() const override;
   void SetOpened(bool opened) override;

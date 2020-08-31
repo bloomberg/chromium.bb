@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/test/ui_controls.h"
@@ -44,10 +45,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
 
   // Open ExtensionDialog, whose initial page is the extension's main.html.
   // The main.html contains three buttons.
-  ExtensionDialog* dialog = ExtensionDialog::Show(
-      extension->url().Resolve("main.html"),
-      browser()->window()->GetNativeWindow(), browser()->profile(), nullptr,
-      true, 300, 300, 300, 300, base::string16(), nullptr);
+  ExtensionDialog::InitParams params(gfx::Size(300, 300));
+  params.is_modal = true;
+  params.min_size = {300, 300};
+  ExtensionDialog* dialog =
+      ExtensionDialog::Show(extension->url().Resolve("main.html"),
+                            browser()->window()->GetNativeWindow(),
+                            browser()->profile(), nullptr, nullptr, params);
   ASSERT_TRUE(dialog);
   ASSERT_TRUE(init_listener.WaitUntilSatisfied());
 

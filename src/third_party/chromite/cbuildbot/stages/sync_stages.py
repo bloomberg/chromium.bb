@@ -7,10 +7,8 @@
 
 from __future__ import print_function
 
-import collections
 import contextlib
 import os
-import re
 import sys
 from xml.etree import ElementTree
 from xml.dom import minidom
@@ -21,7 +19,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import build_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -199,10 +196,6 @@ class BootstrapStage(PatchChangesStage):
     if minor >= 2 and options.cache_dir_specified:
       args += ['--cache-dir', options.cache_dir]
 
-    if minor >= constants.REEXEC_API_TSMON_TASK_NUM:
-      # Increment the ts-mon task_num so the metrics don't collide.
-      args.extend(['--ts-mon-task-num', str(options.ts_mon_task_num + 1)])
-
     return args
 
   @classmethod
@@ -228,18 +221,7 @@ class BootstrapStage(PatchChangesStage):
 
   def HandleApplyFailures(self, failures):
     """Handle the case where patches fail to apply."""
-    if self._run.config.pre_cq:
-      # Let the PreCQSync stage handle this failure. The PreCQSync stage will
-      # comment on CLs with the appropriate message when they fail to apply.
-      #
-      # WARNING: For manifest patches, the Pre-CQ attempts to apply external
-      # patches to the internal manifest, and this means we may flag a conflict
-      # here even if the patch applies cleanly. TODO(davidjames): Fix this.
-      logging.PrintBuildbotStepWarnings()
-      logging.error('Failed applying patches: %s\n'.join(
-          str(x) for x in failures))
-    else:
-      PatchChangesStage.HandleApplyFailures(self, failures)
+    PatchChangesStage.HandleApplyFailures(self, failures)
 
   def _PerformStageInTempDir(self):
     # The plan for the builders is to use master branch to bootstrap other
@@ -253,22 +235,29 @@ class BootstrapStage(PatchChangesStage):
     # Filter all requested patches for the branch.
     branch_pool = self.patch_pool.FilterBranch(filter_branch)
 
-    # Checkout the new version of chromite, and patch it.
-    chromite_dir = os.path.join(self.tempdir, 'chromite')
-    reference_repo = os.path.join(constants.CHROMITE_DIR, '.git')
-    git.Clone(chromite_dir, constants.CHROMITE_URL, reference=reference_repo)
-    git.RunGit(chromite_dir, ['checkout', filter_branch])
+    def _clone_and_patch(subdir, project):
+      """Clone & patch a project."""
+      url = '%s/%s' % (constants.EXTERNAL_GOB_URL, project)
+      checkout = os.path.join(self.tempdir, subdir)
+      reference_repo = os.path.join(constants.SOURCE_ROOT, subdir, '.git')
+      git.Clone(checkout, url, reference=reference_repo)
+      git.RunGit(checkout, ['checkout', filter_branch])
 
-    chromite_pool = branch_pool.Filter(project=constants.CHROMITE_PROJECT)
-    if chromite_pool:
-      patches = patch_series.PatchSeries.WorkOnSingleRepo(
-          chromite_dir, filter_branch)
-      self._ApplyPatchSeries(patches, chromite_pool)
+      pool = branch_pool.Filter(project=project)
+      if pool:
+        patches = patch_series.PatchSeries.WorkOnSingleRepo(
+            checkout, filter_branch)
+        self._ApplyPatchSeries(patches, pool)
+
+    # Checkout the new version of infra_virtualenv, and patch it.
+    _clone_and_patch('infra_virtualenv', 'chromiumos/infra_virtualenv')
+    # Checkout the new version of chromite, and patch it.
+    _clone_and_patch('chromite', constants.CHROMITE_PROJECT)
 
     # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
-      cbuildbot_path = 'chromite/cbuildbot/cbuildbot'
+      cbuildbot_path = 'chromite/bin/cbuildbot'
     cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
                                             self._run.options)
 
@@ -293,7 +282,7 @@ class BootstrapStage(PatchChangesStage):
 
     cmd += extra_params
     result_obj = cros_build_lib.run(
-        cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
+        cmd, cwd=self.tempdir, kill_timeout=30, check=False)
     self.returncode = result_obj.returncode
 
   def PerformStage(self):
@@ -368,32 +357,6 @@ class SyncStage(generic_stages.BuilderStage):
       # http://crbug/921407
       self.repo.FetchAll()
 
-  def RunPrePatchBuild(self):
-    """Run through a pre-patch build to prepare for incremental build.
-
-    This function runs though the InitSDKStage, SetupBoardStage, and
-    BuildPackagesStage. It is intended to be called before applying
-    any patches under test, to prepare the chroot and sysroot in a state
-    corresponding to ToT prior to an incremental build.
-
-    Returns:
-      True if all stages were successful, False if any of them failed.
-    """
-    suffix = ' (pre-Patch)'
-    try:
-      build_stages.InitSDKStage(
-          self._run, self.buildstore, chroot_replace=True, suffix=suffix).Run()
-      for builder_run in self._run.GetUngroupedBuilderRuns():
-        for board in builder_run.config.boards:
-          build_stages.SetupBoardStage(
-              builder_run, self.buildstore, board=board, suffix=suffix).Run()
-          build_stages.BuildPackagesStage(
-              builder_run, self.buildstore, board=board, suffix=suffix).Run()
-    except failures_lib.StepFailure:
-      return False
-
-    return True
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -416,14 +379,6 @@ class SyncStage(generic_stages.BuilderStage):
       # Print the blamelist.
       if fresh_sync:
         logging.PrintBuildbotStepText('(From scratch)')
-      elif self._run.options.buildbot:
-        lkgm_manager.GenerateBlameList(self.repo, old_filename)
-
-      # Incremental builds request an additional build before patching changes.
-      if self._run.config.build_before_patching:
-        pre_build_passed = self.RunPrePatchBuild()
-        if not pre_build_passed:
-          logging.PrintBuildbotStepText('Pre-patch build failed.')
 
 
 class ManifestVersionedSyncStage(SyncStage):
@@ -695,9 +650,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   # If we are using an internal manifest, but need to be able to create an
   # external manifest, we create a second manager for that manifest.
   external_manager = None
-  MAX_BUILD_HISTORY_LENGTH = 10
-  MilestoneVersion = collections.namedtuple('MilestoneVersion',
-                                            ['milestone', 'platform'])
   category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, buildstore, **kwargs):
@@ -795,40 +747,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     return cros_mark_chrome_as_stable.GetLatestRelease(
         constants.CHROMIUM_GOB_URL)
 
-  def GetLastChromeOSVersion(self):
-    """Fetching ChromeOS version from the last run.
-
-    Fetching the chromeos version from the last run that published a manifest
-    by querying CIDB. Master builds that failed before publishing a manifest
-    will be ignored.
-
-    Returns:
-      A namedtuple MilestoneVersion,
-      e.g. MilestoneVersion(milestone='44', platform='7072.0.0-rc4')
-      or None if failed to retrieve milestone and platform versions.
-    """
-    build_identifier, _ = self._run.GetCIDBHandle()
-    buildbucket_id = build_identifier.buildbucket_id
-
-    if not self.buildstore.AreClientsReady():
-      return None
-
-    builds = self.buildstore.GetBuildHistory(
-        build_config=self._run.config.name,
-        num_results=self.MAX_BUILD_HISTORY_LENGTH,
-        ignore_build_id=buildbucket_id)
-    full_versions = [b.get('full_version') for b in builds]
-    old_versions = [x for x in full_versions if x]
-    if old_versions:
-      old_version = old_versions[0]
-      pattern = r'^R(\d+)-(\d+.\d+.\d+(-rc\d+)*)'
-      m = re.match(pattern, old_version)
-      if m:
-        milestone = m.group(1)
-        platform = m.group(2)
-      return self.MilestoneVersion(milestone=milestone, platform=platform)
-    return None
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Performs the stage."""
@@ -846,16 +764,3 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       logging.info('Latest chrome version is: %s', self._chrome_version)
 
     ManifestVersionedSyncStage.PerformStage(self)
-
-    # Generate blamelist
-    cros_version = self.GetLastChromeOSVersion()
-    if cros_version:
-      old_filename = self.manifest_manager.GetBuildSpecFilePath(
-          cros_version.milestone, cros_version.platform)
-      if not os.path.exists(old_filename):
-        logging.error(
-            'Could not generate blamelist, '
-            'manifest file does not exist: %s', old_filename)
-      else:
-        logging.debug('Generate blamelist against: %s', old_filename)
-        lkgm_manager.GenerateBlameList(self.repo, old_filename)

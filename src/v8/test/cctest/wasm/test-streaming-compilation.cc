@@ -38,10 +38,6 @@ class MockPlatform final : public TestPlatform {
     return task_runner_;
   }
 
-  void CallOnForegroundThread(v8::Isolate* isolate, Task* task) override {
-    task_runner_->PostTask(std::unique_ptr<Task>(task));
-  }
-
   void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override {
     task_runner_->PostTask(std::move(task));
   }
@@ -1217,6 +1213,39 @@ STREAM_TEST(TestCompileErrorFunctionName) {
         "#0:\"f\" failed: function body must end with \"end\" opcode @+25",
         tester.error_message());
   }
+}
+
+STREAM_TEST(TestSetModuleCodeSection) {
+  StreamTester tester;
+
+  uint8_t code[] = {
+      U32V_1(1),                  // functions count
+      U32V_1(4),                  // body size
+      U32V_1(0),                  // locals count
+      kExprLocalGet, 0, kExprEnd  // body
+  };
+
+  const uint8_t bytes[] = {
+      WASM_MODULE_HEADER,                   // module header
+      kTypeSectionCode,                     // section code
+      U32V_1(1 + SIZEOF_SIG_ENTRY_x_x),     // section size
+      U32V_1(1),                            // type count
+      SIG_ENTRY_x_x(kLocalI32, kLocalI32),  // signature entry
+      kFunctionSectionCode,                 // section code
+      U32V_1(1 + 1),                        // section size
+      U32V_1(1),                            // functions count
+      0,                                    // signature index
+      kCodeSectionCode,                     // section code
+      U32V_1(arraysize(code)),              // section size
+  };
+
+  tester.OnBytesReceived(bytes, arraysize(bytes));
+  tester.OnBytesReceived(code, arraysize(code));
+  tester.FinishStream();
+  tester.RunCompilerTasks();
+  CHECK_EQ(tester.native_module()->module()->code.offset(), arraysize(bytes));
+  CHECK_EQ(tester.native_module()->module()->code.length(), arraysize(code));
+  CHECK(tester.IsPromiseFulfilled());
 }
 
 #undef STREAM_TEST

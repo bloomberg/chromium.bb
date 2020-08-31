@@ -47,41 +47,12 @@ enum class FormFieldType : uint8_t {
 #endif  // PDF_ENABLE_XFA
 };
 
-Optional<FormFieldType> IntToFormFieldType(int value);
-
 // If values are added to FormFieldType, these will need to be updated.
 #ifdef PDF_ENABLE_XFA
 constexpr size_t kFormFieldTypeCount = 16;
 #else   // PDF_ENABLE_XFA
 constexpr size_t kFormFieldTypeCount = 8;
 #endif  // PDF_ENABLE_XFA
-
-constexpr FormFieldType kFormFieldTypes[kFormFieldTypeCount] = {
-    FormFieldType::kUnknown,
-    FormFieldType::kPushButton,
-    FormFieldType::kCheckBox,
-    FormFieldType::kRadioButton,
-    FormFieldType::kComboBox,
-    FormFieldType::kListBox,
-    FormFieldType::kTextField,
-    FormFieldType::kSignature,
-#ifdef PDF_ENABLE_XFA
-    FormFieldType::kXFA,
-    FormFieldType::kXFA_CheckBox,
-    FormFieldType::kXFA_ComboBox,
-    FormFieldType::kXFA_ImageField,
-    FormFieldType::kXFA_ListBox,
-    FormFieldType::kXFA_PushButton,
-    FormFieldType::kXFA_Signature,
-    FormFieldType::kXFA_TextField
-#endif  // PDF_ENABLE_XFA
-};
-
-const CPDF_Object* FPDF_GetFieldAttr(const CPDF_Dictionary* pFieldDict,
-                                     const char* name);
-CPDF_Object* FPDF_GetFieldAttr(CPDF_Dictionary* pFieldDict, const char* name);
-
-WideString FPDF_GetFullName(CPDF_Dictionary* pFieldDict);
 
 class CPDF_FormField {
  public:
@@ -101,19 +72,25 @@ class CPDF_FormField {
   CPDF_FormField(CPDF_InteractiveForm* pForm, CPDF_Dictionary* pDict);
   ~CPDF_FormField();
 
-  WideString GetFullName() const;
+  static Optional<FormFieldType> IntToFormFieldType(int value);
 
+  static const CPDF_Object* GetFieldAttr(const CPDF_Dictionary* pFieldDict,
+                                         const ByteString& name);
+  static CPDF_Object* GetFieldAttr(CPDF_Dictionary* pFieldDict,
+                                   const ByteString& name);
+
+  static WideString GetFullNameForDict(CPDF_Dictionary* pFieldDict);
+
+  WideString GetFullName() const;
   Type GetType() const { return m_Type; }
 
   CPDF_Dictionary* GetFieldDict() const { return m_pDict.Get(); }
-
   bool ResetField(NotificationOption notify);
 
   int CountControls() const;
-
   CPDF_FormControl* GetControl(int index) const;
-
   int GetControlIndex(const CPDF_FormControl* pControl) const;
+
   FormFieldType GetFieldType() const;
 
   CPDF_AAction GetAdditionalAction() const;
@@ -142,7 +119,6 @@ class CPDF_FormField {
 
   int GetDefaultSelectedItem() const;
   int CountOptions() const;
-
   WideString GetOptionLabel(int index) const;
   WideString GetOptionValue(int index) const;
   int FindOption(const WideString& csOptValue) const;
@@ -153,10 +129,14 @@ class CPDF_FormField {
 
   int GetTopVisibleIndex() const;
   int CountSelectedOptions() const;
-
   int GetSelectedOptionIndex(int index) const;
-  bool IsOptionSelected(int iOptIndex) const;
+  bool IsSelectedOption(const WideString& wsOptValue) const;
+  bool IsSelectedIndex(int iOptIndex) const;
   bool SelectOption(int iOptIndex, bool bSelected, NotificationOption notify);
+
+  // Verifies if there is a valid selected indicies (/I) object and whether its
+  // entries are consistent with the value (/V) object.
+  bool UseSelectedIndicesObject() const;
 
   float GetFontSize() const { return m_FontSize; }
   CPDF_Font* GetFont() const { return m_pFont.Get(); }
@@ -206,6 +186,7 @@ class CPDF_FormField {
   bool m_bNoExport = false;
   bool m_bIsMultiSelectListBox = false;
   bool m_bIsUnison = false;
+  bool m_bUseSelectedIndices = false;
   float m_FontSize = 0;
   UnownedPtr<CPDF_InteractiveForm> const m_pForm;
   RetainPtr<CPDF_Dictionary> const m_pDict;

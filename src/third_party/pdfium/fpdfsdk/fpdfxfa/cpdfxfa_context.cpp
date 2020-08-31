@@ -9,7 +9,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/cpdf_seekablemultistream.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
@@ -42,6 +46,36 @@ bool IsValidAlertIcon(int type) {
          type == JSPLATFORM_ALERT_ICON_QUESTION ||
          type == JSPLATFORM_ALERT_ICON_STATUS ||
          type == JSPLATFORM_ALERT_ICON_ASTERISK;
+}
+
+RetainPtr<CPDF_SeekableMultiStream> CreateXFAMultiStream(
+    const CPDF_Document* pPDFDoc) {
+  const CPDF_Dictionary* pRoot = pPDFDoc->GetRoot();
+  if (!pRoot)
+    return nullptr;
+
+  const CPDF_Dictionary* pAcroForm = pRoot->GetDictFor("AcroForm");
+  if (!pAcroForm)
+    return nullptr;
+
+  const CPDF_Object* pElementXFA = pAcroForm->GetDirectObjectFor("XFA");
+  if (!pElementXFA)
+    return nullptr;
+
+  std::vector<const CPDF_Stream*> xfaStreams;
+  if (pElementXFA->IsArray()) {
+    const CPDF_Array* pXFAArray = pElementXFA->AsArray();
+    for (size_t i = 0; i < pXFAArray->size() / 2; i++) {
+      if (const CPDF_Stream* pStream = pXFAArray->GetStreamAt(i * 2 + 1))
+        xfaStreams.push_back(pStream);
+    }
+  } else if (pElementXFA->IsStream()) {
+    xfaStreams.push_back(pElementXFA->AsStream());
+  }
+  if (xfaStreams.empty())
+    return nullptr;
+
+  return pdfium::MakeRetain<CPDF_SeekableMultiStream>(xfaStreams);
 }
 
 }  // namespace
@@ -100,8 +134,15 @@ void CPDFXFA_Context::SetFormFillEnv(
 bool CPDFXFA_Context::LoadXFADoc() {
   m_nLoadStatus = FXFA_LOADSTATUS_LOADING;
   m_XFAPageList.clear();
-  m_pXFADoc =
-      CXFA_FFDoc::CreateAndOpen(m_pXFAApp.get(), &m_DocEnv, m_pPDFDoc.Get());
+
+  auto stream = CreateXFAMultiStream(m_pPDFDoc.Get());
+  if (!stream) {
+    FXSYS_SetLastError(FPDF_ERR_XFALOAD);
+    return false;
+  }
+
+  m_pXFADoc = CXFA_FFDoc::CreateAndOpen(m_pXFAApp.get(), &m_DocEnv,
+                                        m_pPDFDoc.Get(), stream);
   if (!m_pXFADoc) {
     FXSYS_SetLastError(FPDF_ERR_XFALOAD);
     return false;
@@ -273,7 +314,7 @@ WideString CPDFXFA_Context::Response(const WideString& wsQuestion,
     return WideString();
 
   int nLength = 2048;
-  std::vector<uint8_t> pBuff(nLength);
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> pBuff(nLength);
   nLength = m_pFormFillEnv->JS_appResponse(wsQuestion, wsTitle, wsDefaultAnswer,
                                            WideString(), bMark, pBuff.data(),
                                            nLength);
@@ -315,6 +356,27 @@ bool CPDFXFA_Context::PutRequestURL(const WideString& wsURL,
 
 TimerHandlerIface* CPDFXFA_Context::GetTimerHandler() const {
   return m_pFormFillEnv ? m_pFormFillEnv->GetTimerHandler() : nullptr;
+}
+
+bool CPDFXFA_Context::SaveDatasetsPackage(
+    const RetainPtr<IFX_SeekableStream>& pStream) {
+  return SavePackage(pStream, XFA_HASHCODE_Datasets);
+}
+
+bool CPDFXFA_Context::SaveFormPackage(
+    const RetainPtr<IFX_SeekableStream>& pStream) {
+  return SavePackage(pStream, XFA_HASHCODE_Form);
+}
+
+bool CPDFXFA_Context::SavePackage(const RetainPtr<IFX_SeekableStream>& pStream,
+                                  XFA_HashCode code) {
+  CXFA_FFDocView* pXFADocView = GetXFADocView();
+  if (!pXFADocView)
+    return false;
+
+  CXFA_FFDoc* ffdoc = pXFADocView->GetDoc();
+  return ffdoc->SavePackage(ToNode(ffdoc->GetXFADoc()->GetXFAObject(code)),
+                            pStream);
 }
 
 void CPDFXFA_Context::SendPostSaveToXFADoc() {

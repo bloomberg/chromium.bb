@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_H_
 
 #include <list>
-#include <map>
+#include <memory>
 #include <string>
 
 #include "base/observer_list.h"
@@ -25,9 +25,11 @@ class BreadcrumbManager {
   // up to |event_count_limit|. Passing zero for |event_count_limit| signifies
   // no limit. Events returned will have a timestamp prepended to the original
   // |event| string representing when |AddEvent| was called.
-  std::list<std::string> GetEvents(size_t event_count_limit);
+  const std::list<std::string> GetEvents(size_t event_count_limit);
 
   // Logs a breadcrumb event with message data |event|.
+  // NOTE: |event| must not include newline characters as newlines are used by
+  // BreadcrumbPersistentStore as a deliminator.
   void AddEvent(const std::string& event);
 
   // Adds and removes observers.
@@ -35,9 +37,12 @@ class BreadcrumbManager {
   void RemoveObserver(BreadcrumbManagerObserver* observer);
 
   BreadcrumbManager();
-  virtual ~BreadcrumbManager();
+  ~BreadcrumbManager();
 
  private:
+  BreadcrumbManager(const BreadcrumbManager&) = delete;
+  BreadcrumbManager& operator=(const BreadcrumbManager&) = delete;
+
   // Drops events which are considered stale. Note that stale events are not
   // guaranteed to be removed. Explicitly, stale events will be retained while
   // newer events are limited.
@@ -49,8 +54,6 @@ class BreadcrumbManager {
 
   base::ObserverList<BreadcrumbManagerObserver, /*check_empty=*/true>
       observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BreadcrumbManager);
 };
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_H_

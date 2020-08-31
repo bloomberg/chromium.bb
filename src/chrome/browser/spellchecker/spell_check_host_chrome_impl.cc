@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -20,10 +22,6 @@
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
 #include "chrome/browser/spellchecker/spelling_request.h"
 #endif
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-#include "components/spellcheck/common/spellcheck_common.h"
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 namespace {
 
@@ -175,52 +173,42 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
     int route_id,
     RequestTextCheckCallback callback) {
   DCHECK(!text.empty());
-
-  // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
-  auto request = std::make_unique<SpellingRequest>(
-      &client_, text, render_process_id_, route_id, std::move(callback),
-      base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
-                     base::Unretained(this)));
-  QueueRequest(std::move(request));
-}
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
-    const base::string16& word,
-    GetPerLanguageSuggestionsCallback callback) {
-  spellcheck_platform::GetPerLanguageSuggestions(word, std::move(callback));
-}
-
-void SpellCheckHostChromeImpl::RequestPartialTextCheck(
-    const base::string16& text,
-    int route_id,
-    const std::vector<SpellCheckResult>& partial_results,
-    bool fill_suggestions,
-    RequestPartialTextCheckCallback callback) {
-  DCHECK(!text.empty());
-
-  // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
-  auto request = std::make_unique<SpellingRequest>(
-      &client_, text, render_process_id_, route_id, partial_results,
-      fill_suggestions, std::move(callback),
-      base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
-                     base::Unretained(this)));
-  QueueRequest(std::move(request));
-}
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
-void SpellCheckHostChromeImpl::QueueRequest(
-    std::unique_ptr<SpellingRequest> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Initialize the spellcheck service if needed. The service will send the
   // language code for text breaking to the renderer. (Text breaking is required
   // for the context menu to show spelling suggestions.) Initialization must
   // happen on UI thread.
-  GetSpellcheckService();
+  SpellcheckService* spellcheck = GetSpellcheckService();
 
-  requests_.insert(std::move(request));
+  if (!spellcheck) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
+
+  // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
+  requests_.insert(std::make_unique<SpellingRequest>(
+      spellcheck->platform_spell_checker(), &client_, text, render_process_id_,
+      route_id, std::move(callback),
+      base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
+                     base::Unretained(this))));
 }
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
+    const base::string16& word,
+    GetPerLanguageSuggestionsCallback callback) {
+  SpellcheckService* spellcheck = GetSpellcheckService();
+
+  if (!spellcheck) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
+
+  spellcheck_platform::GetPerLanguageSuggestions(
+      spellcheck->platform_spell_checker(), word, std::move(callback));
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
   auto iterator = requests_.find(request);

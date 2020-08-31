@@ -28,7 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export default class TempFile {
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+
+import {ChunkedFileReader, ChunkedReader} from './FileUtils.js';  // eslint-disable-line no-unused-vars
+
+export class TempFile {
   constructor() {
     /** @type {?Blob} */
     this._lastBlob = null;
@@ -65,7 +71,7 @@ export default class TempFile {
    */
   async readRange(startOffset, endOffset) {
     if (!this._lastBlob) {
-      Common.console.error('Attempt to read a temp file that was never written');
+      Common.Console.Console.instance().error('Attempt to read a temp file that was never written');
       return Promise.resolve('');
     }
     const blob = typeof startOffset === 'number' || typeof endOffset === 'number' ?
@@ -80,15 +86,15 @@ export default class TempFile {
         reader.readAsText(blob);
       });
     } catch (error) {
-      Common.console.error('Failed to read from temp file: ' + error.message);
+      Common.Console.Console.instance().error('Failed to read from temp file: ' + error.message);
     }
 
     return /** @type {?string} */ (reader.result);
   }
 
   /**
-   * @param {!Common.OutputStream} outputStream
-   * @param {function(!Bindings.ChunkedReader)=} progress
+   * @param {!Common.StringOutputStream.OutputStream} outputStream
+   * @param {function(!ChunkedReader)=} progress
    * @return {!Promise<?FileError>}
    */
   copyToOutputStream(outputStream, progress) {
@@ -96,7 +102,7 @@ export default class TempFile {
       outputStream.close();
       return Promise.resolve(/** @type {?FileError} */ (null));
     }
-    const reader = new Bindings.ChunkedFileReader(/** @type {!Blob} */ (this._lastBlob), 10 * 1000 * 1000, progress);
+    const reader = new ChunkedFileReader(/** @type {!Blob} */ (this._lastBlob), 10 * 1000 * 1000, progress);
     return reader.read(outputStream).then(success => success ? null : reader.error());
   }
 
@@ -106,7 +112,7 @@ export default class TempFile {
 }
 
 /**
- * @implements {SDK.BackingStorage}
+ * @implements {SDK.TracingModel.BackingStorage}
  */
 export class TempFileBackingStorage {
   constructor() {
@@ -177,30 +183,10 @@ export class TempFileBackingStorage {
   }
 
   /**
-   * @param {!Common.OutputStream} outputStream
+   * @param {!Common.StringOutputStream.OutputStream} outputStream
    * @return {!Promise<?FileError>}
    */
   writeToStream(outputStream) {
     return this._file ? this._file.copyToOutputStream(outputStream) : Promise.resolve(null);
   }
 }
-
-/* Legacy exported object */
-self.Bindings = self.Bindings || {};
-
-/* Legacy exported object */
-Bindings = Bindings || {};
-
-/** @constructor */
-Bindings.TempFile = TempFile;
-
-/** @constructor */
-Bindings.TempFileBackingStorage = TempFileBackingStorage;
-
-/**
- * @typedef {{
-  *      startOffset: number,
-  *      endOffset: number
-  * }}
-  */
-Bindings.TempFileBackingStorage.Chunk;

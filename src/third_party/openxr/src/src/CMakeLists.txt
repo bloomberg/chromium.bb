@@ -15,13 +15,14 @@
 # Author:
 #
 
-# Entire project uses C++11
-set(CMAKE_CXX_STANDARD 11)
+# Entire project uses C++14
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # All options defined here
 option(BUILD_LOADER "Build loader" ON)
+option(BUILD_ALL_EXTENSIONS "Build loader and layers with all extensions" OFF)
 option(BUILD_LOADER_WITH_EXCEPTION_HANDLING "Enable exception handling in the loader. Leave this on unless your standard library is built to not throw." ON)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option(DYNAMIC_LOADER "Build the loader as a .dll library" OFF)
@@ -31,12 +32,18 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/api_layers")
     option(BUILD_API_LAYERS "Build API layers" ON)
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests" AND NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     option(BUILD_TESTS "Build tests" ON)
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance" AND NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     option(BUILD_CONFORMANCE_TESTS "Build conformance tests" ON)
 endif()
+include(CMakeDependentOption)
+
+find_package(JsonCpp)
+cmake_dependent_option(BUILD_WITH_SYSTEM_JSONCPP "Use system jsoncpp instead of vendored source" ON
+                       "JSONCPP_FOUND" OFF)
+
 
 # Several files use these compile-time OS switches
 if(WIN32)
@@ -52,7 +59,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # Several files use these compile-time platform switches
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(WIN32)
     add_definitions( -DXR_USE_PLATFORM_WIN32 )
 elseif( PRESENTATION_BACKEND MATCHES "xlib" )
     add_definitions( -DXR_USE_PLATFORM_XLIB )
@@ -81,20 +88,64 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
     # wherever you normally link your library files to your target.
 endif()
 
+if (BUILD_ALL_EXTENSIONS AND NOT VulkanHeaders_FOUND)
+    message(FATAL_ERROR "Vulkan headers not found")
+endif()
+
+# Find glslc shader compiler.
+# On Android, the NDK includes the binary, so no external dependency.
+if(ANDROID)
+    file(GLOB glslc-folders ${ANDROID_NDK}/shader-tools/*)
+else()
+    file(GLOB glslc-folders $ENV{VULKAN_SDK}/*)
+endif()
+find_program(CMAKE_GLSL_COMPILER glslc PATHS ${glslc-folders} NO_DEFAULT_PATH)
+if(CMAKE_GLSL_COMPILER)
+    message(STATUS "Found glslc: ${CMAKE_GLSL_COMPILER}")
+else()
+    message(STATUS "Could NOT find glslc, using precompiled .spv files")
+endif()
+
+function(compile_glsl run_target_name)
+    set(glsl_output_files "")
+    foreach(in_file IN LISTS ARGN)
+        get_filename_component(glsl_stage ${in_file} NAME_WE)
+        set(out_file ${CMAKE_CURRENT_BINARY_DIR}/${glsl_stage}.spv)
+        if(CMAKE_GLSL_COMPILER)
+            # Run glslc if we can find it
+            add_custom_command(
+                OUTPUT ${out_file}
+                COMMAND ${CMAKE_GLSL_COMPILER} -mfmt=c -fshader-stage=${glsl_stage} ${in_file} -o ${out_file}
+                DEPENDS ${in_file}
+            )
+        else()
+            # Use the precompiled .spv files
+            get_filename_component(glsl_src_dir ${in_file} DIRECTORY)
+            set(precompiled_file ${glsl_src_dir}/${glsl_stage}.spv)
+            configure_file(${precompiled_file} ${out_file} COPYONLY)
+        endif()
+        list(APPEND glsl_output_files ${out_file})
+    endforeach()
+    add_custom_target(
+        ${run_target_name} ALL
+        DEPENDS ${glsl_output_files}
+    )
+	set_target_properties(${run_target_name} PROPERTIES FOLDER ${HELPER_FOLDER})
+
+endfunction()
+
 find_package(OpenGL)
 if (OPENGL_FOUND)
     add_definitions(-DXR_USE_GRAPHICS_API_OPENGL)
+elseif(BUILD_ALL_EXTENSIONS)
+    message(FATAL_ERROR "OpenGL not found")
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(WIN32)
     add_definitions(-DXR_USE_GRAPHICS_API_D3D11)
     add_definitions(-DXR_USE_GRAPHICS_API_D3D12)
 endif()
 
-if(BUILD_LOADER_WITH_EXCEPTION_HANDLING)
-    # This variable is configured into common_config.h
-    set(XRLOADER_ENABLE_EXCEPTION_HANDLING TRUE)
-endif()
 # Check for the existence of the secure_getenv or __secure_getenv commands
 include(CheckFunctionExists)
 
@@ -114,10 +165,10 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 
 # Path separators ( : or ; ) are not handled well in CMake.
 # This seems like a reasonable approach.
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CODEGEN_PYTHON_PATH "${CMAKE_SOURCE_DIR}/specification/scripts;${CMAKE_SOURCE_DIR}/src/scripts;$ENV{PYTHONPATH}")
+if(WIN32)
+    set(CODEGEN_PYTHON_PATH "${PROJECT_SOURCE_DIR}/specification/scripts;${PROJECT_SOURCE_DIR}/src/scripts;$ENV{PYTHONPATH}")
 else()
-    set(CODEGEN_PYTHON_PATH "${CMAKE_SOURCE_DIR}/specification/scripts:${CMAKE_SOURCE_DIR}/src/scripts:$ENV{PYTHONPATH}")
+    set(CODEGEN_PYTHON_PATH "${PROJECT_SOURCE_DIR}/specification/scripts:${PROJECT_SOURCE_DIR}/src/scripts:$ENV{PYTHONPATH}")
 endif()
 
 # General code generation macro used by several targets.
@@ -133,15 +184,16 @@ macro(run_xr_xml_generate dependency output)
         add_custom_command(OUTPUT ${output}
             COMMAND ${CMAKE_COMMAND} -E env "PYTHONPATH=${CODEGEN_PYTHON_PATH}"
                 ${PYTHON_EXECUTABLE}
-                    ${CMAKE_SOURCE_DIR}/src/scripts/src_genxr.py
-                    -registry ${CMAKE_SOURCE_DIR}/specification/registry/xr.xml
+                    ${PROJECT_SOURCE_DIR}/src/scripts/src_genxr.py
+                    -registry ${PROJECT_SOURCE_DIR}/specification/registry/xr.xml
                     ${output}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS
-                    "${CMAKE_SOURCE_DIR}/specification/registry/xr.xml"
-                    "${CMAKE_SOURCE_DIR}/specification/scripts/generator.py"
-                    "${CMAKE_SOURCE_DIR}/specification/scripts/reg.py"
-                    "${CMAKE_SOURCE_DIR}/src/scripts/${dependency}"
-                    "${CMAKE_SOURCE_DIR}/src/scripts/src_genxr.py"
+                    "${PROJECT_SOURCE_DIR}/specification/registry/xr.xml"
+                    "${PROJECT_SOURCE_DIR}/specification/scripts/generator.py"
+                    "${PROJECT_SOURCE_DIR}/specification/scripts/reg.py"
+                    "${PROJECT_SOURCE_DIR}/src/scripts/${dependency}"
+                    "${PROJECT_SOURCE_DIR}/src/scripts/src_genxr.py"
                 ${ARGN}
             COMMENT "Generating ${output} using ${PYTHON_EXECUTABLE} on ${dependency}"
         )
@@ -156,15 +208,17 @@ macro(gen_xr_layer_json filename layername libfile version desc genbad)
     add_custom_command(OUTPUT ${filename}
         COMMAND ${CMAKE_COMMAND} -E env "PYTHONPATH=${CODEGEN_PYTHON_PATH}"
             ${PYTHON_EXECUTABLE}
-                ${CMAKE_SOURCE_DIR}/src/scripts/generate_api_layer_manifest.py
+                ${PROJECT_SOURCE_DIR}/src/scripts/generate_api_layer_manifest.py
                     -f ${filename} -n ${layername} -l ${libfile} -a ${MAJOR}.${MINOR} -v ${version} ${genbad} -d ${desc}
-        DEPENDS ${CMAKE_SOURCE_DIR}/src/scripts/generate_api_layer_manifest.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/scripts/generate_api_layer_manifest.py
         COMMENT "Generating API Layer JSON ${filename} using -f ${filename} -n ${layername} -l ${libfile} -a ${MAJOR}.${MINOR} -v ${version} ${genbad} -d ${desc}"
     )
 endmacro()
 
 # Custom target for generated dispatch table sources, used by several targets.
 set(GENERATED_OUTPUT)
+set(GENERATED_DEPENDS)
 run_xr_xml_generate(utility_source_generator.py xr_generated_dispatch_table.h)
 run_xr_xml_generate(utility_source_generator.py xr_generated_dispatch_table.c)
 add_custom_target(xr_global_generated_files DEPENDS

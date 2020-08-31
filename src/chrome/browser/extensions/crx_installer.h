@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/preload_check.h"
@@ -84,6 +85,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
     OffStoreInstallAllowedInTest,
     NumOffStoreInstallAllowReasons
   };
+
+  // Used to indicate if host permissions should be withheld during
+  // installation.
+  enum WithholdingBehavior { kWithholdPermissions, kDontWithholdPermissions };
 
   // Extensions will be installed into service->install_directory(), then
   // registered with |service|. This does a silent install - see below for
@@ -261,7 +266,15 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // should complete.
   base::Optional<CrxInstallError> AllowInstall(const Extension* extension);
 
+  // To check whether we need to compute hashes or not, we have to make a query
+  // to ContentVerifier, and that should be done on the UI thread.
+  void ShouldComputeHashesOnUI(scoped_refptr<const Extension> extension,
+                               base::OnceCallback<void(bool)> callback);
+
   // SandboxedUnpackerClient
+  void ShouldComputeHashesForOffWebstoreExtension(
+      scoped_refptr<const Extension> extension,
+      base::OnceCallback<void(bool)> callback) override;
   void OnUnpackFailure(const CrxInstallError& error) override;
   void OnUnpackSuccess(
       const base::FilePath& temp_dir,
@@ -269,7 +282,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override;
+      declarative_net_request::RulesetChecksums ruleset_checksums) override;
 
   // Called on the UI thread to start the requirements, policy and blacklist
   // checks on the extension.
@@ -283,7 +296,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Runs on the UI thread. Updates the creation flags for the extension and
   // calls CompleteInstall().
-  void UpdateCreationFlagsAndCompleteInstall();
+  void UpdateCreationFlagsAndCompleteInstall(
+      WithholdingBehavior withholding_behavior);
 
   // Runs on File thread. Install the unpacked extension into the profile and
   // notify the frontend.
@@ -469,9 +483,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // The checksum for the indexed ruleset corresponding to the Declarative Net
+  // The checksums for the indexed rulesets corresponding to the Declarative Net
   // Request API.
-  base::Optional<int> dnr_ruleset_checksum_;
+  declarative_net_request::RulesetChecksums ruleset_checksums_;
 
   // Checks that may run before installing the extension.
   std::unique_ptr<PreloadCheck> policy_check_;

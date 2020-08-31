@@ -5,11 +5,19 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_ACTION_TRACKER_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_ACTION_TRACKER_H_
 
+#include <list>
 #include <map>
 #include <vector>
 
+#include "base/time/time.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
+
+namespace base {
+class Clock;
+class RetainingOneShotTimer;
+}
 
 namespace content {
 class BrowserContext;
@@ -17,6 +25,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class Extension;
 class ExtensionPrefs;
 struct WebRequestInfo;
 
@@ -25,10 +34,27 @@ struct RequestAction;
 
 class ActionTracker {
  public:
+  // The lifespan of matched rules in |rules_matched_| not associated with an
+  // active document,
+  static constexpr base::TimeDelta kNonActiveTabRuleLifespan =
+      base::TimeDelta::FromMinutes(5);
+
   explicit ActionTracker(content::BrowserContext* browser_context);
   ~ActionTracker();
   ActionTracker(const ActionTracker& other) = delete;
   ActionTracker& operator=(const ActionTracker& other) = delete;
+
+  // TODO(crbug.com/1043367): Use a task environment to avoid having to set
+  // clocks just for tests.
+
+  // Sets a custom Clock to use in tests. |clock| should be owned by the caller
+  // of this function.
+  void SetClockForTests(const base::Clock* clock);
+
+  // Sets a custom RetainingOneShotTimer to use in tests, which replaces
+  // |trim_rules_timer_|.
+  void SetTimerForTest(
+      std::unique_ptr<base::RetainingOneShotTimer> injected_trim_rules_timer);
 
   // Called whenever a request matches with a rule.
   void OnRuleMatched(const RequestAction& request_action,
@@ -39,37 +65,93 @@ class ActionTracker {
   // called by an extension.
   void OnPreferenceEnabled(const ExtensionId& extension_id) const;
 
-  // Clears the action count for the specified |extension_id| for all tabs.
+  // Clears the TrackedInfo for the specified |extension_id| for all tabs.
   // Called when an extension's ruleset is removed.
   void ClearExtensionData(const ExtensionId& extension_id);
 
-  // Clears the action count for every extension for the specified |tab_id|.
+  // Clears the TrackedInfo for every extension for the specified |tab_id|.
   // Called when the tab has been closed.
   void ClearTabData(int tab_id);
 
-  // Sets the action count for every extension for the specified |tab_id| to 0
-  // and notifies the extension action to set the badge text to 0 for that tab.
-  // Called when the a main-frame navigation to a different document finishes on
-  // the tab.
-  void ResetActionCountForTab(int tab_id);
+  // Clears the pending action count for every extension in
+  // |pending_navigation_actions_| for the specified |navigation_id|.
+  void ClearPendingNavigation(int64_t navigation_id);
+
+  // Called when a main-frame navigation to a different document commits.
+  // Updates the TrackedInfo for all extensions for the given |tab_id|.
+  void ResetTrackedInfoForTab(int tab_id, int64_t navigation_id);
+
+  // Returns all matched rules for |extension|. If |tab_id| is provided, only
+  // rules matched for |tab_id| will be returned.
+  std::vector<api::declarative_net_request::MatchedRuleInfo> GetMatchedRules(
+      const Extension& extension,
+      const base::Optional<int>& tab_id,
+      const base::Time& min_time_stamp);
+
+  // Returns the number of matched rules in |rules_tracked_| for the given
+  // |extension_id| and |tab_id|. If |trim_non_active_rules| is true,
+  // TrimRulesFromNonActiveTabs is invoked before returning the matched rule
+  // count, similar to GetMatchedRules. Should only be used for tests.
+  int GetMatchedRuleCountForTest(const ExtensionId& extension_id,
+                                 int tab_id,
+                                 bool trim_non_active_rules);
+
+  // Returns the number of matched rules in |pending_navigation_actions_| for
+  // the given |extension_id| and |navigation_id|. Should only be used for
+  // tests.
+  int GetPendingRuleCountForTest(const ExtensionId& extension_id,
+                                 int64_t navigation_id);
 
  private:
-  struct ExtensionTabIdKey {
-    ExtensionTabIdKey(ExtensionId extension_id, int tab_id);
-    ExtensionTabIdKey(const ExtensionTabIdKey& other) = delete;
-    ExtensionTabIdKey& operator=(const ExtensionTabIdKey& other) = delete;
-    ExtensionTabIdKey(ExtensionTabIdKey&&);
-    ExtensionTabIdKey& operator=(ExtensionTabIdKey&&);
+  // Template key type used for TrackedInfo, specified by an extension_id and
+  // another ID.
+  template <typename T>
+  struct TrackedInfoContextKey {
+    TrackedInfoContextKey(ExtensionId extension_id, T secondary_id);
+    TrackedInfoContextKey(const TrackedInfoContextKey& other) = delete;
+    TrackedInfoContextKey& operator=(const TrackedInfoContextKey& other) =
+        delete;
+    TrackedInfoContextKey(TrackedInfoContextKey&&);
+    TrackedInfoContextKey& operator=(TrackedInfoContextKey&&);
 
     ExtensionId extension_id;
-    int tab_id;
+    T secondary_id;
 
-    bool operator<(const ExtensionTabIdKey& other) const;
+    bool operator<(const TrackedInfoContextKey& other) const;
   };
 
-  // Info tracked for each ExtensionTabIdKey.
+  using ExtensionTabIdKey = TrackedInfoContextKey<int>;
+  using ExtensionNavigationIdKey = TrackedInfoContextKey<int64_t>;
+
+  // Represents a matched rule. This is used as a lightweight version of
+  // api::declarative_net_request::MatchedRuleInfo.
+  struct TrackedRule {
+    TrackedRule(int rule_id, RulesetID ruleset_id);
+    TrackedRule(const TrackedRule& other) = delete;
+    TrackedRule& operator=(const TrackedRule& other) = delete;
+
+    const int rule_id;
+    const RulesetID ruleset_id;
+
+    // The timestamp for when the rule was matched.
+    const base::Time time_stamp;
+  };
+
+  // Info tracked for each ExtensionTabIdKey or ExtensionNavigationIdKey.
   struct TrackedInfo {
+    TrackedInfo();
+    ~TrackedInfo();
+    TrackedInfo(const TrackedInfo& other) = delete;
+    TrackedInfo& operator=(const TrackedInfo& other) = delete;
+    TrackedInfo(TrackedInfo&&);
+    TrackedInfo& operator=(TrackedInfo&&);
+
+    // The number of actions matched. Invalid when the corresponding
+    // TrackedInfoContextKey has a tab_id of -1. Does not include allow rules.
     size_t action_count = 0;
+
+    // The list of rules matched. Includes allow rules.
+    std::list<TrackedRule> matched_rules;
   };
 
   // Called from OnRuleMatched. Dispatches a OnRuleMatchedDebug event to the
@@ -78,9 +160,39 @@ class ActionTracker {
       const RequestAction& request_action,
       api::declarative_net_request::RequestDetails request_details);
 
-  // Maps a pair of (extension ID, tab ID) to the number of actions matched for
-  // the extension and tab specified.
-  std::map<ExtensionTabIdKey, TrackedInfo> actions_matched_;
+  // For all matched rules attributed to |tab_id|, set their tab ID to the
+  // unknown tab ID (-1). Called by ClearTabData and ResetActionCountForTab.
+  void TransferRulesOnTabInvalid(int tab_id);
+
+  // Removes all rules in |rules_tracked_| older than
+  // |kNonActiveTabRuleLifespan| from non active tabs (i.e. |tab_id| = -1).
+  // Called periodically to ensure no rules attributed to the unknown tab ID in
+  // |rules_tracked_| are older than |kNonActiveTabRuleLifespan|.
+  void TrimRulesFromNonActiveTabs();
+
+  // Schedules TrimRulesFromNonActiveTabs to be run after
+  // |kNonActiveTabRuleLifespan|. Called in the constructor and whenever
+  // |trim_rules_timer_| gets set.
+  void StartTrimRulesTask();
+
+  // Converts an internally represented |tracked_rule| to a MatchedRuleInfo.
+  api::declarative_net_request::MatchedRuleInfo CreateMatchedRuleInfo(
+      const Extension& extension,
+      const TrackedRule& tracked_rule,
+      int tab_id) const;
+
+  // A timer to call TrimRulesFromNonActiveTabs with an interval of
+  // |kNonActiveTabRuleLifespan|.
+  std::unique_ptr<base::RetainingOneShotTimer> trim_rules_timer_ =
+      std::make_unique<base::RetainingOneShotTimer>();
+
+  // Maps a pair of (extension ID, tab ID) to the TrackedInfo for that pair.
+  std::map<ExtensionTabIdKey, TrackedInfo> rules_tracked_;
+
+  // Maps a pair of (extension ID, navigation ID) to the TrackedInfo matched for
+  // the main-frame request associated with the navigation ID in the key. The
+  // TrackedInfo is added to |rules_tracked_| once the navigation commits.
+  std::map<ExtensionNavigationIdKey, TrackedInfo> pending_navigation_actions_;
 
   content::BrowserContext* browser_context_;
 

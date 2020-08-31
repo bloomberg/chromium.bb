@@ -298,7 +298,6 @@ sd{
         ZZ{"اڻڄاتل خطو"}
     }
     Countries%short{
-        GB{"برطانيه"}
         US{"يوايس"}
     }
     Countries%variant{
@@ -309,5 +308,5 @@ sd{
         SZ{"سوازيلينڊ"}
         TL{"اوڀر تيمور"}
     }
-    Version{"36"}
+    Version{"37"}
 }

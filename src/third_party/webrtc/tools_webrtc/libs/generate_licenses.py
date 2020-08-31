@@ -46,6 +46,7 @@ LIB_TO_LICENSES_DICT = {
     'guava': ['third_party/guava/LICENSE'],
     'ijar': ['third_party/ijar/LICENSE'],
     'jsoncpp': ['third_party/jsoncpp/LICENSE'],
+    'libaom': ['third_party/libaom/source/libaom/LICENSE'],
     'libc++': ['buildtools/third_party/libc++/trunk/LICENSE.TXT'],
     'libc++abi': ['buildtools/third_party/libc++abi/trunk/LICENSE.TXT'],
     'libevent': ['base/third_party/libevent/LICENSE'],
@@ -53,6 +54,7 @@ LIB_TO_LICENSES_DICT = {
     'libsrtp': ['third_party/libsrtp/LICENSE'],
     'libvpx': ['third_party/libvpx/source/libvpx/LICENSE'],
     'libyuv': ['third_party/libyuv/LICENSE'],
+    'nasm': ['third_party/nasm/LICENSE'],
     'opus': ['third_party/opus/src/COPYING'],
     'pffft': ['third_party/pffft/LICENSE'],
     'protobuf': ['third_party/protobuf/LICENSE'],
@@ -66,7 +68,7 @@ LIB_TO_LICENSES_DICT = {
     'fft': ['modules/third_party/fft/LICENSE'],
     'g711': ['modules/third_party/g711/LICENSE'],
     'g722': ['modules/third_party/g722/LICENSE'],
-    'fft4g': ['common_audio/third_party/fft4g/LICENSE'],
+    'ooura': ['common_audio/third_party/ooura/LICENSE'],
     'spl_sqrt_floor': ['common_audio/third_party/spl_sqrt_floor/LICENSE'],
 
     # TODO(bugs.webrtc.org/1110): Remove this hack. This is not a lib.

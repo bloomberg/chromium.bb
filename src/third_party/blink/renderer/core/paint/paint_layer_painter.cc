@@ -7,21 +7,24 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_hint.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -46,9 +49,7 @@ static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
 }
 
 bool PaintLayerPainter::PaintedOutputInvisible(const ComputedStyle& style) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  if (style.HasBackdropFilter())
+  if (style.HasNonInitialBackdropFilter())
     return false;
 
   // Always paint when 'will-change: opacity' is present. Reduces jank for
@@ -75,19 +76,16 @@ PaintResult PaintLayerPainter::Paint(
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
 
-  // https://code.google.com/p/chromium/issues/detail?id=343772
-  DisableCompositingQueryAsserts disabler;
-
   // Non self-painting layers without self-painting descendants don't need to be
   // painted as their layoutObject() should properly paint itself.
   if (!paint_layer_.IsSelfPaintingLayer() &&
       !paint_layer_.HasSelfPaintingLayerDescendant())
     return kFullyPainted;
 
-  // If this layer is totally invisible then there is nothing to paint. In CAP
-  // we simplify this optimization by painting even when effectively invisible
-  // but skipping the painted content during layerization in
-  // PaintArtifactCompositor.
+  // If this layer is totally invisible then there is nothing to paint.
+  // In CompositeAfterPaint we simplify this optimization by painting even when
+  // effectively invisible but skipping the painted content during layerization
+  // in PaintArtifactCompositor.
   if (paint_layer_.PaintsWithTransparency(
           painting_info.GetGlobalPaintFlags())) {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
@@ -108,10 +106,10 @@ PaintResult PaintLayerPainter::Paint(
   return PaintLayerContents(context, painting_info, paint_flags);
 }
 
-static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
-                                    const GraphicsContext& context,
-                                    const PaintLayerPaintingInfo& painting_info,
-                                    PaintLayerFlags paint_flags) {
+static bool ShouldCreateSubsequence(
+    const PaintLayer& paint_layer,
+    const GraphicsContext& context,
+    const PaintLayerPaintingInfo& painting_info) {
   // Caching is not needed during printing or painting previews.
   if (context.Printing() || context.IsPaintingPreview())
     return false;
@@ -127,16 +125,14 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   // CachedDisplayItemList.  This also avoids conflict of
   // PaintLayer::previousXXX() when paintLayer is composited scrolling and is
   // painted twice for GraphicsLayers of container and scrolling contents.
-  if (paint_layer.GetCompositingState() == kPaintsIntoOwnBacking)
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      paint_layer.GetCompositingState() == kPaintsIntoOwnBacking)
     return false;
 
   // Don't create subsequence during special painting to avoid cache conflict
   // with normal painting.
   if (painting_info.GetGlobalPaintFlags() &
       kGlobalPaintFlattenCompositingLayers)
-    return false;
-
-  if (paint_flags & kPaintLayerPaintingOverlayOverflowControls)
     return false;
 
   return true;
@@ -196,7 +192,7 @@ static bool IsMainFrameNotClippingContents(const PaintLayer& layer) {
   // If MainFrameClipsContent is false which means that WebPreferences::
   // record_whole_document is true, we should not cull the scrolling contents
   // of the main frame.
-  if (layer.GetLayoutObject().IsLayoutView()) {
+  if (IsA<LayoutView>(layer.GetLayoutObject())) {
     const auto* frame = layer.GetLayoutObject().GetFrame();
     if (frame && frame->IsMainFrame() && !frame->ClipsContent())
       return true;
@@ -326,6 +322,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     return kMayBeClippedByCullRect;
   }
 
+  bool selection_drag_image_only = painting_info_arg.GetGlobalPaintFlags() &
+                                   kGlobalPaintSelectionDragImageOnly;
+  if (selection_drag_image_only && !paint_layer_.GetLayoutObject().IsSelected())
+    return result;
+
+  base::Optional<IgnorePaintTimingScope> ignore_paint_timing;
+  if (PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef()))
+    ignore_paint_timing.emplace();
+
   PaintLayerFlags paint_flags = paint_flags_arg;
   PaintLayerPaintingInfo painting_info = painting_info_arg;
   AdjustForPaintProperties(context, painting_info, paint_flags);
@@ -355,15 +360,25 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
 
   PhysicalOffset subpixel_accumulation =
-      paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking
+      (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+       paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking)
           ? paint_layer_.SubpixelAccumulation()
           : painting_info.sub_pixel_accumulation;
 
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
-  bool should_create_subsequence = ShouldCreateSubsequence(
-      paint_layer_, context, painting_info, paint_flags);
+  bool should_paint_content =
+      paint_layer_.HasVisibleContent() &&
+      // Content under a LayoutSVGHiddenContainer is auxiliary resources for
+      // painting. Foreign content should never paint in this situation, as it
+      // is primary, not auxiliary.
+      !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
+      !is_painting_overlay_overflow_controls;
+
+  bool should_create_subsequence =
+      should_paint_content &&
+      ShouldCreateSubsequence(paint_layer_, context, painting_info);
 
   base::Optional<SubsequenceRecorder> subsequence_recorder;
   if (should_create_subsequence) {
@@ -397,19 +412,12 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                                     subpixel_accumulation)
             : offset_from_root;
     clip_path_clipper.emplace(context, paint_layer_.GetLayoutObject(),
+                              paint_layer_.GetLayoutObject(),
                               visual_offset_from_root);
   }
 
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
-
-  bool should_paint_content =
-      paint_layer_.HasVisibleContent() &&
-      // Content under a LayoutSVGHiddenContainer is auxiliary resources for
-      // painting. Foreign content should never paint in this situation, as it
-      // is primary, not auxiliary.
-      !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
-      !is_painting_overlay_overflow_controls;
 
   PaintLayerFragments layer_fragments;
 
@@ -437,16 +445,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }
 
-  bool selection_only =
-      local_painting_info.GetGlobalPaintFlags() & kGlobalPaintSelectionOnly;
-
   {  // Begin block for the lifetime of any filter.
-    size_t display_item_list_size_before_painting =
-        context.GetPaintController().NewDisplayItemList().size();
-
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
     bool should_paint_background =
-        should_paint_content && !selection_only &&
+        should_paint_content && !selection_drag_image_only &&
         (is_painting_composited_background ||
          (is_painting_root_layer &&
           !(paint_flags & kPaintLayerPaintingSkipRootBackground)));
@@ -459,46 +461,45 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     bool should_paint_normal_flow_and_pos_z_order_lists =
         is_painting_composited_foreground &&
         !is_painting_overlay_overflow_controls;
-    bool is_video = paint_layer_.GetLayoutObject().IsVideo();
+    bool is_video = IsA<LayoutVideo>(paint_layer_.GetLayoutObject());
 
-    base::Optional<ScopedPaintChunkProperties>
-        subsequence_forced_chunk_properties;
-    if (subsequence_recorder && paint_layer_.HasSelfPaintingLayerDescendant()) {
-      // Prepare for forced paint chunks to ensure chunk id stability to avoid
-      // unnecessary full chunk raster invalidations on changed chunk ids.
-      // TODO(crbug.com/834606): This may be unnecessary after we refactor
-      // raster invalidation not to depend on chunk ids too much.
-      subsequence_forced_chunk_properties.emplace(
-          context.GetPaintController(),
-          paint_layer_.GetLayoutObject()
-              .FirstFragment()
-              .LocalBorderBoxProperties(),
-          paint_layer_, DisplayItem::kUninitializedType);
+    base::Optional<ScopedPaintChunkHint> paint_chunk_hint;
+    if (should_paint_content) {
+      paint_chunk_hint.emplace(context.GetPaintController(),
+                               paint_layer_.GetLayoutObject()
+                                   .FirstFragment()
+                                   .LocalBorderBoxProperties(),
+                               paint_layer_, DisplayItem::kLayerChunk);
     }
 
     if (should_paint_background) {
-      if (subsequence_forced_chunk_properties) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkBackground);
-      }
       PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
                                   paint_flags);
     }
 
     if (should_paint_neg_z_order_list) {
-      if (subsequence_forced_chunk_properties) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkNegativeZOrderChildren);
-      }
       if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
                         paint_flags) == kMayBeClippedByCullRect)
         result = kMayBeClippedByCullRect;
     }
 
     if (should_paint_own_contents) {
-      PaintForegroundForFragments(
-          layer_fragments, context, local_painting_info, selection_only,
-          !!subsequence_forced_chunk_properties, paint_flags);
+      base::Optional<ScopedPaintChunkHint> paint_chunk_hint_foreground;
+      if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
+        // Hint a foreground chunk if we have created any chunks, to give the
+        // paint chunk after the previous forced paint chunks a stable id.
+        paint_chunk_hint_foreground.emplace(context.GetPaintController(),
+                                            paint_layer_,
+                                            DisplayItem::kLayerChunkForeground);
+      }
+      if (selection_drag_image_only) {
+        PaintForegroundForFragmentsWithPhase(PaintPhase::kSelectionDragImage,
+                                             layer_fragments, context,
+                                             local_painting_info, paint_flags);
+      } else {
+        PaintForegroundForFragments(layer_fragments, context,
+                                    local_painting_info, paint_flags);
+      }
     }
 
     if (!is_video && should_paint_self_outline) {
@@ -507,11 +508,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
-      if (subsequence_forced_chunk_properties) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_,
-            DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
-      }
       if (PaintChildren(kNormalFlowAndPositiveZOrderChildren, context,
                         painting_info, paint_flags) == kMayBeClippedByCullRect)
         result = kMayBeClippedByCullRect;
@@ -532,24 +528,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       PaintSelfOutlineForFragments(layer_fragments, context,
                                    local_painting_info, paint_flags);
     }
-
-    if (!is_painting_overlay_overflow_controls) {
-      // For filters, if the layer painted nothing, we need to issue a no-op
-      // display item to ensure the filters won't be ignored. For backdrop
-      // filters, we issue the display item regardless of other paintings to
-      // ensure correct bounds of the composited layer for the backdrop filter.
-      if ((paint_layer_.PaintsWithFilters() &&
-           display_item_list_size_before_painting ==
-               context.GetPaintController().NewDisplayItemList().size()) ||
-          paint_layer_.GetLayoutObject().HasBackdropFilter()) {
-        PaintEmptyContentForFilters(context);
-      }
-    }
   }  // FilterPainter block
 
   bool should_paint_mask = is_painting_mask && should_paint_content &&
                            paint_layer_.GetLayoutObject().HasMask() &&
-                           !selection_only;
+                           !selection_drag_image_only;
   if (should_paint_mask) {
     PaintMaskForFragments(layer_fragments, context, local_painting_info,
                           paint_flags);
@@ -739,7 +722,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
           DisplayLockLifecycleTarget::kChildren))) {
     paint_info.SetDescendantPaintingBlocked(true);
   }
-  paint_layer_.GetLayoutObject().Paint(paint_info);
+  if (fragment.physical_fragment)
+    NGBoxFragmentPainter(*fragment.physical_fragment).Paint(paint_info);
+  else
+    paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 
 void PaintLayerPainter::PaintBackgroundForFragments(
@@ -759,57 +745,33 @@ void PaintLayerPainter::PaintForegroundForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
-    bool selection_only,
-    bool force_paint_chunks,
     PaintLayerFlags paint_flags) {
-  if (selection_only) {
-    PaintForegroundForFragmentsWithPhase(PaintPhase::kSelection,
+  PaintForegroundForFragmentsWithPhase(
+      PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
+      local_painting_info, paint_flags);
+
+  if (paint_layer_.GetLayoutObject().GetDocument().InForcedColorsMode()) {
+    PaintForegroundForFragmentsWithPhase(PaintPhase::kForcedColorsModeBackplate,
                                          layer_fragments, context,
                                          local_painting_info, paint_flags);
-  } else {
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
-        paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
-      if (force_paint_chunks) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
-      }
-      PaintForegroundForFragmentsWithPhase(
-          PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
-          local_painting_info, paint_flags);
-    }
+  }
 
-    if (paint_layer_.GetLayoutObject().GetDocument().InForcedColorsMode()) {
-      PaintForegroundForFragmentsWithPhase(
-          PaintPhase::kForcedColorsModeBackplate, layer_fragments, context,
-          local_painting_info, paint_flags);
-    }
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
+      paint_layer_.NeedsPaintPhaseFloat()) {
+    PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
+                                         context, local_painting_info,
+                                         paint_flags);
+  }
 
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
-        paint_layer_.NeedsPaintPhaseFloat()) {
-      if (force_paint_chunks) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkFloat);
-      }
-      PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
-                                           context, local_painting_info,
-                                           paint_flags);
-    }
+  PaintForegroundForFragmentsWithPhase(PaintPhase::kForeground, layer_fragments,
+                                       context, local_painting_info,
+                                       paint_flags);
 
-    if (force_paint_chunks) {
-      context.GetPaintController().ForceNewChunk(
-          paint_layer_, DisplayItem::kLayerChunkForeground);
-    }
-
-    PaintForegroundForFragmentsWithPhase(PaintPhase::kForeground,
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
+      paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
+    PaintForegroundForFragmentsWithPhase(PaintPhase::kDescendantOutlinesOnly,
                                          layer_fragments, context,
                                          local_painting_info, paint_flags);
-
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
-        paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
-      PaintForegroundForFragmentsWithPhase(PaintPhase::kDescendantOutlinesOnly,
-                                           layer_fragments, context,
-                                           local_painting_info, paint_flags);
-    }
   }
 }
 
@@ -876,23 +838,6 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
   DrawingRecorder recorder(context, client, DisplayItem::kClippingMask);
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   context.FillRect(snapped_clip_rect, Color::kBlack);
-}
-
-// Generate a no-op DrawingDisplayItem to ensure a non-empty chunk for the
-// filter without content.
-void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
-  DCHECK(paint_layer_.PaintsWithFilters() ||
-         paint_layer_.GetLayoutObject().HasBackdropFilter());
-
-  ScopedPaintChunkProperties paint_chunk_properties(
-      context.GetPaintController(),
-      paint_layer_.GetLayoutObject().FirstFragment().LocalBorderBoxProperties(),
-      paint_layer_, DisplayItem::kEmptyContentForFilters);
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, paint_layer_, DisplayItem::kEmptyContentForFilters))
-    return;
-  DrawingRecorder recorder(context, paint_layer_,
-                           DisplayItem::kEmptyContentForFilters);
 }
 
 }  // namespace blink

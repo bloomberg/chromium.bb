@@ -19,10 +19,9 @@ def RunSteps(api):
   api.git_cl.issue()
   result = api.git_cl.get_description(
       patch_url='https://code.review/123',
-      codereview='rietveld',
       suffix='build')
   api.git_cl.set_description(
-      'bammmm', patch_url='https://code.review/123', codereview='rietveld')
+      'bammmm', patch_url='https://code.review/123')
   api.step('echo', ['echo', result.stdout])
 
   api.git_cl.set_config('basic')

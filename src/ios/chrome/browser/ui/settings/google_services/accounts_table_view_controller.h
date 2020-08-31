@@ -8,15 +8,6 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-// The accessibility identifier of the view controller's view.
-extern NSString* const kSettingsAccountsTableViewId;
-// The accessibility identifier of the add account cell.
-extern NSString* const kSettingsAccountsTableViewAddAccountCellId;
-// The accessibility identifier of the signout cell.
-extern NSString* const kSettingsAccountsTableViewSignoutCellId;
-// The accessibility identifier of the sync account cell.
-extern NSString* const kSettingsAccountsTableViewSyncCellId;
-
 @protocol ApplicationCommands;
 @protocol ApplicationSettingsCommands;
 class Browser;
@@ -33,10 +24,7 @@ class Browser;
       closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 @end
 

@@ -572,7 +572,7 @@ class TestExitWithParent(cros_test_lib.TestCase):
     # process of ours. Just wait 20 seconds - this should be enough even if the
     # machine is under load.
     timeout_util.WaitForReturnTrue(
-        lambda: os.path.isdir('/proc/%d' % grand_child_pid),
+        lambda: not os.path.isdir('/proc/%d' % grand_child_pid),
         20,
         period=0.05)
 

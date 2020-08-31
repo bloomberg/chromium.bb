@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
+#include "chromecast/media/audio/mixer_service/loopback_interrupt_reason.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/net/io_buffer_pool.h"
 
@@ -50,13 +51,23 @@ void MixerLoopbackConnection::SendAudio(
   socket_->SendAudioBuffer(std::move(audio_buffer), data_size_bytes, timestamp);
 }
 
+void MixerLoopbackConnection::SendInterrupt(LoopbackInterruptReason reason) {
+  mixer_service::Generic message;
+  mixer_service::StreamInterruption* interrupt =
+      message.mutable_stream_interruption();
+  interrupt->set_reason(
+      static_cast<mixer_service::StreamInterruption::InterruptionReason>(
+          reason));
+  socket_->SendProto(message);
+}
+
 bool MixerLoopbackConnection::HandleMetadata(
     const mixer_service::Generic& message) {
   return true;
 }
 
 bool MixerLoopbackConnection::HandleAudioData(char* data,
-                                              int size,
+                                              size_t size,
                                               int64_t timestamp) {
   return true;
 }

@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -16,6 +15,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace safe_browsing {
 
@@ -23,7 +23,6 @@ namespace {
 
 class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
  public:
-  std::string GetSafetyNetId() override { return ""; }
   void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override {}
@@ -82,13 +81,15 @@ TEST_F(RemoteDatabaseManagerTest, DisabledViaNull) {
 TEST_F(RemoteDatabaseManagerTest, TypesToCheckDefault) {
   // Most are true, a few are false.
   for (int t_int = 0;
-       t_int <= static_cast<int>(content::ResourceType::kMaxValue); t_int++) {
-    content::ResourceType t = static_cast<content::ResourceType>(t_int);
+       t_int <= static_cast<int>(blink::mojom::ResourceType::kMaxValue);
+       t_int++) {
+    blink::mojom::ResourceType t =
+        static_cast<blink::mojom::ResourceType>(t_int);
     switch (t) {
-      case content::ResourceType::kStylesheet:
-      case content::ResourceType::kImage:
-      case content::ResourceType::kFontResource:
-      case content::ResourceType::kFavicon:
+      case blink::mojom::ResourceType::kStylesheet:
+      case blink::mojom::ResourceType::kImage:
+      case blink::mojom::ResourceType::kFontResource:
+      case blink::mojom::ResourceType::kFavicon:
         EXPECT_FALSE(db_->CanCheckResourceType(t));
         break;
       default:
@@ -102,14 +103,15 @@ TEST_F(RemoteDatabaseManagerTest, TypesToCheckFromTrial) {
   SetFieldTrialParams("1,2,blah, 9");
   db_ = new RemoteSafeBrowsingDatabaseManager();
   EXPECT_TRUE(db_->CanCheckResourceType(
-      content::ResourceType::kMainFrame));  // defaulted
-  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kSubFrame));
-  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kStylesheet));
-  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kScript));
-  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kImage));
+      blink::mojom::ResourceType::kMainFrame));  // defaulted
+  EXPECT_TRUE(db_->CanCheckResourceType(blink::mojom::ResourceType::kSubFrame));
+  EXPECT_TRUE(
+      db_->CanCheckResourceType(blink::mojom::ResourceType::kStylesheet));
+  EXPECT_FALSE(db_->CanCheckResourceType(blink::mojom::ResourceType::kScript));
+  EXPECT_FALSE(db_->CanCheckResourceType(blink::mojom::ResourceType::kImage));
   // ...
-  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kMedia));
-  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kWorker));
+  EXPECT_FALSE(db_->CanCheckResourceType(blink::mojom::ResourceType::kMedia));
+  EXPECT_TRUE(db_->CanCheckResourceType(blink::mojom::ResourceType::kWorker));
 }
 
 }  // namespace safe_browsing

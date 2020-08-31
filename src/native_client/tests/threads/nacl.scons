@@ -254,11 +254,9 @@ node = env.CommandSelLdrTestNacl('cond_timedwait_test.out',
 # be wrong for Windows -- it will always estimate that 100% of the CPU
 # was used.  BUG(bsy):
 # http://code.google.com/p/nativeclient/issues/detail?id=2805
-trusted_env = env.get('TRUSTED_ENV')
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_timedwait_test',
                        is_broken=(env.Bit('running_on_valgrind') or
-                                  (trusted_env is not None and
-                                   trusted_env.Bit('windows'))))
+                                  env.Bit('host_windows')))
 
 # This tests an interface that is provided by nacl-newlib but not nacl-glibc.
 if not env.Bit('nacl_glibc'):

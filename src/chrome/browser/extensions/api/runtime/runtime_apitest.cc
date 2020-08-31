@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/blacklist_state.h"
@@ -15,6 +16,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -145,34 +147,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
       << message_;
 }
 
-// Tests chrome.runtime.reload
-// This test is flaky: crbug.com/366181
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
+// Tests that an extension calling chrome.runtime.reload() repeatedly
+// will eventually be terminated.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExtensionTerminatedForRapidReloads) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const char kManifest[] =
-      "{"
-      "  \"name\": \"reload\","
-      "  \"version\": \"1.0\","
-      "  \"background\": {"
-      "    \"scripts\": [\"background.js\"]"
-      "  },"
-      "  \"manifest_version\": 2"
-      "}";
+  static constexpr char kManifest[] = R"(
+      {
+        "name": "reload",
+        "version": "1.0",
+        "background": {
+          "scripts": ["background.js"]
+        },
+        "manifest_version": 2
+      })";
 
   TestExtensionDir dir;
   dir.WriteManifest(kManifest);
-  dir.WriteFile(FILE_PATH_LITERAL("background.js"), "console.log('loaded');");
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                "chrome.test.sendMessage('ready');");
 
-  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  // Use a packed extension, since this is the scenario we are interested in
+  // testing. Unpacked extensions are allowed more reloads within the allotted
+  // time, to avoid interfering with the developer work flow.
+  const Extension* extension = LoadExtension(dir.Pack());
   ASSERT_TRUE(extension);
   const std::string extension_id = extension->id();
 
-  // Somewhat arbitrary upper limit of 30 iterations. If the extension manages
-  // to reload itself that often without being terminated, the test fails
+  // The current limit for fast reload is 5, so the loop limit of 10
+  // be enough to trigger termination. If the extension manages to
+  // reload itself that often without being terminated, the test fails
   // anyway.
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < RuntimeAPI::kFastReloadCount + 1; i++) {
+    ExtensionTestMessageListener ready_listener_reload("ready", false);
     TestExtensionRegistryObserver unload_observer(registry, extension_id);
-    TestExtensionRegistryObserver load_observer(registry, extension_id);
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension_id, "chrome.runtime.reload();"));
     unload_observer.WaitForExtensionUnloaded();
@@ -182,15 +189,55 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
                                    ExtensionRegistry::TERMINATED)) {
       break;
     } else {
-      load_observer.WaitForExtensionLoaded();
-      // We need to let other registry observers handle the notification to
-      // finish initialization
-      base::RunLoop().RunUntilIdle();
-      WaitForExtensionViewsToLoad();
+      EXPECT_TRUE(ready_listener_reload.WaitUntilSatisfied());
     }
   }
   ASSERT_TRUE(
       registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
+}
+
+// Tests chrome.runtime.reload
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeReload) {
+  static constexpr char kManifest[] = R"(
+      {
+        "name": "reload",
+        "version": "1.0",
+        "background": {
+          "scripts": ["background.js"]
+        },
+        "manifest_version": 2
+      })";
+
+  static constexpr char kScript[] = R"(
+    chrome.test.sendMessage('ready', function(response) {
+      if (response == 'reload') {
+        chrome.runtime.reload();
+      } else if (response == 'done') {
+        chrome.test.notifyPass();
+      }
+    });
+  )";
+
+  TestExtensionDir dir;
+  dir.WriteManifest(kManifest);
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"), kScript);
+
+  // This listener will respond to the initial load of the extension
+  // and tell the script to do the reload.
+  ExtensionTestMessageListener ready_listener_reload("ready", true);
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+  EXPECT_TRUE(ready_listener_reload.WaitUntilSatisfied());
+
+  // This listener will respond to the ready message from the
+  // reloaded extension and tell the script to finish the test.
+  ExtensionTestMessageListener ready_listener_done("ready", true);
+  ResultCatcher reload_catcher;
+  ready_listener_reload.Reply("reload");
+  EXPECT_TRUE(ready_listener_done.WaitUntilSatisfied());
+  ready_listener_done.Reply("done");
+  EXPECT_TRUE(reload_catcher.GetNextResult());
 }
 
 // Tests that updating a terminated extension sends runtime.onInstalled event

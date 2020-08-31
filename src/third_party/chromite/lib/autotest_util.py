@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import path_util
 from chromite.utils import matching
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class AutotestTarballBuilder(object):
@@ -35,6 +39,7 @@ class AutotestTarballBuilder(object):
       '/usr/bin/remote_test_runner',  # Runs remote tests.
       '/usr/libexec/tast/bundles',  # Dir containing test bundles.
       '/usr/share/tast/data',  # Dir containing test data.
+      '/etc/tast/vars',  # Secret variables.
   ]
   # Tast files and directories stored in the source code.
   _TAST_SSP_SOURCE_FILES = [
@@ -103,7 +108,7 @@ class AutotestTarballBuilder(object):
 
     tarball = os.path.join(self.output_directory, self._SERVER_PACKAGE_ARCHIVE)
     self._BuildTarball(autotest_files + tast_files, tarball,
-                       extra_args=transforms, error_code_ok=True)
+                       extra_args=transforms, check=False)
     return tarball
 
   def _BuildTarball(self, input_list, tarball_output, compressed=True,

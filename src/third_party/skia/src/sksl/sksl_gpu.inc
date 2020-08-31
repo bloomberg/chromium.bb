@@ -1,4 +1,4 @@
-STRINGIFY(
+R"SKSL(
 
 // defines built-in functions supported by SkSL when running on a GPU
 
@@ -92,6 +92,7 @@ $genType mix($genType x, $genType y, float a);
 $genHType mix($genHType x, $genHType y, $genHType a);
 $genHType mix($genHType x, $genHType y, half a);
 $genType mix($genType x, $genType y, $genBType a);
+$genHType mix($genHType x, $genHType y, $genBType a);
 $genIType mix($genIType x, $genIType y, $genBType a);
 $genBType mix($genBType x, $genBType y, $genBType a);
 $genType step($genType edge, $genType x);
@@ -295,5 +296,4 @@ float interpolateAtOffset(float interpolant, float2 offset);
 float2 interpolateAtOffset(float2 interpolant, float2 offset);
 float3 interpolateAtOffset(float3 interpolant, float2 offset);
 float4 interpolateAtOffset(float4 interpolant, float2 offset);
-
-)
+)SKSL"

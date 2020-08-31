@@ -22,18 +22,24 @@ class Rect;
 }
 
 namespace ui {
+class AnimationMetricsReporter;
 class GestureEvent;
 class MouseWheelEvent;
 class MouseEvent;
-}
+class ScrollEvent;
+}  // namespace ui
 
 namespace ash {
 
 enum class AnimationChangeType;
+class HotseatWidget;
+class HotseatWidgetAnimationMetricsReporter;
+class NavigationWidgetAnimationMetricsReporter;
 class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
 class ShelfLockingManager;
+class ShelfNavigationWidget;
 class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
@@ -81,6 +87,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // on the display identified by |display_id|.
   static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
 
+  void CreateNavigationWidget(aura::Window* container);
+  void CreateHotseatWidget(aura::Window* container);
+  void CreateStatusAreaWidget(aura::Window* status_container);
   void CreateShelfWidget(aura::Window* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();
@@ -100,10 +109,26 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   bool IsHorizontalAlignment() const;
 
   // Returns a value based on shelf alignment.
-  int SelectValueForShelfAlignment(int bottom, int left, int right) const;
+  template <typename T>
+  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
+    switch (alignment_) {
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
+        return bottom;
+      case ShelfAlignment::kLeft:
+        return left;
+      case ShelfAlignment::kRight:
+        return right;
+    }
+    NOTREACHED();
+    return bottom;
+  }
 
   // Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
-  int PrimaryAxisValue(int horizontal, int vertical) const;
+  template <typename T>
+  T PrimaryAxisValue(T horizontal, T vertical) const {
+    return IsHorizontalAlignment() ? horizontal : vertical;
+  }
 
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
 
@@ -120,6 +145,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void MaybeUpdateShelfBackground();
 
   ShelfVisibilityState GetVisibilityState() const;
+
+  gfx::Rect GetShelfBoundsInScreen() const;
 
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
@@ -141,8 +168,13 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Handles a mouse |event| coming from the Shelf.
   void ProcessMouseEvent(const ui::MouseEvent& event);
 
-  // Handles a mousewheel scroll event coming from the shelf.
-  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event);
+  // Handles a scroll |event| coming from the Shelf.
+  void ProcessScrollEvent(ui::ScrollEvent* event);
+
+  // Handles a mousewheel scroll event coming from the shelf. We use
+  // |from_touchpad| to distinguish if an event originated from a touchpad
+  // scroll or a mousewheel scroll.
+  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event, bool from_touchpad);
 
   void AddObserver(ShelfObserver* observer);
   void RemoveObserver(ShelfObserver* observer);
@@ -171,7 +203,17 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfLayoutManager* shelf_layout_manager() const {
     return shelf_layout_manager_;
   }
+
+  // Getters for the various shelf components.
   ShelfWidget* shelf_widget() const { return shelf_widget_.get(); }
+  ShelfNavigationWidget* navigation_widget() const {
+    return navigation_widget_.get();
+  }
+  HotseatWidget* hotseat_widget() const { return hotseat_widget_.get(); }
+  StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_.get();
+  }
+
   ShelfAlignment alignment() const { return alignment_; }
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
@@ -189,6 +231,14 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
+  // |target_state| is the hotseat state after hotseat transition animation.
+  ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter(
+      HotseatState target_state);
+  ui::AnimationMetricsReporter* GetTranslucentBackgroundMetricsReporter(
+      HotseatState target_state);
+
+  ui::AnimationMetricsReporter* GetNavigationWidgetAnimationMetricsReporter();
+
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
@@ -196,12 +246,20 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
   void OnWorkAreaInsetsChanged() override;
 
  private:
-  class AutoHideEventHandler;
   class AutoDimEventHandler;
+  class AutoHideEventHandler;
+  friend class DimShelfLayoutManagerTestBase;
   friend class ShelfLayoutManagerTest;
+
+  // Uses Auto Dim Event Handler to update the shelf dim state.
+  void DimShelf();
+  void UndimShelf();
+  bool HasDimShelfTimer();
 
   // Returns work area insets object for the window with this shelf.
   WorkAreaInsets* GetWorkAreaInsets() const;
@@ -210,13 +268,18 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
 
+  // Pointers to shelf components.
+  std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
+  std::unique_ptr<HotseatWidget> hotseat_widget_;
+  std::unique_ptr<StatusAreaWidget> status_area_widget_;
   // Null during display teardown, see WindowTreeHostManager::DeleteHost() and
   // RootWindowController::CloseAllChildWindows().
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // These initial values hide the shelf until user preferences are available.
   ShelfAlignment alignment_ = ShelfAlignment::kBottomLocked;
-  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+  ShelfAutoHideBehavior auto_hide_behavior_ =
+      ShelfAutoHideBehavior::kAlwaysHidden;
 
   // Sets shelf alignment to bottom during login and screen lock.
   ShelfLockingManager shelf_locking_manager_;
@@ -231,6 +294,21 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Hands focus off to different parts of the shelf.
   std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;
+
+  // Animation metrics reporter for hotseat animations. Owned by the Shelf to
+  // ensure it outlives the Hotseat Widget.
+  std::unique_ptr<HotseatWidgetAnimationMetricsReporter>
+      hotseat_transition_metrics_reporter_;
+
+  // Metrics reporter for animations of the traslucent background in the
+  // hotseat. Owned by the Shelf to ensure it outlives the Hotseat Widget.
+  std::unique_ptr<HotseatWidgetAnimationMetricsReporter>
+      translucent_background_metrics_reporter_;
+
+  // Animation metrics reporter for navigation widget animations. Owned by the
+  // Shelf to ensure it outlives the Navigation Widget.
+  std::unique_ptr<NavigationWidgetAnimationMetricsReporter>
+      navigation_widget_metrics_reporter_;
 
   // True while the animation to enter or exit tablet mode is running. Sometimes
   // this value is true when the shelf movements are not actually animating

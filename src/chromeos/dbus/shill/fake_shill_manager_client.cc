@@ -645,7 +645,7 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
             CompareNetworks);
 
   // Rebuild |complete_path_list| with the new sort order.
-  complete_path_list->GetList().clear();
+  complete_path_list->ClearList();
   for (const base::Value& dict : complete_dict_list) {
     std::string service_path = GetStringValue(dict, kPathKey);
     complete_path_list->Append(base::Value(service_path));
@@ -1015,12 +1015,12 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
 void FakeShillManagerClient::PassStubProperties(
     DictionaryValueCallback callback) const {
-  std::unique_ptr<base::DictionaryValue> stub_properties(
-      stub_properties_.DeepCopy());
-  stub_properties->SetWithoutPathExpansion(
+  base::Value stub_properties = stub_properties_.Clone();
+  stub_properties.SetKey(
       shill::kServiceCompleteListProperty,
       GetEnabledServiceList(shill::kServiceCompleteListProperty));
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
+                          base::Value::AsDictionaryValue(stub_properties));
 }
 
 void FakeShillManagerClient::PassStubGeoNetworks(
@@ -1049,9 +1049,9 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
     return;
   }
   if (property == shill::kServiceCompleteListProperty) {
-    std::unique_ptr<base::ListValue> services(GetEnabledServiceList(property));
+    base::Value services = GetEnabledServiceList(property);
     for (auto& observer : observer_list_)
-      observer.OnPropertyChanged(property, *(services.get()));
+      observer.OnPropertyChanged(property, services);
     return;
   }
   for (auto& observer : observer_list_)
@@ -1100,9 +1100,9 @@ void FakeShillManagerClient::SetTechnologyEnabled(const std::string& type,
   SortManagerServices(true);
 }
 
-std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
+base::Value FakeShillManagerClient::GetEnabledServiceList(
     const std::string& property) const {
-  auto new_service_list = std::make_unique<base::ListValue>();
+  base::Value new_service_list(base::Value::Type::LIST);
   const base::ListValue* service_list;
   if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
     ShillServiceClient::TestInterface* service_client =
@@ -1121,7 +1121,7 @@ std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
       std::string type;
       properties->GetString(shill::kTypeProperty, &type);
       if (TechnologyEnabled(type))
-        new_service_list->Append(iter->CreateDeepCopy());
+        new_service_list.Append(iter->Clone());
     }
   }
   return new_service_list;

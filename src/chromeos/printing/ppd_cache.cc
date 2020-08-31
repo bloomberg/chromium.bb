@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -60,30 +61,31 @@ PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
   base::File file(FilePathForKey(cache_dir, key),
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-  if (file.IsValid()) {
-    int64_t len = file.GetLength();
-    if (len >= static_cast<int64_t>(crypto::kSHA256Length) &&
-        len <= static_cast<int64_t>(kMaxPpdSizeBytes) +
-                   static_cast<int64_t>(crypto::kSHA256Length)) {
-      std::unique_ptr<char[]> buf(new char[len]);
-      if (file.ReadAtCurrentPos(buf.get(), len) == len) {
-        base::StringPiece contents(buf.get(), len - crypto::kSHA256Length);
-        base::StringPiece checksum(buf.get() + len - crypto::kSHA256Length,
-                                   crypto::kSHA256Length);
-        if (crypto::SHA256HashString(contents) == checksum) {
-          base::File::Info info;
-          if (file.GetInfo(&info)) {
-            result.success = true;
-            result.age = base::Time::Now() - info.last_modified;
-            contents.CopyToString(&result.contents);
-          }
-        } else {
-          LOG(ERROR) << "Bad checksum for cache key " << key;
-        }
-      }
-    }
+  base::File::Info info;
+  if (!file.IsValid() || !file.GetInfo(&info))
+    return result;
+
+  if (info.size < static_cast<int64_t>(crypto::kSHA256Length) ||
+      info.size > static_cast<int64_t>(kMaxPpdSizeBytes) +
+                      static_cast<int64_t>(crypto::kSHA256Length)) {
+    return result;
   }
 
+  std::vector<char> buf(info.size);
+  if (file.ReadAtCurrentPos(buf.data(), info.size) != info.size)
+    return result;
+
+  base::StringPiece contents(buf.data(), info.size - crypto::kSHA256Length);
+  base::StringPiece checksum(buf.data() + info.size - crypto::kSHA256Length,
+                             crypto::kSHA256Length);
+  if (crypto::SHA256HashString(contents) != checksum) {
+    LOG(ERROR) << "Bad checksum for cache key " << key;
+    return result;
+  }
+
+  result.success = true;
+  result.age = base::Time::Now() - info.last_modified;
+  result.contents = std::string(contents);
   return result;
 }
 
@@ -176,14 +178,14 @@ class PpdCacheImpl : public PpdCache {
 
 // static
 scoped_refptr<PpdCache> PpdCache::Create(const base::FilePath& cache_base_dir) {
-  return scoped_refptr<PpdCache>(new PpdCacheImpl(
-      cache_base_dir,
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
+  return scoped_refptr<PpdCache>(
+      new PpdCacheImpl(cache_base_dir,
+                       base::ThreadPool::CreateSequencedTaskRunner(
+                           {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+                       base::ThreadPool::CreateSequencedTaskRunner(
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
 }
 
 scoped_refptr<PpdCache> PpdCache::CreateForTesting(

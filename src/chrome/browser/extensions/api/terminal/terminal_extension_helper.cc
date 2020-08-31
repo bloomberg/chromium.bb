@@ -23,12 +23,10 @@ const char kCroshExtensionEntryPoint[] = "/html/crosh.html";
 
 const Extension* TerminalExtensionHelper::GetTerminalExtension(
     Profile* profile) {
-  // Search order for terminal extensions.
-  // We prefer nassh-dev, then nassh, then the builtin crosh extension.
+  // Search order for terminal extensions: nassh-dev, then nassh.
   static const char* const kPossibleAppIds[] = {
     extension_misc::kHTermDevAppId,
     extension_misc::kHTermAppId,
-    extension_misc::kCroshBuiltinAppId,
   };
 
   // The nassh-dev should be first in the list.
@@ -47,8 +45,10 @@ const Extension* TerminalExtensionHelper::GetTerminalExtension(
 }
 
 GURL TerminalExtensionHelper::GetCroshURL(Profile* profile) {
-  GURL url;
+  // chrome-untrusted://crosh by default.
+  GURL url(chrome::kChromeUIUntrustedCroshURL);
   const extensions::Extension* extension = GetTerminalExtension(profile);
+  // Allow nassh-dev or nassh to override.
   if (extension) {
     url = extension->GetResourceURL(kCroshExtensionEntryPoint);
   }

@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import autotest_quickmerge
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 RSYNC_TEST_OUTPUT = """.d..t...... ./

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxge/render_defines.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fde/cfde_textout.h"
@@ -34,19 +35,10 @@ CFWL_WidgetTP::CFWL_WidgetTP() = default;
 
 CFWL_WidgetTP::~CFWL_WidgetTP() = default;
 
-void CFWL_WidgetTP::Initialize() {}
-
-void CFWL_WidgetTP::Finalize() {
-  if (m_pTextOut)
-    FinalizeTTO();
-}
-
 void CFWL_WidgetTP::DrawBackground(const CFWL_ThemeBackground& pParams) {}
 
 void CFWL_WidgetTP::DrawText(const CFWL_ThemeText& pParams) {
-  if (!m_pTextOut)
-    InitTTO();
-
+  EnsureTTOInitialized();
   int32_t iLen = pParams.m_wsText.GetLength();
   if (iLen <= 0)
     return;
@@ -60,7 +52,7 @@ void CFWL_WidgetTP::DrawText(const CFWL_ThemeText& pParams) {
   m_pTextOut->SetMatrix(matrix);
   m_pTextOut->DrawLogicText(pGraphics->GetRenderDevice(),
                             WideStringView(pParams.m_wsText.c_str(), iLen),
-                            pParams.m_rtPart);
+                            pParams.m_PartRect);
 }
 
 const RetainPtr<CFGAS_GEFont>& CFWL_WidgetTP::GetFont() const {
@@ -90,8 +82,7 @@ void CFWL_WidgetTP::InitializeArrowColorData() {
   m_pColorData->clrSign[3] = ArgbEncode(255, 128, 128, 128);
 }
 
-
-void CFWL_WidgetTP::InitTTO() {
+void CFWL_WidgetTP::EnsureTTOInitialized() {
   if (m_pTextOut)
     return;
 
@@ -100,10 +91,6 @@ void CFWL_WidgetTP::InitTTO() {
   m_pTextOut->SetFont(m_pFDEFont);
   m_pTextOut->SetFontSize(FWLTHEME_CAPACITY_FontSize);
   m_pTextOut->SetTextColor(FWLTHEME_CAPACITY_TextColor);
-}
-
-void CFWL_WidgetTP::FinalizeTTO() {
-  m_pTextOut.reset();
 }
 
 void CFWL_WidgetTP::DrawBorder(CXFA_Graphics* pGraphics,

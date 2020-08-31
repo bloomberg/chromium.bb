@@ -17,8 +17,7 @@
 #include "base/optional.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/password_form_user_action.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -63,13 +62,6 @@ class PasswordFormMetricsRecorder
     kManagerActionAutofilled,
     kManagerActionBlacklisted_Obsolete,
     kManagerActionMax
-  };
-
-  // Same as above without the obsoleted 'Blacklisted' action.
-  enum ManagerActionNew {
-    kManagerActionNewNone = 0,
-    kManagerActionNewAutofilled,
-    kManagerActionNewMax
   };
 
   // Result - What happens to the form?
@@ -261,6 +253,17 @@ class PasswordFormMetricsRecorder
     kMaxValue = kNoSavedCredentialsAndBlacklistedBySmartBubble,
   };
 
+  // Records which store(s) a filled password came from.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class FillingSource {
+    kNotFilled = 0,
+    kFilledFromProfileStore = 1,
+    kFilledFromAccountStore = 2,
+    kFilledFromBothStores = 3,
+    kMaxValue = kFilledFromBothStores,
+  };
+
   // Records whether a password hash was saved or not on Chrome sign-in page.
   enum class ChromeSignInPageHashSaved {
     kPasswordTypedHashNotSaved = 0,
@@ -286,17 +289,6 @@ class PasswordFormMetricsRecorder
     kMaxValue = kAutofillOrUserInput,
   };
 
-  // The maximum number of combinations of the ManagerAction, UserAction and
-  // SubmitResult enums.
-  // This is used when recording the actions taken by the form in UMA.
-  static constexpr int kMaxNumActionsTaken =
-      kManagerActionMax * static_cast<int>(UserAction::kMax) * kSubmitResultMax;
-
-  // Same as above but for ManagerActionNew instead of ManagerAction.
-  static constexpr int kMaxNumActionsTakenNew =
-      kManagerActionNewMax * static_cast<int>(UserAction::kMax) *
-      kSubmitResultMax;
-
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable();
 
@@ -306,19 +298,6 @@ class PasswordFormMetricsRecorder
   // Stores the password manager action. During destruction the last
   // set value will be logged.
   void SetManagerAction(ManagerAction manager_action);
-
-  // Calculates the user's action depending on the submitted form and existing
-  // matches. Also inspects |manager_action_| to correctly detect if the
-  // user chose a credential.
-  void CalculateUserAction(
-      const std::vector<const autofill::PasswordForm*>& best_matches,
-      const autofill::PasswordForm& submitted_form);
-
-  // Allow tests to explicitly set a value for |user_action_|.
-  void SetUserActionForTesting(UserAction user_action);
-
-  // Gets the current value of |user_action_|.
-  UserAction GetUserAction() const;
 
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").
@@ -348,11 +327,6 @@ class PasswordFormMetricsRecorder
 
   // Records that the password manager managed or failed to fill a form.
   void RecordFillEvent(ManagerAutofillEvent event);
-
-  // Converts the "ActionsTaken" fields (using ManagerActionNew) into an int so
-  // they can be logged to UMA.
-  // Public for testing.
-  int GetActionsTakenNew() const;
 
   // Records a DetailedUserAction UKM metric.
   void RecordDetailedUserAction(DetailedUserAction action);
@@ -391,10 +365,14 @@ class PasswordFormMetricsRecorder
   // the successful submission is detected.
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form,
-      const std::set<base::string16>& saved_usernames,
-      const std::set<base::string16>& saved_passwords,
+      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+          saved_usernames,
+      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+          saved_passwords,
       bool is_blacklisted,
-      const std::vector<InteractionsStats>& interactions_stats);
+      const std::vector<InteractionsStats>& interactions_stats,
+      metrics_util::PasswordAccountStorageUsageLevel
+          account_storage_usage_level);
 
   // Calculates whether all field values in |submitted_form| came from
   // JavaScript. The result is stored in |js_only_input_|.
@@ -434,10 +412,6 @@ class PasswordFormMetricsRecorder
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
 
-  // Converts the "ActionsTaken" fields into an int so they can be logged to
-  // UMA.
-  int GetActionsTaken() const;
-
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.
   const bool is_main_frame_secure_;
@@ -467,7 +441,6 @@ class PasswordFormMetricsRecorder
   // the user with this form, and the result. They are combined and
   // recorded in UMA when the PasswordFormMetricsRecorder is destroyed.
   ManagerAction manager_action_ = kManagerActionNone;
-  UserAction user_action_ = UserAction::kNone;
   SubmitResult submit_result_ = kSubmitResultNotSubmitted;
 
   // Form type of the form that the PasswordFormManager is managing. Set after
@@ -501,11 +474,16 @@ class PasswordFormMetricsRecorder
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
+  base::Optional<FillingSource> filling_source_;
+  base::Optional<metrics_util::PasswordAccountStorageUsageLevel>
+      account_storage_usage_level_;
 
   bool possible_username_used_ = false;
   bool username_updated_in_bubble_ = false;
 
   base::Optional<JsOnlyInput> js_only_input_;
+
+  bool is_mixed_content_form_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

@@ -28,12 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as UI from '../ui/ui.js';
+
+import {ExtensionServer} from './ExtensionServer.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
- */
-export default class ExtensionView extends UI.Widget {
+*/
+export class ExtensionView extends UI.Widget.Widget {
   /**
-   * @param {!Extensions.ExtensionServer} server
+   * @param {!ExtensionServer} server
    * @param {string} id
    * @param {string} src
    * @param {string} className
@@ -89,9 +93,9 @@ export default class ExtensionView extends UI.Widget {
 /**
  * @unrestricted
  */
-export class ExtensionNotifierView extends UI.VBox {
+export class ExtensionNotifierView extends UI.Widget.VBox {
   /**
-   * @param {!Extensions.ExtensionServer} server
+   * @param {!ExtensionServer} server
    * @param {string} id
    */
   constructor(server, id) {
@@ -115,15 +119,3 @@ export class ExtensionNotifierView extends UI.VBox {
     this._server.notifyViewHidden(this._id);
   }
 }
-
-/* Legacy exported object */
-self.Extensions = self.Extensions || {};
-
-/* Legacy exported object */
-Extensions = Extensions || {};
-
-/** @constructor */
-Extensions.ExtensionView = ExtensionView;
-
-/** @constructor */
-Extensions.ExtensionNotifierView = ExtensionNotifierView;

@@ -88,12 +88,6 @@ void ProxyMain::DidCommitAndDrawFrame() {
   layer_tree_host_->DidCommitAndDrawFrame();
 }
 
-void ProxyMain::SetAnimationEvents(std::unique_ptr<MutatorEvents> events) {
-  TRACE_EVENT0("cc", "ProxyMain::SetAnimationEvents");
-  DCHECK(IsMainThread());
-  layer_tree_host_->SetAnimationEvents(std::move(events));
-}
-
 void ProxyMain::DidLoseLayerTreeFrameSink() {
   TRACE_EVENT0("cc", "ProxyMain::DidLoseLayerTreeFrameSink");
   DCHECK(IsMainThread());
@@ -220,6 +214,9 @@ void ProxyMain::BeginMainFrame(
         begin_main_frame_state->scroll_info.get());
   }
 
+  layer_tree_host_->ApplyMutatorEvents(
+      std::move(begin_main_frame_state->mutator_events));
+
   layer_tree_host_->WillBeginMainFrame();
 
   // This call winds through to the LocalFrameView to mark the beginning
@@ -260,7 +257,9 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+    layer_tree_host_->RecordEndOfFrameMetrics(
+        begin_main_frame_start_time,
+        begin_main_frame_state->active_sequence_trackers);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
@@ -309,6 +308,11 @@ void ProxyMain::BeginMainFrame(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
+
+    // Since the BeginMainFrame has been aborted, handling of events on the main
+    // frame had no effect and no metrics should be reported for such events.
+    layer_tree_host_->ClearEventsMetrics();
+
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
@@ -320,7 +324,9 @@ void ProxyMain::BeginMainFrame(
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
     layer_tree_host_->CommitComplete();
-    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+    layer_tree_host_->RecordEndOfFrameMetrics(
+        begin_main_frame_start_time,
+        begin_main_frame_state->active_sequence_trackers);
     return;
   }
 
@@ -343,6 +349,7 @@ void ProxyMain::BeginMainFrame(
         base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
                        base::Unretained(proxy_impl_.get()), &completion,
                        layer_tree_host_, begin_main_frame_start_time,
+                       begin_main_frame_state->begin_frame_args,
                        hold_commit_for_activation));
     completion.Wait();
   }
@@ -354,7 +361,9 @@ void ProxyMain::BeginMainFrame(
   // blink::LocalFrameView::RunPostLifecycleSteps.
   layer_tree_host_->DidBeginMainFrame();
 
-  layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+  layer_tree_host_->RecordEndOfFrameMetrics(
+      begin_main_frame_start_time,
+      begin_main_frame_state->active_sequence_trackers);
 }
 
 void ProxyMain::DidPresentCompositorFrame(
@@ -363,6 +372,10 @@ void ProxyMain::DidPresentCompositorFrame(
     const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
                                               feedback);
+}
+
+void ProxyMain::NotifyThroughputTrackerResults(CustomTrackerResults results) {
+  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
 bool ProxyMain::IsStarted() const {
@@ -449,9 +462,11 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
 
   defer_main_frame_update_ = defer_main_frame_update;
   if (defer_main_frame_update_) {
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "cc", "ProxyMain::SetDeferMainFrameUpdate", TRACE_ID_LOCAL(this));
   } else {
-    TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "ProxyMain::SetDeferMainFrameUpdate",
+                                    TRACE_ID_LOCAL(this));
   }
 
   // Notify dependent systems that the deferral status has changed.
@@ -472,7 +487,8 @@ void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
   if (defer_commits_)
     return;
 
-  TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits",
+                                    TRACE_ID_LOCAL(this));
 
   defer_commits_ = true;
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
@@ -487,7 +503,8 @@ void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   defer_commits_ = false;
   UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   commits_restart_time_ = base::TimeTicks();
-  TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "ProxyMain::SetDeferCommits",
+                                  TRACE_ID_LOCAL(this));
 
   // Notify depended systems that the deferral status has changed.
   layer_tree_host_->OnDeferCommitsChanged(defer_commits_);

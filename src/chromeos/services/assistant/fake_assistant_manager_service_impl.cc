@@ -18,32 +18,45 @@ void FakeAssistantManagerServiceImpl::FinishStart() {
 }
 
 void FakeAssistantManagerServiceImpl::Start(
-    const base::Optional<std::string>& access_token,
+    const base::Optional<UserInfo>& user,
     bool enable_hotword) {
   SetStateAndInformObservers(State::STARTING);
+  SetUser(user);
 }
 
 void FakeAssistantManagerServiceImpl::Stop() {
   SetStateAndInformObservers(State::STOPPED);
 }
 
-void FakeAssistantManagerServiceImpl::SetAccessToken(
-    const std::string& access_token) {}
+void FakeAssistantManagerServiceImpl::SetUser(
+    const base::Optional<UserInfo>& user) {
+  if (user) {
+    gaia_id_ = user.value().gaia_id;
+    access_token_ = user.value().access_token;
+  } else {
+    gaia_id_ = base::nullopt;
+    access_token_ = base::nullopt;
+  }
+}
 
 void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
 void FakeAssistantManagerServiceImpl::EnableHotword(bool enable) {}
 
+void FakeAssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {}
+
 void FakeAssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enabled) {}
+
+void FakeAssistantManagerServiceImpl::SetAssistantContextEnabled(bool enabled) {
+}
 
 AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
     const {
   return state_;
 }
 
-AssistantSettingsManager*
-FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
-  return &assistant_settings_manager_;
+AssistantSettings* FakeAssistantManagerServiceImpl::GetAssistantSettings() {
+  return &assistant_settings_;
 }
 
 void FakeAssistantManagerServiceImpl::AddAndFireStateObserver(
@@ -57,13 +70,17 @@ void FakeAssistantManagerServiceImpl::RemoveStateObserver(
   state_observers_.RemoveObserver(observer);
 }
 
-void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
+void FakeAssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
+    MediaSessionAction action) {
+  action_ = action;
+}
 
 void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {}
 
-void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
-    const gfx::Rect& region) {}
+void FakeAssistantManagerServiceImpl::StartScreenContextInteraction(
+    ax::mojom::AssistantStructurePtr assistant_structure,
+    const std::vector<uint8_t>& assistant_screenshot) {}
 
 void FakeAssistantManagerServiceImpl::StartTextInteraction(
     const std::string& query,
@@ -89,21 +106,25 @@ void FakeAssistantManagerServiceImpl::RetrieveNotification(
 void FakeAssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {}
 
-void FakeAssistantManagerServiceImpl::CacheScreenContext(
-    CacheScreenContextCallback callback) {
-  std::move(callback).Run();
-}
-
-void FakeAssistantManagerServiceImpl::ClearScreenContextCache() {}
-
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}
 
 void FakeAssistantManagerServiceImpl::SendAssistantFeedback(
     mojom::AssistantFeedbackPtr feedback) {}
 
-void FakeAssistantManagerServiceImpl::StopAlarmTimerRinging() {}
-void FakeAssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {}
+void FakeAssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
+    mojom::AssistantEntryPoint entry_point) {}
+
+void FakeAssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
+                                                     base::TimeDelta duration) {
+}
+
+void FakeAssistantManagerServiceImpl::PauseTimer(const std::string& id) {}
+
+void FakeAssistantManagerServiceImpl::RemoveAlarmOrTimer(
+    const std::string& id) {}
+
+void FakeAssistantManagerServiceImpl::ResumeTimer(const std::string& id) {}
 
 void FakeAssistantManagerServiceImpl::SetStateAndInformObservers(
     State new_state) {

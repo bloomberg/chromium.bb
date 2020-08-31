@@ -5,15 +5,16 @@
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 
 #include "base/android/build_info.h"
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
@@ -29,9 +30,12 @@
 
 namespace {
 
+// Increment this suffix when changes are needed to the cache structure, e.g.
+// counting up after the dash "-1", "-2", etc.
+const char kFingerprintSuffixForceUpdateCache[] = "-1";
 const char kProtobufFilename[] = "font_unique_name_table.pb";
-static const char* const kAndroidFontPaths[] = {"/system/fonts",
-                                                "/vendor/fonts"};
+static const char* const kAndroidFontPaths[] = {
+    "/system/fonts", "/vendor/fonts", "/product/fonts"};
 
 // These values are logged to UMA. Entries should not be renumbered and
 // numeric values should never be reused. Please keep in sync with
@@ -183,7 +187,7 @@ void IndexFile(FT_Library ft_library,
     if (!IsRelevantNameRecord(sfnt_name))
       continue;
 
-    std::string sfnt_name_string = "";
+    std::string sfnt_name_string;
     std::string codepage_name;
     // Codepage names from http://demo.icu-project.org/icu-bin/convexp
     if (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT &&
@@ -348,9 +352,9 @@ bool FontUniqueNameLookup::PersistToFile() {
 }
 
 void FontUniqueNameLookup::ScheduleLoadOrUpdateTable() {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
           [](FontUniqueNameLookup* instance) {
@@ -387,7 +391,9 @@ base::FilePath FontUniqueNameLookup::TableCacheFilePath() {
 std::string FontUniqueNameLookup::GetAndroidBuildFingerprint() const {
   return android_build_fingerprint_for_testing_.size()
              ? android_build_fingerprint_for_testing_
-             : base::android::BuildInfo::GetInstance()->android_build_fp();
+             : std::string(base::android::BuildInfo::GetInstance()
+                               ->android_build_fp()) +
+                   std::string(kFingerprintSuffixForceUpdateCache);
 }
 
 std::vector<std::string> FontUniqueNameLookup::GetFontFilePaths() const {

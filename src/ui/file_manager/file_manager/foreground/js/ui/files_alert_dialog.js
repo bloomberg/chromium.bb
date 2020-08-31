@@ -11,6 +11,10 @@ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
    */
   constructor(parentNode) {
     super(parentNode);
+
+    if (util.isFilesNg()) {
+      this.container.classList.add('files-ng');
+    }
   }
 
   /**
@@ -20,5 +24,21 @@ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
   initDom() {
     super.initDom();
     this.frame.classList.add('files-alert-dialog');
+  }
+
+  /**
+   * @override
+   */
+  showWithTitle(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showWithTitle(title, message, ...args);
+  }
+
+  /**
+   * @override
+   */
+  showHtml(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showHtml(title, message, ...args);
   }
 }

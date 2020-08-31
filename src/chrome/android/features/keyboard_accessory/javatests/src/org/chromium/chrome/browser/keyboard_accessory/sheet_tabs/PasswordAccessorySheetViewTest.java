@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -125,7 +125,7 @@ public class PasswordAccessorySheetViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        UserInfo testInfo = new UserInfo("", null);
+        UserInfo testInfo = new UserInfo("", false);
         testInfo.addField(new UserInfoField(
                 "Name Suggestion", "Name Suggestion", "", false, item -> clicked.set(true)));
         testInfo.addField(new UserInfoField(

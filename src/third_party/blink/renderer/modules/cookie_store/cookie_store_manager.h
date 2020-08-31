@@ -9,14 +9,15 @@
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class CookieStoreGetOptions;
+class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
 
@@ -42,7 +43,7 @@ class CookieStoreManager final : public ScriptWrappable {
                                  ExceptionState& exception_state);
 
   // GarbageCollected
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   // The non-static callbacks keep CookieStoreManager alive during mojo calls.

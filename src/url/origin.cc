@@ -7,8 +7,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <vector>
 
-#include "base/logging.h"
+#include "base/base64.h"
+#include "base/check_op.h"
+#include "base/containers/span.h"
+#include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,12 +46,12 @@ Origin Origin::Create(const GURL& url) {
 
     // It's SchemeHostPort's responsibility to filter out unrecognized schemes;
     // sanity check that this is happening.
-    DCHECK(tuple.IsInvalid() || url.IsStandard() ||
+    DCHECK(!tuple.IsValid() || url.IsStandard() ||
            base::Contains(GetLocalSchemes(), url.scheme_piece()) ||
            AllowNonStandardSchemesForAndroidWebView());
   }
 
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return Origin();
   return Origin(std::move(tuple));
 }
@@ -74,7 +78,7 @@ base::Optional<Origin> Origin::UnsafelyCreateTupleOriginWithoutNormalization(
     uint16_t port) {
   SchemeHostPort tuple(scheme.as_string(), host.as_string(), port,
                        SchemeHostPort::CHECK_CANONICALIZATION);
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return base::nullopt;
   return Origin(std::move(tuple));
 }
@@ -91,7 +95,7 @@ base::Optional<Origin> Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
   // For opaque origins, it is okay for the SchemeHostPort to be invalid;
   // however, this should only arise when the arguments indicate the
   // canonical representation of the invalid SchemeHostPort.
-  if (precursor.IsInvalid() &&
+  if (!precursor.IsValid() &&
       !(precursor_scheme.empty() && precursor_host.empty() &&
         precursor_port == 0)) {
     return base::nullopt;
@@ -105,7 +109,7 @@ Origin Origin::CreateFromNormalizedTuple(std::string scheme,
                                          uint16_t port) {
   SchemeHostPort tuple(std::move(scheme), std::move(host), port,
                        SchemeHostPort::ALREADY_CANONICALIZED);
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return Origin();
   return Origin(std::move(tuple));
 }
@@ -171,7 +175,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
 
     // And if it is unique opaque origin, it definitely is fine. But if there
     // is a precursor stored, we should fall through to compare the tuples.
-    if (tuple_.IsInvalid())
+    if (!tuple_.IsValid())
       return true;
   }
 
@@ -198,7 +202,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
     // opaque origin. It is valid case, as any browser-initiated navigation
     // to about:blank or data: URL will result in a document with such
     // origin and it is valid for it to create blob: URLs.
-    if (tuple_.IsInvalid())
+    if (!tuple_.IsValid())
       return true;
 
     url_tuple = SchemeHostPort(GURL(url.GetContent()));
@@ -221,7 +225,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
 
   // If |this| does not have valid precursor tuple, it is unique opaque origin,
   // which is what we expect non-standard schemes to get.
-  if (tuple_.IsInvalid())
+  if (!tuple_.IsValid())
     return true;
 
   // However, when there is precursor present, the schemes must match.
@@ -257,7 +261,7 @@ std::string Origin::GetDebugString() const {
                           : nonce_->raw_token().ToString();
 
   std::string out = base::StrCat({Serialize(), " [internally: (", nonce, ")"});
-  if (tuple_.IsInvalid())
+  if (!tuple_.IsValid())
     base::StrAppend(&out, {" anonymous]"});
   else
     base::StrAppend(&out, {" derived from ", tuple_.Serialize(), "]"});
@@ -266,7 +270,7 @@ std::string Origin::GetDebugString() const {
 
 Origin::Origin(SchemeHostPort tuple) : tuple_(std::move(tuple)) {
   DCHECK(!opaque());
-  DCHECK(!tuple_.IsInvalid());
+  DCHECK(tuple_.IsValid());
 }
 
 // Constructs an opaque origin derived from |precursor|.
@@ -277,6 +281,82 @@ Origin::Origin(const Nonce& nonce, SchemeHostPort precursor)
   DCHECK_EQ("", scheme());
   DCHECK_EQ("", host());
   DCHECK_EQ(0U, port());
+}
+
+// The pickle is saved in the following format, in order:
+// string - tuple_.GetURL().spec().
+// uint64_t (if opaque) - high bits of nonce if opaque. 0 if not initialized.
+// uint64_t (if opaque) - low bits of nonce if opaque. 0 if not initialized.
+base::Optional<std::string> Origin::SerializeWithNonce() const {
+  if (!opaque() && !tuple_.IsValid())
+    return base::nullopt;
+
+  base::Pickle pickle;
+  pickle.WriteString(tuple_.Serialize());
+  if (opaque() && !nonce_->raw_token().is_empty()) {
+    pickle.WriteUInt64(nonce_->token().GetHighForSerialization());
+    pickle.WriteUInt64(nonce_->token().GetLowForSerialization());
+  } else if (opaque()) {
+    // Nonce hasn't been initialized.
+    pickle.WriteUInt64(0);
+    pickle.WriteUInt64(0);
+  }
+
+  base::span<const uint8_t> data(
+      static_cast<const uint8_t*>(pickle.data()),
+      static_cast<const uint8_t*>(pickle.data()) + pickle.size());
+  // Base64 encode the data to make it nicer to play with.
+  return base::Base64Encode(data);
+}
+
+// static
+base::Optional<Origin> Origin::Deserialize(const std::string& value) {
+  std::string data;
+  if (!base::Base64Decode(value, &data))
+    return base::nullopt;
+  base::Pickle pickle(reinterpret_cast<char*>(&data[0]), data.size());
+  base::PickleIterator reader(pickle);
+
+  std::string pickled_url;
+  if (!reader.ReadString(&pickled_url))
+    return base::nullopt;
+  GURL url(pickled_url);
+
+  // If only a tuple was serialized, then this origin is not opaque. For opaque
+  // origins, we expect two uint64's to be left in the pickle.
+  bool is_opaque = !reader.ReachedEnd();
+
+  // Opaque origins without a tuple are ok.
+  if (!is_opaque && !url.is_valid())
+    return base::nullopt;
+  SchemeHostPort tuple(url);
+
+  // Possible successful early return if the pickled Origin was not opaque.
+  if (!is_opaque) {
+    Origin origin(tuple);
+    if (origin.opaque())
+      return base::nullopt;  // Something went horribly wrong.
+    return origin;
+  }
+
+  uint64_t nonce_high = 0;
+  if (!reader.ReadUInt64(&nonce_high))
+    return base::nullopt;
+
+  uint64_t nonce_low = 0;
+  if (!reader.ReadUInt64(&nonce_low))
+    return base::nullopt;
+
+  Origin::Nonce nonce;
+  if (nonce_high != 0 && nonce_low != 0) {
+    // The serialized nonce wasn't empty, so copy it here.
+    nonce = Origin::Nonce(
+        base::UnguessableToken::Deserialize(nonce_high, nonce_low));
+  }
+  Origin origin;
+  origin.nonce_ = std::move(nonce);
+  origin.tuple_ = tuple;
+  return origin;
 }
 
 std::ostream& operator<<(std::ostream& out, const url::Origin& origin) {
@@ -350,5 +430,18 @@ bool Origin::Nonce::operator==(const Origin::Nonce& other) const {
 bool Origin::Nonce::operator!=(const Origin::Nonce& other) const {
   return !(*this == other);
 }
+
+namespace debug {
+
+ScopedOriginCrashKey::ScopedOriginCrashKey(
+    base::debug::CrashKeyString* crash_key,
+    const url::Origin* value)
+    : base::debug::ScopedCrashKeyString(
+          crash_key,
+          value ? value->GetDebugString() : "nullptr") {}
+
+ScopedOriginCrashKey::~ScopedOriginCrashKey() = default;
+
+}  // namespace debug
 
 }  // namespace url

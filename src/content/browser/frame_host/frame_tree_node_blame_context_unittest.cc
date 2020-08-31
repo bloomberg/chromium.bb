@@ -13,11 +13,11 @@
 #include "base/trace_event/traced_value.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
 
@@ -98,13 +98,14 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
     for (int child_num = 1; shape[consumption++] == '('; ++child_num) {
       int child_id = self_id * 10 + child_num;
       tree()->AddFrame(
-          node, process_id(), child_id,
+          node->current_frame_host(), process_id(), child_id,
           TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
           TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-          blink::WebTreeScopeType::kDocument, std::string(),
+          blink::mojom::TreeScopeType::kDocument, std::string(),
           base::StringPrintf("uniqueName%d", child_id), false,
-          base::UnguessableToken::Create(), blink::FramePolicy(),
-          FrameOwnerProperties(), false, blink::FrameOwnerElementType::kIframe);
+          base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+          blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
+          blink::mojom::FrameOwnerElementType::kIframe);
       FrameTreeNode* child = node->child_at(child_num - 1);
       consumption += CreateSubframes(child, child_id, shape + consumption);
     }
@@ -152,7 +153,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameCreation) {
       snapshot_traced.insert(node);
       std::string parent_id = GetParentNodeID(event);
       EXPECT_FALSE(parent_id.empty());
-      EXPECT_EQ(node->parent(),
+      EXPECT_EQ(node->parent()->frame_tree_node(),
                 tree()->FindByID(strtol(parent_id.c_str(), nullptr, 16)));
     } else {
       EXPECT_EQ(TRACE_EVENT_PHASE_CREATE_OBJECT, event->phase);

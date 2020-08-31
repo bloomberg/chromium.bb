@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -13,6 +13,8 @@ import logging
 import os
 import sys
 import tempfile
+
+import six
 
 # Mutates sys.path.
 import test_env
@@ -101,12 +103,17 @@ class StorageFake(object):
     sink([self._files[digest]])
     channel.send_result(digest)
 
-  def upload_items(self, items_to_upload):
+  def upload_items(self, items_to_upload, _verify_push):
     # Return all except the first one.
     return list(items_to_upload)[1:]
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
+  # These tests fail with the following error
+  # 'AssertionError: Items in the first set but not the second'
+  # Need to run in test_seq.py as an executable
+  no_run = 1
+
   @classmethod
   def setUpClass(cls):
     if not file_path.enable_symlink():
@@ -117,7 +124,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTestBase, self).setUp()
     os.environ.pop('LUCI_CONTEXT', None)
-    self._previous_dir = unicode(os.getcwd())
+    self._previous_dir = six.text_type(os.getcwd())
     self.tempdir = tempfile.mkdtemp(prefix=u'run_isolated_test')
     logging.debug('Temp dir: %s', self.tempdir)
     cwd = os.path.join(self.tempdir, 'cwd')
@@ -147,10 +154,10 @@ class RunIsolatedTestBase(auto_stub.TestCase):
 
   def fake_make_temp_dir(self, prefix, _root_dir):
     """Predictably returns directory for run_tha_test (one per test case)."""
-    self.assertIn(
-        prefix,
-        (run_isolated.ISOLATED_OUT_DIR, run_isolated.ISOLATED_RUN_DIR,
-          run_isolated.ISOLATED_TMP_DIR, 'cipd_site_root'))
+    self.assertIn(prefix,
+                  (run_isolated.ISOLATED_OUT_DIR, run_isolated.ISOLATED_RUN_DIR,
+                   run_isolated.ISOLATED_TMP_DIR,
+                   run_isolated.ISOLATED_CLIENT_DIR, 'cipd_site_root'))
     temp_dir = os.path.join(self.tempdir, prefix)
     self.assertFalse(fs.isdir(temp_dir))
     fs.makedirs(temp_dir)
@@ -195,7 +202,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         return ()
 
       def wait(self2, timeout=None):
-        self.assertIn(timeout, (None, 60))
+        self.assertIn(timeout, (None, 30, 60))
         self2.returncode = 0
         for mock_fn in self.popen_fakes:
           ret = mock_fn(self2.args, **self2.kwargs)
@@ -249,16 +256,21 @@ class RunIsolatedTest(RunIsolatedTestBase):
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--isolate-server', 'https://localhost',
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--isolate-server',
+        'https://localhost',
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -282,17 +294,21 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated = json_dumps({'command': ['foo.exe', 'cmd w/ space']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
-        '--use-symlinks',
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--isolate-server',
+        'https://localhost',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--root-dir',
+        self.tempdir,
         '--',
         '--extraargs',
         'bar',
@@ -342,7 +358,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
         bot_file=None,
         switch_to_account=False,
         install_packages_fn=run_isolated.noop_install_packages,
-        use_symlinks=False,
+        use_go_isolated=False,
+        go_cache_dir=None,
+        go_cache_policies=None,
         env={},
         env_prefix={},
         lower_priority=lower_priority,
@@ -354,14 +372,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_run_tha_test_naked(self):
     isolated = json_dumps({'command': ['invalid', 'command']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(
-        [
-          'make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable',
-          'make_tree_deleteable',
-        ],
-        make_tree_call)
+    self.assertEqual([
+        'make_tree_writeable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+    ], make_tree_call)
     self.assertEqual(
         [
           (
@@ -384,14 +403,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 0,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(
-        [
-          'make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable',
-          'make_tree_deleteable',
-        ],
-        make_tree_call)
+    self.assertEqual([
+        'make_tree_writeable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+    ], make_tree_call)
     self.assertEqual(
         [
           (
@@ -414,14 +434,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 1,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(
-        [
-          'make_tree_files_read_only', 'make_tree_deleteable',
-          'make_tree_deleteable', 'make_tree_deleteable',
-        ],
-        make_tree_call)
+    self.assertEqual([
+        'make_tree_files_read_only',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+    ], make_tree_call)
     self.assertEqual(
         [
           (
@@ -444,14 +465,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'read_only': 2,
         })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
-    self.assertEqual(
-        [
-          'make_tree_read_only', 'make_tree_deleteable', 'make_tree_deleteable',
-          'make_tree_deleteable',
-        ],
-        make_tree_call)
+    self.assertEqual([
+        'make_tree_read_only',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+        'make_tree_deleteable',
+    ], make_tree_call)
     self.assertEqual(
         [
           (
@@ -481,16 +503,21 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolated = json_dumps({'command': ['invalid', 'command']})
     isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
-      return StorageFake({isolated_hash:isolated}, server_ref)
+      return StorageFake({isolated_hash: isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--isolate-server',
+        'https://localhost',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -513,14 +540,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_main_naked_without_isolated(self):
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -543,15 +572,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.capture_luci_ctx = True
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--switch-to-account', 'task',
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--switch-to-account',
+        'task',
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     root_ctx = {
       'accounts': [{'id': 'bot'}, {'id': 'task'}],
@@ -570,15 +602,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.capture_luci_ctx = True
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--switch-to-account', 'task',
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--switch-to-account',
+        'task',
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     root_ctx = {
       'accounts': [{'id': 'bot'}],  # only 'bot', there's no 'task'
@@ -597,16 +632,19 @@ class RunIsolatedTest(RunIsolatedTestBase):
     workdir = tempfile.mkdtemp()
     try:
       cmd = [
-        '--no-log',
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--root-dir', workdir,
-        '--leak-temp-dir',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--raw-cmd',
-        '--',
-        '/bin/echo',
-        'hello',
-        'world',
+          '--no-log',
+          '--cache',
+          os.path.join(self.tempdir, 'isolated_cache'),
+          '--root-dir',
+          workdir,
+          '--leak-temp-dir',
+          '--named-cache-root',
+          os.path.join(self.tempdir, 'named_cache'),
+          '--raw-cmd',
+          '--',
+          '/bin/echo',
+          'hello',
+          'world',
       ]
       ret = run_isolated.main(cmd)
       self.assertEqual(0, ret)
@@ -616,15 +654,20 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_main_naked_with_packages(self):
     self.mock(cipd, 'get_platform', lambda: 'linux-amd64')
 
-    pins = {
-      '': [
-        ('infra/data/x', 'badc0fee'*5),
-        ('infra/data/y', 'cafebabe'*5),
-      ],
-      'bin': [
-        ('infra/tools/echo/linux-amd64', 'deadbeef'*5),
-      ],
-    }
+    def pins_generator():
+      yield {
+          '': [
+              ('infra/data/x', 'badc0fee' * 5),
+              ('infra/data/y', 'cafebabe' * 5),
+          ],
+          'bin': [('infra/tools/echo/linux-amd64', 'deadbeef' * 5),],
+      }
+      yield {
+          '': [('infra/tools/luci/isolated/linux-amd64',
+                run_isolated.ISOLATED_REVISION)],
+      }
+
+    pins_gen = pins_generator()
 
     suffix = '.exe' if sys.platform == 'win32' else ''
     def fake_ensure(args, **kwargs):
@@ -634,13 +677,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
         idx = args.index('-json-output')
         with open(args[idx+1], 'w') as json_out:
           json.dump({
-            'result': {
-              subdir: [
-                {'package': pkg, 'instance_id': ver}
-                for pkg, ver in packages
-              ]
-              for subdir, packages in pins.iteritems()
-            }
+              'result': {
+                  subdir: [{
+                      'package': pkg,
+                      'instance_id': ver
+                  } for pkg, ver in packages
+                          ] for subdir, packages in pins_gen.next().items()
+              }
           }, json_out)
         return 0
       if args[0].endswith(os.sep + 'echo' + suffix):
@@ -651,25 +694,33 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.popen_fakes.append(fake_ensure)
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--cipd-client-version', 'git:wowza',
-      '--cipd-package', 'bin:infra/tools/echo/${platform}:latest',
-      '--cipd-package', '.:infra/data/x:latest',
-      '--cipd-package', '.:infra/data/y:canary',
-      '--cipd-server', self.cipd_server.url,
-      '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--cipd-client-version',
+        'git:wowza',
+        '--cipd-package',
+        'bin:infra/tools/echo/${platform}:latest',
+        '--cipd-package',
+        '.:infra/data/x:latest',
+        '--cipd-package',
+        '.:infra/data/y:canary',
+        '--cipd-server',
+        self.cipd_server.url,
+        '--cipd-cache',
+        cipd_cache,
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
 
-    self.assertEqual(2, len(self.popen_calls))
+    self.assertEqual(3, len(self.popen_calls))
 
     # Test cipd-ensure command for installing packages.
     cipd_ensure_cmd, _ = self.popen_calls[0]
@@ -684,72 +735,112 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     # Test cipd client cache. `git:wowza` was a tag and so is cacheable.
     self.assertEqual(len(fs.listdir(os.path.join(cipd_cache, 'versions'))), 2)
-    version_file = unicode(os.path.join(
-        cipd_cache, 'versions', '765a0de4c618f91faf923cb68a47bb564aed412d'))
+    version_file = six.text_type(
+        os.path.join(cipd_cache, 'versions',
+                     '765a0de4c618f91faf923cb68a47bb564aed412d'))
     self.assertTrue(fs.isfile(version_file))
     with open(version_file) as f:
       self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-    client_binary_file = unicode(os.path.join(
-        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    client_binary_file = six.text_type(
+        os.path.join(cipd_cache, 'clients',
+                     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
     self.assertTrue(fs.isfile(client_binary_file))
 
     # Test echo call.
-    echo_cmd, _ = self.popen_calls[1]
+    echo_cmd, _ = self.popen_calls[2]
     self.assertTrue(echo_cmd[0].endswith(
         os.path.sep + 'bin' + os.path.sep + 'echo' + cipd.EXECUTABLE_SUFFIX),
         echo_cmd[0])
     self.assertEqual(echo_cmd[1:], [u'hello', u'world'])
 
   def test_main_naked_with_cipd_client_no_packages(self):
+    self.mock(cipd, 'get_platform', lambda: 'linux-amd64')
+
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--cipd-enabled',
-      '--cipd-client-version', 'git:wowza',
-      '--cipd-server', self.cipd_server.url,
-      '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--relative-cwd', 'a',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--cipd-enabled',
+        '--cipd-client-version',
+        'git:wowza',
+        '--cipd-server',
+        self.cipd_server.url,
+        '--cipd-cache',
+        cipd_cache,
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--relative-cwd',
+        'a',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
+
+    pins = {
+        '': [('infra/tools/luci/isolated/linux-amd64',
+              run_isolated.ISOLATED_REVISION)],
+    }
+
+    suffix = '.exe' if sys.platform == 'win32' else ''
+
+    def fake_ensure(args, **kwargs):
+      if (args[0].endswith(os.path.join('bin', 'cipd' + suffix)) and
+          args[1] == 'ensure' and '-json-output' in args):
+        idx = args.index('-json-output')
+        with open(args[idx + 1], 'w') as json_out:
+          json.dump({
+              'result': {
+                  subdir: [{
+                      'package': pkg,
+                      'instance_id': ver
+                  } for pkg, ver in packages
+                          ] for subdir, packages in pins.items()
+              }
+          }, json_out)
+        return 0
+      if args[0].endswith(os.sep + 'echo' + suffix):
+        return 0
+      self.fail('unexpected: %s, %s' % (args, kwargs))
+      return 1
+
+    self.popen_fakes.append(fake_ensure)
 
     self.capture_popen_env = True
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
 
     # The CIPD client was bootstrapped and hardlinked (or copied on Win).
-    client_binary_file = unicode(os.path.join(
-        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    client_binary_file = six.text_type(
+        os.path.join(cipd_cache, 'clients',
+                     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
     self.assertTrue(fs.isfile(client_binary_file))
-    client_binary_link = unicode(os.path.join(
-        cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX))
+    client_binary_link = six.text_type(
+        os.path.join(cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX))
     self.assertTrue(fs.isfile(client_binary_link))
 
-    # 'cipd ensure' was NOT called (only 'echo hello world' was).
-    env = self.popen_calls[0][1].pop('env')
+    env = self.popen_calls[1][1].pop('env')
     exec_path = self.ir_dir(u'a', 'bin', 'echo')
     if sys.platform == 'win32':
       exec_path += '.exe'
     self.assertEqual(
         [
-          (
-            [exec_path, 'hello', 'world'],
-            {
-              'cwd': self.ir_dir('a'),
-              'detached': True,
-              'close_fds': True,
-              'lower_priority': False,
-              'containment': subprocess42.Containment(),
-            },
-          ),
+            (
+                [exec_path, 'hello', 'world'],
+                {
+                    'cwd': self.ir_dir('a'),
+                    'detached': True,
+                    'close_fds': True,
+                    'lower_priority': False,
+                    'containment': subprocess42.Containment(),
+                },
+            ),
         ],
-        self.popen_calls)
+        # Ignore `cipd ensure` for isolated client here.
+        self.popen_calls[1:])
 
     # Directory with cipd client is in front of PATH.
     path = env['PATH'].split(os.pathsep)
@@ -793,17 +884,26 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock(local_caching, 'trim_caches', trim_caches)
     nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
-      '--no-log',
-      '--leak-temp-dir',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'), '100',
-      '--named-cache-root', nc,
-      '--named-cache', 'cache_foo', 'foo', '100',
-      '--named-cache', 'cache_bar', 'bar', '1000',
-      '--raw-cmd',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--leak-temp-dir',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '100',
+        '--named-cache-root',
+        nc,
+        '--named-cache',
+        'cache_foo',
+        'foo',
+        '100',
+        '--named-cache',
+        'cache_bar',
+        'bar',
+        '1000',
+        '--raw-cmd',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -819,7 +919,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'relative_cwd': 'some',
     })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
@@ -842,7 +942,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'relative_cwd': 'some',
     })
     isolated_hash = isolateserver_fake.hash_content(isolated)
-    files = {isolated_hash:isolated}
+    files = {isolated_hash: isolated}
     _ = self._run_tha_test(isolated_hash, files, lower_priority=True)
     # Injects sys.executable but on macOS, the path may be different than
     # sys.executable due to symlinks.
@@ -919,6 +1019,34 @@ class RunIsolatedTest(RunIsolatedTestBase):
         ],
         self.popen_calls)
 
+  def test_fetch_and_map_with_go(self):
+    # Sanity test for run_isolated._fetch_and_map_with_go(...).
+    _, options, _ = run_isolated.parse_args([])
+    cipd_server = 'https://chrome-infra-packages.appspot.com/'
+    storage = isolate_storage.IsolateServer(
+        isolate_storage.ServerRef(cipd_server, options.namespace))
+
+    def fake_wait(args, **kwargs):  # pylint: disable=unused-argument
+      for arg in args:
+        self.assertTrue(
+            isinstance(arg, str) or isinstance(arg.encode('utf-8'), str), arg)
+
+      json_path = args[args.index('-fetch-and-map-result-json') + 1]
+      with open(json_path, 'w') as json_file:
+        json.dump({
+            'isolated': {},
+            'items_cold': '',
+            'items_hot': '',
+        }, json_file)
+      return 0
+
+    self.popen_fakes.append(fake_wait)
+    bundle, stats = run_isolated._fetch_and_map_with_go(
+        'fake_isolated_hash', storage, 'fake_outdir', 'fake_cache_dir',
+        local_caching.CachePolicies(0, 0, 0, 0), 'fake/path/to/isolated')
+    self.assertTrue(bundle)
+    self.assertTrue(stats)
+
 
 class RunIsolatedTestRun(RunIsolatedTestBase):
   # Runs the actual command requested.
@@ -932,16 +1060,16 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
         'open(sys.argv[1], "w").write("bar")\n')
       script_hash = isolateserver_fake.hash_content(script)
       isolated = {
-        u'algo': u'sha-1',
-        u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
-        u'files': {
-          u'cmd.py': {
-            u'h': script_hash,
-            u'm': 0700,
-            u's': len(script),
+          u'algo': u'sha-1',
+          u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
+          u'files': {
+              u'cmd.py': {
+                  u'h': script_hash,
+                  u'm': 0o700,
+                  u's': len(script),
+              },
           },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated[u'files'][u'cmd.py'].pop(u'm')
@@ -969,7 +1097,9 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           bot_file=None,
           switch_to_account=False,
           install_packages_fn=run_isolated.noop_install_packages,
-          use_symlinks=False,
+          use_go_isolated=False,
+          go_cache_dir=None,
+          go_cache_policies=None,
           env={},
           env_prefix={},
           lower_priority=False,
@@ -982,15 +1112,15 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       output_hash = isolateserver_fake.hash_content('bar')
       hashes.add(output_hash)
       isolated = {
-        u'algo': u'sha-1',
-        u'files': {
-          u'foo': {
-            u'h': output_hash,
-            u'm': 0600,
-            u's': 3,
+          u'algo': u'sha-1',
+          u'files': {
+              u'foo': {
+                  u'h': output_hash,
+                  u'm': 0o600,
+                  u's': 3,
+              },
           },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated[u'files'][u'foo'].pop(u'm')
@@ -1307,9 +1437,9 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
         '  open(sys.argv[2], "w").write("foo2")\n')
       script_hash = isolateserver_fake.hash_content(script)
       isolated['files']['cmd.py'] = {
-        'h': script_hash,
-        'm': 0700,
-        's': len(script),
+          'h': script_hash,
+          'm': 0o700,
+          's': len(script),
       }
       if sys.platform == 'win32':
         isolated['files']['cmd.py'].pop('m')
@@ -1329,10 +1459,10 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           storage=store,
           isolate_cache=local_caching.MemoryContentAddressedCache(),
           outputs=[
-            'foo1',
-            # They must be in OS native path.
-            os.path.join('foodir', 'foo2_sl'),
-            os.path.join('bardir', ''),
+              'foo1',
+              # They must be in OS native path.
+              os.path.join('foodir', 'foo2_sl'),
+              os.path.join('bardir', ''),
           ],
           install_named_caches=init_named_caches_stub,
           leak_temp_dir=False,
@@ -1342,7 +1472,9 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           bot_file=None,
           switch_to_account=False,
           install_packages_fn=run_isolated.noop_install_packages,
-          use_symlinks=False,
+          use_go_isolated=False,
+          go_cache_dir=None,
+          go_cache_policies=None,
           env={},
           env_prefix={},
           lower_priority=False,
@@ -1359,25 +1491,25 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       hashes.add(foo2_output_hash)
       hashes.add(bar1_output_hash)
       isolated = {
-        u'algo': u'sha-1',
-        u'files': {
-          u'foo1': {
-            u'h': foo1_output_hash,
-            u'm': 0600,
-            u's': 4,
+          u'algo': u'sha-1',
+          u'files': {
+              u'foo1': {
+                  u'h': foo1_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
+              os.path.join(u'foodir', 'foo2_sl'): {
+                  u'h': foo2_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
+              os.path.join(u'bardir', 'bar1'): {
+                  u'h': bar1_output_hash,
+                  u'm': 0o600,
+                  u's': 4,
+              },
           },
-          os.path.join(u'foodir', 'foo2_sl'): {
-            u'h': foo2_output_hash,
-            u'm': 0600,
-            u's': 4,
-          },
-          os.path.join(u'bardir', 'bar1'): {
-            u'h': bar1_output_hash,
-            u'm': 0600,
-            u's': 4,
-          },
-        },
-        u'version': isolated_format.ISOLATED_FILE_VERSION,
+          u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated['files']['foo1'].pop('m')
@@ -1466,18 +1598,24 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     isolated_in_json = json_dumps({'command': sub_cmd})
     isolated_in_hash = isolateserver_fake.hash_content(isolated_in_json)
     def get_storage(server_ref):
-      return StorageFake({isolated_in_hash:isolated_in_json}, server_ref)
+      return StorageFake({isolated_in_hash: isolated_in_json}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
 
     out = os.path.join(self.tempdir, 'res.json')
     cmd = [
         '--no-log',
-        '--isolated', isolated_in_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'http://localhost:1',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--json', out,
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_in_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache'),
+        '--isolate-server',
+        'http://localhost:1',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--json',
+        out,
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -1499,44 +1637,44 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         ],
         self.popen_calls)
     isolated_out = {
-      'algo': 'sha-1',
-      'files': {
-        'out.txt': {
-          'h': isolateserver_fake.hash_content('generated data\n'),
-          's': 15,
-          'm': 0600,
+        'algo': 'sha-1',
+        'files': {
+            'out.txt': {
+                'h': isolateserver_fake.hash_content('generated data\n'),
+                's': 15,
+                'm': 0o600,
+            },
         },
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+        'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     if sys.platform == 'win32':
       del isolated_out['files']['out.txt']['m']
     isolated_out_json = json_dumps(isolated_out)
     isolated_out_hash = isolateserver_fake.hash_content(isolated_out_json)
     expected = {
-      u'exit_code': 0,
-      u'had_hard_timeout': False,
-      u'internal_failure': None,
-      u'outputs_ref': {
-        u'isolated': unicode(isolated_out_hash),
-        u'isolatedserver': u'http://localhost:1',
-        u'namespace': u'default-gzip',
-      },
-      u'stats': {
-        u'isolated': {
-          u'download': {
-            u'initial_number_items': 0,
-            u'initial_size': 0,
-            u'items_cold': [len(isolated_in_json)],
-            u'items_hot': [],
-          },
-          u'upload': {
-            u'items_cold': [len(isolated_out_json)],
-            u'items_hot': [15],
-          },
+        u'exit_code': 0,
+        u'had_hard_timeout': False,
+        u'internal_failure': None,
+        u'outputs_ref': {
+            u'isolated': six.text_type(isolated_out_hash),
+            u'isolatedserver': u'http://localhost:1',
+            u'namespace': u'default-gzip',
         },
-      },
-      u'version': 5,
+        u'stats': {
+            u'isolated': {
+                u'download': {
+                    u'initial_number_items': 0,
+                    u'initial_size': 0,
+                    u'items_cold': [len(isolated_in_json)],
+                    u'items_hot': [],
+                },
+                u'upload': {
+                    u'items_cold': [len(isolated_out_json)],
+                    u'items_hot': [15],
+                },
+            },
+        },
+        u'version': 5,
     }
     actual = tools.read_json(out)
     # duration can be exactly 0 due to low timer resolution, especially but not

@@ -6,12 +6,14 @@ package org.chromium.android_webview.devui.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.webkit.WebView;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 
 /**
  * A helper class to get info about WebView package.
@@ -117,6 +119,43 @@ public final class WebViewPackageHelper {
             return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Check if the given context is a WebView package and if it's currently selected as system's
+     * WebView implementation.
+     *
+     * @param context the {@link Context} to check its package.
+     */
+    public static boolean isCurrentSystemWebViewImplementation(Context context) {
+        PackageInfo systemWebViewPackage = getCurrentWebViewPackage(context);
+        if (systemWebViewPackage == null) return false;
+        return context.getPackageName().equals(systemWebViewPackage.packageName);
+    }
+
+    /**
+     * Check if the system currently has a valid WebView implementation.
+     */
+    public static boolean hasValidWebViewImplementation(Context context) {
+        return getCurrentWebViewPackage(context) != null;
+    }
+
+    /**
+     * Loads a label for the app specified by {@code mContext}. This is designed to be consistent
+     * with how the system's WebView chooser labels WebView packages (see {@code
+     * com.android.settings.webview.WebViewAppPicker.WebViewAppInfo#loadLabel()} in the AOSP source
+     * code).
+     */
+    public static CharSequence loadLabel(Context context) {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        PackageManager pm = context.getPackageManager();
+        CharSequence appLabel = applicationInfo.loadLabel(pm);
+        try {
+            String versionName = pm.getPackageInfo(context.getPackageName(), 0).versionName;
+            return String.format(Locale.US, "%s %s", appLabel, versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return appLabel;
         }
     }
 

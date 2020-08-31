@@ -60,7 +60,7 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
  public:
   explicit LayoutTableCol(Element*);
 
-  void ClearPreferredLogicalWidthsDirtyBits();
+  void ClearIntrinsicLogicalWidthsDirtyBits();
 
   // The 'span' attribute in HTML.
   // For CSS table columns or colgroups, this is always 1.
@@ -86,7 +86,15 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
     return type == kLayoutObjectLayoutTableCol || LayoutBox::IsOfType(type);
   }
   void UpdateFromElement() override;
-  void ComputePreferredLogicalWidths() override { NOTREACHED(); }
+
+  MinMaxSizes PreferredLogicalWidths() const override {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
 
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
@@ -94,8 +102,6 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
   bool CanHaveChildren() const override;
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 

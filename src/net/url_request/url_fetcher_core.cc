@@ -9,7 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -406,6 +407,7 @@ void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
     stopped_on_redirect_ = true;
     url_ = redirect_info.new_url;
     response_code_ = request_->GetResponseCode();
+    response_headers_ = request_->response_headers();
     proxy_server_ = request_->proxy_server();
     was_cached_ = request_->was_cached();
     total_received_bytes_ += request_->GetTotalReceivedBytes();
@@ -567,10 +569,10 @@ void URLFetcherCore::StartURLRequest() {
   }
   request_->SetReferrer(referrer_);
   request_->set_referrer_policy(referrer_policy_);
-  request_->set_site_for_cookies(initiator_.has_value() &&
-                                         !initiator_.value().opaque()
-                                     ? initiator_.value().GetURL()
-                                     : original_url_);
+  request_->set_site_for_cookies(SiteForCookies::FromUrl(
+      initiator_.has_value() && !initiator_.value().opaque()
+          ? initiator_.value().GetURL()
+          : original_url_));
   request_->set_initiator(initiator_);
   if (url_request_data_key_ && !url_request_create_data_callback_.is_null()) {
     request_->SetUserData(url_request_data_key_,

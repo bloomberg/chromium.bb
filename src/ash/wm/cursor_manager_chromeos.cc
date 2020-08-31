@@ -9,7 +9,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/shell.h"
-#include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -70,6 +69,7 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
     case ui::VKEY_BRIGHTNESS_UP:
     case ui::VKEY_KBD_BRIGHTNESS_UP:
     case ui::VKEY_KBD_BRIGHTNESS_DOWN:
+    case ui::VKEY_PRIVACY_SCREEN_TOGGLE:
       return false;
     default:
       return true;

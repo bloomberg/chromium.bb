@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/containers/id_map.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -37,10 +38,11 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
-#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-forward.h"
+#include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -56,6 +58,10 @@ class TimeDelta;
 class Token;
 }
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace url {
 class Origin;
 }
@@ -66,7 +72,6 @@ class BrowserMessageFilter;
 class IsolationContext;
 class RenderProcessHostObserver;
 class StoragePartition;
-struct WebPreferences;
 #if defined(OS_ANDROID)
 enum class ChildProcessImportance;
 #endif
@@ -326,20 +331,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void DisableAudioDebugRecordings() = 0;
 
   using WebRtcRtpPacketCallback =
-      base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
-                          size_t header_length,
-                          size_t packet_length,
-                          bool incoming)>;
+      base::RepeatingCallback<void(std::unique_ptr<uint8_t[]> packet_header,
+                                   size_t header_length,
+                                   size_t packet_length,
+                                   bool incoming)>;
 
   using WebRtcStopRtpDumpCallback =
-      base::Callback<void(bool incoming, bool outgoing)>;
+      base::OnceCallback<void(bool incoming, bool outgoing)>;
 
   // Starts passing RTP packets to |packet_callback| and returns the callback
   // used to stop dumping.
   virtual WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,
-      const WebRtcRtpPacketCallback& packet_callback) = 0;
+      WebRtcRtpPacketCallback packet_callback) = 0;
 
   // Start/stop event log output from WebRTC on this RPH for the peer connection
   // identified locally within the RPH using the ID |lid|.
@@ -419,56 +424,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // MockRenderProcessHost usage in tests.
   virtual mojom::Renderer* GetRendererInterface() = 0;
 
-  // Create an URLLoaderFactory that can be used by |origin| being hosted in
-  // |this| process.
+  // Create an URLLoaderFactory from |this| renderer process.
   //
-  // |main_world_origin| specifies the origin of the main world that will use
-  // the URLLoaderFactory.  In most cases |main_world_origin| and |origin|
-  // should be the same, but they may differ if |origin| specifies an origin of
-  // an isolated world (e.g. a content script of a Chrome Extension - see also
-  // the doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
-  // TODO(lukasza): Remove |main_world_origin| once there is no need for
-  // a separate URLLoaderFactory for allowlisted extensions (in all other cases
-  // |main_world_origin| should be the same as |origin|).  At the same time,
-  // consider renaming |origin| to |request_initiator|.
-  //
-  // When NetworkService is enabled, |receiver| will be bound with a new
-  // URLLoaderFactory created from the storage partition's Network Context. Note
-  // that the URLLoaderFactory returned by this method does NOT support
-  // auto-reconnect after a crash of Network Service.
-  // When NetworkService is not enabled, |receiver| will be bound with a
-  // URLLoaderFactory which routes requests to ResourceDispatcherHost.
-  //
-  // |preferences| is an optional argument that might be used to control some
-  // aspects of the URLLoaderFactory (e.g. via
-  // allow_universal_access_from_file_urls).
-  //
-  // |header_client| will be used in URLLoaderFactoryParams when creating the
-  // factory.
-  //
-  // |network_isolation_key| will be used in URLLoaderFactoryParams when
-  // creating the factory. All resource requests through this factory will
-  // propagate the key to the network stack so that resources with different
-  // keys do not share network resources like the http cache.
-  //
-  // |top_frame_token| is a token for the top level frame, and used for resource
-  // accounting for keepalive requests.
-  //
-  // |factory_override|, when non-null, replaces the lower level network
-  // URLLoaderFactory used by security features (e.g., CORS) in the network
-  // service.
-
+  // This method will bind |receiver| with a new URLLoaderFactory created from
+  // the storage partition's Network Context. Note that the URLLoaderFactory
+  // returned by this method does NOT support auto-reconnect after a crash of
+  // Network Service.
   virtual void CreateURLLoaderFactory(
-      const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
-      const WebPreferences* preferences,
-      const net::NetworkIsolationKey& network_isolation_key,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-          header_client,
-      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryOverridePtr factory_override) = 0;
+      network::mojom::URLLoaderFactoryParamsPtr params) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.
@@ -507,6 +471,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter_remote,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) = 0;
   virtual void BindFileSystemManager(
@@ -520,7 +487,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // |render_frame_id| is the frame associated with |receiver|, or
   // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void BindIndexedDB(
-      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
@@ -529,10 +495,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
           receiver) = 0;
   virtual void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
-  virtual void BindQuotaDispatcherHost(
+  virtual void BindQuotaManagerHost(
       int render_frame_id,
       const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) = 0;
+      mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) = 0;
   virtual void CreateLockManager(
       int render_frame_id,
       const url::Origin& origin,
@@ -566,13 +532,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Controls whether the destructor of RenderProcessHost*Impl* will end up
   // cleaning the memory used by the exception added via
-  // RenderProcessHostImpl::AddCorbExceptionForPlugin.
+  // RenderProcessHostImpl::AddCorbExceptionForPlugin and
+  // AddAllowedRequestInitiatorForPlugin.
   //
   // TODO(lukasza): https://crbug.com/652474: This method shouldn't be part of
   // the //content public API, because it shouldn't be called by anyone other
   // than RenderProcessHostImpl (from underneath
   // RenderProcessHostImpl::AddCorbExceptionForPlugin).
-  virtual void CleanupCorbExceptionForPluginUponDestruction() = 0;
+  virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  // Ask the renderer process to dump its profiling data to disk. Invokes
+  // |callback| once this has completed.
+  virtual void DumpProfilingData(base::OnceClosure callback) {}
+#endif
 
   // Static management functions -----------------------------------------------
 
@@ -594,6 +567,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // //content layer will maintain a warm spare process host at all times
   // (without a need for separate calls to WarmupSpareRenderProcessHost).
   static void WarmupSpareRenderProcessHost(BrowserContext* browser_context);
+
+  // Return the spare RenderProcessHost, if it exists. There is at most one
+  // globally-used spare RenderProcessHost at any time.
+  static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the
@@ -625,7 +602,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // the current site), in which case we should ensure there is only one
   // RenderProcessHost per site for the entire browser context.
   static bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                                      const GURL& url);
+                                      const GURL& site_url);
 
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.

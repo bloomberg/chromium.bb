@@ -11,15 +11,16 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -143,10 +144,13 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         return mConnectionFactory;
     }
 
-    void fullyLoadUrl(final String url) {
+    void fullyLoadUrl(final String url) throws Exception {
+        CallbackHelper done = mCallbackContainer.getOnFirstVisuallyNonEmptyPaintHelper();
+        int currentCallCount = done.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { getActivity().getActiveShell().loadUrl(url); });
         waitForActiveShellToBeDoneLoading();
+        done.waitForCallback(currentCallCount);
     }
 
     void clearEventLogs() throws Exception {
@@ -294,18 +298,11 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void assertWaitForKeyboardStatus(final boolean show) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // We do not check the other way around: in some cases we need to keep
-                // input connection even when the last known status is 'hidden'.
-                if (show && getInputConnection() == null) {
-                    updateFailureReason("input connection should not be null.");
-                    return false;
-                }
-                updateFailureReason("expected show: " + show);
-                return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
+        CriteriaHelper.pollUiThread(() -> {
+            if (show) {
+                Assert.assertNotNull(getInputConnection());
             }
+            Assert.assertEquals(show, mInputMethodManagerWrapper.isShowWithoutHideOutstanding());
         });
     }
 
@@ -321,12 +318,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     void waitAndVerifyUpdateSelection(final int index, final int selectionStart,
             final int selectionEnd, final int compositionStart, final int compositionEnd) {
         final List<Pair<Range, Range>> states = mInputMethodManagerWrapper.getUpdateSelectionList();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return states.size() > index;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> Assert.assertThat(states.size(), Matchers.greaterThan(index)));
         Pair<Range, Range> selection = states.get(index);
         Assert.assertEquals("Mismatched selection start", selectionStart, selection.first.start());
         Assert.assertEquals("Mismatched selection end", selectionEnd, selection.first.end());
@@ -340,15 +333,13 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void assertClipboardContents(final Activity activity, final String expectedContents) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ClipboardManager clipboardManager =
-                        (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = clipboardManager.getPrimaryClip();
-                return clip != null && clip.getItemCount() == 1
-                        && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ClipboardManager clipboardManager =
+                    (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = clipboardManager.getPrimaryClip();
+            Assert.assertNotNull(clip);
+            Assert.assertEquals(1, clip.getItemCount());
+            Assert.assertEquals(expectedContents, clip.getItemAt(0).getText());
         });
     }
 

@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -36,12 +37,16 @@ std::vector<uint8_t> CreateFlattenedPdf(base::span<const uint8_t> input_buffer);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-// Printing modes - type to convert PDF to for printing
+// Printing modes - type to convert PDF to for printing. See PDFium's
+// FPDF_SetPrintMode() for details.
 enum PrintingMode {
   kEmf = 0,
   kTextOnly = 1,
   kPostScript2 = 2,
   kPostScript3 = 3,
+  // Values 4 and 5 are similar to |kPostScript2| and |kPostScript3|, but are
+  // not intended for use in sandboxed environments like Chromium's.
+  kEmfWithReducedRasterization = 6,
 };
 
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
@@ -104,6 +109,11 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
 // Returns true if it's a tagged (accessible) PDF, false if it's a valid
 // PDF but untagged, and nullopt if the PDF can't be parsed.
 base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer);
+
+// Given a tagged PDF (see IsPDFDocTagged, above), return the portion of
+// the structure tree for a given page as a hierarchical tree of base::Values.
+base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
+                                    int page_index);
 
 // Gets the dimensions of a specific page in a document.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be

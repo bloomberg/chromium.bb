@@ -5,8 +5,6 @@
 package org.chromium.android_webview.services;
 
 import android.app.Service;
-import android.app.job.JobInfo;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -15,17 +13,15 @@ import android.os.ParcelFileDescriptor;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
+import org.chromium.android_webview.common.crash.CrashUploadUtil;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.base.Log;
-import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -69,7 +65,7 @@ public class CrashReceiverService extends Service {
             boolean copySucceeded = copyMinidumps(uid, fileDescriptors, crashesInfo);
             if (copySucceeded && scheduleUploads) {
                 // Only schedule a new job if there actually are any files to upload.
-                scheduleNewJob();
+                CrashUploadUtil.scheduleNewJob(this);
             }
         } finally {
             synchronized (mCopyingLock) {
@@ -96,12 +92,6 @@ public class CrashReceiverService extends Service {
             mIsCopying = true;
             return true;
         }
-    }
-
-    private void scheduleNewJob() {
-        JobInfo.Builder builder = new JobInfo.Builder(TaskIds.WEBVIEW_MINIDUMP_UPLOADING_JOB_ID,
-                new ComponentName(this, AwMinidumpUploadJobService.class));
-        MinidumpUploadJobService.scheduleUpload(builder);
     }
 
     /**
@@ -158,16 +148,9 @@ public class CrashReceiverService extends Service {
             File logFile, File crashFile, Map<String, String> crashInfoMap) {
         try {
             String localId = CrashFileManager.getCrashLocalIdFromFileName(crashFile.getName());
-            if (localId == null) return false;
-            CrashInfo crashInfo = new CrashInfo(localId);
+            if (localId == null || crashInfoMap == null) return false;
+            CrashInfo crashInfo = new CrashInfo(localId, crashInfoMap);
             crashInfo.captureTime = crashFile.lastModified();
-
-            if (crashInfoMap == null) return false;
-            crashInfo.packageName = crashInfoMap.get("app-package-name");
-
-            if (crashInfoMap.containsKey("variations")) {
-                crashInfo.variations = Arrays.asList(crashInfoMap.get("variations").split(","));
-            }
 
             FileWriter writer = new FileWriter(logFile);
             try {

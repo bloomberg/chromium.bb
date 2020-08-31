@@ -104,7 +104,7 @@ void AppendValueAndShortTokens(
   for (const base::StringPiece16& token : tokens) {
     if (token.size() < kMinimumWordLength)
       short_tokens.push_back(token.as_string());
-    token.AppendToString(field_data_value);
+    field_data_value->append(token.data(), token.size());
   }
   // It is better to insert elements to a |base::flat_set| in one operation.
   field_data_short_tokens->insert(short_tokens.begin(), short_tokens.end());
@@ -226,17 +226,17 @@ void RemoveFieldsWithNegativeWords(
 void FindWordsFromCategoryInForm(
     const std::vector<UsernameFieldData>& possible_usernames_data,
     const CategoryOfWords& category,
-    std::vector<uint32_t>* username_predictions) {
+    std::vector<FieldRendererId>* username_predictions) {
   // Auxiliary element that contains the first field (in order of appearance in
   // the form) in which a substring is encountered.
-  uint32_t chosen_field_renderer_id = FormData::kNotSetFormRendererId;
+  FieldRendererId chosen_field_renderer_id;
 
   size_t fields_found = 0;
   for (const UsernameFieldData& field_data : possible_usernames_data) {
     if (ContainsWordFromCategory(field_data, category)) {
       if (fields_found == 0) {
-        chosen_field_renderer_id =
-            field_data.input_element.UniqueRendererFormControlId();
+        chosen_field_renderer_id = FieldRendererId(
+            field_data.input_element.UniqueRendererFormControlId());
       }
       fields_found++;
     }
@@ -252,7 +252,7 @@ void FindWordsFromCategoryInForm(
 void FindUsernameFieldInternal(
     const std::vector<blink::WebFormControlElement>& all_control_elements,
     const FormData& form_data,
-    std::vector<uint32_t>* username_predictions) {
+    std::vector<FieldRendererId>* username_predictions) {
   DCHECK(username_predictions);
   DCHECK(username_predictions->empty());
 
@@ -285,15 +285,15 @@ void FindUsernameFieldInternal(
 }
 
 // Returns the |unique_renderer_id| of a given |WebFormElement|. If
-// |WebFormElement::IsNull()| return |kNotSetFormRendererId|.
-uint32_t GetFormRendererId(WebFormElement form) {
-  return form.IsNull() ? FormData::kNotSetFormRendererId
-                       : form.UniqueRendererFormId();
+// |WebFormElement::IsNull()| return a null renderer ID.
+FormRendererId GetFormRendererId(WebFormElement form) {
+  return form.IsNull() ? FormRendererId()
+                       : FormRendererId(form.UniqueRendererFormId());
 }
 
 }  // namespace
 
-const std::vector<uint32_t>& GetPredictionsFieldBasedOnHtmlAttributes(
+const std::vector<FieldRendererId>& GetPredictionsFieldBasedOnHtmlAttributes(
     const std::vector<WebFormControlElement>& all_control_elements,
     const FormData& form_data,
     UsernameDetectorCache* username_detector_cache) {
@@ -312,10 +312,10 @@ const std::vector<uint32_t>& GetPredictionsFieldBasedOnHtmlAttributes(
   // Iterator pointing to the entry for |form| if the entry for |form| is found.
   UsernameDetectorCache::iterator form_position;
   std::tie(form_position, cache_miss) = username_detector_cache->insert(
-      std::make_pair(GetFormRendererId(form), std::vector<uint32_t>()));
+      std::make_pair(GetFormRendererId(form), std::vector<FieldRendererId>()));
 
   if (cache_miss) {
-    std::vector<uint32_t> username_predictions;
+    std::vector<FieldRendererId> username_predictions;
     FindUsernameFieldInternal(all_control_elements, form_data,
                               &username_predictions);
     if (!username_predictions.empty())

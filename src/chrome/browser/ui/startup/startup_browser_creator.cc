@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <limits>
 #include <set>
 #include <string>
 
@@ -14,12 +13,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
@@ -27,6 +26,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
@@ -45,12 +45,14 @@
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -79,6 +81,7 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/user_manager.h"
 #endif
 
@@ -96,11 +99,10 @@
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/print_dialog_cloud.h"
-#endif
+#include "chrome/browser/printing/print_dialog_cloud_win.h"
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // defined(OS_WIN)
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -258,11 +260,18 @@ bool CanOpenProfileOnStartup(Profile* profile) {
   // Guest or system profiles are not available unless a separate process
   // already has a window open for the profile.
   return (!profile->IsGuestSession() && !profile->IsSystemProfile()) ||
-         (chrome::GetBrowserCount(profile->GetOffTheRecordProfile()) > 0);
+         (chrome::GetBrowserCount(profile->GetPrimaryOTRProfile()) > 0);
 #endif
 }
 
-void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
+#if !defined(OS_CHROMEOS)
+bool ShouldShowProfilePicker() {
+  return !signin_util::IsForceSigninEnabled() &&
+         base::FeatureList::IsEnabled(features::kNewProfilePicker);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+void ShowUserManagerOnStartup() {
 #if !defined(OS_CHROMEOS)
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -355,7 +364,7 @@ bool StartupBrowserCreator::LaunchBrowser(
   // is forced.
   if (IncognitoModePrefs::ShouldLaunchIncognito(command_line,
                                                 profile->GetPrefs())) {
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
   } else if (command_line.HasSwitch(switches::kIncognito)) {
     LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
                  << "browser session.";
@@ -364,13 +373,13 @@ bool StartupBrowserCreator::LaunchBrowser(
   if (IsGuestModeEnforced(command_line, /* show_warning= */ true)) {
     profile = g_browser_process->profile_manager()
                   ->GetProfile(ProfileManager::GetGuestProfilePath())
-                  ->GetOffTheRecordProfile();
+                  ->GetPrimaryOTRProfile();
   }
 
 #if defined(OS_WIN)
   // Continue with the incognito profile if this is a credential provider logon.
   if (command_line.HasSwitch(credential_provider::kGcpwSigninSwitch))
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
 #endif
 
   if (!IsSilentLaunchEnabled(command_line, profile)) {
@@ -489,6 +498,10 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
 #endif
   registry->RegisterBooleanPref(prefs::kSuppressUnsupportedOSWarning, false);
   registry->RegisterBooleanPref(prefs::kWasRestarted, false);
+
+#if defined(OS_WIN)
+  registry->RegisterStringPref(prefs::kShortcutMigrationVersion, std::string());
+#endif
 }
 
 // static
@@ -605,7 +618,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
        !IncognitoModePrefs::ShouldLaunchIncognito(
            command_line, last_used_profile->GetPrefs()));
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
   if (command_line.HasSwitch(switches::kCloudPrintFile) &&
@@ -614,7 +627,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                                                            command_line)) {
     silent_launch = true;
   }
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (!process_startup) {
@@ -650,6 +663,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
+  // If we are in the recoverable ARC/PWA app mode state (we do not have kAppId
+  // set), we should terminate the session instead of just showing black screen.
+  // TODO(crbug.com/1054382): Add a way of restarting PWA and Arc kiosks.
+  if (chrome::IsRunningInForcedAppMode() &&
+      !command_line.HasSwitch(switches::kAppId)) {
+    chrome::AttemptUserExit();
+    return false;
+  }
+
   // If we are a demo app session and we crashed, there is no safe recovery
   // possible. We should instead cleanly exit and go back to the OOBE screen,
   // where we will launch again after the timeout has expired.
@@ -678,11 +700,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     base::FilePath output_file(
         command_line.GetSwitchValuePath(switches::kDumpBrowserHistograms));
     if (!output_file.empty()) {
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskPriority::BEST_EFFORT,
-                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                     base::BindOnce(&DumpBrowserHistograms, output_file));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          base::BindOnce(&DumpBrowserHistograms, output_file));
     }
     silent_launch = true;
   }
@@ -778,6 +800,13 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles) {
+#if !defined(OS_CHROMEOS)
+  if (ShouldShowProfilePicker()) {
+    ProfilePicker::Show();
+    return true;
+  }
+#endif  // !defined(OS_CHROMEOS)
+
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?
       chrome::startup::IS_PROCESS_STARTUP :
       chrome::startup::IS_NOT_PROCESS_STARTUP;
@@ -803,17 +832,16 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
   // - All of the last opened profiles fail to initialize.
   if (last_opened_profiles.empty() || was_windows_notification_launch) {
     if (CanOpenProfileOnStartup(last_used_profile)) {
-      Profile* profile_to_open =
-          last_used_profile->IsGuestSession()
-              ? last_used_profile->GetOffTheRecordProfile()
-              : last_used_profile;
+      Profile* profile_to_open = last_used_profile->IsGuestSession()
+                                     ? last_used_profile->GetPrimaryOTRProfile()
+                                     : last_used_profile;
 
       return LaunchBrowser(command_line, profile_to_open, cur_dir,
                            is_process_startup, is_first_run);
     }
 
     // Show UserManager if |last_used_profile| can't be auto opened.
-    ShowUserManagerOnStartup(command_line);
+    ShowUserManagerOnStartup();
     return true;
   }
   return ProcessLastOpenedProfiles(command_line, cur_dir, is_process_startup,
@@ -834,39 +862,13 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
                                                  switch_pair.second);
   }
 
-  // TODO(scottmg): DEBUG_ variables added for https://crbug.com/614753.
-  size_t DEBUG_num_profiles_on_entry = last_opened_profiles.size();
-  base::debug::Alias(&DEBUG_num_profiles_on_entry);
-  int DEBUG_loop_counter = 0;
-  base::debug::Alias(&DEBUG_loop_counter);
-
-  base::debug::Alias(&last_opened_profiles);
-  const Profile* DEBUG_profile_0 = nullptr;
-  const Profile* DEBUG_profile_1 = nullptr;
-  if (!last_opened_profiles.empty())
-    DEBUG_profile_0 = last_opened_profiles[0];
-  if (last_opened_profiles.size() > 1)
-    DEBUG_profile_1 = last_opened_profiles[1];
-  base::debug::Alias(&DEBUG_profile_0);
-  base::debug::Alias(&DEBUG_profile_1);
-
-  size_t DEBUG_num_profiles_at_loop_start = std::numeric_limits<size_t>::max();
-  base::debug::Alias(&DEBUG_num_profiles_at_loop_start);
-
-  auto DEBUG_it_begin = last_opened_profiles.begin();
-  base::debug::Alias(&DEBUG_it_begin);
-  auto DEBUG_it_end = last_opened_profiles.end();
-  base::debug::Alias(&DEBUG_it_end);
-
   // Launch the profiles in the order they became active.
-  for (auto it = last_opened_profiles.begin(); it != last_opened_profiles.end();
-       ++it, ++DEBUG_loop_counter) {
-    DEBUG_num_profiles_at_loop_start = last_opened_profiles.size();
-    DCHECK(!(*it)->IsGuestSession());
+  for (Profile* profile : last_opened_profiles) {
+    DCHECK(!profile->IsGuestSession());
 
 #if !defined(OS_CHROMEOS)
     // Skip any locked profile.
-    if (!CanOpenProfileOnStartup(*it))
+    if (!CanOpenProfileOnStartup(profile))
       continue;
 
     // Guest profiles should not be reopened on startup. This can happen if
@@ -875,21 +877,23 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
     // to be the active one, since the Guest profile is never added to the
     // list of open profiles.
     if (last_used_profile->IsGuestSession())
-      last_used_profile = *it;
+      last_used_profile = profile;
 #endif
 
     // Don't launch additional profiles which would only open a new tab
     // page. When restarting after an update, all profiles will reopen last
     // open pages.
-    SessionStartupPref startup_pref = GetSessionStartupPref(command_line, *it);
-    if (*it != last_used_profile &&
+    SessionStartupPref startup_pref =
+        GetSessionStartupPref(command_line, profile);
+    if (profile != last_used_profile &&
         startup_pref.type == SessionStartupPref::DEFAULT &&
-        !HasPendingUncleanExit(*it)) {
+        !HasPendingUncleanExit(profile)) {
       continue;
     }
-    if (!LaunchBrowser((*it == last_used_profile) ? command_line
-                                                  : command_line_without_urls,
-                       *it, cur_dir, is_process_startup, is_first_run)) {
+    if (!LaunchBrowser((profile == last_used_profile)
+                           ? command_line
+                           : command_line_without_urls,
+                       profile, cur_dir, is_process_startup, is_first_run)) {
       return false;
     }
     // We've launched at least one browser.
@@ -903,7 +907,7 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
 // activation this one.
 #if !defined(OS_CHROMEOS)
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP)
-    ShowUserManagerOnStartup(command_line);
+    ShowUserManagerOnStartup();
   else
 #endif
     profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
@@ -1011,13 +1015,10 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
 // the profile id encoded in the notification launch id should be chosen over
 // all others.
 #if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
-    std::string profile_id = NotificationLaunchId::GetProfileIdFromLaunchId(
-        command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
-    if (!profile_id.empty()) {
-      return user_data_dir.Append(
-          base::FilePath(base::UTF8ToUTF16(profile_id)));
-    }
+  std::string profile_id =
+      NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
+  if (!profile_id.empty()) {
+    return user_data_dir.Append(base::FilePath(base::UTF8ToUTF16(profile_id)));
   }
 #endif  // defined(OS_WIN)
 

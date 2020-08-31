@@ -6,9 +6,10 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 

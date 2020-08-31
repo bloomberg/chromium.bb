@@ -28,31 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Network.RequestResponseView = class extends UI.VBox {
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as SourceFrame from '../source_frame/source_frame.js';
+import * as UI from '../ui/ui.js';
+
+export class RequestResponseView extends UI.Widget.VBox {
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   constructor(request) {
     super();
     this.element.classList.add('request-view');
     /** @protected */
     this.request = request;
-    /** @type {?Promise<!UI.Widget>} */
+    /** @type {?Promise<!UI.Widget.Widget>} */
     this._contentViewPromise = null;
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {!SDK.NetworkRequest.ContentData} contentData
    * @return {boolean}
    */
   static _hasTextContent(request, contentData) {
     const mimeType = request.mimeType || '';
-    let resourceType = Common.ResourceType.fromMimeType(mimeType);
-    if (resourceType === Common.resourceTypes.Other) {
+    let resourceType = Common.ResourceType.ResourceType.fromMimeType(mimeType);
+    if (resourceType === Common.ResourceType.resourceTypes.Other) {
       resourceType = request.contentType();
     }
-    if (resourceType === Common.resourceTypes.Image) {
+    if (resourceType === Common.ResourceType.resourceTypes.Image) {
       return mimeType.startsWith('image/svg');
     }
     if (resourceType.isTextType()) {
@@ -61,7 +66,7 @@ Network.RequestResponseView = class extends UI.VBox {
     if (contentData.error) {
       return false;
     }
-    if (resourceType === Common.resourceTypes.Other) {
+    if (resourceType === Common.ResourceType.resourceTypes.Other) {
       return !!contentData.content && !contentData.encoded;
     }
     return false;
@@ -69,24 +74,24 @@ Network.RequestResponseView = class extends UI.VBox {
 
   /**
    * @protected
-   * @param {!SDK.NetworkRequest} request
-   * @return {!Promise<?UI.Widget>}
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @return {!Promise<?UI.Widget.Widget>}
    */
   static async sourceViewForRequest(request) {
-    let sourceView = request[Network.RequestResponseView._sourceViewSymbol];
+    let sourceView = request[_sourceViewSymbol];
     if (sourceView !== undefined) {
       return sourceView;
     }
 
     const contentData = await request.contentData();
-    if (!Network.RequestResponseView._hasTextContent(request, contentData)) {
-      request[Network.RequestResponseView._sourceViewSymbol] = null;
+    if (!RequestResponseView._hasTextContent(request, contentData)) {
+      request[_sourceViewSymbol] = null;
       return null;
     }
 
     const highlighterType = request.resourceType().canonicalMimeType() || request.mimeType;
-    sourceView = SourceFrame.ResourceSourceFrame.createSearchableView(request, highlighterType);
-    request[Network.RequestResponseView._sourceViewSymbol] = sourceView;
+    sourceView = SourceFrame.ResourceSourceFrame.ResourceSourceFrame.createSearchableView(request, highlighterType);
+    request[_sourceViewSymbol] = sourceView;
     return sourceView;
   }
 
@@ -99,7 +104,7 @@ Network.RequestResponseView = class extends UI.VBox {
   }
 
   /**
-   * @return {!Promise<!UI.Widget>}
+   * @return {!Promise<!UI.Widget.Widget>}
    */
   _doShowPreview() {
     if (!this._contentViewPromise) {
@@ -110,7 +115,7 @@ Network.RequestResponseView = class extends UI.VBox {
 
   /**
    * @protected
-   * @return {!Promise<!UI.Widget>}
+   * @return {!Promise<!UI.Widget.Widget>}
    */
   async showPreview() {
     const responseView = await this.createPreview();
@@ -120,18 +125,18 @@ Network.RequestResponseView = class extends UI.VBox {
 
   /**
    * @protected
-   * @return {!Promise<!UI.Widget>}
+   * @return {!Promise<!UI.Widget.Widget>}
    */
   async createPreview() {
     const contentData = await this.request.contentData();
-    const sourceView = await Network.RequestResponseView.sourceViewForRequest(this.request);
+    const sourceView = await RequestResponseView.sourceViewForRequest(this.request);
     if ((!contentData.content || !sourceView) && !contentData.error) {
-      return new UI.EmptyWidget(Common.UIString('This request has no response data available.'));
+      return new UI.EmptyWidget.EmptyWidget(Common.UIString.UIString('This request has no response data available.'));
     }
     if (contentData.content && sourceView) {
       return sourceView;
     }
-    return new UI.EmptyWidget(Common.UIString('Failed to load response data'));
+    return new UI.EmptyWidget.EmptyWidget(Common.UIString.UIString('Failed to load response data'));
   }
 
   /**
@@ -143,6 +148,6 @@ Network.RequestResponseView = class extends UI.VBox {
       view.revealPosition(line);
     }
   }
-};
+}
 
-Network.RequestResponseView._sourceViewSymbol = Symbol('RequestResponseSourceView');
+export const _sourceViewSymbol = Symbol('RequestResponseSourceView');

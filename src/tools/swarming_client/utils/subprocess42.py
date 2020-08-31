@@ -484,7 +484,7 @@ class Popen(subprocess.Popen):
       kwargs['cwd'] = to_str(kwargs['cwd'])
     if kwargs.get('env'):
       kwargs['env'] = {
-        to_str(k): to_str(v) for k, v in kwargs['env'].iteritems()
+        to_str(k): to_str(v) for k, v in kwargs['env'].items()
       }
 
     # Set via contrived monkey patching below, because stdlib doesn't expose
@@ -549,11 +549,12 @@ class Popen(subprocess.Popen):
             def Close(self):
               pass
           def patch_CreateProcess(*args, **kwargs):
-             hp, ht, pid, tid = old(*args, **kwargs)
-             # Save the thread handle, and return a fake one that
-             # _execute_child() will close indiscriminally.
-             self._handle_thread = ht
-             return hp, FakeHandle(), pid, tid
+            hp, ht, pid, tid = old(*args, **kwargs)
+            # Save the thread handle, and return a fake one that
+            # _execute_child() will close indiscriminally.
+            self._handle_thread = ht
+            return hp, FakeHandle(), pid, tid
+
           subprocess._subprocess.CreateProcess = patch_CreateProcess
         try:
           super(Popen, self).__init__(args, **kwargs)
@@ -759,7 +760,7 @@ class Popen(subprocess.Popen):
         to = max(to - (time.time() - last_yield), 0)
       t, data = self.recv_any(
           maxsize=maxsize() if callable(maxsize) else maxsize, timeout=to)
-      if data or to is 0:
+      if data or to == 0:
         yield t, data
         last_yield = time.time()
 
@@ -930,7 +931,7 @@ def set_signal_handler(signals, handler):
   try:
     yield
   finally:
-    for sig, h in previous.iteritems():
+    for sig, h in previous.items():
       signal.signal(sig, h)
 
 
@@ -1040,6 +1041,6 @@ def split(data, sep='\n'):
       yield pipe_name, to_emit
 
   # Emit remaining chunks that don't end with separators as is.
-  for pipe_name, chunks in sorted(pending_chunks.iteritems()):
+  for pipe_name, chunks in sorted(pending_chunks.items()):
     if chunks:
       yield pipe_name, ''.join(chunks)

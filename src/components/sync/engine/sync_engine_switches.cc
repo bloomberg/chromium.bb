@@ -6,14 +6,6 @@
 
 namespace switches {
 
-// TODO(crbug.com/657130): Sync integration tests depend on the precommit get
-// updates because invalidations aren't working for them. Therefore, they pass
-// the command line switch to enable this feature. Once sync integrations test
-// support invalidation, this should be removed.
-// Enables feature to perform GetUpdate requests before every commit.
-const char kSyncEnableGetUpdatesBeforeCommit[] =
-    "sync-enable-get-update-before-commits";
-
 const base::Feature kSyncResetPollIntervalOnStart{
     "SyncResetPollIntervalOnStart", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -26,7 +18,7 @@ const base::Feature kSyncUseScryptForNewCustomPassphrases{
     "SyncUseScryptForNewCustomPassphrases", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSyncSupportTrustedVaultPassphrase{
-    "SyncSupportTrustedVaultPassphrase", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncSupportTrustedVaultPassphrase", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled sync cycle ends by collecting contributions from all datatypes
 // and having less than max_commit_batch_size() entries to commit. If disabled

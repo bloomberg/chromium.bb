@@ -6,15 +6,16 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.annotation.ColorInt;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.Button;
 
-import org.chromium.chrome.browser.ui.widget.TintedDrawable;
-import org.chromium.chrome.browser.widget.NumberRollView;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import androidx.annotation.ColorInt;
+import androidx.appcompat.content.res.AppCompatResources;
+
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.NumberRollView;
+import org.chromium.components.browser_ui.widget.TintedDrawable;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 
 import java.util.Collections;
 import java.util.List;

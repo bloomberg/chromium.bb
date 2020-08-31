@@ -17,19 +17,19 @@ namespace autofill_assistant {
 
 namespace {
 
-// Sort scripts by priority.
-void SortScripts(std::vector<Script*>* scripts) {
-  std::sort(scripts->begin(), scripts->end(),
-            [](const Script* a, const Script* b) {
-              // Runnable scripts with lowest priority value are displayed
-              // first, Interrupts with lowest priority values are run first.
-              // Order of scripts with the same priority is arbitrary. Fallback
-              // to ordering by name and path, arbitrarily, for the behavior to
-              // be consistent across runs.
-              return std::tie(a->priority, a->handle.chip.text,
-                              a->handle.path) <
-                     std::tie(b->priority, b->handle.chip.text, a->handle.path);
-            });
+// Sort scripts by priority. T must be a normal or smart pointer to a script
+void SortScripts(std::vector<std::unique_ptr<Script>>* scripts) {
+  std::sort(
+      scripts->begin(), scripts->end(),
+      [](const std::unique_ptr<Script>& a, const std::unique_ptr<Script>& b) {
+        // Runnable scripts with lowest priority value are displayed
+        // first, Interrupts with lowest priority values are run first.
+        // Order of scripts with the same priority is arbitrary. Fallback
+        // to ordering by name and path, arbitrarily, for the behavior to
+        // be consistent across runs.
+        return std::tie(a->priority, a->handle.chip.text, a->handle.path) <
+               std::tie(b->priority, b->handle.chip.text, a->handle.path);
+      });
 }
 
 // Creates a value containing a vector of a simple type, accepted by base::Value
@@ -55,25 +55,18 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
 ScriptTracker::~ScriptTracker() = default;
 
 void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
-  // The set of interrupts must not change while a script is running, as they're
-  // passed to ScriptExecutor.
-  if (running())
-    return;
-
   TerminatePendingChecks();
 
   available_scripts_.clear();
-  for (auto& script : scripts) {
-    available_scripts_[script.get()] = std::move(script);
-  }
-
   interrupts_.clear();
-  for (auto& entry : available_scripts_) {
-    Script* script = entry.first;
+  for (auto& script : scripts) {
     if (script->handle.interrupt) {
-      interrupts_.push_back(script);
+      interrupts_.emplace_back(std::move(script));
+    } else {
+      available_scripts_.emplace_back(std::move(script));
     }
   }
+  SortScripts(&available_scripts_);
   SortScripts(&interrupts_);
 }
 
@@ -85,8 +78,7 @@ void ScriptTracker::CheckScripts() {
 
   GURL url = delegate_->GetCurrentURL();
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
-  for (const auto& entry : available_scripts_) {
-    Script* script = entry.first;
+  for (const std::unique_ptr<Script>& script : available_scripts_) {
     if (script->handle.chip.empty() && script->handle.direct_action.empty() &&
         !script->handle.autostart)
       continue;
@@ -95,12 +87,12 @@ void ScriptTracker::CheckScripts() {
         url, batch_element_checker_.get(), *delegate_->GetTriggerContext(),
         scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
-                       weak_ptr_factory_.GetWeakPtr(), script));
+                       weak_ptr_factory_.GetWeakPtr(), script->handle.path));
   }
   if (batch_element_checker_->empty() && pending_runnable_scripts_.empty() &&
       !available_scripts_.empty()) {
-    DVLOG(1) << __func__ << ": No runnable scripts for " << url << " out of "
-             << available_scripts_.size() << " available.";
+    VLOG(1) << __func__ << ": No runnable scripts for " << url << " out of "
+            << available_scripts_.size() << " available.";
     // There are no runnable scripts, even though we haven't checked the DOM
     // yet. Report it all immediately.
     UpdateRunnableScriptsIfNecessary();
@@ -114,11 +106,17 @@ void ScriptTracker::CheckScripts() {
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
+                                  const UserData* user_data,
                                   std::unique_ptr<TriggerContext> context,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
+#ifdef NDEBUG
+    VLOG(1) << "Unexpected call while another script is running.";
+#else
     DVLOG(1) << "Do not expect executing the script (" << script_path
              << " when there is a script running.";
+#endif
+
     ScriptExecutor::Result result;
     result.success = false;
     std::move(callback).Run(result);
@@ -133,7 +131,7 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
   TerminatePendingChecks();
-  executor_->Run(std::move(run_script_callback));
+  executor_->Run(user_data, std::move(run_script_callback));
 }
 
 void ScriptTracker::StopScript() {
@@ -164,8 +162,8 @@ base::Value ScriptTracker::GetDebugContext() const {
   dict.SetKey("executed-scripts", base::Value(scripts_state_js));
 
   std::vector<base::Value> available_scripts_js;
-  for (const auto& entry : available_scripts_)
-    available_scripts_js.push_back(base::Value(entry.second->handle.path));
+  for (const std::unique_ptr<Script>& script : available_scripts_)
+    available_scripts_js.push_back(base::Value(script->handle.path));
   dict.SetKey("available-scripts", base::Value(available_scripts_js));
 
   std::vector<base::Value> runnable_scripts_js;
@@ -199,15 +197,7 @@ void ScriptTracker::OnScriptRun(
     ScriptExecutor::RunScriptCallback original_callback,
     const ScriptExecutor::Result& result) {
   executor_.reset();
-  MaybeSwapInScripts();
   std::move(original_callback).Run(result);
-}
-
-void ScriptTracker::MaybeSwapInScripts() {
-  if (scripts_update_) {
-    SetScripts(std::move(*scripts_update_));
-    scripts_update_.reset();
-  }
 }
 
 void ScriptTracker::OnCheckDone() {
@@ -222,12 +212,16 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
     return;
   }
 
+  // Go through available scripts, to guarantee that runnable_scripts_ follows
+  // the order of available_scripts_. As a side effect, any invalid path in
+  // runnable_scripts_ is ignored here.
   runnable_scripts_.clear();
-  SortScripts(&pending_runnable_scripts_);
-  for (Script* script : pending_runnable_scripts_) {
-    runnable_scripts_.push_back(script->handle);
+  for (const std::unique_ptr<Script>& script : available_scripts_) {
+    if (pending_runnable_scripts_.find(script->handle.path) !=
+        pending_runnable_scripts_.end()) {
+      runnable_scripts_.push_back(script->handle);
+    }
   }
-
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 
@@ -240,25 +234,20 @@ bool ScriptTracker::RunnablesHaveChanged() {
   if (runnable_scripts_.size() != pending_runnable_scripts_.size())
     return true;
 
-  std::set<std::string> pending_paths;
-  for (Script* script : pending_runnable_scripts_) {
-    pending_paths.insert(script->handle.path);
-  }
   std::set<std::string> current_paths;
   for (const auto& handle : runnable_scripts_) {
     current_paths.insert(handle.path);
   }
-  return pending_paths != current_paths;
+  return pending_runnable_scripts_ != current_paths;
 }
 
-void ScriptTracker::OnPreconditionCheck(Script* script,
+void ScriptTracker::OnPreconditionCheck(const std::string& script_path,
                                         bool met_preconditions) {
-  if (available_scripts_.find(script) == available_scripts_.end()) {
-    // Result is not relevant anymore.
-    return;
-  }
   if (met_preconditions)
-    pending_runnable_scripts_.push_back(script);
+    pending_runnable_scripts_.insert(script_path);
+
+  // Note that if we receive a path for a script not in available_scripts_ - or
+  // not any more - it'll be ignored in UpdateRunnableScriptsIfNecessary.
 }
 
 void ScriptTracker::OnServerPayloadChanged(const std::string& global_payload,
@@ -269,8 +258,7 @@ void ScriptTracker::OnServerPayloadChanged(const std::string& global_payload,
 
 void ScriptTracker::OnScriptListChanged(
     std::vector<std::unique_ptr<Script>> scripts) {
-  scripts_update_.reset(
-      new std::vector<std::unique_ptr<Script>>(std::move(scripts)));
+  SetScripts(std::move(scripts));
 }
 
 }  // namespace autofill_assistant

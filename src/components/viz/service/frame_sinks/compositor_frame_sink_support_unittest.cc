@@ -39,13 +39,14 @@ namespace viz {
 namespace {
 
 constexpr bool kIsRoot = false;
-constexpr bool kNeedsSyncPoints = true;
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
 
 const base::UnguessableToken kArbitraryToken =
     base::UnguessableToken::Deserialize(1, 2);
+const base::UnguessableToken kAnotherArbitraryToken =
+    base::UnguessableToken::Deserialize(2, 2);
 const base::UnguessableToken kArbitrarySourceId1 =
     base::UnguessableToken::Deserialize(0xdead, 0xbeef);
 const base::UnguessableToken kArbitrarySourceId2 =
@@ -67,8 +68,7 @@ gpu::SyncToken GenTestSyncToken(int id) {
 
 bool BeginFrameArgsAreEquivalent(const BeginFrameArgs& first,
                                  const BeginFrameArgs& second) {
-  return first.source_id == second.source_id &&
-         first.sequence_number == second.sequence_number;
+  return first.frame_id == second.frame_id;
 }
 
 }  // namespace
@@ -104,8 +104,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     manager_.RegisterFrameSinkId(kArbitraryFrameSinkId,
                                  true /* report_activation */);
     support_ = std::make_unique<CompositorFrameSinkSupport>(
-        &fake_support_client_, &manager_, kArbitraryFrameSinkId, kIsRoot,
-        kNeedsSyncPoints);
+        &fake_support_client_, &manager_, kArbitraryFrameSinkId, kIsRoot);
     support_->SetBeginFrameSource(&begin_frame_source_);
   }
   ~CompositorFrameSinkSupportTest() override {
@@ -562,8 +561,7 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
                                true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot);
   LocalSurfaceId local_surface_id(6, kArbitraryToken);
   support->SubmitCompositorFrame(local_surface_id,
                                  MakeDefaultCompositorFrame());
@@ -588,8 +586,7 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
                                true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot);
   base::UnguessableToken embed_token = base::UnguessableToken::Create();
   LocalSurfaceId local_surface_id1(6, 1, embed_token);
   LocalSurfaceId local_surface_id2(6, 2, embed_token);
@@ -645,7 +642,7 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId,
-      false /* not root frame sink */, kNeedsSyncPoints);
+      false /* not root frame sink */);
 
   bool did_receive_aborted_copy_result = false;
   auto request = std::make_unique<CopyOutputRequest>(
@@ -678,8 +675,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictLastActivatedSurface) {
                                true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
   SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
 
@@ -1176,6 +1172,37 @@ TEST_F(CompositorFrameSinkSupportTest,
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
+// Verify that FrameToken is sent to the client if and only if the frame is
+// active.
+TEST_F(CompositorFrameSinkSupportTest, OnFrameTokenUpdate) {
+  LocalSurfaceId child_local_surface_id(1, kAnotherArbitraryToken);
+  SurfaceId child_id(kAnotherArbitraryFrameSinkId, child_local_surface_id);
+
+  auto frame = CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetSendFrameTokenToEmbedder(true)
+                   .SetActivationDependencies({child_id})
+                   .Build();
+  uint32_t frame_token = frame.metadata.frame_token;
+  ASSERT_NE(frame_token, 0u);
+
+  LocalSurfaceId local_surface_id(1, kArbitraryToken);
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+
+  Surface* surface = support_->GetLastCreatedSurfaceForTesting();
+  EXPECT_TRUE(surface->has_deadline());
+  EXPECT_FALSE(surface->HasActiveFrame());
+  EXPECT_TRUE(surface->HasPendingFrame());
+
+  // Since the frame is not activated, |frame_token| is not sent to the client.
+  EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, _)).Times(0);
+  testing::Mock::VerifyAndClearExpectations(&frame_sink_manager_client_);
+
+  // Since the frame is now activated, |frame_token| is sent to the client.
+  EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, frame_token));
+  surface->ActivatePendingFrameForDeadline();
+}
+
 // This test verifies that it is not possible to reuse the same embed token in
 // two different frame sinks.
 TEST_F(CompositorFrameSinkSupportTest,
@@ -1190,7 +1217,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId,
-      false /* not root frame sink */, kNeedsSyncPoints);
+      false /* not root frame sink */);
   LocalSurfaceId local_surface_id(31232, local_surface_id_.embed_token());
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id, MakeDefaultCompositorFrame(), base::nullopt, 0,
@@ -1251,8 +1278,7 @@ TEST_F(CompositorFrameSinkSupportTest, HitTestRegionValidation) {
   constexpr FrameSinkId frame_sink_id(1234, 5678);
   manager_.RegisterFrameSinkId(frame_sink_id, true /* report_activation */);
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &fake_support_client_, &manager_, frame_sink_id, kIsRoot,
-      kNeedsSyncPoints);
+      &fake_support_client_, &manager_, frame_sink_id, kIsRoot);
   LocalSurfaceId local_surface_id(6, 1, base::UnguessableToken::Create());
 
   HitTestRegionList hit_test_region_list;
@@ -1336,8 +1362,7 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
 
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true,
-      kNeedsSyncPoints);
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true);
   support->SetBeginFrameSource(&begin_frame_source);
   support->SetNeedsBeginFrame(true);
 

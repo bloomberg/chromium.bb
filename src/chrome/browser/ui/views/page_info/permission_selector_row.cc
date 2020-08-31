@@ -8,12 +8,13 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "components/page_info/page_info_ui.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -185,8 +186,9 @@ PermissionSelectorRow::PermissionSelectorRow(
   InitializeComboboxView(layout, permission);
 
   // Show the permission decision reason, if it was not the user.
-  base::string16 reason =
-      PageInfoUI::PermissionDecisionReasonToUIString(profile, permission, url);
+  auto delegate = ChromePageInfoUiDelegate(profile);
+  base::string16 reason = PageInfoUI::PermissionDecisionReasonToUIString(
+      &delegate, permission, url);
   if (!reason.empty()) {
     layout->StartRow(1.0, PageInfoBubbleView::kPermissionColumnSetId);
     layout->SkipColumns(1);

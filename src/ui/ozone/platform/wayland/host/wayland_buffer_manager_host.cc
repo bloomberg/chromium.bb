@@ -12,8 +12,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
@@ -175,7 +174,7 @@ class WaylandBufferManagerHost::Surface {
   void ClearState() {
     buffers_.clear();
     wl_frame_callback_.reset();
-    presentation_feedbacks_ = PresentationFeedbackQueue();
+    feedback_queue_ = PresentationFeedbackQueue();
 
     ResetSurfaceContents();
 
@@ -212,21 +211,38 @@ class WaylandBufferManagerHost::Surface {
   bool HasWindow() const { return !!window_; }
 
  private:
-  using PresentationFeedbackQueue = base::queue<
-      std::pair<uint32_t, wl::Object<struct wp_presentation_feedback>>>;
+  struct FeedbackInfo {
+    // The wayland object identifying this feedback.
+    wl::Object<struct wp_presentation_feedback> wp_presentation_feedback;
+    // The buffer that this presentation feedback is for.
+    uint32_t buffer_id;
+    // The actual presentation feedback. May be missing if the callback from the
+    // Wayland server has not arrived yet.
+    base::Optional<gfx::PresentationFeedback> feedback;
+    // True iff OnSubmission has been called.
+    bool submission_completed;
+  };
+
+  using PresentationFeedbackQueue = std::vector<FeedbackInfo>;
 
   bool CommitBufferInternal(WaylandBuffer* buffer) {
     DCHECK(buffer && window_);
     DCHECK(!pending_buffer_);
 
-    // Once the BufferRelease is called, the buffer will be released.
-    DCHECK(buffer->released);
-    buffer->released = false;
-
     DCHECK(!submitted_buffer_);
     submitted_buffer_ = buffer;
 
-    AttachAndDamageBuffer(buffer);
+    // if the same buffer has been submitted again right after the client
+    // received OnSubmission for that buffer, just damage the buffer and
+    // commit the surface again.
+    if (prev_submitted_buffer_ != submitted_buffer_) {
+      // Once the BufferRelease is called, the buffer will be released.
+      DCHECK(buffer->released);
+      buffer->released = false;
+      AttachBuffer(buffer);
+    }
+
+    DamageBuffer(buffer);
 
     SetupFrameCallback();
     SetupPresentationFeedback(buffer->buffer_id);
@@ -246,13 +262,18 @@ class WaylandBufferManagerHost::Surface {
     // If it was the very first frame, the surface has not had a back buffer
     // before, and Wayland won't release the front buffer until next buffer is
     // attached. Thus, notify about successful submission immediately.
-    if (!prev_submitted_buffer_)
+    //
+    // As said above, if the client submits the same buffer again, we must
+    // notify the client about the submission immediately as Wayland compositor
+    // is not going to send a release callback for a buffer committed more than
+    // once.
+    if (!prev_submitted_buffer_ || prev_submitted_buffer_ == submitted_buffer_)
       CompleteSubmission();
 
     return true;
   }
 
-  void AttachAndDamageBuffer(WaylandBuffer* buffer) {
+  void DamageBuffer(WaylandBuffer* buffer) {
     DCHECK(window_);
 
     gfx::Rect pending_damage_region = std::move(buffer->damage_region);
@@ -263,11 +284,41 @@ class WaylandBufferManagerHost::Surface {
       pending_damage_region.set_size(buffer->size);
     DCHECK(!pending_damage_region.size().IsEmpty());
 
-    auto* surface = window_->surface();
-    wl_surface_damage_buffer(
-        surface, pending_damage_region.x(), pending_damage_region.y(),
-        pending_damage_region.width(), pending_damage_region.height());
-    wl_surface_attach(surface, buffer->wl_buffer.get(), 0, 0);
+    if (connection_->compositor_version() >=
+        WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
+      // wl_surface_damage_buffer relies on compositor API version 4. See
+      // https://bit.ly/2u00lv6 for details.
+      // We don't need to apply any scaling because pending_damage_region is
+      // already in buffer coordinates.
+      wl_surface_damage_buffer(window_->surface(), pending_damage_region.x(),
+                               pending_damage_region.y(),
+                               pending_damage_region.width(),
+                               pending_damage_region.height());
+    } else {
+      // The calculation for damage region relies on two assumptions:
+      // 1) The buffer is always attached at surface location (0, 0)
+      // 2) The API wl_surface::set_buffer_transform is not used.
+      // It's possible to write logic that accounts for both cases above, but
+      // it's currently unnecessary.
+      //
+      // Note: The damage region may not be an integer multiple of scale. To
+      // keep the implementation simple, the x() and y() coordinates round down,
+      // and the width() and height() calculations always add an extra pixel.
+      int scale = window_->buffer_scale();
+      wl_surface_damage(window_->surface(), pending_damage_region.x() / scale,
+                        pending_damage_region.y() / scale,
+                        pending_damage_region.width() / scale + 1,
+                        pending_damage_region.height() / scale + 1);
+    }
+  }
+
+  void AttachBuffer(WaylandBuffer* buffer) {
+    DCHECK(window_);
+
+    // The logic in DamageBuffer currently relies on attachment coordinates of
+    // (0, 0). If this changes, then the calculation in DamageBuffer will also
+    // need to be updated.
+    wl_surface_attach(window_->surface(), buffer->wl_buffer.get(), 0, 0);
   }
 
   void CommitSurface() {
@@ -295,12 +346,14 @@ class WaylandBufferManagerHost::Surface {
         &Surface::FeedbackSyncOutput, &Surface::FeedbackPresented,
         &Surface::FeedbackDiscarded};
 
-    presentation_feedbacks_.push(std::make_pair(
-        buffer_id,
-        wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
-            connection_->presentation(), window_->surface()))));
+    feedback_queue_.push_back(
+        {wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
+             connection_->presentation(), window_->surface())),
+         buffer_id, /*feedback=*/base::nullopt,
+         /*submission_completed=*/false});
     wp_presentation_feedback_add_listener(
-        presentation_feedbacks_.back().second.get(), &feedback_listener, this);
+        feedback_queue_.back().wp_presentation_feedback.get(),
+        &feedback_listener, this);
   }
 
   void SetupBufferReleaseListener(WaylandBuffer* buffer) {
@@ -382,11 +435,6 @@ class WaylandBufferManagerHost::Surface {
   void CompleteSubmission() {
     DCHECK(submitted_buffer_);
     auto id = submitted_buffer_->buffer_id;
-
-    auto feedback = std::move(submitted_buffer_->feedback);
-    bool needs_send_feedback = submitted_buffer_->needs_send_feedback;
-    submitted_buffer_->needs_send_feedback = false;
-
     prev_submitted_buffer_ = submitted_buffer_;
     submitted_buffer_ = nullptr;
 
@@ -402,30 +450,68 @@ class WaylandBufferManagerHost::Surface {
     // If presentation feedback is not supported, use a fake feedback. This
     // literally means there are no presentation feedback callbacks created.
     if (!connection_->presentation()) {
-      DCHECK(presentation_feedbacks_.empty());
-      OnPresentation(id, gfx::PresentationFeedback(
-                             base::TimeTicks::Now(), base::TimeDelta(),
-                             GetPresentationKindFlags(0)));
-    } else if (needs_send_feedback) {
-      OnPresentation(id, std::move(feedback));
+      DCHECK(feedback_queue_.empty());
+      buffer_manager_->OnPresentation(
+          window_->GetWidget(), id,
+          gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                    GetPresentationKindFlags(0)));
+    } else {
+      for (auto& info : feedback_queue_) {
+        if (info.buffer_id == id && !info.submission_completed) {
+          info.submission_completed = true;
+          ProcessPresentationFeedbacks();
+          return;
+        }
+      }
+      NOTREACHED() << "Did not find matching feedback for buffer_id=" << id;
     }
   }
 
-  void OnPresentation(uint32_t buffer_id,
+  void OnPresentation(struct wp_presentation_feedback* wp_presentation_feedback,
                       const gfx::PresentationFeedback& feedback) {
-    // The order of submission and presentation callbacks cannot be controlled.
-    // Some Wayland compositors may fire presentation callbacks earlier than we
-    // are able to send submission callbacks and this is bad. Thus, handle it
-    // here.
-    if (submitted_buffer_ && submitted_buffer_->buffer_id == buffer_id) {
-      submitted_buffer_->needs_send_feedback = true;
-      submitted_buffer_->feedback = feedback;
-      return;
+    FeedbackInfo* feedback_info = nullptr;
+    for (auto& info : feedback_queue_) {
+      if (info.wp_presentation_feedback.get() == wp_presentation_feedback) {
+        feedback_info = &info;
+        break;
+      } else if (!info.feedback.has_value()) {  // Feedback must come in order.
+        info.feedback = gfx::PresentationFeedback::Failure();
+      }
     }
+    DCHECK(feedback_info);
+    DCHECK(!feedback_info->feedback.has_value());
+    feedback_info->feedback = feedback;
 
-    if (window_)
-      buffer_manager_->OnPresentation(window_->GetWidget(), buffer_id,
-                                      feedback);
+    ProcessPresentationFeedbacks();
+  }
+
+  // We provide the guarantee to the client that:
+  // 1. OnPresentation and OnSubmission will be called for each submitted buffer
+  // 2. OnPresentation(buffer_id) will be called after OnSubmission(buffer_id)
+  // 3. OnPresentation and OnSubmission will be called in the same order
+  //    of buffer submission.
+  // We make the following assumptions about the server:
+  // 1. Presentation feedback will arrive in the same order of submission.
+  // 2. Presentation feedback may never arrive if the buffer is destroyed.
+  // 3. Presentation feedback may arrive at an arbitrary time after commit.
+  // For these reasons, we can't associate feedback with a specific buffer,
+  // as there may be more than one feedback in-flight for a single buffer.
+  // This function ensures that we send OnPresentation for each buffer that
+  // already has had OnSubmission called for it (condition #2).
+  void ProcessPresentationFeedbacks() {
+    if (!window_)
+      return;
+
+    while (!feedback_queue_.empty()) {
+      const auto& info = feedback_queue_.front();
+      if (!info.submission_completed || !info.feedback.has_value())
+        break;
+      buffer_manager_->OnPresentation(window_->GetWidget(), info.buffer_id,
+                                      *info.feedback);
+      feedback_queue_.erase(feedback_queue_.begin());
+    }
+    // This queue should be small - if not it's likely a bug.
+    DCHECK_LE(feedback_queue_.size(), 25u);
   }
 
   // wp_presentation_feedback_listener
@@ -446,11 +532,8 @@ class WaylandBufferManagerHost::Surface {
       uint32_t flags) {
     Surface* self = static_cast<Surface*>(data);
     DCHECK(self);
-    auto presentation = std::move(self->presentation_feedbacks_.front());
-    DCHECK(presentation.second.get() == wp_presentation_feedback);
-    self->presentation_feedbacks_.pop();
     self->OnPresentation(
-        presentation.first,
+        wp_presentation_feedback,
         gfx::PresentationFeedback(
             GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
             base::TimeDelta::FromNanoseconds(refresh),
@@ -462,10 +545,7 @@ class WaylandBufferManagerHost::Surface {
       struct wp_presentation_feedback* wp_presentation_feedback) {
     Surface* self = static_cast<Surface*>(data);
     DCHECK(self);
-    auto presentation = std::move(self->presentation_feedbacks_.front());
-    DCHECK(presentation.second.get() == wp_presentation_feedback);
-    self->presentation_feedbacks_.pop();
-    self->OnPresentation(presentation.first,
+    self->OnPresentation(wp_presentation_feedback,
                          gfx::PresentationFeedback::Failure());
   }
 
@@ -500,7 +580,7 @@ class WaylandBufferManagerHost::Surface {
 
   // A presentation feedback provided by the Wayland server once frame is
   // shown.
-  PresentationFeedbackQueue presentation_feedbacks_;
+  PresentationFeedbackQueue feedback_queue_;
 
   // A buffer, which is pending to be submitted (look the comment in the
   // CommitBuffer method).
@@ -559,7 +639,10 @@ void WaylandBufferManagerHost::SetTerminateGpuCallback(
 
 mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
 WaylandBufferManagerHost::BindInterface() {
-  DCHECK(!receiver_.is_bound());
+  // Allow to rebind the interface if it hasn't been destroyed yet.
+  if (receiver_.is_bound())
+    OnChannelDestroyed();
+
   mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
       buffer_manager_host;
   receiver_.Bind(buffer_manager_host.InitWithNewPipeAndPassReceiver());
@@ -598,7 +681,7 @@ void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
 }
 
 void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
-    mojo::ScopedHandle dmabuf_fd,
+    mojo::PlatformHandle dmabuf_fd,
     const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
@@ -612,7 +695,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   TRACE_EVENT2("wayland", "WaylandBufferManagerHost::CreateDmabufBasedBuffer",
                "Format", format, "Buffer id", buffer_id);
 
-  base::ScopedFD fd = mojo::UnwrapPlatformHandle(std::move(dmabuf_fd)).TakeFD();
+  base::ScopedFD fd = dmabuf_fd.TakeFD();
 
   // Validate data and ask surface to create a buffer associated with the
   // |buffer_id|.
@@ -642,7 +725,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   }
 }
 
-void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
+void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
                                                     uint64_t length,
                                                     const gfx::Size& size,
                                                     uint32_t buffer_id) {
@@ -652,7 +735,7 @@ void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::CreateShmBasedBuffer",
                "Buffer id", buffer_id);
 
-  base::ScopedFD fd = mojo::UnwrapPlatformHandle(std::move(shm_fd)).TakeFD();
+  base::ScopedFD fd = shm_fd.TakeFD();
   // Validate data and create a buffer associated with the |buffer_id|.
   if (!ValidateDataFromGpu(fd, length, size, buffer_id) ||
       !CreateBuffer(size, buffer_id)) {

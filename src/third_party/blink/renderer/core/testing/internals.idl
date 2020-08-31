@@ -78,7 +78,6 @@
     [RaisesException] void pauseAnimations(double pauseTime);
     boolean isCompositedAnimation(Animation animation);
     void disableCompositedAnimation(Animation animation);
-    void disableCSSAdditiveAnimations();
 
     // Advances an animated image. For BitmapImage (e.g., animated gifs) this
     // will advance to the next frame. For SVGImage, this will trigger an
@@ -114,7 +113,7 @@
     [RaisesException] unsigned long markerBackgroundColorForNode(Node node, DOMString markerType, unsigned long index);
     [RaisesException] unsigned long markerUnderlineColorForNode(Node node, DOMString markerType, unsigned long index);
     [RaisesException] void addTextMatchMarker(Range range, DOMString matchStatus);
-    [RaisesException] void addCompositionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString backgroundColorValue);
+    [RaisesException] void addCompositionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString underlineStyleValue, DOMString textColorValue, DOMString backgroundColorValue);
     [RaisesException] void addActiveSuggestionMarker(Range range, DOMString underlineColorValue, DOMString thicknessValue, DOMString backgroundColorValue);
     [RaisesException] void addSuggestionMarker(Range range, sequence<DOMString> suggestions, DOMString suggestionHighlightColorValue, DOMString underlineColorValue, DOMString thicknessValue, DOMString backgroundColorValue);
     void setTextMatchMarkersActive(Node node, unsigned long startOffset, unsigned long endOffset, boolean active);
@@ -150,10 +149,10 @@
 
     sequence<DOMString> userPreferredLanguages();
     void setUserPreferredLanguages(sequence<DOMString> languages);
+    void setSystemTimeZone(DOMString timezone);
 
     unsigned long mediaKeysCount();
     unsigned long mediaKeySessionCount();
-    unsigned long contextLifecycleStateObserverObjectCount(Document document);
     unsigned long wheelEventHandlerCount(Document document);
     unsigned long scrollEventHandlerCount(Document document);
     unsigned long touchStartOrMoveEventHandlerCount(Document document);
@@ -162,6 +161,8 @@
     [RaisesException] HitTestLayerRectList touchEventTargetLayerRects(Document document);
 
     [RaisesException] boolean executeCommand(Document document, DOMString name, DOMString value);
+
+    void triggerTestInspectorIssue(Document document);
 
     DOMString htmlNamespace();
     sequence<DOMString> htmlTags();
@@ -189,11 +190,13 @@
     readonly attribute InternalSettings settings;
     readonly attribute InternalRuntimeFlags runtimeFlags;
     readonly attribute unsigned long workerThreadCount;
+    readonly attribute boolean isFormControlsRefreshEnabled;
 
-    // Flag for layerTreeAsText.
-    // The value must be kept in sync with the value of LayerTreeFlags in layers_as_json.h.
+    // Flag for layerTreeAsText. The value must be kept in sync with the value
+    // of LayerTreeFlags in layers_as_json.h.
     // Other flags in LayerTreeFlags are not supported in internals API.
-    const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_INVALIDATIONS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_DETAILED_INVALIDATIONS = 4;
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 
@@ -260,16 +263,11 @@
     DOMString getCurrentCursorInfo();
 
     readonly attribute boolean cursorUpdatePending;
-    readonly attribute boolean fakeMouseMovePending;
 
     DOMString markerTextForListItem(Element element);
 
-    SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);
-    ArrayBuffer serializeObject(SerializedScriptValue obj);
-
-    [CallWith=ScriptState] any deserializeBufferContainingWasm(ArrayBuffer buffer);
-    ArrayBuffer serializeWithInlineWasm(any obj);
-
+    [CallWith=Isolate, RaisesException] ArrayBuffer serializeObject(any obj);
+    [CallWith=Isolate] any deserializeBuffer(ArrayBuffer buffer);
 
     void forceReload(boolean endToEnd);
 
@@ -319,9 +317,6 @@
     // attribute returns the currently interested element on the page.
     readonly attribute Element? interestedElement;
 
-    // This function is for testing HitRegions on Canvas2D.
-    unsigned long countHitRegions(CanvasRenderingContext2D context);
-
     boolean isInCanvasFontCache(Document document, DOMString fontString);
     unsigned long canvasFontCacheMaxFonts();
 
@@ -331,7 +326,6 @@
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
-    void scheduleBlinkGC();
 
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();
@@ -429,12 +423,15 @@
     // Sets the scale for devtools device emulation.
     [RaisesException] void setDeviceEmulationScale(float scale);
 
-    // Return a string that identifies |document|'s WindowAgent. You can use it
+    // Return a string that identifies |window|'s WindowAgent. You can use it
     // to distinguish different Agent instances (perhaps in a remote process).
     // The returned string is composed of the process ID and the memory address
     // of the Agent object.
-    DOMString getDocumentAgentId(Document document);
+    DOMString getAgentId(Window window);
 
     void useMockOverlayScrollbars();
     readonly attribute boolean overlayScrollbarsEnabled;
+
+    // Request generation of a Reporting report.
+    void generateTestReport(DOMString message);
 };

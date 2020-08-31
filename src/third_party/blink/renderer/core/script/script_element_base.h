@@ -31,6 +31,7 @@
 namespace blink {
 class Document;
 class Element;
+class ExecutionContext;
 class HTMLScriptElementOrSVGScriptElement;
 class ScriptLoader;
 
@@ -38,6 +39,7 @@ ScriptLoader* ScriptLoaderFromElement(Element*);
 
 class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
  public:
+  enum class Type { kHTMLScriptElement, kSVGScriptElement };
   virtual bool AsyncAttributeValue() const = 0;
   virtual String CharsetAttributeValue() const = 0;
   virtual String CrossOriginAttributeValue() const = 0;
@@ -52,7 +54,11 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual String ReferrerPolicyAttributeValue() const = 0;
   virtual String ImportanceAttributeValue() const = 0;
 
-  virtual String TextFromChildren() = 0;
+  // This implements https://dom.spec.whatwg.org/#concept-child-text-content
+  virtual String ChildTextContent() = 0;
+  // This supports
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#prepare-script-url-and-text
+  virtual String ScriptTextInternalSlot() const = 0;
   virtual bool HasSourceAttribute() const = 0;
   virtual bool IsConnected() const = 0;
   virtual bool HasChildren() const = 0;
@@ -65,12 +71,32 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                        const WTF::OrdinalNumber&,
                                        const String& script_content) = 0;
+
+  // GetDocument() is "element document", to which the script element belongs
+  // and a parser is attached (in the case of parser-inserted scripts).
+  // GetExecutionContext() is "context window" (LocalDOMWindow),
+  // in which script should be fetched and evaluated,
+  // and its document() was previously known as "context document".
+  // The distinction between the element document and the context document is
+  // important in HTML imports, where:
+  // The element document is HTML-imported Document, and
+  // The context document is the parent Document that triggers HTML imports.
+  //
+  // TODO(hiroshige): After HTML imports implementation is removed, merge
+  // context documents into element documents, because without HTML imports,
+  // they are the same wherever scripting is enabled.
+  // Even after that, some uses of context window will remain, simply as
+  // script element's node document's relevant settings object.
   virtual Document& GetDocument() const = 0;
+  virtual ExecutionContext* GetExecutionContext() const = 0;
+
   virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;
 
   virtual void DispatchLoadEvent() = 0;
   virtual void DispatchErrorEvent() = 0;
+
+  virtual Type GetScriptElementType() = 0;
 
  protected:
   ScriptLoader* InitializeScriptLoader(bool parser_inserted,

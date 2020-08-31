@@ -55,7 +55,8 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   unmasking_result_ = AutofillClient::NONE;
   unmasking_number_of_attempts_ = 0;
   unmasking_initial_should_store_pan_ = GetStoreLocallyStartState();
-  AutofillMetrics::LogUnmaskPromptEvent(AutofillMetrics::UNMASK_PROMPT_SHOWN);
+  AutofillMetrics::LogUnmaskPromptEvent(AutofillMetrics::UNMASK_PROMPT_SHOWN,
+                                        card_.HasValidNickname());
 }
 
 void CardUnmaskPromptControllerImpl::OnVerificationResult(
@@ -134,15 +135,18 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
     pending_details_.should_store_pan = false;
   }
 
-  // The FIDO authentication checkbox is only shown when the local storage
-  // checkbox is not shown and the flag is turned on. If it is shown, then
-  // remember the last choice the user made on this device.
+  // On Android, the FIDO authentication checkbox is only shown when the local
+  // storage checkbox is not shown and the flag is turned on. If it is shown,
+  // then remember the last choice the user made on this device.
+#if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication) &&
       !CanStoreLocally()) {
+    pending_details_.enable_fido_auth = enable_fido_auth;
     pref_service_->SetBoolean(
         prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, enable_fido_auth);
   }
+#endif
 
   // There is a chance the delegate has disappeared (i.e. tab closed) before the
   // unmask response came in. Avoid a crash.
@@ -163,7 +167,7 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
       ShouldRequestExpirationDate()
           ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE
           : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
-      card_.NetworkOrBankNameAndLastFourDigits());
+      card_.CardIdentifierStringForAutofillDisplay());
 #endif
 }
 
@@ -184,8 +188,8 @@ base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
   }
   // The iOS UI shows the card details in the instructions text since they
   // don't fit in the title.
-  return l10n_util::GetStringFUTF16(ids,
-                                    card_.NetworkOrBankNameAndLastFourDigits());
+  return l10n_util::GetStringFUTF16(
+      ids, card_.CardIdentifierStringForAutofillDisplay());
 #else
   return l10n_util::GetStringUTF16(
       card_.record_type() == autofill::CreditCard::LOCAL_CARD
@@ -229,10 +233,16 @@ bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
       prefs::kAutofillWalletImportStorageCheckboxState);
 }
 
+#if defined(OS_ANDROID)
+bool CardUnmaskPromptControllerImpl::ShouldOfferWebauthn() const {
+  return delegate_ && delegate_->ShouldOfferFidoAuth();
+}
+
 bool CardUnmaskPromptControllerImpl::GetWebauthnOfferStartState() const {
   return pref_service_->GetBoolean(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState);
 }
+#endif
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {
@@ -267,7 +277,7 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
 }
 
 int CardUnmaskPromptControllerImpl::GetExpectedCvcLength() const {
-  return GetCvcLengthForCardType(card_.network());
+  return GetCvcLengthForCardNetwork(card_.network());
 }
 
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
@@ -295,23 +305,26 @@ bool CardUnmaskPromptControllerImpl::AllowsRetry(
 
 void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
   AutofillMetrics::UnmaskPromptEvent close_reason_event = GetCloseReasonEvent();
-  AutofillMetrics::LogUnmaskPromptEvent(close_reason_event);
+  AutofillMetrics::LogUnmaskPromptEvent(close_reason_event,
+                                        card_.HasValidNickname());
   AutofillMetrics::LogUnmaskPromptEventDuration(
-      AutofillClock::Now() - shown_timestamp_, close_reason_event);
+      AutofillClock::Now() - shown_timestamp_, close_reason_event,
+      card_.HasValidNickname());
 
   if (close_reason_event == AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS)
     return;
 
   if (close_reason_event ==
       AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING) {
-    AutofillMetrics::LogTimeBeforeAbandonUnmasking(AutofillClock::Now() -
-                                                   verify_timestamp_);
+    AutofillMetrics::LogTimeBeforeAbandonUnmasking(
+        AutofillClock::Now() - verify_timestamp_, card_.HasValidNickname());
   }
 
   bool final_should_store_pan = pending_details_.should_store_pan;
   if (unmasking_result_ == AutofillClient::SUCCESS && final_should_store_pan) {
     AutofillMetrics::LogUnmaskPromptEvent(
-        AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY);
+        AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY,
+        card_.HasValidNickname());
   }
 
   if (CanStoreLocally()) {
@@ -327,7 +340,7 @@ void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
     } else {
       event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
     }
-    AutofillMetrics::LogUnmaskPromptEvent(event);
+    AutofillMetrics::LogUnmaskPromptEvent(event, card_.HasValidNickname());
   }
 }
 

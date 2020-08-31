@@ -979,7 +979,11 @@ static void ReplaceDirection(RtpTransceiverDirection direction,
       new_direction = "a=recvonly";
       break;
     case RtpTransceiverDirection::kSendRecv:
+      new_direction = "a=sendrecv";
+      break;
+    case RtpTransceiverDirection::kStopped:
     default:
+      RTC_NOTREACHED();
       new_direction = "a=sendrecv";
       break;
   }
@@ -1191,8 +1195,8 @@ class WebRtcSdpTest : public ::testing::Test {
   // Turns the existing reference description into a plan B description,
   // with 2 audio tracks and 3 video tracks.
   void MakePlanBDescription() {
-    audio_desc_ = audio_desc_->Copy();
-    video_desc_ = video_desc_->Copy();
+    audio_desc_ = new AudioContentDescription(*audio_desc_);
+    video_desc_ = new VideoContentDescription(*video_desc_);
 
     StreamParams audio_track_2;
     audio_track_2.id = kAudioTrackId2;
@@ -1709,8 +1713,8 @@ class WebRtcSdpTest : public ::testing::Test {
   }
 
   void AddExtmap(bool encrypted) {
-    audio_desc_ = audio_desc_->Copy();
-    video_desc_ = video_desc_->Copy();
+    audio_desc_ = new AudioContentDescription(*audio_desc_);
+    video_desc_ = new VideoContentDescription(*video_desc_);
     audio_desc_->AddRtpHeaderExtension(
         RtpExtension(kExtmapUri, kExtmapId, encrypted));
     video_desc_->AddRtpHeaderExtension(
@@ -1790,8 +1794,8 @@ class WebRtcSdpTest : public ::testing::Test {
   }
 
   bool TestSerializeRejected(bool audio_rejected, bool video_rejected) {
-    audio_desc_ = audio_desc_->Copy();
-    video_desc_ = video_desc_->Copy();
+    audio_desc_ = new AudioContentDescription(*audio_desc_);
+    video_desc_ = new VideoContentDescription(*video_desc_);
 
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
@@ -1872,8 +1876,8 @@ class WebRtcSdpTest : public ::testing::Test {
     JsepSessionDescription new_jdesc(SdpType::kOffer);
     EXPECT_TRUE(SdpDeserialize(new_sdp, &new_jdesc));
 
-    audio_desc_ = audio_desc_->Copy();
-    video_desc_ = video_desc_->Copy();
+    audio_desc_ = new AudioContentDescription(*audio_desc_);
+    video_desc_ = new VideoContentDescription(*video_desc_);
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
     desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_rejected,
@@ -1963,18 +1967,22 @@ class WebRtcSdpTest : public ::testing::Test {
     os << "minptime=" << params.min_ptime << "; stereo=" << params.stereo
        << "; sprop-stereo=" << params.sprop_stereo
        << "; useinbandfec=" << params.useinband
-       << "; maxaveragebitrate=" << params.maxaveragebitrate << "\r\n"
-       << "a=ptime:" << params.ptime << "\r\n"
-       << "a=maxptime:" << params.max_ptime << "\r\n";
+       << "; maxaveragebitrate=" << params.maxaveragebitrate
+       << "\r\n"
+          "a=ptime:"
+       << params.ptime
+       << "\r\n"
+          "a=maxptime:"
+       << params.max_ptime << "\r\n";
     sdp += os.str();
 
     os.clear();
     os.str("");
     // Pl type 100 preferred.
     os << "m=video 9 RTP/SAVPF 99 95\r\n"
-       << "a=rtpmap:99 VP8/90000\r\n"
-       << "a=rtpmap:95 RTX/90000\r\n"
-       << "a=fmtp:95 apt=99;\r\n";
+          "a=rtpmap:99 VP8/90000\r\n"
+          "a=rtpmap:95 RTX/90000\r\n"
+          "a=fmtp:95 apt=99;\r\n";
     sdp += os.str();
 
     // Deserialize
@@ -2118,8 +2126,11 @@ void TestMismatch(const std::string& string1, const std::string& string2) {
   }
   EXPECT_EQ(0, position) << "Strings mismatch at the " << position
                          << " character\n"
-                         << " 1: " << string1.substr(position, 20) << "\n"
-                         << " 2: " << string2.substr(position, 20) << "\n";
+                            " 1: "
+                         << string1.substr(position, 20)
+                         << "\n"
+                            " 2: "
+                         << string2.substr(position, 20) << "\n";
 }
 
 TEST_F(WebRtcSdpTest, SerializeSessionDescription) {
@@ -2447,6 +2458,32 @@ TEST_F(WebRtcSdpTest, SerializeTcpCandidates) {
 
   std::string message = webrtc::SdpSerializeCandidate(*jcandidate);
   EXPECT_EQ(std::string(kSdpTcpActiveCandidate), message);
+}
+
+// Test serializing a TCP candidate that came in with a missing tcptype. This
+// shouldn't happen according to the spec, but our implementation has been
+// accepting this for quite some time, treating it as a passive candidate.
+//
+// So, we should be able to at least convert such candidates to and from SDP.
+// See: bugs.webrtc.org/11423
+TEST_F(WebRtcSdpTest, ParseTcpCandidateWithoutTcptype) {
+  std::string missing_tcptype =
+      "candidate:a0+B/1 1 tcp 2130706432 192.168.1.5 9999 typ host";
+  JsepIceCandidate jcandidate(kDummyMid, kDummyIndex);
+  EXPECT_TRUE(SdpDeserializeCandidate(missing_tcptype, &jcandidate));
+
+  EXPECT_EQ(std::string(cricket::TCPTYPE_PASSIVE_STR),
+            jcandidate.candidate().tcptype());
+}
+
+TEST_F(WebRtcSdpTest, ParseSslTcpCandidate) {
+  std::string ssltcp =
+      "candidate:a0+B/1 1 ssltcp 2130706432 192.168.1.5 9999 typ host tcptype "
+      "passive";
+  JsepIceCandidate jcandidate(kDummyMid, kDummyIndex);
+  EXPECT_TRUE(SdpDeserializeCandidate(ssltcp, &jcandidate));
+
+  EXPECT_EQ(std::string("ssltcp"), jcandidate.candidate().protocol());
 }
 
 TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithH264) {
@@ -4664,4 +4701,18 @@ TEST_F(WebRtcSdpTest, DeserializeWithAllSctpProtocols) {
     SdpParseError error;
     EXPECT_TRUE(webrtc::SdpDeserialize(message, &jsep_output, &error));
   }
+}
+
+// According to https://tools.ietf.org/html/rfc5576#section-6.1, the CNAME
+// attribute is mandatory, but we relax that restriction.
+TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithoutCname) {
+  std::string sdp_without_cname = kSdpFullString;
+  Replace("a=ssrc:1 cname:stream_1_cname\r\n", "", &sdp_without_cname);
+  JsepSessionDescription new_jdesc(kDummyType);
+  EXPECT_TRUE(SdpDeserialize(sdp_without_cname, &new_jdesc));
+
+  audio_desc_->mutable_streams()[0].cname = "";
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  EXPECT_TRUE(CompareSessionDescription(jdesc_, new_jdesc));
 }

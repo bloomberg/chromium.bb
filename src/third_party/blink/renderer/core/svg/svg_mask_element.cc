@@ -78,7 +78,7 @@ SVGMaskElement::SVGMaskElement(Document& document)
   AddToPropertyMap(mask_content_units_);
 }
 
-void SVGMaskElement::Trace(blink::Visitor* visitor) {
+void SVGMaskElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -143,7 +143,7 @@ void SVGMaskElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGMaskElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

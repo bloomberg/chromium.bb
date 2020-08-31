@@ -161,7 +161,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
   if (outer_state->opcode() != IrOpcode::kFrameState) {
     switch (type) {
       case CreateArgumentsType::kMappedArguments: {
-        // TODO(mstarzinger): Duplicate parameters are not handled yet.
+        // TODO(turbofan): Duplicate parameters are not handled yet.
         if (shared.has_duplicate_parameters()) return NoChange();
         Node* const callee = NodeProperties::GetValueInput(node, 0);
         Node* const context = NodeProperties::GetContextInput(node);
@@ -256,14 +256,16 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       }
     }
     UNREACHABLE();
-  } else if (outer_state->opcode() == IrOpcode::kFrameState) {
-    // Use inline allocation for all mapped arguments objects within inlined
-    // (i.e. non-outermost) frames, independent of the object size.
-    if (type == CreateArgumentsType::kMappedArguments) {
+  }
+  // Use inline allocation for all mapped arguments objects within inlined
+  // (i.e. non-outermost) frames, independent of the object size.
+  DCHECK_EQ(outer_state->opcode(), IrOpcode::kFrameState);
+  switch (type) {
+    case CreateArgumentsType::kMappedArguments: {
       Node* const callee = NodeProperties::GetValueInput(node, 0);
       Node* const context = NodeProperties::GetContextInput(node);
       Node* effect = NodeProperties::GetEffectInput(node);
-      // TODO(mstarzinger): Duplicate parameters are not handled yet.
+      // TODO(turbofan): Duplicate parameters are not handled yet.
       if (shared.has_duplicate_parameters()) return NoChange();
       // Choose the correct frame state and frame state info depending on
       // whether there conceptually is an arguments adaptor frame in the call
@@ -300,7 +302,8 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       RelaxControls(node);
       a.FinishAndChange(node);
       return Changed(node);
-    } else if (type == CreateArgumentsType::kUnmappedArguments) {
+    }
+    case CreateArgumentsType::kUnmappedArguments: {
       // Use inline allocation for all unmapped arguments objects within inlined
       // (i.e. non-outermost) frames, independent of the object size.
       Node* effect = NodeProperties::GetEffectInput(node);
@@ -335,7 +338,8 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       RelaxControls(node);
       a.FinishAndChange(node);
       return Changed(node);
-    } else if (type == CreateArgumentsType::kRestParameter) {
+    }
+    case CreateArgumentsType::kRestParameter: {
       int start_index = shared.internal_formal_parameter_count();
       // Use inline allocation for all unmapped arguments objects within inlined
       // (i.e. non-outermost) frames, independent of the object size.
@@ -378,8 +382,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       return Changed(node);
     }
   }
-
-  return NoChange();
+  UNREACHABLE();
 }
 
 Reduction JSCreateLowering::ReduceJSCreateGeneratorObject(Node* node) {
@@ -471,6 +474,12 @@ Reduction JSCreateLowering::ReduceNewArray(
       initial_map,
       initial_map.AsElementsKind(GetHoleyElementsKind(elements_kind)));
 
+  // Because CheckBounds performs implicit conversion from string to number, an
+  // additional CheckNumber is required to behave correctly for calls with a
+  // single string argument.
+  length = effect = graph()->NewNode(
+      simplified()->CheckNumber(FeedbackSource{}), length, effect, control);
+
   // Check that the {limit} is an unsigned integer in the valid range.
   // This has to be kept in sync with src/runtime/runtime-array.cc,
   // where this limit is protected.
@@ -512,6 +521,7 @@ Reduction JSCreateLowering::ReduceNewArray(
     const SlackTrackingPrediction& slack_tracking_prediction) {
   DCHECK(node->opcode() == IrOpcode::kJSCreateArray ||
          node->opcode() == IrOpcode::kJSCreateEmptyLiteralArray);
+  DCHECK(NodeProperties::GetType(length).Is(Type::Number()));
   Node* effect = NodeProperties::GetEffectInput(node);
   Node* control = NodeProperties::GetControlInput(node);
 
@@ -1414,9 +1424,9 @@ Node* JSCreateLowering::AllocateArguments(Node* effect, Node* control,
   a.AllocateArray(argument_count,
                   MapRef(broker(), factory()->fixed_array_map()));
   for (int i = 0; i < argument_count; ++i, ++parameters_it) {
-    DCHECK_NOT_NULL((*parameters_it).node);
+    DCHECK_NOT_NULL(parameters_it.node());
     a.Store(AccessBuilder::ForFixedArrayElement(), jsgraph()->Constant(i),
-            (*parameters_it).node);
+            parameters_it.node());
   }
   return a.Finish();
 }
@@ -1445,9 +1455,9 @@ Node* JSCreateLowering::AllocateRestArguments(Node* effect, Node* control,
   AllocationBuilder a(jsgraph(), effect, control);
   a.AllocateArray(num_elements, MapRef(broker(), factory()->fixed_array_map()));
   for (int i = 0; i < num_elements; ++i, ++parameters_it) {
-    DCHECK_NOT_NULL((*parameters_it).node);
+    DCHECK_NOT_NULL(parameters_it.node());
     a.Store(AccessBuilder::ForFixedArrayElement(), jsgraph()->Constant(i),
-            (*parameters_it).node);
+            parameters_it.node());
   }
   return a.Finish();
 }
@@ -1489,9 +1499,9 @@ Node* JSCreateLowering::AllocateAliasedArguments(
              jsgraph()->TheHoleConstant());
   }
   for (int i = mapped_count; i < argument_count; ++i, ++parameters_it) {
-    DCHECK_NOT_NULL((*parameters_it).node);
+    DCHECK_NOT_NULL(parameters_it.node());
     aa.Store(AccessBuilder::ForFixedArrayElement(), jsgraph()->Constant(i),
-             (*parameters_it).node);
+             parameters_it.node());
   }
   Node* arguments = aa.Finish();
 

@@ -5,10 +5,14 @@
 #include "ash/ambient/ui/photo_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/ambient/ambient_constants.h"
-#include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/model/ambient_backend_model.h"
+#include "ash/ambient/ui/ambient_view_delegate.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -18,14 +22,72 @@
 
 namespace ash {
 
-PhotoView::PhotoView(AmbientController* ambient_controller)
-    : ambient_controller_(ambient_controller) {
+namespace {
+
+class PhotoViewMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  PhotoViewMetricsReporter() = default;
+  PhotoViewMetricsReporter(const PhotoViewMetricsReporter&) = delete;
+  PhotoViewMetricsReporter& operator=(const PhotoViewMetricsReporter&) = delete;
+  ~PhotoViewMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Ash.AmbientMode.AnimationSmoothness.PhotoTransition", value);
+  }
+};
+
+}  // namespace
+
+// AmbientBackgroundImageView--------------------------------------------------
+// A custom ImageView for ambient mode to handle specific mouse/gesture events
+// when user interacting with the background photos.
+class AmbientBackgroundImageView : public views::ImageView {
+ public:
+  explicit AmbientBackgroundImageView(AmbientViewDelegate* delegate)
+      : delegate_(delegate) {
+    DCHECK(delegate_);
+  }
+  AmbientBackgroundImageView(const AmbientBackgroundImageView&) = delete;
+  AmbientBackgroundImageView& operator=(AmbientBackgroundImageView&) = delete;
+  ~AmbientBackgroundImageView() override = default;
+
+  // views::View:
+  const char* GetClassName() const override {
+    return "AmbientBackgroundImageView";
+  }
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    delegate_->OnBackgroundPhotoEvents();
+    return true;
+  }
+
+  void OnMouseMoved(const ui::MouseEvent& event) override {
+    delegate_->OnBackgroundPhotoEvents();
+  }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() == ui::ET_GESTURE_TAP) {
+      delegate_->OnBackgroundPhotoEvents();
+      event->SetHandled();
+    }
+  }
+
+ private:
+  // Owned by |AmbientController| and should always outlive |this|.
+  AmbientViewDelegate* delegate_ = nullptr;
+};
+
+// PhotoView ------------------------------------------------------------------
+PhotoView::PhotoView(AmbientViewDelegate* delegate)
+    : delegate_(delegate),
+      metrics_reporter_(std::make_unique<PhotoViewMetricsReporter>()) {
+  DCHECK(delegate_);
   Init();
 }
 
 PhotoView::~PhotoView() {
-  // |ambient_controller_| outlives this view.
-  ambient_controller_->RemovePhotoModelObserver(this);
+  delegate_->GetAmbientBackendModel()->RemoveObserver(this);
 }
 
 const char* PhotoView::GetClassName() const {
@@ -47,8 +109,15 @@ void PhotoView::AddedToWidget() {
 }
 
 void PhotoView::OnImagesChanged() {
+  // If NeedToAnimate() is true, will start transition animation and
+  // UpdateImages() when animation completes. Otherwise, update images
+  // immediately.
+  if (NeedToAnimateTransition()) {
+    StartTransitionAnimation();
+    return;
+  }
+
   UpdateImages();
-  StartSlideAnimation();
 }
 
 void PhotoView::Init() {
@@ -60,45 +129,51 @@ void PhotoView::Init() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
-  image_view_prev_ = AddChildView(std::make_unique<views::ImageView>());
-  image_view_curr_ = AddChildView(std::make_unique<views::ImageView>());
-  image_view_next_ = AddChildView(std::make_unique<views::ImageView>());
+  image_view_prev_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+  image_view_curr_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+  image_view_next_ =
+      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
 
-  // |ambient_controller_| outlives this view.
-  ambient_controller_->AddPhotoModelObserver(this);
+  delegate_->GetAmbientBackendModel()->AddObserver(this);
 }
 
 void PhotoView::UpdateImages() {
   // TODO(b/140193766): Investigate a more efficient way to update images and do
   // layer animation.
-  auto& model = ambient_controller_->model();
-  image_view_prev_->SetImage(model.GetPrevImage());
-  image_view_curr_->SetImage(model.GetCurrImage());
-  image_view_next_->SetImage(model.GetNextImage());
+  auto* model = delegate_->GetAmbientBackendModel();
+  image_view_prev_->SetImage(model->GetPrevImage());
+  image_view_curr_->SetImage(model->GetCurrImage());
+  image_view_next_->SetImage(model->GetNextImage());
 }
 
-void PhotoView::StartSlideAnimation() {
-  if (!CanAnimate())
-    return;
-
+void PhotoView::StartTransitionAnimation() {
   ui::Layer* layer = this->layer();
-  const int x_offset = image_view_prev_->GetPreferredSize().width();
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(kAnimationDuration);
+  animation.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  animation.SetAnimationMetricsReporter(metrics_reporter_.get());
+  animation.AddObserver(this);
+
+  const int x_offset = image_view_curr_->GetPreferredSize().width();
   gfx::Transform transform;
-  transform.Translate(x_offset, 0);
+  transform.Translate(-x_offset, 0);
   layer->SetTransform(transform);
-  {
-    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-    animation.SetTransitionDuration(kAnimationDuration);
-    animation.SetTweenType(gfx::Tween::EASE_OUT);
-    animation.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-    layer->SetTransform(gfx::Transform());
-  }
 }
 
-bool PhotoView::CanAnimate() const {
-  // Cannot do slide animation from previous to current image.
-  return !image_view_prev_->GetImage().isNull();
+void PhotoView::OnImplicitAnimationsCompleted() {
+  // Layer transform and images update will be applied on the next frame at the
+  // same time.
+  this->layer()->SetTransform(gfx::Transform());
+  UpdateImages();
+}
+
+bool PhotoView::NeedToAnimateTransition() const {
+  // Can do transition animation from current to next image.
+  return !image_view_next_->GetImage().isNull();
 }
 
 }  // namespace ash

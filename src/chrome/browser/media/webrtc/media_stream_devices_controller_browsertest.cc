@@ -10,32 +10,35 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
-#include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_context_base.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_util.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+
+using content_settings::TabSpecificContentSettings;
 
 class MediaStreamDevicesControllerTest : public WebRtcTestBase {
  public:
@@ -46,10 +49,10 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
             blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS) {
   }
 
-  // Dummy callback for when we deny the current request directly.
   void OnMediaStreamResponse(const blink::MediaStreamDevices& devices,
                              blink::mojom::MediaStreamRequestResult result,
                              std::unique_ptr<content::MediaStreamUI> ui) {
+    EXPECT_EQ(devices.empty(), !ui);
     media_stream_devices_ = devices;
     media_stream_result_ = result;
     quit_closure_.Run();
@@ -74,13 +77,15 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   }
 
   void RequestPermissions(content::WebContents* web_contents,
-                          const content::MediaStreamRequest& request,
-                          content::MediaResponseCallback callback) {
+                          const content::MediaStreamRequest& request) {
     base::RunLoop run_loop;
     ASSERT_TRUE(quit_closure_.is_null());
     quit_closure_ = run_loop.QuitClosure();
-    MediaStreamDevicesController::RequestPermissions(request,
-                                                     std::move(callback));
+    permission_bubble_media_access_handler_->HandleRequest(
+        web_contents, request,
+        base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                       base::Unretained(this)),
+        nullptr);
     run_loop.Run();
   }
 
@@ -149,7 +154,9 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     int render_frame_id = GetWebContents()->GetMainFrame()->GetRoutingID();
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, example_url(), false,
-        request_type, audio_id, video_id, audio_type, video_type, false);
+        request_type, audio_id, video_id, audio_type, video_type,
+        /*disable_local_echo=*/false,
+        /*request_pan_tilt_zoom_permission=*/false);
   }
 
   content::MediaStreamRequest CreateRequest(const std::string& audio_id,
@@ -166,20 +173,35 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
               GetContentSettings()->GetMicrophoneCameraState());
   }
 
-  MockPermissionPromptFactory* prompt_factory() {
+  permissions::MockPermissionPromptFactory* prompt_factory() {
     return prompt_factory_.get();
   }
 
- private:
+  void VerifyResultState(blink::mojom::MediaStreamRequestResult result,
+                         bool has_audio,
+                         bool has_video) {
+    EXPECT_EQ(result, media_stream_result());
+    EXPECT_EQ(has_audio,
+              CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+    EXPECT_EQ(has_video,
+              CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  }
+
   void SetUpOnMainThread() override {
     WebRtcTestBase::SetUpOnMainThread();
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    PermissionRequestManager* manager =
-        PermissionRequestManager::FromWebContents(
+    permission_bubble_media_access_handler_ =
+        std::make_unique<PermissionBubbleMediaAccessHandler>();
+
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(
             browser()->tab_strip_model()->GetActiveWebContents());
-    prompt_factory_.reset(new MockPermissionPromptFactory(manager));
+    prompt_factory_.reset(
+        new permissions::MockPermissionPromptFactory(manager));
 
     // Cleanup.
     media_stream_devices_.clear();
@@ -204,6 +226,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   }
 
   void TearDownOnMainThread() override {
+    permission_bubble_media_access_handler_.reset();
     prompt_factory_.reset();
 
     WebRtcTestBase::TearDownOnMainThread();
@@ -218,7 +241,10 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   base::Closure quit_closure_;
 
-  std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
+  std::unique_ptr<permissions::MockPermissionPromptFactory> prompt_factory_;
+
+  std::unique_ptr<PermissionBubbleMediaAccessHandler>
+      permission_bubble_media_access_handler_;
 };
 
 // Request and allow microphone access.
@@ -227,11 +253,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowMic) {
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_ALLOWED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), std::string()));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -255,11 +280,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowCam) {
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(std::string(), example_video_id()));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
@@ -283,11 +307,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockMic) {
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), std::string()));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -312,11 +335,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockCam) {
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(std::string(), example_video_id()));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
@@ -343,11 +365,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -378,11 +399,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -416,11 +436,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -454,11 +473,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
@@ -492,11 +510,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), std::string()));
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_TRUE(GetContentSettings()->IsContentBlocked(
@@ -508,10 +525,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   // Request cam and allow
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(std::string(), example_video_id()));
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
   EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
@@ -540,11 +555,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(std::string(), example_video_id()));
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_CAMERA));
   EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
@@ -574,11 +588,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);
   // Ensure the prompt is accepted if necessary such that tab specific content
   // settings are updated.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), std::string()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), std::string()));
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_TRUE(GetContentSettings()->IsContentBlocked(
@@ -681,35 +694,33 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     if (test.ExpectMicInfobar() || test.ExpectCamInfobar()) {
       if (test.accept_infobar) {
         prompt_factory()->set_response_type(
-            PermissionRequestManager::ACCEPT_ALL);
+            permissions::PermissionRequestManager::ACCEPT_ALL);
       } else {
-        prompt_factory()->set_response_type(PermissionRequestManager::DENY_ALL);
+        prompt_factory()->set_response_type(
+            permissions::PermissionRequestManager::DENY_ALL);
       }
     } else {
-      prompt_factory()->set_response_type(PermissionRequestManager::NONE);
+      prompt_factory()->set_response_type(
+          permissions::PermissionRequestManager::NONE);
     }
-    RequestPermissions(
-        GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-        base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                   base::Unretained(this)));
+    RequestPermissions(GetWebContents(),
+                       CreateRequest(example_audio_id(), example_video_id()));
 
     ASSERT_LE(prompt_factory()->TotalRequestCount(), 2);
-    ASSERT_EQ(test.ExpectMicInfobar(),
-              prompt_factory()->RequestTypeSeen(
-                  PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
-    ASSERT_EQ(test.ExpectCamInfobar(),
-              prompt_factory()->RequestTypeSeen(
-                  PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
+    ASSERT_EQ(
+        test.ExpectMicInfobar(),
+        prompt_factory()->RequestTypeSeen(
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
+    ASSERT_EQ(
+        test.ExpectCamInfobar(),
+        prompt_factory()->RequestTypeSeen(
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
 
     // Check the media stream result is expected and the devices returned are
     // expected;
-    ASSERT_EQ(test.ExpectedMediaStreamResult(), media_stream_result());
-    ASSERT_EQ(CheckDevicesListContains(
-                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE),
-              test.ExpectMicAllowed() && test.ExpectCamAllowed());
-    ASSERT_EQ(CheckDevicesListContains(
-                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE),
-              test.ExpectMicAllowed() && test.ExpectCamAllowed());
+    VerifyResultState(test.ExpectedMediaStreamResult(),
+                      test.ExpectMicAllowed() && test.ExpectCamAllowed(),
+                      test.ExpectMicAllowed() && test.ExpectCamAllowed());
   }
 }
 
@@ -717,18 +728,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        WebUIRequestAndAllowCam) {
   InitWithUrl(GURL(chrome::kChromeUIVersionURL));
-  RequestPermissions(
-      GetWebContents(), CreateRequest(std::string(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(std::string(), example_video_id()));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, false, true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -738,65 +743,49 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                                    "/index.html";
   InitWithUrl(GURL(pdf_extension_page));
   // Test that a prompt is required.
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
   ASSERT_EQ(2, prompt_factory()->TotalRequestCount());
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
-      PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
-      PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
 
-  // Accept the prompt.
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, true);
 
   // Check that re-requesting allows without prompting.
   prompt_factory()->ResetCounts();
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        PepperRequestInsecure) {
   InitWithUrl(GURL("http://www.example.com"));
 
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), example_video_id(),
-                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
-  InitWithUrl(GURL("http://www.example.com"));
+  InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
 
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   content::MediaStreamRequest request =
       CreateRequest(example_audio_id(), example_video_id());
@@ -804,52 +793,76 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
   request.render_frame_id = 0;
   request.render_process_id = 0;
 
-  RequestPermissions(
-      nullptr, request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(nullptr, request);
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(
+      blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN, false,
+      false);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       WebContentsDestroyedDuringRequest) {
+  InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+
+  content::WebContents* prompt_contents = GetWebContents();
+  const int prompt_contents_index =
+      browser()->tab_strip_model()->GetIndexOfWebContents(prompt_contents);
+
+  // Now request permissions, but before the callback is asynchronously called,
+  // destroy the tab.
+  permission_bubble_media_access_handler_->HandleRequest(
+      prompt_contents, CreateRequest(example_audio_id(), example_video_id()),
+      base::BindOnce([](const blink::MediaStreamDevices& devices,
+                        blink::mojom::MediaStreamRequestResult result,
+                        std::unique_ptr<content::MediaStreamUI> ui) {
+        ADD_FAILURE() << " this callback shouldn't be reached";
+      }),
+      nullptr);
+  // Since the mock prompt factory holds a reference to the
+  // PermissionRequestManager for the WebContents and uses that reference in its
+  // destructor, it has to be destroyed before the tab.
+  prompt_factory_.reset();
+  ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
+      prompt_contents_index, TabStripModel::CloseTypes::CLOSE_USER_GESTURE));
+  base::RunLoop().RunUntilIdle();
+
+  VerifyResultState(
+      blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS, false,
+      false);
 }
 
 // Request and block microphone and camera access with kill switch.
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        RequestAndKillSwitchMicCam) {
   std::map<std::string, std::string> params;
-  params[PermissionUtil::GetPermissionString(
+  params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_MIC)] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
-  params[PermissionUtil::GetPermissionString(
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+  params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_CAMERA)] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
       "TestGroup", params);
   base::FieldTrialList::CreateFieldTrial(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
       "TestGroup");
   InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_ALLOWED);
   SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
-  RequestPermissions(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(),
+                     CreateRequest(example_audio_id(), example_video_id()));
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
-
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON,
+                    false, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -872,19 +885,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   // Make the child frame the source of the request.
   request.render_process_id = child_frame->GetProcess()->GetID();
   request.render_frame_id = child_frame->GetRoutingID();
-  RequestPermissions(
-      GetWebContents(), request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(), request);
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -909,19 +915,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   // Make the child frame the source of the request.
   request.render_process_id = child_frame->GetProcess()->GetID();
   request.render_frame_id = child_frame->GetRoutingID();
-  RequestPermissions(
-      GetWebContents(), request,
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 base::Unretained(this)));
+  RequestPermissions(GetWebContents(), request);
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+                    false, false);
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -933,15 +932,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), std::string(),
-                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                     base::Unretained(this)));
-
-  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  EXPECT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  EXPECT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, true, false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -951,13 +943,6 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(std::string(), example_video_id(),
-                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-      base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                     base::Unretained(this)));
-
-  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
-  EXPECT_FALSE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
-  EXPECT_TRUE(CheckDevicesListContains(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
+                            blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY));
+  VerifyResultState(blink::mojom::MediaStreamRequestResult::OK, false, true);
 }

@@ -7,9 +7,11 @@
 #include <cstdint>
 #include <utility>
 
+#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -94,10 +96,10 @@ void QuartcSendChannel::OnSessionCreated(QuartcSession* session) {
 }
 
 QuicMemSlice QuartcSendChannel::EncodeChannelId() {
-  QuicMemSlice id_slice(allocator_, encoded_length_);
-  QuicDataWriter writer(encoded_length_, const_cast<char*>(id_slice.data()));
+  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(allocator_, encoded_length_);
+  QuicDataWriter writer(encoded_length_, buffer.get());
   writer.WriteVarInt62(id_);
-  return id_slice;
+  return QuicMemSlice(std::move(buffer), encoded_length_);
 }
 
 QuartcMultiplexer::QuartcMultiplexer(
@@ -176,7 +178,7 @@ void QuartcMultiplexer::OnConnectionClosed(
   session_delegate_->OnConnectionClosed(frame, source);
 }
 
-void QuartcMultiplexer::OnMessageReceived(QuicStringPiece message) {
+void QuartcMultiplexer::OnMessageReceived(quiche::QuicheStringPiece message) {
   QuicDataReader reader(message);
   QuicVariableLengthIntegerLength channel_id_length =
       reader.PeekVarInt62Length();

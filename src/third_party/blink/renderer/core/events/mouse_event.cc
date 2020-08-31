@@ -22,7 +22,8 @@
 
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 
-#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mouse_event_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
@@ -129,19 +130,18 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                AbstractView* view,
-                               Event* underlying_event,
+                               const Event* underlying_event,
                                SimulatedClickCreationScope creation_scope) {
   WebInputEvent::Modifiers modifiers = WebInputEvent::kNoModifiers;
-  if (UIEventWithKeyState* key_state_event =
+  if (const UIEventWithKeyState* key_state_event =
           FindEventWithKeyState(underlying_event)) {
     modifiers = key_state_event->GetModifiers();
   }
 
   SyntheticEventType synthetic_type = kPositionless;
   MouseEventInit* initializer = MouseEventInit::Create();
-  if (underlying_event && underlying_event->IsMouseEvent()) {
+  if (const auto* mouse_event = DynamicTo<MouseEvent>(underlying_event)) {
     synthetic_type = kRealOrIndistinguishable;
-    MouseEvent* mouse_event = ToMouseEvent(underlying_event);
     initializer->setScreenX(mouse_event->screenX());
     initializer->setScreenY(mouse_event->screenY());
     initializer->setSourceCapabilities(
@@ -167,7 +167,7 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                             SimulatedClickCreationScope::kFromUserAgent);
   created_event->SetUnderlyingEvent(underlying_event);
   if (synthetic_type == kRealOrIndistinguishable) {
-    MouseEvent* mouse_event = ToMouseEvent(created_event->UnderlyingEvent());
+    auto* mouse_event = To<MouseEvent>(created_event->UnderlyingEvent());
     created_event->InitCoordinates(mouse_event->clientX(),
                                    mouse_event->clientY());
   }
@@ -223,11 +223,11 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     const LocalDOMWindow* dom_window,
     MouseEventInit* initializer) {
   FloatPoint client_point;
-  FloatPoint screen_point = web_pointer_properties.PositionInScreen();
+  FloatPoint screen_point(web_pointer_properties.PositionInScreen());
   float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint root_frame_point = web_pointer_properties.PositionInWidget();
+    FloatPoint root_frame_point(web_pointer_properties.PositionInWidget());
     if (Page* p = frame->GetPage()) {
       if (p->GetPointerLockController().GetElement() &&
           !p->GetPointerLockController().LockPending()) {
@@ -388,7 +388,7 @@ Node* MouseEvent::fromElement() const {
   return target() ? target()->ToNode() : nullptr;
 }
 
-void MouseEvent::Trace(blink::Visitor* visitor) {
+void MouseEvent::Trace(Visitor* visitor) {
   visitor->Trace(related_target_);
   UIEventWithKeyState::Trace(visitor);
 }
@@ -484,7 +484,7 @@ void MouseEvent::ComputeRelativePosition() {
   float inverse_zoom_factor = 1 / PageZoomFactor(this);
 
   // Must have an updated layout tree for this math to work correctly.
-  target_node->GetDocument().UpdateStyleAndLayout();
+  target_node->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInput);
 
   // Adjust offsetLocation to be relative to the target's padding box.
   if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {
@@ -555,24 +555,20 @@ int MouseEvent::layerY() {
                           : static_cast<int>(layer_location_.Y());
 }
 
-double MouseEvent::offsetX() {
+double MouseEvent::offsetX() const {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
-    ComputeRelativePosition();
-  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-             ? offset_location_.X()
-             : std::round(offset_location_.X());
+    const_cast<MouseEvent*>(this)->ComputeRelativePosition();
+  return std::round(offset_location_.X());
 }
 
-double MouseEvent::offsetY() {
+double MouseEvent::offsetY() const {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
-    ComputeRelativePosition();
-  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
-             ? offset_location_.Y()
-             : std::round(offset_location_.Y());
+    const_cast<MouseEvent*>(this)->ComputeRelativePosition();
+  return std::round(offset_location_.Y());
 }
 
 }  // namespace blink

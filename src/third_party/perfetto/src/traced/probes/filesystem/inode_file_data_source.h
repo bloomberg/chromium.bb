@@ -25,8 +25,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "perfetto/base/flat_set.h"
 #include "perfetto/base/task_runner.h"
-#include "perfetto/ext/base/flat_set.h"
 #include "perfetto/ext/base/weak_ptr.h"
 #include "perfetto/ext/traced/data_source_types.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
@@ -53,7 +53,7 @@ void CreateStaticDeviceToInodeMap(
 class InodeFileDataSource : public ProbesDataSource,
                             public FileScanner::Delegate {
  public:
-  static constexpr int kTypeId = 2;
+  static const ProbesDataSource::Descriptor descriptor;
 
   InodeFileDataSource(
       DataSourceConfig,

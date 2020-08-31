@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 
-#include "base/logging.h"
-#include "components/sync/protocol/sharing_sms_fetch_message.pb.h"
+#include "base/check.h"
+#include "chrome/browser/sharing/proto/sms_fetch_message.pb.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -47,10 +47,8 @@ SmsFetchRequestHandler::Request::~Request() {
 }
 
 void SmsFetchRequestHandler::Request::OnReceive(
-    const std::string& one_time_code,
-    const std::string& sms) {
+    const std::string& one_time_code) {
   auto response = std::make_unique<chrome_browser_sharing::ResponseMessage>();
-  response->mutable_sms_fetch_response()->set_sms(sms);
   response->mutable_sms_fetch_response()->set_one_time_code(one_time_code);
 
   std::move(respond_callback_).Run(std::move(response));

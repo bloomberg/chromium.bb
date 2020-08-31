@@ -28,7 +28,7 @@ import json
 
 def generate(symbol_name, commit_id, output_header_file):
     # Write commit ID to output header file
-    with open(output_header_file, "w") as header_file:
+    with open(output_header_file, "w", newline='\n') as header_file:
          # File Comment
         file_comment = '// *** THIS FILE IS GENERATED - DO NOT EDIT ***\n'
         file_comment += '// See external_revision_generator.py for modifications\n'
@@ -38,10 +38,10 @@ def generate(symbol_name, commit_id, output_header_file):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2015-2019 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2019 LunarG, Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Google Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2020 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Google Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'

@@ -71,7 +71,21 @@ dictionary CookieListItem {
 
 typedef sequence<CookieListItem> CookieList;
 
-[Exposed=Window, SecureContext]
+[Exposed=(ServiceWorker,Window),
+ SecureContext]
+interface CookieStoreManager {
+  Promise<void> subscribe(sequence<CookieStoreGetOptions> subscriptions);
+  Promise<sequence<CookieStoreGetOptions>> getSubscriptions();
+  Promise<void> unsubscribe(sequence<CookieStoreGetOptions> subscriptions);
+};
+
+[Exposed=(ServiceWorker,Window)]
+partial interface ServiceWorkerRegistration {
+  readonly attribute CookieStoreManager cookies;
+};
+
+[Exposed=Window,
+ SecureContext]
 interface CookieChangeEvent : Event {
   constructor(DOMString type, optional CookieChangeEventInit eventInitDict = {});
   readonly attribute CookieList changed;
@@ -95,13 +109,6 @@ dictionary ExtendableCookieChangeEventInit : ExtendableEventInit {
   CookieList deleted;
 };
 
-[Exposed=(ServiceWorker,Window), SecureContext]
-interface CookieStoreManager {
-  Promise<void> subscribe(sequence<CookieStoreGetOptions> subscriptions);
-  Promise<sequence<CookieStoreGetOptions>> getSubscriptions();
-  Promise<void> unsubscribe(sequence<CookieStoreGetOptions> subscriptions);
-};
-
 [SecureContext]
 partial interface Window {
   [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
@@ -109,10 +116,6 @@ partial interface Window {
 
 partial interface ServiceWorkerGlobalScope {
   [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
-  attribute EventHandler oncookiechange;
-};
 
-[Exposed=(ServiceWorker,Window), SecureContext]
-partial interface ServiceWorkerRegistration {
-  readonly attribute CookieStoreManager cookies;
+  attribute EventHandler oncookiechange;
 };

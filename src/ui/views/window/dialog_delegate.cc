@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -42,6 +43,8 @@ DialogDelegate::Params::~Params() = default;
 // DialogDelegate:
 
 DialogDelegate::DialogDelegate() {
+  WidgetDelegate::RegisterWindowWillCloseCallback(
+      base::BindOnce(&DialogDelegate::WindowWillClose, base::Unretained(this)));
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegate.Create", true);
   creation_time_ = base::TimeTicks::Now();
 }
@@ -62,12 +65,14 @@ bool DialogDelegate::CanSupportCustomFrame(gfx::NativeView parent) {
 #if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
   // The new style doesn't support unparented dialogs on Linux desktop.
   return parent != nullptr;
-#elif defined(OS_WIN)
+#else
+#if defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (!ui::win::IsAeroGlassEnabled())
     return parent != nullptr;
 #endif
   return true;
+#endif
 }
 
 // static
@@ -106,10 +111,6 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   return params;
 }
 
-int DialogDelegate::GetDialogButtons() const {
-  return params_.buttons;
-}
-
 int DialogDelegate::GetDefaultDialogButton() const {
   if (GetParams().default_button.has_value())
     return *GetParams().default_button;
@@ -137,24 +138,27 @@ base::string16 DialogDelegate::GetDialogButtonLabel(
 }
 
 bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return true;
+  return params_.enabled_buttons & button;
 }
 
 bool DialogDelegate::Cancel() {
+  DCHECK(!already_started_close_);
+  if (cancel_callback_)
+    RunCloseCallback(std::move(cancel_callback_));
   return true;
 }
 
 bool DialogDelegate::Accept() {
+  DCHECK(!already_started_close_);
+  if (accept_callback_)
+    RunCloseCallback(std::move(accept_callback_));
   return true;
 }
 
-bool DialogDelegate::Close() {
-  int buttons = GetDialogButtons();
-  if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
-      (buttons == ui::DIALOG_BUTTON_NONE)) {
-    return Cancel();
-  }
-  return Accept();
+void DialogDelegate::RunCloseCallback(base::OnceClosure callback) {
+  DCHECK(!already_started_close_);
+  already_started_close_ = true;
+  std::move(callback).Run();
 }
 
 View* DialogDelegate::GetInitiallyFocusedView() {
@@ -192,6 +196,36 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
     return CreateDialogFrameView(widget);
 
   return WidgetDelegate::CreateNonClientFrameView(widget);
+}
+
+void DialogDelegate::WindowWillClose() {
+  if (already_started_close_)
+    return;
+
+  bool new_callback_present =
+      close_callback_ || cancel_callback_ || accept_callback_;
+
+  if (close_callback_)
+    RunCloseCallback(std::move(close_callback_));
+
+  if (new_callback_present)
+    return;
+
+  // Old-style close behavior: if the only button was Ok, call Accept();
+  // otherwise call Cancel(). Note that in this case the window is already going
+  // to close, so the return values of Accept()/Cancel(), which normally say
+  // whether the window should close, are ignored.
+  int buttons = GetDialogButtons();
+  if (buttons == ui::DIALOG_BUTTON_OK)
+    Accept();
+  else
+    Cancel();
+
+  // This is set here instead of before the invocations of Accept()/Cancel() so
+  // that those methods can DCHECK that !already_started_close_. Otherwise,
+  // client code could (eg) call Accept() from inside the cancel callback, which
+  // could lead to multiple callbacks being delivered from this class.
+  already_started_close_ = true;
 }
 
 // static
@@ -292,16 +326,57 @@ void DialogDelegate::DialogModelChanged() {
     observer.OnDialogChanged();
 }
 
+void DialogDelegate::SetDefaultButton(int button) {
+  if (params_.default_button == button)
+    return;
+  params_.default_button = button;
+  DialogModelChanged();
+}
+
+void DialogDelegate::SetButtons(int buttons) {
+  if (params_.buttons == buttons)
+    return;
+  params_.buttons = buttons;
+  DialogModelChanged();
+}
+
+void DialogDelegate::SetButtonEnabled(ui::DialogButton button, bool enabled) {
+  if (!!(params_.enabled_buttons & button) == enabled)
+    return;
+  if (enabled)
+    params_.enabled_buttons |= button;
+  else
+    params_.enabled_buttons &= ~button;
+  DialogModelChanged();
+}
+
+void DialogDelegate::SetButtonLabel(ui::DialogButton button,
+    base::string16 label) {
+  if (params_.button_labels[button] == label)
+    return;
+  params_.button_labels[button] = label;
+  DialogModelChanged();
+}
+
+void DialogDelegate::SetAcceptCallback(base::OnceClosure callback) {
+  accept_callback_ = std::move(callback);
+}
+
+void DialogDelegate::SetCancelCallback(base::OnceClosure callback) {
+  cancel_callback_ = std::move(callback);
+}
+
+void DialogDelegate::SetCloseCallback(base::OnceClosure callback) {
+  close_callback_ = std::move(callback);
+}
+
 std::unique_ptr<View> DialogDelegate::DisownExtraView() {
   return std::move(extra_view_);
 }
 
-void DialogDelegate::CancelDialog() {
-  GetDialogClientView()->CancelWindow();
-}
-
-void DialogDelegate::AcceptDialog() {
-  GetDialogClientView()->AcceptWindow();
+bool DialogDelegate::Close() {
+  WindowWillClose();
+  return true;
 }
 
 void DialogDelegate::ResetViewShownTimeStampForTesting() {
@@ -310,6 +385,24 @@ void DialogDelegate::ResetViewShownTimeStampForTesting() {
 
 void DialogDelegate::SetButtonRowInsets(const gfx::Insets& insets) {
   GetDialogClientView()->SetButtonRowInsets(insets);
+}
+
+void DialogDelegate::AcceptDialog() {
+  if (already_started_close_ || !Accept())
+    return;
+
+  already_started_close_ = true;
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kAcceptButtonClicked);
+}
+
+void DialogDelegate::CancelDialog() {
+  if (already_started_close_ || !Cancel())
+    return;
+
+  already_started_close_ = true;
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCancelButtonClicked);
 }
 
 DialogDelegate::~DialogDelegate() {
@@ -359,8 +452,7 @@ View* DialogDelegateView::GetContentsView() {
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this && GetWidget() &&
-      (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
-       GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)) {
+      ui::IsAlert(GetAccessibleWindowRole())) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }

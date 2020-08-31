@@ -4,13 +4,17 @@
 
 #include "components/performance_manager/graph/policies/process_priority_policy.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/performance_manager/graph/process_node_impl.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/render_process_user_data.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,8 +43,7 @@ void PostToggleProcessNodePriority(content::RenderProcessHost* rph) {
   auto* process_node = rpud->process_node();
 
   PerformanceManager::CallOnGraph(
-      FROM_HERE,
-      base::BindLambdaForTesting([process_node](Graph* graph_unused) {
+      FROM_HERE, base::BindLambdaForTesting([process_node]() {
         process_node->set_priority(
             GetOppositePriority(process_node->priority()));
       }));
@@ -72,11 +75,6 @@ class ProcessPriorityPolicyTest : public PerformanceManagerTestHarness {
     // Clean up the web contents, which should dispose of the page and frame
     // nodes involved.
     DeleteContents();
-
-    // The RenderProcessHosts seem to get leaked, or at least be still alive
-    // here, so explicitly detach from them in order to clean up the graph
-    // nodes.
-    RenderProcessUserData::DetachAndDestroyAll();
 
     PerformanceManagerTestHarness::TearDown();
   }

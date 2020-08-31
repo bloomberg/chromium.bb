@@ -41,7 +41,7 @@ void FakeContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   auto frame_sink = cc::FakeLayerTreeFrameSink::Create3d();
   frame_sink_ = frame_sink.get();
-  compositor->SetLayerTreeFrameSink(std::move(frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(frame_sink), nullptr);
 }
 
 scoped_refptr<viz::ContextProvider>
@@ -64,10 +64,6 @@ gpu::GpuMemoryBufferManager* FakeContextFactory::GetGpuMemoryBufferManager() {
 
 cc::TaskGraphRunner* FakeContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
-}
-
-bool FakeContextFactory::SyncTokensRequiredForDisplayCompositor() {
-  return true;
 }
 
 }  // namespace ui

@@ -51,10 +51,10 @@ template("chrome_common_shared_library") {
     export_java_symbols = _export_java_symbols
     export_feature_registrations = true
     if (_generate_partitions) {
-      export_symbol_whitelist_files = []
+      export_symbol_allowlist_files = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_entrypoints)) {
-          export_symbol_whitelist_files += [ _module_desc.native_entrypoints ]
+          export_symbol_allowlist_files += [ _module_desc.native_entrypoints ]
         }
       }
     }
@@ -78,9 +78,7 @@ template("chrome_common_shared_library") {
     # Use a dynamically-generated linker script.
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     deps += [ ":$_linker_script_target" ]
-    inputs = [
-      "$_linker_script",
-    ]
+    inputs = [ "$_linker_script" ]
     if (!defined(ldflags)) {
       ldflags = []
     }

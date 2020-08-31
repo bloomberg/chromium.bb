@@ -37,7 +37,7 @@ public class TabTestUtils {
      */
     public static void simulatePageLoadFinished(Tab tab) {
         RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
-        while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrl());
+        while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrlString());
     }
 
     /**
@@ -133,5 +133,15 @@ public class TabTestUtils {
      */
     public static TabWebContentsDelegateAndroid getTabWebContentsDelegate(Tab tab) {
         return ((TabImpl) tab).getTabWebContentsDelegateAndroid();
+    }
+
+    /**
+     * Sets whether the tab is showing an error page.  This is reset whenever the tab finishes a
+     * navigation.
+     * @param tab {@link Tab} object.
+     * @param isShowingErrorPage Whether the tab shows an error page.
+     */
+    public static void setIsShowingErrorPage(Tab tab, boolean isShowingErrorPage) {
+        ((TabImpl) tab).setIsShowingErrorPage(isShowingErrorPage);
     }
 }

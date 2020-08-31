@@ -67,8 +67,8 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const std::string& email_address,
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_use_custom_frame(false);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_use_custom_frame(false);
 
   AddChildView(web_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -138,7 +138,6 @@ void UserManager::Show(
     profiles::UserManagerAction user_manager_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::OPEN_USER_MANAGER);
   if (g_user_manager_view) {
     // If we are showing the User Manager after locking a profile, change the
     // active profile to Guest.
@@ -295,8 +294,8 @@ UserManagerView::UserManagerView()
     : web_view_(nullptr),
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_use_custom_frame(false);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER);

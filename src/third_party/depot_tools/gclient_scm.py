@@ -230,18 +230,6 @@ class GitWrapper(SCMWrapper):
       filter_kwargs['predicate'] = self.out_cb
     self.filter = gclient_utils.GitFilter(**filter_kwargs)
 
-  @staticmethod
-  def BinaryExists():
-    """Returns true if the command exists."""
-    try:
-      # We assume git is newer than 1.7.  See: crbug.com/114483
-      result, version = scm.GIT.AssertVersion('1.7')
-      if not result:
-        raise gclient_utils.Error('Git version is older than 1.7: %s' % version)
-      return result
-    except OSError:
-      return False
-
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
 
@@ -402,7 +390,7 @@ class GitWrapper(SCMWrapper):
       # remote ref for it, since |target_rev| might point to a local ref which
       # is not up to date with the corresponding remote ref.
       remote_ref = ''.join(scm.GIT.RefToRemoteRef(target_rev, self.remote))
-      self.Print('Trying the correspondig remote ref for %r: %r\n' % (
+      self.Print('Trying the corresponding remote ref for %r: %r\n' % (
           target_rev, remote_ref))
       if scm.GIT.IsValidRevision(self.checkout_path, remote_ref):
         target_rev = remote_ref
@@ -512,6 +500,9 @@ class GitWrapper(SCMWrapper):
     revision_ref = revision
     if ':' in revision:
       revision_ref, _, revision = revision.partition(':')
+
+    if revision_ref.startswith('refs/branch-heads'):
+      options.with_branch_heads = True
 
     mirror = self._GetMirror(url, options, revision_ref)
     if mirror:
@@ -866,7 +857,7 @@ class GitWrapper(SCMWrapper):
     if not os.path.isdir(self.checkout_path):
       # revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
-      self.Print('_____ %s is missing, synching instead' % self.relpath)
+      self.Print('_____ %s is missing, syncing instead' % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
@@ -885,8 +876,8 @@ class GitWrapper(SCMWrapper):
     except NoUsableRevError as e:
       # If the DEPS entry's url and hash changed, try to update the origin.
       # See also http://crbug.com/520067.
-      logging.warn(
-          'Couldn\'t find usable revision, will retrying to update instead: %s',
+      logging.warning(
+          "Couldn't find usable revision, will retrying to update instead: %s",
           e.message)
       return self.update(options, [], file_list)
 
@@ -1081,11 +1072,7 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error("Background task requires input. Rerun "
                                 "gclient with --jobs=1 so that\n"
                                 "interaction is possible.")
-    try:
-      return raw_input(prompt)
-    except KeyboardInterrupt:
-      # Hide the exception.
-      sys.exit(1)
+    return gclient_utils.AskForData(prompt)
 
 
   def _AttemptRebase(self, upstream, files, options, newbase=None,
@@ -1295,7 +1282,7 @@ class GitWrapper(SCMWrapper):
     Args:
       options: The configured option set
       ref: (str) The branch/commit to checkout
-      quiet: (bool/None) Whether or not the checkout shoud pass '--quiet'; if
+      quiet: (bool/None) Whether or not the checkout should pass '--quiet'; if
           'None', the behavior is inferred from 'options.verbose'.
     Returns: (str) The output of the checkout operation
     """
@@ -1374,9 +1361,7 @@ class GitWrapper(SCMWrapper):
     """Attempts to fetch |revision| if not available in local repo.
 
     Returns possibly updated revision."""
-    try:
-      self._Capture(['rev-parse', revision])
-    except subprocess2.CalledProcessError:
+    if not scm.GIT.IsValidRevision(self.checkout_path, revision):
       self._Fetch(options, refspec=revision)
       revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
     return revision
@@ -1475,15 +1460,16 @@ class CipdRoot(object):
   @contextlib.contextmanager
   def _create_ensure_file(self):
     try:
+      contents = '$ParanoidMode CheckPresence\n\n'
+      for subdir, packages in sorted(self._packages_by_subdir.items()):
+        contents += '@Subdir %s\n' % subdir
+        for package in sorted(packages, key=lambda p: p.name):
+          contents += '%s %s\n' % (package.name, package.version)
+        contents += '\n'
       ensure_file = None
       with tempfile.NamedTemporaryFile(
-          suffix='.ensure', delete=False, mode='w') as ensure_file:
-        ensure_file.write('$ParanoidMode CheckPresence\n\n')
-        for subdir, packages in sorted(self._packages_by_subdir.items()):
-          ensure_file.write('@Subdir %s\n' % subdir)
-          for package in sorted(packages, key=lambda p: p.name):
-            ensure_file.write('%s %s\n' % (package.name, package.version))
-          ensure_file.write('\n')
+          suffix='.ensure', delete=False, mode='wb') as ensure_file:
+        ensure_file.write(contents.encode('utf-8', 'replace'))
       yield ensure_file.name
     finally:
       if ensure_file is not None and os.path.exists(ensure_file.name):

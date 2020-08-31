@@ -22,7 +22,6 @@
 #include "src/core/SkFDot6.h"
 #include "src/core/SkFontDescriptor.h"
 #include "src/core/SkGlyph.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkMask.h"
 #include "src/core/SkMaskGamma.h"
 #include "src/core/SkScalerContext.h"
@@ -699,10 +698,11 @@ static bool isAxisAligned(const SkScalerContextRec& rec) {
 
 SkScalerContext* SkTypeface_FreeType::onCreateScalerContext(const SkScalerContextEffects& effects,
                                                             const SkDescriptor* desc) const {
-    auto c = skstd::make_unique<SkScalerContext_FreeType>(
+    auto c = std::make_unique<SkScalerContext_FreeType>(
             sk_ref_sp(const_cast<SkTypeface_FreeType*>(this)), effects, desc);
     if (!c->success()) {
-        return nullptr;
+        return SkScalerContext::MakeEmptyContext(
+                sk_ref_sp(const_cast<SkTypeface_FreeType*>(this)), effects, desc);
     }
     return c.release();
 }
@@ -722,7 +722,7 @@ std::unique_ptr<SkFontData> SkTypeface_FreeType::cloneFontData(
                                axisValues, name);
     int ttcIndex;
     std::unique_ptr<SkStreamAsset> stream = this->openStream(&ttcIndex);
-    return skstd::make_unique<SkFontData>(std::move(stream), ttcIndex, axisValues.get(),
+    return std::make_unique<SkFontData>(std::move(stream), ttcIndex, axisValues.get(),
                                           axisDefinitions.count());
 }
 
@@ -933,7 +933,7 @@ SkScalerContext_FreeType::SkScalerContext_FreeType(sk_sp<SkTypeface> typeface,
     }
 
     using DoneFTSize = SkFunctionWrapper<decltype(FT_Done_Size), FT_Done_Size>;
-    std::unique_ptr<skstd::remove_pointer_t<FT_Size>, DoneFTSize> ftSize([this]() -> FT_Size {
+    std::unique_ptr<std::remove_pointer_t<FT_Size>, DoneFTSize> ftSize([this]() -> FT_Size {
         FT_Size size;
         FT_Error err = FT_New_Size(fFaceRec->fFace.get(), &size);
         if (err != 0) {
@@ -1764,7 +1764,7 @@ size_t SkTypeface_FreeType::onGetTableData(SkFontTableTag tag, size_t offset,
     if (offset > tableLength) {
         return 0;
     }
-    FT_ULong size = SkTMin((FT_ULong)length, tableLength - (FT_ULong)offset);
+    FT_ULong size = std::min((FT_ULong)length, tableLength - (FT_ULong)offset);
     if (data) {
         error = FT_Load_Sfnt_Table(face, tag, offset, reinterpret_cast<FT_Byte*>(data), &size);
         if (error) {

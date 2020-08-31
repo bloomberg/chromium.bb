@@ -40,10 +40,15 @@ class ModelTypeProcessor {
                                GetLocalChangesCallback callback) = 0;
 
   // Informs this object that some of its commit requests have been
-  // successfully serviced.
+  // serviced (successfully or not).
   virtual void OnCommitCompleted(
       const sync_pb::ModelTypeState& type_state,
-      const CommitResponseDataList& response_list) = 0;
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list) = 0;
+
+  // Informs this object that a commit attempt failed, e.g. due to network or
+  // server issues. The commit may not include all pending entities.
+  virtual void OnCommitFailed(SyncCommitError commit_error);
 
   // Informs this object that there are some incoming updates it should
   // handle.

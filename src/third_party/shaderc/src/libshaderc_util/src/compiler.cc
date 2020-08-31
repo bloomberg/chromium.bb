@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <sstream>
+#include <thread>
 #include <tuple>
 
 #include "SPIRV/GlslangToSpv.h"
@@ -83,6 +84,7 @@ EShMessages GetMessageRules(shaderc_util::Compiler::TargetEnv env,
     case Compiler::TargetEnv::OpenGL:
       result = static_cast<EShMessages>(result | EShMsgSpvRules);
       break;
+    case Compiler::TargetEnv::WebGPU:
     case Compiler::TargetEnv::Vulkan:
       result =
           static_cast<EShMessages>(result | EShMsgSpvRules | EShMsgVulkanRules);
@@ -100,6 +102,46 @@ EShMessages GetMessageRules(shaderc_util::Compiler::TargetEnv env,
 }  // anonymous namespace
 
 namespace shaderc_util {
+
+unsigned int GlslangInitializer::initialize_count_ = 0;
+std::mutex* GlslangInitializer::glslang_mutex_ = nullptr;
+
+GlslangInitializer::GlslangInitializer() {
+  static std::mutex first_call_mutex;
+
+  // If this is the first call, glslang_mutex_ needs to be created, but in
+  // thread safe manner.
+  {
+    const std::lock_guard<std::mutex> first_call_lock(first_call_mutex);
+    if (glslang_mutex_ == nullptr) {
+      glslang_mutex_ = new std::mutex();
+    }
+  }
+
+  const std::lock_guard<std::mutex> glslang_lock(*glslang_mutex_);
+
+  if (initialize_count_ == 0) {
+    glslang::InitializeProcess();
+  }
+
+  initialize_count_++;
+}
+
+GlslangInitializer::~GlslangInitializer() {
+  const std::lock_guard<std::mutex> glslang_lock(*glslang_mutex_);
+
+  initialize_count_--;
+
+  if (initialize_count_ == 0) {
+    glslang::FinalizeProcess();
+    // There is no delete for glslang_mutex_ here, because we cannot guarantee
+    // there isn't a caller waiting for glslang_mutex_ in GlslangInitializer().
+    //
+    // This means that this class does leak one std::mutex worth of memory after
+    // the final instance is destroyed, but this allows us to defer allocating
+    // and constructing until we are sure we need to.
+  }
+}
 
 void Compiler::SetLimit(Compiler::Limit limit, int value) {
   switch (limit) {
@@ -130,8 +172,7 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
                                     const string_piece& error_tag)>&
         stage_callback,
     CountingIncluder& includer, OutputType output_type,
-    std::ostream* error_stream, size_t* total_warnings, size_t* total_errors,
-    GlslangInitializer* initializer) const {
+    std::ostream* error_stream, size_t* total_warnings, size_t* total_errors) const {
   // Compilation results to be returned:
   // Initialize the result tuple as a failed compilation. In error cases, we
   // should return result_tuple directly without setting its members.
@@ -143,10 +184,18 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
   std::vector<uint32_t>& compilation_output_data = std::get<1>(result_tuple);
   size_t& compilation_output_data_size_in_bytes = std::get<2>(result_tuple);
 
+  // glslang doesn't currently support WebGPU, so we need to fake it by having
+  // it generate Vulkan1.1 and then use spirv-opt later to convert to WebGPU.
+  bool is_webgpu = target_env_ == Compiler::TargetEnv::WebGPU;
+  TargetEnv internal_target_env =
+      !is_webgpu ? target_env_ : Compiler::TargetEnv::Vulkan;
+  TargetEnvVersion internal_target_env_version =
+      !is_webgpu ? target_env_version_ : Compiler::TargetEnvVersion::Vulkan_1_1;
+
   // Check target environment.
   const auto target_client_info = GetGlslangClientInfo(
-      error_tag, target_env_, target_env_version_, target_spirv_version_,
-      target_spirv_version_is_forced_);
+      error_tag, internal_target_env, internal_target_env_version,
+      target_spirv_version_, target_spirv_version_is_forced_);
   if (!target_client_info.error.empty()) {
     *error_stream << target_client_info.error;
     *total_warnings = 0;
@@ -154,7 +203,6 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
     return result_tuple;
   }
 
-  auto token = initializer->Acquire();
   EShLanguage used_shader_stage = forced_shader_stage;
   const std::string macro_definitions =
       shaderc_util::format(predefined_macros_, "#define ", " ", "\n");
@@ -248,8 +296,9 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
   shader.setInvertY(invert_y_enabled_);
   shader.setNanMinMaxClamp(nan_clamp_);
 
-  const EShMessages rules = GetMessageRules(
-      target_env_, source_language_, hlsl_offsets_, generate_debug_info_);
+  const EShMessages rules =
+      GetMessageRules(internal_target_env, source_language_, hlsl_offsets_,
+                      generate_debug_info_);
 
   bool success = shader.parse(&limits_, default_version_, default_profile_,
                               force_version_profile_, kNotForwardCompatible,
@@ -298,10 +347,15 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
   opt_passes.insert(opt_passes.end(), enabled_opt_passes_.begin(),
                     enabled_opt_passes_.end());
 
+  // WebGPU goes last, since it is converting the env.
+  if (is_webgpu) {
+    opt_passes.push_back(PassId::kVulkanToWebGPUPasses);
+  }
+
   if (!opt_passes.empty()) {
     std::string opt_errors;
-    if (!SpirvToolsOptimize(target_env_, target_env_version_, opt_passes,
-                            &spirv, &opt_errors)) {
+    if (!SpirvToolsOptimize(internal_target_env, internal_target_env_version,
+                            opt_passes, &spirv, &opt_errors)) {
       *error_stream << "shaderc: internal error: compilation succeeded but "
                        "failed to optimize: "
                     << opt_errors << "\n";
@@ -311,6 +365,8 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
 
   if (output_type == OutputType::SpirvAssemblyText) {
     std::string text_or_error;
+    // spirv-tools does know about WebGPU, so don't need to punt to Vulkan1.1
+    // here.
     if (!SpirvToolsDisassemble(target_env_, target_env_version_, spirv,
                                &text_or_error)) {
       *error_stream << "shaderc: internal error: compilation succeeded but "
@@ -408,6 +464,14 @@ void Compiler::SetSuppressWarnings() { suppress_warnings_ = true; }
 std::tuple<bool, std::string, std::string> Compiler::PreprocessShader(
     const std::string& error_tag, const string_piece& shader_source,
     const string_piece& shader_preamble, CountingIncluder& includer) const {
+  // glslang doesn't currently support WebGPU, so we need to fake it by having
+  // it generate Vulkan1.1 and then use spirv-opt later to convert to WebGPU.
+  bool is_webgpu = target_env_ == Compiler::TargetEnv::WebGPU;
+  TargetEnv internal_target_env =
+      !is_webgpu ? target_env_ : Compiler::TargetEnv::Vulkan;
+  TargetEnvVersion internal_target_env_version =
+      !is_webgpu ? target_env_version_ : Compiler::TargetEnvVersion::Vulkan_1_1;
+
   // The stage does not matter for preprocessing.
   glslang::TShader shader(EShLangVertex);
   const char* shader_strings = shader_source.data();
@@ -417,8 +481,8 @@ std::tuple<bool, std::string, std::string> Compiler::PreprocessShader(
                                        &string_names, 1);
   shader.setPreamble(shader_preamble.data());
   auto target_client_info = GetGlslangClientInfo(
-      error_tag, target_env_, target_env_version_, target_spirv_version_,
-      target_spirv_version_is_forced_);
+      error_tag, internal_target_env, internal_target_env_version,
+      target_spirv_version_, target_spirv_version_is_forced_);
   if (!target_client_info.error.empty()) {
     return std::make_tuple(false, "", target_client_info.error);
   }
@@ -435,7 +499,8 @@ std::tuple<bool, std::string, std::string> Compiler::PreprocessShader(
   // flag.
   const auto rules = static_cast<EShMessages>(
       EShMsgOnlyPreprocessor |
-      GetMessageRules(target_env_, source_language_, hlsl_offsets_, false));
+      GetMessageRules(internal_target_env, source_language_, hlsl_offsets_,
+                      false));
 
   std::string preprocessed_shader;
   const bool success = shader.preprocess(
@@ -671,6 +736,9 @@ GlslangClientInfo GetGlslangClientInfo(
       } else if (env_version == Compiler::TargetEnvVersion::Vulkan_1_1) {
         result.client_version = glslang::EShTargetVulkan_1_1;
         result.target_language_version = glslang::EShTargetSpv_1_3;
+      } else if (env_version == Compiler::TargetEnvVersion::Vulkan_1_2) {
+        result.client_version = glslang::EShTargetVulkan_1_2;
+        result.target_language_version = glslang::EShTargetSpv_1_5;
       } else {
         errs << "error:" << error_tag << ": Invalid target client version "
              << static_cast<uint32_t>(env_version) << " for Vulkan environment "

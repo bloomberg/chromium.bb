@@ -43,7 +43,7 @@ class CONTENT_EXPORT ClientHintsControllerDelegate
 
   virtual bool IsJavaScriptAllowed(const GURL& url) = 0;
 
-  virtual std::string GetAcceptLanguageString() = 0;
+  virtual bool UserAgentClientHintEnabled() = 0;
 
   virtual blink::UserAgentMetadata GetUserAgentMetadata() = 0;
 
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ClientHintsControllerDelegate
   // mojom::ClientHints implementation.
   void PersistClientHints(
       const url::Origin& primary_origin,
-      const std::vector<blink::mojom::WebClientHintsType>& client_hints,
+      const std::vector<network::mojom::WebClientHintsType>& client_hints,
       base::TimeDelta expiration_duration) override = 0;
 
   virtual void ResetForTesting() {}

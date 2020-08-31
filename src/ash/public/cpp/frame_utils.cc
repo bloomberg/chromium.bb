@@ -5,6 +5,7 @@
 #include "ash/public/cpp/frame_utils.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -15,6 +16,8 @@
 #include "ui/views/window/non_client_view.h"
 
 namespace ash {
+
+using WindowOpacity = views::Widget::InitParams::WindowOpacity;
 
 int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
                                 const gfx::Point& point_in_widget) {
@@ -59,6 +62,35 @@ int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
 
   // Caption is a safe default.
   return HTCAPTION;
+}
+
+void ResolveInferredOpacity(views::Widget::InitParams* params) {
+  DCHECK_EQ(params->opacity, WindowOpacity::kInferred);
+  if (params->type == views::Widget::InitParams::TYPE_WINDOW &&
+      params->layer_type == ui::LAYER_TEXTURED) {
+    // A framed window may have a rounded corner which requires the
+    // window to be transparent. WindowManager controls the actual
+    // opaque-ness of the window depending on its window state.
+    params->init_properties_container.SetProperty(
+        ash::kWindowManagerManagesOpacityKey, true);
+    params->opacity = WindowOpacity::kTranslucent;
+  } else {
+    params->opacity = WindowOpacity::kOpaque;
+  }
+}
+
+bool ShouldUseRestoreFrame(const views::Widget* widget) {
+  aura::Window* window = widget->GetNativeWindow();
+  // This is true when dragging a maximized window in ash. During this phase,
+  // the window should look as if it was restored, but keep its maximized state.
+  if (window->GetProperty(kFrameRestoreLookKey))
+    return true;
+
+  // Maximized and fullscreen windows should use the maximized frame.
+  if (widget->IsMaximized() || widget->IsFullscreen())
+    return false;
+
+  return true;
 }
 
 }  // namespace ash

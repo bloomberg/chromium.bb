@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/span.h"
@@ -57,6 +58,27 @@ TEST(WideString, ElementAccess) {
 #endif
 }
 
+TEST(WideString, Construct) {
+  {
+    // Copy-construct.
+    WideString string1(L"abc");
+    WideString string2(string1);
+    EXPECT_EQ(L"abc", string1);
+    EXPECT_EQ(L"abc", string2);
+    EXPECT_EQ(2, string1.ReferenceCountForTesting());
+    EXPECT_EQ(2, string2.ReferenceCountForTesting());
+  }
+  {
+    // Move-construct.
+    WideString string1(L"abc");
+    WideString string2(std::move(string1));
+    EXPECT_TRUE(string1.IsEmpty());
+    EXPECT_EQ(L"abc", string2);
+    EXPECT_EQ(0, string1.ReferenceCountForTesting());
+    EXPECT_EQ(1, string2.ReferenceCountForTesting());
+  }
+}
+
 TEST(WideString, Assign) {
   {
     // Copy-assign.
@@ -81,6 +103,8 @@ TEST(WideString, Assign) {
       EXPECT_EQ(1, string2.ReferenceCountForTesting());
 
       string1 = std::move(string2);
+      EXPECT_EQ(L"abc", string1);
+      EXPECT_TRUE(string2.IsEmpty());
       EXPECT_EQ(1, string1.ReferenceCountForTesting());
       EXPECT_EQ(0, string2.ReferenceCountForTesting());
     }
@@ -491,7 +515,16 @@ TEST(WideString, RemoveCopies) {
 }
 
 TEST(WideString, Replace) {
+  WideString empty;
+  empty.Replace(L"", L"CLAMS");
+  empty.Replace(L"xx", L"CLAMS");
+  EXPECT_EQ(L"", empty);
+
   WideString fred(L"FRED");
+  fred.Replace(L"", L"");
+  EXPECT_EQ(L"FRED", fred);
+  fred.Replace(L"", L"CLAMS");
+  EXPECT_EQ(L"FRED", fred);
   fred.Replace(L"FR", L"BL");
   EXPECT_EQ(L"BLED", fred);
   fred.Replace(L"D", L"DDY");
@@ -502,10 +535,20 @@ TEST(WideString, Replace) {
   EXPECT_EQ(L"BY", fred);
   fred.Replace(L"BY", L"HI");
   EXPECT_EQ(L"HI", fred);
-  fred.Replace(L"", L"CLAMS");
-  EXPECT_EQ(L"HI", fred);
-  fred.Replace(L"HI", L"");
+  fred.Replace(L"I", L"IHIHI");
+  EXPECT_EQ(L"HIHIHI", fred);
+  fred.Replace(L"HI", L"HO");
+  EXPECT_EQ(L"HOHOHO", fred);
+  fred.Replace(L"HO", L"");
   EXPECT_EQ(L"", fred);
+
+  WideString five_xs(L"xxxxx");
+  five_xs.Replace(L"xx", L"xxx");
+  EXPECT_EQ(L"xxxxxxx", five_xs);
+
+  WideString five_ys(L"yyyyy");
+  five_ys.Replace(L"yy", L"y");
+  EXPECT_EQ(L"yyy", five_ys);
 }
 
 TEST(WideString, Insert) {
@@ -588,57 +631,57 @@ TEST(WideString, Delete) {
   EXPECT_EQ(L"", empty);
 }
 
-TEST(WideString, Mid) {
+TEST(WideString, Substr) {
   WideString fred(L"FRED");
-  EXPECT_EQ(L"", fred.Mid(0, 0));
-  EXPECT_EQ(L"", fred.Mid(3, 0));
-  EXPECT_EQ(L"FRED", fred.Mid(0, 4));
-  EXPECT_EQ(L"RED", fred.Mid(1, 3));
-  EXPECT_EQ(L"ED", fred.Mid(2, 2));
-  EXPECT_EQ(L"D", fred.Mid(3, 1));
-  EXPECT_EQ(L"F", fred.Mid(0, 1));
-  EXPECT_EQ(L"R", fred.Mid(1, 1));
-  EXPECT_EQ(L"E", fred.Mid(2, 1));
-  EXPECT_EQ(L"D", fred.Mid(3, 1));
-  EXPECT_EQ(L"FR", fred.Mid(0, 2));
-  EXPECT_EQ(L"FRED", fred.Mid(0, 4));
-  EXPECT_EQ(L"", fred.Mid(0, 10));
+  EXPECT_EQ(L"", fred.Substr(0, 0));
+  EXPECT_EQ(L"", fred.Substr(3, 0));
+  EXPECT_EQ(L"FRED", fred.Substr(0, 4));
+  EXPECT_EQ(L"RED", fred.Substr(1, 3));
+  EXPECT_EQ(L"ED", fred.Substr(2, 2));
+  EXPECT_EQ(L"D", fred.Substr(3, 1));
+  EXPECT_EQ(L"F", fred.Substr(0, 1));
+  EXPECT_EQ(L"R", fred.Substr(1, 1));
+  EXPECT_EQ(L"E", fred.Substr(2, 1));
+  EXPECT_EQ(L"D", fred.Substr(3, 1));
+  EXPECT_EQ(L"FR", fred.Substr(0, 2));
+  EXPECT_EQ(L"FRED", fred.Substr(0, 4));
+  EXPECT_EQ(L"", fred.Substr(0, 10));
 
-  EXPECT_EQ(L"", fred.Mid(1, 4));
-  EXPECT_EQ(L"", fred.Mid(4, 1));
+  EXPECT_EQ(L"", fred.Substr(1, 4));
+  EXPECT_EQ(L"", fred.Substr(4, 1));
 
   WideString empty;
-  EXPECT_EQ(L"", empty.Mid(0, 0));
+  EXPECT_EQ(L"", empty.Substr(0, 0));
 }
 
-TEST(WideString, Left) {
+TEST(WideString, First) {
   WideString fred(L"FRED");
-  EXPECT_EQ(L"", fred.Left(0));
-  EXPECT_EQ(L"F", fred.Left(1));
-  EXPECT_EQ(L"FR", fred.Left(2));
-  EXPECT_EQ(L"FRE", fred.Left(3));
-  EXPECT_EQ(L"FRED", fred.Left(4));
+  EXPECT_EQ(L"", fred.First(0));
+  EXPECT_EQ(L"F", fred.First(1));
+  EXPECT_EQ(L"FR", fred.First(2));
+  EXPECT_EQ(L"FRE", fred.First(3));
+  EXPECT_EQ(L"FRED", fred.First(4));
 
-  EXPECT_EQ(L"", fred.Left(5));
+  EXPECT_EQ(L"", fred.First(5));
 
   WideString empty;
-  EXPECT_EQ(L"", empty.Left(0));
-  EXPECT_EQ(L"", empty.Left(1));
+  EXPECT_EQ(L"", empty.First(0));
+  EXPECT_EQ(L"", empty.First(1));
 }
 
-TEST(WideString, Right) {
+TEST(WideString, Last) {
   WideString fred(L"FRED");
-  EXPECT_EQ(L"", fred.Right(0));
-  EXPECT_EQ(L"D", fred.Right(1));
-  EXPECT_EQ(L"ED", fred.Right(2));
-  EXPECT_EQ(L"RED", fred.Right(3));
-  EXPECT_EQ(L"FRED", fred.Right(4));
+  EXPECT_EQ(L"", fred.Last(0));
+  EXPECT_EQ(L"D", fred.Last(1));
+  EXPECT_EQ(L"ED", fred.Last(2));
+  EXPECT_EQ(L"RED", fred.Last(3));
+  EXPECT_EQ(L"FRED", fred.Last(4));
 
-  EXPECT_EQ(L"", fred.Right(5));
+  EXPECT_EQ(L"", fred.Last(5));
 
   WideString empty;
-  EXPECT_EQ(L"", empty.Right(0));
-  EXPECT_EQ(L"", empty.Right(1));
+  EXPECT_EQ(L"", empty.Last(0));
+  EXPECT_EQ(L"", empty.Last(1));
 }
 
 TEST(WideString, Find) {

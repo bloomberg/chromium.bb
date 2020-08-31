@@ -69,20 +69,19 @@ class DevicePermissionsManagerTest : public testing::Test {
     device3_ = fake_usb_manager_.CreateAndAddDevice(0, 0, "Test Manufacturer",
                                                     "Test Product", "");
 
-    mojo::PendingRemote<device::mojom::HidManager> hid_manager;
-    fake_hid_manager_.Bind(hid_manager.InitWithNewPipeAndPassReceiver());
-    HidDeviceManager::Get(env_->profile())
-        ->SetFakeHidManagerForTesting(std::move(hid_manager));
+    HidDeviceManager::OverrideHidManagerBinderForTesting(base::BindRepeating(
+        &device::FakeHidManager::Bind, base::Unretained(&fake_hid_manager_)));
+    HidDeviceManager::Get(env_->profile())->LazyInitialize();
     base::RunLoop().RunUntilIdle();
 
     device4_ = fake_hid_manager_.CreateAndAddDevice(
-        0, 0, "Test HID Device", "abcde", HidBusType::kHIDBusTypeUSB);
-    device5_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
-                                                    HidBusType::kHIDBusTypeUSB);
+        "4", 0, 0, "Test HID Device", "abcde", HidBusType::kHIDBusTypeUSB);
+    device5_ = fake_hid_manager_.CreateAndAddDevice(
+        "5", 0, 0, "Test HID Device", "", HidBusType::kHIDBusTypeUSB);
     device6_ = fake_hid_manager_.CreateAndAddDevice(
-        0, 0, "Test HID Device", "67890", HidBusType::kHIDBusTypeUSB);
-    device7_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
-                                                    HidBusType::kHIDBusTypeUSB);
+        "6", 0, 0, "Test HID Device", "67890", HidBusType::kHIDBusTypeUSB);
+    device7_ = fake_hid_manager_.CreateAndAddDevice(
+        "7", 0, 0, "Test HID Device", "", HidBusType::kHIDBusTypeUSB);
   }
 
   void TearDown() override { env_.reset(nullptr); }

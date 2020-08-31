@@ -22,6 +22,8 @@ import sys
 import tempfile
 import threading
 
+import six
+
 _LOGGER = logging.getLogger(__name__)
 
 # _ENV_KEY is the environment variable that we look for to find out where the
@@ -40,12 +42,12 @@ _WRITE_LOCK = threading.RLock()
 
 @contextlib.contextmanager
 def _tf(data, data_raw=False, workdir=None):
-  tf = tempfile.NamedTemporaryFile(prefix='luci_ctx.', suffix='.json',
-                                   delete=False, dir=workdir)
+  tf = tempfile.NamedTemporaryFile(
+      mode='w', prefix='luci_ctx.', suffix='.json', delete=False, dir=workdir)
   _LOGGER.debug('Writing LUCI_CONTEXT file %r', tf.name)
   try:
     if not data_raw:
-      json.dump(data, tf)
+      json.dump(_to_encodable(data), tf)
     else:
       # for testing, allows malformed json
       tf.write(data)
@@ -61,11 +63,23 @@ def _tf(data, data_raw=False, workdir=None):
 
 def _to_utf8(obj):
   if isinstance(obj, dict):
-    return {_to_utf8(key): _to_utf8(value) for key, value in obj.iteritems()}
+    return {_to_utf8(key): _to_utf8(value) for key, value in obj.items()}
   if isinstance(obj, list):
     return [_to_utf8(item) for item in obj]
-  if isinstance(obj, unicode):
+  if six.PY2 and isinstance(obj, six.text_type):
     return obj.encode('utf-8')
+  return obj
+
+
+def _to_encodable(obj):
+  if isinstance(obj, dict):
+    return {
+        _to_encodable(key): _to_encodable(value) for key, value in obj.items()
+    }
+  if isinstance(obj, list):
+    return [_to_encodable(item) for item in obj]
+  if isinstance(obj, six.binary_type):
+    return obj.decode('utf-8')
   return obj
 
 
@@ -82,7 +96,7 @@ def _check_ok(data):
     return False
 
   bad = False
-  for k, v in data.iteritems():
+  for k, v in data.items():
     if not isinstance(v, dict):
       bad = True
       _LOGGER.error(
@@ -98,7 +112,8 @@ def _initial_load():
 
   ctx_path = os.environ.get(_ENV_KEY)
   if ctx_path:
-    ctx_path = ctx_path.decode(sys.getfilesystemencoding())
+    if six.PY2:
+      ctx_path = ctx_path.decode(sys.getfilesystemencoding())
     _LOGGER.debug('Loading LUCI_CONTEXT: %r', ctx_path)
     try:
       with open(ctx_path, 'r') as f:
@@ -126,7 +141,7 @@ def _read_full():
 
 def _mutate(section_values):
   new_val = read_full()
-  for section, value in section_values.iteritems():
+  for section, value in section_values.items():
     if value is None:
       new_val.pop(section, None)
     elif isinstance(value, dict):
@@ -232,8 +247,10 @@ def write(_tmpdir=None, **section_values):
       try:
         old_value = _CUR_CONTEXT
         old_envvar = os.environ.get(_ENV_KEY, None)
-
-        os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
+        if six.PY2:
+          os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
+        else:
+          os.environ[_ENV_KEY] = name
         _CUR_CONTEXT = new_val
         yield
       finally:

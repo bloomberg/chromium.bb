@@ -10,6 +10,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/dx_diag_node_mojom_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
@@ -114,7 +115,7 @@ struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
   }
 
   static std::vector<gpu::VideoDecodeAcceleratorSupportedProfile>
-      supported_profiles(const gpu::VideoDecodeAcceleratorCapabilities& input) {
+  supported_profiles(const gpu::VideoDecodeAcceleratorCapabilities& input) {
     return input.supported_profiles;
   }
 };
@@ -228,6 +229,30 @@ struct StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
     return input.vulkan_version;
   }
 };
+
+template <>
+struct StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo> {
+  static bool Read(gpu::mojom::OverlayInfoDataView data, gpu::OverlayInfo* out);
+
+  static bool direct_composition(const gpu::OverlayInfo& input) {
+    return input.direct_composition;
+  }
+
+  static bool supports_overlays(const gpu::OverlayInfo& input) {
+    return input.supports_overlays;
+  }
+
+  static gpu::OverlaySupport yuy2_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.yuy2_overlay_support;
+  }
+
+  static gpu::OverlaySupport nv12_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.nv12_overlay_support;
+  }
+};
+
 #endif
 
 template <>
@@ -328,22 +353,13 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.can_support_threaded_texture_mailbox;
   }
 
+#if defined(OS_MACOSX)
+  static uint32_t macos_specific_texture_target(const gpu::GPUInfo& input) {
+    return input.macos_specific_texture_target;
+  }
+#endif  // OS_MACOSX
+
 #if defined(OS_WIN)
-  static bool direct_composition(const gpu::GPUInfo& input) {
-    return input.direct_composition;
-  }
-
-  static bool supports_overlays(const gpu::GPUInfo& input) {
-    return input.supports_overlays;
-  }
-
-  static gpu::OverlaySupport yuy2_overlay_support(const gpu::GPUInfo& input) {
-    return input.yuy2_overlay_support;
-  }
-
-  static gpu::OverlaySupport nv12_overlay_support(const gpu::GPUInfo& input) {
-    return input.nv12_overlay_support;
-  }
 
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
@@ -352,6 +368,10 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info(
       const gpu::GPUInfo& input) {
     return input.dx12_vulkan_version_info;
+  }
+
+  static const gpu::OverlayInfo& overlay_info(const gpu::GPUInfo& input) {
+    return input.overlay_info;
   }
 #endif
 
@@ -372,20 +392,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
   image_decode_accelerator_supported_profiles(const gpu::GPUInfo& input) {
     return input.image_decode_accelerator_supported_profiles;
-  }
-
-  static uint64_t system_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11)
-    return input.system_visual;
-#endif
-    return 0;
-  }
-
-  static uint64_t rgba_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11)
-    return input.rgba_visual;
-#endif
-    return 0;
   }
 
   static bool oop_rasterization_supported(const gpu::GPUInfo& input) {

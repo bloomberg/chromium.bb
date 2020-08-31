@@ -20,8 +20,7 @@
 namespace password_manager {
 class PasswordFormManagerForUI;
 class PasswordManagerClient;
-}
-
+}  // namespace password_manager
 
 // ManagePasswordsState keeps the current state for ManagePasswordsUIController
 // as well as up-to-date data for this state.
@@ -37,6 +36,8 @@ class ManagePasswordsState {
   void set_client(password_manager::PasswordManagerClient* client) {
     client_ = client;
   }
+
+  password_manager::PasswordManagerClient* client() { return client_; }
 
   // The methods below discard the current state/data of the object and move it
   // to the specified state.
@@ -76,6 +77,11 @@ class ManagePasswordsState {
   // Move to INACTIVE_STATE.
   void OnInactive();
 
+  // Move to CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE. Triggers a bubble to move the
+  // just submitted form to the user's account store.
+  void OnPasswordMovable(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move);
+
   // Moves the object to |state| without resetting the internal data. Allowed:
   // * -> MANAGE_STATE
   void TransitionToState(password_manager::ui::State state);
@@ -84,12 +90,18 @@ class ManagePasswordsState {
   void ProcessLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes);
 
+  void ProcessUnsyncedCredentialsWillBeDeleted(
+      const std::vector<autofill::PasswordForm>& unsynced_credentials);
+
   // Called when the user chooses a credential. |form| is passed to the
   // credentials callback. Method should be called in the
   // CREDENTIAL_REQUEST_STATE state.
   void ChooseCredential(const autofill::PasswordForm* form);
 
   password_manager::ui::State state() const { return state_; }
+  const std::vector<autofill::PasswordForm>& unsynced_credentials() const {
+    return unsynced_credentials_;
+  }
   const GURL& origin() const { return origin_; }
   password_manager::PasswordFormManagerForUI* form_manager() const {
     return form_manager_.get();
@@ -125,6 +137,9 @@ class ManagePasswordsState {
 
   // Contains all the current forms.
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_forms_;
+
+  // Contains any non synced credentials.
+  std::vector<autofill::PasswordForm> unsynced_credentials_;
 
   // A callback to be invoked when user selects a credential.
   CredentialsCallback credentials_callback_;

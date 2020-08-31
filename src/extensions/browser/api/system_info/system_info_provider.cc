@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -14,8 +15,8 @@ namespace extensions {
 
 SystemInfoProvider::SystemInfoProvider()
     : is_waiting_for_completion_(false),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(),
            /* default priority, */
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
@@ -64,8 +65,8 @@ void SystemInfoProvider::StartQueryInfoPostInitialization() {
   // and reply with OnQueryCompleted.
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&SystemInfoProvider::QueryInfo, this),
-      base::Bind(&SystemInfoProvider::OnQueryCompleted, this));
+      base::BindOnce(&SystemInfoProvider::QueryInfo, this),
+      base::BindOnce(&SystemInfoProvider::OnQueryCompleted, this));
 }
 
 }  // namespace extensions

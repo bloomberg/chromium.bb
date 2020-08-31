@@ -45,15 +45,14 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
-      const CastTransportStatusCallback& status_callback);
+      CastTransportStatusCallback status_callback);
   ~UdpTransportImpl() final;
 
   // PacketTransport implementations.
-  bool SendPacket(PacketRef packet, const base::RepeatingClosure& cb) final;
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final;
   int64_t GetBytesSent() final;
   // Start receiving packets. Packets are submitted to |packet_receiver|.
-  void StartReceiving(
-      const PacketReceiverCallbackWithStatus& packet_receiver) final;
+  void StartReceiving(PacketReceiverCallbackWithStatus packet_receiver) final;
   void StopReceiving() final;
 
   // UdpTransport implementations.
@@ -98,7 +97,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
 
   void OnSent(const scoped_refptr<net::IOBuffer>& buf,
               PacketRef packet,
-              const base::RepeatingClosure& cb,
+              base::OnceClosure cb,
               int result);
 
   // Called by |reader_| when it completes reading a packet from the data pipe.

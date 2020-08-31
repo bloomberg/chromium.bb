@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Įkelti</translation>
 <translation id="1249250836236328755">Žanras</translation>
 <translation id="1278813325885878377">Vengriška QWERTY klaviatūra</translation>
+<translation id="1293556467332435079">Failai</translation>
 <translation id="1297922636971898492">„Google“ diskas dabar nepasiekiamas. Įkėlimas bus iš naujo pradėtas automatiškai, kai „Google“ diskas bus vėl pasiekiamas.</translation>
 <translation id="1307931752636661898">Nepavyko peržiūrėti „Linux“ failų</translation>
 <translation id="1310751437842832374">Transliteracija (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Išsaugota</translation>
 <translation id="1864756863218646478">Nepavyko rasti failo.</translation>
 <translation id="1921986354447415460">Turkiška klaviatūra</translation>
+<translation id="1924372192547904021">Suformatuota: „<ph name="DRIVE_NAME" />“</translation>
 <translation id="1931134289871235022">Slovakų</translation>
 <translation id="1933345018156373194">Nepavyko perkelti, netikėta klaida: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Suomių</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Vokiška klaviatūra</translation>
 <translation id="1972984168337863910">Išskleisti failų atsiliepimų skydelius</translation>
 <translation id="1984603991036629094">Armėniška fonetinė klaviatūra</translation>
+<translation id="1995337122023280937">Eiti į failo vietą</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
 <translation id="2009067268969781306">Formatuojant atmintuką bus ištrinti visi jame saugomi duomenys. Šio veiksmo anuliuoti negalima.</translation>
 <translation id="2028997212275086731">RAR archyvas</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Nepavyko pasiekti „Google“ disko. <ph name="BEGIN_LINK" />Atsijunkite<ph name="END_LINK" /> ir vėl prisijunkite.</translation>
 <translation id="2649120831653069427">Vaivorykštinė žuvis</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Failo vieta</translation>
 <translation id="2672394958563893062">Įvyko klaida. Spustelėkite, kad paleistumėte iš naujo nuo pradžios.</translation>
 <translation id="2676946222714718093">Leidžiama</translation>
 <translation id="2735698359135166290">Rumunų k. standartinė klaviatūra</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Vokiška NEO 2 klaviatūra</translation>
 <translation id="2943400156390503548">Skaidrės</translation>
 <translation id="2943503720238418293">Naudokite trumpesnį pavadinimą</translation>
+<translation id="2949781154072577687">Formatuojama: „<ph name="DRIVE_NAME" />“...</translation>
 <translation id="2951236788251446349">Medūza</translation>
 <translation id="2963783323012015985">Turkiška klaviatūra</translation>
 <translation id="2966459079597787514">Švediška klaviatūra</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826">Klaidų: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalų</translation>
+<translation id="3524311639100184459">Perspėjimas: šie failai yra laikini ir gali būti automatiškai ištrinti, kad būtų atlaisvinta vietos diske.  <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Aplankas</translation>
 <translation id="3549797760399244642">Eiti į drive.google.com...</translation>
 <translation id="357479282490346887">Lietuvių</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Kivis</translation>
 <translation id="3966388904776714213">Garso įrašų grotuvas</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
+<translation id="4065397611279318371">Jei norite atidaryti failus naudodami programas <ph name="APP_NAME" />, pirmiausia perkelkite juos į „<ph name="SHARED_DIRECTORY_LABEL" />“ aplanką.</translation>
 <translation id="4070370845051020638">Įvesties kantoniečių dialektu metodas</translation>
 <translation id="4072248638558688893">Tamiliška klaviatūra (fonetinė)</translation>
 <translation id="4124935795427217608">Vienaragis</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Nepavyko įvykdyti kopijavimo operacijos. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Melionas</translation>
 <translation id="4372884569765913867">1 x 1</translation>
+<translation id="4394214039309501350">Išorinė nuoroda</translation>
 <translation id="4425149324548788773">Mano Diskas</translation>
 <translation id="4465830120256509958">Braziliška klaviatūra</translation>
 <translation id="4470564870223067757">Hangul 2 rinkinys</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Automatinis pataisymas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4886021172213954916">Tamiliška klaviatūra (rašomosios mašinėlės išdėstymas)</translation>
+<translation id="4892969127351273348">Nepavyko atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="4905417359854579806">Paruošta kurti atsargines kopijas: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Pataisyta</translation>
 <translation id="4935975195727477204">Gėlė</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Tvarkyti „Linux“ bendrinimą</translation>
 <translation id="6808193438228982088">Lapė</translation>
 <translation id="6820687829547641339">„Gzip“ suglaudintas TAR archyvas</translation>
+<translation id="6823166707458800069">Visų šiame aplanke saugomų failų kopija automatiškai kuriama internete.</translation>
 <translation id="6825883775269213504">Rusų</translation>
 <translation id="6827236167376090743">Šis vaizdo įrašas bus grojamas neribotą laiką.</translation>
 <translation id="6847101934483209767">„<ph name="ENTRY_NAME" />“ pašalintas iš pasirinkimo srities.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">Devanagari klaviatūra (fonetinė)</translation>
 <translation id="6885780034956018177">Sraigė</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
+<translation id="6898028766943174120">Daugiau poaplankių...</translation>
 <translation id="691516599546977041">Nepavyko išsaugoti aplanke „<ph name="FOLDER_NAME" />“. Redaguoti vaizdai bus išsaugoti „Atsisiuntimų“ aplanke.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">JAV „Workman“</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">Įgalinti mobiliųjų duomenų sinchronizavimą</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6970230597523682626">Bulgarų</translation>
+<translation id="6973630695168034713">Aplankai</translation>
 <translation id="6978611942794658017">Šis failas skirtas kompiuteriui, kuriame naudojama „Windows“ programinė įranga. Jis nesuderinamas su jūsų įrenginiu, kuriame veikia „Chrome“ OS. Ieškokite tinkamos pakaitinės programos „Chrome“ internetinėje parduotuvėje.</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="6990081529015358884">Nebėra laisvos vietos</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">„Google“ žemėlapis</translation>
 <translation id="7419631653042041064">Kataloniška klaviatūra</translation>
 <translation id="7434823369735508263">JK Dvorako klaviatūra</translation>
+<translation id="7447678886297481665">Failai šiame aplanke tik skaitomi. Tam tikra veikla nepalaikoma.</translation>
 <translation id="7460898608667578234">Ukrainiečių</translation>
 <translation id="7474889694310679759">Kanados angliška klaviatūra</translation>
 <translation id="7489215562877293245">Rasta: <ph name="FILE_COUNT" />
@@ -565,9 +578,10 @@
 <translation id="7603724359189955920">Tinkleliai</translation>
 <translation id="7627790789328695202">Oi, „<ph name="FILE_NAME" />“ jau yra. Pervardykite jį ir bandykite dar kartą.</translation>
 <translation id="7628656427739290098">Baigta <ph name="PERCENT" /> proc.</translation>
-<translation id="7649070708921625228">Žinynas</translation>
+<translation id="7649070708921625228">Pagalba</translation>
 <translation id="7654209398114106148">Perkeliama elementų: <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
+<translation id="7695430100978772476">Nepavyko suformatuoti: „<ph name="DRIVE_NAME" />“</translation>
 <translation id="770015031906360009">Graikų</translation>
 <translation id="7706319470528945664">Portugališka klaviatūra</translation>
 <translation id="7711920809702896782">Vaizdo informacija</translation>

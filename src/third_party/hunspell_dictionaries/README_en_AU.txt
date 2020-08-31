@@ -1,6 +1,6 @@
 en_AU Hunspell Dictionary
-Version 2017.01.22
-Sun Jan 22 17:22:40 2017 -0500 [0c64f5c]
+Version 2019.10.06
+Sun Oct 6 20:44:03 2019 -0400 [755d6dd]
 http://wordlist.sourceforge.net
 
 README file for English Hunspell dictionaries derived from SCOWL.
@@ -94,10 +94,10 @@ released as part of Geoff Kuenning's Ispell and as such is covered by
 his BSD license.  Part of SCOWL is also based on Ispell thus the
 Ispell copyright is included with the SCOWL copyright.
 
-The collective work is Copyright 2000-2016 by Kevin Atkinson as well
+The collective work is Copyright 2000-2018 by Kevin Atkinson as well
 as any of the copyrights mentioned below:
 
-  Copyright 2000-2016 by Kevin Atkinson
+  Copyright 2000-2018 by Kevin Atkinson
 
   Permission to use, copy, modify, distribute and sell these word
   lists, the associated scripts, the output created from the scripts,
@@ -343,5 +343,5 @@ and Australian word list.  It is under the following copyright:
   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
   SUCH DAMAGE.
 
-Build Date: Sun Jan 22 17:42:52 EST 2017
+Build Date: Sun Oct  6 20:46:26 EDT 2019
 Wordlist Command: mk-list --accents=strip en_AU 60

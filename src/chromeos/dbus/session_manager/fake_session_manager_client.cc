@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
@@ -44,7 +45,9 @@ constexpr char kStubSigninExtensionPolicyFileNameFragment[] =
 constexpr char kStubPerAccountPolicyKeyFileName[] = "policy.pub";
 constexpr char kEmptyAccountId[] = "";
 
-FakeSessionManagerClient* g_instance = nullptr;
+// Global flag weather the g_instance in SessionManagerClient is a
+// FakeSessionManagerClient or not.
+bool g_is_fake = false;
 
 // Helper to asynchronously retrieve a file's content.
 std::string GetFileContent(const base::FilePath& path) {
@@ -219,21 +222,32 @@ void PostReply(const base::Location& from_here,
 FakeSessionManagerClient::FakeSessionManagerClient()
     : FakeSessionManagerClient(PolicyStorageType::kInMemory) {}
 
+// This constructor will implicitly create a global static variable by
+// SessionManagerClient::SessionManagerClient() that can be retrieved
+// via FakeSessionManagerClient::Get() down casted. With the global
+// flag g_is_fake we make sure that either the SessionManagerClient or
+// the FakeSessionManagerClient constructor is called but not both.
 FakeSessionManagerClient::FakeSessionManagerClient(
     PolicyStorageType policy_storage)
     : policy_storage_(policy_storage) {
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_is_fake);
+  g_is_fake = true;
 }
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  g_is_fake = false;
 }
 
 // static
+// Returns the static instance of FakeSessionManagerClient if the
+// g_instance in SessionManagerClientis a FakeSessionManagerClient otherwise it
+// will return nullptr.
 FakeSessionManagerClient* FakeSessionManagerClient::Get() {
-  return g_instance;
+  SessionManagerClient* client = SessionManagerClient::Get();
+  if (g_is_fake)
+    return static_cast<FakeSessionManagerClient*>(client);
+  else
+    return nullptr;
 }
 
 void FakeSessionManagerClient::SetStubDelegate(StubDelegate* delegate) {
@@ -451,10 +465,9 @@ void FakeSessionManagerClient::RetrievePolicy(
         GetStubPolicyFilePath(descriptor, nullptr /* key_path */);
     DCHECK(!policy_path.empty());
 
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&GetFileContent, policy_path),
         base::BindOnce(std::move(callback),
                        RetrievePolicyResponseType::SUCCESS));
@@ -536,26 +549,23 @@ void FakeSessionManagerClient::StorePolicy(
     if (response.has_new_public_key())
       files_to_store[key_path] = response.new_public_key();
 
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(StoreFiles, std::move(files_to_store)),
         base::BindOnce(std::move(callback), true /* success */));
   } else {
     policy_[GetMemoryStorageKey(descriptor)] = policy_blob;
 
     if (IsChromeDevicePolicy(descriptor)) {
-      // TODO(ljusten): For historical reasons, this code path only stores keys
-      // for device policy. Should this be extended to other policy?
       if (response.has_new_public_key()) {
         base::FilePath key_path;
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskAndReply(
+        base::ThreadPool::PostTaskAndReply(
             FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
+            {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
@@ -600,10 +610,9 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
     CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
     const base::FilePath state_keys_path =
         owner_key_path.DirName().AppendASCII(kStubStateKeysFileName);
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ReadCreateStateKeysStub, state_keys_path),
         std::move(callback));
   } else {
@@ -641,6 +650,8 @@ void FakeSessionManagerClient::UpgradeArcContainer(
 }
 
 void FakeSessionManagerClient::StopArcInstance(
+    const std::string& account_id,
+    bool should_backup_log,
     VoidDBusMethodCallback callback) {
   if (!arc_available_ || !container_running_) {
     PostReply(FROM_HERE, std::move(callback), false /* result */);
@@ -680,7 +691,14 @@ void FakeSessionManagerClient::EnableAdbSideload(
     EnableAdbSideloadCallback callback) {}
 
 void FakeSessionManagerClient::QueryAdbSideload(
-    QueryAdbSideloadCallback callback) {}
+    QueryAdbSideloadCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     adb_sideload_enabled_ ? AdbSideloadResponseCode::SUCCESS
+                                           : AdbSideloadResponseCode::FAILED,
+                     adb_sideload_enabled_));
+}
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)

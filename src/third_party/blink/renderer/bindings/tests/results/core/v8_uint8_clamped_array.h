@@ -32,6 +32,11 @@ CORE_EXPORT extern const WrapperTypeInfo v8_uint8_clamped_array_wrapper_type_inf
 class V8Uint8ClampedArray {
   STATIC_ONLY(V8Uint8ClampedArray);
  public:
+  // Migration adapter
+  CORE_EXPORT static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->IsUint8ClampedArray();
+  }
+
   CORE_EXPORT static TestUint8ClampedArray* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestUint8ClampedArray* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
 
@@ -42,12 +47,6 @@ class V8Uint8ClampedArray {
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
-};
-
-template <>
-struct NativeValueTraits<TestUint8ClampedArray> : public NativeValueTraitsBase<TestUint8ClampedArray> {
-  CORE_EXPORT static TestUint8ClampedArray* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestUint8ClampedArray* NullValue() { return nullptr; }
 };
 
 template <>

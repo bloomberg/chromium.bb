@@ -5,15 +5,24 @@
 source_set("device_sharing") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "device_sharing_browser_agent.h",
+    "device_sharing_browser_agent.mm",
     "device_sharing_manager.h",
-    "device_sharing_manager.mm",
+    "device_sharing_manager_factory.h",
+    "device_sharing_manager_factory.mm",
+    "device_sharing_manager_impl.h",
+    "device_sharing_manager_impl.mm",
   ]
   deps = [
     "//base",
     "//components/handoff",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
     "//components/prefs",
     "//components/prefs/ios",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/web_state_list",
     "//net",
     "//url",
   ]
@@ -23,7 +32,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "device_sharing_manager_unittest.mm",
+    "device_sharing_browser_agent_unittest.mm",
+    "device_sharing_manager_impl_unittest.mm",
   ]
   deps = [
     ":device_sharing",
@@ -31,6 +41,8 @@ source_set("unit_tests") {
     "//components/handoff",
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/web_state_list",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -79,18 +91,14 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [
-    "handoff_manager_app_interface.h",
-  ]
+  sources = [ "handoff_manager_app_interface.h" ]
 }
 
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "handoff_manager_egtest.mm",
-  ]
+  sources = [ "handoff_manager_egtest.mm" ]
   deps = [
     ":test_support",
     "//ios/chrome/browser/ui/util",
@@ -112,9 +120,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
 
-  sources = [
-    "handoff_manager_egtest.mm",
-  ]
+  sources = [ "handoff_manager_egtest.mm" ]
 
   deps = [
     ":eg_test_support+eg2",

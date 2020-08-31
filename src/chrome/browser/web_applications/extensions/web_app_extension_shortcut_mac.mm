@@ -12,12 +12,13 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -67,20 +68,6 @@ class Latch : public base::RefCountedThreadSafe<
 
 namespace web_app {
 
-void RevealAppShimInFinderForAppOnFileThread(
-    const base::FilePath& app_path,
-    const ShortcutInfo& shortcut_info) {
-  WebAppShortcutCreator shortcut_creator(app_path, &shortcut_info);
-  shortcut_creator.RevealAppShimInFinder();
-}
-
-void RevealAppShimInFinderForApp(Profile* profile,
-                                 const extensions::Extension* app) {
-  web_app::internals::PostShortcutIOTask(
-      base::BindOnce(&RevealAppShimInFinderForAppOnFileThread, app->path()),
-      ShortcutInfoForExtensionAndProfile(app, profile));
-}
-
 void RebuildAppAndLaunch(std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -109,9 +96,8 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(app_mode::kAppShimError))
     return false;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RecordAppShimErrorAndBuildShortcutInfo,
                      command_line.GetSwitchValuePath(app_mode::kAppShimError)),
       base::BindOnce(&RebuildAppAndLaunch));
@@ -167,6 +153,20 @@ void ShowCreateChromeAppShortcutsDialog(
   CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                   web_app::ShortcutLocations(), profile, app,
                   base::DoNothing());
+  if (!close_callback.is_null())
+    close_callback.Run(true);
+}
+
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow /*parent_window*/,
+    Profile* profile,
+    const std::string& app_id,
+    const base::Callback<void(bool)>& close_callback) {
+  // On Mac, the Applications folder is the only option, so don't bother asking
+  // the user anything. Just create shortcuts.
+  CreateShortcutsForWebApp(web_app::SHORTCUT_CREATION_BY_USER,
+                           web_app::ShortcutLocations(), profile, app_id,
+                           base::DoNothing());
   if (!close_callback.is_null())
     close_callback.Run(true);
 }

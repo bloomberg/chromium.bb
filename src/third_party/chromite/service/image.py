@@ -133,7 +133,7 @@ def Build(board=None, images=None, config=None, extra_env=None):
     status_file = os.path.join(tempdir, PARALLEL_EMERGE_STATUS_FILE_NAME)
     extra_env_local[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = status_file
     result = cros_build_lib.run(cmd, enter_chroot=True,
-                                error_code_ok=True,
+                                check=False,
                                 extra_env=extra_env_local)
     try:
       content = osutils.ReadFile(status_file).strip()
@@ -167,7 +167,7 @@ def CreateVm(board, is_test=False, chroot=None):
   if chroot and cros_build_lib.IsOutsideChroot():
     chroot_args = chroot.get_enter_args()
 
-  result = cros_build_lib.run(cmd, error_code_ok=True,
+  result = cros_build_lib.run(cmd, check=False,
                               enter_chroot=True, chroot_args=chroot_args)
 
   if result.returncode:
@@ -209,7 +209,7 @@ def CreateGuestVm(board, is_test=False, chroot=None):
   if chroot and cros_build_lib.IsOutsideChroot():
     chroot_args = chroot.get_enter_args()
 
-  result = cros_build_lib.sudo_run(cmd, error_code_ok=True, enter_chroot=True,
+  result = cros_build_lib.sudo_run(cmd, check=False, enter_chroot=True,
                                    chroot_args=chroot_args)
 
   if result.returncode:
@@ -257,6 +257,6 @@ def Test(board, result_directory, image_dir=None):
       image_dir,
   ]
 
-  result = cros_build_lib.sudo_run(cmd, enter_chroot=True, error_code_ok=True)
+  result = cros_build_lib.sudo_run(cmd, enter_chroot=True, check=False)
 
   return result.returncode == 0

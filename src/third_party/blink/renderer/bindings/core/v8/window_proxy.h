@@ -42,7 +42,6 @@ namespace blink {
 
 class DOMWindow;
 class Frame;
-struct WrapperTypeInfo;
 
 // WindowProxy implements the split window model of a window for a frame. In the
 // HTML standard, the split window model is composed of the Window interface
@@ -145,7 +144,7 @@ class WindowProxy : public GarbageCollected<WindowProxy> {
  public:
   virtual ~WindowProxy();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   void InitializeIfNeeded();
 
@@ -256,14 +255,7 @@ class WindowProxy : public GarbageCollected<WindowProxy> {
 
   virtual void Initialize() = 0;
 
-  virtual void DisposeContext(Lifecycle next_status,
-                              FrameReuseStatus,
-                              v8::Context::DetachedWindowReason) = 0;
-
-  WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
-      DOMWindow*,
-      const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper);
+  virtual void DisposeContext(Lifecycle next_status, FrameReuseStatus) = 0;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   Frame* GetFrame() const { return frame_.Get(); }

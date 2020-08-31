@@ -29,10 +29,6 @@
  * going from fd to pci id via fstat and udev.
  */
 
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,27 +106,27 @@ linux_from_sysfs(int fd, struct kms_driver **out)
 	if (ret)
 		return ret;
 
-#ifdef HAVE_INTEL
+#if HAVE_INTEL
 	if (!strcmp(name, "intel"))
 		ret = intel_create(fd, out);
 	else
 #endif
-#ifdef HAVE_VMWGFX
+#if HAVE_VMWGFX
 	if (!strcmp(name, "vmwgfx"))
 		ret = vmwgfx_create(fd, out);
 	else
 #endif
-#ifdef HAVE_NOUVEAU
+#if HAVE_NOUVEAU
 	if (!strcmp(name, "nouveau"))
 		ret = nouveau_create(fd, out);
 	else
 #endif
-#ifdef HAVE_RADEON
+#if HAVE_RADEON
 	if (!strcmp(name, "radeon"))
 		ret = radeon_create(fd, out);
 	else
 #endif
-#ifdef HAVE_EXYNOS
+#if HAVE_EXYNOS
 	if (!strcmp(name, "exynos"))
 		ret = exynos_create(fd, out);
 	else

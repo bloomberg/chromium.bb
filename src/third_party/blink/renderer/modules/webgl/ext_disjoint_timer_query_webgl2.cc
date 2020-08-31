@@ -14,13 +14,6 @@ WebGLExtensionName EXTDisjointTimerQueryWebGL2::GetName() const {
   return kEXTDisjointTimerQueryWebGL2Name;
 }
 
-EXTDisjointTimerQueryWebGL2* EXTDisjointTimerQueryWebGL2::Create(
-    WebGLRenderingContextBase* context) {
-  EXTDisjointTimerQueryWebGL2* o =
-      MakeGarbageCollected<EXTDisjointTimerQueryWebGL2>(context);
-  return o;
-}
-
 bool EXTDisjointTimerQueryWebGL2::Supported(
     WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
@@ -58,7 +51,7 @@ void EXTDisjointTimerQueryWebGL2::queryCounterEXT(WebGLQuery* query,
   query->ResetCachedResult();
 }
 
-void EXTDisjointTimerQueryWebGL2::Trace(blink::Visitor* visitor) {
+void EXTDisjointTimerQueryWebGL2::Trace(Visitor* visitor) {
   WebGLExtension::Trace(visitor);
 }
 

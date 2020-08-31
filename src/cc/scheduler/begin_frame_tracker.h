@@ -8,13 +8,10 @@
 #include <set>
 #include <string>
 
-#include "base/location.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-
-#define BEGINFRAMETRACKER_FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION("")
 
 namespace perfetto {
 namespace protos {
@@ -52,7 +49,7 @@ class CC_EXPORT BeginFrameTracker {
 
   // Start using a new BFA value and check invariant properties.
   // **Must** only be called after finishing with any previous BFA.
-  void Start(viz::BeginFrameArgs new_args);
+  void Start(const viz::BeginFrameArgs& new_args);
   // Finish using the current BFA.
   // **Must** only be called while still using a BFA.
   void Finish();

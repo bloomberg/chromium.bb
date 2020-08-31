@@ -29,6 +29,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 
+class PrefService;
+
 namespace cryptauthv2 {
 class ClientAppMetadata;
 class ClientMetadata;
@@ -51,20 +53,30 @@ class CryptAuthKeyRegistry;
 // devices that have a valid device ID, device name, device public key, and
 // feature states. If device metadata cannot be decrypted due to an error or
 // because the group private key was not returned by CryptAuth, the device is
-// still added to the registry without the decrypted metadata.
+// still added to the registry without the new decrypted metadata. Any existing
+// decrypted metadata from the device registry will remain there until the new
+// metadata can be decrypted.
 class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthDeviceSyncer> BuildInstance(
+    static std::unique_ptr<CryptAuthDeviceSyncer> Create(
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
+        PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<CryptAuthDeviceSyncer> CreateInstance(
+        CryptAuthDeviceRegistry* device_registry,
+        CryptAuthKeyRegistry* key_registry,
+        CryptAuthClientFactory* client_factory,
+        PrefService* pref_service,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;
@@ -99,6 +111,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   CryptAuthDeviceSyncerImpl(CryptAuthDeviceRegistry* device_registry,
                             CryptAuthKeyRegistry* key_registry,
                             CryptAuthClientFactory* client_factory,
+                            PrefService* pref_service,
                             std::unique_ptr<base::OneShotTimer> timer);
 
   // CryptAuthDeviceSyncer:
@@ -195,6 +208,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   CryptAuthDeviceRegistry* device_registry_ = nullptr;
   CryptAuthKeyRegistry* key_registry_ = nullptr;
   CryptAuthClientFactory* client_factory_ = nullptr;
+  PrefService* pref_service_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceSyncerImpl);

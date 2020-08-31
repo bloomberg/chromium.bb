@@ -17,13 +17,15 @@
 #include "config/av1_rtcd.h"
 
 #include "aom_dsp/blend.h"
+#include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/synonyms.h"
 
 #include "aom_ports/mem.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/filter.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
+#include "av1/encoder/reconinter_enc.h"
 
 unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
   __m128i vsum = _mm_setzero_si128();
@@ -41,8 +43,8 @@ unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
 }
 
 static INLINE __m128i load4x2_sse2(const uint8_t *const p, const int stride) {
-  const __m128i p0 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 0 * stride));
-  const __m128i p1 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 1 * stride));
+  const __m128i p0 = _mm_cvtsi32_si128(loadu_uint32(p + 0 * stride));
+  const __m128i p1 = _mm_cvtsi32_si128(loadu_uint32(p + 1 * stride));
   return _mm_unpacklo_epi8(_mm_unpacklo_epi32(p0, p1), _mm_setzero_si128());
 }
 
@@ -144,6 +146,7 @@ static INLINE void variance8_sse2(const uint8_t *src, const int src_stride,
                                   __m128i *const sum) {
   assert(h <= 128);  // May overflow for larger height.
   *sum = _mm_setzero_si128();
+  *sse = _mm_setzero_si128();
   for (int i = 0; i < h; i++) {
     const __m128i s = load8_8to16_sse2(src);
     const __m128i r = load8_8to16_sse2(ref);
@@ -234,6 +237,14 @@ static INLINE void variance128_sse2(const uint8_t *src, const int src_stride,
     src += src_stride;
     ref += ref_stride;
   }
+}
+
+void aom_get8x8var_sse2(const uint8_t *src_ptr, int src_stride,
+                        const uint8_t *ref_ptr, int ref_stride,
+                        unsigned int *sse, int *sum) {
+  __m128i vsse, vsum;
+  variance8_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 8, &vsse, &vsum);
+  variance_final_128_pel_sse2(vsse, vsum, sse, sum);
 }
 
 #define AOM_VAR_NO_LOOP_SSE2(bw, bh, bits, max_pixels)                        \
@@ -498,75 +509,24 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
     const int is_scaled = av1_is_scaled(sf);
 
     if (is_scaled) {
-      // Note: This is mostly a copy from the >=8X8 case in
-      // build_inter_predictors() function, with some small tweaks.
-
-      // Some assumptions.
-      const int plane = 0;
-
-      // Get pre-requisites.
+      int plane = 0;
+      const int mi_x = mi_col * MI_SIZE;
+      const int mi_y = mi_row * MI_SIZE;
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const int ssx = pd->subsampling_x;
-      const int ssy = pd->subsampling_y;
-      assert(ssx == 0 && ssy == 0);
       const struct buf_2d *const dst_buf = &pd->dst;
       const struct buf_2d *const pre_buf =
           is_intrabc ? dst_buf : &pd->pre[ref_num];
-      const int mi_x = mi_col * MI_SIZE;
-      const int mi_y = mi_row * MI_SIZE;
 
-      // Calculate subpel_x/y and x/y_step.
-      const int row_start = 0;  // Because ss_y is 0.
-      const int col_start = 0;  // Because ss_x is 0.
-      const int pre_x = (mi_x + MI_SIZE * col_start) >> ssx;
-      const int pre_y = (mi_y + MI_SIZE * row_start) >> ssy;
-      int orig_pos_y = pre_y << SUBPEL_BITS;
-      orig_pos_y += mv->row * (1 << (1 - ssy));
-      int orig_pos_x = pre_x << SUBPEL_BITS;
-      orig_pos_x += mv->col * (1 << (1 - ssx));
-      int pos_y = sf->scale_value_y(orig_pos_y, sf);
-      int pos_x = sf->scale_value_x(orig_pos_x, sf);
-      pos_x += SCALE_EXTRA_OFF;
-      pos_y += SCALE_EXTRA_OFF;
-
-      const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
-      const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
-      const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
-                         << SCALE_SUBPEL_BITS;
-      const int right = (pre_buf->width + AOM_INTERP_EXTEND)
-                        << SCALE_SUBPEL_BITS;
-      pos_y = clamp(pos_y, top, bottom);
-      pos_x = clamp(pos_x, left, right);
-
-      const uint8_t *const pre =
-          pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-          (pos_x >> SCALE_SUBPEL_BITS);
-
-      const SubpelParams subpel_params = { sf->x_step_q4, sf->y_step_q4,
-                                           pos_x & SCALE_SUBPEL_MASK,
-                                           pos_y & SCALE_SUBPEL_MASK };
-
-      // Get warp types.
-      const WarpedMotionParams *const wm =
-          &xd->global_motion[mi->ref_frame[ref_num]];
-      const int is_global = is_global_mv_block(mi, wm->wmtype);
-      WarpTypesAllowed warp_types;
-      warp_types.global_warp_allowed = is_global;
-      warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
-
-      // Get convolve parameters.
-      ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
-      const InterpFilters filters =
+      InterPredParams inter_pred_params;
+      inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
+      const int_interpfilters filters =
           av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
-
-      // Get the inter predictor.
-      const int build_for_obmc = 0;
-      av1_make_inter_predictor(pre, pre_buf->stride, comp_pred, width,
-                               &subpel_params, sf, width, height, &conv_params,
-                               filters, &warp_types, mi_x >> pd->subsampling_x,
-                               mi_y >> pd->subsampling_y, plane, ref_num, mi,
-                               build_for_obmc, xd, cm->allow_warped_motion);
-
+      av1_init_inter_params(
+          &inter_pred_params, width, height, mi_y >> pd->subsampling_y,
+          mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
+          xd->bd, is_cur_buf_hbd(xd), is_intrabc, sf, pre_buf, filters);
+      av1_enc_build_one_inter_predictor(comp_pred, width, mv,
+                                        &inter_pred_params);
       return;
     }
   }

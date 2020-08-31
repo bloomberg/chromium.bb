@@ -1766,59 +1766,64 @@ TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithCommas) {
   EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
 }
 
-struct AddHeaderTestData {
-  const char* orig_headers;
-  const char* new_header;
-  const char* expected_headers;
-};
+TEST(HttpResponseHeadersTest, AddHeader) {
+  scoped_refptr<HttpResponseHeaders> headers = HttpResponseHeaders::TryToCreate(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n");
+  ASSERT_TRUE(headers);
 
-class AddHeaderTest
-    : public HttpResponseHeadersTest,
-      public ::testing::WithParamInterface<AddHeaderTestData> {
-};
+  headers->AddHeader("Content-Length", "450");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n",
+      ToSimpleString(headers));
 
-TEST_P(AddHeaderTest, AddHeader) {
-  const AddHeaderTestData test = GetParam();
-
-  std::string orig_headers(test.orig_headers);
-  HeadersToRaw(&orig_headers);
-  scoped_refptr<HttpResponseHeaders> parsed(
-      new HttpResponseHeaders(orig_headers));
-
-  std::string new_header(test.new_header);
-  parsed->AddHeader(new_header);
-
-  EXPECT_EQ(std::string(test.expected_headers), ToSimpleString(parsed));
+  // Add a second Content-Length header with extra spaces in the value. It
+  // should be added to the end, and the extra spaces removed.
+  headers->AddHeader("Content-Length", "   42    ");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n"
+      "Content-Length: 42\n",
+      ToSimpleString(headers));
 }
 
-const AddHeaderTestData add_header_tests[] = {
-  { "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n",
+TEST(HttpResponseHeadersTest, SetHeader) {
+  scoped_refptr<HttpResponseHeaders> headers = HttpResponseHeaders::TryToCreate(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n");
+  ASSERT_TRUE(headers);
 
-    "Content-Length: 450",
+  headers->SetHeader("Content-Length", "450");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 450\n",
+      ToSimpleString(headers));
 
-    "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n"
-    "Content-Length: 450\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000    \n",
+  headers->SetHeader("Content-Length", "   42    ");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 42\n",
+      ToSimpleString(headers));
 
-    "Content-Length: 450  ",
-
-    "HTTP/1.1 200 OK\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n"
-    "Content-Length: 450\n"
-  },
-};
-
-INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
-                         AddHeaderTest,
-                         testing::ValuesIn(add_header_tests));
+  headers->SetHeader("connection", "close");
+  EXPECT_EQ(
+      "HTTP/1.1 200 OK\n"
+      "Cache-control: max-age=10000\n"
+      "Content-Length: 42\n"
+      "connection: close\n",
+      ToSimpleString(headers));
+}
 
 struct RemoveHeaderTestData {
   const char* orig_headers;

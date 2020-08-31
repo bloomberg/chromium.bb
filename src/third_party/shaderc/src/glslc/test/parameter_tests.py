@@ -149,7 +149,7 @@ Options:
   -std=<value>      Version and profile for GLSL input files. Possible values
                     are concatenations of version and profile, e.g. 310es,
                     450core, etc.  Ignored for HLSL files.
-  -S                Only run preprocess and compilation steps.
+  -S                Emit SPIR-V assembly instead of binary.
   --show-limits     Display available limit names and their default values.
   --target-env=<environment>
                     Set the target client environment, and the semantics
@@ -157,6 +157,7 @@ Options:
                     the client version.  Values are:
                         vulkan1.0       # The default
                         vulkan1.1
+                        vulkan1.2
                         vulkan          # Same as vulkan1.0
                         opengl4.5
                         opengl          # Same as opengl4.5
@@ -165,7 +166,8 @@ Options:
                     module.  The default is the highest version of SPIR-V
                     required to be supported for the target environment.
                     For example, default for vulkan1.0 is spv1.0, and
-                    the default for vulkan1.1 is spv1.3.
+                    the default for vulkan1.1 is spv1.3,
+                    the default for vulkan1.2 is spv1.5.
                     Values are:
                         spv1.0, spv1.1, spv1.2, spv1.3, spv1.4, spv1.5
   --version         Display compiler version information.

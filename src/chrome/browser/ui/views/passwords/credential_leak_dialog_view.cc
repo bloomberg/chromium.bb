@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -23,39 +22,19 @@
 
 namespace {
 
-// Fixed height of the illustration shown on the top of the dialog.
-constexpr int kIllustrationHeight = 148;
-
-// Fixed background color of the illustration shown on the top of the dialog in
-// normal mode.
-constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
-
-// Fixed background color of the illustration shown on the top of the dialog in
-// dark mode.
-constexpr SkColor kPictureBackgroundColorDarkMode =
-    SkColorSetARGB(0x1A, 0x00, 0x00, 0x00);
-
 // Updates the image displayed on the illustration based on the current theme.
 void UpdateImageView(NonAccessibleImageView* image_view,
                      bool dark_mode_enabled) {
   image_view->SetImage(
-      gfx::CreateVectorIcon(dark_mode_enabled ? kPasswordCheckWarningDarkIcon
-                                              : kPasswordCheckWarningIcon,
-                            dark_mode_enabled ? kPictureBackgroundColorDarkMode
-                                              : kPictureBackgroundColor));
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          dark_mode_enabled ? IDR_PASSWORD_CHECK_DARK : IDR_PASSWORD_CHECK));
 }
 
 // Creates the illustration which is rendered on top of the dialog.
 std::unique_ptr<NonAccessibleImageView> CreateIllustration(
     bool dark_mode_enabled) {
-  const gfx::Size illustration_size(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
-      kIllustrationHeight);
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetPreferredSize(illustration_size);
   UpdateImageView(image_view.get(), dark_mode_enabled);
-  image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
 }
@@ -80,10 +59,34 @@ CredentialLeakDialogView::CredentialLeakDialogView(
   DCHECK(controller);
   DCHECK(web_contents);
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   controller_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   controller_->GetCancelButtonLabel());
+  SetButtons(controller->ShouldShowCancelButton()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, controller_->GetCancelButtonLabel());
+
+  using ControllerClosureFn = void (CredentialLeakDialogController::*)(void);
+  auto close_callback = [](CredentialLeakDialogController** controller,
+                           ControllerClosureFn fn) {
+    // Null out the controller pointer stored in the parent object, to avoid any
+    // further calls to the controller and inhibit recursive closes that would
+    // otherwise happen in ControllerGone(), and invoke the provided method on
+    // the controller.
+    //
+    // Note that when this lambda gets bound it closes over &controller_, not
+    // controller_ itself!
+    (std::exchange(*controller, nullptr)->*(fn))();
+  };
+
+  SetAcceptCallback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnAcceptDialog));
+  SetCancelCallback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnCancelDialog));
+  SetCloseCallback(
+      base::BindOnce(close_callback, base::Unretained(&controller_),
+                     &CredentialLeakDialogController::OnCloseDialog));
 }
 
 CredentialLeakDialogView::~CredentialLeakDialogView() = default;
@@ -95,8 +98,12 @@ void CredentialLeakDialogView::ShowCredentialLeakPrompt() {
 
 void CredentialLeakDialogView::ControllerGone() {
   // Widget::Close() synchronously calls Close() on this instance, which resets
-  // the |controller_|.
-  GetWidget()->Close();
+  // the |controller_|. The null check for |controller_| here is to avoid
+  // reentry into Close() - |controller_| might have been nulled out by the
+  // closure callbacks already, in which case the dialog is already closing. See
+  // the definition of |close_callback| in the constructor.
+  if (controller_)
+    GetWidget()->Close();
 }
 
 ui::ModalType CredentialLeakDialogView::GetModalType() const {
@@ -110,46 +117,12 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-bool CredentialLeakDialogView::Cancel() {
-  if (controller_)
-    // Since OnCancelDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnCancelDialog();
-  return true;
-}
-
-bool CredentialLeakDialogView::Accept() {
-  if (controller_)
-    // Since OnAcceptDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnAcceptDialog();
-  return true;
-}
-
-bool CredentialLeakDialogView::Close() {
-  if (controller_)
-    // Since OnCloseDialog() synchronously invokes Close() on this instance, we
-    // need to clear the |controller_| before to avoid notifying the controller
-    // twice.
-    std::exchange(controller_, nullptr)->OnCloseDialog();
-  return true;
-}
-
-int CredentialLeakDialogView::GetDialogButtons() const {
-  // |controller_| can be nullptr when the framework calls this method after a
-  // button click.
-  return controller_ && controller_->ShouldShowCancelButton()
-             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
-             : ui::DIALOG_BUTTON_OK;
-}
-
 bool CredentialLeakDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
 void CredentialLeakDialogView::OnThemeChanged() {
+  views::DialogDelegateView::OnThemeChanged();
   GetBubbleFrameView()->SetHeaderView(
       CreateIllustration(GetNativeTheme()->ShouldUseDarkColors()));
 }

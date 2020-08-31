@@ -9,16 +9,14 @@
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
+#include "third_party/dawn/src/include/dawn/webgpu.h"
+#include "third_party/dawn/src/include/dawn/webgpu_cpp.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
-#include "third_party/vulkan/include/vulkan/vulkan.h"
-#endif
-
-#if BUILDFLAG(SKIA_USE_DAWN)
-#include <dawn/dawncpp.h>
+#include "third_party/vulkan_headers/include/vulkan/vulkan.h"  // nogncheck
 #endif
 
 namespace viz {
@@ -64,13 +62,16 @@ GetResourceFormat(gfx::BufferFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
 
 #if BUILDFLAG(ENABLE_VULKAN)
+VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT VkFormat ToVkFormat(ResourceFormat format);
 #endif
 
-#if BUILDFLAG(SKIA_USE_DAWN)
-VIZ_RESOURCE_FORMAT_EXPORT dawn::TextureFormat ToDawnFormat(
+VIZ_RESOURCE_FORMAT_EXPORT wgpu::TextureFormat ToDawnFormat(
     ResourceFormat format);
-#endif
+// Same as ToDawnFormat, except it casts from wgpu::TextureFormat to
+// WGPUTextureFormat instead.
+VIZ_RESOURCE_FORMAT_EXPORT WGPUTextureFormat
+ToWGPUFormat(ResourceFormat format);
 
 }  // namespace viz
 

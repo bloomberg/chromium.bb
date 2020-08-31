@@ -7,8 +7,10 @@ GEN_INCLUDE([
   '//chrome/test/data/webui/a11y/accessibility_test.js',
   '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
+
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test fixture for Accessibility of Chrome Extensions.
@@ -62,7 +64,7 @@ var CrExtensionsA11yTest = class extends PolymerTest {
         // Ignore the <button> residing within cr-toggle, which has tabindex -1
         // anyway.
         return parentNode && parentNode.host &&
-            parentNode.host.tagName == 'CR-TOGGLE';
+            parentNode.host.tagName === 'CR-TOGGLE';
       },
 
       // TODO(crbug.com/1002620): this filter can be removed after
@@ -93,7 +95,7 @@ class="clippable-flex-text">My extension 1</div>';
       return false;
     }
 
-    return (node.parentElement.tagName.toLocaleLowerCase() == type) ||
+    return (node.parentElement.tagName.toLocaleLowerCase() === type) ||
         CrExtensionsA11yTest.hasAncestor_(node.parentElement, type);
   }
 };
@@ -220,7 +222,6 @@ CrExtensionsErrorConsoleA11yTest =
   /** @override */
   testGenPreamble() {
     GEN('  SetDevModeEnabled(true);');
-    GEN('  EnableErrorConsole();');
     GEN('  InstallErrorsExtension();');
   }
 

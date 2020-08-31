@@ -7,7 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
@@ -285,10 +288,12 @@ void BluetoothRemoteGattCharacteristic::StopNotifySession(
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   NotifySessionCommand* command = new NotifySessionCommand(
-      base::Bind(&BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession,
-                 GetWeakPtr(), session, repeating_callback),
-      base::Bind(&BluetoothRemoteGattCharacteristic::CancelStopNotifySession,
-                 GetWeakPtr(), repeating_callback));
+      base::BindOnce(
+          &BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession,
+          GetWeakPtr(), session, repeating_callback),
+      base::BindOnce(
+          &BluetoothRemoteGattCharacteristic::CancelStopNotifySession,
+          GetWeakPtr(), repeating_callback));
 
   pending_notify_commands_.push(std::unique_ptr<NotifySessionCommand>(command));
   if (pending_notify_commands_.size() == 1) {

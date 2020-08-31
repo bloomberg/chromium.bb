@@ -4,18 +4,17 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
-import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 
 /**
  * Maintains and provides the night mode state for the entire application.
@@ -58,7 +57,7 @@ class GlobalNightModeStateController implements NightModeStateProvider,
         mPowerSaveModeMonitor = powerSaveModeMonitor;
 
         mPreferenceObserver = key -> {
-            if (TextUtils.equals(key, UI_THEME_SETTING_KEY)) updateNightMode();
+            if (TextUtils.equals(key, UI_THEME_SETTING)) updateNightMode();
         };
 
         updateNightMode();
@@ -128,10 +127,10 @@ class GlobalNightModeStateController implements NightModeStateProvider,
 
     private void updateNightMode() {
         boolean powerSaveModeOn = mPowerSaveModeMonitor.powerSavingIsOn();
-        final int themeSetting = NightModeUtils.getThemeSetting();
-        final boolean newNightModeOn = themeSetting == ThemePreferences.ThemeSetting.SYSTEM_DEFAULT
+        final int theme = NightModeUtils.getThemeSetting();
+        final boolean newNightModeOn = theme == ThemeType.SYSTEM_DEFAULT
                         && (powerSaveModeOn || mSystemNightModeMonitor.isSystemNightModeOn())
-                || themeSetting == ThemePreferences.ThemeSetting.DARK;
+                || theme == ThemeType.DARK;
         if (mNightModeOn != null && newNightModeOn == mNightModeOn) return;
 
         mNightModeOn = newNightModeOn;
@@ -140,9 +139,9 @@ class GlobalNightModeStateController implements NightModeStateProvider,
         for (Observer observer : mObservers) observer.onNightModeStateChanged();
 
         NightModeMetrics.recordNightModeState(mNightModeOn);
-        NightModeMetrics.recordThemePreferencesState(themeSetting);
+        NightModeMetrics.recordThemePreferencesState(theme);
         if (mNightModeOn) {
-            NightModeMetrics.recordNightModeEnabledReason(themeSetting, powerSaveModeOn);
+            NightModeMetrics.recordNightModeEnabledReason(theme, powerSaveModeOn);
         }
     }
 }

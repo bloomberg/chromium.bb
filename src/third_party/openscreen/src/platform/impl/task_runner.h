@@ -15,14 +15,12 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/types/optional.h"
-#include "build/config/features.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunnerImpl final : public TaskRunner {
  public:
@@ -49,7 +47,7 @@ class TaskRunnerImpl final : public TaskRunner {
   };
 
   explicit TaskRunnerImpl(
-      platform::ClockNowFunctionPtr now_function,
+      ClockNowFunctionPtr now_function,
       TaskWaiter* event_waiter = nullptr,
       Clock::duration waiter_timeout = std::chrono::milliseconds(100));
 
@@ -63,6 +61,11 @@ class TaskRunnerImpl final : public TaskRunner {
   // timing; and does not return until some time after RequestStopSoon() is
   // called.
   void RunUntilStopped();
+
+  // Blocks the current thread, executing tasks from the queue with the desired
+  // timing; and does not return until some time after the current process is
+  // signaled with SIGINT or SIGTERM, or after RequestStopSoon() is called.
+  void RunUntilSignaled();
 
   // Thread-safe method for requesting the TaskRunner to stop running after all
   // non-delayed tasks in the queue have run. This behavior allows final
@@ -83,7 +86,7 @@ class TaskRunnerImpl final : public TaskRunner {
     // used. This simplifies switching between 'Task' and 'TaskWithMetadata'
     // based on the compilation flag.
     TaskWithMetadata(Task task)
-        : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY){};
+        : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY) {}
 
     void operator()() {
       TRACE_SET_HIERARCHY(trace_ids_);
@@ -111,7 +114,7 @@ class TaskRunnerImpl final : public TaskRunner {
   // transferred.
   bool GrabMoreRunnableTasks();
 
-  const platform::ClockNowFunctionPtr now_function_;
+  const ClockNowFunctionPtr now_function_;
 
   // Flag that indicates whether the task runner loop should continue. This is
   // only meant to be read/written on the thread executing RunUntilStopped().
@@ -141,7 +144,6 @@ class TaskRunnerImpl final : public TaskRunner {
 
   OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TASK_RUNNER_H_

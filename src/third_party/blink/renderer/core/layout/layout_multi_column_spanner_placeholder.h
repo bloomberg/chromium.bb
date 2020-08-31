@@ -60,8 +60,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   void WillBeRemovedFromTree() override;
   bool NeedsPreferredWidthsRecalculation() const override;
   void RecalcVisualOverflow() override;
-  LayoutUnit MinPreferredLogicalWidth() const override;
-  LayoutUnit MaxPreferredLogicalWidth() const override;
+  MinMaxSizes PreferredLogicalWidths() const override;
   void UpdateLayout() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
@@ -74,6 +73,11 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
 
  private:
   LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
+
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
 
   // The actual column-span:all layoutObject inside the flow thread.
   LayoutBox* layout_object_in_flow_thread_;

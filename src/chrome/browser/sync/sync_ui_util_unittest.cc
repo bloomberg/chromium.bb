@@ -17,12 +17,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace sync_ui_util {
 
 void PrintTo(const StatusLabels& labels, std::ostream* out) {
   *out << "{" << labels.message_type << ", " << labels.status_label_string_id
-       << ", " << labels.link_label_string_id << ", " << labels.action_type
-       << "}";
+       << ", " << labels.button_string_id << ", " << labels.action_type << "}";
 }
 
 namespace {
@@ -30,7 +34,7 @@ namespace {
 MATCHER_P4(StatusLabelsMatch,
            message_type,
            status_label_string_id,
-           link_label_string_id,
+           button_string_id,
            action_type,
            "") {
   if (arg.message_type != message_type) {
@@ -41,8 +45,8 @@ MATCHER_P4(StatusLabelsMatch,
     *result_listener << "Wrong status label";
     return false;
   }
-  if (arg.link_label_string_id != link_label_string_id) {
-    *result_listener << "Wrong link label";
+  if (arg.button_string_id != button_string_id) {
+    *result_listener << "Wrong button string";
     return false;
   }
   if (arg.action_type != action_type) {
@@ -98,7 +102,7 @@ StatusLabels SetUpDistinctCase(
 #else
             IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT,
 #endif
-            IDS_SYNC_RELOGIN_LINK_LABEL, REAUTHENTICATE
+            IDS_SYNC_RELOGIN_BUTTON, REAUTHENTICATE
       };
     }
     case STATUS_CASE_AUTH_ERROR: {
@@ -116,8 +120,8 @@ StatusLabels SetUpDistinctCase(
       test_environment->UpdatePersistentErrorOfRefreshTokenForAccount(
           account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
-      return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_LINK_LABEL,
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
+      return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_BUTTON,
               REAUTHENTICATE};
     }
     case STATUS_CASE_PROTOCOL_ERROR: {
@@ -129,9 +133,9 @@ StatusLabels SetUpDistinctCase(
       syncer::SyncStatus status;
       status.sync_protocol_error = protocol_error;
       service->SetDetailedSyncStatus(false, status);
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       return {SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
-              IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT};
+              IDS_SYNC_UPGRADE_CLIENT_BUTTON, UPGRADE_CLIENT};
     }
     case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
       service->SetFirstSetupComplete(false);
@@ -145,27 +149,26 @@ StatusLabels SetUpDistinctCase(
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(true);
       service->SetPassphraseRequiredForPreferredDataTypes(true);
       return {SYNC_ERROR, IDS_SYNC_STATUS_NEEDS_PASSWORD,
-              IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL, ENTER_PASSPHRASE};
+              IDS_SYNC_STATUS_NEEDS_PASSWORD_BUTTON, ENTER_PASSPHRASE};
     }
     case STATUS_CASE_TRUSTED_VAULT_KEYS_ERROR:
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(false);
       service->SetTrustedVaultKeyRequiredForPreferredDataTypes(true);
       return {PASSWORDS_ONLY_SYNC_ERROR, IDS_SETTINGS_EMPTY_STRING,
-              IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL,
-              RETRIEVE_TRUSTED_VAULT_KEYS};
+              IDS_SYNC_STATUS_NEEDS_KEYS_BUTTON, RETRIEVE_TRUSTED_VAULT_KEYS};
     case STATUS_CASE_SYNCED: {
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+      service->SetDisableReasons(syncer::SyncService::DisableReasonSet());
       service->SetPassphraseRequired(false);
       return {SYNCED, IDS_SYNC_ACCOUNT_SYNCING, IDS_SETTINGS_EMPTY_STRING,
               NO_ACTION};
@@ -219,7 +222,7 @@ TEST(SyncUIUtilTest, DistinctCasesReportProperMessages) {
                                 /*is_user_signout_allowed=*/true),
                 StatusLabelsMatch(expected_labels.message_type,
                                   expected_labels.status_label_string_id,
-                                  expected_labels.link_label_string_id,
+                                  expected_labels.button_string_id,
                                   expected_labels.action_type));
   }
 }
@@ -246,7 +249,7 @@ TEST(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
 #else
                                 IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT,
 #endif
-                                IDS_SYNC_RELOGIN_LINK_LABEL, REAUTHENTICATE));
+                                IDS_SYNC_RELOGIN_BUTTON, REAUTHENTICATE));
 
   // This time set action to UPGRADE_CLIENT.
   syncer::SyncStatus status;
@@ -257,7 +260,7 @@ TEST(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
       GetStatusLabels(&service, environment.identity_manager(),
                       /*is_user_signout_allowed=*/true),
       StatusLabelsMatch(SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
-                        IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT));
+                        IDS_SYNC_UPGRADE_CLIENT_BUTTON, UPGRADE_CLIENT));
 }
 
 TEST(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
@@ -280,7 +283,7 @@ TEST(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
       GetStatusLabels(&service, environment.identity_manager(),
                       /*is_user_signout_allowed=*/true),
       StatusLabelsMatch(SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
-                        IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT));
+                        IDS_SYNC_UPGRADE_CLIENT_BUTTON, UPGRADE_CLIENT));
 }
 
 TEST(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
@@ -333,6 +336,42 @@ TEST(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
               StatusLabelsMatch(MessageType::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
                                 IDS_SETTINGS_EMPTY_STRING, NO_ACTION));
 }
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(true);
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  EXPECT_TRUE(ShouldShowPassphraseError(&service));
+}
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_SyncDisabled) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(false);
+#if defined(OS_CHROMEOS)
+  service.GetUserSettings()->SetOsSyncFeatureEnabled(false);
+#endif  // defined(OS_CHROMEOS)
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  EXPECT_FALSE(ShouldShowPassphraseError(&service));
+}
+
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_NotUsingPassphrase) {
+  syncer::TestSyncService service;
+  service.SetFirstSetupComplete(true);
+  service.SetPassphraseRequiredForPreferredDataTypes(false);
+  EXPECT_FALSE(ShouldShowPassphraseError(&service));
+}
+
+#if defined(OS_CHROMEOS)
+TEST(SyncUIUtilTest, ShouldShowPassphraseError_OsSyncEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  syncer::TestSyncService service;
+  service.SetPassphraseRequiredForPreferredDataTypes(true);
+  service.SetFirstSetupComplete(false);
+  service.GetUserSettings()->SetOsSyncFeatureEnabled(true);
+  EXPECT_TRUE(ShouldShowPassphraseError(&service));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {
@@ -61,16 +61,15 @@ std::unique_ptr<FakeQuicStream> FakeQuicConnection::MakeIncomingStream() {
   return result;
 }
 
-void FakeQuicConnection::OnRead(platform::UdpSocket* socket,
-                                ErrorOr<platform::UdpPacket> data) {
+void FakeQuicConnection::OnRead(UdpSocket* socket, ErrorOr<UdpPacket> data) {
   OSP_NOTREACHED() << "data should go directly to fake streams";
 }
 
-void FakeQuicConnection::OnSendError(platform::UdpSocket* socket, Error error) {
+void FakeQuicConnection::OnSendError(UdpSocket* socket, Error error) {
   OSP_NOTREACHED() << "data should go directly to fake streams";
 }
 
-void FakeQuicConnection::OnError(platform::UdpSocket* socket, Error error) {
+void FakeQuicConnection::OnError(UdpSocket* socket, Error error) {
   OSP_NOTREACHED() << "data should go directly to fake streams";
 }
 

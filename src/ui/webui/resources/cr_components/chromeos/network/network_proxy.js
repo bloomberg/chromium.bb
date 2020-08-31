@@ -43,7 +43,7 @@ Polymer({
      */
     proxy_: {
       type: Object,
-      value: function() {
+      value() {
         return this.createDefaultProxySettings_();
       },
     },
@@ -102,7 +102,7 @@ Polymer({
   proxyIsUserModified_: false,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.reset();
   },
 
@@ -110,7 +110,7 @@ Polymer({
    * Called any time the page is refreshed or navigated to so that the proxy
    * is updated correctly.
    */
-  reset: function() {
+  reset() {
     this.proxyIsUserModified_ = false;
     this.updateProxy_();
   },
@@ -120,27 +120,67 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined} oldValue
    * @private
    */
-  managedPropertiesChanged_: function(newValue, oldValue) {
-    if ((newValue && newValue.guid) != (oldValue && oldValue.guid)) {
+  managedPropertiesChanged_(newValue, oldValue) {
+    if ((newValue && newValue.guid) !== (oldValue && oldValue.guid)) {
       // Clear saved manual properties and exclude domains if we're updating
       // to show a different network.
       this.savedManual_ = undefined;
       this.savedExcludeDomains_ = undefined;
     }
 
-    if (this.proxyIsUserModified_) {
-      return;  // Ignore update
+    if (this.proxyIsUserModified_ || this.isInputEditInProgress_()) {
+      // Ignore updates if any fields have been modified by user or if any
+      // input elements are currently being edited.
+      return;
     }
     this.updateProxy_();
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} a
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} b
+   * @return {boolean} True if any input elements are currently being edited.
+   * @private
+   */
+  isInputEditInProgress_: function() {
+    if (!this.editable) {
+      return false;
+    }
+    const activeElement = this.shadowRoot.activeElement;
+    if (!activeElement) {
+      return false;
+    }
+
+    // Find property name for current active element.
+    let property = null;
+    switch (activeElement.id) {
+      case 'sameProxyInput':
+      case 'httpProxyInput':
+        property = 'manual.httpProxy.host';
+        break;
+      case 'secureHttpProxyInput':
+        property = 'manual.secureHttpProxy.host';
+        break;
+      case 'socksProxyInput':
+        property = 'manual.socks.host';
+        break;
+      case 'pacInput':
+        property = 'pac';
+        break;
+    }
+    if (!property) {
+      return false;
+    }
+
+    // Input should be considered active only when the property editable.
+    return this.isEditable_(property);
+  },
+
+  /**
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} a
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} b
    * @return {boolean}
    * @private
    */
-  proxyMatches_: function(a, b) {
+  proxyMatches_(a, b) {
     return !!a && !!b && a.host.activeValue === b.host.activeValue &&
         a.port.activeValue === b.port.activeValue;
   },
@@ -150,7 +190,7 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.ManagedProxyLocation}
    * @private
    */
-  createDefaultProxyLocation_: function(port) {
+  createDefaultProxyLocation_(port) {
     return {
       host: OncMojo.createManagedString(''),
       port: OncMojo.createManagedInt(port),
@@ -163,25 +203,22 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.ManagedProxySettings}
    * @private
    */
-  validateProxy_: function(inputProxy) {
+  validateProxy_(inputProxy) {
     const proxy =
         /** @type {!chromeos.networkConfig.mojom.ManagedProxySettings} */ (
             Object.assign({}, inputProxy));
     const type = proxy.type.activeValue;
-    if (type == 'PAC') {
+    if (type === 'PAC') {
       if (!proxy.pac) {
         proxy.pac = OncMojo.createManagedString('');
       }
-    } else if (type == 'Manual') {
+    } else if (type === 'Manual') {
       proxy.manual = proxy.manual || this.savedManual_ || {};
       if (!proxy.manual.httpProxy) {
         proxy.manual.httpProxy = this.createDefaultProxyLocation_(80);
       }
       if (!proxy.manual.secureHttpProxy) {
         proxy.manual.secureHttpProxy = this.createDefaultProxyLocation_(80);
-      }
-      if (!proxy.manual.ftpProxy) {
-        proxy.manual.ftpProxy = this.createDefaultProxyLocation_(80);
       }
       if (!proxy.manual.socks) {
         proxy.manual.socks = this.createDefaultProxyLocation_(1080);
@@ -196,7 +233,7 @@ Polymer({
   },
 
   /** @private */
-  updateProxy_: function() {
+  updateProxy_() {
     if (!this.managedProperties) {
       return;
     }
@@ -213,7 +250,7 @@ Polymer({
     const proxy = proxySettings ? this.validateProxy_(proxySettings) :
                                   this.createDefaultProxySettings_();
 
-    if (proxy.type.activeValue == 'WPAD') {
+    if (proxy.type.activeValue === 'WPAD') {
       // Set the Web Proxy Auto Discovery URL for display purposes.
       const ipv4 = this.managedProperties ?
           OncMojo.getIPConfigForType(this.managedProperties, 'IPv4') :
@@ -230,19 +267,18 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.ManagedProxySettings} proxy
    * @private
    */
-  setProxy_: function(proxy) {
+  setProxy_(proxy) {
     this.proxy_ = proxy;
     if (proxy.manual) {
       const manual = proxy.manual;
       const httpProxy = manual.httpProxy;
       if (this.proxyMatches_(httpProxy, manual.secureHttpProxy) &&
-          this.proxyMatches_(httpProxy, manual.ftpProxy) &&
           this.proxyMatches_(httpProxy, manual.socks)) {
         // If all four proxies match, enable the 'use same proxy' toggle.
         this.useSameProxy_ = true;
       } else if (
           !manual.secureHttpProxy.host.activeValue &&
-          !manual.ftpProxy.host.activeValue && !manual.socks.host.activeValue) {
+          !manual.socks.host.activeValue) {
         // Otherwise if no proxies other than http have a host value, also
         // enable the 'use same proxy' toggle.
         this.useSameProxy_ = true;
@@ -252,7 +288,7 @@ Polymer({
   },
 
   /** @private */
-  useSameProxyChanged_: function() {
+  useSameProxyChanged_() {
     this.proxyIsUserModified_ = true;
   },
 
@@ -260,19 +296,19 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.ManagedProxySettings}
    * @private
    */
-  createDefaultProxySettings_: function() {
+  createDefaultProxySettings_() {
     return {
       type: OncMojo.createManagedString('Direct'),
     };
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined}
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined}
    *     location
    * @return {!chromeos.networkConfig.mojom.ProxyLocation|undefined}
    * @private
    */
-  getProxyLocation_: function(location) {
+  getProxyLocation_(location) {
     if (!location) {
       return undefined;
     }
@@ -286,10 +322,10 @@ Polymer({
    * Called when the proxy changes in the UI.
    * @private
    */
-  sendProxyChange_: function() {
+  sendProxyChange_() {
     const mojom = chromeos.networkConfig.mojom;
     const proxyType = OncMojo.getActiveString(this.proxy_.type);
-    if (!proxyType || (proxyType == 'PAC' && !this.proxy_.pac)) {
+    if (!proxyType || (proxyType === 'PAC' && !this.proxy_.pac)) {
       return;
     }
 
@@ -298,7 +334,7 @@ Polymer({
       excludeDomains: OncMojo.getActiveValue(this.proxy_.excludeDomains),
     });
 
-    if (proxyType == 'Manual') {
+    if (proxyType === 'Manual') {
       let manual = {};
       if (this.proxy_.manual) {
         this.savedManual_ =
@@ -308,7 +344,6 @@ Polymer({
           httpProxy: this.getProxyLocation_(this.proxy_.manual.httpProxy),
           secureHttpProxy:
               this.getProxyLocation_(this.proxy_.manual.secureHttpProxy),
-          ftpProxy: this.getProxyLocation_(this.proxy_.manual.ftpProxy),
           socks: this.getProxyLocation_(this.proxy_.manual.socks),
         };
       }
@@ -321,8 +356,6 @@ Polymer({
       if (this.useSameProxy_) {
         manual.secureHttpProxy = /** @type {!mojom.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
-        manual.ftpProxy = /** @type {!mojom.ProxyLocation} */ (
-            Object.assign({}, defaultProxy));
         manual.socks = /** @type {!mojom.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
       } else {
@@ -333,15 +366,12 @@ Polymer({
         if (manual.secureHttpProxy && !manual.secureHttpProxy.host) {
           delete manual.secureHttpProxy;
         }
-        if (manual.ftpProxy && !manual.ftpProxy.host) {
-          delete manual.ftpProxy;
-        }
         if (manual.socks && !manual.socks.host) {
           delete manual.socks;
         }
       }
       proxy.manual = manual;
-    } else if (proxyType == 'PAC') {
+    } else if (proxyType === 'PAC') {
       proxy.pac = OncMojo.getActiveString(this.proxy_.pac);
     }
     this.fire('proxy-change', proxy);
@@ -353,7 +383,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onTypeChange_: function(event) {
+  onTypeChange_(event) {
     if (!this.proxy_ || !this.proxy_.type) {
       return;
     }
@@ -371,9 +401,9 @@ Polymer({
         break;
       case 'PAC':
         elementToFocus = this.$$('#pacInput');
-        // If a PAC is already defined, send the type change now, otherwise wait
+        // If a PAC is already set, send the type change now, otherwise wait
         // until the user provides a PAC value.
-        proxyTypeChangeIsReady = !!this.proxy_.pac;
+        proxyTypeChangeIsReady = !!OncMojo.getActiveString(this.proxy_.pac);
         break;
       case 'Manual':
         // Manual proxy configuration includes multiple input fields, so wait
@@ -400,17 +430,17 @@ Polymer({
   },
 
   /** @private */
-  onPACChange_: function() {
+  onPACChange_() {
     this.sendProxyChange_();
   },
 
   /** @private */
-  onProxyInputChange_: function() {
+  onProxyInputChange_() {
     this.proxyIsUserModified_ = true;
   },
 
   /** @private */
-  onAddProxyExclusionTap_: function() {
+  onAddProxyExclusionTap_() {
     const value = this.$.proxyExclusion.value;
     if (!value) {
       return;
@@ -425,8 +455,8 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onAddProxyExclusionKeypress_: function(event) {
-    if (event.key != 'Enter') {
+  onAddProxyExclusionKeypress_(event) {
+    if (event.key !== 'Enter') {
       return;
     }
     event.stopPropagation();
@@ -438,12 +468,12 @@ Polymer({
    * @param {!Event} event The remove proxy exclusions change event.
    * @private
    */
-  onProxyExclusionsChange_: function(event) {
+  onProxyExclusionsChange_(event) {
     this.proxyIsUserModified_ = true;
   },
 
   /** @private */
-  onSaveProxyTap_: function() {
+  onSaveProxyTap_() {
     this.sendProxyChange_();
   },
 
@@ -452,14 +482,14 @@ Polymer({
    * @return {string} The description for |proxyType|.
    * @private
    */
-  getProxyTypeDesc_: function(proxyType) {
-    if (proxyType == 'Manual') {
+  getProxyTypeDesc_(proxyType) {
+    if (proxyType === 'Manual') {
       return this.i18n('networkProxyTypeManual');
     }
-    if (proxyType == 'PAC') {
+    if (proxyType === 'PAC') {
       return this.i18n('networkProxyTypePac');
     }
-    if (proxyType == 'WPAD') {
+    if (proxyType === 'WPAD') {
       return this.i18n('networkProxyTypeWpad');
     }
     return this.i18n('networkProxyTypeDirect');
@@ -470,7 +500,7 @@ Polymer({
    * @return {boolean} Whether the named property setting is editable.
    * @private
    */
-  isEditable_: function(propertyName) {
+  isEditable_(propertyName) {
     if (!this.editable || (this.isShared_() && !this.useSharedProxies)) {
       return false;
     }
@@ -487,7 +517,7 @@ Polymer({
    * @return {boolean} Whether |property| is editable.
    * @private
    */
-  isPropertyEditable_: function(property) {
+  isPropertyEditable_(property) {
     return !!property && !this.isNetworkPolicyEnforced(property) &&
         !this.isExtensionControlled(property);
   },
@@ -496,20 +526,20 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isShared_: function() {
+  isShared_() {
     if (!this.managedProperties) {
       return false;
     }
     const source = this.managedProperties.source;
-    return source == chromeos.networkConfig.mojom.OncSource.kDevice ||
-        source == chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
+    return source === chromeos.networkConfig.mojom.OncSource.kDevice ||
+        source === chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  isSaveManualProxyEnabled_: function() {
+  isSaveManualProxyEnabled_() {
     if (!this.proxyIsUserModified_) {
       return false;
     }
@@ -520,18 +550,17 @@ Polymer({
     }
     return !!httpHost ||
         !!this.get('secureHttpProxy.host.activeValue', manual) ||
-        !!this.get('ftpProxy.host.activeValue', manual) ||
         !!this.get('socks.host.activeValue', manual);
   },
 
   /**
    * @param {string} property The property to test
    * @param {string} value The value to test against
-   * @return {boolean} True if property == value
+   * @return {boolean} True if property === value
    * @private
    */
-  matches_: function(property, value) {
-    return property == value;
+  matches_(property, value) {
+    return property === value;
   },
 });
 })();

@@ -5,7 +5,7 @@
 import './ui/app.js';
 
 export {CloudPrintInterface, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
-export {setCloudPrintInterfaceForTesting} from './cloud_print_interface_manager.js';
+export {CloudPrintInterfaceImpl} from './cloud_print_interface_impl.js';
 export {ColorMode, createDestinationKey, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationType, makeRecentDestination} from './data/destination.js';
 export {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">
@@ -21,6 +21,7 @@ export {Size} from './data/size.js';
 export {Error, State} from './data/state.js';
 export {BackgroundGraphicsModeRestriction, NativeLayer} from './native_layer.js';
 export {getSelectDropdownBackground} from './print_preview_utils.js';
+export {DEFAULT_MAX_COPIES} from './ui/copies_settings.js';
 export {DestinationState} from './ui/destination_settings.js';
 export {PluginProxy} from './ui/plugin_proxy.js';
 export {PreviewAreaState} from './ui/preview_area.js';

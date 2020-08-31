@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -35,13 +36,15 @@ class WebView;
 class WebFormControlElement;
 template <typename T>
 class WebVector;
-}
+}  // namespace blink
 
 namespace autofill {
 
 struct FormData;
+class AutofillAssistantAgent;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
+class FieldDataManager;
 
 // AutofillAgent deals with Autofill related communications between WebKit and
 // the browser.  There is one AutofillAgent per RenderFrame.
@@ -56,11 +59,12 @@ class AutofillAgent : public content::RenderFrameObserver,
                       public mojom::AutofillAgent {
  public:
   // PasswordAutofillAgent is guaranteed to outlive AutofillAgent.
-  // PasswordGenerationAgent may be NULL. If it is not, then it is also
-  // guaranteed to outlive AutofillAgent.
+  // PasswordGenerationAgent and AutofillAssistantAgent may be nullptr. If they
+  // are not, then they are also guaranteed to outlive AutofillAgent.
   AutofillAgent(content::RenderFrame* render_frame,
                 PasswordAutofillAgent* password_autofill_manager,
                 PasswordGenerationAgent* password_generation_agent,
+                AutofillAssistantAgent* autofill_assistant_agent,
                 blink::AssociatedInterfaceRegistry* registry);
   ~AutofillAgent() override;
 
@@ -94,6 +98,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void GetElementFormAndFieldData(
       const std::vector<std::string>& selectors,
       GetElementFormAndFieldDataCallback callback) override;
+  void SetAssistantActionState(bool running) override;
 
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
@@ -290,6 +295,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   PasswordAutofillAgent* password_autofill_agent_;      // Weak reference.
   PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
+  AutofillAssistantAgent* autofill_assistant_agent_;    // Weak reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
@@ -310,7 +316,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.
-  std::unique_ptr<FormData> provisionally_saved_form_;
+  base::Optional<FormData> provisionally_saved_form_;
 
   // Keeps track of the forms for which form submitted event has been sent to
   // AutofillDriver. We use it to avoid fire duplicated submission event when
@@ -322,11 +328,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The query node autofill state prior to previewing the form.
   blink::WebAutofillState query_node_autofill_state_;
-
-  // Whether or not to ignore text changes.  Useful for when we're committing
-  // a composition when we are defocusing the WebView and we don't want to
-  // trigger an autofill popup to show.
-  bool ignore_text_changes_;
 
   // Whether the Autofill popup is possibly visible.  This is tracked as a
   // performance improvement, so that the IPC channel isn't flooded with
@@ -373,6 +374,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Will be set when accessibility mode changes, depending on what the new mode
   // is.
   bool is_screen_reader_enabled_ = false;
+
+  const scoped_refptr<FieldDataManager> field_data_manager_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 

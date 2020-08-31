@@ -249,7 +249,7 @@ endif()
 
 # Precompiled header macro. Parameters are source file list and filename for pch cpp file.
 macro(spvtools_pch SRCS PCHPREFIX)
-  if(MSVC AND CMAKE_GENERATOR MATCHES "^Visual Studio")
+  if(MSVC AND CMAKE_GENERATOR MATCHES "^Visual Studio" AND NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(PCH_NAME "$(IntDir)\\${PCHPREFIX}.pch")
     # make source files use/depend on PCH_NAME
     set_source_files_properties(${${SRCS}} PROPERTIES COMPILE_FLAGS "/Yu${PCHPREFIX}.h /FI${PCHPREFIX}.h /Fp${PCH_NAME} /Zm300" OBJECT_DEPENDS "${PCH_NAME}")
@@ -300,7 +300,7 @@ if (NOT "${SPIRV_SKIP_TESTS}")
            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-set(SPIRV_LIBRARIES "-lSPIRV-Tools -lSPIRV-Tools-link -lSPIRV-Tools-opt")
+set(SPIRV_LIBRARIES "-lSPIRV-Tools-opt -lSPIRV-Tools -lSPIRV-Tools-link")
 set(SPIRV_SHARED_LIBRARIES "-lSPIRV-Tools-shared")
 
 # Build pkg-config file

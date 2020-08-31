@@ -23,22 +23,22 @@ namespace dawn_native { namespace vulkan {
 
     VkCompareOp ToVulkanCompareOp(wgpu::CompareFunction op) {
         switch (op) {
-            case wgpu::CompareFunction::Always:
-                return VK_COMPARE_OP_ALWAYS;
-            case wgpu::CompareFunction::Equal:
-                return VK_COMPARE_OP_EQUAL;
-            case wgpu::CompareFunction::Greater:
-                return VK_COMPARE_OP_GREATER;
-            case wgpu::CompareFunction::GreaterEqual:
-                return VK_COMPARE_OP_GREATER_OR_EQUAL;
+            case wgpu::CompareFunction::Never:
+                return VK_COMPARE_OP_NEVER;
             case wgpu::CompareFunction::Less:
                 return VK_COMPARE_OP_LESS;
             case wgpu::CompareFunction::LessEqual:
                 return VK_COMPARE_OP_LESS_OR_EQUAL;
-            case wgpu::CompareFunction::Never:
-                return VK_COMPARE_OP_NEVER;
+            case wgpu::CompareFunction::Greater:
+                return VK_COMPARE_OP_GREATER;
+            case wgpu::CompareFunction::GreaterEqual:
+                return VK_COMPARE_OP_GREATER_OR_EQUAL;
+            case wgpu::CompareFunction::Equal:
+                return VK_COMPARE_OP_EQUAL;
             case wgpu::CompareFunction::NotEqual:
                 return VK_COMPARE_OP_NOT_EQUAL;
+            case wgpu::CompareFunction::Always:
+                return VK_COMPARE_OP_ALWAYS;
             default:
                 UNREACHABLE();
         }
@@ -75,9 +75,9 @@ namespace dawn_native { namespace vulkan {
         region.bufferOffset = bufferCopy.offset;
         // In Vulkan the row length is in texels while it is in bytes for Dawn
         const Format& format = texture->GetFormat();
-        ASSERT(bufferCopy.rowPitch % format.blockByteSize == 0);
-        region.bufferRowLength = bufferCopy.rowPitch / format.blockByteSize * format.blockWidth;
-        region.bufferImageHeight = bufferCopy.imageHeight;
+        ASSERT(bufferCopy.bytesPerRow % format.blockByteSize == 0);
+        region.bufferRowLength = bufferCopy.bytesPerRow / format.blockByteSize * format.blockWidth;
+        region.bufferImageHeight = bufferCopy.rowsPerImage;
 
         region.imageSubresource.aspectMask = texture->GetVkAspectMask();
         region.imageSubresource.mipLevel = textureCopy.mipLevel;

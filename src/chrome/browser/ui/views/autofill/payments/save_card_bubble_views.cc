@@ -54,10 +54,12 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          SaveCardBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   controller->GetAcceptButtonText());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   controller->GetDeclineButtonText());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, controller->GetAcceptButtonText());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, controller->GetDeclineButtonText());
+  SetCancelCallback(base::BindOnce(&SaveCardBubbleViews::OnDialogCancelled,
+                                   base::Unretained(this)));
+  SetAcceptCallback(base::BindOnce(&SaveCardBubbleViews::OnDialogAccepted,
+                                   base::Unretained(this)));
   DCHECK(controller);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
@@ -78,30 +80,16 @@ void SaveCardBubbleViews::Hide() {
   CloseBubble();
 }
 
-bool SaveCardBubbleViews::Accept() {
+void SaveCardBubbleViews::OnDialogAccepted() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnSaveButton({});
-  return true;
 }
 
-bool SaveCardBubbleViews::Cancel() {
+void SaveCardBubbleViews::OnDialogCancelled() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnCancelButton();
-  return true;
-}
-
-bool SaveCardBubbleViews::Close() {
-  // If there is a cancel button (non-Material UI), Cancel is logged as a
-  // different user action than closing, so override Close() to prevent the
-  // superclass' implementation from calling Cancel().
-  //
-  // Clicking the top-right [X] close button and/or focusing then unfocusing the
-  // bubble count as a close action only (without calling Cancel), which means
-  // we can't tell the controller to permanently hide the bubble on close,
-  // because the user simply dismissed/ignored the bubble; they might want to
-  // access the bubble again from the location bar icon. Return true to indicate
-  // that the bubble can be closed.
-  return true;
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
@@ -163,7 +151,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     view->AddChildView(explanation_label);
   }
 
-  // Add the card type icon, last four digits and expiration date.
+  // Add the card network icon, last four digits and expiration date.
   auto* description_view = new views::View();
   views::BoxLayout* box_layout =
       description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -173,13 +161,13 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   view->AddChildView(description_view);
 
   const CreditCard& card = controller_->GetCard();
-  auto* card_type_icon = new views::ImageView();
-  card_type_icon->SetImage(
+  auto* card_network_icon = new views::ImageView();
+  card_network_icon->SetImage(
       ui::ResourceBundle::GetSharedInstance()
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
-  card_type_icon->set_tooltip_text(card.NetworkForDisplay());
-  description_view->AddChildView(card_type_icon);
+  card_network_icon->set_tooltip_text(card.NetworkForDisplay());
+  description_view->AddChildView(card_network_icon);
 
   description_view->AddChildView(
       new views::Label(card.NetworkAndLastFourDigits(), CONTEXT_BODY_TEXT_LARGE,

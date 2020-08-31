@@ -7,13 +7,16 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
-#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
-#include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -27,18 +30,18 @@ enum class AlarmTimerAction;
 }  // namespace util
 }  // namespace assistant
 
-class AssistantController;
+class AssistantControllerImpl;
 
 // The AssistantAlarmTimerController is a sub-controller of AssistantController
 // tasked with tracking alarm/timer state and providing alarm/timer APIs.
 class AssistantAlarmTimerController
     : public mojom::AssistantAlarmTimerController,
       public AssistantControllerObserver,
-      public AssistantAlarmTimerModelObserver,
-      public AssistantUiModelObserver {
+      public AssistantStateObserver,
+      public AssistantAlarmTimerModelObserver {
  public:
   explicit AssistantAlarmTimerController(
-      AssistantController* assistant_controller);
+      AssistantControllerImpl* assistant_controller);
   ~AssistantAlarmTimerController() override;
 
   void BindReceiver(
@@ -51,17 +54,6 @@ class AssistantAlarmTimerController
   void AddModelObserver(AssistantAlarmTimerModelObserver* observer);
   void RemoveModelObserver(AssistantAlarmTimerModelObserver* observer);
 
-  // mojom::AssistantAlarmTimerController:
-  void OnAlarmTimerStateChanged(
-      mojom::AssistantAlarmTimerEventPtr event) override;
-
-  // AssistantAlarmTimerModelObserver:
-  void OnAlarmTimerAdded(const AlarmTimer& alarm_timer,
-                         const base::TimeDelta& time_remaining) override;
-  void OnAlarmsTimersTicked(
-      const std::map<std::string, base::TimeDelta>& times_remaining) override;
-  void OnAllAlarmsTimersRemoved() override;
-
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
@@ -72,29 +64,38 @@ class AssistantAlarmTimerController
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
 
-  // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(
-      AssistantVisibility new_visibility,
-      AssistantVisibility old_visibility,
-      base::Optional<AssistantEntryPoint> entry_point,
-      base::Optional<AssistantExitPoint> exit_point) override;
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
+
+  // mojom::AssistantAlarmTimerController:
+  void OnTimerStateChanged(
+      std::vector<mojom::AssistantTimerPtr> timers) override;
+
+  // AssistantAlarmTimerModelObserver:
+  void OnTimerAdded(const mojom::AssistantTimer& timer) override;
+  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
+  void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
+  void OnAllTimersRemoved() override;
 
  private:
-  void PerformAlarmTimerAction(
-      const assistant::util::AlarmTimerAction& action,
-      const base::Optional<std::string>& alarm_timer_id,
-      const base::Optional<base::TimeDelta>& duration);
+  void PerformAlarmTimerAction(const assistant::util::AlarmTimerAction& action,
+                               const std::string& alarm_timer_id,
+                               const base::Optional<base::TimeDelta>& duration);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   mojo::Receiver<mojom::AssistantAlarmTimerController> receiver_{this};
 
   AssistantAlarmTimerModel model_;
 
-  base::RepeatingTimer timer_;
+  base::RepeatingTimer ticker_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_;
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerController);
 };

@@ -84,19 +84,14 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
   ScriptPromise abort(ScriptState*, ExceptionState&);
   ScriptPromise abort(ScriptState*, ScriptValue reason, ExceptionState&);
 
+  // https://streams.spec.whatwg.org/#ws-close
+  ScriptPromise close(ScriptState*, ExceptionState&);
+
   // https://streams.spec.whatwg.org/#ws-get-writer
   WritableStreamDefaultWriter* getWriter(ScriptState*, ExceptionState&);
 
   // Inherited methods used internally.
 
-  // https://streams.spec.whatwg.org/#is-writable-stream-locked
-  // TODO(ricea): Delete this variant once the V8 extras implementation is
-  // removed.
-  base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const {
-    return IsLocked(this);
-  }
-
-  // This version can't fail.
   static bool IsLocked(const WritableStream* stream) { return stream->writer_; }
 
   void Serialize(ScriptState*, MessagePort*, ExceptionState&);
@@ -125,6 +120,8 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
 
   // https://streams.spec.whatwg.org/#writable-stream-add-write-request
   static v8::Local<v8::Promise> AddWriteRequest(ScriptState*, WritableStream*);
+
+  static v8::Local<v8::Promise> Close(ScriptState*, WritableStream*);
 
   // https://streams.spec.whatwg.org/#writable-stream-close-queued-or-in-flight
   static bool CloseQueuedOrInFlight(const WritableStream*);
@@ -204,19 +201,31 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
   void SetController(WritableStreamDefaultController*);
   void SetWriter(WritableStreamDefaultWriter*);
 
+  // Utility methods shared with other classes.
+  static v8::Local<v8::String> CreateCannotActionOnStateStreamMessage(
+      v8::Isolate*,
+      const char* action,
+      const char* state_name);
+
+  static v8::Local<v8::Value> CreateCannotActionOnStateStreamException(
+      v8::Isolate*,
+      const char* action,
+      State);
+
   void Trace(Visitor*) override;
 
- private:
-  using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
-
-  class PendingAbortRequest;
-
+ protected:
   // Used when creating a stream from JavaScript. Called from Create().
   // https://streams.spec.whatwg.org/#ws-constructor
   void InitInternal(ScriptState*,
                     ScriptValue raw_underlying_sink,
                     ScriptValue raw_strategy,
                     ExceptionState&);
+
+ private:
+  using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
+
+  class PendingAbortRequest;
 
   // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
   static bool HasOperationMarkedInFlight(const WritableStream*);

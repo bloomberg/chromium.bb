@@ -37,7 +37,6 @@
 #include "pc/srtp_transport.h"
 #include "pc/transport_stats.h"
 #include "rtc_base/constructor_magic.h"
-#include "rtc_base/message_queue.h"
 #include "rtc_base/rtc_certificate.h"
 #include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
@@ -298,12 +297,9 @@ class JsepTransport : public sigslot::has_slots<> {
       ConnectionRole remote_connection_role,
       absl::optional<rtc::SSLRole>* negotiated_dtls_role);
 
-  // Pushes down the ICE parameters from the local description, such
-  // as the ICE ufrag and pwd.
-  void SetLocalIceParameters(IceTransportInternal* ice);
-
   // Pushes down the ICE parameters from the remote description.
-  void SetRemoteIceParameters(IceTransportInternal* ice);
+  void SetRemoteIceParameters(const IceParameters& ice_parameters,
+                              IceTransportInternal* ice);
 
   // Pushes down the DTLS parameters obtained via negotiation.
   webrtc::RTCError SetNegotiatedDtlsParameters(

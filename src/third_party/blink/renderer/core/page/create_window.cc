@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
@@ -202,7 +204,8 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
     return;
 
   bool is_ad_subframe = opener_frame.IsAdSubframe();
-  bool is_ad_script_in_stack = ad_tracker->IsAdScriptInStack();
+  bool is_ad_script_in_stack =
+      ad_tracker->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop);
   FromAdState state =
       blink::GetFromAdState(is_ad_subframe, is_ad_script_in_stack);
 
@@ -228,7 +231,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 
   // Exempting window.open() from this check here is necessary to support a
-  // special policy that will be removed in Chrome 82.
+  // special policy that will be removed in Chrome 88.
   // See https://crbug.com/937569
   if (!request.IsWindowOpen() &&
       opener_frame.GetDocument()->PageDismissalEventBeingDispatched() !=
@@ -236,17 +239,16 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     return nullptr;
   }
 
-  request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
+  request.SetFrameType(mojom::RequestContextFrameType::kAuxiliary);
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript() &&
-      opener_frame.GetDocument()->GetContentSecurityPolicy() &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(
-          opener_frame.GetDocument())) {
+      opener_frame.DomWindow()->GetContentSecurityPolicy() &&
+      !ContentSecurityPolicy::ShouldBypassMainWorld(opener_frame.DomWindow())) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-    if (!opener_frame.GetDocument()->GetContentSecurityPolicy()->AllowInline(
+    if (!opener_frame.DomWindow()->GetContentSecurityPolicy()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
             opener_frame.GetDocument()->Url(), OrdinalNumber())) {
@@ -255,10 +257,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   }
 
   if (!opener_frame.GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Not allowed to load local resource: " + url.ElidedString()));
+    opener_frame.GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
+            "Not allowed to load local resource: " + url.ElidedString()));
     return nullptr;
   }
 
@@ -268,29 +271,33 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
 
   // Sandboxed frames cannot open new auxiliary browsing contexts.
-  if (opener_frame.GetDocument()->IsSandboxed(WebSandboxFlags::kPopups)) {
+  if (opener_frame.GetDocument()->IsSandboxed(
+          network::mojom::blink::WebSandboxFlags::kPopups)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Blocked opening '" + url.ElidedString() +
-            "' in a new window because the request was made in a sandboxed "
-            "frame whose 'allow-popups' permission is not set."));
+    opener_frame.GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
+            "Blocked opening '" + url.ElidedString() +
+                "' in a new window because the request was made in a sandboxed "
+                "frame whose 'allow-popups' permission is not set."));
     return nullptr;
   }
 
   bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
-      WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts);
-  const SandboxFlags sandbox_flags =
+      network::mojom::blink::WebSandboxFlags::
+          kPropagatesToAuxiliaryBrowsingContexts);
+  network::mojom::blink::WebSandboxFlags sandbox_flags =
       propagate_sandbox ? opener_frame.GetDocument()->GetSandboxFlags()
-                        : WebSandboxFlags::kNone;
-  bool not_sandboxed =
-      opener_frame.GetDocument()->GetSandboxFlags() == WebSandboxFlags::kNone;
+                        : network::mojom::blink::WebSandboxFlags::kNone;
+  bool not_sandboxed = opener_frame.GetDocument()->GetSandboxFlags() ==
+                       network::mojom::blink::WebSandboxFlags::kNone;
   FeaturePolicy::FeatureState opener_feature_state =
-      (not_sandboxed || propagate_sandbox)
-          ? opener_frame.GetDocument()->GetFeaturePolicy()->GetFeatureState()
-          : FeaturePolicy::FeatureState();
+      (not_sandboxed || propagate_sandbox) ? opener_frame.GetSecurityContext()
+                                                 ->GetFeaturePolicy()
+                                                 ->GetFeatureState()
+                                           : FeaturePolicy::FeatureState();
 
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();

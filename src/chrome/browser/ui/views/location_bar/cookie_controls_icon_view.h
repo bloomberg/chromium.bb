@@ -12,16 +12,21 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 
 // View for the cookie control icon in the Omnibox.
 class CookieControlsIconView : public PageActionIconView,
                                public CookieControlsView {
  public:
-  explicit CookieControlsIconView(PageActionIconView::Delegate* delegate);
+  CookieControlsIconView(
+      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+      PageActionIconView::Delegate* page_action_icon_delegate);
   ~CookieControlsIconView() override;
 
   // CookieControlsUI:
-  void OnStatusChanged(CookieControlsController::Status status,
+  void OnStatusChanged(CookieControlsStatus status,
+                       CookieControlsEnforcement enforcement,
+
                        int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 
@@ -33,13 +38,13 @@ class CookieControlsIconView : public PageActionIconView,
  protected:
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const char* GetClassName() const override;
 
  private:
   bool HasAssociatedBubble() const;
   bool ShouldBeVisible() const;
 
-  CookieControlsController::Status status_ =
-      CookieControlsController::Status::kUninitialized;
+  CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
   bool has_blocked_cookies_ = false;
 
   std::unique_ptr<CookieControlsController> controller_;

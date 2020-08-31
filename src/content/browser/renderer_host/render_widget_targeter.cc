@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
 
 namespace content {
@@ -24,7 +24,7 @@ namespace {
 
 gfx::PointF ComputeEventLocation(const blink::WebInputEvent& event) {
   if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-      event.GetType() == blink::WebInputEvent::kMouseWheel) {
+      event.GetType() == blink::WebInputEvent::Type::kMouseWheel) {
     return static_cast<const blink::WebMouseEvent&>(event).PositionInWidget();
   }
   if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
@@ -106,7 +106,7 @@ RenderWidgetTargeter::TargetingRequest::TargetingRequest(
     const ui::LatencyInfo& latency) {
   this->root_view = std::move(root_view);
   this->location = ComputeEventLocation(event);
-  this->event = ui::WebInputEventTraits::Clone(event);
+  this->event = event.Clone();
   this->latency = latency;
 }
 
@@ -139,21 +139,11 @@ bool RenderWidgetTargeter::TargetingRequest::MergeEventIfPossible(
     const blink::WebInputEvent& new_event) {
   if (event && !blink::WebInputEvent::IsTouchEventType(new_event.GetType()) &&
       !blink::WebInputEvent::IsGestureEventType(new_event.GetType()) &&
-      ui::CanCoalesce(new_event, *event.get())) {
-    ui::Coalesce(new_event, event.get());
+      event->CanCoalesce(new_event)) {
+    event->Coalesce(new_event);
     return true;
   }
   return false;
-}
-
-void RenderWidgetTargeter::TargetingRequest::StartQueueingTimeTracker() {
-  tracker =
-      std::make_unique<TracingUmaTracker>("Event.AsyncTargeting.TimeInQueue");
-}
-
-void RenderWidgetTargeter::TargetingRequest::StopQueueingTimeTracker() {
-  if (tracker)
-    tracker->StopAndRecord();
 }
 
 bool RenderWidgetTargeter::TargetingRequest::IsWebInputEventRequest() const {
@@ -193,7 +183,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency) {
   DCHECK(blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-         event.GetType() == blink::WebInputEvent::kMouseWheel ||
+         event.GetType() == blink::WebInputEvent::Type::kMouseWheel ||
          blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
          (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
           (static_cast<const blink::WebGestureEvent&>(event).SourceDevice() ==
@@ -223,7 +213,6 @@ void RenderWidgetTargeter::FindTargetAndCallback(
 
 void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
   if (request_in_flight_) {
-    request.StartQueueingTimeTracker();
     requests_.push(std::move(request));
     return;
   }
@@ -237,6 +226,13 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
                  ? middle_click_result_
                  : delegate_->FindTargetSynchronously(request_target,
                                                       *request.GetEvent());
+    // |result.target_location| is utilized to update the position in widget for
+    // an event. If we are in autoscroll mode, we used cached data. So we need
+    // to update the target location of the |result|.
+    if (is_autoscroll_in_progress_) {
+      result.target_location = request_target_location;
+    }
+
     if (!is_autoscroll_in_progress_ &&
         IsMouseMiddleClick(*request.GetEvent())) {
       if (!result.should_query_view)
@@ -340,7 +336,6 @@ void RenderWidgetTargeter::FlushEventQueue() {
     if (!request.GetRootView())
       continue;
 
-    request.StopQueueingTimeTracker();
     // Only notify the delegate once that the current event queue is being
     // flushed. Once all the events are flushed, notify the delegate again.
     if (!events_being_flushed) {

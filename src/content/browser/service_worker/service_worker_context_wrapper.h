@@ -66,16 +66,16 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
   using FindRegistrationCallback =
-      ServiceWorkerStorage::FindRegistrationCallback;
+      ServiceWorkerRegistry::FindRegistrationCallback;
   using GetRegistrationsCallback =
-      ServiceWorkerStorage::GetRegistrationsCallback;
+      ServiceWorkerRegistry::GetRegistrationsCallback;
   using GetRegistrationsInfosCallback =
-      ServiceWorkerStorage::GetRegistrationsInfosCallback;
-  using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
+      ServiceWorkerRegistry::GetRegistrationsInfosCallback;
+  using GetUserDataCallback = ServiceWorkerRegistry::GetUserDataCallback;
   using GetUserKeysAndDataCallback =
-      ServiceWorkerStorage::GetUserKeysAndDataCallback;
+      ServiceWorkerRegistry::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =
-      ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback;
+      ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback;
 
   explicit ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
@@ -159,6 +159,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
                              CheckHasServiceWorkerCallback callback) override;
+  void CheckOfflineCapability(const GURL& url,
+                              CheckOfflineCapabilityCallback callback) override;
+
   void ClearAllServiceWorkersForTest(base::OnceClosure callback) override;
   void StartWorkerForScope(const GURL& scope,
                            StartWorkerCallback info_callback,
@@ -337,7 +340,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class FakeServiceWorkerContextWrapper;
   friend class ServiceWorkerClientsApiBrowserTest;
   friend class ServiceWorkerInternalsUI;
-  friend class ServiceWorkerNavigationHandleCore;
+  friend class ServiceWorkerMainResourceHandleCore;
   friend class ServiceWorkerProcessManager;
   friend class ServiceWorkerRequestHandler;
   friend class ServiceWorkerVersionBrowserTest;
@@ -388,6 +391,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidCheckHasServiceWorker(CheckHasServiceWorkerCallback callback,
                                 content::ServiceWorkerCapability status);
+  void DidCheckOfflineCapability(CheckOfflineCapabilityCallback callback,
+                                 content::OfflineCapability status);
 
   void DidFindRegistrationForUpdate(
       blink::ServiceWorkerStatusCode status,

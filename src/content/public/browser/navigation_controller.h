@@ -24,6 +24,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -115,11 +116,28 @@ class NavigationController {
 
   // Extra optional parameters for LoadURLWithParams.
   struct CONTENT_EXPORT LoadURLParams {
+    explicit LoadURLParams(const GURL& url);
+
+    // Copies |open_url_params| into LoadURLParams, attempting to copy all
+    // fields that are present in both structs (some properties are ignored
+    // because they are unique to LoadURLParams or OpenURLParams).
+    explicit LoadURLParams(const OpenURLParams& open_url_params);
+
+    ~LoadURLParams();
+
     // The url to load. This field is required.
     GURL url;
 
+    // The routing id of the initiator of the navigation if the
+    // navigation was initiated through trusted, non-web-influenced UI (e.g. via
+    // omnibox, the bookmarks bar, local NTP, etc.). This frame is not
+    // guaranteed to exist at any point during navigation. This can be an
+    // invalid id if the navigation was not associated with a frame, or if the
+    // initiating frame did not exist by the time navigation started.
+    GlobalFrameRoutingId initiator_routing_id;
+
     // The origin of the initiator of the navigation or base::nullopt if the
-    // navigation was initiated through through trusted, non-web-influenced UI
+    // navigation was initiated through trusted, non-web-influenced UI
     // (e.g. via omnibox, the bookmarks bar, local NTP, etc.).
     //
     // All renderer-initiated navigations must have a non-null
@@ -238,14 +256,9 @@ class NavigationController {
     // Indicates the reload type of this navigation.
     ReloadType reload_type = ReloadType::NONE;
 
-    explicit LoadURLParams(const GURL& url);
-
-    // Copies |open_url_params| into LoadURLParams, attempting to copy all
-    // fields that are present in both structs (some properties are ignored
-    // because they are unique to LoadURLParams or OpenURLParams).
-    explicit LoadURLParams(const OpenURLParams& open_url_params);
-
-    ~LoadURLParams();
+    // Impression info associated with this navigation. Should only be populated
+    // for navigations originating from a link click.
+    base::Optional<Impression> impression;
 
     DISALLOW_COPY_AND_ASSIGN(LoadURLParams);
   };

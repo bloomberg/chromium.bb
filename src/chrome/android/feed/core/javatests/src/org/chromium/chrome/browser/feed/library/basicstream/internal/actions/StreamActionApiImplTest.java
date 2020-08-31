@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.actions;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -23,7 +24,9 @@ import android.view.View;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,6 +53,8 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdism
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.StreamContentLoggingData;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
 import org.chromium.chrome.browser.feed.library.testing.sharedstream.contextmenumanager.FakeContextMenuManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAction;
@@ -155,6 +160,9 @@ public class StreamActionApiImplTest {
     private StreamActionApiImpl mStreamActionApi;
     private View mView;
 
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
     @Before
     public void setup() {
         initMocks(this);
@@ -237,6 +245,16 @@ public class StreamActionApiImplTest {
     }
 
     @Test
+    public void testHandleBlockContent() {
+        List<StreamDataOperation> streamDataOperations =
+                Collections.singletonList(StreamDataOperation.getDefaultInstance());
+        mStreamActionApi.handleBlockContent(streamDataOperations, ACTION_PAYLOAD);
+
+        verify(mActionManager).dismiss(streamDataOperations, SESSION_ID);
+        verify(mActionManager).createAndUploadAction(CONTENT_ID, ACTION_PAYLOAD);
+    }
+
+    @Test
     public void testOnClientAction() {
         mStreamActionApi.onClientAction(ActionType.OPEN_URL);
 
@@ -271,6 +289,59 @@ public class StreamActionApiImplTest {
         mStreamActionApi.onElementView(ElementType.INTEREST_HEADER.getNumber());
 
         verify(mViewElementActionHandler).onElementView(ElementType.INTEREST_HEADER.getNumber());
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportClickAction_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportClickAction(contentId, ACTION_PAYLOAD);
+
+        verify(mActionManager).createAndUploadAction(contentId, ACTION_PAYLOAD);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testNoReportClickAction_withoutFeature() {
+        mStreamActionApi.reportClickAction("contentId", ACTION_PAYLOAD);
+
+        verify(mActionManager, never())
+                .createAndUploadAction(anyString(), any(ActionPayload.class));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewVisible_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportViewVisible(mView, contentId, ACTION_PAYLOAD);
+
+        verify(mActionManager).onViewVisible(mView, contentId, ACTION_PAYLOAD);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewVisible_withoutFeature() {
+        mStreamActionApi.reportViewHidden(mView, "contentId");
+
+        verify(mActionManager, never())
+                .onViewVisible(any(View.class), anyString(), any(ActionPayload.class));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewHidden_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportViewHidden(mView, contentId);
+
+        verify(mActionManager).onViewHidden(mView, contentId);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewHidden_withoutFeature() {
+        mStreamActionApi.reportViewHidden(mView, "contentId");
+
+        verify(mActionManager, never()).onViewHidden(any(View.class), anyString());
     }
 
     @Test

@@ -5,28 +5,31 @@
 #include "chrome/browser/download/android/download_controller.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/DownloadController_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/android/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/android/download_utils.h"
+#include "chrome/browser/download/android/mixed_content_download_infobar_delegate.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
@@ -230,6 +233,18 @@ void DownloadController::RecordStoragePermission(StoragePermissionType type) {
 }
 
 // static
+void DownloadController::CloseTabIfEmpty(content::WebContents* web_contents) {
+  if (!web_contents)
+    return;
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  if (tab && !tab->GetJavaObject().is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
+  }
+}
+
+// static
 DownloadController* DownloadController::GetInstance() {
   return base::Singleton<DownloadController>::get();
 }
@@ -264,7 +279,7 @@ void DownloadController::AcquireFileAccessPermission(
   RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
   AcquirePermissionCallback callback(base::BindOnce(
       &OnRequestFileAccessResult, web_contents_getter,
-      base::BindOnce(&OnStoragePermissionDecided, base::Passed(&cb))));
+      base::BindOnce(&OnStoragePermissionDecided, std::move(cb))));
   // Make copy on the heap so we can pass the pointer through JNI.
   intptr_t callback_id = reinterpret_cast<intptr_t>(
       new AcquirePermissionCallback(std::move(callback)));
@@ -307,8 +322,9 @@ void DownloadController::StartAndroidDownload(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AcquireFileAccessPermission(
-      wc_getter, base::Bind(&DownloadController::StartAndroidDownloadInternal,
-                            base::Unretained(this), wc_getter, info));
+      wc_getter,
+      base::BindOnce(&DownloadController::StartAndroidDownloadInternal,
+                     base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::StartAndroidDownloadInternal(
@@ -341,11 +357,7 @@ void DownloadController::StartAndroidDownloadInternal(
       env, jurl, juser_agent, jfile_name, jmime_type, jcookie, jreferer);
 
   WebContents* web_contents = wc_getter.Run();
-  if (web_contents) {
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    if (tab && !tab->GetJavaObject().is_null())
-      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
-  }
+  CloseTabIfEmpty(web_contents);
 }
 
 bool DownloadController::HasFileAccessPermission() {
@@ -356,20 +368,11 @@ bool DownloadController::HasFileAccessPermission() {
 }
 
 void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
-  // For dangerous item, we need to show the dangerous infobar before the
-  // download can start.
+  // For dangerous or mixed-content downloads, we need to show the dangerous
+  // infobar before the download can start.
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!download_item->IsDangerous())
+  if (!download_item->IsDangerous() && !download_item->IsMixedContent())
     Java_DownloadController_onDownloadStarted(env);
-
-  WebContents* web_contents =
-      content::DownloadItemUtils::GetWebContents(download_item);
-  if (web_contents) {
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    if (tab && !tab->GetJavaObject().is_null()) {
-      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
-    }
-  }
 
   // Register for updates to the DownloadItem.
   download_item->RemoveObserver(this);
@@ -397,6 +400,14 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
     OnDangerousDownload(item);
+    return;
+  }
+
+  if (item->IsMixedContent() && (item->GetState() != DownloadItem::CANCELLED)) {
+    // Don't show a notification for a mixed content download, either.
+    // Note: Mixed content is less scary than a Dangerous download, so check for
+    // danger first.
+    OnMixedContentDownload(item);
     return;
   }
 
@@ -453,6 +464,24 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
       InfoBarService::FromWebContents(web_contents), item);
 }
 
+void DownloadController::OnMixedContentDownload(DownloadItem* item) {
+  WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
+  if (!web_contents) {
+    auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
+        BrowserContext::GetDownloadManager(
+            content::DownloadItemUtils::GetBrowserContext(item)));
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
+                       item->GetGuid()));
+    item->RemoveObserver(this);
+    return;
+  }
+
+  MixedContentDownloadInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), item);
+}
+
 void DownloadController::StartContextMenuDownload(
     const ContextMenuParams& params,
     WebContents* web_contents,
@@ -465,8 +494,8 @@ void DownloadController::StartContextMenuDownload(
       base::Bind(&GetWebContents, process_id, routing_id));
 
   AcquireFileAccessPermission(
-      wc_getter, base::Bind(&CreateContextMenuDownload, wc_getter, params,
-                            is_link, extra_headers));
+      wc_getter, base::BindOnce(&CreateContextMenuDownload, wc_getter, params,
+                                is_link, extra_headers));
 }
 
 bool DownloadController::IsInterruptedDownloadAutoResumable(

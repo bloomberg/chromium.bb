@@ -29,7 +29,6 @@ class DOMWindowLaunchQueue final
   static const char kSupplementName[];
 
   explicit DOMWindowLaunchQueue();
-  ~DOMWindowLaunchQueue();
 
   // IDL Interface.
   static Member<LaunchQueue> launchQueue(LocalDOMWindow&);
@@ -37,7 +36,7 @@ class DOMWindowLaunchQueue final
   static void UpdateLaunchFiles(LocalDOMWindow*,
                                 HeapVector<Member<NativeFileSystemHandle>>);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static DOMWindowLaunchQueue* FromState(LocalDOMWindow* window);

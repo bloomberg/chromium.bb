@@ -14,15 +14,16 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** The coordinator to control the explore surface. */
-class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDelegate {
+class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
     private final ChromeActivity mActivity;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private final FeedSurfaceCreator mFeedSurfaceCreator;
@@ -65,7 +66,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         return mFeedSurfaceCreator;
     }
 
-    // Implements FeedSurfaceCoordinator.FeedSurfaceDelegate.
+    // Implements FeedSurfaceDelegate.
     @Override
     public StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity) {
         return new ExploreSurfaceStreamLifecycleManager(stream, activity, mHasHeader);
@@ -81,22 +82,28 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         if (mExploreSurfaceNavigationDelegate == null) {
             mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(mActivity);
         }
-
+        Profile profile = Profile.getLastUsedRegularProfile();
         ExploreSurfaceActionHandler exploreSurfaceActionHandler =
                 new ExploreSurfaceActionHandler(mExploreSurfaceNavigationDelegate,
                         FeedProcessScopeFactory.getFeedConsumptionObserver(),
-                        FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                        FeedProcessScopeFactory.getFeedLoggingBridge());
+                        FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, profile);
 
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
-            sectionHeaderView =
-                    (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+                sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                        R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+            } else {
+                sectionHeaderView =
+                        (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+            }
         }
-        FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity, null,
-                null, null, sectionHeaderView, exploreSurfaceActionHandler, isInNightMode, this);
+        FeedSurfaceCoordinator feedSurfaceCoordinator =
+                new FeedSurfaceCoordinator(mActivity, mActivity.getSnackbarManager(),
+                        mActivity.getTabModelSelector(), mActivity.getActivityTabProvider(), null,
+                        null, sectionHeaderView, exploreSurfaceActionHandler, isInNightMode, this,
+                        mExploreSurfaceNavigationDelegate, profile);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

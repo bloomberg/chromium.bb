@@ -70,12 +70,6 @@ namespace {
 const char kAgentPath[] = "/org/chromium/bluetooth_agent";
 const char kGattApplicationObjectPath[] = "/gatt_application";
 
-#if defined(OS_CHROMEOS)
-// Twice the period that field trial configs are fetched at.
-constexpr base::TimeDelta kSetLongTermKeysAfterFirstTimeInstallDuration =
-    base::TimeDelta::FromMinutes(60);
-#endif
-
 void OnUnregisterAgentError(const std::string& error_name,
                             const std::string& error_message) {
   // It's okay if the agent didn't exist, it means we never saw an adapter.
@@ -129,9 +123,8 @@ device::BluetoothDevice::ManufacturerDataMap ConvertManufacturerDataMap(
 namespace device {
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return bluez::BluetoothAdapterBlueZ::CreateAdapter(std::move(init_callback));
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return bluez::BluetoothAdapterBlueZ::CreateAdapter();
 }
 
 }  // namespace device
@@ -186,11 +179,23 @@ void ResetAdvertisingErrorCallbackConnector(
 }  // namespace
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
-    InitCallback init_callback) {
-  BluetoothAdapterBlueZ* adapter =
-      new BluetoothAdapterBlueZ(std::move(init_callback));
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+scoped_refptr<BluetoothAdapterBlueZ> BluetoothAdapterBlueZ::CreateAdapter() {
+  return base::WrapRefCounted(new BluetoothAdapterBlueZ());
+}
+
+void BluetoothAdapterBlueZ::Initialize(base::OnceClosure callback) {
+  init_callback_ = std::move(callback);
+
+  // Can't initialize the adapter until DBus clients are ready.
+  if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&BluetoothAdapterBlueZ::Init,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
+      base::BindRepeating(&BluetoothAdapterBlueZ::Init,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::Shutdown() {
@@ -251,29 +256,17 @@ void BluetoothAdapterBlueZ::Shutdown() {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
       ->UnregisterAgent(dbus::ObjectPath(kAgentPath), base::DoNothing(),
-                        base::Bind(&OnUnregisterAgentError));
+                        base::BindOnce(&OnUnregisterAgentError));
 
   agent_.reset();
 
   dbus_is_shutdown_ = true;
 }
 
-BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(InitCallback init_callback)
-    : init_callback_(std::move(init_callback)),
-      initialized_(false),
-      dbus_is_shutdown_(false) {
+BluetoothAdapterBlueZ::BluetoothAdapterBlueZ()
+    : initialized_(false), dbus_is_shutdown_(false) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = device::BluetoothSocketThread::Get();
-
-  // Can't initialize the adapter until DBus clients are ready.
-  if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BluetoothAdapterBlueZ::Init,
-                                  weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-  bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
-      base::Bind(&BluetoothAdapterBlueZ::Init, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::Init() {
@@ -343,6 +336,19 @@ std::string BluetoothAdapterBlueZ::GetName() const {
   return properties->alias.value();
 }
 
+std::string BluetoothAdapterBlueZ::GetSystemName() const {
+  if (!IsPresent())
+    return std::string();
+
+  bluez::BluetoothAdapterClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothAdapterClient()
+          ->GetProperties(object_path_);
+  DCHECK(properties);
+
+  return properties ? properties->name.value() : std::string();
+}
+
 void BluetoothAdapterBlueZ::SetName(const std::string& name,
                                     const base::Closure& callback,
                                     const ErrorCallback& error_callback) {
@@ -355,9 +361,9 @@ void BluetoothAdapterBlueZ::SetName(const std::string& name,
       ->GetBluetoothAdapterClient()
       ->GetProperties(object_path_)
       ->alias.Set(
-          name,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          name, base::BindOnce(
+                    &BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
 bool BluetoothAdapterBlueZ::IsInitialized() const {
@@ -396,8 +402,9 @@ void BluetoothAdapterBlueZ::SetPowered(bool powered,
       ->GetProperties(object_path_)
       ->powered.Set(
           powered,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         error_callback));
 }
 
 bool BluetoothAdapterBlueZ::IsDiscoverable() const {
@@ -428,8 +435,9 @@ void BluetoothAdapterBlueZ::SetDiscoverable(
       ->GetProperties(object_path_)
       ->discoverable.Set(
           discoverable,
-          base::Bind(&BluetoothAdapterBlueZ::OnSetDiscoverable,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoverable,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         error_callback));
 }
 
 uint32_t BluetoothAdapterBlueZ::GetDiscoverableTimeout() const {
@@ -445,6 +453,13 @@ uint32_t BluetoothAdapterBlueZ::GetDiscoverableTimeout() const {
 }
 
 bool BluetoothAdapterBlueZ::IsDiscovering() const {
+  if (!IsPresent())
+    return false;
+
+  return NumScanningDiscoverySessions() > 0;
+}
+
+bool BluetoothAdapterBlueZ::IsDiscoveringForTesting() const {
   if (!IsPresent())
     return false;
 
@@ -555,7 +570,7 @@ void BluetoothAdapterBlueZ::SetAdvertisingInterval(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->SetAdvertisingInterval(
           object_path_, min_ms, max_ms, callback,
-          base::Bind(&SetIntervalErrorCallbackConnector, error_callback));
+          base::BindOnce(&SetIntervalErrorCallbackConnector, error_callback));
 }
 
 void BluetoothAdapterBlueZ::ResetAdvertising(
@@ -564,9 +579,9 @@ void BluetoothAdapterBlueZ::ResetAdvertising(
   DCHECK(bluez::BluezDBusManager::Get());
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
-      ->ResetAdvertising(
-          object_path_, callback,
-          base::Bind(&ResetAdvertisingErrorCallbackConnector, error_callback));
+      ->ResetAdvertising(object_path_, callback,
+                         base::BindOnce(&ResetAdvertisingErrorCallbackConnector,
+                                        error_callback));
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(
@@ -637,6 +652,11 @@ void BluetoothAdapterBlueZ::DeviceAdded(const dbus::ObjectPath& object_path) {
   DCHECK(devices_.find(device_bluez->GetAddress()) == devices_.end());
 
   devices_[device_bluez->GetAddress()] = base::WrapUnique(device_bluez);
+
+  if (properties->rssi.is_valid() && properties->eir.is_valid()) {
+    NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
+                                      properties->eir.value());
+  }
 
   for (auto& observer : observers_)
     observer.DeviceAdded(this, device_bluez);
@@ -712,12 +732,15 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
   if (property_name == properties->mtu.name())
     NotifyDeviceMTUChanged(device_bluez, properties->mtu.value());
 
-  // We use the RSSI as a proxy for receiving an advertisement because it's
-  // usually updated whenever an advertisement is received.
-  if (property_name == properties->rssi.name() && properties->rssi.is_valid() &&
-      properties->eir.is_valid())
+  // Bluez does not currently provide an explicit signal for an advertisement
+  // packet being received. Currently, it implicitly does so by notifying of an
+  // RSSI change. We also listen for whether the EIR packet data has changed.
+  if ((property_name == properties->rssi.name() ||
+       property_name == properties->eir.name()) &&
+      properties->rssi.is_valid() && properties->eir.is_valid()) {
     NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
                                       properties->eir.value());
+  }
 
   if (property_name == properties->connected.name())
     NotifyDeviceConnectedStateChanged(device_bluez,
@@ -775,12 +798,13 @@ void BluetoothAdapterBlueZ::AgentManagerAdded(
   BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
-      ->RegisterAgent(dbus::ObjectPath(kAgentPath),
-                      bluetooth_agent_manager::kKeyboardDisplayCapability,
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgent,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
-                                 weak_ptr_factory_.GetWeakPtr()));
+      ->RegisterAgent(
+          dbus::ObjectPath(kAgentPath),
+          bluetooth_agent_manager::kKeyboardDisplayCapability,
+          base::BindOnce(&BluetoothAdapterBlueZ::OnRegisterAgent,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BluetoothAdapterBlueZ::OnRegisterAgentError,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::AgentManagerRemoved(
@@ -936,10 +960,10 @@ void BluetoothAdapterBlueZ::OnRegisterAgent() {
       ->GetBluetoothAgentManagerClient()
       ->RequestDefaultAgent(
           dbus::ObjectPath(kAgentPath),
-          base::Bind(&BluetoothAdapterBlueZ::OnRequestDefaultAgent,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BluetoothAdapterBlueZ::OnRequestDefaultAgentError,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&BluetoothAdapterBlueZ::OnRequestDefaultAgent,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BluetoothAdapterBlueZ::OnRequestDefaultAgentError,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::OnRegisterAgentError(
@@ -972,8 +996,8 @@ void BluetoothAdapterBlueZ::CreateServiceRecord(
       ->GetBluetoothAdapterClient()
       ->CreateServiceRecord(
           object_path_, record, callback,
-          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                         weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothAdapterBlueZ::RemoveServiceRecord(
@@ -984,8 +1008,8 @@ void BluetoothAdapterBlueZ::RemoveServiceRecord(
       ->GetBluetoothAdapterClient()
       ->RemoveServiceRecord(
           object_path_, handle, callback,
-          base::Bind(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
+                         weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 BluetoothDeviceBlueZ* BluetoothAdapterBlueZ::GetDeviceWithPath(
@@ -1149,23 +1173,6 @@ void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
 }
 
 void BluetoothAdapterBlueZ::PresentChanged(bool present) {
-#if defined(OS_CHROMEOS)
-  if (present) {
-    SetLongTermKeys();
-
-    if (!set_long_term_keys_after_first_time_install_timer_.IsRunning()) {
-      // The LTK list in field trials would not yet have been available if we
-      // are in a first-time install situation. Schedule SetLongTermKeys() to be
-      // called again in the future when the field trials will definitely be
-      // available.
-      set_long_term_keys_after_first_time_install_timer_.Start(
-          FROM_HERE, kSetLongTermKeysAfterFirstTimeInstallDuration,
-          base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeys,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-#endif
-
   for (auto& observer : observers_)
     observer.AdapterPresentChanged(this, present);
 }
@@ -1462,9 +1469,9 @@ void BluetoothAdapterBlueZ::OnSetDiscoverable(
       ->GetBluetoothAdapterClient()
       ->GetProperties(object_path_)
       ->discoverable_timeout.Set(
-          0,
-          base::Bind(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+          0, base::BindOnce(&BluetoothAdapterBlueZ::OnPropertyChangeCompleted,
+                            weak_ptr_factory_.GetWeakPtr(), callback,
+                            error_callback));
 }
 
 void BluetoothAdapterBlueZ::OnPropertyChangeCompleted(
@@ -1550,7 +1557,7 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
   // This is the first request to start device discovery.
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StartDiscovery(
       object_path_,
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterBlueZ::OnStartDiscovery,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
@@ -1586,7 +1593,7 @@ void BluetoothAdapterBlueZ::StopScan(DiscoverySessionResultCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StopDiscovery(
       object_path_,
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterBlueZ::OnStopDiscovery,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
@@ -1645,9 +1652,9 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
       ->GetBluetoothAdapterClient()
       ->SetDiscoveryFilter(
           object_path_, dbus_discovery_filter,
-          base::BindRepeating(&BluetoothAdapterBlueZ::OnSetDiscoveryFilter,
-                              weak_ptr_factory_.GetWeakPtr(), callback,
-                              copyable_error_callback),
+          base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoveryFilter,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         copyable_error_callback),
           base::BindOnce(&BluetoothAdapterBlueZ::OnSetDiscoveryFilterError,
                          weak_ptr_factory_.GetWeakPtr(), callback,
                          copyable_error_callback));
@@ -1725,9 +1732,9 @@ void BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter(
       base::AdaptCallbackForRepeating(std::move(error_callback));
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StartDiscovery(
       object_path_,
-      base::BindRepeating(&BluetoothAdapterBlueZ::OnStartDiscovery,
-                          weak_ptr_factory_.GetWeakPtr(), callback,
-                          copyable_error_callback),
+      base::BindOnce(&BluetoothAdapterBlueZ::OnStartDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     copyable_error_callback),
       base::BindOnce(&BluetoothAdapterBlueZ::OnStartDiscoveryError,
                      weak_ptr_factory_.GetWeakPtr(), callback,
                      copyable_error_callback));
@@ -1856,26 +1863,5 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
 
   error_callback.Run(code);
 }
-
-#if defined(OS_CHROMEOS)
-void BluetoothAdapterBlueZ::SetLongTermKeys() {
-  // This method will be called and also queued up again when the adapter
-  // becomes present. See PresentChanged().
-  if (!IsPresent())
-    return;
-
-  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->SetLongTermKeys(
-      object_path_, device::GetBlockedLongTermKeys(),
-      base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeysError,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothAdapterBlueZ::SetLongTermKeysError(
-    const std::string& error_name,
-    const std::string& error_message) {
-  BLUETOOTH_LOG(ERROR) << "Setting long term keys failed: error: " << error_name
-                       << " - " << error_message;
-}
-#endif
 
 }  // namespace bluez

@@ -49,6 +49,13 @@ struct ResolvedFontDescriptor {
     TextIndex fTextStart;
 };
 
+struct BidiRegion {
+    BidiRegion(size_t start, size_t end, uint8_t dir)
+        : text(start, end), direction(dir) { }
+    TextRange text;
+    uint8_t direction;
+};
+
 class TextBreaker {
 public:
     TextBreaker() : fInitialized(false), fPos(-1) {}
@@ -119,7 +126,7 @@ public:
     size_t lineNumber() override { return fLines.size(); }
 
     TextLine& addLine(SkVector offset, SkVector advance, TextRange text, TextRange textWithSpaces,
-                      ClusterRange clusters, ClusterRange clustersWithGhosts, SkScalar AddLineToParagraph,
+                      ClusterRange clusters, ClusterRange clustersWithGhosts, SkScalar widthWithSpaces,
                       InternalLineMetrics sizes);
 
     SkSpan<const char> text() const { return SkSpan<const char>(fText.c_str(), fText.size()); }
@@ -128,32 +135,16 @@ public:
     SkSpan<Block> styles() {
         return SkSpan<Block>(fTextStyles.data(), fTextStyles.size());
     }
+    SkSpan<Placeholder> placeholders() {
+        return SkSpan<Placeholder>(fPlaceholders.data(), fPlaceholders.size());
+    }
     SkSpan<TextLine> lines() { return SkSpan<TextLine>(fLines.data(), fLines.size()); }
     const ParagraphStyle& paragraphStyle() const { return fParagraphStyle; }
     SkSpan<Cluster> clusters() { return SkSpan<Cluster>(fClusters.begin(), fClusters.size()); }
     sk_sp<FontCollection> fontCollection() const { return fFontCollection; }
+    const SkTHashSet<size_t>& graphemes() const { return fGraphemes; }
+    SkSpan<Codepoint> codepoints(){ return SkSpan<Codepoint>(fCodePoints.begin(), fCodePoints.size()); }
     void formatLines(SkScalar maxWidth);
-
-    void shiftCluster(ClusterIndex index, SkScalar shift, SkScalar lastShift) {
-        auto& cluster = fClusters[index];
-        auto& runShift = fRunShifts[cluster.runIndex()];
-        auto& run = fRuns[cluster.runIndex()];
-        auto start = cluster.startPos();
-        auto end = cluster.endPos();
-        if (!run.leftToRight()) {
-            runShift.fShifts[start] = lastShift;
-            ++start;
-            ++end;
-        }
-        for (size_t pos = start; pos < end; ++pos) {
-            runShift.fShifts[pos] = shift;
-        }
-    }
-
-    SkScalar posShift(RunIndex index, size_t pos) const {
-        if (fRunShifts.count() == 0) return 0.0;
-        return fRunShifts[index].fShifts[pos];
-    }
 
     bool strutEnabled() const { return paragraphStyle().getStrutStyle().getStrutEnabled(); }
     bool strutForceHeight() const {
@@ -181,11 +172,13 @@ public:
     sk_sp<SkPicture> getPicture() { return fPicture; }
     SkRect getBoundaries() const { return fOrigin; }
 
+    SkScalar widthWithTrailingSpaces() { return fMaxWidthWithTrailingSpaces; }
+
     void resetContext();
     void resolveStrut();
-    void resetRunShifts();
     void buildClusterTable();
     void markLineBreaks();
+    void spaceGlyphs();
     bool shapeTextIntoEndlessLine();
     void breakShapedTextIntoLines(SkScalar maxWidth);
     void paintLinesIntoPicture();
@@ -196,8 +189,17 @@ public:
     void updateForegroundPaint(size_t from, size_t to, SkPaint paint) override;
     void updateBackgroundPaint(size_t from, size_t to, SkPaint paint) override;
 
-    InternalLineMetrics computeEmptyMetrics();
+    InternalLineMetrics getEmptyMetrics() const { return fEmptyMetrics; }
     InternalLineMetrics getStrutMetrics() const { return fStrutMetrics; }
+
+    BlockRange findAllBlocks(TextRange textRange);
+
+    void resetShifts() {
+        for (auto& run : fRuns) {
+            run.resetJustificationShifts();
+            run.resetShifts();
+        }
+    }
 
 private:
     friend class ParagraphBuilder;
@@ -208,12 +210,14 @@ private:
     friend class TextWrapper;
     friend class OneLineShaper;
 
-    void calculateBoundaries(ClusterRange clusters, SkVector offset, SkVector advance);
-    BlockRange findAllBlocks(TextRange textRange);
-    void extractStyles();
+    void calculateBoundaries();
 
     void markGraphemes16();
     void markGraphemes();
+
+    void computeEmptyMetrics();
+
+    bool calculateBidiRegions(SkTArray<BidiRegion>* regions);
 
     // Input
     SkTArray<StyleBlock<SkScalar>> fLetterSpaceStyles;
@@ -228,19 +232,19 @@ private:
 
     // Internal structures
     InternalState fState;
-    SkTArray<Run, false> fRuns;                // kShaped
+    SkTArray<Run, false> fRuns;         // kShaped
     SkTArray<Cluster, true> fClusters;  // kClusterized (cached: text, word spacing, letter spacing, resolved fonts)
     SkTArray<Grapheme, true> fGraphemes16;
     SkTArray<Codepoint, true> fCodePoints;
     SkTHashSet<size_t> fGraphemes;
     size_t fUnresolvedGlyphs;
 
-    SkTArray<RunShifts, false> fRunShifts;
     SkTArray<TextLine, true> fLines;    // kFormatted   (cached: width, max lines, ellipsis, text align)
     sk_sp<SkPicture> fPicture;          // kRecorded    (cached: text styles)
 
     SkTArray<ResolvedFontDescriptor> fFontSwitches;
 
+    InternalLineMetrics fEmptyMetrics;
     InternalLineMetrics fStrutMetrics;
 
     SkScalar fOldWidth;

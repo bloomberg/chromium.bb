@@ -120,7 +120,7 @@ tcu::Vec4 linearToSRGBIfNeeded (const TextureFormat& format, const tcu::Vec4& co
 bool isCombinedDepthStencilType (TextureFormat::ChannelType type)
 {
 	// make sure to update this if type table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	return	type == TextureFormat::UNSIGNED_INT_16_8_8			||
 			type == TextureFormat::UNSIGNED_INT_24_8			||
@@ -162,7 +162,7 @@ bool hasDepthComponent (TextureFormat::ChannelOrder order)
 TextureChannelClass getTextureChannelClass (TextureFormat::ChannelType channelType)
 {
 	// make sure this table is updated if format table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	switch (channelType)
 	{
@@ -196,10 +196,12 @@ TextureChannelClass getTextureChannelClass (TextureFormat::ChannelType channelTy
 		case TextureFormat::SIGNED_INT8:					return TEXTURECHANNELCLASS_SIGNED_INTEGER;
 		case TextureFormat::SIGNED_INT16:					return TEXTURECHANNELCLASS_SIGNED_INTEGER;
 		case TextureFormat::SIGNED_INT32:					return TEXTURECHANNELCLASS_SIGNED_INTEGER;
+		case TextureFormat::SIGNED_INT64:					return TEXTURECHANNELCLASS_SIGNED_INTEGER;
 		case TextureFormat::UNSIGNED_INT8:					return TEXTURECHANNELCLASS_UNSIGNED_INTEGER;
 		case TextureFormat::UNSIGNED_INT16:					return TEXTURECHANNELCLASS_UNSIGNED_INTEGER;
 		case TextureFormat::UNSIGNED_INT24:					return TEXTURECHANNELCLASS_UNSIGNED_INTEGER;
 		case TextureFormat::UNSIGNED_INT32:					return TEXTURECHANNELCLASS_UNSIGNED_INTEGER;
+		case TextureFormat::UNSIGNED_INT64:					return TEXTURECHANNELCLASS_UNSIGNED_INTEGER;
 		case TextureFormat::HALF_FLOAT:						return TEXTURECHANNELCLASS_FLOATING_POINT;
 		case TextureFormat::FLOAT:							return TEXTURECHANNELCLASS_FLOATING_POINT;
 		case TextureFormat::FLOAT64:						return TEXTURECHANNELCLASS_FLOATING_POINT;
@@ -355,7 +357,7 @@ ConstPixelBufferAccess flipYAccess (const ConstPixelBufferAccess& access)
 static Vec2 getFloatChannelValueRange (TextureFormat::ChannelType channelType)
 {
 	// make sure this table is updated if format table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	float cMin = 0.0f;
 	float cMax = 0.0f;
@@ -540,7 +542,7 @@ UVec4 getFormatMaxUintValue (const TextureFormat& format)
 static IVec4 getChannelBitDepth (TextureFormat::ChannelType channelType)
 {
 	// make sure this table is updated if format table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	switch (channelType)
 	{
@@ -615,7 +617,7 @@ IVec4 getTextureFormatBitDepth (const TextureFormat& format)
 static IVec4 getChannelMantissaBitDepth (TextureFormat::ChannelType channelType)
 {
 	// make sure this table is updated if format table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	switch (channelType)
 	{
@@ -1051,7 +1053,7 @@ void fillWithMetaballs (const PixelBufferAccess& dst, int numBalls, deUint32 see
 	}
 }
 
-void copy (const PixelBufferAccess& dst, const ConstPixelBufferAccess& src)
+void copy (const PixelBufferAccess& dst, const ConstPixelBufferAccess& src, const bool clearUnused)
 {
 	DE_ASSERT(src.getSize() == dst.getSize());
 
@@ -1097,7 +1099,7 @@ void copy (const PixelBufferAccess& dst, const ConstPixelBufferAccess& src)
 			for (int x = 0; x < width; x++)
 				dst.setPixDepth(src.getPixDepth(x, y, z), x, y, z);
 		}
-		else if (dstHasDepth && !srcHasDepth)
+		else if (dstHasDepth && !srcHasDepth && clearUnused)
 		{
 			// consistency with color copies
 			tcu::clearDepth(dst, 0.0f);
@@ -1110,7 +1112,7 @@ void copy (const PixelBufferAccess& dst, const ConstPixelBufferAccess& src)
 			for (int x = 0; x < width; x++)
 				dst.setPixStencil(src.getPixStencil(x, y, z), x, y, z);
 		}
-		else if (dstHasStencil && !srcHasStencil)
+		else if (dstHasStencil && !srcHasStencil && clearUnused)
 		{
 			// consistency with color copies
 			tcu::clearStencil(dst, 0u);
@@ -1265,14 +1267,19 @@ deUint32 packRGB999E5 (const tcu::Vec4& color)
 	float	gc		= deFloatClamp(color[1], 0.0f, maxVal);
 	float	bc		= deFloatClamp(color[2], 0.0f, maxVal);
 	float	maxc	= de::max(rc, de::max(gc, bc));
-	int		expp	= de::max(-eBias - 1, deFloorFloatToInt32(deFloatLog2(maxc))) + 1 + eBias;
-	float	e		= deFloatPow(2.0f, (float)(expp-eBias-mBits));
+	int		exps	= de::max(-eBias - 1, deFloorFloatToInt32(deFloatLog2(maxc))) + 1 + eBias;
+	float	e		= deFloatPow(2.0f, (float)(exps-eBias-mBits));
 	int		maxs	= deFloorFloatToInt32(maxc / e + 0.5f);
 
-	deUint32	exps	= maxs == (1<<mBits) ? expp+1 : expp;
-	deUint32	rs		= (deUint32)deClamp32(deFloorFloatToInt32(rc / e + 0.5f), 0, (1<<9)-1);
-	deUint32	gs		= (deUint32)deClamp32(deFloorFloatToInt32(gc / e + 0.5f), 0, (1<<9)-1);
-	deUint32	bs		= (deUint32)deClamp32(deFloorFloatToInt32(bc / e + 0.5f), 0, (1<<9)-1);
+	if (maxs == (1<<mBits))
+	{
+		exps++;
+		e *= 2.0f;
+	}
+
+	deUint32 rs = (deUint32)deFloorFloatToInt32(rc / e + 0.5f);
+	deUint32 gs = (deUint32)deFloorFloatToInt32(gc / e + 0.5f);
+	deUint32 bs = (deUint32)deFloorFloatToInt32(bc / e + 0.5f);
 
 	DE_ASSERT((exps & ~((1<<5)-1)) == 0);
 	DE_ASSERT((rs & ~((1<<9)-1)) == 0);
@@ -1298,7 +1305,7 @@ template <typename AccessType>
 static AccessType toSamplerAccess (const AccessType& baseAccess, Sampler::DepthStencilMode mode)
 {
 	// make sure to update this if type table is updated
-	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 46);
+	DE_STATIC_ASSERT(TextureFormat::CHANNELTYPE_LAST == 48);
 
 	if (!isCombinedDepthStencilType(baseAccess.getFormat().type))
 		return baseAccess;
@@ -1460,7 +1467,7 @@ ViewType getEffectiveTView (const ViewType& src, std::vector<tcu::ConstPixelBuff
 {
 	storage.resize(src.getNumLevels());
 
-	ViewType view = ViewType(src.getNumLevels(), &storage[0]);
+	ViewType view = ViewType(src.getNumLevels(), &storage[0], src.isES2());
 
 	for (int levelNdx = 0; levelNdx < src.getNumLevels(); ++levelNdx)
 		storage[levelNdx] = tcu::getEffectiveDepthStencilAccess(src.getLevel(levelNdx), sampler.depthStencilMode);
@@ -1482,7 +1489,7 @@ tcu::TextureCubeView getEffectiveTView (const tcu::TextureCubeView& src, std::ve
 		&storage[5 * src.getNumLevels()],
 	};
 
-	tcu::TextureCubeView view = tcu::TextureCubeView(src.getNumLevels(), storagePtrs);
+	tcu::TextureCubeView view = tcu::TextureCubeView(src.getNumLevels(), storagePtrs, false);
 
 	for (int faceNdx = 0; faceNdx < tcu::CUBEFACE_LAST; ++faceNdx)
 	for (int levelNdx = 0; levelNdx < src.getNumLevels(); ++levelNdx)

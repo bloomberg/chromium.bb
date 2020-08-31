@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/events/security_policy_violation_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_security_policy_violation_event_init.h"
+
 namespace blink {
 
 namespace {
@@ -37,11 +39,7 @@ const char kReport[] = "report";
 
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
     const AtomicString& type)
-    : Event(type, Bubbles::kYes, Cancelable::kNo, ComposedMode::kComposed),
-      disposition_(kContentSecurityPolicyHeaderTypeEnforce),
-      line_number_(0),
-      column_number_(0),
-      status_code_(0) {}
+    : Event(type, Bubbles::kYes, Cancelable::kNo, ComposedMode::kComposed) {}
 
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
     const AtomicString& type,
@@ -60,8 +58,8 @@ SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
   if (initializer->hasOriginalPolicy())
     original_policy_ = initializer->originalPolicy();
   disposition_ = initializer->disposition() == kReport
-                     ? kContentSecurityPolicyHeaderTypeReport
-                     : kContentSecurityPolicyHeaderTypeEnforce;
+                     ? network::mojom::ContentSecurityPolicyType::kReport
+                     : network::mojom::ContentSecurityPolicyType::kEnforce;
   if (initializer->hasSourceFile())
     source_file_ = initializer->sourceFile();
   if (initializer->hasLineNumber())
@@ -78,9 +76,9 @@ const String& SecurityPolicyViolationEvent::disposition() const {
   DEFINE_STATIC_LOCAL(const String, enforce, (kEnforce));
   DEFINE_STATIC_LOCAL(const String, report, (kReport));
 
-  if (disposition_ == kContentSecurityPolicyHeaderTypeReport)
-    return report;
-  return enforce;
+  return disposition_ == network::mojom::ContentSecurityPolicyType::kReport
+             ? report
+             : enforce;
 }
 
 }  // namespace blink

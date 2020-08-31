@@ -21,7 +21,7 @@
     async function setBreakpointInFileSystemUISourceCode(next) {
       var uiSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
       var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
-      SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+      await SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
       await SourcesTestRunner.waitBreakpointSidebarPane();
       dumpBreakpointSidebarPane();
       next();
@@ -53,11 +53,10 @@
   ]);
 
   function dumpBreakpointSidebarPane() {
-    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
-    var empty = paneElement.querySelector('.gray-info-message');
-    if (empty)
-      return TestRunner.textContentWithLineBreaks(empty);
-    var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+    var pane = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane);
+    if (!pane._emptyElement.classList.contains('hidden'))
+      return TestRunner.textContentWithLineBreaks(pane._emptyElement);
+    var entries = Array.from(pane.contentElement.querySelectorAll('.breakpoint-entry'));
     for (var entry of entries) {
       var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
       TestRunner.addResult('    ' + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber);

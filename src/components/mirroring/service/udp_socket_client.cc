@@ -62,13 +62,13 @@ UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
 UdpSocketClient::~UdpSocketClient() {}
 
 bool UdpSocketClient::SendPacket(media::cast::PacketRef packet,
-                                 const base::RepeatingClosure& cb) {
+                                 base::OnceClosure cb) {
   DVLOG(3) << __func__;
   DCHECK(resume_send_callback_.is_null());
 
   bytes_sent_ += packet->data.size();
   if (!allow_sending_) {
-    resume_send_callback_ = cb;
+    resume_send_callback_ = std::move(cb);
     return false;
   }
 
@@ -101,9 +101,9 @@ int64_t UdpSocketClient::GetBytesSent() {
 }
 
 void UdpSocketClient::StartReceiving(
-    const media::cast::PacketReceiverCallbackWithStatus& packet_receiver) {
+    media::cast::PacketReceiverCallbackWithStatus packet_receiver) {
   DVLOG(1) << __func__;
-  packet_receiver_callback_ = packet_receiver;
+  packet_receiver_callback_ = std::move(packet_receiver);
   network_context_->CreateUDPSocket(udp_socket_.BindNewPipeAndPassReceiver(),
                                     receiver_.BindNewPipeAndPassRemote());
   network::mojom::UDPSocketOptionsPtr options;

@@ -21,7 +21,7 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
  public:
   explicit DeviceOrientationInspectorAgent(InspectedFrames*);
   ~DeviceOrientationInspectorAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Protocol methods.
   protocol::Response setDeviceOrientationOverride(double,
@@ -34,7 +34,7 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
   void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
  private:
-  DeviceOrientationController* Controller();
+  DeviceOrientationController& Controller();
 
   Member<InspectedFrames> inspected_frames_;
   Member<SensorInspectorAgent> sensor_agent_;

@@ -21,11 +21,17 @@
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
-#include "modules/canvaskit/WasmAliases.h"
+#include "modules/canvaskit/WasmCommon.h"
 
 using namespace emscripten;
 
 namespace para = skia::textlayout;
+
+SkColor4f toSkColor4f(uintptr_t /* float* */ cPtr) {
+    float* fourFloats = reinterpret_cast<float*>(cPtr);
+    SkColor4f color = { fourFloats[0], fourFloats[1], fourFloats[2], fourFloats[3] };
+    return color;
+}
 
 struct SimpleFontStyle {
     SkFontStyle::Slant  slant;
@@ -34,13 +40,13 @@ struct SimpleFontStyle {
 };
 
 struct SimpleTextStyle {
-    SkColor backgroundColor;
-    SkColor color;
+    uintptr_t /* float* */ colorPtr;
+    uintptr_t /* float* */ foregroundColorPtr;
+    uintptr_t /* float* */ backgroundColorPtr;
     uint8_t decoration;
     SkScalar decorationThickness;
     SkScalar fontSize;
     SimpleFontStyle fontStyle;
-    SkColor foregroundColor;
 
     uintptr_t /* const char** */ fontFamilies;
     int numFontFamilies;
@@ -48,20 +54,21 @@ struct SimpleTextStyle {
 
 para::TextStyle toTextStyle(const SimpleTextStyle& s) {
     para::TextStyle ts;
-    if (s.color != 0) {
-        ts.setColor(s.color);
+
+    // textstyle.color doesn't support a 4f color, however the foreground and background fields below do.
+    ts.setColor(toSkColor4f(s.colorPtr).toSkColor());
+
+    // It is functionally important that these paints be unset when no value was provided.
+    if (s.foregroundColorPtr) {
+        SkPaint p1;
+        p1.setColor4f(toSkColor4f(s.foregroundColorPtr));
+        ts.setForegroundColor(p1);
     }
 
-    if (s.foregroundColor != 0) {
-        SkPaint p;
-        p.setColor(s.foregroundColor);
-        ts.setForegroundColor(p);
-    }
-
-    if (s.backgroundColor != 0) {
-        SkPaint p;
-        p.setColor(s.backgroundColor);
-        ts.setBackgroundColor(p);
+    if (s.backgroundColorPtr) {
+        SkPaint p2;
+        p2.setColor4f(toSkColor4f(s.backgroundColorPtr));
+        ts.setBackgroundColor(p2);
     }
 
     if (s.fontSize != 0) {
@@ -175,7 +182,7 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .function("layout", &para::ParagraphImpl::layout);
 
     class_<para::ParagraphBuilderImpl>("ParagraphBuilder")
-        .class_function("Make", optional_override([](SimpleParagraphStyle style,
+        .class_function("_Make", optional_override([](SimpleParagraphStyle style,
                                                      sk_sp<SkFontMgr> fontMgr)-> para::ParagraphBuilderImpl {
             auto fc = sk_make_sp<para::FontCollection>();
             fc->setDefaultFontManager(fontMgr);
@@ -188,7 +195,7 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         }))
         .function("build", &para::ParagraphBuilderImpl::Build, allow_raw_pointers())
         .function("pop", &para::ParagraphBuilderImpl::pop)
-        .function("pushStyle",  optional_override([](para::ParagraphBuilderImpl& self,
+        .function("_pushStyle",  optional_override([](para::ParagraphBuilderImpl& self,
                                                      SimpleTextStyle textStyle) {
             auto ts = toTextStyle(textStyle);
             self.pushStyle(ts);
@@ -272,14 +279,14 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .field("textStyle",         &SimpleParagraphStyle::textStyle);
 
     value_object<SimpleTextStyle>("TextStyle")
-        .field("backgroundColor",     &SimpleTextStyle::backgroundColor)
-        .field("color",               &SimpleTextStyle::color)
+        .field("colorPtr",            &SimpleTextStyle::colorPtr)
+        .field("foregroundColorPtr",  &SimpleTextStyle::foregroundColorPtr)
+        .field("backgroundColorPtr",  &SimpleTextStyle::backgroundColorPtr)
         .field("decoration",          &SimpleTextStyle::decoration)
         .field("decorationThickness", &SimpleTextStyle::decorationThickness)
         .field("_fontFamilies",       &SimpleTextStyle::fontFamilies)
         .field("fontSize",            &SimpleTextStyle::fontSize)
         .field("fontStyle",           &SimpleTextStyle::fontStyle)
-        .field("foregroundColor",     &SimpleTextStyle::foregroundColor)
         .field("_numFontFamilies",    &SimpleTextStyle::numFontFamilies);
 
     // The U stands for unsigned - we can't bind a generic/template object, so we have to specify it

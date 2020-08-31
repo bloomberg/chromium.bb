@@ -14,6 +14,7 @@
 #include "net/base/escape.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -79,11 +80,12 @@ void AssistantQueryView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
   // Label.
-  label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
+  label_ = AddChildView(std::make_unique<views::StyledLabel>(
+      base::string16(), /*listener=*/nullptr));
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
   label_->SetLineHeight(kLineHeightDip);
-  AddChildView(label_);
+  label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 }
 
 void AssistantQueryView::SetQuery(const AssistantQuery& query) {

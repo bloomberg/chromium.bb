@@ -13,9 +13,10 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/base/monotonic_clock.h"
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
+#include "chromecast/media/api/cma_backend_factory.h"
+#include "chromecast/media/base/default_monotonic_clock.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
 #include "media/audio/audio_device_description.h"
@@ -98,7 +99,7 @@ void CmaAudioOutputStream::Initialize(
   AudioConfig audio_config;
   audio_config.codec = kCodecPCM;
   audio_config.channel_layout =
-      ChannelLayoutFromChannelNumber(audio_params_.channels());
+      DecoderConfigAdapter::ToChannelLayout(audio_params_.channel_layout());
   audio_config.sample_format = kSampleFormatS16;
   audio_config.bytes_per_channel = 2;
   audio_config.channel_number = audio_params_.channels();
@@ -192,9 +193,9 @@ void CmaAudioOutputStream::Close(base::OnceClosure closure) {
   source_callback_ = nullptr;
   cma_backend_state_ = CmaBackendState::kPendingClose;
 
-  cma_backend_task_runner_.reset();
-  cma_backend_.reset();
   audio_bus_.reset();
+  cma_backend_.reset();
+  cma_backend_task_runner_.reset();
 
   std::move(closure).Run();
 }

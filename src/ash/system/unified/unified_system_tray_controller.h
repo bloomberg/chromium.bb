@@ -117,6 +117,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   // notifications area.
   void ResetToCollapsedIfRequired();
 
+  // Collapse the tray without animating.
+  void CollapseWithoutAnimating();
+
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -131,9 +134,16 @@ class ASH_EXPORT UnifiedSystemTrayController
     return pagination_controller_.get();
   }
 
+  DetailedViewController* detailed_view_controller() {
+    return detailed_view_controller_.get();
+  }
+
  private:
+  friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayControllerTest;
   friend class UnifiedMessageCenterBubbleTest;
+
+  class SystemTrayTransitionAnimationMetricsReporter;
 
   // How the expanded state is toggled. The enum is used to back an UMA
   // histogram and should be treated as append-only.
@@ -177,6 +187,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Starts animation to expand or collapse the bubble.
   void StartAnimation(bool expand);
 
+  // views::AnimationDelegateViews:
+  base::TimeDelta GetAnimationDurationForReporting() const override;
+
   // Model that stores UI specific variables. Unowned.
   UnifiedSystemTrayModel* const model_;
 
@@ -212,6 +225,9 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Animation between expanded and collapsed states.
   std::unique_ptr<gfx::SlideAnimation> animation_;
+
+  std::unique_ptr<SystemTrayTransitionAnimationMetricsReporter>
+      animation_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayController);
 };

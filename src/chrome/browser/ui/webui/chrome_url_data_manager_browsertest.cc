@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -14,6 +16,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_features.h"
+#include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace {
 
@@ -132,4 +137,258 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   // The presence of net error means that navigation did not commit to the
   // original url.
   EXPECT_NE(net::OK, observer.net_error());
+}
+
+class ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled
+    : public InProcessBrowserTest {
+ public:
+  ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled() {
+    feature_list_.InitAndEnableFeature(features::kWebUIReportOnlyTrustedTypes);
+  }
+
+  void CheckTrustedTypesViolation(base::StringPiece url) {
+    std::string message_filter = "*This document requires*assignment*";
+    content::WebContents* content =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebContentsConsoleObserver console_observer(content);
+    console_observer.SetPattern(message_filter);
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ui_test_utils::NavigateToURL(browser(), GURL(url));
+
+    // Round trip to the renderer to ensure that the page is loaded
+    EXPECT_TRUE(content::ExecuteScript(content, "var a = 0;"));
+    EXPECT_TRUE(console_observer.messages().empty());
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verify that there's no Trusted Types violation in chrome://chrome-urls
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInChromeUrls) {
+  CheckTrustedTypesViolation("chrome://chrome-urls");
+}
+
+// Verify that there's no Trusted Types violation in chrome://blob-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInBlobInternals) {
+  CheckTrustedTypesViolation("chrome://blob-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://device-log
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInDeviceLog) {
+  CheckTrustedTypesViolation("chrome://device-log");
+}
+
+// Verify that there's no Trusted Types violation in chrome://devices
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInDevices) {
+  CheckTrustedTypesViolation("chrome://devices");
+}
+
+// Verify that there's no Trusted Types violation in chrome://gcm-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInGCMInternals) {
+  CheckTrustedTypesViolation("chrome://gcm-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://inspect
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInInspect) {
+  CheckTrustedTypesViolation("chrome://inspect");
+}
+
+// Verify that there's no Trusted Types violation in chrome://local-state
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInLocalState) {
+  CheckTrustedTypesViolation("chrome://local-state");
+}
+
+// Verify that there's no Trusted Types violation in chrome://net-export
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInNetExport) {
+  CheckTrustedTypesViolation("chrome://net-export");
+}
+
+// Verify that there's no Trusted Types violation in chrome://policy
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInPolicy) {
+  CheckTrustedTypesViolation("chrome://policy");
+}
+
+// Verify that there's no Trusted Types violation in chrome://predictors
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInPredictors) {
+  CheckTrustedTypesViolation("chrome://predictors");
+}
+
+// Verify that there's no Trusted Types violation in chrome://prefs-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInPrefsInternals) {
+  CheckTrustedTypesViolation("chrome://prefs-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://sandbox
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSandbox) {
+  CheckTrustedTypesViolation("chrome://sandbox");
+}
+
+// Verify that there's no Trusted Types violation in chrome://suggestions
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSuggestions) {
+  CheckTrustedTypesViolation("chrome://suggestions");
+}
+
+// Verify that there's no Trusted Types violation in chrome://terms
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInTerms) {
+  CheckTrustedTypesViolation("chrome://terms");
+}
+
+// Verify that there's no Trusted Types violation in chrome://user-actions
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInUserActions) {
+  CheckTrustedTypesViolation("chrome://user-actions");
+}
+
+// Verify that there's no Trusted Types violation in chrome://webrtc-logs
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInWebrtcLogs) {
+  CheckTrustedTypesViolation("chrome://webrtc-logs");
+}
+
+// Verify that there's no Trusted Types violation in chrome://autofill-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInAutofillInternals) {
+  CheckTrustedTypesViolation("chrome://autofill-internals");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://password-manager-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInPasswordManagerInternals) {
+  CheckTrustedTypesViolation("chrome://password-manager-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://media-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInMediaInternals) {
+  CheckTrustedTypesViolation("chrome://media-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://histograms
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInHistograms) {
+  CheckTrustedTypesViolation("chrome://histograms");
+}
+
+// Verify that there's no Trusted Types violation in chrome://accessibility
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInAccessibility) {
+  CheckTrustedTypesViolation("chrome://accessibility");
+}
+
+// Verify that there's no Trusted Types violation in chrome://process-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInProcessInternals) {
+  CheckTrustedTypesViolation("chrome://process-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://credits
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInCredits) {
+  CheckTrustedTypesViolation("chrome://credits");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://bluetooth-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInBluetoothInternals) {
+  CheckTrustedTypesViolation("chrome://bluetooth-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://media-engagement
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInMediaEngagement) {
+  CheckTrustedTypesViolation("chrome://media-engagement");
+}
+
+// Verify that there's no Trusted Types violation in chrome://site-engagement
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSiteEngagement) {
+  CheckTrustedTypesViolation("chrome://site-engagement");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://translate-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInTranslateInternals) {
+  CheckTrustedTypesViolation("chrome://translate-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://system
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSystem) {
+  CheckTrustedTypesViolation("chrome://system");
+}
+
+// Verify that there's no Trusted Types violation in chrome://usb-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInUSBInternals) {
+  CheckTrustedTypesViolation("chrome://usb-internals");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://interventions-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInInterventionsInternals) {
+  CheckTrustedTypesViolation("chrome://interventions-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://version
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInVersion) {
+  CheckTrustedTypesViolation("chrome://version");
+}
+
+// Verify that there's no Trusted Types violation in chrome://quota-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInQuotaInternals) {
+  CheckTrustedTypesViolation("chrome://quota-internals");
 }

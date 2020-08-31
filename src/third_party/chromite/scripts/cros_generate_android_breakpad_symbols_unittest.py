@@ -7,12 +7,17 @@
 
 from __future__ import print_function
 
+import sys
 import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cros_generate_android_breakpad_symbols
+from chromite.scripts import cros_generate_breakpad_symbols
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Unitests often need access to internals of the thing they test.
@@ -142,3 +147,21 @@ STACK CFI dd32 x23: .cfa -288 + ^ x24: .cfa -280 + ^
           sym_file.name, 42)
       after = osutils.ReadFile(sym_file.name)
       self.assertEqual(after, expected)
+
+
+class MockTests(cros_test_lib.RunCommandTestCase):
+  """Tests that need mocks & RunCommand mocks."""
+
+  def testUnpackGenerateBreakpad(self):
+    """Test UnpackGenerateBreakpad call."""
+    output = """
+INFO: Relocations   : RELA
+INFO: Packed           : 9544 bytes
+INFO: Unpacked         : 66888 bytes
+INFO: Relocations      : 2787 entries
+INFO: Expansion     : 0 bytes
+"""
+    self.PatchObject(cros_generate_breakpad_symbols, 'GenerateBreakpadSymbol',
+                     return_value='/foo.sym')
+    self.rc.AddCmdResult(['relocation_packer', '-u', '/foo'], stdout=output)
+    cros_generate_android_breakpad_symbols._UnpackGenerateBreakpad('/foo')

@@ -19,7 +19,7 @@
 #include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 #if defined(WAYLAND_GBM)
-#include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
+#include "ui/gfx/linux/gbm_device.h"  // nogncheck
 #endif
 
 namespace gfx {
@@ -123,6 +123,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   const std::vector<uint64_t>& GetModifiersForBufferFormat(
       gfx::BufferFormat buffer_format) const;
 
+  // Allocates a unique buffer ID.
+  uint32_t AllocateBufferID();
+
  private:
   void CreateDmabufBasedBufferInternal(base::ScopedFD dmabuf_fd,
                                        gfx::Size size,
@@ -192,6 +195,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   // Protects access to |widget_to_surface_map_|.
   base::Lock lock_;
+
+  // Keeps track of the next unique buffer ID.
+  uint32_t next_buffer_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerGpu);
 };

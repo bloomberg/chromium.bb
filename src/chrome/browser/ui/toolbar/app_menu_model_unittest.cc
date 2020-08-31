@@ -22,8 +22,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/default_theme_provider.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/gfx/color_palette.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -61,15 +65,10 @@ class FakeIconDelegate : public AppMenuIconController::Delegate {
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override {}
-  const ui::ThemeProvider* GetViewThemeProvider() const override {
-    return &theme_provider_;
+  SkColor GetDefaultColorForSeverity(
+      AppMenuIconController::Severity severity) const override {
+    return gfx::kPlaceholderColor;
   }
-  ui::NativeTheme* GetViewNativeTheme() override {
-    return ui::NativeTheme::GetInstanceForNativeUi();
-  }
-
- private:
-  ui::DefaultThemeProvider theme_provider_;
 };
 
 } // namespace
@@ -171,24 +170,25 @@ TEST_F(AppMenuModelTest, Basics) {
 
   // Choose something from the bookmark submenu and make sure it makes it back
   // to the delegate as well.
-  int bookmarksModelIndex = -1;
+  int bookmarks_model_index = -1;
   for (int i = 0; i < itemCount; ++i) {
     if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       // The bookmarks submenu comes after the Tabs and Downloads items.
-      bookmarksModelIndex = i + 2;
+      bookmarks_model_index = i + 2;
       break;
     }
   }
-  EXPECT_GT(bookmarksModelIndex, -1);
-  ui::MenuModel* bookmarksModel = model.GetSubmenuModelAt(bookmarksModelIndex);
-  EXPECT_TRUE(bookmarksModel);
+  EXPECT_GT(bookmarks_model_index, -1);
+  ui::MenuModel* bookmarks_model =
+      model.GetSubmenuModelAt(bookmarks_model_index);
+  EXPECT_TRUE(bookmarks_model);
   // The bookmarks model may be empty until we tell it we're going to show it.
-  bookmarksModel->MenuWillShow();
-  EXPECT_GT(bookmarksModel->GetItemCount(), 1);
+  bookmarks_model->MenuWillShow();
+  EXPECT_GT(bookmarks_model->GetItemCount(), 1);
 
   // Bookmark manager item.
-  bookmarksModel->ActivatedAt(4);
-  EXPECT_TRUE(bookmarksModel->IsEnabledAt(4));
+  bookmarks_model->ActivatedAt(4);
+  EXPECT_TRUE(bookmarks_model->IsEnabledAt(4));
   EXPECT_EQ(model.execute_count_, 1);
   EXPECT_EQ(model.enable_count_, 1);
 }
@@ -222,3 +222,30 @@ TEST_F(AppMenuModelTest, GlobalError) {
   model.ActivatedAt(index2);
   EXPECT_EQ(1, error1->execute_count());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests settings menu items is disabled in the app menu when
+// kSystemFeaturesDisableList is set.
+TEST_F(AppMenuModelTest, DisableSettingsItem) {
+  AppMenuModel model(this, browser());
+  model.Init();
+  int index = model.GetIndexOfCommandId(IDC_OPTIONS);
+  EXPECT_TRUE(model.IsEnabledAt(index));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Append(policy::SystemFeature::BROWSER_SETTINGS);
+  }
+  EXPECT_FALSE(model.IsEnabledAt(index));
+
+  {
+    ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
+                          policy::policy_prefs::kSystemFeaturesDisableList);
+    base::ListValue* list = update.Get();
+    list->Clear();
+  }
+  EXPECT_TRUE(model.IsEnabledAt(index));
+}
+#endif  // defined(OS_CHROMEOS)

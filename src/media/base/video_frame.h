@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "media/base/hdr_metadata.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
@@ -112,8 +113,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     DISALLOW_COPY_AND_ASSIGN(SyncTokenClient);
   };
 
-  // Call prior to CreateFrame to ensure validity of frame configuration. Called
-  // automatically by VideoDecoderConfig::IsValidConfig().
+  // Returns true if frame configuration is valid.
   static bool IsValidConfig(VideoPixelFormat format,
                             StorageType storage_type,
                             const gfx::Size& coded_size,
@@ -312,6 +312,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static size_t AllocationSize(VideoPixelFormat format,
                                const gfx::Size& coded_size);
 
+  // Returns |dimensions| adjusted to appropriate boundaries based on |format|.
+  static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
+                                        const gfx::Size& dimensions);
+
   // Returns the plane gfx::Size (in bytes) for a plane of the given coded size
   // and format.
   static gfx::Size PlaneSize(VideoPixelFormat format,
@@ -370,21 +374,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   //
   // The region is NOT owned by the video frame. Both the region and its
   // associated mapping must outlive this instance.
-  void BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region,
-                            size_t offset = 0);
+  void BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region);
 
   // As above, but the VideoFrame owns the shared memory region as well as the
   // mapping. They will be destroyed with their VideoFrame.
   void BackWithOwnedSharedMemory(base::UnsafeSharedMemoryRegion region,
-                                 base::WritableSharedMemoryMapping mapping,
-                                 size_t offset = 0);
-
-  // Returns the offset into the shared memory where the frame data begins. Only
-  // valid if the frame is backed by shared memory.
-  size_t shared_memory_offset() const {
-    DCHECK(IsValidSharedMemoryFrame());
-    return shared_memory_offset_;
-  }
+                                 base::WritableSharedMemoryMapping mapping);
 
   // Valid for shared memory backed VideoFrames.
   base::UnsafeSharedMemoryRegion* shm_region() {
@@ -411,10 +406,24 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Gets the GpuMemoryBuffer backing the VideoFrame.
   gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const;
 
+  // Returns true if the video frame was created with the given parameters.
+  bool IsSameAllocation(VideoPixelFormat format,
+                        const gfx::Size& coded_size,
+                        const gfx::Rect& visible_rect,
+                        const gfx::Size& natural_size) const;
+
   // Returns the color space of this frame's content.
   gfx::ColorSpace ColorSpace() const;
   void set_color_space(const gfx::ColorSpace& color_space) {
     color_space_ = color_space;
+  }
+
+  const base::Optional<HDRMetadata>& hdr_metadata() const {
+    return hdr_metadata_;
+  }
+
+  void set_hdr_metadata(const base::Optional<HDRMetadata>& hdr_metadata) {
+    hdr_metadata_ = hdr_metadata;
   }
 
   const VideoFrameLayout& layout() const { return layout_; }
@@ -461,7 +470,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   }
 
   const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
-    return ycbcr_info_;
+    return wrapped_frame_ ? wrapped_frame_->ycbcr_info() : ycbcr_info_;
   }
 
   // Returns pointer to the data in the visible region of the frame, for
@@ -544,7 +553,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   gpu::SyncToken UpdateReleaseSyncToken(SyncTokenClient* client);
 
   // Returns a human-readable string describing |*this|.
-  std::string AsHumanReadableString();
+  std::string AsHumanReadableString() const;
 
   // Unique identifier for this video frame; generated at construction time and
   // guaranteed to be unique within a single process.
@@ -578,10 +587,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                     const gfx::Size& coded_size,
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size);
-
-  // Returns |dimensions| adjusted to appropriate boundaries based on |format|.
-  static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
-                                        const gfx::Size& dimensions);
 
   void set_data(size_t plane, uint8_t* ptr) {
     DCHECK(IsValidPlane(format(), plane));
@@ -650,10 +655,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // to is unowned.
   base::UnsafeSharedMemoryRegion* shm_region_ = nullptr;
 
-  // If this is a STORAGE_SHMEM frame, the offset of the data within the shared
-  // memory.
-  size_t shared_memory_offset_ = 0;
-
   // Used if this is a STORAGE_SHMEM frame with owned shared memory. In that
   // case, shm_region_ will refer to this region.
   base::UnsafeSharedMemoryRegion owned_shm_region_;
@@ -694,6 +695,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const int unique_id_;
 
   gfx::ColorSpace color_space_;
+  base::Optional<HDRMetadata> hdr_metadata_;
 
   // Sampler conversion information which is used in vulkan context for android.
   base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;

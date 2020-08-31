@@ -89,7 +89,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
 
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
-        pass.Draw(3, 1, 0, 0);
+        pass.Draw(3);
         pass.EndPass();
     }
 
@@ -101,7 +101,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
 
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
-        pass.Draw(3, 1, 0, 0);
+        pass.Draw(3);
         pass.EndPass();
     }
 
@@ -133,7 +133,7 @@ TEST_P(RenderPassTest, NoCorrespondingFragmentShaderOutputs) {
     {
         // First we draw a blue triangle in the bottom left of renderTarget.
         pass.SetPipeline(pipeline);
-        pass.Draw(3, 1, 0, 0);
+        pass.Draw(3);
     }
 
     {
@@ -153,7 +153,7 @@ TEST_P(RenderPassTest, NoCorrespondingFragmentShaderOutputs) {
             device.CreateRenderPipeline(&descriptor);
 
         pass.SetPipeline(pipelineWithNoFragmentOutput);
-        pass.Draw(3, 1, 0, 0);
+        pass.Draw(3);
     }
 
     pass.EndPass();
@@ -166,8 +166,8 @@ TEST_P(RenderPassTest, NoCorrespondingFragmentShaderOutputs) {
 }
 
 DAWN_INSTANTIATE_TEST(RenderPassTest,
-                      D3D12Backend,
-                      ForceWorkarounds(D3D12Backend, {}, {"use_d3d12_render_pass"}),
-                      MetalBackend,
-                      OpenGLBackend,
-                      VulkanBackend);
+                      D3D12Backend(),
+                      D3D12Backend({}, {"use_d3d12_render_pass"}),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend());

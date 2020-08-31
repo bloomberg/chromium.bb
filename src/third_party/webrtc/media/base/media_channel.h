@@ -22,6 +22,8 @@
 #include "api/audio_options.h"
 #include "api/crypto/frame_decryptor_interface.h"
 #include "api/crypto/frame_encryptor_interface.h"
+#include "api/frame_transformer_interface.h"
+#include "api/media_stream_interface.h"
 #include "api/rtc_error.h"
 #include "api/rtp_parameters.h"
 #include "api/transport/media/media_transport_config.h"
@@ -143,6 +145,7 @@ struct VideoOptions {
   // things, e.g., screencast of a text document and screencast of a
   // youtube video have different needs.
   absl::optional<bool> is_screencast;
+  webrtc::VideoTrackInterface::ContentHint content_hint;
 
  private:
   template <typename T>
@@ -286,6 +289,13 @@ class MediaChannel : public sigslot::has_slots<> {
   virtual webrtc::RTCError SetRtpSendParameters(
       uint32_t ssrc,
       const webrtc::RtpParameters& parameters) = 0;
+
+  virtual void SetEncoderToPacketizerFrameTransformer(
+      uint32_t ssrc,
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer);
+  virtual void SetDepacketizerToDecoderFrameTransformer(
+      uint32_t ssrc,
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer);
 
  protected:
   bool DscpEnabled() const { return enable_dscp_; }
@@ -502,6 +512,7 @@ struct VoiceReceiverInfo : public MediaReceiverInfo {
   uint64_t concealment_events = 0;
   double jitter_buffer_delay_seconds = 0.0;
   uint64_t jitter_buffer_emitted_count = 0;
+  double jitter_buffer_target_delay_seconds = 0.0;
   uint64_t inserted_samples_for_deceleration = 0;
   uint64_t removed_samples_for_acceleration = 0;
   uint64_t fec_packets_received = 0;
@@ -558,6 +569,7 @@ struct VideoSenderInfo : public MediaSenderInfo {
   int send_frame_height = 0;
   int framerate_input = 0;
   int framerate_sent = 0;
+  int aggregated_framerate_sent = 0;
   int nominal_bitrate = 0;
   int adapt_reason = 0;
   int adapt_changes = 0;
@@ -581,8 +593,11 @@ struct VideoSenderInfo : public MediaSenderInfo {
   bool has_entered_low_resolution = false;
   absl::optional<uint64_t> qp_sum;
   webrtc::VideoContentType content_type = webrtc::VideoContentType::UNSPECIFIED;
+  uint32_t frames_sent = 0;
   // https://w3c.github.io/webrtc-stats/#dom-rtcvideosenderstats-hugeframessent
   uint32_t huge_frames_sent = 0;
+  uint32_t aggregated_huge_frames_sent = 0;
+  absl::optional<std::string> rid;
 };
 
 struct VideoReceiverInfo : public MediaReceiverInfo {
@@ -702,16 +717,21 @@ struct VideoMediaInfo {
   ~VideoMediaInfo();
   void Clear() {
     senders.clear();
+    aggregated_senders.clear();
     receivers.clear();
-    bw_estimations.clear();
     send_codecs.clear();
     receive_codecs.clear();
   }
+  // Each sender info represents one "outbound-rtp" stream.In non - simulcast,
+  // this means one info per RtpSender but if simulcast is used this means
+  // one info per simulcast layer.
   std::vector<VideoSenderInfo> senders;
+  // Used for legacy getStats() API's "ssrc" stats and modern getStats() API's
+  // "track" stats. If simulcast is used, instead of having one sender info per
+  // simulcast layer, the metrics of all layers of an RtpSender are aggregated
+  // into a single sender info per RtpSender.
+  std::vector<VideoSenderInfo> aggregated_senders;
   std::vector<VideoReceiverInfo> receivers;
-  // Deprecated.
-  // TODO(holmer): Remove once upstream projects no longer use this.
-  std::vector<BandwidthEstimationInfo> bw_estimations;
   RtpCodecParametersMap send_codecs;
   RtpCodecParametersMap receive_codecs;
 };
@@ -738,6 +758,10 @@ struct RtpParameters {
 
   std::vector<Codec> codecs;
   std::vector<webrtc::RtpExtension> extensions;
+  // For a send stream this is true if we've neogtiated a send direction,
+  // for a receive stream this is true if we've negotiated a receive direction.
+  bool is_stream_active = true;
+
   // TODO(pthatcher): Add streams.
   RtcpParameters rtcp;
 

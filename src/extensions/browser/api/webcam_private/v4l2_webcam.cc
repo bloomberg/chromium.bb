@@ -14,6 +14,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
+#include "base/logging.h"
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
 #define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
@@ -40,10 +41,31 @@
 
 namespace {
 const int kLogitechMenuIndexGoHome = 2;
+const int kLogitechMenuIndexSetHome = 0;
 const int kAverMenuIndexGoHome = 1;
+const int kAverMenuIndexSetHome = 0;
 
 const uvc_menu_info kLogitechCmdMenu[] = {
-  {1, "Set Preset"}, {2, "Get Preset"}, {3, "Go Home"}
+    {1, "Set Home Preset"},
+    {2, "Go Home"},
+    {3, "Go Home"},
+    {0x04, "Set Preset 1"},
+    {0x0C, "Restore Preset 1"},
+    {0x05, "Set Preset 2"},
+    {0x0D, "Restore Preset 2"},
+    {0x06, "Set Preset 3"},
+    {0x0E, "Restore Preset 3"},
+    {0x07, "Set Preset 4"},
+    {0x0F, "Restore Preset 4"},
+    {0x08, "Set Preset 5"},
+    {0x10, "Restore Preset 5"},
+    {0x09, "Set Preset 6"},
+    {0x11, "Restore Preset 6"},
+    {0x0A, "Set Preset 7"},
+    {0x12, "Restore Preset 7"},
+    {0x0B, "Set Preset 8"},
+    {0x13, "Restore Preset 8"},
+
 };
 
 // Preset 0 is equivalent to HOME in Aver cameras.
@@ -285,6 +307,135 @@ void V4L2Webcam::SetTiltDirection(TiltDirection direction,
   }
   callback.Run(
       SetWebcamParameter(fd_.get(), V4L2_CID_TILT_SPEED, direction_value));
+}
+
+void V4L2Webcam::SetHome(const SetPTZCompleteCallback& callback) {
+  if (EnsureLogitechCommandsMapped()) {
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
+                            kLogitechMenuIndexSetHome)) {
+      LOG(WARNING) << "Failed to set HOME preset for Logitech webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+  if (EnsureAverCommandsMapped()) {
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
+                            kAverMenuIndexSetHome)) {
+      LOG(WARNING) << "Failed to set HOME preset for AVer CAM webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+  LOG(WARNING) << "Active webcam does not currently support seting HOME preset";
+  callback.Run(false);
+}
+
+int getLogitechPresetCmdMenuIndex(int preset_number, bool set_preset) {
+  // Preset must be within range [1, 8]
+  if (preset_number < 1 || preset_number > 8) {
+    LOG(WARNING) << "Preset number index for Logitech camera out of range.";
+    return -1;
+  }
+
+  int set_preset_index = preset_number * 2 + 1;
+  return set_preset ? set_preset_index : set_preset_index + 1;
+}
+
+int getAverPresetCmdMenuIndex(int preset_number, bool set_preset) {
+  // Preset must be within range [0, 9]
+  if (preset_number < 0 || preset_number > 9) {
+    LOG(WARNING) << "Preset number index for AVer camera out of range.";
+    return -1;
+  }
+
+  int set_preset_index = 2 * preset_number;
+  return set_preset ? set_preset_index : set_preset_index + 1;
+}
+
+void V4L2Webcam::RestoreCameraPreset(int preset_number,
+                                     const SetPTZCompleteCallback& callback) {
+  if (EnsureLogitechCommandsMapped()) {
+    int menu_index = getLogitechPresetCmdMenuIndex(preset_number, false);
+
+    if (menu_index < 0) {
+      callback.Run(false);
+      return;
+    }
+
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD, menu_index)) {
+      LOG(WARNING) << "Failed to call preset " << preset_number
+                   << " for Logitech webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  } else if (EnsureAverCommandsMapped()) {
+    int menu_index = getAverPresetCmdMenuIndex(preset_number, false);
+
+    if (menu_index < 0) {
+      callback.Run(false);
+      return;
+    }
+
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD, menu_index)) {
+      LOG(WARNING) << "Failed to call preset " << preset_number
+                   << " for AVer webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+
+  LOG(WARNING)
+      << "Active webcam does not currently support calling camera presets.";
+  callback.Run(false);
+}
+
+void V4L2Webcam::SetCameraPreset(int preset_number,
+                                 const SetPTZCompleteCallback& callback) {
+  if (EnsureLogitechCommandsMapped()) {
+    int menu_index = getLogitechPresetCmdMenuIndex(preset_number, true);
+
+    if (menu_index < 0) {
+      callback.Run(false);
+      return;
+    }
+
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD, menu_index)) {
+      LOG(WARNING) << "Failed to set preset " << preset_number
+                   << " for Logitech webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  } else if (EnsureAverCommandsMapped()) {
+    int menu_index = getAverPresetCmdMenuIndex(preset_number, true);
+
+    if (menu_index < 0) {
+      callback.Run(false);
+      return;
+    }
+
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD, menu_index)) {
+      LOG(WARNING) << "Failed to set preset " << preset_number
+                   << " for AVer webcam";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+    return;
+  }
+
+  LOG(WARNING)
+      << "Active webcam does not currently support setting camera presets.";
+  callback.Run(false);
 }
 
 void V4L2Webcam::Reset(bool pan,

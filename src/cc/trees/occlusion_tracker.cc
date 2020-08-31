@@ -20,8 +20,7 @@
 namespace cc {
 
 OcclusionTracker::OcclusionTracker(const gfx::Rect& screen_space_clip_rect)
-    : screen_space_clip_rect_(screen_space_clip_rect) {
-}
+    : screen_space_clip_rect_(screen_space_clip_rect) {}
 
 OcclusionTracker::~OcclusionTracker() = default;
 
@@ -29,15 +28,14 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForLayer(
     const gfx::Transform& draw_transform) const {
   DCHECK(!stack_.empty());
   const StackObject& back = stack_.back();
-  return Occlusion(draw_transform,
-                   back.occlusion_from_outside_target,
+  return Occlusion(draw_transform, back.occlusion_from_outside_target,
                    back.occlusion_from_inside_target);
 }
 
 Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
     const gfx::Transform& draw_transform) const {
   DCHECK(!stack_.empty());
-  if (stack_.size() < 2)
+  if (stack_.size() < 2 || stack_.back().ignores_parent_occlusion)
     return Occlusion();
   // A contributing surface doesn't get occluded by things inside its own
   // surface, so only things outside the surface can occlude it. That occlusion
@@ -49,10 +47,12 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
 
 const RenderSurfaceImpl*
 OcclusionTracker::OcclusionSurfaceForContributingSurface() const {
+  if (stack_.size() < 2 || stack_.back().ignores_parent_occlusion)
+    return nullptr;
   // A contributing surface doesn't get occluded by things inside its own
   // surface, so only things outside the surface can occlude it. That occlusion
   // is found just below the top of the stack (if it exists).
-  return (stack_.size() < 2) ? nullptr : stack_[stack_.size() - 2].target;
+  return stack_[stack_.size() - 2].target;
 }
 
 void OcclusionTracker::EnterLayer(
@@ -158,12 +158,12 @@ void OcclusionTracker::EnterRenderTarget(
       new_target_surface->render_target() == new_target_surface;
 
   bool copy_outside_occlusion_forward =
-      stack_.size() > 1 &&
-      !entering_unoccluded_subtree &&
-      have_transform_from_screen_to_new_target &&
-      !entering_root_target;
-  if (!copy_outside_occlusion_forward)
+      stack_.size() > 1 && !entering_unoccluded_subtree &&
+      have_transform_from_screen_to_new_target && !entering_root_target;
+  if (!copy_outside_occlusion_forward) {
+    stack_.back().ignores_parent_occlusion = true;
     return;
+  }
 
   size_t last_index = stack_.size() - 1;
   gfx::Transform old_target_to_new_target_transform(
@@ -177,6 +177,12 @@ void OcclusionTracker::EnterRenderTarget(
       TransformSurfaceOpaqueRegion(
           stack_[last_index - 1].occlusion_from_inside_target, false,
           gfx::Rect(), old_target_to_new_target_transform));
+}
+
+// A blend mode is occluding if a fully opaque source can fully occlude the
+// destination and the result is also fully opaque.
+static bool IsOccludingBlendMode(SkBlendMode blend_mode) {
+  return blend_mode == SkBlendMode::kSrc || blend_mode == SkBlendMode::kSrcOver;
 }
 
 void OcclusionTracker::FinishedRenderTarget(
@@ -198,7 +204,7 @@ void OcclusionTracker::FinishedRenderTarget(
   // the surface's subtree, then clear the occlusion here so it won't be used.
   if (finished_target_surface->HasMaskingContributingSurface() ||
       finished_target_surface->draw_opacity() < 1 ||
-      !finished_target_surface->UsesDefaultBlendMode() ||
+      !IsOccludingBlendMode(finished_target_surface->BlendMode()) ||
       target_is_only_for_copy_request_or_force_render_surface ||
       finished_target_surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
@@ -223,8 +229,12 @@ static void ReduceOcclusionBelowSurface(
     return;
 
   gfx::Rect affected_area_in_target =
-      contributing_surface->BackdropFilters().MapRectReverse(target_rect,
-                                                             SkMatrix::I());
+      contributing_surface->BackdropFilters().HasFilterOfType(
+          FilterOperation::FilterType::BLUR)
+          ? contributing_surface->BackdropFilters().MapRect(target_rect,
+                                                            SkMatrix::I())
+          : contributing_surface->BackdropFilters().MapRectReverse(
+                target_rect, SkMatrix::I());
   // Unite target_rect because we only care about positive outsets.
   affected_area_in_target.Union(target_rect);
 
@@ -345,6 +355,17 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
 
   SimpleEnclosedRegion opaque_layer_region = layer->VisibleOpaqueRegion();
   if (opaque_layer_region.IsEmpty())
+    return;
+
+  // If the blend mode is not occluding and the effect doesn't have a render
+  // surface, then the layer should not occlude. An example of this would
+  // otherwise be wrong is that this layer is a non-render-surface mask layer
+  // with kDstIn blend mode.
+  const auto* effect_node =
+      layer->layer_tree_impl()->property_trees()->effect_tree.Node(
+          layer->effect_tree_index());
+  if (!effect_node->HasRenderSurface() &&
+      !IsOccludingBlendMode(effect_node->blend_mode))
     return;
 
   DCHECK(layer->visible_layer_rect().Contains(opaque_layer_region.bounds()));

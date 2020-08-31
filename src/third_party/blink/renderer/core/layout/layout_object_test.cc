@@ -86,6 +86,31 @@ TEST_F(LayoutObjectTest, DisplayInlineBlockCreateObject) {
   EXPECT_TRUE(layout_object->IsInline());
 }
 
+TEST_F(LayoutObjectTest, UseCountBackdropFilterAsGroupingProperty) {
+  SetBodyInnerHTML(R"HTML(
+    <style> div { transform-style: preserve-3d; } </style>
+    <div id=target style="backdrop-filter: blur(2px)"></div>
+  )HTML");
+  EXPECT_FALSE(
+      GetLayoutObjectByElementId("target")->StyleRef().HasGroupingProperty());
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kAdditionalGroupingPropertiesForCompat));
+}
+
+TEST_F(LayoutObjectTest, UseCountContainingBlockFixedPosUnderFlattened3D) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform-style: preserve-3d; opacity: 0.9'>
+      <div id=target style='position:fixed'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(target->View(), target->Container());
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kTransformStyleContainingBlockComputedUsedMismatch));
+}
+
 // Containing block test.
 TEST_F(LayoutObjectTest, ContainingBlockLayoutViewShouldBeNull) {
   EXPECT_EQ(nullptr, GetLayoutView().ContainingBlock());
@@ -530,6 +555,7 @@ TEST_F(LayoutObjectTest, VisualRect) {
   class MockLayoutObject : public LayoutObject {
    public:
     MockLayoutObject() : LayoutObject(nullptr) {}
+    ~MockLayoutObject() override { SetBeingDestroyedForTesting(); }
     MOCK_CONST_METHOD0(VisualRectRespectsVisibility, bool());
 
    private:
@@ -856,8 +882,7 @@ TEST_F(LayoutObjectTest, UpdateVisualRectAfterAncestorLayout) {
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     return registry.HasEventHandlers(
         EventHandlerRegistry::EventHandlerClass::kTouchAction);
   }
@@ -930,8 +955,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
     <div id='target'>target</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   Element* iframe_element = GetDocument().QuerySelector("iframe");
   auto* frame_owner_element = To<HTMLFrameOwnerElement>(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
@@ -941,8 +965,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-150px");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();
   EXPECT_EQ(result.InnerNode(), occluder);
 }
@@ -965,8 +988,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
     <div>To keep the image alive when target is set display: none</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   auto* target = GetDocument().getElementById("target");
   auto* target_object = target->GetLayoutObject();
@@ -998,8 +1020,7 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
   EXPECT_FALSE(second_line->SlowFirstChild()->ShouldDoFullPaintInvalidation());
 
   target->setAttribute(html_names::kStyleAttr, "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   target_object = target->GetLayoutObject();
   EXPECT_EQ(nullptr, target_object);
   // The image is still alive because the other div's first line style still
@@ -1064,8 +1085,7 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
   UpdateAllLifecyclePhasesForTest();
 }
 
-// TODO(rego): Test is failing until we can fix https://crbug.com/941180.
-TEST_F(LayoutObjectTest, DISABLED_NeedsLayoutOverflowRecalc) {
+TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 
@@ -1089,7 +1109,7 @@ TEST_F(LayoutObjectTest, DISABLED_NeedsLayoutOverflowRecalc) {
   EXPECT_FALSE(other->NeedsLayoutOverflowRecalc());
 
   auto* target_element = GetDocument().getElementById("target");
-  target_element->SetInnerHTMLFromString("baz");
+  target_element->setInnerHTML("baz");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(wrapper->NeedsLayoutOverflowRecalc());

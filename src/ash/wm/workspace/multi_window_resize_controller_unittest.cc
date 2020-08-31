@@ -18,6 +18,7 @@
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -141,7 +142,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params1.delegate = new TestWidgetDelegate;
   params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params1.bounds = gfx::Rect(100, 200);
-  params1.context = CurrentContext();
+  params1.context = GetContext();
   w1->Init(std::move(params1));
   w1->Show();
 
@@ -150,7 +151,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params2.delegate = new TestWidgetDelegate;
   params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params2.bounds = gfx::Rect(100, 0, 100, 100);
-  params2.context = CurrentContext();
+  params2.context = GetContext();
   w2->Init(std::move(params2));
   w2->Show();
 
@@ -159,7 +160,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params3.delegate = new TestWidgetDelegate;
   params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params3.bounds = gfx::Rect(100, 100, 100, 100);
-  params3.context = CurrentContext();
+  params3.context = GetContext();
   w3->Init(std::move(params3));
   w3->Show();
 
@@ -560,7 +561,7 @@ class TestWindowStateDelegate : public WindowStateDelegate {
 
   // WindowStateDelegate:
   void OnDragStarted(int component) override { component_ = component; }
-  void OnDragFinished(bool cancel, const gfx::Point& location) override {
+  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
     location_ = location;
   }
 
@@ -570,14 +571,14 @@ class TestWindowStateDelegate : public WindowStateDelegate {
     return result;
   }
 
-  gfx::Point GetLocationAndReset() {
-    gfx::Point p = location_;
+  gfx::PointF GetLocationAndReset() {
+    gfx::PointF p = location_;
     location_.SetPoint(0, 0);
     return p;
   }
 
  private:
-  gfx::Point location_;
+  gfx::PointF location_;
   int component_ = -1;
   DISALLOW_COPY_AND_ASSIGN(TestWindowStateDelegate);
 };
@@ -645,7 +646,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
 
   // Dragging should call the WindowStateDelegate.
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
-  EXPECT_EQ(gfx::Point(300, resize_widget_center.y()),
+  EXPECT_EQ(gfx::PointF(300, resize_widget_center.y()),
             window_state_delegate1->GetLocationAndReset());
 }
 

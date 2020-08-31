@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -205,6 +206,29 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       performAction:grey_tap()];
 }
 
+// Tests that when loading an invalid URL, the NTP is still displayed.
+// Prevents regressions from https://crbug.com/1063154 .
+- (void)testInvalidURL {
+  NSString* URL = @"app-settings://test-test-test/";
+
+  // The URL needs to be typed to trigger the bug.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_typeText(URL)];
+
+  // The first suggestion is a search, the second suggestion is the URL.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(@"omnibox suggestion 1"),
+              grey_kindOfClassName(@"OmniboxPopupRowCell"),
+              grey_descendant(
+                  chrome_test_util::StaticTextWithAccessibilityLabel(URL)),
+              grey_sufficientlyVisible(), nil)] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the fake omnibox width is correctly updated after a rotation.
 - (void)testOmniboxWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
@@ -326,9 +350,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       [ContentSuggestionsAppInterface collectionView].bounds.size.width;
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the app doesn't crash when opening multiple tabs.
@@ -407,11 +428,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
 - (void)testPositionRestoredWithOmniboxFocused {
-// TODO(crbug.com/1021649): Enable this test.
-#if defined(CHROME_EARL_GREY_2)
-  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
-#endif
-
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -466,29 +482,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Check that the page is loaded.
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
-}
-
-// Tests that tapping the omnibox search button logs correctly.
-// It is important for ranking algorithm of omnibox that requests from the
-// search button and real omnibox are marked appropriately.
-- (void)testTapOmniboxSearchButtonLogsCorrectly {
-  if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
-    // This logging only happens on iPhone, since on iPad there's no secondary
-    // toolbar.
-    return;
-  }
-  [ContentSuggestionsAppInterface swizzleSearchButtonLogging];
-
-  // Tap the search button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarSearchButtonIdentifier)]
-      performAction:grey_tap()];
-
-  BOOL tapped = [ContentSuggestionsAppInterface resetSearchButtonLogging];
-
-  // Check that the page is loaded.
-  GREYAssertTrue(tapped,
-                 @"The tap on the search button was not correctly logged.");
 }
 
 // Tests that tapping the fake omnibox moves the collection.
@@ -576,24 +569,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       @"The collection is not scrolled back to its previous position");
 }
 
-// Tests tapping the search button when the fake omnibox is scrolled.
-- (void)testTapSearchButtonFakeOmniboxScrolled {
-  if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
-    // This only happens on iPhone, since on iPad there's no secondary toolbar.
-    return;
-  }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ContentSuggestionCollectionView()]
-      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
-  // Tap the search button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarSearchButtonIdentifier)]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
-}
-
 - (void)testOpeningNewTab {
   [ChromeEarlGreyUI openNewTab];
 
@@ -644,7 +619,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Change the Search Engine to Yahoo!.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
-      tapSettingsMenuButton:grey_accessibilityID(@"Search Engine")];
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
       performAction:grey_tap()];
   [[EarlGrey
@@ -667,7 +642,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Change the Search Engine to Google.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
-      tapSettingsMenuButton:grey_accessibilityID(@"Search Engine")];
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Google")]
       performAction:grey_tap()];
   [[EarlGrey

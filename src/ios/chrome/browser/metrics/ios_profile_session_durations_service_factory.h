@@ -9,17 +9,15 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-class IOSProfileSessionDurationsService;
-namespace ios {
 class ChromeBrowserState;
-}
+class IOSProfileSessionDurationsService;
 
 class IOSProfileSessionDurationsServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   // Creates the service if it doesn't exist already for |browser_state|.
   static IOSProfileSessionDurationsService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSProfileSessionDurationsServiceFactory* GetInstance();
 

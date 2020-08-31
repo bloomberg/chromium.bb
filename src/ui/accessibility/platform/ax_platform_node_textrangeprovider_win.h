@@ -14,7 +14,6 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_range.h"
-#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
@@ -41,46 +40,46 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   // ITextRangeProvider methods.
   //
 
-  STDMETHODIMP Clone(ITextRangeProvider** clone) override;
-  STDMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
-  STDMETHODIMP
+  IFACEMETHODIMP Clone(ITextRangeProvider** clone) override;
+  IFACEMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
+  IFACEMETHODIMP
   CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
                    ITextRangeProvider* other,
                    TextPatternRangeEndpoint other_endpoint,
                    int* result) override;
-  STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
-  STDMETHODIMP
+  IFACEMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
+  IFACEMETHODIMP
   FindAttribute(TEXTATTRIBUTEID attribute_id,
                 VARIANT attribute_val,
                 BOOL is_backward,
                 ITextRangeProvider** result) override;
-  STDMETHODIMP
+  IFACEMETHODIMP
   FindText(BSTR string,
            BOOL backwards,
            BOOL ignore_case,
            ITextRangeProvider** result) override;
-  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
-                                 VARIANT* value) override;
-  STDMETHODIMP
-  GetBoundingRectangles(SAFEARRAY** rectangles) override;
-  STDMETHODIMP
+  IFACEMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                   VARIANT* value) override;
+  IFACEMETHODIMP
+  GetBoundingRectangles(SAFEARRAY** screen_physical_pixel_rectangles) override;
+  IFACEMETHODIMP
   GetEnclosingElement(IRawElementProviderSimple** element) override;
-  STDMETHODIMP GetText(int max_count, BSTR* text) override;
-  STDMETHODIMP Move(TextUnit unit, int count, int* units_moved) override;
-  STDMETHODIMP
+  IFACEMETHODIMP GetText(int max_count, BSTR* text) override;
+  IFACEMETHODIMP Move(TextUnit unit, int count, int* units_moved) override;
+  IFACEMETHODIMP
   MoveEndpointByUnit(TextPatternRangeEndpoint endpoint,
                      TextUnit unit,
                      int count,
                      int* units_moved) override;
-  STDMETHODIMP
+  IFACEMETHODIMP
   MoveEndpointByRange(TextPatternRangeEndpoint this_endpoint,
                       ITextRangeProvider* other,
                       TextPatternRangeEndpoint other_endpoint) override;
-  STDMETHODIMP Select() override;
-  STDMETHODIMP AddToSelection() override;
-  STDMETHODIMP RemoveFromSelection() override;
-  STDMETHODIMP ScrollIntoView(BOOL align_to_top) override;
-  STDMETHODIMP GetChildren(SAFEARRAY** children) override;
+  IFACEMETHODIMP Select() override;
+  IFACEMETHODIMP AddToSelection() override;
+  IFACEMETHODIMP RemoveFromSelection() override;
+  IFACEMETHODIMP ScrollIntoView(BOOL align_to_top) override;
+  IFACEMETHODIMP GetChildren(SAFEARRAY** children) override;
 
  private:
   using AXPositionInstance = AXNodePosition::AXPositionInstance;
@@ -89,10 +88,16 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
-  friend class AXRangeScreenRectDelegateImpl;
+  friend class AXRangePhysicalPixelRectDelegate;
 
   static bool AtStartOfLinePredicate(const AXPositionInstance& position);
   static bool AtEndOfLinePredicate(const AXPositionInstance& position);
+
+  static AXPositionInstance GetNextTextBoundaryPosition(
+      const AXPositionInstance& position,
+      ax::mojom::TextBoundary boundary_type,
+      AXBoundaryBehavior boundary_behavior,
+      ax::mojom::MoveDirection boundary_direction);
 
   base::string16 GetString(int max_count,
                            size_t* appended_newlines_count = nullptr);
@@ -116,7 +121,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                                         const int count,
                                         int* units_moved);
   AXPositionInstance MoveEndpointByLine(const AXPositionInstance& endpoint,
-                                        bool endpoint_is_start,
+                                        bool is_start_endpoint,
                                         const int count,
                                         int* units_moved);
   AXPositionInstance MoveEndpointByParagraph(const AXPositionInstance& endpoint,
@@ -136,12 +141,25 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   AXPositionInstance MoveEndpointByUnitHelper(
       const AXPositionInstance& endpoint,
-      const AXTextBoundary boundary_type,
+      const ax::mojom::TextBoundary boundary_type,
       const int count,
       int* units_moved);
 
-  void NormalizeAsUnignoredTextRange();
+  // A text range normalization is necessary to prevent a |start_| endpoint to
+  // be positioned at the end of an anchor when it can be at the start of the
+  // next anchor. After normalization, it is guaranteed that:
+  // * both endpoints of a range are always positioned on unignored anchors;
+  // * both endpoints of a range are never between a grapheme cluster;
+  // * if the range is degenerate, both endpoints of a range are on the same
+  //   anchor.
   void NormalizeTextRange();
+  void NormalizeAsUnignoredTextRange();
+
+  AXPlatformNodeDelegate* GetRootDelegate(const ui::AXTreeID tree_id);
+  AXNode* GetSelectionCommonAnchor();
+  void RemoveFocusFromPreviousSelectionIfNeeded(
+      const AXNodeRange& new_selection);
+  AXPlatformNodeWin* GetLowestAccessibleCommonPlatformNode() const;
 
   Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
   AXPositionInstance start_;

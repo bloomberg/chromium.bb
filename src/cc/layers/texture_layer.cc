@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/features.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
@@ -65,26 +66,6 @@ void TextureLayer::SetUV(const gfx::PointF& top_left,
   SetNeedsCommit();
 }
 
-void TextureLayer::SetVertexOpacity(float bottom_left,
-                                    float top_left,
-                                    float top_right,
-                                    float bottom_right) {
-  // Indexing according to the quad vertex generation:
-  // 1--2
-  // |  |
-  // 0--3
-  if (vertex_opacity_[0] == bottom_left &&
-      vertex_opacity_[1] == top_left &&
-      vertex_opacity_[2] == top_right &&
-      vertex_opacity_[3] == bottom_right)
-    return;
-  vertex_opacity_[0] = bottom_left;
-  vertex_opacity_[1] = top_left;
-  vertex_opacity_[2] = top_right;
-  vertex_opacity_[3] = bottom_right;
-  SetNeedsCommit();
-}
-
 void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
   if (premultiplied_alpha_ == premultiplied_alpha)
     return;
@@ -131,7 +112,9 @@ void TextureLayer::SetTransferableResourceInternal(
   UpdateDrawsContent(HasDrawableContent());
   // The active frame needs to be replaced and the mailbox returned before the
   // commit is called complete.
-  SetNextCommitWaitsForActivation();
+  if (!base::FeatureList::IsEnabled(
+          features::kTextureLayerSkipWaitForActivation))
+    SetNextCommitWaitsForActivation();
 }
 
 void TextureLayer::SetTransferableResource(
@@ -159,10 +142,12 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     needs_set_resource_ = true;
     // The active frame needs to be replaced and the mailbox returned before the
     // commit is called complete.
-    SetNextCommitWaitsForActivation();
+    if (!base::FeatureList::IsEnabled(
+            features::kTextureLayerSkipWaitForActivation))
+      SetNextCommitWaitsForActivation();
   }
   if (host) {
-    // When attached to a new LayerTreHost, all previously registered
+    // When attached to a new LayerTreeHost, all previously registered
     // SharedBitmapIds will need to be re-sent to the new TextureLayerImpl
     // representing this layer on the compositor thread.
     to_register_bitmaps_.insert(
@@ -216,7 +201,6 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetNearestNeighbor(nearest_neighbor_);
   texture_layer->SetUVTopLeft(uv_top_left_);
   texture_layer->SetUVBottomRight(uv_bottom_right_);
-  texture_layer->SetVertexOpacity(vertex_opacity_);
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   texture_layer->SetForceTextureToOpaque(force_texture_to_opaque_);

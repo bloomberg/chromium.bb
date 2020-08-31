@@ -6,8 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,6 +33,10 @@ class MockSmsFetcher : public content::SmsFetcher {
 
   MOCK_METHOD2(Subscribe,
                void(const url::Origin& origin, Subscriber* subscriber));
+  MOCK_METHOD3(Subscribe,
+               void(const url::Origin& origin,
+                    Subscriber* subscriber,
+                    content::RenderFrameHost* rfh));
   MOCK_METHOD2(Unsubscribe,
                void(const url::Origin& origin, Subscriber* subscriber));
   MOCK_METHOD0(HasSubscribers, bool());
@@ -66,12 +70,10 @@ TEST(SmsFetchRequestHandlerTest, Basic) {
       BindLambdaForTesting([&loop](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
         EXPECT_EQ("123", response->sms_fetch_response().one_time_code());
-        EXPECT_EQ("hello", response->sms_fetch_response().sms());
         loop.Quit();
       }));
 
-  subscriber->OnReceive("123", "hello");
-
+  subscriber->OnReceive("123");
   loop.Run();
 }
 
@@ -91,7 +93,7 @@ TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
       message,
       BindLambdaForTesting([&loop1](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
-        EXPECT_EQ("first", response->sms_fetch_response().sms());
+        EXPECT_EQ("1", response->sms_fetch_response().one_time_code());
         loop1.Quit();
       }));
 
@@ -104,16 +106,14 @@ TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
       message,
       BindLambdaForTesting([&loop2](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
-        EXPECT_EQ("second", response->sms_fetch_response().sms());
+        EXPECT_EQ("2", response->sms_fetch_response().one_time_code());
         loop2.Quit();
       }));
 
-  request2->OnReceive("2", "second");
-
+  request2->OnReceive("2");
   loop2.Run();
 
-  request1->OnReceive("1", "first");
-
+  request1->OnReceive("1");
   loop1.Run();
 }
 

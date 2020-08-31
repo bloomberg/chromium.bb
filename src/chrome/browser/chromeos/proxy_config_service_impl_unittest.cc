@@ -11,7 +11,7 @@
 
 #include "base/format_macros.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -32,7 +32,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -76,7 +75,7 @@ const struct TestParams {
 
   // Expected outputs from fields of net::ProxyConfig (via IO).
   bool auto_detect;
-  GURL pac_url;
+  std::string pac_url;
   net::ProxyRulesExpectation proxy_rules;
 } tests[] = {
     {
@@ -90,7 +89,7 @@ const struct TestParams {
 
         // Expected result.
         false,                                // auto_detect
-        GURL(),                               // pac_url
+        "",                                   // pac_url
         net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
@@ -105,7 +104,7 @@ const struct TestParams {
 
         // Expected result.
         true,                                 // auto_detect
-        GURL(),                               // pac_url
+        "",                                   // pac_url
         net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
@@ -121,7 +120,7 @@ const struct TestParams {
 
         // Expected result.
         false,                                // auto_detect
-        GURL("http://wpad/wpad.dat"),         // pac_url
+        "http://wpad/wpad.dat",               // pac_url
         net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
@@ -137,7 +136,7 @@ const struct TestParams {
 
         // Expected result.
         false,                                // auto_detect
-        GURL(),                               // pac_url
+        "",                                   // pac_url
         net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
@@ -154,7 +153,7 @@ const struct TestParams {
 
         // Expected result.
         false,                               // auto_detect
-        GURL(),                              // pac_url
+        "",                                  // pac_url
         net::ProxyRulesExpectation::Single(  // proxy_rules
             "www.google.com:80",             // single proxy
             "<local>"),                      // bypass rules
@@ -173,7 +172,7 @@ const struct TestParams {
 
         // Expected result.
         false,                               // auto_detect
-        GURL(),                              // pac_url
+        "",                                  // pac_url
         net::ProxyRulesExpectation::Single(  // proxy_rules
             "www.google.com:99",             // single
             "<local>"),                      // bypass rules
@@ -192,7 +191,7 @@ const struct TestParams {
 
         // Expected result.
         false,                               // auto_detect
-        GURL(),                              // pac_url
+        "",                                  // pac_url
         net::ProxyRulesExpectation::Single(  // proxy_rules
             "www.google.com:99",             // single proxy
             "<local>"),                      // bypass rules
@@ -212,7 +211,7 @@ const struct TestParams {
 
         // Expected result.
         false,                                           // auto_detect
-        GURL(),                                          // pac_url
+        "",                                              // pac_url
         net::ProxyRulesExpectation::PerSchemeWithSocks(  // proxy_rules
             "www.google.com:80",                         // http
             "https://www.foo.com:110",                   // https
@@ -236,7 +235,7 @@ const struct TestParams {
 
         // Expected result.
         false,                               // auto_detect
-        GURL(),                              // pac_url
+        "",                                  // pac_url
         net::ProxyRulesExpectation::Single(  // proxy_rules
             "www.google.com:80",             // single proxy
                                              // bypass_rules
@@ -412,7 +411,7 @@ TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
     SyncGetLatestProxyConfig(&config);
 
     EXPECT_EQ(tests[i].auto_detect, config.value().auto_detect());
-    EXPECT_EQ(tests[i].pac_url, config.value().pac_url());
+    EXPECT_EQ(GURL(tests[i].pac_url), config.value().pac_url());
     EXPECT_TRUE(tests[i].proxy_rules.Matches(config.value().proxy_rules()));
   }
 }
@@ -471,7 +470,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     net::ProxyConfigWithAnnotation actual_config;
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(managed_params.auto_detect, actual_config.value().auto_detect());
-    EXPECT_EQ(managed_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(managed_params.pac_url), actual_config.value().pac_url());
     EXPECT_TRUE(managed_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
 
@@ -481,7 +480,8 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(recommended_params.auto_detect,
               actual_config.value().auto_detect());
-    EXPECT_EQ(recommended_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(recommended_params.pac_url),
+              actual_config.value().pac_url());
     EXPECT_TRUE(recommended_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
 
@@ -489,7 +489,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     SetUserConfigInShill(&network_config);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.value().auto_detect());
-    EXPECT_EQ(network_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(network_params.pac_url), actual_config.value().pac_url());
     EXPECT_TRUE(network_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
 
@@ -498,7 +498,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
                                  managed_config.CreateDeepCopy());
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(managed_params.auto_detect, actual_config.value().auto_detect());
-    EXPECT_EQ(managed_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(managed_params.pac_url), actual_config.value().pac_url());
     EXPECT_TRUE(managed_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
 
@@ -507,7 +507,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     pref_service_.RemoveManagedPref(::proxy_config::prefs::kProxy);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.value().auto_detect());
-    EXPECT_EQ(network_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(network_params.pac_url), actual_config.value().pac_url());
     EXPECT_TRUE(network_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
 
@@ -515,7 +515,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     pref_service_.RemoveRecommendedPref(::proxy_config::prefs::kProxy);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.value().auto_detect());
-    EXPECT_EQ(network_params.pac_url, actual_config.value().pac_url());
+    EXPECT_EQ(GURL(network_params.pac_url), actual_config.value().pac_url());
     EXPECT_TRUE(network_params.proxy_rules.Matches(
         actual_config.value().proxy_rules()));
   }

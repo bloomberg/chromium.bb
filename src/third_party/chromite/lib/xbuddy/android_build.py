@@ -13,10 +13,15 @@ import googleapiclient.discovery
 import googleapiclient.http
 import httplib2  # pylint: disable=import-error
 
-from oauth2client.client import SignedJwtAssertionCredentials
 
 from chromite.lib import osutils
 from chromite.lib.xbuddy import retry
+from chromite.lib import cros_test_lib
+
+try:
+  from oauth2client.client import SignedJwtAssertionCredentials
+except ImportError:
+  cros_test_lib.pytest_skip(allow_module_level=True)
 
 
 CREDENTIAL_SCOPE = 'https://www.googleapis.com/auth/androidbuild.internal'

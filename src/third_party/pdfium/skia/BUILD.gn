@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 import("//third_party/skia/third_party/skcms/skcms.gni")
+import("features.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -16,7 +17,7 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 }
 
 skia_support_gpu = !is_ios
-skia_support_pdf = false  #!is_ios && (enable_basic_printing || enable_print_preview)
+skia_support_pdf = false
 
 # External-facing config for dependent code.
 config("skia_config") {
@@ -39,6 +40,10 @@ config("skia_config") {
     defines += [ "SK_SUPPORT_GPU=1" ]
   } else {
     defines += [ "SK_SUPPORT_GPU=0" ]
+  }
+
+  if (skia_use_gl) {
+    defines += [ "SK_GL" ]
   }
 
   if (is_android) {
@@ -124,7 +129,15 @@ config("skia_library_config") {
       "/wd4554",  # 'operator' : check operator precedence for possible error
       "/wd4748",  # compiler will disable optimizations if a function has inline
                   # assembly code contains flow control(jmp or jcc) statements.
+
+      "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
+      "/wd5041",  # out-of-line definition for constexpr static data member is
+                  # not needed and is deprecated in C++17
     ]
+    cflags_cc = [ "/std:c++17" ]
+  } else {
+    cflags_cc = [ "-std=c++17" ]
+    cflags_objcc = [ "-std=c++17" ]
   }
 }
 
@@ -144,9 +157,7 @@ source_set("skcms") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
-  public = [
-    "//third_party/skia/include/third_party/skcms/skcms.h",
-  ]
+  public = [ "//third_party/skia/include/third_party/skcms/skcms.h" ]
   include_dirs = [ "//third_party/skia/include/third_party/skcms" ]
   sources =
       rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
@@ -209,12 +220,14 @@ component("skia") {
   if (skia_support_gpu) {
     sources += skia_gpu_sources
     sources += skia_null_gpu_sources
+    if (skia_use_gl) {
+      sources += skia_gl_gpu_sources
+    }
   }
 
   # Remove unused util files include in utils.gni
   sources -= [
     "//third_party/skia/src/utils/SkCamera.cpp",
-    "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
   ]
@@ -295,9 +308,7 @@ component("skia") {
     "../third_party:zlib",
     "//:freetype_common",
   ]
-  public_deps = [
-    ":skia_core_and_effects",
-  ]
+  public_deps = [ ":skia_core_and_effects" ]
 
   if (is_linux) {
     deps += [ "//third_party/icu:icuuc" ]
@@ -360,6 +371,16 @@ template("skia_source_set") {
       "//build/config/compiler:no_chromium_code",
     ]
     public_configs = [ ":skia_config" ]
+
+    if (is_win) {
+      cflags_cc = [
+        "/std:c++17",
+        "/wd5041",  # out-of-line definition for constexpr static data member is
+                    # not needed and is deprecated in C++17
+      ]
+    } else {
+      cflags_cc = [ "-std=c++17" ]
+    }
   }
 }
 

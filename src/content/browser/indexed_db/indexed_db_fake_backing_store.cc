@@ -32,20 +32,26 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
+                            /*blob_storage_context=*/nullptr,
+                            /*native_file_system_context=*/nullptr,
                             BlobFilesCleanedCallback(),
                             ReportOutstandingBlobsCallback(),
-                            base::SequencedTaskRunnerHandle::Get().get()) {}
+                            base::SequencedTaskRunnerHandle::Get(),
+                            base::SequencedTaskRunnerHandle::Get()) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     BlobFilesCleanedCallback blob_files_cleaned,
     ReportOutstandingBlobsCallback report_outstanding_blobs,
-    base::SequencedTaskRunner* task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kOnDisk,
                             GetTransactionalLevelDBFactory(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
+                            /*blob_storage_context=*/nullptr,
+                            /*native_file_system_context=*/nullptr,
                             std::move(blob_files_cleaned),
                             std::move(report_outstanding_blobs),
+                            task_runner,
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
@@ -121,7 +127,7 @@ leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
 }
 
 void IndexedDBFakeBackingStore::ReportBlobUnused(int64_t database_id,
-                                                 int64_t blob_key) {}
+                                                 int64_t blob_number) {}
 
 std::unique_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(

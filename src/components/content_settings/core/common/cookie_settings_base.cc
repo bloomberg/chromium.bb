@@ -4,15 +4,16 @@
 
 #include "components/content_settings/core/common/cookie_settings_base.h"
 
+#include "base/check.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/task_trace.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -20,7 +21,8 @@ namespace {
 bool IsThirdPartyRequest(const GURL& url, const GURL& site_for_cookies) {
   net::StaticCookiePolicy policy(
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
-  return policy.CanAccessCookies(url, site_for_cookies) != net::OK;
+  return policy.CanAccessCookies(
+             url, net::SiteForCookies::FromUrl(site_for_cookies)) != net::OK;
 }
 }  // namespace
 

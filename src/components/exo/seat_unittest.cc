@@ -66,6 +66,9 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   void OnDndDropPerformed() override {}
   void OnDndFinished() override {}
   void OnAction(DndAction dnd_action) override {}
+  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
+    return true;
+  }
 
   void SetData(std::vector<uint8_t> data) { data_ = std::move(data); }
 
@@ -421,7 +424,12 @@ TEST_F(SeatTest, SetSelection_NullSource) {
 
   RunReadingTask();
 
-  // Should clear the clipboard.
+  {
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
+    writer.WriteText(base::UTF8ToUTF16("Golden data"));
+  }
+
+  // Should not affect the current state of the clipboard.
   seat.SetSelection(nullptr);
 
   ASSERT_TRUE(delegate.cancelled());
@@ -429,7 +437,7 @@ TEST_F(SeatTest, SetSelection_NullSource) {
   std::string clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
       ui::ClipboardBuffer::kCopyPaste, &clipboard);
-  EXPECT_EQ(clipboard, "");
+  EXPECT_EQ(clipboard, "Golden data");
 }
 
 TEST_F(SeatTest, PressedKeys) {
@@ -477,7 +485,7 @@ TEST_F(SeatTest, DragDropAbort) {
   Surface origin, icon;
 
   // Give origin a root window for DragDropOperation.
-  CurrentContext()->AddChild(origin.window());
+  GetContext()->AddChild(origin.window());
 
   seat.StartDrag(&source, &origin, &icon,
                  ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);

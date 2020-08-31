@@ -5,10 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
 #define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MAC_H_
 
-#import <Cocoa/Cocoa.h>
-
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -121,10 +118,10 @@ class CONTENT_EXPORT TextInputClientMac {
   // These methods lock the internal condition for use before the asynchronous
   // message is sent to the renderer to lookup the required information. These
   // are only used on the UI thread.
-  void BeforeRequest();
+  void BeforeRequest() EXCLUSIVE_LOCK_FUNCTION(lock_);
   // Called at the end of a critical section. This will release the lock and
   // condition.
-  void AfterRequest();
+  void AfterRequest() UNLOCK_FUNCTION(lock_);
 
   uint32_t character_index_;
   gfx::Rect first_rect_;

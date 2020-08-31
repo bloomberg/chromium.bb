@@ -52,7 +52,7 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
     const CSSParserContext* context =
         StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
     const bool is_animation_tainted = false;
-    if (!registration->Syntax().Parse(resolved_range, context,
+    if (!registration->Syntax().Parse(resolved_range, *context,
                                       is_animation_tainted))
       return Fallback::kFail;
   }
@@ -68,7 +68,6 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     return nullptr;
   }
 
-  DCHECK(registry_ || !RuntimeEnabledFeatures::CSSVariables2Enabled());
   const PropertyRegistration* registration =
       registry_ ? registry_->Registration(name) : nullptr;
 
@@ -536,6 +535,9 @@ CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
     : state_(state),
       inherited_variables_(state.Style()->InheritedVariables()),
       non_inherited_variables_(state.Style()->NonInheritedVariables()),
-      registry_(state.GetDocument().GetPropertyRegistry()) {}
+      registry_(state.GetDocument().GetPropertyRegistry()) {
+  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled())
+      << "Use StyleCascade instead";
+}
 
 }  // namespace blink

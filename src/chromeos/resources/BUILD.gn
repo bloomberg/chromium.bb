@@ -12,8 +12,6 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 grit("resources") {
   source = "chromeos_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/chromeos_resources.h",
     "grit/chromeos_resources_map.cc",
@@ -47,8 +45,6 @@ grit("resources") {
 grit("help_app_resources") {
   source = "../components/help_app_ui/resources/help_app_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/chromeos_help_app_resources.h",
     "grit/chromeos_help_app_resources_map.cc",
@@ -56,19 +52,26 @@ grit("help_app_resources") {
     "chromeos_help_app_resources.pak",
   ]
   output_dir = "$root_gen_dir/chromeos"
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  deps = [ "//chromeos/components/help_app_ui:mojo_bindings_js" ]
 }
 
 # Resources automatically served by the chrome://help-app bundle, obtained via DEPS.
 grit("help_app_bundle_resources") {
   if (enable_cros_help_app) {
-    # Obtained via src-internal/DEPS.
+    # Obtained via an internal CIPD package in src/DEPS.
     source =
-        "../components/help_app_ui/resources/app/help_app_bundle_resources.grd"
+        "../components/help_app_ui/resources/prod/help_app_bundle_resources.grd"
   } else {
     source = "../components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd"
   }
 
-  source_is_generated = true
+  use_brotli = true
 
   outputs = [
     "grit/chromeos_help_app_bundle_resources.h",
@@ -79,30 +82,50 @@ grit("help_app_bundle_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
+# Resources used by chrome://sample-system-web-app
+grit("sample_system_web_app_resources") {
+  source = "../components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd"
+
+  outputs = [
+    "grit/chromeos_sample_system_web_app_resources.h",
+    "grit/chromeos_sample_system_web_app_resources_map.cc",
+    "grit/chromeos_sample_system_web_app_resources_map.h",
+    "chromeos_sample_system_web_app_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}
+
 # Resources used by chrome://media-app, and parts of the sandboxed app it hosts
 # that do not come from the app bundle (below).
 grit("media_app_resources") {
   source = "../components/media_app_ui/resources/media_app_resources.grd"
-
-  source_is_generated = true
 
   outputs = [
     "grit/chromeos_media_app_resources.h",
     "chromeos_media_app_resources.pak",
   ]
   output_dir = "$root_gen_dir/chromeos"
+
+  use_brotli = true
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  deps = [ "//chromeos/components/media_app_ui:mojo_bindings_js" ]
 }
 
 # Resources automatically served by the chrome://media-app bundle, obtained via DEPS.
 grit("media_app_bundle_resources") {
   if (enable_cros_media_app) {
     # Obtained via src-internal/DEPS.
-    source = "../components/media_app_ui/resources/app/app/media_app_bundle_resources.grd"
+    source = "../components/media_app_ui/resources/pkg/media_app_bundle_resources.grd"
   } else {
     source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
   }
 
-  source_is_generated = true
+  use_brotli = true
 
   outputs = [
     "grit/chromeos_media_app_bundle_resources.h",
@@ -110,5 +133,29 @@ grit("media_app_bundle_resources") {
     "grit/chromeos_media_app_bundle_resources_map.h",
     "chromeos_media_app_bundle_resources.pak",
   ]
+  output_dir = "$root_gen_dir/chromeos"
+}
+
+grit("print_management_resources") {
+  source =
+      "../components/print_management/resources/print_management_resources.grd"
+
+  deps = [
+    "../components/print_management/mojom:mojom_js",
+    "../components/print_management/resources:polymer3_elements",
+  ]
+
+  outputs = [
+    "grit/chromeos_print_management_resources.h",
+    "grit/chromeos_print_management_resources_map.cc",
+    "grit/chromeos_print_management_resources_map.h",
+    "chromeos_print_management_resources.pak",
+  ]
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
   output_dir = "$root_gen_dir/chromeos"
 }

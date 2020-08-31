@@ -13,10 +13,19 @@ namespace features {
 const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Connect to MetricsBridgeService to retrieve and transmit UMA metrics
+// collected in nonembedded WebView processes.
+const base::Feature kWebViewCollectNonembeddedMetrics{
+    "WebViewCollectNonEmbeddedMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the SafeBrowsingApiHandler which uses the connectionless GMS APIs. This
 // Feature is checked and used in downstream internal code.
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Activate compatible origin checks for AndroidStreamReaderURLLoader.
+const base::Feature kWebViewOriginCheckForStreamReader{
+    "WebViewOriginCheckForStreamReader", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sniff the content stream to guess the MIME type when the application doesn't
 // tell us the MIME type explicitly.
@@ -30,11 +39,6 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 //   depending on headers, but that's a NetworkService implementation detail).
 const base::Feature kWebViewSniffMimeType{"WebViewSniffMimeType",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Wake up the MetricsService for each page load start/finish, renderer hang,
-// and renderer close. This aligns with Chrome's behavior.
-const base::Feature kWebViewWakeMetricsService{
-    "WebViewWakeMetricsService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable raster in wide color gamut for apps that use webview in a wide color
 // gamut activity.

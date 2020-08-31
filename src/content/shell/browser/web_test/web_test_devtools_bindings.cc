@@ -16,7 +16,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "net/base/filename_util.h"
 
@@ -39,14 +39,9 @@ namespace content {
 
 class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
  public:
-  SecondaryObserver(WebTestDevToolsBindings* bindings, bool is_startup_test)
+  explicit SecondaryObserver(WebTestDevToolsBindings* bindings)
       : WebContentsObserver(bindings->inspected_contents()),
-        bindings_(bindings) {
-    if (is_startup_test) {
-      bindings_->NavigateDevToolsFrontend();
-      bindings_ = nullptr;
-    }
-  }
+        bindings_(bindings) {}
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override {
@@ -57,8 +52,8 @@ class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    if (BlinkTestController::Get())
-      BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+    if (WebTestControlHost::Get())
+      WebTestControlHost::Get()->HandleNewRenderFrameHost(render_frame_host);
   }
 
  private:
@@ -104,16 +99,9 @@ void WebTestDevToolsBindings::NavigateDevToolsFrontend() {
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   web_contents()->GetController().LoadURLWithParams(params);
-  web_contents()->Focus();
 }
 
 void WebTestDevToolsBindings::Attach() {
-  DCHECK(is_startup_test_);
-  ShellDevToolsBindings::Attach();
-  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("TestRunner._startupTestSetupFinished();\n//# "
-                        "sourceURL=layout_test_devtools_bindings.cc"),
-      base::NullCallback());
 }
 
 WebTestDevToolsBindings::WebTestDevToolsBindings(
@@ -122,12 +110,7 @@ WebTestDevToolsBindings::WebTestDevToolsBindings(
     const GURL& frontend_url)
     : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
       frontend_url_(frontend_url) {
-  is_startup_test_ =
-      frontend_url.query().find("/startup/") != std::string::npos;
-  secondary_observer_ =
-      std::make_unique<SecondaryObserver>(this, is_startup_test_);
-  if (is_startup_test_)
-    return;
+  secondary_observer_ = std::make_unique<SecondaryObserver>(this);
   NavigationController::LoadURLParams params(GetInspectedPageURL(frontend_url));
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
@@ -136,21 +119,7 @@ WebTestDevToolsBindings::WebTestDevToolsBindings(
 
 WebTestDevToolsBindings::~WebTestDevToolsBindings() {}
 
-void WebTestDevToolsBindings::RenderProcessGone(
-    base::TerminationStatus status) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->DevToolsProcessCrashed();
-}
-
-void WebTestDevToolsBindings::RenderFrameCreated(
-    RenderFrameHost* render_frame_host) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
-}
-
 void WebTestDevToolsBindings::DocumentAvailableInMainFrame() {
-  if (is_startup_test_)
-    return;
   ShellDevToolsBindings::Attach();
 }
 

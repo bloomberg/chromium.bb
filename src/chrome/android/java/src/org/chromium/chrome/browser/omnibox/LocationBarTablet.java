@@ -13,14 +13,13 @@ import android.util.AttributeSet;
 import android.util.Property;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet;
-import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -31,7 +30,6 @@ import java.util.List;
  * Location bar for tablet form factors.
  */
 public class LocationBarTablet extends LocationBarLayout {
-    private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
     private static final long MAX_NTP_KEYBOARD_FOCUS_DURATION_MS = 200;
 
     private static final int ICON_FADE_ANIMATION_DURATION_MS = 150;
@@ -64,14 +62,6 @@ public class LocationBarTablet extends LocationBarLayout {
                     setWidthChangeAnimationPercent(value);
                 }
             };
-
-    private final Runnable mKeyboardResizeModeTask = new Runnable() {
-        @Override
-        public void run() {
-            getWindowDelegate().setWindowSoftInputMode(
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
-    };
 
     private View mLocationBarIcon;
     private View mBookmarkButton;
@@ -115,6 +105,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
         mTargets = new View[] {mUrlBar, mDeleteButton};
         mStatusViewCoordinator.setShowIconsWhenUrlFocused(true);
+        mStatusViewCoordinator.setStatusIconShown(true);
     }
 
     @Override
@@ -159,8 +150,6 @@ public class LocationBarTablet extends LocationBarLayout {
     public void handleUrlFocusAnimation(final boolean hasFocus) {
         super.handleUrlFocusAnimation(hasFocus);
 
-        removeCallbacks(mKeyboardResizeModeTask);
-
         if (mUrlFocusChangeAnimator != null && mUrlFocusChangeAnimator.isRunning()) {
             mUrlFocusChangeAnimator.cancel();
             mUrlFocusChangeAnimator = null;
@@ -192,29 +181,6 @@ public class LocationBarTablet extends LocationBarLayout {
         });
         setUrlFocusChangeInProgress(true);
         mUrlFocusChangeAnimator.start();
-    }
-
-    private void finishUrlFocusChange(boolean hasFocus) {
-        // Report focus change early to trigger animations.
-        mStatusViewCoordinator.onUrlFocusChange(hasFocus);
-        if (hasFocus) {
-            if (getWindowDelegate().getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN) {
-                getWindowDelegate().setWindowSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-            }
-            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
-        } else {
-            getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
-            // Convert the keyboard back to resize mode (delay the change for an arbitrary
-            // amount of time in hopes the keyboard will be completely hidden before making
-            // this change).
-            if (getWindowDelegate().getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE) {
-                postDelayed(mKeyboardResizeModeTask, KEYBOARD_MODE_CHANGE_DELAY_MS);
-            }
-        }
-        setUrlFocusChangeInProgress(false);
     }
 
     /**
@@ -251,7 +217,7 @@ public class LocationBarTablet extends LocationBarLayout {
         if (showSaveOfflineButton) mSaveOfflineButton.setEnabled(isSaveOfflineButtonEnabled());
 
         if (!mShouldShowButtonsWhenUnfocused) {
-            updateMicButtonVisibility(mUrlFocusChangePercent);
+            updateMicButtonVisibility();
         } else {
             mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
         }
@@ -268,7 +234,7 @@ public class LocationBarTablet extends LocationBarLayout {
         super.onSuggestionsChanged(autocompleteText);
         mStatusViewCoordinator.setFirstSuggestionIsSearchType(
                 mAutocompleteCoordinator.getSuggestionCount() > 0
-                && !mAutocompleteCoordinator.getSuggestionAt(0).isUrlSuggestion());
+                && mAutocompleteCoordinator.getSuggestionAt(0).isSearchSuggestion());
     }
 
     @Override
@@ -423,7 +389,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
         if (shouldShowSaveOfflineButton() && mSaveOfflineButton.getVisibility() == View.VISIBLE) {
             animators.add(createHideButtonAnimator(mSaveOfflineButton));
-        } else if (!(mUrlBar.isFocused() && mDeleteButton.getVisibility() != View.VISIBLE)) {
+        } else if (!(mUrlBar.hasFocus() && mDeleteButton.getVisibility() != View.VISIBLE)) {
             // If the save offline button isn't enabled, the microphone button always shows when
             // buttons are shown in the unfocused location bar. When buttons are hidden in the
             // unfocused location bar, the microphone shows if the location bar is focused and the
@@ -543,13 +509,13 @@ public class LocationBarTablet extends LocationBarLayout {
 
         // There are two actions, bookmark and save offline, and they should be shown if the
         // omnibox isn't focused.
-        return !(mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+        return !(mUrlBar.hasFocus() || isUrlFocusChangeInProgress());
     }
 
     private boolean shouldShowMicButton() {
         // If the download UI is enabled, the mic button should be only be shown when the url bar
         // is focused.
-        return mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
-                && mNativeInitialized && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+        return mVoiceSearchEnabled && mNativeInitialized
+                && (mUrlBar.hasFocus() || isUrlFocusChangeInProgress());
     }
 }

@@ -8,8 +8,9 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -154,7 +156,7 @@ content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
 void ToolbarActionView::UpdateState() {
   content::WebContents* web_contents = GetCurrentWebContents();
   SetAccessibleName(view_controller_->GetAccessibleName(web_contents));
-  if (!SessionTabHelper::IdForTab(web_contents).is_valid())
+  if (!sessions::SessionTabHelper::IdForTab(web_contents).is_valid())
     return;
 
   if (!view_controller_->IsEnabled(web_contents) &&
@@ -163,8 +165,6 @@ void ToolbarActionView::UpdateState() {
   } else if (state() == views::Button::STATE_DISABLED) {
     SetState(views::Button::STATE_NORMAL);
   }
-
-  wants_to_run_ = view_controller_->WantsToRun(web_contents);
 
   gfx::ImageSkia icon(
       view_controller_->GetIcon(web_contents, GetPreferredSize())
@@ -188,7 +188,14 @@ void ToolbarActionView::ButtonPressed(views::Button* sender,
     context_menu_controller()->ShowContextMenuForView(this, GetMenuPosition(),
                                                       ui::MENU_SOURCE_NONE);
   } else {
-    view_controller_->ExecuteAction(true);
+    base::RecordAction(base::UserMetricsAction(
+        "Extensions.Toolbar.ExtensionActivatedFromToolbar"));
+    auto source =
+        delegate_->ShownInsideMenu()
+            ? ToolbarActionViewController::InvocationSource::
+                  kLegacyOverflowedEntry
+            : ToolbarActionViewController::InvocationSource::kToolbarButton;
+    view_controller_->ExecuteAction(true, source);
   }
 }
 

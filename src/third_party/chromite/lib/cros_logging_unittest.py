@@ -20,6 +20,8 @@ class CrosloggingTest(cros_test_lib.OutputTestCase):
     self.logger = logging.getLogger()
     sh = logging.StreamHandler(sys.stdout)
     self.logger.addHandler(sh)
+    # pylint: disable=protected-access
+    logging._buildbot_markers_enabled = False
 
   def AssertLogContainsMsg(self, msg, functor, *args, **kwargs):
     """Asserts that calling functor logs a line that contains msg.

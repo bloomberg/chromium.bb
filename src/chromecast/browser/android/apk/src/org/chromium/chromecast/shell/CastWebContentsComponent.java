@@ -9,14 +9,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PatternMatcher;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Observable;
+import org.chromium.chromecast.base.Observers;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -33,11 +37,18 @@ public class CastWebContentsComponent {
     public interface OnComponentClosedHandler { void onComponentClosed(); }
 
     /**
+     * Callback interface invoked to indicate whether a gesture has been handled.
+     */
+    public interface GestureHandledCallback {
+        void invoke(boolean handled);
+    }
+
+    /**
      * Callback interface for when UI events occur.
      */
     public interface SurfaceEventHandler {
         void onVisibilityChange(int visibilityType);
-        boolean consumeGesture(int gestureType);
+        void consumeGesture(int gestureType, GestureHandledCallback handledGestureCallback);
     }
 
     /**
@@ -54,6 +65,22 @@ public class CastWebContentsComponent {
             this.webContents = webContents;
             this.appId = appId;
             visibilityPriority = priority;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+
+            if (!(other instanceof StartParams)) {
+                return false;
+            }
+
+            StartParams params = (StartParams) other;
+            return params.context == this.context && params.webContents == this.webContents
+                    && params.appId.equals(this.appId)
+                    && params.visibilityPriority == this.visibilityPriority;
         }
     }
 
@@ -109,6 +136,7 @@ public class CastWebContentsComponent {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
                 context, webContents, enableTouch, isRemoteControlMode, turnOnScreen, mSessionId);
         if (DEBUG) Log.d(TAG, "start activity by intent: " + intent);
+        ResumeIntents.addResumeIntent(mSessionId, intent);
         context.startActivity(intent);
     }
 
@@ -116,6 +144,7 @@ public class CastWebContentsComponent {
         Intent intent = CastWebContentsIntentUtils.requestStopWebContents(mSessionId);
         if (DEBUG) Log.d(TAG, "stop: send STOP_WEB_CONTENT intent: " + intent);
         sendIntentSync(intent);
+        ResumeIntents.removeResumeIntent(mSessionId);
     }
 
     private class ServiceDelegate implements Delegate {
@@ -161,6 +190,8 @@ public class CastWebContentsComponent {
     private final boolean mIsRemoteControlMode;
     private final boolean mTurnOnScreen;
 
+    private final Controller<CastAudioFocusRequest> mAudioFocusRequestState = new Controller<>();
+
     public CastWebContentsComponent(String sessionId,
             OnComponentClosedHandler onComponentClosedHandler,
             SurfaceEventHandler surfaceEventHandler, boolean isHeadless, boolean enableTouchInput,
@@ -178,6 +209,13 @@ public class CastWebContentsComponent {
         mSurfaceEventHandler = surfaceEventHandler;
         mIsRemoteControlMode = isRemoteControlMode;
         mTurnOnScreen = turnOnScreen;
+        CastAudioManager audioManager =
+                CastAudioManager.getAudioManager(ContextUtils.getApplicationContext());
+        Observable<CastAudioManager.AudioFocusLoss> focusLoss =
+                audioManager.requestAudioFocusWhen(mAudioFocusRequestState)
+                        .filter(state -> state == CastAudioManager.AudioFocusLoss.NORMAL);
+        mAudioFocusRequestState.andThen(focusLoss).subscribe(
+                Observers.onEnter(x -> mComponentClosedHandler.onComponentClosed()));
 
         if (BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE || isHeadless) {
             if (DEBUG) Log.d(TAG, "Creating service delegate...");
@@ -226,15 +264,17 @@ public class CastWebContentsComponent {
                                 + "; gesture=" + gestureType);
             }
             if (mSurfaceEventHandler != null) {
-                if (mSurfaceEventHandler.consumeGesture(gestureType)) {
-                    if (DEBUG) Log.d(TAG, "send gesture consumed instance=" + mSessionId);
-                    sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
-                            mSessionId, gestureType, true));
-                } else {
-                    if (DEBUG) Log.d(TAG, "send gesture NOT consumed instance=" + mSessionId);
-                    sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
-                            mSessionId, gestureType, false));
-                }
+                mSurfaceEventHandler.consumeGesture(gestureType, (handled) -> {
+                    if (handled) {
+                        if (DEBUG) Log.d(TAG, "send gesture consumed instance=" + mSessionId);
+                        sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
+                                mSessionId, gestureType, true));
+                    } else {
+                        if (DEBUG) Log.d(TAG, "send gesture NOT consumed instance=" + mSessionId);
+                        sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
+                                mSessionId, gestureType, false));
+                    }
+                });
             } else {
                 sendIntentSync(
                         CastWebContentsIntentUtils.gestureConsumed(mSessionId, gestureType, false));
@@ -260,6 +300,9 @@ public class CastWebContentsComponent {
                             + "; Visibility Priority: " + params.visibilityPriority);
         }
         mHasWebContentsState.set(params.webContents);
+        mAudioFocusRequestState.set(new CastAudioFocusRequest.Builder()
+                                            .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                                            .build());
         mDelegate.start(params);
         mStarted = true;
     }
@@ -271,6 +314,7 @@ public class CastWebContentsComponent {
                             + "; Instance ID: " + mSessionId);
         }
         if (mStarted) {
+            mAudioFocusRequestState.reset();
             mHasWebContentsState.reset();
             if (DEBUG) Log.d(TAG, "Call delegate to stop");
             mDelegate.stop(context);
@@ -297,6 +341,15 @@ public class CastWebContentsComponent {
         if (DEBUG) Log.d(TAG, "enableTouchInput enabled:" + enabled);
         mEnableTouchInput = enabled;
         sendIntentSync(CastWebContentsIntentUtils.enableTouchInput(mSessionId, enabled));
+    }
+
+    public void setHostContext(int interactionId, String conversationId) {
+        if (DEBUG) {
+            Log.d(TAG, "setInteractionid interactionId=%s; conversationID=%s", interactionId,
+                    conversationId);
+        }
+        sendIntentSync(CastWebContentsIntentUtils.setHostContext(
+                mSessionId, interactionId, conversationId));
     }
 
     public static void onComponentClosed(String sessionId) {

@@ -5,10 +5,8 @@
 #include "platform/api/udp_socket.h"
 
 namespace openscreen {
-namespace platform {
 
 UdpSocket::UdpSocket() = default;
 UdpSocket::~UdpSocket() = default;
 
-}  // namespace platform
 }  // namespace openscreen

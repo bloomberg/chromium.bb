@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -43,6 +43,7 @@ class ServiceWorkerManager;
 class SharedUserScriptMaster;
 class StateStore;
 class ValueStoreFactory;
+enum class UnloadedExtensionReason;
 
 // ExtensionSystem manages the lifetime of many of the services used by the
 // extensions and apps system, and it handles startup and shutdown as needed.
@@ -114,7 +115,7 @@ class ExtensionSystem : public KeyedService {
   // asynchronously. |callback| is run on the calling thread once completed.
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) {}
+      base::OnceClosure callback) {}
 
   // Called by the ExtensionService that lives in this system. Lets the
   // info map clean up its RequestContexts once all the listeners to the
@@ -145,6 +146,11 @@ class ExtensionSystem : public KeyedService {
                              const base::FilePath& unpacked_dir,
                              bool install_immediately,
                              InstallUpdateCallback install_update_callback) = 0;
+
+  // Perform various actions depending on the Omaga attributes on the extension.
+  virtual void PerformActionBasedOnOmahaAttributes(
+      const std::string& extension_id,
+      const base::Value& attributes) = 0;
 
   // Attempts finishing installation of an update for an extension with the
   // specified id, when installation of that extension was previously delayed.

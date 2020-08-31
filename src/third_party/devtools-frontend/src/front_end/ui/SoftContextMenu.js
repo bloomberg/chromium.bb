@@ -1,35 +1,50 @@
 /*
- * Copyright (C) 2011 Google Inc. All Rights Reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Host from '../host/host.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {AnchorBehavior, GlassPane, MarginBehavior, PointerEventsBehavior, SizeBehavior,} from './GlassPane.js';  // eslint-disable-line no-unused-vars
+import {Icon} from './Icon.js';
+import {ElementFocusRestorer} from './UIUtils.js';
+
 /**
  * @unrestricted
  */
-export default class SoftContextMenu {
+export class SoftContextMenu {
   /**
    * @param {!Array.<!InspectorFrontendHostAPI.ContextMenuDescriptor>} items
-   * @param {function(string)} itemSelectedCallback
+   * @param {function(string):void} itemSelectedCallback
    * @param {!SoftContextMenu=} parentMenu
    */
   constructor(items, itemSelectedCallback, parentMenu) {
@@ -51,20 +66,18 @@ export default class SoftContextMenu {
 
     this._document = document;
 
-    this._glassPane = new UI.GlassPane();
+    this._glassPane = new GlassPane();
     this._glassPane.setPointerEventsBehavior(
-        this._parentMenu ? UI.GlassPane.PointerEventsBehavior.PierceGlassPane :
-                           UI.GlassPane.PointerEventsBehavior.BlockedByGlassPane);
+        this._parentMenu ? PointerEventsBehavior.PierceGlassPane : PointerEventsBehavior.BlockedByGlassPane);
     this._glassPane.registerRequiredCSS('ui/softContextMenu.css');
     this._glassPane.setContentAnchorBox(anchorBox);
-    this._glassPane.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
-    this._glassPane.setMarginBehavior(UI.GlassPane.MarginBehavior.NoMargin);
-    this._glassPane.setAnchorBehavior(
-        this._parentMenu ? UI.GlassPane.AnchorBehavior.PreferRight : UI.GlassPane.AnchorBehavior.PreferBottom);
+    this._glassPane.setSizeBehavior(SizeBehavior.MeasureContent);
+    this._glassPane.setMarginBehavior(MarginBehavior.NoMargin);
+    this._glassPane.setAnchorBehavior(this._parentMenu ? AnchorBehavior.PreferRight : AnchorBehavior.PreferBottom);
 
     this._contextMenuElement = this._glassPane.contentElement.createChild('div', 'soft-context-menu');
     this._contextMenuElement.tabIndex = -1;
-    UI.ARIAUtils.markAsMenu(this._contextMenuElement);
+    ARIAUtils.markAsMenu(this._contextMenuElement);
     this._contextMenuElement.addEventListener('mouseup', e => e.consume(), false);
     this._contextMenuElement.addEventListener('keydown', this._menuKeyDown.bind(this), false);
 
@@ -73,7 +86,7 @@ export default class SoftContextMenu {
     }
 
     this._glassPane.show(document);
-    this._focusRestorer = new UI.ElementFocusRestorer(this._contextMenuElement);
+    this._focusRestorer = new ElementFocusRestorer(this._contextMenuElement);
 
     if (!this._parentMenu) {
       this._hideOnUserGesture = event => {
@@ -124,10 +137,11 @@ export default class SoftContextMenu {
       return this._createSubMenu(item);
     }
 
-    const menuItemElement = createElementWithClass('div', 'soft-context-menu-item');
+    const menuItemElement = document.createElement('div');
+    menuItemElement.classList.add('soft-context-menu-item');
     menuItemElement.tabIndex = -1;
-    UI.ARIAUtils.markAsMenuItem(menuItemElement);
-    const checkMarkElement = UI.Icon.create('smallicon-checkmark', 'checkmark');
+    ARIAUtils.markAsMenuItem(menuItemElement);
+    const checkMarkElement = Icon.create('smallicon-checkmark', 'checkmark');
     menuItemElement.appendChild(checkMarkElement);
     if (!item.checked) {
       checkMarkElement.style.opacity = '0';
@@ -167,30 +181,33 @@ export default class SoftContextMenu {
     } else if (item.shortcut) {
       accessibleName = ls`${item.label}, ${item.shortcut}`;
     }
-    UI.ARIAUtils.setAccessibleName(menuItemElement, accessibleName);
+    ARIAUtils.setAccessibleName(menuItemElement, accessibleName);
 
     return menuItemElement;
   }
 
   _createSubMenu(item) {
-    const menuItemElement = createElementWithClass('div', 'soft-context-menu-item');
+    const menuItemElement = document.createElement('div');
+    menuItemElement.classList.add('soft-context-menu-item');
     menuItemElement._subItems = item.subItems;
     menuItemElement.tabIndex = -1;
-    UI.ARIAUtils.markAsMenuItemSubMenu(menuItemElement);
+    ARIAUtils.markAsMenuItemSubMenu(menuItemElement);
+    // TODO: Once we have AOM, remove the explicit aria-label and use document.queryByAccessibleName
+    ARIAUtils.setAccessibleName(menuItemElement, item.label);
 
     // Occupy the same space on the left in all items.
-    const checkMarkElement = UI.Icon.create('smallicon-checkmark', 'soft-context-menu-item-checkmark');
+    const checkMarkElement = Icon.create('smallicon-checkmark', 'soft-context-menu-item-checkmark');
     checkMarkElement.classList.add('checkmark');
     menuItemElement.appendChild(checkMarkElement);
     checkMarkElement.style.opacity = '0';
 
     menuItemElement.createTextChild(item.label);
 
-    if (Host.isMac() && !UI.themeSupport.hasTheme()) {
+    if (Host.Platform.isMac() && !self.UI.themeSupport.hasTheme()) {
       const subMenuArrowElement = menuItemElement.createChild('span', 'soft-context-menu-item-submenu-arrow');
       subMenuArrowElement.textContent = '\u25B6';  // BLACK RIGHT-POINTING TRIANGLE
     } else {
-      const subMenuArrowElement = UI.Icon.create('smallicon-triangle-right', 'soft-context-menu-item-submenu-arrow');
+      const subMenuArrowElement = Icon.create('smallicon-triangle-right', 'soft-context-menu-item-submenu-arrow');
       menuItemElement.appendChild(subMenuArrowElement);
     }
 
@@ -205,7 +222,8 @@ export default class SoftContextMenu {
   }
 
   _createSeparator() {
-    const separatorElement = createElementWithClass('div', 'soft-context-menu-separator');
+    const separatorElement = document.createElement('div');
+    separatorElement.classList.add('soft-context-menu-separator');
     separatorElement._isSeparator = true;
     separatorElement.createChild('div', 'separator-line');
     return separatorElement;
@@ -304,7 +322,7 @@ export default class SoftContextMenu {
     }
     this._highlightedMenuItemElement = menuItemElement;
     if (this._highlightedMenuItemElement) {
-      if (UI.themeSupport.hasTheme() || Host.isMac()) {
+      if (self.UI.themeSupport.hasTheme() || Host.Platform.isMac()) {
         this._highlightedMenuItemElement.classList.add('force-white-icons');
       }
       this._highlightedMenuItemElement.classList.add('soft-context-menu-item-mouse-over');
@@ -389,12 +407,3 @@ export default class SoftContextMenu {
     event.consume(true);
   }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.SoftContextMenu = SoftContextMenu;

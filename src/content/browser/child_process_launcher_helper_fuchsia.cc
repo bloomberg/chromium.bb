@@ -21,20 +21,22 @@ namespace {
 const char* ProcessNameFromSandboxType(
     service_manager::SandboxType sandbox_type) {
   switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
+    case service_manager::SandboxType::kNoSandbox:
       return nullptr;
-    case service_manager::SANDBOX_TYPE_WEB_CONTEXT:
+    case service_manager::SandboxType::kWebContext:
       return "context";
-    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SandboxType::kRenderer:
       return "renderer";
-    case service_manager::SANDBOX_TYPE_UTILITY:
+    case service_manager::SandboxType::kUtility:
       return "utility";
-    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SandboxType::kGpu:
       return "gpu";
-    case service_manager::SANDBOX_TYPE_NETWORK:
+    case service_manager::SandboxType::kNetwork:
       return "network";
+    case service_manager::SandboxType::kVideoCapture:
+      return "video-capture";
     default:
-      NOTREACHED() << sandbox_type;
+      NOTREACHED() << "Unknown sandbox_type.";
       return nullptr;
   }
 }
@@ -66,7 +68,8 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 
-  sandbox_policy_.Initialize(delegate_->GetSandboxType());
+  sandbox_policy_ = std::make_unique<service_manager::SandboxPolicyFuchsia>(
+      delegate_->GetSandboxType());
 }
 
 std::unique_ptr<FileMappedForLaunch>
@@ -82,7 +85,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   mojo_channel_->PrepareToPassRemoteEndpoint(&options->handles_to_transfer,
                                              command_line());
-  sandbox_policy_.UpdateLaunchOptionsForSandbox(options);
+  sandbox_policy_->UpdateLaunchOptionsForSandbox(options);
 
   // Set process name suffix to make it easier to identify the process.
   const char* process_type =

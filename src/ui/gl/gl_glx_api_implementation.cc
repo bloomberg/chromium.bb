@@ -4,45 +4,34 @@
 
 #include "ui/gl/gl_glx_api_implementation.h"
 
-#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_wrapper.h"
 #include "ui/gl/gl_surface_glx.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gl {
 
-RealGLXApi* g_real_glx;
-LogGLXApi* g_log_glx;
+GL_IMPL_WRAPPER_TYPE(GLX) * g_glx_wrapper = nullptr;
 
 void InitializeStaticGLBindingsGLX() {
   g_driver_glx.InitializeStaticBindings();
-  if (!g_real_glx) {
-    g_real_glx = new RealGLXApi();
+  if (!g_glx_wrapper) {
+    auto real_api = std::make_unique<RealGLXApi>();
+    real_api->Initialize(&g_driver_glx);
+    g_glx_wrapper = new GL_IMPL_WRAPPER_TYPE(GLX)(std::move(real_api));
   }
-  g_real_glx->Initialize(&g_driver_glx);
-  g_current_glx_context = g_real_glx;
-}
 
-void InitializeLogGLBindingsGLX() {
-  if (!g_log_glx) {
-    g_log_glx = new LogGLXApi(g_real_glx);
-  }
-  g_current_glx_context = g_log_glx;
+  g_current_glx_context = g_glx_wrapper->api();
 }
 
 void ClearBindingsGLX() {
-  if (g_log_glx) {
-    delete g_log_glx;
-    g_log_glx = nullptr;
-  }
-  if (g_real_glx) {
-    delete g_real_glx;
-    g_real_glx = nullptr;
-  }
+  delete g_glx_wrapper;
+  g_glx_wrapper = nullptr;
+
   g_current_glx_context = nullptr;
   g_driver_glx.ClearBindings();
 }
@@ -90,7 +79,6 @@ const char* RealGLXApi::glXQueryExtensionsStringFn(Display* dpy,
 
   if (!driver_->fn.glXQueryExtensionsStringFn)
     return nullptr;
-
   const char* str = GLXApiBase::glXQueryExtensionsStringFn(dpy, screen);
   if (!str)
     return nullptr;
@@ -122,13 +110,10 @@ void TraceGLXApi::SetDisabledExtensions(
 bool GetGLWindowSystemBindingInfoGLX(const GLVersionInfo& gl_info,
                                      GLWindowSystemBindingInfo* info) {
   Display* display = glXGetCurrentDisplay();
-  const int kDefaultScreen = 0;
-  const char* vendor =
-      glXQueryServerString(display, kDefaultScreen, GLX_VENDOR);
-  const char* version =
-      glXQueryServerString(display, kDefaultScreen, GLX_VERSION);
-  const char* extensions =
-      glXQueryServerString(display, kDefaultScreen, GLX_EXTENSIONS);
+  const int screen = (display ? DefaultScreen(display) : 0);
+  const char* vendor = glXQueryServerString(display, screen, GLX_VENDOR);
+  const char* version = glXQueryServerString(display, screen, GLX_VERSION);
+  const char* extensions = glXQueryExtensionsString(display, screen);
   *info = GLWindowSystemBindingInfo();
   if (vendor)
     info->vendor = vendor;

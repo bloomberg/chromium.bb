@@ -4,11 +4,11 @@
 
 module content.mojom;
 
-import "components/tracing/common/background_tracing_agent.mojom";
 import "ipc/ipc.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "services/service_manager/public/mojom/service.mojom";
+import "services/tracing/public/mojom/background_tracing_agent.mojom";
 
 // The primordial interface child processes use to push requests to their
 // browser-side host object.
@@ -48,7 +48,7 @@ interface ChildProcess {
 
   // Requests the child process send its Mach task port to the caller.
   [EnableIf=is_mac]
-  GetTaskPort() => (handle task_port);
+  GetTaskPort() => (handle<platform> task_port);
 
   // Tells the child process to begin or end IPC message logging.
   [EnableIf=ipc_logging]
@@ -91,7 +91,8 @@ interface ChildProcess {
   // depends on the process type and potentially on the Content embedder.
   BindReceiver(mojo_base.mojom.GenericPendingReceiver receiver);
 
-  // Sets the coverage file for the child process.
-  [EnableIf=clang_coverage]
-  SetCoverageFile(mojo_base.mojom.File file);
+  // Sets the profiling file for the child process.
+  // Used for the coverage builds.
+  [EnableIf=clang_profiling_inside_sandbox]
+  SetProfilingFile(mojo_base.mojom.File file);
 };

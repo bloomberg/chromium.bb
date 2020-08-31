@@ -18,14 +18,14 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
@@ -50,7 +50,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
     private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
     @VisibleForTesting
-    static final int HIDE_NOTIFICATION_DELAY_MILLIS = 1000;
+    static final int HIDE_NOTIFICATION_DELAY_MILLIS = 2500;
 
     private Tab mTab;
     @VisibleForTesting
@@ -323,7 +323,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             }
 
             mOrigin = UrlFormatter.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(
-                    GURLUtils.getOrigin(mTab.getUrl()));
+                    GURLUtils.getOrigin(mTab.getUrlString()));
             mFavicon = null;
             mPageMediaImage = null;
             mPageMetadata = null;
@@ -561,7 +561,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         String pageUrl = webContents.getLastCommittedUrl();
         int size = MediaNotificationManager.MINIMAL_MEDIA_IMAGE_SIZE_PX;
         if (mLargeIconBridge == null) {
-            mLargeIconBridge = new LargeIconBridge(((TabImpl) mTab).getProfile());
+            mLargeIconBridge = new LargeIconBridge(Profile.fromWebContents(mTab.getWebContents()));
         }
         LargeIconBridge.LargeIconCallback callback = new LargeIconBridge.LargeIconCallback() {
             @Override
@@ -580,7 +580,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             }
         };
 
-        return mLargeIconBridge.getLargeIconForUrl(pageUrl, size, callback);
+        return mLargeIconBridge.getLargeIconForStringUrl(pageUrl, size, callback);
     }
 
     private boolean isNotificationHiddingOrHidden() {

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -28,7 +29,8 @@ constexpr char kTestUserGaiaId[] = "1234567890";
 
 class BrowserLoginTest : public chromeos::LoginManagerTest {
  public:
-  BrowserLoginTest() : LoginManagerTest(true, true) {}
+  BrowserLoginTest() : LoginManagerTest() { set_should_launch_browser(true); }
+
   ~BrowserLoginTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -45,11 +47,13 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
+  base::HistogramTester histograms;
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
+  histograms.ExpectTotalCount("OOBE.BootToSignInCompleted", 1);
 
   Browser* browser =
       chrome::FindAnyBrowser(ProfileManager::GetActiveUserProfile(), false);

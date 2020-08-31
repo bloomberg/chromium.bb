@@ -6,4 +6,7 @@ declare_args() {
   # Tells icu to load an external data file rather than rely on the icudata
   # being linked directly into the binary.
   icu_use_data_file = true
+  # If true, compile icu into a standalone static library. Currently this is
+  # only useful on Chrome OS.
+  icu_disable_thin_archive = false
 }

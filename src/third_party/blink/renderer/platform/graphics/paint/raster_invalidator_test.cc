@@ -6,12 +6,15 @@
 
 #include <utility>
 #include "base/bind_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
+
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -20,7 +23,7 @@ static const IntRect kDefaultLayerBounds(-9999, -7777, 18888, 16666);
 class RasterInvalidatorTest : public testing::Test,
                               public PaintTestConfigurations {
  public:
-  RasterInvalidatorTest() : invalidator_(base::DoNothing()) {}
+  RasterInvalidatorTest() = default;
 
   static PropertyTreeState DefaultPropertyTreeState() {
     return PropertyTreeState::Root();
@@ -47,58 +50,60 @@ class RasterInvalidatorTest : public testing::Test,
     return invalidator_.GetTracking()->Invalidations();
   }
 
-  using MapFunction = base::RepeatingCallback<void(IntRect&)>;
-  static IntRect ChunkRectToLayer(
-      const IntRect& rect,
-      const IntPoint& layer_offset,
-      const MapFunction& mapper = base::DoNothing()) {
-    auto r = rect;
-    mapper.Run(r);
-    r.MoveBy(layer_offset);
-    return r;
-  }
-
   RasterInvalidator invalidator_;
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(RasterInvalidatorTest);
 
-#define EXPECT_CHUNK_INVALIDATION_CUSTOM(                               \
-    invalidations, index, chunk, expected_reason, layer_offset, mapper) \
-  do {                                                                  \
-    const auto& info = (invalidations)[index];                          \
-    EXPECT_EQ(ChunkRectToLayer((chunk).bounds, layer_offset, mapper),   \
-              info.rect);                                               \
-    EXPECT_EQ(&(chunk).id.client, info.client);                         \
-    EXPECT_EQ(expected_reason, info.reason);                            \
-  } while (false)
+using MapFunction = base::RepeatingCallback<void(IntRect&)>;
+static IntRect ChunkRectToLayer(const IntRect& rect,
+                                const IntPoint& layer_offset,
+                                const MapFunction& mapper = base::DoNothing()) {
+  auto r = rect;
+  mapper.Run(r);
+  r.MoveBy(layer_offset);
+  return r;
+}
 
-#define EXPECT_CHUNK_INVALIDATION(invalidations, index, chunk, reason)  \
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, index, chunk, reason, \
-                                   -kDefaultLayerBounds.Location(),     \
-                                   base::DoNothing())
+static bool CheckChunkInvalidation(
+    const RasterInvalidationInfo& info,
+    const PaintChunk& chunk,
+    const IntRect& chunk_rect,
+    PaintInvalidationReason reason,
+    const IntPoint& layer_offset,
+    const MapFunction& mapper = base::DoNothing()) {
+  return ChunkRectToLayer(chunk_rect, layer_offset, mapper) == info.rect &&
+         &chunk.id.client == info.client && reason == info.reason;
+}
 
-#define EXPECT_INCREMENTAL_INVALIDATION(invalidations, index, chunk,         \
-                                        chunk_rect)                          \
-  do {                                                                       \
-    const auto& info = (invalidations)[index];                               \
-    EXPECT_EQ(ChunkRectToLayer(chunk_rect, -kDefaultLayerBounds.Location()), \
-              info.rect);                                                    \
-    EXPECT_EQ(&(chunk).id.client, info.client);                              \
-    EXPECT_EQ(PaintInvalidationReason::kIncremental, info.reason);           \
-  } while (false)
+MATCHER_P4(ChunkInvalidation, chunk, reason, layer_offset, mapper, "") {
+  return CheckChunkInvalidation(arg, *chunk, chunk->drawable_bounds, reason,
+                                layer_offset, mapper);
+}
+
+MATCHER_P2(ChunkInvalidation, chunk, reason, "") {
+  return CheckChunkInvalidation(arg, *chunk, chunk->drawable_bounds, reason,
+                                -kDefaultLayerBounds.Location());
+}
+
+MATCHER_P2(IncrementalInvalidation, chunk, chunk_rect, "") {
+  return CheckChunkInvalidation(arg, *chunk, chunk_rect,
+                                PaintInvalidationReason::kIncremental,
+                                -kDefaultLayerBounds.Location());
+}
 
 TEST_P(RasterInvalidatorTest, ImplicitFullLayerInvalidation) {
   auto artifact = TestPaintArtifact().Chunk(0).Build();
 
   invalidator_.SetTracksRasterInvalidations(true);
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_EQ(IntRect(IntPoint(), kDefaultLayerBounds.Size()),
-            invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations[0].reason);
+  const auto& client = artifact->PaintChunks()[0].id.client;
+  EXPECT_THAT(TrackedRasterInvalidations(),
+              ElementsAre(RasterInvalidationInfo{
+                  &client, client.DebugName(),
+                  IntRect(IntPoint(), kDefaultLayerBounds.Size()),
+                  PaintInvalidationReason::kFullLayer}));
   FinishCycle(*artifact);
   invalidator_.SetTracksRasterInvalidations(false);
 }
@@ -106,34 +111,35 @@ TEST_P(RasterInvalidatorTest, ImplicitFullLayerInvalidation) {
 TEST_P(RasterInvalidatorTest, LayerBounds) {
   auto artifact = TestPaintArtifact().Chunk(0).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   // No raster invalidations needed if layer origin doesn't change.
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
 
   auto new_layer_bounds = kDefaultLayerBounds;
   new_layer_bounds.Move(66, 77);
-  invalidator_.Generate(artifact, new_layer_bounds, DefaultPropertyTreeState());
+  invalidator_.Generate(base::DoNothing(), artifact, new_layer_bounds,
+                        DefaultPropertyTreeState());
   // Change of layer origin causes change of chunk0's transform to layer.
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(2u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
-                            PaintInvalidationReason::kPaintProperty);
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 1, artifact->PaintChunks()[0],
-                                   PaintInvalidationReason::kPaintProperty,
-                                   -new_layer_bounds.Location(),
-                                   base::DoNothing());
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(
+          ChunkInvalidation(&artifact->PaintChunks()[0],
+                            PaintInvalidationReason::kPaintProperty),
+          ChunkInvalidation(&artifact->PaintChunks()[0],
+                            PaintInvalidationReason::kPaintProperty,
+                            -new_layer_bounds.Location(), base::DoNothing())));
   FinishCycle(*artifact);
 }
 
 TEST_P(RasterInvalidatorTest, ReorderChunks) {
   auto artifact = TestPaintArtifact().Chunk(0).Chunk(1).Chunk(2).Build();
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
@@ -145,23 +151,23 @@ TEST_P(RasterInvalidatorTest, ReorderChunks) {
                           .Chunk(1)
                           .Bounds(IntRect(11, 22, 33, 44))
                           .Build();
-  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(2u, invalidations.size());
   // Invalidated new chunk 2's old (as artifact->PaintChunks()[1]) and new
   // (as new_artifact->PaintChunks()[2]) bounds.
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkReordered);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 1, new_artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kChunkReordered);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[1],
+                                    PaintInvalidationReason::kChunkReordered),
+                  ChunkInvalidation(&new_artifact->PaintChunks()[2],
+                                    PaintInvalidationReason::kChunkReordered)));
   FinishCycle(*new_artifact);
 }
 
 TEST_P(RasterInvalidatorTest, ReorderChunkSubsequences) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Chunk(1).Chunk(2).Chunk(3).Chunk(4).Build();
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
@@ -175,63 +181,98 @@ TEST_P(RasterInvalidatorTest, ReorderChunkSubsequences) {
                           .Bounds(IntRect(11, 22, 33, 44))
                           .Chunk(2)
                           .Build();
-  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(3u, invalidations.size());
   // Invalidated new chunk 3's old (as artifact->PaintChunks()[1] and new
   // (as new_artifact->PaintChunks()[3]) bounds.
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkReordered);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 1, new_artifact->PaintChunks()[3],
-                            PaintInvalidationReason::kChunkReordered);
   // Invalidated new chunk 4's new bounds. Didn't invalidate old bounds because
   // it's the same as the new bounds.
-  EXPECT_CHUNK_INVALIDATION(invalidations, 2, new_artifact->PaintChunks()[4],
-                            PaintInvalidationReason::kChunkReordered);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[1],
+                                    PaintInvalidationReason::kChunkReordered),
+                  ChunkInvalidation(&new_artifact->PaintChunks()[3],
+                                    PaintInvalidationReason::kChunkReordered),
+                  ChunkInvalidation(&new_artifact->PaintChunks()[4],
+                                    PaintInvalidationReason::kChunkReordered)));
   FinishCycle(*new_artifact);
 }
 
 TEST_P(RasterInvalidatorTest, ChunkAppearAndDisappear) {
   auto artifact = TestPaintArtifact().Chunk(0).Chunk(1).Chunk(2).Build();
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
   // Chunk 1 and 2 disappeared, 3 and 4 appeared.
   invalidator_.SetTracksRasterInvalidations(true);
   auto new_artifact = TestPaintArtifact().Chunk(0).Chunk(3).Chunk(4).Build();
-  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(4u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, new_artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkAppeared);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 1, new_artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kChunkAppeared);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 2, artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkDisappeared);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 3, artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kChunkDisappeared);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(
+          ChunkInvalidation(&new_artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkAppeared),
+          ChunkInvalidation(&new_artifact->PaintChunks()[2],
+                            PaintInvalidationReason::kChunkAppeared),
+          ChunkInvalidation(&artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkDisappeared),
+          ChunkInvalidation(&artifact->PaintChunks()[2],
+                            PaintInvalidationReason::kChunkDisappeared)));
+  FinishCycle(*new_artifact);
+}
+
+TEST_P(RasterInvalidatorTest, InvalidateDrawableBounds) {
+  IntRect drawable_bounds(11, 22, 33, 44);
+  IntRect bounds(0, 0, 100, 100);
+  auto artifact = TestPaintArtifact()
+                      .Chunk(0)
+                      .Chunk(1)
+                      .Bounds(bounds)
+                      .DrawableBounds(drawable_bounds)
+                      .Build();
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        DefaultPropertyTreeState());
+  FinishCycle(*artifact);
+
+  invalidator_.SetTracksRasterInvalidations(true);
+  auto new_artifact = TestPaintArtifact()
+                          .Chunk(0)
+                          .Chunk(2)
+                          .Bounds(bounds)
+                          .DrawableBounds(drawable_bounds)
+                          .Build();
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
+                        DefaultPropertyTreeState());
+  // ChunkInvalidation uses the drawable_bounds. We expect raster invalidations
+  // based on drawable_bounds instead of bounds.
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(
+          ChunkInvalidation(&new_artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkAppeared),
+          ChunkInvalidation(&artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkDisappeared)));
   FinishCycle(*new_artifact);
 }
 
 TEST_P(RasterInvalidatorTest, ChunkAppearAtEnd) {
   auto artifact = TestPaintArtifact().Chunk(0).Build();
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
   auto new_artifact = TestPaintArtifact().Chunk(0).Chunk(1).Chunk(2).Build();
-  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(2u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, new_artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkAppeared);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 1, new_artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kChunkAppeared);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&new_artifact->PaintChunks()[1],
+                                    PaintInvalidationReason::kChunkAppeared),
+                  ChunkInvalidation(&new_artifact->PaintChunks()[2],
+                                    PaintInvalidationReason::kChunkAppeared)));
   FinishCycle(*new_artifact);
 }
 
@@ -239,21 +280,22 @@ TEST_P(RasterInvalidatorTest, UncacheableChunks) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Chunk(1).Uncacheable().Chunk(2).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
   auto new_artifact =
       TestPaintArtifact().Chunk(0).Chunk(2).Chunk(1).Uncacheable().Build();
-  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+  invalidator_.Generate(base::DoNothing(), new_artifact, kDefaultLayerBounds,
                         DefaultPropertyTreeState());
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(2u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, new_artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kChunkUncacheable);
-  EXPECT_CHUNK_INVALIDATION(invalidations, 1, artifact->PaintChunks()[1],
-                            PaintInvalidationReason::kChunkUncacheable);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(
+          ChunkInvalidation(&new_artifact->PaintChunks()[2],
+                            PaintInvalidationReason::kChunkUncacheable),
+          ChunkInvalidation(&artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkUncacheable)));
   FinishCycle(*new_artifact);
 }
 
@@ -275,7 +317,8 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
                       .Properties(t0(), *clip2, e0())
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change both clip0 and clip2.
@@ -288,13 +331,14 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
                 ClipPaintPropertyNode::State{&clip2->LocalTransformSpace(),
                                              new_clip_rect});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   // Property change in the layer state should not trigger raster invalidation.
   // |clip2| change should trigger raster invalidation.
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[2],
-                            PaintInvalidationReason::kPaintProperty);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[2],
+                                    PaintInvalidationReason::kPaintProperty)));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 
@@ -309,11 +353,12 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
                            .Build();
 
   invalidator_.SetTracksRasterInvalidations(true);
-  invalidator_.Generate(new_artifact1, kDefaultLayerBounds, layer_state);
-  const auto& invalidations1 = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations1.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations1, 0, new_artifact1->PaintChunks()[1],
-                            PaintInvalidationReason::kPaintProperty);
+  invalidator_.Generate(base::DoNothing(), new_artifact1, kDefaultLayerBounds,
+                        layer_state);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&new_artifact1->PaintChunks()[1],
+                                    PaintInvalidationReason::kPaintProperty)));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*new_artifact1);
 }
@@ -334,7 +379,8 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
                       .Bounds(EnclosingIntRect(clip_rect.Rect()))
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change clip1 to bigger, which is still bound by clip0, resulting no actual
@@ -345,7 +391,8 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
                 ClipPaintPropertyNode::State{&clip1->LocalTransformSpace(),
                                              new_clip_rect1});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 
@@ -355,18 +402,19 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
                 ClipPaintPropertyNode::State{&clip1->LocalTransformSpace(),
                                              new_clip_rect2});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(4u, invalidations.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   // |clip1| change should trigger incremental raster invalidation.
-  EXPECT_INCREMENTAL_INVALIDATION(invalidations, 0, artifact->PaintChunks()[1],
-                                  IntRect(-1000, -1000, 2000, 500));
-  EXPECT_INCREMENTAL_INVALIDATION(invalidations, 1, artifact->PaintChunks()[1],
-                                  IntRect(-1000, -500, 500, 1000));
-  EXPECT_INCREMENTAL_INVALIDATION(invalidations, 2, artifact->PaintChunks()[1],
-                                  IntRect(500, -500, 500, 1000));
-  EXPECT_INCREMENTAL_INVALIDATION(invalidations, 3, artifact->PaintChunks()[1],
-                                  IntRect(-1000, 500, 2000, 500));
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(IncrementalInvalidation(&artifact->PaintChunks()[1],
+                                          IntRect(-1000, -1000, 2000, 500)),
+                  IncrementalInvalidation(&artifact->PaintChunks()[1],
+                                          IntRect(-1000, -500, 500, 1000)),
+                  IncrementalInvalidation(&artifact->PaintChunks()[1],
+                                          IntRect(500, -500, 500, 1000)),
+                  IncrementalInvalidation(&artifact->PaintChunks()[1],
+                                          IntRect(-1000, 500, 2000, 500))));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 
@@ -377,12 +425,12 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
                                              new_clip_rect3});
 
   invalidator_.SetTracksRasterInvalidations(true);
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations1 = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations1.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   // |clip1| change should trigger incremental raster invalidation.
-  EXPECT_INCREMENTAL_INVALIDATION(invalidations1, 0, artifact->PaintChunks()[1],
-                                  IntRect(500, -500, 500, 1000));
+  EXPECT_THAT(TrackedRasterInvalidations(),
+              ElementsAre(IncrementalInvalidation(
+                  &artifact->PaintChunks()[1], IntRect(500, -500, 500, 1000))));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 }
@@ -402,21 +450,22 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeWithOutsetForRasterEffects) {
                       .OutsetForRasterEffects(2)
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
   FloatRoundedRect new_clip_rect(-2000, -2000, 4000, 4000);
   clip->Update(c0(), ClipPaintPropertyNode::State{&t0(), new_clip_rect});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   auto mapper = [](IntRect& r) { r.Inflate(2); };
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 0, artifact->PaintChunks()[0],
-                                   PaintInvalidationReason::kPaintProperty,
-                                   -kDefaultLayerBounds.Location(),
-                                   base::BindRepeating(mapper));
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(
+          &artifact->PaintChunks()[0], PaintInvalidationReason::kPaintProperty,
+          -kDefaultLayerBounds.Location(), base::BindRepeating(mapper))));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 }
@@ -434,7 +483,8 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChange) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, *c1, e0()).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change both t1 and t2 but keep t1*t2 unchanged, to test change of
@@ -443,11 +493,12 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChange) {
   t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(-10, -20)});
   t2->Update(*t1, TransformPaintPropertyNode::State{FloatSize(10, 20)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
-                            PaintInvalidationReason::kPaintProperty);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty)));
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
@@ -468,7 +519,8 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChangeNoInvalidation) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, *c1, e0()).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change both t1 and t2 but keep t1*t2 unchanged.
@@ -476,7 +528,8 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChangeNoInvalidation) {
   t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(-10, -20)});
   t2->Update(*t1, TransformPaintPropertyNode::State{FloatSize(10, 20)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 }
@@ -494,7 +547,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
                       .Properties(*transform1, c0(), e0())
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change layer_transform should not cause raster invalidation in the layer.
@@ -503,7 +557,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
       *layer_transform->Parent(),
       TransformPaintPropertyNode::State{TransformationMatrix().Scale(10)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 
@@ -516,7 +571,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   transform0->Update(*new_layer_transform, TransformPaintPropertyNode::State{
                                                transform0->Translation2D()});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 
@@ -526,7 +582,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   transform0->Update(layer_state.Transform(), TransformPaintPropertyNode::State{
                                                   transform0->Translation2D()});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 
@@ -540,19 +597,20 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
                      TransformPaintPropertyNode::State{
                          transform1->Translation2D() + FloatSize(-20, -30)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(2u, invalidations.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   auto mapper0 = [](IntRect& r) { r.Move(10, 20); };
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 0, artifact->PaintChunks()[0],
-                                   PaintInvalidationReason::kPaintProperty,
-                                   -kDefaultLayerBounds.Location(),
-                                   base::BindRepeating(mapper0));
   auto mapper1 = [](IntRect& r) { r.Move(30, 50); };
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 1, artifact->PaintChunks()[0],
-                                   PaintInvalidationReason::kPaintProperty,
-                                   -kDefaultLayerBounds.Location(),
-                                   base::BindRepeating(mapper1));
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty,
+                                    -kDefaultLayerBounds.Location(),
+                                    base::BindRepeating(mapper0)),
+                  ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty,
+                                    -kDefaultLayerBounds.Location(),
+                                    base::BindRepeating(mapper1))));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 }
@@ -567,7 +625,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
                       .Properties(*chunk_transform, c0(), e0())
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change chunk_transform by tiny difference, which should be ignored.
@@ -579,7 +638,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
                                             .Scale(1.0000001)
                                             .Rotate(0.0000001)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 
@@ -593,7 +653,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
                                               .Translate(0.0000001, -0.0000001)
                                               .Scale(1.0000001)
                                               .Rotate(0.0000001)});
-    invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+    invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                          layer_state);
     invalidated = !TrackedRasterInvalidations().IsEmpty();
     FinishCycle(*artifact);
   }
@@ -613,7 +674,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
                       .Bounds(chunk_bounds)
                       .Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Scale change from 1e-6 to 2e-6 should be treated as significant.
@@ -622,7 +684,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
       layer_state.Transform(),
       TransformPaintPropertyNode::State{TransformationMatrix().Scale(2e-6)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_FALSE(TrackedRasterInvalidations().IsEmpty());
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
@@ -633,7 +696,8 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
                           TransformPaintPropertyNode::State{
                               TransformationMatrix().Scale(2e-6 + 1e-15)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
@@ -650,7 +714,8 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChange) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, c0(), *e1).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change both t1 and t2 but keep t1*t2 unchanged, to test change of
@@ -659,14 +724,14 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChange) {
   t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(-10, -20)});
   t2->Update(*t1, TransformPaintPropertyNode::State{FloatSize(10, 20)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   auto mapper = [](IntRect& r) { r.Inflate(60); };
-  EXPECT_CHUNK_INVALIDATION_CUSTOM(invalidations, 0, artifact->PaintChunks()[0],
-                                   PaintInvalidationReason::kPaintProperty,
-                                   -kDefaultLayerBounds.Location(),
-                                   base::BindRepeating(mapper));
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(
+          &artifact->PaintChunks()[0], PaintInvalidationReason::kPaintProperty,
+          -kDefaultLayerBounds.Location(), base::BindRepeating(mapper))));
   invalidator_.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 }
@@ -686,7 +751,8 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChangeNoInvalidation) {
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, c0(), *e1).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   // Change both t1 and t2 but keep t1*t2 unchanged.
@@ -694,7 +760,8 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChangeNoInvalidation) {
   t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(-10, -20)});
   t2->Update(*t1, TransformPaintPropertyNode::State{FloatSize(10, 20)});
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations().IsEmpty());
   FinishCycle(*artifact);
 }
@@ -711,7 +778,8 @@ TEST_P(RasterInvalidatorTest, AliasEffectParentChanges) {
   PropertyTreeState chunk_state(t0(), c0(), *alias_effect);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
@@ -721,11 +789,12 @@ TEST_P(RasterInvalidatorTest, AliasEffectParentChanges) {
 
   // We expect to get invalidations since the effect unaliased effect is
   // actually different now.
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
-                            PaintInvalidationReason::kPaintProperty);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty)));
   FinishCycle(*artifact);
 }
 
@@ -742,7 +811,8 @@ TEST_P(RasterInvalidatorTest, NestedAliasEffectParentChanges) {
   PropertyTreeState chunk_state(t0(), c0(), *alias_effect_2);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
@@ -753,11 +823,12 @@ TEST_P(RasterInvalidatorTest, NestedAliasEffectParentChanges) {
 
   // We expect to get invalidations since the effect unaliased effect is
   // actually different now.
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
-                            PaintInvalidationReason::kPaintProperty);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty)));
   FinishCycle(*artifact);
 }
 
@@ -775,7 +846,8 @@ TEST_P(RasterInvalidatorTest, EffectWithAliasTransformWhoseParentChanges) {
   PropertyTreeState chunk_state(t0(), c0(), *e1);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
   FinishCycle(*artifact);
 
   invalidator_.SetTracksRasterInvalidations(true);
@@ -785,11 +857,12 @@ TEST_P(RasterInvalidatorTest, EffectWithAliasTransformWhoseParentChanges) {
 
   // We expect to get invalidations since the effect unaliased effect is
   // actually different now.
-  invalidator_.Generate(artifact, kDefaultLayerBounds, layer_state);
-  const auto& invalidations = TrackedRasterInvalidations();
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
-                            PaintInvalidationReason::kPaintProperty);
+  invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
+                        layer_state);
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(&artifact->PaintChunks()[0],
+                                    PaintInvalidationReason::kPaintProperty)));
   FinishCycle(*artifact);
 }
 

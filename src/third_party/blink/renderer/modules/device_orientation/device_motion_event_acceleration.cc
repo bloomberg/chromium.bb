@@ -24,7 +24,7 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_device_motion_event_acceleration_init.h"
 
 namespace blink {
 
@@ -51,18 +51,21 @@ bool DeviceMotionEventAcceleration::HasAccelerationData() const {
   return !std::isnan(x_) || !std::isnan(y_) || !std::isnan(z_);
 }
 
-double DeviceMotionEventAcceleration::x(bool& is_null) const {
-  is_null = std::isnan(x_);
+base::Optional<double> DeviceMotionEventAcceleration::x() const {
+  if (std::isnan(x_))
+    return base::nullopt;
   return x_;
 }
 
-double DeviceMotionEventAcceleration::y(bool& is_null) const {
-  is_null = std::isnan(y_);
+base::Optional<double> DeviceMotionEventAcceleration::y() const {
+  if (std::isnan(y_))
+    return base::nullopt;
   return y_;
 }
 
-double DeviceMotionEventAcceleration::z(bool& is_null) const {
-  is_null = std::isnan(z_);
+base::Optional<double> DeviceMotionEventAcceleration::z() const {
+  if (std::isnan(z_))
+    return base::nullopt;
   return z_;
 }
 

@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 #include "printing/print_job_constants.h"
@@ -25,8 +27,9 @@
 
 namespace printing {
 
-// Returns true if |color_mode| is color and not B&W.
-PRINTING_EXPORT bool IsColorModelSelected(int color_mode);
+// Returns true if |color_mode| is color and not B&W. Must be called with a
+// |color_mode| from printing::ColorModel, excluding UNKNOWN_COLOR_MODEL.
+PRINTING_EXPORT base::Optional<bool> IsColorModelSelected(int color_mode);
 
 #if defined(USE_CUPS)
 // Get the color model setting name and value for the |color_mode|.
@@ -172,8 +175,10 @@ class PRINTING_EXPORT PrintSettings {
   void set_copies(int copies) { copies_ = copies; }
   int copies() const { return copies_; }
 
-  void set_duplex_mode(DuplexMode duplex_mode) { duplex_mode_ = duplex_mode; }
-  DuplexMode duplex_mode() const { return duplex_mode_; }
+  void set_duplex_mode(mojom::DuplexMode duplex_mode) {
+    duplex_mode_ = duplex_mode;
+  }
+  mojom::DuplexMode duplex_mode() const { return duplex_mode_; }
 
 #if defined(OS_WIN)
   void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
@@ -254,7 +259,7 @@ class PRINTING_EXPORT PrintSettings {
   int copies_;
 
   // Duplex type user wants to use.
-  DuplexMode duplex_mode_;
+  mojom::DuplexMode duplex_mode_;
 
   // Printer device name as opened by the OS.
   base::string16 device_name_;

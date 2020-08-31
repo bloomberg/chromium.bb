@@ -101,11 +101,26 @@
     <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces.">
       Network addresses
     </message>
+    <message name="IDS_MANAGEMENT_REPORT_DEVICE_CRASH_REPORTS" desc="Message stating that administrators see the numbers and causes of the crashes that occurred on the device recently.">
+      Numbers and causes of the crashes that occurred recently
+    </message>
     <message name="IDS_MANAGEMENT_REPORT_PRINTING" desc="Message stating that administrators can see names of printed files.">
       Names of files that you print
     </message>
     <message name="IDS_MANAGEMENT_CROSTINI" desc="Message stating that administrators can see Crostini usage">
       Linux apps installed and when they were last used
+    </message>
+    <message name="IDS_MANAGEMENT_CROSTINI_CONTAINER_CONFIGURATION" desc="Message stating that administrators can see Crostini usage">
+      Linux activity within the container, and can install and run Linux apps within the container
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_EXTENSIONS" desc="Message stating that administrators can see user's extensions.">
+      Which extensions you have installed
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS" desc="Message stating that administrators can see user's installed Android applications.">
+      Which Google Play apps you have installed
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_PROXY_SERVER" desc="Message stating that administrators can see user's traffic when connected to a proxy server.">
+      Websites you visit and the contents of not secure pages
     </message>
   </if>
 
@@ -146,7 +161,7 @@
     Version information about your device and browser
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS" desc="Message explaining that an extension currently reports the user's exensions and plugins">
-    Information about installed extensions and plugins
+    Which extensions and plugins you have installed
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS" desc="Message explaining that an extension currently reports the user's Safe Browsing warnings and ignored warnings">
     <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;<ex>&lt;a target="_blank" href="https://example.com"&gt;</ex></ph>Safe Browsing<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> warnings
@@ -158,21 +173,21 @@
     Performance data and crash reports
   </message>
 
-  <!-- Strings related to Chrome Enterprise User Protect -->
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION" desc="Title of the Chrome Enterprise User Protect section of the page">
-    Chrome Enterprise User Protect
+  <!-- Strings related to Chrome Enterprise Connectors -->
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION" desc="Title of the Chrome Enterprise Connectors section of the page">
+    Chrome Enterprise Connectors
   </message>
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION" desc="Description of the Chrome Enterprise User Protect section of the page">
-    Your administrator has enabled Chrome Enterprise User Protect on your browser. Chrome Enterprise User Protect has access to some of your data.
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION" desc="Description of the Chrome Enterprise Connectors section of the page">
+    Your administrator has enabled Chrome Enterprise Connectors on your browser. These connectors have access to some of your data.
   </message>
-  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY" desc="Description of the Chrome Enterprise User Protect section of the page">
-    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has enabled Chrome Enterprise User Protect on your browser. Chrome Enterprise User Protect has access to some of your data.
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY" desc="Description of the Chrome Enterprise Connectors section of the page">
+    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has enabled Chrome Enterprise Connectors on your browser. These connectors have access to some of your data.
   </message>
   <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME" desc="Name for the data loss prevention feature">
     Data Loss Prevention
   </message>
-  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS" desc="Permissions description for the data loss prevention feature">
-    Scan the contents of the files that you download or upload in Chrome.
+  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS" desc="Permissions description for the data loss prevention feature.  The part that says 'that you download or upload in Chrome' applies only to files, not the clipboard">
+    Scan the contents of the clipboard, as well as files that you download or upload in Chrome.
   </message>
   <message name="IDS_MANAGEMENT_MALWARE_SCANNING_NAME" desc="Name for the malware scanning feature">
     Malware Scanning
@@ -184,6 +199,6 @@
     Enterprise Reporting
   </message>
   <message name="IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS" desc="Permissions description for the enterprise reporting feature">
-    Share data about security events that have been flagged by Chrome Enterprise User Protect with your Administrator. This may include URLs of pages you visit, file names or metadata, and the username you use to sign in to your device and Chrome.
+    Share data about security events that have been flagged by Chrome Enterprise Connectors with your administrator. This may include URLs of pages you visit, file names or metadata, and the username you use to sign in to your device and Chrome.
   </message>
 </grit-part>

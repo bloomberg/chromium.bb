@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "chrome/common/search/search.mojom.h"
 #include "chrome/renderer/instant_restricted_id_cache.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
@@ -28,7 +28,7 @@
 // https://www.chromium.org/embeddedsearch).
 class SearchBox : public content::RenderFrameObserver,
                   public content::RenderFrameObserverTracker<SearchBox>,
-                  public chrome::mojom::EmbeddedSearchClient {
+                  public search::mojom::EmbeddedSearchClient {
  public:
   // Helper class for GenerateImageURLFromTransientURL() to adapt SearchBox's
   // instance, thereby allow mocking for unit tests.
@@ -204,8 +204,20 @@ class SearchBox : public content::RenderFrameObserver,
   // |clear_result| is true.
   void StopAutocomplete(bool clear_result);
 
+  // Logs the time it took in milliseconds since the first character (in a
+  // series of characters) was typed until Autocomplete results were painted.
+  void LogCharTypedToRepaintLatency(uint32_t latency_ms);
+
   // Called when a user dismisses a promo.
   void BlocklistPromo(const std::string& promo_id);
+
+  // Handles navigation to the chrome://extensions page by calling the browser
+  // to do the navigation.
+  void OpenExtensionsPage(double button,
+                          bool alt_key,
+                          bool ctrl_key,
+                          bool meta_key,
+                          bool shift_key);
 
   // Handles navigation to privileged (i.e. chrome://) URLs by calling the
   // browser to do the navigation.
@@ -219,6 +231,11 @@ class SearchBox : public content::RenderFrameObserver,
                              bool meta_key,
                              bool shift_key);
 
+  // Tells the browser to allow suggestions with the given suggestion group ID
+  // to appear in the results if they currently are not allowed to or to prevent
+  // them from appearing in the results if they are currently permitted to.
+  void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -229,9 +246,12 @@ class SearchBox : public content::RenderFrameObserver,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
 
-  // Overridden from chrome::mojom::EmbeddedSearchClient:
+  // Overridden from search::mojom::EmbeddedSearchClient:
   void AutocompleteResultChanged(
-      chrome::mojom::AutocompleteResultPtr result) override;
+      search::mojom::AutocompleteResultPtr result) override;
+  void AutocompleteMatchImageAvailable(uint32_t match_index,
+                                       const std::string& image_url,
+                                       const std::string& data_url) override;
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
@@ -249,9 +269,9 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // The connection to the EmbeddedSearch service in the browser process.
-  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearch>
+  mojo::AssociatedRemote<search::mojom::EmbeddedSearch>
       embedded_search_service_;
-  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearchClient> receiver_{this};
+  mojo::AssociatedReceiver<search::mojom::EmbeddedSearchClient> receiver_{this};
 
   // Whether it's legal to execute JavaScript in |render_frame()|.
   // This class may want to execute JS in response to IPCs (via the

@@ -30,9 +30,7 @@ jumbo_component("init") {
     "//ui/gl:buildflags",
   ]
 
-  public_deps = [
-    "//ui/gl",
-  ]
+  public_deps = [ "//ui/gl" ]
 
   if (is_android) {
     sources += [
@@ -60,13 +58,21 @@ jumbo_component("init") {
     libs = [ "OpenGL.framework" ]
   } else if (use_x11) {
     sources += [
+      "gl_display_egl_util_x11.cc",
+      "gl_display_egl_util_x11.h",
       "gl_factory_x11.cc",
       "gl_initializer_x11.cc",
     ]
 
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/base/x",
+      "//ui/base/x:gl",
+      "//ui/gfx/x",
+    ]
   } else if (use_ozone) {
     sources += [
+      "gl_display_egl_util_ozone.cc",
+      "gl_display_egl_util_ozone.h",
       "gl_factory_ozone.cc",
       "gl_initializer_ozone.cc",
       "ozone_util.h",

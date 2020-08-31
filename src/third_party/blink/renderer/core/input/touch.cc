@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/input/touch.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_touch_init.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -116,7 +117,7 @@ Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
       rotation_angle_, force_, region_, absolute_location_);
 }
 
-void Touch::Trace(blink::Visitor* visitor) {
+void Touch::Trace(Visitor* visitor) {
   visitor->Trace(target_);
   ScriptWrappable::Trace(visitor);
 }

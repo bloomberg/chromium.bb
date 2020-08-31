@@ -2,7 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("zlib") {
+config("zlib_config") {
+  include_dirs = [ "src" ]
+}
+
+config("zlib_internal_config") {
+  defines = [ "ZLIB_IMPLEMENTATION" ]
+  cflags = [ "-w" ]  # Disable all warnings.
+}
+
+static_library("zlib") {
+  # Don't stomp on "libzlib"
+  output_name = "chrome_zlib"
+
   sources = [
     "src/adler32.c",
     "src/compress.c",
@@ -26,30 +38,19 @@ source_set("zlib") {
     "src/trees.c",
     "src/trees.h",
     "src/uncompr.c",
+    "src/zconf.h",
     "src/zlib.h",
     "src/zutil.c",
     "src/zutil.h",
   ]
 
-  include_dirs = [
-    "src",
-    ".",
-  ]
+  defines = []
+  deps = []
 
-  defines = [
-    "HAVE_SYS_TYPES_H",
-    "HAVE_STDINT_H",
-    "HAVE_STDDEF_H",
-    "_LARGEFILE64_SOURCE",
-    "_FILE_OFFSET_BITS=64",
-  ]
-  if (is_mac) {
-    # NOTE: zlib wants to use fseeko() if available, but on Mac it isn't
-    # available.
-    defines += [ "NO_FSEEKO" ]
-  }
-}
+  include_dirs = [ "." ]
+  configs += [ ":zlib_internal_config" ]
 
-config("zlib_config") {
-  include_dirs = [ "src" ]
+  public_configs = [ ":zlib_config" ]
+
+  allow_circular_includes_from = deps
 }

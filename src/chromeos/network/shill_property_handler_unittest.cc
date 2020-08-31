@@ -258,7 +258,6 @@ class ShillPropertyHandlerTest : public testing::Test {
     return (type == shill::kTypeEthernet ||
             type == shill::kTypeEthernetEap ||
             type == shill::kTypeWifi ||
-            type == shill::kTypeBluetooth ||
             type == shill::kTypeCellular ||
             type == shill::kTypeVPN);
   }
@@ -323,7 +322,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   // Enable the technology.
   listener_->reset_list_updates();
   ShillManagerClient::Get()->EnableTechnology(
-      shill::kTypeWifi, base::DoNothing(), base::Bind(&ErrorCallbackFunction));
+      shill::kTypeWifi, base::DoNothing(),
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
@@ -406,7 +406,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   base::Value scan_interval(3);
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath), shill::kScanIntervalProperty,
-      scan_interval, base::DoNothing(), base::Bind(&ErrorCallbackFunction));
+      scan_interval, base::DoNothing(), base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   // Property change triggers an update (but not a service list update).
   EXPECT_EQ(1, listener_->property_updates(
@@ -418,7 +418,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath), shill::kStateProperty,
       base::Value(shill::kStateReady), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
 
@@ -441,21 +441,21 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   base::Value ip_address("192.168.1.1");
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kAddressProperty, ip_address,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::ListValue dns_servers;
   dns_servers.AppendString("192.168.1.100");
   dns_servers.AppendString("192.168.1.101");
-  ShillIPConfigClient::Get()->SetProperty(
-      dbus::ObjectPath(kTestIPConfigPath), shill::kNameServersProperty,
-      dns_servers, EmptyVoidDBusMethodCallback());
+  ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
+                                          shill::kNameServersProperty,
+                                          dns_servers, base::DoNothing());
   base::Value prefixlen(8);
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kPrefixlenProperty, prefixlen,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::Value gateway("192.0.0.1");
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kGatewayProperty, gateway,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Add a service with an empty ipconfig and then update
@@ -469,7 +469,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(kTestServicePath1), shill::kIPConfigProperty,
       base::Value(kTestIPConfigPath), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   // IPConfig property change on the service should trigger an IPConfigs update.
   EXPECT_EQ(1, listener_->property_updates(

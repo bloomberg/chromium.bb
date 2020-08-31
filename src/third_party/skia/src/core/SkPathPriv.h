@@ -9,6 +9,7 @@
 #define SkPathPriv_DEFINED
 
 #include "include/core/SkPath.h"
+#include "include/private/SkIDChangeListener.h"
 
 static_assert(0 == static_cast<int>(SkPathFillType::kWinding), "fill_type_mismatch");
 static_assert(1 == static_cast<int>(SkPathFillType::kEvenOdd), "fill_type_mismatch");
@@ -22,6 +23,8 @@ public:
 #else
     static const int kPathRefGenIDBitCnt = 32;
 #endif
+
+    static constexpr SkScalar kW0PlaneDistance = 0.05f;
 
     enum FirstDirection : int {
         kCW_FirstDirection,         // == SkPathDirection::kCW
@@ -91,8 +94,7 @@ public:
         return false;
     }
 
-    static void AddGenIDChangeListener(const SkPath& path,
-                                       sk_sp<SkPathRef::GenIDChangeListener> listener) {
+    static void AddGenIDChangeListener(const SkPath& path, sk_sp<SkIDChangeListener> listener) {
         path.fPathRef->addGenIDChangeListener(std::move(listener));
     }
 
@@ -139,6 +141,43 @@ public:
         Verbs(const Verbs&) = delete;
         Verbs& operator=(const Verbs&) = delete;
         SkPathRef* fPathRef;
+    };
+
+    /**
+      * Iterates through a raw range of path verbs, points, and conics. All values are returned
+      * unaltered.
+      *
+      * NOTE: This class's definition will be moved into SkPathPriv once RangeIter is removed.
+    */
+    using RangeIter = SkPath::RangeIter;
+
+    /**
+     * Iterable object for traversing verbs, points, and conic weights in a path:
+     *
+     *   for (auto [verb, pts, weights] : SkPathPriv::Iterate(skPath)) {
+     *       ...
+     *   }
+     */
+    struct Iterate {
+    public:
+        Iterate(const SkPath& path)
+                : Iterate(path.fPathRef->verbsBegin(),
+                          // Don't allow iteration through non-finite points.
+                          (!path.isFinite()) ? path.fPathRef->verbsBegin()
+                                             : path.fPathRef->verbsEnd(),
+                          path.fPathRef->points(), path.fPathRef->conicWeights()) {
+        }
+        Iterate(const uint8_t* verbsBegin, const uint8_t* verbsEnd, const SkPoint* points,
+                const SkScalar* weights)
+                : fVerbsBegin(verbsBegin), fVerbsEnd(verbsEnd), fPoints(points), fWeights(weights) {
+        }
+        SkPath::RangeIter begin() { return {fVerbsBegin, fPoints, fWeights}; }
+        SkPath::RangeIter end() { return {fVerbsEnd, nullptr, nullptr}; }
+    private:
+        const uint8_t* fVerbsBegin;
+        const uint8_t* fVerbsEnd;
+        const SkPoint* fPoints;
+        const SkScalar* fWeights;
     };
 
     /**
@@ -315,6 +354,30 @@ public:
      */
     static SkPathFillType ConvertToNonInverseFillType(SkPathFillType fill) {
         return (SkPathFillType)(static_cast<int>(fill) & 1);
+    }
+
+    /**
+     *  If needed (to not blow-up under a perspective matrix), clip the path, returning the
+     *  answer in "result", and return true.
+     *
+     *  Note result might be empty (if the path was completely clipped out).
+     *
+     *  If no clipping is needed, returns false and "result" is left unchanged.
+     */
+    static bool PerspectiveClip(const SkPath& src, const SkMatrix&, SkPath* result);
+
+    /**
+     * Gets the number of GenIDChangeListeners. If another thread has access to this path then
+     * this may be stale before return and only indicates that the count was the return value
+     * at some point during the execution of the function.
+     */
+    static int GenIDChangeListenersCount(const SkPath&);
+
+    static void UpdatePathPoint(SkPath* path, int index, const SkPoint& pt) {
+        SkASSERT(index < path->countPoints());
+        SkPathRef::Editor ed(&path->fPathRef);
+        ed.writablePoints()[index] = pt;
+        path->dirtyAfterEdit();
     }
 };
 

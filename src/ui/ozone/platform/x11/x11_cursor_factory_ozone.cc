@@ -5,7 +5,9 @@
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -21,11 +23,11 @@ PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
 }
 
 // Gets default aura cursor bitmap/hotspot and creates a X11CursorOzone with it.
-scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(CursorType type) {
+scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(mojom::CursorType type) {
   Cursor cursor(type);
-  cursor.set_device_scale_factor(1);
-  SkBitmap bitmap = cursor.GetBitmap();
-  gfx::Point hotspot = cursor.GetHotspot();
+  cursor.set_image_scale_factor(1);
+  SkBitmap bitmap = GetCursorBitmap(cursor);
+  gfx::Point hotspot = GetCursorHotspot(cursor);
   if (!bitmap.isNull())
     return new X11CursorOzone(bitmap, hotspot);
   return nullptr;
@@ -38,7 +40,7 @@ X11CursorFactoryOzone::X11CursorFactoryOzone()
 
 X11CursorFactoryOzone::~X11CursorFactoryOzone() {}
 
-PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(CursorType type) {
+PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(mojom::CursorType type) {
   return ToPlatformCursor(GetDefaultCursorInternal(type).get());
 }
 
@@ -83,8 +85,8 @@ void X11CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 }
 
 scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
-    CursorType type) {
-  if (type == CursorType::kNone)
+    mojom::CursorType type) {
+  if (type == mojom::CursorType::kNone)
     return invisible_cursor_;
 
   if (!default_cursors_.count(type)) {
@@ -100,8 +102,8 @@ scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
     // pointer cursor then invisible cursor if this fails.
     cursor = CreateAuraX11Cursor(type);
     if (!cursor.get()) {
-      if (type != CursorType::kPointer) {
-        cursor = GetDefaultCursorInternal(CursorType::kPointer);
+      if (type != mojom::CursorType::kPointer) {
+        cursor = GetDefaultCursorInternal(mojom::CursorType::kPointer);
       } else {
         NOTREACHED() << "Failed to load default cursor bitmap";
       }

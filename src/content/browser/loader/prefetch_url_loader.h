@@ -86,20 +86,12 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       const network::URLLoaderCompletionStatus& completion_status);
 
  private:
-  // This enum is used to record a histogram and should not be renumbered.
-  enum class PrefetchRedirect {
-    kPrefetchMade = 0,
-    kPrefetchRedirected = 1,
-    kPrefetchRedirectedSXGHandler = 2,
-    kMaxValue = kPrefetchRedirectedSXGHandler
-  };
-
-  void RecordPrefetchRedirectHistogram(PrefetchRedirect event);
-
   // network::mojom::URLLoader overrides:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;

@@ -381,13 +381,13 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
 
   Vector<CSPHeaderAndType> headers{
-      {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+      {"contentSecurityPolicy",
+       network::mojom::ContentSecurityPolicyType::kReport}};
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          KURL("http://fake.url/"), mojom::ScriptType::kClassic,
-          OffMainThreadWorkerScriptFetchOption::kDisabled,
-          "fake global scope name", "fake user agent",
+          KURL("http://fake.url/"), mojom::blink::ScriptType::kClassic,
+          "fake global scope name", "fake user agent", UserAgentMetadata(),
           nullptr /* web_worker_fetch_context */, headers,
           network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
           false /* starter_secure_context */,
@@ -492,7 +492,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-// Disabled due to flakiness: https://crbug.com/935231
+// TODO(https://crbug.com/1072997): This test occasionally crashes.
 TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
   ExpectReportingCalls();
   Start();

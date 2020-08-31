@@ -7,13 +7,31 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from dashboard import sheriff_pb2
-from dashboard.models.sheriff import Sheriff
-from google.appengine.ext import ndb
+from dashboard.common.utils import GetEmail
+from dashboard.models.subscription import Subscription
 import google.auth
 from google.auth import jwt
 from google.auth.transport.requests import AuthorizedSession
 from google.protobuf import json_format
+
+# Move the protobuf import later, to let AppEngine work-arounds to kick in
+# before we do any protobuf imports.
+from dashboard import sheriff_config_pb2
+
+class InternalServerError(Exception):
+  """An error indicating that something unexpected happens."""
+  pass
+
+
+def GetSheriffConfigClient():
+  """Get a cached SheriffConfigClient instance.
+  Most code should use this rather than constructing a SheriffConfigClient
+  directly.
+  """
+  # pylint: disable=protected-access
+  if not hasattr(GetSheriffConfigClient, '_client'):
+    GetSheriffConfigClient._client = SheriffConfigClient()
+  return GetSheriffConfigClient._client
 
 
 class SheriffConfigClient(object):
@@ -28,34 +46,55 @@ class SheriffConfigClient(object):
     self._session = AuthorizedSession(jwt_credentials)
 
   @staticmethod
-  def _SubscriptionToSheriff(subscription):
-    return Sheriff(
-        key=ndb.Key('Sheriff', subscription.name),
-        url=subscription.rotation_url,
-        email=subscription.notification_email,
-        internal_only=(subscription.visibility !=
-                       sheriff_pb2.Subscription.PUBLIC),
-        # Sheriff model only support glob patterns
-        patterns=[p.glob for p in subscription.patterns if p.glob],
-        lables=(subscription.bug_labels +
-                ['Component-' + c.replace('>', '-')
-                 for c in subscription.bug_components]),
+  def _ParseSubscription(revision, subscription):
+    return Subscription(
+        revision=revision,
+        name=subscription.name,
+        rotation_url=subscription.rotation_url,
+        notification_email=subscription.notification_email,
+        bug_labels=list(subscription.bug_labels),
+        bug_components=list(subscription.bug_components),
+        bug_cc_emails=list(subscription.bug_cc_emails),
+        visibility=subscription.visibility,
+        auto_triage_enable=subscription.auto_triage.enable,
     )
 
-  def Match(self, path):
+  def Match(self, path, check=False):
     response = self._session.post(
         'https://sheriff-config-dot-chromeperf.appspot.com/subscriptions/match',
         json={'path': path})
+    if response.status_code == 404: # If no subscription matched
+      return [], None
     if not response.ok:
-      return None, ('%r\n%s' % response, response.text)
-    def Parse(s):
-      subscription = json_format.Parse(s, sheriff_pb2.Subscription())
-      return self._SubscriptionToSheriff(subscription)
-    return [Parse(s) for s in response.json().get('subscriptions', [])], None
+      err_msg = '%r\n%s' % (response, response.text)
+      if check:
+        raise InternalServerError(err_msg)
+      return None, err_msg
+    match_resp = json_format.Parse(response.text,
+                                   sheriff_config_pb2.MatchResponse())
+    return [self._ParseSubscription(s.revision, s.subscription)
+            for s in match_resp.subscriptions], None
 
-  def Update(self):
+  def List(self, check=False):
+    response = self._session.post(
+        'https://sheriff-config-dot-chromeperf.appspot.com/subscriptions/list',
+        json={'identity_email': GetEmail()})
+    if not response.ok:
+      err_msg = '%r\n%s' % (response, response.text)
+      if check:
+        raise InternalServerError(err_msg)
+      return None, err_msg
+    list_resp = json_format.Parse(response.text,
+                                  sheriff_config_pb2.ListResponse())
+    return [self._ParseSubscription(s.revision, s.subscription)
+            for s in list_resp.subscriptions], None
+
+  def Update(self, check=False):
     response = self._session.get(
         'https://sheriff-config-dot-chromeperf.appspot.com/configs/update')
     if response.ok:
       return True, None
-    return False, ('%r\n%s' % response, response.text)
+    err_msg = '%r\n%s' % (response, response.text)
+    if check:
+      raise InternalServerError(err_msg)
+    return False, err_msg

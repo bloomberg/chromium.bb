@@ -75,10 +75,10 @@ const gfx::Size kTinySize = gfx::Size(kTinyEdgeSize, kTinyEdgeSize);
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
 
-typedef base::Callback<void(const history::URLRow*,
-                            const history::URLRow*,
-                            const history::URLRow*)>
-    SimulateNotificationCallback;
+using SimulateNotificationCallback =
+    base::RepeatingCallback<void(const history::URLRow*,
+                                 const history::URLRow*,
+                                 const history::URLRow*)>;
 
 void SimulateNotificationURLVisited(history::HistoryServiceObserver* observer,
                                     const history::URLRow* row1,
@@ -241,6 +241,7 @@ class HistoryBackendTestBase : public testing::Test {
     mem_backend_->OnKeywordSearchTermDeleted(nullptr, url_id);
   }
 
+  base::test::TaskEnvironment task_environment_;
   history::HistoryClientFakeBookmarks history_client_;
   scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
   std::unique_ptr<InMemoryHistoryBackend> mem_backend_;
@@ -282,7 +283,6 @@ class HistoryBackendTestBase : public testing::Test {
   URLsModifiedList urls_modified_notifications_;
   URLsDeletedList urls_deleted_notifications_;
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
   base::FilePath test_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestBase);
@@ -3578,28 +3578,6 @@ TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
   EXPECT_FALSE(backend_->db()->GetKeywordSearchTermRow(url3_id, nullptr));
 }
 
-// Simple test that removes a bookmark. This test exercises the code paths in
-// History that block till bookmark bar model is loaded.
-TEST_F(HistoryBackendTest, RemoveNotification) {
-  base::ScopedTempDir scoped_temp_dir;
-  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDirUnderPath(test_dir()));
-
-  // Add a URL.
-  GURL url("http://www.google.com");
-  std::unique_ptr<HistoryService> service(
-      new HistoryService(std::make_unique<HistoryClientFakeBookmarks>(),
-                         std::unique_ptr<history::VisitDelegate>()));
-  EXPECT_TRUE(service->Init(
-      TestHistoryDatabaseParamsForPath(scoped_temp_dir.GetPath())));
-
-  service->AddPage(url, base::Time::Now(), nullptr, 1, GURL(), RedirectList(),
-                   ui::PAGE_TRANSITION_TYPED, SOURCE_BROWSED, false);
-
-  // This won't actually delete the URL, rather it'll empty out the visits.
-  // This triggers blocking on the BookmarkModel.
-  service->DeleteURLs({url});
-}
-
 // Test DeleteFTSIndexDatabases deletes expected files.
 TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   ASSERT_TRUE(backend_.get());
@@ -3838,12 +3816,12 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsModified) {
-  TestAddingAndChangingURLRows(base::Bind(
+  TestAddingAndChangingURLRows(base::BindRepeating(
       &SimulateNotificationURLsModified, base::Unretained(mem_backend_.get())));
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsVisisted) {
-  TestAddingAndChangingURLRows(base::Bind(
+  TestAddingAndChangingURLRows(base::BindRepeating(
       &SimulateNotificationURLVisited, base::Unretained(mem_backend_.get())));
 }
 

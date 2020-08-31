@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.signin;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.chrome.R;
 
@@ -135,6 +136,9 @@ public class ConfirmSyncDataStateMachineDelegate {
 
     private static final String PROGRESS_DIALOG_TAG = "ConfirmSyncTimeoutDialog";
     private static final String TIMEOUT_DIALOG_TAG = "ConfirmSyncProgressDialog";
+    private static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG = "ConfirmImportSyncDataDialog";
+    private static final String CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG =
+            "ConfirmManagedSyncDataDialog";
 
     private final FragmentManager mFragmentManager;
 
@@ -147,7 +151,7 @@ public class ConfirmSyncDataStateMachineDelegate {
      *
      * @param listener The {@link ProgressDialogListener} that will be notified about user actions.
      */
-    public void showFetchManagementPolicyProgressDialog(final ProgressDialogListener listener) {
+    void showFetchManagementPolicyProgressDialog(ProgressDialogListener listener) {
         dismissAllDialogs();
         showAllowingStateLoss(ProgressDialogFragment.create(listener), PROGRESS_DIALOG_TAG);
     }
@@ -157,9 +161,40 @@ public class ConfirmSyncDataStateMachineDelegate {
      *
      * @param listener The {@link TimeoutDialogListener} that will be notified about user actions.
      */
-    public void showFetchManagementPolicyTimeoutDialog(final TimeoutDialogListener listener) {
+    void showFetchManagementPolicyTimeoutDialog(TimeoutDialogListener listener) {
         dismissAllDialogs();
         showAllowingStateLoss(TimeoutDialogFragment.create(listener), TIMEOUT_DIALOG_TAG);
+    }
+
+    /**
+     * Shows ConfirmImportSyncDataDialog that gives the user the option to
+     * merge data between the account they are attempting to sign in to and the
+     * account they were previously signed into, or to keep the data separate.
+     *
+     * @param listener        Callback to be called if the user completes the dialog (as opposed to
+     *                        hitting cancel).
+     * @param oldAccountName  The previous sync account name.
+     * @param newAccountName  The potential next sync account name.
+     */
+    void showConfirmImportSyncDataDialog(ConfirmImportSyncDataDialog.Listener listener,
+            String oldAccountName, String newAccountName) {
+        dismissAllDialogs();
+        ConfirmImportSyncDataDialog dialog =
+                ConfirmImportSyncDataDialog.create(listener, oldAccountName, newAccountName);
+        showAllowingStateLoss(dialog, CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
+    }
+
+    /**
+     * Shows {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
+     * (either through sign in or when switching accounts).
+     * @param listener Callback for result.
+     * @param domain The domain of the managed account.
+     */
+    void showSignInToManagedAccountDialog(
+            ConfirmManagedSyncDataDialog.Listener listener, String domain) {
+        dismissAllDialogs();
+        showAllowingStateLoss(ConfirmManagedSyncDataDialog.create(listener, domain),
+                CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG);
     }
 
     private void showAllowingStateLoss(DialogFragment dialogFragment, String tag) {
@@ -174,6 +209,8 @@ public class ConfirmSyncDataStateMachineDelegate {
     public void dismissAllDialogs() {
         dismissDialog(PROGRESS_DIALOG_TAG);
         dismissDialog(TIMEOUT_DIALOG_TAG);
+        dismissDialog(CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG);
+        dismissDialog(CONFIRM_MANAGED_SYNC_DATA_DIALOG_TAG);
     }
 
     private void dismissDialog(String tag) {

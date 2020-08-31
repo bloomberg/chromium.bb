@@ -34,7 +34,6 @@
 #include "extensions/common/manifest.h"
 
 class Profile;
-struct WebApplicationInfo;
 
 namespace extensions {
 class ExtensionCacheFake;
@@ -81,6 +80,14 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
     // Load the provided extension as Service Worker based extension.
     kFlagRunAsServiceWorkerBasedExtension = 1 << 5,
+
+    // Don't wait for extension renderers to fully load.
+    kFlagDontWaitForExtensionRenderers = 1 << 6,
+
+    // Always maintain this as the next flag value. The flags in
+    // ExtensionApiTest depend on this to avoid having overlapping
+    // values with these flags.
+    kFlagNextValue = 1 << 7,
   };
 
   ExtensionBrowserTest();
@@ -172,8 +179,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   // Launches |extension| as a window and returns the browser.
   Browser* LaunchAppBrowser(const Extension* extension);
-  // Launches |extension| as a tab and returns the browser.
-  Browser* LaunchBrowserForAppInTab(const Extension* extension);
 
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.
@@ -225,9 +230,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
         Manifest::INTERNAL, browser(), Extension::NO_FLAGS, false, true);
   }
 
-  // Installs bookmark app for |info|.
-  const Extension* InstallBookmarkApp(WebApplicationInfo info);
-
   // Installs extension as if it came from the Chrome Webstore.
   const Extension* InstallExtensionFromWebstore(const base::FilePath& path,
                                                 int expected_change);
@@ -245,14 +247,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   const Extension* UpdateExtensionWaitForIdle(const std::string& id,
                                               const base::FilePath& path,
                                               int expected_change);
-
-  // Same as |InstallExtension| but with the normal extension UI showing up
-  // (for e.g. info bar on success).
-  const Extension* InstallExtensionWithUI(const base::FilePath& path,
-                                          int expected_change) {
-    return InstallOrUpdateExtension(
-        std::string(), path, INSTALL_UI_TYPE_NORMAL, expected_change);
-  }
 
   const Extension* InstallExtensionWithUIAutoConfirm(const base::FilePath& path,
                                                      int expected_change,
@@ -291,18 +285,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count) {
     return observer_->WaitForPageActionVisibilityChangeTo(count);
-  }
-
-  // Wait for an extension install error to be raised. Returns true if an
-  // error was raised.
-  bool WaitForExtensionInstallError() {
-    return observer_->WaitForExtensionInstallError();
-  }
-
-  // Waits for an extension load error. Returns true if the error really
-  // happened.
-  bool WaitForExtensionLoadError() {
-    return observer_->WaitForExtensionLoadError();
   }
 
   // Wait for the specified extension to crash. Returns true if it really
@@ -369,9 +351,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // profile(), extension_id, script).
   bool ExecuteScriptInBackgroundPageNoWait(const std::string& extension_id,
                                            const std::string& script);
-
-  bool loaded_;
-  bool installed_;
 
 #if defined(OS_CHROMEOS)
   // True if the command line should be tweaked as if ChromeOS user is

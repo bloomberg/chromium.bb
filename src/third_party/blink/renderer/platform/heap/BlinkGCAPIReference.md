@@ -201,7 +201,7 @@ Especially, avoid defining a pre-finalizer in a class that can be allocated a lo
 
 ### STACK_ALLOCATED
 
-Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any fields holding garbage-collected objects should use `Member<T>` references, but you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
+Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any fields holding garbage-collected objects should use regular pointers or references and you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
 
 Classes with this annotation do not need a `Trace()` method and must not inherit a on-heap garbage collected class.
 
@@ -275,7 +275,7 @@ You need to trace every `Member<T>` and `WeakMember<T>` in your class. See [Trac
 Unlike 'Member<T>', 'UntracedMember<T>' will not keep an object alive. However, unlike 'WeakMember<T>', the reference will not be cleared (i.e. set to 'nullptr') if the referenced object dies.
 Furthermore, class fields of type 'UntracedMember<T>' should not be traced by the class' tracing method.
 
-Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom weak callbacks).
+Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom-weak-callbacks).
 
 ### Persistent, WeakPersistent, CrossThreadPersistent, CrossThreadWeakPersistent
 
@@ -452,7 +452,7 @@ The semantics then are as follows:
 In case very specific weakness semantics are required Oilpan allows adding custom weakness callbacks through its tracing method.
 
 There exist two helper methods on `blink::Visitor` to add such callbacks:
-- `RegisterWeakCallback`: Used to add custom weak callbacks of the form `void(void*, const blink::WeakCallbackInfo&)`.
+- `RegisterWeakCallback`: Used to add custom weak callbacks of the form `void(void*, const blink::LivenessBroker&)`.
 - `RegisterWeakCallbackMethod`: Helper for adding an instance method.
 
 Note that custom weak callbacks should not be used to clear `WeakMember<T>` fields as such fields are automatically handled by Oilpan.
@@ -466,7 +466,7 @@ class W final : public GarbageCollected<W> {
  public:
   virtual void Trace(Visitor*);
  private:
-  void ProcessCustomWeakness(const WeakCallbackInfo&);
+  void ProcessCustomWeakness(const LivenessBroker&);
 
   UntracedMember<C> other_;
 };
@@ -475,7 +475,7 @@ void W::Trace(Visitor* visitor) {
   visitor->template RegisterCustomWeakMethod<W, &W::ProcessCustomWeakness>(this);
 }
 
-void W::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+void W::ProcessCustomWeakness(const LivenessBroker& info) {
   if (info.IsHeapObjectAlive(other_)) {
     // Do something with other_.
   }

@@ -23,12 +23,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 
 namespace {
@@ -39,29 +39,13 @@ GURL GetGoogleURL() {
 
 using BrowserNavigatorTestChromeOS = BrowserNavigatorTest;
 
-// This test verifies that the OS Settings page isn't opened in the incognito
-// window.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
-                       Disposition_OSSettings_UseNonIncognitoWindow) {
-  RunUseNonIncognitoWindowTest(GURL(chrome::kChromeUIOSSettingsURL),
-                               ui::PageTransition::PAGE_TRANSITION_TYPED);
-}
-
-class BrowserNavigatorTestChromeOSWithSplitSettings
-    : public BrowserNavigatorTestChromeOS {
- public:
-  BrowserNavigatorTestChromeOSWithSplitSettings() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Verifies that the OS settings page opens in a standalone surface when
 // accessed via link or url.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOSWithSplitSettings,
-                       NavigateToOSSettings) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
+  // By default, browsertests open settings in a browser tab. For this test, we
+  // verify that if this flag is not set, settings opens in the settings app.
+  // This simulates the default case users see.
+  SetAllowOsSettingsInTabForTesting(false);
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
@@ -76,10 +60,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOSWithSplitSettings,
   params.transition = ui::PageTransition::PAGE_TRANSITION_TYPED;
   Navigate(&params);
 
-  // Verify that navigating to chrome://os-settings/ via typing causes the
-  // browser itself to navigate to the OS Settings page.
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(GURL("chrome://os-settings/"),
+  // Verify that navigating to chrome://os-settings/ via typing does not cause
+  // the browser itself to navigate to the OS Settings page.
+  EXPECT_NE(1u, chrome::GetTotalBrowserCount());
+  EXPECT_NE(GURL("chrome://os-settings/"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   // Navigate to OS Settings page via clicking a link on another page.

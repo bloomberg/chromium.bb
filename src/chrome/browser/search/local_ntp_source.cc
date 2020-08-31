@@ -22,13 +22,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/local_ntp_js_integrity.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/search/omnibox_mojo_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -137,6 +139,37 @@ const struct Resource{
     // added complexity.
     {chrome::kChromeSearchLocalNtpBackgroundFilename, kLocalResource,
      "image/jpg"},
+    {omnibox::kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G,
+     "image/png"},
+    {omnibox::kBookmarkIconResourceName, IDR_LOCAL_NTP_ICONS_BOOKMARK,
+     "image/svg+xml"},
+    {omnibox::kCalculatorIconResourceName, IDR_LOCAL_NTP_ICONS_CALCULATOR,
+     "image/svg+xml"},
+    {omnibox::kClockIconResourceName, IDR_LOCAL_NTP_ICONS_CLOCK,
+     "image/svg+xml"},
+    {omnibox::kDriveDocsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_DOCS,
+     "image/svg+xml"},
+    {omnibox::kDriveFolderIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FOLDER,
+     "image/svg+xml"},
+    {omnibox::kDriveFormIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_FORM,
+     "image/svg+xml"},
+    {omnibox::kDriveImageIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_IMAGE,
+     "image/svg+xml"},
+    {omnibox::kDriveLogoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_LOGO,
+     "image/svg+xml"},
+    {omnibox::kDrivePdfIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_PDF,
+     "image/svg+xml"},
+    {omnibox::kDriveSheetsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SHEETS,
+     "image/svg+xml"},
+    {omnibox::kDriveSlidesIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_SLIDES,
+     "image/svg+xml"},
+    {omnibox::kDriveVideoIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_VIDEO,
+     "image/svg+xml"},
+    {omnibox::kExtensionAppIconResourceName, IDR_LOCAL_NTP_ICONS_EXTENSION_APP,
+     "image/svg+xml"},
+    {omnibox::kPageIconResourceName, IDR_LOCAL_NTP_ICONS_PAGE, "image/svg+xml"},
+    {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH,
+     "image/svg+xml"},
 };
 
 // This enum must match the numbering for NTPSearchSuggestionsRequestStatusi in
@@ -269,8 +302,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "audioError",
               IDS_NEW_TAB_VOICE_AUDIO_ERROR);
     AddString(translated_strings.get(), "details", IDS_NEW_TAB_VOICE_DETAILS);
-    AddString(translated_strings.get(), "clickToViewDoodle",
-              IDS_CLICK_TO_VIEW_DOODLE);
     AddString(translated_strings.get(), "fakeboxMicrophoneTooltip",
               IDS_TOOLTIP_MIC_SEARCH);
     AddString(translated_strings.get(), "languageError",
@@ -293,12 +324,22 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
     AddString(translated_strings.get(), "voiceCloseTooltip",
               IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
+    AddString(translated_strings.get(), "voiceSearchClosed",
+              IDS_NEW_TAB_VOICE_SEARCH_CLOSED);
 
     // Realbox
     AddString(translated_strings.get(), "realboxSeparator",
               IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
     AddString(translated_strings.get(), "removeSuggestion",
               IDS_OMNIBOX_REMOVE_SUGGESTION);
+    AddString(translated_strings.get(), "hideSuggestions",
+              IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "showSuggestions",
+              IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "hideSection",
+              IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "showSection",
+              IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON);
 
     // Promos
     AddString(translated_strings.get(), "dismissPromo", IDS_NTP_DISMISS_PROMO);
@@ -342,7 +383,6 @@ std::string GetLocalNtpPath() {
 base::Value ConvertCollectionInfoToDict(
     const std::vector<CollectionInfo>& collection_info) {
   base::Value collections(base::Value::Type::LIST);
-  collections.GetList().reserve(collection_info.size());
   for (const CollectionInfo& collection : collection_info) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("collectionId", base::Value(collection.collection_id));
@@ -357,7 +397,6 @@ base::Value ConvertCollectionInfoToDict(
 base::Value ConvertCollectionImageToDict(
     const std::vector<CollectionImage>& collection_image) {
   base::Value images(base::Value::Type::LIST);
-  images.GetList().reserve(collection_image.size());
   for (const CollectionImage& image : collection_image) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("thumbnailImageUrl",
@@ -404,7 +443,7 @@ scoped_refptr<base::RefCountedString> GetPromoString(
     dict.SetString("promoHtml", promo->promo_html);
     dict.SetString("promoLogUrl", promo->promo_log_url.spec());
     dict.SetString("promoId", promo->promo_id);
-    dict.SetBoolean("canOpenPrivilegedLinks", promo->can_open_privileged_links);
+    dict.SetBoolean("canOpenExtensionsPage", promo->can_open_extensions_page);
   }
 
   std::string js;
@@ -504,31 +543,6 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   return result;
 }
 
-// Note: Code that runs on the IO thread is implemented as non-member functions,
-// to avoid accidentally accessing member data that's owned by the UI thread.
-
-bool ShouldServiceRequestIOThread(const GURL& url,
-                                  content::ResourceContext* resource_context,
-                                  int render_process_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
-  if (!InstantIOContext::ShouldServiceRequest(url, resource_context,
-                                              render_process_id)) {
-    return false;
-  }
-
-  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
-    std::string filename;
-    webui::ParsePathAndScale(url, &filename, nullptr);
-    for (size_t i = 0; i < base::size(kResources); ++i) {
-      if (filename == kResources[i].filename)
-        return true;
-    }
-  }
-  return false;
-}
-
 std::string GetErrorDict(const ErrorInfo& error) {
   base::DictionaryValue error_info;
   error_info.SetBoolean("net_error", error.error_type == ErrorType::NET_ERROR);
@@ -610,14 +624,7 @@ class LocalNtpSource::SearchConfigurationProvider
                                ->IsAccessibleBrowser());
 
     if (is_google) {
-      config_data.SetBoolean(
-          "richerPicker",
-          base::FeatureList::IsEnabled(ntp_features::kCustomizationMenuV2));
-      config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(
-                                                 ntp_features::kChromeColors));
-      config_data.SetBoolean("chromeColorsCustomColorPicker",
-                             base::FeatureList::IsEnabled(
-                                 ntp_features::kChromeColorsCustomColorPicker));
+      config_data.SetBoolean("richerPicker", true);
       config_data.SetBoolean("realboxEnabled",
                              ntp_features::IsRealboxEnabled());
       config_data.SetBoolean("realboxMatchOmniboxTheme",
@@ -627,6 +634,9 @@ class LocalNtpSource::SearchConfigurationProvider
           "suggestionTransparencyEnabled",
           base::FeatureList::IsEnabled(
               omnibox::kOmniboxSuggestionTransparencyOptions));
+      config_data.SetBoolean(
+          "useGoogleGIcon",
+          base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon));
     }
 
     // Serialize the dictionary.
@@ -754,7 +764,7 @@ class LocalNtpSource::DesktopLogoObserver {
     if (!observing()) {
       ++version_started_;
     }
-    service->GetLogo(std::move(callbacks));
+    service->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
   }
 
   bool observing() const {
@@ -842,10 +852,8 @@ void LocalNtpSource::StartDataRequest(
   }
 
   if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
         base::BindOnce(&ServeBackgroundImageData, std::move(callback)));
     return;
@@ -1044,11 +1052,13 @@ void LocalNtpSource::StartDataRequest(
 
     bool use_google_g_icon =
         base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon);
-    replacements["realboxIconClass"] =
-        use_google_g_icon ? "google-g-icon" : "search-icon";
+    replacements["realboxDefaultIcon"] = use_google_g_icon
+                                             ? omnibox::kGoogleGIconResourceName
+                                             : omnibox::kSearchIconResourceName;
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
+    std::string html_string = bundle.LoadDataResourceString(IDR_LOCAL_NTP_HTML);
+    base::StringPiece html(html_string);
     std::string replaced = ui::ReplaceTemplateExpressions(html, replacements);
     std::move(callback).Run(base::RefCountedString::TakeString(&replaced));
     return;
@@ -1091,11 +1101,23 @@ bool LocalNtpSource::AllowCaching() {
 
 bool LocalNtpSource::ShouldServiceRequest(
     const GURL& url,
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     int render_process_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+  if (!InstantService::ShouldServiceRequest(url, browser_context,
+                                            render_process_id)) {
+    return false;
+  }
 
-  return ShouldServiceRequestIOThread(url, resource_context, render_process_id);
+  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
+    std::string filename;
+    webui::ParsePathAndScale(url, &filename, nullptr);
+    for (size_t i = 0; i < base::size(kResources); ++i) {
+      if (filename == kResources[i].filename)
+        return true;
+    }
+  }
+  return false;
 }
 
 bool LocalNtpSource::ShouldAddContentSecurityPolicy() {

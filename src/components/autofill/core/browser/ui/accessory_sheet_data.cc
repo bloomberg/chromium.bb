@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 #include "base/strings/string_piece.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 
 namespace autofill {
 
@@ -56,7 +57,11 @@ std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
 
 UserInfo::UserInfo() = default;
 
-UserInfo::UserInfo(std::string origin) : origin_(std::move(origin)) {}
+UserInfo::UserInfo(std::string origin)
+    : UserInfo(std::move(origin), IsPslMatch(false)) {}
+
+UserInfo::UserInfo(std::string origin, IsPslMatch is_psl_match)
+    : origin_(std::move(origin)), is_psl_match_(is_psl_match) {}
 
 UserInfo::UserInfo(const UserInfo& user_info) = default;
 
@@ -69,11 +74,13 @@ UserInfo& UserInfo::operator=(const UserInfo& user_info) = default;
 UserInfo& UserInfo::operator=(UserInfo&& user_info) = default;
 
 bool UserInfo::operator==(const UserInfo& user_info) const {
-  return fields_ == user_info.fields_ && origin_ == user_info.origin_;
+  return fields_ == user_info.fields_ && origin_ == user_info.origin_ &&
+         is_psl_match_ == user_info.is_psl_match_;
 }
 
 std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
-  os << "origin: \"" << user_info.origin() << "\", \n"
+  os << "origin: \"" << user_info.origin() << "\", "
+     << "is_psl_match: " << std::boolalpha << user_info.is_psl_match() << ", "
      << "fields: [\n";
   for (const UserInfo::Field& field : user_info.fields()) {
     os << field << ", \n";
@@ -105,6 +112,36 @@ bool FooterCommand::operator==(const FooterCommand& fc) const {
 std::ostream& operator<<(std::ostream& os, const FooterCommand& fc) {
   return os << "(display text: \"" << fc.display_text() << "\", "
             << "action: " << static_cast<int>(fc.accessory_action()) << ")";
+}
+
+OptionToggle::OptionToggle(base::string16 display_text,
+                           bool enabled,
+                           autofill::AccessoryAction action)
+    : display_text_(display_text),
+      enabled_(enabled),
+      accessory_action_(action) {}
+
+OptionToggle::OptionToggle(const OptionToggle& option_toggle) = default;
+
+OptionToggle::OptionToggle(OptionToggle&& option_toggle) = default;
+
+OptionToggle::~OptionToggle() = default;
+
+OptionToggle& OptionToggle::operator=(const OptionToggle& option_toggle) =
+    default;
+
+OptionToggle& OptionToggle::operator=(OptionToggle&& option_toggle) = default;
+
+bool OptionToggle::operator==(const OptionToggle& option_toggle) const {
+  return display_text_ == option_toggle.display_text_ &&
+         enabled_ == option_toggle.enabled_ &&
+         accessory_action_ == option_toggle.accessory_action_;
+}
+
+std::ostream& operator<<(std::ostream& os, const OptionToggle& ot) {
+  return os << "(display text: \"" << ot.display_text() << "\", "
+            << "state: " << ot.is_enabled() << ", "
+            << "action: " << static_cast<int>(ot.accessory_action()) << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
@@ -150,13 +187,20 @@ AccessorySheetData& AccessorySheetData::operator=(AccessorySheetData&& data) =
 
 bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
   return sheet_type_ == data.sheet_type_ && title_ == data.title_ &&
-         warning_ == data.warning_ && user_info_list_ == data.user_info_list_ &&
+         warning_ == data.warning_ && option_toggle_ == data.option_toggle_ &&
+         user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
 }
 
 std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
-  os << data.get_sheet_type() << " with title: \"" << data.title()
-     << "\", warning: \"" << data.warning() << "\", and user info list: [";
+  os << data.get_sheet_type() << " with title: \"" << data.title();
+  if (data.option_toggle().has_value()) {
+    os << "\", with option toggle: \"" << data.option_toggle().value();
+  } else {
+    os << "\", with option toggle: \"none";
+  }
+
+  os << "\", warning: \"" << data.warning() << "\", and user info list: [";
   for (const UserInfo& user_info : data.user_info_list()) {
     os << user_info << ", ";
   }
@@ -185,15 +229,35 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::SetWarning(
   return *this;
 }
 
+AccessorySheetData::Builder&& AccessorySheetData::Builder::SetOptionToggle(
+    base::string16 display_text,
+    bool enabled,
+    autofill::AccessoryAction action) && {
+  // Calls SetOptionToggle(...)& since |this| is an lvalue.
+  return std::move(SetOptionToggle(std::move(display_text), enabled, action));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::SetOptionToggle(
+    base::string16 display_text,
+    bool enabled,
+    autofill::AccessoryAction action) & {
+  accessory_sheet_data_.set_option_toggle(
+      OptionToggle(std::move(display_text), enabled, action));
+  return *this;
+}
+
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo(
-    std::string origin) && {
+    std::string origin,
+    UserInfo::IsPslMatch is_psl_match) && {
   // Calls AddUserInfo()& since |this| is an lvalue.
-  return std::move(AddUserInfo(std::move(origin)));
+  return std::move(AddUserInfo(std::move(origin), is_psl_match));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo(
-    std::string origin) & {
-  accessory_sheet_data_.add_user_info(UserInfo(std::move(origin)));
+    std::string origin,
+    UserInfo::IsPslMatch is_psl_match) & {
+  accessory_sheet_data_.add_user_info(
+      UserInfo(std::move(origin), is_psl_match));
   return *this;
 }
 

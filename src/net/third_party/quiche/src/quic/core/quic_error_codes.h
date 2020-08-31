@@ -56,6 +56,53 @@ enum QuicRstStreamErrorCode {
   QUIC_STREAM_TTL_EXPIRED,
   // The stream received data that goes beyond its close offset.
   QUIC_DATA_AFTER_CLOSE_OFFSET,
+  // Peer violated protocol requirements in a way which does not match a more
+  // specific error code, or endpoint declines to use the more specific error
+  // code.
+  QUIC_STREAM_GENERAL_PROTOCOL_ERROR,
+  // An internal error has occurred.
+  QUIC_STREAM_INTERNAL_ERROR,
+  // Peer created a stream that will not be accepted.
+  QUIC_STREAM_STREAM_CREATION_ERROR,
+  // A stream required by the connection was closed or reset.
+  QUIC_STREAM_CLOSED_CRITICAL_STREAM,
+  // A frame was received which was not permitted in the current state or on the
+  // current stream.
+  QUIC_STREAM_FRAME_UNEXPECTED,
+  // A frame that fails to satisfy layout requirements or with an invalid size
+  // was received.
+  QUIC_STREAM_FRAME_ERROR,
+  // Peer exhibits a behavior that might be generating excessive load.
+  QUIC_STREAM_EXCESSIVE_LOAD,
+  // A Stream ID or Push ID was used incorrectly, such as exceeding a limit,
+  // reducing a limit, or being reused.
+  QUIC_STREAM_ID_ERROR,
+  // Error in the payload of a SETTINGS frame.
+  QUIC_STREAM_SETTINGS_ERROR,
+  // No SETTINGS frame was received at the beginning of the control stream.
+  QUIC_STREAM_MISSING_SETTINGS,
+  // A server rejected a request without performing any application processing.
+  QUIC_STREAM_REQUEST_REJECTED,
+  // The client's stream terminated without containing a fully-formed request.
+  QUIC_STREAM_REQUEST_INCOMPLETE,
+  // The connection established in response to a CONNECT request was reset or
+  // abnormally closed.
+  QUIC_STREAM_CONNECT_ERROR,
+  // The requested operation cannot be served over HTTP/3.
+  // The peer should retry over HTTP/1.1.
+  QUIC_STREAM_VERSION_FALLBACK,
+  // The QPACK decoder failed to interpret a header block and is not able to
+  // continue decoding that header block.
+  QUIC_STREAM_DECOMPRESSION_FAILED,
+  // The QPACK decoder failed to interpret an encoder instruction received on
+  // the encoder stream.
+  QUIC_STREAM_ENCODER_STREAM_ERROR,
+  // The QPACK encoder failed to interpret a decoder instruction received on the
+  // decoder stream.
+  QUIC_STREAM_DECODER_STREAM_ERROR,
+  // IETF RESET_FRAME application error code not matching any HTTP/3 or QPACK
+  // error codes.
+  QUIC_STREAM_UNKNOWN_APPLICATION_ERROR_CODE,
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };
@@ -353,8 +400,74 @@ enum QuicErrorCode {
   // Received multiple close offset.
   QUIC_STREAM_MULTIPLE_OFFSET = 130,
 
+  // Internal error codes for HTTP/3 errors.
+  QUIC_HTTP_FRAME_TOO_LARGE = 131,
+  QUIC_HTTP_FRAME_ERROR = 132,
+  // A frame that is never allowed on a request stream is received.
+  QUIC_HTTP_FRAME_UNEXPECTED_ON_SPDY_STREAM = 133,
+  // A frame that is never allowed on the control stream is received.
+  QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM = 134,
+  // An invalid sequence of frames normally allowed on a request stream is
+  // received.
+  QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_SPDY_STREAM = 151,
+  // A second SETTINGS frame is received on the control stream.
+  QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_CONTROL_STREAM = 152,
+  // A second instance of a unidirectional stream of a certain type is created.
+  QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM = 153,
+  // Client receives a server-initiated bidirectional stream.
+  QUIC_HTTP_SERVER_INITIATED_BIDIRECTIONAL_STREAM = 154,
+  // Server opens stream with stream ID corresponding to client-initiated
+  // stream or vice versa.
+  QUIC_HTTP_STREAM_WRONG_DIRECTION = 155,
+  // Peer closes one of the six critical unidirectional streams (control, QPACK
+  // encoder or decoder, in either direction).
+  QUIC_HTTP_CLOSED_CRITICAL_STREAM = 156,
+  // The first frame received on the control stream is not a SETTINGS frame.
+  QUIC_HTTP_MISSING_SETTINGS_FRAME = 157,
+  // The received SETTINGS frame contains duplicate setting identifiers.
+  QUIC_HTTP_DUPLICATE_SETTING_IDENTIFIER = 158,
+  // MAX_PUSH_ID frame received with push ID value smaller than a previously
+  // received value.
+  QUIC_HTTP_INVALID_MAX_PUSH_ID = 159,
+  // Received unidirectional stream limit is lower than required by HTTP/3.
+  QUIC_HTTP_STREAM_LIMIT_TOO_LOW = 160,
+
+  // HPACK header block decoding errors.
+  // Index varint beyond implementation limit.
+  QUIC_HPACK_INDEX_VARINT_ERROR = 135,
+  // Name length varint beyond implementation limit.
+  QUIC_HPACK_NAME_LENGTH_VARINT_ERROR = 136,
+  // Value length varint beyond implementation limit.
+  QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR = 137,
+  // Name length exceeds buffer limit.
+  QUIC_HPACK_NAME_TOO_LONG = 138,
+  // Value length exceeds buffer limit.
+  QUIC_HPACK_VALUE_TOO_LONG = 139,
+  // Name Huffman encoding error.
+  QUIC_HPACK_NAME_HUFFMAN_ERROR = 140,
+  // Value Huffman encoding error.
+  QUIC_HPACK_VALUE_HUFFMAN_ERROR = 141,
+  // Next instruction should have been a dynamic table size update.
+  QUIC_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE = 142,
+  // Invalid index in indexed header field representation.
+  QUIC_HPACK_INVALID_INDEX = 143,
+  // Invalid index in literal header field with indexed name representation.
+  QUIC_HPACK_INVALID_NAME_INDEX = 144,
+  // Dynamic table size update not allowed.
+  QUIC_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED = 145,
+  // Initial dynamic table size update is above low water mark.
+  QUIC_HPACK_INITIAL_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK = 146,
+  // Dynamic table size update is above acknowledged setting.
+  QUIC_HPACK_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING = 147,
+  // HPACK block ends in the middle of an instruction.
+  QUIC_HPACK_TRUNCATED_BLOCK = 148,
+  // Incoming data fragment exceeds buffer limit.
+  QUIC_HPACK_FRAGMENT_TOO_LONG = 149,
+  // Total compressed HPACK data size exceeds limit.
+  QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT = 150,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 131,
+  QUIC_LAST_ERROR = 161,
 };
 // QuicErrorCodes is encoded as four octets on-the-wire when doing Google QUIC,
 // or a varint62 when doing IETF QUIC. Ensure that its value does not exceed
@@ -370,13 +483,84 @@ QUIC_EXPORT_PRIVATE const char* QuicRstStreamErrorCodeToString(
 // Returns the name of the QuicErrorCode as a char*
 QUIC_EXPORT_PRIVATE const char* QuicErrorCodeToString(QuicErrorCode error);
 
+// Wire values for QUIC transport errors.
+// https://quicwg.org/base-drafts/draft-ietf-quic-transport.html#name-transport-error-codes
+enum QuicIetfTransportErrorCodes : uint64_t {
+  NO_IETF_QUIC_ERROR = 0x0,
+  INTERNAL_ERROR = 0x1,
+  SERVER_BUSY_ERROR = 0x2,
+  FLOW_CONTROL_ERROR = 0x3,
+  STREAM_LIMIT_ERROR = 0x4,
+  STREAM_STATE_ERROR = 0x5,
+  FINAL_SIZE_ERROR = 0x6,
+  FRAME_ENCODING_ERROR = 0x7,
+  TRANSPORT_PARAMETER_ERROR = 0x8,
+  CONNECTION_ID_LIMIT_ERROR = 0x9,
+  PROTOCOL_VIOLATION = 0xA,
+  INVALID_TOKEN = 0xB,
+  CRYPTO_BUFFER_EXCEEDED = 0xD,
+  CRYPTO_ERROR_FIRST = 0x100,
+  CRYPTO_ERROR_LAST = 0x1FF,
+};
+
+QUIC_EXPORT_PRIVATE std::string QuicIetfTransportErrorCodeString(
+    QuicIetfTransportErrorCodes c);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+    std::ostream& os,
+    const QuicIetfTransportErrorCodes& c);
+
+// A transport error code (if is_transport_close is true) or application error
+// code (if is_transport_close is false) to be used in CONNECTION_CLOSE frames.
+struct QUIC_EXPORT_PRIVATE QuicErrorCodeToIetfMapping {
+  bool is_transport_close;
+  uint64_t error_code;
+};
+
+// Convert QuicErrorCode to transport or application IETF error code
+// to be used in CONNECTION_CLOSE frames.
+QUIC_EXPORT_PRIVATE QuicErrorCodeToIetfMapping
+QuicErrorCodeToTransportErrorCode(QuicErrorCode error);
+
+// Wire values for HTTP/3 errors.
+// https://quicwg.org/base-drafts/draft-ietf-quic-http.html#http-error-codes
+enum class QuicHttp3ErrorCode {
+  // NO_ERROR is defined as a C preprocessor macro on Windows.
+  HTTP3_NO_ERROR = 0x100,
+  GENERAL_PROTOCOL_ERROR = 0x101,
+  INTERNAL_ERROR = 0x102,
+  STREAM_CREATION_ERROR = 0x103,
+  CLOSED_CRITICAL_STREAM = 0x104,
+  FRAME_UNEXPECTED = 0x105,
+  FRAME_ERROR = 0x106,
+  EXCESSIVE_LOAD = 0x107,
+  ID_ERROR = 0x108,
+  SETTINGS_ERROR = 0x109,
+  MISSING_SETTINGS = 0x10A,
+  REQUEST_REJECTED = 0x10B,
+  REQUEST_CANCELLED = 0x10C,
+  REQUEST_INCOMPLETE = 0x10D,
+  CONNECT_ERROR = 0x10F,
+  VERSION_FALLBACK = 0x110,
+};
+
 // Wire values for QPACK errors.
 // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#error-code-registration
-enum QuicHttpQpackErrorCode {
-  IETF_QUIC_HTTP_QPACK_DECOMPRESSION_FAILED = 0x200,
-  IETF_QUIC_HTTP_QPACK_ENCODER_STREAM_ERROR = 0x201,
-  IETF_QUIC_HTTP_QPACK_DECODER_STREAM_ERROR = 0x202
+enum class QuicHttpQpackErrorCode {
+  DECOMPRESSION_FAILED = 0x200,
+  ENCODER_STREAM_ERROR = 0x201,
+  DECODER_STREAM_ERROR = 0x202
 };
+
+// Convert a QuicRstStreamErrorCode to an application error code to be used in
+// an IETF QUIC RESET_STREAM frame
+uint64_t RstStreamErrorCodeToIetfResetStreamErrorCode(
+    QuicRstStreamErrorCode rst_stream_error_code);
+
+// Convert the application error code of an IETF QUIC RESET_STREAM frame
+// to QuicRstStreamErrorCode.
+QuicRstStreamErrorCode IetfResetStreamErrorCodeToRstStreamErrorCode(
+    uint64_t ietf_error_code);
 
 QUIC_EXPORT_PRIVATE inline std::string HistogramEnumString(
     QuicErrorCode enum_value) {

@@ -25,12 +25,9 @@ namespace {
 
 class CompileTest : public testing::Test {
  public:
-  void SetUp() override {
-    options_.SetSourceEnvironment(shaderc_target_env_webgpu,
-                                  shaderc_env_version_webgpu);
-    options_.SetTargetEnvironment(shaderc_target_env_vulkan,
-                                  shaderc_env_version_vulkan_1_1);
-  }
+  CompileTest()
+      : options_(shaderc_spvc_spv_env_webgpu_0,
+                 shaderc_spvc_spv_env_vulkan_1_1) {}
 
   Context context_;
   CompileOptions options_;
@@ -47,8 +44,12 @@ TEST_F(CompileTest, Glsl) {
   {
     shaderc_spvc_status status = context_.CompileShader(&result_);
     EXPECT_EQ(shaderc_spvc_status_success, status);
-    EXPECT_NE(0, result_.GetStringOutput().size());
-    EXPECT_EQ(0, result_.GetBinaryOutput().size());
+    std::string string_output;
+    result_.GetStringOutput(&string_output);
+    EXPECT_NE(0, string_output.size());
+    std::vector<uint32_t> binary_output;
+    result_.GetBinaryOutput(&binary_output);
+    EXPECT_EQ(0, binary_output.size());
   }
 }
 
@@ -62,8 +63,12 @@ TEST_F(CompileTest, Hlsl) {
   {
     shaderc_spvc_status status = context_.CompileShader(&result_);
     EXPECT_EQ(shaderc_spvc_status_success, status);
-    EXPECT_NE(0, result_.GetStringOutput().size());
-    EXPECT_EQ(0, result_.GetBinaryOutput().size());
+    std::string string_output;
+    result_.GetStringOutput(&string_output);
+    EXPECT_NE(0, string_output.size());
+    std::vector<uint32_t> binary_output;
+    result_.GetBinaryOutput(&binary_output);
+    EXPECT_EQ(0, binary_output.size());
   }
 }
 
@@ -77,8 +82,12 @@ TEST_F(CompileTest, Msl) {
   {
     shaderc_spvc_status status = context_.CompileShader(&result_);
     EXPECT_EQ(shaderc_spvc_status_success, status);
-    EXPECT_NE(0, result_.GetStringOutput().size());
-    EXPECT_EQ(0, result_.GetBinaryOutput().size());
+    std::string string_output;
+    result_.GetStringOutput(&string_output);
+    EXPECT_NE(0, string_output.size());
+    std::vector<uint32_t> binary_output;
+    result_.GetBinaryOutput(&binary_output);
+    EXPECT_EQ(0, binary_output.size());
   }
 }
 
@@ -92,8 +101,12 @@ TEST_F(CompileTest, Vulkan) {
   {
     shaderc_spvc_status status = context_.CompileShader(&result_);
     EXPECT_EQ(shaderc_spvc_status_success, status);
-    EXPECT_EQ(0, result_.GetStringOutput().size());
-    EXPECT_NE(0, result_.GetBinaryOutput().size());
+    std::string string_output;
+    result_.GetStringOutput(&string_output);
+    EXPECT_EQ(0, string_output.size());
+    std::vector<uint32_t> binary_output;
+    result_.GetBinaryOutput(&binary_output);
+    EXPECT_NE(0, binary_output.size());
   }
 }
 

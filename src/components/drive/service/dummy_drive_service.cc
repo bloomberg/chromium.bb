@@ -38,8 +38,8 @@ bool DummyDriveService::CanSendRequest() const { return true; }
 
 bool DummyDriveService::HasAccessToken() const { return true; }
 
-void DummyDriveService::RequestAccessToken(const AuthStatusCallback& callback) {
-  callback.Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
+void DummyDriveService::RequestAccessToken(AuthStatusCallback callback) {
+  std::move(callback).Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
 }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }
@@ -105,14 +105,18 @@ CancelCallback DummyDriveService::GetRemainingFileList(
 
 CancelCallback DummyDriveService::GetFileResource(
     const std::string& resource_id,
-    const FileResourceCallback& callback) { return CancelCallback(); }
+    FileResourceCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetAboutResource(
-    const AboutResourceCallback& callback) { return CancelCallback(); }
+    AboutResourceCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetStartPageToken(
     const std::string& team_drive_id,
-    const google_apis::StartPageTokenCallback& callback) {
+    google_apis::StartPageTokenCallback callback) {
   return CancelCallback();
 }
 
@@ -130,14 +134,18 @@ CancelCallback DummyDriveService::DownloadFile(
     const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const ProgressCallback& progress_callback) { return CancelCallback(); }
+    ProgressCallback progress_callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
-    const FileResourceCallback& callback) { return CancelCallback(); }
+    FileResourceCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::UpdateResource(
     const std::string& resource_id,
@@ -146,7 +154,7 @@ CancelCallback DummyDriveService::UpdateResource(
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
     const google_apis::drive::Properties& properties,
-    const google_apis::FileResourceCallback& callback) {
+    FileResourceCallback callback) {
   return CancelCallback();
 }
 
@@ -164,7 +172,9 @@ CancelCallback DummyDriveService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
-    const FileResourceCallback& callback) { return CancelCallback(); }
+    FileResourceCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::InitiateUploadNewFile(
     const std::string& content_type,
@@ -192,15 +202,15 @@ CancelCallback DummyDriveService::ResumeUpload(
     int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
-    const UploadRangeCallback& callback,
-    const ProgressCallback& progress_callback) {
+    UploadRangeCallback callback,
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 
 CancelCallback DummyDriveService::GetUploadStatus(
     const GURL& upload_url,
     int64_t content_length,
-    const UploadRangeCallback& callback) {
+    UploadRangeCallback callback) {
   return CancelCallback();
 }
 
@@ -211,8 +221,8 @@ CancelCallback DummyDriveService::MultipartUploadNewFile(
     const std::string& title,
     const base::FilePath& local_file_path,
     const UploadNewFileOptions& options,
-    const FileResourceCallback& callback,
-    const ProgressCallback& progress_callback) {
+    FileResourceCallback callback,
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 
@@ -222,8 +232,8 @@ CancelCallback DummyDriveService::MultipartUploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,
-    const FileResourceCallback& callback,
-    const ProgressCallback& progress_callback) {
+    FileResourceCallback callback,
+    ProgressCallback progress_callback) {
   return CancelCallback();
 }
 

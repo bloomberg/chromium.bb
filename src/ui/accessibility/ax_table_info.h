@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 #define UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 
+#include <map>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -89,17 +90,22 @@ class AX_EXPORT AXTableInfo {
   // Map from each row's node ID to its row index.
   std::unordered_map<int32_t, size_t> row_id_to_index;
 
+  // List of ax nodes that represent the rows of the table.
+  std::vector<AXNode*> row_nodes;
+
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
-  base::Optional<int> aria_row_count = 0;
-  base::Optional<int> aria_col_count = 0;
+  int aria_row_count = 0;
+  int aria_col_count = 0;
+
+  std::string ToString() const;
 
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);
 
   void ClearVectors();
   void BuildCellDataVectorFromRowAndCellNodes(
-      const std::vector<AXNode*>& row_nodes,
+      const std::vector<AXNode*>& row_node_list,
       const std::vector<std::vector<AXNode*>>& cell_nodes_per_row);
   void BuildCellAndHeaderVectorsFromCellData();
   void UpdateExtraMacNodes();
@@ -111,6 +117,7 @@ class AX_EXPORT AXTableInfo {
   AXTree* tree_ = nullptr;
   AXNode* table_node_ = nullptr;
   bool valid_ = false;
+  std::map<int, std::map<int, CellData>> incremental_row_col_map_;
 };
 
 }  // namespace ui

@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -48,6 +50,10 @@ class WebApp {
 
   DisplayMode user_display_mode() const { return user_display_mode_; }
 
+  const base::Optional<WebAppChromeOsData>& chromeos_data() const {
+    return chromeos_data_;
+  }
+
   // Locally installed apps have shortcuts installed on various UI surfaces.
   // If app isn't locally installed, it is excluded from UIs and only listed as
   // a part of user's app library.
@@ -66,8 +72,15 @@ class WebApp {
   }
 
   // Represents which icon sizes we successfully downloaded from the icon_infos.
+  // Icon sizes are sorted in ascending order.
   const std::vector<SquareSizePx>& downloaded_icon_sizes() const {
     return downloaded_icon_sizes_;
+  }
+
+  const apps::FileHandlers& file_handlers() const { return file_handlers_; }
+
+  const std::vector<std::string>& additional_search_terms() const {
+    return additional_search_terms_;
   }
 
   // While local |name| and |theme_color| may vary from device to device, the
@@ -85,6 +98,39 @@ class WebApp {
     base::Optional<SkColor> theme_color;
   };
   const SyncData& sync_data() const { return sync_data_; }
+
+  // Stores info needed to create app icon shortcuts menu and for downloading
+  // associated shortcut icons when supported by OS platform (eg. Windows).
+  struct WebAppShortcutMenuItemInfo {
+    WebAppShortcutMenuItemInfo();
+    WebAppShortcutMenuItemInfo(const WebAppShortcutMenuItemInfo&);
+    WebAppShortcutMenuItemInfo(WebAppShortcutMenuItemInfo&&) noexcept;
+    ~WebAppShortcutMenuItemInfo();
+    WebAppShortcutMenuItemInfo& operator=(const WebAppShortcutMenuItemInfo&);
+    WebAppShortcutMenuItemInfo& operator=(
+        WebAppShortcutMenuItemInfo&&) noexcept;
+
+    // Title of shortcut item in App Icon Shortcut Menu.
+    base::string16 name;
+
+    // URL launched when shortcut item is selected.
+    GURL url;
+
+    // List of shortcut icon URLs with associated square size.
+    std::vector<WebApplicationIconInfo> shortcut_icon_infos;
+  };
+
+  // Represents the "shortcuts" field in the manifest.
+  const std::vector<WebAppShortcutMenuItemInfo>& shortcut_infos() const {
+    return shortcut_infos_;
+  }
+
+  // Represents which shortcut icon sizes we successfully downloaded from the
+  // shortcut_infos.
+  const std::vector<std::vector<SquareSizePx>>&
+  downloaded_shortcut_icons_sizes() const {
+    return downloaded_shortcut_icons_sizes_;
+  }
 
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
@@ -109,10 +155,18 @@ class WebApp {
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
+  void SetWebAppChromeOsData(base::Optional<WebAppChromeOsData> chromeos_data);
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsInSyncInstall(bool is_in_sync_install);
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
+  // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
+  void SetShortcutInfos(std::vector<WebAppShortcutMenuItemInfo> shortcut_infos);
+  void SetDownloadedShortcutIconsSizes(
+      std::vector<std::vector<SquareSizePx>> icon_sizes);
+  void SetFileHandlers(apps::FileHandlers file_handlers);
+  void SetAdditionalSearchTerms(
+      std::vector<std::string> additional_search_terms);
 
   void SetSyncData(SyncData sync_data);
 
@@ -138,10 +192,17 @@ class WebApp {
   base::Optional<SkColor> theme_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
+  base::Optional<WebAppChromeOsData> chromeos_data_;
   bool is_locally_installed_ = true;
   bool is_in_sync_install_ = false;
   std::vector<WebApplicationIconInfo> icon_infos_;
   std::vector<SquareSizePx> downloaded_icon_sizes_;
+  // TODO(https://crbug.com/1069312): Serialize shortcut_infos_ and
+  // downloaded_shortcut_icons_sizes_ fields in WebAppDatabase.
+  std::vector<WebAppShortcutMenuItemInfo> shortcut_infos_;
+  std::vector<std::vector<SquareSizePx>> downloaded_shortcut_icons_sizes_;
+  apps::FileHandlers file_handlers_;
+  std::vector<std::string> additional_search_terms_;
 
   SyncData sync_data_;
 };

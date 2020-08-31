@@ -54,24 +54,6 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
 
 }  // anonymous namespace
 
-bool NeedMinMaxSizeForContentContribution(WritingMode mode,
-                                          const ComputedStyle& style) {
-  // During the intrinsic sizes pass percentages/calc() are defined to behave
-  // like 'auto'. As a result we need to calculate the intrinsic sizes for any
-  // children with percentages. E.g.
-  // <div style="float:left;">
-  //   <div style="width:30%;">text text</div>
-  // </div>
-  if (mode == WritingMode::kHorizontalTb) {
-    return style.Width().IsIntrinsicOrAuto() ||
-           style.Width().IsPercentOrCalc() || style.MinWidth().IsIntrinsic() ||
-           style.MaxWidth().IsIntrinsic();
-  }
-  return style.Height().IsIntrinsicOrAuto() ||
-         style.Height().IsPercentOrCalc() || style.MinHeight().IsIntrinsic() ||
-         style.MaxHeight().IsIntrinsic();
-}
-
 // Check if we shouldn't resolve a percentage/calc()/-webkit-fill-available
 // if we are in the intrinsic sizes phase.
 bool InlineLengthUnresolvable(const Length& length, LengthResolvePhase phase) {
@@ -90,7 +72,7 @@ bool BlockLengthUnresolvable(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
   if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
-      length.IsFitContent() || length.IsMaxSizeNone())
+      length.IsFitContent() || length.IsNone())
     return true;
   if (length.IsPercentOrCalc()) {
     if (phase == LengthResolvePhase::kIntrinsic)
@@ -115,7 +97,7 @@ LayoutUnit ResolveInlineLengthInternal(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSize>& min_and_max,
+    const base::Optional<MinMaxSizes>& min_max_sizes,
     const Length& length) {
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
   DCHECK_GE(constraint_space.PercentageResolutionInlineSize(), LayoutUnit());
@@ -146,20 +128,20 @@ LayoutUnit ResolveInlineLengthInternal(
     case Length::kMinContent:
     case Length::kMaxContent:
     case Length::kFitContent: {
-      DCHECK(min_and_max.has_value());
+      DCHECK(min_max_sizes.has_value());
       LayoutUnit available_size = constraint_space.AvailableSize().inline_size;
       LayoutUnit value;
       if (length.IsMinContent()) {
-        value = min_and_max->min_size;
+        value = min_max_sizes->min_size;
       } else if (length.IsMaxContent() || available_size == LayoutUnit::Max()) {
         // If the available space is infinite, fit-content resolves to
         // max-content. See css-sizing section 2.1.
-        value = min_and_max->max_size;
+        value = min_max_sizes->max_size;
       } else {
         NGBoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
         LayoutUnit fill_available =
             std::max(LayoutUnit(), available_size - margins.InlineSum());
-        value = min_and_max->ShrinkToFit(fill_available);
+        value = min_max_sizes->ShrinkToFit(fill_available);
       }
       return value;
     }
@@ -168,7 +150,7 @@ LayoutUnit ResolveInlineLengthInternal(
     case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case Length::kMaxSizeNone:
+    case Length::kNone:
     default:
       NOTREACHED();
       return border_padding.InlineSum();
@@ -181,7 +163,6 @@ LayoutUnit ResolveBlockLengthInternal(
     const NGBoxStrut& border_padding,
     const Length& length,
     LayoutUnit content_size,
-    LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
@@ -235,18 +216,44 @@ LayoutUnit ResolveBlockLengthInternal(
     case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case Length::kMaxSizeNone:
+    case Length::kNone:
     default:
       NOTREACHED();
       return border_padding.BlockSum();
   }
 }
 
-MinMaxSize ComputeMinAndMaxContentContribution(
+namespace {
+
+LayoutUnit InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
+                                     const LogicalSize& aspect_ratio,
+                                     EBoxSizing box_sizing,
+                                     LayoutUnit block_size) {
+  if (box_sizing == EBoxSizing::kBorderBox)
+    return block_size * aspect_ratio.inline_size / aspect_ratio.block_size;
+
+  return ((block_size - border_padding.BlockSum()) * aspect_ratio.inline_size /
+          aspect_ratio.block_size) +
+         border_padding.InlineSum();
+}
+
+LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
+                                    const LogicalSize& aspect_ratio,
+                                    EBoxSizing box_sizing,
+                                    LayoutUnit inline_size) {
+  if (box_sizing == EBoxSizing::kBorderBox)
+    return inline_size * aspect_ratio.block_size / aspect_ratio.inline_size;
+
+  return ((inline_size - border_padding.InlineSum()) * aspect_ratio.block_size /
+          aspect_ratio.inline_size) +
+         border_padding.BlockSum();
+}
+
+template <typename MinMaxSizesFunc>
+MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
     WritingMode parent_writing_mode,
     const ComputedStyle& style,
-    const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSize>& min_and_max) {
+    const MinMaxSizesFunc& min_max_sizes_func) {
   WritingMode child_writing_mode = style.GetWritingMode();
 
   // Synthesize a zero-sized constraint space for resolving sizes against.
@@ -254,26 +261,31 @@ MinMaxSize ComputeMinAndMaxContentContribution(
       NGConstraintSpaceBuilder(child_writing_mode, child_writing_mode,
                                /* is_new_fc */ false)
           .ToConstraintSpace();
+  NGBoxStrut border_padding =
+      ComputeBorders(space, style) + ComputePadding(space, style);
 
-  LayoutUnit content_size =
-      min_and_max ? min_and_max->max_size : kIndefiniteSize;
-
-  MinMaxSize computed_sizes;
+  MinMaxSizesResult result;
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
                                   ? style.Width()
                                   : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
-    CHECK(min_and_max.has_value());
-    computed_sizes = *min_and_max;
+    result = min_max_sizes_func();
   } else {
     if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-      computed_sizes = ResolveMainInlineLength(space, style, border_padding,
-                                               min_and_max, inline_size);
+      MinMaxSizes sizes;
+      sizes = ResolveMainInlineLength(space, style, border_padding,
+                                      min_max_sizes_func, inline_size);
+      result = {sizes, /* depends_on_percentage_block_size */ false};
     } else {
-      computed_sizes =
-          ResolveMainBlockLength(space, style, border_padding, inline_size,
-                                 content_size, LengthResolvePhase::kIntrinsic);
+      auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
+        return min_max_sizes_func().sizes.max_size;
+      };
+      MinMaxSizes sizes;
+      sizes = ResolveMainBlockLength(space, style, border_padding, inline_size,
+                                     IntrinsicBlockSizeFunc,
+                                     LengthResolvePhase::kIntrinsic);
+      result = {sizes, /* depends_on_percentage_block_size */ false};
     }
   }
 
@@ -282,75 +294,89 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                                  : style.MaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    max = ResolveMaxInlineLength(space, style, border_padding, min_and_max,
-                                 max_length, LengthResolvePhase::kIntrinsic);
+    max =
+        ResolveMaxInlineLength(space, style, border_padding, min_max_sizes_func,
+                               max_length, LengthResolvePhase::kIntrinsic);
   } else {
     max = ResolveMaxBlockLength(space, style, border_padding, max_length,
-                                content_size, LengthResolvePhase::kIntrinsic);
+                                LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.Constrain(max);
+  result.sizes.Constrain(max);
 
   const Length& min_length = parent_writing_mode == WritingMode::kHorizontalTb
                                  ? style.MinWidth()
                                  : style.MinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    min = ResolveMinInlineLength(space, style, border_padding, min_and_max,
-                                 min_length, LengthResolvePhase::kIntrinsic);
+    min =
+        ResolveMinInlineLength(space, style, border_padding, min_max_sizes_func,
+                               min_length, LengthResolvePhase::kIntrinsic);
   } else {
     min = ResolveMinBlockLength(space, style, border_padding, min_length,
-                                content_size, LengthResolvePhase::kIntrinsic);
+                                LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.Encompass(min);
+  result.sizes.Encompass(min);
 
-  return computed_sizes;
+  return result;
 }
 
-MinMaxSize ComputeMinAndMaxContentContribution(
+}  // namespace
+
+MinMaxSizes ComputeMinAndMaxContentContributionForTest(
+    WritingMode parent_writing_mode,
+    const ComputedStyle& style,
+    const MinMaxSizes& min_max_sizes) {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+    return {min_max_sizes, false};
+  };
+  return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, style,
+                                                     MinMaxSizesFunc)
+      .sizes;
+}
+
+MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
-    const MinMaxSizeInput& input) {
+    const MinMaxSizesInput& input) {
   const ComputedStyle& child_style = child.Style();
   WritingMode parent_writing_mode = parent_style.GetWritingMode();
   WritingMode child_writing_mode = child_style.GetWritingMode();
-  LayoutBox* box = child.GetLayoutBox();
-
-  if (box->NeedsPreferredWidthsRecalculation()) {
-    // Some objects (when there's an intrinsic ratio) have their min/max inline
-    // size affected by the block size of their container. We don't really know
-    // whether the containing block of this child did change or is going to
-    // change size. However, this is our only opportunity to make sure that it
-    // gets its min/max widths calculated.
-    box->SetPreferredLogicalWidthsDirty();
-  }
 
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    if (!box->PreferredLogicalWidthsDirty()) {
-      return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
-    }
     // Tables are special; even if a width is specified, they may end up being
     // sized different. So we just always let the table code handle this.
+    if (child.IsTable())
+      return child.ComputeMinMaxSizes(parent_writing_mode, input, nullptr);
+
     // Replaced elements may size themselves using aspect ratios and block
     // sizes, so we pass that on as well.
-    if (box->IsTable() || box->IsTablePart() || box->IsLayoutReplaced()) {
+    if (child.IsReplaced()) {
+      LayoutBox* box = child.GetLayoutBox();
       bool needs_size_reset = false;
       if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
         box->SetOverrideContainingBlockContentLogicalHeight(
             input.percentage_resolution_block_size);
         needs_size_reset = true;
       }
-      MinMaxSize result{box->MinPreferredLogicalWidth(),
-                        box->MaxPreferredLogicalWidth()};
+
+      MinMaxSizes result = box->PreferredLogicalWidths();
+
       if (needs_size_reset)
         box->ClearOverrideContainingBlockContentSize();
-      return result;
+
+      // Replaced elements which have a percentage block-size use the
+      // |MinMaxSizesInput::percentage_resolution_block_size| field.
+      bool depends_on_percentage_block_size =
+          child_style.LogicalMinHeight().IsPercentOrCalc() ||
+          child_style.LogicalHeight().IsPercentOrCalc() ||
+          child_style.LogicalMaxHeight().IsPercentOrCalc();
+      return {result, depends_on_percentage_block_size};
     }
   }
 
-  base::Optional<MinMaxSize> minmax;
-  if (NeedMinMaxSizeForContentContribution(parent_writing_mode, child_style)) {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
     // We need to set up a constraint space with correct fallback available
-    // inline size in case of orthogonal children.
+    // inline-size in case of orthogonal children.
     NGConstraintSpace indefinite_constraint_space;
     const NGConstraintSpace* child_constraint_space = nullptr;
     if (!IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
@@ -358,119 +384,76 @@ MinMaxSize ComputeMinAndMaxContentContribution(
           CreateIndefiniteConstraintSpaceForChild(parent_style, child);
       child_constraint_space = &indefinite_constraint_space;
     }
-    minmax = child.ComputeMinMaxSize(parent_writing_mode, input,
-                                     child_constraint_space);
-  }
-  // Synthesize a zero-sized constraint space for determining the borders, and
-  // padding.
-  NGConstraintSpace space =
-      NGConstraintSpaceBuilder(child_writing_mode, child_writing_mode,
-                               /* is_new_fc */ false)
-          .ToConstraintSpace();
-  NGBoxStrut border_padding =
-      ComputeBorders(space, child) + ComputePadding(space, child_style);
+    return child.ComputeMinMaxSizes(parent_writing_mode, input,
+                                    child_constraint_space);
+  };
 
-  MinMaxSize sizes = ComputeMinAndMaxContentContribution(
-      parent_writing_mode, child_style, border_padding, minmax);
-  if (IsParallelWritingMode(parent_writing_mode, child_writing_mode))
-    box->SetPreferredLogicalWidthsFromNG(sizes);
-  return sizes;
+  return ComputeMinAndMaxContentContributionInternal(
+      parent_writing_mode, child_style, MinMaxSizesFunc);
 }
 
-MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
-    const NGConstraintSpace& constraint_space,
-    NGLayoutInputNode node,
-    const NGBoxStrut& border_padding,
-    const MinMaxSizeInput& input) {
-  LayoutBox* box = node.GetLayoutBox();
-  // If we've already populated the legacy preferred logical widths cache for
-  // this node at the bottom of this function, use those cached results here.
-  // Or, if we're working on a table, use the legacy preferred widths code
-  // instead of ComputeMinAndMaxContentContribution below because
-  // ComputeMinAndMaxContentContribution assumes that if an element has a
-  // specified size, that's its final size, which tables don't follow.
-  if ((!box->PreferredLogicalWidthsDirty() &&
-       !box->NeedsPreferredWidthsRecalculation()) ||
-      box->IsTable()) {
-    return MinMaxSize{box->MinPreferredLogicalWidth(),
-                      box->MaxPreferredLogicalWidth()};
+LayoutUnit ComputeInlineSizeFromAspectRatio(const NGConstraintSpace& space,
+                                            const ComputedStyle& style,
+                                            const NGBoxStrut& border_padding) {
+  if (UNLIKELY(style.LogicalAspectRatio() && !style.LogicalHeight().IsAuto())) {
+    // Check if we can get an inline size using the aspect ratio
+    LayoutUnit block_size = ComputeBlockSizeForFragment(
+        space, style, border_padding, kIndefiniteSize, base::nullopt);
+    if (block_size != kIndefiniteSize) {
+      return InlineSizeFromAspectRatio(border_padding,
+                                       *style.LogicalAspectRatio(),
+                                       style.BoxSizing(), block_size);
+    }
   }
-
-  // Compute the intrinsic sizes without regard to the specified sizes.
-  MinMaxSize result = node.ComputeMinMaxSize(node.Style().GetWritingMode(),
-                                             input, &constraint_space);
-  // Apply the specified min, main, max sizes.
-  MinMaxSize contribution = ComputeMinAndMaxContentContribution(
-      node.Style().GetWritingMode(), node.Style(), border_padding, result);
-  // Cache these computed values.
-  box->SetPreferredLogicalWidthsFromNG(contribution);
-  return result;
+  return kIndefiniteSize;
 }
 
 LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace& space,
     NGLayoutInputNode node,
     const NGBoxStrut& border_padding,
-    const MinMaxSize* override_minmax_for_test) {
+    const MinMaxSizes* override_min_max_sizes_for_test) {
   if (space.IsFixedInlineSize() || space.IsAnonymous())
     return space.AvailableSize().inline_size;
 
   const ComputedStyle& style = node.Style();
   Length logical_width = style.LogicalWidth();
-  if (logical_width.IsAuto() && space.IsShrinkToFit())
-    logical_width = Length::FitContent();
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+    if (override_min_max_sizes_for_test)
+      return {*override_min_max_sizes_for_test, false};
 
-  LayoutBox* box = node.GetLayoutBox();
-  // If we have usable cached min/max intrinsic sizes, use those if we can. They
-  // will normally also be constrained to {min,max}-inline-size, but not if
-  // percentages are involved. In such cases we'll have to calculate and apply
-  // the constraints on our own. We also need to discard the cached values if
-  // the box has certain properties (e.g. percentage padding) that cause the
-  // cached values to be affected by extrinsic sizing.
-  if (!box->PreferredLogicalWidthsDirty() && !override_minmax_for_test &&
-      !style.LogicalMinWidth().IsPercentOrCalc() &&
-      !style.LogicalMaxWidth().IsPercentOrCalc() &&
-      !box->NeedsPreferredWidthsRecalculation()) {
-    if (logical_width.IsFitContent()) {
-      // This is not as easy as {min, max}.ShrinkToFit() because we also need
-      // to subtract inline margins from the available size. The code in
-      // ResolveMainInlineLength knows how to handle that, just call that.
+    return node.ComputeMinMaxSizes(
+        space.GetWritingMode(),
+        MinMaxSizesInput(space.PercentageResolutionBlockSize()), &space);
+  };
 
-      MinMaxSize min_and_max = {box->MinPreferredLogicalWidth(),
-                                box->MaxPreferredLogicalWidth()};
-      return ResolveMainInlineLength(space, style, border_padding, min_and_max,
-                                     logical_width);
-    }
-    if (logical_width.IsMinContent())
-      return box->MinPreferredLogicalWidth();
-    if (logical_width.IsMaxContent())
-      return box->MaxPreferredLogicalWidth();
+  Length min_length = style.LogicalMinWidth();
+  // TODO(cbiesinger): Audit callers of ResolveMainInlineLength to see
+  // whether they need to respect aspect ratio and consider adding a helper
+  // function for that.
+  LayoutUnit extent = kIndefiniteSize;
+  if (style.AspectRatio() && logical_width.IsAuto())
+    extent = ComputeInlineSizeFromAspectRatio(space, style, border_padding);
+  if (UNLIKELY(extent != kIndefiniteSize)) {
+    // This means we successfully applied aspect-ratio and now need to check
+    // if we need to apply the implied minimum size:
+    // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
+    if (style.OverflowInlineDirection() == EOverflow::kVisible &&
+        min_length.IsAuto())
+      min_length = Length::MinContent();
+  } else {
+    if (logical_width.IsAuto() && space.IsShrinkToFit())
+      logical_width = Length::FitContent();
+    extent = ResolveMainInlineLength(space, style, border_padding,
+                                     MinMaxSizesFunc, logical_width);
   }
 
-  base::Optional<MinMaxSize> min_and_max;
-  if (NeedMinMaxSize(space, style)) {
-    if (override_minmax_for_test) {
-      min_and_max = *override_minmax_for_test;
-    } else {
-      min_and_max = node.ComputeMinMaxSize(
-          space.GetWritingMode(),
-          MinMaxSizeInput(space.PercentageResolutionBlockSize()), &space);
-      // Cache these computed values
-      MinMaxSize contribution = ComputeMinAndMaxContentContribution(
-          style.GetWritingMode(), style, border_padding, min_and_max);
-      box->SetPreferredLogicalWidthsFromNG(contribution);
-    }
-  }
-
-  LayoutUnit extent = ResolveMainInlineLength(space, style, border_padding,
-                                              min_and_max, logical_width);
-
-  LayoutUnit max = ResolveMaxInlineLength(space, style, border_padding,
-                                          min_and_max, style.LogicalMaxWidth(),
-                                          LengthResolvePhase::kLayout);
-  LayoutUnit min = ResolveMinInlineLength(space, style, border_padding,
-                                          min_and_max, style.LogicalMinWidth(),
-                                          LengthResolvePhase::kLayout);
+  LayoutUnit max = ResolveMaxInlineLength(
+      space, style, border_padding, MinMaxSizesFunc, style.LogicalMaxWidth(),
+      LengthResolvePhase::kLayout);
+  LayoutUnit min =
+      ResolveMinInlineLength(space, style, border_padding, MinMaxSizesFunc,
+                             min_length, LengthResolvePhase::kLayout);
   return ConstrainByMinMax(extent, min, max);
 }
 
@@ -482,11 +465,12 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
     LayoutUnit content_size,
+    base::Optional<LayoutUnit> inline_size,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
   LayoutUnit min = ResolveMinBlockLength(
       constraint_space, style, border_padding, style.LogicalMinHeight(),
-      content_size, LengthResolvePhase::kLayout,
+      LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
   const Length& logical_height = style.LogicalHeight();
   // Scrollable percentage-sized children of table cells, in the table
@@ -507,18 +491,32 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
        style.OverflowY() == EOverflow::kScroll))
     return min;
 
+  // TODO(cbiesinger): Audit callers of ResolveMainBlockLength to see whether
+  // they need to respect aspect ratio.
   LayoutUnit extent = ResolveMainBlockLength(
       constraint_space, style, border_padding, logical_height, content_size,
       LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
-  if (extent == kIndefiniteSize) {
+  if (UNLIKELY((extent == kIndefiniteSize || logical_height.IsAuto()) &&
+               style.LogicalAspectRatio() && inline_size &&
+               !style.LogicalWidth().IsAuto())) {
+    extent =
+        BlockSizeFromAspectRatio(border_padding, *style.LogicalAspectRatio(),
+                                 style.BoxSizing(), *inline_size);
+    // Apply the automatic minimum size for aspect ratio:
+    // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
+    if (style.LogicalMinHeight().IsAuto() &&
+        style.OverflowBlockDirection() == EOverflow::kVisible &&
+        content_size != kIndefiniteSize)
+      min = content_size;
+  } else if (extent == kIndefiniteSize) {
     DCHECK_EQ(content_size, kIndefiniteSize);
     return extent;
   }
 
   LayoutUnit max = ResolveMaxBlockLength(
       constraint_space, style, border_padding, style.LogicalMaxHeight(),
-      content_size, LengthResolvePhase::kLayout,
+      LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
 
   return ConstrainByMinMax(extent, min, max);
@@ -530,7 +528,8 @@ LayoutUnit ComputeBlockSizeForFragment(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    LayoutUnit content_size) {
+    LayoutUnit content_size,
+    base::Optional<LayoutUnit> inline_size) {
   // The final block-size of a table-cell is always its intrinsic size.
   if (constraint_space.IsTableCell() && content_size != kIndefiniteSize)
     return content_size;
@@ -541,14 +540,14 @@ LayoutUnit ComputeBlockSizeForFragment(
   if (constraint_space.IsAnonymous())
     return content_size;
 
-  return ComputeBlockSizeForFragmentInternal(constraint_space, style,
-                                             border_padding, content_size);
+  return ComputeBlockSizeForFragmentInternal(
+      constraint_space, style, border_padding, content_size, inline_size);
 }
 
 // Computes size for a replaced element.
-void ComputeReplacedSize(const NGLayoutInputNode& node,
+void ComputeReplacedSize(const NGBlockNode& node,
                          const NGConstraintSpace& space,
-                         const base::Optional<MinMaxSize>& child_minmax,
+                         const base::Optional<MinMaxSizes>& child_min_max_sizes,
                          base::Optional<LogicalSize>* out_replaced_size,
                          base::Optional<LogicalSize>* out_aspect_ratio) {
   DCHECK(node.IsReplaced());
@@ -558,26 +557,26 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
   const ComputedStyle& style = node.Style();
 
   NGBoxStrut border_padding =
-      ComputeBorders(space, node) + ComputePadding(space, style);
+      ComputeBorders(space, style) + ComputePadding(space, style);
   LayoutUnit inline_min = ResolveMinInlineLength(
-      space, style, border_padding, child_minmax, style.LogicalMinWidth(),
-      LengthResolvePhase::kLayout);
+      space, style, border_padding, child_min_max_sizes,
+      style.LogicalMinWidth(), LengthResolvePhase::kLayout);
   LayoutUnit inline_max = ResolveMaxInlineLength(
-      space, style, border_padding, child_minmax, style.LogicalMaxWidth(),
-      LengthResolvePhase::kLayout);
-  LayoutUnit block_min = ResolveMinBlockLength(
-      space, style, border_padding, style.LogicalMinHeight(),
-      border_padding.BlockSum(), LengthResolvePhase::kLayout);
-  LayoutUnit block_max = ResolveMaxBlockLength(
-      space, style, border_padding, style.LogicalMaxHeight(), LayoutUnit::Max(),
-      LengthResolvePhase::kLayout);
+      space, style, border_padding, child_min_max_sizes,
+      style.LogicalMaxWidth(), LengthResolvePhase::kLayout);
+  LayoutUnit block_min = ResolveMinBlockLength(space, style, border_padding,
+                                               style.LogicalMinHeight(),
+                                               LengthResolvePhase::kLayout);
+  LayoutUnit block_max = ResolveMaxBlockLength(space, style, border_padding,
+                                               style.LogicalMaxHeight(),
+                                               LengthResolvePhase::kLayout);
 
   const Length& inline_length = style.LogicalWidth();
   const Length& block_length = style.LogicalHeight();
   base::Optional<LayoutUnit> replaced_inline;
   if (!inline_length.IsAuto()) {
-    replaced_inline = ResolveMainInlineLength(space, style, border_padding,
-                                              child_minmax, inline_length);
+    replaced_inline = ResolveMainInlineLength(
+        space, style, border_padding, child_min_max_sizes, inline_length);
     replaced_inline =
         ConstrainByMinMax(*replaced_inline, inline_min, inline_max);
   }
@@ -595,9 +594,10 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
 
   base::Optional<LayoutUnit> intrinsic_inline;
   base::Optional<LayoutUnit> intrinsic_block;
-  LogicalSize aspect_ratio;
+  node.IntrinsicSize(&intrinsic_inline, &intrinsic_block);
 
-  node.IntrinsicSize(&intrinsic_inline, &intrinsic_block, &aspect_ratio);
+  LogicalSize aspect_ratio = node.GetAspectRatio();
+
   // Computing intrinsic size is complicated by the fact that
   // intrinsic_inline, intrinsic_block, and aspect_ratio can all
   // be empty independent of each other.
@@ -612,9 +612,9 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
     intrinsic_block = LayoutUnit(150) + border_padding.BlockSum();
   if (!intrinsic_inline) {
     if (intrinsic_block) {
-      intrinsic_inline = ((*intrinsic_block - border_padding.BlockSum()) *
-                          aspect_ratio.inline_size / aspect_ratio.block_size) +
-                         border_padding.InlineSum();
+      intrinsic_inline =
+          InlineSizeFromAspectRatio(border_padding, aspect_ratio,
+                                    EBoxSizing::kContentBox, *intrinsic_block);
     } else if (!replaced_inline && !replaced_block) {
       // No sizes available, return only the aspect ratio.
       *out_aspect_ratio = aspect_ratio;
@@ -623,9 +623,9 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
   }
   if (intrinsic_inline && !intrinsic_block) {
     DCHECK(!aspect_ratio.IsEmpty());
-    intrinsic_block = ((*intrinsic_inline - border_padding.InlineSum()) *
-                       aspect_ratio.block_size / aspect_ratio.inline_size) +
-                      border_padding.BlockSum();
+    intrinsic_block =
+        BlockSizeFromAspectRatio(border_padding, aspect_ratio,
+                                 EBoxSizing::kContentBox, *intrinsic_inline);
   }
 
   DCHECK(intrinsic_inline || intrinsic_block || replaced_inline ||
@@ -638,9 +638,8 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
       DCHECK_GE(default_block, border_padding.BlockSum());
       return default_block;
     }
-    return ((*replaced_inline - border_padding.InlineSum()) *
-            aspect_ratio.block_size / aspect_ratio.inline_size) +
-           border_padding.BlockSum();
+    return BlockSizeFromAspectRatio(border_padding, aspect_ratio,
+                                    EBoxSizing::kContentBox, *replaced_inline);
   };
 
   auto ComputeInlineFromBlock = [&replaced_block, &aspect_ratio,
@@ -649,9 +648,8 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
       DCHECK_GE(default_inline, border_padding.InlineSum());
       return default_inline;
     }
-    return ((*replaced_block - border_padding.BlockSum()) *
-            aspect_ratio.inline_size / aspect_ratio.block_size) +
-           border_padding.InlineSum();
+    return InlineSizeFromAspectRatio(border_padding, aspect_ratio,
+                                     EBoxSizing::kContentBox, *replaced_block);
   };
   if (replaced_inline) {
     DCHECK(!replaced_block);
@@ -850,7 +848,7 @@ NGBoxStrut ComputeBordersInternal(const ComputedStyle& style) {
 }  // namespace
 
 NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
-                          const NGLayoutInputNode node) {
+                          const ComputedStyle& style) {
   // If we are producing an anonymous fragment (e.g. a column), it has no
   // borders, padding or scrollbars. Using the ones from the container can only
   // cause trouble.
@@ -862,7 +860,7 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsTableCell())
     return constraint_space.TableCellBorders();
 
-  return ComputeBordersInternal(node.Style());
+  return ComputeBordersInternal(style);
 }
 
 NGBoxStrut ComputeBordersForInline(const ComputedStyle& style) {
@@ -877,7 +875,6 @@ NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,
                                    const ComputedStyle& style,
                                    const NGBoxStrut& scrollbar) {
   DCHECK(constraint_space.IsTableCell());
-  DCHECK(!scrollbar.block_start);
 
   // During the "layout" table phase, adjust the given intrinsic-padding to
   // accommodate the scrollbar.
@@ -1058,7 +1055,7 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
     const NGBlockNode& node) {
   const ComputedStyle& style = node.Style();
 
-  NGBoxStrut border = ComputeBorders(constraint_space, node);
+  NGBoxStrut border = ComputeBorders(constraint_space, style);
   NGBoxStrut padding = ComputePadding(constraint_space, style);
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
   NGBoxStrut border_padding = border + padding;
@@ -1078,10 +1075,12 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
 
   LayoutUnit default_block_size = CalculateDefaultBlockSize(
       constraint_space, node, border_scrollbar_padding);
+  LayoutUnit inline_size =
+      ComputeInlineSizeForFragment(constraint_space, node, border_padding);
   LogicalSize border_box_size(
-      ComputeInlineSizeForFragment(constraint_space, node, border_padding),
+      inline_size,
       ComputeBlockSizeForFragment(constraint_space, style, border_padding,
-                                  default_block_size));
+                                  default_block_size, inline_size));
 
   if (UNLIKELY(border_box_size.inline_size <
                    border_scrollbar_padding.InlineSum() &&
@@ -1096,8 +1095,9 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
 NGFragmentGeometry CalculateInitialMinMaxFragmentGeometry(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode& node) {
-  NGBoxStrut border = ComputeBorders(constraint_space, node);
-  NGBoxStrut padding = ComputePadding(constraint_space, node.Style());
+  const ComputedStyle& style = node.Style();
+  NGBoxStrut border = ComputeBorders(constraint_space, style);
+  NGBoxStrut padding = ComputePadding(constraint_space, style);
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
 
   return {/* border_box_size */ LogicalSize(), border, scrollbar, padding};
@@ -1192,7 +1192,8 @@ LogicalSize CalculateReplacedChildPercentageSize(
   const ComputedStyle& style = node.Style();
   if (space.IsTableCell() && style.LogicalHeight().IsFixed()) {
     LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
-        space, style, border_padding, kIndefiniteSize /* content_size */);
+        space, style, border_padding, kIndefiniteSize /* content_size */,
+        base::nullopt /* inline_size */);
     DCHECK_NE(block_size, kIndefiniteSize);
     return {child_available_size.inline_size,
             (block_size - border_scrollbar_padding.BlockSum())
@@ -1208,15 +1209,29 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGConstraintSpace& space,
     const NGBlockNode node,
     const NGBoxStrut& border_padding,
-    LayoutUnit parent_percentage_block_size) {
-  // Anonymous block or spaces should pass the percent size straight through.
-  if (space.IsAnonymous() || node.IsAnonymousBlock())
-    return parent_percentage_block_size;
+    LayoutUnit input_percentage_block_size,
+    bool* uses_input_percentage_block_size) {
+  *uses_input_percentage_block_size = false;
 
+  // Anonymous block or spaces should pass the percent size straight through.
+  // If this node is OOF-positioned, our size was pre-calculated and we should
+  // pass this through to our children.
+  if (space.IsAnonymous() || node.IsAnonymousBlock() ||
+      node.IsOutOfFlowPositioned()) {
+    *uses_input_percentage_block_size = true;
+    return input_percentage_block_size;
+  }
+
+  const ComputedStyle& style = node.Style();
   LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
-      space, node.Style(), border_padding,
-      CalculateDefaultBlockSize(space, node, border_padding),
-      &parent_percentage_block_size);
+      space, style, border_padding,
+      CalculateDefaultBlockSize(space, node, border_padding), base::nullopt,
+      &input_percentage_block_size);
+
+  if (style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc())
+    *uses_input_percentage_block_size = true;
 
   LayoutUnit child_percentage_block_size =
       block_size == kIndefiniteSize
@@ -1225,9 +1240,10 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 
   // For OOF-positioned nodes, use the parent (containing-block) size.
   if (child_percentage_block_size == kIndefiniteSize &&
-      (node.UseParentPercentageResolutionBlockSizeForChildren() ||
-       node.IsOutOfFlowPositioned()))
-    child_percentage_block_size = parent_percentage_block_size;
+      node.UseParentPercentageResolutionBlockSizeForChildren()) {
+    *uses_input_percentage_block_size = true;
+    child_percentage_block_size = input_percentage_block_size;
+  }
 
   return child_percentage_block_size;
 }
@@ -1255,8 +1271,13 @@ LayoutUnit ClampIntrinsicBlockSize(
 
   // If the intrinsic size was overridden, then use that.
   LayoutUnit intrinsic_size_override = node.OverrideIntrinsicContentBlockSize();
-  if (intrinsic_size_override != kIndefiniteSize)
+  if (intrinsic_size_override != kIndefiniteSize) {
     return intrinsic_size_override + border_scrollbar_padding.BlockSum();
+  } else {
+    LayoutUnit default_intrinsic_size = node.DefaultIntrinsicContentBlockSize();
+    if (default_intrinsic_size != kIndefiniteSize)
+      return default_intrinsic_size + border_scrollbar_padding.BlockSum();
+  }
 
   // If we have size containment, we ignore child contributions to intrinsic
   // sizing.
@@ -1265,26 +1286,34 @@ LayoutUnit ClampIntrinsicBlockSize(
   return current_intrinsic_block_size;
 }
 
-base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
+base::Optional<MinMaxSizesResult> CalculateMinMaxSizesIgnoringChildren(
     const NGBlockNode& node,
-    const NGBoxStrut& border_scrollbar_padding,
-    NGMinMaxSizeType type) {
-  MinMaxSize sizes;
-  if (type == NGMinMaxSizeType::kBorderBoxSize)
-    sizes += border_scrollbar_padding.InlineSum();
+    const NGBoxStrut& border_scrollbar_padding) {
+  MinMaxSizes sizes;
+  sizes += border_scrollbar_padding.InlineSum();
 
   // If intrinsic size was overridden, then use that.
   const LayoutUnit intrinsic_size_override =
       node.OverrideIntrinsicContentInlineSize();
   if (intrinsic_size_override != kIndefiniteSize) {
     sizes += intrinsic_size_override;
-    return sizes;
+    return MinMaxSizesResult{sizes,
+                             /* depends_on_percentage_block_size */ false};
+  } else {
+    LayoutUnit default_inline_size = node.DefaultIntrinsicContentInlineSize();
+    if (default_inline_size != kIndefiniteSize) {
+      sizes += default_inline_size;
+      return MinMaxSizesResult{sizes,
+                               /* depends_on_percentage_block_size */ false};
+    }
   }
 
   // Size contained elements don't consider children for intrinsic sizing.
   // Also, if we don't have children, we can determine the size immediately.
-  if (node.ShouldApplySizeContainment() || !node.FirstChild())
-    return sizes;
+  if (node.ShouldApplySizeContainment() || !node.FirstChild()) {
+    return MinMaxSizesResult{sizes,
+                             /* depends_on_percentage_block_size */ false};
+  }
 
   return base::nullopt;
 }

@@ -45,8 +45,6 @@
 #  "generated_script"
 #  : the test is a script generated at build time; the path to the script
 #    *relative to the output directory* is specified in the "script" field.
-#  "fuzzer"
-#  : the test is a fuzzer that needs to be run with a wrapper.
 #  "unknown"
 #  : (the default), which indicates that we don't know what the command line
 #    needs to be (this is a fatal error).
@@ -85,17 +83,9 @@
     "label": "//ui/accessibility:accessibility_unittests",
     "type": "console_test_launcher",
   },
-  "agc_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:agc_fuzzer",
-    "type": "fuzzer",
-  },
   "android_browsertests": {
     "label": "//chrome/test:android_browsertests",
     "type": "windowed_test_launcher",
-  },
-  "android_crazy_linker_zip_fuzzer": {
-    "label": "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer",
-    "type": "fuzzer",
   },
   "android_webview_junit_tests": {
     "label": "//android_webview/test:android_webview_junit_tests",
@@ -112,47 +102,47 @@
   "angle_deqp_egl_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_egl_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_gles2_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_gles31_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_gles31_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_gles3_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_khr_gles2_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_khr_gles3_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_deqp_khr_gles31_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_end2end_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_end2end_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_gles1_conformance_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "angle_perftests": {
     "args": [
@@ -166,10 +156,6 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
-  "angle_translator_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:angle_translator_fuzzer",
-    "type": "fuzzer",
-  },
   "angle_unittests": {
     "label": "//third_party/angle/src/tests:angle_unittests",
     "type": "console_test_launcher",
@@ -177,11 +163,7 @@
   "angle_white_box_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_white_box_tests",
-    "type": "raw",
-  },
-  "apdu_fuzzer": {
-    "label": "//components/apdu:apdu_fuzzer",
-    "type": "fuzzer",
+    "type": "windowed_test_launcher",
   },
   "app_list_unittests": {
     "label": "//ash/app_list:app_list_unittests",
@@ -191,89 +173,13 @@
     "label": "//extensions/shell:app_shell_unittests",
     "type": "windowed_test_launcher",
   },
-  "appcache_fuzzer": {
-    "label": "//content/test/fuzzer:appcache_fuzzer",
-    "type": "fuzzer",
-  },
-  "appcache_manifest_parser_fuzzer": {
-    "label": "//content/test/fuzzer:appcache_manifest_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "ash_unittests": {
     "label": "//ash:ash_unittests",
     "type": "windowed_test_launcher",
   },
-  "audio_decoder_fuzzer": {
-    "label": "//content/renderer:audio_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_ilbc_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_ilbc_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_isac_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_isac_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_isac_incoming_packet_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_isac_incoming_packet_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_isacfix_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_isacfix_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_opus_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_opus_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_decoder_opus_redundant_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_decoder_opus_redundant_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_encoder_opus_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_encoder_opus_fuzzer",
-    "type": "fuzzer",
-  },
-  "audio_processing_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:audio_processing_fuzzer",
-    "type": "fuzzer",
-  },
   "aura_unittests": {
     "label": "//ui/aura:aura_unittests",
     "type": "windowed_test_launcher",
-  },
-  "autofill_phone_number_i18n_fuzzer": {
-    "label": "//components/autofill/core/browser:autofill_phone_number_i18n_fuzzer",
-    "type": "fuzzer",
-  },
-  "ax_table_fuzzer": {
-    "label": "//ui/accessibility:ax_table_fuzzer",
-    "type": "fuzzer",
-  },
-  "ax_tree_fuzzer": {
-    "label": "//ui/accessibility:ax_tree_fuzzer",
-    "type": "fuzzer",
-  },
-  "base64_decode_fuzzer": {
-    "label": "//base:base64_decode_fuzzer",
-    "type": "fuzzer",
-  },
-  "base64_encode_fuzzer": {
-    "label": "//base:base64_encode_fuzzer",
-    "type": "fuzzer",
-  },
-  "base_json_correctness_fuzzer": {
-    "label": "//base:base_json_correctness_fuzzer",
-    "type": "fuzzer",
-  },
-  "base_json_reader_fuzzer": {
-    "label": "//base:base_json_reader_fuzzer",
-    "type": "fuzzer",
-  },
-  "base_json_string_escape_fuzzer": {
-    "label": "//base:base_json_string_escape_fuzzer",
-    "type": "fuzzer",
   },
   "base_junit_tests": {
     "label": "//base:base_junit_tests",
@@ -288,6 +194,7 @@
       "--test-launcher-retry-limit=0",
     ],
     "label": "//base:base_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -299,10 +206,6 @@
     "label": "//base/util:base_util_unittests",
     "type": "console_test_launcher",
   },
-  "bdict_fuzzer": {
-    "label": "//third_party/hunspell:bdict_fuzzer",
-    "type": "fuzzer",
-  },
   "blink_common_unittests": {
     "label": "//third_party/blink/common:blink_common_unittests",
     "type": "console_test_launcher",
@@ -311,33 +214,13 @@
     "label": "//third_party/blink/renderer/platform:blink_fuzzer_unittests",
     "type": "console_test_launcher",
   },
-  "blink_harfbuzz_shaper_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_harfbuzz_shaper_fuzzer",
-    "type": "fuzzer",
-  },
   "blink_heap_unittests": {
     "label": "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",
   },
-  "blink_html_tokenizer_fuzzer": {
-    "label": "//third_party/blink/renderer/core/html/parser:blink_html_tokenizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "blink_http_parsers_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_http_parsers_fuzzer",
-    "type": "fuzzer",
-  },
-  "blink_json_parser_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_json_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "blink_platform_unittests": {
     "label": "//third_party/blink/renderer/platform:blink_platform_unittests",
     "type": "console_test_launcher",
-  },
-  "blink_png_decoder_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_png_decoder_fuzzer",
-    "type": "fuzzer",
   },
   "blink_python_tests": {
     "args": [
@@ -350,14 +233,6 @@
   "blink_tests": {
     "label": "//:blink_tests",
     "type": "additional_compile_target",
-  },
-  "blink_text_codec_UTF_8_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_text_codec_UTF_8_fuzzer",
-    "type": "fuzzer",
-  },
-  "blink_text_codec_WINDOWS_1252_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:blink_text_codec_WINDOWS_1252_fuzzer",
-    "type": "fuzzer",
   },
   "blink_unittests": {
     "label": "//third_party/blink/renderer/controller:blink_unittests",
@@ -376,83 +251,38 @@
       "--exit-after-n-crashes-or-timeouts",
       "100",
       "--results-directory",
-      "${ISOLATED_OUTDIR}/layout-test-results",
+      "${ISOLATED_OUTDIR}",
     ],
     "label": "//:blink_web_tests",
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
-  "boringssl_arm_cpuinfo_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_arm_cpuinfo_fuzzer",
-    "type": "fuzzer",
+  "boundary_interface_example_apk": {
+    "label": "//android_webview/support_library/boundary_interfaces:boundary_interface_example_apk",
+    "type": "additional_compile_target",
   },
-  "boringssl_bn_div_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_bn_div_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_bn_mod_exp_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_bn_mod_exp_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_cert_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_cert_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_client_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_client_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_client_no_fuzzer_mode_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_client_no_fuzzer_mode_fuzzer",
-    "type": "fuzzer",
+  "devtools_web_tests": {
+    "args": [
+      "../../third_party/blink/tools/run_web_tests.py",
+      "--seed",
+      "4",
+      "--no-show-results",
+      "--zero-tests-executed-ok",
+      "--clobber-old-results",
+      "--exit-after-n-failures",
+      "5000",
+      "--exit-after-n-crashes-or-timeouts",
+      "100",
+      "--results-directory",
+      "${ISOLATED_OUTDIR}",
+    ],
+    "label": "//:devtools_web_tests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "boringssl_crypto_tests": {
     "label": "//third_party/boringssl:boringssl_crypto_tests",
     "type": "console_test_launcher",
-  },
-  "boringssl_dtls_client_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_dtls_client_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_dtls_server_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_dtls_server_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_pkcs12_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_pkcs12_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_pkcs8_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_pkcs8_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_privkey_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_privkey_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_read_pem_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_read_pem_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_server_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_server_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_server_no_fuzzer_mode_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_server_no_fuzzer_mode_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_session_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_session_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_spki_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_spki_fuzzer",
-    "type": "fuzzer",
-  },
-  "boringssl_ssl_ctx_api_fuzzer": {
-    "label": "//third_party/boringssl:boringssl_ssl_ctx_api_fuzzer",
-    "type": "fuzzer",
   },
   "boringssl_ssl_tests": {
     "label": "//third_party/boringssl:boringssl_ssl_tests",
@@ -461,10 +291,6 @@
   "breakpad_unittests": {
     "label": "//third_party/breakpad:breakpad_unittests",
     "type": "console_test_launcher",
-  },
-  "brotli_fuzzer": {
-    "label": "//third_party/brotli:brotli_fuzzer",
-    "type": "fuzzer",
   },
   "browser_switcher_bho_unittests": {
     "label": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests",
@@ -534,10 +360,6 @@
     "label": "//chromecast/media:cast_media_unittests",
     "type": "console_test_launcher",
   },
-  "cast_message_fuzzer": {
-    "label": "//components/cast_channel:cast_message_fuzzer",
-    "type": "fuzzer",
-  },
   "cast_shell": {
     "label": "//chromecast:cast_shell",
     "type": "additional_compile_target",
@@ -566,17 +388,9 @@
     "label": "//media/cast:cast_unittests",
     "type": "windowed_test_launcher",
   },
-  "cbcs_decryptor_fuzzer": {
-    "label": "//media:cbcs_decryptor_fuzzer",
-    "type": "fuzzer",
-  },
   "cc_unittests": {
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
-  },
-  "cenc_decryptor_fuzzer": {
-    "label": "//media:cenc_decryptor_fuzzer",
-    "type": "fuzzer",
   },
   "chrome": {
     "label": "//chrome:chrome",
@@ -642,6 +456,10 @@
     "label": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
+  "chrome_modern_public_bundle__base_libs_and_assets_expectations": {
+    "label": "//chrome/android:chrome_modern_public_bundle__base_libs_and_assets_expectations",
+    "type": "additional_compile_target",
+  },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
     "type": "additional_compile_target",
@@ -672,8 +490,9 @@
     "script": "//testing/scripts/run_android_wpt.py",
     "args": [
       "--product=chrome_android",
-      "--apk=apks/ChromePublic.apk",
-      "-vvvv",
+      "--chrome-apk=apks/ChromePublic.apk",
+      "--webdriver-binary=clang_x64/chromedriver",
+      "-v",
     ],
   },
   "chrome_sandbox": {
@@ -716,11 +535,6 @@
     "label": "//:wpt_tests_isolate",
     "type": "script",
     "script": "//testing/scripts/run_wpt_tests.py",
-    "args": [
-      "--old-json-output-file-path=${ISOLATED_OUTDIR}/output.json",
-      "--new-json-output-dir=${ISOLATED_OUTDIR}",
-      "--new-json-output-filename=output.json",
-    ],
   },
   "chrome/installer/linux": {
     "label": "//chrome/installer/linux:linux",
@@ -755,14 +569,6 @@
     "label": "//:chromiumos_preflight",
     "type": "additional_compile_target",
   },
-  "color_transform_fuzzer": {
-    "label": "//ui/gfx:color_transform_fuzzer",
-    "type": "fuzzer",
-  },
-  "comfort_noise_decoder_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:comfort_noise_decoder_fuzzer",
-    "type": "fuzzer",
-  },
   "command_buffer_perftests": {
     "args": [
       "command_buffer_perftests",
@@ -774,24 +580,12 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
-  "compact_enc_det_fuzzer": {
-    "label": "//third_party/ced:compact_enc_det_fuzzer",
-    "type": "fuzzer",
-  },
-  "components_background_task_scheduler_junit_tests": {
-    "label": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests",
-    "type": "junit_test",
-  },
   "components_browsertests": {
     "label": "//components:components_browsertests",
     "type": "windowed_test_launcher",
   },
-  "components_gcm_driver_junit_tests": {
-    "label": "//components/gcm_driver/android:components_gcm_driver_junit_tests",
-    "type": "junit_test",
-  },
-  "components_invalidation_impl_junit_tests": {
-    "label": "//components/invalidation/impl:components_invalidation_impl_junit_tests",
+  "components_junit_tests": {
+    "label": "//components:components_junit_tests",
     "type": "junit_test",
   },
   "components_perftests": {
@@ -804,29 +598,13 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
-  "components_policy_junit_tests": {
-    "label": "//components/policy/android:components_policy_junit_tests",
-    "type": "junit_test",
-  },
-  "components_signin_junit_tests": {
-    "label": "//components/signin/core/browser/android:components_signin_junit_tests",
-    "type": "junit_test",
-  },
   "components_unittests": {
     "label": "//components:components_unittests",
     "type": "windowed_test_launcher",
   },
-  "components_variations_junit_tests": {
-    "label": "//components/variations/android:components_variations_junit_tests",
-    "type": "junit_test",
-  },
   "compositor_unittests": {
     "label": "//ui/compositor:compositor_unittests",
     "type": "windowed_test_launcher",
-  },
-  "congestion_controller_feedback_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:congestion_controller_feedback_fuzzer",
-    "type": "fuzzer",
   },
   "content_browsertests": {
     "label": "//content/test:content_browsertests",
@@ -840,10 +618,6 @@
     "label": "//content/test:content_nocompile_tests",
     "type": "console_test_launcher",
   },
-  "content_security_policy_fuzzer": {
-    "label": "//third_party/blink/renderer/core:content_security_policy_fuzzer",
-    "type": "fuzzer",
-  },
   "content_shell_crash_test": {
     "label": "//content/shell:content_shell_crash_test",
     "script": "//testing/scripts/content_shell_crash_test.py",
@@ -856,14 +630,6 @@
   "content_unittests": {
     "label": "//content/test:content_unittests",
     "type": "windowed_test_launcher",
-  },
-  "convert_woff2ttf_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:convert_woff2ttf_fuzzer",
-    "type": "fuzzer",
-  },
-  "courgette_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:courgette_fuzzer",
-    "type": "fuzzer",
   },
   "courgette_unittests": {
     "label": "//courgette:courgette_unittests",
@@ -904,7 +670,8 @@
   },
   "cronet_test": {
     "label": "//components/cronet/ios/test:cronet_test",
-    "type": "raw",
+    "type": "generated_script",
+    "script": "bin/run_cronet_test"
   },
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
@@ -941,24 +708,8 @@
     "label": "//crypto:crypto_unittests",
     "type": "console_test_launcher",
   },
-  "css_parser_fast_paths_fuzzer": {
-    "label": "//third_party/blink/renderer/core:css_parser_fast_paths_fuzzer",
-    "type": "fuzzer",
-  },
-  "css_parser_proto_fuzzer": {
-    "label": "//third_party/blink/renderer/core:css_parser_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "csv_reader_fuzzer": {
-    "label": "//components/password_manager/core/browser:csv_reader_fuzzer",
-    "type": "fuzzer",
-  },
-  "ctap_response_fuzzer": {
-    "label": "//device/fido:ctap_response_fuzzer",
-    "type": "fuzzer",
-  },
   "dawn_end2end_tests": {
-    "label": "//third_party/dawn:dawn_end2end_tests",
+    "label": "//third_party/dawn/src/tests:dawn_end2end_tests",
     "type": "raw",
   },
   "dawn_perf_tests": {
@@ -972,34 +723,6 @@
     "label": "//chrome/test:dawn_perf_tests",
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "dawn_spirv_cross_glsl_fast_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_glsl_fast_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_spirv_cross_glsl_full_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_glsl_full_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_spirv_cross_hlsl_fast_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_hlsl_fast_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_spirv_cross_hlsl_full_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_hlsl_full_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_spirv_cross_msl_fast_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_msl_fast_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_spirv_cross_msl_full_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_msl_full_fuzzer",
-    "type": "fuzzer",
-  },
-  "dawn_wire_server_and_frontend_fuzzer": {
-    "label": "//third_party/dawn/src/fuzzers:dawn_wire_server_and_frontend_fuzzer",
-    "type": "fuzzer",
   },
   "dbus_unittests": {
     "label": "//dbus:dbus_unittests",
@@ -1017,21 +740,12 @@
     "label": "//device:device_unittests",
     "type": "console_test_launcher",
   },
-  "devtools_type_check": {
+  "disk_usage_tast_test": {
     "args": [
-      "../../third_party/devtools-frontend/src/scripts/test/run_type_check.py",
+      "--vm-logs-dir=${ISOLATED_OUTDIR}",
     ],
-    "label": "//third_party/devtools-frontend/src:devtools_type_check",
-    "script": "//testing/scripts/run_devtools_check.py",
-    "type": "script",
-  },
-  "devtools_lint_check": {
-    "args": [
-      "../../third_party/devtools-frontend/src/scripts/test/run_lint_check.py",
-    ],
-    "label": "//third_party/devtools-frontend/src:devtools_lint_check",
-    "script": "//testing/scripts/run_devtools_check.py",
-    "type": "script",
+    "label": "//chromeos:disk_usage_tast_test",
+    "type": "raw",
   },
   "display_unittests": {
     "label": "//ui/display:display_unittests",
@@ -1041,17 +755,9 @@
     "label": "//third_party/breakpad:dump_syms",
     "type": "additional_compile_target",
   },
-  "edid_parser_fuzzer": {
-    "label": "//ui/display/util:edid_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "elevation_service_unittests": {
     "label": "//chrome/elevation_service:elevation_service_unittests",
     "type": "windowed_test_launcher",
-  },
-  "empty_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:empty_fuzzer",
-    "type": "fuzzer",
   },
   "empty_main": {
     "label": "//testing:empty_main",
@@ -1065,10 +771,6 @@
     "label": "//components/exo:exo_unittests",
     "type": "windowed_test_launcher",
   },
-  "expat_xml_parse_fuzzer": {
-    "label": "//third_party/expat:expat_xml_parse_fuzzer",
-    "type": "fuzzer",
-  },
   "extensions_browsertests": {
     "label": "//extensions:extensions_browsertests",
     "type": "windowed_test_launcher",
@@ -1077,70 +779,22 @@
     "label": "//extensions:extensions_unittests",
     "type": "windowed_test_launcher",
   },
-  "feature_policy_fuzzer": {
-    "label": "//third_party/blink/renderer/core:feature_policy_fuzzer",
-    "type": "fuzzer",
-  },
-  "fidlgen_js_unittests": {
-    "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
-    "type": "console_test_launcher",
-  },
-  "fido_ble_frames_fuzzer": {
-    "label": "//device/fido:fido_ble_frames_fuzzer",
-    "type": "fuzzer",
-  },
-  "fido_cable_handshake_handler_fuzzer": {
-    "label": "//device/fido:fido_cable_handshake_handler_fuzzer",
-    "type": "fuzzer",
-  },
-  "fido_hid_message_fuzzer": {
-    "label": "//device/fido:fido_hid_message_fuzzer",
-    "type": "fuzzer",
-  },
   "filesystem_service_unittests": {
     "label": "//components/services/filesystem:filesystem_service_unittests",
     "type": "console_test_launcher",
-  },
-  "fingerprint_fuzzer": {
-    "label": "//components/payments/content/utility:fingerprint_fuzzer",
-    "type": "fuzzer",
   },
   "flatbuffers_unittests": {
     "label": "//third_party/flatbuffers:flatbuffers_unittests",
     "script": "//testing/scripts/run_flatbuffers_unittests.py",
     "type": "script",
   },
-  "flatbuffers_verifier_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:flatbuffers_verifier_fuzzer",
-    "type": "fuzzer",
-  },
-  "flexfec_header_reader_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:flexfec_header_reader_fuzzer",
-    "type": "fuzzer",
-  },
-  "flexfec_receiver_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:flexfec_receiver_fuzzer",
-    "type": "fuzzer",
-  },
-  "flexfec_sender_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:flexfec_sender_fuzzer",
-    "type": "fuzzer",
-  },
-  "form_structure_fuzzer": {
-    "label": "//components/autofill/core/browser:form_structure_fuzzer",
-    "type": "fuzzer",
-  },
-  "form_structure_process_query_response_fuzzer": {
-    "label": "//components/autofill/core/browser:form_structure_process_query_response_fuzzer",
-    "type": "fuzzer",
-  },
-  "forward_error_correction_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:forward_error_correction_fuzzer",
-    "type": "fuzzer",
-  },
-  "frame_buffer2_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:frame_buffer2_fuzzer",
-    "type": "fuzzer",
+  "fuchsia_telemetry_gpu_integration_test": {
+    "args": [
+      "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
+    ],
+    "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "gcm_unit_tests": {
     "label": "//google_apis/gcm:gcm_unit_tests",
@@ -1149,10 +803,6 @@
   "gcp_unittests": {
     "label": "//chrome/credential_provider/test:gcp_unittests",
     "type": "console_test_launcher",
-  },
-  "gfx_png_image_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:gfx_png_image_fuzzer",
-    "type": "fuzzer",
   },
   "gfx_unittests": {
     "label": "//ui/gfx:gfx_unittests",
@@ -1189,18 +839,6 @@
     "label": "//google_apis:google_apis_unittests",
     "type": "console_test_launcher",
   },
-  "gpu_angle_fuzzer": {
-    "label": "//gpu:gpu_angle_fuzzer",
-    "type": "fuzzer",
-  },
-  "gpu_angle_passthrough_fuzzer": {
-    "label": "//gpu:gpu_angle_passthrough_fuzzer",
-    "type": "fuzzer",
-  },
-  "gpu_fuzzer": {
-    "label": "//gpu:gpu_fuzzer",
-    "type": "fuzzer",
-  },
   "gpu_perftests": {
     "args": [
       "gpu_perftests",
@@ -1209,24 +847,9 @@
       "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//gpu:gpu_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "gpu_raster_angle_fuzzer": {
-    "label": "//gpu:gpu_raster_angle_fuzzer",
-    "type": "fuzzer",
-  },
-  "gpu_raster_fuzzer": {
-    "label": "//gpu:gpu_raster_fuzzer",
-    "type": "fuzzer",
-  },
-  "gpu_raster_swiftshader_fuzzer": {
-    "label": "//gpu:gpu_raster_swiftshader_fuzzer",
-    "type": "fuzzer",
-  },
-  "gpu_swiftshader_fuzzer": {
-    "label": "//gpu:gpu_swiftshader_fuzzer",
-    "type": "fuzzer",
   },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
@@ -1240,29 +863,9 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
-  "gurl_fuzzer": {
-    "label": "//url:gurl_fuzzer",
-    "type": "fuzzer",
-  },
   "gwp_asan_unittests": {
     "label": "//components/gwp_asan:gwp_asan_unittests",
     "type": "console_test_launcher",
-  },
-  "h264_bitstream_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:h264_bitstream_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "h264_depacketizer_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:h264_depacketizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "harfbuzz_fuzzer": {
-    "label": "//third_party/harfbuzz-ng:harfbuzz_fuzzer",
-    "type": "fuzzer",
-  },
-  "hash_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:hash_fuzzer",
-    "type": "fuzzer",
   },
   "headless_browsertests": {
     "label": "//headless:headless_browsertests",
@@ -1272,65 +875,9 @@
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",
   },
-  "hid_report_descriptor_fuzzer": {
-    "label": "//services/device/hid:hid_report_descriptor_fuzzer",
-    "type": "fuzzer",
-  },
-  "hit_test_manager_fuzzer": {
-    "label": "//components/viz/service:hit_test_manager_fuzzer",
-    "type": "fuzzer",
-  },
-  "hit_test_query_fuzzer": {
-    "label": "//components/viz/host:hit_test_query_fuzzer",
-    "type": "fuzzer",
-  },
-  "html_preload_scanner_fuzzer": {
-    "label": "//third_party/blink/renderer/core:html_preload_scanner_fuzzer",
-    "type": "fuzzer",
-  },
   "http_service_tests": {
     "label": "//fuchsia/http:http_service_tests",
     "type": "console_test_launcher",
-  },
-  "http_structured_header_fuzzer": {
-    "label": "//third_party/blink/common:http_structured_header_fuzzer",
-    "type": "fuzzer",
-  },
-  "hunspell_fuzzer": {
-    "label": "//third_party/hunspell:hunspell_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_break_iterator_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_break_iterator_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_break_iterator_utf32_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_break_iterator_utf32_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_converter_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_converter_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_number_format_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_number_format_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_ucasemap_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_ucasemap_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_unicode_string_codepage_create_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_unicode_string_codepage_create_fuzzer",
-    "type": "fuzzer",
-  },
-  "icu_uregex_open_fuzzer": {
-    "label": "//third_party/icu/fuzzers:icu_uregex_open_fuzzer",
-    "type": "fuzzer",
-  },
-  "indexed_ruleset_fuzzer": {
-    "label": "//components/subresource_filter/core/common:indexed_ruleset_fuzzer",
-    "type": "fuzzer",
   },
   "install_static_unittests": {
     "label": "//chrome/install_static:install_static_unittests",
@@ -1350,142 +897,191 @@
   "ios_chrome_bookmarks_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_bookmarks_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_integration_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_integration_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_reading_list_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_reading_list_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_settings_egtests": {
-    "args": [],
+    "args": [
+      "--enable-features=ClearSyncedData",
+    ],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_settings_egtests",
+    "type": "generated_script",
+  },
+  "ios_chrome_signin_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests",
+    "script": "bin/run_ios_chrome_signin_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_translate_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_translate_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_smoke_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_smoke_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_smoke_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_ui_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_ui_egtests",
+    "type": "generated_script",
   },
   "ios_chrome_unittests": {
     "args": [],
     "label": "//ios/chrome/test:ios_chrome_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_unittests",
+    "type": "generated_script",
   },
   "ios_chrome_web_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_web_egtests",
+    "type": "generated_script",
+  },
+  "ios_chrome_bookmarks_eg2tests_module": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module",
+    "script": "bin/run_ios_chrome_bookmarks_eg2tests_module",
+    "type": "generated_script",
   },
   "ios_chrome_integration_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_integration_eg2tests_module",
+    "type": "generated_script",
   },
   "ios_chrome_settings_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_settings_eg2tests_module",
+    "type": "generated_script",
+  },
+  "ios_chrome_signin_eg2tests_module": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module",
+    "script": "bin/run_ios_chrome_signin_eg2tests_module",
+    "type": "generated_script",
   },
   "ios_chrome_smoke_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_smoke_eg2tests_module",
+    "type": "generated_script",
   },
   "ios_chrome_ui_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_ui_eg2tests_module",
+    "type": "generated_script",
   },
-"ios_chrome_web_eg2tests_module": {
+  "ios_chrome_web_eg2tests_module": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_chrome_web_eg2tests_module",
+    "type": "generated_script",
   },
-  "ios_web_shell_eg2tests_module": {
+  "ios_crash_xcuitests_module": {
     "args": [],
-    "label": "//ios/web/shell/test:ios_web_shell_eg2tests_module",
-    "type": "raw",
+    "label": "//third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module",
+    "script": "bin/run_ios_crash_xcuitests_module",
+    "type": "generated_script",
   },
   "ios_components_unittests": {
     "args": [],
     "label": "//ios/components:ios_components_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_components_unittests",
+    "type": "generated_script",
   },
   "ios_net_unittests": {
     "args": [],
     "label": "//ios/net:ios_net_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_net_unittests",
+    "type": "generated_script",
   },
   "ios_remoting_unittests": {
     "args": [],
     "label": "//remoting/ios:ios_remoting_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_remoting_unittests",
+    "type": "generated_script",
   },
   "ios_showcase_egtests": {
     "args": [],
     "label": "//ios/showcase:ios_showcase_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_showcase_egtests",
+    "type": "generated_script",
   },
   "ios_showcase_eg2tests_module": {
     "args":[],
     "label": "//ios/showcase:ios_showcase_eg2tests_module",
-    "type": "raw",
+    "script": "bin/run_ios_showcase_eg2tests_module",
+    "type": "generated_script",
+  },
+  "ios_testing_unittests": {
+    "args": [],
+    "label": "//ios/testing:ios_testing_unittests",
+    "script": "bin/run_ios_testing_unittests",
+    "type": "generated_script",
   },
   "ios_web_inttests": {
     "args": [],
     "label": "//ios/web:ios_web_inttests",
-    "type": "raw",
+    "script": "bin/run_ios_web_inttests",
+    "type": "generated_script",
+  },
+  "ios_web_shell_eg2tests_module": {
+    "args": [],
+    "label": "//ios/web/shell/test:ios_web_shell_eg2tests_module",
+    "script": "bin/run_ios_web_shell_eg2tests_module",
+    "type": "generated_script",
   },
   "ios_web_shell_egtests": {
     "args": [],
     "label": "//ios/web/shell/test:ios_web_shell_egtests",
-    "type": "raw",
+    "script": "bin/run_ios_web_shell_egtests",
+    "type": "generated_script",
   },
   "ios_web_unittests": {
     "args": [],
     "label": "//ios/web:ios_web_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_web_unittests",
+    "type": "generated_script",
   },
   "ios_web_view_inttests": {
     "args": [],
     "label": "//ios/web_view:ios_web_view_inttests",
-    "type": "raw",
+    "script": "bin/run_ios_web_view_inttests",
+    "type": "generated_script",
   },
   "ios_web_view_unittests": {
     "args": [],
     "label": "//ios/web_view:ios_web_view_unittests",
-    "type": "raw",
+    "script": "bin/run_ios_web_view_unittests",
+    "type": "generated_script",
   },
   "ipc_tests": {
     "label": "//ipc:ipc_tests",
     "type": "console_test_launcher",
   },
-  "javascript_parser_proto_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:javascript_parser_proto_fuzzer",
-    "type": "fuzzer",
-  },
   "jingle_unittests": {
     "label": "//jingle:jingle_unittests",
     "type": "console_test_launcher",
-  },
-  "json_web_key_fuzzer": {
-    "label": "//media:json_web_key_fuzzer",
-    "type": "fuzzer",
   },
   "junit_unit_tests": {
     "label": "//testing/android/junit:junit_unit_tests",
@@ -1499,29 +1095,9 @@
     "label": "//ash/keyboard/ui:keyboard_unittests",
     "type": "windowed_test_launcher",
   },
-  "language_detection_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:language_detection_fuzzer",
-    "type": "fuzzer",
-  },
   "latency_unittests": {
     "label": "//ui/latency:latency_unittests",
     "type": "console_test_launcher",
-  },
-  "leveldb_put_get_delete_fuzzer": {
-    "label": "//third_party/leveldatabase:leveldb_put_get_delete_fuzzer",
-    "type": "fuzzer",
-  },
-  "libANGLE": {
-    "label": "//third_party/angle:libANGLE",
-    "type": "additional_compile_target",
-  },
-  "libaddressinput_parse_address_fields_fuzzer": {
-    "label": "//third_party/libaddressinput:libaddressinput_parse_address_fields_fuzzer",
-    "type": "fuzzer",
-  },
-  "libaddressinput_parse_format_rule_fuzzer": {
-    "label": "//third_party/libaddressinput:libaddressinput_parse_format_rule_fuzzer",
-    "type": "fuzzer",
   },
   "libcups_unittests": {
     "label": "//chrome/services/cups_proxy:libcups_unittests",
@@ -1530,42 +1106,6 @@
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
     "type": "console_test_launcher",
-  },
-  "libpng_progressive_read_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:libpng_progressive_read_fuzzer",
-    "type": "fuzzer",
-  },
-  "libpng_read_fuzzer": {
-    "label": "//third_party/libpng:libpng_read_fuzzer",
-    "type": "fuzzer",
-  },
-  "libsrtp_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:libsrtp_fuzzer",
-    "type": "fuzzer",
-  },
-  "libwebp_advanced_api_fuzzer": {
-    "label": "//third_party/libwebp:libwebp_advanced_api_fuzzer",
-    "type": "fuzzer",
-  },
-  "libwebp_animation_api_fuzzer": {
-    "label": "//third_party/libwebp:libwebp_animation_api_fuzzer",
-    "type": "fuzzer",
-  },
-  "libwebp_demux_api_fuzzer": {
-    "label": "//third_party/libwebp:libwebp_demux_api_fuzzer",
-    "type": "fuzzer",
-  },
-  "libwebp_enc_dec_api_fuzzer": {
-    "label": "//third_party/libwebp:libwebp_enc_dec_api_fuzzer",
-    "type": "fuzzer",
-  },
-  "libwebp_simple_api_fuzzer": {
-    "label": "//third_party/libwebp:libwebp_simple_api_fuzzer",
-    "type": "fuzzer",
-  },
-  "libxml_xml_read_memory_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:libxml_xml_read_memory_fuzzer",
-    "type": "fuzzer",
   },
   "linux_symbols": {
     "label": "//chrome:linux_symbols",
@@ -1578,12 +1118,9 @@
       "--test-launcher-print-test-stdio=always",
     ],
     "label": "//chrome/test:load_library_perf_tests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "lookup_affiliation_response_parser_fuzzer": {
-    "label": "//components/password_manager/core/browser:lookup_affiliation_response_parser_fuzzer",
-    "type": "fuzzer",
   },
   "mac_signing_tests": {
     "args": [
@@ -1593,29 +1130,13 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
-  "mdns_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:mdns_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "media_base_junit_tests": {
     "label": "//media/base/android:media_base_junit_tests",
     "type": "junit_test",
   },
-  "media_bit_reader_fuzzer": {
-    "label": "//media/base:media_bit_reader_fuzzer",
-    "type": "fuzzer",
-  },
   "media_blink_unittests": {
     "label": "//media/blink:media_blink_unittests",
     "type": "windowed_test_launcher",
-  },
-  "media_container_names_fuzzer": {
-    "label": "//media/base:media_container_names_fuzzer",
-    "type": "fuzzer",
-  },
-  "media_h264_parser_fuzzer": {
-    "label": "//media/video:media_h264_parser_fuzzer",
-    "type": "fuzzer",
   },
   "media_perftests": {
     "args": [
@@ -1626,12 +1147,9 @@
       "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned",
     ],
     "label": "//media:media_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "media_pipeline_integration_fuzzer": {
-    "label": "//media/test:media_pipeline_integration_fuzzer",
-    "type": "fuzzer",
   },
   "media_router_e2e_tests": {
     "args": [
@@ -1661,73 +1179,9 @@
     "script": "//tools/perf/contrib/media_router_benchmarks/run_benchmark.py",
     "type": "script",
   },
-  "media_service_unittests": {
-    "label": "//media/mojo/services:media_service_unittests",
-    "type": "console_test_launcher",
-  },
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
-  },
-  "media_vp8_parser_fuzzer": {
-    "label": "//media:media_vp8_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "media_vp9_parser_encrypted_fuzzer": {
-    "label": "//media:media_vp9_parser_encrypted_fuzzer",
-    "type": "fuzzer",
-  },
-  "media_vp9_parser_fuzzer": {
-    "label": "//media:media_vp9_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "media_vpx_video_decoder_fuzzer": {
-    "label": "//media:media_vpx_video_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "media_webm_muxer_fuzzer": {
-    "label": "//media:media_webm_muxer_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_MP3_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_MP3_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_MP4_AV1_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_MP4_AV1_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_MP4_FLAC_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_MP4_FLAC_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_MP4_OPUS_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_MP4_OPUS_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_WEBM_OPUS_VP9_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_WEBM_OPUS_VP9_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_WEBM_OPUS_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_WEBM_OPUS_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_WEBM_VORBIS_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_WEBM_VORBIS_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_WEBM_VP8_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_WEBM_VP8_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "mediasource_WEBM_VP9_pipeline_integration_fuzzer": {
-    "label": "//media/test:mediasource_WEBM_VP9_pipeline_integration_fuzzer",
-    "type": "fuzzer",
-  },
-  "merkle_integrity_source_stream_fuzzer": {
-    "label": "//content/test/fuzzer:merkle_integrity_source_stream_fuzzer",
-    "type": "fuzzer",
   },
   "message_center_unittests": {
     "label": "//ui/message_center:message_center_unittests",
@@ -1741,25 +1195,13 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
-  "mhtml_parser_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:mhtml_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "microdump_stackwalk": {
     "label": "//third_party/breakpad:microdump_stackwalk",
     "type": "additional_compile_target",
   },
-  "midi_message_queue_fuzzer": {
-    "label": "//media/midi:midi_message_queue_fuzzer",
-    "type": "fuzzer",
-  },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
-  },
-  "midi_webmidi_data_validator_fuzzer": {
-    "label": "//media/midi:midi_webmidi_data_validator_fuzzer",
-    "type": "fuzzer",
   },
   "mini_installer": {
     "label": "//chrome/installer/mini_installer:mini_installer",
@@ -1774,18 +1216,6 @@
     "label": "//chrome/test/mini_installer:mini_installer_tests",
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
-  },
-  "minidump_fuzzer": {
-    "label": "//third_party/breakpad:minidump_fuzzer",
-    "type": "fuzzer",
-  },
-  "minizip_compress_fuzzer": {
-    "label": "//third_party/minizip:minizip_compress_fuzzer",
-    "type": "fuzzer",
-  },
-  "minizip_uncompress_fuzzer": {
-    "label": "//third_party/minizip:minizip_uncompress_fuzzer",
-    "type": "fuzzer",
   },
   "module_installer_junit_tests": {
     "label": "//components/module_installer/android:module_installer_junit_tests",
@@ -1803,33 +1233,21 @@
     "label": "//chrome/android:monochrome_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
-  "mojo_core_channel_fuzzer": {
-    "label": "//mojo/core:mojo_core_channel_fuzzer",
-    "type": "fuzzer",
-  },
-  "mojo_core_node_channel_fuzzer": {
-    "label": "//mojo/core:mojo_core_node_channel_fuzzer",
-    "type": "fuzzer",
-  },
-  "mojo_core_port_event_fuzzer": {
-    "label": "//mojo/core:mojo_core_port_event_fuzzer",
-    "type": "fuzzer",
+  "monochrome_public_bundle__base_libs_and_assets_expectations": {
+    "label": "//chrome/android:monochrome_public_bundle__base_libs_and_assets_expectations",
+    "type": "additional_compile_target",
   },
   "mojo_core_unittests": {
     "label": "//mojo/core:mojo_core_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_core_user_message_fuzzer": {
-    "label": "//mojo/core:mojo_core_user_message_fuzzer",
-    "type": "fuzzer",
-  },
-  "mojo_parse_message_fuzzer": {
-    "label": "//mojo/public/tools/fuzzers:mojo_parse_message_fuzzer",
-    "type": "fuzzer",
-  },
-  "mojo_parse_message_proto_fuzzer": {
-    "label": "//mojo/public/tools/fuzzers:mojo_parse_message_proto_fuzzer",
-    "type": "fuzzer",
+  "mojo_python_unittests": {
+    "args": [
+      "../../mojo/public/tools/run_all_python_unittests.py",
+    ],
+    "label": "//mojo/public/tools:mojo_python_unittests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "mojo_test_apk": {
     "label": "//mojo/public/java/system:mojo_test_apk",
@@ -1891,149 +1309,9 @@
     "label": "//ui/native_theme:native_theme_unittests",
     "type": "windowed_test_launcher",
   },
-  "net_auth_challenge_tokenizer_fuzzer": {
-    "label": "//net:net_auth_challenge_tokenizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_brotli_source_stream_fuzzer": {
-    "label": "//net:net_brotli_source_stream_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_cert_normalize_name_fuzzer": {
-    "label": "//net:net_cert_normalize_name_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_cert_parse_certificate_fuzzer": {
-    "label": "//net:net_cert_parse_certificate_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_cert_verify_name_in_subtree_fuzzer": {
-    "label": "//net:net_cert_verify_name_in_subtree_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_cert_verify_name_match_fuzzer": {
-    "label": "//net:net_cert_verify_name_match_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_data_job_fuzzer": {
-    "label": "//net:net_data_job_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_dns_hosts_parse_fuzzer": {
-    "label": "//net/dns:net_dns_hosts_parse_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_dns_query_parse_fuzzer": {
-    "label": "//net/dns:net_dns_query_parse_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_dns_record_fuzzer": {
-    "label": "//net/dns:net_dns_record_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_dns_response_fuzzer": {
-    "label": "//net/dns:net_dns_response_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_ftp_ctrl_response_fuzzer": {
-    "label": "//net:net_ftp_ctrl_response_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_ftp_directory_listing_fuzzer": {
-    "label": "//net:net_ftp_directory_listing_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_get_domain_and_registry_fuzzer": {
-    "label": "//net:net_get_domain_and_registry_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_gzip_source_stream_fuzzer": {
-    "label": "//net:net_gzip_source_stream_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_host_resolver_manager_fuzzer": {
-    "label": "//net/dns:net_host_resolver_manager_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_hpack_decoder_fuzzer": {
-    "label": "//net:net_hpack_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http2_frame_decoder_fuzzer": {
-    "label": "//net:net_http2_frame_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_chunked_decoder_fuzzer": {
-    "label": "//net:net_http_chunked_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_proxy_client_socket_fuzzer": {
-    "label": "//net:net_http_proxy_client_socket_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_security_headers_expect_ct_fuzzer": {
-    "label": "//net:net_http_security_headers_expect_ct_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_security_headers_hsts_fuzzer": {
-    "label": "//net:net_http_security_headers_hsts_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_server_fuzzer": {
-    "label": "//net/server:net_http_server_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_stream_parser_fuzzer": {
-    "label": "//net:net_http_stream_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_http_transport_security_state_static_fuzzer": {
-    "label": "//net:net_http_transport_security_state_static_fuzzer",
-    "type": "fuzzer",
-  },
   "net_junit_tests": {
     "label": "//net/android:net_junit_tests",
     "type": "junit_test",
-  },
-  "net_mime_sniffer_fuzzer": {
-    "label": "//net:net_mime_sniffer_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_ntlm_ntlm_client_fuzzer": {
-    "label": "//net:net_ntlm_ntlm_client_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_cookie_line_fuzzer": {
-    "label": "//net:net_parse_cookie_line_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_data_url_fuzzer": {
-    "label": "//net:net_parse_data_url_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_ip_pattern_fuzzer": {
-    "label": "//net:net_parse_ip_pattern_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_proxy_bypass_rules_fuzzer": {
-    "label": "//net:net_parse_proxy_bypass_rules_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_proxy_list_fuzzer": {
-    "label": "//net:net_parse_proxy_list_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_proxy_list_pac_fuzzer": {
-    "label": "//net:net_parse_proxy_list_pac_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_proxy_rules_fuzzer": {
-    "label": "//net:net_parse_proxy_rules_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_parse_url_hostname_to_address_fuzzer": {
-    "label": "//net:net_parse_url_hostname_to_address_fuzzer",
-    "type": "fuzzer",
   },
   "net_perftests": {
     "args": [
@@ -2042,75 +1320,12 @@
     ],
     "label": "//net:net_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "type": "script",
-  },
-  "net_quic_crypto_framer_parse_message_fuzzer": {
-    "label": "//net:net_quic_crypto_framer_parse_message_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_quic_stream_factory_fuzzer": {
-    "label": "//net:net_quic_stream_factory_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_quic_transport_parameters_fuzzer": {
-    "label": "//net:net_quic_transport_parameters_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_reporting_header_parser_fuzzer": {
-    "label": "//net:net_reporting_header_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_socks5_client_socket_fuzzer": {
-    "label": "//net:net_socks5_client_socket_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_socks_client_socket_fuzzer": {
-    "label": "//net:net_socks_client_socket_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_spdy_session_fuzzer": {
-    "label": "//net:net_spdy_session_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_unescape_url_component_fuzzer": {
-    "label": "//net:net_unescape_url_component_fuzzer",
-    "type": "fuzzer",
   },
   "net_unittests": {
     "label": "//net:net_unittests",
     "type": "console_test_launcher",
-  },
-  "net_uri_template_fuzzer": {
-    "label": "//net:net_uri_template_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_url_request_ftp_fuzzer": {
-    "label": "//net:net_url_request_ftp_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_url_request_fuzzer": {
-    "label": "//net:net_url_request_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_websocket_deflate_stream_fuzzer": {
-    "label": "//net:net_websocket_deflate_stream_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_websocket_extension_parser_fuzzer": {
-    "label": "//net:net_websocket_extension_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "net_websocket_frame_parser_fuzzer": {
-    "label": "//net:net_websocket_frame_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "neteq_rtp_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:neteq_rtp_fuzzer",
-    "type": "fuzzer",
-  },
-  "neteq_signal_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:neteq_signal_fuzzer",
-    "type": "fuzzer",
   },
   "notification_helper_unittests": {
     "label": "//chrome/notification_helper:notification_helper_unittests",
@@ -2120,26 +1335,9 @@
     "label": "//third_party/opus:opus_tests",
     "type": "console_test_launcher",
   },
-  "ios_testing_unittests": {
-    "args": [],
-    "label": "//ios/testing:ios_testing_unittests",
-    "type": "raw",
-  },
-  "origin_policy_parser_fuzzer": {
-    "label": "//content/test/fuzzer:origin_policy_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "origin_trial_token_fuzzer": {
-    "label": "//content/test/fuzzer:origin_trial_token_fuzzer",
-    "type": "fuzzer",
-  },
-  "ots_fuzzer": {
-    "label": "//third_party/ots:ots_fuzzer",
-    "type": "fuzzer",
-  },
-  "override_lite_runtime_plugin_test_fuzzer": {
-    "label": "//third_party/libprotobuf-mutator:override_lite_runtime_plugin_test_fuzzer",
-    "type": "fuzzer",
+  "openscreen_unittests": {
+    "label": "//chrome/browser/media/router:openscreen_unittests",
+    "type": "console_test_launcher",
   },
   "ozone_gl_unittests": {
     "label": "//ui/ozone/gl:ozone_gl_unittests",
@@ -2153,105 +1351,17 @@
     "label": "//ui/ozone:ozone_x11_unittests",
     "type": "windowed_test_launcher",
   },
-  "packet_buffer_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:packet_buffer_fuzzer",
-    "type": "fuzzer",
-  },
-  "paint_op_buffer_fuzzer": {
-    "label": "//cc/paint:paint_op_buffer_fuzzer",
-    "type": "fuzzer",
-  },
   "paint_preview_junit_tests": {
     "label": "//components/paint_preview/player/android:paint_preview_junit_tests",
     "type": "junit_test",
-  },
-  "password_generator_proto_fuzzer": {
-    "label": "//components/password_manager/core/browser:password_generator_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "password_manager_form_parser_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "password_manager_form_parser_proto_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "payment_method_manifest_fuzzer": {
-    "label": "//components/payments/content/utility:payment_method_manifest_fuzzer",
-    "type": "fuzzer",
-  },
-  "payment_web_app_manifest_fuzzer": {
-    "label": "//components/payments/content/utility:payment_web_app_manifest_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_cjs_util_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_cjs_util_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_cmap_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_cmap_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_codec_a85_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_codec_a85_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_codec_fax_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_codec_fax_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_codec_icc_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_codec_icc_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_codec_jbig2_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_codec_jbig2_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_codec_rle_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_codec_rle_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_font_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_font_fuzzer",
-    "type": "fuzzer",
   },
   "pdf_fuzzers": {
     "label": "//pdf/pdfium/fuzzers:pdf_fuzzers",
     "type": "additional_compile_target",
   },
-  "pdf_fx_date_helpers_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_fx_date_helpers_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_hint_table_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_hint_table_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_jpx_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_jpx_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_psengine_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_psengine_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdf_streamparser_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_streamparser_fuzzer",
-    "type": "fuzzer",
-  },
   "pdf_unittests": {
     "label": "//pdf:pdf_unittests",
     "type": "console_test_launcher",
-  },
-  "pdf_xml_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdf_xml_fuzzer",
-    "type": "fuzzer",
-  },
-  "pdfium_fuzzer": {
-    "label": "//pdf/pdfium/fuzzers:pdfium_fuzzer",
-    "type": "fuzzer",
   },
   "pdfium_test": {
     "label": "//third_party/pdfium/samples:pdfium_test",
@@ -2277,6 +1387,7 @@
       "--gtest_filter=*/TabCapturePerformanceTest.*:*/CastV2PerformanceTest.*",
     ],
     "label": "//chrome/test:performance_browser_tests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -2311,10 +1422,6 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
-  "pickle_fuzzer": {
-    "label": "//base:pickle_fuzzer",
-    "type": "fuzzer",
-  },
   "polymer_tools_python_unittests": {
     "args": [
       "../../tools/polymer/run_polymer_tools_tests.py",
@@ -2331,10 +1438,6 @@
     "label": "//ppapi:ppapi_unittests",
     "type": "console_test_launcher",
   },
-  "preg_parser_fuzzer": {
-    "label": "//components/policy/core/common:preg_parser_fuzzer",
-    "type": "fuzzer",
-  },
   "previous_version_mini_installer": {
     "label": "//chrome/installer/mini_installer:previous_version_mini_installer",
     "type": "additional_compile_target",
@@ -2346,22 +1449,6 @@
   "profile_provider_unittest": {
     "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
     "type": "raw",
-  },
-  "prtime_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:prtime_fuzzer",
-    "type": "fuzzer",
-  },
-  "pseudotcp_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:pseudotcp_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "qcms_color_space_fuzzer": {
-    "label": "//third_party/qcms:qcms_color_space_fuzzer",
-    "type": "fuzzer",
-  },
-  "reader_fuzzer": {
-    "label": "//components/cbor:reader_fuzzer",
-    "type": "fuzzer",
   },
   "remoting/client:client": {
     "label": "//remoting/client:client",
@@ -2375,18 +1462,6 @@
     "label": "//remoting:remoting_unittests",
     "type": "console_test_launcher",
   },
-  "renderer_fuzzer": {
-    "label": "//content/test/fuzzer:renderer_fuzzer",
-    "type": "fuzzer",
-  },
-  "renderer_proto_tree_fuzzer": {
-    "label": "//content/test/fuzzer:renderer_proto_tree_fuzzer",
-    "type": "fuzzer",
-  },
-  "renderer_tree_fuzzer": {
-    "label": "//content/test/fuzzer:renderer_tree_fuzzer",
-    "type": "fuzzer",
-  },
   "rendering_representative_perf_tests": {
     "args": [
       "--output-format=csv",
@@ -2396,10 +1471,6 @@
     "label": "//chrome/test:rendering_representative_perf_tests",
     "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
     "type": "script",
-  },
-  "residual_echo_detector_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:residual_echo_detector_fuzzer",
-    "type": "fuzzer",
   },
   "resource_sizes_chrome_modern_public_minimal_apks": {
     "label": "//chrome/android:resource_sizes_chrome_modern_public_minimal_apks",
@@ -2426,26 +1497,6 @@
     "type": "generated_script",
     "script": "bin/resource_sizes_system_webview_apk",
   },
-  "rtcp_receiver_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:rtcp_receiver_fuzzer",
-    "type": "fuzzer",
-  },
-  "rtp_frame_reference_finder_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:rtp_frame_reference_finder_fuzzer",
-    "type": "fuzzer",
-  },
-  "rtp_header_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:rtp_header_fuzzer",
-    "type": "fuzzer",
-  },
-  "rtp_packet_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:rtp_packet_fuzzer",
-    "type": "fuzzer",
-  },
-  "sandbox_ipc_fuzzer": {
-    "label": "//sandbox:sandbox_ipc_fuzzer",
-    "type": "fuzzer",
-  },
   "sandbox_linux_unittests": {
     "label": "//sandbox/linux:sandbox_linux_unittests",
     "type": "console_test_launcher",
@@ -2466,14 +1517,6 @@
     "label": "//sandbox/win:sbox_validation_tests",
     "type": "console_test_launcher",
   },
-  "sdp_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:sdp_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "sequence_manager_fuzzer": {
-    "label": "//third_party/blink/renderer/platform/scheduler:sequence_manager_fuzzer",
-    "type": "fuzzer",
-  },
   "service_junit_tests": {
     "label": "//services:service_junit_tests",
     "type": "junit_test",
@@ -2490,14 +1533,6 @@
     "label": "//chrome/installer/setup:setup_unittests",
     "type": "console_test_launcher",
   },
-  "sfntly_fuzzer": {
-    "label": "//third_party/sfntly:sfntly_fuzzer",
-    "type": "fuzzer",
-  },
-  "sha1_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:sha1_fuzzer",
-    "type": "fuzzer",
-  },
   "shell_dialogs_unittests": {
     "label": "//ui/shell_dialogs:shell_dialogs_unittests",
     "type": "console_test_launcher",
@@ -2506,122 +1541,26 @@
     "label": "//:shipped_binaries",
     "type": "additional_compile_target",
   },
-  "signed_exchange_certificate_chain_fuzzer": {
-    "label": "//content/test/fuzzer:signed_exchange_certificate_chain_fuzzer",
-    "type": "fuzzer",
-  },
-  "signed_exchange_envelope_fuzzer": {
-    "label": "//content/test/fuzzer:signed_exchange_envelope_fuzzer",
-    "type": "fuzzer",
-  },
-  "skia_image_filter_proto_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:skia_image_filter_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "skia_path_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:skia_path_fuzzer",
-    "type": "fuzzer",
-  },
-  "skia_pathop_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:skia_pathop_fuzzer",
-    "type": "fuzzer",
-  },
   "skia_unittests": {
     "label": "//skia:skia_unittests",
     "type": "console_test_launcher",
-  },
-  "snappy_compress_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:snappy_compress_fuzzer",
-    "type": "fuzzer",
-  },
-  "snappy_uncompress_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:snappy_uncompress_fuzzer",
-    "type": "fuzzer",
   },
   "snapshot_unittests": {
     "label": "//ui/snapshot:snapshot_unittests",
     "type": "windowed_test_launcher",
   },
-  "spvtools_binary_parser_fuzzer": {
-    "label": "//third_party/SPIRV-Tools/src/test/fuzzers:spvtools_binary_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "spvtools_opt_legalization_fuzzer": {
-    "label": "//third_party/SPIRV-Tools/src/test/fuzzers:spvtools_opt_legalization_fuzzer",
-    "type": "fuzzer",
-  },
-  "spvtools_opt_performance_fuzzer": {
-    "label": "//third_party/SPIRV-Tools/src/test/fuzzers:spvtools_opt_performance_fuzzer",
-    "type": "fuzzer",
-  },
-  "spvtools_opt_size_fuzzer": {
-    "label": "//third_party/SPIRV-Tools/src/test/fuzzers:spvtools_opt_size_fuzzer",
-    "type": "fuzzer",
-  },
-  "spvtools_val_fuzzer": {
-    "label": "//third_party/SPIRV-Tools/src/test/fuzzers:spvtools_val_fuzzer",
-    "type": "fuzzer",
-  },
   "sql_unittests": {
     "label": "//sql:sql_unittests",
     "type": "console_test_launcher",
-  },
-  "sqlite3_fts3_lpm_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_fts3_lpm_fuzzer",
-    "type": "fuzzer",
-  },
-  "sqlite3_lpm_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_lpm_fuzzer",
-    "type": "fuzzer",
-  },
-  "sqlite3_ossfuzz_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_ossfuzz_fuzzer",
-    "type": "fuzzer",
-  },
-  "sqlite3_select_expr_lpm_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_select_expr_lpm_fuzzer",
-    "type": "fuzzer",
-  },
-  "sqlite3_select_printf_lpm_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_select_printf_lpm_fuzzer",
-    "type": "fuzzer",
-  },
-  "sqlite3_select_strftime_lpm_fuzzer": {
-    "label": "//third_party/sqlite:sqlite3_select_strftime_lpm_fuzzer",
-    "type": "fuzzer",
   },
   "storage_unittests": {
     "label": "//storage:storage_unittests",
     "type": "console_test_launcher",
   },
-  "string_number_conversions_fuzzer": {
-    "label": "//base:string_number_conversions_fuzzer",
-    "type": "fuzzer",
-  },
-  "string_tokenizer_fuzzer": {
-    "label": "//base:string_tokenizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "stun_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:stun_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "stun_validator_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:stun_validator_fuzzer",
-    "type": "fuzzer",
-  },
-  "stylesheet_contents_fuzzer": {
-    "label": "//third_party/blink/renderer/core:stylesheet_contents_fuzzer",
-    "type": "fuzzer",
-  },
   "swiftshader_unittests": {
     "args": [],
     "label": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
     "type": "raw",
-  },
-  "swiftshader_vertex_routine_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:swiftshader_vertex_routine_fuzzer",
-    "type": "fuzzer",
   },
   "symupload": {
     "label": "//third_party/breakpad:symupload",
@@ -2650,9 +1589,10 @@
     "script": "//testing/scripts/run_android_wpt.py",
     "args": [
       "--product=android_webview",
-      "--apk=apks/SystemWebView.apk",
+      "--webview-provider=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
-      "-vvvv",
+      "--webdriver-binary=clang_x64/chromedriver",
+      "-v",
     ],
   },
   "telemetry_gpu_integration_test": {
@@ -2710,50 +1650,19 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
-  "template_url_parser_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:template_url_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "test_buildbucket_api_gpu_use_cases": {
-    "label": "//content/test:test_buildbucket_api_gpu_use_cases",
-    "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
-    "type": "script",
-  },
-  "test_config_and_dict": {
-    "label": "//testing/libfuzzer/tests:test_config_and_dict",
-    "type": "fuzzer",
-  },
-  "test_config_and_seed_corpus": {
-    "label": "//testing/libfuzzer/tests:test_config_and_seed_corpus",
-    "type": "fuzzer",
-  },
-  "test_config_and_seed_corpuses": {
-    "label": "//testing/libfuzzer/tests:test_config_and_seed_corpuses",
-    "type": "fuzzer",
-  },
-  "test_config_only": {
-    "label": "//testing/libfuzzer/tests:test_config_only",
-    "type": "fuzzer",
-  },
-  "test_dict_from_subdir": {
-    "label": "//testing/libfuzzer/tests:test_dict_from_subdir",
-    "type": "fuzzer",
-  },
-  "test_dict_only": {
-    "label": "//testing/libfuzzer/tests:test_dict_only",
-    "type": "fuzzer",
-  },
-  "text_resource_decoder_fuzzer": {
-    "label": "//third_party/blink/renderer/core:text_resource_decoder_fuzzer",
-    "type": "fuzzer",
-  },
-  "third_party_re2_fuzzer": {
-    "label": "//third_party/re2:third_party_re2_fuzzer",
-    "type": "fuzzer",
-  },
+  # TODO(crbug.com/1080749): Re-add this once the test is fixed and re-enabled.
+  # "test_buildbucket_api_gpu_use_cases": {
+  #   "label": "//content/test:test_buildbucket_api_gpu_use_cases",
+  #   "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+  #   "type": "script",
+  # },
   "touch_to_fill_junit_tests": {
     "label": "//chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests",
     "type": "junit_test",
+  },
+  "trace_processor_shell": {
+    "label": "//third_party/perfetto/src/trace_processor:trace_processor_shell",
+    "type": "additional_compile_target",
   },
   "tracing_perftests": {
     "args": [
@@ -2764,6 +1673,7 @@
       "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//components/tracing:tracing_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -2771,17 +1681,21 @@
     "label": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
     "type": "console_test_launcher",
   },
-  "transfer_cache_fuzzer": {
-    "label": "//cc/paint:transfer_cache_fuzzer",
-    "type": "fuzzer",
+  "trichrome_chrome_bundle_smoke_test": {
+    "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",
+    "type": "console_test_launcher",
   },
-  "transport_feedback_packet_loss_tracker_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:transport_feedback_packet_loss_tracker_fuzzer",
-    "type": "fuzzer",
+  "trichrome_chrome_bundle_fake_modules_smoke_test": {
+    "label": "//chrome/android:trichrome_chrome_bundle_fake_modules_smoke_test",
+    "type": "console_test_launcher",
   },
-  "turn_unwrap_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:turn_unwrap_fuzzer",
-    "type": "fuzzer",
+  "trichrome_chrome_bundle__base_libs_and_assets_expectations": {
+    "label": "//chrome/android:trichrome_chrome_bundle__base_libs_and_assets_expectations",
+    "type": "additional_compile_target",
+  },
+  "trichrome_library_apk_libs_and_assets_expectations": {
+    "label": "//chrome/android:trichrome_library_apk_libs_and_assets_expectations",
+    "type": "additional_compile_target",
   },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",
@@ -2803,18 +1717,6 @@
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
     "type": "windowed_test_launcher",
   },
-  "ulpfec_generator_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:ulpfec_generator_fuzzer",
-    "type": "fuzzer",
-  },
-  "ulpfec_header_reader_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:ulpfec_header_reader_fuzzer",
-    "type": "fuzzer",
-  },
-  "ulpfec_receiver_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:ulpfec_receiver_fuzzer",
-    "type": "fuzzer",
-  },
   "unit_tests": {
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
@@ -2823,9 +1725,10 @@
     "label": "//chrome/updater:updater_tests",
     "type": "console_test_launcher",
   },
-  "url_parse_proto_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:url_parse_proto_fuzzer",
-    "type": "fuzzer",
+  "upload_trace_processor": {
+    "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",
+    "type": "generated_script",
+    "script": "bin/upload_trace_processor",
   },
   "url_unittests": {
     "label": "//url:url_unittests",
@@ -2835,69 +1738,13 @@
     "label": "//chrome/test:usage_time_limit_unittests",
     "type": "console_test_launcher",
   },
-  "usb_descriptors_fuzzer": {
-    "label": "//services/device/usb:usb_descriptors_fuzzer",
-    "type": "fuzzer",
+  "vaapi_unittest": {
+    "label": "//media/gpu/vaapi:vaapi_unittest",
+    "type": "console_test_launcher",
   },
-  "usb_string_read_fuzzer": {
-    "label": "//services/device/usb:usb_string_read_fuzzer",
-    "type": "fuzzer",
-  },
-  "usrsctp_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:usrsctp_fuzzer",
-    "type": "fuzzer",
-  },
-  "utf_string_conversions_fuzzer": {
-    "label": "//base:utf_string_conversions_fuzzer",
-    "type": "fuzzer",
-  },
-  "v4_get_hash_protocol_manager_fuzzer": {
-    "label": "//components/safe_browsing/db:v4_get_hash_protocol_manager_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_fully_instrumented_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_fully_instrumented_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_json_parser_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_json_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_multi_return_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_multi_return_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_regexp_builtins_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_regexp_builtins_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_regexp_parser_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_regexp_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_script_parser_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_script_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_serialized_script_value_fuzzer": {
-    "label": "//third_party/blink/renderer/bindings/core/v8:v8_serialized_script_value_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_wasm_async_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_wasm_async_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_wasm_code_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_wasm_code_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_wasm_compile_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_wasm_compile_fuzzer",
-    "type": "fuzzer",
-  },
-  "v8_wasm_fuzzer": {
-    "label": "//testing/libfuzzer/fuzzers:v8_wasm_fuzzer",
-    "type": "fuzzer",
+  "views_examples_unittests": {
+    "label": "//ui/views/examples:views_examples_unittests",
+    "type": "windowed_test_launcher",
   },
   "views_perftests": {
     "args": [
@@ -2916,22 +1763,6 @@
   "viz_unittests": {
     "label": "//components/viz:viz_unittests",
     "type": "windowed_test_launcher",
-  },
-  "vp8_depacketizer_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:vp8_depacketizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "vp8_qp_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:vp8_qp_parser_fuzzer",
-    "type": "fuzzer",
-  },
-  "vp9_depacketizer_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:vp9_depacketizer_fuzzer",
-    "type": "fuzzer",
-  },
-  "vp9_qp_parser_fuzzer": {
-    "label": "//third_party/webrtc/test/fuzzers:vp9_qp_parser_fuzzer",
-    "type": "fuzzer",
   },
   "vr_android_unittests": {
     "label": "//chrome/browser/android/vr:vr_android_unittests",
@@ -2976,6 +1807,10 @@
     "script": "//chrome/test/vr/perf/vrcore_fps/run_vrcore_fps_test.py",
     "type": "script",
   },
+  "vulkan_tests": {
+    "label": "//gpu/vulkan:vulkan_tests",
+    "type": "windowed_test_launcher",
+  },
   "wayland_client_perftests": {
     "label": "//components/exo/wayland:wayland_client_perftests",
     "type": "windowed_test_launcher",
@@ -2991,10 +1826,6 @@
   "web_engine_unittests": {
     "label": "//fuchsia/engine:web_engine_unittests",
     "type": "console_test_launcher",
-  },
-  "web_icon_sizes_fuzzer": {
-    "label": "//third_party/blink/renderer/platform:web_icon_sizes_fuzzer",
-    "type": "fuzzer",
   },
   "web_runner_integration_tests": {
     "label": "//fuchsia/runners:web_runner_integration_tests",
@@ -3012,32 +1843,48 @@
     "label": "//chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests",
     "type": "junit_test",
   },
-  "webcrypto_ec_import_key_pkcs8_fuzzer": {
-    "label": "//components/webcrypto:webcrypto_ec_import_key_pkcs8_fuzzer",
-    "type": "fuzzer",
-  },
-  "webcrypto_ec_import_key_raw_fuzzer": {
-    "label": "//components/webcrypto:webcrypto_ec_import_key_raw_fuzzer",
-    "type": "fuzzer",
-  },
-  "webcrypto_ec_import_key_spki_fuzzer": {
-    "label": "//components/webcrypto:webcrypto_ec_import_key_spki_fuzzer",
-    "type": "fuzzer",
-  },
-  "webcrypto_rsa_import_key_pkcs8_fuzzer": {
-    "label": "//components/webcrypto:webcrypto_rsa_import_key_pkcs8_fuzzer",
-    "type": "fuzzer",
-  },
-  "webcrypto_rsa_import_key_spki_fuzzer": {
-    "label": "//components/webcrypto:webcrypto_rsa_import_key_spki_fuzzer",
-    "type": "fuzzer",
-  },
-  "webusb_descriptors_fuzzer": {
-    "label": "//services/device/usb:webusb_descriptors_fuzzer",
-    "type": "fuzzer",
+  "webgpu_blink_web_tests": {
+    "args": [
+      "../../third_party/blink/tools/run_web_tests.py",
+      "--seed",
+      "4",
+      "--no-show-results",
+      "--zero-tests-executed-ok",
+      "--clobber-old-results",
+      "--exit-after-n-failures",
+      "5000",
+      "--exit-after-n-crashes-or-timeouts",
+      "100",
+      "--results-directory",
+      "${ISOLATED_OUTDIR}",
+      # WebGPU specific
+      "--additional-driver-flag=--enable-unsafe-webgpu",
+      "--ignore-default-expectations",
+      "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+      "--isolated-script-test-filter=wpt_internal/webgpu/*",
+    ],
+    "label": "//:webgpu_blink_web_tests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "weblayer_browsertests": {
     "label": "//weblayer/test:weblayer_browsertests",
+    "type": "windowed_test_launcher",
+  },
+  "weblayer_shell_wpt": {
+    "label": "//weblayer/shell/android:weblayer_shell_wpt",
+    "type": "script",
+    "script": "//testing/scripts/run_android_wpt.py",
+    "args": [
+      "--product=android_weblayer",
+      "--weblayer-shell=apks/WebLayerShell.apk",
+      "--weblayer-support=apks/WebLayerSupport.apk",
+      "--webdriver-binary=clang_x64/chromedriver",
+      "-v",
+    ],
+  },
+  "weblayer_unittests": {
+    "label": "//weblayer/test:weblayer_unittests",
     "type": "windowed_test_launcher",
   },
   "webview_cts_tests": {
@@ -3068,8 +1915,20 @@
     "label": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
     "type": "console_test_launcher",
   },
+  "weblayer_bundle_test": {
+    "label": "//weblayer/browser/android/javatests:weblayer_bundle_test",
+    "type": "console_test_launcher",
+  },
   "weblayer_instrumentation_test_apk": {
     "label": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk",
+    "type": "console_test_launcher",
+  },
+  "weblayer_instrumentation_test_versions_apk": {
+    "label": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk",
+    "type": "console_test_launcher",
+  },
+  "weblayer_private_instrumentation_test_apk": {
+    "label": "//weblayer/browser/android/javatests:weblayer_private_instrumentation_test_apk",
     "type": "console_test_launcher",
   },
   "weblayer_shell": {
@@ -3083,10 +1942,6 @@
   "wtf_unittests": {
     "label": "//third_party/blink/renderer/platform/wtf:wtf_unittests",
     "type": "console_test_launcher",
-  },
-  "xml_parser_fuzzer": {
-    "label": "//services/data_decoder:xml_parser_fuzzer",
-    "type": "fuzzer",
   },
   "xr_browser_tests": {
     "label": "//chrome/test:xr_browser_tests",
@@ -3103,52 +1958,8 @@
       '--enable-pixel-output-in-tests',
     ],
   },
-  "zlib_deflate_fuzzer": {
-    "label": "//third_party/zlib/contrib/tests/fuzzers:zlib_deflate_fuzzer",
-    "type": "fuzzer",
-  },
-  "zlib_deflate_set_dictionary_fuzzer": {
-    "label": "//third_party/zlib/contrib/tests/fuzzers:zlib_deflate_set_dictionary_fuzzer",
-    "type": "fuzzer",
-  },
-  "zlib_inflate_fuzzer": {
-    "label": "//third_party/zlib/contrib/tests/fuzzers:zlib_inflate_fuzzer",
-    "type": "fuzzer",
-  },
-  "zlib_uncompress_fuzzer": {
-    "label": "//third_party/zlib/contrib/tests/fuzzers:zlib_uncompress_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_apply_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_apply_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_disassembler_dex_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_disassembler_dex_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_disassembler_win32_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_disassembler_win32_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_imposed_ensemble_matcher_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_imposed_ensemble_matcher_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_patch_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_patch_fuzzer",
-    "type": "fuzzer",
-  },
-  "zucchini_raw_gen_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_raw_gen_fuzzer",
-    "type": "fuzzer",
-  },
   "zucchini_unittests": {
     "label": "//components/zucchini:zucchini_unittests",
     "type": "console_test_launcher",
-  },
-  "zucchini_ztf_gen_fuzzer": {
-    "label": "//components/zucchini/fuzzers:zucchini_ztf_gen_fuzzer",
-    "type": "fuzzer",
   },
 }

@@ -14,6 +14,7 @@ import os
 import sys
 
 from chromite.cli import command
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -117,24 +118,55 @@ class BoolTest(cros_test_lib.TestCase):
     self._RunBoolTestCase('FaLse', False)
 
 
+class BuildTargetTest(cros_test_lib.TestCase):
+  """Test type='build_target' functionality."""
+
+  @staticmethod
+  def _ParseCommandLine(argv):
+    parser = commandline.ArgumentParser()
+    parser.add_argument('--build-target', type='build_target',
+                        help='Build Target Argument.')
+    return parser.parse_args(argv)
+
+  def _RunBuildTargetTestCase(self, build_target_name, expected):
+    options = self._ParseCommandLine(['--build-target', build_target_name])
+    self.assertEqual(options.build_target, expected)
+
+  def _CheckBuildTargetParseFails(self, build_target_name):
+    """Checks that parsing a device input fails."""
+    with self.assertRaises(SystemExit):
+      self._ParseCommandLine(['--build-target', build_target_name])
+
+  def test_valid_build_target(self):
+    """Test valid build target name."""
+    self._RunBuildTargetTestCase(
+        'build-target-name', build_target_lib.BuildTarget('build-target-name'))
+
+  def test_invalid_build_target(self):
+    """Test invalid build target name."""
+    self._CheckBuildTargetParseFails('invalid-name-!@#$%^&*()+=')
+
+
 class DeviceParseTest(cros_test_lib.OutputTestCase):
   """Test device parsing functionality."""
 
   _ALL_SCHEMES = (commandline.DEVICE_SCHEME_FILE,
+                  commandline.DEVICE_SCHEME_SERVO,
                   commandline.DEVICE_SCHEME_SSH,
                   commandline.DEVICE_SCHEME_USB)
 
   def _CheckDeviceParse(self, device_input, scheme, username=None,
-                        hostname=None, port=None, path=None):
+                        hostname=None, port=None, path=None, serial=None):
     """Checks that parsing a device input gives the expected result.
 
     Args:
-      device_input: String input specifying a device.
-      scheme: String expected scheme.
-      username: String expected username or None.
-      hostname: String expected hostname or None.
-      port: Int expected port or None.
-      path: String expected path or None.
+      device_input (str): Input specifying a device.
+      scheme (str): Expected scheme.
+      username (str|None): Expected username.
+      hostname (str|None): Expected hostname.
+      port (int|None): Expected port.
+      path (str|None): Expected path.
+      serial (str|None): Expected serial number.
     """
     parser = commandline.ArgumentParser()
     parser.add_argument('device', type=commandline.DeviceParser(scheme))
@@ -144,6 +176,7 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
     self.assertEqual(device.hostname, hostname)
     self.assertEqual(device.port, port)
     self.assertEqual(device.path, path)
+    self.assertEqual(device.serial_number, serial)
 
   def _CheckDeviceParseFails(self, device_input, schemes=_ALL_SCHEMES):
     """Checks that parsing a device input fails.
@@ -165,11 +198,22 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
     """Verify that SSH scheme-only device specification fails."""
     self._CheckDeviceParseFails('ssh://')
 
+  def testInvalidSshScheme(self):
+    """Verify that invalid ssh specification fails."""
+    self._CheckDeviceParseFails('sssssh://localhost:22')
+
   def testSshHostname(self):
     """Test SSH hostname-only device specification."""
     self._CheckDeviceParse('192.168.1.200',
                            scheme=commandline.DEVICE_SCHEME_SSH,
                            hostname='192.168.1.200')
+
+  def testSshHostnamePort(self):
+    """Test SSH hostname and port device specification."""
+    self._CheckDeviceParse('192.168.1.200:9999',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           hostname='192.168.1.200',
+                           port=9999)
 
   def testSshUsernameHostname(self):
     """Test SSH username and hostname device specification."""
@@ -193,6 +237,53 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
                            username='me',
                            hostname='foo_host',
                            port=4500)
+
+  def testEmptyServoScheme(self):
+    """Test empty servo scheme."""
+    # Everything should be None so the underlying programs (e.g. dut-control)
+    # can use their defaults.
+    self._CheckDeviceParseFails('servo:')
+
+  def testServoPort(self):
+    """Test valid servo port values."""
+    self._CheckDeviceParse('servo:port',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=None)
+    self._CheckDeviceParse('servo:port:1',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=1)
+    self._CheckDeviceParse('servo:port:12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=12345)
+    self._CheckDeviceParse('servo:port:65535',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=65535)
+
+  def testInvalidServoPort(self):
+    """Invalid port provided."""
+    self._CheckDeviceParseFails('servo:port:0')
+    self._CheckDeviceParseFails('servo:port:65536')
+    # Some serial numbers.
+    self._CheckDeviceParseFails('servo:port:C1234567890')
+    self._CheckDeviceParseFails('servo:port:123456-12345')
+
+  def testServoSerialNumber(self):
+    """Test servo serial number."""
+    # Some known serial number formats.
+    self._CheckDeviceParse('servo:serial:C1234567890',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='C1234567890')
+    self._CheckDeviceParse('servo:serial:123456-12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='123456-12345')
+    # Make sure we don't fall back to a port when it looks like one.
+    self._CheckDeviceParse('servo:serial:12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='12345')
+
+  def testInvalidServoSerialNumber(self):
+    """Invalid serial number value provided."""
+    self._CheckDeviceParseFails('servo:serial:')
 
   def testUsbScheme(self):
     """Test USB scheme-only device specification."""

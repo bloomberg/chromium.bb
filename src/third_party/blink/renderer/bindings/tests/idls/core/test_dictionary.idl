@@ -24,6 +24,7 @@ dictionary TestDictionary {
     Element? elementOrNullMember;
     object objectMember;
     object? objectOrNullMember;
+    sequence<object?> objectOrNullSequenceMember;
     [ImplementedAs=createMember] boolean create;
     [DeprecateAs=CreateMember, ImplementedAs=createMember] boolean deprecatedCreateMember;
     // If done naively, collides with a C++ keyword.
@@ -36,7 +37,6 @@ dictionary TestDictionary {
     Uint8Array uint8ArrayMember;
     EventTarget eventTargetMember;
     any anyMember = null;
-    Dictionary dictionaryMember;
     [RuntimeEnabled=RuntimeFeature] boolean runtimeMember;
     [RuntimeEnabled=RuntimeFeature] boolean runtimeSecondMember;
     [RuntimeEnabled=FeatureName] boolean originTrialMember;

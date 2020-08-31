@@ -5,10 +5,8 @@
 #include "platform/api/tls_connection_factory.h"
 
 namespace openscreen {
-namespace platform {
 
 TlsConnectionFactory::TlsConnectionFactory() = default;
 TlsConnectionFactory::~TlsConnectionFactory() = default;
 
-}  // namespace platform
 }  // namespace openscreen

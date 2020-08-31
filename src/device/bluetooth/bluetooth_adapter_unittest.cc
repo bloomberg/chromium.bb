@@ -64,6 +64,10 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
  public:
   TestBluetoothAdapter() = default;
 
+  void Initialize(base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
+
   std::string GetAddress() const override { return ""; }
 
   std::string GetName() const override { return ""; }
@@ -207,7 +211,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
                   run_loop_quit.Run();
                 }
               }),
-          base::Bind(&TestBluetoothAdapter::TestErrorCallback, this));
+          base::BindOnce(&TestBluetoothAdapter::TestErrorCallback, this));
     };
   }
 
@@ -216,8 +220,8 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
       base::RepeatingClosure run_loop_quit) {
     StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
-        base::Bind(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop, this,
-                   run_loop_quit),
+        base::BindOnce(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop,
+                       this, run_loop_quit),
         base::DoNothing());
   }
 
@@ -765,6 +769,7 @@ TEST_F(BluetoothTest, MAYBE_ConstructFakeAdapter) {
   EXPECT_TRUE(adapter_->CanPower());
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_TRUE(adapter_->IsPeripheralRoleSupported());
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
@@ -782,6 +787,22 @@ TEST_P(BluetoothTestWinrtOnly, ConstructFakeAdapterWithoutRadio) {
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_FALSE(adapter_->CanPower());
   EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_FALSE(adapter_->IsDiscoverable());
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
+
+TEST_P(BluetoothTestWinrtOnly, ConstructFakeAdapterWithoutPowerControl) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitFakeAdapterWithRadioAccessDenied();
+  EXPECT_EQ(adapter_->GetAddress(), kTestAdapterAddress);
+  EXPECT_EQ(adapter_->GetName(), kTestAdapterName);
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_FALSE(adapter_->CanPower());
+  EXPECT_TRUE(adapter_->IsPowered());
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
@@ -1047,6 +1068,45 @@ TEST_P(BluetoothTestWinrtOnly, SimulateAdapterPoweredOffAndOn) {
   EXPECT_FALSE(observer.last_powered());
 
   SimulateAdapterPoweredOn();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(2, observer.powered_changed_count());
+  EXPECT_TRUE(observer.last_powered());
+}
+
+// Tests that power change notifications are deduplicated.
+// Multiple StateChanged events with the same state only cause a
+// single AdapterPoweredChanged() call.
+TEST_P(BluetoothTestWinrtOnly, SimulateDuplicateStateChanged) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  ASSERT_TRUE(adapter_->IsPresent());
+  ASSERT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
+
+  SimulateSpuriousRadioStateChangedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_EQ(0, observer.powered_changed_count());
+
+  SimulateAdapterPoweredOff();
+  SimulateSpuriousRadioStateChangedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_EQ(1, observer.powered_changed_count());
+  EXPECT_FALSE(observer.last_powered());
+
+  SimulateAdapterPoweredOn();
+  SimulateSpuriousRadioStateChangedEvent();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(adapter_->IsPowered());
@@ -2033,15 +2093,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    BluetoothTestWinrt,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrt, ::testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    BluetoothTestWinrtOnly,
-    ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrtOnly, ::testing::Values(true));
 #endif  // defined(OS_WIN)
 
 }  // namespace device

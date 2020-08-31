@@ -27,6 +27,7 @@
 #endif
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Assign;
@@ -104,7 +105,7 @@ class VideoDecoderStreamTest
       // Decryptor can only decrypt (not decrypt-and-decode) so that
       // DecryptingDemuxerStream will be used.
       EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-          .WillRepeatedly(RunCallback<1>(false));
+          .WillRepeatedly(RunOnceCallback<1>(false));
       EXPECT_CALL(*decryptor_, Decrypt(_, _, _))
           .WillRepeatedly(Invoke(this, &VideoDecoderStreamTest::Decrypt));
     }
@@ -297,10 +298,10 @@ class VideoDecoderStreamTest
   // but removes the DecryptConfig to make the buffer unencrypted.
   void Decrypt(Decryptor::StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const Decryptor::DecryptCB& decrypt_cb) {
+               Decryptor::DecryptCB decrypt_cb) {
     DCHECK(encrypted->decrypt_config());
     if (has_no_key_) {
-      decrypt_cb.Run(Decryptor::kNoKey, nullptr);
+      std::move(decrypt_cb).Run(Decryptor::kNoKey, nullptr);
       return;
     }
 
@@ -311,11 +312,11 @@ class VideoDecoderStreamTest
       decrypted->set_is_key_frame(true);
     decrypted->set_timestamp(encrypted->timestamp());
     decrypted->set_duration(encrypted->duration());
-    decrypt_cb.Run(Decryptor::kSuccess, decrypted);
+    std::move(decrypt_cb).Run(Decryptor::kSuccess, decrypted);
   }
 
   // Callback for VideoDecoderStream::Read().
-  void FrameReady(VideoDecoderStream::Status status,
+  void FrameReady(VideoDecoderStream::ReadStatus status,
                   scoped_refptr<VideoFrame> frame) {
     DCHECK(pending_read_);
     frame_read_ = frame;
@@ -506,7 +507,7 @@ class VideoDecoderStreamTest
   bool pending_stop_;
   int num_decoded_bytes_unreported_;
   scoped_refptr<VideoFrame> frame_read_;
-  VideoDecoderStream::Status last_read_status_;
+  VideoDecoderStream::ReadStatus last_read_status_;
 
   // Decryptor has no key to decrypt a frame.
   bool has_no_key_;

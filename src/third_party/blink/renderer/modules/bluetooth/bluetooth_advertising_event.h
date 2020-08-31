@@ -34,16 +34,16 @@ class BluetoothAdvertisingEvent final : public Event {
 
   ~BluetoothAdvertisingEvent() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const AtomicString& InterfaceName() const override;
 
   BluetoothDevice* device() const;
   const String& name() const;
   const HeapVector<StringOrUnsignedLong>& uuids() const;
-  uint16_t appearance(bool& is_null) const;
-  int8_t txPower(bool& is_null) const;
-  int8_t rssi(bool& is_null) const;
+  base::Optional<uint16_t> appearance() const { return appearance_; }
+  base::Optional<int8_t> txPower() const { return txPower_; }
+  base::Optional<int8_t> rssi() const { return rssi_; }
   BluetoothManufacturerDataMap* manufacturerData() const;
   BluetoothServiceDataMap* serviceData() const;
 

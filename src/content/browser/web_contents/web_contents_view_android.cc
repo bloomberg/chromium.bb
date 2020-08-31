@@ -7,7 +7,8 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_feature_list.h"
@@ -15,7 +16,6 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
 #include "content/browser/android/selection/selection_popup_controller.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -117,18 +117,6 @@ void WebContentsViewAndroid::SetOverscrollRefreshHandler(
     static_cast<RenderWidgetHostViewAndroid*>(rwhv)
         ->OnOverscrollRefreshHandlerAvailable();
   }
-
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-    if (rwhv) {
-      static_cast<RenderWidgetHostViewAndroid*>(rwhv)
-          ->OnOverscrollRefreshHandlerAvailable();
-    }
-  }
 }
 
 ui::OverscrollRefreshHandler*
@@ -153,13 +141,6 @@ RenderWidgetHostViewAndroid*
 WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = nullptr;
   rwhv = web_contents_->GetRenderWidgetHostView();
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
@@ -175,21 +156,10 @@ void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
   // Do nothing.
 }
 
-void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
-  // TODO(klobag): Do we need to do anything else?
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetSize(size);
-}
-
 void WebContentsViewAndroid::Focus() {
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->Focus();
-  } else {
-    auto* rwhv = web_contents_->GetRenderWidgetHostView();
-    if (rwhv)
-      static_cast<RenderWidgetHostViewAndroid*>(rwhv)->Focus();
-  }
+  auto* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    static_cast<RenderWidgetHostViewAndroid*>(rwhv)->Focus();
 }
 
 void WebContentsViewAndroid::SetInitialFocus() {
@@ -208,10 +178,6 @@ void WebContentsViewAndroid::RestoreFocus() {
 }
 
 void WebContentsViewAndroid::FocusThroughTabTraversal(bool reverse) {
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {
@@ -247,8 +213,7 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
   // Note that while this instructs the render widget host to reference
   // |native_view_|, this has no effect without also instructing the
   // native view (i.e. ContentView) how to obtain a reference to this widget in
-  // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
-  // example of how this is achieved for InterstitialPages.
+  // order to paint it.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   auto* rwhv = new RenderWidgetHostViewAndroid(rwhi, &view_);
   rwhv->SetSynchronousCompositorClient(synchronous_compositor_client_);
@@ -259,9 +224,6 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   return new RenderWidgetHostViewAndroid(rwhi, nullptr);
-}
-
-void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewAndroid::RenderViewReady() {
@@ -327,19 +289,17 @@ SelectPopup* WebContentsViewAndroid::GetSelectPopup() {
 
 void WebContentsViewAndroid::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,
     int selected_item,
-    const std::vector<MenuItem>& items,
+    std::vector<blink::mojom::MenuItemPtr> menu_items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  GetSelectPopup()->ShowMenu(render_frame_host, bounds, items, selected_item,
+  GetSelectPopup()->ShowMenu(std::move(popup_client), bounds,
+                             std::move(menu_items), selected_item,
                              allow_multiple_selection, right_aligned);
-}
-
-void WebContentsViewAndroid::HidePopupMenu() {
-  GetSelectPopup()->HideMenu();
 }
 
 void WebContentsViewAndroid::StartDragging(
@@ -480,6 +440,7 @@ void WebContentsViewAndroid::OnDragExited() {
 void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
                                            const gfx::PointF& location,
                                            const gfx::PointF& screen_location) {
+  web_contents_->Focus();
   web_contents_->GetRenderViewHost()->GetWidget()->FilterDropData(drop_data);
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
       *drop_data, location, screen_location, 0);
@@ -621,6 +582,13 @@ void WebContentsViewAndroid::OnSizeChanged() {
 void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {
   if (web_contents_->GetRenderWidgetHostView())
     web_contents_->SendScreenRects();
+}
+
+void WebContentsViewAndroid::OnBrowserControlsHeightChanged() {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                      base::nullopt);
 }
 
 } // namespace content

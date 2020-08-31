@@ -5,13 +5,14 @@
 #ifndef CONTENT_RENDERER_PEPPER_FULLSCREEN_CONTAINER_H_
 #define CONTENT_RENDERER_PEPPER_FULLSCREEN_CONTAINER_H_
 
-namespace blink {
-struct WebCursorInfo;
-struct WebRect;
-}  // namespace blink
+#include "base/memory/ref_counted.h"
 
 namespace cc {
 class Layer;
+}
+
+namespace ui {
+class Cursor;
 }
 
 namespace content {
@@ -20,17 +21,14 @@ namespace content {
 // plugins, that only handles painting.
 class FullscreenContainer {
  public:
-  // Scrolls a partial region of the plugin in the given direction.
-  virtual void ScrollRect(int dx, int dy, const blink::WebRect&) = 0;
-
   // Destroys the fullscreen window. This also destroys the FullscreenContainer
   // instance.
   virtual void Destroy() = 0;
 
   // Notifies the container that the mouse cursor has changed.
-  virtual void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) = 0;
+  virtual void PepperDidChangeCursor(const ui::Cursor& cursor) = 0;
 
-  virtual void SetLayer(cc::Layer* layer) = 0;
+  virtual void SetLayer(scoped_refptr<cc::Layer> layer) = 0;
 
  protected:
   virtual ~FullscreenContainer() {}

@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -26,10 +25,12 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.UsedByReflection;
@@ -38,7 +39,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 
 /**
  * A widget that shows a single row of the {@link AccessibilityTabModelListView} list.
@@ -216,7 +217,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
-        mDefaultIconColor = ChromeColors.getIconTint(context, false);
+        mDefaultIconColor = ChromeColors.getPrimaryIconTint(context, false);
         mIncognitoIconColor =
                 AppCompatResources.getColorStateList(context, R.color.default_icon_color_dark);
         mDefaultCloseIconColor =
@@ -234,15 +235,16 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        mTabContents = findViewById(R.id.tab_contents_modern);
+
+        mTabContents = findViewById(R.id.content);
         mTitleView = mTabContents.findViewById(R.id.title);
         mDescriptionView = mTabContents.findViewById(R.id.description);
-        mFaviconView = mTabContents.findViewById(R.id.icon_view);
-        mCloseButton = mTabContents.findViewById(R.id.close_btn_modern);
+        mFaviconView = mTabContents.findViewById(R.id.start_icon);
+        mCloseButton = mTabContents.findViewById(R.id.end_button);
         mFaviconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
 
-        mUndoContents = (LinearLayout) findViewById(R.id.undo_contents);
-        mUndoButton = (Button) findViewById(R.id.undo_button);
+        mUndoContents = findViewById(R.id.undo_contents);
+        mUndoButton = findViewById(R.id.undo_button);
 
         setClickable(true);
         setFocusable(true);
@@ -250,6 +252,17 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         mCloseButton.setOnClickListener(this);
         mUndoButton.setOnClickListener(this);
         setOnClickListener(this);
+
+        mCloseButton.setVisibility(View.VISIBLE);
+        mCloseButton.setImageResource(R.drawable.btn_delete_24dp);
+        mCloseButton.setScaleType(ScaleType.CENTER_INSIDE);
+        mCloseButton.setPaddingRelative(
+                getResources().getDimensionPixelSize(
+                        R.dimen.accessibility_tab_switcher_item_close_button_padding_start),
+                getPaddingTop(),
+                getResources().getDimensionPixelSize(
+                        R.dimen.accessibility_tab_switcher_item_close_button_padding_end),
+                getPaddingBottom());
     }
 
     /**
@@ -293,7 +306,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         String url = null;
         if (mTab != null) {
             title = mTab.getTitle();
-            url = mTab.getUrl();
+            url = mTab.getUrlString();
             if (TextUtils.isEmpty(title)) title = url;
         }
         if (TextUtils.isEmpty(title)) {
@@ -312,18 +325,20 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         }
 
         if (mTab.isIncognito()) {
-            setBackgroundResource(R.color.dark_primary_color);
+            setBackgroundResource(R.color.default_bg_color_dark);
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
-            ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_WhiteTitle1);
             ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, R.style.TextAppearance_WhiteBody);
+                    mTitleView, R.style.TextAppearance_TextLarge_Primary_Light);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDescriptionView, R.style.TextAppearance_TextMedium_Primary_Light);
             ApiCompatibilityUtils.setImageTintList(mCloseButton, mIncognitoCloseIconColor);
         } else {
-            setBackgroundResource(R.color.modern_primary_color);
+            setBackgroundResource(R.color.default_bg_color);
             mFaviconView.getBackground().setLevel(mDefaultLevel);
-            ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_BlackTitle1);
             ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, R.style.TextAppearance_BlackBody);
+                    mTitleView, R.style.TextAppearance_TextLarge_Primary);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDescriptionView, R.style.TextAppearance_TextMedium_Secondary);
             ApiCompatibilityUtils.setImageTintList(mCloseButton, mDefaultCloseIconColor);
         }
 
@@ -625,5 +640,10 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
     private void notifyTabUpdated(Tab tab) {
         if (mListener != null) mListener.tabChanged(tab.getId());
+    }
+
+    @VisibleForTesting
+    public View getCloseButtonForTests() {
+        return mCloseButton;
     }
 }

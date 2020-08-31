@@ -14,7 +14,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -37,6 +36,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/warning_service.h"
+#include "extensions/common/extension_id.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -624,8 +624,7 @@ class DeveloperPrivateIsProfileManagedFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class DeveloperPrivateLoadDirectoryFunction
-    : public ChromeAsyncExtensionFunction {
+class DeveloperPrivateLoadDirectoryFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadDirectory",
                              DEVELOPERPRIVATE_LOADUNPACKEDCROS)
@@ -636,9 +635,10 @@ class DeveloperPrivateLoadDirectoryFunction
   ~DeveloperPrivateLoadDirectoryFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
-  bool LoadByFileSystemAPI(const ::storage::FileSystemURL& directory_url);
+  ResponseAction LoadByFileSystemAPI(
+      const ::storage::FileSystemURL& directory_url);
 
   void ClearExistingDirectoryContent(const base::FilePath& project_path);
 
@@ -678,6 +678,9 @@ class DeveloperPrivateLoadDirectoryFunction
   // This is set to false if any of the copyFile operations fail on
   // call of the API. It is returned as a response of the API call.
   bool success_;
+
+  // Error string if |success_| is false.
+  std::string error_;
 };
 
 class DeveloperPrivateRequestFileSourceFunction

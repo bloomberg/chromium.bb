@@ -5,21 +5,25 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:divider="?android:dividerHorizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/min_touch_target_size"
-    android:orientation="vertical"
-    android:showDividers="middle">
-  <android.support.v7.widget.RecyclerView
+    android:orientation="vertical">
+  <androidx.recyclerview.widget.RecyclerView
       android:layout_width="wrap_content"
       android:layout_height="113dp"
       android:minHeight="@dimen/min_touch_target_size"
       android:id="@+id/share_sheet_chrome_apps" />
-  <android.support.v7.widget.RecyclerView
-      android:layout_width="wrap_content"
-      android:layout_height="113dp"
-      android:minHeight="@dimen/min_touch_target_size"
-      android:orientation="horizontal"
-      android:id="@+id/share_sheet_other_apps" />
+  <View
+    android:background="@color/divider_line_bg_color"
+    android:layout_height="1dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_width="match_parent" />
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/share_sheet_other_apps"
+    android:layout_width="wrap_content"
+    android:layout_height="113dp"
+    android:minHeight="@dimen/min_touch_target_size"
+    android:orientation="horizontal" />
 </LinearLayout>

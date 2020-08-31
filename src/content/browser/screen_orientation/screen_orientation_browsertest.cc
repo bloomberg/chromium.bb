@@ -18,6 +18,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -242,8 +243,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
 // This could be a web test if they were not using a mock screen orientation
 // controller.
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
-  GURL test_url = GetTestUrl("screen_orientation",
-                             "screen_orientation_use_after_detach.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(embedded_test_server()->GetURL(
+      "/screen_orientation/screen_orientation_use_after_detach.html"));
 
   TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
   shell()->LoadURL(test_url);

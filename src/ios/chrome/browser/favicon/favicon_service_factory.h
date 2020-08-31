@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
 enum class ServiceAccessType;
 
 namespace favicon {
@@ -18,15 +19,12 @@ class FaviconService;
 }
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // Singleton that owns all FaviconServices and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class FaviconServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static favicon::FaviconService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       ServiceAccessType access_type);
   static FaviconServiceFactory* GetInstance();
   // Returns the default factory used to build FaviconService. Can be

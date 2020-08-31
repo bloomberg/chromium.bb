@@ -37,6 +37,8 @@ void aom_video_writer_close(AvxVideoWriter *writer);
 // Writes frame bytes to the file.
 int aom_video_writer_write_frame(AvxVideoWriter *writer, const uint8_t *buffer,
                                  size_t size, int64_t pts);
+// Set fourcc.
+void aom_video_writer_set_fourcc(AvxVideoWriter *writer, uint32_t fourcc);
 
 #ifdef __cplusplus
 }  // extern "C"

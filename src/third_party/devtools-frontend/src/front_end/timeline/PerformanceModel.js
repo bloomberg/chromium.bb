@@ -2,42 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Timeline.PerformanceModel = class extends Common.Object {
+import * as Bindings from '../bindings/bindings.js';  // eslint-disable-line no-unused-vars
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TimelineModel from '../timeline_model/timeline_model.js';
+
+import {TimelineUIUtils} from './TimelineUIUtils.js';
+
+export class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
-    /** @type {?SDK.Target} */
+    /** @type {?SDK.SDKModel.Target} */
     this._mainTarget = null;
-    /** @type {?SDK.TracingModel} */
+    /** @type {?SDK.TracingModel.TracingModel} */
     this._tracingModel = null;
-    /** @type {!Array<!TimelineModel.TimelineModelFilter>} */
+    /** @type {!Array<!TimelineModel.TimelineModelFilter.TimelineModelFilter>} */
     this._filters = [];
 
-    this._timelineModel = new TimelineModel.TimelineModel();
-    this._frameModel =
-        new TimelineModel.TimelineFrameModel(event => Timeline.TimelineUIUtils.eventStyle(event).category.name);
-    /** @type {?SDK.FilmStripModel} */
+    this._timelineModel = new TimelineModel.TimelineModel.TimelineModelImpl();
+    this._frameModel = new TimelineModel.TimelineFrameModel.TimelineFrameModel(
+        event => TimelineUIUtils.eventStyle(event).category.name);
+    /** @type {?SDK.FilmStripModel.FilmStripModel} */
     this._filmStripModel = null;
-    /** @type {?TimelineModel.TimelineIRModel} */
-    this._irModel = new TimelineModel.TimelineIRModel();
+    /** @type {?TimelineModel.TimelineIRModel.TimelineIRModel} */
+    this._irModel = new TimelineModel.TimelineIRModel.TimelineIRModel();
 
-    /** @type {!Timeline.PerformanceModel.Window} */
+    /** @type {!Window} */
     this._window = {left: 0, right: Infinity};
 
-    /** @type {!Array<!{title: string, model: !SDK.TracingModel, timeOffset: number}>} */
+    /** @type {!Array<!{title: string, model: !SDK.TracingModel.TracingModel, timeOffset: number}>} */
     this._extensionTracingModels = [];
     /** @type {number|undefined} */
     this._recordStartTime = undefined;
   }
 
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   setMainTarget(target) {
     this._mainTarget = target;
   }
 
   /**
-   * @return {?SDK.Target}
+   * @return {?SDK.SDKModel.Target}
    */
   mainTarget() {
     return this._mainTarget;
@@ -58,14 +65,14 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
-   * @param {!Array<!TimelineModel.TimelineModelFilter>} filters
+   * @param {!Array<!TimelineModel.TimelineModelFilter.TimelineModelFilter>} filters
    */
   setFilters(filters) {
     this._filters = filters;
   }
 
   /**
-   * @return {!Array<!TimelineModel.TimelineModelFilter>}
+   * @return {!Array<!TimelineModel.TimelineModelFilter.TimelineModelFilter>}
    */
   filters() {
     return this._filters;
@@ -80,7 +87,7 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
-   * @param {!SDK.TracingModel} model
+   * @param {!SDK.TracingModel.TracingModel} model
    */
   setTracingModel(model) {
     this._tracingModel = model;
@@ -118,7 +125,7 @@ Timeline.PerformanceModel = class extends Common.Object {
 
   /**
    * @param {string} title
-   * @param {!SDK.TracingModel} model
+   * @param {!SDK.TracingModel.TracingModel} model
    * @param {number} timeOffset
    */
   addExtensionEvents(title, model, timeOffset) {
@@ -127,11 +134,11 @@ Timeline.PerformanceModel = class extends Common.Object {
       return;
     }
     model.adjustTime(this._tracingModel.minimumRecordTime() + (timeOffset / 1000) - this._recordStartTime);
-    this.dispatchEventToListeners(Timeline.PerformanceModel.Events.ExtensionDataAdded);
+    this.dispatchEventToListeners(Events.ExtensionDataAdded);
   }
 
   /**
-   * @return {!SDK.TracingModel}
+   * @return {!SDK.TracingModel.TracingModel}
    */
   tracingModel() {
     if (!this._tracingModel) {
@@ -141,14 +148,14 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
-   * @return {!TimelineModel.TimelineModel}
+   * @return {!TimelineModel.TimelineModel.TimelineModelImpl}
    */
   timelineModel() {
     return this._timelineModel;
   }
 
   /**
-   * @return {!SDK.FilmStripModel} filmStripModel
+   * @return {!SDK.FilmStripModel.FilmStripModel} filmStripModel
    */
   filmStripModel() {
     if (this._filmStripModel) {
@@ -157,33 +164,33 @@ Timeline.PerformanceModel = class extends Common.Object {
     if (!this._tracingModel) {
       throw 'call setTracingModel before accessing PerformanceModel';
     }
-    this._filmStripModel = new SDK.FilmStripModel(this._tracingModel);
+    this._filmStripModel = new SDK.FilmStripModel.FilmStripModel(this._tracingModel);
     return this._filmStripModel;
   }
 
   /**
-   * @return {!Array<!TimelineModel.TimelineFrame>} frames
+   * @return {!Array<!TimelineModel.TimelineFrameModel.TimelineFrame>} frames
    */
   frames() {
     return this._frameModel.frames();
   }
 
   /**
-   * @return {!TimelineModel.TimelineFrameModel} frames
+   * @return {!TimelineModel.TimelineFrameModel.TimelineFrameModel} frames
    */
   frameModel() {
     return this._frameModel;
   }
 
   /**
-   * @return {!Array<!Common.Segment>}
+   * @return {!Array<!Common.SegmentedRange.Segment>}
    */
   interactionRecords() {
     return this._irModel.interactionRecords();
   }
 
   /**
-   * @return {!Array<!{title: string, model: !SDK.TracingModel}>}
+   * @return {!Array<!{title: string, model: !SDK.TracingModel.TracingModel}>}
    */
   extensionInfo() {
     return this._extensionTracingModels;
@@ -199,7 +206,7 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
-   * @param {!TimelineModel.TimelineFrame} frame
+   * @param {!TimelineModel.TimelineFrameModel.TimelineFrame} frame
    * @return {?SDK.FilmStripModel.Frame}
    */
   filmStripModelFrame(frame) {
@@ -210,25 +217,26 @@ Timeline.PerformanceModel = class extends Common.Object {
   }
 
   /**
-   * @param {!Common.OutputStream} stream
+   * @param {!Common.StringOutputStream.OutputStream} stream
    * @return {!Promise<?FileError>}
    */
   save(stream) {
-    const backingStorage = /** @type {!Bindings.TempFileBackingStorage} */ (this._tracingModel.backingStorage());
+    const backingStorage =
+        /** @type {!Bindings.TempFile.TempFileBackingStorage} */ (this._tracingModel.backingStorage());
     return backingStorage.writeToStream(stream);
   }
 
   /**
-   * @param {!Timeline.PerformanceModel.Window} window
+   * @param {!Window} window
    * @param {boolean=} animate
    */
   setWindow(window, animate) {
     this._window = window;
-    this.dispatchEventToListeners(Timeline.PerformanceModel.Events.WindowChanged, {window, animate});
+    this.dispatchEventToListeners(Events.WindowChanged, {window, animate});
   }
 
   /**
-   * @return {!Timeline.PerformanceModel.Window}
+   * @return {!Window}
    */
   window() {
     return this._window;
@@ -287,15 +295,15 @@ Timeline.PerformanceModel = class extends Common.Object {
     }
     this.setWindow({left: leftTime, right: rightTime});
   }
-};
+}
 
 /**
  * @enum {symbol}
  */
-Timeline.PerformanceModel.Events = {
+export const Events = {
   ExtensionDataAdded: Symbol('ExtensionDataAdded'),
   WindowChanged: Symbol('WindowChanged')
 };
 
 /** @typedef {!{left: number, right: number}} */
-Timeline.PerformanceModel.Window;
+export let Window;

@@ -14,8 +14,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -43,73 +43,68 @@ class MockMediaDevicesDispatcherHost
                         bool request_video_input_capabilities,
                         bool request_audio_input_capabilities,
                         EnumerateDevicesCallback callback) override {
-    Vector<Vector<MediaDeviceInfoPtr>> enumeration(static_cast<size_t>(
+    Vector<Vector<WebMediaDeviceInfo>> enumeration(static_cast<size_t>(
         blink::mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES));
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities;
     Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
         audio_input_capabilities;
-    MediaDeviceInfoPtr device_info;
+    WebMediaDeviceInfo device_info;
     if (request_audio_input) {
-      device_info = mojom::blink::MediaDeviceInfo::New();
-      device_info->device_id = kFakeAudioInputDeviceId1;
-      device_info->label = "Fake Audio Input 1";
-      device_info->group_id = kFakeCommonGroupId1;
+      device_info.device_id = kFakeAudioInputDeviceId1;
+      device_info.label = "Fake Audio Input 1";
+      device_info.group_id = kFakeCommonGroupId1;
       enumeration[static_cast<size_t>(
                       blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
-          .push_back(std::move(device_info));
+          .push_back(device_info);
 
-      device_info = mojom::blink::MediaDeviceInfo::New();
-      device_info->device_id = kFakeAudioInputDeviceId2;
-      device_info->label = "Fake Audio Input 2";
-      device_info->group_id = "fake_group 2";
+      device_info.device_id = kFakeAudioInputDeviceId2;
+      device_info.label = "Fake Audio Input 2";
+      device_info.group_id = "fake_group 2";
       enumeration[static_cast<size_t>(
                       blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
-          .push_back(std::move(device_info));
+          .push_back(device_info);
 
       // TODO(crbug.com/935960): add missing mocked capabilities and related
       // tests when media::AudioParameters is visible in this context.
     }
     if (request_video_input) {
-      device_info = mojom::blink::MediaDeviceInfo::New();
-      device_info->device_id = kFakeVideoInputDeviceId1;
-      device_info->label = "Fake Video Input 1";
-      device_info->group_id = kFakeCommonGroupId1;
+      device_info.device_id = kFakeVideoInputDeviceId1;
+      device_info.label = "Fake Video Input 1";
+      device_info.group_id = kFakeCommonGroupId1;
       enumeration[static_cast<size_t>(
                       blink::mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
-          .push_back(std::move(device_info));
+          .push_back(device_info);
 
-      device_info = mojom::blink::MediaDeviceInfo::New();
-      device_info->device_id = kFakeVideoInputDeviceId2;
-      device_info->label = "Fake Video Input 2";
-      device_info->group_id = kFakeVideoInputGroupId2;
+      device_info.device_id = kFakeVideoInputDeviceId2;
+      device_info.label = "Fake Video Input 2";
+      device_info.group_id = kFakeVideoInputGroupId2;
       enumeration[static_cast<size_t>(
                       blink::mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
-          .push_back(std::move(device_info));
+          .push_back(device_info);
 
       if (request_video_input_capabilities) {
         mojom::blink::VideoInputDeviceCapabilitiesPtr capabilities =
             mojom::blink::VideoInputDeviceCapabilities::New();
         capabilities->device_id = kFakeVideoInputDeviceId1;
         capabilities->group_id = kFakeCommonGroupId1;
-        capabilities->facing_mode = blink::mojom::FacingMode::NONE;
+        capabilities->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
         video_input_capabilities.push_back(std::move(capabilities));
 
         capabilities = mojom::blink::VideoInputDeviceCapabilities::New();
         capabilities->device_id = kFakeVideoInputDeviceId2;
         capabilities->group_id = kFakeVideoInputGroupId2;
-        capabilities->facing_mode = blink::mojom::FacingMode::USER;
+        capabilities->facing_mode = media::MEDIA_VIDEO_FACING_USER;
         video_input_capabilities.push_back(std::move(capabilities));
       }
     }
     if (request_audio_output) {
-      device_info = mojom::blink::MediaDeviceInfo::New();
-      device_info->device_id = kFakeAudioOutputDeviceId1;
-      device_info->label = "Fake Audio Input 1";
-      device_info->group_id = kFakeCommonGroupId1;
+      device_info.device_id = kFakeAudioOutputDeviceId1;
+      device_info.label = "Fake Audio Input 1";
+      device_info.group_id = kFakeCommonGroupId1;
       enumeration[static_cast<size_t>(
                       blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT)]
-          .push_back(std::move(device_info));
+          .push_back(device_info);
     }
     std::move(callback).Run(std::move(enumeration),
                             std::move(video_input_capabilities),
@@ -163,57 +158,6 @@ class MockMediaDevicesDispatcherHost
   mojo::Receiver<mojom::blink::MediaDevicesDispatcherHost> receiver_{this};
 };
 
-class PromiseObserver {
- public:
-  PromiseObserver(ScriptState* script_state, ScriptPromise promise)
-      : is_rejected_(false), is_fulfilled_(false) {
-    v8::Local<v8::Function> on_fulfilled = MyScriptFunction::CreateFunction(
-        script_state, &is_fulfilled_, &saved_arg_);
-    v8::Local<v8::Function> on_rejected = MyScriptFunction::CreateFunction(
-        script_state, &is_rejected_, &saved_arg_);
-    promise.Then(on_fulfilled, on_rejected);
-  }
-
-  bool isDecided() { return is_rejected_ || is_fulfilled_; }
-
-  bool isFulfilled() { return is_fulfilled_; }
-  bool isRejected() { return is_rejected_; }
-  ScriptValue argument() { return saved_arg_; }
-  void Trace(blink::Visitor* visitor) { visitor->Trace(saved_arg_); }
-
- private:
-  class MyScriptFunction : public ScriptFunction {
-   public:
-    static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
-                                                  bool* flag_to_set,
-                                                  ScriptValue* arg_to_set) {
-      MyScriptFunction* self = MakeGarbageCollected<MyScriptFunction>(
-          script_state, flag_to_set, arg_to_set);
-      return self->BindToV8Function();
-    }
-
-    MyScriptFunction(ScriptState* script_state,
-                     bool* flag_to_set,
-                     ScriptValue* arg_to_set)
-        : ScriptFunction(script_state),
-          flag_to_set_(flag_to_set),
-          arg_to_set_(arg_to_set) {}
-    ScriptValue Call(ScriptValue arg) override {
-      *flag_to_set_ = true;
-      *arg_to_set_ = arg;
-      return arg;
-    }
-
-   private:
-    bool* flag_to_set_;
-    ScriptValue* arg_to_set_;
-  };
-
-  bool is_rejected_;
-  bool is_fulfilled_;
-  ScriptValue saved_arg_;
-};
-
 class MediaDevicesTest : public testing::Test {
  public:
   using MediaDeviceInfos = HeapVector<Member<MediaDeviceInfo>>;
@@ -235,9 +179,8 @@ class MediaDevicesTest : public testing::Test {
 
   void SimulateDeviceChange() {
     DCHECK(listener());
-    listener()->OnDevicesChanged(
-        blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT,
-        Vector<MediaDeviceInfoPtr>());
+    listener()->OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_INPUT,
+                                 Vector<WebMediaDeviceInfo>());
   }
 
   void DevicesEnumerated(const MediaDeviceInfoVector& device_infos) {
@@ -298,24 +241,11 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
       GetMediaDevices(scope.GetExecutionContext())
           ->getUserMedia(scope.GetScriptState(), constraints,
                          scope.GetExceptionState());
-  ASSERT_FALSE(promise.IsEmpty());
-  PromiseObserver promise_observer(scope.GetScriptState(), promise);
-  EXPECT_FALSE(promise_observer.isDecided());
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  EXPECT_TRUE(promise_observer.isDecided());
-  // In the default test environment, we expect a DOM rejection because
-  // the script state's execution context's document's frame doesn't
-  // have an UserMediaController.
-  EXPECT_TRUE(promise_observer.isRejected());
-  // TODO(hta): Check that the correct error ("not supported") is returned.
-  EXPECT_FALSE(promise_observer.argument().IsNull());
-  // This log statement is included as a demonstration of how to get the string
-  // value of the argument.
-  VLOG(1) << "Argument is"
-          << ToCoreString(promise_observer.argument()
-                              .V8Value()
-                              ->ToString(scope.GetContext())
-                              .ToLocalChecked());
+  ASSERT_TRUE(promise.IsEmpty());
+  // We expect a type error because the given constraints are empty.
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(ESErrorType::kTypeError));
+  VLOG(1) << "Exception message is" << scope.GetExceptionState().Message();
 }
 
 TEST_F(MediaDevicesTest, EnumerateDevices) {
@@ -323,8 +253,8 @@ TEST_F(MediaDevicesTest, EnumerateDevices) {
   auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetEnumerateDevicesCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
 
@@ -385,8 +315,8 @@ TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   CloseBinding();
   platform()->RunUntilIdle();
 
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
   EXPECT_TRUE(dispatcher_host_connection_error());
@@ -403,8 +333,8 @@ TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
                 WTF::Unretained(this)));
   EXPECT_FALSE(dispatcher_host_connection_error());
 
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
 

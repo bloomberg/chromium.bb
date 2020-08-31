@@ -12,17 +12,16 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/public/browser/bluetooth_chooser.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extensions_browser_api_provider.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
-#include "services/service_manager/public/cpp/binder_map.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 
 class ExtensionFunctionRegistry;
@@ -169,7 +168,7 @@ class ExtensionsBrowserClient {
   // webview and dev tools. May be called on either the UI or IO thread.
   virtual bool AllowCrossRendererResourceLoad(
       const GURL& url,
-      content::ResourceType resource_type,
+      blink::mojom::ResourceType resource_type,
       ui::PageTransition page_transition,
       int child_id,
       bool is_incognito,
@@ -227,17 +226,10 @@ class ExtensionsBrowserClient {
   // ExtensionSystem::Get.
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() = 0;
 
-  // [Deprecated] Registers additional interfaces to expose to a RenderFrame.
-  virtual void RegisterExtensionInterfaces(
-      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-          registry,
-      content::RenderFrameHost* render_frame_host,
-      const Extension* extension) const = 0;
-
   // Registers additional interfaces to a binder map for a browser interface
   // broker.
   virtual void RegisterBrowserInterfaceBindersForFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map,
       content::RenderFrameHost* render_frame_host,
       const Extension* extension) const = 0;
 

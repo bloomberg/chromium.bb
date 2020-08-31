@@ -68,33 +68,54 @@ declare_args() {
   # gcc compiler on Linux instead, set is_gcc to true.
   is_gcc = false
   clang_base_path = default_clang_base_path
+
+  # This would not normally be set as a build argument, but rather is used as a
+  # default value during the first parse of this config.  All other toolchains
+  # that cause this file to be re-parsed will already have this set.  For
+  # further explanation, see
+  # https://gn.googlesource.com/gn/+/refs/heads/master/docs/reference.md#toolchain-overview
+  host_toolchain = ""
 }
 
 declare_args() {
   is_clang = !is_gcc
 }
 
-# We need to ensure that clang is pulled down using the update script. In
-# Chromium, this is done with a gclient hook, but we can just call
-if (is_clang) {
-  exec_script("//tools/clang/scripts/update.py")
-}
-
 # ==============================================================================
 # TOOLCHAIN SETUP
 # ==============================================================================
 #
-# Here we set the default toolchain. Currently only Mac and POSIX are defined.
-host_toolchain = ""
-if (current_os == "chromeos" || current_os == "linux") {
-  host_toolchain = "//build/toolchain/linux:linux"
-} else if (current_os == "mac") {
-  host_toolchain = "//build/toolchain/mac:clang"
-} else {
-  # TODO(miu): Windows, and others.
-  assert(false, "Toolchain for current_os is not defined.")
+# Here we set the host and default toolchains. Currently only Mac and POSIX are
+# defined.
+if (host_toolchain == "") {
+  if (current_os == "chromeos" || current_os == "linux") {
+    if (is_clang) {
+      host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
+    } else {
+      host_toolchain = "//build/toolchain/linux:gcc_$host_cpu"
+    }
+  } else if (current_os == "mac") {
+    host_toolchain = "//build/toolchain/mac:clang"
+  } else {
+    # TODO(miu): Windows, and others.
+    assert(false, "Toolchain for current_os is not defined.")
+  }
 }
-set_default_toolchain(host_toolchain)
+
+_default_toolchain = ""
+if (target_os == "chromeos" || target_os == "linux") {
+  if (is_clang) {
+    _default_toolchain = "//build/toolchain/linux:clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/linux:gcc_$target_cpu"
+  }
+} else if (target_os == "mac") {
+  assert(host_os == "mac", "Cross-compiling on Mac is not supported.")
+  _default_toolchain = "//build/toolchain/mac:clang"
+} else {
+  assert(false, "Toolchain for target_os is not defined.")
+}
+set_default_toolchain(_default_toolchain)
 
 # =============================================================================
 # OS DEFINITIONS
@@ -132,8 +153,11 @@ _shared_binary_target_configs = [
   "//build/config:no_rtti",
   "//build/config:symbol_visibility_hidden",
   "//build/config:default_sanitizers",
+  "//build/config:default_coverage",
   "//build/config:compiler_defaults",
+  "//build/config:compiler_cpu_abi",
   "//build/config:default_optimization",
+  "//build/config:sysroot_runtime_libraries",
 ]
 
 # Apply that default list to the binary target types.

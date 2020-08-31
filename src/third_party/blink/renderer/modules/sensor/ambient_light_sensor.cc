@@ -55,18 +55,26 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
              options,
              exception_state,
              SensorType::AMBIENT_LIGHT,
-             {mojom::FeaturePolicyFeature::kAmbientLightSensor}) {}
+             {mojom::blink::FeaturePolicyFeature::kAmbientLightSensor}) {}
 
-double AmbientLightSensor::illuminance(bool& is_null) const {
-  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  DCHECK(latest_reading_.has_value());
-  return RoundIlluminance(*latest_reading_);
+base::Optional<double> AmbientLightSensor::illuminance() const {
+  if (hasReading()) {
+    DCHECK(latest_reading_.has_value());
+    return RoundIlluminance(latest_reading_.value());
+  }
+  return base::nullopt;
 }
 
 // When the reading we get does not differ significantly from our current
 // value, we discard this reading and do not emit any events. This is a privacy
 // measure to avoid giving readings that are too specific.
 void AmbientLightSensor::OnSensorReadingChanged() {
+  // The platform sensor may start sending readings before the sensor is fully
+  // activated on the Blink side. In this case, bail out early, otherwise we
+  // will set |latest_reading_| and not send a "reading" event.
+  if (!IsActivated())
+    return;
+
   const double new_reading = GetReading().als.value;
   if (latest_reading_.has_value() &&
       !IsSignificantlyDifferent(*latest_reading_, new_reading)) {

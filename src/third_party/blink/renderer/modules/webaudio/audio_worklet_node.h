@@ -6,9 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param_map.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_worklet_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_error_state.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -31,7 +32,9 @@ class ScriptState;
 //  AudioWorkletNode <-> AudioWorkletHandler <==|==>   AudioWorkletProcessor
 //   (JS interface)       (Renderer access)     |      (V8 audio processing)
 
-class AudioWorkletHandler final : public AudioHandler {
+class AudioWorkletHandler final
+    : public AudioHandler,
+      public base::SupportsWeakPtr<AudioWorkletHandler> {
  public:
   static scoped_refptr<AudioWorkletHandler> Create(
       AudioNode&,
@@ -46,6 +49,7 @@ class AudioWorkletHandler final : public AudioHandler {
   void Process(uint32_t frames_to_process) override;
 
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
+  void UpdatePullStatusIfNeeded() override;
 
   double TailTime() const override;
   double LatencyTime() const override { return 0; }
@@ -114,11 +118,11 @@ class AudioWorkletNode final : public AudioNode,
   // IDL
   AudioParamMap* parameters() const;
   MessagePort* port() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kProcessorerror)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kError)
 
-  void FireProcessorError();
+  void FireProcessorError(AudioWorkletProcessorErrorState);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // InspectorHelperMixin
   void ReportDidCreate() final;

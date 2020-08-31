@@ -13,7 +13,10 @@
 
 class HostContentSettingsMap;
 class InfoBarService;
+
+namespace content_settings {
 class TabSpecificContentSettings;
+}
 
 // Shows an infobar that asks the user whether a Pepper plugin is allowed
 // to connect to its (privileged) broker. The user decision is made "sticky"
@@ -22,37 +25,39 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a pepper broker infobar and delegate and adds the infobar to
   // |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     const GURL& url,
-                     const base::string16& plugin_name,
-                     HostContentSettingsMap* content_settings,
-                     TabSpecificContentSettings* tab_content_settings,
-                     base::OnceCallback<void(bool)> callback);
+  static void Create(
+      InfoBarService* infobar_service,
+      const GURL& url,
+      const base::string16& plugin_name,
+      HostContentSettingsMap* content_settings,
+      content_settings::TabSpecificContentSettings* tab_content_settings,
+      base::OnceCallback<void(bool)> callback);
   ~PepperBrokerInfoBarDelegate() override;
 
  private:
-  PepperBrokerInfoBarDelegate(const GURL& url,
-                              const base::string16& plugin_name,
-                              HostContentSettingsMap* content_settings,
-                              TabSpecificContentSettings* tab_content_settings,
-                              base::OnceCallback<void(bool)> callback);
+  PepperBrokerInfoBarDelegate(
+      const GURL& url,
+      const base::string16& plugin_name,
+      HostContentSettingsMap* content_settings,
+      content_settings::TabSpecificContentSettings* tab_content_settings,
+      base::OnceCallback<void(bool)> callback);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  base::string16 GetLinkText() const override;
-  GURL GetLinkURL() const override;
 
   void DispatchCallback(bool result);
 
   const GURL url_;
   const base::string16 plugin_name_;
   HostContentSettingsMap* content_settings_;
-  TabSpecificContentSettings* tab_content_settings_;
+  content_settings::TabSpecificContentSettings* tab_content_settings_;
   base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);

@@ -93,12 +93,9 @@ void Seat::AbortPendingDragOperation() {
 }
 
 void Seat::SetSelection(DataSource* source) {
-  if (!source) {
-    ui::Clipboard::GetForCurrentThread()->Clear(
-        ui::ClipboardBuffer::kCopyPaste);
-    // selection_source_ is Cancelled() and reset() in OnClipboardDataChanged().
+  Surface* focused_surface = GetFocusedSurface();
+  if (!source || !source->CanBeDataSourceForCopy(focused_surface))
     return;
-  }
 
   if (selection_source_) {
     if (selection_source_->get() == source)

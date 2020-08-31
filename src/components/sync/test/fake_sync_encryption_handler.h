@@ -38,12 +38,11 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) override;
+      const std::vector<std::vector<uint8_t>>& keys) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
-  std::string GetLastKeystoreKey() const override;
 
   // NigoriHandler implemenation.
   bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
@@ -62,7 +61,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
-  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
+  bool SetKeystoreKeys(const std::vector<std::vector<uint8_t>>& keys) override;
 
   // Own method, used in some tests to manipulate cryptographer directly.
   DirectoryCryptographer* GetMutableCryptographer();
@@ -74,7 +73,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   PassphraseType passphrase_type_;
 
   DirectoryCryptographer cryptographer_;
-  std::string keystore_key_;
+  std::vector<uint8_t> keystore_key_;
 };
 
 }  // namespace syncer

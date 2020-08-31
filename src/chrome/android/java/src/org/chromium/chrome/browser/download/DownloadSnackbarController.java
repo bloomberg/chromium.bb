@@ -12,10 +12,11 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.snackbar.Snackbar;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OpenParams;
 
 /**
  * Class for displaying a snackbar when a download completes.
@@ -60,6 +61,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             }
         } else {
             OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(
+                    new OpenParams(LaunchLocation.PROGRESS_BAR),
                     download.downloadInfo.getContentId());
         }
 
@@ -80,8 +82,9 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      * @param showAllDownloads Whether to show all downloads in case the failure is caused by
      *                         duplicated files.
      */
-    public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
-        if (isShowingDownloadInfoBar()) return;
+    public void onDownloadFailed(
+            String errorMessage, boolean showAllDownloads, boolean isOffTheRecord) {
+        if (isShowingDownloadInfoBar(isOffTheRecord)) return;
         if (getSnackbarManager() == null) return;
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         Snackbar snackbar = Snackbar.make(errorMessage, this, Snackbar.TYPE_NOTIFICATION,
@@ -128,10 +131,10 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         return null;
     }
 
-    private boolean isShowingDownloadInfoBar() {
+    private boolean isShowingDownloadInfoBar(boolean isOffTheRecord) {
         DownloadInfoBarController infoBarController =
                 DownloadManagerService.getDownloadManagerService().getInfoBarController(
-                        Profile.getLastUsedProfile().isOffTheRecord());
+                        isOffTheRecord);
         return infoBarController == null ? false : infoBarController.isShowing();
     }
 }

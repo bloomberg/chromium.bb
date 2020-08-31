@@ -30,7 +30,7 @@
 /**
  * Define max. number of card in system which we are able to handle
  */
-#define MAX_CARDS_SUPPORTED     4
+#define MAX_CARDS_SUPPORTED     128
 
 /* Forward reference for array to keep "drm" handles */
 extern int drm_amdgpu[MAX_CARDS_SUPPORTED];
@@ -185,9 +185,57 @@ int suite_vm_tests_init();
 int suite_vm_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_vm_tests_enable(void);
+
+/**
  * Tests in vm test suite
  */
 extern CU_TestInfo vm_tests[];
+
+
+/**
+ * Initialize ras test suite
+ */
+int suite_ras_tests_init();
+
+/**
+ * Deinitialize deadlock test suite
+ */
+int suite_ras_tests_clean();
+
+/**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_ras_tests_enable(void);
+
+/**
+ * Tests in ras test suite
+ */
+extern CU_TestInfo ras_tests[];
+
+
+/**
+ * Initialize syncobj timeline test suite
+ */
+int suite_syncobj_timeline_tests_init();
+
+/**
+ * Deinitialize syncobj timeline test suite
+ */
+int suite_syncobj_timeline_tests_clean();
+
+/**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_syncobj_timeline_tests_enable(void);
+
+/**
+ * Tests in syncobj timeline test suite
+ */
+extern CU_TestInfo syncobj_timeline_tests[];
+
 
 /**
  * Helper functions
@@ -202,10 +250,8 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 					amdgpu_va_handle *va_handle)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	amdgpu_bo_handle buf_handle;
+	amdgpu_bo_handle buf_handle = NULL;
 	int r;
-
-	CU_ASSERT_NOT_EQUAL(vmc_addr, NULL);
 
 	req.alloc_size = size;
 	req.phys_alignment = alignment;
@@ -214,17 +260,36 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 
 	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
+	if (r)
+		return NULL;
 
-	r = amdgpu_va_range_alloc(device_handle,
-				  amdgpu_gpu_va_range_general,
-				  size, alignment, 0, vmc_addr,
-				  va_handle, 0);
-	CU_ASSERT_EQUAL(r, 0);
+	if (vmc_addr && va_handle) {
+		r = amdgpu_va_range_alloc(device_handle,
+					  amdgpu_gpu_va_range_general,
+					  size, alignment, 0, vmc_addr,
+					  va_handle, 0);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			goto error_free_bo;
 
-	r = amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0, AMDGPU_VA_OP_MAP);
-	CU_ASSERT_EQUAL(r, 0);
+		r = amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0,
+				    AMDGPU_VA_OP_MAP);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			goto error_free_va;
+	}
 
 	return buf_handle;
+
+error_free_va:
+	r = amdgpu_va_range_free(*va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+error_free_bo:
+	r = amdgpu_bo_free(buf_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	return NULL;
 }
 
 static inline int gpu_mem_free(amdgpu_bo_handle bo,
@@ -234,28 +299,35 @@ static inline int gpu_mem_free(amdgpu_bo_handle bo,
 {
 	int r;
 
-	r = amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
-	CU_ASSERT_EQUAL(r, 0);
+	if (!bo)
+		return 0;
 
-	r = amdgpu_va_range_free(va_handle);
-	CU_ASSERT_EQUAL(r, 0);
+	if (va_handle) {
+		r = amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0,
+				    AMDGPU_VA_OP_UNMAP);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			return r;
+
+		r = amdgpu_va_range_free(va_handle);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			return r;
+	}
 
 	r = amdgpu_bo_free(bo);
 	CU_ASSERT_EQUAL(r, 0);
 
-	return 0;
+	return r;
 }
 
 static inline int
-amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
-			unsigned alignment, unsigned heap, uint64_t flags,
-			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address,
-			amdgpu_va_handle *va_handle)
+amdgpu_bo_alloc_wrap(amdgpu_device_handle dev, unsigned size,
+		     unsigned alignment, unsigned heap, uint64_t flags,
+		     amdgpu_bo_handle *bo)
 {
 	struct amdgpu_bo_alloc_request request = {};
 	amdgpu_bo_handle buf_handle;
-	amdgpu_va_handle handle;
-	uint64_t vmc_addr;
 	int r;
 
 	request.alloc_size = size;
@@ -267,36 +339,25 @@ amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 	if (r)
 		return r;
 
-	r = amdgpu_va_range_alloc(dev,
-				  amdgpu_gpu_va_range_general,
-				  size, alignment, 0, &vmc_addr,
-				  &handle, 0);
-	if (r)
-		goto error_va_alloc;
-
-	r = amdgpu_bo_va_op(buf_handle, 0, size, vmc_addr, 0, AMDGPU_VA_OP_MAP);
-	if (r)
-		goto error_va_map;
-
-	r = amdgpu_bo_cpu_map(buf_handle, cpu);
-	if (r)
-		goto error_cpu_map;
-
 	*bo = buf_handle;
-	*mc_address = vmc_addr;
-	*va_handle = handle;
 
 	return 0;
+}
 
-error_cpu_map:
-	amdgpu_bo_cpu_unmap(buf_handle);
+int amdgpu_bo_alloc_and_map_raw(amdgpu_device_handle dev, unsigned size,
+			unsigned alignment, unsigned heap, uint64_t alloc_flags,
+			uint64_t mapping_flags, amdgpu_bo_handle *bo, void **cpu,
+			uint64_t *mc_address,
+			amdgpu_va_handle *va_handle);
 
-error_va_map:
-	amdgpu_bo_va_op(buf_handle, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
-
-error_va_alloc:
-	amdgpu_bo_free(buf_handle);
-	return r;
+static inline int
+amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
+			unsigned alignment, unsigned heap, uint64_t alloc_flags,
+			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address,
+			amdgpu_va_handle *va_handle)
+{
+	return amdgpu_bo_alloc_and_map_raw(dev, size, alignment, heap,
+					alloc_flags, 0, bo, cpu, mc_address, va_handle);
 }
 
 static inline int
@@ -322,26 +383,26 @@ amdgpu_get_bo_list(amdgpu_device_handle dev, amdgpu_bo_handle bo1,
 }
 
 
-static inline CU_ErrorCode amdgpu_set_suite_active(const char *suit_name,
+static inline CU_ErrorCode amdgpu_set_suite_active(const char *suite_name,
 							  CU_BOOL active)
 {
-	CU_ErrorCode r = CU_set_suite_active(CU_get_suite(suit_name), active);
+	CU_ErrorCode r = CU_set_suite_active(CU_get_suite(suite_name), active);
 
 	if (r != CUE_SUCCESS)
-		fprintf(stderr, "Failed to obtain suite %s\n", suit_name);
+		fprintf(stderr, "Failed to obtain suite %s\n", suite_name);
 
 	return r;
 }
 
-static inline CU_ErrorCode amdgpu_set_test_active(const char *suit_name,
+static inline CU_ErrorCode amdgpu_set_test_active(const char *suite_name,
 				  const char *test_name, CU_BOOL active)
 {
 	CU_ErrorCode r;
-	CU_pSuite pSuite = CU_get_suite(suit_name);
+	CU_pSuite pSuite = CU_get_suite(suite_name);
 
 	if (!pSuite) {
 		fprintf(stderr, "Failed to obtain suite %s\n",
-				suit_name);
+				suite_name);
 		return CUE_NOSUITE;
 	}
 

@@ -8,9 +8,12 @@
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
@@ -104,6 +107,156 @@ SurfaceTextureGLOwner::GetAHardwareBuffer() {
 gfx::Rect SurfaceTextureGLOwner::GetCropRect() {
   NOTREACHED() << "Don't use GetCropRect with SurfaceTextureGLOwner";
   return gfx::Rect();
+}
+
+void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
+    gfx::Size rotated_visible_size,
+    gfx::Size* coded_size,
+    gfx::Rect* visible_rect) {
+  DCHECK(coded_size);
+  DCHECK(visible_rect);
+
+  if (!surface_texture_) {
+    *visible_rect = gfx::Rect();
+    *coded_size = gfx::Size();
+    return;
+  }
+
+  float mtx[16];
+  surface_texture_->GetTransformMatrix(mtx);
+
+  bool result =
+      DecomposeTransform(mtx, rotated_visible_size, coded_size, visible_rect);
+
+  constexpr gfx::Rect kMaxRect(16536, 16536);
+  gfx::Rect coded_rect(*coded_size);
+
+  if (!result || !coded_rect.Contains(*visible_rect) ||
+      !kMaxRect.Contains(coded_rect)) {
+    // Save old values for minidump.
+    gfx::Size coded_size_for_debug = *coded_size;
+    gfx::Rect visible_rect_for_debug = *visible_rect;
+
+    // Sanitize returning values to avoid crashes.
+    *coded_size = rotated_visible_size;
+    *visible_rect = gfx::Rect(rotated_visible_size);
+
+    // Alias values to prevent optimization out and do logging/dump.
+    base::debug::Alias(mtx);
+    base::debug::Alias(&coded_size_for_debug);
+    base::debug::Alias(&visible_rect_for_debug);
+
+    LOG(ERROR) << "Wrong matrix decomposition: coded: "
+               << coded_size_for_debug.ToString()
+               << "visible: " << visible_rect_for_debug.ToString()
+               << "matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
+               << ", " << mtx[5] << ", " << mtx[12] << ", " << mtx[13];
+
+    base::debug::DumpWithoutCrashing();
+  }
+}
+
+// static
+bool SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
+                                               gfx::Size rotated_visible_size,
+                                               gfx::Size* coded_size,
+                                               gfx::Rect* visible_rect) {
+  DCHECK(coded_size);
+  DCHECK(visible_rect);
+
+  // Due to shrinking of visible rect by 1 pixels from each side matrix can be
+  // zero for visible sizes less then 4x4.
+  if (rotated_visible_size.width() < 4 || rotated_visible_size.height() < 4) {
+    *coded_size = rotated_visible_size;
+    *visible_rect = gfx::Rect(rotated_visible_size);
+
+    // Note as this is expected case we return true, to avoid crash dump above.
+    return true;
+  }
+
+  float sx, sy;
+  *visible_rect = gfx::Rect();
+  // The matrix is in column order and contains transform of (0, 0)x(1, 1)
+  // textur coordinates rect into visible portion of the buffer.
+
+  if (mtx[0]) {
+    // If mtx[0] is non zero, mtx[5] must be non-zero while mtx[1] and mtx[4]
+    // must be zero if this is 0/180 rotation + scale/translate.
+    LOG_IF(DFATAL, mtx[1] || mtx[4] || !mtx[5])
+        << "Invalid matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
+        << ", " << mtx[5];
+
+    // Scale is on diagonal, drop any flips or rotations.
+    sx = mtx[0];
+    sy = mtx[5];
+
+    // 0/180 degrees doesn't swap width/height
+    visible_rect->set_size(rotated_visible_size);
+  } else {
+    // If mtx[0] is zero, mtx[5] must be zero while mtx[1] and mtx[4] must be
+    // non-zero if this is rotation 90/270 rotation + scale/translate.
+    LOG_IF(DFATAL, !mtx[1] || !mtx[4] || mtx[5])
+        << "Invalid matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
+        << ", " << mtx[5];
+
+    // Scale is on reverse diagonal for inner 2x2 matrix
+    sx = mtx[4];
+    sy = mtx[1];
+
+    // Frame is rotated, we need to swap width/height
+    visible_rect->set_width(rotated_visible_size.height());
+    visible_rect->set_height(rotated_visible_size.width());
+  }
+
+  // Read translate and flip them if scale is negative.
+  float tx = sx > 0 ? mtx[12] : (sx + mtx[12]);
+  float ty = sy > 0 ? mtx[13] : (sy + mtx[13]);
+
+  // Drop scale signs from rotation/flip as it's handled above already
+  sx = std::abs(sx);
+  sy = std::abs(sy);
+
+  // We got zero matrix, so we can't decompose anything.
+  if (!sx || !sy) {
+    return false;
+  }
+
+  *coded_size = visible_rect->size();
+
+  // Note: Below calculation is reverse operation of computing matrix in
+  // SurfaceTexture::computeCurrentTransformMatrix() -
+  // https://android.googlesource.com/platform/frameworks/native/+/5c1139f/libs/gui/SurfaceTexture.cpp#516.
+  // We are assuming here that bilinear filtering is always enabled for
+  // sampling the texture.
+
+  // In order to prevent bilinear sampling beyond the edge of the
+  // crop rectangle might have been shrunk by up to 2 texels in each dimension
+  // depending on format and if the filtering was enabled. We will try with
+  // worst case of YUV as most common and work down.
+
+  const float possible_shrinks_amounts[] = {1.0f, 0.5f, 0.0f};
+
+  for (float shrink_amount : possible_shrinks_amounts) {
+    if (sx < 1.0f) {
+      coded_size->set_width(
+          std::round((visible_rect->width() - 2.0f * shrink_amount) / sx));
+      visible_rect->set_x(std::round(tx * coded_size->width() - shrink_amount));
+    }
+    if (sy < 1.0f) {
+      coded_size->set_height(
+          std::round((visible_rect->height() - 2.0f * shrink_amount) / sy));
+      visible_rect->set_y(
+          std::round(ty * coded_size->height() - shrink_amount));
+    }
+
+    // If origin of visible_rect is negative we likely trying too big
+    // |shrink_amount| so we need to check for next value. Otherwise break the
+    // loop.
+    if (visible_rect->x() >= 0 && visible_rect->y() >= 0) {
+      break;
+    }
+  }
+  return true;
 }
 
 }  // namespace gpu

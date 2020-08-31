@@ -31,13 +31,14 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize(base::OnceClosure) override;
+  void FinalizeImmediately() override;
   void SetStatusAreaVisible(bool visible) override;
   void StartWizard(chromeos::OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
   AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
   void CancelUserAdding() override;
-  void StartSignInScreen(const LoginScreenContext& context) override;
+  void StartSignInScreen() override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
   void StartAppLaunch(const std::string& app_id,
@@ -54,8 +55,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-  void ShowGaiaDialog(bool can_close,
-                      const AccountId& prefilled_account) override;
+  void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;

@@ -20,6 +20,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,14 +39,8 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("base::android")
 public class ApplicationStatus {
-    private static final String TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS =
-            "android.support.v7.internal.app.ToolbarActionBar$ToolbarCallbackWrapper";
-    // In builds using the --use_unpublished_apis flag, the ToolbarActionBar class name does not
-    // include the "internal" package.
     private static final String TOOLBAR_CALLBACK_WRAPPER_CLASS =
-            "android.support.v7.app.ToolbarActionBar$ToolbarCallbackWrapper";
-    private static final String WINDOW_PROFILER_CALLBACK =
-            "com.android.tools.profiler.support.event.WindowProfilerCallback";
+            "androidx.appcompat.app.ToolbarActionBar$ToolbarCallbackWrapper";
 
     private static class ActivityInfo {
         private int mStatus = ActivityState.DESTROYED;
@@ -177,7 +172,8 @@ public class ApplicationStatus {
      * This is used to relay window focus changes throughout the app and remedy a bug in the
      * appcompat library.
      */
-    private static class WindowCallbackProxy implements InvocationHandler {
+    @VisibleForTesting
+    static class WindowCallbackProxy implements InvocationHandler {
         private final Window.Callback mCallback;
         private final Activity mActivity;
 
@@ -257,9 +253,7 @@ public class ApplicationStatus {
             public void onActivityCreated(final Activity activity, Bundle savedInstanceState) {
                 onStateChange(activity, ActivityState.CREATED);
                 Window.Callback callback = activity.getWindow().getCallback();
-                activity.getWindow().setCallback((Window.Callback) Proxy.newProxyInstance(
-                        Window.Callback.class.getClassLoader(), new Class[] {Window.Callback.class},
-                        new ApplicationStatus.WindowCallbackProxy(activity, callback)));
+                activity.getWindow().setCallback(createWindowCallbackProxy(activity, callback));
             }
 
             @Override
@@ -299,15 +293,59 @@ public class ApplicationStatus {
 
             private void checkCallback(Activity activity) {
                 if (BuildConfig.DCHECK_IS_ON) {
-                    Class<? extends Window.Callback> callback =
-                            activity.getWindow().getCallback().getClass();
-                    assert(Proxy.isProxyClass(callback)
-                            || callback.getName().equals(TOOLBAR_CALLBACK_WRAPPER_CLASS)
-                            || callback.getName().equals(TOOLBAR_CALLBACK_INTERNAL_WRAPPER_CLASS)
-                            || callback.getName().equals(WINDOW_PROFILER_CALLBACK));
+                    assert reachesWindowCallback(activity.getWindow().getCallback());
                 }
             }
         });
+    }
+
+    @VisibleForTesting
+    static Window.Callback createWindowCallbackProxy(Activity activity, Window.Callback callback) {
+        return (Window.Callback) Proxy.newProxyInstance(Window.Callback.class.getClassLoader(),
+                new Class[] {Window.Callback.class},
+                new ApplicationStatus.WindowCallbackProxy(activity, callback));
+    }
+
+    /**
+     * Tries to trace down to our WindowCallbackProxy from the given callback.
+     * Since the callback can be overwritten by embedder code we try to ensure
+     * that there at least seem to be a reference back to our callback by
+     * checking the declared fields of the given callback using reflection.
+     */
+    @VisibleForTesting
+    static boolean reachesWindowCallback(@Nullable Window.Callback callback) {
+        if (callback == null) return false;
+        if (callback.getClass().getName().equals(TOOLBAR_CALLBACK_WRAPPER_CLASS)) {
+            // We're actually not going to get called, see AndroidX report here:
+            // https://issuetracker.google.com/issues/155165145.
+            // But this was accepted in the old code as well so mimic that until
+            // AndroidX is fixed and updated.
+            return true;
+        }
+        if (Proxy.isProxyClass(callback.getClass())) {
+            return Proxy.getInvocationHandler(callback)
+                           instanceof ApplicationStatus.WindowCallbackProxy;
+        }
+        for (Class<?> c = callback.getClass(); c != Object.class; c = c.getSuperclass()) {
+            for (Field f : c.getDeclaredFields()) {
+                if (f.getType().isAssignableFrom(Window.Callback.class)) {
+                    boolean isAccessible = f.isAccessible();
+                    f.setAccessible(true);
+                    Window.Callback fieldCb;
+                    try {
+                        fieldCb = (Window.Callback) f.get(callback);
+                    } catch (IllegalAccessException ex) {
+                        continue;
+                    } finally {
+                        f.setAccessible(isAccessible);
+                    }
+                    if (reachesWindowCallback(fieldCb)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

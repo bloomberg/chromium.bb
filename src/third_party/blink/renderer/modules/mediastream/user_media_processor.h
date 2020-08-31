@@ -17,8 +17,8 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
-#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -38,17 +38,6 @@ class WebMediaStreamDeviceObserver;
 class WebMediaStreamSource;
 class WebString;
 
-// TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
-// blink::WebUserMediaRequest and remove this struct.
-struct UserMediaRequestInfo {
-  UserMediaRequestInfo(int request_id,
-                       const blink::WebUserMediaRequest& web_request,
-                       bool is_processing_user_gesture);
-  const int request_id;
-  const blink::WebUserMediaRequest web_request;
-  const bool is_processing_user_gesture;
-};
-
 // UserMediaProcessor is responsible for processing getUserMedia() requests.
 // It also keeps tracks of all sources used by streams created with
 // getUserMedia().
@@ -61,7 +50,7 @@ class MODULES_EXPORT UserMediaProcessor
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       blink::mojom::blink::MediaDevicesDispatcherHost*()>;
-  // |web_frame| must outlive this instance.
+  // |frame| must outlive this instance.
   UserMediaProcessor(LocalFrame* frame,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -69,24 +58,23 @@ class MODULES_EXPORT UserMediaProcessor
 
   // It can be assumed that the output of CurrentRequest() remains the same
   // during the execution of a task on the main thread unless ProcessRequest or
-  // DeleteWebRequest are invoked.
+  // DeleteUserMediaRequest are invoked.
   // TODO(guidou): Remove this method. https://crbug.com/764293
-  UserMediaRequestInfo* CurrentRequest();
+  UserMediaRequest* CurrentRequest();
 
   // Starts processing |request| in order to create a new MediaStream. When
   // processing of |request| is complete, it notifies by invoking |callback|.
   // This method must be called only if there is no request currently being
   // processed.
-  void ProcessRequest(std::unique_ptr<UserMediaRequestInfo> request,
-                      base::OnceClosure callback);
+  void ProcessRequest(UserMediaRequest* request, base::OnceClosure callback);
 
-  // If |web_request| is the request currently being processed, stops processing
-  // the request and returns true. Otherwise, performs no action and returns
-  // false.
+  // If |user_media_request| is the request currently being processed, stops
+  // processing the request and returns true. Otherwise, performs no action and
+  // returns false.
   // TODO(guidou): Make this method private and replace with a public
   // CancelRequest() method that deletes the request only if it has not been
   // generated yet. https://crbug.com/764293
-  bool DeleteWebRequest(const blink::WebUserMediaRequest& web_request);
+  bool DeleteUserMediaRequest(UserMediaRequest* user_media_request);
 
   // Stops processing the current request, if any, and stops all sources
   // currently being tracked, effectively stopping all tracks associated with
@@ -113,7 +101,7 @@ class MODULES_EXPORT UserMediaProcessor
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
-      blink::WebUserMediaRequest web_request);
+      UserMediaRequest* user_media_request);
   virtual void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name = String());
@@ -136,6 +124,12 @@ class MODULES_EXPORT UserMediaProcessor
       WebMediaStreamDeviceObserver* media_stream_device_observer);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           PanConstraintRequestPanTiltZoomPermission);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           TiltConstraintRequestPanTiltZoomPermission);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           ZoomConstraintRequestPanTiltZoomPermission);
   class RequestInfo;
   using LocalStreamSources = Vector<blink::WebMediaStreamSource>;
 
@@ -146,7 +140,7 @@ class MODULES_EXPORT UserMediaProcessor
                          const Vector<blink::MediaStreamDevice>& video_devices);
 
   void GotAllVideoInputFormatsForDevice(
-      const blink::WebUserMediaRequest& web_request,
+      UserMediaRequest* user_media_request,
       const String& label,
       const String& device_id,
       const Vector<media::VideoCaptureFormat>& formats);
@@ -158,13 +152,14 @@ class MODULES_EXPORT UserMediaProcessor
       blink::mojom::blink::MediaStreamRequestResult result);
 
   bool IsCurrentRequestInfo(int request_id) const;
-  bool IsCurrentRequestInfo(
-      const blink::WebUserMediaRequest& web_request) const;
+  bool IsCurrentRequestInfo(UserMediaRequest* user_media_request) const;
   void DelayedGetUserMediaRequestSucceeded(
+      int request_id,
       const blink::WebMediaStream& stream,
-      blink::WebUserMediaRequest web_request);
+      UserMediaRequest* user_media_request);
   void DelayedGetUserMediaRequestFailed(
-      blink::WebUserMediaRequest web_request,
+      int request_id,
+      UserMediaRequest* user_media_request,
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name);
 
@@ -251,20 +246,23 @@ class MODULES_EXPORT UserMediaProcessor
 
   void SetupAudioInput();
   void SelectAudioDeviceSettings(
-      const blink::WebUserMediaRequest& web_request,
+      UserMediaRequest* user_media_request,
       Vector<blink::mojom::blink::AudioInputDeviceCapabilitiesPtr>
           audio_input_capabilities);
   void SelectAudioSettings(
-      const blink::WebUserMediaRequest& web_request,
+      UserMediaRequest* user_media_request,
       const blink::AudioDeviceCaptureCapabilities& capabilities);
 
   void SetupVideoInput();
+  // Exported for testing.
+  static bool IsPanTiltZoomPermissionRequested(
+      const MediaConstraints& constraints);
   void SelectVideoDeviceSettings(
-      const blink::WebUserMediaRequest& web_request,
+      UserMediaRequest* user_media_request,
       Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
   void FinalizeSelectVideoDeviceSettings(
-      const blink::WebUserMediaRequest& web_request,
+      UserMediaRequest* user_media_request,
       const blink::VideoCaptureSettings& settings);
   void SelectVideoContentSettings();
 

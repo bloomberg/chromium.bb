@@ -240,6 +240,19 @@ class FileTasks {
   }
 
   /**
+   * Returns ViewFileType enum or 'other' for the given entry.
+   * @param {!Entry} entry The entry for which ViewFileType is computed.
+   * @return {string} A ViewFileType enum or 'other'.
+   */
+  static getViewFileType(entry) {
+    let extension = FileType.getExtension(entry).toLowerCase();
+    if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
+      extension = 'other';
+    }
+    return extension;
+  }
+
+  /**
    * Records trial of opening file grouped by extensions.
    *
    * @param {!VolumeManager} volumeManager
@@ -248,13 +261,9 @@ class FileTasks {
    */
   static recordViewingFileTypeUMA_(volumeManager, entries) {
     for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
-      let extension = FileType.getExtension(entry).toLowerCase();
-      if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
-        extension = 'other';
-      }
       FileTasks.recordEnumWithOnlineAndOffline_(
-          volumeManager, 'ViewingFileType', extension,
+          volumeManager, 'ViewingFileType',
+          FileTasks.getViewFileType(entries[i]),
           FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
     }
   }
@@ -329,6 +338,25 @@ class FileTasks {
     // - Files app's internal tasks
     // - file_handler tasks with OPEN_WITH verb
     return !task.verb || task.verb == chrome.fileManagerPrivate.Verb.OPEN_WITH;
+  }
+
+  /**
+   * @param {string} taskId Task identifier.
+   * @return {boolean} True if the task ID is for Plugin VM.
+   * @private
+   */
+  static isPluginVmTask_(taskId) {
+    return taskId.split('|')[1] === 'pluginvm';
+  }
+
+
+  /**
+   *  @param {!Entry} entry
+   *  @return {boolean} True if entry is in the Plugin VM shared folder.
+   *  @private
+   */
+  static entryInPluginVmSharedFolder_(entry) {
+    return entry.fullPath.startsWith('/PvmDefault/');
   }
 
   /**
@@ -629,6 +657,19 @@ class FileTasks {
       this.ui_.speakA11yMessage(msg);
       if (FileTasks.isInternalTask_(task.taskId)) {
         this.executeInternalTask_(task.taskId);
+      } else if (
+          // TODO(crbug.com/1077160): Remove this logic from the front end and
+          // instead show the dialog based on the response of
+          // fileManagerPrivate.executeTask.
+          FileTasks.isPluginVmTask_(task.taskId) &&
+          !this.entries_.every(FileTasks.entryInPluginVmSharedFolder_)) {
+        this.ui_.alertDialog.showHtml(
+            strf(
+                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
+                strf('PLUGIN_VM_APP_NAME')),
+            strf(
+                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE',
+                strf('PLUGIN_VM_APP_NAME'), strf('PLUGIN_VM_DIRECTORY_LABEL')));
       } else {
         FileTasks.recordZipHandlerUMA_(task.taskId);
         chrome.fileManagerPrivate.executeTask(
@@ -913,11 +954,11 @@ class FileTasks {
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
    */
   updateShareMenuButton_(shareMenuButton, tasks) {
-    let driveShareCommand =
+    const driveShareCommand =
         shareMenuButton.menu.querySelector('cr-menu-item[command="#share"]');
-    let driveShareCommandSeparator =
+    const driveShareCommandSeparator =
         shareMenuButton.menu.querySelector('#drive-share-separator');
-    let moreActionsSeparator =
+    const moreActionsSeparator =
         shareMenuButton.menu.querySelector('#more-actions-separator');
 
     // Update share command.
@@ -938,7 +979,7 @@ class FileTasks {
     // Temporarily remove the more actions item while the rest of the menu
     // items are being cleared out so we don't lose it and make it hidden for
     // now
-    let moreActions = shareMenuButton.menu.querySelector(
+    const moreActions = shareMenuButton.menu.querySelector(
         'cr-menu-item[command="#show-submenu"]');
     moreActions.remove();
     moreActions.setAttribute('hidden', '');
@@ -1183,7 +1224,7 @@ FileTasks.TaskPickerType = {
  *
  * The list must also match the FileBrowser ViewFileType entry in enums.xml.
  *
- * @const {Array<string>}
+ * @const {!Array<string>}
  */
 FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   'other',     '.3ga',         '.3gp',

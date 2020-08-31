@@ -9,42 +9,34 @@
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "services/network/public/cpp/features.h"');
+
 const HistoryFocusTest = class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://history';
+    return 'chrome://history/';
   }
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'test_util.js',
-    ]);
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
   }
 
   /** @override */
-  setUp() {
-    super.setUp();
-
-    suiteSetup(function() {
-      // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade()
-          .then(() => history.ensureLazyLoaded())
-          .then(() => {
-            $('history-app').queryState_.queryingDisabled = true;
-          });
-    });
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 
 // eslint-disable-next-line no-var
 var HistoryToolbarFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'history_toolbar_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_toolbar_focus_test.js';
   }
 };
 
@@ -55,27 +47,40 @@ TEST_F('HistoryToolbarFocusTest', 'All', function() {
 // eslint-disable-next-line no-var
 var HistoryListFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'history_list_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_list_focus_test.js';
   }
 };
 
-TEST_F('HistoryListFocusTest', 'All', function() {
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_AllListFocus DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_AllListFocus All');
+GEN('#endif');
+TEST_F('HistoryListFocusTest', 'MAYBE_AllListFocus', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
 var HistorySyncedDeviceManagerFocusTest = class extends HistoryFocusTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'history_synced_device_manager_focus_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_synced_device_manager_focus_test.js';
   }
 };
 
 TEST_F('HistorySyncedDeviceManagerFocusTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var HistoryItemFocusTest = class extends HistoryFocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://history/test_loader.html?module=history/history_item_focus_test.js';
+  }
+};
+
+TEST_F('HistoryItemFocusTest', 'All', function() {
   mocha.run();
 });

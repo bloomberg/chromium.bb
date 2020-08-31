@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -78,12 +78,12 @@ const char* OzonePlatform::GetPlatformName() {
   return GetOzonePlatformName();
 }
 
-IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {
+PlatformClipboard* OzonePlatform::GetPlatformClipboard() {
+  // Platforms that support system clipboard must override this method.
   return nullptr;
 }
 
-PlatformClipboard* OzonePlatform::GetPlatformClipboard() {
-  // Platforms that support system clipboard must override this method.
+PlatformGLEGLUtility* OzonePlatform::GetPlatformGLEGLUtility() {
   return nullptr;
 }
 

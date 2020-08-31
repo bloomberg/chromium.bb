@@ -231,7 +231,7 @@ void SpvcIrPass::GenerateSpirvCrossIR(Instruction *inst) {
 
     case SpvOpExtension: {
       const std::string extension_name = GetWordsAsString(0u, inst);
-      ir_->declared_extensions.push_back(std::move(extension_name));
+      ir_->declared_extensions.push_back(extension_name);
       break;
     }
 
@@ -725,10 +725,10 @@ void SpvcIrPass::GenerateSpirvCrossIR(Instruction *inst) {
     }
 
       // opcode: 5341
-    case SpvOpTypeAccelerationStructureNV: {
+    case SpvOpTypeAccelerationStructureKHR: {
       uint32_t id = inst->result_id();
       auto &type = set<spirv_cross::SPIRType>(id);
-      type.basetype = spirv_cross::SPIRType::AccelerationStructureNV;
+      type.basetype = spirv_cross::SPIRType::AccelerationStructure;
       break;
     }
 
@@ -1264,7 +1264,6 @@ void SpvcIrPass::GenerateSpirvCrossIR(Instruction *inst) {
     }
   }
   offset_ += inst->NumOperandWords() + 1;
-  return;
 }
 
 }  // namespace opt

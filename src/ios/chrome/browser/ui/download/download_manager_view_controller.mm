@@ -4,14 +4,18 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
-#include "base/logging.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/download/download_manager_metric_names.h"
 #include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
@@ -101,9 +105,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 // self.closeButton or to self.actionButton (when visible).
 @property(nonatomic) NSLayoutConstraint* statusLabelTrailingConstraint;
 
-// UILayoutGuide for action button. Used in delegate callbacks.
-@property(nonatomic) UILayoutGuide* actionButtonGuide;
-
 // UILayoutGuide for adding bottom margin to Download Manager view.
 @property(nonatomic) UILayoutGuide* bottomMarginGuide;
 
@@ -128,7 +129,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 @synthesize installDriveControlsRowTrailingConstraint =
     _installDriveControlsRowTrailingConstraint;
 @synthesize statusLabelTrailingConstraint = _statusLabelTrailingConstraint;
-@synthesize actionButtonGuide = _actionButtonGuide;
 @synthesize bottomMarginGuide = _bottomMarginGuide;
 
 #pragma mark - UIViewController overrides
@@ -149,8 +149,6 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.installDriveControlsRow addSubview:self.installDriveLabel];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
 
-  self.actionButtonGuide = [[UILayoutGuide alloc] init];
-  [self.view addLayoutGuide:self.actionButtonGuide];
   self.bottomMarginGuide = [[UILayoutGuide alloc] init];
   [self.view addLayoutGuide:self.bottomMarginGuide];
 }
@@ -310,9 +308,6 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
 
-  // constraint actionButtonGuide to action button.
-  AddSameConstraints(self.actionButtonGuide, actionButton);
-
   [self updateConstraintsForTraitCollection:self.traitCollection];
 
   _addedConstraints = YES;
@@ -428,6 +423,14 @@ NSString* GetSizeString(long long size_in_bytes) {
     [_closeButton addTarget:self
                      action:@selector(didTapCloseButton)
            forControlEvents:UIControlEventTouchUpInside];
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _closeButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
   return _closeButton;
 }
@@ -470,6 +473,15 @@ NSString* GetSizeString(long long size_in_bytes) {
     [_actionButton addTarget:self
                       action:@selector(didTapActionButton)
             forControlEvents:UIControlEventTouchUpInside];
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _actionButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
+
     [self updateActionButton];
   }
   return _actionButton;
@@ -490,6 +502,14 @@ NSString* GetSizeString(long long size_in_bytes) {
     [_installDriveButton
         setTitle:l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_INSTALL)
         forState:UIControlStateNormal];
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _installDriveButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
   return _installDriveButton;
 }
@@ -562,11 +582,9 @@ NSString* GetSizeString(long long size_in_bytes) {
       break;
     }
     case kDownloadManagerStateSucceeded: {
-      SEL selector = @selector
-          (downloadManagerViewController:presentOpenInMenuWithLayoutGuide:);
+      SEL selector = @selector(presentOpenInForDownloadManagerViewController:);
       if ([_delegate respondsToSelector:selector]) {
-        [_delegate downloadManagerViewController:self
-                presentOpenInMenuWithLayoutGuide:self.actionButtonGuide];
+        [_delegate presentOpenInForDownloadManagerViewController:self];
       }
       break;
     }
@@ -581,6 +599,10 @@ NSString* GetSizeString(long long size_in_bytes) {
 }
 
 - (void)didTapInstallDriveButton {
+  base::UmaHistogramEnumeration(
+      "Download.IOSDownloadFileUIGoogleDrive",
+      DownloadFileUIGoogleDrive::GoogleDriveInstallStarted,
+      DownloadFileUIGoogleDrive::Count);
   SEL selector = @selector(installDriveForDownloadManagerViewController:);
   if ([_delegate respondsToSelector:selector]) {
     [_delegate installDriveForDownloadManagerViewController:self];

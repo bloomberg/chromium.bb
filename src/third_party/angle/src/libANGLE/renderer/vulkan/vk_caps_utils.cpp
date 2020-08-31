@@ -14,6 +14,7 @@
 #include "common/utilities.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/formatutils.h"
+#include "libANGLE/renderer/driver_utils.h"
 #include "libANGLE/renderer/vulkan/DisplayVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "vk_format_utils.h"
@@ -28,8 +29,10 @@ namespace rx
 
 GLint LimitToInt(const uint32_t physicalDeviceValue)
 {
+    // Limit to INT_MAX / 2 instead of INT_MAX.  If the limit is queried as float, the imprecision
+    // in floating point can cause the value to exceed INT_MAX.  This trips dEQP up.
     return std::min(physicalDeviceValue,
-                    static_cast<uint32_t>(std::numeric_limits<int32_t>::max()));
+                    static_cast<uint32_t>(std::numeric_limits<int32_t>::max() / 2));
 }
 
 void RendererVk::ensureCapsInitialized() const
@@ -45,13 +48,35 @@ void RendererVk::ensureCapsInitialized() const
 
     mNativeExtensions.setTextureExtensionSupport(mNativeTextureCaps);
 
-    // Vulkan technically only supports the LDR profile but driver all appear to support the HDR
-    // profile as well. http://anglebug.com/1185#c8
-    mNativeExtensions.textureCompressionASTCHDRKHR = mNativeExtensions.textureCompressionASTCLDRKHR;
+    // TODO: http://anglebug.com/3609
+    // Due to a dEQP bug, this extension cannot be exposed until EXT_texture_sRGB_decode is
+    // implemented
+    mNativeExtensions.sRGBR8EXT = false;
+
+    // To ensure that ETC2/EAC formats are enabled only on hardware that supports them natively,
+    // this flag is not set by the function above and must be set explicitly. It exposes
+    // ANGLE_compressed_texture_etc extension string.
+    mNativeExtensions.compressedTextureETC =
+        (mPhysicalDeviceFeatures.textureCompressionETC2 == VK_TRUE) &&
+        gl::DetermineCompressedTextureETCSupport(mNativeTextureCaps);
+
+    // Vulkan doesn't support ASTC 3D block textures, which are required by
+    // GL_OES_texture_compression_astc.
+    mNativeExtensions.textureCompressionASTCOES = false;
+
+    // Vulkan doesn't guarantee HDR blocks decoding without VK_EXT_texture_compression_astc_hdr.
+    mNativeExtensions.textureCompressionASTCHDRKHR = false;
+
+    // Vulkan supports sliced 3D ASTC texture uploads when ASTC is supported.
+    mNativeExtensions.textureCompressionSliced3dASTCKHR =
+        mNativeExtensions.textureCompressionASTCLDRKHR;
+
+    // Enable EXT_compressed_ETC1_RGB8_sub_texture
+    mNativeExtensions.compressedETC1RGB8SubTexture = mNativeExtensions.compressedETC1RGB8TextureOES;
 
     // Enable this for simple buffer readback testing, but some functionality is missing.
     // TODO(jmadill): Support full mapBufferRange extension.
-    mNativeExtensions.mapBuffer              = true;
+    mNativeExtensions.mapBufferOES           = true;
     mNativeExtensions.mapBufferRange         = true;
     mNativeExtensions.textureStorage         = true;
     mNativeExtensions.drawBuffers            = true;
@@ -61,8 +86,9 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.copyTexture            = true;
     mNativeExtensions.copyCompressedTexture  = true;
     mNativeExtensions.debugMarker            = true;
-    mNativeExtensions.robustness             = true;
-    mNativeExtensions.textureBorderClamp     = false;  // not implemented yet
+    mNativeExtensions.robustness =
+        !IsSwiftshader(mPhysicalDeviceProperties.vendorID, mPhysicalDeviceProperties.deviceID);
+    mNativeExtensions.textureBorderClampOES  = false;  // not implemented yet
     mNativeExtensions.translatedShaderSource = true;
     mNativeExtensions.discardFramebuffer     = true;
 
@@ -79,17 +105,22 @@ void RendererVk::ensureCapsInitialized() const
     // Enable EXT_blend_minmax
     mNativeExtensions.blendMinMax = true;
 
-    mNativeExtensions.eglImage              = true;
-    mNativeExtensions.eglImageExternal      = true;
-    mNativeExtensions.eglImageExternalEssl3 = true;
-
-    mNativeExtensions.memoryObject   = true;
-    mNativeExtensions.memoryObjectFd = getFeatures().supportsExternalMemoryFd.enabled;
+    mNativeExtensions.eglImageOES                  = true;
+    mNativeExtensions.eglImageExternalOES          = true;
+    mNativeExtensions.eglImageExternalWrapModesEXT = true;
+    mNativeExtensions.eglImageExternalEssl3OES     = true;
+    mNativeExtensions.eglImageArray                = true;
+    mNativeExtensions.memoryObject                 = true;
+    mNativeExtensions.memoryObjectFd               = getFeatures().supportsExternalMemoryFd.enabled;
+    mNativeExtensions.memoryObjectFuchsiaANGLE =
+        getFeatures().supportsExternalMemoryFuchsia.enabled;
 
     mNativeExtensions.semaphore   = true;
     mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd.enabled;
+    mNativeExtensions.semaphoreFuchsiaANGLE =
+        getFeatures().supportsExternalSemaphoreFuchsia.enabled;
 
-    mNativeExtensions.vertexHalfFloat = true;
+    mNativeExtensions.vertexHalfFloatOES = true;
 
     // Enabled in HW if VK_EXT_vertex_attribute_divisor available, otherwise emulated
     mNativeExtensions.instancedArraysANGLE = true;
@@ -99,9 +130,9 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.robustBufferAccessBehavior =
         (mPhysicalDeviceFeatures.robustBufferAccess == VK_TRUE);
 
-    mNativeExtensions.eglSync = true;
+    mNativeExtensions.eglSyncOES = true;
 
-    mNativeExtensions.vertexAttribType1010102 = true;
+    mNativeExtensions.vertexAttribType1010102OES = true;
 
     // We use secondary command buffers almost everywhere and they require a feature to be
     // able to execute in the presence of queries.  As a result, we won't support queries
@@ -124,20 +155,33 @@ void RendererVk::ensureCapsInitialized() const
         mNativeExtensions.textureFilterAnisotropic ? limitsVk.maxSamplerAnisotropy : 0.0f;
 
     // Vulkan natively supports non power-of-two textures
-    mNativeExtensions.textureNPOT = true;
+    mNativeExtensions.textureNPOTOES = true;
 
     mNativeExtensions.texture3DOES = true;
 
     // Vulkan natively supports standard derivatives
-    mNativeExtensions.standardDerivatives = true;
+    mNativeExtensions.standardDerivativesOES = true;
+
+    // Vulkan natively supports noperspective interpolation
+    mNativeExtensions.noperspectiveInterpolationNV = true;
 
     // Vulkan natively supports 32-bit indices, entry in kIndexTypeMap
-    mNativeExtensions.elementIndexUint = true;
+    mNativeExtensions.elementIndexUintOES = true;
 
-    mNativeExtensions.fboRenderMipmap = true;
+    mNativeExtensions.fboRenderMipmapOES = true;
 
     // We support getting image data for Textures and Renderbuffers.
     mNativeExtensions.getImageANGLE = true;
+
+    // Implemented in the translator
+    mNativeExtensions.shaderNonConstGlobalInitializersEXT = true;
+
+    // Vulkan has no restrictions of the format of cubemaps, so if the proper formats are supported,
+    // creating a cube of any of these formats should be implicitly supported.
+    mNativeExtensions.depthTextureCubeMapOES =
+        mNativeExtensions.depthTextureOES && mNativeExtensions.packedDepthStencilOES;
+
+    mNativeExtensions.gpuShader5EXT = vk::CanSupportGPUShader5EXT(mPhysicalDeviceFeatures);
 
     // https://vulkan.lunarg.com/doc/view/1.0.30.0/linux/vkspec.chunked/ch31s02.html
     mNativeCaps.maxElementIndex  = std::numeric_limits<GLuint>::max() - 1;
@@ -158,15 +202,21 @@ void RendererVk::ensureCapsInitialized() const
 
     mNativeCaps.maxDrawBuffers =
         std::min(limitsVk.maxColorAttachments, limitsVk.maxFragmentOutputAttachments);
-    mNativeCaps.maxFramebufferWidth    = LimitToInt(limitsVk.maxFramebufferWidth);
-    mNativeCaps.maxFramebufferHeight   = LimitToInt(limitsVk.maxFramebufferHeight);
-    mNativeCaps.maxColorAttachments    = LimitToInt(limitsVk.maxColorAttachments);
-    mNativeCaps.maxViewportWidth       = LimitToInt(limitsVk.maxViewportDimensions[0]);
-    mNativeCaps.maxViewportHeight      = LimitToInt(limitsVk.maxViewportDimensions[1]);
-    mNativeCaps.maxSampleMaskWords     = LimitToInt(limitsVk.maxSampleMaskWords);
-    mNativeCaps.maxColorTextureSamples = limitsVk.sampledImageColorSampleCounts;
-    mNativeCaps.maxDepthTextureSamples = limitsVk.sampledImageDepthSampleCounts;
-    mNativeCaps.maxIntegerSamples      = limitsVk.sampledImageIntegerSampleCounts;
+    mNativeCaps.maxFramebufferWidth  = LimitToInt(limitsVk.maxFramebufferWidth);
+    mNativeCaps.maxFramebufferHeight = LimitToInt(limitsVk.maxFramebufferHeight);
+    mNativeCaps.maxColorAttachments  = LimitToInt(limitsVk.maxColorAttachments);
+    mNativeCaps.maxViewportWidth     = LimitToInt(limitsVk.maxViewportDimensions[0]);
+    mNativeCaps.maxViewportHeight    = LimitToInt(limitsVk.maxViewportDimensions[1]);
+    mNativeCaps.maxSampleMaskWords   = LimitToInt(limitsVk.maxSampleMaskWords);
+    mNativeCaps.maxColorTextureSamples =
+        limitsVk.sampledImageColorSampleCounts & vk_gl::kSupportedSampleCounts;
+    mNativeCaps.maxDepthTextureSamples =
+        limitsVk.sampledImageDepthSampleCounts & vk_gl::kSupportedSampleCounts;
+    // TODO (ianelliott): Should mask this with vk_gl::kSupportedSampleCounts, but it causes
+    // end2end test failures with SwiftShader because SwiftShader returns a sample count of 1 in
+    // sampledImageIntegerSampleCounts.
+    // See: http://anglebug.com/4197
+    mNativeCaps.maxIntegerSamples = limitsVk.sampledImageIntegerSampleCounts;
 
     mNativeCaps.maxVertexAttributes     = LimitToInt(limitsVk.maxVertexInputAttributes);
     mNativeCaps.maxVertexAttribBindings = LimitToInt(limitsVk.maxVertexInputBindings);
@@ -373,10 +423,15 @@ void RendererVk::ensureCapsInitialized() const
     // GL Images correspond to Vulkan Storage Images.
     const int32_t maxPerStageImages = LimitToInt(limitsVk.maxPerStageDescriptorStorageImages);
     const int32_t maxCombinedImages = LimitToInt(limitsVk.maxDescriptorSetStorageImages);
-    for (gl::ShaderType shaderType : gl::AllShaderTypes())
-    {
-        mNativeCaps.maxShaderImageUniforms[shaderType] = maxPerStageImages;
-    }
+
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Vertex] =
+        mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics ? maxPerStageImages : 0;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Fragment] =
+        mPhysicalDeviceFeatures.fragmentStoresAndAtomics ? maxPerStageImages : 0;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Geometry] =
+        mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics ? maxPerStageImages : 0;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Compute] = maxPerStageImages;
+
     mNativeCaps.maxCombinedImageUniforms = maxCombinedImages;
     mNativeCaps.maxImageUnits            = maxCombinedImages;
 
@@ -419,14 +474,30 @@ void RendererVk::ensureCapsInitialized() const
     // The gles2.0 section 2.10 states that "gl_Position is not a varying variable and does
     // not count against this limit.", but the Vulkan spec has no such mention in its Built-in
     // vars section. It is implicit that we need to actually reserve it for Vulkan in that case.
-    //
-    // Note: AMD has a weird behavior when we edge toward the maximum number of varyings and can
-    // often crash. Reserving an additional varying just for them bringing the total to 2.
-    constexpr GLint kReservedVaryingCount = 2;
+    GLint reservedVaryingVectorCount = 1;
+
+    // reserve 1 extra for ANGLEPosition when GLLineRasterization is enabled
+    constexpr GLint kRservedVaryingForGLLineRasterization = 1;
+    // reserve 2 extra for builtin varables when feedback is enabled
+    // possible capturable out varable: gl_Position, gl_PointSize
+    // https://www.khronos.org/registry/OpenGL/specs/es/3.1/GLSL_ES_Specification_3.10.withchanges.pdf
+    // page 105
+    constexpr GLint kReservedVaryingForTransformFeedbackExtension = 2;
+
+    if (getFeatures().basicGLLineRasterization.enabled)
+    {
+        reservedVaryingVectorCount += kRservedVaryingForGLLineRasterization;
+    }
+    if (getFeatures().supportsTransformFeedbackExtension.enabled)
+    {
+        reservedVaryingVectorCount += kReservedVaryingForTransformFeedbackExtension;
+    }
+
+    const GLint maxVaryingCount =
+        std::min(limitsVk.maxVertexOutputComponents, limitsVk.maxFragmentInputComponents);
     mNativeCaps.maxVaryingVectors =
-        LimitToInt((limitsVk.maxVertexOutputComponents / 4) - kReservedVaryingCount);
-    mNativeCaps.maxVertexOutputComponents =
-        LimitToInt(static_cast<uint32_t>(mNativeCaps.maxVaryingVectors * 4));
+        LimitToInt((maxVaryingCount / kComponentsPerVector) - reservedVaryingVectorCount);
+    mNativeCaps.maxVertexOutputComponents = LimitToInt(limitsVk.maxVertexOutputComponents);
 
     mNativeCaps.maxTransformFeedbackInterleavedComponents =
         gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS;
@@ -438,9 +509,9 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.minProgramTexelOffset = limitsVk.minTexelOffset;
     mNativeCaps.maxProgramTexelOffset = LimitToInt(limitsVk.maxTexelOffset);
 
-    const uint32_t sampleCounts = limitsVk.framebufferColorSampleCounts &
-                                  limitsVk.framebufferDepthSampleCounts &
-                                  limitsVk.framebufferStencilSampleCounts;
+    const uint32_t sampleCounts =
+        limitsVk.framebufferColorSampleCounts & limitsVk.framebufferDepthSampleCounts &
+        limitsVk.framebufferStencilSampleCounts & vk_gl::kSupportedSampleCounts;
 
     mNativeCaps.maxSamples            = LimitToInt(vk_gl::GetMaxSampleCount(sampleCounts));
     mNativeCaps.maxFramebufferSamples = mNativeCaps.maxSamples;
@@ -448,11 +519,14 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.subPixelBits = limitsVk.subPixelPrecisionBits;
 
     // Enable Program Binary extension.
-    mNativeExtensions.getProgramBinary = true;
+    mNativeExtensions.getProgramBinaryOES = true;
     mNativeCaps.programBinaryFormats.push_back(GL_PROGRAM_BINARY_ANGLE);
 
     // Enable GL_NV_pixel_buffer_object extension.
-    mNativeExtensions.pixelBufferObject = true;
+    mNativeExtensions.pixelBufferObjectNV = true;
+
+    // Enable GL_NV_fence extension.
+    mNativeExtensions.fenceNV = true;
 
     // Geometry shader is optional.
     if (mPhysicalDeviceFeatures.geometryShader)
@@ -474,7 +548,35 @@ void RendererVk::ensureCapsInitialized() const
         mNativeCaps.maxGeometryShaderInvocations =
             LimitToInt(limitsVk.maxGeometryShaderInvocations);
     }
+
+    // GL_APPLE_clip_distance/GL_EXT_clip_cull_distance
+    if (mPhysicalDeviceFeatures.shaderClipDistance && limitsVk.maxClipDistances >= 8)
+    {
+        mNativeExtensions.clipDistanceAPPLE = true;
+        mNativeCaps.maxClipDistances =
+            std::min<GLuint>(limitsVk.maxClipDistances, gl::IMPLEMENTATION_MAX_CLIP_DISTANCES);
+    }
 }
+
+namespace vk
+{
+
+bool CanSupportGPUShader5EXT(const VkPhysicalDeviceFeatures &features)
+{
+    // We use the following Vulkan features to implement EXT_gpu_shader5:
+    // - shaderImageGatherExtended: textureGatherOffset with non-constant offset and
+    //   textureGatherOffsets family of functions.
+    // - shaderSampledImageArrayDynamicIndexing and shaderUniformBufferArrayDynamicIndexing:
+    //   dynamically uniform indices for samplers and uniform buffers.
+    // - shaderStorageBufferArrayDynamicIndexing: While EXT_gpu_shader5 doesn't require dynamically
+    //   uniform indices on storage buffers, we need it as we emulate atomic counter buffers with
+    //   storage buffers (and atomic counter buffers *can* be indexed in that way).
+    return features.shaderImageGatherExtended && features.shaderSampledImageArrayDynamicIndexing &&
+           features.shaderUniformBufferArrayDynamicIndexing &&
+           features.shaderStorageBufferArrayDynamicIndexing;
+}
+
+}  // namespace vk
 
 namespace egl_vk
 {
@@ -517,6 +619,8 @@ egl::Config GenerateDefaultConfig(const RendererVk *renderer,
         renderer->getPhysicalDeviceProperties();
     gl::Version maxSupportedESVersion = renderer->getMaxSupportedESVersion();
 
+    // ES3 features are required to emulate ES1
+    EGLint es1Support = (maxSupportedESVersion.major >= 3 ? EGL_OPENGL_ES_BIT : 0);
     EGLint es2Support = (maxSupportedESVersion.major >= 2 ? EGL_OPENGL_ES2_BIT : 0);
     EGLint es3Support = (maxSupportedESVersion.major >= 3 ? EGL_OPENGL_ES3_BIT : 0);
 
@@ -533,8 +637,8 @@ egl::Config GenerateDefaultConfig(const RendererVk *renderer,
     config.bindToTextureRGB   = colorFormat.format == GL_RGB;
     config.bindToTextureRGBA  = colorFormat.format == GL_RGBA || colorFormat.format == GL_BGRA_EXT;
     config.colorBufferType    = EGL_RGB_BUFFER;
-    config.configCaveat       = EGL_NONE;
-    config.conformant         = es2Support | es3Support;
+    config.configCaveat       = GetConfigCaveat(colorFormat.internalFormat);
+    config.conformant         = es1Support | es2Support | es3Support;
     config.depthSize          = depthStencilFormat.depthBits;
     config.stencilSize        = depthStencilFormat.stencilBits;
     config.level              = 0;
@@ -545,9 +649,9 @@ egl::Config GenerateDefaultConfig(const RendererVk *renderer,
     config.maxSwapInterval    = 1;
     config.minSwapInterval    = 0;
     config.nativeRenderable   = EGL_TRUE;
-    config.nativeVisualID     = 0;
+    config.nativeVisualID     = static_cast<EGLint>(GetNativeVisualID(colorFormat));
     config.nativeVisualType   = EGL_NONE;
-    config.renderableType     = es2Support | es3Support;
+    config.renderableType     = es1Support | es2Support | es3Support;
     config.sampleBuffers      = (sampleCount > 0) ? 1 : 0;
     config.samples            = sampleCount;
     config.surfaceType        = EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
@@ -581,10 +685,12 @@ egl::ConfigSet GenerateConfigs(const GLenum *colorFormats,
 
     const VkPhysicalDeviceLimits &limits =
         display->getRenderer()->getPhysicalDeviceProperties().limits;
-    const uint32_t depthStencilSampleCountsLimit =
-        limits.framebufferDepthSampleCounts & limits.framebufferStencilSampleCounts;
+    const uint32_t depthStencilSampleCountsLimit = limits.framebufferDepthSampleCounts &
+                                                   limits.framebufferStencilSampleCounts &
+                                                   vk_gl::kSupportedSampleCounts;
 
-    vk_gl::AddSampleCounts(limits.framebufferColorSampleCounts, &colorSampleCounts);
+    vk_gl::AddSampleCounts(limits.framebufferColorSampleCounts & vk_gl::kSupportedSampleCounts,
+                           &colorSampleCounts);
     vk_gl::AddSampleCounts(depthStencilSampleCountsLimit, &depthStencilSampleCounts);
 
     // Always support 0 samples

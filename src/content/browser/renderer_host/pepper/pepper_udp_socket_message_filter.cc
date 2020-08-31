@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -131,7 +132,7 @@ void PepperUDPSocketMessageFilter::OnFilterDestroyed() {
                  base::BindOnce(&PepperUDPSocketMessageFilter::Close, this));
 }
 
-scoped_refptr<base::TaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PepperUDPSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
@@ -572,10 +573,10 @@ void PepperUDPSocketMessageFilter::DoBindCallback(
 #if defined(OS_CHROMEOS)
   pepper_socket_utils::OpenUDPFirewallHole(
       *local_addr_out,
-      base::BindRepeating(&PepperUDPSocketMessageFilter::OnFirewallHoleOpened,
-                          firewall_hole_weak_ptr_factory_.GetWeakPtr(),
-                          base::Passed(std::move(listener_receiver)), context,
-                          net_address));
+      base::BindOnce(&PepperUDPSocketMessageFilter::OnFirewallHoleOpened,
+                     firewall_hole_weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(std::move(listener_receiver)), context,
+                     net_address));
 #else   // !defined(OS_CHROMEOS)
   OnBindComplete(std::move(listener_receiver), context, net_address);
 #endif  // !defined(OS_CHROMEOS)

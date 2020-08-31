@@ -7,7 +7,7 @@ module viz.mojom;
 import "gpu/ipc/common/context_result.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojom/ca_layer_params.mojom";
-import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/display_color_spaces.mojom";
 import "ui/gfx/mojom/overlay_transform.mojom";
 import "ui/gfx/mojom/transform.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -15,15 +15,14 @@ import "ui/latency/mojom/latency_info.mojom";
 import "services/viz/privileged/mojom/compositing/layered_window_updater.mojom";
 import "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom";
 
-// See ui/compositor/compositor.h: ContextFactoryPrivate.
 // The DisplayPrivate is used by privileged clients to talk to Display.
-// DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
 interface DisplayPrivate {
   SetDisplayVisible(bool visible);
 
   // Attempts to immediately swap a frame with the current size if possible,
   // then will no longer swap until Resize() is called with a non-empty size.
-  [Sync] DisableSwapUntilResize() => ();
+  [EnableIf=is_win, Sync]
+  DisableSwapUntilResize() => ();
 
   // Resizes the display.
   Resize(gfx.mojom.Size size);
@@ -32,10 +31,9 @@ interface DisplayPrivate {
   // display. This only works in GPU compositing.
   SetDisplayColorMatrix(gfx.mojom.Transform color_matrix);
 
-  // Sets the device color space for rendering and white level in nits used for
-  // scaling SDR content.  This only works in GPU compositing.
-  SetDisplayColorSpace(gfx.mojom.ColorSpace device_color_space,
-                       float sdr_white_level);
+  // Sets the color spaces that may be used for rendering. This only has an
+  // effect when using GPU compositing.
+  SetDisplayColorSpaces(gfx.mojom.DisplayColorSpaces display_color_spaces);
   SetOutputIsSecure(bool secure);
 
   // Updates vsync parameters used to generate BeginFrames for this display.
@@ -97,6 +95,11 @@ interface DisplayClient {
   // fall back to SW in failure cases, so we need to handle this specifically.
   [EnableIf=is_android]
   OnContextCreationResult(gpu.mojom.ContextResult result);
+
+  // Notifies the AndroidWindow that wide color gamut is being enabled or
+  // disabled.
+  [EnableIf=is_android]
+  SetWideColorEnabled(bool enabled);
 
   [EnableIf=is_android]
   SetPreferredRefreshRate(float refresh_rate);

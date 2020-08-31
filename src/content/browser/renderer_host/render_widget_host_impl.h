@@ -11,7 +11,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,8 +29,8 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
@@ -51,7 +50,6 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
@@ -62,7 +60,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
@@ -85,10 +85,6 @@ class WebInputEvent;
 class WebMouseEvent;
 }
 
-namespace cc {
-struct BeginFrameAck;
-}  // namespace cc
-
 namespace gfx {
 class Image;
 class Range;
@@ -99,23 +95,17 @@ namespace ui {
 enum class DomCode;
 }
 
-namespace viz {
-class ServerSharedBitmapManager;
-}
-
 namespace content {
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
 class PeakGpuMemoryTracker;
-class RenderViewHost;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
-struct EditCommand;
 struct VisualProperties;
 struct ScreenInfo;
 struct TextInputState;
@@ -158,9 +148,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public RenderProcessHostImpl::PriorityClient,
       public RenderProcessHostObserver,
       public SyntheticGestureController::Delegate,
-      public viz::mojom::CompositorFrameSink,
       public IPC::Listener,
-      public RenderFrameMetadataProvider::Observer {
+      public RenderFrameMetadataProvider::Observer,
+      public blink::mojom::FrameWidgetHost,
+      public blink::mojom::WidgetHost,
+      public blink::mojom::PointerLockContext {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -187,12 +179,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderWidgetHostImpl.
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
 
-  void set_hung_renderer_delay(const base::TimeDelta& delay) {
-    hung_renderer_delay_ = delay;
-  }
-
-  base::TimeDelta hung_renderer_delay() { return hung_renderer_delay_; }
-
   void set_new_content_rendering_delay_for_testing(
       const base::TimeDelta& delay) {
     new_content_rendering_delay_ = delay;
@@ -213,7 +199,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // RenderWidgetHost implementation.
   const viz::FrameSinkId& GetFrameSinkId() override;
-  void UpdateTextDirection(blink::WebTextDirection direction) override;
+  void UpdateTextDirection(base::i18n::TextDirection direction) override;
   void NotifyTextDirection() override;
   void Focus() override;
   void Blur() override;
@@ -241,6 +227,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AddObserver(RenderWidgetHostObserver* observer) override;
   void RemoveObserver(RenderWidgetHostObserver* observer) override;
   void GetScreenInfo(content::ScreenInfo* result) override;
+  base::Optional<cc::TouchAction> GetAllowedTouchAction() override;
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDragEnter(const DropData& drop_data,
@@ -271,7 +258,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                          blink::WebDragOperation operation) override;
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
-  void SetCursor(const CursorInfo& cursor_info) override;
+  void SetCursor(const ui::Cursor& cursor) override;
+  void ShowContextMenuAtPoint(const gfx::Point& point,
+                              const ui::MenuSourceType source_type) override;
 
   // RenderProcessHostImpl::PriorityClient implementation.
   RenderProcessHost::Priority GetPriority() override;
@@ -307,6 +296,27 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // menus, and other times when the renderer initiates creating an object.
   void Init();
 
+  // Allocate and bind new widget interfaces.
+  std::pair<mojo::PendingAssociatedRemote<blink::mojom::WidgetHost>,
+            mojo::PendingAssociatedReceiver<blink::mojom::Widget>>
+  BindNewWidgetInterfaces();
+
+  // Bind the provided widget interfaces.
+  void BindWidgetInterfaces(
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> widget);
+
+  // Allocate and bind new frame widget interfaces.
+  std::pair<mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>,
+            mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>>
+  BindNewFrameWidgetInterfaces();
+
+  // Bind the provided frame widget interfaces.
+  void BindFrameWidgetInterfaces(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+          frame_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::FrameWidget> frame_widget);
+
   // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
   void InitForFrame();
 
@@ -341,7 +351,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(const base::Optional<RecordTabSwitchTimeRequest>&
+  void WasShown(const base::Optional<RecordContentToVisibleTimeRequest>&
                     record_tab_switch_time_request);
 
 #if defined(OS_ANDROID)
@@ -392,9 +402,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Notifies the RenderWidget of the current mouse cursor visibility state.
   void OnCursorVisibilityStateChanged(bool is_visible);
 
-  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
-  void OnFallbackCursorModeToggled(bool is_on);
-
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
 
@@ -427,7 +434,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForwardKeyboardEventWithCommands(
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency,
-      const std::vector<EditCommand>* commands,
+      std::vector<blink::mojom::EditCommandPtr> commands,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
@@ -467,8 +474,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   TouchEmulator* GetTouchEmulator();
 
   void SetCursor(const WebCursor& cursor);
-  void ShowContextMenuAtPoint(const gfx::Point& point,
-                              const ui::MenuSourceType source_type);
 
   // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
   // callback when the gesture is finished running.
@@ -539,7 +544,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
-  bool GotResponseToLockMouseRequest(bool allowed);
+  bool GotResponseToLockMouseRequest(blink::mojom::PointerLockResult result);
 
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
@@ -549,10 +554,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |allowed| should be true if the current tab is in tab initiated fullscreen
   // mode.
   void GotResponseToKeyboardLockRequest(bool allowed);
-
-  // Resets state variables related to tracking pending updates to visual
-  // properties.
-  void ResetSentVisualProperties();
 
   // When the WebContents (which acts as the Delegate) is destroyed, this object
   // may still outlive it while the renderer is shutting down. In that case the
@@ -590,25 +591,53 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // or create it if it doesn't already exist.
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager();
 
-  void RejectMouseLockOrUnlockIfNecessary();
+  void RejectMouseLockOrUnlockIfNecessary(
+      blink::mojom::PointerLockResult reason);
 
-  void set_renderer_initialized(bool renderer_initialized) {
-    renderer_initialized_ = renderer_initialized;
+  // The places in our codebase that call SetRendererInitialized or set the
+  // state to true directly.
+  // TODO(https://crbug.com/1006814): Delete this.
+  enum class RendererInitializer {
+    kUnknown,
+    kTest,  // We don't care about tests, this can be used for any test call.
+    kInit,  // RenderWidgetHostImpl
+    kInitForFrame,  // RenderWidgetHostImpl
+    kWebContentsInit,
+    kCreateRenderView,
+  };
+  void SetRendererInitialized(bool renderer_initialized,
+                              RendererInitializer initializer);
+  // TODO(https://crbug.com/1006814): Delete this.
+  RendererInitializer get_initializer_for_crbug_1006814() {
+    return initializer_;
   }
+  // Store values received in a child frame RenderWidgetHost from a parent
+  // RenderWidget, in order to pass them to the renderer and continue their
+  // propagation down the RenderWidget tree.
+  void SetVisualPropertiesFromParentFrame(
+      float page_scale_factor,
+      bool is_pinch_gesture_active,
+      const gfx::Size& visible_viewport_size,
+      const gfx::Rect& compositor_viewport);
 
   // Indicates if the render widget host should track the render widget's size
   // as opposed to visa versa.
+  // In main frame RenderWidgetHosts this controls the value for the frame tree.
+  // In child frame RenderWidgetHosts this value comes from the parent
+  // RenderWidget and should be propagated down the RenderWidgetTree.
   void SetAutoResize(bool enable,
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
-  // Generates a filled in VisualProperties struct representing the current
-  // properties of this widget.
-  VisualProperties GetVisualProperties();
-
-  // Sets the |visual_properties| that were sent to the renderer bundled with
-  // the request to create a new RenderWidget.
-  void SetInitialVisualProperties(const VisualProperties& visual_properties);
+  // Returns the result of GetVisualProperties(), resetting and storing that
+  // value as what has been sent to the renderer. This should be called when
+  // getting VisualProperties that will be sent in order to create a
+  // RenderWidget, since the creation acts as the initial
+  // SynchronizeVisualProperties().
+  //
+  // This has the side effect of resetting state that should match a newly
+  // created RenderWidget in the renderer.
+  VisualProperties GetInitialVisualProperties();
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -632,8 +661,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   size_t in_flight_event_count() const { return in_flight_event_count_; }
 
   bool renderer_initialized() const { return renderer_initialized_; }
-
-  bool needs_begin_frames() const { return needs_begin_frames_; }
 
   base::WeakPtr<RenderWidgetHostImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -668,25 +695,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool HasGestureStopped() override;
 
-  // viz::mojom::CompositorFrameSink implementation.
-  void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list,
-      uint64_t submit_time) override;
-  void SubmitCompositorFrameSync(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list,
-      uint64_t submit_time,
-      const SubmitCompositorFrameSyncCallback callback) override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
-                               const viz::SharedBitmapId& id) override;
-  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
-
   // Signals that a frame with token |frame_token| was finished processing. If
   // there are any queued messages belonging to it, they will be processed.
   void DidProcessFrame(uint32_t frame_token);
@@ -711,12 +719,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool IsWheelScrollInProgress() override;
   bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override;
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-  void FallbackCursorModeSetCursorVisibility(bool visible) override;
+  void RequestMouseLock(
+      bool from_user_gesture,
+      bool privileged,
+      bool unadjusted_movement,
+      InputRouterImpl::RequestMouseLockCallback response) override;
   gfx::Size GetRootWidgetViewportSize() override;
+
+  // PointerLockContext overrides
+  void RequestMouseLockChange(
+      bool unadjusted_movement,
+      PointerLockContext::RequestMouseLockChangeCallback response) override;
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;
@@ -725,7 +738,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
-  void SetNeedsBeginFrameForFlingProgress();
 
   // The RenderWidgetHostImpl will keep showing the old page (for a while) after
   // navigation until the first frame of the new page arrives. This reduces
@@ -777,11 +789,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Add/ClearPendingUserActivation() for details.
   bool RemovePendingUserActivationIfAvailable();
 
-  // Allows the main frame's page scale state to be tracked.
-  void SetPageScaleState(float page_scale_factor, bool is_pinch_gesture_active);
+  const mojo::AssociatedRemote<blink::mojom::FrameWidget>&
+  GetAssociatedFrameWidget();
 
-  // Tracks the compositor viewport requested for an OOPIF subframe.
-  void SetCompositorViewport(const gfx::Rect& compositor_viewport);
+  // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>&
+  frame_widget_host_receiver_for_testing() {
+    return blink_frame_widget_host_receiver_;
+  }
+
+  // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost>&
+  widget_host_receiver_for_testing() {
+    return blink_widget_host_receiver_;
+  }
 
  protected:
   // ---------------------------------------------------------------------------
@@ -794,19 +815,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // InputDispositionHandler
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override;
+                       blink::mojom::InputEventResultSource ack_source,
+                       blink::mojom::InputEventResultState ack_result) override;
+  void OnGestureEventAck(
+      const GestureEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // virtual for testing.
   virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                               InputEventAckSource ack_source,
-                               InputEventAckState ack_result);
+                               blink::mojom::InputEventResultSource ack_source,
+                               blink::mojom::InputEventResultState ack_result);
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
@@ -821,38 +843,36 @@ class CONTENT_EXPORT RenderWidgetHostImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HideShowMessages);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PendingUserActivationTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            ShorterDelayInputEventAckTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, SynchronizeVisualProperties);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            AddAndRemoveInputEventObserver);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            AddAndRemoveImeInputEventObserver);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           AutoResizeWithBrowserInitiatedResize);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ChildAllocationAcceptedInParentWhileHidden);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, Resize);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
-                           ChildFrameAutoResizeUpdate);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           InputRouterReceivesHasTouchEventHandlers);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, EventDispatchPostDetach);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, InputEventRWHLatencyComponent);
   FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
                            NoUnresponsiveDialogInInspectedContents);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ChildAllocationAcceptedInParent);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ConflictingAllocationsResolve);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
-                           ChildAllocationAcceptedInParent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ResizeAndCrossProcessPostMessagePreserveOrder);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
+                           EnsureRendererDestroyedHandlesUnAckedTouchEvents);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventSyncAsync);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraOverscrollTest,
+                           OverscrollWithTouchEvents);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraOverscrollTest,
+                           TouchGestureEndDispatchedAfterOverscrollComplete);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           InvalidEventsHaveSyncHandlingDisabled);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
                            EnsureRendererDestroyedHandlesUnAckedTouchEvents);
   friend class MockRenderWidgetHost;
@@ -872,28 +892,21 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // InputRouter::SendKeyboardEvent() callbacks to this. This may be called
   // synchronously.
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
-                          InputEventAckSource ack_source,
-                          InputEventAckState ack_result);
+                          blink::mojom::InputEventResultSource ack_source,
+                          blink::mojom::InputEventResultState ack_result);
+
+  // Release the mouse lock
+  void UnlockMouse();
 
   // IPC message handlers
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
-                        blink::WebTextDirection text_direction_hint);
-  void OnSetCursor(const WebCursor& cursor);
-  void OnAutoscrollStart(const gfx::PointF& position);
-  void OnAutoscrollFling(const gfx::Vector2dF& velocity);
-  void OnAutoscrollEnd();
+                        base::i18n::TextDirection text_direction_hint);
   void OnTextInputStateChanged(const TextInputState& params);
-
-  void OnLockMouse(bool user_gesture,
-                   bool privileged,
-                   bool request_unadjusted_movement);
-  void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
-  void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
@@ -904,15 +917,25 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
   void OnFirstVisuallyNonEmptyPaint();
-  void OnCommitAndDrawCompositorFrame();
-  void OnHasTouchEventHandlers(bool has_handlers);
-  void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
-  void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
-                                         const gfx::Rect& rect_to_zoom);
-  void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
-  // Called when visual properties have changed in the renderer.
-  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+  // blink::mojom::FrameWidgetHost overrides.
+  void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
+                                       const gfx::Rect& rect_to_zoom) override;
+  void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
+  void SetHasTouchEventHandlers(bool has_handlers) override;
+  void IntrinsicSizingInfoChanged(
+      blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
+  void AutoscrollStart(const gfx::PointF& position) override;
+  void AutoscrollFling(const gfx::Vector2dF& velocity) override;
+  void AutoscrollEnd() override;
+
+  // When the RenderWidget is destroyed and recreated, this resets states in the
+  // browser to match the clean start for the renderer side.
+  void ResetStateForCreatedRenderWidget(const VisualProperties& initial_props);
+
+  // Generates a filled in VisualProperties struct representing the current
+  // properties of this widget.
+  VisualProperties GetVisualProperties();
 
   // Returns true if the |new_visual_properties| differs from
   // |old_page_visual_properties| in a way that indicates a size changed.
@@ -937,15 +960,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
 
   // InputRouterClient
-  InputEventAckState FilterInputEvent(
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency_info) override;
   void IncrementInFlightEventCount() override;
-  void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
+  void DecrementInFlightEventCount(
+      blink::mojom::InputEventResultSource ack_source) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
+  void OnInvalidInputEventSource() override;
 
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,
@@ -972,7 +997,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
-  void StartInputEventAckTimeout(base::TimeDelta delay);
+  void StartInputEventAckTimeout();
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
@@ -1070,6 +1095,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderFrame/View, assume false.
   bool intersects_viewport_ = false;
 
+  // One side of a pipe that is held open while the pointer is locked.
+  // The other side is held be the renderer.
+  mojo::Receiver<blink::mojom::PointerLockContext> mouse_lock_context_{this};
+
 #if defined(OS_ANDROID)
   // Tracks the current importance of widget.
   ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
@@ -1084,20 +1113,30 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.
   bool auto_resize_enabled_ = false;
-
   // The minimum size for the render widget if auto-resize is enabled.
   gfx::Size min_size_for_auto_resize_;
-
   // The maximum size for the render widget if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize_;
 
-  // The page-scale factor of the main-frame.
-  float page_scale_factor_ = 1.f;
+  // These properties are propagated down the RenderWidget tree from the main
+  // frame to a child frame RenderWidgetHost. They are not used on a top-level
+  // RenderWidgetHost. The child frame RenderWidgetHost stores these values to
+  // pass them to the renderer, instead of computing them for itself. It
+  // collects them and passes them though WidgetMsg_UpdateVisualProperties so
+  // that the renderer receives updates in an atomic fashion along with a
+  // synchronization token for the compositor in a LocalSurfaceIdAllocation.
+  struct MainFramePropagationProperties {
+    // The page-scale factor of the main-frame.
+    float page_scale_factor = 1.f;
 
-  // True when the renderer is currently undergoing a pinch-zoom gesture.
-  bool is_pinch_gesture_active_ = false;
+    // True when the renderer is currently undergoing a pinch-zoom gesture.
+    bool is_pinch_gesture_active = false;
 
-  gfx::Rect compositor_viewport_;
+    // The size of the main frame's widget in DIP.
+    gfx::Size visible_viewport_size;
+
+    gfx::Rect compositor_viewport;
+  } properties_from_parent_local_root_;
 
   bool waiting_for_screen_rects_ack_ = false;
   gfx::Rect last_view_screen_rect_;
@@ -1139,7 +1178,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_ = false;
-  blink::WebTextDirection text_direction_ = blink::kWebTextDirectionLeftToRight;
+  base::i18n::TextDirection text_direction_ = base::i18n::LEFT_TO_RIGHT;
 
   // Indicates if Char and KeyUp events should be suppressed or not. Usually all
   // events are sent to the renderer directly in sequence. However, if a
@@ -1185,7 +1224,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Receives and handles all input events.
   std::unique_ptr<InputRouter> input_router_;
 
-  std::unique_ptr<TimeoutMonitor> input_event_ack_timeout_;
+  base::OneShotTimer input_event_ack_timeout_;
   base::TimeTicks input_event_ack_start_time_;
 
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
@@ -1210,15 +1249,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_ = false;
 
-  // Whether the view should send begin frame messages to its render widget.
-  // This is state that may arrive before the view has been set and that must be
-  // consistent with the state in the renderer, so this host handles it.
-  bool needs_begin_frames_ = false;
-
-  // This is used to make sure that when the fling controller sets
-  // needs_begin_frames_ it doesn't get overriden by the renderer.
-  bool browser_fling_needs_begin_frame_ = false;
-
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
 
@@ -1235,18 +1265,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
-  mojo::Receiver<viz::mojom::CompositorFrameSink>
-      compositor_frame_sink_receiver_;
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_;
-
-  // Stash a request to create a CompositorFrameSink if it arrives before
-  // we have a view. This is only used if |enable_viz_| is true.
+  // Stash a request to create a CompositorFrameSink if it arrives before we
+  // have a view.
   base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
 
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
-
-  bool enable_viz_ = false;
 
   // If the |associated_widget_input_handler_| is set it should always be
   // used to ensure in order delivery of related messages that may occur
@@ -1260,17 +1283,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
-
-  // When the viz display compositor is in the browser process, this is used to
-  // register and unregister the bitmaps (stored in |owned_bitmaps_| reported to
-  // this class from the renderer.
-  viz::ServerSharedBitmapManager* shared_bitmap_manager_ = nullptr;
-  // The set of SharedBitmapIds that have been reported as allocated to this
-  // interface. On closing this interface, the display compositor should drop
-  // ownership of the bitmaps with these ids to avoid leaking them. This is only
-  // used when SharedBitmaps are reported to this class because the display
-  // compositor is in the browser process.
-  std::set<viz::SharedBitmapId> owned_bitmaps_;
 
   bool force_enable_zoom_ = false;
 
@@ -1295,6 +1307,22 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::OneShotTimer pending_user_activation_timer_;
 
   std::unique_ptr<PeakGpuMemoryTracker> scroll_peak_gpu_mem_tracker_;
+
+  InputRouterImpl::RequestMouseLockCallback request_mouse_callback_;
+
+  // If this is initialized with a frame this member will be valid and
+  // can be used to send messages directly to blink.
+  mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver_{this};
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget_;
+
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost>
+      blink_widget_host_receiver_{this};
+  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
+
+  // Who initialized us.
+  // TODO(https://crbug.com/1006814): Delete this.
+  RendererInitializer initializer_ = RendererInitializer::kUnknown;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

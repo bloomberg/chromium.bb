@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,8 +41,16 @@ TEST_F(UnitConversionResultParserTest, Success) {
   QuickAnswer quick_answer;
 
   EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
+  EXPECT_EQ(ResultType::kUnitConversionResult, quick_answer.result_type);
   EXPECT_EQ("9.84252 inch", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
+
+  EXPECT_EQ(1u, quick_answer.first_answer_row.size());
+  EXPECT_EQ(0u, quick_answer.title.size());
+  auto* answer =
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
+  EXPECT_EQ(base::UTF8ToUTF16("9.84252 inch"), answer->text);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color);
 }
 
 TEST_F(UnitConversionResultParserTest, EmptyValue) {

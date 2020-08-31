@@ -4,7 +4,7 @@
 package org.chromium.chrome.browser.omaha.notification;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
  * A factory that creates an {@link UpdateNotificationController} instance.
@@ -17,7 +17,7 @@ public class UpdateNotificationControllerFactory {
     public static UpdateNotificationController create(ChromeActivity activity) {
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.UPDATE_NOTIFICATION_SCHEDULING_INTEGRATION)) {
-            return new UpdateNotificationScheduleCoordinator(activity);
+            return new UpdateNotificationServiceBridge(activity);
         }
         return new UpdateNotificationControllerImpl(activity);
     }

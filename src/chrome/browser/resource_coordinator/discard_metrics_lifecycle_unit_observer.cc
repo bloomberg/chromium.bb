@@ -4,9 +4,10 @@
 
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -90,15 +91,13 @@ void DiscardMetricsLifecycleUnitObserver::OnReload() {
 
   // TODO(fdoray): All discard histograms should have a reason suffix.
   switch (discard_reason_) {
-    case LifecycleUnitStateChangeReason::BROWSER_INITIATED:
-      RecordReloadAfterDiscardHistograms("Proactive");
-      break;
     case LifecycleUnitStateChangeReason::SYSTEM_MEMORY_PRESSURE:
       RecordReloadAfterDiscardHistograms("Urgent");
       break;
     case LifecycleUnitStateChangeReason::EXTENSION_INITIATED:
       RecordReloadAfterDiscardHistograms("Extension");
       break;
+    case LifecycleUnitStateChangeReason::BROWSER_INITIATED:
     default:
       NOTREACHED();
       break;

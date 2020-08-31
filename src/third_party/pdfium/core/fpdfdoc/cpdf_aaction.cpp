@@ -7,6 +7,7 @@
 #include "core/fpdfdoc/cpdf_aaction.h"
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
+#include "core/fxcrt/fx_memory.h"
 
 namespace {
 
@@ -56,10 +57,11 @@ CPDF_Action CPDF_AAction::GetAction(AActionType eType) const {
 }
 
 // static
-bool CPDF_AAction::IsUserClick(AActionType eType) {
-  switch (eType) {
+bool CPDF_AAction::IsUserInput(AActionType type) {
+  switch (type) {
     case kButtonUp:
     case kButtonDown:
+    case kKeyStroke:
       return true;
     default:
       return false;

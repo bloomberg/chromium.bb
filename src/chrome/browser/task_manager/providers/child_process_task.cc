@@ -162,7 +162,6 @@ gfx::ImageSkia* ChildProcessTask::s_icon_ = nullptr;
 
 ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
     : Task(GetLocalizedTitle(data.name, data.process_type),
-           base::UTF16ToUTF8(data.name),
            FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
            data.GetProcess().Handle()),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),
@@ -223,10 +222,6 @@ Task::Type ChildProcessTask::GetType() const {
 
 int ChildProcessTask::GetChildProcessUniqueID() const {
   return unique_child_process_id_;
-}
-
-bool ChildProcessTask::ReportsV8Memory() const {
-  return uses_v8_memory_ && process_resources_sampler_->ReportsV8MemoryStats();
 }
 
 int64_t ChildProcessTask::GetV8MemoryAllocated() const {

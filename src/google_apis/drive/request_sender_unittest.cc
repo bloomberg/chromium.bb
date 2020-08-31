@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/drive/base_requests.h"
@@ -34,7 +35,7 @@ class TestAuthService : public DummyAuthService {
  public:
   TestAuthService() : auth_try_count_(0) {}
 
-  void StartAuthentication(const AuthStatusCallback& callback) override {
+  void StartAuthentication(AuthStatusCallback callback) override {
     // RequestSender should clear the rejected access token before starting
     // to request another one.
     EXPECT_FALSE(HasAccessToken());
@@ -45,10 +46,10 @@ class TestAuthService : public DummyAuthService {
       const std::string token =
           kTestAccessToken + base::NumberToString(auth_try_count_);
       set_access_token(token);
-      callback.Run(HTTP_SUCCESS, token);
+      std::move(callback).Run(HTTP_SUCCESS, token);
     } else {
       set_access_token("");
-      callback.Run(HTTP_UNAUTHORIZED, "");
+      std::move(callback).Run(HTTP_UNAUTHORIZED, "");
     }
   }
 
@@ -101,10 +102,10 @@ class TestRequest : public AuthenticatedRequestInterface {
 
   void Start(const std::string& access_token,
              const std::string& custom_user_agent,
-             const ReAuthenticateCallback& callback) override {
+             ReAuthenticateCallback callback) override {
     *start_called_ = true;
     passed_access_token_ = access_token;
-    passed_reauth_callback_ = callback;
+    passed_reauth_callback_ = std::move(callback);
 
     // This request class itself does not return any response at this point.
     // Each test case should respond properly by using the above methods.

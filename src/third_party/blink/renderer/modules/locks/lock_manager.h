@@ -7,14 +7,16 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_lock_options.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
-#include "third_party/blink/renderer/modules/locks/lock_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -23,7 +25,7 @@ class ScriptState;
 class V8LockGrantedCallback;
 
 class LockManager final : public ScriptWrappable,
-                          public ContextLifecycleObserver {
+                          public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(LockManager);
 
@@ -42,11 +44,11 @@ class LockManager final : public ScriptWrappable,
 
   ScriptPromise query(ScriptState*, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Terminate all outstanding requests when the context is destroyed, since
   // this can unblock requests by other contexts.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Called by a lock when it is released. The lock is dropped from the
   // |held_locks_| list. Held locks are tracked until explicitly released (or
@@ -73,7 +75,12 @@ class LockManager final : public ScriptWrappable,
   HeapHashSet<Member<LockRequestImpl>> pending_requests_;
   HeapHashSet<Member<Lock>> held_locks_;
 
-  mojo::Remote<mojom::blink::LockManager> service_;
+  HeapMojoRemote<mojom::blink::LockManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      service_;
+  HeapMojoRemote<mojom::blink::FeatureObserver,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      observer_;
 
   base::Optional<bool> cached_allowed_;
 

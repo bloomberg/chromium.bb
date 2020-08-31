@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromise;
 class ScriptState;
 
@@ -37,7 +38,7 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
                              BluetoothDevice*);
 
   // Interface required by garbage collection.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // IDL exposed interface:
   String uuid() { return service_->uuid; }
@@ -64,6 +65,7 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
 
   ScriptPromise GetCharacteristicsImpl(
       ScriptState*,
+      ExceptionState&,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       const String& characteristic_uuid = String());
 

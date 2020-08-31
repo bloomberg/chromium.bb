@@ -13,34 +13,36 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
-
-namespace web {
-class WebState;
-}
+#include "ios/web_view/internal/web_view_browser_state.h"
 
 namespace autofill {
 
 // WebView implementation of AutofillClient.
 class WebViewAutofillClientIOS : public AutofillClient {
  public:
+  static std::unique_ptr<WebViewAutofillClientIOS> Create(
+      web::WebState* web_state,
+      ios_web_view::WebViewBrowserState* browser_state);
+
   WebViewAutofillClientIOS(
+      const std::string& locale,
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
       AutocompleteHistoryManager* autocomplete_history_manager,
       web::WebState* web_state,
-      id<CWVAutofillClientIOSBridge> bridge,
       signin::IdentityManager* identity_manager,
       StrikeDatabase* strike_database,
-      scoped_refptr<AutofillWebDataService> autofill_web_data_service,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      std::unique_ptr<autofill::LogManager> log_manager);
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
@@ -61,30 +63,16 @@ class WebViewAutofillClientIOS : public AutofillClient {
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  void ShowLocalCardMigrationDialog(
-      base::OnceClosure show_migration_dialog_closure) override;
-  void ConfirmMigrateLocalCardToCloud(
-      const LegalMessageLines& legal_message_lines,
-      const std::string& user_email,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      LocalCardMigrationCallback start_migrating_cards_callback) override;
-  void ShowLocalCardMigrationResults(
-      const bool has_server_error,
-      const base::string16& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
-  void ConfirmSaveCreditCardLocally(
-      const CreditCard& card,
-      SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) override;
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmExpirationDateFixFlow(
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
+  void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      SaveCreditCardOptions options,
+      LocalSaveCardPromptCallback callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -94,7 +82,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
-  void ScanCreditCard(const CreditCardScanCallback& callback) override;
+  void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -105,7 +93,11 @@ class WebViewAutofillClientIOS : public AutofillClient {
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
-  void HideAutofillPopup() override;
+  base::span<const Suggestion> GetPopupSuggestions() const override;
+  void PinPopupView() override;
+  void UpdatePopup(const std::vector<Suggestion>& suggestions,
+                   PopupType popup_type) override;
+  void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
@@ -123,6 +115,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
 
   LogManager* GetLogManager() const override;
 
+  void set_bridge(id<CWVAutofillClientIOSBridge> bridge) { bridge_ = bridge; }
+
  private:
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
@@ -133,7 +127,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   StrikeDatabase* strike_database_;
-  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
   std::unique_ptr<LogManager> log_manager_;
 

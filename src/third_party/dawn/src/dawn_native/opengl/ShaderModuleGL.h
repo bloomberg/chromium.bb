@@ -38,7 +38,7 @@ namespace dawn_native { namespace opengl {
     };
     bool operator<(const CombinedSampler& a, const CombinedSampler& b);
 
-    class ShaderModule : public ShaderModuleBase {
+    class ShaderModule final : public ShaderModuleBase {
       public:
         static ResultOrError<ShaderModule*> Create(Device* device,
                                                    const ShaderModuleDescriptor* descriptor);
@@ -50,7 +50,8 @@ namespace dawn_native { namespace opengl {
 
       private:
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
-        MaybeError Initialize(const ShaderModuleDescriptor* descriptor);
+        ~ShaderModule() override = default;
+        MaybeError Initialize();
 
         CombinedSamplerInfo mCombinedInfo;
         std::string mGlslSource;

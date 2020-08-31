@@ -11,8 +11,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -27,7 +29,7 @@ namespace extensions {
 // NOTE: No extensions are created as part of these tests. Integration tests
 // that test the messages are generated properly for extensions can be found in
 // chrome/browser/extensions/permission_messages_unittest.cc.
-class ChromePermissionMessageProviderUnittest : public testing::Test {
+class ChromePermissionMessageProviderUnittest : public ChromeManifestTest {
  public:
   ChromePermissionMessageProviderUnittest()
       : message_provider_(new ChromePermissionMessageProvider()) {}
@@ -43,22 +45,26 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
             type));
   }
 
-  PermissionMessages GetPowerfulMessages(const APIPermissionSet& permissions,
-                                         Manifest::Type type) {
-    return message_provider_->GetPowerfulPermissionMessages(
-        message_provider_->GetAllPermissionIDs(
-            PermissionSet(permissions.Clone(), ManifestPermissionSet(),
+  PermissionMessages GetManagementUIPermissionIDs(
+      const APIPermissionSet& api_permissions,
+      const ManifestPermissionSet& manifest_permissions,
+      Manifest::Type type) {
+    return message_provider_->GetPermissionMessages(
+        message_provider_->GetManagementUIPermissionIDs(
+            PermissionSet(api_permissions.Clone(), manifest_permissions.Clone(),
                           URLPatternSet(), URLPatternSet()),
             type));
   }
 
   bool IsPrivilegeIncrease(const APIPermissionSet& granted_permissions,
-                           const APIPermissionSet& requested_permissions) {
+                           const URLPatternSet& granted_hosts,
+                           const APIPermissionSet& requested_permissions,
+                           const URLPatternSet& requested_hosts) {
     return message_provider_->IsPrivilegeIncrease(
         PermissionSet(granted_permissions.Clone(), ManifestPermissionSet(),
-                      URLPatternSet(), URLPatternSet()),
+                      granted_hosts.Clone(), URLPatternSet()),
         PermissionSet(requested_permissions.Clone(), ManifestPermissionSet(),
-                      URLPatternSet(), URLPatternSet()),
+                      requested_hosts.Clone(), URLPatternSet()),
         Manifest::TYPE_EXTENSION);
   }
 
@@ -175,8 +181,8 @@ TEST_F(ChromePermissionMessageProviderUnittest, PowerfulPermissions) {
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kTab);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(1U, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
@@ -185,21 +191,85 @@ TEST_F(ChromePermissionMessageProviderUnittest, PowerfulPermissions) {
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kBookmark);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(0U, messages.size());
   }
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kTab);
     permissions.insert(APIPermission::kBookmark);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(1U, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
         messages.front().message());
   }
+  {
+    scoped_refptr<Extension> extension =
+        ManifestTest::LoadAndExpectSuccess("automation_desktop_true.json");
+    ASSERT_TRUE(extension.get());
+    ManifestPermissionSet manifest_permissions = extension->permissions_data()
+                                                     ->active_permissions()
+                                                     .manifest_permissions()
+                                                     .Clone();
+    APIPermissionSet permissions;
+    permissions.insert(APIPermission::kTab);
+    permissions.insert(APIPermission::kBookmark);
+    permissions.insert(APIPermission::kDebugger);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, manifest_permissions, Manifest::TYPE_EXTENSION);
+    ASSERT_EQ(2U, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_DEBUGGER),
+              messages.front().message());
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
+        messages[1].message());
+  }
+  {
+    scoped_refptr<Extension> extension = ManifestTest::LoadAndExpectSuccess(
+        "automation_all_hosts_interact_true.json");
+    ASSERT_TRUE(extension.get());
+    ManifestPermissionSet manifest_permissions = extension->permissions_data()
+                                                     ->active_permissions()
+                                                     .manifest_permissions()
+                                                     .Clone();
+    APIPermissionSet permissions;
+    permissions.insert(APIPermission::kTab);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, manifest_permissions, Manifest::TYPE_EXTENSION);
+    ASSERT_EQ(1U, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS),
+              messages.front().message());
+  }
+}
+
+// Checks that granted hosts that may cause API permission messages are
+// processed as part of IsPrivilegeIncrease. Regression test for
+// crbug.com/1014505.
+TEST_F(ChromePermissionMessageProviderUnittest, PrivilegeIncreaseAllUrls) {
+  APIPermissionSet granted_permissions;
+  granted_permissions.insert(APIPermission::kWebRequest);
+
+  extensions::URLPatternSet granted_hosts;
+  granted_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL, "<all_urls>"));
+
+  APIPermissionSet requested_permissions;
+  requested_permissions.insert(APIPermission::kWebRequest);
+  requested_permissions.insert(APIPermission::kDeclarativeNetRequest);
+
+  extensions::URLPatternSet requested_hosts;
+  requested_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL, "<all_urls>"));
+
+  // While |kDeclarativeNetRequest| would cause a permission message, the
+  // inclusion of <all_urls> for both granted and request permissions should
+  // subsume the permission message for |kDeclarativeNetRequest| with its own
+  // message. Since this message would be identical between
+  // |granted_permissions| and |requested_permissions|, there should not be a
+  // privilege increase.
+  EXPECT_FALSE(IsPrivilegeIncrease(granted_permissions, granted_hosts,
+                                   requested_permissions, requested_hosts));
 }
 
 }  // namespace extensions

@@ -9,10 +9,11 @@ import gzip
 import hashlib
 import json
 import os
+import sys
 import urllib2
 import xml.etree.ElementTree
 
-PACKAGE_FILTER = [
+LIBRARY_FILTER = set([
     "ld-linux-x86-64.so",
     "libX11-xcb.so",
     "libX11.so",
@@ -35,8 +36,10 @@ PACKAGE_FILTER = [
     "libcairo.so",
     "libcups.so",
     "libdbus-1.so",
+    "libdrm.so.2",
     "libdl.so",
     "libexpat.so",
+    "libgbm.so.1",
     "libgcc_s.so",
     "libgdk-3.so",
     "libgdk_pixbuf-2.0.so",
@@ -57,11 +60,12 @@ PACKAGE_FILTER = [
     "libstdc++.so",
     "libuuid.so",
     "libxcb.so",
+    "libxcb-dri3.so.0",
     "rtld(GNU_HASH)",
-]
+])
 
-SUPPORTED_FEDORA_RELEASES = ['25', '26', '27']
-SUPPORTED_OPENSUSE_LEAP_RELEASES = ['42.2', '42.3']
+SUPPORTED_FEDORA_RELEASES = ['30', '31']
+SUPPORTED_OPENSUSE_LEAP_RELEASES = ['15.1', '15.2']
 
 COMMON_NS = "http://linux.duke.edu/metadata/common"
 RPM_NS = "http://linux.duke.edu/metadata/rpm"
@@ -73,19 +77,21 @@ for version in SUPPORTED_FEDORA_RELEASES:
       "https://download.fedoraproject.org/pub/fedora/linux/releases/%s/Everything/x86_64/os/" % version,
       # 'updates' must appear after 'releases' since its entries
       # overwrite the originals.
-      "https://download.fedoraproject.org/pub/fedora/linux/updates/%s/x86_64/" % version,
+      "https://download.fedoraproject.org/pub/fedora/linux/updates/%s/Everything/x86_64/" % version,
   ]
 for version in SUPPORTED_OPENSUSE_LEAP_RELEASES:
-    rpm_sources['openSUSE Leap ' + version] = [
-        "https://download.opensuse.org/distribution/leap/%s/repo/oss/suse/" % version,
-        # 'update' must appear after 'distribution' since its entries
-        # overwrite the originals.
-        "https://download.opensuse.org/update/leap/%s/oss/" % version,
+  rpm_sources['openSUSE Leap ' + version] = [
+      "https://download.opensuse.org/distribution/leap/%s/repo/oss/" % version,
+      # 'update' must appear after 'distribution' since its entries
+      # overwrite the originals.
+      "https://download.opensuse.org/update/leap/%s/oss/" % version,
   ]
 
 provides = {}
+missing_any_library = False
 for distro in rpm_sources:
   distro_provides = {}
+  provided_prefixes = set()
   for source in rpm_sources[distro]:
     # |source| may redirect to a real download mirror.  However, these
     # mirrors may be out-of-sync with each other.  Follow the redirect
@@ -121,14 +127,23 @@ for distro in rpm_sources:
       for entry in package.findall('./{%s}format/{%s}provides/{%s}entry' %
                                    (COMMON_NS, RPM_NS, RPM_NS)):
         name = entry.attrib['name']
-        for prefix in PACKAGE_FILTER:
+        for prefix in LIBRARY_FILTER:
           if name.startswith(prefix):
             package_provides.append(name)
+            provided_prefixes.add(prefix)
       distro_provides[package_name] = package_provides
   provides[distro] = sorted(list(set(
       [package_provides for package in distro_provides
        for package_provides in distro_provides[package]])))
 
+  missing_libraries = LIBRARY_FILTER.difference(provided_prefixes)
+  if missing_libraries:
+    missing_any_library = True
+    print >> sys.stderr, "Libraries are not avilable on %s: %s" % (
+        distro, ', '.join(missing_libraries))
+
+if missing_any_library:
+  sys.exit(1)
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(script_dir, 'dist_package_provides.json'), 'w') as f:

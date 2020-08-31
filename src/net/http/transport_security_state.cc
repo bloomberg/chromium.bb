@@ -36,6 +36,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
 #include "net/extras/preload_data/decoder.h"
+#include "net/http/hsts_info.h"
 #include "net/http/http_security_headers.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
@@ -65,10 +66,9 @@ const int kTimeToRememberReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
 
 // Override for CheckCTRequirements() for unit tests. Possible values:
-//  -1: Unless a delegate says otherwise, do not require CT.
-//   0: Use the default implementation (e.g. production)
-//   1: Unless a delegate says otherwise, require CT.
-int g_ct_required_for_testing = 0;
+//   false: Use the default implementation (e.g. production)
+//   true: Unless a delegate says otherwise, require CT.
+bool g_ct_required_for_testing = false;
 
 // The date (as the number of seconds since the Unix Epoch) to enforce CT for
 // new certificates.
@@ -392,6 +392,29 @@ bool DecodeHSTSPreload(const std::string& search_hostname, PreloadResult* out) {
   return found;
 }
 
+// Records a histogram for details on the HSTS status of a host. |enabled| is
+// true if the host had HSTS enabled when considering both the preload list and
+// the current dynamic implementation and false otherwise. |should_be_dynamic|
+// is true if the current dynamic implementation reported host did not have HSTS
+// enabled, but a spec-compliant implementation would have reported it enabled.
+// Note both parameters may be true, in which case the spec non-compliance was
+// masked by the HSTS preload list.
+//
+// See https://crbug.com/821811.
+void RecordHstsInfo(bool enabled, bool should_be_dynamic) {
+  HstsInfo info;
+  if (enabled) {
+    info = should_be_dynamic
+               ? HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic
+               : HstsInfo::kEnabled;
+  } else {
+    info = should_be_dynamic ? HstsInfo::kDynamicIncorrectlyMasked
+                             : HstsInfo::kDisabled;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Net.HstsInfo", info);
+}
+
 }  // namespace
 
 // static
@@ -432,9 +455,13 @@ TransportSecurityState::TransportSecurityState(
 bool TransportSecurityState::ShouldSSLErrorsBeFatal(const std::string& host) {
   STSState unused_sts;
   PKPState unused_pkp;
-  return GetStaticDomainState(host, &unused_sts, &unused_pkp) ||
-         GetDynamicSTSState(host, &unused_sts) ||
-         GetDynamicPKPState(host, &unused_pkp);
+  // Query GetDynamicSTSState() first to set |sts_should_be_dynamic|.
+  bool sts_should_be_dynamic = false;
+  bool ret = GetDynamicSTSState(host, &unused_sts, &sts_should_be_dynamic) ||
+             GetDynamicPKPState(host, &unused_pkp) ||
+             GetStaticDomainState(host, &unused_sts, &unused_pkp);
+  RecordHstsInfo(ret, sts_should_be_dynamic);
+  return ret;
 }
 
 bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host) {
@@ -492,7 +519,7 @@ TransportSecurityState::CheckCTRequirements(
   // CT is not required if the certificate does not chain to a publicly
   // trusted root certificate. Testing can override this, as certain tests
   // rely on using a non-publicly-trusted root.
-  if (!is_issued_by_known_root && g_ct_required_for_testing == 0)
+  if (!is_issued_by_known_root && !g_ct_required_for_testing)
     return CT_NOT_REQUIRED;
 
   // A connection is considered compliant if it has sufficient SCTs or if the
@@ -542,12 +569,6 @@ TransportSecurityState::CheckCTRequirements(
       }
       break;
   }
-
-  // Allow unittests to override the default result.
-  if (g_ct_required_for_testing)
-    return (g_ct_required_for_testing == 1
-                ? (complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET)
-                : CT_NOT_REQUIRED);
 
   // This is provided as a means for CAs to test their own issuance practices
   // prior to Certificate Transparency becoming mandatory. A parameterized
@@ -602,7 +623,7 @@ TransportSecurityState::CheckCTRequirements(
     // stated policies.
     found = true;
   }
-  if (found)
+  if (found || g_ct_required_for_testing)
     return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
 
   return CT_NOT_REQUIRED;
@@ -1096,12 +1117,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
 }
 
 // static
-void TransportSecurityState::SetShouldRequireCTForTesting(bool* required) {
-  if (!required) {
-    g_ct_required_for_testing = 0;
-    return;
-  }
-  g_ct_required_for_testing = *required ? 1 : -1;
+void TransportSecurityState::SetRequireCTForTesting(bool required) {
+  g_ct_required_for_testing = required;
 }
 
 void TransportSecurityState::ClearReportCachesForTesting() {
@@ -1192,8 +1209,11 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
 bool TransportSecurityState::GetSTSState(const std::string& host,
                                          STSState* result) {
   PKPState unused;
-  return GetDynamicSTSState(host, result) ||
-         GetStaticDomainState(host, result, &unused);
+  bool should_be_dynamic = false;
+  bool ret = GetDynamicSTSState(host, result, &should_be_dynamic) ||
+             GetStaticDomainState(host, result, &unused);
+  RecordHstsInfo(ret, should_be_dynamic);
+  return ret;
 }
 
 bool TransportSecurityState::GetPKPState(const std::string& host,
@@ -1204,15 +1224,19 @@ bool TransportSecurityState::GetPKPState(const std::string& host,
 }
 
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
-                                                STSState* result) {
+                                                STSState* result,
+                                                bool* should_be_dynamic) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (should_be_dynamic)
+    *should_be_dynamic = false;
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
   base::Time current_time(base::Time::Now());
 
+  bool first_match = true;
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
     std::string host_sub_chunk(&canonicalized_host[i],
                                canonicalized_host.size() - i);
@@ -1231,12 +1255,23 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
     // entry at a more specific domain overrides a less specific domain whether
     // or not |include_subdomains| is set.
     if (i == 0 || j->second.include_subdomains) {
+      // TransportSecurityState considers a more specific non-includeSubDomains
+      // entry to override a less specific includeSubDomain entry. This does not
+      // match the specification and results in confusing behavior, so evaluate
+      // both versions for histogramming purposes.
+      if (!first_match) {
+        if (should_be_dynamic)
+          *should_be_dynamic = true;
+        // No need to continue iterating.
+        break;
+      }
+
       *result = j->second;
       result->domain = DNSDomainToString(host_sub_chunk);
       return true;
     }
 
-    break;
+    first_match = false;
   }
 
   return false;

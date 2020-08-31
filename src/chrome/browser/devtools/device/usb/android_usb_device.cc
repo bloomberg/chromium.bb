@@ -57,7 +57,7 @@ uint32_t Checksum(const std::string& data) {
 
 void DumpMessage(bool outgoing, const uint8_t* data, size_t length) {
 #if 0
-  std::string result = "";
+  std::string result;
   if (length == kHeaderSize) {
     for (size_t i = 0; i < 24; ++i) {
       result += base::StringPrintf("%02x", data[i]);
@@ -307,10 +307,10 @@ void AndroidUsbDevice::ProcessOutgoing() {
   outgoing_queue_.pop();
   DumpMessage(true, message->front(), message->size());
 
-  device_->GenericTransferOut(android_device_info_.outbound_address,
-                              message->data(), kUsbTimeout,
-                              base::Bind(&AndroidUsbDevice::OutgoingMessageSent,
-                                         weak_factory_.GetWeakPtr()));
+  device_->GenericTransferOut(
+      android_device_info_.outbound_address, message->data(), kUsbTimeout,
+      base::BindOnce(&AndroidUsbDevice::OutgoingMessageSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status) {
@@ -326,9 +326,10 @@ void AndroidUsbDevice::ReadHeader() {
   if (!device_)
     return;
 
-  device_->GenericTransferIn(
-      android_device_info_.inbound_address, kHeaderSize, kUsbTimeout,
-      base::Bind(&AndroidUsbDevice::ParseHeader, weak_factory_.GetWeakPtr()));
+  device_->GenericTransferIn(android_device_info_.inbound_address, kHeaderSize,
+                             kUsbTimeout,
+                             base::BindOnce(&AndroidUsbDevice::ParseHeader,
+                                            weak_factory_.GetWeakPtr()));
 }
 
 void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
@@ -380,8 +381,8 @@ void AndroidUsbDevice::ReadBody(std::unique_ptr<AdbMessage> message,
 
   device_->GenericTransferIn(
       android_device_info_.inbound_address, data_length, kUsbTimeout,
-      base::Bind(&AndroidUsbDevice::ParseBody, weak_factory_.GetWeakPtr(),
-                 base::Passed(&message), data_length, data_check));
+      base::BindOnce(&AndroidUsbDevice::ParseBody, weak_factory_.GetWeakPtr(),
+                     base::Passed(&message), data_length, data_check));
 }
 
 void AndroidUsbDevice::ParseBody(std::unique_ptr<AdbMessage> message,

@@ -115,7 +115,7 @@ except NotImplementedError:
 # Required SDK version and target version for Mac builds.
 # See MAC_SDK_FLAGS, below.
 MAC_SDK_MIN = '10.10'
-MAC_DEPLOYMENT_TARGET = '10.6'
+MAC_DEPLOYMENT_TARGET = '10.9'
 
 # Redirectors are small shims acting like sym links with optional arguments.
 # For mac/linux we simply use a shell script which create small redirector
@@ -314,16 +314,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
       result['CXXFLAGS'] += extra_cc_flags
     else:
       result['CFLAGS'] += extra_cc_flags
-      result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
-                                                  host, opts) + ')s/lib']
       if TripleIsLinux(host) and not opts.gcc:
-        result['LDFLAGS'] += ['-fuse-ld=lld']
-      result['CXXFLAGS'] += ([
-        '-stdlib=libc++',
-        '-nostdinc++',
-        '-I%(' + FlavoredName('abs_libcxx', host, opts) + ')s/include/c++/v1'] +
-        extra_cc_flags)
-      deps.append(FlavoredName('libcxx', host, opts))
+        result['LDFLAGS'] += ['-fuse-ld=lld', '-static-libstdc++']
   return result, deps
 
 
@@ -418,31 +410,6 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
   return configure_args, InputsForCommands(hashables), tool_deps
-
-
-def LibCxxHostArchFlags(host, options):
-  cc, cxx, _, _ = CompilersForHost(host)
-  hashables = [cc, cxx]
-  cmake_flags = []
-  if options.goma:
-    cmake_flags.extend(GomaCmakeFlags(options.goma))
-
-  cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
-  if TripleIsLinux(host):
-    # -fuse-lld should be an LDFLAG and not a cflag. See CMake bug link below.
-    # The consequence is just extra warnings during the CMake build.
-    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR, '-fuse-ld=lld']
-    if not TripleIsX8664(host):
-      # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
-      cflags.extend(['-m32'])
-    cmake_flags.extend(['-DCMAKE_C_FLAGS=%s' % ' '.join(cflags),
-                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags),
-                        '-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld'])
-  elif TripleIsMac(host):
-    sdk_flags = ' '.join(MAC_SDK_FLAGS)
-    cmake_flags.extend(['-DCMAKE_C_FLAGS=' + sdk_flags,
-                        '-DCMAKE_CXX_FLAGS=' + sdk_flags])
-  return cmake_flags, InputsForCommands(hashables)
 
 
 def CmakeHostArchFlags(host, options):
@@ -589,16 +556,6 @@ def GetGitSyncCmdsCallback(revisions):
 
 def HostToolsSources(GetGitSyncCmds):
   sources = {
-      'libcxx_src': {
-          'type': 'source',
-          'output_dirname': 'libcxx',
-          'commands': GetGitSyncCmds('libcxx'),
-      },
-      'libcxxabi_src': {
-          'type': 'source',
-          'output_dirname': 'libcxxabi',
-          'commands': GetGitSyncCmds('libcxxabi'),
-      },
       'binutils_src': {
           'type': 'source',
           'output_dirname': 'binutils',
@@ -640,22 +597,6 @@ def TestsuiteSources(GetGitSyncCmds):
   }
   return sources
 
-
-def CopyHostLibcxxForLLVMBuild(host, dest, options):
-  """Copy libc++ to the working directory for build tools."""
-  if options.gcc:
-    return []
-  if TripleIsLinux(host):
-    libname = 'libc++.so.1'
-  elif TripleIsMac(host):
-    libname = 'libc++.1.dylib'
-  else:
-    return []
-  return [command.Mkdir(dest, parents=True),
-          command.Copy('%(' +
-                       FlavoredName('abs_libcxx', host, options) +')s/lib/' +
-                       libname, os.path.join(dest, libname))]
-
 def CreateSymLinksToDirectToNaClTools(host):
   if host == 'le32-nacl':
     return []
@@ -686,9 +627,6 @@ def CreateSymLinksToPNaClTools(host):
        for tool in ['ar', 'nm', 'ranlib', 'as']])
 
 def HostLibs(host, options):
-  def H(component_name):
-    # Return a package name for a component name with a host triple.
-    return FlavoredName(component_name, host, options)
   libs = {}
   if TripleIsWindows(host):
     if pynacl.platform.IsWindows():
@@ -715,32 +653,6 @@ def HostLibs(host, options):
                            os.path.join('%(output)s', 'dlfcn.h')),
           ],
       },
-    })
-  elif not options.gcc:
-    # Libc++ is only tested with the clang build
-    libcxx_host_arch_flags, libcxx_inputs = LibCxxHostArchFlags(host, options)
-    libs.update({
-        H('libcxx'): {
-            'dependencies': ['libcxx_src', 'libcxxabi_src'],
-            'type': 'build',
-            'inputs': libcxx_inputs,
-            'commands': [
-                command.SkipForIncrementalCommand([
-                     pnacl_commands.PrebuiltCmake(), '-G', 'Unix Makefiles'] +
-                     libcxx_host_arch_flags +
-                     ['-DLIBCXX_CXX_ABI=libcxxabi',
-                      '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
-                          '%(abs_libcxxabi_src)s', 'include'),
-                      '-DLIBCXX_ENABLE_SHARED=ON',
-                      '-DCMAKE_INSTALL_PREFIX=',
-                      '-DCMAKE_INSTALL_NAME_DIR=@executable_path/../lib',
-                      '%(libcxx_src)s'],
-                    path_dirs=GomaPathDirs(host, options)),
-                command.Command(MakeCommand(host, options) + ['VERBOSE=1'],
-                                path_dirs=GomaPathDirs(host, options)),
-                command.Command(MAKE_DESTDIR_CMD + ['VERBOSE=1', 'install']),
-            ],
-        },
     })
   return libs
 
@@ -928,7 +840,6 @@ def HostTools(host, options):
                   '%(llvm_src)s'],
                   env=llvm_cmake_config_env,
                   path_dirs=GomaPathDirs(host, options))] +
-              CopyHostLibcxxForLLVMBuild(host, 'lib', options) +
               [command.Command(NinjaCommand(host, options) + ['-v'],
                                path_dirs=GomaPathDirs(host, options),
                                env=AflFuzzEnvMap(host, options)),
@@ -989,13 +900,9 @@ def HostTools(host, options):
                    '--with-binutils-include=%(abs_binutils_src)s/include',
                    '--with-clang-srcdir=%(abs_clang_src)s',
                    'ac_cv_have_decl_strerror_s=no',
+                   'ac_cv_lib_xml2_xmlReadFile=no',
                   ] + shared,
                   path_dirs=GomaPathDirs(host, options))] +
-              CopyHostLibcxxForLLVMBuild(
-                  host,
-                  os.path.join(('Debug+Asserts' if HostIsDebug(options)
-                                else 'Release+Asserts'), 'lib'),
-                  options) +
               [command.Command(MakeCommand(host, options) +
                   AflFuzzEnvList(host, options) + [
                   'VERBOSE=1',
@@ -1048,11 +955,10 @@ def TargetLibCompiler(host, options):
       },
   }
 
-  if TripleIsWindows(host) or not options.gcc:
-    host_lib = 'libdl' if TripleIsWindows(host) else H('libcxx')
-    compiler['target_lib_compiler']['dependencies'].append(host_lib)
+  if TripleIsWindows(host):
+    compiler['target_lib_compiler']['dependencies'].append('libdl')
     compiler['target_lib_compiler']['commands'].append(
-        command.CopyRecursive('%(' + host_lib + ')s', '%(output)s'))
+        command.CopyRecursive('%(libdl)s', '%(output)s'))
   return compiler
 
 
@@ -1302,8 +1208,6 @@ def GetUploadPackageTargets():
          'binutils_x86_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
-    if os_name != 'win':
-      host_packages[os_name].append('libcxx_%s' % legal_triple)
 
   # Unsandboxed target IRT libraries
   for os_name in ['linux', 'mac']:

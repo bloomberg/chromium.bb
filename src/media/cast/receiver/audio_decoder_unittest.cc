@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
@@ -126,14 +128,12 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     }
 
     cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(&AudioDecoder::DecodeFrame,
-                   base::Unretained(audio_decoder_.get()),
-                   base::Passed(&encoded_frame),
-                   base::Bind(&AudioDecoderTest::OnDecodedFrame,
-                              base::Unretained(this),
-                              num_dropped_frames == 0)));
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(
+            &AudioDecoder::DecodeFrame, base::Unretained(audio_decoder_.get()),
+            std::move(encoded_frame),
+            base::Bind(&AudioDecoderTest::OnDecodedFrame,
+                       base::Unretained(this), num_dropped_frames == 0)));
   }
 
   // Blocks the caller until all audio that has been feed in has been decoded.
@@ -164,7 +164,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     // recovery) because it introduces a tiny, significant delay.
     bool examine_signal = true;
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
-      ++decoded_frames_seen_;
+      decoded_frames_seen_ = should_be_continuous ? decoded_frames_seen_ + 1 : 1;
       examine_signal = (decoded_frames_seen_ > 2) && should_be_continuous;
     }
     if (examine_signal) {

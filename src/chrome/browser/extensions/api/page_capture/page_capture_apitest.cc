@@ -17,6 +17,7 @@
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -78,7 +79,7 @@ class PageCaptureSaveAsMHTMLDelegate
 // TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
 // Also flaky-failing on slow (debug) bots: https://crbug.com/1017305
 #if defined(LEAK_SANITIZER) || !defined(NDEBUG) || \
-    defined(ADDRESS_SANITIZER) || defined(OS_WIN)
+    defined(ADDRESS_SANITIZER) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
 #else
 #define MAYBE_SaveAsMHTML SaveAsMHTML
@@ -87,8 +88,8 @@ class PageCaptureSaveAsMHTMLDelegate
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  ASSERT_TRUE(RunExtensionTestWithFlagsAndArg(
-      "page_capture", "ONLY_PAGE_CAPTURE_PERMISSION", kFlagNone))
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("page_capture", "ONLY_PAGE_CAPTURE_PERMISSION"))
       << message_;
   // Make sure the MHTML data gets written to the temporary file.
   ASSERT_FALSE(delegate.temp_file_.empty());

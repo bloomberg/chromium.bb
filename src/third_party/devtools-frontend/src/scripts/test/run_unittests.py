@@ -4,84 +4,80 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Run Karma unit tests on a pre-built chrome or one specified via --chrome-binary.
+Run unit tests on a pinned version of chrome.
 """
 
 import os
 import platform
 import re
-import subprocess
+from subprocess import Popen
 import sys
+import signal
+import argparse
 
 scripts_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(scripts_path)
 
+import test_helpers
 import devtools_paths
 
 
-def check_chrome_binary(chrome_binary):
-    return os.path.exists(chrome_binary) and os.path.isfile(chrome_binary) and os.access(chrome_binary, os.X_OK)
-
-
-def popen(arguments, cwd=None, env=None):
-    return subprocess.Popen(arguments, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
-
-
-def to_platform_path_exact(filepath):
-    if not is_cygwin:
-        return filepath
-    output, _ = popen(['cygpath', '-w', filepath]).communicate()
-    # pylint: disable=E1103
-    return output.strip().replace('\\', '\\\\')
-
-
-def run_tests():
+def run_tests(chrome_binary, target, no_text_coverage):
     cwd = devtools_paths.devtools_root_path()
-    karma_errors_found = False
-    karmaconfig_path = os.path.join(cwd, 'karma.conf.js')
-    exec_command = [devtools_paths.node_path(), devtools_paths.karma_path(), 'start', to_platform_path_exact(karmaconfig_path)]
+    karmaconfig_path = os.path.join(cwd, 'out', target, 'gen', 'test', 'unittests', 'front_end', 'karma.conf.js')
+
+    if not os.path.exists(karmaconfig_path):
+        print('Unable to find Karma config at ' + karmaconfig_path)
+        print('Make sure to set the --ninja-build-name argument to the folder name of "out/target"')
+        sys.exit(1)
+
+    print('Using karma config ' + karmaconfig_path)
+
+    exec_command = [devtools_paths.node_path(), devtools_paths.karma_path(), 'start', test_helpers.to_platform_path_exact(karmaconfig_path)]
+
     env = os.environ.copy()
     env['NODE_PATH'] = devtools_paths.node_path()
+    if (no_text_coverage is not False):
+        env['NO_TEXT_COVERAGE'] = '1'
     if (chrome_binary is not None):
         env['CHROME_BIN'] = chrome_binary
 
-    karma_proc = popen(exec_command, cwd=cwd, env=env)
+    exit_code = test_helpers.popen(exec_command, cwd=cwd, env=env)
+    if exit_code == 1:
+        return True
 
-    (karma_proc_out, _) = karma_proc.communicate()
-    if karma_proc.returncode != 0:
-        karma_errors_found = True
-    else:
-        print('Karma exited successfully')
-
-    print(karma_proc_out)
-    return karma_errors_found
+    return False
 
 
-is_cygwin = sys.platform == 'cygwin'
-chrome_binary = None
-downloaded_chrome_binary = devtools_paths.downloaded_chrome_binary_path()
+def run_unit_tests_on_ninja_build_target(target, no_text_coverage=True):
+    chrome_binary = None
 
-if check_chrome_binary(downloaded_chrome_binary):
-    chrome_binary = downloaded_chrome_binary
+    # Default to the downloaded / pinned Chromium binary
+    downloaded_chrome_binary = devtools_paths.downloaded_chrome_binary_path()
+    if test_helpers.check_chrome_binary(downloaded_chrome_binary):
+        chrome_binary = downloaded_chrome_binary
 
-if len(sys.argv) >= 2:
-    chrome_binary = re.sub(r'^\-\-chrome-binary=(.*)', '\\1', sys.argv[1])
-    if not check_chrome_binary(chrome_binary):
-        print('Unable to find a Chrome binary at \'%s\'' % chrome_binary)
+    if (chrome_binary is None):
+        print('Unable to run, no Chrome binary provided')
         sys.exit(1)
-print('Running tests with Karma...')
-if (chrome_binary is not None):
-    print('Using custom Chrome Binary (%s)\n' % chrome_binary)
-else:
-    print('Using system Chrome')
 
+    print('Using Chromium binary (%s)\n' % chrome_binary)
 
-def main():
-    errors_found = run_tests()
-
+    errors_found = run_tests(chrome_binary, target, no_text_coverage)
     if errors_found:
         print('ERRORS DETECTED')
         sys.exit(1)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Run unittests on Ninja targets.')
+    parser.add_argument(
+        '--target', '-t', default='Default', dest='target', help='The name of the Ninja output directory. Defaults to "Default"')
+    parser.add_argument(
+        '--no-text-coverage', action='store_true', default=False, dest='no_text_coverage', help='Whether to output text coverage')
+    args = parser.parse_args(sys.argv[1:])
+
+    run_unit_tests_on_ninja_build_target(args.target, args.no_text_coverage)
 
 
 if __name__ == '__main__':

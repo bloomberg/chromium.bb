@@ -9,6 +9,8 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
@@ -27,6 +29,8 @@ Polymer({
   is: 'extensions-shortcut-input',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!KeyboardShortcutDelegate} */
@@ -67,7 +71,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     const node = this.$.input;
     node.addEventListener('mouseup', this.startCapture_.bind(this));
     node.addEventListener('blur', this.endCapture_.bind(this));
@@ -77,7 +81,7 @@ Polymer({
   },
 
   /** @private */
-  startCapture_: function() {
+  startCapture_() {
     if (this.capturing_) {
       return;
     }
@@ -86,7 +90,7 @@ Polymer({
   },
 
   /** @private */
-  endCapture_: function() {
+  endCapture_() {
     if (!this.capturing_) {
       return;
     }
@@ -102,12 +106,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onKeyDown_: function(e) {
-    if (e.target == this.$.clear) {
+  onKeyDown_(e) {
+    if (e.target === this.$.clear) {
       return;
     }
 
-    if (e.keyCode == Key.Escape) {
+    if (e.keyCode === Key.Escape) {
       if (!this.capturing_) {
         // If we're not currently capturing, allow escape to propagate.
         return;
@@ -118,7 +122,7 @@ Polymer({
       e.stopPropagation();
       return;
     }
-    if (e.keyCode == Key.Tab) {
+    if (e.keyCode === Key.Tab) {
       // Allow tab propagation for keyboard navigation.
       return;
     }
@@ -134,16 +138,16 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onKeyUp_: function(e) {
+  onKeyUp_(e) {
     // Ignores pressing 'Space' or 'Enter' on the clear button. In 'Enter's
     // case, the clear button disappears before key-up, so 'Enter's key-up
     // target becomes the input field, not the clear button, and needs to
     // be caught explicitly.
-    if (e.target == this.$.clear || e.key == 'Enter') {
+    if (e.target === this.$.clear || e.key === 'Enter') {
       return;
     }
 
-    if (e.keyCode == Key.Escape || e.keyCode == Key.Tab) {
+    if (e.keyCode === Key.Escape || e.keyCode === Key.Tab) {
       return;
     }
 
@@ -158,7 +162,7 @@ Polymer({
    * @return {string} UI string.
    * @private
    */
-  getErrorString_: function(
+  getErrorString_(
       error, includeStartModifier, tooManyModifiers, needCharacter) {
     switch (this.error_) {
       case ShortcutError.INCLUDE_START_MODIFIER:
@@ -168,7 +172,7 @@ Polymer({
       case ShortcutError.NEED_CHARACTER:
         return needCharacter;
       default:
-        assert(this.error_ == ShortcutError.NO_ERROR);
+        assert(this.error_ === ShortcutError.NO_ERROR);
         return '';
     }
   },
@@ -177,7 +181,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  handleKey_: function(e) {
+  handleKey_(e) {
     // While capturing, we prevent all events from bubbling, to prevent
     // shortcuts lacking the right modifier (F3 for example) from activating
     // and ending capture prematurely.
@@ -204,12 +208,17 @@ Polymer({
 
     this.error_ = ShortcutError.NO_ERROR;
 
+    IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {
+      text: this.i18n('shortcutSet', this.computeText_()),
+    });
+
     this.commitPending_();
     this.endCapture_();
   },
 
   /** @private */
-  commitPending_: function() {
+  commitPending_() {
     this.shortcut = this.pendingShortcut_;
     this.delegate.updateExtensionCommandKeybinding(
         this.item, this.commandName, this.shortcut);
@@ -219,32 +228,40 @@ Polymer({
    * @return {string} The text to be displayed in the shortcut field.
    * @private
    */
-  computeText_: function() {
+  computeText_() {
     const shortcutString =
         this.capturing_ ? this.pendingShortcut_ : this.shortcut;
     return shortcutString.split('+').join(' + ');
   },
 
   /**
+   * Invisible when capturing AND we have a shortcut.
+   * @return {boolean} Whether the clear button is invisible.
+   * @private
+   */
+  computeClearInvisible_() {
+    return this.capturing_ && !!this.shortcut;
+  },
+
+  /**
+   * Hidden when no shortcut is set.
    * @return {boolean} Whether the clear button is hidden.
    * @private
    */
-  computeClearHidden_: function() {
-    // We don't want to show the clear button if the input is currently
-    // capturing a new shortcut or if there is no shortcut to clear.
-    return this.capturing_ || !this.shortcut;
+  computeClearHidden_() {
+    return !this.shortcut;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  getIsInvalid_: function() {
-    return this.error_ != ShortcutError.NO_ERROR;
+  getIsInvalid_() {
+    return this.error_ !== ShortcutError.NO_ERROR;
   },
 
   /** @private */
-  onClearTap_: function() {
+  onClearTap_() {
     assert(this.shortcut);
 
     this.pendingShortcut_ = '';

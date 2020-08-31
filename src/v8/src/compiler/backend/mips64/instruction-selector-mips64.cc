@@ -132,6 +132,20 @@ static void VisitRRI(InstructionSelector* selector, ArchOpcode opcode,
                  g.UseRegister(node->InputAt(0)), g.UseImmediate(imm));
 }
 
+static void VisitSimdShift(InstructionSelector* selector, ArchOpcode opcode,
+                           Node* node) {
+  Mips64OperandGenerator g(selector);
+  if (g.IsIntegerConstant(node->InputAt(1))) {
+    selector->Emit(opcode, g.DefineAsRegister(node),
+                   g.UseRegister(node->InputAt(0)),
+                   g.UseImmediate(node->InputAt(1)));
+  } else {
+    selector->Emit(opcode, g.DefineAsRegister(node),
+                   g.UseRegister(node->InputAt(0)),
+                   g.UseRegister(node->InputAt(1)));
+  }
+}
+
 static void VisitRRIR(InstructionSelector* selector, ArchOpcode opcode,
                       Node* node) {
   Mips64OperandGenerator g(selector);
@@ -357,6 +371,48 @@ void EmitLoad(InstructionSelector* selector, Node* node, InstructionCode opcode,
                    g.DefineAsRegister(output == nullptr ? node : output),
                    addr_reg, g.TempImmediate(0));
   }
+}
+
+void InstructionSelector::VisitLoadTransform(Node* node) {
+  LoadTransformParameters params = LoadTransformParametersOf(node->op());
+
+  InstructionCode opcode = kArchNop;
+  switch (params.transformation) {
+    case LoadTransformation::kS8x16LoadSplat:
+      opcode = kMips64S8x16LoadSplat;
+      break;
+    case LoadTransformation::kS16x8LoadSplat:
+      opcode = kMips64S16x8LoadSplat;
+      break;
+    case LoadTransformation::kS32x4LoadSplat:
+      opcode = kMips64S32x4LoadSplat;
+      break;
+    case LoadTransformation::kS64x2LoadSplat:
+      opcode = kMips64S64x2LoadSplat;
+      break;
+    case LoadTransformation::kI16x8Load8x8S:
+      opcode = kMips64I16x8Load8x8S;
+      break;
+    case LoadTransformation::kI16x8Load8x8U:
+      opcode = kMips64I16x8Load8x8U;
+      break;
+    case LoadTransformation::kI32x4Load16x4S:
+      opcode = kMips64I32x4Load16x4S;
+      break;
+    case LoadTransformation::kI32x4Load16x4U:
+      opcode = kMips64I32x4Load16x4U;
+      break;
+    case LoadTransformation::kI64x2Load32x2S:
+      opcode = kMips64I64x2Load32x2S;
+      break;
+    case LoadTransformation::kI64x2Load32x2U:
+      opcode = kMips64I64x2Load32x2U;
+      break;
+    default:
+      UNIMPLEMENTED();
+  }
+
+  EmitLoad(this, node, opcode);
 }
 
 void InstructionSelector::VisitLoad(Node* node) {
@@ -795,6 +851,10 @@ void InstructionSelector::VisitWord64Sar(Node* node) {
   if (TryEmitExtendingLoad(this, node, node)) return;
   VisitRRO(this, kMips64Dsar, node);
 }
+
+void InstructionSelector::VisitWord32Rol(Node* node) { UNREACHABLE(); }
+
+void InstructionSelector::VisitWord64Rol(Node* node) { UNREACHABLE(); }
 
 void InstructionSelector::VisitWord32Ror(Node* node) {
   VisitRRO(this, kMips64Ror, node);
@@ -1359,10 +1419,6 @@ void InstructionSelector::VisitChangeUint32ToUint64(Node* node) {
   }
   Emit(kMips64Dext, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)),
        g.TempImmediate(0), g.TempImmediate(32));
-}
-
-void InstructionSelector::VisitChangeTaggedToCompressed(Node* node) {
-  UNIMPLEMENTED();
 }
 
 void InstructionSelector::VisitTruncateInt64ToInt32(Node* node) {
@@ -2252,7 +2308,7 @@ void InstructionSelector::VisitSwitch(Node* node, const SwitchInfo& sw) {
   Mips64OperandGenerator g(this);
   InstructionOperand value_operand = g.UseRegister(node->InputAt(0));
 
-  // Emit either ArchTableSwitch or ArchLookupSwitch.
+  // Emit either ArchTableSwitch or ArchBinarySearchSwitch.
   if (enable_switch_jump_table_ == kEnableSwitchJumpTable) {
     static const size_t kMaxTableSwitchValueRange = 2 << 16;
     size_t table_space_cost = 10 + 2 * sw.value_range();
@@ -2695,7 +2751,9 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
 }
 
 #define SIMD_TYPE_LIST(V) \
+  V(F64x2)                \
   V(F32x4)                \
+  V(I64x2)                \
   V(I32x4)                \
   V(I16x8)                \
   V(I8x16)
@@ -2719,12 +2777,15 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I32x4SConvertI16x8High, kMips64I32x4SConvertI16x8High) \
   V(I32x4UConvertI16x8Low, kMips64I32x4UConvertI16x8Low)   \
   V(I32x4UConvertI16x8High, kMips64I32x4UConvertI16x8High) \
+  V(I32x4Abs, kMips64I32x4Abs)                             \
   V(I16x8Neg, kMips64I16x8Neg)                             \
   V(I16x8SConvertI8x16Low, kMips64I16x8SConvertI8x16Low)   \
   V(I16x8SConvertI8x16High, kMips64I16x8SConvertI8x16High) \
   V(I16x8UConvertI8x16Low, kMips64I16x8UConvertI8x16Low)   \
   V(I16x8UConvertI8x16High, kMips64I16x8UConvertI8x16High) \
+  V(I16x8Abs, kMips64I16x8Abs)                             \
   V(I8x16Neg, kMips64I8x16Neg)                             \
+  V(I8x16Abs, kMips64I8x16Abs)                             \
   V(S128Not, kMips64S128Not)                               \
   V(S1x4AnyTrue, kMips64S1x4AnyTrue)                       \
   V(S1x4AllTrue, kMips64S1x4AllTrue)                       \
@@ -2747,90 +2808,94 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
   V(I8x16ShrS)                \
   V(I8x16ShrU)
 
-#define SIMD_BINOP_LIST(V)                         \
-  V(F64x2Add, kMips64F64x2Add)                     \
-  V(F64x2Sub, kMips64F64x2Sub)                     \
-  V(F64x2Mul, kMips64F64x2Mul)                     \
-  V(F64x2Div, kMips64F64x2Div)                     \
-  V(F64x2Min, kMips64F64x2Min)                     \
-  V(F64x2Max, kMips64F64x2Max)                     \
-  V(F64x2Eq, kMips64F64x2Eq)                       \
-  V(F64x2Ne, kMips64F64x2Ne)                       \
-  V(F64x2Lt, kMips64F64x2Lt)                       \
-  V(F64x2Le, kMips64F64x2Le)                       \
-  V(I64x2Add, kMips64I64x2Add)                     \
-  V(I64x2Sub, kMips64I64x2Sub)                     \
-  V(F32x4Add, kMips64F32x4Add)                     \
-  V(F32x4AddHoriz, kMips64F32x4AddHoriz)           \
-  V(F32x4Sub, kMips64F32x4Sub)                     \
-  V(F32x4Mul, kMips64F32x4Mul)                     \
-  V(F32x4Div, kMips64F32x4Div)                     \
-  V(F32x4Max, kMips64F32x4Max)                     \
-  V(F32x4Min, kMips64F32x4Min)                     \
-  V(F32x4Eq, kMips64F32x4Eq)                       \
-  V(F32x4Ne, kMips64F32x4Ne)                       \
-  V(F32x4Lt, kMips64F32x4Lt)                       \
-  V(F32x4Le, kMips64F32x4Le)                       \
-  V(I32x4Add, kMips64I32x4Add)                     \
-  V(I32x4AddHoriz, kMips64I32x4AddHoriz)           \
-  V(I32x4Sub, kMips64I32x4Sub)                     \
-  V(I32x4Mul, kMips64I32x4Mul)                     \
-  V(I32x4MaxS, kMips64I32x4MaxS)                   \
-  V(I32x4MinS, kMips64I32x4MinS)                   \
-  V(I32x4MaxU, kMips64I32x4MaxU)                   \
-  V(I32x4MinU, kMips64I32x4MinU)                   \
-  V(I32x4Eq, kMips64I32x4Eq)                       \
-  V(I32x4Ne, kMips64I32x4Ne)                       \
-  V(I32x4GtS, kMips64I32x4GtS)                     \
-  V(I32x4GeS, kMips64I32x4GeS)                     \
-  V(I32x4GtU, kMips64I32x4GtU)                     \
-  V(I32x4GeU, kMips64I32x4GeU)                     \
-  V(I16x8Add, kMips64I16x8Add)                     \
-  V(I16x8AddSaturateS, kMips64I16x8AddSaturateS)   \
-  V(I16x8AddSaturateU, kMips64I16x8AddSaturateU)   \
-  V(I16x8AddHoriz, kMips64I16x8AddHoriz)           \
-  V(I16x8Sub, kMips64I16x8Sub)                     \
-  V(I16x8SubSaturateS, kMips64I16x8SubSaturateS)   \
-  V(I16x8SubSaturateU, kMips64I16x8SubSaturateU)   \
-  V(I16x8Mul, kMips64I16x8Mul)                     \
-  V(I16x8MaxS, kMips64I16x8MaxS)                   \
-  V(I16x8MinS, kMips64I16x8MinS)                   \
-  V(I16x8MaxU, kMips64I16x8MaxU)                   \
-  V(I16x8MinU, kMips64I16x8MinU)                   \
-  V(I16x8Eq, kMips64I16x8Eq)                       \
-  V(I16x8Ne, kMips64I16x8Ne)                       \
-  V(I16x8GtS, kMips64I16x8GtS)                     \
-  V(I16x8GeS, kMips64I16x8GeS)                     \
-  V(I16x8GtU, kMips64I16x8GtU)                     \
-  V(I16x8GeU, kMips64I16x8GeU)                     \
-  V(I16x8SConvertI32x4, kMips64I16x8SConvertI32x4) \
-  V(I16x8UConvertI32x4, kMips64I16x8UConvertI32x4) \
-  V(I8x16Add, kMips64I8x16Add)                     \
-  V(I8x16AddSaturateS, kMips64I8x16AddSaturateS)   \
-  V(I8x16AddSaturateU, kMips64I8x16AddSaturateU)   \
-  V(I8x16Sub, kMips64I8x16Sub)                     \
-  V(I8x16SubSaturateS, kMips64I8x16SubSaturateS)   \
-  V(I8x16SubSaturateU, kMips64I8x16SubSaturateU)   \
-  V(I8x16Mul, kMips64I8x16Mul)                     \
-  V(I8x16MaxS, kMips64I8x16MaxS)                   \
-  V(I8x16MinS, kMips64I8x16MinS)                   \
-  V(I8x16MaxU, kMips64I8x16MaxU)                   \
-  V(I8x16MinU, kMips64I8x16MinU)                   \
-  V(I8x16Eq, kMips64I8x16Eq)                       \
-  V(I8x16Ne, kMips64I8x16Ne)                       \
-  V(I8x16GtS, kMips64I8x16GtS)                     \
-  V(I8x16GeS, kMips64I8x16GeS)                     \
-  V(I8x16GtU, kMips64I8x16GtU)                     \
-  V(I8x16GeU, kMips64I8x16GeU)                     \
-  V(I8x16SConvertI16x8, kMips64I8x16SConvertI16x8) \
-  V(I8x16UConvertI16x8, kMips64I8x16UConvertI16x8) \
-  V(S128And, kMips64S128And)                       \
-  V(S128Or, kMips64S128Or)                         \
-  V(S128Xor, kMips64S128Xor)
+#define SIMD_BINOP_LIST(V)                               \
+  V(F64x2Add, kMips64F64x2Add)                           \
+  V(F64x2Sub, kMips64F64x2Sub)                           \
+  V(F64x2Mul, kMips64F64x2Mul)                           \
+  V(F64x2Div, kMips64F64x2Div)                           \
+  V(F64x2Min, kMips64F64x2Min)                           \
+  V(F64x2Max, kMips64F64x2Max)                           \
+  V(F64x2Eq, kMips64F64x2Eq)                             \
+  V(F64x2Ne, kMips64F64x2Ne)                             \
+  V(F64x2Lt, kMips64F64x2Lt)                             \
+  V(F64x2Le, kMips64F64x2Le)                             \
+  V(I64x2Add, kMips64I64x2Add)                           \
+  V(I64x2Sub, kMips64I64x2Sub)                           \
+  V(I64x2Mul, kMips64I64x2Mul)                           \
+  V(F32x4Add, kMips64F32x4Add)                           \
+  V(F32x4AddHoriz, kMips64F32x4AddHoriz)                 \
+  V(F32x4Sub, kMips64F32x4Sub)                           \
+  V(F32x4Mul, kMips64F32x4Mul)                           \
+  V(F32x4Div, kMips64F32x4Div)                           \
+  V(F32x4Max, kMips64F32x4Max)                           \
+  V(F32x4Min, kMips64F32x4Min)                           \
+  V(F32x4Eq, kMips64F32x4Eq)                             \
+  V(F32x4Ne, kMips64F32x4Ne)                             \
+  V(F32x4Lt, kMips64F32x4Lt)                             \
+  V(F32x4Le, kMips64F32x4Le)                             \
+  V(I32x4Add, kMips64I32x4Add)                           \
+  V(I32x4AddHoriz, kMips64I32x4AddHoriz)                 \
+  V(I32x4Sub, kMips64I32x4Sub)                           \
+  V(I32x4Mul, kMips64I32x4Mul)                           \
+  V(I32x4MaxS, kMips64I32x4MaxS)                         \
+  V(I32x4MinS, kMips64I32x4MinS)                         \
+  V(I32x4MaxU, kMips64I32x4MaxU)                         \
+  V(I32x4MinU, kMips64I32x4MinU)                         \
+  V(I32x4Eq, kMips64I32x4Eq)                             \
+  V(I32x4Ne, kMips64I32x4Ne)                             \
+  V(I32x4GtS, kMips64I32x4GtS)                           \
+  V(I32x4GeS, kMips64I32x4GeS)                           \
+  V(I32x4GtU, kMips64I32x4GtU)                           \
+  V(I32x4GeU, kMips64I32x4GeU)                           \
+  V(I16x8Add, kMips64I16x8Add)                           \
+  V(I16x8AddSaturateS, kMips64I16x8AddSaturateS)         \
+  V(I16x8AddSaturateU, kMips64I16x8AddSaturateU)         \
+  V(I16x8AddHoriz, kMips64I16x8AddHoriz)                 \
+  V(I16x8Sub, kMips64I16x8Sub)                           \
+  V(I16x8SubSaturateS, kMips64I16x8SubSaturateS)         \
+  V(I16x8SubSaturateU, kMips64I16x8SubSaturateU)         \
+  V(I16x8Mul, kMips64I16x8Mul)                           \
+  V(I16x8MaxS, kMips64I16x8MaxS)                         \
+  V(I16x8MinS, kMips64I16x8MinS)                         \
+  V(I16x8MaxU, kMips64I16x8MaxU)                         \
+  V(I16x8MinU, kMips64I16x8MinU)                         \
+  V(I16x8Eq, kMips64I16x8Eq)                             \
+  V(I16x8Ne, kMips64I16x8Ne)                             \
+  V(I16x8GtS, kMips64I16x8GtS)                           \
+  V(I16x8GeS, kMips64I16x8GeS)                           \
+  V(I16x8GtU, kMips64I16x8GtU)                           \
+  V(I16x8GeU, kMips64I16x8GeU)                           \
+  V(I16x8RoundingAverageU, kMips64I16x8RoundingAverageU) \
+  V(I16x8SConvertI32x4, kMips64I16x8SConvertI32x4)       \
+  V(I16x8UConvertI32x4, kMips64I16x8UConvertI32x4)       \
+  V(I8x16Add, kMips64I8x16Add)                           \
+  V(I8x16AddSaturateS, kMips64I8x16AddSaturateS)         \
+  V(I8x16AddSaturateU, kMips64I8x16AddSaturateU)         \
+  V(I8x16Sub, kMips64I8x16Sub)                           \
+  V(I8x16SubSaturateS, kMips64I8x16SubSaturateS)         \
+  V(I8x16SubSaturateU, kMips64I8x16SubSaturateU)         \
+  V(I8x16Mul, kMips64I8x16Mul)                           \
+  V(I8x16MaxS, kMips64I8x16MaxS)                         \
+  V(I8x16MinS, kMips64I8x16MinS)                         \
+  V(I8x16MaxU, kMips64I8x16MaxU)                         \
+  V(I8x16MinU, kMips64I8x16MinU)                         \
+  V(I8x16Eq, kMips64I8x16Eq)                             \
+  V(I8x16Ne, kMips64I8x16Ne)                             \
+  V(I8x16GtS, kMips64I8x16GtS)                           \
+  V(I8x16GeS, kMips64I8x16GeS)                           \
+  V(I8x16GtU, kMips64I8x16GtU)                           \
+  V(I8x16GeU, kMips64I8x16GeU)                           \
+  V(I8x16RoundingAverageU, kMips64I8x16RoundingAverageU) \
+  V(I8x16SConvertI16x8, kMips64I8x16SConvertI16x8)       \
+  V(I8x16UConvertI16x8, kMips64I8x16UConvertI16x8)       \
+  V(S128And, kMips64S128And)                             \
+  V(S128Or, kMips64S128Or)                               \
+  V(S128Xor, kMips64S128Xor)                             \
+  V(S128AndNot, kMips64S128AndNot)
 
 void InstructionSelector::VisitS128Zero(Node* node) {
   Mips64OperandGenerator g(this);
-  Emit(kMips64S128Zero, g.DefineSameAsFirst(node));
+  Emit(kMips64S128Zero, g.DefineAsRegister(node));
 }
 
 #define SIMD_VISIT_SPLAT(Type)                               \
@@ -2838,7 +2903,6 @@ void InstructionSelector::VisitS128Zero(Node* node) {
     VisitRR(this, kMips64##Type##Splat, node);               \
   }
 SIMD_TYPE_LIST(SIMD_VISIT_SPLAT)
-SIMD_VISIT_SPLAT(F64x2)
 #undef SIMD_VISIT_SPLAT
 
 #define SIMD_VISIT_EXTRACT_LANE(Type, Sign)                              \
@@ -2847,6 +2911,7 @@ SIMD_VISIT_SPLAT(F64x2)
   }
 SIMD_VISIT_EXTRACT_LANE(F64x2, )
 SIMD_VISIT_EXTRACT_LANE(F32x4, )
+SIMD_VISIT_EXTRACT_LANE(I64x2, )
 SIMD_VISIT_EXTRACT_LANE(I32x4, )
 SIMD_VISIT_EXTRACT_LANE(I16x8, U)
 SIMD_VISIT_EXTRACT_LANE(I16x8, S)
@@ -2859,7 +2924,6 @@ SIMD_VISIT_EXTRACT_LANE(I8x16, S)
     VisitRRIR(this, kMips64##Type##ReplaceLane, node);             \
   }
 SIMD_TYPE_LIST(SIMD_VISIT_REPLACE_LANE)
-SIMD_VISIT_REPLACE_LANE(F64x2)
 #undef SIMD_VISIT_REPLACE_LANE
 
 #define SIMD_VISIT_UNOP(Name, instruction)            \
@@ -2871,7 +2935,7 @@ SIMD_UNOP_LIST(SIMD_VISIT_UNOP)
 
 #define SIMD_VISIT_SHIFT_OP(Name)                     \
   void InstructionSelector::Visit##Name(Node* node) { \
-    VisitRRI(this, kMips64##Name, node);              \
+    VisitSimdShift(this, kMips64##Name, node);        \
   }
 SIMD_SHIFT_OP_LIST(SIMD_VISIT_SHIFT_OP)
 #undef SIMD_VISIT_SHIFT_OP

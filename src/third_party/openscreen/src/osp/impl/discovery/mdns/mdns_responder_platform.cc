@@ -16,9 +16,8 @@
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
-using openscreen::platform::Clock;
 using std::chrono::duration_cast;
 using std::chrono::hours;
 using std::chrono::milliseconds;
@@ -44,8 +43,7 @@ mStatus mDNSPlatformSendUDP(const mDNS* m,
                             UDPSocket* src,
                             const mDNSAddr* dst,
                             mDNSIPPort dstport) {
-  auto* const socket =
-      reinterpret_cast<openscreen::platform::UdpSocket*>(InterfaceID);
+  auto* const socket = reinterpret_cast<openscreen::UdpSocket*>(InterfaceID);
   const auto socket_it =
       std::find(m->p->sockets.begin(), m->p->sockets.end(), socket);
   if (socket_it == m->p->sockets.end())
@@ -111,6 +109,8 @@ mStatus mDNSPlatformTimeInit() {
 }
 
 mDNSs32 mDNSPlatformRawTime() {
+  using openscreen::Clock;
+
   const Clock::time_point now = Clock::now();
 
   // A signed 32-bit integer counting milliseconds only gives ~24.8 days of
@@ -129,8 +129,7 @@ mDNSs32 mDNSPlatformRawTime() {
 
 mDNSs32 mDNSPlatformUTC() {
   const auto seconds_since_epoch =
-      duration_cast<seconds>(openscreen::platform::GetWallTimeSinceUnixEpoch())
-          .count();
+      duration_cast<seconds>(openscreen::GetWallTimeSinceUnixEpoch()).count();
 
   // The return type will cause overflow in early 2038. Warn future developers
   // a year ahead of time.
@@ -244,7 +243,11 @@ void mDNSPlatformSetDNSConfig(mDNS* const m,
                               mDNSBool setsearch,
                               domainname* const fqdn,
                               DNameListElem** RegDomains,
-                              DNameListElem** BrowseDomains) {}
+                              DNameListElem** BrowseDomains) {
+  if (fqdn) {
+    std::memset(fqdn, 0, sizeof(*fqdn));
+  }
+}
 
 mStatus mDNSPlatformGetPrimaryInterface(mDNS* const m,
                                         mDNSAddr* v4,

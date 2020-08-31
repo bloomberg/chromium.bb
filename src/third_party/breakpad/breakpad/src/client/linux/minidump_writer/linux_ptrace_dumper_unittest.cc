@@ -36,13 +36,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <poll.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
-#include <sys/poll.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

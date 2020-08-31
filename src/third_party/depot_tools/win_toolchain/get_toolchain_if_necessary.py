@@ -79,16 +79,19 @@ def GetFileList(root):
   assert os.path.normpath(root) == root
   file_list = []
   # Ignore WER ReportQueue entries that vctip/cl leave in the bin dir if/when
-  # they crash. Also ignores the content of the win_sdk/debuggers/x(86|64)/sym/
-  # directories as this is just the temporarily location that Windbg might use
-  # to store the symbol files.
+  # they crash. Also ignores the content of the
+  # win_sdk/debuggers/x(86|64)/(sym|src)/ directories as this is just the
+  # temporarily location that Windbg might use to store the symbol files and
+  # downloaded sources.
   #
   # Note: These files are only created on a Windows host, so the
   # ignored_directories list isn't relevant on non-Windows hosts.
 
   ignored_directories = ['wer\\reportqueue',
                          'win_sdk\\debuggers\\x86\\sym\\',
-                         'win_sdk\\debuggers\\x64\\sym\\']
+                         'win_sdk\\debuggers\\x64\\sym\\',
+                         'win_sdk\\debuggers\\x86\\src\\',
+                         'win_sdk\\debuggers\\x64\\src\\']
   for base, _, files in os.walk(root):
     paths = [os.path.join(base, f) for f in files]
     for p in paths:

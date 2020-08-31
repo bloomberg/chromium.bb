@@ -14,8 +14,8 @@
 #include "cast/streaming/environment.h"
 #include "cast/streaming/ssrc.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 class Receiver;
 
@@ -47,8 +47,8 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
   using ReceiverEntries = std::vector<std::pair<Ssrc, Receiver*>>;
 
   // Environment::PacketConsumer implementation.
-  void OnReceivedPacket(const openscreen::IPEndpoint& source,
-                        openscreen::platform::Clock::time_point arrival_time,
+  void OnReceivedPacket(const IPEndpoint& source,
+                        Clock::time_point arrival_time,
                         std::vector<uint8_t> packet) final;
 
   // Helper to return an iterator pointing to the entry corresponding to the
@@ -60,7 +60,7 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
   ReceiverEntries receivers_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RECEIVER_PACKET_ROUTER_H_

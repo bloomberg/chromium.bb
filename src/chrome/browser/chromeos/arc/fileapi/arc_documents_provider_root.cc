@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -900,8 +900,8 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
   cache.clear_timer.Start(
       FROM_HERE,
       directory_cache_expire_soon_ ? base::TimeDelta() : kCacheExpiration,
-      base::Bind(&ArcDocumentsProviderRoot::ClearDirectoryCache,
-                 weak_ptr_factory_.GetWeakPtr(), document_id));
+      base::BindOnce(&ArcDocumentsProviderRoot::ClearDirectoryCache,
+                     weak_ptr_factory_.GetWeakPtr(), document_id));
 
   for (auto& callback : pending_callbacks)
     std::move(callback).Run(base::File::FILE_OK, cache.mapping);

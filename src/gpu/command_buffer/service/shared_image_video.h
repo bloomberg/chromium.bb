@@ -42,11 +42,10 @@ class GPU_GLES2_EXPORT SharedImageVideo
   ~SharedImageVideo() override;
 
   // SharedImageBacking implementation.
-  bool IsCleared() const override;
-  void SetCleared() override;
+  gfx::Rect ClearedRect() const override;
+  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-  void Destroy() override;
   size_t EstimatedSizeForMemTracking() const override;
 
   // SharedContextState::ContextLostObserver implementation.
@@ -55,7 +54,7 @@ class GPU_GLES2_EXPORT SharedImageVideo
   // Returns ycbcr information. This is only valid in vulkan context and
   // nullopt for other context.
   static base::Optional<VulkanYCbCrInfo> GetYcbcrInfo(
-      StreamTextureSharedImageInterface* stream_texture_sii,
+      TextureOwner* texture_owner,
       scoped_refptr<SharedContextState> context_state);
 
  protected:

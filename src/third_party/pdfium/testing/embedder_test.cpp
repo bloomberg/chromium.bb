@@ -37,19 +37,7 @@
 namespace {
 
 int GetBitmapBytesPerPixel(FPDF_BITMAP bitmap) {
-  const int format = FPDFBitmap_GetFormat(bitmap);
-  switch (format) {
-    case FPDFBitmap_Gray:
-      return 1;
-    case FPDFBitmap_BGR:
-      return 3;
-    case FPDFBitmap_BGRx:
-    case FPDFBitmap_BGRA:
-      return 4;
-    default:
-      ASSERT(false);
-      return 0;
-  }
+  return EmbedderTest::BytesPerPixelForFormat(FPDFBitmap_GetFormat(bitmap));
 }
 
 #if defined(OS_WIN)
@@ -73,7 +61,7 @@ EmbedderTest::EmbedderTest()
   FPDF_FILEWRITE::WriteBlock = WriteBlockCallback;
 }
 
-EmbedderTest::~EmbedderTest() {}
+EmbedderTest::~EmbedderTest() = default;
 
 void EmbedderTest::SetUp() {
   FPDF_LIBRARY_CONFIG config;
@@ -98,10 +86,8 @@ void EmbedderTest::TearDown() {
   EXPECT_EQ(0U, page_map_.size());
   EXPECT_EQ(0U, saved_page_map_.size());
 
-  if (document_) {
-    FORM_DoDocumentAAction(form_handle_, FPDFDOC_AACTION_WC);
+  if (document_)
     CloseDocument();
-  }
 
   FPDFAvail_Destroy(avail_);
   FPDF_DestroyLibrary();
@@ -241,6 +227,7 @@ bool EmbedderTest::OpenDocumentHelper(const char* password,
 }
 
 void EmbedderTest::CloseDocument() {
+  FORM_DoDocumentAAction(form_handle_, FPDFDOC_AACTION_WC);
   FPDFDOC_ExitFormFillEnvironment(form_handle_);
   form_handle_ = nullptr;
 
@@ -259,24 +246,22 @@ FPDF_FORMHANDLE EmbedderTest::SetupFormFillEnvironment(
 
   FPDF_FORMFILLINFO* formfillinfo = static_cast<FPDF_FORMFILLINFO*>(this);
   memset(formfillinfo, 0, sizeof(FPDF_FORMFILLINFO));
-#ifdef PDF_ENABLE_XFA
-  formfillinfo->version = 2;
-#else   // PDF_ENABLE_XFA
-  formfillinfo->version = 1;
-#endif  // PDF_ENABLE_XFA
+  formfillinfo->version = form_fill_info_version_;
   formfillinfo->FFI_SetTimer = SetTimerTrampoline;
   formfillinfo->FFI_KillTimer = KillTimerTrampoline;
   formfillinfo->FFI_GetPage = GetPageTrampoline;
   formfillinfo->FFI_DoURIAction = DoURIActionTrampoline;
+  formfillinfo->FFI_DoGoToAction = DoGoToActionTrampoline;
+  formfillinfo->FFI_OnFocusChange = OnFocusChangeTrampoline;
+  formfillinfo->FFI_DoURIActionWithKeyboardModifier =
+      DoURIActionWithKeyboardModifierTrampoline;
 
   if (javascript_option == JavaScriptOption::kEnableJavaScript)
     formfillinfo->m_pJsPlatform = platform;
 
   FPDF_FORMHANDLE form_handle =
       FPDFDOC_InitFormFillEnvironment(doc, formfillinfo);
-  FPDF_SetFormFieldHighlightColor(form_handle, FPDF_FORMFIELD_UNKNOWN,
-                                  0xFFE4DD);
-  FPDF_SetFormFieldHighlightAlpha(form_handle, 100);
+  SetInitialFormFieldHighlight(form_handle);
   return form_handle;
 }
 
@@ -349,6 +334,11 @@ void EmbedderTest::UnloadPageCommon(FPDF_PAGE page, bool do_events) {
   page_map_.erase(page_number);
 }
 
+void EmbedderTest::SetInitialFormFieldHighlight(FPDF_FORMHANDLE form) {
+  FPDF_SetFormFieldHighlightColor(form, FPDF_FORMFIELD_UNKNOWN, 0xFFE4DD);
+  FPDF_SetFormFieldHighlightAlpha(form, 100);
+}
+
 ScopedFPDFBitmap EmbedderTest::RenderLoadedPage(FPDF_PAGE page) {
   return RenderLoadedPageWithFlags(page, 0);
 }
@@ -379,8 +369,8 @@ ScopedFPDFBitmap EmbedderTest::RenderSavedPageWithFlags(FPDF_PAGE page,
 ScopedFPDFBitmap EmbedderTest::RenderPageWithFlags(FPDF_PAGE page,
                                                    FPDF_FORMHANDLE handle,
                                                    int flags) {
-  int width = static_cast<int>(FPDF_GetPageWidth(page));
-  int height = static_cast<int>(FPDF_GetPageHeight(page));
+  int width = static_cast<int>(FPDF_GetPageWidthF(page));
+  int height = static_cast<int>(FPDF_GetPageHeightF(page));
   int alpha = FPDFPage_HasTransparency(page) ? 1 : 0;
   ScopedFPDFBitmap bitmap(FPDFBitmap_Create(width, height, alpha));
   FPDF_DWORD fill_color = alpha ? 0x00000000 : 0xFFFFFFFF;
@@ -401,8 +391,8 @@ std::vector<uint8_t> EmbedderTest::RenderPageWithFlagsToEmf(FPDF_PAGE page,
                                                             int flags) {
   HDC dc = CreateEnhMetaFileA(nullptr, nullptr, nullptr, nullptr);
 
-  int width = static_cast<int>(FPDF_GetPageWidth(page));
-  int height = static_cast<int>(FPDF_GetPageHeight(page));
+  int width = static_cast<int>(FPDF_GetPageWidthF(page));
+  int height = static_cast<int>(FPDF_GetPageHeightF(page));
   HRGN rgn = CreateRectRgn(0, 0, width, height);
   SelectClipRgn(dc, rgn);
   DeleteObject(rgn);
@@ -459,6 +449,22 @@ std::string EmbedderTest::GetPostScriptFromEmf(
 
 FPDF_DOCUMENT EmbedderTest::OpenSavedDocument() {
   return OpenSavedDocumentWithPassword(nullptr);
+}
+
+// static
+int EmbedderTest::BytesPerPixelForFormat(int format) {
+  switch (format) {
+    case FPDFBitmap_Gray:
+      return 1;
+    case FPDFBitmap_BGR:
+      return 3;
+    case FPDFBitmap_BGRx:
+    case FPDFBitmap_BGRA:
+      return 4;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 FPDF_DOCUMENT EmbedderTest::OpenSavedDocumentWithPassword(
@@ -602,13 +608,47 @@ void EmbedderTest::DoURIActionTrampoline(FPDF_FORMFILLINFO* info,
 }
 
 // static
+void EmbedderTest::DoGoToActionTrampoline(FPDF_FORMFILLINFO* info,
+                                          int page_index,
+                                          int zoom_mode,
+                                          float* pos_array,
+                                          int array_size) {
+  EmbedderTest* test = static_cast<EmbedderTest*>(info);
+  return test->delegate_->DoGoToAction(info, page_index, zoom_mode, pos_array,
+                                       array_size);
+}
+
+// static
+void EmbedderTest::OnFocusChangeTrampoline(FPDF_FORMFILLINFO* info,
+                                           FPDF_ANNOTATION annot,
+                                           int page_index) {
+  EmbedderTest* test = static_cast<EmbedderTest*>(info);
+  return test->delegate_->OnFocusChange(info, annot, page_index);
+}
+
+// static
+void EmbedderTest::DoURIActionWithKeyboardModifierTrampoline(
+    FPDF_FORMFILLINFO* info,
+    FPDF_BYTESTRING uri,
+    int modifiers) {
+  EmbedderTest* test = static_cast<EmbedderTest*>(info);
+  return test->delegate_->DoURIActionWithKeyboardModifier(info, uri, modifiers);
+}
+
+// static
 std::string EmbedderTest::HashBitmap(FPDF_BITMAP bitmap) {
+  int stride = FPDFBitmap_GetStride(bitmap);
+  int usable_bytes_per_row =
+      GetBitmapBytesPerPixel(bitmap) * FPDFBitmap_GetWidth(bitmap);
+  int height = FPDFBitmap_GetHeight(bitmap);
+  auto span = pdfium::make_span(
+      static_cast<uint8_t*>(FPDFBitmap_GetBuffer(bitmap)), stride * height);
+
+  CRYPT_md5_context context = CRYPT_MD5Start();
+  for (int i = 0; i < height; ++i)
+    CRYPT_MD5Update(&context, span.subspan(i * stride, usable_bytes_per_row));
   uint8_t digest[16];
-  CRYPT_MD5Generate(static_cast<uint8_t*>(FPDFBitmap_GetBuffer(bitmap)),
-                    FPDFBitmap_GetWidth(bitmap) *
-                        GetBitmapBytesPerPixel(bitmap) *
-                        FPDFBitmap_GetHeight(bitmap),
-                    digest);
+  CRYPT_MD5Finish(&context, digest);
   return CryptToBase16(digest);
 }
 
@@ -695,10 +735,12 @@ int EmbedderTest::GetPageNumberForSavedPage(FPDF_PAGE page) const {
   return GetPageNumberForPage(saved_page_map_, page);
 }
 
-void EmbedderTest::OpenPDFFileForWrite(const char* filename) {
+#ifndef NDEBUG
+void EmbedderTest::OpenPDFFileForWrite(const std::string& filename) {
   filestream_.open(filename, std::ios_base::binary);
 }
 
 void EmbedderTest::ClosePDFFileForWrite() {
   filestream_.close();
 }
+#endif

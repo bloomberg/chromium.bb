@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import virtualenv_wrapper
 
 _MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class VirtualEnvTest(cros_test_lib.TestCase):
@@ -33,8 +37,9 @@ class VirtualEnvTest(cros_test_lib.TestCase):
   def testInsideVenv(self):
     """Test that we are inside a virtualenv."""
     # pylint: disable=protected-access
-    self.assertTrue(virtualenv_wrapper._IsInsideVenv(os.environ))
-
+    self.assertTrue(
+        (hasattr(sys, 'real_prefix') or
+         (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)))
 
   def testVenvMarkers(self):
     """Test that the virtualenv marker functions work."""

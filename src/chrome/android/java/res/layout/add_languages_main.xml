@@ -8,11 +8,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/language_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <include layout="@layout/preferences_action_bar_shadow"/>
+    <include layout="@layout/settings_action_bar_shadow"/>
 
 </FrameLayout>

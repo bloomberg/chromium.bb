@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the the People section to get the
- * profile info, which consists of the profile name and icon. Used for both
- * Chrome browser and ChromeOS.
- */
-cr.exportPath('settings');
-
-/**
- * An object describing the profile.
- * @typedef {{
- *   name: string,
- *   iconUrl: string
- * }}
- */
-settings.ProfileInfo;
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
 cr.define('settings', function() {
+  /**
+   * An object describing the profile.
+   * @typedef {{
+   *   name: string,
+   *   iconUrl: string
+   * }}
+   */
+  /* #export */ let ProfileInfo;
+
   /** @interface */
-  class ProfileInfoBrowserProxy {
+  /* #export */ class ProfileInfoBrowserProxy {
     /**
      * Returns a Promise for the profile info.
      * @return {!Promise<!settings.ProfileInfo>}
@@ -35,9 +32,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {ProfileInfoBrowserProxy}
+   * @implements {settings.ProfileInfoBrowserProxy}
    */
-  class ProfileInfoBrowserProxyImpl {
+  /* #export */ class ProfileInfoBrowserProxyImpl {
     /** @override */
     getProfileInfo() {
       return cr.sendWithPromise('getProfileInfo');
@@ -51,7 +48,10 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ProfileInfoBrowserProxyImpl);
 
+  // #cr_define_end
   return {
-    ProfileInfoBrowserProxyImpl: ProfileInfoBrowserProxyImpl,
+    ProfileInfo,
+    ProfileInfoBrowserProxy,
+    ProfileInfoBrowserProxyImpl,
   };
 });

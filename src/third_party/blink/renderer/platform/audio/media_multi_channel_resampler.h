@@ -31,7 +31,7 @@ class PLATFORM_EXPORT MediaMultiChannelResampler {
   // frames are available to satisfy the request.  |frame_delay| is the number
   // of output frames already processed and can be used to estimate delay.
   typedef WTF::CrossThreadRepeatingFunction<void(int frame_delay,
-                                                 AudioBus* audio_bus)>
+                                                 blink::AudioBus*)>
       ReadCB;
 
  public:
@@ -44,16 +44,31 @@ class PLATFORM_EXPORT MediaMultiChannelResampler {
                              size_t request_frames,
                              ReadCB read_cb);
 
-  // Resamples |frames| of data from |read_cb_| into AudioBus.
-  void Resample(int frames, media::AudioBus* audio_bus);
+  // Resamples |frames| of data from |read_cb_| into a blink::AudioBus, this
+  // requires creating a wrapper for the media::AudioBus on each call and so
+  // resampling directly into a media::AudioBus using ResampleInternal() is
+  // preferred if possible.
+  void Resample(int frames, blink::AudioBus* resampler_input_bus);
+
+  // Resamples |frames| of data from |read_cb_| into a media::AudioBus by
+  // directly calling Resample() on the underlying
+  // media::MultiChannelResampler.
+  void ResampleInternal(int frames, media::AudioBus* resampler_input_bus);
 
  private:
   // Wrapper method used to provide input to the media::MultiChannelResampler
   // with a media::AudioBus rather than a blink::AudioBus.
-  void ProvideResamplerInput(int resampler_frame_delay, media::AudioBus* dest);
+  void ProvideResamplerInput(int resampler_frame_delay,
+                             media::AudioBus* resampler_output_bus);
 
   // The resampler being wrapped by this class.
   std::unique_ptr<media::MultiChannelResampler> resampler_;
+
+  // An intermediary storage (wrapper) for buffers from Web Audio.
+  const std::unique_ptr<media::AudioBus> resampler_input_bus_wrapper_;
+
+  // An intermediary storage (wrapper) for providing the resampler's output.
+  const scoped_refptr<AudioBus> resampler_output_bus_wrapper_;
 
   // The callback using a blink::AudioBus that will be called by
   // ProvideResamplerInput().

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/common/gpu_preferences.mojom.h"
+#include "gpu/ipc/common/gpu_preferences.mojom-shared.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 #if defined(USE_OZONE)
@@ -124,7 +124,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
         prefs.enable_gpu_driver_debug_logging();
     out->disable_gpu_program_cache = prefs.disable_gpu_program_cache();
     out->enforce_gl_minimums = prefs.enforce_gl_minimums();
-    out->force_gpu_mem_available = prefs.force_gpu_mem_available();
+    out->force_gpu_mem_available_bytes = prefs.force_gpu_mem_available_bytes();
+    out->force_gpu_mem_discardable_limit_bytes =
+        prefs.force_gpu_mem_discardable_limit_bytes();
+    out->force_max_texture_size = prefs.force_max_texture_size();
     out->gpu_program_cache_size = prefs.gpu_program_cache_size();
     out->disable_gpu_shader_disk_cache = prefs.disable_gpu_shader_disk_cache();
     out->enable_threaded_texture_mailboxes =
@@ -167,13 +170,22 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
+    out->enable_dawn_backend_validation =
+        prefs.enable_dawn_backend_validation();
     out->enable_gpu_blocked_time_metric =
         prefs.enable_gpu_blocked_time_metric();
+    out->enable_perf_data_collection = prefs.enable_perf_data_collection();
 
 #if defined(USE_OZONE)
     if (!prefs.ReadMessagePumpType(&out->message_pump_type))
       return false;
 #endif
+
+    out->enable_native_gpu_memory_buffers =
+        prefs.enable_native_gpu_memory_buffers();
+
+    out->force_disable_new_accelerated_video_decoder =
+        prefs.force_disable_new_accelerated_video_decoder();
 
     return true;
   }
@@ -245,8 +257,16 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enforce_gl_minimums(const gpu::GpuPreferences& prefs) {
     return prefs.enforce_gl_minimums;
   }
-  static uint32_t force_gpu_mem_available(const gpu::GpuPreferences& prefs) {
-    return prefs.force_gpu_mem_available;
+  static uint32_t force_gpu_mem_available_bytes(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.force_gpu_mem_available_bytes;
+  }
+  static uint32_t force_gpu_mem_discardable_limit_bytes(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.force_gpu_mem_discardable_limit_bytes;
+  }
+  static uint32_t force_max_texture_size(const gpu::GpuPreferences& prefs) {
+    return prefs.force_max_texture_size;
   }
   static uint32_t gpu_program_cache_size(const gpu::GpuPreferences& prefs) {
     return prefs.gpu_program_cache_size;
@@ -327,8 +347,14 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_webgpu(const gpu::GpuPreferences& prefs) {
     return prefs.enable_webgpu;
   }
+  static bool enable_dawn_backend_validation(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_dawn_backend_validation;
+  }
   static bool enable_gpu_blocked_time_metric(const gpu::GpuPreferences& prefs) {
     return prefs.enable_gpu_blocked_time_metric;
+  }
+  static bool enable_perf_data_collection(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_perf_data_collection;
   }
 #if defined(USE_OZONE)
   static base::MessagePumpType message_pump_type(
@@ -336,6 +362,14 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     return prefs.message_pump_type;
   }
 #endif
+  static bool enable_native_gpu_memory_buffers(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.enable_native_gpu_memory_buffers;
+  }
+  static bool force_disable_new_accelerated_video_decoder(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.force_disable_new_accelerated_video_decoder;
+  }
 };
 
 }  // namespace mojo

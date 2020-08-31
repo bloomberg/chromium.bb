@@ -8,6 +8,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
@@ -34,7 +36,7 @@ namespace {
 const int kDefaultWidth = 400;
 const int kDefaultHeight = 420;
 // Site ID for HaTS survey.
-constexpr char kSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
+constexpr char kRegularSiteID[] = "cs5lsagwwbho7l5cbbdniso22e";
 constexpr char kGooglerSiteID[] = "z56p2hjy7pegxh3gmmur4qlwha";
 
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
@@ -58,10 +60,9 @@ enum class DeviceInfoKey : unsigned int {
 // URL.
 std::string LoadLocalHtmlAsString(const std::string& site_id,
                                   const std::string& site_context) {
-  std::string html_data;
-  ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_HATS_HTML)
-      .CopyToString(&html_data);
+  std::string html_data =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_HATS_HTML);
 
   size_t pos = html_data.find(kScriptSrcReplacementToken);
   html_data.replace(pos, strlen(kScriptSrcReplacementToken),
@@ -116,6 +117,15 @@ std::string GetFormattedSiteContext(const std::string& user_locale,
   return base::JoinString(pairs, join_keyword);
 }
 
+// Determine which HaTS survey to show the user.
+const std::string GetSiteID(bool is_google_account) {
+  if (is_google_account) {
+    return kGooglerSiteID;
+  } else {
+    return kRegularSiteID;
+  }
+}
+
 }  // namespace
 
 // static
@@ -129,9 +139,8 @@ void HatsDialog::CreateAndShow(bool is_google_account) {
   if (!user_locale.length())
     user_locale = kDefaultProfileLocale;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetFormattedSiteContext, user_locale,
                      kDeviceInfoStopKeyword),
       base::BindOnce(&HatsDialog::Show, is_google_account));
@@ -142,23 +151,32 @@ void HatsDialog::Show(bool is_google_account, const std::string& site_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Load and set the html data that needs to be displayed in the dialog.
-  std::string site_id = is_google_account ? kGooglerSiteID : kSiteID;
+  std::string site_id = GetSiteID(is_google_account);
   std::string html_data = LoadLocalHtmlAsString(site_id, site_context);
 
-  // Self deleting.
-  auto* hats_dialog = new HatsDialog(html_data);
+  Profile* active_profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile_to_show = active_profile->GetOffTheRecordProfile(
+      Profile::OTRProfileID::CreateUnique("ChromeOS::HatsDialog"));
 
-  chrome::ShowWebDialog(
-      nullptr, ProfileManager::GetActiveUserProfile()->GetOffTheRecordProfile(),
-      hats_dialog);
+  // Self deleting.
+  // Users of non-primary OTR profiles should destroy it when it's not needed
+  // any more.
+  auto* hats_dialog = new HatsDialog(html_data,
+                                     /* otr_profile= */ profile_to_show);
+  chrome::ShowWebDialog(nullptr, profile_to_show, hats_dialog);
 }
 
-HatsDialog::HatsDialog(const std::string& html_data) : html_data_(html_data) {
+HatsDialog::HatsDialog(const std::string& html_data, Profile* otr_profile)
+    : html_data_(html_data), otr_profile_(otr_profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(otr_profile_->IsOffTheRecord());
+  DCHECK(!otr_profile_->IsPrimaryOTRProfile());
 }
 
 HatsDialog::~HatsDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(otr_profile_);
+  ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
 }
 
 ui::ModalType HatsDialog::GetDialogModalType() const {

@@ -19,10 +19,9 @@ function initializeDateTimeLocalPicker(config) {
 
 /**
  * DateTimeLocalPicker: Custom element providing a datetime-local picker implementation.
- *             DateTimeLocalPicker contains 3 parts:
+ *             DateTimeLocalPicker contains 2 parts:
  *                 - date picker
  *                 - time picker
- *                 - submission controls
  */
 class DateTimeLocalPicker extends HTMLElement {
   constructor(config) {
@@ -34,34 +33,72 @@ class DateTimeLocalPicker extends HTMLElement {
     this.timePicker_ = new TimePicker(config);
     this.append(this.datePicker_.element, this.timePicker_);
 
-    this.submissionControls_ = new SubmissionControls(
-        this.onSubmitButtonClick_, this.onCancelButtonClick_);
-    this.append(this.submissionControls_);
+    this.hadValidValueWhenOpened_ =
+        (config.currentValue !== '') && (this.datePicker_.selection() != null);
+    this.initialSelectedValue_ = this.selectedValue;
+
     this.addEventListener('keydown', this.onKeyDown_);
+    this.addEventListener('click', this.onClick_);
 
     window.addEventListener('resize', this.onWindowResize_, {once: true});
-  };
-
-  onSubmitButtonClick_ = () => {
-    const selectedValue = this.datePicker_.getSelectedValue() + 'T' +
-        this.timePicker_.selectedValue;
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
-  };
-
-  onCancelButtonClick_ = () => {
-    window.pagePopupController.closePopup();
   };
 
   onKeyDown_ = (event) => {
     switch (event.key) {
       case 'Enter':
-        this.submissionControls_.submitButton.click();
+        // Submit the popup for an Enter keypress except when the user is
+        // hitting Enter to activate the month switcher button, Today button,
+        // or previous/next month arrows.
+        if (!event.target.matches(
+                '.calendar-navigation-button, .month-popup-button, .year-list-view')) {
+          window.pagePopupController.setValueAndClosePopup(
+              0, this.selectedValue);
+        } else if (event.target.matches(
+                       '.calendar-navigation-button, .year-list-view')) {
+          // Navigating with the previous/next arrows may change selection,
+          // so push this change to the in-page control but don't
+          // close the popup.
+          window.pagePopupController.setValue(this.selectedValue);
+        }
         break;
       case 'Escape':
-        this.submissionControls_.cancelButton.click();
+        if (this.selectedValue === this.initialSelectedValue_) {
+          window.pagePopupController.closePopup();
+        } else {
+          this.datePicker_.resetToInitialValue();
+          this.timePicker_.resetToInitialValue();
+          window.pagePopupController.setValue(
+              this.hadValidValueWhenOpened_ ? this.initialSelectedValue_ : '');
+        }
         break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'PageUp':
+      case 'PageDown':
+        if (event.target.matches('.calendar-table-view, .time-column') &&
+            this.hasSelectedDate) {
+          window.pagePopupController.setValue(this.selectedValue);
+        }
+        // Stop the native scrolling behavior; the Time picker needs to manage
+        // its own scroll position.
+        event.preventDefault();
+        break;
+      case 'Home':
+      case 'End':
+        // Prevent an attempt to scroll to the end of
+        // of an infinitely looping time picker column.
+        event.preventDefault();
+        break;
+    }
+  };
+
+  onClick_ = (event) => {
+    if (event.target.matches(
+            '.day-cell, .time-cell, .today-button-refresh, .calendar-navigation-button, .year-list-view, .calendar-navigation-button, .today-button-icon-refresh, .month-button') &&
+        this.hasSelectedDate) {
+      window.pagePopupController.setValue(this.selectedValue);
     }
   };
 
@@ -69,16 +106,25 @@ class DateTimeLocalPicker extends HTMLElement {
     this.datePicker_.calendarTableView.element.focus();
   };
 
+  // This will be false if neither the initial value of the
+  // control nor today's date are within a valid date range defined
+  // by the 'step', 'min', and 'max' attributes of the control.
+  get hasSelectedDate() {
+    return (this.datePicker_.selection() != null);
+  }
+
+  get selectedValue() {
+    return this.hasSelectedDate ? (this.datePicker_.getSelectedValue() + 'T' +
+                                   this.timePicker_.selectedValue) :
+                                  '';
+  }
+
   get height() {
     return DateTimeLocalPicker.Height;
   }
 
   get width() {
     return this.datePicker_.width() + this.timePicker_.width;
-  }
-
-  get submissionControls() {
-    return this.submissionControls_;
   }
 
   get datePicker() {
@@ -90,5 +136,5 @@ class DateTimeLocalPicker extends HTMLElement {
   }
 }
 DateTimeLocalPicker.ClassName = 'datetimelocal-picker';
-DateTimeLocalPicker.Height = 320;
+DateTimeLocalPicker.Height = 280;
 window.customElements.define('datetimelocal-picker', DateTimeLocalPicker);

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
@@ -58,12 +57,6 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       apps::PickerEntryType entry_type,
       apps::IntentPickerCloseReason close_reason,
       bool should_persist);
-
-  static void RecordUma(const std::string& selected_app_package,
-                        apps::PickerEntryType entry_type,
-                        apps::IntentPickerCloseReason close_reason,
-                        apps::Source source,
-                        bool should_persist);
 
   ChromeOsAppsNavigationThrottle(content::NavigationHandle* navigation_handle,
                                  bool arc_enabled);

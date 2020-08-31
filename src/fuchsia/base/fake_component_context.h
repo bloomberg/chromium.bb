@@ -7,6 +7,7 @@
 
 #include <fuchsia/base/agent_impl.h>
 #include <fuchsia/modular/cpp/fidl_test_base.h>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,28 +26,30 @@ namespace cr_fuchsia {
 class FakeComponentContext
     : public fuchsia::modular::testing::ComponentContext_TestBase {
  public:
-  explicit FakeComponentContext(
-      AgentImpl::CreateComponentStateCallback create_component_state_callback,
-      sys::OutgoingDirectory* outgoing_directory,
-      base::StringPiece component_url);
+  FakeComponentContext(sys::OutgoingDirectory* outgoing_directory,
+                       base::StringPiece component_url);
   ~FakeComponentContext() override;
 
+  void RegisterCreateComponentStateCallback(
+      base::StringPiece agent_url,
+      AgentImpl::CreateComponentStateCallback callback);
+
   // fuchsia::modular::ComponentContext_TestBase implementation.
-  void ConnectToAgent(
+  void DeprecatedConnectToAgent(
       std::string agent_url,
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
       fidl::InterfaceRequest<fuchsia::modular::AgentController> controller)
       override;
-  void ConnectToAgentService(
-      fuchsia::modular::AgentServiceRequest request) override;
   void NotImplemented_(const std::string& name) override;
 
  private:
   base::fuchsia::ScopedServiceBinding<fuchsia::modular::ComponentContext>
       binding_;
-  AgentImpl agent_impl_;
   const std::string component_url_;
+  sys::OutgoingDirectory* const outgoing_directory_;
   fuchsia::sys::ServiceProviderPtr agent_services_;
+
+  std::map<base::StringPiece, std::unique_ptr<AgentImpl>> agent_impl_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentContext);
 };

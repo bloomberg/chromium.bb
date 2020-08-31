@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
@@ -55,7 +56,10 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool ShouldRequestExpirationDate() const override;
   bool CanStoreLocally() const override;
   bool GetStoreLocallyStartState() const override;
+#if defined(OS_ANDROID)
+  bool ShouldOfferWebauthn() const override;
   bool GetWebauthnOfferStartState() const override;
+#endif
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
                               const base::string16& year) const override;
@@ -66,7 +70,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  protected:
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
-  void SetCreditCardForTesting(CreditCard test_card) { card_ = test_card; }
 
  private:
   bool AllowsRetry(AutofillClient::PaymentsRpcResult result);

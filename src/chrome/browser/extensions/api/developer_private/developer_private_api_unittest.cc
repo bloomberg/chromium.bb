@@ -50,6 +50,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -57,7 +58,6 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "services/data_decoder/data_decoder_service.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 namespace extensions {
@@ -415,7 +415,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
   scoped_refptr<const Extension> unloaded_extension =
       registry_observer.WaitForExtensionUnloaded();
   EXPECT_EQ(extension, unloaded_extension);
-  const Extension* reloaded_extension =
+  scoped_refptr<const Extension> reloaded_extension =
       registry_observer.WaitForExtensionLoaded();
   EXPECT_EQ(extension_id, reloaded_extension->id());
 }
@@ -759,7 +759,8 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedRetryId) {
                                                    "\"retryGuid\": \"%s\"}]",
                                                    retry_guid.c_str()),
                                 profile());
-    const Extension* extension = observer.WaitForExtensionLoaded();
+    scoped_refptr<const Extension> extension =
+        observer.WaitForExtensionLoaded();
     ASSERT_TRUE(extension);
     EXPECT_EQ(extension->path(), path);
   }
@@ -894,7 +895,8 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
                                 "retryGuid": "%s"}])",
                            retry_guid.c_str());
     api_test_utils::RunFunction(function.get(), args, profile());
-    const Extension* extension = observer.WaitForExtensionLoaded();
+    scoped_refptr<const Extension> extension =
+        observer.WaitForExtensionLoaded();
     ASSERT_TRUE(extension);
     EXPECT_EQ(extension->path(), path);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -942,7 +944,8 @@ TEST_F(DeveloperPrivateApiUnitTest,
     function->SetRenderFrameHost(web_contents->GetMainFrame());
     TestExtensionRegistryObserver observer(registry());
     api_test_utils::RunFunction(function.get(), kLoadUnpackedArgs, profile());
-    const Extension* extension = observer.WaitForExtensionLoaded();
+    scoped_refptr<const Extension> extension =
+        observer.WaitForExtensionLoaded();
     ASSERT_TRUE(extension);
     EXPECT_EQ(extension->path(), path);
   }
@@ -1054,8 +1057,6 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
 
 // Test developerPrivate.deleteExtensionErrors.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
-  FeatureSwitch::ScopedOverride error_console_override(
-      FeatureSwitch::error_console(), true);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   const Extension* extension = LoadSimpleExtension();
 
@@ -1328,7 +1329,8 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileCrx) {
   TestExtensionRegistryObserver observer(registry());
   ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
       << function->GetError();
-  const Extension* extension = observer.WaitForExtensionInstalled();
+  scoped_refptr<const Extension> extension =
+      observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("foo", extension->name());
 }
@@ -1351,7 +1353,8 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileUserScript) {
   TestExtensionRegistryObserver observer(registry());
   ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
       << function->GetError();
-  const Extension* extension = observer.WaitForExtensionInstalled();
+  scoped_refptr<const Extension> extension =
+      observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("My user script", extension->name());
 }
@@ -1476,14 +1479,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 }
 
-// This test is flaky on chromeos.
-// https://crbug.com/937355
-#if defined(OS_CHROMEOS)
-#define MAYBE_UpdateHostAccess DISABLED_UpdateHostAccess
-#else
-#define MAYBE_UpdateHostAccess UpdateHostAccess
-#endif
-TEST_F(DeveloperPrivateApiUnitTest, MAYBE_UpdateHostAccess) {
+TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1562,6 +1558,45 @@ TEST_F(DeveloperPrivateApiUnitTest,
   RunUpdateHostAccess(*extension, "ON_SPECIFIC_SITES");
   EXPECT_TRUE(modifier.HasWithheldHostPermissions());
   EXPECT_FALSE(modifier.HasGrantedHostPermission(example_com));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest,
+       UpdateHostAccess_BroadPermissionsRemovedOnTransitionToSpecificSites) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  modifier.SetWithholdHostPermissions(true);
+
+  const GURL kGoogleCom("https://google.com/");
+  const GURL kChromiumCom("https://chromium.com");
+
+  // Request <all_urls> and google.com so they are both in the runtime granted
+  // list. We use the util function to specifically add the <all_urls> pattern
+  // here, similar to if it was requested through the chrome.permissions.request
+  // API.
+  URLPattern all_url_pattern(Extension::kValidHostPermissionSchemes,
+                             "<all_urls>");
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({all_url_pattern}),
+                    URLPatternSet({all_url_pattern})));
+  modifier.GrantHostPermission(kGoogleCom);
+
+  // Even though <all_urls> has been granted, it was granted as a runtime host
+  // pattern, so the extension is still is considered to have withheld host
+  // permissions.
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kChromiumCom));
+
+  // Changing to specific sites should now remove the broad pattern, leaving
+  // only the google match pattern.
+  RunUpdateHostAccess(*extension, "ON_SPECIFIC_SITES");
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kChromiumCom));
 }
 
 TEST_F(DeveloperPrivateApiUnitTest,
@@ -1737,7 +1772,8 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
   TestExtensionRegistryObserver observer(registry());
   ASSERT_TRUE(api_test_utils::RunFunction(function.get(), "[]", profile()))
       << function->GetError();
-  const Extension* extension = observer.WaitForExtensionInstalled();
+  scoped_refptr<const Extension> extension =
+      observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("Simple Empty Extension", extension->name());
 }

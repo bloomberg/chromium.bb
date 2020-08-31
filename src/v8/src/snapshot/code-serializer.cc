@@ -13,6 +13,7 @@
 #include "src/objects/slots.h"
 #include "src/objects/visitors.h"
 #include "src/snapshot/object-deserializer.h"
+#include "src/snapshot/snapshot-utils.h"
 #include "src/snapshot/snapshot.h"
 #include "src/utils/version.h"
 
@@ -31,7 +32,8 @@ ScriptData::ScriptData(const byte* data, int length)
 }
 
 CodeSerializer::CodeSerializer(Isolate* isolate, uint32_t source_hash)
-    : Serializer(isolate), source_hash_(source_hash) {
+    : Serializer(isolate, Snapshot::kDefaultSerializerFlags),
+      source_hash_(source_hash) {
   allocator()->UseCustomChunkSize(FLAG_serialization_chunk_size);
 }
 
@@ -197,11 +199,6 @@ void CodeSerializer::SerializeObject(HeapObject obj) {
   }
 #endif  // V8_TARGET_ARCH_ARM
 
-  if (obj.IsBytecodeArray()) {
-    // Clear the stack frame cache if present
-    BytecodeArray::cast(obj).ClearFrameCacheFromSourcePositionTable();
-  }
-
   // Past this point we should not see any (context-specific) maps anymore.
   CHECK(!obj.IsMap());
   // There should be no references to the global object embedded.
@@ -256,7 +253,7 @@ void CreateInterpreterDataForDeserializedCode(Isolate* isolate,
     int column_num = script->GetColumnNumber(info->StartPosition()) + 1;
     PROFILE(isolate,
             CodeCreateEvent(CodeEventListener::INTERPRETED_FUNCTION_TAG,
-                            *abstract_code, *info, *name_handle, line_num,
+                            abstract_code, info, name_handle, line_num,
                             column_num));
   }
 }
@@ -273,8 +270,7 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
   SerializedCodeData::SanityCheckResult sanity_check_result =
       SerializedCodeData::CHECK_SUCCESS;
   const SerializedCodeData scd = SerializedCodeData::FromCachedData(
-      isolate, cached_data,
-      SerializedCodeData::SourceHash(source, origin_options),
+      cached_data, SerializedCodeData::SourceHash(source, origin_options),
       &sanity_check_result);
   if (sanity_check_result != SerializedCodeData::CHECK_SUCCESS) {
     if (FLAG_profile_deserialization) PrintF("[Cached code failed check]\n");
@@ -328,7 +324,7 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
                         result->StartPosition(), result->EndPosition(), *name));
     }
     if (log_code_creation) {
-      Script::InitLineEnds(script);
+      Script::InitLineEnds(isolate, script);
 
       SharedFunctionInfo::ScriptIterator iter(isolate, *script);
       for (SharedFunctionInfo info = iter.Next(); !info.is_null();
@@ -344,9 +340,10 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
               script->GetLineNumber(shared_info->StartPosition()) + 1;
           int column_num =
               script->GetColumnNumber(shared_info->StartPosition()) + 1;
-          PROFILE(isolate, CodeCreateEvent(CodeEventListener::SCRIPT_TAG,
-                                           info.abstract_code(), *shared_info,
-                                           *name, line_num, column_num));
+          PROFILE(isolate,
+                  CodeCreateEvent(CodeEventListener::SCRIPT_TAG,
+                                  handle(shared_info->abstract_code(), isolate),
+                                  shared_info, name, line_num, column_num));
         }
       }
     }
@@ -354,7 +351,7 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
 
   if (needs_source_positions) {
     Handle<Script> script(Script::cast(result->script()), isolate);
-    Script::InitLineEnds(script);
+    Script::InitLineEnds(isolate, script);
   }
   return scope.CloseAndEscape(result);
 }
@@ -407,7 +404,7 @@ SerializedCodeData::SerializedCodeData(const std::vector<byte>* payload,
 }
 
 SerializedCodeData::SanityCheckResult SerializedCodeData::SanityCheck(
-    Isolate* isolate, uint32_t expected_source_hash) const {
+    uint32_t expected_source_hash) const {
   if (this->size_ < kHeaderSize) return INVALID_HEADER;
   uint32_t magic_number = GetMagicNumber();
   if (magic_number != kMagicNumber) return MAGIC_NUMBER_MISMATCH;
@@ -473,11 +470,11 @@ SerializedCodeData::SerializedCodeData(ScriptData* data)
     : SerializedData(const_cast<byte*>(data->data()), data->length()) {}
 
 SerializedCodeData SerializedCodeData::FromCachedData(
-    Isolate* isolate, ScriptData* cached_data, uint32_t expected_source_hash,
+    ScriptData* cached_data, uint32_t expected_source_hash,
     SanityCheckResult* rejection_result) {
   DisallowHeapAllocation no_gc;
   SerializedCodeData scd(cached_data);
-  *rejection_result = scd.SanityCheck(isolate, expected_source_hash);
+  *rejection_result = scd.SanityCheck(expected_source_hash);
   if (*rejection_result != CHECK_SUCCESS) {
     cached_data->Reject();
     return SerializedCodeData(nullptr, 0);

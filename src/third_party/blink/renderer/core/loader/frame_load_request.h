@@ -27,9 +27,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
@@ -37,6 +39,7 @@
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace blink {
 
@@ -48,13 +51,14 @@ struct CORE_EXPORT FrameLoadRequest {
 
  public:
   FrameLoadRequest(Document* origin_document, const ResourceRequest&);
+  FrameLoadRequest(Document* origin_document, const ResourceRequestHead&);
+  FrameLoadRequest(const FrameLoadRequest&) = delete;
+  FrameLoadRequest& operator=(const FrameLoadRequest&) = delete;
 
-  Document* OriginDocument() const { return origin_document_.Get(); }
+  Document* OriginDocument() const { return origin_document_; }
 
-  network::mojom::RequestContextFrameType GetFrameType() const {
-    return frame_type_;
-  }
-  void SetFrameType(network::mojom::RequestContextFrameType frame_type) {
+  mojom::RequestContextFrameType GetFrameType() const { return frame_type_; }
+  void SetFrameType(mojom::RequestContextFrameType frame_type) {
     frame_type_ = frame_type;
   }
 
@@ -88,7 +92,7 @@ struct CORE_EXPORT FrameLoadRequest {
     triggering_event_info_ = info;
   }
 
-  HTMLFormElement* Form() const { return form_.Get(); }
+  HTMLFormElement* Form() const { return form_; }
   void SetForm(HTMLFormElement* form) { form_ = form; }
 
   ShouldSendReferrer GetShouldSendReferrer() const {
@@ -100,7 +104,7 @@ struct CORE_EXPORT FrameLoadRequest {
     href_translate_ = translate;
   }
 
-  ContentSecurityPolicyDisposition ShouldCheckMainWorldContentSecurityPolicy()
+  network::mojom::CSPDisposition ShouldCheckMainWorldContentSecurityPolicy()
       const {
     return should_check_main_world_content_security_policy_;
   }
@@ -136,16 +140,25 @@ struct CORE_EXPORT FrameLoadRequest {
   void SetNoOpener() { window_features_.noopener = true; }
   void SetNoReferrer() {
     should_send_referrer_ = kNeverSendReferrer;
-    resource_request_.ClearHTTPReferrer();
+    resource_request_.SetReferrerString(Referrer::NoReferrer());
+    resource_request_.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
     resource_request_.ClearHTTPOrigin();
   }
+
+  // Impressions are set when a FrameLoadRequest is created for a click on an
+  // anchor tag that has conversion measurement attributes.
+  void SetImpression(const WebImpression& impression) {
+    impression_ = impression;
+  }
+
+  const base::Optional<WebImpression>& Impression() { return impression_; }
 
   // Whether either OriginDocument, RequestorOrigin or IsolatedWorldOrigin can
   // display the |url|,
   bool CanDisplay(const KURL&) const;
 
  private:
-  Member<Document> origin_document_;
+  Document* origin_document_;
   ResourceRequest resource_request_;
   AtomicString href_translate_;
   ClientNavigationReason client_navigation_reason_ =
@@ -153,17 +166,18 @@ struct CORE_EXPORT FrameLoadRequest {
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   TriggeringEventInfo triggering_event_info_ =
       TriggeringEventInfo::kNotFromEvent;
-  Member<HTMLFormElement> form_;
+  HTMLFormElement* form_ = nullptr;
   ShouldSendReferrer should_send_referrer_;
-  ContentSecurityPolicyDisposition
+  network::mojom::CSPDisposition
       should_check_main_world_content_security_policy_;
   scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
-  network::mojom::RequestContextFrameType frame_type_ =
-      network::mojom::RequestContextFrameType::kNone;
+  mojom::RequestContextFrameType frame_type_ =
+      mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
   bool is_window_open_ = false;
+  base::Optional<WebImpression> impression_;
 };
 
 }  // namespace blink

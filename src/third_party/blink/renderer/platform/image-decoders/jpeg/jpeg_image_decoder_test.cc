@@ -49,10 +49,13 @@ static const size_t kLargeEnoughSize = 1000 * 1000;
 
 namespace {
 
-std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
+std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(
+    size_t max_decoded_bytes,
+    ImageDecoder::OverrideAllowDecodeToYuv decodeToYUV =
+        ImageDecoder::OverrideAllowDecodeToYuv::kDeny) {
   return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      max_decoded_bytes, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
+      max_decoded_bytes, decodeToYUV);
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {
@@ -87,8 +90,8 @@ void ReadYUV(size_t max_decoded_bytes,
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<JPEGImageDecoder> decoder =
-      CreateJPEGDecoder(max_decoded_bytes);
+  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(
+      max_decoded_bytes, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
   decoder->SetDecodeToYuvForTesting(true);
   decoder->SetData(data.get(), true);
 
@@ -142,7 +145,7 @@ void ReadYUV(size_t max_decoded_bytes,
 // Tests failure on a too big image.
 TEST(JPEGImageDecoderTest, tooBig) {
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(100);
-  EXPECT_FALSE(decoder->SetSize(10000, 10000));
+  EXPECT_FALSE(decoder->SetSize(10000u, 10000u));
   EXPECT_TRUE(decoder->Failed());
 }
 
@@ -274,7 +277,8 @@ TEST(JPEGImageDecoderTest, yuv) {
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
+  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(
+      230 * 230 * 4, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
   decoder->SetDecodeToYuvForTesting(true);
   decoder->SetData(data.get(), true);
 
@@ -551,5 +555,24 @@ const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
 INSTANTIATE_TEST_SUITE_P(JPEGImageDecoderTest,
                          ColorSpaceUMATest,
                          ::testing::ValuesIn(kColorSpaceUMATestParams));
+
+TEST(JPEGImageDecoderTest, PartialDataWithoutSize) {
+  const char* jpeg_file = "/images/resources/lenna.jpg";
+  scoped_refptr<SharedBuffer> full_data = ReadFile(jpeg_file);
+  ASSERT_TRUE(full_data);
+
+  constexpr size_t kDataLengthWithoutSize = 4;
+  ASSERT_LT(kDataLengthWithoutSize, full_data->size());
+  scoped_refptr<SharedBuffer> partial_data =
+      SharedBuffer::Create(full_data->Data(), kDataLengthWithoutSize);
+
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder();
+  decoder->SetData(partial_data.get(), false);
+  EXPECT_FALSE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+  decoder->SetData(full_data.get(), true);
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+}
 
 }  // namespace blink

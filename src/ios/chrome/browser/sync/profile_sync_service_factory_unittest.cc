@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/base/model_type.h"
@@ -43,13 +42,14 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
  protected:
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(40 == syncer::ModelType::NUM_ENTRIES,
+    static_assert(41 == syncer::ModelType::NUM_ENTRIES,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
     std::vector<syncer::ModelType> datatypes;
 
-    // Common types.
+    // Common types. This excludes PASSWORDS because the password store factory
+    // is null for testing and hence no controller gets instantiated.
     datatypes.push_back(syncer::AUTOFILL);
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
     datatypes.push_back(syncer::AUTOFILL_WALLET_DATA);
@@ -57,12 +57,6 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
-    if (!base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      // Password store factory is null for testing. For directory
-      // implementation, a controller was added anyway. For USS, no controller
-      // gets added, and hence the type isn't available.
-      datatypes.push_back(syncer::PASSWORDS);
-    }
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
     datatypes.push_back(syncer::READING_LIST);
@@ -101,7 +95,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
         syncer::ModelTypeSetToString(disabled_types));
   }
 
-  ios::ChromeBrowserState* chrome_browser_state() {
+  ChromeBrowserState* chrome_browser_state() {
     return chrome_browser_state_.get();
   }
 

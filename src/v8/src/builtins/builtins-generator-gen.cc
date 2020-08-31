@@ -25,7 +25,7 @@ class GeneratorBuiltinsAssembler : public CodeStubAssembler {
   // the body of resume is factored out below, and shared by JSGeneratorObject
   // prototype methods as well as AsyncModuleEvaluate. The only difference
   // between AsyncModuleEvaluate and JSGeneratorObject::PrototypeNext is
-  // the expected reciever.
+  // the expected receiver.
   void InnerResume(CodeStubArguments* args, TNode<JSGeneratorObject> receiver,
                    TNode<Object> value, TNode<Context> context,
                    JSGeneratorObject::ResumeMode resume_mode,
@@ -56,12 +56,16 @@ void GeneratorBuiltinsAssembler::InnerResume(
                                  SmiConstant(resume_mode));
 
   // Resume the {receiver} using our trampoline.
+  // Close the generator if there was an exception.
   TVARIABLE(Object, var_exception);
   Label if_exception(this, Label::kDeferred), if_final_return(this);
-  TNode<Object> result = CallStub(CodeFactory::ResumeGenerator(isolate()),
-                                  context, value, receiver);
-  // Make sure we close the generator if there was an exception.
-  GotoIfException(result, &if_exception, &var_exception);
+  TNode<Object> result;
+  {
+    compiler::ScopedExceptionHandler handler(this, &if_exception,
+                                             &var_exception);
+    result = CallStub(CodeFactory::ResumeGenerator(isolate()), context, value,
+                      receiver);
+  }
 
   // If the generator is not suspended (i.e., its state is 'executing'),
   // close it and wrap the return value in IteratorResult.

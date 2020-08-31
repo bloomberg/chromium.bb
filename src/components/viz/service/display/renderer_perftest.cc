@@ -16,10 +16,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -27,11 +30,13 @@
 #include "base/timer/lap_timer.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/quads/render_pass_io.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
@@ -43,6 +48,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -99,9 +105,11 @@ class WaitForSwapDisplayClient : public DisplayClient {
     DCHECK(loop_);
     loop_->Quit();
   }
+  void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) override {
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) override {
     return BeginFrameArgs::MinInterval();
   }
 
@@ -168,7 +176,7 @@ void DeleteSharedImage(scoped_refptr<ContextProvider> context_provider,
 }
 
 TransferableResource CreateTestTexture(
-    const gfx::Rect& rect,
+    const gfx::Size& size,
     SkColor texel_color,
     bool premultiplied_alpha,
     ClientResourceProvider* child_resource_provider,
@@ -179,19 +187,19 @@ TransferableResource CreateTestTexture(
                                                     SkColorGetR(texel_color),
                                                     SkColorGetG(texel_color),
                                                     SkColorGetB(texel_color));
-  size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
+  size_t num_pixels = static_cast<size_t>(size.width()) * size.height();
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
   gpu::SharedImageInterface* sii =
       child_context_provider->SharedImageInterface();
   DCHECK(sii);
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      RGBA_8888, rect.size(), gfx::ColorSpace(),
-      gpu::SHARED_IMAGE_USAGE_DISPLAY, MakePixelSpan(pixels));
-  gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
+      RGBA_8888, size, gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_DISPLAY,
+      MakePixelSpan(pixels));
+  gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGL(
-      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, rect.size(),
+      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
       false /* is_overlay_candidate */);
   gl_resource.format = RGBA_8888;
   gl_resource.color_space = gfx::ColorSpace();
@@ -239,6 +247,34 @@ void CreateTestTileDrawQuad(ResourceId resource_id,
                nearest_neighbor, force_anti_aliasing_off);
 }
 
+bool RenderPassListFromJSON(const std::string& tag,
+                            const std::string& site,
+                            uint32_t year,
+                            size_t frame_index,
+                            RenderPassList* render_pass_list) {
+  base::FilePath json_path;
+  if (!base::PathService::Get(Paths::DIR_TEST_DATA, &json_path))
+    return false;
+  std::string site_year = site + "_" + base::NumberToString(year);
+  std::string filename = base::NumberToString(frame_index);
+  while (filename.length() < 4)
+    filename = "0" + filename;
+  filename += ".json";
+  json_path = json_path.Append(FILE_PATH_LITERAL("render_pass_data"))
+                  .AppendASCII(tag)
+                  .AppendASCII(site_year)
+                  .AppendASCII(filename);
+  if (!base::PathExists(json_path))
+    return false;
+  std::string json_text;
+  if (!base::ReadFileToString(json_path, &json_text))
+    return false;
+  base::Optional<base::Value> dict = base::JSONReader::Read(json_text);
+  if (!dict.has_value())
+    return false;
+  return RenderPassListFromDict(dict.value(), render_pass_list);
+}
+
 }  // namespace
 
 template <typename RendererType>
@@ -246,12 +282,11 @@ class RendererPerfTest : public testing::Test {
  public:
   RendererPerfTest()
       : manager_(&shared_bitmap_manager_),
-        support_(std::make_unique<CompositorFrameSinkSupport>(
-            nullptr,
-            &manager_,
-            kArbitraryFrameSinkId,
-            true /* is_root */,
-            true /* needs_sync_points */)),
+        support_(
+            std::make_unique<CompositorFrameSinkSupport>(nullptr,
+                                                         &manager_,
+                                                         kArbitraryFrameSinkId,
+                                                         true /* is_root */)),
         timer_(/*warmup_laps=*/100,
                /*time_limit=*/TestTimeLimit(),
                /*check_interval=*/10) {}
@@ -282,17 +317,15 @@ class RendererPerfTest : public testing::Test {
         gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
         image_factory, gpu_channel_manager_delegate, renderer_settings_);
     child_context_provider_->BindToCurrentThread();
-    constexpr bool sync_token_verification = false;
-    child_resource_provider_ =
-        std::make_unique<ClientResourceProvider>(sync_token_verification);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
     auto output_surface = CreateOutputSurface(gpu_service);
     // WaitForSwapDisplayClient depends on this.
     output_surface->SetNeedsSwapSizeNotifications(true);
-
+    auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     display_ = std::make_unique<Display>(
         &shared_bitmap_manager_, renderer_settings_, kArbitraryFrameSinkId,
-        std::move(output_surface),
+        std::move(output_surface), std::move(overlay_processor),
         /*display_scheduler=*/nullptr, base::ThreadTaskRunnerHandle::Get());
     display_->SetVisible(true);
     display_->Initialize(&client_, manager_.surface_manager());
@@ -357,12 +390,88 @@ class RendererPerfTest : public testing::Test {
     support_->SubmitCompositorFrame(
         id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
         std::move(frame));
-    ASSERT_TRUE(display_->DrawAndSwap());
+    ASSERT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
+  }
+
+  ResourceId MapResourceId(base::flat_map<ResourceId, ResourceId>* resource_map,
+                           ResourceId recorded_id,
+                           const gfx::Size& texture_size,
+                           SkColor texel_color,
+                           bool premultiplied_alpha) {
+    DCHECK(resource_map);
+    ResourceId actual_id;
+    if (resource_map->find(recorded_id) == resource_map->end()) {
+      resource_list_.push_back(CreateTestTexture(
+          texture_size, texel_color, premultiplied_alpha,
+          child_resource_provider_.get(), child_context_provider_));
+      actual_id = resource_list_.back().id;
+      (*resource_map)[recorded_id] = actual_id;
+    } else {
+      actual_id = (*resource_map)[recorded_id];
+    }
+    return actual_id;
+  }
+
+  void SetUpRenderPassListResources(RenderPassList* render_pass_list) {
+    base::flat_map<ResourceId, ResourceId> resource_map;
+    for (auto& render_pass : *render_pass_list) {
+      for (auto* quad : render_pass->quad_list) {
+        if (quad->resources.count == 0)
+          continue;
+        switch (quad->material) {
+          case DrawQuad::Material::kTiledContent: {
+            TileDrawQuad* tile_quad = reinterpret_cast<TileDrawQuad*>(quad);
+            ResourceId recorded_id = tile_quad->resource_id();
+            ResourceId actual_id = this->MapResourceId(
+                &resource_map, recorded_id, tile_quad->texture_size,
+                SkColorSetARGB(128, 0, 255, 0), tile_quad->is_premultiplied);
+            tile_quad->resources.ids[TileDrawQuad::kResourceIdIndex] =
+                actual_id;
+          } break;
+          case DrawQuad::Material::kTextureContent: {
+            TextureDrawQuad* texture_quad =
+                reinterpret_cast<TextureDrawQuad*>(quad);
+            ResourceId recorded_id = texture_quad->resource_id();
+            ResourceId actual_id = this->MapResourceId(
+                &resource_map, recorded_id, texture_quad->rect.size(),
+                SkColorSetARGB(128, 0, 255, 0),
+                texture_quad->premultiplied_alpha);
+            texture_quad->resources.ids[TextureDrawQuad::kResourceIdIndex] =
+                actual_id;
+          } break;
+          case DrawQuad::Material::kYuvVideoContent: {
+            YUVVideoDrawQuad* yuv_quad =
+                reinterpret_cast<YUVVideoDrawQuad*>(quad);
+            const size_t kIndex[] = {
+                YUVVideoDrawQuad::kYPlaneResourceIdIndex,
+                YUVVideoDrawQuad::kUPlaneResourceIdIndex,
+                YUVVideoDrawQuad::kVPlaneResourceIdIndex,
+                YUVVideoDrawQuad::kAPlaneResourceIdIndex,
+            };
+            const gfx::Size kSize[] = {
+                yuv_quad->ya_tex_size,
+                yuv_quad->uv_tex_size,
+                yuv_quad->uv_tex_size,
+                yuv_quad->ya_tex_size,
+            };
+            for (size_t ii = 0; ii < yuv_quad->resources.count; ++ii) {
+              ResourceId recorded_id = yuv_quad->resources.ids[kIndex[ii]];
+              ResourceId actual_id =
+                  this->MapResourceId(&resource_map, recorded_id, kSize[ii],
+                                      SkColorSetARGB(128, 0, 255, 0), false);
+              yuv_quad->resources.ids[kIndex[ii]] = actual_id;
+            }
+          } break;
+          default:
+            ASSERT_TRUE(false);
+        }
+      }
+    }
   }
 
   void RunSingleTextureQuad() {
     resource_list_.push_back(CreateTestTexture(
-        gfx::Rect(kSurfaceSize),
+        kSurfaceSize,
         /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
         /*premultiplied_alpha=*/false, child_resource_provider_.get(),
         child_context_provider_));
@@ -381,8 +490,8 @@ class RendererPerfTest : public testing::Test {
 
       RenderPassList pass_list;
       pass_list.push_back(std::move(pass));
-      DrawFrame(std::move(pass_list));
 
+      DrawFrame(std::move(pass_list));
       client_.WaitForSwap();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -395,7 +504,7 @@ class RendererPerfTest : public testing::Test {
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 5; j++) {
         resource_list_.push_back(CreateTestTexture(
-            gfx::Rect(kTextureSize),
+            kTextureSize,
             /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
             /*premultiplied_alpha=*/false, child_resource_provider_.get(),
             child_context_provider_));
@@ -434,7 +543,7 @@ class RendererPerfTest : public testing::Test {
         ScaleToCeiledSize(kSurfaceSize, /*x_scale=*/0.2, /*y_scale=*/0.2);
     ResourceId resource_id;
     resource_list_.push_back(CreateTestTexture(
-        gfx::Rect(kTextureSize),
+        kTextureSize,
         /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
         /*premultiplied_alpha=*/false, child_resource_provider_.get(),
         child_context_provider_));
@@ -479,7 +588,7 @@ class RendererPerfTest : public testing::Test {
     if (share_resources) {
       // A single tiled resource referenced by each TileDrawQuad
       resource_list_.push_back(CreateTestTexture(
-          gfx::Rect(kTextureSize),
+          kTextureSize,
           /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
           /*premultiplied_alpha=*/false, child_resource_provider_.get(),
           child_context_provider_));
@@ -487,7 +596,7 @@ class RendererPerfTest : public testing::Test {
       // Each TileDrawQuad gets its own resource
       for (int i = 0; i < tile_count; ++i) {
         resource_list_.push_back(CreateTestTexture(
-            gfx::Rect(kTextureSize),
+            kTextureSize,
             /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
             /*premultiplied_alpha=*/false, child_resource_provider_.get(),
             child_context_provider_));
@@ -536,6 +645,30 @@ class RendererPerfTest : public testing::Test {
 
   void RunRotatedTileQuads() {
     this->RunRotatedTileQuads(/*share_resources=*/false);
+  }
+
+  void RunSingleRenderPassListFromJSON(const std::string& tag,
+                                       const std::string& site,
+                                       uint32_t year,
+                                       size_t index) {
+    RenderPassList render_pass_list;
+    ASSERT_TRUE(
+        RenderPassListFromJSON(tag, site, year, index, &render_pass_list));
+    ASSERT_FALSE(render_pass_list.empty());
+    // Root render pass damage needs to match the output surface size.
+    auto& last_render_pass = *render_pass_list.back();
+    last_render_pass.damage_rect = last_render_pass.output_rect;
+
+    this->SetUpRenderPassListResources(&render_pass_list);
+
+    timer_.Reset();
+    do {
+      RenderPassList local_list;
+      RenderPass::CopyAll(render_pass_list, &local_list);
+      DrawFrame(std::move(local_list));
+      client_.WaitForSwap();
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
   }
 
  protected:
@@ -603,5 +736,39 @@ TYPED_TEST(RendererPerfTest, RotatedTileQuadsShared) {
 TYPED_TEST(RendererPerfTest, RotatedTileQuads) {
   this->RunRotatedTileQuads();
 }
+
+#define TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(SITE, FRAME)              \
+  TYPED_TEST(RendererPerfTest, SITE) {                                      \
+    this->RunSingleRenderPassListFromJSON(/*tag=*/"top_real_world_desktop", \
+                                          /*site=*/#SITE, /*year=*/2018,    \
+                                          /*frame_index=*/FRAME);           \
+  }
+
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(accu_weather, 298)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(amazon, 30)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(blogspot, 56)
+// TODO(zmo): Fix the crash and enable cnn test.
+// TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(cnn, 479)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(ebay, 44)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(espn, 463)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(facebook, 327)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(gmail, 66)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(google_calendar, 53)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(google_docs, 369)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(google_image_search, 44)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(google_plus, 45)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(google_web_search, 89)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(linkedin, 284)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(pinterest, 120)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(techcrunch, 190)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(twitch, 396)
+// TODO(zmo): Fix the crash and enable twitter test.
+// TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(twitter, 352)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(wikipedia, 48)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(wordpress, 75)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(yahoo_answers, 74)
+TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST(yahoo_sports, 269)
+
+#undef TOP_REAL_WORLD_DESKTOP_RENDERER_PERF_TEST
 
 }  // namespace viz

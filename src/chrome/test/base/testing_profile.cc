@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -94,11 +95,11 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema.h"
+#include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
-#include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -153,7 +154,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
@@ -402,8 +402,6 @@ void TestingProfile::Init() {
     key_ = std::make_unique<TestingProfileKey>(this, profile_path_);
   }
 
-  BrowserContext::Initialize(this, profile_path_);
-
 #if defined(OS_ANDROID)
   signin::DisableInteractionWithSystemAccounts();
 #endif
@@ -417,8 +415,8 @@ void TestingProfile::Init() {
   if (!IsOffTheRecord()) {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
-    TestingPrefStore* store = new TestingPrefStore();
-    settings_service->Init(store);
+    supervised_user_pref_store_ = new TestingPrefStore();
+    settings_service->Init(supervised_user_pref_store_);
     settings_service->MergeDataAndStartSyncing(
         syncer::SUPERVISED_USER_SETTINGS, syncer::SyncDataList(),
         std::unique_ptr<syncer::SyncChangeProcessor>(
@@ -426,7 +424,7 @@ void TestingProfile::Init() {
         std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
 
-    store->SetInitializationCompleted();
+    supervised_user_pref_store_->SetInitializationCompleted();
   }
 #endif
 
@@ -753,26 +751,68 @@ bool TestingProfile::IsOffTheRecord() const {
   return original_profile_;
 }
 
-void TestingProfile::SetOffTheRecordProfile(std::unique_ptr<Profile> profile) {
-  DCHECK(!IsOffTheRecord());
-  if (profile)
-    DCHECK_EQ(this, profile->GetOriginalProfile());
-  incognito_profile_ = std::move(profile);
+const Profile::OTRProfileID& TestingProfile::GetOTRProfileID() const {
+  // TODO(https://crbug.com//1033903): Remove this variable and add support for
+  // non-primary OTRs.
+  static base::NoDestructor<Profile::OTRProfileID> incognito_profile_id(
+      Profile::OTRProfileID::PrimaryID());
+  DCHECK(IsOffTheRecord());
+
+  return *incognito_profile_id;
 }
 
-Profile* TestingProfile::GetOffTheRecordProfile() {
+void TestingProfile::SetOffTheRecordProfile(
+    std::unique_ptr<Profile> otr_profile) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(!IsOffTheRecord());
+  if (otr_profile)
+    DCHECK_EQ(this, otr_profile->GetOriginalProfile());
+  incognito_profile_ = std::move(otr_profile);
+}
+
+Profile* TestingProfile::GetOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
   if (IsOffTheRecord())
     return this;
-  if (!incognito_profile_)
-    TestingProfile::Builder().BuildIncognito(this);
+  if (!incognito_profile_) {
+    TestingProfile::Builder builder;
+    if (IsGuestSession())
+      builder.SetGuestSession();
+    builder.BuildIncognito(this);
+  }
   return incognito_profile_.get();
 }
 
-void TestingProfile::DestroyOffTheRecordProfile() {
+std::vector<Profile*> TestingProfile::GetAllOffTheRecordProfiles() {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  std::vector<Profile*> otr_profiles;
+
+  if (incognito_profile_)
+    otr_profiles.push_back(incognito_profile_.get());
+
+  return otr_profiles;
+}
+
+void TestingProfile::DestroyOffTheRecordProfile(Profile* otr_profile) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
   incognito_profile_.reset();
 }
 
-bool TestingProfile::HasOffTheRecordProfile() {
+void TestingProfile::DestroyOffTheRecordProfile() {
+  DestroyOffTheRecordProfile(incognito_profile_.get());
+}
+
+bool TestingProfile::HasOffTheRecordProfile(
+    const OTRProfileID& otr_profile_id) {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
+  DCHECK(otr_profile_id == OTRProfileID::PrimaryID());
+  return incognito_profile_.get() != nullptr;
+}
+
+bool TestingProfile::HasAnyOffTheRecordProfile() {
+  // TODO(https://crbug.com//1033903): Add support for non-primary OTRs.
   return incognito_profile_.get() != nullptr;
 }
 
@@ -812,11 +852,6 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
-bool TestingProfile::IsIndependentOffTheRecordProfile() {
-  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
-         GetOriginalProfile()->GetOffTheRecordProfile() != this;
-}
-
 bool TestingProfile::AllowsBrowserWindows() const {
   return allows_browser_windows_;
 }
@@ -852,20 +887,17 @@ void TestingProfile::CreateTestingPrefService() {
 void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!prefs_.get());
   DCHECK(!supervised_user_id_.empty());
-  sync_preferences::PrefServiceMockFactory factory;
-  SupervisedUserSettingsService* supervised_user_settings =
-      SupervisedUserSettingsServiceFactory::GetForKey(GetProfileKey());
-  scoped_refptr<PrefStore> supervised_user_prefs =
-      base::MakeRefCounted<SupervisedUserPrefStore>(supervised_user_settings);
 
-  factory.set_supervised_user_prefs(supervised_user_prefs);
-
-  scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-      new user_prefs::PrefRegistrySyncable);
-
-  prefs_ = factory.CreateSyncable(registry.get());
-  RegisterUserProfilePrefs(registry.get());
+  // Construct testing_prefs_ by hand to add the supervised user pref store.
+  testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable(
+      /*managed_prefs=*/new TestingPrefStore, supervised_user_pref_store_,
+      /*extension_prefs=*/new TestingPrefStore,
+      /*user_prefs=*/new TestingPrefStore,
+      /*recommended_prefs=*/new TestingPrefStore,
+      new user_prefs::PrefRegistrySyncable, new PrefNotifierImpl);
+  prefs_.reset(testing_prefs_);
   user_prefs::UserPrefs::Set(this, prefs_.get());
+  RegisterUserProfilePrefs(testing_prefs_->registry());
 }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
@@ -1107,31 +1139,13 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
-void TestingProfile::SetNetworkContext(
-    std::unique_ptr<network::mojom::NetworkContext> network_context) {
-  DCHECK(!network_context_);
-  network_context_ = std::move(network_context);
-}
-
-mojo::Remote<network::mojom::NetworkContext>
-TestingProfile::CreateNetworkContext(
+void TestingProfile::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  if (network_context_) {
-    mojo::Remote<network::mojom::NetworkContext> network_context_remote;
-    network_context_receivers_.Add(
-        network_context_.get(),
-        network_context_remote.BindNewPipeAndPassReceiver());
-    return network_context_remote;
-  }
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language = "en-us,en";
 }
 
 TestingProfile::Builder::Builder()

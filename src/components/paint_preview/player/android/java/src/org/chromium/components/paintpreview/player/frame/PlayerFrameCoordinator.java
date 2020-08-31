@@ -7,7 +7,9 @@ package org.chromium.components.paintpreview.player.frame;
 import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
+import android.widget.Scroller;
 
+import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -24,10 +26,11 @@ public class PlayerFrameCoordinator {
      * binds them together.
      */
     public PlayerFrameCoordinator(Context context, PlayerCompositorDelegate compositorDelegate,
-            long frameGuid, int contentWidth, int contentHeight, boolean canDetectZoom) {
+            UnguessableToken frameGuid, int contentWidth, int contentHeight,
+            boolean canDetectZoom) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
-        mMediator = new PlayerFrameMediator(
-                model, compositorDelegate, frameGuid, contentWidth, contentHeight);
+        mMediator = new PlayerFrameMediator(model, compositorDelegate, new Scroller(context),
+                frameGuid, contentWidth, contentHeight);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
         PropertyModelChangeProcessor.create(model, mView, PlayerFrameViewBinder::bind);
     }
@@ -39,6 +42,7 @@ public class PlayerFrameCoordinator {
      */
     public void addSubFrame(PlayerFrameCoordinator subFrame, Rect clipRect) {
         mMediator.addSubFrame(subFrame.getView(), clipRect);
+        subFrame.mView.getGestureDetector().setParentGestureDetector(mView.getGestureDetector());
     }
 
     /**

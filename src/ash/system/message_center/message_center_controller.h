@@ -9,7 +9,10 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/arc_notifications_host_initializer.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class PrefRegistrySimple;
 
@@ -27,7 +30,8 @@ class SessionStateNotificationBlocker;
 // This class manages the ash message center and allows clients (like Chrome) to
 // add and remove notifications.
 class ASH_EXPORT MessageCenterController
-    : public ArcNotificationsHostInitializer {
+    : public ArcNotificationsHostInitializer,
+      public SessionObserver {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -36,7 +40,13 @@ class ASH_EXPORT MessageCenterController
 
   // ArcNotificationsHostInitializer:
   void SetArcNotificationsInstance(
-      arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
+      mojo::PendingRemote<arc::mojom::NotificationsInstance>
+          arc_notification_instance) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+  // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
@@ -53,6 +63,8 @@ class ASH_EXPORT MessageCenterController
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterController);
 };

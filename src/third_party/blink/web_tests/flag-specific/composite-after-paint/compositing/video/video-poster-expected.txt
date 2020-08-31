@@ -48,8 +48,25 @@ Case: Displaying movie
     },
     {
       "name": "LayoutVideo VIDEO",
-      "position": [8, 8],
-      "bounds": [352, 288]
+      "bounds": [352, 288],
+      "transform": 1
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-scrubbing'",
+      "bounds": [352, 288],
+      "drawsContent": false,
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

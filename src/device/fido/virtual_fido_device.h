@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "crypto/ec_private_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -29,18 +28,51 @@
 
 namespace crypto {
 class ECPrivateKey;
-}  // namespace crypto
+}
 
 namespace device {
 
+class PublicKey;
+
+constexpr size_t kMaxPinRetries = 8;
+
+constexpr size_t kMaxUvRetries = 5;
+
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
  public:
+  // PrivateKey abstracts over the private key types supported by the virtual
+  // authenticator.
+  class COMPONENT_EXPORT(DEVICE_FIDO) PrivateKey {
+   public:
+    // FromPKCS8 attempts to parse |pkcs8_private_key| as an ASN.1, DER, PKCS#8
+    // private key of a supported type and returns a |PrivateKey| instance
+    // representing that key.
+    static base::Optional<std::unique_ptr<PrivateKey>> FromPKCS8(
+        base::span<const uint8_t> pkcs8_private_key);
+
+    virtual ~PrivateKey();
+
+    // Sign returns a signature over |message|.
+    virtual std::vector<uint8_t> Sign(base::span<const uint8_t> message) = 0;
+
+    // GetX962PublicKey returns the elliptic-curve public key encoded in X9.62
+    // format. Only elliptic-curve based private keys can be represented in this
+    // format and calling this function on other types of keys will crash.
+    virtual std::vector<uint8_t> GetX962PublicKey() const;
+
+    // GetPKCS8PrivateKey returns the private key encoded in ASN.1, DER, PKCS#8
+    // format.
+    virtual std::vector<uint8_t> GetPKCS8PrivateKey() const = 0;
+
+    virtual std::unique_ptr<PublicKey> GetPublicKey() const = 0;
+  };
+
   // Encapsulates information corresponding to one registered key on the virtual
   // authenticator device.
   struct COMPONENT_EXPORT(DEVICE_FIDO) RegistrationData {
     RegistrationData();
     RegistrationData(
-        std::unique_ptr<crypto::ECPrivateKey> private_key,
+        std::unique_ptr<PrivateKey> private_key,
         base::span<const uint8_t, kRpIdHashLength> application_parameter,
         uint32_t counter);
 
@@ -49,13 +81,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     ~RegistrationData();
 
-    std::unique_ptr<crypto::ECPrivateKey> private_key;
+    std::unique_ptr<PrivateKey> private_key;
     std::array<uint8_t, kRpIdHashLength> application_parameter;
     uint32_t counter = 0;
     bool is_resident = false;
     // is_u2f is true if the credential was created via a U2F interface.
     bool is_u2f = false;
-    base::Optional<device::CredProtect> protection;
+    device::CredProtect protection = device::CredProtect::kUVOptional;
 
     // user is only valid if |is_resident| is true.
     base::Optional<device::PublicKeyCredentialUserEntity> user;
@@ -106,9 +138,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool non_zero_aaguid_with_self_attestation = false;
 
     // Number of PIN retries remaining.
-    int retries = 8;
+    int pin_retries = kMaxPinRetries;
     // The number of failed PIN attempts since the token was "inserted".
-    int retries_since_insertion = 0;
+    int pin_retries_since_insertion = 0;
     // True if the token is soft-locked due to too many failed PIN attempts
     // since "insertion".
     bool soft_locked = false;
@@ -120,17 +152,35 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // itself.
     uint8_t pin_token[32];
 
+    // Number of internal UV retries remaining.
+    int uv_retries = kMaxUvRetries;
+
     // Whether a device with internal-UV support has fingerprints enrolled.
     bool fingerprints_enrolled = false;
 
     // Whether a device with bio enrollment support has been provisioned.
     bool bio_enrollment_provisioned = false;
+
     // Current template ID being enrolled, if any.
     base::Optional<uint8_t> bio_current_template_id;
+
     // Number of remaining samples in current enrollment.
     uint8_t bio_remaining_samples = 4;
+
     // Backing storage for enrollments and their friendly names.
     std::map<uint8_t, std::string> bio_templates;
+
+    // Whether the next authenticatorBioEnrollment command with a
+    // enrollCaptureNextSample subCommand should return a
+    // CTAP2_ENROLL_FEEDBACK_TOO_HIGH response. Will be reset to false upon
+    // returning the error.
+    bool bio_enrollment_next_sample_error = false;
+
+    // Whether the next authenticatorBioEnrollment command with a
+    // enrollCaptureNextSample subCommand should return a
+    // CTAP2_ENROLL_FEEDBACK_NO_USER_ACTIVITY response. Will be reset to false
+    // upon returning the error.
+    bool bio_enrollment_next_sample_timeout = false;
 
     // pending_assertions contains the second and subsequent assertions
     // resulting from a GetAssertion call. These values are awaiting a
@@ -165,7 +215,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
                            device::PublicKeyCredentialRpEntity rp,
                            device::PublicKeyCredentialUserEntity user,
                            int32_t signature_counter,
-                           std::unique_ptr<crypto::ECPrivateKey> private_key);
+                           std::unique_ptr<PrivateKey> private_key);
 
     // Adds a resident credential with the specified values, creating a new
     // private key.
@@ -208,6 +258,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   scoped_refptr<State> NewReferenceToState() const { return state_; }
 
+  static std::unique_ptr<PrivateKey> FreshP256Key();
+  static std::unique_ptr<PrivateKey> FreshRSAKey();
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
                    std::vector<uint8_t>* signature);
@@ -225,12 +277,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
       base::span<const uint8_t> key_handle,
       base::span<const uint8_t, kRpIdHashLength> application_parameter);
 
+  // Simulates flashing the device for a press and potentially receiving one.
+  // Returns true if the "user" pressed the device (and the request must
+  // continue) or false if the user didn't, and the request must be dropped.
+  // Internally calls |state_->simulate_press_callback|, so |this| may be
+  // destroyed after calling this method, in which case it will return false.
+  bool SimulatePress();
+
   // FidoDevice:
   void TryWink(base::OnceClosure cb) override;
   std::string GetId() const override;
   FidoTransportProtocol DeviceTransport() const override;
 
  private:
+  static std::string MakeVirtualFidoDeviceId();
+
+  const std::string id_ = MakeVirtualFidoDeviceId();
   scoped_refptr<State> state_ = base::MakeRefCounted<State>();
 
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDevice);

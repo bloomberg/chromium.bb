@@ -42,7 +42,7 @@ class AXImageMapLink final : public AXNodeObject {
  public:
   explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
   ~AXImageMapLink() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   HTMLAreaElement* AreaElement() const {
     return To<HTMLAreaElement>(GetNode());
@@ -56,7 +56,6 @@ class AXImageMapLink final : public AXNodeObject {
   Element* AnchorElement() const override;
   Element* ActionElement() const override;
   KURL Url() const override;
-  bool IsLink() const override { return true; }
   bool IsLinked() const override { return true; }
   AXObject* ComputeParent() const override;
   void GetRelativeBounds(AXObject** out_container,
@@ -65,12 +64,17 @@ class AXImageMapLink final : public AXNodeObject {
                          bool* clips_children = nullptr) const override;
 
  private:
-  bool IsImageMapLink() const override { return true; }
+  bool IsImageMapLink() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AXImageMapLink);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, IsImageMapLink());
+template <>
+struct DowncastTraits<AXImageMapLink> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsImageMapLink();
+  }
+};
 
 }  // namespace blink
 

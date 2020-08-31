@@ -19,7 +19,6 @@
 #include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "ui/base/layout.h"
-#include "url/url_util.h"
 
 namespace base {
 class RefCountedMemory;
@@ -181,14 +180,13 @@ class WebClient {
                                 int64_t navigation_id,
                                 base::OnceCallback<void(NSString*)> callback);
 
-  // Allows upper layers to inject experimental flags to the web layer.
-  // TODO(crbug.com/734150): Clean up this flag after experiment. If need for a
-  // second flag arises before clean up, consider generalizing to an experiment
-  // flags struct instead of adding a bool method for each experiment.
-  virtual bool IsSlimNavigationManagerEnabled() const;
-
   // Instructs the embedder to return a container that is attached to a window.
   virtual UIView* GetWindowedContainer();
+
+  // Enables the logic to handle long press and force
+  // touch. Should return false to use the context menu API.
+  // Defaults to return true.
+  virtual bool EnableLongPressAndForceTouchHandling() const;
 
   // This method is used when the user didn't express any preference for the
   // version of |url|. Returning true allows to make sure that for |url|, the
@@ -196,6 +194,14 @@ class WebClient {
   // desktop version. This method can be overriden to avoid having specific URL
   // being requested in desktop mode when the default mode is desktop.
   virtual bool ForceMobileVersionByDefault(const GURL& url);
+
+  // Returns the UserAgentType that should be used by default for the web
+  // content, based on the size class of |web_view| and the |url|.
+  virtual UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
+                                            const GURL& url);
+
+  // Returns whether the embedders could block restore urls.
+  virtual bool IsEmbedderBlockRestoreUrlEnabled();
 };
 
 }  // namespace web

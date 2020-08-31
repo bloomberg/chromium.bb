@@ -70,10 +70,6 @@ class DataReductionProxySettingsAndroid {
   base::android::ScopedJavaLocalRef<jlongArray> GetDailyReceivedContentLengths(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jstring>
-  GetDataReductionProxyPassThroughHeader(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
 
   // Return a Java |ContentLengths| object wrapping the results of a call to
   // DataReductionProxySettings::GetContentLengths.
@@ -87,11 +83,6 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyUnreachable(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
-  base::android::ScopedJavaLocalRef<jstring> MaybeRewriteWebliteUrl(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& obj,
-      const base::android::JavaRef<jstring>& url);
 
   base::android::ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(
       JNIEnv* env,

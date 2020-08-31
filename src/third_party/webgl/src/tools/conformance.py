@@ -8,12 +8,18 @@ import logging
 import os
 import platform
 import re
-import urllib2
 import shutil
 import socket
 import subprocess
 import sys
 import time
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 try:
     import selenium
@@ -23,10 +29,10 @@ try:
     from selenium.common.exceptions import WebDriverException
     from selenium.webdriver.support.select import Select
     from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 except ImportError:
     print('Please install package selenium')
     exit(1)
-
 
 class Util(object):
     LOGGER_NAME = __file__
@@ -67,8 +73,13 @@ class Util(object):
         exit(1)
 
     @staticmethod
+    def warn(msg):
+        _logger = Util.get_logger()
+        _logger.warning(msg)
+
+    @staticmethod
     def not_implemented():
-        Util.error('not_mplemented() at line %s' % inspect.stack()[1][2])
+        Util.error('not_implemented() at line %s' % inspect.stack()[1][2])
 
     @staticmethod
     def get_caller_name():
@@ -149,27 +160,49 @@ class Util(object):
             return s
 
 
-class AndroidDevice(object):
+class MobileDevice(object):
     def __init__(self, id):
         self.id = id
 
+class AndroidDevice(MobileDevice):
     def get_prop(self, key):
         cmd = AdbShellCmd('getprop | grep %s' % key, device_id=self.id)
-        match = re.search('\[%s\]: \[(.*)\]' % key, cmd.output)
+        match = re.search(r'\[%s\]: \[(.*)\]' % key, cmd.output)
         if match:
             return match.group(1)
         else:
             Util.error('Could not find %s' % key)
 
 
-class AndroidDevices():
+class MobileDevices():
     def __init__(self):
         self.devices = []
+        self.initialize_devices()
+
+    def initialize_devices(self):
+        # TODO: this could probably use @foo.abstractmethod
+        Util.error('initialize_devices called on base MobileDevices class')
+
+    def get_device(self, device_id):
+        if not device_id:
+            if len(self.devices) > 1:
+                Util.warn('There is more than one device, and the first one will be used')
+            return self.devices[0]
+        else:
+            for device in self.devices:
+                if device.id == device_id:
+                    return device
+            else:
+                Util.error('Could not find mobile device with id %s' % device_id)
+
+
+class AndroidDevices(MobileDevices):
+    def initialize_devices(self):
         cmd = Cmd('adb devices')
         for device_line in cmd.output.split('\n'):
             if re.match('List of devices attached', device_line):
                 continue
-            elif re.match('^\s*$', device_line):
+            elif re.match(r'^\s*$', device_line):
                 continue
             elif re.search('offline', device_line):
                 continue
@@ -180,17 +213,22 @@ class AndroidDevices():
         if len(self.devices) < 1:
             Util.error('Could not find available Android device')
 
-    def get_device(self, device_id):
-        if not device_id:
-            if len(self.devices) > 1:
-                self._logger.warning('There are more than one devices, and the first one will be used')
-            return self.devices[0]
-        else:
-            for device in self.devices:
-                if device.id == device_id:
-                    return device
+
+class iOSDevices(MobileDevices):
+    def initialize_devices(self):
+        cmd = Cmd('instruments -s devices')
+        for device_line in cmd.output.split('\n'):
+            if re.match('Known Devices', device_line):
+                continue
+            if re.match('Simulator', device_line):
+                continue
             else:
-                Util.error('Cound not find Android device with id %s' % device_id)
+                match = re.search(r'\[([a-f0-9]{40})\]', device_line)
+                if match:
+                    self.devices.append(MobileDevice(match.group(1)))
+
+        if len(self.devices) < 1:
+            Util.error('Could not find available iOS device')
 
 
 class Cmd(object):
@@ -210,17 +248,18 @@ class Cmd(object):
             self.process = None
             return
 
-        tmp_output = ''
+        tmp_output = b''
         process = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        while True:
-            nextline = process.stdout.readline()
-            if nextline == '' and process.poll() is not None:
+        for nextline in iter(process.stdout.readline, ''):
+            if nextline == b'':
                 break
             tmp_output += nextline
 
         self.status = process.returncode
         (out, error) = process.communicate()
         self.output = tmp_output + out + error
+        self.output = self.output.decode('utf-8')
+
         self.process = process
 
         if self.abort and self.status:
@@ -332,7 +371,7 @@ class GPU(object):
 
 
 class GPUs(object):
-    def __init__(self, os, android_device, driver=None):
+    def __init__(self, os, mobile_device, driver=None):
         self._logger = Util.get_logger()
         self.gpus = []
 
@@ -343,7 +382,7 @@ class GPUs(object):
         driver_version = []
 
         if os.is_android():
-            cmd = AdbShellCmd('dumpsys | grep GLES', android_device.id)
+            cmd = AdbShellCmd('dumpsys | grep GLES', mobile_device.id)
             for line in cmd.output.split('\n'):
                 if re.match('GLES', line):
                     fields = line.replace('GLES:', '').strip().split(',')
@@ -367,7 +406,7 @@ class GPUs(object):
                 key = tds[0].find_element_by_xpath('./span').text
                 if key == 'GPU0':
                     value = tds[1].find_element_by_xpath('./span').text
-                    match = re.search('VENDOR = 0x(\S{4}), DEVICE.*= 0x(\S{4})', value)
+                    match = re.search(r'VENDOR = 0x(\S{4}), DEVICE.*= 0x(\S{4})', value)
                     vendor_id.append(match.group(1))
                     vendor_name.append('')
                     product_id.append(match.group(2))
@@ -382,11 +421,11 @@ class GPUs(object):
             lines = cmd.output.split('\n')
             for line in lines:
                 line = line.strip()
-                match = re.search('product: (.*) \[(.*)\]$', line)
+                match = re.search(r'product: (.*) \[(.*)\]$', line)
                 if match:
                     product_name.append(match.group(1))
                     product_id.append(match.group(2).split(':')[1].upper())
-                match = re.search('vendor: (.*) \[(.*)\]$', line)
+                match = re.search(r'vendor: (.*) \[(.*)\]$', line)
                 if match:
                     vendor_name.append(match.group(1))
                     vendor_id.append(match.group(2).upper())
@@ -401,7 +440,7 @@ class GPUs(object):
                 match = re.match('Chipset Model: (.*)', line)
                 if match:
                     product_name.append(match.group(1))
-                match = re.match('Vendor: (.*) \(0x(.*)\)', line)
+                match = re.match(r'Vendor: (.*) \(0x(.*)\)', line)
                 if match:
                     vendor_name.append(match.group(1))
                     vendor_id.append(match.group(2))
@@ -409,6 +448,13 @@ class GPUs(object):
                 if match:
                     product_id.append(match.group(1))
                     driver_version.append('')
+
+        elif os.is_ios():
+            product_name.append("iOS")
+            vendor_name.append("Apple")
+            vendor_id.append("Apple")
+            product_id.append("GPU")
+            driver_version.append("")
 
         elif os.is_win():
             cmd = Cmd('wmic path win32_videocontroller get /format:list')
@@ -424,7 +470,7 @@ class GPUs(object):
                 match = re.match('Name=(.*)', line)
                 if match:
                     product_name.append(match.group(1))
-                match = re.match('PNPDeviceID=.*VEN_(\S{4})&.*DEV_(\S{4})&', line)
+                match = re.match(r'PNPDeviceID=.*VEN_(\S{4})&.*DEV_(\S{4})&', line)
                 if match:
                     vendor_id.append(match.group(1))
                     product_id.append(match.group(2))
@@ -473,6 +519,9 @@ class OS(object):
     def is_mac(self):
         return self._is_name('mac')
 
+    def is_ios(self):
+        return self._is_name('ios')
+
     def is_win(self):
         return self._is_name('win')
 
@@ -508,6 +557,8 @@ class HostOS(OS):
             version = platform.dist()[1]
         elif self.is_mac():
             version = platform.mac_ver()[0]
+        elif self.is_ios():
+            version = 1
         elif self.is_win():
             version = platform.version()
 
@@ -557,12 +608,12 @@ class Browser(object):
         elif self.os.is_mac():
             if self.name == 'chrome' or self.name == 'chrome_stable':
                 self.path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-            if self.name == 'chrome_canary':
+            elif self.name == 'chrome_canary':
                 self.path = '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
         elif self.os.is_win():
             if self.name == 'chrome' or self.name == 'chrome_stable':
                 self.path = '%s/Google/Chrome/Application/chrome.exe' % self.os.programfilesx86
-            if self.name == 'chrome_canary':
+            elif self.name == 'chrome_canary':
                 self.path = '%s/../Local/Google/Chrome SxS/Application/chrome.exe' % self.os.appdata
             elif self.name == 'firefox' or self.name == 'firefox_stable':
                 self.path = '%s/Mozilla Firefox/firefox.exe' % self.os.programfilesx86
@@ -570,6 +621,8 @@ class Browser(object):
                 self.path = '%s/Nightly/firefox.exe' % self.os.programfiles
             elif self.name == 'edge':
                 self.path = '%s/systemapps/Microsoft.MicrosoftEdge_8wekyb3d8bbwe/MicrosoftEdge.exe' % self.os.windir
+        elif self.os.is_ios():
+            pass
         else:
             Util.not_implemented()
 
@@ -592,12 +645,15 @@ class Browser(object):
         # version
         if not self.os.is_win():
             ua = driver.execute_script('return navigator.userAgent;')
+            match = None
             if self.is_chrome():
                 match = re.search('Chrome/(.*) ', ua)
             elif self.is_edge():
                 match = re.search('Edge/(.*)$', ua)
             elif self.is_firefox():
-                match = re.search('rv:(.*)\)', ua)
+                match = re.search(r'rv:(.*)\)', ua)
+            elif self.is_safari():
+                match = re.search('AppleWebKit/(.*)$', ua)
             if match:
                 self.version = match.group(1)
 
@@ -636,7 +692,7 @@ class Webdriver(object):
         'chrome_public': 'org.chromium.chrome',
     }
 
-    def __init__(self, path, browser, host_os, target_os, android_device=None, debug=False):
+    def __init__(self, path, browser, host_os, target_os, mobile_device=None, debug=False, tools=False):
         self._logger = Util.get_logger()
         self.path = path
         self.target_os = target_os
@@ -644,6 +700,12 @@ class Webdriver(object):
         # path
         if target_os.is_cros():
             self.path = '/usr/local/chromedriver/chromedriver'
+        elif target_os.is_ios():
+            self.path = '/usr/bin/safaridriver'
+        elif browser.name == 'safari':
+            self.path = '/usr/bin/safaridriver'
+        elif browser.name == 'safari_technology_preview':
+            self.path = '/Applications/Safari Technology Preview.app/Contents/MacOS/safaridriver'
 
         executable_suffix = Util.get_executable_suffix(host_os)
         if not self.path and browser.is_chrome() and host_os == target_os:
@@ -706,12 +768,12 @@ class Webdriver(object):
             self.server_url = 'http://localhost:%d' % port
 
             if target_os.is_android():
-                capabilities['chromeOptions']['androidDeviceSerial'] = android_device.id
+                capabilities['chromeOptions']['androidDeviceSerial'] = mobile_device.id
                 capabilities['chromeOptions']['androidPackage'] = self.ANDROID_CHROME_NAME_PKG[browser.name]
                 capabilities['chromeOptions']['args'] = browser.options
             elif target_os.is_cros():
                 remote_port = self._get_chrome_remote_debugging_port()
-                urllib2.urlopen('http://localhost:%i/json/new' % remote_port)
+                urlopen('http://localhost:%i/json/new' % remote_port)
                 capabilities['chromeOptions']['debuggerAddress'] = ('localhost:%d' % remote_port)
 
             self.driver = webdriver.Remote(command_executor=self.server_url, desired_capabilities=capabilities)
@@ -728,21 +790,29 @@ class Webdriver(object):
                     service_args = []
                 self.driver = selenium.webdriver.Chrome(executable_path=self.path, chrome_options=chrome_options, service_args=service_args)
             elif browser.is_safari():
-                Util.not_implemented()
+                capabilities = DesiredCapabilities.SAFARI.copy()
+                if tools:
+                    capabilities['automaticInspection'] = True
+                if target_os.is_ios():
+                    capabilities['platformName'] = "ios"
+                    capabilities['deviceUDID'] = mobile_device.id
+                self.driver = selenium.webdriver.safari.webdriver.WebDriver(desired_capabilities=capabilities, executable_path=self.path)
             elif browser.is_edge():
                 self.driver = selenium.webdriver.Edge(self.path)
             elif browser.is_firefox():
-                from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-                capabilities = DesiredCapabilities.FIREFOX
+                capabilities = DesiredCapabilities.FIREFOX.copy()
                 capabilities['marionette'] = True
                 capabilities['binary'] = browser.path
                 self.driver = selenium.webdriver.Firefox(capabilities=capabilities, executable_path=self.path)
 
         # check
-        if not browser.path:
-            Util.error('Could not find browser at %s' % browser.path)
+        if not browser.is_safari():
+            if not browser.path:
+                Util.error('Could not find browser at %s' % browser.path)
+            else:
+                self._logger.info('Use browser at %s' % browser.path)
         else:
-            self._logger.info('Use browser at %s' % browser.path)
+            self._logger.info('Using Safari-family browser')
         if not self.path:
             Util.error('Could not find webdriver at %s' % self.path)
         else:
@@ -781,7 +851,7 @@ class Webdriver(object):
         self.driver.quit()
         if self.target_os.is_android() or self.target_os.is_cros():
             try:
-                urllib2.urlopen(self.server_url + '/shutdown', timeout=10).close()
+                urlopen(self.server_url + '/shutdown', timeout=10).close()
             except Exception:
                 pass
             self.server_process.stdout.close()
@@ -910,11 +980,12 @@ class Conformance(object):
         parser.add_argument('--url', dest='url', help='url for website other than default Khronos WebGL CTS')
         parser.add_argument('--suite', dest='suite', help='instead of whole suite, we may test specific cases, e.g., conformance/attibs or "conformance/attribs/gl-bindAttribLocation-matrix.html"', default='all')
         parser.add_argument('--os-name', dest='os_name', help='OS to run test on')
-        parser.add_argument('--android-device-id', dest='android_device_id', help='id of Android device to run test on')
+        parser.add_argument('--device-id', dest='device_id', help='id of mobile device to run test on')
         parser.add_argument('--mesa-dir', dest='mesa_dir', help='directory of Mesa')
         parser.add_argument('--gles', dest='gles', help='gles', action='store_true')
         parser.add_argument('--logging-level', dest='logging_level', help='level of logging', default=logging.INFO)
         parser.add_argument('--timeout', dest='timeout', help='timeout seconds for each test', type=int, default=60)
+        parser.add_argument('--tools', dest='open_tools', help='show the developer tools for the browser', action='store_true')
 
         debug_group = parser.add_argument_group('debug')
         debug_group.add_argument('--fixed-time', dest='fixed_time', help='fixed time', action='store_true')
@@ -944,15 +1015,18 @@ class Conformance(object):
         self.result_file = '%s/%s.html' % (self.result_dir, self.timestamp)
 
         # device
+        self.mobile_device = None
         if args.os_name == 'android':
-            self.android_device = AndroidDevices().get_device(args.android_device_id)
-        else:
-            self.android_device = None
+            self.mobile_device = AndroidDevices().get_device(args.device_id)
+        elif args.os_name == 'ios':
+            self.mobile_device = iOSDevices().get_device(args.device_id)
 
         # OS
         self.host_os = HostOS()
         if args.os_name == 'android':
-            self.target_os = AndroidOS(self.android_device)
+            self.target_os = AndroidOS(self.mobile_device)
+        elif args.os_name == 'ios':
+            self.target_os = OS("ios")
         else:
             self.target_os = self.host_os
 
@@ -983,6 +1057,7 @@ class Conformance(object):
         self.webdriver_path = args.webdriver_path
         self.args = args
         self.timeout = args.timeout
+        self.open_tools = args.open_tools
 
         # url
         self.version = args.version
@@ -1109,14 +1184,14 @@ class Conformance(object):
                 category = remain_detail
             category.append(Change(exp_case, cur_case))
 
-        improve_pass_detail = sorted(improve_pass_detail, cmp=lambda x, y: cmp(x.exp_case.path, y.exp_case.path))
-        improve_fail_detail = sorted(improve_fail_detail, cmp=lambda x, y: cmp(x.exp_case.path, y.exp_case.path))
-        regress_detail = sorted(regress_detail, cmp=lambda x, y: cmp(x.exp_case.path, y.exp_case.path))
-        remain_detail = sorted(remain_detail, cmp=lambda x, y: cmp(x.exp_case.path, y.exp_case.path))
+        improve_pass_detail = sorted(improve_pass_detail, key=lambda x: x.exp_case.path)
+        improve_fail_detail = sorted(improve_fail_detail, key=lambda x: x.exp_case.path)
+        regress_detail = sorted(regress_detail, key=lambda x: x.exp_case.path)
+        remain_detail = sorted(remain_detail, key=lambda x: x.exp_case.path)
 
         # top_time
         top_time = []
-        all_time = sorted(self.cur_suite.suite, cmp=lambda x, y: cmp(x.time, y.time), reverse=True)
+        all_time = sorted(self.cur_suite.suite, key=lambda x: x.time, reverse=True)
         count = 0
         for case in all_time:
             if not case.path:
@@ -1315,7 +1390,7 @@ class Conformance(object):
         folder_name_elements = self.driver.find_elements_by_class_name('folderName')
         for folder_name_element in folder_name_elements:
             if folder_name_element.text == folder_name:
-                tmp_case_elements = folder_name_element.find_elements_by_xpath('../..//*[@class="testpage"]')
+                tmp_case_elements = folder_name_element.find_elements_by_xpath('../../..//*[@class="testpage"]')
                 if not case_name:
                     case_elements = tmp_case_elements
                     break
@@ -1338,8 +1413,7 @@ class Conformance(object):
     def _get_result(self, text):
         # passed includes both results of passed and skipped
         if self.version == '1.0.3':
-            p = '(\d+) of (\d+) (.+)'
-            match = re.search(p, text)
+            match = re.search(r'(\d+) of (\d+) (.+)', text)
             if match:
                 total = int(match.group(2))
                 passed = int(match.group(1))
@@ -1353,13 +1427,12 @@ class Conformance(object):
             else:
                 status = Status.FAIL
         else:
-            p = '(.*) in (.+) ms'
-            match = re.search(p, text)
+            match = re.search(r'(.*) in (.+) ms', text)
             if match:
                 time = float(match.group(2))
                 text_detail = match.group(1)
                 total = 0
-                match_detail = re.search('Passed: (\d+)/(\d+)', text_detail)
+                match_detail = re.search(r'Passed: (\d+)/(\d+)', text_detail)
                 if match_detail:
                     passed = int(match_detail.group(1))
                     total_tmp = int(match_detail.group(2))
@@ -1369,7 +1442,7 @@ class Conformance(object):
                         Util.error('Total is not consistent')
                 else:
                     passed = 0
-                match_detail = re.search('Skipped: (\d+)/(\d+)', text_detail)
+                match_detail = re.search(r'Skipped: (\d+)/(\d+)', text_detail)
                 if match_detail:
                     skipped = int(match_detail.group(1))
                     total_tmp = int(match_detail.group(2))
@@ -1379,7 +1452,7 @@ class Conformance(object):
                         Util.error('Total is not consistent')
                 else:
                     skipped = 0
-                match_detail = re.search('Failed: (\d+)/(\d+)', text_detail)
+                match_detail = re.search(r'Failed: (\d+)/(\d+)', text_detail)
                 if match_detail:
                     failed = int(match_detail.group(1))
                     total_tmp = int(match_detail.group(2))
@@ -1528,12 +1601,12 @@ class Conformance(object):
         f.close()
 
     def _start(self, is_firstrun=False):
-        self.webdriver = Webdriver(browser=self.browser, path=self.webdriver_path, host_os=self.host_os, target_os=self.target_os, android_device=self.android_device)
+        self.webdriver = Webdriver(browser=self.browser, path=self.webdriver_path, host_os=self.host_os, target_os=self.target_os, mobile_device=self.mobile_device, tools=self.open_tools)
         self.driver = self.webdriver.driver
 
         if is_firstrun:
             self.browser.update(self.driver)
-            self.gpus = GPUs(self.target_os, self.android_device, self.driver)
+            self.gpus = GPUs(self.target_os, self.mobile_device, self.driver)
             self.gpu = self.gpus.get_active(self.driver)
             self.exp_suite = Suite()
             for exp in Expectations().expectations:

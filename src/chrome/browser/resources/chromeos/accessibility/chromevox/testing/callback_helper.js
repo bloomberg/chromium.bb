@@ -17,26 +17,36 @@ function CallbackHelper(fixture) {
 CallbackHelper.prototype = {
   /**
    * @param {Function=} opt_callback
+   * @param {boolean=} opt_isAsync True if callback is async.
    * @return {Function}
    */
-  wrap: function(opt_callback) {
-    var callback = opt_callback || function() {};
-    var savedArgs = new SaveMockArguments();
-    var lastCall = null;
-    var completionAction = callFunctionWithSavedArgs(savedArgs, function() {
+  wrap(opt_callback, opt_isAsync) {
+    const callback = opt_callback || function() {};
+    const savedArgs = new SaveMockArguments();
+    let lastCall = null;
+    const completionAction = callFunctionWithSavedArgs(savedArgs, function() {
       if (lastCall) {
         throw new Error('Called more than once, first call here: ' + lastCall);
       } else {
         lastCall = new Error().stack;
       }
-      callback.apply(this.fixture_, arguments);
-      if (--this.pendingCallbacks_ <= 0) {
-        CallbackHelper.testDone_();
+      const result = callback.apply(this.fixture_, arguments);
+      if (opt_isAsync) {
+        if (!result) {
+          throw new Error('Expected function to return a Promise.');
+        }
+        result.then(() => {
+          CallbackHelper.testDone_();
+        });
+      } else {
+        if (--this.pendingCallbacks_ <= 0) {
+          CallbackHelper.testDone_();
+        }
       }
     }.bind(this));
     // runAllActionsAsync catches exceptions and puts them in the test
     // framework's list of errors and fails the test if appropriate.
-    var runAll = runAllActionsAsync(WhenTestDone.ASSERT, completionAction);
+    const runAll = runAllActionsAsync(WhenTestDone.ASSERT, completionAction);
     ++this.pendingCallbacks_;
     return function() {
       savedArgs.arguments = Array.prototype.slice.call(arguments);

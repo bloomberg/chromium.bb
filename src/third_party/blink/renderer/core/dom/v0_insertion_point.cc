@@ -46,8 +46,6 @@ V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document, kCreateV0InsertionPoint),
       registered_with_shadow_root_(false) {
-  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
-    SetHasCustomStyleCallbacks();
 }
 
 V0InsertionPoint::~V0InsertionPoint() = default;
@@ -72,8 +70,8 @@ void V0InsertionPoint::SetDistributedNodes(
   for (; i < distributed_nodes_.size() && j < distributed_nodes.size();
        ++i, ++j) {
     if (distributed_nodes_.size() < distributed_nodes.size()) {
-      // If the new distribution is larger than the old one, reattach all nodes
-      // in the new distribution that were inserted.
+      // If the new distribution is larger than the old one, notify all nodes in
+      // the new distribution that were inserted.
       for (; j < distributed_nodes.size() &&
              distributed_nodes_.at(i) != distributed_nodes.at(j);
            ++j)
@@ -81,26 +79,21 @@ void V0InsertionPoint::SetDistributedNodes(
       if (j == distributed_nodes.size())
         break;
     } else if (distributed_nodes_.size() > distributed_nodes.size()) {
-      // If the old distribution is larger than the new one, reattach all nodes
-      // in the old distribution that were removed.
-      for (; i < distributed_nodes_.size() &&
-             distributed_nodes_.at(i) != distributed_nodes.at(j);
-           ++i)
-        distributed_nodes_.at(i)->FlatTreeParentChanged();
+      // If the old distribution is larger than the new one, skip all nodes in
+      // the old distribution that were removed.
+      while (i < distributed_nodes_.size() &&
+             distributed_nodes_.at(i) != distributed_nodes.at(j))
+        ++i;
       if (i == distributed_nodes_.size())
         break;
     } else if (distributed_nodes_.at(i) != distributed_nodes.at(j)) {
-      // If both distributions are the same length reattach both old and new.
-      distributed_nodes_.at(i)->FlatTreeParentChanged();
+      // If both distributions are the same length notify the new.
       distributed_nodes.at(j)->FlatTreeParentChanged();
     }
   }
 
-  // If we hit the end of either list above we need to reattach all remaining
-  // nodes.
-
-  for (; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->FlatTreeParentChanged();
+  // If we hit the end of either list above we need to notify all remaining
+  // nodes in the new distribution.
 
   for (; j < distributed_nodes.size(); ++j)
     distributed_nodes.at(j)->FlatTreeParentChanged();
@@ -143,31 +136,8 @@ void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
   }
 }
 
-void V0InsertionPoint::DidRecalcStyle(const StyleRecalcChange change) {
-  DCHECK(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled());
-  if (DistributedNodesAreFallback()) {
-    // Fallback children have already been recalculated in
-    // ContainerNode::RecalcDescendantStyles().
-    return;
-  }
-
-  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
-    Node* node = distributed_nodes_.at(i);
-    if (!change.TraverseChild(*node))
-      continue;
-    if (auto* this_element = DynamicTo<Element>(node))
-      this_element->RecalcStyle(change);
-    else if (auto* text_node = DynamicTo<Text>(node))
-      text_node->RecalcTextStyle(change);
-  }
-}
-
 void V0InsertionPoint::RecalcStyleForInsertionPointChildren(
     const StyleRecalcChange change) {
-  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-    RecalcDescendantStyles(change);
-    return;
-  }
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* node = distributed_nodes_.at(i);
     if (!change.TraverseChild(*node))

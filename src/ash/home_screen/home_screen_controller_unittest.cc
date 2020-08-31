@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_utils.h"
@@ -38,12 +39,15 @@ class HomeScreenControllerTest : public AshTestBase,
                                  public testing::WithParamInterface<bool> {
  public:
   HomeScreenControllerTest() {
-    if (GetParam()) {
+    if (IsWindowDragFromShelfEnabled()) {
       scoped_feature_list_.InitWithFeatures(
           {features::kDragFromShelfToHomeOrOverview}, {});
     } else {
+      // The feature verified by this test is only enabled if drag from shelf to
+      // home or overview is disabled.
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kDragFromShelfToHomeOrOverview});
+          {}, {features::kDragFromShelfToHomeOrOverview,
+               chromeos::features::kShelfHotseat});
     }
   }
   ~HomeScreenControllerTest() override = default;
@@ -57,13 +61,16 @@ class HomeScreenControllerTest : public AshTestBase,
                                          aura::client::WINDOW_TYPE_POPUP);
   }
 
+  bool IsWindowDragFromShelfEnabled() const { return GetParam(); }
+
   HomeScreenController* home_screen_controller() {
     return Shell::Get()->home_screen_controller();
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(HomeScreenControllerTest);
 };
 
@@ -110,10 +117,27 @@ TEST_P(HomeScreenControllerTest, ShowLauncherHistograms) {
   auto window = CreateTestWindow();
   base::HistogramTester tester;
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);
+
+  // Note that going home animation minimizes the window, and the window layer
+  // is recreated after minimization animation is set up. Create waiter before
+  // the request to go home to ensure the waiter waits for the correct animator.
+  base::OnceClosure waiter =
+      ShellTestApi().CreateWaiterForFinishingWindowAnimation(window.get());
+
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_BROWSER_SEARCH, 0);
   GetEventGenerator()->ReleaseKey(ui::KeyboardCode::VKEY_BROWSER_SEARCH, 0);
 
-  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  std::move(waiter).Run();
+
+  // If window drag from shelf is disabled, the active window is minimized using
+  // different animation, and in that case the window might still be animating.
+  if (!IsWindowDragFromShelfEnabled()) {
+    ASSERT_TRUE(window->layer()->GetAnimator()->is_animating());
+    ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  } else {
+    ASSERT_FALSE(window->layer()->GetAnimator()->is_animating());
+  }
+
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
 }
 
@@ -135,21 +159,21 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   tester.ExpectTotalCount(kHomescreenDragHistogram, 0);
   tester.ExpectTotalCount(kHomescreenDragMaxLatencyHistogram, 0);
 
-  const bool drag_enabled = !GetParam();
+  const bool drag_enabled = !IsWindowDragFromShelfEnabled();
 
   // Create a touch event and drag it twice and verify the histograms are
   // recorded as expected.
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto* generator = GetEventGenerator();
   generator->set_current_screen_location(gfx::Point(200, 1));
   generator->PressTouch();
   generator->MoveTouch(gfx::Point(200, 20));
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   tester.ExpectTotalCount(kHomescreenDragHistogram, drag_enabled ? 1 : 0);
   generator->MoveTouch(gfx::Point(200, 60));
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   generator->ReleaseTouch();
 
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);

@@ -47,6 +47,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
                                                     ResourceFetcher* fetcher,
                                                     ResourceClient* client) {
   params.SetRequestContext(mojom::RequestContextType::STYLE);
+  params.SetRequestDestination(network::mojom::RequestDestination::kStyle);
   CSSStyleSheetResource* resource = ToCSSStyleSheetResource(
       fetcher->RequestResource(params, CSSStyleSheetResourceFactory(), client));
   return resource;
@@ -87,7 +88,7 @@ void CSSStyleSheetResource::SetParsedStyleSheetCache(
   UpdateDecodedSize();
 }
 
-void CSSStyleSheetResource::Trace(blink::Visitor* visitor) {
+void CSSStyleSheetResource::Trace(Visitor* visitor) {
   visitor->Trace(parsed_style_sheet_cache_);
   TextResource::Trace(visitor);
 }
@@ -206,9 +207,9 @@ bool CSSStyleSheetResource::CanUseSheet(const CSSParserContext* parser_context,
     return true;
   AtomicString content_type = HttpContentType();
   return content_type.IsEmpty() ||
-         DeprecatedEqualIgnoringCase(content_type, "text/css") ||
-         DeprecatedEqualIgnoringCase(content_type,
-                                     "application/x-unknown-content-type");
+         EqualIgnoringASCIICase(content_type, "text/css") ||
+         EqualIgnoringASCIICase(content_type,
+                                "application/x-unknown-content-type");
 }
 
 StyleSheetContents* CSSStyleSheetResource::CreateParsedStyleSheetFromCache(

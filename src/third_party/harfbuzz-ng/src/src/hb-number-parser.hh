@@ -30,10 +30,8 @@
 
 #include "hb.hh"
 
-#include <float.h>
 
-
-#line 37 "hb-number-parser.hh"
+#line 35 "hb-number-parser.hh"
 static const unsigned char _double_parser_trans_keys[] = {
 	0u, 0u, 43u, 57u, 46u, 57u, 48u, 57u, 43u, 57u, 48u, 57u, 48u, 101u, 48u, 57u, 
 	46u, 101u, 0
@@ -93,7 +91,7 @@ static const int double_parser_error = 0;
 static const int double_parser_en_main = 1;
 
 
-#line 70 "hb-number-parser.rl"
+#line 68 "hb-number-parser.rl"
 
 
 /* Works only for n < 512 */
@@ -128,8 +126,8 @@ strtod_rl (const char *buf, char **end_ptr)
   double frac_count = 0;
   unsigned int exp = 0;
   bool neg = false, exp_neg = false, exp_overflow = false;
-  const unsigned long long MAX_FRACT = 0xFFFFFFFFFFFFFull; /* 1^52-1 */
-  const unsigned int MAX_EXP = 0x7FFu; /* 1^11-1 */
+  const unsigned long long MAX_FRACT = 0xFFFFFFFFFFFFFull; /* 2^52-1 */
+  const unsigned int MAX_EXP = 0x7FFu; /* 2^11-1 */
   p = buf;
   pe = p + strlen (p);
 
@@ -138,12 +136,12 @@ strtod_rl (const char *buf, char **end_ptr)
 
   int cs;
   
-#line 142 "hb-number-parser.hh"
+#line 140 "hb-number-parser.hh"
 	{
 	cs = double_parser_start;
 	}
 
-#line 147 "hb-number-parser.hh"
+#line 145 "hb-number-parser.hh"
 	{
 	int _slen;
 	int _trans;
@@ -169,21 +167,21 @@ _resume:
 
 	switch ( _double_parser_trans_actions[_trans] ) {
 	case 1:
-#line 39 "hb-number-parser.rl"
+#line 37 "hb-number-parser.rl"
 	{ neg = true; }
 	break;
 	case 4:
-#line 40 "hb-number-parser.rl"
+#line 38 "hb-number-parser.rl"
 	{ exp_neg = true; }
 	break;
 	case 2:
-#line 42 "hb-number-parser.rl"
+#line 40 "hb-number-parser.rl"
 	{
 	value = value * 10. + ((*p) - '0');
 }
 	break;
 	case 3:
-#line 45 "hb-number-parser.rl"
+#line 43 "hb-number-parser.rl"
 	{
 	if (likely (frac <= MAX_FRACT / 10))
 	{
@@ -193,7 +191,7 @@ _resume:
 }
 	break;
 	case 5:
-#line 52 "hb-number-parser.rl"
+#line 50 "hb-number-parser.rl"
 	{
 	if (likely (exp * 10 + ((*p) - '0') <= MAX_EXP))
 	  exp = exp * 10 + ((*p) - '0');
@@ -201,7 +199,7 @@ _resume:
 	  exp_overflow = true;
 }
 	break;
-#line 205 "hb-number-parser.hh"
+#line 203 "hb-number-parser.hh"
 	}
 
 _again:
@@ -213,7 +211,7 @@ _again:
 	_out: {}
 	}
 
-#line 116 "hb-number-parser.rl"
+#line 114 "hb-number-parser.rl"
 
 
   *end_ptr = (char *) p;

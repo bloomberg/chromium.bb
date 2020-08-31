@@ -9,9 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
@@ -126,19 +127,19 @@ void ContentTranslateDriver::TranslatePage(int page_seq_no,
                                            const std::string& translate_script,
                                            const std::string& source_lang,
                                            const std::string& target_lang) {
-  auto it = pages_.find(page_seq_no);
-  if (it == pages_.end())
+  auto it = translate_agents_.find(page_seq_no);
+  if (it == translate_agents_.end())
     return;  // This page has navigated away.
 
-  it->second->Translate(
+  it->second->TranslateFrame(
       translate_script, source_lang, target_lang,
       base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
                      base::Unretained(this)));
 }
 
 void ContentTranslateDriver::RevertTranslation(int page_seq_no) {
-  auto it = pages_.find(page_seq_no);
-  if (it == pages_.end())
+  auto it = translate_agents_.find(page_seq_no);
+  if (it == translate_agents_.end())
     return;  // This page has navigated away.
 
   it->second->RevertTranslation();
@@ -258,15 +259,19 @@ void ContentTranslateDriver::DidFinishNavigation(
       (google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
                                       google_util::DISALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS) ||
-       base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins));
+       IsAutoHrefTranslateAllOriginsEnabled());
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
       reload, navigation_handle->GetHrefTranslate(), navigation_from_google);
 }
 
+bool ContentTranslateDriver::IsAutoHrefTranslateAllOriginsEnabled() const {
+  return base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins);
+}
+
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {
-  pages_.erase(page_seq_no);
+  translate_agents_.erase(page_seq_no);
 }
 
 void ContentTranslateDriver::AddReceiver(
@@ -275,7 +280,7 @@ void ContentTranslateDriver::AddReceiver(
 }
 
 void ContentTranslateDriver::RegisterPage(
-    mojo::PendingRemote<translate::mojom::Page> page,
+    mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
     const translate::LanguageDetectionDetails& details,
     const bool page_needs_translation) {
   // If we have a language histogram (i.e. we're not in incognito), update it
@@ -283,8 +288,8 @@ void ContentTranslateDriver::RegisterPage(
   if (language_histogram_ && details.is_cld_reliable)
     language_histogram_->OnPageVisited(details.cld_language);
 
-  pages_[++next_page_seq_no_].Bind(std::move(page));
-  pages_[next_page_seq_no_].set_disconnect_handler(
+  translate_agents_[++next_page_seq_no_].Bind(std::move(translate_agent));
+  translate_agents_[next_page_seq_no_].set_disconnect_handler(
       base::BindOnce(&ContentTranslateDriver::OnPageAway,
                      base::Unretained(this), next_page_seq_no_));
   translate_manager_->set_current_seq_no(next_page_seq_no_);

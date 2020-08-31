@@ -24,13 +24,14 @@ source_set("libjpeg_headers") {
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
-  import("//third_party/yasm/yasm_assemble.gni")
+  import("//third_party/nasm/nasm_assemble.gni")
 
-  yasm_assemble("simd_asm") {
+  nasm_assemble("simd_asm") {
     defines = []
     include_dirs = [ "simd/nasm/" ]
 
     if (current_cpu == "x86") {
+      include_dirs += [ "simd/i386/" ]
       sources = [
         "simd/i386/jccolor-avx2.asm",
         "simd/i386/jccolor-mmx.asm",
@@ -82,6 +83,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
         "PIC",
       ]
     } else if (current_cpu == "x64") {
+      include_dirs += [ "simd/x86_64/" ]
       sources = [
         "simd/x86_64/jccolor-avx2.asm",
         "simd/x86_64/jccolor-sse2.asm",
@@ -156,6 +158,7 @@ static_library("simd") {
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
+      "simd/arm/common/jidctfst-neon.c",
       "simd/arm/common/jidctint-neon.c",
       "simd/arm/common/jidctred-neon.c",
     ]
@@ -168,6 +171,7 @@ static_library("simd") {
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
+      "simd/arm/common/jidctfst-neon.c",
       "simd/arm/common/jidctint-neon.c",
       "simd/arm/common/jidctred-neon.c",
     ]

@@ -17,8 +17,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 
@@ -83,7 +84,8 @@ STACK_ALIGN int DelayedLooperCallback(int fd, int events, void* data) {
 
 }  // namespace
 
-MessagePumpForUI::MessagePumpForUI() {
+MessagePumpForUI::MessagePumpForUI()
+    : env_(base::android::AttachCurrentThread()) {
   // The Android native ALooper uses epoll to poll our file descriptors and wake
   // us up. We use a simple level-triggered eventfd to signal that non-delayed
   // work is available, and a timerfd to signal when delayed work is ready to
@@ -121,6 +123,14 @@ MessagePumpForUI::~MessagePumpForUI() {
 }
 
 void MessagePumpForUI::OnDelayedLooperCallback() {
+  // There may be non-Chromium callbacks on the same ALooper which may have left
+  // a pending exception set, and ALooper does not check for this between
+  // callbacks. Check here, and if there's already an exception, just skip this
+  // iteration without clearing the fd. If the exception ends up being non-fatal
+  // then we'll just get called again on the next polling iteration.
+  if (base::android::HasException(env_))
+    return;
+
   // ALooper_pollOnce may call this after Quit() if OnNonDelayedLooperCallback()
   // resulted in Quit() in the same round.
   if (ShouldQuit())
@@ -143,7 +153,7 @@ void MessagePumpForUI::OnDelayedLooperCallback() {
 
   delayed_scheduled_time_.reset();
 
-  Delegate::NextWorkInfo next_work_info = delegate_->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = delegate_->DoWork();
 
   if (ShouldQuit())
     return;
@@ -159,6 +169,14 @@ void MessagePumpForUI::OnDelayedLooperCallback() {
 }
 
 void MessagePumpForUI::OnNonDelayedLooperCallback() {
+  // There may be non-Chromium callbacks on the same ALooper which may have left
+  // a pending exception set, and ALooper does not check for this between
+  // callbacks. Check here, and if there's already an exception, just skip this
+  // iteration without clearing the fd. If the exception ends up being non-fatal
+  // then we'll just get called again on the next polling iteration.
+  if (base::android::HasException(env_))
+    return;
+
   // ALooper_pollOnce may call this after Quit() if OnDelayedLooperCallback()
   // resulted in Quit() in the same round.
   if (ShouldQuit())
@@ -170,7 +188,7 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
 
   // We're about to process all the work requested by ScheduleWork().
   // MessagePump users are expected to do their best not to invoke
-  // ScheduleWork() again before DoSomeWork() returns a non-immediate
+  // ScheduleWork() again before DoWork() returns a non-immediate
   // NextWorkInfo below. Hence, capturing the file descriptor's value now and
   // resetting its contents to 0 should be okay. The value currently stored
   // should be greater than 0 since work having been scheduled is the reason
@@ -180,7 +198,7 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
   DPCHECK(ret >= 0);
   DCHECK_GT(pre_work_value, 0U);
 
-  // Note: We can't skip DoSomeWork() even if
+  // Note: We can't skip DoWork() even if
   // |pre_work_value == kTryNativeTasksBeforeIdleBit| here (i.e. no additional
   // ScheduleWork() since yielding to native) as delayed tasks might have come
   // in and we need to re-sample |next_work_info|.
@@ -191,7 +209,7 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
     if (ShouldQuit())
       return;
 
-    next_work_info = delegate_->DoSomeWork();
+    next_work_info = delegate_->DoWork();
   } while (next_work_info.is_immediate());
 
   // Do not resignal |non_delayed_fd_| if we're quitting (this pump doesn't

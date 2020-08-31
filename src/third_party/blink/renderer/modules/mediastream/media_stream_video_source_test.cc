@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -160,7 +161,7 @@ class MediaStreamVideoSourceTest : public testing::Test {
                                            MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::OnceClosure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink, OnVideoFrame()).WillOnce([&]() {
+    EXPECT_CALL(*sink, OnVideoFrame).WillOnce([&](base::TimeTicks) {
       std::move(quit_closure).Run();
     });
     scoped_refptr<media::VideoFrame> frame =
@@ -183,8 +184,8 @@ class MediaStreamVideoSourceTest : public testing::Test {
       MockMediaStreamVideoSink* sink2) {
     base::RunLoop run_loop;
     base::OnceClosure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink1, OnVideoFrame());
-    EXPECT_CALL(*sink2, OnVideoFrame()).WillOnce([&]() {
+    EXPECT_CALL(*sink1, OnVideoFrame);
+    EXPECT_CALL(*sink2, OnVideoFrame).WillOnce([&](base::TimeTicks) {
       std::move(quit_closure).Run();
     });
     scoped_refptr<media::VideoFrame> frame =

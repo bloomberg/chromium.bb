@@ -1,0 +1,24 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "lib": ["dom", "es2016"],
+    "module": "esnext",
+
+    /* Output options */
+    "noEmit": true,
+
+    /* Strict type-checking options */
+    "allowJs": false,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+
+    /* Module Options */
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+  },
+  "include": [
+    "src/**/*.ts",
+  ],
+}

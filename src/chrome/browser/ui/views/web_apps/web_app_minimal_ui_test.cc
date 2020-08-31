@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
@@ -16,9 +15,7 @@ namespace web_app {
 
 class WebAppMinimalUITest : public WebAppControllerBrowserTest {
  public:
-  WebAppMinimalUITest() {
-    scoped_feature_list_.InitWithFeatures({features::kDesktopMinimalUI}, {});
-  }
+  WebAppMinimalUITest() = default;
 
   BrowserView* CreateBrowserView(blink::mojom::DisplayMode display_mode) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -31,8 +28,6 @@ class WebAppMinimalUITest : public WebAppControllerBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(WebAppMinimalUITest);
 };
 
@@ -53,7 +48,7 @@ IN_PROC_BROWSER_TEST_P(WebAppMinimalUITest, MinimalUi) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebAppMinimalUITest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,

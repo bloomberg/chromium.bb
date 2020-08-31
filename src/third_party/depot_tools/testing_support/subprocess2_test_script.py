@@ -38,11 +38,21 @@ if args:
 
 def do(string):
   if options.stdout:
-    sys.stdout.write(string.upper())
-    sys.stdout.write(options.eol)
+    if sys.version_info.major == 2:
+      sys.stdout.write(string.upper())
+      sys.stdout.write(options.eol)
+    else:
+      sys.stdout.buffer.write(string.upper().encode('utf-8'))
+      sys.stdout.buffer.write(options.eol.encode('utf-8'))
   if options.stderr:
-    sys.stderr.write(string.lower())
-    sys.stderr.write(options.eol)
+    if sys.version_info.major == 2:
+      sys.stderr.write(string.lower())
+      sys.stderr.write(options.eol)
+    else:
+      sys.stderr.buffer.write(string.lower().encode('utf-8'))
+      sys.stderr.buffer.write(options.eol.encode('utf-8'))
+    sys.stderr.flush()
+
 
 do('A')
 do('BB')

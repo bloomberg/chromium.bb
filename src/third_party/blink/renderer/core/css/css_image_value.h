@@ -39,43 +39,12 @@ class ComputedStyle;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
-  static CSSImageValue* Create(const KURL& url,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(url.GetString(), url, Referrer(), origin_clean, image);
-  }
-  static CSSImageValue* Create(const AtomicString& relative_url,
-                               const KURL& absolute_url,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(relative_url, absolute_url, Referrer(), origin_clean, image);
-  }
-  static CSSImageValue* Create(const String& raw_value,
-                               const KURL& url,
-                               const Referrer& referrer,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return Create(AtomicString(raw_value), url, referrer, origin_clean, image);
-  }
-  static CSSImageValue* Create(const AtomicString& raw_value,
-                               const KURL& url,
-                               const Referrer& referrer,
-                               OriginClean origin_clean,
-                               StyleImage* image = nullptr) {
-    return MakeGarbageCollected<CSSImageValue>(raw_value, url, referrer, image,
-                                               origin_clean);
-  }
-  static CSSImageValue* Create(const AtomicString& absolute_url,
-                               OriginClean origin_clean) {
-    return MakeGarbageCollected<CSSImageValue>(absolute_url, origin_clean);
-  }
-
   CSSImageValue(const AtomicString& raw_value,
                 const KURL&,
                 const Referrer&,
-                StyleImage*,
-                OriginClean origin_clean);
-  CSSImageValue(const AtomicString& absolute_url, OriginClean origin_clean);
+                OriginClean origin_clean,
+                bool is_ad_related,
+                StyleImage* image = nullptr);
   ~CSSImageValue();
 
   bool IsCachePending() const { return !cached_image_; }
@@ -85,13 +54,14 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   }
   StyleImage* CacheImage(
       const Document&,
-      FetchParameters::ImageRequestOptimization,
+      FetchParameters::ImageRequestBehavior,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   const String& Url() const { return absolute_url_; }
   const String& RelativeUrl() const { return relative_url_; }
 
   const Referrer& GetReferrer() const { return referrer_; }
+  bool GetIsAdRelated() const { return is_ad_related_; }
 
   void ReResolveURL(const Document&) const;
 
@@ -104,17 +74,20 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   CSSImageValue* ValueWithURLMadeAbsolute() const {
-    return Create(KURL(absolute_url_), origin_clean_, cached_image_.Get());
+    return MakeGarbageCollected<CSSImageValue>(
+        absolute_url_, KURL(absolute_url_), Referrer(), origin_clean_,
+        is_ad_related_, cached_image_.Get());
   }
 
   CSSImageValue* Clone() const {
-    return Create(relative_url_, KURL(absolute_url_), origin_clean_,
-                  cached_image_.Get());
+    return MakeGarbageCollected<CSSImageValue>(
+        relative_url_, KURL(absolute_url_), Referrer(), origin_clean_,
+        is_ad_related_, cached_image_.Get());
   }
 
   void SetInitiator(const AtomicString& name) { initiator_name_ = name; }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
   void RestoreCachedResourceIfNeeded(const Document&) const;
 
  private:
@@ -129,6 +102,9 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   // Whether the stylesheet that requested this image is origin-clean:
   // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
   const OriginClean origin_clean_;
+
+  // Whether this was created by an ad-related CSSParserContext.
+  const bool is_ad_related_;
 };
 
 template <>

@@ -27,15 +27,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+
+import {Events, IsolatedFileSystemManager} from './IsolatedFileSystemManager.js';  // eslint-disable-line no-unused-vars
+import {PlatformFileSystem} from './PlatformFileSystem.js';
+
 /**
  * @unrestricted
  */
-export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
+export class IsolatedFileSystem extends PlatformFileSystem {
   /**
-   * @param {!Persistence.IsolatedFileSystemManager} manager
+   * @param {!IsolatedFileSystemManager} manager
    * @param {string} path
    * @param {string} embedderPath
-   * @param {!DOMFileSystem} domFileSystem
+   * @param {!FileSystem} domFileSystem
    * @param {string} type
    */
   constructor(manager, path, embedderPath, domFileSystem, type) {
@@ -43,7 +51,8 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
     this._manager = manager;
     this._embedderPath = embedderPath;
     this._domFileSystem = domFileSystem;
-    this._excludedFoldersSetting = Common.settings.createLocalSetting('workspaceExcludedFolders', {});
+    this._excludedFoldersSetting =
+        Common.Settings.Settings.instance().createLocalSetting('workspaceExcludedFolders', {});
     /** @type {!Set<string>} */
     this._excludedFolders = new Set(this._excludedFoldersSetting.get()[path] || []);
     /** @type {!Array<string>} */
@@ -58,7 +67,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   }
 
   /**
-   * @param {!Persistence.IsolatedFileSystemManager} manager
+   * @param {!IsolatedFileSystemManager} manager
    * @param {string} path
    * @param {string} embedderPath
    * @param {string} type
@@ -67,15 +76,15 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {!Promise<?IsolatedFileSystem>}
    */
   static create(manager, path, embedderPath, type, name, rootURL) {
-    const domFileSystem = Host.InspectorFrontendHost.isolatedFileSystem(name, rootURL);
+    const domFileSystem = Host.InspectorFrontendHost.InspectorFrontendHostInstance.isolatedFileSystem(name, rootURL);
     if (!domFileSystem) {
       return Promise.resolve(/** @type {?IsolatedFileSystem} */ (null));
     }
 
     const fileSystem = new IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
-    return fileSystem._initializeFilePaths()
-        .then(() => fileSystem)
-        .catchException(/** @type {?IsolatedFileSystem} */ (null));
+    return fileSystem._initializeFilePaths().then(() => fileSystem).catch(error => {
+      console.error(error);
+    });
   }
 
   /**
@@ -83,7 +92,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {string}
    */
   static errorMessage(error) {
-    return Common.UIString('File system error: %s', error.message);
+    return Common.UIString.UIString('File system error: %s', error.message);
   }
 
   /**
@@ -131,7 +140,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {!Array<string>}
    */
   initialFilePaths() {
-    return this._initialFilePaths.valuesArray();
+    return [...this._initialFilePaths];
   }
 
   /**
@@ -139,7 +148,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {!Array<string>}
    */
   initialGitFolders() {
-    return this._initialGitFolders.valuesArray();
+    return [...this._initialGitFolders];
   }
 
   /**
@@ -181,7 +190,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
           }
           if (this.isFileExcluded(entry.fullPath + '/')) {
             this._excludedEmbedderFolders.push(
-                Common.ParsedURL.urlToPlatformPath(this.path() + entry.fullPath, Host.isWin()));
+                Common.ParsedURL.ParsedURL.urlToPlatformPath(this.path() + entry.fullPath, Host.Platform.isWin()));
             continue;
           }
           ++pendingRequests;
@@ -338,7 +347,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestFileContent(path) {
     return this._serializedFileOperation(path, () => this._innerRequestFileContent(path));
@@ -346,7 +355,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
 
   /**
    * @param {string} path
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async _innerRequestFileContent(path) {
     const blob = await this.requestFileBlob(path);
@@ -355,8 +364,8 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
     }
 
     const reader = new FileReader();
-    const extension = Common.ParsedURL.extractExtension(path);
-    const encoded = Persistence.IsolatedFileSystem.BinaryExtensions.has(extension);
+    const extension = Common.ParsedURL.ParsedURL.extractExtension(path);
+    const encoded = BinaryExtensions.has(extension);
     const readPromise = new Promise(x => reader.onloadend = x);
     if (encoded) {
       reader.readAsBinaryString(blob);
@@ -570,7 +579,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
 
   _saveExcludedFolders() {
     const settingValue = this._excludedFoldersSetting.get();
-    settingValue[this.path()] = this._excludedFolders.valuesArray();
+    settingValue[this.path()] = [...this._excludedFolders];
     this._excludedFoldersSetting.set(settingValue);
   }
 
@@ -581,7 +590,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   addExcludedFolder(path) {
     this._excludedFolders.add(path);
     this._saveExcludedFolders();
-    this._manager.dispatchEventToListeners(Persistence.IsolatedFileSystemManager.Events.ExcludedFolderAdded, path);
+    this._manager.dispatchEventToListeners(Events.ExcludedFolderAdded, path);
   }
 
   /**
@@ -591,7 +600,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   removeExcludedFolder(path) {
     this._excludedFolders.delete(path);
     this._saveExcludedFolders();
-    this._manager.dispatchEventToListeners(Persistence.IsolatedFileSystemManager.Events.ExcludedFolderRemoved, path);
+    this._manager.dispatchEventToListeners(Events.ExcludedFolderRemoved, path);
   }
 
   /**
@@ -627,19 +636,19 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} query
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    * @return {!Promise<!Array<string>>}
    */
   searchInPath(query, progress) {
     return new Promise(resolve => {
       const requestId = this._manager.registerCallback(innerCallback);
-      Host.InspectorFrontendHost.searchInPath(requestId, this._embedderPath, query);
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this._embedderPath, query);
 
       /**
        * @param {!Array<string>} files
        */
       function innerCallback(files) {
-        resolve(files.map(path => Common.ParsedURL.platformPathToURL(path)));
+        resolve(files.map(path => Common.ParsedURL.ParsedURL.platformPathToURL(path)));
         progress.worked(1);
       }
     });
@@ -647,12 +656,13 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
 
   /**
    * @override
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    */
   indexContent(progress) {
     progress.setTotalWork(1);
     const requestId = this._manager.registerProgress(progress);
-    Host.InspectorFrontendHost.indexPath(requestId, this._embedderPath, JSON.stringify(this._excludedEmbedderFolders));
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(
+        requestId, this._embedderPath, JSON.stringify(this._excludedEmbedderFolders));
   }
 
   /**
@@ -661,7 +671,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {string}
    */
   mimeFromPath(path) {
-    return Common.ResourceType.mimeFromURL(path) || 'text/plain';
+    return Common.ResourceType.ResourceType.mimeFromURL(path) || 'text/plain';
   }
 
   /**
@@ -676,23 +686,24 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType(path) {
-    const extension = Common.ParsedURL.extractExtension(path);
+    const extension = Common.ParsedURL.ParsedURL.extractExtension(path);
     if (_styleSheetExtensions.has(extension)) {
-      return Common.resourceTypes.Stylesheet;
+      return Common.ResourceType.resourceTypes.Stylesheet;
     }
     if (_documentExtensions.has(extension)) {
-      return Common.resourceTypes.Document;
+      return Common.ResourceType.resourceTypes.Document;
     }
     if (ImageExtensions.has(extension)) {
-      return Common.resourceTypes.Image;
+      return Common.ResourceType.resourceTypes.Image;
     }
     if (_scriptExtensions.has(extension)) {
-      return Common.resourceTypes.Script;
+      return Common.ResourceType.resourceTypes.Script;
     }
-    return BinaryExtensions.has(extension) ? Common.resourceTypes.Other : Common.resourceTypes.Document;
+    return BinaryExtensions.has(extension) ? Common.ResourceType.resourceTypes.Other :
+                                             Common.ResourceType.resourceTypes.Document;
   }
 
   /**
@@ -701,7 +712,7 @@ export default class IsolatedFileSystem extends Persistence.PlatformFileSystem {
    * @return {string}
    */
   tooltipForURL(url) {
-    const path = Common.ParsedURL.urlToPlatformPath(url, Host.isWin()).trimMiddle(150);
+    const path = Common.ParsedURL.ParsedURL.urlToPlatformPath(url, Host.Platform.isWin()).trimMiddle(150);
     return ls`Linked to ${path}`;
   }
 
@@ -736,14 +747,3 @@ export const BinaryExtensions = new Set([
   // Image file extensions
   'jpeg', 'jpg', 'gif', 'webp', 'png', 'ico', 'tiff', 'tif', 'bmp'
 ]);
-
-/* Legacy exported object */
-self.Persistence = self.Persistence || {};
-
-/* Legacy exported object */
-Persistence = Persistence || {};
-
-/** @constructor */
-Persistence.IsolatedFileSystem = IsolatedFileSystem;
-
-Persistence.IsolatedFileSystem.BinaryExtensions = BinaryExtensions;

@@ -8,23 +8,19 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import chrome_committer
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                             cros_test_lib.MockTempDirTestCase):
   """Test cros_chromeos_lkgm.Committer."""
-
-  class Args(object):
-    """Class for ChromeComitter args."""
-    def __init__(self, workdir):
-      self.workdir = workdir
-      self.dryrun = False
-      self.user_email = 'user@test.org'
-
 
   def setUp(self):
     """Common set up method for all tests."""
@@ -34,7 +30,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     osutils.WriteFile(os.path.join(self.tempdir, 'chromeos', 'BUILD.gn'),
                       'assert(is_chromeos)')
     self.committer = chrome_committer.ChromeCommitter(
-        ChromeCommitterTester.Args(self.tempdir))
+        'user@test.org', self.tempdir)
 
   def _assertCommand(self, git_cmd):
     self.assertCommandContains(git_cmd.split(' '))
@@ -90,8 +86,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
                                 '--bypass-hooks', '-f',
                                 '--tbrs', 'chrome-os-gardeners@google.com',
-                                '--send-mail'])
-    self._assertCommand('git cl set-commit -v')
+                                '--send-mail', '--use-commit-queue'])
 
   def testUploadDryRun(self):
     """Tests that we can upload a commit with dryrun."""
@@ -107,5 +102,4 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                                 '-c', 'user.name=user@test.org',
                                 'cl', 'upload', '-v', '-m',
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
-                                '--bypass-hooks', '-f'])
-    self._assertCommand('git cl set-commit -v --dry-run')
+                                '--bypass-hooks', '-f', '--dry-run'])

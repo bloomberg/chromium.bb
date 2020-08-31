@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
@@ -31,6 +31,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -50,46 +51,46 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                                      Observer* observer)
     : browser_(browser),
       observer_(observer),
-      menu_model_(std::make_unique<ui::SimpleMenuModel>(this)) {
-  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
-                                   IDS_MEDIA_ROUTER_ABOUT);
-  menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE, IDS_LEARN_MORE);
-  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
-                                   IDS_MEDIA_ROUTER_HELP);
-  if (shown_by_policy) {
-    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY,
-                                     IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
-    menu_model_->SetIcon(
-        menu_model_->GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
-        gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
-                                         gfx::kChromeIconGrey)));
-  } else {
-    menu_model_->AddCheckItemWithStringId(
-        IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
-        IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
-  }
-  menu_model_->AddCheckItemWithStringId(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
-                                        IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
-  if (!browser_->profile()->IsOffTheRecord()) {
-    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_->AddCheckItemWithStringId(
-        IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
-        IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
-
-    if (browser->profile()->GetPrefs()->GetBoolean(
-            prefs::kUserFeedbackAllowed)) {
-      menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
-                                       IDS_MEDIA_ROUTER_REPORT_ISSUE);
-    }
-  }
-}
+      shown_by_policy_(shown_by_policy) {}
 
 MediaRouterContextualMenu::~MediaRouterContextualMenu() = default;
 
 std::unique_ptr<ui::SimpleMenuModel>
-MediaRouterContextualMenu::TakeMenuModel() {
-  return std::move(menu_model_);
+MediaRouterContextualMenu::CreateMenuModel() {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
+                                  IDS_MEDIA_ROUTER_ABOUT);
+  menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE, IDS_LEARN_MORE);
+  menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_HELP, IDS_MEDIA_ROUTER_HELP);
+  if (shown_by_policy_) {
+    menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY,
+                                    IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
+    // TODO (kylixrd): Review the use of the hard-coded color constant.
+    menu_model->SetIcon(
+        menu_model->GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
+        ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                       gfx::kChromeIconGrey, 16));
+  } else {
+    menu_model->AddCheckItemWithStringId(
+        IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
+        IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
+  }
+  menu_model->AddCheckItemWithStringId(IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING,
+                                       IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING);
+  if (!browser_->profile()->IsOffTheRecord()) {
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddCheckItemWithStringId(
+        IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
+        IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
+
+    if (browser_->profile()->GetPrefs()->GetBoolean(
+            prefs::kUserFeedbackAllowed)) {
+      menu_model->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
+                                      IDS_MEDIA_ROUTER_REPORT_ISSUE);
+    }
+  }
+  return menu_model;
 }
 
 bool MediaRouterContextualMenu::GetAlwaysShowActionPref() const {

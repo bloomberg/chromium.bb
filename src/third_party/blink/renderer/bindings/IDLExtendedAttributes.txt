@@ -35,7 +35,7 @@ ActiveScriptWrappable
 Affects=Nothing
 AllowShared
 CEReactions
-CachedAccessor
+CachedAccessor=*
 CachedAttribute=*
 CallWith=ExecutionContext|Isolate|ScriptState|ThisValue
 CheckSecurity=Receiver|ReturnValue
@@ -46,11 +46,12 @@ Constructor
 ConstructorCallWith=ExecutionContext|ScriptState|Document
 ContextEnabled=*
 CrossOrigin=|Getter|Setter
-Custom=|Getter|Setter|LegacyCallAsFunction|PropertyGetter|PropertyEnumerator|PropertyQuery|CallPrologue|CallEpilogue
+Custom=|Getter|Setter|LegacyCallAsFunction|PropertyGetter|PropertyEnumerator|PropertyQuery
 CustomConstructor
 CustomElementCallbacks
 DefaultValue=Undefined
 DeprecateAs=*
+DisableInNewIDLCompiler
 DoNotCheckConstants
 DoNotTestNewObject
 EnforceRange
@@ -64,6 +65,9 @@ ImmutablePrototype
 ImplementedAs=*
 LegacyTreatAsPartialInterface
 LegacyUnenumerableNamedProperties
+LegacyWindowAlias=*
+LegacyWindowAlias_Measure=|*
+LegacyWindowAlias_RuntimeEnabled=*
 LenientSetter
 LenientThis
 LogActivity=|GetterOnly|SetterOnly
@@ -72,6 +76,8 @@ NewObject
 Measure
 MeasureAs=*
 NamedConstructor=*
+NamedConstructor_CallWith=Document
+NamedConstructor_RaisesException
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins
@@ -97,6 +103,7 @@ SaveSameObject
 SecureContext=|*
 Serializable
 SetterCallWith=ExecutionContext|Isolate|ScriptState
+StringContext=TrustedHTML|TrustedScript|TrustedScriptURL
 Transferable
 TreatNonObjectAsNull
 TreatNullAs=EmptyString

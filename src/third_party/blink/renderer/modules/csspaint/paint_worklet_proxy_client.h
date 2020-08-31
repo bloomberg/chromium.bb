@@ -44,7 +44,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
 
   // Create the PaintWorkletProxyClient for a given PaintWorklet, represented by
   // its unique |worklet_id|.
-  static PaintWorkletProxyClient* Create(Document*, int worklet_id);
+  static PaintWorkletProxyClient* Create(LocalDOMWindow*, int worklet_id);
 
   PaintWorkletProxyClient(
       int worklet_id,
@@ -74,7 +74,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // after the first have no effect.
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Hooks for testing.
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>&

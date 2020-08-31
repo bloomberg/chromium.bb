@@ -47,17 +47,14 @@ class CSSNumericLiteralValue;
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
 enum CalculationCategory {
-  kCalcNumber = 0,
+  kCalcNumber,
   kCalcLength,
   kCalcPercent,
-  kCalcPercentNumber,
   kCalcPercentLength,
   kCalcAngle,
   kCalcTime,
   kCalcFrequency,
-  kCalcLengthNumber,
-  kCalcPercentLengthNumber,
-  kCalcOther
+  kCalcOther,
 };
 
 class CORE_EXPORT CSSMathExpressionNode
@@ -121,9 +118,7 @@ class CORE_EXPORT CSSMathExpressionNode
 
   CalculationCategory Category() const { return category_; }
   bool HasPercentage() const {
-    return category_ == kCalcPercent || category_ == kCalcPercentNumber ||
-           category_ == kCalcPercentLength ||
-           category_ == kCalcPercentLengthNumber;
+    return category_ == kCalcPercent || category_ == kCalcPercentLength;
   }
 
   // Returns the unit type of the math expression *without doing any type
@@ -136,6 +131,8 @@ class CORE_EXPORT CSSMathExpressionNode
   bool IsNestedCalc() const { return is_nested_calc_; }
   void SetIsNestedCalc() { is_nested_calc_ = true; }
 
+  bool HasComparisons() const { return has_comparisons_; }
+
 #if DCHECK_IS_ON()
   // There's a subtle issue in comparing two percentages, e.g., min(10%, 20%).
   // It doesn't always resolve into 10%, because the reference value may be
@@ -144,17 +141,22 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool InvolvesPercentageComparisons() const = 0;
 #endif
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
-  CSSMathExpressionNode(CalculationCategory category, bool is_integer)
-      : category_(category), is_integer_(is_integer) {
+  CSSMathExpressionNode(CalculationCategory category,
+                        bool is_integer,
+                        bool has_comparisons)
+      : category_(category),
+        is_integer_(is_integer),
+        has_comparisons_(has_comparisons) {
     DCHECK_NE(category, kCalcOther);
   }
 
   CalculationCategory category_;
   bool is_integer_;
   bool is_nested_calc_ = false;
+  bool has_comparisons_;
 };
 
 class CORE_EXPORT CSSMathExpressionNumericLiteral final
@@ -190,7 +192,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;
@@ -248,7 +250,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
   String CustomCSSText() const final;
   bool operator==(const CSSMathExpressionNode& exp) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;
@@ -316,7 +318,7 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;

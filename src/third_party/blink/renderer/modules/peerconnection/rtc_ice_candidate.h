@@ -51,31 +51,33 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
   static RTCIceCandidate* Create(ExecutionContext*,
                                  const RTCIceCandidateInit*,
                                  ExceptionState&);
-  static RTCIceCandidate* Create(scoped_refptr<RTCIceCandidatePlatform>);
+  static RTCIceCandidate* Create(RTCIceCandidatePlatform*);
 
-  explicit RTCIceCandidate(scoped_refptr<RTCIceCandidatePlatform>);
+  explicit RTCIceCandidate(RTCIceCandidatePlatform*);
 
   String candidate() const;
   String sdpMid() const;
-  uint16_t sdpMLineIndex(bool& is_null) const;
+  base::Optional<uint16_t> sdpMLineIndex() const;
   String foundation() const;
   String component() const;
-  uint32_t priority(bool& is_null) const;
+  base::Optional<uint32_t> priority() const;
   String address() const;
   String protocol() const;
-  uint16_t port(bool& is_null) const;
+  base::Optional<uint16_t> port() const;
   String type() const;
   String tcpType() const;
   String relatedAddress() const;
-  uint16_t relatedPort(bool& is_null) const;
+  base::Optional<uint16_t> relatedPort() const;
   String usernameFragment() const;
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  scoped_refptr<RTCIceCandidatePlatform> PlatformCandidate() const;
+  RTCIceCandidatePlatform* PlatformCandidate() const;
+
+  void Trace(Visitor*) override;
 
  private:
-  scoped_refptr<RTCIceCandidatePlatform> platform_candidate_;
+  Member<RTCIceCandidatePlatform> platform_candidate_;
 };
 
 }  // namespace blink

@@ -9,36 +9,30 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/render_pass.h"
-#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/video_types.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace viz {
 class DisplayResourceProvider;
 class RendererSettings;
 
-// Holds all information necessary to construct a DCLayer from a DrawQuad.
+// TODO(weiliangc): Eventually fold this into OverlayProcessorWin and
+// OverlayCandidate class.
+// Holds all information necessary to construct a
+// DCLayer from a DrawQuad.
 class VIZ_SERVICE_EXPORT DCLayerOverlay {
  public:
   DCLayerOverlay();
   DCLayerOverlay(const DCLayerOverlay& other);
   DCLayerOverlay& operator=(const DCLayerOverlay& other);
   ~DCLayerOverlay();
-
-  // TODO(magchen): Once software protected video is enabled for all GPUs and
-  // all configurations, RequiresOverlay() will be true for all protected video.
-  // Currently, we only force the overlay swap chain path (RequiresOverlay) for
-  // hardware protected video and soon for Finch experiment on software
-  // protected video.
-  bool RequiresOverlay() const {
-    return (protected_video_type ==
-            gfx::ProtectedVideoType::kHardwareProtected);
-  }
 
   // Resource ids for video Y and UV planes, a single NV12 image, or a swap
   // chain image. See DirectCompositionSurfaceWin for details.
@@ -77,19 +71,20 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
-class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
+class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
+    : public ui::GpuSwitchingObserver {
  public:
-  DCLayerOverlayProcessor(const OutputSurface::Capabilities& capabilities,
-                          const RendererSettings& settings);
+  explicit DCLayerOverlayProcessor(const RendererSettings& settings);
   // For testing.
   DCLayerOverlayProcessor();
-  ~DCLayerOverlayProcessor();
+  virtual ~DCLayerOverlayProcessor();
 
-  void Process(DisplayResourceProvider* resource_provider,
-               const gfx::RectF& display_rect,
-               RenderPassList* render_passes,
-               gfx::Rect* damage_rect,
-               DCLayerOverlayList* dc_layer_overlays);
+  // Virtual for testing.
+  virtual void Process(DisplayResourceProvider* resource_provider,
+                       const gfx::RectF& display_rect,
+                       RenderPassList* render_passes,
+                       gfx::Rect* damage_rect,
+                       DCLayerOverlayList* dc_layer_overlays);
   void ClearOverlayState();
   // This is the damage contribution due to previous frame's overlays which can
   // be empty.
@@ -97,17 +92,39 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
     return previous_frame_overlay_rect_union_;
   }
 
+  // GpuSwitchingObserver implementation.
+  void OnDisplayAdded() override;
+  void OnDisplayRemoved() override;
+  void UpdateHasHwOverlaySupport();
+
  private:
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
                                                QuadList::Iterator it);
+
   void ProcessRenderPass(DisplayResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* damage_rect,
                          DCLayerOverlayList* dc_layer_overlays);
+
+  // UpdateDCLayerOverlays() adds the quad at |it| to the overlay list
+  // |dc_layer_overlays|.
+  void UpdateDCLayerOverlays(const gfx::RectF& display_rect,
+                             RenderPass* render_pass,
+                             bool is_root,
+                             const QuadList::Iterator& it,
+                             const gfx::Rect& quad_rectangle_in_target_space,
+                             const gfx::Rect& occluding_damage_rect,
+                             bool is_overlay,
+                             QuadList::Iterator* next_it,
+                             gfx::Rect* this_frame_overlay_rect,
+                             gfx::Rect* this_frame_underlay_rect,
+                             gfx::Rect* damage_rect,
+                             DCLayerOverlayList* dc_layer_overlays);
+
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,
                                        RenderPass* render_pass,
@@ -128,7 +145,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
                                   RenderPass* root_render_pass,
                                   gfx::Rect* damage_rect);
 
-  const bool has_hw_overlay_support_;
+  bool has_overlay_support_;
   const bool show_debug_borders_;
 
   gfx::Rect previous_frame_underlay_rect_;
@@ -158,6 +175,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
     bool has_backdrop_filters = false;
   };
   base::flat_map<RenderPassId, RenderPassData> render_pass_data_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DCLayerOverlayProcessor);
 };

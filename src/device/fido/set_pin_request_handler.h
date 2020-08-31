@@ -18,17 +18,12 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace device {
 
 class FidoAuthenticator;
 
 namespace pin {
 struct RetriesResponse;
-struct KeyAgreementResponse;
 struct EmptyResponse;
 }  // namespace pin
 
@@ -60,7 +55,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) SetPINRequestHandler
       base::RepeatingCallback<void(CtapDeviceResponseCode)>;
 
   SetPINRequestHandler(
-      service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       GetPINCallback get_pin_callback,
       FinishedCallback finished_callback,
@@ -79,7 +73,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) SetPINRequestHandler
     kWaitingForTouch,
     kGettingRetries,
     kWaitingForPIN,
-    kGetEphemeralKey,
     kSettingPIN,
     kFinished,
   };
@@ -93,11 +86,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) SetPINRequestHandler
   void RequestRetries();
   void OnRetriesResponse(CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
-
-  void OnHaveEphemeralKey(std::string old_pin,
-                          std::string new_pin,
-                          CtapDeviceResponseCode status,
-                          base::Optional<pin::KeyAgreementResponse> response);
 
   void OnSetPINComplete(CtapDeviceResponseCode status,
                         base::Optional<pin::EmptyResponse> response);

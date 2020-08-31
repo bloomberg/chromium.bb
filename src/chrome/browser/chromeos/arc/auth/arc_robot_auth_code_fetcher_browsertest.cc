@@ -28,6 +28,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -121,7 +122,7 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     fetcher->SetURLLoaderFactoryForTesting(
         test_url_loader_factory_.GetSafeWeakWrapper());
-    fetcher->Fetch(base::Bind(
+    fetcher->Fetch(base::BindOnce(
         [](bool* output_fetch_success, std::string* output_auth_code,
            base::RunLoop* run_loop, bool fetch_success,
            const std::string& auth_code) {

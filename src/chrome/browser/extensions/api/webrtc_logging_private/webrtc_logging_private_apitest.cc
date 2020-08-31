@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_split.h"
@@ -31,6 +32,7 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"

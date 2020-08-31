@@ -25,7 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -41,6 +41,11 @@ import java.io.FileInputStream;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DecoderServiceTest {
+    // By default, the test will wait for 3 seconds to create the decoder process, which (at least
+    // in the emulators) brushes up against the actual time it takes to create the process, so these
+    // tests are frequently flaky when run locally.
+    private static final int DECODER_STARTUP_TIMEOUT_IN_MS = 7500;
+
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -99,7 +104,7 @@ public class DecoderServiceTest {
             public boolean isSatisfied() {
                 return mBound;
             }
-        });
+        }, DECODER_STARTUP_TIMEOUT_IN_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private void decode(String filePath, FileDescriptor fd, int width,

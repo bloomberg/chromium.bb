@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/editor.h"
 
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -39,14 +39,13 @@ namespace blink {
 
 bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   const WebKeyboardEvent* key_event = evt->KeyEvent();
-  // do not treat this as text input if it's a system key event
-  if (!key_event || key_event->is_system_key)
+  if (!key_event)
     return false;
 
   String command_name = Behavior().InterpretKeyEvent(*evt);
   const EditorCommand command = this->CreateCommand(command_name);
 
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how
     // commands that just insert text if executed via Editor should be treated,
     // so we leave it upon WebCore to either handle them immediately

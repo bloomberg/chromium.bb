@@ -16,10 +16,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
@@ -37,6 +38,7 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/util.h"
+#include "net/dns/resolve_context.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
@@ -384,8 +386,9 @@ class FuzzedHostResolverManager : public HostResolverManager {
         std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
     std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
         net_log_, &socket_factory_,
-        base::Bind(&FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
-                   base::Unretained(data_provider_)));
+        base::BindRepeating(
+            &FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
+            base::Unretained(data_provider_)));
     dns_client->SetSystemConfig(GetFuzzedDnsConfig(data_provider_));
     HostResolverManager::SetDnsClientForTesting(std::move(dns_client));
   }
@@ -434,9 +437,10 @@ std::unique_ptr<ContextHostResolver> CreateFuzzedContextHostResolver(
     bool enable_caching) {
   auto manager = std::make_unique<FuzzedHostResolverManager>(options, net_log,
                                                              data_provider);
-  return std::make_unique<ContextHostResolver>(
-      std::move(manager),
-      enable_caching ? HostCache::CreateDefaultCache() : nullptr);
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
+  return std::make_unique<ContextHostResolver>(std::move(manager),
+                                               std::move(resolve_context));
 }
 
 }  // namespace net

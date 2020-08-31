@@ -134,6 +134,9 @@ id<GREYMatcher> NavigationBarDoneButton();
 // Matcher for the done button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarDoneButton();
 
+// Matcher for the back button on the Bookmarks navigation bar.
+id<GREYMatcher> BookmarksNavigationBarBackButton();
+
 // Returns matcher for the account consistency confirmation button.
 id<GREYMatcher> AccountConsistencyConfirmationOkButton();
 
@@ -279,6 +282,10 @@ id<GREYMatcher> ClearCacheButton();
 // panel.
 id<GREYMatcher> ClearSavedPasswordsButton();
 
+// Returns matcher for the clear saved passwords cell on the clear browsing data
+// panel.
+id<GREYMatcher> ClearAutofillButton();
+
 // Returns matcher for the collection view of content suggestion.
 id<GREYMatcher> ContentSuggestionCollectionView();
 
@@ -390,6 +397,9 @@ id<GREYMatcher> SettingsCreditCardMatcher();
 // views.
 id<GREYMatcher> SettingsBottomToolbarDeleteButton();
 
+// Returns a matcher for the search engine button in the main settings view.
+id<GREYMatcher> SettingsSearchEngineButton();
+
 // Returns a matcher for an autofill suggestion view.
 id<GREYMatcher> AutofillSuggestionViewMatcher();
 
@@ -402,6 +412,9 @@ id<GREYMatcher> AutofillSaveCardLocallyInfobar();
 
 // Returns a matcher for the infobar asking to upload a credit card.
 id<GREYMatcher> AutofillUploadCardInfobar();
+
+// Returns a matcher for a history entry with |url| and |title|.
+id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title);
 
 #pragma mark - Manual Fallback
 

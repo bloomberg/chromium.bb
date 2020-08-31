@@ -13,7 +13,6 @@ import tempfile
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.utils import memoize
@@ -21,7 +20,6 @@ from chromite.utils import memoize
 
 GENERAL_CACHE_DIR = '.cache'
 CHROME_CACHE_DIR = 'cros_cache'
-OLD_CHROME_CACHE_DIR = '.cros_cache'
 
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
 CHECKOUT_TYPE_GCLIENT = 'gclient'
@@ -281,7 +279,7 @@ class ChrootPathResolver(object):
     return self._ConvertPath(path, self._GetHostPath)
 
 
-def DetermineCheckout(cwd):
+def DetermineCheckout(cwd=None):
   """Gather information on the checkout we are in.
 
   There are several checkout types, as defined by CHECKOUT_TYPE_XXX variables.
@@ -298,6 +296,7 @@ def DetermineCheckout(cwd):
   checkout_type = CHECKOUT_TYPE_UNKNOWN
   root, path = None, None
 
+  cwd = cwd or os.getcwd()
   for path in osutils.IteratePathParents(cwd):
     gclient_file = os.path.join(path, '.gclient')
     if os.path.exists(gclient_file):
@@ -321,25 +320,15 @@ def DetermineCheckout(cwd):
 
 def FindCacheDir():
   """Returns the cache directory location based on the checkout type."""
-  cwd = os.getcwd()
-  checkout = DetermineCheckout(cwd)
-  path = None
+  checkout = DetermineCheckout()
   if checkout.type == CHECKOUT_TYPE_REPO:
-    path = os.path.join(checkout.root, GENERAL_CACHE_DIR)
+    return os.path.join(checkout.root, GENERAL_CACHE_DIR)
   elif checkout.type == CHECKOUT_TYPE_GCLIENT:
-    path = os.path.join(checkout.chrome_src_dir, 'build', CHROME_CACHE_DIR)
-    # Notify the user that the previous location is no longer used.
-    old_path = os.path.join(checkout.root, OLD_CHROME_CACHE_DIR)
-    if os.path.exists(old_path):
-      logging.warning(
-          "The location of Chrome's cache dir has changed. The old path at %s "
-          'can safely be removed.', old_path)
+    return os.path.join(checkout.chrome_src_dir, 'build', CHROME_CACHE_DIR)
   elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
-    path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
+    return os.path.join(tempfile.gettempdir(), 'chromeos-cache')
   else:
     raise AssertionError('Unexpected type %s' % checkout.type)
-
-  return path
 
 
 def GetCacheDir():

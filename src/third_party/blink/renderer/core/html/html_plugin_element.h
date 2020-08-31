@@ -52,7 +52,7 @@ class PluginParameters {
   const Vector<String>& Values() const;
   void AppendAttribute(const Attribute&);
   void AppendNameWithValue(const String& name, const String& value);
-  int FindStringInNames(const String&);
+  void MapDataParamToSrc();
 
  private:
   Vector<String> names_;
@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   bool HasPendingActivity() const final;
 
-  void SetFocused(bool, WebFocusType) override;
+  void SetFocused(bool, mojom::blink::FocusType) override;
   void ResetInstance();
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
@@ -235,11 +235,20 @@ class CORE_EXPORT HTMLPlugInElement
   bool dispose_view_ = false;
 };
 
-inline bool IsHTMLPlugInElement(const HTMLElement& element) {
-  return element.IsPluginElement();
+template <>
+inline bool IsElementOfType<const HTMLPlugInElement>(const Node& node) {
+  return IsA<HTMLPlugInElement>(node);
 }
-
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLPlugInElement);
+template <>
+struct DowncastTraits<HTMLPlugInElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    return html_element && AllowFrom(*html_element);
+  }
+  static bool AllowFrom(const HTMLElement& html_element) {
+    return html_element.IsPluginElement();
+  }
+};
 
 }  // namespace blink
 

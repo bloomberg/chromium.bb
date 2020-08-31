@@ -18,7 +18,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -224,13 +223,14 @@ std::string GetWifiSSID() {
 // On Android, obtain the SSID using the Android-specific APIs.
 #if defined(OS_ANDROID)
   return android::GetWifiSSID();
-#endif
+#else
   NetworkInterfaceList networks;
   if (GetNetworkList(&networks, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     return internal::GetWifiSSIDFromInterfaceListInternal(
         networks, internal::GetInterfaceSSID);
   }
   return std::string();
+#endif
 }
 
 }  // namespace net

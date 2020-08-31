@@ -15,6 +15,8 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
+#include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpdf_bookmark.h"
 #include "core/fpdfdoc/cpdf_bookmarktree.h"
 #include "core/fpdfdoc/cpdf_dest.h"
@@ -192,10 +194,7 @@ FPDFAction_GetFilePath(FPDF_ACTION action, void* buffer, unsigned long buflen) {
 
   CPDF_Action cAction(CPDFDictionaryFromFPDFAction(action));
   ByteString path = cAction.GetFilePath().ToUTF8();
-  unsigned long len = path.GetLength() + 1;
-  if (buffer && len <= buflen)
-    memcpy(buffer, path.c_str(), len);
-  return len;
+  return NulTerminateMaybeCopyAndReturnLength(path, buffer, buflen);
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
@@ -233,9 +232,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFDest_GetDestPageIndex(FPDF_DOCUMENT document,
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
-FPDFDest_GetView(FPDF_DEST dest,
-                 unsigned long* pNumParams,
-                 FS_FLOAT* pParams) {
+FPDFDest_GetView(FPDF_DEST dest, unsigned long* pNumParams, FS_FLOAT* pParams) {
   if (!dest) {
     *pNumParams = 0;
     return 0;
@@ -367,7 +364,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_GetAnnotRect(FPDF_LINK link_annot,
     return false;
 
   CPDF_Dictionary* pAnnotDict = CPDFDictionaryFromFPDFLink(link_annot);
-  *rect = FSRECTFFromCFXFloatRect(pAnnotDict->GetRectFor("Rect"));
+  *rect = FSRectFFromCFXFloatRect(pAnnotDict->GetRectFor("Rect"));
   return true;
 }
 
@@ -394,6 +391,32 @@ FPDFLink_GetQuadPoints(FPDF_LINK link_annot,
 
   return GetQuadPointsAtIndex(pArray, static_cast<size_t>(quad_index),
                               quad_points);
+}
+
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDF_GetFileIdentifier(FPDF_DOCUMENT document,
+                       FPDF_FILEIDTYPE id_type,
+                       void* buffer,
+                       unsigned long buflen) {
+  CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document);
+  if (!pDoc)
+    return 0;
+
+  // Check if |id_type| is valid.
+  if (id_type != FILEIDTYPE_PERMANENT && id_type != FILEIDTYPE_CHANGING)
+    return 0;
+
+  const CPDF_Array* pFileId = pDoc->GetFileIdentifier();
+  if (!pFileId)
+    return 0;
+
+  size_t nIndex = id_type == FILEIDTYPE_PERMANENT ? 0 : 1;
+  const CPDF_String* pValue = ToString(pFileId->GetDirectObjectAt(nIndex));
+  if (!pValue)
+    return 0;
+
+  return NulTerminateMaybeCopyAndReturnLength(pValue->GetString(), buffer,
+                                              buflen);
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV FPDF_GetMetaText(FPDF_DOCUMENT document,

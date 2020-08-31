@@ -12,11 +12,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -63,26 +66,6 @@ bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
          base::StringPiece(url.spec()).substr(0, scope_str_length);
 }
 
-const Extension* GetInstalledShortcutForUrl(Profile* profile, const GURL& url) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProviderBase::GetProviderBase(profile)->registrar();
-  for (scoped_refptr<const Extension> app :
-       ExtensionRegistry::Get(profile)->enabled_extensions()) {
-    if (!app->from_bookmark())
-      continue;
-    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
-      continue;
-    if (!registrar.IsShortcutApp(app->id()))
-      continue;
-
-    const GURL launch_url = AppLaunchInfo::GetLaunchWebURL(app.get());
-    if (IsInNavigationScopeForLaunchUrl(launch_url, url))
-      return app.get();
-  }
-  return nullptr;
-}
-
 int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   // To avoid data races and inaccurate counting, ensure that ExtensionSystem is
   // always ready at this point.
@@ -104,6 +87,42 @@ int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   }
 
   return num_user_installed;
+}
+
+std::vector<SquareSizePx> GetBookmarkAppDownloadedIconSizes(
+    const Extension* extension) {
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+
+  std::vector<SquareSizePx> icon_sizes_in_px;
+  icon_sizes_in_px.reserve(icons.map().size());
+
+  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map())
+    icon_sizes_in_px.push_back(icon_info.first);
+
+  return icon_sizes_in_px;
+}
+
+LaunchContainerAndType GetLaunchContainerAndTypeFromDisplayMode(
+    web_app::DisplayMode display_mode) {
+  apps::mojom::LaunchContainer apps_launch_container =
+      web_app::ConvertDisplayModeToAppLaunchContainer(display_mode);
+  switch (apps_launch_container) {
+    case apps::mojom::LaunchContainer::kLaunchContainerNone:
+      return {extensions::LaunchContainer::kLaunchContainerNone,
+              extensions::LaunchType::LAUNCH_TYPE_DEFAULT};
+    case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
+      return {extensions::LaunchContainer::kLaunchContainerPanelDeprecated,
+              extensions::LaunchType::LAUNCH_TYPE_REGULAR};
+    case apps::mojom::LaunchContainer::kLaunchContainerTab:
+      return {extensions::LaunchContainer::kLaunchContainerTab,
+              extensions::LaunchType::LAUNCH_TYPE_REGULAR};
+    case apps::mojom::LaunchContainer::kLaunchContainerWindow:
+      return {extensions::LaunchContainer::kLaunchContainerTab,
+              display_mode == web_app::DisplayMode::kFullscreen
+                  ? extensions::LaunchType::LAUNCH_TYPE_FULLSCREEN
+                  : extensions::LaunchType::LAUNCH_TYPE_WINDOW};
+  }
+  NOTREACHED();
 }
 
 }  // namespace extensions

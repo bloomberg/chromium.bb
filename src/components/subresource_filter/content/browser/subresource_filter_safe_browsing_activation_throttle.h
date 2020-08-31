@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
@@ -94,9 +94,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const SubresourceFilterSafeBrowsingClient::CheckResult& result);
   // Gets the ActivationDecision for the given Configuration.
   // Returns it, or ACTIVATION_CONDITIONS_NOT_MET if no Configuration.
-  ActivationDecision GetActivationDecision(
-      const std::vector<ConfigResult>& configs,
-      ConfigResult* selected_config);
+  ActivationDecision GetActivationDecision(const ConfigResult& configs);
 
   // Returns whether a main-frame navigation satisfies the activation
   // |conditions| of a given configuration, except for |priority|.

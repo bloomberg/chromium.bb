@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
@@ -32,13 +32,11 @@ void TestDirectorySetterUpper::SetUp() {
 
   directory_ = std::make_unique<syncable::Directory>(
       std::make_unique<syncable::InMemoryDirectoryBackingStore>(
-          name_, base::BindRepeating(
-                     []() -> std::string { return "kTestCacheGuid"; })),
-      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
+          name_, "kTestCacheGuid"),
+      MakeWeakHandle(handler_.GetWeakPtr()), base::NullCallback(),
       &encryption_handler_);
   ASSERT_EQ(syncable::OPENED_NEW,
             directory_->Open(name_, &delegate_, transaction_observer));
-  directory_->set_cache_guid("kTestCacheGuid");
 }
 
 void TestDirectorySetterUpper::SetUpWith(
@@ -51,10 +49,9 @@ void TestDirectorySetterUpper::SetUpWith(
 
   directory_ = std::make_unique<syncable::Directory>(
       std::move(directory_store), MakeWeakHandle(handler_.GetWeakPtr()),
-      base::Closure(), &encryption_handler_);
+      base::NullCallback(), &encryption_handler_);
   ASSERT_EQ(syncable::OPENED_EXISTING,
             directory_->Open(name_, &delegate_, transaction_observer));
-  directory_->set_cache_guid("kTestCacheGuid");
 }
 
 void TestDirectorySetterUpper::TearDown() {

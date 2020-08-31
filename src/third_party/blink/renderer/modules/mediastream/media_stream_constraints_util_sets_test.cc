@@ -125,7 +125,7 @@ class MediaStreamConstraintsUtilSetsTest : public testing::Test {
 
   Point SelectClosestPointToIdeal(const ResolutionSet& set) {
     return set.SelectClosestPointToIdeal(
-        factory_.CreateWebMediaConstraints().Basic(), kDefaultHeight,
+        factory_.CreateMediaConstraints().Basic(), kDefaultHeight,
         kDefaultWidth);
   }
 
@@ -1509,21 +1509,20 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
   factory_.Reset();
-  factory_.CreateWebMediaConstraints();
+  factory_.CreateMediaConstraints();
   BoolSet set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.is_universal());
   EXPECT_FALSE(set.HasExplicitElements());
 
   // Invalid exact value.
-  factory_.basic().resize_mode.SetExact({WebString::FromASCII("invalid")});
+  factory_.basic().resize_mode.SetExact("invalid");
   set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.IsEmpty());
 
   // No rescaling
-  factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone));
+  factory_.basic().resize_mode.SetExact(WebMediaStreamTrack::kResizeModeNone);
   set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(false));
@@ -1531,18 +1530,16 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
 
   // Rescaling
   factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII(WebMediaStreamTrack::kResizeModeRescale));
+      WebMediaStreamTrack::kResizeModeRescale);
   set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(true));
   EXPECT_FALSE(set.Contains(false));
 
   // Both explicit
-  WebString rescale_modes[] = {
-      WebString::FromASCII(WebMediaStreamTrack::kResizeModeRescale),
-      WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone)};
-  factory_.basic().resize_mode.SetExact(
-      WebVector<WebString>(rescale_modes, base::size(rescale_modes)));
+  Vector<String> rescale_modes = {WebMediaStreamTrack::kResizeModeRescale,
+                                  WebMediaStreamTrack::kResizeModeNone};
+  factory_.basic().resize_mode.SetExact(rescale_modes);
   set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(true));
@@ -1550,8 +1547,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
 
   // Invalid and no rescaling.
   rescale_modes[0] = "invalid";
-  factory_.basic().resize_mode.SetExact(
-      WebVector<WebString>(rescale_modes, base::size(rescale_modes)));
+  factory_.basic().resize_mode.SetExact(Vector<String>(rescale_modes));
   set =
       media_constraints::RescaleSetFromConstraint(factory_.basic().resize_mode);
   EXPECT_FALSE(set.Contains(true));

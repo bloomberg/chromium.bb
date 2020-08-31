@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">上載</translation>
 <translation id="1249250836236328755">類型</translation>
 <translation id="1278813325885878377">匈牙利文 QWERTY 鍵盤</translation>
+<translation id="1293556467332435079">檔案</translation>
 <translation id="1297922636971898492">「Google 雲端硬碟」目前無法提供服務。一旦「Google 雲端硬碟」恢復正常，上載操作將會自動重新啟動。</translation>
 <translation id="1307931752636661898">無法查看 Linux 檔案</translation>
 <translation id="1310751437842832374">音譯 (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">已儲存</translation>
 <translation id="1864756863218646478">找不到檔案。</translation>
 <translation id="1921986354447415460">土耳其文 F 鍵盤</translation>
+<translation id="1924372192547904021">已格式化「<ph name="DRIVE_NAME" />」</translation>
 <translation id="1931134289871235022">斯洛伐克文</translation>
 <translation id="1933345018156373194">移動失敗，發生未預期的錯誤：<ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">芬蘭文</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">德文鍵盤</translation>
 <translation id="1972984168337863910">展開檔案意見面板</translation>
 <translation id="1984603991036629094">亞美尼亞文 (拼音) 鍵盤</translation>
+<translation id="1995337122023280937">前往檔案位置</translation>
 <translation id="2001796770603320721">在「雲端硬碟」中管理</translation>
 <translation id="2009067268969781306">格式化硬碟將刪除其中儲存的所有資料。此操作無法復原。</translation>
 <translation id="2028997212275086731">RAR 封存檔案</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">無法連上「Google 雲端硬碟」。請<ph name="BEGIN_LINK" />登出<ph name="END_LINK" />並重新登入帳戶。</translation>
 <translation id="2649120831653069427">彩虹魚</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">檔案位置</translation>
 <translation id="2672394958563893062">發生錯誤，按一下即可重新播放。</translation>
 <translation id="2676946222714718093">目前播放裝置：</translation>
 <translation id="2735698359135166290">羅馬尼亞文標準鍵盤</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">德文 NEO 2 鍵盤</translation>
 <translation id="2943400156390503548">投影片</translation>
 <translation id="2943503720238418293">請使用較短的名稱</translation>
+<translation id="2949781154072577687">正在格式化「<ph name="DRIVE_NAME" />」…</translation>
 <translation id="2951236788251446349">水母</translation>
 <translation id="2963783323012015985">土耳其文鍵盤</translation>
 <translation id="2966459079597787514">瑞典文鍵盤</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826">發生 <ph name="COUNT" /> 個錯誤。</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
+<translation id="3524311639100184459">注意：系統可能會自動刪除這些暫存檔案，以釋放磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3549797760399244642">前往 drive.google.com…</translation>
 <translation id="357479282490346887">立陶宛文</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">奇異果</translation>
 <translation id="3966388904776714213">音效檔案播放器</translation>
 <translation id="4002066346123236978">標題</translation>
+<translation id="4065397611279318371">如要透過「<ph name="APP_NAME" />」應用程式開啟檔案，請先將檔案移至「<ph name="SHARED_DIRECTORY_LABEL" />」資料夾。</translation>
 <translation id="4070370845051020638">粵語輸入法</translation>
 <translation id="4072248638558688893">坦米爾文鍵盤 (拼音)</translation>
 <translation id="4124935795427217608">獨角獸</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">複製操作失敗。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">蜜瓜</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">外部連結</translation>
 <translation id="4425149324548788773">我的雲端硬碟</translation>
 <translation id="4465830120256509958">巴西文鍵盤</translation>
 <translation id="4470564870223067757">韓文 2 Set</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">自動修正</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4886021172213954916">坦米爾文鍵盤 (打字機)</translation>
+<translation id="4892969127351273348">無法使用「<ph name="APP_NAME" />」開啟</translation>
 <translation id="4905417359854579806">現在可以備份 <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">已修正</translation>
 <translation id="4935975195727477204">勳章菊</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">管理 Linux 共用設定</translation>
 <translation id="6808193438228982088">狐狸</translation>
 <translation id="6820687829547641339">Gzip 壓縮 tar 封存檔案</translation>
+<translation id="6823166707458800069">所有儲存在此資料夾的檔案都會自動在網上備份。</translation>
 <translation id="6825883775269213504">俄羅斯文</translation>
 <translation id="6827236167376090743">這部影片將會持續迴圈播放。</translation>
 <translation id="6847101934483209767">喺選擇範圍入面移除 <ph name="ENTRY_NAME" />。</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">梵文鍵盤 (拼音)</translation>
 <translation id="6885780034956018177">蝸牛</translation>
 <translation id="6896758677409633944">複製</translation>
+<translation id="6898028766943174120">更多子資料夾…</translation>
 <translation id="691516599546977041">無法儲存至「<ph name="FOLDER_NAME" />」，系統會將編輯過的圖片儲存在「下載」資料夾。</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">美式 Workman</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">啟用同步處理流動數據</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6970230597523682626">保加利亞文</translation>
+<translation id="6973630695168034713">資料夾</translation>
 <translation id="6978611942794658017">這個檔案是專為使用 Windows 軟件的 PC 電腦而設，與運行 Chrome 作業系統的裝置並不相容。請前往「Chrome 網上應用程式商店」尋找適合的替代應用程式。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6990081529015358884">沒有可用的空間</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Google 地圖</translation>
 <translation id="7419631653042041064">卡達隆尼亞文鍵盤</translation>
 <translation id="7434823369735508263">英式 Dvorak 鍵盤</translation>
+<translation id="7447678886297481665">此資料夾中的檔案是唯讀檔案，因此不支援部份活動。</translation>
 <translation id="7460898608667578234">烏克蘭文</translation>
 <translation id="7474889694310679759">加拿大英文鍵盤</translation>
 <translation id="7489215562877293245">已找到 <ph name="FILE_COUNT" />
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7654209398114106148">正在移動 <ph name="NUMBER_OF_ITEMS" /> 個項目…</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="7695430100978772476">無法格式化「<ph name="DRIVE_NAME" />」</translation>
 <translation id="770015031906360009">希臘文</translation>
 <translation id="7706319470528945664">葡萄牙文鍵盤</translation>
 <translation id="7711920809702896782">圖片資料</translation>

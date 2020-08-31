@@ -84,23 +84,28 @@ void SmbShareFinder::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
   scanner_.RegisterHostLocator(std::move(locator));
 }
 
-std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
+SmbUrl SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   DCHECK(url.IsValid());
 
-  const std::string ip_address = scanner_.ResolveHost(url.GetHost());
+  const std::string ip_address = scanner_.ResolveHost(url.GetHost()).ToString();
   // Return the original URL if the resolved host cannot be found or if there is
   // no change in the resolved IP address.
   if (ip_address.empty() || ip_address == url.GetHost()) {
-    return url.ToString();
+    return url;
   }
 
   return url.ReplaceHost(ip_address);
 }
 
+net::IPAddress SmbShareFinder::GetResolvedHost(const std::string& host) const {
+  DCHECK(!host.empty());
+  return scanner_.ResolveHost(host);
+}
+
 bool SmbShareFinder::TryResolveUrl(const SmbUrl& url,
-                                   std::string* updated_url) const {
+                                   SmbUrl* updated_url) const {
   *updated_url = GetResolvedUrl(url);
-  return *updated_url != url.ToString();
+  return updated_url->ToString() != url.ToString();
 }
 
 void SmbShareFinder::OnHostsFound(bool success, const HostMap& hosts) {
@@ -122,7 +127,7 @@ void SmbShareFinder::OnHostsFound(bool success, const HostMap& hosts) {
   host_counter_ = hosts.size();
   for (const auto& host : hosts) {
     const std::string& host_name = host.first;
-    const std::string& resolved_address = host.second;
+    const std::string resolved_address = host.second.ToString();
     const base::FilePath server_url(kSmbSchemePrefix + resolved_address);
 
     client_->GetShares(

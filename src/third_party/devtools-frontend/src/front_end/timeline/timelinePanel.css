@@ -287,11 +287,12 @@
     overflow: auto;
     position: relative;
     background-color: var(--toolbar-bg-color);
-    -webkit-user-select: text;
+    user-select: text;
 }
 
 .timeline-details-view-body > div {
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: auto;
 }
 
 .timeline-details-view-block {
@@ -305,8 +306,6 @@
 
 .timeline-details-view-row {
     padding-left: 10px;
-    flex-direction: row;
-    display: flex;
     line-height: 20px;
 }
 
@@ -334,6 +333,7 @@
     color: rgb(152, 152, 152);
     overflow: hidden;
     padding-right: 10px;
+    display: inline-block;
 }
 
 .timeline-details-warning {
@@ -351,7 +351,8 @@
 }
 
 .timeline-details-view-row-value {
-    -webkit-user-select: text;
+    display : inline-block;
+    user-select: text;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -596,4 +597,32 @@
 .timeline-landing-page > div > p {
     flex: none;
     white-space: pre-line;
+}
+
+@media (forced-colors: active) {
+    .timeline-tree-view .data-grid .name-container .activity-icon {
+        forced-color-adjust: none;
+    }
+    .timeline-tree-view .data-grid tr.selected span.percent-column,
+    .timeline-tree-view .data-grid tr.selected div.background-percent-bar span,
+    .timeline-tree-view .data-grid tr.selected .name-container .activity-link .devtools-link {
+        color: HighlightText;
+    }
+    .timeline-tree-view .data-grid .background-bar,
+    .timeline-tree-view .data-grid tr:hover td:not(.bottom-filler-td) {
+        background-color: transparent;
+    }
+    .timeline-tree-view .data-grid tr.selected .background-bar {
+        background-color: transparent;
+        border-bottom-color: HighlightText;
+    }
+}
+
+.timeline-additional-metrics {
+    display: flex;
+    flex: 0 0 27px;
+    background-color: var(--toolbar-bg-color);
+    border-top: var(--divider-border);
+    overflow: hidden;
+    z-index: 0;
 }

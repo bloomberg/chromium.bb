@@ -35,6 +35,7 @@ class AutofillProfile;
 class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
+struct CreditCardCloudTokenData;
 struct FormFieldData;
 struct PaymentsCustomerData;
 
@@ -170,15 +171,15 @@ struct PaymentsCustomerData;
 //   name_on_card
 //   network            Issuer network of the card. For example, "VISA". Renamed
 //                      from "type" in version 72.
-//   type               Card type. One of CreditCard::CardType enum values.
-//                      Added in version 74.
 //   last_four          Last four digits of the card number. For de-duping
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
 //   bank_name          Issuer bank name of the credit card.
-//   cloud_token_data   Opaque identifier for the cloud token associated with
-//                      the payment instrument.
+//   nickname           The card's nickname, if it exists. Added in version 84.
+//   card_issuer        Issuer for the card. An integer representing the
+//                      CardIssuer.Issuer enum from the Chrome Sync response.
+//                      For example, GOOGLE or ISSUER_UNKNOWN.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -190,11 +191,22 @@ struct PaymentsCustomerData;
 //                      masked_credit_cards table to get the rest of the data.
 //   card_number_encrypted
 //                      Full card number, encrypted.
-//   use_count          DEPRECATED in version 65. See server_card_metadata.
-//   use_date           DEPRECATED in version 65. See server_card_metadata.
-//                      TODO(crbug.com/682326): Remove deprecated columns.
 //   unmask_date        The date this card was unmasked in units of
 //                      Time::ToInternalValue. Added in version 64.
+//
+// server_card_cloud_token_data
+//                      Stores data related to Cloud Primary Account Number
+//                      (CPAN) of server credit cards. Each card can have
+//                      multiple entries.
+//
+//   id                 The server ID, which matches an ID from the
+//                      masked_credit_cards table.
+//   suffix             Last 4-5 digits of the Cloud Primary Account Number.
+//   exp_month          Expiration month associated with the CPAN.
+//   exp_year           Four-digit Expiration year associated with the CPAN.
+//   card_art_url       URL of the card art to be displayed for CPAN.
+//   instrument_token   Opaque identifier for the cloud token associated with
+//                      the payment instrument.
 //
 // server_card_metadata
 //                      Metadata (currently, usage data) about server credit
@@ -279,7 +291,7 @@ struct PaymentsCustomerData;
 // payments_upi_vpa     Contains saved UPI/VPA payment data.
 //                      https://en.wikipedia.org/wiki/Unified_Payments_Interface
 //
-//   vpa_id             A string representing the VPA value.
+//   vpa_id             A string representing the UPI ID (a.k.a. VPA) value.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -432,6 +444,14 @@ class AutofillTable : public WebDatabaseTable,
   void SetServerCardsData(const std::vector<CreditCard>& credit_cards);
   void SetServerAddressesData(const std::vector<AutofillProfile>& profiles);
 
+  // Setters and getters related to the CreditCardCloudTokenData of server
+  // cards. Used by AutofillWalletSyncBridge to interact with the stored data.
+  void SetCreditCardCloudTokenData(const std::vector<CreditCardCloudTokenData>&
+                                       credit_card_cloud_token_data);
+  bool GetCreditCardCloudTokenData(
+      std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
+          credit_card_cloud_token_data);
+
   // Setters and getters related to the Google Payments customer data.
   // Passing null to the setter will clear the data.
   void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
@@ -440,8 +460,11 @@ class AutofillTable : public WebDatabaseTable,
   bool GetPaymentsCustomerData(
       std::unique_ptr<PaymentsCustomerData>* customer_data) const;
 
-  // Adds |vpa| to the saved VPA ids.
-  bool InsertVPA(const std::string& vpa);
+  // Adds |upi_id| to the saved UPI IDs.
+  bool InsertUpiId(const std::string& upi_id);
+
+  // Returns all the UPI IDs stored in the database.
+  std::vector<std::string> GetAllUpiIds();
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
@@ -529,6 +552,11 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion78AddModelTypeColumns();
   bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   bool MigrateToVersion81CleanUpWrongModelTypeData();
+  bool MigrateToVersion83RemoveServerCardTypeColumn();
+  bool MigrateToVersion84AddNicknameColumn();
+  bool MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
+  bool MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
+
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
@@ -635,6 +663,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitModelTypeStateTable();
   bool InitPaymentsCustomerDataTable();
   bool InitPaymentsUPIVPATable();
+  bool InitServerCreditCardCloudTokenDataTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 

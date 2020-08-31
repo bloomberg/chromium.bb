@@ -47,11 +47,9 @@ grit("camera_resources") {
   output_dir = "$root_gen_dir/chrome"
 
   deps = [
+    "//components/arc/mojom:camera_intent_js",
     "//media/capture/video/chromeos/mojom:cros_camera_js",
   ]
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   grit_flags = [
     "-E",
@@ -68,10 +66,12 @@ group("closure_compile") {
     "bluetooth_pairing_dialog:closure_compile",
     "camera/src/js:closure_compile",
     "crostini_installer:closure_compile",
+    "edu_login:closure_compile",
     "emulator:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
     "login:closure_compile",
+    "login/components:closure_compile",
     "machine_learning:closure_compile",
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",

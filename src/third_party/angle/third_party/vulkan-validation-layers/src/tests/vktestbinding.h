@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016, 2019 The Khronos Group Inc.
- * Copyright (c) 2015-2016, 2019 Valve Corporation
- * Copyright (c) 2015-2016, 2019 LunarG, Inc.
+ * Copyright (c) 2015-2016, 2020 The Khronos Group Inc.
+ * Copyright (c) 2015-2016, 2020 Valve Corporation
+ * Copyright (c) 2015-2016, 2020 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,8 +163,7 @@ class PhysicalDevice : public internal::Handle<VkPhysicalDevice> {
                          const VkMemoryPropertyFlags forbid = 0) const;
 
     // vkEnumerateDeviceExtensionProperties()
-    std::vector<VkExtensionProperties> extensions() const;
-    std::vector<VkExtensionProperties> extensions(const char *pLayerName) const;
+    std::vector<VkExtensionProperties> extensions(const char *pLayerName = nullptr) const;
 
     // vkEnumerateLayers()
     std::vector<VkLayerProperties> layers() const;
@@ -331,7 +330,7 @@ class Fence : public internal::NonDispHandle<VkFence> {
 
     // vkGetFenceStatus()
     VkResult status() const { return vk::GetFenceStatus(device(), handle()); }
-    VkResult wait(VkBool32 wait_all, uint64_t timeout) const;
+    VkResult wait(uint64_t timeout) const;
 
     static VkFenceCreateInfo create_info(VkFenceCreateFlags flags);
     static VkFenceCreateInfo create_info();
@@ -576,7 +575,7 @@ class AccelerationStructure : public internal::NonDispHandle<VkAccelerationStruc
 
     const VkDevice &dev() const { return device(); }
 
-    void create_scratch_buffer(const Device &dev, Buffer *buffer);
+    void create_scratch_buffer(const Device &dev, Buffer *buffer, VkBufferCreateInfo *pCreateInfo = NULL);
 
   private:
     VkAccelerationStructureInfoNV info_;

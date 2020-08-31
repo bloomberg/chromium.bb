@@ -51,11 +51,12 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    file_system_context_ = CreateFileSystemContextForTesting(
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
-    chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
+    chrome_blob_context_->InitializeOnIOThread(base::FilePath(),
+                                               base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,

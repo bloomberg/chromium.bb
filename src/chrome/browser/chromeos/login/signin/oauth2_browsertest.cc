@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -48,6 +47,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -58,6 +58,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -244,7 +245,6 @@ class OAuth2Test : public OobeBaseTest {
   // OobeBaseTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
 
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
 
@@ -304,9 +304,6 @@ class OAuth2Test : public OobeBaseTest {
   }
 
   void LoginAsExistingUser() {
-    test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
-    test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
-
     // PickAccountId does not work at this point as the primary user profile has
     // not yet been created.
     const std::string email = kTestEmail;
@@ -314,9 +311,10 @@ class OAuth2Test : public OobeBaseTest {
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     // Try login.  Primary profile has changed.
-    EXPECT_TRUE(
-        TryToLogin(AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
-                   kTestAccountPassword));
+    ash::LoginScreenTestApi::SubmitPassword(
+        AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
+        kTestAccountPassword, true /*check_if_submittable */);
+    test::WaitForPrimaryUserSessionStart();
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
     CoreAccountId account_id = PickAccountId(profile, kTestGaiaId, kTestEmail);
     ASSERT_EQ(email, account_id.ToString());
@@ -568,8 +566,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_MergeSession) {
 IN_PROC_BROWSER_TEST_F(OAuth2Test, MergeSession) {
   SimulateNetworkOnline();
 
-  test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
-  test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
+  EXPECT_EQ(1, ash::LoginScreenTestApi::GetUsersCount());
 
   // PickAccountId does not work at this point as the primary user profile has
   // not yet been created.
@@ -975,10 +972,11 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   // JavaScript dialog wait setup.
   content::WebContents* tab =
       browser->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(tab);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(tab);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();
@@ -1003,7 +1001,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   // Check that real page is no longer blocked by the throttle and that the
   // real page pops up JS dialog.
   dialog_wait.Run();
-  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+  js_dialog_manager->HandleJavaScriptDialog(tab, true, nullptr);
 
   ui_test_utils::GetCurrentTabTitle(browser, &title);
   DVLOG(1) << "Loaded page at the end : " << title;
@@ -1066,8 +1064,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, Throttle) {
   EXPECT_TRUE(fake_google_.IsPageRequested());
 }
 
-// TODO(https://crbug.com/990844): Re-enable once flakiness is fixed.
-// TODO(crbug.com/998330): The test is flaky (timeout) on Chromium OS MSAN.
+// The test is too slow for the MSan configuration.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_XHRNotThrottled DISABLED_XHRNotThrottled
 #else
@@ -1108,8 +1105,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, MAYBE_XHRNotThrottled) {
 
   if (do_async_xhr()) {
     // Verify that we've sent XHR request from the extension side...
-    JsExpectOnBackgroundPage(ext->id(),
-                             "googleRequestSent && !googleResponseReceived");
+    JsExpectOnBackgroundPage(ext->id(), "googleRequestSent");
 
     // Wait until non-google XHR content to load.
     ASSERT_TRUE(non_google_xhr_listener->WaitUntilSatisfied());

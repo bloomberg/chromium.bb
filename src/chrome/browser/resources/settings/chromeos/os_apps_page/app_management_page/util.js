@@ -57,7 +57,7 @@ cr.define('app_management.util', function() {
    * @return {string}
    */
   function getAppIcon(app) {
-    return `chrome://app-icon/${app.id}/128`;
+    return `chrome://app-icon/${app.id}/64`;
   }
 
   /**
@@ -133,6 +133,8 @@ cr.define('app_management.util', function() {
         return PwaPermissionType[permissionType];
       case AppType.kArc:
         return ArcPermissionType[permissionType];
+      case AppType.kPluginVm:
+        return PluginVmPermissionType[permissionType];
       default:
         assertNotReached();
     }
@@ -197,14 +199,15 @@ cr.define('app_management.util', function() {
   function openAppDetailPage(appId) {
     const params = new URLSearchParams;
     params.append('id', appId);
-    settings.navigateTo(settings.routes.APP_MANAGEMENT_DETAIL, params);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.APP_MANAGEMENT_DETAIL, params);
   }
 
   /**
    * Navigates to the main App Management list page.
    */
   function openMainPage() {
-    settings.navigateTo(settings.routes.APP_MANAGEMENT);
+    settings.Router.getInstance().navigateTo(settings.routes.APP_MANAGEMENT);
   }
 
   /**
@@ -220,6 +223,8 @@ cr.define('app_management.util', function() {
         return 'AppManagement.AppDetailViews.ChromeApp';
       case AppType.kWeb:
         return 'AppManagement.AppDetailViews.WebApp';
+      case AppType.kPluginVm:
+        return 'AppManagement.AppDetailViews.PluginVmApp';
       default:
         assertNotReached();
     }
@@ -236,6 +241,7 @@ cr.define('app_management.util', function() {
         histogram, userAction, enumLength);
   }
 
+  // #cr_define_end
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,

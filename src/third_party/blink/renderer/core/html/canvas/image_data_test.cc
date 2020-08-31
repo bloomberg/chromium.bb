@@ -75,16 +75,16 @@ TEST_F(ImageDataTest,
 
   // Testing CanvasPixelFormat::kRGBA8->
   // kUint8ClampedArrayStorageFormat
-  DOMArrayBufferView* data =
+  NotShared<DOMArrayBufferView> data(
       ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
           contents_rgba32, CanvasPixelFormat::kRGBA8,
-          kUint8ClampedArrayStorageFormat);
+          kUint8ClampedArrayStorageFormat));
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint8Clamped);
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
       data->BaseAddress(), rgba32_pixels, kNumPixels, kPixelFormat_8888,
       kAlphaUnmultiplied, kNoUnpremulRoundTripTolerance);
 
-  // Testing CanvasPixelFormat::kRGBA8prN32->
+  // Testing CanvasPixelFormat::kRGBA8->
   // kUint16ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_rgba32_2, CanvasPixelFormat::kRGBA8, kUint16ArrayStorageFormat);
@@ -92,8 +92,7 @@ TEST_F(ImageDataTest,
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
       data->BaseAddress(), u16_pixels, kNumPixels, kPixelFormat_16161616,
       kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
-
-  // Testing CanvasPixelFormat::kRGBA8prN32 ->
+  // Testing CanvasPixelFormat::kRGBA8 ->
   // kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_rgba32_2, CanvasPixelFormat::kRGBA8, kFloat32ArrayStorageFormat);
@@ -172,28 +171,28 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
                          0,   0,   0,   0,    // Transparent
                          255, 192, 128, 64,   // Decreasing values
                          93,  117, 205, 11};  // Random values
-  unsigned data_length = 16;
+  size_t data_length = 16;
 
   uint16_t* u16_pixels = new uint16_t[data_length];
-  for (unsigned i = 0; i < data_length; i++)
+  for (size_t i = 0; i < data_length; i++)
     u16_pixels[i] = u8_pixels[i] * 257;
 
   float* f32_pixels = new float[data_length];
-  for (unsigned i = 0; i < data_length; i++)
+  for (size_t i = 0; i < data_length; i++)
     f32_pixels[i] = u8_pixels[i] / 255.0;
 
-  DOMArrayBufferView* data_array = nullptr;
-
-  DOMUint8ClampedArray* data_u8 =
-      DOMUint8ClampedArray::Create(u8_pixels, data_length);
+  NotShared<DOMUint8ClampedArray> data_u8(
+      DOMUint8ClampedArray::Create(u8_pixels, data_length));
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->deprecatedLengthAsUnsigned());
-  DOMUint16Array* data_u16 = DOMUint16Array::Create(u16_pixels, data_length);
+  EXPECT_EQ(data_length, data_u8->lengthAsSizeT());
+  NotShared<DOMUint16Array> data_u16(
+      DOMUint16Array::Create(u16_pixels, data_length));
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->deprecatedLengthAsUnsigned());
-  DOMFloat32Array* data_f32 = DOMFloat32Array::Create(f32_pixels, data_length);
+  EXPECT_EQ(data_length, data_u16->lengthAsSizeT());
+  NotShared<DOMFloat32Array> data_f32(
+      DOMFloat32Array::Create(f32_pixels, data_length));
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->deprecatedLengthAsUnsigned());
+  EXPECT_EQ(data_length, data_f32->lengthAsSizeT());
 
   ImageData* image_data = nullptr;
   ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
@@ -211,17 +210,18 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
         ImageData::CanvasColorSpaceName(image_data_color_spaces[i]));
 
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
+      NotShared<DOMArrayBufferView> data_array;
       switch (image_data_storage_formats[j]) {
         case kUint8ClampedArrayStorageFormat:
-          data_array = static_cast<DOMArrayBufferView*>(data_u8);
+          data_array = data_u8;
           color_settings->setStorageFormat(kUint8ClampedArrayStorageFormatName);
           break;
         case kUint16ArrayStorageFormat:
-          data_array = static_cast<DOMArrayBufferView*>(data_u16);
+          data_array = data_u16;
           color_settings->setStorageFormat(kUint16ArrayStorageFormatName);
           break;
         case kFloat32ArrayStorageFormat:
-          data_array = static_cast<DOMArrayBufferView*>(data_f32);
+          data_array = data_f32;
           color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
           break;
         default:
@@ -395,7 +395,7 @@ TEST_F(ImageDataTest, TestCropRect) {
   // Source pixels
   unsigned width = 20;
   unsigned height = 20;
-  unsigned data_length = width * height * 4;
+  size_t data_length = width * height * 4;
   uint8_t* u8_pixels = new uint8_t[data_length];
   uint16_t* u16_pixels = new uint16_t[data_length];
   float* f32_pixels = new float[data_length];
@@ -427,30 +427,32 @@ TEST_F(ImageDataTest, TestCropRect) {
       }
 
   // Create ImageData objects
-  DOMArrayBufferView* data_array = nullptr;
 
-  DOMUint8ClampedArray* data_u8 =
-      DOMUint8ClampedArray::Create(u8_pixels, data_length);
+  NotShared<DOMUint8ClampedArray> data_u8(
+      DOMUint8ClampedArray::Create(u8_pixels, data_length));
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->deprecatedLengthAsUnsigned());
-  DOMUint16Array* data_u16 = DOMUint16Array::Create(u16_pixels, data_length);
+  EXPECT_EQ(data_length, data_u8->lengthAsSizeT());
+  NotShared<DOMUint16Array> data_u16(
+      DOMUint16Array::Create(u16_pixels, data_length));
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->deprecatedLengthAsUnsigned());
-  DOMFloat32Array* data_f32 = DOMFloat32Array::Create(f32_pixels, data_length);
+  EXPECT_EQ(data_length, data_u16->lengthAsSizeT());
+  NotShared<DOMFloat32Array> data_f32(
+      DOMFloat32Array::Create(f32_pixels, data_length));
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->deprecatedLengthAsUnsigned());
+  EXPECT_EQ(data_length, data_f32->lengthAsSizeT());
 
   ImageData* image_data = nullptr;
   ImageData* cropped_image_data = nullptr;
 
   bool test_passed = true;
   for (int i = 0; i < num_image_data_storage_formats; i++) {
+    NotShared<DOMArrayBufferView> data_array;
     if (image_data_storage_formats[i] == kUint8ClampedArrayStorageFormat)
-      data_array = static_cast<DOMArrayBufferView*>(data_u8);
+      data_array = data_u8;
     else if (image_data_storage_formats[i] == kUint16ArrayStorageFormat)
-      data_array = static_cast<DOMArrayBufferView*>(data_u16);
+      data_array = data_u16;
     else
-      data_array = static_cast<DOMArrayBufferView*>(data_f32);
+      data_array = data_f32;
 
     ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
     color_settings->setStorageFormat(image_data_storage_format_names[i]);

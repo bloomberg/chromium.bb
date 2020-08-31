@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -43,14 +42,19 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   // ClipboardRecentContent implementation.
   base::Optional<GURL> GetRecentURLFromClipboard() override;
   base::Optional<base::string16> GetRecentTextFromClipboard() override;
-  base::Optional<gfx::Image> GetRecentImageFromClipboard() override;
+  void GetRecentImageFromClipboard(GetRecentImageCallback callback) override;
+  bool HasRecentImageFromClipboard() override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
   void ClearClipboardContent() override;
 
  private:
+  base::Optional<gfx::Image> GetRecentImageFromClipboardInternal();
+  void OnGetRecentImageFromClipboard(GetRecentImageCallback callback,
+                                     const SkBitmap& sk_bitmap);
+
   // The implementation instance.
-  base::scoped_nsobject<ClipboardRecentContentImplIOS> implementation_;
+  __strong ClipboardRecentContentImplIOS* implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContentIOS);
 };

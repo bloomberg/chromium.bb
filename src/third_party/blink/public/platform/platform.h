@@ -58,7 +58,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
-#include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -80,23 +79,22 @@ struct AudioSinkParameters;
 struct AudioSourceParameters;
 class MediaPermission;
 class GpuVideoAcceleratorFactories;
-}
+}  // namespace media
 
 namespace v8 {
 class Context;
 template <class T>
 class Local;
-}
+}  // namespace v8
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace blink {
 
 class BrowserInterfaceBrokerProxy;
 class ThreadSafeBrowserInterfaceBrokerProxy;
-class InterfaceProvider;
 class Thread;
 struct ThreadCreationParams;
 class WebAudioBus;
@@ -123,9 +121,12 @@ class BLINK_PLATFORM_EXPORT Platform {
  public:
   // Initialize platform and wtf. If you need to initialize the entire Blink,
   // you should use blink::Initialize. WebThreadScheduler must be owned by
-  // the embedder.
-  static void Initialize(Platform*,
-                         scheduler::WebThreadScheduler* main_thread_scheduler);
+  // the embedder. InitializeBlink must be called before WebThreadScheduler is
+  // created and passed to InitializeMainThread.
+  static void InitializeBlink();
+  static void InitializeMainThread(
+      Platform*,
+      scheduler::WebThreadScheduler* main_thread_scheduler);
   static Platform* Current();
 
   // This is another entry point for embedders that only require simple
@@ -230,8 +231,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // See comments on ImageDecoder::max_decoded_bytes_.
   virtual size_t MaxDecodedImageBytes() { return kNoDecodedImageByteLimit; }
 
-  // Returns true if this is a low-end device.
-  // This is the same as base::SysInfo::IsLowEndDevice.
+  // See: SysUtils::IsLowEndDevice for the full details of what "low-end" means.
+  // This returns true for devices that can use more extreme tradeoffs for
+  // performance. Many low memory devices (<=1GB) are not considered low-end.
   virtual bool IsLowEndDevice() { return false; }
 
   // Process -------------------------------------------------------------
@@ -432,13 +434,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // TODO(kinuko,toyoshim): Deprecate this one. (crbug.com/751425)
   virtual WebURLLoaderMockFactory* GetURLLoaderMockFactory() { return nullptr; }
 
-  // Record to a RAPPOR privacy-preserving metric, see:
-  // https://www.chromium.org/developers/design-documents/rappor.
-  // RecordRappor records a sample string, while RecordRapporURL records the
-  // eTLD+1 of a url.
-  virtual void RecordRappor(const char* metric, const WebString& sample) {}
-  virtual void RecordRapporURL(const char* metric, const blink::WebURL& url) {}
-
   // Record a UMA sequence action.  The UserMetricsAction construction must
   // be on a single line for extract_actions.py to find it.  Please see
   // that script for more details.  Intended use is:
@@ -493,10 +488,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // backed by an independent context. Returns null if the context cannot be
   // created or initialized.
   virtual std::unique_ptr<WebGraphicsContext3DProvider>
-  CreateOffscreenGraphicsContext3DProvider(
-      const ContextAttributes&,
-      const WebURL& top_document_url,
-      GraphicsInfo*);
+  CreateOffscreenGraphicsContext3DProvider(const ContextAttributes&,
+                                           const WebURL& top_document_url,
+                                           GraphicsInfo*);
 
   // Returns a newly allocated and initialized offscreen context provider,
   // backed by the process-wide shared main thread context. Returns null if
@@ -534,7 +528,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual viz::ContextProvider* SharedMainThreadContextProvider() {
+  virtual viz::RasterContextProvider* SharedMainThreadContextProvider() {
     return nullptr;
   }
 
@@ -578,7 +572,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcSrtpEncryptedHeadersEnabled() { return false; }
 
-  virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
+  virtual base::Optional<WebString> WebRtcStunProbeTrialParameter() {
     return base::nullopt;
   }
 
@@ -638,10 +632,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  // DEPRECATED: Use |GetBrowserInterfaceBroker()| instead. The same
-  // interfaces are reachable through either method.
-  virtual InterfaceProvider* GetInterfaceProvider();
-
   // Callable from any thread. Asks the browser to bind an interface receiver on
   // behalf of this renderer.
   //
@@ -680,8 +670,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  private:
-  static void InitializeCommon(Platform* platform,
-                               std::unique_ptr<Thread> main_thread);
+  static void InitializeMainThreadCommon(Platform* platform,
+                                         std::unique_ptr<Thread> main_thread);
 };
 
 }  // namespace blink

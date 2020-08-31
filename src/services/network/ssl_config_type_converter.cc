@@ -4,7 +4,8 @@
 
 #include "services/network/ssl_config_type_converter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace mojo {
 
@@ -29,6 +30,8 @@ net::SSLContextConfig MojoSSLConfigToSSLContextConfig(
 
   net_config.version_min =
       MojoSSLVersionToNetSSLVersion(mojo_config->version_min);
+  net_config.version_min_warn =
+      MojoSSLVersionToNetSSLVersion(mojo_config->version_min_warn);
   net_config.version_max =
       MojoSSLVersionToNetSSLVersion(mojo_config->version_max);
   DCHECK_LE(net_config.version_min, net_config.version_max);

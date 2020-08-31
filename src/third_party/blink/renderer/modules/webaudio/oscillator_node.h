@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_OSCILLATOR_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_oscillator_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_scheduled_source_node.h"
-#include "third_party/blink/renderer/modules/webaudio/oscillator_options.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -125,7 +125,7 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   OscillatorNode(BaseAudioContext&,
                  const String& oscillator_type,
                  PeriodicWave* wave_table);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   String type() const;
   void setType(const String&, ExceptionState&);

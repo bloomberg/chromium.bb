@@ -1,15 +1,15 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 65.1
+Version: 67.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 65.1 for C/C++.
+This directory contains the source code of ICU 67.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 65-1).
+1. Run "scripts/update.sh <version>" (e.g. 67-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -193,7 +193,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of September 11, 2019, the latest version is 2019c and the above files
+  As of April 27, 2020, the latest version is 2020a and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -206,9 +206,13 @@ D. Local Modifications
     upstream bugs : https://unicode-org.atlassian.net/browse/ICU-8043
                     https://unicode-org.atlassian.net/browse/ICU-5701
 
-  - patches/extra-semi.patch
-    - upstream bugs: https://unicode-org.atlassian.net/browse/ICU-20872
-    - upstream PR: https://github.com/unicode-org/icu/pull/888
+  - patches/data_symb.patch :
+      Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
+      the icu data file or icudt.dll
+
+  - patches/formatted_string_builder.patch
+    upstream bugs: https://unicode-org.atlassian.net/browse/ICU-21081
+    * #if 0 out constexpr hacks which does not work with C++-14
 
 5. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
   - patches/iso2022jp.patch
@@ -220,31 +224,6 @@ D. Local Modifications
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20774
 
-7. Fix DateInterval::createInstance
-  - patches/DateIntervalInfo.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20706
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/876
-
-8. Fix uninitialized array.
-  - patches/uninitialized_uloc.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20884
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/902
-
-9. Fix the variant in locale is not sorted
-  - patches/sort_variant.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20478
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/836
-
-10. Fix SEGV_MAPERR in UnicodeString::doAppend
-  - patches/unistr_segmap.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20958
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/971
-
+7. Enable tracing of file but not resource, only for Chromium
+    to reduce performance impact/risk.
+  - patches/restrace.patch

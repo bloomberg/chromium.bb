@@ -13,6 +13,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -24,10 +25,9 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
+#include "media/base/audio_power_monitor.h"
 #include "services/audio/loopback_group_member.h"
-#include "services/audio/stream_monitor_coordinator.h"
 
 // An OutputController controls an AudioOutputStream and provides data to this
 // output stream. It executes audio operations like play, pause, stop, etc. on
@@ -62,8 +62,7 @@ namespace audio {
 
 class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                          public LoopbackGroupMember,
-                         public media::AudioManager::AudioDeviceListener,
-                         public StreamMonitorCoordinator::Observer {
+                         public media::AudioManager::AudioDeviceListener {
  public:
   // An event handler that receives events from the OutputController. The
   // following methods are called on the audio manager thread.
@@ -103,6 +102,16 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
     virtual void Close() = 0;
   };
 
+  // Internal state of the source.
+  enum State {
+    kEmpty,
+    kCreated,
+    kPlaying,
+    kPaused,
+    kClosed,
+    kError,
+  };
+
   // |audio_manager| and |handler| must outlive OutputController.  The
   // |output_device_id| can be either empty (default device) or specify a
   // specific hardware device for audio output.
@@ -110,9 +119,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                    EventHandler* handler,
                    const media::AudioParameters& params,
                    const std::string& output_device_id,
-                   SyncReader* sync_reader,
-                   StreamMonitorCoordinator* stream_monitor_coordinator,
-                   const base::UnguessableToken& processing_id);
+                   SyncReader* sync_reader);
   ~OutputController() override;
 
   // Indicates whether audio power level analysis will be performed.  If false,
@@ -164,10 +171,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   void StartMuting() override;
   void StopMuting() override;
 
-  // StreamMonitorCoordinator::Observer implementation.
-  void OnMemberJoinedGroup(StreamMonitor* monitor) override;
-  void OnMemberLeftGroup(StreamMonitor* monitor) override;
-
   // AudioDeviceListener implementation.  When called OutputController will
   // shutdown the existing |stream_|, create a new stream, and then transition
   // back to an equivalent state prior to being called.
@@ -178,16 +181,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   std::pair<float, bool> ReadCurrentPowerAndClip();
 
  protected:
-  // Internal state of the source.
-  enum State {
-    kEmpty,
-    kCreated,
-    kPlaying,
-    kPaused,
-    kClosed,
-    kError,
-  };
-
   // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments
   // for semantics.  This value was arbitrarily chosen, but seems to work well.
   enum { kPowerMeasurementTimeConstantMillis = 10 };
@@ -206,7 +199,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // cycle.
   class ErrorStatisticsTracker {
    public:
-    ErrorStatisticsTracker();
+    // |handler| must outlive the ErrorStatisticsTracker. See comments for
+    // |OutputController::handler_| why it is safe to use a raw pointer here.
+    ErrorStatisticsTracker(EventHandler* handler);
 
     // Note: the destructor takes care of logging all of the stats.
     ~ErrorStatisticsTracker();
@@ -219,6 +214,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
    private:
     void WedgeCheck();
+
+    // Using a raw pointer is safe since the EventHandler object will outlive
+    // the ErrorStatisticsTracker object.
+    EventHandler* const handler_;
 
     const base::TimeTicks start_time_;
 
@@ -247,6 +246,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Helper method that stops, closes, and NULLs |*stream_|.
   void StopCloseAndClearStream();
 
+  // Helper method which delivers a log string to the event handler.
+  void SendLogMessage(const char* fmt, ...) PRINTF_FORMAT(2, 3);
+
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const char* call_name);
 
@@ -256,6 +258,11 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   media::AudioManager* const audio_manager_;
   const media::AudioParameters params_;
+
+  // This object (OC) is owned by an OutputStream (OS) object which is an
+  // EventHandler. |handler_| is set at construction by the OS (using this).
+  // It is safe to use a raw pointer here since the OS will always outlive
+  // the OC object.
   EventHandler* const handler_;
 
   // The task runner for the audio manager. All control methods should be called
@@ -288,9 +295,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   // SyncReader is used only in low latency mode for synchronous reading.
   SyncReader* const sync_reader_;
-
-  StreamMonitorCoordinator* const stream_monitor_coordinator_;
-  base::UnguessableToken const processing_id_;
 
   // Scans audio samples from OnMoreData() as input to compute power levels.
   media::AudioPowerMonitor power_monitor_;

@@ -16,6 +16,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_default_packet_writer.h"
@@ -24,18 +25,12 @@
 #include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/impl/quic_epoll_clock.h"
-#include "net/quic/platform/impl/quic_socket_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
-
-#ifndef SO_RXQ_OVFL
-#define SO_RXQ_OVFL 40
-#endif
 
 namespace quic {
 
@@ -118,14 +113,17 @@ void QuicServer::Initialize() {
 QuicServer::~QuicServer() = default;
 
 bool QuicServer::CreateUDPSocketAndListen(const QuicSocketAddress& address) {
-  fd_ = QuicSocketUtils::CreateUDPSocket(
-      address,
-      /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
-      /*send_buffer_size =*/kDefaultSocketReceiveBuffer, &overflow_supported_);
-  if (fd_ < 0) {
+  QuicUdpSocketApi socket_api;
+  fd_ = socket_api.Create(address.host().AddressFamilyToInt(),
+                          /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
+                          /*send_buffer_size =*/kDefaultSocketReceiveBuffer);
+  if (fd_ == kQuicInvalidSocketFd) {
     QUIC_LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
     return false;
   }
+
+  overflow_supported_ = socket_api.EnableDroppedPacketCount(fd_);
+  socket_api.EnableReceiveTimestamp(fd_);
 
   sockaddr_storage addr = address.generic_address();
   int rc = bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
@@ -161,7 +159,7 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
       &config_, &crypto_config_, &version_manager_,
       std::unique_ptr<QuicEpollConnectionHelper>(new QuicEpollConnectionHelper(
           &epoll_server_, QuicAllocator::BUFFER_POOL)),
-      std::unique_ptr<QuicCryptoServerStream::Helper>(
+      std::unique_ptr<QuicCryptoServerStreamBase::Helper>(
           new QuicSimpleCryptoServerStreamHelper()),
       std::unique_ptr<QuicEpollAlarmFactory>(
           new QuicEpollAlarmFactory(&epoll_server_)),

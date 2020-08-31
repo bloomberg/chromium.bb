@@ -7,10 +7,9 @@
 
 #include "src/gpu/GrDrawingManager.h"
 
+#include "include/core/SkDeferredDisplayList.h"
 #include "include/gpu/GrBackendSemaphore.h"
-#include "include/gpu/GrTexture.h"
 #include "include/private/GrRecordingContext.h"
-#include "include/private/SkDeferredDisplayList.h"
 #include "src/core/SkTTopoSort.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrClientMappedBufferManager.h"
@@ -26,8 +25,9 @@
 #include "src/gpu/GrResourceAllocator.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSoftwarePathRenderer.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
-#include "src/gpu/GrTextureContext.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTexturePriv.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
@@ -104,6 +104,12 @@ GrRenderTask* GrDrawingManager::RenderTaskDAG::addBeforeLast(sk_sp<GrRenderTask>
 }
 
 void GrDrawingManager::RenderTaskDAG::add(const SkTArray<sk_sp<GrRenderTask>>& renderTasks) {
+#ifdef SK_DEBUG
+    for (auto& renderTask : renderTasks) {
+        SkASSERT(renderTask->unique());
+    }
+#endif
+
     fRenderTasks.push_back_n(renderTasks.count(), renderTasks.begin());
 }
 
@@ -215,7 +221,7 @@ void GrDrawingManager::freeGpuResources() {
 }
 
 // MDB TODO: make use of the 'proxy' parameter.
-GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int numProxies,
+bool GrDrawingManager::flush(GrSurfaceProxy* proxies[], int numProxies,
         SkSurface::BackendSurfaceAccess access, const GrFlushInfo& info,
         const GrPrepareForExternalIORequests& externalRequests) {
     SkASSERT(numProxies >= 0);
@@ -226,7 +232,7 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
         if (info.fFinishedProc) {
             info.fFinishedProc(info.fFinishedContext);
         }
-        return GrSemaphoresSubmitted::kNo;
+        return false;
     }
 
     SkDEBUGCODE(this->validate());
@@ -238,7 +244,7 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
             canSkip = !fDAG.isUsed(proxies[i]) && !this->isDDLTarget(proxies[i]);
         }
         if (canSkip) {
-            return GrSemaphoresSubmitted::kNo;
+            return false;
         }
     }
 
@@ -247,7 +253,7 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
         if (info.fFinishedProc) {
             info.fFinishedProc(info.fFinishedContext);
         }
-        return GrSemaphoresSubmitted::kNo; // Can't flush while DDL recording
+        return false; // Can't flush while DDL recording
     }
     direct->priv().clientMappedBufferManager()->process();
 
@@ -256,7 +262,7 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
         if (info.fFinishedProc) {
             info.fFinishedProc(info.fFinishedContext);
         }
-        return GrSemaphoresSubmitted::kNo; // Can't flush while DDL recording
+        return false; // Can't flush while DDL recording
     }
 
     fFlushing = true;
@@ -388,8 +394,7 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
     opMemoryPool->isEmpty();
 #endif
 
-    GrSemaphoresSubmitted result = gpu->finishFlush(proxies, numProxies, access, info,
-                                                    externalRequests);
+    gpu->executeFlushInfo(proxies, numProxies, access, info, externalRequests);
 
     // Give the cache a chance to purge resources that become purgeable due to flushing.
     if (flushed) {
@@ -407,7 +412,20 @@ GrSemaphoresSubmitted GrDrawingManager::flush(GrSurfaceProxy* proxies[], int num
     fFlushingRenderTaskIDs.reset();
     fFlushing = false;
 
-    return result;
+    return true;
+}
+
+bool GrDrawingManager::submitToGpu(bool syncToCpu) {
+    if (fFlushing || this->wasAbandoned()) {
+        return false;
+    }
+
+    auto direct = fContext->priv().asDirectContext();
+    if (!direct) {
+        return false; // Can't submit while DDL recording
+    }
+    GrGpu* gpu = direct->priv().getGpu();
+    return gpu->submitToGpu(syncToCpu);
 }
 
 bool GrDrawingManager::executeRenderTasks(int startIndex, int stopIndex, GrOpFlushState* flushState,
@@ -456,8 +474,7 @@ bool GrDrawingManager::executeRenderTasks(int startIndex, int stopIndex, GrOpFlu
         onFlushRenderTask = nullptr;
         (*numRenderTasksExecuted)++;
         if (*numRenderTasksExecuted >= kMaxRenderTasksBeforeFlush) {
-            flushState->gpu()->finishFlush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess,
-                                           GrFlushInfo(), GrPrepareForExternalIORequests());
+            flushState->gpu()->submitToGpu(false);
             *numRenderTasksExecuted = 0;
         }
     }
@@ -475,8 +492,7 @@ bool GrDrawingManager::executeRenderTasks(int startIndex, int stopIndex, GrOpFlu
         }
         (*numRenderTasksExecuted)++;
         if (*numRenderTasksExecuted >= kMaxRenderTasksBeforeFlush) {
-            flushState->gpu()->finishFlush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess,
-                                           GrFlushInfo(), GrPrepareForExternalIORequests());
+            flushState->gpu()->submitToGpu(false);
             *numRenderTasksExecuted = 0;
         }
     }
@@ -517,12 +533,12 @@ GrSemaphoresSubmitted GrDrawingManager::flushSurfaces(GrSurfaceProxy* proxies[],
     // TODO: It is important to upgrade the drawingmanager to just flushing the
     // portion of the DAG required by 'proxies' in order to restore some of the
     // semantics of this method.
-    GrSemaphoresSubmitted result = this->flush(proxies, numProxies, access, info,
-                                               GrPrepareForExternalIORequests());
+    bool didFlush = this->flush(proxies, numProxies, access, info,
+                                GrPrepareForExternalIORequests());
     for (int i = 0; i < numProxies; ++i) {
         GrSurfaceProxy* proxy = proxies[i];
         if (!proxy->isInstantiated()) {
-            return result;
+            continue;
         }
         // In the flushSurfaces case, we need to resolve MSAA immediately after flush. This is
         // because the client will call through to this method when drawing into a target created by
@@ -534,7 +550,7 @@ GrSemaphoresSubmitted GrDrawingManager::flushSurfaces(GrSurfaceProxy* proxies[],
             if (rtProxy->isMSAADirty()) {
                 SkASSERT(rtProxy->peekRenderTarget());
                 gpu->resolveRenderTarget(rtProxy->peekRenderTarget(), rtProxy->msaaDirtyRect(),
-                                         rtProxy->origin(), GrGpu::ForExternalIO::kYes);
+                                         GrGpu::ForExternalIO::kYes);
                 rtProxy->markMSAAResolved();
             }
         }
@@ -552,7 +568,16 @@ GrSemaphoresSubmitted GrDrawingManager::flushSurfaces(GrSurfaceProxy* proxies[],
     }
 
     SkDEBUGCODE(this->validate());
-    return result;
+
+    bool submitted = false;
+    if (didFlush) {
+        submitted = this->submitToGpu(SkToBool(info.fFlags & kSyncCpu_GrFlushFlag));
+    }
+
+    if (!submitted || (!direct->priv().caps()->semaphoreSupport() && info.fNumSemaphores)) {
+        return GrSemaphoresSubmitted::kNo;
+    }
+    return GrSemaphoresSubmitted::kYes;
 }
 
 void GrDrawingManager::addOnFlushCallbackObject(GrOnFlushCallbackObject* onFlushCBObject) {
@@ -576,12 +601,15 @@ void GrDrawingManager::moveRenderTasksToDDL(SkDeferredDisplayList* ddl) {
     fActiveOpsTask = nullptr;
 
     fDAG.swap(&ddl->fRenderTasks);
+    SkASSERT(!fDAG.numRenderTasks());
 
-    for (auto renderTask : ddl->fRenderTasks) {
+    for (auto& renderTask : ddl->fRenderTasks) {
         renderTask->prePrepare(fContext);
     }
 
-    ddl->fRecordTimeData = fContext->priv().detachRecordTimeAllocator();
+    ddl->fArenas = std::move(fContext->priv().detachArenas());
+
+    fContext->priv().detachProgramData(&ddl->fProgramData);
 
     if (fPathRendererChain) {
         if (auto ccpr = fPathRendererChain->getCoverageCountingPathRenderer()) {
@@ -678,8 +706,9 @@ sk_sp<GrOpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfaceView,
     GrSurfaceProxy* proxy = surfaceView.proxy();
     this->closeRenderTasksForNewRenderTask(proxy);
 
-    sk_sp<GrOpsTask> opsTask(new GrOpsTask(fContext->priv().refOpMemoryPool(),
-                                           std::move(surfaceView), fContext->priv().auditTrail()));
+    sk_sp<GrOpsTask> opsTask(new GrOpsTask(fContext->priv().arenas(),
+                                           std::move(surfaceView),
+                                           fContext->priv().auditTrail()));
     SkASSERT(proxy->getLastRenderTask() == opsTask.get());
 
     if (managedOpsTask) {
@@ -873,6 +902,12 @@ GrPathRenderer* GrDrawingManager::getPathRenderer(const GrPathRenderer::CanDrawP
         }
     }
 
+#if GR_PATH_RENDERER_SPEW
+    if (pr) {
+        SkDebugf("getPathRenderer: %s\n", pr->name());
+    }
+#endif
+
     return pr;
 }
 
@@ -900,60 +935,11 @@ void GrDrawingManager::flushIfNecessary() {
 
     auto resourceCache = direct->priv().getResourceCache();
     if (resourceCache && resourceCache->requestsFlush()) {
-        this->flush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(),
-                    GrPrepareForExternalIORequests());
+        if (this->flush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(),
+                        GrPrepareForExternalIORequests())) {
+            this->submitToGpu(false);
+        }
         resourceCache->purgeAsNeeded();
     }
 }
 
-std::unique_ptr<GrRenderTargetContext> GrDrawingManager::makeRenderTargetContext(
-        sk_sp<GrSurfaceProxy> sProxy,
-        GrColorType colorType,
-        sk_sp<SkColorSpace> colorSpace,
-        const SkSurfaceProps* surfaceProps,
-        bool managedOpsTask) {
-    if (this->wasAbandoned() || !sProxy->asRenderTargetProxy()) {
-        return nullptr;
-    }
-
-    sk_sp<GrRenderTargetProxy> renderTargetProxy(sk_ref_sp(sProxy->asRenderTargetProxy()));
-
-    GrSurfaceOrigin origin = renderTargetProxy->origin();
-    GrSwizzle texSwizzle = fContext->priv().caps()->getTextureSwizzle(sProxy->backendFormat(),
-                                                                      colorType);
-    GrSwizzle outSwizzle = fContext->priv().caps()->getOutputSwizzle(sProxy->backendFormat(),
-                                                                     colorType);
-
-    return std::unique_ptr<GrRenderTargetContext>(
-            new GrRenderTargetContext(fContext,
-                                      std::move(renderTargetProxy),
-                                      colorType,
-                                      origin,
-                                      texSwizzle,
-                                      outSwizzle,
-                                      std::move(colorSpace),
-                                      surfaceProps,
-                                      managedOpsTask));
-}
-
-std::unique_ptr<GrTextureContext> GrDrawingManager::makeTextureContext(
-        sk_sp<GrSurfaceProxy> sProxy,
-        GrColorType colorType,
-        SkAlphaType alphaType,
-        sk_sp<SkColorSpace> colorSpace) {
-    if (this->wasAbandoned() || !sProxy->asTextureProxy()) {
-        return nullptr;
-    }
-
-    // GrTextureRenderTargets should always be using a GrRenderTargetContext
-    SkASSERT(!sProxy->asRenderTargetProxy());
-
-    sk_sp<GrTextureProxy> textureProxy(sk_ref_sp(sProxy->asTextureProxy()));
-
-    GrSurfaceOrigin origin = textureProxy->origin();
-    GrSwizzle texSwizzle = textureProxy->textureSwizzle();
-
-    return std::unique_ptr<GrTextureContext>(new GrTextureContext(
-            fContext, std::move(textureProxy), colorType, alphaType, std::move(colorSpace), origin,
-            texSwizzle));
-}

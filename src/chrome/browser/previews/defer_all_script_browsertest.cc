@@ -37,12 +37,14 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "third_party/blink/public/common/features.h"
 
 class DeferAllScriptBrowserTest : public InProcessBrowserTest {
  public:
@@ -51,8 +53,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
         {previews::features::kPreviews,
          previews::features::kDeferAllScriptPreviews,
          optimization_guide::features::kOptimizationHints,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService,
          features::kBackForwardCache},
         {});
   }
@@ -71,6 +71,10 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
     https_url_ = https_server_->GetURL("/defer_all_script_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    https_url_with_iframe_ =
+        https_server_->GetURL("/defer_all_script_test_with_iframe.html");
+
     client_redirect_url_ = https_server_->GetURL("/client_redirect_base.html");
     client_redirect_url_target_url_ = https_server_->GetURL(
         "/client_redirect_loop_with_defer_all_script.html");
@@ -149,6 +153,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   virtual const GURL& https_url() const { return https_url_; }
 
+  const GURL& https_url_with_iframe() const { return https_url_with_iframe_; }
+
   const GURL& client_redirect_url() const { return client_redirect_url_; }
 
   const GURL& client_redirect_url_target_url() const {
@@ -181,6 +187,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   GURL https_url_;
+  GURL https_url_with_iframe_;
   GURL client_redirect_url_;
   GURL client_redirect_url_target_url_;
   GURL server_redirect_url_;
@@ -534,9 +541,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
+  content::WaitForLoadStop(web_contents());
 
   // Navigate to DeferAllScript url expecting a DeferAllScript preview.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -561,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   // to be saved in BackForward cache).
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), another_host_url(), WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   base::RunLoop().RunUntilIdle();
   content::WaitForLoadStop(web_contents());
 
@@ -613,9 +618,7 @@ IN_PROC_BROWSER_TEST_F(
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
+  content::WaitForLoadStop(web_contents());
 
   // Adjust the network triggering condition to not choose preview for this
   // navigation.
@@ -644,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(
   // to be saved in BackForward cache).
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), another_host_url(), WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   base::RunLoop().RunUntilIdle();
   content::WaitForLoadStop(web_contents());
 
@@ -677,4 +680,88 @@ IN_PROC_BROWSER_TEST_F(
       static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
   histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
                                      true, 1);
+}
+
+class DeferAllScriptIframesBrowserTest
+    : public ::testing::WithParamInterface<bool>,
+      public DeferAllScriptBrowserTest {
+ public:
+  DeferAllScriptIframesBrowserTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          blink::features::kDisableForceDeferInChildFrames);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          blink::features::kDisableForceDeferInChildFrames);
+    }
+  }
+
+  bool is_force_defer_disabled_in_child_frames() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ShouldSkipPreview,
+                         DeferAllScriptIframesBrowserTest,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
+    DeferAllScriptIframesBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted_Iframe)) {
+  GURL url = https_url_with_iframe();
+
+  // When defer is disabled
+  // in iframes which should delay execution of SyncScript.
+  static const char kDeferEnabledIframes[] =
+      "ScriptLog:_InlineMainFrameScript_ScriptLogFromIframe:_BodyEnd_"
+      "InlineScript_"
+      "SyncScript_DeveloperDeferScript";
+  // When defer is enabled
+  // in iframes which should execute scripts in regular order.
+  static const char kDeferDisabledIframes[] =
+      "ScriptLog:_InlineMainFrameScript_ScriptLogFromIframe:_InlineScript_"
+      "SyncScript_"
+      "BodyEnd_DeveloperDeferScript";
+
+  // Whitelist DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+
+  if (is_force_defer_disabled_in_child_frames()) {
+    EXPECT_EQ(kDeferDisabledIframes, GetScriptLog(browser()));
+  } else {
+    EXPECT_EQ(kDeferEnabledIframes, GetScriptLog(browser()));
+  }
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
+  histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
+                                     true, 1);
+  histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "Blink.Script.ForceDeferredScripts.Mainframe", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.Script.ForceDeferredScripts.Mainframe.External", 0, 1);
+
+  if (!is_force_defer_disabled_in_child_frames()) {
+    histogram_tester.ExpectUniqueSample(
+        "Blink.Script.ForceDeferredScripts.Subframe", 2, 1);
+    histogram_tester.ExpectTotalCount(
+        "Blink.Script.ForceDeferredScripts.Subframe.External", 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Blink.Script.ForceDeferredScripts.Subframe", 0);
+    histogram_tester.ExpectTotalCount(
+        "Blink.Script.ForceDeferredScripts.Subframe.External", 0);
+  }
 }

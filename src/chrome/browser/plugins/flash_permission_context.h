@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_PLUGINS_FLASH_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
-class PermissionRequestID;
 
-class FlashPermissionContext : public PermissionContextBase {
+namespace permissions {
+class PermissionRequestID;
+}
+
+class FlashPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit FlashPermissionContext(Profile* profile);
+  explicit FlashPermissionContext(content::BrowserContext* browser_context);
   ~FlashPermissionContext() override;
 
  private:
@@ -22,7 +25,7 @@ class FlashPermissionContext : public PermissionContextBase {
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_origin,
                         bool allowed) override;
   void UpdateContentSetting(const GURL& requesting_origin,

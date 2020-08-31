@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -37,6 +37,9 @@ namespace blink {
 class BLINK_COMMON_EXPORT ThrottlingURLLoader
     : public network::mojom::URLLoaderClient {
  public:
+  // Reason used when resetting the URLLoader to follow a redirect.
+  static const char kFollowRedirectReason[];
+
   // |client| must stay alive during the lifetime of the returned object. Please
   // note that the request may not start immediately since it could be deferred
   // by throttles.
@@ -56,9 +59,17 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
+  // This should be called if the loader will be recreated to follow a redirect
+  // instead of calling FollowRedirect(). This can be used if a loader is
+  // implementing similar logic to FollowRedirectForcingRestart(). If this is
+  // called, a future request for the redirect should be guaranteed to be sent
+  // with the same request_id.
+  void ResetForFollowRedirect();
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers);
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers);
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
   void PauseReadingBodyFromNet();
   void ResumeReadingBodyFromNet();
@@ -247,7 +258,6 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   struct PriorityInfo {
     PriorityInfo(net::RequestPriority in_priority,
                  int32_t in_intra_priority_value);
-    ~PriorityInfo();
 
     net::RequestPriority priority;
     int32_t intra_priority_value;
@@ -278,6 +288,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
 
   std::vector<std::string> removed_headers_;
   net::HttpRequestHeaders modified_headers_;
+  net::HttpRequestHeaders modified_cors_exempt_headers_;
 
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;

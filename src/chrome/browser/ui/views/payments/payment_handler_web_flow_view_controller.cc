@@ -68,7 +68,7 @@ class ReadOnlyOriginView : public views::View {
 
     views::ColumnSet* columns = title_origin_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
     bool title_is_valid = !page_title.empty();
     if (title_is_valid) {
@@ -110,9 +110,9 @@ class ReadOnlyOriginView : public views::View {
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
-    top_level_columns->AddColumn(views::GridLayout::LEADING,
-                                 views::GridLayout::CENTER, 1.0,
-                                 views::GridLayout::USE_PREF, 0, 0);
+    top_level_columns->AddColumn(
+        views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
+        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
     float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
     if (has_icon) {
@@ -123,7 +123,7 @@ class ReadOnlyOriginView : public views::View {
       // A column for the app icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
-          views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+          views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);
@@ -215,7 +215,8 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // time of first layout (nothing has loaded yet). Because of this, set it to.
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
-  web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 75));
+  web_view->SetPreferredSize(
+      gfx::Size(0, dialog()->GetActualPaymentHandlerDialogHeight() - 75));
   content_view->AddChildView(web_view.release());
 }
 
@@ -286,6 +287,7 @@ void PaymentHandlerWebFlowViewController::DidStartNavigation(
 void PaymentHandlerWebFlowViewController::AddNewContents(
     content::WebContents* source,
     std::unique_ptr<content::WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture,
@@ -296,7 +298,7 @@ void PaymentHandlerWebFlowViewController::AddNewContents(
   if (browser && user_gesture &&
       (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
        disposition == WindowOpenDisposition::NEW_POPUP)) {
-    chrome::AddWebContents(browser, source, std::move(new_contents),
+    chrome::AddWebContents(browser, source, std::move(new_contents), target_url,
                            disposition, initial_rect);
   }
 }
@@ -308,6 +310,10 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
 
   if (navigation_handle->IsSameDocument())
     return;
+
+  // The navigation must be committed because WebContents::GetLastCommittedURL()
+  // is assumed to be the URL loaded in the payment handler window.
+  DCHECK(navigation_handle->HasCommitted());
 
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {

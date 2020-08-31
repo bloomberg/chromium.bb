@@ -66,6 +66,11 @@ class CORE_EXPORT DocumentLifecycle {
     kAfterPerformLayout,
     kLayoutClean,
 
+    // In InAccessibility step, fire deferred accessibility events which
+    // require layout to be in a clean state.
+    kInAccessibility,
+    kAccessibilityClean,
+
     kInCompositingUpdate,
     kCompositingInputsClean,
     kCompositingClean,
@@ -86,9 +91,6 @@ class CORE_EXPORT DocumentLifecycle {
     kStopping,
     kStopped,
   };
-
-  // This must be kept coordinated with WebWidget::LifecycleUpdateReason
-  enum LifecycleUpdateReason { kBeginMainFrame, kTest, kOther };
 
   class Scope {
     STACK_ALLOCATED();
@@ -213,7 +215,6 @@ class CORE_EXPORT DocumentLifecycle {
   };
 
   DocumentLifecycle();
-  ~DocumentLifecycle();
 
   bool IsActive() const { return state_ > kInactive && state_ < kStopping; }
   LifecycleState GetState() const { return state_; }
@@ -221,7 +222,6 @@ class CORE_EXPORT DocumentLifecycle {
   bool StateAllowsTreeMutations() const;
   bool StateAllowsLayoutTreeMutations() const;
   bool StateAllowsDetach() const;
-  bool StateAllowsLayoutInvalidation() const;
   bool StateAllowsLayoutTreeNotifications() const;
 
   void AdvanceTo(LifecycleState);
@@ -290,11 +290,6 @@ inline bool DocumentLifecycle::StateAllowsDetach() const {
          state_ == kCompositingInputsClean || state_ == kCompositingClean ||
          state_ == kPrePaintClean || state_ == kPaintClean ||
          state_ == kStopping || state_ == kInactive;
-}
-
-inline bool DocumentLifecycle::StateAllowsLayoutInvalidation() const {
-  return state_ != kInPerformLayout && state_ != kInCompositingUpdate &&
-         state_ != kInPrePaint && state_ != kInPaint;
 }
 
 }  // namespace blink

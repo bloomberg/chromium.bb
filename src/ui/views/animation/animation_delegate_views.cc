@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/animation_delegate_views.h"
 
+#include "ui/compositor/animation_metrics_recorder.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/widget/widget.h"
@@ -52,6 +53,26 @@ void AnimationDelegateViews::OnViewIsDeleting(View* observed_view) {
 void AnimationDelegateViews::AnimationContainerShuttingDown(
     gfx::AnimationContainer* container) {
   container_ = nullptr;
+  compositor_animation_runner_ = nullptr;
+}
+
+base::TimeDelta AnimationDelegateViews::GetAnimationDurationForReporting()
+    const {
+  return base::TimeDelta();
+}
+
+void AnimationDelegateViews::SetAnimationMetricsReporter(
+    ui::AnimationMetricsReporter* animation_metrics_reporter) {
+  if (animation_metrics_reporter_ == animation_metrics_reporter)
+    return;
+
+  animation_metrics_reporter_ = animation_metrics_reporter;
+
+  if (!compositor_animation_runner_)
+    return;
+
+  compositor_animation_runner_->SetAnimationMetricsReporter(
+      animation_metrics_reporter_, GetAnimationDurationForReporting());
 }
 
 void AnimationDelegateViews::UpdateAnimationRunner() {
@@ -62,14 +83,19 @@ void AnimationDelegateViews::UpdateAnimationRunner() {
     // TODO(https://crbug.com/960621): make sure the container has a correct
     // compositor-assisted runner.
     container_->SetAnimationRunner(nullptr);
+    compositor_animation_runner_ = nullptr;
     return;
   }
 
   if (container_->has_custom_animation_runner())
     return;
 
-  container_->SetAnimationRunner(
-      std::make_unique<CompositorAnimationRunner>(view_->GetWidget()));
+  auto compositor_animation_runner =
+      std::make_unique<CompositorAnimationRunner>(view_->GetWidget());
+  compositor_animation_runner_ = compositor_animation_runner.get();
+  compositor_animation_runner_->SetAnimationMetricsReporter(
+      animation_metrics_reporter_, GetAnimationDurationForReporting());
+  container_->SetAnimationRunner(std::move(compositor_animation_runner));
 }
 
 }  // namespace views

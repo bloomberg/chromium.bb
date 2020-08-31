@@ -20,9 +20,12 @@ import tempfile
 import mock
 
 from chromite.lib import cros_test_lib
+from chromite.lib.xbuddy import artifact_info
 from chromite.lib.xbuddy import build_artifact
 from chromite.lib.xbuddy import devserver_constants
 from chromite.lib.xbuddy import downloader
+
+pytestmark = cros_test_lib.pytestmark_inside_only
 
 
 _VERSION = 'R80-12653.0.0-rc1'
@@ -260,6 +263,9 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.work_dir = tempfile.mkdtemp('build_artifact_unittest')
+    self.dl = downloader.GoogleStorageDownloader(self.work_dir,
+                                                 _TEST_GOLO_ARCHIVE,
+                                                 _TEST_GOLO_BUILD_ID)
 
   def tearDown(self):
     shutil.rmtree(self.work_dir)
@@ -282,9 +288,8 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     """Processes a real tarball from GSUtil and stages it."""
     artifact = build_artifact.Artifact(
         build_artifact.TEST_SUITES_FILE, self.work_dir, _VERSION)
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+
+    artifact.Process(self.dl, False)
     self.assertEqual(
         artifact.installed_files,
         [os.path.join(self.work_dir, build_artifact.TEST_SUITES_FILE)])
@@ -297,9 +302,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     """Downloads a real tarball and untars it."""
     artifact = build_artifact.BundledArtifact(
         build_artifact.TEST_SUITES_FILE, self.work_dir, _VERSION)
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+    artifact.Process(self.dl, False)
     expected_installed_files = [
         os.path.join(self.work_dir, filename)
         for filename in ([build_artifact.TEST_SUITES_FILE] +
@@ -319,9 +322,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     expected_installed_files = [
         os.path.join(self.work_dir, filename)
         for filename in [build_artifact.TEST_SUITES_FILE] + [file_to_download]]
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+    artifact.Process(self.dl, False)
     self.assertEqual(artifact.installed_files, expected_installed_files)
     self.assertExists(os.path.join(self.work_dir,
                                    file_to_download))
@@ -341,12 +342,9 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     install_dir = self.work_dir
     artifact.staging_dir = install_dir
 
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-
     rc = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc.SetDefaultCmdResult()
-    artifact.Process(dl, True)
+    artifact.Process(self.dl, True)
 
     self.assertFalse(artifact.installed_files)
     self.assertTrue(os.path.isdir(
@@ -354,7 +352,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     self.assertFalse(os.path.getsize(
         os.path.join(self.work_dir, artifact.marker_name)))
 
-    wait_mock.assert_called_with('autotest.tar', False, 1)
+    wait_mock.assert_called_with('autotest.tar', False, None, 1)
     fetch_mock.assert_called_with('autotest.tar', install_dir + '/')
     update_name_mock.assert_called()
     extract_mock.assert_called()
@@ -364,37 +362,59 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
         cwd=install_dir)
 
   @cros_test_lib.NetworkTest()
-  def testAUTestPayloadBuildArtifact(self):
-    """Downloads a real tarball and treats it like an AU payload."""
-    artifact = build_artifact.AUTestPayload(
-        build_artifact.TEST_SUITES_FILE, self.work_dir, _VERSION)
-    expected_installed_files = [
-        os.path.join(self.work_dir, devserver_constants.UPDATE_FILE)]
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+  def testStatefulPayloadArtifact(self):
+    """Tests downloading the stateful payload."""
+    factory = build_artifact.ChromeOSArtifactFactory(
+        self.work_dir, [artifact_info.STATEFUL_PAYLOAD], [], _VERSION)
+    artifacts = factory.RequiredArtifacts()
+    self.assertEqual(len(artifacts), 1)
+
+    artifact = artifacts[0]
+    expected_installed_files = [os.path.join(self.work_dir,
+                                             devserver_constants.STATEFUL_FILE)]
+    artifact.Process(self.dl, False)
     self.assertEqual(artifact.installed_files, expected_installed_files)
-    self.assertExists(os.path.join(self.work_dir,
-                                   devserver_constants.UPDATE_FILE))
+    for f in expected_installed_files:
+      self.assertExists(f)
     self._CheckMarker(artifact.marker_name, artifact.installed_files)
 
   @cros_test_lib.NetworkTest()
-  def testDeltaPayloadsArtifact(self):
-    """Downloads delta paylaods from test bucket."""
-    nton = build_artifact.DeltaPayloadNtoN(self.work_dir, _VERSION)
-    dl = downloader.GoogleStorageDownloader(
-        self.work_dir, _TEST_GOLO_ARCHIVE, _TEST_GOLO_BUILD_ID)
-    nton.Process(dl, False)
+  def testAUFullPayloadArtifact(self):
+    """Tests downloading the full update payload payload."""
+    factory = build_artifact.ChromeOSArtifactFactory(
+        self.work_dir, [artifact_info.FULL_PAYLOAD], [], _VERSION)
+    artifacts = factory.RequiredArtifacts()
+    self.assertEqual(len(artifacts), 1)
 
-    nton_dir = os.path.join(self.work_dir, 'au', '%s_nton' % _VERSION)
-    # TODO(ahassani, achuith): update.gz appears twice.
-    delta_installed_files = ('update.gz', 'update.gz.json',
-                             'update.gz', 'stateful.tgz')
-    self.assertEqual(nton.installed_files,
-                     [os.path.join(nton_dir, filename)
-                      for filename in delta_installed_files])
-    self.assertExists(os.path.join(nton_dir, 'update.gz'))
-    self._CheckMarker(nton.marker_name, nton.installed_files)
+    artifact = artifacts[0]
+    expected_installed_files = [
+        os.path.join(self.work_dir, f)
+        for f in (devserver_constants.UPDATE_FILE,
+                  devserver_constants.UPDATE_METADATA_FILE)]
+    artifact.Process(self.dl, False)
+    self.assertEqual(artifact.installed_files, expected_installed_files)
+    for f in expected_installed_files:
+      self.assertExists(f)
+    self._CheckMarker(artifact.marker_name, artifact.installed_files)
+
+  @cros_test_lib.NetworkTest()
+  def testAUDeltaPayloadArtifact(self):
+    """Tests downloading the delta update payload payload."""
+    factory = build_artifact.ChromeOSArtifactFactory(
+        self.work_dir, [artifact_info.DELTA_PAYLOAD], [], _VERSION)
+    artifacts = factory.RequiredArtifacts()
+    self.assertEqual(len(artifacts), 1)
+
+    artifact = artifacts[0]
+    expected_installed_files = [
+        os.path.join(self.work_dir, build_artifact.AU_NTON_DIR, f)
+        for f in (devserver_constants.UPDATE_FILE,
+                  devserver_constants.UPDATE_METADATA_FILE)]
+    artifact.Process(self.dl, False)
+    self.assertEqual(artifact.installed_files, expected_installed_files)
+    for f in expected_installed_files:
+      self.assertExists(f)
+    self._CheckMarker(artifact.marker_name, artifact.installed_files)
 
   @cros_test_lib.NetworkTest()
   def testImageUnzip(self):
@@ -406,12 +426,10 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     expected_installed_files = [
         os.path.join(self.work_dir, filename)
         for filename in [build_artifact.IMAGE_FILE] + files_to_extract]
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+    artifact.Process(self.dl, False)
     self.assertEqual(expected_installed_files, artifact.installed_files)
-    self.assertExists(os.path.join(self.work_dir,
-                                   'chromiumos_test_image.bin'))
+    for f in expected_installed_files:
+      self.assertExists(f)
     self._CheckMarker(artifact.marker_name, artifact.installed_files)
 
   @cros_test_lib.NetworkTest()
@@ -419,9 +437,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     """Downloads and stages a zip file while excluding all large files."""
     artifact = build_artifact.BundledArtifact(
         build_artifact.IMAGE_FILE, self.work_dir, _VERSION, exclude=['*.bin'])
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+    artifact.Process(self.dl, False)
 
     expected_installed_files = [
         os.path.join(self.work_dir, filename)
@@ -445,10 +461,8 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
         in ([build_artifact.TEST_SUITES_FILE] +
             _TEST_GOLO_ARCHIVE_TEST_TARBALL_CONTENT)]
     expected_installed_files_1 = [os.path.join(self.work_dir, file_artifact)]
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifacts[0].Process(dl, False)
-    artifacts[1].Process(dl, False)
+    artifacts[0].Process(self.dl, False)
+    artifacts[1].Process(self.dl, False)
     self.assertEqual(artifacts[0].installed_files, expected_installed_files_0)
     self.assertEqual(artifacts[1].installed_files, expected_installed_files_1)
     # Test suites directory exists.
@@ -483,9 +497,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
         os.path.join(self.work_dir, filename)
         for filename in ([build_artifact.TEST_SUITES_FILE] +
                          _TEST_GOLO_ARCHIVE_TEST_TARBALL_CONTENT)]
-    dl = downloader.GoogleStorageDownloader(self.work_dir, _TEST_GOLO_ARCHIVE,
-                                            _TEST_GOLO_BUILD_ID)
-    artifact.Process(dl, False)
+    artifact.Process(self.dl, False)
 
     # Check that it works when all files are there.
     self.assertTrue(artifact.ArtifactStaged())

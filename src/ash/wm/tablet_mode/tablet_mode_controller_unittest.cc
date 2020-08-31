@@ -19,7 +19,9 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -184,6 +186,14 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   bool IsScreenshotShown() const { return test_api_->IsScreenshotShown(); }
+  float GetLidAngle() const { return test_api_->GetLidAngle(); }
+
+  bool IsShelfOpaque() const {
+    const aura::Window* shelf_container =
+        Shell::GetPrimaryRootWindow()->GetChildById(
+            kShellWindowId_ShelfContainer);
+    return shelf_container->layer()->opacity() == 1.0;
+  }
 
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft(
@@ -462,6 +472,17 @@ TEST_P(TabletModeControllerTest, NotExitTabletModeWithUnstableLidAngle) {
   EXPECT_TRUE(CanUseUnstableLidAngle());
   OpenLidToAngle(5.0f);
   EXPECT_TRUE(IsTabletModeStarted());
+}
+
+// Test that when the device lid is closed, its lid angle is reset properly.
+TEST_P(TabletModeControllerTest, ResetLidAngleWhenLidClosed) {
+  AttachTickClockForTest();
+  OpenLid();
+  OpenLidToAngle(90.0f);
+  EXPECT_FLOAT_EQ(GetLidAngle(), 90.f);
+
+  CloseLid();
+  EXPECT_FLOAT_EQ(GetLidAngle(), 0.f);
 }
 
 // Tests that when the hinge is nearly vertically aligned, the current state
@@ -1212,8 +1233,8 @@ TEST_P(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
       CreateDesktopWindowSnappedLeft();
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
-      dragged_window.get(), gfx::Point(), HTCAPTION,
-      ash::ToplevelWindowEventHandler::EndClosure()));
+      dragged_window.get(), gfx::PointF(), HTCAPTION,
+      ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
             split_view_controller()->state());
@@ -1254,8 +1275,8 @@ TEST_P(TabletModeControllerTest,
   wm::ActivateWindow(child.get());
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
-      dragged_window.get(), gfx::Point(), HTCAPTION,
-      ash::ToplevelWindowEventHandler::EndClosure()));
+      dragged_window.get(), gfx::PointF(), HTCAPTION,
+      ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
             split_view_controller()->state());
@@ -1389,7 +1410,8 @@ TEST_P(TabletModeControllerTest,
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
   tablet_mode_controller()->SetEnabledForTest(true);
   app_list_controller->ShowAppList();
-  EXPECT_FALSE(app_list_controller->IsVisible());
+
+  EXPECT_FALSE(app_list_controller->IsVisible(base::nullopt));
 }
 
 // Test that if both the active window and the previous window are snapped on
@@ -1449,6 +1471,25 @@ TEST_P(
   tablet_mode_controller()->SetEnabledForTest(true);
   // Make sure display mirroring triggers without any crashes.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(TabletModeControllerTest,
+       StartTabletActiveLeftSnapOnPrimaryDisplayPreviousOnSecondaryDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window1 =
+      CreateDesktopWindowSnappedLeft(gfx::Rect(0, 0, 400, 400));
+  EXPECT_EQ(Shell::GetPrimaryRootWindow(), window1->GetRootWindow());
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(800, 0, 400, 400));
+  EXPECT_NE(Shell::GetPrimaryRootWindow(), window2->GetRootWindow());
+  wm::ActivateWindow(window1.get());
+  tablet_mode_controller()->SetEnabledForTest(true);
+  // After display mirroring triggers, as the split view state will still be
+  // |SplitViewController::State::kLeftSnapped|, check for overview mode.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 }
 
 // Test that tablet mode controller does not respond to the input device changes
@@ -1564,13 +1605,49 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+}
 
-  tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  window2->layer()->GetAnimator()->StopAnimating();
-  histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
-  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+class TabletModeControllerOnDeviceTest : public TabletModeControllerTest {
+ public:
+  TabletModeControllerOnDeviceTest() = default;
+  TabletModeControllerOnDeviceTest(const TabletModeControllerOnDeviceTest&) =
+      delete;
+  TabletModeControllerOnDeviceTest& operator=(
+      const TabletModeControllerOnDeviceTest&) = delete;
+
+  ~TabletModeControllerOnDeviceTest() override = default;
+
+  void SetUp() override {
+    // We need to simulate the real on-device behavior for some tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kForceSystemCompositorMode);
+    TabletModeControllerTest::SetUp();
+    // PowerManagerClient callback is a posted task.
+    base::RunLoop().RunUntilIdle();
+
+    // Make sure we've seen accelerometer data.
+    TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f),
+                            gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));
+  }
+};
+
+// Tests that if there is no internal and external input device, the device
+// should stay in tablet mode.
+TEST_P(TabletModeControllerOnDeviceTest, DoNotEnterClamshellWithNoInputDevice) {
+  AttachExternalTouchpad();
+  EXPECT_FALSE(IsTabletModeStarted());
+  DetachAllTouchpads();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  SetTabletMode(false);
+  EXPECT_TRUE(IsTabletModeStarted());
+  SetTabletMode(true);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  OpenLidToAngle(30.f);
+  EXPECT_TRUE(IsTabletModeStarted());
+  OpenLidToAngle(300.f);
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
 class TabletModeControllerScreenshotTest : public TabletModeControllerTest {
@@ -1587,9 +1664,13 @@ class TabletModeControllerScreenshotTest : public TabletModeControllerTest {
     ui::DeviceDataManager::GetInstance()->RemoveObserver(
         tablet_mode_controller());
 
+    // Screenshot relies on the animation status of windows. These animations
+    // can be triggered in multiple ways such as tablet enter/exit or overview
+    // enter/exit. With a NONZERO_DURATION, occasionally they may trigger too
+    // quickly in tests so use NORMAL_DURATION.
     scoped_animation_duration_scale_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-            ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+            ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
     // PowerManagerClient callback is a posted task.
     base::RunLoop().RunUntilIdle();
@@ -1613,6 +1694,8 @@ TEST_P(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
   // Tests that no windows means no screenshot.
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
+
   SetTabletMode(false);
 
   // If the top window is already maximized, there is no animation, so no
@@ -1627,17 +1710,19 @@ TEST_P(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
 
   waiter.Wait();
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
+
   // The window will animate if the hotseat is enabled because the workspace
   // area will change. As long as a screenshot is not shown, this is ok.
   if (chromeos::switches::ShouldShowShelfHotseat())
     return;
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(IsShelfOpaque());
 }
 
 // Regression test for screenshot staying visible when entering tablet mode when
 // already in overview mode. See https://crbug.com/1002735.
-// Flaky in remote builds, see: crbug.com/1007961
-TEST_P(TabletModeControllerScreenshotTest, DISABLED_FromOverviewNoScreenshot) {
+TEST_P(TabletModeControllerScreenshotTest, FromOverviewNoScreenshot) {
   // Create two maximized windows.
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(200, 200));
@@ -1648,45 +1733,77 @@ TEST_P(TabletModeControllerScreenshotTest, DISABLED_FromOverviewNoScreenshot) {
 
   // Enter overview.
   Shell::Get()->overview_controller()->StartOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+
+  // Enter tablet mode. This triggers an overview exit, so |window2| will be
+  // animating from the overview exit animation. Therefore, we do not show the
+  // screenshot.
+  TabletMode::Waiter waiter(/*enable=*/true);
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+
+  waiter.Wait();
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
+
+  // Tests that after ending the window animation, the screenshot is still not
+  // shown.
   window->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
+}
+
+// Regression test for screenshot staying visible when entering tablet mode when
+// a window creation animation is still underway. See https://crbug.com/1035356.
+TEST_P(TabletModeControllerScreenshotTest, EnterTabletModeWhileAnimating) {
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  ASSERT_TRUE(window->layer()->GetAnimator()->is_animating());
 
   // Enter tablet mode.
   TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 
   waiter.Wait();
-  EXPECT_TRUE(IsScreenshotShown());
-
-  // Tests that after ending the overview animation, the screenshot is
-  // destroyed.
-  window->layer()->GetAnimator()->StopAnimating();
-  window2->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 }
 
 // Tests that the screenshot is visible when a window animation happens when
 // entering tablet mode.
-TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
+// TODO(http://crbug.com/1035356): This test fails on bots but not locally so
+// suspected to be a timing issue. Possible that the screenshot is deleted
+// before the waiter is done waiting.
+TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
-  ui::Layer* layer = window2->layer();
+
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
   ASSERT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 
   TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_FALSE(IsShelfOpaque());
 
   // Tests that after waiting for the async tablet mode entry, the screenshot is
   // shown.
   waiter.Wait();
   EXPECT_TRUE(IsScreenshotShown());
-  EXPECT_TRUE(layer->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(IsShelfOpaque());
 
   // Tests that the screenshot is destroyed after the window is done animating.
-  layer->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 }
 
 // Tests that if we exit tablet mode before the screenshot is taken, there is no
@@ -1694,14 +1811,19 @@ TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
 TEST_P(TabletModeControllerScreenshotTest, NoCrashWhenExitingWithoutWaiting) {
   // One non-maximized window is needed for screenshot to be taken.
   auto window = CreateTestWindow(gfx::Rect(200, 200));
+  window->layer()->GetAnimator()->StopAnimating();
 
   SetTabletMode(true);
+  EXPECT_FALSE(IsShelfOpaque());
+
   SetTabletMode(false);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 
   // Tests that reentering tablet mode without waiting causes no crash either.
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_FALSE(IsShelfOpaque());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, TabletModeControllerTest, testing::Bool());
@@ -1716,6 +1838,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeControllerScreenshotTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         TabletModeControllerOnDeviceTest,
                          testing::Bool());
 
 }  // namespace ash

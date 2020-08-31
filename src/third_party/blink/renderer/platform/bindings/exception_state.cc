@@ -125,6 +125,12 @@ void ExceptionState::ThrowTypeError(const String& message) {
                                                  AddExceptionContext(message)));
 }
 
+void ExceptionState::ThrowWasmCompileError(const String& message) {
+  SetException(ToExceptionCode(ESErrorType::kWasmCompileError), message,
+               V8ThrowException::CreateWasmCompileError(
+                   isolate_, AddExceptionContext(message)));
+}
+
 void ExceptionState::ThrowDOMException(DOMExceptionCode exception_code,
                                        const char* message) {
   ThrowDOMException(exception_code, String(message));
@@ -141,6 +147,10 @@ void ExceptionState::ThrowRangeError(const char* message) {
 
 void ExceptionState::ThrowTypeError(const char* message) {
   ThrowTypeError(String(message));
+}
+
+void ExceptionState::ThrowWasmCompileError(const char* message) {
+  ThrowWasmCompileError(String(message));
 }
 
 void ExceptionState::RethrowV8Exception(v8::Local<v8::Value> value) {
@@ -174,38 +184,65 @@ String ExceptionState::AddExceptionContext(const String& message) const {
   if (message.IsEmpty())
     return message;
 
-  String processed_message = message;
-  if (PropertyName() && InterfaceName() && context_ != kUnknownContext) {
-    if (context_ == kDeletionContext)
-      processed_message = ExceptionMessages::FailedToDelete(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kExecutionContext)
-      processed_message = ExceptionMessages::FailedToExecute(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kGetterContext)
-      processed_message = ExceptionMessages::FailedToGet(
-          PropertyName(), InterfaceName(), message);
-    else if (context_ == kSetterContext)
-      processed_message = ExceptionMessages::FailedToSet(
-          PropertyName(), InterfaceName(), message);
-  } else if (!PropertyName() && InterfaceName()) {
-    if (context_ == kConstructionContext)
-      processed_message =
-          ExceptionMessages::FailedToConstruct(InterfaceName(), message);
-    else if (context_ == kEnumerationContext)
-      processed_message =
-          ExceptionMessages::FailedToEnumerate(InterfaceName(), message);
-    else if (context_ == kIndexedDeletionContext)
-      processed_message =
-          ExceptionMessages::FailedToDeleteIndexed(InterfaceName(), message);
-    else if (context_ == kIndexedGetterContext)
-      processed_message =
-          ExceptionMessages::FailedToGetIndexed(InterfaceName(), message);
-    else if (context_ == kIndexedSetterContext)
-      processed_message =
-          ExceptionMessages::FailedToSetIndexed(InterfaceName(), message);
+  const char* i = InterfaceName();
+  const char* p = PropertyName();
+  const auto& m = message;
+
+  if (i && p) {
+    switch (context_) {
+      case kConstructionContext:
+        return ExceptionMessages::FailedToConstruct(i, m);
+      case kExecutionContext:
+        return ExceptionMessages::FailedToExecute(p, i, m);
+      case kDeletionContext:
+        return ExceptionMessages::FailedToDelete(p, i, m);
+      case kGetterContext:
+        return ExceptionMessages::FailedToGet(p, i, m);
+      case kSetterContext:
+        return ExceptionMessages::FailedToSet(p, i, m);
+      case kEnumerationContext:
+        return ExceptionMessages::FailedToEnumerate(i, m);
+      case kQueryContext:
+        break;
+      case kIndexedGetterContext:
+        return ExceptionMessages::FailedToGetIndexed(i, m);
+      case kIndexedSetterContext:
+        return ExceptionMessages::FailedToSetIndexed(i, m);
+      case kIndexedDeletionContext:
+        return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kUnknownContext:
+        break;
+    }
   }
-  return processed_message;
+
+  if (i) {
+    switch (context_) {
+      case kConstructionContext:
+        return ExceptionMessages::FailedToConstruct(i, m);
+      case kExecutionContext:
+        break;
+      case kDeletionContext:
+        break;
+      case kGetterContext:
+        break;
+      case kSetterContext:
+        break;
+      case kEnumerationContext:
+        return ExceptionMessages::FailedToEnumerate(i, m);
+      case kQueryContext:
+        break;
+      case kIndexedGetterContext:
+        return ExceptionMessages::FailedToGetIndexed(i, m);
+      case kIndexedSetterContext:
+        return ExceptionMessages::FailedToSetIndexed(i, m);
+      case kIndexedDeletionContext:
+        return ExceptionMessages::FailedToDeleteIndexed(i, m);
+      case kUnknownContext:
+        break;
+    }
+  }
+
+  return message;
 }
 
 NonThrowableExceptionState::NonThrowableExceptionState()
@@ -245,6 +282,11 @@ void NonThrowableExceptionState::ThrowTypeError(const String& message) {
   DCHECK_AT(false, file_, line_) << "TypeError should not be thrown.";
 }
 
+void NonThrowableExceptionState::ThrowWasmCompileError(const String& message) {
+  DCHECK_AT(false, file_, line_)
+      << "WebAssembly.CompileError should not be thrown.";
+}
+
 void NonThrowableExceptionState::RethrowV8Exception(v8::Local<v8::Value>) {
   DCHECK_AT(false, file_, line_) << "An exception should not be rethrown.";
 }
@@ -270,6 +312,12 @@ void DummyExceptionStateForTesting::ThrowSecurityError(
 
 void DummyExceptionStateForTesting::ThrowTypeError(const String& message) {
   SetException(ToExceptionCode(ESErrorType::kTypeError), message,
+               v8::Local<v8::Value>());
+}
+
+void DummyExceptionStateForTesting::ThrowWasmCompileError(
+    const String& message) {
+  SetException(ToExceptionCode(ESErrorType::kWasmCompileError), message,
                v8::Local<v8::Value>());
 }
 

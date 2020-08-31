@@ -425,36 +425,42 @@ void V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback(
 }
 
 void V8TestInterfacePartial::PartialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partialVoidTestEnumModulesArgMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialVoidTestEnumModulesArgMethod");
 
   test_interface_implementation_partial_v8_internal::PartialVoidTestEnumModulesArgMethodMethod(info);
 }
 
 void V8TestInterfacePartial::Partial2VoidTestEnumModulesRecordMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partial2VoidTestEnumModulesRecordMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2VoidTestEnumModulesRecordMethod");
 
   test_interface_implementation_partial_v8_internal::Partial2VoidTestEnumModulesRecordMethodMethod(info);
 }
 
 void V8TestInterfacePartial::UnscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.unscopableVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unscopableVoidMethod");
 
   test_interface_implementation_partial_v8_internal::UnscopableVoidMethodMethod(info);
 }
 
 void V8TestInterfacePartial::UnionWithTypedefMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.unionWithTypedefMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unionWithTypedefMethod");
 
   test_interface_implementation_partial_v8_internal::UnionWithTypedefMethodMethod(info);
 }
 
 void V8TestInterfacePartial::Partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partial4VoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial4VoidMethod");
 
   test_interface_implementation_partial_v8_internal::Partial4VoidMethodMethod(info);
 }
 
 void V8TestInterfacePartial::Partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.partial4StaticVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial4StaticVoidMethod");
 
   test_interface_implementation_partial_v8_internal::Partial4StaticVoidMethodMethod(info);
@@ -533,8 +539,8 @@ void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
   if (is_secure_context) {
     static constexpr V8DOMConfiguration::AccessorConfiguration
     kAccessorConfigurations[] = {
-        { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-        { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+        { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     };
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance, prototype, interface,

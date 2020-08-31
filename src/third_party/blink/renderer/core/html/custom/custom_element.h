@@ -77,8 +77,10 @@ class CORE_EXPORT CustomElement {
   static bool ShouldCreateCustomElement(const AtomicString& local_name);
   static bool ShouldCreateCustomElement(const QualifiedName&);
   static bool ShouldCreateCustomizedBuiltinElement(
-      const AtomicString& local_name);
-  static bool ShouldCreateCustomizedBuiltinElement(const QualifiedName&);
+      const AtomicString& local_name,
+      const Document&);
+  static bool ShouldCreateCustomizedBuiltinElement(const QualifiedName&,
+                                                   const Document&);
 
   // Look up a definition, and create an autonomous custom element if
   // it's found.
@@ -114,7 +116,7 @@ class CORE_EXPORT CustomElement {
       const FileOrUSVStringOrFormData& value,
       const String& mode);
 
-  static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
+  static void TryToUpgrade(Element&);
 
   static void AddEmbedderCustomElementNameForTesting(const AtomicString& name,
                                                      ExceptionState&);

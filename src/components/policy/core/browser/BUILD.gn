@@ -7,13 +7,9 @@ import("//build/config/jumbo.gni")
 
 group("browser") {
   if (is_component_build) {
-    public_deps = [
-      "//components/policy",
-    ]
+    public_deps = [ "//components/policy" ]
   } else {
-    public_deps = [
-      ":internal",
-    ]
+    public_deps = [ ":internal" ]
   }
 }
 
@@ -24,8 +20,6 @@ jumbo_source_set("internal") {
     "browser_policy_connector.h",
     "browser_policy_connector_base.cc",
     "browser_policy_connector_base.h",
-    "browser_policy_connector_ios.h",
-    "browser_policy_connector_ios.mm",
     "cloud/message_util.cc",
     "cloud/message_util.h",
     "configuration_policy_handler.cc",
@@ -34,6 +28,10 @@ jumbo_source_set("internal") {
     "configuration_policy_handler_list.h",
     "configuration_policy_pref_store.cc",
     "configuration_policy_pref_store.h",
+    "policy_conversions.cc",
+    "policy_conversions.h",
+    "policy_conversions_client.cc",
+    "policy_conversions_client.h",
     "policy_error_map.cc",
     "policy_error_map.h",
     "proxy_policy_handler.cc",
@@ -48,11 +46,10 @@ jumbo_source_set("internal") {
 
   configs += [ "//components/policy:component_implementation" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//components/google/core/common",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -60,6 +57,7 @@ jumbo_source_set("internal") {
     "//components/strings",
     "//components/url_formatter",
     "//components/url_matcher",
+    "//extensions/buildflags",
     "//net",
     "//services/network/public/cpp",
     "//third_party/re2",
@@ -93,6 +91,13 @@ jumbo_static_library("test_support") {
     "configuration_policy_pref_store_test.h",
   ]
 
+  if (!is_android && !is_fuchsia) {
+    sources += [
+      "policy_pref_mapping_test.cc",
+      "policy_pref_mapping_test.h",
+    ]
+  }
+
   public_deps = [
     ":browser",
     "//base",
@@ -104,7 +109,10 @@ jumbo_static_library("test_support") {
     "//components/policy/core/common:test_support",
   ]
   deps = [
+    "//build:branding_buildflags",
+    "//components/prefs",
     "//testing/gtest",
+    "//url",
   ]
 }
 

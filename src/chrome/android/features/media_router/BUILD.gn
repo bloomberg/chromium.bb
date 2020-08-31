@@ -19,12 +19,12 @@ android_library("java") {
     "//chrome/android:chrome_java",
     "//services/media_session/public/cpp/android:media_session_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_collections_java",
-    "//third_party/android_deps:com_android_support_mediarouter_v7_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:androidx_collection_collection_java",
+    "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
     "//third_party/android_media:android_media_java",
   ]
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
     "java/src/org/chromium/chrome/browser/media/router/CastRequestIdGenerator.java",
     "java/src/org/chromium/chrome/browser/media/router/CastSessionUtil.java",
@@ -81,7 +81,7 @@ generate_jni("jni_headers") {
 android_library("test_java") {
   testonly = true
 
-  java_files = [
+  sources = [
     "javatests/src/org/chromium/chrome/browser/media/router/MediaRouterIntegrationTest.java",
     "javatests/src/org/chromium/chrome/browser/media/router/MockMediaRouteProvider.java",
   ]
@@ -102,7 +102,7 @@ android_library("test_java") {
 }
 
 junit_binary("media_router_junit_tests") {
-  java_files = [
+  sources = [
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterRouteTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterSinkObservationTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTestBase.java",
@@ -128,7 +128,30 @@ junit_binary("media_router_junit_tests") {
 }
 
 android_resources("java_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/cast_playing_square.png",
+    "java/res/drawable-hdpi/ic_cast_dark_off.png",
+    "java/res/drawable-hdpi/ic_cast_dark_on.png",
+    "java/res/drawable-hdpi/ic_notification_media_route.png",
+    "java/res/drawable-mdpi/cast_playing_square.png",
+    "java/res/drawable-mdpi/ic_cast_dark_off.png",
+    "java/res/drawable-mdpi/ic_cast_dark_on.png",
+    "java/res/drawable-mdpi/ic_notification_media_route.png",
+    "java/res/drawable-xhdpi/cast_playing_square.png",
+    "java/res/drawable-xhdpi/ic_cast_dark_off.png",
+    "java/res/drawable-xhdpi/ic_cast_dark_on.png",
+    "java/res/drawable-xhdpi/ic_notification_media_route.png",
+    "java/res/drawable-xxhdpi/cast_playing_square.png",
+    "java/res/drawable-xxhdpi/ic_cast_dark_off.png",
+    "java/res/drawable-xxhdpi/ic_cast_dark_on.png",
+    "java/res/drawable-xxhdpi/ic_notification_media_route.png",
+    "java/res/drawable-xxxhdpi/cast_playing_square.png",
+    "java/res/drawable-xxxhdpi/ic_notification_media_route.png",
+    "java/res/drawable/ic_cast_dark_chrome.xml",
+    "java/res/layout/caf_controller_media_route_button.xml",
+    "java/res/layout/expanded_cast_controller.xml",
+    "java/res/values-v17/styles.xml",
+  ]
   deps = [
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",

@@ -4,6 +4,8 @@
 
 #include "ash/home_screen/window_scale_animation.h"
 
+#include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -37,16 +39,14 @@ constexpr float kWindowScaleDownFactor = 0.001f;
 
 }  // namespace
 
-WindowScaleAnimation::WindowScaleAnimation(
-    aura::Window* window,
-    WindowScaleType scale_type,
-    base::Optional<BackdropWindowMode> original_backdrop_mode,
-    base::OnceClosure opt_callback)
+WindowScaleAnimation::WindowScaleAnimation(aura::Window* window,
+                                           WindowScaleType scale_type,
+                                           base::OnceClosure opt_callback)
     : window_(window),
-      original_backdrop_mode_(original_backdrop_mode),
       opt_callback_(std::move(opt_callback)),
       scale_type_(scale_type) {
   window_observer_.Add(window);
+  WindowBackdrop::Get(window)->DisableBackdrop();
 
   ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
   settings.SetTransitionDuration(kWindowScaleUpOrDownTime);
@@ -72,15 +72,13 @@ WindowScaleAnimation::~WindowScaleAnimation() {
 void WindowScaleAnimation::OnImplicitAnimationsCompleted() {
   if (scale_type_ == WindowScaleType::kScaleDownToShelf) {
     // Minimize the dragged window after transform animation is completed.
-    window_util::HideAndMaybeMinimizeWithoutAnimation({window_},
-                                                      /*minimize=*/true);
+    window_util::MinimizeAndHideWithoutAnimation({window_});
 
     // Reset its transform to identity transform and its original backdrop mode.
     window_->layer()->SetTransform(gfx::Transform());
     window_->layer()->SetOpacity(1.f);
   }
-  if (original_backdrop_mode_.has_value())
-    window_->SetProperty(kBackdropWindowMode, *original_backdrop_mode_);
+  WindowBackdrop::Get(window_)->RestoreBackdrop();
 
   delete this;
 }
@@ -101,6 +99,7 @@ gfx::Transform WindowScaleAnimation::GetWindowTransformToShelf() {
 
   gfx::Transform transform;
   Shelf* shelf = Shelf::ForWindow(window_);
+
   const gfx::Rect shelf_item_bounds =
       shelf->GetScreenBoundsOfItemIconForWindow(window_);
 

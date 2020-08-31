@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,10 +18,13 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/geometry/point.h"
 
 namespace aura {
 class Window;
+}
+
+namespace gfx {
+class PointF;
 }
 
 namespace ash {
@@ -48,32 +52,20 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // If the window drag starts within |kDistanceFromEdge| from screen edge, it
   // will get snapped if the drag ends in the snap region, no matter how far
   // the window has been dragged.
-  static constexpr int kDistanceFromEdge = 16;
-  // If the window drag starts in a snap region, it needs to be dragged
-  // |kMinDragDistanceInSnapRegion| toward the snap direction for the window to
-  // be snapped.
-  static constexpr int kMinDragDistanceInSnapRegion = 48;
-  // If the window drag starts outside a snap region, it needs to be dragged
-  // |kMinDragDistanceOutsideSnapRegion| toward the snap direction for the
-  // window to be snapped.
-  static constexpr int kMinDragDistanceOutsideSnapRegion = 96;
+  static constexpr int kDistanceFromEdge = 8;
+
+  // A window has to be dragged toward the direction of the edge of the screen
+  // for a minimum of |kMinDragDistance| to a point within
+  // |kScreenEdgeInsetForSnap| of the edge of the screen, or dragged inside
+  // |kDistanceFromEdge| from edge to be snapped.
+  static constexpr int kScreenEdgeInsetForSnap = 48;
+  static constexpr int kMinDragDistance = 96;
 
   // The distance for the dragged window to pass over the bottom of the display
   // so that it can be dragged into home launcher or overview. If not pass this
   // value, the window will snap back to its original position. The value is
   // different for standard or dense shelf.
   static float GetReturnToMaximizedThreshold();
-
-  enum class ShelfWindowDragResult {
-    // Go to home screen after drag ends.
-    kGoToHomeScreen,
-
-    // Dragged window restored to its original bounds.
-    kRestoreToOriginalBounds,
-
-    // Enter overview mode after drag ends.
-    kGoToOverviewMode
-  };
 
   class Observer : public base::CheckedObserver {
    public:
@@ -83,20 +75,26 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   };
 
   DragWindowFromShelfController(aura::Window* window,
-                                const gfx::Point& location_in_screen,
+                                const gfx::PointF& location_in_screen,
                                 HotseatState hotseat_state);
   ~DragWindowFromShelfController() override;
 
   // Called during swiping up on the shelf.
-  void Drag(const gfx::Point& location_in_screen,
+  void Drag(const gfx::PointF& location_in_screen,
             float scroll_x,
             float scroll_y);
   base::Optional<ShelfWindowDragResult> EndDrag(
-      const gfx::Point& location_in_screen,
+      const gfx::PointF& location_in_screen,
       base::Optional<float> velocity_y);
   void CancelDrag();
 
   bool IsDraggedWindowAnimating() const;
+
+  // Performs the action on the dragged window depending on
+  // |window_drag_result_|, such as scaling up/down the dragged window. This
+  // method should be called after EndDrag() which computes
+  // |window_drag_result_|.
+  void FinalizeDraggedWindow();
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -107,43 +105,46 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   aura::Window* dragged_window() const { return window_; }
   bool drag_started() const { return drag_started_; }
   bool show_overview_windows() const { return show_overview_windows_; }
+  bool during_window_restoration_callback() const {
+    return during_window_restoration_callback_;
+  }
 
  private:
   class WindowsHider;
 
-  void OnDragStarted(const gfx::Point& location_in_screen);
-  void OnDragEnded(const gfx::Point& location_in_screen,
+  void OnDragStarted(const gfx::PointF& location_in_screen);
+  void OnDragEnded(const gfx::PointF& location_in_screen,
                    bool should_drop_window_in_overview,
                    SplitViewController::SnapPosition snap_position);
 
   // Updates the dragged window's transform during dragging.
-  void UpdateDraggedWindow(const gfx::Point& location_in_screen);
+  void UpdateDraggedWindow(const gfx::PointF& location_in_screen);
 
   // Returns the desired snap position on |location_in_screen| during dragging.
   SplitViewController::SnapPosition GetSnapPosition(
-      const gfx::Point& location_in_screen) const;
+      const gfx::PointF& location_in_screen) const;
 
   // Returns true if the dragged window should restore to its original bounds
   // after drag ends. Happens when |location_in_screen| is within
   // GetReturnToMaximizedThreshold() threshold.
   bool ShouldRestoreToOriginalBounds(
-      const gfx::Point& location_in_screen) const;
+      const gfx::PointF& location_in_screen) const;
 
   // Returns true if we should go to home screen after drag ends. Happens when
   // the upward vertical velocity is larger than kVelocityToHomeScreenThreshold
   // and splitview is not active. Note when splitview is active, we do not allow
   // to go to home screen by fling.
-  bool ShouldGoToHomeScreen(const gfx::Point& location_in_screen,
+  bool ShouldGoToHomeScreen(const gfx::PointF& location_in_screen,
                             base::Optional<float> velocity_y) const;
 
   // Returns the desired snap position on |location_in_screen| when drag ends.
   SplitViewController::SnapPosition GetSnapPositionOnDragEnd(
-      const gfx::Point& location_in_screen,
+      const gfx::PointF& location_in_screen,
       base::Optional<float> velocity_y) const;
 
   // Returns true if we should drop the dragged window in overview after drag
   // ends.
-  bool ShouldDropWindowInOverview(const gfx::Point& location_in_screen,
+  bool ShouldDropWindowInOverview(const gfx::PointF& location_in_screen,
                                   base::Optional<float> velocity_y) const;
 
   // Reshows the windows that were hidden before drag starts.
@@ -177,10 +178,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   void OnWindowDragStartedInOverview();
 
   aura::Window* window_ = nullptr;
-  gfx::Point initial_location_in_screen_;
-  gfx::Point previous_location_in_screen_;
+  gfx::PointF initial_location_in_screen_;
+  gfx::PointF previous_location_in_screen_;
   bool drag_started_ = false;
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
 
   // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
@@ -195,7 +195,14 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // True if overview is active and its windows are showing.
   bool show_overview_windows_ = false;
 
+  // A pending action from EndDrag() to be performed in FinalizeDraggedWindow().
+  base::Optional<ShelfWindowDragResult> window_drag_result_;
+
   base::ObserverList<Observer> observers_;
+
+  bool during_window_restoration_callback_ = false;
+
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   base::WeakPtrFactory<DragWindowFromShelfController> weak_ptr_factory_{this};
 

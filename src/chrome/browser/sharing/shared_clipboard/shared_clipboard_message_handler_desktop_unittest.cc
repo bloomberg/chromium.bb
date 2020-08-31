@@ -7,12 +7,13 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/sharing/fake_device_info.h"
+#include "chrome/browser/sharing/mock_sharing_device_source.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
+#include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
-#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/sync/protocol/sharing_shared_clipboard_message.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,17 +27,6 @@ const char kEmptyDeviceName[] = "";
 const char kDeviceNameInDeviceInfo[] = "DeviceNameInDeviceInfo";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 
-class MockSharingDeviceSource : public SharingDeviceSource {
- public:
-  bool IsReady() override { return true; }
-
-  MOCK_METHOD1(GetDeviceByGuid,
-               std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
-
-  MOCK_METHOD0(GetAllDevices,
-               std::vector<std::unique_ptr<syncer::DeviceInfo>>());
-};
-
 class SharedClipboardMessageHandlerTest : public SharedClipboardTestBase {
  public:
   SharedClipboardMessageHandlerTest() = default;
@@ -45,6 +35,7 @@ class SharedClipboardMessageHandlerTest : public SharedClipboardTestBase {
 
   void SetUp() override {
     SharedClipboardTestBase::SetUp();
+    ON_CALL(device_source_, IsReady()).WillByDefault(testing::Return(true));
     message_handler_ = std::make_unique<SharedClipboardMessageHandlerDesktop>(
         &device_source_, &profile_);
   }
@@ -94,15 +85,8 @@ TEST_F(SharedClipboardMessageHandlerTest,
     EXPECT_CALL(device_source_, GetDeviceByGuid(guid))
         .WillOnce(
             [](const std::string& guid) -> std::unique_ptr<syncer::DeviceInfo> {
-              return std::make_unique<syncer::DeviceInfo>(
-                  base::GenerateGUID(), kDeviceNameInDeviceInfo,
-                  /*chrome_version=*/"78.0.0.0",
-                  /*sync_user_agent=*/"Chrome", sync_pb::SyncEnums::TYPE_LINUX,
-                  /*signin_scoped_device_id=*/base::GenerateGUID(),
-                  base::SysInfo::HardwareInfo(),
-                  /*last_updated_timestamp=*/base::Time::Now(),
-                  /*send_tab_to_self_receiving_enabled=*/false,
-                  /*sharing_info=*/base::nullopt);
+              return CreateFakeDeviceInfo(base::GenerateGUID(),
+                                          kDeviceNameInDeviceInfo);
             });
     base::MockCallback<SharingMessageHandler::DoneCallback> done_callback;
     EXPECT_CALL(done_callback, Run(testing::Eq(nullptr))).Times(1);

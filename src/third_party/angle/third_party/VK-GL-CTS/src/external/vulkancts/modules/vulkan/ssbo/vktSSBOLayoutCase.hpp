@@ -45,22 +45,29 @@ enum BufferVarFlags
 	LAYOUT_MASK			= LAYOUT_STD430|LAYOUT_STD140|LAYOUT_ROW_MAJOR|LAYOUT_COLUMN_MAJOR|LAYOUT_SCALAR,
 
 	// \todo [2013-10-14 pyry] Investigate adding these.
-/*	QUALIFIER_COHERENT	= (1<<4),
-	QUALIFIER_VOLATILE	= (1<<5),
-	QUALIFIER_RESTRICT	= (1<<6),
-	QUALIFIER_READONLY	= (1<<7),
-	QUALIFIER_WRITEONLY	= (1<<8),*/
-	ACCESS_READ			= (1<<9),	//!< Buffer variable is read in the shader.
-	ACCESS_WRITE		= (1<<10),	//!< Buffer variable is written in the shader.
-	LAYOUT_RELAXED		= (1<<11),	//!< Support VK_KHR_relaxed_block_layout extension
-	LAYOUT_16BIT_STORAGE= (1<<12),  //!< Support VK_KHR_16bit_storage extension
-	LAYOUT_8BIT_STORAGE	= (1<<13),  //!< Support VK_KHR_8bit_storage extension
+/*	QUALIFIER_COHERENT			= (1<<4),
+	QUALIFIER_VOLATILE			= (1<<5),
+	QUALIFIER_RESTRICT			= (1<<6),
+	QUALIFIER_READONLY			= (1<<7),
+	QUALIFIER_WRITEONLY			= (1<<8),*/
+	ACCESS_READ					= (1<<9),	//!< Buffer variable is read in the shader.
+	ACCESS_WRITE				= (1<<10),	//!< Buffer variable is written in the shader.
+	LAYOUT_RELAXED				= (1<<11),	//!< Support VK_KHR_relaxed_block_layout extension
+	LAYOUT_16BIT_STORAGE		= (1<<12),  //!< Support VK_KHR_16bit_storage extension
+	LAYOUT_8BIT_STORAGE			= (1 << 13),  //!< Support VK_KHR_8bit_storage extension
+	LAYOUT_DESCRIPTOR_INDEXING	= (1 << 14),  //!< Support VK_KHR_descriptor_indexing extension
 };
 
 enum MatrixLoadFlags
 {
 	LOAD_FULL_MATRIX		= 0,
 	LOAD_MATRIX_COMPONENTS	= 1,
+};
+
+enum MatrixStoreFlags
+{
+	STORE_FULL_MATRIX		= 0,
+	STORE_MATRIX_COLUMNS	= 1,
 };
 
 class BufferVar
@@ -231,7 +238,7 @@ public:
 		BUFFERMODE_LAST
 	};
 
-								SSBOLayoutCase				(tcu::TestContext& testCtx, const char* name, const char* description, BufferMode bufferMode, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer);
+								SSBOLayoutCase				(tcu::TestContext& testCtx, const char* name, const char* description, BufferMode bufferMode, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer);
 	virtual						~SSBOLayoutCase				(void);
 
 	virtual void				delayedInit					(void);
@@ -242,6 +249,7 @@ protected:
 	BufferMode					m_bufferMode;
 	ShaderInterface				m_interface;
 	MatrixLoadFlags				m_matrixLoadFlag;
+	MatrixStoreFlags			m_matrixStoreFlag;
 	std::string					m_computeShaderSrc;
 	bool						m_usePhysStorageBuffer;
 

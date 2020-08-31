@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_model.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
@@ -42,6 +43,7 @@ NeuralStylusPalmDetectionFilter::~NeuralStylusPalmDetectionFilter() {}
 
 void NeuralStylusPalmDetectionFilter::FindBiggestNeighborsWithin(
     int neighbor_count,
+    unsigned long min_sample_count,
     float max_distance,
     const PalmFilterStroke& stroke,
     std::vector<std::pair<float, int>>* biggest_strokes) const {
@@ -55,7 +57,7 @@ void NeuralStylusPalmDetectionFilter::FindBiggestNeighborsWithin(
     if (neighbor.tracking_id() == stroke.tracking_id()) {
       continue;
     }
-    if (neighbor.samples().size() < model_->config().min_sample_count) {
+    if (neighbor.samples().size() < min_sample_count) {
       continue;
     }
     float distance =
@@ -249,7 +251,7 @@ bool NeuralStylusPalmDetectionFilter::IsHeuristicPalmStroke(
       return true;
     }
     std::vector<std::pair<float, int>> biggest_strokes;
-    FindBiggestNeighborsWithin(1 /* neighbors */,
+    FindBiggestNeighborsWithin(1 /* neighbors */, 1 /* min sample count */,
                                model_->config().max_neighbor_distance_in_mm,
                                stroke, &biggest_strokes);
     if (!biggest_strokes.empty() &&
@@ -279,9 +281,10 @@ std::vector<float> NeuralStylusPalmDetectionFilter::ExtractFeatures(
   FindNearestNeighborsWithin(config.nearest_neighbor_count,
                              config.max_neighbor_distance_in_mm, stroke,
                              &nearest_strokes);
-  FindBiggestNeighborsWithin(config.biggest_near_neighbor_count,
-                             config.max_neighbor_distance_in_mm, stroke,
-                             &biggest_strokes);
+  FindBiggestNeighborsWithin(
+      config.biggest_near_neighbor_count,
+      model_->config().min_sample_count /* min sample count */,
+      config.max_neighbor_distance_in_mm, stroke, &biggest_strokes);
   for (uint32_t i = 0; i < config.nearest_neighbor_count; ++i) {
     if (i < nearest_strokes.size()) {
       const auto& nearest_stroke = nearest_strokes[i];
@@ -394,6 +397,10 @@ bool NeuralStylusPalmDetectionFilter::
   // present.
   if (devinfo.HasAbsEvent(ABS_MT_TOUCH_MINOR) &&
       !code_check(ABS_MT_TOUCH_MINOR)) {
+    return false;
+  }
+  // Only work with internal touchscreens.
+  if (devinfo.device_type() != INPUT_DEVICE_INTERNAL) {
     return false;
   }
   return true;

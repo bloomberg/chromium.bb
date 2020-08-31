@@ -29,7 +29,6 @@
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -313,9 +312,7 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
       return false;
     }
   } else {
-    NSArray* arguments = [NSArray arrayWithObjects:source_path,
-                                                   target_path,
-                                                   nil];
+    NSArray* arguments = @[ source_path, target_path ];
 
     NSTask* task;
     @try {
@@ -423,7 +420,7 @@ bool MaybeInstallFromDiskImage() {
                  << "no local application directories";
       return false;
     }
-    NSString* application_directory = [application_directories objectAtIndex:0];
+    NSString* application_directory = application_directories[0];
 
     NSFileManager* file_manager = [NSFileManager defaultManager];
 

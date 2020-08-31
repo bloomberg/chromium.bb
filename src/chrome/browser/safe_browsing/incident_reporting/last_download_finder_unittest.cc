@@ -42,8 +42,8 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -126,8 +126,8 @@ class LastDownloadFinderTest : public testing::Test {
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         CreateTestDownloadRow(kBinaryFileName),
-        base::Bind(&LastDownloadFinderTest::OnDownloadCreated,
-                   base::Unretained(this)));
+        base::BindOnce(&LastDownloadFinderTest::OnDownloadCreated,
+                       base::Unretained(this)));
   }
 
   // LastDownloadFinder::LastDownloadCallback implementation that
@@ -213,9 +213,8 @@ class LastDownloadFinderTest : public testing::Test {
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         download,
-        base::Bind(&LastDownloadFinderTest::ContinueOnDownloadCreated,
-                   base::Unretained(this),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&LastDownloadFinderTest::ContinueOnDownloadCreated,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

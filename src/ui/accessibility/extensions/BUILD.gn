@@ -17,9 +17,7 @@ group("extensions") {
 group("extension_tests") {
   testonly = true
   if (is_chromeos) {
-    deps = [
-      "chromevoxclassic:chromevox_tests",
-    ]
+    deps = [ "chromevoxclassic:chromevox_tests" ]
   }
 }
 
@@ -94,7 +92,6 @@ grit("colorenhancer_strings") {
   source = "strings/accessibility_extensions_strings.grd"
   outputs = locale_files
   output_dir = "$root_out_dir/colorenhancer"
-  depfile_dir = "$root_out_dir"
   resource_ids = ""
 }
 
@@ -116,9 +113,7 @@ colorenhancer_files = [
 
 copy("colorenhancer_copy") {
   sources = colorenhancer_files
-  outputs = [
-    "$root_out_dir/{{source_target_relative}}",
-  ]
+  outputs = [ "$root_out_dir/{{source_target_relative}}" ]
 }
 
 #
@@ -136,7 +131,6 @@ grit("caretbrowsing_strings") {
   source = "strings/accessibility_extensions_strings.grd"
   outputs = locale_files
   output_dir = "$root_out_dir/caretbrowsing"
-  depfile_dir = "$root_out_dir"
   resource_ids = ""
 }
 
@@ -159,7 +153,5 @@ caretbrowsing_files = [
 
 copy("caretbrowsing_copy") {
   sources = caretbrowsing_files
-  outputs = [
-    "$root_out_dir/caretbrowsing/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/caretbrowsing/{{source_file_part}}" ]
 }

@@ -117,7 +117,7 @@ void LayoutReplaced::IntrinsicSizeChanged() {
   int scaled_height =
       static_cast<int>(kDefaultHeight * StyleRef().EffectiveZoom());
   intrinsic_size_ = LayoutSize(scaled_width, scaled_height);
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kSizeChanged);
 }
 
@@ -152,7 +152,7 @@ static inline bool LayoutObjectHasAspectRatio(
     const LayoutObject* layout_object) {
   DCHECK(layout_object);
   return layout_object->IsImage() || layout_object->IsCanvas() ||
-         layout_object->IsVideo();
+         IsA<LayoutVideo>(layout_object);
 }
 
 void LayoutReplaced::RecalcVisualOverflow() {
@@ -724,12 +724,14 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
 
 static inline LayoutUnit ResolveWidthForRatio(LayoutUnit height,
                                               const FloatSize& aspect_ratio) {
-  return LayoutUnit(height * aspect_ratio.Width() / aspect_ratio.Height());
+  return LayoutUnit(height.ToDouble() * aspect_ratio.Width() /
+                    aspect_ratio.Height());
 }
 
 static inline LayoutUnit ResolveHeightForRatio(LayoutUnit width,
                                                const FloatSize& aspect_ratio) {
-  return LayoutUnit(width * aspect_ratio.Height() / aspect_ratio.Width());
+  return LayoutUnit(width.ToDouble() * aspect_ratio.Height() /
+                    aspect_ratio.Width());
 }
 
 LayoutUnit LayoutReplaced::ComputeConstrainedLogicalWidth(
@@ -893,60 +895,45 @@ LayoutUnit LayoutReplaced::ComputeReplacedLogicalHeight(
       IntrinsicLogicalHeight());
 }
 
-void LayoutReplaced::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  min_logical_width = max_logical_width = IntrinsicLogicalWidth();
+MinMaxSizes LayoutReplaced::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + IntrinsicLogicalWidth();
+  return sizes;
 }
 
-void LayoutReplaced::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
+MinMaxSizes LayoutReplaced::PreferredLogicalWidths() const {
+  MinMaxSizes sizes;
 
   // We cannot resolve some logical width here (i.e. percent, fill-available or
   // fit-content) as the available logical width may not be set on our
   // containing block.
   const Length& logical_width = StyleRef().LogicalWidth();
   if (logical_width.IsPercentOrCalc() || logical_width.IsFillAvailable() ||
-      logical_width.IsFitContent())
-    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                  max_preferred_logical_width_);
-  else
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        ComputeReplacedLogicalWidth(kComputePreferred);
+      logical_width.IsFitContent()) {
+    sizes = IntrinsicLogicalWidths();
+    sizes -= BorderAndPaddingLogicalWidth();
+  } else {
+    sizes = ComputeReplacedLogicalWidth(kComputePreferred);
+  }
 
   const ComputedStyle& style_to_use = StyleRef();
   if (style_to_use.LogicalWidth().IsPercentOrCalc() ||
       style_to_use.LogicalMaxWidth().IsPercentOrCalc())
-    min_preferred_logical_width_ = LayoutUnit();
+    sizes.min_size = LayoutUnit();
 
   if (style_to_use.LogicalMinWidth().IsFixed() &&
       style_to_use.LogicalMinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
+    sizes.Encompass(AdjustContentBoxLogicalWidthForBoxSizing(
+        style_to_use.LogicalMinWidth().Value()));
   }
 
   if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
+    sizes.Constrain(AdjustContentBoxLogicalWidthForBoxSizing(
+        style_to_use.LogicalMaxWidth().Value()));
   }
 
-  LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
-  min_preferred_logical_width_ += border_and_padding;
-  max_preferred_logical_width_ += border_and_padding;
-
-  ClearPreferredLogicalWidthsDirty();
+  sizes += BorderAndPaddingLogicalWidth();
+  return sizes;
 }
 
 static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
@@ -975,14 +962,15 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
     // Step 2: Return the logical top and bottom of the line box.
     // TODO(layout-dev): Use selection top & bottom instead of line's, or decide
     // if we still want to distinguish line and selection heights in NG.
-    const ComputedStyle& line_style = line_box.CurrentStyle();
+    const ComputedStyle& line_style = line_box.Current().Style();
     const WritingMode writing_mode = line_style.GetWritingMode();
     const TextDirection text_direction = line_style.Direction();
-    const PhysicalOffset line_box_offset = line_box.CurrentOffset();
-    const PhysicalSize line_box_size = line_box.CurrentSize();
+    const PhysicalOffset line_box_offset =
+        line_box.Current().OffsetInContainerBlock();
+    const PhysicalSize line_box_size = line_box.Current().Size();
     const LogicalOffset logical_offset = line_box_offset.ConvertToLogical(
         writing_mode, text_direction, fragmentainer->Size(),
-        line_box.CurrentSize());
+        line_box.Current().Size());
     const LogicalSize logical_size =
         line_box_size.ConvertToLogical(writing_mode);
     return {logical_offset.block_offset,

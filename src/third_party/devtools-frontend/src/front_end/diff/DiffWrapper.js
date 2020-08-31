@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+
 export const DiffWrapper = {
   /**
    * @param {string} text1
@@ -21,11 +23,11 @@ export const DiffWrapper = {
   /**
    * @param {!Array.<string>} lines1
    * @param {!Array.<string>} lines2
-   * @return {!Diff.Diff.DiffArray}
+   * @return {!DiffArray}
    */
   lineDiff: function(lines1, lines2) {
-    /** @type {!Common.CharacterIdMap<string>} */
-    const idMap = new Common.CharacterIdMap();
+    /** @type {!Common.CharacterIdMap.CharacterIdMap<string>} */
+    const idMap = new Common.CharacterIdMap.CharacterIdMap();
     const text1 = lines1.map(line => idMap.toChar(line)).join('');
     const text2 = lines2.map(line => idMap.toChar(line)).join('');
 
@@ -43,7 +45,7 @@ export const DiffWrapper = {
   },
 
   /**
-   * @param {!Diff.Diff.DiffArray} diff
+   * @param {!DiffArray} diff
    * @return {!Array<!Array<number>>}
    */
   convertToEditDiff: function(diff) {
@@ -91,16 +93,5 @@ export const Operation = {
   Edit: 2
 };
 
-/* Legacy exported object */
-self.Diff = self.Diff || {};
-
-/* Legacy exported object */
-Diff = Diff || {};
-
-Diff.Diff = DiffWrapper;
-
-/** @enum {number} */
-Diff.Diff.Operation = Operation;
-
-/** @typedef {!Array<!{0: !Diff.Diff.Operation, 1: !Array<string>}>} */
-Diff.Diff.DiffArray;
+/** @typedef {!Array<!{0: !Operation, 1: !Array<string>}>} */
+export let DiffArray;

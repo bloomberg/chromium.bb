@@ -8,24 +8,15 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
-
-namespace WTF {
-
-template <typename T>
-struct CrossThreadCopier<rtc::scoped_refptr<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = rtc::scoped_refptr<T>;
-  static Type Copy(Type pointer) { return pointer; }
-};
-
-}  // namespace WTF
 
 namespace blink {
 
@@ -82,7 +73,7 @@ bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
 // including one of its group IDs in |exposed_group_ids|.
 std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
     std::vector<const webrtc::RTCStatsMemberInterface*> stats_members,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   // Note that using "is_standarized" avoids having to maintain a whitelist of
   // every single standardized member, as we do at the "stats object" level
   // with "RTCStatsWhitelist".
@@ -93,7 +84,7 @@ std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
           return false;
         }
 
-        const blink::WebVector<webrtc::NonStandardGroupId>& ids =
+        const std::vector<webrtc::NonStandardGroupId>& ids =
             member->group_ids();
         for (const webrtc::NonStandardGroupId& id : exposed_group_ids) {
           if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
@@ -116,11 +107,18 @@ size_t CountWhitelistedStats(
   return size;
 }
 
+template <typename T>
+Vector<T> ToWTFVector(const std::vector<T>& vector) {
+  Vector<T> wtf_vector(SafeCast<WTF::wtf_size_t>(vector.size()));
+  std::move(vector.begin(), vector.end(), wtf_vector.begin());
+  return wtf_vector;
+}
+
 }  // namespace
 
 RTCStatsReportPlatform::RTCStatsReportPlatform(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : stats_report_(stats_report),
       it_(stats_report_->begin()),
       end_(stats_report_->end()),
@@ -164,7 +162,7 @@ size_t RTCStatsReportPlatform::Size() const {
 RTCStats::RTCStats(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
     const webrtc::RTCStats* stats,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : stats_owner_(stats_owner),
       stats_(stats),
       stats_members_(FilterMembers(stats->Members(), exposed_group_ids)) {
@@ -255,63 +253,63 @@ String RTCStatsMember::ValueString() const {
       *member_->cast_to<webrtc::RTCStatsMember<std::string>>());
 }
 
-blink::WebVector<int> RTCStatsMember::ValueSequenceBool() const {
+Vector<bool> RTCStatsMember::ValueSequenceBool() const {
   DCHECK(IsDefined());
-  const std::vector<bool>& vector =
+  const std::vector<bool> vector =
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<bool>>>();
-  std::vector<int> uint32_vector;
-  uint32_vector.reserve(vector.size());
-  for (size_t i = 0; i < vector.size(); ++i) {
-    uint32_vector.push_back(vector[i] ? 1 : 0);
-  }
-  return blink::WebVector<int>(uint32_vector);
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<int32_t> RTCStatsMember::ValueSequenceInt32() const {
+Vector<int32_t> RTCStatsMember::ValueSequenceInt32() const {
   DCHECK(IsDefined());
-  return blink::WebVector<int32_t>(
-      *member_->cast_to<webrtc::RTCStatsMember<std::vector<int32_t>>>());
+  const std::vector<int32_t> vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<int32_t>>>();
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<uint32_t> RTCStatsMember::ValueSequenceUint32() const {
+Vector<uint32_t> RTCStatsMember::ValueSequenceUint32() const {
   DCHECK(IsDefined());
-  return blink::WebVector<uint32_t>(
-      *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint32_t>>>());
+  const std::vector<uint32_t> vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint32_t>>>();
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<int64_t> RTCStatsMember::ValueSequenceInt64() const {
+Vector<int64_t> RTCStatsMember::ValueSequenceInt64() const {
   DCHECK(IsDefined());
-  return blink::WebVector<int64_t>(
-      *member_->cast_to<webrtc::RTCStatsMember<std::vector<int64_t>>>());
+  const std::vector<int64_t> vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<int64_t>>>();
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<uint64_t> RTCStatsMember::ValueSequenceUint64() const {
+Vector<uint64_t> RTCStatsMember::ValueSequenceUint64() const {
   DCHECK(IsDefined());
-  return blink::WebVector<uint64_t>(
-      *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint64_t>>>());
+  const std::vector<uint64_t> vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint64_t>>>();
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<double> RTCStatsMember::ValueSequenceDouble() const {
+Vector<double> RTCStatsMember::ValueSequenceDouble() const {
   DCHECK(IsDefined());
-  return blink::WebVector<double>(
-      *member_->cast_to<webrtc::RTCStatsMember<std::vector<double>>>());
+  const std::vector<double> vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<double>>>();
+  return ToWTFVector(vector);
 }
 
-blink::WebVector<String> RTCStatsMember::ValueSequenceString() const {
+Vector<String> RTCStatsMember::ValueSequenceString() const {
   DCHECK(IsDefined());
   const std::vector<std::string>& sequence =
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<std::string>>>();
-  blink::WebVector<String> web_sequence(sequence.size());
+  Vector<String> wtf_sequence(sequence.size());
   for (size_t i = 0; i < sequence.size(); ++i)
-    web_sequence[i] = String::FromUTF8(sequence[i]);
-  return web_sequence;
+    wtf_sequence[i] = String::FromUTF8(sequence[i]);
+  return wtf_sequence;
 }
 
 rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>
 CreateRTCStatsCollectorCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    RTCStatsReportCallback callback,
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   return rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(
       new rtc::RefCountedObject<RTCStatsCollectorCallbackImpl>(
           std::move(main_thread), std::move(callback), exposed_group_ids));
@@ -319,8 +317,8 @@ CreateRTCStatsCollectorCallback(
 
 RTCStatsCollectorCallbackImpl::RTCStatsCollectorCallbackImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    RTCStatsReportCallback callback,
+    const Vector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : main_thread_(std::move(main_thread)),
       callback_(std::move(callback)),
       exposed_group_ids_(exposed_group_ids) {}

@@ -4,26 +4,25 @@
 
 #include "chrome/browser/idle/idle_detection_permission_context.h"
 
-#include "base/logging.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/permissions/permission_request_id.h"
 #include "url/gurl.h"
 
-IdleDetectionPermissionContext::IdleDetectionPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+IdleDetectionPermissionContext::IdleDetectionPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::IDLE_DETECTION,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 IdleDetectionPermissionContext::~IdleDetectionPermissionContext() = default;
 
 void IdleDetectionPermissionContext::UpdateTabContext(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
-                                              id.render_frame_id());
+  content_settings::TabSpecificContentSettings* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;
 

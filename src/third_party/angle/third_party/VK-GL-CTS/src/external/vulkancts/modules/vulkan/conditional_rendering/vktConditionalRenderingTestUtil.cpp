@@ -33,12 +33,12 @@ namespace conditional
 
 void checkConditionalRenderingCapabilities (vkt::Context& context, const ConditionalData& data)
 {
-	if (!vk::isDeviceExtensionSupported(context.getUsedApiVersion(), context.getDeviceExtensions(), "VK_EXT_conditional_rendering"))
+	if (!context.isDeviceFunctionalitySupported("VK_EXT_conditional_rendering"))
 		TCU_THROW(NotSupportedError, "Missing extension: VK_EXT_conditional_rendering");
 
 	if (data.conditionInherited)
 	{
-		const vk::VkPhysicalDeviceConditionalRenderingFeaturesEXT& conditionalRenderingFeatures = context.getConditionalRenderingFeatures();
+		const vk::VkPhysicalDeviceConditionalRenderingFeaturesEXT& conditionalRenderingFeatures = context.getConditionalRenderingFeaturesEXT();
 		if (!conditionalRenderingFeatures.inheritedConditionalRendering)
 		{
 			TCU_THROW(NotSupportedError, "Device does not support inherited conditional rendering");

@@ -12,14 +12,6 @@ export class AppProvider {
    * @return {!App}
    */
   createApp() {
+    throw new Error('not implemented');
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @interface
- */
-Common.AppProvider = AppProvider;

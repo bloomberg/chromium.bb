@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2019 The Khronos Group Inc.
- * Copyright (c) 2015-2019 Valve Corporation
- * Copyright (c) 2015-2019 LunarG, Inc.
- * Copyright (C) 2015-2019 Google Inc.
+/* Copyright (c) 2015-2020 The Khronos Group Inc.
+ * Copyright (c) 2015-2020 Valve Corporation
+ * Copyright (c) 2015-2020 LunarG, Inc.
+ * Copyright (C) 2015-2020 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,8 +66,7 @@ bool ObjectLifetimes::ValidateDeviceObject(const VulkanTypedHandle &device_typed
     if (instance_object_lifetime_data->object_map[kVulkanObjectTypeDevice].contains(device_typed.handle)) {
         return false;
     }
-    return log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT, device_typed.handle,
-                   invalid_handle_code, "Invalid %s.", report_data->FormatHandle(device_typed).c_str());
+    return LogError(instance, invalid_handle_code, "Invalid %s.", report_data->FormatHandle(device_typed).c_str());
 }
 
 bool ObjectLifetimes::ValidateAnonymousObject(uint64_t object_handle, VkObjectType core_object_type, bool null_allowed,
@@ -79,6 +78,7 @@ bool ObjectLifetimes::ValidateAnonymousObject(uint64_t object_handle, VkObjectTy
         return ValidateDeviceObject(VulkanTypedHandle(reinterpret_cast<VkDevice>(object_handle), object_type), invalid_handle_code,
                                     wrong_device_code);
     }
+
     return CheckObjectValidity(object_handle, object_type, null_allowed, invalid_handle_code, wrong_device_code);
 }
 
@@ -93,8 +93,7 @@ void ObjectLifetimes::AllocateCommandBuffer(const VkCommandPool command_pool, co
     } else {
         pNewObjNode->status = OBJSTATUS_NONE;
     }
-    InsertObject(object_map[kVulkanObjectTypeCommandBuffer], HandleToUint64(command_buffer), kVulkanObjectTypeCommandBuffer,
-                 pNewObjNode);
+    InsertObject(object_map[kVulkanObjectTypeCommandBuffer], command_buffer, kVulkanObjectTypeCommandBuffer, pNewObjNode);
     num_objects[kVulkanObjectTypeCommandBuffer]++;
     num_total_objects++;
 }
@@ -109,16 +108,17 @@ bool ObjectLifetimes::ValidateCommandBuffer(VkCommandPool command_pool, VkComman
         if (pNode->parent_object != HandleToUint64(command_pool)) {
             // We know that the parent *must* be a command pool
             const auto parent_pool = CastFromUint64<VkCommandPool>(pNode->parent_object);
-            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
-                            object_handle, "VUID-vkFreeCommandBuffers-pCommandBuffers-parent",
-                            "FreeCommandBuffers is attempting to free %s belonging to %s from %s).",
-                            report_data->FormatHandle(command_buffer).c_str(), report_data->FormatHandle(parent_pool).c_str(),
-                            report_data->FormatHandle(command_pool).c_str());
+            LogObjectList objlist(command_buffer);
+            objlist.add(parent_pool);
+            objlist.add(command_pool);
+            skip |= LogError(objlist, "VUID-vkFreeCommandBuffers-pCommandBuffers-parent",
+                             "FreeCommandBuffers is attempting to free %s belonging to %s from %s).",
+                             report_data->FormatHandle(command_buffer).c_str(), report_data->FormatHandle(parent_pool).c_str(),
+                             report_data->FormatHandle(command_pool).c_str());
         }
     } else {
-        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT, object_handle,
-                        "VUID-vkFreeCommandBuffers-pCommandBuffers-00048", "Invalid %s.",
-                        report_data->FormatHandle(command_buffer).c_str());
+        skip |= LogError(command_buffer, "VUID-vkFreeCommandBuffers-pCommandBuffers-00048", "Invalid %s.",
+                         report_data->FormatHandle(command_buffer).c_str());
     }
     return skip;
 }
@@ -129,8 +129,7 @@ void ObjectLifetimes::AllocateDescriptorSet(VkDescriptorPool descriptor_pool, Vk
     pNewObjNode->status = OBJSTATUS_NONE;
     pNewObjNode->handle = HandleToUint64(descriptor_set);
     pNewObjNode->parent_object = HandleToUint64(descriptor_pool);
-    InsertObject(object_map[kVulkanObjectTypeDescriptorSet], HandleToUint64(descriptor_set), kVulkanObjectTypeDescriptorSet,
-                 pNewObjNode);
+    InsertObject(object_map[kVulkanObjectTypeDescriptorSet], descriptor_set, kVulkanObjectTypeDescriptorSet, pNewObjNode);
     num_objects[kVulkanObjectTypeDescriptorSet]++;
     num_total_objects++;
 
@@ -148,17 +147,18 @@ bool ObjectLifetimes::ValidateDescriptorSet(VkDescriptorPool descriptor_pool, Vk
         if (dsItem->second->parent_object != HandleToUint64(descriptor_pool)) {
             // We know that the parent *must* be a descriptor pool
             const auto parent_pool = CastFromUint64<VkDescriptorPool>(dsItem->second->parent_object);
-            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT,
-                            object_handle, "VUID-vkFreeDescriptorSets-pDescriptorSets-parent",
-                            "FreeDescriptorSets is attempting to free %s"
-                            " belonging to %s from %s).",
-                            report_data->FormatHandle(descriptor_set).c_str(), report_data->FormatHandle(parent_pool).c_str(),
-                            report_data->FormatHandle(descriptor_pool).c_str());
+            LogObjectList objlist(descriptor_set);
+            objlist.add(parent_pool);
+            objlist.add(descriptor_pool);
+            skip |= LogError(objlist, "VUID-vkFreeDescriptorSets-pDescriptorSets-parent",
+                             "FreeDescriptorSets is attempting to free %s"
+                             " belonging to %s from %s).",
+                             report_data->FormatHandle(descriptor_set).c_str(), report_data->FormatHandle(parent_pool).c_str(),
+                             report_data->FormatHandle(descriptor_pool).c_str());
         }
     } else {
-        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT, object_handle,
-                        "VUID-vkFreeDescriptorSets-pDescriptorSets-00310", "Invalid %s.",
-                        report_data->FormatHandle(descriptor_set).c_str());
+        skip |= LogError(descriptor_set, "VUID-vkFreeDescriptorSets-pDescriptorSets-00310", "Invalid %s.",
+                         report_data->FormatHandle(descriptor_set).c_str());
     }
     return skip;
 }
@@ -174,8 +174,12 @@ bool ObjectLifetimes::ValidateDescriptorWrite(VkWriteDescriptorSet const *desc, 
     if ((desc->descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER) ||
         (desc->descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER)) {
         for (uint32_t idx2 = 0; idx2 < desc->descriptorCount; ++idx2) {
-            skip |= ValidateObject(desc->pTexelBufferView[idx2], kVulkanObjectTypeBufferView, false,
-                                   "VUID-VkWriteDescriptorSet-descriptorType-00323", "VUID-VkWriteDescriptorSet-commonparent");
+            skip |= ValidateObject(desc->pTexelBufferView[idx2], kVulkanObjectTypeBufferView, true,
+                                   "VUID-VkWriteDescriptorSet-descriptorType-02994", "VUID-VkWriteDescriptorSet-commonparent");
+            if (!null_descriptor_enabled && desc->pTexelBufferView[idx2] == VK_NULL_HANDLE) {
+                skip |= LogError(desc->dstSet, "VUID-VkWriteDescriptorSet-descriptorType-02995",
+                                 "VkWriteDescriptorSet: texel buffer view must not be VK_NULL_HANDLE.");
+            }
         }
     }
 
@@ -183,8 +187,12 @@ bool ObjectLifetimes::ValidateDescriptorWrite(VkWriteDescriptorSet const *desc, 
         (desc->descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) || (desc->descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) ||
         (desc->descriptorType == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
         for (uint32_t idx3 = 0; idx3 < desc->descriptorCount; ++idx3) {
-            skip |= ValidateObject(desc->pImageInfo[idx3].imageView, kVulkanObjectTypeImageView, false,
-                                   "VUID-VkWriteDescriptorSet-descriptorType-00326", "VUID-VkDescriptorImageInfo-commonparent");
+            skip |= ValidateObject(desc->pImageInfo[idx3].imageView, kVulkanObjectTypeImageView, true,
+                                   "VUID-VkWriteDescriptorSet-descriptorType-02996", "VUID-VkDescriptorImageInfo-commonparent");
+            if (!null_descriptor_enabled && desc->pImageInfo[idx3].imageView == VK_NULL_HANDLE) {
+                skip |= LogError(desc->dstSet, "VUID-VkWriteDescriptorSet-descriptorType-02997",
+                                 "VkWriteDescriptorSet: image view must not be VK_NULL_HANDLE.");
+            }
         }
     }
 
@@ -193,10 +201,21 @@ bool ObjectLifetimes::ValidateDescriptorWrite(VkWriteDescriptorSet const *desc, 
         (desc->descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC) ||
         (desc->descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)) {
         for (uint32_t idx4 = 0; idx4 < desc->descriptorCount; ++idx4) {
-            if (desc->pBufferInfo[idx4].buffer) {
-                skip |= ValidateObject(desc->pBufferInfo[idx4].buffer, kVulkanObjectTypeBuffer, false,
-                                       "VUID-VkDescriptorBufferInfo-buffer-parameter", kVUIDUndefined);
+            skip |= ValidateObject(desc->pBufferInfo[idx4].buffer, kVulkanObjectTypeBuffer, true,
+                                   "VUID-VkDescriptorBufferInfo-buffer-parameter", kVUIDUndefined);
+            if (!null_descriptor_enabled && desc->pBufferInfo[idx4].buffer == VK_NULL_HANDLE) {
+                skip |= LogError(desc->dstSet, "VUID-VkDescriptorBufferInfo-buffer-02998",
+                                 "VkWriteDescriptorSet: buffer must not be VK_NULL_HANDLE.");
             }
+        }
+    }
+
+    if (desc->descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
+        const auto *accInfo = lvl_find_in_chain<VkWriteDescriptorSetAccelerationStructureKHR>(desc->pNext);
+        for (uint32_t idx5 = 0; idx5 < desc->descriptorCount; ++idx5) {
+            skip |= ValidateObject(accInfo->pAccelerationStructures[idx5], kVulkanObjectTypeAccelerationStructureKHR, false,
+                                   "VUID-VkWriteDescriptorSetAccelerationStructureKHR-pAccelerationStructures-parameter",
+                                   kVUIDUndefined);
         }
     }
 
@@ -224,7 +243,7 @@ void ObjectLifetimes::CreateQueue(VkQueue vkObj) {
     auto queue_item = object_map[kVulkanObjectTypeQueue].find(HandleToUint64(vkObj));
     if (queue_item == object_map[kVulkanObjectTypeQueue].end()) {
         p_obj_node = std::make_shared<ObjTrackState>();
-        InsertObject(object_map[kVulkanObjectTypeQueue], HandleToUint64(vkObj), kVulkanObjectTypeQueue, p_obj_node);
+        InsertObject(object_map[kVulkanObjectTypeQueue], vkObj, kVulkanObjectTypeQueue, p_obj_node);
         num_objects[kVulkanObjectTypeQueue]++;
         num_total_objects++;
     } else {
@@ -242,7 +261,7 @@ void ObjectLifetimes::CreateSwapchainImageObject(VkImage swapchain_image, VkSwap
         pNewObjNode->status = OBJSTATUS_NONE;
         pNewObjNode->handle = HandleToUint64(swapchain_image);
         pNewObjNode->parent_object = HandleToUint64(swapchain);
-        InsertObject(swapchainImageMap, HandleToUint64(swapchain_image), kVulkanObjectTypeImage, pNewObjNode);
+        InsertObject(swapchainImageMap, swapchain_image, kVulkanObjectTypeImage, pNewObjNode);
     }
 }
 
@@ -253,9 +272,11 @@ bool ObjectLifetimes::ReportLeakedInstanceObjects(VkInstance instance, VulkanObj
     auto snapshot = object_map[object_type].snapshot();
     for (const auto &item : snapshot) {
         const auto object_info = item.second;
-        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, get_debug_report_enum[object_type], object_info->handle,
-                        error_code, "OBJ ERROR : For %s, %s has not been destroyed.", report_data->FormatHandle(instance).c_str(),
-                        report_data->FormatHandle(ObjTrackStateTypedHandle(*object_info)).c_str());
+        LogObjectList objlist(instance);
+        objlist.add(ObjTrackStateTypedHandle(*object_info));
+        skip |= LogError(objlist, error_code, "OBJ ERROR : For %s, %s has not been destroyed.",
+                         report_data->FormatHandle(instance).c_str(),
+                         report_data->FormatHandle(ObjTrackStateTypedHandle(*object_info)).c_str());
     }
     return skip;
 }
@@ -267,9 +288,11 @@ bool ObjectLifetimes::ReportLeakedDeviceObjects(VkDevice device, VulkanObjectTyp
     auto snapshot = object_map[object_type].snapshot();
     for (const auto &item : snapshot) {
         const auto object_info = item.second;
-        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, get_debug_report_enum[object_type], object_info->handle,
-                        error_code, "OBJ ERROR : For %s, %s has not been destroyed.", report_data->FormatHandle(device).c_str(),
-                        report_data->FormatHandle(ObjTrackStateTypedHandle(*object_info)).c_str());
+        LogObjectList objlist(device);
+        objlist.add(ObjTrackStateTypedHandle(*object_info));
+        skip |= LogError(objlist, error_code, "OBJ ERROR : For %s, %s has not been destroyed.",
+                         report_data->FormatHandle(device).c_str(),
+                         report_data->FormatHandle(ObjTrackStateTypedHandle(*object_info)).c_str());
     }
     return skip;
 }
@@ -277,10 +300,9 @@ bool ObjectLifetimes::ReportLeakedDeviceObjects(VkDevice device, VulkanObjectTyp
 bool ObjectLifetimes::PreCallValidateDestroyInstance(VkInstance instance, const VkAllocationCallbacks *pAllocator) const {
     bool skip = false;
 
-    // We validate here for coverage, though we'd not have made it this for with a bad instance.
+    // We validate here for coverage, though we'd not have made it this far with a bad instance.
     skip |= ValidateObject(instance, kVulkanObjectTypeInstance, true, "VUID-vkDestroyInstance-instance-parameter", kVUIDUndefined);
 
-    // Validate that child devices have been destroyed
     auto snapshot = object_map[kVulkanObjectTypeDevice].snapshot();
     for (const auto &iit : snapshot) {
         auto pNode = iit.second;
@@ -288,21 +310,22 @@ bool ObjectLifetimes::PreCallValidateDestroyInstance(VkInstance instance, const 
         VkDevice device = reinterpret_cast<VkDevice>(pNode->handle);
         VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[pNode->object_type];
 
-        skip |=
-            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, debug_object_type, pNode->handle, kVUID_ObjectTracker_ObjectLeak,
-                    "OBJ ERROR : %s object %s has not been destroyed.", string_VkDebugReportObjectTypeEXT(debug_object_type),
-                    report_data->FormatHandle(ObjTrackStateTypedHandle(*pNode)).c_str());
+        skip |= LogError(device, kVUID_ObjectTracker_ObjectLeak, "OBJ ERROR : %s object %s has not been destroyed.",
+                         string_VkDebugReportObjectTypeEXT(debug_object_type),
+                         report_data->FormatHandle(ObjTrackStateTypedHandle(*pNode)).c_str());
 
         // Throw errors if any device objects belonging to this instance have not been destroyed
-        skip |= ReportUndestroyedDeviceObjects(device, "VUID-vkDestroyDevice-device-00378");
+        auto device_layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+        auto obj_lifetimes_data = reinterpret_cast<ObjectLifetimes *>(
+            device_layer_data->GetValidationObject(device_layer_data->object_dispatch, LayerObjectTypeObjectTracker));
+        skip |= obj_lifetimes_data->ReportUndestroyedDeviceObjects(device, "VUID-vkDestroyDevice-device-00378");
 
         skip |= ValidateDestroyObject(device, kVulkanObjectTypeDevice, pAllocator, "VUID-vkDestroyInstance-instance-00630",
                                       "VUID-vkDestroyInstance-instance-00631");
     }
 
-    // Throw errors if any instance objects created on this instance have not been destroyed
-    ValidateDestroyObject(instance, kVulkanObjectTypeInstance, pAllocator, "VUID-vkDestroyInstance-instance-00630",
-                          "VUID-vkDestroyInstance-instance-00631");
+    skip |= ValidateDestroyObject(instance, kVulkanObjectTypeInstance, pAllocator, "VUID-vkDestroyInstance-instance-00630",
+                                  "VUID-vkDestroyInstance-instance-00631");
 
     // Report any remaining instance objects
     skip |= ReportUndestroyedInstanceObjects(instance, "VUID-vkDestroyInstance-instance-00629");
@@ -561,7 +584,7 @@ bool ObjectLifetimes::PreCallValidateGetDescriptorSetLayoutSupport(VkDevice devi
 bool ObjectLifetimes::PreCallValidateGetDescriptorSetLayoutSupportKHR(VkDevice device,
                                                                       const VkDescriptorSetLayoutCreateInfo *pCreateInfo,
                                                                       VkDescriptorSetLayoutSupport *pSupport) const {
-    bool skip = ValidateObject(device, kVulkanObjectTypeDevice, false, "VUID-vkGetDescriptorSetLayoutSupportKHR-device-parameter",
+    bool skip = ValidateObject(device, kVulkanObjectTypeDevice, false, "VUID-vkGetDescriptorSetLayoutSupport-device-parameter",
                                kVUIDUndefined);
     if (pCreateInfo) {
         skip |= ValidateSamplerObjects(pCreateInfo);
@@ -584,6 +607,30 @@ void ObjectLifetimes::PostCallRecordCreateInstance(const VkInstanceCreateInfo *p
                                                    VkInstance *pInstance, VkResult result) {
     if (result != VK_SUCCESS) return;
     CreateObject(*pInstance, kVulkanObjectTypeInstance, pAllocator);
+}
+
+bool ObjectLifetimes::PreCallValidateCreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo *pCreateInfo,
+                                                  const VkAllocationCallbacks *pAllocator, VkDevice *pDevice) const {
+    bool skip = false;
+    skip |= ValidateObject(physicalDevice, kVulkanObjectTypePhysicalDevice, false, "VUID-vkCreateDevice-physicalDevice-parameter",
+                           kVUIDUndefined);
+
+    return skip;
+}
+
+void ObjectLifetimes::PostCallRecordCreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo *pCreateInfo,
+                                                 const VkAllocationCallbacks *pAllocator, VkDevice *pDevice, VkResult result) {
+    if (result != VK_SUCCESS) return;
+    CreateObject(*pDevice, kVulkanObjectTypeDevice, pAllocator);
+
+    auto device_data = GetLayerDataPtr(get_dispatch_key(*pDevice), layer_data_map);
+    ValidationObject *validation_data = GetValidationObject(device_data->object_dispatch, LayerObjectTypeObjectTracker);
+    ObjectLifetimes *object_tracking = static_cast<ObjectLifetimes *>(validation_data);
+
+    object_tracking->device_createinfo_pnext = SafePnextCopy(pCreateInfo->pNext);
+    const auto *robustness2_features =
+        lvl_find_in_chain<VkPhysicalDeviceRobustness2FeaturesEXT>(object_tracking->device_createinfo_pnext);
+    object_tracking->null_descriptor_enabled = robustness2_features && robustness2_features->nullDescriptor;
 }
 
 bool ObjectLifetimes::PreCallValidateAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo *pAllocateInfo,
@@ -939,4 +986,50 @@ bool ObjectLifetimes::PreCallValidateSetDebugUtilsObjectTagEXT(VkDevice device,
                                     "VUID-VkDebugUtilsObjectTagInfoEXT-objectHandle-01910", kVUIDUndefined);
 
     return skip;
+}
+
+bool ObjectLifetimes::PreCallValidateCreateDescriptorUpdateTemplate(VkDevice device,
+                                                                    const VkDescriptorUpdateTemplateCreateInfo *pCreateInfo,
+                                                                    const VkAllocationCallbacks *pAllocator,
+                                                                    VkDescriptorUpdateTemplate *pDescriptorUpdateTemplate) const {
+    bool skip = false;
+    skip |= ValidateObject(device, kVulkanObjectTypeDevice, false, "VUID-vkCreateDescriptorUpdateTemplate-device-parameter",
+                           kVUIDUndefined);
+    if (pCreateInfo) {
+        if (pCreateInfo->templateType == VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET) {
+            skip |= ValidateObject(pCreateInfo->descriptorSetLayout, kVulkanObjectTypeDescriptorSetLayout, false,
+                                   "VUID-VkDescriptorUpdateTemplateCreateInfo-templateType-00350",
+                                   "VUID-VkDescriptorUpdateTemplateCreateInfo-commonparent");
+        }
+        if (pCreateInfo->templateType == VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR) {
+            skip |= ValidateObject(pCreateInfo->pipelineLayout, kVulkanObjectTypePipelineLayout, false,
+                                   "VUID-VkDescriptorUpdateTemplateCreateInfo-templateType-00352",
+                                   "VUID-VkDescriptorUpdateTemplateCreateInfo-commonparent");
+        }
+    }
+
+    return skip;
+}
+
+bool ObjectLifetimes::PreCallValidateCreateDescriptorUpdateTemplateKHR(
+    VkDevice device, const VkDescriptorUpdateTemplateCreateInfo *pCreateInfo, const VkAllocationCallbacks *pAllocator,
+    VkDescriptorUpdateTemplate *pDescriptorUpdateTemplate) const {
+    return PreCallValidateCreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate);
+}
+
+void ObjectLifetimes::PostCallRecordCreateDescriptorUpdateTemplate(VkDevice device,
+                                                                   const VkDescriptorUpdateTemplateCreateInfo *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator,
+                                                                   VkDescriptorUpdateTemplate *pDescriptorUpdateTemplate,
+                                                                   VkResult result) {
+    if (result != VK_SUCCESS) return;
+    CreateObject(*pDescriptorUpdateTemplate, kVulkanObjectTypeDescriptorUpdateTemplate, pAllocator);
+}
+
+void ObjectLifetimes::PostCallRecordCreateDescriptorUpdateTemplateKHR(VkDevice device,
+                                                                      const VkDescriptorUpdateTemplateCreateInfo *pCreateInfo,
+                                                                      const VkAllocationCallbacks *pAllocator,
+                                                                      VkDescriptorUpdateTemplate *pDescriptorUpdateTemplate,
+                                                                      VkResult result) {
+    return PostCallRecordCreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate, result);
 }

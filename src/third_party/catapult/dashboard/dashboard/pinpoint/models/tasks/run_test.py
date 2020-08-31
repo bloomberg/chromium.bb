@@ -16,6 +16,20 @@ from dashboard.pinpoint.models import task as task_module
 from dashboard.pinpoint.models.quest import run_test as run_test_quest
 from dashboard.pinpoint.models.tasks import find_isolate
 from dashboard.services import swarming
+from dashboard.services import request
+
+
+class MarkTaskFailedAction(
+    collections.namedtuple('MarkTaskFailedAction', ('job', 'task'))):
+  __slots__ = ()
+
+  def __str__(self):
+    return 'MarkTaskFailedAction(task = %s)' % (self.task.id,)
+
+  @task_module.LogStateTransitionFailures
+  def __call__(self, _):
+    task_module.UpdateTask(
+        self.job, self.task.id, new_state='failed', payload=self.task.payload)
 
 
 class ScheduleTestAction(
@@ -23,10 +37,13 @@ class ScheduleTestAction(
                            ('job', 'task', 'properties'))):
   __slots__ = ()
 
+  def __str__(self):
+    return 'ScheduleTestAction(job = %s, task = %s)' % (self.job.job_id,
+                                                        self.task.id)
+
   @task_module.LogStateTransitionFailures
   def __call__(self, _):
     logging.debug('Scheduling a Swarming task to run a test.')
-    self.properties.update(run_test_quest.VPYTHON_PARAMS)
     body = {
         'name':
             'Pinpoint job',
@@ -47,6 +64,10 @@ class ScheduleTestAction(
             for k, v in run_test_quest.SwarmingTagsFromJob(self.job).items()
         ],
 
+        # Use an explicit service account.
+        'service_account':
+            run_test_quest._TESTER_SERVICE_ACCOUNT,
+
         # TODO(dberris): Consolidate constants in environment vars?
         'pubsub_topic':
             'projects/chromeperf/topics/pinpoint-swarming-updates',
@@ -65,28 +86,46 @@ class ScheduleTestAction(
         'swarming_request_body': body,
     })
 
-    # At this point we know we were successful in transitioning to 'ongoing'.
-    # TODO(dberris): Figure out error-handling for Swarming request failures?
-    response = swarming.Swarming(
-        self.task.payload.get('swarming_server')).Tasks().New(body)
-    logging.debug('Swarming response: %s', response)
-    self.task.payload.update({
-        'swarming_task_id': response.get('task_id'),
-        'tries': self.task.payload.get('tries', 0) + 1
-    })
-
-    # Update the payload with the task id from the Swarming request.
+    # Ensure that this thread/process/handler is the first to mark this task
+    # 'ongoing'. Only proceed in scheduling a Swarming request if we're the
+    # first one to do so.
     task_module.UpdateTask(
         self.job, self.task.id, new_state='ongoing', payload=self.task.payload)
+
+    # At this point we know we were successful in transitioning to 'ongoing'.
+    try:
+      response = swarming.Swarming(
+          self.task.payload.get('swarming_server')).Tasks().New(body)
+      self.task.payload.update({
+          'swarming_task_id': response.get('task_id'),
+          'tries': self.task.payload.get('tries', 0) + 1
+      })
+    except request.RequestError as e:
+      self.task.payload.update({
+          'errors':
+              self.task.payload.get('errors', []) + [{
+                  'reason':
+                      type(e).__name__,
+                  'message':
+                      'Encountered failure in swarming request: %s' % (e,),
+              }]
+      })
+
+    # Update the payload with the task id from the Swarming request. Note that
+    # this could also fail to commit.
+    task_module.UpdateTask(self.job, self.task.id, payload=self.task.payload)
 
 
 class PollSwarmingTaskAction(
     collections.namedtuple('PollSwarmingTaskAction', ('job', 'task'))):
   __slots__ = ()
 
+  def __str__(self):
+    return 'PollSwarmingTaskAction(job = %s, task = %s)' % (self.job.job_id,
+                                                            self.task.id)
+
   @task_module.LogStateTransitionFailures
   def __call__(self, _):
-    logging.debug('Polling a swarming task; task = %s', self.task)
     swarming_server = self.task.payload.get('swarming_server')
     task_id = self.task.payload.get('swarming_task_id')
     swarming_task = swarming.Swarming(swarming_server).Task(task_id)
@@ -101,6 +140,8 @@ class PollSwarmingTaskAction(
 
     task_state = result.get('state')
     if task_state in {'PENDING', 'RUNNING'}:
+      # Commit the task payload still.
+      task_module.UpdateTask(self.job, self.task.id, payload=self.task.payload)
       return
 
     if task_state == 'EXPIRED':
@@ -127,15 +168,17 @@ class PollSwarmingTaskAction(
     new_state = 'completed'
     if result.get('failure', False):
       new_state = 'failed'
-      exception_string = run_test_quest.ParseException(
-          swarming_task.Stdout()['output'])
-      if not exception_string:
-        exception_string = 'No exception found in Swarming task output.'
       self.task.payload.update({
-          'errors': [{
-              'reason': 'RunTestFailed',
-              'message': 'Running the test failed: %s' % (exception_string,)
-          }]
+          'errors':
+              self.task.payload.get('errors', []) + [{
+                  'reason':
+                      'RunTestFailed',
+                  'message': ('Running the test failed, see isolate output: '
+                              'https://%s/browse?digest=%s' % (
+                                  self.task.payload.get('isolate_server'),
+                                  self.task.payload.get('isolate_hash'),
+                              ))
+              }]
       })
     task_module.UpdateTask(
         self.job, self.task.id, new_state=new_state, payload=self.task.payload)
@@ -184,14 +227,11 @@ class InitiateEvaluator(object):
                           'so we cannot proceed to running the tests.')
           }]
       })
-      return [
-          lambda _: task_module.UpdateTask(
-              self.job, task.id, new_state='failed', payload=task.payload)
-      ]
+      return [MarkTaskFailedAction(self.job, task)]
 
     if dep_value.get('status') == 'completed':
       properties = {
-          'input_ref': {
+          'inputs_ref': {
               'isolatedserver': dep_value.get('isolate_server'),
               'isolated': dep_value.get('isolate_hash'),
           },
@@ -212,6 +252,9 @@ class UpdateEvaluator(object):
     self.job = job
 
   def __call__(self, task, event, accumulator):
+    if event.target_task is None or event.target_task != task.id:
+      return None
+
     # Check that the task has the required information to poll Swarming. In this
     # handler we're going to look for the 'swarming_task_id' key in the payload.
     # TODO(dberris): Move this out, when we incorporate validation properly.
@@ -220,7 +263,13 @@ class UpdateEvaluator(object):
     if missing_keys:
       logging.error('Failed to find required keys from payload: %s; task = %s',
                     missing_keys, task.payload)
+      # See if the event has the data we want.
+      task_id = event.payload.get('task_id')
 
+      # If it doesn't (which is unlikely) we ought to fail the task.
+      if task_id is None:
+        return [MarkTaskFailedAction(self.job, task)]
+      task.payload.update({'swarming_task_id': task_id})
     return [PollSwarmingTaskAction(job=self.job, task=task)]
 
 
@@ -229,12 +278,8 @@ class Evaluator(evaluators.SequenceEvaluator):
   def __init__(self, job):
     super(Evaluator, self).__init__(
         evaluators=(
-            evaluators.TaskPayloadLiftingEvaluator(),
             evaluators.FilteringEvaluator(
-                predicate=evaluators.All(
-                    evaluators.TaskTypeEq('run_test'),
-                    evaluators.TaskIsEventTarget(),
-                ),
+                predicate=evaluators.All(evaluators.TaskTypeEq('run_test'),),
                 delegate=evaluators.DispatchByEventTypeEvaluator({
                     'initiate':
                         evaluators.FilteringEvaluator(
@@ -242,11 +287,21 @@ class Evaluator(evaluators.SequenceEvaluator):
                                 evaluators.TaskStatusIn(
                                     {'ongoing', 'failed', 'completed'})),
                             delegate=InitiateEvaluator(job)),
+                    # For updates, we want to ensure that the initiate evaluator
+                    # has a chance to run on 'pending' tasks.
                     'update':
-                        evaluators.FilteringEvaluator(
-                            predicate=evaluators.TaskStatusIn({'ongoing'}),
-                            delegate=UpdateEvaluator(job)),
+                        evaluators.SequenceEvaluator([
+                            evaluators.FilteringEvaluator(
+                                predicate=evaluators.Not(
+                                    evaluators.TaskStatusIn(
+                                        {'ongoing', 'failed', 'completed'})),
+                                delegate=InitiateEvaluator(job)),
+                            evaluators.FilteringEvaluator(
+                                predicate=evaluators.TaskStatusIn({'ongoing'}),
+                                delegate=UpdateEvaluator(job)),
+                        ])
                 })),
+            evaluators.TaskPayloadLiftingEvaluator(),
         ))
 
 
@@ -311,10 +366,7 @@ def TestSerializer(task, _, accumulator):
       'details': []
   })
 
-  swarming_task_result = task.payload.get('swarming_task_result')
-  if not swarming_task_result:
-    return None
-
+  swarming_task_result = task.payload.get('swarming_task_result', {})
   swarming_server = task.payload.get('swarming_server')
   bot_id = swarming_task_result.get('bot_id')
   if bot_id:
@@ -323,7 +375,7 @@ def TestSerializer(task, _, accumulator):
         'value': bot_id,
         'url': swarming_server + '/bot?id=' + bot_id
     })
-  task_id = swarming_task_result.get('task')
+  task_id = task.payload.get('swarming_task_id')
   if task_id:
     results['details'].append({
         'key': 'task',
@@ -344,12 +396,7 @@ class Serializer(evaluators.FilteringEvaluator):
 
   def __init__(self):
     super(Serializer, self).__init__(
-        predicate=evaluators.All(
-            evaluators.TaskTypeEq('run_test'),
-            evaluators.TaskStatusIn(
-                {'ongoing', 'failed', 'completed', 'cancelled'}),
-        ),
-        delegate=TestSerializer)
+        predicate=evaluators.TaskTypeEq('run_test'), delegate=TestSerializer)
 
 
 def TaskId(change, attempt):

@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -246,13 +247,18 @@ bool CreateWebURLRequest(PP_Instance instance,
     dest->SetRequestedWithHeader(WebString::FromUTF8(name_version));
 
   if (data->has_custom_user_agent) {
-    auto extra_data = std::make_unique<RequestExtraData>();
+    auto extra_data = base::MakeRefCounted<RequestExtraData>();
     extra_data->set_custom_user_agent(
         WebString::FromUTF8(data->custom_user_agent));
     dest->SetExtraData(std::move(extra_data));
   }
 
   dest->SetRequestContext(blink::mojom::RequestContextType::PLUGIN);
+  // TODO(lyf): We don't currently distinguish between plugin content loaded
+  // via `<embed>` or `<object>` as https://github.com/whatwg/fetch/pull/948
+  // asks us to do. See `content::PepperURLLoaderHost::InternalOnHostMsgOpen`
+  // for details.
+  dest->SetRequestDestination(network::mojom::RequestDestination::kEmbed);
 
   return true;
 }

@@ -2,31 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for the ARC++ intent.
- */
-cca.intent = cca.intent || {};
-
-/**
- * Available intent modes.
- * @enum {string}
- */
-cca.intent.Mode = {
-  PHOTO: 'photo',
-  VIDEO: 'video',
-};
+import * as metrics from './metrics.js';
+import {ChromeHelper} from './mojo/chrome_helper.js';
+import {Mode} from './type.js';
 
 /**
  * Thrown when fails to parse intent url.
  */
-cca.intent.ParseError = class extends Error {
+export class ParseError extends Error {
   /**
    * @param {!URL} url Intent url.
    */
@@ -38,18 +21,18 @@ cca.intent.ParseError = class extends Error {
      */
     this.url_ = url;
 
-    this.name = 'ParseError';
+    this.name = this.constructor.name;
   }
-};
+}
 
 /**
  * Intent from ARC++.
  */
-cca.intent.Intent = class {
+export class Intent {
   /**
    * @param {!URL} url
    * @param {number} intentId
-   * @param {cca.intent.Mode} mode
+   * @param {Mode} mode
    * @param {boolean} shouldHandleResult
    * @param {boolean} shouldDownScale
    * @param {boolean} isSecure
@@ -69,7 +52,7 @@ cca.intent.Intent = class {
 
     /**
      * Capture mode of intent.
-     * @const {!cca.intent.Mode}
+     * @const {Mode}
      */
     this.mode = mode;
 
@@ -101,11 +84,11 @@ cca.intent.Intent = class {
   }
 
   /**
-   * @return {!cca.mojo.ChromeHelper}
+   * @return {!ChromeHelper}
    * @private
    */
   get chromeHelper_() {
-    return cca.mojo.ChromeHelper.getInstance();
+    return ChromeHelper.getInstance();
   }
 
   /**
@@ -126,6 +109,7 @@ cca.intent.Intent = class {
     }
     this.done_ = true;
     await this.chromeHelper_.finish(this.intentId);
+    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CONFIRMED);
   }
 
   /**
@@ -138,6 +122,7 @@ cca.intent.Intent = class {
     }
     this.done_ = true;
     await this.chromeHelper_.cancel(this.intentId);
+    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CANCELED);
   }
 
   /**
@@ -165,27 +150,27 @@ cca.intent.Intent = class {
 
   /**
    * @param {!URL} url Url passed along with app launch event.
-   * @return {!cca.intent.Intent} Created intent object. Returns null if input
-   *     is not a valid intent url.
-   * @throws {cca.intent.ParseError}
+   * @return {!Intent} Created intent object. Returns null if input is not a
+   *     valid intent url.
+   * @throws {ParseError}
    */
   static create(url) {
     const params = url.searchParams;
     const getBool = (key) => params.get(key) === '1';
     let param = params.get('intentId');
     if (param === null) {
-      throw new cca.intent.ParseError(url);
+      throw new ParseError(url);
     }
     const intentId = parseInt(param, 10);
 
     param = params.get('mode');
-    if (param === null || !Object.values(cca.intent.Mode).includes(param)) {
-      throw new cca.intent.ParseError(url);
+    if (param === null || !Object.values(Mode).includes(param)) {
+      throw new ParseError(url);
     }
-    const mode = /** @type {!cca.intent.Mode} */ (param);
+    const mode = /** @type {Mode} */ (param);
 
-    return new cca.intent.Intent(
+    return new Intent(
         url, intentId, mode, getBool('shouldHandleResult'),
         getBool('shouldDownScale'), getBool('isSecure'));
   }
-};
+}

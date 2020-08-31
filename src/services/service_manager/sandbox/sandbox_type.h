@@ -14,67 +14,81 @@
 namespace service_manager {
 
 // Defines the sandbox types known within the servicemanager.
-enum SandboxType {
-  // Not a valid sandbox type.
-  SANDBOX_TYPE_INVALID = -1,
-
-  SANDBOX_TYPE_FIRST_TYPE = 0,  // Placeholder to ease iteration.
-
+enum class SandboxType {
   // Do not apply any sandboxing to the process.
-  SANDBOX_TYPE_NO_SANDBOX = SANDBOX_TYPE_FIRST_TYPE,
+  kNoSandbox,
 
 #if defined(OS_WIN)
   // Do not apply any sandboxing and elevate the privileges of the process.
-  SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES,
+  kNoSandboxAndElevatedPrivileges,
 
   // The XR Compositing process.
-  SANDBOX_TYPE_XRCOMPOSITING,
+  kXrCompositing,
+
+  // The proxy resolver process.
+  kProxyResolver,
+
+  // The PDF conversion service process used in printing.
+  kPdfConversion,
 #endif
 
 #if defined(OS_FUCHSIA)
   // Sandbox type for the web::Context process on Fuchsia. Functionally it's an
   // equivalent of the browser process on other platforms.
-  SANDBOX_TYPE_WEB_CONTEXT,
+  kWebContext,
 #endif
 
   // Renderer or worker process. Most common case.
-  SANDBOX_TYPE_RENDERER,
+  kRenderer,
 
-  // Utility process is as restrictive as the worker process except full
-  // access is allowed to one configurable directory.
-  SANDBOX_TYPE_UTILITY,
+  // Utility processes. Used by most isolated services.
+  kUtility,
 
   // GPU process.
-  SANDBOX_TYPE_GPU,
+  kGpu,
 
   // The PPAPI plugin process.
-  SANDBOX_TYPE_PPAPI,
+  kPpapi,
 
   // The network service process.
-  SANDBOX_TYPE_NETWORK,
+  kNetwork,
 
   // The CDM service process.
-  SANDBOX_TYPE_CDM,
+  kCdm,
 
 #if defined(OS_MACOSX)
   // The NaCl loader process.
-  SANDBOX_TYPE_NACL_LOADER,
+  kNaClLoader,
 #endif  // defined(OS_MACOSX)
 
-  // The pdf compositor service process.
-  SANDBOX_TYPE_PDF_COMPOSITOR,
-
-  // The profiling service process.
-  SANDBOX_TYPE_PROFILING,
+  // The print compositor service process.
+  kPrintCompositor,
 
   // The audio service process.
-  SANDBOX_TYPE_AUDIO,
+  kAudio,
 
 #if defined(OS_CHROMEOS)
-  SANDBOX_TYPE_IME,
+  kIme,
 #endif  // defined(OS_CHROMEOS)
 
-  SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
+#if defined(OS_LINUX)
+  // Indicates that a process is a zygote and will get a real sandbox later.
+  kZygoteIntermediateSandbox,
+#endif
+
+#if !defined(OS_MACOSX)
+  // Hosts WebRTC for Sharing Service, uses kUtility on OS_MACOSX.
+  kSharingService,
+#endif
+
+  // The speech recognition service process.
+  kSpeechRecognition,
+
+  // Equivalent to no sandbox on all non-Fuchsia platforms.
+  // Minimally privileged sandbox on Fuchsia.
+  kVideoCapture,
+
+  kMaxValue = kVideoCapture
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

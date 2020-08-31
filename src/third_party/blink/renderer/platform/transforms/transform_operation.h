@@ -61,7 +61,6 @@ class PLATFORM_EXPORT TransformOperation
     kMatrix3D,
     kPerspective,
     kInterpolated,
-    kIdentity,
     kRotateAroundOrigin,
   };
 
@@ -113,11 +112,6 @@ class PLATFORM_EXPORT TransformOperation
  private:
   DISALLOW_COPY_AND_ASSIGN(TransformOperation);
 };
-
-#define DEFINE_TRANSFORM_TYPE_CASTS(thisType)                                \
-  DEFINE_TYPE_CASTS(thisType, TransformOperation, transform,                 \
-                    thisType::IsMatchingOperationType(transform->GetType()), \
-                    thisType::IsMatchingOperationType(transform.GetType()))
 
 }  // namespace blink
 

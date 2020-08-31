@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.junit.Assert.assertEquals;
+
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
@@ -31,20 +33,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
@@ -63,7 +66,7 @@ public class CustomTabsConnectionTest {
 
     @Before
     public void setUp() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection();
     }
 
@@ -436,6 +439,23 @@ public class CustomTabsConnectionTest {
 
     /**
      * Tests that
+     * {@link
+     * CustomTabsConnection#mayLaunchUrlReportsNavigationPredictorService(CustomTabsSessionToken,
+     * Uri, Bundle, List)} succeeds.
+     */
+    @Test
+    @SmallTest
+    public void testMayLaunchUrlReportsNavigationPredictorService() throws Exception {
+        MetricsUtils.HistogramDelta delta = new MetricsUtils.HistogramDelta(
+                "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs", 1);
+        assertWarmupAndMayLaunchUrl(null, URL, true);
+
+        CriteriaHelper.pollUiThread(() -> delta.getDelta() > 0);
+        assertEquals(1, delta.getDelta());
+    }
+
+    /**
+     * Tests that
      * {@link CustomTabsConnection#mayLaunchUrl(CustomTabsSessionToken, Uri, Bundle, List)}
      * can be called several times with the same, and different URLs.
      */
@@ -483,15 +503,15 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     public void testGetSchedulerGroup() throws Exception {
-        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+        // After M, /proc is mounted with hidepid=2, so even though the test still passes, it
+        // is not useful in practice. See crbug.com/973368 for details.
+        Assume.assumeTrue(Build.VERSION.SDK_INT < Build.VERSION_CODES.M);
         Assert.assertNotNull(CustomTabsConnection.getSchedulerGroup(Process.myPid()));
         String cgroup = CustomTabsConnection.getSchedulerGroup(Process.myPid());
         // Tests run in the foreground. Last two are from Android O.
         List<String> foregroundGroups = Arrays.asList("/", "/apps", "/top-app", "/foreground");
         Assert.assertTrue(foregroundGroups.contains(cgroup));
 
-        // On O, a background thread is still in the foreground cgroup.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
         final AtomicReference<String> backgroundThreadCgroup = new AtomicReference<>();
         Thread backgroundThread = new Thread(() -> {
             int tid = Process.myTid();

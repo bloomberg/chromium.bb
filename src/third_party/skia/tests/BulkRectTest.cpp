@@ -7,29 +7,26 @@
 #include "src/core/SkBlendModePriv.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/ops/GrTextureOp.h"
 #include "tests/Test.h"
 
 static std::unique_ptr<GrRenderTargetContext> new_RTC(GrContext* context) {
-    return context->priv().makeDeferredRenderTargetContext(SkBackingFit::kExact, 128, 128,
-                                                           GrColorType::kRGBA_8888, nullptr);
+    return GrRenderTargetContext::Make(
+            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {128, 128});
 }
 
 sk_sp<GrSurfaceProxy> create_proxy(GrContext* context) {
-    GrSurfaceDesc desc;
-    desc.fConfig = kRGBA_8888_GrPixelConfig;
-    desc.fWidth  = 128;
-    desc.fHeight = 128;
+    static constexpr SkISize kDimensions = {128, 128};
 
     const GrBackendFormat format = context->priv().caps()->getDefaultBackendFormat(
                                                                            GrColorType::kRGBA_8888,
                                                                            GrRenderable::kYes);
-
     return context->priv().proxyProvider()->createProxy(
-        format, desc, GrRenderable::kYes, 1, kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo,
-        SkBackingFit::kExact, SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
+            format, kDimensions, GrRenderable::kYes, 1, GrMipMapped::kNo, SkBackingFit::kExact,
+            SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
 }
 
 typedef GrQuadAAFlags (*PerQuadAAFunc)(int i);
@@ -109,12 +106,13 @@ static void bulk_texture_rect_create_test(skiatest::Reporter* reporter, GrContex
     }
 
     GrTextureOp::AddTextureSetOps(rtc.get(), GrNoClip(), context, set, requestedTotNumQuads,
-                                     GrSamplerState::Filter::kNearest,
-                                     GrTextureOp::Saturate::kYes,
-                                     blendMode,
-                                     overallAA,
-                                     SkCanvas::kStrict_SrcRectConstraint,
-                                     SkMatrix::I(), nullptr);
+                                  requestedTotNumQuads, // We alternate so proxyCnt == cnt
+                                  GrSamplerState::Filter::kNearest,
+                                  GrTextureOp::Saturate::kYes,
+                                  blendMode,
+                                  overallAA,
+                                  SkCanvas::kStrict_SrcRectConstraint,
+                                  SkMatrix::I(), nullptr);
 
     GrOpsTask* opsTask = rtc->testingOnly_PeekLastOpsTask();
     int actualNumOps = opsTask->numOpChains();

@@ -179,14 +179,12 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     }
   }
 
-  bool QuitForPageWait() {
-    if (running_for_page_wait_) {
-      running_for_page_wait_ = false;
-      if (!running_for_debug_break_)
-        DoQuit();
-      return true;
-    }
-    return false;
+  void RunIfWaitingForDebugger(LocalFrame* frame) override {
+    if (!running_for_page_wait_)
+      return;
+    running_for_page_wait_ = false;
+    if (!running_for_debug_break_)
+      DoQuit();
   }
 
   void DoQuit() {
@@ -196,12 +194,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     message_loop_->QuitNow();
     page_pauser_.reset();
     WebFrameWidgetBase::SetIgnoreInputEvents(false);
-  }
-
-  void RunIfWaitingForDebugger(LocalFrame* frame) override {
-    // If we've paused for Page.waitForDebugger, handle it ourselves.
-    if (QuitForPageWait())
-      return;
   }
 
   bool running_for_debug_break_;
@@ -252,6 +244,10 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                       session->V8Session());
   session->Append(dom_debugger_agent);
 
+  InspectorPerformanceAgent* performance_agent =
+      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames);
+  session->Append(performance_agent);
+
   session->Append(MakeGarbageCollected<InspectorDOMSnapshotAgent>(
       inspected_frames, dom_debugger_agent));
 
@@ -259,9 +255,6 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
       inspected_frames, css_agent, session->V8Session()));
 
   session->Append(MakeGarbageCollected<InspectorMemoryAgent>(inspected_frames));
-
-  session->Append(
-      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames));
 
   session->Append(
       MakeGarbageCollected<InspectorApplicationCacheAgent>(inspected_frames));
@@ -284,7 +277,9 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->Append(
       MakeGarbageCollected<InspectorIOAgent>(isolate, session->V8Session()));
 
-  session->Append(MakeGarbageCollected<InspectorAuditsAgent>(network_agent));
+  session->Append(MakeGarbageCollected<InspectorAuditsAgent>(
+      network_agent,
+      &inspected_frames->Root()->GetPage()->GetInspectorIssueStorage()));
 
   session->Append(MakeGarbageCollected<InspectorMediaAgent>(inspected_frames));
 
@@ -343,7 +338,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
-void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
+void WebDevToolsAgentImpl::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(network_agents_);
   visitor->Trace(page_agents_);
@@ -379,20 +374,21 @@ void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
     Thread::Current()->RemoveTaskObserver(this);
 }
 
-void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
-  WebFloatRect rect(point_in_local_root.x, point_in_local_root.y, 0, 0);
+void WebDevToolsAgentImpl::InspectElement(
+    const gfx::Point& point_in_local_root) {
+  WebFloatRect rect(point_in_local_root.x(), point_in_local_root.y(), 0, 0);
   web_local_frame_impl_->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
       &rect);
-  WebPoint point(rect.x, rect.y);
+  gfx::PointF point(rect.x, rect.y);
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |
       HitTestRequest::kAllowChildFrameContent;
   HitTestRequest request(hit_type);
-  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
+  WebMouseEvent dummy_event(WebInputEvent::Type::kMouseDown,
                             WebInputEvent::kNoModifiers,
                             base::TimeTicks::Now());
-  dummy_event.SetPositionInWidget(point.x, point.y);
+  dummy_event.SetPositionInWidget(point);
   IntPoint transformed_point = FlooredIntPoint(
       TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)
           .PositionInRootFrame());
@@ -414,9 +410,13 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
   }
 }
 
-void WebDevToolsAgentImpl::DebuggerTaskStarted() {}
+void WebDevToolsAgentImpl::DebuggerTaskStarted() {
+  probe::WillStartDebuggerTask(probe_sink_);
+}
 
-void WebDevToolsAgentImpl::DebuggerTaskFinished() {}
+void WebDevToolsAgentImpl::DebuggerTaskFinished() {
+  probe::DidFinishDebuggerTask(probe_sink_);
+}
 
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);
@@ -434,6 +434,17 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
   for (auto& it : overlay_agents_)
     it.value->PageLayoutInvalidated(resized);
+}
+
+void WebDevToolsAgentImpl::DidShowNewWindow() {
+  if (!wait_for_debugger_when_shown_)
+    return;
+  wait_for_debugger_when_shown_ = false;
+  WaitForDebugger();
+}
+
+void WebDevToolsAgentImpl::WaitForDebuggerWhenShown() {
+  wait_for_debugger_when_shown_ = true;
 }
 
 void WebDevToolsAgentImpl::WaitForDebugger() {

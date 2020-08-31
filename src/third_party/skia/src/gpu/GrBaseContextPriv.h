@@ -25,11 +25,11 @@ public:
     const GrCaps* caps() const { return fContext->caps(); }
     sk_sp<const GrCaps> refCaps() const;
 
-    sk_sp<GrSkSLFPFactoryCache> fpFactoryCache();
-
     GrImageContext* asImageContext() { return fContext->asImageContext(); }
     GrRecordingContext* asRecordingContext() { return fContext->asRecordingContext(); }
     GrContext* asDirectContext() { return fContext->asDirectContext(); }
+
+    GrContextOptions::ShaderErrorHandler* getShaderErrorHandler() const;
 
 private:
     explicit GrBaseContextPriv(GrContext_Base* context) : fContext(context) {}

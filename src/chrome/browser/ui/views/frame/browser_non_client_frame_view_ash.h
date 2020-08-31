@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
@@ -118,12 +117,15 @@ class BrowserNonClientFrameViewAsh
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  // TODO(pkasting): Test the public API or create a test helper class, don't
+  // add this many friends
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTestNoWebUiTabStrip,
                            NonImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTest, ImmersiveFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
+                           ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeRelayout);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTestNoWebUiTabStrip,
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            BrowserHeaderVisibilityInTabletModeTest);
@@ -153,9 +155,18 @@ class BrowserNonClientFrameViewAsh
 
   friend class WebAppNonClientFrameViewAshTest;
 
-  // Returns whether the caption buttons should be visible. They are hidden, for
-  // example, in overview mode and tablet mode.
+  // Returns true if |ShouldShowCaptionButtonsWhenNotInOverview| returns true
+  // and this browser window is not showing in overview.
   bool ShouldShowCaptionButtons() const;
+
+  // In tablet mode, to prevent accidental taps of the window controls, and to
+  // give more horizontal space for tabs and the new tab button (especially in
+  // split view), we hide the window controls even when this browser window is
+  // not showing in overview. We only do this when the Home Launcher feature is
+  // enabled, because it gives the user the ability to minimize all windows when
+  // pressing the Launcher button on the shelf. So, this function returns true
+  // if the Home Launcher feature is disabled or we are in clamshell mode.
+  bool ShouldShowCaptionButtonsWhenNotInOverview() const;
 
   // Distance between the edge of the NonClientFrameView and the web app frame
   // toolbar.
@@ -176,9 +187,6 @@ class BrowserNonClientFrameViewAsh
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
-  // Creates views and does other setup for a web app.
-  void SetUpForWebApp();
-
   // Triggers the web-app origin and icon animations, assumes the web-app UI
   // elements exist.
   void StartWebAppAnimation();
@@ -196,6 +204,9 @@ class BrowserNonClientFrameViewAsh
 
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
+
+  // Called any time the frame color may have changed.
+  void OnUpdateFrameColor();
 
   // Returns the top level aura::Window for this browser window.
   const aura::Window* GetFrameWindow() const;

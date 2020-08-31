@@ -60,15 +60,10 @@ class CreditCard : public AutofillDataModel {
     OK,
   };
 
-  // The type of the card. Local cards are all CARD_TYPE_UNKNOWN. Server cards
-  // may have a more specific type.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.autofill
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CardType
-  enum CardType : int {
-    CARD_TYPE_UNKNOWN,
-    CARD_TYPE_CREDIT,
-    CARD_TYPE_DEBIT,
-    CARD_TYPE_PREPAID,
+  // The Issuer for the card.
+  enum Issuer {
+    ISSUER_UNKNOWN = 0,
+    GOOGLE = 1,
   };
 
   CreditCard(const std::string& guid, const std::string& origin);
@@ -143,6 +138,18 @@ class CreditCard : public AutofillDataModel {
   const std::string& server_id() const { return server_id_; }
   void set_server_id(const std::string& server_id) { server_id_ = server_id; }
 
+  const base::string16& nickname() const { return nickname_; }
+
+  // Set the nickname with the processed input (replace all tabs and newlines
+  // with whitespaces, and trim leading/trailing whitespaces).
+  void SetNickname(const base::string16& nickname);
+
+  Issuer card_issuer() const { return card_issuer_; }
+  void set_card_issuer(Issuer card_issuer) { card_issuer_ = card_issuer; }
+
+  // Return true if card_issuer_ is set to Issuer::GOOGLE.
+  bool IsGoogleIssuedCard() const;
+
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
 
@@ -177,11 +184,6 @@ class CreditCard : public AutofillDataModel {
   // How this card is stored.
   RecordType record_type() const { return record_type_; }
   void set_record_type(RecordType rt) { record_type_ = rt; }
-
-  // Whether this is a credit, debit, or prepaid card. Known only for server
-  // cards. All local cards are CARD_TYPE_UNKNOWN.
-  CardType card_type() const { return card_type_; }
-  void set_card_type(CardType card_type) { card_type_ = card_type; }
 
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
@@ -237,7 +239,8 @@ class CreditCard : public AutofillDataModel {
 
   // Various display functions.
 
-  // Card preview summary, for example: "Visa - ****1234", ", 01/2020".
+  // Card preview summary, for example: "Nickname/Network - ****1234",
+  // ", 01/2020".
   const std::pair<base::string16, base::string16> LabelPieces() const;
   // Like LabelPieces, but appends the two pieces together.
   const base::string16 Label() const;
@@ -248,19 +251,22 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkForDisplay() const;
   // A label for this card formatted as '****2345'.
   base::string16 ObfuscatedLastFourDigits() const;
+  // The string used to represent the icon to be used for the autofill
+  // suggestion. For ex: visaCC, googleIssuedCC, americanExpressCC, etc.
+  std::string CardIconStringForAutofillSuggestion() const;
   // A label for this card formatted as 'IssuerNetwork - ****2345'.
   base::string16 NetworkAndLastFourDigits() const;
-  // A label for this card formatted as 'BankName' - ****2345' if bank name
-  // experiment turned on and bank name available; otherwise, formatted as
-  // 'IssuerNetwork - ****2345'.
-  base::string16 NetworkOrBankNameAndLastFourDigits() const;
-  // A label for this card formatted as
-  // 'BankName/Netowrk' - ****2345, expires on MM/YY' if bank name
-  // experiment turned on and bank name available; otherwise, formatted as
-  // 'IssuerNetwork - ****2345, expires on MM/YY'.
-  // This label is used as a second line label when the autofill dropdown
-  // layout experiment is enabled and the cardholder name is selected.
-  base::string16 NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
+  // A label for this card formatted as 'Nickname - ****2345' if nickname is
+  // available and valid;  otherwise, formatted as 'IssuerNetwork - ****2345'.
+  // Google-issued cards have their own specific identifier, instead of
+  // displaying the issuer network name.
+  base::string16 CardIdentifierStringForAutofillDisplay() const;
+  // A label for this card formatted as 'Nickname - ****2345, expires on MM/YY'
+  // if nickname experiment is turned on and nickname is available; otherwise,
+  // formatted as 'IssuerNetwork - ****2345, expires on MM/YY'.
+  // This label is used as a second line label when the cardholder
+  // name/expiration date field is selected.
+  base::string16 CardIdentifierStringAndDescriptiveExpiration(
       const std::string& app_locale) const;
   // A label for this card formatted as 'Expires on MM/YY'.
   // This label is used as a second line label when the autofill dropdown
@@ -283,10 +289,13 @@ class CreditCard : public AutofillDataModel {
   // Returns whether the card has a cardholder name.
   bool HasNameOnCard() const;
 
+  // Returns whether the card has a valid nickname.
+  bool HasValidNickname() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, BankNameAndLastFourDigitsStrings);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, NicknameAndLastFourDigitsStrings);
 
   base::string16 Expiration2DigitYearAsString() const;
 
@@ -301,15 +310,15 @@ class CreditCard : public AutofillDataModel {
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   base::string16 NetworkForFill() const;
 
-  // A label for this card formatted as 'BankName - 2345'.
-  base::string16 BankNameAndLastFourDigits() const;
+  // A label for this card formatted as 'Nickname - ****2345'. Always call
+  // HasValidNickname() before calling this.
+  base::string16 NicknameAndLastFourDigits() const;
 
   // Sets the name_on_card_ value based on the saved name parts.
   void SetNameOnCardFromSeparateParts();
 
   // See enum definition above.
   RecordType record_type_;
-  CardType card_type_;
 
   // The card number. For MASKED_SERVER_CARDs, this number will just contain the
   // last four digits of the card number.
@@ -322,6 +331,7 @@ class CreditCard : public AutofillDataModel {
   // below.
   std::string network_;
 
+  // bank_name is no longer actively used but remains for legacy reasons.
   // The issuer bank name of the card.
   std::string bank_name_;
 
@@ -348,6 +358,13 @@ class CreditCard : public AutofillDataModel {
 
   // Info of tokenizized credit card if available.
   sync_pb::CloudTokenData cloud_token_data_;
+
+  // The nickname of the card. May be empty when nickname is not set.
+  base::string16 nickname_;
+
+  // The issuer for the card. This is populated from the sync response. It has a
+  // default value of CreditCard::ISSUER_UNKNOWN.
+  Issuer card_issuer_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().
@@ -359,6 +376,7 @@ extern const char kDinersCard[];
 extern const char kDiscoverCard[];
 extern const char kEloCard[];
 extern const char kGenericCard[];
+extern const char kGoogleIssuedCard[];
 extern const char kJCBCard[];
 extern const char kMasterCard[];
 extern const char kMirCard[];

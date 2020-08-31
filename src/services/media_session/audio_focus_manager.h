@@ -52,14 +52,14 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // mojom::AudioFocusManager.
   void RequestAudioFocus(
       mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojo::PendingRemote<mojom::MediaSession> session,
       mojom::MediaSessionInfoPtr session_info,
       mojom::AudioFocusType type,
       RequestAudioFocusCallback callback) override;
   void RequestGroupedAudioFocus(
       const base::UnguessableToken& request_id,
       mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojo::PendingRemote<mojom::MediaSession> session,
       mojom::MediaSessionInfoPtr session_info,
       mojom::AudioFocusType type,
       const base::UnguessableToken& group_id,
@@ -111,9 +111,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // ReceiverContext stores associated metadata for mojo binding.
   struct ReceiverContext {
     // The source name is associated with a binding when a client calls
-    // |SetSourceName|. It is used to provide more granularity than a
-    // service_manager::Identity for metrics and for identifying where an audio
-    // focus request originated from.
+    // |SetSourceName|. It is used to provide extra granularity for metrics and
+    // for identifying where an audio focus request originated from.
     std::string source_name;
 
     // The identity associated with the binding when it was created.

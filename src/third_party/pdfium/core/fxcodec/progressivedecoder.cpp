@@ -20,7 +20,6 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
 #include "third_party/base/logging.h"
-#include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/ptr_util.h"
 
 namespace fxcodec {
@@ -608,7 +607,7 @@ void ProgressiveDecoder::ResampleVertBT(
   uint32_t dest_ScanOffet = m_startX * dest_Bpp;
   int dest_top = m_startY;
   int dest_bottom = m_startY + m_sizeY;
-  pdfium::base::CheckedNumeric<int> check_dest_row_1 = dest_row;
+  FX_SAFE_INT32 check_dest_row_1 = dest_row;
   check_dest_row_1 += pdfium::base::checked_cast<int>(scale_y);
   int dest_row_1 = check_dest_row_1.ValueOrDie();
   if (dest_row_1 >= dest_bottom - 1) {
@@ -760,7 +759,7 @@ bool ProgressiveDecoder::BmpDetectImageTypeInBuffer(
   m_clipBox = FX_RECT(0, 0, m_SrcWidth, m_SrcHeight);
   m_pBmpContext = std::move(pBmpContext);
   if (m_SrcPaletteNumber) {
-    m_pSrcPalette.reset(FX_Alloc(FX_ARGB, m_SrcPaletteNumber));
+    m_pSrcPalette.reset(FX_AllocUninit(FX_ARGB, m_SrcPaletteNumber));
     memcpy(m_pSrcPalette.get(), palette->data(),
            m_SrcPaletteNumber * sizeof(FX_ARGB));
   } else {
@@ -929,7 +928,7 @@ void ProgressiveDecoder::GifDoubleLineResampleVert(
   int dest_top = m_startY;
   pdfium::base::CheckedNumeric<double> scale_y2 = scale_y;
   scale_y2 *= 2;
-  pdfium::base::CheckedNumeric<int> check_dest_row_1 = dest_row;
+  FX_SAFE_INT32 check_dest_row_1 = dest_row;
   check_dest_row_1 -= scale_y2.ValueOrDie();
   int dest_row_1 = check_dest_row_1.ValueOrDie();
   dest_row_1 = std::max(dest_row_1, dest_top);
@@ -1025,7 +1024,7 @@ bool ProgressiveDecoder::JpegDetectImageTypeInBuffer(
 
   // Setting jump marker before calling ReadHeader, since a longjmp to
   // the marker indicates a fatal error.
-  if (setjmp(*pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
+  if (setjmp(pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
     m_pJpegContext.reset();
     m_status = FXCODEC_STATUS_ERR_FORMAT;
     return false;
@@ -1061,7 +1060,7 @@ FXCODEC_STATUS ProgressiveDecoder::JpegStartDecode(
   GetDownScale(down_scale);
   // Setting jump marker before calling StartScanLine, since a longjmp to
   // the marker indicates a fatal error.
-  if (setjmp(*pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
+  if (setjmp(pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
     m_pJpegContext.reset();
     m_status = FXCODEC_STATUS_ERROR;
     return FXCODEC_STATUS_ERROR;
@@ -1105,7 +1104,7 @@ FXCODEC_STATUS ProgressiveDecoder::JpegContinueDecode() {
   JpegModule* pJpegModule = m_pCodecMgr->GetJpegModule();
   // Setting jump marker before calling ReadScanLine, since a longjmp to
   // the marker indicates a fatal error.
-  if (setjmp(*pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
+  if (setjmp(pJpegModule->GetJumpMark(m_pJpegContext.get())) == -1) {
     m_pJpegContext.reset();
     m_status = FXCODEC_STATUS_ERROR;
     return FXCODEC_STATUS_ERROR;
@@ -1835,9 +1834,9 @@ void ProgressiveDecoder::ReSampleScanline(
           int pixel_weight =
               pPixelWeights->m_Weights[j - pPixelWeights->m_SrcStart];
           unsigned long argb = m_pSrcPalette.get()[src_scan[j]];
-          dest_r += pixel_weight * (uint8_t)(argb >> 16);
-          dest_g += pixel_weight * (uint8_t)(argb >> 8);
-          dest_b += pixel_weight * (uint8_t)argb;
+          dest_r += pixel_weight * FXARGB_R(argb);
+          dest_g += pixel_weight * FXARGB_G(argb);
+          dest_b += pixel_weight * FXARGB_B(argb);
         }
         *dest_scan++ =
             (uint8_t)FXRGB2GRAY((dest_r >> 16), (dest_g >> 16), (dest_b >> 16));
@@ -1902,9 +1901,9 @@ void ProgressiveDecoder::ReSampleScanline(
           int pixel_weight =
               pPixelWeights->m_Weights[j - pPixelWeights->m_SrcStart];
           unsigned long argb = m_pSrcPalette.get()[src_scan[j]];
-          dest_r += pixel_weight * (uint8_t)(argb >> 16);
-          dest_g += pixel_weight * (uint8_t)(argb >> 8);
-          dest_b += pixel_weight * (uint8_t)argb;
+          dest_r += pixel_weight * FXARGB_R(argb);
+          dest_g += pixel_weight * FXARGB_G(argb);
+          dest_b += pixel_weight * FXARGB_B(argb);
         }
         *dest_scan++ = (uint8_t)((dest_b) >> 16);
         *dest_scan++ = (uint8_t)((dest_g) >> 16);
@@ -1922,9 +1921,9 @@ void ProgressiveDecoder::ReSampleScanline(
             int pixel_weight =
                 pPixelWeights->m_Weights[j - pPixelWeights->m_SrcStart];
             unsigned long argb = m_pSrcPalette.get()[src_scan[j]];
-            dest_r += pixel_weight * (uint8_t)(argb >> 16);
-            dest_g += pixel_weight * (uint8_t)(argb >> 8);
-            dest_b += pixel_weight * (uint8_t)argb;
+            dest_r += pixel_weight * FXARGB_R(argb);
+            dest_g += pixel_weight * FXARGB_G(argb);
+            dest_b += pixel_weight * FXARGB_B(argb);
           }
           *dest_scan++ = (uint8_t)((dest_b) >> 16);
           *dest_scan++ = (uint8_t)((dest_g) >> 16);
@@ -1942,10 +1941,10 @@ void ProgressiveDecoder::ReSampleScanline(
           int pixel_weight =
               pPixelWeights->m_Weights[j - pPixelWeights->m_SrcStart];
           unsigned long argb = m_pSrcPalette.get()[src_scan[j]];
-          dest_a += pixel_weight * (uint8_t)(argb >> 24);
-          dest_r += pixel_weight * (uint8_t)(argb >> 16);
-          dest_g += pixel_weight * (uint8_t)(argb >> 8);
-          dest_b += pixel_weight * (uint8_t)argb;
+          dest_a += pixel_weight * FXARGB_A(argb);
+          dest_r += pixel_weight * FXARGB_R(argb);
+          dest_g += pixel_weight * FXARGB_G(argb);
+          dest_b += pixel_weight * FXARGB_B(argb);
         }
         *dest_scan++ = (uint8_t)((dest_b) >> 16);
         *dest_scan++ = (uint8_t)((dest_g) >> 16);
@@ -2028,7 +2027,7 @@ void ProgressiveDecoder::ResampleVert(
   int dest_Bpp = pDeviceBitmap->GetBPP() >> 3;
   uint32_t dest_ScanOffet = m_startX * dest_Bpp;
   int dest_top = m_startY;
-  pdfium::base::CheckedNumeric<int> check_dest_row_1 = dest_row;
+  FX_SAFE_INT32 check_dest_row_1 = dest_row;
   check_dest_row_1 -= pdfium::base::checked_cast<int>(scale_y);
   int dest_row_1 = check_dest_row_1.ValueOrDie();
   if (dest_row_1 < dest_top) {

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -16,6 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -35,6 +37,16 @@ namespace cors {
 class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
+  // Set whether the factory allows CORS preflights. See IsValidRequest.
+  static void SetAllowExternalPreflightsForTesting(bool allow) {
+    allow_external_preflights_for_testing_ = allow;
+  }
+
+  // Check if members in |headers| are permitted by |allowed_exempt_headers|.
+  static bool IsValidCorsExemptHeaders(
+      const base::flat_set<std::string>& allowed_exempt_headers,
+      const net::HttpRequestHeaders& headers);
+
   // |origin_access_list| should always outlive this factory instance.
   // Used by network::NetworkContext.
   CorsURLLoaderFactory(
@@ -49,15 +61,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   void DestroyURLLoader(mojom::URLLoader* loader);
 
   // Clears the bindings for this factory, but does not touch any in-progress
-  // URLLoaders.
+  // URLLoaders. Calling this may delete this factory and remove it from the
+  // network context.
   void ClearBindings();
 
-  uint32_t process_id() const { return process_id_; }
-
-  // Set whether the factory allows CORS preflights. See IsSane.
-  static void SetAllowExternalPreflightsForTesting(bool allow) {
-    allow_external_preflights_for_testing_ = allow;
-  }
+  int32_t process_id() const { return process_id_; }
 
  private:
   class FactoryOverride;
@@ -75,9 +83,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   void DeleteIfNeeded();
 
-  bool IsSane(const NetworkContext* context,
-              const ResourceRequest& request,
-              uint32_t options);
+  bool IsValidRequest(const ResourceRequest& request, uint32_t options);
+
+  InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
+      uint32_t process_id,
+      const base::Optional<url::Origin>& request_initiator_site_lock,
+      const base::Optional<url::Origin>& request_initiator);
+
+  bool GetAllowAnyCorsExemptHeaderForBrowser() const;
 
   mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
 
@@ -91,8 +104,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
-  const uint32_t process_id_ = mojom::kInvalidProcessId;
+  const int32_t process_id_ = mojom::kInvalidProcessId;
   const base::Optional<url::Origin> request_initiator_site_lock_;
+  const bool ignore_isolated_world_origin_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -
   // URLLoaderFactory needs to live longer than URLLoaders created using the

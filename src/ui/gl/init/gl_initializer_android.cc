@@ -94,7 +94,8 @@ bool InitializeGLOneOffPlatform() {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
-      if (!GLSurfaceEGL::InitializeOneOff(EGL_DEFAULT_DISPLAY)) {
+      if (!GLSurfaceEGL::InitializeOneOff(
+              EGLDisplayPlatform(EGL_DEFAULT_DISPLAY))) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
@@ -124,11 +125,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   }
 
   return false;
-}
-
-void InitializeLogGLBindings() {
-  InitializeLogGLBindingsEGL();
-  InitializeLogGLBindingsGL();
 }
 
 void ShutdownGLPlatform() {

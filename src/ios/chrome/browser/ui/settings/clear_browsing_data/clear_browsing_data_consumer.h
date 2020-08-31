@@ -9,11 +9,8 @@
 
 #include "base/ios/block_types.h"
 
-@class ListItem;
-
-namespace ios {
 class ChromeBrowserState;
-}
+@class ListItem;
 
 namespace browsing_data {
 enum class TimePeriod;
@@ -23,7 +20,7 @@ enum class BrowsingDataRemoveMask;
 
 @protocol ClearBrowsingDataConsumer <NSObject>
 // Execute action to clear browsing data.
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+- (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock;

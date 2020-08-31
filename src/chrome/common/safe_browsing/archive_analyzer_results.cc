@@ -9,13 +9,15 @@
 
 #include "base/files/file.h"
 #include "base/i18n/streaming_utf8_validator.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
+#include "components/safe_browsing/core/file_type_policies.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
@@ -177,6 +179,10 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
   } else {
     DVLOG(3) << "Ignoring non-binary file: " << path.value();
   }
+
+  base::UmaHistogramSparse(
+      "SBClientDownload.ArchiveDownloadExtensions",
+      FileTypePolicies::GetInstance()->UmaValueForFile(path));
 }
 
 }  // namespace safe_browsing

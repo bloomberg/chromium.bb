@@ -19,6 +19,8 @@
 class GURL;
 
 namespace net {
+class IsolationInfo;
+class SiteForCookies;
 class SSLInfo;
 }  // namespace net
 
@@ -39,8 +41,8 @@ class WebSocketFactory final {
   void CreateWebSocket(
       const GURL& url,
       const std::vector<std::string>& requested_protocols,
-      const GURL& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::SiteForCookies& site_for_cookies,
+      const net::IsolationInfo& isolation_info,
       std::vector<mojom::HttpHeaderPtr> additional_headers,
       int32_t process_id,
       int32_t render_frame_id,

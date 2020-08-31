@@ -4,14 +4,48 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Wrapper to find run_tests for the lazy people."""
+"""Wrapper to run all tests with default settings."""
 
 from __future__ import print_function
 
 import os
+import subprocess
 import sys
 
 
-sys.argv[0] = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           'scripts', 'run_tests')
-os.execv(sys.argv[0], sys.argv)
+CHROMITE_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPTS_DIR = os.path.join(CHROMITE_DIR, 'scripts')
+LEGACY_TEST_RUNNER = os.path.join(SCRIPTS_DIR, 'run_tests')
+PYTEST_RUNNER = os.path.join(SCRIPTS_DIR, 'run_pytest')
+
+
+def main(argv):
+  if argv:
+    print(
+        'ERROR: This script takes no arguments. If you want to pass arguments\n'
+        'to the test suite, try running `scripts/run_tests` or `run_pytest`.',
+        file=sys.stderr)
+    sys.exit(1)
+
+  py2_tests_result = run_legacy_tests()
+  print('')
+  py3_tests_result = run_pytest()
+  return py2_tests_result or py3_tests_result
+
+
+def run_legacy_tests():
+  print('Running legacy Python 2 tests:')
+  print('')
+  res = subprocess.run([LEGACY_TEST_RUNNER, '--py2'])
+  return res.returncode
+
+
+def run_pytest():
+  print('Running pytest under Python 3:')
+  print('')
+  res = subprocess.run([PYTEST_RUNNER])
+  return res.returncode
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

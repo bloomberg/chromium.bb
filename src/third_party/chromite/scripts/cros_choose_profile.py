@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import functools
 import os
+import sys
 
 import six
 
@@ -17,6 +18,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import sysroot_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Default value constants.
@@ -258,7 +262,7 @@ def GetParser():
                       help='Board root where the profile should be created.')
   parser.add_argument('-p', '--profile',
                       help='The portage configuration profile to use.')
-  parser.add_argument('-v', '--variant', help='Board variant.')
+  parser.add_argument('--variant', help='Board variant.')
 
   group = parser.add_argument_group('Advanced options')
   group.add_argument('--filesystem-prefix',

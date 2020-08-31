@@ -20,8 +20,8 @@ namespace ash {
 
 class FeaturePodControllerBase;
 
-// ImageButon internally used in FeaturePodButton. Should not be used directly.
-class FeaturePodIconButton : public views::ImageButton {
+// A toggle button with an icon used by feature pods and in other places.
+class FeaturePodIconButton : public views::ToggleImageButton {
  public:
   FeaturePodIconButton(views::ButtonListener* listener, bool is_togglable);
   ~FeaturePodIconButton() override;
@@ -29,13 +29,15 @@ class FeaturePodIconButton : public views::ImageButton {
   // Change the toggle state. See FeaturePodButton::SetToggled.
   void SetToggled(bool toggled);
 
+  // Sets the button's icon.
+  void SetVectorIcon(const gfx::VectorIcon& icon);
+
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
 
@@ -59,10 +61,12 @@ class FeaturePodLabelButton : public views::Button {
 
   // Set the text of label shown below the icon. See FeaturePodButton::SetLabel.
   void SetLabel(const base::string16& label);
+  const base::string16& GetLabelText() const;
 
   // Set the text of sub-label shown below the label.
   // See FeaturePodButton::SetSubLabel.
   void SetSubLabel(const base::string16& sub_label);
+  const base::string16& GetSubLabelText() const;
 
   // Show arrow to indicate that the feature has a detailed view.
   // See FeaturePodButton::ShowDetailedViewArrow.
@@ -75,7 +79,6 @@ class FeaturePodLabelButton : public views::Button {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   const char* GetClassName() const override;
 
  private:

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/udev_linux/udev0_loader.h"
 #include "device/udev_linux/udev1_loader.h"
 
@@ -36,7 +36,15 @@ UdevLoader* UdevLoader::Get() {
     return g_udev_loader;
   }
   CHECK(false);
-  return NULL;
+  return nullptr;
+}
+
+// static
+void UdevLoader::SetForTesting(UdevLoader* loader, bool delete_previous) {
+  if (g_udev_loader && delete_previous)
+    delete g_udev_loader;
+
+  g_udev_loader = loader;
 }
 
 UdevLoader::~UdevLoader() = default;

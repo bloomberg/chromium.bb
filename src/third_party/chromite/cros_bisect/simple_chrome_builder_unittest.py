@@ -14,6 +14,7 @@ import mock
 from chromite.cros_bisect import simple_chrome_builder
 from chromite.cbuildbot import commands
 from chromite.lib import commandline
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import git
@@ -32,6 +33,18 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     self.default_archive_base = os.path.join(self.tempdir, 'build')
     self.gclient_path = os.path.join(self.tempdir, 'gclient')
     self.log_output_args = {'log_output': True}
+
+    # The SimpleChromeBuilder class sets a 'verbose' setting based on the
+    # ambient logging level, so we must set the logger to the default setting
+    # of INFO for this test and then restore the logger to whatever it was
+    # originally set to when we clean the test up.
+    logger = logging.getLogger()
+    self._prev_logging_level = logger.getEffectiveLevel()
+    logger.setLevel(logging.INFO)
+
+  def tearDown(self):
+    logger = logging.getLogger()
+    logger.setLevel(self._prev_logging_level)
 
   def GetBuilder(self, base_dir=None, board=None, reuse_repo=True,
                  chromium_dir=None, build_dir=None, archive_build=True,

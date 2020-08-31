@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
@@ -25,14 +25,11 @@
 
   // Logic for handling Views windows.
   //
-  // There are 3 ways for extensions to register accelerators in Views:
+  // There are 2 ways for extensions to register accelerators in Views:
   //  1) As regular extension commands, see ExtensionKeybindingRegistryViews.
   //     This always has high priority.
   //  2) As page/browser popup actions, see
   //     ExtensionActionPlatformDelegateViews. This always has high priority.
-  //  3) As a bookmark override. This always has regular priority, and is
-  //     actually handled as a special case of the IDC_BOOKMARK_THIS_TAB browser
-  //     command. See BookmarkCurrentTabAllowingExtensionOverrides.
   //
   // The only reasonable way to access the registered accelerators for (1) and
   // (2) is to use the FocusManager. That is what we do here. But that will also

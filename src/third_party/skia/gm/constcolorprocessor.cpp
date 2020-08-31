@@ -29,6 +29,7 @@
 #include "include/gpu/GrContext.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkColorData.h"
+#include "src/core/SkMatrixProvider.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
@@ -89,7 +90,7 @@ protected:
             "kModulateRGBA",
             "kModulateA",
         };
-        GR_STATIC_ASSERT(SK_ARRAY_COUNT(kModeStrs) == GrConstColorProcessor::kInputModeCnt);
+        static_assert(SK_ARRAY_COUNT(kModeStrs) == GrConstColorProcessor::kInputModeCnt);
 
         SkScalar y = kPad;
         SkScalar x = kPad;
@@ -101,6 +102,7 @@ protected:
                     canvas->save();
                     canvas->translate(x, y);
                     const SkMatrix viewMatrix = SkMatrix::MakeTrans(x, y);
+                    SkSimpleMatrixProvider matrixProvider(viewMatrix);
 
                     // rect to draw
                     SkRect renderRect = SkRect::MakeXYWH(0, 0, kRectSize, kRectSize);
@@ -113,7 +115,7 @@ protected:
                         skPaint.setColor(kPaintColors[paintType]);
                     }
                     SkAssertResult(SkPaintToGrPaint(context, renderTargetContext->colorInfo(),
-                                                    skPaint, viewMatrix, &grPaint));
+                                                    skPaint, matrixProvider, &grPaint));
 
                     GrConstColorProcessor::InputMode mode = (GrConstColorProcessor::InputMode) m;
                     SkPMColor4f color = SkPMColor4f::FromBytes_RGBA(kColors[procColor]);
@@ -168,8 +170,8 @@ protected:
 
                     // update x and y for the next test case.
                     SkScalar height = renderRect.height();
-                    SkScalar width = SkTMax(inputLabelBounds.fRight, procLabelBounds.fRight);
-                    maxW = SkTMax(maxW, width);
+                    SkScalar width = std::max(inputLabelBounds.fRight, procLabelBounds.fRight);
+                    maxW = std::max(maxW, width);
                     y += height + kPad;
                     if (y + height > kHeight) {
                         y = kPad;

@@ -20,7 +20,9 @@ static_library("common") {
     "//ipc",
     "//printing",
     "//printing/common:common",
+    "//printing/mojom",
     "//third_party/blink/public:blink_headers",
+    "//ui/accessibility",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
@@ -29,12 +31,12 @@ static_library("common") {
 }
 
 mojom("mojo_interfaces") {
-  sources = [
-    "print.mojom",
-  ]
+  sources = [ "print.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//printing/mojom",
+    "//ui/gfx/geometry/mojom",
   ]
 
   if (enable_print_preview) {

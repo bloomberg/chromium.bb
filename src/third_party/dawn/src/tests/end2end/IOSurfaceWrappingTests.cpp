@@ -19,6 +19,7 @@
 #include "utils/WGPUHelpers.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreVideo/CVPixelBuffer.h>
 #include <IOSurface/IOSurface.h>
 
 namespace {
@@ -95,10 +96,15 @@ namespace {
       public:
         wgpu::Texture WrapIOSurface(const wgpu::TextureDescriptor* descriptor,
                                     IOSurfaceRef ioSurface,
-                                    uint32_t plane) {
-            WGPUTexture texture = dawn_native::metal::WrapIOSurface(
-                device.Get(), reinterpret_cast<const WGPUTextureDescriptor*>(descriptor), ioSurface,
-                plane);
+                                    uint32_t plane,
+                                    bool isCleared = true) {
+            dawn_native::metal::ExternalImageDescriptorIOSurface externDesc;
+            externDesc.cTextureDescriptor =
+                reinterpret_cast<const WGPUTextureDescriptor*>(descriptor);
+            externDesc.ioSurface = ioSurface;
+            externDesc.plane = plane;
+            externDesc.isCleared = isCleared;
+            WGPUTexture texture = dawn_native::metal::WrapIOSurface(device.Get(), &externDesc);
             return wgpu::Texture::Acquire(texture);
         }
     };
@@ -110,7 +116,7 @@ namespace {
 class IOSurfaceValidationTests : public IOSurfaceTestBase {
   public:
     IOSurfaceValidationTests() {
-        defaultIOSurface = CreateSinglePlaneIOSurface(10, 10, 'BGRA', 4);
+        defaultIOSurface = CreateSinglePlaneIOSurface(10, 10, kCVPixelFormatType_32BGRA, 4);
 
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.format = wgpu::TextureFormat::BGRA8Unorm;
@@ -136,7 +142,9 @@ TEST_P(IOSurfaceValidationTests, Success) {
 // Test an error occurs if the texture descriptor is invalid
 TEST_P(IOSurfaceValidationTests, InvalidTextureDescriptor) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    descriptor.nextInChain = this;
+
+    wgpu::ChainedStruct chainedDescriptor;
+    descriptor.nextInChain = &chainedDescriptor;
 
     ASSERT_DEVICE_ERROR(wgpu::Texture texture =
                             WrapIOSurface(&descriptor, defaultIOSurface.get(), 0));
@@ -311,7 +319,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
             pass.SetPipeline(pipeline);
             pass.SetBindGroup(0, bindGroup);
-            pass.Draw(6, 1, 0, 0);
+            pass.Draw(6);
             pass.EndPass();
         }
 
@@ -364,7 +372,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
 // Test sampling from a R8 IOSurface
 TEST_P(IOSurfaceUsageTests, SampleFromR8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'L008', 1);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_OneComponent8, 1);
 
     uint8_t data = 0x01;
     DoSampleTest(ioSurface.get(), wgpu::TextureFormat::R8Unorm, &data, sizeof(data),
@@ -374,7 +382,7 @@ TEST_P(IOSurfaceUsageTests, SampleFromR8IOSurface) {
 // Test clearing a R8 IOSurface
 TEST_P(IOSurfaceUsageTests, ClearR8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'L008', 1);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_OneComponent8, 1);
 
     uint8_t data = 0x01;
     DoClearTest(ioSurface.get(), wgpu::TextureFormat::R8Unorm, &data, sizeof(data));
@@ -383,7 +391,7 @@ TEST_P(IOSurfaceUsageTests, ClearR8IOSurface) {
 // Test sampling from a RG8 IOSurface
 TEST_P(IOSurfaceUsageTests, SampleFromRG8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, '2C08', 2);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_TwoComponent8, 2);
 
     uint16_t data = 0x0102;  // Stored as (G, R)
     DoSampleTest(ioSurface.get(), wgpu::TextureFormat::RG8Unorm, &data, sizeof(data),
@@ -393,7 +401,7 @@ TEST_P(IOSurfaceUsageTests, SampleFromRG8IOSurface) {
 // Test clearing a RG8 IOSurface
 TEST_P(IOSurfaceUsageTests, ClearRG8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, '2C08', 2);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_TwoComponent8, 2);
 
     uint16_t data = 0x0201;
     DoClearTest(ioSurface.get(), wgpu::TextureFormat::RG8Unorm, &data, sizeof(data));
@@ -402,7 +410,7 @@ TEST_P(IOSurfaceUsageTests, ClearRG8IOSurface) {
 // Test sampling from a BGRA8 IOSurface
 TEST_P(IOSurfaceUsageTests, SampleFromBGRA8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'BGRA', 4);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_32BGRA, 4);
 
     uint32_t data = 0x01020304;  // Stored as (A, R, G, B)
     DoSampleTest(ioSurface.get(), wgpu::TextureFormat::BGRA8Unorm, &data, sizeof(data),
@@ -412,7 +420,7 @@ TEST_P(IOSurfaceUsageTests, SampleFromBGRA8IOSurface) {
 // Test clearing a BGRA8 IOSurface
 TEST_P(IOSurfaceUsageTests, ClearBGRA8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'BGRA', 4);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_32BGRA, 4);
 
     uint32_t data = 0x04010203;
     DoClearTest(ioSurface.get(), wgpu::TextureFormat::BGRA8Unorm, &data, sizeof(data));
@@ -421,7 +429,7 @@ TEST_P(IOSurfaceUsageTests, ClearBGRA8IOSurface) {
 // Test sampling from an RGBA8 IOSurface
 TEST_P(IOSurfaceUsageTests, SampleFromRGBA8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'RGBA', 4);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_32RGBA, 4);
 
     uint32_t data = 0x01020304;  // Stored as (A, B, G, R)
     DoSampleTest(ioSurface.get(), wgpu::TextureFormat::RGBA8Unorm, &data, sizeof(data),
@@ -431,11 +439,36 @@ TEST_P(IOSurfaceUsageTests, SampleFromRGBA8IOSurface) {
 // Test clearing an RGBA8 IOSurface
 TEST_P(IOSurfaceUsageTests, ClearRGBA8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'RGBA', 4);
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_32RGBA, 4);
 
     uint32_t data = 0x04030201;
     DoClearTest(ioSurface.get(), wgpu::TextureFormat::RGBA8Unorm, &data, sizeof(data));
 }
 
-DAWN_INSTANTIATE_TEST(IOSurfaceValidationTests, MetalBackend);
-DAWN_INSTANTIATE_TEST(IOSurfaceUsageTests, MetalBackend);
+// Test that texture with color is cleared when isCleared = false
+TEST_P(IOSurfaceUsageTests, UnclearedTextureIsCleared) {
+    DAWN_SKIP_TEST_IF(UsesWire());
+
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, kCVPixelFormatType_32RGBA, 4);
+    uint32_t data = 0x04030201;
+
+    IOSurfaceLock(ioSurface.get(), 0, nullptr);
+    memcpy(IOSurfaceGetBaseAddress(ioSurface.get()), &data, sizeof(data));
+    IOSurfaceUnlock(ioSurface.get(), 0, nullptr);
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.dimension = wgpu::TextureDimension::e2D;
+    textureDescriptor.format = wgpu::TextureFormat::RGBA8Unorm;
+    textureDescriptor.size = {1, 1, 1};
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.arrayLayerCount = 1;
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+
+    // wrap ioSurface and ensure color is not visible when isCleared set to false
+    wgpu::Texture ioSurfaceTexture = WrapIOSurface(&textureDescriptor, ioSurface.get(), 0, false);
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0, 0), ioSurfaceTexture, 0, 0);
+}
+
+DAWN_INSTANTIATE_TEST(IOSurfaceValidationTests, MetalBackend());
+DAWN_INSTANTIATE_TEST(IOSurfaceUsageTests, MetalBackend());

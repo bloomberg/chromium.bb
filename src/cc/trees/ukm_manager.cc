@@ -4,6 +4,7 @@
 
 #include "cc/trees/ukm_manager.h"
 
+#include "cc/metrics/throughput_ukm_reporter.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -92,11 +93,11 @@ void UkmManager::RecordRenderingUkm() {
 
 void UkmManager::RecordThroughputUKM(
     FrameSequenceTrackerType tracker_type,
-    FrameSequenceTracker::ThreadType thread_type,
+    FrameSequenceMetrics::ThreadType thread_type,
     int64_t throughput) const {
-  ukm::builders::Graphics_Smoothness_Throughput builder(source_id_);
+  ukm::builders::Graphics_Smoothness_PercentDroppedFrames builder(source_id_);
   switch (thread_type) {
-    case FrameSequenceTracker::ThreadType::kMain: {
+    case FrameSequenceMetrics::ThreadType::kMain: {
       switch (tracker_type) {
 #define CASE_FOR_MAIN_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:     \
@@ -119,7 +120,7 @@ void UkmManager::RecordThroughputUKM(
       break;
     }
 
-    case FrameSequenceTracker::ThreadType::kCompositor: {
+    case FrameSequenceMetrics::ThreadType::kCompositor: {
       switch (tracker_type) {
 #define CASE_FOR_COMPOSITOR_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:           \
@@ -141,7 +142,7 @@ void UkmManager::RecordThroughputUKM(
       break;
     }
 
-    case FrameSequenceTracker::ThreadType::kSlower: {
+    case FrameSequenceMetrics::ThreadType::kSlower: {
       switch (tracker_type) {
 #define CASE_FOR_SLOWER_THREAD_TRACKER(name)    \
   case FrameSequenceTrackerType::k##name:       \
@@ -166,6 +167,123 @@ void UkmManager::RecordThroughputUKM(
       NOTREACHED();
       break;
   }
+  builder.Record(recorder_.get());
+}
+
+void UkmManager::RecordAggregateThroughput(AggregationType aggregation_type,
+                                           int64_t throughput_percent) const {
+  ukm::builders::Graphics_Smoothness_PercentDroppedFrames builder(source_id_);
+  switch (aggregation_type) {
+    case AggregationType::kAllAnimations:
+      builder.SetAllAnimations(throughput_percent);
+      break;
+    case AggregationType::kAllInteractions:
+      builder.SetAllInteractions(throughput_percent);
+      break;
+    case AggregationType::kAllSequences:
+      builder.SetAllSequences(throughput_percent);
+      break;
+  }
+  builder.Record(recorder_.get());
+}
+
+void UkmManager::RecordLatencyUKM(
+    CompositorFrameReporter::FrameReportType report_type,
+    const std::vector<CompositorFrameReporter::StageData>& stage_history,
+    const CompositorFrameReporter::ActiveTrackers& active_trackers,
+    const viz::FrameTimingDetails& viz_breakdown) const {
+  ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
+
+  if (report_type == CompositorFrameReporter::FrameReportType::kDroppedFrame) {
+    builder.SetMissedFrame(true);
+  }
+
+  // Record each stage
+  for (const CompositorFrameReporter::StageData& stage : stage_history) {
+    switch (stage.stage_type) {
+#define CASE_FOR_STAGE(name)                                                 \
+  case CompositorFrameReporter::StageType::k##name:                          \
+    builder.Set##name((stage.end_time - stage.start_time).InMicroseconds()); \
+    break;
+      CASE_FOR_STAGE(BeginImplFrameToSendBeginMainFrame);
+      CASE_FOR_STAGE(SendBeginMainFrameToCommit);
+      CASE_FOR_STAGE(Commit);
+      CASE_FOR_STAGE(EndCommitToActivation);
+      CASE_FOR_STAGE(Activation);
+      CASE_FOR_STAGE(EndActivateToSubmitCompositorFrame);
+      CASE_FOR_STAGE(TotalLatency);
+#undef CASE_FOR_STAGE
+      // Break out kSubmitCompositorFrameToPresentationCompositorFrame to report
+      // the viz breakdown.
+      case CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame:
+        builder.SetSubmitCompositorFrameToPresentationCompositorFrame(
+            (stage.end_time - stage.start_time).InMicroseconds());
+        if (viz_breakdown.received_compositor_frame_timestamp.is_null())
+          break;
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_SubmitToReceiveCompositorFrame(
+                (viz_breakdown.received_compositor_frame_timestamp -
+                 stage.start_time)
+                    .InMicroseconds());
+        if (viz_breakdown.draw_start_timestamp.is_null())
+          break;
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_ReceivedCompositorFrameToStartDraw(
+                (viz_breakdown.draw_start_timestamp -
+                 viz_breakdown.received_compositor_frame_timestamp)
+                    .InMicroseconds());
+        if (viz_breakdown.swap_timings.is_null())
+          break;
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_StartDrawToSwapStart(
+                (viz_breakdown.swap_timings.swap_start -
+                 viz_breakdown.draw_start_timestamp)
+                    .InMicroseconds());
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_SwapStartToSwapEnd(
+                (viz_breakdown.swap_timings.swap_end -
+                 viz_breakdown.swap_timings.swap_start)
+                    .InMicroseconds());
+        builder
+            .SetSubmitCompositorFrameToPresentationCompositorFrame_SwapEndToPresentationCompositorFrame(
+                (viz_breakdown.presentation_feedback.timestamp -
+                 viz_breakdown.swap_timings.swap_end)
+                    .InMicroseconds());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  // Record the active trackers
+  for (size_t type = 0; type < active_trackers.size(); ++type) {
+    if (!active_trackers.test(type))
+      continue;
+    const auto frame_sequence_tracker_type =
+        static_cast<FrameSequenceTrackerType>(type);
+    if (frame_sequence_tracker_type == FrameSequenceTrackerType::kUniversal)
+      continue;
+    switch (frame_sequence_tracker_type) {
+#define CASE_FOR_TRACKER(name)            \
+  case FrameSequenceTrackerType::k##name: \
+    builder.Set##name(true);              \
+    break;
+      CASE_FOR_TRACKER(CompositorAnimation);
+      CASE_FOR_TRACKER(MainThreadAnimation);
+      CASE_FOR_TRACKER(PinchZoom);
+      CASE_FOR_TRACKER(RAF);
+      CASE_FOR_TRACKER(TouchScroll);
+      CASE_FOR_TRACKER(Video);
+      CASE_FOR_TRACKER(WheelScroll);
+#undef CASE_FOR_TRACKER
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
   builder.Record(recorder_.get());
 }
 

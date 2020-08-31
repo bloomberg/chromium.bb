@@ -12,6 +12,8 @@ import fnmatch
 import os
 import re
 import shutil
+import subprocess
+import sys
 import tempfile
 
 import portage  # pylint: disable=import-error
@@ -26,6 +28,9 @@ from chromite.lib import operation
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 oper = operation.Operation('cros_portage_upgrade')
@@ -200,8 +205,7 @@ class Upgrader(object):
     is a file path rooted at |self._stable_repo|, and the value is the status
     for that file as returned by 'git status -s'.  (e.g. 'A' for 'Added').
     """
-    result = self._RunGit(self._stable_repo, ['status', '-s'],
-                          redirect_stdout=True)
+    result = self._RunGit(self._stable_repo, ['status', '-s'], stdout=True)
     if result.returncode == 0:
       statuses = {}
       for line in result.output.strip().split('\n'):
@@ -248,7 +252,7 @@ class Upgrader(object):
 
   def _CheckStableRepoOnBranch(self):
     """Raise exception if |self._stable_repo| is not on a branch now."""
-    result = self._RunGit(self._stable_repo, ['branch'], redirect_stdout=True)
+    result = self._RunGit(self._stable_repo, ['branch'], stdout=True)
     if result.returncode == 0:
       for line in result.output.split('\n'):
         match = re.search(r'^\*\s+(.+)$', line)
@@ -373,26 +377,22 @@ class Upgrader(object):
 
     return None
 
-  def _RunGit(self, cwd, command, redirect_stdout=False,
-              combine_stdout_stderr=False):
+  def _RunGit(self, cwd, command, stdout=None, stderr=None):
     """Runs git |command| (a list of command tokens) in |cwd|.
 
-    This leverages the cros_build_lib.run function.  The
-    |redirect_stdout| and |combine_stdout_stderr| arguments are
-    passed to that function.
+    This leverages the cros_build_lib.run function.  The |stdout| and |stderr|
+    arguments are passed to that function.
 
     Returns a Result object as documented by cros_build_lib.run.
-    Most usefully, the result object has a .output attribute containing
-    the output from the command (if |redirect_stdout| was True).
+    Most usefully, the result object has a .stdout attribute containing
+    the output from the command (if |stdout| was True).
     """
     # This disables the vi-like output viewer for commands like 'git show'.
     extra_env = {'GIT_PAGER': 'cat'}
     cmdline = ['git'] + command
     return cros_build_lib.run(
         cmdline, cwd=cwd, extra_env=extra_env, print_cmd=self._verbose,
-        redirect_stdout=redirect_stdout,
-        combine_stdout_stderr=combine_stdout_stderr,
-        encoding='utf-8')
+        stdout=stdout, stderr=stderr, encoding='utf-8')
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
@@ -454,7 +454,7 @@ class Upgrader(object):
     equery = ['equery', 'which', pkg]
     cmd_result = cros_build_lib.run(
         equery, extra_env=envvars, print_cmd=self._verbose,
-        check=False, redirect_stdout=True, combine_stdout_stderr=True,
+        check=False, stdout=True, stderr=subprocess.STDOUT,
         encoding='utf-8')
 
     if cmd_result.returncode == 0:
@@ -488,8 +488,8 @@ class Upgrader(object):
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cmd, check=False, extra_env=envvars, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     return (result.returncode == 0, ' '.join(cmd), result.output)
 
@@ -500,8 +500,8 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', pkg]
     cmd_result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cmd, check=False, extra_env=envvars, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
@@ -518,8 +518,8 @@ class Upgrader(object):
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cmd, check=False, extra_env=envvars, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     output = result.output
     if result.returncode:
@@ -560,8 +560,8 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', '--include-masked', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cmd, check=False, extra_env=envvars, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     ebuild_path = result.output.strip()
     (overlay, _cat, _pn, _pv) = self._SplitEBuildPath(ebuild_path)
@@ -604,8 +604,8 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', '--no-pipe', 'which', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cmd, check=False, extra_env=envvars, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     if result.returncode != 0:
       output = result.output.strip()
@@ -678,7 +678,7 @@ class Upgrader(object):
     """Run 'git stash save' on stable repo."""
     # Only one level of stashing expected/supported.
     self._RunGit(self._stable_repo, ['stash', 'save'],
-                 redirect_stdout=True, combine_stdout_stderr=True)
+                 stdout=True, stderr=subprocess.STDOUT)
     self._stable_repo_stashed = True
 
   def _UnstashAnyChanges(self):
@@ -686,7 +686,7 @@ class Upgrader(object):
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
       self._RunGit(self._stable_repo, ['stash', 'pop', '--index'],
-                   redirect_stdout=True, combine_stdout_stderr=True)
+                   stdout=True, stderr=subprocess.STDOUT)
       self._stable_repo_stashed = False
 
   def _DropAnyStashedChanges(self):
@@ -694,7 +694,7 @@ class Upgrader(object):
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
       self._RunGit(self._stable_repo, ['stash', 'drop'],
-                   redirect_stdout=True, combine_stdout_stderr=True)
+                   stdout=True, stderr=subprocess.STDOUT)
       self._stable_repo_stashed = False
 
   def _CopyUpstreamPackage(self, upstream_cpv):
@@ -728,7 +728,7 @@ class Upgrader(object):
       items = [os.path.join(catpkgsubdir, i) for i in items if i != 'Manifest']
       if items:
         args = ['rm', '-rf', '--ignore-unmatch'] + items
-        self._RunGit(self._stable_repo, args, redirect_stdout=True)
+        self._RunGit(self._stable_repo, args, stdout=True)
         # Now delete any files that git doesn't know about.
         for item in items:
           osutils.SafeUnlink(os.path.join(self._stable_repo, item))
@@ -827,8 +827,8 @@ class Upgrader(object):
 
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
     manifest_result = cros_build_lib.run(
-        manifest_cmd, error_code_ok=True, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        manifest_cmd, check=False, print_cmd=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
     if manifest_result.returncode != 0:
       raise RuntimeError('Failed "ebuild manifest" for upgraded package.\n'
@@ -1057,8 +1057,8 @@ class Upgrader(object):
                                        cache_files])
       cmd = ['egencache', '--update', '--repo=portage-stable', pinfo.package]
       egen_result = cros_build_lib.run(cmd, print_cmd=False,
-                                       redirect_stdout=True,
-                                       combine_stdout_stderr=True,
+                                       stdout=True,
+                                       stderr=subprocess.STDOUT,
                                        encoding='utf-8')
       if egen_result.returncode != 0:
         raise RuntimeError('Failed to regenerate md5-cache for %r.\n'
@@ -1136,7 +1136,7 @@ class Upgrader(object):
     """Create git commit message combining |upgrade_lines| with last commit."""
     # First get the body of the last commit message.
     git_cmd = ['show', '-s', '--format=%b']
-    result = self._RunGit(self._stable_repo, git_cmd, redirect_stdout=True)
+    result = self._RunGit(self._stable_repo, git_cmd, stdout=True)
     body = result.output
 
     remaining_lines = []
@@ -1548,7 +1548,7 @@ class Upgrader(object):
                       (self.GIT_BRANCH, self.GIT_REMOTE_BRANCH)])
         self._RunGit(self._upstream, ['remote', 'update'])
         self._RunGit(self._upstream, ['checkout', '-f', self.GIT_REMOTE_BRANCH],
-                     redirect_stdout=True, combine_stdout_stderr=True)
+                     stdout=True, stderr=subprocess.STDOUT)
     else:
       if self._local_only:
         oper.Die('--local-only specified, but no local cache exists. '

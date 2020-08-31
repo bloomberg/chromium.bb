@@ -36,14 +36,6 @@
 
 namespace blink {
 
-Scrollbar* CustomScrollbar::CreateCustomScrollbar(
-    ScrollableArea* scrollable_area,
-    ScrollbarOrientation orientation,
-    Element* style_source) {
-  return MakeGarbageCollected<CustomScrollbar>(scrollable_area, orientation,
-                                               style_source);
-}
-
 CustomScrollbar::CustomScrollbar(ScrollableArea* scrollable_area,
                                  ScrollbarOrientation orientation,
                                  Element* style_source)
@@ -104,7 +96,7 @@ int CustomScrollbar::HypotheticalScrollbarThickness(
       enclosing_box.ClientWidth().ToInt(), part_style.get());
 }
 
-void CustomScrollbar::Trace(blink::Visitor* visitor) {
+void CustomScrollbar::Trace(Visitor* visitor) {
   Scrollbar::Trace(visitor);
 }
 
@@ -150,14 +142,18 @@ void CustomScrollbar::SetPressedPart(ScrollbarPart part,
   UpdateScrollbarPart(kTrackBGPart);
 }
 
-scoped_refptr<ComputedStyle> CustomScrollbar::GetScrollbarPseudoElementStyle(
-    ScrollbarPart part_type,
-    PseudoId pseudo_id) {
+scoped_refptr<const ComputedStyle>
+CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
+                                                PseudoId pseudo_id) {
   if (!StyleSource()->GetLayoutObject())
     return nullptr;
-  return StyleSource()->StyleForPseudoElement(
-      PseudoElementStyleRequest(pseudo_id, this, part_type),
-      StyleSource()->GetLayoutObject()->Style());
+  const ComputedStyle* source_style = StyleSource()->GetLayoutObject()->Style();
+  scoped_refptr<const ComputedStyle> part_style =
+      StyleSource()->StyleForPseudoElement(
+          PseudoElementStyleRequest(pseudo_id, this, part_type), source_style);
+  if (!part_style)
+    return nullptr;
+  return source_style->AddCachedPseudoElementStyle(std::move(part_style));
 }
 
 void CustomScrollbar::UpdateScrollbarParts(bool destroy) {
@@ -236,41 +232,28 @@ void CustomScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
   if (part_type == kNoPart)
     return;
 
-  scoped_refptr<ComputedStyle> part_style =
+  scoped_refptr<const ComputedStyle> part_style =
       !destroy ? GetScrollbarPseudoElementStyle(
                      part_type, PseudoForScrollbarPart(part_type))
-               : scoped_refptr<ComputedStyle>(nullptr);
+               : scoped_refptr<const ComputedStyle>(nullptr);
 
   bool need_layout_object =
       !destroy && part_style && part_style->Display() != EDisplay::kNone;
 
-  if (need_layout_object && part_style->Display() != EDisplay::kBlock) {
-    // See if we are a button that should not be visible according to OS
-    // settings.
-    WebScrollbarButtonsPlacement buttons_placement =
-        GetTheme().ButtonsPlacement();
+  if (need_layout_object &&
+      // display:block overrides OS settings.
+      part_style->Display() != EDisplay::kBlock) {
+    // If not display:block, visibility of buttons depends on OS settings.
     switch (part_type) {
       case kBackButtonStartPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementSingle ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
-        break;
-      case kForwardButtonStartPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
+      case kForwardButtonEndPart:
+        // Create buttons only if the OS theme has scrollbar buttons.
+        need_layout_object = GetTheme().NativeThemeHasButtons();
         break;
       case kBackButtonEndPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
-        break;
-      case kForwardButtonEndPart:
-        need_layout_object =
-            (buttons_placement == kWebScrollbarButtonsPlacementSingle ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-             buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth);
+      case kForwardButtonStartPart:
+        // These buttons are not supported by any OS.
+        need_layout_object = false;
         break;
       default:
         break;

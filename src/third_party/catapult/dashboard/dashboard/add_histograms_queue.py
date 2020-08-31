@@ -18,6 +18,7 @@ from dashboard import add_point
 from dashboard import add_point_queue
 from dashboard import find_anomalies
 from dashboard import graph_revisions
+from dashboard import sheriff_config_client
 from dashboard.common import datastore_hooks
 from dashboard.common import histogram_helpers
 from dashboard.common import request_handler
@@ -207,15 +208,28 @@ def _AddRowsFromData(params, revision, parent_test, legacy_parent_tests):
     raise ndb.Return()
 
   yield ndb.put_multi_async(rows) + [r.UpdateParentAsync() for r in rows]
+  logging.debug('Processed %s row entities.', len(rows))
 
+  def IsMonitored(client, test):
+    reason = []
+    subscriptions, _ = client.Match(test.test_path, check=True)
+    if not subscriptions:
+      reason.append('subscriptions')
+    if not test.has_rows:
+      reason.append('has_rows')
+    if reason:
+      logging.info('Skip test: %s reason=%s', test.key, ','.join(reason))
+      return False
+    logging.info('Process test: %s', test.key)
+    return True
+
+  client = sheriff_config_client.GetSheriffConfigClient()
   tests_keys = []
-  is_monitored = parent_test.sheriff and parent_test.has_rows
-  if is_monitored:
+  if IsMonitored(client, parent_test):
     tests_keys.append(parent_test.key)
 
   for legacy_parent_test in legacy_parent_tests.values():
-    is_monitored = legacy_parent_test.sheriff and legacy_parent_test.has_rows
-    if is_monitored:
+    if IsMonitored(client, legacy_parent_test):
       tests_keys.append(legacy_parent_test.key)
 
   tests_keys = [

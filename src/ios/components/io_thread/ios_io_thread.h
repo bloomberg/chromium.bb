@@ -107,7 +107,8 @@ class IOSIOThread : public web::WebThreadDelegate {
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     std::unique_ptr<net::HttpServerProperties> http_server_properties;
-    std::unique_ptr<net::ProxyResolutionService> system_proxy_resolution_service;
+    std::unique_ptr<net::ProxyResolutionService>
+        system_proxy_resolution_service;
     std::unique_ptr<net::QuicContext> quic_context;
     std::unique_ptr<net::HttpNetworkSession> system_http_network_session;
     std::unique_ptr<net::HttpTransactionFactory>

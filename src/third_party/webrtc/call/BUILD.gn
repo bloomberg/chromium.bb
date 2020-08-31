@@ -28,9 +28,11 @@ rtc_library("call_interfaces") {
     sources += [ "audio_send_stream.cc" ]
   }
   deps = [
+    ":audio_sender_interface",
     ":rtp_interfaces",
     ":video_stream_api",
     "../api:fec_controller_api",
+    "../api:frame_transformer_interface",
     "../api:network_state_predictor_api",
     "../api:rtc_error",
     "../api:rtp_headers",
@@ -63,6 +65,12 @@ rtc_library("call_interfaces") {
   ]
 }
 
+rtc_source_set("audio_sender_interface") {
+  visibility = [ "*" ]
+  sources = [ "audio_sender.h" ]
+  deps = [ "../api/audio:audio_frame_api" ]
+}
+
 # TODO(nisse): These RTP targets should be moved elsewhere
 # when interfaces have stabilized. See also TODO for |mock_rtp_interfaces|.
 rtc_library("rtp_interfaces") {
@@ -82,6 +90,7 @@ rtc_library("rtp_interfaces") {
   deps = [
     "../api:array_view",
     "../api:fec_controller_api",
+    "../api:frame_transformer_interface",
     "../api:rtp_headers",
     "../api:rtp_parameters",
     "../api/crypto:options",
@@ -89,7 +98,9 @@ rtc_library("rtp_interfaces") {
     "../api/transport:bitrate_settings",
     "../api/units:timestamp",
     "../modules/rtp_rtcp:rtp_rtcp_format",
+    "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
+    "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -144,6 +155,7 @@ rtc_library("rtp_sender") {
     "../api/transport:field_trial_based_config",
     "../api/transport:goog_cc",
     "../api/transport:network_control",
+    "../api/transport:webrtc_key_value_config",
     "../api/units:data_rate",
     "../api/units:time_delta",
     "../api/units:timestamp",
@@ -160,6 +172,7 @@ rtc_library("rtp_sender") {
     "../modules/rtp_rtcp:rtp_video_header",
     "../modules/utility",
     "../modules/video_coding:codec_globals_headers",
+    "../modules/video_coding:frame_dependencies_calculator",
     "../modules/video_coding:video_codec_interface",
     "../rtc_base",
     "../rtc_base:checks",
@@ -167,7 +180,6 @@ rtc_library("rtp_sender") {
     "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_task_queue",
     "../rtc_base/task_utils:repeating_task",
-    "../system_wrappers:field_trial",
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/container:inlined_vector",
     "//third_party/abseil-cpp/absl/strings:strings",
@@ -187,6 +199,7 @@ rtc_library("bitrate_configurator") {
     # For api/bitrate_constraints.h
     "../api:libjingle_peerconnection_api",
     "../api/transport:bitrate_settings",
+    "../api/units:data_rate",
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "//third_party/abseil-cpp/absl/types:optional",
@@ -285,6 +298,7 @@ rtc_library("video_stream_api") {
   ]
   deps = [
     ":rtp_interfaces",
+    "../api:frame_transformer_interface",
     "../api:rtp_headers",
     "../api:rtp_parameters",
     "../api:transport_api",
@@ -324,9 +338,7 @@ rtc_library("simulated_network") {
 }
 
 rtc_source_set("simulated_packet_receiver") {
-  sources = [
-    "simulated_packet_receiver.h",
-  ]
+  sources = [ "simulated_packet_receiver.h" ]
   deps = [
     ":call_interfaces",
     "../api:simulated_network_api",
@@ -382,6 +394,7 @@ if (rtc_include_tests) {
       ":rtp_sender",
       ":simulated_network",
       "../api:array_view",
+      "../api:create_frame_generator",
       "../api:mock_audio_mixer",
       "../api:rtp_headers",
       "../api:rtp_parameters",
@@ -416,11 +429,14 @@ if (rtc_include_tests) {
       "../test:encoder_settings",
       "../test:fake_video_codecs",
       "../test:field_trial",
+      "../test:mock_frame_transformer",
+      "../test:mock_transport",
       "../test:test_common",
       "../test:test_support",
       "../test:video_test_common",
       "../test/time_controller:time_controller",
       "../video",
+      "//test/scenario:scenario",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/abseil-cpp/absl/container:inlined_vector",
@@ -456,6 +472,7 @@ if (rtc_include_tests) {
       "../modules/audio_device:audio_device_impl",
       "../modules/audio_mixer:audio_mixer_impl",
       "../modules/rtp_rtcp",
+      "../modules/rtp_rtcp:rtp_rtcp_format",
       "../rtc_base",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
@@ -491,6 +508,7 @@ if (rtc_include_tests) {
     ]
     deps = [
       ":rtp_interfaces",
+      "../api:frame_transformer_interface",
       "../api:libjingle_peerconnection_api",
       "../api/crypto:frame_encryptor_interface",
       "../api/crypto:options",
@@ -505,9 +523,7 @@ if (rtc_include_tests) {
   rtc_source_set("mock_bitrate_allocator") {
     testonly = true
 
-    sources = [
-      "test/mock_bitrate_allocator.h",
-    ]
+    sources = [ "test/mock_bitrate_allocator.h" ]
     deps = [
       ":bitrate_allocator",
       "../test:test_support",
@@ -516,9 +532,7 @@ if (rtc_include_tests) {
   rtc_source_set("mock_call_interfaces") {
     testonly = true
 
-    sources = [
-      "test/mock_audio_send_stream.h",
-    ]
+    sources = [ "test/mock_audio_send_stream.h" ]
     deps = [
       ":call_interfaces",
       "../test:test_support",

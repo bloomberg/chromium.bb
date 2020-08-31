@@ -11,7 +11,7 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -19,10 +19,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/profile_metrics/state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -291,8 +291,6 @@ TEST_F(ProfileAttributesStorageTest, InitialValues) {
 }
 
 TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kProfileMenuRevamp);
   AddTestingProfile();
 
   base::FilePath path = GetProfilePath("testing_profile_path0");
@@ -729,8 +727,9 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
 
   // Simulate downloading a high-res avatar.
   ProfileAvatarDownloader avatar_downloader(
-      kIconIndex, base::Bind(&ProfileAttributesStorage::SaveAvatarImageAtPath,
-                             base::Unretained(storage()), entry->GetPath()));
+      kIconIndex,
+      base::BindOnce(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
+                     base::Unretained(storage()), entry->GetPath()));
 
   // Put a real bitmap into "bitmap": a 2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
@@ -832,3 +831,85 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 #endif
+
+TEST_F(ProfileAttributesStorageTest, ProfilesState_ActiveMultiProfile) {
+  EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
+  for (size_t i = 0; i < 5; ++i)
+    AddTestingProfile();
+  EXPECT_EQ(5U, storage()->GetNumberOfProfiles());
+
+  std::vector<ProfileAttributesEntry*> entries =
+      storage()->GetAllProfilesAttributes();
+  entries[0]->SetActiveTimeToNow();
+  entries[1]->SetActiveTimeToNow();
+
+  base::HistogramTester histogram_tester;
+  storage()->RecordProfilesState();
+
+  // There are 5 profiles all together.
+  histogram_tester.ExpectTotalCount("Profile.State.Avatar_All", 5);
+  histogram_tester.ExpectTotalCount("Profile.State.Avatar_ActiveMultiProfile",
+                                    5);
+
+  // Other user segments get 0 records.
+  histogram_tester.ExpectTotalCount("Profile.State.Avatar_SingleProfile", 0);
+  histogram_tester.ExpectTotalCount("Profile.State.Avatar_LatentMultiProfile",
+                                    0);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.Avatar_LatentMultiProfileActive", 0);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.Avatar_LatentMultiProfileOthers", 0);
+}
+
+// On Android (at least on KitKat), all profiles are considered active (because
+// ActiveTime is not set in production). Thus, these test does not work.
+#if !defined(OS_ANDROID)
+TEST_F(ProfileAttributesStorageTest, ProfilesState_LatentMultiProfile) {
+  EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
+  for (size_t i = 0; i < 5; ++i)
+    AddTestingProfile();
+  EXPECT_EQ(5U, storage()->GetNumberOfProfiles());
+
+  std::vector<ProfileAttributesEntry*> entries =
+      storage()->GetAllProfilesAttributes();
+  entries[0]->SetActiveTimeToNow();
+
+  base::HistogramTester histogram_tester;
+  storage()->RecordProfilesState();
+
+  // There are 5 profiles all together.
+  histogram_tester.ExpectTotalCount("Profile.State.Name_All", 5);
+  histogram_tester.ExpectTotalCount("Profile.State.Name_LatentMultiProfile", 5);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.Name_LatentMultiProfileActive", 1);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.Name_LatentMultiProfileOthers", 4);
+
+  // Other user segments get 0 records.
+  histogram_tester.ExpectTotalCount("Profile.State.Name_SingleProfile", 0);
+  histogram_tester.ExpectTotalCount("Profile.State.Name_ActiveMultiProfile", 0);
+}
+#endif
+
+TEST_F(ProfileAttributesStorageTest, ProfilesState_SingleProfile) {
+  EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
+  AddTestingProfile();
+  EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
+
+  base::HistogramTester histogram_tester;
+  storage()->RecordProfilesState();
+
+  // There is 1 profile all together.
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_All", 1);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_SingleProfile", 1);
+
+  // Other user segments get 0 records.
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_ActiveMultiProfile",
+                                    0);
+  histogram_tester.ExpectTotalCount("Profile.State.LastUsed_LatentMultiProfile",
+                                    0);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.LastUsed_LatentMultiProfileActive", 0);
+  histogram_tester.ExpectTotalCount(
+      "Profile.State.LastUsed_LatentMultiProfileOthers", 0);
+}

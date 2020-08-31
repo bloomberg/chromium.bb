@@ -42,7 +42,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       web_contents_(web_contents),
       controller_(controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
   DCHECK(controller);
 }
 
@@ -69,10 +69,6 @@ void SendTabToSelfBubbleViewImpl::WindowClosing() {
     controller_->OnBubbleClosed();
     controller_ = nullptr;
   }
-}
-
-bool SendTabToSelfBubbleViewImpl::Close() {
-  return Cancel();
 }
 
 void SendTabToSelfBubbleViewImpl::ButtonPressed(views::Button* sender,

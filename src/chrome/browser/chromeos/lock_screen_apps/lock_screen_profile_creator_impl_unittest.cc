@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -33,7 +34,7 @@
 #include "components/arc/session/arc_session.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -225,7 +226,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
         profile_manager.release());
 
     // Needed by note taking helper.
-    arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
+    arc_session_manager_ = arc::CreateTestArcSessionManager(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(&ArcSessionFactory)));
     chromeos::NoteTakingHelper::Initialize();
@@ -379,7 +380,7 @@ TEST_F(LockScreenProfileCreatorImplTest,
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   SetExtensionSystemReady(primary_profile());
 
@@ -424,7 +425,7 @@ TEST_F(LockScreenProfileCreatorImplTest, ProfileCreationError) {
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   SetExtensionSystemReady(primary_profile());
 
@@ -458,7 +459,7 @@ TEST_F(LockScreenProfileCreatorImplTest,
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   scoped_refptr<const extensions::Extension> test_app =
       AddTestNoteTakingApp(primary_profile());
@@ -497,7 +498,7 @@ TEST_F(LockScreenProfileCreatorImplTest, InitializedAfterNoteTakingEnabled) {
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   ASSERT_EQ(ProfileHelper::GetLockScreenAppProfilePath(),
             profile_manager()->pending_profile_creation()->path());
@@ -522,11 +523,11 @@ TEST_F(LockScreenProfileCreatorImplTest, MultipleCallbacks) {
 
   bool first_callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &first_callback_run));
+      base::BindOnce(&SetWasRun, &first_callback_run));
 
   bool second_callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &second_callback_run));
+      base::BindOnce(&SetWasRun, &second_callback_run));
 
   scoped_refptr<const extensions::Extension> test_app =
       AddTestNoteTakingApp(primary_profile());
@@ -541,7 +542,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MultipleCallbacks) {
 
   bool callback_added_during_creation_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_added_during_creation_run));
+      base::BindOnce(&SetWasRun, &callback_added_during_creation_run));
 
   ASSERT_TRUE(profile_manager()
                   ->pending_profile_creation()
@@ -555,7 +556,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MultipleCallbacks) {
 
   bool callback_added_after_creation_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_added_after_creation_run));
+      base::BindOnce(&SetWasRun, &callback_added_after_creation_run));
   EXPECT_TRUE(callback_added_after_creation_run);
 }
 
@@ -564,8 +565,8 @@ TEST_F(LockScreenProfileCreatorImplTest, LockScreenProfileSetBeforeCallback) {
 
   Profile* lock_screen_profile = nullptr;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&LockScreenProfileCreatorImplTest::RecordLockScreenProfile,
-                 base::Unretained(this), &lock_screen_profile));
+      base::BindOnce(&LockScreenProfileCreatorImplTest::RecordLockScreenProfile,
+                     base::Unretained(this), &lock_screen_profile));
 
   scoped_refptr<const extensions::Extension> test_app =
       AddTestNoteTakingApp(primary_profile());
@@ -581,8 +582,8 @@ TEST_F(LockScreenProfileCreatorImplTest, LockScreenProfileSetBeforeCallback) {
 
   lock_screen_profile = nullptr;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&LockScreenProfileCreatorImplTest::RecordLockScreenProfile,
-                 base::Unretained(this), &lock_screen_profile));
+      base::BindOnce(&LockScreenProfileCreatorImplTest::RecordLockScreenProfile,
+                     base::Unretained(this), &lock_screen_profile));
 
   EXPECT_EQ(lock_screen_profile_creator()->lock_screen_profile(),
             lock_screen_profile);
@@ -594,7 +595,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MetricsOnSuccess) {
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   SetExtensionSystemReady(primary_profile());
   scoped_refptr<const extensions::Extension> test_app =
@@ -629,7 +630,7 @@ TEST_F(LockScreenProfileCreatorImplTest, MetricsOnFailure) {
 
   bool callback_run = false;
   lock_screen_profile_creator()->AddCreateProfileCallback(
-      base::Bind(&SetWasRun, &callback_run));
+      base::BindOnce(&SetWasRun, &callback_run));
 
   SetExtensionSystemReady(primary_profile());
   scoped_refptr<const extensions::Extension> test_app =

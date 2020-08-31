@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_or_array_buffer_view_or_string.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_push_subscription_options_init.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -22,7 +23,7 @@ Vector<uint8_t> BufferSourceToVector(
     const ArrayBufferOrArrayBufferViewOrString& application_server_key,
     ExceptionState& exception_state) {
   char* input;
-  int length;
+  size_t length;
   Vector<char> decoded_application_server_key;
   Vector<uint8_t> result;
 
@@ -30,15 +31,14 @@ Vector<uint8_t> BufferSourceToVector(
   if (application_server_key.IsArrayBuffer()) {
     input =
         static_cast<char*>(application_server_key.GetAsArrayBuffer()->Data());
-    length = application_server_key.GetAsArrayBuffer()
-                 ->DeprecatedByteLengthAsUnsigned();
+    length = application_server_key.GetAsArrayBuffer()->ByteLengthAsSizeT();
   } else if (application_server_key.IsArrayBufferView()) {
     input = static_cast<char*>(
         application_server_key.GetAsArrayBufferView().View()->buffer()->Data());
     length = application_server_key.GetAsArrayBufferView()
                  .View()
                  ->buffer()
-                 ->DeprecatedByteLengthAsUnsigned();
+                 ->ByteLengthAsSizeT();
   } else if (application_server_key.IsString()) {
     if (!Base64UnpaddedURLDecode(application_server_key.GetAsString(),
                                  decoded_application_server_key)) {
@@ -65,7 +65,7 @@ Vector<uint8_t> BufferSourceToVector(
        input + length);
 
   if (is_vapid || is_sender_id) {
-    result.Append(input, length);
+    result.Append(input, static_cast<wtf_size_t>(length));
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -82,7 +82,11 @@ PushSubscriptionOptions* PushSubscriptionOptions::FromOptionsInit(
     const PushSubscriptionOptionsInit* options_init,
     ExceptionState& exception_state) {
   Vector<uint8_t> application_server_key;
-  if (options_init->hasApplicationServerKey()) {
+  // TODO(crbug.com/1070871): PushSubscriptionOptionsInit.applicationServerKey
+  // has a default value, but we check |hasApplicationServerKey()| here for
+  // backward compatibility.
+  if (options_init->hasApplicationServerKey() &&
+      !options_init->applicationServerKey().IsNull()) {
     application_server_key.AppendVector(BufferSourceToVector(
         options_init->applicationServerKey(), exception_state));
   }
@@ -99,14 +103,7 @@ PushSubscriptionOptions::PushSubscriptionOptions(
           application_server_key.data(),
           SafeCast<unsigned>(application_server_key.size()))) {}
 
-bool PushSubscriptionOptions::IsApplicationServerKeyVapid() const {
-  if (!application_server_key_)
-    return false;
-  return application_server_key_->ByteLengthAsSizeT() == 65 &&
-         static_cast<uint8_t*>(application_server_key_->Data())[0] == 0x04;
-}
-
-void PushSubscriptionOptions::Trace(blink::Visitor* visitor) {
+void PushSubscriptionOptions::Trace(Visitor* visitor) {
   visitor->Trace(application_server_key_);
   ScriptWrappable::Trace(visitor);
 }

@@ -27,12 +27,16 @@ set(DEQP_VK_SUBGROUPS_SRCS
   vktSubgroupsShuffleTests.hpp
   vktSubgroupsQuadTests.cpp
   vktSubgroupsQuadTests.hpp
+  vktSubgroupsScanHelpers.cpp
+  vktSubgroupsScanHelpers.hpp
   vktSubgroupsShapeTests.cpp
   vktSubgroupsShapeTests.hpp
   vktSubgroupsTestsUtils.cpp
   vktSubgroupsTestsUtils.hpp
   vktSubgroupsBallotMasksTests.cpp
   vktSubgroupsBallotMasksTests.hpp
+  vktSubgroupsSizeControlTests.cpp
+  vktSubgroupsSizeControlTests.hpp
   )
 
 set(DEQP_VK_SUBGROUPS_LIBS

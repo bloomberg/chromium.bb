@@ -18,6 +18,7 @@
 #include "api/audio/audio_frame.h"
 #include "api/audio_codecs/audio_encoder.h"
 #include "api/crypto/crypto_options.h"
+#include "api/frame_transformer_interface.h"
 #include "api/function_view.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
@@ -77,14 +78,8 @@ class ChannelSendInterface {
   virtual void CallEncoder(rtc::FunctionView<void(AudioEncoder*)> modifier) = 0;
 
   // Use 0 to indicate that the extension should not be registered.
-  virtual void SetRid(const std::string& rid,
-                      int extension_id,
-                      int repaired_extension_id) = 0;
-  virtual void SetMid(const std::string& mid, int extension_id) = 0;
   virtual void SetRTCP_CNAME(absl::string_view c_name) = 0;
-  virtual void SetExtmapAllowMixed(bool extmap_allow_mixed) = 0;
   virtual void SetSendAudioLevelIndicationStatus(bool enable, int id) = 0;
-  virtual void EnableSendTransportSequenceNumber(int id) = 0;
   virtual void RegisterSenderCongestionControlObjects(
       RtpTransportControllerSendInterface* transport,
       RtcpBandwidthObserver* bandwidth_observer) = 0;
@@ -121,13 +116,18 @@ class ChannelSendInterface {
   // E2EE Custom Audio Frame Encryption (Optional)
   virtual void SetFrameEncryptor(
       rtc::scoped_refptr<FrameEncryptorInterface> frame_encryptor) = 0;
+
+  // Sets a frame transformer between encoder and packetizer, to transform
+  // encoded frames before sending them out the network.
+  virtual void SetEncoderToPacketizerFrameTransformer(
+      rtc::scoped_refptr<webrtc::FrameTransformerInterface>
+          frame_transformer) = 0;
 };
 
 std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     Clock* clock,
     TaskQueueFactory* task_queue_factory,
     ProcessThread* module_process_thread,
-    OverheadObserver* overhead_observer,
     Transport* rtp_transport,
     RtcpRttStats* rtcp_rtt_stats,
     RtcEventLog* rtc_event_log,
@@ -135,7 +135,8 @@ std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     const webrtc::CryptoOptions& crypto_options,
     bool extmap_allow_mixed,
     int rtcp_report_interval_ms,
-    uint32_t ssrc);
+    uint32_t ssrc,
+    rtc::scoped_refptr<FrameTransformerInterface> frame_transformer);
 
 }  // namespace voe
 }  // namespace webrtc

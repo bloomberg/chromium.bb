@@ -15,12 +15,6 @@ const base::Feature kNewBLEWinImplementation{"NewBLEWinImplementation",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-// Enables or disables the use of Bluetooth dispatcher daemon on Chrome OS.
-const base::Feature kNewblueDaemon{"Newblue",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
-
 #if BUILDFLAG(ENABLE_VR)
 // Controls whether the orientation sensor based device is enabled.
 const base::Feature kWebXrOrientationSensorDevice {
@@ -34,5 +28,26 @@ const base::Feature kWebXrOrientationSensorDevice {
 #endif
 };
 #endif  // BUILDFLAG(ENABLE_VR)
+namespace features {
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+// Controls WebXR support for the Oculus Runtime.
+const base::Feature kOculusVR{"OculusVR", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_OCULUS_VR
 
+#if BUILDFLAG(ENABLE_OPENVR)
+// Controls WebXR support for the OpenVR Runtime.
+const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_OPENVR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+// Controls WebXR support for the OpenXR Runtime.
+const base::Feature kOpenXR{"OpenXR", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // ENABLE_OPENXR
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+// Controls WebXR support for the Windows Mixed Reality Runtime.
+const base::Feature kWindowsMixedReality{"WindowsMixedReality",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // ENABLE_WINDOWS_MR
+}  // namespace features
 }  // namespace device

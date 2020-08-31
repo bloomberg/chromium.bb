@@ -1,23 +1,33 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Platform from '../platform/platform.js';
+
+import {GlassPane} from './GlassPane.js';
+import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
+import {Events as ZoomManagerEvents, ZoomManager} from './ZoomManager.js';
+
 /**
  * @unrestricted
  */
-export default class Tooltip {
+export class Tooltip {
   /**
    * @param {!Document} doc
    */
   constructor(doc) {
     this.element = doc.body.createChild('div');
-    this._shadowRoot = UI.createShadowRootWithCoreStyles(this.element, 'ui/tooltip.css');
+    this._shadowRoot = createShadowRootWithCoreStyles(this.element, 'ui/tooltip.css');
 
     this._tooltipElement = this._shadowRoot.createChild('div', 'tooltip');
     doc.addEventListener('mousemove', this._mouseMove.bind(this), true);
     doc.addEventListener('mousedown', this._hide.bind(this, true), true);
     doc.addEventListener('mouseleave', this._hide.bind(this, false), true);
     doc.addEventListener('keydown', this._hide.bind(this, true), true);
-    UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this._reset, this);
+    ZoomManager.instance().addEventListener(ZoomManagerEvents.ZoomChanged, this._reset, this);
     doc.defaultView.addEventListener('resize', this._reset.bind(this), false);
   }
 
@@ -32,7 +42,7 @@ export default class Tooltip {
    * @param {!Element} element
    * @param {?Element|string} tooltipContent
    * @param {string=} actionId
-   * @param {!Object=} options
+   * @param {?TooltipOptions=} options
    */
   static install(element, tooltipContent, actionId, options) {
     if (!tooltipContent) {
@@ -82,46 +92,11 @@ export default class Tooltip {
    * @param {!Element} anchorElement
    * @param {!Event} event
    */
-  _show(anchorElement, event) {
-    const tooltip = anchorElement[_symbol];
-    this._anchorElement = anchorElement;
-    this._tooltipElement.removeChildren();
-
-    // Check if native tooltips should be used.
-    for (const element of _nativeOverrideContainer) {
-      if (this._anchorElement.isSelfOrDescendant(element)) {
-        Object.defineProperty(this._anchorElement, 'title', /** @type {!Object} */ (_nativeTitle));
-        this._anchorElement.title = tooltip.content;
-        return;
-      }
-    }
-
-    if (typeof tooltip.content === 'string') {
-      this._tooltipElement.setTextContentTruncatedIfNeeded(tooltip.content);
-    } else {
-      this._tooltipElement.appendChild(tooltip.content);
-    }
-
-    if (tooltip.actionId) {
-      const shortcuts = UI.shortcutRegistry.shortcutDescriptorsForAction(tooltip.actionId);
-      for (const shortcut of shortcuts) {
-        const shortcutElement = this._tooltipElement.createChild('div', 'tooltip-shortcut');
-        shortcutElement.textContent = shortcut.name;
-      }
-    }
-
-    this._tooltipElement.classList.add('shown');
+  _reposition(anchorElement, event) {
     // Reposition to ensure text doesn't overflow unnecessarily.
     this._tooltipElement.positionAt(0, 0);
-
-    // Show tooltip instantly if a tooltip was shown recently.
-    const now = Date.now();
-    const instant = (this._tooltipLastClosed && now - this._tooltipLastClosed < Timing.InstantThreshold);
-    this._tooltipElement.classList.toggle('instant', instant);
-    this._tooltipLastOpened = instant ? now : now + Timing.OpeningDelay;
-
     // Get container element.
-    const container = UI.GlassPane.container(/** @type {!Document} */ (anchorElement.ownerDocument));
+    const container = GlassPane.container(/** @type {!Document} */ (anchorElement.ownerDocument));
     // Position tooltip based on the anchor element.
     const containerBox = container.boxInWindow(this.element.window());
     const anchorBox = this._anchorElement.boxInWindow(this.element.window());
@@ -133,10 +108,9 @@ export default class Tooltip {
     this._tooltipElement.style.maxHeight = '';
     const tooltipWidth = this._tooltipElement.offsetWidth;
     const tooltipHeight = this._tooltipElement.offsetHeight;
-    const anchorTooltipAtElement =
-        this._anchorElement.nodeName === 'BUTTON' || this._anchorElement.nodeName === 'LABEL';
+    const anchorTooltipAtElement = this._anchorTooltipAtElement();
     let tooltipX = anchorTooltipAtElement ? anchorBox.x : event.x + cursorOffset;
-    tooltipX = Number.constrain(
+    tooltipX = Platform.NumberUtilities.clamp(
         tooltipX, containerBox.x + pageMargin, containerBox.x + containerBox.width - tooltipWidth - pageMargin);
     let tooltipY;
     if (!anchorTooltipAtElement) {
@@ -149,6 +123,72 @@ export default class Tooltip {
       tooltipY = onBottom ? anchorBox.y + anchorBox.height + anchorOffset : anchorBox.y - tooltipHeight - anchorOffset;
     }
     this._tooltipElement.positionAt(tooltipX, tooltipY);
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  _anchorTooltipAtElement() {
+    const tooltip = this._anchorElement[_symbol];
+
+    if (tooltip.options.anchorTooltipAtElement !== undefined) {
+      return tooltip.options.anchorTooltipAtElement;
+    }
+
+    // default legacy behavior; better to explicitly configure tooltip placement via options
+    return this._anchorElement.nodeName === 'BUTTON' || this._anchorElement.nodeName === 'LABEL';
+  }
+
+  /**
+   * @param {!Element} anchorElement
+   * @param {!Event} event
+   */
+  _show(anchorElement, event) {
+    const tooltip = anchorElement[_symbol];
+    this._anchorElement = anchorElement;
+    this._tooltipElement.removeChildren();
+
+    // Check if native tooltips should be used.
+    if (this._shouldUseNativeTooltips()) {
+      Object.defineProperty(this._anchorElement, 'title', /** @type {!Object} */ (_nativeTitle));
+      this._anchorElement.title = tooltip.content;
+      return;
+    }
+
+    if (typeof tooltip.content === 'string') {
+      this._tooltipElement.setTextContentTruncatedIfNeeded(tooltip.content);
+    } else {
+      this._tooltipElement.appendChild(tooltip.content);
+    }
+
+    if (tooltip.actionId) {
+      const shortcuts = self.UI.shortcutRegistry.shortcutsForAction(tooltip.actionId);
+      for (const shortcut of shortcuts) {
+        const shortcutElement = this._tooltipElement.createChild('div', 'tooltip-shortcut');
+        shortcutElement.textContent = shortcut.title();
+      }
+    }
+
+    // Show tooltip instantly if a tooltip was shown recently.
+    const now = Date.now();
+    const instant = (this._tooltipLastClosed && now - this._tooltipLastClosed < Timing.InstantThreshold);
+    this._tooltipElement.classList.toggle('instant', instant);
+    this._tooltipLastOpened = instant ? now : now + Timing.OpeningDelay;
+
+    this._reposition(anchorElement, event);
+    this._tooltipElement.classList.add('shown');
+  }
+
+  /**
+   * @return {boolean}
+   */
+  _shouldUseNativeTooltips() {
+    for (const element of _nativeOverrideContainer) {
+      if (this._anchorElement.isSelfOrDescendant(element)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -173,6 +213,13 @@ export default class Tooltip {
   }
 }
 
+/**
+ * @typedef {{
+ * anchorTooltipAtElement: (boolean|undefined)
+ * }}
+ */
+export let TooltipOptions;
+
 const Timing = {
   // Max time between tooltips showing that no opening delay is required.
   'InstantThreshold': 300,
@@ -181,6 +228,9 @@ const Timing = {
 };
 
 const _symbol = Symbol('Tooltip');
+
+// Exported for layout tests.
+export const TooltipSymbol = _symbol;
 
 /** @type {!Array.<!Element>} */
 const _nativeOverrideContainer = [];
@@ -193,7 +243,7 @@ Object.defineProperty(HTMLElement.prototype, 'title', {
    * @this {!Element}
    */
   get: function() {
-    const tooltip = this[UI.Tooltip._symbol];
+    const tooltip = this[_symbol];
     return tooltip ? tooltip.content : '';
   },
 
@@ -205,14 +255,3 @@ Object.defineProperty(HTMLElement.prototype, 'title', {
     Tooltip.install(this, x);
   }
 });
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.Tooltip = Tooltip;
-
-UI.Tooltip._symbol = _symbol;

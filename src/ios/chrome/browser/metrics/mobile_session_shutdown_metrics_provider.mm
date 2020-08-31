@@ -174,15 +174,12 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   bool possible_explanation =
       // Log any of the following cases as a possible explanation for the
       // crash:
-      // - device restarted while the battery was critically low
-      (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
-       session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel &&
-       session_info.OSRestartedAfterPreviousSession) ||
+      // - device restarted when Chrome was in the foreground (OS was updated,
+      // battery died, or iPhone X or newer was powered off)
+      (session_info.OSRestartedAfterPreviousSession) ||
       // - storage was critically low
       (session_info.availableDeviceStorage >= 0 &&
        session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
-      // - OS version changed
-      session_info.isFirstSessionAfterOSUpgrade ||
       // - device in abnormal thermal state
       session_info.deviceThermalState == DeviceThermalState::kCritical ||
       session_info.deviceThermalState == DeviceThermalState::kSerious;
@@ -202,23 +199,23 @@ MobileSessionShutdownMetricsProvider::GetLastShutdownType() {
     return SHUTDOWN_IN_BACKGROUND;
   }
 
-  // If the last app lifetime ended with main thread not responding, log it as
-  // main thread frozen shutdown.
+  if (HasCrashLogs()) {
+    // The cause of the crash is known.
+    if (ReceivedMemoryWarningBeforeLastShutdown()) {
+      return SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING;
+    }
+    return SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING;
+  }
+
+  // The cause of the crash is not known. Check the common causes in order of
+  // severity and likeliness to have caused the crash.
   if (LastSessionEndedFrozen()) {
     return SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN;
   }
-
-  // If the last app lifetime ended in a crash, log the type of crash.
   if (ReceivedMemoryWarningBeforeLastShutdown()) {
-    if (HasCrashLogs()) {
-      return SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING;
-    }
     return SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING;
   }
-
-  if (HasCrashLogs()) {
-    return SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING;
-  }
+  // There is no known cause.
   return SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING;
 }
 

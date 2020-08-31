@@ -19,17 +19,15 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -93,45 +91,67 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     true,             // always_use_initial_delay
 };
 
-// Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
-std::vector<DataReductionProxyServer> GetProxiesForHTTP(
-    const data_reduction_proxy::ProxyConfig& proxy_config) {
-  std::vector<DataReductionProxyServer> proxies;
-  for (const auto& server : proxy_config.http_proxy_servers()) {
-    if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(DataReductionProxyServer(net::ProxyServer(
-          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-          net::HostPortPair(server.host(), server.port()),
-          /* HTTPS proxies are marked as trusted. */
-          server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
+bool AllowInsecurePrefetchProxy() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "allow-insecure-prefetch-proxy-for-testing");
+}
+
+std::vector<GURL> GetPrefetchProxyHosts(
+    const data_reduction_proxy::PrefetchProxyConfig& prefetch_config) {
+  std::vector<GURL> hosts;
+
+  // Check for a command line override and maybe early return.
+  std::string cmd_line_override =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "prefetch-proxy-override-proxy-hosts");
+  if (!cmd_line_override.empty()) {
+    std::vector<std::string> split_cmd_line_override =
+        base::SplitString(cmd_line_override, ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    for (const std::string& host : split_cmd_line_override) {
+      GURL url(host);
+      if (url.is_valid()) {
+        hosts.push_back(url);
+      }
+    }
+    if (!hosts.empty()) {
+      return hosts;
     }
   }
 
-  return proxies;
+  for (const auto& proxy : prefetch_config.proxy_list()) {
+    if (proxy.type() != PrefetchProxyConfig_Proxy_Type_CONNECT)
+      continue;
+
+    if (proxy.scheme() != PrefetchProxyConfig_Proxy_Scheme_HTTPS &&
+        !AllowInsecurePrefetchProxy()) {
+      LOG(ERROR) << "non-HTTPS PrefetchProxy hosts are not accepted without "
+                    "--allow-insecure-prefetch-proxy-for-testing";
+      continue;
+    }
+
+    std::string scheme =
+        protobuf_parser::SchemeFromPrefetchScheme(proxy.scheme());
+    if (scheme.empty())
+      continue;
+    if (proxy.host().empty())
+      continue;
+    if (proxy.port() == 0)
+      continue;
+
+    url::SchemeHostPort shp(scheme, proxy.host(),
+                            static_cast<uint16_t>(proxy.port()));
+    if (!shp.IsValid())
+      continue;
+
+    hosts.push_back(shp.GetURL());
+  }
+  return hosts;
 }
 
 void RecordAuthExpiredHistogram(bool auth_expired) {
   UMA_HISTOGRAM_BOOLEAN(kUMAConfigServiceAuthExpired, auth_expired);
-}
-
-// Records whether the session key used in the request matches the current
-// sesssion key.
-void RecordAuthExpiredSessionKey(bool matches) {
-  // This enum must remain synchronized with the
-  // DataReductionProxyConfigServiceAuthExpiredSessionKey enum in
-  // metrics/histograms/histograms.xml.
-  enum AuthExpiredSessionKey {
-    AUTH_EXPIRED_SESSION_KEY_MISMATCH = 0,
-    AUTH_EXPIRED_SESSION_KEY_MATCH = 1,
-    AUTH_EXPIRED_SESSION_KEY_BOUNDARY = 2
-  };
-
-  AuthExpiredSessionKey state = matches ? AUTH_EXPIRED_SESSION_KEY_MATCH
-                                        : AUTH_EXPIRED_SESSION_KEY_MISMATCH;
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "DataReductionProxy.ConfigService.AuthExpiredSessionKey", state,
-      AUTH_EXPIRED_SESSION_KEY_BOUNDARY);
 }
 
 }  // namespace
@@ -151,14 +171,10 @@ net::BackoffEntry::Policy GetBackoffPolicy() {
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
-    DataReductionProxyMutableConfigValues* config_values,
-    DataReductionProxyConfig* config,
     DataReductionProxyService* service,
     network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
     : request_options_(request_options),
-      config_values_(config_values),
-      config_(config),
       service_(service),
       network_connection_tracker_(network_connection_tracker),
       config_storer_(config_storer),
@@ -175,13 +191,9 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       fetch_in_progress_(false),
       client_config_override_used_(false) {
   DCHECK(request_options);
-  DCHECK(config_values);
-  DCHECK(config);
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled() ||
-         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
+  DCHECK(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -250,7 +262,6 @@ void DataReductionProxyConfigServiceClient::InvalidateAndRetrieveNewConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InvalidateConfig();
-  DCHECK(config_->GetProxiesForHttp().empty());
 
   if (fetch_in_progress_) {
     // If a client config fetch is already in progress, then do not start
@@ -317,76 +328,6 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
   }
 }
 
-bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
-    const net::HttpRequestHeaders& request_headers,
-    const net::HttpResponseHeaders* response_headers,
-    const net::ProxyServer& proxy_server,
-    const net::LoadTimingInfo& load_timing_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(response_headers);
-
-  if (!config_->FindConfiguredDataReductionProxy(proxy_server))
-    return false;
-
-  if (response_headers->response_code() !=
-      net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-    previous_request_failed_authentication_ = false;
-    return false;
-  }
-
-  // If the session key used in the request is different from the current
-  // session key, then the current session key does not need to be
-  // invalidated.
-  base::Optional<std::string> session_key =
-      request_options_->GetSessionKeyFromRequestHeaders(request_headers);
-  if ((session_key.has_value() ? session_key.value() : std::string()) !=
-      request_options_->GetSecureSession()) {
-    RecordAuthExpiredSessionKey(false);
-    return true;
-  }
-  RecordAuthExpiredSessionKey(true);
-
-  // The default backoff logic is to increment the failure count (and
-  // increase the backoff time) with each response failure to the remote
-  // config service, and to decrement the failure count (and decrease the
-  // backoff time) with each response success. In the case where the
-  // config service returns a success response (decrementing the failure
-  // count) but the session key is continually invalid (as a response from
-  // the Data Reduction Proxy and not the config service), the previous
-  // response should be considered a failure in order to ensure the backoff
-  // time continues to increase.
-  if (previous_request_failed_authentication_)
-    GetBackoffEntry()->InformOfRequest(false);
-
-  // Record that a request resulted in an authentication failure.
-  RecordAuthExpiredHistogram(true);
-  previous_request_failed_authentication_ = true;
-  InvalidateConfig();
-  DCHECK(config_->GetProxiesForHttp().empty());
-
-  if (fetch_in_progress_) {
-    // If a client config fetch is already in progress, then do not start
-    // another fetch since starting a new fetch will cause extra data
-    // usage, and also cancel the ongoing fetch.
-    return true;
-  }
-
-  RetrieveConfig();
-
-  if (!load_timing_info.send_start.is_null() &&
-      !load_timing_info.request_start.is_null() &&
-      !network_connection_tracker_->IsOffline() &&
-      last_ip_address_change_ < load_timing_info.request_start) {
-    // Record only if there was no change in the IP address since the
-    // request started.
-    UMA_HISTOGRAM_TIMES(
-        "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
-        base::TimeTicks::Now() - load_timing_info.request_start);
-  }
-
-  return true;
-}
-
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return &backoff_entry_;
@@ -434,9 +375,7 @@ void DataReductionProxyConfigServiceClient::OnURLLoadComplete(
 
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled() ||
-         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
+  DCHECK(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   CreateClientConfigRequest request;
   std::string serialized_request;
@@ -521,8 +460,6 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   GetBackoffEntry()->InformOfRequest(false);
   config_storer_.Run(std::string());
   request_options_->Invalidate();
-  config_values_->Invalidate();
-  config_->OnNewClientConfigFetched();
 }
 
 void DataReductionProxyConfigServiceClient::HandleResponse(
@@ -541,12 +478,8 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     succeeded = ParseAndApplyProxyConfig(config);
   }
 
-  // These are proxies listed in the config. The proxies that client eventually
-  // ends up using depend on the field trials.
-  std::vector<DataReductionProxyServer> proxies;
   base::TimeDelta refresh_duration;
   if (succeeded) {
-    proxies = GetProxiesForHTTP(config.proxy_config());
     refresh_duration =
         protobuf_parser::DurationToTimeDelta(config.refresh_duration());
 
@@ -596,17 +529,13 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (!config.has_proxy_config())
     return false;
 
+  service_->UpdatePrefetchProxyHosts(
+      GetPrefetchProxyHosts(config.prefetch_proxy_config()));
+
   service_->SetIgnoreLongTermBlackListRules(
       config.ignore_long_term_black_list_rules());
 
-  // An empty proxy config is OK, and allows the server to effectively turn off
-  // DataSaver if needed. See http://crbug.com/840978.
-  std::vector<DataReductionProxyServer> proxies =
-      GetProxiesForHTTP(config.proxy_config());
-
   request_options_->SetSecureSession(config.session_key());
-  config_values_->UpdateValues(proxies);
-  config_->OnNewClientConfigFetched();
   remote_config_applied_ = true;
   return true;
 }

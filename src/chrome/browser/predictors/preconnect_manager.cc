@@ -82,18 +82,19 @@ PreconnectManager::~PreconnectManager() = default;
 void PreconnectManager::Start(const GURL& url,
                               std::vector<PreconnectRequest> requests) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const std::string host = url.host();
-  if (preresolve_info_.find(host) != preresolve_info_.end())
-    return;
+  PreresolveInfo* info;
+  if (preresolve_info_.find(url) == preresolve_info_.end()) {
+    auto iterator_and_whether_inserted = preresolve_info_.emplace(
+        url, std::make_unique<PreresolveInfo>(url, requests.size()));
+    info = iterator_and_whether_inserted.first->second.get();
+  } else {
+    info = preresolve_info_.find(url)->second.get();
+    info->queued_count += requests.size();
+  }
 
-  auto iterator_and_whether_inserted = preresolve_info_.emplace(
-      host, std::make_unique<PreresolveInfo>(url, requests.size()));
-  PreresolveInfo* info = iterator_and_whether_inserted.first->second.get();
-
-  for (auto request_it = requests.begin(); request_it != requests.end();
-       ++request_it) {
+  for (auto& request : requests) {
     PreresolveJobId job_id = preresolve_jobs_.Add(
-        std::make_unique<PreresolveJob>(std::move(*request_it), info));
+        std::make_unique<PreresolveJob>(std::move(request), info));
     queued_jobs_.push_back(job_id);
   }
 
@@ -147,7 +148,7 @@ void PreconnectManager::StartPreconnectUrl(
 
 void PreconnectManager::Stop(const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto it = preresolve_info_.find(url.host());
+  auto it = preresolve_info_.find(url);
   if (it == preresolve_info_.end()) {
     return;
   }
@@ -255,7 +256,8 @@ void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
   DCHECK(job);
 
   if (observer_)
-    observer_->OnPreresolveFinished(job->url, success);
+    observer_->OnPreresolveFinished(job->url, job->network_isolation_key,
+                                    success);
 
   job->resolve_host_client = nullptr;
   FinishPreresolveJob(job_id, success);
@@ -314,7 +316,7 @@ void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
 void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
   DCHECK(info);
   DCHECK(info->is_done());
-  auto it = preresolve_info_.find(info->url.host());
+  auto it = preresolve_info_.find(info->url);
   DCHECK(it != preresolve_info_.end());
   DCHECK(info == it->second.get());
   if (delegate_)

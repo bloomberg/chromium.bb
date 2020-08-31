@@ -252,6 +252,10 @@ class TargetPolicy {
   // resources.
   virtual void SetLockdownDefaultDacl() = 0;
 
+  // Adds a restricting random SID to the restricted SIDs list as well as
+  // the default DACL.
+  virtual void AddRestrictingRandomSid() = 0;
+
   // Enable OPM API redirection when in Win32k lockdown.
   virtual void SetEnableOPMRedirection() = 0;
   // Enable OPM API emulation when in Win32k lockdown.
@@ -271,6 +275,9 @@ class TargetPolicy {
   // lockdown tokens. The token the caller passes must remain valid for the
   // lifetime of the policy object.
   virtual void SetEffectiveToken(HANDLE token) = 0;
+
+  // Returns the size of policy memory used at process start.
+  virtual size_t GetPolicyGlobalSize() const = 0;
 
  protected:
   ~TargetPolicy() {}

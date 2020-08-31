@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -114,8 +113,10 @@ static String InitiatorFor(const StringImpl* tag_impl) {
 
 static bool MediaAttributeMatches(const MediaValuesCached& media_values,
                                   const String& attribute_value) {
+  // Since this is for preload scanning only, ExecutionContext-based origin
+  // trials for media queries are not needed.
   scoped_refptr<MediaQuerySet> media_queries =
-      MediaQuerySet::Create(attribute_value);
+      MediaQuerySet::Create(attribute_value, nullptr);
   MediaQueryEvaluator media_query_evaluator(media_values);
   return media_query_evaluator.Eval(*media_queries);
 }
@@ -162,7 +163,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(tag_impl_, html_names::kImgTag) ||
         Match(tag_impl_, html_names::kSourceTag) ||
         Match(tag_impl_, html_names::kLinkTag)) {
-      source_size_ = SizesAttributeParser(media_values_, String()).length();
+      source_size_ =
+          SizesAttributeParser(media_values_, String(), nullptr).length();
       return;
     }
     if (!Match(tag_impl_, html_names::kInputTag) &&
@@ -300,53 +302,20 @@ class TokenPreloadScanner::StartTagScanner {
         document_parameters.lazyload_policy_enforced) {
       effective_loading_attr_value = LoadingAttrValue::kAuto;
     }
-    if (type == ResourceType::kImage) {
-      bool is_lazy_load_image_enabled = false;
-      switch (effective_loading_attr_value) {
-        case LoadingAttrValue::kEager:
-          is_lazy_load_image_enabled = false;
-          break;
-        case LoadingAttrValue::kLazy:
-          is_lazy_load_image_enabled =
-              document_parameters.lazy_load_image_setting !=
-              LocalFrame::LazyLoadImageSetting::kDisabled;
-          break;
-        case LoadingAttrValue::kAuto:
-          if ((width_attr_dimension_type_ ==
-                   HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
-               height_attr_dimension_type_ ==
-                   HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
-              inline_style_dimensions_type_ ==
-                  HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
-            is_lazy_load_image_enabled = false;
-          } else {
-            is_lazy_load_image_enabled =
-                document_parameters.lazy_load_image_setting ==
-                LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
-          }
-          break;
-      }
-      // Do not preload if lazyload is possible but metadata fetch is disabled.
-      if (is_lazy_load_image_enabled &&
-          !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
-        return nullptr;
-      }
-      // LazyLoad: Do not preload if absolute dimensions are mentioned in width
-      // and height attributes or in the inline style, and the dimensions are
-      // not small enough.
-      if (is_lazy_load_image_enabled &&
-          ((width_attr_dimension_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
-            height_attr_dimension_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
-           inline_style_dimensions_type_ ==
-               HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
-        return nullptr;
-      }
-      request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
+    if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
+        IsLazyLoadImageDeferable(document_parameters)) {
+      return nullptr;
     }
-
-    request->SetIntegrityMetadata(integrity_metadata_);
+    // Do not set integrity metadata for <link> elements for destinations not
+    // supporting SRI (crbug.com/1058045).
+    // A corresponding check for non-preload-scanner code path is in
+    // PreloadHelper::PreloadIfNeeded().
+    // TODO(crbug.com/981419): Honor the integrity attribute value for all
+    // supported preload destinations, not just the destinations that support
+    // SRI in the first place.
+    if (type == ResourceType::kScript || type == ResourceType::kCSSStyleSheet) {
+      request->SetIntegrityMetadata(integrity_metadata_);
+    }
 
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);
@@ -470,9 +439,10 @@ class TokenPreloadScanner::StartTagScanner {
       img_src_url_ = attribute_value;
     } else if (Match(attribute_name, html_names::kRelAttr)) {
       LinkRelAttribute rel(attribute_value);
-      link_is_style_sheet_ = rel.IsStyleSheet() && !rel.IsAlternate() &&
-                             rel.GetIconType() == kInvalidIcon &&
-                             !rel.IsDNSPrefetch();
+      link_is_style_sheet_ =
+          rel.IsStyleSheet() && !rel.IsAlternate() &&
+          rel.GetIconType() == mojom::blink::FaviconIconType::kInvalid &&
+          !rel.IsDNSPrefetch();
       link_is_preconnect_ = rel.IsPreconnect();
       link_is_preload_ = rel.IsLinkPreload();
       link_is_modulepreload_ = rel.IsModulePreload();
@@ -517,8 +487,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(attribute_name, html_names::kSrcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
     } else if (Match(attribute_name, html_names::kTypeAttr)) {
-      input_is_image_ = DeprecatedEqualIgnoringCase(attribute_value,
-                                                    input_type_names::kImage);
+      input_is_image_ =
+          EqualIgnoringASCIICase(attribute_value, input_type_names::kImage);
     }
   }
 
@@ -574,6 +544,50 @@ class TokenPreloadScanner::StartTagScanner {
       ProcessSourceAttribute(attribute_name, attribute_value);
     else if (Match(tag_impl_, html_names::kVideoTag))
       ProcessVideoAttribute(attribute_name, attribute_value);
+  }
+
+  bool IsLazyLoadImageDeferable(
+      const CachedDocumentParameters& document_parameters) {
+    if (!document_parameters.lazy_load_image_observer)
+      return false;
+
+    bool is_fully_loadable =
+        document_parameters.lazy_load_image_observer
+            ->IsFullyLoadableFirstKImageAndDecrementCount();
+    if (document_parameters.lazy_load_image_setting ==
+        LocalFrame::LazyLoadImageSetting::kDisabled) {
+      return false;
+    }
+
+    // If the 'lazyload' feature policy is enforced, the attribute value
+    // loading='eager' is considered as 'auto'.
+    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
+    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
+        document_parameters.lazyload_policy_enforced) {
+      effective_loading_attr_value = LoadingAttrValue::kAuto;
+    }
+    switch (effective_loading_attr_value) {
+      case LoadingAttrValue::kEager:
+        return false;
+      case LoadingAttrValue::kLazy:
+        return true;
+      case LoadingAttrValue::kAuto:
+        if ((width_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+             height_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
+            inline_style_dimensions_type_ ==
+                HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+          // Fetch small images eagerly.
+          return false;
+        } else if (is_fully_loadable ||
+                   document_parameters.lazy_load_image_setting !=
+                       LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
+          return false;
+        }
+        break;
+    }
+    return true;
   }
 
   void SetUrlToLoad(const String& value, URLReplacement replacement) {
@@ -693,7 +707,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void ParseSourceSize(const String& attribute_value) {
     source_size_ =
-        SizesAttributeParser(media_values_, attribute_value).length();
+        SizesAttributeParser(media_values_, attribute_value, nullptr).length();
     source_size_set_ = true;
   }
 
@@ -745,7 +759,7 @@ class TokenPreloadScanner::StartTagScanner {
   mojom::FetchImportanceMode importance_;
   bool importance_mode_set_;
   String nonce_;
-  Member<MediaValuesCached> media_values_;
+  MediaValuesCached* media_values_;
   bool referrer_policy_set_;
   network::mojom::ReferrerPolicy referrer_policy_;
   bool integrity_attr_set_;
@@ -878,13 +892,13 @@ static void HandleMetaNameAttribute(
     return;
 
   String content_attribute_value(content_attribute->Value());
-  if (DeprecatedEqualIgnoringCase(name_attribute_value, "viewport")) {
+  if (EqualIgnoringASCIICase(name_attribute_value, "viewport")) {
     HandleMetaViewport(content_attribute_value, document_parameters,
                        media_values, viewport);
     return;
   }
 
-  if (DeprecatedEqualIgnoringCase(name_attribute_value, "referrer")) {
+  if (EqualIgnoringASCIICase(name_attribute_value, "referrer")) {
     HandleMetaReferrer(content_attribute_value, document_parameters,
                        css_scanner);
   }
@@ -960,16 +974,17 @@ void TokenPreloadScanner::ScanCommon(
             token.GetAttributeItem(html_names::kHttpEquivAttr);
         if (equiv_attribute) {
           String equiv_attribute_value(equiv_attribute->Value());
-          if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
-                                          "content-security-policy")) {
+          if (EqualIgnoringASCIICase(equiv_attribute_value,
+                                     "content-security-policy")) {
             *is_csp_meta_tag = true;
-          } else if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
-                                                 "accept-ch")) {
+          } else if (EqualIgnoringASCIICase(equiv_attribute_value,
+                                            "accept-ch")) {
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
               client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-                  content_attribute->Value(), document_url_, nullptr);
+                  content_attribute->Value(), document_url_,
+                  ClientHintsPreferences::UpdateMode::kMerge, nullptr);
             }
           }
           return;
@@ -1097,11 +1112,13 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   viewport_meta_enabled = document->GetSettings() &&
                           document->GetSettings()->GetViewportMetaEnabled();
   referrer_policy = document->GetReferrerPolicy();
-  integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
+  integrity_features =
+      SubresourceIntegrityHelper::GetFeatures(document->GetExecutionContext());
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
     lazy_load_image_setting =
         document->Loader()->GetFrame()->GetLazyLoadImageSetting();
+    lazy_load_image_observer = document->EnsureLazyLoadImageObserver();
   } else {
     lazy_load_image_setting = LocalFrame::LazyLoadImageSetting::kDisabled;
   }

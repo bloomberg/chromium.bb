@@ -49,7 +49,7 @@ namespace {
 std::unique_ptr<views::LabelButton> CreateNewFolderButton(
     views::ButtonListener* listener,
     bool enabled) {
-  auto new_folder_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto new_folder_button = views::MdTextButton::Create(
       listener,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
   new_folder_button->SetEnabled(enabled);
@@ -71,11 +71,10 @@ BookmarkEditorView::BookmarkEditorView(
   DCHECK(profile);
   DCHECK(bb_model_);
   DCHECK(bb_model_->client()->CanBeEditedByUser(parent));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_SAVE));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_SAVE));
   if (show_tree_) {
-    new_folder_button_ = DialogDelegate::SetExtraView(
-        CreateNewFolderButton(this, bb_model_->loaded()));
+    new_folder_button_ =
+        SetExtraView(CreateNewFolderButton(this, bb_model_->loaded()));
   }
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::CONTROL, views::CONTROL));
@@ -336,36 +335,37 @@ void BookmarkEditorView::Init() {
   const int single_column_view_set_id = 1;
   const int buttons_column_set_id = 2;
 
+  using ColumnSize = views::GridLayout::ColumnSize;
   views::ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
   column_set->AddColumn(
       provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
 
   column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
 
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       1.0,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->LinkColumnSizes({0, 2, 4});
 
   layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);

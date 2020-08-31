@@ -11,8 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 
+class GURL;
 class Profile;
 class TrustedSourcesManager;
 
@@ -23,6 +25,10 @@ class DownloadManager;
 
 namespace download {
 class DownloadItem;
+}
+
+namespace policy {
+class URLBlacklist;
 }
 
 namespace user_prefs {
@@ -84,12 +90,14 @@ class DownloadPrefs {
   bool IsDownloadPathManaged() const;
 
   // Returns true if there is at least one file extension registered
-  // for auto-open.
-  bool IsAutoOpenUsed() const;
+  // by the user for auto-open.
+  bool IsAutoOpenByUserUsed() const;
 
-  // Returns true if |path| should be opened automatically based on
-  // |path.Extension()|.
-  bool IsAutoOpenEnabledBasedOnExtension(const base::FilePath& path) const;
+  // Returns true if |path| should be opened automatically.
+  bool IsAutoOpenEnabled(const GURL& url, const base::FilePath& path) const;
+
+  // Returns true if |path| should be opened automatically by policy.
+  bool IsAutoOpenByPolicy(const GURL& url, const base::FilePath& path) const;
 
   // Enables automatically opening all downloads with the same file type as
   // |file_name|. Returns true on success. The call may fail if |file_name|
@@ -97,10 +105,10 @@ class DownloadPrefs {
   // determined), or if the file type is one that is disallowed from being
   // opened automatically. See IsAllowedToOpenAutomatically() for details on the
   // latter.
-  bool EnableAutoOpenBasedOnExtension(const base::FilePath& file_name);
+  bool EnableAutoOpenByUserBasedOnExtension(const base::FilePath& file_name);
 
   // Disables auto-open based on file extension.
-  void DisableAutoOpenBasedOnExtension(const base::FilePath& file_name);
+  void DisableAutoOpenByUserBasedOnExtension(const base::FilePath& file_name);
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   // Store the user preference to disk. If |should_open| is true, also disable
@@ -112,7 +120,7 @@ class DownloadPrefs {
   bool ShouldOpenPdfInSystemReader() const;
 #endif
 
-  void ResetAutoOpen();
+  void ResetAutoOpenByUser();
 
   // If this is called, the download target path will not be sanitized going
   // forward - whatever has been passed to SetDownloadPath will be used.
@@ -124,6 +132,10 @@ class DownloadPrefs {
   // Checks whether |path| is a valid download target path. If it is, returns
   // it as is. If it isn't returns the default download directory.
   base::FilePath SanitizeDownloadTargetPath(const base::FilePath& path) const;
+
+  void UpdateAutoOpenByPolicy();
+
+  void UpdateAllowedURLsForOpenByPolicy();
 
   Profile* profile_;
 
@@ -138,6 +150,8 @@ class DownloadPrefs {
   IntegerPrefMember download_restriction_;
   BooleanPrefMember safebrowsing_for_trusted_sources_enabled_;
 
+  PrefChangeRegistrar pref_change_registrar_;
+
   // To identify if a download URL is from a trusted source.
   std::unique_ptr<TrustedSourcesManager> trusted_sources_manager_;
 
@@ -148,7 +162,10 @@ class DownloadPrefs {
   };
   typedef std::set<base::FilePath::StringType,
                    AutoOpenCompareFunctor> AutoOpenSet;
-  AutoOpenSet auto_open_;
+  AutoOpenSet auto_open_by_user_;
+  AutoOpenSet auto_open_by_policy_;
+
+  std::unique_ptr<policy::URLBlacklist> auto_open_allowed_by_urls_;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;

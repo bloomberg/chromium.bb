@@ -9,24 +9,23 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/policy/display_resolution_handler.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/policy/display_settings_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
-#include "chrome/browser/ui/ash/ambient/photo_controller_impl.h"
+#include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ui/ash/arc_chrome_actions_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
@@ -59,9 +58,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
@@ -208,7 +205,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   night_light_client_->Start();
 
   if (chromeos::features::IsAmbientModeEnabled())
-    photo_controller_ = std::make_unique<PhotoControllerImpl>();
+    ambient_client_ = std::make_unique<AmbientClientImpl>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -219,7 +216,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #endif
 
   if (chromeos::features::IsAmbientModeEnabled())
-    photo_controller_.reset();
+    ambient_client_.reset();
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();

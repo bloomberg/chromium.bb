@@ -298,7 +298,6 @@ tk{
         ZZ{"Näbelli sebit"}
     }
     Countries%short{
-        GB{"Birleşen Patyşalyk"}
         US{"ABŞ"}
     }
     Countries%variant{
@@ -309,5 +308,5 @@ tk{
         SZ{"Swazilend"}
         TL{"Gündogar Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

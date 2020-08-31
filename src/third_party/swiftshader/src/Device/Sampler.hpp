@@ -15,104 +15,206 @@
 #ifndef sw_Sampler_hpp
 #define sw_Sampler_hpp
 
-#include "Device/Color.hpp"
 #include "Device/Config.hpp"
 #include "System/Types.hpp"
-#include "Vulkan/VkFormat.h"
+#include "Vulkan/VkFormat.hpp"
 
-namespace vk
-{
-	class Image;
+namespace vk {
+class Image;
 }
 
-namespace sw
+namespace sw {
+
+struct Mipmap
 {
-	struct Mipmap
+	const void *buffer;
+
+	short4 uHalf;
+	short4 vHalf;
+	short4 wHalf;
+	int4 width;
+	int4 height;
+	int4 depth;
+	short4 onePitchP;
+	int4 pitchP;
+	int4 sliceP;
+	int4 samplePitchP;
+	int4 sampleMax;
+};
+
+struct Texture
+{
+	Mipmap mipmap[MIPMAP_LEVELS];
+
+	float4 widthWidthHeightHeight;
+	float4 width;
+	float4 height;
+	float4 depth;
+};
+
+enum FilterType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+{
+	FILTER_POINT,
+	FILTER_GATHER,
+	FILTER_MIN_POINT_MAG_LINEAR,
+	FILTER_MIN_LINEAR_MAG_POINT,
+	FILTER_LINEAR,
+	FILTER_ANISOTROPIC,
+
+	FILTER_LAST = FILTER_ANISOTROPIC
+};
+
+enum MipmapType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+{
+	MIPMAP_NONE,
+	MIPMAP_POINT,
+	MIPMAP_LINEAR,
+
+	MIPMAP_LAST = MIPMAP_LINEAR
+};
+
+enum AddressingMode ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+{
+	ADDRESSING_UNUSED,
+	ADDRESSING_WRAP,
+	ADDRESSING_CLAMP,
+	ADDRESSING_MIRROR,
+	ADDRESSING_MIRRORONCE,
+	ADDRESSING_BORDER,    // Single color
+	ADDRESSING_SEAMLESS,  // Border of pixels
+	ADDRESSING_CUBEFACE,  // Cube face layer
+	ADDRESSING_TEXELFETCH,
+
+	ADDRESSING_LAST = ADDRESSING_TEXELFETCH
+};
+
+struct Sampler
+{
+	VkImageViewType textureType;
+	vk::Format textureFormat;
+	FilterType textureFilter;
+	AddressingMode addressingModeU;
+	AddressingMode addressingModeV;
+	AddressingMode addressingModeW;
+	MipmapType mipmapFilter;
+	VkComponentMapping swizzle;
+	int gatherComponent;
+	bool highPrecisionFiltering;
+	bool compareEnable;
+	VkCompareOp compareOp;
+	VkBorderColor border;
+	bool unnormalizedCoordinates;
+
+	VkSamplerYcbcrModelConversion ycbcrModel;
+	bool studioSwing;    // Narrow range
+	bool swappedChroma;  // Cb/Cr components in reverse order
+
+	float mipLodBias = 0.0f;
+	float maxAnisotropy = 0.0f;
+	float minLod = 0.0f;
+	float maxLod = 0.0f;
+
+	bool is1D() const
 	{
-		const void *buffer;
+		switch(textureType)
+		{
+			case VK_IMAGE_VIEW_TYPE_1D:
+			case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+				return true;
+			case VK_IMAGE_VIEW_TYPE_2D:
+			case VK_IMAGE_VIEW_TYPE_3D:
+			case VK_IMAGE_VIEW_TYPE_CUBE:
+			case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+				return false;
+			default:
+				UNSUPPORTED("VkImageViewType %d", (int)textureType);
+		}
 
-		short4 uHalf;
-		short4 vHalf;
-		short4 wHalf;
-		int4 width;
-		int4 height;
-		int4 depth;
-		short4 onePitchP;
-		int4 pitchP;
-		int4 sliceP;
-		int4 samplePitchP;
-		int4 sampleMax;
-	};
+		return false;
+	}
 
-	struct Texture
+	bool is2D() const
 	{
-		Mipmap mipmap[MIPMAP_LEVELS];
+		switch(textureType)
+		{
+			case VK_IMAGE_VIEW_TYPE_2D:
+			case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+				return true;
+			case VK_IMAGE_VIEW_TYPE_1D:
+			case VK_IMAGE_VIEW_TYPE_3D:
+			case VK_IMAGE_VIEW_TYPE_CUBE:
+			case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+				return false;
+			default:
+				UNSUPPORTED("VkImageViewType %d", (int)textureType);
+		}
 
-		float4 widthWidthHeightHeight;
-		float4 width;
-		float4 height;
-		float4 depth;
-	};
+		return false;
+	}
 
-	enum FilterType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+	bool is3D() const
 	{
-		FILTER_POINT,
-		FILTER_GATHER,
-		FILTER_MIN_POINT_MAG_LINEAR,
-		FILTER_MIN_LINEAR_MAG_POINT,
-		FILTER_LINEAR,
-		FILTER_ANISOTROPIC,
+		switch(textureType)
+		{
+			case VK_IMAGE_VIEW_TYPE_3D:
+				return true;
+			case VK_IMAGE_VIEW_TYPE_1D:
+			case VK_IMAGE_VIEW_TYPE_2D:
+			case VK_IMAGE_VIEW_TYPE_CUBE:
+			case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+				return false;
+			default:
+				UNSUPPORTED("VkImageViewType %d", (int)textureType);
+		}
 
-		FILTER_LAST = FILTER_ANISOTROPIC
-	};
+		return false;
+	}
 
-	enum MipmapType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+	bool isCube() const
 	{
-		MIPMAP_NONE,
-		MIPMAP_POINT,
-		MIPMAP_LINEAR,
+		switch(textureType)
+		{
+			case VK_IMAGE_VIEW_TYPE_CUBE:
+			case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+				return true;
+			case VK_IMAGE_VIEW_TYPE_1D:
+			case VK_IMAGE_VIEW_TYPE_2D:
+			case VK_IMAGE_VIEW_TYPE_3D:
+			case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+				return false;
+			default:
+				UNSUPPORTED("VkImageViewType %d", (int)textureType);
+		}
 
-		MIPMAP_LAST = MIPMAP_LINEAR
-	};
+		return false;
+	}
 
-	enum AddressingMode ENUM_UNDERLYING_TYPE_UNSIGNED_INT
+	bool isArrayed() const
 	{
-		ADDRESSING_UNUSED,
-		ADDRESSING_WRAP,
-		ADDRESSING_CLAMP,
-		ADDRESSING_MIRROR,
-		ADDRESSING_MIRRORONCE,
-		ADDRESSING_BORDER,     // Single color
-		ADDRESSING_SEAMLESS,   // Border of pixels
-		ADDRESSING_CUBEFACE,   // Cube face layer
-		ADDRESSING_LAYER,      // Array layer
-		ADDRESSING_TEXELFETCH,
+		switch(textureType)
+		{
+			case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+			case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+				return true;
+			case VK_IMAGE_VIEW_TYPE_1D:
+			case VK_IMAGE_VIEW_TYPE_2D:
+			case VK_IMAGE_VIEW_TYPE_3D:
+			case VK_IMAGE_VIEW_TYPE_CUBE:
+				return false;
+			default:
+				UNSUPPORTED("VkImageViewType %d", (int)textureType);
+		}
 
-		ADDRESSING_LAST = ADDRESSING_TEXELFETCH
-	};
+		return false;
+	}
+};
 
-	struct Sampler
-	{
-		VkImageViewType textureType;
-		vk::Format textureFormat;
-		FilterType textureFilter;
-		AddressingMode addressingModeU;
-		AddressingMode addressingModeV;
-		AddressingMode addressingModeW;
-		MipmapType mipmapFilter;
-		VkComponentMapping swizzle;
-		int gatherComponent;
-		bool highPrecisionFiltering;
-		bool compareEnable;
-		VkCompareOp compareOp;
-		VkBorderColor border;
-		bool unnormalizedCoordinates;
-		bool largeTexture;
+}  // namespace sw
 
-		VkSamplerYcbcrModelConversion ycbcrModel;
-		bool studioSwing;    // Narrow range
-		bool swappedChroma;  // Cb/Cr components in reverse order
-	};
-}
-
-#endif   // sw_Sampler_hpp
+#endif  // sw_Sampler_hpp

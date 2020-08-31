@@ -8,7 +8,7 @@
 }
 
 .security-main-view {
-    -webkit-user-select: text;
+    user-select: text;
     overflow-x: hidden;
     overflow-y: auto;
     background-color: var(--toolbar-bg-color);
@@ -145,11 +145,6 @@
     max-width: 400px;
 }
 
-.security-certificate-button {
-    margin-top: 8px;
-    margin-left: 0;
-}
-
 .security-explanation .security-property {
     flex: none;
     width: 16px;
@@ -173,4 +168,16 @@
 
 .security-explanation-recommendations > li {
     margin-bottom: 4px;
+}
+
+@media (forced-colors: active) {
+    .security-summary:not(.security-summary-secure) .lock-icon-secure,
+    .security-summary:not(.security-summary-neutral) .lock-icon-neutral,
+    .security-summary:not(.security-summary-insecure) .lock-icon-insecure,
+    .security-summary:not(.security-summary-insecure-broken) .lock-icon-insecure-broken {
+        background-color: CanvasText;
+    }
+    .security-summary-neutral .lock-icon-neutral {
+        background-color: Highlight;
+    }
 }

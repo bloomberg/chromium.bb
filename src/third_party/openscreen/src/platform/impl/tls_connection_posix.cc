@@ -24,49 +24,29 @@
 #include "platform/base/error.h"
 #include "platform/impl/stream_socket.h"
 #include "util/crypto/openssl_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
+                                       TaskRunner* task_runner)
     : task_runner_(task_runner),
-      platform_client_(platform_client),
-      socket_(std::make_unique<StreamSocketPosix>(local_address)),
-      buffer_(this) {
+      socket_(std::make_unique<StreamSocketPosix>(local_address)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
+                                       TaskRunner* task_runner)
     : task_runner_(task_runner),
-      platform_client_(platform_client),
-      socket_(std::make_unique<StreamSocketPosix>(version)),
-      buffer_(this) {
+      socket_(std::make_unique<StreamSocketPosix>(version)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
-    : task_runner_(task_runner),
-      platform_client_(platform_client),
-      socket_(std::move(socket)),
-      buffer_(this) {
+                                       TaskRunner* task_runner)
+    : task_runner_(task_runner), socket_(std::move(socket)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::~TlsConnectionPosix() {
@@ -76,47 +56,44 @@ TlsConnectionPosix::~TlsConnectionPosix() {
 }
 
 void TlsConnectionPosix::TryReceiveMessage() {
-  const int bytes_available = SSL_pending(ssl_.get());
-  if (bytes_available > 0) {
-    // NOTE: the pending size of the data block available is not a guarantee
-    // that it will receive only bytes_available or even
-    // any data, since not all pending bytes are application data.
-    std::vector<uint8_t> block(bytes_available);
+  OSP_DCHECK(ssl_);
+  constexpr int kMaxApplicationDataBytes = 4096;
+  std::vector<uint8_t> block(kMaxApplicationDataBytes);
+  ClearOpenSSLERRStack(CURRENT_LOCATION);
+  const int bytes_read =
+      SSL_read(ssl_.get(), block.data(), kMaxApplicationDataBytes);
 
-    const int bytes_read = SSL_read(ssl_.get(), block.data(), bytes_available);
-
-    // Read operator was not successful, either due to a closed connection,
-    // an error occurred, or we have to take an action.
-    if (bytes_read <= 0) {
-      const Error error = GetSSLError(ssl_.get(), bytes_read);
-      if (!error.ok() && (error != Error::Code::kAgain)) {
-        DispatchError(error);
-      }
-      return;
+  // Read operator was not successful, either due to a closed connection,
+  // no application data available, an error occurred, or we have to take an
+  // action.
+  if (bytes_read <= 0) {
+    const Error error = GetSSLError(ssl_.get(), bytes_read);
+    if (!error.ok() && (error != Error::Code::kAgain)) {
+      DispatchError(error);
     }
-
-    block.resize(bytes_read);
-
-    task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
-                            moved_block = std::move(block)]() mutable {
-      if (auto* self = weak_this.get()) {
-        if (auto* client = self->client_) {
-          client->OnRead(self, std::move(moved_block));
-        }
-      }
-    });
+    return;
   }
+
+  block.resize(bytes_read);
+
+  task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
+                          moved_block = std::move(block)]() mutable {
+    if (auto* self = weak_this.get()) {
+      if (auto* client = self->client_) {
+        client->OnRead(self, std::move(moved_block));
+      }
+    }
+  });
 }
 
 void TlsConnectionPosix::SetClient(Client* client) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   client_ = client;
-  notified_client_buffer_is_blocked_ = false;
 }
 
-void TlsConnectionPosix::Write(const void* data, size_t len) {
+bool TlsConnectionPosix::Send(const void* data, size_t len) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-  buffer_.Write(data, len);
+  return buffer_.Push(data, len);
 }
 
 IPEndpoint TlsConnectionPosix::GetLocalEndpoint() const {
@@ -135,29 +112,11 @@ IPEndpoint TlsConnectionPosix::GetRemoteEndpoint() const {
   return endpoint.value();
 }
 
-void TlsConnectionPosix::NotifyWriteBufferFill(double fraction) {
-  // WARNING: This method is called on multiple threads.
-  //
-  // The following is very subtle/complex behavior: Only "writes" can increase
-  // the buffer fill, so we expect transitions into the "blocked" state to occur
-  // on the |task_runner_| thread, and |client_| will be notified
-  // *synchronously* when that happens. Likewise, only "reads" can cause
-  // transitions to the "unblocked" state; but these will not occur on the
-  // |task_runner_| thread. Thus, when unblocking, the |client_| will be
-  // notified *asynchronously*; but, that should be acceptable because it's only
-  // a race towards a buffer overrun that is of concern.
-  //
-  // TODO(rwkeane): Have Write() return a bool, and then none of this is needed.
-  constexpr double kBlockBufferPercentage = 0.5;
-  if (fraction > kBlockBufferPercentage &&
-      !notified_client_buffer_is_blocked_) {
-    NotifyClientOfWriteBlockStatusSequentially(true);
-  } else if (fraction < kBlockBufferPercentage &&
-             notified_client_buffer_is_blocked_) {
-    NotifyClientOfWriteBlockStatusSequentially(false);
-  } else if (fraction >= 0.99) {
-    DispatchError(Error::Code::kInsufficientBuffer);
-  }
+void TlsConnectionPosix::RegisterConnectionWithDataRouter(
+    PlatformClientPosix* platform_client) {
+  OSP_DCHECK(!platform_client_);
+  platform_client_ = platform_client;
+  platform_client_->tls_data_router()->RegisterConnection(this);
 }
 
 void TlsConnectionPosix::SendAvailableBytes() {
@@ -166,6 +125,7 @@ void TlsConnectionPosix::SendAvailableBytes() {
     return;
   }
 
+  ClearOpenSSLERRStack(CURRENT_LOCATION);
   const int result =
       SSL_write(ssl_.get(), sendable_bytes.data(), sendable_bytes.size());
   if (result <= 0) {
@@ -189,38 +149,4 @@ void TlsConnectionPosix::DispatchError(Error error) {
   });
 }
 
-void TlsConnectionPosix::NotifyClientOfWriteBlockStatusSequentially(
-    bool is_blocked) {
-  if (!task_runner_->IsRunningOnTaskRunner()) {
-    task_runner_->PostTask(
-        [weak_this = weak_factory_.GetWeakPtr(), is_blocked = is_blocked] {
-          if (auto* self = weak_this.get()) {
-            OSP_DCHECK(self->task_runner_->IsRunningOnTaskRunner());
-            self->NotifyClientOfWriteBlockStatusSequentially(is_blocked);
-          }
-        });
-    return;
-  }
-
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (!client_) {
-    return;
-  }
-
-  // Check again, now that the block/unblock state change is happening
-  // in-sequence (it originated from parallel executions).
-  if (notified_client_buffer_is_blocked_ == is_blocked) {
-    return;
-  }
-
-  notified_client_buffer_is_blocked_ = is_blocked;
-  if (is_blocked) {
-    client_->OnWriteBlocked(this);
-  } else {
-    client_->OnWriteUnblocked(this);
-  }
-}
-
-}  // namespace platform
 }  // namespace openscreen

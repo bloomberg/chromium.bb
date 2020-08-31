@@ -123,7 +123,10 @@ void WriteMonoResult(uint32_t r_bgra_cmyk, FXDIB_Format format, uint8_t* dest) {
   }
 }
 
-void WriteColorResult(std::function<uint8_t(int offset)> func,
+// Let the compiler deduce the type for |func|, which cheaper than specifying it
+// with std::function.
+template <typename F>
+void WriteColorResult(const F& func,
                       bool bHasAlpha,
                       FXDIB_Format format,
                       uint8_t* dest) {
@@ -200,6 +203,109 @@ class CFX_BilinearMatrix final : public CPDF_FixedMatrix {
   }
 };
 
+bool InStretchBounds(const FX_RECT& clip_rect, int col, int row) {
+  return col >= 0 && col <= clip_rect.Width() && row >= 0 &&
+         row <= clip_rect.Height();
+}
+
+void AdjustCoords(const FX_RECT& clip_rect, int* col, int* row) {
+  int& src_col = *col;
+  int& src_row = *row;
+  if (src_col == clip_rect.Width())
+    src_col--;
+  if (src_row == clip_rect.Height())
+    src_row--;
+}
+
+// Let the compiler deduce the type for |func|, which cheaper than specifying it
+// with std::function.
+template <typename F>
+void DoBilinearLoop(const CFX_ImageTransformer::CalcData& cdata,
+                    const FX_RECT& result_rect,
+                    const FX_RECT& clip_rect,
+                    int increment,
+                    const F& func) {
+  CFX_BilinearMatrix matrix_fix(cdata.matrix);
+  for (int row = 0; row < result_rect.Height(); row++) {
+    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
+    for (int col = 0; col < result_rect.Width(); col++) {
+      CFX_ImageTransformer::BilinearData d;
+      d.res_x = 0;
+      d.res_y = 0;
+      d.src_col_l = 0;
+      d.src_row_l = 0;
+      matrix_fix.Transform(col, row, &d.src_col_l, &d.src_row_l, &d.res_x,
+                           &d.res_y);
+      if (LIKELY(InStretchBounds(clip_rect, d.src_col_l, d.src_row_l))) {
+        AdjustCoords(clip_rect, &d.src_col_l, &d.src_row_l);
+        d.src_col_r = d.src_col_l + 1;
+        d.src_row_r = d.src_row_l + 1;
+        AdjustCoords(clip_rect, &d.src_col_r, &d.src_row_r);
+        d.row_offset_l = d.src_row_l * cdata.pitch;
+        d.row_offset_r = d.src_row_r * cdata.pitch;
+        func(d, dest);
+      }
+      dest += increment;
+    }
+  }
+}
+
+// Let the compiler deduce the type for |func|, which cheaper than specifying it
+// with std::function.
+template <typename F>
+void DoBicubicLoop(const CFX_ImageTransformer::CalcData& cdata,
+                   const FX_RECT& result_rect,
+                   const FX_RECT& clip_rect,
+                   int increment,
+                   const F& func) {
+  CFX_BilinearMatrix matrix_fix(cdata.matrix);
+  for (int row = 0; row < result_rect.Height(); row++) {
+    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
+    for (int col = 0; col < result_rect.Width(); col++) {
+      CFX_ImageTransformer::BicubicData d;
+      d.res_x = 0;
+      d.res_y = 0;
+      d.src_col_l = 0;
+      d.src_row_l = 0;
+      matrix_fix.Transform(col, row, &d.src_col_l, &d.src_row_l, &d.res_x,
+                           &d.res_y);
+      if (LIKELY(InStretchBounds(clip_rect, d.src_col_l, d.src_row_l))) {
+        AdjustCoords(clip_rect, &d.src_col_l, &d.src_row_l);
+        bicubic_get_pos_weight(d.pos_pixel, d.u_w, d.v_w, d.src_col_l,
+                               d.src_row_l, d.res_x, d.res_y, clip_rect.Width(),
+                               clip_rect.Height());
+        func(d, dest);
+      }
+      dest += increment;
+    }
+  }
+}
+
+// Let the compiler deduce the type for |func|, which cheaper than specifying it
+// with std::function.
+template <typename F>
+void DoDownSampleLoop(const CFX_ImageTransformer::CalcData& cdata,
+                      const FX_RECT& result_rect,
+                      const FX_RECT& clip_rect,
+                      int increment,
+                      const F& func) {
+  CPDF_FixedMatrix matrix_fix(cdata.matrix);
+  for (int row = 0; row < result_rect.Height(); row++) {
+    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
+    for (int col = 0; col < result_rect.Width(); col++) {
+      CFX_ImageTransformer::DownSampleData d;
+      d.src_col = 0;
+      d.src_row = 0;
+      matrix_fix.Transform(col, row, &d.src_col, &d.src_row);
+      if (LIKELY(InStretchBounds(clip_rect, d.src_col, d.src_row))) {
+        AdjustCoords(clip_rect, &d.src_col, &d.src_row);
+        func(d, dest);
+      }
+      dest += increment;
+    }
+  }
+}
+
 }  // namespace
 
 CFX_ImageTransformer::CFX_ImageTransformer(const RetainPtr<CFX_DIBBase>& pSrc,
@@ -228,7 +334,7 @@ CFX_ImageTransformer::CFX_ImageTransformer(const RetainPtr<CFX_DIBBase>& pSrc,
         &m_Storer, m_pSrc, dest_height, dest_width, result_clip,
         m_ResampleOptions);
     m_Stretcher->Start();
-    m_Status = 1;
+    m_type = kRotate;
     return;
   }
   if (fabs(m_matrix.b) < kFix16 && fabs(m_matrix.c) < kFix16) {
@@ -241,7 +347,7 @@ CFX_ImageTransformer::CFX_ImageTransformer(const RetainPtr<CFX_DIBBase>& pSrc,
         &m_Storer, m_pSrc, dest_width, dest_height, result_clip,
         m_ResampleOptions);
     m_Stretcher->Start();
-    m_Status = 2;
+    m_type = kNormal;
     return;
   }
 
@@ -271,37 +377,49 @@ CFX_ImageTransformer::CFX_ImageTransformer(const RetainPtr<CFX_DIBBase>& pSrc,
       &m_Storer, m_pSrc, stretch_width, stretch_height, m_StretchClip,
       m_ResampleOptions);
   m_Stretcher->Start();
-  m_Status = 3;
+  m_type = kOther;
 }
 
-CFX_ImageTransformer::~CFX_ImageTransformer() {}
+CFX_ImageTransformer::~CFX_ImageTransformer() = default;
 
 bool CFX_ImageTransformer::Continue(PauseIndicatorIface* pPause) {
-  if (m_Status == 1) {
-    if (m_Stretcher->Continue(pPause))
-      return true;
-
-    if (m_Storer.GetBitmap()) {
-      m_Storer.Replace(
-          m_Storer.GetBitmap()->SwapXY(m_matrix.c > 0, m_matrix.b < 0));
-    }
+  if (m_type == kNone)
     return false;
-  }
 
-  if (m_Status == 2)
-    return m_Stretcher->Continue(pPause);
-  if (m_Status != 3)
-    return false;
   if (m_Stretcher->Continue(pPause))
     return true;
 
+  switch (m_type) {
+    case kNormal:
+      break;
+    case kRotate:
+      ContinueRotate(pPause);
+      break;
+    case kOther:
+      ContinueOther(pPause);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return false;
+}
+
+void CFX_ImageTransformer::ContinueRotate(PauseIndicatorIface* pPause) {
+  if (m_Storer.GetBitmap()) {
+    m_Storer.Replace(
+        m_Storer.GetBitmap()->SwapXY(m_matrix.c > 0, m_matrix.b < 0));
+  }
+}
+
+void CFX_ImageTransformer::ContinueOther(PauseIndicatorIface* pPause) {
   if (!m_Storer.GetBitmap())
-    return false;
+    return;
 
   auto pTransformed = pdfium::MakeRetain<CFX_DIBitmap>();
   FXDIB_Format format = GetTransformedFormat(m_Stretcher->source());
   if (!pTransformed->Create(m_result.Width(), m_result.Height(), format))
-    return false;
+    return;
 
   const auto& pSrcMask = m_Storer.GetBitmap()->m_pAlphaMask;
   const uint8_t* pSrcMaskBuf = pSrcMask ? pSrcMask->GetBuffer() : nullptr;
@@ -319,7 +437,9 @@ bool CFX_ImageTransformer::Continue(PauseIndicatorIface* pPause) {
     pDestMask->Clear(0xff000000);
   } else if (pDestMask) {
     CalcData cdata = {
-        pDestMask.Get(), result2stretch, pSrcMaskBuf,
+        pDestMask.Get(),
+        result2stretch,
+        pSrcMaskBuf,
         m_Storer.GetBitmap()->m_pAlphaMask->GetPitch(),
     };
     CalcMask(cdata);
@@ -338,7 +458,6 @@ bool CFX_ImageTransformer::Continue(PauseIndicatorIface* pPause) {
       CalcColor(cdata, format, Bpp);
   }
   m_Storer.Replace(std::move(pTransformed));
-  return false;
 }
 
 RetainPtr<CFX_DIBitmap> CFX_ImageTransformer::DetachBitmap() {
@@ -352,18 +471,18 @@ void CFX_ImageTransformer::CalcMask(const CalcData& cdata) {
                                 data.src_col_l, data.src_col_r, data.res_x,
                                 data.res_y, 1, 0);
     };
-    DoBilinearLoop(cdata, 1, func);
+    DoBilinearLoop(cdata, m_result, m_StretchClip, 1, func);
   } else if (IsBiCubic()) {
     auto func = [&cdata](const BicubicData& data, uint8_t* dest) {
       *dest = bicubic_interpol(cdata.buf, cdata.pitch, data.pos_pixel, data.u_w,
                                data.v_w, data.res_x, data.res_y, 1, 0);
     };
-    DoBicubicLoop(cdata, 1, func);
+    DoBicubicLoop(cdata, m_result, m_StretchClip, 1, func);
   } else {
     auto func = [&cdata](const DownSampleData& data, uint8_t* dest) {
       *dest = cdata.buf[data.src_row * cdata.pitch + data.src_col];
     };
-    DoDownSampleLoop(cdata, 1, func);
+    DoDownSampleLoop(cdata, m_result, m_StretchClip, 1, func);
   }
 }
 
@@ -374,20 +493,20 @@ void CFX_ImageTransformer::CalcAlpha(const CalcData& cdata) {
                                 data.src_col_l, data.src_col_r, data.res_x,
                                 data.res_y, 1, 0);
     };
-    DoBilinearLoop(cdata, 1, func);
+    DoBilinearLoop(cdata, m_result, m_StretchClip, 1, func);
   } else if (IsBiCubic()) {
     auto func = [&cdata](const BicubicData& data, uint8_t* dest) {
       *dest = bicubic_interpol(cdata.buf, cdata.pitch, data.pos_pixel, data.u_w,
                                data.v_w, data.res_x, data.res_y, 1, 0);
     };
-    DoBicubicLoop(cdata, 1, func);
+    DoBicubicLoop(cdata, m_result, m_StretchClip, 1, func);
   } else {
     auto func = [&cdata](const DownSampleData& data, uint8_t* dest) {
       const uint8_t* src_pixel =
           cdata.buf + cdata.pitch * data.src_row + data.src_col;
       *dest = *src_pixel;
     };
-    DoDownSampleLoop(cdata, 1, func);
+    DoDownSampleLoop(cdata, m_result, m_StretchClip, 1, func);
   }
 }
 
@@ -415,7 +534,7 @@ void CFX_ImageTransformer::CalcMono(const CalcData& cdata,
       uint32_t r_bgra_cmyk = argb[idx];
       WriteMonoResult(r_bgra_cmyk, format, dest);
     };
-    DoBilinearLoop(cdata, destBpp, func);
+    DoBilinearLoop(cdata, m_result, m_StretchClip, destBpp, func);
   } else if (IsBiCubic()) {
     auto func = [&cdata, format, &argb](const BicubicData& data,
                                         uint8_t* dest) {
@@ -424,7 +543,7 @@ void CFX_ImageTransformer::CalcMono(const CalcData& cdata,
           data.res_x, data.res_y, 1, 0)];
       WriteMonoResult(r_bgra_cmyk, format, dest);
     };
-    DoBicubicLoop(cdata, destBpp, func);
+    DoBicubicLoop(cdata, m_result, m_StretchClip, destBpp, func);
   } else {
     auto func = [&cdata, format, &argb](const DownSampleData& data,
                                         uint8_t* dest) {
@@ -432,7 +551,7 @@ void CFX_ImageTransformer::CalcMono(const CalcData& cdata,
           argb[cdata.buf[data.src_row * cdata.pitch + data.src_col]];
       WriteMonoResult(r_bgra_cmyk, format, dest);
     };
-    DoDownSampleLoop(cdata, destBpp, func);
+    DoDownSampleLoop(cdata, m_result, m_StretchClip, destBpp, func);
   }
 }
 
@@ -451,7 +570,7 @@ void CFX_ImageTransformer::CalcColor(const CalcData& cdata,
       };
       WriteColorResult(bilinear_interpol_func, bHasAlpha, format, dest);
     };
-    DoBilinearLoop(cdata, destBpp, func);
+    DoBilinearLoop(cdata, m_result, m_StretchClip, destBpp, func);
   } else if (IsBiCubic()) {
     auto func = [&cdata, format, Bpp, bHasAlpha](const BicubicData& data,
                                                  uint8_t* dest) {
@@ -462,7 +581,7 @@ void CFX_ImageTransformer::CalcColor(const CalcData& cdata,
       };
       WriteColorResult(bicubic_interpol_func, bHasAlpha, format, dest);
     };
-    DoBicubicLoop(cdata, destBpp, func);
+    DoBicubicLoop(cdata, m_result, m_StretchClip, destBpp, func);
   } else {
     auto func = [&cdata, format, bHasAlpha, Bpp](const DownSampleData& data,
                                                  uint8_t* dest) {
@@ -471,100 +590,14 @@ void CFX_ImageTransformer::CalcColor(const CalcData& cdata,
       auto sample_func = [src_pos](int offset) { return src_pos[offset]; };
       WriteColorResult(sample_func, bHasAlpha, format, dest);
     };
-    DoDownSampleLoop(cdata, destBpp, func);
+    DoDownSampleLoop(cdata, m_result, m_StretchClip, destBpp, func);
   }
 }
 
 bool CFX_ImageTransformer::IsBilinear() const {
-  return !m_ResampleOptions.bInterpolateDownsample && !IsBiCubic();
+  return !IsBiCubic();
 }
 
 bool CFX_ImageTransformer::IsBiCubic() const {
   return m_ResampleOptions.bInterpolateBicubic;
-}
-
-void CFX_ImageTransformer::AdjustCoords(int* col, int* row) const {
-  int& src_col = *col;
-  int& src_row = *row;
-  if (src_col == stretch_width())
-    src_col--;
-  if (src_row == stretch_height())
-    src_row--;
-}
-
-void CFX_ImageTransformer::DoBilinearLoop(
-    const CalcData& cdata,
-    int increment,
-    std::function<void(const BilinearData&, uint8_t*)> func) {
-  CFX_BilinearMatrix matrix_fix(cdata.matrix);
-  for (int row = 0; row < m_result.Height(); row++) {
-    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
-    for (int col = 0; col < m_result.Width(); col++) {
-      BilinearData d;
-      d.res_x = 0;
-      d.res_y = 0;
-      d.src_col_l = 0;
-      d.src_row_l = 0;
-      matrix_fix.Transform(col, row, &d.src_col_l, &d.src_row_l, &d.res_x,
-                           &d.res_y);
-      if (LIKELY(InStretchBounds(d.src_col_l, d.src_row_l))) {
-        AdjustCoords(&d.src_col_l, &d.src_row_l);
-        d.src_col_r = d.src_col_l + 1;
-        d.src_row_r = d.src_row_l + 1;
-        AdjustCoords(&d.src_col_r, &d.src_row_r);
-        d.row_offset_l = d.src_row_l * cdata.pitch;
-        d.row_offset_r = d.src_row_r * cdata.pitch;
-        func(d, dest);
-      }
-      dest += increment;
-    }
-  }
-}
-
-void CFX_ImageTransformer::DoBicubicLoop(
-    const CalcData& cdata,
-    int increment,
-    std::function<void(const BicubicData&, uint8_t*)> func) {
-  CFX_BilinearMatrix matrix_fix(cdata.matrix);
-  for (int row = 0; row < m_result.Height(); row++) {
-    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
-    for (int col = 0; col < m_result.Width(); col++) {
-      BicubicData d;
-      d.res_x = 0;
-      d.res_y = 0;
-      d.src_col_l = 0;
-      d.src_row_l = 0;
-      matrix_fix.Transform(col, row, &d.src_col_l, &d.src_row_l, &d.res_x,
-                           &d.res_y);
-      if (LIKELY(InStretchBounds(d.src_col_l, d.src_row_l))) {
-        AdjustCoords(&d.src_col_l, &d.src_row_l);
-        bicubic_get_pos_weight(d.pos_pixel, d.u_w, d.v_w, d.src_col_l,
-                               d.src_row_l, d.res_x, d.res_y, stretch_width(),
-                               stretch_height());
-        func(d, dest);
-      }
-      dest += increment;
-    }
-  }
-}
-
-void CFX_ImageTransformer::DoDownSampleLoop(
-    const CalcData& cdata,
-    int increment,
-    std::function<void(const DownSampleData&, uint8_t*)> func) {
-  CPDF_FixedMatrix matrix_fix(cdata.matrix);
-  for (int row = 0; row < m_result.Height(); row++) {
-    uint8_t* dest = cdata.bitmap->GetWritableScanline(row);
-    for (int col = 0; col < m_result.Width(); col++) {
-      DownSampleData d;
-      d.src_col = 0;
-      d.src_row = 0;
-      matrix_fix.Transform(col, row, &d.src_col, &d.src_row);
-      if (LIKELY(InStretchBounds(d.src_col, d.src_row))) {
-        AdjustCoords(&d.src_col, &d.src_row);
-        func(d, dest);
-      }
-      dest += increment;
-    }
-  }
 }

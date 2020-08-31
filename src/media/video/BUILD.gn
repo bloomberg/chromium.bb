@@ -39,6 +39,8 @@ source_set("video") {
     "video_decode_accelerator.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
+    "video_encoder_info.cc",
+    "video_encoder_info.h",
   ]
 
   if (proprietary_codecs && enable_platform_hevc) {
@@ -48,9 +50,7 @@ source_set("video") {
     ]
   }
 
-  public_deps = [
-    "//gpu/command_buffer/client:gles2_interface",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:gles2_interface" ]
 
   deps = [
     "//gpu/command_buffer/client",
@@ -66,6 +66,14 @@ source_set("video") {
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
   ]
+
+  if (media_use_libvpx) {
+    sources += [
+      "vpx_video_encoder.cc",
+      "vpx_video_encoder.h",
+    ]
+    deps += [ "//third_party/libvpx" ]
+  }
 }
 
 # Note: This is a roll-up only target; do not expand the visibility. DEPS should
@@ -129,9 +137,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("media_h264_parser_fuzzer") {
-  sources = [
-    "h264_parser_fuzzertest.cc",
-  ]
+  sources = [ "h264_parser_fuzzertest.cc" ]
   deps = [
     "//base",
     "//media",

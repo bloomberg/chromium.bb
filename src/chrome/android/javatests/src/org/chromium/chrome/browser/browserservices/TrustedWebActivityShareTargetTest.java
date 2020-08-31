@@ -22,12 +22,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigatorJni;
@@ -81,7 +80,7 @@ public class TrustedWebActivityShareTargetTest {
     public void setUp() throws Exception {
         mJniMocker.mock(WebApkPostShareTargetNavigatorJni.TEST_HOOKS, mPostNavigatorNatives);
 
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+        LibraryLoader.getInstance().ensureInitialized();
         mEmbeddedTestServerRule.setServerUsesHttps(true);
         String testPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
         String shareTestPage = mEmbeddedTestServerRule.getServer().getURL(SHARE_TEST_PAGE);

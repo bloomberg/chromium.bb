@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class JavaScriptAutocomplete {
+import * as Common from '../common/common.js';
+import * as Formatter from '../formatter/formatter.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
+const DEFAULT_TIMEOUT = 500;
+
+export class JavaScriptAutocomplete {
   constructor() {
     /** @type {!Map<string, {date: number, value: !Promise<?Object>}>} */
     this._expressionCache = new Map();
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
-    UI.context.addFlavorChangeListener(SDK.ExecutionContext, this._clearCache, this);
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
-    SDK.targetManager.addModelListener(
-        SDK.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._clearCache, this);
+    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
+        SDK.ConsoleModel.Events.CommandEvaluated, this._clearCache, this);
+    self.UI.context.addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this._clearCache, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._clearCache, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._clearCache, this);
   }
 
   _clearCache() {
@@ -37,11 +47,11 @@ export default class JavaScriptAutocomplete {
    * @return {!Promise<?{args: !Array<!Array<string>>, argumentIndex: number}|undefined>}
    */
   async argumentsHint(fullText) {
-    const functionCall = await Formatter.formatterWorkerPool().findLastFunctionCall(fullText);
+    const functionCall = await Formatter.FormatterWorkerPool.formatterWorkerPool().findLastFunctionCall(fullText);
     if (!functionCall) {
       return null;
     }
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return null;
     }
@@ -53,8 +63,8 @@ export default class JavaScriptAutocomplete {
           silent: true,
           returnByValue: false,
           generatePreview: false,
-          throwOnSideEffect: functionCall.possibleSideEffects,
-          timeout: functionCall.possibleSideEffects ? 500 : undefined
+          throwOnSideEffect: true,
+          timeout: DEFAULT_TIMEOUT
         },
         /* userGesture */ false, /* awaitPromise */ false);
     if (!result || result.exceptionDetails || !result.object || result.object.type !== 'function') {
@@ -71,8 +81,8 @@ export default class JavaScriptAutocomplete {
             silent: true,
             returnByValue: false,
             generatePreview: false,
-            throwOnSideEffect: functionCall.possibleSideEffects,
-            timeout: functionCall.possibleSideEffects ? 500 : undefined
+            throwOnSideEffect: true,
+            timeout: DEFAULT_TIMEOUT
           },
           /* userGesture */ false, /* awaitPromise */ false);
       return (result && !result.exceptionDetails && result.object) ? result.object : null;
@@ -85,15 +95,15 @@ export default class JavaScriptAutocomplete {
   }
 
   /**
-   * @param {!SDK.RemoteObject} functionObject
-   * @param {function():!Promise<?SDK.RemoteObject>} receiverObjGetter
+   * @param {!SDK.RemoteObject.RemoteObject} functionObject
+   * @param {function():!Promise<?SDK.RemoteObject.RemoteObject>} receiverObjGetter
    * @param {string=} parsedFunctionName
    * @return {!Promise<!Array<!Array<string>>>}
    */
   async _argumentsForFunction(functionObject, receiverObjGetter, parsedFunctionName) {
     const description = functionObject.description;
     if (!description.endsWith('{ [native code] }')) {
-      return [await Formatter.formatterWorkerPool().argumentsList(description)];
+      return [await Formatter.FormatterWorkerPool.formatterWorkerPool().argumentsList(description)];
     }
 
     // Check if this is a bound function.
@@ -106,7 +116,7 @@ export default class JavaScriptAutocomplete {
       if (thisProperty && targetProperty && argsProperty) {
         const originalSignatures =
             await this._argumentsForFunction(targetProperty.value, () => Promise.resolve(thisProperty.value));
-        const boundArgsLength = SDK.RemoteObject.arrayLength(argsProperty.value);
+        const boundArgsLength = SDK.RemoteObject.RemoteObject.arrayLength(argsProperty.value);
         const clippedArgs = [];
         for (const signature of originalSignatures) {
           const restIndex = signature.slice(0, boundArgsLength).findIndex(arg => arg.startsWith('...'));
@@ -119,7 +129,7 @@ export default class JavaScriptAutocomplete {
         return clippedArgs;
       }
     }
-    const javaScriptMetadata = await self.runtime.extension(Common.JavaScriptMetadata).instance();
+    const javaScriptMetadata = await self.runtime.extension(Common.JavaScriptMetaData.JavaScriptMetaData).instance();
 
     const name = /^function ([^(]*)\(/.exec(description)[1] || parsedFunctionName;
     if (!name) {
@@ -169,6 +179,11 @@ export default class JavaScriptAutocomplete {
         return result;
       }, []);
     }
+
+    if (!protoNames) {
+      return [];
+    }
+
     for (const proto of protoNames) {
       const instanceSignatures = javaScriptMetadata.signaturesForInstanceMethod(name, proto);
       if (instanceSignatures) {
@@ -185,26 +200,27 @@ export default class JavaScriptAutocomplete {
    */
   async _mapCompletions(text, query) {
     const mapMatch = text.match(/\.\s*(get|set|delete)\s*\(\s*$/);
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext || !mapMatch) {
       return [];
     }
 
-    const expression = await Formatter.formatterWorkerPool().findLastExpression(text.substring(0, mapMatch.index));
+    const expression =
+        await Formatter.FormatterWorkerPool.formatterWorkerPool().findLastExpression(text.substring(0, mapMatch.index));
     if (!expression) {
       return [];
     }
 
     const result = await executionContext.evaluate(
         {
-          expression: expression.baseExpression,
+          expression,
           objectGroup: 'mapCompletion',
           includeCommandLineAPI: true,
           silent: true,
           returnByValue: false,
           generatePreview: false,
-          throwOnSideEffect: expression.possibleSideEffects,
-          timeout: expression.possibleSideEffects ? 500 : undefined
+          throwOnSideEffect: true,
+          timeout: DEFAULT_TIMEOUT,
         },
         /* userGesture */ false, /* awaitPromise */ false);
     if (result.error || !!result.exceptionDetails || result.object.subtype !== 'map') {
@@ -280,7 +296,7 @@ export default class JavaScriptAutocomplete {
       const suggestions =
           caseSensitivePrefix.concat(caseInsensitivePrefix, caseSensitiveAnywhere, caseInsensitiveAnywhere);
       if (suggestions.length) {
-        suggestions[0].subtitle = Common.UIString('Keys');
+        suggestions[0].subtitle = Common.UIString.UIString('Keys');
       }
       return suggestions;
     }
@@ -293,24 +309,23 @@ export default class JavaScriptAutocomplete {
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
   async _completionsForExpression(fullText, query, force) {
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
+    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (!executionContext) {
       return [];
     }
     let expression;
     if (fullText.endsWith('.') || fullText.endsWith('[')) {
-      expression = await Formatter.formatterWorkerPool().findLastExpression(fullText.substring(0, fullText.length - 1));
+      expression = await Formatter.FormatterWorkerPool.formatterWorkerPool().findLastExpression(
+          fullText.substring(0, fullText.length - 1));
     }
     if (!expression) {
       if (fullText.endsWith('.')) {
         return [];
       }
-      expression = {baseExpression: '', possibleSideEffects: false};
+      expression = '';
     }
-    const needsNoSideEffects = expression.possibleSideEffects;
-    const expressionString = expression.baseExpression;
 
-
+    const expressionString = expression;
     const dotNotation = fullText.endsWith('.');
     const bracketNotation = !!expressionString && fullText.endsWith('[');
 
@@ -342,8 +357,8 @@ export default class JavaScriptAutocomplete {
             silent: true,
             returnByValue: false,
             generatePreview: false,
-            throwOnSideEffect: needsNoSideEffects,
-            timeout: needsNoSideEffects ? 500 : undefined
+            throwOnSideEffect: true,
+            timeout: DEFAULT_TIMEOUT
           },
           /* userGesture */ false, /* awaitPromise */ false);
       cache = {date: Date.now(), value: resultPromise.then(result => completionsOnGlobal.call(this, result))};
@@ -356,7 +371,7 @@ export default class JavaScriptAutocomplete {
     /**
      * @this {JavaScriptAutocomplete}
      * @param {!SDK.RuntimeModel.EvaluationResult} result
-     * @return {!Promise<!Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>>}
+     * @return {!Promise<!Array<!CompletionGroup>>}
      */
     async function completionsOnGlobal(result) {
       if (result.error || !!result.exceptionDetails || !result.object) {
@@ -375,8 +390,9 @@ export default class JavaScriptAutocomplete {
       }
       let completions = [];
       if (object.type === 'object' || object.type === 'function') {
-        completions =
-            await object.callFunctionJSON(getCompletions, [SDK.RemoteObject.toCallArgument(object.subtype)]) || [];
+        completions = await object.callFunctionJSON(
+                          getCompletions, [SDK.RemoteObject.RemoteObject.toCallArgument(object.subtype)]) ||
+            [];
       } else if (
           object.type === 'string' || object.type === 'number' || object.type === 'boolean' ||
           object.type === 'bigint') {
@@ -403,7 +419,7 @@ export default class JavaScriptAutocomplete {
         if (completions.length) {
           completions[0].items = completions[0].items.concat(globalNames);
         } else {
-          completions.push({items: globalNames.sort(), title: Common.UIString('Lexical scope variables')});
+          completions.push({items: globalNames.sort(), title: Common.UIString.UIString('Lexical scope variables')});
         }
       }
 
@@ -495,7 +511,7 @@ export default class JavaScriptAutocomplete {
   }
 
   /**
-   * @param {?Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>} propertyGroups
+   * @param {?Array<!CompletionGroup>} propertyGroups
    * @param {boolean} dotNotation
    * @param {boolean} bracketNotation
    * @param {string} expressionString
@@ -543,7 +559,7 @@ export default class JavaScriptAutocomplete {
      * @param {boolean} bracketNotation
      * @param {string} expressionString
      * @param {string} query
-     * @param {!Array<!ObjectUI.JavaScriptAutocomplete.CompletionGroup>} propertyGroups
+     * @param {!Array<!CompletionGroup>} propertyGroups
      * @return {!UI.SuggestBox.Suggestions}
      */
   _completionsForQuery(dotNotation, bracketNotation, expressionString, query, propertyGroups) {
@@ -587,7 +603,7 @@ export default class JavaScriptAutocomplete {
 
         if (bracketNotation) {
           if (!/^[0-9]+$/.test(property)) {
-            property = quoteUsed + property.escapeCharacters(quoteUsed + '\\') + quoteUsed;
+            property = quoteUsed + Platform.StringUtilities.escapeCharacters(property, quoteUsed + '\\') + quoteUsed;
           }
           property += ']';
         }
@@ -652,13 +668,13 @@ export default class JavaScriptAutocomplete {
    * @return {!Promise<boolean>}
    */
   static async isExpressionComplete(expression) {
-    const currentExecutionContext = UI.context.flavor(SDK.ExecutionContext);
+    const currentExecutionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
     if (!currentExecutionContext) {
       return true;
     }
     const result =
         await currentExecutionContext.runtimeModel.compileScript(expression, '', false, currentExecutionContext.id);
-    if (!result.exceptionDetails) {
+    if (!result || !result.exceptionDetails) {
       return true;
     }
     const description = result.exceptionDetails.exception.description;
@@ -669,15 +685,15 @@ export default class JavaScriptAutocomplete {
 
 export class JavaScriptAutocompleteConfig {
   /**
-   * @param {!UI.TextEditor} editor
+   * @param {!UI.TextEditor.TextEditor} editor
    */
   constructor(editor) {
     this._editor = editor;
   }
 
   /**
-   * @param {!UI.TextEditor} editor
-   * @return {!UI.AutocompleteConfig}
+   * @param {!UI.TextEditor.TextEditor} editor
+   * @return {!UI.SuggestBox.AutocompleteConfig}
    */
   static createConfigForEditor(editor) {
     const autocomplete = new JavaScriptAutocompleteConfig(editor);
@@ -691,12 +707,12 @@ export class JavaScriptAutocompleteConfig {
   /**
    * @param {number} lineNumber
    * @param {number} columnNumber
-   * @return {?TextUtils.TextRange}
+   * @return {?TextUtils.TextRange.TextRange}
    */
   _substituteRange(lineNumber, columnNumber) {
     const token = this._editor.tokenAtTextPosition(lineNumber, columnNumber);
     if (token && token.type === 'js-string') {
-      return new TextUtils.TextRange(lineNumber, token.startColumn, lineNumber, columnNumber);
+      return new TextUtils.TextRange.TextRange(lineNumber, token.startColumn, lineNumber, columnNumber);
     }
 
     const lineText = this._editor.line(lineNumber);
@@ -706,18 +722,19 @@ export class JavaScriptAutocompleteConfig {
         break;
       }
     }
-    return new TextUtils.TextRange(lineNumber, index + 1, lineNumber, columnNumber);
+    return new TextUtils.TextRange.TextRange(lineNumber, index + 1, lineNumber, columnNumber);
   }
 
   /**
-   * @param {!TextUtils.TextRange} queryRange
-   * @param {!TextUtils.TextRange} substituteRange
+   * @param {!TextUtils.TextRange.TextRange} queryRange
+   * @param {!TextUtils.TextRange.TextRange} substituteRange
    * @param {boolean=} force
    * @return {!Promise<!UI.SuggestBox.Suggestions>}
    */
   async _suggestionsCallback(queryRange, substituteRange, force) {
     const query = this._editor.text(queryRange);
-    const before = this._editor.text(new TextUtils.TextRange(0, 0, queryRange.startLine, queryRange.startColumn));
+    const before =
+        this._editor.text(new TextUtils.TextRange.TextRange(0, 0, queryRange.startLine, queryRange.startColumn));
     const token = this._editor.tokenAtTextPosition(substituteRange.startLine, substituteRange.startColumn);
     if (token) {
       const excludedTokens = new Set(['js-comment', 'js-string-2', 'js-def']);
@@ -748,7 +765,7 @@ export class JavaScriptAutocompleteConfig {
    * @return {!Promise<?Element>}
    */
   async _tooltipCallback(lineNumber, columnNumber) {
-    const before = this._editor.text(new TextUtils.TextRange(0, 0, lineNumber, columnNumber));
+    const before = this._editor.text(new TextUtils.TextRange.TextRange(0, 0, lineNumber, columnNumber));
     const result = await ObjectUI.javaScriptAutocomplete.argumentsHint(before);
     if (!result) {
       return null;
@@ -759,7 +776,7 @@ export class JavaScriptAutocompleteConfig {
       const argumentsElement = createElement('span');
       for (let i = 0; i < args.length; i++) {
         if (i === argumentIndex || (i < argumentIndex && args[i].startsWith('...'))) {
-          argumentsElement.appendChild(UI.html`<b>${args[i]}</b>`);
+          argumentsElement.appendChild(UI.Fragment.html`<b>${args[i]}</b>`);
         } else {
           argumentsElement.createTextChild(args[i]);
         }
@@ -767,25 +784,11 @@ export class JavaScriptAutocompleteConfig {
           argumentsElement.createTextChild(', ');
         }
       }
-      tooltip.appendChild(UI.html`<div class='source-code'>\u0192(${argumentsElement})</div>`);
+      tooltip.appendChild(UI.Fragment.html`<div class='source-code'>\u0192(${argumentsElement})</div>`);
     }
     return tooltip;
   }
 }
 
-/* Legacy exported object */
-self.ObjectUI = self.ObjectUI || {};
-
-/* Legacy exported object */
-ObjectUI = ObjectUI || {};
-
-/** @constructor */
-ObjectUI.JavaScriptAutocomplete = JavaScriptAutocomplete;
-
-/** @constructor */
-ObjectUI.JavaScriptAutocompleteConfig = JavaScriptAutocompleteConfig;
-
-ObjectUI.javaScriptAutocomplete = new JavaScriptAutocomplete();
-
 /** @typedef {{title:(string|undefined), items:Array<string>}} */
-ObjectUI.JavaScriptAutocomplete.CompletionGroup;
+export let CompletionGroup;

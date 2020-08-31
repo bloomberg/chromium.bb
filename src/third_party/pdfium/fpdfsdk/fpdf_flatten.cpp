@@ -6,6 +6,8 @@
 
 #include "public/fpdf_flatten.h"
 
+#include <limits.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -203,7 +205,7 @@ void SetPageContents(const ByteString& key,
   if (pContentsArray) {
     pContentsArray->InsertAt(
         0, NewIndirectContentsStream(pDocument, "q")->MakeReference(pDocument));
-    pContentsArray->Add(
+    pContentsArray->Append(
         NewIndirectContentsStream(pDocument, "Q")->MakeReference(pDocument));
   } else {
     ByteString sStream = "q\n";
@@ -215,13 +217,13 @@ void SetPageContents(const ByteString& key,
     }
     pContentsStream->SetDataAndRemoveFilter(sStream.raw_span());
     pContentsArray = pDocument->NewIndirect<CPDF_Array>();
-    pContentsArray->AddNew<CPDF_Reference>(pDocument,
-                                           pContentsStream->GetObjNum());
+    pContentsArray->AppendNew<CPDF_Reference>(pDocument,
+                                              pContentsStream->GetObjNum());
     pPage->SetNewFor<CPDF_Reference>(pdfium::page_object::kContents, pDocument,
                                      pContentsArray->GetObjNum());
   }
   if (!key.IsEmpty()) {
-    pContentsArray->Add(
+    pContentsArray->Append(
         NewIndirectContentsStream(pDocument, GenerateFlattenedContent(key))
             ->MakeReference(pDocument));
   }
@@ -269,12 +271,15 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
   if (pPageDict->KeyExist(pdfium::page_object::kCropBox))
     rcOriginalMB = pPageDict->GetRectFor(pdfium::page_object::kCropBox);
 
+  rcOriginalMB.Normalize();
   if (rcOriginalMB.IsEmpty())
     rcOriginalMB = CFX_FloatRect(0.0f, 0.0f, 612.0f, 792.0f);
 
   CFX_FloatRect rcOriginalCB;
-  if (pPageDict->KeyExist(pdfium::page_object::kCropBox))
+  if (pPageDict->KeyExist(pdfium::page_object::kCropBox)) {
     rcOriginalCB = pPageDict->GetRectFor(pdfium::page_object::kCropBox);
+    rcOriginalCB.Normalize();
+  }
   if (rcOriginalCB.IsEmpty())
     rcOriginalCB = rcOriginalMB;
 

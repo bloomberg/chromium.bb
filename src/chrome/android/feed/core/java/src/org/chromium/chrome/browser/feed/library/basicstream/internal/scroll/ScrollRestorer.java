@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.scroll;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
@@ -32,8 +33,7 @@ public class ScrollRestorer {
     private boolean mCanRestore;
 
     public ScrollRestorer(Configuration configuration, RecyclerView recyclerView,
-            ScrollListenerNotifier scrollListenerNotifier,
-            /*@Nullable*/ ScrollState scrollState) {
+            ScrollListenerNotifier scrollListenerNotifier, @Nullable ScrollState scrollState) {
         this.mConfiguration = configuration;
         this.mRecyclerView = recyclerView;
         this.mScrollListenerNotifier = scrollListenerNotifier;
@@ -95,7 +95,7 @@ public class ScrollRestorer {
      *
      * @param currentHeaderCount The amount of headers which appear before Stream content.
      */
-    /*@Nullable*/
+    @Nullable
     public ScrollState getScrollStateForScrollRestore(int currentHeaderCount) {
         return ScrollRestoreHelper.getScrollStateForScrollRestore(
                 getLayoutManager(), mConfiguration, currentHeaderCount);

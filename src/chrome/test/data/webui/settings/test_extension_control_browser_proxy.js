@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.ExtensionControlBrowserProxy} */
-class TestExtensionControlBrowserProxy extends TestBrowserProxy {
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+/** @implements {ExtensionControlBrowserProxy} */
+export class TestExtensionControlBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'disableExtension',

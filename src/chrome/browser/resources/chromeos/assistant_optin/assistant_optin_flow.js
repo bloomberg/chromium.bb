@@ -20,7 +20,7 @@
 Polymer({
   is: 'assistant-optin-flow',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   /**
    * Indicates the type of the opt-in flow.
@@ -39,7 +39,7 @@ Polymer({
    * @param {?string} type The type of the flow.
    * @param {?string} captionBarHeight The height of the caption bar.
    */
-  onShow: function(type, captionBarHeight) {
+  onShow(type, captionBarHeight) {
     captionBarHeight = captionBarHeight ? captionBarHeight + 'px' : '0px';
     this.style.setProperty('--caption-bar-height', captionBarHeight);
 
@@ -68,6 +68,7 @@ Polymer({
       case this.FlowType.SPEAKER_ID_ENROLLMENT:
       case this.FlowType.SPEAKER_ID_RETRAIN:
         this.$['value-prop'].hidden = true;
+        this.$['voice-match'].isFirstScreen = true;
         this.showScreen(this.$['voice-match']);
         break;
       default:
@@ -80,7 +81,7 @@ Polymer({
    * Reloads localized strings.
    * @param {!Object} data New dictionary with i18n values.
    */
-  reloadContent: function(data) {
+  reloadContent(data) {
     this.voiceMatchEnforcedOff = data['voiceMatchEnforcedOff'];
     this.voiceMatchDisabled = loadTimeData.getBoolean('voiceMatchDisabled');
     data['flowType'] = this.flowType;
@@ -94,7 +95,7 @@ Polymer({
    * @param {string} type type of the setting zippy.
    * @param {!Object} data String and url for the setting zippy.
    */
-  addSettingZippy: function(type, data) {
+  addSettingZippy(type, data) {
     switch (type) {
       case 'settings':
         this.$['value-prop'].addSettingZippy(data);
@@ -113,7 +114,7 @@ Polymer({
   /**
    * Show the next screen in the flow.
    */
-  showNextScreen: function() {
+  showNextScreen() {
     switch (this.currentScreen) {
       case this.$['value-prop']:
         this.showScreen(this.$['third-party']);
@@ -146,7 +147,7 @@ Polymer({
    * Called when the Voice match state is updated.
    * @param {string} state the voice match state.
    */
-  onVoiceMatchUpdate: function(state) {
+  onVoiceMatchUpdate(state) {
     if (!this.currentScreen == this.$['voice-match']) {
       return;
     }
@@ -173,7 +174,7 @@ Polymer({
    *
    * @param {Element} screen The screen to be shown.
    */
-  showScreen: function(screen) {
+  showScreen(screen) {
     if (this.currentScreen == screen) {
       return;
     }
@@ -200,7 +201,7 @@ Polymer({
   /**
    * Show the loading screen.
    */
-  showLoadingScreen: function() {
+  showLoadingScreen() {
     this.$['loading'].hidden = false;
     this.currentScreen.hidden = true;
     this.$['loading'].onShow();
@@ -209,7 +210,7 @@ Polymer({
   /**
    * Called when the screen failed to load.
    */
-  onScreenLoadingError: function() {
+  onScreenLoadingError() {
     this.$['loading'].hidden = false;
     this.currentScreen.hidden = true;
     this.$['loading'].onErrorOccurred();
@@ -218,7 +219,7 @@ Polymer({
   /**
    * Called when all the content of current screen has been loaded.
    */
-  onScreenLoaded: function() {
+  onScreenLoaded() {
     this.currentScreen.hidden = false;
     this.$['loading'].hidden = true;
     this.$['loading'].onPageLoaded();
@@ -227,7 +228,7 @@ Polymer({
   /**
    * Called when user request the screen to be reloaded.
    */
-  onReload: function() {
+  onReload() {
     this.currentScreen.reloadPage();
   },
 });

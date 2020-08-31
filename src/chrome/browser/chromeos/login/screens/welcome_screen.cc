@@ -49,7 +49,7 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
 
 WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
-    : BaseScreen(WelcomeView::kScreenId),
+    : BaseScreen(WelcomeView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   if (view_)
@@ -167,7 +167,7 @@ void WelcomeScreen::RemoveObserver(Observer* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 // BaseScreen implementation:
 
-void WelcomeScreen::Show() {
+void WelcomeScreen::ShowImpl() {
   // Here we should handle default locales, for which we do not have UI
   // resources. This would load fallback, but properly show "selected" locale
   // in the UI.
@@ -185,7 +185,7 @@ void WelcomeScreen::Show() {
   }
 }
 
-void WelcomeScreen::Hide() {
+void WelcomeScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }

@@ -164,8 +164,7 @@ INSTANTIATE_TEST_SUITE_P(Parameterized, UpdateCheckerTest, testing::Bool());
 UpdateCheckerTest::UpdateCheckerTest()
     : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
-UpdateCheckerTest::~UpdateCheckerTest() {
-}
+UpdateCheckerTest::~UpdateCheckerTest() = default;
 
 void UpdateCheckerTest::SetUp() {
   is_foreground_ = GetParam();
@@ -228,8 +227,9 @@ void UpdateCheckerTest::UpdateCheckComplete(
 scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
-      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      UpdateEngine::Callback(), nullptr);
+      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
+      nullptr, nullptr);
 }
 
 std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {

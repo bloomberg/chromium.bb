@@ -4,7 +4,7 @@
 
 #include "chromeos/services/device_sync/cryptauth_v2_device_sync_test_devices.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
@@ -20,7 +20,6 @@ namespace device_sync {
 const char kGroupPublicKey[] = "group_key";
 const int64_t kGroupPublicKeyHash = 0xf3666041a2db06e4;
 
-// TODO(nohle): Add last update time when relevant.
 const CryptAuthDevice& GetLocalDeviceForTest() {
   static const base::NoDestructor<CryptAuthDevice> device([] {
     // Note: The local device's (Instance) ID and PII-free device name are not
@@ -62,7 +61,6 @@ const CryptAuthDevice& GetLocalDeviceForTest() {
   return *device;
 }
 
-// TODO(nohle): Add last update time when relevant.
 const CryptAuthDevice& GetRemoteDeviceNeedsGroupPrivateKeyForTest() {
   static const base::NoDestructor<CryptAuthDevice> device([] {
     const char kRemoteDeviceNeedsGroupPrivateKeyId[] =
@@ -109,7 +107,6 @@ const CryptAuthDevice& GetRemoteDeviceNeedsGroupPrivateKeyForTest() {
   return *device;
 }
 
-// TODO(nohle): Add last update time when relevant.
 const CryptAuthDevice& GetRemoteDeviceHasGroupPrivateKeyForTest() {
   static const base::NoDestructor<CryptAuthDevice> device([] {
     const char kRemoteDeviceHasGroupPrivateKeyId[] =

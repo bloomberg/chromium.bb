@@ -33,8 +33,23 @@ inline bool HasMultiplePaintFragments(const LayoutObject& layout_object) {
   return HasMultipleItems(NGPaintFragment::InlineFragmentsFor(&layout_object));
 }
 
-inline bool HasMultipleFragmentItems(const LayoutObject& layout_object) {
-  return HasMultipleItems(NGFragmentItem::ItemsFor(layout_object));
+inline bool MayHaveMultipleFragmentItems(const LayoutObject& layout_object) {
+  // TODO(crbug.com/1061423): NGInlineCursor is currently unable to deal with
+  // objects split into multiple fragmentainers (e.g. columns). Just return true
+  // if it's possible that this object participates in a fragmentation
+  // context. This will give false positives, but that should be harmless, given
+  // the way the return value is used by the caller.
+  if (layout_object.IsInsideFlowThread())
+    return true;
+
+  NGInlineCursor cursor;
+  cursor.MoveTo(layout_object);
+  DCHECK(cursor);
+  if (cursor) {
+    cursor.MoveToNextForSameLayoutObject();
+    return cursor;
+  }
+  return false;
 }
 
 }  // namespace
@@ -52,7 +67,7 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
   const PhysicalOffset adjusted_paint_offset =
       paint_offset + (inline_box_paint_fragment_
                           ? inline_box_paint_fragment_->Offset()
-                          : inline_box_item_->Offset());
+                          : inline_box_item_->OffsetInContainerBlock());
   if (paint_info.phase == PaintPhase::kForeground)
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
@@ -64,9 +79,10 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                             suppress_box_decoration_background);
     return;
   }
+  DCHECK(inline_box_cursor_);
   DCHECK(inline_box_item_);
-  NGBoxFragmentPainter box_painter(*inline_box_item_, PhysicalFragment(),
-                                   descendants_);
+  NGBoxFragmentPainter box_painter(*inline_box_cursor_, *inline_box_item_,
+                                   PhysicalFragment());
   box_painter.PaintObject(paint_info, adjusted_paint_offset,
                           suppress_box_decoration_background);
 }
@@ -105,21 +121,31 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
 
   DCHECK(inline_box_fragment_.GetLayoutObject());
   const LayoutObject& layout_object = *inline_box_fragment_.GetLayoutObject();
-  bool object_has_multiple_boxes =
+  bool object_may_have_multiple_boxes =
       inline_box_paint_fragment_ ? HasMultiplePaintFragments(layout_object)
-                                 : HasMultipleFragmentItems(layout_object);
+                                 : MayHaveMultipleFragmentItems(layout_object);
 
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
       inline_box_fragment_.GetLayoutObject()));
-  // TODO(kojii): not applicable for line box
-  NGBoxFragmentPainter box_painter(
-      To<NGPhysicalBoxFragment>(inline_box_fragment_),
-      inline_box_paint_fragment_);
   const NGBorderEdges& border_edges = BorderEdges();
+  if (inline_box_paint_fragment_) {
+    NGBoxFragmentPainter box_painter(
+        To<NGPhysicalBoxFragment>(inline_box_fragment_),
+        inline_box_paint_fragment_);
+    PaintBoxDecorationBackground(
+        box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
+        object_may_have_multiple_boxes, border_edges.line_left,
+        border_edges.line_right);
+    return;
+  }
+  DCHECK(inline_box_cursor_);
+  NGBoxFragmentPainter box_painter(
+      *inline_box_cursor_, *inline_box_item_,
+      To<NGPhysicalBoxFragment>(inline_box_fragment_));
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                adjusted_frame_rect, geometry,
-                               object_has_multiple_boxes,
+                               object_may_have_multiple_boxes,
                                border_edges.line_left, border_edges.line_right);
 }
 
@@ -178,22 +204,34 @@ void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
     LayoutUnit* offset_on_line,
     LayoutUnit* total_width) const {
   WritingMode writing_mode = inline_box_fragment_.Style().GetWritingMode();
-  NGPaintFragment::FragmentRange fragments =
-      inline_box_paint_fragment_->InlineFragmentsFor(
-          inline_box_fragment_.GetLayoutObject());
+  NGInlineCursor cursor;
+  DCHECK(inline_box_fragment_.GetLayoutObject());
+  cursor.MoveTo(*inline_box_fragment_.GetLayoutObject());
 
   LayoutUnit before;
   LayoutUnit after;
   bool before_self = true;
-  for (auto iter = fragments.begin(); iter != fragments.end(); ++iter) {
-    if (*iter == inline_box_paint_fragment_) {
-      before_self = false;
-      continue;
+  for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+    if (inline_box_paint_fragment_) {
+      DCHECK(cursor.CurrentPaintFragment());
+      if (cursor.CurrentPaintFragment() == inline_box_paint_fragment_) {
+        before_self = false;
+        continue;
+      }
+    } else {
+      DCHECK(inline_box_item_);
+      DCHECK(cursor.CurrentItem());
+      if (cursor.CurrentItem() == inline_box_item_) {
+        before_self = false;
+        continue;
+      }
     }
+    const NGPhysicalBoxFragment* box_fragment = cursor.Current().BoxFragment();
+    DCHECK(box_fragment);
     if (before_self)
-      before += NGFragment(writing_mode, iter->PhysicalFragment()).InlineSize();
+      before += NGFragment(writing_mode, *box_fragment).InlineSize();
     else
-      after += NGFragment(writing_mode, iter->PhysicalFragment()).InlineSize();
+      after += NGFragment(writing_mode, *box_fragment).InlineSize();
   }
 
   NGFragment logical_fragment(writing_mode, inline_box_fragment_);
@@ -326,7 +364,7 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
 
     for (const NGPaintFragment* fragment : fragments) {
       PhysicalOffset child_offset = paint_offset +
-                                    fragment->InlineOffsetToContainerBox() -
+                                    fragment->OffsetInContainerBlock() -
                                     fragment->Offset();
       DCHECK(fragment->PhysicalFragment().IsBox());
       NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
@@ -334,7 +372,6 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
     return;
   }
 
-  DCHECK(layout_inline.ShouldCreateBoxFragment());
   NGInlineCursor cursor(*block_flow);
   cursor.MoveTo(layout_inline);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -342,10 +379,23 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
     DCHECK(item);
     const NGPhysicalBoxFragment* box_fragment = item->BoxFragment();
     DCHECK(box_fragment);
-    NGInlineCursor descendants = cursor.CursorForDescendants();
-    NGInlineBoxFragmentPainter(*item, *box_fragment, &descendants)
+    NGInlineBoxFragmentPainter(cursor, *item, *box_fragment)
         .Paint(paint_info, paint_offset);
   }
 }
+
+#if DCHECK_IS_ON()
+void NGInlineBoxFragmentPainter::CheckValid() const {
+  if (inline_box_item_) {
+    DCHECK(inline_box_cursor_);
+    DCHECK_EQ(inline_box_cursor_->Current().Item(), inline_box_item_);
+  }
+
+  DCHECK_EQ(inline_box_fragment_.Type(),
+            NGPhysicalFragment::NGFragmentType::kFragmentBox);
+  DCHECK_EQ(inline_box_fragment_.BoxType(),
+            NGPhysicalFragment::NGBoxType::kInlineBox);
+}
+#endif
 
 }  // namespace blink

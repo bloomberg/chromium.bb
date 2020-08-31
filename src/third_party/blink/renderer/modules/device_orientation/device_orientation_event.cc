@@ -25,8 +25,8 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_device_orientation_event_init.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_init.h"
 
 namespace blink {
 
@@ -47,28 +47,22 @@ DeviceOrientationEvent::DeviceOrientationEvent(
     : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       orientation_(orientation) {}
 
-double DeviceOrientationEvent::alpha(bool& is_null) const {
+base::Optional<double> DeviceOrientationEvent::alpha() const {
   if (orientation_->CanProvideAlpha())
     return orientation_->Alpha();
-
-  is_null = true;
-  return 0;
+  return base::nullopt;
 }
 
-double DeviceOrientationEvent::beta(bool& is_null) const {
+base::Optional<double> DeviceOrientationEvent::beta() const {
   if (orientation_->CanProvideBeta())
     return orientation_->Beta();
-
-  is_null = true;
-  return 0;
+  return base::nullopt;
 }
 
-double DeviceOrientationEvent::gamma(bool& is_null) const {
+base::Optional<double> DeviceOrientationEvent::gamma() const {
   if (orientation_->CanProvideGamma())
     return orientation_->Gamma();
-
-  is_null = true;
-  return 0;
+  return base::nullopt;
 }
 
 bool DeviceOrientationEvent::absolute() const {
@@ -79,7 +73,7 @@ const AtomicString& DeviceOrientationEvent::InterfaceName() const {
   return event_interface_names::kDeviceOrientationEvent;
 }
 
-void DeviceOrientationEvent::Trace(blink::Visitor* visitor) {
+void DeviceOrientationEvent::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
   Event::Trace(visitor);
 }

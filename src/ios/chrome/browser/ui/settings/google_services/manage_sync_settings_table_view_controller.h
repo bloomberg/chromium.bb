@@ -7,21 +7,19 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 
 @class ManageSyncSettingsTableViewController;
 @protocol ManageSyncSettingsTableViewControllerModelDelegate;
 @protocol ManageSyncSettingsServiceDelegate;
 
-// Accessibility identifier for Manage Sync table view.
-extern NSString* const kManageSyncTableViewAccessibilityIdentifier;
-
 // Delegate for presentation events related to
 // ManageSyncSettingsTableViewController.
 @protocol ManageSyncSettingsTableViewControllerPresentationDelegate <NSObject>
 
 // Called when the view controller is removed from its parent.
-- (void)manageSyncSettingsTableViewControllerWasPopped:
+- (void)manageSyncSettingsTableViewControllerWasRemoved:
     (ManageSyncSettingsTableViewController*)controller;
 
 @end

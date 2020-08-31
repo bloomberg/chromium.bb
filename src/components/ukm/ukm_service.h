@@ -18,6 +18,7 @@
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_rotation_scheduler.h"
+#include "components/ukm/ukm_entry_filter.h"
 #include "components/ukm/ukm_recorder_impl.h"
 #include "components/ukm/ukm_reporting_service.h"
 
@@ -25,21 +26,17 @@ class PrefRegistrySimple;
 class PrefService;
 FORWARD_DECLARE_TEST(ChromeMetricsServiceClientTest, TestRegisterUKMProviders);
 FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
-                     TestRegisterUKMProvidersWhenDisabled);
-FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
-                     TestRegisterUKMProvidersWhenForceMetricsReporting);
-FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
-                     TestRegisterUKMProvidersWhenUKMFeatureEnabled);
+                     TestRegisterUkmProvidersWhenUKMFeatureEnabled);
 
 namespace metrics {
 class MetricsServiceClient;
 class UkmBrowserTestBase;
-class UkmEGTestHelper;
 class UkmDemographicMetricsProvider;
 }
 
 namespace ukm {
 class Report;
+class UkmTestHelper;
 
 namespace debug {
 class UkmDebugDataExtractor;
@@ -50,7 +47,8 @@ class UkmDebugDataExtractor;
 enum class ResetReason {
   kOnUkmAllowedStateChanged = 0,
   kUpdatePermissions = 1,
-  kMaxValue = kUpdatePermissions,
+  kClonedInstall = 2,
+  kMaxValue = kClonedInstall,
 };
 
 // The URL-Keyed Metrics (UKM) service is responsible for gathering and
@@ -100,6 +98,10 @@ class UkmService : public UkmRecorderImpl {
   virtual void RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider> provider);
 
+  // Registers the |filter| that is guaranteed to be applied to all subsequent
+  // events that are recorded via this UkmService.
+  void RegisterEventFilter(std::unique_ptr<UkmEntryFilter> filter);
+
   // Registers the names of all of the preferences used by UkmService in
   // the provided PrefRegistry.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -113,17 +115,13 @@ class UkmService : public UkmRecorderImpl {
 
  private:
   friend ::metrics::UkmBrowserTestBase;
-  friend ::metrics::UkmEGTestHelper;
+  friend ::ukm::UkmTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,
                            TestRegisterUKMProviders);
   FRIEND_TEST_ALL_PREFIXES(::IOSChromeMetricsServiceClientTest,
-                           TestRegisterUKMProvidersWhenDisabled);
-  FRIEND_TEST_ALL_PREFIXES(::IOSChromeMetricsServiceClientTest,
-                           TestRegisterUKMProvidersWhenForceMetricsReporting);
-  FRIEND_TEST_ALL_PREFIXES(::IOSChromeMetricsServiceClientTest,
-                           TestRegisterUKMProvidersWhenUKMFeatureEnabled);
+                           TestRegisterUkmProvidersWhenUKMFeatureEnabled);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
                            PurgeExtensionDataFromUnsentLogStore);
 

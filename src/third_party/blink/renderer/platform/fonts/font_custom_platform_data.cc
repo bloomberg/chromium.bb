@@ -45,16 +45,6 @@
 
 namespace blink {
 
-namespace {
-sk_sp<SkFontMgr> FontManagerForSubType(
-    FontFormatCheck::VariableFontSubType font_sub_type) {
-  CHECK_NE(font_sub_type, FontFormatCheck::VariableFontSubType::kNotVariable);
-  if (font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2)
-    return WebFontTypefaceFactory::FreeTypeFontManager();
-  return WebFontTypefaceFactory::FontManagerForVariations();
-}
-}  // namespace
-
 FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t data_size)
     : base_typeface_(std::move(typeface)), data_size_(data_size) {}
@@ -97,9 +87,14 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
         SkSetFourByteTag('w', 'd', 't', 'h'),
         SkFloatToScalar(selection_capabilities.width.clampToRange(
             selection_request.width))};
+    // CSS and OpenType have opposite definitions of direction of slant
+    // angle. In OpenType positive values turn counter-clockwise, negative
+    // values clockwise - in CSS positive values are clockwise rotations /
+    // skew. See note in https://drafts.csswg.org/css-fonts/#font-style-prop -
+    // map value from CSS to OpenType here.
     SkFontArguments::Axis slant_axis = {
         SkSetFourByteTag('s', 'l', 'n', 't'),
-        SkFloatToScalar(selection_capabilities.slope.clampToRange(
+        SkFloatToScalar(-selection_capabilities.slope.clampToRange(
             selection_request.slope))};
 
     axes.push_back(weight_axis);
@@ -124,12 +119,8 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
       axes.push_back(opsz_axis);
     }
 
-    int index;
-    std::unique_ptr<SkStreamAsset> stream(base_typeface_->openStream(&index));
-    sk_sp<SkTypeface> sk_variation_font(FontManagerForSubType(font_sub_type)
-        ->makeFromStream(std::move(stream),
-                         SkFontArguments().setCollectionIndex(index)
-                                          .setAxes(axes.data(), axes.size())));
+    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(
+        SkFontArguments().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;

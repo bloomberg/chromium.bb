@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -53,8 +55,8 @@ views::ScrollView* CreateCredentialsView(
         GetCredentialLabelsForAccountChooser(*form);
     CredentialsItemView* credential_view =
         new CredentialsItemView(button_listener, titles.first, titles.second,
-                                kButtonHoverColor, form.get(), loader_factory);
-    credential_view->SetLowerLabelColor(kAutoSigninTextColor);
+                                form.get(), loader_factory);
+    credential_view->SetStoreIndicatorIcon(form->in_store);
     ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
     gfx::Insets insets =
         layout_provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION);
@@ -86,17 +88,16 @@ std::unique_ptr<views::View> CreateGoogleAccountFooter() {
 AccountChooserDialogView::AccountChooserDialogView(
     CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
-    : controller_(controller),
-      web_contents_(web_contents),
-      show_signin_button_(false) {
+    : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
-  DialogDelegate::set_button_label(
+  SetButtons(ui::DIALOG_BUTTON_CANCEL);
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
   set_close_on_deactivate(false);
   if (controller_->ShouldShowFooter())
-    DialogDelegate::SetFootnoteView(CreateGoogleAccountFooter());
+    SetFootnoteView(CreateGoogleAccountFooter());
   SetArrow(views::BubbleBorder::NONE);
   set_margins(gfx::Insets(margins().top(), 0, margins().bottom(), 0));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ACCOUNT_CHOOSER);
@@ -105,7 +106,12 @@ AccountChooserDialogView::AccountChooserDialogView(
 AccountChooserDialogView::~AccountChooserDialogView() = default;
 
 void AccountChooserDialogView::ShowAccountChooser() {
-  show_signin_button_ = controller_->ShouldShowSignInButton();
+  // It isn't known until after the creation of this dialog whether the sign-in
+  // button should be shown, so always reset the button state here.
+  SetButtons(controller_->ShouldShowSignInButton()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
+  DialogModelChanged();
   InitWindow();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
@@ -135,17 +141,10 @@ void AccountChooserDialogView::WindowClosing() {
 }
 
 bool AccountChooserDialogView::Accept() {
-  DCHECK(show_signin_button_);
   DCHECK(controller_);
   controller_->OnSignInClicked();
   // The dialog is closed by the controller.
   return false;
-}
-
-int AccountChooserDialogView::GetDialogButtons() const {
-  if (show_signin_button_)
-    return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 void AccountChooserDialogView::ButtonPressed(views::Button* sender,

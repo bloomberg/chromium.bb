@@ -10,20 +10,21 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -63,6 +64,7 @@ class ContextualSearchPolicy {
 
         mSelectionController = selectionController;
         mNetworkCommunicator = networkCommunicator;
+        if (selectionController != null) selectionController.setPolicy(this);
     }
 
     /**
@@ -153,7 +155,8 @@ class ContextualSearchPolicy {
 
     /** @return Whether a long-press gesture can resolve. */
     boolean canResolveLongpress() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS);
     }
 
     /**
@@ -258,7 +261,7 @@ class ContextualSearchPolicy {
 
     /** @return whether Tap is disabled due to the longpress experiment. */
     private boolean isTapDisabledDueToLongpress() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
+        return canResolveLongpress()
                 && !ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP.equals(
                         ChromeFeatureList.getFieldTrialParamByFeature(
                                 ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
@@ -457,16 +460,10 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @return Whether any translation feature for Contextual Search is enabled.
-     */
-    boolean isTranslationDisabled() {
-        return ContextualSearchFieldTrial.getSwitch(ContextualSearchSwitch.IS_TRANSLATION_DISABLED);
-    }
-
-    /**
      * @return The ISO country code for the user's home country, or an empty string if not
      *         available or privacy-enabled.
      */
+    @NonNull
     String getHomeCountry(Context context) {
         if (ContextualSearchFieldTrial.getSwitch(
                     ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED)) {

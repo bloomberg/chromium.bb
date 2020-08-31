@@ -7,10 +7,17 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chroot
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class MockChrootCommand(command_unittest.MockCommand):
@@ -48,7 +55,7 @@ class ChrootTest(cros_test_lib.MockTestCase):
     self.cmd_mock.inst.Run()
 
     # Ensure we exec'd bash.
-    self.cmd_mock.rc_mock.assertCommandContains(['bash'], mute_output=False)
+    self.cmd_mock.rc_mock.assertCommandContains(['bash'])
 
   def testExplicitCmdNoArgs(self):
     """Tests a non-interactive command as a single argument."""

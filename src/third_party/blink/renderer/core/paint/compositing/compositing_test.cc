@@ -2,19 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/scroll_and_scale_set.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -48,9 +53,9 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
 
   // Both sets the inner html and runs the document lifecycle.
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
-    frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
+    frame.GetDocument()->body()->setInnerHTML(html_content);
     frame.GetDocument()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   WebLocalFrame* LocalMainFrame() { return web_view_helper_->LocalMainFrame(); }
@@ -66,7 +71,8 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
   }
 
   const cc::Layer* CcLayerByDOMElementId(const char* id) {
-    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
+    auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
+    return layers.IsEmpty() ? nullptr : layers[0];
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
@@ -80,7 +86,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
 
   void UpdateAllLifecyclePhases() {
     WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
  private:
@@ -92,7 +98,7 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(CompositingTest);
 
 TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
@@ -121,9 +127,13 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   CompositorElementId scroll_element_id = scrollable_area->GetScrollElementId();
   const auto* overflow_scroll_layer =
       CcLayerByCcElementId(RootCcLayer(), scroll_element_id);
-  EXPECT_TRUE(overflow_scroll_layer->scrollable());
-  EXPECT_EQ(overflow_scroll_layer->scroll_container_bounds(),
-            gfx::Size(100, 100));
+  const auto* scroll_node =
+      RootCcLayer()
+          ->layer_tree_host()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scroll_element_id);
+  EXPECT_TRUE(scroll_node->scrollable);
+  EXPECT_EQ(scroll_node->container_bounds, gfx::Size(100, 100));
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
@@ -151,8 +161,10 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // apply impl-side offsets without crashing.
   ASSERT_EQ(overflow_scroll_layer,
             CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
-  const_cast<cc::Layer*>(overflow_scroll_layer)
-      ->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
+  scroll_and_scale_set.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
+                                     base::nullopt};
+  overflow_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
+      &scroll_and_scale_set);
 
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
@@ -173,9 +185,13 @@ TEST_P(CompositingTest, FrameViewScroll) {
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
 
-  const auto* scroll_layer = CcLayerByCcElementId(
-      RootCcLayer(), scrollable_area->GetScrollElementId());
-  EXPECT_TRUE(scroll_layer->scrollable());
+  const auto* scroll_node = RootCcLayer()
+                                ->layer_tree_host()
+                                ->property_trees()
+                                ->scroll_tree.FindNodeFromElementId(
+                                    scrollable_area->GetScrollElementId());
+  ASSERT_TRUE(scroll_node);
+  EXPECT_TRUE(scroll_node->scrollable);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
@@ -184,16 +200,158 @@ TEST_P(CompositingTest, FrameViewScroll) {
   scroll_and_scale_set.scrolls.push_back({scrollable_area->GetScrollElementId(),
                                           gfx::ScrollOffset(0, 1),
                                           base::nullopt});
-  scroll_layer->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
+  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
+}
+
+TEST_P(CompositingTest, WillChangeTransformHint) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <style>
+      #willChange {
+        width: 100px;
+        height: 100px;
+        will-change: transform;
+        background: blue;
+      }
+    </style>
+    <div id="willChange"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  auto* layer = CcLayerByDOMElementId("willChange");
+  EXPECT_TRUE(layer->has_will_change_transform_hint());
+}
+
+TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <style>
+      html {
+        background-color: rgb(10, 20, 30);
+      }
+      #scroller {
+        will-change: transform;
+        overflow: scroll;
+        height: 100px;
+        width: 100px;
+        background-color: rgb(30, 40, 50);
+      }
+      .spacer {
+        height: 1000px;
+      }
+    </style>
+    <div id="scroller">
+      <div class="spacer"></div>
+    </div>
+    <div class="spacer"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  LayoutView* layout_view = GetLocalFrameView()->GetLayoutView();
+  Element* scroller = GetElementById("scroller");
+  LayoutBox* scroller_box = ToLayoutBox(scroller->GetLayoutObject());
+  ASSERT_TRUE(layout_view->GetBackgroundPaintLocation() ==
+              kBackgroundPaintInScrollingContents);
+  ASSERT_TRUE(scroller_box->GetBackgroundPaintLocation() ==
+              kBackgroundPaintInScrollingContents);
+
+  // In CAP mode, background_color is only set on the cc::Layer which draws the
+  // background; in pre-CAP mode, it is set on both the main layer and the
+  // scrolling contents layer.
+  bool cap_mode = RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
+
+  // The root layer and root scrolling contents layer get background_color by
+  // blending the CSS background-color of the <html> element with
+  // LocalFrameView::BaseBackgroundColor(), which is white by default.
+  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
+  SkColor expected_color = SkColorSetRGB(10, 20, 30);
+  EXPECT_EQ(layer->background_color(),
+            cap_mode ? SK_ColorTRANSPARENT : expected_color);
+  auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
+  layer = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(), scrollable_area->GetScrollElementId());
+  EXPECT_EQ(layer->background_color(), expected_color);
+
+  // Non-root layers set background_color based on the CSS background color of
+  // the layer-defining element.
+  expected_color = SkColorSetRGB(30, 40, 50);
+  layer = CcLayerByDOMElementId("scroller");
+  EXPECT_EQ(layer->background_color(),
+            cap_mode ? SK_ColorTRANSPARENT : expected_color);
+  scrollable_area = scroller_box->GetScrollableArea();
+  layer = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(), scrollable_area->GetScrollElementId());
+  EXPECT_EQ(layer->background_color(), expected_color);
+}
+
+TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <style>
+      html {
+        background-image: linear-gradient(rgb(10, 20, 30), rgb(60, 70, 80));
+        background-attachment: fixed;
+      }
+      #scroller {
+        will-change: transform;
+        overflow: scroll;
+        height: 100px;
+        width: 100px;
+        background-color: rgba(30, 40, 50, .6);
+        background-clip: content-box;
+        background-attachment: scroll;
+        padding: 1px;
+      }
+      .spacer {
+        height: 1000px;
+      }
+    </style>
+    <div id="scroller">
+      <div class="spacer"></div>
+    </div>
+    <div class="spacer"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  LayoutView* layout_view = GetLocalFrameView()->GetLayoutView();
+  Element* scroller = GetElementById("scroller");
+  LayoutBox* scroller_box = ToLayoutBox(scroller->GetLayoutObject());
+  ASSERT_TRUE(layout_view->GetBackgroundPaintLocation() ==
+              kBackgroundPaintInGraphicsLayer);
+  ASSERT_TRUE(scroller_box->GetBackgroundPaintLocation() ==
+              kBackgroundPaintInGraphicsLayer);
+
+  // In CAP mode, background_color is only set on the cc::Layer which draws the
+  // background; in pre-CAP mode, it is set on both the main layer and the
+  // scrolling contents layer.
+  bool cap_mode = RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
+
+  // The root layer and root scrolling contents layer get background_color by
+  // blending the CSS background-color of the <html> element with
+  // LocalFrameView::BaseBackgroundColor(), which is white by default. In this
+  // case, because the background is a gradient, it will blend transparent with
+  // white, resulting in white.
+  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
+  EXPECT_EQ(layer->background_color(), SK_ColorWHITE);
+  auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
+  layer = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(), scrollable_area->GetScrollElementId());
+  EXPECT_EQ(layer->background_color(),
+            cap_mode ? SK_ColorTRANSPARENT : SK_ColorWHITE);
+
+  // Non-root layers set background_color based on the CSS background color of
+  // the layer-defining element.
+  SkColor expected_color = SkColorSetARGB(roundf(255. * 0.6), 30, 40, 50);
+  layer = CcLayerByDOMElementId("scroller");
+  EXPECT_EQ(layer->background_color(), expected_color);
+  scrollable_area = scroller_box->GetScrollableArea();
+  layer = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(), scrollable_area->GetScrollElementId());
+  EXPECT_EQ(layer->background_color(),
+            cap_mode ? SK_ColorTRANSPARENT : expected_color);
 }
 
 class CompositingSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {
-    WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-
     SimRequest request("https://example.com/test.html", "text/html");
     LoadURL("https://example.com/test.html");
     request.Complete(html);
@@ -206,7 +364,8 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   const cc::Layer* CcLayerByDOMElementId(const char* id) {
-    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
+    auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
+    return layers.IsEmpty() ? nullptr : layers[0];
   }
 
   Element* GetElementById(const AtomicString& id) {
@@ -215,17 +374,16 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
 
   void UpdateAllLifecyclePhases() {
     WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
-        WebWidget::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
   }
 
   void UpdateAllLifecyclePhasesExceptPaint() {
-    WebView().MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kPrePaint,
-        WebWidget::LifecycleUpdateReason::kTest);
+    WebView().MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kPrePaint,
+                                                 DocumentUpdateReason::kTest);
   }
 
   cc::PropertyTrees* GetPropertyTrees() {
-    return Compositor().layer_tree_host().property_trees();
+    return Compositor().layer_tree_host()->property_trees();
   }
 
   cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
@@ -240,17 +398,18 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositor();
   }
+
+ private:
+  void SetUp() override {
+    SimTest::SetUp();
+    // Ensure a non-empty size so painting does not early-out.
+    WebView().Resize(WebSize(800, 600));
+  }
 };
 
-INSTANTIATE_LAYER_LIST_TEST_SUITE_P(CompositingSimTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(CompositingSimTest);
 
 TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -259,6 +418,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
           width: 100px;
           height: 100px;
           will-change: transform;
+          background: lightblue;
         }
       </style>
       <div id='a'></div>
@@ -267,19 +427,12 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
 
   Compositor().BeginFrame();
 
-  auto* a_element = GetElementById("a");
   auto* a_layer = CcLayerByDOMElementId("a");
-  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       a_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
   auto* b_layer = CcLayerByDOMElementId("b");
-  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       b_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
 
   // Initially, neither a nor b should have a layer that should push properties.
-  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& host = *Compositor().layer_tree_host();
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
 
@@ -296,12 +449,6 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
 }
 
 TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -310,6 +457,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
           width: 100px;
           height: 100px;
           will-change: transform;
+          background: lightblue;
         }
       </style>
       <div id='a'></div>
@@ -321,22 +469,12 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
 
   auto* a_element = GetElementById("a");
   auto* a_layer = CcLayerByDOMElementId("a");
-  DCHECK_EQ(a_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       a_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
   auto* b_element = GetElementById("b");
   auto* b_layer = CcLayerByDOMElementId("b");
-  DCHECK_EQ(b_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       b_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
-  auto* c_element = GetElementById("c");
   auto* c_layer = CcLayerByDOMElementId("c");
-  DCHECK_EQ(c_layer->element_id(), CompositorElementIdFromUniqueObjectId(
-                                       c_element->GetLayoutObject()->UniqueId(),
-                                       CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should need to push properties.
-  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& host = *Compositor().layer_tree_host();
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
@@ -374,7 +512,7 @@ TEST_P(CompositingSimTest,
   Compositor().BeginFrame();
 
   // Initially the host should not need to sync.
-  cc::LayerTreeHost& layer_tree_host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& layer_tree_host = *Compositor().layer_tree_host();
   EXPECT_FALSE(layer_tree_host.needs_full_tree_sync());
   int sequence_number = GetPropertyTrees()->sequence_number;
   EXPECT_GT(sequence_number, 0);
@@ -394,12 +532,6 @@ TEST_P(CompositingSimTest,
 // non-layer-list mode, this occurs in BuildPropertyTreesInternal (see:
 // SetLayerPropertyChangedForChild).
 TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -409,6 +541,7 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
           height: 100px;
           will-change: transform;
           transform: translate(10px, 10px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -426,16 +559,7 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
@@ -471,12 +595,6 @@ TEST_P(CompositingSimTest, LayerSubtreeTransformPropertyChanged) {
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::TransformTree::OnTransformAnimated and cc::Layer::SetTransform.
 TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -486,6 +604,7 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
           height: 100px;
           will-change: transform;
           transform: translate(10px, 10px) scale(1, 2);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -503,10 +622,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto transform_tree_index = outer_element_layer->transform_tree_index();
   auto* transform_node =
       GetPropertyTrees()->transform_tree.Node(transform_tree_index);
@@ -531,12 +646,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 // the changed value of a directly updated transform is still set if some other
 // change causes PaintArtifactCompositor to run and do non-direct updates.
 TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -546,6 +655,7 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
           height: 100px;
           will-change: transform;
           transform: translate(1px, 2px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -564,20 +674,12 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto outer_transform_tree_index = outer_element_layer->transform_tree_index();
   auto* outer_transform_node =
       GetPropertyTrees()->transform_tree.Node(outer_transform_tree_index);
 
   auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto inner_transform_tree_index = inner_element_layer->transform_tree_index();
   auto* inner_transform_node =
       GetPropertyTrees()->transform_tree.Node(inner_transform_tree_index);
@@ -680,12 +782,6 @@ TEST_P(CompositingSimTest, AffectedByOuterViewportBoundsDelta) {
 // |transform_changed| set. In non-layer-list mode, this occurs in
 // cc::Layer::SetTransformOrigin.
 TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -695,6 +791,7 @@ TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
           height: 100px;
           transform: rotate3d(3, 2, 1, 45deg);
           transform-origin: 10px 10px 100px;
+          background: lightblue;
         }
       </style>
       <div id='box'></div>
@@ -704,10 +801,6 @@ TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
 
   auto* box_element = GetElementById("box");
   auto* box_element_layer = CcLayerByDOMElementId("box");
-  DCHECK_EQ(box_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                box_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
   auto transform_tree_index = box_element_layer->transform_tree_index();
   auto* transform_node =
       GetPropertyTrees()->transform_tree.Node(transform_tree_index);
@@ -803,12 +896,6 @@ TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // clip property node changes.
 TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -819,6 +906,7 @@ TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
           will-change: transform;
           position: absolute;
           clip: rect(10px, 80px, 70px, 40px);
+          background: lightgreen;
         }
         #inner {
           width: 100px;
@@ -836,12 +924,7 @@ TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
@@ -948,7 +1031,7 @@ TEST_P(CompositingSimTest, LayerClipPropertyChanged) {
   Compositor().BeginFrame();
 
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->should_check_backface_visibility());
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
@@ -960,7 +1043,7 @@ TEST_P(CompositingSimTest, LayerClipPropertyChanged) {
   UpdateAllLifecyclePhases();
 
   inner_element_layer = CcLayerByDOMElementId("inner");
-  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->should_check_backface_visibility());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
   // After a frame the |subtree_property_changed| value should be reset.
@@ -1044,6 +1127,21 @@ TEST_P(CompositingSimTest, SafeOpaqueBackgroundColorGetsSet) {
               (squashed_bg_color == SK_ColorCYAN));
 }
 
+// Test that a pleasant checkerboard color is used in the presence of blending.
+TEST_P(CompositingSimTest, RootScrollingContentsSafeOpaqueBackgroundColor) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div style="mix-blend-mode: multiply;"></div>
+      <div id="forcescroll" style="height: 10000px;"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* scrolling_contents = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(),
+      MainFrame().GetFrameView()->LayoutViewport()->GetScrollElementId());
+  EXPECT_EQ(scrolling_contents->SafeOpaqueBackgroundColor(), SK_ColorWHITE);
+}
+
 TEST_P(CompositingSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions. When
   // CAP gets closer to launch, this test should be updated to pass.
@@ -1116,6 +1214,145 @@ TEST_P(CompositingSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
     EXPECT_NE(cc::RenderSurfaceReason::kClipAxisAlignment,
               effect_node.render_surface_reason);
   }
+}
+
+TEST_P(CompositingSimTest, PromoteCrossOriginIframe) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+  InitializeWithHTML("<!DOCTYPE html><iframe id=iframe sandbox></iframe>");
+  Compositor().BeginFrame();
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+}
+
+// On initial layout, the iframe is not yet loaded and is not considered
+// cross origin. This test ensures the iframe is promoted due to being cross
+// origin after the iframe loads.
+TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterLoading) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest frame_resource("https://origin-b.com/b.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="iframe" src="https://origin-b.com/b.html"></iframe>
+  )HTML");
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+}
+
+// An iframe that is cross-origin to the parent should be composited. This test
+// sets up nested frames with domains A -> B -> A. Both the child and grandchild
+// frames should be composited because they are cross-origin to their parent.
+TEST_P(CompositingSimTest, PromoteCrossOriginToParent) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest child_resource("https://origin-b.com/b.html", "text/html");
+  SimRequest grandchild_resource("https://origin-a.com/c.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="main_iframe" src="https://origin-b.com/b.html"></iframe>
+  )HTML");
+  child_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="child_iframe" src="https://origin-a.com/c.html"></iframe>
+  )HTML");
+  grandchild_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_TRUE(CcLayerByDOMElementId("child_iframe"));
+}
+
+// Initially the iframe is cross-origin and should be composited. After changing
+// to same-origin, the frame should no longer be composited.
+TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterDomainChange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest frame_resource("https://sub.origin-a.com/b.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="iframe" src="https://sub.origin-a.com/b.html"></iframe>
+  )HTML");
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+
+  auto* iframe_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
+  NonThrowableExceptionState exception_state;
+  GetDocument().setDomain(String("origin-a.com"), exception_state);
+  iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                               exception_state);
+  // We may not have scheduled a visual update so force an update instead of
+  // using BeginFrame.
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(CcLayerByDOMElementId("iframe"));
+}
+
+// This test sets up nested frames with domains A -> B -> A. Initially, the
+// child frame and grandchild frame should be composited. After changing the
+// child frame to A (same-origin), both child and grandchild frames should no
+// longer be composited.
+TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest child_resource("https://sub.origin-a.com/b.html", "text/html");
+  SimRequest grandchild_resource("https://origin-a.com/c.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="main_iframe" src="https://sub.origin-a.com/b.html"></iframe>
+  )HTML");
+  child_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="child_iframe" src="https://origin-a.com/c.html"></iframe>
+  )HTML");
+  grandchild_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_TRUE(CcLayerByDOMElementId("child_iframe"));
+
+  auto* main_iframe_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("main_iframe"));
+  NonThrowableExceptionState exception_state;
+  GetDocument().setDomain(String("origin-a.com"), exception_state);
+  auto* child_iframe_element = To<HTMLIFrameElement>(
+      main_iframe_element->contentDocument()->getElementById("child_iframe"));
+  child_iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                                     exception_state);
+  main_iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                                    exception_state);
+
+  // We may not have scheduled a visual update so force an update instead of
+  // using BeginFrame.
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_FALSE(CcLayerByDOMElementId("child_iframe"));
 }
 
 }  // namespace blink

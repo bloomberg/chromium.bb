@@ -36,7 +36,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
     // TODO(nazabris, crbug.com/1017508) Use RasterImplementation after
     // all references to GLES2Interface have been removed.
     raster_interface_ =
-        std::make_unique<gpu::raster::RasterImplementationGLES>(gl_);
+        std::make_unique<gpu::raster::RasterImplementationGLES>(gl_, nullptr);
 
     // enable all gpu features.
     for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
@@ -61,7 +61,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
     return webgl_preferences_;
   }
 
-  viz::GLHelper* GetGLHelper() override { return nullptr; }
+  gpu::GLHelper* GetGLHelper() override { return nullptr; }
 
   gpu::InterfaceBase* InterfaceBase() override { return gl_; }
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
@@ -71,11 +71,14 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
     return raster_interface_.get();
   }
-
+  bool IsContextLost() override {
+    return RasterInterface() &&
+           RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+  }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
 
   bool BindToCurrentThread() override { return false; }
-  void SetLostContextCallback(base::Closure) override {}
+  void SetLostContextCallback(base::RepeatingClosure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {

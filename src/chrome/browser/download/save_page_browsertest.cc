@@ -56,6 +56,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
@@ -734,7 +735,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SecurityLevelHistogram) {
 }
 
 // Tests that a page can be saved as MHTML.
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageAsMHTML) {
+// Flaky on Windows, crbug.com/1048100
+#if defined(OS_WIN)
+#define MAYBE_SavePageAsMHTML DISABLED_SavePageAsMHTML
+#else
+#define MAYBE_SavePageAsMHTML SavePageAsMHTML
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SavePageAsMHTML) {
   static const int64_t kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
@@ -879,8 +886,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveUnauthorizedResource) {
   base::FilePath file_path =
       temp_dir2.GetPath().Append(FILE_PATH_LITERAL("should-not-save.jpg"));
   std::string file_content("fake-jpg");
-  ASSERT_LT(
-      0, base::WriteFile(file_path, file_content.data(), file_content.size()));
+  ASSERT_TRUE(base::WriteFile(file_path, file_content));
 
   // Refer to the test file from the test page.
   GURL file_url = net::FilePathToFileURL(file_path);
@@ -1139,7 +1145,7 @@ class SavePageOriginalVsSavedComparisonTest
     // See https://crbug.com/948246.
     ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,foo"));
     chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-    content::WaitForLoadStop(GetCurrentTab(browser()));
+    EXPECT_TRUE(content::WaitForLoadStop(GetCurrentTab(browser())));
     AssertExpectationsAboutCurrentTab(expected_number_of_frames_in_saved_page,
                                       expected_substrings);
   }

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.feed.library.api.client.scope;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageD
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorage;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
-import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionReader;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.knowncontent.FeedKnownContent;
@@ -72,16 +72,16 @@ public final class ProcessScopeBuilder {
     private final ApplicationInfo mApplicationInfo;
 
     // Optional fields - if they are not provided, we will use default implementations.
-    /*@MonotonicNonNull*/ private ProtoExtensionProvider mProtoExtensionProvider;
-    /*@MonotonicNonNull*/ private Clock mClock;
+    private ProtoExtensionProvider mProtoExtensionProvider;
+    private Clock mClock;
 
     // Either contentStorage or rawContentStorage must be provided.
-    /*@MonotonicNonNull*/ ContentStorageDirect mContentStorage;
-    /*@MonotonicNonNull*/ private ContentStorage mRawContentStorage;
+    ContentStorageDirect mContentStorage;
+    private ContentStorage mRawContentStorage;
 
     // Either journalStorage or rawJournalStorage must be provided.
-    /*@MonotonicNonNull*/ JournalStorageDirect mJournalStorage;
-    /*@MonotonicNonNull*/ private JournalStorage mRawJournalStorage;
+    JournalStorageDirect mJournalStorage;
+    private JournalStorage mRawJournalStorage;
 
     /** The APIs are all required to construct the scope. */
     public ProcessScopeBuilder(Configuration configuration, Executor sequencedExecutor,
@@ -215,18 +215,19 @@ public final class ProcessScopeBuilder {
                 networkClient, protocolAdapter, extensionRegistry, schedulerApi, taskQueue,
                 timingUtils, threadUtils, actionReader, mContext, mApplicationInfo,
                 mainThreadRunner, mBasicLoggingApi, mTooltipSupportedApi);
-        ActionUploadRequestManager actionUploadRequestManager =
-                new FeedActionUploadRequestManager(mConfiguration, networkClient, protocolAdapter,
-                        extensionRegistry, taskQueue, threadUtils, store, mClock);
+        FeedActionManagerImpl actionManager = new FeedActionManagerImpl(
+                store, threadUtils, taskQueue, mainThreadRunner, mClock, mBasicLoggingApi);
+        ActionUploadRequestManager actionUploadRequestManager = new FeedActionUploadRequestManager(
+                actionManager, mConfiguration, networkClient, protocolAdapter, extensionRegistry,
+                mainThreadRunner, taskQueue, threadUtils, store, mClock);
         FeedSessionManagerFactory fsmFactory = new FeedSessionManagerFactory(taskQueue, store,
                 timingUtils, threadUtils, protocolAdapter, feedRequestManager,
                 actionUploadRequestManager, schedulerApi, mConfiguration, mClock, lifecycleListener,
                 mainThreadRunner, mBasicLoggingApi);
         FeedSessionManager feedSessionManager = fsmFactory.create();
+        actionManager.initialize(feedSessionManager);
         RequestManagerImpl clientRequestManager =
                 new RequestManagerImpl(feedRequestManager, feedSessionManager);
-        ActionManager actionManager = new FeedActionManagerImpl(
-                feedSessionManager, store, threadUtils, taskQueue, mainThreadRunner, mClock);
 
         FeedKnownContent feedKnownContent =
                 new FeedKnownContentImpl(feedSessionManager, mainThreadRunner, threadUtils);

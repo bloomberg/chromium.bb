@@ -41,7 +41,11 @@ void FakeServiceWorker::InitializeGlobalScope(
         service_worker_host,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
-    blink::mojom::FetchHandlerExistence fetch_handler_existence) {
+    blink::mojom::FetchHandlerExistence fetch_handler_existence,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        subresource_loader_factories,
+    mojo::PendingReceiver<blink::mojom::ReportingObserver>
+        reporting_observer_receiver) {
   host_.Bind(std::move(service_worker_host));
 
   // Enable callers to use these endpoints without us actually binding them
@@ -75,8 +79,7 @@ void FakeServiceWorker::InitializeGlobalScope(
 
 void FakeServiceWorker::DispatchInstallEvent(
     DispatchInstallEventCallback callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          true /* has_fetch_handler */);
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchActivateEvent(
@@ -190,7 +193,8 @@ void FakeServiceWorker::DispatchCanMakePaymentEvent(
     DispatchCanMakePaymentEventCallback callback) {
   mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
       response_callback(std::move(pending_response_callback));
-  response_callback->OnResponseForCanMakePayment(true);
+  response_callback->OnResponseForCanMakePayment(
+      payments::mojom::CanMakePaymentResponse::New());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
@@ -222,8 +226,8 @@ void FakeServiceWorker::Ping(PingCallback callback) {
   std::move(callback).Run();
 }
 
-void FakeServiceWorker::SetIdleTimerDelayToZero() {
-  is_zero_idle_timer_delay_ = true;
+void FakeServiceWorker::SetIdleDelay(base::TimeDelta delay) {
+  idle_delay_ = delay;
 }
 
 void FakeServiceWorker::AddMessageToConsole(

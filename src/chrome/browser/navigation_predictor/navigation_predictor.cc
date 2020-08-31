@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -41,14 +40,6 @@ namespace {
 // but the params it exposes are variable.
 const base::Feature kNavigationPredictorMultiplePrerenders{
     "NavigationPredictorMultiplePrerenders", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMainFrame(content::RenderFrameHost* rfh) {
-  // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
-  // RenderViewHost is being deprecated and because in OOPIF,
-  // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
-  // different process from the main frame.
-  return rfh->GetParent() == nullptr;
-}
 
 std::string GetURLWithoutRefParams(const GURL& gurl) {
   url::Replacements<char> replacements;
@@ -121,10 +112,8 @@ struct NavigationPredictor::NavigationScore {
   base::Optional<size_t> score_rank;
 };
 
-NavigationPredictor::NavigationPredictor(
-    content::RenderFrameHost* render_frame_host)
-    : browser_context_(
-          render_frame_host->GetSiteInstance()->GetBrowserContext()),
+NavigationPredictor::NavigationPredictor(content::WebContents* web_contents)
+    : browser_context_(web_contents->GetBrowserContext()),
       ratio_area_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "ratio_area_scale",
@@ -210,24 +199,17 @@ NavigationPredictor::NavigationPredictor(
       normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "normalize_scores",
-          true)),
-      render_frame_host_(render_frame_host) {
+          true)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(render_frame_host_);
-
-  if (!IsMainFrame(render_frame_host))
-    return;
 
   if (browser_context_->IsOffTheRecord())
     return;
 
   ukm_recorder_ = ukm::UkmRecorder::Get();
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
   current_visibility_ = web_contents->GetVisibility();
-  ukm_source_id_ = web_contents->GetLastCommittedSourceId();
+  ukm_source_id_ = web_contents->GetMainFrame()->GetPageUkmSourceId();
   Observe(web_contents);
 }
 
@@ -250,36 +232,19 @@ void NavigationPredictor::Create(
   if (render_frame_host->GetParent())
     return;
 
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<NavigationPredictor>(render_frame_host),
-      std::move(receiver));
+      std::make_unique<NavigationPredictor>(web_contents), std::move(receiver));
 }
 
 bool NavigationPredictor::IsValidMetricFromRenderer(
     const blink::mojom::AnchorElementMetrics& metric) const {
   return metric.target_url.SchemeIsHTTPOrHTTPS() &&
          metric.source_url.SchemeIsHTTPOrHTTPS();
-}
-
-
-void NavigationPredictor::RecordTimingOnClick() {
-  base::TimeTicks current_timing = base::TimeTicks::Now();
-
-  // This is the first click in the document.
-  // Note that multiple clicks can happen on the same document. For example,
-  // if the click opens a new tab, then the old document is not necessarily
-  // destroyed. The user can return to the old document and click.
-  if (last_click_timing_ == base::TimeTicks()) {
-    // Document may have not loaded yet when click happens.
-    UMA_HISTOGRAM_TIMES("AnchorElementMetrics.Clicked.DurationLoadToFirstClick",
-                        document_loaded_timing_ > base::TimeTicks()
-                            ? current_timing - document_loaded_timing_
-                            : base::TimeDelta());
-  } else {
-    UMA_HISTOGRAM_TIMES("AnchorElementMetrics.Clicked.ClickIntervals",
-                        current_timing - last_click_timing_);
-  }
-  last_click_timing_ = current_timing;
 }
 
 void NavigationPredictor::RecordActionAccuracyOnClick(
@@ -558,7 +523,6 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     return;
   }
 
-  RecordTimingOnClick();
   clicked_count_++;
 
   document_url_ = metrics->source_url;
@@ -571,25 +535,10 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   if (iter == navigation_scores_map_.end())
     return;
 
-  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.AreaRank",
-                           static_cast<int>(iter->second->area_rank));
-  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.NavigationScore",
-                           static_cast<int>(iter->second->score));
-  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.NavigationScoreRank",
-                           static_cast<int>(iter->second->score_rank.value()));
 
   // Guaranteed to be non-zero since we have found the clicked link in
   // |navigation_scores_map_|.
   DCHECK_LT(0, number_of_anchors_);
-  if (metrics->is_same_host) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioSameHost_SameHost",
-        (number_of_anchors_same_host_ * 100) / number_of_anchors_);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioSameHost_DiffHost",
-        (number_of_anchors_same_host_ * 100) / number_of_anchors_);
-  }
 
   if (source_is_default_search_engine_page_) {
     UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.OnDSE.SameHost",
@@ -598,45 +547,10 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.OnNonDSE.SameHost",
                           metrics->is_same_host);
   }
-
-  // Check if the clicked anchor element contains image or if any other anchor
-  // element pointing to the same url contains an image.
-  if (metrics->contains_image || iter->second->contains_image) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage",
-        (number_of_anchors_contains_image_ * 100) / number_of_anchors_);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioContainsImage_NoImage",
-        (number_of_anchors_contains_image_ * 100) / number_of_anchors_);
-  }
-
-  if (metrics->is_in_iframe) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioInIframe_InIframe",
-        (number_of_anchors_in_iframe_ * 100) / number_of_anchors_);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioInIframe_NotInIframe",
-        (number_of_anchors_in_iframe_ * 100) / number_of_anchors_);
-  }
-
-  if (metrics->is_url_incremented_by_one) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioUrlIncremented_UrlIncremented",
-        (number_of_anchors_url_incremented_ * 100) / number_of_anchors_);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "AnchorElementMetrics.Clicked.RatioUrlIncremented_NotIncremented",
-        (number_of_anchors_url_incremented_ * 100) / number_of_anchors_);
-  }
 }
 
 void NavigationPredictor::MergeMetricsSameTargetUrl(
     std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const {
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", metrics->size());
-
   // Maps from target url (href) to anchor element metrics from renderer.
   std::unordered_map<std::string, blink::mojom::AnchorElementMetricsPtr>
       metrics_map;
@@ -756,8 +670,6 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   if (!metrics[0]->source_url.SchemeIsCryptographic())
     return;
 
-  document_loaded_timing_ = base::TimeTicks::Now();
-
   source_is_default_search_engine_page_ =
       GetTemplateURLService() &&
       GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
@@ -810,7 +722,6 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
 
   for (size_t i = 0; i != metrics.size(); ++i) {
     const auto& metric = metrics[i];
-    RecordMetricsOnLoad(*metric);
 
     // Anchor elements with the same area are assigned with the same rank.
     size_t area_rank = i;
@@ -948,6 +859,13 @@ double NavigationPredictor::GetPageMetricsScore() const {
 void NavigationPredictor::NotifyPredictionUpdated(
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) {
+  // It is possible for this class to still exist while its WebContents and
+  // RenderFrameHost are being destroyed. This can be detected by checking
+  // |web_contents()| which will be nullptr if the WebContents has been
+  // destroyed.
+  if (!web_contents())
+    return;
+
   NavigationPredictorKeyedService* service =
       NavigationPredictorKeyedServiceFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_));
@@ -957,7 +875,11 @@ void NavigationPredictor::NotifyPredictionUpdated(
   for (const auto& nav_score : sorted_navigation_scores) {
     top_urls.push_back(nav_score->url);
   }
-  service->OnPredictionUpdated(render_frame_host_, document_url_, top_urls);
+  service->OnPredictionUpdated(
+      web_contents(), document_url_,
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      top_urls);
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
@@ -1007,6 +929,13 @@ void NavigationPredictor::Prefetch(
     const GURL& url_to_prefetch) {
   DCHECK(!prerender_handle_);
   DCHECK(!prefetch_url_);
+
+  // It is possible for this class to still exist while its WebContents and
+  // RenderFrameHost are being destroyed. This can be detected by checking
+  // |web_contents()| which will be nullptr if the WebContents has been
+  // destroyed.
+  if (!web_contents())
+    return;
 
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();
@@ -1087,51 +1016,6 @@ std::deque<GURL> NavigationPredictor::GetUrlsToPrefetch(
     urls_to_prefetch.emplace_back(url_to_prefetch);
   }
 
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Visible.HighestNavigationScore",
-      static_cast<int>(sorted_navigation_scores[0]->score));
-
   return urls_to_prefetch;
 }
 
-void NavigationPredictor::RecordMetricsOnLoad(
-    const blink::mojom::AnchorElementMetrics& metric) const {
-  DCHECK(!browser_context_->IsOffTheRecord());
-
-  UMA_HISTOGRAM_PERCENTAGE("AnchorElementMetrics.Visible.RatioArea",
-                           static_cast<int>(metric.ratio_area * 100));
-
-  UMA_HISTOGRAM_PERCENTAGE("AnchorElementMetrics.Visible.RatioVisibleArea",
-                           static_cast<int>(metric.ratio_visible_area * 100));
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "AnchorElementMetrics.Visible.RatioDistanceTopToVisibleTop",
-      static_cast<int>(
-          std::min(metric.ratio_distance_top_to_visible_top, 1.0f) * 100));
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "AnchorElementMetrics.Visible.RatioDistanceCenterToVisibleTop",
-      static_cast<int>(
-          std::min(metric.ratio_distance_center_to_visible_top, 1.0f) * 100));
-
-  UMA_HISTOGRAM_COUNTS_10000(
-      "AnchorElementMetrics.Visible.RatioDistanceRootTop",
-      static_cast<int>(std::min(metric.ratio_distance_root_top, 100.0f) * 100));
-
-  UMA_HISTOGRAM_COUNTS_10000(
-      "AnchorElementMetrics.Visible.RatioDistanceRootBottom",
-      static_cast<int>(std::min(metric.ratio_distance_root_bottom, 100.0f) *
-                       100));
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsInIFrame",
-                        metric.is_in_iframe);
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.ContainsImage",
-                        metric.contains_image);
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsSameHost",
-                        metric.is_same_host);
-
-  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsUrlIncrementedByOne",
-                        metric.is_url_incremented_by_one);
-}

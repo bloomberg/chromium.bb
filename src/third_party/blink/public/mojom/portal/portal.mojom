@@ -19,9 +19,22 @@ enum PortalActivateResult {
   // The predecessor was adopted by its successor.
   kPredecessorWasAdopted,
 
+  // The activation could not proceed because the portal had not yet begun
+  // to load a document, or its load was canceled.
+  kRejectedDueToPortalNotReady,
+
+  // The activation could not proceed because the portal is showing an error
+  // page.
+  kRejectedDueToErrorInPortal,
+
   // The activation could not proceed since the predecessor main frame was
   // navigating and the navigation could not be cancelled.
   kRejectedDueToPredecessorNavigation,
+
+  // The connection with the remote was closed (usually happens during a
+  // browser shutdown). This error code is never sent as an IPC response, but
+  // is synthesized by the renderer.
+  kDisconnected,
 
   // The activation was attempted but was aborted due to a logic error, such as
   // a nonsensical reply from the other renderer. This should never happen; it

@@ -57,7 +57,7 @@ std::unique_ptr<AudioEncoderOpusStates> CreateCodec(int sample_rate_hz,
       std::make_unique<AudioEncoderOpusStates>();
   states->mock_audio_network_adaptor = nullptr;
   states->fake_clock.reset(new rtc::ScopedFakeClock());
-  states->fake_clock->SetTime(Timestamp::us(kInitialTimeUs));
+  states->fake_clock->SetTime(Timestamp::Micros(kInitialTimeUs));
 
   MockAudioNetworkAdaptor** mock_ptr = &states->mock_audio_network_adaptor;
   AudioEncoderOpusImpl::AudioNetworkAdaptorCreator creator =
@@ -249,7 +249,7 @@ void TestSetPacketLossRate(const AudioEncoderOpusStates* states,
   constexpr int64_t kSampleIntervalMs = 184198;
   for (float loss : losses) {
     states->encoder->OnReceivedUplinkPacketLossFraction(loss);
-    states->fake_clock->AdvanceTime(TimeDelta::ms(kSampleIntervalMs));
+    states->fake_clock->AdvanceTime(TimeDelta::Millis(kSampleIntervalMs));
     EXPECT_FLOAT_EQ(expected_return, states->encoder->packet_loss_rate());
   }
 }
@@ -298,29 +298,6 @@ TEST_P(AudioEncoderOpusTest, PacketLossRateLowerBounded) {
   TestSetPacketLossRate(states.get(), I(0.04f - eps, 0.01f + eps), 0.05f);
   TestSetPacketLossRate(states.get(), I(0.01f - eps, 0.00f      ), 0.05f);
   // clang-format on
-}
-
-TEST_P(AudioEncoderOpusTest, NewPacketLossRateOptimization) {
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-NewOpusPacketLossRateOptimization/Enabled-5-15-0.5/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-
-    TestSetPacketLossRate(states.get(), {0.00f}, 0.05f);
-    TestSetPacketLossRate(states.get(), {0.12f}, 0.06f);
-    TestSetPacketLossRate(states.get(), {0.22f}, 0.11f);
-    TestSetPacketLossRate(states.get(), {0.50f}, 0.15f);
-  }
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-NewOpusPacketLossRateOptimization/Enabled/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-
-    TestSetPacketLossRate(states.get(), {0.00f}, 0.01f);
-    TestSetPacketLossRate(states.get(), {0.12f}, 0.12f);
-    TestSetPacketLossRate(states.get(), {0.22f}, 0.20f);
-    TestSetPacketLossRate(states.get(), {0.50f}, 0.20f);
-  }
 }
 
 TEST_P(AudioEncoderOpusTest, SetReceiverFrameLengthRange) {
@@ -429,7 +406,7 @@ TEST_P(AudioEncoderOpusTest,
   states->encoder->OnReceivedUplinkPacketLossFraction(kPacketLossFraction_1);
   EXPECT_FLOAT_EQ(0.01f, states->encoder->packet_loss_rate());
 
-  states->fake_clock->AdvanceTime(TimeDelta::ms(kSecondSampleTimeMs));
+  states->fake_clock->AdvanceTime(TimeDelta::Millis(kSecondSampleTimeMs));
   states->encoder->OnReceivedUplinkPacketLossFraction(kPacketLossFraction_2);
 
   // Now the output of packet loss fraction smoother should be
@@ -520,34 +497,6 @@ TEST_P(AudioEncoderOpusTest, MinPacketLossRate) {
     constexpr float kMinPacketLossRate = 0.5;
     auto states = CreateCodec(sample_rate_hz_, 1);
     EXPECT_EQ(kMinPacketLossRate, states->encoder->packet_loss_rate());
-  }
-}
-
-TEST_P(AudioEncoderOpusTest, NewPacketLossRateOptimizer) {
-  {
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    auto optimizer = states->encoder->new_packet_loss_optimizer();
-    EXPECT_EQ(nullptr, optimizer);
-  }
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-NewOpusPacketLossRateOptimization/Enabled/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    auto optimizer = states->encoder->new_packet_loss_optimizer();
-    ASSERT_NE(nullptr, optimizer);
-    EXPECT_FLOAT_EQ(0.01, optimizer->min_packet_loss_rate());
-    EXPECT_FLOAT_EQ(0.20, optimizer->max_packet_loss_rate());
-    EXPECT_FLOAT_EQ(1.00, optimizer->slope());
-  }
-  {
-    test::ScopedFieldTrials override_field_trials(
-        "WebRTC-Audio-NewOpusPacketLossRateOptimization/Enabled-2-50-0.7/");
-    auto states = CreateCodec(sample_rate_hz_, 1);
-    auto optimizer = states->encoder->new_packet_loss_optimizer();
-    ASSERT_NE(nullptr, optimizer);
-    EXPECT_FLOAT_EQ(0.02, optimizer->min_packet_loss_rate());
-    EXPECT_FLOAT_EQ(0.50, optimizer->max_packet_loss_rate());
-    EXPECT_FLOAT_EQ(0.70, optimizer->slope());
   }
 }
 
@@ -667,8 +616,8 @@ TEST_P(AudioEncoderOpusTest, UpdateUplinkBandwidthInAudioNetworkAdaptor) {
   // Repeat update uplink bandwidth tests.
   for (int i = 0; i < 5; i++) {
     // Don't update till it is time to update again.
-    states->fake_clock->AdvanceTime(
-        TimeDelta::ms(states->config.uplink_bandwidth_update_interval_ms - 1));
+    states->fake_clock->AdvanceTime(TimeDelta::Millis(
+        states->config.uplink_bandwidth_update_interval_ms - 1));
     states->encoder->Encode(
         0, rtc::ArrayView<const int16_t>(audio.data(), audio.size()), &encoded);
 
@@ -676,7 +625,7 @@ TEST_P(AudioEncoderOpusTest, UpdateUplinkBandwidthInAudioNetworkAdaptor) {
     EXPECT_CALL(*states->mock_bitrate_smoother, GetAverage())
         .WillOnce(Return(40000));
     EXPECT_CALL(*states->mock_audio_network_adaptor, SetUplinkBandwidth(40000));
-    states->fake_clock->AdvanceTime(TimeDelta::ms(1));
+    states->fake_clock->AdvanceTime(TimeDelta::Millis(1));
     states->encoder->Encode(
         0, rtc::ArrayView<const int16_t>(audio.data(), audio.size()), &encoded);
   }
@@ -969,8 +918,8 @@ TEST_P(AudioEncoderOpusTest, OpusFlagDtxAsNonSpeech) {
     }
   }
 
-  // Maximum number of consecutive non-speech packets should exceed 20.
-  EXPECT_GT(max_nonspeech_frames, 20);
+  // Maximum number of consecutive non-speech packets should exceed 15.
+  EXPECT_GT(max_nonspeech_frames, 15);
 }
 
 }  // namespace webrtc

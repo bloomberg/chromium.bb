@@ -17,26 +17,25 @@ group("closure_compile") {
 js_library("annotation_tool") {
 }
 
+js_library("bookmark_type") {
+}
+
 js_library("browser_api") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/mime_handler_private.js",
   ]
 }
 
-js_library("pdf_fitting_type") {
+js_library("constants") {
 }
 
 js_library("gesture_detector") {
 }
 
 js_library("open_pdf_params_parser") {
-  deps = [
-    ":pdf_fitting_type",
-  ]
+  deps = [ ":constants" ]
 }
 
 js_library("pdf_scripting_api") {
@@ -47,8 +46,8 @@ js_library("viewport_scroller") {
 
 js_library("viewport") {
   deps = [
+    ":constants",
     ":gesture_detector",
-    ":pdf_fitting_type",
     ":zoom_manager",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:event_tracker.m",
@@ -65,9 +64,7 @@ js_library("zoom_manager") {
 }
 
 js_library("metrics") {
-  deps = [
-    ":pdf_fitting_type",
-  ]
+  deps = [ ":constants" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -101,6 +98,8 @@ js_library("controller") {
 
 js_library("pdf_viewer") {
   deps = [
+    ":bookmark_type",
+    ":constants",
     ":controller",
     ":metrics",
     ":navigator",
@@ -108,7 +107,6 @@ js_library("pdf_viewer") {
     ":toolbar_manager",
     ":viewport",
     ":viewport_scroller",
-    "elements:viewer-bookmark",
     "elements:viewer-error-screen",
     "elements:viewer-page-indicator",
     "elements:viewer-password-screen",
@@ -123,11 +121,19 @@ js_library("pdf_viewer") {
   externs_list = [ "$externs_path/resources_private.js" ]
 }
 
-js_library("main") {
+js_library("main_util") {
   deps = [
     ":browser_api",
     ":pdf_viewer",
   ]
+}
+
+js_library("main") {
+  deps = [ ":main_util" ]
+}
+
+js_library("main_pp") {
+  deps = [ ":main_util" ]
 }
 
 js_type_check("pdf_resources") {
@@ -135,13 +141,15 @@ js_type_check("pdf_resources") {
   deps = [
     ":annotation_tool",
     ":browser_api",
+    ":constants",
     ":controller",
     ":gesture_detector",
     ":main",
+    ":main_pp",
+    ":main_util",
     ":metrics",
     ":navigator",
     ":open_pdf_params_parser",
-    ":pdf_fitting_type",
     ":pdf_scripting_api",
     ":pdf_viewer",
     ":toolbar_manager",

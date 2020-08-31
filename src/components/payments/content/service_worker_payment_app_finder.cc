@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -24,6 +24,7 @@
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents.h"
@@ -54,14 +55,11 @@ bool BasicCardCapabilitiesMatch(
     const mojom::PaymentMethodDataPtr& request) {
   for (const auto& capability : capabilities) {
     if (CapabilityMatches(request->supported_networks,
-                          capability.supported_card_networks) &&
-        CapabilityMatches(request->supported_types,
-                          capability.supported_card_types)) {
+                          capability.supported_card_networks)) {
       return true;
     }
   }
-  return capabilities.empty() && request->supported_networks.empty() &&
-         request->supported_types.empty();
+  return capabilities.empty() && request->supported_networks.empty();
 }
 
 // Returns true if |app| supports at least one of the |requests|.
@@ -101,6 +99,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
   // this factory. Don't destroy the factory and don't call this method again
   // until |finished_using_resources_callback| has run.
   void GetAllPaymentApps(
+      const url::Origin& merchant_origin,
+      content::RenderFrameHost* initiator_render_frame_host,
       content::WebContents* web_contents,
       std::unique_ptr<PaymentManifestDownloader> downloader,
       scoped_refptr<PaymentManifestWebDataService> cache,
@@ -115,13 +115,15 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
         std::make_unique<DeveloperConsoleLogger>(web_contents));
     cache_ = cache;
     verifier_ = std::make_unique<ManifestVerifier>(
-        web_contents, downloader_.get(), parser_.get(), cache_.get());
+        merchant_origin, web_contents, downloader_.get(), parser_.get(),
+        cache_.get());
     if (may_crawl_for_installable_payment_apps &&
         base::FeatureList::IsEnabled(
             features::kWebPaymentsJustInTimePaymentApp)) {
       // Construct crawler in constructor to allow it observe the web_contents.
       crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
-          web_contents, downloader_.get(), parser_.get(), cache_.get());
+          merchant_origin, initiator_render_frame_host, web_contents,
+          downloader_.get(), parser_.get(), cache_.get());
       if (ignore_port_in_origin_comparison_for_testing_)
         crawler_->IgnorePortInOriginComparisonForTesting();
     }
@@ -147,10 +149,27 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
   }
 
  private:
+  static void RemoveUnrequestedMethods(
+      const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+      content::PaymentAppProvider::PaymentApps* apps) {
+    std::set<std::string> requested_methods;
+    for (const auto& requested_method_datum : requested_method_data) {
+      requested_methods.insert(requested_method_datum->supported_method);
+    }
+    for (auto& app : *apps) {
+      std::sort(app.second->enabled_methods.begin(),
+                app.second->enabled_methods.end());
+      app.second->enabled_methods =
+          base::STLSetIntersection<std::vector<std::string>>(
+              app.second->enabled_methods, requested_methods);
+    }
+  }
+
   void OnGotAllPaymentApps(content::PaymentAppProvider::PaymentApps apps) {
     if (ignore_port_in_origin_comparison_for_testing_)
       RemovePortNumbersFromScopesForTest(&apps);
 
+    RemoveUnrequestedMethods(requested_method_data_, &apps);
     ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
         requested_method_data_, &apps);
     if (apps.empty()) {
@@ -266,15 +285,31 @@ ServiceWorkerPaymentAppFinder* ServiceWorkerPaymentAppFinder::GetInstance() {
 }
 
 void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
+    const url::Origin& merchant_origin,
+    content::RenderFrameHost* initiator_render_frame_host,
     content::WebContents* web_contents,
     scoped_refptr<PaymentManifestWebDataService> cache,
-    const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+    std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
     bool may_crawl_for_installable_payment_apps,
     GetAllPaymentAppsCallback callback,
     base::OnceClosure finished_writing_cache_callback_for_testing) {
+  DCHECK(!requested_method_data.empty());
+  // Do not look up payment handlers for ignored payment methods.
+  base::EraseIf(requested_method_data,
+                [&](const mojom::PaymentMethodDataPtr& method_data) {
+                  return base::Contains(ignored_methods_,
+                                        method_data->supported_method);
+                });
+  if (requested_method_data.empty()) {
+    std::move(callback).Run(
+        content::PaymentAppProvider::PaymentApps(),
+        std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>(),
+        /*error_message=*/"");
+    return;
+  }
+
   SelfDeletingServiceWorkerPaymentAppFinder* self_delete_factory =
       new SelfDeletingServiceWorkerPaymentAppFinder();
-
   std::unique_ptr<PaymentManifestDownloader> downloader;
   if (test_downloader_ != nullptr) {
     downloader = std::move(test_downloader_);
@@ -288,7 +323,8 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   }
 
   self_delete_factory->GetAllPaymentApps(
-      web_contents, std::move(downloader), cache, requested_method_data,
+      merchant_origin, initiator_render_frame_host, web_contents,
+      std::move(downloader), cache, requested_method_data,
       may_crawl_for_installable_payment_apps, std::move(callback),
       std::move(finished_writing_cache_callback_for_testing));
 }
@@ -307,10 +343,16 @@ void ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
   }
 }
 
-ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder()
-    : test_downloader_(nullptr) {}
+void ServiceWorkerPaymentAppFinder::IgnorePaymentMethodForTest(
+    const std::string& method) {
+  ignored_methods_.insert(method);
+}
 
-ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() {}
+ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder()
+    : ignored_methods_({methods::kGooglePlayBilling}),
+      test_downloader_(nullptr) {}
+
+ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() = default;
 
 void ServiceWorkerPaymentAppFinder::
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(

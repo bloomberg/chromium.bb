@@ -2,16 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {ElementsPanel} from './ElementsPanel.js';
+
 /**
  * @unrestricted
  */
-export default class ElementStatePaneWidget extends UI.Widget {
+export class ElementStatePaneWidget extends UI.Widget.Widget {
   constructor() {
     super(true);
     this.registerRequiredCSS('elements/elementStatePaneWidget.css');
     this.contentElement.className = 'styles-element-state-pane';
-    this.contentElement.createChild('div').createTextChild(Common.UIString('Force element state'));
-    const table = createElementWithClass('table', 'source-code');
+    this.contentElement.createChild('div').createTextChild(Common.UIString.UIString('Force element state'));
+    const table = document.createElement('table');
+    table.classList.add('source-code');
+    UI.ARIAUtils.markAsPresentation(table);
 
     const inputs = [];
     this._inputs = inputs;
@@ -20,7 +28,7 @@ export default class ElementStatePaneWidget extends UI.Widget {
      * @param {!Event} event
      */
     function clickListener(event) {
-      const node = UI.context.flavor(SDK.DOMNode);
+      const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
       if (!node) {
         return;
       }
@@ -33,7 +41,7 @@ export default class ElementStatePaneWidget extends UI.Widget {
      */
     function createCheckbox(state) {
       const td = createElement('td');
-      const label = UI.CheckboxLabel.create(':' + state);
+      const label = UI.UIUtils.CheckboxLabel.create(':' + state);
       const input = label.checkboxElement;
       input.state = state;
       input.addEventListener('click', clickListener, false);
@@ -59,11 +67,11 @@ export default class ElementStatePaneWidget extends UI.Widget {
     }
 
     this.contentElement.appendChild(table);
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._update, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._update, this);
   }
 
   /**
-   * @param {?SDK.CSSModel} cssModel
+   * @param {?SDK.CSSModel.CSSModel} cssModel
    */
   _updateModel(cssModel) {
     if (this._cssModel === cssModel) {
@@ -90,7 +98,7 @@ export default class ElementStatePaneWidget extends UI.Widget {
       return;
     }
 
-    let node = UI.context.flavor(SDK.DOMNode);
+    let node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
@@ -112,39 +120,27 @@ export default class ElementStatePaneWidget extends UI.Widget {
 }
 
 /**
- * @implements {UI.ToolbarItem.Provider}
+ * @implements {UI.Toolbar.Provider}
  * @unrestricted
  */
 export class ButtonProvider {
   constructor() {
-    this._button = new UI.ToolbarToggle(Common.UIString('Toggle Element State'), '');
-    this._button.setText(Common.UIString(':hov'));
-    this._button.addEventListener(UI.ToolbarButton.Events.Click, this._clicked, this);
+    this._button = new UI.Toolbar.ToolbarToggle(Common.UIString.UIString('Toggle Element State'), '');
+    this._button.setText(Common.UIString.UIString(':hov'));
+    this._button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._clicked, this);
     this._button.element.classList.add('monospace');
     this._view = new ElementStatePaneWidget();
   }
 
   _clicked() {
-    Elements.ElementsPanel.instance().showToolbarPane(!this._view.isShowing() ? this._view : null, this._button);
+    ElementsPanel.instance().showToolbarPane(!this._view.isShowing() ? this._view : null, this._button);
   }
 
   /**
    * @override
-   * @return {!UI.ToolbarItem}
+   * @return {!UI.Toolbar.ToolbarItem}
    */
   item() {
     return this._button;
   }
 }
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.ElementStatePaneWidget = ElementStatePaneWidget;
-
-/** @constructor */
-Elements.ElementStatePaneWidget.ButtonProvider = ButtonProvider;

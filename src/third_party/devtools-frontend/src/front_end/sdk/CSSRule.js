@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {CSSMedia} from './CSSMedia.js';
+import {CSSModel, Edit} from './CSSModel.js';  // eslint-disable-line no-unused-vars
+import {CSSStyleDeclaration, Type} from './CSSStyleDeclaration.js';
+
 /**
  * @unrestricted
  */
-export default class CSSRule {
+export class CSSRule {
   /**
-   * @param {!SDK.CSSModel} cssModel
+   * @param {!CSSModel} cssModel
    * @param {{style: !Protocol.CSS.CSSStyle, styleSheetId: (string|undefined), origin: !Protocol.CSS.StyleSheetOrigin}} payload
    */
   constructor(cssModel, payload) {
@@ -19,11 +26,11 @@ export default class CSSRule {
       this.sourceURL = styleSheetHeader.sourceURL;
     }
     this.origin = payload.origin;
-    this.style = new SDK.CSSStyleDeclaration(this._cssModel, this, payload.style, SDK.CSSStyleDeclaration.Type.Regular);
+    this.style = new CSSStyleDeclaration(this._cssModel, this, payload.style, Type.Regular);
   }
 
   /**
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!Edit} edit
    */
   rebase(edit) {
     if (this.styleSheetId !== edit.styleSheetId) {
@@ -72,7 +79,7 @@ export default class CSSRule {
   }
 
   /**
-   * @return {!SDK.CSSModel}
+   * @return {!CSSModel}
    */
   cssModel() {
     return this._cssModel;
@@ -94,7 +101,7 @@ class CSSValue {
   }
 
   /**
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!Edit} edit
    */
   rebase(edit) {
     if (!this.range) {
@@ -109,7 +116,7 @@ class CSSValue {
  */
 export class CSSStyleRule extends CSSRule {
   /**
-   * @param {!SDK.CSSModel} cssModel
+   * @param {!CSSModel} cssModel
    * @param {!Protocol.CSS.CSSRule} payload
    * @param {boolean=} wasUsed
    */
@@ -117,12 +124,12 @@ export class CSSStyleRule extends CSSRule {
     super(cssModel, payload);
 
     this._reinitializeSelectors(payload.selectorList);
-    this.media = payload.media ? SDK.CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
+    this.media = payload.media ? CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
     this.wasUsed = wasUsed || false;
   }
 
   /**
-   * @param {!SDK.CSSModel} cssModel
+   * @param {!CSSModel} cssModel
    * @param {string} selectorText
    * @return {!CSSStyleRule}
    */
@@ -167,7 +174,7 @@ export class CSSStyleRule extends CSSRule {
    * @return {string}
    */
   selectorText() {
-    return this.selectors.select('text').join(', ');
+    return this.selectors.map(selector => selector.text).join(', ');
   }
 
   /**
@@ -212,7 +219,7 @@ export class CSSStyleRule extends CSSRule {
 
   /**
    * @override
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!Edit} edit
    */
   rebase(edit) {
     if (this.styleSheetId !== edit.styleSheetId) {
@@ -239,7 +246,7 @@ export class CSSStyleRule extends CSSRule {
  */
 export class CSSKeyframesRule {
   /**
-   * @param {!SDK.CSSModel} cssModel
+   * @param {!CSSModel} cssModel
    * @param {!Protocol.CSS.CSSKeyframesRule} payload
    */
   constructor(cssModel, payload) {
@@ -268,7 +275,7 @@ export class CSSKeyframesRule {
  */
 export class CSSKeyframeRule extends CSSRule {
   /**
-   * @param {!SDK.CSSModel} cssModel
+   * @param {!CSSModel} cssModel
    * @param {!Protocol.CSS.CSSKeyframeRule} payload
    */
   constructor(cssModel, payload) {
@@ -292,7 +299,7 @@ export class CSSKeyframeRule extends CSSRule {
 
   /**
    * @override
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!Edit} edit
    */
   rebase(edit) {
     if (this.styleSheetId !== edit.styleSheetId || !this._keyText.range) {
@@ -323,21 +330,3 @@ export class CSSKeyframeRule extends CSSRule {
     return this._cssModel.setKeyframeKey(styleSheetId, range, newKeyText);
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.CSSRule = CSSRule;
-
-/** @constructor */
-SDK.CSSStyleRule = CSSStyleRule;
-
-/** @constructor */
-SDK.CSSKeyframesRule = CSSKeyframesRule;
-
-/** @constructor */
-SDK.CSSKeyframeRule = CSSKeyframeRule;

@@ -47,10 +47,6 @@ class PasswordReuseModalWarningDialog
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
-  int GetDialogButtons() const override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
   // ChromePasswordProtectionService::Observer:
   void OnGaiaPasswordChanged() override;
@@ -66,6 +62,9 @@ class PasswordReuseModalWarningDialog
   ChromePasswordProtectionService* service_;
   const GURL url_;
   const ReusedPasswordAccountType password_type_;
+
+  // Records the start time when modal warning is constructed.
+  base::TimeTicks modal_construction_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };

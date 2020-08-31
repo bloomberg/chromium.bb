@@ -40,10 +40,10 @@ def generate_histogram(data, buckets):
 
   buckets = min(len(data), buckets)
   bucket_size = (maximum-minimum)/buckets
-  out = dict((i, 0) for i in xrange(buckets))
+  out = dict((i, 0) for i in range(buckets))
   for i in data:
     out[min(int((i-minimum)/bucket_size), buckets-1)] += 1
-  return dict(((k*bucket_size)+minimum, v) for k, v in out.iteritems())
+  return dict(((k*bucket_size)+minimum, v) for k, v in out.items())
 
 
 def print_histogram(data, columns=0, key_format=None):
@@ -67,8 +67,8 @@ def print_histogram(data, columns=0, key_format=None):
   width = columns - max_key_width - 3
   assert width > 1
 
-  maxvalue = max(data.itervalues())
-  if all(isinstance(i, int) for i in data.itervalues()) and maxvalue < width:
+  maxvalue = max(data.values())
+  if all(isinstance(i, int) for i in data.values()) and maxvalue < width:
     width = maxvalue
   norm = float(maxvalue) / width
 

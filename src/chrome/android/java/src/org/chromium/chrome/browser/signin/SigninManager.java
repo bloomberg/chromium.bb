@@ -22,11 +22,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
-import org.chromium.components.signin.identitymanager.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -172,6 +173,7 @@ public class SigninManager
     private final IdentityManager mIdentityManager;
     private final IdentityMutator mIdentityMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
+    private final ExternalAuthUtils mExternalAuthUtils;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<>();
@@ -212,13 +214,13 @@ public class SigninManager
         assert identityManager != null;
         assert identityMutator != null;
         return new SigninManager(nativeSigninManagerAndroid, accountTrackerService, identityManager,
-                identityMutator, AndroidSyncSettings.get());
+                identityMutator, AndroidSyncSettings.get(), ExternalAuthUtils.getInstance());
     }
 
     @VisibleForTesting
     SigninManager(long nativeSigninManagerAndroid, AccountTrackerService accountTrackerService,
             IdentityManager identityManager, IdentityMutator identityMutator,
-            AndroidSyncSettings androidSyncSettings) {
+            AndroidSyncSettings androidSyncSettings, ExternalAuthUtils externalAuthUtils) {
         ThreadUtils.assertOnUiThread();
         assert androidSyncSettings != null;
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
@@ -226,6 +228,7 @@ public class SigninManager
         mIdentityManager = identityManager;
         mIdentityMutator = identityMutator;
         mAndroidSyncSettings = androidSyncSettings;
+        mExternalAuthUtils = externalAuthUtils;
 
         mSigninAllowedByPolicy =
                 SigninManagerJni.get().isSigninAllowedByPolicy(mNativeSigninManagerAndroid);
@@ -283,7 +286,8 @@ public class SigninManager
      */
     public boolean isSignInAllowed() {
         return !mFirstRunCheckIsPending && mSignInState == null && mSigninAllowedByPolicy
-                && ChromeSigninController.get().getSignedInUser() == null && isSigninSupported();
+                && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC) == null
+                && isSigninSupported();
     }
 
     /**
@@ -298,8 +302,7 @@ public class SigninManager
      *         Google Play Services installed.
      */
     public boolean isSigninSupported() {
-        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent()
-                && !SigninManagerJni.get().isMobileIdentityConsistencyEnabled();
+        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent();
     }
 
     /**
@@ -351,37 +354,48 @@ public class SigninManager
     }
 
     /**
-    * Clear pending sign in when system accounts in AccountTrackerService were refreshed.
-    */
-    @Override
-    public void onSystemAccountsChanged() {
-        if (mSignInState != null) {
-            abortSignIn();
-        }
-    }
-
-    /**
      * Starts the sign-in flow, and executes the callback when finished.
      *
-     * If an activity is provided, it is considered an "interactive" sign-in and the user can be
-     * prompted to confirm various aspects of sign-in using dialogs inside the activity.
      * The sign-in flow goes through the following steps:
      *
      *   - Wait for AccountTrackerService to be seeded.
-     *   - If interactive, confirm the account change with the user.
      *   - Wait for policy to be checked for the account.
-     *   - If interactive and the account is managed, warn the user.
      *   - If managed, wait for the policy to be fetched.
-     *   - Complete sign-in with the native SigninManager and kick off token requests.
+     *   - Complete sign-in with the native IdentityManager.
+     *   - Call the callback if provided.
+     *
+     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
+     * @param accountInfo The account to sign in to.
+     * @param callback Optional callback for when the sign-in process is finished.
+     */
+    public void signIn(@SigninAccessPoint int accessPoint, CoreAccountInfo accountInfo,
+            @Nullable SignInCallback callback) {
+        assert accountInfo != null;
+        signIn(accessPoint, AccountUtils.createAccountFromName(accountInfo.getEmail()), callback);
+    }
+
+    /**
+     * @deprecated use {@link #signIn(int, CoreAccountInfo, SignInCallback)} instead.
+     * TODO(crbug.com/1002056): Remove this version after migrating all callers to CoreAccountInfo.
+     *
+     * Starts the sign-in flow, and executes the callback when finished.
+     *
+     * The sign-in flow goes through the following steps:
+     *
+     *   - Wait for AccountTrackerService to be seeded.
+     *   - Wait for policy to be checked for the account.
+     *   - If managed, wait for the policy to be fetched.
+     *   - Complete sign-in with the native IdentityManager.
      *   - Call the callback if provided.
      *
      * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
      * @param account The account to sign in to.
      * @param callback Optional callback for when the sign-in process is finished.
      */
-    // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
+    @Deprecated
     public void signIn(@SigninAccessPoint int accessPoint, Account account,
             @Nullable SignInCallback callback) {
+        assert isSignInAllowed() : "Sign-in isn't allowed!";
         if (account == null) {
             Log.w(TAG, "Ignoring sign-in request due to null account.");
             if (callback != null) callback.onSignInAborted();
@@ -409,11 +423,8 @@ public class SigninManager
     private void progressSignInFlowSeedSystemAccounts() {
         if (mAccountTrackerService.checkAndSeedSystemAccounts()) {
             progressSignInFlowCheckPolicy();
-        } else if (AccountIdProvider.getInstance().canBeUsed()) {
-            mSignInState.mBlockedOnAccountSeeding = true;
         } else {
-            Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
-            abortSignIn();
+            mSignInState.mBlockedOnAccountSeeding = true;
         }
     }
 
@@ -460,8 +471,8 @@ public class SigninManager
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get().setSignedInAccountName(
-                mSignInState.mCoreAccountInfo.getName());
-        enableSync(mSignInState.mCoreAccountInfo.getAccount());
+                mSignInState.mCoreAccountInfo.getEmail());
+        enableSync(mSignInState.mCoreAccountInfo);
 
         if (mSignInState.mCallback != null) {
             mSignInState.mCallback.onSignInComplete();
@@ -580,8 +591,8 @@ public class SigninManager
      * Reloads accounts from system within IdentityManager.
      */
     void reloadAllAccountsFromSystem() {
-        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
-                mIdentityManager.getPrimaryAccountId());
+        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountInfo.getIdFrom(
+                mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC)));
     }
 
     /**
@@ -670,7 +681,7 @@ public class SigninManager
     }
 
     private boolean isGooglePlayServicesPresent() {
-        return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(
+        return !mExternalAuthUtils.isGooglePlayServicesMissing(
                 ContextUtils.getApplicationContext());
     }
 
@@ -683,10 +694,11 @@ public class SigninManager
         SigninManagerJni.get().stopApplyingCloudPolicy(mNativeSigninManagerAndroid);
     }
 
-    private void enableSync(Account account) {
+    private void enableSync(CoreAccountInfo accountInfo) {
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in the native code and crashes.
-        mAndroidSyncSettings.updateAccount(account);
+        mAndroidSyncSettings.updateAccount(
+                AccountUtils.createAccountFromName(accountInfo.getEmail()));
         mAndroidSyncSettings.enableChromeSync();
     }
 
@@ -714,8 +726,6 @@ public class SigninManager
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
-
-        boolean isMobileIdentityConsistencyEnabled();
 
         void fetchAndApplyCloudPolicy(
                 long nativeSigninManagerAndroid, CoreAccountInfo account, Runnable callback);

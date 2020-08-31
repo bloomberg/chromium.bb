@@ -73,11 +73,6 @@ extern "C" {
 #define DIST_PRECISION_BITS 4
 #define DIST_PRECISION (1 << DIST_PRECISION_BITS)  // 16
 
-// TODO(chengchen): Temporal flag serve as experimental flag for WIP
-// bitmask construction.
-// Shall be removed when bitmask code is completely checkedin
-#define LOOP_FILTER_BITMASK 0
-
 #define PROFILE_BITS 3
 // The following three profiles are currently defined.
 // Profile 0.  8-bit and 10-bit 4:2:0 and 4:0:0 only.
@@ -91,15 +86,6 @@ enum {
   PROFILE_2,
   MAX_PROFILES,
 } SENUM1BYTE(BITSTREAM_PROFILE);
-
-#define LEVEL_MAJOR_BITS 3
-#define LEVEL_MINOR_BITS 2
-#define LEVEL_BITS (LEVEL_MAJOR_BITS + LEVEL_MINOR_BITS)
-
-#define LEVEL_MAJOR_MIN 2
-#define LEVEL_MAJOR_MAX ((1 << LEVEL_MAJOR_BITS) - 1 + LEVEL_MAJOR_MIN)
-#define LEVEL_MINOR_MIN 0
-#define LEVEL_MINOR_MAX ((1 << LEVEL_MINOR_BITS) - 1)
 
 #define OP_POINTS_CNT_MINUS_1_BITS 5
 #define OP_POINTS_IDC_BITS 12
@@ -139,6 +125,27 @@ typedef enum ATTRIBUTE_PACKED {
 // 4X4, 8X8, 16X16, 32X32, 64X64, 128X128
 #define SQR_BLOCK_SIZES 6
 
+//  Partition types.  R: Recursive
+//
+//  NONE          HORZ          VERT          SPLIT
+//  +-------+     +-------+     +---+---+     +---+---+
+//  |       |     |       |     |   |   |     | R | R |
+//  |       |     +-------+     |   |   |     +---+---+
+//  |       |     |       |     |   |   |     | R | R |
+//  +-------+     +-------+     +---+---+     +---+---+
+//
+//  HORZ_A        HORZ_B        VERT_A        VERT_B
+//  +---+---+     +-------+     +---+---+     +---+---+
+//  |   |   |     |       |     |   |   |     |   |   |
+//  +---+---+     +---+---+     +---+   |     |   +---+
+//  |       |     |   |   |     |   |   |     |   |   |
+//  +-------+     +---+---+     +---+---+     +---+---+
+//
+//  HORZ_4        VERT_4
+//  +-----+       +-+-+-+
+//  +-----+       | | | |
+//  +-----+       | | | |
+//  +-----+       +-+-+-+
 enum {
   PARTITION_NONE,
   PARTITION_HORZ,
@@ -253,6 +260,7 @@ enum {
   V_FLIPADST,         // FLIPADST in vertical, identity in horizontal
   H_FLIPADST,         // Identity in vertical, FLIPADST in horizontal
   TX_TYPES,
+  DCT_ADST_TX_MASK = 0x000F,  // Either DCT or ADST in each direction
 } UENUM1BYTE(TX_TYPE);
 
 enum {
@@ -282,8 +290,6 @@ enum {
   EXT_TX_SET_ALL16,
   EXT_TX_SET_TYPES
 } UENUM1BYTE(TxSetType);
-
-#define IS_2D_TRANSFORM(tx_type) (tx_type < IDTX)
 
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
@@ -404,6 +410,8 @@ enum {
   MB_MODE_COUNT,
   INTRA_MODE_START = DC_PRED,
   INTRA_MODE_END = NEARESTMV,
+  DIR_MODE_START = V_PRED,
+  DIR_MODE_END = D67_PRED + 1,
   INTRA_MODE_NUM = INTRA_MODE_END - INTRA_MODE_START,
   SINGLE_INTER_MODE_START = NEARESTMV,
   SINGLE_INTER_MODE_END = NEAREST_NEARESTMV,
@@ -455,9 +463,11 @@ enum {
 
 enum {
   COMPOUND_AVERAGE,
+  COMPOUND_DISTWTD,
   COMPOUND_WEDGE,
   COMPOUND_DIFFWTD,
   COMPOUND_TYPES,
+  MASKED_COMPOUND_TYPES = 2,
 } UENUM1BYTE(COMPOUND_TYPE);
 
 enum {
@@ -468,6 +478,37 @@ enum {
   FILTER_PAETH_PRED,
   FILTER_INTRA_MODES,
 } UENUM1BYTE(FILTER_INTRA_MODE);
+
+enum {
+  SEQ_LEVEL_2_0,
+  SEQ_LEVEL_2_1,
+  SEQ_LEVEL_2_2,
+  SEQ_LEVEL_2_3,
+  SEQ_LEVEL_3_0,
+  SEQ_LEVEL_3_1,
+  SEQ_LEVEL_3_2,
+  SEQ_LEVEL_3_3,
+  SEQ_LEVEL_4_0,
+  SEQ_LEVEL_4_1,
+  SEQ_LEVEL_4_2,
+  SEQ_LEVEL_4_3,
+  SEQ_LEVEL_5_0,
+  SEQ_LEVEL_5_1,
+  SEQ_LEVEL_5_2,
+  SEQ_LEVEL_5_3,
+  SEQ_LEVEL_6_0,
+  SEQ_LEVEL_6_1,
+  SEQ_LEVEL_6_2,
+  SEQ_LEVEL_6_3,
+  SEQ_LEVEL_7_0,
+  SEQ_LEVEL_7_1,
+  SEQ_LEVEL_7_2,
+  SEQ_LEVEL_7_3,
+  SEQ_LEVELS,
+  SEQ_LEVEL_MAX = 31
+} UENUM1BYTE(AV1_LEVEL);
+
+#define LEVEL_BITS 5
 
 #define DIRECTIONAL_MODES 8
 #define MAX_ANGLE_DELTA 3
@@ -502,7 +543,9 @@ enum {
 
 #define DELTA_Q_SMALL 3
 #define DELTA_Q_PROBS (DELTA_Q_SMALL)
-#define DEFAULT_DELTA_Q_RES 4
+#define DEFAULT_DELTA_Q_RES_PERCEPTUAL 4
+#define DEFAULT_DELTA_Q_RES_OBJECTIVE 4
+
 #define DELTA_LF_SMALL 3
 #define DELTA_LF_PROBS (DELTA_LF_SMALL)
 #define DEFAULT_DELTA_LF_RES 2
@@ -511,6 +554,7 @@ enum {
 #define MAX_MV_REF_CANDIDATES 2
 
 #define MAX_REF_MV_STACK_SIZE 8
+#define USABLE_REF_MV_STACK_SIZE 4
 #define REF_CAT_LEVEL 640
 
 #define INTRA_INTER_CONTEXTS 4
@@ -600,6 +644,25 @@ enum {
   RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
   RESTORE_TYPES = 4,
 } UENUM1BYTE(RestorationType);
+
+// Picture prediction structures (0-12 are predefined) in scalability metadata.
+enum {
+  SCALABILITY_L1T2 = 0,
+  SCALABILITY_L1T3 = 1,
+  SCALABILITY_L2T1 = 2,
+  SCALABILITY_L2T2 = 3,
+  SCALABILITY_L2T3 = 4,
+  SCALABILITY_S2T1 = 5,
+  SCALABILITY_S2T2 = 6,
+  SCALABILITY_S2T3 = 7,
+  SCALABILITY_L2T1h = 8,
+  SCALABILITY_L2T2h = 9,
+  SCALABILITY_L2T3h = 10,
+  SCALABILITY_S2T1h = 11,
+  SCALABILITY_S2T2h = 12,
+  SCALABILITY_S2T3h = 13,
+  SCALABILITY_SS = 14
+} UENUM1BYTE(SCALABILITY_STRUCTURES);
 
 #define SUPERRES_SCALE_BITS 3
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)

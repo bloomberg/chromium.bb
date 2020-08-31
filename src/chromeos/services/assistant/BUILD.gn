@@ -18,15 +18,10 @@ component("lib") {
 
   sources = [
     "assistant_manager_service.h",
-    "assistant_settings_manager.h",
-    "assistant_state_proxy.cc",
-    "assistant_state_proxy.h",
-    "constants.cc",
-    "constants.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",
-    "fake_assistant_settings_manager_impl.cc",
-    "fake_assistant_settings_manager_impl.h",
+    "fake_assistant_settings_impl.cc",
+    "fake_assistant_settings_impl.h",
     "service.cc",
     "service.h",
     "service_context.h",
@@ -44,31 +39,33 @@ component("lib") {
     "//chromeos/services/assistant/public/proto",
     "//components/account_id",
     "//components/prefs",
+    "//components/signin/public/identity_manager",
     "//components/user_manager",
     "//services/device/public/mojom",
-    "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",
     "//ui/accessibility:ax_assistant",
   ]
 
   public_deps = [
     "//ash/public/cpp:cpp",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/assistant/public/shared",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
   ]
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_device_settings_delegate.cc",
+      "assistant_device_settings_delegate.h",
       "assistant_manager_service_delegate.h",
       "assistant_manager_service_delegate_impl.cc",
       "assistant_manager_service_delegate_impl.h",
       "assistant_manager_service_impl.cc",
       "assistant_manager_service_impl.h",
-      "assistant_settings_manager_impl.cc",
-      "assistant_settings_manager_impl.h",
+      "assistant_settings_impl.cc",
+      "assistant_settings_impl.h",
       "chromium_api_delegate.cc",
       "chromium_api_delegate.h",
       "chromium_http_connection.cc",
@@ -106,7 +103,7 @@ component("lib") {
 
     deps += [
       "//chromeos/assistant/internal",
-      "//chromeos/assistant/internal:build_libassistant",
+      "//chromeos/assistant/internal:libassistant",
       "//chromeos/assistant/internal/proto/google3",
       "//chromeos/dbus",
       "//chromeos/resources",
@@ -124,12 +121,6 @@ component("lib") {
       "//ui/base",
       "//url",
     ]
-
-    libs = [ "$root_out_dir/libassistant.so" ]
-
-    data = [
-      "$root_out_dir/libassistant.so",
-    ]
   }
 }
 
@@ -137,18 +128,21 @@ source_set("tests") {
   testonly = true
   deps = [
     ":lib",
+    "//ash/public/cpp/assistant/test_support",
     "//ash/public/mojom",
     "//base",
     "//base/test:test_support",
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/power",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//components/prefs:test_support",
+    "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",
-    "//services/identity/public/mojom",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
     "//testing/gmock",
@@ -157,15 +151,19 @@ source_set("tests") {
 
   sources = [
     "service_unittest.cc",
-    "test_support/fake_client.cc",
-    "test_support/fake_client.h",
     "test_support/fully_initialized_assistant_state.cc",
     "test_support/fully_initialized_assistant_state.h",
+    "test_support/scoped_assistant_client.cc",
+    "test_support/scoped_assistant_client.h",
+    "test_support/scoped_device_actions.cc",
+    "test_support/scoped_device_actions.h",
   ]
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_device_settings_delegate_unittest.cc",
       "assistant_manager_service_impl_unittest.cc",
+      "media_session/assistant_media_session_unittest.cc",
       "platform/audio_input_impl_unittest.cc",
       "platform/audio_output_provider_impl_unittest.cc",
       "platform/network_provider_impl_unittest.cc",
@@ -175,6 +173,10 @@ source_set("tests") {
       "test_support/fake_assistant_manager_service_delegate.h",
       "test_support/fake_platform_api.cc",
       "test_support/fake_platform_api.h",
+      "test_support/fake_service_context.cc",
+      "test_support/fake_service_context.h",
+      "test_support/mock_assistant_interaction_subscriber.cc",
+      "test_support/mock_assistant_interaction_subscriber.h",
       "test_support/mock_media_manager.cc",
       "test_support/mock_media_manager.h",
     ]
@@ -182,6 +184,7 @@ source_set("tests") {
     deps += [
       "//chromeos/assistant/internal",
       "//chromeos/assistant/internal:test_support",
+      "//chromeos/assistant/internal:tests",
       "//chromeos/assistant/internal/proto/google3",
       "//chromeos/dbus",
       "//chromeos/services/network_config/public/mojom",
@@ -199,8 +202,9 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
-    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/assistant/public/shared",
     "//testing/gmock",
   ]
 }

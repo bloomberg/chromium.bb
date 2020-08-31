@@ -55,15 +55,12 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
-  void RecordMetrics();
   void RecordPreviewsTypes();
-  void RecordOptimizationGuideInfo();
 
   // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;
 
   bool lite_page_seen_ = false;
-  bool lite_page_redirect_seen_ = false;
   bool noscript_seen_ = false;
   bool resource_loading_hints_seen_ = false;
   bool defer_all_script_seen_ = false;
@@ -75,8 +72,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   base::Optional<previews::PreviewsEligibilityReason>
       lite_page_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
-      lite_page_redirect_eligibility_reason_;
-  base::Optional<previews::PreviewsEligibilityReason>
       noscript_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       resource_loading_hints_eligibility_reason_;
@@ -84,8 +79,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       defer_all_script_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       offline_eligibility_reason_;
-  base::Optional<base::TimeDelta> navigation_restart_penalty_;
-  base::Optional<std::string> serialized_hint_version_string_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

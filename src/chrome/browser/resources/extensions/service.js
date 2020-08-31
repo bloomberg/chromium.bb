@@ -117,7 +117,8 @@ export class Service {
     return new Promise(function(resolve, reject) {
       chrome.developerPrivate.choosePath(selectType, fileType, function(path) {
         if (chrome.runtime.lastError &&
-            chrome.runtime.lastError != 'File selection was canceled.') {
+            chrome.runtime.lastError.message !==
+                'File selection was canceled.') {
           reject(chrome.runtime.lastError);
         } else {
           resolve(path || '');
@@ -172,7 +173,7 @@ export class Service {
 
       chrome.developerPrivate.loadUnpacked(options, (loadError) => {
         if (chrome.runtime.lastError &&
-            chrome.runtime.lastError.message !=
+            chrome.runtime.lastError.message !==
                 'File selection was canceled.') {
           throw new Error(chrome.runtime.lastError.message);
         }
@@ -190,6 +191,7 @@ export class Service {
     if (this.isDeleting_) {
       return;
     }
+    chrome.metricsPrivate.recordUserAction('Extensions.RemoveExtensionClick');
     this.isDeleting_ = true;
     chrome.management.uninstall(id, {showConfirmDialog: true}, () => {
       // The "last error" was almost certainly the user canceling the dialog.
@@ -202,6 +204,9 @@ export class Service {
 
   /** @override */
   setItemEnabled(id, isEnabled) {
+    chrome.metricsPrivate.recordUserAction(
+        isEnabled ? 'Extensions.ExtensionEnabled' :
+                    'Extensions.ExtensionDisabled');
     chrome.management.setEnabled(id, isEnabled);
   }
 
@@ -328,11 +333,34 @@ export class Service {
   }
 
   /** @override */
-  updateAllExtensions() {
+  updateAllExtensions(extensions) {
+    /**
+     * Attempt to reload local extensions. If an extension fails to load, the
+     * user is prompted to try updating the broken extension using loadUnpacked
+     * and we skip reloading the remaining local extensions.
+     */
     return new Promise((resolve) => {
-      chrome.developerPrivate.autoUpdate(resolve);
-      chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
-    });
+             chrome.developerPrivate.autoUpdate(resolve);
+             chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
+           })
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            const loadLocalExtensions = async () => {
+              for (const extension of extensions) {
+                if (extension.location === 'UNPACKED') {
+                  try {
+                    await this.reloadItem(extension.id);
+                  } catch (loadError) {
+                    reject(loadError);
+                    break;
+                  }
+                }
+              }
+              resolve('Loaded local extensions.');
+            };
+            loadLocalExtensions();
+          });
+        });
   }
 
   /** @override */

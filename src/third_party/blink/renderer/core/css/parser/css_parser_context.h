@@ -37,8 +37,8 @@ class CORE_EXPORT CSSParserContext final
   // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
   // through the CSS subsystem. Currently the UseCounter life time is too crazy
   // and we need a way to override it.
-  CSSParserContext(const CSSParserContext* other,
-                   const Document* use_counter_document = nullptr);
+  explicit CSSParserContext(const CSSParserContext* other,
+                            const Document* use_counter_document = nullptr);
 
   CSSParserContext(const CSSParserContext* other,
                    const KURL& base_url_override,
@@ -73,7 +73,7 @@ class CORE_EXPORT CSSParserContext final
                    bool is_html_document,
                    bool use_legacy_background_size_shorthand_behavior,
                    SecureContextMode,
-                   ContentSecurityPolicyDisposition,
+                   network::mojom::CSPDisposition,
                    const Document* use_counter_document,
                    ResourceFetchRestriction resource_fetch_restriction);
 
@@ -87,6 +87,7 @@ class CORE_EXPORT CSSParserContext final
   const KURL& BaseURL() const { return base_url_; }
   const WTF::TextEncoding& Charset() const { return charset_; }
   const Referrer& GetReferrer() const { return referrer_; }
+  bool IsAdRelated() const { return is_ad_related_; }
   bool IsHTMLDocument() const { return is_html_document_; }
   enum ResourceFetchRestriction ResourceFetchRestriction() const {
     return resource_fetch_restriction_;
@@ -108,6 +109,8 @@ class CORE_EXPORT CSSParserContext final
   // override this field.
   void SetMode(CSSParserMode mode) { mode_ = mode; }
 
+  void SetIsAdRelated() { is_ad_related_ = true; }
+
   KURL CompleteURL(const String& url) const;
 
   SecureContextMode GetSecureContextMode() const {
@@ -119,8 +122,10 @@ class CORE_EXPORT CSSParserContext final
   void CountDeprecation(WebFeature) const;
   bool IsUseCounterRecordingEnabled() const { return document_; }
   bool IsDocumentHandleEqual(const Document* other) const;
+  const Document* GetDocument() const;
+  const ExecutionContext* GetExecutionContext() const;
 
-  ContentSecurityPolicyDisposition ShouldCheckContentSecurityPolicy() const {
+  network::mojom::CSPDisposition ShouldCheckContentSecurityPolicy() const {
     return should_check_content_security_policy_;
   }
 
@@ -135,12 +140,30 @@ class CORE_EXPORT CSSParserContext final
 
   bool IsForMarkupSanitization() const;
 
-  void Trace(blink::Visitor*);
+  // Overrides |mode_| of a CSSParserContext within the scope, allowing us to
+  // switching parsing mode while parsing different parts of a style sheet.
+  // TODO(xiaochengh): This isn't the right approach, as it breaks the
+  // immutability of CSSParserContext. We should introduce some local context.
+  class ParserModeOverridingScope {
+    STACK_ALLOCATED();
+
+   public:
+    ParserModeOverridingScope(const CSSParserContext& context,
+                              CSSParserMode mode)
+        : mode_reset_(const_cast<CSSParserMode*>(&context.mode_), mode) {}
+
+   private:
+    base::AutoReset<CSSParserMode> mode_reset_;
+  };
+
+  void Trace(Visitor*);
 
  private:
+  friend class ParserModeOverridingScope;
+
   KURL base_url_;
 
-  ContentSecurityPolicyDisposition should_check_content_security_policy_;
+  network::mojom::CSPDisposition should_check_content_security_policy_;
 
   // If true, allows reading and modifying of the CSS rules.
   // https://drafts.csswg.org/cssom/#concept-css-style-sheet-origin-clean-flag
@@ -150,6 +173,11 @@ class CORE_EXPORT CSSParserContext final
   CSSParserMode match_mode_;
   SelectorProfile profile_ = kLiveProfile;
   Referrer referrer_;
+
+  // Whether the associated stylesheet's ResourceRequest is an ad resource. If
+  // there is no associated ResourceRequest, whether ad script is on the v8 call
+  // stack at stylesheet creation. Not set for presentation attributes.
+  bool is_ad_related_ = false;
   bool is_html_document_;
   bool use_legacy_background_size_shorthand_behavior_;
   SecureContextMode secure_context_mode_;

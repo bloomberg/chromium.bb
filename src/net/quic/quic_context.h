@@ -50,6 +50,12 @@ const int64_t kMaxMigrationsToNonDefaultNetworkOnWriteError = 5;
 // degrading per network.
 const int64_t kMaxMigrationsToNonDefaultNetworkOnPathDegrading = 5;
 
+// QUIC's socket receive buffer size.
+// We should adaptively set this buffer size, but for now, we'll use a size
+// that seems large enough to receive data at line rate for most connections,
+// and does not consume "too much" memory.
+const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
+
 // Structure containing simple configuration options and experiments for QUIC.
 struct NET_EXPORT QuicParams {
   QuicParams();
@@ -151,8 +157,6 @@ struct NET_EXPORT QuicParams {
   bool go_away_on_path_degrading = false;
   // If true, bidirectional streams over QUIC will be disabled.
   bool disable_bidirectional_streams = false;
-  // If true, race cert verification with host resolution.
-  bool race_cert_verification = false;
   // If true, estimate the initial RTT for QUIC connections based on network.
   bool estimate_initial_rtt = false;
   // If true, client headers will include HTTP/2 stream dependency info
@@ -188,6 +192,9 @@ class NET_EXPORT_PRIVATE QuicContext {
 
   QuicParams params_;
 };
+
+// Initializes QuicConfig based on the specified parameters.
+quic::QuicConfig InitializeQuicConfig(const QuicParams& params);
 
 }  // namespace net
 

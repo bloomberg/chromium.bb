@@ -15,6 +15,7 @@
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_constants.h"
@@ -43,6 +44,14 @@ constexpr char kLoginScopedToken[] = "login_scoped_token";
 constexpr char kGetAuthCodeKey[] = "Content-Type";
 constexpr char kGetAuthCodeValue[] = "application/json; charset=utf-8";
 constexpr char kContentTypeJSON[] = "application/json";
+
+}  // namespace
+
+namespace {
+
+signin::ScopeSet GetAccessTokenScopes() {
+  return signin::ScopeSet({GaiaConstants::kOAuth1LoginScope});
+}
 
 }  // namespace
 
@@ -76,10 +85,22 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(bool success) {
     return;
   }
 
-  identity::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
+  StartFetchingAccessToken();
+}
+
+void ArcBackgroundAuthCodeFetcher::AttemptToRecoverAccessToken(
+    const signin::AccessTokenInfo& token_info) {
+  DCHECK(!attempted_to_recover_access_token_);
+  attempted_to_recover_access_token_ = true;
+  context_.RemoveAccessTokenFromCache(GetAccessTokenScopes(), token_info.token);
+  StartFetchingAccessToken();
+}
+
+void ArcBackgroundAuthCodeFetcher::StartFetchingAccessToken() {
+  DCHECK(!simple_url_loader_);
+  DCHECK(!access_token_fetcher_);
   access_token_fetcher_ = context_.CreateAccessTokenFetcher(
-      kConsumerName, scopes,
+      kConsumerName, GetAccessTokenScopes(),
       base::BindOnce(&ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete,
                      base::Unretained(this)));
 }
@@ -87,7 +108,7 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(bool success) {
 void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
     signin::AccessTokenInfo token_info) {
-  ResetFetchers();
+  access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     LOG(WARNING) << "Failed to get LST " << error.ToString() << ".";
@@ -135,6 +156,9 @@ void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(kGetAuthCodeKey, kGetAuthCodeValue);
+
+  DCHECK(!simple_url_loader_);
+
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(request_string, kContentTypeJSON);
@@ -147,10 +171,11 @@ void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete,
-                     base::Unretained(this)));
+                     base::Unretained(this), token_info));
 }
 
 void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
+    signin::AccessTokenInfo token_info,
     std::unique_ptr<std::string> response_body) {
   int response_code = -1;
   if (simple_url_loader_->ResponseInfo() &&
@@ -162,7 +187,7 @@ void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
   if (response_body)
     json_string = std::move(*response_body);
 
-  ResetFetchers();
+  simple_url_loader_.reset();
 
   JSONStringValueDeserializer deserializer(json_string);
   std::string error_msg;
@@ -181,12 +206,17 @@ void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
                  << ".";
 
     OptInSilentAuthCode uma_status;
-    if (response_code >= 400 && response_code < 500)
+    if (response_code >= 400 && response_code < 500) {
+      if (!attempted_to_recover_access_token_) {
+        AttemptToRecoverAccessToken(token_info);
+        return;
+      }
       uma_status = OptInSilentAuthCode::HTTP_CLIENT_FAILURE;
-    if (response_code >= 500 && response_code < 600)
+    } else if (response_code >= 500 && response_code < 600) {
       uma_status = OptInSilentAuthCode::HTTP_SERVER_FAILURE;
-    else
+    } else {
       uma_status = OptInSilentAuthCode::HTTP_UNKNOWN_FAILURE;
+    }
     ReportResult(std::string(), uma_status);
     return;
   }
@@ -217,11 +247,6 @@ void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
   ReportResult(auth_code, OptInSilentAuthCode::SUCCESS);
 }
 
-void ArcBackgroundAuthCodeFetcher::ResetFetchers() {
-  access_token_fetcher_.reset();
-  simple_url_loader_.reset();
-}
-
 void ArcBackgroundAuthCodeFetcher::ReportResult(
     const std::string& auth_code,
     OptInSilentAuthCode uma_status) {
@@ -235,10 +260,6 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
       UpdateSecondaryAccountSilentAuthCodeUMA(uma_status);
   }
   std::move(callback_).Run(!auth_code.empty(), auth_code);
-}
-
-void ArcBackgroundAuthCodeFetcher::SkipMergeSessionForTesting() {
-  context_.SkipMergeSessionForTesting();
 }
 
 }  // namespace arc

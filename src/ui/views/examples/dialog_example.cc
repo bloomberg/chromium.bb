@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/dialog_example.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -14,6 +17,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -35,18 +39,23 @@ constexpr int kFakeModeless = ui::MODAL_TYPE_SYSTEM + 1;
 template <class DialogType>
 class DialogExample::Delegate : public virtual DialogType {
  public:
-  explicit Delegate(DialogExample* parent) : parent_(parent) {}
+  explicit Delegate(DialogExample* parent) : parent_(parent) {
+    DialogDelegate::SetButtons(parent_->GetDialogButtons());
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                                     parent_->ok_button_label_->GetText());
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                                     parent_->cancel_button_label_->GetText());
+  }
 
   void InitDelegate() {
     this->SetLayoutManager(std::make_unique<FillLayout>());
     Label* body = new Label(parent_->body_->GetText());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    body->SetBackground(CreateSolidBackground(SkColorSetRGB(0, 255, 255)));
     this->AddChildView(body);
 
     if (parent_->has_extra_button_->GetChecked()) {
-      DialogDelegate::SetExtraView(MdTextButton::CreateSecondaryUiButton(
+      DialogDelegate::SetExtraView(MdTextButton::Create(
           nullptr, parent_->extra_button_label_->GetText()));
     }
 
@@ -66,14 +75,6 @@ class DialogExample::Delegate : public virtual DialogType {
 
   bool Cancel() override { return parent_->AllowDialogClose(false); }
   bool Accept() override { return parent_->AllowDialogClose(true); }
-  int GetDialogButtons() const override { return parent_->GetDialogButtons(); }
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    if (button == ui::DIALOG_BUTTON_OK)
-      return parent_->ok_button_label_->GetText();
-    if (button == ui::DIALOG_BUTTON_CANCEL)
-      return parent_->cancel_button_label_->GetText();
-    return base::string16();
-  }
 
  private:
   DialogExample* parent_;
@@ -115,8 +116,10 @@ class DialogExample::Dialog : public Delegate<DialogDelegateView> {
 DialogExample::DialogExample()
     : ExampleBase("Dialog"),
       mode_model_({
-          base::ASCIIToUTF16("Modeless"), base::ASCIIToUTF16("Window Modal"),
-          base::ASCIIToUTF16("Child Modal"), base::ASCIIToUTF16("System Modal"),
+          base::ASCIIToUTF16("Modeless"),
+          base::ASCIIToUTF16("Window Modal"),
+          base::ASCIIToUTF16("Child Modal"),
+          base::ASCIIToUTF16("System Modal"),
           base::ASCIIToUTF16("Fake Modeless (non-bubbles)"),
       }) {}
 
@@ -134,13 +137,13 @@ void DialogExample::CreateExampleView(View* container) {
       container->SetLayoutManager(std::make_unique<views::GridLayout>());
   ColumnSet* column_set = layout->AddColumnSet(kFieldsColumnId);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, kFixed,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(kFixed, horizontal_spacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kStretchy,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(kFixed, horizontal_spacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   StartTextfieldRow(layout, &title_, "Dialog Title", "Title");
   StartTextfieldRow(layout, &body_, "Dialog Body Text", "Body Text");
 
@@ -166,13 +169,13 @@ void DialogExample::CreateExampleView(View* container) {
 
   column_set = layout->AddColumnSet(kButtonsColumnId);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, kStretchy,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRowWithPadding(
       kFixed, kButtonsColumnId, kFixed,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  show_ = layout->AddView(
-      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show")));
+  show_ =
+      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("Show")));
 }
 
 void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
@@ -268,7 +271,7 @@ void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == bubble_) {
     if (bubble_->GetChecked() && GetModalType() != ui::MODAL_TYPE_CHILD) {
       mode_->SetSelectedIndex(ui::MODAL_TYPE_CHILD);
-      PrintStatus("You nearly always want Child Modal for bubbles.");
+      LogStatus("You nearly always want Child Modal for bubbles.");
     }
     persistent_bubble_->SetEnabled(bubble_->GetChecked());
     OnPerformAction(mode_);  // Validate the modal type.
@@ -294,7 +297,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
     return;
 
   if (sender == extra_button_label_)
-    PrintStatus("DialogDelegate can never refresh the extra view.");
+    LogStatus("DialogDelegate can never refresh the extra view.");
 
   if (sender == title_) {
     last_dialog_->GetWidget()->UpdateWindowTitle();
@@ -314,9 +317,9 @@ void DialogExample::OnPerformAction(Combobox* combobox) {
 #endif
   show_->SetEnabled(enable);
   if (!enable && GetModalType() == ui::MODAL_TYPE_CHILD)
-    PrintStatus("MODAL_TYPE_CHILD can't be used with non-bubbles.");
+    LogStatus("MODAL_TYPE_CHILD can't be used with non-bubbles.");
   if (!enable && GetModalType() == ui::MODAL_TYPE_SYSTEM)
-    PrintStatus("MODAL_TYPE_SYSTEM isn't supported on Mac.");
+    LogStatus("MODAL_TYPE_SYSTEM isn't supported on Mac.");
 }
 
 }  // namespace examples

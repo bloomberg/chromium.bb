@@ -53,7 +53,9 @@ RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     : AudioDestinationHandler(node),
       latency_hint_(latency_hint),
       sample_rate_(sample_rate),
-      allow_pulling_audio_graph_(false) {
+      allow_pulling_audio_graph_(false),
+      task_runner_(Context()->GetExecutionContext()->GetTaskRunner(
+          TaskType::kInternalMediaRealTime)) {
   // Node-specific default channel count and mixing rules.
   channel_count_ = 2;
   SetInternalChannelCountMode(kExplicit);
@@ -198,33 +200,29 @@ void RealtimeAudioDestinationHandler::Render(
   // Only pull on the audio graph if we have not stopped the destination.  It
   // takes time for the destination to stop, but we want to stop pulling before
   // the destination has actually stopped.
-  {
-    MutexTryLocker try_locker(context->GetTearDownMutex());
-    if (try_locker.Locked() && IsPullingAudioGraphAllowed()) {
-      // Renders the graph by pulling all the inputs to this node. This will
-      // in turn pull on their inputs, all the way backwards through the graph.
-      AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+  if (IsPullingAudioGraphAllowed()) {
+    // Renders the graph by pulling all the inputs to this node. This will in
+    // turn pull on their inputs, all the way backwards through the graph.
+    scoped_refptr<AudioBus> rendered_bus =
+        Input(0).Pull(destination_bus, number_of_frames);
 
-      DCHECK(rendered_bus);
-      if (!rendered_bus) {
-        // AudioNodeInput might be in the middle of destruction. Then the
-        // internal summing bus will return as nullptr. Then zero out the
-        // output.
-        destination_bus->Zero();
-      } else if (rendered_bus != destination_bus) {
-        // In-place processing was not possible. Copy the rendererd result to
-        // the given |destination_bus| buffer.
-        destination_bus->CopyFrom(*rendered_bus);
-      }
-    } else {
+    DCHECK(rendered_bus);
+    if (!rendered_bus) {
+      // AudioNodeInput might be in the middle of destruction. Then the internal
+      // summing bus will return as nullptr. Then zero out the output.
       destination_bus->Zero();
+    } else if (rendered_bus != destination_bus) {
+      // In-place processing was not possible. Copy the rendered result to the
+      // given |destination_bus| buffer.
+      destination_bus->CopyFrom(*rendered_bus);
     }
-
-    // Processes "automatic" nodes that are not connected to anything. This can
-    // be done after copying because it does not affect the rendered result.
-    context->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
-        number_of_frames);
+  } else {
+    destination_bus->Zero();
   }
+
+  // Processes "automatic" nodes that are not connected to anything. This can
+  // be done after copying because it does not affect the rendered result.
+  context->GetDeferredTaskHandler().ProcessAutomaticPullNodes(number_of_frames);
 
   context->HandlePostRenderTasks();
 
@@ -234,6 +232,31 @@ void RealtimeAudioDestinationHandler::Render(
   AdvanceCurrentSampleFrame(number_of_frames);
 
   context->UpdateWorkletGlobalScopeOnRenderingThread();
+
+  SetDetectSilenceIfNecessary(
+      context->GetDeferredTaskHandler().HasAutomaticPullNodes());
+}
+
+void RealtimeAudioDestinationHandler::SetDetectSilenceIfNecessary(
+    bool has_automatic_pull_nodes) {
+  // When there is no automatic pull nodes, or the destination has an active
+  // input connection, the silence detection should be turned on.
+  bool needs_silence_detection =
+      !has_automatic_pull_nodes || Input(0).IsConnected();
+
+  // Post a cross-thread task only when the detecting condition has changed.
+  if (is_detecting_silence_ != needs_silence_detection) {
+    PostCrossThreadTask(*task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&RealtimeAudioDestinationHandler::SetDetectSilence,
+                            AsWeakPtr(), needs_silence_detection));
+    is_detecting_silence_ = needs_silence_detection;
+  }
+}
+
+void RealtimeAudioDestinationHandler::SetDetectSilence(bool detect_silence) {
+  DCHECK(IsMainThread());
+
+  platform_destination_->SetDetectSilence(detect_silence);
 }
 
 uint32_t RealtimeAudioDestinationHandler::GetCallbackBufferSize() const {
@@ -269,7 +292,7 @@ void RealtimeAudioDestinationHandler::StartPlatformDestination() {
     platform_destination_->StartWithWorkletTaskRunner(
         audio_worklet->GetMessagingProxy()
             ->GetBackingWorkerThread()
-            ->GetTaskRunner(TaskType::kInternalMedia));
+            ->GetTaskRunner(TaskType::kInternalMediaRealTime));
   } else {
     platform_destination_->Start();
   }

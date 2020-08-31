@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
@@ -32,6 +33,10 @@ using DemoModeApp = DemoSessionMetricsRecorder::DemoModeApp;
 // How often to sample.
 constexpr auto kSamplePeriod = base::TimeDelta::FromSeconds(1);
 
+// Redefining chromeos::default_web_apps::kHelpAppId as ash can't depend on
+// chrome.
+constexpr char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
+
 // How many periods to wait for user activity before discarding samples.
 // This timeout is low because demo sessions tend to be very short. If we
 // recorded samples for a full minute while the device is in between uses, we
@@ -45,7 +50,7 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
   if (app_id == extension_misc::kHighlightsAppId ||
       app_id == extension_misc::kHighlightsEveAppId ||
       app_id == extension_misc::kHighlightsNocturneAppId ||
-      app_id == extension_misc::kHighlightsAltAppId) {
+      app_id == extension_misc::kHighlightsAtlasAppId) {
     return DemoModeApp::kHighlights;
   }
 
@@ -53,7 +58,7 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
   if (app_id == extension_misc::kScreensaverAppId ||
       app_id == extension_misc::kScreensaverEveAppId ||
       app_id == extension_misc::kScreensaverNocturneAppId ||
-      app_id == extension_misc::kScreensaverAltAppId ||
+      app_id == extension_misc::kScreensaverAtlasAppId ||
       app_id == extension_misc::kScreensaverKukuiAppId) {
     return DemoModeApp::kScreensaver;
   }
@@ -64,10 +69,20 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kBrowser;
   if (app_id == extension_misc::kFilesManagerAppId)
     return DemoModeApp::kFiles;
-  if (app_id == extension_misc::kGeniusAppId)
+  if (app_id == extension_misc::kCalculatorAppId)
+    return DemoModeApp::kCalculator;
+  if (app_id == extension_misc::kCalendarDemoAppId)
+    return DemoModeApp::kCalendar;
+  if (app_id == extension_misc::kGoogleDocsDemoAppId)
+    return DemoModeApp::kGoogleDocsChromeApp;
+  if (app_id == extension_misc::kGoogleSheetsDemoAppId)
+    return DemoModeApp::kGoogleSheetsChromeApp;
+  if (app_id == extension_misc::kGoogleSlidesDemoAppId)
+    return DemoModeApp::kGoogleSlidesChromeApp;
+  if (app_id == kHelpAppId || app_id == extension_misc::kGeniusAppId)
     return DemoModeApp::kGetHelp;
   if (app_id == extension_misc::kGoogleKeepAppId)
-    return DemoModeApp::kGoogleKeep;
+    return DemoModeApp::kGoogleKeepChromeApp;
   if (app_id == extensions::kWebStoreAppId)
     return DemoModeApp::kWebStore;
   if (app_id == extension_misc::kYoutubeAppId)
@@ -78,24 +93,43 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
 // Maps an ARC++ package name to a DemoModeApp value for metrics.
 DemoModeApp GetAppFromPackageName(const std::string& package_name) {
   // Google apps.
-  if (package_name == "com.google.Photos")
+  if (package_name == "com.google.Photos" ||
+      package_name == "com.google.android.apps.photos")
     return DemoModeApp::kGooglePhotos;
-  if (package_name == "com.google.Sheets")
-    return DemoModeApp::kGoogleSheets;
-  if (package_name == "com.google.Slides")
-    return DemoModeApp::kGoogleSlides;
+  if (package_name == "com.google.Sheets" ||
+      package_name == "com.google.android.apps.docs.editors.sheets")
+    return DemoModeApp::kGoogleSheetsAndroidApp;
+  if (package_name == "com.google.Slides" ||
+      package_name == "com.google.android.apps.docs.editors.slides")
+    return DemoModeApp::kGoogleSlidesAndroidApp;
+  if (package_name == "com.google.android.keep")
+    return DemoModeApp::kGoogleKeepAndroidApp;
   if (package_name == "com.android.vending")
     return DemoModeApp::kPlayStore;
 
   // Third-party apps.
   if (package_name == "com.gameloft.android.ANMP.GloftA8HMD")
     return DemoModeApp::kAsphalt8;
+  if (package_name == "com.gameloft.android.ANMP.GloftA9HM" ||
+      package_name == "com.gameloft.android.ANMP.GloftA9HMD")
+    return DemoModeApp::kAsphalt9;
+  if (package_name == "com.chucklefish.stardewvalley" ||
+      package_name == "com.chucklefish.stardewvalleydemo")
+    return DemoModeApp::kStardewValley;
+  if (package_name == "com.nexstreaming.app.kinemasterfree" ||
+      package_name == "com.nexstreaming.app.kinemasterfree.demo.chromebook")
+    return DemoModeApp::kKinemaster;
+  if (package_name == "com.pixlr.express" ||
+      package_name == "com.pixlr.express.chromebook.demo")
+    return DemoModeApp::kPixlr;
   if (package_name == "com.brakefield.painter")
     return DemoModeApp::kInfinitePainter;
   if (package_name == "com.myscript.nebo.demo")
     return DemoModeApp::kMyScriptNebo;
   if (package_name == "com.steadfastinnovation.android.projectpapyrus")
     return DemoModeApp::kSquid;
+  if (package_name == "com.autodesk.autocadws.demo")
+    return DemoModeApp::kAutoCAD;
 
   return DemoModeApp::kOtherArcApp;
 }
@@ -155,6 +189,20 @@ DemoModeApp GetAppFromWindow(const aura::Window* window) {
   if (app_type == AppType::BROWSER)
     return DemoModeApp::kBrowser;
   return DemoModeApp::kOtherWindow;
+}
+
+// Identical to UmaHistogramLongTimes100, but reports times with second
+// granularity instead of millisecond granularity.
+// This significantly improves the bucketing if millisecond granularity is
+// not required - 90/100 buckets are greater than 10 seconds, compared to
+// 43/100 buckets using millisecond accuracy with min=1ms, or
+// 72/100 buckets using millisecond accuracy with min=1000ms.
+void ReportHistogramLongSecondsTimes100(const char* name,
+                                        base::TimeDelta sample) {
+  // We use a max of 1 hour = 60 * 60 secs.
+  base::UmaHistogramCustomCounts(name,
+                                 base::saturated_cast<int>(sample.InSeconds()),
+                                 /*min=*/1, /*max=*/60 * 60, /*buckets=*/100);
 }
 
 }  // namespace
@@ -267,9 +315,14 @@ DemoSessionMetricsRecorder::DemoSessionMetricsRecorder(
 }
 
 DemoSessionMetricsRecorder::~DemoSessionMetricsRecorder() {
+  // TODO(mlcui): Investigate whether the metrics emitted here are gracefully
+  // handled during session / device shutdown.
+
   // Report any remaining stored samples on exit. (If the user went idle, there
   // won't be any.)
   ReportSamples();
+
+  ReportDwellTime();
 
   // Unsubscribe from window activation events.
   activation_client_->RemoveObserver(this);
@@ -349,6 +402,12 @@ void DemoSessionMetricsRecorder::OnWindowActivated(ActivationReason reason,
 }
 
 void DemoSessionMetricsRecorder::OnUserActivity(const ui::Event* event) {
+  // Record the first and last time activity was observed.
+  if (first_user_activity_.is_null()) {
+    first_user_activity_ = base::TimeTicks::Now();
+  }
+  last_user_activity_ = base::TimeTicks::Now();
+
   // Report samples recorded since the last activity.
   ReportSamples();
 
@@ -405,6 +464,18 @@ void DemoSessionMetricsRecorder::ReportUniqueAppsLaunched() {
     UMA_HISTOGRAM_COUNTS_100("DemoMode.UniqueAppsLaunched",
                              unique_apps_launched_.size());
   unique_apps_launched_.clear();
+}
+
+void DemoSessionMetricsRecorder::ReportDwellTime() {
+  if (!first_user_activity_.is_null()) {
+    DCHECK(!last_user_activity_.is_null());
+    DCHECK_LE(first_user_activity_, last_user_activity_);
+
+    base::TimeDelta dwell_time = last_user_activity_ - first_user_activity_;
+    ReportHistogramLongSecondsTimes100("DemoMode.DwellTime", dwell_time);
+  }
+  first_user_activity_ = base::TimeTicks();
+  last_user_activity_ = base::TimeTicks();
 }
 
 }  // namespace ash

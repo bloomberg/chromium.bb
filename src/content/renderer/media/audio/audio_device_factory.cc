@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
@@ -195,8 +197,8 @@ media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
 
   // There's one process wide instance that lives on the render thread.
   static base::NoDestructor<AudioRendererSinkCacheImpl> cache(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::BindRepeating(&AudioDeviceFactory::NewAudioRendererSink,
                           blink::WebAudioDeviceSourceType::kNone),

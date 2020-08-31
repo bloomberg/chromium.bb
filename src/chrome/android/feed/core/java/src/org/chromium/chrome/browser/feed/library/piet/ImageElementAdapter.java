@@ -8,9 +8,11 @@ import static org.chromium.chrome.browser.feed.library.api.host.imageloader.Imag
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.ui.AspectRatioScalingImageView;
@@ -26,7 +28,8 @@ import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.ImageSource;
 class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, ImageElement> {
     private static final String TAG = "ImageElementAdapter";
 
-    /*@Nullable*/ private LoadImageCallback mCurrentlyLoadingImage;
+    @Nullable
+    private LoadImageCallback mCurrentlyLoadingImage;
 
     @VisibleForTesting
     ImageElementAdapter(Context context, AdapterParameters parameters) {
@@ -132,7 +135,7 @@ class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, Im
 
     @VisibleForTesting
     LoadImageCallback createLoadImageCallback(
-            ScaleType scaleType, /*@Nullable*/ Integer overlayColor, FrameContext frameContext) {
+            ScaleType scaleType, @Nullable Integer overlayColor, FrameContext frameContext) {
         return new LoadImageCallback(getBaseView(), scaleType, overlayColor,
                 getElementStyle().getFadeInImageOnLoad(), getParameters(), frameContext);
     }

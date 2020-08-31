@@ -1,5 +1,5 @@
-document
-++img Name='Pipe'
-++group
-++++description Name='The pipe'
-++++description Name=' clicked by SomeOne.'
+Document
+++Image Name='Pipe'
+++Group IsControlElement=false
+++++Text Name='The pipe'
+++++Text Name=' clicked by SomeOne.'

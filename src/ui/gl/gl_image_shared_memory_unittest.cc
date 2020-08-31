@@ -55,11 +55,12 @@ using GLImageTestTypes = testing::Types<
     // Fails on Win nVidia and linux android: the test writes nothing (we read
     // back the color used to clear the buffer).
     // TODO(mcasas): enable those paltforms https://crbug.com/803451.
-    // https://crbug.com/830653
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBA_1010102>,
+
+// https://crbug.com/830653
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER)
-    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRX_1010102>,
-    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBX_1010102>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_1010102>,
 #endif
 #endif
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;

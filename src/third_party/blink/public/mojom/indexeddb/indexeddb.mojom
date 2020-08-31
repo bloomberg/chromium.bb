@@ -4,11 +4,11 @@
 
 module blink.mojom;
 
-import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom";
 
 // kIDBMaxMessageSize is 128MB, originally based on
 // IPC::Channel::kMaximumMessageSize.  The "usable" size is this value less
@@ -196,7 +196,6 @@ struct IDBIndexKeys {
 };
 
 struct IDBFileInfo {
-  mojo_base.mojom.FilePath path;
   mojo_base.mojom.String16 name;
   mojo_base.mojom.Time last_modified;
 };
@@ -209,9 +208,14 @@ struct IDBBlobInfo {
   IDBFileInfo? file;
 };
 
+union IDBExternalObject {
+  IDBBlobInfo blob_or_file;
+  pending_remote<NativeFileSystemTransferToken> native_file_system_token;
+};
+
 struct IDBValue {
   array<uint8> bits;
-  array<IDBBlobInfo> blob_or_file_info;
+  array<IDBExternalObject> external_objects;
 };
 
 struct IDBReturnValue {

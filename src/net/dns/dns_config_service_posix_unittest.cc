@@ -23,6 +23,7 @@
 #include "net/dns/public/dns_protocol.h"
 
 #include "base/bind.h"
+#include "base/task/thread_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -206,7 +207,7 @@ TEST(DnsConfigServicePosixTest, DestroyOnDifferentThread) {
   base::test::TaskEnvironment task_environment;
 
   scoped_refptr<base::SequencedTaskRunner> runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   std::unique_ptr<internal::DnsConfigServicePosix, base::OnTaskRunnerDeleter>
       service(new internal::DnsConfigServicePosix(),
               base::OnTaskRunnerDeleter(runner));
@@ -251,8 +252,8 @@ class DnsConfigServicePosixTest : public testing::Test {
 
 // Regression test for https://crbug.com/704662.
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
-  service_->WatchConfig(base::Bind(&DnsConfigServicePosixTest::OnConfigChanged,
-                                   base::Unretained(this)));
+  service_->WatchConfig(base::BindRepeating(
+      &DnsConfigServicePosixTest::OnConfigChanged, base::Unretained(this)));
   task_environment_.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {

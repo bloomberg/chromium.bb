@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/permission_bubble/chooser_bubble_ui.h"
-
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
-#include "chrome/browser/ui/views/front_eliding_title_label.h"
-#include "components/bubble/bubble_controller.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/title_origin_label.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 using bubble_anchor_util::AnchorConfiguration;
 
@@ -35,11 +36,12 @@ gfx::Rect GetChooserAnchorRect(Browser* browser) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the chooser bubble.
-class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
+class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
                                     public views::TableViewObserver {
  public:
   ChooserBubbleUiViewDelegate(
       Browser* browser,
+      content::WebContents* web_contents,
       std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserBubbleUiViewDelegate() override;
 
@@ -52,9 +54,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   // views::DialogDelegate:
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -63,20 +62,31 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   // displayed in the correct location.
   void UpdateAnchor(Browser* browser);
 
-  void set_bubble_reference(BubbleReference bubble_reference);
   void UpdateTableView() const;
 
+  base::OnceClosure MakeCloseClosure();
+  void Close();
+
+  static int g_num_instances_for_testing_;
+
  private:
-  DeviceChooserContentView* device_chooser_content_view_;
-  BubbleReference bubble_reference_;
+  DeviceChooserContentView* device_chooser_content_view_ = nullptr;
+
+  base::WeakPtrFactory<ChooserBubbleUiViewDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiViewDelegate);
 };
 
+int ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ = 0;
+
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     Browser* browser,
+    content::WebContents* contents,
     std::unique_ptr<ChooserController> chooser_controller)
-    : device_chooser_content_view_(nullptr) {
+    : LocationBarBubbleDelegateView(
+          GetChooserAnchorConfiguration(browser).anchor_view,
+          contents) {
+  g_num_instances_for_testing_++;
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -92,27 +102,36 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Get help                         |
   // ------------------------------------
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   chooser_controller->GetOkButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   chooser_controller->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, chooser_controller->GetOkButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 chooser_controller->GetCancelButtonLabel());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
   AddChildView(device_chooser_content_view_);
 
-  DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
+  SetExtraView(device_chooser_content_view_->CreateExtraView());
 
-  UpdateAnchor(browser);
+  SetAcceptCallback(
+      base::BindOnce(&DeviceChooserContentView::Accept,
+                     base::Unretained(device_chooser_content_view_)));
+  SetCancelCallback(
+      base::BindOnce(&DeviceChooserContentView::Cancel,
+                     base::Unretained(device_chooser_content_view_)));
+  SetCloseCallback(
+      base::BindOnce(&DeviceChooserContentView::Close,
+                     base::Unretained(device_chooser_content_view_)));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
-ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
+ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {
+  g_num_instances_for_testing_--;
+}
 
 void ChooserBubbleUiViewDelegate::AddedToWidget() {
-  GetBubbleFrameView()->SetTitleView(
-      CreateFrontElidingTitleLabel(GetWindowTitle()));
+  GetBubbleFrameView()->SetTitleView(CreateTitleOriginLabel(GetWindowTitle()));
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
@@ -128,25 +147,6 @@ bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(
   return device_chooser_content_view_->IsDialogButtonEnabled(button);
 }
 
-bool ChooserBubbleUiViewDelegate::Accept() {
-  device_chooser_content_view_->Accept();
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
-  return true;
-}
-
-bool ChooserBubbleUiViewDelegate::Cancel() {
-  device_chooser_content_view_->Cancel();
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
-  return true;
-}
-
-bool ChooserBubbleUiViewDelegate::Close() {
-  device_chooser_content_view_->Close();
-  return true;
-}
-
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
   DialogModelChanged();
 }
@@ -160,55 +160,54 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
   SetArrow(configuration.bubble_arrow);
 }
 
-void ChooserBubbleUiViewDelegate::set_bubble_reference(
-    BubbleReference bubble_reference) {
-  bubble_reference_ = bubble_reference;
-}
-
 void ChooserBubbleUiViewDelegate::UpdateTableView() const {
   device_chooser_content_view_->UpdateTableView();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// ChooserBubbleUi
-ChooserBubbleUi::ChooserBubbleUi(
-    Browser* browser,
-    std::unique_ptr<ChooserController> chooser_controller)
-    : browser_(browser), chooser_bubble_ui_view_delegate_(nullptr) {
-  DCHECK(browser_);
-  DCHECK(chooser_controller);
-  chooser_bubble_ui_view_delegate_ =
-      new ChooserBubbleUiViewDelegate(browser, std::move(chooser_controller));
+base::OnceClosure ChooserBubbleUiViewDelegate::MakeCloseClosure() {
+  return base::BindOnce(&ChooserBubbleUiViewDelegate::Close,
+                        weak_ptr_factory_.GetWeakPtr());
 }
 
-ChooserBubbleUi::~ChooserBubbleUi() {
-  if (chooser_bubble_ui_view_delegate_ &&
-      chooser_bubble_ui_view_delegate_->GetWidget()) {
-    chooser_bubble_ui_view_delegate_->GetWidget()->RemoveObserver(this);
-  }
+void ChooserBubbleUiViewDelegate::Close() {
+  if (GetWidget())
+    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 
-void ChooserBubbleUi::Show(BubbleReference bubble_reference) {
-  chooser_bubble_ui_view_delegate_->set_bubble_reference(bubble_reference);
-  chooser_bubble_ui_view_delegate_->UpdateAnchor(browser_);
-  CreateAndShow(chooser_bubble_ui_view_delegate_);
-  chooser_bubble_ui_view_delegate_->GetWidget()->AddObserver(this);
-  chooser_bubble_ui_view_delegate_->UpdateTableView();
+namespace chrome {
+
+base::OnceClosure ShowDeviceChooserDialog(
+    content::RenderFrameHost* owner,
+    std::unique_ptr<ChooserController> controller) {
+  auto* contents = content::WebContents::FromRenderFrameHost(owner);
+  auto* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!browser)
+    return base::DoNothing();
+
+  auto bubble = std::make_unique<ChooserBubbleUiViewDelegate>(
+      browser, contents, std::move(controller));
+
+  // Set |parent_window_| because some valid anchors can become hidden.
+  views::Widget* parent_widget = views::Widget::GetWidgetForNativeWindow(
+      browser->window()->GetNativeWindow());
+  gfx::NativeView parent = parent_widget->GetNativeView();
+  DCHECK(parent);
+  bubble->set_parent_window(parent);
+  bubble->UpdateAnchor(browser);
+
+  base::OnceClosure close_closure = bubble->MakeCloseClosure();
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble.release());
+  if (browser->window()->IsActive())
+    widget->Show();
+  else
+    widget->ShowInactive();
+
+  return close_closure;
 }
 
-void ChooserBubbleUi::Close() {
-  if (chooser_bubble_ui_view_delegate_ &&
-      !chooser_bubble_ui_view_delegate_->GetWidget()->IsClosed()) {
-    chooser_bubble_ui_view_delegate_->GetWidget()->Close();
-  }
+bool IsDeviceChooserShowingForTesting(Browser* browser) {
+  return ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ > 0;
 }
 
-void ChooserBubbleUi::UpdateAnchorPosition() {
-  if (chooser_bubble_ui_view_delegate_)
-    chooser_bubble_ui_view_delegate_->UpdateAnchor(browser_);
-}
-
-void ChooserBubbleUi::OnWidgetClosing(views::Widget* widget) {
-  widget->RemoveObserver(this);
-  chooser_bubble_ui_view_delegate_ = nullptr;
-}
+}  // namespace chrome

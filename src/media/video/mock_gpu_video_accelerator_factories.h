@@ -34,20 +34,17 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD2(IsDecoderConfigSupported,
                Supported(VideoDecoderImplementation,
                          const VideoDecoderConfig&));
-  MOCK_METHOD3(
-      CreateVideoDecoder,
-      std::unique_ptr<media::VideoDecoder>(MediaLog*,
-                                           VideoDecoderImplementation,
-                                           const RequestOverlayInfoCB&));
+  MOCK_METHOD3(CreateVideoDecoder,
+               std::unique_ptr<media::VideoDecoder>(MediaLog*,
+                                                    VideoDecoderImplementation,
+                                                    RequestOverlayInfoCB));
 
   // CreateVideoEncodeAccelerator returns scoped_ptr, which the mocking
   // framework does not want. Trampoline it.
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
-  MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
-               VideoEncodeAccelerator::SupportedProfiles());
-  MOCK_METHOD0(GetMediaContextProvider, scoped_refptr<viz::ContextProvider>());
+  MOCK_METHOD0(GetMediaContextProvider, viz::RasterContextProvider*());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -82,6 +79,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
+  base::Optional<VideoEncodeAccelerator::SupportedProfiles>
+  GetVideoEncodeAcceleratorSupportedProfiles() override {
+    return VideoEncodeAccelerator::SupportedProfiles();
+  }
 
   const std::vector<gfx::GpuMemoryBuffer*>& created_memory_buffers() {
     return created_memory_buffers_;

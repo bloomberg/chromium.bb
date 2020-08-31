@@ -12,11 +12,10 @@
 #include <iosfwd>
 #include <memory>
 
-#include "base/hash/hash.h"
+#include "base/check_op.h"
 #include "cc/paint/paint_export.h"
 
 namespace base {
-class Value;
 namespace trace_event {
 class TracedValue;
 }  // namespace trace_event
@@ -59,7 +58,6 @@ struct CC_PAINT_EXPORT ElementId {
   explicit operator bool() const { return !!id_; }
 
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
-  std::unique_ptr<base::Value> AsValue() const;
 
   ElementIdType GetStableId() const;
 

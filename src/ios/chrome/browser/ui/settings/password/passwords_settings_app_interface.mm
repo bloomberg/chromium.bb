@@ -151,8 +151,9 @@ static MockReauthenticationModule* _mockReauthenticationModule;
       SetUpAndReturnMockReauthenticationModuleForExport();
 }
 
-+ (void)mockReauthenticationModuleShouldSucceed:(BOOL)shouldSucceed {
-  _mockReauthenticationModule.shouldSucceed = shouldSucceed;
++ (void)mockReauthenticationModuleExpectedResult:
+    (ReauthenticationResult)expectedResult {
+  _mockReauthenticationModule.expectedResult = expectedResult;
 }
 
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {
@@ -214,7 +215,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 }
 
 + (BOOL)isCredentialsServiceEnabled {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   return browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);

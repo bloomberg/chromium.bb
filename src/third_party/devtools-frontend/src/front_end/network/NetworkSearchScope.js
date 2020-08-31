@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';           // eslint-disable-line no-unused-vars
+import * as Search from '../search/search.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Search.SearchScope}
+ * @implements {Search.SearchConfig.SearchScope}
  */
-Network.NetworkSearchScope = class {
+export class NetworkSearchScope {
   /**
    * @override
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    */
   performIndexing(progress) {
     setImmediate(progress.done.bind(progress));
@@ -16,15 +20,16 @@ Network.NetworkSearchScope = class {
 
   /**
    * @override
-   * @param {!Search.SearchConfig} searchConfig
-   * @param {!Common.Progress} progress
-   * @param {function(!Search.SearchResult)} searchResultCallback
+   * @param {!Search.SearchConfig.SearchConfig} searchConfig
+   * @param {!Common.Progress.Progress} progress
+   * @param {function(!Search.SearchConfig.SearchResult)} searchResultCallback
    * @param {function(boolean)} searchFinishedCallback
    * @return {?}
    */
   async performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback) {
     const promises = [];
-    const requests = SDK.networkLog.requests().filter(request => searchConfig.filePathMatchesFileQuery(request.url()));
+    const requests =
+        self.SDK.networkLog.requests().filter(request => searchConfig.filePathMatchesFileQuery(request.url()));
     progress.setTotalWork(requests.length);
     for (const request of requests) {
       const promise = this._searchRequest(searchConfig, request, progress);
@@ -45,10 +50,10 @@ Network.NetworkSearchScope = class {
   }
 
   /**
-   * @param {!Search.SearchConfig} searchConfig
-   * @param {!SDK.NetworkRequest} request
-   * @param {!Common.Progress} progress
-   * @return {!Promise<?Network.NetworkSearchResult>}
+   * @param {!Search.SearchConfig.SearchConfig} searchConfig
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!Common.Progress.Progress} progress
+   * @return {!Promise<?NetworkSearchResult>}
    */
   async _searchRequest(searchConfig, request, progress) {
     let bodyMatches = [];
@@ -61,23 +66,23 @@ Network.NetworkSearchScope = class {
     }
     const locations = [];
     if (stringMatchesQuery(request.url())) {
-      locations.push(Network.UIRequestLocation.urlMatch(request));
+      locations.push(UIRequestLocation.urlMatch(request));
     }
     for (const header of request.requestHeaders()) {
       if (headerMatchesQuery(header)) {
-        locations.push(Network.UIRequestLocation.requestHeaderMatch(request, header));
+        locations.push(UIRequestLocation.requestHeaderMatch(request, header));
       }
     }
     for (const header of request.responseHeaders) {
       if (headerMatchesQuery(header)) {
-        locations.push(Network.UIRequestLocation.responseHeaderMatch(request, header));
+        locations.push(UIRequestLocation.responseHeaderMatch(request, header));
       }
     }
     for (const match of bodyMatches) {
-      locations.push(Network.UIRequestLocation.bodyMatch(request, match));
+      locations.push(UIRequestLocation.bodyMatch(request, match));
     }
     progress.worked();
-    return new Network.NetworkSearchResult(request, locations);
+    return new NetworkSearchResult(request, locations);
 
     /**
      * @param {!SDK.NetworkRequest.NameValue} header
@@ -111,14 +116,14 @@ Network.NetworkSearchScope = class {
    */
   stopSearch() {
   }
-};
+}
 
-Network.UIRequestLocation = class {
+export class UIRequestLocation {
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {?SDK.NetworkRequest.NameValue} requestHeader
    * @param {?SDK.NetworkRequest.NameValue} responseHeader
-   * @param {?Common.ContentProvider.SearchMatch} searchMatch
+   * @param {?TextUtils.ContentProvider.SearchMatch} searchMatch
    * @param {boolean} urlMatch
    */
   constructor(request, requestHeader, responseHeader, searchMatch, urlMatch) {
@@ -130,44 +135,44 @@ Network.UIRequestLocation = class {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {?SDK.NetworkRequest.NameValue} header
    */
   static requestHeaderMatch(request, header) {
-    return new Network.UIRequestLocation(request, header, null, null, false);
+    return new UIRequestLocation(request, header, null, null, false);
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {?SDK.NetworkRequest.NameValue} header
    */
   static responseHeaderMatch(request, header) {
-    return new Network.UIRequestLocation(request, null, header, null, false);
+    return new UIRequestLocation(request, null, header, null, false);
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {?Common.ContentProvider.SearchMatch} searchMatch
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {?TextUtils.ContentProvider.SearchMatch} searchMatch
    */
   static bodyMatch(request, searchMatch) {
-    return new Network.UIRequestLocation(request, null, null, searchMatch, false);
+    return new UIRequestLocation(request, null, null, searchMatch, false);
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   static urlMatch(request) {
-    return new Network.UIRequestLocation(request, null, null, null, true);
+    return new UIRequestLocation(request, null, null, null, true);
   }
-};
+}
 
 /**
- * @implements Search.SearchResult
+ * @implements Search.SearchConfig.SearchResult
  */
-Network.NetworkSearchResult = class {
+export class NetworkSearchResult {
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!Array<!Network.UIRequestLocation>} locations
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!Array<!UIRequestLocation>} locations
    */
   constructor(request, locations) {
     this._request = request;
@@ -236,7 +241,7 @@ Network.NetworkSearchResult = class {
   matchLabel(index) {
     const location = this._locations[index];
     if (location.isUrlMatch) {
-      return Common.UIString('URL');
+      return Common.UIString.UIString('URL');
     }
     const header = location.requestHeader || location.responseHeader;
     if (header) {
@@ -244,4 +249,4 @@ Network.NetworkSearchResult = class {
     }
     return location.searchMatch.lineNumber + 1;
   }
-};
+}

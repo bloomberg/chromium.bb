@@ -4,14 +4,18 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 
+#include <tuple>
+
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "net/base/url_util.h"
-#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
-#include "url/url_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -20,8 +24,6 @@ namespace dnr_api = api::declarative_net_request;
 
 namespace {
 
-constexpr const char kSetCookieResponseHeader[] = "set-cookie";
-
 bool ShouldCollapseResourceType(flat_rule::ElementType type) {
   // TODO(crbug.com/848842): Add support for other element types like
   // OBJECT.
@@ -29,15 +31,16 @@ bool ShouldCollapseResourceType(flat_rule::ElementType type) {
          type == flat_rule::ElementType_SUBDOCUMENT;
 }
 
+bool IsUpgradeableUrl(const GURL& url) {
+  return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kFtpScheme);
+}
+
 // Upgrades the url's scheme to HTTPS.
 GURL GetUpgradedUrl(const GURL& url) {
+  DCHECK(IsUpgradeableUrl(url));
   GURL::Replacements replacements;
   replacements.SetSchemeStr(url::kHttpsScheme);
   return url.ReplaceComponents(replacements);
-}
-
-base::StringPiece CreateStringPiece(const ::flatbuffers::String& str) {
-  return base::StringPiece(str.c_str(), str.size());
 }
 
 // Returns true if the given |vec| is nullptr or empty.
@@ -71,7 +74,7 @@ bool GetModifiedQuery(const GURL& url,
   if (!IsEmpty(transform.remove_query_params())) {
     remove_query_params.reserve(transform.remove_query_params()->size());
     for (const ::flatbuffers::String* str : *transform.remove_query_params())
-      remove_query_params.push_back(CreateStringPiece(*str));
+      remove_query_params.push_back(CreateString<base::StringPiece>(*str));
   }
 
   // We don't use a map from keys to vector of values to ensure the relative
@@ -86,8 +89,8 @@ bool GetModifiedQuery(const GURL& url,
       DCHECK(query_pair->key());
       DCHECK(query_pair->value());
       add_or_replace_query_params.emplace_back(
-          CreateStringPiece(*query_pair->key()),
-          CreateStringPiece(*query_pair->value()));
+          CreateString<base::StringPiece>(*query_pair->key()),
+          CreateString<base::StringPiece>(*query_pair->value()));
     }
   }
 
@@ -144,22 +147,23 @@ GURL GetTransformedURL(const RequestParams& params,
   GURL::Replacements replacements;
 
   if (transform.scheme())
-    replacements.SetSchemeStr(CreateStringPiece(*transform.scheme()));
+    replacements.SetSchemeStr(
+        CreateString<base::StringPiece>(*transform.scheme()));
 
   if (transform.host())
-    replacements.SetHostStr(CreateStringPiece(*transform.host()));
+    replacements.SetHostStr(CreateString<base::StringPiece>(*transform.host()));
 
   DCHECK(!(transform.clear_port() && transform.port()));
   if (transform.clear_port())
     replacements.ClearPort();
   else if (transform.port())
-    replacements.SetPortStr(CreateStringPiece(*transform.port()));
+    replacements.SetPortStr(CreateString<base::StringPiece>(*transform.port()));
 
   DCHECK(!(transform.clear_path() && transform.path()));
   if (transform.clear_path())
     replacements.ClearPath();
   else if (transform.path())
-    replacements.SetPathStr(CreateStringPiece(*transform.path()));
+    replacements.SetPathStr(CreateString<base::StringPiece>(*transform.path()));
 
   // |query| is defined outside the if conditions since url::Replacements does
   // not own the strings it uses.
@@ -167,7 +171,8 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_query()) {
     replacements.ClearQuery();
   } else if (transform.query()) {
-    replacements.SetQueryStr(CreateStringPiece(*transform.query()));
+    replacements.SetQueryStr(
+        CreateString<base::StringPiece>(*transform.query()));
   } else if (GetModifiedQuery(*params.url, transform, &query)) {
     replacements.SetQueryStr(query);
   }
@@ -176,55 +181,136 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_fragment())
     replacements.ClearRef();
   else if (transform.fragment())
-    replacements.SetRefStr(CreateStringPiece(*transform.fragment()));
+    replacements.SetRefStr(
+        CreateString<base::StringPiece>(*transform.fragment()));
 
   if (transform.password())
-    replacements.SetPasswordStr(CreateStringPiece(*transform.password()));
+    replacements.SetPasswordStr(
+        CreateString<base::StringPiece>(*transform.password()));
 
   if (transform.username())
-    replacements.SetUsernameStr(CreateStringPiece(*transform.username()));
+    replacements.SetUsernameStr(
+        CreateString<base::StringPiece>(*transform.username()));
 
   return params.url->ReplaceComponents(replacements);
 }
 
 }  // namespace
 
-RulesetMatcherBase::RulesetMatcherBase(
-    const ExtensionId& extension_id,
-    api::declarative_net_request::SourceType source_type)
-    : extension_id_(extension_id), source_type_(source_type) {}
+RulesetMatcherBase::RulesetMatcherBase(const ExtensionId& extension_id,
+                                       RulesetID ruleset_id)
+    : extension_id_(extension_id), ruleset_id_(ruleset_id) {}
 RulesetMatcherBase::~RulesetMatcherBase() = default;
 
-// static
-bool RulesetMatcherBase::IsUpgradeableRequest(const RequestParams& params) {
-  return params.url->SchemeIs(url::kHttpScheme) ||
-         params.url->SchemeIs(url::kFtpScheme);
+base::Optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
+    const RequestParams& params) const {
+  base::Optional<RequestAction> action =
+      GetBeforeRequestActionIgnoringAncestors(params);
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(params.parent_routing_id);
+
+  return GetMaxPriorityAction(std::move(action), std::move(parent_action));
+}
+
+void RulesetMatcherBase::OnRenderFrameCreated(content::RenderFrameHost* host) {
+  DCHECK(host);
+  content::RenderFrameHost* parent = host->GetParent();
+  if (!parent)
+    return;
+
+  // Some frames like srcdoc frames inherit URLLoaderFactories from their
+  // parents and can make network requests before a corresponding navigation
+  // commit for the frame is received in the browser (via DidFinishNavigation).
+  // Hence if the parent frame is allowlisted, we allow list the current frame
+  // as well in OnRenderFrameCreated.
+  content::GlobalFrameRoutingId parent_frame_id(parent->GetProcess()->GetID(),
+                                                parent->GetRoutingID());
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(parent_frame_id);
+  if (!parent_action)
+    return;
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+
+  bool inserted = false;
+  std::tie(std::ignore, inserted) = allowlisted_frames_.insert(
+      std::make_pair(frame_id, std::move(*parent_action)));
+  DCHECK(inserted);
+}
+
+void RulesetMatcherBase::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  DCHECK(host);
+  allowlisted_frames_.erase(content::GlobalFrameRoutingId(
+      host->GetProcess()->GetID(), host->GetRoutingID()));
+}
+
+void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  // Note: we only start tracking frames on navigation, since a document only
+  // issues network requests after the corresponding navigation is committed.
+  // Hence we need not listen to OnRenderFrameCreated.
+  DCHECK(host);
+
+  RequestParams params(host);
+
+  // Find the highest priority allowAllRequests action corresponding to this
+  // frame.
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(params.parent_routing_id);
+  base::Optional<RequestAction> frame_action =
+      GetAllowAllRequestsAction(params);
+  base::Optional<RequestAction> action =
+      GetMaxPriorityAction(std::move(parent_action), std::move(frame_action));
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+
+  allowlisted_frames_.erase(frame_id);
+
+  if (action)
+    allowlisted_frames_.insert(std::make_pair(frame_id, std::move(*action)));
+}
+
+base::Optional<RequestAction>
+RulesetMatcherBase::GetAllowlistedFrameActionForTesting(
+    content::RenderFrameHost* host) const {
+  DCHECK(host);
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+  return GetAllowlistedFrameAction(frame_id);
 }
 
 RequestAction RulesetMatcherBase::CreateBlockOrCollapseRequestAction(
     const RequestParams& params,
     const flat_rule::UrlRule& rule) const {
-  return ShouldCollapseResourceType(params.element_type)
-             ? RequestAction(RequestAction::Type::COLLAPSE, rule.id(),
-                             rule.priority(), source_type(), extension_id())
-             : RequestAction(RequestAction::Type::BLOCK, rule.id(),
-                             rule.priority(), source_type(), extension_id());
+  return CreateRequestAction(ShouldCollapseResourceType(params.element_type)
+                                 ? RequestAction::Type::COLLAPSE
+                                 : RequestAction::Type::BLOCK,
+                             rule);
 }
 
 RequestAction RulesetMatcherBase::CreateAllowAction(
     const RequestParams& params,
-    const url_pattern_index::flat::UrlRule& rule) const {
-  return RequestAction(RequestAction::Type::ALLOW, rule.id(), rule.priority(),
-                       source_type(), extension_id());
+    const flat_rule::UrlRule& rule) const {
+  return CreateRequestAction(RequestAction::Type::ALLOW, rule);
 }
 
-RequestAction RulesetMatcherBase::CreateUpgradeAction(
+RequestAction RulesetMatcherBase::CreateAllowAllRequestsAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule) const {
-  DCHECK(IsUpgradeableRequest(params));
+  return CreateRequestAction(RequestAction::Type::ALLOW_ALL_REQUESTS, rule);
+}
 
-  RequestAction upgrade_action(RequestAction::Type::REDIRECT, rule.id(),
-                               rule.priority(), source_type(), extension_id());
+base::Optional<RequestAction> RulesetMatcherBase::CreateUpgradeAction(
+    const RequestParams& params,
+    const url_pattern_index::flat::UrlRule& rule) const {
+  if (!IsUpgradeableUrl(*params.url)) {
+    // TODO(crbug.com/1033780): this results in counterintuitive behavior.
+    return base::nullopt;
+  }
+  RequestAction upgrade_action =
+      CreateRequestAction(RequestAction::Type::UPGRADE, rule);
   upgrade_action.redirect_url = GetUpgradedUrl(*params.url);
   return upgrade_action;
 }
@@ -234,8 +320,6 @@ RulesetMatcherBase::CreateRedirectActionFromMetadata(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     const ExtensionMetadataList& metadata_list) const {
-  DCHECK_NE(flat_rule::ElementType_WEBSOCKET, params.element_type);
-
   // Find the UrlRuleMetadata corresponding to |rule|. Since |metadata_list| is
   // sorted by rule id, use LookupByKey which binary searches for fast lookup.
   const flat::UrlRuleMetadata* metadata = metadata_list.LookupByKey(rule.id());
@@ -247,7 +331,8 @@ RulesetMatcherBase::CreateRedirectActionFromMetadata(
 
   GURL redirect_url;
   if (metadata->redirect_url())
-    redirect_url = GURL(CreateStringPiece(*metadata->redirect_url()));
+    redirect_url =
+        GURL(CreateString<base::StringPiece>(*metadata->redirect_url()));
   else
     redirect_url = GetTransformedURL(params, *metadata->transform());
 
@@ -264,47 +349,74 @@ base::Optional<RequestAction> RulesetMatcherBase::CreateRedirectAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     GURL redirect_url) const {
+  // Redirecting WebSocket handshake request is prohibited.
+  // TODO(crbug.com/1033780): this results in counterintuitive behavior.
+  if (params.element_type == flat_rule::ElementType_WEBSOCKET)
+    return base::nullopt;
+
   // Prevent a redirect loop where a URL continuously redirects to itself.
   if (!redirect_url.is_valid() || *params.url == redirect_url)
     return base::nullopt;
 
-  RequestAction redirect_action(RequestAction::Type::REDIRECT, rule.id(),
-                                rule.priority(), source_type(), extension_id());
+  RequestAction redirect_action =
+      CreateRequestAction(RequestAction::Type::REDIRECT, rule);
   redirect_action.redirect_url = std::move(redirect_url);
   return redirect_action;
 }
 
-RequestAction RulesetMatcherBase::GetRemoveHeadersActionForMask(
-    const url_pattern_index::flat::UrlRule& rule,
-    uint8_t mask) const {
-  DCHECK(mask);
-  RequestAction action(RequestAction::Type::REMOVE_HEADERS, rule.id(),
-                       rule.priority(), source_type(), extension_id());
+std::vector<RequestAction>
+RulesetMatcherBase::GetModifyHeadersActionsFromMetadata(
+    const RequestParams& params,
+    const std::vector<const url_pattern_index::flat::UrlRule*>& rules,
+    const ExtensionMetadataList& metadata_list) const {
+  using FlatHeaderList = flatbuffers::Vector<flatbuffers::Offset<
+      extensions::declarative_net_request::flat::ModifyHeaderInfo>>;
 
-  for (int header = 0; header <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++header) {
-    switch (header) {
-      case dnr_api::REMOVE_HEADER_TYPE_NONE:
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        if (mask & flat::RemoveHeaderType_cookie) {
-          action.request_headers_to_remove.push_back(
-              net::HttpRequestHeaders::kCookie);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        if (mask & flat::RemoveHeaderType_referer) {
-          action.request_headers_to_remove.push_back(
-              net::HttpRequestHeaders::kReferer);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        if (mask & flat::RemoveHeaderType_set_cookie)
-          action.response_headers_to_remove.push_back(kSetCookieResponseHeader);
-        break;
-    }
+  // Helper method to convert a list of headers from a rule's metadata to a list
+  // of RequestAction::HeaderInfo.
+  auto get_headers_for_action = [](const FlatHeaderList& headers_for_rule) {
+    std::vector<RequestAction::HeaderInfo> headers_for_action;
+    for (const auto* flat_header_info : headers_for_rule)
+      headers_for_action.emplace_back(*flat_header_info);
+
+    return headers_for_action;
+  };
+
+  std::vector<RequestAction> actions;
+  for (const auto* rule : rules) {
+    const flat::UrlRuleMetadata* metadata =
+        metadata_list.LookupByKey(rule->id());
+
+    DCHECK(metadata);
+    DCHECK_EQ(metadata->id(), rule->id());
+
+    RequestAction action =
+        CreateRequestAction(RequestAction::Type::MODIFY_HEADERS, *rule);
+    action.request_headers_to_modify =
+        get_headers_for_action(*metadata->request_headers());
+    action.response_headers_to_modify =
+        get_headers_for_action(*metadata->response_headers());
+
+    actions.push_back(std::move(action));
   }
 
-  return action;
+  return actions;
+}
+
+RequestAction RulesetMatcherBase::CreateRequestAction(
+    RequestAction::Type type,
+    const flat_rule::UrlRule& rule) const {
+  return RequestAction(type, rule.id(), rule.priority(), ruleset_id(),
+                       extension_id());
+}
+
+base::Optional<RequestAction> RulesetMatcherBase::GetAllowlistedFrameAction(
+    content::GlobalFrameRoutingId frame_id) const {
+  auto it = allowlisted_frames_.find(frame_id);
+  if (it == allowlisted_frames_.end())
+    return base::nullopt;
+
+  return it->second.Clone();
 }
 
 }  // namespace declarative_net_request

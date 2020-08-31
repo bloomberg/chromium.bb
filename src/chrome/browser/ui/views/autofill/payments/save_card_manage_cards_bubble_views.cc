@@ -25,7 +25,7 @@ namespace {
 
 std::unique_ptr<views::View> CreateManageCardsButton(
     views::ButtonListener* listener) {
-  auto manage_cards_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto manage_cards_button = views::MdTextButton::Create(
       listener, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
   manage_cards_button->SetID(autofill::DialogViewId::MANAGE_CARDS_BUTTON);
   return manage_cards_button;
@@ -40,9 +40,9 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetExtraView(CreateManageCardsButton(this));
-  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetExtraView(CreateManageCardsButton(this));
+  SetFootnoteView(CreateSigninPromoView());
 }
 
 std::unique_ptr<views::View>

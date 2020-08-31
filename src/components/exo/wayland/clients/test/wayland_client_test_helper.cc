@@ -11,7 +11,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/ash_test_views_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
@@ -22,7 +21,6 @@
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_core_switches.h"
 
@@ -107,21 +105,7 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
 
   ash_test_helper_ = std::make_unique<ash::AshTestHelper>();
-  ash::AshTestHelper::InitParams init_params;
-  ash_test_helper_->SetUp(init_params);
-  ash::Shell::GetPrimaryRootWindow()->Show();
-  ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
-  ash::Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  ash::Shell::Get()->cursor_manager()->EnableMouseEvents();
-
-  // Changing GestureConfiguration shouldn't make tests fail. These values
-  // prevent unexpected events from being generated during tests. Such as
-  // delayed events which create race conditions on slower tests.
-  ui::GestureConfiguration* gesture_config =
-      ui::GestureConfiguration::GetInstance();
-  gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
-  gesture_config->set_long_press_time_in_ms(1000);
-  gesture_config->set_max_touch_move_in_pixels_for_click(5);
+  ash_test_helper_->SetUp();
 
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
   WMHelper::SetInstance(wm_helper_.get());
@@ -140,8 +124,7 @@ void WaylandClientTestHelper::TearDownOnUIThread(base::WaitableEvent* event) {
   wm_helper_.reset();
 
   ash::Shell::Get()->session_controller()->NotifyChromeTerminating();
-  ash_test_helper_->TearDown();
-  ash_test_helper_ = nullptr;
+  ash_test_helper_.reset();
   xdg_temp_dir_ = nullptr;
   event->Signal();
 }

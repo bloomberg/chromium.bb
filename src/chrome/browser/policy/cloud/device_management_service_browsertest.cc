@@ -20,6 +20,7 @@
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
@@ -142,7 +143,7 @@ class DeviceManagementServiceIntegrationTest
             oauth_token, GetFactory(),
             base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                        base::Unretained(this)),
-            base::DoNothing());
+            base::DoNothing(), base::DoNothing());
     config->SetRequestPayload(payload);
     return service_->CreateJob(std::move(config));
   }
@@ -275,23 +276,6 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   std::unique_ptr<DeviceManagementService::Job> job =
       StartJob(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
                false, DMAuth::NoAuth(), "", request);
-
-  run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
-                       AppInstallReport) {
-  PerformRegistration();
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-
-  em::DeviceManagementRequest request;
-  request.mutable_app_install_report_request();
-  std::unique_ptr<DeviceManagementService::Job> job = StartJob(
-      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_APP_INSTALL_REPORT,
-      false, DMAuth::FromDMToken(token_), "", request);
 
   run_loop.Run();
 }

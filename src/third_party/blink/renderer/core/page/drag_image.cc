@@ -109,9 +109,10 @@ std::unique_ptr<DragImage> DragImage::Create(
     return nullptr;
 
   ImageOrientation orientation;
+  auto* bitmap_image = DynamicTo<BitmapImage>(image);
   if (should_respect_image_orientation == kRespectImageOrientation &&
-      image->IsBitmapImage())
-    orientation = ToBitmapImage(image)->CurrentFrameOrientation();
+      bitmap_image)
+    orientation = bitmap_image->CurrentFrameOrientation();
 
   SkBitmap bm;
   paint_image = Image::ResizeAndOrientImage(
@@ -131,7 +132,6 @@ static Font DeriveDragLabelFont(int size,
   description.SetSpecifiedSize(size);
   description.SetComputedSize(size);
   Font result(description);
-  result.Update(nullptr);
   return result;
 }
 
@@ -203,14 +203,8 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
   scaled_image_size.Scale(device_scale_factor);
   // TODO(fserb): are we sure this should be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider(
-      CanvasResourceProvider::Create(
-          scaled_image_size,
-          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-          nullptr,  // context_provider_wrapper
-          0,        // msaa_sample_count
-          kLow_SkFilterQuality, CanvasColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr));  // canvas_resource_dispatcher
+      CanvasResourceProvider::CreateBitmapProvider(
+          scaled_image_size, kLow_SkFilterQuality, CanvasColorParams()));
   if (!resource_provider)
     return nullptr;
 
@@ -265,7 +259,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
                           text_paint);
 
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-  return DragImage::Create(image.get(), kDoNotRespectImageOrientation,
+  return DragImage::Create(image.get(), kRespectImageOrientation,
                            device_scale_factor);
 }
 

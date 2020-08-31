@@ -14,9 +14,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Supplier;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -159,19 +159,22 @@ public class StartupTabPreloaderUnitTest {
 
     private StartupTabPreloader createStartupTabPreloader(
             Intent intent, TabCreatorManager tabCreatorManager) {
-        return new StartupTabPreloader(new Supplier<Intent>() {
-            @Override
-            public Intent get() {
-                return intent;
-            }
-        }, new ActivityLifecycleDispatcherImpl(), null, tabCreatorManager);
+        return new StartupTabPreloader(
+                new Supplier<Intent>() {
+                    @Override
+                    public Intent get() {
+                        return intent;
+                    }
+                },
+                new ActivityLifecycleDispatcherImpl(), null, tabCreatorManager,
+                new IntentHandler(null, null));
     }
 
     private static class ChromeTabCreatorManager implements TabCreatorManager {
         @Override
         public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
             Assert.assertFalse(incognito);
-            return new ChromeTabCreator(null, null, null, null, false);
+            return new ChromeTabCreator(null, null, null, null, false, null);
         }
     }
 

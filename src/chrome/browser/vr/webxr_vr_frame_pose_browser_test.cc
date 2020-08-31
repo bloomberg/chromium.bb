@@ -161,7 +161,6 @@ std::string GetPoseAsString(const Frame& frame) {
 
 }  // namespace
 
-// TODO(crbug.com/986621) - OpenXR currently hard codes data
 // Pixel test for WebXR - start presentation, submit frames, get data back out.
 // Validates that submitted frames used expected pose.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {
@@ -170,8 +169,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {
   MyXRMock my_mock;
 
   // Load the test page, and enter presentation.
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_poses"));
+  t->LoadFileAndAwaitInitialization("test_webxr_poses");
   ASSERT_TRUE(
       t->RunJavaScriptAndExtractBoolOrFail("checkMagicWindowViewOffset()"))
       << "view under Magic Window should not have any offset from frame";

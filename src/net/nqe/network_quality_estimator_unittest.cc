@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/optional.h"
@@ -271,12 +271,6 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   histogram_tester.ExpectUniqueSample(
       "NQE.MainFrame.EffectiveConnectionType",
       EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, 1);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.RTT", 0,
-                                      1);
-  histogram_tester.ExpectUniqueSample(
-      "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 1);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.Kbps", 0,
-                                      1);
   EXPECT_LE(1u,
             histogram_tester.GetAllSamples("NQE.RTT.OnECTComputation").size());
   EXPECT_LE(1u,
@@ -286,7 +280,6 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       "NQE.RTT.ObservationSource", NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, 1);
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource", NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, 1);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.Http", 1);
 
   std::unique_ptr<URLRequest> request2(
       context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
@@ -295,12 +288,6 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   request2->Start();
   test_delegate.RunUntilComplete();
   histogram_tester.ExpectTotalCount("NQE.MainFrame.EffectiveConnectionType", 2);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.RTT", 1,
-                                     1);
-  histogram_tester.ExpectUniqueSample(
-      "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 2);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.Kbps", 1,
-                                     1);
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
@@ -339,16 +326,6 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       "NQE.MainFrame.EffectiveConnectionType",
       EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, 2);
   histogram_tester.ExpectTotalCount("NQE.MainFrame.EffectiveConnectionType", 3);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.RTT", 0,
-                                     2);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.RTT", 1,
-                                     1);
-  histogram_tester.ExpectUniqueSample(
-      "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 3);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.Kbps", 0,
-                                     2);
-  histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.Kbps", 1,
-                                     1);
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
@@ -453,8 +430,6 @@ TEST_F(NetworkQualityEstimatorTest, Caching) {
     histogram_tester.ExpectBucketCount(
         "NQE.Kbps.ObservationSource",
         NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE, 1);
-    histogram_tester.ExpectTotalCount(
-        "NQE.Kbps.RawObservation.HttpCachedEstimate", 1);
 
     // Verify the contents of the net log.
     EXPECT_LE(
@@ -793,11 +768,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservations) {
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource",
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM, 1);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.HttpPlatform", 1);
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 2);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.HttpPlatform", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.TransportPlatform",
-                                    1);
   histogram_tester.ExpectTotalCount("NQE.Kbps.ObservationSource", 1);
 
   // Default observations should be added on connection change.
@@ -812,11 +783,7 @@ TEST_F(NetworkQualityEstimatorTest, DefaultObservations) {
   histogram_tester.ExpectBucketCount(
       "NQE.Kbps.ObservationSource",
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM, 2);
-  histogram_tester.ExpectTotalCount("NQE.Kbps.RawObservation.HttpPlatform", 2);
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 4);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.HttpPlatform", 2);
-  histogram_tester.ExpectTotalCount("NQE.RTT.RawObservation.TransportPlatform",
-                                    2);
   histogram_tester.ExpectTotalCount("NQE.Kbps.ObservationSource", 2);
 
   base::TimeDelta rtt;
@@ -1903,12 +1870,6 @@ TEST_F(NetworkQualityEstimatorTest,
   EXPECT_EQ(1U, observer.effective_connection_types().size());
   histogram_tester.ExpectUniqueSample("NQE.MainFrame.EffectiveConnectionType",
                                       EFFECTIVE_CONNECTION_TYPE_2G, 1);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.RTT", 0,
-                                      1);
-  histogram_tester.ExpectUniqueSample(
-      "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 1);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.Kbps", 0,
-                                      1);
   EXPECT_LE(1u,
             histogram_tester
                 .GetAllSamples("NQE.EffectiveConnectionType.OnECTComputation")
@@ -2243,12 +2204,6 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   // Verify that metrics are logged correctly on main-frame requests.
   histogram_tester.ExpectTotalCount("NQE.MainFrame.TransportRTT.Percentile50",
                                     num_requests);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.RTT", 1,
-                                      num_requests);
-  histogram_tester.ExpectUniqueSample(
-      "NQE.EstimateAvailable.MainFrame.TransportRTT", 1, num_requests);
-  histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.Kbps", 1,
-                                      num_requests);
 
   histogram_tester.ExpectTotalCount("NQE.MainFrame.EffectiveConnectionType",
                                     num_requests);
@@ -3094,6 +3049,97 @@ TEST_F(NetworkQualityEstimatorTest, TestPeerToPeerConnectionsCountObserver) {
   estimator.OnPeerToPeerConnectionsCountChange(3u);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, observer.count());
+}
+
+// Tests that the signal strength API is not called too frequently.
+TEST_F(NetworkQualityEstimatorTest, CheckSignalStrength) {
+  std::map<std::string, std::string> variation_params;
+  variation_params["get_signal_strength_and_detailed_network_id"] = "true";
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+
+  estimator.SetTickClockForTesting(&tick_clock);
+
+  base::Optional<int32_t> signal_strength =
+      estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Advance clock by 30 seconds. The signal strength API should now be called.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(30));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  // Calling it again should return no value.
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromSeconds(27));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Move the clock by another 4 seconds. Since it's more than 30 seconds since
+  // the strength was last available, it should be available again.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(4));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Changing the connection type should make the signal strength available
+  // again.
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+}
+
+TEST_F(NetworkQualityEstimatorTest, CheckSignalStrengthDisabledByDefault) {
+  TestNetworkQualityEstimator estimator;
+
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+
+  estimator.SetTickClockForTesting(&tick_clock);
+
+  base::Optional<int32_t> signal_strength =
+      estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Advance clock by 60 seconds. The signal strength API should NOT be called.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(60));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Changing the connection type should NOT make the signal strength available
+  // again.
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
 }
 
 }  // namespace net

@@ -16,8 +16,8 @@
 # The name of artifact to stage a full update payload.
 FULL_PAYLOAD = 'full_payload'
 
-# The name of the artifact to stage all delta payloads for a build.
-DELTA_PAYLOADS = 'delta_payloads'
+# The name of the artifact to stage N-to-N payloads for a build.
+DELTA_PAYLOAD = 'delta_payload'
 
 # The payload containing stateful data not stored on the rootfs of the image.
 STATEFUL_PAYLOAD = 'stateful'

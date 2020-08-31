@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -101,7 +103,7 @@ static bool MatchesTagName(const Element& element,
   const AtomicString& local_name = tag_q_name.LocalName();
   if (local_name != CSSSelector::UniversalSelectorAtom() &&
       local_name != element.localName()) {
-    if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+    if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
       return false;
     // Non-html elements in html documents are normalized to their camel-cased
     // version during parsing if applicable. Yet, type selectors are lower-cased
@@ -132,7 +134,7 @@ static bool MatchesTagNameForVTT(
 
   if (local_name != CSSSelector::UniversalSelectorAtom() &&
       local_name != element.localName()) {
-    if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+    if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
       return false;
 
     // Non-html elements in html documents are normalized to their camel-cased
@@ -619,7 +621,6 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
           return MatchSelector(next_context, result);
       }
       return kSelectorFailsCompletely;
-      break;
     case CSSSelector::kSubSelector:
       break;
   }
@@ -773,7 +774,7 @@ static bool AnyAttributeMatches(Element& element,
   AttributeCollection attributes = element.AttributesWithoutUpdate();
   for (const auto& attribute_item : attributes) {
     if (!attribute_item.Matches(selector_attr)) {
-      if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
+      if (element.IsHTMLElement() || !IsA<HTMLDocument>(element.GetDocument()))
         continue;
       // Non-html attributes in html documents are normalized to their camel-
       // cased version during parsing if applicable. Yet, attribute selectors
@@ -798,7 +799,7 @@ static bool AnyAttributeMatches(Element& element,
     // a case-insensitive manner regardless of whether the case insensitive
     // flag is set or not.
     bool legacy_case_insensitive =
-        element.GetDocument().IsHTMLDocument() &&
+        IsA<HTMLDocument>(element.GetDocument()) &&
         !HTMLDocument::IsCaseSensitiveAttribute(selector_attr);
 
     // If case-insensitive, re-check, and count if result differs.
@@ -1249,11 +1250,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoVideoPersistentAncestor:
       DCHECK(is_ua_rule_);
       return element.ContainsPersistentVideo();
-    case CSSSelector::kPseudoXrImmersiveDomOverlay:
-      DCHECK(is_ua_rule_);
-      // In immersive AR overlay mode, apply a pseudostyle to the root element.
-      return element.GetDocument().IsImmersiveArOverlay() &&
-             element == element.GetDocument().documentElement();
+    case CSSSelector::kPseudoXrOverlay:
+      // In immersive AR overlay mode, apply a pseudostyle to the DOM Overlay
+      // element. This is the same as the fullscreen element in the current
+      // implementation, but could be different for AR headsets.
+      return element.GetDocument().IsXrOverlay() &&
+             Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoInRange:
       return element.IsInRange();
     case CSSSelector::kPseudoOutOfRange:
@@ -1271,7 +1273,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
-      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope.Get()))
+      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope))
         return element == shadow_root->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
@@ -1295,7 +1297,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return MatchesSpatialNavigationInterestPseudoClass(element);
     case CSSSelector::kPseudoIsHtml:
       DCHECK(is_ua_rule_);
-      return element.GetDocument().IsHTMLDocument();
+      return IsA<HTMLDocument>(element.GetDocument());
     case CSSSelector::kPseudoListBox:
       DCHECK(is_ua_rule_);
       return MatchesListBoxPseudoClass(element);
@@ -1366,7 +1368,6 @@ bool SelectorChecker::CheckPseudoClassForVTT(
       return false;
     default:
       return CheckPseudoClass(context, result);
-      break;
   }
   return false;
 }
@@ -1394,7 +1395,11 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
     }
     case CSSSelector::kPseudoPart:
       DCHECK(part_names_);
-      return part_names_->Contains(selector.Argument());
+      for (const auto& part_name : *selector.PartNames()) {
+        if (!part_names_->Contains(part_name))
+          return false;
+      }
+      return true;
     case CSSSelector::kPseudoPlaceholder:
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
         return root->IsUserAgent() &&
@@ -1611,42 +1616,21 @@ bool SelectorChecker::CheckScrollbarPseudoClass(
       return scrollbar_part_ == kBackButtonEndPart ||
              scrollbar_part_ == kForwardButtonEndPart ||
              scrollbar_part_ == kForwardTrackPart;
-    case CSSSelector::kPseudoDoubleButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackButtonStartPart ||
-          scrollbar_part_ == kForwardButtonStartPart ||
-          scrollbar_part_ == kBackTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementDoubleStart ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth;
-      if (scrollbar_part_ == kBackButtonEndPart ||
-          scrollbar_part_ == kForwardButtonEndPart ||
-          scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleBoth;
+    case CSSSelector::kPseudoDoubleButton:
+      // :double-button matches nothing on all platforms.
       return false;
-    }
-    case CSSSelector::kPseudoSingleButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackButtonStartPart ||
-          scrollbar_part_ == kForwardButtonEndPart ||
-          scrollbar_part_ == kBackTrackPart ||
-          scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementSingle;
-      return false;
-    }
-    case CSSSelector::kPseudoNoButton: {
-      WebScrollbarButtonsPlacement buttons_placement =
-          scrollbar_->GetTheme().ButtonsPlacement();
-      if (scrollbar_part_ == kBackTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementNone ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleEnd;
-      if (scrollbar_part_ == kForwardTrackPart)
-        return buttons_placement == kWebScrollbarButtonsPlacementNone ||
-               buttons_placement == kWebScrollbarButtonsPlacementDoubleStart;
-      return false;
-    }
+    case CSSSelector::kPseudoSingleButton:
+      if (!scrollbar_->GetTheme().NativeThemeHasButtons())
+        return false;
+      return scrollbar_part_ == kBackButtonStartPart ||
+             scrollbar_part_ == kForwardButtonEndPart ||
+             scrollbar_part_ == kBackTrackPart ||
+             scrollbar_part_ == kForwardTrackPart;
+    case CSSSelector::kPseudoNoButton:
+      if (scrollbar_->GetTheme().NativeThemeHasButtons())
+        return false;
+      return scrollbar_part_ == kBackTrackPart ||
+             scrollbar_part_ == kForwardTrackPart;
     case CSSSelector::kPseudoCornerPresent:
       return scrollbar_->GetScrollableArea() &&
              scrollbar_->GetScrollableArea()->IsScrollCornerVisible();
@@ -1676,15 +1660,17 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
     return false;
 
   const Document& document = element.GetDocument();
-  bool always_show_focus_ring = element.MayTriggerVirtualKeyboard();
+  const Settings* settings = document.GetSettings();
+  bool always_show_focus = settings->GetAccessibilityAlwaysShowFocus();
+  bool is_text_input = element.MayTriggerVirtualKeyboard();
   bool last_focus_from_mouse =
       document.GetFrame() &&
       document.GetFrame()->Selection().FrameIsFocusedAndActive() &&
-      document.LastFocusType() == kWebFocusTypeMouse;
+      document.LastFocusType() == mojom::blink::FocusType::kMouse;
   bool had_keyboard_event = document.HadKeyboardEvent();
 
-  return (!last_focus_from_mouse || had_keyboard_event ||
-          always_show_focus_ring);
+  return (always_show_focus || is_text_input || !last_focus_from_mouse ||
+          had_keyboard_event);
 }
 
 // static

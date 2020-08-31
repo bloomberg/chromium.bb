@@ -21,6 +21,8 @@ namespace web {
 
 // Current URL (std::string).
 extern NSString* const kNavigationItemStorageURLKey;
+// Current URL (std::string).
+extern NSString* const kNavigationItemStorageVirtualURLKey;
 // Page referrer URL (std::string).
 extern NSString* const kNavigationItemStorageReferrerURLKey;
 // Page referrer URL (NSURL). Deprecated, used for backward compatibility.
@@ -44,12 +46,23 @@ extern NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey;
 // The user agent type (std::string).
 extern NSString* const kNavigationItemStorageUserAgentTypeKey;
 
+// Constants for histogram names.
+extern const char kNavigationItemSerializedSizeHistogram[];
+extern const char kNavigationItemSerializedVirtualURLSizeHistogram[];
+extern const char kNavigationItemSerializedURLSizeHistogram[];
+extern const char kNavigationItemSerializedReferrerURLSizeHistogram[];
+extern const char kNavigationItemSerializedTitleSizeHistogram[];
+extern const char kNavigationItemSerializedDisplayStateSizeHistogram[];
+extern const char kNavigationItemSerializedPostDataSizeHistogram[];
+extern const char kNavigationItemSerializedRequestHeadersSizeHistogram[];
+
 }  // namespace web
 
 // NSCoding-compliant class used to serialize NavigationItem's persisted
 // properties.
 @interface CRWNavigationItemStorage : NSObject <NSCoding>
 
+@property(nonatomic, assign) GURL URL;
 @property(nonatomic, assign) GURL virtualURL;
 @property(nonatomic, assign) web::Referrer referrer;
 @property(nonatomic, assign) base::Time timestamp;

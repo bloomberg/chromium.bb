@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.design.widget.TabLayout;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.appcompat.content.res.AppCompatResources;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -45,10 +47,10 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
     public IncognitoToggleTabLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mTabIconDarkColor =
-                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
-        mTabIconSelectedDarkColor =
-                AppCompatResources.getColorStateList(getContext(), R.color.light_active_color);
+        mTabIconDarkColor = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_tint_list);
+        mTabIconSelectedDarkColor = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_control_color_active);
         mTabIconLightColor =
                 AppCompatResources.getColorStateList(getContext(), R.color.white_alpha_70);
         mTabIconSelectedLightColor =

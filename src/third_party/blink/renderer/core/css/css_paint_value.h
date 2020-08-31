@@ -20,6 +20,7 @@ namespace blink {
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
   explicit CSSPaintValue(CSSCustomIdentValue* name);
+  CSSPaintValue(CSSCustomIdentValue* name, bool threaded_compositing_enabled);
   CSSPaintValue(CSSCustomIdentValue* name,
                 Vector<scoped_refptr<CSSVariableData>>&);
   ~CSSPaintValue();
@@ -65,10 +66,12 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   bool IsUsingCustomProperty(const AtomicString& custom_property_name,
                              const Document&) const;
 
-  void CreateGeneratorForTesting(const Document& document);
+  void CreateGeneratorForTesting(const Document& document) {
+    EnsureGenerator(document);
+  }
   unsigned NumberOfGeneratorsForTesting() const { return generators_.size(); }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   class Observer final : public CSSPaintImageGenerator::Observer {
@@ -76,7 +79,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}
 
     ~Observer() override = default;
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       visitor->Trace(owner_value_);
       CSSPaintImageGenerator::Observer::Trace(visitor);
     }
@@ -88,6 +91,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
+  CSSPaintImageGenerator& EnsureGenerator(const Document&);
   void PaintImageGeneratorReady();
 
   bool ParseInputArguments(const Document&);

@@ -53,7 +53,7 @@ class CPDF_Parser {
   // are non-consecutive.
   static constexpr uint32_t kMaxObjectNumber = 4 * 1024 * 1024;
 
-  static const size_t kInvalidPos = std::numeric_limits<size_t>::max();
+  static constexpr size_t kInvalidPos = std::numeric_limits<size_t>::max();
 
   explicit CPDF_Parser(ParsedObjectsHolder* holder);
   CPDF_Parser();
@@ -67,7 +67,12 @@ class CPDF_Parser {
   void SetPassword(const char* password) { m_Password = password; }
   ByteString GetPassword() const { return m_Password; }
 
+  // Take the GetPassword() value and encode it, if necessary, based on the
+  // password encoding conversion.
+  ByteString GetEncodedPassword() const;
+
   const CPDF_Dictionary* GetTrailer() const;
+  CPDF_Dictionary* GetMutableTrailerForTesting();
 
   // Returns a new trailer which combines the last read trailer with the /Root
   // and /Info from previous ones.
@@ -88,7 +93,6 @@ class CPDF_Parser {
   uint32_t GetLastObjNum() const;
   bool IsValidObjectNumber(uint32_t objnum) const;
   FX_FILESIZE GetObjectPositionOrZero(uint32_t objnum) const;
-  uint16_t GetObjectGenNum(uint32_t objnum) const;
   bool IsObjectFreeOrNull(uint32_t objnum) const;
   const RetainPtr<CPDF_SecurityHandler>& GetSecurityHandler() const {
     return m_pSecurityHandler;
@@ -114,7 +118,8 @@ class CPDF_Parser {
 
   CPDF_SyntaxParser* GetSyntax() const { return m_pSyntax.get(); }
 
-  void SetLinearizedHeader(std::unique_ptr<CPDF_LinearizedHeader> pLinearized);
+  void SetLinearizedHeaderForTesting(
+      std::unique_ptr<CPDF_LinearizedHeader> pLinearized);
 
  protected:
   using ObjectType = CPDF_CrossRefTable::ObjectType;

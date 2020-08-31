@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/shell_integration_linux.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_linux.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,7 +36,7 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   // windows and e.g app windows.
   const Browser& browser = *browser_view()->browser();
   params.wm_class_name =
-      browser.is_type_app()
+      (browser.is_type_app() || browser.is_type_app_popup())
           ? shell_integration_linux::GetWMClassFromAppName(browser.app_name())
           // This window is a hosted app or v1 packaged app.
           // NOTE: v2 packaged app windows are created by
@@ -65,6 +66,10 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
     return true;
 
   return false;
+}
+
+void DesktopBrowserFrameAuraLinux::TabDraggingStatusChanged(bool is_dragging) {
+  host_->TabDraggingStatusChanged(is_dragging);
 }
 
 void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {

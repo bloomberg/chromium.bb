@@ -20,15 +20,17 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
+#include "chrome/browser/supervised_user/supervised_user_blacklist.h"
 #include "chrome/common/chrome_features.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
-#include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -215,9 +217,8 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
-      blocking_task_runner_(base::CreateTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      blocking_task_runner_(base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
@@ -245,8 +246,21 @@ bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
 bool SupervisedUserURLFilter::HostMatchesPattern(
     const std::string& canonical_host,
     const std::string& pattern) {
-  std::string trimmed_pattern = pattern;
+  // If |canonical_host| starts with |www.| but |pattern| starts with neither
+  // |www.| nor |*.| then trim |www.| part of canonical host.
+  bool is_host_www =
+      base::StartsWith(canonical_host, "www.", base::CompareCase::SENSITIVE);
+  bool patern_accepts =
+      base::StartsWith(pattern, "www.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(pattern, "*.", base::CompareCase::SENSITIVE);
+
   std::string trimmed_host = canonical_host;
+  if (is_host_www && !patern_accepts) {
+    trimmed_host = base::UTF16ToASCII(
+        url_formatter::StripWWW(base::ASCIIToUTF16(canonical_host)));
+  }
+
+  std::string trimmed_pattern = pattern;
   if (base::EndsWith(pattern, ".*", base::CompareCase::SENSITIVE)) {
     size_t registry_length = GetCanonicalHostRegistryLength(
         trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);
@@ -377,6 +391,15 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     return BLOCK;
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // The user requested the Chrome Webstore, and it
+  // hasn't specifically been blocked above, so allow.
+  if (policy::url_util::Normalize(effective_url).host() ==
+      extension_urls::GetWebstoreLaunchURL().host()) {
+    return ALLOW;
+  }
+#endif
+
   // Fall back to the default behavior.
   *reason = supervised_user_error_page::DEFAULT;
   return default_behavior_;
@@ -484,9 +507,9 @@ void SupervisedUserURLFilter::LoadWhitelists(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&LoadWhitelistsAsyncThread, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LoadWhitelistsAsyncThread, site_lists),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetBlacklist(
@@ -504,9 +527,9 @@ void SupervisedUserURLFilter::SetFromPatternsForTesting(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateWhitelistFromPatternsForTesting, patterns),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateWhitelistFromPatternsForTesting, patterns),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetFromSiteListsForTesting(
@@ -515,9 +538,9 @@ void SupervisedUserURLFilter::SetFromSiteListsForTesting(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateWhitelistsFromSiteListsForTesting, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateWhitelistsFromSiteListsForTesting, site_lists),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetManualHosts(
@@ -542,40 +565,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
       country = variations_service->GetLatestCountry();
   }
 
-  std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client;
-
-  if ((base::FeatureList::IsEnabled(
-          features::kKidsManagementUrlClassification))) {
-    url_checker_client =
-        std::make_unique<KidsManagementURLCheckerClient>(country);
-  } else {
-    // TODO(crbug.com/940454): remove safe_search_checker
-    net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("supervised_user_url_filter", R"(
-        semantics {
-          sender: "Supervised Users"
-          description:
-            "Checks whether a given URL (or set of URLs) is considered safe by "
-            "Google SafeSearch."
-          trigger:
-            "If the parent enabled this feature for the child account, this is "
-            "sent for every navigation."
-          data: "URL(s) to be checked."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "This feature is only used in child accounts and cannot be "
-            "disabled by settings. Parent accounts can disable it in the "
-            "family dashboard."
-          policy_exception_justification: "Not implemented."
-        })");
-    url_checker_client =
-        std::make_unique<safe_search_api::SafeSearchURLCheckerClient>(
-            std::move(url_loader_factory), traffic_annotation, country);
-  }
-
+  std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client =
+      std::make_unique<KidsManagementURLCheckerClient>(country);
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
       std::move(url_checker_client));
 }

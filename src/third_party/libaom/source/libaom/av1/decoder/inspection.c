@@ -36,16 +36,18 @@ void ifd_clear(insp_frame_data *fd) {
 int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
   struct AV1Decoder *pbi = (struct AV1Decoder *)decoder;
   AV1_COMMON *const cm = &pbi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const CommonQuantParams *quant_params = &cm->quant_params;
 
-  if (fd->mi_rows != cm->mi_rows || fd->mi_cols != cm->mi_cols) {
+  if (fd->mi_rows != mi_params->mi_rows || fd->mi_cols != mi_params->mi_cols) {
     ifd_clear(fd);
-    ifd_init_mi_rc(fd, cm->mi_rows, cm->mi_cols);
+    ifd_init_mi_rc(fd, mi_params->mi_rows, mi_params->mi_cols);
   }
   fd->show_existing_frame = cm->show_existing_frame;
   fd->frame_number = cm->current_frame.frame_number;
   fd->show_frame = cm->show_frame;
   fd->frame_type = cm->current_frame.frame_type;
-  fd->base_qindex = cm->base_qindex;
+  fd->base_qindex = quant_params->base_qindex;
   // Set width and height of the first tile until generic support can be added
   TileInfo tile_info;
   av1_tile_set_row(&tile_info, cm, 0);
@@ -61,15 +63,16 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
   int i, j;
   for (i = 0; i < MAX_SEGMENTS; i++) {
     for (j = 0; j < 2; j++) {
-      fd->y_dequant[i][j] = cm->y_dequant_QTX[i][j];
-      fd->u_dequant[i][j] = cm->u_dequant_QTX[i][j];
-      fd->v_dequant[i][j] = cm->v_dequant_QTX[i][j];
+      fd->y_dequant[i][j] = quant_params->y_dequant_QTX[i][j];
+      fd->u_dequant[i][j] = quant_params->u_dequant_QTX[i][j];
+      fd->v_dequant[i][j] = quant_params->v_dequant_QTX[i][j];
     }
   }
-  for (j = 0; j < cm->mi_rows; j++) {
-    for (i = 0; i < cm->mi_cols; i++) {
-      const MB_MODE_INFO *mbmi = cm->mi_grid_visible[j * cm->mi_stride + i];
-      insp_mi_data *mi = &fd->mi_grid[j * cm->mi_cols + i];
+  for (j = 0; j < mi_params->mi_rows; j++) {
+    for (i = 0; i < mi_params->mi_cols; i++) {
+      const MB_MODE_INFO *mbmi =
+          mi_params->mi_grid_base[j * mi_params->mi_stride + i];
+      insp_mi_data *mi = &fd->mi_grid[j * mi_params->mi_cols + i];
       // Segment
       mi->segment_id = mbmi->segment_id;
       // Motion Vectors
@@ -82,6 +85,9 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       mi->ref_frame[1] = mbmi->ref_frame[1];
       // Prediction Mode
       mi->mode = mbmi->mode;
+      mi->intrabc = (int16_t)mbmi->use_intrabc;
+      mi->palette = (int16_t)mbmi->palette_mode_info.palette_size[0];
+      mi->uv_palette = (int16_t)mbmi->palette_mode_info.palette_size[1];
       // Prediction Mode for Chromatic planes
       if (mi->mode < INTRA_MODES) {
         mi->uv_mode = mbmi->uv_mode;
@@ -95,7 +101,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       // Block Size
       mi->sb_type = mbmi->sb_type;
       // Skip Flag
-      mi->skip = mbmi->skip;
+      mi->skip = mbmi->skip_txfm;
       mi->filter[0] = av1_extract_interp_filter(mbmi->interp_filters, 0);
       mi->filter[1] = av1_extract_interp_filter(mbmi->interp_filters, 1);
       mi->dual_filter_type = mi->filter[0] * 3 + mi->filter[1];
@@ -113,8 +119,16 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
 
       if (skip_not_transform && mi->skip) mi->tx_size = -1;
 
-      mi->tx_type =
-          (mi->skip ? 0 : mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)]);
+      if (mi->skip) {
+        const int tx_type_row = j - j % tx_size_high_unit[mi->tx_size];
+        const int tx_type_col = i - i % tx_size_wide_unit[mi->tx_size];
+        const int tx_type_map_idx =
+            tx_type_row * mi_params->mi_stride + tx_type_col;
+        mi->tx_type = mi_params->tx_type_map[tx_type_map_idx];
+      } else {
+        mi->tx_type = 0;
+      }
+
       if (skip_not_transform &&
           (mi->skip || mbmi->tx_skip[av1_get_txk_type_index(bsize, r, c)]))
         mi->tx_type = -1;

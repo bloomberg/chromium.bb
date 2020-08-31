@@ -4,9 +4,10 @@
 
 #include "ui/gfx/icon_util.h"
 
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/resource_util.h"
@@ -523,18 +524,15 @@ bool IconUtil::CreateIconFileFromImageFamily(
   DCHECK_EQ(offset, buffer_size);
 
   if (write_type == NORMAL_WRITE) {
-    auto saved_size =
-        base::WriteFile(icon_path, reinterpret_cast<const char*>(&buffer[0]),
-                        static_cast<int>(buffer.size()));
-    if (saved_size == static_cast<int>(buffer.size()))
+    if (base::WriteFile(icon_path, buffer))
       return true;
     bool delete_success = base::DeleteFile(icon_path, false);
     DCHECK(delete_success);
     return false;
-  } else {
-    std::string data(buffer.begin(), buffer.end());
-    return base::ImportantFileWriter::WriteFileAtomically(icon_path, data);
   }
+
+  std::string data(buffer.begin(), buffer.end());
+  return base::ImportantFileWriter::WriteFileAtomically(icon_path, data);
 }
 
 bool IconUtil::PixelsHaveAlpha(const uint32_t* pixels, size_t num_pixels) {

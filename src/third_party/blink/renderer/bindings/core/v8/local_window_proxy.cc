@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
-#include "third_party/blink/public/common/features.h"
+#include "base/debug/dump_without_crashing.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -60,8 +60,8 @@
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
 #include "v8/include/v8.h"
@@ -74,34 +74,13 @@ constexpr char kGlobalProxyLabel[] = "WindowProxy::global_proxy_";
 
 }  // namespace
 
-void LocalWindowProxy::Trace(blink::Visitor* visitor) {
+void LocalWindowProxy::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   WindowProxy::Trace(visitor);
 }
 
-bool LocalWindowProxy::IsSetDetachedWindowReasonEnabled(
-    v8::Context::DetachedWindowReason reason) {
-  switch (reason) {
-    case v8::Context::DetachedWindowReason::kWindowNotDetached:
-      // This shouldn't happen, but if it does, it's always safe to clear the
-      // reason.
-      return true;
-    case v8::Context::DetachedWindowReason::kDetachedWindowByNavigation:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByNavigation);
-    case v8::Context::DetachedWindowReason::kDetachedWindowByClosing:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByClosing);
-    case v8::Context::DetachedWindowReason::kDetachedWindowByOtherReason:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByOtherReason);
-  }
-}
-
-void LocalWindowProxy::DisposeContext(
-    Lifecycle next_status,
-    FrameReuseStatus frame_reuse_status,
-    v8::Context::DetachedWindowReason reason) {
+void LocalWindowProxy::DisposeContext(Lifecycle next_status,
+                                      FrameReuseStatus frame_reuse_status) {
   DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached ||
@@ -146,10 +125,6 @@ void LocalWindowProxy::DisposeContext(
 #if DCHECK_IS_ON()
     DidDetachGlobalObject();
 #endif
-  }
-
-  if (IsSetDetachedWindowReasonEnabled(reason)) {
-    context->SetDetachedWindowReason(reason);
   }
 
   script_state_->DisposePerContextData();
@@ -199,14 +174,9 @@ void LocalWindowProxy::Initialize() {
       (world_->IsIsolatedWorld() &&
        IsolatedWorldCSP::Get().HasContentSecurityPolicy(world_->GetWorldId()));
   if (evaluate_csp_for_eval) {
-    // Using 'false' here means V8 will always call back blink for every 'eval'
-    // call being made. Blink executes CSP checks and returns whether or not
-    // V8 can proceed. The callback is
-    // V8Initializer::CodeGenerationCheckCallbackInMainThread().
-    context->AllowCodeGenerationFromStrings(false);
-
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
+    context->AllowCodeGenerationFromStrings(!csp->ShouldCheckEval());
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }
@@ -245,7 +215,7 @@ void LocalWindowProxy::CreateContext() {
   CHECK(IsMainThread());
 
   v8::ExtensionConfiguration extension_configuration =
-      ScriptController::ExtensionsFor(GetFrame()->GetDocument());
+      ScriptController::ExtensionsFor(GetFrame()->DomWindow());
 
   v8::Local<v8::Context> context;
   {
@@ -341,9 +311,8 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> window_wrapper =
       global_proxy->GetPrototype().As<v8::Object>();
-  v8::Local<v8::Object> associated_wrapper =
-      AssociateWithWrapper(window, wrapper_type_info, window_wrapper);
-  DCHECK(associated_wrapper == window_wrapper);
+  V8DOMWrapper::SetNativeInfo(GetIsolate(), window_wrapper, wrapper_type_info,
+                              window);
 
   // The prototype object of Window interface.
   v8::Local<v8::Object> window_prototype =

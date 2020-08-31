@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
@@ -53,7 +49,7 @@ add_bucket(struct fd_bo_cache *cache, int size)
  *    fill in for a bit smoother size curve..
  */
 drm_private void
-fd_bo_cache_init(struct fd_bo_cache *cache, int course)
+fd_bo_cache_init(struct fd_bo_cache *cache, int coarse)
 {
 	unsigned long size, cache_max_size = 64 * 1024 * 1024;
 
@@ -67,13 +63,13 @@ fd_bo_cache_init(struct fd_bo_cache *cache, int course)
 	 */
 	add_bucket(cache, 4096);
 	add_bucket(cache, 4096 * 2);
-	if (!course)
+	if (!coarse)
 		add_bucket(cache, 4096 * 3);
 
 	/* Initialize the linked lists for BO reuse cache. */
 	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
 		add_bucket(cache, size);
-		if (!course) {
+		if (!coarse) {
 			add_bucket(cache, size + size * 1 / 4);
 			add_bucket(cache, size + size * 2 / 4);
 			add_bucket(cache, size + size * 3 / 4);

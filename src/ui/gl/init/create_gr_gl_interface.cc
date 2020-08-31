@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -158,9 +159,17 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     // Conditional may be optimized out because droppable_call is set at compile
     // time.
     if (!droppable_call || !HasInitializedNullDrawGLBindings()) {
-      glFlush();
+      {
+        TRACE_EVENT0(
+            "gpu", "CreateGrGLInterface - bind_with_flush_on_mac - beforefunc")
+        glFlush();
+      }
       func(args...);
-      glFlush();
+      {
+        TRACE_EVENT0("gpu",
+                     "CreateGrGLInterface - bind_with_flush_on_mac - afterfunc")
+        glFlush();
+      }
     }
   };
 #else
@@ -345,8 +354,14 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
 
   functions->fDrawArraysInstanced = bind_slow_on_mac<true>(
       gl->glDrawArraysInstancedANGLEFn, progress_reporter);
+  functions->fDrawArraysInstancedBaseInstance = bind_slow_on_mac<true>(
+      gl->glDrawArraysInstancedBaseInstanceANGLEFn, progress_reporter);
   functions->fDrawElementsInstanced = bind_slow_on_mac<true>(
       gl->glDrawElementsInstancedANGLEFn, progress_reporter);
+  functions->fDrawElementsInstancedBaseVertexBaseInstance =
+      bind_slow_on_mac<true>(
+          gl->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn,
+          progress_reporter);
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1
   functions->fDrawArraysIndirect =
@@ -495,8 +510,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glGetFramebufferAttachmentParameterivEXTFn;
   functions->fGetRenderbufferParameteriv =
       gl->glGetRenderbufferParameterivEXTFn;
-  functions->fBindFramebuffer =
-      bind_with_flush_on_mac(gl->glBindFramebufferEXTFn);
+  functions->fBindFramebuffer = bind_slow_with_flush_on_mac(
+      gl->glBindFramebufferEXTFn, progress_reporter);
   functions->fFramebufferTexture2D = gl->glFramebufferTexture2DEXTFn;
   functions->fCheckFramebufferStatus = gl->glCheckFramebufferStatusEXTFn;
   functions->fDeleteFramebuffers = bind_slow_with_flush_on_mac(
@@ -766,6 +781,13 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
     // GL_APPLE_sync support.
     extensions.add("GL_APPLE_sync");
   }
+
+  // Skia can fall back to GL_NV_fence if GLsync objects are not available.
+  functions->fDeleteFences = gl->glDeleteFencesNVFn;
+  functions->fFinishFence = gl->glFinishFenceNVFn;
+  functions->fGenFences = gl->glGenFencesNVFn;
+  functions->fSetFence = gl->glSetFenceNVFn;
+  functions->fTestFence = gl->glTestFenceNVFn;
 
   functions->fGetInternalformativ = gl->glGetInternalformativFn;
 

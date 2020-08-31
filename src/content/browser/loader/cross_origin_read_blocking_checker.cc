@@ -18,9 +18,9 @@
 
 namespace content {
 
-// When NavigationLoaderOnUI is enabled, the CrossOriginReadBlockingChecker
-// lives on the UI thread, but blobs must be read on IO. This class handles all
-// blob access for CrossOriginReadBlockingChecker.
+// The CrossOriginReadBlockingChecker lives on the UI thread, but blobs must be
+// read on IO. This class handles all blob access for
+// CrossOriginReadBlockingChecker.
 class CrossOriginReadBlockingChecker::BlobIOState {
  public:
   BlobIOState(base::WeakPtr<CrossOriginReadBlockingChecker> checker,
@@ -103,10 +103,20 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
   DCHECK(!callback_.is_null());
   network::CrossOriginReadBlocking::LogAction(
       network::CrossOriginReadBlocking::Action::kResponseStarted);
+
+  // |isolated_world_origin| and |network_service_client| are only used for UMA
+  // and UKM logging related to the OOR-CORS feature.  Since OOR-CORS is not
+  // used in scenarios relevant to CrossOriginReadBlockingChecker, we can just
+  // use |base::nullopt| and |nullptr| here.
+  const base::Optional<url::Origin> isolated_world_origin = base::nullopt;
+  constexpr network::mojom::NetworkServiceClient* network_service_client =
+      nullptr;
+
   corb_analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
           request.url, request.request_initiator, response,
-          request_initiator_site_lock, request.mode);
+          request_initiator_site_lock, request.mode, isolated_world_origin,
+          network_service_client);
   if (corb_analyzer_->ShouldBlock()) {
     OnBlocked();
     return;

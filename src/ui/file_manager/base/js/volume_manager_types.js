@@ -126,6 +126,15 @@ VolumeManagerCommon.RootType = {
 
   // Root directory of an SMB file share.
   SMB: 'smb',
+
+  // Root directory of recently-modified audio files.
+  RECENT_AUDIO: 'recent_audio',
+
+  // Root directory of recently-modified image files.
+  RECENT_IMAGES: 'recent_images',
+
+  // Root directory of recently-modified video files.
+  RECENT_VIDEOS: 'recent_videos',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -163,6 +172,9 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.EXTERNAL_MEDIA,                    // 21
   VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER,                // 22
   VolumeManagerCommon.RootType.SMB,                               // 23
+  VolumeManagerCommon.RootType.RECENT_AUDIO,                      // 24
+  VolumeManagerCommon.RootType.RECENT_IMAGES,                     // 25
+  VolumeManagerCommon.RootType.RECENT_VIDEOS,                     // 26
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -290,10 +302,12 @@ VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
     case VolumeManagerCommon.RootType.SMB:
       return VolumeManagerCommon.VolumeType.SMB;
   }
+
   assertNotReached('Unknown root type: ' + rootType);
 };
 
 /**
+ * Obtains root type from volume type.
  * @param {VolumeManagerCommon.VolumeType} volumeType .
  * @return {VolumeManagerCommon.RootType}
  */
@@ -324,7 +338,31 @@ VolumeManagerCommon.getRootTypeFromVolumeType = volumeType => {
     case VolumeManagerCommon.VolumeType.SMB:
       return VolumeManagerCommon.RootType.SMB;
   }
+
   assertNotReached('Unknown volume type: ' + volumeType);
+};
+
+/**
+ * Returns true if the given |volumeType| is expected to provide third party
+ * icons in the iconSet property of the volume.
+ * @param {VolumeManagerCommon.VolumeType} volumeType
+ * @return {boolean}
+ */
+VolumeManagerCommon.shouldProvideIcons = volumeType => {
+  switch (volumeType) {
+    case VolumeManagerCommon.VolumeType.ANDROID_FILES:
+      return true;
+    case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
+      return true;
+    case VolumeManagerCommon.VolumeType.PROVIDED:
+      return true;
+  }
+
+  if (!volumeType) {
+    assertNotReached('Invalid volume type: ' + volumeType);
+  }
+
+  return false;
 };
 
 /**

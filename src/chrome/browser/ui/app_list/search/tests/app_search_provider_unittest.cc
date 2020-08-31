@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
@@ -138,7 +137,7 @@ class AppSearchProviderTest : public AppListTestBase {
     open_tabs_ui_delegate_ =
         std::make_unique<sync_sessions::OpenTabsUIDelegateImpl>(
             &mock_sync_sessions_client_, session_tracker_.get(),
-            /*favicon_cache=*/nullptr, base::DoNothing());
+            base::DoNothing());
     app_search_->set_open_tabs_ui_delegate_for_testing(
         open_tabs_ui_delegate_.get());
   }
@@ -172,7 +171,8 @@ class AppSearchProviderTest : public AppListTestBase {
     std::vector<ChromeSearchResult*> priority_results;
     for (const auto& result : app_search_->results()) {
       if (result->display_index() == ash::kFirstIndex &&
-          result->display_location() == ash::kSuggestionChipContainer) {
+          (result->display_type() == ash::kChip ||
+           result->display_type() == ash::kTile)) {
         priority_results.emplace_back(result.get());
       } else {
         non_relevance_results.emplace_back(result.get());
@@ -389,16 +389,14 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
   // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings", RunQuery(""));
 
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(20));
   // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Settings,Camera",
-            RunQuery(""));
+  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Settings", RunQuery(""));
 
   // Times in the future should just be handled as highest priority.
   prefs->SetLastLaunchTime(kHostedAppId,
@@ -407,8 +405,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
   // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings", RunQuery(""));
 }
 
 TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
@@ -475,7 +472,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag3)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
 
-    EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -499,7 +496,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kLocalSessionTag)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
 
-    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -524,7 +521,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
 
-    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -549,7 +546,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_TABLET;
 
-    EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -574,7 +571,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_CROS;
 
-    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -599,7 +596,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_CROS;
 
-    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -637,8 +634,7 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings", RunQuery(""));
 }
 
 TEST_F(AppSearchProviderTest, FilterDuplicate) {
@@ -801,7 +797,7 @@ TEST_F(AppSearchProviderTest, FuzzyAppSearchTest) {
   feature_list.InitAndEnableFeature(app_list_features::kEnableFuzzyAppSearch);
   CreateSearch();
   EXPECT_EQ("Packaged App 1,Packaged App 2", RunQuery("pa"));
-  std::string result = RunQuery("packahe");
+  std::string result = RunQuery("ackaged");
   EXPECT_TRUE(result == "Packaged App 1,Packaged App 2" ||
               result == "Packaged App 2,Packaged App 1");
   EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Helper"));

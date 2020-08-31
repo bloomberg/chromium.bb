@@ -56,12 +56,13 @@ class Declarations {
     return d;
   }
 
-  static std::vector<Declarable*> LookupGlobalScope(const std::string& name);
+  static std::vector<Declarable*> LookupGlobalScope(const QualifiedName& name);
 
   static const TypeAlias* LookupTypeAlias(const QualifiedName& name);
   static const Type* LookupType(const QualifiedName& name);
   static const Type* LookupType(const Identifier* identifier);
-  static const Type* LookupGlobalType(const std::string& name);
+  static base::Optional<const Type*> TryLookupType(const QualifiedName& name);
+  static const Type* LookupGlobalType(const QualifiedName& name);
 
   static Builtin* FindSomeInternalBuiltinWithType(
       const BuiltinPointerType* type);

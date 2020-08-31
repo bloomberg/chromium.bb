@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-Emulation.InspectedPagePlaceholder = class extends UI.Widget {
+export class InspectedPagePlaceholder extends UI.Widget.Widget {
   constructor() {
     super(true);
     this.registerRequiredCSS('emulation/inspectedPagePlaceholder.css');
-    UI.zoomManager.addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
+    UI.ZoomManager.ZoomManager.instance().addEventListener(UI.ZoomManager.Events.ZoomChanged, this.onResize, this);
     this.restoreMinimumSize();
   }
 
@@ -32,7 +34,7 @@ Emulation.InspectedPagePlaceholder = class extends UI.Widget {
   }
 
   _dipPageRect() {
-    const zoomFactor = UI.zoomManager.zoomFactor();
+    const zoomFactor = UI.ZoomManager.ZoomManager.instance().zoomFactor();
     const rect = this.element.getBoundingClientRect();
     const bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
 
@@ -59,21 +61,21 @@ Emulation.InspectedPagePlaceholder = class extends UI.Widget {
     if (force) {
       // Short term fix for Lighthouse interop.
       --bounds.height;
-      this.dispatchEventToListeners(Emulation.InspectedPagePlaceholder.Events.Update, bounds);
+      this.dispatchEventToListeners(Events.Update, bounds);
       ++bounds.height;
     }
-    this.dispatchEventToListeners(Emulation.InspectedPagePlaceholder.Events.Update, bounds);
+    this.dispatchEventToListeners(Events.Update, bounds);
   }
-};
+}
 
 /**
- * @return {!Emulation.InspectedPagePlaceholder}
+ * @return {!InspectedPagePlaceholder}
  */
-Emulation.InspectedPagePlaceholder.instance = function() {
-  return self.singleton(Emulation.InspectedPagePlaceholder);
+export const instance = function() {
+  return self.singleton(InspectedPagePlaceholder);
 };
 
 /** @enum {symbol} */
-Emulation.InspectedPagePlaceholder.Events = {
+export const Events = {
   Update: Symbol('Update')
 };

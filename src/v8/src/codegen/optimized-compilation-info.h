@@ -64,7 +64,8 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
     kTraceHeapBroker = 1 << 17,
     kWasmRuntimeExceptionSupport = 1 << 18,
     kTurboControlFlowAwareAllocation = 1 << 19,
-    kTurboPreprocessRanges = 1 << 20
+    kTurboPreprocessRanges = 1 << 20,
+    kConcurrentInlining = 1 << 21,
   };
 
   // Construct a compilation info for optimized compilation.
@@ -92,6 +93,9 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
   JavaScriptFrame* osr_frame() const { return osr_frame_; }
 
   // Flags used by optimized compilation.
+
+  void MarkAsConcurrentInlining() { SetFlag(kConcurrentInlining); }
+  bool is_concurrent_inlining() const { return GetFlag(kConcurrentInlining); }
 
   void MarkAsTurboControlFlowAwareAllocation() {
     SetFlag(kTurboControlFlowAwareAllocation);
@@ -244,6 +248,12 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
     return optimization_id_;
   }
 
+  unsigned inlined_bytecode_size() const { return inlined_bytecode_size_; }
+
+  void set_inlined_bytecode_size(unsigned size) {
+    inlined_bytecode_size_ = size;
+  }
+
   struct InlinedFunctionHolder {
     Handle<SharedFunctionInfo> shared_info;
     Handle<BytecodeArray> bytecode_array;  // Explicit to prevent flushing.
@@ -325,6 +335,7 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
   InlinedFunctionList inlined_functions_;
 
   int optimization_id_ = -1;
+  unsigned inlined_bytecode_size_ = 0;
 
   // The current OSR frame for specialization or {nullptr}.
   JavaScriptFrame* osr_frame_ = nullptr;

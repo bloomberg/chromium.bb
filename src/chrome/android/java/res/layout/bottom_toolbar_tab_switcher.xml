@@ -18,7 +18,7 @@
         android:id="@+id/bottom_toolbar_buttons"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/modern_primary_color" >
+        android:background="@color/default_bg_color" >
 
         <LinearLayout
             android:orientation="horizontal"
@@ -32,7 +32,7 @@
                 style="@style/BottomToolbarButtonWrapper"
                 android:src="@drawable/ic_close_all_tabs"
                 android:contentDescription="@string/accessibility_toolbar_btn_close_all_tabs"
-                app:tint="@color/standard_mode_tint" />
+                app:tint="@color/default_icon_color_tint_list" />
 
             <include layout="@layout/toolbar_space" />
 

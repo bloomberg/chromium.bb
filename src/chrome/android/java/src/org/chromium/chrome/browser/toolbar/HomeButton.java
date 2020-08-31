@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -14,6 +13,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
+
+import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -24,10 +26,15 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
+import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
@@ -36,7 +43,10 @@ import org.chromium.ui.widget.ChromeImageButton;
 public class HomeButton extends ChromeImageButton
         implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener,
                    HomepageManager.HomepageStateListener {
-    private static final int ID_REMOVE = 0;
+    @VisibleForTesting
+    public static final int ID_REMOVE = 0;
+    @VisibleForTesting
+    public static final int ID_SETTINGS = 1;
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
@@ -53,16 +63,19 @@ public class HomeButton extends ChromeImageButton
     /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
+    // Test related members
+    private static boolean sSaveContextMenuForTests;
+    private ContextMenu mMenuForTests;
+
+    private SettingsLauncher mSettingsLauncher;
+
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         final int homeButtonIcon = R.drawable.btn_toolbar_home;
         setImageDrawable(ContextCompat.getDrawable(context, homeButtonIcon));
-        if (!FeatureUtilities.isBottomToolbarEnabled()) {
-            setOnCreateContextMenuListener(this);
-        }
-
         HomepageManager.getInstance().addListener(this);
+        updateContextMenuListener();
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -75,6 +88,8 @@ public class HomeButton extends ChromeImageButton
                 }
             }
         };
+
+        mSettingsLauncher = new SettingsLauncherImpl();
     }
 
     public void destroy() {
@@ -114,13 +129,31 @@ public class HomeButton extends ChromeImageButton
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove).setOnMenuItemClickListener(this);
+        // Disable long click before native initialized.
+        if (!ChromeFeatureList.isInitialized()) return;
+
+        if (isHomepageSettingsUIConversionEnabled()) {
+            menu.add(Menu.NONE, ID_SETTINGS, Menu.NONE, R.string.options_homepage_edit_title)
+                    .setOnMenuItemClickListener(this);
+        } else {
+            menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove)
+                    .setOnMenuItemClickListener(this);
+        }
+
+        if (sSaveContextMenuForTests) mMenuForTests = menu;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        assert item.getItemId() == ID_REMOVE;
-        HomepageManager.getInstance().setPrefHomepageEnabled(false);
+        assert !isManagedByPolicy();
+        if (isHomepageSettingsUIConversionEnabled()) {
+            assert item.getItemId() == ID_SETTINGS;
+            mSettingsLauncher.launchSettingsActivity(getContext(), HomepageSettings.class);
+        } else {
+            assert item.getItemId() == ID_REMOVE;
+            HomepageManager.getInstance().setPrefHomepageEnabled(false);
+        }
+
         return true;
     }
 
@@ -173,6 +206,7 @@ public class HomeButton extends ChromeImageButton
 
     private void updateButtonEnabledState(boolean isEnabled) {
         setEnabled(isEnabled);
+        updateContextMenuListener();
     }
 
     /**
@@ -181,7 +215,7 @@ public class HomeButton extends ChromeImageButton
      *         change is likely.
      */
     private boolean isTabNTP(Tab tab) {
-        return tab != null && NewTabPage.isNTPUrl(tab.getUrl());
+        return tab != null && NewTabPage.isNTPUrl(tab.getUrlString());
     }
 
     /**
@@ -191,5 +225,44 @@ public class HomeButton extends ChromeImageButton
         if (mActivityTabProvider == null) return null;
 
         return mActivityTabProvider.get();
+    }
+
+    private boolean isManagedByPolicy() {
+        return HomepagePolicyManager.isHomepageManagedByPolicy();
+    }
+
+    private void updateContextMenuListener() {
+        if (!BottomToolbarConfiguration.isBottomToolbarEnabled() && !isManagedByPolicy()) {
+            setOnCreateContextMenuListener(this);
+        } else {
+            setOnCreateContextMenuListener(null);
+            setLongClickable(false);
+        }
+    }
+
+    private boolean isHomepageSettingsUIConversionEnabled() {
+        assert ChromeFeatureList.isInitialized();
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION);
+    }
+
+    /**
+     * @param saveContextMenuForTests Whether we want to store the context menu for testing
+     */
+    @VisibleForTesting
+    public static void setSaveContextMenuForTests(boolean saveContextMenuForTests) {
+        sSaveContextMenuForTests = saveContextMenuForTests;
+    }
+
+    /**
+     * @return Latest context menu created.
+     */
+    @VisibleForTesting
+    public ContextMenu getMenuForTests() {
+        return mMenuForTests;
+    }
+
+    @VisibleForTesting
+    public void setSettingsLauncherForTests(SettingsLauncher settingsLauncher) {
+        mSettingsLauncher = settingsLauncher;
     }
 }

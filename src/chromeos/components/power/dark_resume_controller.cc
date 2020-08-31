@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace chromeos {
@@ -25,12 +24,10 @@ constexpr base::TimeDelta kDefaultDarkResumeHardTimeout =
 constexpr base::TimeDelta DarkResumeController::kDarkResumeWakeLockCheckTimeout;
 
 DarkResumeController::DarkResumeController(
-    service_manager::Connector* connector)
-    : connector_(connector),
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider)
+    : wake_lock_provider_(std::move(wake_lock_provider)),
       dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout) {
   DCHECK(!dark_resume_hard_timeout_.is_zero());
-  connector_->Connect(device::mojom::kServiceName,
-                      wake_lock_provider_.BindNewPipeAndPassReceiver());
   PowerManagerClient::Get()->AddObserver(this);
 }
 

@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
@@ -65,7 +66,7 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   void SetCursor(int32_t nCursorType) override;
 
   CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage, bool renew);
-  CPDFSDK_PageView* GetPageView(int nIndex);
+  CPDFSDK_PageView* GetPageViewAtIndex(int nIndex);
 
   void RemovePageView(IPDF_Page* pUnderlyingPage);
   void UpdateAllViews(CPDFSDK_PageView* pSender, CPDFSDK_Annot* pAnnot);
@@ -76,13 +77,16 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   void ClearAllFocusedAnnots();
 
   int GetPageCount() const;
-  bool GetPermissions(int nFlag) const;
+
+  // See PDF Reference 1.7, table 3.20 for the permission bits. Returns true if
+  // any bit in |flags| is set.
+  bool HasPermissions(uint32_t flags) const;
 
   bool GetChangeMark() const { return m_bChangeMask; }
   void SetChangeMark() { m_bChangeMask = true; }
   void ClearChangeMark() { m_bChangeMask = false; }
 
-  void ProcJavascriptFun();
+  void ProcJavascriptAction();
   bool ProcOpenAction();
   void Invalidate(IPDF_Page* page, const FX_RECT& rect);
 
@@ -91,7 +95,7 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   void OnSetFieldInputFocus(FPDF_WIDESTRING focusText,
                             FPDF_DWORD nTextLen,
                             bool bFocus);
-  void DoURIAction(const char* bsURI);
+  void DoURIAction(const char* bsURI, uint32_t modifiers);
   void DoGoToAction(int nPageIndex,
                     int zoomMode,
                     float* fPosArray,
@@ -103,6 +107,9 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   }
 
   bool IsJSPlatformPresent() const { return m_pInfo && m_pInfo->m_pJsPlatform; }
+  IPDF_JSPLATFORM* GetJSPlatform() const {
+    return m_pInfo ? m_pInfo->m_pJsPlatform : nullptr;
+  }
 
 #ifdef PDF_ENABLE_V8
   CPDFSDK_PageView* GetCurrentView();
@@ -160,7 +167,6 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   void GotoURL(const WideString& wsURL);
   FS_RECTF GetPageViewRect(IPDF_Page* page);
   bool PopupMenu(IPDF_Page* page,
-                 FPDF_WIDGET hWidget,
                  int menuFlag,
                  const CFX_PointF& pt);
   void EmailTo(FPDF_FILEHANDLER* fileHandler,
@@ -198,6 +204,14 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
 
   CPDFSDK_AnnotHandlerMgr* GetAnnotHandlerMgr();  // Always present.
 
+  void SetFocusableAnnotSubtypes(
+      const std::vector<CPDF_Annot::Subtype>& focusableAnnotTypes) {
+    m_FocusableAnnotTypes = focusableAnnotTypes;
+  }
+  const std::vector<CPDF_Annot::Subtype>& GetFocusableAnnotSubtypes() const {
+    return m_FocusableAnnotTypes;
+  }
+
   // Creates if not present.
   CFFL_InteractiveFormFiller* GetInteractiveFormFiller();
   IJS_Runtime* GetIJSRuntime();                   // Creates if not present.
@@ -206,6 +220,7 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
 
  private:
   IPDF_Page* GetPage(int nIndex);
+  void SendOnFocusChange(ObservedPtr<CPDFSDK_Annot>* pAnnot);
 
   FPDF_FORMFILLINFO* const m_pInfo;
   std::unique_ptr<CPDFSDK_ActionHandler> m_pActionHandler;
@@ -218,6 +233,11 @@ class CPDFSDK_FormFillEnvironment final : public Observable,
   std::unique_ptr<CFFL_InteractiveFormFiller> m_pFormFiller;
   bool m_bChangeMask = false;
   bool m_bBeingDestroyed = false;
+
+  // Holds the list of focusable annot types.
+  // Annotations of type WIDGET are by default focusable.
+  std::vector<CPDF_Annot::Subtype> m_FocusableAnnotTypes = {
+      CPDF_Annot::Subtype::WIDGET};
 };
 
 #endif  // FPDFSDK_CPDFSDK_FORMFILLENVIRONMENT_H_

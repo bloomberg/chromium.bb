@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/process_type.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
@@ -25,6 +26,45 @@ using content::RenderProcessHost;
 
 namespace sandbox_handler {
 namespace {
+
+// This only includes OS_WIN included SandboxType values.
+std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case content::SandboxType::kNoSandbox:
+      return "Unsandboxed";
+    case content::SandboxType::kNoSandboxAndElevatedPrivileges:
+      return "Unsandboxed (Elevated)";
+    case content::SandboxType::kXrCompositing:
+      return "XR Compositing";
+    case content::SandboxType::kRenderer:
+      return "Renderer";
+    case content::SandboxType::kUtility:
+      return "Utility";
+    case content::SandboxType::kGpu:
+      return "GPU";
+    case content::SandboxType::kPpapi:
+      return "PPAPI";
+    case content::SandboxType::kNetwork:
+      return "Network";
+    case content::SandboxType::kCdm:
+      return "CDM";
+    case content::SandboxType::kPrintCompositor:
+      return "Print Compositor";
+    case content::SandboxType::kAudio:
+      return "Audio";
+    case content::SandboxType::kSpeechRecognition:
+      return "Speech Recognition";
+    case content::SandboxType::kProxyResolver:
+      return "Proxy Resolver";
+    case content::SandboxType::kPdfConversion:
+      return "PDF Conversion";
+    case content::SandboxType::kSharingService:
+      return "Sharing";
+    case content::SandboxType::kVideoCapture:
+      return "Video Capture";
+  }
+}
+
 base::Value FetchBrowserChildProcesses() {
   // The |BrowserChildProcessHostIterator| must only be used on the IO thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -43,7 +83,10 @@ base::Value FetchBrowserChildProcesses() {
                      process_data.process_type)));
     proc.SetPath("name", base::Value(process_data.name));
     proc.SetPath("metricsName", base::Value(process_data.metrics_name));
-    browser_processes.GetList().push_back(std::move(proc));
+    proc.SetPath(
+        "sandboxType",
+        base::Value(GetSandboxTypeInEnglish(process_data.sandbox_type)));
+    browser_processes.Append(std::move(proc));
   }
 
   return browser_processes;
@@ -64,7 +107,7 @@ base::Value FetchRenderHostProcesses() {
     proc.SetPath(
         "processId",
         base::Value(base::strict_cast<double>(host->GetProcess().Pid())));
-    renderer_processes.GetList().push_back(std::move(proc));
+    renderer_processes.Append(std::move(proc));
   }
 
   return renderer_processes;
@@ -95,9 +138,9 @@ void SandboxHandler::HandleRequestSandboxDiagnostics(
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&FetchBrowserChildProcesses),
-      base::Bind(&SandboxHandler::FetchBrowserChildProcessesCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FetchBrowserChildProcesses),
+      base::BindOnce(&SandboxHandler::FetchBrowserChildProcessesCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SandboxHandler::FetchBrowserChildProcessesCompleted(
@@ -106,8 +149,8 @@ void SandboxHandler::FetchBrowserChildProcessesCompleted(
   browser_processes_ = std::move(browser_processes);
 
   service_manager::SandboxWin::GetPolicyDiagnostics(
-      base::Bind(&SandboxHandler::FetchSandboxDiagnosticsCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SandboxHandler::FetchSandboxDiagnosticsCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // This runs nested inside SandboxWin so we get out quickly.

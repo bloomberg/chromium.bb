@@ -424,18 +424,24 @@ class ColorPicker extends HTMLElement {
   constructor(initialColor) {
     super();
 
+    if (global.params.isBorderTransparent) {
+      this.style.borderColor = 'transparent';
+    }
+
     this.selectedColor_ = initialColor;
+    this.colorWhenOpened_ = initialColor;
 
     this.visualColorPicker_ = new VisualColorPicker(initialColor);
     this.manualColorPicker_ = new ManualColorPicker(initialColor);
-    this.submissionControls_ = new SubmissionControls(
-        this.onSubmitButtonClick_, this.onCancelButtonClick_);
+    this.colorValueAXAnnouncer_ = new ColorValueAXAnnouncer();
     this.append(
         this.visualColorPicker_, this.manualColorPicker_,
-        this.submissionControls_);
+        this.colorValueAXAnnouncer_);
 
     this.visualColorPicker_.addEventListener(
         'visual-color-picker-initialized', this.initializeListeners_);
+
+    window.addEventListener('resize', this.onWindowResize_, {once: true});
   }
 
   initializeListeners_ = () => {
@@ -444,7 +450,11 @@ class ColorPicker extends HTMLElement {
 
     this.addEventListener('visual-color-change', this.onVisualColorChange_);
 
-    this.addEventListener('format-change', this.updateFocusableElements_);
+    this.addEventListener('format-change', this.onFormatChange_);
+
+    this.addEventListener('focusin', this.onFocusin_);
+
+    window.addEventListener('message', this.onMessageReceived_);
 
     document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
@@ -480,8 +490,11 @@ class ColorPicker extends HTMLElement {
       this.processingManualColorChange_ = true;
       this.visualColorPicker_.color = newColor;
       this.processingManualColorChange_ = false;
+
+      const selectedValue = newColor.asHex();
+      window.pagePopupController.setValue(selectedValue);
     }
-  }
+  };
 
   /**
    * @param {!Event} event
@@ -492,24 +505,35 @@ class ColorPicker extends HTMLElement {
       if (!this.processingManualColorChange_) {
         this.selectedColor = newColor;
         this.manualColorPicker_.color = newColor;
+
+        this.colorValueAXAnnouncer_.announceColor(newColor);
+
+        const selectedValue = newColor.asHex();
+        window.pagePopupController.setValue(selectedValue);
       } else {
         // We are making a visual color change in response to a manual color
         // change. So we do not overwrite the manually specified values and do
         // not change the selected color.
       }
     }
-  }
+  };
 
   /**
    * @param {!Event} event
    */
   onKeyDown_ = (event) => {
-    switch(event.key) {
+    switch (event.key) {
       case 'Enter':
-        this.submissionControls_.submitButton.click();
+        window.pagePopupController.closePopup();
         break;
       case 'Escape':
-        this.submissionControls_.cancelButton.click();
+        if (this.selectedColor.equals(this.colorWhenOpened_)) {
+          window.pagePopupController.closePopup();
+        } else {
+          this.manualColorPicker_.dispatchEvent(new CustomEvent(
+              'manual-color-change',
+              {bubbles: true, detail: {color: this.colorWhenOpened_}}));
+        }
         break;
       case 'Tab':
         event.preventDefault();
@@ -522,9 +546,8 @@ class ColorPicker extends HTMLElement {
               this.focusableElements_.indexOf(document.activeElement);
           let nextFocusIndex;
           if (event.shiftKey) {
-            nextFocusIndex = (currentFocusIndex > 0) ?
-                currentFocusIndex - 1 :
-                length - 1;
+            nextFocusIndex =
+                (currentFocusIndex > 0) ? currentFocusIndex - 1 : length - 1;
           } else {
             nextFocusIndex = (currentFocusIndex + 1) % length;
           }
@@ -532,28 +555,54 @@ class ColorPicker extends HTMLElement {
         }
         break;
     }
-  }
+  };
+
+  onFormatChange_ = (event) => {
+    this.updateFocusableElements_();
+    this.colorValueAXAnnouncer_.updateColorFormat(event.detail.colorFormat);
+  };
+
+  onFocusin_ = (event) => {
+    if (event.target instanceof ColorSelectionRing) {
+      // Announce the current color when the user focuses the ColorWell or the
+      // HueSlider.
+      this.colorValueAXAnnouncer_.announceColor(this.selectedColor);
+    } else if (event.target instanceof FormatToggler) {
+      // Announce the current color format when the user focuses the
+      // FormatToggler.
+      this.colorValueAXAnnouncer_.announceColorFormat();
+    }
+  };
 
   updateFocusableElements_ = () => {
     this.focusableElements_ = Array.from(this.querySelectorAll(
         'color-value-container:not(.hidden-color-value-container) > input,' +
         '[tabindex]:not([tabindex=\'-1\'])'));
-  }
-
-  static get COMMIT_DELAY_MS() {
-    return 100;
-  }
-
-  onSubmitButtonClick_ = () => {
-    const selectedValue = this.selectedColor_.asHex();
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, ColorPicker.COMMIT_DELAY_MS);
   };
 
-  onCancelButtonClick_ = () => {
-    window.pagePopupController.closePopup();
+  onWindowResize_ = () => {
+    // Set focus on the first focusable element.
+    if (this.focusableElements_ === undefined) {
+      this.updateFocusableElements_();
+    }
+    this.focusableElements_[0].focus({preventScroll: true});
   };
+
+  onMessageReceived_ = (event) => {
+    eval(event.data);
+    if (window.updateData && window.updateData.success) {
+      // Update the popup with the color selected using the eye dropper.
+      const selectedValue = new Color(window.updateData.color);
+      this.selectedColor = selectedValue;
+      this.manualColorPicker_.color = selectedValue;
+      this.visualColorPicker_.color = selectedValue;
+
+      const hexValue = selectedValue.asHex();
+      window.pagePopupController.setValue(hexValue);
+    }
+    this.visualColorPicker_.eyeDropper.finished();
+    delete window.updateData;
+  }
 }
 window.customElements.define('color-picker', ColorPicker);
 
@@ -602,6 +651,15 @@ class VisualColorPicker extends HTMLElement {
       document.documentElement
           .addEventListener('mousemove', this.onMouseMove_);
       document.documentElement.addEventListener('mouseup', this.onMouseUp_);
+      this.colorWell_
+          .addEventListener('touchstart', this.onColorWellTouchStart_);
+      this.hueSlider_
+          .addEventListener('touchstart', this.onHueSliderTouchStart_);
+      document.documentElement
+          .addEventListener('touchstart', this.onTouchStart_);
+      document.documentElement
+          .addEventListener('touchmove', this.onTouchMove_);
+      document.documentElement.addEventListener('touchend', this.onTouchEnd_);
       document.documentElement.addEventListener('keydown', this.onKeyDown_);
 
       this.dispatchEvent(new CustomEvent('visual-color-picker-initialized'));
@@ -626,7 +684,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.hueSlider_.focused = false;
-    this.colorWell_.mouseDown(new Point(event.clientX, event.clientY));
+    this.colorWell_.pointerDown(new Point(event.clientX, event.clientY));
   }
 
   /**
@@ -636,7 +694,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.colorWell_.focused = false;
-    this.hueSlider_.mouseDown(new Point(event.clientX, event.clientY));
+    this.hueSlider_.pointerDown(new Point(event.clientX, event.clientY));
   }
 
   onMouseDown_ = () => {
@@ -649,13 +707,52 @@ class VisualColorPicker extends HTMLElement {
    */
   onMouseMove_ = (event) => {
     var point = new Point(event.clientX, event.clientY);
-    this.colorWell_.mouseMove(point);
-    this.hueSlider_.mouseMove(point);
+    this.colorWell_.pointerMove(point);
+    this.hueSlider_.pointerMove(point);
   }
 
   onMouseUp_ = () => {
-    this.colorWell_.mouseUp();
-    this.hueSlider_.mouseUp();
+    this.colorWell_.pointerUp();
+    this.hueSlider_.pointerUp();
+  }
+
+    /**
+   * @param {!Event} event
+   */
+  onColorWellTouchStart_ = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.hueSlider_.focused = false;
+    this.colorWell_.pointerDown(new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY)));
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onHueSliderTouchStart_ = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.colorWell_.focused = false;
+    this.hueSlider_.pointerDown(new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY)));
+  }
+
+  onTouchStart_ = () => {
+    this.colorWell_.focused = false;
+    this.hueSlider_.focused = false;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onTouchMove_ = (event) => {
+    var point = new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY));
+    this.colorWell_.pointerMove(point);
+    this.hueSlider_.pointerMove(point);
+  }
+
+  onTouchEnd_ = () => {
+    this.colorWell_.pointerUp();
+    this.hueSlider_.pointerUp();
   }
 
   /**
@@ -691,6 +788,10 @@ class VisualColorPicker extends HTMLElement {
     this.hueSlider_.color = newColor;
     this.colorWell_.selectedColor = newColor;
   }
+
+  get eyeDropper() {
+    return this.eyeDropper_;
+  }
 }
 window.customElements.define('visual-color-picker', VisualColorPicker);
 
@@ -700,7 +801,92 @@ window.customElements.define('visual-color-picker', VisualColorPicker);
  *             implementation.)
  * TODO(http://crbug.com/992297): Implement eye dropper
  */
-class EyeDropper extends HTMLElement {}
+class EyeDropper extends HTMLElement {
+  constructor() {
+    super();
+
+    if (!global.params.isEyeDropperEnabled) {
+      this.classList.add('hidden');
+      return;
+    }
+
+    this.setAttribute('tabIndex', 0);
+    this.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" ' +
+        'xmlns="http://www.w3.org/2000/svg"><path d="M13.7344 0C14.0469 0 ' +
+        '14.3411 0.0598958 14.6172 0.179688C14.8932 0.299479 15.1328 ' +
+        '0.460938 15.3359 0.664062C15.5391 0.867188 15.7005 1.10677 15.8203 ' +
+        '1.38281C15.9401 1.65885 16 1.95312 16 2.26562C16 2.56771 15.9427 ' +
+        '2.85938 15.8281 3.14062C15.7135 3.41667 15.5495 3.66146 15.3359 ' +
+        '3.875L13.4609 5.75C13.6328 5.91667 13.7656 6.10677 13.8594 ' +
+        '6.32031C13.9531 6.52865 14 6.75521 14 7C14 7.23958 13.9531 7.46354 ' +
+        '13.8594 7.67188C13.7708 7.88021 13.6432 8.06771 13.4766 ' +
+        '8.23438L12.25 9.46094L11 8.20312L4.71094 14.4922L4.50781 ' +
+        '14.5C4.24219 14.5104 4.01302 14.5547 3.82031 14.6328C3.63281 ' +
+        '14.7109 3.46615 14.8073 3.32031 14.9219C3.17969 15.0312 3.04948 ' +
+        '15.1484 2.92969 15.2734C2.8151 15.3984 2.69271 15.5156 2.5625 ' +
+        '15.625C2.43229 15.7344 2.28906 15.8255 2.13281 15.8984C1.97656 ' +
+        '15.9661 1.78646 16 1.5625 16C1.34896 16 1.14583 15.9583 0.953125 ' +
+        '15.875C0.765625 15.7917 0.601562 15.6797 0.460938 15.5391C0.320312 ' +
+        '15.3984 0.208333 15.2344 0.125 15.0469C0.0416667 14.8542 0 14.651 0 ' +
+        '14.4375C0 14.2135 0.0338542 14.0234 0.101562 13.8672C0.174479 ' +
+        '13.7057 0.265625 13.5625 0.375 13.4375C0.484375 13.3073 0.601562 ' +
+        '13.1849 0.726562 13.0703C0.851562 12.9505 0.96875 12.8203 1.07812 ' +
+        '12.6797C1.19271 12.5339 1.28906 12.3672 1.36719 12.1797C1.44531 ' +
+        '11.9922 1.48958 11.763 1.5 11.4922L1.50781 11.2891L7.79688 ' +
+        '5L6.53906 3.75L7.76562 2.52344C7.93229 2.35677 8.11979 2.22917 ' +
+        '8.32812 2.14062C8.53646 2.04688 8.76042 2 9 2C9.24479 2 9.47135 ' +
+        '2.04688 9.67969 2.14062C9.89323 2.23438 10.0833 2.36719 10.25 ' +
+        '2.53906L12.125 0.664062C12.3385 0.450521 12.5833 0.286458 12.8594 ' +
+        '0.171875C13.1406 0.0572917 13.4323 0 13.7344 0ZM10.2891 7.5L8.5 ' +
+        '5.71094L2.49219 11.7188C2.46615 11.9844 2.41667 12.2214 2.34375 ' +
+        '12.4297C2.27083 12.638 2.17708 12.8333 2.0625 13.0156C1.94792 ' +
+        '13.1927 1.8125 13.3646 1.65625 13.5312C1.50521 13.6927 1.34115 ' +
+        '13.8646 1.16406 14.0469C1.05469 14.1562 1 14.2891 1 14.4453C1 ' +
+        '14.5964 1.05469 14.7266 1.16406 14.8359C1.27344 14.9453 1.40365 15 ' +
+        '1.55469 15C1.71094 15 1.84375 14.9453 1.95312 14.8359C2.13542 ' +
+        '14.6589 2.3099 14.4948 2.47656 14.3438C2.64323 14.1875 2.8151 ' +
+        '14.0521 2.99219 13.9375C3.16927 13.8229 3.36198 13.7292 3.57031 ' +
+        '13.6562C3.77865 13.5833 4.01562 13.5339 4.28125 13.5078L10.2891 ' +
+        '7.5ZM14.625 3.16406C14.875 2.91406 15 2.61719 15 2.27344C15 2.10156 ' +
+        '14.9661 1.9375 14.8984 1.78125C14.8307 1.625 14.7396 1.48958 14.625 ' +
+        '1.375C14.5104 1.26042 14.375 1.16927 14.2188 1.10156C14.0625 ' +
+        '1.03385 13.8984 1 13.7266 1C13.3828 1 13.0859 1.125 12.8359 ' +
+        '1.375L10.25 3.95312L9.51562 3.21875C9.36979 3.07292 9.19792 3 9 ' +
+        '3C8.89062 3 8.78646 3.02604 8.6875 3.07812C8.59375 3.13021 8.5026 ' +
+        '3.19531 8.41406 3.27344C8.33073 3.35156 8.25 3.4349 8.17188 ' +
+        '3.52344C8.09375 3.60677 8.02083 3.68229 7.95312 3.75L12.25 ' +
+        '8.04688L12.7812 7.51562C12.9271 7.36979 13 7.19792 13 7C13 6.89583 ' +
+        '12.9792 6.80208 12.9375 6.71875C12.901 6.63021 12.8464 6.54948 ' +
+        '12.7734 6.47656L12.0469 5.75L14.625 3.16406Z" fill="WindowText"/> ' +
+        '</svg>';
+
+    this.addEventListener('click', this.onClick_);
+    this.addEventListener('keydown', this.onKeyDown_);
+  }
+
+  onClick_ = () => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.classList.add('selected');
+    window.pagePopupController.openEyeDropper();
+  };
+
+  /**
+   * @param {!Event} event
+   */
+  onKeyDown_ = (event) => {
+    switch (event.key) {
+      case 'Enter':
+        this.onClick_();
+        break;
+    }
+  };
+
+  finished = () => {
+    this.classList.remove('selected');
+  }
+}
 window.customElements.define('eye-dropper', EyeDropper);
 
 /**
@@ -714,6 +900,10 @@ class ColorViewer extends HTMLElement {
     super();
 
     this.color = initialColor;
+
+    // Leave the ColorViewer out of the accessibility tree; it's redundant
+    // with the updates from ColorValueAXAnnouncer.
+    this.setAttribute('aria-hidden', 'true');
   }
 
   get color() {
@@ -766,7 +956,7 @@ class ColorSelectionArea extends HTMLElement {
   /**
    * @param {!Point} point
    */
-  mouseDown(point) {
+  pointerDown(point) {
     this.colorSelectionRing_.focus({preventScroll: true});
     this.colorSelectionRing_.drag = true;
     this.moveColorSelectionRingTo_(point);
@@ -775,13 +965,13 @@ class ColorSelectionArea extends HTMLElement {
   /**
    * @param {!Point} point
    */
-  mouseMove(point) {
+  pointerMove(point) {
     if (this.colorSelectionRing_.drag) {
       this.moveColorSelectionRingTo_(point);
     }
   }
 
-  mouseUp() {
+  pointerUp() {
     this.colorSelectionRing_.drag = false;
   }
 
@@ -874,7 +1064,7 @@ class ColorPalette extends HTMLCanvasElement {
    * @param {number} y
    */
   hslImageDataAtPoint_(x, y) {
-    let offset = Math.round(y * this.width + x) * 3;
+    let offset = (y * this.width + x) * 3;
     // It is possible that the computed offset is larger than the hslImageData
     // array's length. This can happen at certain zoom levels (ex. 150%), where
     // the height of the color well is not a round number. The getImageData API
@@ -1011,6 +1201,7 @@ class ColorSelectionRing extends HTMLElement {
 
   initialize() {
     this.set(this.backingColorPalette_.left, this.backingColorPalette_.top);
+    this.onPositionChange_();
   }
 
   /**
@@ -1061,7 +1252,48 @@ class ColorSelectionRing extends HTMLElement {
 
   onPositionChange_() {
     this.setElementPosition_();
+    this.updatePositionForAria_();
     this.updateColor();
+  }
+
+  initializeAria(isForColorWell) {
+    this.setAttribute('role', 'slider');
+    this.isForColorWell = isForColorWell;
+    this.setAttribute('aria-valuemin', 0);
+    if (isForColorWell) {
+      this.setAttribute('aria-label', global.params.axColorWellLabel);
+      this.setAttribute(
+          'aria-roledescription', global.params.axColorWellRoleDescription);
+      this.setAttribute(
+          'aria-valuemax',
+          this.backingColorPalette_.offsetHeight *
+              this.backingColorPalette_.offsetWidth);
+    } else {
+      this.setAttribute('aria-label', global.params.axHueSliderLabel);
+      this.setAttribute(
+          'aria-valuemax',
+          this.backingColorPalette_.right - this.backingColorPalette_.left);
+    }
+    this.updatePositionForAria_();
+  }
+
+  updatePositionForAria_() {
+    if (this.isForColorWell) {
+      let positionX = (this.position_.x - this.backingColorPalette_.left);
+      let positionY = (this.position_.y - this.backingColorPalette_.top);
+      let colorWellWidth =
+          (this.backingColorPalette_.right - this.backingColorPalette_.left);
+
+      // aria-valuenow only takes a single numeric value, so we use this
+      // scheme to collapse the 2-D coordinates into a 1-D slider value.
+      this.setAttribute(
+          'aria-valuenow', (positionY * colorWellWidth) + positionX);
+
+      this.setAttribute('aria-valuetext', `X: ${positionX}, Y: ${positionY}`);
+    } else {
+      this.setAttribute(
+          'aria-valuenow', this.position_.x - this.backingColorPalette_.left);
+    }
   }
 
   setElementPosition_() {
@@ -1219,6 +1451,7 @@ class ColorWell extends ColorSelectionArea {
           'color-selection-ring-update', this.onColorSelectionRingUpdate_);
 
       this.moveColorSelectionRingTo_(this.selectedColor_);
+      this.colorSelectionRing_.initializeAria(/*isForColorWell*/ true);
 
       this.resizeObserver_.disconnect();
       this.resizeObserver_ = null;
@@ -1333,6 +1566,7 @@ class HueSlider extends ColorSelectionArea {
           'color-selection-ring-update', this.onColorSelectionRingUpdate_);
 
       this.moveColorSelectionRingTo_(this.color_);
+      this.colorSelectionRing_.initializeAria(/*isForColorWell*/ false);
 
       this.resizeObserver_.disconnect();
       this.resizeObserver_ = null;
@@ -1550,36 +1784,44 @@ class ChannelValueContainer extends HTMLInputElement {
 
     this.setAttribute('type', 'text');
     this.colorChannel_ = colorChannel;
+
     switch (colorChannel) {
       case ColorChannel.HEX:
         this.setAttribute('id', 'hexValueContainer');
         this.setAttribute('maxlength', '7');
+        this.setAttribute('aria-label', global.params.axHexadecimalEditLabel);
         break;
       case ColorChannel.R:
         this.setAttribute('id', 'rValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axRedEditLabel);
         break;
       case ColorChannel.G:
         this.setAttribute('id', 'gValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axGreenEditLabel);
         break;
       case ColorChannel.B:
         this.setAttribute('id', 'bValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axBlueEditLabel);
         break;
       case ColorChannel.H:
         this.setAttribute('id', 'hValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axHueEditLabel);
         break;
       case ColorChannel.S:
         // up to 3 digits plus '%'
         this.setAttribute('id', 'sValueContainer');
         this.setAttribute('maxlength', '4');
+        this.setAttribute('aria-label', global.params.axSaturationEditLabel);
         break;
       case ColorChannel.L:
         // up to 3 digits plus '%'
         this.setAttribute('id', 'lValueContainer');
         this.setAttribute('maxlength', '4');
+        this.setAttribute('aria-label', global.params.axLightnessEditLabel);
         break;
     }
     this.setValue(initialColor);
@@ -1721,13 +1963,18 @@ class FormatToggler extends HTMLElement {
     super();
 
     this.setAttribute('tabIndex', 0);
+    this.setAttribute('role', 'spinbutton');
+    this.setAttribute('aria-label', global.params.axFormatTogglerLabel);
+    this.setAttribute('aria-valuenow', '1');
+    this.setAttribute('aria-valuemin', '1');
+    this.setAttribute('aria-valuemax', '3');
     this.currentColorFormat_ = initialColorFormat;
-    this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.rgbFormatLabel_ = new FormatLabel(ColorFormat.RGB);
+    this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.hslFormatLabel_ = new FormatLabel(ColorFormat.HSL);
     this.colorFormatLabels_ = [
-      this.hexFormatLabel_,
       this.rgbFormatLabel_,
+      this.hexFormatLabel_,
       this.hslFormatLabel_,
     ];
     this.adjustFormatLabelVisibility_();
@@ -1762,6 +2009,14 @@ class FormatToggler extends HTMLElement {
           (((newValue % numFormats) + numFormats) % numFormats);
     });
     this.currentColorFormat_ = ColorFormat[newColorFormatKey];
+
+    if (this.currentColorFormat_ === ColorFormat.RGB) {
+      this.setAttribute('aria-valuenow', '1');
+    } else if (this.currentColorFormat_ === ColorFormat.HSL) {
+      this.setAttribute('aria-valuenow', '2');
+    } else if (this.currentColorFormat_ === ColorFormat.HEX) {
+      this.setAttribute('aria-valuenow', '3');
+    }
 
     this.adjustFormatLabelVisibility_();
 
@@ -1875,63 +2130,92 @@ class ChannelLabel extends HTMLElement {
 window.customElements.define('channel-label', ChannelLabel);
 
 /**
- * SubmissionControls: Provides functionality to submit or discard a change.
+ * ColorValueAXAnnouncer: Make announcements to be read out by accessibility tools
+ * when the color value is changed by the ColorWell or HueSlider.
+ * Ideally it would be sufficient to just set the right ARIA attributes on the elements
+ * themselves, but the color control does not fit neatly into existing ARIA roles.
+ * ColorValueAXAnnouncer fills this gap by reading out color value changes using an
+ * ARIA live region.
  */
-class SubmissionControls extends HTMLElement {
-  /**
-   * @param {function} submitCallback executed if the submit button is clicked
-   * @param {function} cancelCallback executed if the cancel button is clicked
-   */
-  constructor(submitCallback, cancelCallback) {
+class ColorValueAXAnnouncer extends HTMLElement {
+  constructor() {
     super();
+    this.setAttribute('aria-live', 'polite');
+    this.colorFormat_ = ColorFormat.RGB;
 
-    const padding = document.createElement('span');
-    padding.setAttribute('id', 'submission-controls-padding');
-    this.append(padding);
+    // We don't want this element to be visible so hide it off the edge of the popup.
+    this.style.position = 'absolute';
+    this.style.left = '-99999ch';
 
-    this.submitButton_ = new SubmissionButton(
-        submitCallback,
-        '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
-            '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-            '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="WindowText"/></svg>');
-    this.cancelButton_ = new SubmissionButton(
-        cancelCallback,
-        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M7.71094 7L13.1016 ' +
-            '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
-            '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
-            '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-            'fill="WindowText"/></svg>');
-    this.append(this.submitButton_, this.cancelButton_);
+    this.addEventListener('format-change', this.onFormatChange_);
   }
 
-  get submitButton() {
-    return this.submitButton_;
+  announceColor(newColor) {
+    let announcementString = null;
+    if (this.colorFormat_ === ColorFormat.HEX) {
+      announcementString =
+          `${global.params.axHexadecimalEditLabel} ${newColor.hexValue}`;
+    } else if (this.colorFormat_ === ColorFormat.RGB) {
+      announcementString =
+          `${global.params.axRedEditLabel} ${newColor.rValue}, ${
+              global.params.axGreenEditLabel} ${newColor.gValue}, ${
+              global.params.axBlueEditLabel} ${newColor.bValue}`;
+    } else if (this.colorFormat_ === ColorFormat.HSL) {
+      announcementString =
+          `${global.params.axHueEditLabel} ${newColor.hValue}, ${
+              global.params.axSaturationEditLabel} ${newColor.sValue}, ${
+              global.params.axLightnessEditLabel} ${newColor.lValue}`;
+    }
+    this.announce_(announcementString)
   }
 
-  get cancelButton() {
-    return this.cancelButton_;
+  // Announce format changes via the live region in order to work around an
+  // issue where Windows Narrator does not support aria-valuetext for
+  // spinbutton.  The behavior that this achieves is similar to updating the
+  // FormatToggler spinbutton's aria-valuetext whenever the format changes,
+  // but it dodges the Narrator bug.
+  // TODO(crbug.com/1073188): Remove this workaround and use aria-valuetext
+  // instead once the Narrator bug has been fixed.
+  announceColorFormat() {
+    // These are deliberately non-localized so that they match the
+    // abbreviations of the text on the FormatToggler ChannelLabels,
+    // which are also not localized.
+    let announcementString = null;
+    if (this.colorFormat_ === ColorFormat.HEX) {
+      announcementString = 'Hex';
+    } else if (this.colorFormat_ === ColorFormat.RGB) {
+      announcementString = 'RGB';
+    } else if (this.colorFormat_ === ColorFormat.HSL) {
+      announcementString = 'HSL';
+    }
+
+    this.announce_(announcementString)
   }
+
+  updateColorFormat(newColorFormat) {
+    this.colorFormat_ = newColorFormat;
+    this.announceColorFormat();
+  }
+
+  announce_(announcementString) {
+    // Only cue one announcement at a time so that user isn't spammed with a backlog
+    // of announcements after holding down an arrow key.
+    // Announce after a delay so that the control announces its raw position before
+    // the full announcement starts.
+    window.clearTimeout(this.pendingAnnouncement_);
+    this.pendingAnnouncement_ = window.setTimeout(() => {
+      if (this.textContent === announcementString) {
+        // The AT will only do an announcement if the live-region content has
+        // changed, so make a no-op change to fool it into announcing every
+        // time.  Normal whitespace is ignored by Narrator for this purpose,
+        // so use a non-breaking space.
+        this.textContent += String.fromCharCode(160);
+      } else {
+        this.textContent = announcementString;
+      }
+    }, ColorValueAXAnnouncer.announcementDelayMS);
+  }
+
+  static announcementDelayMS = 500;
 }
-window.customElements.define('submission-controls', SubmissionControls);
-
-/**
- * SubmissionButton: Button with a custom look that can be clicked for
- *                   a submission action.
- */
-class SubmissionButton extends HTMLElement {
-  /**
-   * @param {function} clickCallback executed when the button is clicked
-   * @param {string} htmlString custom look for the button
-   */
-  constructor(clickCallback, htmlString) {
-    super();
-
-    this.setAttribute('tabIndex', '0');
-    this.innerHTML = htmlString;
-
-    this.addEventListener('click', clickCallback);
-  }
-}
-window.customElements.define('submission-button', SubmissionButton);
+window.customElements.define('color-value-ax-announcer', ColorValueAXAnnouncer);

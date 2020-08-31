@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "components/autofill_assistant/browser/event_handler.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
@@ -19,6 +20,9 @@
 
 namespace autofill_assistant {
 class ControllerObserver;
+class Details;
+class InfoBox;
+class BasicInteractions;
 struct ClientSettings;
 
 // UI delegate called for script executions.
@@ -37,11 +41,6 @@ class UiDelegate {
 
   // Returns the current state of the controller.
   virtual AutofillAssistantState GetState() = 0;
-
-  // Asks for updated coordinates for the touchable area. This is called to
-  // speed up update of the touchable areas when there are good reasons to think
-  // that the current coordinates are out of date, such as while scrolling.
-  virtual void UpdateTouchableArea() = 0;
 
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
@@ -123,31 +122,32 @@ class UiDelegate {
   // options.
   virtual void SetLoginOption(std::string identifier) = 0;
 
-  // Called when the user clicks a link on the terms & conditions message.
-  virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
+  // Called when the user clicks a link of the form <link0>text</link0> in a
+  // text message.
+  virtual void OnTextLinkClicked(int link) = 0;
 
   // Called when the user clicks a link in the form action.
   virtual void OnFormActionLinkClicked(int link) = 0;
 
-  // Sets the start of the date/time range.
-  virtual void SetDateTimeRangeStart(int year,
-                                     int month,
-                                     int day,
-                                     int hour,
-                                     int minute,
-                                     int second) = 0;
+  // Sets the start date of the date/time range.
+  virtual void SetDateTimeRangeStartDate(
+      const base::Optional<DateProto>& date) = 0;
 
-  // Sets the end of the date/time range.
-  virtual void SetDateTimeRangeEnd(int year,
-                                   int month,
-                                   int day,
-                                   int hour,
-                                   int minute,
-                                   int second) = 0;
+  // Sets the start timeslot of the date/time range.
+  virtual void SetDateTimeRangeStartTimeSlot(
+      const base::Optional<int>& timeslot_index) = 0;
+
+  // Sets the end date of the date/time range.
+  virtual void SetDateTimeRangeEndDate(
+      const base::Optional<DateProto>& date) = 0;
+
+  // Sets the end timeslot of the date/time range.
+  virtual void SetDateTimeRangeEndTimeSlot(
+      const base::Optional<int>& timeslot_index) = 0;
 
   // Sets an additional value.
   virtual void SetAdditionalValue(const std::string& client_memory_key,
-                                  const std::string& value) = 0;
+                                  const ValueProto& value) = 0;
 
   // Adds the rectangles that correspond to the current touchable area to
   // the given vector.
@@ -173,6 +173,7 @@ class UiDelegate {
   // Returns whether the viewport should be resized.
   virtual ViewportMode GetViewportMode() = 0;
 
+  // Peek mode state and whether it was changed automatically last time.
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
 
   // Fills in the overlay colors.
@@ -183,6 +184,9 @@ class UiDelegate {
 
   // Returns the current form. May be null if there is no form to show.
   virtual const FormProto* GetForm() const = 0;
+
+  // Returns the current form data. May be null if there is no form to show.
+  virtual const FormProto::Result* GetFormResult() const = 0;
 
   // Sets a counter value.
   virtual void SetCounterValue(int input_index,
@@ -201,7 +205,24 @@ class UiDelegate {
   // Remove a previously registered observer.
   virtual void RemoveObserver(const ControllerObserver* observer) = 0;
 
- protected:
+  // Dispatches an event to the event handler.
+  virtual void DispatchEvent(const EventHandler::EventKey& key) = 0;
+
+  // Returns the user model.
+  virtual UserModel* GetUserModel() = 0;
+
+  // Returns the event handler.
+  virtual EventHandler* GetEventHandler() = 0;
+
+  // Returns an object that provides basic interactions for the UI framework.
+  virtual BasicInteractions* GetBasicInteractions() = 0;
+
+  // Whether the sheet should be auto expanded when entering the prompt state.
+  virtual bool ShouldPromptActionExpandSheet() const = 0;
+
+  // The generic user interface to show, if any.
+  virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
+
  protected:
   UiDelegate() = default;
 };

@@ -9,9 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
@@ -68,8 +69,6 @@ class FailingHttpTransaction : public HttpTransaction {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
-  void SetBeforeHeadersSentCallback(
-      const BeforeHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void SetRequestHeadersCallback(RequestHeadersCallback) override {}
@@ -172,9 +171,6 @@ void FailingHttpTransaction::SetWebSocketHandshakeStreamCreateHelper(
 void FailingHttpTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback)  {
 }
-
-void FailingHttpTransaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {}
 
 int FailingHttpTransaction::ResumeNetworkStart()  {
   NOTREACHED();

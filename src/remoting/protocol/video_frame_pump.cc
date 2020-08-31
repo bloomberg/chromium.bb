@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
@@ -131,10 +131,10 @@ void VideoFramePump::OnCaptureResult(
   // that we don't start capturing frame n+2 before frame n is freed.
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
-      base::Bind(&VideoFramePump::EncodeFrame, encoder_.get(),
-                 base::Passed(&frame),
-                 base::Passed(&captured_frame_timestamps_)),
-      base::Bind(&VideoFramePump::OnFrameEncoded, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&VideoFramePump::EncodeFrame, encoder_.get(),
+                     std::move(frame), std::move(captured_frame_timestamps_)),
+      base::BindOnce(&VideoFramePump::OnFrameEncoded,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::CaptureNextFrame() {

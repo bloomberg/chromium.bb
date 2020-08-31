@@ -8,6 +8,7 @@ source_set("ui") {
   deps = [
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
+    ":web_view_handler",
     "//base",
     "//ios/net",
     "//ios/third_party/webkit",
@@ -37,7 +38,6 @@ source_set("ui") {
     "//ios/web/web_state:web_view_internal_creation_util",
     "//ios/web/web_state/js",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
-    "//ios/web/web_state/ui/controller",
     "//ios/web/web_view:util",
     "//ios/web/webui:webui",
     "//net",
@@ -72,14 +72,19 @@ source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("crw_web_view_navigation_proxy") {
+source_set("web_view_handler") {
   sources = [
-    "crw_web_view_navigation_proxy.h",
+    "crw_web_view_handler.h",
+    "crw_web_view_handler.mm",
+    "crw_web_view_handler_delegate.h",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
 
-  deps = [
-    "//ios/third_party/webkit",
-  ]
+source_set("crw_web_view_navigation_proxy") {
+  sources = [ "crw_web_view_navigation_proxy.h" ]
+
+  deps = [ "//ios/third_party/webkit" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -98,6 +103,7 @@ source_set("crw_context_menu_controller") {
   sources = [
     "crw_context_menu_controller.h",
     "crw_context_menu_controller.mm",
+    "crw_context_menu_delegate.h",
     "html_element_fetch_request.h",
     "html_element_fetch_request.mm",
   ]
@@ -108,6 +114,7 @@ source_set("crw_context_menu_controller") {
 source_set("wk_web_view_configuration_provider") {
   deps = [
     "//base",
+    "//components/safe_browsing/core:features",
     "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/js_messaging",

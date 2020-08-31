@@ -24,6 +24,7 @@ import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidge
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -31,16 +32,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
-import org.chromium.chrome.browser.favicon.FaviconUtils;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
@@ -181,8 +181,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mCallback = callback;
 
             Resources res = context.getResources();
-            mLargeIconBridge = new LargeIconBridge(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             mIconGenerator =
@@ -255,7 +254,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
                     taskFinished();
                 }
             };
-            mLargeIconBridge.getLargeIconForUrl(bookmark.url, mMinIconSizeDp, callback);
+            mLargeIconBridge.getLargeIconForStringUrl(bookmark.url, mMinIconSizeDp, callback);
         }
 
         @UiThread
@@ -306,7 +305,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
         public void onCreate() {
             // Required to be applied here redundantly to prevent crashes in the cases where the
             // package data is deleted or the Chrome application forced to stop.
-            ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             if (isWidgetNewlyCreated()) {
                 RecordUserAction.record("BookmarkNavigatorWidgetAdded");
             }

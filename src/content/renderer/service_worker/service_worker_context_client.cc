@@ -11,9 +11,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -366,7 +366,7 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
                                          blink::WebStringToGURL(source_url));
 }
 
-scoped_refptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebServiceWorkerFetchContext>
 ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_receiver_.is_valid());
@@ -466,7 +466,8 @@ void ServiceWorkerContextClient::SendWorkerStarted(
   CHECK_LE(start_timing_->script_evaluation_start_time,
            start_timing_->script_evaluation_end_time);
 
-  instance_host_->OnStarted(status, WorkerThread::GetCurrentId(),
+  instance_host_->OnStarted(status, proxy_->HasFetchHandler(),
+                            WorkerThread::GetCurrentId(),
                             std::move(start_timing_));
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
@@ -482,11 +483,8 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
       this, fetch_event_id, GURL(url),
       blink::mojom::FetchEventPreloadHandle::New(
-          mojo::PendingRemote<network::mojom::URLLoader>(
-              std::move(preload_handle->url_loader),
-              network::mojom::URLLoader::Version_),
-          mojo::PendingReceiver<network::mojom::URLLoaderClient>(
-              std::move(preload_handle->url_loader_client_receiver))));
+          std::move(preload_handle->url_loader),
+          std::move(preload_handle->url_loader_client_receiver)));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }

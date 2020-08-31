@@ -22,6 +22,195 @@ const kFrameNodesTargetY = kPageNodesYRange + 50;
 const kFrameNodesTopMargin = kPageNodesYRange;
 const kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
 
+class ToolTip {
+  /**
+   * @param {Element} div
+   * @param {GraphNode} node
+   */
+  constructor(div, node) {
+    /** @type {boolean} */
+    this.floating = true;
+
+    /** @type {number} */
+    this.x = node.x;
+
+    /** @type {number} */
+    this.y = node.y - 28;
+
+    /** @type {GraphNode} */
+    this.node = node;
+
+    /** @private {d3.selection} */
+    this.div_ = d3.select(div)
+                    .append('div')
+                    .attr('class', 'tooltip')
+                    .style('opacity', 0)
+                    .style('left', `${this.x}px`)
+                    .style('top', `${this.y}px`);
+    this.div_.append('table').append('tbody');
+    this.div_.transition().duration(200).style('opacity', .9);
+
+    /** @private {string} */
+    this.description_json_ = '';
+    // Set up a drag behavior for this object's div.
+    const drag = d3.drag().subject(() => this);
+    drag.on('start', this.onDragStart_.bind(this));
+    drag.on('drag', this.onDrag_.bind(this));
+    this.div_.call(drag);
+
+    this.onDescription(JSON.stringify({}));
+  }
+
+  nodeMoved() {
+    if (!this.floating) {
+      return;
+    }
+
+    const node = this.node;
+    this.x = node.x;
+    this.y = node.y - 28;
+    this.div_.style('left', `${this.x}px`).style('top', `${this.y}px`);
+  }
+
+  /**
+   * @return {!Array<number>} The [x, y] center of the ToolTip's div
+   * element.
+   */
+  getCenter() {
+    const rect = this.div_.node().getBoundingClientRect();
+    return [rect.x + rect.width / 2, rect.y + rect.height / 2];
+  }
+
+  goAway() {
+    this.div_.transition().duration(200).style('opacity', 0).remove();
+  }
+
+  /**
+   * Updates the description displayed.
+   * @param {string} description_json A JSON string.
+   */
+  onDescription(description_json) {
+    if (this.description_json_ === description_json) {
+      return;
+    }
+
+    /**
+     * Helper for recursively flattening an Object.
+     *
+     * @param {!Set} visited The set of visited objects, excluding
+     *          {@code object}.
+     * @param {!Object<?,?>} flattened The flattened object being built.
+     * @param {string} path The current flattened path.
+     * @param {!Object<?,?>} object The nested dict to be flattened.
+     */
+    function flattenObjectRec(visited, flattened, path, object) {
+      if (typeof object !== 'object' || visited.has(object)) {
+        return;
+      }
+      visited.add(object);
+      for (const [key, value] of Object.entries(object)) {
+        const fullPath = path ? `${path}.${key}` : key;
+        // Recurse on non-null objects.
+        if (!!value && typeof value === 'object') {
+          flattenObjectRec(
+              visited, flattened, fullPath,
+              /** @type {!Object<?,?>} */ (value));
+        } else {
+          // Everything else is considered a leaf value.
+          flattened[fullPath] = value;
+        }
+      }
+    }
+
+    /**
+     * Recursively flattens an Object of key/value pairs. Nested objects will be
+     * flattened to paths with a . separator between each key. If there are
+     * circular dependencies, they will not be expanded.
+     *
+     * For example, converting:
+     *
+     * {
+     *   'foo': 'hello',
+     *   'bar': 1,
+     *   'baz': {
+     *     'x': 43.5,
+     *     'y': 'fox'
+     *     'z': [1, 2]
+     *   },
+     *   'self': (reference to self)
+     * }
+     *
+     * will yield:
+     *
+     * {
+     *   'foo': 'hello',
+     *   'bar': 1,
+     *   'baz.x': 43.5,
+     *   'baz.y': 'fox',
+     *   'baz.z.0': '1',
+     *   'baz.y.1': '2'
+     * }
+     * @param {!Object<?,?>} object The object to be flattened.
+     * @return {!Object<?,?>} the flattened object.
+     */
+    function flattenObject(object) {
+      const flattened = {};
+      flattenObjectRec(new Set(), flattened, '', object);
+      return flattened;
+    }
+
+    // The JSON is a dictionary of data describer name to their data. Assuming a
+    // convention that describers emit a dictionary from string->string, this is
+    // flattened to an array. Each top-level dictionary entry is flattened to a
+    // 'heading' with [`the describer's name`, null], followed by some number of
+    // entries with a two-element list, each representing a key/value pair.
+    this.description_json_ = description_json;
+    const description =
+        /** @type {!Object<?,?>} */ (JSON.parse(description_json));
+    const flattenedDescription = [];
+    for (const [title, value] of Object.entries(description)) {
+      flattenedDescription.push([title, null]);
+      const flattenedValue = flattenObject(value);
+      for (const [propName, propValue] of Object.entries(flattenedValue)) {
+        let strValue = String(propValue);
+        if (strValue.length > 50) {
+          strValue = `${strValue.substring(0, 47)}...`;
+        }
+        flattenedDescription.push([propName, strValue]);
+      }
+    }
+    if (flattenedDescription.length === 0) {
+      flattenedDescription.push(['No Data', null]);
+    }
+
+    let tr =
+        this.div_.selectAll('tbody').selectAll('tr').data(flattenedDescription);
+    tr.enter().append('tr').selectAll('td').data(d => d).enter().append('td');
+    tr.exit().remove();
+
+    tr = this.div_.selectAll('tr');
+    tr.select('td').attr('colspan', function(d) {
+      return (d3.select(this.parentElement).datum()[1] === null) ? 2 : null;
+    });
+    tr = tr.attr('class', d => d[1] === null ? 'heading' : 'value');
+    tr.selectAll('td').data(d => d).text(d => d === null ? '' : d);
+  }
+
+  /** @private */
+  onDragStart_() {
+    this.floating = false;
+  }
+
+  /** @private */
+  onDrag_() {
+    this.x = d3.event.x;
+    this.y = d3.event.y;
+    this.div_.style('left', `${this.x}px`).style('top', `${this.y}px`);
+
+    graph.updateToolTipLinks();
+  }
+}
+
 /** @implements {d3.ForceNode} */
 class GraphNode {
   constructor(id) {
@@ -32,15 +221,18 @@ class GraphNode {
     /** @type {string} */
     this.iconUrl = '';
 
+    /** @type {ToolTip} */
+    this.tooltip = null;
+
     /**
      * Implementation of the d3.ForceNode interface.
      * See https://github.com/d3/d3-force#simulation_nodes.
      * @type {number|undefined}
      */
     this.index;
-    /** @type {number|undefined} */
+    /** @type {number} */
     this.x;
-    /** @type {number|undefined} */
+    /** @type {number} */
     this.y;
     /** @type {number|undefined} */
     this.vx;
@@ -269,7 +461,7 @@ function boundingForce(graphHeight) {
       const node = nodes[i];
       const yOld = node.y;
       const yNew = Math.max(bound[0], Math.min(yOld, bound[1]));
-      if (yOld != yNew) {
+      if (yOld !== yNew) {
         node.y = yNew;
         // Zero the velocity of clamped nodes.
         node.vy = 0;
@@ -294,13 +486,17 @@ class Graph {
    * TODO(siggi): This should be SVGElement, but closure doesn't have externs
    *    for this yet.
    * @param {Element} svg
+   * @param {Element} div
    */
-  constructor(svg) {
+  constructor(svg, div) {
     /**
      * TODO(siggi): SVGElement.
      * @private {Element}
      */
     this.svg_ = svg;
+
+    /** @private {Element} */
+    this.div_ = div;
 
     /** @private {boolean} */
     this.wasResized_ = false;
@@ -312,6 +508,12 @@ class Graph {
 
     /** @private {d3.ForceSimulation} */
     this.simulation_ = null;
+
+    /**
+     * A selection for the top-level <g> node that contains all tooltip links.
+     * @private {d3.selection}
+     */
+    this.toolTipLinkGroup_ = null;
 
     /**
      * A selection for the top-level <g> node that contains all separators.
@@ -339,6 +541,24 @@ class Graph {
      * @private {!Array<!d3.ForceLink>}
      */
     this.links_ = [];
+
+    /**
+     * The host window.
+     * @private {Window}
+     */
+    this.hostWindow_ = null;
+
+    /**
+     * The interval timer used to poll for node descriptions.
+     * @private {number}
+     */
+    this.pollDescriptionsInterval_ = 0;
+
+    /**
+     * The d3.drag instance applied to nodes.
+     * @private {?d3.Drag}
+     */
+    this.drag_ = null;
   }
 
   initialize() {
@@ -347,7 +567,7 @@ class Graph {
     // so these event handlers are never removed.
     window.addEventListener('message', this.onMessage_.bind(this));
 
-    // Set up a window resize listener to track the graph on resize.
+    // Set up a resize listener to track the graph on resize.
     window.addEventListener('resize', this.onResize_.bind(this));
 
     // Create the simulation and set up the permanent forces.
@@ -366,11 +586,19 @@ class Graph {
     this.simulation_ = simulation;
 
     // Create the <g> elements that host nodes and links.
-    // The link group is created first so that all links end up behind nodes.
+    // The link groups are created first so that all links end up behind nodes.
     const svg = d3.select(this.svg_);
+    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'toolTipLinks');
     this.linkGroup_ = svg.append('g').attr('class', 'links');
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
     this.separatorGroup_ = svg.append('g').attr('class', 'separators');
+
+    const drag = d3.drag();
+    drag.clickDistance(4);
+    drag.on('start', this.onDragStart_.bind(this));
+    drag.on('drag', this.onDrag_.bind(this));
+    drag.on('end', this.onDragEnd_.bind(this));
+    this.drag_ = drag;
   }
 
   /** @override */
@@ -440,14 +668,89 @@ class Graph {
     this.nodes_.delete(nodeId);
   }
 
+  /** Updates floating tooltip positions as well as links to pinned tooltips */
+  updateToolTipLinks() {
+    const pinnedTooltips = [];
+    for (const node of this.nodes_.values()) {
+      const tooltip = node.tooltip;
+
+      if (tooltip) {
+        if (tooltip.floating) {
+          tooltip.nodeMoved();
+        } else {
+          pinnedTooltips.push(tooltip);
+        }
+      }
+    }
+
+    function setLineEndpoints(d) {
+      const line = d3.select(this);
+      const center = d.getCenter();
+      line.attr('x1', d => center[0])
+          .attr('y1', d => center[1])
+          .attr('x2', d => d.node.x)
+          .attr('y2', d => d.node.y);
+    }
+
+    const toolTipLinks =
+        this.toolTipLinkGroup_.selectAll('line').data(pinnedTooltips);
+    toolTipLinks.enter()
+        .append('line')
+        .attr('stroke', 'LightGray')
+        .attr('stroke-dasharray', '1')
+        .attr('stroke-opacity', '0.8')
+        .each(setLineEndpoints);
+    toolTipLinks.each(setLineEndpoints);
+    toolTipLinks.exit().remove();
+  }
+
   /**
    * @param {!GraphNode} node
    * @private
    */
   removeNodeLinks_(node) {
     // Filter away any links to or from the deleted node.
-    this.links_ =
-        this.links_.filter(link => link.source != node && link.target != node);
+    this.links_ = this.links_.filter(
+        link => link.source !== node && link.target !== node);
+  }
+
+  /**
+   * @param {!Object<string>} nodeDescriptions
+   * @private
+   */
+  nodeDescriptions_(nodeDescriptions) {
+    for (const nodeId in nodeDescriptions) {
+      const node = this.nodes_.get(Number.parseInt(nodeId, 10));
+      if (node && node.tooltip) {
+        node.tooltip.onDescription(nodeDescriptions[nodeId]);
+      }
+    }
+  }
+
+  /**
+   * @private
+   */
+  pollForNodeDescriptions_() {
+    const nodeIds = [];
+    for (const node of this.nodes_.values()) {
+      if (node.tooltip) {
+        nodeIds.push(node.id);
+      }
+    }
+
+    if (nodeIds.length) {
+      this.hostWindow_.postMessage(['requestNodeDescriptions', nodeIds], '*');
+
+      if (this.pollDescriptionsInterval_ === 0) {
+        // Start polling if not already in progress.
+        this.pollDescriptionsInterval_ =
+            setInterval(this.pollForNodeDescriptions_.bind(this), 1000);
+      }
+    } else {
+      // No tooltips, stop polling.
+      clearInterval(this.pollDescriptionsInterval_);
+      this.pollDescriptionsInterval_ = 0;
+    }
   }
 
   /**
@@ -455,6 +758,10 @@ class Graph {
    * @private
    */
   onMessage_(event) {
+    if (!this.hostWindow_) {
+      this.hostWindow_ = event.source;
+    }
+
     const type = /** @type {string} */ (event.data[0]);
     const data = /** @type {Object|number} */ (event.data[1]);
     switch (type) {
@@ -497,9 +804,28 @@ class Graph {
       case 'nodeDeleted':
         this.nodeDeleted(/** @type {number} */ (data));
         break;
+      case 'nodeDescriptions':
+        this.nodeDescriptions_(/** @type {!Object<string>} */ (data));
+        break;
     }
 
     this.render_();
+  }
+
+  /**
+   * @param {GraphNode} node
+   * @private
+   */
+  onGraphNodeClick_(node) {
+    if (node.tooltip) {
+      node.tooltip.goAway();
+      node.tooltip = null;
+    } else {
+      node.tooltip = new ToolTip(this.div_, node);
+
+      // Poll for all tooltip node descriptions immediately.
+      this.pollForNodeDescriptions_();
+    }
   }
 
   /**
@@ -533,14 +859,13 @@ class Graph {
 
     // Add new nodes, if any.
     if (!node.enter().empty()) {
-      const drag = d3.drag();
-      drag.on('start', this.onDragStart_.bind(this));
-      drag.on('drag', this.onDrag_.bind(this));
-      drag.on('end', this.onDragEnd_.bind(this));
-
-      const newNodes = node.enter().append('g').call(drag);
+      const newNodes = node.enter()
+                           .append('g')
+                           .call(this.drag_)
+                           .on('click', this.onGraphNodeClick_.bind(this));
       const circles = newNodes.append('circle').attr('r', 9).attr(
           'fill', 'green');  // New nodes appear green.
+
       newNodes.append('image')
           .attr('x', -8)
           .attr('y', -8)
@@ -555,17 +880,31 @@ class Graph {
           .attr('r', 6);
     }
 
-    // Give dead nodes a distinguishing class to exclude them from the selection
-    // above. Interrupt any ongoing transitions, then transition them out.
-    const deletedNodes = node.exit().classed('dead', true).interrupt();
+    if (!node.exit().empty()) {
+      // Give dead nodes a distinguishing class to exclude them from the
+      // selection above.
+      const deletedNodes = node.exit().classed('dead', true);
 
-    deletedNodes.select('circle')
-        .attr('r', 9)
-        .attr('fill', 'red')
-        .transition()
-        .duration(2000)
-        .attr('r', 0)
-        .remove();
+      // Interrupt any ongoing transitions.
+      deletedNodes.interrupt();
+
+      // Turn down the node associated tooltips.
+      deletedNodes.each(d => {
+        if (d.tooltip) {
+          d.tooltip.goAway();
+        }
+      });
+
+      // Transition the nodes out and remove them at the end of transition.
+      deletedNodes.transition()
+          .remove()
+          .select('circle')
+          .attr('r', 9)
+          .attr('fill', 'red')
+          .transition()
+          .duration(2000)
+          .attr('r', 0);
+    }
 
     // Update the title for all nodes.
     node.selectAll('title').text(d => d.title);
@@ -592,6 +931,8 @@ class Graph {
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
+
+    this.updateToolTipLinks();
   }
 
   /**
@@ -770,10 +1111,11 @@ class Graph {
     this.restartSimulation_();
   }
 }
-
+/* @type {?Graph} */
 let graph = null;
 function onLoad() {
-  graph = new Graph(document.querySelector('svg'));
+  graph =
+      new Graph(document.querySelector('svg'), document.querySelector('div'));
 
   graph.initialize();
 }

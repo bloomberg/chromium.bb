@@ -25,56 +25,6 @@
 
 namespace content {
 
-namespace {
-
-void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
-                          std::string* result,
-                          base::OnceClosure quit_closure) {
-  while (true) {
-    uint32_t num_bytes;
-    const void* buffer = nullptr;
-    MojoResult rv =
-        handle.BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
-    switch (rv) {
-      case MOJO_RESULT_BUSY:
-      case MOJO_RESULT_INVALID_ARGUMENT:
-        NOTREACHED();
-        return;
-      case MOJO_RESULT_FAILED_PRECONDITION:
-        std::move(quit_closure).Run();
-        return;
-      case MOJO_RESULT_SHOULD_WAIT:
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(&ReadDataPipeInternal, handle, result,
-                                      std::move(quit_closure)));
-        return;
-      case MOJO_RESULT_OK:
-        EXPECT_NE(nullptr, buffer);
-        EXPECT_GT(num_bytes, 0u);
-        uint32_t before_size = result->size();
-        result->append(static_cast<const char*>(buffer), num_bytes);
-        uint32_t read_size = result->size() - before_size;
-        EXPECT_EQ(num_bytes, read_size);
-        rv = handle.EndReadData(read_size);
-        EXPECT_EQ(MOJO_RESULT_OK, rv);
-        break;
-    }
-  }
-  NOTREACHED();
-  return;
-}
-
-std::string ReadDataPipe(mojo::ScopedDataPipeConsumerHandle handle) {
-  EXPECT_TRUE(handle.is_valid());
-  std::string result;
-  base::RunLoop loop;
-  ReadDataPipeInternal(handle.get(), &result, loop.QuitClosure());
-  loop.Run();
-  return result;
-}
-
-}  // namespace
-
 class ExpectedScriptInfo {
  public:
   ExpectedScriptInfo(
@@ -91,10 +41,10 @@ class ExpectedScriptInfo {
         body_(body),
         meta_data_(meta_data) {}
 
-  ServiceWorkerDatabase::ResourceRecord WriteToDiskCache(
+  storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCache(
       ServiceWorkerStorage* storage) const {
-    return ::content::WriteToDiskCacheSync(storage, script_url_, resource_id_,
-                                           headers_, body_, meta_data_);
+    return ::content::WriteToDiskCacheWithIdSync(
+        storage, script_url_, resource_id_, headers_, body_, meta_data_);
   }
 
   void CheckIfIdentical(
@@ -182,11 +132,10 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
     options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L, context()->AsWeakPtr());
-    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(),
+    version_ = CreateNewServiceWorkerVersion(
+        context()->registry(), registration_.get(),
         GURL("http://www.example.com/test/service_worker.js"),
-        blink::mojom::ScriptType::kClassic,
-        context()->storage()->NewVersionId(), context()->AsWeakPtr());
+        blink::mojom::ScriptType::kClassic);
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version_->SetStatus(ServiceWorkerVersion::INSTALLED);
@@ -250,7 +199,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -306,7 +255,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -365,7 +314,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -436,7 +385,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -516,7 +465,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -603,7 +552,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -670,7 +619,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, NoContext) {
         "utf-8",
         "I'm script body for the main script",
         "I'm meta data for the main script"}}};
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
   for (const auto& info : kExpectedScriptInfoMap)
     records.push_back(info.second.WriteToDiskCache(context()->storage()));
   version()->script_cache_map()->SetResources(records);

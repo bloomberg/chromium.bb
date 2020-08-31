@@ -82,6 +82,18 @@ suite('PersonalizationHandler', function() {
     const row = personalizationPage.$.changePictureRow;
     assertTrue(!!row);
     row.click();
-    assertEquals(settings.routes.CHANGE_PICTURE, settings.getCurrentRoute());
+    assertEquals(
+        settings.routes.CHANGE_PICTURE,
+        settings.Router.getInstance().getCurrentRoute());
   });
+
+  test('ambientMode', function() {
+    const row = personalizationPage.$$('#ambientModeRow');
+    assertTrue(!!row);
+    row.click();
+    assertEquals(
+        settings.routes.AMBIENT_MODE,
+        settings.Router.getInstance().getCurrentRoute());
+  });
+
 });

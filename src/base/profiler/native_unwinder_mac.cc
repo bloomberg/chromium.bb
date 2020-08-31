@@ -9,10 +9,11 @@
 #include <mach/vm_map.h>
 #include <sys/ptrace.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 
 extern "C" {
 void _sigtramp(int, int, struct sigset*);
@@ -130,8 +131,8 @@ NativeUnwinderMac::NativeUnwinderMac(ModuleCache* module_cache)
   GetSigtrampRange(&sigtramp_start_, &sigtramp_end_);
 }
 
-bool NativeUnwinderMac::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module && current_frame->module->IsNative();
+bool NativeUnwinderMac::CanUnwindFrom(const Frame& current_frame) const {
+  return current_frame.module && current_frame.module->IsNative();
 }
 
 UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,

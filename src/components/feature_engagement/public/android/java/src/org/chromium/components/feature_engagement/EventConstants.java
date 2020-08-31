@@ -157,6 +157,18 @@ public final class EventConstants {
     /** User has tapped on Identity Disc. */
     public static final String IDENTITY_DISC_USED = "identity_disc_used";
 
+    /** User has used Ephemeral Tab i.e. opened and browsed the content. */
+    public static final String EPHEMERAL_TAB_USED = "ephemeral_tab_used";
+
+    /** HomepagePromo has been accepted. */
+    public static final String HOMEPAGE_PROMO_ACCEPTED = "homepage_promo_accepted";
+    public static final String HOMEPAGE_PROMO_SEEN = "homepage_promo_seen";
+    public static final String NTP_SHOWN = "ntp_shown";
+    public static final String NTP_HOME_BUTTON_CLICKED = "ntp_homebutton_clicked";
+
+    /** Reengagement events. */
+    public static final String STARTED_FROM_MAIN_INTENT = "started_from_main_intent";
+
     /**
      * Do not instantiate.
      */

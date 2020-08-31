@@ -58,6 +58,10 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
     // Called when the number of active output streams has changed.
     virtual void NumberOfActiveStreamsChanged();
 
+    // Called when the battery level for a Bluetooth headset changed.
+    virtual void BluetoothBatteryChanged(const std::string& address,
+                                         uint32_t level);
+
    protected:
     virtual ~Observer();
   };
@@ -128,6 +132,11 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
                                const std::string& hotword_model,
                                VoidDBusMethodCallback callback) = 0;
 
+  // Enables or disables the usage of fixed A2DP packet size in CRAS.
+  virtual void SetFixA2dpPacketSize(bool enabled) = 0;
+  // Enables or disables the next Handsfree profile next version in CRAS.
+  virtual void SetNextHandsfreeProfile(bool enabled) = 0;
+
   // Adds input node |node_id| to the active input list. This is used to add
   // an additional active input node besides the one set by SetActiveInputNode.
   // Note that this action will not trigger an ActiveInputNodeChanged event and
@@ -158,6 +167,25 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   virtual void SetGlobalOutputChannelRemix(
       int32_t channels,
       const std::vector<double>& mixer) = 0;
+
+  // Sets the player playback status. Possible status are "Playing", "Paused" or
+  // "Stopped".
+  virtual void SetPlayerPlaybackStatus(const std::string& playback_status) = 0;
+
+  // Sets the player identity. Identity is a human readable title for the source
+  // of the media player. This could be the name of the app or the name of the
+  // site playing media.
+  virtual void SetPlayerIdentity(const std::string& playback_identity) = 0;
+
+  // Sets the current track position for the player in microseconds
+  virtual void SetPlayerPosition(const int64_t& position) = 0;
+
+  // Sets the current track duration for the player in microseconds
+  virtual void SetPlayerDuration(const int64_t& duration) = 0;
+
+  // Sets the current media metadata including Title, Album, and Artist.
+  virtual void SetPlayerMetadata(
+      const std::map<std::string, std::string>& metadata) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(

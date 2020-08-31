@@ -10,6 +10,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
@@ -50,6 +51,9 @@ QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
 // static
 QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
     QuicConnection* connection) {
+  if (connection->use_idle_network_detector_) {
+    return connection->idle_network_detector_.idle_network_timeout_;
+  }
   return connection->idle_network_timeout_;
 }
 
@@ -87,20 +91,15 @@ void QuicConnectionPeer::SetEffectivePeerAddress(
 }
 
 // static
-bool QuicConnectionPeer::IsSilentCloseEnabled(QuicConnection* connection) {
-  return connection->idle_timeout_connection_close_behavior_ ==
-         ConnectionCloseBehavior::SILENT_CLOSE;
-}
-
-// static
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
   QuicFramerPeer::SwapCrypters(framer, &connection->framer_);
 }
 
 // static
-void QuicConnectionPeer::SetCurrentPacket(QuicConnection* connection,
-                                          QuicStringPiece current_packet) {
+void QuicConnectionPeer::SetCurrentPacket(
+    QuicConnection* connection,
+    quiche::QuicheStringPiece current_packet) {
   connection->current_packet_data_ = current_packet.data();
   connection->last_size_ = current_packet.size();
 }
@@ -152,12 +151,6 @@ QuicAlarm* QuicConnectionPeer::GetTimeoutAlarm(QuicConnection* connection) {
 QuicAlarm* QuicConnectionPeer::GetMtuDiscoveryAlarm(
     QuicConnection* connection) {
   return connection->mtu_discovery_alarm_.get();
-}
-
-// static
-QuicAlarm* QuicConnectionPeer::GetPathDegradingAlarm(
-    QuicConnection* connection) {
-  return connection->path_degrading_alarm_.get();
 }
 
 // static
@@ -344,6 +337,44 @@ size_t QuicConnectionPeer::GetNumEncryptionLevels(QuicConnection* connection) {
     }
   }
   return count;
+}
+
+// static
+QuicNetworkBlackholeDetector& QuicConnectionPeer::GetBlackholeDetector(
+    QuicConnection* connection) {
+  return connection->blackhole_detector_;
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetBlackholeDetectorAlarm(
+    QuicConnection* connection) {
+  return connection->blackhole_detector_.alarm_.get();
+}
+
+// static
+QuicTime QuicConnectionPeer::GetPathDegradingDeadline(
+    QuicConnection* connection) {
+  return connection->blackhole_detector_.path_degrading_deadline_;
+}
+
+// static
+QuicTime QuicConnectionPeer::GetBlackholeDetectionDeadline(
+    QuicConnection* connection) {
+  return connection->blackhole_detector_.blackhole_deadline_;
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetIdleNetworkDetectorAlarm(
+    QuicConnection* connection) {
+  return connection->idle_network_detector_.alarm_.get();
+}
+
+// static
+void QuicConnectionPeer::SetServerConnectionId(
+    QuicConnection* connection,
+    const QuicConnectionId& server_connection_id) {
+  connection->server_connection_id_ = server_connection_id;
+  connection->InstallInitialCrypters(server_connection_id);
 }
 
 }  // namespace test

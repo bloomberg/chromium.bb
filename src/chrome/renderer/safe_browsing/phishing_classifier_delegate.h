@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/safe_browsing/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -24,6 +24,19 @@ namespace safe_browsing {
 class ClientPhishingRequest;
 class PhishingClassifier;
 class Scorer;
+
+enum class SBPhishingClassifierEvent {
+  kPhishingDetectionRequested = 0,
+  kPageTextCaptured = 1,
+  // Phishing detection could not start because the page text was not loaded.
+  kPageTextNotLoaded = 2,
+  // Phishing detection could not start because the url was not specified to be
+  // classified.
+  kUrlShouldNotBeClassified = 3,
+  // Phishing detection could not finish because the class was destructed.
+  kDestructedBeforeClassificationDone = 4,
+  kMaxValue = kDestructedBeforeClassificationDone,
+};
 
 class PhishingClassifierFilter : public mojom::PhishingModelSetter {
  public:
@@ -91,6 +104,9 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   // Cancels any pending classification and frees the page text.
   void CancelPendingClassification(CancelClassificationReason reason);
 
+  // Records in UMA of a specific event that happens in the phishing classifier.
+  void RecordEvent(SBPhishingClassifierEvent event);
+
   void OnDestruct() override;
 
   void OnInterfaceRequestForFrame(
@@ -149,6 +165,10 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
 
   // Set to true if the classifier is currently running.
   bool is_classifying_;
+
+  // Set to true when StartPhishingDetection method is called. It is
+  // set to false whenever phishing detection has finished.
+  bool is_phishing_detection_running_ = false;
 
   // The callback from the most recent call to StartPhishingDetection.
   StartPhishingDetectionCallback callback_;

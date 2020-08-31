@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "components/permissions/permission_context_base.h"
+#include "components/permissions/permission_request_id.h"
 
 #if defined(OS_CHROMEOS)
 #include <map>
@@ -17,8 +17,6 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #endif
-
-class Profile;
 
 namespace views {
 class Widget;
@@ -31,19 +29,21 @@ class WebContents;
 // Manages protected media identifier permissions flow, and delegates UI
 // handling via PermissionQueueController.
 class ProtectedMediaIdentifierPermissionContext
-    : public PermissionContextBase {
+    : public permissions::PermissionContextBase {
  public:
-  explicit ProtectedMediaIdentifierPermissionContext(Profile* profile);
+  explicit ProtectedMediaIdentifierPermissionContext(
+      content::BrowserContext* browser_context);
   ~ProtectedMediaIdentifierPermissionContext() override;
 
   // PermissionContextBase implementation.
 #if defined(OS_CHROMEOS)
-  void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
 #endif  // defined(OS_CHROMEOS)
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
@@ -54,7 +54,7 @@ class ProtectedMediaIdentifierPermissionContext
   friend class ProtectedMediaIdentifierPermissionContextTest;
   static bool IsOriginWhitelisted(const GURL& origin);
 
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;
@@ -68,10 +68,10 @@ class ProtectedMediaIdentifierPermissionContext
 #if defined(OS_CHROMEOS)
   void OnPlatformVerificationConsentResponse(
       content::WebContents* web_contents,
-      const PermissionRequestID& id,
+      const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      BrowserPermissionCallback callback,
+      permissions::BrowserPermissionCallback callback,
       chromeos::attestation::PlatformVerificationDialog::ConsentResponse
           response);
 
@@ -79,7 +79,7 @@ class ProtectedMediaIdentifierPermissionContext
   // permission requests. This map tracks all pending requests. Note that we
   // only allow one request per WebContents.
   typedef std::map<content::WebContents*,
-                   std::pair<views::Widget*, PermissionRequestID>>
+                   std::pair<views::Widget*, permissions::PermissionRequestID>>
       PendingRequestMap;
   PendingRequestMap pending_requests_;
 

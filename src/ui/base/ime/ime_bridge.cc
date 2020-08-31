@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -91,6 +90,18 @@ class IMEBridgeImpl : public IMEBridge {
       const override {
     return candidate_window_handler_;
   }
+
+  // IMEBridge override.
+  void SetAssistiveWindowHandler(
+      chromeos::IMEAssistiveWindowHandlerInterface* handler) override {
+    assistive_window_handler_ = handler;
+  }
+
+  // IMEBridge override.
+  chromeos::IMEAssistiveWindowHandlerInterface* GetAssistiveWindowHandler()
+      const override {
+    return assistive_window_handler_;
+  }
 #endif
 
  private:
@@ -101,6 +112,8 @@ class IMEBridgeImpl : public IMEBridge {
 
 #if defined(OS_CHROMEOS)
   chromeos::IMECandidateWindowHandlerInterface* candidate_window_handler_ =
+      nullptr;
+  chromeos::IMEAssistiveWindowHandlerInterface* assistive_window_handler_ =
       nullptr;
 #endif
 

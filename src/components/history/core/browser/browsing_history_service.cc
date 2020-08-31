@@ -12,8 +12,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
@@ -300,14 +301,14 @@ void BrowsingHistoryService::QueryHistoryInternal(
           state->search_text,
           OptionsWithEndTime(state->original_options,
                              state->remote_end_time_for_continuation),
-          base::Bind(&BrowsingHistoryService::WebHistoryQueryComplete,
-                     weak_factory_.GetWeakPtr(), state, clock_->Now()),
+          base::BindOnce(&BrowsingHistoryService::WebHistoryQueryComplete,
+                         weak_factory_.GetWeakPtr(), state, clock_->Now()),
           partial_traffic_annotation);
 
       // Test the existence of other forms of browsing history.
       driver_->ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
           sync_service_, web_history,
-          base::Bind(
+          base::BindOnce(
               &BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete,
               weak_factory_.GetWeakPtr()));
     }
@@ -384,8 +385,8 @@ void BrowsingHistoryService::RemoveVisits(
   if (local_history_) {
     local_history_->ExpireHistory(
         expire_list,
-        base::Bind(&BrowsingHistoryService::RemoveComplete,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&BrowsingHistoryService::RemoveComplete,
+                       weak_factory_.GetWeakPtr()),
         &delete_task_tracker_);
   }
 
@@ -417,8 +418,8 @@ void BrowsingHistoryService::RemoveVisits(
           })");
     web_history->ExpireHistory(
         expire_list,
-        base::Bind(&BrowsingHistoryService::RemoveWebHistoryComplete,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&BrowsingHistoryService::RemoveWebHistoryComplete,
+                       weak_factory_.GetWeakPtr()),
         partial_traffic_annotation);
   }
 

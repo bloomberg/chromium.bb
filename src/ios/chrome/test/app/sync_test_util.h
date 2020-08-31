@@ -9,6 +9,7 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 #include "url/gurl.h"
 
 namespace chrome_test_util {
@@ -40,16 +41,28 @@ BOOL VerifyNumberOfSyncEntitiesWithName(syncer::ModelType type,
                                         NSError** error);
 
 // Injects a bookmark into the fake sync server with |url| and |title|.
-void InjectBookmarkOnFakeSyncServer(std::string url, std::string title);
+void AddBookmarkToFakeSyncServer(std::string url, std::string title);
+
+// Injects a legacy bookmark into the fake sync server. The legacy bookmark
+// means 2015 and earlier, prior to the adoption of GUIDs for originator client
+// item ID.
+void AddLegacyBookmarkToFakeSyncServer(std::string url,
+                                       std::string title,
+                                       std::string originator_client_item_id);
+
+// Injects user demographics into the fake sync server.
+void AddUserDemographicsToSyncServer(
+    int birth_year,
+    metrics::UserDemographicsProto::Gender gender);
 
 // Injects an autofill profile into the fake sync server with |guid| and
 // |full_name|.
-void InjectAutofillProfileOnFakeSyncServer(std::string guid,
-                                           std::string full_name);
+void AddAutofillProfileToFakeSyncServer(std::string guid,
+                                        std::string full_name);
 
 // Deletes an autofill profile from the fake sync server with |guid|, if it
 // exists. If it doesn't exist, nothing is done.
-void DeleteAutofillProfileOnFakeSyncServer(std::string guid);
+void DeleteAutofillProfileFromFakeSyncServer(std::string guid);
 
 // Clears the autofill profile for the given |guid|.
 void ClearAutofillProfile(std::string guid);
@@ -75,11 +88,11 @@ bool IsAutofillProfilePresent(std::string guid, std::string full_name);
 BOOL VerifySessionsOnSyncServer(const std::multiset<std::string>& expected_urls,
                                 NSError** error);
 
-// Adds typed URL into HistoryService.
-void AddTypedURLOnClient(const GURL& url);
+// Adds typed URL to HistoryService.
+void AddTypedURLToClient(const GURL& url);
 
-// Injects typed URL to sync FakeServer.
-void InjectTypedURLOnFakeSyncServer(const std::string& url);
+// Injects a typed URL into the fake sync server.
+void AddTypedURLToFakeSyncServer(const std::string& url);
 
 // Returns YES if the provided |url| is present (or not) if |expected_present|
 // is YES (or NO).
@@ -92,6 +105,10 @@ void DeleteTypedUrlFromClient(const GURL& url);
 
 // Deletes typed URL on FakeServer by injecting a tombstone.
 void DeleteTypedUrlFromFakeSyncServer(std::string url);
+
+// Adds a bookmark with a sync passphrase. The sync server will need the sync
+// passphrase to start.
+void AddBookmarkWithSyncPassphrase(const std::string& sync_passphrase);
 
 }  // namespace chrome_test_util
 

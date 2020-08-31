@@ -66,7 +66,8 @@ TEST_F(AccessibilityObjectModelTest, SetAccessibleNodeRole) {
   button->accessibleNode()->setRole("slider");
   EXPECT_EQ("slider", button->accessibleNode()->role());
 
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   axButton = cache->GetOrCreate(button);
 
   // No change in the AXObject role should be observed.
@@ -99,9 +100,7 @@ TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
   // The AOM properties should still all be null.
   EXPECT_EQ(nullptr, textbox->accessibleNode()->role());
   EXPECT_EQ(nullptr, textbox->accessibleNode()->label());
-  bool is_null = false;
-  EXPECT_FALSE(textbox->accessibleNode()->disabled(is_null));
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(textbox->accessibleNode()->disabled().has_value());
 }
 
 TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
@@ -120,7 +119,8 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Assert that the AX object was affected by ARIA attributes.
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   auto* axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
   ax::mojom::NameFrom name_from;
@@ -131,8 +131,9 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Now set the AOM properties to override.
   button->accessibleNode()->setRole("radio");
   button->accessibleNode()->setLabel("Radio");
-  button->accessibleNode()->setDisabled(false, false);
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  button->accessibleNode()->setDisabled(false);
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
 
   // Assert that AOM does not affect the AXObject.
   axButton = cache->GetOrCreate(button);
@@ -143,8 +144,9 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Null the AOM properties.
   button->accessibleNode()->setRole(g_null_atom);
   button->accessibleNode()->setLabel(g_null_atom);
-  button->accessibleNode()->setDisabled(false, true);
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  button->accessibleNode()->setDisabled(base::nullopt);
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
 
   // The AX Object should now revert to ARIA.
   axButton = cache->GetOrCreate(button);
@@ -161,13 +163,14 @@ TEST_F(AccessibilityObjectModelTest, RangeProperties) {
 
   auto* slider = GetDocument().getElementById("slider");
   ASSERT_NE(nullptr, slider);
-  slider->accessibleNode()->setValueMin(-0.5, false);
-  slider->accessibleNode()->setValueMax(0.5, false);
-  slider->accessibleNode()->setValueNow(0.1, false);
+  slider->accessibleNode()->setValueMin(-0.5);
+  slider->accessibleNode()->setValueMax(0.5);
+  slider->accessibleNode()->setValueNow(0.1);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
-  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  GetDocument().View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kTest);
   auto* ax_slider = cache->GetOrCreate(slider);
   float value = 0.0f;
   EXPECT_TRUE(ax_slider->MinValueForRange(&value));
@@ -186,7 +189,7 @@ TEST_F(AccessibilityObjectModelTest, Level) {
 
   auto* heading = GetDocument().getElementById("heading");
   ASSERT_NE(nullptr, heading);
-  heading->accessibleNode()->setLevel(5, false);
+  heading->accessibleNode()->setLevel(5);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -203,8 +206,8 @@ TEST_F(AccessibilityObjectModelTest, ListItem) {
 
   auto* listitem = GetDocument().getElementById("listitem");
   ASSERT_NE(nullptr, listitem);
-  listitem->accessibleNode()->setPosInSet(9, false);
-  listitem->accessibleNode()->setSetSize(10, false);
+  listitem->accessibleNode()->setPosInSet(9);
+  listitem->accessibleNode()->setSetSize(10);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -228,20 +231,20 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
 
   auto* grid = GetDocument().getElementById("grid");
   ASSERT_NE(nullptr, grid);
-  grid->accessibleNode()->setColCount(16, false);
-  grid->accessibleNode()->setRowCount(9, false);
+  grid->accessibleNode()->setColCount(16);
+  grid->accessibleNode()->setRowCount(9);
 
   auto* row = GetDocument().getElementById("row");
   ASSERT_NE(nullptr, row);
-  row->accessibleNode()->setColIndex(8, false);
-  row->accessibleNode()->setRowIndex(5, false);
+  row->accessibleNode()->setColIndex(8);
+  row->accessibleNode()->setRowIndex(5);
 
   auto* cell = GetDocument().getElementById("cell");
 
   auto* cell2 = GetDocument().getElementById("cell2");
   ASSERT_NE(nullptr, cell2);
-  cell2->accessibleNode()->setColIndex(10, false);
-  cell2->accessibleNode()->setRowIndex(7, false);
+  cell2->accessibleNode()->setColIndex(10);
+  cell2->accessibleNode()->setRowIndex(7);
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -346,10 +349,10 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
             sparse_attributes.object_attributes
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
-  ASSERT_EQ(
-      ax::mojom::Role::kContentInfo,
-      sparse_attributes.object_attributes.at(AXObjectAttribute::kAriaDetails)
-          ->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kContentInfo,
+            sparse_attributes.object_vector_attributes
+                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+                ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes.object_attributes
                 .at(AXObjectAttribute::kAriaErrorMessage)
@@ -359,8 +362,11 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
   target->accessibleNode()->setRoleDescription("Object");
   target->accessibleNode()->setActiveDescendant(
       GetDocument().getElementById("active2")->accessibleNode());
-  target->accessibleNode()->setDetails(
+  AccessibleNodeList* details_node_list =
+      MakeGarbageCollected<AccessibleNodeList>();
+  details_node_list->add(
       GetDocument().getElementById("details2")->accessibleNode());
+  target->accessibleNode()->setDetails(details_node_list);
   target->accessibleNode()->setErrorMessage(
       GetDocument().getElementById("error2")->accessibleNode());
 
@@ -375,10 +381,10 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
-  ASSERT_EQ(
-      ax::mojom::Role::kContentInfo,
-      sparse_attributes2.object_attributes.at(AXObjectAttribute::kAriaDetails)
-          ->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kContentInfo,
+            sparse_attributes2.object_vector_attributes
+                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+                ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaErrorMessage)

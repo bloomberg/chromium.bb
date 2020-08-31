@@ -28,7 +28,6 @@ namespace net {
 class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
-class ProxyInfo;
 class URLRequest;
 
 class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
@@ -43,11 +42,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   int OnBeforeStartTransaction(URLRequest* request,
                                CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override;
-
-  void OnBeforeSendHeaders(URLRequest* request,
-                           const ProxyInfo& proxy_info,
-                           const ProxyRetryInfoMap& proxy_retry_info,
-                           HttpRequestHeaders* headers) override;
 
   int OnHeadersReceived(
       URLRequest* request,
@@ -78,7 +72,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
 
   bool OnForcePrivacyMode(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) const override;
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(

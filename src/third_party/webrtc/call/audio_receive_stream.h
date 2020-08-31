@@ -21,6 +21,7 @@
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
 #include "api/crypto/frame_decryptor_interface.h"
+#include "api/frame_transformer_interface.h"
 #include "api/rtp_parameters.h"
 #include "api/scoped_refptr.h"
 #include "api/transport/rtp/rtp_source.h"
@@ -58,6 +59,7 @@ class AudioReceiveStream {
     uint64_t concealment_events = 0;
     double jitter_buffer_delay_seconds = 0.0;
     uint64_t jitter_buffer_emitted_count = 0;
+    double jitter_buffer_target_delay_seconds = 0.0;
     uint64_t inserted_samples_for_deceleration = 0;
     uint64_t removed_samples_for_acceleration = 0;
     // Stats below DO NOT correspond directly to anything in the WebRTC stats
@@ -149,6 +151,10 @@ class AudioReceiveStream {
     // decrypted in whatever way the caller choses. This is not required by
     // default.
     rtc::scoped_refptr<webrtc::FrameDecryptorInterface> frame_decryptor;
+
+    // An optional frame transformer used by insertable streams to transform
+    // encoded frames.
+    rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer;
   };
 
   // Reconfigure the stream according to the Configuration.

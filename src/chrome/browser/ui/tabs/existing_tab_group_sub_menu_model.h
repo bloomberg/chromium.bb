@@ -10,13 +10,18 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class TabGroupId;
 class TabStripModel;
+
+namespace tab_groups {
+class TabGroupId;
+}
 
 class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
                                      ui::SimpleMenuModel::Delegate {
  public:
-  ExistingTabGroupSubMenuModel(TabStripModel* model, int context_index);
+  ExistingTabGroupSubMenuModel(ui::SimpleMenuModel::Delegate* parent_delegate,
+                               TabStripModel* model,
+                               int context_index);
   ~ExistingTabGroupSubMenuModel() override = default;
 
   bool IsCommandIdChecked(int command_id) const override;
@@ -33,6 +38,14 @@ class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
  private:
   void Build();
 
+  // Returns the group ids in the order that they appear in the tab strip model,
+  // so that the user sees an ordered display. Only needed for creating items
+  // and executing commands, which must be in order. Otherwise, ListTabGroups()
+  // is cheaper and sufficient for determining visibility and size of the menu.
+  std::vector<tab_groups::TabGroupId> GetOrderedTabGroups();
+
+  ui::SimpleMenuModel::Delegate* parent_delegate_;
+
   // Unowned; |model_| must outlive this instance.
   TabStripModel* model_;
 
@@ -42,7 +55,7 @@ class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
   // one tab that would be affected by the command is not in |group|.
   static bool ShouldShowGroup(TabStripModel* model,
                               int context_index,
-                              TabGroupId group);
+                              tab_groups::TabGroupId group);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingTabGroupSubMenuModel);
 };

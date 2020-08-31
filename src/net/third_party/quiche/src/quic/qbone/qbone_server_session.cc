@@ -10,6 +10,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -18,8 +19,8 @@ bool QboneCryptoServerStreamHelper::CanAcceptClientHello(
     const QuicSocketAddress& client_address,
     const QuicSocketAddress& peer_address,
     const QuicSocketAddress& self_address,
-    string* error_details) const {
-  absl::string_view alpn;
+    std::string* error_details) const {
+  quiche::QuicheStringPiece alpn;
   chlo.GetStringPiece(quic::kALPN, &alpn);
   if (alpn != QboneConstants::kQboneAlpn) {
     *error_details = "ALPN-indicated protocol is not qbone";
@@ -49,9 +50,9 @@ QboneServerSession::QboneServerSession(
 QboneServerSession::~QboneServerSession() {}
 
 std::unique_ptr<QuicCryptoStream> QboneServerSession::CreateCryptoStream() {
-  return std::make_unique<QuicCryptoServerStream>(quic_crypto_server_config_,
-                                                  compressed_certs_cache_, this,
-                                                  &stream_helper_);
+  return CreateCryptoServerStream(quic_crypto_server_config_,
+                                  compressed_certs_cache_, this,
+                                  &stream_helper_);
 }
 
 void QboneServerSession::Initialize() {
@@ -71,23 +72,25 @@ bool QboneServerSession::SendClientRequest(const QboneClientRequest& request) {
   return control_stream_->SendRequest(request);
 }
 
-void QboneServerSession::ProcessPacketFromNetwork(QuicStringPiece packet) {
-  string buffer = string(packet);
+void QboneServerSession::ProcessPacketFromNetwork(
+    quiche::QuicheStringPiece packet) {
+  std::string buffer = std::string(packet);
   processor_.ProcessPacket(&buffer,
                            QbonePacketProcessor::Direction::FROM_NETWORK);
 }
 
-void QboneServerSession::ProcessPacketFromPeer(QuicStringPiece packet) {
-  string buffer = string(packet);
+void QboneServerSession::ProcessPacketFromPeer(
+    quiche::QuicheStringPiece packet) {
+  std::string buffer = std::string(packet);
   processor_.ProcessPacket(&buffer,
-                           QbonePacketProcessor::Direction::FROM_CLIENT);
+                           QbonePacketProcessor::Direction::FROM_OFF_NETWORK);
 }
 
-void QboneServerSession::SendPacketToClient(QuicStringPiece packet) {
+void QboneServerSession::SendPacketToClient(quiche::QuicheStringPiece packet) {
   SendPacketToPeer(packet);
 }
 
-void QboneServerSession::SendPacketToNetwork(QuicStringPiece packet) {
+void QboneServerSession::SendPacketToNetwork(quiche::QuicheStringPiece packet) {
   DCHECK(writer_ != nullptr);
   writer_->WritePacketToNetwork(packet.data(), packet.size());
 }

@@ -36,6 +36,7 @@
 #include "libavutil/display.h"
 #include "libavutil/hash.h"
 #include "libavutil/mastering_display_metadata.h"
+#include "libavutil/dovi_meta.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/spherical.h"
@@ -254,6 +255,7 @@ static const OptionDef *options;
 
 /* FFprobe context */
 static const char *input_filename;
+static const char *print_input_filename;
 static AVInputFormat *iformat = NULL;
 
 static struct AVHashContext *hash;
@@ -1083,12 +1085,12 @@ typedef struct CompactContext {
 #define OFFSET(x) offsetof(CompactContext, x)
 
 static const AVOption compact_options[]= {
-    {"item_sep", "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str="|"},  CHAR_MIN, CHAR_MAX },
-    {"s",        "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str="|"},  CHAR_MIN, CHAR_MAX },
+    {"item_sep", "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str="|"},  0, 0 },
+    {"s",        "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str="|"},  0, 0 },
     {"nokey",    "force no key printing", OFFSET(nokey),           AV_OPT_TYPE_BOOL,   {.i64=0},    0,        1        },
     {"nk",       "force no key printing", OFFSET(nokey),           AV_OPT_TYPE_BOOL,   {.i64=0},    0,        1        },
-    {"escape",   "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="c"},  CHAR_MIN, CHAR_MAX },
-    {"e",        "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="c"},  CHAR_MIN, CHAR_MAX },
+    {"escape",   "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="c"},  0, 0 },
+    {"e",        "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="c"},  0, 0 },
     {"print_section", "print section name", OFFSET(print_section), AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
     {"p",             "print section name", OFFSET(print_section), AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
     {NULL},
@@ -1199,12 +1201,12 @@ static const Writer compact_writer = {
 #define OFFSET(x) offsetof(CompactContext, x)
 
 static const AVOption csv_options[] = {
-    {"item_sep", "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str=","},  CHAR_MIN, CHAR_MAX },
-    {"s",        "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str=","},  CHAR_MIN, CHAR_MAX },
+    {"item_sep", "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str=","},  0, 0 },
+    {"s",        "set item separator",    OFFSET(item_sep_str),    AV_OPT_TYPE_STRING, {.str=","},  0, 0 },
     {"nokey",    "force no key printing", OFFSET(nokey),           AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
     {"nk",       "force no key printing", OFFSET(nokey),           AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
-    {"escape",   "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="csv"}, CHAR_MIN, CHAR_MAX },
-    {"e",        "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="csv"}, CHAR_MIN, CHAR_MAX },
+    {"escape",   "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="csv"}, 0, 0 },
+    {"e",        "set escape mode",       OFFSET(escape_mode_str), AV_OPT_TYPE_STRING, {.str="csv"}, 0, 0 },
     {"print_section", "print section name", OFFSET(print_section), AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
     {"p",             "print section name", OFFSET(print_section), AV_OPT_TYPE_BOOL,   {.i64=1},    0,        1        },
     {NULL},
@@ -1237,8 +1239,8 @@ typedef struct FlatContext {
 #define OFFSET(x) offsetof(FlatContext, x)
 
 static const AVOption flat_options[]= {
-    {"sep_char", "set separator",    OFFSET(sep_str),    AV_OPT_TYPE_STRING, {.str="."},  CHAR_MIN, CHAR_MAX },
-    {"s",        "set separator",    OFFSET(sep_str),    AV_OPT_TYPE_STRING, {.str="."},  CHAR_MIN, CHAR_MAX },
+    {"sep_char", "set separator",    OFFSET(sep_str),    AV_OPT_TYPE_STRING, {.str="."},  0, 0 },
+    {"s",        "set separator",    OFFSET(sep_str),    AV_OPT_TYPE_STRING, {.str="."},  0, 0 },
     {"hierarchical", "specify if the section specification should be hierarchical", OFFSET(hierarchical), AV_OPT_TYPE_BOOL, {.i64=1}, 0, 1 },
     {"h",            "specify if the section specification should be hierarchical", OFFSET(hierarchical), AV_OPT_TYPE_BOOL, {.i64=1}, 0, 1 },
     {NULL},
@@ -1927,6 +1929,16 @@ static void print_pkt_side_data(WriterContext *w,
             AVContentLightMetadata *metadata = (AVContentLightMetadata *)sd->data;
             print_int("max_content", metadata->MaxCLL);
             print_int("max_average", metadata->MaxFALL);
+        } else if (sd->type == AV_PKT_DATA_DOVI_CONF) {
+            AVDOVIDecoderConfigurationRecord *dovi = (AVDOVIDecoderConfigurationRecord *)sd->data;
+            print_int("dv_version_major", dovi->dv_version_major);
+            print_int("dv_version_minor", dovi->dv_version_minor);
+            print_int("dv_profile", dovi->dv_profile);
+            print_int("dv_level", dovi->dv_level);
+            print_int("rpu_present_flag", dovi->rpu_present_flag);
+            print_int("el_present_flag", dovi->el_present_flag);
+            print_int("bl_present_flag", dovi->bl_present_flag);
+            print_int("dv_bl_signal_compatibility_id", dovi->dv_bl_signal_compatibility_id);
         }
         writer_print_section_footer(w);
     }
@@ -2836,7 +2848,8 @@ static void show_error(WriterContext *w, int err)
     writer_print_section_footer(w);
 }
 
-static int open_input_file(InputFile *ifile, const char *filename)
+static int open_input_file(InputFile *ifile, const char *filename,
+                           const char *print_filename)
 {
     int err, i;
     AVFormatContext *fmt_ctx = NULL;
@@ -2857,6 +2870,10 @@ static int open_input_file(InputFile *ifile, const char *filename)
                                    iformat, &format_opts)) < 0) {
         print_error(filename, err);
         return err;
+    }
+    if (print_filename) {
+        av_freep(&fmt_ctx->url);
+        fmt_ctx->url = av_strdup(print_filename);
     }
     ifile->fmt_ctx = fmt_ctx;
     if (scan_all_pmts_set)
@@ -2971,7 +2988,8 @@ static void close_input_file(InputFile *ifile)
     avformat_close_input(&ifile->fmt_ctx);
 }
 
-static int probe_file(WriterContext *wctx, const char *filename)
+static int probe_file(WriterContext *wctx, const char *filename,
+                      const char *print_filename)
 {
     InputFile ifile = { 0 };
     int ret, i;
@@ -2980,7 +2998,7 @@ static int probe_file(WriterContext *wctx, const char *filename)
     do_read_frames = do_show_frames || do_count_frames;
     do_read_packets = do_show_packets || do_count_packets;
 
-    ret = open_input_file(&ifile, filename);
+    ret = open_input_file(&ifile, filename, print_filename);
     if (ret < 0)
         goto end;
 
@@ -3286,6 +3304,12 @@ static int opt_input_file_i(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
+static int opt_print_filename(void *optctx, const char *opt, const char *arg)
+{
+    print_input_filename = arg;
+    return 0;
+}
+
 void show_help_default(const char *opt, const char *arg)
 {
     av_log_set_callback(log_callback_help);
@@ -3511,13 +3535,13 @@ static const OptionDef real_options[] = {
       "use sexagesimal format HOURS:MM:SS.MICROSECONDS for time units" },
     { "pretty", 0, {.func_arg = opt_pretty},
       "prettify the format of displayed values, make it more human readable" },
-    { "print_format", OPT_STRING | HAS_ARG, {(void*)&print_format},
+    { "print_format", OPT_STRING | HAS_ARG, { &print_format },
       "set the output printing format (available formats are: default, compact, csv, flat, ini, json, xml)", "format" },
-    { "of", OPT_STRING | HAS_ARG, {(void*)&print_format}, "alias for -print_format", "format" },
-    { "select_streams", OPT_STRING | HAS_ARG, {(void*)&stream_specifier}, "select the specified streams", "stream_specifier" },
+    { "of", OPT_STRING | HAS_ARG, { &print_format }, "alias for -print_format", "format" },
+    { "select_streams", OPT_STRING | HAS_ARG, { &stream_specifier }, "select the specified streams", "stream_specifier" },
     { "sections", OPT_EXIT, {.func_arg = opt_sections}, "print sections structure and section information, and exit" },
-    { "show_data",    OPT_BOOL, {(void*)&do_show_data}, "show packets data" },
-    { "show_data_hash", OPT_STRING | HAS_ARG, {(void*)&show_data_hash}, "show packets data hash" },
+    { "show_data",    OPT_BOOL, { &do_show_data }, "show packets data" },
+    { "show_data_hash", OPT_STRING | HAS_ARG, { &show_data_hash }, "show packets data hash" },
     { "show_error",   0, { .func_arg = &opt_show_error },  "show probing error" },
     { "show_format",  0, { .func_arg = &opt_show_format }, "show format/container info" },
     { "show_frames",  0, { .func_arg = &opt_show_frames }, "show frames info" },
@@ -3526,24 +3550,25 @@ static const OptionDef real_options[] = {
     { "show_entries", HAS_ARG, {.func_arg = opt_show_entries},
       "show a set of specified entries", "entry_list" },
 #if HAVE_THREADS
-    { "show_log", OPT_INT|HAS_ARG, {(void*)&do_show_log}, "show log" },
+    { "show_log", OPT_INT|HAS_ARG, { &do_show_log }, "show log" },
 #endif
     { "show_packets", 0, { .func_arg = &opt_show_packets }, "show packets info" },
     { "show_programs", 0, { .func_arg = &opt_show_programs }, "show programs info" },
     { "show_streams", 0, { .func_arg = &opt_show_streams }, "show streams info" },
     { "show_chapters", 0, { .func_arg = &opt_show_chapters }, "show chapters info" },
-    { "count_frames", OPT_BOOL, {(void*)&do_count_frames}, "count the number of frames per stream" },
-    { "count_packets", OPT_BOOL, {(void*)&do_count_packets}, "count the number of packets per stream" },
+    { "count_frames", OPT_BOOL, { &do_count_frames }, "count the number of frames per stream" },
+    { "count_packets", OPT_BOOL, { &do_count_packets }, "count the number of packets per stream" },
     { "show_program_version",  0, { .func_arg = &opt_show_program_version },  "show ffprobe version" },
     { "show_library_versions", 0, { .func_arg = &opt_show_library_versions }, "show library versions" },
     { "show_versions",         0, { .func_arg = &opt_show_versions }, "show program and library versions" },
     { "show_pixel_formats", 0, { .func_arg = &opt_show_pixel_formats }, "show pixel format descriptions" },
-    { "show_private_data", OPT_BOOL, {(void*)&show_private_data}, "show private data" },
-    { "private",           OPT_BOOL, {(void*)&show_private_data}, "same as show_private_data" },
+    { "show_private_data", OPT_BOOL, { &show_private_data }, "show private data" },
+    { "private",           OPT_BOOL, { &show_private_data }, "same as show_private_data" },
     { "bitexact", OPT_BOOL, {&do_bitexact}, "force bitexact output" },
     { "read_intervals", HAS_ARG, {.func_arg = opt_read_intervals}, "set read intervals", "read_intervals" },
     { "default", HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, {.func_arg = opt_default}, "generic catch all option", "" },
     { "i", HAS_ARG, {.func_arg = opt_input_file_i}, "read specified file", "input_file"},
+    { "print_filename", HAS_ARG, {.func_arg = opt_print_filename}, "override the printed input filename", "print_file"},
     { "find_stream_info", OPT_BOOL | OPT_INPUT | OPT_EXPERT, { &find_stream_info },
         "read and decode the streams to fill missing information with heuristics" },
     { NULL, },
@@ -3692,7 +3717,7 @@ int main(int argc, char **argv)
             av_log(NULL, AV_LOG_ERROR, "Use -h to get full help or, even better, run 'man %s'.\n", program_name);
             ret = AVERROR(EINVAL);
         } else if (input_filename) {
-            ret = probe_file(wctx, input_filename);
+            ret = probe_file(wctx, input_filename, print_input_filename);
             if (ret < 0 && do_show_error)
                 show_error(wctx, ret);
         }

@@ -111,7 +111,7 @@ shift, and a calendar appointment.
         GPU bots.
     *   In this case you'll upload CLs to Gerrit to perform reverts (optionally
         using the new "Revert" button in the UI), and might consider using
-        `TBR=` to speed through trivial and urgent CLs. In general, try to send
+        `Tbr:` to speed through trivial and urgent CLs. In general, try to send
         all CLs through the commit queue.
     *   Contact bajones, kainino, kbr, vmiura, zmo, or another member of the
         Chrome GPU team who's already a committer for help landing patches or
@@ -238,9 +238,8 @@ shift, and a calendar appointment.
         by Telemetry, rather than a Gtest harness. The tests and their
         expectations are contained in [src/content/test/gpu/gpu_tests/test_expectations] . See
         for example <code>[webgl_conformance_expectations.txt]</code>,
-        <code>[gpu_process_expectations.txt]</code>,
-        <code>[pixel_expectations.txt]</code> and
-        [rendering_representative_perf_tests].
+        <code>[gpu_process_expectations.txt]</code> and
+        <code>[pixel_expectations.txt]</code>.
     1.  See the header of the file a list of modifiers to specify a bot
         configuration. It is possible to specify OS (down to a specific
         version, say, Windows 7 or Mountain Lion), GPU vendor
@@ -255,6 +254,8 @@ shift, and a calendar appointment.
         close the Chromium tree.
     1.  Please read the section on [stamping out flakiness] for motivation on
         how important it is to eliminate flakiness rather than hiding it.
+    1. For failures of rendering_representative_perf_tests please refer to its
+    [instructions on updating expectations][rendering_representative_perf_tests].
 1.  For the remaining Gtest-style tests, use the [`DISABLED_`
     modifier][gtest-DISABLED] to suppress any failures if necessary.
 
@@ -301,8 +302,16 @@ https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel
 
 [telemetry documentation]: https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/docs/run_benchmarks_locally.md
 
-## Extending the GPU Pixel Wrangling Rotation
+## Modifying the GPU Pixel Wrangling Rotation
 
-See the [Chrome Internal GPU Pixel Wrangling Instructions] for information on extending the rotation.
+You may find yourself needing to modify the current rotation. Whether to extend
+the rotation, or if scheduling conflicts arise.
+
+For scheduling conflicts you can swap your shift with another wrangler. A good
+approach is to look at the rotation calendar, finding someone with nearby dates
+to yours. Reach out to them, as they will often be willing to swap.
+
+To actually modify the rotation:
+See the [Chrome Internal GPU Pixel Wrangling Instructions] for information.
 
 [Chrome Internal GPU Pixel Wrangling Instructions]: https://sites.google.com/a/google.com/client3d/documents/chrome-internal-gpu-pixel-wrangling-instructions

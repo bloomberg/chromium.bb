@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -73,22 +74,21 @@ bool HasLocalTld(const std::string& host_name) {
 
 class P2PSocketManager::DnsRequest {
  public:
-  typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
+  using DoneCallback = base::OnceCallback<void(const net::IPAddressList&)>;
 
   DnsRequest(net::HostResolver* host_resolver, bool enable_mdns)
       : resolver_(host_resolver), enable_mdns_(enable_mdns) {}
 
-  void Resolve(const std::string& host_name,
-               const DoneCallback& done_callback) {
+  void Resolve(const std::string& host_name, DoneCallback done_callback) {
     DCHECK(!done_callback.is_null());
 
     host_name_ = host_name;
-    done_callback_ = done_callback;
+    done_callback_ = std::move(done_callback);
 
     // Return an error if it's an empty string.
     if (host_name_.empty()) {
       net::IPAddressList address_list;
-      done_callback_.Run(address_list);
+      std::move(done_callback_).Run(address_list);
       return;
     }
 
@@ -124,14 +124,14 @@ class P2PSocketManager::DnsRequest {
     if (result != net::OK || !addresses) {
       LOG(ERROR) << "Failed to resolve address for " << host_name_
                  << ", errorcode: " << result;
-      done_callback_.Run(list);
+      std::move(done_callback_).Run(list);
       return;
     }
 
     for (const auto& endpoint : *addresses) {
       list.push_back(endpoint.address());
     }
-    done_callback_.Run(list);
+    std::move(done_callback_).Run(list);
   }
 
   std::string host_name_;
@@ -153,21 +153,23 @@ P2PSocketManager::P2PSocketManager(
     net::URLRequestContext* url_request_context)
     : delete_callback_(std::move(delete_callback)),
       url_request_context_(url_request_context),
-      network_list_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      network_list_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       trusted_socket_manager_client_(std::move(trusted_socket_manager_client)),
       trusted_socket_manager_receiver_(
           this,
           std::move(trusted_socket_manager_receiver)),
       socket_manager_receiver_(this, std::move(socket_manager_receiver)) {
-  trusted_socket_manager_receiver_.set_disconnect_handler(
-      base::Bind(&P2PSocketManager::OnConnectionError, base::Unretained(this)));
-  socket_manager_receiver_.set_disconnect_handler(
-      base::Bind(&P2PSocketManager::OnConnectionError, base::Unretained(this)));
+  trusted_socket_manager_receiver_.set_disconnect_handler(base::BindOnce(
+      &P2PSocketManager::OnConnectionError, base::Unretained(this)));
+  socket_manager_receiver_.set_disconnect_handler(base::BindOnce(
+      &P2PSocketManager::OnConnectionError, base::Unretained(this)));
 }
 
 P2PSocketManager::~P2PSocketManager() {
+  // Reset the P2PSocketManager receiver before dropping pending dns requests.
+  socket_manager_receiver_.reset();
+
   sockets_.clear();
   dns_requests_.clear();
 
@@ -285,8 +287,8 @@ void P2PSocketManager::GetHostAddress(
   dns_requests_.insert(std::move(request));
   request_ptr->Resolve(
       host_name,
-      base::Bind(&P2PSocketManager::OnAddressResolved, base::Unretained(this),
-                 request_ptr, base::Passed(&callback)));
+      base::BindOnce(&P2PSocketManager::OnAddressResolved,
+                     base::Unretained(this), request_ptr, std::move(callback)));
 }
 
 void P2PSocketManager::CreateSocket(

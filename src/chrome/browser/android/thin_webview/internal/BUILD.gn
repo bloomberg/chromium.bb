@@ -16,19 +16,22 @@ static_library("internal") {
   deps = [
     ":jni_headers",
     "//cc",
+    "//chrome/browser/ui",
+    "//components/permissions",
     "//skia",
   ]
 
   public_deps = [
     "//base",
     "//chrome/browser/android/thin_webview",
+    "//components/embedder_support/android:web_contents_delegate",
     "//content/public/browser",
     "//ui/android",
   ]
 }
 
 android_library("internal_java") {
-  java_files = [
+  sources = [
     "java/src/org/chromium/chrome/browser/thinwebview/internal/CompositorViewImpl.java",
     "java/src/org/chromium/chrome/browser/thinwebview/internal/ThinWebViewImpl.java",
   ]
@@ -37,6 +40,7 @@ android_library("internal_java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/browser/android/thin_webview:java",
+    "//components/embedder_support/android:web_contents_delegate_java",
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]

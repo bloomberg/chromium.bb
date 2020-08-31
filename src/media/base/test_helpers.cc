@@ -7,8 +7,9 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -45,22 +46,22 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 MockCallback::MockCallback() = default;
 MockCallback::~MockCallback() = default;
 
-base::Closure NewExpectedClosure() {
+base::OnceClosure NewExpectedClosure() {
   StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
   EXPECT_CALL(*callback, Run());
-  return base::Bind(&MockCallback::Run, WrapRefCounted(callback));
+  return base::BindOnce(&MockCallback::Run, WrapRefCounted(callback));
 }
 
-base::Callback<void(bool)> NewExpectedBoolCB(bool success) {
+base::OnceCallback<void(bool)> NewExpectedBoolCB(bool success) {
   StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
   EXPECT_CALL(*callback, RunWithBool(success));
-  return base::Bind(&MockCallback::RunWithBool, WrapRefCounted(callback));
+  return base::BindOnce(&MockCallback::RunWithBool, WrapRefCounted(callback));
 }
 
-PipelineStatusCB NewExpectedStatusCB(PipelineStatus status) {
+PipelineStatusCallback NewExpectedStatusCB(PipelineStatus status) {
   StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
   EXPECT_CALL(*callback, RunWithStatus(status));
-  return base::Bind(&MockCallback::RunWithStatus, WrapRefCounted(callback));
+  return base::BindOnce(&MockCallback::RunWithStatus, WrapRefCounted(callback));
 }
 
 WaitableMessageLoopEvent::WaitableMessageLoopEvent()
@@ -73,17 +74,16 @@ WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-base::Closure WaitableMessageLoopEvent::GetClosure() {
+base::OnceClosure WaitableMessageLoopEvent::GetClosure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return BindToCurrentLoop(base::Bind(
-      &WaitableMessageLoopEvent::OnCallback, base::Unretained(this),
-      PIPELINE_OK));
+  return BindToCurrentLoop(base::BindOnce(&WaitableMessageLoopEvent::OnCallback,
+                                          base::Unretained(this), PIPELINE_OK));
 }
 
-PipelineStatusCB WaitableMessageLoopEvent::GetPipelineStatusCB() {
+PipelineStatusCallback WaitableMessageLoopEvent::GetPipelineStatusCB() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return BindToCurrentLoop(base::Bind(
-      &WaitableMessageLoopEvent::OnCallback, base::Unretained(this)));
+  return BindToCurrentLoop(base::BindOnce(&WaitableMessageLoopEvent::OnCallback,
+                                          base::Unretained(this)));
 }
 
 void WaitableMessageLoopEvent::RunAndWait() {
@@ -100,9 +100,9 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
 
   run_loop_.reset(new base::RunLoop());
   base::OneShotTimer timer;
-  timer.Start(
-      FROM_HERE, timeout_,
-      base::Bind(&WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
+  timer.Start(FROM_HERE, timeout_,
+              base::BindOnce(&WaitableMessageLoopEvent::OnTimeout,
+                             base::Unretained(this)));
 
   run_loop_->Run();
   EXPECT_TRUE(signaled_);

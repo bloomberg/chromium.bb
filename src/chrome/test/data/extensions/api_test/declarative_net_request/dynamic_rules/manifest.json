@@ -1,9 +1,11 @@
 {
   "name": "Test extension",
   "declarative_net_request": {
-    "rule_resources": [
-      "rules_file_empty.json"
-    ]
+    "rule_resources": [{
+      "id": "empty_ruleset",
+      "path": "rules_file_empty.json",
+      "enabled": true
+    }]
   },
   "manifest_version": 2,
   "permissions": [

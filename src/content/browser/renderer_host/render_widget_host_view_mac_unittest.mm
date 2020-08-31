@@ -13,8 +13,8 @@
 #include "base/containers/queue.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -99,7 +99,7 @@ using testing::_;
 
 @interface MockRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
-  BOOL unhandledWheelEventReceived_;
+  BOOL _unhandledWheelEventReceived;
 }
 
 @property(nonatomic) BOOL unhandledWheelEventReceived;
@@ -108,19 +108,19 @@ using testing::_;
 
 @implementation MockRenderWidgetHostViewMacDelegate
 
-@synthesize unhandledWheelEventReceived = unhandledWheelEventReceived_;
+@synthesize unhandledWheelEventReceived = _unhandledWheelEventReceived;
 
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed {
   if (!consumed)
-    unhandledWheelEventReceived_ = true;
+    _unhandledWheelEventReceived = true;
 }
 
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
   if (!consumed &&
-      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate)
-    unhandledWheelEventReceived_ = true;
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate)
+    _unhandledWheelEventReceived = true;
 }
 
 - (void)touchesBeganWithEvent:(NSEvent*)event {}
@@ -140,16 +140,16 @@ using testing::_;
 @end
 
 @implementation FakeTextCheckingResult {
-  base::scoped_nsobject<NSString> replacementString_;
+  base::scoped_nsobject<NSString> _replacementString;
 }
-@synthesize range = range_;
+@synthesize range = _range;
 
 + (FakeTextCheckingResult*)resultWithRange:(NSRange)range
                          replacementString:(NSString*)replacementString {
   FakeTextCheckingResult* result =
       [[[FakeTextCheckingResult alloc] init] autorelease];
-  result->range_ = range;
-  result->replacementString_.reset([replacementString retain]);
+  result->_range = range;
+  result->_replacementString.reset([replacementString retain]);
   return result;
 }
 
@@ -160,7 +160,7 @@ using testing::_;
 }
 
 - (NSString*)replacementString {
-  return replacementString_;
+  return _replacementString;
 }
 @end
 
@@ -171,9 +171,9 @@ using testing::_;
 @implementation FakeSpellChecker {
   base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
                                   NSArray<NSTextCheckingResult*>* candidates)>
-      lastCompletionHandler_;
+      _lastCompletionHandler;
 }
-@synthesize sequenceNumber = sequenceNumber_;
+@synthesize sequenceNumber = _sequenceNumber;
 
 - (NSInteger)
 requestCandidatesForSelectedRange:(NSRange)selectedRange
@@ -188,15 +188,15 @@ requestCandidatesForSelectedRange:(NSRange)selectedRange
                                         NSArray<NSTextCheckingResult*>*
                                             candidates))completionHandler
     NS_AVAILABLE_MAC(10_12_2) {
-  sequenceNumber_ += 1;
-  lastCompletionHandler_.reset([completionHandler copy]);
-  return sequenceNumber_;
+  _sequenceNumber += 1;
+  _lastCompletionHandler.reset([completionHandler copy]);
+  return _sequenceNumber;
 }
 
 - (base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
                                    NSArray<NSTextCheckingResult*>* candidates)>)
     takeCompletionHandler {
-  return std::move(lastCompletionHandler_);
+  return std::move(_lastCompletionHandler);
 }
 
 @end
@@ -371,7 +371,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                              /*hidden=*/false,
                              std::make_unique<FrameTokenMessageQueue>()),
         widget_impl_(std::move(widget_impl)) {
-    set_renderer_initialized(true);
+    SetRendererInitialized(true, RendererInitializer::kTest);
     lastWheelEventLatencyInfo = ui::LatencyInfo();
 
     ON_CALL(*this, Focus())
@@ -655,7 +655,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   gfx::Range actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   params.anchor_rect = params.focus_rect = caret_rect;
-  params.anchor_dir = params.focus_dir = blink::kWebTextDirectionLeftToRight;
+  params.anchor_dir = params.focus_dir = base::i18n::LEFT_TO_RIGHT;
   rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
                                                              &actual_range));
@@ -977,7 +977,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   // Send an ACK for the first wheel event, so that the queue will be flushed.
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   // Post the NSEventPhaseEnded wheel event to NSApp and check whether the
   // render view receives it.
@@ -1182,7 +1183,8 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // GestureEventQueue allows multiple in-flight events.
   ASSERT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   events.clear();
 
@@ -1527,7 +1529,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     // After acking the synthetic mouse wheel, no GesturePinch events are
     // produced.
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
 
@@ -1544,7 +1546,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
       EXPECT_EQ("MouseWheel", GetMessageNames(events));
       // Now acking the synthetic mouse wheel does produce GesturePinch events.
       events[0]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+          blink::mojom::InputEventResultState::kNoConsumerExists);
       events = host_->GetAndResetDispatchedMessages();
       EXPECT_EQ("GesturePinchBegin GesturePinchUpdate",
                 GetMessageNames(events));
@@ -1559,7 +1561,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     } else {
       EXPECT_EQ("MouseWheel", GetMessageNames(events));
       events[0]->ToEvent()->CallCallback(
-          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+          blink::mojom::InputEventResultState::kNoConsumerExists);
       events = host_->GetAndResetDispatchedMessages();
       EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
     }
@@ -1589,7 +1591,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("GesturePinchBegin GesturePinchUpdate", GetMessageNames(events));
 
@@ -1623,7 +1625,7 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
     events[0]->ToEvent()->CallCallback(
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        blink::mojom::InputEventResultState::kNoConsumerExists);
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ(0U, events.size());
 
@@ -1648,7 +1650,8 @@ TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoom) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureDoubleTap", GetMessageNames(events));
@@ -1665,7 +1668,8 @@ TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoomConsumed) {
       host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
 
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+  events[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
 
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
@@ -2178,7 +2182,8 @@ TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
       child_allocator.GetCurrentLocalSurfaceIdAllocation();
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
 
   viz::LocalSurfaceId local_surface_id3(
       rwhv_mac_->GetLocalSurfaceIdAllocation().local_surface_id());
@@ -2203,7 +2208,8 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
       child_allocator.GetCurrentLocalSurfaceIdAllocation();
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
 
   // Cause a conflicting viz::LocalSurfaceId allocation
   BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();
@@ -2239,8 +2245,7 @@ TEST_F(RenderWidgetHostViewMacTest, TransformToRootNoParentLayer) {
 TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
   std::unique_ptr<ui::RecyclableCompositorMac> compositor =
       ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-          ImageTransportFactory::GetInstance()->GetContextFactory(),
-          ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
+          ImageTransportFactory::GetInstance()->GetContextFactory());
   std::unique_ptr<ui::Layer> root_surface_layer =
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   std::unique_ptr<ui::Layer> parent_layer =

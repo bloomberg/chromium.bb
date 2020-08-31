@@ -28,7 +28,7 @@ class PDF {
     std::string font_name;
     int font_weight;
     PP_TextRenderingMode render_mode;
-    double font_size;
+    float font_size;
     // Colors are ARGB.
     uint32_t fill_color;
     uint32_t stroke_color;
@@ -77,6 +77,25 @@ class PDF {
     uint32_t text_run_index;
     uint32_t text_run_count;
     FloatRect bounds;
+    // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
+    // follows after it with each using 8 bytes.
+    uint32_t color;
+  };
+
+  // C++ version of PP_PrivateAccessibilityTextFieldInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityTextFieldInfo {
+    std::string name;
+    std::string value;
+    bool is_read_only;
+    bool is_required;
+    bool is_password;
+    // Index of this text field in the collection of text fields in the page.
+    uint32_t index_in_page;
+    // We anchor the text field to a text run index, this denotes the text run
+    // before which the text field should be inserted in the accessibility tree.
+    uint32_t text_run_index;
+    FloatRect bounds;
   };
 
   // C++ version of PP_PrivateAccessibilityPageObjects.
@@ -85,6 +104,7 @@ class PDF {
     std::vector<PrivateAccessibilityLinkInfo> links;
     std::vector<PrivateAccessibilityImageInfo> images;
     std::vector<PrivateAccessibilityHighlightInfo> highlights;
+    std::vector<PrivateAccessibilityTextFieldInfo> text_fields;
   };
 
   // Returns true if the required interface is available.

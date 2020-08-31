@@ -35,11 +35,6 @@ namespace {
 const char kAsterisk[] = "*";
 const char kLowerCaseTrue[] = "true";
 
-// TODO(toyoshim): Consider to move following const variables to
-// //net/http/http_request_headers.
-const char kHeadMethod[] = "HEAD";
-const char kPostMethod[] = "POST";
-
 // TODO(toyoshim): Consider to move the following method to
 // //net/base/mime_util, and expose to Blink platform/network in order to
 // replace the existing equivalent method in HTTPParser.
@@ -128,16 +123,10 @@ bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
 
 base::Optional<CorsErrorStatus> CheckAccessInternal(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin) {
-  // TODO(toyoshim): This response status code check should not be needed. We
-  // have another status code check after a CheckAccess() call if it is needed.
-  if (!response_status_code)
-    return CorsErrorStatus(mojom::CorsError::kInvalidResponse);
-
   if (allow_origin_header == kAsterisk) {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
     // to be sent, even with Access-Control-Allow-Credentials set to true.
@@ -209,7 +198,7 @@ base::Optional<CorsErrorStatus> CheckAccessInternal(
 
 // These values are used for logging to UMA. Entries should not be renumbered
 // and numeric values should never be reused. Please keep in sync with
-// "AccessCheckResult" in src/tools/metrics/histograms/enums.xml.
+// "CorsAccessCheckResult" in src/tools/metrics/histograms/enums.xml.
 enum class AccessCheckResult {
   kPermitted = 0,
   kNotPermitted = 1,
@@ -245,14 +234,13 @@ const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
 // See https://fetch.spec.whatwg.org/#cors-check.
 base::Optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin) {
-  base::Optional<CorsErrorStatus> error_status = CheckAccessInternal(
-      response_url, response_status_code, allow_origin_header,
-      allow_credentials_header, credentials_mode, origin);
+  const auto error_status =
+      CheckAccessInternal(response_url, allow_origin_header,
+                          allow_credentials_header, credentials_mode, origin);
   ReportAccessCheckResultMetric(error_status ? AccessCheckResult::kNotPermitted
                                              : AccessCheckResult::kPermitted);
   if (error_status) {
@@ -265,7 +253,7 @@ base::Optional<CorsErrorStatus> CheckAccess(
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      mojom::RequestMode request_mode) {
-  if (IsNavigationRequestMode(request_mode) ||
+  if (request_mode == network::mojom::RequestMode::kNavigate ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
@@ -274,10 +262,9 @@ bool ShouldCheckCors(const GURL& request_url,
   // request doesn't have one, CORS should not work.
   DCHECK(request_initiator);
 
-  // TODO(crbug.com/870173): Remove following scheme check once the network
-  // service is fully enabled.
-  if (request_url.SchemeIs(url::kDataScheme))
-    return false;
+  // |request_url| should not contain the url::kDataScheme here, but have a
+  // DCHECK for a while, just in case.
+  DCHECK(!request_url.SchemeIs(url::kDataScheme));
 
   if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
     return false;
@@ -291,47 +278,58 @@ base::Optional<CorsErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode actual_credentials_mode,
     const url::Origin& origin) {
-  const auto error_status = CheckAccessInternal(
-      response_url, response_status_code, allow_origin_header,
-      allow_credentials_header, actual_credentials_mode, origin);
+  // Step 7 of https://fetch.spec.whatwg.org/#cors-preflight-fetch
+  auto error_status = CheckAccessInternal(response_url, allow_origin_header,
+                                          allow_credentials_header,
+                                          actual_credentials_mode, origin);
+  const bool has_ok_status = IsOkStatus(response_status_code);
+
   ReportAccessCheckResultMetric(
-      error_status ? AccessCheckResult::kNotPermittedInPreflight
-                   : AccessCheckResult::kPermittedInPreflight);
-  if (!error_status)
+      (error_status || !has_ok_status)
+          ? AccessCheckResult::kNotPermittedInPreflight
+          : AccessCheckResult::kPermittedInPreflight);
+
+  // Prefer using a preflight specific error code.
+  if (error_status) {
+    switch (error_status->cors_error) {
+      case mojom::CorsError::kWildcardOriginNotAllowed:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightWildcardOriginNotAllowed;
+        break;
+      case mojom::CorsError::kMissingAllowOriginHeader:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMissingAllowOriginHeader;
+        break;
+      case mojom::CorsError::kMultipleAllowOriginValues:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMultipleAllowOriginValues;
+        break;
+      case mojom::CorsError::kInvalidAllowOriginValue:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowOriginValue;
+        break;
+      case mojom::CorsError::kAllowOriginMismatch:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightAllowOriginMismatch;
+        break;
+      case mojom::CorsError::kInvalidAllowCredentials:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowCredentials;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else if (!has_ok_status) {
+    error_status = base::make_optional<CorsErrorStatus>(
+        mojom::CorsError::kPreflightInvalidStatus);
+  } else {
     return base::nullopt;
-
-  // TODO(toyoshim): Remove following two lines when the status code check is
-  // removed from CheckAccess().
-  if (error_status->cors_error == mojom::CorsError::kInvalidResponse)
-    return error_status;
-
-  mojom::CorsError error = error_status->cors_error;
-  switch (error_status->cors_error) {
-    case mojom::CorsError::kWildcardOriginNotAllowed:
-      error = mojom::CorsError::kPreflightWildcardOriginNotAllowed;
-      break;
-    case mojom::CorsError::kMissingAllowOriginHeader:
-      error = mojom::CorsError::kPreflightMissingAllowOriginHeader;
-      break;
-    case mojom::CorsError::kMultipleAllowOriginValues:
-      error = mojom::CorsError::kPreflightMultipleAllowOriginValues;
-      break;
-    case mojom::CorsError::kInvalidAllowOriginValue:
-      error = mojom::CorsError::kPreflightInvalidAllowOriginValue;
-      break;
-    case mojom::CorsError::kAllowOriginMismatch:
-      error = mojom::CorsError::kPreflightAllowOriginMismatch;
-      break;
-    case mojom::CorsError::kInvalidAllowCredentials:
-      error = mojom::CorsError::kPreflightInvalidAllowCredentials;
-      break;
-    default:
-      NOTREACHED();
-      break;
   }
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError", error);
 
-  return CorsErrorStatus(error, error_status->failed_parameter);
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError",
+                            error_status->cors_error);
+  return error_status;
 }
 
 base::Optional<CorsErrorStatus> CheckRedirectLocation(
@@ -365,16 +363,6 @@ base::Optional<CorsErrorStatus> CheckRedirectLocation(
   return base::nullopt;
 }
 
-base::Optional<mojom::CorsError> CheckPreflight(const int status_code) {
-  // CORS preflight with 3XX is considered network error in
-  // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
-  // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
-  // https://crbug.com/452394
-  if (IsOkStatus(status_code))
-    return base::nullopt;
-  return mojom::CorsError::kPreflightInvalidStatus;
-}
-
 // https://wicg.github.io/cors-rfc1918/#http-headerdef-access-control-allow-external
 base::Optional<CorsErrorStatus> CheckExternalPreflight(
     const base::Optional<std::string>& allow_external) {
@@ -396,7 +384,8 @@ bool IsCorsSafelistedMethod(const std::string& method) {
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
   std::string method_upper = base::ToUpperASCII(method);
   return method_upper == net::HttpRequestHeaders::kGetMethod ||
-         method_upper == kHeadMethod || method_upper == kPostMethod;
+         method_upper == net::HttpRequestHeaders::kHeadMethod ||
+         method_upper == net::HttpRequestHeaders::kPostMethod;
 }
 
 bool IsCorsSafelistedContentType(const std::string& media_type) {
@@ -465,6 +454,9 @@ bool IsCorsSafelistedHeader(
       "sec-ch-ua-platform",
       "sec-ch-ua-arch",
       "sec-ch-ua-model",
+      "sec-ch-ua-mobile",
+      "sec-ch-ua-full-version",
+      "sec-ch-ua-platform-version",
   };
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))
@@ -579,9 +571,10 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
 }
 
 bool IsForbiddenMethod(const std::string& method) {
-  const std::string lower_method = base::ToLowerASCII(method);
-  return lower_method == "trace" || lower_method == "track" ||
-         lower_method == "connect";
+  const std::string upper_method = base::ToUpperASCII(method);
+  return upper_method == net::HttpRequestHeaders::kConnectMethod ||
+         upper_method == net::HttpRequestHeaders::kTraceMethod ||
+         upper_method == net::HttpRequestHeaders::kTrackMethod;
 }
 
 bool IsOkStatus(int status) {
@@ -628,6 +621,21 @@ bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
       return response_tainting == network::mojom::FetchResponseType::kBasic;
     case network::mojom::CredentialsMode::kInclude:
       return true;
+  }
+}
+
+mojom::FetchResponseType CalculateResponseType(
+    mojom::RequestMode mode,
+    bool is_request_considered_same_origin) {
+  if (is_request_considered_same_origin ||
+      mode == network::mojom::RequestMode::kNavigate ||
+      mode == network::mojom::RequestMode::kSameOrigin) {
+    return network::mojom::FetchResponseType::kBasic;
+  } else if (mode == network::mojom::RequestMode::kNoCors) {
+    return network::mojom::FetchResponseType::kOpaque;
+  } else {
+    DCHECK(network::cors::IsCorsEnabledRequestMode(mode)) << mode;
+    return network::mojom::FetchResponseType::kCors;
   }
 }
 

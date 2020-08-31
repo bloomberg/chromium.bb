@@ -81,7 +81,7 @@ Block count: %d
     image = '/foo/image'
     self.assertTrue(partition_lib.IsSquashfsImage(image))
     self.assertCommandCalled(['unsquashfs', '-s', image], enter_chroot=True,
-                             redirect_stdout=True)
+                             stdout=True)
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'run',
@@ -98,7 +98,7 @@ Block count: %d
     self.assertTrue(partition_lib.IsExt4Image(image))
     self.assertCommandCalled(['sudo', '--', 'tune2fs', '-l', image],
                              enter_chroot=True,
-                             redirect_stdout=True)
+                             stdout=True)
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'run',

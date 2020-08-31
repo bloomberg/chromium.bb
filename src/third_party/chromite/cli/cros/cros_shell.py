@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import argparse
+import sys
 
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 @command.CommandDecorator('shell')
@@ -73,7 +77,7 @@ Quoting can be tricky; the rules are the same as with ssh:
   def AddParser(cls, parser):
     """Adds a parser."""
     super(cls, ShellCommand).AddParser(parser)
-    cls.AddDeviceArgument(parser)
+    cls.AddDeviceArgument(parser, positional=True)
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
@@ -162,9 +166,8 @@ Quoting can be tricky; the rules are the same as with ssh:
     return self.device.BaseRunCommand(
         self.command,
         connect_settings=self._ConnectSettings(),
-        error_code_ok=True,
-        mute_output=False,
-        redirect_stderr=True,
+        check=False,
+        stderr=True,
         capture_output=False).returncode
 
   def Run(self):

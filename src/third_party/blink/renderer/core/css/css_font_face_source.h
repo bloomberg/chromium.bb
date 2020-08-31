@@ -70,11 +70,15 @@ class CORE_EXPORT CSSFontFaceSource
   virtual bool IsInBlockPeriod() const { return false; }
   virtual bool IsInFailurePeriod() const { return false; }
 
+  // Recalculate the font loading timeline period for the font face.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
+  virtual bool UpdatePeriod() { return false; }
+
   // For UMA reporting
   virtual bool HadBlankText() { return false; }
   virtual void PaintRequested() {}
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   CSSFontFaceSource() = default;
@@ -85,12 +89,8 @@ class CORE_EXPORT CSSFontFaceSource
 
  private:
   void PruneOldestIfNeeded();
-  using FontDataTable = HashMap<FontCacheKey,
-                                scoped_refptr<SimpleFontData>,
-                                FontCacheKeyHash,
-                                FontCacheKeyTraits>;
-  using FontCacheKeyAgeList =
-      LinkedHashSet<FontCacheKey, FontCacheKeyHash, FontCacheKeyTraits>;
+  using FontDataTable = HashMap<FontCacheKey, scoped_refptr<SimpleFontData>>;
+  using FontCacheKeyAgeList = LinkedHashSet<FontCacheKey>;
 
   FontDataTable font_data_table_;
   FontCacheKeyAgeList font_cache_key_age;

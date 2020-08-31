@@ -522,11 +522,11 @@ class circular_deque {
     return buffer_[i - right_size];
   }
   value_type& at(size_type i) {
-    return const_cast<value_type&>(as_const(*this).at(i));
+    return const_cast<value_type&>(base::as_const(*this).at(i));
   }
 
   value_type& operator[](size_type i) {
-    return const_cast<value_type&>(as_const(*this)[i]);
+    return const_cast<value_type&>(base::as_const(*this)[i]);
   }
 
   const value_type& operator[](size_type i) const { return at(i); }
@@ -1096,15 +1096,19 @@ class circular_deque {
 
 // Implementations of base::Erase[If] (see base/stl_util.h).
 template <class T, class Value>
-void Erase(circular_deque<T>& container, const Value& value) {
-  container.erase(std::remove(container.begin(), container.end(), value),
-                  container.end());
+size_t Erase(circular_deque<T>& container, const Value& value) {
+  auto it = std::remove(container.begin(), container.end(), value);
+  size_t removed = std::distance(it, container.end());
+  container.erase(it, container.end());
+  return removed;
 }
 
 template <class T, class Predicate>
-void EraseIf(circular_deque<T>& container, Predicate pred) {
-  container.erase(std::remove_if(container.begin(), container.end(), pred),
-                  container.end());
+size_t EraseIf(circular_deque<T>& container, Predicate pred) {
+  auto it = std::remove_if(container.begin(), container.end(), pred);
+  size_t removed = std::distance(it, container.end());
+  container.erase(it, container.end());
+  return removed;
 }
 
 }  // namespace base

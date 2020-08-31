@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_indata.c 333979 2018-05-21 14:51:20Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_indata.c 353145 2019-10-06 08:47:10Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -487,7 +487,12 @@ sctp_clean_up_control(struct sctp_tcb *stcb, struct sctp_queued_to_read *control
 		chk->data = NULL;
 		sctp_free_a_chunk(stcb, chk, SCTP_SO_NOT_LOCKED);
 	}
-	sctp_free_a_readq(stcb, control);	
+	sctp_free_remote_addr(control->whoFrom);
+	if (control->data) {
+		sctp_m_freem(control->data);
+		control->data = NULL;
+	}
+	sctp_free_a_readq(stcb, control);
 }
 
 /*
@@ -726,6 +731,7 @@ sctp_add_to_tail_pointer(struct sctp_queued_to_read *control, struct mbuf *m, ui
 	}
 	if (control->tail_mbuf == NULL) {
 		/* TSNH */
+		sctp_m_freem(control->data);
 		control->data = m;
 		sctp_setup_tail_pointer(control);
 		return;
@@ -928,6 +934,12 @@ restart:
 			break;
 		}
 	}
+	if (cnt_added && strm->pd_api_started) {
+#if defined(__Userspace__)
+		sctp_invoke_recv_callback(stcb->sctp_ep, stcb, control, SCTP_READ_LOCK_NOT_HELD);
+#endif
+		sctp_wakeup_the_read_socket(stcb->sctp_ep, stcb, SCTP_SO_NOT_LOCKED);
+	}
 	if ((control->length > pd_point) && (strm->pd_api_started == 0)) {
 		strm->pd_api_started = 1;
 		control->pdapi_started = 1;
@@ -959,6 +971,16 @@ sctp_inject_old_unordered_data(struct sctp_tcb *stcb,
 		SCTPDBG(SCTP_DEBUG_XXX,
 			"chunk is a first fsn: %u becomes fsn_included\n",
 			chk->rec.data.fsn);
+		at = TAILQ_FIRST(&control->reasm);
+		if (at && SCTP_TSN_GT(chk->rec.data.fsn, at->rec.data.fsn)) {
+			/* 
+			 * The first chunk in the reassembly is
+			 * a smaller TSN than this one, even though
+			 * this has a first, it must be from a subsequent
+			 * msg.
+			 */
+			goto place_chunk;
+		}
 		if (control->first_frag_seen) {
 			/*
 			 * In old un-ordered we can reassembly on
@@ -1463,6 +1485,16 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 					"The last fsn is now in place fsn: %u\n",
 					chk->rec.data.fsn);
 				control->last_frag_seen = 1;
+				if (SCTP_TSN_GT(control->top_fsn, chk->rec.data.fsn)) {
+					SCTPDBG(SCTP_DEBUG_XXX,
+						"New fsn: %u is not at top_fsn: %u -- abort\n",
+						chk->rec.data.fsn,
+						control->top_fsn);
+					sctp_abort_in_reasm(stcb, control, chk,
+							    abort_flag,
+							    SCTP_FROM_SCTP_INDATA + SCTP_LOC_9);
+					return;
+				}
 			}
 			if (asoc->idata_supported || control->first_frag_seen) {
 				/* 
@@ -1475,7 +1507,7 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 					/* We have already delivered up to this so its a dup */
 					sctp_abort_in_reasm(stcb, control, chk,
 							    abort_flag,
-							    SCTP_FROM_SCTP_INDATA + SCTP_LOC_9);
+							    SCTP_FROM_SCTP_INDATA + SCTP_LOC_10);
 					return;
 				}
 			}
@@ -1487,7 +1519,7 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 					chk->rec.data.fsn, control->top_fsn);
 				sctp_abort_in_reasm(stcb, control,
 						    chk, abort_flag,
-						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_10);
+						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_11);
 				return;
 			}
 			if (asoc->idata_supported || control->first_frag_seen) {
@@ -1505,7 +1537,7 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 						chk->rec.data.fsn, control->fsn_included);
 					sctp_abort_in_reasm(stcb, control, chk,
 							    abort_flag,
-							    SCTP_FROM_SCTP_INDATA + SCTP_LOC_11);
+							    SCTP_FROM_SCTP_INDATA + SCTP_LOC_12);
 					return;
 				}
 			}
@@ -1517,7 +1549,7 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 					control->top_fsn);
 				sctp_abort_in_reasm(stcb, control, chk,
 						    abort_flag,
-						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_12);
+						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_13);
 				return;
 			}
 		}
@@ -1557,7 +1589,7 @@ sctp_queue_data_for_reasm(struct sctp_tcb *stcb, struct sctp_association *asoc,
 					at->rec.data.fsn);
 				sctp_abort_in_reasm(stcb, control,
 						    chk, abort_flag,
-						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_13);
+						    SCTP_FROM_SCTP_INDATA + SCTP_LOC_14);
 				return;
 			}
 		}
@@ -2072,10 +2104,13 @@ sctp_process_a_data_chunk(struct sctp_tcb *stcb, struct sctp_association *asoc,
 			struct mbuf *mm;
 
 			control->data = dmbuf;
+			control->tail_mbuf = NULL;
 			for (mm = control->data; mm; mm = mm->m_next) {
 				control->length += SCTP_BUF_LEN(mm);
+				if (SCTP_BUF_NEXT(mm) == NULL) {
+					control->tail_mbuf = mm;
+				}
 			}
-			control->tail_mbuf = NULL;
 			control->end_added = 1;
 			control->last_frag_seen = 1;
 			control->first_frag_seen = 1;
@@ -2554,7 +2589,7 @@ sctp_sack_check(struct sctp_tcb *stcb, int was_a_gap)
 	 * Now we need to see if we need to queue a sack or just start the
 	 * timer (if allowed).
 	 */
-	if (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_SENT) {
+	if (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_SENT) {
 		/*
 		 * Ok special case, in SHUTDOWN-SENT case. here we
 		 * maker sure SACK timer is off and instead send a
@@ -2911,7 +2946,7 @@ sctp_process_data(struct mbuf **mm, int iphlen, int *offset, int length,
 		(void)SCTP_GETTIME_TIMEVAL(&stcb->asoc.time_last_rcvd);
 	}
 	/* now service all of the reassm queue if needed */
-	if (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_SENT) {
+	if (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_SENT) {
 		/* Assure that we ack right away */
 		stcb->asoc.send_sack = 1;
 	}
@@ -3059,7 +3094,7 @@ sctp_process_segment_range(struct sctp_tcb *stcb, struct sctp_tmit_chunk **p_tp1
 						tp1->whoTo->net_ack += tp1->send_size;
 						if (tp1->snd_count < 2) {
 							/*-
-							 * True non-retransmited chunk
+							 * True non-retransmitted chunk
 							 */
 							tp1->whoTo->net_ack2 += tp1->send_size;
 
@@ -3067,13 +3102,12 @@ sctp_process_segment_range(struct sctp_tcb *stcb, struct sctp_tmit_chunk **p_tp1
 							 * update RTO too ?
 							 */
 							if (tp1->do_rtt) {
-								if (*rto_ok) {
-									tp1->whoTo->RTO =
-										sctp_calculate_rto(stcb,
-												   &stcb->asoc,
-												   tp1->whoTo,
-												   &tp1->sent_rcv_time,
-												   SCTP_RTT_FROM_DATA);
+								if (*rto_ok &&
+								    sctp_calculate_rto(stcb,
+								                       &stcb->asoc,
+								                       tp1->whoTo,
+								                       &tp1->sent_rcv_time,
+								                       SCTP_RTT_FROM_DATA)) {
 									*rto_ok = 0;
 								}
 								if (tp1->whoTo->rto_needed == 0) {
@@ -4019,7 +4053,7 @@ sctp_express_handle_sack(struct sctp_tcb *stcb, uint32_t cumack,
 					tp1->whoTo->net_ack += tp1->send_size;
 					if (tp1->snd_count < 2) {
 						/*
-						 * True non-retransmited
+						 * True non-retransmitted
 						 * chunk
 						 */
 						tp1->whoTo->net_ack2 +=
@@ -4027,16 +4061,12 @@ sctp_express_handle_sack(struct sctp_tcb *stcb, uint32_t cumack,
 
 						/* update RTO too? */
 						if (tp1->do_rtt) {
-							if (rto_ok) {
-								tp1->whoTo->RTO =
-									/*
-									 * sa_ignore
-									 * NO_NULL_CHK
-									 */
-									sctp_calculate_rto(stcb,
-											   asoc, tp1->whoTo,
-											   &tp1->sent_rcv_time,
-											   SCTP_RTT_FROM_DATA);
+							if (rto_ok &&
+							    sctp_calculate_rto(stcb,
+									       &stcb->asoc,
+									       tp1->whoTo,
+									       &tp1->sent_rcv_time,
+									       SCTP_RTT_FROM_DATA)) {
 								rto_ok = 0;
 							}
 							if (tp1->whoTo->rto_needed == 0) {
@@ -4311,12 +4341,12 @@ again:
 		/* clean up */
 		if ((asoc->stream_queue_cnt == 1) &&
 		    ((asoc->state & SCTP_STATE_SHUTDOWN_PENDING) ||
-		     (asoc->state & SCTP_STATE_SHUTDOWN_RECEIVED)) &&
+		     (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
 		    ((*asoc->ss_functions.sctp_ss_is_user_msgs_incomplete)(stcb, asoc))) {
-			asoc->state |= SCTP_STATE_PARTIAL_MSG_LEFT;
+			SCTP_ADD_SUBSTATE(stcb, SCTP_STATE_PARTIAL_MSG_LEFT);
 		}
 		if (((asoc->state & SCTP_STATE_SHUTDOWN_PENDING) ||
-		      (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
+		     (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
 		    (asoc->stream_queue_cnt == 1) &&
 		    (asoc->state & SCTP_STATE_PARTIAL_MSG_LEFT)) {
 			struct mbuf *op_err;
@@ -4332,12 +4362,11 @@ again:
 		    (asoc->stream_queue_cnt == 0)) {
 			struct sctp_nets *netp;
 
-			if ((SCTP_GET_STATE(asoc) == SCTP_STATE_OPEN) ||
-			    (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED)) {
+			if ((SCTP_GET_STATE(stcb) == SCTP_STATE_OPEN) ||
+			    (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) {
 				SCTP_STAT_DECR_GAUGE32(sctps_currestab);
 			}
-			SCTP_SET_STATE(asoc, SCTP_STATE_SHUTDOWN_SENT);
-			SCTP_CLEAR_SUBSTATE(asoc, SCTP_STATE_SHUTDOWN_PENDING);
+			SCTP_SET_STATE(stcb, SCTP_STATE_SHUTDOWN_SENT);
 			sctp_stop_timers_for_shutdown(stcb);
 			if (asoc->alternate) {
 				netp = asoc->alternate;
@@ -4349,13 +4378,12 @@ again:
 					 stcb->sctp_ep, stcb, netp);
 			sctp_timer_start(SCTP_TIMER_TYPE_SHUTDOWNGUARD,
 					 stcb->sctp_ep, stcb, netp);
-		} else if ((SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED) &&
+		} else if ((SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED) &&
 			   (asoc->stream_queue_cnt == 0)) {
 			struct sctp_nets *netp;
 
 			SCTP_STAT_DECR_GAUGE32(sctps_currestab);
-			SCTP_SET_STATE(asoc, SCTP_STATE_SHUTDOWN_ACK_SENT);
-			SCTP_CLEAR_SUBSTATE(asoc, SCTP_STATE_SHUTDOWN_PENDING);
+			SCTP_SET_STATE(stcb, SCTP_STATE_SHUTDOWN_ACK_SENT);
 			sctp_stop_timers_for_shutdown(stcb);
 			if (asoc->alternate) {
 				netp = asoc->alternate;
@@ -4657,7 +4685,7 @@ sctp_handle_sack(struct mbuf *m, int offset_seg, int offset_dup,
 
 					if (tp1->snd_count < 2) {
 						/*
-						 * True non-retransmited
+						 * True non-retransmitted
 						 * chunk
 						 */
 						tp1->whoTo->net_ack2 +=
@@ -4665,12 +4693,12 @@ sctp_handle_sack(struct mbuf *m, int offset_seg, int offset_dup,
 
 						/* update RTO too? */
 						if (tp1->do_rtt) {
-							if (rto_ok) {
-								tp1->whoTo->RTO =
-									sctp_calculate_rto(stcb,
-											   asoc, tp1->whoTo,
-											   &tp1->sent_rcv_time,
-											   SCTP_RTT_FROM_DATA);
+							if (rto_ok &&
+							    sctp_calculate_rto(stcb,
+									       &stcb->asoc,
+									       tp1->whoTo,
+									       &tp1->sent_rcv_time,
+									       SCTP_RTT_FROM_DATA)) {
 								rto_ok = 0;
 							}
 							if (tp1->whoTo->rto_needed == 0) {
@@ -5029,12 +5057,12 @@ sctp_handle_sack(struct mbuf *m, int offset_seg, int offset_dup,
 		/* clean up */
 		if ((asoc->stream_queue_cnt == 1) &&
 		    ((asoc->state & SCTP_STATE_SHUTDOWN_PENDING) ||
-		     (asoc->state & SCTP_STATE_SHUTDOWN_RECEIVED)) &&
+		     (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
 		    ((*asoc->ss_functions.sctp_ss_is_user_msgs_incomplete)(stcb, asoc))) {
-			asoc->state |= SCTP_STATE_PARTIAL_MSG_LEFT;
+			SCTP_ADD_SUBSTATE(stcb, SCTP_STATE_PARTIAL_MSG_LEFT);
 		}
 		if (((asoc->state & SCTP_STATE_SHUTDOWN_PENDING) ||
-		      (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
+		     (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) &&
 		    (asoc->stream_queue_cnt == 1) &&
 		    (asoc->state & SCTP_STATE_PARTIAL_MSG_LEFT)) {
 			struct mbuf *op_err;
@@ -5050,12 +5078,11 @@ sctp_handle_sack(struct mbuf *m, int offset_seg, int offset_dup,
 		    (asoc->stream_queue_cnt == 0)) {
 			struct sctp_nets *netp;
 
-			if ((SCTP_GET_STATE(asoc) == SCTP_STATE_OPEN) ||
-			    (SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED)) {
+			if ((SCTP_GET_STATE(stcb) == SCTP_STATE_OPEN) ||
+			    (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED)) {
 				SCTP_STAT_DECR_GAUGE32(sctps_currestab);
 			}
-			SCTP_SET_STATE(asoc, SCTP_STATE_SHUTDOWN_SENT);
-			SCTP_CLEAR_SUBSTATE(asoc, SCTP_STATE_SHUTDOWN_PENDING);
+			SCTP_SET_STATE(stcb, SCTP_STATE_SHUTDOWN_SENT);
 			sctp_stop_timers_for_shutdown(stcb);
 			if (asoc->alternate) {
 				netp = asoc->alternate;
@@ -5068,13 +5095,12 @@ sctp_handle_sack(struct mbuf *m, int offset_seg, int offset_dup,
 			sctp_timer_start(SCTP_TIMER_TYPE_SHUTDOWNGUARD,
 					 stcb->sctp_ep, stcb, netp);
 			return;
-		} else if ((SCTP_GET_STATE(asoc) == SCTP_STATE_SHUTDOWN_RECEIVED) &&
+		} else if ((SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED) &&
 			   (asoc->stream_queue_cnt == 0)) {
 			struct sctp_nets *netp;
 
 			SCTP_STAT_DECR_GAUGE32(sctps_currestab);
-			SCTP_SET_STATE(asoc, SCTP_STATE_SHUTDOWN_ACK_SENT);
-			SCTP_CLEAR_SUBSTATE(asoc, SCTP_STATE_SHUTDOWN_PENDING);
+			SCTP_SET_STATE(stcb, SCTP_STATE_SHUTDOWN_ACK_SENT);
 			sctp_stop_timers_for_shutdown(stcb);
 			if (asoc->alternate) {
 				netp = asoc->alternate;

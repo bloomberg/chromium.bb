@@ -172,6 +172,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgPointee<1>(8u))
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
+      .WillOnce(SetArgPointee<1>(8u))
+      .RetiresOnSaturation();
   ContextStateTestHelpers::SetupInitState(gl_.get(), feature_info(),
                                           gfx::Size(1, 1));
 
@@ -192,7 +195,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   decoder_.reset(RasterDecoder::Create(
       this, command_buffer_service_.get(), &outputter_, gpu_feature_info,
       gpu_preferences_, nullptr /* memory_tracker */, &shared_image_manager_,
-      shared_context_state_));
+      shared_context_state_, true /* is_privileged */));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->DisableFlushWorkaroundForTest();
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);

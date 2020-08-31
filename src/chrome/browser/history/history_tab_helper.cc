@@ -18,7 +18,6 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/features.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -52,7 +51,7 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
     const history::HistoryAddPageArgs& add_page_args) {
   history::HistoryService* hs = GetHistoryService();
   if (hs)
-    GetHistoryService()->AddPage(add_page_args);
+    hs->AddPage(add_page_args);
 }
 
 history::HistoryAddPageArgs
@@ -94,12 +93,6 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
                 navigation_handle->GetWebContents()->GetTitle())
           : base::nullopt);
 
-  // If this navigation attempted a Preview, remove those URLS from the redirect
-  // chain so that they are not seen by the user. See http://crbug.com/914404.
-  DCHECK(!add_page_args.redirects.empty());
-  base::EraseIf(add_page_args.redirects, [](const GURL& url) {
-    return previews::IsLitePageRedirectPreviewURL(url);
-  });
   if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
       virtual_url != navigation_handle->GetURL()) {
     // Hack on the "virtual" URL so that it will appear in history. For some
@@ -135,6 +128,11 @@ void HistoryTabHelper::DidFinishNavigation(
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.
   if (!navigation_handle->ShouldUpdateHistory())
+    return;
+
+  // Navigations in portals don't appear in history until the portal is
+  // activated.
+  if (navigation_handle->GetWebContents()->IsPortal())
     return;
 
   // Most of the time, the displayURL matches the loaded URL, but for about:
@@ -175,6 +173,36 @@ void HistoryTabHelper::DidFinishNavigation(
 #endif
 
   UpdateHistoryForNavigation(add_page_args);
+}
+
+// We update history upon the associated WebContents becoming the top level
+// contents of a tab from portal activation.
+// TODO(mcnee): Investigate whether the early return cases in
+// DidFinishNavigation apply to portal activation. See https://crbug.com/1072762
+void HistoryTabHelper::DidActivatePortal(
+    content::WebContents* predecessor_contents) {
+  history::HistoryService* hs = GetHistoryService();
+  if (!hs)
+    return;
+
+  content::NavigationEntry* last_committed_entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+
+  // TODO(1058504): Update this when portal activations can be done with
+  // replacement.
+  const bool did_replace_entry = false;
+
+  const history::HistoryAddPageArgs add_page_args(
+      last_committed_entry->GetVirtualURL(),
+      last_committed_entry->GetTimestamp(),
+      history::ContextIDForWebContents(web_contents()),
+      last_committed_entry->GetUniqueID(),
+      last_committed_entry->GetReferrer().url,
+      /* redirects */ {}, ui::PAGE_TRANSITION_LINK,
+      /* hidden */ false, history::SOURCE_BROWSED, did_replace_entry,
+      /* consider_for_ntp_most_visited */ true,
+      last_committed_entry->GetTitle());
+  hs->AddPage(add_page_args);
 }
 
 void HistoryTabHelper::DidFinishLoad(

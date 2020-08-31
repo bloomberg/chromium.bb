@@ -7,22 +7,17 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
 
 declare_args() {
-  enable_linux_installer =
-      is_linux && !is_chromeos && !is_component_build && use_sysroot &&
-      !using_sanitizer
+  enable_linux_installer = is_linux && !is_chromeos && !is_component_build &&
+                           use_sysroot && !using_sanitizer
 }
 
 # Meta-target that forwards to the installer of the correct type (if any).
 group("installer") {
   if (enable_linux_installer) {
-    deps = [
-      "//chrome/installer/linux",
-    ]
+    deps = [ "//chrome/installer/linux" ]
   }
 
   if (is_mac) {
-    deps = [
-      "//chrome/installer/mac",
-    ]
+    deps = [ "//chrome/installer/mac" ]
   }
 }

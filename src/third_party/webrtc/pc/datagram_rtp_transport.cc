@@ -29,7 +29,6 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/dscp.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/message_queue.h"
 #include "rtc_base/rtc_certificate.h"
 #include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/stream.h"
@@ -77,11 +76,6 @@ DatagramRtpTransport::DatagramRtpTransport(
     RTC_LOG(LS_ERROR) << "Transport sequence numbers are not supported in "
                          "datagram transport connection";
   }
-
-  // TODO(sukhanov): Add CHECK to make sure that field trial
-  // WebRTC-ExcludeTransportSequenceNumberFromFecFieldTrial is enabled.
-  // If feedback loop is translation is enabled, FEC packets must exclude
-  // transport sequence numbers, otherwise recovered packets will be corrupt.
 
   RTC_DCHECK(ice_transport_);
   RTC_DCHECK(datagram_transport_);

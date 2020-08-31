@@ -38,6 +38,7 @@ class TooltipControllerTestHelper {
   void FireTooltipShownTimer();
   bool IsTooltipShownTimerRunning();
   bool IsTooltipVisible();
+  void SetTooltipShowDelayEnable(bool tooltip_show_delay);
 
  private:
   TooltipController* controller_;
@@ -63,7 +64,6 @@ class TooltipTestView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(TooltipTestView);
 };
-
 
 }  // namespace test
 }  // namespace corewm

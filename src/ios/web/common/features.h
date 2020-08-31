@@ -10,12 +10,6 @@
 namespace web {
 namespace features {
 
-// Used to always allow scaling of the web page, regardless of author intent.
-extern const base::Feature kIgnoresViewportScaleLimits;
-
-// Used to enable the WKBackForwardList based navigation manager.
-extern const base::Feature kSlimNavigationManager;
-
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
@@ -39,24 +33,34 @@ extern const base::Feature kClearOldNavigationRecordsWorkaround;
 // Used to enable committed interstitials for SSL errors.
 extern const base::Feature kSSLCommittedInterstitials;
 
-// Used to enable using WKWebView.loading for WebState::IsLoading.
-extern const base::Feature kUseWKWebViewLoading;
-
-// Feature flag to move -LogLoadStarted() to WebStateDidStartNavigation().
-extern const base::Feature kLogLoadStartedInDidStartNavigation;
-
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;
 
 // Feature flag for the new error page workflow, using JavaScript.
 extern const base::Feature kUseJSForErrorPage;
 
-// Feature flag to request the desktop version of web pages on iPad.
-extern const base::Feature kDefaultToDesktopOnIPad;
+// When enabled, for each navigation, the default user agent is chosen by the
+// WebClient GetDefaultUserAgent() method. If it is disabled, the mobile version
+// is requested by default.
+// Use UseWebClientDefaultUserAgent() instead of checking this variable.
+extern const base::Feature kUseDefaultUserAgentInWebClient;
 
-// Use WKWebView.loading to update WebState::IsLoading.
-// TODO(crbug.com/1006012): Clean up this flag after experiment.
-bool UseWKWebViewLoading();
+// When enabled, preserves properties of the UIScrollView using CRWPropertyStore
+// when the scroll view is recreated. When disabled, only preserve a small set
+// of properties using hard coded logic.
+extern const base::Feature kPreserveScrollViewProperties;
+
+// When enabled, display an interstitial on lookalike URL navigations.
+extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
+
+// Level at which battery power is considered low, and some cosmetic features
+// can be turned off.
+const float kLowBatteryLevelThreshold = 0.2;
+
+// When true, for each navigation, the default user agent is chosen by the
+// WebClient GetDefaultUserAgent() method. If it is false, the mobile version
+// is requested by default.
+bool UseWebClientDefaultUserAgent();
 
 }  // namespace features
 }  // namespace web

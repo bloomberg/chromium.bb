@@ -107,7 +107,7 @@ sw{
         ES{"Uhispania"}
         ET{"Ethiopia"}
         EU{"Umoja wa Ulaya"}
-        EZ{"EZ"}
+        EZ{"Jumuiya ya Ulaya"}
         FI{"Ufini"}
         FJ{"Fiji"}
         FK{"Visiwa vya Falkland (Islas Malvinas)"}
@@ -298,8 +298,6 @@ sw{
         ZZ{"Eneo lisilojulikana"}
     }
     Countries%short{
-        GB{"Ufalme wa Muungano"}
-        UN{"Umoja wa Mataifa"}
         US{"US"}
     }
     Countries%variant{
@@ -307,8 +305,7 @@ sw{
         CG{"Jamhuri ya Kongo"}
         CI{"Ivory Coast"}
         CZ{"Jamhuri ya Cheki"}
-        SZ{"Uswazi"}
         TL{"Timor ya Mashariki"}
     }
-    Version{"36"}
+    Version{"37"}
 }

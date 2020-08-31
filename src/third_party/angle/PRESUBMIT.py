@@ -8,13 +8,14 @@ for more details on the presubmit API built into depot_tools.
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 
-# Fragment of a regular expression that matches C++ and Objective-C++ implementation files.
-_IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
+# Fragment of a regular expression that matches C++ and Objective-C++ implementation files and headers.
+_IMPLEMENTATION_AND_HEADER_EXTENSIONS = r'\.(cc|cpp|cxx|mm|h|hpp|hxx)$'
 
 # Fragment of a regular expression that matches C++ and Objective-C++ header files.
 _HEADER_EXTENSIONS = r'\.(h|hpp|hxx)$'
@@ -28,7 +29,7 @@ _PRIMARY_EXPORT_TARGETS = [
 
 
 def _CheckChangeHasBugField(input_api, output_api):
-    """Requires that the changelist have a Bug: field."""
+    """Requires that the changelist have a Bug: field from a known project."""
     bugs = input_api.change.BugsFromDescription()
     if not bugs:
         return [
@@ -36,13 +37,36 @@ def _CheckChangeHasBugField(input_api, output_api):
                                       '"Bug: angleproject:[bug number]"\n'
                                       'directly above the Change-Id tag.')
         ]
-    elif not all([' ' not in bug for bug in bugs]):
-        return [
-            output_api.PresubmitError(
-                'Check bug tag formatting. Ensure there are no spaces after the colon.')
-        ]
-    else:
+
+    # The bug must be in the form of "project:number".  None is also accepted, which is used by
+    # rollers as well as in very minor changes.
+    if len(bugs) == 1 and bugs[0] == 'None':
         return []
+
+    projects = ['angleproject:', 'chromium:', 'dawn:', 'fuchsia:', 'skia:', 'swiftshader:', 'b/']
+    bug_regex = re.compile(r"([a-z]+[:/])(\d+)")
+    errors = []
+    extra_help = None
+
+    for bug in bugs:
+        if bug == 'None':
+            errors.append(
+                output_api.PresubmitError('Invalid bug tag "None" in presence of other bug tags.'))
+            continue
+
+        match = re.match(bug_regex, bug)
+        if match == None or bug != match.group(0) or match.group(1) not in projects:
+            errors.append(output_api.PresubmitError('Incorrect bug tag "' + bug + '".'))
+            if not extra_help:
+                extra_help = output_api.PresubmitError('Acceptable format is:\n\n'
+                                                       '    Bug: project:bugnumber\n\n'
+                                                       'Acceptable projects are:\n\n    ' +
+                                                       '\n    '.join(projects))
+
+    if extra_help:
+        errors.append(extra_help)
+
+    return errors
 
 
 def _CheckCodeGeneration(input_api, output_api):
@@ -147,8 +171,67 @@ def _CheckExportValidity(input_api, output_api):
         shutil.rmtree(outdir)
 
 
+def _CheckTabsInSourceFiles(input_api, output_api):
+    """Forbids tab characters in source files due to a WebKit repo requirement. """
+
+    def implementation_and_headers(f):
+        return input_api.FilterSourceFile(
+            f, white_list=(r'.+%s' % _IMPLEMENTATION_AND_HEADER_EXTENSIONS,))
+
+    files_with_tabs = []
+    for f in input_api.AffectedSourceFiles(implementation_and_headers):
+        for (num, line) in f.ChangedContents():
+            if '\t' in line:
+                files_with_tabs.append(f)
+                break
+
+    if files_with_tabs:
+        return [
+            output_api.PresubmitError(
+                'Tab characters in source files.',
+                items=sorted(files_with_tabs),
+                long_text=
+                'Tab characters are forbidden in ANGLE source files because WebKit\'s Subversion\n'
+                'repository does not allow tab characters in source files.\n'
+                'Please remove tab characters from these files.')
+        ]
+    return []
+
+
+# https://stackoverflow.com/a/196392
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
+
+def _CheckNonAsciiInSourceFiles(input_api, output_api):
+    """Forbids non-ascii characters in source files. """
+
+    def implementation_and_headers(f):
+        return input_api.FilterSourceFile(
+            f, white_list=(r'.+%s' % _IMPLEMENTATION_AND_HEADER_EXTENSIONS,))
+
+    files_with_non_ascii = []
+    for f in input_api.AffectedSourceFiles(implementation_and_headers):
+        for (num, line) in f.ChangedContents():
+            if not is_ascii(line):
+                files_with_non_ascii.append("%s: %s" % (f, line))
+                break
+
+    if files_with_non_ascii:
+        return [
+            output_api.PresubmitError(
+                'Non-ASCII characters in source files.',
+                items=sorted(files_with_non_ascii),
+                long_text='Non-ASCII characters are forbidden in ANGLE source files.\n'
+                'Please remove non-ASCII characters from these files.')
+        ]
+    return []
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
+    results.extend(_CheckTabsInSourceFiles(input_api, output_api))
+    results.extend(_CheckNonAsciiInSourceFiles(input_api, output_api))
     results.extend(_CheckCodeGeneration(input_api, output_api))
     results.extend(_CheckChangeHasBugField(input_api, output_api))
     results.extend(input_api.canned_checks.CheckChangeHasDescription(input_api, output_api))
@@ -161,12 +244,4 @@ def CheckChangeOnUpload(input_api, output_api):
 
 
 def CheckChangeOnCommit(input_api, output_api):
-    results = []
-    results.extend(_CheckCodeGeneration(input_api, output_api))
-    results.extend(
-        input_api.canned_checks.CheckPatchFormatted(
-            input_api, output_api, result_factory=output_api.PresubmitError))
-    results.extend(_CheckChangeHasBugField(input_api, output_api))
-    results.extend(_CheckExportValidity(input_api, output_api))
-    results.extend(input_api.canned_checks.CheckChangeHasDescription(input_api, output_api))
-    return results
+    return CheckChangeOnUpload(input_api, output_api)

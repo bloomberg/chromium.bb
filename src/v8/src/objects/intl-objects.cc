@@ -34,6 +34,7 @@
 #include "unicode/decimfmt.h"
 #include "unicode/formattedvalue.h"
 #include "unicode/localebuilder.h"
+#include "unicode/localematcher.h"
 #include "unicode/locid.h"
 #include "unicode/normalizer2.h"
 #include "unicode/numberformatter.h"
@@ -212,8 +213,8 @@ icu::UnicodeString Intl::ToICUUnicodeString(Isolate* isolate,
   return icu::UnicodeString(uchar_buffer, length);
 }
 
-icu::StringPiece Intl::ToICUStringPiece(Isolate* isolate,
-                                        Handle<String> string) {
+namespace {
+icu::StringPiece ToICUStringPiece(Isolate* isolate, Handle<String> string) {
   DCHECK(string->IsFlat());
   DisallowHeapAllocation no_gc;
 
@@ -230,7 +231,6 @@ icu::StringPiece Intl::ToICUStringPiece(Isolate* isolate,
   return icu::StringPiece(char_buffer, length);
 }
 
-namespace {
 MaybeHandle<String> LocaleConvertCase(Isolate* isolate, Handle<String> s,
                                       bool is_to_upper, const char* lang) {
   auto case_converter = is_to_upper ? u_strToUpper : u_strToLower;
@@ -431,7 +431,9 @@ std::string Intl::GetNumberingSystem(const icu::Locale& icu_locale) {
   return "latn";
 }
 
-icu::Locale Intl::CreateICULocale(const std::string& bcp47_locale) {
+namespace {
+
+Maybe<icu::Locale> CreateICULocale(const std::string& bcp47_locale) {
   DisallowHeapAllocation no_gc;
 
   // Convert BCP47 into ICU locale format.
@@ -440,11 +442,13 @@ icu::Locale Intl::CreateICULocale(const std::string& bcp47_locale) {
   icu::Locale icu_locale = icu::Locale::forLanguageTag(bcp47_locale, status);
   CHECK(U_SUCCESS(status));
   if (icu_locale.isBogus()) {
-    FATAL("Failed to create ICU locale, are ICU data files missing?");
+    return Nothing<icu::Locale>();
   }
 
-  return icu_locale;
+  return Just(icu_locale);
 }
+
+}  // anonymous namespace
 
 // static
 
@@ -559,14 +563,12 @@ bool ValidateResource(const icu::Locale locale, const char* path,
 }  // namespace
 
 std::set<std::string> Intl::BuildLocaleSet(
-    const icu::Locale* icu_available_locales, int32_t count, const char* path,
+    const std::vector<std::string>& icu_available_locales, const char* path,
     const char* validate_key) {
   std::set<std::string> locales;
-  for (int32_t i = 0; i < count; ++i) {
-    std::string locale =
-        Intl::ToLanguageTag(icu_available_locales[i]).FromJust();
+  for (const std::string& locale : icu_available_locales) {
     if (path != nullptr || validate_key != nullptr) {
-      if (!ValidateResource(icu_available_locales[i], path, validate_key)) {
+      if (!ValidateResource(icu::Locale(locale.c_str()), path, validate_key)) {
         continue;
       }
     }
@@ -761,41 +763,15 @@ bool IsGrandfatheredTagWithoutPreferredVaule(const std::string& locale) {
   return false;
 }
 
-}  // anonymous namespace
-
-Maybe<std::string> Intl::CanonicalizeLanguageTag(Isolate* isolate,
-                                                 Handle<Object> locale_in) {
-  Handle<String> locale_str;
-  // This does part of the validity checking spec'ed in CanonicalizeLocaleList:
-  // 7c ii. If Type(kValue) is not String or Object, throw a TypeError
-  // exception.
-  // 7c iii. Let tag be ? ToString(kValue).
-  // 7c iv. If IsStructurallyValidLanguageTag(tag) is false, throw a
-  // RangeError exception.
-
-  if (locale_in->IsString()) {
-    locale_str = Handle<String>::cast(locale_in);
-  } else if (locale_in->IsJSReceiver()) {
-    ASSIGN_RETURN_ON_EXCEPTION_VALUE(isolate, locale_str,
-                                     Object::ToString(isolate, locale_in),
-                                     Nothing<std::string>());
-  } else {
-    THROW_NEW_ERROR_RETURN_VALUE(isolate,
-                                 NewTypeError(MessageTemplate::kLanguageID),
-                                 Nothing<std::string>());
-  }
-  std::string locale(locale_str->ToCString().get());
-
-  if (!IsStructurallyValidLanguageTag(locale)) {
-    THROW_NEW_ERROR_RETURN_VALUE(
-        isolate, NewRangeError(MessageTemplate::kLocaleBadParameters),
-        Nothing<std::string>());
-  }
-  return Intl::CanonicalizeLanguageTag(isolate, locale);
+bool IsStructurallyValidLanguageTag(const std::string& tag) {
+  return JSLocale::StartsWithUnicodeLanguageId(tag);
 }
 
-Maybe<std::string> Intl::CanonicalizeLanguageTag(Isolate* isolate,
-                                                 const std::string& locale_in) {
+// Canonicalize the locale.
+// https://tc39.github.io/ecma402/#sec-canonicalizelanguagetag,
+// including type check and structural validity check.
+Maybe<std::string> CanonicalizeLanguageTag(Isolate* isolate,
+                                           const std::string& locale_in) {
   std::string locale = locale_in;
 
   if (locale.length() == 0 ||
@@ -862,6 +838,39 @@ Maybe<std::string> Intl::CanonicalizeLanguageTag(Isolate* isolate,
 
   return maybe_to_language_tag;
 }
+
+Maybe<std::string> CanonicalizeLanguageTag(Isolate* isolate,
+                                           Handle<Object> locale_in) {
+  Handle<String> locale_str;
+  // This does part of the validity checking spec'ed in CanonicalizeLocaleList:
+  // 7c ii. If Type(kValue) is not String or Object, throw a TypeError
+  // exception.
+  // 7c iii. Let tag be ? ToString(kValue).
+  // 7c iv. If IsStructurallyValidLanguageTag(tag) is false, throw a
+  // RangeError exception.
+
+  if (locale_in->IsString()) {
+    locale_str = Handle<String>::cast(locale_in);
+  } else if (locale_in->IsJSReceiver()) {
+    ASSIGN_RETURN_ON_EXCEPTION_VALUE(isolate, locale_str,
+                                     Object::ToString(isolate, locale_in),
+                                     Nothing<std::string>());
+  } else {
+    THROW_NEW_ERROR_RETURN_VALUE(isolate,
+                                 NewTypeError(MessageTemplate::kLanguageID),
+                                 Nothing<std::string>());
+  }
+  std::string locale(locale_str->ToCString().get());
+
+  if (!IsStructurallyValidLanguageTag(locale)) {
+    THROW_NEW_ERROR_RETURN_VALUE(
+        isolate, NewRangeError(MessageTemplate::kLocaleBadParameters),
+        Nothing<std::string>());
+  }
+  return CanonicalizeLanguageTag(isolate, locale);
+}
+
+}  // anonymous namespace
 
 Maybe<std::vector<std::string>> Intl::CanonicalizeLocaleList(
     Isolate* isolate, Handle<Object> locales, bool only_return_one_result) {
@@ -1068,9 +1077,9 @@ Handle<Object> Intl::CompareStrings(Isolate* isolate,
 
   UCollationResult result;
   UErrorCode status = U_ZERO_ERROR;
-  icu::StringPiece string_piece1 = Intl::ToICUStringPiece(isolate, string1);
+  icu::StringPiece string_piece1 = ToICUStringPiece(isolate, string1);
   if (!string_piece1.empty()) {
-    icu::StringPiece string_piece2 = Intl::ToICUStringPiece(isolate, string2);
+    icu::StringPiece string_piece2 = ToICUStringPiece(isolate, string2);
     if (!string_piece2.empty()) {
       result = icu_collator.compareUTF8(string_piece1, string_piece2, status);
       DCHECK(U_SUCCESS(status));
@@ -1440,12 +1449,114 @@ std::vector<std::string> LookupSupportedLocales(
   return subset;
 }
 
+icu::LocaleMatcher BuildLocaleMatcher(
+    Isolate* isolate, const std::set<std::string>& available_locales,
+    UErrorCode* status) {
+  icu::Locale default_locale =
+      icu::Locale::forLanguageTag(DefaultLocale(isolate), *status);
+  CHECK(U_SUCCESS(*status));
+  icu::LocaleMatcher::Builder builder;
+  builder.setDefaultLocale(&default_locale);
+  for (auto it = available_locales.begin(); it != available_locales.end();
+       ++it) {
+    builder.addSupportedLocale(
+        icu::Locale::forLanguageTag(it->c_str(), *status));
+  }
+
+  return builder.build(*status);
+}
+
+class Iterator : public icu::Locale::Iterator {
+ public:
+  Iterator(std::vector<std::string>::const_iterator begin,
+           std::vector<std::string>::const_iterator end)
+      : iter_(begin), end_(end) {}
+  virtual ~Iterator() {}
+
+  UBool hasNext() const override { return iter_ != end_; }
+
+  const icu::Locale& next() override {
+    UErrorCode status = U_ZERO_ERROR;
+    locale_ = icu::Locale::forLanguageTag(iter_->c_str(), status);
+    CHECK(U_SUCCESS(status));
+    ++iter_;
+    return locale_;
+  }
+
+ private:
+  std::vector<std::string>::const_iterator iter_;
+  std::vector<std::string>::const_iterator end_;
+  icu::Locale locale_;
+};
+
+// ecma402/#sec-bestfitmatcher
+// The BestFitMatcher abstract operation compares requestedLocales, which must
+// be a List as returned by CanonicalizeLocaleList, against the locales in
+// availableLocales and determines the best available language to meet the
+// request. The algorithm is implementation dependent, but should produce
+// results that a typical user of the requested locales would perceive
+// as at least as good as those produced by the LookupMatcher abstract
+// operation. Options specified through Unicode locale extension sequences must
+// be ignored by the algorithm. Information about such subsequences is returned
+// separately. The abstract operation returns a record with a [[locale]] field,
+// whose value is the language tag of the selected locale, which must be an
+// element of availableLocales. If the language tag of the request locale that
+// led to the selected locale contained a Unicode locale extension sequence,
+// then the returned record also contains an [[extension]] field whose value is
+// the first Unicode locale extension sequence within the request locale
+// language tag.
+std::string BestFitMatcher(Isolate* isolate,
+                           const std::set<std::string>& available_locales,
+                           const std::vector<std::string>& requested_locales) {
+  UErrorCode status = U_ZERO_ERROR;
+  icu::LocaleMatcher matcher =
+      BuildLocaleMatcher(isolate, available_locales, &status);
+  CHECK(U_SUCCESS(status));
+
+  Iterator iter(requested_locales.cbegin(), requested_locales.cend());
+  std::string bestfit =
+      matcher.getBestMatch(iter, status)->toLanguageTag<std::string>(status);
+  if (U_FAILURE(status)) {
+    return DefaultLocale(isolate);
+  }
+  // We need to return the extensions with it.
+  for (auto it = requested_locales.begin(); it != requested_locales.end();
+       ++it) {
+    if (it->find(bestfit) == 0) {
+      return *it;
+    }
+  }
+  return bestfit;
+}
+
 // ECMA 402 9.2.8 BestFitSupportedLocales(availableLocales, requestedLocales)
 // https://tc39.github.io/ecma402/#sec-bestfitsupportedlocales
 std::vector<std::string> BestFitSupportedLocales(
-    const std::set<std::string>& available_locales,
+    Isolate* isolate, const std::set<std::string>& available_locales,
     const std::vector<std::string>& requested_locales) {
-  return LookupSupportedLocales(available_locales, requested_locales);
+  UErrorCode status = U_ZERO_ERROR;
+  icu::LocaleMatcher matcher =
+      BuildLocaleMatcher(isolate, available_locales, &status);
+  CHECK(U_SUCCESS(status));
+
+  std::string default_locale = DefaultLocale(isolate);
+  std::vector<std::string> result;
+  for (auto it = requested_locales.cbegin(); it != requested_locales.cend();
+       it++) {
+    if (*it == default_locale) {
+      result.push_back(*it);
+    } else {
+      status = U_ZERO_ERROR;
+      icu::Locale desired = icu::Locale::forLanguageTag(it->c_str(), status);
+      std::string bestfit = matcher.getBestMatch(desired, status)
+                                ->toLanguageTag<std::string>(status);
+      // We need to return the extensions with it.
+      if (U_SUCCESS(status) && it->find(bestfit) == 0) {
+        result.push_back(*it);
+      }
+    }
+  }
+  return result;
 }
 
 // ecma262 #sec-createarrayfromlist
@@ -1469,6 +1580,10 @@ Handle<JSArray> CreateArrayFromList(Isolate* isolate,
   // 5. Return array.
   return array;
 }
+
+// To mitigate the risk of bestfit locale matcher, we first check in without
+// turnning it on.
+static bool implement_bestfit = false;
 
 // ECMA 402 9.2.9 SupportedLocales(availableLocales, requestedLocales, options)
 // https://tc39.github.io/ecma402/#sec-supportedlocales
@@ -1499,14 +1614,13 @@ MaybeHandle<JSObject> SupportedLocales(
   // 3. If matcher is "best fit", then
   //    a. Let supportedLocales be BestFitSupportedLocales(availableLocales,
   //       requestedLocales).
-  if (matcher == Intl::MatcherOption::kBestFit) {
+  if (matcher == Intl::MatcherOption::kBestFit && implement_bestfit) {
     supported_locales =
-        BestFitSupportedLocales(available_locales, requested_locales);
+        BestFitSupportedLocales(isolate, available_locales, requested_locales);
   } else {
     // 4. Else,
     //    a. Let supportedLocales be LookupSupportedLocales(availableLocales,
     //       requestedLocales).
-    DCHECK_EQ(matcher, Intl::MatcherOption::kLookup);
     supported_locales =
         LookupSupportedLocales(available_locales, requested_locales);
   }
@@ -1751,19 +1865,20 @@ std::string LookupMatcher(Isolate* isolate,
 // this method perform such normalization.
 //
 // ecma402/#sec-resolvelocale
-Intl::ResolvedLocale Intl::ResolveLocale(
+Maybe<Intl::ResolvedLocale> Intl::ResolveLocale(
     Isolate* isolate, const std::set<std::string>& available_locales,
     const std::vector<std::string>& requested_locales, MatcherOption matcher,
     const std::set<std::string>& relevant_extension_keys) {
   std::string locale;
-  if (matcher == Intl::MatcherOption::kLookup) {
-    locale = LookupMatcher(isolate, available_locales, requested_locales);
-  } else if (matcher == Intl::MatcherOption::kBestFit) {
-    // TODO(intl): Implement better lookup algorithm.
+  if (matcher == Intl::MatcherOption::kBestFit && implement_bestfit) {
+    locale = BestFitMatcher(isolate, available_locales, requested_locales);
+  } else {
     locale = LookupMatcher(isolate, available_locales, requested_locales);
   }
 
-  icu::Locale icu_locale = CreateICULocale(locale);
+  Maybe<icu::Locale> maybe_icu_locale = CreateICULocale(locale);
+  MAYBE_RETURN(maybe_icu_locale, Nothing<Intl::ResolvedLocale>());
+  icu::Locale icu_locale = maybe_icu_locale.FromJust();
   std::map<std::string, std::string> extensions =
       LookupAndValidateUnicodeExtensions(&icu_locale, relevant_extension_keys);
 
@@ -1771,7 +1886,8 @@ Intl::ResolvedLocale Intl::ResolveLocale(
 
   // TODO(gsathya): Remove privateuse subtags from extensions.
 
-  return Intl::ResolvedLocale{canonicalized_locale, icu_locale, extensions};
+  return Just(
+      Intl::ResolvedLocale{canonicalized_locale, icu_locale, extensions});
 }
 
 Handle<Managed<icu::UnicodeString>> Intl::SetTextToBreakIterator(
@@ -1957,33 +2073,13 @@ base::TimezoneCache* Intl::CreateTimeZoneCache() {
                                 : base::OS::CreateTimezoneCache();
 }
 
-Maybe<Intl::CaseFirst> Intl::GetCaseFirst(Isolate* isolate,
-                                          Handle<JSReceiver> options,
-                                          const char* method) {
-  return Intl::GetStringOption<Intl::CaseFirst>(
-      isolate, options, "caseFirst", method, {"upper", "lower", "false"},
-      {Intl::CaseFirst::kUpper, Intl::CaseFirst::kLower,
-       Intl::CaseFirst::kFalse},
-      Intl::CaseFirst::kUndefined);
-}
-
-Maybe<Intl::HourCycle> Intl::GetHourCycle(Isolate* isolate,
-                                          Handle<JSReceiver> options,
-                                          const char* method) {
-  return Intl::GetStringOption<Intl::HourCycle>(
-      isolate, options, "hourCycle", method, {"h11", "h12", "h23", "h24"},
-      {Intl::HourCycle::kH11, Intl::HourCycle::kH12, Intl::HourCycle::kH23,
-       Intl::HourCycle::kH24},
-      Intl::HourCycle::kUndefined);
-}
-
 Maybe<Intl::MatcherOption> Intl::GetLocaleMatcher(Isolate* isolate,
                                                   Handle<JSReceiver> options,
                                                   const char* method) {
   return Intl::GetStringOption<Intl::MatcherOption>(
       isolate, options, "localeMatcher", method, {"best fit", "lookup"},
-      {Intl::MatcherOption::kLookup, Intl::MatcherOption::kBestFit},
-      Intl::MatcherOption::kLookup);
+      {Intl::MatcherOption::kBestFit, Intl::MatcherOption::kLookup},
+      Intl::MatcherOption::kBestFit);
 }
 
 Maybe<bool> Intl::GetNumberingSystem(Isolate* isolate,
@@ -2009,17 +2105,9 @@ Maybe<bool> Intl::GetNumberingSystem(Isolate* isolate,
   return Just(false);
 }
 
-Intl::HourCycle Intl::ToHourCycle(const std::string& hc) {
-  if (hc == "h11") return Intl::HourCycle::kH11;
-  if (hc == "h12") return Intl::HourCycle::kH12;
-  if (hc == "h23") return Intl::HourCycle::kH23;
-  if (hc == "h24") return Intl::HourCycle::kH24;
-  return Intl::HourCycle::kUndefined;
-}
-
-const std::set<std::string>& Intl::GetAvailableLocalesForLocale() {
-  static base::LazyInstance<Intl::AvailableLocales<icu::Locale>>::type
-      available_locales = LAZY_INSTANCE_INITIALIZER;
+const std::set<std::string>& Intl::GetAvailableLocales() {
+  static base::LazyInstance<Intl::AvailableLocales<>>::type available_locales =
+      LAZY_INSTANCE_INITIALIZER;
   return available_locales.Pointer()->Get();
 }
 
@@ -2033,8 +2121,7 @@ struct CheckCalendar {
 }  // namespace
 
 const std::set<std::string>& Intl::GetAvailableLocalesForDateFormat() {
-  static base::LazyInstance<
-      Intl::AvailableLocales<icu::DateFormat, CheckCalendar>>::type
+  static base::LazyInstance<Intl::AvailableLocales<CheckCalendar>>::type
       available_locales = LAZY_INSTANCE_INITIALIZER;
   return available_locales.Pointer()->Get();
 }
@@ -2112,9 +2199,6 @@ MaybeHandle<String> Intl::FormattedToString(
   return Intl::ToString(isolate, result);
 }
 
-bool Intl::IsStructurallyValidLanguageTag(const std::string& tag) {
-  return JSLocale::StartsWithUnicodeLanguageId(tag);
-}
 
 }  // namespace internal
 }  // namespace v8

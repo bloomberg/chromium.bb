@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -208,9 +209,9 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
 
  protected:
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   base::WaitableEvent loaded_event_;
   base::WaitableEvent db_thread_event_;
   CanonicalCookieVector cookies_;
@@ -1274,11 +1275,12 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  auto cookie = CanonicalCookie::Create(
-      GURL("ftp://subdomain.ftperiffic.com/page"), "A=B; max-age=3600",
-      base::Time::Now(), base::nullopt /* server_time */);
+  GURL ftp_url("ftp://subdomain.ftperiffic.com/page/");
+  auto cookie =
+      CanonicalCookie::Create(ftp_url, "A=B; max-age=3600", base::Time::Now(),
+                              base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "ftp", CookieOptions::MakeAllInclusive(),
+      std::move(cookie), ftp_url, CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1290,12 +1292,12 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   for (int i = 0; i < 50; ++i) {
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
         set_cookie_callback2;
-    auto canonical_cookie = CanonicalCookie::Create(
-        GURL(base::StringPrintf("http://example%d.com/", i)),
-        "A=B; max-age=3600", base::Time::Now(),
-        base::nullopt /* server_time */);
+    GURL url(base::StringPrintf("http://example%d.com/", i));
+    auto canonical_cookie =
+        CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
+                                base::nullopt /* server_time */);
     cookie_monster->SetCanonicalCookieAsync(
-        std::move(canonical_cookie), "http", CookieOptions::MakeAllInclusive(),
+        std::move(canonical_cookie), url, CookieOptions::MakeAllInclusive(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
@@ -1347,11 +1349,12 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  auto cookie = CanonicalCookie::Create(GURL("http://www.example.com/"),
-                                        "A=B; max-age=3600", base::Time::Now(),
-                                        base::nullopt /* server_time */);
+  GURL url("http://www.example.com/");
+  auto cookie =
+      CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
+                              base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "http", CookieOptions::MakeAllInclusive(),
+      std::move(cookie), url, CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));

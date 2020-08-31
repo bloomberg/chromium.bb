@@ -58,7 +58,7 @@ class MEDIA_EXPORT Pipeline {
     // Executed whenever a text track is added.
     // The client is expected to create a TextTrack and call |done_cb|.
     virtual void OnAddTextTrack(const TextTrackConfig& config,
-                                const AddTextTrackDoneCB& done_cb) = 0;
+                                AddTextTrackDoneCB done_cb) = 0;
 
     // Executed whenever the pipeline is waiting because of |reason|.
     virtual void OnWaiting(WaitingReason reason) = 0;
@@ -81,6 +81,11 @@ class MEDIA_EXPORT Pipeline {
     // during playback.
     virtual void OnAudioDecoderChange(const PipelineDecoderInfo& info) = 0;
     virtual void OnVideoDecoderChange(const PipelineDecoderInfo& info) = 0;
+
+    // Executed whenever the video frame rate changes.  |fps| will be unset if
+    // the frame rate is unstable.  The duration used for the frame rate is
+    // based on wall clock time, not media time.
+    virtual void OnVideoFrameRateChange(base::Optional<int> fps) = 0;
   };
 
   virtual ~Pipeline() {}
@@ -106,7 +111,7 @@ class MEDIA_EXPORT Pipeline {
   virtual void Start(StartType start_type,
                      Demuxer* demuxer,
                      Client* client,
-                     const PipelineStatusCB& seek_cb) = 0;
+                     PipelineStatusCallback seek_cb) = 0;
 
   // Track switching works similarly for both audio and video. Callbacks are
   // used to notify when it is time to procede to the next step, since many of
@@ -163,7 +168,7 @@ class MEDIA_EXPORT Pipeline {
   //
   // It is an error to call this method if the pipeline has not started or
   // has been suspended.
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) = 0;
+  virtual void Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) = 0;
 
   // Suspends the pipeline, discarding the current renderer.
   //
@@ -172,14 +177,14 @@ class MEDIA_EXPORT Pipeline {
   //
   // It is an error to call this method if the pipeline has not started or is
   // seeking.
-  virtual void Suspend(const PipelineStatusCB& suspend_cb) = 0;
+  virtual void Suspend(PipelineStatusCallback suspend_cb) = 0;
 
   // Resume the pipeline and seek to |timestamp|.
   //
   // It is an error to call this method if the pipeline has not finished
   // suspending.
   virtual void Resume(base::TimeDelta timestamp,
-                      const PipelineStatusCB& seek_cb) = 0;
+                      PipelineStatusCallback seek_cb) = 0;
 
   // Returns true if the pipeline has been started via Start().  If IsRunning()
   // returns true, it is expected that Stop() will be called before destroying

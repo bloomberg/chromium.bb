@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -49,15 +50,15 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
     base::TimeTicks time_origin,
-    const WebVector<WebServerTimingInfo>& server_timing)
+    HeapVector<Member<PerformanceServerTiming>> server_timing)
     : PerformanceResourceTiming(
           info ? AtomicString(
                      info->FinalResponse().CurrentRequestUrl().GetString())
                : g_empty_atom,
           time_origin,
           SecurityOrigin::IsSecure(frame->GetDocument()->Url()),
-          server_timing),
-      ContextClient(frame),
+          std::move(server_timing)),
+      ExecutionContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);
   DCHECK(frame->GetDocument());
@@ -74,8 +75,8 @@ PerformanceEntryType PerformanceNavigationTiming::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kNavigation;
 }
 
-void PerformanceNavigationTiming::Trace(blink::Visitor* visitor) {
-  ContextClient::Trace(visitor);
+void PerformanceNavigationTiming::Trace(Visitor* visitor) {
+  ExecutionContextClient::Trace(visitor);
   PerformanceResourceTiming::Trace(visitor);
 }
 
@@ -151,7 +152,7 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
 
 bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
   blink::ExecutionContext* context =
-      GetFrame() ? GetFrame()->GetDocument() : nullptr;
+      GetFrame() ? GetFrame()->DomWindow() : nullptr;
   const blink::SecurityOrigin* security_origin = nullptr;
   if (context)
     security_origin = context->GetSecurityOrigin();

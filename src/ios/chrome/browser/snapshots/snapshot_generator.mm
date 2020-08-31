@@ -12,7 +12,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -336,8 +336,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (SnapshotCache*)snapshotCache {
   return SnapshotCacheFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(
-          self.webState->GetBrowserState()));
+      ChromeBrowserState::FromBrowserState(self.webState->GetBrowserState()));
 }
 
 #pragma mark - CRWWebStateObserver

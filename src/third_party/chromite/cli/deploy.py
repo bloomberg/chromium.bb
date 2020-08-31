@@ -3,7 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Deploy packages onto a target device."""
+"""Deploy packages onto a target device.
+
+Integration tests for this file can be found at cli/cros/tests/cros_vm_tests.py.
+See that file for more information.
+"""
 
 from __future__ import division
 from __future__ import print_function
@@ -13,6 +17,7 @@ import fnmatch
 import functools
 import json
 import os
+import sys
 import tempfile
 
 from chromite.cli import command
@@ -22,11 +27,15 @@ from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import remote_access
+from chromite.scripts import build_dlc
 try:
   import portage
 except ImportError:
   if cros_build_lib.IsInsideChroot():
     raise
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _DEVICE_BASE_DIR = '/usr/local/tmp/cros-deploy'
@@ -42,6 +51,7 @@ _MAX_UPDATES_WARNING = (
 
 _DLC_ID = 'DLC_ID'
 _DLC_PACKAGE = 'DLC_PACKAGE'
+_DLC_ENABLED = 'DLC_ENABLED'
 _ENVIRONMENT_FILENAME = 'environment.bz2'
 _DLC_INSTALL_ROOT = '/var/cache/dlc'
 
@@ -52,7 +62,9 @@ class DeployError(Exception):
 
 class BrilloDeployOperation(operation.ProgressBarOperation):
   """ProgressBarOperation specific for brillo deploy."""
-  MERGE_EVENTS = ['NOTICE: Copying', 'NOTICE: Installing',
+  # These two variables are used to validate the output in the VM integration
+  # tests. Changes to the output must be reflected here.
+  MERGE_EVENTS = ['NOTICE: Copying', 'NOTICE: Installing', 'WARNING: Ignoring',
                   'emerge --usepkg', 'has been installed.']
   UNMERGE_EVENTS = ['NOTICE: Unmerging', 'has been uninstalled.']
 
@@ -734,7 +746,7 @@ print(json.dumps(pkg_info))
 
     install_attrs = {}
     for pkg in sorted_installs:
-      pkg_path = os.path.join(root, portage.VDB_PATH, pkg)
+      pkg_path = os.path.join(root, portage_util.VDB_PATH, pkg)
       dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=True)
       install_attrs[pkg] = {}
       if dlc_id and dlc_package:
@@ -763,7 +775,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
   # Clean out the dirs first if we had a previous emerge on the device so as to
   # free up space for this emerge.  The last emerge gets implicitly cleaned up
   # when the device connection deletes its work_dir.
-  device.RunCommand(
+  device.run(
       ['rm', '-rf', pkg_dir, portage_tmpdir, '&&',
        'mkdir', '-p', pkg_dir, portage_tmpdir], remote_sudo=True)
 
@@ -791,13 +803,21 @@ def _Emerge(device, pkg_path, root, extra_args=None):
       'PORTDIR': device.work_dir,
       'CONFIG_PROTECT': '-*',
   }
-  cmd = ['emerge', '--usepkg', pkg_path, '--root=%s' % root]
+  # --ignore-built-slot-operator-deps because we don't rebuild everything.
+  # It can cause errors, but that's expected with cros deploy since it's just a
+  # best effort to prevent developers avoid rebuilding an image every time.
+  cmd = ['emerge', '--usepkg', '--ignore-built-slot-operator-deps=y', pkg_path,
+         '--root=%s' % root]
   if extra_args:
     cmd.append(extra_args)
 
+  logging.warning('Ignoring slot dependencies! This may break things! e.g. '
+                  'packages built against the old version may not be able to '
+                  'load the new .so. This is expected, and you will just need '
+                  'to build and flash a new image if you have problems.')
   try:
-    result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
-                               capture_output=True, debug_level=logging.INFO)
+    result = device.run(cmd, extra_env=extra_env, remote_sudo=True,
+                        capture_output=True, debug_level=logging.INFO)
 
     pattern = ('A requested package will not be merged because '
                'it is listed in package.provided')
@@ -817,7 +837,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
 
 
 def _RestoreSELinuxContext(device, pkgpath, root):
-  """Restore SELinux context for files in a given pacakge.
+  """Restore SELinux context for files in a given package.
 
   This reads the tarball from pkgpath, and calls restorecon on device to
   restore SELinux context for files listed in the tarball, assuming those files
@@ -830,18 +850,18 @@ def _RestoreSELinuxContext(device, pkgpath, root):
   """
   enforced = device.IsSELinuxEnforced()
   if enforced:
-    device.RunCommand(['setenforce', '0'])
+    device.run(['setenforce', '0'])
   pkgroot = os.path.join(device.work_dir, 'packages')
   pkg_dirname = os.path.basename(os.path.dirname(pkgpath))
   pkgpath_device = os.path.join(pkgroot, pkg_dirname, os.path.basename(pkgpath))
   # Testing shows restorecon splits on newlines instead of spaces.
-  device.RunCommand(
+  device.run(
       ['cd', root, '&&',
        'tar', 'tf', pkgpath_device, '|',
        'restorecon', '-i', '-f', '-'],
       remote_sudo=True)
   if enforced:
-    device.RunCommand(['setenforce', '1'])
+    device.run(['setenforce', '1'])
 
 
 def _GetPackagesByCPV(cpvs, strip, sysroot):
@@ -910,15 +930,14 @@ def _Unmerge(device, pkg, root):
   logging.notice('Unmerging %s.', pkg_name)
   cmd = ['qmerge', '--yes']
   # Check if qmerge is available on the device. If not, use emerge.
-  if device.RunCommand(
-      ['qmerge', '--version'], error_code_ok=True).returncode != 0:
+  if device.run(['qmerge', '--version'], check=False).returncode != 0:
     cmd = ['emerge']
 
   cmd.extend(['--unmerge', pkg, '--root=%s' % root])
   try:
     # Always showing the emerge output for clarity.
-    device.RunCommand(cmd, capture_output=False, remote_sudo=True,
-                      debug_level=logging.INFO)
+    device.run(cmd, capture_output=False, remote_sudo=True,
+               debug_level=logging.INFO)
   except Exception:
     logging.error('Failed to unmerge package %s', pkg_name)
     raise
@@ -935,20 +954,27 @@ def _ConfirmDeploy(num_updates):
   return True
 
 
-def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
-  """Call _Emerge for each packge in pkgs."""
+def _EmergePackages(pkgs, device, strip, sysroot, root, board, emerge_args):
+  """Call _Emerge for each package in pkgs."""
   dlc_deployed = False
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
     if device.IsSELinuxAvailable():
       _RestoreSELinuxContext(device, pkg_path, root)
-    if _DeployDLCImage(device, pkg_path):
+
+    dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=False)
+    if dlc_id and dlc_package:
+      _DeployDLCImage(device, sysroot, board, dlc_id, dlc_package)
       dlc_deployed = True
+      # Clean up empty directories created by emerging DLCs.
+      device.run(['test', '-d', '/build/rootfs', '&&', 'rmdir',
+                  '--ignore-fail-on-non-empty', '/build/rootfs', '/build'],
+                 check=False)
 
   # Restart dlcservice so it picks up the newly installed DLC modules (in case
   # we installed new DLC images).
   if dlc_deployed:
-    device.RunCommand(['restart', 'dlcservice'])
+    device.run(['restart', 'dlcservice'])
 
 
 def _UnmergePackages(pkgs, device, root, pkgs_attrs):
@@ -962,7 +988,7 @@ def _UnmergePackages(pkgs, device, root, pkgs_attrs):
   # Restart dlcservice so it picks up the uninstalled DLC modules (in case we
   # uninstalled DLC images).
   if dlc_uninstalled:
-    device.RunCommand(['restart', 'dlcservice'])
+    device.run(['restart', 'dlcservice'])
 
 
 def _UninstallDLCImage(device, pkg_attrs):
@@ -971,41 +997,60 @@ def _UninstallDLCImage(device, pkg_attrs):
     dlc_id = pkg_attrs[_DLC_ID]
     logging.notice('Uninstalling DLC image for %s', dlc_id)
 
-    device.RunCommand(['sudo', '-u', 'chronos', 'dlcservice_util',
-                       '--uninstall', '--dlc_ids=%s' % dlc_id])
+    device.run(['dlcservice_util', '--uninstall', '--dlc_ids=%s' % dlc_id])
     return True
   else:
     logging.debug('DLC_ID not found in package')
     return False
 
 
-def _DeployDLCImage(device, pkg_path):
+def _DeployDLCImage(device, sysroot, board, dlc_id, dlc_package):
   """Deploy (install and mount) a DLC image."""
-  dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=False)
-  if dlc_id and dlc_package:
-    logging.notice('Deploy a DLC image for %s', dlc_id)
+  # Build the DLC image if the image is outdated or doesn't exist.
+  build_dlc.InstallDlcImages(sysroot=sysroot, dlc_id=dlc_id, board=board)
 
-    dlc_path_src = os.path.join('/build/rootfs/dlc', dlc_id, dlc_package,
-                                'dlc.img')
-    dlc_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
-    dlc_path_a = os.path.join(dlc_path, 'dlc_a')
-    dlc_path_b = os.path.join(dlc_path, 'dlc_b')
-    # Create folders for DLC images.
-    device.RunCommand(['mkdir', '-p', dlc_path_a, dlc_path_b])
-    # Copy images to the destination folders.
-    device.RunCommand(['cp', dlc_path_src,
-                       os.path.join(dlc_path_a, 'dlc.img')])
-    device.RunCommand(['cp', dlc_path_src,
-                       os.path.join(dlc_path_b, 'dlc.img')])
+  logging.debug('Uninstall DLC %s if it is installed.', dlc_id)
+  try:
+    device.run(['dlcservice_util', '--uninstall', '--dlc_ids=%s' % dlc_id])
+  except cros_build_lib.RunCommandError as e:
+    logging.info('Failed to uninstall DLC:%s. Continue anyway.',
+                 e.result.error)
+  except Exception:
+    logging.error('Failed to uninstall DLC.')
+    raise
 
-    # Set the proper perms and ownership so dlcservice can access the image.
-    device.RunCommand(['chmod', '-R', '0755', _DLC_INSTALL_ROOT])
-    device.RunCommand(['chown', '-R', 'dlcservice:dlcservice',
-                       _DLC_INSTALL_ROOT])
-    return True
-  else:
-    logging.debug('DLC_ID not found in package')
-    return False
+  # TODO(andrewlassalle): Copy the DLC image to the preload location instead
+  # of to dlc_a and dlc_b, and let dlcserive install the images to their final
+  # location.
+  logging.notice('Deploy the DLC image for %s', dlc_id)
+  dlc_img_path_src = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, dlc_id,
+                                  dlc_package, build_dlc.DLC_IMAGE)
+  dlc_img_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
+  dlc_img_path_a = os.path.join(dlc_img_path, 'dlc_a')
+  dlc_img_path_b = os.path.join(dlc_img_path, 'dlc_b')
+  # Create directories for DLC images.
+  device.run(['mkdir', '-p', dlc_img_path_a, dlc_img_path_b])
+  # Copy images to the destination directories.
+  device.CopyToDevice(dlc_img_path_src, os.path.join(dlc_img_path_a,
+                                                     build_dlc.DLC_IMAGE),
+                      mode='rsync')
+  device.run(['cp', os.path.join(dlc_img_path_a, build_dlc.DLC_IMAGE),
+              os.path.join(dlc_img_path_b, build_dlc.DLC_IMAGE)])
+
+  # Set the proper perms and ownership so dlcservice can access the image.
+  device.run(['chmod', '-R', 'u+rwX,go+rX,go-w', _DLC_INSTALL_ROOT])
+  device.run(['chown', '-R', 'dlcservice:dlcservice', _DLC_INSTALL_ROOT])
+
+  # Copy metadata to device.
+  dest_mata_dir = os.path.join('/', build_dlc.DLC_META_DIR, dlc_id, dlc_package)
+  device.run(['mkdir', '-p', dest_mata_dir])
+  src_meta_dir = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, dlc_id,
+                              dlc_package, build_dlc.DLC_TMP_META_DIR)
+  device.CopyToDevice(src_meta_dir + '/',
+                      dest_mata_dir,
+                      mode='rsync',
+                      recursive=True,
+                      remote_sudo=True)
 
 
 def _GetDLCInfo(device, pkg_path, from_dut):
@@ -1024,25 +1069,33 @@ def _GetDLCInfo(device, pkg_path, from_dut):
   if from_dut:
     # On DUT, |pkg_path| is the directory which contains environment file.
     environment_path = os.path.join(pkg_path, _ENVIRONMENT_FILENAME)
-    result = device.RunCommand(['test', '-f', environment_path],
-                               error_code_ok=True)
+    result = device.run(['test', '-f', environment_path],
+                        check=False, encoding=None)
     if result.returncode == 1:
       # The package is not installed on DUT yet. Skip extracting info.
       return None, None
-    result = device.RunCommand(['bzip2', '-d', '-c', environment_path])
+    result = device.run(['bzip2', '-d', '-c', environment_path], encoding=None)
     environment_content = result.output
   else:
     # On host, pkg_path is tbz2 file which contains environment file.
     # Extract the metadata of the package file.
     data = portage.xpak.tbz2(pkg_path).get_data()
     # Extract the environment metadata.
-    environment_content = bz2.decompress(data[_ENVIRONMENT_FILENAME])
+    environment_content = bz2.decompress(
+        data[_ENVIRONMENT_FILENAME.encode('utf-8')])
 
   with tempfile.NamedTemporaryFile() as f:
     # Dumps content into a file so we can use osutils.SourceEnvironment.
     path = os.path.realpath(f.name)
-    osutils.WriteFile(path, environment_content)
-    content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE))
+    osutils.WriteFile(path, environment_content, mode='wb')
+    content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE,
+                                               _DLC_ENABLED))
+
+    dlc_enabled = content.get(_DLC_ENABLED)
+    if dlc_enabled is not None and (dlc_enabled is False or
+                                    str(dlc_enabled) == 'false'):
+      logging.info('Installing DLC in rootfs.')
+      return None, None
     return content.get(_DLC_ID), content.get(_DLC_PACKAGE)
 
 
@@ -1139,7 +1192,7 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
       # Select function (emerge or unmerge) and bind args.
       if emerge:
         func = functools.partial(_EmergePackages, pkgs, device, strip,
-                                 sysroot, root, emerge_args)
+                                 sysroot, root, board, emerge_args)
       else:
         func = functools.partial(_UnmergePackages, pkgs, device, root,
                                  pkgs_attrs)

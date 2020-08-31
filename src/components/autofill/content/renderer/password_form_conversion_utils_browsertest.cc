@@ -42,11 +42,11 @@ class PasswordFormBuilder {
   void AddTextField(const char* name_and_id,
                     const char* value,
                     const char* autocomplete) {
-    std::string autocomplete_attribute(autocomplete ?
-        base::StringPrintf("autocomplete=\"%s\"", autocomplete) : "");
+    std::string autocomplete_attribute(
+        autocomplete ? base::StringPrintf("autocomplete=\"%s\"", autocomplete)
+                     : "");
     base::StringAppendF(
-        &html_,
-        "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\" %s/>",
+        &html_, "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\" %s/>",
         name_and_id, name_and_id, value, autocomplete_attribute.c_str());
   }
 
@@ -101,17 +101,14 @@ class PasswordFormConversionUtilsTest : public content::RenderViewTest {
     GetFirstForm(form);
   }
 
-  void TearDown() override {
-    content::RenderViewTest::TearDown();
-  }
+  void TearDown() override { content::RenderViewTest::TearDown(); }
 
  private:
   void GetFirstForm(WebFormElement* form) {
     WebLocalFrame* frame = GetMainFrame();
     ASSERT_TRUE(frame);
 
-    WebVector<WebFormElement> forms;
-    frame->GetDocument().Forms(forms);
+    WebVector<WebFormElement> forms = frame->GetDocument().Forms();
     ASSERT_LE(1U, forms.size());
 
     *form = forms[0];

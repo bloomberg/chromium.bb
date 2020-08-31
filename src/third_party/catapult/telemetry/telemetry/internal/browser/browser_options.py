@@ -24,6 +24,10 @@ from telemetry.internal.util import binary_manager
 from telemetry.util import wpr_modes
 
 
+def _IsWin():
+  return sys.platform == 'win32'
+
+
 class BrowserFinderOptions(optparse.Values):
   """Options to be used for discovering a browser."""
 
@@ -40,6 +44,7 @@ class BrowserFinderOptions(optparse.Values):
     self.cros_ssh_identity = None
 
     self.cros_remote = None
+    self.cros_remote_ssh_port = None
 
     self.verbosity = 0
 
@@ -57,6 +62,10 @@ class BrowserFinderOptions(optparse.Values):
     self.interval_profiling_periods = []
     self.interval_profiling_frequency = 1000
     self.interval_profiler_options = ''
+    self.capture_screen_video = False
+
+    self.experimental_system_tracing = False
+    self.experimental_system_data_sources = False
 
   def __repr__(self):
     return str(sorted(self.__dict__.items()))
@@ -112,7 +121,8 @@ class BrowserFinderOptions(optparse.Values):
     group.add_option(
         '--remote-ssh-port',
         type=int,
-        default=socket.getservbyname('ssh'),
+        # This is set in ParseArgs if necessary.
+        default=-1,
         dest='cros_remote_ssh_port',
         help='The SSH port of the remote ChromeOS device (requires --remote).')
     compat_mode_options_list = [
@@ -131,9 +141,17 @@ class BrowserFinderOptions(optparse.Values):
              'running benchmarks. The options are: %s' % ', '.join(
                  compat_mode_options_list))
     parser.add_option(
-        '--experimental-proto-trace-format',
+        '--legacy-json-trace-format',
         action='store_true',
-        help='Request traces from Chrome in protobuf file format.')
+        help='Request traces from Chrome in legacy JSON format.')
+    parser.add_option(
+        '--experimental-system-tracing',
+        action='store_true',
+        help='Use system tracing from Perfetto to trace Chrome.')
+    parser.add_option(
+        '--experimental-system-data-sources',
+        action='store_true',
+        help='Use Perfetto tracing to collect power and CPU usage data.')
     identity = None
     testing_rsa = os.path.join(
         util.GetTelemetryThirdPartyDir(), 'chromite', 'ssh_keys', 'testing_rsa')
@@ -165,6 +183,11 @@ class BrowserFinderOptions(optparse.Values):
         '--enable-systrace', dest='enable_systrace', action='store_true',
         help='Enable collection of systrace. (Useful on ChromeOS where'
              ' atrace is not supported; collects scheduling information.)')
+    group.add_option(
+        '--capture-screen-video',
+        dest='capture_screen_video', action='store_true',
+        help='Capture the screen during the test and save it to a video file '
+             '(note that it is supported only on some platforms)')
     parser.add_option_group(group)
 
     # Platform options
@@ -202,6 +225,27 @@ class BrowserFinderOptions(optparse.Values):
         default=[],
         help='Specify Android App Bundle modules to install in addition to the '
         'base module. Ignored on Non-Android platforms.')
+    parser.add_option_group(group)
+
+    group = optparse.OptionGroup(parser, 'Fuchsia platform options')
+    group.add_option(
+        '--fuchsia-ssh-config-dir',
+        default='out/Release',
+        help='Specify directory of the ssh_config file for the Fuchsia OS.')
+    group.add_option(
+        '--fuchsia-ssh-port',
+        default=None,
+        help='The port on the host to which the ssh service running on the '
+        'Fuchsia device was forwarded. Will skip using the device-finder tool '
+        'if specified.')
+    group.add_option(
+        '--fuchsia-system-log-file',
+        default=None,
+        help='The file where Fuchsia system logs will be stored.')
+    group.add_option(
+        '--fuchsia-repo',
+        default="fuchsia.com",
+        help='The name of the Fuchsia repo used to serve required packages.')
     parser.add_option_group(group)
 
     # CPU profiling on Android/Linux/ChromeOS.
@@ -302,6 +346,16 @@ class BrowserFinderOptions(optparse.Values):
             print '     No browsers found for this device'
         sys.exit(0)
 
+      if self.browser_type == 'cros-chrome' and self.cros_remote and (
+          self.cros_remote_ssh_port < 0):
+        try:
+          self.cros_remote_ssh_port = socket.getservbyname('ssh')
+        except OSError as e:
+          raise RuntimeError(
+              'Running a CrOS test in remote mode, but failed to retrieve port '
+              'used by SSH service. This likely means SSH is not installed on '
+              'the system. Original error: %s' % e)
+
       # Profiling other periods along with the story_run period leads to running
       # multiple profiling processes at the same time. The effects of performing
       # muliple CPU profiling at the same time is unclear and may generate
@@ -312,7 +366,7 @@ class BrowserFinderOptions(optparse.Values):
         sys.exit(1)
 
       self.interval_profiler_options = shlex.split(
-          self.interval_profiler_options)
+          self.interval_profiler_options, posix=(not _IsWin()))
 
       # Parse browser options.
       self.browser_options.UpdateFromParseResults(self)
@@ -331,6 +385,14 @@ class BrowserFinderOptions(optparse.Values):
     """
     return (browser_type == self.browser_type or
             self.browser_type in ('list', 'any',))
+
+  def IsBrowserTypeReference(self):
+    """Determines if the browser_type is a reference browser_type."""
+    return self.browser_type and self.browser_type.startswith('reference-')
+
+  def IsBrowserTypeBundle(self):
+    """Determines if the browser_type is a bundle browser_type."""
+    return self.browser_type and self.browser_type.endswith('-bundle')
 
   # TODO(eakuefner): Factor this out into OptionBuilder pattern
   def BuildRemotePlatformOptions(self):
@@ -439,6 +501,10 @@ class BrowserOptions(object):
     # earlier versions of Chrome
     self.compatibility_mode = []
 
+    # If not None, a ProjectConfig object with information about the benchmark
+    # runtime environment.
+    self.environment = None
+
   def __repr__(self):
     return str(sorted(self.__dict__.items()))
 
@@ -526,13 +592,11 @@ class BrowserOptions(object):
     self.browser_type = finder_options.browser_type
 
     if hasattr(self, 'extra_browser_args_as_string'):
-      tmp = shlex.split(
-          self.extra_browser_args_as_string)
+      tmp = shlex.split(self.extra_browser_args_as_string, posix=(not _IsWin()))
       self.AppendExtraBrowserArgs(tmp)
       delattr(self, 'extra_browser_args_as_string')
     if hasattr(self, 'extra_wpr_args_as_string'):
-      tmp = shlex.split(
-          self.extra_wpr_args_as_string)
+      tmp = shlex.split(self.extra_wpr_args_as_string, posix=(not _IsWin()))
       self.extra_wpr_args.extend(tmp)
       delattr(self, 'extra_wpr_args_as_string')
     if self.profile_type == 'default':

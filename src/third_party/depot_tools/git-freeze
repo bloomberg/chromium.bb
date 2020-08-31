@@ -5,4 +5,4 @@
 
 SCRIPT=git_freezer.py
 set -- freeze "$@"
-. $(type -P python_runner.sh)
+. "$(type -P python_runner.sh)"

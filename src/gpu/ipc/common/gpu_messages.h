@@ -210,6 +210,12 @@ IPC_MESSAGE_ROUTED2(
 // This is only supported in testing environments, and is otherwise ignored.
 IPC_MESSAGE_CONTROL0(GpuChannelMsg_CrashForTesting)
 
+// Terminates the GPU process with an exit code of 0. This message is handled in
+// in GpuChannelMessageFilter::OnMessageReceived and is only used in tests where
+// the GPU benchmarking extension is enabled. The purpose of this API is to test
+// scenarios where the GPU process is terminated on purpose with exit code of 0.
+IPC_MESSAGE_CONTROL0(GpuChannelMsg_TerminateForTesting)
+
 // Simple NOP message which can be used as fence to ensure all previous sent
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)
@@ -231,17 +237,18 @@ IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_ForwardForSurfaceRequest,
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_StartListening)
 
 // Inform the renderer that a new frame with VulkanYcbcrInfo is available.
-IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_FrameWithYcbcrInfoAvailable,
+IPC_MESSAGE_ROUTED4(GpuStreamTextureMsg_FrameWithInfoAvailable,
+                    gpu::Mailbox,
+                    gfx::Size /* coded_size */,
+                    gfx::Rect /* visible_rect*/,
                     base::Optional<gpu::VulkanYCbCrInfo>)
 
 // Inform the renderer that a new frame is available.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_FrameAvailable)
 
-// Create a SharedImage for the current StreamTexture at the provided |size|.
-IPC_MESSAGE_ROUTED3(GpuStreamTextureMsg_CreateSharedImage,
-                    gpu::Mailbox /* mailbox */,
-                    gfx::Size /* size */,
-                    uint32_t /* release_id */)
+// Update visible size from MediaPlayer. The size includes rotation of video.
+IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_UpdateRotatedVisibleSize,
+                    gfx::Size /* rotated_visible_size */)
 
 // Destroys the StreamTexture attached to the provided |stream_id|.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_Destroy)

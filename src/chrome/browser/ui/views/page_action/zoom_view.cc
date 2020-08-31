@@ -16,8 +16,13 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
 
-ZoomView::ZoomView(PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate), icon_(&kZoomMinusIcon) {
+ZoomView::ZoomView(IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                   PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate),
+      icon_(&kZoomMinusIcon) {
   SetVisible(false);
 }
 
@@ -28,7 +33,7 @@ void ZoomView::UpdateImpl() {
 }
 
 bool ZoomView::ShouldBeVisible(bool can_show_bubble) const {
-  if (delegate()->IsLocationBarUserInputInProgress())
+  if (delegate()->ShouldHidePageActionIcons())
     return false;
 
   if (can_show_bubble)
@@ -106,4 +111,8 @@ const gfx::VectorIcon& ZoomView::GetVectorIcon() const {
 base::string16 ZoomView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM,
                                     base::FormatPercent(current_zoom_percent_));
+}
+
+const char* ZoomView::GetClassName() const {
+  return "ZoomView";
 }

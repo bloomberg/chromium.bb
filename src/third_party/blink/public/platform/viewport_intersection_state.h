@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_VIEWPORT_INTERSECTION_STATE_H_
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace blink {
 
@@ -37,21 +37,36 @@ struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
     return viewport_offset == other.viewport_offset &&
            viewport_intersection == other.viewport_intersection &&
            compositor_visible_rect == other.compositor_visible_rect &&
-           occlusion_state == other.occlusion_state;
+           occlusion_state == other.occlusion_state &&
+           main_frame_viewport_size == other.main_frame_viewport_size &&
+           main_frame_scroll_offset == other.main_frame_scroll_offset &&
+           can_skip_sticky_frame_tracking ==
+               other.can_skip_sticky_frame_tracking;
   }
   bool operator!=(const ViewportIntersectionState& other) const {
     return !(*this == other);
   }
 
-  // Child frame's offset from the root frame.
-  WebPoint viewport_offset;
-  // Portion of the child frame which is within the root frame's scrolling
-  // viewport, in the coordinate system of the child frame.
+  // Child frame's offset from the main frame.
+  gfx::Point viewport_offset;
+  // Portion of the child frame which is within the main frame's scrolling
+  // Child frame's offset from the main frame.
   WebRect viewport_intersection;
+  // Same as viewport_intersection, but without applying the main frame's
+  // document-level overflow clip.
+  WebRect main_frame_document_intersection;
   // Area of the child frame that needs to be rastered, in physical pixels.
   WebRect compositor_visible_rect;
   // Occlusion state, as described above.
   FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;
+  // Main frame's size.
+  WebSize main_frame_viewport_size;
+  // Main frame's scrolling offset.
+  gfx::Point main_frame_scroll_offset;
+  // Indicates whether to force an intersection observation update in
+  // LocalFrame::SetViewportIntersectionFromParent in order to track sticky
+  // frames, or whether we could skip it.
+  bool can_skip_sticky_frame_tracking = false;
 };
 
 }  // namespace blink

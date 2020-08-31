@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -54,6 +53,7 @@ class DrmDisplay {
   void SetGammaCorrection(
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+  void SetPrivacyScreen(bool enabled);
 
  private:
   ScreenManager* screen_manager_;  // Not owned.

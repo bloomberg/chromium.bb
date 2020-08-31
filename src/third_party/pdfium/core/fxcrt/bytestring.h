@@ -23,10 +23,6 @@
 
 namespace fxcrt {
 
-class ByteString_Assign_Test;
-class ByteString_Concat_Test;
-class StringPool_ByteString_Test;
-
 // A mutable string with shared buffers using copy-on-write semantics that
 // avoids the cost of std::string's iterator stability guarantees.
 class ByteString {
@@ -43,6 +39,8 @@ class ByteString {
 
   ByteString();
   ByteString(const ByteString& other);
+
+  // Move-construct a ByteString. After construction, |other| is empty.
   ByteString(ByteString&& other) noexcept;
 
   // Deliberately implicit to avoid calling on every string literal.
@@ -134,6 +132,8 @@ class ByteString {
   ByteString& operator=(const char* str);
   ByteString& operator=(ByteStringView str);
   ByteString& operator=(const ByteString& that);
+
+  // Move-assign a ByteString. After assignment, |that| is empty.
   ByteString& operator=(ByteString&& that);
 
   ByteString& operator+=(char ch);
@@ -146,8 +146,8 @@ class ByteString {
     return m_pData->m_String[index];
   }
 
-  CharType First() const { return GetLength() ? (*this)[0] : 0; }
-  CharType Last() const { return GetLength() ? (*this)[GetLength() - 1] : 0; }
+  CharType Front() const { return GetLength() ? (*this)[0] : 0; }
+  CharType Back() const { return GetLength() ? (*this)[GetLength() - 1] : 0; }
 
   void SetAt(size_t index, char c);
 
@@ -163,9 +163,9 @@ class ByteString {
   pdfium::span<char> GetBuffer(size_t nMinBufLength);
   void ReleaseBuffer(size_t nNewLength);
 
-  ByteString Mid(size_t first, size_t count) const;
-  ByteString Left(size_t count) const;
-  ByteString Right(size_t count) const;
+  ByteString Substr(size_t first, size_t count) const;
+  ByteString First(size_t count) const;
+  ByteString Last(size_t count) const;
 
   Optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
   Optional<size_t> Find(char ch, size_t start = 0) const;
@@ -211,8 +211,9 @@ class ByteString {
 
   RetainPtr<StringData> m_pData;
 
-  friend ByteString_Assign_Test;
-  friend ByteString_Concat_Test;
+  friend class ByteString_Assign_Test;
+  friend class ByteString_Concat_Test;
+  friend class ByteString_Construct_Test;
   friend class StringPool_ByteString_Test;
 };
 

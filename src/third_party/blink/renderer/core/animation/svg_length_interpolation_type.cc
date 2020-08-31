@@ -70,7 +70,7 @@ InterpolationValue SVGLengthInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedLength)
     return nullptr;
 
-  return MaybeConvertSVGLength(ToSVGLength(svg_value));
+  return MaybeConvertSVGLength(To<SVGLength>(svg_value));
 }
 
 SVGPropertyBase* SVGLengthInterpolationType::AppliedSVGValue(
@@ -85,7 +85,7 @@ void SVGLengthInterpolationType::Apply(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  SVGElement& element = ToSVGInterpolationEnvironment(environment).SvgElement();
+  auto& element = To<SVGInterpolationEnvironment>(environment).SvgElement();
   SVGLengthContext length_context(&element);
   element.SetWebAnimatedAttribute(
       Attribute(),

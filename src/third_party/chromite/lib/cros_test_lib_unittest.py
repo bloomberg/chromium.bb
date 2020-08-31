@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 import sys
 import time
 import unittest
@@ -249,11 +250,11 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
       print('bar')
     self.AssertOutputContainsLine('bar')
 
+  @cros_test_lib.pytestmark_skip
   def testRunCommandCapture(self):
     """Check capturing run() subprocess output."""
     with self.OutputCapturer():
-      cros_build_lib.run(['sh', '-c', 'echo foo; echo bar >&2'],
-                         mute_output=False)
+      cros_build_lib.run(['sh', '-c', 'echo foo; echo bar >&2'])
     self.AssertOutputContainsLine('foo')
     self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
 
@@ -304,3 +305,13 @@ class RunCommandTestCase(cros_test_lib.RunCommandTestCase):
     result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
     self.assertEqual(u'Yes\u20a0', result.stdout)
     self.assertEqual(u'abc\x00', result.stderr)
+
+  def testPopenMockCombiningStderr(self):
+    """Verify combining stderr into stdout works."""
+    self.rc.AddCmdResult(['/x'], stderr='err', stdout='out')
+    result = cros_build_lib.run(['/x'], stdout=True, stderr=True)
+    self.assertEqual(b'err', result.stderr)
+    self.assertEqual(b'out', result.stdout)
+    result = cros_build_lib.run(['/x'], stdout=True, stderr=subprocess.STDOUT)
+    self.assertEqual(None, result.stderr)
+    self.assertEqual(b'outerr', result.stdout)

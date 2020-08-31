@@ -78,11 +78,14 @@ class ToolbarButton : public views::LabelButton,
   void ClearPendingMenu();
   bool IsMenuShowing() const;
 
+  // Updates the images using the given icon and the default colors returned by
+  // GetForegroundColor().
+  void UpdateIconsWithStandardColors(const gfx::VectorIcon& icon);
+
   // Sets |layout_insets_|, see comment there.
   void SetLayoutInsets(const gfx::Insets& insets);
 
   // views::LabelButton:
-  void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnThemeChanged() override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
@@ -121,8 +124,10 @@ class ToolbarButton : public views::LabelButton,
       SkColor dark_extreme,
       SkColor light_extreme);
 
-  // Returns the default border color used for toolbar buttons (when having a
-  // highlight text, see SetHighlight()).
+  // Returns the default background and border color used for toolbar buttons
+  // (when having a highlight text, see SetHighlight()).
+  static SkColor GetDefaultBackgroundColor(
+      const ui::ThemeProvider* theme_provider);
   static SkColor GetDefaultBorderColor(views::View* host_view);
 
  protected:
@@ -136,6 +141,17 @@ class ToolbarButton : public views::LabelButton,
   void SetLayoutInsetDelta(const gfx::Insets& insets);
 
   void UpdateColorsAndInsets();
+
+  // Returns the standard toolbar button foreground color for the given state.
+  // This color is typically used for the icon and text of toolbar buttons.
+  virtual SkColor GetForegroundColor(ButtonState state) const;
+
+  // Updates the images using the given icons and specific colors.
+  void UpdateIconsWithColors(const gfx::VectorIcon& icon,
+                             SkColor normal_color,
+                             SkColor hovered_color,
+                             SkColor pressed_color,
+                             SkColor disabled_color);
 
   static constexpr int kDefaultIconSize = 16;
   static constexpr int kDefaultTouchableIconSize = 24;
@@ -172,6 +188,8 @@ class ToolbarButton : public views::LabelButton,
     void AnimationProgressed(const gfx::Animation* animation) override;
 
    private:
+    friend test::ToolbarButtonTestApi;
+
     // Returns whether the animation is currently shown. Note that this returns
     // true even after calling Hide() until the fade-out animation finishes.
     bool IsShown() const;
@@ -206,6 +224,11 @@ class ToolbarButton : public views::LabelButton,
 
   // views::ImageButton:
   const char* GetClassName() const override;
+
+  // views::LabelButton:
+  // This is private to avoid a foot-shooter. Callers should use SetHighlight()
+  // instead which sets an optional color as well.
+  void SetText(const base::string16& text) override;
 
   // The model that populates the attached menu.
   std::unique_ptr<ui::MenuModel> model_;
@@ -248,7 +271,11 @@ class ToolbarButton : public views::LabelButton,
   // |this| to refresh UI).
   HighlightColorAnimation highlight_color_animation_;
 
+  // If either |last_border_color_| or |last_paint_insets_| have changed since
+  // the last update to |border_| it must be recalculated  to match current
+  // values.
   base::Optional<SkColor> last_border_color_;
+  gfx::Insets last_paint_insets_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};

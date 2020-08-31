@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "crypto/sha2.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/client_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
@@ -32,6 +33,24 @@ namespace device {
 struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
+
+  // ParseOpts are optional parameters passed to Parse().
+  struct ParseOpts {
+    // reject_all_extensions makes parsing fail if any extensions are present.
+    bool reject_all_extensions = false;
+  };
+
+  // Decodes a CTAP2 authenticatorGetAssertion request message. The request's
+  // |client_data_json| will be empty and |client_data_hash| will be set.
+  //
+  // A |uv| bit of 0 is mapped to UserVerificationRequirement::kDiscouraged.
+  static base::Optional<CtapGetAssertionRequest> Parse(
+      const cbor::Value::MapValue& request_map) {
+    return Parse(request_map, ParseOpts());
+  }
+  static base::Optional<CtapGetAssertionRequest> Parse(
+      const cbor::Value::MapValue& request_map,
+      const ParseOpts& opts);
 
   CtapGetAssertionRequest(std::string rp_id, std::string client_data_json);
   CtapGetAssertionRequest(const CtapGetAssertionRequest& that);
@@ -57,10 +76,11 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 
   bool is_incognito_mode = false;
   bool is_u2f_only = false;
+
+  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext;
 };
 
-struct CtapGetNextAssertionRequest {
-};
+struct CtapGetNextAssertionRequest {};
 
 // Serializes GetAssertion request parameter into CBOR encoded map with
 // integer keys and CBOR encoded values as defined by the CTAP spec.

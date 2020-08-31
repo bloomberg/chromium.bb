@@ -71,6 +71,7 @@
 #include "absl/types/internal/span.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 
 //------------------------------------------------------------------------------
 // Span
@@ -275,7 +276,7 @@ class Span {
   // Returns a reference to the i'th element of this span.
   constexpr reference operator[](size_type i) const noexcept {
     // MSVC 2015 accepts this as constexpr, but not ptr_[i]
-    return *(data() + i);
+    return ABSL_HARDENING_ASSERT(i < size()), *(data() + i);
   }
 
   // Span::at()
@@ -291,60 +292,74 @@ class Span {
 
   // Span::front()
   //
-  // Returns a reference to the first element of this span.
+  // Returns a reference to the first element of this span. The span must not
+  // be empty.
   constexpr reference front() const noexcept {
-    return ABSL_ASSERT(size() > 0), *data();
+    return ABSL_HARDENING_ASSERT(size() > 0), *data();
   }
 
   // Span::back()
   //
-  // Returns a reference to the last element of this span.
+  // Returns a reference to the last element of this span. The span must not
+  // be empty.
   constexpr reference back() const noexcept {
-    return ABSL_ASSERT(size() > 0), *(data() + size() - 1);
+    return ABSL_HARDENING_ASSERT(size() > 0), *(data() + size() - 1);
   }
 
   // Span::begin()
   //
-  // Returns an iterator to the first element of this span.
+  // Returns an iterator pointing to the first element of this span, or `end()`
+  // if the span is empty.
   constexpr iterator begin() const noexcept { return data(); }
 
   // Span::cbegin()
   //
-  // Returns a const iterator to the first element of this span.
+  // Returns a const iterator pointing to the first element of this span, or
+  // `end()` if the span is empty.
   constexpr const_iterator cbegin() const noexcept { return begin(); }
 
   // Span::end()
   //
-  // Returns an iterator to the last element of this span.
+  // Returns an iterator pointing just beyond the last element at the
+  // end of this span. This iterator acts as a placeholder; attempting to
+  // access it results in undefined behavior.
   constexpr iterator end() const noexcept { return data() + size(); }
 
   // Span::cend()
   //
-  // Returns a const iterator to the last element of this span.
+  // Returns a const iterator pointing just beyond the last element at the
+  // end of this span. This iterator acts as a placeholder; attempting to
+  // access it results in undefined behavior.
   constexpr const_iterator cend() const noexcept { return end(); }
 
   // Span::rbegin()
   //
-  // Returns a reverse iterator starting at the last element of this span.
+  // Returns a reverse iterator pointing to the last element at the end of this
+  // span, or `rend()` if the span is empty.
   constexpr reverse_iterator rbegin() const noexcept {
     return reverse_iterator(end());
   }
 
   // Span::crbegin()
   //
-  // Returns a reverse const iterator starting at the last element of this span.
+  // Returns a const reverse iterator pointing to the last element at the end of
+  // this span, or `crend()` if the span is empty.
   constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
 
   // Span::rend()
   //
-  // Returns a reverse iterator starting at the first element of this span.
+  // Returns a reverse iterator pointing just before the first element
+  // at the beginning of this span. This pointer acts as a placeholder;
+  // attempting to access its element results in undefined behavior.
   constexpr reverse_iterator rend() const noexcept {
     return reverse_iterator(begin());
   }
 
   // Span::crend()
   //
-  // Returns a reverse iterator starting at the first element of this span.
+  // Returns a reverse const iterator pointing just before the first element
+  // at the beginning of this span. This pointer acts as a placeholder;
+  // attempting to access its element results in undefined behavior.
   constexpr const_reverse_iterator crend() const noexcept { return rend(); }
 
   // Span mutations
@@ -353,7 +368,7 @@ class Span {
   //
   // Removes the first `n` elements from the span.
   void remove_prefix(size_type n) noexcept {
-    assert(size() >= n);
+    ABSL_HARDENING_ASSERT(size() >= n);
     ptr_ += n;
     len_ -= n;
   }
@@ -362,7 +377,7 @@ class Span {
   //
   // Removes the last `n` elements from the span.
   void remove_suffix(size_type n) noexcept {
-    assert(size() >= n);
+    ABSL_HARDENING_ASSERT(size() >= n);
     len_ -= n;
   }
 
@@ -650,7 +665,7 @@ constexpr Span<T> MakeSpan(T* ptr, size_t size) noexcept {
 
 template <int&... ExplicitArgumentBarrier, typename T>
 Span<T> MakeSpan(T* begin, T* end) noexcept {
-  return ABSL_ASSERT(begin <= end), Span<T>(begin, end - begin);
+  return ABSL_HARDENING_ASSERT(begin <= end), Span<T>(begin, end - begin);
 }
 
 template <int&... ExplicitArgumentBarrier, typename C>
@@ -695,7 +710,7 @@ constexpr Span<const T> MakeConstSpan(T* ptr, size_t size) noexcept {
 
 template <int&... ExplicitArgumentBarrier, typename T>
 Span<const T> MakeConstSpan(T* begin, T* end) noexcept {
-  return ABSL_ASSERT(begin <= end), Span<const T>(begin, end - begin);
+  return ABSL_HARDENING_ASSERT(begin <= end), Span<const T>(begin, end - begin);
 }
 
 template <int&... ExplicitArgumentBarrier, typename C>
@@ -707,5 +722,6 @@ template <int&... ExplicitArgumentBarrier, typename T, size_t N>
 constexpr Span<const T> MakeConstSpan(const T (&array)[N]) noexcept {
   return Span<const T>(array, N);
 }
+ABSL_NAMESPACE_END
 }  // namespace absl
 #endif  // ABSL_TYPES_SPAN_H_

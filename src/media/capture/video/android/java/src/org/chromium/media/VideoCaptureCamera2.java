@@ -575,7 +575,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 }
             }
             try {
-                if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE)) {
+                Boolean ae_lock_available =
+                        cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE);
+                if (ae_lock_available != null && ae_lock_available.booleanValue()) {
                     exposureModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
                 }
             } catch (NoSuchFieldError e) {
@@ -622,7 +624,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 }
             }
             try {
-                if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE)) {
+                Boolean awb_lock_available =
+                        cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE);
+                if (awb_lock_available != null && awb_lock_available.booleanValue()) {
                     whiteBalanceModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
                 }
             } catch (NoSuchFieldError e) {
@@ -1378,8 +1382,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) return null;
         final int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+
+        boolean isInfrared = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            final Integer infoColor = cameraCharacteristics.get(
+                    CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT);
+            isInfrared = infoColor != null
+                    && infoColor.equals(
+                            CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_NIR);
+        }
         return "camera2 " + id + ", facing "
-                + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back");
+                + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back")
+                + (isInfrared ? " infrared" : "");
     }
 
     public static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
@@ -1462,9 +1476,29 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
+        mCameraNativeOrientation =
+                cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+        // Update the capture width and height based on the camera orientation.
+        // With device's native orientation being Portrait for Android devices,
+        // for cameras that are mounted 0 or 180 degrees in respect to device's
+        // native orientation, we will need to swap the width and height in
+        // order to capture upright frames in respect to device's current
+        // orientation.
+        int capture_width = width;
+        int capture_height = height;
+        if (mCameraNativeOrientation == 0 || mCameraNativeOrientation == 180) {
+            Log.d(TAG,
+                    "Flipping capture width and height to match device's "
+                            + "natural orientation");
+            capture_width = height;
+            capture_height = width;
+        }
+
         // Find closest supported size.
         final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.YUV_420_888);
-        final Size closestSupportedSize = findClosestSizeInArray(supportedSizes, width, height);
+        final Size closestSupportedSize =
+                findClosestSizeInArray(supportedSizes, capture_width, capture_height);
         if (closestSupportedSize == null) {
             Log.e(TAG, "No supported resolutions.");
             return false;
@@ -1495,8 +1529,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // |mCaptureFormat| is also used to configure the ImageReader.
         mCaptureFormat = new VideoCaptureFormat(closestSupportedSize.getWidth(),
                 closestSupportedSize.getHeight(), frameRate, ImageFormat.YUV_420_888);
-        mCameraNativeOrientation =
-                cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
         // TODO(mcasas): The following line is correct for N5 with prerelease Build,
         // but NOT for N7 with a dev Build. Figure out which one to support.
         mInvertDeviceOrientationReadings =

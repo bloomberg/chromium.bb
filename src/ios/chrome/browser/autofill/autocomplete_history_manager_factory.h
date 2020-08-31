@@ -11,21 +11,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
 
 namespace autofill {
 
 class AutocompleteHistoryManager;
 
 // Singleton that owns all AutocompleteHistoryManagers and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class AutocompleteHistoryManagerFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static AutocompleteHistoryManager* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static AutocompleteHistoryManagerFactory* GetInstance();
 
  private:

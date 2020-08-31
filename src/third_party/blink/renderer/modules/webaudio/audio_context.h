@@ -5,14 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_context_options.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -42,17 +44,17 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
                const WebAudioLatencyHint&,
                base::Optional<float> sample_rate);
   ~AudioContext() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // For ContextLifeCycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
   bool HasPendingActivity() const override;
 
-  ScriptPromise closeContext(ScriptState*);
+  ScriptPromise closeContext(ScriptState*, ExceptionState&);
   bool IsContextClosed() const final;
 
   ScriptPromise suspendContext(ScriptState*);
-  ScriptPromise resumeContext(ScriptState*);
+  ScriptPromise resumeContext(ScriptState*, ExceptionState&);
 
   bool HasRealtimeConstraint() final { return true; }
 
@@ -92,10 +94,11 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   friend class AudioContextAutoplayTest;
   friend class AudioContextTest;
 
-  // Do not change the order of this enum, it is used for metrics.
-  enum AutoplayStatus {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class AutoplayStatus {
     // The AudioContext failed to activate because of user gesture requirements.
-    kAutoplayStatusFailed = 0,
+    kFailed = 0,
     // Same as AutoplayStatusFailed but start() on a node was called with a user
     // gesture.
     // This value is no longer used but the enum entry should not be re-used
@@ -103,10 +106,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
     // kAutoplayStatusFailedWithStart = 1,
     // The AudioContext had user gesture requirements and was able to activate
     // with a user gesture.
-    kAutoplayStatusSucceeded = 2,
+    kSucceeded = 2,
 
-    // Keep at the end.
-    kAutoplayStatusCount
+    kMaxValue = kSucceeded,
   };
 
   // Returns the AutoplayPolicy currently applying to this instance.
@@ -120,7 +122,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
     kContextConstructor = 0,
     kContextResume = 1,
     kSourceNodeStart = 2,
-    kCount
+    kMaxValue = kSourceNodeStart,
   };
 
   // If possible, allows autoplay for the AudioContext and marke it as allowed
@@ -133,7 +135,18 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // Record the current autoplay metrics.
   void RecordAutoplayMetrics();
 
+  // Starts rendering via AudioDestinationNode. This sets the self-referencing
+  // pointer to this object.
+  void StartRendering() override;
+
+  // Called when the context is being closed to stop rendering audio and clean
+  // up handlers. This clears the self-referencing pointer, making this object
+  // available for the potential GC.
   void StopRendering();
+
+  // Called when suspending the context to stop reundering audio, but don't
+  // clean up handlers because we expect to be resuming where we left off.
+  void SuspendRendering();
 
   void DidClose();
 
@@ -180,7 +193,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   double base_latency_ = 0;
 
   // AudioContextManager for reporting audibility.
-  mojo::Remote<mojom::blink::AudioContextManager> audio_context_manager_;
+  HeapMojoRemote<mojom::blink::AudioContextManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      audio_context_manager_;
 
   // Keeps track if the output of this destination was audible, before the
   // current rendering quantum.  Used for recording "playback" time.
@@ -190,6 +205,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // determine audibility on render quantum boundaries, so counting quanta is
   // all that's needed.
   size_t total_audible_renders_ = 0;
+
+  SelfKeepAlive<AudioContext> keep_alive_;
 };
 
 }  // namespace blink

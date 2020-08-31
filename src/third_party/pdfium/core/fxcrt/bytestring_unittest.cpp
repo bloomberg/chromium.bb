@@ -60,6 +60,27 @@ TEST(ByteString, ElementAccess) {
 #endif
 }
 
+TEST(ByteString, Construct) {
+  {
+    // Copy-construct.
+    ByteString string1("abc");
+    ByteString string2(string1);
+    EXPECT_EQ("abc", string1);
+    EXPECT_EQ("abc", string2);
+    EXPECT_EQ(2, string1.ReferenceCountForTesting());
+    EXPECT_EQ(2, string2.ReferenceCountForTesting());
+  }
+  {
+    // Move-construct.
+    ByteString string1("abc");
+    ByteString string2(std::move(string1));
+    EXPECT_TRUE(string1.IsEmpty());
+    EXPECT_EQ("abc", string2);
+    EXPECT_EQ(0, string1.ReferenceCountForTesting());
+    EXPECT_EQ(1, string2.ReferenceCountForTesting());
+  }
+}
+
 TEST(ByteString, Assign) {
   {
     // Copy-assign.
@@ -84,6 +105,8 @@ TEST(ByteString, Assign) {
       EXPECT_EQ(1, string2.ReferenceCountForTesting());
 
       string1 = std::move(string2);
+      EXPECT_EQ("abc", string1);
+      EXPECT_TRUE(string2.IsEmpty());
       EXPECT_EQ(1, string1.ReferenceCountForTesting());
       EXPECT_EQ(0, string2.ReferenceCountForTesting());
     }
@@ -483,7 +506,16 @@ TEST(ByteString, RemoveCopies) {
 }
 
 TEST(ByteString, Replace) {
+  ByteString empty;
+  empty.Replace("", "CLAMS");
+  empty.Replace("xx", "CLAMS");
+  EXPECT_EQ("", empty);
+
   ByteString fred("FRED");
+  fred.Replace("", "");
+  EXPECT_EQ("FRED", fred);
+  fred.Replace("", "CLAMS");
+  EXPECT_EQ("FRED", fred);
   fred.Replace("FR", "BL");
   EXPECT_EQ("BLED", fred);
   fred.Replace("D", "DDY");
@@ -494,10 +526,20 @@ TEST(ByteString, Replace) {
   EXPECT_EQ("BY", fred);
   fred.Replace("BY", "HI");
   EXPECT_EQ("HI", fred);
-  fred.Replace("", "CLAMS");
-  EXPECT_EQ("HI", fred);
-  fred.Replace("HI", "");
+  fred.Replace("I", "IHIHI");
+  EXPECT_EQ("HIHIHI", fred);
+  fred.Replace("HI", "HO");
+  EXPECT_EQ("HOHOHO", fred);
+  fred.Replace("HO", "");
   EXPECT_EQ("", fred);
+
+  ByteString five_xs("xxxxx");
+  five_xs.Replace("xx", "xxx");
+  EXPECT_EQ("xxxxxxx", five_xs);
+
+  ByteString five_ys("yyyyy");
+  five_ys.Replace("yy", "y");
+  EXPECT_EQ("yyy", five_ys);
 }
 
 TEST(ByteString, Insert) {
@@ -580,57 +622,57 @@ TEST(ByteString, Delete) {
   EXPECT_EQ("", empty);
 }
 
-TEST(ByteString, Mid) {
+TEST(ByteString, Substr) {
   ByteString fred("FRED");
-  EXPECT_EQ("", fred.Mid(0, 0));
-  EXPECT_EQ("", fred.Mid(3, 0));
-  EXPECT_EQ("FRED", fred.Mid(0, 4));
-  EXPECT_EQ("RED", fred.Mid(1, 3));
-  EXPECT_EQ("ED", fred.Mid(2, 2));
-  EXPECT_EQ("D", fred.Mid(3, 1));
-  EXPECT_EQ("F", fred.Mid(0, 1));
-  EXPECT_EQ("R", fred.Mid(1, 1));
-  EXPECT_EQ("E", fred.Mid(2, 1));
-  EXPECT_EQ("D", fred.Mid(3, 1));
-  EXPECT_EQ("FR", fred.Mid(0, 2));
-  EXPECT_EQ("FRED", fred.Mid(0, 4));
-  EXPECT_EQ("", fred.Mid(0, 10));
+  EXPECT_EQ("", fred.Substr(0, 0));
+  EXPECT_EQ("", fred.Substr(3, 0));
+  EXPECT_EQ("FRED", fred.Substr(0, 4));
+  EXPECT_EQ("RED", fred.Substr(1, 3));
+  EXPECT_EQ("ED", fred.Substr(2, 2));
+  EXPECT_EQ("D", fred.Substr(3, 1));
+  EXPECT_EQ("F", fred.Substr(0, 1));
+  EXPECT_EQ("R", fred.Substr(1, 1));
+  EXPECT_EQ("E", fred.Substr(2, 1));
+  EXPECT_EQ("D", fred.Substr(3, 1));
+  EXPECT_EQ("FR", fred.Substr(0, 2));
+  EXPECT_EQ("FRED", fred.Substr(0, 4));
+  EXPECT_EQ("", fred.Substr(0, 10));
 
-  EXPECT_EQ("RED", fred.Mid(1, 3));
-  EXPECT_EQ("", fred.Mid(4, 1));
+  EXPECT_EQ("RED", fred.Substr(1, 3));
+  EXPECT_EQ("", fred.Substr(4, 1));
 
   ByteString empty;
-  EXPECT_EQ("", empty.Mid(0, 0));
+  EXPECT_EQ("", empty.Substr(0, 0));
 }
 
-TEST(ByteString, Left) {
+TEST(ByteString, First) {
   ByteString fred("FRED");
-  EXPECT_EQ("", fred.Left(0));
-  EXPECT_EQ("F", fred.Left(1));
-  EXPECT_EQ("FR", fred.Left(2));
-  EXPECT_EQ("FRE", fred.Left(3));
-  EXPECT_EQ("FRED", fred.Left(4));
+  EXPECT_EQ("", fred.First(0));
+  EXPECT_EQ("F", fred.First(1));
+  EXPECT_EQ("FR", fred.First(2));
+  EXPECT_EQ("FRE", fred.First(3));
+  EXPECT_EQ("FRED", fred.First(4));
 
-  EXPECT_EQ("", fred.Left(5));
+  EXPECT_EQ("", fred.First(5));
 
   ByteString empty;
-  EXPECT_EQ("", empty.Left(0));
-  EXPECT_EQ("", empty.Left(1));
+  EXPECT_EQ("", empty.First(0));
+  EXPECT_EQ("", empty.First(1));
 }
 
-TEST(ByteString, Right) {
+TEST(ByteString, Last) {
   ByteString fred("FRED");
-  EXPECT_EQ("", fred.Right(0));
-  EXPECT_EQ("D", fred.Right(1));
-  EXPECT_EQ("ED", fred.Right(2));
-  EXPECT_EQ("RED", fred.Right(3));
-  EXPECT_EQ("FRED", fred.Right(4));
+  EXPECT_EQ("", fred.Last(0));
+  EXPECT_EQ("D", fred.Last(1));
+  EXPECT_EQ("ED", fred.Last(2));
+  EXPECT_EQ("RED", fred.Last(3));
+  EXPECT_EQ("FRED", fred.Last(4));
 
-  EXPECT_EQ("", fred.Right(5));
+  EXPECT_EQ("", fred.Last(5));
 
   ByteString empty;
-  EXPECT_EQ("", empty.Right(0));
-  EXPECT_EQ("", empty.Right(1));
+  EXPECT_EQ("", empty.Last(0));
+  EXPECT_EQ("", empty.Last(1));
 }
 
 TEST(ByteString, Find) {
@@ -1237,34 +1279,34 @@ TEST(ByteStringView, Find) {
   EXPECT_EQ(2u, result.value());
 }
 
-TEST(ByteStringView, Mid) {
+TEST(ByteStringView, Substr) {
   ByteStringView null_string;
-  EXPECT_EQ(null_string, null_string.Mid(0, 1));
-  EXPECT_EQ(null_string, null_string.Mid(1, 1));
+  EXPECT_EQ(null_string, null_string.Substr(0, 1));
+  EXPECT_EQ(null_string, null_string.Substr(1, 1));
 
   ByteStringView empty_string("");
-  EXPECT_EQ("", empty_string.Mid(0, 1));
-  EXPECT_EQ("", empty_string.Mid(1, 1));
+  EXPECT_EQ("", empty_string.Substr(0, 1));
+  EXPECT_EQ("", empty_string.Substr(1, 1));
 
   ByteStringView single_character("a");
-  EXPECT_EQ("", single_character.Mid(0, 0));
-  EXPECT_EQ(single_character, single_character.Mid(0, 1));
-  EXPECT_EQ("", single_character.Mid(1, 0));
-  EXPECT_EQ("", single_character.Mid(1, 1));
+  EXPECT_EQ("", single_character.Substr(0, 0));
+  EXPECT_EQ(single_character, single_character.Substr(0, 1));
+  EXPECT_EQ("", single_character.Substr(1, 0));
+  EXPECT_EQ("", single_character.Substr(1, 1));
 
   ByteStringView longer_string("abcdef");
-  EXPECT_EQ(longer_string, longer_string.Mid(0, 6));
-  EXPECT_EQ("", longer_string.Mid(0, 187));
+  EXPECT_EQ(longer_string, longer_string.Substr(0, 6));
+  EXPECT_EQ("", longer_string.Substr(0, 187));
 
   ByteStringView leading_substring("ab");
-  EXPECT_EQ(leading_substring, longer_string.Mid(0, 2));
+  EXPECT_EQ(leading_substring, longer_string.Substr(0, 2));
 
   ByteStringView middle_substring("bcde");
-  EXPECT_EQ(middle_substring, longer_string.Mid(1, 4));
+  EXPECT_EQ(middle_substring, longer_string.Substr(1, 4));
 
   ByteStringView trailing_substring("ef");
-  EXPECT_EQ(trailing_substring, longer_string.Mid(4, 2));
-  EXPECT_EQ("", longer_string.Mid(4, 3));
+  EXPECT_EQ(trailing_substring, longer_string.Substr(4, 2));
+  EXPECT_EQ("", longer_string.Substr(4, 3));
 }
 
 TEST(ByteStringView, TrimmedRight) {

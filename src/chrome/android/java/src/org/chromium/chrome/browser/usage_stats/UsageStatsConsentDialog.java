@@ -9,7 +9,7 @@ import android.content.res.Resources;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -19,7 +19,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Dialog prompting a user to either enable integration with Digital Wellbeing or to revoke
  * permission for that integration.
  * TODO(pnoland): Revisit the style of this dialog and where it's used(i.e. whether it's used from
- * PrivacyPreferences or not) to ensure that the visual style is consistent.
+ * PrivacySettings or not) to ensure that the visual style is consistent.
  */
 public class UsageStatsConsentDialog {
     private Activity mActivity;

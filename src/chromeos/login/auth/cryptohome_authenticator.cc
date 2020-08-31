@@ -131,6 +131,8 @@ const char* AuthStateToString(CryptohomeAuthenticator::AuthState state) {
       return "FAILED_PREVIOUS_MIGRATION_INCOMPLETE";
     case CryptohomeAuthenticator::OFFLINE_NO_MOUNT:
       return "OFFLINE_NO_MOUNT";
+    case CryptohomeAuthenticator::TPM_UPDATE_REQUIRED:
+      return "TPM_UPDATE_REQUIRED";
   }
   return "UNKNOWN";
 }
@@ -422,7 +424,7 @@ void OnGetKeyDataEx(const base::WeakPtr<AuthAttemptState>& attempt,
     }
   }
 
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &OnGetSystemSalt, attempt, resolver, ephemeral, create_if_nonexistent));
 }
 
@@ -579,10 +581,10 @@ void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
 }  // namespace
 
 CryptohomeAuthenticator::CryptohomeAuthenticator(
-    scoped_refptr<base::TaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     AuthStatusConsumer* consumer)
     : Authenticator(consumer),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       migrate_attempted_(false),
       remove_attempted_(false),
       resync_attempted_(false),
@@ -657,8 +659,8 @@ void CryptohomeAuthenticator::AuthenticateToUnlock(
   remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&CheckKey, current_state_->AsWeakPtr(),
-                 scoped_refptr<CryptohomeAuthenticator>(this)));
+      base::BindOnce(&CheckKey, current_state_->AsWeakPtr(),
+                     scoped_refptr<CryptohomeAuthenticator>(this)));
 }
 
 void CryptohomeAuthenticator::LoginAsSupervisedUser(
@@ -846,7 +848,7 @@ void CryptohomeAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
   migrate_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &Migrate, current_state_->AsWeakPtr(),
       scoped_refptr<CryptohomeAuthenticator>(this), true, old_password));
 }
@@ -880,7 +882,7 @@ bool CryptohomeAuthenticator::VerifyOwner() {
 
   CheckSafeModeOwnership(
       current_state_->user_context,
-      base::Bind(&CryptohomeAuthenticator::OnOwnershipChecked, this));
+      base::BindOnce(&CryptohomeAuthenticator::OnOwnershipChecked, this));
   return false;
 }
 
@@ -1031,6 +1033,13 @@ void CryptohomeAuthenticator::Resolve() {
           base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
                          AuthFailure(AuthFailure::MISSING_CRYPTOHOME)));
       break;
+    case TPM_UPDATE_REQUIRED:
+      current_state_->ResetCryptohomeStatus();
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::TPM_UPDATE_REQUIRED)));
+      break;
     default:
       NOTREACHED();
       break;
@@ -1110,6 +1119,10 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
   if (current_state_->cryptohome_code() ==
       cryptohome::MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE) {
     return FAILED_PREVIOUS_MIGRATION_INCOMPLETE;
+  }
+  if (current_state_->cryptohome_code() ==
+      cryptohome::MOUNT_ERROR_TPM_UPDATE_REQUIRED) {
+    return TPM_UPDATE_REQUIRED;
   }
 
   // Return intermediate states in the following case:

@@ -4,16 +4,29 @@
 
 #include "gpu/config/gpu_util.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+// Must be included after windows.h.
+#include <psapi.h>
+#endif  // OS_WIN
+
 #include <memory>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -25,7 +38,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/vulkan/buildflags.h"
-#include "third_party/vulkan/include/vulkan/vulkan.h"
+#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
@@ -34,6 +47,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 #endif  // OS_ANDROID
 
@@ -41,16 +55,69 @@ namespace gpu {
 
 namespace {
 
+#if defined(OS_WIN)
+// These values are persistent to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum D3D11FeatureLevel in
+//  \tools\metrics\histograms\enums.xml
+enum class D3D11FeatureLevel {
+  kUnknown = 0,
+  k9_1 = 4,
+  k9_2 = 5,
+  k9_3 = 6,
+  k10_0 = 7,
+  k10_1 = 8,
+  k11_0 = 9,
+  k11_1 = 10,
+  k12_0 = 11,
+  k12_1 = 12,
+  kMaxValue = k12_1,
+};
+
+inline D3D11FeatureLevel ConvertToHistogramD3D11FeatureLevel(
+    D3D_FEATURE_LEVEL d3d11_feature_level) {
+  switch (d3d11_feature_level) {
+    case D3D_FEATURE_LEVEL_1_0_CORE:
+      return D3D11FeatureLevel::kUnknown;
+    case D3D_FEATURE_LEVEL_9_1:
+      return D3D11FeatureLevel::k9_1;
+    case D3D_FEATURE_LEVEL_9_2:
+      return D3D11FeatureLevel::k9_2;
+    case D3D_FEATURE_LEVEL_9_3:
+      return D3D11FeatureLevel::k9_3;
+    case D3D_FEATURE_LEVEL_10_0:
+      return D3D11FeatureLevel::k10_0;
+    case D3D_FEATURE_LEVEL_10_1:
+      return D3D11FeatureLevel::k10_1;
+    case D3D_FEATURE_LEVEL_11_0:
+      return D3D11FeatureLevel::k11_0;
+    case D3D_FEATURE_LEVEL_11_1:
+      return D3D11FeatureLevel::k11_1;
+    case D3D_FEATURE_LEVEL_12_0:
+      return D3D11FeatureLevel::k12_0;
+    case D3D_FEATURE_LEVEL_12_1:
+      return D3D11FeatureLevel::k12_1;
+    default:
+      NOTREACHED();
+      return D3D11FeatureLevel::kUnknown;
+  }
+}
+#endif  // OS_WIN
+
 GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
     const std::set<int>& blacklisted_features,
     const GpuPreferences& gpu_preferences) {
 #if !defined(OS_ANDROID)
   return kGpuFeatureStatusDisabled;
 #else
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL))
-    return kGpuFeatureStatusBlacklisted;
-
   if (!gpu_preferences.enable_android_surface_control)
+    return kGpuFeatureStatusDisabled;
+
+  // SurfaceControl as used by Chrome requires using GpuFence for
+  // synchronization, this is based on Android native fence sync
+  // support. If that is unavailable, i.e. on emulator or SwiftShader,
+  // don't claim SurfaceControl support.
+  if (!gl::GLSurfaceEGL::IsAndroidNativeFenceSyncSupported())
     return kGpuFeatureStatusDisabled;
 
   DCHECK(gl::SurfaceControl::IsSupported());
@@ -291,12 +358,56 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
     gpu_feature_info->status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
         kGpuFeatureStatusBlacklisted;
   }
-
-  if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
-    gpu_feature_info->status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
-        kGpuFeatureStatusBlacklisted;
-  }
 }
+
+// Estimates roughly user total disk space by counting in the drives where
+// the exe is, where the temporary space is, where the user home is.
+// If total space and free space are of the same size, they are considered
+// the same drive. There could be corner cases this estimation is far from
+// the actual total disk space, but for histogram purpose, limited numbers
+// of outliers do not matter.
+uint32_t EstimateAmountOfTotalDiskSpaceMB() {
+  const base::BasePathKey kPathKeys[] = {base::DIR_EXE, base::DIR_TEMP,
+                                         base::DIR_HOME};
+  std::vector<uint32_t> total_space_vector, free_space_vector;
+  uint32_t sum = 0;
+  for (const auto& path_key : kPathKeys) {
+    base::FilePath path;
+    if (base::PathService::Get(path_key, &path)) {
+      uint32_t total_space = static_cast<uint32_t>(
+          base::SysInfo::AmountOfTotalDiskSpace(path) / 1024 / 1024);
+      uint32_t free_space = static_cast<uint32_t>(
+          base::SysInfo::AmountOfFreeDiskSpace(path) / 1024 / 1024);
+      bool duplicated = false;
+      for (size_t ii = 0; ii < total_space_vector.size(); ++ii) {
+        if (total_space == total_space_vector[ii] &&
+            free_space == free_space_vector[ii]) {
+          duplicated = true;
+          break;
+        }
+      }
+      if (!duplicated) {
+        total_space_vector.push_back(total_space);
+        free_space_vector.push_back(free_space);
+        sum += total_space;
+      }
+    }
+  }
+  return sum;
+}
+
+#if defined(OS_WIN)
+uint32_t GetSystemCommitLimitMb() {
+  PERFORMANCE_INFORMATION perf_info = {sizeof(perf_info)};
+  if (::GetPerformanceInfo(&perf_info, sizeof(perf_info))) {
+    uint64_t limit = perf_info.CommitLimit;
+    limit *= perf_info.PageSize;
+    limit /= 1024 * 1024;
+    return static_cast<uint32_t>(limit);
+  }
+  return 0u;
+}
+#endif  // OS_WIN
 
 GPUInfo* g_gpu_info_cache = nullptr;
 GpuFeatureInfo* g_gpu_feature_info_cache = nullptr;
@@ -427,7 +538,14 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
     if (use_gl == gl::kGLImplementationSwiftShaderName)
       use_swift_shader = true;
-    else if (use_gl == gl::kGLImplementationSwiftShaderForWebGLName)
+    else if (use_gl == gl::kGLImplementationANGLEName) {
+      if (command_line->HasSwitch(switches::kUseANGLE)) {
+        std::string use_angle =
+            command_line->GetSwitchValueASCII(switches::kUseANGLE);
+        if (use_angle == gl::kANGLEImplementationSwiftShaderName)
+          use_swift_shader = true;
+      }
+    } else if (use_gl == gl::kGLImplementationSwiftShaderForWebGLName)
       return ComputeGpuFeatureInfoForSwiftShader();
     else if (use_gl == gl::kGLImplementationDisabledName)
       return ComputeGpuFeatureInfoWithNoGpu();
@@ -578,6 +696,8 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
   crash_keys::gpu_driver_version.Set(active_gpu.driver_version);
   crash_keys::gpu_pixel_shader_version.Set(gpu_info.pixel_shader_version);
   crash_keys::gpu_vertex_shader_version.Set(gpu_info.vertex_shader_version);
+  crash_keys::gpu_generation_intel.Set(
+      base::StringPrintf("%d", GetIntelGpuGeneration(gpu_info)));
 #if defined(OS_MACOSX)
   crash_keys::gpu_gl_version.Set(gpu_info.gl_version);
 #elif defined(OS_POSIX)
@@ -681,111 +801,202 @@ bool EnableSwiftShaderIfNeeded(base::CommandLine* command_line,
 #endif
 }
 
-GpuSeriesType GetGpuSeriesType(uint32_t vendor_id, uint32_t device_id) {
+IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
+                                         uint32_t device_id) {
   // Note that this function's output should only depend on vendor_id and
   // device_id of a GPU. This is because we record a histogram on the output
   // and we don't want to expose an extra bit other than the already recorded
   // vendor_id and device_id.
   if (vendor_id == 0x8086) {  // Intel
-    // We only identify Intel 6th gen or newer.
-    // The device id can be referred to in the following locations:
-    // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
-    // and the heade files in Mesa sources:
-    // include/pci_ids/i965_pci_ids.h
+    // The device IDs of Intel GPU are based on following Mesa source files:
+    // include/pci_ids/i965_pci_ids.h and iris_pci_ids.h
     uint32_t masked_device_id = device_id & 0xFF00;
     switch (masked_device_id) {
-      case 0x0100:
-        switch (device_id & 0xFFF0) {
-          case 0x0100:
-          case 0x0110:
-          case 0x0120:
-            return GpuSeriesType::kIntelSandybridge;
-          case 0x0150:
-            if (device_id == 0x0155 || device_id == 0x0157)
-              return GpuSeriesType::kIntelBaytrail;
-            if (device_id == 0x0152 || device_id == 0x015A
-                || device_id == 0x0156)
-              return GpuSeriesType::kIntelIvybridge;
-            break;
-          case 0x0160:
-            return GpuSeriesType::kIntelIvybridge;
-          default:
-            break;
-        }
+      case 0x2900:
+        return IntelGpuSeriesType::kBroadwater;
+      case 0x2A00:
+        if (device_id == 0x2A02 || device_id == 0x2A12)
+          return IntelGpuSeriesType::kBroadwater;
+        if (device_id == 0x2A42)
+          return IntelGpuSeriesType::kEaglelake;
         break;
+      case 0x2E00:
+        return IntelGpuSeriesType::kEaglelake;
+      case 0x0000:
+        return IntelGpuSeriesType::kIronlake;
+      case 0x0100:
+        if (device_id == 0x0152 || device_id == 0x0156 || device_id == 0x015A ||
+            device_id == 0x0162 || device_id == 0x0166 || device_id == 0x016A)
+          return IntelGpuSeriesType::kIvybridge;
+        if (device_id == 0x0155 || device_id == 0x0157)
+          return IntelGpuSeriesType::kBaytrail;
+        return IntelGpuSeriesType::kSandybridge;
       case 0x0F00:
-        return GpuSeriesType::kIntelBaytrail;
-      case 0x0400:
+        return IntelGpuSeriesType::kBaytrail;
       case 0x0A00:
+        if (device_id == 0x0A84)
+          return IntelGpuSeriesType::kApollolake;
+        return IntelGpuSeriesType::kHaswell;
+      case 0x0400:
       case 0x0C00:
       case 0x0D00:
-        return GpuSeriesType::kIntelHaswell;
+        return IntelGpuSeriesType::kHaswell;
       case 0x2200:
-        return GpuSeriesType::kIntelCherrytrail;
+        return IntelGpuSeriesType::kCherrytrail;
       case 0x1600:
-        return GpuSeriesType::kIntelBroadwell;
+        return IntelGpuSeriesType::kBroadwell;
       case 0x5A00:
         if (device_id == 0x5A85 || device_id == 0x5A84)
-          return GpuSeriesType::kIntelApollolake;
-        return GpuSeriesType::kIntelCannonlake;
+          return IntelGpuSeriesType::kApollolake;
+        return IntelGpuSeriesType::kCannonlake;
       case 0x1900:
-        return GpuSeriesType::kIntelSkylake;
+        return IntelGpuSeriesType::kSkylake;
+      case 0x1A00:
+        return IntelGpuSeriesType::kApollolake;
       case 0x3100:
-        return GpuSeriesType::kIntelGeminilake;
+        return IntelGpuSeriesType::kGeminilake;
       case 0x5900:
-        return GpuSeriesType::kIntelKabylake;
+        return IntelGpuSeriesType::kKabylake;
       case 0x8700:
         if (device_id == 0x87C0)
-          return GpuSeriesType::kIntelKabylake;
+          return IntelGpuSeriesType::kKabylake;
         if (device_id == 0x87CA)
-          return GpuSeriesType::kIntelCoffeelake;
+          return IntelGpuSeriesType::kCoffeelake;
         break;
       case 0x3E00:
         if (device_id == 0x3EA0 || device_id == 0x3EA1 || device_id == 0x3EA2
             || device_id == 0x3EA4 || device_id == 0x3EA3)
-          return GpuSeriesType::kIntelWhiskeylake;
-        return GpuSeriesType::kIntelCoffeelake;
+          return IntelGpuSeriesType::kWhiskeylake;
+        return IntelGpuSeriesType::kCoffeelake;
       case 0x9B00:
-        return GpuSeriesType::kIntelCometlake;
+        return IntelGpuSeriesType::kCometlake;
       case 0x8A00:
-        return GpuSeriesType::kIntelIcelake;
+        return IntelGpuSeriesType::kIcelake;
+      case 0x4500:
+        return IntelGpuSeriesType::kElkhartlake;
+      case 0x4E00:
+        return IntelGpuSeriesType::kJasperlake;
+      case 0x9A00:
+        return IntelGpuSeriesType::kTigerlake;
       default:
         break;
     }
   }
-  return GpuSeriesType::kUnknown;
+  return IntelGpuSeriesType::kUnknown;
 }
 
 std::string GetIntelGpuGeneration(uint32_t vendor_id, uint32_t device_id) {
   if (vendor_id == 0x8086) {
-    GpuSeriesType gpu_series = GetGpuSeriesType(vendor_id, device_id);
+    IntelGpuSeriesType gpu_series = GetIntelGpuSeriesType(vendor_id, device_id);
     switch (gpu_series) {
-      case GpuSeriesType::kIntelSandybridge:
+      case IntelGpuSeriesType::kBroadwater:
+      case IntelGpuSeriesType::kEaglelake:
+        return "4";
+      case IntelGpuSeriesType::kIronlake:
+        return "5";
+      case IntelGpuSeriesType::kSandybridge:
         return "6";
-      case GpuSeriesType::kIntelBaytrail:
-      case GpuSeriesType::kIntelIvybridge:
-      case GpuSeriesType::kIntelHaswell:
+      case IntelGpuSeriesType::kBaytrail:
+      case IntelGpuSeriesType::kIvybridge:
+      case IntelGpuSeriesType::kHaswell:
         return "7";
-      case GpuSeriesType::kIntelCherrytrail:
-      case GpuSeriesType::kIntelBroadwell:
+      case IntelGpuSeriesType::kCherrytrail:
+      case IntelGpuSeriesType::kBroadwell:
         return "8";
-      case GpuSeriesType::kIntelApollolake:
-      case GpuSeriesType::kIntelSkylake:
-      case GpuSeriesType::kIntelGeminilake:
-      case GpuSeriesType::kIntelKabylake:
-      case GpuSeriesType::kIntelCoffeelake:
-      case GpuSeriesType::kIntelWhiskeylake:
-      case GpuSeriesType::kIntelCometlake:
+      case IntelGpuSeriesType::kApollolake:
+      case IntelGpuSeriesType::kSkylake:
+      case IntelGpuSeriesType::kGeminilake:
+      case IntelGpuSeriesType::kKabylake:
+      case IntelGpuSeriesType::kCoffeelake:
+      case IntelGpuSeriesType::kWhiskeylake:
+      case IntelGpuSeriesType::kCometlake:
         return "9";
-      case GpuSeriesType::kIntelCannonlake:
+      case IntelGpuSeriesType::kCannonlake:
         return "10";
-      case GpuSeriesType::kIntelIcelake:
+      case IntelGpuSeriesType::kIcelake:
+      case IntelGpuSeriesType::kElkhartlake:
+      case IntelGpuSeriesType::kJasperlake:
         return "11";
+      case IntelGpuSeriesType::kTigerlake:
+        return "12";
       default:
         break;
     }
   }
   return "";
+}
+
+IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info) {
+  const uint32_t kIntelVendorId = 0x8086;
+  IntelGpuGeneration latest = IntelGpuGeneration::kNonIntel;
+  std::vector<uint32_t> intel_device_ids;
+  if (gpu_info.gpu.vendor_id == kIntelVendorId)
+    intel_device_ids.push_back(gpu_info.gpu.device_id);
+  for (const auto& gpu : gpu_info.secondary_gpus) {
+    if (gpu.vendor_id == kIntelVendorId)
+      intel_device_ids.push_back(gpu.device_id);
+  }
+  if (intel_device_ids.empty())
+    return latest;
+  latest = IntelGpuGeneration::kUnknownIntel;
+  for (uint32_t device_id : intel_device_ids) {
+    std::string gen_str = gpu::GetIntelGpuGeneration(kIntelVendorId, device_id);
+    int gen_int = 0;
+    if (gen_str.empty() || !base::StringToInt(gen_str, &gen_int))
+      continue;
+    DCHECK_GE(gen_int, static_cast<int>(IntelGpuGeneration::kUnknownIntel));
+    DCHECK_LE(gen_int, static_cast<int>(IntelGpuGeneration::kMaxValue));
+    if (gen_int > static_cast<int>(latest))
+      latest = static_cast<IntelGpuGeneration>(gen_int);
+  }
+  return latest;
+}
+
+void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info,
+                           bool in_browser_process) {
+  DCHECK(device_perf_info);
+  device_perf_info->total_physical_memory_mb =
+      static_cast<uint32_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
+  if (!in_browser_process)
+    device_perf_info->total_disk_space_mb = EstimateAmountOfTotalDiskSpaceMB();
+  device_perf_info->hardware_concurrency =
+      static_cast<uint32_t>(std::thread::hardware_concurrency());
+
+#if defined(OS_WIN)
+  device_perf_info->system_commit_limit_mb = GetSystemCommitLimitMb();
+  if (!in_browser_process) {
+    D3D_FEATURE_LEVEL d3d11_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
+    bool has_discrete_gpu = false;
+    if (CollectD3D11FeatureInfo(&d3d11_feature_level, &has_discrete_gpu)) {
+      device_perf_info->d3d11_feature_level = d3d11_feature_level;
+      device_perf_info->has_discrete_gpu =
+          has_discrete_gpu ? HasDiscreteGpu::kYes : HasDiscreteGpu::kNo;
+    }
+  }
+#endif
+}
+
+void RecordDevicePerfInfoHistograms() {
+  base::Optional<DevicePerfInfo> device_perf_info = GetDevicePerfInfo();
+  if (!device_perf_info.has_value())
+    return;
+  UMA_HISTOGRAM_COUNTS_1000("Hardware.TotalDiskSpace",
+                            device_perf_info->total_disk_space_mb / 1024);
+  UMA_HISTOGRAM_COUNTS_100("Hardware.Concurrency",
+                           device_perf_info->hardware_concurrency);
+#if defined(OS_WIN)
+  UMA_HISTOGRAM_COUNTS_100("Memory.Total.SystemCommitLimit",
+                           device_perf_info->system_commit_limit_mb / 1024);
+  UMA_HISTOGRAM_ENUMERATION("GPU.D3D11FeatureLevel",
+                            ConvertToHistogramD3D11FeatureLevel(
+                                device_perf_info->d3d11_feature_level));
+  UMA_HISTOGRAM_ENUMERATION("GPU.HasDiscreteGpu",
+                            device_perf_info->has_discrete_gpu);
+#endif  // OS_WIN
+  UMA_HISTOGRAM_ENUMERATION("GPU.IntelGpuGeneration",
+                            device_perf_info->intel_gpu_generation);
+  UMA_HISTOGRAM_BOOLEAN("GPU.SoftwareRendering",
+                        device_perf_info->software_rendering);
 }
 
 #if defined(OS_WIN)
@@ -812,16 +1023,18 @@ std::string VulkanVersionToString(uint32_t vulkan_version) {
 #endif  // OS_WIN
 
 VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
-  switch (vulkan_version) {
-    case 0:
-      return VulkanVersion::kVulkanVersionUnknown;
-    case VK_MAKE_VERSION(1, 0, 0):
-      return VulkanVersion::kVulkanVersion_1_0_0;
-    case VK_MAKE_VERSION(1, 1, 0):
-      return VulkanVersion::kVulkanVersion_1_1_0;
-    default:
-      NOTREACHED();
-      return VulkanVersion::kVulkanVersionUnknown;
+  if (vulkan_version < VK_MAKE_VERSION(1, 0, 0))
+    return VulkanVersion::kVulkanVersionUnknown;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 1, 0))
+    return VulkanVersion::kVulkanVersion_1_0_0;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 2, 0))
+    return VulkanVersion::kVulkanVersion_1_1_0;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 3, 0))
+    return VulkanVersion::kVulkanVersion_1_2_0;
+  else {
+    // Need to add 1.3.0+ to enum VulkanVersion.
+    NOTREACHED();
+    return VulkanVersion::kVulkanVersion_1_2_0;
   }
 }
 

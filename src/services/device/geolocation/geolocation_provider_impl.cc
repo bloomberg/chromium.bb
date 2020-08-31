@@ -9,11 +9,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -136,9 +137,9 @@ GeolocationProviderImpl::GeolocationProviderImpl()
       ignore_location_updates_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  high_accuracy_callbacks_.set_removal_callback(base::Bind(
+  high_accuracy_callbacks_.set_removal_callback(base::BindRepeating(
       &GeolocationProviderImpl::OnClientsChanged, base::Unretained(this)));
-  low_accuracy_callbacks_.set_removal_callback(base::Bind(
+  low_accuracy_callbacks_.set_removal_callback(base::BindRepeating(
       &GeolocationProviderImpl::OnClientsChanged, base::Unretained(this)));
 }
 
@@ -158,7 +159,7 @@ bool GeolocationProviderImpl::OnGeolocationThread() const {
 
 void GeolocationProviderImpl::OnClientsChanged() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  base::Closure task;
+  base::OnceClosure task;
   if (high_accuracy_callbacks_.empty() && low_accuracy_callbacks_.empty()) {
     DCHECK(IsRunning());
     if (!ignore_location_updates_) {
@@ -166,11 +167,15 @@ void GeolocationProviderImpl::OnClientsChanged() {
       // when the next observer is added we will not provide a stale position.
       position_ = mojom::Geoposition();
     }
-    task = base::Bind(&GeolocationProviderImpl::StopProviders,
-                      base::Unretained(this));
+    task = base::BindOnce(&GeolocationProviderImpl::StopProviders,
+                          base::Unretained(this));
   } else {
     if (!IsRunning()) {
-      Start();
+      base::Thread::Options options;
+#if defined(OS_MACOSX)
+      options.message_pump_type = base::MessagePumpType::NS_RUNLOOP;
+#endif
+      StartWithOptions(options);
       if (user_did_opt_into_location_services_)
         InformProvidersPermissionGranted();
     }
@@ -178,11 +183,11 @@ void GeolocationProviderImpl::OnClientsChanged() {
     bool enable_high_accuracy = !high_accuracy_callbacks_.empty();
 
     // Send the current options to the providers as they may have changed.
-    task = base::Bind(&GeolocationProviderImpl::StartProviders,
-                      base::Unretained(this), enable_high_accuracy);
+    task = base::BindOnce(&GeolocationProviderImpl::StartProviders,
+                          base::Unretained(this), enable_high_accuracy);
   }
 
-  task_runner()->PostTask(FROM_HERE, task);
+  task_runner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void GeolocationProviderImpl::StopProviders() {
@@ -228,8 +233,9 @@ void GeolocationProviderImpl::Init() {
   if (arbitrator_)
     return;
 
-  LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
-      &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
+  LocationProvider::LocationProviderUpdateCallback callback =
+      base::BindRepeating(&GeolocationProviderImpl::OnLocationUpdate,
+                          base::Unretained(this));
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
   if (g_pending_url_loader_factory.Get()) {

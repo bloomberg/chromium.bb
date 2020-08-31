@@ -11,12 +11,13 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
+#include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 
-class ArcAppWindowLauncherController;
+class AppServiceAppIconLoader;
+class ArcAppWindowDelegate;
 
 namespace gfx {
 class ImageSkia;
@@ -33,28 +34,21 @@ class ArcAppWindow : public AppWindowBase,
                      public ImageDecoder::ImageRequest,
                      public AppIconLoaderDelegate {
  public:
-  // TODO(khmel): use a bool set to false by default, or use an existing enum,
-  // like ash::WindowStateType.
-  enum class FullScreenMode {
-    NOT_DEFINED,  // Fullscreen mode was not defined.
-    ACTIVE,       // Fullscreen is activated for an app.
-    NON_ACTIVE,   // Fullscreen was not activated for an app.
-  };
-
   ArcAppWindow(int task_id,
                const arc::ArcAppShelfId& app_shelf_id,
                views::Widget* widget,
-               ArcAppWindowLauncherController* owner,
+               ArcAppWindowDelegate* owner,
                Profile* profile);
 
   ~ArcAppWindow() override;
 
-  void SetFullscreenMode(FullScreenMode mode);
+  void SetFullscreenMode(FullScreenMode mode) override;
 
   // Sets optional window title and icon. Note that |unsafe_icon_data_png| has
   // to be decoded in separate process for security reason.
-  void SetDescription(const std::string& title,
-                      const std::vector<uint8_t>& unsafe_icon_data_png);
+  void SetDescription(
+      const std::string& title,
+      const std::vector<uint8_t>& unsafe_icon_data_png) override;
 
   FullScreenMode fullscreen_mode() const { return fullscreen_mode_; }
 
@@ -85,8 +79,8 @@ class ArcAppWindow : public AppWindowBase,
   // Keeps ARC shelf grouping id.
   const arc::ArcAppShelfId app_shelf_id_;
   // Keeps current full-screen mode.
-  FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
-  ArcAppWindowLauncherController* const owner_;
+  FullScreenMode fullscreen_mode_ = FullScreenMode::kNotDefined;
+  ArcAppWindowDelegate* const owner_;
 
   // Set to true in case image fetch is requested. This indicates that default
   // app icon is returned in |OnAppImageUpdated|.
@@ -97,7 +91,7 @@ class ArcAppWindow : public AppWindowBase,
 
   // Loads the ARC app icon to the window icon keys. Nullptr once a custom icon
   // has been successfully set.
-  std::unique_ptr<ArcAppIconLoader> app_icon_loader_;
+  std::unique_ptr<AppServiceAppIconLoader> app_icon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindow);
 };

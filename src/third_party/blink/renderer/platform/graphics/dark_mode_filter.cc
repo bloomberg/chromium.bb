@@ -6,13 +6,15 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_icon_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
@@ -129,7 +131,13 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 
 Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
                                           ElementRole role) {
-  if (IsDarkModeActive() && ShouldApplyToColor(color, role))
+  if (!IsDarkModeActive())
+    return color;
+
+  if (role_override_.has_value())
+    role = role_override_.value();
+
+  if (ShouldApplyToColor(color, role))
     return color_filter_->InvertColor(color);
   return color;
 }
@@ -149,6 +157,9 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     ElementRole role) {
   if (!IsDarkModeActive())
     return base::nullopt;
+
+  if (role_override_.has_value())
+    role = role_override_.value();
 
   cc::PaintFlags dark_mode_flags = flags;
   if (flags.HasShader()) {
@@ -177,6 +188,13 @@ bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
       DCHECK(text_classifier_);
       return text_classifier_->ShouldInvertColor(color) ==
              DarkModeClassification::kApplyFilter;
+    case ElementRole::kListSymbol:
+      // TODO(prashant.n): Rename text_classifier_ to foreground_classifier_,
+      // so that same classifier can be used for all roles which are supposed
+      // to be at foreground.
+      DCHECK(text_classifier_);
+      return text_classifier_->ShouldInvertColor(color) ==
+             DarkModeClassification::kApplyFilter;
     case ElementRole::kBackground:
       DCHECK(background_classifier_);
       return background_classifier_->ShouldInvertColor(color) ==
@@ -193,6 +211,20 @@ bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
       return false;
   }
   NOTREACHED();
+}
+
+ScopedDarkModeElementRoleOverride::ScopedDarkModeElementRoleOverride(
+    GraphicsContext* graphics_context,
+    DarkModeFilter::ElementRole role)
+    : graphics_context_(graphics_context) {
+  DarkModeFilter& dark_mode_filter = graphics_context->dark_mode_filter_;
+  previous_role_override_ = dark_mode_filter.role_override_;
+  dark_mode_filter.role_override_ = role;
+}
+
+ScopedDarkModeElementRoleOverride::~ScopedDarkModeElementRoleOverride() {
+  DarkModeFilter& dark_mode_filter = graphics_context_->dark_mode_filter_;
+  dark_mode_filter.role_override_ = previous_role_override_;
 }
 
 }  // namespace blink

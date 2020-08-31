@@ -32,7 +32,7 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   explicit SingleChildLocalFrameClient() = default;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(child_);
     EmptyLocalFrameClient::Trace(visitor);
   }
@@ -52,7 +52,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }
@@ -96,6 +96,13 @@ class RenderingTestChromeClient : public EmptyChromeClient {
   TransformationMatrix GetDeviceEmulationTransform() const override {
     return device_emulation_transform_;
   }
+
+  void InjectGestureScrollEvent(LocalFrame& local_frame,
+                                WebGestureDevice device,
+                                const gfx::Vector2dF& delta,
+                                ScrollGranularity granularity,
+                                CompositorElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
 
  private:
   std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;

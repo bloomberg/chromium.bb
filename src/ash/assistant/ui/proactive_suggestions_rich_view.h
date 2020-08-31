@@ -8,9 +8,8 @@
 #include <memory>
 
 #include "ash/assistant/ui/proactive_suggestions_view.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/content/public/cpp/navigable_contents.h"
-#include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/events/event_observer.h"
 
 namespace views {
@@ -26,18 +25,20 @@ class ViewShadow;
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
     : public ProactiveSuggestionsView,
       public ui::EventObserver,
-      public content::NavigableContentsObserver {
+      public AssistantWebView::Observer {
  public:
   explicit ProactiveSuggestionsRichView(AssistantViewDelegate* delegate);
-  explicit ProactiveSuggestionsRichView(ProactiveSuggestionsRichView&) = delete;
+  ~ProactiveSuggestionsRichView() override;
+
+  ProactiveSuggestionsRichView(ProactiveSuggestionsRichView&) = delete;
   ProactiveSuggestionsRichView& operator=(ProactiveSuggestionsRichView&) =
       delete;
-  ~ProactiveSuggestionsRichView() override;
 
   // ProactiveSuggestionsView:
   const char* GetClassName() const override;
   void InitLayout() override;
   void AddedToWidget() override;
+  void ChildPreferredSizeChanged(views::View* child) override;
   void ShowWhenReady() override;
   void Hide() override;
   void Close() override;
@@ -49,16 +50,17 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
   using views::View::OnEvent;  // Suppress clang warning.
   void OnEvent(const ui::Event& event) override;
 
-  // content::NavigableContentsObserver:
-  void DidAutoResizeView(const gfx::Size& new_size) override;
+  // AssistantWebView::Observer:
   void DidStopLoading() override;
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
 
  private:
-  mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
-  std::unique_ptr<content::NavigableContents> contents_;
+  AssistantWebView* ContentsView();
+
+  std::unique_ptr<AssistantWebView> contents_view_;
+  AssistantWebView* contents_view_ptr_ = nullptr;
   std::unique_ptr<views::EventMonitor> event_monitor_;
   std::unique_ptr<ViewShadow> view_shadow_;
 

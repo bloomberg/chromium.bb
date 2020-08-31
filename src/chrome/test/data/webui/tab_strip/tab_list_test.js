@@ -4,49 +4,15 @@
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {eventToPromise} from '../test_util.m.js';
+
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
-
-class MockDataTransfer extends DataTransfer {
-  constructor() {
-    super();
-
-    this.dragImageData = {
-      image: undefined,
-      offsetX: undefined,
-      offsetY: undefined,
-    };
-
-    this.dropEffect_ = 'none';
-    this.effectAllowed_ = 'none';
-  }
-
-  get dropEffect() {
-    return this.dropEffect_;
-  }
-
-  set dropEffect(effect) {
-    this.dropEffect_ = effect;
-  }
-
-  get effectAllowed() {
-    return this.effectAllowed_;
-  }
-
-  set effectAllowed(effect) {
-    this.effectAllowed_ = effect;
-  }
-
-  setDragImage(image, offsetX, offsetY) {
-    this.dragImageData.image = image;
-    this.dragImageData.offsetX = offsetX;
-    this.dragImageData.offsetY = offsetY;
-  }
-}
 
 suite('TabList', () => {
   let callbackRouter;
@@ -95,12 +61,15 @@ suite('TabList', () => {
   }
 
   function getUnpinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#tabsContainer tabstrip-tab');
+    return tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab');
   }
 
   function getPinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll(
-        '#pinnedTabsContainer tabstrip-tab');
+    return tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab');
+  }
+
+  function getTabGroups() {
+    return tabList.shadowRoot.querySelectorAll('tabstrip-tab-group');
   }
 
   setup(() => {
@@ -170,6 +139,40 @@ suite('TabList', () => {
     assertEquals(tabList.style.getPropertyValue('--width'), '10px');
   });
 
+  test('GroupVisualDataOnInit', async () => {
+    testTabsApiProxy.reset();
+    testTabsApiProxy.setTabs([{
+      active: true,
+      alertStates: [],
+      groupId: 'group0',
+      id: 0,
+      index: 0,
+      title: 'New tab',
+    }]);
+    testTabsApiProxy.setGroupVisualData({
+      group0: {
+        title: 'My group',
+        color: 'rgba(255, 0, 0, 1)',
+      },
+    });
+    // Remove and reinsert into DOM to retrigger connectedCallback();
+    tabList.remove();
+    document.body.appendChild(tabList);
+    await testTabsApiProxy.whenCalled('getGroupVisualData');
+  });
+
+  test('GroupVisualDataOnThemeChange', async () => {
+    testTabsApiProxy.reset();
+    testTabsApiProxy.setGroupVisualData({
+      group0: {
+        title: 'My group',
+        color: 'rgba(255, 0, 0, 1)',
+      },
+    });
+    webUIListenerCallback('theme-changed');
+    await testTabsApiProxy.whenCalled('getGroupVisualData');
+  });
+
   test('calculates the correct unpinned tab width and height', async () => {
     webUIListenerCallback('layout-changed', {
       '--tabstrip-tab-thumbnail-height': '132px',
@@ -218,6 +221,182 @@ suite('TabList', () => {
     tabElements = getUnpinnedTabs();
     assertEquals(tabs.length + 2, tabElements.length);
     assertEquals(tabElements[0].tab, prependedTab);
+  });
+
+  test('PlacesTabElement', () => {
+    const pinnedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(pinnedTab, 0, true, undefined);
+    assertEquals(pinnedTab, getPinnedTabs()[0]);
+
+    const unpinnedUngroupedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(unpinnedUngroupedTab, 1, false, undefined);
+    let unpinnedTabs = getUnpinnedTabs();
+    assertEquals(4, unpinnedTabs.length);
+    assertEquals(unpinnedUngroupedTab, unpinnedTabs[0]);
+
+    const groupedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(groupedTab, 1, false, 'group0');
+    unpinnedTabs = getUnpinnedTabs();
+    assertEquals(5, unpinnedTabs.length);
+    assertEquals(groupedTab, unpinnedTabs[0]);
+    assertEquals('TABSTRIP-TAB-GROUP', groupedTab.parentElement.tagName);
+  });
+
+  test('PlacesTabGroupElement', () => {
+    const tabGroupElement = document.createElement('tabstrip-tab-group');
+    tabList.placeTabGroupElement(tabGroupElement, 2);
+
+    const tabGroupElements = getTabGroups();
+    assertEquals(1, tabGroupElements.length);
+    assertEquals(tabGroupElement, tabGroupElements[0]);
+
+    // Group was inserted at index 2, so it should come after the 2nd tab.
+    assertEquals(getUnpinnedTabs()[1], tabGroupElement.previousElementSibling);
+  });
+
+  test('AddNewTabGroup', () => {
+    const appendedTab = {
+      active: false,
+      alertStates: [],
+      groupId: 'group0',
+      id: 3,
+      index: 3,
+      title: 'New tab in group',
+    };
+    webUIListenerCallback('tab-created', appendedTab);
+    let tabElements = getUnpinnedTabs();
+    assertEquals(tabs.length + 1, tabElements.length);
+    assertEquals(getTabGroups().length, 1);
+    assertEquals(
+        'TABSTRIP-TAB-GROUP',
+        tabElements[appendedTab.index].parentElement.tagName);
+
+    const prependedTab = {
+      active: false,
+      alertStates: [],
+      groupId: 'group1',
+      id: 4,
+      index: 0,
+      title: 'New tab',
+    };
+    webUIListenerCallback('tab-created', prependedTab);
+    tabElements = getUnpinnedTabs();
+    assertEquals(tabs.length + 2, tabElements.length);
+    assertEquals(getTabGroups().length, 2);
+    assertEquals(
+        'TABSTRIP-TAB-GROUP',
+        tabElements[prependedTab.index].parentElement.tagName);
+  });
+
+  test('AddTabToExistingGroup', () => {
+    const appendedTab = {
+      active: false,
+      alertStates: [],
+      groupId: 'group0',
+      id: 3,
+      index: 3,
+      title: 'New tab in group',
+    };
+    webUIListenerCallback('tab-created', appendedTab);
+    const appendedTabInSameGroup = {
+      active: false,
+      alertStates: [],
+      groupId: 'group0',
+      id: 4,
+      index: 4,
+      title: 'New tab in same group',
+    };
+    webUIListenerCallback('tab-created', appendedTabInSameGroup);
+    const tabGroups = getTabGroups();
+    assertEquals(tabGroups.length, 1);
+    assertEquals(tabGroups[0].children.item(0).tab.id, appendedTab.id);
+    assertEquals(
+        tabGroups[0].children.item(1).tab.id, appendedTabInSameGroup.id);
+  });
+
+  // Test that the TabList does not add a non-grouped tab to a tab group at the
+  // same index.
+  test('HandleSingleTabBeforeGroup', () => {
+    const tabInGroup = {
+      active: false,
+      alertStates: [],
+      groupId: 'group0',
+      id: 3,
+      index: 3,
+      title: 'New tab in group',
+    };
+    webUIListenerCallback('tab-created', tabInGroup);
+    const tabNotInGroup = {
+      active: false,
+      alertStates: [],
+      id: 4,
+      index: 3,
+      title: 'New tab not in group',
+    };
+    webUIListenerCallback('tab-created', tabNotInGroup);
+    const tabsContainerChildren =
+        tabList.shadowRoot.querySelector('#unpinnedTabs').children;
+    assertEquals(tabsContainerChildren.item(3).tagName, 'TABSTRIP-TAB');
+    assertEquals(tabsContainerChildren.item(3).tab, tabNotInGroup);
+    assertEquals(tabsContainerChildren.item(4).tagName, 'TABSTRIP-TAB-GROUP');
+  });
+
+  test('HandleGroupedTabBeforeDifferentGroup', () => {
+    const tabInOriginalGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabInOriginalGroup.id,
+        tabInOriginalGroup.index, 'originalGroup');
+
+    // Create another group from the tab before group A.
+    const tabInPrecedingGroup = tabs[0];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabInPrecedingGroup.id,
+        tabInPrecedingGroup.index, 'precedingGroup');
+    const tabsContainerChildren =
+        tabList.shadowRoot.querySelector('#unpinnedTabs').children;
+
+    const precedingGroup = tabsContainerChildren[0];
+    assertEquals(precedingGroup.tagName, 'TABSTRIP-TAB-GROUP');
+    assertEquals(precedingGroup.dataset.groupId, 'precedingGroup');
+    assertEquals(precedingGroup.children.length, 1);
+    assertEquals(precedingGroup.children[0].tab.id, tabInPrecedingGroup.id);
+
+    const originalGroup = tabsContainerChildren[1];
+    assertEquals(originalGroup.tagName, 'TABSTRIP-TAB-GROUP');
+    assertEquals(originalGroup.dataset.groupId, 'originalGroup');
+    assertEquals(originalGroup.children.length, 1);
+    assertEquals(originalGroup.children[0].tab.id, tabInOriginalGroup.id);
+  });
+
+  test('HandleGroupedTabBeforeSameGroup', () => {
+    const originalTabInGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', originalTabInGroup.id,
+        originalTabInGroup.index, 'sameGroup');
+
+    // Create another group from the tab before group A.
+    const precedingTabInGroup = tabs[0];
+    webUIListenerCallback(
+        'tab-group-state-changed', precedingTabInGroup.id,
+        precedingTabInGroup.index, 'sameGroup');
+
+    const tabGroups = getTabGroups();
+    const tabGroup = tabGroups[0];
+    assertEquals(tabGroups.length, 1);
+    assertEquals(tabGroup.dataset.groupId, 'sameGroup');
+    assertEquals(tabGroup.children.length, 2);
+    assertEquals(tabGroup.children[0].tab.id, precedingTabInGroup.id);
+    assertEquals(tabGroup.children[1].tab.id, originalTabInGroup.id);
+  });
+
+  test('HandleReplacedGroupId', () => {
+    webUIListenerCallback(
+        'tab-group-state-changed', tabs[1].id, tabs[1].index, 'oldGroupId');
+    const group = getTabGroups()[0];
+    assertEquals('oldGroupId', group.dataset.groupId);
+
+    webUIListenerCallback('tab-group-id-replaced', 'oldGroupId', 'newGroupId');
+    assertEquals('newGroupId', group.dataset.groupId);
   });
 
   test('removes a tab when tab is removed from current window', async () => {
@@ -294,60 +473,36 @@ suite('TabList', () => {
     assertEquals(tabElementsBeforeMove[2], tabElementsAfterMove[1]);
   });
 
-  test('dragstart sets a drag image offset by the event coordinates', () => {
-    // Drag and drop only works for pinned tabs
-    tabs.forEach(pinTabAt);
+  test('MoveExistingTabToGroup', () => {
+    const tabToGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabToGroup.id, tabToGroup.index, 'group0');
+    let tabElements = getUnpinnedTabs();
+    assertEquals(tabElements.length, tabs.length);
+    assertEquals(
+        tabElements[tabToGroup.index].parentElement.tagName,
+        'TABSTRIP-TAB-GROUP');
 
-    const draggedTab = getPinnedTabs()[0];
-    const mockDataTransfer = new MockDataTransfer();
-    const dragStartEvent = new DragEvent('dragstart', {
-      bubbles: true,
-      composed: true,
-      clientX: 100,
-      clientY: 150,
-      dataTransfer: mockDataTransfer,
-    });
-    draggedTab.dispatchEvent(dragStartEvent);
-    assertEquals(dragStartEvent.dataTransfer.effectAllowed, 'move');
+    const anotherTabToGroup = tabs[2];
+    webUIListenerCallback(
+        'tab-group-state-changed', anotherTabToGroup.id,
+        anotherTabToGroup.index, 'group0');
+    tabElements = getUnpinnedTabs();
+    assertEquals(tabElements.length, tabs.length);
     assertEquals(
-        mockDataTransfer.dragImageData.image, draggedTab.getDragImage());
-    assertEquals(
-        mockDataTransfer.dragImageData.offsetX, 100 - draggedTab.offsetLeft);
-    assertEquals(
-        mockDataTransfer.dragImageData.offsetY, 150 - draggedTab.offsetTop);
+        tabElements[tabToGroup.index].parentElement,
+        tabElements[anotherTabToGroup.index].parentElement);
   });
 
-  test('dragover moves tabs', async () => {
-    // Drag and drop only works for pinned tabs
-    tabs.forEach(pinTabAt);
+  test('MoveTabGroup', () => {
+    const tabToGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabToGroup.id, tabToGroup.index, 'group0');
+    webUIListenerCallback('tab-group-moved', 'group0', 0);
 
-    const draggedIndex = 0;
-    const dragOverIndex = 1;
-    const draggedTab = getPinnedTabs()[draggedIndex];
-    const dragOverTab = getPinnedTabs()[dragOverIndex];
-    const mockDataTransfer = new MockDataTransfer();
-
-    // Dispatch a dragstart event to start the drag process
-    const dragStartEvent = new DragEvent('dragstart', {
-      bubbles: true,
-      composed: true,
-      clientX: 100,
-      clientY: 150,
-      dataTransfer: mockDataTransfer,
-    });
-    draggedTab.dispatchEvent(dragStartEvent);
-
-    // Move the draggedTab over the 2nd tab
-    const dragOverEvent = new DragEvent('dragover', {
-      bubbles: true,
-      composed: true,
-      dataTransfer: mockDataTransfer,
-    });
-    dragOverTab.dispatchEvent(dragOverEvent);
-    assertEquals(dragOverEvent.dataTransfer.dropEffect, 'move');
-    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
-    assertEquals(tabId, tabs[draggedIndex].id);
-    assertEquals(newIndex, dragOverIndex);
+    const tabAtIndex0 = getUnpinnedTabs()[0];
+    assertEquals(tabAtIndex0.parentElement.tagName, 'TABSTRIP-TAB-GROUP');
+    assertEquals(tabAtIndex0.tab.id, tabToGroup.id);
   });
 
   test('tracks and untracks thumbnails based on viewport', async () => {
@@ -486,11 +641,17 @@ suite('TabList', () => {
   test('scrolls to active tabs', async () => {
     await tabList.animationPromises;
 
+    const newTabButtonMargin = 15;
+    const newTabButtonWidth = 50;
     const scrollPadding = 32;
     const tabWidth = 200;
     const viewportWidth = 300;
 
     // Mock the width of each tab element.
+    tabList.style.setProperty(
+        '--tabstrip-new-tab-button-margin', `${newTabButtonMargin}px`);
+    tabList.style.setProperty(
+        '--tabstrip-new-tab-button-width', `${newTabButtonWidth}px`);
     tabList.style.setProperty(
         '--tabstrip-tab-thumbnail-width', `${tabWidth}px`);
     tabList.style.setProperty('--tabstrip-tab-spacing', '0px');
@@ -517,7 +678,8 @@ suite('TabList', () => {
     let activeTab = getUnpinnedTabs()[1];
     assertEquals(
         tabList.scrollLeft + tabList.offsetWidth,
-        activeTab.offsetLeft + activeTab.offsetWidth + scrollPadding);
+        activeTab.offsetLeft + activeTab.offsetWidth + scrollPadding +
+            newTabButtonMargin + newTabButtonWidth);
 
     // The 1st tab should be now off-screen to the left, so activating it should
     // scroll so that the element's left edge is aligned with the screen's
@@ -525,5 +687,10 @@ suite('TabList', () => {
     webUIListenerCallback('tab-active-changed', tabs[0].id);
     activeTab = getUnpinnedTabs()[0];
     assertEquals(tabList.scrollLeft, 0);
+  });
+
+  test('clicking on new tab button opens a new tab', () => {
+    tabList.shadowRoot.querySelector('#newTabButton').click();
+    return testTabsApiProxy.whenCalled('createNewTab');
   });
 });

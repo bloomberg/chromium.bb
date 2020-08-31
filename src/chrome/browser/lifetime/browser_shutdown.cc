@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,16 +19,17 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/switch_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -38,6 +40,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/public/common/content_switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 
@@ -65,6 +68,11 @@
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
+#endif
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "content/public/browser/gpu_utils.h"
+#include "content/public/common/profiling_utils.h"
 #endif
 
 using base::TimeDelta;
@@ -130,6 +138,38 @@ void OnShutdownStarting(ShutdownType type) {
   DCHECK(!g_shutdown_started);
   g_shutdown_started = new base::Time(base::Time::Now());
 
+  // TODO(https://crbug.com/1071664): Check if this should also be enabled for
+  // coverage builds.
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    content::WaitForProcessesToDumpProfilingInfo wait_for_profiling_data;
+
+    // Ask all the renderer processes to dump their profiling data.
+    for (content::RenderProcessHost::iterator i(
+             content::RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      DCHECK(!i.GetCurrentValue()->GetProcess().is_current());
+      if (!i.GetCurrentValue()->IsInitializedAndNotDead())
+        continue;
+      i.GetCurrentValue()->DumpProfilingData(base::BindOnce(
+          &base::WaitableEvent::Signal,
+          base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
+    }
+
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kInProcessGPU)) {
+      content::DumpGpuProfilingData(base::BindOnce(
+          &base::WaitableEvent::Signal,
+          base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
+    }
+
+    // This will block until all the child processes have saved their profiling
+    // data to disk.
+    wait_for_profiling_data.WaitForAll();
+  }
+#endif  // defined(OS_WIN) && BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
   // a no-op in some cases, so we still need to go through the normal
   // shutdown path for the ones that didn't exit here.
@@ -172,9 +212,6 @@ bool ShutdownPreThreadsStop() {
   // time to get here. If you have something that *must* happen on end session,
   // consider putting it in BrowserProcessImpl::EndSession.
   PrefService* prefs = g_browser_process->local_state();
-
-  // Log the amount of times the user switched profiles during this session.
-  ProfileMetrics::LogNumberOfProfileSwitches();
 
   metrics::MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics)
@@ -365,9 +402,9 @@ void ReadLastShutdownInfo() {
 
   base::UmaHistogramEnumeration("Shutdown.ShutdownType", type);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }

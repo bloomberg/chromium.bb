@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,8 +61,7 @@ class StubPlatformWindowDelegate : public PlatformWindowDelegate {
 class TestCompositorHostOzone : public TestCompositorHost {
  public:
   TestCompositorHostOzone(const gfx::Rect& bounds,
-                          ui::ContextFactory* context_factory,
-                          ui::ContextFactoryPrivate* context_factory_private);
+                          ui::ContextFactory* context_factory);
   ~TestCompositorHostOzone() override;
 
  private:
@@ -81,12 +80,10 @@ class TestCompositorHostOzone : public TestCompositorHost {
 
 TestCompositorHostOzone::TestCompositorHostOzone(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private)
+    ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      compositor_(context_factory_private->AllocateFrameSinkId(),
+      compositor_(context_factory->AllocateFrameSinkId(),
                   context_factory,
-                  context_factory_private,
                   base::ThreadTaskRunnerHandle::Get(),
                   false /* enable_pixel_canvas */) {}
 
@@ -121,10 +118,8 @@ ui::Compositor* TestCompositorHostOzone::GetCompositor() {
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new TestCompositorHostOzone(bounds, context_factory,
-                                     context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostOzone(bounds, context_factory);
 }
 
 }  // namespace ui

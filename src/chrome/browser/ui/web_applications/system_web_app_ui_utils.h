@@ -9,16 +9,12 @@
 
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "url/gurl.h"
 
-class Browser;
 class Profile;
-
-namespace content {
-class WebUIDataSource;
-}
 
 namespace web_app {
 
@@ -30,9 +26,16 @@ base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
 base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
                                               SystemAppType app_type);
 
+base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
+    Profile* profile,
+    SystemAppType app_type);
+
 // Launches a System App to the given URL, reusing any existing window for the
 // app. Returns the browser for the System App, or nullptr if launch/focus
 // failed. |did_create| will reflect whether a new window was created if passed.
+//
+// TODO(calamity) Separate this into LaunchSystemWebApp and
+// LaunchSystemWebAppPopup.
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
                             const GURL& url = GURL(),
@@ -43,9 +46,12 @@ Browser* LaunchSystemWebApp(Profile* profile,
                             const apps::AppLaunchParams& params,
                             bool* did_create = nullptr);
 
-// Returns a browser that is hosting the given system app type, or nullptr if
-// not found.
-Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type);
+// Returns a browser that is hosting the given system app type and browser type,
+// or nullptr if not found.
+Browser* FindSystemWebAppBrowser(
+    Profile* profile,
+    SystemAppType app_type,
+    Browser::Type browser_type = Browser::TYPE_APP);
 
 // Returns true if the |browser| is a system web app.
 bool IsSystemWebApp(Browser* browser);
@@ -53,13 +59,6 @@ bool IsSystemWebApp(Browser* browser);
 // Returns the minimum window size for a system web app, or an empty size if
 // the app does not specify a minimum size.
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser);
-
-// Calls |source->SetRequestFilter()| to set up respones to requests for
-// "manifest.json" while replacing $i18nRaw{name} in the contents indiciated by
-// |manifest_idr| with the name from |name_ids|.
-void SetManifestRequestFilter(content::WebUIDataSource* source,
-                              int manifest_idr,
-                              int name_ids);
 
 }  // namespace web_app
 

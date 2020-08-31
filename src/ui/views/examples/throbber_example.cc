@@ -4,8 +4,12 @@
 
 #include "ui/views/examples/throbber_example.h"
 
+#include <memory>
+
 #include "base/macros.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/throbber.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
@@ -16,8 +20,8 @@ namespace {
 
 class ThrobberView : public View {
  public:
-  ThrobberView() : throbber_(new Throbber()) {
-    AddChildView(throbber_);
+  ThrobberView() {
+    throbber_ = AddChildView(std::make_unique<Throbber>());
     throbber_->Start();
   }
 
@@ -28,8 +32,7 @@ class ThrobberView : public View {
 
   void Layout() override {
     int diameter = 16;
-    throbber_->SetBounds((width() - diameter) / 2,
-                         (height() - diameter) / 2,
+    throbber_->SetBounds((width() - diameter) / 2, (height() - diameter) / 2,
                          diameter, diameter);
     SizeToPreferredSize();
   }
@@ -56,14 +59,15 @@ class ThrobberView : public View {
 
 }  // namespace
 
-ThrobberExample::ThrobberExample() : ExampleBase("Throbber") {
+ThrobberExample::ThrobberExample()
+    : ExampleBase(l10n_util::GetStringUTF8(IDS_THROBBER_SELECT_LABEL).c_str()) {
 }
 
 ThrobberExample::~ThrobberExample() = default;
 
 void ThrobberExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(new ThrobberView());
+  container->AddChildView(std::make_unique<ThrobberView>());
 }
 
 }  // namespace examples

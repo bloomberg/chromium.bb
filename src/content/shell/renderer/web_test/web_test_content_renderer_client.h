@@ -21,7 +21,6 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   // ShellContentRendererClient implementation.
   void RenderThreadStarted() override;
   void RenderFrameCreated(RenderFrame* render_frame) override;
-  void RenderViewCreated(RenderView* render_view) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
   void DidInitializeWorkerContextOnWorkerThread(
@@ -30,7 +29,7 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   bool IsIdleMediaSuspendEnabled() override;
 
  private:
-  std::unique_ptr<WebTestRenderThreadObserver> shell_observer_;
+  std::unique_ptr<WebTestRenderThreadObserver> render_thread_observer_;
 };
 
 }  // namespace content

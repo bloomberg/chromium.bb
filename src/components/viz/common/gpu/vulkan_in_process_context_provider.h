@@ -10,6 +10,8 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/viz_vulkan_context_provider_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/skia/include/gpu/GrContextOptions.h"
+
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #endif
@@ -17,6 +19,7 @@
 namespace gpu {
 class VulkanImplementation;
 class VulkanDeviceQueue;
+struct GPUInfo;
 }
 
 namespace viz {
@@ -25,7 +28,9 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
     : public VulkanContextProvider {
  public:
   static scoped_refptr<VulkanInProcessContextProvider> Create(
-      gpu::VulkanImplementation* vulkan_implementation);
+      gpu::VulkanImplementation* vulkan_implementation,
+      const GrContextOptions& context_options = GrContextOptions(),
+      const gpu::GPUInfo* gpu_info = nullptr);
 
   void Destroy();
 
@@ -43,7 +48,8 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
       gpu::VulkanImplementation* vulkan_implementation);
   ~VulkanInProcessContextProvider() override;
 
-  bool Initialize();
+  bool Initialize(const GrContextOptions& context_options,
+                  const gpu::GPUInfo* gpu_info);
 
 #if BUILDFLAG(ENABLE_VULKAN)
   sk_sp<GrContext> gr_context_;

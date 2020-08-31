@@ -50,6 +50,11 @@ NavigateParams::~NavigateParams() {}
 
 void NavigateParams::FillNavigateParamsFromOpenURLParams(
     const content::OpenURLParams& params) {
+#if DCHECK_IS_ON()
+  DCHECK(params.Valid());
+#endif
+
+  this->initiator_routing_id = params.initiator_routing_id;
   this->initiator_origin = params.initiator_origin;
   this->referrer = params.referrer;
   this->reload_type = params.reload_type;
@@ -74,6 +79,7 @@ void NavigateParams::FillNavigateParamsFromOpenURLParams(
   this->user_gesture = params.user_gesture;
   this->blob_url_loader_factory = params.blob_url_loader_factory;
   this->href_translate = params.href_translate;
+  this->impression = params.impression;
 
   // Implementation notes:
   //   The following NavigateParams don't have an equivalent in OpenURLParams:

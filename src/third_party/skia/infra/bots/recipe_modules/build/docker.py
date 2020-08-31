@@ -51,7 +51,10 @@ def compile_fn(api, checkout_root, out_dir):
       'target_cpu': target_arch,
       'werror': True
   }
-  if configuration != 'Debug':
+
+  if configuration == 'Debug':
+    args['extra_cflags'].append('-O1')
+  else:
     args['is_debug'] = False
 
   if 'NoGPU' in extra_tokens:
@@ -65,6 +68,10 @@ def compile_fn(api, checkout_root, out_dir):
   if os == 'Debian10' and compiler == 'GCC' and not extra_tokens:
     args['cc'] = 'gcc'
     args['cxx'] = 'g++'
+    # Newer GCC includes tons and tons of debugging symbols. This seems to
+    # negatively affect our bots (potentially only in combination with other
+    # bugs in Swarming or recipe code). Use g1 to reduce it a bit.
+    args['extra_cflags'].append('-g1')
     if target_arch == 'x86_64':
       image_name = 'gcc-debian10'
     elif target_arch == 'x86':

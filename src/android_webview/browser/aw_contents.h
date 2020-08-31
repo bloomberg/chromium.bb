@@ -17,6 +17,7 @@
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/js_java_interaction/js_java_configurator_host.h"
+#include "android_webview/browser/metrics/visibility_metrics_logger.h"
 #include "android_webview/browser/permission/permission_request_handler_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
@@ -61,7 +62,8 @@ class AwContents : public FindHelper::Listener,
                    public AwBrowserPermissionRequestDelegate,
                    public AwRenderProcessGoneDelegate,
                    public content::WebContentsObserver,
-                   public AwSafeBrowsingUIManager::UIManagerClient {
+                   public AwSafeBrowsingUIManager::UIManagerClient,
+                   public VisibilityMetricsLogger::Client {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -157,6 +159,9 @@ class AwContents : public FindHelper::Listener,
   void OnDetachedFromWindow(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
   bool IsVisible(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  bool IsDisplayingInterstitialForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -218,6 +223,17 @@ class AwContents : public FindHelper::Listener,
 
   JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
 
+  jint AddDocumentStartJavascript(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& script,
+      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules);
+
+  void RemoveDocumentStartJavascript(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint script_id);
+
   base::android::ScopedJavaLocalRef<jstring> AddWebMessageListener(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -229,6 +245,11 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& js_object_name);
+
+  base::android::ScopedJavaLocalRef<jobjectArray> GetJsObjectsInfo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jclass>& clazz);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 
@@ -314,6 +335,8 @@ class AwContents : public FindHelper::Listener,
                   jboolean include_disk_files);
   void KillRenderProcess(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
+  // See //android_webview/docs/how-does-on-create-window-work.md for more
+  // details.
   void SetPendingWebContentsForPopup(
       std::unique_ptr<content::WebContents> pending);
   jlong ReleasePopupAwContents(JNIEnv* env,
@@ -336,6 +359,8 @@ class AwContents : public FindHelper::Listener,
   void SetDipScale(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dip_scale);
+  void OnInputEvent(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
   void SetSaveFormData(bool enabled);
 
   // Sets the java client
@@ -368,18 +393,13 @@ class AwContents : public FindHelper::Listener,
                              content::RenderViewHost* new_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
 
   // AwSafeBrowsingUIManager::UIManagerClient implementation
   bool CanShowInterstitial() override;
   int GetErrorUiType() override;
 
-  void EvaluateJavaScriptOnInterstitialForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& script,
-      const base::android::JavaParamRef<jobject>& callback);
+  // VisibilityMetricsLogger::Client implementation
+  VisibilityMetricsLogger::VisibilityInfo GetVisibilityInfo() override;
 
   // AwRenderProcessGoneDelegate overrides
   RenderProcessGoneResult OnRenderProcessGone(int child_process_id,
@@ -403,6 +423,8 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwRenderViewHostExt> render_view_host_ext_;
   std::unique_ptr<FindHelper> find_helper_;
   std::unique_ptr<IconHelper> icon_helper_;
+  // See //android_webview/docs/how-does-on-create-window-work.md for more
+  // details for |pending_contents_|.
   std::unique_ptr<AwContents> pending_contents_;
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;

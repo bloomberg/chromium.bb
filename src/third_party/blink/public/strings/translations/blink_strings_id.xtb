@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">item menu</translation>
 <translation id="10623998915015855">tombol</translation>
 <translation id="1088086359088493902">Detik</translation>
+<translation id="1142001580032786438">Tampilkan alat pilih minggu</translation>
 <translation id="1171774979989969504">Masukkan alamat email.</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1188858454923323853">komplementer</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">penggeser</translation>
 <translation id="1211441953136645838">catatan akhir</translation>
 <translation id="1281252709823657822">dialog</translation>
+<translation id="1306460908038601864">Nonaktif</translation>
 <translation id="1335095011850992622">daftar penghargaan</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">spanduk</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">sembunyikan menu subtitel</translation>
 <translation id="1729654308190250600">Jangan mengosongkan bidang alamat email.</translation>
 <translation id="1758486001363313524">Lainnya...</translation>
+<translation id="1787192514241997742">waktu total: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">kisi pohon</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">Tanggal harus <ph name="MAXIMUM_DATE_OR_TIME" /> atau lebih awal.</translation>
 <translation id="1946271899482435442">Tampilkan alat pilih tanggal</translation>
 <translation id="1993104285338243655">Dialihkan ke pencerminan</translation>
+<translation id="2031987842108996681">Saluran merah</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' digunakan pada posisi yang salah di '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2158401438286456825">daftar halaman</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">kotak centang</translation>
 <translation id="2311842470354187719">batas halaman</translation>
 <translation id="2335594187091864976">pemilih tanggal dan waktu</translation>
+<translation id="2393030564806080191">Nilai warna heksadesimal</translation>
 <translation id="245932805758469625">sisa durasi video dalam detik</translation>
 <translation id="248395913932153421">Hari</translation>
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">tampilkan kontrol media lainnya</translation>
 <translation id="2572483411312390101">main</translation>
 <translation id="2613802280814924224">Masukkan nilai yang valid. Nilai valid terdekatnya adalah <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Saluran hijau</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2657045182931379222">objek grafis</translation>
 <translation id="2674318244760992338">footer</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">Masukkan URL.</translation>
 <translation id="3175736971608411871">timer</translation>
 <translation id="3199563858620722075">kotak kombo</translation>
+<translation id="3329013043687509092">Saturasi</translation>
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definisi</translation>
 <translation id="3557673793733683882">judul <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">Perpanjang teks ini hingga <ph name="MIN_CHARACTERS" /> karakter atau lebih (saat ini Anda menggunakan <ph name="CURRENT_LENGTH" /> karakter).</translation>
 <translation id="383465348367842624">Bagian sebelum '<ph name="ATSIGN" />' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">Keluar dari layar penuh</translation>
-<translation id="3889183436948184105">revisi</translation>
 <translation id="3920932319529768807">kesimpulan</translation>
 <translation id="3924558731517983934">aplikasi</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">Muncul dengan menyatakan: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">referensi glosarium</translation>
 <translation id="4522570452068850558">Detail</translation>
-<translation id="4542388879936266156">sisa waktu: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">formulir</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Bagian setelah '<ph name="ATSIGN" />' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Masukkan nomor.</translation>
 <translation id="4912536737030637138">entri bibliografi</translation>
+<translation id="4915360478455618802">Tampilkan pemilih waktu</translation>
 <translation id="492244087561876220">komentar</translation>
+<translation id="4950364064308314478">Tampilkan pemilih tanggal dan waktu lokal</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> dipilih</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> dipilih</translation>
 <translation id="4992066212339426712">Bunyikan</translation>
 <translation id="49969490063480558">Masukkan bagian setelah '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' tidak lengkap.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">indikator kemajuan</translation>
 <translation id="5090250355906949916">pengatur waktu video</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Saluran biru</translation>
 <translation id="5117590920725113268">Tampilkan bulan berikutnya</translation>
 <translation id="512758898067543763">judul baris</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Masukkan bagian yang diikuti dengan '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' tidak lengkap.</translation>
 <translation id="5334352251556557839">Tidak dapat memutar media.</translation>
+<translation id="537648784377940524">Tanggal Minimal (<ph name="MIN_DATE_OR_TIME" />) harus sebelum tanggal Maksimal (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">sosok</translation>
 <translation id="5453733299334684579">item pohon</translation>
 <translation id="5466621249238537318">Pilih salah satu atau beberapa file.</translation>
@@ -144,11 +154,10 @@
 <translation id="5677946354068040947">opsi lainnya</translation>
 <translation id="576709008726043716">pendahuluan</translation>
 <translation id="57838592816432529">Bisukan</translation>
-<translation id="5860033963881614850">Nonaktif</translation>
 <translation id="588258955323874662">Layar Penuh</translation>
 <translation id="5888666972993069672">Sedang melakukan cast ke <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">kotak penelusuran</translation>
-<translation id="5939518447894949180">Setel ulang</translation>
+<translation id="5939518447894949180">Reset</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5987525920412732405">tombol putar</translation>
 <translation id="6011459053400940133">Pengatur volume</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">penutup</translation>
 <translation id="6209276755895393898">Muncul sebagai: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosarium</translation>
+<translation id="6281588256137006900">Cahaya</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Keluar dari Mode Picture-in-Picture</translation>
 <translation id="6398862346408813489">Tampilkan panel pilihan bulan</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6820355525329141109">Tidak dapat memuat plugin.</translation>
 <translation id="6820615603175220800">referensi bibliografi</translation>
+<translation id="6831465880655513317">Palet warna dengan penggeser dua dimensi untuk memilih saturasi dan cahaya</translation>
 <translation id="6843725295806269523">bisukan</translation>
 <translation id="6885760532393684712">direktori</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="727747134524199931">judul kolom</translation>
 <translation id="7320576522385648310">buffering</translation>
+<translation id="7341556277900466204">Palet warna</translation>
 <translation id="7353453495576941748">daftar penghargaan</translation>
 <translation id="7364796246159120393">Pilih File</translation>
 <translation id="739024184232394898">Lainnya...</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">Entri tidak valid</translation>
 <translation id="7789962463072032349">jeda</translation>
 <translation id="7802800022689234070">segitiga pengungkapan</translation>
+<translation id="7852167693871241274">Penggeser hue</translation>
 <translation id="7888071071722539607">Sertakan '<ph name="ATSIGN" />' pada alamat email. '<ph name="INVALIDADDRESS" />' tidak memiliki '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">pemisah</translation>
 <translation id="795667975304826397">Tidak ada file yang dipilih</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> tidak dipilih</translation>
 <translation id="8034303206267677282">kuat</translation>
 <translation id="8053789581856978548">bidang teks penelusuran</translation>
 <translation id="8057695513531652401">pemberitahuan</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">Teks</translation>
 <translation id="8346634859695247203">bagian</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
+<translation id="839593075537728968">Nilai harus antara <ph name="MINIMUM_TIME" /> dan <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">waktu berlalu: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">bagian</translation>
 <translation id="8433900881053900389">bilah alat</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">daftar isi</translation>
 <translation id="8613126697340063924">kontrol pemutaran jarak jauh</translation>
 <translation id="862370744433916922">subjudul</translation>
+<translation id="8634971699417195529">Tampilkan pemilih bulan</translation>
 <translation id="8711688047404765493">keluaran</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="8808573423886751634">bab</translation>
 <translation id="8845239796550121995">Sekarang sedang mentransmisi ke TV Anda</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Error pemutaran video</translation>
+<translation id="8889402386540077796">Rona</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Pengubah format</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
 <translation id="901834265349196618">email</translation>
-<translation id="9023835124071926463">bagian komentar</translation>
 <translation id="9048119486235211610">navigasi</translation>
 <translation id="9062295712474918030">dokumen</translation>
 <translation id="9093215626363556771">keluar dari mode picture-in-picture</translation>

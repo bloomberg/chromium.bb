@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -59,11 +60,31 @@ namespace blink {
 class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
  public:
   MOCK_METHOD1(WakeAfter, void(base::TimeDelta));
-  MOCK_METHOD0(ServiceOnNextFrame, void());
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     DocumentTimeline::PlatformTiming::Trace(visitor);
   }
+};
+
+class TestDocumentTimeline : public DocumentTimeline {
+ public:
+  TestDocumentTimeline(Document* document)
+      : DocumentTimeline(document, base::TimeDelta(), nullptr),
+        schedule_next_service_called_(false) {}
+  void ScheduleServiceOnNextFrame() override {
+    DocumentTimeline::ScheduleServiceOnNextFrame();
+    schedule_next_service_called_ = true;
+  }
+  void Trace(Visitor* visitor) override { DocumentTimeline::Trace(visitor); }
+  bool ScheduleNextServiceCalled() const {
+    return schedule_next_service_called_;
+  }
+  void ResetScheduleNextServiceCalled() {
+    schedule_next_service_called_ = false;
+  }
+
+ private:
+  bool schedule_next_service_called_;
 };
 
 class AnimationDocumentTimelineTest : public PageTestBase {
@@ -75,8 +96,9 @@ class AnimationDocumentTimelineTest : public PageTestBase {
     GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
     element =
         MakeGarbageCollected<Element>(QualifiedName::Null(), document.Get());
+    document->Timeline().ResetForTesting();
     platform_timing = MakeGarbageCollected<MockPlatformTiming>();
-    timeline = document->Timeline();
+    timeline = MakeGarbageCollected<TestDocumentTimeline>(document);
     timeline->SetTimingForTesting(platform_timing);
 
     timeline->ResetForTesting();
@@ -104,11 +126,9 @@ class AnimationDocumentTimelineTest : public PageTestBase {
 
   Persistent<Document> document;
   Persistent<Element> element;
-  Persistent<DocumentTimeline> timeline;
+  Persistent<TestDocumentTimeline> timeline;
   Timing timing;
   Persistent<MockPlatformTiming> platform_timing;
-
-  void Wake() { timeline->Wake(); }
 
   double MinimumDelay() { return DocumentTimeline::kMinimumDelay; }
 };
@@ -141,11 +161,11 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
   timeline->Play(keyframe_effect);
 
   UpdateClockAndService(0);
-  EXPECT_FLOAT_EQ(0, timeline->currentTime());
+  EXPECT_FLOAT_EQ(0, timeline->currentTime().value());
   EXPECT_FALSE(keyframe_effect->IsInEffect());
 
   UpdateClockAndService(1000);
-  EXPECT_FLOAT_EQ(1000, timeline->currentTime());
+  EXPECT_FLOAT_EQ(1000, timeline->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
@@ -162,7 +182,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
   EXPECT_TRUE(keyframe_effect->IsInEffect());
 
   UpdateClockAndService(1000);
-  EXPECT_FLOAT_EQ(1000, timeline->currentTime());
+  EXPECT_FLOAT_EQ(1000, timeline->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, ZeroTime) {
@@ -173,22 +193,17 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime) {
   EXPECT_EQ(2000, timeline->currentTime());
 }
 
-// EffectiveTime is identical to currentTime/1000 except that it returns 0
-// when the timeline is inactive.
-TEST_F(AnimationDocumentTimelineTest, EffectiveTime) {
+TEST_F(AnimationDocumentTimelineTest, CurrentTimeSeconds) {
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(2000));
-  EXPECT_EQ(2, timeline->EffectiveTime());
+  EXPECT_EQ(2, timeline->CurrentTimeSeconds());
   EXPECT_EQ(2000, timeline->currentTime());
 
   auto* document_without_frame = MakeGarbageCollected<Document>();
   auto* inactive_timeline = MakeGarbageCollected<DocumentTimeline>(
       document_without_frame, base::TimeDelta(), platform_timing);
 
-  EXPECT_EQ(0, inactive_timeline->EffectiveTime());
-  EXPECT_NAN(inactive_timeline->currentTime());
-  bool is_null = false;
-  inactive_timeline->currentTime(is_null);
-  EXPECT_TRUE(is_null);
+  EXPECT_FALSE(inactive_timeline->CurrentTimeSeconds());
+  EXPECT_FALSE(inactive_timeline->currentTime());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
@@ -207,8 +222,8 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormalWithOriginTime) {
   base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
-  timeline = MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time,
-                                                    platform_timing);
+  DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
+      document.Get(), origin_time, platform_timing);
   timeline->ResetForTesting();
 
   EXPECT_EQ(1.0, timeline->PlaybackRate());
@@ -244,8 +259,8 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRatePauseWithOriginTime) {
   base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
-  timeline = MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time,
-                                                    platform_timing);
+  DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
+      document.Get(), origin_time, platform_timing);
   timeline->ResetForTesting();
 
   EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
@@ -307,7 +322,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFast) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
-  timeline = MakeGarbageCollected<DocumentTimeline>(
+  DocumentTimeline* timeline = MakeGarbageCollected<DocumentTimeline>(
       document.Get(), base::TimeDelta::FromSeconds(-1000), platform_timing);
   timeline->ResetForTesting();
 
@@ -345,8 +360,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
 
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation1->currentTime());
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation2->currentTime());
+  EXPECT_FLOAT_EQ(seek_time * 1000, animation1->currentTime().value());
+  EXPECT_FLOAT_EQ(seek_time * 1000, animation2->currentTime().value());
 }
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
@@ -369,25 +384,25 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
                                                       MinimumDelay() - 1.5)));
   UpdateClockAndService(1500);
 
-  EXPECT_CALL(*platform_timing, ServiceOnNextFrame());
-  Wake();
+  timeline->ScheduleServiceOnNextFrame();
 
-  EXPECT_CALL(*platform_timing, ServiceOnNextFrame());
+  timeline->ResetScheduleNextServiceCalled();
   UpdateClockAndService(4980);
+  EXPECT_TRUE(timeline->ScheduleNextServiceCalled());
 }
 
 TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
   Animation* animation = timeline->Play(nullptr);
   timeline.Clear();
   // Test passes if this does not crash.
-  animation->setStartTime(0, false);
+  animation->setStartTime(0);
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
   timing.start_delay = 5;
 
-  timeline = &document->Timeline();
+  DocumentTimeline* timeline = &document->Timeline();
   document = nullptr;
 
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
@@ -439,7 +454,7 @@ TEST_F(AnimationDocumentTimelineRealTimeTest,
       document->Loader()->GetTiming().ReferenceMonotonicTime().is_null());
 
   base::TimeDelta origin_time = base::TimeDelta::FromSeconds(1000);
-  timeline =
+  DocumentTimeline* timeline =
       MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time);
   timeline->SetPlaybackRate(0.5);
   EXPECT_EQ(origin_time * 2,

@@ -18,10 +18,13 @@
 #include "base/timer/timer.h"
 #include "chrome/common/buildflags.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 
 namespace base {
@@ -77,7 +80,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Send the print preset options from the document.
   void SendPrintPresetOptions(bool disable_scaling,
                               int copies,
-                              int duplex,
+                              mojom::DuplexMode duplex,
                               int request_id);
 
   // Send the print preview page count and fit to page scaling
@@ -94,10 +97,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendPagePreviewReady(int page_index,
                             int preview_uid,
                             int preview_request_id);
-
-  int regenerate_preview_request_count() const {
-    return regenerate_preview_request_count_;
-  }
 
   // Notifies PDF Printer Handler that |path| was selected. Used for tests.
   void FileSelectedForTesting(const base::FilePath& path,
@@ -235,10 +234,11 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // preview is displayed.
   void HandleGetInitialSettings(const base::ListValue* args);
 
-#if defined(OS_CHROMEOS)
-  // Opens printer settings in the Chrome OS Settings App.
+  // Opens printer settings in the Chrome OS Settings App or the
+  // chrome://settings page.
   void HandleOpenPrinterSettings(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
   // Gets the EULA URL.
   void HandleGetEulaUrl(const base::ListValue* args);
 #endif
@@ -267,7 +267,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                         const std::string& printer_name,
                         base::Value settings_info);
 
-  // Send the PDF data to the cloud to print.
+  // Send the PDF data to Print Preview so that it can be sent to the cloud
+  // print server to print.
   void SendCloudPrintJob(const std::string& callback_id,
                          const base::RefCountedMemory* data);
 
@@ -310,18 +311,23 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void OnPrintResult(const std::string& callback_id,
                      const base::Value& error);
 
+#if defined(OS_CHROMEOS)
+  // Called to initiate a status request for a printer.
+  void HandleRequestPrinterStatusUpdate(const base::ListValue* args);
+
+  // Invokes Web UI Listener "printer-status-update" with new printer status.
+  void OnPrinterStatusUpdated(const base::Value& cups_printer_status);
+#endif
+
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.
-  int regenerate_preview_request_count_;
-
-  // A count of how many requests received to show manage printers dialog.
-  int manage_printers_dialog_request_count_;
+  int regenerate_preview_request_count_ = 0;
 
   // Whether we have already logged a failed print preview.
-  bool reported_failed_preview_;
+  bool reported_failed_preview_ = false;
 
   // Whether we have already logged the number of printers this session.
-  bool has_logged_printers_count_;
+  bool has_logged_printers_count_ = false;
 
   // Whether Google Cloud Print is enabled for the active profile.
   bool cloud_print_enabled_ = false;
@@ -336,11 +342,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Pointer to the identity manager service so that print preview can listen
   // for GAIA cookie changes.
-  signin::IdentityManager* identity_manager_;
-
-  // Handles requests for cloud printers. Created lazily by calling
-  // GetPrinterHandler().
-  std::unique_ptr<PrinterHandler> cloud_printer_handler_;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   // Handles requests for extension printers. Created lazily by calling
   // GetPrinterHandler().
@@ -366,6 +368,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Set of printer types on the deny list.
   base::flat_set<PrinterType> printer_type_deny_list_;
+
+  // Used to transmit mojo interface method calls to the associated receiver.
+  mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};
 

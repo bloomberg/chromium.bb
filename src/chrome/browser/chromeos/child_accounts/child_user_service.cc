@@ -5,11 +5,24 @@
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
+
 namespace chromeos {
+
+// static
+const char ChildUserService::kFamilyLinkHelperAppPackageName[] =
+    "com.google.android.apps.kids.familylinkhelper";
+// static
+const char ChildUserService::kFamilyLinkHelperAppPlayStoreURL[] =
+    "https://play.google.com/store/apps/"
+    "details?id=com.google.android.apps.kids.familylinkhelper";
 
 ChildUserService::TestApi::TestApi(ChildUserService* service)
     : service_(service) {}
@@ -27,38 +40,76 @@ app_time::WebTimeLimitEnforcer* ChildUserService::TestApi::web_time_enforcer() {
 }
 
 ChildUserService::ChildUserService(content::BrowserContext* context) {
-  if (app_time::AppTimeController::ArePerAppTimeLimitsEnabled())
-    app_time_controller_ = std::make_unique<app_time::AppTimeController>();
+  DCHECK(context);
+  if (app_time::AppTimeController::ArePerAppTimeLimitsEnabled()) {
+    app_time_controller_ = std::make_unique<app_time::AppTimeController>(
+        Profile::FromBrowserContext(context));
+  }
 }
 
 ChildUserService::~ChildUserService() = default;
 
-void ChildUserService::PauseWebActivity() {
+void ChildUserService::PauseWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
+
+  // Pause web activity only if the app is chrome.
+  if (app_service_id != extension_misc::kChromeAppId)
+    return;
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
       app_time_controller_->web_time_enforcer();
   DCHECK(web_time_enforcer);
 
-  // TODO(agawronska): Pass the time limit to |web_time_enforcer|.
-  web_time_enforcer->OnWebTimeLimitReached();
+  const base::Optional<app_time::AppLimit>& time_limit =
+      app_time_controller_->app_registry()->GetWebTimeLimit();
+  DCHECK(time_limit.has_value());
+  DCHECK_EQ(time_limit->restriction(), app_time::AppRestriction::kTimeLimit);
+  DCHECK(time_limit->daily_limit().has_value());
+
+  web_time_enforcer->OnWebTimeLimitReached(time_limit->daily_limit().value());
 }
 
-void ChildUserService::ResumeWebActivity() {
+void ChildUserService::ResumeWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
+
+  // Only unpause web activity if the app is chrome.
+  if (app_service_id != extension_misc::kChromeAppId)
+    return;
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
       app_time_controller_->web_time_enforcer();
   DCHECK(web_time_enforcer);
 
-  web_time_enforcer->set_time_limit(base::TimeDelta());
   web_time_enforcer->OnWebTimeLimitEnded();
 }
 
-bool ChildUserService::WebTimeLimitReached() const {
+base::Optional<base::TimeDelta> ChildUserService::GetTimeLimitForApp(
+    const std::string& app_service_id,
+    apps::mojom::AppType app_type) {
   if (!app_time_controller_)
+    return base::nullopt;
+
+  return app_time_controller_->GetTimeLimitForApp(app_service_id, app_type);
+}
+
+app_time::AppActivityReportInterface::ReportParams
+ChildUserService::GenerateAppActivityReport(
+    enterprise_management::ChildStatusReportRequest* report) {
+  DCHECK(app_time_controller_);
+  return app_time_controller_->app_registry()->GenerateAppActivityReport(
+      report);
+}
+
+void ChildUserService::AppActivityReportSubmitted(
+    base::Time report_generation_timestamp) {
+  DCHECK(app_time_controller_);
+  app_time_controller_->app_registry()->OnSuccessfullyReported(
+      report_generation_timestamp);
+}
+
+bool ChildUserService::WebTimeLimitReached() const {
+  if (!app_time_controller_ || !app_time_controller_->web_time_enforcer())
     return false;
-  DCHECK(app_time_controller_->web_time_enforcer());
   return app_time_controller_->web_time_enforcer()->blocked();
 }
 
@@ -69,6 +120,13 @@ bool ChildUserService::WebTimeLimitWhitelistedURL(const GURL& url) const {
   return app_time_controller_->web_time_enforcer()->IsURLWhitelisted(url);
 }
 
+bool ChildUserService::AppTimeLimitWhitelistedApp(
+    const app_time::AppId& app_id) const {
+  if (!app_time_controller_)
+    return false;
+  return app_time_controller_->app_registry()->IsWhitelistedApp(app_id);
+}
+
 base::TimeDelta ChildUserService::GetWebTimeLimit() const {
   DCHECK(app_time_controller_);
   DCHECK(app_time_controller_->web_time_enforcer());
@@ -76,7 +134,11 @@ base::TimeDelta ChildUserService::GetWebTimeLimit() const {
 }
 
 void ChildUserService::Shutdown() {
-  app_time_controller_.reset();
+  if (app_time_controller_) {
+    app_time_controller_->app_registry()->SaveAppActivity();
+    app_time_controller_->RecordMetricsOnShutdown();
+    app_time_controller_.reset();
+  }
 }
 
 }  // namespace chromeos

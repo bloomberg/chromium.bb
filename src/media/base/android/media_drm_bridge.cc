@@ -30,9 +30,9 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
-#include "media/base/android/media_drm_key_type.h"
 #include "media/base/android/media_jni_headers/MediaDrmBridge_jni.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/media_drm_key_type.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -368,7 +368,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     SecurityLevel security_level,
     bool requires_media_crypto,
     std::unique_ptr<MediaDrmStorageBridge> storage,
-    const CreateFetcherCB& create_fetcher_cb,
+    CreateFetcherCB create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
@@ -382,7 +382,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
 
   scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
       scheme_uuid, origin_id, security_level, requires_media_crypto,
-      std::move(storage), create_fetcher_cb, session_message_cb,
+      std::move(storage), std::move(create_fetcher_cb), session_message_cb,
       session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
 
   if (!media_drm_bridge->j_media_drm_)
@@ -396,7 +396,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system,
     const std::string& origin_id,
     SecurityLevel security_level,
-    const CreateFetcherCB& create_fetcher_cb) {
+    CreateFetcherCB create_fetcher_cb) {
   DVLOG(1) << __func__;
 
   // Sessions won't be used so decoding capability is not required.
@@ -412,7 +412,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
 
   return CreateInternal(
       scheme_uuid, origin_id, security_level, requires_media_crypto,
-      std::make_unique<MediaDrmStorageBridge>(), create_fetcher_cb,
+      std::make_unique<MediaDrmStorageBridge>(), std::move(create_fetcher_cb),
       SessionMessageCB(), SessionClosedCB(), SessionKeysChangeCB(),
       SessionExpirationUpdateCB());
 }
@@ -579,10 +579,11 @@ MediaCryptoContext* MediaDrmBridge::GetMediaCryptoContext() {
   return &media_crypto_context_;
 }
 
-int MediaDrmBridge::RegisterPlayer(const base::Closure& new_key_cb,
-                                   const base::Closure& cdm_unset_cb) {
+int MediaDrmBridge::RegisterPlayer(base::RepeatingClosure new_key_cb,
+                                   base::RepeatingClosure cdm_unset_cb) {
   // |player_tracker_| can be accessed from any thread.
-  return player_tracker_.RegisterPlayer(new_key_cb, cdm_unset_cb);
+  return player_tracker_.RegisterPlayer(std::move(new_key_cb),
+                                        std::move(cdm_unset_cb));
 }
 
 void MediaDrmBridge::UnregisterPlayer(int registration_id) {
@@ -680,10 +681,9 @@ void MediaDrmBridge::OnMediaCryptoReady(
   DVLOG(1) << __func__;
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MediaDrmBridge::NotifyMediaCryptoReady,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(CreateJavaObjectPtr(j_media_crypto.obj()))));
+      FROM_HERE, base::BindOnce(&MediaDrmBridge::NotifyMediaCryptoReady,
+                                weak_factory_.GetWeakPtr(),
+                                CreateJavaObjectPtr(j_media_crypto.obj())));
 }
 
 void MediaDrmBridge::OnProvisionRequest(
@@ -815,7 +815,7 @@ void MediaDrmBridge::OnSessionKeysChange(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(session_keys_change_cb_, std::move(session_id),
-                     has_additional_usable_key, base::Passed(&cdm_keys_info)));
+                     has_additional_usable_key, std::move(cdm_keys_info)));
 
   if (has_additional_usable_key) {
     task_runner_->PostTask(
@@ -963,8 +963,8 @@ void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
 
   provision_fetcher_->Retrieve(
       default_url, request_data,
-      base::Bind(&MediaDrmBridge::ProcessProvisionResponse,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MediaDrmBridge::ProcessProvisionResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaDrmBridge::ProcessProvisionResponse(bool success,

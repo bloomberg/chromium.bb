@@ -9,6 +9,7 @@
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
@@ -19,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/shader_tracking.h"
 
 #if defined(OS_WIN)
@@ -41,6 +43,27 @@ const int kGpuTimeout = 15000;
 const int kGpuTimeout = 10000;
 #endif
 
+// The same set of timeouts from Watchdog V2 so we can compare the results
+// between V1 and V2.
+#if defined(CYGPROFILE_INSTRUMENTATION)
+const int kNewGpuTimeout = 30000;
+#elif defined(OS_MACOSX)
+const int kNewGpuTimeout = 17000;
+#else
+const int kNewGpuTimeout = 15000;
+#endif
+
+// Histogram parameters for GPU.WatchdogThread.V1.ExtraThreadTime and
+// GPU.WatchdogThread.V1.WaitTime
+constexpr base::TimeDelta kMin = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kMax = base::TimeDelta::FromSeconds(150);
+constexpr int kBuckets = 50;
+
+// Histogram recorded in OnWatchdogTimeout()
+void GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent timeout_event) {
+  base::UmaHistogramEnumeration("GPU.WatchdogThread.V1.Timeout", timeout_event);
+}
+
 #if defined(USE_X11)
 const base::FilePath::CharType kTtyFilePath[] =
     FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
@@ -50,7 +73,6 @@ const base::FilePath::CharType kTtyFilePath[] =
 
 GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
     : watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeout)),
       armed_(false),
       task_observer_(this),
       use_thread_cpu_time_(true),
@@ -65,6 +87,11 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
       host_tty_(-1)
 #endif
 {
+  if (base::FeatureList::IsEnabled(features::kGpuWatchdogV1NewTimeout))
+    timeout_ = base::TimeDelta::FromMilliseconds(kNewGpuTimeout);
+  else
+    timeout_ = base::TimeDelta::FromMilliseconds(kGpuTimeout);
+
   base::subtle::NoBarrier_Store(&awaiting_acknowledge_, false);
 
 #if defined(OS_WIN)
@@ -79,7 +106,8 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
 
 #if defined(USE_X11)
   tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
-  host_tty_ = GetActiveTTY();
+  UpdateActiveTTY();
+  host_tty_ = active_tty_;
 #endif
   base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
 }
@@ -138,6 +166,7 @@ void GpuWatchdogThreadImplV1::Init() {
 
 void GpuWatchdogThreadImplV1::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
+  more_gpu_thread_time_allowed_ = false;
   armed_ = false;
 }
 
@@ -235,6 +264,18 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
 void GpuWatchdogThreadImplV1::OnAcknowledge() {
   CHECK(base::PlatformThread::CurrentId() == GetThreadId());
 
+  // For metrics only
+  if (more_gpu_thread_time_allowed_) {
+    base::TimeDelta wait_time =
+        base::TimeTicks::Now() - last_timeout_timeticks_;
+    base::UmaHistogramCustomTimes("GPU.WatchdogThread.V1.ExtraThreadTime",
+                                  wait_time, kMin, kMax, kBuckets);
+    GpuWatchdogTimeoutHistogram(
+        GpuWatchdogTimeoutEvent::kProgressAfterMoreThreadTime);
+
+    more_gpu_thread_time_allowed_ = false;
+  }
+
   // The check has already been acknowledged and another has already been
   // scheduled by a previous call to OnAcknowledge. It is normal for a
   // watched thread to see armed_ being true multiple times before
@@ -331,6 +372,9 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   // Should not get here while the system is suspended.
   DCHECK(!suspension_counter_.HasRefs());
 
+  base::TimeTicks function_start = base::TimeTicks::Now();
+  GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeout);
+
   // If this metric is added too early (eg. watchdog creation time), it cannot
   // be persistent. The histogram data will be lost after crash or browser exit.
   // Delay the recording of kGpuWatchdogStart until the first OnCheckTimeout().
@@ -344,6 +388,9 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   // when a machine wakes up from sleep or hibernation, which would otherwise
   // appear to be a hang.
   if (base::Time::Now() > suspension_timeout_) {
+    // Reset the timeticks after resume for metrics.
+    last_timeout_timeticks_ = function_start;
+
     OnAcknowledge();
     return;
   }
@@ -359,6 +406,13 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   base::ThreadTicks current_cpu_time = GetWatchedThreadTime();
   base::TimeDelta time_since_arm = current_cpu_time - arm_cpu_time_;
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
+    // For metrics
+    if (!more_gpu_thread_time_allowed_) {
+      more_gpu_thread_time_allowed_ = true;
+      last_timeout_timeticks_ = function_start;
+      GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kMoreThreadTime);
+    }
+
     task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV1::OnCheckTimeout,
@@ -367,6 +421,7 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
     return;
   }
 #endif
+  GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeoutWait);
 
   // For minimal developer annoyance, don't keep terminating. You need to skip
   // the call to base::Process::Terminate below in a debugger for this to be
@@ -382,8 +437,13 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
 
 #if defined(USE_X11)
   // Don't crash if we're not on the TTY of our host X11 server.
-  int active_tty = GetActiveTTY();
-  if (host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
+  UpdateActiveTTY();
+  if (host_tty_ != -1 && active_tty_ != -1 && host_tty_ != active_tty_) {
+    // Only record for the time there is a change on TTY
+    if (last_active_tty_ != active_tty_) {
+      GpuWatchdogTimeoutHistogram(
+          GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+    }
     OnAcknowledge();
     return;
   }
@@ -444,10 +504,22 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
 
   // Check it one last time before crashing.
   if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {
+    {  // For metrics only
+      base::TimeDelta wait_time;
+      if (more_gpu_thread_time_allowed_) {
+        more_gpu_thread_time_allowed_ = false;
+        wait_time = base::TimeTicks::Now() - last_timeout_timeticks_;
+      } else {
+        wait_time = base::TimeTicks::Now() - function_start;
+      }
+      base::UmaHistogramCustomTimes("GPU.WatchdogThread.V1.WaitTime", wait_time,
+                                    kMin, kMax, kBuckets);
+      GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kProgressAfterWait);
+    }
     OnAcknowledge();
     return;
   }
-
+  GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kKill);
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
 
   // Deliberately crash the process to create a crash dump.
@@ -539,16 +611,18 @@ base::ThreadTicks GpuWatchdogThreadImplV1::GetWatchedThreadTime() {
 #endif
 
 #if defined(USE_X11)
-int GpuWatchdogThreadImplV1::GetActiveTTY() const {
+void GpuWatchdogThreadImplV1::UpdateActiveTTY() {
+  last_active_tty_ = active_tty_;
+
+  active_tty_ = -1;
   char tty_string[8] = {0};
   if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
       fread(tty_string, 1, 7, tty_file_)) {
     int tty_number;
-    size_t num_res = sscanf(tty_string, "tty%d\n", &tty_number);
-    if (num_res == 1)
-      return tty_number;
+    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1) {
+      active_tty_ = tty_number;
+    }
   }
-  return -1;
 }
 #endif
 

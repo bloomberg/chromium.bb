@@ -22,6 +22,7 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
+#include "ui/accessibility/ax_param_traits.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -77,14 +78,6 @@ struct PrintMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
-struct PrintMsg_PrintFrame_Params {
-  PrintMsg_PrintFrame_Params();
-  ~PrintMsg_PrintFrame_Params();
-
-  gfx::Rect printable_area;
-  int document_cookie;
-};
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 struct PrintHostMsg_RequestPrintPreview_Params {
   PrintHostMsg_RequestPrintPreview_Params();
@@ -103,16 +96,6 @@ struct PrintHostMsg_PreviewIds {
   ~PrintHostMsg_PreviewIds();
   int request_id;
   int ui_id;
-};
-
-struct PrintHostMsg_SetOptionsFromDocument_Params {
-  PrintHostMsg_SetOptionsFromDocument_Params();
-  ~PrintHostMsg_SetOptionsFromDocument_Params();
-
-  bool is_scaling_disabled;
-  int copies;
-  printing::DuplexMode duplex;
-  printing::PageRanges page_ranges;
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -227,20 +210,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_PreviewIds)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(ui_id)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_SetOptionsFromDocument_Params)
-  // Specifies whether print scaling is enabled or not.
-  IPC_STRUCT_TRAITS_MEMBER(is_scaling_disabled)
-
-  // Specifies number of copies to be printed.
-  IPC_STRUCT_TRAITS_MEMBER(copies)
-
-  // Specifies paper handling option.
-  IPC_STRUCT_TRAITS_MEMBER(duplex)
-
-  // Specifies page range to be printed.
-  IPC_STRUCT_TRAITS_MEMBER(page_ranges)
-IPC_STRUCT_TRAITS_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageSizeMargins)
@@ -259,15 +228,6 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintPages_Params)
 
   // If empty, this means a request to render all the printed pages.
   IPC_STRUCT_TRAITS_MEMBER(pages)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintFrame_Params)
-  // Physical printable area of the page in pixels according to dpi.
-  IPC_STRUCT_TRAITS_MEMBER(printable_area)
-
-  // Cookie that is unique for each print request.
-  // It is used to associate the printed frame with its original print request.
-  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
 IPC_STRUCT_TRAITS_END()
 
 // Holds the printed content information.
@@ -358,23 +318,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_ScriptedPrint_Params)
 IPC_STRUCT_END()
 
 
-// Messages sent from the browser to the renderer.
-
-// Tells the RenderFrame to initiate printing or print preview for a particular
-// node, depending on which mode the RenderFrame is in.
-IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
-
-// Print content of an out-of-process subframe.
-IPC_MESSAGE_ROUTED1(PrintMsg_PrintFrameContent, PrintMsg_PrintFrame_Params)
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the RenderFrame to switch the CSS to print media type, renders every
-// requested pages for print preview using the given |settings|. This gets
-// called multiple times as the user updates settings.
-IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
-                    base::DictionaryValue /* settings */)
-#endif
-
 // Messages sent from the renderer to the browser.
 
 // Tells the browser that the renderer is done calculating the number of
@@ -404,6 +347,14 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrintFrameContent,
                     int /* rendered document cookie */,
                     PrintHostMsg_DidPrintContent_Params)
+
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+// Sends the accessibility tree corresponding to a document being
+// printed, needed for a tagged (accessible) PDF.
+IPC_MESSAGE_ROUTED2(PrintHostMsg_AccessibilityTree,
+                    int /* rendered document cookie */,
+                    ui::AXTreeUpdate)
+#endif
 
 // The renderer wants to know the default print settings.
 IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_GetDefaultPrintSettings,
@@ -480,11 +431,6 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintingFailed,
                     int /* document cookie */)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tell the browser print preview failed.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_PrintPreviewFailed,
-                    int /* document cookie */,
-                    PrintHostMsg_PreviewIds /* ids */)
-
 // Tell the browser print preview was cancelled.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_PrintPreviewCancelled,
                     int /* document cookie */,
@@ -505,11 +451,6 @@ IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_SetupScriptedPrintPreview)
 // loaded such that the renderer can determine whether it is modifiable or not.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_ShowScriptedPrintPreview,
                     bool /* is_modifiable */)
-
-// Notify the browser to set print presets based on source PDF document.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_SetOptionsFromDocument,
-                    PrintHostMsg_SetOptionsFromDocument_Params /* params */,
-                    PrintHostMsg_PreviewIds /* ids */)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_

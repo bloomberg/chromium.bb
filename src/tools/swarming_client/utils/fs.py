@@ -15,6 +15,7 @@ from utils import tools
 tools.force_local_third_party()
 
 # third_party/
+import six
 from six.moves import builtins
 
 if sys.platform == 'win32':
@@ -157,14 +158,14 @@ if sys.platform == 'win32':
     not enforced.
     """
     assert os.path.isabs(path), path
-    assert isinstance(path, unicode), path
+    assert isinstance(path, six.text_type), path
     prefix = u'\\\\?\\'
     return path if path.startswith(prefix) else prefix + path
 
 
   def trim(path):
     """Removes '\\\\?\\' when receiving a path."""
-    assert isinstance(path, unicode), path
+    assert isinstance(path, six.text_type), path
     prefix = u'\\\\?\\'
     if path.startswith(prefix):
       path = path[len(prefix):]
@@ -202,7 +203,7 @@ if sys.platform == 'win32':
     """
     # Accept relative links, and implicitly promote source to unicode.
     if isinstance(source, str):
-      source = unicode(source)
+      source = six.text_type(source)
     f = extend(link_name)
     # We need to convert to absolute path, so we can test if it points to a
     # directory or a file.
@@ -270,7 +271,7 @@ if sys.platform == 'win32':
 
   def readlink(path):
     """Reads a symlink on Windows."""
-    path = unicode(path)
+    path = six.text_type(path)
     # Interestingly, when using FILE_FLAG_OPEN_REPARSE_POINT and the destination
     # is not a reparse point, the actual file will be opened. It's the
     # DeviceIoControl() below that will fail with 4390.
@@ -354,21 +355,24 @@ else:
 
 
   def extend(path):
-    """Convert the path back to utf-8.
-
-    In some rare case, concatenating str and unicode may cause a
-    UnicodeEncodeError because the default encoding is 'ascii'.
-    """
+    """Path extending is not needed on POSIX."""
     assert os.path.isabs(path), path
-    assert isinstance(path, unicode), path
-    return path.encode('utf-8')
+    assert isinstance(path, six.text_type), path
+    if six.PY2:
+      # In python2, default filesystem encoding may be 'ascii'.
+      # So does encode here to avoid UnicodeEncodeError.
+      return path.encode('utf-8')
+    return path
 
 
   def trim(path):
     """Path mangling is not needed on POSIX."""
     assert os.path.isabs(path), path
-    assert isinstance(path, str), path
-    return path.decode('utf-8')
+    if six.PY2:
+      assert isinstance(path, str), path
+      return path.decode('utf-8')
+    assert isinstance(path, six.text_type), path
+    return path
 
 
   def islink(path):
@@ -380,7 +384,9 @@ else:
 
 
   def readlink(path):
-    return os.readlink(extend(path)).decode('utf-8')
+    if six.PY2:
+      return os.readlink(extend(path)).decode('utf-8')
+    return os.readlink(extend(path))
 
 
   def walk(top, *args, **kwargs):

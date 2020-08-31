@@ -516,8 +516,8 @@ TEST_F(GaiaAuthFetcherTest, ListAccounts) {
   ASSERT_EQ(received_requests_.size(), 1U);
   EXPECT_EQ(network::mojom::CredentialsMode::kInclude,
             received_requests_.at(0).credentials_mode);
-  EXPECT_EQ(GaiaUrls::GetInstance()->gaia_url(),
-            received_requests_.at(0).site_for_cookies);
+  EXPECT_TRUE(received_requests_.at(0).site_for_cookies.IsEquivalent(
+      net::SiteForCookies::FromUrl(GaiaUrls::GetInstance()->gaia_url())));
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, data);
 }
 
@@ -536,7 +536,6 @@ TEST_F(GaiaAuthFetcherTest, LogOutSuccess) {
 
 TEST_F(GaiaAuthFetcherTest, LogOutFailure) {
   net::Error error_no = net::ERR_CONNECTION_RESET;
-  net::URLRequestStatus status(net::URLRequestStatus::FAILED, error_no);
 
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(error_no);

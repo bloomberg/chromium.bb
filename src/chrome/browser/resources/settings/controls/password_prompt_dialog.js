@@ -19,9 +19,6 @@
  * </settings-password-prompt-dialog>
  */
 
-(function() {
-'use strict';
-
 Polymer({
   is: 'settings-password-prompt-dialog',
 
@@ -35,16 +32,6 @@ Polymer({
       type: String,
       notify: true,
       value: '',
-    },
-
-    /**
-     * Authentication token returned by quickUnlockPrivate.getAuthToken().
-     * Should be passed to API calls which require authentication.
-     * @type {string}
-     */
-    authToken: {
-      type: String,
-      notify: true,
     },
 
     /**
@@ -68,7 +55,7 @@ Polymer({
     /**
      * Interface for chrome.quickUnlockPrivate calls. May be overridden by
      * tests.
-     * @type {QuickUnlockPrivate}
+     * @type {Object}
      */
     quickUnlockPrivate: {type: Object, value: chrome.quickUnlockPrivate},
 
@@ -81,11 +68,11 @@ Polymer({
 
   /** @return {!CrInputElement} */
   get passwordInput() {
-    return this.$.passwordInput;
+    return /** @type {!CrInputElement} */ (this.$.passwordInput);
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
     // This needs to occur at the next paint otherwise the password input will
     // not receive focus.
@@ -97,26 +84,18 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     if (this.$.dialog.open) {
       this.$.dialog.close();
     }
   },
 
   /**
-   * The timeout ID to pass to clearTimeout() to cancel auth token
-   * invalidation.
-   * @private {number|undefined}
-   */
-  clearAccountPasswordTimeoutId_: undefined,
-
-  /**
    * Run the account password check.
    * @private
    */
-  submitPassword_: function() {
+  submitPassword_() {
     this.waitingForPasswordCheck_ = true;
-    clearTimeout(this.clearAccountPasswordTimeoutId_);
 
     const password = this.passwordInput.value;
     // The user might have started entering a password and then deleted it all.
@@ -136,19 +115,8 @@ Polymer({
         return;
       }
 
-      this.authToken = tokenInfo.token;
+      this.fire('token-obtained', tokenInfo);
       this.passwordInvalid_ = false;
-
-      // Clear |this.authToken| after tokenInfo.lifetimeSeconds.
-      // Subtract time from the expiration time to account for IPC delays.
-      // Treat values less than the minimum as 0 for testing.
-      const IPC_SECONDS = 2;
-      const lifetimeMs = tokenInfo.lifetimeSeconds > IPC_SECONDS ?
-          (tokenInfo.lifetimeSeconds - IPC_SECONDS) * 1000 :
-          0;
-      this.clearAccountPasswordTimeoutId_ = setTimeout(() => {
-        this.authToken = '';
-      }, lifetimeMs);
 
       if (this.$.dialog.open) {
         this.$.dialog.close();
@@ -157,14 +125,13 @@ Polymer({
   },
 
   /** @private */
-  onInputValueChange_: function() {
+  onInputValueChange_() {
     this.passwordInvalid_ = false;
   },
 
   /** @private */
-  isConfirmEnabled_: function() {
+  isConfirmEnabled_() {
     return !this.waitingForPasswordCheck_ && !this.passwordInvalid_ &&
         this.inputValue_;
   },
 });
-})();

@@ -9,12 +9,10 @@ assert(is_win, "This only runs on Windows.")
 message_compiler("chrome_events_win") {
   visibility = [
     "//base/*",
-    "//chrome:main_dll",
+    "//chrome:chrome_dll",
   ]
 
-  sources = [
-    "chrome_events_win.man",
-  ]
+  sources = [ "chrome_events_win.man" ]
 
   user_mode_logging = true
 

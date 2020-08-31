@@ -100,7 +100,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
     // Called when a surrounding text is changed.
     virtual void OnSurroundingTextChanged(const std::string& engine_id,
-                                          const std::string& text,
+                                          const base::string16& text,
                                           int cursor_pos,
                                           int anchor_pos,
                                           int offset_pos) = 0;
@@ -143,7 +143,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   void Reset() override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback callback) override;
-  void SetSurroundingText(const std::string& text,
+  void SetSurroundingText(const base::string16& text,
                           uint32_t cursor_pos,
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
@@ -180,7 +180,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   bool FinishComposingText(int context_id, std::string* error);
 
   // Send the sequence of key events.
-  bool SendKeyEvents(int context_id, const std::vector<KeyboardEvent>& events);
+  bool SendKeyEvents(int context_id,
+                     const std::vector<KeyboardEvent>& events,
+                     std::string* error);
 
   // Set the current composition and associated properties.
   bool SetComposition(int context_id,
@@ -230,6 +232,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     ~PendingKeyEvent();
 
     std::string component_id;
+    KeyboardEvent key_event;
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback;
 
    private:
@@ -256,11 +259,18 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Notifies InputContextHanlder to commit |text|.
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;
+
   // Notifies InputContextHandler to delete surrounding text.
   void DeleteSurroundingTextToInputContext(int offset, size_t number_of_chars);
+
   // Sends the key event to the window tree host.
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
-                            const std::string& code) = 0;
+                            const std::string& code,
+                            std::string* error) = 0;
+
+  // Used to verify that a key event is valid before precessing it in the
+  // current context.
+  virtual bool IsValidKeyEvent(const ui::KeyEvent* ui_event) = 0;
 
   ui::TextInputType current_input_type_;
 
@@ -299,6 +309,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Indicates whether the IME extension is currently handling a physical key
   // event. This is used in CommitText/UpdateCompositionText/etc.
   bool handling_key_event_;
+
+ private:
+  ui::KeyEvent ConvertKeyboardEventToUIKeyEvent(const KeyboardEvent& event);
 };
 
 }  // namespace input_method

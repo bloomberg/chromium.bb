@@ -25,6 +25,10 @@ FakeDownloadTask::~FakeDownloadTask() {
     observer.OnDownloadDestroyed(this);
 }
 
+WebState* FakeDownloadTask::GetWebState() {
+  return web_state_;
+}
+
 DownloadTask::State FakeDownloadTask::GetState() const {
   return state_;
 }
@@ -93,10 +97,6 @@ std::string FakeDownloadTask::GetMimeType() const {
   return mime_type_;
 }
 
-ui::PageTransition FakeDownloadTask::GetTransitionType() const {
-  return page_transition_;
-}
-
 base::string16 FakeDownloadTask::GetSuggestedFilename() const {
   return suggested_file_name_;
 }
@@ -113,6 +113,10 @@ void FakeDownloadTask::AddObserver(DownloadTaskObserver* observer) {
 void FakeDownloadTask::RemoveObserver(DownloadTaskObserver* observer) {
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
+}
+
+void FakeDownloadTask::SetWebState(WebState* web_state) {
+  web_state_ = web_state;
 }
 
 void FakeDownloadTask::SetDone(bool done) {
@@ -153,11 +157,6 @@ void FakeDownloadTask::SetContentDisposition(
 
 void FakeDownloadTask::SetMimeType(const std::string& mime_type) {
   mime_type_ = mime_type;
-  OnDownloadUpdated();
-}
-
-void FakeDownloadTask::SetTransitionType(ui::PageTransition page_transition) {
-  page_transition_ = page_transition;
   OnDownloadUpdated();
 }
 

@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_QBONE_QBONE_CONTROL_STREAM_H_
 
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_control.pb.h"
 
 namespace quic {
@@ -18,13 +19,15 @@ class QUIC_EXPORT_PRIVATE QboneControlStreamBase : public QuicStream {
 
   void OnDataAvailable() override;
 
+  void OnStreamReset(const QuicRstStreamFrame& frame) override;
+
  protected:
-  virtual void OnMessage(const string& data) = 0;
+  virtual void OnMessage(const std::string& data) = 0;
   bool SendMessage(const proto2::Message& proto);
 
  private:
   uint16_t pending_message_size_;
-  string buffer_;
+  std::string buffer_;
 };
 
 template <class T>
@@ -47,7 +50,7 @@ class QUIC_EXPORT_PRIVATE QboneControlStream : public QboneControlStreamBase {
   bool SendRequest(const Outgoing& request) { return SendMessage(request); }
 
  protected:
-  void OnMessage(const string& data) override {
+  void OnMessage(const std::string& data) override {
     Incoming request;
     if (!request.ParseFromString(data)) {
       QUIC_LOG(ERROR) << "Failed to parse incoming request";

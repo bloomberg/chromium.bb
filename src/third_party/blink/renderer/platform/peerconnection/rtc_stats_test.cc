@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 #include "third_party/webrtc/stats/test/rtc_test_stats.h"
@@ -103,7 +103,7 @@ TEST(RTCStatsTest, IncludeAllMembers) {
 
   // Include both standard and non-standard member.
   RTCStatsReportPlatform report(
-      webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
+      webrtc_report.get(), Vector<webrtc::NonStandardGroupId>{
                                webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<RTCStats> stats = report.GetStats("id");
   ASSERT_NE(nullptr, stats);
@@ -127,7 +127,7 @@ TEST(RTCStatsTest, CopyHandle) {
   ASSERT_EQ(1u, standard_members_copy->GetStats("id")->MembersCount());
 
   RTCStatsReportPlatform all_members_report(
-      webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
+      webrtc_report.get(), Vector<webrtc::NonStandardGroupId>{
                                webrtc::NonStandardGroupId::kGroupIdForTesting});
   std::unique_ptr<RTCStatsReportPlatform> all_members_copy =
       all_members_report.CopyHandle();

@@ -28,13 +28,15 @@
  *     </pre>
  *
  * An application instantiates a specific decoder instance by using
- * aom_codec_init() and a pointer to the algorithm's interface structure:
+ * aom_codec_dec_init() and a pointer to the algorithm's interface structure:
  *     <pre>
  *     my_app.c:
  *       extern aom_codec_iface_t my_codec;
  *       {
  *           aom_codec_ctx_t algo;
- *           res = aom_codec_init(&algo, &my_codec);
+ *           int threads = 4;
+ *           aom_codec_dec_cfg_t cfg = { threads, 0, 0, 1 };
+ *           res = aom_codec_dec_init(&algo, &my_codec, &cfg, 0);
  *       }
  *     </pre>
  *
@@ -59,15 +61,14 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_CODEC_INTERNAL_ABI_VERSION (5) /**<\hideinitializer*/
+#define AOM_CODEC_INTERNAL_ABI_VERSION (7) /**<\hideinitializer*/
 
 typedef struct aom_codec_alg_priv aom_codec_alg_priv_t;
-typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
 
 /*!\brief init function pointer prototype
  *
  * Performs algorithm-specific initialization of the decoder context. This
- * function is called by the generic aom_codec_init() wrapper function, so
+ * function is called by aom_codec_dec_init() and aom_codec_enc_init(), so
  * plugins implementing this interface may trust the input parameters to be
  * properly initialized.
  *
@@ -77,8 +78,7 @@ typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
  * \retval #AOM_CODEC_MEM_ERROR
  *     Memory operation failed.
  */
-typedef aom_codec_err_t (*aom_codec_init_fn_t)(
-    aom_codec_ctx_t *ctx, aom_codec_priv_enc_mr_cfg_t *data);
+typedef aom_codec_err_t (*aom_codec_init_fn_t)(aom_codec_ctx_t *ctx);
 
 /*!\brief destroy function pointer prototype
  *
@@ -171,17 +171,12 @@ typedef const struct aom_codec_ctrl_fn_map {
 
 /*!\brief decode data function pointer prototype
  *
- * Processes a buffer of coded data. If the processing results in a new
- * decoded frame becoming available, #AOM_CODEC_CB_PUT_SLICE and
- * #AOM_CODEC_CB_PUT_FRAME events are generated as appropriate. This
- * function is called by the generic aom_codec_decode() wrapper function,
- * so plugins implementing this interface may trust the input parameters
- * to be properly initialized.
+ * Processes a buffer of coded data. This function is called by the generic
+ * aom_codec_decode() wrapper function, so plugins implementing this interface
+ * may trust the input parameters to be properly initialized.
  *
  * \param[in] ctx          Pointer to this instance's context
- * \param[in] data         Pointer to this block of new coded data. If
- *                         NULL, a #AOM_CODEC_CB_PUT_FRAME event is posted
- *                         for the previously decoded frame.
+ * \param[in] data         Pointer to this block of new coded data.
  * \param[in] data_sz      Size of the coded data, in bytes.
  *
  * \return Returns #AOM_CODEC_OK if the coded data was processed completely
@@ -259,24 +254,6 @@ typedef aom_fixed_buf_t *(*aom_codec_get_global_headers_fn_t)(
 typedef aom_image_t *(*aom_codec_get_preview_frame_fn_t)(
     aom_codec_alg_priv_t *ctx);
 
-typedef aom_codec_err_t (*aom_codec_enc_mr_get_mem_loc_fn_t)(
-    const aom_codec_enc_cfg_t *cfg, void **mem_loc);
-
-/*!\brief usage configuration mapping
- *
- * This structure stores the mapping between usage identifiers and
- * configuration structures. Each algorithm provides a list of these
- * mappings. This list is searched by the aom_codec_enc_config_default()
- * wrapper function to determine which config to return. The special value
- * {-1, {0}} is used to indicate end-of-list, and must be present. At least
- * one mapping must be present, in addition to the end-of-list.
- *
- */
-typedef const struct aom_codec_enc_cfg_map {
-  int usage;
-  aom_codec_enc_cfg_t cfg;
-} aom_codec_enc_cfg_map_t;
-
 /*!\brief Decoder algorithm interface interface
  *
  * All decoders \ref MUST expose a variable of this type.
@@ -297,10 +274,9 @@ struct aom_codec_iface {
     aom_codec_set_fb_fn_t set_fb_fn; /**< \copydoc ::aom_codec_set_fb_fn_t */
   } dec;
   struct aom_codec_enc_iface {
-    int cfg_map_count;
-    aom_codec_enc_cfg_map_t
-        *cfg_maps;                /**< \copydoc ::aom_codec_enc_cfg_map_t */
-    aom_codec_encode_fn_t encode; /**< \copydoc ::aom_codec_encode_fn_t */
+    int cfg_count;
+    const aom_codec_enc_cfg_t *cfgs; /**< \copydoc ::aom_codec_enc_cfg_t */
+    aom_codec_encode_fn_t encode;    /**< \copydoc ::aom_codec_encode_fn_t */
     aom_codec_get_cx_data_fn_t
         get_cx_data; /**< \copydoc ::aom_codec_get_cx_data_fn_t */
     aom_codec_enc_config_set_fn_t
@@ -309,19 +285,8 @@ struct aom_codec_iface {
         get_glob_hdrs; /**< \copydoc ::aom_codec_get_global_headers_fn_t */
     aom_codec_get_preview_frame_fn_t
         get_preview; /**< \copydoc ::aom_codec_get_preview_frame_fn_t */
-    aom_codec_enc_mr_get_mem_loc_fn_t
-        mr_get_mem_loc; /**< \copydoc ::aom_codec_enc_mr_get_mem_loc_fn_t */
   } enc;
 };
-
-/*!\brief Callback function pointer / user data pair storage */
-typedef struct aom_codec_priv_cb_pair {
-  union {
-    aom_codec_put_frame_cb_fn_t put_frame;
-    aom_codec_put_slice_cb_fn_t put_slice;
-  } u;
-  void *user_priv;
-} aom_codec_priv_cb_pair_t;
 
 /*!\brief Instance private storage
  *
@@ -335,26 +300,11 @@ struct aom_codec_priv {
   const char *err_detail;
   aom_codec_flags_t init_flags;
   struct {
-    aom_codec_priv_cb_pair_t put_frame_cb;
-    aom_codec_priv_cb_pair_t put_slice_cb;
-  } dec;
-  struct {
     aom_fixed_buf_t cx_data_dst_buf;
     unsigned int cx_data_pad_before;
     unsigned int cx_data_pad_after;
     aom_codec_cx_pkt_t cx_data_pkt;
-    unsigned int total_encoders;
   } enc;
-};
-
-/*
- * Multi-resolution encoding internal configuration
- */
-struct aom_codec_priv_enc_mr_cfg {
-  unsigned int mr_total_resolutions;
-  unsigned int mr_encoder_id;
-  struct aom_rational mr_down_sampling_factor;
-  void *mr_low_res_mode_info;
 };
 
 #undef AOM_CTRL_USE_TYPE
@@ -366,19 +316,6 @@ struct aom_codec_priv_enc_mr_cfg {
   static AOM_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
 
 #define CAST(id, arg) id##__value(arg)
-
-/* CODEC_INTERFACE convenience macro
- *
- * By convention, each codec interface is a struct with extern linkage, where
- * the symbol is suffixed with _algo. A getter function is also defined to
- * return a pointer to the struct, since in some cases it's easier to work
- * with text symbols than data symbols (see issue #169). This function has
- * the same name as the struct, less the _algo suffix. The CODEC_INTERFACE
- * macro is provided to define this getter function automatically.
- */
-#define CODEC_INTERFACE(id)                          \
-  aom_codec_iface_t *id(void) { return &id##_algo; } \
-  aom_codec_iface_t id##_algo
 
 /* Internal Utility Functions
  *

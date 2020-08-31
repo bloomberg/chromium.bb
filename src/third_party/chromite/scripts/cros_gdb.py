@@ -18,7 +18,9 @@ import os
 import sys
 import tempfile
 
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
@@ -28,6 +30,10 @@ from chromite.lib import qemu
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import toolchain
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 class GdbException(Exception):
   """Base exception for this module."""
@@ -127,23 +133,22 @@ To install the debug symbols for all available packages, run:
 
   def SimpleChromeGdb(self):
     """Get the name of the cross gdb based on board name."""
-    bin_path = self.board + '+' + os.environ['SDK_VERSION'] + '+' + \
-               'target_toolchain'
-    bin_path = os.path.join(self.sdk_path, bin_path, 'bin')
+    bin_path = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        cros_chrome_sdk.SDKFetcher.TARGET_TOOLCHAIN_KEY,
+        self.sdk_path, self.board)
+    bin_path = os.path.join(bin_path, 'bin')
     for f in os.listdir(bin_path):
       if f.endswith('gdb'):
         return os.path.join(bin_path, f)
-    raise GdbMissingDebuggerError('Cannot find cros gdb for %s.'
-                                  % self.board)
+    raise GdbMissingDebuggerError('Cannot find cross gdb for %s.' % self.board)
 
   def SimpleChromeSysroot(self):
     """Get the sysroot in simple chrome."""
-    sysroot = self.board + '+' + os.environ['SDK_VERSION'] + \
-              '+' + 'sysroot_chromeos-base_chromeos-chrome.tar.xz'
-    sysroot = os.path.join(self.sdk_path, sysroot)
-    if not os.path.isdir(sysroot):
+    sysroot = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        constants.CHROME_SYSROOT_TAR, self.sdk_path, self.board)
+    if not sysroot:
       raise GdbMissingSysrootError('Cannot find sysroot for %s at %s'
-                                   % (self.board, sysroot))
+                                   % (self.board, self.sdk_path))
     return sysroot
 
   def GetSimpleChromeBinary(self):
@@ -166,7 +171,7 @@ To install the debug symbols for all available packages, run:
                 'the binary via --binary'% binary_name, output_dir)
     if target_binary is None:
       raise GdbSimpleChromeBinaryError('There is no %s under %s.'
-                                       % binary_name, output_dir)
+                                       % (binary_name, output_dir))
     return target_binary
 
   def VerifyAndFinishInitialization(self, device):
@@ -188,8 +193,7 @@ To install the debug symbols for all available packages, run:
     else:
       self.chrome_path = os.path.realpath(os.path.join(os.path.dirname(
           os.path.realpath(__file__)), '../../../..'))
-      self.sdk_path = os.path.join(
-          path_util.FindCacheDir(), 'chrome-sdk/tarballs/')
+      self.sdk_path = path_util.FindCacheDir()
       self.sysroot = self.SimpleChromeSysroot()
       self.cross_gdb = self.SimpleChromeGdb()
 
@@ -223,7 +227,8 @@ To install the debug symbols for all available packages, run:
     # the debug info.
     if sysroot_inf_cmd:
       stripped_info = cros_build_lib.run(['file', sysroot_inf_cmd],
-                                         capture_output=True).output
+                                         capture_output=True,
+                                         encoding='utf-8').stdout
       if ' not stripped' not in stripped_info:
         debug_file = os.path.join(self.sysroot, 'usr/lib/debug',
                                   self.inf_cmd.lstrip('/'))
@@ -231,7 +236,8 @@ To install the debug symbols for all available packages, run:
         if not os.path.exists(debug_file):
           equery = 'equery-%s' % self.board
           package = cros_build_lib.run([equery, '-q', 'b', self.inf_cmd],
-                                       capture_output=True).output
+                                       capture_output=True,
+                                       encoding='utf-8').stdout
           # pylint: disable=logging-not-lazy
           logging.info(self._MISSING_DEBUG_INFO_MSG % {
               'board': self.board,
@@ -389,7 +395,7 @@ To install the debug symbols for all available packages, run:
         '-e', '/proc/%s/exe' % self.pid,
     ]
     try:
-      res = device.RunCommand(command, capture_output=True)
+      res = device.run(command, capture_output=True)
       if res.returncode == 0:
         self.inf_cmd = res.output.rstrip('\n')
     except cros_build_lib.RunCommandError:

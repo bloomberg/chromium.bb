@@ -21,7 +21,7 @@ cr.define('cr.FirstRun', function() {
     // Default control for this step.
     defaultControl_: null,
 
-    decorate: function() {
+    decorate() {
       this.name_ = this.getAttribute('id');
       var controlsContainer = this.getElementsByClassName('controls')[0];
       if (!controlsContainer)
@@ -45,19 +45,16 @@ cr.define('cr.FirstRun', function() {
     /**
      * Returns name of the string.
      */
-    getName: function() {
+    getName() {
       return this.name_;
     },
 
     /**
      * Hides the step.
-     * @param {boolean} animated Whether transition should be animated.
      * @param {function()=} opt_onHidden Called after step has been hidden.
      */
-    hide: function(animated, opt_onHidden) {
-      var transitionDuration =
-          animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
-      changeVisibility(this, false, transitionDuration, function() {
+    hide(opt_onHidden) {
+      changeVisibility(this, false, function() {
         this.classList.add('hidden');
         if (opt_onHidden)
           opt_onHidden();
@@ -66,14 +63,11 @@ cr.define('cr.FirstRun', function() {
 
     /**
      * Shows the step.
-     * @param {boolean} animated Whether transition should be animated.
      * @param {function(Step)=} opt_onShown Called after step has been shown.
      */
-    show: function(animated, opt_onShown) {
-      var transitionDuration =
-          animated ? cr.FirstRun.getDefaultTransitionDuration() : 0;
+    show(opt_onShown) {
       this.classList.remove('hidden');
-      changeVisibility(this, true, transitionDuration, function() {
+      changeVisibility(this, true, function() {
         if (opt_onShown)
           opt_onShown(this);
       }.bind(this));
@@ -84,7 +78,7 @@ cr.define('cr.FirstRun', function() {
      * @param {object} position Parameter with optional fields |top|,
      *     |right|, |bottom|, |left| holding corresponding offsets.
      */
-    setPosition: function(position) {
+    setPosition(position) {
       var style = this.style;
       ['top', 'right', 'bottom', 'left'].forEach(function(property) {
         if (position.hasOwnProperty(property))
@@ -96,14 +90,14 @@ cr.define('cr.FirstRun', function() {
      * Makes default control focused. Default control is a first control in
      * current implementation.
      */
-    focusDefaultControl: function() {
+    focusDefaultControl() {
       this.defaultControl_.focus();
     },
 
     /**
      * Updates UI when Google Assistant is enabled.
      */
-    setAssistantEnabled: function() {
+    setAssistantEnabled() {
       if (this.name_ == 'app-list')
         $('google-assistant-text').hidden = false;
     },
@@ -153,7 +147,7 @@ cr.define('cr.FirstRun', function() {
      * In addition to base class 'decorate' this method creates arrow and
      * sets some properties related to arrow.
      */
-    decorate: function() {
+    decorate() {
       Step.prototype.decorate.call(this);
       this.arrow_ = document.createElement('div');
       this.arrow_.classList.add('arrow');
@@ -195,12 +189,12 @@ cr.define('cr.FirstRun', function() {
      *     positioning. |point| has format [x, y].
      * @param {offset} number Additional offset from |point|.
      */
-    setPointsTo: function(point, offset) {
+    setPointsTo(point, offset) {
       var shouldShowBefore = this.hidden;
       // "Showing" bubble in order to make offset* methods work.
       if (shouldShowBefore) {
         this.style.setProperty('opacity', '0');
-        this.show(false);
+        this.show();
       }
       var arrow = [
         this.arrow_.offsetLeft + this.arrow_.offsetWidth / 2,
@@ -229,7 +223,7 @@ cr.define('cr.FirstRun', function() {
       this.style.setProperty('left', left + 'px');
       this.style.setProperty('top', top + 'px');
       if (shouldShowBefore) {
-        this.hide(false);
+        this.hide();
         this.style.removeProperty('opacity');
       }
     },
@@ -240,7 +234,7 @@ cr.define('cr.FirstRun', function() {
      * @param {object} position Parameter with optional fields |top|,
      *     |right|, |bottom|, |left| holding corresponding offsets.
      */
-    setPosition: function(position) {
+    setPosition(position) {
       var arrow = this.arrow_;
       // Increasing offset if it's from side where bubble points to.
       [['top', 'points-up'], ['right', 'points-right'],
@@ -260,7 +254,7 @@ cr.define('cr.FirstRun', function() {
   TrayStep.prototype = {
     __proto__: Bubble.prototype,
 
-    decorate: function() {
+    decorate() {
       Bubble.prototype.decorate.call(this);
       var helpButton = this.getElementsByClassName('help-button')[0];
       helpButton.addEventListener('click', function(e) {
